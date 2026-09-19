@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 1（Q1–Q4、Q6 完成；Q5、Q8 可开工）
+最后刷新：2026-09-19 · beat 2（Q1–Q6 完成；新开附录 A 一章 Q9–Q13）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -18,6 +18,11 @@
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **CLAIMED** (CC) |
+| Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **OPEN** ← 下一条 |
+| Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **OPEN**（与 Q9 文件不相交，可并行） |
+| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | BLOCKED by Q10 |
+| Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | BLOCKED by Q10 |
+| Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | BLOCKED by Q9 |
 
 ---
 
@@ -308,3 +313,90 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 和 `∂_{h_{βα}}` 这些对象。照 `Model.lean` 的先例：**先只建到能被编译器检查的那一层**，
 不要一上来就建完整的图代数。如果发现陈述它们需要的前置比预期深，就在 STATUS.md 里写清楚
 卡在哪，别硬撑。
+
+
+---
+
+# 第二批：附录 A（确定性估计）
+
+论文里这一章是**本文自足**的推导——以 `lem_propTH` 为输入，往上盖。Q9 现在就能开工，
+它只用到刚证好的性质 4。**Q9 与 Q10 文件不相交，可以两个人同时做。**
+
+## Q9 · 演化核 `U^(n)` 与 `lem:sum_Ndecay` — **OPEN，下一条**
+
+**文件**：新开 `RBM3D/Kernel/Evolution.lean`。**只依赖 Q5（性质 4），不需要任何接口公理。**
+
+要定义的（`\Cref{DefTHUST}`）：张量 `A : (Zd d L)^n → ℂ`、它的 `‖A‖_∞ = max_a |A_a|`，以及
+
+* `(def:op_thn)` `(Θ^(n)_{t,σ} ∘ A)_a = Σ_i Σ_{b_i} (M^(σ_i,σ_{i+1}) S^(B) / (1 − t M^(σ_i,σ_{i+1}) S^(B)))_{a_i b_i} · A_{a^(i)(b_i)}`，
+  其中 `a^(i)(b_i) := (a_1,…,a_{i-1}, b_i, a_{i+1},…,a_n)`，并约定 `σ_{n+1} = σ_1`；
+* `(def_Ustz)` `(U^(n)_{s,t,σ} ∘ A)_a = Σ_b ∏_{i=1}^n ((1 − s M^(σ_i,σ_{i+1}) S^(B)) / (1 − t M^(σ_i,σ_{i+1}) S^(B)))_{a_i b_i} · A_b`。
+
+**随机带矩阵模型下 `M^(σ_i,σ_{i+1}) = m(σ_i)m(σ_{i+1}) I`，所以那个分式就是
+`(1 − s ξ_i S^(B))·Θ_{t,ξ_i}`，其中 `ξ_i = t·m(σ_i)m(σ_{i+1})`** —— 直接复用
+`Propagator/Basic.lean` 的 `Theta`，不要另起炉灶。
+
+要证的三条，按顺序：
+
+1. **`(eq:decompUalt)`**：`(1 − s M S)/(1 − t M S) = 1 + Ξ^(i)`，其中 `Ξ^(i) := (t−s)·M S·Θ_t`。
+   纯代数恒等式，用 `Theta_mul` / `mul_Theta` 展开即可。
+2. **`(Xi_infint)`**：`‖Ξ^(i)‖_{∞→∞} = max_a Σ_b |Ξ^(i)_{ab}| ≤ (t−s)·‖Θ_t‖_{∞→∞} ≤ (t−s)/(1−t)`。
+   **第二个不等号就是 Q5 刚证好的 `norm_Theta_le`。**
+3. **`(sum_res_Ndecay)` = `lem:sum_Ndecay`**：`‖U^(n)_{s,t,σ} ∘ A‖_∞ ≤ ((1−s)/(1−t))^n ‖A‖_∞`。
+   由 1、2 得单个因子的 `(∞→∞)` 范数 `≤ 1 + (t−s)/(1−t) = (1−s)/(1−t)`，再对 `n` 个因子取积。
+
+**提示**：`n` 个指标上的张量用 `(Fin n → Zd d L) → ℂ`；`U^(n)` 是 `n` 个同一算子在不同指标上的
+张量积，所以「积的范数 ≤ 范数的积」那一步建议先对 `n` 归纳，别一上来就找 Mathlib 的张量积 API。
+
+## Q10 · 尾函数 `𝒯_t` 与 `wT^ℓ_{t,D}` — **OPEN**（与 Q9 并行）
+
+**文件**：新开 `RBM3D/Defs/Tail.lean`。只依赖 `Defs/Params.lean` 的 `Bparam` / `ellT`。
+
+`\Cref{def: TTfunc}`：
+
+* `(defTUL)` `𝒯_t(r) := B_{t,r} · exp(−(r/ℓ_t)^{1/2})`，`r ≥ 0`；
+* `(defWTTlD)` `wT^ℓ_{t,D}(r) := max(𝒯_t(r ∧ ℓ), W^{-D})`，`0 ≤ ℓ ≤ L`。
+
+要证的基本性质（论文正文里当作显然，形式化必须写出来）：
+
+* `𝒯_t` 关于 `r` 单调不增 —— 注意 `B_{t,r}` 的第一项 `(g²+|1−t|)⁻¹/(r+1)^{d-2}` 单调减、
+  第二项 `(L^d|1−t|)⁻¹` 是常数，指数因子也单调减；
+* 非负性、`𝒯_t(0) = B_{t,0}`；
+* `wT` 单调不增、`≥ W^{-D} > 0`（后面所有除以 `wT` 的地方都要它非零）；
+* 论文 L325 那句话：`0 ≤ r ≤ L` 时，`1−t ≥ g²/L²` 则 `B_{t,r}` 的第二项被第一项压住，
+  反之则反过来 —— **这条在第三轮我补 `eq:MG_conclusion2` 的理由时用到了，值得单独成引理。**
+
+## Q11 · `lem:propT` 的卷积界 — BLOCKED by Q10
+
+**文件**：新开 `RBM3D/Kernel/PropT.lean`。陈述（`TTT2`）：存在只依赖 `d` 的 `C_d > 0`，使得对
+任意 `0 ≤ u ≤ t < 1` 满足 (i) `1−u ≥ 1−t ≥ g²/L²` 或 (ii) `1−t ≤ 1−u ≤ g²/L²`，
+
+```
+Σ_{c ∈ Z_L^d} 𝒯_u(|a−c|) · 𝒯_t(|c−b|) ≤ C_d/(1−u) · 𝒯_t(|a−b|),   ∀ a,b
+```
+
+证明在附录 A.3（`sec:pfpropT`）。**注意两个区制要分开做**，这是 `d ≥ 3` 与低维不同的地方之一。
+
+## Q12 · `claim:TTk`（`eq:TtTt` / `eq:KtKt`） — BLOCKED by Q10
+
+**文件**：同 `Kernel/PropT.lean`。附录 A.4。**这一条要特别小心**：第三轮校对就是在这里发现
+原稿漏了截断——两式都必须带 `∧ ℓ`：
+
+```
+𝒯_t(|x_i−α| ∧ ℓ) · 𝒯_t(|y_i−α| ∧ ℓ) ≲ 𝒯_t(|x_i−y_i| ∧ ℓ)                      (eq:TtTt)
+|y_i−α| > ℓ 时： ≲ 𝒯_t(ℓ) · (W^{-d}B_{t,0})^{1/2} · (|x_i−α| ∧ ℓ + 1)^{-(d-2)/2}   (eq:KtKt)
+```
+
+两条都由 `𝒯_t` 的定义、单调性，加上两条初等事实推出：
+`𝒯_t(0) ≤ (W^{-d}B_{t,0})^{1/2}` 与 `𝒯_t(r ∧ ℓ) ≤ 𝒯_t(0)·(r ∧ ℓ + 1)^{-(d-2)/2}`。
+另外第三轮把 case 2 的适用范围从 `3 ≤ i ≤ k` 改成 `2 ≤ i ≤ k`、case 3 改成 `1 ≤ i ≤ k`
+（原稿漏了下标）——**形式化时把这两处当作重点核对对象**。
+
+## Q13 · `lem:sum_decay_nonzero` — BLOCKED by Q9
+
+**文件**：`RBM3D/Kernel/Evolution.lean`。附录 A.2 末尾，`sum_res_Ndecay_nonzero`。
+第三轮补写的那段推导现在是显式的，照着做即可：由 `(def_Ustz)`，`U^(n)` 在 `n` 个指标上分别作用；
+由 `\Cref{def;zero_mode_remove}`，`Q^(A) = ∏_{i∈A} Q^(i)` 把 `i ∈ A` 的因子换成带
+`Proj_{e^⊥}` 的形式。第一类因子用那个 `(∞→∞)` 界；第二类因子由假设 `A ⊃ I_diff(σ)` 强制
+`σ_i = σ_{i+1}`，从而落在 `(eq:decompUalt)` 的适用范围内。
+**需要 `(prop:ThfadC)`（接口公理）作输入。**

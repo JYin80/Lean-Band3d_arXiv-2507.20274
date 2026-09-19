@@ -23,17 +23,15 @@ owner 取值：`CC`（Claude Code，本机）/ `CW`（Cowork，云端）/ `Jun`
 
 ---
 
-## T0 — 磁盘与 Mathlib 依赖
+## T0 — Mathlib 依赖（已降级，不再阻塞）
 
-`~/Lean_proof` 所在卷 97% 满，剩约 15G。RBM1D 的 Mathlib build 约 6.6 GB，RBM2D 还没建。
-三个项目各一份放不下。三选一：
+原来写的「卷 97% 满、只剩 15 G」已经过时：现在还有约 123 G。三个项目的 toolchain 与
+mathlib rev 完全一致，各建一份 `.lake`（每份约 8.1 G）放得下，`lake exe cache get` 的
+下载缓存本身跨项目共用，所以重复的只是解包后的 build 树。
 
-1. 清磁盘，然后老实 `lake exe cache get`（最稳）
-2. `RBM3D/.lake/packages` 符号链接到 `../RBM1D/.lake/packages`。toolchain 与 rev
-   三者完全一致（都是 `v4.34.0`），理论上可行，**但要先确认 `lake` 不会写坏 RBM1D 那棵树**
-3. 换一块盘
-
-**在 T0 做完之前 `lake build` / `./check.sh` 跑不了**；但 T1 已绕过它完成，见 T1 的完成记录。
+**做法**：`cd ~/Lean_proof/RBM3D && lake exe cache get && lake build`。
+做完 `./check.sh` 就能跑了（Claude Code 目前是借 RBM1D 的 olean 只读编译，
+所以 `lake build` 这条路还没验证过）。
 
 ## T1 — 让第一批草稿编译通过 ⚠️ 最优先
 

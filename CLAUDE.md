@@ -67,11 +67,13 @@ lake exe cache get      # 拉 Mathlib 预编译 olean
 lake build
 ```
 
-**磁盘警告**：`~/Lean_proof` 所在卷已用到 97%，只剩约 15G。RBM1D 的
-`.lake/packages/mathlib/.lake/build` 约 6.6 GB，RBM2D 还没建。三个项目各来一份
-Mathlib 会满盘。toolchain 与 rev 三者完全锁死一致，所以可以考虑让
-`RBM3D/.lake/packages` 指向 `../RBM1D/.lake/packages` 的符号链接——
-**但请先确认 `lake` 不会写坏那边的树**，不确定就先清磁盘再 `cache get`。见 T0。
+**磁盘**：已不是约束。卷上还有约 123 G（74% 用），一份 `.lake` 约 8.1 G（其中 mathlib 的
+build 6.6 G），三个项目各一份放得下。三者 toolchain 与 mathlib rev 完全一致
+（`5ed2965256430c3649e86755f9576b54eca72435`），所以**共享在原理上安全**，但既然空间够，
+建议各用各的：互不干扰，`lake build` / `./check.sh` / CI 行为一致，也不会出现某个项目
+`lake update` 静默改掉共享树的情况。真要省空间，macOS 上用 APFS 写时复制克隆
+（`cp -c -R RBM1D/.lake/packages RBM3D/.lake/packages`，在 Terminal 里跑）比软链安全。
+`lake exe cache get` 的下载缓存本来就是跨项目共用的，所以重复的只是解包后的 build 树。
 
 Mathlib 源码在 `../RBM1D/.lake/packages/mathlib/Mathlib/` —— 找 API 就 grep 这里，
 `.lake` 建好之前也能用。
