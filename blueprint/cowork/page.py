@@ -44,13 +44,14 @@ CH3 = rows([
 ])
 
 CH4 = rows([
- ("演化核 U^(n) 与 lem:sum_Ndecay（只依赖性质 4）","Q9 · 认领中","ready","Kernel/Evolution.lean"),
- ("尾函数 𝒯_t = B_{t,r}·exp(−(r/ℓ_t)^{1/2}) 与截断版 wT","Q10 · 可开工","ready","Defs/Tail.lean"),
- ("lem:propT 的卷积界 TTT2","Q11 · 待 Q10","todo","—"),
- ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 要盯紧","Q12 · 待 Q10","todo","—"),
- ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 待 Q9","todo","—"),
- ("A.5 典范划分与 K-loop 树表示","未排期","todo","—"),
- ("[YY_25] Lem 3.4 树表示","接口公理","cited","待落地"),
+ ("演化核 U^(n) 与 lem:sum_Ndecay","Q9 ✓ 已证","done","ThetaN · UN · norm_UN_le"),
+ ("尾函数 𝒯_t 与截断版 wT^ℓ_{t,D}","Q10 ✓ 已证","done","tailT · tailW · zeroMode_le_of_ge · ellT_eq_of_le"),
+ ("lem:propT 的卷积界 TTT2","Q11 · 可开工","ready","Kernel/PropT.lean"),
+ ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 要盯紧","Q12 · 可开工","ready","同上，与 Q11 串行"),
+ ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 可开工","ready","Kernel/Evolution.lean"),
+ ("典范树划分 TSP(P_a) 与边值 f_{t,σ}(e)","Q14 · 可开工","ready","Loop/Partition.lean"),
+ ("树表示 eq_Ktree —— 公理化 vs 移植 RBM1D 的 ODE 唯一性证法","Q15 · 待 Q14","todo","Loop/TreeRep.lean"),
+ ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 · 待 Q15","todo","Loop/PureLoop.lean"),
 ])
 
 QUEUE = """
@@ -65,9 +66,13 @@ QUEUE = """
 <tr><td>Q6</td><td>图模型 · case 穷尽性 <b>⭐</b></td><td><code>Graph/Model.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q7</td><td>核对 [yang2024Del] B.10 的 check 记号</td><td>查文献</td><td><span class="pill cited">降级 · 不在关键路径</span></td></tr>
 <tr><td>Q8</td><td><code>(Owx)</code>/<code>(Oe2x)</code> 的确定性内核（决定不写 axiom）</td><td><code>Graph/Expansions.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q9</td><td>演化核 <code>U^(n)</code> 与 <code>lem:sum_Ndecay</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">认领中</span></td></tr>
-<tr><td>Q10</td><td>尾函数 <code>𝒯_t</code> / <code>wT^ℓ_{t,D}</code></td><td><code>Defs/Tail.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
-<tr><td>Q11–Q13</td><td><code>lem:propT</code> · <code>claim:TTk</code> · <code>lem:sum_decay_nonzero</code></td><td><code>Kernel/</code></td><td><span class="pill todo">待 Q9/Q10</span></td></tr>
+<tr><td>Q9</td><td>演化核 <code>U^(n)</code> 与 <code>lem:sum_Ndecay</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q10</td><td>尾函数 <code>𝒯_t</code> / <code>wT^ℓ_{t,D}</code></td><td><code>Defs/Tail.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q11</td><td><code>lem:propT</code> 的卷积界</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q12</td><td><code>claim:TTk</code>（<code>∧ℓ</code> 截断）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN · 与 Q11 串行</span></td></tr>
+<tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
+<tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
+<tr><td>Q15–Q16</td><td>树表示 <code>eq_Ktree</code> · <code>lem_pureloop</code></td><td><code>Loop/</code></td><td><span class="pill todo">待 Q14</span></td></tr>
 </tbody></table>
 """
 
@@ -159,10 +164,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>323</b><span>声明已编译</span></div>
+    <div class="chip done"><b>361</b><span>声明已编译</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip cited"><b>5</b><span>接口公理</span></div>
-    <div class="chip ready"><b>2</b><span>工单可开工</span></div>
+    <div class="chip ready"><b>4</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -247,7 +252,7 @@ __QUEUE__
 </div>
 
 <footer>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 2 · 2026-09-19 11:55 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 3 · 2026-09-19 12:10 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
