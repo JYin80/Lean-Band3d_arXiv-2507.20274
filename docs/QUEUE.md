@@ -6,14 +6,14 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 0+（Q1 绿了，随即解锁 Q2）
+最后刷新：2026-09-19 · beat 1（Q1 / Q2 / Q6 完成，Q3、Q4 解锁）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
-| Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
-| Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
+| Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **OPEN** |
+| Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **OPEN** |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | OPEN（需要查文献，非 Lean） |
@@ -119,7 +119,7 @@ theorem card_nbhd (d L : ℕ) [NeZero L] (hL : 3 ≤ L) :
 
 ---
 
-## Q3 · `‖S^(B)(g)‖ = 1` — BLOCKED by Q2
+## Q3 · `‖S^(B)(g)‖ = 1` — **OPEN**
 
 **文件**：`RBM3D/Defs/Block.lean`。
 
@@ -140,7 +140,7 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q4 · `S^(B) 1 = 1` — BLOCKED by Q2
+## Q4 · `S^(B) 1 = 1` — **OPEN**
 
 **文件**：`RBM3D/Defs/Block.lean`。
 移植 `RBM1D/Defs/Block.lean` 的 `sum_SB_row` / `SB_mulVec_one`，同样用 Q2 的计数。
