@@ -1,0 +1,247 @@
+from graphs import G1, G2, G3, G4
+
+def rows(items):
+    out = ['<ul class="rows">']
+    for name, pill, cls, code in items:
+        c = f'<code>{code}</code>' if code else ''
+        out.append(f'<li class="row"><div class="row-main"><span class="row-name">{name}</span></div>'
+                   f'<div class="row-side"><span class="pill {cls}">{pill}</span>{c}</div></li>')
+    out.append('</ul>')
+    return "\n".join(out)
+
+CH1 = rows([
+ ("格点 Z_L^d 与周期 ℓ¹ 距离","草稿","draft","Zd · zdistD · zdistD_add_le · zdistD_neg"),
+ ("块方差矩阵 S^(B)(g)","草稿","draft","sbKernel · SB · SB_isSymm · SB_apply_add_right"),
+ ("控制参数 ℓ_t 与 B_{t,K}","草稿","draft","ellT · Bparam · one_le_ellT"),
+ ("确定性 ≺（从 RBM1D 原样搬来）","草稿","draft","UnifDetDom · DetDom · detDom_iff"),
+ ("邻居计数 #{x : |x| = 1} = 2d","Q2 · 可开工","ready","card_nbhd"),
+ ("‖S^(B)(g)‖ = 1","Q3 · 待解锁","todo","norm_SB"),
+ ("S^(B)·1 = 1","Q4 · 待解锁","todo","SB_mulVec_one"),
+])
+
+CH2 = rows([
+ ("Θ_ξ = Ring.inverse (1 − ξ S^(B))","草稿","draft","Theta · Theta0"),
+ ("逆的唯一性 —— 本层的全部支点","草稿","draft","eq_Theta_of_mul · Theta_mul · mul_Theta"),
+ ("性质 1 对称性","草稿","draft","Theta_transpose · Theta_isSymm"),
+ ("性质 2 平移不变","草稿","draft","Theta_apply_add_right"),
+ ("性质 3 交换性","草稿","draft","Theta_commute_SB · Theta_commute"),
+ ("行和 Σ_b Θ_{ab} = (1−ξ)⁻¹","草稿","draft","Theta_mulVec_one · sum_Theta_row"),
+ ("Neumann 级数 (eq;Taylor)","草稿","draft","Theta_eq_tsum"),
+ ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹","Q5 · 待解锁","todo","—"),
+ ("性质 5 (prop:ThfadC) 多项式+指数衰减","接口公理","cited","theta_decay"),
+ ("性质 5′ (prop:ThfadC_short)","接口公理","cited","theta_decay_short"),
+ ("性质 6 (prop:BD1) 一阶差分","接口公理","cited","theta_diff_one"),
+ ("性质 7 (prop:BD2) 二阶差分","接口公理","cited","theta_diff_two"),
+ ("性质 8 (prop:ThfadC0) 去零模","接口公理","cited","theta_zero_mode"),
+])
+
+CH3 = rows([
+ ("scaling order 的定义 (eq:ordG)","草稿","draft","Graph.Counters · Graph.ord"),
+ ("case (ii)–(vi) 的算术记账","草稿","draft","ord_case_ii … ord_case_vi"),
+ ("图模型 · case 分析穷尽性","Q6 · 可开工","ready","—"),
+ ("B.9 基本展开","接口公理","cited","待落地"),
+ ("B.10 权展开 —— 落地前须核对记号","接口公理","cited","待落地 · 见 Q7"),
+ ("B.11 GG 展开","接口公理","cited","待落地"),
+])
+
+CH4 = rows([
+ ("A.2 演化核分解 U^(n) · Q^(A) · I_diff(σ)","待解锁","todo","—"),
+ ("A.3–A.4 lem:propT 与 claim:TTk","待解锁","todo","—"),
+ ("A.5 典范划分与 K-loop 树表示","待解锁","todo","—"),
+ ("[YY_25] Lem 3.4 树表示","接口公理","cited","待落地"),
+])
+
+QUEUE = """
+<table class="q">
+<thead><tr><th>#</th><th>工单</th><th>文件</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td>Q1</td><td>让现有草稿编译通过</td><td><code>RBM3D/**</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q2</td><td>邻居计数 <code>#{|x| = 1} = 2d</code> —— 整层的地基</td><td><code>Defs/Block.lean</code></td><td><span class="pill todo">待 Q1</span></td></tr>
+<tr><td>Q3</td><td><code>‖S^(B)(g)‖ = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill todo">待 Q2</span></td></tr>
+<tr><td>Q4</td><td><code>S^(B)·1 = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill todo">待 Q2</span></td></tr>
+<tr><td>Q5</td><td>性质 4 的 (∞→∞) 范数界</td><td><code>Propagator/Props4.lean</code></td><td><span class="pill todo">待 Q3,Q4</span></td></tr>
+<tr><td>Q6</td><td>图模型 · case 穷尽性 <b>⭐</b></td><td><code>Graph/Model.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
+<tr><td>Q7</td><td>核对 [yang2024Del] B.10 的一个 check 记号</td><td>查文献</td><td><span class="pill ready">OPEN</span></td></tr>
+</tbody></table>
+"""
+
+HTML = """<title>d≥3 Band Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f8; --surface:#fff; --border:#dfe4e9; --ink:#141a20; --muted:#6d7883;
+  --accent:#2c4a7c; --done:#1a8a5e; --done-bg:#e3f3ec; --ready:#1a8a5e; --ready-bg:#e3f3ec;
+  --draft:#3d74ad; --draft-bg:#e2edf7; --todo:#8d97a2; --todo-bg:#eceff2;
+  --cited:#9a7328; --cited-bg:#fbf1de;
+  --plate:#f8fafb; --plate-border:#dde3e8;
+  --edge:#aeb6bf; --axband:rgba(154,115,40,.07); --axline:#cda85f; --axtext:#9a7328;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11161b; --surface:#191f26; --border:#2a333c; --ink:#e5e9ed; --muted:#98a3ae;
+  --accent:#8fb4e0; --done:#4bc094; --done-bg:#14302a; --ready:#4bc094; --ready-bg:#14302a;
+  --draft:#79a9d8; --draft-bg:#16283a; --todo:#8e99a4; --todo-bg:#222a32;
+  --cited:#d7ab5f; --cited-bg:#2e2617;
+  --plate:#e7ebee; --plate-border:#c7ced4;
+  --edge:#8d97a2; --axband:rgba(154,115,40,.10); --axline:#a8823c; --axtext:#7a5c1e;
+}}
+:root[data-theme="dark"]{
+  --bg:#11161b; --surface:#191f26; --border:#2a333c; --ink:#e5e9ed; --muted:#98a3ae;
+  --accent:#8fb4e0; --done:#4bc094; --done-bg:#14302a; --ready:#4bc094; --ready-bg:#14302a;
+  --draft:#79a9d8; --draft-bg:#16283a; --todo:#8e99a4; --todo-bg:#222a32;
+  --cited:#d7ab5f; --cited-bg:#2e2617;
+  --plate:#e7ebee; --plate-border:#c7ced4;
+  --edge:#8d97a2; --axband:rgba(154,115,40,.10); --axline:#a8823c; --axtext:#7a5c1e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:40px 64px}
+header{border-bottom:1px solid var(--border);padding-bottom:22px;margin-bottom:26px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+h1{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(26px,4.4vw,38px);
+  line-height:1.15;margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.chip{display:flex;align-items:baseline;gap:8px;background:var(--surface);
+  border:1px solid var(--border);border-radius:6px;padding:9px 13px}
+.chip b{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.chip span{font-size:12.5px;color:var(--muted)}
+.chip.draft b{color:var(--draft)} .chip.cited b{color:var(--cited)}
+.chip.ready b{color:var(--ready)} .chip.todo b{color:var(--todo)}
+h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:21px;margin:38px 0 4px}
+h2+p{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 0;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;
+  vertical-align:-1px;border:1px solid rgba(0,0,0,.18)}
+.plate{background:var(--plate);border:1px solid var(--plate-border);border-radius:8px;
+  padding:10px;overflow-x:auto}
+svg.dep{display:block;min-width:640px;width:100%;height:auto}
+ul.rows{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--border)}
+.row{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;align-items:baseline;
+  padding:10px 2px;border-bottom:1px solid var(--border)}
+.row-main{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;min-width:0}
+.row-name{font-weight:500}
+.row-side{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;min-width:0}
+.pill{font-size:11.5px;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill.draft{color:var(--draft);background:var(--draft-bg)}
+.pill.ready{color:var(--ready);background:var(--ready-bg)}
+.pill.todo{color:var(--todo);background:var(--todo-bg)}
+.pill.cited{color:var(--cited);background:var(--cited-bg)}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;color:var(--muted);
+  overflow-wrap:anywhere}
+.note{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--cited);
+  border-radius:0 6px 6px 0;padding:15px 17px;margin-top:22px;font-size:13.5px;color:var(--muted)}
+.note.acc{border-left-color:var(--accent)}
+.note strong{color:var(--ink);font-weight:600}
+.note p{margin:0 0 9px} .note p:last-child{margin:0}
+table.q{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
+table.q th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;padding:0 10px 8px 0;border-bottom:1px solid var(--border)}
+table.q td{padding:9px 10px 9px 0;border-bottom:1px solid var(--border);vertical-align:top}
+table.q td:first-child{font-variant-numeric:tabular-nums;color:var(--muted);width:2.6em}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
+  font-size:12.5px;color:var(--muted)}
+@media (max-width:640px){.row{flex-direction:column;align-items:flex-start}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Lean 4 · Mathlib · 形式化蓝图</p>
+  <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
+  <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
+  <div class="chips">
+    <div class="chip draft"><b>15</b><span>草稿待编译</span></div>
+    <div class="chip cited"><b>9</b><span>接口公理</span></div>
+    <div class="chip ready"><b>2</b><span>可开工</span></div>
+    <div class="chip todo"><b>0</b><span>已编译定理</span></div>
+  </div>
+</header>
+
+<div class="note">
+<p><strong>这个项目和两个姊妹项目形状不同，先读这一段。</strong></p>
+<p>d = 2 那篇论文在它的 §8 里从零证明了传播子衰减估计，所以 <code>RBM2D</code> 里那些是<em>定理</em>。
+这篇论文没有：<code>lem_propTH</code> 的性质 5–8 分别归给 <code>[DYYY25]</code> Lemma 2.14、
+<code>[yang2024Del]</code> Lemma 3.1 与 (E.19)，其中 <code>(prop:BD1)</code> 论文自己说
+“not stated explicitly in [yang2024Del] … we omit the details”——它在所引文献里根本没有显式证明。
+附录 B 的三条 expansion 引理同样引自 <code>[yang2024Del]</code> B.9–B.11。</p>
+<p>按「只依据这篇论文」的规则，这些一律是 <strong>axiom</strong>，集中在
+<code>Propagator/Interface.lean</code>，并由 <code>Test/Axioms.lean</code> 的审计钉死：
+任何不在名单上的公理（含 <code>sorryAx</code>）都让构建失败，审计还会报出每条公理被多少条声明依赖。
+<strong>那张名单是产出，不是缺陷</strong>——它是「这篇论文向前人借了什么」的精确、机器可核查的记录。
+下面每张图里，横线以下即为借来的结果。</p>
+</div>
+
+<div class="legend">
+  <span><i style="background:#3d74ad"></i>已写成 Lean，尚未编译</span>
+  <span><i style="background:#dfe9f3"></i>定义</span>
+  <span><i style="background:#1a8a5e"></i>依赖就绪，可开工</span>
+  <span><i style="background:#fbf1de"></i>接口公理 · 论文引用而未证</span>
+  <span><i style="background:#ffffff"></i>尚被上游阻塞</span>
+</div>
+
+<h2>第 1 章 · 格点与模型</h2>
+<p>§2.1 与 §2.5 的定义层：环面 Z_L^d、周期 ℓ¹ 距离、块方差矩阵 S^(B)(g)、控制参数 ℓ_t 与 B_{t,K}。d 全程是参数，<code>3 ≤ d</code> 只在真正用到的地方引入。</p>
+<div class="plate">__G1__</div>
+__CH1__
+
+<div class="note acc">
+<p><strong>Q2 是整层的地基。</strong> 邻居计数 <code>#{x : |x| = 1} = 2d</code> 看着不起眼，
+但 <code>‖S^(B)‖ = 1</code> 和 <code>S^(B)·1 = 1</code> 都归结到它，而第 2 章每一条结构引理
+现在都带着假设 <code>hS : ‖S^(B)(g)‖ = 1</code>。<strong>做完 Q2，传播子那一层立刻全部解除假设。</strong>
+这也正是 <code>3 ≤ L</code> 的来源：L = 2 时 <code>1 = −1</code>，2d 个邻居塌成 d 个。</p>
+</div>
+
+<h2>第 2 章 · 传播子 Θ</h2>
+<p>整层只靠一条引理撑着：<code>eq_Theta_of_mul</code>——<em>任何</em> 1 − ξS^(B) 的左逆<em>就是</em> Θ_ξ。要证 Θ 有某个性质，就构造一个有那个性质的左逆，再引唯一性。这条路线从 RBM1D 逐行移植，其中没有一步用到维数。</p>
+<div class="plate">__G2__</div>
+__CH2__
+
+<h2>第 3 章 · 附录 B · scaling order</h2>
+<p>ord(Γ) = n_S + 2(n_W − n_V) 的记账，以及 <code>lem_scalingorder</code> 的 case 分析。</p>
+<div class="plate">__G3__</div>
+__CH3__
+
+<div class="note acc">
+<p><strong>Q6 是这个项目机器检查收益最高的一块，而且现在就能动。</strong></p>
+<p>第三轮人工校对在附录 B 发现漏掉了一种情形 case (vi)。但它的算术与 case (iv) 完全相同——
+<code>ord_case_vi</code> 在 Lean 里就是 <code>ord_case_iv</code> 的推论。
+<strong>只检查算术的形式化抓不到它</strong>：漏的是情形枚举，不是不等式。</p>
+<p>所以真正的价值在把图的构型做成一个归纳类型，让 <code>cases</code> 的穷尽性由编译器保证。
+验收标准很干脆：<em>删掉 case (vi) 那一个分支，编译器应当报 non-exhaustive。</em>
+做到这一点，这个项目就有了第三轮人工校对没有的保证。</p>
+</div>
+
+<h2>第 4 章 · 附录 A · 确定性估计</h2>
+<p>以 <code>lem_propTH</code> 为输入、本文自足的推导：演化核分解、lem:propT、claim:TTk、K-loop 树表示。第三轮补写隐含步骤最多的就是这一章。</p>
+<div class="plate">__G4__</div>
+__CH4__
+
+<h2>工单队列</h2>
+<p>Claude Code 从 <code>docs/QUEUE.md</code> 从上往下领第一条 OPEN。此表每次心跳刷新。</p>
+__QUEUE__
+
+<div class="note">
+<p><strong>为什么现在一条定理都没有。</strong> 云端容器与本机 VM 都拉不到 Mathlib
+（出口策略挡掉 <code>reservoir.lean-lang.org</code> 与 GitHub releases），而这个仓库又不在云端会话的
+授权仓库集里，所以连「push 上去让 CI 当编译器」这条退路也暂时不通。
+上面 15 条草稿的 Mathlib 名字都 grep 过 <code>../RBM1D/.lake/packages/mathlib/</code> 确认存在，
+但<strong>签名一个都没验过</strong>。Q1 就是干这件事的，它列了 7 个按可疑程度排序的风险点。</p>
+<p>磁盘还有一件事：<code>~/Lean_proof</code> 所在卷已用到 97%，只剩约 15 G，而一份 Mathlib 要 6.6 G。</p>
+</div>
+
+<footer>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 0 · 2026-09-19<br>
+  姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
+  <code>~/Lean_proof/RBM2D</code>（d=2）
+</footer>
+</div>
+"""
+
+out = (HTML.replace("__G1__", G1).replace("__G2__", G2).replace("__G3__", G3)
+           .replace("__G4__", G4).replace("__CH1__", CH1).replace("__CH2__", CH2)
+           .replace("__CH3__", CH3).replace("__CH4__", CH4).replace("__QUEUE__", QUEUE))
+open("/home/claude/bp/blueprint.html","w").write(out)
+print("bytes:", len(out))
