@@ -7,6 +7,15 @@ dimensions $d\ge 3$*（arXiv:2507.20274，Inventiones 投稿版）的确定性�
 和 `../RBM2D`（d=2，arXiv:2503.07606）。RBM1D 的代码是本项目最可靠的参照——
 `Defs/Domination.lean` 和 `Test/Axioms.lean` 就是从那边搬过来的。
 
+## 开工流程（Claude Code 读这一段）
+
+**工单在 `docs/QUEUE.md`。** 从上往下找第一条 `OPEN`，改成 `CLAIMED` 并单独提交这一行，
+做完改 `DONE`，在 `docs/STATUS.md` 记一笔（新增了哪些声明、卡在哪、下一步）。
+
+队列由 Cowork 侧约每 10 分钟刷新一次；**已被认领（`CLAIMED`）的工单不会被改写**，
+所以认领动作要尽早提交。卡住时在 `STATUS.md` 里写清楚「卡在 X，试过 Y 和 Z，
+失败原因是 W」——那是两边唯一的交接面。
+
 ## 唯一真相来源
 
 - **论文**：`paper/2507.20274-inventiones-submission.pdf`（97 页），源码在 `paper/tex/`，

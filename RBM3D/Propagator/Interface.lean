@@ -40,6 +40,11 @@ right trade: a reader checking these against the paper should not have to unfold
 definition to see what is being assumed.
 
 Properties 5 and 5' carry explicit constants in the paper and need no `≺` at all.
+
+Note on the spectral parameter: `RBM.Theta` takes `ξ = t · m(σ₁)m(σ₂)` as a single
+complex argument, so `Θ_t^(σ₁,σ₂)` appears below as `Theta d L g ((t : ℂ) * m)`.  The
+hypothesis `‖m‖ = 1` together with `t < 1` gives `‖ξ‖ < 1`, which is what makes the
+propagator well defined at all (`RBM.isUnit_one_sub_smul_SB`).
 -/
 
 namespace RBM
@@ -58,7 +63,7 @@ axiom theta_decay (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) (hm 
     ∃ Cd > (0 : ℝ), ∃ cd > (0 : ℝ),
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d L,
         haveI : NeZero L := ⟨by omega⟩
-        ‖ThetaRBM d L g m t 0 a‖
+        ‖Theta d L g ((t : ℂ) * m) 0 a‖
           ≤ Cd * Bparam d L g t (zdistD d L a)
               * Real.exp (-cd * (zdistD d L a : ℝ) / ellT L g t)
 
@@ -72,7 +77,7 @@ axiom theta_decay_short (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ
     ∃ Cκ > (0 : ℝ), ∃ cκ > (0 : ℝ),
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d L,
         haveI : NeZero L := ⟨by omega⟩
-        ‖ThetaRBM d L g m t 0 a‖
+        ‖Theta d L g ((t : ℂ) * m) 0 a‖
           ≤ Cκ * ((if a = 0 then 1 else 0)
               + g ^ 2 * Real.exp (-cκ * (zdistD d L a : ℝ)))
 
@@ -90,7 +95,7 @@ axiom theta_diff_one (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) (
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a r : Zd d L,
         zdistD d L r ≤ zdistD d L a →
         haveI : NeZero L := ⟨by omega⟩
-        ‖ThetaRBM d L g m t 0 (a + r) - ThetaRBM d L g m t 0 a‖
+        ‖Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a‖
           ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
               * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹
 
@@ -105,8 +110,8 @@ axiom theta_diff_two (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) (
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a r : Zd d L,
         zdistD d L r ≤ zdistD d L a →
         haveI : NeZero L := ⟨by omega⟩
-        ‖ThetaRBM d L g m t 0 (a + r) + ThetaRBM d L g m t 0 (a - r)
-            - 2 * ThetaRBM d L g m t 0 a‖
+        ‖Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
+            - 2 * Theta d L g ((t : ℂ) * m) 0 a‖
           ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
               * (zdistD d L r : ℝ) ^ 2 * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹
 
@@ -120,7 +125,7 @@ axiom theta_zero_mode (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) 
     ∃ C > (0 : ℝ),
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d L,
         haveI : NeZero L := ⟨by omega⟩
-        ‖ThetaRBM0 d L g m t 0 a‖
+        ‖Theta0 d L g ((t : ℂ) * m) 0 a‖
           ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
               * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹
 
