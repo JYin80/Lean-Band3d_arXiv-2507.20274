@@ -125,6 +125,10 @@ lake env lean RBM3D/Defs/Lattice.lean   # 单文件，秒级 —— 默认用这
 | 蓝图渲染 / 依赖图 | 需本机装 plasTeX + graphviz | 工具链现成 |
 | git / CI / GitHub Pages | 都行 | **push 不了**，见下 |
 
+**CI 是通的，而且快。** 仓库公开，`Lean Action CI` 每次约 2 分钟，
+运行页上的 job summary 公开可读（`lean_action_ci.yml` 第二步把完整 `lake build` 输出写进
+`$GITHUB_STEP_SUMMARY`）。所以只要 Jun push 了，Cowork 侧就能读到全部编译错误。
+
 **Cowork 无法编译，也无法 push。** 这个仓库不在云端会话的授权仓库集里，git 代理
 会拒绝注入凭据（403）。所以 RBM2D 那套「写 → push → 读 CI 日志 → 改」的回路，
 在这个项目里**暂时不可用**。要打通，Jun 需要把
