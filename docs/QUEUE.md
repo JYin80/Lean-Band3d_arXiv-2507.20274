@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 2（Q8 拍板选 B 关闭；Q9 认领中，Q10 待领）
+最后刷新：2026-09-19 · beat 3（Q9、Q10 完成；Q11–Q13 全部解锁）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -20,9 +20,9 @@
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
-| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | BLOCKED by Q10 |
-| Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | BLOCKED by Q10 |
-| Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | BLOCKED by Q9 |
+| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **OPEN** |
+| Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **OPEN**（与 Q11 同文件，串行） |
+| Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **OPEN**（与 Q11/Q12 文件不相交，可并行） |
 
 ---
 
@@ -488,7 +488,7 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 * 论文 L325 那句话：`0 ≤ r ≤ L` 时，`1−t ≥ g²/L²` 则 `B_{t,r}` 的第二项被第一项压住，
   反之则反过来 —— **这条在第三轮我补 `eq:MG_conclusion2` 的理由时用到了，值得单独成引理。**
 
-## Q11 · `lem:propT` 的卷积界 — BLOCKED by Q10
+## Q11 · `lem:propT` 的卷积界 — **OPEN**
 
 **文件**：新开 `RBM3D/Kernel/PropT.lean`。陈述（`TTT2`）：存在只依赖 `d` 的 `C_d > 0`，使得对
 任意 `0 ≤ u ≤ t < 1` 满足 (i) `1−u ≥ 1−t ≥ g²/L²` 或 (ii) `1−t ≤ 1−u ≤ g²/L²`，
@@ -499,7 +499,7 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 
 证明在附录 A.3（`sec:pfpropT`）。**注意两个区制要分开做**，这是 `d ≥ 3` 与低维不同的地方之一。
 
-## Q12 · `claim:TTk`（`eq:TtTt` / `eq:KtKt`） — BLOCKED by Q10
+## Q12 · `claim:TTk`（`eq:TtTt` / `eq:KtKt`） — **OPEN**
 
 **文件**：同 `Kernel/PropT.lean`。附录 A.4。**这一条要特别小心**：第三轮校对就是在这里发现
 原稿漏了截断——两式都必须带 `∧ ℓ`：
@@ -514,7 +514,7 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 另外第三轮把 case 2 的适用范围从 `3 ≤ i ≤ k` 改成 `2 ≤ i ≤ k`、case 3 改成 `1 ≤ i ≤ k`
 （原稿漏了下标）——**形式化时把这两处当作重点核对对象**。
 
-## Q13 · `lem:sum_decay_nonzero` — BLOCKED by Q9
+## Q13 · `lem:sum_decay_nonzero` — **OPEN**
 
 **文件**：`RBM3D/Kernel/Evolution.lean`。附录 A.2 末尾，`sum_res_Ndecay_nonzero`。
 第三轮补写的那段推导现在是显式的，照着做即可：由 `(def_Ustz)`，`U^(n)` 在 `n` 个指标上分别作用；
