@@ -15,7 +15,7 @@
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
-| Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | OPEN（与 Q1 无关，可并行） |
+| Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **CLAIMED** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | OPEN（需要查文献，非 Lean） |
 
 ---
