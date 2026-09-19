@@ -75,3 +75,12 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 唯一改动：`Propagator/Basic.lean` 两处 `show` → `change`。
 编译仍是借 RBM1D 的 Mathlib olean（只读），`./check.sh` 待 T0。
 下一条：Q2（邻居计数）已解除阻塞；Q6（图模型）一直可并行。
+
+## 2026-09-19 · Claude Code · Q6 完成（图模型 · case 穷尽性）
+
+新文件 `RBM3D/Graph/Model.lean`（已加进 `RBM3D.lean`）。`lem_scalingorder` 权展开那一步的 case 分析，
+做成 4-环 `β₁—α—w—β₂` 上等号模式的一个 `match`：16 种模式，12 种可实现，全部分到 (i)–(vi)；
+**删掉 case (vi) 那一行，编译器报 `Missing cases`**（已实测）。每个 case 都证明了与论文描述等价的顶点刻画，
+`ord_weight_step` 给出每步 `ord` 至少升 1。
+全库：249 条声明，审计干净，5 条接口公理各依赖 1 次。
+未覆盖：各 case 的计数关系是照抄论文的假设（`Case.Rel`），不是推导出来的；`n_lw/n_dv` 未建模。详见 QUEUE 的 Q6 完成记录。

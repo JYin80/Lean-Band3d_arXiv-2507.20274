@@ -15,7 +15,7 @@
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
-| Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **CLAIMED** (CC) |
+| Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | OPEN（需要查文献，非 Lean） |
 
 ---
@@ -145,7 +145,30 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q6 · 图模型与 case 分析穷尽性 ⭐ — **CLAIMED**（CC，`cb1b121`）
+## Q6 · 图模型与 case 分析穷尽性 ⭐ — **DONE**（CC，2026-09-19）
+
+> **完成记录**：`RBM3D/Graph/Model.lean`，编译通过（零 error / 零 warning / 零 sorry），审计干净。
+>
+> * **模型**：一个构型 = `β₁ — α — w — β₂ — β₁` 这个 4-环上的等号模式
+>   （`e₁ = G_{β₁α}`、`e₂ = G_{wβ₂}`、`e₃ = G_{αw}` 各自是否对角，加 `β₁ = β₂` 与否），`Pattern`，共 16 种。
+> * `Pattern.of_realizable`：等号可传递，4-环上不可能恰好三处相等 → 只有 12 种可实现
+>   （`card_realizable`，`decide` 验证）。
+> * `Pattern.classify`：**一个 `match`** 把 12 种分到论文的 (i)–(vi)，4 种不可实现的用可实现性排除。
+> * `classify_eq_{i..vi}_iff`：每个 case 恰好刻画为论文描述它时用的顶点（不）等式——
+>   比如 `classify α w β₁ β₂ = .vi ↔ α = w ∧ β₁ ≠ α ∧ w ≠ β₂`。所以这些 case 就是论文的 case，不是重新编号。
+> * `ord_weight_step`：任一构型下 `ord` 至少升 `Case.gain ≥ 1`，经 `Case.ord_ge` 调用 `ord_case_ii..vi`。
+>
+> **验收（已实测）**：删掉 `=> .vi` 那一行，Lean 报
+> `Missing cases: (mk false false true false), (mk false false true true)`——正好是 case (vi) 的两种模式。
+> 把 (vi) 冒充成「不可实现」（`absurd h (by decide)`）同样编不过。`classify_vi_occurs` 给出具体见证
+> （`Fin 3` 上 `α = w = 0, β₁ = 1, β₂ = 2`）。
+>
+> **范围说明**：`Case.Rel` 里各 case 的计数关系（`n_W, n_V, n_S`）照抄论文，**本身未被推导**——
+> 那需要完整的图（分子、light-weight、dotted-edge 划分），不在最小模型里。case (i) 论文只给了结论
+> `ord(𝒢₁) ≥ ord(𝒢₀)+1`，`Rel .i` 就原样记这个。`n_lw / n_dv` 的记账（`eq:relateG1G0`）也未建模。
+> 所以 Lean 保证的是：**情形枚举完整** + **每个 case 的算术**；不保证每个 case 的计数关系本身正确。
+> 陈述没有偏离论文，未记 `paper-deltas.md`。
+
 
 **文件**：新开 `RBM3D/Graph/Model.lean`。
 **这是本项目机器检查收益最高的一块**，而且**不依赖传播子那一层，现在就能动**。

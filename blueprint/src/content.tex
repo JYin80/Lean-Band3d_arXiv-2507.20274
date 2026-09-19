@@ -177,6 +177,19 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
   construction (T5) is therefore where this project earns its keep.
 \end{remark}
 
+% RBM.Graph.Pattern.classify, RBM.Graph.classify_eq_vi_iff, RBM.Graph.ord_weight_step
+\begin{lemma}[The case split of $\mathtt{lem\_scalingorder}$ is exhaustive]\label{lem:ord-exhaustive}
+  \uses{lem:ord-cases}
+  A configuration of the weight-expansion step is the equality pattern of the vertices on
+  the cycle $\beta_1 - \alpha - w - \beta_2 - \beta_1$.  Of the $16$ Boolean patterns, exactly
+  $12$ are realizable (no $4$-cycle has exactly three coincidences), and each of them falls
+  into one of cases (i)--(vi); each case is characterised by the vertex (in)equalities the
+  paper uses to describe it.  Consequently $\ord(\mathcal G_1) \ge \ord(\mathcal G_0)+1$ in
+  every configuration, given the counter relations stated for each case.  In Lean the split
+  is a single \texttt{match} whose exhaustiveness the compiler checks: removing case (vi)
+  is rejected with \texttt{missing cases}.
+\end{lemma}
+
 \chapter{Deterministic estimates (Appendix A)}
 
 The remaining chapters are stated but not yet formalized; they are work orders T6--T8.

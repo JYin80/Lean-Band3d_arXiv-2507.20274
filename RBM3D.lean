@@ -6,6 +6,7 @@ import RBM3D.Defs.Domination
 import RBM3D.Propagator.Basic
 import RBM3D.Propagator.Interface
 import RBM3D.Graph.ScalingOrder
+import RBM3D.Graph.Model
 import RBM3D.Test.Axioms
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/

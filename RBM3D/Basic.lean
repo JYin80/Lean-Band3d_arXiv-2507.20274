@@ -26,6 +26,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Graph.Defs`         — scaling size and scaling order of `def scalingBA`
 * `RBM3D.Graph.Expansions`   — the three expansion lemmas of Appendix B, as axioms
 * `RBM3D.Graph.ScalingOrder` — the bookkeeping proved on top of them
+* `RBM3D.Graph.Model`        — the case split of `lem_scalingorder`, exhaustive by construction
 * `RBM3D.Test.Axioms`        — the axiom audit
 
 ## Two structural differences from the sister projects
