@@ -46,9 +46,10 @@ CH3 = rows([
 CH4 = rows([
  ("演化核 U^(n) 与 lem:sum_Ndecay","Q9 ✓ 已证","done","ThetaN · UN · norm_UN_le"),
  ("尾函数 𝒯_t 与截断版 wT^ℓ_{t,D}","Q10 ✓ 已证","done","tailT · tailW · zeroMode_le_of_ge · ellT_eq_of_le"),
- ("lem:propT 的卷积界 TTT2","Q11 · 可开工","ready","Kernel/PropT.lean"),
+ ("lem:propT 的卷积界 TTT2 —— 分析量最大的一条，拆成 K0–K5","Q11 · 进行中","ready","Defs/Shells.lean · Defs/RadialSum.lean 已落地"),
  ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 要盯紧","Q12 · 可开工","ready","同上，与 Q11 串行"),
  ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 可开工","ready","Kernel/Evolution.lean"),
+ ("lem:sum_decay 与 eq:latticesum_d3 —— 第三轮新加的那条临界格点求和","Q17 · 可开工","ready","d=3 与 d≥4 要分开处理"),
  ("典范树划分 TSP(P_a) 与边值 f_{t,σ}(e)","Q14 · 可开工","ready","Loop/Partition.lean"),
  ("树表示 eq_Ktree —— 公理化 vs 移植 RBM1D 的 ODE 唯一性证法","Q15 · 待 Q14","todo","Loop/TreeRep.lean"),
  ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 · 待 Q15","todo","Loop/PureLoop.lean"),
@@ -164,7 +165,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>361</b><span>声明已编译</span></div>
+    <div class="chip done"><b>389</b><span>声明已编译</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip cited"><b>5</b><span>接口公理</span></div>
     <div class="chip ready"><b>4</b><span>工单可开工</span></div>
@@ -252,7 +253,7 @@ __QUEUE__
 </div>
 
 <footer>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 3 · 2026-09-19 12:10 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 4 · 2026-09-19 12:25 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

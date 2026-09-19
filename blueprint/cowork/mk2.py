@@ -51,14 +51,15 @@ g4 = build(
   ("uk","Q9 ✓ U^(n) · lem:sum_Ndecay","done",1),
   ("tail","Q10 ✓ 尾函数 𝒯_t , wT^ℓ_{t,D}","done",1),
   ("nz","Q13 · lem:sum_decay_nonzero","ready",2),
-  ("pt","Q11 · lem:propT 卷积界","ready",2),
+  ("sd","Q17 · lem:sum_decay + eq:latticesum_d3","ready",2),
+  ("pt","Q11 · lem:propT 卷积界（K0,K2 已落地）","ready",2),
   ("ttk","Q12 · claim:TTk (∧ℓ 截断)","ready",2),
   ("part","Q14 · 典范树划分 TSP(P_a)","ready",2),
   ("tree","Q15 · 树表示 eq_Ktree","todo",3),
   ("pure","Q16 · lem_pureloop 指数衰减","todo",4),
  ],
- edges=[("uk","nz"),("tail","pt"),("tail","ttk"),("part","tree"),("tree","pure"),
-        ("ax1","nz","d"),("ax1","uk","d"),("ax1","pure","d")],
+ edges=[("uk","nz"),("uk","sd"),("tail","pt"),("tail","ttk"),("part","tree"),("tree","pure"),
+        ("ax1","nz","d"),("ax1","uk","d"),("ax1","pure","d"),("ax1","sd","d")],
  width=W, band=1, band_label="以下 · 接口公理")
 
 open("graphs.py","w").write("G1=%r\nG2=%r\nG3=%r\nG4=%r\n" % (g1,g2,g3,g4))
