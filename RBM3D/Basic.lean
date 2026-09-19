@@ -20,6 +20,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Defs.Lattice`       — the torus `Z_L^d` and its periodic `ℓ¹` distance `|x|`
 * `RBM3D.Defs.Neighbours`    — every point has exactly `2d` nearest neighbours (`3 ≤ L`)
 * `RBM3D.Defs.Shells`        — `#{x : |x| = r} ≤ 2^d (r+1)^{d-1}`, for the lattice sums of `lem:propT`
+* `RBM3D.Defs.RadialSum`     — `Σ_x (|x|+1)^{-(d-2)} e^{-κ√(|x|/ℓ)} ≤ C ℓ²`
 * `RBM3D.Defs.Params`        — `ℓ_t` of `(eq:ellt)` and `B_{t,K}` of `(eq_B_param)`
 * `RBM3D.Defs.Tail`          — the tail functions `𝒯_t`, `wT^ℓ_{t,D}` of `def: TTfunc`
 * `RBM3D.Defs.Block`         — the block variance matrix `S^(B)(g)` of `(eq:variancematrix)`

@@ -136,3 +136,8 @@ Q11、Q12 现在可以解锁。
 Q11（`lem:propT`）是附录 A 里分析量最大的一条，要好几轮心跳，拆解计划 K0–K5 见 QUEUE 的 Q11 条目。
 本轮落地 **K0**：新文件 `RBM3D/Defs/Shells.lean`，`card_sphere_le : #{x ∈ Z_L^{d+1} : |x| = r} ≤ 2^{d+1}(r+1)^d`。
 全库 389 条声明，审计干净。**Q11 保持 CLAIMED**，下一步 K2（径向和）。
+
+## 2026-09-19 · Claude Code · Q11 进行中（K2 落地）
+
+新文件 `RBM3D/Defs/RadialSum.lean`：`sum_radial`（按球壳求和）和 `sum_radial_exp_le`（K2：`Σ_x (|x|+1)^{-(d-2)} e^{-κ√(|x|/ℓ)} ≤ 2^d·32(1+720/κ⁶)·ℓ²`）。
+逐项用 `e^y ≥ y⁶/6!` 加望远镜和，没有积分比较。Q11 仍 CLAIMED，下一步 K3（卷积拆分）。
