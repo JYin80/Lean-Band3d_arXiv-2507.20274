@@ -26,7 +26,7 @@ g2 = build(
   ("p12","性质 1–2   对称 · 平移不变","done",3),
   ("p3","性质 3   交换性","done",3),
   ("row","行和 = (1−ξ)⁻¹","done",3),
-  ("p4","Q5 · 性质 4  ‖Θ‖ ≤ (1−t)⁻¹  · 顺带消掉 hS","ready",4),
+  ("p4","Q5 ✓ 性质 4  ‖Θ‖ ≤ (1−t)⁻¹","done",4),
  ],
  edges=[("th","uniq"),("uniq","p12"),("uniq","p3"),("uniq","row"),("row","p4"),
         ("th","ax1","d"),("th","ax3","d"),("th","ax5","d")],
@@ -40,19 +40,21 @@ g3 = build(
   ("ord","ord = n_S + 2(n_W − n_V)","def",1),
   ("arith","case (ii)–(vi)  算术记账","done",2),
   ("model","Q6 ✓ 图模型 · case 穷尽性","star",3),
-  ("exp","Q8 · (Owx)/(Oe2x) 接口公理","ready",4),
+  ("exp","Q8 ✓ ∂_h G = −G G  确定性内核","done",4),
  ],
  edges=[("ord","arith"),("arith","model"),("model","exp"),("b9","model","d"),("b10","model","d"),("b11","model","d")],
  width=W, band=1, band_label="以下 · 接口公理 · 论文引用而未证")
 
 g4 = build(
  nodes=[
-  ("tr","[YY_25] Lem 3.4  树表示","axiom",0),
-  ("uk","A.2  U^(n) 分解 · Q^(A) · I_diff(σ)","todo",1),
-  ("pt","A.3–A.4  lem:propT · claim:TTk","todo",2),
-  ("kl","A.5  典范划分 · K-loop","todo",2),
+  ("ax1","(prop:ThfadC)  衰减","axiom",0),
+  ("uk","Q9 · U^(n) 与 lem:sum_Ndecay","ready",1),
+  ("tail","Q10 · 尾函数 𝒯_t , wT^ℓ_{t,D}","ready",1),
+  ("nz","Q13 · lem:sum_decay_nonzero","todo",2),
+  ("pt","Q11 · lem:propT  卷积界","todo",2),
+  ("ttk","Q12 · claim:TTk  (∧ℓ 截断)","todo",2),
  ],
- edges=[("uk","pt"),("uk","kl"),("tr","kl","d")],
+ edges=[("uk","nz"),("tail","pt"),("tail","ttk"),("ax1","nz","d"),("ax1","uk","d")],
  width=W, band=1, band_label="以下 · 接口公理")
 
 open("graphs.py","w").write("G1=%r\nG2=%r\nG3=%r\nG4=%r\n" % (g1,g2,g3,g4))

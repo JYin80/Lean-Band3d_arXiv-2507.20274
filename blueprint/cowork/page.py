@@ -27,7 +27,7 @@ CH2 = rows([
  ("性质 3 交换性","已证","done","Theta_commute_SB · Theta_commute"),
  ("行和 Σ_b Θ_{ab} = (1−ξ)⁻¹","已证","done","Theta_mulVec_one · sum_Theta_row"),
  ("Neumann 级数 (eq;Taylor)","已证","done","Theta_eq_tsum"),
- ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹，并消掉 hS / hone","Q5 · 可开工","ready","—"),
+ ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹，并消掉 hS / hone","Q5 ✓ 已证","done","norm_Theta_le · norm_Theta_apply_le · *_of_three_le"),
  ("性质 5 (prop:ThfadC) 多项式+指数衰减","接口公理","cited","theta_decay"),
  ("性质 5′ (prop:ThfadC_short)","接口公理","cited","theta_decay_short"),
  ("性质 6 (prop:BD1) 一阶差分","接口公理","cited","theta_diff_one"),
@@ -39,14 +39,17 @@ CH3 = rows([
  ("scaling order 的定义 (eq:ordG)","已证","done","Graph.Counters · Graph.ord"),
  ("case (ii)–(vi) 的算术记账","已证","done","ord_case_ii … ord_case_vi"),
  ("图模型 · case 分析穷尽性","Q6 ✓ 已证","done","Pattern.classify · classify_vi_occurs · ord_weight_step"),
- ("(Owx) 权展开 · (Oe2x) GG 展开 —— 随机带矩阵线实际用的两条","Q8 · 可开工","ready","待落地"),
- ("B.9 / B.10 / B.11（块 Anderson 线，全文从未被引用）","接口公理 · 降级","cited","不在关键路径"),
+ ("∂_h G = −G G：(Owx) 第三项产生三条新边的确定性一步","Q8 ✓ 已证","done","hasDerivAt_inverse_apply"),
+ ("(Owx) / (Oe2x) 的 =𝔼 恒等式本身 —— 仅在蓝图，不写 axiom","规则 6 · 随机层","cited","见 paper-deltas D10"),
 ])
 
 CH4 = rows([
- ("A.2 演化核分解 U^(n) · Q^(A) · I_diff(σ)","待解锁","todo","—"),
- ("A.3–A.4 lem:propT 与 claim:TTk","待解锁","todo","—"),
- ("A.5 典范划分与 K-loop 树表示","待解锁","todo","—"),
+ ("演化核 U^(n) 与 lem:sum_Ndecay（只依赖性质 4）","Q9 · 认领中","ready","Kernel/Evolution.lean"),
+ ("尾函数 𝒯_t = B_{t,r}·exp(−(r/ℓ_t)^{1/2}) 与截断版 wT","Q10 · 可开工","ready","Defs/Tail.lean"),
+ ("lem:propT 的卷积界 TTT2","Q11 · 待 Q10","todo","—"),
+ ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 要盯紧","Q12 · 待 Q10","todo","—"),
+ ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 待 Q9","todo","—"),
+ ("A.5 典范划分与 K-loop 树表示","未排期","todo","—"),
  ("[YY_25] Lem 3.4 树表示","接口公理","cited","待落地"),
 ])
 
@@ -58,10 +61,13 @@ QUEUE = """
 <tr><td>Q2</td><td>邻居计数 <code>#{|x| = 1} = 2d</code> —— 整层的地基</td><td><code>Defs/Block.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q3</td><td><code>‖S^(B)(g)‖ = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q4</td><td><code>S^(B)·1 = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q5</td><td>性质 4 的 (∞→∞) 范数界，并消掉 <code>hS</code> / <code>hone</code></td><td><code>Propagator/Props4.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q5</td><td>性质 4 的 (∞→∞) 范数界</td><td><code>Propagator/Props4.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q6</td><td>图模型 · case 穷尽性 <b>⭐</b></td><td><code>Graph/Model.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q7</td><td>核对 [yang2024Del] B.10 的 check 记号</td><td>查文献</td><td><span class="pill cited">降级 · 不在关键路径</span></td></tr>
-<tr><td>Q8</td><td><code>(Owx)</code> / <code>(Oe2x)</code> 的接口公理</td><td><code>Graph/Expansions.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q8</td><td><code>(Owx)</code>/<code>(Oe2x)</code> 的确定性内核（决定不写 axiom）</td><td><code>Graph/Expansions.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q9</td><td>演化核 <code>U^(n)</code> 与 <code>lem:sum_Ndecay</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">认领中</span></td></tr>
+<tr><td>Q10</td><td>尾函数 <code>𝒯_t</code> / <code>wT^ℓ_{t,D}</code></td><td><code>Defs/Tail.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
+<tr><td>Q11–Q13</td><td><code>lem:propT</code> · <code>claim:TTk</code> · <code>lem:sum_decay_nonzero</code></td><td><code>Kernel/</code></td><td><span class="pill todo">待 Q9/Q10</span></td></tr>
 </tbody></table>
 """
 
@@ -153,7 +159,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>294</b><span>声明已编译</span></div>
+    <div class="chip done"><b>323</b><span>声明已编译</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip cited"><b>5</b><span>接口公理</span></div>
     <div class="chip ready"><b>2</b><span>工单可开工</span></div>
@@ -166,7 +172,15 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
 这篇论文没有：<code>lem_propTH</code> 的性质 5–8 分别归给 <code>[DYYY25]</code> Lemma 2.14、
 <code>[yang2024Del]</code> Lemma 3.1 与 (E.19)，其中 <code>(prop:BD1)</code> 论文自己说
 “not stated explicitly in [yang2024Del] … we omit the details”——它在所引文献里根本没有显式证明。
-附录 B 的三条 expansion 引理同样引自 <code>[yang2024Del]</code> B.9–B.11。</p>
+附录 B 的三条 expansion 引理（块 Anderson 线）同样引自 <code>[yang2024Del]</code> B.9–B.11；
+随机带矩阵线实际用的 <code>(Owx)</code>、<code>(Oe2x)</code> 则引自 <code>[yang2021delocalization]</code>
+Lemma 3.5 / 3.14。</p>
+<p><strong>但不是所有借来的东西都该写成 axiom。</strong> <code>(Owx)</code>、<code>(Oe2x)</code> 是
+<code>=𝔼</code> 恒等式，逐字陈述需要概率空间、预解式与 Wirtinger 导数——正是规则 6 划出 Phase 1 的随机层，
+而写错了编译器查不出来。它们真正被用到的部分反而进了 Lean 而且形式更好：确定性内核
+<code>∂_h G = −G·G</code> 是<em>定理</em>，展开产生的构型与计数关系是 <code>Model.lean</code> 的<em>显式假设</em>
+<code>Case.Rel</code>——假设出现在每条定理的类型里，比躲在 <code>#print axioms</code> 里的公理更可见。
+见 <code>paper-deltas.md</code> D10。</p>
 <p>按「只依据这篇论文」的规则，这些一律是 <strong>axiom</strong>，集中在
 <code>Propagator/Interface.lean</code>，并由 <code>Test/Axioms.lean</code> 的审计钉死：
 任何不在名单上的公理（含 <code>sorryAx</code>）都让构建失败，审计还会报出每条公理被多少条声明依赖。
@@ -215,7 +229,7 @@ __CH3__
 </div>
 
 <h2>第 4 章 · 附录 A · 确定性估计</h2>
-<p>以 <code>lem_propTH</code> 为输入、本文自足的推导：演化核分解、lem:propT、claim:TTk、K-loop 树表示。第三轮补写隐含步骤最多的就是这一章。</p>
+<p>以 <code>lem_propTH</code> 为输入、<strong>本文自足</strong>的推导——这一章不引用任何外部结论，是接下来的主战场。第三轮补写隐含步骤最多的也是这里。Q9 与 Q10 文件不相交，可并行。</p>
 <div class="plate">__G4__</div>
 __CH4__
 
@@ -233,7 +247,7 @@ __QUEUE__
 </div>
 
 <footer>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 1 · 2026-09-19 11:45 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 2 · 2026-09-19 11:55 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
