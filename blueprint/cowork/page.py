@@ -74,6 +74,8 @@ QUEUE = """
 <tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
 <tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
 <tr><td>Q15–Q16</td><td>树表示 <code>eq_Ktree</code> · <code>lem_pureloop</code></td><td><code>Loop/</code></td><td><span class="pill todo">待 Q14</span></td></tr>
+<tr><td>Q17</td><td><code>lem:sum_decay</code> 与 <code>eq:latticesum_d3</code>（第三轮新加的临界格点求和）</td><td><code>Kernel/</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q18</td><td>让审计直接报定理数与公理承重情况</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN · 小活</span></td></tr>
 </tbody></table>
 """
 
@@ -165,10 +167,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>389</b><span>声明已编译</span></div>
+    <div class="chip done"><b>174</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
-    <div class="chip cited"><b>5</b><span>接口公理</span></div>
-    <div class="chip ready"><b>4</b><span>工单可开工</span></div>
+    <div class="chip cited"><b>5</b><span>接口公理 · 尚未承重</span></div>
+    <div class="chip ready"><b>5</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -192,6 +194,12 @@ Lemma 3.5 / 3.14。</p>
 任何不在名单上的公理（含 <code>sorryAx</code>）都让构建失败，审计还会报出每条公理被多少条声明依赖。
 <strong>那张名单是产出，不是缺陷</strong>——它是「这篇论文向前人借了什么」的精确、机器可核查的记录。
 下面每张图里，横线以下即为借来的结果。</p>
+<p><strong>而到目前为止，借来的结果一条都还没承重。</strong> 审计报出的每条接口公理依赖数都是
+<code>1</code>，而 <code>collectAxioms</code> 对公理本身会返回它自己——也就是说
+<strong>现有 174 条定理没有一条依赖任何接口公理</strong>，全部是实打实证出来的。
+第一批会用到它们的是 <code>lem_pureloop</code>（需 <code>prop:ThfadC_short</code>）与
+<code>lem:sum_decay</code>（需 <code>prop:ThfadC</code>）。那个计数从 0 变正的时刻，
+就是借用开始承重的时刻，值得单独记一笔。</p>
 </div>
 
 <div class="legend">
@@ -253,7 +261,9 @@ __QUEUE__
 </div>
 
 <footer>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 4 · 2026-09-19 12:25 UTC<br>
+  计数说明：<b>174</b> 是手写 <code>theorem</code> 的条数。审计报的「389 条声明」包含定义、结构、实例，
+  以及 167 条编译器自动生成的声明（递归子、equation lemma 等），不宜当进度读——Q18 就是去修这个报告。<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 4+ · 2026-09-19 12:30 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
