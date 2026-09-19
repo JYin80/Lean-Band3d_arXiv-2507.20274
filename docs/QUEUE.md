@@ -11,7 +11,7 @@
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
-| Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | **OPEN** |
+| Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | **CLAIMED** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
