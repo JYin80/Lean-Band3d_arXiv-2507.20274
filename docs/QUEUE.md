@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 1（Q1 / Q2 / Q6 完成，Q3、Q4 解锁）
+最后刷新：2026-09-19 · beat 1（Q1–Q4、Q6 完成；Q5、Q8 可开工）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -14,7 +14,7 @@
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **DONE** (CC) |
-| Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
+| Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | **OPEN** |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **OPEN** |
@@ -177,7 +177,11 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q5 · 性质 4 的 `(∞→∞)` 范数界 — BLOCKED by Q3,Q4
+## Q5 · 性质 4 的 `(∞→∞)` 范数界 — **OPEN**
+
+> Q3、Q4 都已落地，所以 `Propagator/Basic.lean` 里那两个假设 `hS` 与 `hone` 现在都能
+> 直接由 `norm_SB` / `SB_mulVec_one` 供上。**顺手把那一层的假设消掉**：整个文件的结构
+> 引理都是带着 `hS` 证的，现在可以给出无假设的推论版本。
 
 **文件**：新开 `RBM3D/Propagator/Props4.lean`。
 
