@@ -16,7 +16,8 @@
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **DONE** (CC) |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
-| Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | OPEN（需要查文献，非 Lean） |
+| Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
+| Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **OPEN** |
 
 ---
 
@@ -238,14 +239,44 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q7 · 核对 `[yang2024Del]` Lemma B.10 的一个记号 — **OPEN（查文献，非 Lean）**
+## Q7 · 核对 `[yang2024Del]` Lemma B.10 的一个记号 — 降级，不再阻塞
 
-附录 B 的三条 expansion 引理要写成 axiom，**陈述错了编译器查不出来**，
-所以必须在 `Graph/Expansions.lean` 落地之前核清楚。要确认的就一个符号：
+beat 1 的查证，三条：
 
-* 本文 `eq:BE`（Lemma B.9）第一项写的是 `Ǧ_ββ G_αy`（`ββ` 带 check，`αy` 不带）；
-* 本文 `eq:LW`（Lemma B.10）括号内对应的第一项写的是 `Ǧ_αy Ǧ_ββ`（**两个都带 check**）。
+**一、它不在关键路径上。** `eq:LW`（`lem_lweight`）是**块 Anderson 模型**那一套的权展开，
+写在附录 B 的 BA 工具箱里。全文**没有任何 `\eqref{eq:LW}` 或 `\Cref{lem_lweight}`**——
+它一次都没被引用过。随机带矩阵那条线上真正用的权展开是 `(Owx)`，GG 展开是 `(Oe2x)`；
+`Graph/Model.lean` 的 case 分析就建在 `(Owx)` 的第三项上。而按 `docs/paper-deltas.md` D6，
+本项目目前只覆盖随机带矩阵模型。**所以 `Graph/Expansions.lean` 先要写的是 `(Owx)` 和
+`(Oe2x)`，不是 B.9 / B.10** —— 见 Q8。
 
-若 `eq:LW` 的内层括号本应是 `eq:BE` 右端把 `x` 换成 `y`，则 `Ǧ_αy` 处多了一个 check。
-**要查**：`[yang2024Del]` Lemma B.10 那一项到底是 `G_αy` 还是 `Ǧ_αy`。
-（作者已答复说「合作者查过，完全一样」，但没说是哪一个版本，所以落地前仍需确认。）
+**二、文献没查到。** `yang2024Del` = arXiv:2501.08608（Yang–Yin，*Delocalization of a
+general class of random block Schrödinger operators*）。arXiv 的 HTML 版与 ar5iv 都只返回
+摘要和导航，取不到附录 B；PDF 也不在这台机器上（`3D_Band` 与 `Lean_proof` 下都没有）。
+
+**三、数学上 `Ǧ_αy` 很可能本来就是对的，不是笔误。** `\Gc = \mathring G = G − M` 是中心化的
+G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是把 B.9 递归求和起来的那个
+几何级数——**权展开的意义就在于这次重求和把 `G_{αy}` 的确定性部分 `M_{αy}` 吸收掉，剩下
+`Ǧ_{αy}`**。若真如此，B.9 写 `G_αy` 而 B.10 写 `Ǧ_αy` 恰恰是对的，合作者说「完全一样」
+也就说得通了。
+
+**这是待确认的假说，不是结论。** 谁手上有 2501.08608 的 PDF，翻到 Lemma B.10，只需回答
+一个字：括号内第一项那个 `(α,y)` 因子，是 `G` 还是 `Ǧ`。
+
+## Q8 · `(Owx)` 与 `(Oe2x)` 的接口公理 — **OPEN**
+
+**文件**：新开 `RBM3D/Graph/Expansions.lean`。这是 Q7 的真正替代品。
+
+`Graph/Model.lean` 现在是自足的：它只谈构型与计数，没有陈述展开式本身。要把它接到论文上，
+得把随机带矩阵线上实际用到的两条展开写成接口公理：
+
+* **`(Owx)`** 权展开 —— `Graph/Model.lean` 的 case 分析建在它第三项上；
+* **`(Oe2x)`** GG 展开 —— `Graph/ScalingOrder.lean` 的 `eq:GGraisesord` 引用它。
+
+两条都引自 `[yang2024Del]`，所以都是 `axiom`，**落地时必须同时加进
+`Test/Axioms.lean` 的 `interfaceAxioms` 并在 `docs/paper-deltas.md` 记一条**。
+
+**开工前先定建模深度。** 这两条是关于 `f(G)` 的恒等式，要陈述就得有「可微的 G 的函数」
+和 `∂_{h_{βα}}` 这些对象。照 `Model.lean` 的先例：**先只建到能被编译器检查的那一层**，
+不要一上来就建完整的图代数。如果发现陈述它们需要的前置比预期深，就在 STATUS.md 里写清楚
+卡在哪，别硬撑。
