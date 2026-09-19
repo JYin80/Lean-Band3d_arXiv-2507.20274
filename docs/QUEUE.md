@@ -6,12 +6,12 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 0
+最后刷新：2026-09-19 · beat 0+（Q1 绿了，随即解锁 Q2）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
-| Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | BLOCKED by Q1 |
+| Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | **OPEN** |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
@@ -69,7 +69,7 @@ Defs/Lattice → Defs/Params → Defs/Block → Defs/Domination
 
 ---
 
-## Q2 · 邻居计数 `#{x : Zd d L | zdistD d L x = 1} = 2 * d` — BLOCKED by Q1
+## Q2 · 邻居计数 `#{x : Zd d L | zdistD d L x = 1} = 2 * d` — **OPEN**
 
 **文件**：`RBM3D/Defs/Block.lean`（或新开 `Defs/Neighbours.lean`）。
 
@@ -145,7 +145,7 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q6 · 图模型与 case 分析穷尽性 ⭐ — **OPEN，与 Q1 无关，可并行**
+## Q6 · 图模型与 case 分析穷尽性 ⭐ — **CLAIMED**（CC，`cb1b121`）
 
 **文件**：新开 `RBM3D/Graph/Model.lean`。
 **这是本项目机器检查收益最高的一块**，而且**不依赖传播子那一层，现在就能动**。
