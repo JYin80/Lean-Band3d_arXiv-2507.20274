@@ -20,7 +20,7 @@
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
-| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **CLAIMED** (CC)，进行中：K0、K2、K3 已落地 |
+| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **DONE** (CC) |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **OPEN**（与 Q11 同文件，串行） |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **OPEN**（与 Q11/Q12 文件不相交，可并行） |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
@@ -493,7 +493,32 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 * 论文 L325 那句话：`0 ≤ r ≤ L` 时，`1−t ≥ g²/L²` 则 `B_{t,r}` 的第二项被第一项压住，
   反之则反过来 —— **这条在第三轮我补 `eq:MG_conclusion2` 的理由时用到了，值得单独成引理。**
 
-## Q11 · `lem:propT` 的卷积界 — **CLAIMED**（CC），进行中
+## Q11 · `lem:propT` 的卷积界 — **DONE**（CC，2026-09-19）
+
+> **完成记录**：`(TTT2)` 完整证明，**两个区制都做了，常数全部显式，没有 `≲`**。零 error / 零 warning / 零 sorry，
+> 不依赖接口公理；全库 434 条声明，审计干净。
+>
+> ```lean
+> theorem propT (k : ℕ) :                                 -- d = k + 2
+>     ∃ C > 0, ∀ (L : ℕ) [NeZero L] (g u t : ℝ), 0 < g → 0 ≤ u → u ≤ t → t < 1 →
+>       (g²/L² ≤ 1 - t ∨ 1 - u ≤ g²/L²) →                    -- 区制 (i) ∨ 区制 (ii)
+>       ∀ a b, Σ_c 𝒯_u(|a−c|) 𝒯_t(|c−b|) ≤ C/(1−u) · 𝒯_t(|a−b|)
+> ```
+>
+> `C = constI k + constII k` 只依赖 `d`。分区制的版本是 `propT_i`、`propT_ii`（`Kernel/PropT.lean`）。
+> 证明链上的文件：`Defs/Shells.lean`（K0）→ `Defs/RadialSum.lean`（K2）→ `Defs/Convolution.lean`（K3）→ `Kernel/PropT.lean`（K4/K5）。
+>
+> **与论文证明的两处差别**（都不改陈述）：
+> 1. 论文 A.3 第二步引的是一条 `ℝ^d` 上的「基本微积分事实」，没有证明；这里换成它的格点版 `sum_conv_le`，
+>    完整证明，靠 `√` 的次可加性 `sqrt_add_sqrt_sub_ge`。
+> 2. L325 那句「`0 ≤ r ≤ L` 时零模项被压住」，在 ℓ¹ 环面距离下不够用：`|x|` 最大到 `dL/2`，不止 `L`。
+>    所以用推广版 `zeroMode_le_of_ge_mul`（`r ≤ mL`，常数 `2(2m)^{d-2}`）；区制 (ii) 的下界同理，
+>    用 `E_L(r) ≥ e^{−√d}`（`r ≤ dL`）。常数吸收了这些，陈述不变。
+>
+> **附带**：证明从头到尾没用 `d ≥ 3`，结论对 `d ≥ 2` 都成立。陈述里多了 `0 < g`——论文的默认假设。
+>
+> 原拆解计划（保留作记录）：
+
 
 > **CC 的拆解计划**（论文 A.3 两步都是 `≲`，第二步还用了一条只在 `ℝ^d` 上陈述的「基本微积分事实」，
 > 下面是离散化之后、能直接在 `Z_L^d` 上证的路线；`|x| = zdistD`，即 ℓ¹ 环面距离）：

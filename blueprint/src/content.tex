@@ -239,6 +239,16 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   $\ell_t=L$ and $e^{-(r/\ell_t)^{1/2}}\ge e^{-1}$.
 \end{definition}
 
+% RBM.propT, RBM.propT_i, RBM.propT_ii  (Kernel/PropT.lean); RBM.sum_conv_le  (Defs/Convolution.lean)
+\begin{lemma}[$\mathtt{lem{:}propT}$, $\mathtt{(TTT2)}$]\label{lem:propT-TTT2}
+  \uses{def:tail}
+  There is $C_d>0$ such that for $0\le u\le t<1$ with (i) $1-u\ge1-t\ge g^2/L^2$ or
+  (ii) $1-t\le1-u\le g^2/L^2$, and all $a,b$,
+  $\sum_c\mathcal T_u(|a-c|)\mathcal T_t(|c-b|)\le\frac{C_d}{1-u}\mathcal T_t(|a-b|)$.
+  The ``basic calculus fact'' on $\mathbb R^d$ used in Appendix A.3 is replaced by its
+  lattice form, proved via $\sqrt{p/\ell_1}+\sqrt{q/\ell_2}-\sqrt{r/\ell_2}\ge(2-\sqrt2)\sqrt{\min(p,q)/\ell_1}$ for $r\le p+q$.
+\end{lemma}
+
 \begin{lemma}[$\mathtt{lem{:}propT}$ and $\mathtt{claim{:}TTk}$, Appendix A.3--A.4]\label{lem:propT}
   \uses{lem:Ukernel, def:tail}
   Bounds on products $\Tcal_t(|x_i-\alpha|\wedge\ell)\,\Tcal_t(|y_i-\alpha|\wedge\ell)$.
