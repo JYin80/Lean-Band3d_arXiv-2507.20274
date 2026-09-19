@@ -22,7 +22,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Defs.Params`        — `ℓ_t` of `(eq:ellt)` and `B_{t,K}` of `(eq_B_param)`
 * `RBM3D.Defs.Block`         — the block variance matrix `S^(B)(g)` of `(eq:variancematrix)`
 * `RBM3D.Propagator.Basic`   — `M^(σ₁,σ₂)`, `Θ_t` and `Θ̊_t` of `def_Theta`
-* `RBM3D.Propagator.Props14` — properties 1–4 of `lem_propTH`
+* `RBM3D.Propagator.Props4`  — property 4 of `lem_propTH`; properties 1–3 without hypotheses
 * `RBM3D.Propagator.Interface` — properties 5–8 of `lem_propTH`, as axioms
 * `RBM3D.Graph.Defs`         — scaling size and scaling order of `def scalingBA`
 * `RBM3D.Graph.Expansions`   — the three expansion lemmas of Appendix B, as axioms

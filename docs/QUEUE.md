@@ -14,7 +14,7 @@
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **DONE** (CC) |
-| Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | **CLAIMED** (CC) |
+| Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | **DONE** (CC) |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **OPEN** |
@@ -177,7 +177,31 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q5 · 性质 4 的 `(∞→∞)` 范数界 — **OPEN**
+## Q5 · 性质 4 的 `(∞→∞)` 范数界 — **DONE**（CC，2026-09-19）
+
+> **完成记录**：新文件 `RBM3D/Propagator/Props4.lean`（已加进 `RBM3D.lean`），零 error / 零 warning /
+> 零 sorry，全库 320 条声明，审计干净。约定：`Θ_t^(σ₁,σ₂) = Theta d L g (t·m)`，`‖m‖ = 1`；
+> `Θ_t^(+,-) = Theta d L g t`。
+>
+> ```lean
+> theorem norm_Theta_apply_le (hL : 3 ≤ L) (ht0 : 0 ≤ t) (ht1 : t < 1) (hm : ‖m‖ = 1) (a b) :
+>     ‖Theta d L g ((t : ℂ) * m) a b‖ ≤ (Theta d L g t a b).re      -- |Θ^(σ₁,σ₂)_ab| ≤ Θ^(+,-)_ab
+> theorem Theta_real_eq / Theta_real_nonneg                         -- Θ^(+,-) 是实的、非负
+> theorem sum_Theta_real_row : ∑ b, (Theta d L g t a b).re = (1 - t)⁻¹
+> theorem norm_Theta_le (hL) (ht0) (ht1) (hm) :
+>     ‖Theta d L g ((t : ℂ) * m)‖ ≤ (1 - t)⁻¹                       -- (eq:THETAinftinf)，ℓ^∞ 算子范数
+> ```
+>
+> 证法按论文 A.1：`S^(B)` 是非负实矩阵 `SBR` 的复化（`SB_eq_map_SBR`、`SB_pow_eq_map`、
+> `SBR_pow_nonneg`），所以 Taylor 级数第 `k` 项的 `(a,b)` 元是 `ξ^k (SBR^k)_ab`（`Theta_apply_eq_tsum`）；
+> 逐项取范数（`norm_tsum_le_tsum_norm`）得第一条，加上行和得第二条。
+>
+> **顺手消掉 `hS` / `hone`**（工单要求）：同文件 `section Unconditional` 给出无假设版本，全部只要 `hL : 3 ≤ L`——
+> `Theta_mul_of_three_le`、`mul_Theta_of_three_le`、`Theta_transpose_of_three_le`（性质 1）、
+> `Theta_apply_add_right_of_three_le`（性质 2）、`Theta_commute_SB_of_three_le`、`Theta_commute_of_three_le`（性质 3）、
+> `sum_Theta_row_of_three_le`、`Theta_eq_tsum_of_three_le`。`Propagator/Basic.lean` 本身未改。
+> 至此 `lem_propTH` 性质 1–4 全部是定理（Phase 1 完成标准第 3 条的前半）。
+
 
 > Q3、Q4 都已落地，所以 `Propagator/Basic.lean` 里那两个假设 `hS` 与 `hone` 现在都能
 > 直接由 `norm_SB` / `SB_mulVec_one` 供上。**顺手把那一层的假设消掉**：整个文件的结构

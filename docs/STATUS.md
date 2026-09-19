@@ -96,3 +96,10 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 `SB_mulVec_one d L g hL : SB *ᵥ 1 = 1`、`sum_SB_row` 等。`norm_SB` **不需要 `0 < g`**（比工单签名强）。
 实测可直接消掉 `Propagator/Basic.lean` 的 `hS` / `hone`；该文件本身未改。Q5 可以解锁。
 全库 294 条声明，审计干净。
+
+## 2026-09-19 · Claude Code · Q5 完成（`lem_propTH` 性质 4）
+
+新文件 `RBM3D/Propagator/Props4.lean`：`norm_Theta_apply_le`（`|Θ^(σ₁,σ₂)_ab| ≤ Θ^(+,-)_ab`）、
+`sum_Theta_real_row`（行和 `(1-t)⁻¹`）、`norm_Theta_le`（`‖Θ_t^(σ₁,σ₂)‖_{∞→∞} ≤ (1-t)⁻¹`）。
+另有性质 1–3 与行和、Neumann 级数的无 `hS/hone` 版本（`*_of_three_le`）。
+**`lem_propTH` 性质 1–4 现在全部是定理**，5–8 仍是登记在册的接口公理。全库 320 条声明，审计干净。
