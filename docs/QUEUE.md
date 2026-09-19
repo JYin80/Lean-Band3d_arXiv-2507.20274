@@ -18,7 +18,7 @@
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
-| Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **CLAIMED** (CC) |
+| Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **OPEN**（与 Q9 文件不相交，可并行） |
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | BLOCKED by Q10 |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | BLOCKED by Q10 |
@@ -390,7 +390,35 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 论文里这一章是**本文自足**的推导——以 `lem_propTH` 为输入，往上盖。Q9 现在就能开工，
 它只用到刚证好的性质 4。**Q9 与 Q10 文件不相交，可以两个人同时做。**
 
-## Q9 · 演化核 `U^(n)` 与 `lem:sum_Ndecay` — **OPEN，下一条**
+## Q9 · 演化核 `U^(n)` 与 `lem:sum_Ndecay` — **DONE**（CC，2026-09-19）
+
+> **完成记录**：新文件 `RBM3D/Kernel/Evolution.lean`（已加进 `RBM3D.lean`），**不依赖任何接口公理**，
+> 零 error / 零 warning / 零 sorry；全库 338 条声明，审计干净。
+>
+> **定义**（签名入参 `m : Fin n → ℂ`，`m i = m(σ_i)`，`‖m i‖ = 1`；张量 `A : (Fin n → Zd d L) → ℂ`）：
+> `cycProd m i = m i * m (finRotate n i)`（即 `μ_i = m(σ_i)m(σ_{i+1})`，循环约定）；
+> `thetaKer μ t = (μ • SB) * Θ_{tμ}`；`uKer μ s t = (1 − (sμ) • SB) * Θ_{tμ}`；
+> `ThetaN`（`def:op_thn`，用 `Function.update a i b` 表示 `a^(i)(b_i)`）；`UN`（`def_Ustz`）。
+> 按工单复用 `Theta`，没有另起炉灶。
+>
+> **定理**：
+>
+> ```lean
+> theorem uKer_eq_one_add (hL) (hξ : ‖(t:ℂ) * μ‖ < 1) :                     -- (eq:decompUalt)
+>     uKer d L g μ s t = 1 + (((t:ℂ) - s) * μ) • (SB d L g * Theta d L g ((t:ℂ) * μ))
+> theorem norm_Xi_le (hL) (hs : 0 ≤ s) (hst : s ≤ t) (ht : t < 1) (hμ : ‖μ‖ = 1) :  -- (Xi_infint)
+>     ‖(((t:ℂ) - s) * μ) • (SB d L g * Theta d L g ((t:ℂ) * μ))‖ ≤ (t - s) / (1 - t)
+> theorem norm_uKer_le ... : ‖uKer d L g μ s t‖ ≤ (1 - s) / (1 - t)
+> theorem norm_UN_le (hL) (hm : ∀ i, ‖m i‖ = 1) (hs) (hst) (ht) (A) :           -- (sum_res_Ndecay)
+>     ‖UN d L g m s t A‖ ≤ ((1 - s) / (1 - t)) ^ n * ‖A‖
+> ```
+>
+> `‖A‖` 就是 Mathlib 在函数类型上的 sup 范数 `max_a |A_a|`；`‖·‖_{∞→∞}` 是 `ℓ^∞` 算子范数。
+> `(Xi_infint)` 的第二个不等号用的正是 Q5 的 `norm_Theta_le`。
+> **积的那一步没有对 `n` 归纳**：`∏_i Σ_c |K_i(a_i,c)| = Σ_b ∏_i |K_i(a_i,b_i)|` 就是
+> `Finset.prod_univ_sum`，一行。论文要求 `n ≥ 2`，这里对所有 `n` 成立（陈述更强，不算偏离）。
+> 另有辅助引理 `sum_norm_row_le`（行和 ≤ `ℓ^∞` 算子范数），Q13 大概用得上。
+
 
 **文件**：新开 `RBM3D/Kernel/Evolution.lean`。**只依赖 Q5（性质 4），不需要任何接口公理。**
 

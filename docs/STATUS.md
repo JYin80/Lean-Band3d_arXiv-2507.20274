@@ -117,3 +117,9 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 **另外**：两条展开的出处是 `[yang2021delocalization]` Lemma 3.5 / 3.14，不是工单写的 `[yang2024Del]`。
 
 **需要决定**：A（建最小随机层再写 axiom）/ B（推荐：Phase 1 不写 axiom，蓝图灰节点）/ C（不推荐）。详见 QUEUE。
+
+## 2026-09-19 · Claude Code · Q9 完成（演化核与 `lem:sum_Ndecay`）
+
+新文件 `RBM3D/Kernel/Evolution.lean`：定义 `ThetaN`（`def:op_thn`）和 `UN`（`def_Ustz`），都建在 `Theta` 上；
+证明了 `(eq:decompUalt)`、`(Xi_infint)` 和 `lem:sum_Ndecay`（`norm_UN_le : ‖U^(n)∘A‖_∞ ≤ ((1-s)/(1-t))^n ‖A‖_∞`）。
+不依赖接口公理。全库 338 条声明，审计干净。Q13 现在可以解锁。

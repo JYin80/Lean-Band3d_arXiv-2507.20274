@@ -6,6 +6,7 @@ import RBM3D.Defs.Block
 import RBM3D.Defs.Domination
 import RBM3D.Propagator.Basic
 import RBM3D.Propagator.Props4
+import RBM3D.Kernel.Evolution
 import RBM3D.Propagator.Interface
 import RBM3D.Graph.ScalingOrder
 import RBM3D.Graph.Model

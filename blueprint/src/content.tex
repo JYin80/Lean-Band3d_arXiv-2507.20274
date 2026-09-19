@@ -212,6 +212,14 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
 
 The remaining chapters are stated but not yet formalized; they are work orders T6--T8.
 
+% RBM.UN, RBM.ThetaN (DefTHUST); RBM.uKer_eq_one_add, RBM.norm_Xi_le, RBM.norm_UN_le  (Kernel/Evolution.lean)
+\begin{lemma}[$\mathtt{lem{:}sum\_Ndecay}$, Appendix A.2]\label{lem:sum-Ndecay}
+  \uses{lem:propTH-34}
+  For $0\le s\le t<1$,
+  $\|\mathcal U^{(n)}_{s,t,\bm\sigma}\circ\mathcal A\|_\infty\le\bigl(\tfrac{1-s}{1-t}\bigr)^n\|\mathcal A\|_\infty$.
+  Each one-index factor is $1+\Xi^{(i)}$ with $\|\Xi^{(i)}\|_{\infty\to\infty}\le(t-s)/(1-t)$ by property 4.
+\end{lemma}
+
 \begin{lemma}[Evolution kernel decomposition, Appendix A.2]\label{lem:Ukernel}
   \uses{ax:ThfadC, lem:propTH-34}
   The kernel $\Ucal^{(n)}_{s,t,\bm\sigma}$ acts on each of the $n$ indices separately, and
