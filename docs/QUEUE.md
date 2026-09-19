@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 3（Q9、Q10 完成；Q11–Q13 解锁；新开 A.5 的 Q14–Q16）
+最后刷新：2026-09-19 · beat 4（Q11 分步进行中；补开 Q17，A.2 的中间一条）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -26,6 +26,7 @@
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
+| Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
 
 ---
 
@@ -621,3 +622,46 @@ K^(n)_{t,σ,a} = W^{-d(n-1)} · Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}
 **这条是本文自足证的**：用树表示 `eq:tree_rep2`（每项只含 `M`-边与短的无标号边），
 加上 `(prop:ThfadC_short)` 的指数衰减——注意 `(prop:ThfadC_short)` 是接口公理
 `theta_decay_short`，所以这条会依赖它，审计里会体现出来，这是对的。
+
+
+---
+
+## Q17 · `lem:sum_decay` 与 `eq:latticesum_d3` — **OPEN**（补开，我之前漏了）
+
+**文件**：`RBM3D/Kernel/Evolution.lean`（或新开 `Kernel/SumDecay.lean`，与 Q13 同文件时注意串行）。
+
+**为什么补开**：附录 A.2 开头写着「we present the proofs of
+`lem:sum_Ndecay`, `lem:sum_decay`, `lem:sum_decay_nonzero`」——三条。
+我第一批只开了第一条（Q9）和第三条（Q13），**中间这条漏了**。
+
+**而且漏掉的恰好是最值得形式化的一条。** `eq:latticesum_d3` 是**第三轮校对时新加进论文的**：
+原稿在 `eq:bddfA` 的第三步直接得到 `W^{(n+4)ε}`，但那一步的格点求和在 `d = 3` 是临界情形，
+会多出一个 `log`。补进去的是
+
+```
+Σ_{b : |a₁−b| ∧ |a₂−b| > R}  exp(−c|a₁−b|/ℓ_t) / (|a₁−b|^{d−2} · |a₂−b|^{d−1})  ≲  log L / R^{d−3},
+                                                                        ∀ 1 ≤ R ≤ L
+```
+
+对每个 `d ≥ 3` 成立；**`log` 只在临界情形 `d = 3` 需要**——那里被求和项恰好像 `|b|^{-d}` 那样衰减，
+`R ≤ |b| ≲ ℓ_t` 上的和是 `log(ℓ_t/R)` 量级。指数因此从 `W^{(n+4)ε}` 改成 `W^{(n+5)ε}`。
+
+**这是整篇论文附录里唯一一处「新数学」**（其余都是补写隐含步骤或修记号），所以它是
+形式化收益最高的单条引理之一：如果论文那一步其实站不住，Lean 会在这里卡住。
+
+**现在做它比一小时前便宜得多**：Q11 的 K0、K2 已经落地了需要的基础设施——
+`Defs/Shells.lean` 的 `card_sphere_le`（球壳计数 `#{|x| = r} ≤ 2^d (r+1)^{d-1}`）
+和 `Defs/RadialSum.lean` 的 `sum_radial` / `sum_radial_exp_le`（按球壳求和、
+带 stretched-exponential 截断的径向和）。**先读这两个文件再动手，别重复造。**
+
+**建议拆成两步**：
+
+* **Q17a**：把 `eq:latticesum_d3` 作为独立引理证出来（纯格点求和，只用 Shells + RadialSum，
+  不需要任何接口公理）。**注意 `d = 3` 与 `d ≥ 4` 要分开处理**——这正是
+  `docs/PLAN.md` 里说的「`d = 3` 的临界性只集中在两处」的第一处。
+* **Q17b**：`lem:sum_decay` 本体（`sum_res_1`、`sum_res_2`）。走 `(eq:decompUalt)` 把
+  `U^(n)∘A` 按 `A ⊂ [n]` 拆开（Q9 已经有这个分解），再分别证 `sum_res_1_red0`（`|A| = k ≥ 1`）
+  与 `sum_res_1_red`（`A = ∅`）。需要 `(eq:decayXi)`，它来自接口公理 `theta_decay`
+  （`(prop:ThfadC)`），所以这条会依赖接口公理，审计里会体现——这是对的。
+
+做完 Q17a 就在 STATUS 里单独记一笔：**那一条是第三轮新加的，Lean 通过等于给它独立背书。**
