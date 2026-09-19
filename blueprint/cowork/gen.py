@@ -8,14 +8,13 @@ NODE_H = 27
 
 # kind -> (fill, stroke, textfill)  [light theme; dark handled via CSS vars on a wrapper]
 KIND = {
-  "def":   ("#dfe9f3", "#8fb0cf", "#14304a"),   # definition, drafted
-  "draft": ("#3d74ad", "#2d5a8a", "#ffffff"),   # lemma drafted, not compiled
+  "def":   ("#cfe9dc", "#7cbfa4", "#123a2b"),   # definition, compiled
+  "done":  ("#1a8a5e", "#13704b", "#ffffff"),   # proved and compiled
+  "ready": ("#3d74ad", "#2d5a8a", "#ffffff"),   # dependencies met, can start now
   "todo":  ("#ffffff", "#b9c1c9", "#5d6873"),   # blocked / not started
-  "ready": ("#1a8a5e", "#13704b", "#ffffff"),   # dependencies met, can start now
-  "axiom": ("#fbf1de", "#c9a costs", "#6d5016"),
+  "axiom": ("#fbf1de", "#cda85f", "#6d5016"),   # interface axiom, borrowed
+  "star":  ("#146b4a", "#0e5237", "#ffffff"),   # the high-value node, done
 }
-KIND["axiom"] = ("#fbf1de", "#cda85f", "#6d5016")
-KIND["star"]  = ("#2c4a7c", "#1e3557", "#ffffff")  # the high-value node
 
 def esc(s): return html.escape(s, quote=True)
 

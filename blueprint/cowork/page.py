@@ -15,8 +15,8 @@ CH1 = rows([
  ("控制参数 ℓ_t 与 B_{t,K}","已证","done","ellT · Bparam · one_le_ellT"),
  ("确定性 ≺（从 RBM1D 原样搬来）","已证","done","UnifDetDom · DetDom · detDom_iff"),
  ("邻居计数 #{x : |x| = 1} = 2d","Q2 ✓ 已证","done","card_nbhd · card_adj"),
- ("‖S^(B)(g)‖ = 1","Q3 · 可开工","ready","norm_SB"),
- ("S^(B)·1 = 1","Q4 · 可开工","ready","SB_mulVec_one"),
+ ("‖S^(B)(g)‖ = 1","Q3 ✓ 已证","done","norm_SB · sum_SB_row"),
+ ("S^(B)·1 = 1","Q4 ✓ 已证","done","SB_mulVec_one"),
 ])
 
 CH2 = rows([
@@ -27,7 +27,7 @@ CH2 = rows([
  ("性质 3 交换性","已证","done","Theta_commute_SB · Theta_commute"),
  ("行和 Σ_b Θ_{ab} = (1−ξ)⁻¹","已证","done","Theta_mulVec_one · sum_Theta_row"),
  ("Neumann 级数 (eq;Taylor)","已证","done","Theta_eq_tsum"),
- ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹","Q5 · 待解锁","todo","—"),
+ ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹，并消掉 hS / hone","Q5 · 可开工","ready","—"),
  ("性质 5 (prop:ThfadC) 多项式+指数衰减","接口公理","cited","theta_decay"),
  ("性质 5′ (prop:ThfadC_short)","接口公理","cited","theta_decay_short"),
  ("性质 6 (prop:BD1) 一阶差分","接口公理","cited","theta_diff_one"),
@@ -39,9 +39,8 @@ CH3 = rows([
  ("scaling order 的定义 (eq:ordG)","已证","done","Graph.Counters · Graph.ord"),
  ("case (ii)–(vi) 的算术记账","已证","done","ord_case_ii … ord_case_vi"),
  ("图模型 · case 分析穷尽性","Q6 ✓ 已证","done","Pattern.classify · classify_vi_occurs · ord_weight_step"),
- ("B.9 基本展开","接口公理","cited","待落地"),
- ("B.10 权展开 —— 落地前须核对记号","接口公理","cited","待落地 · 见 Q7"),
- ("B.11 GG 展开","接口公理","cited","待落地"),
+ ("(Owx) 权展开 · (Oe2x) GG 展开 —— 随机带矩阵线实际用的两条","Q8 · 可开工","ready","待落地"),
+ ("B.9 / B.10 / B.11（块 Anderson 线，全文从未被引用）","接口公理 · 降级","cited","不在关键路径"),
 ])
 
 CH4 = rows([
@@ -57,11 +56,12 @@ QUEUE = """
 <tbody>
 <tr><td>Q1</td><td>让现有草稿编译通过</td><td><code>RBM3D/**</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q2</td><td>邻居计数 <code>#{|x| = 1} = 2d</code> —— 整层的地基</td><td><code>Defs/Block.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q3</td><td><code>‖S^(B)(g)‖ = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q4</td><td><code>S^(B)·1 = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q5</td><td>性质 4 的 (∞→∞) 范数界</td><td><code>Propagator/Props4.lean</code></td><td><span class="pill todo">待 Q3,Q4</span></td></tr>
+<tr><td>Q3</td><td><code>‖S^(B)(g)‖ = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q4</td><td><code>S^(B)·1 = 1</code></td><td><code>Defs/Block.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q5</td><td>性质 4 的 (∞→∞) 范数界，并消掉 <code>hS</code> / <code>hone</code></td><td><code>Propagator/Props4.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q6</td><td>图模型 · case 穷尽性 <b>⭐</b></td><td><code>Graph/Model.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q7</td><td>核对 [yang2024Del] B.10 的一个 check 记号</td><td>查文献</td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q7</td><td>核对 [yang2024Del] B.10 的 check 记号</td><td>查文献</td><td><span class="pill cited">降级 · 不在关键路径</span></td></tr>
+<tr><td>Q8</td><td><code>(Owx)</code> / <code>(Oe2x)</code> 的接口公理</td><td><code>Graph/Expansions.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 </tbody></table>
 """
 
@@ -153,10 +153,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>278</b><span>声明已编译</span></div>
+    <div class="chip done"><b>294</b><span>声明已编译</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip cited"><b>5</b><span>接口公理</span></div>
-    <div class="chip ready"><b>3</b><span>工单可开工</span></div>
+    <div class="chip ready"><b>2</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -233,7 +233,7 @@ __QUEUE__
 </div>
 
 <footer>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 1 · 2026-09-19<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 1 · 2026-09-19 11:45 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

@@ -8,8 +8,8 @@ g1 = build(
   ("sb","S^(B)(g)   (eq:variancematrix)","def",1),
   ("par","ℓ_t ,  B_{t,K}","def",1),
   ("cnt","Q2 ✓ 邻居计数  #{|x|=1} = 2d","done",2),
-  ("nrm","Q3 · ‖S^(B)‖ = 1","ready",3),
-  ("one","Q4 · S^(B)·1 = 1","ready",3),
+  ("nrm","Q3 ✓ ‖S^(B)‖ = 1","done",3),
+  ("one","Q4 ✓ S^(B)·1 = 1","done",3),
  ],
  edges=[("lat","sb"),("lat","par"),("sb","cnt"),("cnt","nrm"),("cnt","one")],
  width=W)
@@ -26,7 +26,7 @@ g2 = build(
   ("p12","性质 1–2   对称 · 平移不变","done",3),
   ("p3","性质 3   交换性","done",3),
   ("row","行和 = (1−ξ)⁻¹","done",3),
-  ("p4","Q5 · 性质 4  ‖Θ‖ ≤ (1−t)⁻¹","todo",4),
+  ("p4","Q5 · 性质 4  ‖Θ‖ ≤ (1−t)⁻¹  · 顺带消掉 hS","ready",4),
  ],
  edges=[("th","uniq"),("uniq","p12"),("uniq","p3"),("uniq","row"),("row","p4"),
         ("th","ax1","d"),("th","ax3","d"),("th","ax5","d")],
@@ -40,8 +40,9 @@ g3 = build(
   ("ord","ord = n_S + 2(n_W − n_V)","def",1),
   ("arith","case (ii)–(vi)  算术记账","done",2),
   ("model","Q6 ✓ 图模型 · case 穷尽性","star",3),
+  ("exp","Q8 · (Owx)/(Oe2x) 接口公理","ready",4),
  ],
- edges=[("ord","arith"),("arith","model"),("b9","model","d"),("b10","model","d"),("b11","model","d")],
+ edges=[("ord","arith"),("arith","model"),("model","exp"),("b9","model","d"),("b10","model","d"),("b11","model","d")],
  width=W, band=1, band_label="以下 · 接口公理 · 论文引用而未证")
 
 g4 = build(
