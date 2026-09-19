@@ -1,0 +1,12 @@
+title: Lean-Band3d
+description: Lean 4 formalization of the deterministic core of the random band matrix paper in dimensions d >= 3 (arXiv:2507.20274)
+baseurl: ""
+url: "https://jyin80.github.io/Lean-Band3d_arXiv-2507.20274"
+
+repository: JYin80/Lean-Band3d_arXiv-2507.20274
+github_username: JYin80
+
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-github-metadata

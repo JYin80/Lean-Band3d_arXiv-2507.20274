@@ -1,0 +1,69 @@
+# STATUS（RBM3D）
+
+> 两边（Claude Code / Cowork）**唯一**的共享状态。开工前读它，收工前更新它。
+
+## 2026-09-19 · Cowork · 项目建立
+
+从空目录建起。范围、接口策略、索引类型三项由 Jun 拍板：
+显式 axiom 接口 / Phase 1 三条线并行（附录 B 组合层、传播子定义+性质 1–4、附录 A.2–A.5）/
+`Fin d → ZMod L` 且 `d` 保持参数。
+
+### 落地的东西
+
+脚手架完整：`lakefile.toml`、`lean-toolchain`(v4.34.0)、`.gitignore`、CI 两个 workflow、
+`check.sh`/`watch.sh`、`home_page/`、`blueprint/` 的 macros 与样式、`paper/`（tex + PDF，已 gitignore）。
+文档：`CLAUDE.md`、`docs/PLAN.md`、`docs/TASKS.md`、`docs/paper-deltas.md`、本文件。
+
+Lean（**全部未编译**，见下）：
+
+| 文件 | 内容 |
+|---|---|
+| `RBM3D/Basic.lean` | 文档枢纽 |
+| `RBM3D/Defs/Lattice.lean` | `zdist`、`Zd d L`、`zdistD`、`Adj`；零点刻画、三角不等式、取负不变 |
+| `RBM3D/Defs/Params.lean` | `ellT` `(eq:ellt)`、`Bparam` `(eq_B_param)` |
+| `RBM3D/Defs/Block.lean` | `sbKernel`、`SB` `(eq:variancematrix)`；对称性与平移不变性 |
+| `RBM3D/Defs/Domination.lean` | `UnifDetDom` / `DetDom`，**从 RBM1D 原样搬来**（那边已编译通过） |
+| `RBM3D/Propagator/Basic.lean` | `Theta`、`ThetaRBM` `(def_Thxi)`、`ThetaRBM0` `(def_Thxi0)` |
+| `RBM3D/Propagator/Interface.lean` | 5 条接口公理，逐字对应 `lem_propTH` 性质 5–8 |
+| `RBM3D/Graph/ScalingOrder.lean` | `Counters`、`ord` `(eq:ordG)`、case (ii)–(vi) 的算术 |
+| `RBM3D/Test/Axioms.lean` | `#assert_rbm_axioms`，带接口公理白名单与依赖计数 |
+
+### 状态：**一行 Lean 都没有编译过**
+
+云端容器和本机 VM 都拿不到 Mathlib（出口策略挡 `reservoir.lean-lang.org` 与
+GitHub releases），而且这个仓库不在云端会话的授权仓库集里，**push 也做不了**，
+所以 RBM2D 那条「用 CI 当编译器」的退路在这里暂时不通（T13）。
+
+所有 Mathlib 名字都 grep 过 `../RBM1D/.lake/packages/mathlib/` 确认存在，
+但**签名没有验证过**。`docs/TASKS.md` 的 T1 列了 7 个按可疑程度排序的风险点。
+
+### 下一步
+
+1. **T0**：磁盘。`~/Lean_proof` 所在卷 97% 满，只剩 15G，一份 Mathlib 要 6.6G。
+2. **T1**：本机逐文件编译，按 import 顺序。
+3. 然后按 `docs/PLAN.md` 的阶段表走，**T5（图模型）是价值最高的一块**。
+
+### 一条值得记住的发现
+
+第三轮人工校对在附录 B 发现漏掉的 case (vi)，其算术与 case (iv) 完全相同
+（`ord_case_vi` 在 Lean 里就是 `ord_case_iv` 的推论）。
+**只检查算术的形式化抓不到它**——漏的是情形枚举，不是不等式。
+这直接决定了 T5 的验收标准：删掉 case (vi) 应当让编译器报 non-exhaustive。
+
+## 2026-09-19 · Claude Code · T1 完成
+
+**第一批草稿全部编译通过**：8 个文件 + `RBM3D.lean`，零 error / 零 warning / 零 sorry，
+`#assert_rbm_axioms` 通过（124 条声明，5 条接口公理各被依赖 1 次）。
+详见 `docs/TASKS.md` 的「T1 完成记录」。
+
+没碰 T0：借 RBM1D 已编好的 Mathlib olean（只读，`LEAN_PATH` 直调 `lean`），
+RBM3D 的 olean 写在临时目录。所以 **`./check.sh` 仍没跑过**，等 T0。
+
+改动只有 import 修正和 lint 清理，**没有改任何陈述**，不需要记 `paper-deltas.md`。
+
+**没有提交**：`.git/index.lock` 从首次 `git add` 起一直存在（>10 分钟），
+initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确认没有 git 进程在跑后
+`rm .git/index.lock`，再做首次提交（T1 的改动可以并进去，或单独一个 commit）。
+
+下一步候选（都不依赖 T0，可以用同样的方式编译）：**T4**（`S^(B)` 双随机性，T3 的前置）、
+**T5**（图模型，价值最高）。
