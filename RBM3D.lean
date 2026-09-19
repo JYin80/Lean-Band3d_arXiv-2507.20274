@@ -2,6 +2,7 @@ import RBM3D.Basic
 import RBM3D.Defs.Lattice
 import RBM3D.Defs.Neighbours
 import RBM3D.Defs.Params
+import RBM3D.Defs.Tail
 import RBM3D.Defs.Block
 import RBM3D.Defs.Domination
 import RBM3D.Propagator.Basic

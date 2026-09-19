@@ -228,8 +228,19 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   $A\supset I_{\mathrm{diff}}(\bm\sigma)$ forces $\sigma_i=\sigma_{i+1}$.
 \end{lemma}
 
+% RBM.tailT, RBM.tailW, RBM.tailT_antitone, RBM.tailW_pos, RBM.zeroMode_le_of_ge, RBM.ellT_eq_of_le  (Defs/Tail.lean)
+\begin{definition}[Tail functions, $\mathtt{def{:}\ TTfunc}$]\label{def:tail}
+  \uses{def:params}
+  $\mathcal T_t(r)=B_{t,r}\,e^{-(r/\ell_t)^{1/2}}$ and
+  $\widetilde{\mathcal T}^{\ell}_{t,D}(r)=\max(\mathcal T_t(r\wedge\ell),W^{-D})$.  $\mathcal T_t$ is
+  non-negative and non-increasing on $[0,\infty)$ with $\mathcal T_t(0)=B_{t,0}$;
+  $\widetilde{\mathcal T}\ge W^{-D}>0$.  For $0\le r\le L$: if $1-t\ge g^2/L^2$ then
+  $(L^d|1-t|)^{-1}\le 2^{d-1}(g^2+|1-t|)^{-1}(r+1)^{-(d-2)}$; if $1-t\le g^2/L^2$ then
+  $\ell_t=L$ and $e^{-(r/\ell_t)^{1/2}}\ge e^{-1}$.
+\end{definition}
+
 \begin{lemma}[$\mathtt{lem{:}propT}$ and $\mathtt{claim{:}TTk}$, Appendix A.3--A.4]\label{lem:propT}
-  \uses{lem:Ukernel}
+  \uses{lem:Ukernel, def:tail}
   Bounds on products $\Tcal_t(|x_i-\alpha|\wedge\ell)\,\Tcal_t(|y_i-\alpha|\wedge\ell)$.
   The truncation at $\ell$ is essential and was made explicit in the third proofreading
   round, together with a correction to the index ranges in cases 2 and 3.

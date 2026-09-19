@@ -19,7 +19,7 @@
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
-| Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **CLAIMED** (CC) |
+| Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | BLOCKED by Q10 |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | BLOCKED by Q10 |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | BLOCKED by Q9 |
@@ -444,7 +444,33 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 **提示**：`n` 个指标上的张量用 `(Fin n → Zd d L) → ℂ`；`U^(n)` 是 `n` 个同一算子在不同指标上的
 张量积，所以「积的范数 ≤ 范数的积」那一步建议先对 `n` 归纳，别一上来就找 Mathlib 的张量积 API。
 
-## Q10 · 尾函数 `𝒯_t` 与 `wT^ℓ_{t,D}` — **OPEN**（与 Q9 并行）
+## Q10 · 尾函数 `𝒯_t` 与 `wT^ℓ_{t,D}` — **DONE**（CC，2026-09-19）
+
+> **完成记录**：新文件 `RBM3D/Defs/Tail.lean`（只依赖 `Defs/Params.lean`），零 error / 零 warning / 零 sorry；
+> 全库 361 条声明，审计干净。
+>
+> **定义**：`BparamR d L g t (r : ℝ)`——`B_{t,r}` 取实数自变量（`𝒯_t` 要在 `r ∧ ℓ` 处取值，`ℓ` 是实数），
+> `BparamR_natCast` 证明它在自然数处等于 `Bparam`；`tailT d L g t r = BparamR r * exp(−√(r/ℓ_t))`（`defTUL`）；
+> `tailW d L g t ℓ W D r = max (tailT (min r ℓ)) (W ^ (−D))`（`defWTTlD`，`W^{-D}` 用 `Real.rpow`）。
+> 平方根沿用 `Params.lean` 的 `Real.sqrt` 约定。
+>
+> **性质**：`tailT_nonneg`、`tailT_zero : 𝒯_t(0) = B_{t,0}`、`tailT_antitone`（`[0,∞)` 上单调不增，
+> 两个因子分别单调：`BparamR_antitone`、指数因子）；`rpow_neg_le_tailW`、`tailW_pos : 0 < W → 0 < wT`、
+> `tailW_antitone`（要 `0 ≤ ℓ`）。
+>
+> **L325 那句话，拆成两条带显式常数的引理**：
+>
+> ```lean
+> theorem zeroMode_le_of_ge (hd : 2 ≤ d) (hL : 1 ≤ L) (ht : t < 1) (hr0 : 0 ≤ r) (hrL : r ≤ L)
+>     (hgt : g²/L² ≤ 1 - t) :
+>     (L^d |1-t|)⁻¹ ≤ 2^(d-1) * ((g² + |1-t|)⁻¹ * ((r+1)^(d-2))⁻¹)      -- 零模项被衰减项压住
+> theorem ellT_eq_of_le (hg : 0 ≤ g) (ht : t < 1) (hL : 1 ≤ L) (h : 1 - t ≤ g²/L²) : ℓ_t = L
+> theorem exp_tail_ge ... (hrL : r ≤ L) : exp(-1) ≤ exp(-√(r/ℓ_t))    -- 指数因子是常数阶
+> ```
+>
+> 论文只说「压住」「常数阶」，常数 `2^{d-1}`、`e⁻¹` 是论证实际给出的。`exp_tail_ge` 不需要 `0 ≤ r`（比论文强）。
+> `ellT_eq_of_le` 需要 `g ≥ 0`，论文里 `g > 0` 是默认的。
+
 
 **文件**：新开 `RBM3D/Defs/Tail.lean`。只依赖 `Defs/Params.lean` 的 `Bparam` / `ellT`。
 

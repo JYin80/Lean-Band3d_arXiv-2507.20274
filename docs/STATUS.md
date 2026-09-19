@@ -123,3 +123,10 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 新文件 `RBM3D/Kernel/Evolution.lean`：定义 `ThetaN`（`def:op_thn`）和 `UN`（`def_Ustz`），都建在 `Theta` 上；
 证明了 `(eq:decompUalt)`、`(Xi_infint)` 和 `lem:sum_Ndecay`（`norm_UN_le : ‖U^(n)∘A‖_∞ ≤ ((1-s)/(1-t))^n ‖A‖_∞`）。
 不依赖接口公理。全库 338 条声明，审计干净。Q13 现在可以解锁。
+
+## 2026-09-19 · Claude Code · Q10 完成（尾函数）
+
+新文件 `RBM3D/Defs/Tail.lean`：`tailT`（`𝒯_t`）、`tailW`（`wT^ℓ_{t,D}`）和实数版 `BparamR`；
+证明了非负、`𝒯_t(0) = B_{t,0}`、单调性、`wT ≥ W^{-D} > 0`；L325 那句话拆成两条引理
+（`zeroMode_le_of_ge`，常数 `2^{d-1}`；`ellT_eq_of_le` + `exp_tail_ge`，常数 `e⁻¹`）。全库 361 条声明，审计干净。
+Q11、Q12 现在可以解锁。
