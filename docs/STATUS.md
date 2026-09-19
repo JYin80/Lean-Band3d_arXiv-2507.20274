@@ -130,3 +130,9 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 证明了非负、`𝒯_t(0) = B_{t,0}`、单调性、`wT ≥ W^{-D} > 0`；L325 那句话拆成两条引理
 （`zeroMode_le_of_ge`，常数 `2^{d-1}`；`ellT_eq_of_le` + `exp_tail_ge`，常数 `e⁻¹`）。全库 361 条声明，审计干净。
 Q11、Q12 现在可以解锁。
+
+## 2026-09-19 · Claude Code · Q11 进行中（K0 落地）
+
+Q11（`lem:propT`）是附录 A 里分析量最大的一条，要好几轮心跳，拆解计划 K0–K5 见 QUEUE 的 Q11 条目。
+本轮落地 **K0**：新文件 `RBM3D/Defs/Shells.lean`，`card_sphere_le : #{x ∈ Z_L^{d+1} : |x| = r} ≤ 2^{d+1}(r+1)^d`。
+全库 389 条声明，审计干净。**Q11 保持 CLAIMED**，下一步 K2（径向和）。

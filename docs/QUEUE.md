@@ -20,7 +20,7 @@
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
-| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **CLAIMED** (CC) |
+| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **CLAIMED** (CC)，进行中：K0 已落地 |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **OPEN**（与 Q11 同文件，串行） |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **OPEN**（与 Q11/Q12 文件不相交，可并行） |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
@@ -491,7 +491,25 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 * 论文 L325 那句话：`0 ≤ r ≤ L` 时，`1−t ≥ g²/L²` 则 `B_{t,r}` 的第二项被第一项压住，
   反之则反过来 —— **这条在第三轮我补 `eq:MG_conclusion2` 的理由时用到了，值得单独成引理。**
 
-## Q11 · `lem:propT` 的卷积界 — **OPEN**
+## Q11 · `lem:propT` 的卷积界 — **CLAIMED**（CC），进行中
+
+> **CC 的拆解计划**（论文 A.3 两步都是 `≲`，第二步还用了一条只在 `ℝ^d` 上陈述的「基本微积分事实」，
+> 下面是离散化之后、能直接在 `Z_L^d` 上证的路线；`|x| = zdistD`，即 ℓ¹ 环面距离）：
+>
+> * **K0 球壳计数** ✅ `Defs/Shells.lean`：`card_sphere_le : #{x ∈ Z_L^{d+1} : |x| = r} ≤ 2^{d+1}(r+1)^d`
+>   （一维：距离 `= r` 的点至多 2 个、`≤ r` 的至多 `2r+1` 个；再按 `Fin.consEquiv` 对 `d` 归纳）。
+> * **K2 径向和**：`Σ_x (|x|+1)^{-(d-2)} e^{-κ√(|x|/ℓ)} ≤ C_d ℓ²`（`ℓ ≥ 1`，`d ≥ 3`）。按球壳求和后，
+>   化成一维的 `Σ_r (r+1) e^{-κ√(r/ℓ)} ≲ ℓ²`。取 `ℓ = L` 时指数因子 `≥ e^{-κ√d}`，也就给出区制 (ii) 要的 `Σ_x (|x|+1)^{-(d-2)} ≲ L²`。
+> * **K3 卷积拆分**（那条「微积分事实」的离散版）：设 `X = √|a−c|`、`Y = √|c−b|`、`Z = √|a−b|`。
+>   由三角不等式 `Z ≤ √(X²+Y²)` 得 `X + ε(Y − Z) ≥ (2−√2)·min(X, Y)`，对所有 `ε ∈ [0,1]` 成立。
+>   再按 `|a−c| ≤ |c−b|` 与否拆成两块：每块里 `(|a−b|+1)/(|c−b|+1) ≤ 2`（或对称的那一个），于是归结到 K2。
+> * **K4 区制 (ii)** `1−t ≤ 1−u ≤ g²/L²`：`ℓ_u = ℓ_t = L`，指数因子在 `[e⁻¹, 1]` 之间（Q10 的 `exp_tail_ge`）；
+>   把「衰减项 + 零模项」两两相乘，得四个交叉项，逐项用 `L² ≤ g²/(1−u)` 估计。
+> * **K5 区制 (i)** `1−u ≥ 1−t ≥ g²/L²`：零模项被衰减项压住（Q10 的 `zeroMode_le_of_ge`），`ℓ_u ≤ ℓ_t`，
+>   用 K3（取 `ε = √(ℓ_u/ℓ_t)`），最后 `ℓ_u²/(g²+1−u) ≤ 1/(1−u)`。
+>
+> 常数 `C_d` 最终是显式的（形如 `2^{O(d)}`）。
+
 
 **文件**：新开 `RBM3D/Kernel/PropT.lean`。陈述（`TTT2`）：存在只依赖 `d` 的 `C_d > 0`，使得对
 任意 `0 ≤ u ≤ t < 1` 满足 (i) `1−u ≥ 1−t ≥ g²/L²` 或 (ii) `1−t ≤ 1−u ≤ g²/L²`，
