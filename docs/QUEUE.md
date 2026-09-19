@@ -14,7 +14,7 @@
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **DONE** (CC) |
-| Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | **OPEN** |
+| Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | **CLAIMED** (CC) |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **OPEN** |
