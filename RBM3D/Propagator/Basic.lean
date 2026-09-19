@@ -121,7 +121,7 @@ theorem Theta_commute_SB (hS : ‖SB d L g‖ = 1) {ξ : ℂ} (hξ : ‖ξ‖ < 
   have hb : Commute (1 - ξ • SB d L g) (SB d L g) := by
     unfold Commute SemiconjBy
     simp [sub_mul, mul_sub]
-  show Theta d L g ξ * SB d L g = SB d L g * Theta d L g ξ
+  change Theta d L g ξ * SB d L g = SB d L g * Theta d L g ξ
   calc Theta d L g ξ * SB d L g
       = Theta d L g ξ * SB d L g * ((1 - ξ • SB d L g) * Theta d L g ξ) := by
         rw [mul_Theta d L g hS hξ, mul_one]
@@ -137,7 +137,7 @@ theorem Theta_commute (hS : ‖SB d L g‖ = 1) {ξ ξ' : ℂ} (hξ : ‖ξ‖ <
     have := Theta_commute_SB d L g hS hξ
     unfold Commute SemiconjBy at this ⊢
     simp [mul_sub, sub_mul, this]
-  show Theta d L g ξ * Theta d L g ξ' = Theta d L g ξ' * Theta d L g ξ
+  change Theta d L g ξ * Theta d L g ξ' = Theta d L g ξ' * Theta d L g ξ
   calc Theta d L g ξ * Theta d L g ξ'
       = Theta d L g ξ' * (1 - ξ' • SB d L g) * (Theta d L g ξ * Theta d L g ξ') := by
         rw [Theta_mul d L g hS hξ', one_mul]

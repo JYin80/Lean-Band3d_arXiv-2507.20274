@@ -67,3 +67,11 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 
 下一步候选（都不依赖 T0，可以用同样的方式编译）：**T4**（`S^(B)` 双随机性，T3 的前置）、
 **T5**（图模型，价值最高）。
+
+## 2026-09-19 · Claude Code · Q1 完成
+
+`docs/QUEUE.md` 的 Q1：重写后的传播子层（`959b4bd`）与其余文件全部编译通过，
+零 error / 零 warning / 零 sorry；审计 136 条声明，5 条接口公理各依赖 1 次。
+唯一改动：`Propagator/Basic.lean` 两处 `show` → `change`。
+编译仍是借 RBM1D 的 Mathlib olean（只读），`./check.sh` 待 T0。
+下一条：Q2（邻居计数）已解除阻塞；Q6（图模型）一直可并行。

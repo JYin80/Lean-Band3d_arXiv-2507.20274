@@ -10,7 +10,7 @@
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
-| Q1 | 让现有草稿编译通过 | 全部 | **CLAIMED** (CC) |
+| Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | BLOCKED by Q1 |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
@@ -20,7 +20,16 @@
 
 ---
 
-## Q1 · 让现有草稿编译通过 — **OPEN**
+## Q1 · 让现有草稿编译通过 — **DONE**（CC，2026-09-19）
+
+> **完成记录**：按 import 顺序逐文件编译，9 个文件 + `RBM3D.lean` 全部 exit=0，
+> **零 error、零 warning、零 sorry**。`#assert_rbm_axioms` 通过：136 条声明，
+> 只有 `interfaceAxioms` 那 5 条，各被依赖 1 次。
+> 重写后的 `Propagator/Basic.lean`（RBM1D 移植）一次编过；唯一改动是两处 `show` → `change`
+> （lint：`show` 改变了目标）。之前 T1 的 import 修正已在 `3c07bc8` 里。
+> **编译方式**：`.lake` 还不存在（T0），所以没用 `lake`，而是直调 v4.34.0 的 `lean`，
+> `LEAN_PATH` 只读借用 `../RBM1D/.lake/packages/*/.lake/build/lib/lean`。
+> **验收里的 `./check.sh` 那一步要等 T0**，届时应直接绿。
 
 **文件**：`RBM3D/` 下全部 `.lean`。
 **背景**：这批文件是 Cowork 在没有编译器的情况下写的，**一行都没编译过**。
