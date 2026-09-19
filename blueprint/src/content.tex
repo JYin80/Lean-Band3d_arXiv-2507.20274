@@ -185,9 +185,19 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
   construction (T5) is therefore where this project earns its keep.
 \end{remark}
 
+% RBM.Graph.hasDerivAt_inverse_apply, RBM.Graph.hasDerivAt_inverse_sub_apply  (Graph/Expansions.lean)
+\begin{lemma}[Derivative of a resolvent entry]\label{lem:dG}
+  For invertible $A$ with $G=A^{-1}$, $\partial_{h_{\alpha w}}G_{ij}=-G_{i\alpha}G_{wj}$, and the same for
+  $\mathring G=G-M$.  In the third term of $\mathtt{(Owx)}$ this turns a solid edge $G_{\beta_1\beta_2}$
+  into $G_{\beta_1\alpha}G_{w\beta_2}$; with the prefactor $G_{\alpha w}$ these are the three new
+  edges classified in \cref{lem:ord-exhaustive}.  The expansions $\mathtt{(Owx)}$, $\mathtt{(Oe2x)}$
+  themselves (\texttt{[yang2021delocalization]} Lemmas 3.5, 3.14) are identities in expectation
+  and are not formalized; see \texttt{docs/QUEUE.md}, Q8.
+\end{lemma}
+
 % RBM.Graph.Pattern.classify, RBM.Graph.classify_eq_vi_iff, RBM.Graph.ord_weight_step
 \begin{lemma}[The case split of $\mathtt{lem\_scalingorder}$ is exhaustive]\label{lem:ord-exhaustive}
-  \uses{lem:ord-cases}
+  \uses{lem:ord-cases, lem:dG}
   A configuration of the weight-expansion step is the equality pattern of the vertices on
   the cycle $\beta_1 - \alpha - w - \beta_2 - \beta_1$.  Of the $16$ Boolean patterns, exactly
   $12$ are realizable (no $4$-cycle has exactly three coincidences), and each of them falls

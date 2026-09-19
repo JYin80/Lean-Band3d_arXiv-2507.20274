@@ -17,7 +17,7 @@
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | **DONE** (CC) |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
-| Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **CLAIMED** (CC) |
+| Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **PARTIAL** (CC)：确定性层已落地；两条公理待拍板 |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **OPEN** ← 下一条 |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **OPEN**（与 Q9 文件不相交，可并行） |
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | BLOCKED by Q10 |
@@ -296,7 +296,52 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 **这是待确认的假说，不是结论。** 谁手上有 2501.08608 的 PDF，翻到 Lemma B.10，只需回答
 一个字：括号内第一项那个 `(α,y)` 因子，是 `G` 还是 `Ǧ`。
 
-## Q8 · `(Owx)` 与 `(Oe2x)` 的接口公理 — **OPEN**
+## Q8 · `(Owx)` 与 `(Oe2x)` 的接口公理 — **PARTIAL**（CC，2026-09-19）：确定性层已落地，公理**待拍板**
+
+> **结论：按工单「前置比预期深就别硬撑」，两条 axiom 没有写。** 落地的是它们的确定性内核。
+>
+> **一、先更正出处。** 论文把两条都归给 **`[yang2021delocalization]`**：`(Owx)` 是其 Lemma 3.5，
+> `(Oe2x)` 是其 Lemma 3.14（`7_8_light_weight.tex` L293、L334），不是 `[yang2024Del]`。
+> 它们在 §7 开头，前面还有一句：原文是对 `G = (H−z)⁻¹` 陈述的，这里把 `G, S` 换成 `G_t, S_t = tS` 使用。
+>
+> **二、卡在哪。** 两条都是 `=_𝔼`（期望相等）的恒等式，对「`G` 的任意可微函数 `f`」成立。
+> 要逐字陈述，至少需要：
+> (1) `N × N` 随机带矩阵 `H` 及其分布（概率空间、方差矩阵 `S`、Hermitian 约束）；
+> (2) 预解式 `G(z)`、`m(z)`、`Ǧ = G − M`；
+> (3) `S^±`，按**本文**归一化（与原文差 `m²`，见 `paper-deltas.md` D9.3）；
+> (4) `∂_{h_{αx}}`：Hermitian 矩阵元上的 Wirtinger 导数；
+> (5) `f` 的取值范围和可积性（「可微函数」在 Lean 里要给出一个具体类，比如 `G` 的矩阵元多项式）。
+> 仓库里这些**一样都没有**；(1)(2)(4) 正是 CLAUDE.md 规则 6 说 Phase 1 不碰的随机层。
+> 没有它们，写出来的 axiom 要么是空话（量词范围不对），要么写错了归一化还查不出来——
+> 这正是 PLAN 风险表里「接口公理写错，编译器查不出来」那一条。
+>
+> **三、落地了什么**（`RBM3D/Graph/Expansions.lean`，**无 axiom**，零 error / 零 warning / 零 sorry，全库 323 条，审计不变）：
+>
+> ```lean
+> theorem hasDerivAt_inverse_apply (hA : IsUnit A) (α w i j : n) :
+>     HasDerivAt (fun s : ℂ => Ring.inverse (A + s • single α w 1) i j)
+>       (-(Ring.inverse A i α * Ring.inverse A w j)) 0     -- ∂_{h_{αw}} G_{ij} = −G_{iα} G_{wj}
+> theorem hasDerivAt_inverse_sub_apply ...                  -- 对 light-weight Ǧ = G − M 同样成立
+> ```
+>
+> 这就是 `(Owx)` 第三项里 `∂_{h_{αw}}` 打到 `G_{β₁β₂}`（或 `Ǧ_{β₁β₂}`）时产生 `G_{β₁α} G_{wβ₂}` 的那一步，
+> 加上前因子 `G_{αw}`，正好是 `Graph/Model.lean` 分类的三条新边 `e₁, e₂, e₃`。所以现在
+> 「展开产生哪三条边」（本文件）和「这三条边有哪些对角构型、各升多少阶」（`Model.lean`）都有编译器检查；
+> 中间只剩「期望恒等式本身」没进 Lean。
+> 注：这里的导数是沿矩阵单位 `E_{αw}` 的方向导数，也就是把 `h_{αw}`、`h_{wα}` 当作独立变量的
+> Wirtinger 导数——文献里的 `∂_{h_{αw}}` 正是这个约定。
+>
+> **四、三个选项（请 Jun / Cowork 拍板）**：
+> * **A. 建最小随机层，再写两条 axiom。** 按上面 (1)–(5) 建模，`f` 取 `G` 矩阵元的多项式。
+>   工作量大，而且要突破规则 6；归一化（`S` vs `S_t`、`S^±` 的 `m²`）是主要写错风险。
+> * **B.（推荐，Phase 1）不写 axiom**，蓝图里这两条作为灰色「仅在蓝图」节点，
+>   依赖边指向 `Expansions.lean` 的导数引理和 `Model.lean`。借用边界照样诚实可见，
+>   只是不进 `interfaceAxioms`。
+> * **C. 在图模型层面写一条抽象 axiom**（比如「第三项产生的图恰好是这些构型」）。
+>   **不推荐**：那已经是由论文引理推出来的推论，不是逐字的论文陈述，违反规则 4。
+>
+> `interfaceAxioms` 与 `paper-deltas.md` 本次**都没改**（没有新增 axiom）。
+
 
 **文件**：新开 `RBM3D/Graph/Expansions.lean`。这是 Q7 的真正替代品。
 

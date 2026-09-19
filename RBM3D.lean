@@ -9,6 +9,7 @@ import RBM3D.Propagator.Props4
 import RBM3D.Propagator.Interface
 import RBM3D.Graph.ScalingOrder
 import RBM3D.Graph.Model
+import RBM3D.Graph.Expansions
 import RBM3D.Test.Axioms
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
