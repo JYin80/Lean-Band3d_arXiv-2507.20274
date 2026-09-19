@@ -27,6 +27,7 @@
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
+| Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
 
 ---
 
@@ -665,3 +666,36 @@ K^(n)_{t,σ,a} = W^{-d(n-1)} · Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}
   （`(prop:ThfadC)`），所以这条会依赖接口公理，审计里会体现——这是对的。
 
 做完 Q17a 就在 STATUS 里单独记一笔：**那一条是第三轮新加的，Lean 通过等于给它独立背书。**
+
+
+---
+
+## Q18 · 让审计直接报定理数与公理承重情况 — **OPEN**（小活，不是证明工作）
+
+**文件**：`RBM3D/Test/Axioms.lean`。**动手前确认没人正在改这个文件。**
+
+**起因**：`#assert_rbm_axioms` 现在报的是「N 条声明」，数的是 `env.constants` 里所有 `RBM`
+前缀的常量——里面混着 `def`、`structure`、`instance`，以及编译器自动生成的递归子、
+equation lemma、`.proof_N`、实例投影。实测：总数 389，其中**手写只有 222 条，167 条是自动生成的**；
+手写的 222 条里**定理 174、定义 37、结构 6、公理 5**。
+
+拿「389 条声明」当进度报是误导的（Cowork 侧已经这么报了好几拍，是我的错）。
+
+**要改成**：报告里分开列出
+
+* `theorem` 的条数（`ConstantInfo.thmInfo`）；
+* 定义类的条数（`defnInfo` / `inductInfo` / `ctorInfo` / `opaqueInfo`）；
+* 公理数；
+* 过滤掉编译器生成的（名字里含 `.proof_`、`.eq_`、`._`、以 `.rec`/`.recOn`/`.casesOn`/`.below`/
+  `.brecOn`/`.noConfusion`/`.ofNat`/`.sizeOf` 结尾等——用 `Name.isInternal` 或
+  `isAuxRecursor` / `isNoConfusion` 之类的现成判定，**别自己拼字符串匹配**，先去
+  `../RBM1D/.lake/packages/mathlib/` 或 Lean 核心里 grep 有没有现成的）。
+
+**另外一件更要紧的**：现在每条接口公理的依赖计数都是 **1，也就是只有它自己**——
+`collectAxioms` 对公理本身会返回它自己。换句话说**目前 174 条定理没有一条依赖接口公理**，
+借来的结果还没有承重。这是个好消息，但报告里看不出来。请把计数改成
+**「除它自己以外有多少条声明依赖它」**（即当前值减一），并在都为 0 时明确写一句
+「no declaration yet depends on the borrowed results」。
+
+第一批会让它非零的是 Q13、Q16、Q17b。**那个数字从 0 变正的时刻，就是「借用开始承重」**，
+值得在 STATUS 里单独记一笔。
