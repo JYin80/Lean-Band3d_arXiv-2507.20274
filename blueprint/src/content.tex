@@ -34,9 +34,17 @@
   fails to be doubly stochastic.  See \texttt{docs/paper-deltas.md}, D1.
 \end{remark}
 
+% RBM.card_nbhd, RBM.card_adj  (RBM3D/Defs/Neighbours.lean)
+\begin{lemma}[Neighbour count]\label{lem:card-nbhd}
+  \uses{def:lattice}
+  For $L\ge3$, $\#\{x\in\ZL : |x|=1\}=2d$, and every $a\in\ZL$ has exactly $2d$
+  neighbours.  The unit sphere is the image of the injection $(i,\pm)\mapsto\pm e_i$ of
+  $\{1,\dots,d\}\times\{\pm\}$; injectivity is $1\ne-1$ in $\ZLone$, which needs $L\ge3$.
+\end{lemma}
+
 % RBM.SB_isSymm, RBM.SB_apply_add_right
 \begin{lemma}[Elementary properties of $\SB$]\label{lem:SB-basic}
-  \uses{def:SB}
+  \uses{def:SB, lem:card-nbhd}
   $\SB(\gcoup)$ is symmetric and translation invariant, each row sums to $1$, and
   $\SB(\gcoup)\mathbf 1=\mathbf 1$.  The row sum is where $L\ge3$ enters: it amounts to
   the count $\#\{x\in\ZL : |x|=1\}=2d$.

@@ -18,6 +18,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 ## File layout
 
 * `RBM3D.Defs.Lattice`       — the torus `Z_L^d` and its periodic `ℓ¹` distance `|x|`
+* `RBM3D.Defs.Neighbours`    — every point has exactly `2d` nearest neighbours (`3 ≤ L`)
 * `RBM3D.Defs.Params`        — `ℓ_t` of `(eq:ellt)` and `B_{t,K}` of `(eq_B_param)`
 * `RBM3D.Defs.Block`         — the block variance matrix `S^(B)(g)` of `(eq:variancematrix)`
 * `RBM3D.Propagator.Basic`   — `M^(σ₁,σ₂)`, `Θ_t` and `Θ̊_t` of `def_Theta`

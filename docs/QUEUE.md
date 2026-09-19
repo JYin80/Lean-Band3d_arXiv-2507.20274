@@ -11,7 +11,7 @@
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
-| Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | **CLAIMED** (CC) |
+| Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
@@ -69,7 +69,27 @@ Defs/Lattice → Defs/Params → Defs/Block → Defs/Domination
 
 ---
 
-## Q2 · 邻居计数 `#{x : Zd d L | zdistD d L x = 1} = 2 * d` — **OPEN**
+## Q2 · 邻居计数 `#{x : Zd d L | zdistD d L x = 1} = 2 * d` — **DONE**（CC，2026-09-19）
+
+> **完成记录**：新文件 `RBM3D/Defs/Neighbours.lean`（只 import `Defs/Lattice`；**`Block.lean` 没动**，
+> Q3/Q4 用时在 `Block.lean` 里加 `import RBM3D.Defs.Neighbours`）。零 error / 零 warning / 零 sorry，审计干净。
+>
+> 给 Q3/Q4 用的签名（已编译验证）：
+>
+> ```lean
+> theorem card_nbhd (d L : ℕ) [NeZero L] (hL : 3 ≤ L) :
+>     (Finset.univ.filter fun x : Zd d L => zdistD d L x = 1).card = 2 * d
+> theorem card_adj (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (a : Zd d L) :
+>     (Finset.univ.filter fun b : Zd d L => Adj d L a b).card = 2 * d
+> ```
+>
+> 顺带落地、Q3 可能用到的：`zdist_eq_one_iff : zdist L u = 1 ↔ u = 1 ∨ u = -1`、
+> `one_ne_neg_one_of_three_le`、`zdist_one`、`zdist_neg_one`、`zdistD_single`
+> （`zdistD (Pi.single i u) = zdist u`）、`unitVec`（`(i, b) ↦ ±eᵢ`）及其单射性、
+> `filter_zdistD_eq_one`（单位球 = `unitVec` 的像）。另加了 `Decidable (Adj d L x y)` 实例。
+> 证法按工单：与 `Fin d × Bool` 的单射；反方向用 `Finset.add_sum_erase` + `Finset.sum_eq_zero_iff`
+> 得「和为 1 的自然数族恰有一项为 1」。没用 RBM1D 的引理（一维部分直接从 `ZMod.val` 算）。
+
 
 **文件**：`RBM3D/Defs/Block.lean`（或新开 `Defs/Neighbours.lean`）。
 

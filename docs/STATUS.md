@@ -84,3 +84,8 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 `ord_weight_step` 给出每步 `ord` 至少升 1。
 全库：249 条声明，审计干净，5 条接口公理各依赖 1 次。
 未覆盖：各 case 的计数关系是照抄论文的假设（`Case.Rel`），不是推导出来的；`n_lw/n_dv` 未建模。详见 QUEUE 的 Q6 完成记录。
+
+## 2026-09-19 · Claude Code · Q2 完成（邻居计数）
+
+新文件 `RBM3D/Defs/Neighbours.lean`：`card_nbhd d L hL : #{x | |x| = 1} = 2 * d`，以及平移版 `card_adj`。
+`Block.lean` 未改动。全库 278 条声明，审计干净。Q3、Q4 现在可以解锁。签名见 QUEUE 的 Q2 完成记录。
