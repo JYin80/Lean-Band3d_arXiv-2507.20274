@@ -89,3 +89,10 @@ initial commit 没落地，像是 Cowork 那边中断留下的死锁。Jun 确�
 
 新文件 `RBM3D/Defs/Neighbours.lean`：`card_nbhd d L hL : #{x | |x| = 1} = 2 * d`，以及平移版 `card_adj`。
 `Block.lean` 未改动。全库 278 条声明，审计干净。Q3、Q4 现在可以解锁。签名见 QUEUE 的 Q2 完成记录。
+
+## 2026-09-19 · Claude Code · Q3 + Q4 完成（`S^(B)` 双随机）
+
+`Defs/Block.lean` 新增 `section Stochastic`：`norm_SB d L g hL : ‖SB d L g‖ = 1`、
+`SB_mulVec_one d L g hL : SB *ᵥ 1 = 1`、`sum_SB_row` 等。`norm_SB` **不需要 `0 < g`**（比工单签名强）。
+实测可直接消掉 `Propagator/Basic.lean` 的 `hS` / `hone`；该文件本身未改。Q5 可以解锁。
+全库 294 条声明，审计干净。

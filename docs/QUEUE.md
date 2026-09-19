@@ -12,8 +12,8 @@
 |---|---|---|---|
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
-| Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **CLAIMED** (CC) |
-| Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **CLAIMED** (CC) |
+| Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
+| Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | **DONE** (CC) |
 | Q5 | 性质 4 的 `(∞→∞)` 范数界 | `Propagator/Props4.lean` | BLOCKED by Q3,Q4 |
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | OPEN（需要查文献，非 Lean） |
@@ -119,7 +119,33 @@ theorem card_nbhd (d L : ℕ) [NeZero L] (hL : 3 ≤ L) :
 
 ---
 
-## Q3 · `‖S^(B)(g)‖ = 1` — **OPEN**
+## Q3 · `‖S^(B)(g)‖ = 1` — **DONE**（CC，2026-09-19）
+
+> **完成记录**（Q3、Q4 一起做，同一文件 `Defs/Block.lean` 末尾的 `section Stochastic`）：
+>
+> ```lean
+> theorem norm_SB (d L : ℕ) [NeZero L] (g : ℝ) (hL : 3 ≤ L) : ‖SB d L g‖ = 1
+> theorem SB_mulVec_one (d L : ℕ) [NeZero L] (g : ℝ) (hL : 3 ≤ L) :
+>     SB d L g *ᵥ (1 : Zd d L → ℂ) = 1
+> ```
+>
+> **与工单签名的唯一差别：`norm_SB` 没有 `hg : 0 < g`。** 两档核值 `(1+2dg²)⁻¹`、`g²(1+2dg²)⁻¹`
+> 对任意实数 `g` 都非负，用不上这个假设，所以陈述更强。调用处写 `norm_SB d L g hL`。
+>
+> **已实测**：`Theta_mul d L g (norm_SB d L g hL) hξ` 与
+> `sum_Theta_row d L g (norm_SB d L g hL) (SB_mulVec_one d L g hL) hξ a` 都能编过——
+> 即 `Propagator/Basic.lean` 的 `hS`、`hone` 可以在任何调用处直接消掉（范数是同一个
+> `Matrix.Norms.Operator` 的 `ℓ^∞` 算子范数）。`Propagator/Basic.lean` 本身**没改**，
+> 那些假设仍在陈述里；要不要把它们从陈述中拿掉由 Cowork 定。
+>
+> 做法：没照搬 RBM1D 的 `nnnorm_sbKernel` 三情形，而是把核写成实值非负函数
+> `sbKernelR = a·1_{x=0} + b·1_{|x|=1}`（`sbKernel_eq_ofReal`、`sbKernelR_nonneg`），
+> 总质量 `sum_sbKernelR : a + 2d·b = 1` 由 `card_nbhd` + `field_simp` 得到；
+> 于是 `sum_sbKernel`（Q4）和 `sum_norm_sbKernel`（Q3）是同一个计算的两个推论。
+> 之后按 RBM1D 的链：`sum_SB_row` / `sum_norm_SB_row`（`Equiv.subLeft`）→ `sum_nnnorm_SB_row`
+> → `nnnorm_SB`（`linfty_opNNNorm_def`）→ `norm_SB`。
+> 全库 294 条声明，零 error / 零 warning / 零 sorry，审计干净。
+
 
 **文件**：`RBM3D/Defs/Block.lean`。
 
@@ -140,7 +166,7 @@ nnnorm_sbKernel → sum_nnnorm_sbKernel → sum_nnnorm_SB_row → nnnorm_SB → 
 
 ---
 
-## Q4 · `S^(B) 1 = 1` — **OPEN**
+## Q4 · `S^(B) 1 = 1` — **DONE**（CC，2026-09-19；见 Q3 的完成记录）
 
 **文件**：`RBM3D/Defs/Block.lean`。
 移植 `RBM1D/Defs/Block.lean` 的 `sum_SB_row` / `SB_mulVec_one`，同样用 Q2 的计数。

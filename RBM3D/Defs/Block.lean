@@ -5,7 +5,9 @@ Authors: Jun Yin
 -/
 import Mathlib.Basic.Complex.Basic
 import Mathlib.LinearAlgebra.Matrix.Circulant
-import RBM3D.Defs.Lattice
+import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.Matrix.Normed
+import RBM3D.Defs.Neighbours
 
 /-!
 # The block variance matrix `S^(B)(g)`
@@ -59,5 +61,78 @@ omit [NeZero L] in
 /-- Property 2 of `lem_propTH` at the level of `S^(B)`: translation invariance. -/
 theorem SB_apply_add_right (a b c : Zd d L) : SB d L g (a + c) (b + c) = SB d L g a b := by
   simp only [SB_apply, add_sub_add_right_eq_sub]
+
+/-! ### Stochasticity: `S^(B) 1 = 1` and `‖S^(B)‖ = 1`
+
+Both come from the same computation: the kernel is the real, non-negative function
+`a·1_{x=0} + b·1_{|x|=1}` with `a = (1 + 2dg²)⁻¹`, `b = g²a`, and by the neighbour count
+`card_nbhd` its total mass is `a + 2d·b = 1`.  No sign condition on `g` is needed. -/
+
+section Stochastic
+
+/-- The kernel of `S^(B)(g)` as a real function, split into its two pieces. -/
+noncomputable def sbKernelR (x : Zd d L) : ℝ :=
+  (if x = 0 then (1 + 2 * (d : ℝ) * g ^ 2)⁻¹ else 0) +
+    (if zdistD d L x = 1 then g ^ 2 * (1 + 2 * (d : ℝ) * g ^ 2)⁻¹ else 0)
+
+omit [NeZero L] in
+theorem sbKernel_eq_ofReal (x : Zd d L) : sbKernel d L g x = (sbKernelR d L g x : ℂ) := by
+  by_cases h0 : x = 0
+  · subst h0; simp [sbKernel, sbKernelR]
+  · by_cases h1 : zdistD d L x = 1 <;> simp [sbKernel, sbKernelR, h0, h1]
+
+omit [NeZero L] in
+theorem sbKernelR_nonneg (x : Zd d L) : 0 ≤ sbKernelR d L g x := by
+  unfold sbKernelR
+  have : 0 < 1 + 2 * (d : ℝ) * g ^ 2 := by positivity
+  split_ifs <;> positivity
+
+theorem sum_sbKernelR (hL : 3 ≤ L) : ∑ x, sbKernelR d L g x = 1 := by
+  have hpos : 0 < 1 + 2 * (d : ℝ) * g ^ 2 := by positivity
+  simp only [sbKernelR, Finset.sum_add_distrib, Finset.sum_ite_eq', Finset.mem_univ, ite_true,
+    ← Finset.sum_filter, Finset.sum_const, card_nbhd d L hL, nsmul_eq_mul]
+  push_cast
+  field_simp
+
+theorem sum_sbKernel (hL : 3 ≤ L) : ∑ x, sbKernel d L g x = 1 := by
+  simp only [sbKernel_eq_ofReal, ← Complex.ofReal_sum, sum_sbKernelR d L g hL, Complex.ofReal_one]
+
+theorem sum_norm_sbKernel (hL : 3 ≤ L) : ∑ x, ‖sbKernel d L g x‖ = 1 := by
+  simp only [sbKernel_eq_ofReal, Complex.norm_real, Real.norm_of_nonneg (sbKernelR_nonneg d L g _),
+    sum_sbKernelR d L g hL]
+
+/-- Each row of `S^(B)(g)` sums to `1`. -/
+theorem sum_SB_row (hL : 3 ≤ L) (a : Zd d L) : ∑ b, SB d L g a b = 1 := by
+  rw [← sum_sbKernel d L g hL]
+  exact Fintype.sum_equiv (Equiv.subLeft a) _ _ fun b => by rw [SB_apply]; rfl
+
+/-- `S^(B)(g) 1 = 1`. -/
+theorem SB_mulVec_one (hL : 3 ≤ L) : SB d L g *ᵥ (1 : Zd d L → ℂ) = 1 := by
+  funext a
+  simp only [Matrix.mulVec, dotProduct, Pi.one_apply, mul_one]
+  exact sum_SB_row d L g hL a
+
+theorem sum_norm_SB_row (hL : 3 ≤ L) (a : Zd d L) : ∑ b, ‖SB d L g a b‖ = 1 := by
+  rw [← sum_norm_sbKernel d L g hL]
+  exact Fintype.sum_equiv (Equiv.subLeft a) _ _ fun b => by rw [SB_apply]; rfl
+
+open scoped NNReal Matrix.Norms.Operator
+
+theorem sum_nnnorm_SB_row (hL : 3 ≤ L) (a : Zd d L) : ∑ b, ‖SB d L g a b‖₊ = 1 := by
+  apply NNReal.eq
+  rw [NNReal.coe_sum, NNReal.coe_one]
+  exact sum_norm_SB_row d L g hL a
+
+theorem nnnorm_SB (hL : 3 ≤ L) : ‖SB d L g‖₊ = 1 := by
+  rw [Matrix.linfty_opNNNorm_def]
+  simp only [sum_nnnorm_SB_row d L g hL]
+  exact Finset.sup_const Finset.univ_nonempty 1
+
+/-- `‖S^(B)(g)‖ = 1` in the `ℓ^∞` operator norm: the hypothesis `hS` of
+`Propagator/Basic.lean`. -/
+theorem norm_SB (hL : 3 ≤ L) : ‖SB d L g‖ = 1 := by
+  rw [← coe_nnnorm, nnnorm_SB d L g hL, NNReal.coe_one]
+
+end Stochastic
 
 end RBM
