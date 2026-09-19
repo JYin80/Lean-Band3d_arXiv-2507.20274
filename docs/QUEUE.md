@@ -10,7 +10,7 @@
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
-| Q1 | 让现有草稿编译通过 | 全部 | **OPEN** |
+| Q1 | 让现有草稿编译通过 | 全部 | **CLAIMED** (CC) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Block.lean` | BLOCKED by Q1 |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
 | Q4 | `S^(B) 1 = 1` | `Defs/Block.lean` | BLOCKED by Q2 |
