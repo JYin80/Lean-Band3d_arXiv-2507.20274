@@ -20,7 +20,7 @@
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
-| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **OPEN** |
+| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **CLAIMED** (CC) |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **OPEN**（与 Q11 同文件，串行） |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **OPEN**（与 Q11/Q12 文件不相交，可并行） |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
