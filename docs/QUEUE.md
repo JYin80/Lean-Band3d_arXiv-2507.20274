@@ -18,7 +18,7 @@
 | Q6 | 图模型 · case 分析穷尽性 ⭐ | `Graph/Model.lean` | **DONE** (CC) |
 | Q7 | 核对 `[yang2024Del]` B.10 的一个记号 | — | 降级（不在关键路径） |
 | Q8 | `(Owx)` / `(Oe2x)` 的接口公理 | `Graph/Expansions.lean` | **PARTIAL** (CC)：确定性层已落地；两条公理待拍板 |
-| Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **OPEN** ← 下一条 |
+| Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **CLAIMED** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **OPEN**（与 Q9 文件不相交，可并行） |
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | BLOCKED by Q10 |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | BLOCKED by Q10 |
