@@ -3,6 +3,7 @@ import RBM3D.Defs.Lattice
 import RBM3D.Defs.Neighbours
 import RBM3D.Defs.Shells
 import RBM3D.Defs.RadialSum
+import RBM3D.Defs.Convolution
 import RBM3D.Defs.Params
 import RBM3D.Defs.Tail
 import RBM3D.Defs.Block

@@ -141,3 +141,9 @@ Q11（`lem:propT`）是附录 A 里分析量最大的一条，要好几轮心跳
 
 新文件 `RBM3D/Defs/RadialSum.lean`：`sum_radial`（按球壳求和）和 `sum_radial_exp_le`（K2：`Σ_x (|x|+1)^{-(d-2)} e^{-κ√(|x|/ℓ)} ≤ 2^d·32(1+720/κ⁶)·ℓ²`）。
 逐项用 `e^y ≥ y⁶/6!` 加望远镜和，没有积分比较。Q11 仍 CLAIMED，下一步 K3（卷积拆分）。
+
+## 2026-09-19 · Claude Code · Q11 进行中（K3 落地）
+
+新文件 `RBM3D/Defs/Convolution.lean`：`sum_conv_le`，即 A.3 那条只在 `ℝ^d` 上陈述、没有证明的「基本微积分事实」的格点版：
+`Σ_c P(a−c)E_{ℓ₁}(a−c)·P(c−b)E_{ℓ₂}(c−b) ≤ C ℓ₁² P(a−b)E_{ℓ₂}(a−b)`，对所有 `1 ≤ ℓ₁ ≤ ℓ₂`。
+Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项」，分两个区制拼装。Q11 仍 CLAIMED。

@@ -20,7 +20,7 @@
 | Q8 | `(Owx)` / `(Oe2x)` 的确定性内核 | `Graph/Expansions.lean` | **DONE**（选 B：不写 axiom） |
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
-| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **CLAIMED** (CC)，进行中：K0、K2 已落地 |
+| Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **CLAIMED** (CC)，进行中：K0、K2、K3 已落地 |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **OPEN**（与 Q11 同文件，串行） |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **OPEN**（与 Q11/Q12 文件不相交，可并行） |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
@@ -502,7 +502,11 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 >   `C(κ) = 32(1+720/κ⁶)`（`ℓ ≥ 1`，`κ > 0`）。逐项用 `e^y ≥ y⁶/6!` 把 `(r+1)e^{-κ√(r/ℓ)}` 压到 `C ℓ³/((ℓ+r)(ℓ+r+1))`，再用望远镜和，**不需要积分比较**。
 >   原计划：`Σ_x (|x|+1)^{-(d-2)} e^{-κ√(|x|/ℓ)} ≤ C_d ℓ²`（`ℓ ≥ 1`，`d ≥ 3`）。按球壳求和后，
 >   化成一维的 `Σ_r (r+1) e^{-κ√(r/ℓ)} ≲ ℓ²`。取 `ℓ = L` 时指数因子 `≥ e^{-κ√d}`，也就给出区制 (ii) 要的 `Σ_x (|x|+1)^{-(d-2)} ≲ L²`。
-> * **K3 卷积拆分**（那条「微积分事实」的离散版）：设 `X = √|a−c|`、`Y = √|c−b|`、`Z = √|a−b|`。
+> * **K3 卷积拆分** ✅ `Defs/Convolution.lean`：`sum_conv_le : Σ_c P(a−c)E_{ℓ₁}(a−c)·P(c−b)E_{ℓ₂}(c−b) ≤ C·ℓ₁²·P(a−b)E_{ℓ₂}(a−b)`，
+>   对任意 `1 ≤ ℓ₁ ≤ ℓ₂` 成立（`P(x) = (|x|+1)^{-(d-2)}`，`E_ℓ(x) = e^{-√(|x|/ℓ)}`，`C = 2^{2d-1}·C(2−√2)`）。
+>   两个区制都直接用它：(i) 取 `ℓ₁ = ℓ_u`、`ℓ₂ = ℓ_t`；(ii) 取 `ℓ₁ = ℓ₂ = L`。关键引理 `sqrt_add_sqrt_sub_ge`：
+>   `r ≤ p+q ⟹ √(p/ℓ₁) + √(q/ℓ₂) − √(r/ℓ₂) ≥ (2−√2)√(min(p,q)/ℓ₁)`。
+>   原计划：K3 卷积拆分（那条「微积分事实」的离散版）：设 `X = √|a−c|`、`Y = √|c−b|`、`Z = √|a−b|`。
 >   由三角不等式 `Z ≤ √(X²+Y²)` 得 `X + ε(Y − Z) ≥ (2−√2)·min(X, Y)`，对所有 `ε ∈ [0,1]` 成立。
 >   再按 `|a−c| ≤ |c−b|` 与否拆成两块：每块里 `(|a−b|+1)/(|c−b|+1) ≤ 2`（或对称的那一个），于是归结到 K2。
 > * **K4 区制 (ii)** `1−t ≤ 1−u ≤ g²/L²`：`ℓ_u = ℓ_t = L`，指数因子在 `[e⁻¹, 1]` 之间（Q10 的 `exp_tail_ge`）；
