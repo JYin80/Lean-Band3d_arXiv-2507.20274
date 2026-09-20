@@ -320,3 +320,23 @@ QUEUE 顶部的分号约定改为 Q28（我的新工单从 Q29 起）。
 蓝图补了 `lem:Theta-deriv` 节点（`\lean{} + \leanok`），并写明它是 `ax:KTreeRep` / `ax:KTwoFormula` 的前置。
 
 审计：**309 定理 / 137 定义 / 0 公理**。
+
+## 2026-09-20 · Claude Code · Q27 部分完成：`(Kn2sol)` 的存在性这一半
+
+`RBM3D/Loop/Primitive.lean`（新文件）：`kTwo` 及其满足性——`hasDerivAt_kTwo` 证明它解
+`n = 2` 的卷积树方程（求导用 Q23 的 `hasDerivAt_Theta_mul_apply`，右端用 Q15 的 `treeEqRhs_two`），
+`kTwo_zero` 证明它在 `t = 0` 取 `M`-loop 值。
+
+**PARTIAL 而不是 DONE 的理由**：`KTwoFormula m K` 讲的是**任意**一族 `K`-loop，
+本文件证的是「`kTwo` 是一个解」。要把任意 `K` 改写成它，需要「同一 ODE + 同一初值 ⇒ 同一解」，
+即 Q22a 的 Grönwall 唯一性。工单标题（「消掉这条假设」）比这一拍实际能做到的强一档。
+
+两件仍然有用的产出：`kTwoFormula_kTwoLoop` 给出 `KTwoFormula` 的**显式见证**
+（假设可满足 ⇒ 带着它的定理不是空洞真——这一点审计数不出来，只能靠这样一条定理记录）；
+`pureLoop_two_kTwoLoop` 把 Q16 的估计用在显式解上，`KTwoFormula` 当场消失，
+只剩真正借来的 `ThetaDecayShort`（它的承重因此从 4 涨到 5）。
+
+**主线**：Q23 ✅ → Q27 存在性 ✅ → **Q22a（Grönwall 唯一性）已解锁，是现在的瓶颈**：
+它一落地，`KTwoFormula` 真消掉，且 `KTreeRep` 退成「只欠存在性」。
+
+审计：**317 定理 / 139 定义 / 0 公理**。

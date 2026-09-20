@@ -42,8 +42,8 @@
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **PARTIAL** (CC)：确定性不等式已证；`Ψ²ℓ² ≺ (W^dη)⁻¹` 的吸收 → Q29 |
 | Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **DONE** (CC)：4 条 + `t`-形式；Q27 解锁 |
-| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **CLAIMED (CC)** |
-| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | BLOCKED by Q27 |
+| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **PARTIAL** (CC)：存在性那一半已证；消掉假设还差唯一性 → Q22a |
+| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **OPEN**（Q27 的存在性已就位，解锁） |
 | Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | BLOCKED by Q22a |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
@@ -1326,9 +1326,37 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 **验收**：审计输出分两段；把一条新假设加进任意文件而不登记，构建应当失败（留一个反向测试）。
 
+### CC 的完成记录（2026-09-20）
+
+`RBM3D/Loop/Primitive.lean`（新文件，`./check.sh` 绿、0 warning）：`kTwo`、`Theta_zero`、
+`norm_mul_lt_one`、`hasDerivAt_kTwo`、`kTwo_zero`、`kTwoLoop`、`hasDerivAt_kTwoLoop`、
+`kTwoLoop_zero`、`kTwoFormula_kTwoLoop`、`pureLoop_two_kTwoLoop`。
+
+**工单的算盘打对了**：`(Kn2sol)` 确实满足同一个 ODE 与同一个初值，
+求导那一步直接用 Q23 多写的 `hasDerivAt_Theta_mul_apply`（沿 `ξ = tμ` 对 `t` 求导），
+右端用 Q15 的 `treeEqRhs_two`，两边 `field_simp` 就合上了。
+
+**但有一点要说清楚，工单标题写得比实际能做到的强**：
+`KTwoFormula m K` 说的是「**任意**一族 `K`-loop 的 2-loop 等于那个公式」。
+本文件证的是 `kTwo` **是一个**解（存在性）；要把任意 `K` 改写成它，需要
+「同一 ODE + 同一初值 ⇒ 同一解」，也就是 **Q22a 的 Grönwall 唯一性**。
+所以这条标 **PARTIAL**：存在性这一半已落地，`KTwoFormula` 还没真的消掉。
+
+**两件仍然有用的产出**：
+
+1. `kTwoFormula_kTwoLoop`：**`KTwoFormula` 是可满足的**。这条值得单独留着——
+   一个不可满足的假设会让所有带着它的定理变成空洞的真，而审计只数「有多少定理压在它上面」，
+   数不出空洞。现在这条假设有了显式见证。
+2. `pureLoop_two_kTwoLoop`：把 Q16 的估计用到显式解上，**`KTwoFormula` 当场消失**，
+   只剩 `ThetaDecayShort`——那条是论文真的向外借的。
+   审计里 `ThetaDecayShort` 的承重从 4 涨到 5，涨的正是这条。
+
+**给 Q22a 的交接**：唯一性的陈述应当写成「若 `K₁ K₂` 都 `IsKLoop m T`，则在 `T` 上逐点相等」，
+`n = 2` 的 Riccati 情形现在有现成的显式解可以拿来对照测试。
+
 ---
 
-## Q27 · 证出 `KTwoFormula`（`(Kn2sol)`），消掉这条假设 ⭐ — **OPEN**（本拍新提，需 Q23）
+## Q27 · 证出 `KTwoFormula`（`(Kn2sol)`） ⭐ — **PARTIAL**（CC，2026-09-20）：存在性已证，消假设待 Q22a
 
 **文件**：新开 `RBM3D/Loop/Primitive.lean`（对应 `RBM1D/RBM1D/Loop/Primitive.lean`，**168 行**）。
 
