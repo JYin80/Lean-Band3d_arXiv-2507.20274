@@ -75,7 +75,8 @@
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **PARTIAL** (CC)：第一块（临界指数的对数球和）已证；三块装配待续 |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **DONE (CC)** |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：2 条证书 + 4 条的障碍已机器化 → Q51 |
-| Q51 | **有限 `L` 的谱隙：`1` 是 `S^(B)` 的单重特征值** ⭐ | `Propagator/Gap.lean`（新） | **CLAIMED (CC)** |
+| Q51 | **有限 `L` 的混合性（原名「谱隙」）** ⭐ | `Propagator/Gap.lean` | **PARTIAL (CC)**：块一（连通性 + Doeblin）已证；Dobrushin 收缩 → Q52 |
+| Q52 | **Dobrushin 收缩：由 Doeblin 条件推出 `S^k − P` 几何衰减** ⭐ | `Propagator/Gap.lean` | **OPEN**（CC 于 Q51 开出） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
@@ -1864,7 +1865,38 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 
 ---
 
-## Q51 · 有限 `L` 的谱隙：`1` 是 `S^(B)` 的单重特征值 ⭐ — **OPEN**（CC 于 Q41 开出）
+## Q52 · Dobrushin 收缩：从 Doeblin 条件到 `S^k − P` 的几何衰减 ⭐ — **OPEN**（CC 于 Q51 开出）
+
+**文件**：`RBM3D/Propagator/Gap.lean`（接着块一写）。
+
+**已经有的**（Q51 块一）：`RBM.exists_doeblin`——`(S^(B))^{R_L}` 的所有元 `≥ ε > 0`。
+
+**要证的**：记 `osc f := max f − min f`（实值函数），`P` 是常向量投影（全元 `L^{-d}`）。
+
+1. **一步不增**：`S` 随机 ⟹ `osc (S *ᵥ f) ≤ osc f`。
+2. **Dobrushin 收缩**：若 `M` 随机且所有元 `≥ ε`，则 `osc (M *ᵥ f) ≤ (1 − ε L^d) · osc f`。
+   **证法（已验算，照着写即可）**：
+   `(Mf)(a) − (Mf)(a') = Σ_b (M_{ab} − ε) f(b) − Σ_b (M_{a'b} − ε) f(b)`，
+   两个括号都 `≥ 0`，各自的行和都是 `1 − ε L^d`；于是前者 `≤ (1−εL^d) max f`、
+   后者 `≥ (1−εL^d) min f`，相减即得。**不需要总变差、不需要 `ℓ¹`**。
+3. **迭代**：`osc ((S^{R_L})^k *ᵥ f) ≤ (1 − εL^d)^k osc f`，注意 `(S^{R_L})^k = S^{R_L k}`。
+4. **回到矩阵元**：取 `f = δ_b`（`osc = 1`）。因为列和也是 `1`（`S` 对称随机），
+   `a ↦ S^k_{ab}` 的平均正好是 `L^{-d}`，所以 `|S^k_{ab} − L^{-d}| ≤ osc ≤ Cρ^k`。
+
+**再下一步（可以并到本单，也可以另开）**：`Θ̊_t = Σ_k ξ^k (S^k − P)`
+（`Theta0_apply_eq` 已经给了 `k`-free 的那一半，`S^k P = P` 由 `sum_SB_row` 得），
+于是 `‖Θ̊_t(0,a)‖ ≤ Σ_k Cρ^k = C/(1−ρ)`，**与 `t` 无关**——
+这就是 `(prop:ThfadC0)` 的固定 `L` 证书。`(prop:BD1)`/`(prop:BD2)` 用同一个衰减，
+差分把常模式消掉。
+
+**验收**：`(prop:ThfadC0)` 的固定 `L` 证书进 `Test/InterfaceShape.lean`，
+登记进 `Test/Axioms.lean` 的 `certificates`，审计末行 `2 of 9` 变成 `3 of 9`。
+
+**陷阱**：`osc` 用实矩阵 `SBR` 做，不要碰 `ℓ^∞` 算子范数实例（那是另一套，见 `docs/mathlib-api.md`）。
+
+---
+
+## Q51 · 有限 `L` 的混合性 ⭐ — **PARTIAL**（CC 于 Q41 开出，beat 34 做了块一）
 
 **文件**：新开 `RBM3D/Propagator/Gap.lean`。
 
@@ -1899,6 +1931,37 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 
 **做不出来也算交付**：若在固定 `L` 下这条也不成立（例如 `m² = −1` 且 `−1 ∈ spec S^(B)`），
 按规则 13 留反例并当场上报——那会是比证书更重要的发现。
+
+### 块一完成记录（CC，beat 34）— `./check.sh` exit=0，487 定理 / 0 公理 / 0 warning
+
+**先改了路线，这一条比结果更重要**：工单写的是「`ℓ²` 谱隙 + 单重特征值」，
+但真正需要的东西（`Θ̊_t = Σ_k ξ^k (S^k − P)` 对 `t` 一致有界）有一条**更初等、全程逐元、
+不碰 `ℓ²`** 的路：**Doeblin + Dobrushin**。
+
+> `S^(B)` 是懒惰随机游走的转移矩阵 ⟹ `(S^(B))^n` 逐元为正（`n ≥ |a−b|`）⟹
+> `(S^(B))^{R_L}` 所有元 `≥ ε` ⟹ 振幅每 `R_L` 步收缩 `1 − εL^d` ⟹ `S^k − P` 几何衰减。
+
+这条路**绕开了工单里那个实例陷阱**（项目矩阵带 `ℓ^∞` 范数、谱理论要 `ℓ²`）——不是绕过困难，
+是这条路根本不需要谱。
+
+**已证（`RBM3D/Propagator/Gap.lean`，新文件）**：
+
+* `exists_zdist_step`：`u ≠ 0` 时环上存在单位 `e` 使 `|u − e| = |u| − 1`。
+  两种情况按 `u.val ≤ L − u.val` 分，`u = -1` 那支单独处理（走一步正好落在 `0`）。
+* `exists_step`：托到 `Z_L^d`，`ℓ¹` 距离是坐标和，任挑一个非零坐标走一步。
+* `sbKernelR_pos`：`g > 0` 时核在 `{|x| ≤ 1}` 上严格为正（`x = 0` 的懒惰项 + `2d` 个邻居）。
+* `SBR_pow_pos`：`|a−b| ≤ n ⟹ 0 < (S^(B))^n_{ab}`。归纳：`dist ≤ n` 时原地等一步（**懒惰**），
+  否则朝 `b` 走一步。
+* `exists_doeblin`：`(S^(B))^{R_L}` 的所有元 `≥ ε > 0`（有限集的最小值）。
+
+**懒惰项是关键**，值得记下来：没有 `x = 0` 那一项，偶数 `L` 上的游走是**二部的**，
+`(S^(B))^n_{ab}` 会因奇偶性为零，上面的陈述就得改成带奇偶条件的形式。
+同一个懒惰项也把 `−1` 挡在谱外——正是 Q41 里记下的 `m² = −1`（`E = 0`）那个边界情形。
+
+**维护**：`RBM.torusDiam`（环面直径）从 `Test/InterfaceShape.lean` 的 `maxDist`
+**下沉**到 `Defs/Lattice.lean`，Q41 的证书与本文件共用（规则 4）。
+
+**下一块 → Q52**（Dobrushin 收缩）。证明路线已经想清楚，写在那张工单里。
 
 ---
 

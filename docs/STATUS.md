@@ -755,3 +755,26 @@ proof below**」，随后是完整证明（`paper/tex/A_deterministic_estimates.
 **给假设发证书不能让审计对它闭嘴。**
 
 审计：**482 定理 / 172 定义 / 0 公理**，`non-vacuity certificates: 2 of 9`。
+
+## 2026-09-20 · Claude Code · Q51 块一：`S^(B)` 连通环面（Doeblin 条件）
+
+**先改了路线，这比结果重要**：工单（我自己上一拍写的）说要 `ℓ²` 谱隙 + 单重特征值。
+但真正要的东西——`Θ̊_t = Σ_k ξ^k (S^k − P)` 对 `t ∈ [0,1)` 一致有界——有一条
+**更初等、全程逐元、不碰 `ℓ²`** 的路：**Doeblin + Dobrushin**。
+这条路顺带绕开了工单自己提醒的那个实例陷阱（项目矩阵是 `ℓ^∞`，谱理论要 `ℓ²`）：
+不是绕过困难，是这条路**根本不需要谱**。
+
+**新文件 `RBM3D/Propagator/Gap.lean`**：`exists_zdist_step`（环上朝原点走一步，
+按 `u.val ≤ L − u.val` 分两情况，`u = −1` 那支单独处理）、`exists_step`（托到 `Z_L^d`）、
+`sbKernelR_pos`（`g > 0` 时核在 `{|x| ≤ 1}` 上严格正）、
+`SBR_pow_pos`（`|a−b| ≤ n ⟹ (S^(B))^n_{ab} > 0`）、
+`exists_doeblin`（`(S^(B))^{R_L}` 所有元 `≥ ε > 0`）。
+
+**懒惰项（核里的 `x = 0` 项）是关键**：没有它，偶数 `L` 上的游走是二部的，
+结论要改成带奇偶条件的形式；同一项也把 `−1` 挡在谱外，正是 Q41 记下的 `m² = −1`（`E = 0`）
+那个边界情形。
+
+**维护**：`torusDiam` 从 `Test/InterfaceShape.lean` 的 `maxDist` 下沉到 `Defs/Lattice.lean`，
+两处共用（规则 4）。**下一块 Q52**（Dobrushin 收缩），证明路线已写进工单，逐步可抄。
+
+审计：**487 定理 / 172 定义 / 0 公理**，证书 2 of 9。
