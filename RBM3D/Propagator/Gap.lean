@@ -547,4 +547,58 @@ theorem exists_norm_Theta0_le (hL : 3 ≤ L) (hg : 0 < g) :
         Summable.tsum_le_tsum hterm hnormsummable hsummable
     _ ≤ (R : ℝ) * (1 - q)⁻¹ := hbound
 
+/-- A complex series bounded termwise by a summable real majorant. -/
+theorem norm_tsum_le_of_le {f : ℕ → ℂ} {u : ℕ → ℝ} (hu : Summable u)
+    (h : ∀ k, ‖f k‖ ≤ u k) : ‖∑' k : ℕ, f k‖ ≤ ∑' k : ℕ, u k := by
+  have hns : Summable fun k : ℕ => ‖f k‖ :=
+    Summable.of_nonneg_of_le (fun k => norm_nonneg _) h hu
+  exact le_trans (norm_tsum_le_tsum_norm hns) (Summable.tsum_le_tsum h hns hu)
+
+/-- **Differences of the propagator are bounded uniformly in the spectral parameter**, at
+fixed `L`.  This is what `(prop:BD1)` and `(prop:BD2)` need: a difference kills the
+constant mode, so the same geometric mixing that bounds `Θ̊` bounds it, with the factor `2`
+of the triangle inequality through the flat value `L^{-d}`.
+
+The second difference is two of these, hence `2C`; both certificates in
+`RBM3D/Test/InterfaceShape.lean` rest on this one lemma. -/
+theorem exists_norm_Theta_sub_le (hL : 3 ≤ L) (hg : 0 < g) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ ξ : ℂ, ‖ξ‖ < 1 → ∀ a b c : Zd d L,
+      ‖Theta d L g ξ a b - Theta d L g ξ a c‖ ≤ C := by
+  obtain ⟨q, hq0, hq1, hmix⟩ := exists_mixing (d := d) (L := L) (g := g) hL hg
+  set R := torusDiam d L + 1 with hR
+  have hR0 : 0 < R := Nat.succ_pos _
+  obtain ⟨hsummable, hbound⟩ := summable_pow_div hq0 hq1 hR0
+  refine ⟨2 * ((R : ℝ) * (1 - q)⁻¹), by positivity, ?_⟩
+  intro ξ hξ a b c
+  have hseries : Theta d L g ξ a b - Theta d L g ξ a c
+      = ∑' k : ℕ, (ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ξ ^ k * ((SBR d L g ^ k) a c : ℂ)) := by
+    rw [(summable_Theta_entry hL hξ a b).tsum_sub (summable_Theta_entry hL hξ a c),
+      ← Theta_apply_eq_tsum hL hξ, ← Theta_apply_eq_tsum hL hξ]
+  have hterm : ∀ k : ℕ,
+      ‖ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ξ ^ k * ((SBR d L g ^ k) a c : ℂ)‖
+        ≤ 2 * q ^ (k / R) := by
+    intro k
+    have hfac : ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ξ ^ k * ((SBR d L g ^ k) a c : ℂ)
+        = ξ ^ k * ((((SBR d L g ^ k) a b - (SBR d L g ^ k) a c : ℝ) : ℂ)) := by
+      push_cast
+      ring
+    rw [hfac, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs]
+    have hξk : ‖ξ‖ ^ k ≤ 1 := pow_le_one₀ (norm_nonneg ξ) hξ.le
+    have htri : |(SBR d L g ^ k) a b - (SBR d L g ^ k) a c| ≤ 2 * q ^ (k / R) := by
+      have h1 := hmix k a b
+      have h2 := hmix k a c
+      have hsplit : (SBR d L g ^ k) a b - (SBR d L g ^ k) a c
+          = ((SBR d L g ^ k) a b - ((L : ℝ) ^ d)⁻¹)
+            - ((SBR d L g ^ k) a c - ((L : ℝ) ^ d)⁻¹) := by ring
+      rw [hsplit]
+      exact le_trans (abs_sub _ _) (by linarith)
+    calc ‖ξ‖ ^ k * |(SBR d L g ^ k) a b - (SBR d L g ^ k) a c|
+        ≤ 1 * |(SBR d L g ^ k) a b - (SBR d L g ^ k) a c| :=
+          mul_le_mul_of_nonneg_right hξk (abs_nonneg _)
+      _ ≤ 2 * q ^ (k / R) := by rw [one_mul]; exact htri
+  rw [hseries]
+  refine le_trans (norm_tsum_le_of_le (hsummable.mul_left 2) hterm) ?_
+  rw [tsum_mul_left]
+  exact mul_le_mul_of_nonneg_left hbound (by norm_num)
+
 end RBM
