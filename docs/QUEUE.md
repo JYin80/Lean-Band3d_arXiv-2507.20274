@@ -34,7 +34,8 @@
 | Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **DONE** (CC)：模型 + **重采样不变性**（Q43b 缺的那条） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **DONE** (CC)：抽象算子版 + Hermite 矩阵版 |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
-| Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **CLAIMED (CC)** |
+| Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **PARTIAL** (CC)：半圆律层 + 定义层已落地；包络估计 → Q50 |
+| Q50 | `G`-loop 的确定性包络 `\|L^(n)\| ≤ (η_t^{-1})^n`（需迹范数不等式） | `Loop/GLoop.lean` | **OPEN**（CC 于 Q49 开出；Mathlib 缺 API） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
@@ -2037,6 +2038,28 @@ RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、�
 构建**直接失败**并点名它，登记进结构性那一档后才过。
 这正是 Q26 想要的效果——**名单与实际前件对不上时构建失败，而不是静默漏报**。
 
+
+### CC 的完成记录（Q49，2026-09-20）：半圆律层 + `G`-loop 定义层
+
+**① `Defs/Semicircle.lean`**（移植，文档重新指向本篇）：`(eq:defmzsc)` 的 `m_sc(z)`、
+`m^{(E)}`（`m(m+E) = −1` 且 `Im m > 0` 的那个根）、流 `(eq:zt)`，
+以及姊妹论文 Lemma 2.8 的换元。`m_sc` 是标量，**与 `d` 无关**，所以整包可搬。
+
+**顺带一个不小的收获**：`norm_mE` 与 `mE_im_pos` 说的正是 `‖m^{(E)}‖ = 1` 与 `Im m^{(E)} > 0`——
+**这恰好就是 `Propagator/Interface.lean` 五条接口 `Prop` 带的前提 `‖m‖ = 1`、`0 < m.im`**。
+换句话说，本项目现在有了这些前提的**具体见证**，这对 Q41（非空洞证书）直接有用。
+
+**② `Loop/GLoop.lean`**：`Eblk`（`(Eq:defGLoop)` 的 `E_a = W^{-d}1(x=y∈[a])`）及其 Hermite 性、
+`etaT` 与 `etaT_eq_zt_im`、`etaT_pos`（`|E|<2`、`t<1` 时 `η_t > 0`——这正是让 `z_t` 离开实轴、
+预解式存在的条件）、`Gsig`（`G_t(σ)`，用 `Ring.inverse`，与 `RBM.Theta` 同一风格）、
+`gloop`（**有序**乘积的迹：矩阵不交换，用 `List.ofFn … |>.prod`，不是 `∏`）、`loopMax`。
+
+**没做的（→ Q50）**：`(5.2)` 的包络 `|L^(n)| ≤ (η_t^{-1})^n`。
+分析上的输入已经有了（Q42a 的 `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，逐点、全空间），
+但要把它变成**乘积的迹**的界，需要 `|tr X| ≤ rank·‖X‖` 一类的迹范数不等式，
+而 Mathlib 的 `Matrix.trace` 在 ℓ² 算子范数下**没有这套 API**。
+**没有硬凑，也没有把它写成假设**——开成 Q50，说明清楚缺什么。
+
 ---
 
 # 随机层（Q42–Q46）—— **新开的一条独立战线**
@@ -2335,3 +2358,29 @@ Q30 已把**两侧的东西都摆好**：方程一侧是 `treeEqRhs_four` 的六
 
 **提醒**：第 4 条要**定义 `m^{(E)}`**（半圆律的边界值）。RBM1D 有 `Defs/Semicircle.lean`；
 本项目还没有，逐字核对论文 `(eq:defmzsc)` 再写。
+
+---
+
+## Q50 · `G`-loop 的确定性包络 — **OPEN**（CC 于 Q49 开出）
+
+**文件**：`RBM3D/Loop/GLoop.lean`（接在 `loopMax` 之后）。
+
+**要证**：`|L^(n)_{t,σ,a}| ≤ (η_t^{-1})^n`（论文 `(5.2)` 附近），**逐点、全空间**，
+`η_t = (1−t)Im m^{(E)}`。
+
+**已有**：`Analysis/Resolvent.lean` 的 `norm_le_of_isHermitian`（`‖(H−z)⁻¹v‖ ≤ (Im z)⁻¹‖v‖`，
+ℓ² 范数）、`Gauss/Model.lean` 的 `Hmat_isHermitian`、`Loop/GLoop.lean` 的全部定义。
+
+**卡在哪**：从「算子范数界」到「乘积的迹的界」需要
+`|tr X| ≤ rank(X)·‖X‖₂` 或迹范数（Schatten-1）不等式。
+Mathlib 的 `Matrix.trace` 没有与 ℓ² 算子范数挂钩的这类引理（`Matrix.l2_opNorm` 附近也没有）。
+
+**两条可能的路**（先估算再动手，参照 Q15 的做法）：
+1. **自己证 `|tr X| ≤ card · ‖X‖₂`**：`tr X = Σ_i ⟪e_i, X e_i⟫`，每项 `≤ ‖X‖₂`，
+   共 `card` 项。对本项目够用吗？`card = W^d L^d = N`，而 `E_a` 带 `W^{-d}`，
+   `n` 个因子共给 `W^{-nd}`——**要先算一遍量纲**，看常数是否落在论文的形状上。
+2. **绕开迹**：把 `L^(n)` 写成 `Σ_{x_1…x_n}` 的显式和（`E_a` 是对角的，求和范围就是块），
+   逐项用**预解式的逐元界**。这需要 `|G_xy| ≤ ‖G‖₂`，同样要一条小引理，但更初等。
+
+**提醒**：本项目的 `Matrix` 默认带 **ℓ^∞ 算子范数**，而这里要的是 **ℓ²**——
+两个不同 instance（Q42a 的文件抬头写了这个坑）。
