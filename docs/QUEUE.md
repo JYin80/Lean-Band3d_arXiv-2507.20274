@@ -62,7 +62,7 @@
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **DONE** (CC)：扫描 + 两本账 + 反向测试 |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **DONE** (CC)：`(log N)^m ≺ 1` + `Bℓ_t² ≤ 3/\|1−t\|` + 合并 |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
-| Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
+| Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **CLAIMED (CC)** |
 | Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q28 开出；关键那步已就位） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
