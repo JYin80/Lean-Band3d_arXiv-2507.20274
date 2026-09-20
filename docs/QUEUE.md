@@ -35,7 +35,7 @@
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **DONE** (CC)：抽象算子版 + Hermite 矩阵版 |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
 | Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **PARTIAL** (CC)：半圆律层 + 定义层已落地；包络估计 → Q50 |
-| Q50 | `G`-loop 的确定性包络 `\|L^(n)\| ≤ (η_t^{-1})^n`（需迹范数不等式） | `Loop/GLoop.lean` | **CLAIMED (CC)** |
+| Q50 | `G`-loop 的确定性包络 `\|L^(n)\| ≤ (η_t^{-1})^n` | `Loop/GLoop.lean` | **DONE** (CC)：走逐元 + 块结构，不需要迹范数 |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
@@ -2059,6 +2059,31 @@ RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、�
 但要把它变成**乘积的迹**的界，需要 `|tr X| ≤ rank·‖X‖` 一类的迹范数不等式，
 而 Mathlib 的 `Matrix.trace` 在 ℓ² 算子范数下**没有这套 API**。
 **没有硬凑，也没有把它写成假设**——开成 Q50，说明清楚缺什么。
+
+
+### CC 的完成记录（Q50，2026-09-20）
+
+**工单让先算量纲，算完就定了路线——而且否定了我自己上一拍写的第 1 条候选。**
+
+* **迹范数那条路会输**：每个因子用算子范数 `‖G E_a‖₂ ≤ η⁻¹W^{-d}`、迹用 `|tr X| ≤ card·‖X‖₂`，
+  得到 `L^d W^{d(1−n)}η^{-n}`——`n ≥ 2` 时**不是** `η^{-n}`。
+  原因很实在：**矩阵的体积压过了 `E_a` 的小**。
+* **正确的路是保留逐元、用块结构**：每个因子只支撑在一个块（`W^d` 个格点）上、并带 `W^{-d}`，
+  所以对内部顶点求和是**平均而不是求和**。这就是下面这条不变量：
+
+`|(∏_{i<k} G_i E_{a_i})_{xz}| ≤ W^{-d} η^{-k} · 1(z ∈ [a_k])`
+
+对因子列表做归纳（`norm_prod_entry_le`），最后取迹时把那个指示函数花掉，正好给出 `η^{-n}`。
+
+**新增的零件**：
+* `Analysis/Resolvent.lean`：`isUnit_sub_smul_of_isHermitian`（离开实轴 `H − z` 可逆，
+  由单射性经行列式）、**`norm_inverse_entry_le`**（逆的**逐元**界 `≤ |Im z|⁻¹`，
+  取 `(H−z)⁻¹e_y` 这一列，再用 `PiLp.norm_apply_le`）；
+* `Loop/GLoop.lean`：`gsigEblk_apply`、`norm_Gsig_entry_le`、`norm_prod_entry_le`、
+  **`norm_gloop_le`**（`(5.2)`）。
+
+**Mathlib 缺 API 的那条判断需要修正**：上一拍我说「卡在 Mathlib 没有迹范数不等式」。
+准确的说法是：**那条不等式即使有也不够用**。绕开它反而是对的。
 
 ---
 
