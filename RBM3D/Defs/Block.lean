@@ -81,6 +81,9 @@ theorem sbKernel_eq_ofReal (x : Zd d L) : sbKernel d L g x = (sbKernelR d L g x 
   · subst h0; simp [sbKernel, sbKernelR]
   · by_cases h1 : zdistD d L x = 1 <;> simp [sbKernel, sbKernelR, h0, h1]
 
+theorem sbKernelR_neg (x : Zd d L) : sbKernelR d L g (-x) = sbKernelR d L g x := by
+  simp only [sbKernelR, neg_eq_zero, zdistD_neg]
+
 omit [NeZero L] in
 theorem sbKernelR_nonneg (x : Zd d L) : 0 ≤ sbKernelR d L g x := by
   unfold sbKernelR

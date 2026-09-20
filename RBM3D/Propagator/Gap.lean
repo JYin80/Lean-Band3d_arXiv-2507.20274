@@ -39,6 +39,8 @@ rules out `-1` in the spectrum, the borderline case `m² = -1` (`E = 0`) of Q41'
 
 namespace RBM
 
+open Matrix
+
 variable {d L : ℕ} [NeZero L] {g : ℝ}
 
 /-! ### One step towards the origin -/
@@ -184,17 +186,265 @@ This is the form the next block wants (`docs/QUEUE.md`, Q51, block 2): a stochas
 all of whose entries are `≥ ε` contracts oscillations by `1 - ε L^d` per `R_L` steps
 (Dobrushin), which makes `S^k - P` decay geometrically and `Θ̊_t = Σ_k ξ^k (S^k - P)`
 bounded uniformly in `t` at fixed `L`. -/
-theorem exists_doeblin (hL : 3 ≤ L) (hg : 0 < g) :
-    ∃ ε > (0 : ℝ), ∀ a b : Zd d L, ε ≤ (SBR d L g ^ torusDiam d L) a b := by
+theorem exists_doeblin (hL : 3 ≤ L) (hg : 0 < g) {N : ℕ} (hN : torusDiam d L ≤ N) :
+    ∃ ε > (0 : ℝ), ∀ a b : Zd d L, ε ≤ (SBR d L g ^ N) a b := by
   classical
   have hne : (Finset.univ : Finset (Zd d L × Zd d L)).Nonempty := ⟨(0, 0), Finset.mem_univ _⟩
-  refine ⟨Finset.univ.inf' hne fun p : Zd d L × Zd d L =>
-      (SBR d L g ^ torusDiam d L) p.1 p.2, ?_, ?_⟩
+  refine ⟨Finset.univ.inf' hne fun p : Zd d L × Zd d L => (SBR d L g ^ N) p.1 p.2, ?_, ?_⟩
   · simp only [gt_iff_lt]
     rw [Finset.lt_inf'_iff]
     intro p _
-    exact SBR_pow_pos hL hg _ p.1 p.2 (zdistD_le_torusDiam d L _)
+    exact SBR_pow_pos hL hg _ p.1 p.2 ((zdistD_le_torusDiam d L _).trans hN)
   · intro a b
     exact Finset.inf'_le _ (Finset.mem_univ (a, b))
+
+/-! ### Stochasticity of the powers
+
+The Dobrushin argument needs the rows of every power to sum to `1`, over `ℝ` and not only
+over `ℂ` (`RBM.sum_SB_row`). -/
+
+theorem sum_SBR_row (hL : 3 ≤ L) (a : Zd d L) : ∑ b, SBR d L g a b = 1 := by
+  rw [← sum_sbKernelR d L g hL]
+  exact Fintype.sum_equiv (Equiv.subLeft a) _ _ fun b => by simp [SBR]
+
+theorem sum_SBR_pow_row (hL : 3 ≤ L) : ∀ (n : ℕ) (a : Zd d L), ∑ b, (SBR d L g ^ n) a b = 1 := by
+  intro n
+  induction n with
+  | zero =>
+    intro a
+    simp [Matrix.one_apply]
+  | succ n ih =>
+    intro a
+    rw [pow_succ]
+    have : ∀ b, (SBR d L g ^ n * SBR d L g) a b
+        = ∑ c, (SBR d L g ^ n) a c * SBR d L g c b := fun b => Matrix.mul_apply
+    rw [Finset.sum_congr rfl fun b _ => this b, Finset.sum_comm]
+    have hinner : ∀ c : Zd d L, ∑ b, (SBR d L g ^ n) a c * SBR d L g c b
+        = (SBR d L g ^ n) a c := by
+      intro c
+      rw [← Finset.mul_sum, sum_SBR_row hL c, mul_one]
+    rw [Finset.sum_congr rfl fun c _ => hinner c]
+    exact ih a
+
+/-- `S^(B)` is symmetric, hence so is every power, hence the columns sum to `1` too. -/
+theorem SBR_comm (a b : Zd d L) : SBR d L g a b = SBR d L g b a := by
+  simp only [SBR, Matrix.of_apply]
+  rw [show b - a = -(a - b) by ring, sbKernelR_neg]
+
+theorem SBR_isSymm : (SBR d L g).IsSymm := by
+  ext a b
+  exact (SBR_comm a b).symm
+
+theorem SBR_pow_comm (n : ℕ) (a b : Zd d L) :
+    (SBR d L g ^ n) a b = (SBR d L g ^ n) b a :=
+  ((SBR_isSymm (d := d) (L := L) (g := g)).pow n).apply b a
+
+theorem sum_SBR_pow_col (hL : 3 ≤ L) (n : ℕ) (b : Zd d L) :
+    ∑ a, (SBR d L g ^ n) a b = 1 := by
+  rw [Finset.sum_congr rfl fun a _ => SBR_pow_comm n a b]
+  exact sum_SBR_pow_row hL n b
+
+/-! ### Oscillation, and the Dobrushin contraction -/
+
+/-- `osc f = max f - min f` on the (finite, nonempty) torus. -/
+noncomputable def osc (f : Zd d L → ℝ) : ℝ :=
+  Finset.univ.sup' Finset.univ_nonempty f - Finset.univ.inf' Finset.univ_nonempty f
+
+theorem le_sup_osc (f : Zd d L → ℝ) (a : Zd d L) :
+    f a ≤ Finset.univ.sup' Finset.univ_nonempty f :=
+  Finset.le_sup' f (Finset.mem_univ a)
+
+theorem inf_osc_le (f : Zd d L → ℝ) (a : Zd d L) :
+    Finset.univ.inf' Finset.univ_nonempty f ≤ f a :=
+  Finset.inf'_le f (Finset.mem_univ a)
+
+theorem osc_nonneg (f : Zd d L → ℝ) : 0 ≤ osc f := by
+  have := (inf_osc_le f 0).trans (le_sup_osc f 0)
+  simp only [osc]
+  linarith
+
+/-- **Dobrushin's contraction.**  If every entry of the stochastic matrix `M` is at least
+`ε`, then `M` contracts oscillations by `1 - ε L^d`.
+
+`ε = 0` is allowed and gives the non-expansion `osc (M *ᵥ f) ≤ osc f` that a stochastic
+matrix always has; the content is that a *uniformly positive* `M` contracts strictly.  The
+proof is two lines of bookkeeping: subtract `ε` from every entry, so that both rows become
+non-negative with the same total mass `1 - ε L^d`, and the `ε`-part cancels between the two
+rows. -/
+theorem osc_mulVec_le (M : Matrix (Zd d L) (Zd d L) ℝ) {ε : ℝ}
+    (hM : ∀ a b, ε ≤ M a b) (hrow : ∀ a, ∑ b, M a b = 1) (f : Zd d L → ℝ) :
+    osc (M *ᵥ f) ≤ (1 - ε * (L : ℝ) ^ d) * osc f := by
+  classical
+  set S := Finset.univ.sup' (Finset.univ_nonempty (α := Zd d L)) f with hS
+  set I := Finset.univ.inf' (Finset.univ_nonempty (α := Zd d L)) f with hI
+  -- the mass left after subtracting `ε` from every entry
+  have hmass : ∀ a : Zd d L, ∑ b, (M a b - ε) = 1 - ε * (L : ℝ) ^ d := by
+    intro a
+    rw [Finset.sum_sub_distrib, hrow a, Finset.sum_const, Finset.card_univ, card_Zd,
+      nsmul_eq_mul, Nat.cast_pow]
+    ring
+  have hq0 : 0 ≤ 1 - ε * (L : ℝ) ^ d := by
+    rw [← hmass 0]
+    exact Finset.sum_nonneg fun b _ => sub_nonneg.mpr (hM 0 b)
+  -- the pairwise bound
+  have hpair : ∀ a a' : Zd d L,
+      (M *ᵥ f) a - (M *ᵥ f) a' ≤ (1 - ε * (L : ℝ) ^ d) * osc f := by
+    intro a a'
+    have hsplit : ∀ c : Zd d L, (M *ᵥ f) c = (∑ b, (M c b - ε) * f b) + ε * ∑ b, f b := by
+      intro c
+      simp only [Matrix.mulVec, dotProduct]
+      rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+      exact Finset.sum_congr rfl fun b _ => by ring
+    have hupper : ∑ b, (M a b - ε) * f b ≤ (1 - ε * (L : ℝ) ^ d) * S := by
+      calc ∑ b, (M a b - ε) * f b
+          ≤ ∑ b, (M a b - ε) * S :=
+            Finset.sum_le_sum fun b _ =>
+              mul_le_mul_of_nonneg_left (le_sup_osc f b) (sub_nonneg.mpr (hM a b))
+        _ = (1 - ε * (L : ℝ) ^ d) * S := by rw [← Finset.sum_mul, hmass a]
+    have hlower : (1 - ε * (L : ℝ) ^ d) * I ≤ ∑ b, (M a' b - ε) * f b := by
+      calc (1 - ε * (L : ℝ) ^ d) * I = ∑ b, (M a' b - ε) * I := by rw [← Finset.sum_mul, hmass a']
+        _ ≤ ∑ b, (M a' b - ε) * f b :=
+            Finset.sum_le_sum fun b _ =>
+              mul_le_mul_of_nonneg_left (inf_osc_le f b) (sub_nonneg.mpr (hM a' b))
+    rw [hsplit a, hsplit a', osc]
+    have : (1 - ε * (L : ℝ) ^ d) * (S - I)
+        = (1 - ε * (L : ℝ) ^ d) * S - (1 - ε * (L : ℝ) ^ d) * I := by ring
+    rw [← hS, ← hI, this]
+    linarith
+  -- the oscillation is attained
+  obtain ⟨a, -, ha⟩ := Finset.exists_mem_eq_sup' (Finset.univ_nonempty (α := Zd d L)) (M *ᵥ f)
+  obtain ⟨a', -, ha'⟩ := Finset.exists_mem_eq_inf' (Finset.univ_nonempty (α := Zd d L)) (M *ᵥ f)
+  rw [osc, ha, ha']
+  exact hpair a a'
+
+/-- Iterating Dobrushin: `k` applications of a uniformly positive stochastic matrix
+contract the oscillation by `(1 - ε L^d)^k`. -/
+theorem osc_mulVec_pow_le (M : Matrix (Zd d L) (Zd d L) ℝ) {ε : ℝ}
+    (hM : ∀ a b, ε ≤ M a b) (hrow : ∀ a, ∑ b, M a b = 1) (hq0 : 0 ≤ 1 - ε * (L : ℝ) ^ d)
+    (f : Zd d L → ℝ) : ∀ k : ℕ, osc ((M ^ k) *ᵥ f) ≤ (1 - ε * (L : ℝ) ^ d) ^ k * osc f := by
+  intro k
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    have hstep : (M ^ (k + 1)) *ᵥ f = M *ᵥ ((M ^ k) *ᵥ f) := by
+      rw [Matrix.mulVec_mulVec, ← pow_succ']
+    rw [hstep]
+    calc osc (M *ᵥ ((M ^ k) *ᵥ f))
+        ≤ (1 - ε * (L : ℝ) ^ d) * osc ((M ^ k) *ᵥ f) := osc_mulVec_le M hM hrow _
+      _ ≤ (1 - ε * (L : ℝ) ^ d) * ((1 - ε * (L : ℝ) ^ d) ^ k * osc f) :=
+          mul_le_mul_of_nonneg_left ih hq0
+      _ = (1 - ε * (L : ℝ) ^ d) ^ (k + 1) * osc f := by ring
+
+/-- **Geometric mixing.**  `(S^(B))^n_{ab}` converges to the flat value `L^{-d}`
+geometrically, at a rate that depends on `L` but not on anything else.
+
+This is the cancellation the four uncertified premises of Q41 need, in its elementary
+form: `Θ̊_t = Σ_k ξ^k ((S^(B))^k - P)` is then bounded uniformly in `t` at fixed `L`
+(`docs/QUEUE.md`, Q53).  The exponent is `n / R` with `R` one more than the diameter of
+the torus: oscillations contract by `q` every `R` steps and never grow in between. -/
+theorem exists_mixing (hL : 3 ≤ L) (hg : 0 < g) :
+    ∃ q : ℝ, 0 ≤ q ∧ q < 1 ∧ ∀ (n : ℕ) (a b : Zd d L),
+      |(SBR d L g ^ n) a b - ((L : ℝ) ^ d)⁻¹| ≤ q ^ (n / (torusDiam d L + 1)) := by
+  classical
+  set R := torusDiam d L + 1 with hR
+  have hR0 : 0 < R := Nat.succ_pos _
+  obtain ⟨ε, hε, hεM⟩ := exists_doeblin hL hg (N := R) (Nat.le_succ _)
+  set q : ℝ := 1 - ε * (L : ℝ) ^ d with hq
+  have hLd : (0 : ℝ) < (L : ℝ) ^ d := by
+    have : (0 : ℝ) < (L : ℝ) := by
+      have : (0 : ℕ) < L := by omega
+      exact_mod_cast this
+    positivity
+  -- the rows of every power are a probability vector
+  have hrowM : ∀ a : Zd d L, ∑ b, (SBR d L g ^ R) a b = 1 := sum_SBR_pow_row hL R
+  have hq0 : 0 ≤ q := by
+    rw [hq, ← (by
+      rw [Finset.sum_sub_distrib, hrowM 0, Finset.sum_const, Finset.card_univ, card_Zd,
+        nsmul_eq_mul, Nat.cast_pow]
+      ring : ∑ b : Zd d L, ((SBR d L g ^ R) 0 b - ε) = 1 - ε * (L : ℝ) ^ d)]
+    exact Finset.sum_nonneg fun b _ => sub_nonneg.mpr (hεM 0 b)
+  have hq1 : q < 1 := by
+    rw [hq]
+    nlinarith
+  refine ⟨q, hq0, hq1, ?_⟩
+  intro n a b
+  -- the function whose oscillation controls the entry
+  set h : Zd d L → ℝ := fun c => (SBR d L g ^ n) c b with hh
+  have hcol : ∑ c, h c = 1 := sum_SBR_pow_col hL n b
+  -- `h` is `S^n` applied to the indicator of `b`
+  have hdelta : h = (SBR d L g ^ n) *ᵥ (fun c => if c = b then (1 : ℝ) else 0) := by
+    funext c
+    simp [hh, Matrix.mulVec, dotProduct]
+  -- the flat value lies between the extremes of `h`
+  have hcard : ∑ _c : Zd d L, (1 : ℝ) = (L : ℝ) ^ d := by
+    rw [Finset.sum_const, Finset.card_univ, card_Zd, nsmul_eq_mul, Nat.cast_pow, mul_one]
+  have hinf : Finset.univ.inf' Finset.univ_nonempty h ≤ ((L : ℝ) ^ d)⁻¹ := by
+    by_contra hcon
+    push Not at hcon
+    have : (L : ℝ) ^ d * ((L : ℝ) ^ d)⁻¹ < ∑ c, h c := by
+      calc (L : ℝ) ^ d * ((L : ℝ) ^ d)⁻¹
+          = ∑ _c : Zd d L, ((L : ℝ) ^ d)⁻¹ := by
+            rw [← hcard, Finset.sum_mul]; simp
+        _ < ∑ c, h c :=
+            Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty fun c _ =>
+              lt_of_lt_of_le hcon (inf_osc_le h c)
+    rw [hcol, mul_inv_cancel₀ (ne_of_gt hLd)] at this
+    exact lt_irrefl _ this
+  have hsup : ((L : ℝ) ^ d)⁻¹ ≤ Finset.univ.sup' Finset.univ_nonempty h := by
+    by_contra hcon
+    push Not at hcon
+    have : ∑ c, h c < (L : ℝ) ^ d * ((L : ℝ) ^ d)⁻¹ := by
+      calc ∑ c, h c
+          < ∑ _c : Zd d L, ((L : ℝ) ^ d)⁻¹ :=
+            Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty fun c _ =>
+              lt_of_le_of_lt (le_sup_osc h c) hcon
+        _ = (L : ℝ) ^ d * ((L : ℝ) ^ d)⁻¹ := by rw [← hcard, Finset.sum_mul]; simp
+    rw [hcol, mul_inv_cancel₀ (ne_of_gt hLd)] at this
+    exact lt_irrefl _ this
+  have hentry : |h a - ((L : ℝ) ^ d)⁻¹| ≤ osc h := by
+    rw [abs_le]
+    constructor
+    · have := inf_osc_le h a
+      have := le_sup_osc h a
+      simp only [osc]
+      linarith
+    · have := le_sup_osc h a
+      have := inf_osc_le h a
+      simp only [osc]
+      linarith
+  -- the oscillation contracts every `R` steps and never grows in between
+  have hosc : osc h ≤ q ^ (n / R) := by
+    set k := n / R with hk
+    have hsplit : (SBR d L g ^ n) = (SBR d L g ^ (n - R * k)) * ((SBR d L g ^ R) ^ k) := by
+      rw [← pow_mul, ← pow_add]
+      congr 1
+      have : R * k ≤ n := Nat.mul_div_le n R
+      omega
+    have hdelta_osc : osc (fun c : Zd d L => if c = b then (1 : ℝ) else 0) ≤ 1 := by
+      have hs : Finset.univ.sup' Finset.univ_nonempty
+          (fun c : Zd d L => if c = b then (1 : ℝ) else 0) ≤ 1 := by
+        refine Finset.sup'_le _ _ fun c _ => ?_
+        split_ifs <;> norm_num
+      have hi : (0 : ℝ) ≤ Finset.univ.inf' Finset.univ_nonempty
+          (fun c : Zd d L => if c = b then (1 : ℝ) else 0) := by
+        refine Finset.le_inf' _ _ fun c _ => ?_
+        split_ifs <;> norm_num
+      simp only [osc]
+      linarith
+    have hcontract : osc (((SBR d L g ^ R) ^ k) *ᵥ
+        (fun c : Zd d L => if c = b then (1 : ℝ) else 0)) ≤ q ^ k := by
+      refine le_trans (osc_mulVec_pow_le _ hεM hrowM hq0 _ k) ?_
+      calc q ^ k * osc (fun c : Zd d L => if c = b then (1 : ℝ) else 0)
+          ≤ q ^ k * 1 := mul_le_mul_of_nonneg_left hdelta_osc (by positivity)
+        _ = q ^ k := by ring
+    have hnonexp : osc h ≤ osc (((SBR d L g ^ R) ^ k) *ᵥ
+        (fun c : Zd d L => if c = b then (1 : ℝ) else 0)) := by
+      rw [hdelta, hsplit, ← Matrix.mulVec_mulVec]
+      refine le_trans (osc_mulVec_le (SBR d L g ^ (n - R * k)) (ε := 0)
+        (fun x y => SBR_pow_nonneg d L g _ x y) (sum_SBR_pow_row hL _) _) ?_
+      simp
+    exact le_trans hnonexp hcontract
+  rw [hh] at hentry
+  exact le_trans hentry hosc
 
 end RBM

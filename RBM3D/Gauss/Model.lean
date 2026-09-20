@@ -68,9 +68,6 @@ theorem svar_nonneg (x y : Vtx d L W) : 0 ≤ svar d L W g x y := by
 
 variable [NeZero L]
 
-theorem sbKernelR_neg (z : Zd d L) : sbKernelR d L g (-z) = sbKernelR d L g z := by
-  simp only [sbKernelR, neg_eq_zero, zdistD_neg]
-
 theorem svar_comm (x y : Vtx d L W) : svar d L W g x y = svar d L W g y x := by
   simp only [svar, SBR, Matrix.of_apply]
   rw [show y.1 - x.1 = -(x.1 - y.1) by ring, sbKernelR_neg]
