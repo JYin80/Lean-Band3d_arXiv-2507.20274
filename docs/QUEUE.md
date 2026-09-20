@@ -21,7 +21,7 @@
 | Q9 | 演化核 `U^(n)` 与 `lem:sum_Ndecay` | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **DONE** (CC) |
-| Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **CLAIMED** (CC)，暂停（未写 Lean），见 STATUS |
+| Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **DONE** (CC)；求和版另开 Q20 |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **OPEN**（与 Q11/Q12 文件不相交，可并行） |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
@@ -29,7 +29,7 @@
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **OPEN**（架构，优先） |
-| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | BLOCKED by Q12 |
+| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
 
 ---
 
@@ -555,7 +555,28 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 
 证明在附录 A.3（`sec:pfpropT`）。**注意两个区制要分开做**，这是 `d ≥ 3` 与低维不同的地方之一。
 
-## Q12 · `claim:TTk`（`eq:TtTt` / `eq:KtKt`） — **OPEN**
+## Q12 · `claim:TTk`（`eq:TtTt` / `eq:KtKt`） — **DONE**（CC，2026-09-19）
+
+> **完成记录**：`Kernel/PropT.lean` 的 `section TTk`。**这次是真的 `lake build`**（`./check.sh` → `errors: 0`，`exit=0`，
+> 451 条声明，审计干净）——磁盘腾出来了，`.lake` 已建好，T0 的阻塞没了。
+>
+> **两处对工单的订正**（都已按论文原文落地）：
+> 1. A.4 用的是 `𝖳_t`（论文宏 `\sT`，`7_8_light_weight.tex` L23），**不是 `𝒯_t`**：
+>    `𝖳_t(r) = (g²+|1−t|)^{-1/2} W^{-d/2} (r+1)^{-(d-2)/2} e^{-½√(r/ℓ_t)}`，即 `W^{-d}·(𝒯_t 衰减部分)` 的平方根，不含零模。
+>    Lean 里是 `sfT`，半次幂用 `Real.sqrt` 写；`Ψ_t = (W^{-d}B_{t,0})^{1/2}` 是 `PsiT`。
+> 2. **`(eq:TtTt)` 带前提 `|x−α| ∨ |y−α| ≤ ℓ`**（原文 "for 1 ≤ i ≤ r" 的适用范围）。没有它结论是假的：
+>    `x = y` 且两距离都远大于 `ℓ` 时，右端的 `(|x−α|∧|y−α|+1)^{-(d-2)/2}` 远小于左端。
+>
+> 落地的声明：`sfT_zero_le_PsiT`（`𝖳_t(0) ≤ Ψ_t`）、`sfT_le_PsiT_mul`（`𝖳_t(r) ≤ Ψ_t (r+1)^{-(d-2)/2}`）、
+> `sfT_TtTt`（`(eq:TtTt)`，常数 `2^{(d-2)/2}`，带上面那个前提）、`sfT_KtKt`（`(eq:KtKt)`，常数 1）、
+> `sfT_pair_cases`（情形覆盖）、`min_le_add_min`（截断三角不等式）、`sqrt_add_le_add_sqrt`。
+>
+> **`sfT_pair_cases` 就是工单点名要核的那件事**：每个指标要么落进 `(eq:TtTt)`，要么（必要时交换 `x`、`y`）落进 `(eq:KtKt)`。
+> 所以第三轮把 case 2 改成 `2 ≤ i ≤ k`、case 3 改成 `1 ≤ i ≤ k` 是对的——`(eq:TtTt)` 没覆盖的指标必有一个距离超过 `ℓ`，
+> 正好是 `(eq:KtKt)` 的前提；原稿的 `3 ≤ i ≤ k` 会漏掉 `i = 2`。
+>
+> **未做**：求和版 `(eq:key_T_reudce)`（带 `≺`、`ℓ ≤ (log W)^{10} ℓ_t` 与三情形求和）→ **Q20**。
+
 
 **文件**：同 `Kernel/PropT.lean`。附录 A.4。**这一条要特别小心**：第三轮校对就是在这里发现
 原稿漏了截断——两式都必须带 `∧ ℓ`：
@@ -776,7 +797,7 @@ structure PropTH (d : ℕ) (g : ℝ) (m : ℂ) : Prop where
 `#assert_rbm_axioms` 通过且接口名单为空。同时在 `docs/paper-deltas.md` 把 D5 改写
 （那条现在写的是「接口公理写成展开式」，要改成「写成 `Prop` 定义 + 结构字段」）。
 
-## Q20 · `(eq:key_T_reudce)` 求和版 — BLOCKED by Q12
+## Q20 · `(eq:key_T_reudce)` 求和版 — **OPEN**（Q12 已完成，解锁）
 
 **文件**：`RBM3D/Kernel/PropT.lean`。Q12 的 STATUS 里明确建议单开这条：
 `claim:TTk` 的逐点版做完之后，带 `≺` 和 `ℓ ≤ (log W)^{10} ℓ_t` 的求和版是另一件事。
@@ -804,3 +825,14 @@ Lemma 3.11，但**需要额外修改以处理 `d ≥ 3`**」——**那句「额
 > RBM1D 的经验里，两个最大的收益都不是写代码换来的，是坐下来把论文读一遍换来的——
 > 其中一次**否定性核查**（确认某条捷径走不通）省下了 150–300 条定理的白工。
 > **R5 这类活不是填空，是正经工作。**
+
+### CC 的实现要点（Q12 完成后补，2026-09-19）
+
+Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
+
+* 按 `𝛔 ∈ {0,1}^{2k}` 把 `α` 的求和区域分块（论文 `D_{≤ℓ,𝛔}`），逐块证 `eq:key_T_reudce_pf`；
+* 三种情形分别调用 `sfT_TtTt` / `sfT_KtKt`，**覆盖性已由 `sfT_pair_cases` 保证**，不必再手工讨论；
+* 剩下的格点和 `Σ_α (|x_1−α| ∧ |y_1−α| + 1)^{-(d-2)} ≲ ℓ²` **可以复用 K2**
+  （`Defs/RadialSum.lean` 的 `sum_radial_exp_le`）：`|x| ≤ ℓ` 时 `e^{-√(|x|/ℓ)} ≥ e^{-1}`，
+  所以硬截断的和至多是带指数截断那个和的 `e` 倍；
+* `≺` 用 `Defs/Domination.lean` 的 `DetDom`；`ℓ ≤ (log W)^{10} ℓ_t` 与 `ℓ_t² B_{t,0} ≲ |1−t|^{-1}` 是吸收对数因子的地方。

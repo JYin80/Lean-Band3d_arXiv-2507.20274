@@ -1,4 +1,8 @@
-# 工单队列（RBM3D）
+# 工单队列（RBM3D）· **已停用，见 `docs/QUEUE.md`**
+
+> **这张表是最初的 T0–T13，已被 `docs/QUEUE.md`（Q 系列）取代**，`CLAUDE.md` 指定后者为开工入口。
+> 保留此文件只作历史记录。**T0 已于 2026-09-19 解除**：磁盘空出 112G，`lake exe cache get` + `lake build` 成功，
+> `.lake` 已建好，`./check.sh` 正常跑通。
 
 **开工前先在这张表里认领（填 owner），并单独提交这一行。** 分工按文件切，不按难度切。
 
@@ -6,7 +10,7 @@ owner 取值：`CC`（Claude Code，本机）/ `CW`（Cowork，云端）/ `Jun`
 
 | # | 工单 | 文件 | owner | 状态 |
 |---|---|---|---|---|
-| T0 | 磁盘与 Mathlib 依赖 | `lakefile.toml` | Jun | 待办 |
+| T0 | 磁盘与 Mathlib 依赖 | `lakefile.toml` | Jun | **完成**（2026-09-19，磁盘已空出，`lake build` 通过） |
 | T1 | 让第一批草稿编译通过 | 全部 `.lean` | CC | **完成**（逐文件编译；`./check.sh` 待 T0） |
 | T2 | `lem_propTH` 性质 1–2 | `Propagator/Props14.lean` | — | 待办 |
 | T3 | `lem_propTH` 性质 3–4 | `Propagator/Props14.lean` | — | 待办 |

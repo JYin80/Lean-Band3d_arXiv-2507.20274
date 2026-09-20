@@ -170,3 +170,13 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 `|x−y| ≤ 2 max`）与 `(eq:KtKt)`（常数 1）；再加一条**情形覆盖**引理：每对 `(x_i,y_i)` 要么两距离都 `≤ ℓ`（用 TtTt），
 要么交换后 `|y_i−α| > ℓ`（用 KtKt）——这正好核对第三轮改的下标范围（case 2：`2 ≤ i ≤ k`；case 3：`1 ≤ i ≤ k`），
 读下来这两处修正是对的。求和版 `(eq:key_T_reudce)`（带 `≺` 和 `ℓ ≤ (log W)^{10} ℓ_t`）不在这一步里，建议单开工单。
+
+## 2026-09-19 · Claude Code · Q12 完成 + **T0 解除，`lake build` 已通**
+
+**磁盘腾出来了**（`~/Lean_proof` 所在卷现在 112G 可用），`lake exe cache get` + `lake build` 一次成功，
+`RBM3D/.lake` 已建好。**从此按 CLAUDE.md 的正规回路验证：`./check.sh` → `build.log`。**
+本轮 `./check.sh`：`errors: 0`、`exit=0`、451 条声明、审计干净。
+
+**Q12 完成**（`Kernel/PropT.lean` 的 `section TTk`）：`sfT`（`𝖳_t`）、`PsiT`（`Ψ_t`）、两条初等事实、
+`(eq:TtTt)`（常数 `2^{(d-2)/2}`，带前提 `|x−α| ∨ |y−α| ≤ ℓ`）、`(eq:KtKt)`（常数 1），
+以及 `sfT_pair_cases`（情形覆盖，核实第三轮改的下标范围是对的）。求和版另开 **Q20**。

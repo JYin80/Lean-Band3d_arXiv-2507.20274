@@ -454,4 +454,279 @@ theorem propT (k : ℕ) :
           apply mul_le_mul_of_nonneg_right _ hT0
           exact div_le_div_of_nonneg_right (by linarith) hv.le
 
+/-! ### `claim:TTk`: the pointwise bounds `(eq:TtTt)` and `(eq:KtKt)`
+
+Appendix A.4 works with a *different* function from the tail function `𝒯_t`: writing
+`W` for the band width, `7_8_light_weight.tex` sets
+
+  `𝖳_t(r) = (g²+|1-t|)^{-1/2} W^{-d/2} (r+1)^{-(d-2)/2} exp(-½√(r/ℓ_t))`,
+
+the square root of `W^{-d}` times the *decay part* of `𝒯_t` (no zero mode), and
+`Ψ_t = (W^{-d} B_{t,0})^{1/2}`.  Both `(eq:TtTt)` and `(eq:KtKt)` are statements about
+`𝖳_t`, not `𝒯_t`.
+
+Note that `(eq:TtTt)` needs `|x-α| ∨ |y-α| ≤ ℓ`, the standing assumption of the index
+range it is applied to in Appendix A.4 ("for `1 ≤ i ≤ r`").  Without it the bound is
+false: take `x = y` with both distances far beyond `ℓ`, and the factor
+`(|x-α| ∧ |y-α| + 1)^{-(d-2)/2}` on the right is far smaller than the left-hand side.
+-/
+
+section TTk
+
+variable (d L : ℕ) (W g t : ℝ)
+
+/-- `Ψ_t = (W^{-d} B_{t,0})^{1/2}`. -/
+noncomputable def PsiT : ℝ := √((W ^ d)⁻¹ * Bparam d L g t 0)
+
+/-- `𝖳_t(r) = (g²+|1-t|)^{-1/2} W^{-d/2} (r+1)^{-(d-2)/2} e^{-½√(r/ℓ_t)}` of Appendix A.4,
+written with `Real.sqrt` for the half-powers. -/
+noncomputable def sfT (r : ℝ) : ℝ :=
+  √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r + 1) ^ (d - 2))⁻¹)
+    * exp (-(1 / 2) * √(r / ellT L g t))
+
+variable {d L W g t}
+
+theorem sfT_nonneg (r : ℝ) : 0 ≤ sfT d L W g t r := by
+  unfold sfT; positivity
+
+theorem PsiT_nonneg : 0 ≤ PsiT d L W g t := sqrt_nonneg _
+
+theorem sfT_zero : sfT d L W g t 0 = √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) := by
+  simp [sfT]
+
+/-- `𝖳_t(0) ≤ Ψ_t`, the first of the two elementary facts of Appendix A.4. -/
+theorem sfT_zero_le_PsiT (hW : 0 < W) : sfT d L W g t 0 ≤ PsiT d L W g t := by
+  rw [sfT_zero, PsiT, ← sqrt_mul (by positivity)]
+  apply sqrt_le_sqrt
+  have hZ : 0 ≤ ((L : ℝ) ^ d * |1 - t|)⁻¹ := inv_nonneg.mpr (by positivity)
+  have hW0 : 0 ≤ ((W : ℝ) ^ d)⁻¹ := inv_nonneg.mpr (by positivity)
+  have : Bparam d L g t 0 = (g ^ 2 + |1 - t|)⁻¹ + ((L : ℝ) ^ d * |1 - t|)⁻¹ := by
+    simp [Bparam]
+  rw [this]
+  nlinarith
+
+/-- `𝖳_t(r) ≤ 𝖳_t(0) (r+1)^{-(d-2)/2}`, the second elementary fact. -/
+theorem sfT_le_zero_mul (hr : 0 ≤ r) :
+    sfT d L W g t r ≤ sfT d L W g t 0 * √(((r + 1) ^ (d - 2))⁻¹) := by
+  rw [sfT_zero, sfT]
+  have hE : exp (-(1 / 2) * √(r / ellT L g t)) ≤ 1 := by
+    apply exp_le_one_iff.mpr
+    have : 0 ≤ √(r / ellT L g t) := sqrt_nonneg _
+    linarith
+  have h0 : 0 ≤ √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r + 1) ^ (d - 2))⁻¹) := by
+    positivity
+  calc √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(r / ellT L g t))
+      ≤ √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r + 1) ^ (d - 2))⁻¹) * 1 :=
+        mul_le_mul_of_nonneg_left hE h0
+    _ = √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r + 1) ^ (d - 2))⁻¹) := mul_one _
+
+/-- `√(a+b) ≤ √a + √b`. -/
+theorem sqrt_add_le_add_sqrt {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) : √(a + b) ≤ √a + √b := by
+  have h : a + b ≤ (√a + √b) ^ 2 := by
+    have := Real.sq_sqrt ha
+    have := Real.sq_sqrt hb
+    have : 0 ≤ √a * √b := mul_nonneg (sqrt_nonneg _) (sqrt_nonneg _)
+    nlinarith [Real.sq_sqrt ha, Real.sq_sqrt hb]
+  calc √(a + b) ≤ √((√a + √b) ^ 2) := sqrt_le_sqrt h
+    _ = √a + √b := Real.sqrt_sq (by positivity)
+
+/-- `𝖳_t(r) ≤ Ψ_t (r+1)^{-(d-2)/2}`: the two elementary facts combined. -/
+theorem sfT_le_PsiT_mul (hW : 0 < W) (hr : 0 ≤ r) :
+    sfT d L W g t r ≤ PsiT d L W g t * √(((r + 1) ^ (d - 2))⁻¹) :=
+  (sfT_le_zero_mul hr).trans
+    (mul_le_mul_of_nonneg_right (sfT_zero_le_PsiT hW) (sqrt_nonneg _))
+
+/-- **`(eq:TtTt)`**: for `s ≤ p + q` (the truncated triangle inequality),
+`𝖳_t(p) 𝖳_t(q) ≤ 2^{(d-2)/2} 𝖳_t(s) Ψ_t (min p q + 1)^{-(d-2)/2}`.
+
+At the lattice level `p = |x-α| ∧ ℓ`, `q = |y-α| ∧ ℓ`, `s = |x-y| ∧ ℓ`; the hypothesis
+`s ≤ p + q` is exactly what `|x-α| ∨ |y-α| ≤ ℓ` supplies. -/
+theorem sfT_mul_le_TtTt (hW : 0 < W) {p q s : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) (hs : 0 ≤ s)
+    (hspq : s ≤ p + q) :
+    sfT d L W g t p * sfT d L W g t q
+      ≤ √((2 : ℝ) ^ (d - 2))
+        * (sfT d L W g t s * (PsiT d L W g t * √(((min p q + 1) ^ (d - 2))⁻¹))) := by
+  have key : ∀ r : ℝ, sfT d L W g t r
+      = (√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * √(((r + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(r / ellT L g t)) := fun r => by unfold sfT; ring
+  have hA0 : (0 : ℝ) ≤ √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) := by positivity
+  have hAP : (√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * (√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹))
+      ≤ (√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * PsiT d L W g t := by
+    have := sfT_zero_le_PsiT (d := d) (L := L) (W := W) (g := g) (t := t) hW
+    rw [sfT_zero] at this
+    exact mul_le_mul_of_nonneg_left this hA0
+  -- the exponential factors
+  have hℓ : 0 ≤ ellT L g t := ellT_nonneg
+  have hX : exp (-(1 / 2) * √(p / ellT L g t)) * exp (-(1 / 2) * √(q / ellT L g t))
+      ≤ exp (-(1 / 2) * √(s / ellT L g t)) := by
+    rw [← exp_add]
+    apply exp_le_exp.mpr
+    have h1 : s / ellT L g t ≤ p / ellT L g t + q / ellT L g t := by
+      rw [← add_div]
+      exact div_le_div_of_nonneg_right hspq hℓ
+    have h2 : √(s / ellT L g t) ≤ √(p / ellT L g t) + √(q / ellT L g t) :=
+      (sqrt_le_sqrt h1).trans
+        (sqrt_add_le_add_sqrt (by positivity) (by positivity))
+    linarith
+  -- the power factors
+  have hQ : √(((p + 1) ^ (d - 2))⁻¹) * √(((q + 1) ^ (d - 2))⁻¹)
+      ≤ √((2 : ℝ) ^ (d - 2)) * (√(((min p q + 1) ^ (d - 2))⁻¹) * √(((s + 1) ^ (d - 2))⁻¹)) := by
+    have hmax : ∀ m : ℝ, 0 ≤ m → s ≤ 2 * m →
+        √(((m + 1) ^ (d - 2))⁻¹) ≤ √((2 : ℝ) ^ (d - 2)) * √(((s + 1) ^ (d - 2))⁻¹) := by
+      intro m hm hsm
+      rw [← sqrt_mul (by positivity)]
+      apply sqrt_le_sqrt
+      have h1 : (s + 1) ^ (d - 2) ≤ (2 * (m + 1)) ^ (d - 2) :=
+        pow_le_pow_left₀ (by linarith) (by linarith) _
+      have h2 : (0 : ℝ) < (m + 1) ^ (d - 2) := by positivity
+      have h3 : (0 : ℝ) < (s + 1) ^ (d - 2) := by positivity
+      rw [← div_eq_mul_inv, le_div_iff₀ h3, inv_mul_eq_div, div_le_iff₀ h2]
+      calc (s + 1) ^ (d - 2) ≤ (2 * (m + 1)) ^ (d - 2) := h1
+        _ = 2 ^ (d - 2) * (m + 1) ^ (d - 2) := mul_pow _ _ _
+    rcases le_total p q with hpq | hpq
+    · rw [min_eq_left hpq]
+      have := hmax q hq (by linarith)
+      calc √(((p + 1) ^ (d - 2))⁻¹) * √(((q + 1) ^ (d - 2))⁻¹)
+          ≤ √(((p + 1) ^ (d - 2))⁻¹)
+            * (√((2 : ℝ) ^ (d - 2)) * √(((s + 1) ^ (d - 2))⁻¹)) :=
+            mul_le_mul_of_nonneg_left this (sqrt_nonneg _)
+        _ = _ := by ring
+    · rw [min_eq_right hpq]
+      have := hmax p hp (by linarith)
+      calc √(((p + 1) ^ (d - 2))⁻¹) * √(((q + 1) ^ (d - 2))⁻¹)
+          ≤ (√((2 : ℝ) ^ (d - 2)) * √(((s + 1) ^ (d - 2))⁻¹))
+            * √(((q + 1) ^ (d - 2))⁻¹) :=
+            mul_le_mul_of_nonneg_right this (sqrt_nonneg _)
+        _ = _ := by ring
+  rw [key p, key q, key s]
+  calc (√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * √(((p + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(p / ellT L g t))
+      * ((√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * √(((q + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(q / ellT L g t)))
+      = ((√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹))
+          * (√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)))
+        * ((√(((p + 1) ^ (d - 2))⁻¹) * √(((q + 1) ^ (d - 2))⁻¹))
+          * (exp (-(1 / 2) * √(p / ellT L g t)) * exp (-(1 / 2) * √(q / ellT L g t)))) := by
+        ring
+    _ ≤ ((√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * PsiT d L W g t)
+        * ((√((2 : ℝ) ^ (d - 2))
+            * (√(((min p q + 1) ^ (d - 2))⁻¹) * √(((s + 1) ^ (d - 2))⁻¹)))
+          * exp (-(1 / 2) * √(s / ellT L g t))) := by
+        apply mul_le_mul hAP (mul_le_mul hQ hX (by positivity) (by positivity))
+          (by positivity) (mul_nonneg hA0 PsiT_nonneg)
+    _ = √((2 : ℝ) ^ (d - 2))
+        * ((√((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹)) * √(((s + 1) ^ (d - 2))⁻¹)
+            * exp (-(1 / 2) * √(s / ellT L g t))
+          * (PsiT d L W g t * √(((min p q + 1) ^ (d - 2))⁻¹))) := by ring
+
+/-- **`(eq:KtKt)`**: when the second distance exceeds `ℓ`, so that `q ∧ ℓ = ℓ`,
+`𝖳_t(p) 𝖳_t(ℓ) ≤ 𝖳_t(ℓ) Ψ_t (p+1)^{-(d-2)/2}`, with constant `1`. -/
+theorem sfT_mul_le_KtKt (hW : 0 < W) {p ℓ : ℝ} (hp : 0 ≤ p) :
+    sfT d L W g t p * sfT d L W g t ℓ
+      ≤ sfT d L W g t ℓ * (PsiT d L W g t * √(((p + 1) ^ (d - 2))⁻¹)) := by
+  have h := sfT_le_PsiT_mul (d := d) (L := L) (W := W) (g := g) (t := t) hW hp
+  calc sfT d L W g t p * sfT d L W g t ℓ
+      ≤ (PsiT d L W g t * √(((p + 1) ^ (d - 2))⁻¹)) * sfT d L W g t ℓ :=
+        mul_le_mul_of_nonneg_right h (sfT_nonneg _)
+    _ = sfT d L W g t ℓ * (PsiT d L W g t * √(((p + 1) ^ (d - 2))⁻¹)) := by ring
+
+/-! ### The lattice form, and the case coverage of Appendix A.4 -/
+
+/-- The truncated triangle inequality: `s ≤ p + q` gives `s ∧ ℓ ≤ (p ∧ ℓ) + (q ∧ ℓ)`. -/
+theorem min_le_add_min {p q s ℓ : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) (hℓ : 0 ≤ ℓ)
+    (hspq : s ≤ p + q) : min s ℓ ≤ min p ℓ + min q ℓ := by
+  rcases le_total ℓ p with h | h
+  · calc min s ℓ ≤ ℓ := min_le_right _ _
+      _ = min p ℓ + 0 := by rw [min_eq_right h, add_zero]
+      _ ≤ min p ℓ + min q ℓ := by
+          have : 0 ≤ min q ℓ := le_min hq hℓ
+          linarith
+  rcases le_total ℓ q with h' | h'
+  · calc min s ℓ ≤ ℓ := min_le_right _ _
+      _ = 0 + min q ℓ := by rw [min_eq_right h', zero_add]
+      _ ≤ min p ℓ + min q ℓ := by
+          have : 0 ≤ min p ℓ := le_min hp hℓ
+          linarith
+  · rw [min_eq_left h, min_eq_left h']
+    exact (min_le_left _ _).trans hspq
+
+variable {d L : ℕ} [NeZero L]
+
+/-- **`(eq:TtTt)` on the lattice**, under its standing hypothesis
+`|x-α| ∨ |y-α| ≤ ℓ`. -/
+theorem sfT_TtTt (hW : 0 < W) {ℓ : ℝ} (hℓ : 0 ≤ ℓ) (x y α : Zd d L)
+    (hx : ((zdistD d L (x - α) : ℕ) : ℝ) ≤ ℓ) (hy : ((zdistD d L (y - α) : ℕ) : ℝ) ≤ ℓ) :
+    sfT d L W g t (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)
+      ≤ √((2 : ℝ) ^ (d - 2))
+        * (sfT d L W g t (min ((zdistD d L (x - y) : ℕ) : ℝ) ℓ)
+          * (PsiT d L W g t
+            * √(((min ((zdistD d L (x - α) : ℕ) : ℝ) ((zdistD d L (y - α) : ℕ) : ℝ) + 1)
+                  ^ (d - 2))⁻¹))) := by
+  set p := ((zdistD d L (x - α) : ℕ) : ℝ) with hpdef
+  set q := ((zdistD d L (y - α) : ℕ) : ℝ) with hqdef
+  set r := ((zdistD d L (x - y) : ℕ) : ℝ) with hrdef
+  have hp0 : 0 ≤ p := Nat.cast_nonneg _
+  have hq0 : 0 ≤ q := Nat.cast_nonneg _
+  have htri : r ≤ p + q := by
+    have h := zdistD_add_le d L (x - α) (α - y)
+    rw [sub_add_sub_cancel] at h
+    have hneg : zdistD d L (α - y) = zdistD d L (y - α) := by
+      rw [← zdistD_neg d L (y - α), neg_sub]
+    rw [hneg] at h
+    simp only [hpdef, hqdef, hrdef]
+    exact_mod_cast h
+  rw [min_eq_left hx, min_eq_left hy]
+  exact sfT_mul_le_TtTt hW hp0 hq0 (le_min (Nat.cast_nonneg _) hℓ)
+    ((min_le_left _ _).trans htri)
+
+omit [NeZero L] in
+/-- **`(eq:KtKt)` on the lattice**: when `|y-α| ≥ ℓ`, so that `|y-α| ∧ ℓ = ℓ`. -/
+theorem sfT_KtKt (hW : 0 < W) {ℓ : ℝ} (hℓ : 0 ≤ ℓ) (x y α : Zd d L)
+    (hy : ℓ ≤ ((zdistD d L (y - α) : ℕ) : ℝ)) :
+    sfT d L W g t (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)
+      ≤ sfT d L W g t ℓ
+        * (PsiT d L W g t
+          * √(((min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ + 1) ^ (d - 2))⁻¹)) := by
+  rw [min_eq_right hy]
+  exact sfT_mul_le_KtKt hW (le_min (Nat.cast_nonneg _) hℓ)
+
+/-- **The case coverage of Appendix A.4.**  For every pair `(x, y)` and every internal
+vertex `α`, one of the two bounds applies: `(eq:TtTt)` when both distances are `≤ ℓ`, and
+`(eq:KtKt)` otherwise -- after exchanging `x` and `y` if necessary.
+
+This is what makes the index ranges of the third proofreading round -- `(eq:KtKt)` for
+`2 ≤ i ≤ k` in case 2 and for `1 ≤ i ≤ k` in case 3, rather than `3 ≤ i ≤ k` -- exactly
+right: outside the indices covered by `(eq:TtTt)`, some distance exceeds `ℓ`, which is
+precisely the hypothesis of `(eq:KtKt)`. -/
+theorem sfT_pair_cases (hW : 0 < W) {ℓ : ℝ} (hℓ : 0 ≤ ℓ) (x y α : Zd d L) :
+    sfT d L W g t (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)
+      ≤ √((2 : ℝ) ^ (d - 2))
+        * (sfT d L W g t (min ((zdistD d L (x - y) : ℕ) : ℝ) ℓ)
+          * (PsiT d L W g t
+            * √(((min ((zdistD d L (x - α) : ℕ) : ℝ) ((zdistD d L (y - α) : ℕ) : ℝ) + 1)
+                  ^ (d - 2))⁻¹)))
+    ∨ sfT d L W g t (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)
+      ≤ sfT d L W g t ℓ
+        * (PsiT d L W g t
+          * √(((min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ + 1) ^ (d - 2))⁻¹))
+    ∨ sfT d L W g t (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)
+      ≤ sfT d L W g t ℓ
+        * (PsiT d L W g t
+          * √(((min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ + 1) ^ (d - 2))⁻¹)) := by
+  rcases le_total ((zdistD d L (y - α) : ℕ) : ℝ) ℓ with hy | hy
+  · rcases le_total ((zdistD d L (x - α) : ℕ) : ℝ) ℓ with hx | hx
+    · exact Or.inl (sfT_TtTt hW hℓ x y α hx hy)
+    · refine Or.inr (Or.inr ?_)
+      rw [mul_comm]
+      exact sfT_KtKt hW hℓ y x α hx
+  · exact Or.inr (Or.inl (sfT_KtKt hW hℓ x y α hy))
+
+end TTk
+
 end RBM
