@@ -24,12 +24,13 @@
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **DONE** (CC)；求和版另开 Q20 |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
-| Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **CLAIMED** (CC) |
+| Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3` | `Kernel/SumDecay.lean` | **Q17a DONE** (CC)；Q17b 待做 |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
+| Q22 | 移植 RBM1D 的 `eq_Ktree` 证明（消掉 `KTreeRep` 假设） | `Loop/TreeRep*.lean` | **OPEN**（大件，CC 于 Q15 开出） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
 ---
@@ -692,7 +693,29 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 `Loop/TreeRepGeneral.lean`（2546 行）都已编译通过，索引类型是它的 `LoopIdx`。
 **树的表示方式直接沿用那边的**，别自己重新设计——Q15 要移植的话，数据结构一致才移植得动。
 
-## Q15 · 树表示 `eq_Ktree` — **OPEN**
+## Q15 · 树表示 `eq_Ktree` — **DONE**（CC，2026-09-19）：陈述层落地，`eq_Ktree` 按假设
+
+> **完成记录**：新文件 `RBM3D/Loop/TreeRep.lean`，`./check.sh` → `errors: 0`、`exit=0`，零 sorry，公理审计仍为空。
+>
+> **先说评估结论（工单要求的那一步）**：走移植**超过一拍**，所以按工单的备选方案办——
+> 陈述层做实，`eq_Ktree` 本身按**假设**（不是 axiom）写，移植另开 **Q22**。理由有两条，第二条是关键：
+> 1. RBM1D 那边是 `TreeRep.lean`（729 行，`n ≤ 4`）+ `TreeRepGeneral.lean`（2546 行）；
+> 2. **那条路线依赖 RBM3D 还没有的东西**——ODE 唯一性论证要先能对 `t` 求导 `Θ_t`，
+>    即 RBM1D 的 `Propagator/Deriv.lean`；本项目的传播子层目前只有代数与范数，没有求导。
+>
+> **但陈述层不是空壳**：`eq_Ktree` 里的 `K^(n)` 不是随便一个函数，而是被 `\Cref{Def_Ktza}` 唯一确定的对象，
+> 所以这次把定义它的东西都做出来了：
+> * `LoopIdx`（索引数据，与 RBM1D 同构，标签类型泛化）、`cutGlueL` / `cutGlueR`（`(calGonIND)` 的 cut-and-glue），
+>   以及长度与 `WF` 的保持性；特别是 `length_cutGlueL_add_length_cutGlueR`：两段链长之和为 `n + 2`——
+>   **这正是 `(pro_dyncalK)` 是二次方程的原因**；
+> * `treeEqRhs`：卷积树方程 `(pro_dyncalK)` 的右端（`W^d`，`d` 维权重）；
+> * `MLoop`：初值 `(eq:initial_K)`，用论文给出的随机带矩阵简化形式（只形式化 RBM 模型，D6）；
+> * `IsKLoop`：`\Cref{Def_Ktza}` 逐条写成谓词（ODE + 初值 + 长度 1 的情形）；
+> * `KTreeRep`：`(eq_Ktree)` 作为假设，形状与 `PropTH` 一致，**Q22 落地时可以原地替换、下游签名一字不改**。
+>
+> **自检** `treeEqRhs_two`：`n = 2` 时由 `cutGlueL/cutGlueR` 生成的右端确实是两回路方程
+> `W^d Σ_{a,b} K_{σ,(a₁,a)} S_{ab} K_{σ,(b,a₂)}`——两边的哑指标顺序相反，靠 `S^(B)` 的对称性对上。
+> 这是索引层与论文之间的第一道核对。
 
 > **beat 8 更新：移植的路已经铺好了，优先走移植，不要默认公理化。**
 > Q14 落地时刻意把 `TSP`（不交叉对角线集合）的表示**与 RBM1D 对齐**，所以
@@ -1012,3 +1035,18 @@ Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
 
 **验收**：四条逐条给出结论（「与论文一致」或「已修正，见 D…」），
 每条修正都在 `paper-deltas.md` 记一条，并写明论文第几页/哪一段。
+
+## Q22 · 移植 RBM1D 的 `eq_Ktree` 证明 — **OPEN**（CC 于 Q15 开出）
+
+**目标**：把 `Loop/TreeRep.lean` 的假设 `KTreeRep` 换成定理，从而彻底不依赖 `[YY_25]` Lemma 3.4。
+
+**路线（RBM1D 已走通，不要重新设计）**：不做组合双射，而是证明「树和与 `K`-loop 满足同一个卷积树方程、
+且 `t = 0` 初值相同」，再由解的唯一性收尾。
+
+**前置（这是 Q15 评估时卡住的地方）**：
+* **传播子对 `t` 的导数层**——RBM1D 的 `Propagator/Deriv.lean`，RBM3D 目前没有。
+  需要 `∂_t Θ_t = Θ_t · (M S^(B)) · Θ_t` 这类恒等式（`Ring.inverse` 的求导，`Defs`/`Props4` 已有的代数够用）。
+* 然后照 `RBM1D/Loop/TreeRep.lean`（`n ≤ 4`，把组合讲透）→ `TreeRepGeneral.lean`（一般 `n`）移植。
+
+**建议拆**：Q22a 传播子求导层；Q22b `n ≤ 4`；Q22c 一般 `n`。
+每一步都能独立编译、独立提交，Q22a 本身对别的工单也有用。

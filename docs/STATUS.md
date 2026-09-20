@@ -228,3 +228,14 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 证明没有按 `d = 3` / `d ≥ 4` 分情形：逐点拆成两个径向函数之和，按球壳求和后归结到调和和 `Σ 1/r ≤ 1 + log M`，
 `log` 自然只在 `d = 3` 时是必需的。附带的可复用件：`sum_inv_Icc_le`（调和和）、`sum_radial_tail_le`（径向尾和）。
 Q17b（`lem:sum_decay` 本体，要用 `ThetaDecay`）仍待做。
+
+## 2026-09-19 · Claude Code · Q15 完成（陈述层）+ 开出 Q22（移植）
+
+**评估结论**：`eq_Ktree` 走移植超过一拍，按工单备选方案执行——陈述层做实，`eq_Ktree` 按假设写，移植另开 Q22。
+**卡点不在行数，而在前置**：RBM1D 的 ODE 唯一性路线要先能对 `t` 求导 `Θ_t`（它的 `Propagator/Deriv.lean`），
+RBM3D 的传播子层目前只有代数与范数，没有求导层。Q22a 就是补这一层。
+
+**本轮落地**（`RBM3D/Loop/TreeRep.lean`，零 sorry，审计仍为空）：`LoopIdx` 与 cut-and-glue 算子（与 RBM1D 同构）、
+`treeEqRhs`（`(pro_dyncalK)` 右端）、`MLoop`（初值）、`IsKLoop`（`Def_Ktza` 逐条谓词）、`KTreeRep`（`eq_Ktree` 作为假设）。
+自检 `treeEqRhs_two`：`n = 2` 的右端与论文的两回路方程一致（靠 `S^(B)` 对称性对上哑指标顺序）。
+**`KTreeRep` 的形状与 `PropTH` 一致，Q22 落地时可原地替换、下游零返工。**
