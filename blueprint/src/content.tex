@@ -7,7 +7,7 @@
 % \lean{} tags, and \leanok on every node that is *proved*.
 %
 % A node that names an interface Prop (ax:ThfadC, ax:ThfadCshort, ax:BD1, ax:BD2,
-% ax:ThfadC0, ax:KTreeRep, ax:KTwoFormula) gets \lean{} but NOT \leanok: the statement
+% ax:ThfadC0, ax:KTreeRep) gets \lean{} but NOT \leanok: the statement
 % exists in Lean, the proof does not, because the paper cites it rather than proving it.
 % These are hypotheses carried by the theorems that use them -- not axioms -- so the
 % audit reports 0 axioms while still reporting how many theorems rest on each of them.
@@ -182,8 +182,8 @@ word by word: one of them was \emph{false} as first written and had to be repair
 
   The statement is \emph{entrywise} on purpose: that is what the loop layer uses, and it
   avoids the instance diamond between the Pi topology on \texttt{Matrix} and the topology
-  of the $\ell^\infty$ operator norm.  This node is the prerequisite for \ref{ax:KTreeRep}
-  and \ref{ax:KTwoFormula} (work orders Q27, Q22a, Q22b).
+  of the $\ell^\infty$ operator norm.  This node is the prerequisite for \ref{ax:KTwoFormula} (done: Q27 and Q22a) and for
+  \ref{ax:KTreeRep}, which now lacks only existence (Q22b).
 \end{lemma}
 
 \begin{definition}[Scaling size and scaling order]\label{def:ord}
@@ -401,30 +401,46 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   uniqueness), Q22b (existence).
 \end{theorem}
 
-\begin{theorem}[$\mathtt{(Kn2sol)}$, the $n=2$ loop --- \emph{interface hypothesis}]\label{ax:KTwoFormula}
-  \lean{RBM.Loop.KTwoFormula}
-  \uses{ax:KTreeRep}
-  The closed formula for $\Kcal^{(2)}$.  Carried as a hypothesis for the same reason;
-  Q27 proves it once Q23 lands, and it is the dress rehearsal for Q22.
-  \textbf{Audit note (Q26):} this one is not yet in the audit's hard-coded list of borrowed
-  results, so the ``theorems resting on each borrowed result'' table under-reports it.
+\begin{lemma}[Uniqueness for $\mathtt{(pro\_dyncalK)}$]\label{lem:unique}
+  \lean{RBM.Loop.LoopIdx.length_cutGlueR_eq_two, RBM.Loop.LoopIdx.length_cutGlueL_eq_two, RBM.Loop.eq_on_level, RBM.Loop.isKLoop_unique}\leanok
+  \uses{def:tsp}
+  Two families of $\Kcal$-loops on $[0,T_0]$ with the same $W$, $g$, $m$, whose $2$-loops
+  stay bounded, agree on every loop of length $\ge2$.
+
+  One Grönwall argument covers all lengths.  The structure of $\mathtt{(pro\_dyncalK)}$ is
+  what makes it work: the two chains produced by a cut have lengths adding up to $n+2$, so
+  if one of them has the full length $n$ the other is a $2$-loop.  Hence for $n\ge3$ the
+  equation at length $n$ is \emph{linear} in the length-$n$ unknowns once the shorter
+  lengths are fixed, with the $2$-loops as coefficients, and for $n=2$ it is a Riccati
+  equation; the same estimate covers both, and strong induction on $n$ finishes.
+\end{lemma}
+
+\begin{theorem}[$\mathtt{(Kn2sol)}$, the $n=2$ loop --- \emph{now a theorem}]\label{ax:KTwoFormula}
+  \lean{RBM.Loop.KTwoFormula, RBM.Loop.kTwoFormula_of_isKLoop, RBM.Loop.pureLoop_two_of_isKLoop}\leanok
+  \uses{lem:kTwo, lem:unique}
+  The closed formula for $\Kcal^{(2)}$.  The paper attributes it to \texttt{[YY\_25]},
+  \texttt{[RBSO1D]}; it is not an input.  \texttt{kTwoFormula\_of\_isKLoop} proves it of
+  \emph{every} family of $\Kcal$-loops on $[0,1)$ whose $2$-loops are bounded on each
+  $[0,T_0]$, $T_0<1$: existence (\ref{lem:kTwo}) plus uniqueness at length $2$
+  (\ref{lem:unique}, where the hypothesis on shorter loops is vacuous).
+
+  What is left is the a priori bound on the $2$-loops, which the paper proves along the
+  way rather than borrows.  \texttt{pureLoop\_two\_of\_isKLoop} is \ref{lem:pureloop} with
+  this hypothesis gone, resting only on \ref{ax:ThfadCshort}.
 \end{theorem}
 
 \begin{lemma}[$\mathtt{(Kn2sol)}$, the two-loop solution --- \emph{proved, not borrowed}]\label{lem:kTwo}
-  \lean{RBM.Loop.kTwo, RBM.Loop.hasDerivAt_kTwo, RBM.Loop.kTwo_zero, RBM.Loop.kTwoLoop, RBM.Loop.hasDerivAt_kTwoLoop, RBM.Loop.kTwoFormula_kTwoLoop, RBM.Loop.pureLoop_two_kTwoLoop}\leanok
-  \uses{lem:Theta-deriv, def:tsp, ax:KTwoFormula}
+  \lean{RBM.Loop.kTwo, RBM.Loop.hasDerivAt_kTwo, RBM.Loop.kTwo_zero, RBM.Loop.kTwoLoop, RBM.Loop.hasDerivAt_kTwoLoop, RBM.Loop.kTwoFormula_kTwoLoop, RBM.Loop.norm_kTwo_le, RBM.Loop.pureLoop_two_kTwoLoop}\leanok
+  \uses{lem:Theta-deriv, def:tsp}
   $K^{(2)}_{t,\bm\sigma,\mathbf a}=W^{-d}m(\sigma_1)m(\sigma_2)\,(\Th_{t\,m(\sigma_1)m(\sigma_2)})_{a_1a_2}$
   solves the convolution tree equation at $n=2$ and takes the $M$-loop value at $t=0$.
   The paper records this in an example and attributes it to \texttt{[YY\_25]},
   \texttt{[RBSO1D]}; it does not have to be borrowed, and here it is not.
 
-  This is the \emph{existence} half.  Rewriting an \emph{arbitrary} $K$-loop family into
-  this formula -- which is what \ref{ax:KTwoFormula} asserts -- additionally needs
-  uniqueness for the tree equations (Gr\"onwall, work order Q22a).  What is already
-  available: \texttt{kTwoFormula\_kTwoLoop} exhibits a witness, so \ref{ax:KTwoFormula} is
-  satisfiable and the theorems carrying it are not vacuously true; and
-  \texttt{pureLoop\_two\_kTwoLoop} is \ref{lem:pureloop} with that hypothesis discharged,
-  leaving only \ref{ax:ThfadCshort}.
+  This is the \emph{existence} half; together with uniqueness (\ref{lem:unique}) it gives
+  \ref{ax:KTwoFormula} for every family of $\Kcal$-loops.  \texttt{norm\_kTwo\_le} is the
+  entry bound $W^{-d}(1-t)^{-1}$ for the explicit solution, which is what supplies the
+  $2$-loop bound the uniqueness argument asks for.
 \end{lemma}
 
 \begin{lemma}[$\mathtt{lem\_pureloop}$, $n=2$]\label{lem:pureloop}
