@@ -48,7 +48,7 @@
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **DONE** (CC)：陈述层 + **那句「额外修改」已定位并证出**；格点和 → Q32 |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **PARTIAL** (CC)：星形树（任意 `n`）+ `n = 3` 已证；带对角线的树 → Q33 |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **DONE** (CC)：扫描 + 两本账 + 反向测试 |
-| Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
+| Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **CLAIMED (CC)** |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
