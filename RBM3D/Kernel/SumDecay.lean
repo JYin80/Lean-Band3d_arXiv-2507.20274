@@ -542,4 +542,108 @@ theorem norm_XiKer_apply_le {k : ℕ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g)
 
 end Xi
 
+
+/-! ### One `Ξ` factor, summed over the fast-decay ball
+
+This is the accounting step at the heart of `lem:sum_decay`, and the one place where a
+shortcut gives the wrong answer.  Bounding a factor by `‖Ξ‖_{∞→∞} ≤ (t-s)/(1-t)` and
+summing freely produces `((t-s)/(1-t))^{n-k}`, which is **weaker** than the
+`((ĝ²+|1-s|)/(ĝ²+|1-t|))^{n-k}` the lemma claims.  The claimed shape comes out only if
+the sum is restricted to the ball `|a-b| ≲ ℓ_s` supplied by `(deccA0)`, where
+
+* the entries obey `(eq:decayXi)`: `|Ξ(a,b)| ≲ (1-s)(ĝ²+|1-t|)^{-1}(|a-b|+1)^{-(d-2)}`;
+* the polynomial factor sums to `≍ R²` over that ball (`RBM.sum_ball_pow_le`);
+* and `R ≍ ℓ_s` turns `(1-s)ℓ_s²` into `ĝ²+|1-s|` (`RBM.one_sub_mul_ellT_sq_le`).
+
+The three together give exactly one factor of `(ĝ²+|1-s|)/(ĝ²+|1-t|)`, with `Λ²` standing
+for the paper's `W^{Cε}`.
+-/
+
+/-- **One factor of `(sum_res_1)`.**  For any set `D` of summation points inside the ball
+of radius `R ≤ Λ ℓ_s` around `a`,
+
+`Σ_{b ∈ D} |Ξ_{s,t}(a,b)| ≤ C Λ² (ĝ²+|1-s|)/(ĝ²+|1-t|)`,
+
+with `C` depending only on `d` and the constants of `(prop:ThfadC)`. -/
+theorem sum_ball_norm_XiKer_le {k : ℕ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g) (hμ : ‖μ‖ = 1)
+    (hdecay : ThetaDecay (k + 2) g μ) :
+    ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t → t < 1 →
+      g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t → ∀ Λ : ℝ, 1 ≤ Λ → ∀ R : ℝ, 1 ≤ R →
+      R ≤ Λ * ellT L g s →
+      haveI : NeZero L := ⟨by omega⟩
+      ∀ (a : Zd (k + 2) L) (D : Finset (Zd (k + 2) L)),
+        (∀ b ∈ D, ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) ≤ R) →
+        ∑ b ∈ D, ‖XiKer (k + 2) L g μ s t a b‖
+          ≤ C * Λ ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) := by
+  obtain ⟨C₀, hC₀, c, hc, hbd⟩ := norm_XiKer_apply_le (g := g) hd hg hμ hdecay
+  refine ⟨4 * C₀ * ballC k, mul_pos (by positivity) (ballC_pos k), ?_⟩
+  intro L hL s t hs hst ht hgt Λ hΛ R hR hRℓ a D hD
+  have : NeZero L := ⟨by omega⟩
+  have hL1 : (1 : ℝ) ≤ (L : ℝ) := by exact_mod_cast le_trans (by norm_num) hL
+  have hs1 : s < 1 := lt_of_le_of_lt hst ht
+  have habs : |1 - s| = 1 - s := abs_of_pos (by linarith)
+  have hgt0 : (0 : ℝ) < g ^ 2 + |1 - t| := by positivity
+  -- the entries, with the exponential thrown away
+  have hpt : ∀ b ∈ D, ‖XiKer (k + 2) L g μ s t a b‖
+      ≤ (C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹)
+        * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ := by
+    intro b _
+    refine (hbd L hL s t hs hst ht hgt a b).trans ?_
+    have hexp : Real.exp (-(c * (zdistD (k + 2) L (a - b) : ℝ)) / ellT L g t) ≤ 1 := by
+      refine Real.exp_le_one_iff.mpr ?_
+      have hℓ : 0 < ellT L g t := ellT_pos hL1
+      have : 0 ≤ c * (zdistD (k + 2) L (a - b) : ℝ) := by positivity
+      exact div_nonpos_of_nonpos_of_nonneg (by linarith) hℓ.le
+    have hnn : (0 : ℝ) ≤ C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+        * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ := by
+      have : (0 : ℝ) ≤ 1 - s := by linarith
+      positivity
+    calc C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+          * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹
+          * Real.exp (-(c * (zdistD (k + 2) L (a - b) : ℝ)) / ellT L g t)
+        ≤ C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+          * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ * 1 :=
+          mul_le_mul_of_nonneg_left hexp hnn
+      _ = C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+          * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ := mul_one _
+  -- the ball sum of the polynomial factor
+  have hball := sum_ball_pow_le (L := L) k hR D a hD
+  have hcoef : (0 : ℝ) ≤ C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹ := by
+    have : (0 : ℝ) ≤ 1 - s := by linarith
+    positivity
+  -- `R² ≤ 4 Λ² ℓ_s²`, and `(1-s) ℓ_s² ≤ ĝ² + |1-s|`
+  have hℓs : (1 : ℝ) ≤ ellT L g s := one_le_ellT hL1
+  have hR2 : R ^ 2 ≤ Λ ^ 2 * ellT L g s ^ 2 := by
+    have := pow_le_pow_left₀ (by linarith : (0:ℝ) ≤ R) hRℓ 2
+    rwa [mul_pow] at this
+  have hkey : (1 - s) * (Λ ^ 2 * ellT L g s ^ 2) ≤ Λ ^ 2 * (g ^ 2 + |1 - s|) := by
+    have h := one_sub_mul_ellT_sq_le (L := L) (g := g) (s := s) hg.le hs1
+    rw [habs] at h
+    nlinarith [sq_nonneg Λ, ellT_pos hL1 (L := L) (g := g) (t := s)]
+  calc ∑ b ∈ D, ‖XiKer (k + 2) L g μ s t a b‖
+      ≤ ∑ b ∈ D, (C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹)
+          * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ := Finset.sum_le_sum hpt
+    _ = (C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹)
+          * ∑ b ∈ D, ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ := by
+        rw [Finset.mul_sum]
+    _ ≤ (C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹) * (ballC k * R ^ 2) :=
+        mul_le_mul_of_nonneg_left hball hcoef
+    _ ≤ (C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹) * (ballC k * (Λ ^ 2 * ellT L g s ^ 2)) := by
+        refine mul_le_mul_of_nonneg_left ?_ hcoef
+        exact mul_le_mul_of_nonneg_left hR2 (ballC_nonneg k)
+    _ = C₀ * ballC k * ((1 - s) * (Λ ^ 2 * ellT L g s ^ 2)) * (g ^ 2 + |1 - t|)⁻¹ := by ring
+    _ ≤ C₀ * ballC k * (Λ ^ 2 * (g ^ 2 + |1 - s|)) * (g ^ 2 + |1 - t|)⁻¹ := by
+        have h0 : (0 : ℝ) ≤ C₀ * ballC k := mul_nonneg hC₀.le (ballC_nonneg k)
+        have := mul_le_mul_of_nonneg_left hkey h0
+        exact mul_le_mul_of_nonneg_right this (by positivity)
+    _ = C₀ * ballC k * Λ ^ 2 * ((g ^ 2 + |1 - s|) * (g ^ 2 + |1 - t|)⁻¹) := by ring
+    _ ≤ 4 * C₀ * ballC k * Λ ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) := by
+        rw [div_eq_mul_inv]
+        have h0 : (0 : ℝ) ≤ C₀ * ballC k * Λ ^ 2 * ((g ^ 2 + |1 - s|) * (g ^ 2 + |1 - t|)⁻¹) := by
+          refine mul_nonneg (mul_nonneg (mul_nonneg hC₀.le (ballC_nonneg k)) (sq_nonneg Λ)) ?_
+          have h1 : (0:ℝ) ≤ g ^ 2 + |1 - s| := by positivity
+          have h2 : (0:ℝ) ≤ (g ^ 2 + |1 - t|)⁻¹ := by positivity
+          exact mul_nonneg h1 h2
+        linarith
+
 end RBM

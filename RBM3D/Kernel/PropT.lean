@@ -63,20 +63,6 @@ theorem ellT_mono (hg : 0 ≤ g) (hut : u ≤ t) (ht : t < 1) : ellT L g u ≤ e
   refine min_le_min (max_le_max ?_ le_rfl) le_rfl
   exact div_le_div_of_nonneg_left hg (sqrt_pos.mpr hw) (sqrt_le_sqrt (by linarith))
 
-/-- `ℓ_u² ≤ g²/(1-u) + 1`. -/
-theorem ellT_sq_le (hg : 0 ≤ g) (hv : 0 < 1 - u) :
-    ellT L g u ^ 2 ≤ g ^ 2 / (1 - u) + 1 := by
-  have h0 : 0 ≤ ellT L g u := ellT_nonneg
-  have hx : 0 ≤ g / √|1 - u| := div_nonneg hg (sqrt_nonneg _)
-  have hle : ellT L g u ≤ max (g / √|1 - u|) 1 := min_le_left _ _
-  have hsq : (g / √|1 - u|) ^ 2 = g ^ 2 / (1 - u) := by
-    rw [div_pow, sq_sqrt (abs_nonneg _), abs_of_pos hv]
-  calc ellT L g u ^ 2 ≤ (max (g / √|1 - u|) 1) ^ 2 := pow_le_pow_left₀ h0 hle 2
-    _ ≤ (g / √|1 - u|) ^ 2 + 1 := by
-        rcases le_total (g / √|1 - u|) 1 with h | h
-        · rw [max_eq_right h]; nlinarith
-        · rw [max_eq_left h]; linarith
-    _ = g ^ 2 / (1 - u) + 1 := by rw [hsq]
 
 /-- `A_u ℓ_u² ≤ 1/(1-u)`. -/
 theorem inv_mul_ellT_sq_le (hg : 0 ≤ g) (hv : 0 < 1 - u) :

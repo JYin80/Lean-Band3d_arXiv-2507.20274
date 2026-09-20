@@ -354,9 +354,11 @@ theorem sum_shift (d : ℕ) (a : Zd d L) (F : ℕ → ℝ) :
 /-- The constant of `sum_ball_min_pow_le`. -/
 noncomputable def ballC (k : ℕ) : ℝ := 2 * exp 1 * (2 ^ (k + 2) * radC 1)
 
-theorem ballC_nonneg (k : ℕ) : 0 ≤ ballC k := by
+theorem ballC_pos (k : ℕ) : 0 < ballC k := by
   have := radC_pos (κ := (1 : ℝ)) one_pos
   unfold ballC; positivity
+
+theorem ballC_nonneg (k : ℕ) : 0 ≤ ballC k := (ballC_pos k).le
 
 /-- **The lattice sum of Appendix A.4**: for `d = k + 2` and any finite set `D` contained
 in the ball of radius `ℓ` around `a`,
@@ -430,5 +432,19 @@ theorem sum_ball_min_pow_le (k : ℕ) {ℓ : ℝ} (hℓ : 1 ≤ ℓ) (D : Finset
         have he : (0 : ℝ) ≤ exp 1 := (exp_pos _).le
         exact add_le_add (mul_le_mul_of_nonneg_left h he) (mul_le_mul_of_nonneg_left h he)
     _ = ballC k * ℓ ^ 2 := by rw [ballC]; ring
+
+
+/-- **The ball sum**: `Σ_{α ∈ D} (|a-α|+1)^{-(d-2)} ≤ C_d R²` for any `D` inside the ball
+of radius `R ≥ 1` around `a`.
+
+This is the sum `lem:sum_decay` performs over the fast-decay ball `|a_i - b_i| ≲ W^ε ℓ_s`
+of `(deccA0)`: inside the ball the exponential is no help, only the polynomial factor is,
+and the answer is `≍ R²` for every `d ≥ 3`.  It is `sum_ball_min_pow_le` with the summand
+centred at the centre of the ball, where the truncation `∧ R` does nothing. -/
+theorem sum_ball_pow_le (k : ℕ) {R : ℝ} (hR : 1 ≤ R) (D : Finset (Zd (k + 2) L))
+    (a : Zd (k + 2) L) (hD : ∀ α ∈ D, ((zdistD (k + 2) L (a - α) : ℕ) : ℝ) ≤ R) :
+    ∑ α ∈ D, ((((zdistD (k + 2) L (a - α) : ℕ) : ℝ) + 1) ^ k)⁻¹ ≤ ballC k * R ^ 2 := by
+  refine le_trans (le_of_eq ?_) (sum_ball_min_pow_le (L := L) k hR D a a hD)
+  exact Finset.sum_congr rfl fun α hα => by rw [min_eq_left (hD α hα)]
 
 end RBM

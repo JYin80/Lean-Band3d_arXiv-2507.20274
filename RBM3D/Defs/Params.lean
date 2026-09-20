@@ -58,6 +58,35 @@ hypothesis `ĝ² ≤ L²(1-t)` are used.  Since `η_t ≍ 1-t` (`(eta)`), this i
 `ℓ_t² B_{t,0} ≲ |1-t|^{-1} ≲ η_t^{-1}`.
 -/
 
+/-- `ℓ_u² ≤ g²/(1-u) + 1`.  Moved here from `Kernel/PropT.lean`, where it was first
+needed: it is a fact about `(eq:ellt)` alone. -/
+theorem ellT_sq_le {L : ℕ} {g u : ℝ} (hg : 0 ≤ g) (hv : 0 < 1 - u) :
+    ellT L g u ^ 2 ≤ g ^ 2 / (1 - u) + 1 := by
+  have h0 : 0 ≤ ellT L g u :=
+    le_min (le_trans zero_le_one (le_max_right _ _)) (Nat.cast_nonneg L)
+  have hx : 0 ≤ g / √|1 - u| := div_nonneg hg (Real.sqrt_nonneg _)
+  have hle : ellT L g u ≤ max (g / √|1 - u|) 1 := min_le_left _ _
+  have hsq : (g / √|1 - u|) ^ 2 = g ^ 2 / (1 - u) := by
+    rw [div_pow, Real.sq_sqrt (abs_nonneg _), abs_of_pos hv]
+  calc ellT L g u ^ 2 ≤ (max (g / √|1 - u|) 1) ^ 2 := pow_le_pow_left₀ h0 hle 2
+    _ ≤ (g / √|1 - u|) ^ 2 + 1 := by
+        rcases le_total (g / √|1 - u|) 1 with h | h
+        · rw [max_eq_right h]; nlinarith
+        · rw [max_eq_left h]; linarith
+    _ = g ^ 2 / (1 - u) + 1 := by rw [hsq]
+
+/-- **`(1-s) ℓ_s² ≤ ĝ² + |1-s|`**, the form `lem:sum_decay` uses: the sum over a ball of
+radius `≍ ℓ_s` costs `ℓ_s²`, and this is what turns that into `ĝ² + |1-s|`. -/
+theorem one_sub_mul_ellT_sq_le {L : ℕ} {g s : ℝ} (hg : 0 ≤ g) (hs : s < 1) :
+    |1 - s| * ellT L g s ^ 2 ≤ g ^ 2 + |1 - s| := by
+  have hv : (0 : ℝ) < 1 - s := by linarith
+  have habs : |1 - s| = 1 - s := abs_of_pos hv
+  have h := ellT_sq_le (L := L) (g := g) (u := s) hg hv
+  rw [habs]
+  calc (1 - s) * ellT L g s ^ 2 ≤ (1 - s) * (g ^ 2 / (1 - s) + 1) :=
+        mul_le_mul_of_nonneg_left h hv.le
+    _ = g ^ 2 + (1 - s) := by field_simp
+
 theorem Bparam_mul_ellT_sq_le {d L : ℕ} {g t : ℝ} (hd : 2 ≤ d) (hL : 1 ≤ (L : ℝ))
     (hg : 0 ≤ g) (ht : t < 1) (hgL : g ^ 2 ≤ (L : ℝ) ^ 2 * (1 - t)) :
     Bparam d L g t 0 * ellT L g t ^ 2 ≤ 3 / (1 - t) := by
@@ -68,23 +97,9 @@ theorem Bparam_mul_ellT_sq_le {d L : ℕ} {g t : ℝ} (hd : 2 ≤ d) (hL : 1 ≤
   have hgu : (0 : ℝ) < g ^ 2 + (1 - t) := by positivity
   have hLd : (0 : ℝ) < (L : ℝ) ^ d := by positivity
   have hBnn : 0 ≤ Bparam d L g t 0 := by rw [hB]; positivity
-  -- `ℓ_t² ≤ (ĝ² + |1-t|)/|1-t|`
   have hell : ellT L g t ^ 2 ≤ (g ^ 2 + (1 - t)) / (1 - t) := by
-    have hmin : ellT L g t ≤ max (g / Real.sqrt |1 - t|) 1 := min_le_left _ _
-    have hpos : 0 < ellT L g t := ellT_pos hL
-    have hsq : (max (g / Real.sqrt |1 - t|) 1) ^ 2 ≤ g ^ 2 / (1 - t) + 1 := by
-      have hs : Real.sqrt |1 - t| ^ 2 = 1 - t := by
-        rw [Real.sq_sqrt (abs_nonneg _), habs]
-      have hsnn : 0 ≤ g / Real.sqrt |1 - t| := by positivity
-      rcases le_total (g / Real.sqrt |1 - t|) 1 with h | h
-      · rw [max_eq_right h]
-        have : (0 : ℝ) ≤ g ^ 2 / (1 - t) := by positivity
-        linarith
-      · rw [max_eq_left h, div_pow, hs]
-        linarith
-    calc ellT L g t ^ 2 ≤ (max (g / Real.sqrt |1 - t|) 1) ^ 2 := by
-          exact pow_le_pow_left₀ hpos.le hmin 2
-      _ ≤ g ^ 2 / (1 - t) + 1 := hsq
+    have h := ellT_sq_le (L := L) (g := g) (u := t) hg hu
+    calc ellT L g t ^ 2 ≤ g ^ 2 / (1 - t) + 1 := h
       _ = (g ^ 2 + (1 - t)) / (1 - t) := by field_simp
   -- the zero-mode term costs at most `2`
   have hzero : (g ^ 2 + (1 - t)) / ((L : ℝ) ^ d * (1 - t)) ≤ 2 := by
