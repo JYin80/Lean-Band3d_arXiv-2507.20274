@@ -159,4 +159,172 @@ theorem norm_UN_le (hL : 3 ≤ L) {n : ℕ} {m : Fin n → ℂ} (hm : ∀ i, ‖
     mul_nonneg (pow_nonneg (div_nonneg (by linarith) (by linarith)) n) (norm_nonneg _)
   exact (pi_norm_le_iff_of_nonneg hpos).mpr fun a => norm_UN_apply_le hL hm hs hst ht A a
 
+/-! ### Tensor kernels, and the zero-mode-removing operators `P^(i)`, `Q^(i)`, `Q^(A)`
+
+`(def_Ustz)` builds `U^(n)` out of one one-index kernel per index.  `RBM.tensorKer` is
+that construction for an arbitrary family of kernels, and `RBM.UN_eq_tensorKer` says
+`U^(n)` is an instance of it.  `\Cref{def;zero_mode_remove}` defines the partial
+averaging operator `P^(i)`, the zero-mode-removing `Q^(i) = I - P^(i)` and
+`Q^(A) = ∏_{i ∈ A} Q^(i)`.
+
+The structural fact behind `lem:sum_decay_nonzero` is that `Q^(i)` passes through a
+tensor kernel by left-multiplying the `i`-th kernel with `I - L^{-d} J`
+(`RBM.zeroModeOp_tensorKer`), so `Q^(A) ∘ U^(n)` is again a tensor kernel
+(`RBM.zeroModeSet_tensorKer`) -- with the `(∞→∞)`-norm of each factor to be estimated
+one index at a time. -/
+
+section TensorKernel
+
+variable (d L : ℕ) [NeZero L] {n : ℕ}
+
+/-- The tensor product of `n` one-index kernels, acting on `n`-index tensors:
+`(K ∘ 𝒜)_a = Σ_b ∏_i K_i(a_i, b_i) 𝒜_b`.  `(def_Ustz)` is the case
+`K_i = (1 - s μ_i S^(B)) Θ_{t μ_i}`. -/
+noncomputable def tensorKer (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
+    (A : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
+  fun a => ∑ b : Fin n → Zd d L, (∏ i, K i (a i) (b i)) * A b
+
+/-- `P^(i)`: averaging over the `i`-th index, `\Cref{def;zero_mode_remove}`. -/
+noncomputable def avgOp (i : Fin n) (A : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
+  fun a => ((L : ℂ) ^ d)⁻¹ * ∑ c : Zd d L, A (Function.update a i c)
+
+/-- `Q^(i) = I - P^(i)`, the zero-mode-removing operator on the `i`-th index. -/
+noncomputable def zeroModeOp (i : Fin n) (A : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
+  fun a => A a - avgOp d L i A a
+
+/-- `Q^(A) = ∏_{i ∈ A} Q^(i)`; the factors commute, so the order in `A.toList` is
+immaterial (and `Q^(i)` is idempotent, so even repetitions would be). -/
+noncomputable def zeroModeSet (A : Finset (Fin n)) (T : (Fin n → Zd d L) → ℂ) :
+    (Fin n → Zd d L) → ℂ :=
+  A.toList.foldr (fun i f => zeroModeOp d L i f) T
+
+/-- The one-index matrix of `Q^(i)`: `I - L^{-d} J`, i.e. `Proj_{e^⊥}` for the constant
+vector `e`. -/
+noncomputable def projMat : Matrix (Zd d L) (Zd d L) ℂ :=
+  1 - Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹
+
+variable {d L}
+
+theorem UN_eq_tensorKer (m : Fin n → ℂ) (s t : ℝ) :
+    UN d L g m s t = tensorKer d L (fun i => uKer d L g (cycProd m i) s t) := rfl
+
+theorem sum_one_complex : ∑ _c : Zd d L, (1 : ℂ) = ((L : ℂ) ^ d) := by
+  simp [Finset.card_univ, ZMod.card]
+
+/-- `I - L^{-d} J` is idempotent: it is the projection `Proj_{e^⊥}`. -/
+theorem projMat_mul_self : projMat d L * projMat d L = projMat d L := by
+  have hJ : (Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹)
+      * (Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹)
+      = Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹ := by
+    ext a b
+    have hL : ((L : ℂ) ^ d) ≠ 0 := by
+      have : (L : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne L)
+      positivity
+    have hcard : (Fintype.card (Zd d L) : ℂ) = (L : ℂ) ^ d := by
+      simp [ZMod.card]
+    simp only [Matrix.mul_apply, Matrix.of_apply, Finset.sum_const, Finset.card_univ,
+      nsmul_eq_mul]
+    rw [hcard]
+    field_simp
+  simp only [projMat, Matrix.sub_mul, Matrix.mul_sub, Matrix.one_mul, Matrix.mul_one, hJ]
+  abel
+
+/-- **`Q^(i)` passes through a tensor kernel**, left-multiplying the `i`-th kernel by
+`I - L^{-d} J`. -/
+theorem zeroModeOp_tensorKer (i : Fin n) (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
+    (A : (Fin n → Zd d L) → ℂ) :
+    zeroModeOp d L i (tensorKer d L K A)
+      = tensorKer d L (Function.update K i (projMat d L * K i)) A := by
+  funext a
+  have hsplit : ∀ F : Fin n → ℂ, ∏ j, F j = F i * ∏ j ∈ Finset.univ.erase i, F j := fun F => by
+    rw [← Finset.mul_prod_erase _ _ (Finset.mem_univ i)]
+  have hfac : ∀ b : Fin n → Zd d L,
+      (∏ j, Function.update K i (projMat d L * K i) j (a j) (b j))
+        = (∏ j, K j (a j) (b j))
+          - ((L : ℂ) ^ d)⁻¹ * ∑ c : Zd d L, ∏ j, K j (Function.update a i c j) (b j) := by
+    intro b
+    have h1 : ∏ j, Function.update K i (projMat d L * K i) j (a j) (b j)
+        = (projMat d L * K i) (a i) (b i) * ∏ j ∈ Finset.univ.erase i, K j (a j) (b j) := by
+      rw [hsplit fun j => Function.update K i (projMat d L * K i) j (a j) (b j)]
+      simp only [Function.update_self]
+      congr 1
+      exact Finset.prod_congr rfl fun j hj => by
+        rw [Function.update_of_ne (Finset.ne_of_mem_erase hj)]
+    have h2 : ∀ c : Zd d L, ∏ j, K j (Function.update a i c j) (b j)
+        = K i c (b i) * ∏ j ∈ Finset.univ.erase i, K j (a j) (b j) := by
+      intro c
+      rw [hsplit fun j => K j (Function.update a i c j) (b j)]
+      simp only [Function.update_self]
+      congr 1
+      exact Finset.prod_congr rfl fun j hj => by
+        rw [Function.update_of_ne (Finset.ne_of_mem_erase hj)]
+    have h3 : (projMat d L * K i) (a i) (b i)
+        = K i (a i) (b i) - ((L : ℂ) ^ d)⁻¹ * ∑ c : Zd d L, K i c (b i) := by
+      simp only [projMat, Matrix.sub_apply, Matrix.mul_apply, Matrix.one_apply, Matrix.of_apply,
+        sub_mul, Finset.sum_sub_distrib, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq,
+        Finset.mem_univ, ite_true, Finset.mul_sum]
+    rw [h1, h3, hsplit fun j => K j (a j) (b j)]
+    simp only [h2, ← Finset.sum_mul]
+    ring
+  simp only [tensorKer, zeroModeOp, avgOp, hfac, sub_mul, Finset.sum_sub_distrib,
+    Finset.mul_sum, Finset.sum_mul]
+  refine congrArg₂ (· - ·) rfl ?_
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl fun b _ => Finset.sum_congr rfl fun c _ => by ring
+
+/-- The list form of `Q^(A)`: folding `Q^(i)` over a list of indices left-multiplies the
+kernels at those indices by `I - L^{-d} J`. -/
+theorem zeroModeList_tensorKer (l : List (Fin n)) (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
+    (T : (Fin n → Zd d L) → ℂ) :
+    l.foldr (fun i f => zeroModeOp d L i f) (tensorKer d L K T)
+      = tensorKer d L (fun i => if i ∈ l then projMat d L * K i else K i) T := by
+  induction l generalizing K with
+  | nil => simp
+  | cons j l ih =>
+    rw [List.foldr_cons, ih, zeroModeOp_tensorKer]
+    congr 1
+    funext i
+    by_cases hij : i = j
+    · subst hij
+      by_cases hil : i ∈ l <;>
+        simp [Function.update_self, hil, ← Matrix.mul_assoc, projMat_mul_self]
+    · simp [hij]
+
+/-- **`Q^(A) ∘ (tensor kernel)` is again a tensor kernel**, with the kernels at the
+indices of `A` left-multiplied by `I - L^{-d} J`.  This is the structural half of
+`lem:sum_decay_nonzero`. -/
+theorem zeroModeSet_tensorKer (A : Finset (Fin n)) (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
+    (T : (Fin n → Zd d L) → ℂ) :
+    zeroModeSet d L A (tensorKer d L K T)
+      = tensorKer d L (fun i => if i ∈ A then projMat d L * K i else K i) T := by
+  rw [zeroModeSet, zeroModeList_tensorKer]
+  exact congrArg (tensorKer d L · T) (funext fun i => by simp [Finset.mem_toList])
+
+/-- `‖K ∘ 𝒜‖_∞ ≤ (∏_i ‖K_i‖_{∞→∞}) ‖𝒜‖_∞`, pointwise form. -/
+theorem norm_tensorKer_apply_le (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
+    (A : (Fin n → Zd d L) → ℂ) (a : Fin n → Zd d L) :
+    ‖tensorKer d L K A a‖ ≤ (∏ i, ‖K i‖) * ‖A‖ := by
+  calc ‖tensorKer d L K A a‖
+      ≤ ∑ b : Fin n → Zd d L, ‖(∏ i, K i (a i) (b i)) * A b‖ := norm_sum_le _ _
+    _ ≤ ∑ b : Fin n → Zd d L, (∏ i, ‖K i (a i) (b i)‖) * ‖A‖ := by
+        refine Finset.sum_le_sum fun b _ => ?_
+        rw [norm_mul, norm_prod]
+        exact mul_le_mul_of_nonneg_left (norm_le_pi_norm A b)
+          (Finset.prod_nonneg fun i _ => norm_nonneg _)
+    _ = (∏ i, ∑ c, ‖K i (a i) c‖) * ‖A‖ := by
+        rw [← Finset.sum_mul, Finset.prod_univ_sum, Fintype.piFinset_univ]
+    _ ≤ (∏ i, ‖K i‖) * ‖A‖ := by
+        refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg _)
+        exact Finset.prod_le_prod₀ (fun i _ => Finset.sum_nonneg fun c _ => norm_nonneg _)
+          fun i _ => sum_norm_row_le (K i) (a i)
+
+/-- `‖K ∘ 𝒜‖_∞ ≤ (∏_i ‖K_i‖_{∞→∞}) ‖𝒜‖_∞`. -/
+theorem norm_tensorKer_le (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
+    (A : (Fin n → Zd d L) → ℂ) : ‖tensorKer d L K A‖ ≤ (∏ i, ‖K i‖) * ‖A‖ := by
+  have hpos : 0 ≤ (∏ i, ‖K i‖) * ‖A‖ :=
+    mul_nonneg (Finset.prod_nonneg fun i _ => norm_nonneg _) (norm_nonneg _)
+  exact (pi_norm_le_iff_of_nonneg hpos).mpr fun a => norm_tensorKer_apply_le K A a
+
+end TensorKernel
+
 end RBM
