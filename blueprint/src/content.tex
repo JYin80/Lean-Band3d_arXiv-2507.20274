@@ -410,6 +410,23 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   results, so the ``theorems resting on each borrowed result'' table under-reports it.
 \end{theorem}
 
+\begin{lemma}[$\mathtt{(Kn2sol)}$, the two-loop solution --- \emph{proved, not borrowed}]\label{lem:kTwo}
+  \lean{RBM.Loop.kTwo, RBM.Loop.hasDerivAt_kTwo, RBM.Loop.kTwo_zero, RBM.Loop.kTwoLoop, RBM.Loop.hasDerivAt_kTwoLoop, RBM.Loop.kTwoFormula_kTwoLoop, RBM.Loop.pureLoop_two_kTwoLoop}\leanok
+  \uses{lem:Theta-deriv, def:tsp, ax:KTwoFormula}
+  $K^{(2)}_{t,\bm\sigma,\mathbf a}=W^{-d}m(\sigma_1)m(\sigma_2)\,(\Th_{t\,m(\sigma_1)m(\sigma_2)})_{a_1a_2}$
+  solves the convolution tree equation at $n=2$ and takes the $M$-loop value at $t=0$.
+  The paper records this in an example and attributes it to \texttt{[YY\_25]},
+  \texttt{[RBSO1D]}; it does not have to be borrowed, and here it is not.
+
+  This is the \emph{existence} half.  Rewriting an \emph{arbitrary} $K$-loop family into
+  this formula -- which is what \ref{ax:KTwoFormula} asserts -- additionally needs
+  uniqueness for the tree equations (Gr\"onwall, work order Q22a).  What is already
+  available: \texttt{kTwoFormula\_kTwoLoop} exhibits a witness, so \ref{ax:KTwoFormula} is
+  satisfiable and the theorems carrying it are not vacuously true; and
+  \texttt{pureLoop\_two\_kTwoLoop} is \ref{lem:pureloop} with that hypothesis discharged,
+  leaving only \ref{ax:ThfadCshort}.
+\end{lemma}
+
 \begin{lemma}[$\mathtt{lem\_pureloop}$, $n=2$]\label{lem:pureloop}
   \lean{RBM.Loop.norm_Theta_same_le_exp, RBM.Loop.sum_exp_decay_conv, RBM.Loop.pureLoop_two}\leanok
   \uses{ax:KTwoFormula, ax:ThfadCshort}
