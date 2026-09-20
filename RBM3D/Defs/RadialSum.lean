@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.Real.Sqrt
 import Mathlib.Data.Nat.Factorial.Basic
 import RBM3D.Defs.Shells
@@ -446,5 +447,117 @@ theorem sum_ball_pow_le (k : ℕ) {R : ℝ} (hR : 1 ≤ R) (D : Finset (Zd (k + 
     ∑ α ∈ D, ((((zdistD (k + 2) L (a - α) : ℕ) : ℝ) + 1) ^ k)⁻¹ ≤ ballC k * R ^ 2 := by
   refine le_trans (le_of_eq ?_) (sum_ball_min_pow_le (L := L) k hR D a a hD)
   exact Finset.sum_congr rfl fun α hα => by rw [min_eq_left (hD α hα)]
+
+
+/-! ### The harmonic sum
+
+Moved here from `Kernel/SumDecay.lean` (where `(eq:latticesum_d3)` first needed it):
+it is a fact about sums of `1/r`, and the ball sum at the critical exponent below
+needs it too. -/
+
+/-- `1/(M+1) ≤ log (M+1) - log M` for `M ≥ 1`. -/
+theorem inv_succ_le_log_sub_log {M : ℕ} (hM : 1 ≤ M) :
+    ((M : ℝ) + 1)⁻¹ ≤ Real.log ((M : ℝ) + 1) - Real.log M := by
+  have hM0 : (0 : ℝ) < M := by exact_mod_cast hM
+  have hM1 : (0 : ℝ) < (M : ℝ) + 1 := by linarith
+  have hfrac : (0 : ℝ) < (M : ℝ) / ((M : ℝ) + 1) := by positivity
+  have h := Real.log_le_sub_one_of_pos hfrac
+  rw [Real.log_div hM0.ne' hM1.ne'] at h
+  have hval : (M : ℝ) / ((M : ℝ) + 1) - 1 = -(((M : ℝ) + 1)⁻¹) := by
+    field_simp
+    ring
+  rw [hval] at h
+  linarith
+
+/-- `Σ_{r = 1}^{M} 1/r ≤ 1 + log M`. -/
+theorem sum_inv_Icc_le (M : ℕ) : ∑ r ∈ Icc 1 M, ((r : ℝ))⁻¹ ≤ 1 + Real.log M := by
+  induction M with
+  | zero => simp
+  | succ M ih =>
+    rcases Nat.eq_zero_or_pos M with hM | hM
+    · subst hM
+      norm_num
+    · rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ M + 1)]
+      have hstep := inv_succ_le_log_sub_log hM
+      push_cast
+      linarith
+
+/-- `Σ_{r < M+1} 1/(r+1) ≤ 1 + log (M+1)`: the harmonic bound in the form a `range` sum
+needs it. -/
+theorem sum_inv_range_succ_le (M : ℕ) :
+    ∑ r ∈ Finset.range (M + 1), (((r : ℝ)) + 1)⁻¹ ≤ 1 + Real.log ((M : ℝ) + 1) := by
+  induction M with
+  | zero => simp
+  | succ M ih =>
+    rw [Finset.sum_range_succ]
+    have hstep := inv_succ_le_log_sub_log (M := M + 1) (by omega)
+    push_cast at hstep ⊢
+    linarith
+
+/-- **The ball sum at the critical exponent.**  `Σ_{|a-b| ≤ ρ} (|a-b|+1)^{-d} ≤ C_d(1+log(ρ+1))`.
+
+At the exponent `d - 2` the ball sum is `≍ ρ²` (`sum_ball_pow_le`); at the exponent `d` it
+is logarithmic, and the logarithm is real -- it is the same `Σ 1/r` that makes
+`Σ_{b ∈ Z_L^d}(|b|+1)^{-d}` grow like `log L`.  Keeping it is what forces the asymmetric
+split of `ML:Kbound` (`docs/QUEUE.md`, Q24). -/
+theorem sum_ball_inv_pow_dim_le (k : ℕ) {ρ : ℝ} (hρ : 0 ≤ ρ) (D : Finset (Zd (k + 2) L))
+    (a : Zd (k + 2) L) (hD : ∀ b ∈ D, ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) ≤ ρ) :
+    ∑ b ∈ D, ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ (k + 2))⁻¹
+      ≤ 2 ^ (k + 2) * (1 + Real.log (ρ + 1)) := by
+  classical
+  set M : ℕ := ⌊ρ⌋₊ with hM
+  have hMρ : (M : ℝ) ≤ ρ := Nat.floor_le hρ
+  have hmem : ∀ b ∈ D, zdistD (k + 2) L (a - b) ≤ M := fun b hb =>
+    Nat.le_floor (hD b hb)
+  -- pass to the indicator of the ball on the whole lattice
+  set F : ℕ → ℝ := fun r => if r ≤ M then (((r : ℝ) + 1) ^ (k + 2))⁻¹ else 0 with hF
+  have hF0 : ∀ r, 0 ≤ F r := by
+    intro r; rw [hF]; dsimp only; split_ifs <;> positivity
+  have hstep : ∑ b ∈ D, ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ (k + 2))⁻¹
+      ≤ ∑ b : Zd (k + 2) L, F (zdistD (k + 2) L (a - b)) := by
+    refine le_trans (le_of_eq (Finset.sum_congr rfl fun b hb => ?_))
+      (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ D) fun b _ _ => hF0 _)
+    rw [hF]
+    simp only [hmem b hb, ite_true]
+  refine le_trans hstep ?_
+  rw [sum_shift (k + 2) a F, sum_radial (k + 2) F]
+  -- radially: the sphere count against the critical power is `1/(r+1)`
+  have hterm : ∀ r ∈ Finset.range ((k + 2) * L + 1),
+      (sphereCard (k + 2) L r : ℝ) * F r
+        ≤ 2 ^ (k + 2) * (if r ≤ M then (((r : ℝ) + 1))⁻¹ else 0) := by
+    intro r _
+    have hc : (sphereCard (k + 2) L r : ℝ) ≤ 2 ^ (k + 2) * ((r : ℝ) + 1) ^ (k + 1) := by
+      exact_mod_cast card_sphere_le (L := L) (k + 1) r
+    rw [hF]
+    dsimp only
+    by_cases hr : r ≤ M
+    · simp only [hr, ite_true]
+      have hpow : (((r : ℝ) + 1) ^ (k + 2))⁻¹
+          = (((r : ℝ) + 1) ^ (k + 1))⁻¹ * (((r : ℝ) + 1))⁻¹ := by
+        rw [pow_succ]
+        field_simp
+      rw [hpow, ← mul_assoc]
+      refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+      calc (sphereCard (k + 2) L r : ℝ) * (((r : ℝ) + 1) ^ (k + 1))⁻¹
+          ≤ (2 ^ (k + 2) * ((r : ℝ) + 1) ^ (k + 1)) * (((r : ℝ) + 1) ^ (k + 1))⁻¹ :=
+            mul_le_mul_of_nonneg_right hc (by positivity)
+        _ = 2 ^ (k + 2) := by field_simp
+    · simp [hr]
+  refine le_trans (Finset.sum_le_sum hterm) ?_
+  rw [← Finset.mul_sum]
+  refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+  -- the harmonic sum over the ball
+  have hsub : ∑ r ∈ Finset.range ((k + 2) * L + 1), (if r ≤ M then (((r : ℝ) + 1))⁻¹ else 0)
+      ≤ ∑ r ∈ Finset.range (M + 1), (((r : ℝ) + 1))⁻¹ := by
+    rw [← Finset.sum_filter]
+    refine Finset.sum_le_sum_of_subset_of_nonneg ?_ (fun r _ _ => by positivity)
+    intro r hr
+    simp only [Finset.mem_filter, Finset.mem_range] at hr ⊢
+    omega
+  refine le_trans (le_trans (le_of_eq (Finset.sum_congr rfl fun r _ => rfl)) hsub) ?_
+  refine le_trans (sum_inv_range_succ_le M) ?_
+  have hlog : Real.log ((M : ℝ) + 1) ≤ Real.log (ρ + 1) :=
+    Real.log_le_log (by positivity) (by linarith)
+  linarith
 
 end RBM

@@ -42,35 +42,6 @@ namespace RBM
 
 open Finset Real
 
-/-! ### The harmonic sum -/
-
-/-- `1/(M+1) ≤ log (M+1) - log M` for `M ≥ 1`. -/
-theorem inv_succ_le_log_sub_log {M : ℕ} (hM : 1 ≤ M) :
-    ((M : ℝ) + 1)⁻¹ ≤ Real.log ((M : ℝ) + 1) - Real.log M := by
-  have hM0 : (0 : ℝ) < M := by exact_mod_cast hM
-  have hM1 : (0 : ℝ) < (M : ℝ) + 1 := by linarith
-  have hfrac : (0 : ℝ) < (M : ℝ) / ((M : ℝ) + 1) := by positivity
-  have h := Real.log_le_sub_one_of_pos hfrac
-  rw [Real.log_div hM0.ne' hM1.ne'] at h
-  have hval : (M : ℝ) / ((M : ℝ) + 1) - 1 = -(((M : ℝ) + 1)⁻¹) := by
-    field_simp
-    ring
-  rw [hval] at h
-  linarith
-
-/-- `Σ_{r = 1}^{M} 1/r ≤ 1 + log M`. -/
-theorem sum_inv_Icc_le (M : ℕ) : ∑ r ∈ Icc 1 M, ((r : ℝ))⁻¹ ≤ 1 + Real.log M := by
-  induction M with
-  | zero => simp
-  | succ M ih =>
-    rcases Nat.eq_zero_or_pos M with hM | hM
-    · subst hM
-      norm_num
-    · rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ M + 1)]
-      have hstep := inv_succ_le_log_sub_log hM
-      push_cast
-      linarith
-
 /-! ### The lattice sum -/
 
 variable {L : ℕ} [NeZero L]
