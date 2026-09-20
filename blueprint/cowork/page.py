@@ -49,9 +49,9 @@ CH4 = rows([
  ("lem:propT 的卷积界 TTT2 —— 分析量最大的一条，拆成 K0–K5","Q11 · 进行中","ready","Defs/Shells.lean · Defs/RadialSum.lean 已落地"),
  ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 与下标范围已逐条核实","Q12 ✓ 已证","done","sfT · PsiT · sfT_pair_cases"),
  ("lem:sum_decay_nonzero —— 第一条真正使用接口假设的定理，签名里写着借了什么","Q13 ✓ 已证","done","norm_zeroModeSet_UN_le · projMat_mul_Theta"),
- ("lem:sum_decay 与 eq:latticesum_d3 —— 第三轮新加的那条临界格点求和","Q17 · 可开工","ready","d=3 与 d≥4 要分开处理"),
- ("典范树划分 TSP(P_a) 与边值 f_{t,σ}(e)","Q14 · 可开工","ready","Loop/Partition.lean"),
- ("树表示 eq_Ktree —— 公理化 vs 移植 RBM1D 的 ODE 唯一性证法","Q15 · 待 Q14","todo","Loop/TreeRep.lean"),
+ ("lem:sum_decay 与 eq:latticesum_d3 —— 第三轮新加的那条临界格点求和","Q17 · 认领中","ready","d=3 与 d≥4 要分开处理"),
+ ("典范树划分 TSP(P_a) 与边值 —— 表示刻意与 RBM1D 对齐，为移植铺路","Q14 ✓ 已证","done","TSP · thetaEdge · treeVal · GammaN · GammaSum"),
+ ("树表示 eq_Ktree —— 移植路线已打通，不必当假设","Q15 · 可开工","ready","移植 RBM1D/Loop/TreeRep.lean"),
  ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 · 待 Q15","todo","Loop/PureLoop.lean"),
 ])
 
@@ -72,9 +72,10 @@ QUEUE = """
 <tr><td>Q11</td><td><code>lem:propT</code> 的卷积界</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q12</td><td><code>claim:TTk</code>（<code>∧ℓ</code> 截断）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
-<tr><td>Q15–Q16</td><td>树表示 <code>eq_Ktree</code> · <code>lem_pureloop</code></td><td><code>Loop/</code></td><td><span class="pill todo">待 Q14</span></td></tr>
-<tr><td>Q17</td><td><code>lem:sum_decay</code> 与 <code>eq:latticesum_d3</code>（第三轮新加的临界格点求和）</td><td><code>Kernel/</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q15</td><td>树表示 <code>eq_Ktree</code> —— 移植 RBM1D 的 ODE 唯一性证法</td><td><code>Loop/TreeRep.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q16</td><td><code>lem_pureloop</code></td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill todo">待 Q15</span></td></tr>
+<tr><td>Q17</td><td><code>lem:sum_decay</code> 与 <code>eq:latticesum_d3</code>（第三轮新加的临界格点求和）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">认领中</span></td></tr>
 <tr><td>Q18</td><td>让审计直接报定理数</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN · 小活</span></td></tr>
 <tr><td>Q19</td><td><b>5 条接口 axiom 改成 <code>structure</code> 字段</b> —— 全项目零公理</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q20</td><td><code>(eq:key_T_reudce)</code> 求和版（带 <code>≺</code>）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
@@ -171,10 +172,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>223</b><span>定理已证</span></div>
+    <div class="chip done"><b>238</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>4</b><span>工单可开工</span></div>
+    <div class="chip ready"><b>3</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -291,9 +292,9 @@ __QUEUE__
 </div>
 
 <footer>
-  计数说明：<b>223</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
+  计数说明：<b>238</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
   以及 167 条编译器自动生成的声明（递归子、equation lemma 等），不宜当进度读——Q18 就是去修这个报告。<br>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 7 · 2026-09-20 04:58 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 8 · 2026-09-20 05:10 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
