@@ -27,7 +27,7 @@
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | **PARTIAL** (CC)：`n = 2` + 工具；一般 `n` → Q25 |
 | Q17a | `eq:latticesum_d3`（第三轮新加的那条） | `Kernel/SumDecay.lean` | **DONE** (CC)：不依赖任何接口假设 |
-| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **OPEN**（要用 `ThetaDecay`） |
+| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **CLAIMED** (CC) |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
