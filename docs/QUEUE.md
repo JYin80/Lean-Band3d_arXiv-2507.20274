@@ -69,7 +69,7 @@
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：六项索引 + 两条对角线的树值；求导匹配 → Q35 |
 | Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：主项（乘积步）已证 + 修好 Q28 的一处缺陷；`(deccA0)` 误差项与 (I)(II) 待续 |
-| Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q30 开出；树值已算出） |
+| Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **CLAIMED (CC)** |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
