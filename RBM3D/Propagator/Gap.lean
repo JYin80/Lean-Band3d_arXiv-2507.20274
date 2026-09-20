@@ -447,4 +447,104 @@ theorem exists_mixing (hL : 3 ≤ L) (hg : 0 < g) :
   rw [hh] at hentry
   exact le_trans hentry hosc
 
+/-! ### Summing the mixing bound
+
+`Θ̊_ξ = Σ_k ξ^k (S^k - P)`, and the mixing bound of `exists_mixing` makes that series
+converge at a rate that does not depend on `ξ`.  The exponent `⌊k/R⌋` repeats `R` times
+before it grows, so the majorant sums to `R(1-q)^{-1}`. -/
+
+/-- The block sum: `Σ_{k < R M} q^{⌊k/R⌋} = R Σ_{j < M} q^j`. -/
+theorem sum_range_pow_div (q : ℝ) {R : ℕ} (hR : 0 < R) :
+    ∀ M : ℕ, ∑ k ∈ Finset.range (R * M), q ^ (k / R) = R * ∑ j ∈ Finset.range M, q ^ j := by
+  intro M
+  induction M with
+  | zero => simp
+  | succ M ih =>
+    have hsplit : R * (M + 1) = R * M + R := by ring
+    rw [hsplit, Finset.sum_range_add, ih]
+    have hblock : ∀ i ∈ Finset.range R, q ^ ((R * M + i) / R) = q ^ M := by
+      intro i hi
+      have hiR : i < R := Finset.mem_range.mp hi
+      rw [Nat.mul_add_div hR, Nat.div_eq_of_lt hiR, Nat.add_zero]
+    rw [Finset.sum_congr rfl hblock, Finset.sum_const, Finset.card_range, nsmul_eq_mul,
+      Finset.sum_range_succ]
+    ring
+
+/-- `Σ_k q^{⌊k/R⌋} ≤ R (1-q)⁻¹`, and the sum converges: the exponent repeats `R` times
+before it grows. -/
+theorem summable_pow_div {q : ℝ} (hq0 : 0 ≤ q) (hq1 : q < 1) {R : ℕ} (hR : 0 < R) :
+    Summable (fun k : ℕ => q ^ (k / R)) ∧
+      ∑' k : ℕ, q ^ (k / R) ≤ (R : ℝ) * (1 - q)⁻¹ := by
+  have hsummable : Summable (fun j : ℕ => q ^ j) := (hasSum_geometric_of_lt_one hq0 hq1).summable
+  have hgeom : ∀ M : ℕ, ∑ j ∈ Finset.range M, q ^ j ≤ (1 - q)⁻¹ := by
+    intro M
+    rw [← tsum_geometric_of_lt_one hq0 hq1]
+    exact hsummable.sum_le_tsum (Finset.range M) (fun j _ => by positivity)
+  have hpart : ∀ N : ℕ, ∑ k ∈ Finset.range N, q ^ (k / R) ≤ (R : ℝ) * (1 - q)⁻¹ := by
+    intro N
+    have hle : N ≤ R * N := Nat.le_mul_of_pos_left N hR
+    have hsub : Finset.range N ⊆ Finset.range (R * N) := fun x hx =>
+      Finset.mem_range.mpr (lt_of_lt_of_le (Finset.mem_range.mp hx) hle)
+    calc ∑ k ∈ Finset.range N, q ^ (k / R)
+        ≤ ∑ k ∈ Finset.range (R * N), q ^ (k / R) :=
+          Finset.sum_le_sum_of_subset_of_nonneg hsub (fun k _ _ => by positivity)
+      _ = (R : ℝ) * ∑ j ∈ Finset.range N, q ^ j := sum_range_pow_div q hR N
+      _ ≤ (R : ℝ) * (1 - q)⁻¹ := by
+          refine mul_le_mul_of_nonneg_left (hgeom N) (by positivity)
+  exact ⟨summable_of_sum_range_le (fun k => by positivity) hpart,
+    Real.tsum_le_of_sum_range_le (fun k => by positivity) hpart⟩
+
+
+/-- **The zero-mode-removed propagator is bounded uniformly in the spectral parameter**,
+at fixed `L`.  This is the cancellation `(prop:ThfadC0)` needs: `Θ̊_ξ = Σ_k ξ^k (S^k - P)`,
+and the mixing bound makes that series converge at a rate independent of `ξ`. -/
+theorem exists_norm_Theta0_le (hL : 3 ≤ L) (hg : 0 < g) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ ξ : ℂ, ‖ξ‖ < 1 → ∀ a b : Zd d L, ‖Theta0 d L g ξ a b‖ ≤ C := by
+  obtain ⟨q, hq0, hq1, hmix⟩ := exists_mixing (d := d) (L := L) (g := g) hL hg
+  set R := torusDiam d L + 1 with hR
+  have hR0 : 0 < R := Nat.succ_pos _
+  obtain ⟨hsummable, hbound⟩ := summable_pow_div hq0 hq1 hR0
+  refine ⟨(R : ℝ) * (1 - q)⁻¹, by positivity, ?_⟩
+  intro ξ hξ a b
+  have hLC : ((L : ℂ)) ^ d ≠ 0 := by
+    have hL0 : (L : ℂ) ≠ 0 := by
+      have : L ≠ 0 := by omega
+      exact_mod_cast this
+    exact pow_ne_zero _ hL0
+  -- the two series
+  have hsum1 : Summable fun k : ℕ => ξ ^ k * ((SBR d L g ^ k) a b : ℂ) :=
+    summable_Theta_entry hL hξ a b
+  have hsum2 : Summable fun k : ℕ => ((L : ℂ) ^ d)⁻¹ * ξ ^ k :=
+    (summable_geometric_of_norm_lt_one hξ).mul_left _
+  have hseries : Theta0 d L g ξ a b
+      = ∑' k : ℕ, (ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ((L : ℂ) ^ d)⁻¹ * ξ ^ k) := by
+    rw [hsum1.tsum_sub hsum2, ← Theta_apply_eq_tsum hL hξ, tsum_mul_left,
+      tsum_geometric_of_norm_lt_one hξ, ← Theta0_apply_eq hL hξ]
+  -- termwise estimate
+  have hterm : ∀ k : ℕ,
+      ‖ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ((L : ℂ) ^ d)⁻¹ * ξ ^ k‖ ≤ q ^ (k / R) := by
+    intro k
+    have hfac : ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ((L : ℂ) ^ d)⁻¹ * ξ ^ k
+        = ξ ^ k * (((((SBR d L g ^ k) a b - ((L : ℝ) ^ d)⁻¹ : ℝ)) : ℂ)) := by
+      push_cast
+      ring
+    rw [hfac, norm_mul, norm_pow, Complex.norm_real]
+    have hξk : ‖ξ‖ ^ k ≤ 1 := pow_le_one₀ (norm_nonneg ξ) hξ.le
+    calc ‖ξ‖ ^ k * ‖(SBR d L g ^ k) a b - ((L : ℝ) ^ d)⁻¹‖
+        ≤ 1 * ‖(SBR d L g ^ k) a b - ((L : ℝ) ^ d)⁻¹‖ :=
+          mul_le_mul_of_nonneg_right hξk (norm_nonneg _)
+      _ = |(SBR d L g ^ k) a b - ((L : ℝ) ^ d)⁻¹| := by rw [one_mul, Real.norm_eq_abs]
+      _ ≤ q ^ (k / R) := hmix k a b
+  have hnormsummable : Summable fun k : ℕ =>
+      ‖ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ((L : ℂ) ^ d)⁻¹ * ξ ^ k‖ :=
+    Summable.of_nonneg_of_le (fun k => norm_nonneg _) hterm hsummable
+  calc ‖Theta0 d L g ξ a b‖
+      = ‖∑' k : ℕ, (ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ((L : ℂ) ^ d)⁻¹ * ξ ^ k)‖ := by
+        rw [hseries]
+    _ ≤ ∑' k : ℕ, ‖ξ ^ k * ((SBR d L g ^ k) a b : ℂ) - ((L : ℂ) ^ d)⁻¹ * ξ ^ k‖ :=
+        norm_tsum_le_tsum_norm hnormsummable
+    _ ≤ ∑' k : ℕ, q ^ (k / R) :=
+        Summable.tsum_le_tsum hterm hnormsummable hsummable
+    _ ≤ (R : ℝ) * (1 - q)⁻¹ := hbound
+
 end RBM
