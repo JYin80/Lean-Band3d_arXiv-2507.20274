@@ -442,3 +442,27 @@ CLAUDE.md 规则 15 点名的就是我上两拍写下的那条匿名前提（2-l
 否则只能重新引入假设，与 Q16 的原则冲突。
 
 审计：**349 定理 / 145 定义 / 0 公理**；`ThetaDecayShort` 6 → 7、`TwoLoopBounded` 3 → 4。
+
+## 2026-09-20 · Claude Code · Q26 完成 ⭐：审计自己找前件，报告分两本账
+
+`Test/Axioms.lean` 不再信任手写名单。`scanPremises` 扫环境里 `RBM` 的 `Prop` 值定义，
+挑出「某条定理当前件用、而本项目无任何定理证出」的那些；凡落在
+`borrowedProps` / `owedProps` / `structuralProps` 三份名单之外的，**构建失败**。
+
+两个判定坑都踩过并处理了：**结构体投影不算证明**（`PropTH.decay` 只是拆包），
+用 `isStructure` + `getStructureFields` 精确排除——先试的「名字前缀」粗筛会把
+`DetDom.refl` 这种真定理一起排掉、反而把 `DetDom` 误判成未证。
+
+**两本账**：借来的 8 条（论文引用而未证）、欠下的 1 条（`TwoLoopBounded`，承重 4）、
+另列 5 条结构性谓词（定义对象本身，不进账但必须显式登记）。
+`KTwoFormula` 因 Q22a 已证，**自动**从账上消失——名单时代要手工删。
+
+**反向测试** `Test/AuditNegative.lean`：审计跳过的 `RBM.Audit.Fixture` 里放一条没人证的
+`FakePremise`，断言扫描必须报出它；另手工验证删掉 `TwoLoopBounded` 会让构建失败。
+
+顺带：审计自己的辅助定义以前被算进「本项目定义」，现已排除，定义数 145 → **140**。
+
+**已知边界**（写下来备查）：判定靠「没有定理以它为结论」，所以
+`theorem foo (h : P) : P := h` 这种同义反复能骗过它。
+
+审计：**349 定理 / 140 定义 / 0 公理**。

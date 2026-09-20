@@ -47,7 +47,7 @@
 | Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **PARTIAL** (CC)：`n = 3` 已证（`Loop/TreeThree.lean`）；`n = 4` → Q30，一般 `n` → Q31 |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **DONE** (CC)：陈述层 + **那句「额外修改」已定位并证出**；格点和 → Q32 |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **PARTIAL** (CC)：星形树（任意 `n`）+ `n = 3` 已证；带对角线的树 → Q33 |
-| Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **CLAIMED (CC)** |
+| Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **DONE** (CC)：扫描 + 两本账 + 反向测试 |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
@@ -1628,6 +1628,44 @@ F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
 
 **前两步要先补**：球内求和引理 `Σ_{|x| ≤ R} (|x|+1)^{−(d−2)} ≤ C_d (R+1)²`（仿 `sum_radial_tail_le` 写，几行），
 以及 `(1−s) * ellT L g s ^ 2 ≤ g² + |1−s|`（从 `ellT` 定义直接算）。
+
+### CC 的完成记录（2026-09-20）
+
+**三件事都做了**，`./check.sh` 绿、0 warning。
+
+**① 自动发现，不靠名单**（`scanPremises`）：扫全环境里 `RBM` 命名空间的 `Prop` 值定义，
+挑出「**某条定理把它当前件、而本项目没有任何定理证出它**」的那些。
+两个判定上的坑，都处理了：
+* **结构体投影不算证明**。`PropTH.decay` 的结论是 `ThetaDecay …`，但它只是把 `PropTH` 拆开，
+  不是证明。用 `isStructure` + `getStructureFields` 精确排除（先试过「名字前缀」粗筛，
+  会把 `DetDom.refl` 这种**真定理**一起排掉，`DetDom` 就被误判成未证）。
+* **扫描结果与现实同步**：`KTwoFormula` 因为 Q22a 证出了 `kTwoFormula_of_isKLoop`，
+  现在自动从「未证前件」里消失——名单时代要手工删，现在不用。
+
+**扫到 10 条，逐条归类**：8 条借来的、1 条欠下的、5 条结构性的（有重叠，`ThetaDiffOne/Two`
+目前没被任何定理当前件，所以不在扫描结果里，但仍列在借来的那本账上）。
+
+**② 两本账**（这条比计数重要）：
+* **借来的（论文引用而未证）**：`ThetaDecay`、`ThetaDecayShort`、`ThetaDiffOne`、`ThetaDiffTwo`、
+  `ThetaZeroMode`、`PropTH`、`KTreeRep`、`KLoopBound`；
+* **欠下的（本项目可证、为了往前走先假设）**：`TwoLoopBounded`（承重 4）；
+* **结构性的**（定义对象本身、不是「结论」）：`IsKLoop`、`IsDiag`、`Crossing`、
+  `SameSignOutside`、`Graph.Case.Rel`——单列一档，不进账，但**加一条也要显式写进名单**，
+  否则构建失败。
+
+**③ 反向测试**（`Test/AuditNegative.lean`）：在审计自己跳过的 `RBM.Audit.Fixture` 里放一条
+没人证的 `FakePremise`，用 `#assert_rbm_audit_detects` 断言扫描**必须**报出它。
+另外手工验证过失败路径：把 `TwoLoopBounded` 从账上删掉，构建立刻失败并点名它。
+
+**顺带修正一处计数**：审计自己的辅助定义（`allowedAxioms`、`interfaceProps`、`scanPremises` …）
+以前被算进「本项目的定义」里。它们不是开发的一部分，已从统计中排除——
+定义数 145 → **140**，这个数字现在是诚实的。
+
+**留给将来的一句话**：扫描判定「未证前件」靠的是「没有定理以它为结论」。
+如果哪天有人写了一条 `theorem foo : ThetaDecay d g m := by ...`（真证出来了），
+它会自动从账上消失——**这正是想要的**；但若有人写的是 `theorem foo (h : ThetaDecay d g m) :
+ThetaDecay d g m := h` 这种同义反复，账也会消失。**同义反复会骗过它**，
+这是当前方案的已知边界，写在这里备查。
 
 ---
 
