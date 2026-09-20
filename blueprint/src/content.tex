@@ -7,7 +7,7 @@
 % \lean{} tags, and \leanok on every node that is *proved*.
 %
 % A node that names an interface Prop (ax:ThfadC, ax:ThfadCshort, ax:BD1, ax:BD2,
-% ax:ThfadC0, ax:KTreeRep) gets \lean{} but NOT \leanok: the statement
+% ax:ThfadC0, ax:KTreeRep, ax:Kbound) gets \lean{} but NOT \leanok: the statement
 % exists in Lean, the proof does not, because the paper cites it rather than proving it.
 % These are hypotheses carried by the theorems that use them -- not axioms -- so the
 % audit reports 0 axioms while still reporting how many theorems rest on each of them.
@@ -390,6 +390,30 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   sums $\sum_{\Gamma\in\mathrm{TSP}}$.  The representation is the same as in the sister
   project \texttt{RBM1D}: it is dimension-independent.
 \end{definition}
+
+\begin{theorem}[$\mathtt{ML{:}Kbound}$, and the $d\ge3$ step --- \emph{statement assumed, the modification proved}]\label{ax:Kbound}
+  \lean{RBM.Loop.KLoopBound, RBM.Loop.inv_pow_pair_le, RBM.Loop.not_inv_pow_pair_le_single}
+  \uses{def:params, ax:ThfadC, ax:ThfadCshort, lem:pureloop}
+  $\max_{\bm\sigma}\max_{\mathbf a}|\Kcal^{(n)}_{t,\bm\sigma,\mathbf a}|\prec(W^{-d}B_{t,0})^{n-1}$
+  for every $n$ and $t\in[0,1)$.  Appendix A.5 says the proof is analogous to
+  \texttt{[YY\_25]} Lemma 3.11 \emph{but requires additional modifications to handle
+  $d\ge3$}, without saying which.
+
+  \textbf{It is this step}, in case (ii).4 of $\mathtt{(eq{:}ind\text{-}step\text{-}bound)}$:
+  \[(x^{d-1}+1)^{-1}(y^{d-1}+1)^{-1}\le 2\bigl[(x^{d}+1)^{-1}(y^{d-2}+1)^{-1}+(x^{d-2}+1)^{-1}(y^{d}+1)^{-1}\bigr],\]
+  proved as \texttt{inv\_pow\_pair\_le}.  The asymmetry is forced: bounding one
+  $(d-1)$-factor by $1$ leaves a divergent lattice sum, and even
+  $\sum_b(|a-b|^d+1)^{-1}$ is of order $\log L$; what makes the sum converge is the
+  leftover exponent $d-2$, which is useful exactly when $d\ge3$.  In $d=1$,
+  $|\cdot|^{d-1}=1$ carries no decay at all, which is why the argument of \texttt{[YY\_25]}
+  has to be rewritten.  \texttt{not\_inv\_pow\_pair\_le\_single} checks that one term of
+  the split does not suffice.
+
+  The statement itself is carried as a hypothesis: its proof needs the molecule layer
+  $\Sigma^{(\pi)}$ and the sum-zero property, which are not formalized.  The remaining
+  half of the $d\ge3$ step, the lattice sum
+  $\sum_b(|a-b|^d+1)^{-1}(|c-b|^{d-2}+1)^{-1}\lesssim1$, is work order Q32.
+\end{theorem}
 
 \begin{lemma}[$\mathtt{(eq\_Ktree)}$ at $n=3$]\label{lem:treeThree}
   \lean{RBM.Loop.treeEqRhs_three, RBM.Loop.treeSum_three, RBM.Loop.sum_SB_starLeft, RBM.Loop.sum_SB_starRight, RBM.Loop.hasDerivAt_starThree, RBM.Loop.kThree, RBM.Loop.hasDerivAt_kThree, RBM.Loop.kThree_zero, RBM.Loop.kThree_eq_of_isKLoop}\leanok
