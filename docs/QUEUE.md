@@ -36,7 +36,7 @@
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
 | Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **PARTIAL** (CC)：半圆律层 + 定义层已落地；包络估计 → Q50 |
 | Q50 | `G`-loop 的确定性包络 `\|L^(n)\| ≤ (η_t^{-1})^n` | `Loop/GLoop.lean` | **DONE** (CC)：走逐元 + 块结构，不需要迹范数 |
-| Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **CLAIMED (CC)** |
+| Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **DONE** (CC)：拆成两行，数字各自对得上 |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
@@ -2320,6 +2320,25 @@ registry: 8 borrowed + 1 owed + 5 structural; 4 registered premises are currentl
 
 **为什么值得单开一条**：Q26 治的就是「看上去完整、其实对不上的报告」。
 这一处是同一个毛病的缩小版，出现在 Q26 自己的输出里——**留着比错更糟的是，它会让人不再核对那份报告**。
+
+
+### CC 的完成记录（Q47，2026-09-20）
+
+按工单建议拆成两行，现在报的是：
+
+```
+premises found by scanning: 11 (borrowed 4, owed 1, structural 6).
+registry: 8 borrowed + 1 owed + 6 structural; 4 registered premise(s) carry nothing yet:
+  [RBM.ThetaDiffOne, RBM.ThetaDiffTwo, RBM.Loop.KTreeRep, RBM.Loop.KLoopBound]
+```
+
+**第一行自己加得起来**（4+1+6 = 11），因为它分类的是扫描**真正找到**的那些；
+第二行说的是账面上有什么，并**点名**列出目前无人承重的那几条——
+工单说得对，这一行本身就是有用的信号（「这条假设还没开始承重」）。
+
+**顺带交代一次操作失误**：改这条时我用脚本从那行截断到文件尾重写，
+**把后面 `#assert_rbm_audit_detects`（Q26 的反向测试）一起删掉了**，构建立刻报
+`unexpected token '#'`。已补回。教训：脚本里「从某处截到文件尾」这种改法要先看尾巴有什么。
 
 ---
 
