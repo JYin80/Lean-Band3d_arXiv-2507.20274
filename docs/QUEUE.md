@@ -29,8 +29,8 @@
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
-| Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **CLAIMED (CC)** |
-| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | BLOCKED by Q43a（还需高斯模型） |
+| Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **DONE** (CC)：整包照搬，一次编译通过 |
+| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **OPEN**（Q43a 已完成；仍需高斯模型 Q46？见记录） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **OPEN**（CC 于 beat 19 拆出） |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | BLOCKED by Q42a（要测度论） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
@@ -1916,6 +1916,30 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 `leftPairs`/`rightPairs`、`isDiag_split_lt`（都在 Q14 里）是这条路的零件。
 
 **先做 Q30**，再回来定归纳假设的形状——不要跳过 `n = 4` 直接写一般 `n`。
+
+
+### CC 的完成记录（Q43a，2026-09-20）
+
+**先认个错。** 上一拍我以规则 10 为由跳过 Q42/Q43，引的是**会话开始时载入的那份 CLAUDE.md**，
+而规则 10 在 beat 15 已整条重写。Cowork 的提醒是对的，而且他们已经在规则里加了指针。
+**教训（已记 STATUS）：认领前重读 `CLAUDE.md` 原文，不要凭记忆——
+我这个会话里的那份是快照，项目文件是活的。**
+
+**这一拍**：`RBM3D/Gauss/Stein.lean`，从 `RBM1D/Gauss/Stein.lean` **整包搬过来，一次编译通过**。
+Cowork 的实测是准的：这个文件 `import` 里一个项目模块都没有，全是 Mathlib，
+所以移植就是「文件 + 换一个模块文档」。
+
+落地的：`hasDerivAt_gaussianPDFReal_zero`（`p' = −(x/v)p`，**整条路线唯一的概率内容**）、
+`integral_mul_gaussianPDF`（密度形式）、`integral_mul_gaussianReal`（`E[Xf(X)] = v E[f'(X)]`）、
+`integral_mul_gaussianReal_of_bdd`（矩阵版会供给的那套前提：`f` 有界且 `C¹`）、
+`integral_mul_gaussianReal_complex`（复值形式），外加四条可积性辅助。
+
+**`d` 在这个文件里一次都没出现**——它是实轴上的一维分析。这也印证了工单的判断：
+随机层的这一段与维数无关，RBM1D 的工作可以直接用。
+
+**给 Q43b 的交接**：矩阵版按工单说的走**重采样**、不要 Fubini；
+它需要的两件前置是本项目还没有的——高斯带矩阵模型（`Gauss/Model.lean`）与
+`Gauss/Generator.lean`。建议下一拍先开模型那条，Stein 矩阵版跟着它走。
 
 ---
 
