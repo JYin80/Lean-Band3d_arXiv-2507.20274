@@ -36,7 +36,7 @@
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
 | Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **PARTIAL** (CC)：半圆律层 + 定义层已落地；包络估计 → Q50 |
 | Q50 | `G`-loop 的确定性包络 `\|L^(n)\| ≤ (η_t^{-1})^n` | `Loop/GLoop.lean` | **DONE** (CC)：走逐元 + 块结构，不需要迹范数 |
-| Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
+| Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **CLAIMED (CC)** |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
