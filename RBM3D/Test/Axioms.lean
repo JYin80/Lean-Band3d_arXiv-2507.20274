@@ -217,6 +217,20 @@ elab "#assert_rbm_axioms" : command => do
       m!"interface axioms, with the number of other declarations depending on each:\n\
         {MessageData.joinSep (counts.toList.map fun (a, k) => m!"  {a}: {k}") "\n"}"
   let _ := usageReport
+  -- how the premises the scan found fall into the three ledgers, and which registered
+  -- premises nothing currently rests on
+  let foundBorrowed := found.filter (borrowedProps.contains ·)
+  let foundOwed := found.filter (owedProps.contains ·)
+  let foundStructural := found.filter (structuralProps.contains ·)
+  let unused := classified.filter fun n => !found.contains n
+  let registryLine :=
+    if unused.isEmpty then
+      m!"registry: {borrowedProps.length} borrowed + {owedProps.length} owed + \
+        {structuralProps.length} structural, every one of them carrying something"
+    else
+      m!"registry: {borrowedProps.length} borrowed + {owedProps.length} owed + \
+        {structuralProps.length} structural; {unused.length} registered premise(s) carry \
+        nothing yet: {unused}"
   let carriedLine :=
     if carried = 0 then
       m!"no theorem yet rests on a premise"
@@ -227,9 +241,9 @@ elab "#assert_rbm_axioms" : command => do
     in `RBM` (compiler-generated declarations excluded).\n\
     All within {allowedAxioms}; {axiomLine}.\n\
     {carriedLine}\n\
-    premises found by scanning: {found.size}, all classified \
-    ({borrowedProps.length} borrowed, {owedProps.length} owed, \
-    {structuralProps.length} structural)."
+    premises found by scanning: {found.size} (borrowed {foundBorrowed.size}, \
+    owed {foundOwed.size}, structural {foundStructural.size}).\n\
+    {registryLine}"
 
 /-- **Reverse test.**  Fails unless the scan reports `p` as an unclassified premise.  The
 point of `#assert_rbm_axioms` is that adding an assumption without classifying it breaks
