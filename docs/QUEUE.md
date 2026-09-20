@@ -30,7 +30,7 @@
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
-| Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **OPEN**（优先于 Q13/Q16/Q17 落地） |
+| Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **CLAIMED** (CC) |
 
 ---
 
