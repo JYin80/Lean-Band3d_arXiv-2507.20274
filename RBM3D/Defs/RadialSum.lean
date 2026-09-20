@@ -186,4 +186,111 @@ theorem sum_radial_exp_le (k : ℕ) {κ ℓ : ℝ} (hκ : 0 < κ) (hℓ : 1 ≤ 
         mul_le_mul_of_nonneg_left (sum_succ_mul_exp_le hκ hℓ _) (by positivity)
     _ = 2 ^ (k + 2) * radC κ * ℓ ^ 2 := by ring
 
+/-! ### A purely exponential radial sum
+
+`Σ_x e^{-c|x|} ≤ C(c, d)`, uniformly in `L`.  This is what turns the strong decay of
+`(prop:ThfadC_short)` into an `(∞→∞)`-norm bound on `Θ_t^{(σ,σ)}`. -/
+
+/-- `r^m e^{-cr} ≤ m!/c^m` for `r ≥ 0`, `c > 0`. -/
+theorem pow_mul_exp_neg_le {c : ℝ} (hc : 0 < c) (m : ℕ) {r : ℝ} (hr : 0 ≤ r) :
+    r ^ m * exp (-(c * r)) ≤ (Nat.factorial m : ℝ) / c ^ m := by
+  have h := Real.pow_div_factorial_le_exp _ (by positivity : (0 : ℝ) ≤ c * r) m
+  have hfac : (0 : ℝ) < (Nat.factorial m : ℝ) := by exact_mod_cast Nat.factorial_pos m
+  have hcm : (0 : ℝ) < c ^ m := by positivity
+  rw [div_le_iff₀ hfac] at h
+  rw [exp_neg, ← div_eq_mul_inv, div_le_div_iff₀ (exp_pos _) hcm]
+  calc r ^ m * c ^ m = (c * r) ^ m := by rw [mul_pow]; ring
+    _ ≤ exp (c * r) * (Nat.factorial m : ℝ) := h
+    _ = (Nat.factorial m : ℝ) * exp (c * r) := by ring
+
+/-- `Σ_{r<R} (r+1)^{-2} ≤ 2`. -/
+theorem sum_inv_sq_le (R : ℕ) : ∑ r ∈ range R, (((r : ℝ) + 1) ^ 2)⁻¹ ≤ 2 := by
+  have hterm : ∀ r : ℕ, (((r : ℝ) + 1) ^ 2)⁻¹
+      ≤ 2 * (1 / ((r : ℝ) + 1)) - 2 * (1 / (((r + 1 : ℕ) : ℝ) + 1)) := by
+    intro r
+    have h1 : (0 : ℝ) < (r : ℝ) + 1 := by positivity
+    have h2 : (0 : ℝ) < (r : ℝ) + 2 := by positivity
+    push_cast
+    have hkey : 2 * (1 / ((r : ℝ) + 1)) - 2 * (1 / ((r : ℝ) + 1 + 1))
+        = 2 / (((r : ℝ) + 1) * ((r : ℝ) + 1 + 1)) := by field_simp; ring
+    rw [hkey, ← one_div, div_le_div_iff₀ (by positivity) (by positivity)]
+    nlinarith
+  calc ∑ r ∈ range R, (((r : ℝ) + 1) ^ 2)⁻¹
+      ≤ ∑ r ∈ range R, (2 * (1 / ((r : ℝ) + 1)) - 2 * (1 / (((r + 1 : ℕ) : ℝ) + 1))) :=
+        sum_le_sum fun r _ => hterm r
+    _ = 2 * (1 / ((0 : ℝ) + 1)) - 2 * (1 / ((R : ℝ) + 1)) := by
+        rw [sum_range_sub' (fun r : ℕ => 2 * (1 / ((r : ℝ) + 1))) R]
+        norm_num
+    _ ≤ 2 := by
+        have : 0 ≤ 2 * (1 / ((R : ℝ) + 1)) := by positivity
+        norm_num
+        linarith
+
+/-- The constant of `sum_radial_exp_decay_le`. -/
+noncomputable def expC (k : ℕ) (c : ℝ) : ℝ :=
+  2 ^ (k + 2) * (2 * (2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3))))
+
+/-- `Σ_{x ∈ Z_L^d} e^{-c|x|} ≤ C(c, d)`, uniformly in `L`. -/
+theorem sum_radial_exp_decay_le (k : ℕ) {c : ℝ} (hc : 0 < c) :
+    ∑ x : Zd (k + 2) L, exp (-(c * (zdistD (k + 2) L x : ℝ))) ≤ expC k c := by
+  have hbound : ∀ r : ℕ, ((r : ℝ) + 1) ^ (k + 1) * exp (-(c * (r : ℝ)))
+      ≤ 2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3))
+        * ((((r : ℝ) + 1) ^ 2)⁻¹) := by
+    intro r
+    have hr : (0 : ℝ) ≤ r := Nat.cast_nonneg r
+    have hE : 0 < exp (-(c * (r : ℝ))) := exp_pos _
+    have hsq : (0 : ℝ) < ((r : ℝ) + 1) ^ 2 := by positivity
+    rw [← div_eq_mul_inv, le_div_iff₀ hsq]
+    have key : ((r : ℝ) + 1) ^ (k + 3) * exp (-(c * (r : ℝ)))
+        ≤ 2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3)) := by
+      have h1 : ((r : ℝ) + 1) ^ (k + 3) ≤ 2 ^ (k + 3) * (1 + (r : ℝ) ^ (k + 3)) := by
+        rcases le_total (r : ℝ) 1 with h | h
+        · calc ((r : ℝ) + 1) ^ (k + 3) ≤ (2 : ℝ) ^ (k + 3) :=
+                pow_le_pow_left₀ (by linarith) (by linarith) _
+            _ ≤ 2 ^ (k + 3) * (1 + (r : ℝ) ^ (k + 3)) :=
+                le_mul_of_one_le_right (by positivity)
+                  (by have := pow_nonneg hr (k + 3); linarith)
+        · calc ((r : ℝ) + 1) ^ (k + 3) ≤ (2 * (r : ℝ)) ^ (k + 3) :=
+                pow_le_pow_left₀ (by linarith) (by linarith) _
+            _ = 2 ^ (k + 3) * (r : ℝ) ^ (k + 3) := mul_pow _ _ _
+            _ ≤ 2 ^ (k + 3) * (1 + (r : ℝ) ^ (k + 3)) :=
+                mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+      have h2 : (r : ℝ) ^ (k + 3) * exp (-(c * (r : ℝ)))
+          ≤ (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3) :=
+        pow_mul_exp_neg_le hc (k + 3) hr
+      have h3 : exp (-(c * (r : ℝ))) ≤ 1 :=
+        exp_le_one_iff.mpr (by nlinarith)
+      calc ((r : ℝ) + 1) ^ (k + 3) * exp (-(c * (r : ℝ)))
+          ≤ (2 ^ (k + 3) * (1 + (r : ℝ) ^ (k + 3))) * exp (-(c * (r : ℝ))) :=
+            mul_le_mul_of_nonneg_right h1 hE.le
+        _ = 2 ^ (k + 3) * (exp (-(c * (r : ℝ))) + (r : ℝ) ^ (k + 3) * exp (-(c * (r : ℝ)))) := by
+            ring
+        _ ≤ 2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3)) := by
+            have : (0 : ℝ) < 2 ^ (k + 3) := by positivity
+            nlinarith
+    calc ((r : ℝ) + 1) ^ (k + 1) * exp (-(c * (r : ℝ))) * ((r : ℝ) + 1) ^ 2
+        = ((r : ℝ) + 1) ^ (k + 3) * exp (-(c * (r : ℝ))) := by ring
+      _ ≤ 2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3)) := key
+  rw [sum_radial (k + 2) (fun r : ℕ => exp (-(c * (r : ℝ))))]
+  set M : ℝ := 2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3)) with hM
+  have hM0 : 0 ≤ M := by rw [hM]; positivity
+  calc ∑ r ∈ range ((k + 2) * L + 1), (sphereCard (k + 2) L r : ℝ) * exp (-(c * (r : ℝ)))
+      ≤ ∑ r ∈ range ((k + 2) * L + 1),
+          (2 : ℝ) ^ (k + 2) * (M * ((((r : ℝ) + 1) ^ 2)⁻¹)) := by
+        refine sum_le_sum fun r _ => ?_
+        have hc' : (sphereCard (k + 2) L r : ℝ) ≤ 2 ^ (k + 2) * ((r : ℝ) + 1) ^ (k + 1) := by
+          exact_mod_cast card_sphere_le (L := L) (k + 1) r
+        calc (sphereCard (k + 2) L r : ℝ) * exp (-(c * (r : ℝ)))
+            ≤ (2 ^ (k + 2) * ((r : ℝ) + 1) ^ (k + 1)) * exp (-(c * (r : ℝ))) :=
+              mul_le_mul_of_nonneg_right hc' (exp_pos _).le
+          _ = (2 : ℝ) ^ (k + 2) * (((r : ℝ) + 1) ^ (k + 1) * exp (-(c * (r : ℝ)))) := by ring
+          _ ≤ (2 : ℝ) ^ (k + 2) * (M * ((((r : ℝ) + 1) ^ 2)⁻¹)) :=
+              mul_le_mul_of_nonneg_left (hbound r) (by positivity)
+    _ = (2 : ℝ) ^ (k + 2) * (M * ∑ r ∈ range ((k + 2) * L + 1), ((((r : ℝ) + 1) ^ 2)⁻¹)) := by
+        rw [Finset.mul_sum, Finset.mul_sum]
+    _ ≤ (2 : ℝ) ^ (k + 2) * (M * 2) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (sum_inv_sq_le _) hM0)
+          (by positivity)
+    _ = expC k c := by rw [expC, hM]; ring
+
 end RBM
