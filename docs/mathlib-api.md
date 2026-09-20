@@ -74,3 +74,19 @@ Mathlib `v4.34.0`，rev `5ed2965256430c3649e86755f9576b54eca72435`。
 * `if_neg` 在这版 Mathlib 里**已 deprecated**，提示用 `ite_eq_right`。只是 warning，不是 error。
 * `simp only [foo]` 对一个 `def` 能否展开，取决于是否生成了 equation lemma；不行就用 `unfold foo` 或 `show`。
 * `show` 若改变了目标会触发 style linter，要用 `change`（Q1 里 `Propagator/Basic.lean` 就改了两处）。
+* `push_neg` 在这版 Mathlib 里**已 deprecated**，提示用 `push Not`（`push_neg at h` → `push Not at h`）。
+  只是 warning，但既然 `./check.sh` 要求零 warning，新写的证明直接用 `push Not`。
+
+## Q41 用到、已核实签名的名字
+
+| 名字 | 签名要点 |
+|---|---|
+| `Finset.single_le_sum` | `(∀ i ∈ s, 0 ≤ f i) → j ∈ s → f j ≤ ∑ i ∈ s, f i`。把「行和界」降成「单元素界」就用它。 |
+| `Finset.sum_lt_sum_of_nonempty` | `s.Nonempty → (∀ i ∈ s, f i < g i) → ∑ f < ∑ g`。鸽笼的反证那一半。 |
+| `Fintype.sum_equiv` | `(e : α ≃ β) (f g) → (∀ a, f a = g (e a)) → ∑ f = ∑ g`。平移不变性用 `Equiv.addRight r`。 |
+| `Finset.sum_sub_distrib` | `∑ (f i - g i) = ∑ f - ∑ g`（**不是** `Finset.sum_sub`）。 |
+| `Complex.re_le_norm` | `z.re ≤ ‖z‖`。（`abs_re_le_norm` 是带绝对值的那条。） |
+| `inv_le_one₀` | `0 < a → (a⁻¹ ≤ 1 ↔ 1 ≤ a)`。 |
+| `one_le_pow₀` | `1 ≤ a → 1 ≤ a ^ n`。 |
+| `mul_inv_cancel_left₀` | `a ≠ 0 → a * (a⁻¹ * b) = b`。注意与 `inv_mul_cancel_left₀` 的括号方向相反。 |
+| `Nat.cast_pow` | `((a ^ b : ℕ) : ℝ) = (a : ℝ) ^ b`。`Finset.card_univ` + `card_Zd` 之后必用。 |
