@@ -50,6 +50,8 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Defs.StochDom`      — `(stoch_domination)` and the `w.h.p.` conventions
 * `RBM3D.Gauss.Domination`   — moments ⟹ `≺` (Markov), and the net argument
 * `RBM3D.Gauss.Envelope`     — `≺` + deterministic envelope ⟹ moments
+* `RBM3D.Defs.Semicircle`    — `(eq:defmzsc)` `m_sc`, `m^{(E)}`, and the flow `(eq:zt)`
+* `RBM3D.Loop.GLoop`         — `(Eq:defGLoop)`: `E_a`, `G_t(σ)`, the `G`-loops, `η_t`
 * `RBM3D.Loop.KBound`        — `ML:Kbound`, and the `d ≥ 3` step its proof needs
 * `RBM3D.Test.Axioms`        — the axiom audit
 
