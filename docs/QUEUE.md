@@ -30,7 +30,8 @@
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
 | Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **DONE** (CC)：整包照搬，一次编译通过 |
-| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **CLAIMED (CC)** |
+| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **PARTIAL** (CC)：与模型无关的那半已证；其余需 Q48 |
+| Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **OPEN**（CC 于 Q43b 开出；随机层的真正前置） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **OPEN**（CC 于 beat 19 拆出） |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | BLOCKED by Q42a（要测度论） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
@@ -1941,6 +1942,26 @@ Cowork 的实测是准的：这个文件 `import` 里一个项目模块都没有
 它需要的两件前置是本项目还没有的——高斯带矩阵模型（`Gauss/Model.lean`）与
 `Gauss/Generator.lean`。建议下一拍先开模型那条，Stein 矩阵版跟着它走。
 
+
+### CC 的完成记录（Q43b，2026-09-20）：与模型无关的那一半
+
+**先说结论：Q43b 不是「整包可搬」的，卡点不在 Stein 本身，在缺一个模型。**
+`RBM1D/Gauss/SteinMatrix.lean` 191 行，头一行就 `import RBM1D.Gauss.Generator`，
+而 Generator 依赖 `Gauss/Model.lean`（489 行）。**本项目没有模型，而且它不能照搬**：
+RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、方差廓线是 `SB`。
+
+**这一拍把不需要模型的那一半落地了**（`Gauss/SteinMatrix.lean`，`./check.sh` 绿、0 warning）：
+
+* **`integral_mul_gaussianReal_complex'`**：一维复值 Stein 恒等式，**去掉了方差非零的前提**。
+  `v = 0` 时高斯退化成 `δ₀`，两边同时为零。这正是工单说「重采样路线比 Fubini 好」的两条理由之一
+  （另一条是不需要「只读有限个坐标」的假设），现在它对下游可用了。
+* **坐标更新工具**：`upd`、`upd_self`、`upd_of_ne`、`measurable_upd`、`continuous_update_coord`。
+  RBM1D 那边是按它自己的指标类型写的；这些其实是 `Function.update` 的事实，
+  所以这里**对任意指标类型**陈述，将来模型用什么指标都能直接用。
+
+**剩下的**：`(P ⊗ γ_c).map (upd c) = P`（独立性唯一用到的地方，在可测长方体上验证）
+与矩阵版恒等式本身——两条都要模型。**已开 Q48**。
+
 ---
 
 # 随机层（Q42–Q46）—— **新开的一条独立战线**
@@ -2197,3 +2218,24 @@ Q30 已把**两侧的东西都摆好**：方程一侧是 `treeEqRhs_four` 的六
 
 **提醒**：证到这里就能拿到 `(eq_Ktree)` 在 `n = 4`——**`KTreeRep` 的第一个真正的实例**。
 一般 `n` 仍是 Q31。
+
+---
+
+## Q48 · 高斯带矩阵模型 ⭐ — **OPEN**（CC 于 Q43b 开出）
+
+**文件**：新开 `RBM3D/Gauss/Model.lean`。参照 `RBM1D/RBM1D/Gauss/Model.lean`（489 行），
+但**这一条不是移植**：RBM1D 的指标集是一维的，这里矩阵元由格点 `Zd d L` 指标、
+方差廓线是 `RBM.SB`（`Defs/Block.lean`，已有 `SB_isSymm`、`sum_SB_row` 等）。
+
+**要什么**（按随机层路线的最小需求，不要多写）：
+
+1. **指标类型**：矩阵元的坐标集。注意 Hermite 对称——独立坐标是「无序对」，
+   RBM1D 的 `Coord` 就是这么做的，这里同样要，只是底层集合换成 `Zd d L × Zd d L`。
+2. **方差廓线** `gvar : Coord → ℝ≥0`，取自 `SB d L g`；`SB` 的对称性保证它良定义。
+3. **测度** `P : Measure Ω`，`Ω = Coord → ℝ`，取无穷乘积 `Measure.infinitePi`
+   （每个坐标 `gaussianReal 0 (gvar c)`），并证它是概率测度。
+4. **矩阵化** `H : Ω → Matrix (Zd d L) (Zd d L) ℝ`（或 ℂ），Hermite 性逐点成立。
+
+**验收**：`(P ⊗ γ_c).map (upd c) = P`（Q43b 剩下的那条）能在此基础上证出来。
+**提醒**：`upd` 与它的可测性/连续性已经在 `Gauss/SteinMatrix.lean` 里按任意指标类型证好了，
+不要重写（规则 4）。

@@ -548,3 +548,21 @@ Cowork 的实测准确：该文件只 import Mathlib，零项目依赖，移植�
 
 **下一步建议**：Q43b（Stein 矩阵版）要走**重采样**而非 Fubini，但它依赖本项目还没有的
 高斯带矩阵模型与生成元层；建议先开模型那条。
+
+## 2026-09-20 · Claude Code · Q43b 部分完成：随机层的卡点是缺一个模型
+
+**实测结论**：Q43b 不是「整包可搬」。`RBM1D/Gauss/SteinMatrix.lean` 第一行就 import
+`Gauss.Generator`，后者依赖 `Gauss/Model.lean`（489 行）。**本项目没有模型，而且它不能照搬**——
+RBM1D 的指标集是一维的，这里矩阵元由 `Zd d L` 指标、方差廓线是 `SB`。
+
+**这一拍落地了不需要模型的那一半**（`Gauss/SteinMatrix.lean`）：
+`integral_mul_gaussianReal_complex'`（**去掉方差非零前提**的一维复值 Stein——
+`v = 0` 时高斯退化成 `δ₀`，两边同时为零，正是工单说重采样优于 Fubini 的理由之一），
+以及坐标更新工具 `upd` / `measurable_upd` / `continuous_update_coord`，
+**按任意指标类型**陈述（RBM1D 那边绑在它自己的指标上；这些其实只是 `Function.update` 的事实）。
+
+**开出 Q48（高斯带矩阵模型）**：随机层真正的前置。工单里写清了最小需求
+（Hermite 对称的坐标集、取自 `SB` 的方差廓线、无穷乘积测度、矩阵化），
+并提醒 `upd` 那套已按任意指标类型证好、不要重写。
+
+审计：**378 定理 / 141 定义 / 0 公理**。
