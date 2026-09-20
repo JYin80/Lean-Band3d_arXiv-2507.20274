@@ -197,6 +197,27 @@ is a new theorem.
   \emph{Attributed to} \texttt{[yang2024Del]} Lemma 3.1.
 \end{theorem}
 
+\begin{lemma}[$\SB$ connects the torus (Doeblin)]\label{lem:connect}
+  \lean{RBM.exists_zdist_step, RBM.exists_step, RBM.sbKernelR_pos, RBM.SBR_pow_pos, RBM.exists_doeblin}\leanok
+  \uses{def:SB, def:lattice}
+  Every entry of $\SB^n$ is strictly positive as soon as $n\ge|a-b|$; hence all entries of
+  $\SB^{R_L}$, with $R_L$ the diameter of $\ZL$, are bounded below by one $\varepsilon>0$.
+
+  $\SB$ is the transition matrix of a \emph{lazy} walk --- the $x=0$ term of the kernel
+  ---, and that laziness is why the statement is an inequality $|a-b|\le n$ rather than a
+  parity condition: without it the walk on $\ZL$ with $L$ even would be bipartite.  It is
+  also what keeps $-1$ out of the spectrum, the borderline case $m^2=-1$ (that is, $E=0$)
+  of \ref{lem:certificates}.  The ingredient is one step towards the origin
+  (\texttt{exists\_step}), a \texttt{ZMod.val} computation in each coordinate.
+
+  \textbf{Why:} this is the elementary, entrywise route to the cancellation that the four
+  uncertified premises of \ref{lem:certificates} need.  A stochastic matrix with all
+  entries $\ge\varepsilon$ contracts oscillations by $1-\varepsilon L^d$ (Dobrushin), so
+  $\SB^k-P$ decays geometrically and $\mathring\Th_t=\sum_k\xi^k(\SB^k-P)$ is bounded
+  uniformly in $t$ at fixed $L$.  That contraction is work order Q51, block 2; it needs no
+  $\ell^2$ spectral theory, which is the point of taking this route.
+\end{lemma}
+
 \begin{lemma}[Certificates: which of these are known to be satisfiable]\label{lem:certificates}
   \lean{RBM.Test.thetaDecay_fixedL, RBM.Test.exists_norm_Theta_ge, RBM.Test.not_exists_uniform_entry_bound, RBM.Test.sum_Theta_diff_row, RBM.Test.twoLoopBounded_kTwoLoop, RBM.Theta0_apply_eq, RBM.sum_Theta0_row}\leanok
   \uses{bor:ThfadC, bor:ThfadCshort, bor:BD1, bor:BD2, bor:ThfadC0, hyp:twoloop, lem:propTH-34}
@@ -221,8 +242,8 @@ is a new theorem.
   fixed $L$, while the entries of $\Th_t$ do not
   (\texttt{not\_exists\_uniform\_entry\_bound}), so each of them needs a
   \emph{cancellation} --- a difference of entries, or the removal of the zero mode.  At
-  fixed $L$ that cancellation is the statement that $1$ is a \emph{simple} eigenvalue of
-  $\SB$, a finite-$L$ spectral gap this development does not have (work order Q51).  What
+  fixed $L$ that cancellation is a finite-$L$ mixing statement about $\SB$ alone, whose
+  first half is \ref{lem:connect} (work order Q51).  What
   is checked is that the refutation which killed the old property 5' cannot be rerun
   against them: $\sum_b\mathring\Th_{ab}=0$ and every first difference of a row sums to
   $0$.
