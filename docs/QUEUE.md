@@ -43,7 +43,7 @@
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **PARTIAL** (CC)：确定性不等式已证；`Ψ²ℓ² ≺ (W^dη)⁻¹` 的吸收 → Q29 |
 | Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **DONE** (CC)：4 条 + `t`-形式；Q27 解锁 |
 | Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **PARTIAL** (CC)：存在性那一半已证；消掉假设还差唯一性 → Q22a |
-| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **OPEN**（Q27 的存在性已就位，解锁） |
+| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **CLAIMED (CC)** |
 | Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | BLOCKED by Q22a |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
