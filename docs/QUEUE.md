@@ -5,8 +5,13 @@
 > 规则见 `CLAUDE.md`：不留 `sorry`，不发明 Mathlib 名字，每次回报前必须有一次 `exit=0`。
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
+>
+> **工单编号不许两边各编各的。** beat 11 撞过一次：Cowork 侧在 beat 10 开了 Q23–Q27，
+> CC 在同一时间把 Q17b 的后续也叫成 Q26，表里于是出现两条 Q26，下一个领单的人会领错。
+> **从此分号段：CC 自己开的工单从 Q28 往上顺排，Cowork 侧开的工单从 Q40 起。**
+> 号段分开，两边都不必先同步就能开单。
 
-最后刷新：2026-09-20 · beat 10（Q18 完成、Q16 部分完成；新提 Q25 / Q26 / Q27，Q22 据实测重新拆分）
+最后刷新：2026-09-20 · beat 11（Q17b 部分完成、Q20 认领中；**修掉 Q26 撞号**，主线四条按顺序排）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -27,17 +32,18 @@
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | **PARTIAL** (CC)：`n = 2` + 工具；一般 `n` → Q25 |
 | Q17a | `eq:latticesum_d3`（第三轮新加的那条） | `Kernel/SumDecay.lean` | **DONE** (CC)：不依赖任何接口假设 |
-| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块零件已证；三条结论 → Q26 |
+| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块零件已证；三条结论 → **Q28** |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **CLAIMED (CC)** |
-| Q22a | **Grönwall 唯一性**（`Loop/Unique.lean`，250 行） | `Loop/Unique.lean` | **OPEN**（需 Q27；落地后 `KTreeRep` 只欠存在性） |
-| Q22b | 树公式 = 存在性（真正的大件） | `Loop/TreeRep*.lean` | **OPEN**（需 Q22a） |
-| Q23 | **传播子对 `t` 的求导层** ⭐（Q22 的前置） | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
+| Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
+| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | BLOCKED by Q23 |
+| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | BLOCKED by Q27 |
+| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | BLOCKED by Q22a |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（`KTwoFormula` 已漏报） |
-| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ | `Loop/Primitive.lean` | **OPEN**（需 Q23；Q22 的预演） |
+| Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
 ---
@@ -1106,7 +1112,7 @@ Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
 
 ---
 
-## Q17b · `lem:sum_decay` 本体 — **PARTIAL**（CC，2026-09-19）：两块零件已证，三条结论 → Q26
+## Q17b · `lem:sum_decay` 本体 — **PARTIAL**（CC，2026-09-19）：两块零件已证，三条结论 → Q28
 
 > **完成记录**：`Kernel/SumDecay.lean` 续写，`./check.sh` → `errors: 0`、`exit=0`、零 sorry。
 >
@@ -1120,7 +1126,7 @@ Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
 >   **`S^(B)` 只连最近邻**（新引理 `SB_apply_eq_zero_of_one_lt`），所以衰减廓线从 `|c−b|` 搬到 `|a−b|` 只差常数；
 >   行和为 1 把对 `c` 的求和吃掉。
 >
-> **没做的：三条结论本身**（`sum_res_1`、`(I)` 非交替、`(II)` 和零性质）→ **Q26**。
+> **没做的：三条结论本身**（`sum_res_1`、`(I)` 非交替、`(II)` 和零性质）→ **Q28**。
 > 它们要把上面两块接起来，再加上 `𝒜` 的快衰减假设 `(deccA0)`、`W^ε` 截断、
 > 以及 `(1−s)ℓ_s² ≍ g²+|1−s|`（`eq:1-sells2`）这套记账——是独立的一拍。
 >
@@ -1319,7 +1325,10 @@ F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
 **因此 Q22a 一旦落地，`KTreeRep` 就从「表示定理」退成「只欠存在性」**——
 唯一性不再是假设。这比整体移植先便宜得多，也先有用得多。
 
-## Q26 · `lem:sum_decay` 的三条结论 — **OPEN**（CC 于 Q17b 开出）
+## Q28 · `lem:sum_decay` 的三条结论 — **OPEN**（CC 于 Q17b 开出）
+
+> **改号说明**：CC 开这条时叫它 Q26，而 Cowork 侧在同一拍把 Q26 给了审计工单，表里撞了号。
+> 内容一字未动，只改编号。以后 CC 从 Q28 往上顺排、Cowork 从 Q40 起（见本文件开头）。
 
 **文件**：`RBM3D/Kernel/SumDecay.lean`（接在 `norm_XiKer_apply_le` 之后）。
 
