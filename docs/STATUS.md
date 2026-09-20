@@ -273,3 +273,29 @@ RBM3D 的传播子层目前只有代数与范数，没有求导层。Q22a 就是
 直接用 `‖Ξ‖_{∞→∞}` 得到的形状比论文claim的弱，必须走 `(deccA0)` 的球内截断加 `(1−s)ℓ_s² ≲ g²+|1−s|` 才凑得出来。
 
 审计：291 定理，`ThetaDecay` 承重 0 → **1**，`ThetaDecayShort` 4，`ThetaZeroMode` 2。
+
+## 2026-09-19 · Claude Code · Q20 部分完成（`(eq:key_T_reudce)` 的确定性版）+ 蓝图整体更新
+
+`Defs/RadialSum.lean`：`sum_shift`、`sum_ball_min_pow_le`（Appendix A.4 的格点和
+`Σ_{α∈D}(|x−α|∧ℓ+1)^{−(d−2)} ≤ C_d ℓ²`，`D` 任意含于 `a` 的 `ℓ`-球）。
+`Kernel/PropT.lean`：`sfT_antitone`、`wfac` 一族、`sfT_pair_le`、`prod_sfT_pair_le`、
+`prod_wfac_le_two`、`key_T_reduce`。
+
+**两处比论文省的地方**（D14、D15）：三种情形在逐点层面合并成一条，`2^{2k}` 个 `D_{≤ℓ,𝛔}`
+分块不需要；`|D_{≤ℓ}| ≲ ℓ^d` 的体积计数也不需要——以 `a` 为心的第二份 K2 自己带着体积因子。
+留给 Q29 的是 `Ψ_t²ℓ² ≺ (W^dη_t)^{-1}` 的吸收，那也是全项目第一处真要用 `DetDom` 的地方。
+
+顺手：修掉 `Loop/PureLoop.lean` 的 `if_false` 弃用告警（现在 0 warning）；
+合并了重复开出的两条 Q25；我的 `lem:sum_decay` 工单与 Cowork 的审计工单撞号，已按
+QUEUE 顶部的分号约定改为 Q28（我的新工单从 Q29 起）。
+
+**蓝图**（`blueprint/src/content.tex`，自 Q11 以来第一次动）：抬头那段「目前没有任何节点带
+`\lean{}`，因为 RBM3D 还一行都没编译过」已经严重过期，改写；给所有已证节点打上
+`\lean{} + \leanok`，给七条接口 `Prop` 只打 `\lean{}` 不打 `\leanok`（陈述在、证明不在）；
+五条传播子节点不再自称 axiom（Q19 之后全项目零公理）；新增 A.4 与 A.5 两组节点
+（`def:sfT`、`lem:TTk-pointwise`、`lem:ballsum`、`lem:TTk-sum`、`lem:latticesum`、
+`lem:sumdecay-parts`、`def:tsp`、`ax:KTreeRep`、`ax:KTwoFormula`、`lem:pureloop`），
+每条都写明「还差什么、是哪张工单」。所有 `\lean{}` 名字都拿编译好的环境 `#check` 过，
+所有 `\uses` 都能解析。
+
+审计：**304 定理 / 137 定义 / 0 公理**，`ThetaDecay` 1、`ThetaDecayShort` 4、`ThetaZeroMode` 2。
