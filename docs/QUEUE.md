@@ -74,7 +74,8 @@
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **PARTIAL** (CC)：第一块（临界指数的对数球和）已证；三块装配待续 |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **DONE (CC)** |
-| Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **CLAIMED (CC)** |
+| Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：2 条证书 + 4 条的障碍已机器化 → Q51 |
+| Q51 | **有限 `L` 的谱隙：`1` 是 `S^(B)` 的单重特征值** ⭐ | `Propagator/Gap.lean`（新） | **OPEN**（CC 于 Q41 开出） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
@@ -1863,7 +1864,45 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 
 ---
 
-## Q41 · 每条假设都要有「非空洞」证书 ⭐ — **OPEN**（Cowork 于 beat 13 提）
+## Q51 · 有限 `L` 的谱隙：`1` 是 `S^(B)` 的单重特征值 ⭐ — **OPEN**（CC 于 Q41 开出）
+
+**文件**：新开 `RBM3D/Propagator/Gap.lean`。
+
+**为什么需要**：Q41 给出了 `(prop:ThfadC)` 的固定 `L` 证书，但另外四条
+（`ThfadC_short`、`BD1`、`BD2`、`ThfadC0`）**连固定 `L` 版都证不出来**，原因已经机器化：
+
+* `RBM.Test.not_exists_uniform_entry_bound`：谱参数 `1` 处，任何固定 `L` 下 `Θ_t` 的元素
+  都没有与 `t` 无关的上界；
+* 而这四条的右端在固定 `L` 时对 `t` **有界**（`(g²+|1−t|)⁻¹ ≤ g^{-2}`，`L^τ` 是常数）。
+
+所以它们要的是**相消**，而固定 `L` 下的相消就是这一条：
+
+> `S^(B)` 是有限 `L` 上的实对称随机矩阵，`1` 是它的特征值（常向量，`RBM.SB_mulVec_one`），
+> 而且是**单重**的；等价地，对每个与常向量正交的 `v`，`‖S^(B) v‖ ≤ (1−δ_L)‖v‖`（`ℓ²`）。
+
+有了它，`Θ̊_t = Σ_k (t m)^k S̊^k` 在固定 `L` 上对 `t ∈ [0,1)` 一致有界，
+`(prop:ThfadC0)` 的固定 `L` 证书立刻出来；`BD1`/`BD2` 的差分同理（差分把常模式消掉）。
+
+**要点与陷阱**：
+
+1. **范数是 `ℓ²`，不是本项目默认的 `ℓ^∞`。** 这是本仓库反复踩的实例陷阱
+   （见 `docs/mathlib-api.md`）：项目矩阵带 `Matrix.Norms.Operator` 的 `ℓ^∞` 范数，
+   谱那一套是 `ℓ²`。`RBM3D/Analysis/Resolvent.lean`（Q42a）已经踩过一遍，照那边的写法。
+2. **单重性从连通性来**：`S^(B)` 的支撑是 `Z_L^d` 上的块邻接关系，块图连通。
+   若 `S^(B)` 的对角为正（有自环），还能顺带排除 `−1`，那正是 `m² = −1`（谱中心 `E = 0`）
+   那个边界情形需要的——**先看 `RBM3D/Defs/Block.lean` 里 `SBR` 的对角到底正不正**。
+3. **不要求最优**：`δ_L` 可以随 `L` 退化（固定 `L` 版本本来就允许常数依赖 `L`）。
+
+**验收**：`Propagator/Gap.lean` 里给出谱隙；`Test/InterfaceShape.lean` 里
+`(prop:ThfadC0)` 与 `(prop:BD1)` 至少一条拿到固定 `L` 证书，并登记进 `certificates`，
+审计末行的 `non-vacuity certificates: 2 of 9` 随之变大。
+
+**做不出来也算交付**：若在固定 `L` 下这条也不成立（例如 `m² = −1` 且 `−1 ∈ spec S^(B)`），
+按规则 13 留反例并当场上报——那会是比证书更重要的发现。
+
+---
+
+## Q41 · 每条假设都要有「非空洞」证书 ⭐ — **DONE**（Cowork 于 beat 13 提，CC 于 beat 33 完成）
 
 **文件**：`RBM3D/Test/InterfaceShape.lean`（已有反面测试，正面的加在这里）与 `RBM3D/Test/Axioms.lean`（报告）。
 
@@ -1901,6 +1940,56 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 
 **不要做的**：别为了凑证书把陈述削弱。若某条的固定 `L` 版也证不出来，**那是发现，不是障碍**，
 按 CLAUDE.md 规则 13 留一个机器可核的反例，并当场上报。
+
+### 完成记录（CC，beat 33）— **DONE**，`./check.sh` exit=0，482 定理 / 0 公理
+
+**拿到证书的两条**：
+
+* `thetaDecay_fixedL` —— `(prop:ThfadC)` 的**固定 `L` 版**（工单指定的那个弱化）。
+  能证的原因很具体：性质 5 的右端含 `B_{t,K}` 的零模项 `(L^d|1−t|)⁻¹`，它随 `t → 1`
+  发散的速度**恰好等于**粗界 `‖Θ_t‖_{∞→∞} ≤ (1−t)⁻¹`；指数因子只花掉 `exp(R_L)`（因为 `ℓ_t ≥ 1`，
+  而 `R_L := max_a |a|` 在有限环面上有限）。于是 `C_d := L^d e^{R_L}`、`c_d := 1` 就够。
+* `twoLoopBounded_kTwoLoop` —— `TwoLoopBounded` **不靠弱化**，直接由 `(Kn2sol)` 的显式二圈满足
+  （`norm_kTwo_le` 给 `W^{-d}(1−T₀)⁻¹`）。这正是工单说的「照 `kTwoFormula_kTwoLoop` 的样子」。
+
+**另外四条（`ThfadC_short`、`BD1`、`BD2`、`ThfadC0`）连固定 `L` 版都证不出来——这是工单说的那种「发现」。**
+原因一句话：**它们的右端在固定 `L` 时对 `t` 有界，而 `Θ_t` 的单个元素没有界。**
+按规则 13，这件事没写成注释，写成了定理：
+
+* `not_exists_uniform_entry_bound`：在谱参数 `1`（即 `σ₁ ≠ σ₂`）处，**任何固定 `L`** 下
+  `Θ_t` 的元素都不存在与 `t` 无关的上界。
+* `exists_norm_Theta_ge`：行和 `(1−t)⁻¹` 分布在 `L^d` 个点上，所以总有一个元素 `≥ L^{-d}(1−t)⁻¹`
+  ——顺带说明上面那张证书里的零模项**不是余量**，去掉就假。
+
+所以这四条要的不是「更大的常数」，而是**相消**：差分（BD1/BD2）或去零模（ThfadC0）。
+在固定 `L` 下，相消成立 ⟺ **`1` 是 `S^(B)` 的单重特征值**（有限 `L` 的谱隙）。
+本项目没有这个，于是开 **Q51**。
+
+**同时检查了「那条反驳路线堵死了」**：当年杀掉旧性质 5' 的论证走的是行和
+（`not_decayShort_at_one`）。对这四条**跑不动**，因为——
+
+* `RBM.sum_Theta0_row`：`Σ_b Θ̊_{ab} = 0`（新证，配套 `Theta0_apply_eq`：
+  `Θ̊(a,b) = Θ(a,b) − L^{-d}(1−ξ)⁻¹`，把「零模」明确写出来）；
+* `sum_Theta_diff_row`：每条一阶差分的行和 `= 0`（行和平移不变）。
+
+**`KTreeRep` 没给证书，而且这不是偷懒**：只要令 `K := 树公式本身`，`KTreeRep m K` 就成立——
+但这个见证**什么也不说**，因为这条假设从来只和 `IsKLoop` 一起用。真正算数的证书是
+**同时满足两者**的 `K`，那就是 `(eq_Ktree)` 的存在性，即 Q30 / Q31。这一点写进了文件头。
+
+**审计新增一列**（验收第 3 条）：`certificates : List (Name × Name)`，两本账逐条打印
+`[certificate: …]` 或 `[no certificate]`，证书若不是定理、或指向未登记的前提，**编译失败**。
+末行新增一句 `non-vacuity certificates: 2 of 9`。
+
+**加这一列时撞出一个真问题**（也修了）：`twoLoopBounded_kTwoLoop` 的结论头就是 `TwoLoopBounded`，
+于是 `scanPremises` 把它当成「已被本项目证明」，**把这条前提从报告里删掉了**（owed 1 → 0）。
+证书证的是「某一个 `K` 满足」，不是定理们量化的那个任意 `K`。
+`scanPremises` 现在多带一个 `witness` 谓词，登记为证书的定理不计入「已证」。
+**「给假设发证书」绝不能让审计对这条假设闭嘴**——这正是审计存在的理由。
+
+**新增声明**：`RBM.card_Zd`、`RBM.Theta0_apply_eq`、`RBM.sum_Theta0_row`、`RBM.sum_Theta_shift`、
+`RBM.Test.{maxDist, zdistD_le_maxDist, thetaDecay_fixedL, exists_norm_Theta_ge,
+not_exists_uniform_entry_bound, sum_Theta_diff_row, twoLoopBounded_kTwoLoop}`。
+蓝图新节点 `lem:certificates`。
 
 ---
 
