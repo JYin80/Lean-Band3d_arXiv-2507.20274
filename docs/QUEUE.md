@@ -16,7 +16,7 @@
 > `blueprint/cowork/`（Cowork 维护，发布成给作者看的网页）是**叙事与队列快照**。
 > **两边都别去改对方那一份**；不一致时以 `content.tex` 为准，Cowork 负责把差异反映到网页上。
 
-最后刷新：2026-09-20 · beat 15（**随机层审计完成，开出 Q42–Q46 一条新战线**；Q22b 仍在进行）
+最后刷新：2026-09-20 · beat 16（Q24 完成、Q22b 到 `n = 3`；**规则 15 的那条前提仍匿名，见 Q26 的 beat 16 补充**）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -51,7 +51,7 @@
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
-| Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | **OPEN**（CC 于 Q22b 开出；需 Q30） |
+| Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
@@ -1429,6 +1429,14 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 ## Q26 · 审计要自动发现「借来的谓词」，不能靠硬编码名单 ⭐ — **OPEN**（beat 10 提，beat 14 扩范围）
 
+> **beat 16 补充：规则 15 立住了，但立它的那条前提还没具名。**
+> Q24 的 `KLoopBound` 是按规则 15 写的（具名 `Prop` + 登记进审计名单）——**新代码照办了，很好。**
+> 可是**当初促成这条规则的 `hbdd` 仍然是匿名的**，而且已经从 `Loop/Unique.lean:300`
+> 扩散到 `:349` 与 `Loop/TreeThree.lean:353`，**三处**。
+> 它现在是 `KTwoFormula` → `kThree_eq_of_isKLoop` 这条链上真正的前提，却不在任何名单里；
+> 每多一个使用者，将来改名的成本就多一份。
+> **这张工单先做这件事**：给它起名（`TwoLoopBounded` 之类），三处一起改，再谈自动发现。
+>
 > **beat 14 补充：只扫具名 `Prop` 是不够的。** Q22a 落地时带进来一条新的前提——
 > `kTwoFormula_of_isKLoop` 的 `hbdd`（2-loop 在每个 `[0,T₀]` 上有界）。
 > 它**直接写在签名里**，所以符合本项目「借了什么一眼可见」的原则；

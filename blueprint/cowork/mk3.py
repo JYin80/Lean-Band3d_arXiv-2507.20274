@@ -46,8 +46,8 @@ g0 = build(
 
   ("nz","④ Q13 ✓ sum_decay_nonzero","done",8),
   ("sd","④ Q17a ✓ · Q17b ✓ · Q28 待做","ready",8),
-  ("ktree","④ Q22b 树公式（最后一个大件）","ready",8),
-  ("kb","④ Q24 ML:Kbound (d≥3)","todo",8),
+  ("ktree","④ Q22b ✓ n=3 · Q30 n=4 · Q31 一般 n","ready",8),
+  ("kb","④ Q24 ✓ d≥3 那步已定位","done",8),
  ],
  edges=[
   ("lat","sb"),("lat","par"),("par","tail"),
@@ -129,8 +129,8 @@ g4 = build(
   ("prim","Q27 ✓ (Kn2sol) 显式解 + norm_kTwo_le","done",4),
   ("pure","Q16 ✓ n=2 · Q25 一般 n","ready",5),
   ("uniq22","Q22a ✓ 唯一性 ⇒ KTwoFormula 从假设变定理","star",5),
-  ("ktree","Q22b · 树公式 = 存在性（最后一个大件）","ready",6),
-  ("kb","Q24 · ML:Kbound（d≥3 需额外修改）","todo",6),
+  ("ktree","Q22b ✓ n=3 · Q30 n=4 · Q31 一般 n","ready",6),
+  ("kb","Q24 ✓ 那句「额外修改」已定位 · 格点和 → Q32","done",6),
  ],
  edges=[("uk","nz"),("uk","sd"),("tail","pt"),("tail","ttk"),("ttk","ksum"),
         ("part","tree"),("sd","sdb"),("uk","sdb"),("sdb","sd3"),("sd","sd3"),("tree","prim"),

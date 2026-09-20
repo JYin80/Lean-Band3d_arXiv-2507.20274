@@ -69,9 +69,12 @@ CH4 = rows([
  ("树表示 eq_Ktree —— 陈述层落地，eq_Ktree 暂作假设 KTreeRep（形状同 PropTH）","Q15 ✓ 已证","done","LoopIdx · treeEqRhs · IsKLoop · KTreeRep"),
  ("(Kn2sol) 的显式解与它解 n=2 的树方程","Q27 ✓ 已证","done","kTwo · hasDerivAt_kTwo · kTwo_zero · norm_kTwo_le"),
  ("卷积树方程的唯一性（一次 Grönwall）—— (Kn2sol) 由此从假设变成定理 ⭐","Q22a ✓ 已证","done","isKLoop_unique · kTwoFormula_of_isKLoop · pureLoop_two_of_isKLoop"),
- ("树公式 = 存在性 —— 剩下的唯一一个大件","Q22b · 认领中","draft","TreeRep.lean 729 + TreeRepGeneral.lean 2546"),
+ ("(eq_Ktree) 在 n = 3 —— 对任意一族 K-loop，只要 2-loop 有先验界","Q22b ✓ n=3","done","kThree_eq_of_isKLoop · sum_SB_starLeft/Right"),
+ ("(eq_Ktree) 在 n = 4 —— 第一次出现内部边","Q30 · 可开工","ready","Loop/TreeFour.lean"),
+ ("(eq_Ktree) 的一般 n —— 本项目最大的一件","Q31 · 待 Q30","todo","Loop/TreeRepGeneral.lean · 2546 行"),
  ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 ✓ n=2 · Q25 一般 n","ready","pureLoop_two · sum_exp_decay_conv"),
- ("ML:Kbound —— 论文说「需额外修改以处理 d ≥ 3」，先做陈述层并定位那处修改","Q24 · 可开工","ready","Loop/KBound.lean"),
+ ("ML:Kbound 与那句「需额外修改以处理 d ≥ 3」—— 已定位到一条不等式并证出 ⭐","Q24 ✓ 已证","done","inv_pow_pair_le · not_inv_pow_pair_le_single · 见 D16"),
+ ("ML:Kbound 的格点和 Σ_b (|a−b|^d+1)⁻¹(|c−b|^{d−2}+1)⁻¹ ≲ 1","Q32 · 可开工","ready","d ≥ 3 的另一半"),
 ])
 
 QUEUE = """
@@ -103,8 +106,11 @@ QUEUE = """
 <tr><td>Q23</td><td><b>传播子对 <code>t</code> 的求导层</b> <b>⭐</b> —— <b>主线第一步，已过</b></td><td><code>Propagator/Deriv.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q27</td><td><b><code>(Kn2sol)</code></b> —— 主线第二步，存在性</td><td><code>Loop/Primitive.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q22a</td><td><b>Grönwall 唯一性</b> <b>⭐</b> —— <b><code>KTwoFormula</code> 由此不再是假设</b></td><td><code>Loop/Unique.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q22b</td><td>树公式 = 存在性 —— <b>剩下的唯一一个大件</b></td><td><code>Loop/TreeRep*.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
-<tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— 论文说「需额外修改以处理 <code>d ≥ 3</code>」</td><td><code>Loop/KBound.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q22b</td><td>树公式 = 存在性 —— <code>n = 3</code> 已证，其余 → Q30 / Q31</td><td><code>Loop/TreeThree.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
+<tr><td>Q30</td><td><code>(eq_Ktree)</code> 的 <code>n = 4</code>（第一次出现内部边）</td><td><code>Loop/TreeFour.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q31</td><td><code>(eq_Ktree)</code> 的一般 <code>n</code> —— 本项目最大的一件</td><td><code>Loop/TreeRepGeneral.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
+<tr><td>Q32</td><td><code>ML:Kbound</code> 的格点和 —— <code>d ≥ 3</code> 的另一半</td><td><code>Loop/KBound.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— <b>那句「额外修改」已定位并证出</b>（D16）</td><td><code>Loop/KBound.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q25</td><td><code>lem_pureloop</code> 的一般 <code>n</code></td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— <code>KTwoFormula</code> 已漏报</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q28</td><td><code>lem:sum_decay</code> 的三条结论（<code>sum_res_1</code> / <code>(I)</code> / <code>(II)</code>）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
@@ -208,7 +214,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>332</b><span>定理已证</span></div>
+    <div class="chip done"><b>346</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
     <div class="chip ready"><b>9</b><span>可立即开工</span></div>
@@ -351,6 +357,15 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 记录这条假设<em>可满足</em>。Q41 要把这件事变成规矩：每条假设都给一个「固定 <code>L</code> 版」证书。
 <strong>这条检查若早在 beat 0 就位，beat 6 的缺陷根本不会存在</strong>——当初那个假写法在固定
 <code>L</code> 下就已经不成立。</p>
+<p><strong>论文留的那处白，Lean 填上了。</strong> <code>ML:Kbound</code> 的证明，论文说「类似
+<code>[YY_25]</code> Lemma 3.11，但需要额外修改以处理 <code>d ≥ 3</code>」，没说是哪一步。Q24 定位到了：
+
+<code>(|x|^{d-1}+1)^{-1}(|y|^{d-1}+1)^{-1} ≤ 2[(|x|^d+1)^{-1}(|y|^{d-2}+1)^{-1} + (|x|^{d-2}+1)^{-1}(|y|^d+1)^{-1}]</code>，
+常数 2，除 <code>0 ≤ x,y</code> 外无前提。<strong>非对称拆分是被逼的</strong>：把一个 <code>(d-1)</code>
+因子直接放大成 1 会留下 <code>log L</code> 量级的和，而多出来的 <code>d-2</code> 指数只有 <code>d ≥ 3</code>
+时才有用——<em>这正是 d = 1 的论证必须改的原因</em>。配了反面测试
+<code>not_inv_pow_pair_le_single</code>：单独一项不够。记在 <code>paper-deltas.md</code> D16，
+<strong>建议作者把这一行写回论文</strong>。</p>
 <p><strong>而且「数得着」比「看得见」还要难一层。</strong> Q22a 带进来一条新前提——
 2-loop 在每个 <code>[0,T₀]</code> 上有界。它<em>写在签名里</em>，符合本项目「借了什么一眼可见」的原则；
 可它不是一个具名 <code>Prop</code>，于是<strong>任何汇总都数不到它</strong>，
@@ -372,11 +387,11 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 </div>
 
 <footer>
-  计数说明：<b>332 定理 / 141 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
+  计数说明：<b>346 定理 / 144 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 15 · 2026-09-20 07:05 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 16 · 2026-09-20 07:15 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
