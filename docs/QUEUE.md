@@ -69,7 +69,7 @@
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：六项索引 + 两条对角线的树值；求导匹配 → Q35 |
 | Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：主项（乘积步）已证 + 修好 Q28 的一处缺陷；`(deccA0)` 误差项与 (I)(II) 待续 |
-| Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **CLAIMED (CC)** |
+| Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：树那一侧已就位；配对与 `eq_on_level` 待续 |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
@@ -2223,6 +2223,25 @@ RBM1D 实测：§5 有 141 处 `≺`，但真正需要矩形式的只有 **2 个
 **能** ⇒ 整篇不需要「停时」概念，也就不需要域流，随机层只剩边缘律 + 生成元。
 **不能** ⇒ 需要一个最小的可选时间概念，预算另算。
 **这条在作者回答之前不要开工**，但 Q42–Q45 完全不受它影响，照做。
+
+
+### CC 的完成记录（Q35，2026-09-20）：树那一侧
+
+**① `hasDerivAt_thetaEdge_sub_one`**：内部边 `Θ^(σ,σ') − I` 与边界边**同一条求导公式**
+（`I` 不含 `t`）。这是关于内部边唯一需要的事实，工单第 ① 条说对了。
+
+**② `hasDerivAt_starFour`**：`n = 4` 星形的导数，每条边界边一项，与 `n = 3` 同构。
+
+**③ `treeVal_four_diag02_as_star` / `treeVal_four_diag13_as_star`**：
+**把被替换的那个标签看作变量时，三棵树（星形与两条对角线）形状完全相同**，都是
+`Σ_b Θ^(σ₀σ₁)(x,b)·F(b)`——对角线那两棵需要交换一次求和次序。
+
+**④ 顺带更正我自己写的工单**：Q35 第 ② 条要求「四顶点版的 `sum_SB_starLeft/Right`」——
+**不需要**。那两条引理是对**任意** `F` 陈述的，`n = 4` 与 `n = 3` 的唯一区别是
+`F` 从两条边的乘积变成三条边的乘积。③ 正是为了说清这件事。
+
+**剩下的**：配对本身（4 条边界边 ↔ 带 2-链的四项，2 条对角线 ↔ 两条 3-链相乘的两项）
+与 `eq_on_level` 在 `n = 4`。低层（`n ≤ 3`）已全部就位。
 
 ---
 
