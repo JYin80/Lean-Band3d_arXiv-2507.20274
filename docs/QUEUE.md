@@ -41,8 +41,8 @@
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **PARTIAL** (CC)：确定性不等式已证；`Ψ²ℓ² ≺ (W^dη)⁻¹` 的吸收 → Q29 |
-| Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **CLAIMED (CC)** |
-| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | BLOCKED by Q23 |
+| Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **DONE** (CC)：4 条 + `t`-形式；Q27 解锁 |
+| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **OPEN**（Q23 已完成，解锁） |
 | Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | BLOCKED by Q27 |
 | Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | BLOCKED by Q22a |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
@@ -1183,7 +1183,7 @@ Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
 
 ---
 
-## Q23 · 传播子对 `t` 的求导层 ⭐ — **OPEN**（Q22 的前置，本拍新提）
+## Q23 · 传播子对 `t` 的求导层 ⭐ — **DONE**（CC，2026-09-20）
 
 **文件**：新开 `RBM3D/Propagator/Deriv.lean`。
 
@@ -1222,6 +1222,30 @@ import 需要 `Mathlib.Analysis.Calculus.Deriv.Basic`、`Mathlib.Analysis.Calcul
 
 **验收**：`./check.sh` → `errors: 0`、`exit=0`，零 `sorry`，审计仍为空；
 STATUS 里记一笔「**Q22 的前置已拆掉**」，并说明 `d` 作为参数有没有带来额外麻烦（预计没有，`Θ` 的定义同构）。
+
+### CC 的完成记录（2026-09-20）
+
+**照单全收地移植了**，`RBM3D/Propagator/Deriv.lean`（134 行，`./check.sh` 绿、0 warning）：
+`continuousAt_Theta`、`Theta_sub_Theta`（预解式恒等式）、`continuous_matrix_entry`、
+`hasDerivAt_Theta_apply`（逐元）。工单点名的两条纪律都守住了：走预解式 + 连续性、陈述逐元。
+
+**多做了一条**：`hasDerivAt_Theta_mul_apply` —— 沿 `ξ = t μ` 对**实参数 `t`** 求导，
+`∂_t (Θ_{tμ})_{ab} = μ (Θ S^(B) Θ)_{ab}`。理由：Q27 要的是 `∂_t K^(2)`，
+拿到的却是 `∂_ξ`，差一次链式法则；与其让 Q27 每次自己接，不如在这一层接好。
+（`μ = m(σ₁)m(σ₂)` 时它就是 `Θ_t^{(σ₁,σ₂)}` 本身对 `t` 的导数。）
+
+**`d` 作为参数有没有带来麻烦：没有，一处都没有。** 整个论证里 `d` 只出现在类型
+`Zd d L` 中，从不参与推理——`Θ` 的定义、预解式恒等式、`Ring.inverse` 的连续性都与维数无关。
+与 RBM1D 的唯一差别是每条引理多带一个前件 `hS : ‖S^(B)‖ = 1`（按工单要求保留，
+要消时用 `norm_SB d L g hL`）。
+
+**踩到一个值得记的坑**（已写进 `docs/mathlib-api.md`）：`HasDerivAt` 是 `def`，
+点记号 `h.mul_const` 在**该引理所在文件没 import** 时，报的不是 unknown constant，
+而是「The environment does not contain `HasFDerivAtFilter.mul_const`」——
+这条信息会把人引去找 `HasFDerivAtFilter` 的引理，实际只是缺 import
+（`Deriv.Mul`、`Deriv.Comp`、`Complex.RealDeriv`）。写成显式应用才会报出真正的错因。
+
+**下一步**：Q27（`(Kn2sol)`）现在没有前置了。
 
 ---
 

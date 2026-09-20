@@ -47,6 +47,28 @@ Mathlib `v4.34.0`，rev `5ed2965256430c3649e86755f9576b54eca72435`。
 | `Fintype.sum_equiv (Equiv.subLeft a)` | 把 `∑_b f (a - b)` 换成 `∑_u f u`，行和引理靠它。 |
 | `Finset.prod_le_prod` | ⚠️ 有两个同名重载；要非负实数版的话是 **`prod_le_prod₀`**（RBM1D 踩过）。 |
 
+## 求导（Q23，`Propagator/Deriv.lean` 全部核实过）
+
+| 名字 | 要点 |
+|---|---|
+| `NormedRing.inverse_continuousAt` | `Ring.inverse` 在单位处连续，参数是 `u : Mˣ`。 |
+| `hasDerivAt_iff_tendsto_slope` | 把 `HasDerivAt` 换成差商沿 `𝓝[≠] x` 的极限。 |
+| `slope_def_field` | `slope f a b = (f b - f a)/(b - a)`。 |
+| `eventually_nhdsWithin_of_eventually_nhds` | 把 `∀ᶠ in 𝓝` 降成 `∀ᶠ in 𝓝[≠]`。 |
+| `self_mem_nhdsWithin` | `{x}ᶜ ∈ 𝓝[≠] x`，配 `sub_ne_zero_of_ne` 得 `ζ - ξ ≠ 0`。 |
+| `HasDerivAt.mul_const` | 在 `Mathlib.Analysis.Calculus.Deriv.Mul`，**Deriv.Basic 里没有**。 |
+| `HasDerivAt.comp` | 在 `Mathlib.Analysis.Calculus.Deriv.Comp`，`x` 是显式参数。 |
+| `HasDerivAt.comp_ofReal` | 在 `Mathlib.Analysis.Complex.RealDeriv`：`HasDerivAt e e' ↑z → HasDerivAt (fun y : ℝ => e ↑y) e' z`。ℝ→ℂ 的复合走它最省事。 |
+| `ContinuousLinearMap.hasDerivAt` | 在 `Deriv.Linear`；没 import 那个文件时 `f.hasDerivAt` 会报「environment does not contain」。 |
+
+**踩到的坑（重要）**：`HasDerivAt` 是 `def`（会展开成 `HasFDerivAtFilter`），
+所以点记号 `h.mul_const`、`h.scomp` 在**该引理所在文件没被 import** 时，
+报的不是「unknown constant」而是
+「Invalid field `mul_const`: The environment does not contain `HasFDerivAtFilter.mul_const`」——
+**这条信息会把人引到错误的方向**（去找 `HasFDerivAtFilter` 的引理），
+实际要做的是补 import。写成显式的 `HasDerivAt.mul_const h c` 才会报出真正的
+「Unknown constant」。
+
 ## 已知的坑
 
 * `if_neg` 在这版 Mathlib 里**已 deprecated**，提示用 `ite_eq_right`。只是 warning，不是 error。

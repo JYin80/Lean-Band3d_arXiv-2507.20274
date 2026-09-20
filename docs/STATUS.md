@@ -299,3 +299,24 @@ QUEUE 顶部的分号约定改为 Q28（我的新工单从 Q29 起）。
 所有 `\uses` 都能解析。
 
 审计：**304 定理 / 137 定义 / 0 公理**，`ThetaDecay` 1、`ThetaDecayShort` 4、`ThetaZeroMode` 2。
+
+## 2026-09-20 · Claude Code · Q23 完成：**Q22 的前置已拆掉**
+
+`RBM3D/Propagator/Deriv.lean`（新文件）：`continuousAt_Theta`、`Theta_sub_Theta`（预解式恒等式）、
+`continuous_matrix_entry`、`hasDerivAt_Theta_apply`（逐元 `∂_ξ Θ = Θ S^(B) Θ`），
+外加一条 `hasDerivAt_Theta_mul_apply`：沿 `ξ = tμ` 对实参数 `t` 求导。
+多写这一条是因为 Q27 要的是 `∂_t K^(2)`，与 `∂_ξ` 差一次链式法则，放这一层接好比让下游各接一次强。
+
+**`d` 作为参数没有带来任何额外麻烦**：`d` 只出现在类型 `Zd d L` 里，从不参与推理；
+`Θ` 的定义、预解式恒等式、`Ring.inverse` 的连续性都与维数无关。与 RBM1D 的唯一差别是
+每条引理多带前件 `hS : ‖S^(B)‖ = 1`（按工单要求保留风格）。
+
+**主线现在的状态**：Q23 ✅ → **Q27（`(Kn2sol)`）已解锁，无前置** → Q22a（Grönwall 唯一性）
+→ Q22b（树公式存在性）。也就是说 `KTreeRep` 与 `KTwoFormula` 这两条「借来的谓词」
+第一次有了可执行的消解路径。
+
+顺手：`docs/mathlib-api.md` 补了一节「求导」（9 个核实过的名字）和一个坑——
+`HasDerivAt` 是 `def`，缺 import 时点记号报的是 `HasFDerivAtFilter.xxx 不存在`，会把人引向错误方向；
+蓝图补了 `lem:Theta-deriv` 节点（`\lean{} + \leanok`），并写明它是 `ax:KTreeRep` / `ax:KTwoFormula` 的前置。
+
+审计：**309 定理 / 137 定义 / 0 公理**。

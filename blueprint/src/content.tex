@@ -171,6 +171,21 @@ word by word: one of them was \emph{false} as first written and had to be repair
 \chapter{Scaling order (Appendix B)}
 
 % RBM.Graph.Counters, RBM.Graph.ord  (eq:ordG)
+\begin{lemma}[The derivative of the propagator, $\mathtt{(2.51)}$ of the $d=1$ paper]\label{lem:Theta-deriv}
+  \lean{RBM.continuousAt_Theta, RBM.Theta_sub_Theta, RBM.continuous_matrix_entry, RBM.hasDerivAt_Theta_apply, RBM.hasDerivAt_Theta_mul_apply}\leanok
+  \uses{def:Theta, lem:SB-basic}
+  Entrywise, $\partial_\xi(\Th_\xi)_{ab}=(\Th_\xi\SB\Th_\xi)_{ab}$ for $\|\xi\|<1$, and
+  along $\xi=t\mu$, $\partial_t(\Th_{t\mu})_{ab}=\mu(\Th_{t\mu}\SB\Th_{t\mu})_{ab}$.
+  The proof goes through the resolvent identity
+  $\Th_\zeta-\Th_\xi=(\zeta-\xi)\Th_\zeta\SB\Th_\xi$ and continuity of $\xi\mapsto\Th_\xi$,
+  not by differentiating the Neumann series.
+
+  The statement is \emph{entrywise} on purpose: that is what the loop layer uses, and it
+  avoids the instance diamond between the Pi topology on \texttt{Matrix} and the topology
+  of the $\ell^\infty$ operator norm.  This node is the prerequisite for \ref{ax:KTreeRep}
+  and \ref{ax:KTwoFormula} (work orders Q27, Q22a, Q22b).
+\end{lemma}
+
 \begin{definition}[Scaling size and scaling order]\label{def:ord}
   \lean{RBM.Graph.Counters, RBM.Graph.ord}\leanok
   For a normal graph $\Gamma$ with $n_S$ solid edges (light-weights included), $n_W$ waved
