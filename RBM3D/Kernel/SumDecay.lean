@@ -6,6 +6,8 @@ Authors: Jun Yin
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.Complex.ExponentialBounds
 import RBM3D.Defs.RadialSum
+import RBM3D.Kernel.Evolution
+import RBM3D.Kernel.PropT
 
 /-!
 # `(eq:latticesum_d3)`: the borderline lattice sum of Appendix A.2
@@ -336,5 +338,208 @@ theorem latticesum_d3 (k : ℕ) {c ℓ : ℝ} (hc : 0 < c) (hℓ : 0 < ℓ) {R :
             exact mul_le_mul_of_nonneg_right hbound (by positivity)
         _ = 2 ^ (3 * k + 9) * (2 + Real.log ((k : ℝ) + 3)) * Real.log L * ((R : ℝ) ^ k)⁻¹ := by
             ring
+
+/-! ### `(eq:decomp_U2)` and `(eq:decayXi)`: the two ingredients of `lem:sum_decay`
+
+`(eq:decompUalt)` writes each one-index factor of `U^(n)` as `1 + Ξ^(i)`.  Expanding the
+product over the `n` indices gives `(eq:decomp_U2)`,
+
+  `(U^(n) ∘ 𝒜)_a = Σ_{A ⊆ [n]} Σ_b ∏_{i∈A} δ_{a_i b_i} ∏_{i∉A} Ξ^(i)_{a_i b_i} 𝒜_b`,
+
+and `(eq:decayXi)` bounds a single entry of `Ξ^(i)` using `(prop:ThfadC)`. -/
+
+section Xi
+
+variable {d L : ℕ} [NeZero L] {g : ℝ}
+
+/-- `Ξ^(i) = (t-s) M^{(σ_i,σ_{i+1})} S^(B) Θ_t` of `(eq:decompUalt)`. -/
+noncomputable def XiKer (d L : ℕ) [NeZero L] (g : ℝ) (μ : ℂ) (s t : ℝ) :
+    Matrix (Zd d L) (Zd d L) ℂ :=
+  (((t : ℂ) - s) * μ) • (SB d L g * Theta d L g ((t : ℂ) * μ))
+
+theorem uKer_eq_one_add_XiKer {μ : ℂ} {s t : ℝ} (hL : 3 ≤ L) (hξ : ‖(t : ℂ) * μ‖ < 1) :
+    uKer d L g μ s t = 1 + XiKer d L g μ s t :=
+  uKer_eq_one_add hL hξ
+
+omit [NeZero L] in
+/-- `S^(B)(g)` is supported on the nearest neighbours: its entry vanishes beyond
+distance `1`. -/
+theorem SB_apply_eq_zero_of_one_lt {a b : Zd d L} (h : 1 < zdistD d L (a - b)) :
+    SB d L g a b = 0 := by
+  rw [SB_apply, sbKernel]
+  have h0 : a - b ≠ 0 := by
+    intro hab
+    rw [hab, zdistD_zero] at h
+    omega
+  simp only [h0, ite_false, show ¬(zdistD d L (a - b) = 1) by omega, ite_false]
+
+/-- **`(eq:decomp_U2)`**: expanding `∏_i (δ + Ξ^(i))` over subsets. -/
+theorem UN_apply_eq_sum_powerset {n : ℕ} {m : Fin n → ℂ} (hL : 3 ≤ L)
+    (hm : ∀ i, ‖m i‖ = 1) {s t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+    (𝒜 : (Fin n → Zd d L) → ℂ) (a : Fin n → Zd d L) :
+    UN d L g m s t 𝒜 a
+      = ∑ A ∈ (Finset.univ : Finset (Fin n)).powerset, ∑ b : Fin n → Zd d L,
+          ((∏ i ∈ A, (1 : Matrix (Zd d L) (Zd d L) ℂ) (a i) (b i))
+            * ∏ i ∈ Finset.univ \ A, XiKer d L g (cycProd m i) s t (a i) (b i)) * 𝒜 b := by
+  have hfac : ∀ i : Fin n, uKer d L g (cycProd m i) s t
+      = 1 + XiKer d L g (cycProd m i) s t := fun i =>
+    uKer_eq_one_add_XiKer hL (norm_t_mul_lt_one ht0 ht1 (norm_cycProd hm i))
+  rw [UN_eq_tensorKer, tensorKer]
+  simp only [hfac]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun b _ => ?_
+  rw [show (∏ i, ((1 : Matrix (Zd d L) (Zd d L) ℂ) + XiKer d L g (cycProd m i) s t) (a i) (b i))
+      = ∑ A ∈ (Finset.univ : Finset (Fin n)).powerset,
+        (∏ i ∈ A, (1 : Matrix (Zd d L) (Zd d L) ℂ) (a i) (b i))
+          * ∏ i ∈ Finset.univ \ A, XiKer d L g (cycProd m i) s t (a i) (b i) from
+    Finset.prod_add _ _ _]
+  rw [Finset.sum_mul]
+
+/-- **`(eq:decayXi)`**: a single entry of `Ξ^(i)` inherits the decay of `(prop:ThfadC)`,
+
+  `|Ξ^(i)_{ab}| ≤ C (1-s) (g²+|1-t|)⁻¹ (|a-b|+1)^{-(d-2)} e^{-c|a-b|/ℓ_t}`.
+
+The zero-mode part of `B_{t,|a-b|}` is absorbed into the decay term, which is legitimate
+in the regime `t ≤ 1 - g²/L²` that `lem:sum_decay` assumes; the nearest-neighbour support
+of `S^(B)` moves the profile from `|c-b|` to `|a-b|` at the cost of a constant. -/
+theorem norm_XiKer_apply_le {k : ℕ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g) (hμ : ‖μ‖ = 1)
+    (hdecay : ThetaDecay (k + 2) g μ) :
+    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t → t < 1 →
+      g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t →
+      haveI : NeZero L := ⟨by omega⟩
+      ∀ a b : Zd (k + 2) L,
+        ‖XiKer (k + 2) L g μ s t a b‖
+          ≤ C * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+            * (((zdistD (k + 2) L (a - b) : ℝ) + 1) ^ k)⁻¹
+            * Real.exp (-(c * (zdistD (k + 2) L (a - b) : ℝ)) / ellT L g t) := by
+  obtain ⟨Cd, hCd, cd, hcd, hbd⟩ := hdecay hd hg hμ
+  -- constants: the zero-mode absorption, the shift by one lattice step, and the exponential
+  refine ⟨Cd * (1 + 2 * (2 * ((k : ℝ) + 2)) ^ k) * 2 ^ k * Real.exp cd, by positivity,
+    cd, hcd, ?_⟩
+  intro L hL s t hs hst ht hgt
+  have : NeZero L := ⟨by omega⟩
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast Nat.one_le_of_lt (by omega : 1 < L)
+  have ht0 : 0 ≤ t := hs.trans hst
+  have hξ : ‖(t : ℂ) * μ‖ < 1 := norm_t_mul_lt_one ht0 ht hμ
+  have hℓ : 1 ≤ ellT L g t := one_le_ellT hL1
+  have hℓ0 : 0 < ellT L g t := by linarith
+  intro a b
+  set A : ℝ := (g ^ 2 + |1 - t|)⁻¹ with hA
+  have hA0 : 0 < A := by rw [hA]; positivity
+  set R : ℝ := (zdistD (k + 2) L (a - b) : ℝ) with hR
+  set C₀ : ℝ := Cd * (1 + 2 * (2 * ((k : ℝ) + 2)) ^ k) * 2 ^ k * Real.exp cd with hC₀
+  -- the profile at a neighbour of `a` is the profile at `a`, up to constants
+  have hprof : ∀ c : Zd (k + 2) L, zdistD (k + 2) L (a - c) ≤ 1 →
+      ‖Theta (k + 2) L g ((t : ℂ) * μ) c b‖
+        ≤ C₀ * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t) := by
+    intro c hc
+    have htrans : Theta (k + 2) L g ((t : ℂ) * μ) c b
+        = Theta (k + 2) L g ((t : ℂ) * μ) 0 (b - c) := by
+      have h := Theta_apply_add_right_of_three_le (g := g) hL hξ 0 (b - c) c
+      simpa using h
+    rw [htrans]
+    have hb := hbd L hL t ht0 ht (b - c)
+    set r : ℝ := (zdistD (k + 2) L (b - c) : ℝ) with hr
+    have hr0 : 0 ≤ r := Nat.cast_nonneg _
+    -- the triangle inequality, with `|a - c| ≤ 1`
+    have htri : zdistD (k + 2) L (a - b)
+        ≤ zdistD (k + 2) L (a - c) + zdistD (k + 2) L (c - b) := by
+      have h := zdistD_add_le (k + 2) L (a - c) (c - b)
+      rwa [sub_add_sub_cancel] at h
+    have hcb : zdistD (k + 2) L (c - b) = zdistD (k + 2) L (b - c) := by
+      rw [← zdistD_neg (k + 2) L (b - c), neg_sub]
+    have hRr : R ≤ 1 + r := by
+      rw [hR, hr, ← hcb]
+      have : zdistD (k + 2) L (a - b) ≤ 1 + zdistD (k + 2) L (c - b) := by omega
+      exact_mod_cast this
+    -- the zero mode is dominated by the decay term
+    have hzm : Bparam (k + 2) L g t (zdistD (k + 2) L (b - c))
+        ≤ (1 + 2 * (2 * ((k : ℝ) + 2)) ^ k) * (A * ((r + 1) ^ k)⁻¹) := by
+      have hz := zeroMode_le_of_ge_mul (k := k) (L := L) (g := g) (t := t) (m := k + 2)
+        (by omega) hL1 ht (zdistD_le (k + 2) (b - c)) hgt
+      have hcast : ((2 : ℝ) * ((k + 2 : ℕ) : ℝ)) ^ k = (2 * ((k : ℝ) + 2)) ^ k := by
+        push_cast; ring_nf
+      rw [hcast] at hz
+      simp only [Bparam, powW, hA, hr] at hz ⊢
+      have hpow : (0 : ℝ) < ((zdistD (k + 2) L (b - c) : ℝ) + 1) ^ (k + 2 - 2) := by
+        norm_num
+        positivity
+      simp only [show k + 2 - 2 = k from rfl] at hpow ⊢
+      nlinarith [hz, inv_nonneg.mpr hpow.le]
+    -- the shift in the power and in the exponential
+    have hshift : ((r + 1) ^ k)⁻¹ ≤ 2 ^ k * ((R + 1) ^ k)⁻¹ := by
+      rw [← div_eq_mul_inv, le_div_iff₀ (by positivity), inv_mul_eq_div,
+        div_le_iff₀ (by positivity)]
+      calc (R + 1) ^ k ≤ (2 * (r + 1)) ^ k := pow_le_pow_left₀ (by positivity) (by linarith) _
+        _ = 2 ^ k * (r + 1) ^ k := mul_pow _ _ _
+    have hexp : Real.exp (-cd * r / ellT L g t)
+        ≤ Real.exp cd * Real.exp (-(cd * R) / ellT L g t) := by
+      rw [← Real.exp_add]
+      apply Real.exp_le_exp.mpr
+      have hdiff : cd + -(cd * R) / ellT L g t - -cd * r / ellT L g t
+          = cd - cd * (R - r) / ellT L g t := by field_simp; ring
+      have hle : cd * (R - r) / ellT L g t ≤ cd := by
+        rw [div_le_iff₀ hℓ0]
+        nlinarith [hcd.le, hℓ, hRr]
+      rw [← sub_nonneg, hdiff]
+      linarith
+    have hB0 : 0 ≤ Bparam (k + 2) L g t (zdistD (k + 2) L (b - c)) := by
+      simp only [Bparam]
+      have h1 : (0 : ℝ) ≤ (g ^ 2 + |1 - t|)⁻¹ := by positivity
+      have h2 : (0 : ℝ) ≤ (((zdistD (k + 2) L (b - c) : ℝ)) + 1) ^ (k + 2 - 2) := by positivity
+      have h3 : (0 : ℝ) ≤ ((L : ℝ) ^ (k + 2) * |1 - t|)⁻¹ := by positivity
+      positivity
+    calc ‖Theta (k + 2) L g ((t : ℂ) * μ) 0 (b - c)‖
+        ≤ Cd * Bparam (k + 2) L g t (zdistD (k + 2) L (b - c))
+            * Real.exp (-cd * r / ellT L g t) := hb
+      _ ≤ Cd * ((1 + 2 * (2 * ((k : ℝ) + 2)) ^ k) * (A * ((r + 1) ^ k)⁻¹))
+            * (Real.exp cd * Real.exp (-(cd * R) / ellT L g t)) := by
+          apply mul_le_mul (mul_le_mul_of_nonneg_left hzm hCd.le) hexp (Real.exp_pos _).le
+          positivity
+      _ ≤ Cd * ((1 + 2 * (2 * ((k : ℝ) + 2)) ^ k) * (A * (2 ^ k * ((R + 1) ^ k)⁻¹)))
+            * (Real.exp cd * Real.exp (-(cd * R) / ellT L g t)) := by
+          refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+          refine mul_le_mul_of_nonneg_left ?_ hCd.le
+          refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+          exact mul_le_mul_of_nonneg_left hshift hA0.le
+      _ = C₀ * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t) := by
+          rw [hC₀]; ring
+  -- sum over the neighbours of `a`
+  have hrow : ∑ c : Zd (k + 2) L, ‖SB (k + 2) L g a c‖ = 1 := sum_norm_SB_row (k + 2) L g hL a
+  have hterm : ∀ c : Zd (k + 2) L,
+      ‖SB (k + 2) L g a c‖ * ‖Theta (k + 2) L g ((t : ℂ) * μ) c b‖
+        ≤ ‖SB (k + 2) L g a c‖
+          * (C₀ * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t)) := by
+    intro c
+    by_cases hc : zdistD (k + 2) L (a - c) ≤ 1
+    · exact mul_le_mul_of_nonneg_left (hprof c hc) (norm_nonneg _)
+    · rw [SB_apply_eq_zero_of_one_lt (by omega)]
+      simp
+  have hmul : ‖XiKer (k + 2) L g μ s t a b‖
+      ≤ (t - s) * ∑ c : Zd (k + 2) L,
+          ‖SB (k + 2) L g a c‖ * ‖Theta (k + 2) L g ((t : ℂ) * μ) c b‖ := by
+    rw [XiKer]
+    have hcoef : ‖((t : ℂ) - s) * μ‖ = t - s := by
+      rw [norm_mul, hμ, mul_one, ← Complex.ofReal_sub, Complex.norm_real,
+        Real.norm_of_nonneg (by linarith)]
+    simp only [Matrix.smul_apply, smul_eq_mul, norm_mul, hcoef, Matrix.mul_apply]
+    refine mul_le_mul_of_nonneg_left ?_ (by linarith)
+    calc ‖∑ c : Zd (k + 2) L, SB (k + 2) L g a c * Theta (k + 2) L g ((t : ℂ) * μ) c b‖
+        ≤ ∑ c : Zd (k + 2) L, ‖SB (k + 2) L g a c * Theta (k + 2) L g ((t : ℂ) * μ) c b‖ :=
+          norm_sum_le _ _
+      _ = _ := Finset.sum_congr rfl fun c _ => norm_mul _ _
+  calc ‖XiKer (k + 2) L g μ s t a b‖
+      ≤ (t - s) * ∑ c : Zd (k + 2) L,
+          ‖SB (k + 2) L g a c‖ * ‖Theta (k + 2) L g ((t : ℂ) * μ) c b‖ := hmul
+    _ ≤ (t - s) * ∑ c : Zd (k + 2) L, ‖SB (k + 2) L g a c‖
+          * (C₀ * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t)) := by
+        refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun c _ => hterm c) (by linarith)
+    _ = (t - s) * (C₀ * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t)) := by
+        rw [← Finset.sum_mul, hrow, one_mul]
+    _ ≤ (1 - s) * (C₀ * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t)) := by
+        refine mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+    _ = C₀ * (1 - s) * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t) := by ring
+
+end Xi
 
 end RBM

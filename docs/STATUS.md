@@ -261,3 +261,15 @@ RBM3D 的传播子层目前只有代数与范数，没有求导层。Q22a 就是
 
 一般 `n` 需要对 `polyVal` 递归做归纳（每次分裂用一次 `sum_exp_decay_conv`、`c` 减半），工具已备好，另开 Q25。
 审计：286 定理，`ThetaDecayShort` 承重 2 → **4** 条。
+
+## 2026-09-19 · Claude Code · Q17b 部分完成（两块零件），三条结论 → Q26
+
+`Kernel/SumDecay.lean`：`(eq:decomp_U2)`（`UN_apply_eq_sum_powerset`，靠 `Finset.prod_add` 按子集展开）
+与 `(eq:decayXi)`（`norm_XiKer_apply_le`，由接口假设 `ThetaDecay` 推出）。后者的三个技术点：
+零模项用 `zeroMode_le_of_ge_mul` 吸收、`S^(B)` 的最近邻支集（新引理 `SB_apply_eq_zero_of_one_lt`）
+把廓线从 `|c−b|` 搬到 `|a−b|`、行和为 1 吃掉对 `c` 的求和。
+
+三条结论（`sum_res_1` / 非交替 / 和零）留给 Q26，并在那里写明**一个容易踩的坑**：
+直接用 `‖Ξ‖_{∞→∞}` 得到的形状比论文claim的弱，必须走 `(deccA0)` 的球内截断加 `(1−s)ℓ_s² ≲ g²+|1−s|` 才凑得出来。
+
+审计：291 定理，`ThetaDecay` 承重 0 → **1**，`ThetaDecayShort` 4，`ThetaZeroMode` 2。

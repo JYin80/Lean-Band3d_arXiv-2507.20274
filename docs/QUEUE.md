@@ -27,7 +27,7 @@
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | **PARTIAL** (CC)：`n = 2` + 工具；一般 `n` → Q25 |
 | Q17a | `eq:latticesum_d3`（第三轮新加的那条） | `Kernel/SumDecay.lean` | **DONE** (CC)：不依赖任何接口假设 |
-| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **CLAIMED** (CC) |
+| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块零件已证；三条结论 → Q26 |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
@@ -1106,7 +1106,26 @@ Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
 
 ---
 
-## Q17b · `lem:sum_decay` 本体 — **OPEN**（Q17a 已完成）
+## Q17b · `lem:sum_decay` 本体 — **PARTIAL**（CC，2026-09-19）：两块零件已证，三条结论 → Q26
+
+> **完成记录**：`Kernel/SumDecay.lean` 续写，`./check.sh` → `errors: 0`、`exit=0`、零 sorry。
+>
+> **证出来的两块**（都是 A.2 证明反复用的零件）：
+> * **`(eq:decomp_U2)`** `UN_apply_eq_sum_powerset`：按 `(eq:decompUalt)` 把每个单指标因子写成 `1 + Ξ^(i)`，
+>   再把 `n` 个因子的积按子集展开——`Σ_{A ⊆ [n]} ∏_{i∈A} δ ∏_{i∉A} Ξ`。用的是 Mathlib 的 `Finset.prod_add`，
+>   没有重造 Q9 的分解（`uKer_eq_one_add`）。新增定义 `XiKer` 给 `Ξ^(i)` 一个名字。
+> * **`(eq:decayXi)`** `norm_XiKer_apply_le`：`|Ξ^(i)_{ab}| ≤ C(1−s)(g²+|1−t|)⁻¹(|a−b|+1)^{−(d−2)} e^{−c|a−b|/ℓ_t}`，
+>   由 `(prop:ThfadC)`（接口假设 `ThetaDecay`，签名里写着）推出。三个技术点：
+>   零模项由 `zeroMode_le_of_ge_mul` 吸收（用到 `lem:sum_decay` 假设的 `t ≤ 1 − g²/L²`）；
+>   **`S^(B)` 只连最近邻**（新引理 `SB_apply_eq_zero_of_one_lt`），所以衰减廓线从 `|c−b|` 搬到 `|a−b|` 只差常数；
+>   行和为 1 把对 `c` 的求和吃掉。
+>
+> **没做的：三条结论本身**（`sum_res_1`、`(I)` 非交替、`(II)` 和零性质）→ **Q26**。
+> 它们要把上面两块接起来，再加上 `𝒜` 的快衰减假设 `(deccA0)`、`W^ε` 截断、
+> 以及 `(1−s)ℓ_s² ≍ g²+|1−s|`（`eq:1-sells2`）这套记账——是独立的一拍。
+>
+> 审计里 `ThetaDecay` 的承重从 0 变成 **1**。
+
 
 **文件**：`RBM3D/Kernel/SumDecay.lean`（Q17a 已建好，续写即可）。
 
@@ -1299,3 +1318,25 @@ F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
 
 **因此 Q22a 一旦落地，`KTreeRep` 就从「表示定理」退成「只欠存在性」**——
 唯一性不再是假设。这比整体移植先便宜得多，也先有用得多。
+
+## Q26 · `lem:sum_decay` 的三条结论 — **OPEN**（CC 于 Q17b 开出）
+
+**文件**：`RBM3D/Kernel/SumDecay.lean`（接在 `norm_XiKer_apply_le` 之后）。
+
+**要证**：`sum_res_1`（主界）、`(I)` `sum_res_2_NAL`（`σ` 非交替）、`(II)` `sum_res_2`（`𝒜` 满足和零性质）。
+
+**手上已有**：`UN_apply_eq_sum_powerset`（`(eq:decomp_U2)`）、`norm_XiKer_apply_le`（`(eq:decayXi)`）、
+`latticesum_d3`（Q17a）、`sum_radial_*`、`sum_inv_Icc_le`。
+
+**关键记账**（论文 A.2 的走法，按这个顺序做）：
+1. `sum_res_1_red0`（`|A| = k ≥ 1`）：`|𝒜_b| ≤ ‖𝒜‖`，对 `i ∉ A` 各自求和。
+   **注意**：直接用 `‖Ξ‖_{∞→∞} ≤ (t−s)/(1−t)` 给出的形状是 `((t−s)/(1−t))^{n−k}`，
+   **比论文claim的 `((g²+|1−s|)/(g²+|1−t|))^{n−k}` 弱**——必须走 `(deccA0)` 把求和限制在
+   `|a_i − b_i| ≲ W^ε ℓ_s` 的球内，再用 `(eq:decayXi)` 和球内求和 `Σ_{|x|≤R}(|x|+1)^{−(d−2)} ≲ R²`，
+   配合 `(1−s)ℓ_s² ≲ g²+|1−s|` 才凑出论文的形状。**这一步是整条引理的关键，别走捷径。**
+2. `sum_res_1_red`（`A = ∅`）：多出 `ℓ_t²/ℓ_s²` 因子。
+3. `(I)`：非交替时某个 `Ξ^(k)` 是同号的，用 `(prop:ThfadC_short)` 换掉一个因子。
+4. `(II)`：和零性质让 `A = ∅` 的主项消失（论文 `eq:decompXii` 那一步），剩下的用 `(prop:BD1)` 与 `latticesum_d3`。
+
+**前两步要先补**：球内求和引理 `Σ_{|x| ≤ R} (|x|+1)^{−(d−2)} ≤ C_d (R+1)²`（仿 `sum_radial_tail_le` 写，几行），
+以及 `(1−s) * ellT L g s ^ 2 ≤ g² + |1−s|`（从 `ellT` 定义直接算）。
