@@ -801,3 +801,25 @@ proof below**」，随后是完整证明（`paper/tex/A_deterministic_estimates.
 得到 `(prop:ThfadC0)` 的固定 `L` 证书，审计的 `2 of 9` 变 `3 of 9`。路线已逐步写进工单。
 
 审计：**500 定理 / 173 定义 / 0 公理**。
+
+## 2026-09-20 · Claude Code · Q53：`(prop:ThfadC0)` 拿到固定 `L` 证书，审计 `3 of 9`
+
+Q41 定位、Q51/Q52 补齐的那条相消链，这一拍接上了最后一段：
+
+* `sum_range_pow_div` / `summable_pow_div`：`Σ_k q^{⌊k/R⌋} ≤ R(1−q)⁻¹`。
+  **没走工单建议的 `Nat.divModEquiv`**——部分和更短：块恒等式
+  `Σ_{k<RM} q^{⌊k/R⌋} = R Σ_{j<M} q^j`（归纳 + `Finset.sum_range_add`），
+  再喂给 `summable_of_sum_range_le` 与 `Real.tsum_le_of_sum_range_le`，
+  一次拿到可和性与上界；除法同构那条路要额外处理 `ℕ × Fin R` 上的乘积可和性，更长。
+* `exists_norm_Theta0_le`：`Θ̊_ξ = Σ_k ξ^k (S^k − P)`，每项 `≤ q^{⌊k/R⌋}`，
+  于是 `‖Θ̊_ξ(a,b)‖ ≤ R(1−q)⁻¹`，**与 `ξ` 无关**。
+* `Test.thetaZeroMode_fixedL`：性质 8 的固定 `L` 版。
+
+**这条证书与 Q41 那条的性质不同，值得记**：`(prop:ThfadC)` 那条是**尺寸界**
+（右端含零模项，与粗界同阶发散）；**这一条的右端对 `t` 有界，尺寸界永远给不出来**，
+只能靠去零模后的相消。`not_exists_uniform_entry_bound` 就是当初把这件事钉死的那条。
+
+**下一步 Q54**：`(prop:BD1)`/`(prop:BD2)` 用同一个衰减（差分把常模式消掉，每项 `≤ 2q^{⌊k/R⌋}`），
+预计 `3 of 9` → `5 of 9`；路线与陷阱（`r = 0` 那一支要单独处理）已写进工单。
+
+审计：**504 定理 / 173 定义 / 0 公理**，证书 **3 of 9**。

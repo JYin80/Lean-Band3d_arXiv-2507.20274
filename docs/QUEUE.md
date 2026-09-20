@@ -77,7 +77,8 @@
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：2 条证书 + 4 条的障碍已机器化 → Q51 |
 | Q51 | **有限 `L` 的混合性（原名「谱隙」）** ⭐ | `Propagator/Gap.lean` | **PARTIAL (CC)**：块一（连通性 + Doeblin）已证；Dobrushin 收缩 → Q52 |
 | Q52 | **Dobrushin 收缩 + 几何混合** ⭐ | `Propagator/Gap.lean` | **DONE (CC)**：收缩与混合估计已证；级数求和 → Q53 |
-| Q53 | **把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书** ⭐ | `Test/InterfaceShape.lean` | **CLAIMED (CC)** |
+| Q53 | **把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书** ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：审计 `3 of 9` |
+| Q54 | **`(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书**（同一个衰减，作用在差分上） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（CC 于 Q53 开出） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
@@ -1866,7 +1867,34 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 
 ---
 
-## Q53 · 把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书 ⭐ — **OPEN**（CC 于 Q52 开出）
+## Q54 · `(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书 ⭐ — **OPEN**（CC 于 Q53 开出）
+
+**文件**：`RBM3D/Propagator/Gap.lean`（差分版的一致界）与 `RBM3D/Test/InterfaceShape.lean`（证书）。
+
+**已经有的**：`RBM.exists_mixing`（`|(S^n)_{ab} − L^{-d}| ≤ q^{⌊n/R⌋}`）、
+`RBM.exists_norm_Theta0_le`（`Θ̊` 的一致界，Q53）、`RBM.Test.sum_Theta_diff_row`
+（差分行和为零，Q41）。
+
+**要做的**：差分把常模式消掉，所以同一个衰减直接可用——
+
+> `Θ_ξ(0,a+r) − Θ_ξ(0,a) = Σ_k ξ^k ((S^k)_{0,a+r} − (S^k)_{0,a})`，
+> 每一项 `≤ |(S^k)_{0,a+r} − L^{-d}| + |L^{-d} − (S^k)_{0,a}| ≤ 2 q^{⌊k/R⌋}`。
+
+于是 `‖Θ_ξ(0,a+r) − Θ_ξ(0,a)‖ ≤ 2R(1−q)⁻¹`，**与 `ξ` 无关**。二阶差分同理，系数 `4`。
+最省事的做法：把 Q53 的 `exists_norm_Theta0_le` 抽象成一条
+「`Σ_k ξ^k c_k`，`|c_k| ≤ M q^{⌊k/R⌋}` ⟹ 界 `M R(1−q)⁻¹`」的引理，再用三次。
+
+**再配右端**（与 Q53 相同的套路）：`(prop:BD1)` 的右端还带 `|r|` 这个因子，
+**注意 `r = 0` 时右端为 `0`**——但那时左端也为 `0`，要单独处理这一支。
+`(prop:BD2)` 带 `|r|²`，同样的单独处理。
+
+**验收**：两条证书进 `Test/InterfaceShape.lean`、登记进 `certificates`，审计 `3 of 9` → `5 of 9`。
+剩下没有证书的就只有 `ThetaDecayShort`（需要 `m² ≠ 1` 的定量版本）、`PropTH`（打包，可由四条分量合成）、
+`KTreeRep`、`KLoopBound`。
+
+---
+
+## Q53 · 把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书 ⭐ — **DONE**（CC，beat 36）
 
 **文件**：`RBM3D/Propagator/Gap.lean`（级数部分）与 `RBM3D/Test/InterfaceShape.lean`（证书）。
 
@@ -1890,7 +1918,28 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 审计末行从 `2 of 9` 变成 `3 of 9`。
 
 **接着**（可另开）：`(prop:BD1)` / `(prop:BD2)` 用同一个衰减——差分把常模式消掉，
-`Θ_t(0,a+r) − Θ_t(0,a) = Σ_k ξ^k ((S^k)_{0,a+r} − (S^k)_{0,a})`，每项 `≤ 2q^{⌊k/R⌋}`。
+`Θ_t(0,a+r) − Θ_t(0,a) = Σ_k ξ^k ((S^k)_{0,a+r} − (S^k)_{0,a})`，每项 `≤ 2q^{⌊k/R⌋}`。→ **Q54**
+
+### 完成记录（CC，beat 36）— `./check.sh` exit=0，504 定理 / 0 公理 / 0 warning
+
+**三步都按工单走通**，只有第一步换了做法：
+
+1. **几何级数**：**没用** `Nat.divModEquiv`（工单原本建议的那条）。
+   用**部分和**更短：`sum_range_pow_div` 给块恒等式 `Σ_{k<RM} q^{⌊k/R⌋} = R Σ_{j<M} q^j`
+   （对 `M` 归纳 + `Finset.sum_range_add`），然后 `summable_of_sum_range_le` 与
+   `Real.tsum_le_of_sum_range_le` 正好吃「非负 + `range N` 上一致有界」这两样，
+   一次给出可和性与 `≤ R(1−q)⁻¹`。**除法同构那条路要处理 `ℕ × Fin R` 上的乘积可和性，反而更长。**
+2. **级数恒等式**：`exists_norm_Theta0_le`——`Θ̊_ξ = Σ_k ξ^k (S^k − P)`
+   （`Theta0_apply_eq` + `Theta_apply_eq_tsum` + `Summable.tsum_sub`），每项
+   `≤ q^{⌊k/R⌋}`（因为 `‖ξ‖^k ≤ 1`），于是 `‖Θ̊_ξ(a,b)‖ ≤ R(1−q)⁻¹`，**与 `ξ` 无关**。
+3. **证书**：`thetaZeroMode_fixedL`。右端其余因子在固定 `L` 下都有正下界：
+   `L^τ ≥ 1`、`(g²+|1−t|)⁻¹ ≥ (g²+1)⁻¹`、`(|a|+1)^{-(d−2)} ≥ (R_L+1)^{-(d−2)}`。
+
+**为什么这条证书与 Q41 那条性质不同**（写进了文件头）：`(prop:ThfadC)` 那条是**尺寸界**
+——右端含零模项，和粗界同阶发散；**这一条右端对 `t` 有界，尺寸界永远给不出来**，
+只能靠去零模后的**相消**。这正是 Q41 当时定位、Q51/Q52 补上的那件事。
+
+**审计**：`non-vacuity certificates: 2 of 9` → **`3 of 9`**。
 
 ---
 
