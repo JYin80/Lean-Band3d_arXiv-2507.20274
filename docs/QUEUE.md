@@ -34,7 +34,7 @@
 | Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **DONE** (CC)：模型 + **重采样不变性**（Q43b 缺的那条） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **DONE** (CC)：抽象算子版 + Hermite 矩阵版 |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
-| Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **OPEN**（CC 于 Q42b 开出） |
+| Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **CLAIMED (CC)** |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
