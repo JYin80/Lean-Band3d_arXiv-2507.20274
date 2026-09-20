@@ -72,7 +72,7 @@
 | Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：树那一侧已就位；配对与 `eq_on_level` 待续 |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
-| Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
+| Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **CLAIMED (CC)** |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
