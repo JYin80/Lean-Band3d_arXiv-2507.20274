@@ -36,7 +36,7 @@
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **PARTIAL** (CC)：确定性不等式已证；`Ψ²ℓ² ≺ (W^dη)⁻¹` 的吸收 → Q29 |
-| Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
+| Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **CLAIMED (CC)** |
 | Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | BLOCKED by Q23 |
 | Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | BLOCKED by Q27 |
 | Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | BLOCKED by Q22a |
