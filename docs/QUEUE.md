@@ -24,7 +24,7 @@
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **DONE** (CC)；求和版另开 Q20 |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
-| Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **OPEN** —— 移植路线已打通 |
+| Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **CLAIMED** (CC) |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3` | `Kernel/SumDecay.lean` | **Q17a DONE** (CC)；Q17b 待做 |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
