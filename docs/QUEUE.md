@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-19 · beat 4（Q11 分步进行中；补开 Q17，A.2 的中间一条）
+最后刷新：2026-09-20 · 按 RBM1D 流水线经验重启（新增 Q19、Q20 与储备工单）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -28,6 +28,8 @@
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
+| Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **OPEN**（架构，优先） |
+| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | BLOCKED by Q12 |
 
 ---
 
@@ -724,3 +726,81 @@ equation lemma、`.proof_N`、实例投影。实测：总数 389，其中**手�
 
 第一批会让它非零的是 Q13、Q16、Q17b。**那个数字从 0 变正的时刻，就是「借用开始承重」**，
 值得在 STATUS 里单独记一笔。
+
+
+---
+
+## Q19 · 把 5 条接口 axiom 改成 `structure` 字段 — **OPEN**，架构优先 ⭐
+
+**文件**：`RBM3D/Propagator/Interface.lean`（改写）、`RBM3D/Test/Axioms.lean`（收尾）。
+
+**为什么改**：见 `CLAUDE.md` 的「接口的形式」。一句话——`axiom` 污染公理审计，而且
+**将来真把它证出来时，下游要返工**；写成字段/参数就能做到「原地把字段换成定理，签名一个字不改」。
+
+本项目已经自发走对过两次：`Graph/Model.lean` 的 `Case.Rel` 是显式假设；
+`Propagator/Basic.lean` 早期的 `hS` / `hone` 也是假设，被 Q3/Q4 消掉时**签名没变、下游零返工**。
+Q19 就是把这个形式贯彻到剩下 5 条。
+
+**建议形状**（两层，兼顾「单条可消」与「调用方便」）：
+
+```lean
+/-- `(prop:ThfadC)`，`lem_propTH` 性质 5。 -/
+def ThetaDecay (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
+  ∃ Cd > (0:ℝ), ∃ cd > (0:ℝ), ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d L, …
+
+def ThetaDecayShort  (d : ℕ) (g : ℝ) (m : ℂ) : Prop := …   -- (prop:ThfadC_short)
+def ThetaDiffOne     (d : ℕ) (g : ℝ) (m : ℂ) : Prop := …   -- (prop:BD1)
+def ThetaDiffTwo     (d : ℕ) (g : ℝ) (m : ℂ) : Prop := …   -- (prop:BD2)
+def ThetaZeroMode    (d : ℕ) (g : ℝ) (m : ℂ) : Prop := …   -- (prop:ThfadC0)
+
+/-- `lem_propTH` 性质 5–8：本文引用而未证的那几条，打包。 -/
+structure PropTH (d : ℕ) (g : ℝ) (m : ℂ) : Prop where
+  decay       : ThetaDecay d g m
+  decayShort  : ThetaDecayShort d g m
+  diffOne     : ThetaDiffOne d g m
+  diffTwo     : ThetaDiffTwo d g m
+  zeroMode    : ThetaZeroMode d g m
+```
+
+**陈述内容原样搬过来**，一个字不改——现在那 5 条 axiom 的 body 就是要的东西。
+
+**下游怎么用**：需要它的定理多带一个参数 `(hP : PropTH d g m)`，用 `hP.decay` 取。
+目前没有任何定理依赖这 5 条（审计报的依赖数都是 1，即只有它自己），**所以这次改动零返工**，
+这也正是现在做而不是以后做的理由。第一批会用到的是 Q13、Q16、Q17b。
+
+**单条分开写的理由**：`(prop:BD1)` 论文自己说在所引文献里**根本没有显式证明**，
+而其余几条有出处。将来能一条条消掉，所以要能一条条引用。
+
+**收尾**：`Test/Axioms.lean` 的 `interfaceAxioms` 清空，审计回到 RBM1D 那种最严形式——
+**只允许 `propext` / `Classical.choice` / `Quot.sound`**。这是验收标准：
+`#assert_rbm_axioms` 通过且接口名单为空。同时在 `docs/paper-deltas.md` 把 D5 改写
+（那条现在写的是「接口公理写成展开式」，要改成「写成 `Prop` 定义 + 结构字段」）。
+
+## Q20 · `(eq:key_T_reudce)` 求和版 — BLOCKED by Q12
+
+**文件**：`RBM3D/Kernel/PropT.lean`。Q12 的 STATUS 里明确建议单开这条：
+`claim:TTk` 的逐点版做完之后，带 `≺` 和 `ℓ ≤ (log W)^{10} ℓ_t` 的求和版是另一件事。
+
+---
+
+# 储备工单（队列见底时按顺序自取，见 `CLAUDE.md` 的「永不停工」）
+
+**R1 · `ML:Kbound`：`K`-loop 的关键界**（附录 A.5 末尾）。论文说「证明类似 `[YY_25]`
+Lemma 3.11，但**需要额外修改以处理 `d ≥ 3`**」——**那句「额外修改」正是要在 Lean 里看清楚的地方**，
+也是这一章里最可能藏东西的一条。先读 `../RBM1D/RBM1D/Loop/KBound.lean`（1657 行，已编译）。
+
+**R2 · `m-loop-tsp`：块 Anderson 的 `M`-loop 版典范划分**（`\Cref{m-loop-tsp}`）。
+依赖 Q14。注意 `paper-deltas.md` D6：本项目目前只覆盖随机带矩阵模型，这条是往块 Anderson 扩的第一步。
+
+**R3 · 维护：消假设。** 把带着假设的引理找出来（`grep -n 'Case.Rel\|hP :\|(h[A-Z]'`），
+凡是前提已经落地的就给出无假设版本，签名不变。Q3/Q4 消掉 `hS`/`hone` 就是范例。
+
+**R4 · 维护：补 `docs/mathlib-api.md`。** 把各文件里实际用到的 Mathlib 名字核一遍记进去。
+
+**R5 · 审计：逐字对一节。** 挑论文的一节（建议从 §2.5 传播子开始），
+把 Lean 陈述与论文**逐字**对一遍，偏离记进 `paper-deltas.md`，
+并写明**论文第几页、改哪一段、大约几行**。
+
+> RBM1D 的经验里，两个最大的收益都不是写代码换来的，是坐下来把论文读一遍换来的——
+> 其中一次**否定性核查**（确认某条捷径走不通）省下了 150–300 条定理的白工。
+> **R5 这类活不是填空，是正经工作。**
