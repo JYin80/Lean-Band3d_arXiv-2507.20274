@@ -44,7 +44,7 @@
 | Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **DONE** (CC)：4 条 + `t`-形式；Q27 解锁 |
 | Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **DONE** (CC)：存在性 (Q27) + 唯一性 (Q22a) ⇒ `KTwoFormula` 是定理 |
 | Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **DONE** (CC)：唯一性 + **`KTwoFormula` 已消** |
-| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **OPEN**（Q22a 已完成，解锁；`KTreeRep` 只剩存在性） |
+| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **CLAIMED (CC)** |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（`KTwoFormula` 已漏报） |
