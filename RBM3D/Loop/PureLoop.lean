@@ -129,6 +129,112 @@ theorem sum_exp_decay_conv (k : ℕ) {c : ℝ} (hc : 0 < c) (x z : Zd (k + 2) L)
         exact sum_radial_exp_decay_le k hc2
     _ = expC k (c / 2) * Real.exp (-(c / 2 * (zdistD (k + 2) L (x - z) : ℝ))) := by ring
 
+/-! ### The star tree at any `n`
+
+The canonical partition with no diagonals contributes `Σ_b Π_i Θ(a_i, b)`.  For a pure
+loop every factor decays exponentially, and the sum is controlled uniformly in `L` by the
+same split as in `sum_exp_decay_conv`: half of the total decay `Σ_i |a_i - b|` pays for the
+triangle inequality between any two labels, the other half for the sum over the centre `b`.
+
+This is the `n`-fold analogue of `sum_exp_decay_conv`, and it is what `res_pureKes` needs
+on the star; the trees with diagonals are `docs/QUEUE.md`, Q33.
+-/
+
+/-- `Σ_b e^{-c|x-b|} ≤ C(c,d)`, uniformly in `L` and in the centre `x`. -/
+theorem sum_exp_decay_centre (k : ℕ) {c : ℝ} (hc : 0 < c) (x : Zd (k + 2) L) :
+    ∑ b : Zd (k + 2) L, Real.exp (-(c * (zdistD (k + 2) L (x - b) : ℝ))) ≤ expC k c := by
+  rw [sum_shift (k + 2) x (fun r : ℕ => Real.exp (-(c * (r : ℝ))))]
+  exact sum_radial_exp_decay_le k hc
+
+/-- **The star of a pure loop decays exponentially.**  If every entry satisfies
+`‖E x y‖ ≤ C e^{-c|x-y|}`, then for all labels `a : Fin n → Z_L^d` and every pair of
+indices `p, q`,
+`‖Σ_b Π_i E (a i) b‖ ≤ C^n C(c/2,d) e^{-(c/2)|a_p - a_q|}`.
+
+Taking the maximum over `p, q` gives the form of `res_pureKes`: the star decays in the
+diameter of the label set. -/
+theorem norm_sum_prod_le (k : ℕ) {n : ℕ} (E : Zd (k + 2) L → Zd (k + 2) L → ℂ)
+    {C c : ℝ} (hC : 0 ≤ C) (hc : 0 < c)
+    (hE : ∀ x y : Zd (k + 2) L,
+      ‖E x y‖ ≤ C * Real.exp (-(c * (zdistD (k + 2) L (x - y) : ℝ))))
+    (a : Fin n → Zd (k + 2) L) (p q : Fin n) :
+    ‖∑ b : Zd (k + 2) L, ∏ i : Fin n, E (a i) b‖
+      ≤ C ^ n * expC k (c / 2)
+        * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ))) := by
+  have hc2 : 0 < c / 2 := by linarith
+  set D : Zd (k + 2) L → ℝ := fun b => ∑ i : Fin n, (zdistD (k + 2) L (a i - b) : ℝ) with hD
+  have hD0 : ∀ b, 0 ≤ D b := fun b =>
+    Finset.sum_nonneg fun i _ => Nat.cast_nonneg _
+  -- the diameter is paid for by two of the terms
+  have hpair : ∀ b : Zd (k + 2) L,
+      ((zdistD (k + 2) L (a p - a q) : ℕ) : ℝ) ≤ D b := by
+    intro b
+    rcases eq_or_ne p q with rfl | hpq
+    · simpa [hD] using hD0 b
+    · have htri : (zdistD (k + 2) L (a p - a q) : ℕ)
+          ≤ zdistD (k + 2) L (a p - b) + zdistD (k + 2) L (a q - b) := by
+        have h := zdistD_add_le (k + 2) L (a p - b) (b - a q)
+        rw [sub_add_sub_cancel] at h
+        have hneg : zdistD (k + 2) L (b - a q) = zdistD (k + 2) L (a q - b) := by
+          rw [← zdistD_neg (k + 2) L (a q - b), neg_sub]
+        rw [hneg] at h
+        exact h
+      have hsub : ({p, q} : Finset (Fin n)) ⊆ Finset.univ := Finset.subset_univ _
+      have hle : ∑ i ∈ ({p, q} : Finset (Fin n)), ((zdistD (k + 2) L (a i - b) : ℕ) : ℝ)
+          ≤ D b :=
+        Finset.sum_le_sum_of_subset_of_nonneg hsub fun i _ _ => Nat.cast_nonneg _
+      rw [Finset.sum_pair hpq] at hle
+      have : ((zdistD (k + 2) L (a p - a q) : ℕ) : ℝ)
+          ≤ ((zdistD (k + 2) L (a p - b) : ℕ) : ℝ)
+            + ((zdistD (k + 2) L (a q - b) : ℕ) : ℝ) := by exact_mod_cast htri
+      linarith
+  -- and one more term pays for the sum over the centre
+  have hone : ∀ b : Zd (k + 2) L, ((zdistD (k + 2) L (a p - b) : ℕ) : ℝ) ≤ D b := fun b =>
+    Finset.single_le_sum (f := fun i => ((zdistD (k + 2) L (a i - b) : ℕ) : ℝ))
+      (fun i _ => Nat.cast_nonneg _) (Finset.mem_univ p)
+  have hterm : ∀ b : Zd (k + 2) L, ‖∏ i : Fin n, E (a i) b‖
+      ≤ C ^ n * (Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ)))
+        * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - b) : ℝ)))) := by
+    intro b
+    have hprod : ‖∏ i : Fin n, E (a i) b‖
+        ≤ ∏ i : Fin n, (C * Real.exp (-(c * (zdistD (k + 2) L (a i - b) : ℝ)))) := by
+      rw [norm_prod]
+      exact Finset.prod_le_prod₀ (fun i _ => norm_nonneg _) (fun i _ => hE (a i) b)
+    have hsplit : ∏ i : Fin n, (C * Real.exp (-(c * (zdistD (k + 2) L (a i - b) : ℝ))))
+        = C ^ n * Real.exp (-(c * D b)) := by
+      rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+      congr 1
+      rw [hD, Finset.mul_sum, ← Real.exp_sum]
+      congr 1
+      rw [← Finset.sum_neg_distrib]
+    have hexp : Real.exp (-(c * D b))
+        ≤ Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ)))
+          * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - b) : ℝ))) := by
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.mpr ?_
+      have h1 := hpair b
+      have h2 := hone b
+      nlinarith
+    calc ‖∏ i : Fin n, E (a i) b‖
+        ≤ C ^ n * Real.exp (-(c * D b)) := hsplit ▸ hprod
+      _ ≤ C ^ n * (Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ)))
+            * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - b) : ℝ)))) :=
+          mul_le_mul_of_nonneg_left hexp (by positivity)
+  calc ‖∑ b : Zd (k + 2) L, ∏ i : Fin n, E (a i) b‖
+      ≤ ∑ b : Zd (k + 2) L, ‖∏ i : Fin n, E (a i) b‖ := norm_sum_le _ _
+    _ ≤ ∑ b : Zd (k + 2) L, C ^ n
+          * (Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ)))
+            * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - b) : ℝ)))) :=
+        Finset.sum_le_sum fun b _ => hterm b
+    _ = C ^ n * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ)))
+          * ∑ b : Zd (k + 2) L, Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - b) : ℝ))) := by
+        rw [← Finset.mul_sum, ← Finset.mul_sum]
+        ring
+    _ ≤ C ^ n * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ))) * expC k (c / 2) := by
+        refine mul_le_mul_of_nonneg_left (sum_exp_decay_centre k hc2 (a p)) (by positivity)
+    _ = C ^ n * expC k (c / 2)
+          * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ))) := by ring
+
 /-! ### The two-loop formula and `res_pureKes` at `n = 2` -/
 
 variable (d L W g)

@@ -399,4 +399,75 @@ theorem kThree_eq_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bool
       exact (kThree_zero m τ₀ τ₁ τ₂ b₀ b₁ b₂).symm)
   exact key t ⟨ht0, le_refl t⟩ ⟨[σ₀, σ₁, σ₂], [a₀, a₁, a₂]⟩ rfl rfl
 
+/-! ### `res_pureKes` at `n = 3` -/
+
+/-- **`lem_pureloop` at `n = 3`.**  For a pure loop (`σ₀ = σ₁ = σ₂ = σ`) the `3`-loop of
+any family of `K`-loops decays exponentially in the diameter of its label set:
+`|K^(3)_{t,σ,a}| ≤ C W^{-2d} e^{-c|a_p - a_q|}` for every pair `p, q`.
+
+The tree value at `n = 3` is the star, so this is `norm_sum_prod_le` at `n = 3` applied to
+`Θ^(σ,σ)`, which decays by `(prop:ThfadC_short)`.  No hypothesis about the shape of the
+`3`-loops is needed: `kThree_eq_of_isKLoop` supplies it. -/
+theorem pureLoop_three {k : ℕ} {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd (k + 2) L) → ℂ}
+    (hd : 3 ≤ k + 2) (hg : 0 < g) (hL : 3 ≤ L) (hW : (W : ℂ) ^ (k + 2) ≠ 0) {σ : Bool}
+    (hm : ∀ s, ‖m s‖ = 1) (hmi : 0 < (m σ).im)
+    (hshort : ThetaDecayShort (k + 2) g (m σ))
+    (hK : IsKLoop (k + 2) L W g m (Set.Ico 0 1) K)
+    (hbdd : TwoLoopBounded (k + 2) L K) :
+    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 →
+      ∀ (a : Fin 3 → Zd (k + 2) L) (p q : Fin 3),
+        ‖K t ⟨[σ, σ, σ], [a 0, a 1, a 2]⟩‖
+          ≤ C * ‖(((W : ℂ) ^ (k + 2))⁻¹) ^ 2‖
+            * Real.exp (-(c * (zdistD (k + 2) L (a p - a q) : ℝ))) := by
+  obtain ⟨C, hC, c, hc, hbd⟩ := norm_Theta_same_le_exp (g := g) hd hg (hm σ) hmi hshort
+  have hexpC : 0 < expC k (c / 2) := by
+    have hc2 : 0 < c / 2 := by linarith
+    unfold expC
+    positivity
+  refine ⟨C ^ 3 * expC k (c / 2), by positivity, c / 2, by linarith, ?_⟩
+  intro t ht0 ht1 a p q
+  have hmm : ‖m σ * m σ‖ = 1 := by rw [norm_mul, hm σ, mul_one]
+  have hξ : ‖(t : ℂ) * (m σ * m σ)‖ < 1 := norm_t_mul_lt_one ht0 ht1 hmm
+  -- the entries of `Θ^(σ,σ)` decay, by translation invariance
+  have hE : ∀ x y : Zd (k + 2) L,
+      ‖Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) x y‖
+        ≤ C * Real.exp (-(c * (zdistD (k + 2) L (x - y) : ℝ))) := by
+    intro x y
+    have htrans : Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) x y
+        = Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) 0 (y - x) := by
+      have h := Theta_apply_add_right_of_three_le (g := g) hL hξ 0 (y - x) x
+      simpa using h
+    have hdist : zdistD (k + 2) L (y - x) = zdistD (k + 2) L (x - y) := by
+      rw [← zdistD_neg (k + 2) L (x - y), neg_sub]
+    rw [htrans]
+    have := hbd L hL t ht0 ht1 (y - x)
+    rwa [hdist] at this
+  have hstar := norm_sum_prod_le (L := L) k
+    (E := fun x y => Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) x y) hC.le hc hE a p q
+  rw [kThree_eq_of_isKLoop hL hW hm hK hbdd t ht0 ht1 σ σ σ (a 0) (a 1) (a 2), kThree,
+    treeSum_three]
+  have hval : ‖((((W : ℂ) ^ (k + 2))⁻¹) ^ 2 * (m σ * (m σ * m σ)))
+        * ∑ b : Zd (k + 2) L, thetaEdge (k + 2) L g m t σ σ (a 0) b
+            * thetaEdge (k + 2) L g m t σ σ (a 1) b * thetaEdge (k + 2) L g m t σ σ (a 2) b‖
+      = ‖((((W : ℂ) ^ (k + 2))⁻¹) ^ 2)‖
+        * ‖∑ b : Zd (k + 2) L, ∏ i : Fin 3,
+            Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) (a i) b‖ := by
+    have h3 : ‖m σ * (m σ * m σ)‖ = 1 := by
+      rw [norm_mul, norm_mul, hm σ]; norm_num
+    rw [norm_mul, norm_mul, h3, mul_one]
+    congr 2
+    refine Finset.sum_congr rfl fun b _ => ?_
+    rw [Fin.prod_univ_three]
+    simp [thetaEdge]
+  rw [hval]
+  calc ‖((((W : ℂ) ^ (k + 2))⁻¹) ^ 2)‖
+        * ‖∑ b : Zd (k + 2) L, ∏ i : Fin 3,
+            Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) (a i) b‖
+      ≤ ‖((((W : ℂ) ^ (k + 2))⁻¹) ^ 2)‖
+        * (C ^ 3 * expC k (c / 2)
+          * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ)))) :=
+        mul_le_mul_of_nonneg_left hstar (norm_nonneg _)
+    _ = C ^ 3 * expC k (c / 2) * ‖((((W : ℂ) ^ (k + 2))⁻¹) ^ 2)‖
+          * Real.exp (-(c / 2 * (zdistD (k + 2) L (a p - a q) : ℝ))) := by ring
+
 end RBM.Loop
