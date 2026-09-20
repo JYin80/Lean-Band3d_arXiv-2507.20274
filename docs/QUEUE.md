@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-20 · beat 9（Q15 / Q17a 完成；**Q16 解除阻塞**；新提 Q17b / Q23 / Q24）
+最后刷新：2026-09-20 · beat 10（Q18 完成、Q16 部分完成；新提 Q25 / Q26 / Q27，Q22 据实测重新拆分）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -31,9 +31,13 @@
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
-| Q22 | 移植 RBM1D 的 `eq_Ktree` 证明（消掉 `KTreeRep` 假设） | `Loop/TreeRep*.lean` | **OPEN**（大件；**先做 Q23**） |
+| Q22a | **Grönwall 唯一性**（`Loop/Unique.lean`，250 行） | `Loop/Unique.lean` | **OPEN**（需 Q27；落地后 `KTreeRep` 只欠存在性） |
+| Q22b | 树公式 = 存在性（真正的大件） | `Loop/TreeRep*.lean` | **OPEN**（需 Q22a） |
 | Q23 | **传播子对 `t` 的求导层** ⭐（Q22 的前置） | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
+| Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
+| Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（`KTwoFormula` 已漏报） |
+| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ | `Loop/Primitive.lean` | **OPEN**（需 Q23；Q22 的预演） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
 ---
@@ -1200,3 +1204,98 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 **提示**：归纳假设要对「多边形的标签集合的最大两两距离」陈述，而不是对单个距离，
 否则分裂后两块拼不回来。
+
+---
+
+## Q25 · `lem_pureloop` 的一般 `n` — **OPEN**（CC 于 Q16 开出）
+
+**文件**：`RBM3D/Loop/PureLoop.lean`（Q16 已建好，续写）。
+
+Q16 落地了 `n = 2`（`pureLoop_two`）与两件工具：`norm_Theta_same_le_exp`、`sum_exp_decay_conv`。
+一般 `n` 按 CC 的评估：对 `polyVal` 递归做归纳，每次分裂用一次 `sum_exp_decay_conv`、衰减常数 `c` 减半。
+
+**注意**：`pureLoop_two` 现在带着假设 `KTwoFormula`。**Q27 若先落地，这条假设会消失**，
+一般 `n` 的写法应当同样通过 `IsKLoop` 走，而不是再添新假设。
+
+---
+
+## Q26 · 审计要自动发现「借来的谓词」，不能靠硬编码名单 ⭐ — **OPEN**（本拍新提）
+
+**文件**：`RBM3D/Test/Axioms.lean`。
+
+**起因（这就是它值得单开一条的理由）**：Q18 刚把审计改成报「有多少条定理的类型里带着接口假设」，
+名单是手写的六条（五条 `PropTH` 分量 + `KTreeRep`）。**紧接着的 Q16 就引入了第七条 `KTwoFormula`，
+而它不在名单里，审计一声不吭。** 报告看上去仍然完整——这正是最坏的一种失败：
+一份声称「全部记账」的报告，实际漏了记。
+
+这和 beat 6 的教训是同一类：**审计只能查它被告知去查的东西**。
+公理审计查不出陈述错误；承重审计查不出没登记的假设。**修法是让它自己去发现，而不是等人来登记。**
+
+**做法建议**：扫 `RBM` 命名空间里所有 `Prop` 值的 `def` / `structure`，凡满足
+「本身不是由本项目证明的定理、且出现在某条定理的类型里作为前件」的，都列进报告。
+`PropTH` 的投影要排除（Q18 已经处理过这一层）。若做不到全自动，退一步也要做到：
+**名单与实际前件对不上时构建失败**，而不是静默漏报。
+
+**顺带要分的两本账**（这一条比计数更重要）：
+
+* **借来的**：论文引用文献而未证的——`PropTH` 五条、`KTreeRep`（`[YY_25]` Lem 3.4）、
+  `KTwoFormula`（`(Kn2sol)`，论文写作「As shown in `[YY_25,RBSO1D]`」）。这类是长期假设。
+* **欠下的**：本可以在本项目里证出来、只是为了往前走而先假设的。
+  **Q27 已经查明 `KTwoFormula` 属于这一本**（见下）。
+
+两本账混在一起，「零公理」这个标题就会比实情好看。**报告要把它们分开列。**
+
+**验收**：审计输出分两段；把一条新假设加进任意文件而不登记，构建应当失败（留一个反向测试）。
+
+---
+
+## Q27 · 证出 `KTwoFormula`（`(Kn2sol)`），消掉这条假设 ⭐ — **OPEN**（本拍新提，需 Q23）
+
+**文件**：新开 `RBM3D/Loop/Primitive.lean`（对应 `RBM1D/RBM1D/Loop/Primitive.lean`，**168 行**）。
+
+**结论先说：这条不必借，能证。** 本拍算了一遍：`IsKLoop`（`Loop/TreeRep.lean`）已经是
+「满足树方程这个 ODE + `t = 0` 初值 `MLoop`」的刻画，而 `(Kn2sol)` 的显式解
+
+```
+F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
+```
+
+**恰好满足同一个 ODE 与同一个初值**：
+
+* 求导：`∂_t F = W^{-d}(m₁m₂)² · (Θ S^(B) Θ)(a₁,a₂)`，用的是 `∂_ξ Θ = Θ S^(B) Θ` 与链式法则 —— **这就是 Q23**；
+* 方程右端：`treeEqRhs` 在 `n = 2` 处由 **Q15 已证的 `treeEqRhs_two`** 化为
+  `W^d · Σ_{a,b} F(a₁,a) S(a,b) F(b,a₂) = W^d · W^{-2d}(m₁m₂)² (Θ S Θ)(a₁,a₂)`，两边一致 ✅；
+* 初值：`MLoop` 在 `n = 2` 是 `W^{-d} m₁m₂ · 1[a₁=a₂]`，而 `Θ_0 = 1` ✅。
+
+**所以这条属于「欠下的」而不是「借来的」**（Q26 的两本账）。论文把它放在 `\begin{example}` 里
+写「As shown in `[YY_25,RBSO1D]`」，但那是一次例行计算，不是外部输入。
+
+**路线**：照 `RBM1D/RBM1D/Loop/Primitive.lean` 移植 —— 它有现成的
+`kTwo`、`hasDerivAt_kTwo`、`kTwo_zero`、`hasDerivAt_kTwoLoop`，结构与这里一一对应。
+**先做 Q23**（它 import `RBM1D.Propagator.Deriv`）。
+
+**做完的收益有两层**：`pureLoop_two`（Q16）的假设当场消失；
+更要紧的是**它是 Q22 那条唯一性路线的小号预演**——同样的 ODE + 初值 + 唯一性三件套，
+只是 `n = 2`。这一条走通，Q22 就不再是「没走过的大件」。
+
+---
+
+## Q22 重新拆分（本拍据实测修订）
+
+本拍量了 RBM1D 那一侧的实际行数，Q22 应当拆成**便宜的一半**和**贵的一半**，别当一个大件：
+
+| 步 | 内容 | RBM1D 对应 | 行数 | 依赖 |
+|---|---|---|---|---|
+| Q23 | 传播子求导层 | `Propagator/Deriv.lean` | 92 | — |
+| Q27 | 2-loop 显式解，消掉 `KTwoFormula` | `Loop/Primitive.lean` | 168 | Q23 |
+| **Q22a** | **Grönwall 唯一性 `isPrimitive_unique`** | `Loop/Unique.lean` | **250** | Q27 |
+| Q22b | 树公式（存在性） | `Loop/TreeRep.lean` + `TreeRepGeneral.lean` | 729 + 2546 | Q22a |
+
+**关键观察**：`Loop/Unique.lean` 的证法是**一次 Grönwall**，不做组合。它的注释把结构讲清楚了——
+`n ≥ 3` 时方程对长度 `n` 的未知量是**线性**的（另一支必为 2-loop），`n = 2` 时是 Riccati，
+两种情形同一个估计覆盖，再对 `n` 强归纳。Mathlib 侧用的是
+`Mathlib.Analysis.ODE.Gronwall`（`norm_le_gronwallBound_of_norm_deriv_right_le` 等，
+`ODE_solution_unique*` 在 `Mathlib/Analysis/ODE/ExistUnique.lean`，均已核实存在）。
+
+**因此 Q22a 一旦落地，`KTreeRep` 就从「表示定理」退成「只欠存在性」**——
+唯一性不再是假设。这比整体移植先便宜得多，也先有用得多。

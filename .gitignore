@@ -15,5 +15,7 @@ paper/tex/
 # 蓝图的生成产物不进版本库，但 docs/ 下的手写 md 要留
 blueprint/print/
 blueprint/web/
+blueprint/cowork/__pycache__/
+blueprint/cowork/graphs.py
 docs/*
 !docs/*.md

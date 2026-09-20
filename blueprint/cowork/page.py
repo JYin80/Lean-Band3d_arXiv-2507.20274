@@ -54,8 +54,10 @@ CH4 = rows([
  ("lem:sum_decay 本体（sum_res_1 / sum_res_2），要用 ThetaDecay","Q17b · 可开工","ready","Kernel/SumDecay.lean"),
  ("典范树划分 TSP(P_a) 与边值 —— 表示刻意与 RBM1D 对齐，为移植铺路","Q14 ✓ 已证","done","TSP · thetaEdge · treeVal · GammaN · GammaSum"),
  ("树表示 eq_Ktree —— 陈述层落地，eq_Ktree 暂作假设 KTreeRep（形状同 PropTH）","Q15 ✓ 已证","done","LoopIdx · treeEqRhs · IsKLoop · KTreeRep"),
- ("移植 RBM1D 的 eq_Ktree 证明，消掉 KTreeRep 假设 —— 先做 Q23","Q22 · 可开工","ready","Loop/TreeRep*.lean"),
- ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 · 可开工","ready","Loop/PureLoop.lean"),
+ ("2-K-loop 的显式解 (Kn2sol) —— 本拍查明它能证，不必借","Q27 · 待 Q23","todo","Loop/Primitive.lean · 168 行"),
+ ("Grönwall 唯一性 —— 落地后 KTreeRep 只欠存在性","Q22a · 待 Q27","todo","Loop/Unique.lean · 250 行"),
+ ("树公式 = 存在性（真正的大件）","Q22b · 待 Q22a","todo","TreeRep.lean 729 + TreeRepGeneral.lean 2546"),
+ ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 ✓ n=2 · Q25 一般 n","ready","pureLoop_two · sum_exp_decay_conv"),
  ("ML:Kbound —— 论文说「需额外修改以处理 d ≥ 3」，先做陈述层并定位那处修改","Q24 · 可开工","ready","Loop/KBound.lean"),
 ])
 
@@ -78,16 +80,20 @@ QUEUE = """
 <tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q15</td><td>树表示 <code>eq_Ktree</code> —— 陈述层落地，<code>eq_Ktree</code> 作假设</td><td><code>Loop/TreeRep.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q16</td><td><code>lem_pureloop</code> —— <b>本拍解除阻塞</b></td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q16</td><td><code>lem_pureloop</code> —— <code>n = 2</code> 已证，一般 <code>n</code> → Q25</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q17a</td><td><code>eq:latticesum_d3</code>（第三轮新加的临界格点求和）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q17b</td><td><code>lem:sum_decay</code> 本体（要用 <code>ThetaDecay</code>）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q18</td><td>让审计直接报定理数</td><td><code>Test/Axioms.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
+<tr><td>Q18</td><td>让审计直接报定理数与公理承重情况</td><td><code>Test/Axioms.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q19</td><td><b>5 条接口 axiom 改成 <code>structure</code> 字段</b> —— 全项目零公理</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q20</td><td><code>(eq:key_T_reudce)</code> 求和版（带 <code>≺</code>）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q21</td><td><b>逐字核对剩下四条接口陈述</b> —— 又修正 1 条，新增 1 条反例</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q22</td><td>移植 <code>eq_Ktree</code> 的证明，消掉 <code>KTreeRep</code> 假设（大件）</td><td><code>Loop/TreeRep*.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q22a</td><td><b>Grönwall 唯一性</b> —— 落地后 <code>KTreeRep</code> 只欠存在性</td><td><code>Loop/Unique.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q22b</td><td>树公式 = 存在性（真正的大件）</td><td><code>Loop/TreeRep*.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q23</td><td><b>传播子对 <code>t</code> 的求导层</b> <b>⭐</b> —— Q22 的前置，RBM1D 处只有 92 行</td><td><code>Propagator/Deriv.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— 论文说「需额外修改以处理 <code>d ≥ 3</code>」</td><td><code>Loop/KBound.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q25</td><td><code>lem_pureloop</code> 的一般 <code>n</code></td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— <code>KTwoFormula</code> 已漏报</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q27</td><td><b>证出 <code>KTwoFormula</code></b>（<code>(Kn2sol)</code>）<b>⭐</b> —— Q22 的小号预演</td><td><code>Loop/Primitive.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 </tbody></table>
 """
 
@@ -180,10 +186,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>252</b><span>定理已证</span></div>
+    <div class="chip done"><b>286</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>6</b><span>工单可开工</span></div>
+    <div class="chip ready"><b>9</b><span>工单待做</span></div>
   </div>
 </header>
 
@@ -294,17 +300,25 @@ __QUEUE__
 <p><strong>每条都编过。</strong> 磁盘腾出来之后 <code>lake exe cache get</code> + <code>lake build</code> 已在本机跑通，
 从此每次回报前必须有一次 <code>./check.sh</code> → <code>exit=0</code>（最近一次：<code>errors: 0</code>、2550 jobs、审计干净）。
 上面所有条目都是编译通过的定理，不是草稿。</p>
-<p><strong>写成假设而不是公理，这一拍又见了一次红利。</strong> Q15 评估下来，
-<code>eq_Ktree</code> 的完整移植超过一拍的量，于是它按 <code>KTreeRep</code> 假设落地——
-<em>形状与 <code>PropTH</code> 一致</em>，所以 Q16 当场就能开工（签名里多带一个 <code>hK</code>），
-不必等移植做完；Q22 将来把假设换成定理时，下游签名一个字不用改。
-<strong>若当初写成 <code>axiom</code>，Q16 只能干等。</strong></p>
+<p><strong>借来的结果开始承重了。</strong> Q18 让审计报出「有多少条定理的类型里带着接口假设」：
+目前 <code>ThetaDecayShort: 4</code>、<code>ThetaZeroMode: 2</code>，其余为 0。
+在 Q13 之前，全项目没有任何结论依赖论文引用的估计；现在有了，而且<em>写在定理的签名里</em>。</p>
+<p><strong>但这份报告本身有个缺口，本拍抓到了。</strong> 它的名单是手写的六条。
+紧接 Q18 的 Q16 引入了第七条假设 <code>KTwoFormula</code>，<em>不在名单里，审计一声不吭</em>——
+一份声称「全部记账」的报告漏了记，这比没有报告更危险。Q26 就是去修它：
+让审计自己发现前件，而不是等人登记。</p>
+<p><strong>还要分两本账。</strong> <em>借来的</em>是论文引文献而未证的（<code>PropTH</code> 五条、
+<code>KTreeRep</code>）；<em>欠下的</em>是本可以在这里证、只为往前走而先假设的。
+本拍算明白 <code>KTwoFormula</code> 属于第二本：<code>IsKLoop</code> 已经是「树方程 ODE + 初值」的刻画，
+而 <code>(Kn2sol)</code> 的显式解 <code>W^(−d) m₁m₂ Θ_{t m₁m₂}</code> 恰好满足同一个方程与同一个初值
+（求导用 Q23，右端用 Q15 已证的 <code>treeEqRhs_two</code>，初值用 <code>Θ₀ = 1</code>）。
+<strong>两本账混在一起，「零公理」这个标题就比实情好看。</strong></p>
 </div>
 
 <footer>
-  计数说明：<b>252</b> 是手写 <code>theorem</code> 的条数（23 个文件）。审计报的「677 条声明」还包含定义、结构、实例
-  与编译器自动生成的声明（递归子、equation lemma 等），不宜当进度读——Q18 正在修这个报告。<br>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 9 · 2026-09-20 05:30 UTC<br>
+  计数说明：<b>286 定理 / 133 定义 / 0 公理</b> 现在由 <code>./check.sh</code> 的审计直接报出（Q18），
+  编译器生成的声明已排除。此前蓝图上的数字是 Cowork 侧 grep 出来的，比实际偏低——以审计的为准。<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 10 · 2026-09-20 05:45 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
