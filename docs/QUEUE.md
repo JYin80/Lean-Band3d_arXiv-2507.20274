@@ -60,8 +60,9 @@
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **PARTIAL** (CC)：星形树（任意 `n`）+ `n = 3` 已证；带对角线的树 → Q33 |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **DONE** (CC)：扫描 + 两本账 + 反向测试 |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **DONE** (CC)：`(log N)^m ≺ 1` + `Bℓ_t² ≤ 3/\|1−t\|` + 合并 |
-| Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **CLAIMED (CC)** |
+| Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
+| Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q28 开出；关键那步已就位） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
@@ -1347,7 +1348,7 @@ STATUS 里记一笔「**Q22 的前置已拆掉**」，并说明 `d` 作为参数
 
 ---
 
-## Q24 · `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ — **OPEN**（R1 转正，本拍新提）
+## Q24 · `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ — **DONE**（CC，2026-09-20）
 
 **文件**：新开 `RBM3D/Loop/KBound.lean`。
 
@@ -1415,7 +1416,7 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 ---
 
-## Q25 · `lem_pureloop` 的一般 `n` — **OPEN**（CC 于 Q16 开出）
+## Q25 · `lem_pureloop` 的一般 `n`（工单正文）— **PARTIAL**（完成记录见下一节）
 
 **文件**：`RBM3D/Loop/PureLoop.lean`（接在 `pureLoop_two` 之后）。
 
@@ -1470,7 +1471,7 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 ---
 
-## Q26 · 审计要自动发现「借来的谓词」，不能靠硬编码名单 ⭐ — **OPEN**（beat 10 提，beat 14 扩范围）
+## Q26 · 审计要自动发现「借来的谓词」，不能靠硬编码名单 ⭐ — **DONE**（CC，2026-09-20）
 
 > **CC 回复（2026-09-20，本拍先做掉）**：`hbdd` 已具名为 **`RBM.Loop.TwoLoopBounded`**
 > （放在 `Loop/TreeRep.lean` 的 `IsKLoop` 旁边），三处签名一起改，并登记进 `interfaceProps`。
@@ -1534,112 +1535,6 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 ### CC 的完成记录（2026-09-20）
 
-`RBM3D/Loop/Primitive.lean`（新文件，`./check.sh` 绿、0 warning）：`kTwo`、`Theta_zero`、
-`norm_mul_lt_one`、`hasDerivAt_kTwo`、`kTwo_zero`、`kTwoLoop`、`hasDerivAt_kTwoLoop`、
-`kTwoLoop_zero`、`kTwoFormula_kTwoLoop`、`pureLoop_two_kTwoLoop`。
-
-**工单的算盘打对了**：`(Kn2sol)` 确实满足同一个 ODE 与同一个初值，
-求导那一步直接用 Q23 多写的 `hasDerivAt_Theta_mul_apply`（沿 `ξ = tμ` 对 `t` 求导），
-右端用 Q15 的 `treeEqRhs_two`，两边 `field_simp` 就合上了。
-
-**但有一点要说清楚，工单标题写得比实际能做到的强**：
-`KTwoFormula m K` 说的是「**任意**一族 `K`-loop 的 2-loop 等于那个公式」。
-本文件证的是 `kTwo` **是一个**解（存在性）；要把任意 `K` 改写成它，需要
-「同一 ODE + 同一初值 ⇒ 同一解」，也就是 **Q22a 的 Grönwall 唯一性**。
-所以这条标 **PARTIAL**：存在性这一半已落地，`KTwoFormula` 还没真的消掉。
-
-**两件仍然有用的产出**：
-
-1. `kTwoFormula_kTwoLoop`：**`KTwoFormula` 是可满足的**。这条值得单独留着——
-   一个不可满足的假设会让所有带着它的定理变成空洞的真，而审计只数「有多少定理压在它上面」，
-   数不出空洞。现在这条假设有了显式见证。
-2. `pureLoop_two_kTwoLoop`：把 Q16 的估计用到显式解上，**`KTwoFormula` 当场消失**，
-   只剩 `ThetaDecayShort`——那条是论文真的向外借的。
-   审计里 `ThetaDecayShort` 的承重从 4 涨到 5，涨的正是这条。
-
-**给 Q22a 的交接**：唯一性的陈述应当写成「若 `K₁ K₂` 都 `IsKLoop m T`，则在 `T` 上逐点相等」，
-`n = 2` 的 Riccati 情形现在有现成的显式解可以拿来对照测试。
-
----
-
-## Q27 · 证出 `KTwoFormula`（`(Kn2sol)`） ⭐ — **PARTIAL**（CC，2026-09-20）：存在性已证，消假设待 Q22a
-
-**文件**：新开 `RBM3D/Loop/Primitive.lean`（对应 `RBM1D/RBM1D/Loop/Primitive.lean`，**168 行**）。
-
-**结论先说：这条不必借，能证。** 本拍算了一遍：`IsKLoop`（`Loop/TreeRep.lean`）已经是
-「满足树方程这个 ODE + `t = 0` 初值 `MLoop`」的刻画，而 `(Kn2sol)` 的显式解
-
-```
-F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
-```
-
-**恰好满足同一个 ODE 与同一个初值**：
-
-* 求导：`∂_t F = W^{-d}(m₁m₂)² · (Θ S^(B) Θ)(a₁,a₂)`，用的是 `∂_ξ Θ = Θ S^(B) Θ` 与链式法则 —— **这就是 Q23**；
-* 方程右端：`treeEqRhs` 在 `n = 2` 处由 **Q15 已证的 `treeEqRhs_two`** 化为
-  `W^d · Σ_{a,b} F(a₁,a) S(a,b) F(b,a₂) = W^d · W^{-2d}(m₁m₂)² (Θ S Θ)(a₁,a₂)`，两边一致 ✅；
-* 初值：`MLoop` 在 `n = 2` 是 `W^{-d} m₁m₂ · 1[a₁=a₂]`，而 `Θ_0 = 1` ✅。
-
-**所以这条属于「欠下的」而不是「借来的」**（Q26 的两本账）。论文把它放在 `\begin{example}` 里
-写「As shown in `[YY_25,RBSO1D]`」，但那是一次例行计算，不是外部输入。
-
-**路线**：照 `RBM1D/RBM1D/Loop/Primitive.lean` 移植 —— 它有现成的
-`kTwo`、`hasDerivAt_kTwo`、`kTwo_zero`、`hasDerivAt_kTwoLoop`，结构与这里一一对应。
-**先做 Q23**（它 import `RBM1D.Propagator.Deriv`）。
-
-**做完的收益有两层**：`pureLoop_two`（Q16）的假设当场消失；
-更要紧的是**它是 Q22 那条唯一性路线的小号预演**——同样的 ODE + 初值 + 唯一性三件套，
-只是 `n = 2`。这一条走通，Q22 就不再是「没走过的大件」。
-
----
-
-## Q22 重新拆分（本拍据实测修订）
-
-本拍量了 RBM1D 那一侧的实际行数，Q22 应当拆成**便宜的一半**和**贵的一半**，别当一个大件：
-
-| 步 | 内容 | RBM1D 对应 | 行数 | 依赖 |
-|---|---|---|---|---|
-| Q23 | 传播子求导层 | `Propagator/Deriv.lean` | 92 | — |
-| Q27 | 2-loop 显式解，消掉 `KTwoFormula` | `Loop/Primitive.lean` | 168 | Q23 |
-| **Q22a** | **Grönwall 唯一性 `isPrimitive_unique`** | `Loop/Unique.lean` | **250** | Q27 |
-| Q22b | 树公式（存在性） | `Loop/TreeRep.lean` + `TreeRepGeneral.lean` | 729 + 2546 | Q22a |
-
-**关键观察**：`Loop/Unique.lean` 的证法是**一次 Grönwall**，不做组合。它的注释把结构讲清楚了——
-`n ≥ 3` 时方程对长度 `n` 的未知量是**线性**的（另一支必为 2-loop），`n = 2` 时是 Riccati，
-两种情形同一个估计覆盖，再对 `n` 强归纳。Mathlib 侧用的是
-`Mathlib.Analysis.ODE.Gronwall`（`norm_le_gronwallBound_of_norm_deriv_right_le` 等，
-`ODE_solution_unique*` 在 `Mathlib/Analysis/ODE/ExistUnique.lean`，均已核实存在）。
-
-**因此 Q22a 一旦落地，`KTreeRep` 就从「表示定理」退成「只欠存在性」**——
-唯一性不再是假设。这比整体移植先便宜得多，也先有用得多。
-
-## Q28 · `lem:sum_decay` 的三条结论 — **OPEN**（CC 于 Q17b 开出）
-
-> **改号说明**：CC 开这条时叫它 Q26，而 Cowork 侧在同一拍把 Q26 给了审计工单，表里撞了号。
-> 内容一字未动，只改编号。以后 CC 从 Q28 往上顺排、Cowork 从 Q40 起（见本文件开头）。
-
-**文件**：`RBM3D/Kernel/SumDecay.lean`（接在 `norm_XiKer_apply_le` 之后）。
-
-**要证**：`sum_res_1`（主界）、`(I)` `sum_res_2_NAL`（`σ` 非交替）、`(II)` `sum_res_2`（`𝒜` 满足和零性质）。
-
-**手上已有**：`UN_apply_eq_sum_powerset`（`(eq:decomp_U2)`）、`norm_XiKer_apply_le`（`(eq:decayXi)`）、
-`latticesum_d3`（Q17a）、`sum_radial_*`、`sum_inv_Icc_le`。
-
-**关键记账**（论文 A.2 的走法，按这个顺序做）：
-1. `sum_res_1_red0`（`|A| = k ≥ 1`）：`|𝒜_b| ≤ ‖𝒜‖`，对 `i ∉ A` 各自求和。
-   **注意**：直接用 `‖Ξ‖_{∞→∞} ≤ (t−s)/(1−t)` 给出的形状是 `((t−s)/(1−t))^{n−k}`，
-   **比论文claim的 `((g²+|1−s|)/(g²+|1−t|))^{n−k}` 弱**——必须走 `(deccA0)` 把求和限制在
-   `|a_i − b_i| ≲ W^ε ℓ_s` 的球内，再用 `(eq:decayXi)` 和球内求和 `Σ_{|x|≤R}(|x|+1)^{−(d−2)} ≲ R²`，
-   配合 `(1−s)ℓ_s² ≲ g²+|1−s|` 才凑出论文的形状。**这一步是整条引理的关键，别走捷径。**
-2. `sum_res_1_red`（`A = ∅`）：多出 `ℓ_t²/ℓ_s²` 因子。
-3. `(I)`：非交替时某个 `Ξ^(k)` 是同号的，用 `(prop:ThfadC_short)` 换掉一个因子。
-4. `(II)`：和零性质让 `A = ∅` 的主项消失（论文 `eq:decompXii` 那一步），剩下的用 `(prop:BD1)` 与 `latticesum_d3`。
-
-**前两步要先补**：球内求和引理 `Σ_{|x| ≤ R} (|x|+1)^{−(d−2)} ≤ C_d (R+1)²`（仿 `sum_radial_tail_le` 写，几行），
-以及 `(1−s) * ellT L g s ^ 2 ≤ g² + |1−s|`（从 `ellT` 定义直接算）。
-
-### CC 的完成记录（2026-09-20）
-
 **三件事都做了**，`./check.sh` 绿、0 warning。
 
 **① 自动发现，不靠名单**（`scanPremises`）：扫全环境里 `RBM` 命名空间的 `Prop` 值定义，
@@ -1678,7 +1573,144 @@ ThetaDecay d g m := h` 这种同义反复，账也会消失。**同义反复会�
 
 ---
 
-## Q29 · `(eq:key_T_reudce)` 的 `≺` 吸收步 — **OPEN**（CC 于 Q20 开出）
+## Q27 · 证出 `KTwoFormula`（`(Kn2sol)`） ⭐ — **PARTIAL**（CC，2026-09-20）：存在性已证，消假设待 Q22a
+
+**文件**：新开 `RBM3D/Loop/Primitive.lean`（对应 `RBM1D/RBM1D/Loop/Primitive.lean`，**168 行**）。
+
+**结论先说：这条不必借，能证。** 本拍算了一遍：`IsKLoop`（`Loop/TreeRep.lean`）已经是
+「满足树方程这个 ODE + `t = 0` 初值 `MLoop`」的刻画，而 `(Kn2sol)` 的显式解
+
+```
+F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
+```
+
+**恰好满足同一个 ODE 与同一个初值**：
+
+* 求导：`∂_t F = W^{-d}(m₁m₂)² · (Θ S^(B) Θ)(a₁,a₂)`，用的是 `∂_ξ Θ = Θ S^(B) Θ` 与链式法则 —— **这就是 Q23**；
+* 方程右端：`treeEqRhs` 在 `n = 2` 处由 **Q15 已证的 `treeEqRhs_two`** 化为
+  `W^d · Σ_{a,b} F(a₁,a) S(a,b) F(b,a₂) = W^d · W^{-2d}(m₁m₂)² (Θ S Θ)(a₁,a₂)`，两边一致 ✅；
+* 初值：`MLoop` 在 `n = 2` 是 `W^{-d} m₁m₂ · 1[a₁=a₂]`，而 `Θ_0 = 1` ✅。
+
+**所以这条属于「欠下的」而不是「借来的」**（Q26 的两本账）。论文把它放在 `\begin{example}` 里
+写「As shown in `[YY_25,RBSO1D]`」，但那是一次例行计算，不是外部输入。
+
+**路线**：照 `RBM1D/RBM1D/Loop/Primitive.lean` 移植 —— 它有现成的
+`kTwo`、`hasDerivAt_kTwo`、`kTwo_zero`、`hasDerivAt_kTwoLoop`，结构与这里一一对应。
+**先做 Q23**（它 import `RBM1D.Propagator.Deriv`）。
+
+**做完的收益有两层**：`pureLoop_two`（Q16）的假设当场消失；
+更要紧的是**它是 Q22 那条唯一性路线的小号预演**——同样的 ODE + 初值 + 唯一性三件套，
+只是 `n = 2`。这一条走通，Q22 就不再是「没走过的大件」。
+
+### CC 的完成记录（2026-09-20）
+
+`RBM3D/Loop/Primitive.lean`（新文件，`./check.sh` 绿、0 warning）：`kTwo`、`Theta_zero`、
+`norm_mul_lt_one`、`hasDerivAt_kTwo`、`kTwo_zero`、`kTwoLoop`、`hasDerivAt_kTwoLoop`、
+`kTwoLoop_zero`、`kTwoFormula_kTwoLoop`、`pureLoop_two_kTwoLoop`。
+
+**工单的算盘打对了**：`(Kn2sol)` 确实满足同一个 ODE 与同一个初值，
+求导那一步直接用 Q23 多写的 `hasDerivAt_Theta_mul_apply`（沿 `ξ = tμ` 对 `t` 求导），
+右端用 Q15 的 `treeEqRhs_two`，两边 `field_simp` 就合上了。
+
+**但有一点要说清楚，工单标题写得比实际能做到的强**：
+`KTwoFormula m K` 说的是「**任意**一族 `K`-loop 的 2-loop 等于那个公式」。
+本文件证的是 `kTwo` **是一个**解（存在性）；要把任意 `K` 改写成它，需要
+「同一 ODE + 同一初值 ⇒ 同一解」，也就是 **Q22a 的 Grönwall 唯一性**。
+所以这条标 **PARTIAL**：存在性这一半已落地，`KTwoFormula` 还没真的消掉。
+
+**两件仍然有用的产出**：
+
+1. `kTwoFormula_kTwoLoop`：**`KTwoFormula` 是可满足的**。这条值得单独留着——
+   一个不可满足的假设会让所有带着它的定理变成空洞的真，而审计只数「有多少定理压在它上面」，
+   数不出空洞。现在这条假设有了显式见证。
+2. `pureLoop_two_kTwoLoop`：把 Q16 的估计用到显式解上，**`KTwoFormula` 当场消失**，
+   只剩 `ThetaDecayShort`——那条是论文真的向外借的。
+   审计里 `ThetaDecayShort` 的承重从 4 涨到 5，涨的正是这条。
+
+**给 Q22a 的交接**：唯一性的陈述应当写成「若 `K₁ K₂` 都 `IsKLoop m T`，则在 `T` 上逐点相等」，
+`n = 2` 的 Riccati 情形现在有现成的显式解可以拿来对照测试。
+
+---
+
+---
+
+## Q22 重新拆分（本拍据实测修订）
+
+本拍量了 RBM1D 那一侧的实际行数，Q22 应当拆成**便宜的一半**和**贵的一半**，别当一个大件：
+
+| 步 | 内容 | RBM1D 对应 | 行数 | 依赖 |
+|---|---|---|---|---|
+| Q23 | 传播子求导层 | `Propagator/Deriv.lean` | 92 | — |
+| Q27 | 2-loop 显式解，消掉 `KTwoFormula` | `Loop/Primitive.lean` | 168 | Q23 |
+| **Q22a** | **Grönwall 唯一性 `isPrimitive_unique`** | `Loop/Unique.lean` | **250** | Q27 |
+| Q22b | 树公式（存在性） | `Loop/TreeRep.lean` + `TreeRepGeneral.lean` | 729 + 2546 | Q22a |
+
+**关键观察**：`Loop/Unique.lean` 的证法是**一次 Grönwall**，不做组合。它的注释把结构讲清楚了——
+`n ≥ 3` 时方程对长度 `n` 的未知量是**线性**的（另一支必为 2-loop），`n = 2` 时是 Riccati，
+两种情形同一个估计覆盖，再对 `n` 强归纳。Mathlib 侧用的是
+`Mathlib.Analysis.ODE.Gronwall`（`norm_le_gronwallBound_of_norm_deriv_right_le` 等，
+`ODE_solution_unique*` 在 `Mathlib/Analysis/ODE/ExistUnique.lean`，均已核实存在）。
+
+**因此 Q22a 一旦落地，`KTreeRep` 就从「表示定理」退成「只欠存在性」**——
+唯一性不再是假设。这比整体移植先便宜得多，也先有用得多。
+
+## Q28 · `lem:sum_decay` 的三条结论 — **PARTIAL**（CC，2026-09-20）：两块前置 + 关键那一步
+
+> **改号说明**：CC 开这条时叫它 Q26，而 Cowork 侧在同一拍把 Q26 给了审计工单，表里撞了号。
+> 内容一字未动，只改编号。以后 CC 从 Q28 往上顺排、Cowork 从 Q40 起（见本文件开头）。
+
+**文件**：`RBM3D/Kernel/SumDecay.lean`（接在 `norm_XiKer_apply_le` 之后）。
+
+**要证**：`sum_res_1`（主界）、`(I)` `sum_res_2_NAL`（`σ` 非交替）、`(II)` `sum_res_2`（`𝒜` 满足和零性质）。
+
+**手上已有**：`UN_apply_eq_sum_powerset`（`(eq:decomp_U2)`）、`norm_XiKer_apply_le`（`(eq:decayXi)`）、
+`latticesum_d3`（Q17a）、`sum_radial_*`、`sum_inv_Icc_le`。
+
+**关键记账**（论文 A.2 的走法，按这个顺序做）：
+1. `sum_res_1_red0`（`|A| = k ≥ 1`）：`|𝒜_b| ≤ ‖𝒜‖`，对 `i ∉ A` 各自求和。
+   **注意**：直接用 `‖Ξ‖_{∞→∞} ≤ (t−s)/(1−t)` 给出的形状是 `((t−s)/(1−t))^{n−k}`，
+   **比论文claim的 `((g²+|1−s|)/(g²+|1−t|))^{n−k}` 弱**——必须走 `(deccA0)` 把求和限制在
+   `|a_i − b_i| ≲ W^ε ℓ_s` 的球内，再用 `(eq:decayXi)` 和球内求和 `Σ_{|x|≤R}(|x|+1)^{−(d−2)} ≲ R²`，
+   配合 `(1−s)ℓ_s² ≲ g²+|1−s|` 才凑出论文的形状。**这一步是整条引理的关键，别走捷径。**
+2. `sum_res_1_red`（`A = ∅`）：多出 `ℓ_t²/ℓ_s²` 因子。
+3. `(I)`：非交替时某个 `Ξ^(k)` 是同号的，用 `(prop:ThfadC_short)` 换掉一个因子。
+4. `(II)`：和零性质让 `A = ∅` 的主项消失（论文 `eq:decompXii` 那一步），剩下的用 `(prop:BD1)` 与 `latticesum_d3`。
+
+**前两步要先补**：球内求和引理 `Σ_{|x| ≤ R} (|x|+1)^{−(d−2)} ≤ C_d (R+1)²`（仿 `sum_radial_tail_le` 写，几行），
+以及 `(1−s) * ellT L g s ^ 2 ≤ g² + |1−s|`（从 `ellT` 定义直接算）。
+
+### CC 的完成记录（2026-09-20）：两块前置 + **关键那一步**
+
+**工单点名「前两步要先补」，都补了，而且顺手把关键那一步也证了**。`./check.sh` 绿、0 warning。
+
+**前置 ①** `Defs/RadialSum.lean` · `sum_ball_pow_le`：
+`Σ_{α∈D}(|a−α|+1)^{−(d−2)} ≤ C_d R²`，`D` 任意含于 `a` 的 `R`-球（`R ≥ 1`）。
+**几行就下来了**——Q20 的 `sum_ball_min_pow_le` 取「被加项与球同心」时那个 `∧ R` 截断什么也不做。
+（另加 `ballC_pos`，因为 `positivity` 看不穿 `ballC` 这个 def。）
+
+**前置 ②** `Defs/Params.lean` · `one_sub_mul_ellT_sq_le`：`|1−s| ℓ_s² ≤ ĝ² + |1−s|`。
+
+**关键那一步**（工单说「别走捷径」的那步）`Kernel/SumDecay.lean` · **`sum_ball_norm_XiKer_le`**：
+对任意含于 `a` 的 `R`-球的 `D`（`R ≤ Λ ℓ_s`），
+
+`Σ_{b∈D} ‖Ξ_{s,t}(a,b)‖ ≤ C Λ² (ĝ²+|1−s|)/(ĝ²+|1−t|)`。
+
+三件零件正好咬合：`(eq:decayXi)` 给逐元界 → `sum_ball_pow_le` 把多项式因子求和成 `R²`
+→ `R ≍ Λℓ_s` 与 `(1−s)ℓ_s² ≤ ĝ²+|1−s|` 把 `(1−s)R²` 换成 `Λ²(ĝ²+|1−s|)`。
+**这就是论文每个因子的记账**，`Λ²` 对应论文的 `W^{Cε}`。
+
+**维护（规则 4，我自己犯的）**：写前置 ② 时我顺手又写了一遍 `ellT_sq_le`，
+结果 `Kernel/PropT.lean` 里**早就有一条同名的**，编译直接报重复声明。
+**造轮子前先 grep 仓库**——这条规则是有道理的。既然它只是 `(eq:ellt)` 的事实，
+已把原来那条**下沉到 `Defs/Params.lean`**（陈述一字未改），PropT 从那里用，不留两份。
+
+**剩下的（→ Q34）**：四步装配本身——`sum_res_1_red0`（`|A| = k ≥ 1`，把上面这条对 `i ∉ A`
+连乘）、`sum_res_1_red`（`A = ∅`，多出 `ℓ_t²/ℓ_s²`）、`(I)` 非交替、`(II)` 和零性质。
+关键的记账已经就位，剩下的是组合与 `(prop:ThfadC_short)` / `(prop:BD1)` / `latticesum_d3` 的调用。
+
+---
+
+## Q29 · `(eq:key_T_reudce)` 的 `≺` 吸收步 — **DONE**（CC，2026-09-20）
 
 **文件**：`RBM3D/Kernel/PropT.lean`（接在 `key_T_reduce` 之后）。
 
@@ -1980,3 +2012,27 @@ Q25 已经覆盖星形树（任意 `n`，`norm_sum_prod_le`）与 `n = 3`（`pur
   与论文的 `c_n, C_n` 形状一致。
 * **前置**：`KTreeRep` 在 `n ≥ 4` 仍是假设（Q30/Q31）。在它落地前，`n ≥ 4` 的纯回路界
   只能带着 `KTreeRep` 走；工单 Q16 的原则是「不再添新假设」，所以**等 Q30/Q31**。
+
+---
+
+## Q34 · `lem:sum_decay` 的四步装配 — **OPEN**（CC 于 Q28 开出）
+
+**文件**：`RBM3D/Kernel/SumDecay.lean`（接在 `sum_ball_norm_XiKer_le` 之后）。
+
+Q28 已经把**关键的记账**证出来了：`sum_ball_norm_XiKer_le` 说「一个 `Ξ` 因子在
+`|a−b| ≲ Λℓ_s` 的球上求和，代价正好是 `Λ²(ĝ²+|1−s|)/(ĝ²+|1−t|)`」。
+剩下的是把它按论文 A.2 的四步装起来：
+
+1. **`sum_res_1_red0`**（`|A| = k ≥ 1`）：`|𝒜_b| ≤ ‖𝒜‖`，对 `i ∉ A` 各用一次上面那条，
+   连乘得 `((ĝ²+|1−s|)/(ĝ²+|1−t|))^{n−k}`。装配时注意 `UN_apply_eq_sum_powerset`
+   给出的是按子集展开的和，子集数 `2^n` 进常数 `C_n`。
+2. **`sum_res_1_red`**（`A = ∅`）：多出 `ℓ_t²/ℓ_s²` 因子——这一项要用 `(deccA0)` 的球
+   **对 `t` 那一侧**再算一次，不能照抄第 1 步。
+3. **(I) 非交替**：某个 `Ξ^(k)` 同号，用 `(prop:ThfadC_short)`（`norm_Theta_same_le_exp`
+   已在 `Loop/PureLoop.lean`）把那个因子换成指数衰减的，省下一个 `(ĝ²+|1−s|)/(ĝ²+|1−t|)`。
+4. **(II) 和零性质**：`A = ∅` 的主项消失（论文 `eq:decompXii`），剩下的用 `(prop:BD1)`
+   与 `latticesum_d3`（Q17a 已证）。
+
+**三条结论的陈述要逐字对论文**（`3_5_Loop_Hierarchy.tex:1632`）：
+`(sum_res_1)`、`(sum_res_2_NAL)`、`(sum_res_2)`，注意 `W^{C_nε}` 与 `W^{−D+C_n}` 两项都要写上，
+且 `C_n` **不依赖 `ε` 与 `D`**——这是论文明说的，别写成依赖。
