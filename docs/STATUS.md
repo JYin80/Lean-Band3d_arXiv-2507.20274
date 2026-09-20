@@ -711,3 +711,24 @@ Q28 误用了它的同心推论 `sum_ball_pow_le`。现在球心成为独立参�
 三块分割的进度已写进工单：块二零件齐、块一还差一步初等不等式、块三还缺一条尾和引理。
 
 审计：**471 定理 / 171 定义 / 0 公理**。
+
+## 2026-09-20 · Claude Code · Q40 完成：蓝图按审计的两本账分开，并改正一条分类
+
+**先是对账查出一条错**：`RBM.Loop.KLoopBound` 一直记在审计的 `borrowedProps` 里，
+但**论文自己证了 `ML:Kbound`**——A.5 原话「…but requires additional modifications to handle
+the higher-dimensional setting `d ≥ 3`. **For the reader's convenience, we provide the
+proof below**」，随后是完整证明（`paper/tex/A_deterministic_estimates.tex:661–806`）。
+它是**本项目欠的债**（缺分子层 `Σ^(π)` 与 sum-zero），不是论文向外借的东西，已移入 `owedProps`。
+对照之下 `KTreeRep` 确实是借来的：A.4 明写「Lemma 3.4 of `[YY_25]`」。
+**两本账现在是 borrowed 7 / owed 2 / structural 6。**
+
+**蓝图这一侧**：`ax:` 前缀本身就误导（本项目 0 axiom），按账本改名——
+`bor:`（论文引用不证）与 `hyp:`（论文证了、我们还没证）。`ax:KTwoFormula` 早已是定理，
+改名 `lem:KTwoFormula`。`ax:KTreeRep` 拆成 `def:kloop`（`LoopIdx`、cut-and-glue、
+`treeEqRhs(_two)`、`MLoop`、`IsKLoop`，**带 `\leanok`**）与 `bor:KTreeRep`（只剩那条假设），
+新增 `hyp:twoloop`（`TwoLoopBounded`），于是蓝图的两段与审计的两本账**逐条**对得上。
+第三章改写成两段，并写明怎么读：**`hyp:` 变短是进度，`bor:` 变短是新定理。**
+
+**自检**：41 label 无重复、`\uses`/`\ref` 零悬空、`\uses` 图无环、134 个 `\lean{}` 名字全部 `#check` 通过。
+
+审计：**471 定理 / 171 定义 / 0 公理**。

@@ -73,7 +73,7 @@
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **PARTIAL** (CC)：第一块（临界指数的对数球和）已证；三块装配待续 |
-| Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **CLAIMED (CC)** |
+| Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **DONE (CC)** |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
@@ -1768,7 +1768,7 @@ linter 的「未引用变量」提醒抓到的，顺手收紧了签名。
 
 ---
 
-## Q40 · 依赖图把「借来的」和「暂时假设的」混成一类，而且有一条边是错的 ⭐ — **OPEN**（Cowork 于 beat 12 提）
+## Q40 · 依赖图把「借来的」和「暂时假设的」混成一类，而且有一条边是错的 ⭐ — **DONE**（Cowork 于 beat 12 提，CC 于 beat 32 完成）
 
 **文件**：`blueprint/src/content.tex`（只动蓝图，不动 Lean 代码）。
 
@@ -1817,6 +1817,49 @@ Q27 恰恰是绕开大件、先拿到的那一块。
 **验收**：`leanblueprint` 能构建、`\uses` 全部解析；第三章分成「借来的五条」与「暂时假设的两条」两段；
 `ax:KTwoFormula` 不再指向 `KTreeRep`；已落地的 `K`-loop 定义拿到 `\leanok`。
 **与 Q26 对齐**：审计的两本账和蓝图的两段说的应当是同一件事。
+
+### 完成记录（CC，beat 32）— **DONE**，`./check.sh` exit=0，0 axioms
+
+**（一）两本账，先修一条错分类。** 对账时发现审计把 `RBM.Loop.KLoopBound` 记在
+`borrowedProps`，**记错了**：`ML:Kbound` 论文自己证了。
+`paper/tex/A_deterministic_estimates.tex:661` 原话是「The proof is analogous to that of
+Lemma 3.11 in [YY_25], but requires additional modifications to handle the
+higher-dimensional setting d ≥ 3. **For the reader's convenience, we provide the proof
+below**」，后面 661–806 行是完整证明。所以它是**本项目的欠债**（缺分子层），不是论文的借款。
+已移入 `owedProps`，`Loop/KBound.lean` 的文件头和 `KLoopBound` 的 docstring 同步改过来。
+
+反过来 `KTreeRep` 是真·借来的：A.4 明写「Lemma 3.4 of [YY_25]」，论文只是 recall。
+所以两本账最后是 **borrowed 7 条**（五条 PropTH 分量 + 打包的 `PropTH` + `KTreeRep`）、
+**owed 2 条**（`TwoLoopBounded` + `KLoopBound`）。
+
+**（二）蓝图前缀按账本命名。** `ax:` 这个前缀本身就是误导——本项目 0 条 axiom。改成：
+
+| 旧 | 新 | 理由 |
+|---|---|---|
+| `ax:ThfadC` / `ax:ThfadCshort` / `ax:ThfadC0` / `ax:BD1` / `ax:BD2` | `bor:…` | 论文引用不证 |
+| `ax:KTreeRep` | `bor:KTreeRep` | 同上（[YY_25] Lemma 3.4） |
+| `ax:Kbound` | `hyp:Kbound` | 论文证了，我们欠着 |
+| `ax:KTwoFormula` | `lem:KTwoFormula` | Q27+Q22a 之后它已经是定理 |
+
+**（三）拆节点。** 按工单建议把 `ax:KTreeRep` 拆成两个：
+
+* `def:kloop` —— `LoopIdx`、`cutGlueL/R`、`treeEqRhs`、`treeEqRhs_two`、`MLoop`、`IsKLoop`，
+  **带 `\leanok`**（已落地的定义不该跟着假设一起显示为未完成）；
+* `bor:KTreeRep` —— 只剩 `KTreeRep` 一条假设，`\uses{def:kloop, def:tsp}`。
+
+另新增 `hyp:twoloop`（`TwoLoopBounded`），这样蓝图的两段**逐条**对上审计的两本账：
+`bor:` 六个节点 ↔ borrowed 账（`PropTH` 是打包，不单独立节点），`hyp:` 两个节点 ↔ owed 账。
+`lem:unique` / `lem:treeThree` 的 `\uses` 补上 `def:kloop, hyp:twoloop`——它们本来就带着这条假设。
+
+**（四）那条错边**：`ax:KTwoFormula → ax:KTreeRep` 在更早一拍（Q29 那一拍）已经删掉了，
+现在是 `lem:KTwoFormula \uses{lem:kTwo, lem:unique}`，主线 Q23 → Q27 在图上走得通。
+
+**（五）第三章改写**成两段，并写明怎么读这两本账：**`hyp:` 变短是进度，`bor:` 变短是新定理。**
+文件头那段「哪些节点不带 `\leanok`」的注释也改成按前缀说明。
+
+**验收自检**：41 个 label 无重复；`\uses` / `\ref` 全部解析（0 条悬空）；`\uses` 图无环
+（39 个节点跑了一遍 DFS）；蓝图里 **134 个 `\lean{}` 名字全部 `#check` 通过**（临时 `Probe.lean`，
+跑完删除）。`./check.sh` exit=0，审计报告 borrowed 7 / owed 2 / structural 6。
 
 ---
 
