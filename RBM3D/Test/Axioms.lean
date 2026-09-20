@@ -87,7 +87,8 @@ def structuralProps : List Name :=
    `RBM.Loop.IsDiag,          -- `(i,j)` is a diagonal of the polygon
    `RBM.Loop.Crossing,        -- two diagonals cross
    `RBM.SameSignOutside,      -- `A ⊇ I_diff(σ)`, the condition of `lem:sum_decay_nonzero`
-   `RBM.Graph.Case.Rel]       -- the case relation of `lem_scalingorder`, a parameter
+   `RBM.Graph.Case.Rel,       -- the case relation of `lem_scalingorder`, a parameter
+   `RBM.NormStochDom]         -- `‖A‖ ≺ ζ`: notation of `(stoch_domination)`, not a result
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps

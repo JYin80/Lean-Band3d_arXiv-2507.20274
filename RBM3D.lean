@@ -9,6 +9,7 @@ import RBM3D.Defs.Params
 import RBM3D.Defs.Tail
 import RBM3D.Defs.Block
 import RBM3D.Defs.Domination
+import RBM3D.Defs.StochDom
 import RBM3D.Propagator.Basic
 import RBM3D.Propagator.Props4
 import RBM3D.Propagator.Deriv
@@ -25,6 +26,8 @@ import RBM3D.Loop.TreeFour
 import RBM3D.Gauss.Stein
 import RBM3D.Gauss.SteinMatrix
 import RBM3D.Gauss.Model
+import RBM3D.Gauss.Domination
+import RBM3D.Gauss.Envelope
 import RBM3D.Loop.KBound
 import RBM3D.Propagator.Interface
 import RBM3D.Graph.ScalingOrder
