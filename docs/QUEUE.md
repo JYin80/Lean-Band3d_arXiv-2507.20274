@@ -30,8 +30,8 @@
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
 | Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **DONE** (CC)：整包照搬，一次编译通过 |
-| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **PARTIAL** (CC)：与模型无关的那半已证；其余需 Q48 |
-| Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **CLAIMED (CC)** |
+| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **PARTIAL** (CC)：`P_map_update` 已随 Q48 落地；只剩把两边推过去 |
+| Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **DONE** (CC)：模型 + **重采样不变性**（Q43b 缺的那条） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **OPEN**（CC 于 beat 19 拆出） |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | BLOCKED by Q42a（要测度论） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
@@ -1961,6 +1961,29 @@ RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、�
 
 **剩下的**：`(P ⊗ γ_c).map (upd c) = P`（独立性唯一用到的地方，在可测长方体上验证）
 与矩阵版恒等式本身——两条都要模型。**已开 Q48**。
+
+
+### CC 的完成记录（Q48，2026-09-20）
+
+**不是移植，是按本篇论文的模型重写**（`Gauss/Model.lean`，`./check.sh` 绿、0 warning）：
+
+* `Vtx d L W = Zd d L × Fin (W^d)`：顶点 = 块标号 + 块内位置。论文写「`x ∈ [a]`」，这里 `x.1 = a`。
+* `svar x y = W^{-d} S^(B)_{ab}`：**逐字就是 `(eq:variancematrix)`**，只依赖两个块标号。
+* `Coord`（有序对 + `Bool` 选实部/虚部）、`Omega`、`gvar`、`P`：独立实坐标及其分布。
+  对角线上是**一个**实高斯、方差 `S_xx`；非对角是**两个**独立实高斯、各 `S_xy/2`——
+  这样两种情形都有 `E|H_xy|² = S_xy`，与 `(bandcw0)` 一致。
+* `Hmat` + `Hmat_isHermitian`：`(bandcw0)` 的矩阵本身。Hermite 对称按 RBM1D 的办法处理——
+  用顶点集到 `ℕ` 的单射 `vkey` 决定 `H_xy` 与 `H_yx` 哪一个持有独立坐标。
+* **`P_map_update`**：`(P ⊗ γ_c).map (upd c) = P`——**随机层唯一用到独立性的地方**，
+  也正是 Q43b 缺的那条。证法：两边都是有限乘积上的概率测度，在可测长方体上比较
+  （`Measure.pi_eq`）；`upd c` 下长方体的原像还是长方体，第 `c` 格换成 `univ`
+  （`preimage_upd_univ_pi`）。
+
+**一处有意的设计差异**（记在文件抬头）：RBM1D 把 `W(N)`、`L(N)` 打包成 `Dims`、
+为整个序列建**一个**空间；这里按本项目的一贯风格**对固定的 `d, L, W, g` 建模**。
+于是坐标集是有限的，测度用 `Measure.pi` 而不是 `Measure.infinitePi`，
+可测长方体唯一性用 `Measure.pi_eq`。将来若渐近陈述需要「一个空间装下所有 `N`」，
+再加一层包装即可，不影响这里的任何陈述。
 
 ---
 
