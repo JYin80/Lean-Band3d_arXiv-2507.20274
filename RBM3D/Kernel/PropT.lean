@@ -1016,6 +1016,79 @@ theorem key_T_reduce (hW : 0 < W) {k n : ℕ} (hn : 2 ≤ n) {ℓ : ℝ} (hℓ :
         rw [keyC, mul_pow, hpow]
         ring
 
+/-! ### The absorption step: from `Ψ_t² ℓ²` to `(W^d η_t)^{-1}`
+
+`key_T_reduce` leaves `Ψ_t² ℓ²` where the paper writes `(W^d η_t)^{-1}`.  The passage
+between them is the last line of Appendix A.4, and it is where the logarithms -- hence
+`≺` rather than `≲` -- come from:
+
+* `ℓ ≤ (log W)^{10} ℓ_t`, the standing hypothesis of `claim:TTk`, costs `(log W)^{20}`;
+* `B_{t,0} ℓ_t² ≤ 3|1-t|^{-1}` under `1 - t ≥ ĝ²/L²` (`RBM.Bparam_mul_ellT_sq_le`);
+* `η_t ≍ 1 - t` by `(eta)`, so `|1-t|^{-1} ≍ η_t^{-1}`.
+
+`RBM.detDom_log_pow` (`Defs/Domination.lean`) is what absorbs the `(log W)^{20}` into `≺`:
+for every `τ > 0` it is eventually below `N^τ`.  The two statements below are the
+deterministic content; combining them with that lemma is exactly the paper's `≺`. -/
+
+/-- `Ψ_t² ℓ² ≤ 3 Λ² W^{-d}|1-t|^{-1}` whenever `ℓ ≤ Λ ℓ_t` -- the paper's
+`Ψ_t²ℓ² ≲ (log W)^{20}(W^dη_t)^{-1}` with `Λ = (log W)^{10}` and every constant explicit. -/
+theorem PsiT_sq_mul_le {d L : ℕ} {W g t : ℝ} (hd : 2 ≤ d) (hW : 0 < W) (hL : 1 ≤ (L : ℝ))
+    (hg : 0 ≤ g) (ht : t < 1) (hgL : g ^ 2 ≤ (L : ℝ) ^ 2 * (1 - t))
+    {ℓ Λ : ℝ} (hℓ0 : 0 ≤ ℓ) (hℓ : ℓ ≤ Λ * ellT L g t) :
+    PsiT d L W g t ^ 2 * ℓ ^ 2 ≤ 3 * Λ ^ 2 * ((W ^ d)⁻¹ / (1 - t)) := by
+  have hu : (0 : ℝ) < 1 - t := by linarith
+  have hBnn : 0 ≤ Bparam d L g t 0 := by unfold Bparam; positivity
+  have hWd : (0 : ℝ) < W ^ d := by positivity
+  have hPsi : PsiT d L W g t ^ 2 = (W ^ d)⁻¹ * Bparam d L g t 0 := by
+    rw [PsiT, Real.sq_sqrt (by positivity)]
+  have hsq : ℓ ^ 2 ≤ Λ ^ 2 * ellT L g t ^ 2 := by
+    have := pow_le_pow_left₀ hℓ0 hℓ 2
+    rwa [mul_pow] at this
+  calc PsiT d L W g t ^ 2 * ℓ ^ 2
+      = (W ^ d)⁻¹ * (Bparam d L g t 0 * ℓ ^ 2) := by rw [hPsi]; ring
+    _ ≤ (W ^ d)⁻¹ * (Bparam d L g t 0 * (Λ ^ 2 * ellT L g t ^ 2)) := by
+        have : Bparam d L g t 0 * ℓ ^ 2
+            ≤ Bparam d L g t 0 * (Λ ^ 2 * ellT L g t ^ 2) :=
+          mul_le_mul_of_nonneg_left hsq hBnn
+        exact mul_le_mul_of_nonneg_left this (by positivity)
+    _ = (W ^ d)⁻¹ * (Λ ^ 2 * (Bparam d L g t 0 * ellT L g t ^ 2)) := by ring
+    _ ≤ (W ^ d)⁻¹ * (Λ ^ 2 * (3 / (1 - t))) := by
+        have := Bparam_mul_ellT_sq_le (d := d) (L := L) (g := g) (t := t) hd hL hg ht hgL
+        have h2 : Λ ^ 2 * (Bparam d L g t 0 * ellT L g t ^ 2) ≤ Λ ^ 2 * (3 / (1 - t)) :=
+          mul_le_mul_of_nonneg_left this (by positivity)
+        exact mul_le_mul_of_nonneg_left h2 (by positivity)
+    _ = 3 * Λ ^ 2 * ((W ^ d)⁻¹ / (1 - t)) := by ring
+
+/-- **`(eq:key_T_reudce)` with the paper's right-hand side.**  `key_T_reduce` with the
+absorption carried out: under `ℓ ≤ Λ ℓ_t` and `1 - t ≥ ĝ²/L²`,
+
+`Σ_{α ∈ D} Π_i 𝖳_t(|x_i-α| ∧ ℓ) 𝖳_t(|y_i-α| ∧ ℓ)`
+`  ≤ C(d,n) Λ² (W^d|1-t|)^{-1} · Ψ_t^{n-2} Π_i 𝖳_t(|x_i-y_i| ∧ ℓ)`.
+
+With `Λ = (log W)^{10}` this is the paper's bound, the factor `Λ²` being what `≺`
+absorbs (`RBM.detDom_log_pow`). -/
+theorem key_T_reduce_absorbed {L : ℕ} [NeZero L] {W g t : ℝ} (hW : 0 < W) {k n : ℕ}
+    (hn : 2 ≤ n) {ℓ Λ : ℝ} (hℓ : 1 ≤ ℓ) (hL : 1 ≤ (L : ℝ)) (hg : 0 ≤ g)
+    (ht : t < 1) (hgL : g ^ 2 ≤ (L : ℝ) ^ 2 * (1 - t)) (hℓt : ℓ ≤ Λ * ellT L g t)
+    (D : Finset (Zd (k + 2) L)) (a : Zd (k + 2) L)
+    (hD : ∀ α ∈ D, ((zdistD (k + 2) L (a - α) : ℕ) : ℝ) ≤ ℓ)
+    (x y : Fin n → Zd (k + 2) L) :
+    ∑ α ∈ D, ∏ i, (sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - α) : ℕ) : ℝ) ℓ)
+          * sfT (k + 2) L W g t (min ((zdistD (k + 2) L (y i - α) : ℕ) : ℝ) ℓ))
+      ≤ keyC k n * (3 * Λ ^ 2 * ((W ^ (k + 2))⁻¹ / (1 - t)))
+        * (PsiT (k + 2) L W g t ^ (n - 2)
+          * ∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ)) := by
+  have hkeyC : 0 ≤ keyC k n := by
+    have := ballC_nonneg k
+    unfold keyC; positivity
+  have hrest : 0 ≤ PsiT (k + 2) L W g t ^ (n - 2)
+      * ∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ) :=
+    mul_nonneg (pow_nonneg PsiT_nonneg _) (Finset.prod_nonneg fun i _ => sfT_nonneg _)
+  refine (key_T_reduce hW hn hℓ D a hD x y).trans ?_
+  have habs := PsiT_sq_mul_le (d := k + 2) (L := L) (W := W) (g := g) (t := t)
+    (by omega) hW hL hg ht hgL (by linarith) hℓt
+  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left habs hkeyC) hrest
+
 end TTk
 
 end RBM

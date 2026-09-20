@@ -206,4 +206,30 @@ theorem add_left (hg : ∀ N, 0 ≤ g N) (h₁ : f₁ ≺ g) (h₂ : f₂ ≺ g)
 
 end DetDom
 
+/-! ### Logarithmic factors are invisible to `≺`
+
+The paper writes `≺` rather than `≲` exactly where a power of `log W` has been absorbed.
+This is the lemma that does the absorbing, and it is what makes such a step legitimate:
+for every `τ > 0` a polynomial in `log N` is eventually below `N^τ`.
+
+It is stated once here because every `≺` estimate downstream needs it --- the first is
+`(eq:key_T_reudce)`, where `ℓ ≤ (log W)^{10} ℓ_t` costs a factor `(log W)^{20}`
+(`docs/QUEUE.md`, Q29).
+-/
+
+/-- **`(log N)^m ≺ 1`**: any fixed power of a logarithm is dominated. -/
+theorem detDom_log_pow (m : ℕ) : DetDom (fun N : ℕ => Real.log N ^ m) (fun _ => 1) := by
+  intro τ hτ
+  have h0 := (_root_.isLittleO_log_rpow_rpow_atTop (m : ℝ) hτ).def (c := 1) one_pos
+  have h1 : ∀ᶠ N : ℕ in Filter.atTop,
+      ‖Real.log (N : ℝ) ^ (m : ℝ)‖ ≤ 1 * ‖((N : ℝ)) ^ τ‖ :=
+    tendsto_natCast_atTop_atTop.eventually h0
+  filter_upwards [h1, Filter.eventually_ge_atTop 1] with N hN hN1 _
+  have hlog : 0 ≤ Real.log (N : ℝ) :=
+    Real.log_nonneg (by exact_mod_cast hN1)
+  have hrpow : Real.log (N : ℝ) ^ (m : ℝ) = Real.log (N : ℝ) ^ m := Real.rpow_natCast _ m
+  have hN0 : (0 : ℝ) ≤ (N : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg N) τ
+  rw [hrpow, Real.norm_of_nonneg (by positivity), Real.norm_of_nonneg hN0, one_mul] at hN
+  simpa using hN
+
 end RBM
