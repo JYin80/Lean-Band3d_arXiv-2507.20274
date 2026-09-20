@@ -64,8 +64,9 @@
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **DONE** (CC)：扫描 + 两本账 + 反向测试 |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **DONE** (CC)：`(log N)^m ≺ 1` + `Bℓ_t² ≤ 3/\|1−t\|` + 合并 |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
-| Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **CLAIMED (CC)** |
+| Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：六项索引 + 两条对角线的树值；求导匹配 → Q35 |
 | Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q28 开出；关键那步已就位） |
+| Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q30 开出；树值已算出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
@@ -1857,7 +1858,7 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 
 ---
 
-## Q30 · `(eq_Ktree)` 的 `n = 4` — **OPEN**（CC 于 Q22b 开出）
+## Q30 · `(eq_Ktree)` 的 `n = 4` — **PARTIAL**（CC，2026-09-20）：六项索引 + 两条对角线
 
 **文件**：新开 `RBM3D/Loop/TreeFour.lean`。参照 `RBM1D/RBM1D/Loop/TreeRep.lean`（729 行）。
 
@@ -1874,6 +1875,34 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 
 **提醒**：内部边那两项的右端是**两条 3-链**相乘（不是 2-链 × 4-链），
 所以低层供给要用到 `kThree_eq_of_isKLoop`，这正是这一拍先做 `n = 3` 的原因。
+
+### CC 的完成记录（2026-09-20）：六项索引 + 两条对角线
+
+**做完的两件**（`./check.sh` 绿、0 warning）：
+
+**① `treeEqRhs_four`**：六个 `(k,l)` 项，链都算出来了。**边与项的对应在这里第一次完整**：
+* `(1,2)`、`(2,3)`、`(3,4)`、`(1,4)` 各切下一条 **2-链**、换掉一个标签——这是 4 条边界边；
+* `(1,3)`、`(2,4)` 把正方形切成**两条 3-链**——这就是内部边在方程一侧的样子。
+
+工单的提醒说中了：内部边那两项的右端确实是两条 3-链相乘，
+所以低层供给必须有 `n = 3`（上上拍的 `kThree_eq_of_isKLoop`），先做 `n = 3` 是对的。
+
+**② `treeVal_four_diag02` / `treeVal_four_diag13`**：`polyVal` 递归在 `F = [(0,2)]` 与 `[(1,3)]`
+处的值——**两个三条边的星形，由内部边 `Θ^(σ_i,σ_j) − I` 粘起来**，
+新顶点在左片带 `(Θ−I)ᵀ`、右片带 `I`，两者相乘正是 `(f-internal)`。
+另加 `treeSum_four`：树和 = 星形 + 这两支（`TSP_four`）。
+
+**证的时候遇到的两处**（记下来给 Q31/Q35）：
+1. `cutGlueL/R` 里的 `List.take (k-1)`、`take (l-k+1)` 这类**带数字减法的下标**，
+   `simp only` 不会算，要用 `norm_num`；算完之后两边只差结合律，补一个 `ring`。
+2. `diagList {(0,2)}` 用 `decide` **会卡住**（`Finset.sort` 的可判定实例展不开），
+   用 `simp [diagList]` 就过。
+
+**没做的（→ Q35）**：③ 内部边的导数与 ④ 装配。
+③ 本身不难（`∂_t(Θ−I) = μ Θ S Θ`，因为 `I` 不含 `t`，和边界边同一条公式），
+难的是 ④：要把 6 条边的导数与 6 个 `(k,l)` 项**逐一配对**，其中两条内部边的项
+要用 `kThree_eq_of_isKLoop` 把两条 3-链换成树值，再用 `sum_SB_starLeft/Right` 的
+四顶点版本（`n = 3` 那两条是三顶点的，得推广）。
 
 ---
 
@@ -2123,3 +2152,24 @@ registry: 8 borrowed + 1 owed + 5 structural; 4 registered premises are currentl
 
 **为什么值得单开一条**：Q26 治的就是「看上去完整、其实对不上的报告」。
 这一处是同一个毛病的缩小版，出现在 Q26 自己的输出里——**留着比错更糟的是，它会让人不再核对那份报告**。
+
+---
+
+## Q35 · `(eq_Ktree)` `n = 4` 的求导匹配 — **OPEN**（CC 于 Q30 开出）
+
+**文件**：`RBM3D/Loop/TreeFour.lean`（接在 `treeSum_four` 之后）。
+
+Q30 已把**两侧的东西都摆好**：方程一侧是 `treeEqRhs_four` 的六项，树一侧是
+`treeVal_four_nil`（星形）与 `treeVal_four_diag02/13`（两条对角线）。剩下把它们配对。
+
+**要做的**：
+1. **内部边的导数**：`∂_t (Θ^(σ_i,σ_j) − I)_{by} = μ_{ij} (Θ S^(B) Θ)_{by}`——
+   `I` 不含 `t`，所以与边界边同一条公式（`hasDerivAt_Theta_mul_apply`，Q23）。
+2. **四顶点版的求和引理**：`n = 3` 用的 `sum_SB_starLeft/Right` 是三顶点的，
+   这里星形有四条边，要推广（形状不变，只是多一个不参与的因子）。
+3. **配对**：4 条边界边 ↔ 带 2-链的四项；2 条内部边 ↔ 带两条 3-链的两项，
+   后者要用 `kThree_eq_of_isKLoop`（Q22b 的 `n = 3`）把 3-链换成树值。
+4. **收尾**：`eq_on_level`（Q22a）在 `n = 4`，低层由 `n ≤ 3` 供给（已全部就位）。
+
+**提醒**：证到这里就能拿到 `(eq_Ktree)` 在 `n = 4`——**`KTreeRep` 的第一个真正的实例**。
+一般 `n` 仍是 Q31。
