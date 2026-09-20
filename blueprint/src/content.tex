@@ -391,14 +391,35 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   project \texttt{RBM1D}: it is dimension-independent.
 \end{definition}
 
+\begin{lemma}[$\mathtt{(eq\_Ktree)}$ at $n=3$]\label{lem:treeThree}
+  \lean{RBM.Loop.treeEqRhs_three, RBM.Loop.treeSum_three, RBM.Loop.sum_SB_starLeft, RBM.Loop.sum_SB_starRight, RBM.Loop.hasDerivAt_starThree, RBM.Loop.kThree, RBM.Loop.hasDerivAt_kThree, RBM.Loop.kThree_zero, RBM.Loop.kThree_eq_of_isKLoop}\leanok
+  \uses{def:tsp, lem:unique, ax:KTwoFormula, lem:Theta-deriv}
+  A triangle has no diagonals, so the tree sum is the single star
+  $\sum_b\Th^{(\sigma_0\sigma_1)}(a_0,b)\Th^{(\sigma_1\sigma_2)}(a_1,b)\Th^{(\sigma_2\sigma_0)}(a_2,b)$,
+  and it is the $3$-loop of \emph{every} family of $\Kcal$-loops whose $2$-loops are
+  bounded on each $[0,T_0]$, $T_0<1$.
+
+  The content is the match between the three boundary edges and the three $(k,l)$ terms:
+  $(1,2)$ cuts off the $2$-chain $(\sigma_0,\sigma_1)$ and replaces $a_0$, $(2,3)$ cuts off
+  $(\sigma_1,\sigma_2)$ and replaces $a_1$, and $(1,3)$ cuts off $(\sigma_0,\sigma_2)$ and
+  replaces $a_2$ --- that last one with its $2$-chain on the \emph{left} of $\SB$, which is
+  why there are two summation lemmas and not one.  Differentiating the edge at $a_i$
+  inserts $\SB$ there, and the matching $(k,l)$ term rebuilds exactly that sandwich.
+
+  Only the $2$-loop bound is needed, never a bound on $3$-loops: for $n\ge3$ the equation
+  is linear in the $n$-loops with the $2$-loops as coefficients.
+  Work orders: $n=4$, where internal edges first appear, is Q30; general $n$ is Q31.
+\end{lemma}
+
 \begin{theorem}[Tree representation of $\Kcal$-loops --- \emph{interface hypothesis}]\label{ax:KTreeRep}
   \lean{RBM.Loop.LoopIdx, RBM.Loop.treeEqRhs, RBM.Loop.MLoop, RBM.Loop.IsKLoop, RBM.Loop.KTreeRep}
   \uses{def:tsp}
   $\Kcal^{(n)}_{t,\bm\sigma,\mathbf a}=W^{-d(n-1)}\sum_{\Gamma\in\mathrm{TSP}(\mathcal P_{\mathbf a})}\Gamma^{(n)}$.
   \emph{Attributed to} \texttt{[YY\_25]} Lemma 3.4.  The statement layer is in Lean (Q15);
-  the proof needs a propagator $t$-derivative layer that RBM3D does not have yet, so it is
-  carried as a hypothesis.  Work orders: Q23 (the derivative layer), Q22a (Gr\"onwall
-  uniqueness), Q22b (existence).
+  uniqueness is no longer assumed (\ref{lem:unique}, Q22a) and the cases $n=2$
+  (\ref{ax:KTwoFormula}) and $n=3$ (\ref{lem:treeThree}) are proved, so what is still
+  carried as a hypothesis is existence for $n\ge4$: Q30 ($n=4$, internal edges) and
+  Q31 (general $n$).
 \end{theorem}
 
 \begin{lemma}[Uniqueness for $\mathtt{(pro\_dyncalK)}$]\label{lem:unique}
