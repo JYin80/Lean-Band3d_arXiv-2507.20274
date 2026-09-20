@@ -72,11 +72,17 @@ Reporting them in one list makes "zero axioms" look better than the situation is
 /-- Premises the **paper** cites rather than proves. -/
 def borrowedProps : List Name :=
   [`RBM.ThetaDecay, `RBM.ThetaDecayShort, `RBM.ThetaDiffOne, `RBM.ThetaDiffTwo,
-   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLoopBound]
+   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep]
 
-/-- Premises **this development** owes: provable here, assumed for now. -/
+/-- Premises **this development** owes: provable here, assumed for now.
+
+`KLoopBound` is here rather than in `borrowedProps` because the paper does prove it:
+Appendix A.5 says the proof "is analogous to that of Lemma 3.11 in `[YY_25]`, but requires
+additional modifications to handle the higher-dimensional setting `d ≥ 3`.  For the
+reader's convenience, we provide the proof below", and then gives it in full.  Assuming it
+here is a debt of this formalization (the molecule layer is missing), not a borrowing. -/
 def owedProps : List Name :=
-  [`RBM.Loop.TwoLoopBounded]
+  [`RBM.Loop.TwoLoopBounded, `RBM.Loop.KLoopBound]
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed

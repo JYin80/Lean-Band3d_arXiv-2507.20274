@@ -41,9 +41,12 @@ does not suffice: the case distinction `x ≤ y` / `y ≤ x` is not cosmetic.
 
 ## What is here
 
-* `RBM.Loop.KLoopBound` : `ML:Kbound` stated verbatim, as a `Prop` in the shape of the
-  other borrowed results (`docs/QUEUE.md`, Q24).  It is *not* proved here: the proof needs
-  the molecule layer (`Σ^(π)`, the sum-zero property) which the project does not have yet.
+* `RBM.Loop.KLoopBound` : `ML:Kbound` stated verbatim, as a `Prop` (`docs/QUEUE.md`, Q24).
+  It is *not* proved here: the proof needs the molecule layer (`Σ^(π)`, the sum-zero
+  property) which the project does not have yet.  The paper *does* prove it -- A.5 says
+  "For the reader's convenience, we provide the proof below" -- so in the audit
+  (`RBM3D/Test/Axioms.lean`) this is an **owed** premise, a debt of this formalization,
+  not one of the results the paper borrows.
 * `RBM.Loop.inv_pow_pair_le`, `RBM.Loop.not_inv_pow_pair_le_single` : the `d ≥ 3` step and
   the negative test.
 -/
@@ -66,7 +69,8 @@ for deterministic quantities, Definition 2.1(ii), in the uniform form of
 
 Carried as a hypothesis, in the repository's usual form: the proof in Appendix A.5 runs
 through the molecule decomposition `(eq:wtKpi)` and the sum-zero property
-`(eq:Sigma-empty-sum-zero)`, neither of which is formalized. -/
+`(eq:Sigma-empty-sum-zero)`, neither of which is formalized.  It is an *owed* premise, not
+a borrowed one: the paper gives the proof. -/
 def KLoopBound (K : ℝ → LoopIdx (Zd d L) → ℂ) : Prop :=
   ∀ n : ℕ, 1 ≤ n → ∀ τ : ℝ, 0 < τ → ∃ C > (0 : ℝ),
     ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ : List Bool) (a : List (Zd d L)),

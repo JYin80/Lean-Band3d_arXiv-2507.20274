@@ -6,11 +6,22 @@
 % `sorry` and -- since Q19 -- no project axiom at all.  The nodes below therefore carry
 % \lean{} tags, and \leanok on every node that is *proved*.
 %
-% A node that names an interface Prop (ax:ThfadC, ax:ThfadCshort, ax:BD1, ax:BD2,
-% ax:ThfadC0, ax:KTreeRep, ax:Kbound) gets \lean{} but NOT \leanok: the statement
-% exists in Lean, the proof does not, because the paper cites it rather than proving it.
-% These are hypotheses carried by the theorems that use them -- not axioms -- so the
-% audit reports 0 axioms while still reporting how many theorems rest on each of them.
+% A node that names an unproved premise gets \lean{} but NOT \leanok: the statement
+% exists in Lean, the proof does not.  These are hypotheses carried by the theorems that
+% use them -- not axioms -- so the audit reports 0 axioms while still reporting how many
+% theorems rest on each of them.  The label prefix says WHY the proof is missing, and it
+% matches the two ledgers of RBM3D/Test/Axioms.lean exactly:
+%
+%   bor:  BORROWED -- the paper cites it rather than proving it.  Discharging one means
+%         proving something the paper itself does not.
+%         bor:ThfadC, bor:ThfadCshort, bor:BD1, bor:BD2, bor:ThfadC0  (the five
+%         components of RBM.PropTH) and bor:KTreeRep ([YY_25] Lemma 3.4).
+%   hyp:  OWED -- the paper does prove it; it is assumed here only to get on with the
+%         next layer.  A debt of this formalization, not of the paper.
+%         hyp:Kbound (proved in Appendix A.5), hyp:twoloop.
+%
+% Anything else with an unproved statement is a definition of the objects under study
+% (def:kloop's IsKLoop), which the audit keeps in a third, structural list.
 
 \chapter{The lattice, the model and the propagator}
 
@@ -113,18 +124,36 @@
   $\sum_b\Th_{t,ab}^{(+,-)}=(1-t)^{-1}$ because $M^{(+,-)}\SB$ is doubly stochastic.
 \end{lemma}
 
-\chapter{Properties of the propagator: the axiom interface}
+\chapter{What is assumed, and why: the two ledgers}
 
-These are the estimates this paper \emph{cites} rather than proves.  Since Q19 they are
-not axioms but \texttt{Prop}s in \texttt{RBM3D/Propagator/Interface.lean} (bundled as the
-structure \texttt{RBM.PropTH}), taken as hypotheses by the theorems that need them; the
-audit \texttt{RBM3D/Test/Axioms.lean} reports 0 axioms in the project and, for each of
-these, how many theorems rest on it.  Q21 checked the five statements against the paper
-word by word: one of them was \emph{false} as first written and had to be repaired
-(see \texttt{docs/paper-deltas.md}, D11, and the machine-checked counterexample
-\texttt{RBM.not\_decayShort\_at\_one}), and one was weaker than the paper's claim (D12).
+Nothing in this development is an axiom (Q19: the audit
+\texttt{RBM3D/Test/Axioms.lean} reports 0, and fails the build if an unregistered premise
+appears).  What is unproved is unproved \emph{as a hypothesis}: a \texttt{Prop} carried by
+the theorems that need it.  Those premises fall into two kinds, and the audit keeps two
+separate ledgers for them, because reporting them in one list makes the situation look
+better than it is.  The label prefixes below say which ledger a node is in.
 
-\begin{theorem}[$\mathtt{(prop{:}ThfadC)}$, property 5 --- \emph{interface hypothesis}]\label{ax:ThfadC}
+\paragraph{Borrowed (\texttt{bor:}) --- the paper cites it rather than proving it.}
+Five of them are the components of $\mathtt{lem\_propTH}$ collected in this chapter,
+bundled in Lean as the structure \texttt{RBM.PropTH}
+(\texttt{RBM3D/Propagator/Interface.lean}); the sixth is the tree representation
+\ref{bor:KTreeRep}, \texttt{[YY\_25]} Lemma 3.4.  Discharging one of these means proving
+something \emph{this paper does not prove}, so they are long-term: the list is the precise,
+machine-checkable record of what the paper borrows from the literature.  Q21 checked the
+five statements here against the paper word by word: one was \emph{false} as first written
+and had to be repaired (see \texttt{docs/paper-deltas.md}, D11, and the machine-checked
+counterexample \texttt{RBM.not\_decayShort\_at\_one}), and one was weaker than the paper's
+claim (D12).
+
+\paragraph{Owed (\texttt{hyp:}) --- the paper proves it; this formalization does not, yet.}
+Two of them: \ref{hyp:Kbound}, whose proof Appendix A.5 gives in full (``for the reader's
+convenience, we provide the proof below'') but which needs the molecule layer, and
+\ref{hyp:twoloop}, the a priori bound on $2$-loops.  These are debts of the Lean
+development, and discharging one changes nothing about the paper.  They are the ones to
+look at first: a shrinking \texttt{hyp:} list is progress, a shrinking \texttt{bor:} list
+is a new theorem.
+
+\begin{theorem}[$\mathtt{(prop{:}ThfadC)}$, property 5 --- \emph{interface hypothesis}]\label{bor:ThfadC}
   \lean{RBM.ThetaDecay}
   \uses{def:Theta, def:params}
   There are $C_d,c_d>0$ with
@@ -133,7 +162,7 @@ word by word: one of them was \emph{false} as first written and had to be repair
   random-walk argument and then says ``we omit the details''.
 \end{theorem}
 
-\begin{theorem}[$\mathtt{(prop{:}ThfadC\_short)}$ --- \emph{interface hypothesis}]\label{ax:ThfadCshort}
+\begin{theorem}[$\mathtt{(prop{:}ThfadC\_short)}$ --- \emph{interface hypothesis}]\label{bor:ThfadCshort}
   \lean{RBM.ThetaDecayShort}
   \uses{def:Theta}
   For $\sigma_1=\sigma_2$ there are $C_\kappa,c_\kappa>0$ with
@@ -142,7 +171,7 @@ word by word: one of them was \emph{false} as first written and had to be repair
   which is outside this paper.
 \end{theorem}
 
-\begin{theorem}[$\mathtt{(prop{:}BD1)}$, property 6 --- \emph{interface hypothesis}]\label{ax:BD1}
+\begin{theorem}[$\mathtt{(prop{:}BD1)}$, property 6 --- \emph{interface hypothesis}]\label{bor:BD1}
   \lean{RBM.ThetaDiffOne}
   \uses{def:Theta, def:prec}
   For $|r|\lesssim|a|$,
@@ -153,7 +182,7 @@ word by word: one of them was \emph{false} as first written and had to be repair
   literature at all.
 \end{theorem}
 
-\begin{theorem}[$\mathtt{(prop{:}BD2)}$, property 7 --- \emph{interface hypothesis}]\label{ax:BD2}
+\begin{theorem}[$\mathtt{(prop{:}BD2)}$, property 7 --- \emph{interface hypothesis}]\label{bor:BD2}
   \lean{RBM.ThetaDiffTwo}
   \uses{def:Theta, def:prec}
   For $|r|\lesssim|a|$,
@@ -161,7 +190,7 @@ word by word: one of them was \emph{false} as first written and had to be repair
   \emph{Attributed to} \texttt{[yang2024Del]} (E.19).
 \end{theorem}
 
-\begin{theorem}[$\mathtt{(prop{:}ThfadC0)}$, property 8 --- \emph{interface hypothesis}]\label{ax:ThfadC0}
+\begin{theorem}[$\mathtt{(prop{:}ThfadC0)}$, property 8 --- \emph{interface hypothesis}]\label{bor:ThfadC0}
   \lean{RBM.ThetaZeroMode}
   \uses{def:Theta, def:prec}
   $|\mathring\Th_t(0,a)|\prec(\gcoup^2+|1-t|)^{-1}(|a|+1)^{-(d-2)}$.
@@ -182,8 +211,9 @@ word by word: one of them was \emph{false} as first written and had to be repair
 
   The statement is \emph{entrywise} on purpose: that is what the loop layer uses, and it
   avoids the instance diamond between the Pi topology on \texttt{Matrix} and the topology
-  of the $\ell^\infty$ operator norm.  This node is the prerequisite for \ref{ax:KTwoFormula} (done: Q27 and Q22a) and for
-  \ref{ax:KTreeRep}, which now lacks only existence (Q22b).
+  of the $\ell^\infty$ operator norm.  This node is the prerequisite for \ref{lem:KTwoFormula} (done: Q27 and Q22a), for
+  \ref{lem:treeThree} ($n=3$, Q29) and for \ref{bor:KTreeRep}, which now lacks only
+  existence at $n\ge4$ (Q30, Q31).
 \end{lemma}
 
 \begin{definition}[Scaling size and scaling order]\label{def:ord}
@@ -259,7 +289,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 
 \begin{lemma}[Evolution kernel decomposition, Appendix A.2]\label{lem:Ukernel}
   \lean{RBM.tensorKer, RBM.projMat, RBM.zeroModeSet, RBM.norm_zeroModeSet_UN_le}\leanok
-  \uses{ax:ThfadC, lem:propTH-34}
+  \uses{bor:ThfadC, lem:propTH-34}
   The kernel $\Ucal^{(n)}_{s,t,\bm\sigma}$ acts on each of the $n$ indices separately, and
   $Q^{(A)}$ replaces the factors indexed by $i\in A$ by ones carrying
   $\mathsf{Proj}_{\mathbf e^\perp}$.  For $i\notin A$ the assumption
@@ -366,7 +396,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 
 \begin{lemma}[$\mathtt{(eq{:}decomp\_U2)}$ and $\mathtt{(eq{:}decayXi)}$]\label{lem:sumdecay-parts}
   \lean{RBM.XiKer, RBM.uKer_eq_one_add_XiKer, RBM.SB_apply_eq_zero_of_one_lt, RBM.UN_apply_eq_sum_powerset, RBM.norm_XiKer_apply_le}\leanok
-  \uses{lem:sum-Ndecay, ax:ThfadC}
+  \uses{lem:sum-Ndecay, bor:ThfadC}
   $\Ucal^{(n)}$ expands over subsets ($\prod(1+\Xi^{(i)})$, via \texttt{Finset.prod\_add}), and
   the entries of $\Xi$ decay: the zero-mode term is absorbed by
   \texttt{zeroMode\_le\_of\_ge\_mul}, the nearest-neighbour support of $\SB$ moves the profile
@@ -391,9 +421,9 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   project \texttt{RBM1D}: it is dimension-independent.
 \end{definition}
 
-\begin{theorem}[$\mathtt{ML{:}Kbound}$, and the $d\ge3$ step --- \emph{statement assumed, the modification proved}]\label{ax:Kbound}
+\begin{theorem}[$\mathtt{ML{:}Kbound}$, and the $d\ge3$ step --- \emph{statement assumed, the modification proved}]\label{hyp:Kbound}
   \lean{RBM.Loop.KLoopBound, RBM.Loop.inv_pow_pair_le, RBM.Loop.not_inv_pow_pair_le_single}
-  \uses{def:params, ax:ThfadC, ax:ThfadCshort, lem:pureloop}
+  \uses{def:params, def:kloop, bor:ThfadC, bor:ThfadCshort, lem:pureloop}
   $\max_{\bm\sigma}\max_{\mathbf a}|\Kcal^{(n)}_{t,\bm\sigma,\mathbf a}|\prec(W^{-d}B_{t,0})^{n-1}$
   for every $n$ and $t\in[0,1)$.  Appendix A.5 says the proof is analogous to
   \texttt{[YY\_25]} Lemma 3.11 \emph{but requires additional modifications to handle
@@ -410,14 +440,17 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   the split does not suffice.
 
   The statement itself is carried as a hypothesis: its proof needs the molecule layer
-  $\Sigma^{(\pi)}$ and the sum-zero property, which are not formalized.  The remaining
+  $\Sigma^{(\pi)}$ and the sum-zero property, which are not formalized.  It is
+  \emph{owed}, not borrowed: Appendix A.5 does give the proof (``the proof is analogous to
+  that of Lemma 3.11 in \texttt{[YY\_25]} \dots for the reader's convenience, we provide
+  the proof below''), so this is a debt of the Lean development.  The remaining
   half of the $d\ge3$ step, the lattice sum
   $\sum_b(|a-b|^d+1)^{-1}(|c-b|^{d-2}+1)^{-1}\lesssim1$, is work order Q32.
 \end{theorem}
 
 \begin{lemma}[$\mathtt{(eq\_Ktree)}$ at $n=3$]\label{lem:treeThree}
   \lean{RBM.Loop.treeEqRhs_three, RBM.Loop.treeSum_three, RBM.Loop.sum_SB_starLeft, RBM.Loop.sum_SB_starRight, RBM.Loop.hasDerivAt_starThree, RBM.Loop.kThree, RBM.Loop.hasDerivAt_kThree, RBM.Loop.kThree_zero, RBM.Loop.kThree_eq_of_isKLoop}\leanok
-  \uses{def:tsp, lem:unique, ax:KTwoFormula, lem:Theta-deriv}
+  \uses{def:tsp, def:kloop, hyp:twoloop, lem:unique, lem:KTwoFormula, lem:Theta-deriv}
   A triangle has no diagonals, so the tree sum is the single star
   $\sum_b\Th^{(\sigma_0\sigma_1)}(a_0,b)\Th^{(\sigma_1\sigma_2)}(a_1,b)\Th^{(\sigma_2\sigma_0)}(a_2,b)$,
   and it is the $3$-loop of \emph{every} family of $\Kcal$-loops whose $2$-loops are
@@ -435,20 +468,52 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   Work orders: $n=4$, where internal edges first appear, is Q30; general $n$ is Q31.
 \end{lemma}
 
-\begin{theorem}[Tree representation of $\Kcal$-loops --- \emph{interface hypothesis}]\label{ax:KTreeRep}
-  \lean{RBM.Loop.LoopIdx, RBM.Loop.treeEqRhs, RBM.Loop.MLoop, RBM.Loop.IsKLoop, RBM.Loop.KTreeRep}
-  \uses{def:tsp}
+\begin{definition}[$\Kcal$-loops: the index, the cut-and-glue, $\mathtt{(pro\_dyncalK)}$]\label{def:kloop}
+  \lean{RBM.Loop.LoopIdx, RBM.Loop.LoopIdx.cutGlueL, RBM.Loop.LoopIdx.cutGlueR, RBM.Loop.treeEqRhs, RBM.Loop.treeEqRhs_two, RBM.Loop.MLoop, RBM.Loop.IsKLoop}\leanok
+  \uses{def:Theta, def:tsp}
+  A loop index is a pair of lists $(\bm\sigma,\mathbf a)$ of equal length; cutting the
+  polygon at $(k,l)$ and gluing in an internal vertex $b$ gives the two shorter indices
+  \texttt{cutGlueL}/\texttt{cutGlueR}, whose lengths add up to $n+2$
+  (\texttt{length\_cutGlueL\_add\_length\_cutGlueR}).  \texttt{treeEqRhs} is the right-hand
+  side of $\mathtt{(pro\_dyncalK)}$ assembled from them, \texttt{MLoop} is the value at
+  $t=0$, and \texttt{IsKLoop} says that a family $K$ satisfies the equation with that
+  initial condition.
+
+  This node is \emph{definitions}, not a result: it says what the objects are.  The audit
+  keeps \texttt{IsKLoop} in its structural list for exactly that reason --- assuming it is
+  saying what the data is, not borrowing a theorem.  \texttt{treeEqRhs\_two} is the
+  evaluation at $n=2$ that the $2$-loop work runs on.
+\end{definition}
+
+\begin{theorem}[Tree representation of $\Kcal$-loops --- \emph{borrowed}]\label{bor:KTreeRep}
+  \lean{RBM.Loop.KTreeRep}
+  \uses{def:kloop, def:tsp}
   $\Kcal^{(n)}_{t,\bm\sigma,\mathbf a}=W^{-d(n-1)}\sum_{\Gamma\in\mathrm{TSP}(\mathcal P_{\mathbf a})}\Gamma^{(n)}$.
-  \emph{Attributed to} \texttt{[YY\_25]} Lemma 3.4.  The statement layer is in Lean (Q15);
+  \emph{Attributed to} \texttt{[YY\_25]} Lemma 3.4 --- the paper recalls it, and does not
+  prove it, which is why this node is \texttt{bor:}.  The statement layer is in Lean (Q15);
   uniqueness is no longer assumed (\ref{lem:unique}, Q22a) and the cases $n=2$
-  (\ref{ax:KTwoFormula}) and $n=3$ (\ref{lem:treeThree}) are proved, so what is still
+  (\ref{lem:KTwoFormula}) and $n=3$ (\ref{lem:treeThree}) are proved, so what is still
   carried as a hypothesis is existence for $n\ge4$: Q30 ($n=4$, internal edges) and
-  Q31 (general $n$).
+  Q31 (general $n$).  Those two work orders would leave the \texttt{bor:} ledger one
+  entry shorter than the paper's own bibliography --- a case where the formalization
+  proves more than the paper does.
+\end{theorem}
+
+\begin{theorem}[The a priori bound on $2$-loops --- \emph{owed}]\label{hyp:twoloop}
+  \lean{RBM.Loop.TwoLoopBounded}
+  \uses{def:kloop}
+  On each $[0,T_0]$ with $T_0<1$ the $2$-loops of $K$ are bounded.  Every uniqueness
+  statement here takes this as a hypothesis (\ref{lem:unique}, \ref{lem:treeThree}).
+
+  It is \emph{owed}, not borrowed: for the explicit solution the bound is already proved
+  --- \texttt{norm\_kTwo\_le} of \ref{lem:kTwo} gives $W^{-d}(1-t)^{-1}$ --- and the paper
+  obtains it along the way rather than citing it.  What is missing is the a priori form,
+  for a family of $\Kcal$-loops not yet known to be that solution.
 \end{theorem}
 
 \begin{lemma}[Uniqueness for $\mathtt{(pro\_dyncalK)}$]\label{lem:unique}
   \lean{RBM.Loop.LoopIdx.length_cutGlueR_eq_two, RBM.Loop.LoopIdx.length_cutGlueL_eq_two, RBM.Loop.eq_on_level, RBM.Loop.isKLoop_unique}\leanok
-  \uses{def:tsp}
+  \uses{def:kloop, hyp:twoloop}
   Two families of $\Kcal$-loops on $[0,T_0]$ with the same $W$, $g$, $m$, whose $2$-loops
   stay bounded, agree on every loop of length $\ge2$.
 
@@ -460,7 +525,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   equation; the same estimate covers both, and strong induction on $n$ finishes.
 \end{lemma}
 
-\begin{theorem}[$\mathtt{(Kn2sol)}$, the $n=2$ loop --- \emph{now a theorem}]\label{ax:KTwoFormula}
+\begin{theorem}[$\mathtt{(Kn2sol)}$, the $n=2$ loop --- \emph{now a theorem}]\label{lem:KTwoFormula}
   \lean{RBM.Loop.KTwoFormula, RBM.Loop.kTwoFormula_of_isKLoop, RBM.Loop.pureLoop_two_of_isKLoop}\leanok
   \uses{lem:kTwo, lem:unique}
   The closed formula for $\Kcal^{(2)}$.  The paper attributes it to \texttt{[YY\_25]},
@@ -471,26 +536,26 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 
   What is left is the a priori bound on the $2$-loops, which the paper proves along the
   way rather than borrows.  \texttt{pureLoop\_two\_of\_isKLoop} is \ref{lem:pureloop} with
-  this hypothesis gone, resting only on \ref{ax:ThfadCshort}.
+  this hypothesis gone, resting only on \ref{bor:ThfadCshort}.
 \end{theorem}
 
 \begin{lemma}[$\mathtt{(Kn2sol)}$, the two-loop solution --- \emph{proved, not borrowed}]\label{lem:kTwo}
   \lean{RBM.Loop.kTwo, RBM.Loop.hasDerivAt_kTwo, RBM.Loop.kTwo_zero, RBM.Loop.kTwoLoop, RBM.Loop.hasDerivAt_kTwoLoop, RBM.Loop.kTwoFormula_kTwoLoop, RBM.Loop.norm_kTwo_le, RBM.Loop.pureLoop_two_kTwoLoop}\leanok
-  \uses{lem:Theta-deriv, def:tsp}
+  \uses{lem:Theta-deriv, def:tsp, def:kloop}
   $K^{(2)}_{t,\bm\sigma,\mathbf a}=W^{-d}m(\sigma_1)m(\sigma_2)\,(\Th_{t\,m(\sigma_1)m(\sigma_2)})_{a_1a_2}$
   solves the convolution tree equation at $n=2$ and takes the $M$-loop value at $t=0$.
   The paper records this in an example and attributes it to \texttt{[YY\_25]},
   \texttt{[RBSO1D]}; it does not have to be borrowed, and here it is not.
 
   This is the \emph{existence} half; together with uniqueness (\ref{lem:unique}) it gives
-  \ref{ax:KTwoFormula} for every family of $\Kcal$-loops.  \texttt{norm\_kTwo\_le} is the
+  \ref{lem:KTwoFormula} for every family of $\Kcal$-loops.  \texttt{norm\_kTwo\_le} is the
   entry bound $W^{-d}(1-t)^{-1}$ for the explicit solution, which is what supplies the
   $2$-loop bound the uniqueness argument asks for.
 \end{lemma}
 
 \begin{lemma}[$\mathtt{lem\_pureloop}$, $n=2$]\label{lem:pureloop}
   \lean{RBM.Loop.norm_Theta_same_le_exp, RBM.Loop.sum_exp_decay_conv, RBM.Loop.pureLoop_two}\leanok
-  \uses{ax:KTwoFormula, ax:ThfadCshort}
+  \uses{lem:KTwoFormula, bor:ThfadCshort}
   For a pure loop ($\sigma_1=\sigma_2$), $|\Kcal^{(2)}_{t,\bm\sigma,\mathbf a}|\le
   C W^{-d}e^{-c|a_1-a_2|}$.  The two tools are the exponential decay of $\Th^{(\sigma,\sigma)}$
   (from $\mathtt{(prop{:}ThfadC\_short)}$) and a convolution of exponentials, in which the
