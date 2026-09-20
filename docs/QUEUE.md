@@ -68,7 +68,7 @@
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **DONE** (CC)：`(log N)^m ≺ 1` + `Bℓ_t² ≤ 3/\|1−t\|` + 合并 |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：六项索引 + 两条对角线的树值；求导匹配 → Q35 |
-| Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q28 开出；关键那步已就位） |
+| Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **CLAIMED (CC)** |
 | Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q30 开出；树值已算出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
