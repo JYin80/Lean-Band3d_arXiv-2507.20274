@@ -72,7 +72,7 @@ theorem norm_Theta_same_le_exp {k : ℕ} {m : ℂ} (hd : 3 ≤ k + 2) (hg : 0 < 
     by_cases ha : a = 0
     · subst ha
       simp
-    · simp only [ha, if_false]
+    · simp only [ha, ite_false]
       exact hexp.le
   have hg2 : (0 : ℝ) ≤ g ^ 2 := by positivity
   calc ‖Theta (k + 2) L g ((t : ℂ) * (m * m)) 0 a‖

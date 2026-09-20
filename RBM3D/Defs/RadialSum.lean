@@ -333,4 +333,102 @@ theorem sum_radial_exp_decay_le (k : ℕ) {c : ℝ} (hc : 0 < c) :
           (by positivity)
     _ = expC k c := by rw [expC, hM]; ring
 
+/-! ### A ball-restricted sum with a hard cutoff
+
+`(eq:key_T_reudce)` of Appendix A.4 sums `(|x-α| ∧ ℓ + 1)^{-(d-2)}` over the internal
+domain `D_{≤ℓ} = {α : |a-α| ∨ |b-α| ≤ ℓ}`.  Because of the hard cutoff `∧ ℓ` the summand
+does not decay: outside the ball of radius `ℓ` around `x` it is the constant
+`(ℓ+1)^{-(d-2)}`, and the bound `≲ ℓ²` there comes from the volume `≲ ℓ^d` of `D_{≤ℓ}`.
+
+The proof below avoids counting that volume.  On `D_{≤ℓ}` the point `α` is within `ℓ`
+of `a`, so the *second* copy of K2 -- the one centred at `a` -- already carries the
+volume: for `|a-α| ≤ ℓ` the K2 summand at `a` is `≥ e^{-1}(ℓ+1)^{-(d-2)}`, which is the
+constant we have to sum.  So both regions are paid for by `sum_radial_exp_le`, and the
+`ℓ²` is the same `ℓ²` in both. -/
+
+/-- Re-indexing a lattice sum by `α ↦ a - α`. -/
+theorem sum_shift (d : ℕ) (a : Zd d L) (F : ℕ → ℝ) :
+    ∑ α : Zd d L, F (zdistD d L (a - α)) = ∑ β : Zd d L, F (zdistD d L β) :=
+  Fintype.sum_equiv (Equiv.subLeft a) _ _ fun _ => rfl
+
+/-- The constant of `sum_ball_min_pow_le`. -/
+noncomputable def ballC (k : ℕ) : ℝ := 2 * exp 1 * (2 ^ (k + 2) * radC 1)
+
+theorem ballC_nonneg (k : ℕ) : 0 ≤ ballC k := by
+  have := radC_pos (κ := (1 : ℝ)) one_pos
+  unfold ballC; positivity
+
+/-- **The lattice sum of Appendix A.4**: for `d = k + 2` and any finite set `D` contained
+in the ball of radius `ℓ` around `a`,
+`Σ_{α ∈ D} (|x-α| ∧ ℓ + 1)^{-(d-2)} ≤ C_d ℓ²`, uniformly in `x` and in `L`. -/
+theorem sum_ball_min_pow_le (k : ℕ) {ℓ : ℝ} (hℓ : 1 ≤ ℓ) (D : Finset (Zd (k + 2) L))
+    (a x : Zd (k + 2) L)
+    (hD : ∀ α ∈ D, ((zdistD (k + 2) L (a - α) : ℕ) : ℝ) ≤ ℓ) :
+    ∑ α ∈ D, ((min ((zdistD (k + 2) L (x - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹ ≤ ballC k * ℓ ^ 2 := by
+  have hℓ0 : (0 : ℝ) < ℓ := by linarith
+  -- `(r+1)^{-k}` is antitone
+  have hanti : ∀ r s : ℝ, 0 ≤ r → r ≤ s → (((s : ℝ) + 1) ^ k)⁻¹ ≤ (((r : ℝ) + 1) ^ k)⁻¹ := by
+    intro r s hr hrs
+    have h1 : (0 : ℝ) < (r + 1) ^ k := by positivity
+    have h2 : (r + 1) ^ k ≤ (s + 1) ^ k := by
+      exact pow_le_pow_left₀ (by linarith) (by linarith) k
+    exact inv_anti₀ h1 h2
+  -- on `[0, ℓ]` the K2 exponential costs at most `e`
+  have hexp : ∀ r : ℝ, 0 ≤ r → r ≤ ℓ → (1 : ℝ) ≤ exp 1 * exp (-(1 * √(r / ℓ))) := by
+    intro r hr hrℓ
+    have hdiv : r / ℓ ≤ 1 := (div_le_one hℓ0).mpr hrℓ
+    have hsq : √(r / ℓ) ≤ 1 := by
+      have := Real.sqrt_le_sqrt hdiv
+      simpa using this
+    rw [← exp_add]
+    have : (0 : ℝ) ≤ 1 + -(1 * √(r / ℓ)) := by simp; linarith
+    calc (1 : ℝ) = exp 0 := (exp_zero).symm
+      _ ≤ exp (1 + -(1 * √(r / ℓ))) := exp_le_exp.mpr this
+  set G : Zd (k + 2) L → ℝ := fun α =>
+    exp 1 * (((((zdistD (k + 2) L (x - α) : ℕ) : ℝ) + 1) ^ k)⁻¹
+        * exp (-(1 * √(((zdistD (k + 2) L (x - α) : ℕ) : ℝ) / ℓ))))
+      + exp 1 * (((((zdistD (k + 2) L (a - α) : ℕ) : ℝ) + 1) ^ k)⁻¹
+        * exp (-(1 * √(((zdistD (k + 2) L (a - α) : ℕ) : ℝ) / ℓ)))) with hG
+  have hG0 : ∀ α, 0 ≤ G α := by intro α; rw [hG]; positivity
+  have hkey : ∀ α ∈ D, ((min ((zdistD (k + 2) L (x - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹ ≤ G α := by
+    intro α hα
+    have hax := hD α hα
+    have hx0 : (0 : ℝ) ≤ ((zdistD (k + 2) L (x - α) : ℕ) : ℝ) := Nat.cast_nonneg _
+    have ha0 : (0 : ℝ) ≤ ((zdistD (k + 2) L (a - α) : ℕ) : ℝ) := Nat.cast_nonneg _
+    rw [hG]
+    rcases le_total ((zdistD (k + 2) L (x - α) : ℕ) : ℝ) ℓ with hx | hx
+    · rw [min_eq_left hx]
+      have h1 := hexp _ hx0 hx
+      have hpos : (0 : ℝ) ≤ ((((zdistD (k + 2) L (x - α) : ℕ) : ℝ) + 1) ^ k)⁻¹ := by positivity
+      have hsecond : (0 : ℝ) ≤ exp 1 * (((((zdistD (k + 2) L (a - α) : ℕ) : ℝ) + 1) ^ k)⁻¹
+          * exp (-(1 * √(((zdistD (k + 2) L (a - α) : ℕ) : ℝ) / ℓ)))) := by positivity
+      nlinarith
+    · rw [min_eq_right hx]
+      have h1 := hexp _ ha0 hax
+      have h2 := hanti _ _ ha0 hax
+      have hfirst : (0 : ℝ) ≤ exp 1 * (((((zdistD (k + 2) L (x - α) : ℕ) : ℝ) + 1) ^ k)⁻¹
+          * exp (-(1 * √(((zdistD (k + 2) L (x - α) : ℕ) : ℝ) / ℓ)))) := by positivity
+      have hposa : (0 : ℝ) ≤ ((((zdistD (k + 2) L (a - α) : ℕ) : ℝ) + 1) ^ k)⁻¹ := by positivity
+      nlinarith
+  calc ∑ α ∈ D, ((min ((zdistD (k + 2) L (x - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+      ≤ ∑ α ∈ D, G α := sum_le_sum hkey
+    _ ≤ ∑ α : Zd (k + 2) L, G α :=
+        sum_le_sum_of_subset_of_nonneg (subset_univ D) fun α _ _ => hG0 α
+    _ = exp 1 * ∑ α : Zd (k + 2) L, ((((zdistD (k + 2) L (x - α) : ℕ) : ℝ) + 1) ^ k)⁻¹
+            * exp (-(1 * √(((zdistD (k + 2) L (x - α) : ℕ) : ℝ) / ℓ)))
+        + exp 1 * ∑ α : Zd (k + 2) L, ((((zdistD (k + 2) L (a - α) : ℕ) : ℝ) + 1) ^ k)⁻¹
+            * exp (-(1 * √(((zdistD (k + 2) L (a - α) : ℕ) : ℝ) / ℓ))) := by
+        rw [hG, sum_add_distrib, ← mul_sum, ← mul_sum]
+    _ = exp 1 * ∑ β : Zd (k + 2) L, (((zdistD (k + 2) L β : ℝ) + 1) ^ k)⁻¹
+            * exp (-(1 * √((zdistD (k + 2) L β : ℝ) / ℓ)))
+        + exp 1 * ∑ β : Zd (k + 2) L, (((zdistD (k + 2) L β : ℝ) + 1) ^ k)⁻¹
+            * exp (-(1 * √((zdistD (k + 2) L β : ℝ) / ℓ))) := by
+        rw [sum_shift (k + 2) x (fun r : ℕ => (((r : ℝ) + 1) ^ k)⁻¹ * exp (-(1 * √((r : ℝ) / ℓ)))),
+          sum_shift (k + 2) a (fun r : ℕ => (((r : ℝ) + 1) ^ k)⁻¹ * exp (-(1 * √((r : ℝ) / ℓ))))]
+    _ ≤ exp 1 * (2 ^ (k + 2) * radC 1 * ℓ ^ 2) + exp 1 * (2 ^ (k + 2) * radC 1 * ℓ ^ 2) := by
+        have h := sum_radial_exp_le (L := L) k (κ := 1) one_pos hℓ
+        have he : (0 : ℝ) ≤ exp 1 := (exp_pos _).le
+        exact add_le_add (mul_le_mul_of_nonneg_left h he) (mul_le_mul_of_nonneg_left h he)
+    _ = ballC k * ℓ ^ 2 := by rw [ballC]; ring
+
 end RBM

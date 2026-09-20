@@ -727,6 +727,295 @@ theorem sfT_pair_cases (hW : 0 < W) {ℓ : ℝ} (hℓ : 0 ≤ ℓ) (x y α : Zd 
       exact sfT_KtKt hW hℓ y x α hx
   · exact Or.inr (Or.inl (sfT_KtKt hW hℓ x y α hy))
 
+/-! ### `(eq:key_T_reudce)`: the summed version
+
+Claim `claim:TTk` sums the pointwise bounds over the internal vertex `[α]`.  The paper
+splits the summation region into `2^{2k}` boxes `D_{≤ℓ,𝛔}` and then treats three cases,
+according to how many of the `k` paths consist of short edges only.  In Lean the three
+cases collapse **pointwise**: `sfT_pair_le` below is a single bound, valid for every
+`α`, whose polynomial factor is indexed by `|x_i-α| ∧ |y_i-α| ∧ ℓ` -- which is exactly
+the factor of `(eq:TtTt)` in case 1 and the factor of `(eq:KtKt)` in cases 2 and 3.
+The case distinction of Appendix A.4 therefore only decides *which* indices keep their
+polynomial factor, and the proof below keeps two of them, as the paper does.
+
+What is *not* formalised here is the last line of the paper's display, the passage from
+`ℓ²Ψ_t^k` to `(W^dη_t)^{-1}Ψ_t^{k-2}`: that is where `ℓ ≤ (log W)^{10}ℓ_t` and
+`ℓ_t²B_{t,0} ≲ |1-t|^{-1}` are used, and where the logarithmic factors force `≺` in
+place of `≲`.  The bound proved here is the deterministic one, with `Ψ_t²ℓ²` left in
+place of `(W^dη_t)^{-1}`. -/
+
+omit [NeZero L] in
+/-- `𝖳_t` is non-increasing. -/
+theorem sfT_antitone {r₁ r₂ : ℝ} (hr₁ : 0 ≤ r₁) (h : r₁ ≤ r₂) :
+    sfT d L W g t r₂ ≤ sfT d L W g t r₁ := by
+  have hA : (0 : ℝ) ≤ √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) := by positivity
+  have hpow : √(((r₂ + 1) ^ (d - 2))⁻¹) ≤ √(((r₁ + 1) ^ (d - 2))⁻¹) :=
+    Real.sqrt_le_sqrt (inv_anti₀ (by positivity) (pow_le_pow_left₀ (by linarith) (by linarith) _))
+  have hexp : exp (-(1 / 2) * √(r₂ / ellT L g t)) ≤ exp (-(1 / 2) * √(r₁ / ellT L g t)) := by
+    refine exp_le_exp.mpr ?_
+    have hdiv : r₁ / ellT L g t ≤ r₂ / ellT L g t := by
+      rw [div_eq_mul_inv, div_eq_mul_inv]
+      exact mul_le_mul_of_nonneg_right h (inv_nonneg.mpr ellT_nonneg)
+    have := Real.sqrt_le_sqrt hdiv
+    linarith
+  unfold sfT
+  calc √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r₂ + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(r₂ / ellT L g t))
+      ≤ √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r₁ + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(r₂ / ellT L g t)) :=
+        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hA) (exp_pos _).le
+    _ ≤ √((W ^ d)⁻¹) * √((g ^ 2 + |1 - t|)⁻¹) * √(((r₁ + 1) ^ (d - 2))⁻¹)
+        * exp (-(1 / 2) * √(r₁ / ellT L g t)) :=
+        mul_le_mul_of_nonneg_left hexp (by positivity)
+
+/-- The polynomial factor `(r+1)^{-(d-2)/2}` carried by `(eq:TtTt)` and `(eq:KtKt)`. -/
+noncomputable def wfac (dim : ℕ) (r : ℝ) : ℝ := √(((r + 1) ^ (dim - 2))⁻¹)
+
+theorem wfac_nonneg (dim : ℕ) (r : ℝ) : 0 ≤ wfac dim r := sqrt_nonneg _
+
+theorem wfac_le_one (dim : ℕ) {r : ℝ} (hr : 0 ≤ r) : wfac dim r ≤ 1 := by
+  have h : ((r + 1) ^ (dim - 2))⁻¹ ≤ 1 := by
+    rw [inv_le_one_iff₀]
+    exact Or.inr (one_le_pow₀ (by linarith))
+  calc wfac dim r ≤ √1 := Real.sqrt_le_sqrt h
+    _ = 1 := Real.sqrt_one
+
+theorem wfac_antitone (dim : ℕ) {r₁ r₂ : ℝ} (hr₁ : 0 ≤ r₁) (h : r₁ ≤ r₂) :
+    wfac dim r₂ ≤ wfac dim r₁ :=
+  Real.sqrt_le_sqrt (inv_anti₀ (by positivity) (pow_le_pow_left₀ (by linarith) (by linarith) _))
+
+theorem wfac_sq (dim : ℕ) {r : ℝ} (hr : 0 ≤ r) : wfac dim r ^ 2 = (((r + 1) ^ (dim - 2))⁻¹) :=
+  Real.sq_sqrt (by positivity)
+
+/-- The polynomial factor of the *smaller* of two distances splits into the two
+factors: `(p ∧ q + 1)^{-(d-2)} ≤ (p+1)^{-(d-2)} + (q+1)^{-(d-2)}`. -/
+theorem wfac_min_sq_le (dim : ℕ) {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) :
+    wfac dim (min p q) ^ 2 ≤ ((p + 1) ^ (dim - 2))⁻¹ + ((q + 1) ^ (dim - 2))⁻¹ := by
+  rw [wfac_sq dim (le_min hp hq)]
+  have hp0 : (0 : ℝ) ≤ ((p + 1) ^ (dim - 2))⁻¹ := by positivity
+  have hq0 : (0 : ℝ) ≤ ((q + 1) ^ (dim - 2))⁻¹ := by positivity
+  rcases min_cases p q with ⟨h, _⟩ | ⟨h, _⟩ <;> rw [h] <;> linarith
+
+/-- **The pointwise bound behind `(eq:key_T_reudce)`**, uniform in `α`: the three cases
+of Appendix A.4 collapse into one, with the polynomial factor indexed by
+`|x-α| ∧ |y-α| ∧ ℓ`. -/
+theorem sfT_pair_le (hW : 0 < W) {ℓ : ℝ} (hℓ : 0 ≤ ℓ) (x y α : Zd d L) :
+    sfT d L W g t (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)
+      ≤ √((2 : ℝ) ^ (d - 2))
+        * (sfT d L W g t (min ((zdistD d L (x - y) : ℕ) : ℝ) ℓ)
+          * (PsiT d L W g t
+            * wfac d (min (min ((zdistD d L (x - α) : ℕ) : ℝ) ℓ)
+                          (min ((zdistD d L (y - α) : ℕ) : ℝ) ℓ)))) := by
+  set p := ((zdistD d L (x - α) : ℕ) : ℝ) with hp
+  set q := ((zdistD d L (y - α) : ℕ) : ℝ) with hq
+  set s := ((zdistD d L (x - y) : ℕ) : ℝ) with hs
+  have hp0 : 0 ≤ p := Nat.cast_nonneg _
+  have hq0 : 0 ≤ q := Nat.cast_nonneg _
+  have hs0 : 0 ≤ s := Nat.cast_nonneg _
+  have hm0 : 0 ≤ min (min p ℓ) (min q ℓ) := le_min (le_min hp0 hℓ) (le_min hq0 hℓ)
+  have hone : (1 : ℝ) ≤ √((2 : ℝ) ^ (d - 2)) := by
+    have h : (1 : ℝ) ≤ (2 : ℝ) ^ (d - 2) := one_le_pow₀ one_le_two
+    calc (1 : ℝ) = √1 := Real.sqrt_one.symm
+      _ ≤ √((2 : ℝ) ^ (d - 2)) := Real.sqrt_le_sqrt h
+  have hTℓ : sfT d L W g t ℓ ≤ sfT d L W g t (min s ℓ) :=
+    sfT_antitone (le_min hs0 hℓ) (min_le_right _ _)
+  have hwnn : (0 : ℝ) ≤ PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ)) :=
+    mul_nonneg PsiT_nonneg (wfac_nonneg _ _)
+  rcases sfT_pair_cases (d := d) (L := L) (W := W) (g := g) (t := t) hW hℓ x y α with h | h | h
+  · refine h.trans (mul_le_mul_of_nonneg_left ?_ (by positivity))
+    refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left ?_ PsiT_nonneg) (sfT_nonneg _)
+    exact wfac_antitone d hm0 (min_le_min (min_le_left _ _) (min_le_left _ _))
+  · refine h.trans ?_
+    calc sfT d L W g t ℓ * (PsiT d L W g t * wfac d (min p ℓ))
+        ≤ sfT d L W g t ℓ * (PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ))) :=
+          mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left (wfac_antitone d hm0 (min_le_left _ _)) PsiT_nonneg)
+            (sfT_nonneg _)
+      _ ≤ sfT d L W g t (min s ℓ) * (PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ))) :=
+          mul_le_mul_of_nonneg_right hTℓ hwnn
+      _ ≤ √((2 : ℝ) ^ (d - 2))
+            * (sfT d L W g t (min s ℓ) * (PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ)))) :=
+          le_mul_of_one_le_left (mul_nonneg (sfT_nonneg _) hwnn) hone
+  · refine h.trans ?_
+    calc sfT d L W g t ℓ * (PsiT d L W g t * wfac d (min q ℓ))
+        ≤ sfT d L W g t ℓ * (PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ))) :=
+          mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left (wfac_antitone d hm0 (min_le_right _ _)) PsiT_nonneg)
+            (sfT_nonneg _)
+      _ ≤ sfT d L W g t (min s ℓ) * (PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ))) :=
+          mul_le_mul_of_nonneg_right hTℓ hwnn
+      _ ≤ √((2 : ℝ) ^ (d - 2))
+            * (sfT d L W g t (min s ℓ) * (PsiT d L W g t * wfac d (min (min p ℓ) (min q ℓ)))) :=
+          le_mul_of_one_le_left (mul_nonneg (sfT_nonneg _) hwnn) hone
+
+/-- The product of the `k` pointwise bounds. -/
+theorem prod_sfT_pair_le (hW : 0 < W) {ℓ : ℝ} (hℓ : 0 ≤ ℓ) {n : ℕ}
+    (x y : Fin n → Zd d L) (α : Zd d L) :
+    ∏ i, (sfT d L W g t (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+          * sfT d L W g t (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ))
+      ≤ (√((2 : ℝ) ^ (d - 2)) * PsiT d L W g t) ^ n
+        * ((∏ i, sfT d L W g t (min ((zdistD d L (x i - y i) : ℕ) : ℝ) ℓ))
+          * ∏ i, wfac d (min (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+                             (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ))) := by
+  have hstep : ∀ i : Fin n,
+      sfT d L W g t (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+          * sfT d L W g t (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ)
+        ≤ (√((2 : ℝ) ^ (d - 2)) * PsiT d L W g t)
+          * (sfT d L W g t (min ((zdistD d L (x i - y i) : ℕ) : ℝ) ℓ)
+            * wfac d (min (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+                          (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ))) := by
+    intro i
+    calc sfT d L W g t (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+          * sfT d L W g t (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ)
+        ≤ √((2 : ℝ) ^ (d - 2))
+          * (sfT d L W g t (min ((zdistD d L (x i - y i) : ℕ) : ℝ) ℓ)
+            * (PsiT d L W g t
+              * wfac d (min (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+                            (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ)))) :=
+          sfT_pair_le hW hℓ (x i) (y i) α
+      _ = (√((2 : ℝ) ^ (d - 2)) * PsiT d L W g t)
+          * (sfT d L W g t (min ((zdistD d L (x i - y i) : ℕ) : ℝ) ℓ)
+            * wfac d (min (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+                          (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ))) := by ring
+  calc ∏ i, (sfT d L W g t (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+        * sfT d L W g t (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ))
+      ≤ ∏ i, ((√((2 : ℝ) ^ (d - 2)) * PsiT d L W g t)
+          * (sfT d L W g t (min ((zdistD d L (x i - y i) : ℕ) : ℝ) ℓ)
+            * wfac d (min (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+                          (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ)))) :=
+        Finset.prod_le_prod₀ (fun i _ => mul_nonneg (sfT_nonneg _) (sfT_nonneg _))
+          (fun i _ => hstep i)
+    _ = (√((2 : ℝ) ^ (d - 2)) * PsiT d L W g t) ^ n
+        * ((∏ i, sfT d L W g t (min ((zdistD d L (x i - y i) : ℕ) : ℝ) ℓ))
+          * ∏ i, wfac d (min (min ((zdistD d L (x i - α) : ℕ) : ℝ) ℓ)
+                             (min ((zdistD d L (y i - α) : ℕ) : ℝ) ℓ))) := by
+        simp only [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ,
+          Fintype.card_fin, mul_pow]
+
+/-- For `k ≥ 2`, the product of the `k` polynomial factors is at most the product of
+the first two: this is where the paper keeps the last factor of `(eq:KtKt)` for two
+indices and bounds it by `1` for the rest. -/
+theorem prod_wfac_le_two {n : ℕ} (hn : 2 ≤ n) (w : Fin n → ℝ)
+    (hw0 : ∀ i, 0 ≤ w i) (hw1 : ∀ i, w i ≤ 1) :
+    ∏ i, w i ≤ w ⟨0, by omega⟩ * w ⟨1, by omega⟩ := by
+  have hne : (⟨0, by omega⟩ : Fin n) ≠ ⟨1, by omega⟩ := by
+    simp [Fin.ext_iff]
+  have hsub : ({⟨0, by omega⟩, ⟨1, by omega⟩} : Finset (Fin n)) ⊆ Finset.univ :=
+    Finset.subset_univ _
+  rw [← Finset.prod_sdiff hsub, Finset.prod_pair hne]
+  exact mul_le_of_le_one_left (mul_nonneg (hw0 _) (hw0 _))
+    (Finset.prod_le_one₀ (fun i _ => hw0 i) (fun i _ => hw1 i))
+
+/-- The constant of `key_T_reduce`, for `d = k + 2` and `n` pairs. -/
+noncomputable def keyC (k n : ℕ) : ℝ := (√((2 : ℝ) ^ k)) ^ n * (4 * ballC k)
+
+/-- **`(eq:key_T_reudce)` (`claim:TTk`), the summed version.**  For `d = k + 2`, `n ≥ 2`
+pairs and any set `D` of internal vertices inside the ball of radius `ℓ ≥ 1` around `a`
+(the domain `D_{≤ℓ}` of the paper),
+
+`Σ_{α ∈ D} Π_i 𝖳_t(|x_i-α| ∧ ℓ) 𝖳_t(|y_i-α| ∧ ℓ)`
+` ≤ C(d,n) · Ψ_t² ℓ² · Ψ_t^{n-2} Π_i 𝖳_t(|x_i-y_i| ∧ ℓ)`.
+
+This is the paper's bound with `Ψ_t² ℓ²` in place of `(W^dη_t)^{-1}`; the remaining step
+`Ψ_t²ℓ² ≺ (W^dη_t)^{-1}` is the one that uses `ℓ ≤ (log W)^{10}ℓ_t` and
+`ℓ_t²B_{t,0} ≲ |1-t|^{-1}` under `1-t ≥ ĝ²/L²`, and is where the logarithms -- hence
+`≺` rather than `≲` -- come from.
+
+The hypothesis `n ≥ 2` is essential: the paper notes that `(eq:key_T_reudce)` fails for
+`k = 1`, and here it is what lets `prod_wfac_le_two` keep two polynomial factors. -/
+theorem key_T_reduce (hW : 0 < W) {k n : ℕ} (hn : 2 ≤ n) {ℓ : ℝ} (hℓ : 1 ≤ ℓ)
+    (D : Finset (Zd (k + 2) L)) (a : Zd (k + 2) L)
+    (hD : ∀ α ∈ D, ((zdistD (k + 2) L (a - α) : ℕ) : ℝ) ≤ ℓ)
+    (x y : Fin n → Zd (k + 2) L) :
+    ∑ α ∈ D, ∏ i, (sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - α) : ℕ) : ℝ) ℓ)
+          * sfT (k + 2) L W g t (min ((zdistD (k + 2) L (y i - α) : ℕ) : ℝ) ℓ))
+      ≤ keyC k n * (PsiT (k + 2) L W g t ^ 2 * ℓ ^ 2)
+        * (PsiT (k + 2) L W g t ^ (n - 2)
+          * ∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ)) := by
+  have hℓ0 : (0 : ℝ) ≤ ℓ := by linarith
+  have hi₀ : (0 : ℕ) < n := by omega
+  have hi₁ : (1 : ℕ) < n := by omega
+  set i₀ : Fin n := ⟨0, hi₀⟩ with hi₀def
+  set i₁ : Fin n := ⟨1, hi₁⟩ with hi₁def
+  -- the polynomial factors, and their sum over `D`
+  set w : Zd (k + 2) L → Fin n → ℝ := fun α i =>
+    wfac (k + 2) (min (min ((zdistD (k + 2) L (x i - α) : ℕ) : ℝ) ℓ)
+                      (min ((zdistD (k + 2) L (y i - α) : ℕ) : ℝ) ℓ)) with hw
+  have hw0 : ∀ α i, 0 ≤ w α i := fun _ _ => wfac_nonneg _ _
+  have hwsq : ∀ (α : Zd (k + 2) L) (i : Fin n), w α i ^ 2
+      ≤ ((min ((zdistD (k + 2) L (x i - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+        + ((min ((zdistD (k + 2) L (y i - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹ := by
+    intro α i
+    have h := wfac_min_sq_le (k + 2)
+      (p := min ((zdistD (k + 2) L (x i - α) : ℕ) : ℝ) ℓ)
+      (q := min ((zdistD (k + 2) L (y i - α) : ℕ) : ℝ) ℓ)
+      (le_min (Nat.cast_nonneg _) hℓ0) (le_min (Nat.cast_nonneg _) hℓ0)
+    simpa [hw] using h
+  have hprod : ∀ α ∈ D, ∏ i, w α i
+      ≤ (((min ((zdistD (k + 2) L (x i₀ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+          + ((min ((zdistD (k + 2) L (y i₀ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹)
+        + (((min ((zdistD (k + 2) L (x i₁ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+          + ((min ((zdistD (k + 2) L (y i₁ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹) := by
+    intro α _
+    have h1 : ∏ i, w α i ≤ w α i₀ * w α i₁ :=
+      prod_wfac_le_two hn (w α) (hw0 α) (fun i => wfac_le_one _
+        (le_min (le_min (Nat.cast_nonneg _) hℓ0) (le_min (Nat.cast_nonneg _) hℓ0)))
+    have h2 := two_mul_le_add_sq (w α i₀) (w α i₁)
+    have h3 := hwsq α i₀
+    have h4 := hwsq α i₁
+    linarith [sq_nonneg (w α i₀), sq_nonneg (w α i₁)]
+  have hsum : ∑ α ∈ D, ∏ i, w α i ≤ 4 * ballC k * ℓ ^ 2 := by
+    have hb := fun z : Zd (k + 2) L => sum_ball_min_pow_le (L := L) k hℓ D a z hD
+    calc ∑ α ∈ D, ∏ i, w α i
+        ≤ ∑ α ∈ D, ((((min ((zdistD (k + 2) L (x i₀ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+            + ((min ((zdistD (k + 2) L (y i₀ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹)
+          + (((min ((zdistD (k + 2) L (x i₁ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+            + ((min ((zdistD (k + 2) L (y i₁ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹)) :=
+          Finset.sum_le_sum hprod
+      _ = ((∑ α ∈ D, ((min ((zdistD (k + 2) L (x i₀ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+            + ∑ α ∈ D, ((min ((zdistD (k + 2) L (y i₀ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹)
+          + (∑ α ∈ D, ((min ((zdistD (k + 2) L (x i₁ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹
+            + ∑ α ∈ D, ((min ((zdistD (k + 2) L (y i₁ - α) : ℕ) : ℝ) ℓ + 1) ^ k)⁻¹)) := by
+          rw [Finset.sum_add_distrib, Finset.sum_add_distrib, Finset.sum_add_distrib]
+      _ ≤ 4 * ballC k * ℓ ^ 2 := by
+          have b1 := hb (x i₀)
+          have b2 := hb (y i₀)
+          have b3 := hb (x i₁)
+          have b4 := hb (y i₁)
+          linarith
+  -- assemble
+  have hC : (0 : ℝ) ≤ (√((2 : ℝ) ^ k) * PsiT (k + 2) L W g t) ^ n := by
+    have : (0 : ℝ) ≤ √((2 : ℝ) ^ k) * PsiT (k + 2) L W g t :=
+      mul_nonneg (sqrt_nonneg _) PsiT_nonneg
+    positivity
+  have hS : (0 : ℝ) ≤ ∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ) :=
+    Finset.prod_nonneg fun i _ => sfT_nonneg _
+  have hpow : PsiT (k + 2) L W g t ^ n
+      = PsiT (k + 2) L W g t ^ 2 * PsiT (k + 2) L W g t ^ (n - 2) := by
+    rw [← pow_add]; congr 1; omega
+  calc ∑ α ∈ D, ∏ i, (sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - α) : ℕ) : ℝ) ℓ)
+        * sfT (k + 2) L W g t (min ((zdistD (k + 2) L (y i - α) : ℕ) : ℝ) ℓ))
+      ≤ ∑ α ∈ D, (√((2 : ℝ) ^ k) * PsiT (k + 2) L W g t) ^ n
+          * ((∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ))
+            * ∏ i, w α i) := by
+        refine Finset.sum_le_sum fun α _ => ?_
+        have h := prod_sfT_pair_le (d := k + 2) (L := L) (W := W) (g := g) (t := t) hW hℓ0 x y α
+        simpa [hw] using h
+    _ = (√((2 : ℝ) ^ k) * PsiT (k + 2) L W g t) ^ n
+          * ((∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ))
+            * ∑ α ∈ D, ∏ i, w α i) := by
+        rw [← Finset.mul_sum, ← Finset.mul_sum]
+    _ ≤ (√((2 : ℝ) ^ k) * PsiT (k + 2) L W g t) ^ n
+          * ((∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ))
+            * (4 * ballC k * ℓ ^ 2)) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hsum hS) hC
+    _ = keyC k n * (PsiT (k + 2) L W g t ^ 2 * ℓ ^ 2)
+          * (PsiT (k + 2) L W g t ^ (n - 2)
+            * ∏ i, sfT (k + 2) L W g t (min ((zdistD (k + 2) L (x i - y i) : ℕ) : ℝ) ℓ)) := by
+        rw [keyC, mul_pow, hpow]
+        ring
+
 end TTk
 
 end RBM

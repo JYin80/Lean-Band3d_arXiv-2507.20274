@@ -35,7 +35,7 @@
 | Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块零件已证；三条结论 → **Q28** |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
-| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **CLAIMED (CC)** |
+| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **PARTIAL** (CC)：确定性不等式已证；`Ψ²ℓ² ≺ (W^dη)⁻¹` 的吸收 → Q29 |
 | Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
 | Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | BLOCKED by Q23 |
 | Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | BLOCKED by Q27 |
@@ -43,6 +43,7 @@
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（`KTwoFormula` 已漏报） |
+| Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
@@ -994,7 +995,7 @@ structure PropTH (d : ℕ) (g : ℝ) (m : ℂ) : Prop where
 `#assert_rbm_axioms` 通过且接口名单为空。同时在 `docs/paper-deltas.md` 把 D5 改写
 （那条现在写的是「接口公理写成展开式」，要改成「写成 `Prop` 定义 + 结构字段」）。
 
-## Q20 · `(eq:key_T_reudce)` 求和版 — **OPEN**（Q12 已完成，解锁）
+## Q20 · `(eq:key_T_reudce)` 求和版 — **PARTIAL**（CC，2026-09-19）
 
 **文件**：`RBM3D/Kernel/PropT.lean`。Q12 的 STATUS 里明确建议单开这条：
 `claim:TTk` 的逐点版做完之后，带 `≺` 和 `ℓ ≤ (log W)^{10} ℓ_t` 的求和版是另一件事。
@@ -1022,6 +1023,38 @@ Lemma 3.11，但**需要额外修改以处理 `d ≥ 3`**」——**那句「额
 > RBM1D 的经验里，两个最大的收益都不是写代码换来的，是坐下来把论文读一遍换来的——
 > 其中一次**否定性核查**（确认某条捷径走不通）省下了 150–300 条定理的白工。
 > **R5 这类活不是填空，是正经工作。**
+
+### CC 的完成记录（2026-09-19）
+
+**做了什么**（`Defs/RadialSum.lean` + `Kernel/PropT.lean`，`./check.sh` 绿，0 warning）：
+
+* `sum_shift`：格点和按 `α ↦ a - α` 重标。
+* `sum_ball_min_pow_le`：**Appendix A.4 的那条格点和**
+  `Σ_{α ∈ D} (|x-α| ∧ ℓ + 1)^{-(d-2)} ≤ C_d ℓ²`，`D` 任意含于 `a` 的 `ℓ`-球（即论文的 `D_{≤ℓ}`）。
+* `sfT_antitone`、`wfac`（`(r+1)^{-(d-2)/2}` 因子）及其 `nonneg / le_one / antitone / sq`、
+  `wfac_min_sq_le`（`(p∧q+1)^{-(d-2)} ≤ (p+1)^{-(d-2)} + (q+1)^{-(d-2)}`）。
+* `sfT_pair_le`：**论文的三种情形在逐点层面合并成一条**。
+* `prod_sfT_pair_le`（`k` 对相乘）、`prod_wfac_le_two`（`k ≥ 2` 时只留两个多项式因子）。
+* `keyC`、**`key_T_reduce`**：`Σ_{α∈D} Π_i 𝖳(|x_i-α|∧ℓ)𝖳(|y_i-α|∧ℓ)
+  ≤ C(d,n)·(Ψ_t²ℓ²)·Ψ_t^{n-2}·Π_i 𝖳(|x_i-y_i|∧ℓ)`，`n ≥ 2`，`ℓ ≥ 1`。
+
+**两点比论文更省的地方**（都不是偏离，是证明路线不同，已记 paper-deltas D14/D15）：
+
+1. **三种情形逐点合并**。把多项式因子取成 `|x_i-α| ∧ |y_i-α| ∧ ℓ`（截断后的 min），
+   情形 1 的 `(eq:TtTt)` 因子与情形 2/3 的 `(eq:KtKt)` 因子就都是它。
+   于是 `2^{2k}` 个 `D_{≤ℓ,𝛔}` 分块和三种情形的讨论**在 Lean 里都不需要**：
+   情形之分只决定「保留几个多项式因子」，而这由 `prod_wfac_le_two` 一条处理。
+2. **不数 `D_{≤ℓ}` 的体积**。论文在 `|x-α| > ℓ` 的区域用 `|D_{≤ℓ}| ≲ ℓ^d` 乘常数
+   `(ℓ+1)^{-(d-2)}`。这里改成：`α ∈ D` 保证 `|a-α| ≤ ℓ`，于是**以 `a` 为心的第二份 K2**
+   本身就 `≥ e^{-1}(ℓ+1)^{-(d-2)}`，体积因子由 `sum_radial_exp_le` 免费给出。
+   两个区域都由 K2 付账，`ℓ²` 是同一个 `ℓ²`。
+
+**没做的（→ Q29）**：从 `Ψ_t²ℓ²` 到 `(W^dη_t)^{-1}` 的吸收，即
+`ℓ ≤ (log W)^{10}ℓ_t` 与 `ℓ_t²B_{t,0} ≲ |1-t|^{-1}`（`1-t ≥ ĝ²/L²`）那一步；
+论文正是在这里出现对数因子、结论只能写 `≺` 而不是 `≲`。`DetDom` 的外衣也留在 Q29。
+
+**边界条件**：`ℓ ≥ 1`（K2 的前提 `sum_radial_exp_le` 要 `ℓ ≥ 1`；论文写 `0 ≤ ℓ`，
+`ℓ < 1` 时球内只有 `α = a` 一点，是平凡情形）。
 
 ### CC 的实现要点（Q12 完成后补，2026-09-19）
 
@@ -1230,17 +1263,8 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 **提示**：归纳假设要对「多边形的标签集合的最大两两距离」陈述，而不是对单个距离，
 否则分裂后两块拼不回来。
 
----
-
-## Q25 · `lem_pureloop` 的一般 `n` — **OPEN**（CC 于 Q16 开出）
-
-**文件**：`RBM3D/Loop/PureLoop.lean`（Q16 已建好，续写）。
-
-Q16 落地了 `n = 2`（`pureLoop_two`）与两件工具：`norm_Theta_same_le_exp`、`sum_exp_decay_conv`。
-一般 `n` 按 CC 的评估：对 `polyVal` 递归做归纳，每次分裂用一次 `sum_exp_decay_conv`、衰减常数 `c` 减半。
-
-**注意**：`pureLoop_two` 现在带着假设 `KTwoFormula`。**Q27 若先落地，这条假设会消失**，
-一般 `n` 的写法应当同样通过 `IsKLoop` 走，而不是再添新假设。
+**注意**（合并自本拍重复开出的同号工单）：`pureLoop_two` 现在带着假设 `KTwoFormula`。
+**Q27 若先落地，这条假设会消失**，一般 `n` 的写法应当同样通过 `IsKLoop` 走，而不是再添新假设。
 
 ---
 
@@ -1349,3 +1373,24 @@ F(t) = W^{-d} · m(σ₁)m(σ₂) · Θ_{t·m(σ₁)m(σ₂)}(a₁, a₂)
 
 **前两步要先补**：球内求和引理 `Σ_{|x| ≤ R} (|x|+1)^{−(d−2)} ≤ C_d (R+1)²`（仿 `sum_radial_tail_le` 写，几行），
 以及 `(1−s) * ellT L g s ^ 2 ≤ g² + |1−s|`（从 `ellT` 定义直接算）。
+
+---
+
+## Q29 · `(eq:key_T_reudce)` 的 `≺` 吸收步 — **OPEN**（CC 于 Q20 开出）
+
+**文件**：`RBM3D/Kernel/PropT.lean`（接在 `key_T_reduce` 之后）。
+
+Q20 证到了确定性不等式，右边留着 `Ψ_t² ℓ²`。剩下的就是论文那一行末尾：
+
+* `ℓ ≤ (log W)^{10} ℓ_t`（`claim:TTk` 的前提）；
+* `ℓ_t² B_{t,0} ≲ |1-t|^{-1} ≲ η_t^{-1}`，在 `1 - t ≥ ĝ²/L²` 时成立；
+* 于是 `Ψ_t² ℓ² = W^{-d} B_{t,0} ℓ² ≲ (log W)^{20} (W^d η_t)^{-1}`，对数因子**吃进 `≺`**。
+
+**要点**：这是全项目第一处真正用到 `Defs/Domination.lean` 的 `DetDom` 的地方——
+`≺` 的定义是「∀ τ > 0，N 充分大时 ≤ N^τ ·」，`(log W)^{20}` 正好被任意小的 `N^τ` 吞掉。
+需要一条通用引理：**多项式对数因子 `≺ 1`**（`(log N)^m ≺ 1`），放 `Defs/Domination.lean`。
+那条引理本身是纯 Mathlib 练习（`Real.isLittleO_log_rpow_atTop` 一类），但它会被后面
+所有带 `≺` 的陈述反复用到，值得单独证干净。
+
+**注意**：`η_t`、`B_{t,0}`、`ℓ_t` 之间的关系要逐字核对论文 `(def:etat)` 与 `lem:Bt0`，
+不要凭印象写；`1 - t ≥ ĝ²/L²` 这个前提在 `claim:TTk` 里是显式写着的。
