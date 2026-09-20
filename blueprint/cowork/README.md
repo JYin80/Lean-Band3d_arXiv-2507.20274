@@ -29,3 +29,16 @@ python3 mk3.py && python3 page.py
   中文节点的框画得比文字窄，相邻标签就会叠在一起——全局图第 4 行叠过一次。
 * **接口色带是顶部条带。** `band=N` 表示**最上面 N 行**是接口层，色带从画布顶画到第 N 行下沿。
   早先的实现是从第 N 行往下画，而公理在第 0 行，于是「以下 · 接口公理」这个标注指错了区域。
+
+## 同步回本机的注意事项（beat 10 记）
+
+`device_commit_files` **报成功却写了旧内容**，已出现两次（beat 8、beat 10）。
+所以每次把 `mk3.py` / `page.py` 同步回来之后，**必须 grep 一个本次新增的标记再下结论**
+（例如 `grep -c Q27 page.py`），不能信它的返回值。
+
+对不上就改走本机直接改：把同一份 patch 脚本 heredoc 到 `/tmp` 里，在这个目录跑一遍
+（脚本里每处替换都带 `assert count == 1`，所以本机文件若与预期不符会当场停住，不会改坏）。
+重新生成用 `python3 mk3.py`，再 `PYTHONPATH=. python3` 一份把输出路径换成 `blueprint.html`
+的 `page.py` 副本——`page.py` 里的输出路径写死在云端容器那侧。
+
+`graphs.py` 与 `__pycache__/` 是生成物，已进 `.gitignore`。
