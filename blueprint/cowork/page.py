@@ -30,8 +30,8 @@ CH2 = rows([
  ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹，并消掉 hS / hone","Q5 ✓ 已证","done","norm_Theta_le · norm_Theta_apply_le · *_of_three_le"),
  ("性质 5 (prop:ThfadC) 多项式+指数衰减","接口假设","cited","ThetaDecay"),
  ("性质 5′ (prop:ThfadC_short)","接口假设","cited","ThetaDecayShort"),
- ("性质 6 (prop:BD1) 一阶差分 —— 所引文献里也没有证明","接口假设","cited","ThetaDiffOne"),
- ("性质 7 (prop:BD2) 二阶差分","接口假设","cited","ThetaDiffTwo"),
+ ("性质 6 (prop:BD1) 一阶差分 —— 所引文献里也没有证明；Q21 修正了 ≲ 的读法","接口假设","cited","ThetaDiffOne"),
+ ("性质 7 (prop:BD2) 二阶差分 —— 同上，D12","接口假设","cited","ThetaDiffTwo"),
  ("性质 8 (prop:ThfadC0) 去零模","接口假设","cited","ThetaZeroMode · 打包为 structure PropTH"),
 ])
 
@@ -48,7 +48,7 @@ CH4 = rows([
  ("尾函数 𝒯_t 与截断版 wT^ℓ_{t,D}","Q10 ✓ 已证","done","tailT · tailW · zeroMode_le_of_ge · ellT_eq_of_le"),
  ("lem:propT 的卷积界 TTT2 —— 分析量最大的一条，拆成 K0–K5","Q11 · 进行中","ready","Defs/Shells.lean · Defs/RadialSum.lean 已落地"),
  ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 与下标范围已逐条核实","Q12 ✓ 已证","done","sfT · PsiT · sfT_pair_cases"),
- ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 认领中","ready","Kernel/Evolution.lean"),
+ ("lem:sum_decay_nonzero —— 第一条真正使用接口假设的定理，签名里写着借了什么","Q13 ✓ 已证","done","norm_zeroModeSet_UN_le · projMat_mul_Theta"),
  ("lem:sum_decay 与 eq:latticesum_d3 —— 第三轮新加的那条临界格点求和","Q17 · 可开工","ready","d=3 与 d≥4 要分开处理"),
  ("典范树划分 TSP(P_a) 与边值 f_{t,σ}(e)","Q14 · 可开工","ready","Loop/Partition.lean"),
  ("树表示 eq_Ktree —— 公理化 vs 移植 RBM1D 的 ODE 唯一性证法","Q15 · 待 Q14","todo","Loop/TreeRep.lean"),
@@ -71,14 +71,14 @@ QUEUE = """
 <tr><td>Q10</td><td>尾函数 <code>𝒯_t</code> / <code>wT^ℓ_{t,D}</code></td><td><code>Defs/Tail.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q11</td><td><code>lem:propT</code> 的卷积界</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q12</td><td><code>claim:TTk</code>（<code>∧ℓ</code> 截断）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">认领中</span></td></tr>
+<tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
 <tr><td>Q15–Q16</td><td>树表示 <code>eq_Ktree</code> · <code>lem_pureloop</code></td><td><code>Loop/</code></td><td><span class="pill todo">待 Q14</span></td></tr>
 <tr><td>Q17</td><td><code>lem:sum_decay</code> 与 <code>eq:latticesum_d3</code>（第三轮新加的临界格点求和）</td><td><code>Kernel/</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q18</td><td>让审计直接报定理数</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN · 小活</span></td></tr>
 <tr><td>Q19</td><td><b>5 条接口 axiom 改成 <code>structure</code> 字段</b> —— 全项目零公理</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q20</td><td><code>(eq:key_T_reudce)</code> 求和版（带 <code>≺</code>）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q21</td><td><b>逐字核对剩下四条接口陈述</b> —— 第 5′ 条已发现是错的</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill ready">OPEN · 优先</span></td></tr>
+<tr><td>Q21</td><td><b>逐字核对剩下四条接口陈述</b> —— 又修正 1 条，新增 1 条反例</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 </tbody></table>
 """
 
@@ -171,10 +171,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>219</b><span>定理已证</span></div>
+    <div class="chip done"><b>223</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>5</b><span>工单可开工</span></div>
+    <div class="chip ready"><b>4</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -215,7 +215,16 @@ exponential decay」。<strong>论文是对的，漏掉那个限定的是形式�
 一条没人使用的接口陈述，等于没被检验过。</p>
 <p>改法有两层：陈述修正为 <code>t·m²</code> 且要求 <code>0 &lt; m.im</code>；另加一条
 <strong>负面测试</strong> <code>not_decayShort_at_one</code>，<em>机器证明</em>旧写法在谱参数 <code>1</code>
-处不成立。性质 5–8 是同一次写的，所以 <strong>Q21</strong> 正在把其余四条逐字重核一遍。</p>
+处不成立。</p>
+<p><strong>Q21 把其余四条逐字重核了一遍，又抓到一处。</strong> 性质 6、7 里论文写的是
+<code>|r| ≲ |a|</code>，形式化写成了 <code>|r| ≤ |a|</code>——但 <code>≲</code> 是个量词
+（「存在常数 <code>c</code>，<code>|r| ≤ c|a|</code>」），放在前件位置忠实的写法是
+<strong><code>∀ c &gt; 0</code></strong>。已改（D12）。性质 5、8 与论文一致；性质 8 另加了反例
+<code>not_zeroMode_without_removal</code>，证明把 <code>Θ̊</code> 换回 <code>Θ</code> 在谱参数
+<code>1</code> 处可证伪——<em>零模去除就是那条估计的全部内容</em>。</p>
+<p>两处缺陷是同一个错误的两件外衣：<strong>论文里的限定词在翻译中丢了</strong>。
+所以 <code>CLAUDE.md</code> 现在写死两条：<code>≲ ≺ ≍ ∼</code> 一律当量词读，不是不等号；
+以及改正一条陈述时，<strong>留下一个随全量构建跑的机器可检反例</strong>——比注释可靠，比复述准确。</p>
 </div>
 
 <div class="legend">
@@ -282,9 +291,9 @@ __QUEUE__
 </div>
 
 <footer>
-  计数说明：<b>219</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
+  计数说明：<b>223</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
   以及 167 条编译器自动生成的声明（递归子、equation lemma 等），不宜当进度读——Q18 就是去修这个报告。<br>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 6 · 2026-09-20 04:45 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 7 · 2026-09-20 04:58 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
