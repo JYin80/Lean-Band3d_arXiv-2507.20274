@@ -76,7 +76,8 @@
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **DONE (CC)** |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：2 条证书 + 4 条的障碍已机器化 → Q51 |
 | Q51 | **有限 `L` 的混合性（原名「谱隙」）** ⭐ | `Propagator/Gap.lean` | **PARTIAL (CC)**：块一（连通性 + Doeblin）已证；Dobrushin 收缩 → Q52 |
-| Q52 | **Dobrushin 收缩：由 Doeblin 条件推出 `S^k − P` 几何衰减** ⭐ | `Propagator/Gap.lean` | **CLAIMED (CC)** |
+| Q52 | **Dobrushin 收缩 + 几何混合** ⭐ | `Propagator/Gap.lean` | **DONE (CC)**：收缩与混合估计已证；级数求和 → Q53 |
+| Q53 | **把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书** ⭐ | `Test/InterfaceShape.lean` | **OPEN**（CC 于 Q52 开出） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
@@ -1865,7 +1866,35 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 
 ---
 
-## Q52 · Dobrushin 收缩：从 Doeblin 条件到 `S^k − P` 的几何衰减 ⭐ — **OPEN**（CC 于 Q51 开出）
+## Q53 · 把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书 ⭐ — **OPEN**（CC 于 Q52 开出）
+
+**文件**：`RBM3D/Propagator/Gap.lean`（级数部分）与 `RBM3D/Test/InterfaceShape.lean`（证书）。
+
+**已经有的**：`RBM.exists_mixing`（Q52）：`|(S^(B))^n_{ab} − L^{-d}| ≤ q^{⌊n/R⌋}`，`0 ≤ q < 1`。
+`RBM.Theta0_apply_eq`（Q41）：`Θ̊(a,b) = Θ(a,b) − L^{-d}(1−ξ)⁻¹`。
+`RBM.Theta_apply_eq_tsum`：`Θ_ξ(a,b) = Σ'_k ξ^k (S^k)_{ab}`。
+
+**要做的三步**：
+
+1. **几何级数**：`Summable (fun k => q^{⌊k/R⌋})` 且 `Σ'_k q^{⌊k/R⌋} = R (1−q)⁻¹`。
+   **做法**：`Nat.divModEquiv : ℕ ≃ ℕ × Fin R`（先 `#check` 确认名字与 `[NeZero R]` 需求），
+   再 `Equiv.tsum_eq` + `tsum_prod` + `tsum_geometric_of_lt_one`。
+2. **级数恒等式**：`Θ̊_ξ(a,b) = Σ'_k ξ^k ((S^k)_{ab} − L^{-d})`。
+   由 `Theta_apply_eq_tsum` 减去 `(L^d)⁻¹ Σ'_k ξ^k`（`tsum_geometric_of_norm_lt_one`），
+   两边都可和，用 `Summable.tsum_sub`。
+3. **证书**：`‖Θ̊_t(0,a)‖ ≤ Σ_k |ξ|^k q^{⌊k/R⌋} ≤ R/(1−q)`，**与 `t` 无关**。
+   右端再配上 `(g²+|1−t|)⁻¹ ≥ (g²+1)⁻¹` 与 `(|a|+1)^{-(d−2)} ≥ (R_L+1)^{-(d−2)}`，
+   即得 `(prop:ThfadC0)` 的固定 `L` 版。
+
+**验收**：证书进 `Test/InterfaceShape.lean`，登记进 `Test/Axioms.lean` 的 `certificates`，
+审计末行从 `2 of 9` 变成 `3 of 9`。
+
+**接着**（可另开）：`(prop:BD1)` / `(prop:BD2)` 用同一个衰减——差分把常模式消掉，
+`Θ_t(0,a+r) − Θ_t(0,a) = Σ_k ξ^k ((S^k)_{0,a+r} − (S^k)_{0,a})`，每项 `≤ 2q^{⌊k/R⌋}`。
+
+---
+
+## Q52 · Dobrushin 收缩：从 Doeblin 条件到 `S^k − P` 的几何衰减 ⭐ — **DONE**（CC，beat 35）
 
 **文件**：`RBM3D/Propagator/Gap.lean`（接着块一写）。
 
@@ -1893,6 +1922,34 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 登记进 `Test/Axioms.lean` 的 `certificates`，审计末行 `2 of 9` 变成 `3 of 9`。
 
 **陷阱**：`osc` 用实矩阵 `SBR` 做，不要碰 `ℓ^∞` 算子范数实例（那是另一套，见 `docs/mathlib-api.md`）。
+
+### 完成记录（CC，beat 35）— `./check.sh` exit=0，500 定理 / 0 公理 / 0 warning
+
+**都按上面的路线走通了，一行没改。**
+
+* `osc`（`max f − min f`）、`osc_mulVec_le`（Dobrushin 收缩，含 `ε = 0` 的不增情形）、
+  `osc_mulVec_pow_le`（迭代 `k` 次得 `q^k`）；
+* `exists_mixing`：`|(S^(B))^n_{ab} − L^{-d}| ≤ q^{⌊n/R⌋}`，`q = 1 − εL^d < 1`，
+  `R = 环面直径 + 1`。
+
+**两处实现上的选择，记下来**：
+
+1. **`ε = 0` 那一档是免费的不增引理**。`osc_mulVec_le` 不需要 `0 ≤ ε`（`ε < 0` 时结论更弱、
+   仍然成立），所以那条假设**删掉了**——于是同一条引理既给收缩（`ε` 来自 Doeblin）
+   又给「剩下 `n − R⌊n/R⌋` 步不放大振幅」。少一条引理。
+2. **块长取 `直径 + 1` 而不是直径**：`d = 0` 时直径是 `0`，`n / 0 = 0` 会让陈述退化。
+   于是把 `exists_doeblin` 推广成「对任意 `N ≥ 直径`」，再取 `N = 直径 + 1`。
+
+**元素界那一步**：`a ↦ (S^n)_{ab}` 就是 `S^n` 作用在 `b` 的示性函数上（`osc ≤ 1`），
+而 `L^{-d}` 夹在这个函数的最大最小值之间——因为 `S^n` 的**列和**也是 `1`（对称性）。
+为此补了 `sum_SBR_row` / `sum_SBR_pow_row` / `SBR_isSymm` / `SBR_pow_comm` / `sum_SBR_pow_col`。
+
+**维护**：`sbKernelR_neg` 从 `Gauss/Model.lean` **下沉**到 `Defs/Block.lean`
+（紧挨着 `sbKernel_neg`），传播子层才用得上（规则 4）。
+
+**没做的那一步 → Q53**：把这个衰减对 `k` 求和得到 `Θ̊` 的一致界。
+需要 `∑_k q^{⌊k/R⌋} = R/(1−q)`（用 `ℕ ≃ ℕ × Fin R` 的除法同构），
+以及 `Θ̊ = Σ_k ξ^k (S^k − P)` 的级数恒等式。工单里写清楚了。
 
 ---
 

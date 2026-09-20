@@ -778,3 +778,26 @@ proof below**」，随后是完整证明（`paper/tex/A_deterministic_estimates.
 两处共用（规则 4）。**下一块 Q52**（Dobrushin 收缩），证明路线已写进工单，逐步可抄。
 
 审计：**487 定理 / 172 定义 / 0 公理**，证书 2 of 9。
+
+## 2026-09-20 · Claude Code · Q52：Dobrushin 收缩 + `S^(B)` 的几何混合
+
+块二按上一拍写好的路线走通，**一行没改**：`osc`、`osc_mulVec_le`（Dobrushin 收缩）、
+`osc_mulVec_pow_le`（迭代）、`exists_mixing`（`|(S^(B))^n_{ab} − L^{-d}| ≤ q^{⌊n/R⌋}`，
+`q = 1 − εL^d < 1`，`R = 直径 + 1`）。全程逐元、实矩阵，**没碰 `ℓ²`、没碰 `ℓ^∞` 算子范数实例**。
+
+两处值得记的实现选择：
+
+1. **`ε = 0` 那一档是免费的**：`osc_mulVec_le` 不需要 `0 ≤ ε`，于是同一条引理既给收缩，
+   又给「剩下 `n − R⌊n/R⌋` 步不放大振幅」。少一条引理。
+2. **块长取 `直径 + 1`**：`d = 0` 时直径为 `0`，`n / 0 = 0` 会让陈述退化；
+   `exists_doeblin` 相应推广成「任意 `N ≥ 直径」。
+
+元素界的关键是**列和也是 `1`**（`S^(B)` 对称），所以 `L^{-d}` 夹在 `a ↦ (S^n)_{ab}` 的
+最大最小值之间；为此补了 `sum_SBR_row` / `sum_SBR_pow_row` / `SBR_isSymm` /
+`SBR_pow_comm` / `sum_SBR_pow_col`。维护：`sbKernelR_neg` 从 `Gauss/Model.lean`
+下沉到 `Defs/Block.lean`。
+
+**下一步 Q53**：把这个衰减对 `k` 求和（`ℕ ≃ ℕ × Fin R` 的除法同构 + `Θ̊ = Σ_k ξ^k(S^k − P)`），
+得到 `(prop:ThfadC0)` 的固定 `L` 证书，审计的 `2 of 9` 变 `3 of 9`。路线已逐步写进工单。
+
+审计：**500 定理 / 173 定义 / 0 公理**。
