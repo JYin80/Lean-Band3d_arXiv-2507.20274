@@ -421,3 +421,24 @@ CLAUDE.md 规则 15 点名的就是我上两拍写下的那条匿名前提（2-l
 不占工单（硬规则、我自己的代码），Q26 剩下的仍是本体：自动发现 + 分两本账。
 
 审计：**346 定理 / 145 定义 / 0 公理**。
+
+## 2026-09-20 · Claude Code · Q25 部分完成：星形树（任意 `n`）与 `res_pureKes` 的 `n = 3`
+
+**先记一条事实**：`RBM1D` 里**没有**纯回路引理（grep 一条都没有）。这块是原创，不是移植。
+
+`Loop/PureLoop.lean`：`sum_exp_decay_centre`，以及 **`norm_sum_prod_le`**——
+若 `‖E x y‖ ≤ C e^{-c|x−y|}`，则 `‖Σ_b ∏_{i<n} E(a_i,b)‖ ≤ C^n C(c/2,d) e^{-(c/2)|a_p−a_q|}`
+对**任意一对**下标 `(p,q)` 成立，对 `L` 一致。拆法与 `sum_exp_decay_conv` 相同：
+总衰减 `Σ_i|a_i−b|` 一半付给三角不等式、一半付给对中心求和。**这覆盖任意 `n` 的星形树**。
+
+`Loop/TreeThree.lean`：**`pureLoop_three`**，`res_pureKes` 在 `n = 3`，
+对 3-loop 的形状不带任何假设（`kThree_eq_of_isKLoop` 供给），只剩 `ThetaDecayShort` 与 `TwoLoopBounded`。
+
+**对「最大两两距离」的处理**：不引入 `Finset.max`，而是对**每一对** `(p,q)` 各给一条界——
+等价，但下游取哪一对都行，用起来更顺。
+
+**开出 Q33**（带对角线的树，`n ≥ 4`）：它要先证「内部边 `Θ−I = ξS^(B)Θ` 也指数衰减」，
+再对 `polyVal` 递归归纳；**并且要等 `KTreeRep` 在 `n ≥ 4` 落地（Q30/Q31）**，
+否则只能重新引入假设，与 Q16 的原则冲突。
+
+审计：**349 定理 / 145 定义 / 0 公理**；`ThetaDecayShort` 6 → 7、`TwoLoopBounded` 3 → 4。

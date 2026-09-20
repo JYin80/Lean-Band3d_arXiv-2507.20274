@@ -46,12 +46,13 @@
 | Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **DONE** (CC)：唯一性 + **`KTwoFormula` 已消** |
 | Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **PARTIAL** (CC)：`n = 3` 已证（`Loop/TreeThree.lean`）；`n = 4` → Q30，一般 `n` → Q31 |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **DONE** (CC)：陈述层 + **那句「额外修改」已定位并证出**；格点和 → Q32 |
-| Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **CLAIMED (CC)** |
+| Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **PARTIAL** (CC)：星形树（任意 `n`）+ `n = 3` 已证；带对角线的树 → Q33 |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（范围已扩：见下方 beat 14 补充） |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
+| Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q25 开出；需 Q30/Q31） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
@@ -1427,6 +1428,39 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 
 ---
 
+## Q25 · `lem_pureloop` 的一般 `n` — **PARTIAL**（CC，2026-09-20）：星形树（任意 `n`）+ `n = 3`
+
+**先说一件事实**：`RBM1D` 那边**根本没有纯回路引理**（`grep pureLoop` 一条都没有）。
+所以这条不是移植，是原创的一块，工单里「路线」那几行就是全部的设计输入。
+
+**这一拍落地的**（`./check.sh` 绿、0 warning）：
+
+`Loop/PureLoop.lean`
+* `sum_exp_decay_centre`：`Σ_b e^{-c|x−b|} ≤ C(c,d)`，对 `L` 与球心 `x` 一致。
+* **`norm_sum_prod_le`**：若 `‖E x y‖ ≤ C e^{-c|x−y|}`，则对任意标签 `a : Fin n → Z_L^d`
+  与任意一对下标 `p, q`，
+  `‖Σ_b ∏_i E (a i) b‖ ≤ C^n · C(c/2,d) · e^{-(c/2)|a_p − a_q|}`，对 `L` 一致。
+  这是 `sum_exp_decay_conv` 的 `n` 重版本，拆法一样：总衰减 `Σ_i |a_i − b|` 的一半付给
+  「任意两点之间的三角不等式」，另一半付给「对中心 `b` 求和」。
+  **它覆盖任意 `n` 的星形树**（`F = ∅` 那一支）。
+
+`Loop/TreeThree.lean`
+* **`pureLoop_three`**：`res_pureKes` 在 `n = 3`。对 3-loop 的形状**不带任何假设**——
+  上一拍的 `kThree_eq_of_isKLoop` 直接供给。剩下的前提是 `ThetaDecayShort`（真借的）
+  与 `TwoLoopBounded`（先验界）。
+
+**工单「提示」那条是对的**：归纳假设必须对「标签集合的两两距离」说话。
+本拍的写法是**对每一对 `(p,q)` 都给一条界**（等价于对最大值给一条，但不用引入 `Finset.max`，
+下游取哪一对都行），实际用起来更顺。
+
+**没做的（→ Q33）**：`n ≥ 4` 里**带对角线的树**。它们需要 `polyVal` 递归上的归纳，
+而内部边 `Θ^(σ,σ) − I = tμ S^(B) Θ^(σ,σ)` 的指数衰减还要一条小引理（`S^(B)` 只连最近邻，
+`SB_apply_eq_zero_of_one_lt` 已在 `Kernel/SumDecay.lean`）。
+**而且它还要等 `KTreeRep` 在 `n ≥ 4` 落地（Q30/Q31）**——否则只能重新引入假设，
+这与工单「不要再添新假设」的要求冲突。所以 Q33 排在 Q30/Q31 之后。
+
+---
+
 ## Q26 · 审计要自动发现「借来的谓词」，不能靠硬编码名单 ⭐ — **OPEN**（beat 10 提，beat 14 扩范围）
 
 > **CC 回复（2026-09-20，本拍先做掉）**：`hbdd` 已具名为 **`RBM.Loop.TwoLoopBounded`**
@@ -1845,3 +1879,22 @@ RBM1D 实测：§5 有 141 处 `≺`，但真正需要矩形式的只有 **2 个
 **提示**：`sum_radial_pow_le` 是「不带球心平移」的版本，这里两个因子的球心不同，
 需要先用 `sum_shift`（`Defs/RadialSum.lean`，Q20 加的）把其中一个搬到原点，
 另一个的距离用三角不等式 `zdistD_add_le` 控制。
+
+---
+
+## Q33 · `lem_pureloop`：带对角线的树 — **OPEN**（CC 于 Q25 开出；需 Q30/Q31）
+
+**文件**：`RBM3D/Loop/PureLoop.lean`。
+
+Q25 已经覆盖星形树（任意 `n`，`norm_sum_prod_le`）与 `n = 3`（`pureLoop_three`）。
+剩下 `n ≥ 4` 里**带对角线**的那些 `Γ ∈ TSP(n)`。
+
+**要点**：
+* 内部边是 `Θ^(σ,σ) − I`。由 `mul_Theta` 有 `Θ_ξ − I = ξ S^(B) Θ_ξ`，而 `S^(B)` 只连最近邻
+  （`SB_apply_eq_zero_of_one_lt`，`Kernel/SumDecay.lean`），所以内部边同样指数衰减，
+  常数里多一个 `t|μ|` 和一次最近邻卷积——**先把这条小引理证出来**，它独立于递归。
+* 然后对 `polyVal` 的递归做归纳：每次分裂对新顶点 `y` 求和，用 `sum_exp_decay_conv`，
+  衰减常数减半；`n` 固定时累计 `c_n ≍ c/2^n`，常数随 `|TSP n|`（小 Schröder 数）增长——
+  与论文的 `c_n, C_n` 形状一致。
+* **前置**：`KTreeRep` 在 `n ≥ 4` 仍是假设（Q30/Q31）。在它落地前，`n ≥ 4` 的纯回路界
+  只能带着 `KTreeRep` 走；工单 Q16 的原则是「不再添新假设」，所以**等 Q30/Q31**。
