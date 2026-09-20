@@ -49,6 +49,11 @@ against the paper should not have to unfold a definition to see what is being as
 Each `Prop` carries the paper's standing assumptions `3 ≤ d`, `0 < g`, `‖m‖ = 1` as
 hypotheses of its own, so that it can be stated, assumed and discharged on its own.
 
+Properties 6 and 7 hold "for all `a, r` satisfying `|r| ≲ |a|`".  That `≲` is read the
+way the paper uses it: for **every** constant `c > 0`, on the set `|r| ≤ c |a|`, with the
+constant of `≺` allowed to depend on `c`.  Writing it as `|r| ≤ |a|` (the case `c = 1`)
+would assume strictly less than the paper claims; see `docs/paper-deltas.md`, D12.
+
 Properties 5 and 5' carry explicit constants in the paper and need no `≺` at all.
 
 Note on the spectral parameter: `RBM.Theta` takes `ξ = t · m(σ₁)m(σ₂)` as a single
@@ -111,10 +116,10 @@ The paper: "Although the bound `(prop:BD1)` is not stated explicitly in
 This is the one estimate in `lem_propTH` with no proof anywhere in the literature the
 paper points to. -/
 def ThetaDiffOne (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
-  3 ≤ d → 0 < g → ‖m‖ = 1 → ∀ τ : ℝ, 0 < τ →
+  3 ≤ d → 0 < g → ‖m‖ = 1 → ∀ c : ℝ, 0 < c → ∀ τ : ℝ, 0 < τ →
     ∃ C > (0 : ℝ),
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-        zdistD d L r ≤ zdistD d L a →
+        (zdistD d L r : ℝ) ≤ c * (zdistD d L a : ℝ) →
         haveI : NeZero L := ⟨by omega⟩
         ‖Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a‖
           ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
@@ -126,10 +131,10 @@ def ThetaDiffOne (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
 
 `[yang2024Del]` equation (E.19). -/
 def ThetaDiffTwo (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
-  3 ≤ d → 0 < g → ‖m‖ = 1 → ∀ τ : ℝ, 0 < τ →
+  3 ≤ d → 0 < g → ‖m‖ = 1 → ∀ c : ℝ, 0 < c → ∀ τ : ℝ, 0 < τ →
     ∃ C > (0 : ℝ),
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-        zdistD d L r ≤ zdistD d L a →
+        (zdistD d L r : ℝ) ≤ c * (zdistD d L a : ℝ) →
         haveI : NeZero L := ⟨by omega⟩
         ‖Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
             - 2 * Theta d L g ((t : ℂ) * m) 0 a‖
