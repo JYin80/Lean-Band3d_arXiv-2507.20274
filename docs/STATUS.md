@@ -340,3 +340,25 @@ QUEUE 顶部的分号约定改为 Q28（我的新工单从 Q29 起）。
 它一落地，`KTwoFormula` 真消掉，且 `KTreeRep` 退成「只欠存在性」。
 
 审计：**317 定理 / 139 定义 / 0 公理**。
+
+## 2026-09-20 · Claude Code · Q22a 完成 ⭐ —— **`KTwoFormula` 从假设变成定理**
+
+`RBM3D/Loop/Unique.lean`（新）：结构引理（一条链满长 ⇒ 另一条是 2-loop）、`LoopVec`、
+`eq_on_level`（一次 Grönwall）、`isKLoop_unique`。RBM1D 那 250 行**一次编译通过**，
+`d` 全程不参与推理，只在标签类型与前因子 `W^d` 里出现。
+
+**这一拍真正的收获在移植之外**：把唯一性用在 `n = 2` 这一层（那里「更短回路已一致」的前提是空的），
+与 Q27 的显式解对照，得到
+
+* `kTwoFormula_of_isKLoop`：只要 `K` 是 `[0,1)` 上的一族 `K`-loop、其 2-loop 在每个 `[0,T₀]` 上有界，
+  **`KTwoFormula` 成立**——它不再是假设，是定理；
+* `pureLoop_two_of_isKLoop`：Q16 的纯回路估计，`KTwoFormula` 消失，只剩 `ThetaDecayShort`。
+
+配套的 `norm_kTwo_le`（显式解的逐元界 `W^{-d}(1-t)^{-1}`）放在 `Loop/Primitive.lean`。
+
+**账目**：项目里「欠下的」少了一条。剩下的代价是一条**先验界**（2-loop 在 `[0,T₀]` 上有界），
+那是论文自己沿途证的，不是向外借的。`KTreeRep` 也从「表示定理」退成**只欠存在性**（Q22b）。
+
+审计：**332 定理 / 141 定义 / 0 公理**；`ThetaDecayShort` 承重 5 → 6（新增的那条纯回路推论）。
+
+**主线**：Q23 ✅ → Q27 ✅ → Q22a ✅ → **Q22b（树公式存在性，RBM1D 那边 729 + 2546 行）是唯一剩下的大件**。

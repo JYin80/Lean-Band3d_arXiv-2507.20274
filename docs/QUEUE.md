@@ -42,9 +42,9 @@
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **PARTIAL** (CC)：确定性不等式已证；`Ψ²ℓ² ≺ (W^dη)⁻¹` 的吸收 → Q29 |
 | Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **DONE** (CC)：4 条 + `t`-形式；Q27 解锁 |
-| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **PARTIAL** (CC)：存在性那一半已证；消掉假设还差唯一性 → Q22a |
-| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **CLAIMED (CC)** |
-| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | BLOCKED by Q22a |
+| Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **DONE** (CC)：存在性 (Q27) + 唯一性 (Q22a) ⇒ `KTwoFormula` 是定理 |
+| Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **DONE** (CC)：唯一性 + **`KTwoFormula` 已消** |
+| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **OPEN**（Q22a 已完成，解锁；`KTreeRep` 只剩存在性） |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（`KTwoFormula` 已漏报） |
@@ -1247,6 +1247,41 @@ STATUS 里记一笔「**Q22 的前置已拆掉**」，并说明 `d` 作为参数
 （`Deriv.Mul`、`Deriv.Comp`、`Complex.RealDeriv`）。写成显式应用才会报出真正的错因。
 
 **下一步**：Q27（`(Kn2sol)`）现在没有前置了。
+
+---
+
+## Q22a · Grönwall 唯一性 — **DONE**（CC，2026-09-20）⭐
+
+**文件**：`RBM3D/Loop/Unique.lean`（新，约 290 行）。`./check.sh` 绿、0 warning。
+
+**移植的部分**（对应 `RBM1D/Loop/Unique.lean`，250 行，**一次编译通过**）：
+`length_cutGlueR_eq_two` / `length_cutGlueL_eq_two`（结构引理：一条链满长 ⇒ 另一条是 2-loop）、
+`two_le_length_cutGlueL/R`、`LoopVec`（长度 `n` 的回路作为有限类型）、`norm_SB_apply_le`、
+`norm_mul_mul_sub_le`、`eq_on_level`（一次 Grönwall）、`isKLoop_unique`。
+
+`d` **全程不参与推理**：它只在标签类型 `Zd d L` 和 `(pro_dyncalK)` 的前因子 `W^d` 里出现
+（RBM1D 那边是 `W`，这里是 `W^d`，只影响一处 `norm_pow`）。
+
+**比 RBM1D 多做的一层——这才是这拍的重点**：
+
+* `norm_kTwo_le`（放在 `Loop/Primitive.lean`）：显式解的逐元界 `‖K^(2)‖ ≤ W^{-d}(1-t)^{-1}`，
+  由 `norm_Theta_apply_le` + `Theta_real_nonneg` + `sum_Theta_real_row` 得到；
+* `exists_eq_of_length_two`：长度 2 的良构回路就是 `⟨[σ₁,σ₂],[a₁,a₂]⟩`；
+* **`kTwoFormula_of_isKLoop`**：只要 `K` 是 `[0,1)` 上的一族 `K`-loop、且它的 2-loop
+  在每个 `[0,T₀]`（`T₀ < 1`）上有界，**`KTwoFormula` 就成立**。
+  证法：只在 `n = 2` 这一层用 `eq_on_level`（此时「更短回路已一致」的前提是空的），
+  `K` 与 `kTwoLoop` 解同一条 Riccati、在 `t = 0` 同取 `M`-loop 值。
+* `pureLoop_two_of_isKLoop`：Q16 的估计，`KTwoFormula` 彻底消失，只剩 `ThetaDecayShort`。
+
+**账目变化**：`KTwoFormula` 从「假设」变成「定理」。它本来就属于 Q26 说的
+「欠下的」而不是「借来的」——现在这笔欠账还上了。代价只剩一条**先验界**
+（2-loop 在每个 `[0,T₀]` 上有界），那是论文自己沿途证出来的东西，不是向外借的。
+
+**`KTreeRep` 的状态也变了**：唯一性不再是假设，它现在**只欠存在性**（Q22b）。
+
+**给 Q22b 的交接**：`isKLoop_unique` 的签名就是 Q22b 要对接的接口——
+证明「树和满足 `(pro_dyncalK)` 且初值为 `M`-loop」之后，配上 2-loop 的先验界，
+`eq_Ktree` 立刻落地，不需要再碰唯一性。
 
 ---
 
