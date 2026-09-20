@@ -87,7 +87,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>353</b><span>定理已证</span></div>
+    <div class="chip done"><b>357</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
     <div class="chip ready"><b>9</b><span>可立即开工</span></div>
@@ -398,7 +398,8 @@ exponential decay」。<strong>论文是对的，漏掉那个限定的是形式�
 <li class="row"><div class="row-main"><span class="row-name">lem:sum_decay_nonzero —— 第一条真正使用接口假设的定理，签名里写着借了什么</span></div><div class="row-side"><span class="pill done">Q13 ✓ 已证</span><code>norm_zeroModeSet_UN_le · projMat_mul_Theta</code></div></li>
 <li class="row"><div class="row-main"><span class="row-name">eq:latticesum_d3 —— 第三轮新加的那条临界格点求和，附录里唯一一处新数学</span></div><div class="row-side"><span class="pill done">Q17a ✓ 已证</span><code>latticesum_d3 · sum_inv_Icc_le · sum_radial_tail_le</code></div></li>
 <li class="row"><div class="row-main"><span class="row-name">(eq:decomp_U2) 子集展开与 (eq:decayXi) —— lem:sum_decay 的两块零件</span></div><div class="row-side"><span class="pill done">Q17b ✓ 已证</span><code>UN_apply_eq_sum_powerset · norm_XiKer_apply_le · SB_apply_eq_zero_of_one_lt</code></div></li>
-<li class="row"><div class="row-main"><span class="row-name">lem:sum_decay 的三条结论 —— 不能走 ‖Ξ‖ 捷径，须过 (deccA0) 球内截断</span></div><div class="row-side"><span class="pill ready">Q28 · 可开工</span><code>sum_res_1 · sum_res_2_NAL · sum_res_2</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">lem:sum_decay 的关键那一步 —— 一个 Ξ 因子在球内求和，没走 ‖Ξ‖ 捷径</span></div><div class="row-side"><span class="pill done">Q28 ✓ 关键步</span><code>(deccA0) 球内截断 + (1−s)ℓ_s² ≲ g²+|1−s|</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">lem:sum_decay 的四步装配（sum_res_1 / (I) / (II)）</span></div><div class="row-side"><span class="pill ready">Q34 · 可开工</span><code>Kernel/SumDecay.lean</code></div></li>
 <li class="row"><div class="row-main"><span class="row-name">典范树划分 TSP(P_a) 与边值 —— 表示刻意与 RBM1D 对齐，为移植铺路</span></div><div class="row-side"><span class="pill done">Q14 ✓ 已证</span><code>TSP · thetaEdge · treeVal · GammaN · GammaSum</code></div></li>
 <li class="row"><div class="row-main"><span class="row-name">树表示 eq_Ktree —— 陈述层落地，eq_Ktree 暂作假设 KTreeRep（形状同 PropTH）</span></div><div class="row-side"><span class="pill done">Q15 ✓ 已证</span><code>LoopIdx · treeEqRhs · IsKLoop · KTreeRep</code></div></li>
 <li class="row"><div class="row-main"><span class="row-name">(Kn2sol) 的显式解与它解 n=2 的树方程</span></div><div class="row-side"><span class="pill done">Q27 ✓ 已证</span><code>kTwo · hasDerivAt_kTwo · kTwo_zero · norm_kTwo_le</code></div></li>
@@ -482,7 +483,8 @@ beat 15 把这篇论文从头到尾扫了一遍确认它也适用，结论写在
 <tr><td>Q25</td><td><code>lem_pureloop</code> —— <code>n = 3</code> 与任意 <code>n</code> 的星形树已证</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q33</td><td><code>lem_pureloop</code>：带对角线的树（<code>n ≥ 4</code>）</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
 <tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— 扫描 + 两本账 + 反向测试</td><td><code>Test/Axioms.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q28</td><td><code>lem:sum_decay</code> 的三条结论（<code>sum_res_1</code> / <code>(I)</code> / <code>(II)</code>）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
+<tr><td>Q28</td><td><code>lem:sum_decay</code> —— 两块前置 + <b>关键那一步</b>已证，装配 → Q34</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
+<tr><td>Q34</td><td><code>lem:sum_decay</code> 的四步装配</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q41</td><td><b>每条假设的「非空洞」证书</b>（固定 <code>L</code> 版）<b>⭐</b></td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
@@ -537,6 +539,11 @@ beat 16 新代码照办（<code>KLoopBound</code>）；beat 17 回头把促成�
 <strong>beat 18 Q26 落地，审计不再信任手写名单</strong>——<code>scanPremises</code> 扫环境里
 <code>RBM</code> 的 <code>Prop</code> 值定义，挑出「被当前件用、而本项目无任何定理证出」的那些，
 凡不在三份登记名单里的<em>构建失败</em>，并附反向测试。</p>
+<p><strong>一处小瑕疵，记在这里。</strong> 报告末行写「premises found by scanning: 10, all classified
+(8 borrowed, 1 owed, 5 structural)」——<em>10 是扫出来的条数，而括号里是三份登记名单的长度</em>，
+8+1+5=14，两者本来就不该相加。读者会以为那是 10 的分解。
+登记名单比扫描结果长是正常的（暂时没人用的谓词扫不出来），<strong>该改的是写法</strong>。
+这正是 Q26 要治的那一类「看上去完整的报告」，只是缩小版。已开 Q47。</p>
 <p>报告现在真的分两本账：<b>论文借来的 8 条</b>、<b>本形式化欠下的 1 条</b>
 （<code>TwoLoopBounded</code>，承重 4）、另列 5 条结构性谓词。
 <strong><code>KTwoFormula</code> 因为 Q22a 已证，自动从账上消失了</strong>——名单时代要手工删。
@@ -557,11 +564,11 @@ CC 还把已知边界写下来备查：判定靠「没有定理以它为结论�
 </div>
 
 <footer>
-  计数说明：<b>353 定理 / 140 定义 / 0 公理</b>（定义数从 145 降到 140，是 Q26 把审计自己的辅助定义排除了） 由 <code>./check.sh</code> 的审计直接报出（Q18），
+  计数说明：<b>357 定理 / 140 定义 / 0 公理</b>（定义数从 145 降到 140，是 Q26 把审计自己的辅助定义排除了） 由 <code>./check.sh</code> 的审计直接报出（Q18），
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 18 · 2026-09-20 07:35 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 19 · 2026-09-20 07:45 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

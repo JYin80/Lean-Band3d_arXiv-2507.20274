@@ -31,6 +31,7 @@
 |---|---|---|---|
 | Q42 | **确定性包络** `‖G‖ ≤ η⁻¹` —— 随机层第一步，免费 | `Gauss/Envelope.lean` | **OPEN**（见 `docs/stochastic-audit.md`） |
 | Q43 | **Stein 三层**（重采样路线，与 `d` 无关） ⭐ | `Gauss/Stein*.lean` | **OPEN**（整包可从 RBM1D 搬） |
+| Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
@@ -2036,3 +2037,35 @@ Q28 已经把**关键的记账**证出来了：`sum_ball_norm_XiKer_le` 说「�
 **三条结论的陈述要逐字对论文**（`3_5_Loop_Hierarchy.tex:1632`）：
 `(sum_res_1)`、`(sum_res_2_NAL)`、`(sum_res_2)`，注意 `W^{C_nε}` 与 `W^{−D+C_n}` 两项都要写上，
 且 `C_n` **不依赖 `ε` 与 `D`**——这是论文明说的，别写成依赖。
+
+---
+
+## Q47 · 审计末行那句计数会被读错 — **OPEN**（Cowork 于 beat 19 提；小活）
+
+**文件**：`RBM3D/Test/Axioms.lean` 最后那条 `logInfo`。
+
+现在报的是：
+
+```
+premises found by scanning: 10, all classified (8 borrowed, 1 owed, 5 structural)
+```
+
+**`10` 是 `found.size`（扫描真正找到的），而括号里三个数是 `borrowedProps` / `owedProps` /
+`structuralProps` 三份登记名单的长度**，`8+1+5 = 14`。两者不该并排写在一句话里——
+读者会把括号当成 `10` 的分解，然后发现对不上。
+
+**登记名单比扫描结果长是正常的**：一条谓词若暂时没有任何定理拿它当前件，就扫不出来
+（`ThetaDiffOne`、`ThetaDiffTwo` 现在承重都是 0）。**所以要改的是写法，不是数字。**
+
+**建议**：把两件事分开报，例如
+
+```
+premises found by scanning: 10 (borrowed 6, owed 1, structural 3)
+registry: 8 borrowed + 1 owed + 5 structural; 4 registered premises are currently unused
+```
+
+「当前无人使用的已登记谓词」那一行本身也有用：**它是「这条假设还没开始承重」的信号**，
+与两本账互补。
+
+**为什么值得单开一条**：Q26 治的就是「看上去完整、其实对不上的报告」。
+这一处是同一个毛病的缩小版，出现在 Q26 自己的输出里——**留着比错更糟的是，它会让人不再核对那份报告**。
