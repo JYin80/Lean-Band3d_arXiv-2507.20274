@@ -188,3 +188,14 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 只允许 `propext` / `Classical.choice` / `Quot.sound`，与 RBM1D / RBM2D 同标准。反向测试通过（`sorry` 与野生 axiom 仍被拦下）。
 `./check.sh`：`errors: 0`、`exit=0`、464 条声明。文档连带更新：`paper-deltas.md` D5/D10、`README.md`、`Basic.lean`。
 **用到这 5 条的定理今后写成 `(hP : PropTH d g m)` 参数**，取 `hP.decay` 等；Q13、Q16、Q17 是第一批使用者。
+
+## 2026-09-19 · Claude Code · 接口修正：`(prop:ThfadC_short)` 限定 `σ₁ = σ₂`
+
+做 Q13 接分析部分时发现的**真缺陷**（原 axiom 就有，Q19 只是逐字搬过来）：性质 5' 原先对任意 `‖m‖ = 1` 陈述，
+而 `σ₁ ≠ σ₂` 对应谱参数 `1`，那时 `Σ_b Θ_{t,0b} = (1−t)⁻¹` 发散、右端却与 `t` 无关且求和有界——**该陈述为假**。
+它当 axiom 的那段时间，项目其实是不一致的（公理审计查不出这种错）。
+
+**已修**：`ThetaDecayShort d g m` 现在讲 `t·(m*m)`（即 `m(σ)²`）并要求 `0 < m.im`；
+`PropTH` 只打包性质 5/6/7/8；新文件 `RBM3D/Test/InterfaceShape.lean` 的 `not_decayShort_at_one`
+**机器证明了原写法在谱参数 `1` 处不成立**。记在 `docs/paper-deltas.md` 的 D11。
+`./check.sh`：`errors: 0`、`exit=0`。

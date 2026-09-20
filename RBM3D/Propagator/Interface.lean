@@ -83,13 +83,22 @@ def ThetaDecay (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
   `|Θ_t(0,a)| ≤ C_κ (1_{a=0} + g² exp(-c_κ |a|))`.
 
 Appendix A.1 does prove this, but through `[bourgade2019random]` Lemma 4.2, which is
-outside the paper; hence it sits here rather than in `Props14.lean`. -/
+outside the paper; hence it sits here rather than in `Props14.lean`.
+
+**This is the only one of the five that is not a statement about an arbitrary spectral
+parameter.**  It holds for `σ₁ = σ₂`, where the parameter is `m(σ)²`; here `m` is the
+sign value `m(σ)` and the propagator is `Theta d L g (t · m * m)`.  The distinction
+matters: for `σ₁ ≠ σ₂` the parameter is `m(+)m(-) = |m|² = 1`, and the bound is then
+*false* -- its right-hand side is independent of `t`, while `Σ_b Θ_{t,0b} = (1-t)⁻¹`
+diverges as `t → 1` (`RBM.sum_Theta_row`).  `0 < m.im` is the paper's standing
+assumption `Im m > 0`, on which the constants `C_κ, c_κ` are allowed to depend (the paper
+writes "depending on `d` and `κ`"); it is what keeps `m²` away from `1`. -/
 def ThetaDecayShort (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
-  3 ≤ d → 0 < g → ‖m‖ = 1 →
+  3 ≤ d → 0 < g → ‖m‖ = 1 → 0 < m.im →
     ∃ Cκ > (0 : ℝ), ∃ cκ > (0 : ℝ),
       ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d L,
         haveI : NeZero L := ⟨by omega⟩
-        ‖Theta d L g ((t : ℂ) * m) 0 a‖
+        ‖Theta d L g ((t : ℂ) * (m * m)) 0 a‖
           ≤ Cκ * ((if a = 0 then 1 else 0)
               + g ^ 2 * Real.exp (-cκ * (zdistD d L a : ℝ)))
 
@@ -141,15 +150,19 @@ def ThetaZeroMode (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
           ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
               * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹
 
-/-- **Properties 5–8 of `lem_propTH`**, the estimates this paper cites rather than proves,
-bundled.  A result that rests on them takes `(hP : PropTH d g m)` and projects out the
-one it needs; when a field is discharged by a theorem, the results keep their statements
-and the hypothesis is supplied instead of assumed. -/
+/-- **Properties 5, 6, 7, 8 of `lem_propTH`** at one spectral parameter `m = m(σ₁)m(σ₂)`,
+the estimates this paper cites rather than proves, bundled.  A result that rests on them
+takes `(hP : PropTH d g m)` and projects out the one it needs; when a field is discharged
+by a theorem, the results keep their statements and the hypothesis is supplied instead of
+assumed.
+
+`ThetaDecayShort` is deliberately **not** a field: it is the `σ₁ = σ₂` statement, whose
+parameter is `m(σ)²` rather than `m(σ₁)m(σ₂)`, so it is assumed separately by the results
+that need it.  Bundling it here would make `PropTH d g 1` -- the `σ₁ ≠ σ₂` case, which is
+needed everywhere -- an assumption that is false. -/
 structure PropTH (d : ℕ) (g : ℝ) (m : ℂ) : Prop where
   /-- `(prop:ThfadC)`, property 5: polynomial and exponential decay. -/
   decay : ThetaDecay d g m
-  /-- `(prop:ThfadC_short)`, the `σ₁ = σ₂` half of property 5. -/
-  decayShort : ThetaDecayShort d g m
   /-- `(prop:BD1)`, property 6: the first-order difference bound. -/
   diffOne : ThetaDiffOne d g m
   /-- `(prop:BD2)`, property 7: the second-order difference bound. -/
