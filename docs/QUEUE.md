@@ -72,7 +72,7 @@
 | Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：树那一侧已就位；配对与 `eq_on_level` 待续 |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
-| Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **CLAIMED (CC)** |
+| Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **PARTIAL** (CC)：第一块（临界指数的对数球和）已证；三块装配待续 |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
@@ -2264,6 +2264,32 @@ RBM1D 实测：§5 有 141 处 `≺`，但真正需要矩形式的只有 **2 个
 **提示**：`sum_radial_pow_le` 是「不带球心平移」的版本，这里两个因子的球心不同，
 需要先用 `sum_shift`（`Defs/RadialSum.lean`，Q20 加的）把其中一个搬到原点，
 另一个的距离用三角不等式 `zdistD_add_le` 控制。
+
+
+### CC 的完成记录（Q32，2026-09-20）：第一块 + 一处下沉
+
+**这一拍先把三块分割里最关键的那块零件证了**：
+
+**`sum_ball_inv_pow_dim_le`**（`Defs/RadialSum.lean`）：
+`Σ_{|a−b| ≤ ρ} (|a−b|+1)^{-d} ≤ C_d (1 + log(ρ+1))`。
+
+**对照着看才有意思**：同样的球，指数取 `d−2` 时和是 `≍ ρ²`（`sum_ball_pow_le`，Q28），
+取 `d` 时就只剩**对数**——而且这个对数是真的，它正是让整格和 `Σ_b(|b|+1)^{-d}` 长成 `log L`
+的那个 `Σ 1/r`，也正是 Q24 里「必须不对称地拆」的原因。两条引理并排放着，这件事一眼可见。
+
+顺带新增 `sum_inv_range_succ_le`（调和界的 `range` 形式）。
+
+**维护（规则 4 的另一面）**：`sum_inv_Icc_le` 与 `inv_succ_le_log_sub_log` 原先在
+`Kernel/SumDecay.lean`（Q17a 用到时写在那里），但它们只是关于 `Σ1/r` 的事实，
+而新引理在 `Defs/RadialSum.lean` 里需要它们，**依赖方向是 SumDecay → RadialSum**，
+所以把这两条**下沉**到 RadialSum（陈述一字未改）。
+
+**三块分割的进度**：
+* 块一（`|b−a| ≤ R/2`）：`C log(R+2) · R^{-(d−2)}`——**对数球和已就位**，
+  还差「`log(R+2)/R^{d−2}` 有界」这一步（`d ≥ 3` 时显然，但要写成 Lean）；
+* 块二（`|b−c| ≤ R/2`）：`R^{-d}·C R²`——`sum_ball_pow_le` 直接给，**零件齐**；
+* 块三（两边都远）：要先证 `|c−b| ≥ |a−b|/4`（三角不等式的分情形），
+  再用两个因子合并成 `Σ_r r^{-(d−1)}` 的尾和——**这块还缺一条尾和引理**。
 
 ---
 
