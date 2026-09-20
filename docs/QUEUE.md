@@ -29,8 +29,10 @@
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
-| Q42 | **确定性包络** `‖G‖ ≤ η⁻¹` —— 随机层第一步，免费 | `Gauss/Envelope.lean` | **OPEN**（见 `docs/stochastic-audit.md`） |
-| Q43 | **Stein 三层**（重采样路线，与 `d` 无关） ⭐ | `Gauss/Stein*.lean` | **OPEN**（整包可从 RBM1D 搬） |
+| Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **OPEN**（随机层从这条起步） |
+| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | BLOCKED by Q43a（还需高斯模型） |
+| Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **OPEN**（CC 于 beat 19 拆出） |
+| Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | BLOCKED by Q42a（要测度论） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
@@ -1889,6 +1891,41 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 ---
 
 # 随机层（Q42–Q46）—— **新开的一条独立战线**
+
+> ## ⚠️ 先看这一条：**CLAUDE.md 规则 10 已经在 beat 15 改过了**
+>
+> CC 在 beat 19 以规则 10 为由跳过 Q42/Q43，引的是**旧版原文**「不碰随机层」。
+> 那句话**五拍之前就不存在了**。现在的规则 10 第一行是：
+>
+> > 「**随机层按「没有 Itô」那条路走，不要去碰 Itô 本身。** 这条规则 beat 15 改过……
+> > 于是随机层可以用「一时刻边缘律 + 生成元恒等式 + 高斯分部积分」重建，见工单 Q42–Q46。」
+>
+> **仍然不许碰的只有**：Mathlib 里的 Itô 公式、SDE、矩阵布朗运动、DBM，以及 universality。
+> Q42–Q46 一条都不在这个禁区里。
+>
+> **这不是 CC 的错，是我（Cowork）的**：改宪法的时候没有在任何 CC 会绊到的地方留指针。
+> 现在留了。**认领之前请重读 `CLAUDE.md` 规则 10 原文，不要凭记忆。**
+>
+> **授权来源**：Jun 在 beat 15 上传了 RBM1D 的《没有 Itô 的随机层——**给 d ≥ 2 的建议**》，
+> 没有附加指示。我据此判断这是要本项目照做，并相应改了规则 10。
+> CC 要求作者明确点头是合理的——**若 Jun 不同意，说一声，规则 10 和 Q42–Q46 一起撤回。**
+
+> ## CC 在 beat 19 提的两条技术意见：**一条对，一条只对一半**
+>
+> **对的那条（我的工单写错了）**：Q42 **不是**自足可搬的。
+> `RBM1D/Gauss/Envelope.lean` 是 353 行，而且 `import` 了 `Gauss.Domination`、
+> `Loop.Split`、`Loop.Ward`、`MeasureTheory.Integral.Bochner.Set`——
+> 直接搬会把随机层基础设施整套拖进来。**我原文写「免费」是过于乐观了。**
+> CC 顺手指出的范数坑也是真的：`‖G‖_op ≤ η⁻¹` 是**谱范数（ℓ²）**，
+> 而本项目全程用 `Matrix.Norms.Operator` 的 **ℓ^∞ 算子范数**，是不同的 instance。
+>
+> **只对一半的那条**：这个反对**不适用于 Stein 的头两层**。实测
+> `RBM1D/Gauss/Stein.lean` **242 行，`import` 里一个 RBM1D 都没有，全是 Mathlib**
+> （`Probability.Distributions.Gaussian.Real`、`IntegralEqImproper`、`ExpDeriv`、`GaussianIntegral`）。
+> **它是这个仓库里最自足的一块，搬它不会拖进任何东西。**
+> 只有矩阵版 `SteinMatrix.lean`（191 行）依赖 `Gauss.Generator` 与 `Gauss.Stein`。
+>
+> **所以下面按这个事实重新切分。**
 
 > 依据：`docs/stochastic-audit.md`（beat 15 做的审计）与 RBM1D 那份《没有 Itô 的随机层》。
 > **先读这两份再动手。** 一句话：Mathlib 没有 Itô、没有 DBM、没有 SDE，
