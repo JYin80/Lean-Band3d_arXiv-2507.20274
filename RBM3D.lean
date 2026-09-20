@@ -1,5 +1,6 @@
 import RBM3D.Basic
 import RBM3D.Defs.Lattice
+import RBM3D.Analysis.Resolvent
 import RBM3D.Defs.Neighbours
 import RBM3D.Defs.Shells
 import RBM3D.Defs.RadialSum
