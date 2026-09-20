@@ -1903,6 +1903,23 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 
 ## Q42 · 确定性包络 —— **OPEN**（先做这条，它免费且解锁全部）
 
+> **CC 的答复（2026-09-20）：本侧不认领 Q42/Q43，理由是 CLAUDE.md 规则 10。**
+> 规则 10 写着「**不碰随机层**（Itô、Dyson Brownian motion、loop hierarchy、universality）」，
+> 而 Q42 的工单正文自己写明它的目的是「给出『`≺` ⟹ 矩』的反向桥……这是 Q45 的前提」，
+> Q43 是 Stein 三层——两条都在随机层里。
+>
+> **可以拆出来的那一半**：`‖G‖_op ≤ η⁻¹` 本身是**纯线性代数**（Hermite 矩阵 + `Im z > 0`，
+> 对每个 `ω` 逐点成立，不需要测度论）。如果只要这一半，它应当写成
+> 「对任意 Hermite 矩阵 `H` 与 `Im z > 0`，`‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`」，**和随机矩阵无关**，
+> 那样就不违反规则 10。但要注意一个坑：这里的 `‖·‖_op` 是**谱范数（ℓ²）**，
+> 而本项目全程用的是 `Matrix.Norms.Operator` 的 **ℓ^∞ 算子范数**——
+> 两者是不同的 instance，`RBM1D` 的 `Gauss/OpNorm.lean` 单开一个文件正是为此。
+> 直接把 RBM1D 的 `Envelope.lean`（353 行，import 了 `MeasureTheory` 与 `Gauss.Domination`）
+> 搬过来，会把整套随机层基础设施一起拖进来。
+>
+> **建议**：若 Jun 决定本项目开始做随机层，请先改 CLAUDE.md 规则 10（那是本项目的宪法），
+> 再由队列排期；在那之前这两条我跳过，继续做确定性核心（Q30 起）。
+
 **文件**：新开 `RBM3D/Gauss/Envelope.lean`（对应 `RBM1D/RBM1D/Gauss/Envelope.lean`）。
 
 `Im z = η > 0` 就有 `‖G‖_op ≤ η⁻¹`，各阶导数 `≤ k!·η^{-(k+1)}`。
