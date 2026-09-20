@@ -25,7 +25,7 @@
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
-| Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | **CLAIMED** (CC) |
+| Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | **PARTIAL** (CC)：`n = 2` + 工具；一般 `n` → Q25 |
 | Q17a | `eq:latticesum_d3`（第三轮新加的那条） | `Kernel/SumDecay.lean` | **DONE** (CC)：不依赖任何接口假设 |
 | Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **OPEN**（要用 `ThetaDecay`） |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
@@ -758,7 +758,26 @@ K^(n)_{t,σ,a} = W^{-d(n-1)} · Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}
   **先花 15 分钟读那两个文件的 module docstring，再判断移植成本。** 若评估下来超过一拍的量，
   就先公理化、把移植另开一条工单——但要在 STATUS 里写清楚理由。
 
-## Q16 · `lem_pureloop` — BLOCKED by Q15
+## Q16 · `lem_pureloop` — **PARTIAL**（CC，2026-09-19）：`n = 2` 与工具已证，一般 `n` → Q25
+
+> **完成记录**：新文件 `RBM3D/Loop/PureLoop.lean`，`./check.sh` → `errors: 0`、`exit=0`、零 sorry。
+>
+> **证出来的**：
+> * `norm_Theta_same_le_exp`：把 `(prop:ThfadC_short)` 化成实际要用的形状 `|Θ^(σ,σ)_t(0,a)| ≤ C e^{-c|a|}`。
+>   指示函数 `1_{a=0}` 被吸收进常数——因为 `a = 0` 时 `e^{-c|a|} = 1`，`a ≠ 0` 时它本来就是 0。
+> * `sum_exp_decay_conv`：`Σ_y e^{-c|x-y|}e^{-c|y-z|} ≤ C(c,d) e^{-(c/2)|x-z|}`，对 `L` 一致。
+>   **一半衰减付给三角不等式，另一半付给对 `y` 求和**——这是一般 `n` 归纳里每次分裂都要用的那一步。
+> * `pureLoop_two`：`res_pureKes` 在 `n = 2` 的情形，由 `(Kn2sol)` 加上面两条推出。
+>   `(Kn2sol)` 本身是论文从 `[YY_25]`/`[RBSO1D]` 取来的公式，按惯例写成假设 `KTwoFormula`。
+>
+> **没做的：一般 `n`**。论文的证明走的是 `(eq:tree_rep2)`——带 `M`-边的**精细**树表示，
+> 而 Q15 落地的是 `eq_Ktree`（`Γ^(n)`，边是 `Θ` 与 `Θ − I`）。两者都能用：纯回路时所有电荷相同，
+> 每条边要么是 `Θ^(σ,σ)`、要么是 `Θ^(σ,σ) − I = tμS Θ`，都指数衰减。
+> 但要把这件事贯穿 `polyVal` 的递归，需要对那个递归做归纳，每次分裂对内部顶点求和、常数 `c` 递减一次——
+> **工具（`sum_exp_decay_conv`）已经备好，剩下的是归纳本身**，另开 **Q25**。
+>
+> 审计里 `ThetaDecayShort` 的承重从 2 条升到 **4 条**。
+
 
 **文件**：新开 `RBM3D/Loop/PureLoop.lean`。陈述（`res_pureKes`）：`σ_1 = σ_2 = … = σ_n` 时，
 存在 `c_n, C_n > 0` 使得
@@ -1164,3 +1183,20 @@ STATUS 里记一笔「**Q22 的前置已拆掉**」，并说明 `d` 作为参数
 **验收**：陈述层编译通过（`exit=0`、零 `sorry`），STATUS 里一段话说清那处「额外修改」是什么。
 **若发现论文那句话其实掩盖了一个实质困难，立刻点出来**，别当成普通证明困难往下走——
 Q17 和 beat 6 的接口缺陷都是这么找出来的。
+
+## Q25 · `lem_pureloop` 的一般 `n` — **OPEN**（CC 于 Q16 开出）
+
+**文件**：`RBM3D/Loop/PureLoop.lean`（接在 `pureLoop_two` 之后）。
+
+**目标**：`res_pureKes` 对一般 `n`：`|K^(n)_{t,σ,a}| ≤ C_n W^{-d(n-1)} exp(−c_n max_{i,j}|a_i−a_j|)`，
+纯回路（所有 `σ_i` 相同）。
+
+**路线**：由 `KTreeRep`（Q15 的假设）把 `K^(n)` 换成 `W^{-d(n-1)} Σ_{Γ∈TSP} Γ^(n)`，
+再对 `Loop/Partition.lean` 的 `polyVal` 递归做归纳，证「纯回路的树值指数衰减」：
+* 外部边是 `Θ^(σ,σ)`，由 `norm_Theta_same_le_exp` 指数衰减；
+* 内部边是 `Θ^(σ,σ) − I = tμ S^(B) Θ^(σ,σ)`，`S^(B)` 只连最近邻，所以也指数衰减（需要一条小引理）；
+* 每次分裂对新顶点 `y` 求和，用 `sum_exp_decay_conv`，代价是 `c` 减半——
+  `n` 固定时累计代价是 `c_n = c/2^{n}` 量级，常数 `C_n` 随 `|TSP n|`（小 Schröder 数）增长，这与论文的 `c_n, C_n` 形状一致。
+
+**提示**：归纳假设要对「多边形的标签集合的最大两两距离」陈述，而不是对单个距离，
+否则分裂后两块拼不回来。

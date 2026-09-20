@@ -37,6 +37,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Kernel.SumDecay`    — `(eq:latticesum_d3)`, the borderline lattice sum of Appendix A.2
 * `RBM3D.Loop.Partition`     — canonical tree partitions `TSP(P_a)` and `Γ^(n)_{t,σ,a}`
 * `RBM3D.Loop.TreeRep`       — `K`-loops, the convolution tree equations, and `eq_Ktree`
+* `RBM3D.Loop.PureLoop`      — `lem_pureloop`, exponential decay of pure `K`-loops
 * `RBM3D.Test.Axioms`        — the axiom audit
 
 ## Two structural differences from the sister projects

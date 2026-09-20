@@ -252,3 +252,12 @@ RBM3D 的传播子层目前只有代数与范数，没有求导层。Q22a 就是
 **这就是工单说的那个时刻：借来的结果第一次真正承重。** 在此之前（Q13 之前）全项目没有任何结论依赖论文引用的估计；
 现在有了，而且**在定理的签名里写着**，不需要读证明也看得见。往后这几个数只会增长，
 减少的唯一方式是把对应的接口假设证出来（`docs/PLAN.md` 阶段 8 与 Q22）。
+
+## 2026-09-19 · Claude Code · Q16 部分完成（`n = 2` 与工具），一般 `n` → Q25
+
+`RBM3D/Loop/PureLoop.lean`：`norm_Theta_same_le_exp`（`(prop:ThfadC_short)` 的可用形状）、
+`sum_exp_decay_conv`（指数卷积，一半衰减付给三角不等式、一半付给求和）、`pureLoop_two`（`res_pureKes` 的 `n = 2`）。
+`(Kn2sol)` 按惯例写成假设 `KTwoFormula`。
+
+一般 `n` 需要对 `polyVal` 递归做归纳（每次分裂用一次 `sum_exp_decay_conv`、`c` 减半），工具已备好，另开 Q25。
+审计：286 定理，`ThetaDecayShort` 承重 2 → **4** 条。
