@@ -107,7 +107,13 @@ lake env lean RBM3D/Defs/Lattice.lean   # 单文件，秒级 —— 默认用这
 8. **小步提交。** 一次一条引理；绿了就 commit。攒一大坨再一起编译，错了无法二分。
 9. **共享文件只做点插入，绝不整体重排。** 唯一的共享文件是根 import 列表 `RBM3D.lean`。
    用 `sorted(set(lines))` 之类去重会把末尾的 `#assert_rbm_axioms` 搅进 import 块，整体构建挂掉。
-10. **不碰随机层**（Itô、Dyson Brownian motion、loop hierarchy、universality）。
+10. **随机层按「没有 Itô」那条路走，不要去碰 Itô 本身。** 这条规则 beat 15 改过：
+    原来写的是「不碰随机层」，但 `docs/stochastic-audit.md` 的审计表明这篇论文的证明
+    **不真的需要过程**——全文没有 Doob、没有 Markov 性、没有域流、没有两时刻联合律，
+    而关键鞅引理 `lem:DIfREP` 的**陈述本来就是矩不等式**。
+    于是随机层可以用「一时刻边缘律 + 生成元恒等式 + 高斯分部积分」重建，见工单 Q42–Q46。
+    **仍然不要碰的**：Mathlib 里的 Itô 公式、SDE、矩阵布朗运动、DBM——它们不存在，
+    也不在这条路线上。另外 universality 与 §6 之后的层级暂时仍不在范围内。
 11. **常数不求最优。** 统一 `∃ C > 0, ∃ c > 0, ∀ ...`；`≺` 用 `DetDom` / `UnifDetDom` 封装。
     **对外一律保持论文的 `≺`**，矩只活在证明内部——接口签名冻结，论文那边就只需要改证明，
     不动任何陈述、不重新编号。
