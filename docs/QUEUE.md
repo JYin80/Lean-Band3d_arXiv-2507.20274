@@ -27,7 +27,7 @@
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3` | `Kernel/SumDecay.lean` | **Q17a DONE** (CC)；Q17b 待做 |
-| Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **CLAIMED** (CC) |
+| Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
 | Q22 | 移植 RBM1D 的 `eq_Ktree` 证明（消掉 `KTreeRep` 假设） | `Loop/TreeRep*.lean` | **OPEN**（大件，CC 于 Q15 开出） |
@@ -838,7 +838,34 @@ K^(n)_{t,σ,a} = W^{-d(n-1)} · Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}
 
 ---
 
-## Q18 · 让审计直接报定理数与公理承重情况 — **OPEN**（小活，不是证明工作）
+## Q18 · 让审计直接报定理数与公理承重情况 — **DONE**（CC，2026-09-19）
+
+> **完成记录**：`Test/Axioms.lean`。`./check.sh` 现在报的是：
+>
+> ```
+> axiom audit: 283 theorems, 132 definitions, 0 axioms in `RBM`
+>   (compiler-generated declarations excluded).
+> All within [propext, Classical.choice, Quot.sound]; no project axioms: what the paper
+>   cites rather than proves is carried as hypotheses, not asserted.
+> theorems resting on each borrowed result:
+>   RBM.ThetaDecay: 0        RBM.ThetaDecayShort: 2
+>   RBM.ThetaDiffOne: 0      RBM.ThetaDiffTwo: 0
+>   RBM.ThetaZeroMode: 2     RBM.PropTH: 0        RBM.Loop.KTreeRep: 0
+> ```
+>
+> **过滤用的是现成判定**（按工单要求没有自己拼字符串）：`Name.isInternalDetail`、
+> `Lean.isAuxRecursor`、`Lean.isNoConfusion`，外加排除 `.recInfo`。分类用 `ConstantInfo`：
+> `thmInfo` / `axiomInfo` / `defnInfo`+`inductInfo`+`ctorInfo`+`opaqueInfo`。
+> 下限检查从「≥ 20 条声明」改成「≥ 20 条**定理**」。
+>
+> **第二件事按 Q19 之后的实际情况调整了口径**（工单写于 Q19 前后）：接口现在是**假设**不是公理，
+> 所以「借用承重多少」不再是「哪些声明依赖某条公理」，而是**哪些定理的类型里带着接口假设**。
+> 审计现在数的正是这个，并且**排除接口自身的投影**（`PropTH.decay` 之类提到它但并不依赖它——
+> 第一版没排除时 `PropTH` 显示 4，全是投影，那是误导）。
+>
+> **那个数字已经不是 0 了**：`ThetaDecayShort` 和 `ThetaZeroMode` 各承重 2 条——正是 Q13 的定理。
+> 工单说「从 0 变正的时刻值得单独记一笔」，这一笔记在 STATUS 里。
+
 
 **文件**：`RBM3D/Test/Axioms.lean`。**动手前确认没人正在改这个文件。**
 

@@ -239,3 +239,16 @@ RBM3D 的传播子层目前只有代数与范数，没有求导层。Q22a 就是
 `treeEqRhs`（`(pro_dyncalK)` 右端）、`MLoop`（初值）、`IsKLoop`（`Def_Ktza` 逐条谓词）、`KTreeRep`（`eq_Ktree` 作为假设）。
 自检 `treeEqRhs_two`：`n = 2` 的右端与论文的两回路方程一致（靠 `S^(B)` 对称性对上哑指标顺序）。
 **`KTreeRep` 的形状与 `PropTH` 一致，Q22 落地时可原地替换、下游零返工。**
+
+## 2026-09-19 · Claude Code · Q18 完成 —— **借用开始承重了**
+
+审计报告改成分类计数：**283 定理 / 132 定义 / 0 公理**（过滤编译器生成的，用 `isInternalDetail`、
+`isAuxRecursor`、`isNoConfusion` 等现成判定）。原来那个「389 条声明」把递归子、equation lemma 都算进去了，是虚高。
+
+**更要紧的一行**：审计现在报「有多少条定理的类型里带着接口假设」，并排除接口自身的投影。
+结果 **`ThetaDecayShort: 2`、`ThetaZeroMode: 2`，其余为 0**——这两条正是 Q13 证的
+（`exists_norm_uKer_same_le`、`exists_norm_projMat_mul_uKer_le`、`norm_zeroModeSet_UN_le`）。
+
+**这就是工单说的那个时刻：借来的结果第一次真正承重。** 在此之前（Q13 之前）全项目没有任何结论依赖论文引用的估计；
+现在有了，而且**在定理的签名里写着**，不需要读证明也看得见。往后这几个数只会增长，
+减少的唯一方式是把对应的接口假设证出来（`docs/PLAN.md` 阶段 8 与 Q22）。
