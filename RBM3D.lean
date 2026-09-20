@@ -26,6 +26,7 @@ import RBM3D.Graph.ScalingOrder
 import RBM3D.Graph.Model
 import RBM3D.Graph.Expansions
 import RBM3D.Test.Axioms
+import RBM3D.Test.AuditNegative
 import RBM3D.Test.InterfaceShape
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/

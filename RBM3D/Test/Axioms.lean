@@ -54,19 +54,101 @@ visible: adding a name here would be a deliberate act, recording that the develo
 allowed to rest on a result from outside the paper. -/
 def interfaceAxioms : List Name := []
 
-/-- The interface `Prop`s: the statements this paper cites rather than proves, carried as
-hypotheses.  A theorem whose *type* mentions one of these rests on a borrowed result, and
-says so; counting those theorems is how this development measures how much of it is
-carried by the borrowing. -/
-def interfaceProps : List Name :=
+/-! ### The two ledgers
+
+A premise this development does not prove is one of two things, and the difference
+matters more than the count:
+
+* **borrowed** -- the paper cites it from the literature rather than proving it.  These
+  are long-term assumptions: discharging one means proving something the paper itself
+  does not.
+* **owed** -- the paper does prove it (or it is a routine consequence), and it is assumed
+  here only to get on with the next layer.  These are debts of this formalization, not of
+  the paper.
+
+Reporting them in one list makes "zero axioms" look better than the situation is.
+-/
+
+/-- Premises the **paper** cites rather than proves. -/
+def borrowedProps : List Name :=
   [`RBM.ThetaDecay, `RBM.ThetaDecayShort, `RBM.ThetaDiffOne, `RBM.ThetaDiffTwo,
-   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLoopBound,
-   `RBM.Loop.TwoLoopBounded]
+   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLoopBound]
+
+/-- Premises **this development** owes: provable here, assumed for now. -/
+def owedProps : List Name :=
+  [`RBM.Loop.TwoLoopBounded]
+
+/-- Predicates that *define the objects under study* rather than assert a result about
+them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
+so that the scan below can tell them apart from real premises -- and so that adding one
+is a deliberate act. -/
+def structuralProps : List Name :=
+  [`RBM.Loop.IsKLoop,         -- `Def_Ktza`: what it means to be a family of `K`-loops
+   `RBM.Loop.IsDiag,          -- `(i,j)` is a diagonal of the polygon
+   `RBM.Loop.Crossing,        -- two diagonals cross
+   `RBM.SameSignOutside,      -- `A ⊇ I_diff(σ)`, the condition of `lem:sum_decay_nonzero`
+   `RBM.Graph.Case.Rel]       -- the case relation of `lem_scalingorder`, a parameter
+
+/-- The premises the audit reports on: borrowed plus owed. -/
+def interfaceProps : List Name := borrowedProps ++ owedProps
+
+/-! ### Finding the premises, instead of being told them
+
+`interfaceProps` used to be a hand-written list, and the moment a new assumption appeared
+the report stayed silent about it -- a report that claims to account for everything and
+quietly does not.  The scan below finds the premises itself: a `Prop`-valued definition in
+`RBM` that some theorem takes as a hypothesis and **no** theorem of this development
+proves.  Anything it finds that is in none of the three lists above fails the build.
+-/
+
+/-- The type is `∀ …, Prop`. -/
+private partial def resultIsProp : Expr → Bool
+  | .forallE _ _ b _ => resultIsProp b
+  | .sort u => u == .zero
+  | _ => false
+
+/-- The constants occurring in the hypotheses of a `∀`-telescope. -/
+private partial def binderConsts : Expr → Array Name
+  | .forallE _ d b _ => binderConsts b ++ d.getUsedConstants
+  | _ => #[]
+
+/-- The head constant of the conclusion of a `∀`-telescope. -/
+private partial def conclusionHead : Expr → Option Name
+  | .forallE _ _ b _ => conclusionHead b
+  | e => e.getAppFn.constName?
+
+/-- `Prop`-valued definitions of `RBM`, the theorems that assume them, and the theorems
+that prove them.  `ignore` keeps the audit's own fixtures out of the development.
+
+A structure's projections do not count as proving its fields: `PropTH.decay` produces a
+`ThetaDecay` from a `PropTH`, which is bookkeeping, not a proof. -/
+def scanPremises (env : Environment) (ignore : Name → Bool) : Array Name := Id.run do
+  let keep (n : Name) : Bool := (`RBM).isPrefixOf n && !n.isInternalDetail && !ignore n
+  let propDefs := env.constants.fold (init := #[]) fun acc n ci =>
+    if keep n && (match ci with | .defnInfo _ | .inductInfo _ => true | _ => false)
+        && resultIsProp ci.type then acc.push n else acc
+  let mut assumed : Array Name := #[]
+  let mut proved : Array Name := #[]
+  for (n, ci) in env.constants.toList do
+    if keep n then
+      match ci with
+      | .thmInfo _ =>
+        for c in binderConsts ci.type do
+          if propDefs.contains c && !assumed.contains c then assumed := assumed.push c
+        let isProj := propDefs.any fun p =>
+          isStructure env p && (getStructureFields env p).any fun f => p ++ f == n
+        unless isProj do
+          match conclusionHead ci.type with
+          | some h => if propDefs.contains h && !proved.contains h then proved := proved.push h
+          | none => pure ()
+      | _ => pure ()
+  return assumed.filter fun n => !proved.contains n
 
 /-- Declarations the compiler generates (recursors, `casesOn`, `noConfusion`, equation
 lemmas, internal proofs) are not part of the development and are not counted. -/
 def isHandwritten (env : Environment) (n : Name) (ci : ConstantInfo) : Bool :=
-  (`RBM).isPrefixOf n && !n.isInternalDetail && !isAuxRecursor env n && !isNoConfusion env n
+  (`RBM).isPrefixOf n && !(`RBM.Audit).isPrefixOf n && !n.isInternalDetail
+    && !isAuxRecursor env n && !isNoConfusion env n
     && !(match ci with | .recInfo _ => true | _ => false)
 
 /-- Fails unless every declaration in `RBM` uses only `allowedAxioms` together with the
@@ -105,13 +187,26 @@ elab "#assert_rbm_axioms" : command => do
     counts := counts.map fun (a, k) => if usedAxioms.contains a && a != n then (a, k + 1) else (a, k)
   unless bad.isEmpty do
     throwError m!"axiom audit failed:\n{MessageData.joinSep bad.toList "\n"}"
-  -- how much of the development rests on the borrowed results
+  -- the premises, found rather than declared
+  let found := scanPremises env (fun n => (`RBM.Audit).isPrefixOf n)
+  let classified := borrowedProps ++ owedProps ++ structuralProps
+  let unregistered := found.filter fun n => !classified.contains n
+  unless unregistered.isEmpty do
+    throwError m!"axiom audit: {unregistered.size} premise(s) that no theorem of this \
+      development proves are in none of `borrowedProps`, `owedProps`, \
+      `structuralProps`:\n  {unregistered.toList}\n\
+      Classify each of them: borrowed from the literature, owed by this formalization, \
+      or a predicate that defines the objects under study."
+  -- how much of the development rests on each premise
   -- a Prop's own projections (`PropTH.decay`, …) mention it but rest on nothing
   let isInterfaceOwn (n : Name) : Bool := interfaceProps.any fun p => p.isPrefixOf n
-  let usage := interfaceProps.map fun p =>
+  let usageOf (ps : List Name) := ps.map fun p =>
     (p, (thms.filter fun (n, ci) =>
       !isInterfaceOwn n && (ci.type.getUsedConstants).contains p).size)
+  let usage := usageOf interfaceProps
   let carried : Nat := usage.foldl (init := 0) fun acc (_, k) => acc + k
+  let ledger (title : MessageData) (ps : List Name) : MessageData :=
+    m!"{title}\n{MessageData.joinSep ((usageOf ps).map fun (p, k) => m!"  {p}: {k}") "\n"}"
   let usageReport := usage.map fun (p, k) => m!"  {p}: {k}"
   let axiomLine :=
     if interfaceAxioms.isEmpty then
@@ -120,14 +215,34 @@ elab "#assert_rbm_axioms" : command => do
     else
       m!"interface axioms, with the number of other declarations depending on each:\n\
         {MessageData.joinSep (counts.toList.map fun (a, k) => m!"  {a}: {k}") "\n"}"
+  let _ := usageReport
   let carriedLine :=
     if carried = 0 then
-      m!"no theorem yet rests on the borrowed results"
+      m!"no theorem yet rests on a premise"
     else
-      m!"theorems resting on each borrowed result:\n{MessageData.joinSep usageReport "\n"}"
+      m!"{ledger m!"theorems resting on each premise the PAPER borrows:" borrowedProps}\n\
+        {ledger m!"theorems resting on each premise THIS FORMALIZATION owes:" owedProps}"
   logInfo m!"axiom audit: {thms.size} theorems, {defs.size} definitions, {axs.size} axioms \
     in `RBM` (compiler-generated declarations excluded).\n\
     All within {allowedAxioms}; {axiomLine}.\n\
-    {carriedLine}."
+    {carriedLine}\n\
+    premises found by scanning: {found.size}, all classified \
+    ({borrowedProps.length} borrowed, {owedProps.length} owed, \
+    {structuralProps.length} structural)."
+
+/-- **Reverse test.**  Fails unless the scan reports `p` as an unclassified premise.  The
+point of `#assert_rbm_axioms` is that adding an assumption without classifying it breaks
+the build; this checks that the mechanism actually fires, on a fixture kept out of the
+development (`RBM.Audit.Fixture`). -/
+elab "#assert_rbm_audit_detects " p:ident : command => do
+  let env ← getEnv
+  let n := p.getId
+  let found := scanPremises env (fun _ => false)
+  let classified := borrowedProps ++ owedProps ++ structuralProps
+  let unregistered := found.filter fun m => !classified.contains m
+  unless unregistered.contains n do
+    throwError m!"audit reverse test: the scan did not report `{n}` as an unclassified \
+      premise; it found {unregistered.toList}"
+  logInfo m!"audit reverse test: an unclassified premise is caught ({n})."
 
 end RBM.Audit
