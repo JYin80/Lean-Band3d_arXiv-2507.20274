@@ -122,6 +122,28 @@ theorem kTwoFormula_kTwoLoop (m : Bool → ℂ) :
   intro t _ _ σ₁ σ₂ a₁ a₂
   rfl
 
+/-- An entrywise bound on `(Kn2sol)`: `‖K^(2)‖ ≤ W^{-d}(1-t)^{-1}`, from
+`RBM.norm_Theta_apply_le` and the row sum `RBM.sum_Theta_real_row`.  This is what supplies
+the `2`-loop bound that the uniqueness argument of `Loop/Unique.lean` asks for. -/
+theorem norm_kTwo_le (hL : 3 ≤ L) {m : Bool → ℂ} {σ₁ σ₂ : Bool} (h₁ : ‖m σ₁‖ = 1)
+    (h₂ : ‖m σ₂‖ = 1) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (a₁ a₂ : Zd d L) :
+    ‖kTwo d L W g m t σ₁ σ₂ a₁ a₂‖ ≤ ‖((W : ℂ) ^ d)⁻¹‖ * (1 - t)⁻¹ := by
+  have hmm : ‖m σ₁ * m σ₂‖ = 1 := by rw [norm_mul, h₁, h₂, mul_one]
+  have hentry : ‖Theta d L g ((t : ℂ) * (m σ₁ * m σ₂)) a₁ a₂‖ ≤ (1 - t)⁻¹ := by
+    refine (norm_Theta_apply_le hL ht0 ht1 hmm a₁ a₂).trans ?_
+    have hsingle := Finset.single_le_sum
+      (f := fun b => (Theta d L g (t : ℂ) a₁ b).re)
+      (fun b _ => Theta_real_nonneg (g := g) hL ht0 ht1 a₁ b) (Finset.mem_univ a₂)
+    rwa [sum_Theta_real_row (g := g) hL ht0 ht1 a₁] at hsingle
+  calc ‖kTwo d L W g m t σ₁ σ₂ a₁ a₂‖
+      = ‖((W : ℂ) ^ d)⁻¹‖ * ‖m σ₁ * m σ₂‖
+        * ‖Theta d L g ((t : ℂ) * (m σ₁ * m σ₂)) a₁ a₂‖ := by
+        rw [kTwo, norm_mul, norm_mul]
+    _ = ‖((W : ℂ) ^ d)⁻¹‖ * ‖Theta d L g ((t : ℂ) * (m σ₁ * m σ₂)) a₁ a₂‖ := by
+        rw [hmm, mul_one]
+    _ ≤ ‖((W : ℂ) ^ d)⁻¹‖ * (1 - t)⁻¹ :=
+        mul_le_mul_of_nonneg_left hentry (norm_nonneg _)
+
 /-- **`res_pureKes` at `n = 2`, with `(Kn2sol)` no longer assumed.**  Applying
 `pureLoop_two` to the explicit solution discharges its `KTwoFormula` hypothesis; what is
 left standing is `ThetaDecayShort`, which the paper really does borrow. -/
