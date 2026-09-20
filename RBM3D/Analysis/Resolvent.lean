@@ -121,4 +121,60 @@ theorem norm_le_of_isHermitian {n : Type*} [Fintype n] [DecidableEq n]
     ‖u‖ ≤ |z.im|⁻¹ * ‖w‖ :=
   norm_le_of_sub_smul_eq (Matrix.isSymmetric_toEuclideanLin_iff.mpr hH) hz h
 
+/-! ### Consequences for the matrix inverse
+
+What the loop estimates actually use: off the real axis `H - z` is invertible, and the
+entries of its inverse are bounded by `|Im z|⁻¹`.  The entry bound is the one that survives
+being multiplied together `n` times inside a `G`-loop. -/
+
+open Matrix in
+/-- Off the real axis, `H - z` is invertible. -/
+theorem isUnit_sub_smul_of_isHermitian {n : Type*} [Fintype n] [DecidableEq n]
+    {H : Matrix n n ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) :
+    IsUnit (H - z • (1 : Matrix n n ℂ)) := by
+  rw [Matrix.isUnit_iff_isUnit_det, isUnit_iff_ne_zero]
+  intro hdet
+  obtain ⟨v, hv, hv0⟩ := (Matrix.exists_mulVec_eq_zero_iff).mpr hdet
+  have hmul : Matrix.toEuclideanLin H (WithLp.toLp 2 v) - z • (WithLp.toLp 2 v) = 0 := by
+    have : (H - z • (1 : Matrix n n ℂ)) *ᵥ v = H *ᵥ v - z • v := by
+      rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec]
+    rw [this] at hv0
+    ext i
+    simpa [Matrix.toLpLin_apply] using congrFun hv0 i
+  have hinj := injective_sub_smul (Matrix.isSymmetric_toEuclideanLin_iff.mpr hH) hz
+  have : WithLp.toLp 2 v = 0 := by
+    have h0 : (fun w => Matrix.toEuclideanLin H w - z • w) (WithLp.toLp 2 v)
+        = (fun w => Matrix.toEuclideanLin H w - z • w) 0 := by simpa using hmul
+    simpa using hinj h0
+  exact hv (by simpa using congrArg (WithLp.ofLp) this)
+
+open Matrix in
+/-- **The entry bound**: `|((H - z)⁻¹)_{xy}| ≤ |Im z|⁻¹`, on the whole space. -/
+theorem norm_inverse_entry_le {n : Type*} [Fintype n] [DecidableEq n]
+    {H : Matrix n n ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) (x y : n) :
+    ‖Ring.inverse (H - z • (1 : Matrix n n ℂ)) x y‖ ≤ |z.im|⁻¹ := by
+  set G := Ring.inverse (H - z • (1 : Matrix n n ℂ)) with hG
+  set e : n → ℂ := Pi.single y 1 with he
+  have hunit := isUnit_sub_smul_of_isHermitian hH hz
+  -- `u = G e` solves `(H - z) u = e`
+  have hsol : (H - z • (1 : Matrix n n ℂ)) *ᵥ (G *ᵥ e) = e := by
+    rw [Matrix.mulVec_mulVec, hG, Ring.mul_inverse_cancel _ hunit, Matrix.one_mulVec]
+  have hEuclid : Matrix.toEuclideanLin H (WithLp.toLp 2 (G *ᵥ e)) - z • WithLp.toLp 2 (G *ᵥ e)
+      = WithLp.toLp 2 e := by
+    have hrw : (H - z • (1 : Matrix n n ℂ)) *ᵥ (G *ᵥ e) = H *ᵥ (G *ᵥ e) - z • (G *ᵥ e) := by
+      rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec]
+    rw [hrw] at hsol
+    ext i
+    simpa [Matrix.toLpLin_apply] using congrFun hsol i
+  have hnorm := norm_le_of_sub_smul_eq (Matrix.isSymmetric_toEuclideanLin_iff.mpr hH) hz hEuclid
+  have hone : ‖WithLp.toLp 2 e‖ = 1 := by
+    simp [he, PiLp.norm_single]
+  rw [hone, mul_one] at hnorm
+  have hcoord : ‖(G *ᵥ e) x‖ ≤ ‖WithLp.toLp 2 (G *ᵥ e)‖ := by
+    simpa using PiLp.norm_apply_le (WithLp.toLp 2 (G *ᵥ e)) x
+  have hentry : (G *ᵥ e) x = G x y := by
+    simp [he, Matrix.mulVec_single]
+  rw [hentry] at hcoord
+  exact le_trans hcoord hnorm
+
 end RBM
