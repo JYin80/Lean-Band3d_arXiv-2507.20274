@@ -1,4 +1,4 @@
-from graphs import G0, G1, G2, G3, G4, G5
+from graphs import G0, G1, G2, G3, G4, G5, G6
 
 def rows(items):
     out = ['<ul class="rows">']
@@ -44,14 +44,27 @@ CH3 = rows([
  ("(Owx) / (Oe2x) 的 =𝔼 恒等式本身 —— 仅在蓝图，不写 axiom","规则 6 · 随机层","cited","见 paper-deltas D10"),
 ])
 
+CH6 = rows([
+ ("提出「假设可满足吗」这个问题，并给出能证的弱化：固定 L 版","Q41 ✓","done","Test/InterfaceShape.lean"),
+ ("四条给不出证书的障碍被机器钉死 —— 尺寸界永远够不着","Q41 ✓","done","not_exists_uniform_entry_bound"),
+ ("有限 L 的混合性：连通性 + Doeblin 极小化条件","Q51 ✓","done","Propagator/Gap.lean"),
+ ("Dobrushin 收缩与几何混合估计","Q52 ✓","done","Propagator/Gap.lean"),
+ ("把混合估计求和成 (prop:ThfadC0) 的证书 —— 靠去零模后的相消","Q53 ✓","done","sum_range_pow_div · exists_norm_Theta0_le"),
+ ("(prop:BD1) / (prop:BD2) / PropTH 的证书 —— 同一个衰减作用在差分上","Q54 ✓","done","审计 6 of 9"),
+ ("(prop:ThfadC_short) 与 KTreeRep / KLoopBound 仍无证书","待做","todo","InterfaceShape.lean 写明各需要什么"),
+])
+
 CH5 = rows([
  ("随机层审计：全文没有 Doob、没有 Markov 性、没有域流、没有两时刻联合律","✓ 已做","done","docs/stochastic-audit.md"),
  ("关键鞅引理 lem:DIfREP 的陈述本来就是矩不等式 —— 论文一个字不用改","✓ 已核","done","两边都是 𝔼，BDG 只在证明里"),
- ("确定性包络 ‖G‖ ≤ η⁻¹ 与各阶导数界 —— 在全空间成立，不需要磨光截断","Q42 · 可开工","ready","Gauss/Envelope.lean"),
- ("Stein 三层：一维实 → 一维复 → 矩阵版（走重采样，不走 Fubini）","Q43 · 可开工","ready","Gauss/Stein.lean · SteinMatrix.lean"),
- ("生成元恒等式 —— 二阶项逐字等于论文的二次变差张量 (E⊗E)^{M,(n)}","Q44 · 待 Q43","todo","Gauss/Generator.lean"),
- ("对矩的 Grönwall + 两座 ≺ 桥 + 连续归纳","Q45 · 待 Q42,Q44","todo","MomentGronwall · Bootstrap"),
- ("三处停时换成连续归纳 —— 一处用了停止过程，等作者回答","Q46 · 待作者","todo","审计 §六"),
+ ("Stein 一维实值 + 复值 —— 242 行，只 import Mathlib，零项目依赖","Q43a ✓ 已证","done","整包照搬，一次编译通过"),
+ ("高斯带矩阵模型 + 重采样测度不变式","Q48 ✓ 已证","done","Gauss/Model.lean"),
+ ("‖(H−z)⁻¹‖ ≤ (Im z)⁻¹ —— 纯线性代数，陈述里不出现随机矩阵","Q42a ✓ 已证","done","Analysis/Resolvent.lean"),
+ ("Stein 矩阵版（重采样路线）","Q43b · 暂缓","todo","作者决定"),
+ ("确定性包络其余部分（≺ ⟹ 矩 反向桥）","Q42b · 暂缓","todo","作者决定"),
+ ("生成元恒等式 —— 二阶项逐字等于论文的二次变差张量 (E⊗E)^{M,(n)}","Q44 · 暂缓","todo","作者决定"),
+ ("对矩的 Grönwall + 两座 ≺ 桥 + 连续归纳","Q45 · 暂缓","todo","作者决定"),
+ ("三处停时换成连续归纳","Q46 · 暂缓","todo","作者决定；且仍等审计 §六的回答"),
 ])
 
 CH4 = rows([
@@ -109,23 +122,30 @@ QUEUE = """
 <tr><td>Q27</td><td><b><code>(Kn2sol)</code></b> —— 主线第二步，存在性</td><td><code>Loop/Primitive.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q22a</td><td><b>Grönwall 唯一性</b> <b>⭐</b> —— <b><code>KTwoFormula</code> 由此不再是假设</b></td><td><code>Loop/Unique.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q22b</td><td>树公式 = 存在性 —— <code>n = 3</code> 已证，其余 → Q30 / Q31</td><td><code>Loop/TreeThree.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
-<tr><td>Q30</td><td><code>(eq_Ktree)</code> 的 <code>n = 4</code>（第一次出现内部边）</td><td><code>Loop/TreeFour.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q30</td><td><code>(eq_Ktree)</code> 的 <code>n = 4</code>（第一次出现内部边）—— 六项索引 + 两条对角线已就位</td><td><code>Loop/TreeFour.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
+<tr><td>Q35</td><td><code>n = 4</code> 的求导匹配（内部边那两项）</td><td><code>Loop/TreeFour.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q31</td><td><code>(eq_Ktree)</code> 的一般 <code>n</code> —— 本项目最大的一件</td><td><code>Loop/TreeRepGeneral.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
-<tr><td>Q32</td><td><code>ML:Kbound</code> 的格点和 —— <code>d ≥ 3</code> 的另一半</td><td><code>Loop/KBound.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q32</td><td><code>ML:Kbound</code> 的格点和 —— 第一块（临界指数的对数球和）已证</td><td><code>Loop/KBound.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— <b>那句「额外修改」已定位并证出</b>（D16）</td><td><code>Loop/KBound.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q25</td><td><code>lem_pureloop</code> —— <code>n = 3</code> 与任意 <code>n</code> 的星形树已证</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q33</td><td><code>lem_pureloop</code>：带对角线的树（<code>n ≥ 4</code>）</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
 <tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— 扫描 + 两本账 + 反向测试</td><td><code>Test/Axioms.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q28</td><td><code>lem:sum_decay</code> —— 两块前置 + <b>关键那一步</b>已证，装配 → Q34</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
-<tr><td>Q34</td><td><code>lem:sum_decay</code> 的四步装配</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q34</td><td><code>lem:sum_decay</code> 的四步装配 —— 主项已证，并修好 Q28 的一处缺陷</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q41</td><td><b>每条假设的「非空洞」证书</b>（固定 <code>L</code> 版）<b>⭐</b></td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q42</td><td><b>确定性包络</b> <code>‖G‖ ≤ η⁻¹</code> —— 随机层第一步，免费</td><td><code>Gauss/Envelope.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q43</td><td><b>Stein 三层</b>（重采样路线，与 <code>d</code> 无关）<b>⭐</b></td><td><code>Gauss/Stein*.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q44</td><td><b>生成元恒等式</b> —— 到这步 Itô 不在关键路径上 <b>⭐</b></td><td><code>Gauss/Generator.lean</code></td><td><span class="pill todo">待 Q43</span></td></tr>
-<tr><td>Q45</td><td>对矩的 Grönwall + 两座 <code>≺</code> 桥 + 连续归纳</td><td><code>Gauss/MomentGronwall.lean</code></td><td><span class="pill todo">待 Q42,Q44</span></td></tr>
-<tr><td>Q46</td><td>三处停时 → 连续归纳</td><td>待定</td><td><span class="pill cited">等作者回答</span></td></tr>
+<tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q47</td><td>审计末行那句计数的写法（10 vs 8+1+5）</td><td><code>Test/Axioms.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q41</td><td><b>每条假设的「非空洞」证书</b>（固定 <code>L</code> 版）<b>⭐</b> —— 2 条证书 + 4 条的障碍已机器化</td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q51</td><td><b>有限 <code>L</code> 的混合性</b>：连通性 + Doeblin <b>⭐</b></td><td><code>Propagator/Gap.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
+<tr><td>Q52</td><td><b>Dobrushin 收缩 + 几何混合</b> <b>⭐</b></td><td><code>Propagator/Gap.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q53</td><td><b><code>(prop:ThfadC0)</code> 的固定 <code>L</code> 证书</b> <b>⭐</b> —— 靠去零模后的相消</td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q54</td><td><b><code>(prop:BD1)</code>/<code>(prop:BD2)</code>/<code>PropTH</code> 的证书</b> <b>⭐</b> —— 审计 <b>6 of 9</b></td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
+<tr><td colspan="4" style="padding-top:14px"><b>随机层 —— 作者 2026-09-20 决定暂缓；已落地的保留</b></td></tr>
+<tr><td>Q43a</td><td><b>Stein 一维实值 + 复值</b> —— 242 行，只 import Mathlib，一次编译通过</td><td><code>Gauss/Stein.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q48</td><td><b>高斯带矩阵模型</b> + 重采样测度不变式</td><td><code>Gauss/Model.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q42a</td><td><code>‖(H−z)⁻¹‖ ≤ (Im z)⁻¹</code> —— 纯线性代数</td><td><code>Analysis/Resolvent.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q49 / Q50</td><td><code>G</code>-loop 层（§5）与它的确定性包络</td><td><code>Loop/GLoop.lean</code></td><td><span class="pill done">Q50 DONE</span></td></tr>
+<tr><td>Q43b / Q42b / Q44 / Q45 / Q46</td><td>矩阵版 Stein、反向桥、生成元恒等式、矩 Grönwall、停时替换</td><td><code>Gauss/*</code></td><td><span class="pill cited">暂缓</span></td></tr>
 </tbody></table>
 """
 
@@ -218,10 +238,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>357</b><span>定理已证</span></div>
+    <div class="chip done"><b>509</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>9</b><span>可立即开工</span></div>
+    <div class="chip draft"><b>6 / 9</b><span>假设有非空洞证书</span></div>
   </div>
 </header>
 
@@ -324,17 +344,36 @@ __CH3__
 <div class="plate">__G4__</div>
 __CH4__
 
-<h2>第 5 章 · 随机层 —— <span style="font-weight:400">beat 15 新开的一条战线</span></h2>
-<p>Mathlib 里没有 Itô 公式、没有 SDE、没有矩阵布朗运动。但这篇论文的证明<strong>不真的需要过程</strong>——
-只需要一时刻边缘律加一条生成元恒等式。RBM1D 已经走通这条路（6034 行、247 条定理、0 公理）。
-beat 15 把这篇论文从头到尾扫了一遍确认它也适用，结论写在 <code>docs/stochastic-audit.md</code>。</p>
+<h2>第 6 章 · 非空洞证书链 —— <span style="font-weight:400">从一句质疑长成一条数学线</span></h2>
+<p>Q41 问的是一个很朴素的问题：<strong>审计说「7 条定理依赖 <code>ThetaDecayShort</code>」，可要是这条假设本身是假的呢？</strong>
+那 7 条全是空洞真，而审计照样报一切正常。要求的证书是能证的弱化版——<em>固定 <code>L</code></em>：
+把 <code>∃C ∀L</code> 换成 <code>∀L ∃C</code>，因为假设的全部内容其实是关于 <code>L</code> 的一致性。</p>
+<p>结果这条要求把项目推进了一块<strong>此前完全没有的数学</strong>：两条证书能直接给，
+另外四条给不出来——而且 <em>给不出来的理由被机器钉死了</em>（<code>not_exists_uniform_entry_bound</code>：
+粗的尺寸界永远够不着，右端对 <code>t</code> 有界只能靠去零模后的相消）。
+于是有了 Q51 的连通性与 Doeblin 条件、Q52 的 Dobrushin 收缩与几何混合、
+Q53 把混合估计求和成 <code>(prop:ThfadC0)</code> 的证书，Q54 再把同一个衰减用到差分上。
+<strong>审计现在逐条报证书，6 of 9。</strong></p>
+<div class="plate">__G6__</div>
+__CH6__
+
+<h2>第 5 章 · 随机层 —— <span style="font-weight:400">已落地的保留，其余暂缓</span></h2>
+<div class="note"><p><strong>🛑 2026-09-20 · 作者决定暂缓。</strong> Jun：「不是现在就开，先做其他内容。」
+<strong>已经落地的不动</strong>——Stein 的一维实值与复值两层（242 行，只 import Mathlib）、
+高斯带矩阵模型与重采样不变性、预解式界 <code>‖(H−z)⁻¹‖ ≤ (Im z)⁻¹</code> 都已编译入库，
+留着解冻时直接接上。<strong>矩阵版 Stein、生成元恒等式、矩 Grönwall、停时替换一律不认领。</strong>
+优先级回到确定性核心与证书链。</p></div>
+<p>背景留在这里备查：Mathlib 没有 Itô 公式、没有 SDE、没有矩阵布朗运动，但这篇论文的证明
+<strong>不真的需要过程</strong>——只需要一时刻边缘律加一条生成元恒等式。审计（<code>docs/stochastic-audit.md</code>）
+确认全文没有 Doob、没有 Markov 性、没有域流、没有两时刻联合律，
+而关键鞅引理的陈述本来就是矩不等式，所以论文一个字都不用改。</p>
 <div class="plate">__G5__</div>
 __CH5__
 
 <h2>工单队列</h2>
-<p>Claude Code 从 <code>docs/QUEUE.md</code> 从上往下领第一条 OPEN。此表每次心跳刷新。
-主线四条（<b>Q23 → Q27 → Q22a → Q22b</b>）已按依赖顺序排在一起，未满足前置的标「待 Qxx」而不是 OPEN——
-标成 OPEN 却开不了工，和该解封时忘了解封一样费一拍。</p>
+<p>Claude Code 从 <code>docs/QUEUE.md</code> 从上往下领第一条 OPEN。未满足前置的标「待 Qxx」而不是 OPEN——
+标成 OPEN 却开不了工，和该解封时忘了解封一样费一拍。
+<strong>随机层的几条已按作者决定标为「暂缓」，不要认领；已经证出来的那几条保留在库里。</strong></p>
 __QUEUE__
 
 <div class="note">
@@ -405,11 +444,11 @@ CC 还把已知边界写下来备查：判定靠「没有定理以它为结论�
 </div>
 
 <footer>
-  计数说明：<b>357 定理 / 140 定义 / 0 公理</b>（定义数从 145 降到 140，是 Q26 把审计自己的辅助定义排除了） 由 <code>./check.sh</code> 的审计直接报出（Q18），
+  计数说明：<b>509 定理 / 173 定义 / 0 公理</b>，非空洞证书 <b>6 of 9</b>（定义数从 145 降到 140，是 Q26 把审计自己的辅助定义排除了） 由 <code>./check.sh</code> 的审计直接报出（Q18），
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 19 · 2026-09-20 07:45 UTC<br>
+  心跳已按作者要求暂停；此页改为按需刷新 · 2026-09-20<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
@@ -419,6 +458,7 @@ CC 还把已知边界写下来备查：判定靠「没有定理以它为结论�
 out = (HTML.replace("__G0__", G0).replace("__G1__", G1).replace("__G2__", G2).replace("__G3__", G3)
            .replace("__G4__", G4).replace("__CH1__", CH1).replace("__CH2__", CH2)
            .replace("__CH3__", CH3).replace("__CH4__", CH4).replace("__CH5__", CH5)
+           .replace("__CH6__", CH6).replace("__G6__", G6)
            .replace("__G5__", G5).replace("__QUEUE__", QUEUE))
 open("/home/claude/bp/blueprint.html","w").write(out)
 print("bytes:", len(out))

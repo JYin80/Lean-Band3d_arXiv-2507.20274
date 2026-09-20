@@ -29,11 +29,6 @@
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
-| Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **DONE** (CC)：整包照搬，一次编译通过 |
-| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **PARTIAL** (CC)：`P_map_update` 已随 Q48 落地；只剩把两边推过去 |
-| Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **DONE** (CC)：模型 + **重采样不变性**（Q43b 缺的那条） |
-| Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **DONE** (CC)：抽象算子版 + Hermite 矩阵版 |
-| Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
 | Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **PARTIAL** (CC)：半圆律层 + 定义层已落地；包络估计 → Q50 |
 | Q50 | `G`-loop 的确定性包络 `\|L^(n)\| ≤ (η_t^{-1})^n` | `Loop/GLoop.lean` | **DONE** (CC)：走逐元 + 块结构，不需要迹范数 |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **DONE** (CC)：拆成两行，数字各自对得上 |
@@ -80,9 +75,14 @@
 | Q53 | **把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书** ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：审计 `3 of 9` |
 | Q54 | **`(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书**（同一个衰减，作用在差分上） ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：审计 `6 of 9`（含 `PropTH` 打包） |
 | Q55 | **`(prop:ThfadC_short)` 的固定 `L` 证书：`m² ≠ 1` 的定量版** ⭐ | `Propagator/Gap.lean` | **OPEN**（CC 于 Q54 开出） |
-| Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
-| Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
-| Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
+| Q43a | **Stein 一维实值 + 复值**（242 行，只 import Mathlib） | `Gauss/Stein.lean` | **DONE** (CC)：已落地，保留 |
+| Q48 | 高斯带矩阵模型 + 重采样不变性 | `Gauss/Model.lean` | **DONE** (CC)：已落地，保留 |
+| Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`（纯线性代数） | `Analysis/Resolvent.lean` | **DONE** (CC)：已落地，保留 |
+| Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **暂缓**（作者决定，见随机层章节） |
+| Q42b | 确定性包络的其余部分（`≺ ⟹ 矩` 反向桥） | `Gauss/Envelope.lean` | **暂缓**（作者决定） |
+| Q44 | 生成元恒等式 | `Gauss/Generator.lean` | **暂缓**（作者决定） |
+| Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | **暂缓**（作者决定） |
+| Q46 | 把三处停时换成连续归纳 | 待定 | **暂缓**（作者决定；且仍等审计 §六的回答） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
 ---
@@ -2441,7 +2441,18 @@ RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、�
 
 # 随机层（Q42–Q46）—— **新开的一条独立战线**
 
-> ## ⚠️ 先看这一条：**CLAUDE.md 规则 10 已经在 beat 15 改过了**
+> ## 🛑 **2026-09-20：作者决定随机层暂缓**
+>
+> Jun 的原话：「**不是现在就开，先做其他内容**」。所以 Q43b、Q42b、Q44、Q45、Q46 一律 **暂缓**，
+> 不要认领。**已经落地的不动**——Q43a（Stein 一维两层）、Q48（高斯模型 + 重采样不变性）、
+> Q42a（预解式界）都已编译通过并入库，**删掉它们没有好处**，留着将来解冻时直接接上。
+>
+> **现在的优先级回到确定性核心**：Q54（证书 6 of 9）、Q35 / Q30（`n = 4` 的求导匹配）、
+> Q34（`lem:sum_decay` 装配）、Q32（`ML:Kbound` 的格点和）、Q31 / Q33。
+>
+> 下面这段（规则 10 的沿革）**留着备查**，解冻时再用。
+
+> ## ⚠️ 规则 10 的沿革：**CLAUDE.md 规则 10 在 beat 15 改过**
 >
 > CC 在 beat 19 以规则 10 为由跳过 Q42/Q43，引的是**旧版原文**「不碰随机层」。
 > 那句话**五拍之前就不存在了**。现在的规则 10 第一行是：

@@ -153,5 +153,20 @@ g5 = build(
         ("gen","gron"),("env","gron"),("gron","stop")],
  width=W)
 
-open("graphs.py","w").write("G0=%r\nG1=%r\nG2=%r\nG3=%r\nG4=%r\nG5=%r\n" % (g0,g1,g2,g3,g4,g5))
-print("ok", [len(x) for x in (g0,g1,g2,g3,g4,g5)])
+# ─────────────────────────── 第 6 章 · 非空洞证书链 ───────────────────────────
+g6 = build(
+ nodes=[
+  ("cert","Q41 ✓ 提出「固定 L 版证书」：假设可满足吗","star",0),
+  ("obst","Q41 ✓ 四条的障碍已机器化（尺寸界给不出来）","done",1),
+  ("gap1","Q51 ✓ 连通性 + Doeblin 极小化条件","done",2),
+  ("gap2","Q52 ✓ Dobrushin 收缩 + 几何混合","done",3),
+  ("c0","Q53 ✓ (prop:ThfadC0) 的证书 —— 靠去零模后的相消","done",4),
+  ("bd","Q54 ✓ BD1 / BD2 / PropTH 的证书 —— 审计 6 of 9","done",5),
+  ("short","(prop:ThfadC_short) 仍无证书","todo",5),
+ ],
+ edges=[("cert","obst"),("obst","gap1"),("gap1","gap2"),("gap2","c0"),
+        ("c0","bd"),("obst","short")],
+ width=W)
+
+open("graphs.py","w").write("G0=%r\nG1=%r\nG2=%r\nG3=%r\nG4=%r\nG5=%r\nG6=%r\n" % (g0,g1,g2,g3,g4,g5,g6))
+print("ok", [len(x) for x in (g0,g1,g2,g3,g4,g5,g6)])
