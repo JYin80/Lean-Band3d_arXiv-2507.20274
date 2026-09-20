@@ -552,7 +552,8 @@ summing freely produces `((t-s)/(1-t))^{n-k}`, which is **weaker** than the
 the sum is restricted to the ball `|a-b| ≲ ℓ_s` supplied by `(deccA0)`, where
 
 * the entries obey `(eq:decayXi)`: `|Ξ(a,b)| ≲ (1-s)(ĝ²+|1-t|)^{-1}(|a-b|+1)^{-(d-2)}`;
-* the polynomial factor sums to `≍ R²` over that ball (`RBM.sum_ball_pow_le`);
+* the polynomial factor sums to `≍ R²` over that ball (`RBM.sum_ball_min_pow_le`, whose
+  truncated form lets the centre of the ball differ from the centre of the factor);
 * and `R ≍ ℓ_s` turns `(1-s)ℓ_s²` into `ĝ²+|1-s|` (`RBM.one_sub_mul_ellT_sq_le`).
 
 The three together give exactly one factor of `(ĝ²+|1-s|)/(ĝ²+|1-t|)`, with `Λ²` standing
@@ -571,13 +572,13 @@ theorem sum_ball_norm_XiKer_le {k : ℕ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 <
       g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t → ∀ Λ : ℝ, 1 ≤ Λ → ∀ R : ℝ, 1 ≤ R →
       R ≤ Λ * ellT L g s →
       haveI : NeZero L := ⟨by omega⟩
-      ∀ (a : Zd (k + 2) L) (D : Finset (Zd (k + 2) L)),
-        (∀ b ∈ D, ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) ≤ R) →
+      ∀ (a ctr : Zd (k + 2) L) (D : Finset (Zd (k + 2) L)),
+        (∀ b ∈ D, ((zdistD (k + 2) L (ctr - b) : ℕ) : ℝ) ≤ R) →
         ∑ b ∈ D, ‖XiKer (k + 2) L g μ s t a b‖
           ≤ C * Λ ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) := by
   obtain ⟨C₀, hC₀, c, hc, hbd⟩ := norm_XiKer_apply_le (g := g) hd hg hμ hdecay
   refine ⟨4 * C₀ * ballC k, mul_pos (by positivity) (ballC_pos k), ?_⟩
-  intro L hL s t hs hst ht hgt Λ hΛ R hR hRℓ a D hD
+  intro L hL s t hs hst ht hgt Λ hΛ R hR hRℓ a ctr D hD
   have : NeZero L := ⟨by omega⟩
   have hL1 : (1 : ℝ) ≤ (L : ℝ) := by exact_mod_cast le_trans (by norm_num) hL
   have hs1 : s < 1 := lt_of_le_of_lt hst ht
@@ -607,7 +608,19 @@ theorem sum_ball_norm_XiKer_le {k : ℕ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 <
       _ = C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
           * ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹ := mul_one _
   -- the ball sum of the polynomial factor
-  have hball := sum_ball_pow_le (L := L) k hR D a hD
+  -- the ball is around `ctr`, the `Ξ` factor around `a`: the truncated form of the Q20
+  -- lemma is what allows the two centres to differ
+  have hball : ∑ b ∈ D, ((((zdistD (k + 2) L (a - b) : ℕ) : ℝ) + 1) ^ k)⁻¹
+      ≤ ballC k * R ^ 2 := by
+    refine le_trans (Finset.sum_le_sum fun b _ => ?_)
+      (sum_ball_min_pow_le (L := L) k hR D ctr a hD)
+    have hmin : min ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) R
+        ≤ ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) := min_le_left _ _
+    have h1 : (0 : ℝ) < (min ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) R + 1) ^ k := by
+      have : (0 : ℝ) ≤ min ((zdistD (k + 2) L (a - b) : ℕ) : ℝ) R :=
+        le_min (Nat.cast_nonneg _) (by linarith)
+      positivity
+    exact inv_anti₀ h1 (pow_le_pow_left₀ (by positivity) (by linarith) k)
   have hcoef : (0 : ℝ) ≤ C₀ * (1 - s) * (g ^ 2 + |1 - t|)⁻¹ := by
     have : (0 : ℝ) ≤ 1 - s := by linarith
     positivity
@@ -645,5 +658,80 @@ theorem sum_ball_norm_XiKer_le {k : ℕ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 <
           have h2 : (0:ℝ) ≤ (g ^ 2 + |1 - t|)⁻¹ := by positivity
           exact mul_nonneg h1 h2
         linarith
+
+
+/-! ### The product over the factors: `(sum_res_1_red0)`'s combinatorial core
+
+`(eq:decomp_U2)` expands `U^(n) ∘ 𝒜` over subsets `A ⊂ [n]`: the indices in `A` contribute
+a Kronecker delta and those outside contribute a factor `Ξ^(i)`.  The fast-decay property
+`(deccA0)` confines the summation variables `b_i` to a ball of radius `≍ W^ε ℓ_s` (around
+`a_1`, which is pinned by a delta when `A ≠ ∅`), and inside that ball each factor costs
+`C Λ² (ĝ²+|1-s|)/(ĝ²+|1-t|)` by `sum_ball_norm_XiKer_le`.
+
+What is left is to see that the sum of the products is the product of the sums.  That is
+`Finset.prod_univ_sum`, and it is the content of the two lemmas below; the first is stated
+for an arbitrary non-negative family, because nothing about `Ξ` is used.
+-/
+
+/-- The sum over a product region of a product of non-negative factors is at most the
+product of the individual sums, hence at most `M^n` when each sum is at most `M`. -/
+theorem sum_prod_le_pow {ι : Type*} [Fintype ι] [DecidableEq ι] {α : Type*}
+    (D : Finset α) (F : ι → α → ℝ) (hF : ∀ i, ∀ b ∈ D, 0 ≤ F i b) {M : ℝ}
+    (hsum : ∀ i, ∑ b ∈ D, F i b ≤ M) :
+    ∑ β ∈ Fintype.piFinset fun _ : ι => D, ∏ i, F i (β i) ≤ M ^ Fintype.card ι := by
+  rw [← Finset.prod_univ_sum]
+  calc ∏ i : ι, ∑ b ∈ D, F i b ≤ ∏ _i : ι, M :=
+        Finset.prod_le_prod₀ (fun i _ => Finset.sum_nonneg fun b hb => hF i b hb)
+          (fun i _ => hsum i)
+    _ = M ^ Fintype.card ι := by rw [Finset.prod_const, Finset.card_univ]
+
+/-- **One subset's worth of factors.**  With the summation variables confined to a ball of
+radius `R ≤ Λ ℓ_s` -- around whichever point `(deccA0)` pins down, not necessarily the
+centre of any single factor -- the `Ξ`-factors of `(eq:decomp_U2)` cost
+
+`(C Λ² (ĝ²+|1-s|)/(ĝ²+|1-t|))^k`
+
+in total, which is the shape claimed in `(sum_res_1_red0)` with `Λ²` standing for the
+paper's `W^{Cε}`. -/
+theorem sum_prod_norm_XiKer_le {k n : ℕ} {μ : Fin n → ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g)
+    (hμ : ∀ i, ‖μ i‖ = 1) (hdecay : ∀ i, ThetaDecay (k + 2) g (μ i)) :
+    ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t → t < 1 →
+      g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t → ∀ Λ : ℝ, 1 ≤ Λ → ∀ R : ℝ, 1 ≤ R →
+      R ≤ Λ * ellT L g s →
+      haveI : NeZero L := ⟨by omega⟩
+      ∀ (ctr : Zd (k + 2) L) (D : Finset (Zd (k + 2) L)),
+        (∀ b ∈ D, ((zdistD (k + 2) L (ctr - b) : ℕ) : ℝ) ≤ R) →
+        ∀ (a : Fin n → Zd (k + 2) L),
+        ∑ β ∈ Fintype.piFinset fun _ : Fin n => D,
+            ∏ i : Fin n, ‖XiKer (k + 2) L g (μ i) s t (a i) (β i)‖
+          ≤ (C * Λ ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|))) ^ n := by
+  have hbd : ∀ i : Fin n, ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t →
+      t < 1 → g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t → ∀ Λ : ℝ, 1 ≤ Λ → ∀ R : ℝ, 1 ≤ R →
+      R ≤ Λ * ellT L g s →
+      haveI : NeZero L := ⟨by omega⟩
+      ∀ (a ctr : Zd (k + 2) L) (D : Finset (Zd (k + 2) L)),
+        (∀ b ∈ D, ((zdistD (k + 2) L (ctr - b) : ℕ) : ℝ) ≤ R) →
+        ∑ b ∈ D, ‖XiKer (k + 2) L g (μ i) s t a b‖
+          ≤ C * Λ ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) := fun i =>
+    sum_ball_norm_XiKer_le (g := g) hd hg (hμ i) (hdecay i)
+  choose C hC hCbd using hbd
+  rcases Nat.eq_zero_or_pos n with hn | hn
+  · subst hn
+    refine ⟨1, one_pos, ?_⟩
+    intro L hL s t hs hst ht hgt Λ hΛ R hR hRℓ ctr D hD a
+    simp
+  · have hne : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
+    have hsup : ∀ i, C i ≤ ⨆ j, C j := fun i => le_ciSup (Finite.bddAbove_range _) i
+    refine ⟨⨆ j, C j, lt_of_lt_of_le (hC hne.some) (hsup hne.some), ?_⟩
+    intro L hL s t hs hst ht hgt Λ hΛ R hR hRℓ ctr D hD a
+    have : NeZero L := ⟨by omega⟩
+    have hratio : (0 : ℝ) ≤ (g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|) := by positivity
+    refine le_trans (sum_prod_le_pow D (fun i b => ‖XiKer (k + 2) L g (μ i) s t (a i) b‖)
+      (fun i b _ => norm_nonneg _) (M := (⨆ j, C j) * Λ ^ 2
+        * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|))) ?_) (le_of_eq (by rw [Fintype.card_fin]))
+    intro i
+    refine le_trans (hCbd i L hL s t hs hst ht hgt Λ hΛ R hR hRℓ (a i) ctr D hD) ?_
+    exact mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_right (hsup i) (by positivity)) hratio
 
 end RBM
