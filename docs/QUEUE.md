@@ -30,7 +30,7 @@
 | Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块零件已证；三条结论 → Q26 |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
-| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
+| Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **CLAIMED (CC)** |
 | Q22a | **Grönwall 唯一性**（`Loop/Unique.lean`，250 行） | `Loop/Unique.lean` | **OPEN**（需 Q27；落地后 `KTreeRep` 只欠存在性） |
 | Q22b | 树公式 = 存在性（真正的大件） | `Loop/TreeRep*.lean` | **OPEN**（需 Q22a） |
 | Q23 | **传播子对 `t` 的求导层** ⭐（Q22 的前置） | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
