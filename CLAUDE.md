@@ -90,20 +90,59 @@ lake env lean RBM3D/Defs/Lattice.lean   # 单文件，秒级 —— 默认用这
 
 ## 硬性规则
 
-1. **不留 `sorry`。** 证不出来就停下说「卡在 X」，不要 sorry 占位然后继续往下写。
-2. **不许发明 Mathlib 引理名。** 先 grep `../RBM1D/.lake/packages/mathlib/Mathlib/`，
-   或新建临时 `RBM3D/Probe.lean` 加 `#check @foo` 编译看签名。
-   `exact?` / `apply?` / `rw?` / `aesop` 鼓励用。
-3. **公理审计。** `./check.sh` 会跑 `#assert_rbm_axioms`，它比 `#print axioms` 严：
-   任何不在 `allowedAxioms ∪ interfaceAxioms` 里的公理（含 `sorryAx`）都让构建失败。
-   **新增 axiom 必须同时改 `interfaceAxioms` 并在 `docs/paper-deltas.md` 记一条。**
-   **不用 `native_decide`。**
-4. **陈述逐字对应论文。** 不得不加假设（如 `3 ≤ L`）或换陈述形式，写进 `docs/paper-deltas.md`。
-5. **小步提交。** 一次只动一条引理 / 一个文件；绿了就 `git commit`。
-6. **不碰随机层**（Itô、Dyson Brownian motion、loop hierarchy、universality）。
-7. **常数不求最优。** 统一 `∃ C > 0, ∃ c > 0, ∀ ...`；`≺` 用 `DetDom` / `UnifDetDom` 封装。
-   但**接口公理写成展开式**（`∀ τ > 0, ∃ C > 0, ...`）而不是 `≺`：公理是要被人逐字
-   对着论文核的，不该让核对的人再去展开一个定义。
+每个 agent 开工先读这一段。
+
+1. **不留 `sorry`。** 证不出来就停下说「卡在 X，试过 Y 和 Z，失败原因是 W」。
+   共享工作树里一个 `sorry` 会让所有人的 `build.log` 变红，还会触发公理审计。
+2. **做不了的东西写成 `structure` 字段或定理参数，不写 `axiom`。** 见下面「接口的形式」一节。
+3. **不许发明 Mathlib 引理名。** 先 grep `../RBM1D/.lake/packages/mathlib/Mathlib/`，
+   或新建临时 `RBM3D/Probe.lean` 加 `#check @foo` 看签名。`exact?` / `apply?` / `rw?` / `aesop` 鼓励用。
+   **核实过的名字和签名记进 `docs/mathlib-api.md`**，别让下一个人重查一遍。
+4. **造轮子之前先查仓库。** `grep -rn` 一下 `RBM3D/`，看这条引理是不是已经有人证过了。
+5. **公理审计写进构建。** `./check.sh` 会跑 `#assert_rbm_axioms`，违规即**编译失败**——
+   靠人记得跑 `#print axioms` 是靠不住的。**不用 `native_decide`。**
+6. **陈述逐字对应论文。** 任何偏离记进 `docs/paper-deltas.md`，而且要写明
+   **论文第几页、改哪一段、大约几行**——这样「论文最终要改多少」随时能算出来。
+7. **只按文件名 `git add`，绝不 `git add -A`。** `-A` 会把别人正在写的文件暂存进你的提交。
+8. **小步提交。** 一次一条引理；绿了就 commit。攒一大坨再一起编译，错了无法二分。
+9. **共享文件只做点插入，绝不整体重排。** 唯一的共享文件是根 import 列表 `RBM3D.lean`。
+   用 `sorted(set(lines))` 之类去重会把末尾的 `#assert_rbm_axioms` 搅进 import 块，整体构建挂掉。
+10. **不碰随机层**（Itô、Dyson Brownian motion、loop hierarchy、universality）。
+11. **常数不求最优。** 统一 `∃ C > 0, ∃ c > 0, ∀ ...`；`≺` 用 `DetDom` / `UnifDetDom` 封装。
+    **对外一律保持论文的 `≺`**，矩只活在证明内部——接口签名冻结，论文那边就只需要改证明，
+    不动任何陈述、不重新编号。
+12. **heredoc 写完要验证。** `cat > f <<'EOF'` 有可能静默失败，而后续的 `sed` 却成功，把失败掩盖掉。
+    写完 `ls -l` 确认，并**立刻提交**，免得被 `git clean` 清掉。
+
+## 永不停工
+
+**队列见底 = 全员停工，这是这个项目里唯一不可接受的状态。**
+
+`docs/QUEUE.md` 里 OPEN 的工单永远要比 agent 多。若你开工时发现没有 OPEN 的，
+**不要停下来等**，按这个顺序自己挑活，并在队列表里补一行说明你在做什么：
+
+1. **储备工单**（队列末尾「储备」一节，已经写好但没编号的）；
+2. **维护**：把带假设的引理消掉假设、把 `docs/mathlib-api.md` 补全、把长证明拆短；
+3. **审计**：挑论文的一节逐字对一遍 Lean 陈述，把偏离记进 `paper-deltas.md`。
+
+## 接口的形式：`structure` 字段，不是 `axiom`
+
+**这一条推翻了本项目早期的做法，要按新的来。**
+
+论文引用而未证的结论（`lem_propTH` 性质 5–8 等），早期写成了 `axiom` 放在
+`Propagator/Interface.lean`。姊妹项目 RBM1D 的经验是**不要这样**：
+
+* `axiom` 会污染公理审计，而且没人知道哪天该把它拿掉；
+* 把它做成 **`structure` 字段或定理参数**，下游立刻能编译、能证、能并行推进；
+* 等到有人真把它证出来时，**原地把字段换成定理，签名一个字不改**，
+  依赖它的工单一张都不用返工。`axiom` 做不到这件事。
+
+本项目已经在两处自发走对了：`Graph/Model.lean` 的 `Case.Rel` 是显式假设，
+`Propagator/Basic.lean` 早期的 `hS` / `hone` 也是假设（后来被 Q3/Q4 消掉了，
+签名没变，下游零返工——这正是这条规则要买的东西）。**Q19 是把剩下 5 条 axiom 也改过去。**
+
+判据：**这条结论将来有没有可能被证出来？** 有，就写成字段/参数；
+只有「永远不打算证」的才考虑 axiom，而目前一条都不属于这类。
 
 ## 命名与风格
 
@@ -128,6 +167,13 @@ lake env lean RBM3D/Defs/Lattice.lean   # 单文件，秒级 —— 默认用这
 **CI 是通的，而且快。** 仓库公开，`Lean Action CI` 每次约 2 分钟，
 运行页上的 job summary 公开可读（`lean_action_ci.yml` 第二步把完整 `lake build` 输出写进
 `$GITHUB_STEP_SUMMARY`）。所以只要 Jun push 了，Cowork 侧就能读到全部编译错误。
+
+**push 的正确做法：Cowork 只 commit，终端常驻一个 agent 负责 push 和编译。**
+Cowork 的沙箱里没有 credential helper、没有 keychain，直接 push 必然失败
+（实测：git 代理拒绝注入凭据）。但 `git add` / `git commit` 只动本地 `.git`，不需要凭据，
+所以照常做。在 Mac 终端里常驻一个 Claude Code agent 负责 `git push`（顺带跑 `lake build`），
+两边在**同一个工作树**上，它一 push 就把两边的 commit 一起推上去。
+这也正是两边分工的意义：**终端 agent 有编译器和凭据，Cowork 有长上下文、能读 PDF、能管队列和蓝图。**
 
 **Cowork 无法编译，也无法 push。** 这个仓库不在云端会话的授权仓库集里，git 代理
 会拒绝注入凭据（403）。所以 RBM2D 那套「写 → push → 读 CI 日志 → 改」的回路，
