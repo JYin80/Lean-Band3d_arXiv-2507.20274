@@ -99,6 +99,23 @@ def structuralProps : List Name :=
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
 
+/-- **Non-vacuity certificates** (`docs/QUEUE.md`, Q41).  For a premise `p`, a theorem of
+this development witnessing that `p` is *satisfiable*: either an object that satisfies it,
+or a weakening of it that is proved here.
+
+This is the one thing the axiom count cannot see.  If a premise is false, every theorem
+carrying it is vacuously true, and the audit still reports `0 axioms` and a healthy list
+of dependents -- which is exactly what happened while `(prop:ThfadC_short)` was stated
+without its `σ₁ = σ₂` restriction (`docs/paper-deltas.md`, D11).  The certificate column
+below is the positive half of that record; `RBM3D/Test/InterfaceShape.lean` holds both
+halves and says, premise by premise, what a certificate would take.
+
+A certificate must name a real theorem, for a registered premise; otherwise the build
+fails.  The column is deliberately mostly empty: it reports a gap rather than hiding it. -/
+def certificates : List (Name × Name) :=
+  [(`RBM.ThetaDecay, `RBM.Test.thetaDecay_fixedL),
+   (`RBM.Loop.TwoLoopBounded, `RBM.Test.twoLoopBounded_kTwoLoop)]
+
 /-! ### Finding the premises, instead of being told them
 
 `interfaceProps` used to be a hand-written list, and the moment a new assumption appeared
@@ -128,8 +145,16 @@ private partial def conclusionHead : Expr → Option Name
 that prove them.  `ignore` keeps the audit's own fixtures out of the development.
 
 A structure's projections do not count as proving its fields: `PropTH.decay` produces a
-`ThetaDecay` from a `PropTH`, which is bookkeeping, not a proof. -/
-def scanPremises (env : Environment) (ignore : Name → Bool) : Array Name := Id.run do
+`ThetaDecay` from a `PropTH`, which is bookkeeping, not a proof.
+
+Neither does a **certificate**: `twoLoopBounded_kTwoLoop` concludes
+`TwoLoopBounded d L (kTwoLoop …)`, so its conclusion head is the premise, but it proves it
+of *one* family, not of the arbitrary `K` that every theorem carrying the premise quantifies
+over.  Counting it as a proof made the premise disappear from the scan -- a report that
+goes quiet exactly when someone certifies an assumption is worse than no report -- so the
+names in `certificates` are excluded here (`witness`). -/
+def scanPremises (env : Environment) (ignore : Name → Bool) (witness : Name → Bool) :
+    Array Name := Id.run do
   let keep (n : Name) : Bool := (`RBM).isPrefixOf n && !n.isInternalDetail && !ignore n
   let propDefs := env.constants.fold (init := #[]) fun acc n ci =>
     if keep n && (match ci with | .defnInfo _ | .inductInfo _ => true | _ => false)
@@ -144,7 +169,7 @@ def scanPremises (env : Environment) (ignore : Name → Bool) : Array Name := Id
           if propDefs.contains c && !assumed.contains c then assumed := assumed.push c
         let isProj := propDefs.any fun p =>
           isStructure env p && (getStructureFields env p).any fun f => p ++ f == n
-        unless isProj do
+        unless isProj || witness n do
           match conclusionHead ci.type with
           | some h => if propDefs.contains h && !proved.contains h then proved := proved.push h
           | none => pure ()
@@ -194,8 +219,17 @@ elab "#assert_rbm_axioms" : command => do
     counts := counts.map fun (a, k) => if usedAxioms.contains a && a != n then (a, k + 1) else (a, k)
   unless bad.isEmpty do
     throwError m!"axiom audit failed:\n{MessageData.joinSep bad.toList "\n"}"
+  -- every certificate must name a real theorem, for a registered premise
+  for (p, c) in certificates do
+    unless (borrowedProps ++ owedProps ++ structuralProps).contains p do
+      throwError m!"axiom audit: `{c}` is registered as a certificate for `{p}`, which is \
+        not a registered premise"
+    match env.find? c with
+    | some (.thmInfo _) => pure ()
+    | _ => throwError m!"axiom audit: the certificate `{c}` of `{p}` is not a theorem"
   -- the premises, found rather than declared
   let found := scanPremises env (fun n => (`RBM.Audit).isPrefixOf n)
+    (fun n => certificates.any fun (_, c) => c == n)
   let classified := borrowedProps ++ owedProps ++ structuralProps
   let unregistered := found.filter fun n => !classified.contains n
   unless unregistered.isEmpty do
@@ -212,8 +246,13 @@ elab "#assert_rbm_axioms" : command => do
       !isInterfaceOwn n && (ci.type.getUsedConstants).contains p).size)
   let usage := usageOf interfaceProps
   let carried : Nat := usage.foldl (init := 0) fun acc (_, k) => acc + k
+  let certOf (p : Name) : MessageData :=
+    match certificates.find? (fun (q, _) => q == p) with
+    | some (_, c) => m!" [certificate: {c}]"
+    | none => m!" [no certificate]"
   let ledger (title : MessageData) (ps : List Name) : MessageData :=
-    m!"{title}\n{MessageData.joinSep ((usageOf ps).map fun (p, k) => m!"  {p}: {k}") "\n"}"
+    m!"{title}\n{MessageData.joinSep ((usageOf ps).map fun (p, k) =>
+      m!"  {p}: {k}{certOf p}") "\n"}"
   let usageReport := usage.map fun (p, k) => m!"  {p}: {k}"
   let axiomLine :=
     if interfaceAxioms.isEmpty then
@@ -249,7 +288,11 @@ elab "#assert_rbm_axioms" : command => do
     {carriedLine}\n\
     premises found by scanning: {found.size} (borrowed {foundBorrowed.size}, \
     owed {foundOwed.size}, structural {foundStructural.size}).\n\
-    {registryLine}"
+    {registryLine}.\n\
+    non-vacuity certificates: {certificates.length} of \
+    {borrowedProps.length + owedProps.length} premises in the two ledgers; the rest are \
+    not known to be satisfiable (`RBM3D/Test/InterfaceShape.lean` says what each would \
+    take)"
 
 /-- **Reverse test.**  Fails unless the scan reports `p` as an unclassified premise.  The
 point of `#assert_rbm_axioms` is that adding an assumption without classifying it breaks
@@ -259,6 +302,7 @@ elab "#assert_rbm_audit_detects " p:ident : command => do
   let env ← getEnv
   let n := p.getId
   let found := scanPremises env (fun _ => false)
+    (fun n => certificates.any fun (_, c) => c == n)
   let classified := borrowedProps ++ owedProps ++ structuralProps
   let unregistered := found.filter fun m => !classified.contains m
   unless unregistered.contains n do
