@@ -10,8 +10,13 @@
 > CC 在同一时间把 Q17b 的后续也叫成 Q26，表里于是出现两条 Q26，下一个领单的人会领错。
 > **从此分号段：CC 自己开的工单从 Q28 往上顺排，Cowork 侧开的工单从 Q40 起。**
 > 号段分开，两边都不必先同步就能开单。
+>
+> **两份蓝图的分工**：`blueprint/src/content.tex`（leanblueprint，CC 维护）是**机器可核的进度**——
+> `\lean{}` 指向真实声明、`\leanok` 与提交同步、`\uses` 组成依赖图。
+> `blueprint/cowork/`（Cowork 维护，发布成给作者看的网页）是**叙事与队列快照**。
+> **两边都别去改对方那一份**；不一致时以 `content.tex` 为准，Cowork 负责把差异反映到网页上。
 
-最后刷新：2026-09-20 · beat 11（Q17b 部分完成、Q20 认领中；**修掉 Q26 撞号**，主线四条按顺序排）
+最后刷新：2026-09-20 · beat 12（Q20 部分完成、Q23 认领中；队列无过期标记；新提 **Q40**，只动蓝图 tex）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -45,6 +50,7 @@
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（`KTwoFormula` 已漏报） |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
+| Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
 ---
@@ -1394,3 +1400,55 @@ Q20 证到了确定性不等式，右边留着 `Ψ_t² ℓ²`。剩下的就是�
 
 **注意**：`η_t`、`B_{t,0}`、`ℓ_t` 之间的关系要逐字核对论文 `(def:etat)` 与 `lem:Bt0`，
 不要凭印象写；`1 - t ≥ ĝ²/L²` 这个前提在 `claim:TTk` 里是显式写着的。
+
+---
+
+## Q40 · 依赖图把「借来的」和「暂时假设的」混成一类，而且有一条边是错的 ⭐ — **OPEN**（Cowork 于 beat 12 提）
+
+**文件**：`blueprint/src/content.tex`（只动蓝图，不动 Lean 代码）。
+
+CC 在 Q20 那一拍把 `content.tex` 整理得很好——`\lean{}` 都 `#check` 过、`\uses` 都能解析、
+房规「`\leanok` 与它命名的声明同一次提交」也立住了。**下面两处是在那个基础上继续挑的，不是返工。**
+
+### 一、`ax:` 这一类现在装了两种东西
+
+第三章的抬头写得很清楚：「这些是本文**引用**而非证明的估计」。但 `ax:` 前缀现在挂着七个节点：
+
+* **真·借来的**（五条）：`ax:ThfadC`、`ax:ThfadCshort`、`ax:BD1`、`ax:BD2`、`ax:ThfadC0`。
+  本项目**不打算**证它们，它们会长期是假设。
+* **只是暂时假设的**（两条）：`ax:KTreeRep`、`ax:KTwoFormula`。
+  两条**都有工单要把它们证出来**（Q22a/Q22b 与 Q27），`content.tex` 自己就写着。
+
+在生成的依赖图里这七个是同一种颜色、同一种说法，于是图在说「这七条都是外部输入」——
+**而其中两条其实是本项目的欠债**。这正是 Q26 在审计那一侧要分的两本账，
+蓝图这一侧也得分：**建议把后两条换个前缀（如 `hyp:`）并在章节里单独成段**，
+说明「陈述在 Lean 里，证明本项目会补，工单是 Qxx」。
+
+### 二、`ax:KTwoFormula` 的 `\uses{ax:KTreeRep}` 是错的
+
+这条边说：2-loop 的闭式解依赖一般 `n` 的树表示。**它不依赖。** beat 10 算过：
+`(Kn2sol)` 的证明（Q27）只用三样东西——
+
+1. `IsKLoop`（「树方程 ODE + `t=0` 初值」的刻画），
+2. `treeEqRhs_two`（Q15 **已证**的 `n = 2` 右端），
+3. `∂_ξ Θ = Θ S^(B) Θ`（Q23）。
+
+一条都不是 `KTreeRep`。**画成依赖 `KTreeRep`，图就在说 Q27 得等那个大件，而事实相反**——
+Q27 恰恰是绕开大件、先拿到的那一块。
+
+**根子在节点划分**：`ax:KTreeRep` 的 `\lean{}` 里塞了五个名字
+（`LoopIdx`、`treeEqRhs`、`MLoop`、`IsKLoop`、`KTreeRep`），前四个是**已经落地的定义**，
+只有第五个是假设。因为混在一起，整个节点拿不到 `\leanok`，**已完成的那四个也跟着显示为未完成**。
+
+**建议拆成两个节点**：
+
+* `def:kloop` —— `LoopIdx`、cut-and-glue、`treeEqRhs`、`treeEqRhs_two`、`MLoop`、`IsKLoop`，
+  **带 `\leanok`**（这些都证/定义好了）；
+* `hyp:KTreeRep` —— 只有 `KTreeRep` 这一条假设，`\uses{def:kloop}`。
+
+然后 `ax:KTwoFormula` 改成 `\uses{def:kloop, def:Theta}`（Q23 落地后再加求导那个节点）。
+**改完之后图才会显示出这条项目最关心的事实：主线可以从 Q23 → Q27 走，不必先啃 Q22b。**
+
+**验收**：`leanblueprint` 能构建、`\uses` 全部解析；第三章分成「借来的五条」与「暂时假设的两条」两段；
+`ax:KTwoFormula` 不再指向 `KTreeRep`；已落地的 `K`-loop 定义拿到 `\leanok`。
+**与 Q26 对齐**：审计的两本账和蓝图的两段说的应当是同一件事。
