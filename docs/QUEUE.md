@@ -29,7 +29,7 @@
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
-| Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **OPEN**（随机层从这条起步） |
+| Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **CLAIMED (CC)** |
 | Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | BLOCKED by Q43a（还需高斯模型） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **OPEN**（CC 于 beat 19 拆出） |
 | Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | BLOCKED by Q42a（要测度论） |
