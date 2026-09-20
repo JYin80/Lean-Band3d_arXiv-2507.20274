@@ -60,7 +60,7 @@ CH4 = rows([
  ("lem:propT 的卷积界 TTT2 —— 分析量最大的一条，拆成 K0–K5","Q11 ✓ 已证","done","Defs/Shells.lean · Defs/RadialSum.lean"),
  ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 与下标范围已逐条核实","Q12 ✓ 已证","done","sfT · PsiT · sfT_pair_cases"),
  ("(eq:key_T_reudce) 求和版 —— 确定性不等式已证，比论文还省两步（D14/D15）","Q20 ✓ 已证","done","Kernel/PropT.lean"),
- ("把 Ψ_t²ℓ² 吸收成 (W^d η_t)⁻¹ —— 全项目第一处真要用 DetDom","Q29 · 可开工","ready","Defs/Domination.lean 的 ≺"),
+ ("把 Ψ_t²ℓ² 吸收成 (W^d η_t)⁻¹ —— 全项目第一处真要用 DetDom","Q29 ✓ 已证","done","detDom_log_pow · Bparam_mul_ellT_sq_le · key_T_reduce_absorbed"),
  ("lem:sum_decay_nonzero —— 第一条真正使用接口假设的定理，签名里写着借了什么","Q13 ✓ 已证","done","norm_zeroModeSet_UN_le · projMat_mul_Theta"),
  ("eq:latticesum_d3 —— 第三轮新加的那条临界格点求和，附录里唯一一处新数学","Q17a ✓ 已证","done","latticesum_d3 · sum_inv_Icc_le · sum_radial_tail_le"),
  ("(eq:decomp_U2) 子集展开与 (eq:decayXi) —— lem:sum_decay 的两块零件","Q17b ✓ 已证","done","UN_apply_eq_sum_powerset · norm_XiKer_apply_le · SB_apply_eq_zero_of_one_lt"),
@@ -114,9 +114,9 @@ QUEUE = """
 <tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— <b>那句「额外修改」已定位并证出</b>（D16）</td><td><code>Loop/KBound.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q25</td><td><code>lem_pureloop</code> —— <code>n = 3</code> 与任意 <code>n</code> 的星形树已证</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q33</td><td><code>lem_pureloop</code>：带对角线的树（<code>n ≥ 4</code>）</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
-<tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b></td><td><code>Test/Axioms.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
-<tr><td>Q28</td><td><code>lem:sum_decay</code> 的三条结论（<code>sum_res_1</code> / <code>(I)</code> / <code>(II)</code>）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— 扫描 + 两本账 + 反向测试</td><td><code>Test/Axioms.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q28</td><td><code>lem:sum_decay</code> 的三条结论（<code>sum_res_1</code> / <code>(I)</code> / <code>(II)</code>）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
+<tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q41</td><td><b>每条假设的「非空洞」证书</b>（固定 <code>L</code> 版）<b>⭐</b></td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q42</td><td><b>确定性包络</b> <code>‖G‖ ≤ η⁻¹</code> —— 随机层第一步，免费</td><td><code>Gauss/Envelope.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
@@ -216,7 +216,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>349</b><span>定理已证</span></div>
+    <div class="chip done"><b>353</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
     <div class="chip ready"><b>9</b><span>可立即开工</span></div>
@@ -373,10 +373,16 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 可它不是具名 <code>Prop</code>，于是<strong>任何汇总都数不到它</strong>。这一条本身是良性的
 （论文自己沿途证，显式解也兑现了它），较真的是「数不着」这件事——对一份把「零公理」写在抬头的开发，
 数不着和藏起来差别不大。</p>
-<p>三拍走完：beat 14 立成 CLAUDE.md 规则 15（<em>没证出来的数学前提必须具名</em>）；
-beat 16 新代码照办（<code>KLoopBound</code>）；beat 17 回头把促成这条规则的那一处也改了。
-审计现在报 <code>TwoLoopBounded: 4</code>——<strong>那条原本数不着的前提，现在数得着了。</strong>
-Q26 剩下的本体是让审计<em>自己发现</em>前件，而不是靠人往名单里加。</p>
+<p>四拍走完：beat 14 立成 CLAUDE.md 规则 15（<em>没证出来的数学前提必须具名</em>）；
+beat 16 新代码照办（<code>KLoopBound</code>）；beat 17 回头把促成这条规则的那一处也改了；
+<strong>beat 18 Q26 落地，审计不再信任手写名单</strong>——<code>scanPremises</code> 扫环境里
+<code>RBM</code> 的 <code>Prop</code> 值定义，挑出「被当前件用、而本项目无任何定理证出」的那些，
+凡不在三份登记名单里的<em>构建失败</em>，并附反向测试。</p>
+<p>报告现在真的分两本账：<b>论文借来的 8 条</b>、<b>本形式化欠下的 1 条</b>
+（<code>TwoLoopBounded</code>，承重 4）、另列 5 条结构性谓词。
+<strong><code>KTwoFormula</code> 因为 Q22a 已证，自动从账上消失了</strong>——名单时代要手工删。
+CC 还把已知边界写下来备查：判定靠「没有定理以它为结论」，所以
+<code>theorem foo (h : P) : P := h</code> 这种同义反复骗得过它。</p>
 <p><strong>同一件事在依赖图里还没分开。</strong> <code>blueprint/src/content.tex</code> 的 <code>ax:</code>
 一类现在挂着七个节点：五条真·借来的，加上 <code>KTreeRep</code> 与 <code>KTwoFormula</code>——
 而后两条<em>都有工单要把它们证出来</em>。图里它们同色同说法，于是图在说「七条都是外部输入」。
@@ -392,11 +398,11 @@ Q26 剩下的本体是让审计<em>自己发现</em>前件，而不是靠人往�
 </div>
 
 <footer>
-  计数说明：<b>349 定理 / 145 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
+  计数说明：<b>353 定理 / 140 定义 / 0 公理</b>（定义数从 145 降到 140，是 Q26 把审计自己的辅助定义排除了） 由 <code>./check.sh</code> 的审计直接报出（Q18），
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 17 · 2026-09-20 07:25 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 18 · 2026-09-20 07:35 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

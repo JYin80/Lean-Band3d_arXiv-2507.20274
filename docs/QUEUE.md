@@ -16,10 +16,21 @@
 > `blueprint/cowork/`（Cowork 维护，发布成给作者看的网页）是**叙事与队列快照**。
 > **两边都别去改对方那一份**；不一致时以 `content.tex` 为准，Cowork 负责把差异反映到网页上。
 
-最后刷新：2026-09-20 · beat 17（Q25 到 `n = 3` + 星形树任意 `n`；**规则 15 闭环：`TwoLoopBounded` 已具名，审计报 4 条承重**）
+最后刷新：2026-09-20 · beat 18（Q26 / Q29 完成；**Q42、Q43 已挪到表格最前** —— 见下）
+
+> **为什么把 Q42、Q43 挪到最前（beat 18）**：随机层从 beat 15 开到现在五拍，一条都没被领过，
+> 而这五拍里 CC 连着挑了 Q24 → Q25 → Q26 → Q29 → Q28，全在确定性侧。
+> **多半不是不愿意做，而是领单规则是「从上往下找第一条 OPEN」，而它俩排在六十行表格的末尾。**
+> 那就改机制而不是喊口号：把它们挪到最前。
+>
+> **Q43 的价值在这张表里是最高的**：RBM1D 那边 6034 行、247 条定理、0 公理，**`d` 根本不出现**——
+> 整包可搬，比 `Loop/Unique.lean` 那 250 行还干净。确定性侧现在剩的都是小件与大件的中间段，
+> 边际收益比不上开这一整块。
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
+| Q42 | **确定性包络** `‖G‖ ≤ η⁻¹` —— 随机层第一步，免费 | `Gauss/Envelope.lean` | **OPEN**（见 `docs/stochastic-audit.md`） |
+| Q43 | **Stein 三层**（重采样路线，与 `d` 无关） ⭐ | `Gauss/Stein*.lean` | **OPEN**（整包可从 RBM1D 搬） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
 | Q3 | `‖S^(B)(g)‖ = 1` | `Defs/Block.lean` | **DONE** (CC) |
@@ -56,8 +67,6 @@
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
-| Q42 | **确定性包络** `‖G‖ ≤ η⁻¹` —— 随机层第一步，免费 | `Gauss/Envelope.lean` | **OPEN**（见 `docs/stochastic-audit.md`） |
-| Q43 | **Stein 三层**（重采样路线，与 `d` 无关） ⭐ | `Gauss/Stein*.lean` | **OPEN**（整包可从 RBM1D 搬） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
