@@ -218,6 +218,30 @@ is a new theorem.
   $\ell^2$ spectral theory, which is the point of taking this route.
 \end{lemma}
 
+\begin{lemma}[Dobrushin contraction and geometric mixing]\label{lem:mixing}
+  \lean{RBM.osc, RBM.osc_mulVec_le, RBM.osc_mulVec_pow_le, RBM.exists_mixing, RBM.sum_SBR_pow_row, RBM.sum_SBR_pow_col}\leanok
+  \uses{lem:connect}
+  Write $\mathrm{osc}\,f=\max f-\min f$.  If every entry of a stochastic $M$ is at least
+  $\varepsilon$, then $\mathrm{osc}(Mf)\le(1-\varepsilon L^d)\,\mathrm{osc}\,f$; and
+  therefore
+  \[ \bigl|(\SB^n)_{ab}-L^{-d}\bigr|\;\le\;q^{\lfloor n/R\rfloor},
+     \qquad q=1-\varepsilon L^d<1, \]
+  with $R$ the diameter of $\ZL$ plus one and $\varepsilon$ from \ref{lem:connect}.
+
+  The contraction is bookkeeping: subtract $\varepsilon$ from every entry, so that both
+  rows are non-negative with the same mass $1-\varepsilon L^d$, and the $\varepsilon$-part
+  cancels between the two rows.  $\varepsilon=0$ is allowed and gives the non-expansion
+  every stochastic matrix has, which is what covers the $n-R\lfloor n/R\rfloor$ leftover
+  steps.  The entry bound comes from applying this to the indicator of $b$: the flat value
+  $L^{-d}$ lies between the extremes of $a\mapsto(\SB^n)_{ab}$ because the columns of
+  $\SB^n$ sum to $1$.
+
+  \textbf{Still to do} (Q53): summing $\mathring\Th_t=\sum_k\xi^k(\SB^k-P)$ against this
+  bound --- $\sum_k q^{\lfloor k/R\rfloor}=R/(1-q)$, uniformly in $t$ --- which is the
+  fixed-$L$ certificate for $\mathtt{(prop{:}ThfadC0)}$ that \ref{lem:certificates} is
+  missing.
+\end{lemma}
+
 \begin{lemma}[Certificates: which of these are known to be satisfiable]\label{lem:certificates}
   \lean{RBM.Test.thetaDecay_fixedL, RBM.Test.exists_norm_Theta_ge, RBM.Test.not_exists_uniform_entry_bound, RBM.Test.sum_Theta_diff_row, RBM.Test.twoLoopBounded_kTwoLoop, RBM.Theta0_apply_eq, RBM.sum_Theta0_row}\leanok
   \uses{bor:ThfadC, bor:ThfadCshort, bor:BD1, bor:BD2, bor:ThfadC0, hyp:twoloop, lem:propTH-34}
@@ -242,8 +266,8 @@ is a new theorem.
   fixed $L$, while the entries of $\Th_t$ do not
   (\texttt{not\_exists\_uniform\_entry\_bound}), so each of them needs a
   \emph{cancellation} --- a difference of entries, or the removal of the zero mode.  At
-  fixed $L$ that cancellation is a finite-$L$ mixing statement about $\SB$ alone, whose
-  first half is \ref{lem:connect} (work order Q51).  What
+  fixed $L$ that cancellation is a finite-$L$ mixing statement about $\SB$ alone
+  (\ref{lem:connect}, \ref{lem:mixing}; what is left is the summation, Q53).  What
   is checked is that the refutation which killed the old property 5' cannot be rerun
   against them: $\sum_b\mathring\Th_{ab}=0$ and every first difference of a row sums to
   $0$.
