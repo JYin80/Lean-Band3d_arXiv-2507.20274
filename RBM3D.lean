@@ -23,6 +23,7 @@ import RBM3D.Loop.TreeThree
 import RBM3D.Loop.TreeFour
 import RBM3D.Gauss.Stein
 import RBM3D.Gauss.SteinMatrix
+import RBM3D.Gauss.Model
 import RBM3D.Loop.KBound
 import RBM3D.Propagator.Interface
 import RBM3D.Graph.ScalingOrder

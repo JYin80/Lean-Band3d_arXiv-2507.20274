@@ -45,6 +45,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Loop.TreeFour`      — `n = 4`: the six `(k,l)` terms, and the two diagonals
 * `RBM3D.Gauss.Stein`        — Gaussian integration by parts, the one probabilistic input
 * `RBM3D.Gauss.SteinMatrix`  — the resampling route: what of it does not need the model
+* `RBM3D.Gauss.Model`        — `(bandcw0)`/`(eq:variancematrix)`: the ensemble, and resampling
 * `RBM3D.Loop.KBound`        — `ML:Kbound`, and the `d ≥ 3` step its proof needs
 * `RBM3D.Test.Axioms`        — the axiom audit
 
