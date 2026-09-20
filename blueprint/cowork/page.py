@@ -28,11 +28,11 @@ CH2 = rows([
  ("行和 Σ_b Θ_{ab} = (1−ξ)⁻¹","已证","done","Theta_mulVec_one · sum_Theta_row"),
  ("Neumann 级数 (eq;Taylor)","已证","done","Theta_eq_tsum"),
  ("性质 4 ‖Θ‖_{∞→∞} ≤ (1−t)⁻¹，并消掉 hS / hone","Q5 ✓ 已证","done","norm_Theta_le · norm_Theta_apply_le · *_of_three_le"),
- ("性质 5 (prop:ThfadC) 多项式+指数衰减","接口公理","cited","theta_decay"),
- ("性质 5′ (prop:ThfadC_short)","接口公理","cited","theta_decay_short"),
- ("性质 6 (prop:BD1) 一阶差分","接口公理","cited","theta_diff_one"),
- ("性质 7 (prop:BD2) 二阶差分","接口公理","cited","theta_diff_two"),
- ("性质 8 (prop:ThfadC0) 去零模","接口公理","cited","theta_zero_mode"),
+ ("性质 5 (prop:ThfadC) 多项式+指数衰减","接口假设","cited","ThetaDecay"),
+ ("性质 5′ (prop:ThfadC_short)","接口假设","cited","ThetaDecayShort"),
+ ("性质 6 (prop:BD1) 一阶差分 —— 所引文献里也没有证明","接口假设","cited","ThetaDiffOne"),
+ ("性质 7 (prop:BD2) 二阶差分","接口假设","cited","ThetaDiffTwo"),
+ ("性质 8 (prop:ThfadC0) 去零模","接口假设","cited","ThetaZeroMode · 打包为 structure PropTH"),
 ])
 
 CH3 = rows([
@@ -47,8 +47,8 @@ CH4 = rows([
  ("演化核 U^(n) 与 lem:sum_Ndecay","Q9 ✓ 已证","done","ThetaN · UN · norm_UN_le"),
  ("尾函数 𝒯_t 与截断版 wT^ℓ_{t,D}","Q10 ✓ 已证","done","tailT · tailW · zeroMode_le_of_ge · ellT_eq_of_le"),
  ("lem:propT 的卷积界 TTT2 —— 分析量最大的一条，拆成 K0–K5","Q11 · 进行中","ready","Defs/Shells.lean · Defs/RadialSum.lean 已落地"),
- ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 要盯紧","Q12 · 可开工","ready","同上，与 Q11 串行"),
- ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 可开工","ready","Kernel/Evolution.lean"),
+ ("claim:TTk —— 第三轮发现漏截断之处，∧ℓ 与下标范围已逐条核实","Q12 ✓ 已证","done","sfT · PsiT · sfT_pair_cases"),
+ ("lem:sum_decay_nonzero（Q^(A) · I_diff(σ)）","Q13 · 认领中","ready","Kernel/Evolution.lean"),
  ("lem:sum_decay 与 eq:latticesum_d3 —— 第三轮新加的那条临界格点求和","Q17 · 可开工","ready","d=3 与 d≥4 要分开处理"),
  ("典范树划分 TSP(P_a) 与边值 f_{t,σ}(e)","Q14 · 可开工","ready","Loop/Partition.lean"),
  ("树表示 eq_Ktree —— 公理化 vs 移植 RBM1D 的 ODE 唯一性证法","Q15 · 待 Q14","todo","Loop/TreeRep.lean"),
@@ -70,12 +70,14 @@ QUEUE = """
 <tr><td>Q9</td><td>演化核 <code>U^(n)</code> 与 <code>lem:sum_Ndecay</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q10</td><td>尾函数 <code>𝒯_t</code> / <code>wT^ℓ_{t,D}</code></td><td><code>Defs/Tail.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q11</td><td><code>lem:propT</code> 的卷积界</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q12</td><td><code>claim:TTk</code>（<code>∧ℓ</code> 截断）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN · 与 Q11 串行</span></td></tr>
-<tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
+<tr><td>Q12</td><td><code>claim:TTk</code>（<code>∧ℓ</code> 截断）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q13</td><td><code>lem:sum_decay_nonzero</code></td><td><code>Kernel/Evolution.lean</code></td><td><span class="pill ready">认领中</span></td></tr>
 <tr><td>Q14</td><td>典范树划分 <code>TSP(P_a)</code> 与边值</td><td><code>Loop/Partition.lean</code></td><td><span class="pill ready">OPEN · 可并行</span></td></tr>
 <tr><td>Q15–Q16</td><td>树表示 <code>eq_Ktree</code> · <code>lem_pureloop</code></td><td><code>Loop/</code></td><td><span class="pill todo">待 Q14</span></td></tr>
 <tr><td>Q17</td><td><code>lem:sum_decay</code> 与 <code>eq:latticesum_d3</code>（第三轮新加的临界格点求和）</td><td><code>Kernel/</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q18</td><td>让审计直接报定理数与公理承重情况</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN · 小活</span></td></tr>
+<tr><td>Q18</td><td>让审计直接报定理数</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN · 小活</span></td></tr>
+<tr><td>Q19</td><td><b>5 条接口 axiom 改成 <code>structure</code> 字段</b> —— 全项目零公理</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q20</td><td><code>(eq:key_T_reudce)</code> 求和版（带 <code>≺</code>）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 </tbody></table>
 """
 
@@ -168,10 +170,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>174</b><span>定理已证</span></div>
+    <div class="chip done"><b>207</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
-    <div class="chip cited"><b>5</b><span>接口公理 · 尚未承重</span></div>
-    <div class="chip ready"><b>5</b><span>工单可开工</span></div>
+    <div class="chip done"><b>0</b><span>项目公理</span></div>
+    <div class="chip ready"><b>4</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -184,30 +186,26 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
 附录 B 的三条 expansion 引理（块 Anderson 线）同样引自 <code>[yang2024Del]</code> B.9–B.11；
 随机带矩阵线实际用的 <code>(Owx)</code>、<code>(Oe2x)</code> 则引自 <code>[yang2021delocalization]</code>
 Lemma 3.5 / 3.14。</p>
-<p><strong>但不是所有借来的东西都该写成 axiom。</strong> <code>(Owx)</code>、<code>(Oe2x)</code> 是
-<code>=𝔼</code> 恒等式，逐字陈述需要概率空间、预解式与 Wirtinger 导数——正是规则 6 划出 Phase 1 的随机层，
-而写错了编译器查不出来。它们真正被用到的部分反而进了 Lean 而且形式更好：确定性内核
-<code>∂_h G = −G·G</code> 是<em>定理</em>，展开产生的构型与计数关系是 <code>Model.lean</code> 的<em>显式假设</em>
-<code>Case.Rel</code>——假设出现在每条定理的类型里，比躲在 <code>#print axioms</code> 里的公理更可见。
-见 <code>paper-deltas.md</code> D10。</p>
-<p>按「只依据这篇论文」的规则，这些一律是 <strong>axiom</strong>，集中在
-<code>Propagator/Interface.lean</code>，并由 <code>Test/Axioms.lean</code> 的审计钉死：
-任何不在名单上的公理（含 <code>sorryAx</code>）都让构建失败，审计还会报出每条公理被多少条声明依赖。
-<strong>那张名单是产出，不是缺陷</strong>——它是「这篇论文向前人借了什么」的精确、机器可核查的记录。
-下面每张图里，横线以下即为借来的结果。</p>
-<p><strong>而到目前为止，借来的结果一条都还没承重。</strong> 审计报出的每条接口公理依赖数都是
-<code>1</code>，而 <code>collectAxioms</code> 对公理本身会返回它自己——也就是说
-<strong>现有 174 条定理没有一条依赖任何接口公理</strong>，全部是实打实证出来的。
-第一批会用到它们的是 <code>lem_pureloop</code>（需 <code>prop:ThfadC_short</code>）与
-<code>lem:sum_decay</code>（需 <code>prop:ThfadC</code>）。那个计数从 0 变正的时刻，
-就是借用开始承重的时刻，值得单独记一笔。</p>
+<p><strong>这些借来的结论不是 <code>axiom</code>，是假设。</strong> 它们写成
+<code>Propagator/Interface.lean</code> 里的五条 <code>Prop</code> 定义（<code>ThetaDecay</code>、
+<code>ThetaDiffOne</code> …），打包成 <code>structure PropTH</code>。用到它们的定理多带一个参数
+<code>(hP : PropTH d g m)</code>，取 <code>hP.decay</code>。</p>
+<p>这比写公理好在两处。<strong>一是可见</strong>：依赖关系出现在每条定理的类型里，调用处一眼看得见，
+而不是躲在 <code>#print axioms</code> 里等人去查。<strong>二是可卸</strong>：哪天有人真把某一条证出来了，
+<em>原地把假设换成定理，签名一个字不改</em>，依赖它的工单一张都不用返工——这正是本项目已经发生过一次的事，
+<code>Propagator/Basic.lean</code> 整层当初带着假设 <code>hS</code> 证完，Q3/Q4 落地后假设被消掉，下游零改动。
+<code>axiom</code> 做不到这件事。</p>
+<p>结果是：<strong>全项目零公理。</strong> <code>Test/Axioms.lean</code> 的审计现在只允许
+<code>propext</code> / <code>Classical.choice</code> / <code>Quot.sound</code>，与两个姊妹项目同标准，
+违规即构建失败。下面每张图顶部色带内的节点，就是这五条假设——<strong>整张图里只有那一条带是借来的，
+其余每个绿色节点都是在 Lean 里证出来的</strong>。</p>
 </div>
 
 <div class="legend">
   <span><i style="background:#1a8a5e"></i>已在 Lean 中证明</span>
   <span><i style="background:#cfe9dc"></i>定义（已形式化）</span>
   <span><i style="background:#3d74ad"></i>依赖就绪，可开工</span>
-  <span><i style="background:#fbf1de"></i>接口公理 · 论文引用而未证</span>
+  <span><i style="background:#fbf1de"></i>接口假设 · 论文引用而未证</span>
   <span><i style="background:#ffffff"></i>尚被上游阻塞</span>
   <span><i style="background:#146b4a"></i>机器检查收益最高的节点</span>
 </div>
@@ -267,9 +265,9 @@ __QUEUE__
 </div>
 
 <footer>
-  计数说明：<b>174</b> 是手写 <code>theorem</code> 的条数。审计报的「389 条声明」包含定义、结构、实例，
+  计数说明：<b>207</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
   以及 167 条编译器自动生成的声明（递归子、equation lemma 等），不宜当进度读——Q18 就是去修这个报告。<br>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 4+ · 2026-09-19 12:30 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 5 · 2026-09-20 04:35 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

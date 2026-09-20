@@ -3,12 +3,12 @@ from gen import build
 W  = 860    # 章节图
 WG = 1280   # 全局图
 
-BAND = "接口层 · 论文引用而未证（Q19 后改为 structure 字段）"
+BAND = "接口层 · 论文引用而未证 · 现为 PropTH 的假设，非 axiom"
 
 # ─────────────────────────── 全局图：四章所有节点 ───────────────────────────
 g0 = build(
  nodes=[
-  ("ax","接口 · lem_propTH 性质 5–8（5 条）","axiom",0),
+  ("ax","接口假设 PropTH · lem_propTH 性质 5–8","axiom",0),
 
   ("lat","① Z_L^d · 周期 ℓ¹ 距离","def",1),
   ("prec","① ≺ (DetDom)","def",1),
