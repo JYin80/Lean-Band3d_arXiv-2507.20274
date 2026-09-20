@@ -17,6 +17,7 @@ import RBM3D.Kernel.SumDecay
 import RBM3D.Loop.Partition
 import RBM3D.Loop.TreeRep
 import RBM3D.Loop.PureLoop
+import RBM3D.Loop.Primitive
 import RBM3D.Propagator.Interface
 import RBM3D.Graph.ScalingOrder
 import RBM3D.Graph.Model
