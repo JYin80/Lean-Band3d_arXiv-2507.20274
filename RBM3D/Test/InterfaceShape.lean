@@ -7,6 +7,7 @@ import RBM3D.Propagator.Props4
 import RBM3D.Propagator.Interface
 import RBM3D.Defs.RadialSum
 import RBM3D.Loop.Unique
+import RBM3D.Propagator.Gap
 
 /-!
 # Shape tests for the interface, in both directions
@@ -356,6 +357,72 @@ no contradiction.  For `(prop:ThfadC0)` the same role is played by `RBM.sum_Thet
 theorem sum_Theta_diff_row (d L : ℕ) [NeZero L] {g : ℝ} {ξ : ℂ} (a r : Zd d L) :
     ∑ b : Zd d L, (Theta d L g ξ a (b + r) - Theta d L g ξ a b) = 0 := by
   rw [Finset.sum_sub_distrib, sum_Theta_shift, sub_self]
+
+/-- **Certificate for `RBM.ThetaZeroMode` (`(prop:ThfadC0)`), fixed `L`.**  Property 8
+holds at each fixed `L`, with a constant depending on `L`.
+
+Unlike `thetaDecay_fixedL`, this one cannot come from a size bound: the right-hand side
+stays bounded as `t → 1` while the entries of `Θ_t` do not
+(`not_exists_uniform_entry_bound`).  What supplies it is the cancellation
+`RBM.exists_norm_Theta0_le`: removing the zero mode leaves
+`Θ̊_ξ = Σ_k ξ^k ((S^(B))^k - P)`, and `S^(B)` mixes geometrically at fixed `L`
+(`RBM.exists_mixing`), so the series converges at a rate independent of `ξ`.  Everything
+else on the right-hand side is bounded below at fixed `L`: `L^τ ≥ 1`,
+`(g²+|1-t|)⁻¹ ≥ (g²+1)⁻¹`, and `(|a|+1)^{-(d-2)} ≥ (R_L+1)^{-(d-2)}`. -/
+theorem thetaZeroMode_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) (hg : 0 < g)
+    {m : ℂ} (hm : ‖m‖ = 1) {τ : ℝ} (hτ : 0 ≤ τ) :
+    ∃ C > (0 : ℝ), ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a : Zd d L,
+      ‖Theta0 d L g ((t : ℂ) * m) 0 a‖
+        ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
+            * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹ := by
+  obtain ⟨C₀, hC₀0, hC₀⟩ := exists_norm_Theta0_le (d := d) (L := L) (g := g) hL hg
+  set D : ℝ := ((torusDiam d L : ℝ) + 1) ^ (d - 2) with hD
+  have hD0 : 0 < D := by rw [hD]; positivity
+  have hgpos : (0 : ℝ) < g ^ 2 + 1 := by positivity
+  refine ⟨C₀ * (g ^ 2 + 1) * D + 1, by positivity, ?_⟩
+  intro t ht0 ht1 a
+  have hξ : ‖(t : ℂ) * m‖ < 1 := norm_t_mul_lt_one ht0 ht1 hm
+  have hmain : ‖Theta0 d L g ((t : ℂ) * m) 0 a‖ ≤ C₀ := hC₀ _ hξ 0 a
+  -- every factor on the right is bounded below at fixed `L`
+  have hLrpow : (1 : ℝ) ≤ (L : ℝ) ^ τ := by
+    refine Real.one_le_rpow ?_ hτ
+    have : (1 : ℕ) ≤ L := by omega
+    exact_mod_cast this
+  have habs : |1 - t| ≤ 1 := by
+    rw [abs_of_pos (by linarith)]
+    linarith
+  have hX : (g ^ 2 + 1)⁻¹ ≤ (g ^ 2 + |1 - t|)⁻¹ :=
+    inv_anti₀ (by positivity) (by linarith)
+  have hY : D⁻¹ ≤ (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹ := by
+    refine inv_anti₀ (by positivity) ?_
+    rw [hD]
+    refine pow_le_pow_left₀ (by positivity) ?_ _
+    have : (zdistD d L a : ℕ) ≤ torusDiam d L := zdistD_le_torusDiam d L a
+    have : ((zdistD d L a : ℕ) : ℝ) ≤ (torusDiam d L : ℝ) := by exact_mod_cast this
+    linarith
+  have hsplit : (C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + 1)⁻¹ * D⁻¹
+      = C₀ + ((g ^ 2 + 1) * D)⁻¹ := by
+    field_simp
+  have hlow : C₀ ≤ (C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + 1)⁻¹ * D⁻¹ := by
+    rw [hsplit]
+    have : (0 : ℝ) < ((g ^ 2 + 1) * D)⁻¹ := by positivity
+    linarith
+  refine le_trans hmain (le_trans hlow ?_)
+  have hC1 : (0 : ℝ) ≤ C₀ * (g ^ 2 + 1) * D + 1 := by positivity
+  calc (C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + 1)⁻¹ * D⁻¹
+      ≤ (C₀ * (g ^ 2 + 1) * D + 1) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * D⁻¹ := by
+        refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+        calc (C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + 1)⁻¹
+            ≤ (C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + |1 - t|)⁻¹ :=
+              mul_le_mul_of_nonneg_left hX hC1
+          _ ≤ (C₀ * (g ^ 2 + 1) * D + 1) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by
+              refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+              nlinarith [hLrpow, hC1]
+    _ ≤ (C₀ * (g ^ 2 + 1) * D + 1) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
+          * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹ := by
+        refine mul_le_mul_of_nonneg_left hY ?_
+        have : (0 : ℝ) ≤ (L : ℝ) ^ τ := by positivity
+        positivity
 
 /-- **Certificate for `RBM.Loop.TwoLoopBounded`**, and not by a weakening: the explicit
 two-loop of `(Kn2sol)` satisfies it, with the bound `W^{-d}(1-T₀)⁻¹` of

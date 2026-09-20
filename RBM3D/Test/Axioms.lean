@@ -114,6 +114,7 @@ A certificate must name a real theorem, for a registered premise; otherwise the 
 fails.  The column is deliberately mostly empty: it reports a gap rather than hiding it. -/
 def certificates : List (Name × Name) :=
   [(`RBM.ThetaDecay, `RBM.Test.thetaDecay_fixedL),
+   (`RBM.ThetaZeroMode, `RBM.Test.thetaZeroMode_fixedL),
    (`RBM.Loop.TwoLoopBounded, `RBM.Test.twoLoopBounded_kTwoLoop)]
 
 /-! ### Finding the premises, instead of being told them
