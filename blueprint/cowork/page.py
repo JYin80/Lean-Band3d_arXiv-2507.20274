@@ -1,4 +1,4 @@
-from graphs import G1, G2, G3, G4
+from graphs import G0, G1, G2, G3, G4
 
 def rows(items):
     out = ['<ul class="rows">']
@@ -133,6 +133,7 @@ h2+p{margin:0 0 16px;color:var(--muted);font-size:13.5px}
 .plate{background:var(--plate);border:1px solid var(--plate-border);border-radius:8px;
   padding:10px;overflow-x:auto}
 svg.dep{display:block;min-width:640px;width:100%;height:auto}
+.plate.wide svg.dep{min-width:1000px}
 ul.rows{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--border)}
 .row{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;align-items:baseline;
   padding:10px 2px;border-bottom:1px solid var(--border)}
@@ -208,7 +209,12 @@ Lemma 3.5 / 3.14。</p>
   <span><i style="background:#3d74ad"></i>依赖就绪，可开工</span>
   <span><i style="background:#fbf1de"></i>接口公理 · 论文引用而未证</span>
   <span><i style="background:#ffffff"></i>尚被上游阻塞</span>
+  <span><i style="background:#146b4a"></i>机器检查收益最高的节点</span>
 </div>
+
+<h2>全局依赖图</h2>
+<p>四章全部节点与跨章依赖。①–④ 是章号，箭头由前提指向结论。顶部色带内是论文引用而未证的结论——<strong>整张图里只有那一条带是借来的，其余每个绿色节点都是在 Lean 里证出来的</strong>。</p>
+<div class="plate wide">__G0__</div>
 
 <h2>第 1 章 · 格点与模型</h2>
 <p>§2.1 与 §2.5 的定义层：环面 Z_L^d、周期 ℓ¹ 距离、块方差矩阵 S^(B)(g)、控制参数 ℓ_t 与 B_{t,K}。d 全程是参数，<code>3 ≤ d</code> 只在真正用到的地方引入。</p>
@@ -270,7 +276,7 @@ __QUEUE__
 </div>
 """
 
-out = (HTML.replace("__G1__", G1).replace("__G2__", G2).replace("__G3__", G3)
+out = (HTML.replace("__G0__", G0).replace("__G1__", G1).replace("__G2__", G2).replace("__G3__", G3)
            .replace("__G4__", G4).replace("__CH1__", CH1).replace("__CH2__", CH2)
            .replace("__CH3__", CH3).replace("__CH4__", CH4).replace("__QUEUE__", QUEUE))
 open("/home/claude/bp/blueprint.html","w").write(out)

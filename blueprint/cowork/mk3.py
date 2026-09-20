@@ -1,0 +1,125 @@
+from gen import build
+
+W  = 860    # 章节图
+WG = 1280   # 全局图
+
+BAND = "接口层 · 论文引用而未证（Q19 后改为 structure 字段）"
+
+# ─────────────────────────── 全局图：四章所有节点 ───────────────────────────
+g0 = build(
+ nodes=[
+  ("ax","接口 · lem_propTH 性质 5–8（5 条）","axiom",0),
+
+  ("lat","① Z_L^d · 周期 ℓ¹ 距离","def",1),
+  ("prec","① ≺ (DetDom)","def",1),
+  ("par","① ℓ_t · B_{t,K}","def",1),
+
+  ("sb","① S^(B)(g)","def",2),
+  ("tail","④ 尾函数 𝒯_t · wT","done",2),
+  ("ord","③ ord = n_S+2(n_W−n_V)","def",2),
+
+  ("cnt","① 邻居计数 = 2d","done",3),
+  ("th","② Θ_ξ = (1−ξS)⁻¹","def",3),
+  ("arith","③ case (ii)–(vi) 算术","done",3),
+  ("exp","③ ∂_h G = −G·G","done",3),
+
+  ("nrm","① ‖S^(B)‖=1","done",4),
+  ("one","① S^(B)·1=1","done",4),
+  ("uniq","② 逆唯一性","done",4),
+  ("model","③ 图模型穷尽性","star",4),
+  ("part","④ Q14 树划分","ready",4),
+
+  ("p123","② 性质 1–3","done",5),
+  ("row","② 行和 = (1−ξ)⁻¹","done",5),
+  ("pt","④ Q11 lem:propT","done",5),
+  ("ttk","④ Q12 claim:TTk","ready",5),
+  ("tree","④ Q15 树表示","todo",5),
+
+  ("p4","② 性质 4  ‖Θ‖ ≤ (1−t)⁻¹","done",6),
+  ("ksum","④ Q20 求和版","todo",6),
+  ("pure","④ Q16 lem_pureloop","todo",6),
+
+  ("uk","④ Q9 U^(n) · lem:sum_Ndecay","done",7),
+
+  ("nz","④ Q13 sum_decay_nonzero","ready",8),
+  ("sd","④ Q17 sum_decay · latticesum_d3","ready",8),
+ ],
+ edges=[
+  ("lat","sb"),("lat","par"),("par","tail"),
+  ("sb","cnt"),("sb","th"),
+  ("cnt","nrm"),("cnt","one"),
+  ("th","uniq"),("nrm","uniq"),
+  ("uniq","p123"),("uniq","row"),("one","row"),
+  ("row","p4"),("nrm","p4"),
+  ("p4","uk"),("th","uk"),
+  ("uk","nz"),("uk","sd"),
+  ("tail","pt"),("tail","ttk"),("ttk","ksum"),
+  ("ord","arith"),("arith","model"),("exp","model"),
+  ("th","part"),("part","tree"),("tree","pure"),
+  ("ax","nz","d"),("ax","sd","d"),("ax","pure","d"),
+ ],
+ width=WG, band=1, band_label=BAND)
+
+# ─────────────────────────── 章节图 ───────────────────────────
+g1 = build(
+ nodes=[
+  ("lat","Z_L^d  ·  |x| 周期 ℓ¹","def",0),
+  ("prec","≺   DetDom","def",0),
+  ("sb","S^(B)(g)   (eq:variancematrix)","def",1),
+  ("par","ℓ_t ,  B_{t,K}","def",1),
+  ("cnt","Q2 ✓ 邻居计数  #{|x|=1} = 2d","done",2),
+  ("nrm","Q3 ✓ ‖S^(B)‖ = 1","done",3),
+  ("one","Q4 ✓ S^(B)·1 = 1","done",3),
+ ],
+ edges=[("lat","sb"),("lat","par"),("sb","cnt"),("cnt","nrm"),("cnt","one")],
+ width=W)
+
+g2 = build(
+ nodes=[
+  ("ax1","(prop:ThfadC)","axiom",0),
+  ("ax2","(prop:ThfadC_short)","axiom",0),
+  ("ax3","(prop:BD1)","axiom",0),
+  ("ax4","(prop:BD2)","axiom",0),
+  ("ax5","(prop:ThfadC0)","axiom",0),
+  ("th","Θ_ξ = Ring.inverse (1 − ξ S^(B))","def",1),
+  ("uniq","eq_Theta_of_mul   逆的唯一性","done",2),
+  ("p12","性质 1–2   对称 · 平移不变","done",3),
+  ("p3","性质 3   交换性","done",3),
+  ("row","行和 = (1−ξ)⁻¹","done",3),
+  ("p4","Q5 ✓ 性质 4  ‖Θ‖ ≤ (1−t)⁻¹","done",4),
+ ],
+ edges=[("th","uniq"),("uniq","p12"),("uniq","p3"),("uniq","row"),("row","p4")],
+ width=W, band=1, band_label=BAND)
+
+g3 = build(
+ nodes=[
+  ("b9","(Owx) 权展开 · (Oe2x) GG 展开","axiom",0),
+  ("ord","ord = n_S + 2(n_W − n_V)","def",1),
+  ("exp","Q8 ✓ ∂_h G = −G·G  确定性内核","done",1),
+  ("arith","case (ii)–(vi)  算术记账","done",2),
+  ("model","Q6 ✓ 图模型 · case 穷尽性","star",3),
+ ],
+ edges=[("ord","arith"),("arith","model"),("exp","model"),("b9","model","d")],
+ width=W, band=1, band_label="接口层 · 不写成 axiom，见 paper-deltas D10")
+
+g4 = build(
+ nodes=[
+  ("ax1","(prop:ThfadC) · (prop:ThfadC_short)","axiom",0),
+  ("uk","Q9 ✓ U^(n) · lem:sum_Ndecay","done",1),
+  ("tail","Q10 ✓ 尾函数 𝒯_t , wT^ℓ_{t,D}","done",1),
+  ("part","Q14 · 典范树划分 TSP(P_a)","ready",1),
+  ("nz","Q13 · lem:sum_decay_nonzero","ready",2),
+  ("sd","Q17 · lem:sum_decay + latticesum_d3","ready",2),
+  ("pt","Q11 ✓ lem:propT 卷积界","done",2),
+  ("ttk","Q12 · claim:TTk (∧ℓ 截断)","ready",2),
+  ("tree","Q15 · 树表示 eq_Ktree","todo",3),
+  ("ksum","Q20 · 求和版 key_T_reudce","todo",3),
+  ("pure","Q16 · lem_pureloop 指数衰减","todo",4),
+ ],
+ edges=[("uk","nz"),("uk","sd"),("tail","pt"),("tail","ttk"),("ttk","ksum"),
+        ("part","tree"),("tree","pure"),
+        ("ax1","nz","d"),("ax1","sd","d"),("ax1","pure","d")],
+ width=W, band=1, band_label=BAND)
+
+open("graphs.py","w").write("G0=%r\nG1=%r\nG2=%r\nG3=%r\nG4=%r\n" % (g0,g1,g2,g3,g4))
+print("ok", [len(x) for x in (g0,g1,g2,g3,g4)])
