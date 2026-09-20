@@ -1,4 +1,4 @@
-from graphs import G0, G1, G2, G3, G4
+from graphs import G0, G1, G2, G3, G4, G5
 
 def rows(items):
     out = ['<ul class="rows">']
@@ -42,6 +42,16 @@ CH3 = rows([
  ("图模型 · case 分析穷尽性","Q6 ✓ 已证","done","Pattern.classify · classify_vi_occurs · ord_weight_step"),
  ("∂_h G = −G G：(Owx) 第三项产生三条新边的确定性一步","Q8 ✓ 已证","done","hasDerivAt_inverse_apply"),
  ("(Owx) / (Oe2x) 的 =𝔼 恒等式本身 —— 仅在蓝图，不写 axiom","规则 6 · 随机层","cited","见 paper-deltas D10"),
+])
+
+CH5 = rows([
+ ("随机层审计：全文没有 Doob、没有 Markov 性、没有域流、没有两时刻联合律","✓ 已做","done","docs/stochastic-audit.md"),
+ ("关键鞅引理 lem:DIfREP 的陈述本来就是矩不等式 —— 论文一个字不用改","✓ 已核","done","两边都是 𝔼，BDG 只在证明里"),
+ ("确定性包络 ‖G‖ ≤ η⁻¹ 与各阶导数界 —— 在全空间成立，不需要磨光截断","Q42 · 可开工","ready","Gauss/Envelope.lean"),
+ ("Stein 三层：一维实 → 一维复 → 矩阵版（走重采样，不走 Fubini）","Q43 · 可开工","ready","Gauss/Stein.lean · SteinMatrix.lean"),
+ ("生成元恒等式 —— 二阶项逐字等于论文的二次变差张量 (E⊗E)^{M,(n)}","Q44 · 待 Q43","todo","Gauss/Generator.lean"),
+ ("对矩的 Grönwall + 两座 ≺ 桥 + 连续归纳","Q45 · 待 Q42,Q44","todo","MomentGronwall · Bootstrap"),
+ ("三处停时换成连续归纳 —— 一处用了停止过程，等作者回答","Q46 · 待作者","todo","审计 §六"),
 ])
 
 CH4 = rows([
@@ -101,6 +111,11 @@ QUEUE = """
 <tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q41</td><td><b>每条假设的「非空洞」证书</b>（固定 <code>L</code> 版）<b>⭐</b></td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q42</td><td><b>确定性包络</b> <code>‖G‖ ≤ η⁻¹</code> —— 随机层第一步，免费</td><td><code>Gauss/Envelope.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q43</td><td><b>Stein 三层</b>（重采样路线，与 <code>d</code> 无关）<b>⭐</b></td><td><code>Gauss/Stein*.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q44</td><td><b>生成元恒等式</b> —— 到这步 Itô 不在关键路径上 <b>⭐</b></td><td><code>Gauss/Generator.lean</code></td><td><span class="pill todo">待 Q43</span></td></tr>
+<tr><td>Q45</td><td>对矩的 Grönwall + 两座 <code>≺</code> 桥 + 连续归纳</td><td><code>Gauss/MomentGronwall.lean</code></td><td><span class="pill todo">待 Q42,Q44</span></td></tr>
+<tr><td>Q46</td><td>三处停时 → 连续归纳</td><td>待定</td><td><span class="pill cited">等作者回答</span></td></tr>
 </tbody></table>
 """
 
@@ -196,7 +211,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
     <div class="chip done"><b>332</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>7</b><span>可立即开工</span></div>
+    <div class="chip ready"><b>9</b><span>可立即开工</span></div>
   </div>
 </header>
 
@@ -299,6 +314,13 @@ __CH3__
 <div class="plate">__G4__</div>
 __CH4__
 
+<h2>第 5 章 · 随机层 —— <span style="font-weight:400">beat 15 新开的一条战线</span></h2>
+<p>Mathlib 里没有 Itô 公式、没有 SDE、没有矩阵布朗运动。但这篇论文的证明<strong>不真的需要过程</strong>——
+只需要一时刻边缘律加一条生成元恒等式。RBM1D 已经走通这条路（6034 行、247 条定理、0 公理）。
+beat 15 把这篇论文从头到尾扫了一遍确认它也适用，结论写在 <code>docs/stochastic-audit.md</code>。</p>
+<div class="plate">__G5__</div>
+__CH5__
+
 <h2>工单队列</h2>
 <p>Claude Code 从 <code>docs/QUEUE.md</code> 从上往下领第一条 OPEN。此表每次心跳刷新。
 主线四条（<b>Q23 → Q27 → Q22a → Q22b</b>）已按依赖顺序排在一起，未满足前置的标「待 Qxx」而不是 OPEN——
@@ -354,7 +376,7 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 14 · 2026-09-20 06:45 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 15 · 2026-09-20 07:05 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
@@ -363,6 +385,7 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 
 out = (HTML.replace("__G0__", G0).replace("__G1__", G1).replace("__G2__", G2).replace("__G3__", G3)
            .replace("__G4__", G4).replace("__CH1__", CH1).replace("__CH2__", CH2)
-           .replace("__CH3__", CH3).replace("__CH4__", CH4).replace("__QUEUE__", QUEUE))
+           .replace("__CH3__", CH3).replace("__CH4__", CH4).replace("__CH5__", CH5)
+           .replace("__G5__", G5).replace("__QUEUE__", QUEUE))
 open("/home/claude/bp/blueprint.html","w").write(out)
 print("bytes:", len(out))

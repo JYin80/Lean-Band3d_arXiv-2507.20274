@@ -90,7 +90,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
     <div class="chip done"><b>332</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>7</b><span>可立即开工</span></div>
+    <div class="chip ready"><b>9</b><span>可立即开工</span></div>
   </div>
 </header>
 
@@ -408,6 +408,35 @@ exponential decay」。<strong>论文是对的，漏掉那个限定的是形式�
 <li class="row"><div class="row-main"><span class="row-name">ML:Kbound —— 论文说「需额外修改以处理 d ≥ 3」，先做陈述层并定位那处修改</span></div><div class="row-side"><span class="pill ready">Q24 · 可开工</span><code>Loop/KBound.lean</code></div></li>
 </ul>
 
+<h2>第 5 章 · 随机层 —— <span style="font-weight:400">beat 15 新开的一条战线</span></h2>
+<p>Mathlib 里没有 Itô 公式、没有 SDE、没有矩阵布朗运动。但这篇论文的证明<strong>不真的需要过程</strong>——
+只需要一时刻边缘律加一条生成元恒等式。RBM1D 已经走通这条路（6034 行、247 条定理、0 公理）。
+beat 15 把这篇论文从头到尾扫了一遍确认它也适用，结论写在 <code>docs/stochastic-audit.md</code>。</p>
+<div class="plate"><svg class="dep" viewBox="0 0 860 344" role="img" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L7,4 L0,7 z" fill="var(--edge)"/></marker></defs>
+<path d="M430.0,35.5 C430.0,54.0 277.9,54.0 277.9,72.5" fill="none" stroke="var(--edge)" stroke-width="1.15" marker-end="url(#ah)"/>
+<path d="M430.0,35.5 C430.0,54.0 591.3,54.0 591.3,72.5" fill="none" stroke="var(--edge)" stroke-width="1.15" marker-end="url(#ah)"/>
+<path d="M591.3,99.5 C591.3,118.0 430.0,118.0 430.0,136.5" fill="none" stroke="var(--edge)" stroke-width="1.15" marker-end="url(#ah)"/>
+<path d="M430.0,163.5 C430.0,182.0 430.0,182.0 430.0,200.5" fill="none" stroke="var(--edge)" stroke-width="1.15" marker-end="url(#ah)"/>
+<path d="M277.9,99.5 C277.9,150.0 430.0,150.0 430.0,200.5" fill="none" stroke="var(--edge)" stroke-width="1.15" marker-end="url(#ah)"/>
+<path d="M430.0,227.5 C430.0,246.0 430.0,246.0 430.0,264.5" fill="none" stroke="var(--edge)" stroke-width="1.15" marker-end="url(#ah)"/>
+<g class="n-star"><rect x="244.8" y="8.5" width="370.4" height="27" rx="13" fill="#146b4a" stroke="#0e5237" stroke-width="1.3"/><text x="430.0" y="25.9" text-anchor="middle" font-size="11.3" fill="#ffffff">随机层审计 ✓ —— 没有 Doob / Markov / 域流 / 两时刻联合律</text></g>
+<g class="n-ready"><rect x="129.6" y="72.5" width="296.6" height="27" rx="13" fill="#3d74ad" stroke="#2d5a8a" stroke-width="1.3"/><text x="277.9" y="89.9" text-anchor="middle" font-size="11.3" fill="#ffffff">Q42 · 确定性包络 ‖G‖ ≤ η⁻¹（免费，解锁全部）</text></g>
+<g class="n-ready"><rect x="452.2" y="72.5" width="278.1" height="27" rx="13" fill="#3d74ad" stroke="#2d5a8a" stroke-width="1.3"/><text x="591.3" y="89.9" text-anchor="middle" font-size="11.3" fill="#ffffff">Q43 · Stein 三层（重采样路线，与 d 无关）</text></g>
+<g class="n-todo"><rect x="278.6" y="136.5" width="302.8" height="27" rx="6" fill="#ffffff" stroke="#b9c1c9" stroke-width="1.3"/><text x="430.0" y="153.9" text-anchor="middle" font-size="11.3" fill="#5d6873">Q44 · 生成元恒等式 —— 二阶项 = 二次变差 (E⊗E)</text></g>
+<g class="n-todo"><rect x="281.7" y="200.5" width="296.6" height="27" rx="6" fill="#ffffff" stroke="#b9c1c9" stroke-width="1.3"/><text x="430.0" y="217.9" text-anchor="middle" font-size="11.3" fill="#5d6873">Q45 · 对矩的 Grönwall + 两座 ≺ 桥 + 连续归纳</text></g>
+<g class="n-todo"><rect x="297.1" y="264.5" width="265.9" height="27" rx="6" fill="#ffffff" stroke="#b9c1c9" stroke-width="1.3"/><text x="430.0" y="281.9" text-anchor="middle" font-size="11.3" fill="#5d6873">Q46 · 三处停时 → 连续归纳（等作者回答）</text></g>
+</svg></div>
+<ul class="rows">
+<li class="row"><div class="row-main"><span class="row-name">随机层审计：全文没有 Doob、没有 Markov 性、没有域流、没有两时刻联合律</span></div><div class="row-side"><span class="pill done">✓ 已做</span><code>docs/stochastic-audit.md</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">关键鞅引理 lem:DIfREP 的陈述本来就是矩不等式 —— 论文一个字不用改</span></div><div class="row-side"><span class="pill done">✓ 已核</span><code>两边都是 𝔼，BDG 只在证明里</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">确定性包络 ‖G‖ ≤ η⁻¹ 与各阶导数界 —— 在全空间成立，不需要磨光截断</span></div><div class="row-side"><span class="pill ready">Q42 · 可开工</span><code>Gauss/Envelope.lean</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">Stein 三层：一维实 → 一维复 → 矩阵版（走重采样，不走 Fubini）</span></div><div class="row-side"><span class="pill ready">Q43 · 可开工</span><code>Gauss/Stein.lean · SteinMatrix.lean</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">生成元恒等式 —— 二阶项逐字等于论文的二次变差张量 (E⊗E)^{M,(n)}</span></div><div class="row-side"><span class="pill todo">Q44 · 待 Q43</span><code>Gauss/Generator.lean</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">对矩的 Grönwall + 两座 ≺ 桥 + 连续归纳</span></div><div class="row-side"><span class="pill todo">Q45 · 待 Q42,Q44</span><code>MomentGronwall · Bootstrap</code></div></li>
+<li class="row"><div class="row-main"><span class="row-name">三处停时换成连续归纳 —— 一处用了停止过程，等作者回答</span></div><div class="row-side"><span class="pill todo">Q46 · 待作者</span><code>审计 §六</code></div></li>
+</ul>
+
 <h2>工单队列</h2>
 <p>Claude Code 从 <code>docs/QUEUE.md</code> 从上往下领第一条 OPEN。此表每次心跳刷新。
 主线四条（<b>Q23 → Q27 → Q22a → Q22b</b>）已按依赖顺序排在一起，未满足前置的标「待 Qxx」而不是 OPEN——
@@ -449,6 +478,11 @@ exponential decay」。<strong>论文是对的，漏掉那个限定的是形式�
 <tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q41</td><td><b>每条假设的「非空洞」证书</b>（固定 <code>L</code> 版）<b>⭐</b></td><td><code>Test/InterfaceShape.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q42</td><td><b>确定性包络</b> <code>‖G‖ ≤ η⁻¹</code> —— 随机层第一步，免费</td><td><code>Gauss/Envelope.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q43</td><td><b>Stein 三层</b>（重采样路线，与 <code>d</code> 无关）<b>⭐</b></td><td><code>Gauss/Stein*.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q44</td><td><b>生成元恒等式</b> —— 到这步 Itô 不在关键路径上 <b>⭐</b></td><td><code>Gauss/Generator.lean</code></td><td><span class="pill todo">待 Q43</span></td></tr>
+<tr><td>Q45</td><td>对矩的 Grönwall + 两座 <code>≺</code> 桥 + 连续归纳</td><td><code>Gauss/MomentGronwall.lean</code></td><td><span class="pill todo">待 Q42,Q44</span></td></tr>
+<tr><td>Q46</td><td>三处停时 → 连续归纳</td><td>待定</td><td><span class="pill cited">等作者回答</span></td></tr>
 </tbody></table>
 
 
@@ -501,7 +535,7 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 14 · 2026-09-20 06:45 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 15 · 2026-09-20 07:05 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

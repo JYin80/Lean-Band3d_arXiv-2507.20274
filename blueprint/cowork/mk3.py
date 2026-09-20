@@ -139,5 +139,19 @@ g4 = build(
         ("ax1","nz","d"),("ax1","sdb","d"),("ax1","pure","d")],
  width=W, band=1, band_label=BAND)
 
-open("graphs.py","w").write("G0=%r\nG1=%r\nG2=%r\nG3=%r\nG4=%r\n" % (g0,g1,g2,g3,g4))
-print("ok", [len(x) for x in (g0,g1,g2,g3,g4)])
+# ─────────────────────────── 第 5 章 · 随机层（beat 15 新开） ───────────────────────────
+g5 = build(
+ nodes=[
+  ("audit","随机层审计 ✓ —— 没有 Doob / Markov / 域流 / 两时刻联合律","star",0),
+  ("env","Q42 · 确定性包络 ‖G‖ ≤ η⁻¹（免费，解锁全部）","ready",1),
+  ("stein","Q43 · Stein 三层（重采样路线，与 d 无关）","ready",1),
+  ("gen","Q44 · 生成元恒等式 —— 二阶项 = 二次变差 (E⊗E)","todo",2),
+  ("gron","Q45 · 对矩的 Grönwall + 两座 ≺ 桥 + 连续归纳","todo",3),
+  ("stop","Q46 · 三处停时 → 连续归纳（等作者回答）","todo",4),
+ ],
+ edges=[("audit","env"),("audit","stein"),("stein","gen"),
+        ("gen","gron"),("env","gron"),("gron","stop")],
+ width=W)
+
+open("graphs.py","w").write("G0=%r\nG1=%r\nG2=%r\nG3=%r\nG4=%r\nG5=%r\n" % (g0,g1,g2,g3,g4,g5))
+print("ok", [len(x) for x in (g0,g1,g2,g3,g4,g5)])
