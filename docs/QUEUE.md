@@ -78,7 +78,7 @@
 | Q51 | **有限 `L` 的混合性（原名「谱隙」）** ⭐ | `Propagator/Gap.lean` | **PARTIAL (CC)**：块一（连通性 + Doeblin）已证；Dobrushin 收缩 → Q52 |
 | Q52 | **Dobrushin 收缩 + 几何混合** ⭐ | `Propagator/Gap.lean` | **DONE (CC)**：收缩与混合估计已证；级数求和 → Q53 |
 | Q53 | **把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书** ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：审计 `3 of 9` |
-| Q54 | **`(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书**（同一个衰减，作用在差分上） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（CC 于 Q53 开出） |
+| Q54 | **`(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书**（同一个衰减，作用在差分上） ⭐ | `Test/InterfaceShape.lean` | **CLAIMED (CC)** |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
