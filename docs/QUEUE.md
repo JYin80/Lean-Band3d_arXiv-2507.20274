@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-20 · beat 6（接口发现真缺陷，开 Q21 核对其余四条）
+最后刷新：2026-09-20 · beat 8（Q14 完成解锁 Q15；Q17 认领中）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -24,7 +24,7 @@
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **DONE** (CC)；求和版另开 Q20 |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
-| Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
+| Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **OPEN** —— 移植路线已打通 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **CLAIMED** (CC) |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
@@ -692,7 +692,25 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 `Loop/TreeRepGeneral.lean`（2546 行）都已编译通过，索引类型是它的 `LoopIdx`。
 **树的表示方式直接沿用那边的**，别自己重新设计——Q15 要移植的话，数据结构一致才移植得动。
 
-## Q15 · 树表示 `eq_Ktree` — BLOCKED by Q14
+## Q15 · 树表示 `eq_Ktree` — **OPEN**
+
+> **beat 8 更新：移植的路已经铺好了，优先走移植，不要默认公理化。**
+> Q14 落地时刻意把 `TSP`（不交叉对角线集合）的表示**与 RBM1D 对齐**，所以
+> `RBM1D/Loop/TreeRep.lean`（729 行，已编译）和 `TreeRepGeneral.lean`（2546 行）
+> 的证明可以直接借过来，而不是重新推。
+>
+> 那边的路线再强调一次，因为它是省力的关键：**不做组合双射**，而是证明
+> 「树和满足同一个 ODE 且初值相同」，再由解的唯一性收尾
+> （`hasDerivAt_kFour` + `kFour_zero` ⇒ `kFour_eq_treeSum`）。
+> `TreeRep.lean` 先在 `n ≤ 4` 上把组合讲透（`n = 4` 是第一个出现内部边的情形，
+> 「树的边 ↔ `(k,l)` 对」的双射在那里看得最清楚），`TreeRepGeneral.lean` 做一般 `n`。
+>
+> 现有可复用的（**不要重做，import 即可**）：`Loop/Partition.lean` 的 `TSP`、`thetaEdge`、
+> `polyVal` / `treeVal` / `treeSum`、`GammaN`、`GammaSum`，以及自检
+> `TSP_three` / `TSP_four` / `card_TSP_five` 和验收 `treeVal_four_nil`。
+>
+> **若评估下来移植超过一拍的量**，就先按接口假设写（不是 axiom——见 `CLAUDE.md`「接口的形式」），
+> 把移植另开一条工单，并在 STATUS 里写清楚理由与卡点。
 
 **文件**：新开 `RBM3D/Loop/TreeRep.lean`。陈述（`\Cref{tree-representation}`，`n ≥ 4`）：
 
