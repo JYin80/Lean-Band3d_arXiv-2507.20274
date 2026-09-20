@@ -2,16 +2,21 @@
 % names, never earlier.  The dependency graph is this project's only record of progress,
 % so a tag that runs ahead of the code makes it lie.
 %
-% RIGHT NOW NO NODE CARRIES \lean{} OR \leanok, because not one line of RBM3D/ has been
-% compiled yet (see docs/STATUS.md, and T1 in docs/TASKS.md).  The intended Lean name of
-% each node is given in a comment above it.  As T1 lands file by file, move each name out
-% of its comment and into a \lean{} tag with \leanok.  `leanblueprint checkdecls` will
-% start passing at that point and not before.
+% STATUS (2026-09-19, after Q20).  Everything in RBM3D/ compiles (`./check.sh`), with no
+% `sorry` and -- since Q19 -- no project axiom at all.  The nodes below therefore carry
+% \lean{} tags, and \leanok on every node that is *proved*.
+%
+% A node that names an interface Prop (ax:ThfadC, ax:ThfadCshort, ax:BD1, ax:BD2,
+% ax:ThfadC0, ax:KTreeRep, ax:KTwoFormula) gets \lean{} but NOT \leanok: the statement
+% exists in Lean, the proof does not, because the paper cites it rather than proving it.
+% These are hypotheses carried by the theorems that use them -- not axioms -- so the
+% audit reports 0 axioms while still reporting how many theorems rest on each of them.
 
 \chapter{The lattice, the model and the propagator}
 
 % RBM.Zd, RBM.zdistD
 \begin{definition}[The torus and its periodic distance]\label{def:lattice}
+  \lean{RBM.Zd, RBM.zdistD}\leanok
   Fix $d\ge3$ and $L\ge3$ and work on $\ZL$.  For $x\in\ZL$ let $|x|$ be the periodic
   $\ell^1$ distance to the origin: coordinatewise graph distance on the cycle
   $\ZLone$, summed over the $d$ coordinates.  The paper does not fix a norm and notes
@@ -20,6 +25,7 @@
 
 % RBM.SB, (eq:variancematrix)
 \begin{definition}[Block variance matrix $\SB(\gcoup)$]\label{def:SB}
+  \lean{RBM.SB}\leanok
   \uses{def:lattice}
   For a coupling parameter $\gcoup>0$,
   \[ \SB_{ab}(\gcoup) \;=\; \frac{1}{1+2d\gcoup^2}\,\mathbf 1_{a=b}
@@ -36,6 +42,7 @@
 
 % RBM.card_nbhd, RBM.card_adj  (RBM3D/Defs/Neighbours.lean)
 \begin{lemma}[Neighbour count]\label{lem:card-nbhd}
+  \lean{RBM.card_nbhd, RBM.card_adj}\leanok
   \uses{def:lattice}
   For $L\ge3$, $\#\{x\in\ZL : |x|=1\}=2d$, and every $a\in\ZL$ has exactly $2d$
   neighbours.  The unit sphere is the image of the injection $(i,\pm)\mapsto\pm e_i$ of
@@ -44,6 +51,7 @@
 
 % RBM.SB_isSymm, RBM.SB_apply_add_right, RBM.sum_SB_row, RBM.SB_mulVec_one, RBM.norm_SB
 \begin{lemma}[Elementary properties of $\SB$]\label{lem:SB-basic}
+  \lean{RBM.SB_isSymm, RBM.SB_apply_add_right, RBM.sum_SB_row, RBM.SB_mulVec_one, RBM.norm_SB}\leanok
   \uses{def:SB, lem:card-nbhd}
   $\SB(\gcoup)$ is symmetric and translation invariant, each row sums to $1$, and
   $\SB(\gcoup)\mathbf 1=\mathbf 1$.  The row sum is where $L\ge3$ enters: it amounts to
@@ -52,6 +60,7 @@
 
 % RBM.ellT (eq:ellt), RBM.Bparam (eq_B_param)
 \begin{definition}[Control parameters $\ell_t$ and $B_{t,K}$]\label{def:params}
+  \lean{RBM.ellT, RBM.Bparam}\leanok
   \uses{def:lattice}
   For $t\in[0,1)$,
   \[ \ell_t \;=\; \min\bigl(\max(\gcoup|1-t|^{-1/2},1),\,L\bigr),\qquad
@@ -61,6 +70,7 @@
 
 % RBM.Theta, RBM.ThetaRBM (def_Thxi), RBM.ThetaRBM0 (def_Thxi0)
 \begin{definition}[The $\Th$-propagator]\label{def:Theta}
+  \lean{RBM.Theta, RBM.Theta0}\leanok
   \uses{def:SB}
   For $t\in[0,1]$ and $\sigma_1,\sigma_2\in\{+,-\}$,
   \[ \Th_t^{(\sigma_1,\sigma_2)} \;=\; \bigl(1 - t\,M^{(\sigma_1,\sigma_2)}\SB\bigr)^{-1},
@@ -74,6 +84,7 @@
 
 % RBM.UnifDetDom, RBM.DetDom
 \begin{definition}[Deterministic stochastic domination]\label{def:prec}
+  \lean{RBM.UnifDetDom, RBM.DetDom}\leanok
   $\xi\prec\zeta$ if for every $\tau>0$ one has $\xi\le N^\tau\zeta$ for all large $N$,
   uniformly in any parameters present.
 \end{definition}
@@ -82,6 +93,7 @@
 
 % RBM.Theta_isSymm  (T2)
 \begin{lemma}[$\mathtt{lem\_propTH}$, properties 1--2]\label{lem:propTH-12}
+  \lean{RBM.Theta_isSymm}\leanok
   \uses{def:Theta, lem:SB-basic}
   $\Th_t^{(\sigma_2,\sigma_1)}=(\Th_t^{(\sigma_1,\sigma_2)})^\top=\Th_t^{(\sigma_1,\sigma_2)}$,
   and $\Th_t(a+r,b+r)=\Th_t(a,b)$ for all $a,b,r\in\ZL$.
@@ -91,6 +103,7 @@
 
 % RBM.Theta_commute_SB_of_three_le, RBM.Theta_commute_of_three_le, RBM.norm_Theta_apply_le, RBM.sum_Theta_real_row, RBM.norm_Theta_le  (Propagator/Props4.lean)
 \begin{lemma}[$\mathtt{lem\_propTH}$, properties 3--4]\label{lem:propTH-34}
+  \lean{RBM.Theta_commute_SB_of_three_le, RBM.Theta_commute_of_three_le, RBM.norm_Theta_apply_le, RBM.sum_Theta_real_row, RBM.norm_Theta_le}\leanok
   \uses{def:Theta, lem:SB-basic}
   $[\SB,\Th_t]=[\Th_t,\Th_{t'}]=0$; and $|\Th_{t,ab}^{(\sigma_1,\sigma_2)}|\le\Th_{t,ab}^{(+,-)}$
   with
@@ -102,13 +115,17 @@
 
 \chapter{Properties of the propagator: the axiom interface}
 
-These are the estimates this paper \emph{cites} rather than proves.  They are axioms in
-\texttt{RBM3D/Propagator/Interface.lean} and are listed in the audit
-\texttt{RBM3D.Audit.interfaceAxioms}.  Discharging one is a separate work order
-(T9--T11); until then every result above them carries the dependency visibly.
+These are the estimates this paper \emph{cites} rather than proves.  Since Q19 they are
+not axioms but \texttt{Prop}s in \texttt{RBM3D/Propagator/Interface.lean} (bundled as the
+structure \texttt{RBM.PropTH}), taken as hypotheses by the theorems that need them; the
+audit \texttt{RBM3D/Test/Axioms.lean} reports 0 axioms in the project and, for each of
+these, how many theorems rest on it.  Q21 checked the five statements against the paper
+word by word: one of them was \emph{false} as first written and had to be repaired
+(see \texttt{docs/paper-deltas.md}, D11, and the machine-checked counterexample
+\texttt{RBM.not\_decayShort\_at\_one}), and one was weaker than the paper's claim (D12).
 
-% RBM.theta_decay  (axiom)
-\begin{theorem}[$\mathtt{(prop{:}ThfadC)}$, property 5 --- \emph{axiom}]\label{ax:ThfadC}
+\begin{theorem}[$\mathtt{(prop{:}ThfadC)}$, property 5 --- \emph{interface hypothesis}]\label{ax:ThfadC}
+  \lean{RBM.ThetaDecay}
   \uses{def:Theta, def:params}
   There are $C_d,c_d>0$ with
   $|\Th_t(0,a)|\le C_d\,B_{t,|a|}\,e^{-c_d|a|/\ell_t}$ for all $a\in\ZL$.
@@ -116,8 +133,8 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
   random-walk argument and then says ``we omit the details''.
 \end{theorem}
 
-% RBM.theta_decay_short  (axiom)
-\begin{theorem}[$\mathtt{(prop{:}ThfadC\_short)}$ --- \emph{axiom}]\label{ax:ThfadCshort}
+\begin{theorem}[$\mathtt{(prop{:}ThfadC\_short)}$ --- \emph{interface hypothesis}]\label{ax:ThfadCshort}
+  \lean{RBM.ThetaDecayShort}
   \uses{def:Theta}
   For $\sigma_1=\sigma_2$ there are $C_\kappa,c_\kappa>0$ with
   $|\Th_t(0,a)|\le C_\kappa(\mathbf 1_{a=0}+\gcoup^2e^{-c_\kappa|a|})$.
@@ -125,8 +142,8 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
   which is outside this paper.
 \end{theorem}
 
-% RBM.theta_diff_one  (axiom)
-\begin{theorem}[$\mathtt{(prop{:}BD1)}$, property 6 --- \emph{axiom}]\label{ax:BD1}
+\begin{theorem}[$\mathtt{(prop{:}BD1)}$, property 6 --- \emph{interface hypothesis}]\label{ax:BD1}
+  \lean{RBM.ThetaDiffOne}
   \uses{def:Theta, def:prec}
   For $|r|\lesssim|a|$,
   $|\Th_t(0,a+r)-\Th_t(0,a)|\prec(\gcoup^2+|1-t|)^{-1}|r|(|a|+1)^{-(d-1)}$.
@@ -136,16 +153,16 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
   literature at all.
 \end{theorem}
 
-% RBM.theta_diff_two  (axiom)
-\begin{theorem}[$\mathtt{(prop{:}BD2)}$, property 7 --- \emph{axiom}]\label{ax:BD2}
+\begin{theorem}[$\mathtt{(prop{:}BD2)}$, property 7 --- \emph{interface hypothesis}]\label{ax:BD2}
+  \lean{RBM.ThetaDiffTwo}
   \uses{def:Theta, def:prec}
   For $|r|\lesssim|a|$,
   $|\Th_t(0,a+r)+\Th_t(0,a-r)-2\Th_t(0,a)|\prec(\gcoup^2+|1-t|)^{-1}|r|^2(|a|+1)^{-d}$.
   \emph{Attributed to} \texttt{[yang2024Del]} (E.19).
 \end{theorem}
 
-% RBM.theta_zero_mode  (axiom)
-\begin{theorem}[$\mathtt{(prop{:}ThfadC0)}$, property 8 --- \emph{axiom}]\label{ax:ThfadC0}
+\begin{theorem}[$\mathtt{(prop{:}ThfadC0)}$, property 8 --- \emph{interface hypothesis}]\label{ax:ThfadC0}
+  \lean{RBM.ThetaZeroMode}
   \uses{def:Theta, def:prec}
   $|\mathring\Th_t(0,a)|\prec(\gcoup^2+|1-t|)^{-1}(|a|+1)^{-(d-2)}$.
   \emph{Attributed to} \texttt{[yang2024Del]} Lemma 3.1.
@@ -155,6 +172,7 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
 
 % RBM.Graph.Counters, RBM.Graph.ord  (eq:ordG)
 \begin{definition}[Scaling size and scaling order]\label{def:ord}
+  \lean{RBM.Graph.Counters, RBM.Graph.ord}\leanok
   For a normal graph $\Gamma$ with $n_S$ solid edges (light-weights included), $n_W$ waved
   edges, $n_V$ internal vertices and $n_M$ internal molecules,
   \[ \ord(\Gamma) \;=\; n_S(\Gamma) + 2\bigl(n_W(\Gamma)-n_V(\Gamma)\bigr). \]
@@ -165,6 +183,7 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
 
 % RBM.Graph.ord_case_ii .. ord_case_vi
 \begin{lemma}[Counter bookkeeping in $\mathtt{lem\_scalingorder}$]\label{lem:ord-cases}
+  \lean{RBM.Graph.ord_case_ii, RBM.Graph.ord_case_vi}\leanok
   \uses{def:ord}
   In each configuration of a weight expansion, the counter relations between $\Gamma_0$ and
   $\Gamma_1$ force a lower bound on $\ord(\Gamma_1)-\ord(\Gamma_0)$: $+3$ in cases (ii) and
@@ -187,6 +206,7 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
 
 % RBM.Graph.hasDerivAt_inverse_apply, RBM.Graph.hasDerivAt_inverse_sub_apply  (Graph/Expansions.lean)
 \begin{lemma}[Derivative of a resolvent entry]\label{lem:dG}
+  \lean{RBM.Graph.hasDerivAt_inverse_apply, RBM.Graph.hasDerivAt_inverse_sub_apply}\leanok
   For invertible $A$ with $G=A^{-1}$, $\partial_{h_{\alpha w}}G_{ij}=-G_{i\alpha}G_{wj}$, and the same for
   $\mathring G=G-M$.  In the third term of $\mathtt{(Owx)}$ this turns a solid edge $G_{\beta_1\beta_2}$
   into $G_{\beta_1\alpha}G_{w\beta_2}$; with the prefactor $G_{\alpha w}$ these are the three new
@@ -197,6 +217,7 @@ These are the estimates this paper \emph{cites} rather than proves.  They are ax
 
 % RBM.Graph.Pattern.classify, RBM.Graph.classify_eq_vi_iff, RBM.Graph.ord_weight_step
 \begin{lemma}[The case split of $\mathtt{lem\_scalingorder}$ is exhaustive]\label{lem:ord-exhaustive}
+  \lean{RBM.Graph.Pattern.classify, RBM.Graph.classify_eq_vi_iff, RBM.Graph.ord_weight_step}\leanok
   \uses{lem:ord-cases, lem:dG}
   A configuration of the weight-expansion step is the equality pattern of the vertices on
   the cycle $\beta_1 - \alpha - w - \beta_2 - \beta_1$.  Of the $16$ Boolean patterns, exactly
@@ -214,6 +235,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 
 % RBM.UN, RBM.ThetaN (DefTHUST); RBM.uKer_eq_one_add, RBM.norm_Xi_le, RBM.norm_UN_le  (Kernel/Evolution.lean)
 \begin{lemma}[$\mathtt{lem{:}sum\_Ndecay}$, Appendix A.2]\label{lem:sum-Ndecay}
+  \lean{RBM.UN, RBM.ThetaN, RBM.uKer_eq_one_add, RBM.norm_UN_le}\leanok
   \uses{lem:propTH-34}
   For $0\le s\le t<1$,
   $\|\mathcal U^{(n)}_{s,t,\bm\sigma}\circ\mathcal A\|_\infty\le\bigl(\tfrac{1-s}{1-t}\bigr)^n\|\mathcal A\|_\infty$.
@@ -221,6 +243,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 \end{lemma}
 
 \begin{lemma}[Evolution kernel decomposition, Appendix A.2]\label{lem:Ukernel}
+  \lean{RBM.tensorKer, RBM.projMat, RBM.zeroModeSet, RBM.norm_zeroModeSet_UN_le}\leanok
   \uses{ax:ThfadC, lem:propTH-34}
   The kernel $\Ucal^{(n)}_{s,t,\bm\sigma}$ acts on each of the $n$ indices separately, and
   $Q^{(A)}$ replaces the factors indexed by $i\in A$ by ones carrying
@@ -230,6 +253,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 
 % RBM.tailT, RBM.tailW, RBM.tailT_antitone, RBM.tailW_pos, RBM.zeroMode_le_of_ge, RBM.ellT_eq_of_le  (Defs/Tail.lean)
 \begin{definition}[Tail functions, $\mathtt{def{:}\ TTfunc}$]\label{def:tail}
+  \lean{RBM.tailT, RBM.tailW, RBM.tailT_antitone, RBM.tailW_pos, RBM.zeroMode_le_of_ge, RBM.ellT_eq_of_le}\leanok
   \uses{def:params}
   $\mathcal T_t(r)=B_{t,r}\,e^{-(r/\ell_t)^{1/2}}$ and
   $\widetilde{\mathcal T}^{\ell}_{t,D}(r)=\max(\mathcal T_t(r\wedge\ell),W^{-D})$.  $\mathcal T_t$ is
@@ -241,6 +265,7 @@ The remaining chapters are stated but not yet formalized; they are work orders T
 
 % RBM.propT, RBM.propT_i, RBM.propT_ii  (Kernel/PropT.lean); RBM.sum_conv_le  (Defs/Convolution.lean)
 \begin{lemma}[$\mathtt{lem{:}propT}$, $\mathtt{(TTT2)}$]\label{lem:propT-TTT2}
+  \lean{RBM.propT, RBM.propT_i, RBM.propT_ii, RBM.sum_conv_le}\leanok
   \uses{def:tail}
   There is $C_d>0$ such that for $0\le u\le t<1$ with (i) $1-u\ge1-t\ge g^2/L^2$ or
   (ii) $1-t\le1-u\le g^2/L^2$, and all $a,b$,
@@ -249,16 +274,136 @@ The remaining chapters are stated but not yet formalized; they are work orders T
   lattice form, proved via $\sqrt{p/\ell_1}+\sqrt{q/\ell_2}-\sqrt{r/\ell_2}\ge(2-\sqrt2)\sqrt{\min(p,q)/\ell_1}$ for $r\le p+q$.
 \end{lemma}
 
-\begin{lemma}[$\mathtt{lem{:}propT}$ and $\mathtt{claim{:}TTk}$, Appendix A.3--A.4]\label{lem:propT}
-  \uses{lem:Ukernel, def:tail}
-  Bounds on products $\Tcal_t(|x_i-\alpha|\wedge\ell)\,\Tcal_t(|y_i-\alpha|\wedge\ell)$.
-  The truncation at $\ell$ is essential and was made explicit in the third proofreading
-  round, together with a correction to the index ranges in cases 2 and 3.
+
+% ---------------------------------------------------------------------------
+% Appendix A.4: the truncated tail function and claim:TTk
+% ---------------------------------------------------------------------------
+
+\begin{definition}[The truncated tail $\mathsf T_t$ and $\Psi_t$, Appendix A.4]\label{def:sfT}
+  \lean{RBM.sfT, RBM.PsiT, RBM.sfT_zero_le_PsiT, RBM.sfT_le_PsiT_mul, RBM.sfT_antitone, RBM.wfac}\leanok
+  \uses{def:tail, def:params}
+  $\mathsf T_t(r)=(\gcoup^2+|1-t|)^{-1/2}W^{-d/2}(r+1)^{-(d-2)/2}e^{-\frac12\sqrt{r/\ell_t}}$ and
+  $\Psi_t=(W^{-d}B_{t,0})^{1/2}$.  $\mathsf T_t$ is non-negative and non-increasing, and the
+  two elementary facts of Appendix A.4 hold: $\mathsf T_t(0)\le\Psi_t$ and
+  $\mathsf T_t(r)\le\mathsf T_t(0)(r+1)^{-(d-2)/2}$.  We write $w_d(r)=(r+1)^{-(d-2)/2}$ for the
+  polynomial factor that $\mathtt{(eq{:}TtTt)}$ and $\mathtt{(eq{:}KtKt)}$ carry.
+\end{definition}
+
+\begin{lemma}[$\mathtt{claim{:}TTk}$ pointwise: $\mathtt{(eq{:}TtTt)}$, $\mathtt{(eq{:}KtKt)}$ and their coverage]\label{lem:TTk-pointwise}
+  \lean{RBM.sfT_mul_le_TtTt, RBM.sfT_mul_le_KtKt, RBM.sfT_TtTt, RBM.sfT_KtKt, RBM.sfT_pair_cases, RBM.sfT_pair_le}\leanok
+  \uses{def:sfT}
+  For $|x-\alpha|\vee|y-\alpha|\le\ell$,
+  $\mathsf T_t(|x-\alpha|\wedge\ell)\mathsf T_t(|y-\alpha|\wedge\ell)\lesssim
+   \mathsf T_t(|x-y|\wedge\ell)\,\Psi_t\,w_d(|x-\alpha|\wedge|y-\alpha|)$, and when
+  $|y-\alpha|>\ell$, $\mathsf T_t(|x-\alpha|\wedge\ell)\mathsf T_t(\ell)\le
+   \mathsf T_t(\ell)\Psi_t\,w_d(|x-\alpha|\wedge\ell)$ with constant $1$.
+  Every pair $(x,y)$ and every $\alpha$ falls under one of the two (\texttt{sfT\_pair\_cases}),
+  which is what makes the index ranges of the third proofreading round -- $\mathtt{(eq{:}KtKt)}$
+  for $2\le i\le k$ in case 2 and for $1\le i\le k$ in case 3 -- exactly right.
+
+  \textbf{Sharper than the paper:} the three cases merge into the single bound
+  \texttt{sfT\_pair\_le}, whose polynomial factor is indexed by
+  $|x-\alpha|\wedge|y-\alpha|\wedge\ell$.  So the $2^{2k}$ regions $\mathbb D_{\le\ell,\bm\sigma}$
+  and the three-case split are not needed in Lean; the case distinction only decides
+  \emph{how many} polynomial factors are kept.
 \end{lemma}
 
-\begin{lemma}[Tree representation of $\Kcal$-loops, Appendix A.5]\label{lem:treerep}
+\begin{lemma}[The lattice sum of Appendix A.4]\label{lem:ballsum}
+  \lean{RBM.sum_shift, RBM.ballC, RBM.sum_ball_min_pow_le}\leanok
+  \uses{def:lattice}
+  For $d=k+2$, $\ell\ge1$ and any finite $D$ inside the ball of radius $\ell$ around $a$,
+  $\sum_{\alpha\in D}(|x-\alpha|\wedge\ell+1)^{-(d-2)}\le C_d\,\ell^2$, uniformly in $x$ and $L$.
+
+  \textbf{Sharper than the paper:} no volume count.  The paper bounds the region
+  $|x-\alpha|>\ell$, where the summand is the constant $(\ell+1)^{-(d-2)}$, by
+  $|\mathbb D_{\le\ell}|\lesssim\ell^d$ times that constant.  Here $\alpha\in D$ already gives
+  $|a-\alpha|\le\ell$, so the K2 summand \emph{centred at $a$} is itself
+  $\ge e^{-1}(\ell+1)^{-(d-2)}$: both regions are paid for by \texttt{sum\_radial\_exp\_le},
+  and the $\ell^2$ is the same $\ell^2$.
+\end{lemma}
+
+\begin{lemma}[$\mathtt{claim{:}TTk}$, $\mathtt{(eq{:}key\_T\_reudce)}$ summed]\label{lem:TTk-sum}
+  \lean{RBM.prod_sfT_pair_le, RBM.prod_wfac_le_two, RBM.keyC, RBM.key_T_reduce}\leanok
+  \uses{lem:TTk-pointwise, lem:ballsum}
+  For $k\ge2$, $\ell\ge1$ and $D$ inside the ball of radius $\ell$ around $a$,
+  \[\sum_{\alpha\in D}\prod_{i=1}^k\mathsf T_t(|x_i-\alpha|\wedge\ell)\mathsf T_t(|y_i-\alpha|\wedge\ell)
+    \;\le\;C(d,k)\,\bigl(\Psi_t^2\ell^2\bigr)\,\Psi_t^{k-2}\prod_{i=1}^k\mathsf T_t(|x_i-y_i|\wedge\ell).\]
+  The hypothesis $k\ge2$ is essential -- the paper notes that the estimate fails for $k=1$ --
+  and is what lets \texttt{prod\_wfac\_le\_two} keep two polynomial factors.
+
+  \textbf{Not formalized yet (Q29):} the passage from $\Psi_t^2\ell^2$ to $(W^d\eta_t)^{-1}$,
+  which uses $\ell\le(\log W)^{10}\ell_t$ and $\ell_t^2B_{t,0}\lesssim|1-t|^{-1}$ under
+  $1-t\ge\hat{\gcoup}^2/L^2$.  That is where the logarithms enter and why the paper states
+  the result with $\prec$ rather than $\lesssim$.
+\end{lemma}
+
+% ---------------------------------------------------------------------------
+% lem:sum_decay
+% ---------------------------------------------------------------------------
+
+\begin{lemma}[$\mathtt{(eq{:}latticesum\_d3)}$, the estimate the third round added]\label{lem:latticesum}
+  \lean{RBM.sum_inv_Icc_le, RBM.sum_radial_tail_le, RBM.latC, RBM.latticesum_d3}\leanok
+  \uses{def:lattice, def:params}
+  $\sum_{|x|>\ell}(|x|+1)^{-(d-1)}e^{-\sqrt{|x|/\ell}}\lesssim \ell\,\log\ell$ and the
+  lattice sum $\mathtt{(eq{:}latticesum\_d3)}$ itself.  Proved for every $d\ge3$ at once,
+  without splitting $d=3$ from $d\ge4$; it uses no interface hypothesis.
+\end{lemma}
+
+\begin{lemma}[$\mathtt{(eq{:}decomp\_U2)}$ and $\mathtt{(eq{:}decayXi)}$]\label{lem:sumdecay-parts}
+  \lean{RBM.XiKer, RBM.uKer_eq_one_add_XiKer, RBM.SB_apply_eq_zero_of_one_lt, RBM.UN_apply_eq_sum_powerset, RBM.norm_XiKer_apply_le}\leanok
+  \uses{lem:sum-Ndecay, ax:ThfadC}
+  $\Ucal^{(n)}$ expands over subsets ($\prod(1+\Xi^{(i)})$, via \texttt{Finset.prod\_add}), and
+  the entries of $\Xi$ decay: the zero-mode term is absorbed by
+  \texttt{zeroMode\_le\_of\_ge\_mul}, the nearest-neighbour support of $\SB$ moves the profile
+  from $|c-b|$ to $|a-b|$, and the row sum $1$ eats the sum over $c$.
+
+  \textbf{Not formalized yet (Q28):} the three conclusions of $\mathtt{lem{:}sum\_decay}$
+  themselves ($\mathtt{sum\_res\_1}$, the non-alternating case, the sum-zero property).
+  The trap recorded there: going through $\|\Xi\|_{\infty\to\infty}$ gives a shape weaker
+  than the claim; one has to use the ball truncation of $\mathtt{(deccA0)}$.
+\end{lemma}
+
+% ---------------------------------------------------------------------------
+% Appendix A.5: K-loops
+% ---------------------------------------------------------------------------
+
+\begin{definition}[Canonical partitions of a polygon, $\mathtt{TSP}(\mathcal P_a)$]\label{def:tsp}
+  \lean{RBM.Loop.diagonals, RBM.Loop.CrossingFree, RBM.Loop.TSP, RBM.Loop.thetaEdge, RBM.Loop.polyVal, RBM.Loop.treeVal, RBM.Loop.treeSum, RBM.Loop.GammaSum}\leanok
   \uses{def:Theta}
-  Canonical partitions, $M$-loop tree partitions, and the representation of
-  $\Kcal^{(n)}$ as a sum over them.  Note that the tree representation itself is
-  \texttt{[YY\_25]} Lemma 3.4 --- another interface axiom when it is formalized.
+  Crossing-free sets of diagonals of an oriented polygon, the value $\Gamma^{(n)}$ of a
+  canonical partition built from $\Th$-edges by the recursion \texttt{polyVal}, and the
+  sums $\sum_{\Gamma\in\mathrm{TSP}}$.  The representation is the same as in the sister
+  project \texttt{RBM1D}: it is dimension-independent.
+\end{definition}
+
+\begin{theorem}[Tree representation of $\Kcal$-loops --- \emph{interface hypothesis}]\label{ax:KTreeRep}
+  \lean{RBM.Loop.LoopIdx, RBM.Loop.treeEqRhs, RBM.Loop.MLoop, RBM.Loop.IsKLoop, RBM.Loop.KTreeRep}
+  \uses{def:tsp}
+  $\Kcal^{(n)}_{t,\bm\sigma,\mathbf a}=W^{-d(n-1)}\sum_{\Gamma\in\mathrm{TSP}(\mathcal P_{\mathbf a})}\Gamma^{(n)}$.
+  \emph{Attributed to} \texttt{[YY\_25]} Lemma 3.4.  The statement layer is in Lean (Q15);
+  the proof needs a propagator $t$-derivative layer that RBM3D does not have yet, so it is
+  carried as a hypothesis.  Work orders: Q23 (the derivative layer), Q22a (Gr\"onwall
+  uniqueness), Q22b (existence).
+\end{theorem}
+
+\begin{theorem}[$\mathtt{(Kn2sol)}$, the $n=2$ loop --- \emph{interface hypothesis}]\label{ax:KTwoFormula}
+  \lean{RBM.Loop.KTwoFormula}
+  \uses{ax:KTreeRep}
+  The closed formula for $\Kcal^{(2)}$.  Carried as a hypothesis for the same reason;
+  Q27 proves it once Q23 lands, and it is the dress rehearsal for Q22.
+  \textbf{Audit note (Q26):} this one is not yet in the audit's hard-coded list of borrowed
+  results, so the ``theorems resting on each borrowed result'' table under-reports it.
+\end{theorem}
+
+\begin{lemma}[$\mathtt{lem\_pureloop}$, $n=2$]\label{lem:pureloop}
+  \lean{RBM.Loop.norm_Theta_same_le_exp, RBM.Loop.sum_exp_decay_conv, RBM.Loop.pureLoop_two}\leanok
+  \uses{ax:KTwoFormula, ax:ThfadCshort}
+  For a pure loop ($\sigma_1=\sigma_2$), $|\Kcal^{(2)}_{t,\bm\sigma,\mathbf a}|\le
+  C W^{-d}e^{-c|a_1-a_2|}$.  The two tools are the exponential decay of $\Th^{(\sigma,\sigma)}$
+  (from $\mathtt{(prop{:}ThfadC\_short)}$) and a convolution of exponentials, in which the
+  decay constant halves at each step.
+
+  \textbf{Not formalized yet (Q25):} general $n$, by induction on the \texttt{polyVal}
+  recursion, with the induction hypothesis stated for the \emph{maximal pairwise} distance
+  of the label set.
 \end{lemma}
