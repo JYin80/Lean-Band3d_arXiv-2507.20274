@@ -26,12 +26,21 @@
 于是 `t = 1` 时是 `1/0 = 0`，`ellT` 取值 `1` 而非无定义。
 论文的每个使用点都有 `t < 1`，所以不影响任何陈述。
 
-## D5 · 接口公理写成展开式而非 `≺`
+## D5 · 接口写成 `Prop` 定义 + 结构字段，且用展开式而非 `≺`
 
-`(prop:BD1)`、`(prop:BD2)`、`(prop:ThfadC0)` 论文用 `≺` 陈述。
-`Propagator/Interface.lean` 把它们写成 `≺` 所缩写的
-`∀ τ > 0, ∃ C > 0, ∀ L ≥ 3, ...` 展开式，而不用 `RBM.UnifDetDom`。
-理由：公理是要被人逐字对着论文核的，不该让核对的人再去展开一个定义。
+**形式（2026-09-19，Q19 改）**：性质 5–8 **不是 `axiom`**，而是
+`Propagator/Interface.lean` 里的五个 `Prop` 定义（`ThetaDecay`、`ThetaDecayShort`、
+`ThetaDiffOne`、`ThetaDiffTwo`、`ThetaZeroMode`），打包成 `structure PropTH d g m`。
+用到它们的定理多带一个参数 `(hP : PropTH d g m)`，取 `hP.decay` 之类。
+于是 `Test/Axioms.lean` 的 `interfaceAxioms` **为空**，审计回到 RBM1D 那种最严形式：
+只允许 `propext` / `Classical.choice` / `Quot.sound`。
+好处是将来逐条证出来时「原地把假设换成定理，下游签名一个字不用改」——
+`Propagator/Basic.lean` 的 `hS` / `hone` 被 Q3/Q4 消掉时就是这样，零返工。
+每个 `Prop` 自带论文的默认假设 `3 ≤ d`、`0 < g`、`‖m‖ = 1` 作为前件，可以单独陈述、单独假设、单独消解。
+
+**陈述仍用展开式**：`(prop:BD1)`、`(prop:BD2)`、`(prop:ThfadC0)` 论文用 `≺` 写，
+这里写成 `≺` 所缩写的 `∀ τ > 0, ∃ C > 0, ∀ L ≥ 3, ...`，而不用 `RBM.UnifDetDom`。
+理由：这几条是要被人逐字对着论文核的，不该让核对的人再去展开一个定义。
 定理层仍然用 `DetDom` / `UnifDetDom`。
 
 `≺` 里的 `N^τ` 在展开式里写成 `L^τ`。论文的 `N = (WL)^d`，两者相差一个固定幂次，
@@ -93,7 +102,7 @@ block Anderson 模型（`S^(B) = I`，结构全在 `M^(σ₁,σ₂)` 里）另�
 （`7_8_light_weight.tex` L293、L334），不是 `[yang2024Del]`。原文对 `G = (H−z)⁻¹` 陈述，
 本文把 `G, S` 换成 `G_t, S_t = tS` 使用。
 
-**决定**：**不把它们写成 `axiom`**，因此 `interfaceAxioms` 保持 5 条。
+**决定**：**不把它们写成 `axiom`**。（2026-09-19 Q19 之后，`interfaceAxioms` 已经清空，全项目零公理。）
 
 它们是 `=_𝔼` 恒等式，对 `G` 的任意可微函数成立；逐字陈述需要概率空间、预解式、
 Wirtinger 导数 `∂_{h_{αx}}` 与 `f` 的具体函数类——前三者正是 `CLAUDE.md` 规则 6

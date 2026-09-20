@@ -180,3 +180,11 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 **Q12 完成**（`Kernel/PropT.lean` 的 `section TTk`）：`sfT`（`𝖳_t`）、`PsiT`（`Ψ_t`）、两条初等事实、
 `(eq:TtTt)`（常数 `2^{(d-2)/2}`，带前提 `|x−α| ∨ |y−α| ≤ ℓ`）、`(eq:KtKt)`（常数 1），
 以及 `sfT_pair_cases`（情形覆盖，核实第三轮改的下标范围是对的）。求和版另开 **Q20**。
+
+## 2026-09-19 · Claude Code · Q19 完成 —— **全项目零公理**
+
+`Propagator/Interface.lean` 的 5 条 `axiom` 改成 `Prop` 定义 + `structure PropTH`（陈述一字未动，
+默认假设变成前件）；`Test/Axioms.lean` 的 `interfaceAxioms` 清空。审计现在报「No interface axioms」，
+只允许 `propext` / `Classical.choice` / `Quot.sound`，与 RBM1D / RBM2D 同标准。反向测试通过（`sorry` 与野生 axiom 仍被拦下）。
+`./check.sh`：`errors: 0`、`exit=0`、464 条声明。文档连带更新：`paper-deltas.md` D5/D10、`README.md`、`Basic.lean`。
+**用到这 5 条的定理今后写成 `(hP : PropTH d g m)` 参数**，取 `hP.decay` 等；Q13、Q16、Q17 是第一批使用者。

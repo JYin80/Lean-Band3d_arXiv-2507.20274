@@ -16,8 +16,8 @@ Sister projects: [`../RBM1D`](https://github.com/JYin80/Lean-RBM1d_arxiv-2501.01
 | Lattice $\mathbb Z_L^d$, periodic distance, $B_{t,K}$, $\ell_t$ | `RBM3D/Defs/` | drafted |
 | $S^{(B)}$, $M^{(\sigma_1,\sigma_2)}$, $\Theta_t$, $\mathring\Theta_t$ | `RBM3D/Defs/Block.lean`, `RBM3D/Propagator/Basic.lean` | drafted |
 | Propagator properties 1–4 (the paper proves these) | `RBM3D/Propagator/Props14.lean` | drafted |
-| Propagator properties 5–8 (the paper cites these) | `RBM3D/Propagator/Interface.lean` | axioms |
-| Graph expansion lemmas (the paper cites these) | `RBM3D/Graph/Expansions.lean` | axioms |
+| Propagator properties 5–8 (the paper cites these) | `RBM3D/Propagator/Interface.lean` | hypotheses (`PropTH`) |
+| Graph expansion lemmas (the paper cites these) | `RBM3D/Graph/Expansions.lean` | deterministic core only |
 | Scaling-order bookkeeping (the paper proves this) | `RBM3D/Graph/ScalingOrder.lean` | drafted |
 
 `docs/PLAN.md` has the roadmap, `docs/TASKS.md` the work queue, `docs/STATUS.md` the

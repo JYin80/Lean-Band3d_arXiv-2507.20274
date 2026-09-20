@@ -28,7 +28,7 @@
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
-| Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **CLAIMED** (CC) |
+| Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
 
 ---
@@ -751,7 +751,25 @@ equation lemma、`.proof_N`、实例投影。实测：总数 389，其中**手�
 
 ---
 
-## Q19 · 把 5 条接口 axiom 改成 `structure` 字段 — **OPEN**，架构优先 ⭐
+## Q19 · 把 5 条接口 axiom 改成 `structure` 字段 — **DONE**（CC，2026-09-19）⭐
+
+> **完成记录**：`./check.sh` → `errors: 0`、`exit=0`、464 条声明。
+> **审计报的是：「No interface axioms」——全项目现在只用 `propext` / `Classical.choice` / `Quot.sound`，
+> 零项目公理**，与 RBM1D、RBM2D 同一标准。
+>
+> `Propagator/Interface.lean`：5 条 `axiom` → 5 个 `Prop` 定义 `ThetaDecay`、`ThetaDecayShort`、
+> `ThetaDiffOne`、`ThetaDiffTwo`、`ThetaZeroMode`，外加 `structure PropTH (d g m)` 打包（字段名
+> `decay` / `decayShort` / `diffOne` / `diffTwo` / `zeroMode`）。**陈述一字未动**；原来写在 binder 里的
+> 默认假设 `3 ≤ d`、`0 < g`、`‖m‖ = 1`（以及两条差分的 `τ > 0`）改成各自 `Prop` 的前件，
+> 于是每条都能**单独陈述、单独假设、单独消解**——将来证出某一条就是
+> `theorem thetaDecay_of (hd : 3 ≤ d) … : ThetaDecay d g m`，下游签名一个字不用改。
+>
+> `Test/Axioms.lean`：`interfaceAxioms := []`，审计在清单为空时改报「No interface axioms」一行。
+> **反向测试已跑**：临时加一条 `sorry` 定理和一条 `axiom`，审计照样失败（`RBM.bogus depends on [sorryAx]`）。
+>
+> 连带改的文档：`docs/paper-deltas.md` 的 D5 重写（并在 D10 里注明清单已清空）、`README.md` 状态表、
+> `RBM3D/Basic.lean` 的模块说明。下游目前没有任何定理引用这 5 条，所以**这次改动零返工**（Q13、Q16、Q17 将是第一批使用者）。
+
 
 **文件**：`RBM3D/Propagator/Interface.lean`（改写）、`RBM3D/Test/Axioms.lean`（收尾）。
 

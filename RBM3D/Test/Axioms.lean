@@ -18,12 +18,11 @@ current environment, collects the axioms it depends on (the same computation as
 Any `sorry` (`sorryAx`) therefore breaks the build, and so does any new `axiom` that has
 not been added to the list deliberately.
 
-This differs from the sister projects `RBM1D` and `RBM2D`, whose audits admit no project
-axioms at all.  This project has them because the paper it formalizes cites, rather than
-proves, its propagator decay estimates and its graph expansion lemmas; see
-`RBM3D/Propagator/Interface.lean`.  The point of listing them here is that the borrowing
-stays explicit: nothing can come to depend on `[yang2024Del]` without appearing in this
-file first.
+The interface list is **empty**, as in the sister projects `RBM1D` and `RBM2D`: what this
+paper cites rather than proves is carried as hypotheses (`RBM.PropTH`, see
+`RBM3D/Propagator/Interface.lean`), so a result resting on a borrowed estimate says so in
+its own statement.  The list is kept, and the command still checks it, so that a future
+exception would have to be written down here.
 
 The command also:
 
@@ -33,7 +32,8 @@ The command also:
   cannot make the audit pass vacuously;
 * prints, for each interface axiom, how many `RBM` declarations depend on it.  That count
   is the honest measure of how much of the development rests on borrowed results, and it
-  should be watched: a discharged axiom is one whose count can go to zero.
+  should be watched: a discharged axiom is one whose count can go to zero.  With the list
+  empty the command says so instead.
 -/
 
 namespace RBM.Audit
@@ -43,12 +43,12 @@ open Lean Elab Command
 /-- The axioms every `RBM` declaration may use unconditionally. -/
 def allowedAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
 
-/-- The results this paper cites but does not prove, stated as axioms in
-`RBM3D/Propagator/Interface.lean`.  Adding a name here is a deliberate act: it records
-that the development is allowed to rest on a result from outside the paper. -/
-def interfaceAxioms : List Name :=
-  [`RBM.theta_decay, `RBM.theta_decay_short, `RBM.theta_diff_one, `RBM.theta_diff_two,
-   `RBM.theta_zero_mode]
+/-- Interface axioms: **none**.  The results this paper cites but does not prove are
+`Prop`s in `RBM3D/Propagator/Interface.lean` (`RBM.PropTH`), assumed by the theorems that
+need them, not asserted.  The list is kept so that the exception remains available and
+visible: adding a name here would be a deliberate act, recording that the development is
+allowed to rest on a result from outside the paper. -/
+def interfaceAxioms : List Name := []
 
 /-- Fails unless every declaration in `RBM` uses only `allowedAxioms` together with the
 declared `interfaceAxioms`, and reports the dependency count of each interface axiom. -/
@@ -76,9 +76,14 @@ elab "#assert_rbm_axioms" : command => do
     counts := counts.map fun (a, k) => if axs.contains a then (a, k + 1) else (a, k)
   unless bad.isEmpty do
     throwError m!"axiom audit failed:\n{MessageData.joinSep bad.toList "\n"}"
-  let report := counts.toList.map fun (a, k) => m!"  {a}: {k}"
-  logInfo m!"axiom audit: {names.size} declarations in `RBM`, all within \
-    {allowedAxioms} plus the declared interface.\n\
-    Declarations depending on each interface axiom:\n{MessageData.joinSep report "\n"}"
+  if interfaceAxioms.isEmpty then
+    logInfo m!"axiom audit: {names.size} declarations in `RBM`, all within \
+      {allowedAxioms}.  No interface axioms: what the paper cites rather than proves is \
+      carried as hypotheses (`RBM.PropTH`)."
+  else
+    let report := counts.toList.map fun (a, k) => m!"  {a}: {k}"
+    logInfo m!"axiom audit: {names.size} declarations in `RBM`, all within \
+      {allowedAxioms} plus the declared interface.\n\
+      Declarations depending on each interface axiom:\n{MessageData.joinSep report "\n"}"
 
 end RBM.Audit
