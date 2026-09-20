@@ -300,6 +300,102 @@ theorem zeroModeSet_tensorKer (A : Finset (Fin n)) (K : Fin n → Matrix (Zd d L
   rw [zeroModeSet, zeroModeList_tensorKer]
   exact congrArg (tensorKer d L · T) (funext fun i => by simp [Finset.mem_toList])
 
+/-- For a translation-invariant matrix, every row sum equals the row sum at `0`, so the
+`(∞→∞)`-norm is controlled by the entries in one row. -/
+theorem norm_le_sum_row_zero (M : Matrix (Zd d L) (Zd d L) ℂ)
+    (h : ∀ a b c : Zd d L, M (a + c) (b + c) = M a b) :
+    ‖M‖ ≤ ∑ b : Zd d L, ‖M 0 b‖ := by
+  have key : ∀ a : Zd d L, ∑ b : Zd d L, ‖M a b‖ = ∑ b : Zd d L, ‖M 0 b‖ := by
+    intro a
+    have hrow : ∀ b : Zd d L, M a b = M 0 (b - a) := by
+      intro b
+      have := h 0 (b - a) a
+      simpa using this
+    calc ∑ b : Zd d L, ‖M a b‖ = ∑ b : Zd d L, ‖M 0 (b - a)‖ :=
+          Finset.sum_congr rfl fun b _ => by rw [hrow b]
+      _ = ∑ b : Zd d L, ‖M 0 b‖ := Fintype.sum_equiv (Equiv.subRight a) _ _ fun b => rfl
+  have hnn : 0 ≤ ∑ b : Zd d L, ‖M 0 b‖ :=
+    Finset.sum_nonneg fun b _ => norm_nonneg _
+  have hsup : (Finset.univ.sup fun a => ∑ b, ‖M a b‖₊)
+      ≤ (⟨∑ b : Zd d L, ‖M 0 b‖, hnn⟩ : ℝ≥0) := by
+    refine Finset.sup_le fun a _ => ?_
+    have h2 : ((∑ b, ‖M a b‖₊ : ℝ≥0) : ℝ) ≤ ∑ b : Zd d L, ‖M 0 b‖ := by
+      simpa [NNReal.coe_sum] using (key a).le
+    exact NNReal.coe_le_coe.mp h2
+  rw [Matrix.linfty_opNorm_def]
+  exact le_of_le_of_eq (NNReal.coe_le_coe.mpr hsup) rfl
+
+/-- `‖I - L^{-d} J‖_{∞→∞} ≤ 2`. -/
+theorem norm_projMat_le : ‖projMat d L‖ ≤ 2 := by
+  have hJ : ‖(Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹)‖ ≤ 1 := by
+    have hinv : ∀ a b c : Zd d L,
+        (Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹) (a + c) (b + c)
+          = (Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹) a b := fun _ _ _ => rfl
+    refine (norm_le_sum_row_zero _ hinv).trans ?_
+    have hL0 : (0 : ℝ) < (L : ℝ) ^ d := by
+      have : (0 : ℝ) < (L : ℝ) := by
+        have := NeZero.ne L
+        have : 0 < L := Nat.pos_of_ne_zero this
+        exact_mod_cast this
+      positivity
+    simp only [Matrix.of_apply, norm_inv, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+    rw [show ((Fintype.card (Zd d L) : ℝ)) = (L : ℝ) ^ d by simp [ZMod.card],
+      show ‖((L : ℂ) ^ d)‖ = (L : ℝ) ^ d by simp]
+    rw [mul_inv_cancel₀ hL0.ne']
+  calc ‖projMat d L‖ ≤ ‖(1 : Matrix (Zd d L) (Zd d L) ℂ)‖
+        + ‖(Matrix.of fun _ _ : Zd d L => ((L : ℂ) ^ d)⁻¹)‖ := norm_sub_le _ _
+    _ ≤ 1 + 1 := by rw [norm_one]; linarith
+    _ = 2 := by norm_num
+
+/-- The columns of `S^(B)(g)` sum to `1`. -/
+theorem sum_SB_col (hL : 3 ≤ L) (b : Zd d L) : ∑ c : Zd d L, SB d L g c b = 1 := by
+  rw [← sum_sbKernel d L g hL]
+  exact Fintype.sum_equiv (Equiv.subRight b) _ _ fun c => by rw [SB_apply]; rfl
+
+/-- `I - L^{-d} J` commutes with `S^(B)(g)`: the paper's remark that
+`Proj_{e^⊥}` commutes with the translation-invariant `M^(σ₁,σ₂) S^(B)`. -/
+theorem projMat_mul_SB_comm (hL : 3 ≤ L) :
+    projMat d L * SB d L g = SB d L g * projMat d L := by
+  ext a b
+  have hcol : ∑ c : Zd d L, SB d L g c b = 1 := sum_SB_col hL b
+  have hrow : ∑ c : Zd d L, SB d L g a c = 1 := sum_SB_row d L g hL a
+  simp only [projMat, Matrix.sub_apply, Matrix.mul_apply, Matrix.one_apply, Matrix.of_apply,
+    sub_mul, mul_sub, Finset.sum_sub_distrib, ite_mul, mul_ite, one_mul, mul_one, zero_mul,
+    mul_zero, Finset.sum_ite_eq, Finset.sum_ite_eq', Finset.mem_univ, ite_true,
+    ← Finset.sum_mul, ← Finset.mul_sum]
+  rw [hcol, hrow]
+  ring
+
+/-- **`Proj_{e^⊥} Θ_ξ = Θ̊_ξ`**: left-multiplying the propagator by `I - L^{-d} J` is
+exactly the zero-mode removal `(def_Thxi0)`. -/
+theorem projMat_mul_Theta (hL : 3 ≤ L) {ξ : ℂ} (hξ : ‖ξ‖ < 1) :
+    projMat d L * Theta d L g ξ = Theta0 d L g ξ := by
+  have hL0 : ((L : ℂ) ^ d) ≠ 0 := by
+    have hne : (L : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne L)
+    positivity
+  have hsym : ∀ x y : Zd d L, Theta d L g ξ x y = Theta d L g ξ y x := by
+    intro x y
+    have hT := Theta_transpose_of_three_le (d := d) (g := g) hL hξ
+    calc Theta d L g ξ x y = (Theta d L g ξ)ᵀ y x := rfl
+      _ = Theta d L g ξ y x := by rw [hT]
+  have hrowsum : ∀ x : Zd d L, ∑ y : Zd d L, Theta d L g ξ x y = (1 - ξ)⁻¹ :=
+    fun x => sum_Theta_row_of_three_le hL hξ x
+  ext a b
+  have hcol : ∑ c : Zd d L, Theta d L g ξ c b = (1 - ξ)⁻¹ := by
+    rw [Finset.sum_congr rfl fun c _ => hsym c b]
+    exact hrowsum b
+  have hdouble : ∑ a' : Zd d L, ∑ b' : Zd d L, Theta d L g ξ a' b'
+      = (L : ℂ) ^ d * (1 - ξ)⁻¹ := by
+    rw [Finset.sum_congr rfl fun a' _ => hrowsum a', Finset.sum_const, Finset.card_univ,
+      nsmul_eq_mul]
+    congr 1
+    simp [ZMod.card]
+  simp only [projMat, Matrix.sub_apply, Matrix.mul_apply, Matrix.one_apply, Matrix.of_apply,
+    Theta0_apply, sub_mul, Finset.sum_sub_distrib, ite_mul, one_mul, zero_mul,
+    Finset.sum_ite_eq, Finset.mem_univ, ite_true, ← Finset.mul_sum]
+  rw [hcol, hdouble, two_mul, pow_add]
+  field_simp
+
 /-- `‖K ∘ 𝒜‖_∞ ≤ (∏_i ‖K_i‖_{∞→∞}) ‖𝒜‖_∞`, pointwise form. -/
 theorem norm_tensorKer_apply_le (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
     (A : (Fin n → Zd d L) → ℂ) (a : Fin n → Zd d L) :
