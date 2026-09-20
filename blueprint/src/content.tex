@@ -197,6 +197,37 @@ is a new theorem.
   \emph{Attributed to} \texttt{[yang2024Del]} Lemma 3.1.
 \end{theorem}
 
+\begin{lemma}[Certificates: which of these are known to be satisfiable]\label{lem:certificates}
+  \lean{RBM.Test.thetaDecay_fixedL, RBM.Test.exists_norm_Theta_ge, RBM.Test.not_exists_uniform_entry_bound, RBM.Test.sum_Theta_diff_row, RBM.Test.twoLoopBounded_kTwoLoop, RBM.Theta0_apply_eq, RBM.sum_Theta0_row}\leanok
+  \uses{bor:ThfadC, bor:ThfadCshort, bor:BD1, bor:BD2, bor:ThfadC0, hyp:twoloop, lem:propTH-34}
+  The audit counts what rests on each premise, but a premise that is \emph{false} makes
+  every theorem carrying it vacuous, and the count looks the same.  That is not
+  hypothetical: it is what happened while $\mathtt{(prop{:}ThfadC\_short)}$ was stated
+  without its $\sigma_1=\sigma_2$ restriction (\texttt{docs/paper-deltas.md}, D11).  So
+  each premise also wants a \emph{certificate}: a theorem of this development witnessing
+  that it is satisfiable.  Two have one.
+
+  \ref{bor:ThfadC} is certified at \textbf{fixed $L$}: replacing
+  $\exists C\,\forall L$ by $\forall L\,\exists C$ leaves a statement this development can
+  prove, because at fixed $L$ the torus is finite and the whole content of the assumption
+  is the uniformity in $L$.  The proof plays $\|\Th_t\|_{\infty\to\infty}\le(1-t)^{-1}$
+  against the zero-mode term $(L^d|1-t|)^{-1}$ of $B_{t,K}$, and
+  \texttt{exists\_norm\_Theta\_ge} shows that term is not slack: some entry of the row is
+  at least $L^{-d}(1-t)^{-1}$.  \ref{hyp:twoloop} is certified outright, by the explicit
+  two-loop of $\mathtt{(Kn2sol)}$.
+
+  The other four propagator premises are \textbf{not} certified, and the obstruction is
+  machine-checked rather than asserted: their right-hand sides stay bounded as $t\to1$ at
+  fixed $L$, while the entries of $\Th_t$ do not
+  (\texttt{not\_exists\_uniform\_entry\_bound}), so each of them needs a
+  \emph{cancellation} --- a difference of entries, or the removal of the zero mode.  At
+  fixed $L$ that cancellation is the statement that $1$ is a \emph{simple} eigenvalue of
+  $\SB$, a finite-$L$ spectral gap this development does not have (work order Q51).  What
+  is checked is that the refutation which killed the old property 5' cannot be rerun
+  against them: $\sum_b\mathring\Th_{ab}=0$ and every first difference of a row sums to
+  $0$.
+\end{lemma}
+
 \chapter{Scaling order (Appendix B)}
 
 % RBM.Graph.Counters, RBM.Graph.ord  (eq:ordG)
