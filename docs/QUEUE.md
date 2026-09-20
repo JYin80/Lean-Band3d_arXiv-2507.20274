@@ -44,12 +44,14 @@
 | Q23 | **传播子对 `t` 的求导层** ⭐ —— **主线第一步** | `Propagator/Deriv.lean` | **DONE** (CC)：4 条 + `t`-形式；Q27 解锁 |
 | Q27 | **证出 `KTwoFormula`（`(Kn2sol)`）** ⭐ —— 主线第二步 | `Loop/Primitive.lean` | **DONE** (CC)：存在性 (Q27) + 唯一性 (Q22a) ⇒ `KTwoFormula` 是定理 |
 | Q22a | **Grönwall 唯一性**（250 行）—— 主线第三步 | `Loop/Unique.lean` | **DONE** (CC)：唯一性 + **`KTwoFormula` 已消** |
-| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **CLAIMED (CC)** |
+| Q22b | 树公式 = 存在性（真正的大件）—— 主线第四步 | `Loop/TreeRep*.lean` | **PARTIAL** (CC)：`n = 3` 已证（`Loop/TreeThree.lean`）；`n = 4` → Q30，一般 `n` → Q31 |
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q16 开出） |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **OPEN**（范围已扩：见下方 beat 14 补充） |
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **OPEN**（CC 于 Q20 开出） |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
+| Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
+| Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | **OPEN**（CC 于 Q22b 开出；需 Q30） |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
@@ -1285,6 +1287,50 @@ STATUS 里记一笔「**Q22 的前置已拆掉**」，并说明 `d` 作为参数
 
 ---
 
+## Q22b · 树公式 = 存在性 — **PARTIAL**（CC，2026-09-20）：`n = 3` 已证
+
+**这一拍做了什么**：新开 `RBM3D/Loop/TreeThree.lean`，把 `(eq_Ktree)` 在 **`n = 3`** 处证完。
+`./check.sh` 绿、0 warning。
+
+三角形没有对角线，所以 `TSP 3 = {∅}`（Q14 已证），树和就是单个星形
+`Σ_b Θ^(σ₀σ₁)(a₀,b) Θ^(σ₁σ₂)(a₁,b) Θ^(σ₂σ₀)(a₂,b)`。真正的内容是**星形的三条边与
+`(pro_dyncalK)` 的三个 `(k,l)` 项一一对应**：
+
+* `(1,2)` 切下 2-链 `(σ₀,σ₁)`，换掉标签 `a₀`；
+* `(2,3)` 切下 `(σ₁,σ₂)`，换掉 `a₁`；
+* `(1,3)` 切下 `(σ₀,σ₂)`，换掉 `a₂`——**这一项的 2-链在 `S^(B)` 的左边**，
+  所以要两条求和引理 `sum_SB_starLeft` / `sum_SB_starRight`，不是一条。
+
+落地的声明：`treeEqRhs_three`、`treeVal_three_nil`、`treeSum_three`、
+`sum_SB_starLeft/Right`、`hasDerivAt_starThree`、`kThree`、`hasDerivAt_kThree`、
+`kThree_zero`、`kLoop3`、`exists_eq_of_length_three`、**`kThree_eq_of_isKLoop`**。
+
+**最后一条是这拍的收获**：它说的是「**任意**一族 `K`-loop（2-loop 在 `[0,T₀]` 上有界）
+的 3-loop 就是树值」——不带任何关于解的形状的假设。证法是 Q22a 的 `eq_on_level` 用在 `n = 3`，
+长度 2 那一层由上一拍的 `kTwoFormula_of_isKLoop` 供给。**注意它只要 2-loop 的先验界，
+不要 3-loop 的**：因为 `n ≥ 3` 的方程对 `n`-loop 是线性的，系数正是 2-loop。
+
+**踩到的两个点**（写下来给 Q30/Q31）：
+
+1. `HasDerivAt.sum` 的函数形状是 `∑ i ∈ s, A i`（Pi 上的和），要的是 **`HasDerivAt.fun_sum`**
+   （`fun y => ∑ i, A i y`）；用错了报的是 type mismatch，不好认。
+2. 三重积求导后目标里会留下**未 β 归约的** `((fun s => …) * fun s => …) t`，`ring` 看不穿，
+   要先 `simp only [Pi.mul_apply]`。同理，`ring` 把 `thetaEdge …` 与 `Theta d L g (…)`
+   当成两个不同的原子——**先做结合律的 `show`，再 `simp only [thetaEdge]` 展开，最后 `ring`**，
+   顺序反了 `rw` 的模式就对不上。
+
+**剩下的拆成两张**：
+
+* **Q30 · `n = 4`**：第一次出现**内部边**（对角线 `(0,2)` 与 `(1,3)`），
+  `TSP 4 = {∅, {(0,2)}, {(1,3)}}` 也已证。RBM1D 对应 `Loop/TreeRep.lean` 的 729 行，
+  其中大半是 `star4/spl02/spl13` 的「按某一行线性」引理（`*_slot0..3`）。
+  这里的 `polyVal` 是递归定义的，`treeVal_four_nil` 已经把星形那一支算出来了，
+  两条对角线那一支要先算 `polyVal` 在 `F = [(0,2)]` 处的值。
+* **Q31 · 一般 `n`**：对 `polyVal` 的递归做归纳，RBM1D 那边 2546 行。
+  **先做 Q30**：`n = 4` 是唯一能看清「边 ↔ `(k,l)` 双射」在有内部边时长什么样的地方。
+
+---
+
 ## Q24 · `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ — **OPEN**（R1 转正，本拍新提）
 
 **文件**：新开 `RBM3D/Loop/KBound.lean`。
@@ -1596,3 +1642,36 @@ STATUS 里那句「这一点审计数不出来，只能靠这样一条定理记�
 
 **不要做的**：别为了凑证书把陈述削弱。若某条的固定 `L` 版也证不出来，**那是发现，不是障碍**，
 按 CLAUDE.md 规则 13 留一个机器可核的反例，并当场上报。
+
+---
+
+## Q30 · `(eq_Ktree)` 的 `n = 4` — **OPEN**（CC 于 Q22b 开出）
+
+**文件**：新开 `RBM3D/Loop/TreeFour.lean`。参照 `RBM1D/RBM1D/Loop/TreeRep.lean`（729 行）。
+
+**为什么单开**：`n = 4` 是**第一次出现内部边**的长度。边与 `(k,l)` 的双射在这里第一次完整：
+4 条边界边 + 2 条对角线 = 6 个 `k < l` 对。`n = 3` 只验证了「边界边 ↔ 带 2-链的项」这一半。
+
+**已有的**：`TSP_four`（Q14）、`treeVal_four_nil`（星形那一支，Q14 已算）、
+`sum_SB_starLeft/Right`、`hasDerivAt_Theta_mul_apply`、`eq_on_level`。
+
+**要做的**：① `polyVal` 在 `F = [(0,2)]` 与 `[(1,3)]` 处的值（对角线那两支）；
+② `treeEqRhs_four`（六项的索引核对）；③ 内部边 `Θ^(σ₀,σ₂) − I` 的导数
+（`(prop:...)`：`∂_t(Θ−I) = μ Θ S Θ`，与边界边同一条公式，因为 `I` 不含 `t`）；
+④ 拼起来 + `eq_on_level` 在 `n = 4`（低层由 Q22b 的 `n ≤ 3` 供给）。
+
+**提醒**：内部边那两项的右端是**两条 3-链**相乘（不是 2-链 × 4-链），
+所以低层供给要用到 `kThree_eq_of_isKLoop`，这正是这一拍先做 `n = 3` 的原因。
+
+---
+
+## Q31 · `(eq_Ktree)` 的一般 `n` — **OPEN**（CC 于 Q22b 开出；需 Q30）
+
+**文件**：`RBM3D/Loop/TreeRepGeneral.lean`（新）。RBM1D 对应 2546 行——**本项目最大的一件**。
+
+**路线**：对 `Loop/Partition.lean` 的 `polyVal` 递归做归纳。归纳的骨架应当是
+「边 ↔ `(k,l)` 的双射」：每个 `Γ ∈ TSP(n)` 的每条边，求导后给出一个 `(k,l)` 项；
+反过来每个 `(k,l)` 项由「把两块的树分别求和」得到。`noncrossing_split`、
+`leftPairs`/`rightPairs`、`isDiag_split_lt`（都在 Q14 里）是这条路的零件。
+
+**先做 Q30**，再回来定归纳假设的形状——不要跳过 `n = 4` 直接写一般 `n`。

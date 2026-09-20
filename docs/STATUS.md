@@ -362,3 +362,24 @@ QUEUE 顶部的分号约定改为 Q28（我的新工单从 Q29 起）。
 审计：**332 定理 / 141 定义 / 0 公理**；`ThetaDecayShort` 承重 5 → 6（新增的那条纯回路推论）。
 
 **主线**：Q23 ✅ → Q27 ✅ → Q22a ✅ → **Q22b（树公式存在性，RBM1D 那边 729 + 2546 行）是唯一剩下的大件**。
+
+## 2026-09-20 · Claude Code · Q22b 第一片：`(eq_Ktree)` 在 `n = 3` 证完
+
+新开 `RBM3D/Loop/TreeThree.lean`。三角形没有对角线（`TSP_three`，Q14），树和就是单个星形；
+真正的内容是**星形三条边与 `(pro_dyncalK)` 三个 `(k,l)` 项的一一对应**。
+其中 `(1,3)` 那一项的 2-链落在 `S^(B)` 的**左边**，所以求和引理要两条
+（`sum_SB_starLeft` / `sum_SB_starRight`），不是一条——这一点在 `n = 3` 上才看得出来。
+
+**`kThree_eq_of_isKLoop`**：任意一族 `K`-loop（只要 2-loop 在每个 `[0,T₀]` 上有界）
+的 3-loop 就是树值，不带任何关于解的形状的假设。证法是 Q22a 的 `eq_on_level` 用在 `n = 3`，
+长度 2 那一层由 `kTwoFormula_of_isKLoop` 供给。**只要 2-loop 的先验界、不要 3-loop 的**，
+因为 `n ≥ 3` 的方程对 `n`-loop 线性、系数正是 2-loop。
+
+两个踩过的坑已写进 QUEUE 的完成记录（给 Q30/Q31）：`HasDerivAt.fun_sum` 与 `HasDerivAt.sum`
+的函数形状之别；三重积求导后残留的未 β 归约 `(f * g) t`（要 `Pi.mul_apply`），
+以及 `ring` 把 `thetaEdge` 和展开后的 `Theta` 当作两个原子——**先结合律、再展开、最后 ring**。
+
+**Q22b 拆成两张新工单**：**Q30**（`n = 4`，第一次出现内部边，6 个 `(k,l)` 对 4 边 + 2 对角线）、
+**Q31**（一般 `n`，对 `polyVal` 递归归纳，RBM1D 那边 2546 行，本项目最大的一件）。
+
+审计：**344 定理 / 143 定义 / 0 公理**。
