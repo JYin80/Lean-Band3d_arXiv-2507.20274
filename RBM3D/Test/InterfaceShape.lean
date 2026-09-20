@@ -226,14 +226,6 @@ never have been produced.
 
 open Finset
 
-/-- `R_L := max_a |a|`, the diameter of the torus.  It is finite because the torus is, and
-that finiteness is the whole of the fixed-`L` weakening: the constant below depends on it,
-and therefore on `L`. -/
-def maxDist (d L : ℕ) [NeZero L] : ℕ := Finset.univ.sup fun a : Zd d L => zdistD d L a
-
-theorem zdistD_le_maxDist (d L : ℕ) [NeZero L] (a : Zd d L) :
-    zdistD d L a ≤ maxDist d L := Finset.le_sup (Finset.mem_univ a)
-
 /-- **Certificate for `RBM.ThetaDecay` (`(prop:ThfadC)`), fixed `L`.**  The bound of
 property 5 holds at each fixed `L`, with a constant depending on `L`; the assumption's
 content is the uniformity in `L`, and this says the shape is not vacuous.
@@ -253,7 +245,7 @@ theorem thetaDecay_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) {m : �
   have hL1 : (1 : ℝ) ≤ (L : ℝ) := by
     have : (1 : ℕ) ≤ L := by omega
     exact_mod_cast this
-  refine ⟨(L : ℝ) ^ d * Real.exp (maxDist d L), by positivity, 1, one_pos, ?_⟩
+  refine ⟨(L : ℝ) ^ d * Real.exp (torusDiam d L), by positivity, 1, one_pos, ?_⟩
   intro t ht0 ht1 a
   have hLd : (0 : ℝ) < (L : ℝ) ^ d := by positivity
   have h1t : (0 : ℝ) < 1 - t := by linarith
@@ -262,11 +254,11 @@ theorem thetaDecay_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) {m : �
     exact Finset.single_le_sum (f := fun b => ‖Theta d L g ((t : ℂ) * m) 0 b‖)
       (fun b _ => norm_nonneg _) (Finset.mem_univ a)
   have hell : (1 : ℝ) ≤ ellT L g t := one_le_ellT hL1
-  have hexp : Real.exp (-(maxDist d L : ℝ))
+  have hexp : Real.exp (-(torusDiam d L : ℝ))
       ≤ Real.exp (-1 * (zdistD d L a : ℝ) / ellT L g t) := by
     refine Real.exp_le_exp.mpr ?_
-    have hd : (zdistD d L a : ℝ) ≤ (maxDist d L : ℝ) := by
-      exact_mod_cast zdistD_le_maxDist d L a
+    have hd : (zdistD d L a : ℝ) ≤ (torusDiam d L : ℝ) := by
+      exact_mod_cast zdistD_le_torusDiam d L a
     have hdiv : (zdistD d L a : ℝ) / ellT L g t ≤ (zdistD d L a : ℝ) :=
       div_le_self (by positivity) hell
     have hneg : -1 * (zdistD d L a : ℝ) / ellT L g t = -((zdistD d L a : ℝ) / ellT L g t) := by
@@ -282,13 +274,13 @@ theorem thetaDecay_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) {m : �
     linarith
   calc ‖Theta d L g ((t : ℂ) * m) 0 a‖
       ≤ (1 - t)⁻¹ := hentry
-    _ = ((L : ℝ) ^ d * Real.exp (maxDist d L)) * ((L : ℝ) ^ d * (1 - t))⁻¹
-          * Real.exp (-(maxDist d L : ℝ)) := by
+    _ = ((L : ℝ) ^ d * Real.exp (torusDiam d L)) * ((L : ℝ) ^ d * (1 - t))⁻¹
+          * Real.exp (-(torusDiam d L : ℝ)) := by
         rw [Real.exp_neg]
         field_simp
-    _ ≤ ((L : ℝ) ^ d * Real.exp (maxDist d L)) * Bparam d L g t (zdistD d L a)
+    _ ≤ ((L : ℝ) ^ d * Real.exp (torusDiam d L)) * Bparam d L g t (zdistD d L a)
           * Real.exp (-1 * (zdistD d L a : ℝ) / ellT L g t) := by
-        have h1 : (0 : ℝ) ≤ (L : ℝ) ^ d * Real.exp (maxDist d L) := by positivity
+        have h1 : (0 : ℝ) ≤ (L : ℝ) ^ d * Real.exp (torusDiam d L) := by positivity
         have hBnn : (0 : ℝ) ≤ ((L : ℝ) ^ d * (1 - t))⁻¹ := by positivity
         exact mul_le_mul (mul_le_mul_of_nonneg_left hB h1) hexp (Real.exp_pos _).le
           (mul_nonneg h1 (le_trans hBnn hB))

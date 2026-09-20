@@ -70,6 +70,13 @@ theorem card_Zd (d L : ℕ) [NeZero L] : Fintype.card (Zd d L) = L ^ d := by
 /-- The periodic `ℓ¹` distance to the origin on `Z_L^d`, written `|x|` in the paper. -/
 def zdistD (d L : ℕ) (x : Zd d L) : ℕ := ∑ i, zdist L (x i)
 
+/-- The diameter of the torus, `max_x |x|`.  Finite because the torus is finite; a
+constant depending on `L` is allowed wherever it is used (`docs/QUEUE.md`, Q41, Q51). -/
+def torusDiam (d L : ℕ) [NeZero L] : ℕ := Finset.univ.sup fun x : Zd d L => zdistD d L x
+
+theorem zdistD_le_torusDiam (d L : ℕ) [NeZero L] (x : Zd d L) :
+    zdistD d L x ≤ torusDiam d L := Finset.le_sup (Finset.mem_univ x)
+
 @[simp] theorem zdistD_zero (d L : ℕ) : zdistD d L 0 = 0 := by
   simp [zdistD]
 

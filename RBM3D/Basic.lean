@@ -28,6 +28,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Propagator.Basic`   — `M^(σ₁,σ₂)`, `Θ_t` and `Θ̊_t` of `def_Theta`
 * `RBM3D.Propagator.Props4`  — property 4 of `lem_propTH`; properties 1–3 without hypotheses
 * `RBM3D.Propagator.Deriv`   — `∂_ξ Θ_ξ = Θ_ξ S^(B) Θ_ξ`, entrywise, and its `t`-form
+* `RBM3D.Propagator.Gap`     — `S^(B)` connects the torus: `(S^(B))^n > 0` entrywise for `n ≥ |a−b|`
 * `RBM3D.Kernel.Evolution`    — the evolution kernel `U^(n)` and `lem:sum_Ndecay`
 * `RBM3D.Kernel.PropT`        — `lem:propT`, the convolution bound `(TTT2)` for `𝒯_t`
 * `RBM3D.Propagator.Interface` — properties 5–8 of `lem_propTH`, as hypotheses (`PropTH`)

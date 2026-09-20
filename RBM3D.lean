@@ -14,6 +14,7 @@ import RBM3D.Defs.StochDom
 import RBM3D.Propagator.Basic
 import RBM3D.Propagator.Props4
 import RBM3D.Propagator.Deriv
+import RBM3D.Propagator.Gap
 import RBM3D.Kernel.Evolution
 import RBM3D.Kernel.PropT
 import RBM3D.Kernel.SumDecay
