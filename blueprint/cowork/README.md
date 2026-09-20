@@ -42,3 +42,13 @@ python3 mk3.py && python3 page.py
 的 `page.py` 副本——`page.py` 里的输出路径写死在云端容器那侧。
 
 `graphs.py` 与 `__pycache__/` 是生成物，已进 `.gitignore`。
+
+## beat 14 记：`mk3.py` 与 `page.py` 必须一起跑
+
+beat 14 的 `patch14.py` 第一次跑挂在一条 assert 上（队列行的文字与预期不符）。
+因为命令是 `patchg14 && patch14 && mk3 && page` 串起来的，**`mk3.py` 那一步被跳过了**；
+修好 patch 之后只补跑了 `page.py`，于是 `graphs.py` 还是上一拍的，
+**发出去的 v18 带着旧的图节点**。v19 才是对的。
+
+**规矩**：改完 `mk3.py` 之后，`python3 mk3.py && python3 page.py` 两条都要跑完再发布，
+发布前 grep 一个本拍新增的**节点标签**（不是只 grep 正文），确认图也更新了。

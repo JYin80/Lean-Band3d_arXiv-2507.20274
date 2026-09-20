@@ -57,9 +57,9 @@ CH4 = rows([
  ("lem:sum_decay 的三条结论 —— 不能走 ‖Ξ‖ 捷径，须过 (deccA0) 球内截断","Q28 · 可开工","ready","sum_res_1 · sum_res_2_NAL · sum_res_2"),
  ("典范树划分 TSP(P_a) 与边值 —— 表示刻意与 RBM1D 对齐，为移植铺路","Q14 ✓ 已证","done","TSP · thetaEdge · treeVal · GammaN · GammaSum"),
  ("树表示 eq_Ktree —— 陈述层落地，eq_Ktree 暂作假设 KTreeRep（形状同 PropTH）","Q15 ✓ 已证","done","LoopIdx · treeEqRhs · IsKLoop · KTreeRep"),
- ("2-K-loop 的显式解 (Kn2sol) —— 存在性这一半已证，还带了可满足性见证","Q27 ✓ 存在性","done","kTwo · hasDerivAt_kTwo · kTwo_zero · kTwoFormula_kTwoLoop"),
- ("Grönwall 唯一性 —— 主线现在的瓶颈；落地后 KTwoFormula 真消掉，KTreeRep 只欠存在性","Q22a · 可开工","ready","Loop/Unique.lean · 250 行"),
- ("树公式 = 存在性（真正的大件）","Q22b · 待 Q22a","todo","TreeRep.lean 729 + TreeRepGeneral.lean 2546"),
+ ("(Kn2sol) 的显式解与它解 n=2 的树方程","Q27 ✓ 已证","done","kTwo · hasDerivAt_kTwo · kTwo_zero · norm_kTwo_le"),
+ ("卷积树方程的唯一性（一次 Grönwall）—— (Kn2sol) 由此从假设变成定理 ⭐","Q22a ✓ 已证","done","isKLoop_unique · kTwoFormula_of_isKLoop · pureLoop_two_of_isKLoop"),
+ ("树公式 = 存在性 —— 剩下的唯一一个大件","Q22b · 认领中","draft","TreeRep.lean 729 + TreeRepGeneral.lean 2546"),
  ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 ✓ n=2 · Q25 一般 n","ready","pureLoop_two · sum_exp_decay_conv"),
  ("ML:Kbound —— 论文说「需额外修改以处理 d ≥ 3」，先做陈述层并定位那处修改","Q24 · 可开工","ready","Loop/KBound.lean"),
 ])
@@ -91,9 +91,9 @@ QUEUE = """
 <tr><td>Q20</td><td><code>(eq:key_T_reudce)</code> 求和版 —— 确定性不等式已证，<code>≺</code> 吸收 → Q29</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
 <tr><td>Q21</td><td><b>逐字核对剩下四条接口陈述</b> —— 又修正 1 条，新增 1 条反例</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q23</td><td><b>传播子对 <code>t</code> 的求导层</b> <b>⭐</b> —— <b>主线第一步，已过</b></td><td><code>Propagator/Deriv.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q27</td><td><b><code>(Kn2sol)</code> 的存在性</b> —— 主线第二步；消掉假设还差唯一性</td><td><code>Loop/Primitive.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
-<tr><td>Q22a</td><td><b>Grönwall 唯一性</b> <b>⭐</b> —— <b>主线现在的瓶颈</b></td><td><code>Loop/Unique.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q22b</td><td>树公式 = 存在性（真正的大件）</td><td><code>Loop/TreeRep*.lean</code></td><td><span class="pill todo">待 Q22a</span></td></tr>
+<tr><td>Q27</td><td><b><code>(Kn2sol)</code></b> —— 主线第二步，存在性</td><td><code>Loop/Primitive.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q22a</td><td><b>Grönwall 唯一性</b> <b>⭐</b> —— <b><code>KTwoFormula</code> 由此不再是假设</b></td><td><code>Loop/Unique.lean</code></td><td><span class="pill done">DONE</span></td></tr>
+<tr><td>Q22b</td><td>树公式 = 存在性 —— <b>剩下的唯一一个大件</b></td><td><code>Loop/TreeRep*.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
 <tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— 论文说「需额外修改以处理 <code>d ≥ 3</code>」</td><td><code>Loop/KBound.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q25</td><td><code>lem_pureloop</code> 的一般 <code>n</code></td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— <code>KTwoFormula</code> 已漏报</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
@@ -193,10 +193,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>317</b><span>定理已证</span></div>
+    <div class="chip done"><b>332</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>5</b><span>可立即开工</span></div>
+    <div class="chip ready"><b>7</b><span>可立即开工</span></div>
   </div>
 </header>
 
@@ -309,8 +309,14 @@ __QUEUE__
 <p><strong>每条都编过。</strong> 磁盘腾出来之后 <code>lake exe cache get</code> + <code>lake build</code> 已在本机跑通，
 从此每次回报前必须有一次 <code>./check.sh</code> → <code>exit=0</code>（最近一次：<code>errors: 0</code>、2550 jobs、审计干净）。
 上面所有条目都是编译通过的定理，不是草稿。</p>
-<p><strong>借来的结果开始承重了。</strong> Q18 让审计报出「有多少条定理的类型里带着接口假设」：
-目前 <code>ThetaDecay: 1</code>、<code>ThetaDecayShort: 5</code>、<code>ThetaZeroMode: 2</code>，其余为 0。
+<p><strong>一条假设已经还上了。</strong> 主线 Q23 → Q27 → Q22a 三步走完，
+<code>(Kn2sol)</code> 不再是假设而是定理：存在性来自显式解 <code>kTwo</code>，
+唯一性来自一次 Grönwall，两边一对，<code>KTwoFormula</code> 当场消失。
+<code>KTreeRep</code> 也从「表示定理」退成<em>只欠存在性</em>——那是 Q22b，剩下的唯一一个大件。
+RBM1D 那 250 行的唯一性证明<strong>一次编译通过</strong>，<code>d</code> 全程不参与推理，
+只在标签类型和前因子 <code>W^d</code> 里出现。</p>
+<p><strong>借来的结果在承重。</strong> Q18 让审计报出「有多少条定理的类型里带着接口假设」：
+目前 <code>ThetaDecay: 1</code>、<code>ThetaDecayShort: 6</code>、<code>ThetaZeroMode: 2</code>，其余为 0。
 在 Q13 之前，全项目没有任何结论依赖论文引用的估计；现在有了，而且<em>写在定理的签名里</em>。</p>
 <p><strong>但这份报告本身有个缺口，本拍抓到了。</strong> 它的名单是手写的六条。
 紧接 Q18 的 Q16 引入了第七条假设 <code>KTwoFormula</code>，<em>不在名单里，审计一声不吭</em>——
@@ -323,6 +329,12 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 记录这条假设<em>可满足</em>。Q41 要把这件事变成规矩：每条假设都给一个「固定 <code>L</code> 版」证书。
 <strong>这条检查若早在 beat 0 就位，beat 6 的缺陷根本不会存在</strong>——当初那个假写法在固定
 <code>L</code> 下就已经不成立。</p>
+<p><strong>而且「数得着」比「看得见」还要难一层。</strong> Q22a 带进来一条新前提——
+2-loop 在每个 <code>[0,T₀]</code> 上有界。它<em>写在签名里</em>，符合本项目「借了什么一眼可见」的原则；
+可它不是一个具名 <code>Prop</code>，于是<strong>任何汇总都数不到它</strong>，
+包括 Q26 原本设计的自动发现。这一条本身是良性的（论文自己沿途证，显式解也兑现了它），
+较真的是「数不着」这件事——对一份把「零公理」写在抬头的开发，数不着和藏起来差别不大。
+已立成 CLAUDE.md 规则 15：<em>本项目没证出来的数学前提必须具名</em>。</p>
 <p><strong>同一件事在依赖图里还没分开。</strong> <code>blueprint/src/content.tex</code> 的 <code>ax:</code>
 一类现在挂着七个节点：五条真·借来的，加上 <code>KTreeRep</code> 与 <code>KTwoFormula</code>——
 而后两条<em>都有工单要把它们证出来</em>。图里它们同色同说法，于是图在说「七条都是外部输入」。
@@ -338,11 +350,11 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 </div>
 
 <footer>
-  计数说明：<b>317 定理 / 139 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
+  计数说明：<b>332 定理 / 141 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 13 · 2026-09-20 06:30 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 14 · 2026-09-20 06:45 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

@@ -38,15 +38,15 @@ g0 = build(
 
   ("p4","② 性质 4  ‖Θ‖ ≤ (1−t)⁻¹","done",6),
   ("ksum","④ Q20 求和版","todo",6),
-  ("prim","④ Q27 ✓ 2-loop 解（存在性）","done",6),
+  ("prim","④ Q27 ✓ (Kn2sol) 显式解","done",6),
 
   ("uk","④ Q9 U^(n) · lem:sum_Ndecay","done",7),
   ("pure","④ Q16 n=2 ✓ · Q25 一般 n","ready",7),
-  ("uniq22","④ Q22a Grönwall 唯一性 ← 瓶颈","ready",7),
+  ("uniq22","④ Q22a ✓ 唯一性 ⇒ KTwoFormula 已消","star",7),
 
   ("nz","④ Q13 ✓ sum_decay_nonzero","done",8),
   ("sd","④ Q17a ✓ · Q17b ✓ · Q28 待做","ready",8),
-  ("ktree","④ Q22b 树公式（存在性）","todo",8),
+  ("ktree","④ Q22b 树公式（最后一个大件）","ready",8),
   ("kb","④ Q24 ML:Kbound (d≥3)","todo",8),
  ],
  edges=[
@@ -126,10 +126,10 @@ g4 = build(
   ("ksum","Q20 · 求和版 key_T_reudce","todo",3),
   ("sdb","Q17b ✓ 两块零件（decomp_U2 · decayXi）","done",3),
   ("sd3","Q28 · sum_decay 的三条结论","ready",4),
-  ("prim","Q27 ✓ 2-loop 解 + 可满足性见证","done",4),
+  ("prim","Q27 ✓ (Kn2sol) 显式解 + norm_kTwo_le","done",4),
   ("pure","Q16 ✓ n=2 · Q25 一般 n","ready",5),
-  ("uniq22","Q22a · Grönwall 唯一性（250 行）← 瓶颈","ready",5),
-  ("ktree","Q22b · 树公式 = 存在性（大件）","todo",6),
+  ("uniq22","Q22a ✓ 唯一性 ⇒ KTwoFormula 从假设变定理","star",5),
+  ("ktree","Q22b · 树公式 = 存在性（最后一个大件）","ready",6),
   ("kb","Q24 · ML:Kbound（d≥3 需额外修改）","todo",6),
  ],
  edges=[("uk","nz"),("uk","sd"),("tail","pt"),("tail","ttk"),("ttk","ksum"),
