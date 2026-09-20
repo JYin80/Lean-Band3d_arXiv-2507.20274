@@ -33,7 +33,8 @@
 | Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **PARTIAL** (CC)：`P_map_update` 已随 Q48 落地；只剩把两边推过去 |
 | Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **DONE** (CC)：模型 + **重采样不变性**（Q43b 缺的那条） |
 | Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **DONE** (CC)：抽象算子版 + Hermite 矩阵版 |
-| Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **CLAIMED (CC)** |
+| Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **PARTIAL** (CC)：两座桥 + `StochDom` 已落地；`G`-loop 包络需 §5 层 → Q49 |
+| Q49 | **`G`-loop 层（§5）**：`gloop`、`loopMax`，以及它们的确定性包络 | `Loop/GLoop.lean` | **OPEN**（CC 于 Q42b 开出） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
@@ -2010,6 +2011,32 @@ RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、�
 **Q42b 解锁**：各阶导数（`‖G^{(k)}‖ ≤ k!η^{-(k+1)}`）与「`≺` ⟹ 矩」的反向桥。
 后者需要测度论，且要一个「多项式增长的包络」——现在有了。
 
+
+### CC 的完成记录（Q42b，2026-09-20）
+
+**三个文件，都是移植 + 把文档重新指向本篇论文**（`./check.sh` 绿、0 warning）：
+
+**① `Defs/StochDom.lean`**（本项目此前只有确定性的 `DetDom`）：
+`(stoch_domination)` 与同一段记号里的 `w.h.p.` / `w.h.p. in Ξ`。**逐字核对过论文**：
+对 `u` 的并集在概率**里面**，与论文写法一致；`N ≥ N₀(τ,D)` 用 `∀ᶠ N in atTop` 表达。
+论文同段的确定性约定就是已有的 `DetDom`，`StochDom.of_unifDetDom` 把两者接上。
+
+**② `Gauss/Domination.lean`**：**正向桥**（矩 ⟹ `≺`，Markov + 并集界），
+外加把「在多项式多个时刻成立」升级为「在整个区间成立」的网格论证（Hölder / Lipschitz 两版）。
+
+**③ `Gauss/Envelope.lean`**：**反向桥**，这才是工单点名要的东西。
+`≺` 本身永远推不出矩——例外集概率小，但随机变量在那里不受控；
+补上一个**多项式增长的确定性包络**就够了：在阈值 `N^{ε/2}Φ` 处劈开，
+好的一侧给 `N^{εp}Φ^{2p}`，坏的一侧用 `(stoch_domination)` 的 `N^{-D'}` 配包络的 `N^{2pK}`，
+取 `D' := 2p(K+B)+1` 即可。**Q42a 提供的正是这个包络。**
+
+**只搬了 RBM1D 那个文件的通用一半**：`G`-loop 自身的包络要 §5 的回路层
+（`gloop`、`loopMax`），本项目还没有——**已开 Q49**。
+
+**审计在这一拍当场发挥了作用**：移植带进来一条新的未登记前件 `NormStochDom`，
+构建**直接失败**并点名它，登记进结构性那一档后才过。
+这正是 Q26 想要的效果——**名单与实际前件对不上时构建失败，而不是静默漏报**。
+
 ---
 
 # 随机层（Q42–Q46）—— **新开的一条独立战线**
@@ -2287,3 +2314,24 @@ Q30 已把**两侧的东西都摆好**：方程一侧是 `treeEqRhs_four` 的六
 **验收**：`(P ⊗ γ_c).map (upd c) = P`（Q43b 剩下的那条）能在此基础上证出来。
 **提醒**：`upd` 与它的可测性/连续性已经在 `Gauss/SteinMatrix.lean` 里按任意指标类型证好了，
 不要重写（规则 4）。
+
+---
+
+## Q49 · `G`-loop 层（§5）及其确定性包络 — **OPEN**（CC 于 Q42b 开出）
+
+**文件**：新开 `RBM3D/Loop/GLoop.lean`。参照 `RBM1D` 的 `Loop/Split.lean`、`Loop/Ward.lean`
+与 `Gauss/Envelope.lean` 后半段。
+
+**为什么需要**：Q42b 的反向桥要一个**多项式增长的确定性包络**才能用。
+`Analysis/Resolvent.lean`（Q42a）给了 `‖G‖ ≤ η⁻¹`；把它变成「一个 `G`-loop 的包络」
+还需要 `G`-loop 本身的定义——`L_{t,σ,a} = tr(∏ G E_a)` 那一族。
+
+**要什么**（最小集）：
+1. `gloop`：`G`-loop 的定义（§5，`(5.2)` 附近），以 `Gauss/Model.lean` 的 `Hmat` 与
+   `Analysis/Resolvent.lean` 的预解式为基础；
+2. `loopMax`：`max_{σ,a}|L_{t,σ,a}|`；
+3. 包络：`‖L‖ ≤ (η_t^{-1})^n`（逐点、全空间），由 Q42a 的 `norm_le_of_isHermitian` 得到；
+4. `z_t = E + (1−t)m^{(E)}` 与 `η_t = (1−t)Im m^{(E)}` 的定义，以及 `η_t > 0`（`|E| < 2`、`t < 1`）。
+
+**提醒**：第 4 条要**定义 `m^{(E)}`**（半圆律的边界值）。RBM1D 有 `Defs/Semicircle.lean`；
+本项目还没有，逐字核对论文 `(eq:defmzsc)` 再写。
