@@ -78,7 +78,8 @@
 | Q51 | **有限 `L` 的混合性（原名「谱隙」）** ⭐ | `Propagator/Gap.lean` | **PARTIAL (CC)**：块一（连通性 + Doeblin）已证；Dobrushin 收缩 → Q52 |
 | Q52 | **Dobrushin 收缩 + 几何混合** ⭐ | `Propagator/Gap.lean` | **DONE (CC)**：收缩与混合估计已证；级数求和 → Q53 |
 | Q53 | **把混合估计求和成 `(prop:ThfadC0)` 的固定 `L` 证书** ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：审计 `3 of 9` |
-| Q54 | **`(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书**（同一个衰减，作用在差分上） ⭐ | `Test/InterfaceShape.lean` | **CLAIMED (CC)** |
+| Q54 | **`(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书**（同一个衰减，作用在差分上） ⭐ | `Test/InterfaceShape.lean` | **DONE (CC)**：审计 `6 of 9`（含 `PropTH` 打包） |
+| Q55 | **`(prop:ThfadC_short)` 的固定 `L` 证书：`m² ≠ 1` 的定量版** ⭐ | `Propagator/Gap.lean` | **OPEN**（CC 于 Q54 开出） |
 | Q44 | **生成元恒等式** —— 到这步 Itô 不在关键路径上 ⭐ | `Gauss/Generator.lean` | BLOCKED by Q43 |
 | Q45 | 对矩的 Grönwall + 两座 `≺` 桥 + 连续归纳 | `Gauss/MomentGronwall.lean` 等 | BLOCKED by Q42, Q44 |
 | Q46 | 把三处停时换成连续归纳 | 待定 | **BLOCKED：等作者回答审计 §六的问题** |
@@ -1867,7 +1868,38 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 
 ---
 
-## Q54 · `(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书 ⭐ — **OPEN**（CC 于 Q53 开出）
+## Q55 · `(prop:ThfadC_short)` 的固定 `L` 证书：`m² ≠ 1` 的定量版 ⭐ — **OPEN**（CC 于 Q54 开出）
+
+**文件**：`RBM3D/Propagator/Gap.lean`（一致界）与 `RBM3D/Test/InterfaceShape.lean`（证书）。
+
+**为什么它和另外四条不同**：`(prop:ThfadC_short)` 的右端 `C_κ(1_{a=0} + g² e^{-c_κ|a|})`
+**完全不含 `t`**。而且在谱参数 `1`（即 `σ₁ ≠ σ₂`）处它**是假的**——
+`RBM.Test.not_decayShort_at_one` 已经证了。所以能不能给证书，全看那条等号限制
+`σ₁ = σ₂`（谱参数 `m²`，且论文的 standing assumption `Im m > 0`）**定量地**给出了什么。
+
+**要证的核心**：`‖m‖ = 1`、`0 < m.im` ⟹ 存在 `δ > 0` 使得对所有 `t ∈ [0,1)` 与
+`S^(B)` 的任何「谱值」`λ ∈ [−1,1]`，有 `|1 − t m² λ| ≥ δ`。
+**已验算的初等证明**（不需要谱理论，直接对 `1 − t m² λ` 做）：
+写 `m² = x + iy`（`x² + y² = 1`）。若 `t λ x ≤ 1/2` 则 `|1 − tm²λ| ≥ 1/2`；
+否则 `t|λ| > 1/(2|x|)`，于是 `|Im| = t|λ||y| ≥ |y|/(2|x|) ≥ |y|/2`。故 `δ = min(1/2, |y|/2)`。
+**注意 `y = Im(m²) = 0` 的两个边界**：`m = ±1` 被 `Im m > 0` 排除；
+`m = i`（即 `E = 0`，`m² = −1`）**不被排除**，这时 `y = 0`，上面的 `δ` 退化——
+但此时 `1 − t m² λ = 1 + tλ`，而 `Q51` 的懒惰性说明 `−1` 不在 `S^(B)` 的谱里，
+所以仍然有下界。**这一支必须单独处理，而且它正是 Q41/Q51 记下的那个边界情形。**
+
+**怎么用**：有了下界就有 `‖Θ_{t m²}‖` 的一致界（固定 `L`），右端的 `1_{a=0} + g² e^{-c|a|}`
+在固定 `L` 上有正下界（取 `c` 使 `e^{-c R_L} ≥ 1/2` 之类），证书即得。
+
+**陷阱**：走谱那条路要 `ℓ²`，与项目的 `ℓ^∞` 实例不是一回事（见 `docs/mathlib-api.md`）。
+**建议不要引入谱**：`Θ_{ξ} = Σ_k ξ^k S^k` 逐元展开，用 Q52 的混合估计把 `S^k` 写成
+`P + (S^k − P)`，则 `Σ_k ξ^k P = P/(1−ξ)`，只有这一项需要 `|1 − ξ| ≥ δ`，
+其余部分已经一致有界。**这样只需要 `|1 − t m²| ≥ δ`（`λ = 1` 那一个值），不需要全谱。**
+
+**验收**：证书进 `Test/InterfaceShape.lean`、登记进 `certificates`，审计 `6 of 9` → `7 of 9`。
+
+---
+
+## Q54 · `(prop:BD1)` / `(prop:BD2)` 的固定 `L` 证书 ⭐ — **DONE**（CC，beat 37）
 
 **文件**：`RBM3D/Propagator/Gap.lean`（差分版的一致界）与 `RBM3D/Test/InterfaceShape.lean`（证书）。
 
@@ -1891,6 +1923,25 @@ below**」，后面 661–806 行是完整证明。所以它是**本项目的欠
 **验收**：两条证书进 `Test/InterfaceShape.lean`、登记进 `certificates`，审计 `3 of 9` → `5 of 9`。
 剩下没有证书的就只有 `ThetaDecayShort`（需要 `m² ≠ 1` 的定量版本）、`PropTH`（打包，可由四条分量合成）、
 `KTreeRep`、`KLoopBound`。
+
+### 完成记录（CC，beat 37）— `./check.sh` exit=0，509 定理 / 0 公理 / 0 warning，审计 **6 of 9**
+
+**一条引理管两条性质**：`exists_norm_Theta_sub_le`——`‖Θ_ξ(a,b) − Θ_ξ(a,c)‖ ≤ 2R(1−q)⁻¹`。
+差分把常模式消掉，和去零模是同一件事，所以 Q52 的混合估计**原样可用**，
+系数 `2` 就是经过 `L^{-d}` 的三角不等式。二阶差分是两条一阶差分之和，所以 `2C`，不必重证。
+顺手把 Q53 与这里共用的「被可和控制项控制的级数」抽成 `norm_tsum_le_of_le`。
+
+**`r = 0` 那一支要单独处理，而且不是形式主义**（工单提醒到了，实证如此）：
+那里右端因为带因子 `|r|` 而**等于 0**，任何估计都给不出「`≤ 0`」，
+只能靠代数——左端也恰好是 `0`。两条证书都显式分了这一支。
+
+**顺带补上 `PropTH`**：它是四条分量打包的 structure，`propTH_fixedL` 就是四条固定 `L` 证书的合取。
+不带新信息，但审计是**逐条前提**问的，`PropTH` 也是一条前提，与其每次解释这一行为何空着，
+不如把它说清楚一次。于是 `5 of 9` → **`6 of 9`**。
+
+**剩下三条没有证书**：`ThetaDecayShort`（→ **Q55**，性质不同：右端根本不含 `t`，
+在谱参数 `1` 处**已被证伪**，要的是 `m² ≠ 1` 的定量版）、`KTreeRep`（真证书 = Q30/Q31 的存在性）、
+`KLoopBound`（等分子层）。
 
 ---
 
