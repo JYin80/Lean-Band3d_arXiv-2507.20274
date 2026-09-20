@@ -34,6 +34,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Graph.Expansions`   — `∂_{h_{αw}} G_{ij} = -G_{iα} G_{wj}`, the deterministic core of `(Owx)`/`(Oe2x)`
 * `RBM3D.Graph.ScalingOrder` — the bookkeeping proved on top of them
 * `RBM3D.Graph.Model`        — the case split of `lem_scalingorder`, exhaustive by construction
+* `RBM3D.Kernel.SumDecay`    — `(eq:latticesum_d3)`, the borderline lattice sum of Appendix A.2
 * `RBM3D.Loop.Partition`     — canonical tree partitions `TSP(P_a)` and `Γ^(n)_{t,σ,a}`
 * `RBM3D.Test.Axioms`        — the axiom audit
 

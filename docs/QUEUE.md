@@ -26,7 +26,7 @@
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **OPEN** —— 移植路线已打通 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
-| Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **CLAIMED** (CC) |
+| Q17 | `lem:sum_decay` 与 `eq:latticesum_d3` | `Kernel/SumDecay.lean` | **Q17a DONE** (CC)；Q17b 待做 |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
@@ -748,7 +748,31 @@ K^(n)_{t,σ,a} = W^{-d(n-1)} · Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}
 
 ---
 
-## Q17 · `lem:sum_decay` 与 `eq:latticesum_d3` — **OPEN**（补开，我之前漏了）
+## Q17 · `lem:sum_decay` 与 `eq:latticesum_d3` — **Q17a DONE**（CC，2026-09-19），Q17b 待做
+
+> **Q17a 完成记录**：新文件 `RBM3D/Kernel/SumDecay.lean`，`./check.sh` → `errors: 0`、`exit=0`，
+> **不依赖任何接口假设**。
+>
+> ```lean
+> theorem latticesum_d3 (k : ℕ) (hc : 0 < c) (hℓ : 0 < ℓ) (hR : 1 ≤ R) (hL : 3 ≤ L) (a₁ a₂) :
+>     ∑ b ∈ {b | R < |a₁−b| ∧ R < |a₂−b|},
+>         exp (−(c·|a₁−b|/ℓ)) / (|a₁−b|^(k+1) · |a₂−b|^(k+2))
+>       ≤ latC k * Real.log L / (R : ℝ) ^ k          -- d = k+3，即 R^{d−3}
+> ```
+>
+> **`d = 3` 与 `d ≥ 4` 不用分开处理**（比工单预计的省事）。对每个 `b`，记 `u = |a₁−b|`、`v = |a₂−b|`：
+> `v ≥ u/2` 时被求和项 `≤ 2^{d−1}u^{−(2d−3)}`；`v < u/2` 时 `u > 2v`，项 `≤ v^{−(2d−3)}`。
+> 于是**与情形无关地** `f(b) ≤ 2^{d−1}(u^{−(2d−3)} + v^{−(2d−3)})`，两项都是径向函数，
+> 按球壳求和（`card_sphere_le`）后剩 `Σ_{r>R} r^{2−d}`，再用 `r^{2−d} = r^{−1}·r^{3−d} ≤ r^{−1}R^{3−d}`（`r > R`，`d ≥ 3`）
+> 归结到调和和 `Σ_{r≤M} 1/r ≤ 1 + log M`（`sum_inv_Icc_le`，由 `log x ≤ x−1` 望远镜得到）。
+> **`log` 对每个 `d` 都出现，但只在 `d = 3` 时是必需的**——正如论文所说。
+>
+> 指数因子按论文写在陈述里，但证明中只用到 `≤ 1`：**这个界来自环面直径，不是来自 `ℓ_t` 截断**。
+> 常数 `latC k = 2^{3k+9}(2 + log(k+3))` 显式。辅助引理 `sum_radial_tail_le`、`one_le_log_of_three_le`（`e < 3`）。
+>
+> **Q17b 仍待做**：`lem:sum_decay` 本体（`sum_res_1`、`sum_res_2`），需要接口假设 `ThetaDecay`（`(prop:ThfadC)`）。
+
+
 
 **文件**：`RBM3D/Kernel/Evolution.lean`（或新开 `Kernel/SumDecay.lean`，与 Q13 同文件时注意串行）。
 

@@ -220,3 +220,11 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 `polyVal`/`treeVal`/`treeSum`、`GammaN`（含 `∏ m(σ_i)`）、`GammaSum`。自检 `TSP_three`/`TSP_four`/`card_TSP_five`，
 验收 `treeVal_four_nil`（`n = 4` 星图）。不依赖接口假设，`./check.sh` 全绿。
 **Q15 解锁**，且因为数据结构与 RBM1D 对齐，`eq_Ktree` 可以考虑移植 `RBM1D/Loop/TreeRep.lean` 而不是当公理。
+
+## 2026-09-19 · Claude Code · Q17a 完成 —— **论文第三轮新加的那条估计，Lean 给了独立背书**
+
+`RBM3D/Kernel/SumDecay.lean` 的 `latticesum_d3`：`(eq:latticesum_d3)` 完整证明，常数显式，不依赖接口假设。
+**这是整篇论文附录里唯一一处「新数学」**（第三轮才补进去的），现在它在 Lean 里站住了。
+证明没有按 `d = 3` / `d ≥ 4` 分情形：逐点拆成两个径向函数之和，按球壳求和后归结到调和和 `Σ 1/r ≤ 1 + log M`，
+`log` 自然只在 `d = 3` 时是必需的。附带的可复用件：`sum_inv_Icc_le`（调和和）、`sum_radial_tail_le`（径向尾和）。
+Q17b（`lem:sum_decay` 本体，要用 `ThetaDecay`）仍待做。
