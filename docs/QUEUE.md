@@ -32,8 +32,8 @@
 | Q43a | **Stein 一维实值 + 复值** ⭐⭐ —— **242 行，只 import Mathlib，零项目依赖** | `Gauss/Stein.lean` | **DONE** (CC)：整包照搬，一次编译通过 |
 | Q43b | Stein 矩阵版（重采样路线） | `Gauss/SteinMatrix.lean` | **PARTIAL** (CC)：`P_map_update` 已随 Q48 落地；只剩把两边推过去 |
 | Q48 | **高斯带矩阵模型**（`Z_L^d` 指标 + `S^(B)` 方差廓线） ⭐ | `Gauss/Model.lean` | **DONE** (CC)：模型 + **重采样不变性**（Q43b 缺的那条） |
-| Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **CLAIMED (CC)** |
-| Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | BLOCKED by Q42a（要测度论） |
+| Q42a | `‖(H−z)⁻¹‖ ≤ (Im z)⁻¹`，**纯线性代数**（与随机矩阵无关） | `Analysis/Resolvent.lean` | **DONE** (CC)：抽象算子版 + Hermite 矩阵版 |
+| Q42b | 确定性包络的其余部分（各阶导数 + 「`≺` ⟹ 矩」反向桥） | `Gauss/Envelope.lean` | **OPEN**（Q42a 已完成，解锁） |
 | Q47 | 审计末行那句计数的写法（10 vs 8+1+5） | `Test/Axioms.lean` | **OPEN**（小活，Cowork 于 beat 19 提） |
 | Q1 | 让现有草稿编译通过 | 全部 | **DONE** (CC；`./check.sh` 待 T0) |
 | Q2 | 邻居计数 `#{x : \|x\| = 1} = 2d` | `Defs/Neighbours.lean` | **DONE** (CC) |
@@ -1984,6 +1984,31 @@ RBM1D 的指标集是一维的，这里的矩阵元由格点 `Zd d L` 指标、�
 于是坐标集是有限的，测度用 `Measure.pi` 而不是 `Measure.infinitePi`，
 可测长方体唯一性用 `Measure.pi_eq`。将来若渐近陈述需要「一个空间装下所有 `N`」，
 再加一层包装即可，不影响这里的任何陈述。
+
+
+### CC 的完成记录（Q42a，2026-09-20）
+
+`RBM3D/Analysis/Resolvent.lean`（新，`./check.sh` 绿、0 warning）。**内容其实只有一条估计**：
+
+对内积空间上的对称算子 `T`，`|Im z| ‖v‖ ≤ ‖T v − z v‖`。
+
+证法：`⟪v, Tv⟫` 对对称算子是实的，于是 `Im ⟪v, Tv − z v⟫ = −(Im z)‖v‖²`，
+再用 Cauchy–Schwarz 把它压成 `‖v‖·‖Tv − zv‖`。由此立刻得到
+`injective_sub_smul`（`Im z ≠ 0` 时 `T − z` 单射）与 **`norm_le_of_sub_smul_eq`**
+（`T u − z u = w ⟹ ‖u‖ ≤ |Im z|⁻¹‖w‖`）——后者就是工单要的包络形式。
+
+**为什么写成算子而不是矩阵**（这正是我在 beat 19 提醒过的坑，现在按它来写）：
+本项目的 `Matrix` 全程带 `Matrix.Norms.Operator` 的 **ℓ^∞ 算子范数**，
+而预解式界是**谱范数（ℓ²）**的陈述——同一个类型上的两个不同 instance。
+所以核心估计里根本不出现矩阵范数；`norm_sub_smul_ge_of_isHermitian` 与
+`norm_le_of_isHermitian` 把它特化到 Hermite 矩阵作用在 `EuclideanSpace ℂ n` 上，
+那里范数没有歧义（用 Mathlib 的 `Matrix.isSymmetric_toEuclideanLin_iff`）。
+
+**关键性质**（工单强调的那点）：这条界**在全空间成立**，不是「在好事件上成立」——
+它只用到 Hermite 性，是逐点的事实。所以 Stein 要求的全局有界天然满足，不需要磨光截断。
+
+**Q42b 解锁**：各阶导数（`‖G^{(k)}‖ ≤ k!η^{-(k+1)}`）与「`≺` ⟹ 矩」的反向桥。
+后者需要测度论，且要一个「多项式增长的包络」——现在有了。
 
 ---
 
