@@ -48,7 +48,7 @@
 | Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **DONE** (CC)：陈述层 + **那句「额外修改」已定位并证出**；格点和 → Q32 |
 | Q25 | `lem_pureloop` 的一般 `n` | `Loop/PureLoop.lean` | **PARTIAL** (CC)：星形树（任意 `n`）+ `n = 3` 已证；带对角线的树 → Q33 |
 | Q26 | **审计自动发现借用谓词 + 分两本账** ⭐ | `Test/Axioms.lean` | **DONE** (CC)：扫描 + 两本账 + 反向测试 |
-| Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **CLAIMED (CC)** |
+| Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **DONE** (CC)：`(log N)^m ≺ 1` + `Bℓ_t² ≤ 3/\|1−t\|` + 合并 |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
@@ -1687,6 +1687,36 @@ Q20 证到了确定性不等式，右边留着 `Ψ_t² ℓ²`。剩下的就是�
 
 **注意**：`η_t`、`B_{t,0}`、`ℓ_t` 之间的关系要逐字核对论文 `(def:etat)` 与 `lem:Bt0`，
 不要凭印象写；`1 - t ≥ ĝ²/L²` 这个前提在 `claim:TTk` 里是显式写着的。
+
+### CC 的完成记录（2026-09-20）
+
+**三块，`./check.sh` 绿、0 warning。**
+
+**① `Defs/Domination.lean` · `detDom_log_pow`**：`(log N)^m ≺ 1`。
+工单说「值得单独证干净」，确实——它把「把对数吃进 `≺`」从一句话变成一条定理，
+后面每一条带 `≺` 的估计都要用。走 Mathlib 的 `isLittleO_log_rpow_rpow_atTop`
+（**注意它在根命名空间，不是 `Real.`**，`_root_.` 前缀；这条已记进 `docs/mathlib-api.md` 的习惯里）
+再用 `tendsto_natCast_atTop_atTop` 从 ℝ 的 `atTop` 搬到 ℕ。
+
+**② `Defs/Params.lean` · `Bparam_mul_ellT_sq_le`**：`B_{t,0} ℓ_t² ≤ 3 |1−t|^{-1}`，
+前提是 `claim:TTk` 里显式写着的 `1 − t ≥ ĝ²/L²`（Lean 里写成 `g² ≤ L²(1−t)`）。
+**常数是显式的 3，不是 `≲`。** 两项各自的账：
+* `(ĝ²+|1−t|)^{-1}` 那项乘上 `ℓ_t² ≤ (ĝ²+|1−t|)/|1−t|` **正好**给出 `|1−t|^{-1}`；
+* 零模项给 `2L^{2−d}|1−t|^{-1} ≤ 2|1−t|^{-1}`——**`d ≥ 2` 和那条前提就用在这里**。
+
+**③ `Kernel/PropT.lean` · `PsiT_sq_mul_le` / `key_T_reduce_absorbed`**：
+把 Q20 留下的 `Ψ_t²ℓ²` 换成论文的右端 `3Λ²(W^d|1−t|)^{-1}`，`Λ = (log W)^{10}`。
+`η_t ≍ 1−t` 由论文 `(eta)` 给出（`η_t = Im z_t = (1−t)Im m`），所以 `|1−t|^{-1} ≍ η_t^{-1}`。
+
+**关于「逐字核对」那条提醒**：照做了。`ℓ_t` 的定义 `min(max(ĝ|1−t|^{-1/2},1),L)` 与
+`Defs/Params.lean` 的 `ellT` 一致；`B_{t,0}` 与 `(eq_B_param)` 一致；
+`η_t ≍ 1−t` 是 `(eta)` 的直接推论，**没有把 `η_t` 单独定义进 Lean**——
+它在本条里只以 `1−t` 的形式出现，定义它反而会多一层需要核对的东西。
+若将来随机层要 `η_t` 本身，再定义不迟（届时要连 `(eq:zt)`、`(eq:BtBt)` 一起对）。
+
+**一个小意外**：`PsiT_sq_mul_le` 原本写了前提 `0 ≤ Λ`，证完发现**用不上**
+（`ℓ² ≤ (Λℓ_t)²` 只要 `ℓ ≥ 0`，而 `Λ²  ≥ 0` 恒成立），已删——
+linter 的「未引用变量」提醒抓到的，顺手收紧了签名。
 
 ---
 
