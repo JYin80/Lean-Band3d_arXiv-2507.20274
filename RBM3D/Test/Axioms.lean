@@ -115,6 +115,9 @@ fails.  The column is deliberately mostly empty: it reports a gap rather than hi
 def certificates : List (Name × Name) :=
   [(`RBM.ThetaDecay, `RBM.Test.thetaDecay_fixedL),
    (`RBM.ThetaZeroMode, `RBM.Test.thetaZeroMode_fixedL),
+   (`RBM.ThetaDiffOne, `RBM.Test.thetaDiffOne_fixedL),
+   (`RBM.ThetaDiffTwo, `RBM.Test.thetaDiffTwo_fixedL),
+   (`RBM.PropTH, `RBM.Test.propTH_fixedL),
    (`RBM.Loop.TwoLoopBounded, `RBM.Test.twoLoopBounded_kTwoLoop)]
 
 /-! ### Finding the premises, instead of being told them
