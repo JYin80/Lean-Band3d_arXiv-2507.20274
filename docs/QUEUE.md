@@ -22,7 +22,7 @@
 | Q10 | 尾函数 `𝒯_t` / `wT^ℓ_{t,D}` | `Defs/Tail.lean` | **DONE** (CC) |
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **DONE** (CC) |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **DONE** (CC)；求和版另开 Q20 |
-| Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **CLAIMED** (CC) |
+| Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **OPEN**（与 Q11–Q13 都不相交） |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
@@ -592,7 +592,39 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
 另外第三轮把 case 2 的适用范围从 `3 ≤ i ≤ k` 改成 `2 ≤ i ≤ k`、case 3 改成 `1 ≤ i ≤ k`
 （原稿漏了下标）——**形式化时把这两处当作重点核对对象**。
 
-## Q13 · `lem:sum_decay_nonzero` — **OPEN**
+## Q13 · `lem:sum_decay_nonzero` — **DONE**（CC，2026-09-19）
+
+> **完成记录**：`Kernel/Evolution.lean`。`./check.sh` → `errors: 0`、`exit=0`。主定理：
+>
+> ```lean
+> theorem norm_zeroModeSet_UN_le (hd : 3 ≤ k + 2) (hg : 0 < g) (hm : ∀ i, ‖m i‖ = 1)
+>     (hmi : ∀ i, 0 < (m i).im) (hshort : ∀ i, ThetaDecayShort (k+2) g (m i))
+>     (hzero : ∀ i, ThetaZeroMode (k+2) g (cycProd m i))
+>     (hA : SameSignOutside m A) (hτ : 0 < τ) :
+>     ∃ C > 0, ∀ L ≥ 3, ∀ s t, 0 ≤ s → s ≤ t → t < 1 → 1 - s ≤ g²/L² → ∀ 𝒜,
+>       ‖Q^(A) ∘ U^(n)_{s,t,σ} ∘ 𝒜‖_∞ ≤ C · L^(n·τ) · ‖𝒜‖_∞
+> ```
+>
+> `≺` 按 `Defs/Interface` 的惯例写成展开式 `∀ τ > 0, ∃ C > 0, … ≤ C L^{nτ}`。
+> `SameSignOutside m A`（`∀ i ∉ A, m i = m (i+1)`）就是 `A ⊇ I_diff(σ)`。
+>
+> **结构部分**（无需接口）：`tensorKer`（任意单指标核族的张量积，`U^(n)` 是其实例）、
+> `avgOp`（`P^(i)`）、`zeroModeOp`（`Q^(i)`）、`zeroModeSet`（`Q^(A)`）、
+> `projMat`（`Proj_{e^⊥} = I − L^{-d}J`，幂等）；
+> `zeroModeOp_tensorKer` / `zeroModeSet_tensorKer`：`Q^(A)` 穿过张量核 = 把 `A` 中那些指标的核左乘 `projMat`；
+> `norm_tensorKer_le`：`‖K∘𝒜‖ ≤ (∏‖K_i‖)‖𝒜‖`。
+>
+> **分析部分**（用接口假设）：`norm_le_sum_row_zero`（平移不变矩阵的范数由一行控制）、
+> `projMat_mul_SB_comm`（论文那句「`Proj` 与平移不变的 `M S^(B)` 交换」）、
+> **`projMat_mul_Theta : Proj·Θ_ξ = Θ̊_ξ`**（投影就是 `(def_Thxi0)` 的去零模）；
+> `exists_norm_uKer_same_le`（`(eq:samecolor)`，用 `(prop:ThfadC_short)` + `sum_radial_exp_decay_le`）、
+> `exists_norm_projMat_mul_uKer_le`（`(eq:diffcolor)`，用 `(prop:ThfadC0)` + `sum_radial_pow_le`，
+> 并在这里用掉 `1−s ≤ g²/L²`）。最后把 `n` 个单指标界乘起来。
+>
+> **副产品：接口的一处修正**。接上分析部分时发现 `(prop:ThfadC_short)` 原先对任意单位谱参数陈述，
+> 而那在 `σ₁ ≠ σ₂`（谱参数 `1`）时**是假的**——已按论文限定到 `σ₁ = σ₂`（谱参数 `m(σ)²`，`0 < m.im`），
+> 并在 `RBM3D/Test/InterfaceShape.lean` 里**机器证明了原写法为假**。见 `docs/paper-deltas.md` D11。
+
 
 **文件**：`RBM3D/Kernel/Evolution.lean`。附录 A.2 末尾，`sum_res_Ndecay_nonzero`。
 第三轮补写的那段推导现在是显式的，照着做即可：由 `(def_Ustz)`，`U^(n)` 在 `n` 个指标上分别作用；

@@ -186,6 +186,46 @@ theorem sum_radial_exp_le (k : ℕ) {κ ℓ : ℝ} (hκ : 0 < κ) (hℓ : 1 ≤ 
         mul_le_mul_of_nonneg_left (sum_succ_mul_exp_le hκ hℓ _) (by positivity)
     _ = 2 ^ (k + 2) * radC κ * ℓ ^ 2 := by ring
 
+/-- The radial sum without a cutoff: on the torus `|x| ≤ dL`, so the stretched
+exponential of K2 costs only a constant. -/
+theorem sum_radial_pow_le (k : ℕ) (hL : 1 ≤ (L : ℝ)) :
+    ∑ x : Zd (k + 2) L, (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+      ≤ exp (√((k : ℝ) + 2)) * (2 ^ (k + 2) * radC 1 * (L : ℝ) ^ 2) := by
+  have hL0 : (0 : ℝ) < L := by linarith
+  have hstep : ∀ x : Zd (k + 2) L, (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+      ≤ exp (√((k : ℝ) + 2)) * ((((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+        * exp (-(1 * √((zdistD (k + 2) L x : ℝ) / L)))) := by
+    intro x
+    have hx : ((zdistD (k + 2) L x : ℝ)) / L ≤ (k : ℝ) + 2 := by
+      rw [div_le_iff₀ hL0]
+      have : ((zdistD (k + 2) L x : ℕ) : ℝ) ≤ ((k + 2) * L : ℕ) := by
+        exact_mod_cast zdistD_le (k + 2) x
+      push_cast at this
+      linarith
+    have hsq : √((zdistD (k + 2) L x : ℝ) / L) ≤ √((k : ℝ) + 2) := sqrt_le_sqrt hx
+    have hexp : exp (-√((k : ℝ) + 2)) ≤ exp (-(1 * √((zdistD (k + 2) L x : ℝ) / L))) := by
+      rw [one_mul]
+      exact exp_le_exp.mpr (neg_le_neg hsq)
+    have hinv : (0 : ℝ) ≤ (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹ := by positivity
+    have hcancel : exp (√((k : ℝ) + 2)) * exp (-√((k : ℝ) + 2)) = 1 := by
+      rw [← exp_add]; simp
+    calc (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+        = exp (√((k : ℝ) + 2)) * (exp (-√((k : ℝ) + 2))
+            * (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹) := by
+          rw [← mul_assoc, hcancel, one_mul]
+      _ ≤ exp (√((k : ℝ) + 2)) * ((((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+            * exp (-(1 * √((zdistD (k + 2) L x : ℝ) / L)))) := by
+          refine mul_le_mul_of_nonneg_left ?_ (exp_pos _).le
+          rw [mul_comm]
+          exact mul_le_mul_of_nonneg_left hexp hinv
+  calc ∑ x : Zd (k + 2) L, (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+      ≤ ∑ x : Zd (k + 2) L, exp (√((k : ℝ) + 2)) * ((((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+          * exp (-(1 * √((zdistD (k + 2) L x : ℝ) / L)))) := sum_le_sum fun x _ => hstep x
+    _ = exp (√((k : ℝ) + 2)) * ∑ x : Zd (k + 2) L, (((zdistD (k + 2) L x : ℝ) + 1) ^ k)⁻¹
+          * exp (-(1 * √((zdistD (k + 2) L x : ℝ) / L))) := by rw [Finset.mul_sum]
+    _ ≤ exp (√((k : ℝ) + 2)) * (2 ^ (k + 2) * radC 1 * (L : ℝ) ^ 2) :=
+        mul_le_mul_of_nonneg_left (sum_radial_exp_le k one_pos hL) (exp_pos _).le
+
 /-! ### A purely exponential radial sum
 
 `Σ_x e^{-c|x|} ≤ C(c, d)`, uniformly in `L`.  This is what turns the strong decay of

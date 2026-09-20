@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Propagator.Props4
+import RBM3D.Propagator.Interface
+import RBM3D.Defs.RadialSum
 
 /-!
 # The evolution kernel `U^(n)` and `lem:sum_Ndecay`
@@ -423,4 +425,261 @@ theorem norm_tensorKer_le (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
 
 end TensorKernel
 
+/-! ### One-index bounds from the interface
+
+`lem:sum_decay_nonzero` assumes `1 - s ≤ g²/L²` and `A ⊇ I_diff(σ)`, and bounds the
+`(∞→∞)`-norm of each of the `n` one-index factors of `Q^(A) ∘ U^(n)`:
+
+* `i ∉ A`: then `σ_i = σ_{i+1}`, so the spectral parameter is `m(σ_i)²` and the factor is
+  `1 + Ξ^(i)` with `‖Ξ^(i)‖ ≲ t - s ≤ 1` by `(prop:ThfadC_short)` -- `(eq:samecolor)`;
+* `i ∈ A`: the factor carries `Proj_{e^⊥}`, and
+  `Proj_{e^⊥} Ξ^(i) = (t-s) μ S^(B) Θ̊_t` by `RBM.projMat_mul_Theta`, so
+  `(prop:ThfadC0)` and `1 - s ≤ g²/L²` bound it -- `(eq:diffcolor)`. -/
+
+section OneIndexBounds
+
+variable {k : ℕ}
+
+/-- `(eq:samecolor)`: at a same-sign index the one-index factor is bounded, uniformly in
+`L`, `s` and `t`.  The input is `(prop:ThfadC_short)`. -/
+theorem exists_norm_uKer_same_le {g : ℝ} {m : ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g)
+    (hm : ‖m‖ = 1) (hmi : 0 < m.im) (hshort : ThetaDecayShort (k + 2) g m) :
+    ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t → t < 1 →
+      haveI : NeZero L := ⟨by omega⟩
+      ‖uKer (k + 2) L g (m * m) s t‖ ≤ C := by
+  obtain ⟨Cκ, hCκ, cκ, hcκ, hbd⟩ := hshort hd hg hm hmi
+  refine ⟨1 + Cκ * (1 + g ^ 2 * expC k cκ), by
+    have : 0 ≤ expC k cκ := by
+      unfold expC
+      have : (0 : ℝ) < cκ ^ (k + 3) := by positivity
+      positivity
+    positivity, ?_⟩
+  intro L hL s t hs hst ht
+  have : NeZero L := ⟨by omega⟩
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast Nat.one_le_of_lt (by omega : 1 < L)
+  have hmm : ‖m * m‖ = 1 := by rw [norm_mul, hm, mul_one]
+  have ht0 : 0 ≤ t := hs.trans hst
+  have hξ : ‖(t : ℂ) * (m * m)‖ < 1 := norm_t_mul_lt_one ht0 ht hmm
+  -- the propagator at a same-sign parameter has bounded `(∞→∞)`-norm
+  have hTheta : ‖Theta (k + 2) L g ((t : ℂ) * (m * m))‖ ≤ Cκ * (1 + g ^ 2 * expC k cκ) := by
+    have htrans : ∀ a b c : Zd (k + 2) L,
+        Theta (k + 2) L g ((t : ℂ) * (m * m)) (a + c) (b + c)
+          = Theta (k + 2) L g ((t : ℂ) * (m * m)) a b :=
+      fun a b c => Theta_apply_add_right_of_three_le hL hξ a b c
+    refine (norm_le_sum_row_zero _ htrans).trans ?_
+    calc ∑ b : Zd (k + 2) L, ‖Theta (k + 2) L g ((t : ℂ) * (m * m)) 0 b‖
+        ≤ ∑ b : Zd (k + 2) L, Cκ * ((if b = 0 then 1 else 0)
+            + g ^ 2 * Real.exp (-cκ * (zdistD (k + 2) L b : ℝ))) :=
+          Finset.sum_le_sum fun b _ => hbd L hL t ht0 ht b
+      _ = Cκ * (1 + g ^ 2 * ∑ b : Zd (k + 2) L,
+            Real.exp (-(cκ * (zdistD (k + 2) L b : ℝ)))) := by
+          rw [← Finset.mul_sum, Finset.sum_add_distrib, ← Finset.mul_sum]
+          congr 2
+          · simp
+          · exact congrArg _ (Finset.sum_congr rfl fun b _ => by ring_nf)
+      _ ≤ Cκ * (1 + g ^ 2 * expC k cκ) := by
+          have hsum := sum_radial_exp_decay_le (L := L) k hcκ
+          have hg2 : (0 : ℝ) ≤ g ^ 2 := by positivity
+          exact mul_le_mul_of_nonneg_left
+            (by linarith [mul_le_mul_of_nonneg_left hsum hg2]) hCκ.le
+  -- and `uKer = 1 + Ξ` with `‖Ξ‖ ≤ (t - s) ‖Θ‖ ≤ ‖Θ‖`
+  rw [uKer_eq_one_add hL hξ]
+  have hc : ‖((t : ℂ) - s) * (m * m)‖ ≤ 1 := by
+    rw [norm_mul, hmm, mul_one, ← Complex.ofReal_sub, Complex.norm_real,
+      Real.norm_of_nonneg (by linarith)]
+    linarith
+  calc ‖(1 : Matrix (Zd (k + 2) L) (Zd (k + 2) L) ℂ)
+        + (((t : ℂ) - s) * (m * m)) • (SB (k + 2) L g * Theta (k + 2) L g ((t : ℂ) * (m * m)))‖
+      ≤ 1 + ‖(((t : ℂ) - s) * (m * m))
+          • (SB (k + 2) L g * Theta (k + 2) L g ((t : ℂ) * (m * m)))‖ := by
+        have := norm_add_le (1 : Matrix (Zd (k + 2) L) (Zd (k + 2) L) ℂ)
+          ((((t : ℂ) - s) * (m * m)) • (SB (k + 2) L g * Theta (k + 2) L g ((t : ℂ) * (m * m))))
+        rwa [norm_one] at this
+    _ ≤ 1 + Cκ * (1 + g ^ 2 * expC k cκ) := by
+        have hsmul := norm_smul_le (((t : ℂ) - s) * (m * m))
+          (SB (k + 2) L g * Theta (k + 2) L g ((t : ℂ) * (m * m)))
+        have hmul := norm_mul_le (SB (k + 2) L g) (Theta (k + 2) L g ((t : ℂ) * (m * m)))
+        rw [norm_SB (k + 2) L g hL, one_mul] at hmul
+        have h1 : ‖(((t : ℂ) - s) * (m * m))
+            • (SB (k + 2) L g * Theta (k + 2) L g ((t : ℂ) * (m * m)))‖
+            ≤ 1 * ‖Theta (k + 2) L g ((t : ℂ) * (m * m))‖ := by
+          refine hsmul.trans ?_
+          exact mul_le_mul hc hmul (norm_nonneg _) zero_le_one
+        rw [one_mul] at h1
+        linarith
+
+/-- Translation invariance passes to the zero-mode-removed propagator. -/
+theorem Theta0_apply_add_right {d L : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L) {ξ : ℂ}
+    (hξ : ‖ξ‖ < 1) (a b c : Zd d L) :
+    Theta0 d L g ξ (a + c) (b + c) = Theta0 d L g ξ a b := by
+  simp only [Theta0_apply]
+  rw [Theta_apply_add_right_of_three_le hL hξ a b c]
+
+/-- `(eq:diffcolor)`: at an index carrying `Proj_{e^⊥}` the one-index factor is bounded by
+`C L^τ`, given `1 - s ≤ g²/L²`.  The input is `(prop:ThfadC0)`. -/
+theorem exists_norm_projMat_mul_uKer_le {g : ℝ} {μ : ℂ} (hd : 3 ≤ k + 2) (hg : 0 < g)
+    (hμ : ‖μ‖ = 1) (hzero : ThetaZeroMode (k + 2) g μ) {τ : ℝ} (hτ : 0 < τ) :
+    ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t → t < 1 →
+      1 - s ≤ g ^ 2 / (L : ℝ) ^ 2 →
+      haveI : NeZero L := ⟨by omega⟩
+      ‖projMat (k + 2) L * uKer (k + 2) L g μ s t‖ ≤ C * (L : ℝ) ^ τ := by
+  obtain ⟨C₀, hC₀, hbd⟩ := hzero hd hg hμ τ hτ
+  set E : ℝ := Real.exp (Real.sqrt ((k : ℝ) + 2)) * (2 ^ (k + 2) * radC 1) with hE
+  have hE0 : 0 < E := by
+    rw [hE]
+    have := radC_pos (one_pos : (0 : ℝ) < 1)
+    have := Real.exp_pos (Real.sqrt ((k : ℝ) + 2))
+    positivity
+  refine ⟨2 + C₀ * E, by positivity, ?_⟩
+  intro L hL s t hs hst ht hsg
+  have : NeZero L := ⟨by omega⟩
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast Nat.one_le_of_lt (by omega : 1 < L)
+  have hL0 : (0 : ℝ) < L := by linarith
+  have ht0 : 0 ≤ t := hs.trans hst
+  have hξ : ‖(t : ℂ) * μ‖ < 1 := norm_t_mul_lt_one ht0 ht hμ
+  have hLτ : (1 : ℝ) ≤ (L : ℝ) ^ τ := Real.one_le_rpow hL1 hτ.le
+  -- the zero-mode-removed propagator: `(prop:ThfadC0)` plus the radial sum
+  have hTheta0 : ‖Theta0 (k + 2) L g ((t : ℂ) * μ)‖
+      ≤ C₀ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (E * (L : ℝ) ^ 2) := by
+    have htrans : ∀ a b c : Zd (k + 2) L,
+        Theta0 (k + 2) L g ((t : ℂ) * μ) (a + c) (b + c)
+          = Theta0 (k + 2) L g ((t : ℂ) * μ) a b :=
+      fun a b c => Theta0_apply_add_right hL hξ a b c
+    refine (norm_le_sum_row_zero _ htrans).trans ?_
+    calc ∑ b : Zd (k + 2) L, ‖Theta0 (k + 2) L g ((t : ℂ) * μ) 0 b‖
+        ≤ ∑ b : Zd (k + 2) L, C₀ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
+            * (((zdistD (k + 2) L b : ℝ) + 1) ^ (k + 2 - 2))⁻¹ :=
+          Finset.sum_le_sum fun b _ => hbd L hL t ht0 ht b
+      _ = C₀ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
+            * ∑ b : Zd (k + 2) L, (((zdistD (k + 2) L b : ℝ) + 1) ^ k)⁻¹ := by
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun b _ => by norm_num
+      _ ≤ C₀ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (E * (L : ℝ) ^ 2) := by
+          refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+          have := sum_radial_pow_le (L := L) k hL1
+          rw [hE, mul_assoc]
+          exact this
+  -- `1 - s ≤ g²/L²` turns `(t-s) ‖Θ̊‖` into `C L^τ`
+  have hcoef : (t - s) * ((g ^ 2 + |1 - t|)⁻¹ * (L : ℝ) ^ 2) ≤ 1 := by
+    have hg2 : (0 : ℝ) < g ^ 2 := by positivity
+    have h1 : (g ^ 2 + |1 - t|)⁻¹ ≤ (g ^ 2)⁻¹ :=
+      inv_anti₀ hg2 (by have := abs_nonneg (1 - t); linarith)
+    have h2 : t - s ≤ 1 - s := by linarith
+    have hs2 : (1 - s) * (L : ℝ) ^ 2 ≤ g ^ 2 := by
+      rw [le_div_iff₀ (by positivity)] at hsg; linarith
+    have h3 : (g ^ 2 + |1 - t|)⁻¹ * (L : ℝ) ^ 2 ≤ (g ^ 2)⁻¹ * (L : ℝ) ^ 2 :=
+      mul_le_mul_of_nonneg_right h1 (by positivity)
+    calc (t - s) * ((g ^ 2 + |1 - t|)⁻¹ * (L : ℝ) ^ 2)
+        ≤ (1 - s) * ((g ^ 2)⁻¹ * (L : ℝ) ^ 2) :=
+          mul_le_mul h2 h3 (by positivity) (by linarith)
+      _ = ((1 - s) * (L : ℝ) ^ 2) / g ^ 2 := by field_simp
+      _ ≤ 1 := by rw [div_le_one hg2]; exact hs2
+  -- `projMat * uKer = projMat + (t-s) μ • (S Θ̊)`
+  have hsplit : projMat (k + 2) L * uKer (k + 2) L g μ s t
+      = projMat (k + 2) L
+        + (((t : ℂ) - s) * μ) • (SB (k + 2) L g * Theta0 (k + 2) L g ((t : ℂ) * μ)) := by
+    rw [uKer_eq_one_add hL hξ, Matrix.mul_add, Matrix.mul_one, Matrix.mul_smul,
+      ← Matrix.mul_assoc, projMat_mul_SB_comm hL, Matrix.mul_assoc,
+      projMat_mul_Theta hL hξ]
+  rw [hsplit]
+  have hsmul := norm_smul_le (((t : ℂ) - s) * μ)
+    (SB (k + 2) L g * Theta0 (k + 2) L g ((t : ℂ) * μ))
+  have hmul := norm_mul_le (SB (k + 2) L g) (Theta0 (k + 2) L g ((t : ℂ) * μ))
+  rw [norm_SB (k + 2) L g hL, one_mul] at hmul
+  have hc : ‖((t : ℂ) - s) * μ‖ = t - s := by
+    rw [norm_mul, hμ, mul_one, ← Complex.ofReal_sub, Complex.norm_real,
+      Real.norm_of_nonneg (by linarith)]
+  have hterm : ‖(((t : ℂ) - s) * μ) • (SB (k + 2) L g * Theta0 (k + 2) L g ((t : ℂ) * μ))‖
+      ≤ C₀ * E * (L : ℝ) ^ τ := by
+    calc ‖(((t : ℂ) - s) * μ) • (SB (k + 2) L g * Theta0 (k + 2) L g ((t : ℂ) * μ))‖
+        ≤ (t - s) * ‖Theta0 (k + 2) L g ((t : ℂ) * μ)‖ := by
+          rw [← hc]
+          exact hsmul.trans (mul_le_mul_of_nonneg_left hmul (norm_nonneg _))
+      _ ≤ (t - s) * (C₀ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (E * (L : ℝ) ^ 2)) :=
+          mul_le_mul_of_nonneg_left hTheta0 (by linarith)
+      _ = (C₀ * E * (L : ℝ) ^ τ) * ((t - s) * ((g ^ 2 + |1 - t|)⁻¹ * (L : ℝ) ^ 2)) := by ring
+      _ ≤ (C₀ * E * (L : ℝ) ^ τ) * 1 :=
+          mul_le_mul_of_nonneg_left hcoef (by positivity)
+      _ = C₀ * E * (L : ℝ) ^ τ := mul_one _
+  calc ‖projMat (k + 2) L
+        + (((t : ℂ) - s) * μ) • (SB (k + 2) L g * Theta0 (k + 2) L g ((t : ℂ) * μ))‖
+      ≤ ‖projMat (k + 2) L‖
+        + ‖(((t : ℂ) - s) * μ) • (SB (k + 2) L g * Theta0 (k + 2) L g ((t : ℂ) * μ))‖ :=
+        norm_add_le _ _
+    _ ≤ 2 + C₀ * E * (L : ℝ) ^ τ := add_le_add norm_projMat_le hterm
+    _ ≤ (2 + C₀ * E) * (L : ℝ) ^ τ := by nlinarith [hLτ, mul_pos hC₀ hE0]
+
+end OneIndexBounds
+
+/-! ### `lem:sum_decay_nonzero` -/
+
+/-- `I_diff(σ) = {i : σ_i ≠ σ_{i+1}}`, expressed through the sign values: `i ∉ A` and
+`A ⊇ I_diff(σ)` together say `m(σ_i) = m(σ_{i+1})`. -/
+def SameSignOutside {n : ℕ} (m : Fin n → ℂ) (A : Finset (Fin n)) : Prop :=
+  ∀ i ∉ A, m i = m (finRotate n i)
+
+/-- **`lem:sum_decay_nonzero`, `(sum_res_Ndecay_nonzero)`.**  For `1 - s ≤ g²/L²`,
+`0 ≤ s ≤ t < 1` and any `A ⊇ I_diff(σ)`,
+
+  `‖Q^(A) ∘ U^(n)_{s,t,σ} ∘ 𝒜‖_∞ ≺ ‖𝒜‖_∞`,
+
+with `≺` in the explicit form `∀ τ > 0, ∃ C > 0, … ≤ C L^{nτ} ‖𝒜‖`.  The inputs are
+`(prop:ThfadC_short)` at the same-sign indices and `(prop:ThfadC0)` at the indices of
+`A`, both carried as hypotheses. -/
+theorem norm_zeroModeSet_UN_le {k n : ℕ} {g : ℝ} {m : Fin n → ℂ} {A : Finset (Fin n)}
+    (hd : 3 ≤ k + 2) (hg : 0 < g) (hm : ∀ i, ‖m i‖ = 1) (hmi : ∀ i, 0 < (m i).im)
+    (hshort : ∀ i, ThetaDecayShort (k + 2) g (m i))
+    (hzero : ∀ i, ThetaZeroMode (k + 2) g (cycProd m i))
+    (hA : SameSignOutside m A) {τ : ℝ} (hτ : 0 < τ) :
+    ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ), 0 ≤ s → s ≤ t → t < 1 →
+      1 - s ≤ g ^ 2 / (L : ℝ) ^ 2 →
+      haveI : NeZero L := ⟨by omega⟩
+      ∀ 𝒜 : (Fin n → Zd (k + 2) L) → ℂ,
+        ‖zeroModeSet (k + 2) L A (UN (k + 2) L g m s t 𝒜)‖ ≤ C * (L : ℝ) ^ (n * τ) * ‖𝒜‖ := by
+  -- a bound for the one-index factor at each `i`, of the same shape in both cases
+  have key : ∀ i : Fin n, ∃ C > (0 : ℝ), ∀ (L : ℕ) (_ : 3 ≤ L) (s t : ℝ),
+      0 ≤ s → s ≤ t → t < 1 → 1 - s ≤ g ^ 2 / (L : ℝ) ^ 2 →
+      haveI : NeZero L := ⟨by omega⟩
+      ‖(if i ∈ A then projMat (k + 2) L * uKer (k + 2) L g (cycProd m i) s t
+          else uKer (k + 2) L g (cycProd m i) s t)‖ ≤ C * (L : ℝ) ^ τ := by
+    intro i
+    by_cases hi : i ∈ A
+    · obtain ⟨C, hC, hbd⟩ := exists_norm_projMat_mul_uKer_le (k := k) (g := g)
+        (μ := cycProd m i) hd hg (norm_cycProd hm i) (hzero i) hτ
+      exact ⟨C, hC, fun L hL s t hs hst ht hsg => by
+        simp only [hi, ite_true]; exact hbd L hL s t hs hst ht hsg⟩
+    · have hcyc : cycProd m i = m i * m i := by rw [cycProd, ← hA i hi]
+      obtain ⟨C, hC, hbd⟩ := exists_norm_uKer_same_le (k := k) (g := g) (m := m i)
+        hd hg (hm i) (hmi i) (hshort i)
+      refine ⟨C, hC, fun L hL s t hs hst ht _ => ?_⟩
+      have : NeZero L := ⟨by omega⟩
+      have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast Nat.one_le_of_lt (by omega : 1 < L)
+      have hLτ : (1 : ℝ) ≤ (L : ℝ) ^ τ := Real.one_le_rpow hL1 hτ.le
+      simp only [hi, ite_false]
+      rw [hcyc]
+      calc ‖uKer (k + 2) L g (m i * m i) s t‖ ≤ C := hbd L hL s t hs hst ht
+        _ ≤ C * (L : ℝ) ^ τ := le_mul_of_one_le_right hC.le hLτ
+  choose C hC hCbd using key
+  refine ⟨∏ i, C i, Finset.prod_pos fun i _ => hC i, ?_⟩
+  intro L hL s t hs hst ht hsg
+  have : NeZero L := ⟨by omega⟩
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast Nat.one_le_of_lt (by omega : 1 < L)
+  have hL0 : (0 : ℝ) ≤ L := by linarith
+  intro 𝒜
+  rw [UN_eq_tensorKer, zeroModeSet_tensorKer]
+  calc ‖tensorKer (k + 2) L
+        (fun i => if i ∈ A then projMat (k + 2) L * uKer (k + 2) L g (cycProd m i) s t
+          else uKer (k + 2) L g (cycProd m i) s t) 𝒜‖
+      ≤ (∏ i, ‖(if i ∈ A then projMat (k + 2) L * uKer (k + 2) L g (cycProd m i) s t
+          else uKer (k + 2) L g (cycProd m i) s t)‖) * ‖𝒜‖ := norm_tensorKer_le _ _
+    _ ≤ (∏ i : Fin n, C i * (L : ℝ) ^ τ) * ‖𝒜‖ := by
+        refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg _)
+        exact Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
+          fun i _ => hCbd i L hL s t hs hst ht hsg
+    _ = (∏ i, C i) * (L : ℝ) ^ (n * τ) * ‖𝒜‖ := by
+        rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin,
+          ← Real.rpow_natCast ((L : ℝ) ^ τ) n, ← Real.rpow_mul hL0]
+        ring_nf
+
 end RBM
+

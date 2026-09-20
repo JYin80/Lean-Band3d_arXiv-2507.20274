@@ -199,3 +199,10 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 `PropTH` 只打包性质 5/6/7/8；新文件 `RBM3D/Test/InterfaceShape.lean` 的 `not_decayShort_at_one`
 **机器证明了原写法在谱参数 `1` 处不成立**。记在 `docs/paper-deltas.md` 的 D11。
 `./check.sh`：`errors: 0`、`exit=0`。
+
+## 2026-09-19 · Claude Code · Q13 完成（`lem:sum_decay_nonzero`）
+
+`Kernel/Evolution.lean`：`norm_zeroModeSet_UN_le`——`‖Q^(A) ∘ U^(n) ∘ 𝒜‖ ≺ ‖𝒜‖`（`1−s ≤ g²/L²`，`A ⊇ I_diff(σ)`）。
+结构部分是 `tensorKer` + `Q^(A)` 穿过张量核；分析部分用两条接口假设（性质 5' 与性质 8），
+关键代数事实是 `projMat_mul_Theta : Proj·Θ = Θ̊`。`./check.sh` 全绿。
+**第一批真正使用接口假设的定理**——签名里直接写着 `ThetaDecayShort` / `ThetaZeroMode`，借用了什么一眼可见。
