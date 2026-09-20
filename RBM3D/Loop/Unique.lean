@@ -297,8 +297,7 @@ equation and both take the `M`-loop value at `t = 0`. -/
 theorem kTwoFormula_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bool → ℂ}
     (hm : ∀ s, ‖m s‖ = 1) {K : ℝ → LoopIdx (Zd d L) → ℂ}
     (hK : IsKLoop d L W g m (Set.Ico 0 1) K)
-    (hbdd : ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc 0 T₀,
-      ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R) :
+    (hbdd : TwoLoopBounded d L K) :
     KTwoFormula d L W g m K := by
   intro t ht0 ht1 σ₁ σ₂ a₁ a₂
   obtain ⟨R, hR0, hRK⟩ := hbdd t ht1
@@ -346,8 +345,7 @@ theorem pureLoop_two_of_isKLoop {k : ℕ} (hd : 3 ≤ k + 2) (hg : 0 < g) (hL : 
     (hW : (W : ℂ) ^ (k + 2) ≠ 0) {m : Bool → ℂ} (hm : ∀ s, ‖m s‖ = 1) {σ : Bool}
     (hmi : 0 < (m σ).im) (hshort : ThetaDecayShort (k + 2) g (m σ))
     {K : ℝ → LoopIdx (Zd (k + 2) L) → ℂ} (hK : IsKLoop (k + 2) L W g m (Set.Ico 0 1) K)
-    (hbdd : ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc 0 T₀,
-      ∀ I : LoopIdx (Zd (k + 2) L), I.WF → I.length = 2 → ‖K t I‖ ≤ R) :
+    (hbdd : TwoLoopBounded (k + 2) L K) :
     ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 → ∀ a₁ a₂ : Zd (k + 2) L,
       ‖K t ⟨[σ, σ], [a₁, a₂]⟩‖
         ≤ C * ‖((W : ℂ) ^ (k + 2))⁻¹‖

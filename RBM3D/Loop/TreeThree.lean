@@ -350,8 +350,7 @@ The proof is `eq_on_level` at `n = 3`: `K` and `kLoop3` solve the same equation 
 theorem kThree_eq_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bool → ℂ}
     (hm : ∀ s, ‖m s‖ = 1) {K : ℝ → LoopIdx (Zd d L) → ℂ}
     (hK : IsKLoop d L W g m (Set.Ico 0 1) K)
-    (hbdd : ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc 0 T₀,
-      ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R) :
+    (hbdd : TwoLoopBounded d L K) :
     ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ₀ σ₁ σ₂ : Bool) (a₀ a₁ a₂ : Zd d L),
       K t ⟨[σ₀, σ₁, σ₂], [a₀, a₁, a₂]⟩ = kThree d L W g m t σ₀ σ₁ σ₂ a₀ a₁ a₂ := by
   intro t ht0 ht1 σ₀ σ₁ σ₂ a₀ a₁ a₂

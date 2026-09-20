@@ -161,6 +161,18 @@ def IsKLoop (m : Bool → ℂ) (T : Set ℝ) (K : ℝ → LoopIdx (Zd d L) → �
   (∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length → K 0 I = MLoop d L W m I) ∧
   (∀ t ∈ T, ∀ (s : Bool) (a : Zd d L), K t ⟨[s], [a]⟩ = m s)
 
+/-- **The a priori bound on `2`-loops.**  `K`'s two-loops stay bounded on every
+`[0, T₀]` with `T₀ < 1`, with a bound that may depend on `T₀`.
+
+This is a mathematical premise the project does not prove -- the paper obtains it along
+the way, from `(prop:ThfadC)` -- so by the house rule it is a named `Prop` rather than an
+anonymous clause in a signature: that is what lets the audit count the theorems resting on
+it.  It is the *only* thing still assumed by `(Kn2sol)` (`kTwoFormula_of_isKLoop`) and by
+`(eq_Ktree)` at `n = 3` (`kThree_eq_of_isKLoop`). -/
+def TwoLoopBounded (K : ℝ → LoopIdx (Zd d L) → ℂ) : Prop :=
+  ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
+    ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R
+
 /-- **`(eq_Ktree)`**, `\Cref{tree-representation}` (`[YY_25]` Lemma 3.4): for `n ≥ 4`,
 `K^(n)_{t,σ,a} = W^{-d(n-1)} Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}`.
 

@@ -60,7 +60,8 @@ says so; counting those theorems is how this development measures how much of it
 carried by the borrowing. -/
 def interfaceProps : List Name :=
   [`RBM.ThetaDecay, `RBM.ThetaDecayShort, `RBM.ThetaDiffOne, `RBM.ThetaDiffTwo,
-   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLoopBound]
+   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLoopBound,
+   `RBM.Loop.TwoLoopBounded]
 
 /-- Declarations the compiler generates (recursors, `casesOn`, `noConfusion`, equation
 lemmas, internal proofs) are not part of the development and are not counted. -/
