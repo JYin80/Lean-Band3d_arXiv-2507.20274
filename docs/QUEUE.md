@@ -6,7 +6,7 @@
 >
 > 队列由 Cowork 侧维护，约每 10 分钟刷新一次。已被认领的工单不会被改写。
 
-最后刷新：2026-09-20 · beat 8（Q14 完成解锁 Q15；Q17 认领中）
+最后刷新：2026-09-20 · beat 9（Q15 / Q17a 完成；**Q16 解除阻塞**；新提 Q17b / Q23 / Q24）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -25,12 +25,15 @@
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
-| Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
-| Q17 | `lem:sum_decay` 与 `eq:latticesum_d3` | `Kernel/SumDecay.lean` | **Q17a DONE** (CC)；Q17b 待做 |
+| Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | **OPEN**（Q15 已落地，`KTreeRep` 当假设用） |
+| Q17a | `eq:latticesum_d3`（第三轮新加的那条） | `Kernel/SumDecay.lean` | **DONE** (CC)：不依赖任何接口假设 |
+| Q17b | `lem:sum_decay` 本体（`sum_res_1` / `sum_res_2`） | `Kernel/SumDecay.lean` | **OPEN**（要用 `ThetaDecay`） |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **DONE** (CC)：283 定理 / 132 定义 / 0 公理 |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
-| Q22 | 移植 RBM1D 的 `eq_Ktree` 证明（消掉 `KTreeRep` 假设） | `Loop/TreeRep*.lean` | **OPEN**（大件，CC 于 Q15 开出） |
+| Q22 | 移植 RBM1D 的 `eq_Ktree` 证明（消掉 `KTreeRep` 假设） | `Loop/TreeRep*.lean` | **OPEN**（大件；**先做 Q23**） |
+| Q23 | **传播子对 `t` 的求导层** ⭐（Q22 的前置） | `Propagator/Deriv.lean` | **OPEN**（移植；RBM1D 处只有 92 行） |
+| Q24 | `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ | `Loop/KBound.lean` | **OPEN**（R1 转正） |
 | Q21 | **逐字核对剩下四条接口陈述** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：1 条修正 + 1 条反例 |
 
 ---
@@ -1077,3 +1080,87 @@ Q12 已把两条点态界和情形覆盖做完，剩下的就是求和：
 
 **建议拆**：Q22a 传播子求导层；Q22b `n ≤ 4`；Q22c 一般 `n`。
 每一步都能独立编译、独立提交，Q22a 本身对别的工单也有用。
+
+---
+
+## Q17b · `lem:sum_decay` 本体 — **OPEN**（Q17a 已完成）
+
+**文件**：`RBM3D/Kernel/SumDecay.lean`（Q17a 已建好，续写即可）。
+
+**做法**见上面 Q17 条目末尾的「建议拆成两步」：走 `(eq:decompUalt)` 把 `U^(n)∘𝒜` 按 `A ⊂ [n]` 拆开
+（**Q9 已经有这个分解，别重造**），分别证 `sum_res_1_red0`（`|A| = k ≥ 1`）与 `sum_res_1_red`（`A = ∅`）。
+`(eq:decayXi)` 来自 `(prop:ThfadC)`，所以签名里要带 `ThetaDecay`（或整包 `PropTH`）——
+**照 Q13 的写法**：把接口假设写进参数表，借了什么一眼可见。
+
+**现成可用**：Q17a 留下的 `latticesum_d3`、`sum_inv_Icc_le`（调和和）、`sum_radial_tail_le`（径向尾和）。
+
+---
+
+## Q23 · 传播子对 `t` 的求导层 ⭐ — **OPEN**（Q22 的前置，本拍新提）
+
+**文件**：新开 `RBM3D/Propagator/Deriv.lean`。
+
+**为什么这拍提**：Q15 的评估结论是「移植 `eq_Ktree` 卡点不在行数，而在前置：RBM1D 的
+ODE 唯一性路线要先能对 `t` 求导 `Θ_t`」。这拍实测了那个前置有多大——
+**`RBM1D/RBM1D/Propagator/Deriv.lean` 一共 92 行，4 条定理**，而它用到的东西
+RBM3D 的 `Propagator/Basic.lean` **已经全都有**。也就是说这不是大件，是一拍能完的活，
+做完 Q22 就只剩组合部分了。
+
+**逐条对应**（左边是 RBM1D 的名字，右边是这里要写的）：
+
+| RBM1D | 内容 | RBM3D 需要的前置 | 有没有 |
+|---|---|---|---|
+| `continuousAt_Theta` | `ζ ↦ Θ_ζ` 在 `‖ξ‖ < 1` 处连续 | `isUnit_one_sub_smul_SB` | ✅ `Basic.lean:78` |
+| `Theta_sub_Theta` | 预解式恒等式 `Θ_ζ − Θ_ξ = (ζ−ξ)·Θ_ζ S^(B) Θ_ξ` | `Theta_mul` / `mul_Theta` | ✅ `Basic.lean:82,86` |
+| `continuous_matrix_entry` | 取矩阵元连续 | — | 纯 Mathlib |
+| `hasDerivAt_Theta_apply` | **(2.51)** `∂_ξ (Θ_ξ)_{ab} = (Θ_ξ S^(B) Θ_ξ)_{ab}` | 上面三条 | — |
+
+**两处必须照抄、不要自己设计**：
+
+1. **走预解式恒等式 + 连续性，不要逐项求导 Neumann 级数。**
+   RBM1D 的路线是：先证 `Θ_ζ − Θ_ξ = (ζ−ξ)•(Θ_ζ S^(B) Θ_ξ)`（`noncomm_ring` 两步就下来了），
+   再用 `hasDerivAt_iff_tendsto_slope`，把差商换成 `Θ_ζ S^(B) Θ_ξ` 后对 `ζ → ξ` 取极限。
+2. **陈述写成逐元（entrywise）的。** RBM1D 的注释给了理由：一是第 3 节用到的全是对块指标逐元求和，
+   二是**绕开 `Matrix` 的 Pi 拓扑与 `ℓ^∞` 算子范数之间的 instance 钻石**。
+   写成整体矩阵的 `HasDerivAt` 会撞上这个钻石——**别试**。
+
+**RBM3D 这边的唯一差异**：`Basic.lean` 里每条 `Theta` 引理都多带一个前件 `hS : ‖SB d L g‖ = 1`。
+**继续带着它，别在这一层擅自改风格**（要消的话是 `norm_SB d L g hL`，`Defs/Block.lean:133`，Q3 已证）。
+
+**可以直接信的 Mathlib 名字**（RBM1D 已编译过，顺手补进 `docs/mathlib-api.md`）：
+`NormedRing.inverse_continuousAt`、`hasDerivAt_iff_tendsto_slope`、`slope_def_field`、
+`eventually_nhdsWithin_of_eventually_nhds`、`self_mem_nhdsWithin`、`sub_ne_zero_of_ne`。
+import 需要 `Mathlib.Analysis.Calculus.Deriv.Basic`、`Mathlib.Analysis.Calculus.Deriv.Slope`、
+`Mathlib.Topology.Instances.Matrix`。
+
+**验收**：`./check.sh` → `errors: 0`、`exit=0`，零 `sorry`，审计仍为空；
+STATUS 里记一笔「**Q22 的前置已拆掉**」，并说明 `d` 作为参数有没有带来额外麻烦（预计没有，`Θ` 的定义同构）。
+
+---
+
+## Q24 · `ML:Kbound` —— 论文说「需额外修改以处理 `d ≥ 3`」 ⭐ — **OPEN**（R1 转正，本拍新提）
+
+**文件**：新开 `RBM3D/Loop/KBound.lean`。
+
+**起因**：论文说这条的证明「类似 `[YY_25]` Lemma 3.11，但**需要额外修改以处理 `d ≥ 3`**」。
+**那句「额外修改」正是 Lean 该去看清楚的地方**——和 Q17 是一个道理：
+凡是论文用一句话带过、而维数在其中起作用的地方，形式化的边际收益最高。
+
+**先说别做什么**：`RBM1D/RBM1D/Loop/KBound.lean` **有 2515 行**，且依赖
+`Loop/SumZero` 与 `Propagator/LongDiff`（16k 行量级的一条链），RBM3D 这两层都还没有。
+**不要整体移植**，这一拍也移植不完。
+
+**这一拍只做两件事**：
+
+1. **陈述层**：把 `ML:Kbound` 在 `Loop/KBound.lean` 里**逐字**写下来——参数、量词顺序、
+   常数依赖谁不依赖谁（对照 Q21 的四条核对清单来写），先不证。
+   形状对齐 `PropTH` / `KTreeRep`：证不出来就当假设，**但必须是假设，不是 `axiom`**。
+2. **把「额外修改」定位到具体一步**：读 RBM1D 那条链的骨架
+   （`selfW_eq_treeValW_one` → `norm_selfEdge_le` → `norm_SigmaPi_empty_le`），
+   找出**哪一步的常数或求和依赖维数**，在 STATUS 里写清「`d = 1` 那里用的是什么、`d ≥ 3` 得换成什么」。
+   多半落在两处之一：球壳计数（`d−1` 次幂，`Defs/Shells.lean` 已有 `card_sphere_le`）
+   与径向和的收敛性（`Σ r^{2−d}` 在 `d = 3` 是临界的，正是 Q17a 撞见的那个 `log`）。
+
+**验收**：陈述层编译通过（`exit=0`、零 `sorry`），STATUS 里一段话说清那处「额外修改」是什么。
+**若发现论文那句话其实掩盖了一个实质困难，立刻点出来**，别当成普通证明困难往下走——
+Q17 和 beat 6 的接口缺陷都是这么找出来的。
