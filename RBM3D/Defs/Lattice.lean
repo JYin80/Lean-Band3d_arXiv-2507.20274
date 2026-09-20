@@ -62,6 +62,11 @@ theorem zdist_neg (L : ℕ) [NeZero L] (u : ZMod L) : zdist L (-u) = zdist L u :
 `AddCommGroup`, `Fintype`, `DecidableEq` -- are found by instance search. -/
 abbrev Zd (d L : ℕ) : Type := Fin d → ZMod L
 
+/-- The torus has `L^d` points.  The paper writes this as `|Z_L^d| = L^d` and uses it
+whenever a sum over the lattice is compared with its largest term. -/
+theorem card_Zd (d L : ℕ) [NeZero L] : Fintype.card (Zd d L) = L ^ d := by
+  simp [Zd, ZMod.card]
+
 /-- The periodic `ℓ¹` distance to the origin on `Z_L^d`, written `|x|` in the paper. -/
 def zdistD (d L : ℕ) (x : Zd d L) : ℕ := ∑ i, zdist L (x i)
 
