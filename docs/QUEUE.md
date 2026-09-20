@@ -68,7 +68,7 @@
 | Q29 | `(eq:key_T_reudce)` 的 `≺` 吸收步 | `Kernel/PropT.lean` | **DONE** (CC)：`(log N)^m ≺ 1` + `Bℓ_t² ≤ 3/\|1−t\|` + 合并 |
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：两块前置 + 关键那一步已证；四步装配 → Q34 |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **PARTIAL** (CC)：六项索引 + 两条对角线的树值；求导匹配 → Q35 |
-| Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **CLAIMED (CC)** |
+| Q34 | `lem:sum_decay` 的四步装配（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **PARTIAL** (CC)：主项（乘积步）已证 + 修好 Q28 的一处缺陷；`(deccA0)` 误差项与 (I)(II) 待续 |
 | Q35 | `(eq_Ktree)` `n = 4` 的求导匹配（内部边那两项） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q30 开出；树值已算出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
 | Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
@@ -2339,6 +2339,28 @@ registry: 8 borrowed + 1 owed + 6 structural; 4 registered premise(s) carry noth
 **顺带交代一次操作失误**：改这条时我用脚本从那行截断到文件尾重写，
 **把后面 `#assert_rbm_audit_detects`（Q26 的反向测试）一起删掉了**，构建立刻报
 `unexpected token '#'`。已补回。教训：脚本里「从某处截到文件尾」这种改法要先看尾巴有什么。
+
+
+### CC 的完成记录（Q34，2026-09-20）：主项的乘积步，外加**修掉 Q28 的一处缺陷**
+
+**先说缺陷**（这是这一拍最值得记的事）：照着论文证明往下读的时候发现，
+Q28 证的 `sum_ball_norm_XiKer_le` **把球心与 `Ξ` 的第一个参数绑成了同一点**。
+可是 `(sum_res_1_red0)` 里球心是 `a₁`（被 Kronecker δ 钉住的那个），
+而因子是 `Ξ^(i)(a_i, b_i)`、`i ∉ A`——**两者不是同一点**。
+也就是说：**那条引理当初证出来的形状，用不到它被写出来要用的地方。**
+
+**修法不需要新数学**：Q20 的 `sum_ball_min_pow_le`（带截断的那条）本来就允许两个球心不同，
+Q28 用的是它的同心推论 `sum_ball_pow_le`——**工具选错了**。现在把球心作为独立参数，
+证明里改用截断版（`(|a−b|+1)^{-k} ≤ (min(|a−b|,R)+1)^{-k}`）即可。
+
+**这一拍新证的**：
+* `sum_prod_le_pow`：乘积区域上「和的乘积 ≥ 乘积的和」的那一步（`Finset.prod_univ_sum`），
+  与 `Ξ` 无关，对任意非负族成立；
+* **`sum_prod_norm_XiKer_le`**：`(sum_res_1_red0)` 的**主项**——
+  当求和变量被 `(deccA0)` 限制在半径 `R ≤ Λℓ_s` 的球里时，
+  `Ξ` 因子总共只值 `(C Λ² (ĝ²+|1−s|)/(ĝ²+|1−t|))^n`。
+
+**剩下的**：`(deccA0)` 的分裂（近对角部分 + `W^{-D}` 误差项）、`(I)` 非交替、`(II)` 和零性质。
 
 ---
 
