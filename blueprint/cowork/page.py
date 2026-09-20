@@ -78,6 +78,7 @@ QUEUE = """
 <tr><td>Q18</td><td>让审计直接报定理数</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN · 小活</span></td></tr>
 <tr><td>Q19</td><td><b>5 条接口 axiom 改成 <code>structure</code> 字段</b> —— 全项目零公理</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill done">DONE</span></td></tr>
 <tr><td>Q20</td><td><code>(eq:key_T_reudce)</code> 求和版（带 <code>≺</code>）</td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q21</td><td><b>逐字核对剩下四条接口陈述</b> —— 第 5′ 条已发现是错的</td><td><code>Propagator/Interface.lean</code></td><td><span class="pill ready">OPEN · 优先</span></td></tr>
 </tbody></table>
 """
 
@@ -170,10 +171,10 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>207</b><span>定理已证</span></div>
+    <div class="chip done"><b>219</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
-    <div class="chip ready"><b>4</b><span>工单可开工</span></div>
+    <div class="chip ready"><b>5</b><span>工单可开工</span></div>
   </div>
 </header>
 
@@ -199,6 +200,22 @@ Lemma 3.5 / 3.14。</p>
 <code>propext</code> / <code>Classical.choice</code> / <code>Quot.sound</code>，与两个姊妹项目同标准，
 违规即构建失败。下面每张图顶部色带内的节点，就是这五条假设——<strong>整张图里只有那一条带是借来的，
 其余每个绿色节点都是在 Lean 里证出来的</strong>。</p>
+</div>
+
+<div class="note">
+<p><strong>形式化已经抓到一处真缺陷，值得单独说。</strong></p>
+<p>接口的第二条 <code>(prop:ThfadC_short)</code> 原先写成「对任意 <code>‖m‖ = 1</code>」。
+论文写的不是这个——原文是「Furthermore, <strong>when σ₁ = σ₂</strong>, we have a much stronger
+exponential decay」。<strong>论文是对的，漏掉那个限定的是形式化</strong>（Cowork 在第一拍写接口时写错的）。
+σ₁ ≠ σ₂ 对应谱参数 <code>1</code>，那时 <code>Σ_b Θ_{t,0b} = (1−t)⁻¹</code> 发散，而右端与 <code>t</code>
+无关且可求和——<strong>该陈述为假</strong>。</p>
+<p>三点后果值得记住。<strong>一、它当 <code>axiom</code> 的那段时间，整个项目是不一致的</strong>——
+从一条假命题出发什么都能证。<strong>二、公理审计查不出这种错</strong>：审计管的是「用了哪些公理」，
+不管「公理说得对不对」。<strong>三、发现它的不是任何自动机制，是 Q13 第一次真去用它。</strong>
+一条没人使用的接口陈述，等于没被检验过。</p>
+<p>改法有两层：陈述修正为 <code>t·m²</code> 且要求 <code>0 &lt; m.im</code>；另加一条
+<strong>负面测试</strong> <code>not_decayShort_at_one</code>，<em>机器证明</em>旧写法在谱参数 <code>1</code>
+处不成立。性质 5–8 是同一次写的，所以 <strong>Q21</strong> 正在把其余四条逐字重核一遍。</p>
 </div>
 
 <div class="legend">
@@ -265,9 +282,9 @@ __QUEUE__
 </div>
 
 <footer>
-  计数说明：<b>207</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
+  计数说明：<b>219</b> 是手写 <code>theorem</code> 的条数（20 个文件）。审计报的「389 条声明」包含定义、结构、实例，
   以及 167 条编译器自动生成的声明（递归子、equation lemma 等），不宜当进度读——Q18 就是去修这个报告。<br>
-  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 5 · 2026-09-20 04:35 UTC<br>
+  蓝图由 Cowork 侧维护，约每 10 分钟随工单队列一同刷新 · beat 6 · 2026-09-20 04:45 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>
