@@ -72,7 +72,8 @@ CH4 = rows([
  ("(eq_Ktree) 在 n = 3 —— 对任意一族 K-loop，只要 2-loop 有先验界","Q22b ✓ n=3","done","kThree_eq_of_isKLoop · sum_SB_starLeft/Right"),
  ("(eq_Ktree) 在 n = 4 —— 第一次出现内部边","Q30 · 可开工","ready","Loop/TreeFour.lean"),
  ("(eq_Ktree) 的一般 n —— 本项目最大的一件","Q31 · 待 Q30","todo","Loop/TreeRepGeneral.lean · 2546 行"),
- ("lem_pureloop 同号 K-loop 的指数衰减（本文自足证）","Q16 ✓ n=2 · Q25 一般 n","ready","pureLoop_two · sum_exp_decay_conv"),
+ ("lem_pureloop 同号 K-loop 的指数衰减 —— n=2、n=3、以及任意 n 的星形树","Q16/Q25 ✓ 部分","done","pureLoop_two · pureLoop_three · 星形树任意 n"),
+ ("lem_pureloop 的带对角线的树（n ≥ 4）—— 要先有 KTreeRep 在 n ≥ 4","Q33 · 待 Q30","todo","Loop/PureLoop.lean"),
  ("ML:Kbound 与那句「需额外修改以处理 d ≥ 3」—— 已定位到一条不等式并证出 ⭐","Q24 ✓ 已证","done","inv_pow_pair_le · not_inv_pow_pair_le_single · 见 D16"),
  ("ML:Kbound 的格点和 Σ_b (|a−b|^d+1)⁻¹(|c−b|^{d−2}+1)⁻¹ ≲ 1","Q32 · 可开工","ready","d ≥ 3 的另一半"),
 ])
@@ -111,8 +112,9 @@ QUEUE = """
 <tr><td>Q31</td><td><code>(eq_Ktree)</code> 的一般 <code>n</code> —— 本项目最大的一件</td><td><code>Loop/TreeRepGeneral.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
 <tr><td>Q32</td><td><code>ML:Kbound</code> 的格点和 —— <code>d ≥ 3</code> 的另一半</td><td><code>Loop/KBound.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q24</td><td><code>ML:Kbound</code> <b>⭐</b> —— <b>那句「额外修改」已定位并证出</b>（D16）</td><td><code>Loop/KBound.lean</code></td><td><span class="pill done">DONE</span></td></tr>
-<tr><td>Q25</td><td><code>lem_pureloop</code> 的一般 <code>n</code></td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
-<tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b> —— <code>KTwoFormula</code> 已漏报</td><td><code>Test/Axioms.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
+<tr><td>Q25</td><td><code>lem_pureloop</code> —— <code>n = 3</code> 与任意 <code>n</code> 的星形树已证</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill done">PARTIAL</span></td></tr>
+<tr><td>Q33</td><td><code>lem_pureloop</code>：带对角线的树（<code>n ≥ 4</code>）</td><td><code>Loop/PureLoop.lean</code></td><td><span class="pill todo">待 Q30</span></td></tr>
+<tr><td>Q26</td><td><b>审计自动发现借用谓词 + 分两本账</b> <b>⭐</b></td><td><code>Test/Axioms.lean</code></td><td><span class="pill draft">认领中</span></td></tr>
 <tr><td>Q28</td><td><code>lem:sum_decay</code> 的三条结论（<code>sum_res_1</code> / <code>(I)</code> / <code>(II)</code>）</td><td><code>Kernel/SumDecay.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q29</td><td><code>(eq:key_T_reudce)</code> 的 <code>≺</code> 吸收步 —— 全项目第一处真用 <code>DetDom</code></td><td><code>Kernel/PropT.lean</code></td><td><span class="pill ready">OPEN</span></td></tr>
 <tr><td>Q40</td><td><b>依赖图：分开「借来的」与「暂时假设的」，并修一条错边</b> <b>⭐</b></td><td><code>blueprint/src/content.tex</code></td><td><span class="pill ready">OPEN</span></td></tr>
@@ -214,7 +216,7 @@ footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
   <h1>d ≥ 3 非平均场随机矩阵的退局域化</h1>
   <p class="sub">Dubova · F. Yang · H.-T. Yau · J. Yin，<em>Delocalization of Non-Mean-Field Random Matrices in Dimensions d ≥ 3</em>（arXiv:2507.20274）· Lean 4.34.0 / Mathlib v4.34.0 · <code>~/Lean_proof/RBM3D</code></p>
   <div class="chips">
-    <div class="chip done"><b>346</b><span>定理已证</span></div>
+    <div class="chip done"><b>349</b><span>定理已证</span></div>
     <div class="chip done"><b>0</b><span>sorry</span></div>
     <div class="chip done"><b>0</b><span>项目公理</span></div>
     <div class="chip ready"><b>9</b><span>可立即开工</span></div>
@@ -366,12 +368,15 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 时才有用——<em>这正是 d = 1 的论证必须改的原因</em>。配了反面测试
 <code>not_inv_pow_pair_le_single</code>：单独一项不够。记在 <code>paper-deltas.md</code> D16，
 <strong>建议作者把这一行写回论文</strong>。</p>
-<p><strong>而且「数得着」比「看得见」还要难一层。</strong> Q22a 带进来一条新前提——
+<p><strong>而且「数得着」比「看得见」还要难一层——这一条现在闭环了。</strong> Q22a 带进来一条新前提：
 2-loop 在每个 <code>[0,T₀]</code> 上有界。它<em>写在签名里</em>，符合本项目「借了什么一眼可见」的原则；
-可它不是一个具名 <code>Prop</code>，于是<strong>任何汇总都数不到它</strong>，
-包括 Q26 原本设计的自动发现。这一条本身是良性的（论文自己沿途证，显式解也兑现了它），
-较真的是「数不着」这件事——对一份把「零公理」写在抬头的开发，数不着和藏起来差别不大。
-已立成 CLAUDE.md 规则 15：<em>本项目没证出来的数学前提必须具名</em>。</p>
+可它不是具名 <code>Prop</code>，于是<strong>任何汇总都数不到它</strong>。这一条本身是良性的
+（论文自己沿途证，显式解也兑现了它），较真的是「数不着」这件事——对一份把「零公理」写在抬头的开发，
+数不着和藏起来差别不大。</p>
+<p>三拍走完：beat 14 立成 CLAUDE.md 规则 15（<em>没证出来的数学前提必须具名</em>）；
+beat 16 新代码照办（<code>KLoopBound</code>）；beat 17 回头把促成这条规则的那一处也改了。
+审计现在报 <code>TwoLoopBounded: 4</code>——<strong>那条原本数不着的前提，现在数得着了。</strong>
+Q26 剩下的本体是让审计<em>自己发现</em>前件，而不是靠人往名单里加。</p>
 <p><strong>同一件事在依赖图里还没分开。</strong> <code>blueprint/src/content.tex</code> 的 <code>ax:</code>
 一类现在挂着七个节点：五条真·借来的，加上 <code>KTreeRep</code> 与 <code>KTwoFormula</code>——
 而后两条<em>都有工单要把它们证出来</em>。图里它们同色同说法，于是图在说「七条都是外部输入」。
@@ -387,11 +392,11 @@ Q27 顺手做了正面的那一半——<code>kTwoFormula_kTwoLoop</code> 给出
 </div>
 
 <footer>
-  计数说明：<b>346 定理 / 144 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
+  计数说明：<b>349 定理 / 145 定义 / 0 公理</b> 由 <code>./check.sh</code> 的审计直接报出（Q18），
   编译器生成的声明已排除。<br>
   这一页是<b>叙事与队列快照</b>，由 Cowork 维护；机器可核的进度在 <code>blueprint/src/content.tex</code>
   （leanblueprint，Claude Code 维护，<code>\leanok</code> 与提交同步）。不一致时以后者为准。<br>
-  约每 10 分钟随工单队列一同刷新 · beat 16 · 2026-09-20 07:15 UTC<br>
+  约每 10 分钟随工单队列一同刷新 · beat 17 · 2026-09-20 07:25 UTC<br>
   姊妹项目：<code>~/Lean_proof/RBM1D</code>（d=1，已完整编译，2082 条声明，公理干净）·
   <code>~/Lean_proof/RBM2D</code>（d=2）
 </footer>

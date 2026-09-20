@@ -16,7 +16,7 @@
 > `blueprint/cowork/`（Cowork 维护，发布成给作者看的网页）是**叙事与队列快照**。
 > **两边都别去改对方那一份**；不一致时以 `content.tex` 为准，Cowork 负责把差异反映到网页上。
 
-最后刷新：2026-09-20 · beat 16（Q24 完成、Q22b 到 `n = 3`；**规则 15 的那条前提仍匿名，见 Q26 的 beat 16 补充**）
+最后刷新：2026-09-20 · beat 17（Q25 到 `n = 3` + 星形树任意 `n`；**规则 15 闭环：`TwoLoopBounded` 已具名，审计报 4 条承重**）
 
 | # | 工单 | 文件 | 状态 |
 |---|---|---|---|
@@ -52,7 +52,7 @@
 | Q28 | `lem:sum_decay` 的三条结论（`sum_res_1` / `(I)` / `(II)`） | `Kernel/SumDecay.lean` | **OPEN**（CC 于 Q17b 开出；原叫 Q26，撞号已改） |
 | Q30 | `(eq_Ktree)` 的 `n = 4`（第一次出现内部边） | `Loop/TreeFour.lean` | **OPEN**（CC 于 Q22b 开出） |
 | Q31 | `(eq_Ktree)` 的一般 `n`（`polyVal` 递归上做归纳） | `Loop/TreeRepGeneral.lean` | BLOCKED by Q30（本项目最大的一件） |
-| Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | **OPEN**（CC 于 Q25 开出；需 Q30/Q31） |
+| Q33 | `lem_pureloop`：带对角线的树（`n ≥ 4`，`polyVal` 递归） | `Loop/PureLoop.lean` | BLOCKED by Q30（CC 于 Q25 开出） |
 | Q32 | `ML:Kbound` 的格点和 `Σ_b (\|a−b\|^d+1)⁻¹(\|c−b\|^{d−2}+1)⁻¹ ≲ 1` | `Loop/KBound.lean` | **OPEN**（CC 于 Q24 开出；`d ≥ 3` 的另一半） |
 | Q40 | **依赖图：分开「借来的」与「暂时假设的」，并修一条错边** ⭐ | `blueprint/src/content.tex` | **OPEN**（Cowork 提；不动 Lean 代码） |
 | Q41 | **每条假设的「非空洞」证书**（固定 `L` 版） ⭐ | `Test/InterfaceShape.lean` | **OPEN**（Cowork 提；beat 6 那类缺陷的正面检查） |
@@ -1476,6 +1476,11 @@ Q17 和 beat 6 的接口缺陷都是这么找出来的。
 > 它现在是 `KTwoFormula` → `kThree_eq_of_isKLoop` 这条链上真正的前提，却不在任何名单里；
 > 每多一个使用者，将来改名的成本就多一份。
 > **这张工单先做这件事**：给它起名（`TwoLoopBounded` 之类），三处一起改，再谈自动发现。
+>
+> **beat 17：这一步已经做完了。** `RBM.Loop.TwoLoopBounded` 是具名 `Prop`，三处都改了，
+> 并登记进 `Test/Axioms.lean` 的名单；审计现在报 **`TwoLoopBounded: 4`**——
+> **那条原本数不着的前提，现在数得着了。** 剩下的才是这张工单的本体：让审计**自己发现**前件，
+> 而不是靠人往名单里加。
 >
 > **beat 14 补充：只扫具名 `Prop` 是不够的。** Q22a 落地时带进来一条新的前提——
 > `kTwoFormula_of_isKLoop` 的 `hbdd`（2-loop 在每个 `[0,T₀]` 上有界）。
