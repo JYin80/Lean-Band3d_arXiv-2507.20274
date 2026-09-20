@@ -27,7 +27,7 @@
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | **DONE** (CC)：陈述层落地，`eq_Ktree` 按假设；移植 → Q22 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3` | `Kernel/SumDecay.lean` | **Q17a DONE** (CC)；Q17b 待做 |
-| Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
+| Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **CLAIMED** (CC) |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
 | Q22 | 移植 RBM1D 的 `eq_Ktree` 证明（消掉 `KTreeRep` 假设） | `Loop/TreeRep*.lean` | **OPEN**（大件，CC 于 Q15 开出） |
