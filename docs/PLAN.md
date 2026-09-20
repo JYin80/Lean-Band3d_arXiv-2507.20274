@@ -61,7 +61,7 @@ Lean 能发现人眼漏掉的东西的地方。
 | 风险 | 对策 |
 |---|---|
 | Cowork 写的第一批文件编不过 | T1 就是干这个的。这批文件**一次都没编译过**，错会集中在 Mathlib 引理名、`haveI : NeZero L` 在 axiom 陈述里的 elaboration、以及 `simp only [ord]` 能否展开 `def` |
-| 接口公理写错（陈述与论文不符） | 编译器查不出来。靠 Phase 1 完成标准第 6 条的人工逐字复核，以及蓝图节点与论文 label 的一一对应 |
+| 接口陈述写错（与论文不符） | **已兑现一次**：`(prop:ThfadC_short)` 漏了论文的 `σ₁ = σ₂` 限定，当 axiom 的那段时间项目是不一致的。发现它的不是审计，是 Q13 第一次去用它。对策升级为三条：① 接口一律写成假设而非 axiom（Q19，把不一致降级为「下游空洞成立」）；② 每条接口尽量配一个**负面测试**，机器证明错误写法为假（`Test/InterfaceShape.lean`）；③ 逐字核对（Q21） |
 | 磁盘满 | 见 T0。三份 Mathlib 放不下 |
 | `Fin d → ZMod L` 上的 `Finset` 记账比 `ZMod L × ZMod L` 笨重 | 集中在 `Defs/Lattice.lean` 与 `Defs/Block.lean` 两处，改一处即可 |
 | 图模型设计过度 | 先只建 `lem_scalingorder` 的 case 分析需要的最小结构，不要一上来就建完整的 IPC 图 |
