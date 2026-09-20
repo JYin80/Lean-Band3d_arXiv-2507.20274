@@ -23,7 +23,7 @@
 | Q11 | `lem:propT` 卷积界 `TTT2` | `Kernel/PropT.lean` | **DONE** (CC) |
 | Q12 | `claim:TTk`（`eq:TtTt` / `eq:KtKt`） | `Kernel/PropT.lean` | **DONE** (CC)；求和版另开 Q20 |
 | Q13 | `lem:sum_decay_nonzero`（`Q^(A)` · `I_diff(σ)`） | `Kernel/Evolution.lean` | **DONE** (CC) |
-| Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **CLAIMED** (CC) |
+| Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
 | Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
@@ -647,7 +647,29 @@ G，而 B.10 的前因子 `(1 + M⁺S⁺)`（`M⁺_{xy} = M_{xy}M_{yx}`）正是
   接口公理候选**。更妙的是 RBM1D 已经把它证出来了（见下），所以也可以选择移植而非公理化。
 * Q16 是本文**自足证明**的推论。
 
-## Q14 · 典范树划分与边值 — **OPEN**
+## Q14 · 典范树划分与边值 — **DONE**（CC，2026-09-19）
+
+> **完成记录**：新文件 `RBM3D/Loop/Partition.lean`，`./check.sh` → `errors: 0`、`exit=0`，不依赖任何接口假设。
+>
+> **数据结构按工单要求与 RBM1D 一致**（`RBM1D/Loop/Crossing.lean` + `Loop/Tree.lean`）：树用它的**对角线集合**表示，
+> `TSP n` 定义为「不交叉的对角线集合」。`def:canpnical_part` 的平面几何**不形式化**——这一点 RBM1D 已经记过，
+> 这里沿用同样的建模（见文件的 Modelling 段）。只有索引类型从 `ZMod L` 换成 `Zd d L`，传播子多带一个耦合 `g`。
+>
+> 落地的内容：
+> * 组合层：`IsDiag`、`diagonals`、`Crossing`、`CrossingFree`、`TSP`，以及 `noncrossing_split`（不交叉 ⇒ 可分离）、
+>   `isDiag_split_lt`（两块都更小，这是递归终止的理由）；
+> * 边值：`thetaEdge`（`(f-external)` 的 `Θ^(σ_k,σ_{k+1})_t`）；内部边 `(Θ − I)` 出现在 `polyVal` 的分裂步里
+>   （左块新顶点带 `(Θ − I)ᵀ`、右块带 `I`，合起来正是 `(f-internal)`）；
+> * 值：`polyVal`（按对角线递归，终止性已证）、`bdList`、`treeVal`、`treeSum`，
+>   以及 **`GammaN`**（`(M-graph-value-unsummed)`，含 `∏_i m(σ_i)` 前因子）与 `GammaSum`（对 `TSP` 求和）。
+>
+> **自检**：`TSP_three = {∅}`（三角形没有对角线）、`TSP_four = {∅, {(0,2)}, {(1,3)}}`（两条对角线相交，不能共存）、
+> `card_TSP_five = 11`（小 Schröder 数 `1, 3, 11, 45`）；
+> **验收** `treeVal_four_nil`：`n = 4` 无对角线时树值 = 星图 `Σ_b ∏_i Θ^(σ_i,σ_{i+1})(a_i,b)`。
+>
+> **Q15 现在可以开工**：`GammaSum` 就是 `eq_Ktree` 右端（差一个 `W^{-d(n-1)}`），
+> 而且数据结构与 RBM1D 的 `TreeRep.lean` / `TreeRepGeneral.lean` 对齐，可以考虑移植而不是公理化。
+
 
 **文件**：新开 `RBM3D/Loop/Partition.lean`。不依赖任何接口公理。
 

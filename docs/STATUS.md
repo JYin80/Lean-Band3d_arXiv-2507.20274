@@ -213,3 +213,10 @@ Q11 剩下的是 K4/K5：把 `𝒯_u`、`𝒯_t` 拆成「衰减项 + 零模项�
 性质 8 与论文一致，并新增反例 `not_zeroMode_without_removal`——把 `Θ̊` 换成 `Θ` 在谱参数 `1` 处可证伪，
 说明零模去除是这条估计的全部内容。常数允许依赖 `g`、`m` 记为 D13（有意的弱化）。
 `./check.sh` 全绿。**目前接口相关的两个负面测试都在 `RBM3D/Test/InterfaceShape.lean`，随全量构建跑。**
+
+## 2026-09-19 · Claude Code · Q14 完成（典范树划分与边值）
+
+新文件 `RBM3D/Loop/Partition.lean`：`TSP`（不交叉对角线集合，沿用 RBM1D 的表示）、`thetaEdge`、
+`polyVal`/`treeVal`/`treeSum`、`GammaN`（含 `∏ m(σ_i)`）、`GammaSum`。自检 `TSP_three`/`TSP_four`/`card_TSP_five`，
+验收 `treeVal_four_nil`（`n = 4` 星图）。不依赖接口假设，`./check.sh` 全绿。
+**Q15 解锁**，且因为数据结构与 RBM1D 对齐，`eq_Ktree` 可以考虑移植 `RBM1D/Loop/TreeRep.lean` 而不是当公理。
