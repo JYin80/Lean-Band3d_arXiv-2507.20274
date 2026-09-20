@@ -26,7 +26,7 @@
 | Q14 | 典范树划分 `TSP(P_a)` 与边值 | `Loop/Partition.lean` | **DONE** (CC) |
 | Q15 | 树表示 `eq_Ktree`（`[YY_25]` Lem 3.4） | `Loop/TreeRep.lean` | BLOCKED by Q14 |
 | Q16 | `lem_pureloop` 同号 `K`-loop 的指数衰减 | `Loop/PureLoop.lean` | BLOCKED by Q15 |
-| Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **OPEN** |
+| Q17 | `lem:sum_decay` 与 `eq:latticesum_d3`（**我漏开的**） | `Kernel/Evolution.lean` | **CLAIMED** (CC) |
 | Q18 | 让审计直接报定理数与公理承重情况 | `Test/Axioms.lean` | **OPEN**（小活，非证明） |
 | Q19 | **把 5 条接口 axiom 改成 `structure` 字段** ⭐ | `Propagator/Interface.lean` | **DONE** (CC)：全项目零公理 |
 | Q20 | `(eq:key_T_reudce)` 求和版（带 `≺`） | `Kernel/PropT.lean` | **OPEN**（Q12 已完成） |
