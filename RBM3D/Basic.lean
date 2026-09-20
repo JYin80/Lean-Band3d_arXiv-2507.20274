@@ -42,6 +42,7 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Loop.Primitive`     — `(Kn2sol)`: the two-loop solution, proved rather than borrowed
 * `RBM3D.Loop.Unique`        — uniqueness for `(pro_dyncalK)`, by one Grönwall argument
 * `RBM3D.Loop.TreeThree`     — `(eq_Ktree)` at `n = 3`, proved for every family of `K`-loops
+* `RBM3D.Loop.KBound`        — `ML:Kbound`, and the `d ≥ 3` step its proof needs
 * `RBM3D.Test.Axioms`        — the axiom audit
 
 ## Two structural differences from the sister projects
