@@ -243,7 +243,7 @@ is a new theorem.
 \end{lemma}
 
 \begin{lemma}[Summing the mixing bound: $\mathring\Th$ is bounded uniformly in $\xi$]\label{lem:summing}
-  \lean{RBM.sum_range_pow_div, RBM.summable_pow_div, RBM.exists_norm_Theta0_le}\leanok
+  \lean{RBM.sum_range_pow_div, RBM.summable_pow_div, RBM.norm_tsum_le_of_le, RBM.exists_norm_Theta0_le, RBM.exists_norm_Theta_sub_le}\leanok
   \uses{lem:mixing, def:Theta}
   $\|\mathring\Th_\xi(a,b)\|\le R(1-q)^{-1}$ for every $\|\xi\|<1$, at fixed $L$.
 
@@ -256,17 +256,21 @@ is a new theorem.
   \textbf{The bound does not depend on $\xi$}, which is the whole point: it survives
   $t\to1$, where no bound on the entries of $\Th_t$ can
   (\texttt{not\_exists\_uniform\_entry\_bound}).
+
+  The same argument bounds \emph{differences}, $\|\Th_\xi(a,b)-\Th_\xi(a,c)\|\le
+  2R(1-q)^{-1}$: a difference kills the constant mode just as the zero-mode removal does,
+  and the factor $2$ is the triangle inequality through $L^{-d}$.
 \end{lemma}
 
 \begin{lemma}[Certificates: which of these are known to be satisfiable]\label{lem:certificates}
-  \lean{RBM.Test.thetaDecay_fixedL, RBM.Test.thetaZeroMode_fixedL, RBM.Test.exists_norm_Theta_ge, RBM.Test.not_exists_uniform_entry_bound, RBM.Test.sum_Theta_diff_row, RBM.Test.twoLoopBounded_kTwoLoop, RBM.Theta0_apply_eq, RBM.sum_Theta0_row}\leanok
+  \lean{RBM.Test.thetaDecay_fixedL, RBM.Test.thetaZeroMode_fixedL, RBM.Test.thetaDiffOne_fixedL, RBM.Test.thetaDiffTwo_fixedL, RBM.Test.propTH_fixedL, RBM.Test.exists_norm_Theta_ge, RBM.Test.not_exists_uniform_entry_bound, RBM.Test.sum_Theta_diff_row, RBM.Test.twoLoopBounded_kTwoLoop, RBM.Theta0_apply_eq, RBM.sum_Theta0_row}\leanok
   \uses{bor:ThfadC, bor:ThfadCshort, bor:BD1, bor:BD2, bor:ThfadC0, hyp:twoloop, lem:propTH-34, lem:summing}
   The audit counts what rests on each premise, but a premise that is \emph{false} makes
   every theorem carrying it vacuous, and the count looks the same.  That is not
   hypothetical: it is what happened while $\mathtt{(prop{:}ThfadC\_short)}$ was stated
   without its $\sigma_1=\sigma_2$ restriction (\texttt{docs/paper-deltas.md}, D11).  So
   each premise also wants a \emph{certificate}: a theorem of this development witnessing
-  that it is satisfiable.  Three have one.
+  that it is satisfiable.  Six of the nine have one.
 
   \ref{bor:ThfadC} is certified at \textbf{fixed $L$}: replacing
   $\exists C\,\forall L$ by $\forall L\,\exists C$ leaves a statement this development can
@@ -277,22 +281,23 @@ is a new theorem.
   at least $L^{-d}(1-t)^{-1}$.  \ref{hyp:twoloop} is certified outright, by the explicit
   two-loop of $\mathtt{(Kn2sol)}$.
 
-  \ref{bor:ThfadC0} is certified at fixed $L$ too, but for a different reason, and that
-  difference is the content: its right-hand side stays bounded as $t\to1$, so no size
-  bound can give it.  What does is the cancellation \ref{lem:summing}: removing the zero
-  mode leaves a series that converges at a rate independent of $\xi$.
+  \ref{bor:ThfadC0}, \ref{bor:BD1} and \ref{bor:BD2} are certified at fixed $L$ too, but
+  for a different reason, and that difference is the content: their right-hand sides stay
+  bounded as $t\to1$, so no size bound can give them.  What does is the cancellation
+  \ref{lem:summing} --- removing the zero mode, or taking a difference, leaves a series
+  that converges at a rate independent of $\xi$.  In the two difference statements
+  $r=0$ is a separate case and not a formality: there the right-hand side is $0$ because
+  of its factor $|r|$, so nothing but the algebra can give the bound.
+  \texttt{propTH\_fixedL} is the conjunction of the four, for the bundle.
 
-  The remaining three propagator premises are \textbf{not} certified, and the obstruction is
-  machine-checked rather than asserted: their right-hand sides stay bounded as $t\to1$ at
-  fixed $L$, while the entries of $\Th_t$ do not
-  (\texttt{not\_exists\_uniform\_entry\_bound}), so each of them needs a
-  \emph{cancellation} --- a difference of entries, or the removal of the zero mode.  At
-  fixed $L$ that cancellation is the finite-$L$ mixing of $\SB$
-  (\ref{lem:connect}, \ref{lem:mixing}, \ref{lem:summing}), which is now available: what
-  is left is to run the same argument on differences (Q54).  What
-  is checked is that the refutation which killed the old property 5' cannot be rerun
-  against them: $\sum_b\mathring\Th_{ab}=0$ and every first difference of a row sums to
-  $0$.
+  \ref{bor:ThfadCshort} is the one propagator premise still without a certificate, and it
+  is a different obstruction: its right-hand side is independent of $t$ altogether, and at
+  the spectral parameter $1$ it is outright \emph{false} (\texttt{not\_decayShort\_at\_one}
+  above).  What a fixed-$L$ certificate would take is a quantitative form of $m^2\ne1$: the
+  segment $\{tm^2:t\in[0,1)\}$ stays a definite distance from $1$, which is where the
+  paper's standing assumption $\operatorname{Im}m>0$ does its work (Q55).  Of the other
+  two, \ref{bor:KTreeRep} and \ref{hyp:Kbound}, the first is discussed above and the
+  second waits on the molecule layer.
 \end{lemma}
 
 \chapter{Scaling order (Appendix B)}
