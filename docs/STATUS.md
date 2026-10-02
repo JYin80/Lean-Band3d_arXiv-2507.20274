@@ -1,3 +1,5 @@
+> **已被取代**（调度 V1，2026-10-02）：现行状态见 `docs/ROUTES.md`、`docs/tickets/QUEUE.md`、`docs/queue/*.state`；本文件是旧工作模式写的，只作线索（CLAUDE.md §5.10）。
+
 # STATUS（RBM3D）
 
 > 两边（Claude Code / Cowork）**唯一**的共享状态。开工前读它，收工前更新它。
