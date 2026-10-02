@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor2 PASS on all targets after one rule-(B) report-only repair; report-only merge (probe stays on t/T2001 at bd95cc9)
+updated: 2026-10-02 19:05:12 UTC
+reports: docs/reports/T2001-prove.md, docs/reports/T2001-audit.md, docs/reports/T2001-coverage.md
