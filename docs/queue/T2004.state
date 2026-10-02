@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor1 PASS (no sign-off); report-only merge (probe stays on t/T2004 at 64b58eb)
+updated: 2026-10-02 23:23:08 UTC
+reports: docs/reports/T2004-prove.md, docs/reports/T2004-audit.md
