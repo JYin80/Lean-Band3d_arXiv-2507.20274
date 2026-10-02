@@ -25,3 +25,31 @@
 - H3 (dispatcher V1, 2026-10-02 17:26 UTC). After H2: stage by name only and commit with message `Dispatcher V1: DECISIONS §3–§7, routes, first tickets T2001–T2004`: `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/PLAN.md`, `docs/STATUS.md`, `docs/ROUTES.md`, `docs/claude-team/TEAM.md`, `docs/claude-team/WORKLOG.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2001.md`, `docs/tickets/T2002.md`, `docs/tickets/T2003.md`, `docs/tickets/T2004.md`, `docs/tickets/checks/T2001-check.lean`, `docs/tickets/checks/T2002-check.lean`, `docs/tickets/checks/T2003-check.lean`, `docs/tickets/checks/T2004-check.lean`, `docs/queue/CONTROL.md`. Then `git push origin main` (no force; if rejected, stop and report). No `lake build` needed (no Lean under `RBM3D/` changed). One `done:` line with the hash.
   done: 2026-10-02 17:32 UTC — committed 3c11d7b (17 files staged by name), pushed 89ef8a9..3c11d7b to origin/main; no lake build (no Lean under RBM3D/ changed).
 
+
+## Archived 2026-10-02 19:49 UTC by dispatcher V1
+
+### Pre-release checks (released)
+- `docs/tickets/checks/T2005-check.lean`
+  done: 2026-10-02 19:35 UTC — `lake env lean docs/tickets/checks/T2005-check.lean`: exit 0; no error lines.
+
+
+### Approved instructions (done)
+(H1–H3 archived in `docs/queue/CONTROL-archive.md`)
+- H4 (dispatcher V1, 2026-10-02 19:35 UTC). Compile `docs/tickets/checks/T2005-check.lean` (`lake env lean`, main worktree) and append one `done:` line under Pre-release checks (exit code; error lines verbatim). From now on, compile every file listed under Pre-release checks in the same loop iteration you see it (CLAUDE.md §4 step 0), without a separate H.
+  done: 2026-10-02 19:35 UTC — compiled T2005-check.lean: exit 0, no error lines (done: line under Pre-release checks).
+- H5 (dispatcher V1, 2026-10-02 19:35 UTC). Stage by name only and commit with message `Dispatcher V1: DECISIONS §9–§11, T2005, ledgers`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2005.md`, `docs/tickets/checks/T2005-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force; if rejected, stop and report). One `done:` line with the hash.
+  done: 2026-10-02 19:35 UTC — committed 4908ddf (9 files staged by name), pushed a62eeef..4908ddf to origin/main.
+
+
+## Archived 2026-10-02 23:42 UTC by dispatcher V1
+
+### Pre-release checks (released)
+- `docs/tickets/checks/T2006-check.lean`
+  done: 2026-10-02 23:22 UTC — `lake env lean docs/tickets/checks/T2006-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2007-check.lean`
+  done: 2026-10-02 23:22 UTC — `lake env lean docs/tickets/checks/T2007-check.lean`: exit 0; no error lines.
+
+
+### Approved instructions (done)
+- H6 (dispatcher V1, 2026-10-02 23:17 UTC). T2003: dispatcher sign-off given (DECISIONS §13). Merge T2003 as report-only (CLAUDE.md §3 (A), report-only path): commit `docs/queue/T2003.state` (set `merged <hash>`), `docs/reports/T2003-prove.md`, `docs/reports/T2003-audit.md`; the probe `RBM3D/Probe/T2003Pins.lean` stays on `t/T2003`; no root import, no `lake build`. Push main; one `done:` line under the merge log.
+  done: 2026-10-02 23:22 UTC — T2003 merged 7ba7ba5 (report only); pushed 06f2064..7ba7ba5; merge-log line written.

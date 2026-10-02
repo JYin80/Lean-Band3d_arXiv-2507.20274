@@ -103,3 +103,41 @@
 - 属实质改动（改 Thm 2.7 的结论形式），由 Jun 定；记 paper-delta（合并成 Lean 文件时编号）。证明路线不变：Landon–Sosoe–Yau Thm 2.2（DECISIONS §5）本身给出按局部密度归一化的形式。
 - **落实**：终点冻结票（SV-2）照此钉 `BA_BUniv`；T2001 探针里的 `T2001_BA_BUniv`（匹配 `ρ_sc(E'_n) = ρ_N(E)`）与 `T2001_BA_BUniv_literal`（原文）都不用；UN-D1、BA-D1 的极限核算按此形式做（含 `ρ_N(E)` 的下界与 `E ↦ ρ_N(E)` 的正则性）。
 
+## §12 T2002（MD-D1 词汇与移植表）合并后的签字与落实（总调度按 §4 签字，2026-10-02 23:17 UTC；依据 T2002 审核 PASS，06f2064）
+
+- **词汇决定照 T2002 报告 (b.9) 接受**：细格点 `Idx d L W = Zd d (W*L)` 承载模型与终点陈述，块乘积 `Vtx` 承载 `E_a`、`S`、loop，二者经 `splitEquiv` 桥接；尺寸数据 `Sizes d`（字段 `L W lam`，`lam : ℕ → ℝ` 只受 `WO` 约束）；一个可数乘积概率空间 `seqP`；单时刻流 `seqHflow = √u • seqXmat`，停时处用网格游走 `pathH`（§7）；所有 `≺` 的尺度是 `N = sz.size n = (W n L n)^d`（`StochDomAt … size`；论文 `(stoch_domination)` 本身用 `N^τ`）；能量取序列；BA 用同一词汇（`withLam 0`、`H_0 = λ₀Ψ`、`m, M` 为数据），确定性的 `m(z,λ)`、`M^{(B)}`、`e_λ` 另成一层（BA gate）。
+- **移植源提交固定为 RBM2D `c9a24cf`**（T2002 O1）：它含全部文件（包括后来被 RBM2D 死代码清理删掉、但本项目因 §10 T2001b 需要的 `Path/NetLift.lean`、`Main/RegionUnif.lean`）；RBM2D 之后的提交（`99d6fe0` 死代码、`81fca44` 注释清理）不改保留文件的陈述。票面一律写 `c9a24cf`。
+- **签字接受的 paper-delta 候选**（§4 微小改动，合并成 Lean 时编号）：T2002a（命名：`lam` = 论文 `\ilambda`，印作 `g`）、T2002b（距离：随机层与终点陈述用论文的 `L^∞`（`zdistInf`），传播子层用已合并的 `l¹`（`zdistD`），二者差常数 `d`）、T2002c、T2002e（已含于 §10 T2001a）、T2002d（坐标约定，平移等价）、T2002f（旧 `Loop/GLoop.lean` 文档串说 `G_t` 而 `Gsig` 用时刻 1 的矩阵：文档串勘误，随 MD-3 改）、T2002g（流的 Lean 写法，§7）、T2002h（`Ring.inverse`）、T2002i（`W^τ` 与 `N^τ` 等价）。
+- **拆单**：MD-1…MD-5（报告 (b.6)、portmap E.2）。第一张 MD-1 = T2006（`prover-max`，立即）；MD-2、MD-3 等 MD-1 合并；MD-4 等 MD-1、MD-2；MD-5 等 MD-4。
+- **ST 子 gate**（portmap E）：ST-1 Step 1（86 文件 / 29.9k 行保留）、ST-2 Step 2（46 / 31.8k，含 d ≥ 3 新论证，与 LW 设计同步）、ST-3 Steps 3–4（40 / 39.0k）、ST-4 Step 5（17 / 15.1k）、ST-5 Step 6（7 / 6.8k）、ST-6 装配（9 / 3.2k）；UN 58 / 51.6k。设计单 ST-D1、ST-D2、ST-D3 在 MD-1 合并后写；ST-D4…D6 等 ST-D2 的钉文。各子 gate 按 25/40/50 分别计数。
+
+## §13 T2003（PT-D1 传播子）审核 PASS 要求总调度签字：签字与落实（总调度，2026-10-02 23:17 UTC；依据 `docs/reports/T2003-audit.md` §7，d6e6054）
+
+- **签字**：审核对五个钉文、骨架与实例全部 PASS，要签字的只是路线（见下），不是陈述缺陷。报告可以合并（H6，只并报告与 state；探针留在分支）。不算返工。
+- **钉文接受**（`Prop5Decay`、`Prop5Short`、`Prop6Diff1`、`Prop7Diff2`、`Prop8ZeroMode`、`Prop5to8`）：常数在 `L, g, t, m, σ, a` 之前，只依赖 `(d, Λ)`（5s 另加 `κ`，6/7 另加 `c`），`g ∈ (0, Λ]`，`Λ = 𝔡^{-1}`。
+- **签字接受的 paper-delta 候选**：T2003a（必要条件：常数依赖 `Λ = 𝔡^{-1}`，`Prop5_needs_Lambda` 已编译证明必要；论文写「depending on d」）、T2003b（必要条件：`|r| ≲ |a|` 读作 `|r| ≤ c|a|`、`0 < c < 1`；`c = 1` 时为假，`Prop6Old_false`）、T2003c（更强：6–8 无损失）、T2003d（等价：体内条件写作 `κ ≤ Im m`；5s 用显式谱隙，不引 [bourgade2019random]）、T2003e（更强：性质 5 对一切单位 `m`）、T2003f（`|a|` 取周期 `l¹` 距离，旧 D2）。旧 D11 保留，D12、D13 作废（D12 照字面为假）。
+- **旧接口**：`ThetaDiffOne`、`ThetaDiffTwo`、`PropTH` 照字面为假（无合并定理以之为假设）；`ThetaDecay`、`ThetaDecayShort`、`ThetaZeroMode` 可由新钉文导出（桥接定理），已合并的消费者不必改。
+- **路线**：设计选了路线 H（把论文性质 5 的随机游走论证做严：Poisson 化 + 张量化，一维热核界，Laplace–Gauss 积分；6–8 由热核差分得到，不走论文所引的 Fourier 分部求和），估 8 张票约 7.4k 行；备选 F（把 RBM2D 的 Fourier/围道路线推到 d 维）约 15k 行、14–17 张。H 在论文和 RBM2D 里都没有，按 TEAM §4 属路线级，**交 Jun**（建议 H，先做 B1+B2 试点，试点失败改 F）。路线定前：与路线无关的 PT-A（T2007：钉文入库、桥接、旧接口反例、性质 5s 的谱隙证明）可开工；B1…G 不写。
+- **T2004 核对义务**（§9 O1）照旧：T2004 合并后核对其局部 PT 假设与上述钉文一致。
+
+## §14 传播子路线：H，先请 Fable 5.1 复核（Jun，2026-10-02 23:24 UTC：「我选H 但use a fable 5.1 High subagent to check it first, if it agrees, then H, otherwise let me know again」——回答 §13 的路线问题）
+
+- **决定**：选路线 H，条件是一个 Fable 5.1（high）子代理独立复核后同意；复核不同意，就把结论带回给 Jun 再定。
+- **落实**：总调度起 1 个 Fable 子代理，只读材料（T2003 prove/audit 报告、论文 §2.5 与 App. A.1、已合并的 `Propagator/{Basic,Props4}`、`Defs/{Params,Block}`），交回完整可核查的论证或精确缺口；结论记入本节；同意则写 PT-B1（试点）与后续票，不同意则问 Jun。
+- **Fable 复核结论（2026-10-02 23:44 UTC）：AGREE**（全文 `docs/claude-team/fable/2026-10-02-routeH.md`）。路线 H 每一步都是初等的（不需要局部 CLT、Bessel 函数、围道积分，也不引任何外部结果），给出的正是 T2003 钉的形状，常数对 `(d, Λ, κ, c)` 一致，无对数或 `L^τ` 损失。按 Jun 的条件，**定为路线 H**。
+- **票面必须带上的更正**（Fable §2、§5）：
+  - F2（B1/B2）：一维热核用级数定义 `h_τ(n) = e^{-2τ} Σ_j τ^j N_j(n)/j!`，母函数 `Σ_n h_τ(n) z^n = exp(τ(z+1/z) − 2τ)`，倾斜反演 `e^{νn} h_τ(n) = (2π)^{-1} ∫_{-π}^{π} e^{-ikn} exp(2τ(cosh(ν+ik)−1)) dk`；不用围道平移，不用 `poissonMeasure`；界 (a) `0 ≤ h ≤ min(1, (√π/4)τ^{-1/2}) exp(−c₀ min(n²/τ, |n|))`，`c₀ = 0.18`（用 `Real.cosh_le_exp_half_sq` 时 0.14），(b)、(c) 一阶、二阶差分带 `min(1, τ^{-1})`、`min(1, τ^{-3/2})`、指数 `c₀/2`。
+  - F4（D）：乘积核的指数是 `c/d`；朴素不等式 `Σ_j min(a_j²/τ, |a_j|) ≥ min(|a|²/τ, |a|)` 为假（`a = (1,50,0)`、`τ = 10`），正确的是带 `1/d` 的版本。
+  - F5（E/F）：按 `ε = e/γ` 分区（`ε ≥ 1`、`L^{-2} ≤ ε < 1`、`ε < L^{-2}`）；`e < γ ⇒ t > ½`；`L^{-d}` 项也要用 `e^{-ετ}`；零模项的指数因子由 `εL² ≥ (2/d)|a|/ℓ_t` 得到；`min(1/e, 1/γ) ≤ C_{d,Λ}/(λ²+e)` 是 `Λ` 进入常数的唯一地方。
+  - F7（G）：二阶差分按 `n²` 项分解（混合方向与同方向都要）。
+  - 记号：拉普拉斯变量与 `s₀ = S_00` 分开命名。
+- **落实**：写 PT-B1（试点：一维热核的定义、母函数、倾斜反演）与 PT-E（与 Θ 无关的 Laplace–Gauss 积分引理，和试点并行）；PT-B2 等 B1 合并（试点的另一半：ℤ 上的界）。B1+B2 不通就回到 F 并告诉 Jun。
+
+## §15 T2004（KL-D1 K-loop 层设计）合并后的签字与落实（总调度按 §4 签字，2026-10-02 23:47 UTC；依据 T2004 审核 PASS，0b91f7a）
+
+- **定义选择**：`𝒦` 取树表示定义（选项 B，同 RBM2D P6），ODE `(pro_dyncalK)` 与唯一性为定理（KL3、KL4）。旧的 `KTreeRep`（借来的假设）由定义取代，`TwoLoopBounded`、`KLoopBound`（欠下的假设）由已编译的退役引理取代，KL14 删除。
+- **§9 O1 核对通过**：T2004 的局部传播子形状 `KLDecay`、`KLShort`、`KLDiffOne/Two`、`KLZero` 全带 `0 < g ≤ gmax`，常数依赖 `(d, gmax)`（短程另加 `κ`），在 `g = gmax` 处试过。与 T2003 的钉文相容：T2003 的 `Prop5to8` 更强（无损失），桥接 `KLPT_of_Prop5to8` 放在 KL14（届时 PT 证明已合并）；`|a|` 两边都用 `zdistD`（`l¹`），与 §12 T2002b 的约定一致（传播子与 K-loop 层用 `l¹`，随机层与终点用 `L^∞`）。
+- **签字接受的 paper-delta 候选**：T2004a（证明需要的条件：`ML:Kbound` 在 `n = 3` 时还要用 `(prop:ThfadC_short)`，论文 A:673 只引了 `(prop:ThfadC)`；陈述不变）、T2004b（必要条件：`g ≤ gmax`，同 T2003a）、T2004c（必要范围：`|r| ≤ c|a|`、`c < 1`，同 T2003b）、T2004d（笔误：`Def_Ktza` 与 `Θ_t` 定义里的 `t ∈ [0,1]` 应为 `[0,1)`）、T2004e（更强：`≺` 读作对每个 `τ > 0` 的 `L^τ` 损失，`KLBoundAt_prec` 换到 `N^τ`）。
+- **拆单**：KL1…KL14（报告 b 的 ROW 行；KL4+5、KL8+9 合票，KL7 三张，KL10 两张，KL13 可选）。KL1 = T2008（`prover`，立即）；KL10（`(eq:ind-step-bound)`，d ≥ 3 新估计）是高风险行。审核观察 O2（KL10 的叶子只取 `Θ`，即 RBM2D 的 `innerId` 路线）由 KL10/KL11 的设计确认。
+- 预计票数约 15（< 25），KL gate 不触发预判（§9 O2）。
+

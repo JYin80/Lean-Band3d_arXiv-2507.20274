@@ -18,3 +18,14 @@
 - 2026-10-02 19:22 UTC T2001 合并（a62eeef，报告返工一次）→ rework-ledger、ROUTES、DECISIONS §10（签 a,e,f,g,h；b 取论文原形；c 交 Jun；d,l 交 BA-D1）；写 T2005（F0-1）与检查文件，列入 Pre-release；CONTROL 去掉 T2001。
 - 2026-10-02 19:24 UTC Jun 答 T2001c「A」→ DECISIONS §11（BA universality 按密度归一化）。
 - 2026-10-02 19:35 UTC 中枢未在 RUN 模式下自动编译 Pre-release → 发 H4（编译 T2005 检查文件 + 以后每轮自动编译）、H5（例行提交）。
+- 2026-10-02 19:49 UTC H4：T2005 检查文件 exit 0；H5：提交 4908ddf。T2005 放行；H4/H5 归档。
+- 2026-10-02 20:05 UTC hb：中枢 STALE（HUB.alive 19:41:44），第一次；T2005 未开工。
+- 2026-10-02 20:08 UTC Jun：中枢用量触顶，1.5 小时后再看 → 心跳改为 21:39 UTC 一次（撤掉 20:19 的），之后恢复 14 分钟。
+- 2026-10-02 21:39 UTC 21:39 复查：中枢仍停（HUB.alive 19:41:44）；告诉 Jun。
+- 2026-10-02 21:55 UTC 中枢 21:52 恢复；T2002–T2004 1b 按规则 (H) 重跑；T2005 开工。
+- 2026-10-02 22:11 UTC T2005 合并（709c5c7，一次 PASS，第一张 Lean 合并）→ rework-ledger、ROUTES、QUEUE、CONTROL。空出的并行位不补（等 T2002–T2004 设计，不为凑单拆）。
+- 2026-10-02 22:57 UTC T2003 1b 交付（d6e6054），进入审核。
+- 2026-10-02 23:17 UTC T2002 合并（06f2064）→ DECISIONS §12；T2003 审核 PASS 待签字 → §13 签钉文、H6 合并报告、路线 H 交 Jun；写 T2006（MD-1）、T2007（PT-A）与检查文件，列 Pre-release。
+- 2026-10-02 23:24 UTC Jun 答路线：H，但先用 Fable 5.1 high 子代理复核 → DECISIONS §14；起 Fable 子代理。
+- 2026-10-02 23:42 UTC T2003 合并（7ba7ba5，H6）、T2004 合并（0b91f7a，一次 PASS）；T2006、T2007 检查文件 exit 0 → 放行。Fable 复核路线 H：AGREE（附更正）。
+- 2026-10-02 23:47 UTC DECISIONS §14 落实（Fable AGREE → 路线 H，报告存 docs/claude-team/fable/）、§15（T2004 签字）；写 T2008（KL1）、T2009（PT-B1 试点）与检查文件，列 Pre-release；H7 例行提交。
