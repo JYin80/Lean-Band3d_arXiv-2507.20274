@@ -10,7 +10,8 @@ paper/*.pdf
 paper/**/*.tex
 paper/tex/
 
-.claude/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # 蓝图的生成产物不进版本库，但 docs/ 下的手写 md 要留
 blueprint/print/
@@ -19,3 +20,13 @@ blueprint/cowork/__pycache__/
 blueprint/cowork/graphs.py
 docs/*
 !docs/*.md
+# team mode (2026-10-02): tickets, control, reports, supervisor verdicts, team charter and archive are versioned
+!docs/claude-team/
+!docs/queue/
+!docs/tickets/
+!docs/reports/
+!docs/supervisor/
+!docs/archive/
+docs/queue/HUB.alive
+docs/claude-team/HEARTBEAT-STATE.md
+docs/tickets/ref/

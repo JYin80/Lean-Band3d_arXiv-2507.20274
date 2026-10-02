@@ -1,218 +1,162 @@
-# CLAUDE.md — RBM3D
+# RBM3D — rules for the Claude Code execution side (team mode, 2026-10-02)
 
-用 Lean 4 + Mathlib 形式化 *Delocalization of non-mean-field random matrices in
-dimensions $d\ge 3$*（arXiv:2507.20274，Inventiones 投稿版）的确定性内核。
+Project: a Lean 4 + Mathlib formalization of *Delocalization of non-mean-field random matrices in dimensions d ≥ 3* (Dubova, F. Yang, H.-T. Yau, J. Yin; arXiv:2507.20274, Inventiones submission). Sister projects: `../RBM1D` (d = 1, arXiv:2501.01718, complete) and `../RBM2D` (d = 2, arXiv:2503.07606, complete: all five main theorems proved, one authorized external input). Their team system is copied here; their mathematics is not (see §5).
 
-姊妹项目：`../RBM1D`（d=1，arXiv:2501.01718，**已完整编译**，2082 条声明，公理干净）
-和 `../RBM2D`（d=2，arXiv:2503.07606）。RBM1D 的代码是本项目最可靠的参照——
-`Defs/Domination.lean` 和 `Test/Axioms.lean` 就是从那边搬过来的。
+Who reads this file: the **execution hub** (one long-running Claude Code session on Jun's Mac) and the **subagents it starts** (`preflight`, `preflight-opus`, `prover`, `prover-hard`, `prover-opus`, `repairer`, `auditor`, defined in `.claude/agents/`). The **dispatcher** (a Cowork session) and the **supervisor** (a Cowork scheduled task) follow `docs/claude-team/TEAM.md`.
+- Startup: `docs/claude-team/STARTUP.md`.
+- Effective decisions: `docs/DECISIONS.md`.
+- Mathematical roadmap: `docs/PLAN.md`.
+- The previous work mode (one coordinator plus `docs/TASKS.md`/`docs/QUEUE.md`, until 2026-09-22) is archived in `docs/archive/2026-10-02-old-workmode/`. Search it only when you need something specific.
 
-## 开工流程（Claude Code 读这一段）
+Write code, reports and commit messages in English. Work silently: no narration, one final result per task.
 
-**工单在 `docs/QUEUE.md`。** 从上往下找第一条 `OPEN`，改成 `CLAIMED` 并单独提交这一行，
-做完改 `DONE`，在 `docs/STATUS.md` 记一笔（新增了哪些声明、卡在哪、下一步）。
+## 1. File ownership (one writer per file)
 
-队列由 Cowork 侧约每 10 分钟刷新一次；**已被认领（`CLAIMED`）的工单不会被改写**，
-所以认领动作要尽早提交。卡住时在 `STATUS.md` 里写清楚「卡在 X，试过 Y 和 Z，
-失败原因是 W」——那是两边唯一的交接面。
+| Path | Writer |
+|---|---|
+| `docs/STATUS.md`, `docs/PLAN.md`, `docs/DECISIONS.md`, `docs/HANDOFF.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/paper-deltas.md` (numbering), `docs/queue/CONTROL.md`, `docs/tickets/*`, `docs/claude-team/*` | dispatcher only |
+| `docs/queue/T####.state`, `docs/queue/HUB.alive`, merges into `main`, root imports in `RBM3D.lean` | execution hub only |
+| the ticket's "sole writable files" in its worktree, `docs/reports/T####-prove.md` | that ticket's `preflight` (section (a) only), then `prover` / `prover-hard` / `prover-opus` / `repairer` |
+| `docs/reports/T####-audit.md` | that ticket's `auditor` |
+| `docs/supervisor/*` (except `requests/REQ-*.md`, which the dispatcher writes) | supervisor only |
+| `blueprint/src/content.tex` | only a ticket that names it as a sole writable file (a "blueprint sync" ticket); never two such tickets at once |
 
-## 唯一真相来源
+The dispatcher's check files `docs/tickets/checks/T####-check.lean` (§4 step 0) are the only Lean the dispatcher writes: pinned statement text, `#check` lines and `example`s that elaborate them; no proofs, no `sorry`; never imported, built into the library or merged (Jun, 2026-09-29; DECISIONS §68).
 
-- **论文**：`paper/2507.20274-inventiones-submission.pdf`（97 页），源码在 `paper/tex/`，
-  节与文件的对照表见 `paper/README.md`。
-  **只依据这篇论文，不引用任何其他文献**——论文引别人的地方，在 Lean 里当作 `axiom`。
-- **路线图**：`docs/PLAN.md`
-- **当前进度**：`docs/STATUS.md` —— **每次会话开始先读它，结束前更新它**
-- **工单队列**：`docs/TASKS.md` —— **开工前先在表里认领并单独提交这一行**
-- **与论文的偏差**：`docs/paper-deltas.md` —— 凡 Lean 陈述 ≠ 论文字面陈述，必须记一条
+Never edit: another ticket's files or reports, `docs/archive/`, `paper/`, and **anything under `../RBM1D` or `../RBM2D`** (read-only for every RBM3D role: never write, move, build, or run a git write command there; see §5.2). For `docs/paper-deltas.md`, a ticket only proposes new entries in its report, with a temporary tag `T####a`; the dispatcher appends them and assigns the numbers.
 
-## 这个项目与 d=1、d=2 的两点根本区别
+## 2. Execution hub: one loop iteration
 
-**一、`d` 是参数。** RBM1D 固定 d=1，RBM2D 固定 d=2（索引类型 `ZMod L × ZMod L`）。
-这里格点是 `RBM.Zd d L := Fin d → ZMod L`，`3 ≤ d` 只在真正用到的地方引入。
-论文里真正用到 `d ≥ 3` 的只有两处：临界格点求和 `(eq:latticesum_d3)`（d=3 多一个 $\log L$），
-以及 $\mathcal T_t$ 的 $(r+1)^{-(d-2)/2}$ 衰减。别处一律保持 `d` 一般。
+0. Overwrite `docs/queue/HUB.alive` with the current UTC time from `date -u`.
+1. Read `docs/queue/CONTROL.md`.
+   - `mode: STOP`: start nothing, and stop running workflows before their next stage.
+   - `mode: HOLD`: start no new stage 1; audits of finished provers may continue.
+   - `mode: AUDIT_FIRST`: start audit stages only.
+   - `mode: RUN`: normal operation.
+   - Execute every **Approved instruction** that has no `done:` line, then append `done: <date -u time> — <result>` under it. The `done:` lines are the only thing the hub writes in CONTROL.md.
+2. For each ticket in CONTROL's **Released tickets** list that has no `docs/queue/T####.state`, and whose start condition holds (mode permitting):
+   - Write the state file with `state: claimed`.
+   - Create branch `t/T####` and worktree `../RBM3D-wt/T####` from `main`. Give it the build cache without sharing writable files:
 
-**二、传播子的衰减估计是公理，不是定理。** 这是本项目形状的决定性事实，务必先读懂：
+     ```
+     mkdir ../RBM3D-wt/T####/.lake
+     ln -s "$PWD/.lake/packages" ../RBM3D-wt/T####/.lake/packages
+     cp -c -R .lake/build ../RBM3D-wt/T####/.lake/build
+     ```
 
-d=2 那篇论文在它的 §8 里从零证明了传播子估计，所以 RBM2D 里那些是定理。
-**这篇论文没有。** 附录 A.1 把 `lem_propTH` 的性质 5–8 归给了前人：
+     `cp -c` makes an APFS copy-on-write clone. Never hard-link with `cp -al`, and never share a worktree between tickets.
+   - Tickets, reports, state files and CONTROL live only in the main worktree (`~/Lean_proof/RBM3D`). Give every subagent absolute paths to the ticket file, the main worktree's `docs/reports/`, and its own worktree.
+   - Start **one workflow per ticket**, in the gated shape of §4. Pass the ticket and paths; add nothing, remove nothing.
+3. Keep `T####.state` current as each stage finishes: `claimed | proving | preflight-fail | built | auditing | audit-pass | audit-fail | blocked | merged | held`, with one reason line, an `updated:` time from `date -u`, and the report paths. If the ticket does not specify something, set `blocked` with the question. Do not decide it yourself.
+4. On `audit-pass`, merge in the same iteration (§3). Otherwise never commit to `main` except under an Approved instruction.
+5. If nothing changed since the last iteration, only update `HUB.alive` and print nothing.
 
-| 陈述 | 论文标签 | 出处 |
-|---|---|---|
-| 多项式 + 指数衰减 | `(prop:ThfadC)` | `[DYYY25]` Lemma 2.14，"we omit the details" |
-| σ₁=σ₂ 的强衰减 | `(prop:ThfadC_short)` | 本文有证，但用了 `[bourgade2019random]` Lemma 4.2 |
-| 一阶差分 | `(prop:BD1)` | "not stated explicitly in `[yang2024Del]` ... we omit the details" |
-| 二阶差分 | `(prop:BD2)` | `[yang2024Del]` (E.19) |
-| 去零模传播子 | `(prop:ThfadC0)` | `[yang2024Del]` Lemma 3.1 |
+## 3. Standing hub rules
 
-附录 B 同理：三条 expansion 引理引 `[yang2024Del]` B.9–B.11。
+These are in force from the start. The dispatcher may add more in CONTROL.
 
-按「只依据这篇论文」的规则，这些一律是 `axiom`，全部集中在
-`RBM3D/Propagator/Interface.lean`（以及将来的 `Graph/Expansions.lean`），
-并且**必须**登记在 `RBM3D/Test/Axioms.lean` 的 `interfaceAxioms` 里。
+- **(A) Auto-merge on audit PASS.** When a released ticket reaches `audit-pass`:
+  1. Line 1 of the audit report must be `Auditor model: claude-opus-5-5`. Otherwise re-audit with the pinned auditor first.
+  2. `git diff main...t/T####` must touch only the ticket's sole writable files. Otherwise set `blocked` with the file list.
+  3. Bring in exactly those files.
+  4. For each new module, add `import RBM3D.<Module>` after the **last `import` line** of `RBM3D.lean`. Never append at the end of the file: `#assert_rbm_axioms` must stay last.
+  5. Run `lake build` (the whole library, which runs `#assert_rbm_axioms`). On any error, set `blocked` and do not commit.
+  6. Commit exactly the ticket's files, `RBM3D.lean` if it changed, the state file, and the prove and audit reports, with message `T####: merge <title>`.
+  7. `git push origin main`: main only, never force. If the push is rejected, stop and report; do not retry or rebase.
+  8. Set the state to `merged <hash>` and append one `done:` line under CONTROL's merge log.
+  - Report-only tickets skip steps 3–5 but are still audited.
+- **(B) One automatic repair per RETURN.** If an audit RETURNs with a concrete repair list, start one `repairer` stage (claude-opus-5-5) in the same workflow, then a fresh `auditor`. Stop and set `audit-fail` for the dispatcher in any of these cases:
+  - a second RETURN on the same ticket;
+  - any BLOCKED;
+  - an audit that asks for dispatcher sign-off.
+  - **Escalation to Opus (DECISIONS §94, Jun).** For a ticket whose stage 1b ran as `prover-max` (Sonnet, effort max): if stage 1b ends without proving every target, or the ticket reaches its second RETURN, do not stop at `audit-fail`. Rerun stage 1b once as `prover-opus` with the effort overridden to `xhigh` (Opus 5.5), on the same branch, passing the ticket, its amends and the existing reports; then a fresh `auditor`, with rule (B) applying again. Write a `done:` line when you escalate. A preflight BLOCKED is not a model failure and still goes to the dispatcher. If the Opus round also fails, set `audit-fail` for the dispatcher. A stall (no progress) is escalated by the dispatcher through CONTROL.
+- **(C) Timestamps.** Every time written anywhere (state, CONTROL, reports) comes from `date -u` at the moment of writing.
+- **(D) Report headers.** Line 1 of a prove report is `Prover model: <id>`; line 1 of an audit report is `Auditor model: <id>`.
+- **(E) Private helpers.** A helper lemma that the ticket does not pin must be `private` or prefixed with the file stem. Pinned names stay exactly as pinned.
+- **(F) Nothing undecided starts.** A ticket starts only if CONTROL lists it under Released and its start condition holds. Held or prepared tickets never start.
+- **(G) Parallelism.** Run at most the number of workflows CONTROL states (default 4). Critical-path tickets go first.
+- **(H) API errors.** If a stage fails on an API error (for example 529 Overloaded), rerun that stage. Never let a later stage run on the output of a failed stage.
 
-**这不是缺陷，是产出。** 那张 axiom 清单是「这篇论文向前人借了什么」的精确、
-机器可核查的记录，审稿人和 `#print axioms` 都看得见。审计命令还会报出每条
-axiom 被多少条声明依赖——那个数字是衡量借用程度的诚实指标，把某条 axiom 降级成
-定理，就是让它的计数归零。
+## 4. The gated workflow (one per ticket)
 
-## 环境
+Rewritten 2026-09-29 by Jun's instructions (DECISIONS §63, §68): hard tickets on Sonnet; preflight is mathematics only; audits are statement-centred; reports are script output first; tickets are checked by compiling before release.
 
-Lean `4.34.0` / Mathlib `v4.34.0`，与两个姊妹项目完全一致。
+0. **Compile check before release (by the dispatcher).** While writing a ticket, the dispatcher writes `docs/tickets/checks/T####-check.lean`: the pinned statement text copied from its source, `#check` of every upstream declaration the ticket names, and `#check` of the downstream pin the targets must fit. The dispatcher lists it under CONTROL's **Pre-release checks**; the hub compiles each listed file with `lake env lean docs/tickets/checks/T####-check.lean` in the main worktree and writes the exit code and the error lines (script output) as a `done:` line there (the dispatcher's machine has no Lean toolchain). The dispatcher reads the result, fixes the ticket or the check, and moves the ticket to **Released** only after a clean compile. A ticket under Pre-release checks never starts.
+1. **Stage 1a, agent `preflight` (Sonnet), for every role.** Mathematics only. It writes section `(a) Math preflight` of `docs/reports/T####-prove.md` with exactly two parts:
+   - (i) **the exponent table**: every exponent, threshold and constant the targets depend on, its value, the constraint it must satisfy, and the slack;
+   - (ii) **one concrete nondegenerate instance** (numbers) at which every hypothesis of every target holds at once, checked by a short script whose command and output are pasted.
+   - Targets are restated in mathematics only as far as (i)–(ii) need. No Step 0 pastes, no name or Mathlib checks, no size estimates, no process narrative. Section (a) is at most 120 lines. It writes **no Lean anywhere**.
+   - Structured result: section written (yes/no) and verdict PASS/FAIL/BLOCKED. Stage 1b starts only on PASS. Rerun once on API errors; otherwise set `preflight-fail`.
+2. **Stage 1b**, the ticket's role: `prover` (Sonnet, effort high), `prover-hard` (Sonnet, effort xhigh), `prover-max` (the `prover-hard` agent with the per-stage effort override `max`), or `repairer`. (`prover-opus`/`preflight-opus` are not used for new first rounds: DECISIONS §63.)
+   - It reads (a) and does not edit it; corrections go in `(a′) Preflight corrections` with a `date -u` time.
+   - It writes Lean only in the sole writable files, builds each module with `lake build RBM3D.<Module>`, prints axioms, and commits on `t/T####`.
+   - **Every endpoint theorem (each target theorem of the ticket) gets a compiled nonempty instance** in the same file: an `example` (or a named check) that applies the theorem at concrete nondegenerate data with every hypothesis discharged. No `N = 0`, empty index set, collapsed window or `False` premise. A hypothesis that is another gate's pin not yet proved (for example `Step2LocalPT`, `GbEXPHypV3`, `KboundConcl`) may stay as a hypothesis of the example; every deterministic hypothesis is discharged at the concrete data.
+3. **Stage 2 `auditor`** (a fresh agent that wrote nothing; its own detached worktree): statement-centred, as in §6.
+4. Both stage-1 prompts must contain this sentence verbatim:
 
-```bash
-cd ~/Lean_proof/RBM3D
-lake exe cache get      # 拉 Mathlib 预编译 olean
-lake build
-```
+   > "Every fact you state in the report must come from `date -u`, the tool log, or the files; a false statement fails the audit by itself. Put evidence in the report as script output (the command and its verbatim output), not as prose, and keep the report within CLAUDE.md §6's length limits. Do not narrate edit or build histories."
 
-**磁盘**：已不是约束。卷上还有约 123 G（74% 用），一份 `.lake` 约 8.1 G（其中 mathlib 的
-build 6.6 G），三个项目各一份放得下。三者 toolchain 与 mathlib rev 完全一致
-（`5ed2965256430c3649e86755f9576b54eca72435`），所以**共享在原理上安全**，但既然空间够，
-建议各用各的：互不干扰，`lake build` / `./check.sh` / CI 行为一致，也不会出现某个项目
-`lake update` 静默改掉共享树的情况。真要省空间，macOS 上用 APFS 写时复制克隆
-（`cp -c -R RBM1D/.lake/packages RBM3D/.lake/packages`，在 Terminal 里跑）比软链安全。
-`lake exe cache get` 的下载缓存本来就是跨项目共用的，所以重复的只是解包后的 build 树。
+## 5. Mathematical and Lean gates (all roles)
 
-Mathlib 源码在 `../RBM1D/.lake/packages/mathlib/Mathlib/` —— 找 API 就 grep 这里，
-`.lake` 建好之前也能用。
+1. **Sole source:** `paper/2507.20274-inventiones-submission.pdf` (TeX in `paper/tex/`; section-to-file map in `paper/README.md`). Cite equation and label numbers.
+   - Do not import proofs from other papers. Where the paper cites `[YY_25]` or other work, Lean takes it as an explicit hypothesis or a separate ticket, as `docs/DECISIONS.md` decides.
+   - Any external input must be listed in DECISIONS as authorized.
+2. **d ≥ 3 is not d = 1 or d = 2.** The lattice is `Z_L^d` with `d` a parameter (`3 ≤ d` only where the mathematics needs it); the propagator `Θ` has no closed form, and its decay estimates in this paper (`lem_propTH`) are partly cited from other work — DECISIONS decides which are authorized inputs and which are proved. **Porting from `../RBM2D` and `../RBM1D` is allowed and encouraged**: the three papers are parallel, and you may copy their Lean statements, proofs and helper lemmas into this ticket's sole writable files and adapt them there. Rules:
+   - `../RBM1D` and `../RBM2D` are read-only: read with `cat`/`grep`/`git -C ../RBM2D --no-optional-locks …` only. Never write, move, `lake build`, or run any git write command in them, and never import their modules; copy the text.
+   - Cite every port in the report: source project, file:line and commit (`git -C ../RBM2D --no-optional-locks log -1 --format=%h`).
+   - Re-check every ported statement against this paper. A d = 1 or d = 2 result is not evidence for d ≥ 3: replace the dimension-specific facts (index type `ZMod L`/`Z2 L` vs `Zd d L`, closed forms of `Θ`, lattice sums and their logarithms in d = 2, the scalings of `ℓ`, `M` and block size `W^d`, `N = (W L)^d`), and redo every exponent count.
+   - Names: RBM1D and RBM2D also use namespace `RBM`. Before adding a ported public name, check it does not already exist in RBM3D (`grep -rn`); unpinned helpers are `private` or prefixed with the file stem (§3 (E)).
+3. **Proof hygiene.**
+   - No `sorry`, `admit`, declared `axiom`, or `native_decide`.
+   - `#assert_rbm_axioms` at the end of `RBM3D.lean` hard-checks the whole `RBM` namespace: only `propext`, `Classical.choice`, `Quot.sound`.
+   - Never change a frozen signature; add a primed successor.
+4. **Builds.** Every new module must pass `lake build RBM3D.<Module>`; `lake env lean` alone is not acceptance. Merges need the full `lake build`.
+5. **Hypotheses and parameters.**
+   - A new hypothesis needs a nondegenerate witness that satisfies all hypotheses at once. Avoid `N = 0`, empty index sets, collapsed windows, and witnesses that work only because a quantity is astronomically large.
+   - An external hypothesis also needs a concrete limit check (TEAM §8 lesson 14).
+   - Every endpoint theorem carries a compiled nonempty instance (§4 step 2).
+   - Keep the paper's parameter order (fixed parameters before `∀ᶠ N`), sharp losses, and all dimensions, energies, windows and charges.
+6. **Special cases.** A conditional adapter or special-case result is never the general statement. Say so in the report.
+7. **Docstrings are not evidence.** Judge a declaration by the hypotheses in its signature.
+8. **Mathlib names.** Do not invent them. Check with `grep -rn` in `.lake/packages/mathlib/Mathlib/` or with `#check`. Record verified names, and names verified absent, in the report; the dispatcher copies them to `docs/mathlib-api.md`.
+9. **Paper deltas.** Every Lean/paper statement difference is proposed in the report as a paper-delta candidate `T####a`.
+10. **Old-mode documents are unverified** (Jun, 2026-09-28 21:23 UTC; DECISIONS §11). Some of the plans and claims written before team mode are wrong Treat as leads only, never as evidence: `docs/PLAN.md`, `docs/STATUS.md`, `docs/stochastic-audit.md`, `docs/mathlib-api.md`, everything under `docs/archive/`, all existing paper-deltas entries (written before team mode), the blueprint, and docstrings/comments in merged Lean files. Any claim taken from them into a report (a lemma "is proved", a bound "holds", a counterexample, a route "works", a constant) must be re-verified against the paper TeX/PDF and the Lean signatures, with the evidence pasted. If it turns out wrong, report it as a finding and propose a correction (paper-delta or doc fix). Merged Lean statements themselves are checked by Lean; what they are *claimed* to mean is not.
 
-## 构建回路
+## 6. Reports (script output first, bounded length)
 
-```bash
-lake env lean RBM3D/Defs/Lattice.lean   # 单文件，秒级 —— 默认用这个
-./check.sh                               # 全量，结果写进 build.log
-./watch.sh                               # 另开终端，改动即自动重编
-```
+**`docs/reports/T####-prove.md`**, at most 300 lines:
+- (a) Math preflight (stage 1a): the exponent table and the concrete instance (§4 step 1).
+- (a′) Corrections, if any.
+- (b) Script output: the build command and the tail of its output; `#print axioms` of every target; each target's statement, extracted from the file by script; the compiled nonempty instance; the name-clash grep of new public names; for ports, RBM1D file:line and `git -C ../RBM1D --no-optional-locks diff --stat <commit> HEAD -- <files>`. Narrative at most 40 lines.
+- (c) Verified Mathlib names used, one line each.
+- (d) Open issues and paper-delta candidates (`T####a`, …).
 
-**绝不在没有实际跑过编译的情况下说「写好了」。** 每次回报前必须有一次 exit=0。
+**`docs/reports/T####-audit.md`**, at most 150 lines, mainly script output. Statement-centred; per target PASS / RETURN (exact defect and "Required for resubmission") / BLOCKED (exact missing input):
+- the Lean statement against the ticket's pin (a script diff) or the ticket's mathematics: hypotheses, quantifier order, losses, ranges, dimensions;
+- hidden hypotheses (structure fields), vacuity, circular dependencies;
+- the compiled nonempty instance of every endpoint theorem: RETURN if missing or degenerate;
+- `lake build RBM3D.<Module>` in the audit worktree and the printed axioms (the hub runs the full build at merge);
+- paper-delta coverage of every Lean/paper statement difference.
 
-## 硬性规则
+Process forensics (transcript timestamps, replaying the edits of section (a)) are not part of the audit. A report defect that changes no statement, instance, build, axiom or paper-delta coverage is recorded as an observation, not a RETURN.
 
-每个 agent 开工先读这一段。
+The final chat reply of any subagent is one line: ticket, verdict, report path.
 
-1. **不留 `sorry`。** 证不出来就停下说「卡在 X，试过 Y 和 Z，失败原因是 W」。
-   共享工作树里一个 `sorry` 会让所有人的 `build.log` 变红，还会触发公理审计。
-2. **做不了的东西写成 `structure` 字段或定理参数，不写 `axiom`。** 见下面「接口的形式」一节。
-3. **不许发明 Mathlib 引理名。** 先 grep `../RBM1D/.lake/packages/mathlib/Mathlib/`，
-   或新建临时 `RBM3D/Probe.lean` 加 `#check @foo` 看签名。`exact?` / `apply?` / `rw?` / `aesop` 鼓励用。
-   **核实过的名字和签名记进 `docs/mathlib-api.md`**，别让下一个人重查一遍。
-4. **造轮子之前先查仓库。** `grep -rn` 一下 `RBM3D/`，看这条引理是不是已经有人证过了。
-5. **公理审计写进构建。** `./check.sh` 会跑 `#assert_rbm_axioms`，违规即**编译失败**——
-   靠人记得跑 `#print axioms` 是靠不住的。**不用 `native_decide`。**
-6. **陈述逐字对应论文。** 任何偏离记进 `docs/paper-deltas.md`，而且要写明
-   **论文第几页、改哪一段、大约几行**——这样「论文最终要改多少」随时能算出来。
-7. **只按文件名 `git add`，绝不 `git add -A`。** `-A` 会把别人正在写的文件暂存进你的提交。
-8. **小步提交。** 一次一条引理；绿了就 commit。攒一大坨再一起编译，错了无法二分。
-9. **共享文件只做点插入，绝不整体重排。** 唯一的共享文件是根 import 列表 `RBM3D.lean`。
-   用 `sorted(set(lines))` 之类去重会把末尾的 `#assert_rbm_axioms` 搅进 import 块，整体构建挂掉。
-10. **随机层暂缓（作者 2026-09-20 的决定）：现在不开这一层，先做确定性核心。**
-    Jun 的原话：「不是现在就开，先做其他内容」。
-    **已落地的不动**（Q43a 的 Stein 一维两层、Q48 的高斯模型与重采样不变性、Q42a 的预解式界
-    都已编译入库，留着将来解冻时接上）；**Q43b、Q42b、Q44、Q45、Q46 一律不认领。**
-    优先级回到确定性核心：证书链（Q54 起）、`(eq_Ktree)` 的 `n = 4`（Q30/Q35）、
-    `lem:sum_decay` 的装配（Q34）、`ML:Kbound` 的格点和（Q32）、以及 Q31/Q33。
+## 7. Environment and style (from the project's first phase)
 
-    以下是解冻时要用的背景，**现在不据此开工**：
-    原来写的是「不碰随机层」，但 `docs/stochastic-audit.md` 的审计表明这篇论文的证明
-    **不真的需要过程**——全文没有 Doob、没有 Markov 性、没有域流、没有两时刻联合律，
-    而关键鞅引理 `lem:DIfREP` 的**陈述本来就是矩不等式**。
-    于是随机层可以用「一时刻边缘律 + 生成元恒等式 + 高斯分部积分」重建，见工单 Q42–Q46。
-    **仍然不要碰的**：Mathlib 里的 Itô 公式、SDE、矩阵布朗运动、DBM——它们不存在，
-    也不在这条路线上。另外 universality 与 §6 之后的层级暂时仍不在范围内。
-11. **常数不求最优。** 统一 `∃ C > 0, ∃ c > 0, ∀ ...`；`≺` 用 `DetDom` / `UnifDetDom` 封装。
-    **对外一律保持论文的 `≺`**，矩只活在证明内部——接口签名冻结，论文那边就只需要改证明，
-    不动任何陈述、不重新编号。
-12. **论文里的 `≲`、`≺`、`≍`、`∼` 都是量词，不是不等号。** 翻译时最容易丢的就是它们背后的
-    「存在常数」「对每个 `ε`」。`|r| ≲ |a|` 不是 `|r| ≤ |a|`，而是「存在常数 `c`，`|r| ≤ c|a|`」——
-    用在假设位置时要写成 `∀ c > 0`（对每个常数都成立才是忠实的前件）。**Q21 在性质 6、7 上就栽在这里。**
-13. **改正一条陈述时，留下一个机器可检的反例。** 光把陈述改对，下一个人不知道原来错在哪、
-    为什么不能那样写。`RBM3D/Test/InterfaceShape.lean` 已经有两条：`not_decayShort_at_one`
-    证明旧的性质 5' 在谱参数 `1` 处不成立；`not_zeroMode_without_removal` 证明性质 8 里把
-    `Θ̊` 换成 `Θ` 可证伪。**这些反例随全量构建跑**——比注释可靠，比复述准确。
-14. **heredoc 写完要验证。** `cat > f <<'EOF'` 有可能静默失败，而后续的 `sed` 却成功，把失败掩盖掉。
-    写完 `ls -l` 确认，并**立刻提交**，免得被 `git clean` 清掉。
-
-15. **凡是本项目没有证出来的数学前提，都必须是一个具名的 `Prop`，不许写成匿名的 `∀/∃` 从句。**
-    `PropTH` 五条、`KTreeRep` 是这样做的，所以审计能报出「有多少条定理靠着它」。
-    但 Q22a 的 `kTwoFormula_of_isKLoop` 带了一个先验界 `hbdd`（2-loop 在每个 `[0,T₀]` 上有界），
-    它直接写在签名里——**签名里看得见，可任何汇总都数不到它**。
-    于是「这个开发还欠什么」这个问题，只能靠逐条读签名来回答。
-    **做法**：给它起名（如 `TwoLoopBounded`），与 `KTreeRep` 同级。
-    这样 Q26 的自动发现能抓到、Q41 的证书能要求到、两本账才算完整。
-    **匿名前提不是「隐藏」，但它是「数不着」——对一份声称零公理的开发，这两者差别不大。**
-
-## 永不停工
-
-**队列见底 = 全员停工，这是这个项目里唯一不可接受的状态。**
-
-`docs/QUEUE.md` 里 OPEN 的工单永远要比 agent 多。若你开工时发现没有 OPEN 的，
-**不要停下来等**，按这个顺序自己挑活，并在队列表里补一行说明你在做什么：
-
-1. **储备工单**（队列末尾「储备」一节，已经写好但没编号的）；
-2. **维护**：把带假设的引理消掉假设、把 `docs/mathlib-api.md` 补全、把长证明拆短；
-3. **审计**：挑论文的一节逐字对一遍 Lean 陈述，把偏离记进 `paper-deltas.md`。
-
-## 接口的形式：`structure` 字段，不是 `axiom`
-
-**这一条推翻了本项目早期的做法，要按新的来。**
-
-论文引用而未证的结论（`lem_propTH` 性质 5–8 等），早期写成了 `axiom` 放在
-`Propagator/Interface.lean`。姊妹项目 RBM1D 的经验是**不要这样**：
-
-* `axiom` 会污染公理审计，而且没人知道哪天该把它拿掉；
-* 把它做成 **`structure` 字段或定理参数**，下游立刻能编译、能证、能并行推进；
-* 等到有人真把它证出来时，**原地把字段换成定理，签名一个字不改**，
-  依赖它的工单一张都不用返工。`axiom` 做不到这件事。
-
-本项目已经在两处自发走对了：`Graph/Model.lean` 的 `Case.Rel` 是显式假设，
-`Propagator/Basic.lean` 早期的 `hS` / `hone` 也是假设（后来被 Q3/Q4 消掉了，
-签名没变，下游零返工——这正是这条规则要买的东西）。**Q19 是把剩下 5 条 axiom 也改过去。**
-
-判据：**这条结论将来有没有可能被证出来？** 有，就写成字段/参数；
-只有「永远不打算证」的才考虑 axiom，而目前一条都不属于这类。
-
-## 命名与风格
-
-- namespace `RBM`（与两个姊妹项目同名，不会同时 import，不冲突）；图论层在 `RBM.Graph`
-- 格点 `RBM.Zd d L := Fin d → ZMod L`，`abbrev` 以便 `Pi` 实例自动可见
-- 距离是周期 ℓ¹ 距离 `RBM.zdistD`（论文明说范数选取无关紧要）
-- 变量约定：`d L : ℕ`、`hd : 3 ≤ d`、`hL : 3 ≤ L`、耦合参数 `g : ℝ`、时间 `t : ℝ`
-- 文件头 copyright 块照抄现有文件
-- 每落地一个声明，去 `blueprint/src/content.tex` 对应节点补 `\lean{}` + `\leanok`；
-  节点名与论文 label 一一对应（`lem_propTH`、`prop:ThfadC`、`lem:propT`、`def scalingBA`）
-
-## 分工：Claude Code 与 Cowork
-
-| | Claude Code（本机） | Cowork / chat（云端） |
-|---|---|---|
-| 证明的试错循环 | **主场**。`lake env lean 单文件` 秒级返回 | 云端拉不到 Mathlib 的 olean cache（出口策略挡掉 `reservoir.lean-lang.org` 和 GitHub releases），**编不了** |
-| 读论文 PDF / tex | `paper/` 下都有 | 同样都有 |
-| 路线规划、阶段划分、开工单 | — | **主场** |
-| 蓝图渲染 / 依赖图 | 需本机装 plasTeX + graphviz | 工具链现成 |
-| git / CI / GitHub Pages | 都行 | **push 不了**，见下 |
-
-**CI 是通的，而且快。** 仓库公开，`Lean Action CI` 每次约 2 分钟，
-运行页上的 job summary 公开可读（`lean_action_ci.yml` 第二步把完整 `lake build` 输出写进
-`$GITHUB_STEP_SUMMARY`）。所以只要 Jun push 了，Cowork 侧就能读到全部编译错误。
-
-**push 的正确做法：Cowork 只 commit，终端常驻一个 agent 负责 push 和编译。**
-Cowork 的沙箱里没有 credential helper、没有 keychain，直接 push 必然失败
-（实测：git 代理拒绝注入凭据）。但 `git add` / `git commit` 只动本地 `.git`，不需要凭据，
-所以照常做。在 Mac 终端里常驻一个 Claude Code agent 负责 `git push`（顺带跑 `lake build`），
-两边在**同一个工作树**上，它一 push 就把两边的 commit 一起推上去。
-这也正是两边分工的意义：**终端 agent 有编译器和凭据，Cowork 有长上下文、能读 PDF、能管队列和蓝图。**
-
-**Cowork 无法编译，也无法 push。** 这个仓库不在云端会话的授权仓库集里，git 代理
-会拒绝注入凭据（403）。所以 RBM2D 那套「写 → push → 读 CI 日志 → 改」的回路，
-在这个项目里**暂时不可用**。要打通，Jun 需要把
-`JYin80/Lean-Band3d_arXiv-2507.20274` 加进会话的 sources。在那之前：
-
-**Cowork 写出来的 Lean 一律按「草稿」对待，第一件事是拿到本机编译。** 这就是 T1。
-
-### 交接契约
-
-`docs/STATUS.md` 是两边**唯一**的共享状态。任何一边：开工前读它，收工前更新它。
-卡住时写清楚「卡在 X，试过 Y 和 Z，失败原因是 W」，另一边才接得上。
-分工按**文件**切分，不按难度切分。**绝不用 `git add -A`**。
+- **Versions and cache.** Lean `4.34.0` / Mathlib `v4.34.0`, pinned by `lean-toolchain` and `lake-manifest.json`. Before the first build, run `lake exe cache get`.
+  - Offline, first check that every package commit in `lake-manifest.json` matches `../RBM2D`. Then make an independent copy with `cp -cR ../RBM2D/.lake/packages .lake/packages`.
+  - Never make a writable symlink into a sister project's package tree.
+- **Namespace and index type.**
+  - The namespace is `RBM`, the same name as in RBM1D and RBM2D. The projects are never imported together.
+  - The lattice index is `RBM.Zd d L := Fin d → ZMod L`, with `d` a parameter.
+  - The paper's `|x|_L` is the periodic distance defined in `RBM3D/Defs/Lattice.lean` (check its definition before use).
+- **Variable conventions:** `d L : ℕ`, `hd : 3 ≤ d` only where needed, `hL : 3 ≤ L`, spectral parameters `ξ ζ : ℂ` with `‖ξ‖ < 1`.
+- **Constants** need not be optimal. Hard-code them; do not write `∃ C`.
+- **Copyright header:** copy it from an existing file.
+- **Git.**
+  - Stage files only by name. Never `git add -A`, `git add .`, `git reset --hard`, `git clean`, or `rm -rf`.
+  - Commit identity: `Jun Yin <321276894+JYin80@users.noreply.github.com>`, from the local `.git/config`. Do not override it.
+- **Blueprint and CI.**
+  - Blueprint nodes (`\lean{}`, `\leanok`) are updated only by blueprint-sync tickets.
+  - CI publishes only on push.
