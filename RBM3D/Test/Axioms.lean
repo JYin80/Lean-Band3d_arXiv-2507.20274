@@ -99,6 +99,8 @@ def structuralProps : List Name :=
    `RBM.SameSignOutside,      -- `A ⊇ I_diff(σ)`, the condition of `lem:sum_decay_nonzero`
    `RBM.Graph.Case.Rel,       -- the case relation of `lem_scalingorder`, a parameter
    `RBM.NormStochDom,         -- `‖A‖ ≺ ζ`: notation of `(stoch_domination)`, not a result
+   `RBM.NormStochDomAt,       -- notation of `(stoch_domination)` at scale `N`
+   `RBM.Path.PerTimeDomAt,    -- notation of `(stoch_domination)` at scale `N`
    `RBM.Gauss.Sizes.WO,       -- `(eq:WO)`: the window of the size sequence
    `RBM.Gauss.Sizes.Bandwidth, -- `(Main_DEL_COND)`: `W ≥ N^𝔠`
    `RBM.Gauss.Sizes.SizeTendsto, -- `N → ∞` along the size sequence

@@ -49,6 +49,8 @@ import RBM3D.Propagator.Pins
 import RBM3D.Propagator.Prop5Short
 import RBM3D.Loop.KLTree
 import RBM3D.Propagator.HeatBounds1D
+import RBM3D.Defs.StochDomAt
+import RBM3D.Gauss.DominationAt
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
