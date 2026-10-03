@@ -108,6 +108,7 @@ import RBM3D.Green.FlucVanish
 import RBM3D.Gauss.LoopFlowStein
 import RBM3D.Induction.ConArg
 import RBM3D.Induction.Step2Core
+import RBM3D.Evolution.PropTInf
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
