@@ -1,6 +1,6 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 08:17 UTC
+更新：2026-10-03 09:12 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
@@ -8,8 +8,8 @@
 | T2040 | LW-D1 | 设计（光权重层：图词汇、钉文、拆单、体量） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2042 | EK-4 | 证明（(sumAzero) ⟹ (sum_res_2)，ΔΞ 由性质 6；唯一高风险） | prover-max | 预检 FAIL（钉文为假）→ §21 Amend 1，从预检重开 |
 | T2039 | ST-D2 | 设计（Step 2 与路径层，d ≥ 3 新论证） | prover-max | 同上 |
-| T2043 | KL7a | 证明（移植 Loop/SumZero：树和闭式、sum-zero 界） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2041 | ST-D3 | 设计（Steps 3–4，EK-6 消费形式） | prover-max | 同上 |
+| T2048 | KL7b | 证明（移植 Loop/SumAll：总和界） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2044 | S1-13 | 证明（Green/LDEQuadMom） | prover | 同上 |
 | T2046 | S1-15 | 证明（Green/Stability，d ≥ 3 常数；关键路径） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2045 | S1-08 | 证明（Induction/ScaleFacts + PerTimeCalc） | prover-hard | 同上 |
@@ -23,6 +23,7 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2043（KL7a，cb7d4ba，2026-10-03 09:02；签字 §23）
 - T2028（S1-07，64bdfd3，2026-10-03 08:03；签字 §22）
 - T2031（S1-12，cca94be，2026-10-03 06:33）
 - T2036（KL6，85ab436，2026-10-03 06:32）
@@ -61,7 +62,7 @@
 
 ## 下一批（等上面的结果再写）
 - PT：gate 完成（T2027）；剩 KL14/总清理时删 `ThetaDiffOne/Two`、`PropTH`。
-- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a = T2043 已放行，KL7b、KL7c 依次在后；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039、ST-D3 = T2041、LW-D1 = T2040 已放行（设计）。
+- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7b = T2048 已放行，KL7c 在后；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039、ST-D3 = T2041、LW-D1 = T2040 已放行（设计）。
 - EK：EK-3 已合并；EK-4 = T2042、EK-5 = T2035 已放行；EK-6 等 ST-D3（T2041）。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。
