@@ -71,6 +71,7 @@ import RBM3D.Green.EntryCore
 import RBM3D.Gauss.FlowCalculus
 import RBM3D.Hierarchy.ContractionBasic
 import RBM3D.Evolution.SumDecay
+import RBM3D.Green.RowIndep
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
