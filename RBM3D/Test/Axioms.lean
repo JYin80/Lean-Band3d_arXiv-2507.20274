@@ -110,7 +110,8 @@ def structuralProps : List Name :=
    `RBM.Green.LDERow,         -- row large-deviation event, input of `lem_GbEXP` (later ST-1)
    `RBM.Green.LDECol,         -- column large-deviation event, input of `lem_GbEXP` (later ST-1)
    `RBM.Green.LDEQuad,        -- quadratic large-deviation event; h.p. bound S1-19 `stochDom_ldeQuad`
-   `RBM.Green.Stable]         -- stability of `1 − ξS` with constant `K`; band profile S1-24
+   `RBM.Green.Stable,         -- stability of `1 − ξS` with constant `K`; band profile S1-24
+   `RBM.EKFastDecay]          -- `(deccA0)`: decay of the tensor `A` beyond the window `W^ε ℓ_s`, a data condition on `A` (EK-3, T2034)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
