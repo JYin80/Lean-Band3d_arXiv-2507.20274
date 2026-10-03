@@ -213,6 +213,7 @@ def structuralProps : List Name :=
    `RBM.Graph.NGraph.IsNested, -- properties (1)-(3) of a nested graph (`7_8:956`): a data condition on the graph (T2050; registered by T2067)
    `RBM.Graph.NGraph.NoGhost, -- no ghost edge: a data condition on the graph (T2050; registered by T2067)
    `RBM.Graph.NGraph.GhostOK, -- at most one ghost edge per path, an ending edge: a data condition on the graph (T2050; registered by T2067)
+   `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent] -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
