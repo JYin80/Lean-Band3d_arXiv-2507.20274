@@ -66,6 +66,7 @@ import RBM3D.Evolution.XiPins
 import RBM3D.Propagator.PropUnit
 import RBM3D.Propagator.Prop5Hold
 import RBM3D.Loop.KLUnique
+import RBM3D.Propagator.Prop6Hold
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -72,11 +72,11 @@ Reporting them in one list makes "zero axioms" look better than the situation is
 /-- Premises the **paper** cites rather than proves.  The pins of `lem_propTH` properties
 5–8 (T2003, DECISIONS §13) and their KL-local form (T2004, §15) replace the old `ThetaDecay`
 … `PropTH` as the statements route H (DECISIONS §14) discharges; they are not authorised
-external inputs (DECISIONS §5), so they must end up proved. -/
+external inputs (DECISIONS §5), so they must end up proved.  Route H proved `lem_propTH`
+5–8 for every `d ≥ 3` (T2023, T2024, T2027), so `Prop5Decay`, `Prop8ZeroMode`, `Prop5to8`,
+`ThetaDecay`, `ThetaDecayShort` and `ThetaZeroMode` left this list. -/
 def borrowedProps : List Name :=
-  [`RBM.ThetaDecay, `RBM.ThetaDecayShort, `RBM.ThetaDiffOne, `RBM.ThetaDiffTwo,
-   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep,
-   `RBM.Prop5Decay, `RBM.Prop8ZeroMode, `RBM.Prop5to8, `RBM.Loop.KLPT]
+  [`RBM.ThetaDiffOne, `RBM.ThetaDiffTwo, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLPT]
 
 /-- Premises **this development** owes: provable here, assumed for now.
 
@@ -124,9 +124,7 @@ halves and says, premise by premise, what a certificate would take.
 A certificate must name a real theorem, for a registered premise; otherwise the build
 fails.  The column is deliberately mostly empty: it reports a gap rather than hiding it. -/
 def certificates : List (Name × Name) :=
-  [(`RBM.ThetaDecay, `RBM.Test.thetaDecay_fixedL),
-   (`RBM.ThetaZeroMode, `RBM.Test.thetaZeroMode_fixedL),
-   (`RBM.ThetaDiffOne, `RBM.Test.thetaDiffOne_fixedL),
+  [(`RBM.ThetaDiffOne, `RBM.Test.thetaDiffOne_fixedL),
    (`RBM.ThetaDiffTwo, `RBM.Test.thetaDiffTwo_fixedL),
    (`RBM.PropTH, `RBM.Test.propTH_fixedL),
    (`RBM.Loop.TwoLoopBounded, `RBM.Test.twoLoopBounded_kTwoLoop)]
