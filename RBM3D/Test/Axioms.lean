@@ -135,6 +135,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STGridRepN, -- `Sol_CalL` + `lem:DIfREP` on the grid, every loop length (`3_5:134-148`, `218-240`); `STGridMart` is `m = 2`: ST2-12, ST2-13 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STK2decay, -- `(eq:kn2sol_decay)`, `(eq:simpleboundK)` (`3_5:457`, `518`): ST2-06 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STNetLift2, -- net lift of Step 2 (`1_2:1400`): ST2-18, ST2-19 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STStep2DecayPT, -- `(Eq:Gdecay_w)` per time (`1_2:1349-1351`): hypothesis of `stNetLift2_part1`/`step2NetLift`; proved by the Step 2 chain ST2-04 (T2074, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STScaleExists, -- scale family of `(eq:def_ell1)` (`3_5:521-527`, `571-577`): ST2-05 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLocalAvgOfL2, -- closing paragraph of Step 2 (`3_5:455-465`): ST2-16, ST2-17 (T2066, DECISIONS §28)
