@@ -45,6 +45,8 @@ import RBM3D.Gauss.FineModel
 import RBM3D.Gauss.LinearForm
 import RBM3D.Propagator.HeatKernel1D
 import RBM3D.Propagator.LaplaceGauss
+import RBM3D.Propagator.Pins
+import RBM3D.Propagator.Prop5Short
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

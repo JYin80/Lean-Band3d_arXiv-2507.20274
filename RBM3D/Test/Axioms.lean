@@ -69,10 +69,14 @@ matters more than the count:
 Reporting them in one list makes "zero axioms" look better than the situation is.
 -/
 
-/-- Premises the **paper** cites rather than proves. -/
+/-- Premises the **paper** cites rather than proves.  The pins of `lem_propTH` properties
+5–8 (T2003, DECISIONS §13) and their KL-local form (T2004, §15) replace the old `ThetaDecay`
+… `PropTH` as the statements route H (DECISIONS §14) discharges; they are not authorised
+external inputs (DECISIONS §5), so they must end up proved. -/
 def borrowedProps : List Name :=
   [`RBM.ThetaDecay, `RBM.ThetaDecayShort, `RBM.ThetaDiffOne, `RBM.ThetaDiffTwo,
-   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep]
+   `RBM.ThetaZeroMode, `RBM.PropTH, `RBM.Loop.KTreeRep,
+   `RBM.Prop5Decay, `RBM.Prop8ZeroMode, `RBM.Prop5to8, `RBM.Loop.KLPT]
 
 /-- Premises **this development** owes: provable here, assumed for now.
 
@@ -94,7 +98,12 @@ def structuralProps : List Name :=
    `RBM.Loop.Crossing,        -- two diagonals cross
    `RBM.SameSignOutside,      -- `A ⊇ I_diff(σ)`, the condition of `lem:sum_decay_nonzero`
    `RBM.Graph.Case.Rel,       -- the case relation of `lem_scalingorder`, a parameter
-   `RBM.NormStochDom]         -- `‖A‖ ≺ ζ`: notation of `(stoch_domination)`, not a result
+   `RBM.NormStochDom,         -- `‖A‖ ≺ ζ`: notation of `(stoch_domination)`, not a result
+   `RBM.Gauss.Sizes.WO,       -- `(eq:WO)`: the window of the size sequence
+   `RBM.Gauss.Sizes.Bandwidth, -- `(Main_DEL_COND)`: `W ≥ N^𝔠`
+   `RBM.Gauss.Sizes.SizeTendsto, -- `N → ∞` along the size sequence
+   `RBM.Gauss.Sizes.Admissible, -- the standing hypotheses of the main results
+   `RBM.Gauss.Sizes.locDomain] -- the spectral domain `𝐃_{κ,ε}`
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
