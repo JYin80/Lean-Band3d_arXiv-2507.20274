@@ -30,3 +30,6 @@
 | T2023 | 2026-10-03 04:57 UTC (f40d8ca) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；PT-F1：**性质 5（prop5Decay_holds）、性质 8（prop8ZeroMode_holds）对每个 d ≥ 3 证出**；1041 定理 / 0 公理 |
 | T2015 | 2026-10-03 05:00 UTC (5e7de62) | prover-max（修复 repairer） | Sonnet 5.5 effort max（修复 claude-opus-5-5） | 是（审核 RETURN 一次，仅报告） | ST-D1 设计：钉文、ST-1 拆 36 张；审核 D1 缺一个实例、D2 两条 paper-delta 未列，修复一次后 PASS；签字 §19 |
 | T2025 | 2026-10-03 05:38 UTC (c8bedf7) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KL4+5：`KLK_unique`、`TwoLoopBounded` 退役三条、`KLK_rotate`/`KLK_translate`；1058 定理 / 0 公理；T2025a 仅备注（论文用旋转/平移不变性未单列引理），不入 paper-deltas |
+| T2027 | 2026-10-03 05:46 UTC (6cc5032) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；PT-G：性质 6、7（路径引理）、`prop5to8_holds`、旧接口 `thetaDecay/Short/ZeroMode_holds`；登记表删借用项；**PT gate 完成**；1065 定理 / 0 公理 |
+| T2029 | 2026-10-03 05:52 UTC (890a89f) | prover（Amend 1：repairer） | Sonnet 5.5 effort high | 否（票面错） | 审核一次 PASS；合并第 5 步被登记拦（5 个事件/条件谓词未登记）是总调度票面缺陷（ST1-COMMON 第 8 条 + 预检盲区）→ DECISIONS §20、Amend 1，第 2 轮审核 PASS；S1-10；1110 定理 / 0 公理 |
+| T2030 | 2026-10-03 05:53 UTC (6f99812) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-01 `Gauss/FlowCalculus`；1166 定理 / 0 公理 |
