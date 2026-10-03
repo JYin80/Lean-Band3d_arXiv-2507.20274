@@ -348,3 +348,21 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
   done: 2026-10-03 19:55 UTC — T2076 check compiled (exit 0); committed 467824d (9 files staged by name), pushed to origin/main.
 - H45 (dispatcher V1, 2026-10-03 19:25 UTC). After H44: compile the T2070 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: ticket T2070 (KL8+9)`: `docs/tickets/T2070.md`, `docs/tickets/checks/T2070-check.lean`, `docs/tickets/QUEUE.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; push. One `done:` line.
   done: 2026-10-03 19:32 UTC — T2070 check compiled (exit 0); committed a9ad27c (6 files staged by name), pushed to origin/main.
+
+## Archived 2026-10-03 22:24 UTC (dispatcher V1)
+- `docs/tickets/checks/T2079-check.lean` (S1-35; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2079-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2078-check.lean` (S1-18; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2078-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2077-check.lean` (S1-06; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2077-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2080-check.lean` (ST2-03; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2080-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2082-check.lean` (ST2-19; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2082-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2081-check.lean` (ST2-05; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2081-check.lean`: exit 0; no error lines.
+- H48 (dispatcher V1, 2026-10-03 21:59 UTC). Compile the nine checks T2077–T2085 (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2061, T2064, T2065, T2070–T2076 merged bookkeeping, tickets T2077–T2085 (S1-06, S1-18, S1-35, ST2-03, ST2-05, ST2-19, ST2-21, ST2-23, ST2-24)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2077.md` … `docs/tickets/T2085.md`, `docs/tickets/checks/T2077-check.lean` … `docs/tickets/checks/T2085-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. Start the released tickets in priority order as slots allow. One `done:` line.
+  done: 2026-10-03 22:03 UTC — T2077–T2085 checks compiled (exit 0 each); committed e84e0f7 (24 files staged by name), pushed. Started in priority order: T2079 (wf_8cc8c2b2-6c0), T2078 (wf_647d5854-018), T2077 (wf_75b965b2-4de), T2080 (wf_78741552-76f); T2082, T2081, T2083, T2084, T2085 wait for slots.
+- H49 (dispatcher V1, 2026-10-03 22:11 UTC). Compile the T2086, T2087 checks (Pre-release list), then stage by name only and commit with message `Dispatcher V1: paper-deltas D107–D126, tickets T2086 (S3-03), T2087 (S3-24a)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2086.md`, `docs/tickets/T2087.md`, `docs/tickets/checks/T2086-check.lean`, `docs/tickets/checks/T2087-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; push. One `done:` line.
+  done: 2026-10-03 22:12 UTC — T2086/T2087 checks compiled (exit 0 each); committed 4128ef0 (9 files staged by name), pushed to origin/main.
