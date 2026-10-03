@@ -60,6 +60,7 @@ import RBM3D.Propagator.HeatProduct
 import RBM3D.Path.Markov
 import RBM3D.Path.Stop
 import RBM3D.Path.Azuma
+import RBM3D.Loop.KLTreeDeriv
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
