@@ -114,6 +114,7 @@ import RBM3D.Loop.KLMolecule
 import RBM3D.Path.OneStep
 import RBM3D.Path.NetLift1
 import RBM3D.Path.NetLift2
+import RBM3D.Gauss.LoopGenerator
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
