@@ -64,3 +64,6 @@
 | T2033 | 2026-10-03 15:45 UTC (aa42e43) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-09 `Induction/Split` |
 | T2060 | 2026-10-03 16:10 UTC (89f29cf) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-04 `Graph/LWStein`（登记 `Tame1` structural） |
 | T2053 | 2026-10-03 19:12 UTC (fc76526) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（Amend 1 重开不算返工，§27）；EK-6 `Evolution/Prec`（五条 `STEK*` 消费钉文）；EK gate 完成 |
+| T2066 | 2026-10-03 19:31 UTC (86124dc) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-01 `Induction/Step2Defs`（ST-2 钉文入库，登记 18 行）；D83–D92 |
+| T2062 | 2026-10-03 19:22 UTC (a51b69e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-34 `Induction/Continuity`（`stNetLift_holds`）；D104 |
+| T2067 | 2026-10-03 19:33 UTC (ed199e7) | prover（修复 repairer） | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次：缺两个实例） | LW-P `Graph/LWPins`（LW 钉文入库）；D93–D103 |

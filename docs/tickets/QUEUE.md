@@ -1,16 +1,18 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 19:22 UTC
+更新：2026-10-03 19:40 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2061 | S1-17 | 证明（Green/FlucVanish：CondRow、GreenDeriv、FlucVanish；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2066 | ST2-01 | 证明（Step 2 词汇与全部 ST-2 钉文入库 Induction/Step2Defs，§28） | prover | 检查 exit 0 且有空位即开工（§17） |
-| T2067 | LW-P | 证明（LW 钉文入库 Graph/LWPins，§24、§28） | prover | 同上 |
-| T2062 | S1-34 | 证明（Induction/Continuity 后半：gopbound、stNetLift_holds） | prover-hard | 同上 |
 | T2063 | S1-31 | 证明（Induction/ConArgDet：WardResolvent、ConArgDet） | prover-hard | 同上 |
 | T2064 | S1-05 | 证明（Gauss/LoopFlowStein） | prover-hard | 同上 |
+| T2071 | ST2-02 | 证明（Step 2 实数核心入库 Induction/Step2Core，探针 §3–§8） | prover | 检查 exit 0 且有空位即开工（§17） |
+| T2075 | ST2-06b | 证明（lem:propT 的 (TTT2) ∞ 距离版 Evolution/PropTInf） | prover-hard | 同上 |
+| T2072 | ST2-20 | 证明（移植 Path/OneStep + DriftLip） | prover | 同上 |
+| T2073 | ST2-22 | 证明（移植 Path/StepDecomp） | prover | 同上 |
+| T2074 | ST2-18 | 证明（移植 Path/NetLift 前半：Step2NetLift） | prover | 同上 |
 | T2070 | KL8+9 | 证明（分子衰减 KLmoleculePin、和为零 KLsumZeroPin） | prover-max | 同上 |
 | T2065 | S1-04 | 证明（Hierarchy/ContractionSecondLoop，13 个小文件） | prover | 同上 |
 
@@ -19,6 +21,9 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2067（LW-P，ed199e7，2026-10-03 19:33；修复一次）
+- T2066（ST2-01，86124dc，2026-10-03 19:31）
+- T2062（S1-34，a51b69e，2026-10-03 19:22；`STNetLift` 证出）
 - T2053（EK-6，fc76526，2026-10-03 19:12；钉文修补 §27；EK gate 完成）
 - T2060（LW-04，89f29cf，2026-10-03 16:10）
 - T2033（S1-09，aa42e43，2026-10-03 15:45）

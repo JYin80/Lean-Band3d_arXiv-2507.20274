@@ -92,3 +92,4 @@
 - 2026-10-03 19:06 UTC 心跳：H41、H42 已做（c405127、65ccfb3）；开工 T2061、T2066、T2053（预检 PASS，1b）、T2067；T2062 也在 1b。T2061（S1-17）预检 FAIL：`uniformWeight_svar` 在 d≥3 假（`svarF` 带 g，支撑上两个值）→ DECISIONS §30（另立 `BoundedWeight`，`boundedWeight_svarF`，c = W^{-d}；S1-18/20/30 前提换成有界权）、T2061 Amend 1；H43。
 - 2026-10-03 19:22 UTC 心跳：H43 已做（5f0a683）；T2053（EK-6）合并 fc76526（Amend 1 后一次 PASS）→ **EK gate 完成**。T2061 重开（预检中）。补编 paper-deltas D66–D82（断线期间 12 张的候选；T2033c 命名不记、T2059b 只引 D50、T2052 无）。H44。
 - 2026-10-03 19:25 UTC：写票 T2070（KL8+9：`KLmolecule_holds`、`KLsumZero_holds`，钉文贴在检查文件里；看 `KLShort` 能否由 PT 推出）；H45。
+- 2026-10-03 19:40 UTC 心跳：H44、H45 已做（2be5aaf、a9ad27c；T2070 检查 exit 0）；合并 T2062（S1-34，a51b69e，`STNetLift` 证出）、T2066（ST2-01，86124dc）、T2067（LW-P，ed199e7，修复一次）；补编 D83–D104；返工 9/63。写票 T2071（ST2-02）、T2075（ST2-06b，prover-hard）、T2072（ST2-20）、T2073（ST2-22）、T2074（ST2-18），检查文件已写；H46。CONTROL 归档 H44、H45 及旧预检行。

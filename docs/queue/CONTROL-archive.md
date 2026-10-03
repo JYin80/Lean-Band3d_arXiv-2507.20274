@@ -300,3 +300,16 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
 - H43 (dispatcher V1, 2026-10-03 19:06 UTC). T2061 (S1-17): Amend 1 (DECISIONS §30) — `uniformWeight_svar` is replaced by a bounded-weight statement; restart T2061 on branch t/T2061 from stage 1a (preflight → prover-hard → auditor); not counted as rework; it keeps its place first in the Released list. Then stage by name only and commit with message `Dispatcher V1: DECISIONS §29 (pin boundary checks), §30 (S1-17 bounded weights), T2061 Amend 1, ROUTES counts`: `docs/DECISIONS.md`, `docs/tickets/T2061.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. One `done:` line.
   done: 2026-10-03 19:12 UTC — committed 5f0a683 (4 changed files staged by name; ROUTES.md and CONTROL-archive.md had no changes), pushed. T2061 restarts on t/T2061 from stage 1a at the next free slot (4 of 4 in use: T2066, T2053, T2067, T2062), first in the Released order.
   done: 2026-10-03 19:13 UTC — T2061 restarted on t/T2061 from stage 1a (workflow wf_1cc51b40-481) in the slot freed by T2053 (merged fc76526).
+
+## Archived 2026-10-03 19:40 UTC (dispatcher V1)
+31. T2066 — `docs/tickets/T2066.md` (ST2-01, Step 2 vocabulary and all ST-2 pins into the library `Induction/Step2Defs`, registry; role `prover`; DECISIONS §28). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+33. T2067 — `docs/tickets/T2067.md` (LW-P, the LW pins into the library `Graph/LWPins`, bound to the merged LW vocabulary; role `prover`; DECISIONS §24, §28). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+34. T2062 — `docs/tickets/T2062.md` (S1-34, `Induction/Continuity` second part: `gopbound`, `stNetLift_holds : STNetLift d`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+- `docs/tickets/checks/T2063-check.lean` (S1-31; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 18:52 UTC — `lake env lean docs/tickets/checks/T2063-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2064-check.lean` (S1-05; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 18:52 UTC — `lake env lean docs/tickets/checks/T2064-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2065-check.lean` (S1-04; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 18:52 UTC — `lake env lean docs/tickets/checks/T2065-check.lean`: exit 0; no error lines.
+- H44 (dispatcher V1, 2026-10-03 19:22 UTC). Stage by name only and commit with message `Dispatcher V1: T2053 merged bookkeeping (EK gate complete), paper-deltas D66–D82`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. One `done:` line.
+  done: 2026-10-03 19:22 UTC — committed 2be5aaf (7 files staged by name), pushed to origin/main.

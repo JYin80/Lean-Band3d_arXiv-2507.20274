@@ -390,3 +390,34 @@ RBM2D `ChainStepCond`、`chainStepCond`（网格 `CondStInd`，指数 30）和 `
 - **D80（T2060c）**：Stein 恒等式用模型的方差（对角实 `S_{ww}`，非对角每个实坐标 `S/2`），`u ≥ 0`，`GaussIBP`（owed，S1-19）作前提。
 - **D81（T2060d）**：`(Owx)` 的导数项是以 `α, w` 为新顶点的图；这里是两个新的外部顶点（`E ⊕ Fin 2`）；对 `α` 求和、取 `w = x` 是 LW-05…07 的步骤。
 - **D82（T2060e）**：论文用 `Θ^{(+,+)}` 定义 `S⁺`（`7_8:110`；`S/(1−m²S)` 是旁注）；Lean 取任意满足 `Sp(1 − m²S) = S` 的 `Sp`，并由 `lwS_isUnit` 证 `|m|²u < 1` 时 `S(1 − m²S)⁻¹` 就是一个。
+
+## D83–D92 · Step 2 钉文（2026-10-03，T2039a–j；签字 §28；随 T2066 入库 86124dc，`RBM3D/Induction/Step2Defs.lean`）
+
+- **D83（T2039a）**：`lem:newKLK` 钉成确定性的：对每个 Hermitian `H`、`‖G − M‖_max ≤ δ₀`（论文：在 `(Gtmwc)` 下以高概率；`C` 来自 `prop:ThfadC`）。
+- **D84（T2039b）**：`C_d`、`𝔠_d` 论文无数值；钉 `∃ C_d, ∃ 𝔠_d ≤ 10⁻²`（`C_d` 在前），编译闭合 `C_d𝔠_d ≤ 1/60`、`𝔠_d ≤ 𝔠₀`（`(eq:opt_L2)`）。
+- **D85（T2039c）**：两族光权重项都作输入；`STLWB` 把 `(initialGT2)` 的控制绑到 `Ψ_t(0)`。
+- **D86（T2039d）**："任意大 `D`"读作 `∀ D > 0`（`STStep2Decay`、`STLWT`、`STEMn2Exp`）。
+- **D87（T2039e）**：`(eq:def_ell1)` 的尺度族在 `L` 处截断（`STScaleAdm`）。
+- **D88（T2039f）**：`|·|_∞` 下的 `(TTT2)` 要自己证（合并的 `EKPropT` 是 `ℓ¹`；ST2-06b）。
+- **D89（T2039g）**：`STStep2Avg` 是单电荷 `tr((G_u − M)E_a)`；合并的 `STAvgU` 是双电荷，等价（已编译）。
+- **D90（T2039h）**：`STGridRepN` 里 BDG 矩界换成网格上的 Azuma–Hoeffding 尾（DECISIONS §7），损失 `N^{ε'}`、加性 `N^{-D}`、余项 `N^{C₀}Δ^{1/2}`，对所有 `k ≤ K` 同时成立。
+- **D91（T2039i）**：`STContractPt` 带显式常数 `3^d` 与依赖标号的最大值（合并的 `STContract` 是 Step 3 形式）。
+- **D92（T2039j）**：`STScaleAdm`/`STScaleOk` 的条款（`(eq:def_ell1)`、`(eq:monotone_Ku)`）只对大 `N` 要求（对每个层次 `m` 是 `∀ᶠ n`）；论文在固定 `N`、`W^{-d}B_{u,0} ≤ N^{-c}` 的范围内陈述。另：库里的 `STStep2` 结论是合并的 `STStep2Concl`（T2066a，与三部分形式等价，到 T2039g 为止）。
+
+## D93–D103 · LW 钉文（2026-10-03，T2040a、e–h、j–o；签字 §24；随 T2067 入库 ed199e7，`RBM3D/Graph/LWPins.lean`）
+
+- **D93（T2040a）**：`7_8:65` 取 `Ψ_t = (W^{-d}B_{t,0})^{1/2}`，在 `B_{t,0} < 1` 时违反 `W^{-d/2} ≤ Ψ_t`（`t = 1/2, ĝ = 1, L = 3`：0.7407）；钉成带窗口前提与常数 `C₃`。
+- **D94（T2040e）**：`G_t` 的展开（`7_8:291`）钉成 `S_t = tS`、`S⁺_t = S_t(1 − m²S_t)⁻¹`、`z_t = E + (1 − t)m`。
+- **D95（T2040f）**：`lem: EWGn2_N` 说"任意 `t ∈ [0,1)`"（`3_5:407`），钉在 `0 ≤ t ≤ lemT z`。
+- **D96（T2040g）**：`lem:Anp_key` 的 `Ψ_t` 是 `Ψ_t(0)`（`7_8:949`）。
+- **D97（T2040h）**："不妨设 `Ψ_t` 递减"（`3_5:389`）作前提（上包络保持 `(eq:Psi)`；未证）。
+- **D98（T2040j）**：`∃ c` 在序列之前（`c` 只依赖 `p` 或图与常数）；Markov 一步要 `LWInteg`（有界可测，成立）。
+- **D99（T2040k）**：`1 − t ≤ ĝ²/L²` 时的 `lem: EWGn2_N` 论文说"直接推论"（`7_8:20`）：要 `(LW_assm_exp)` 的类、`r ≤ L` 时 `W^{-d}T̃ ≍ B` 与子序列转移；单钉为 `LWtermExpN`（LW-16）。
+- **D100（T2040l）**：`lem:Anp`（`7_8:933`）讲的是局部标准图的 `Γ^aux`；`LWAnp` 是嵌套形式（`lwanp_of_key`），`def_auxgraph` 与 `GtoAG` 归 LW-11。
+- **D101（T2040m）**：`Anp_key` 是 ghost 版本的"容易推论"（`7_8:1025`）；`claim:size`（`7_8:264`）、`claim:xi`（`7_8:884`）论文无证明（LW-09、LW-11 补）。
+- **D102（T2040n）**：`lem:LWterm_EXP`（`6:83`）的前提范围"(Gt_bound_flow)–(Eq:Gdecay_flow)"读作 `t` 时刻的 `STLocalEntry`、`LWAvgLaw`、`STLmax`、`STLK`、`STDecay`（`(Eq:Gdecay_w)` 由 `(Eq:Gdecay_flow)` 推出）。
+- **D103（T2040o）**：`7_8:20-91` 的约化（`LWReduceB/T`）与分段（`LWtermExpS/N`）不是论文编号陈述；`LWedgeExp` 写 `k₁ + 1` 代替论文的 `k₁ ≥ 1`。另（T2067a）：三条展开式钉在固定尺寸的 `PF d L W g` 上，合并的 Stein 层（`owx_integral`）在 `Sizes.seqP` 上、带 `GaussIBP sz`、`0 < u`；LW-05 要单独处理 `t = 0` 并在两个空间之间搭桥。
+
+## D104 · `Step1NetLift` 去掉不用的参数（2026-10-03，T2062a；S1-34 `Induction/Continuity`，a51b69e）
+
+`Step1NetLift`（`Continuity:1261`）比 RBM2D 少了 `c`、`Bandwidth d c`、`CondStInd d E s t`（证明不用，RBM2D T2070b），并把 `Step1LoopPT/Unif`、`Step1WeakLawPT/Unif`、`RangeCond` 读作合并的 `STStep1LoopPT/Loop`、`STStep1WeakPT/Weak`、`Sizes.RangeCond`。没有加前提。`stNetLift_holds : STNetLift d` 证出，`STNetLift` 的 owed 行可删（清理票）。
