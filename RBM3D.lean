@@ -86,6 +86,7 @@ import RBM3D.Evolution.Nonzero
 import RBM3D.Induction.PerTimeCalc
 import RBM3D.Induction.ScaleFacts
 import RBM3D.Induction.QopAlgebra
+import RBM3D.Graph.LWVocab
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

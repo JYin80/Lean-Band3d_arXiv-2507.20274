@@ -156,7 +156,9 @@ def structuralProps : List Name :=
    `RBM.Green.AgreeOffRow,    -- two samples agree on every coordinate off row `i` (S1-11 RowIndep)
    `RBM.Green.FinDep,         -- `g` reads finitely many Gaussian coordinates: a property of the function, hypothesis of `Tame.ofBdd` (T2031)
    `RBM.Gauss.Sizes.STConStInd, -- `(con_st_ind)` (`1_2:1296`): a condition on the time sequences (T2028, DECISIONS §19)
-   `RBM.Gauss.Sizes.STFlow] -- the setting of `MR:locSC` and `zztE`: `Admissible` and `locDomain` (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STFlow, -- the setting of `MR:locSC` and `zztE`: `Admissible` and `locDomain` (T2028, DECISIONS §19)
+   `RBM.Graph.LGraph.DotWF, -- at most one dotted edge per pair of vertices, none a loop (`def_graph1`, `7_8:141`; T2050)
+   `RBM.Graph.LGraph.Consistent] -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
