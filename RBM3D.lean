@@ -53,6 +53,7 @@ import RBM3D.Defs.StochDomAt
 import RBM3D.Gauss.DominationAt
 import RBM3D.Loop.GLoopFlow
 import RBM3D.Gauss.BlockAnderson
+import RBM3D.Propagator.HeatTorus1D
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
