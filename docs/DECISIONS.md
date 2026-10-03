@@ -174,3 +174,15 @@
 - **今后所有证明票**（不止 ST-1）：(1) `RBM3D/Test/Axioms.lean` 对每张证明票都可写，但只能在三张表里追加登记行（每行一个名字，带一行注释），不改别的；(2) prover 交付前在主工作树外跑一次「登记预检」：一个不提交的临时文件 `import RBM3D` + `import <本票新模块>…` + `#assert_rbm_axioms`，`lake env lean` 退出 0；报告里贴输出；(3) 中枢合并时 `Axioms.lean` 若只在登记表里冲突，取两边并集，再跑全量构建。
 - **T2029**：`docs/tickets/T2029.md` Amend 1——在 `t/T2029` 上跑一次 `repairer`，把上面五个名字记进 `structuralProps`，跑预检和全量构建；再一轮审核（只看 `Axioms.lean` 的差异与预检输出）；然后从第 5 步续合并。
 - 已放行未合并的票（T2027、T2028、T2030–T2035）各加 Amend 1，照上面三条；正在跑的若已错过，合并被拦时照 T2029 的办法补一次 repairer，不算返工。
+
+## §21 EK-4 预检否掉钉文 `EKSumDecay2`：补 `L^d ≤ W^K`（总调度，2026-10-03 08:13 UTC，按 §4 签字的小改动；依据 `docs/reports/T2042-prove.md` (a)）
+- **事**：T2042（EK-4）预检判 FAIL：照 §18 签的 `EKSumDecay2` 在 `d = 3, n = 2` 不成立。钉文里 `L` 与 `W` 只有 `log L ≤ W^ε` 一条关系，而 `EKSumZero` 对全部 `b'` 求和、`EKFastDecay` 只给逐点 `W^{-D}`：把补偿质量以密度 `≤ W^{-D}` 摊到 `L^d` 个远点上，`A` 在窗口内就不再和为零，`‖UN A‖` 带回 `ℓ_t/ℓ_s`（预检 (ii) 第 3、4 块：`L = 129` 的合法数据上比值从 3.1 涨到 106.7；固定 `C` 取 `L ≈ W^{D/3}` 即反例）。我核过机制：论文 `A_deterministic_estimates.tex:186–190` 把远处余项记成 `W^{-D+n}`，没数 `L`；`Σ_{b_i} |ΔΞ_{a_i;b_1 b_i}|` 里 `Ξ_{a_i b_1}` 那一项对 `b_i` 求和给出 `L^d`，所以余项实为 `W^{-D} L^{d(n−1)}`。
+- **改法（照预检的候选 1，最贴论文）**：钉文加一个常数 `K > 0`（量词放在 `∃ C` 之前，`C` 可依赖 `K`）和前提 `(L : ℝ)^d ≤ W^K`。论文的常设假设 `(Main_DEL_COND)` `W ≥ N^𝔠`（`N = (WL)^d`）给出 `L^d ≤ W^{1/𝔠}`，所以消费者（EK-6、ST-3）取 `K = 1/𝔠` 即可，论文的 `W^{-D+n}` 正是默认了它。候选 2（窗口内和为零）、3（`ℓ¹` 远处衰减）改的是 `(sumAzero)`/`(deccA0)` 本身，不取。
+- **paper-delta 候选 T2042a**（签字，合并成 Lean 时编号）：`(sum_res_2)` / `(eq:bddfA)` 的余项 `W^{-D+n}` 需要 `L` 关于 `W` 多项式（`L^d ≤ W^K`，由 `(Main_DEL_COND)` 保证），常数依赖 `K`。
+- **落实**：`docs/tickets/T2042.md` Amend 1——`RBM3D/Evolution/Pins.lean` 对这张票可写，只改 `EKSumDecay2` 的定义体（照检查文件逐字）、它的文档串加一句 T2042a，以及私有实例 `ekInstDecay2`（取 `K = 2`：`5^3 = 125 ≤ 25^2`）；T2042 在原分支从预检重开。不算返工（钉文缺陷，记在总调度 §18 签字账上）。`EKSumDecay1`、`EKSumDecayNAL`（已证）、`EKSumDecayNonzero` 不受影响（无和为零前提）。
+
+## §22 T2028（S1-07，ST-1 钉文入库）合并后的签字（总调度按 §4 签字，2026-10-03 08:16 UTC；依据审核第 2 轮 PASS（一次修复），64bdfd3）
+- **T2028a 照准**：`GbEXPHypV3` 等取 `Admissible 𝔠 𝔡`（含 `(eq:WO)`）代替 RBM2D 的 `SizeTendsto → Bandwidth 𝔠`，`𝔡` 排在 `𝔠` 之后——论文 `lem_GbEXP` 的设定就是随机带状矩阵模型（含 `(eq:WO)`），不算越过 ST1-COMMON 第 6 条。记 D39。
+- **T2028b–f** 记为 D40–D44（形式上的加强或 RBM2D 读法，照移植保留）；T2028b 由 S1-16 定：d ≥ 3 只能证对称右端时，把 `gexRHS` 换成 `STgexRHS`，由 S1-16 报告、我改票。
+- **登记归类确认**（T2028 按 §20 自登记、§19 未签的七个）：`STMainInd`（ST-6 链终点）、`STConArg`（S1-32）、`STStep1`、`STBootstrap`、`STForbidden`（S1-36；`forbidden_region` 由 S1-08 移植）、`STNetLift`（S1-34）、`GbEXPV3Theorem`（S1-30）、`GijOmegaSeq`（S1-24）、`AsGMcPT`（Step 1 的 `(Gtmwc)`）——都由后续票证出，**owed** 正确。
+- **paper-deltas 编号补齐**：§18 的 T2016a–f（钉文已随 T2022 入库）记 D33–D38；§19 的 T2015b–h（随 T2028 入库）记 D26–D32；T2042a（§21）等 EK-4 合并时编号。

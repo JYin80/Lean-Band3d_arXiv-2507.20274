@@ -255,3 +255,79 @@ Lean 用 `ZMod (W*L)`，块 `[a] = a.val·W + {0, …, W−1}`；论文用 `⟦�
 实值族定义，定义里不要求非负；论文的 `≺`（1_2:227–231）是对概率空间上的非负量。非负性只在 `refl`、`mul`、`const_mul_*` 等引理
 里作为前提（`0 ≤ ζ`），矩桥接要求 `IsFiniteMeasure P`。与已合并的 `StochDom` 同一约定；用在 `seqP`（概率测度）与非负控制量上时
 与论文一致。
+
+## D26 · `lem_ConArg` 只陈述 `t < 1`（2026-10-03，T2015b；钉文 `STConArg`，`RBM3D/Induction/Defs.lean`（T2028 合并 64bdfd3））
+
+论文 `lem_ConArg`（3_5:42–62）对流的全部时间陈述；`t = 1` 时 `η_t = 0`，界无意义。Lean 只取 `t < 1`。
+
+## D27 · `lem:main_ind` 的时间限 `t ≤ t₀(z)`（2026-10-03，T2015c；`STMainInd`、`STStep1`（`t n ≤ lemT (z n)`））
+
+论文 `lem:main_ind`（1_2:1256–1330）在 `zztE` 的流上把 `t` 限在 `t₀` 之前（`η_t > 0`）；Lean 显式写出 `t ≤ lemT (z n)`。
+
+## D28 · 「小 `ε₀`」读作任意 `ε₀ > 0`（2026-10-03，T2015d；`STGbEXPii/ij/av`）
+
+论文 `lem_GbEXP`（3_5:14–40）说对小 `ε₀`；Lean 对每个 `ε₀ > 0` 陈述（`≺` 吸收常数），强于字面。
+
+## D29 · Step 1 对任意起点 `s ≥ 0`，时间连续性单独成陈述（2026-10-03，T2015e；`STStep1`、`STBootstrap`、`STNetLift`）
+
+论文把 Step 1 交给 [YY_25] §5.1（3_5:64–66）。Lean 对任意 `s ≥ 0` 陈述；`u < 1/2` 处用尖锐包络；时间连续性（RBM2D `Gopboundu`）在 d ≥ 3 论文里无陈述，Lean 作为 `STNetLift` 单列。
+
+## D30 · `(Eq:Gdecay+IND_s<g)` 只在 `g² ≤ 1 − τ` 的尺寸上（2026-10-03，T2015f；`STDecayStrong`）
+
+论文 `(Eq:Gdecay+IND_s<g)` 只在 `1 − s ≥ g²` 时成立；Lean 的 `STDecayStrong` 把条件写进每个尺寸 `n`（不满足时空真）。
+
+## D31 · `STStep1` 对每个 `𝔠_d ∈ (0, 10^{-2}]`，只用 (a)、(c) 与 `ML:Kbound`（2026-10-03，T2015g）
+
+强于论文：论文 Step 1（1_2:1317–1328）在 `lem:main_ind` 的全部前提下陈述；Lean 只要 (a)、(c)、`STKbound`，且对 `(0, 10^{-2}]` 内每个 `𝔠_d` 成立。
+
+## D32 · `STConArg` 只留 `(res_lo_bo_eta)` 的第一个界（2026-10-03，T2015h）
+
+第二个界是确定性的 `η` 单调性，Lean 单列为 `STBctl_mono`。
+
+## D33 · `(sum_res_2)` 带 `log L ≤ W^ε`（2026-10-03，T2016a；`EKSumDecay2`，`RBM3D/Evolution/Pins.lean`（T2022 合并 5fb7729））
+
+论文 A.2（A_deterministic_estimates.tex:196–197）自己说用 `log L ≤ W^ε` 吸收 d = 3 的 `log L`；Lean 把它写成前提。
+
+## D34 · `lem:sum_decay` 三条要求 `4 ≤ W^ε`（2026-10-03，T2016b；`EKSumDecay1`、`EKSumDecayNAL`、`EKSumDecay2`）
+
+`≲` 的常数只在 `W^ε` 有下界时才能吸进 `W^{Cε}`（`W^ε ↓ 1` 时为假）；BD1 用在 `|r| ≤ |a|/2`。
+
+## D35 · `lem:propT` 只含区间 (i)(ii)（2026-10-03，T2016c；`EKPropT`）
+
+中间区间 `1 − t < g²/L² < 1 − u` 无下游使用，不陈述。
+
+## D36 · `claim:TTk` 的 `D` 为任意 `ℓ`-球内集合、`ℓ ≥ 1`、`Λ²` 显式、`η_t ≍ 1 − t`（2026-10-03，T2016d；`EKTTk`）
+
+论文 `D_{≤ℓ}`、`≺`；Lean 显式常数 `Λ²`（`Λ = (log W)^{10}` 由消费者给），`η_t` 换成 `1 − t`（`(eta)`）。
+
+## D37 · `lem:sum_decay_nonzero` 无损、两种电荷（2026-10-03，T2016e；`EKSumDecayNonzero`）
+
+强于论文：论文是 `≺`（含 `L^τ` 损失）且只写一种电荷；Lean 是 `C‖𝒜‖`，`C` 只依赖 `(d, n, Λ, κ)`。
+
+## D38 · EK 钉文的常数对 `g ∈ (0, Λ]` 一致，距离用 `ℓ¹`（2026-10-03，T2016f）
+
+`(deccA0)`、`(sumAzero)` 用周期 `ℓ¹` 距离 `zdistD`（D18：`L^∞` 的消费者把 `W^ε` 换成 `d·W^ε`）；`(sumAzero)` 取在值为 0 的指标上。
+
+## D39 · `lem_GbEXP` 在 `Admissible 𝔠 𝔡`（含 `(eq:WO)`）下陈述（2026-10-03，T2028a；`GbEXPHypV3`、`GbEXPV3Theorem`，`RBM3D/Green/Pins.lean`（T2028 合并 64bdfd3））
+
+RBM2D 用 `SizeTendsto → Bandwidth 𝔠`；论文 `lem_GbEXP` 是在随机带状矩阵模型的设定下（3_5:14），其前提含 `(eq:WO)`（1_2:357–363）。Lean 取 `Admissible`，常数 `𝔡` 排在 `𝔠` 之后（DECISIONS §22）。
+
+## D40 · `(GijGEX)` 取单一取向的右端（2026-10-03，T2028b；`GijOmegaSeq`、`GijSeq`）
+
+保留 RBM2D 的 `gexRHS … [y] [x]`（`σ = (−,+)` 那一半，3_5:24），强于论文的显示式；`stGijGEX_of_gijOmegaSeq` 推出论文形式。若 S1-16 在 d ≥ 3 只能证对称右端，再换成 `STgexRHS`。
+
+## D41 · `(GavLGEX)` 的 `Ψ` 取 `0 ≤ Ψ ≤ N^{-a}`（2026-10-03，T2028c；`GbEXPHypV3`）
+
+论文 `W^{-d/2} ≤ Ψ_t ≤ W^{-ε₀}`（3_5:27）；Lean 的条款更强（需要 S1-27 的下界），`stGavLGEX_of_v3` 取 `a = 𝔠 ε₀`。
+
+## D42 · `RangeCond` 保留 `(E, t)` 形式（2026-10-03，T2028d）
+
+RBM2D 的 `RangeCond`（论文无）；`v3_premises_of_stFlow` 由 `Im z ≥ N^{-1+ε}`（`δ = ε/2`，`t₀ ≥ 1/16`）推出。
+
+## D43 · `(GiiGEX)` 的对角形式（2026-10-03，T2028e；`GiiOmegaSeq`、`GiiSeq`、`GiiGEXPT`）
+
+这三者只界对角 `|G_pp − m|²`，论文 `(GiiGEX)`（3_5:21）界 `1(Ω)‖G_t − M‖²_max`。在 `GbEXPHypV3` 里与 `GijOmegaSeq` 合取后由 `stGiiGEX_of_omegaSeq` 推出论文形式；单独的 `GiiSeq`、`GiiGEXPT` 弱于论文显示式，只与非对角形式成对使用。逐时刻 `PrecPT` 与一致 `≺` 在这些有限指标集上等价（`asGMcSeq_iff_prec`、`gavLDetSeq_iff_prec`）。
+
+## D44 · `GbEXPHypV3` 的无指示函数条款（2026-10-03，T2028f）
+
+`AsGMcSeq c → GijSeq ∧ GiiSeq ∧ …`：在 `(asGMc)` 下不带 `1(Ω)` 的 `(GijGEX)`、`(GiiGEX)`，论文 `lem_GbEXP` 未显示（它只显示指示函数形式）。是 RBM2D 的读法，照移植保留；由 S1-30 的 `gbEXPV3` 证出。

@@ -38,3 +38,5 @@
 | T2038 | 2026-10-03 06:29 UTC (cace419) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-11 `Green/RowIndep`；自登记 `AgreeOffRow`（structural）；1265 定理 / 0 公理 |
 | T2036 | 2026-10-03 06:32 UTC (85ab436) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KL6：`KLK_ward`（Ward 恒等式，全部 n、两种电荷顺序）；1224 行；1273 定理 / 0 公理 |
 | T2031 | 2026-10-03 06:33 UTC (cca94be) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-12 `Green/LDEQuad`；自登记 `GaussIBP`（owed，S1-19 证）、`FinDep`（structural）；1345 定理 / 0 公理 |
+| T2028 | 2026-10-03 08:03 UTC (64bdfd3) | prover-max（修复 repairer） | Sonnet 5.5 effort max（修复 claude-opus-5-5） | 是（审核 RETURN 一次，仅报告：补 paper-delta 候选 T2028e/f） | S1-07：ST-1 钉文入库 `Induction/Defs`、`Green/Pins`、登记（owed 9 个由 §20 自登记，§22 确认）；审核撞用量墙两次（H27，不计）；1441 定理 / 0 公理 |
+| T2042 | （未合并） | prover-max | — | 否（钉文错） | 预检 FAIL：§18 签的 `EKSumDecay2` 为假（缺 `L^d ≤ W^K`）→ DECISIONS §21、Amend 1，从预检重开 |
