@@ -142,8 +142,8 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLocalAvgOfL2, -- closing paragraph of Step 2 (`3_5:455-465`): ST2-16, ST2-17 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STStep2, -- Step 2 of `lem:main_ind` (`1_2:1340-1357`): ST2-04 (`ST_step2_of_pins`) (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate, bridge in ST2-03 (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate, bridge in ST2-03 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, so it stays owed through `LWterm`/`LWtermExp` (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, so it stays owed through `LWterm`/`LWtermExp` (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
@@ -174,7 +174,9 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWAssm, -- conjunction of the hypotheses of `lem:LWterm` with random parts (§20: unsure, owed)
    `RBM.Gauss.Sizes.LWAssmExp, -- conjunction of the hypotheses of `lem: EWGn2_N` with random parts (§20: unsure, owed)
    `RBM.Gauss.Sizes.STNewKLKAt, -- `lem:newKLK` (`3_5:371-378`) pointwise in `(n, E, u, D, ℓ, H)`, the form `ST_good_engine` takes: ST2-07 (+ST2-06b), `STNewKLK` is its `∃ C δ₀` form (T2071; class proposed: owed)
-   `RBM.Gauss.Sizes.STGoodAt, -- the pathwise good event (E1)-(E5) of one self-improving step of Step 2 (`3_5:537-577`), hypothesis of `ST_good_engine`; holds w.h.p. by `ST_good_prob` (T2039 probe §11): ST2-03/ST2-04 (T2071; class proposed: owed)
+   `RBM.Gauss.Sizes.STGoodAt, -- the pathwise good event (E1)-(E5) of one self-improving step of Step 2 (`3_5:537-577`), hypothesis of `ST_good_engine`; `ST_good_prob` (T2080) proves `P(¬ STGoodAt) ≤ N^{-D'}` from (E1)-(E4) and the pins, not `STGoodAt` itself: ST2-04 (T2071; class proposed: owed)
+   `RBM.Gauss.Sizes.STStep1Weak, -- `(Gtmwc)` (`1_2:1327`), the weak-law conclusion of `STStep1`, uniform in `u ∈ [s,t]`; hypothesis of the ST2-03 event theorems: S1-36 (T2080; class proposed: owed)
+   `RBM.Gauss.Sizes.STScaleInv, -- `(eq:LW_assm_exp)` at the scale family at every time section (`3_5:409`, `521-527`); hypothesis of `ST_LW_sections`, `ST_event_lw`, `ST_event_mg`: ST2-04/ST2-05 (T2080; class proposed: owed)
    `RBM.Ind.Step1TargetV3, -- Step 1 of `lem:main_ind` (`1_2:1317-1328`) under `STGbEXPii`, `STGbEXPij`, RBM2D `Step1TargetV3` (`Induction/Step1.lean:84`): proved by S1-36 (T2079, §20 rule)
    `RBM.Gauss.Sizes.STLocalEntry] -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
 
