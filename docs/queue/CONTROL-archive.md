@@ -66,3 +66,13 @@
 
 ## Released-ticket lines removed 2026-10-03 00:53 UTC (merged)
 - T2006 (MD-1) merged 0a873f1 at 00:38 UTC; T2009 (PT-B1) merged 73cf5c1 at 00:40 UTC; T2010 (PT-E) merged 315e65e at 00:41 UTC (merge log in CONTROL).
+
+## Pre-release lines released 2026-10-03 01:18 UTC (dispatcher V1): T2011, T2012, T2013, T2014
+- `docs/tickets/checks/T2011-check.lean` (PT-B2, route H pilot part 2).
+  done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2011-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2012-check.lean` (MD-2).
+  done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2012-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2013-check.lean` (MD-3).
+- `docs/tickets/checks/T2014-check.lean` (KL2).
+  done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2013-check.lean`: exit 0; no error lines.
+  done: 2026-10-03 01:12 UTC — `lake env lean docs/tickets/checks/T2014-check.lean`: exit 0; no error lines. (The T2013 line above sits under the T2014 entry because CONTROL was rewritten between the hub's write and the dispatcher's; it refers to T2013.)

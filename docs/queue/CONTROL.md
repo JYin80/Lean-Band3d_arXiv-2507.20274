@@ -2,25 +2,23 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-03 01:03 UTC (dispatcher V1: T2007, T2008 merged (H9 done); T2011–T2014 under pre-release check; H10 pending, T2014 files added to H11)
+updated: 2026-10-03 01:19 UTC (dispatcher V1: T2011–T2014 released; T2015 (ST-D1) released on check exit 0, DECISIONS §17; H12)
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-(none; T2011–T2013 under pre-release check)
+1. T2011 — `docs/tickets/T2011.md` (PT-B2, route H pilot part 2: bounds of the 1D heat kernel on ℤ; role `prover-max`; check exit 0 at 01:02 UTC). Start: now.
+2. T2013 — `docs/tickets/T2013.md` (MD-3, flow data, `G_t`, fine-lattice `G`-loops, BA wrapper; role `prover-max`; check exit 0 at 01:02 UTC). Start: now.
+3. T2012 — `docs/tickets/T2012.md` (MD-2, `≺` at scale `N`, per-time domination, moment/Stein bridges; role `prover-hard`; check exit 0 at 01:02 UTC). Start: now.
+4. T2014 — `docs/tickets/T2014.md` (KL2, tree cut and cut bijection; role `prover-max`; check exit 0 at 01:12 UTC). Start: now.
+5. T2015 — `docs/tickets/T2015.md` (ST-D1, report only: design of `lem:main_ind` pins and Step 1, split of sub-gate ST-1; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
-- `docs/tickets/checks/T2011-check.lean` (PT-B2, route H pilot part 2).
-  done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2011-check.lean`: exit 0; no error lines.
-- `docs/tickets/checks/T2012-check.lean` (MD-2).
-  done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2012-check.lean`: exit 0; no error lines.
-- `docs/tickets/checks/T2013-check.lean` (MD-3).
-- `docs/tickets/checks/T2014-check.lean` (KL2).
-  done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2013-check.lean`: exit 0; no error lines.
-  done: 2026-10-03 01:12 UTC — `lake env lean docs/tickets/checks/T2014-check.lean`: exit 0; no error lines. (The T2013 line above sits under the T2014 entry because CONTROL was rewritten between the hub's write and the dispatcher's; it refers to T2013.)
+- `docs/tickets/checks/T2015-check.lean` (ST-D1; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 01:22 UTC — `lake env lean docs/tickets/checks/T2015-check.lean`: exit 0; no error lines.
 
 ## Approved instructions
 - H7 (dispatcher V1, 2026-10-02 23:47 UTC). Stage by name only and commit with message `Dispatcher V1: DECISIONS §12–§15, route H (Fable review), tickets T2006–T2009`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2006.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2009.md`, `docs/tickets/checks/T2006-check.lean`, `docs/tickets/checks/T2007-check.lean`, `docs/tickets/checks/T2008-check.lean`, `docs/tickets/checks/T2009-check.lean`, `docs/claude-team/fable/2026-10-02-routeH.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
@@ -34,6 +32,8 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
 - H10 (dispatcher V1, 2026-10-03 00:53 UTC). After compiling the Pre-release files above: run `lake build RBM3D.Loop.GLoop` (module-doc change only, T2002f), then stage by name only and commit with message `Dispatcher V1: DECISIONS §16, paper-deltas D17–D24, tickets T2011–T2013, GLoop module doc (T2002f)`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/paper-deltas.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2011.md`, `docs/tickets/T2012.md`, `docs/tickets/T2013.md`, `docs/tickets/checks/T2011-check.lean`, `docs/tickets/checks/T2012-check.lean`, `docs/tickets/checks/T2013-check.lean`, `RBM3D/Loop/GLoop.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
   done: 2026-10-03 01:02 UTC — T2011–T2013 checks compiled (exit 0 each); `lake build RBM3D.Loop.GLoop` exit 0 (3220 jobs); committed e0c58e6 (17 files staged by name), pushed to origin/main.
 - H11 (dispatcher V1, 2026-10-03 01:03 UTC). After H10: stage by name only and commit with message `Dispatcher V1: T2007/T2008 merged bookkeeping, ticket T2014 (KL2)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2014.md`, `docs/tickets/checks/T2014-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash. (If H10 is still open when you read this, do H10 and H11 as one commit with H10's message plus ", T2014 (KL2)" and both file lists.)
+  done: 2026-10-03 01:12 UTC — T2014 check compiled (exit 0); committed 06b1fa9 (6 changed files staged by name; `docs/rework-ledger.md` and `docs/queue/CONTROL-archive.md` had no changes), pushed to origin/main.
+- H12 (dispatcher V1, 2026-10-03 01:19 UTC). Standing from now (DECISIONS §17): a Released ticket whose start condition names its Pre-release check starts in the same loop iteration in which you compile that check with exit 0, if a slot is free. Now: stage by name only and commit with message `Dispatcher V1: T2011–T2014 released, ticket T2015 (ST-D1), DECISIONS §17`: `docs/DECISIONS.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2015.md`, `docs/tickets/checks/T2015-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
 (H1–H6 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it.)
 
 ## Merge log (the hub appends one `done:` line per merge)

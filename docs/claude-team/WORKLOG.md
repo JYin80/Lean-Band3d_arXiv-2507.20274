@@ -37,3 +37,5 @@
 - 2026-10-03 00:54 UTC T2006（0a873f1）、T2009（73cf5c1，试点前半）、T2010（315e65e）合并，均一次 PASS → rework-ledger 三行、paper-deltas D17–D24（T2002a–i 与 T2006a；D1 补 three_le_L）、ROUTES。T2007 Amend 1 在跑（H9）。写 T2011（PT-B2，试点后半，钉文 3 条，数值核对 sup 比 1.0/1.09/2.0）、T2012（MD-2）、T2013（MD-3）与检查文件，列 Pre-release；GLoop.lean 模块文档按 T2002f 修正；H10。
 - 2026-10-03 01:03 UTC H9 完成：T2007 Amend 1（repairer 64e6082，第 2 轮审核 PASS）合并 b20c658；T2008 续合并 710acd2 → rework-ledger 两行（流程缺口，不算返工）、ROUTES、QUEUE、CONTROL。
 - 2026-10-03 01:03 UTC 写 T2014（KL2：移植 RBM2D TreeRep.lean:545–1674 的切割与切割双射，公开化，KL 前缀）与检查文件，列 Pre-release；H11 例行提交。
+- 2026-10-03 01:18 UTC T2011–T2014 检查全部 exit 0（01:02/01:12）→ 放行（并行 4 满：T2011、T2013、T2012、T2014）；H10（e0c58e6）、H11（06b1fa9）done。
+- 2026-10-03 01:19 UTC 写 T2015（ST-D1，报告型：lem:main_ind 序列级钉文、Step 1、ST-1 拆单与 O2 计数）与检查文件；DECISIONS §17（新票直接列 Released，检查 exit 0 即开工）；H12。
