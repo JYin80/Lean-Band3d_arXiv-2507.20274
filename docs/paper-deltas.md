@@ -421,3 +421,11 @@ RBM2D `ChainStepCond`、`chainStepCond`（网格 `CondStInd`，指数 30）和 `
 ## D104 · `Step1NetLift` 去掉不用的参数（2026-10-03，T2062a；S1-34 `Induction/Continuity`，a51b69e）
 
 `Step1NetLift`（`Continuity:1261`）比 RBM2D 少了 `c`、`Bandwidth d c`、`CondStInd d E s t`（证明不用，RBM2D T2070b），并把 `Step1LoopPT/Unif`、`Step1WeakLawPT/Unif`、`RangeCond` 读作合并的 `STStep1LoopPT/Loop`、`STStep1WeakPT/Weak`、`Sizes.RangeCond`。没有加前提。`stNetLift_holds : STNetLift d` 证出，`STNetLift` 的 owed 行可删（清理票）。
+
+## D105 · Ward 恒等式只移植一个符号组合（2026-10-03，T2063a；S1-31 `Induction/ConArgDet`，bbd22a5）
+
+`sum_gloop_ward_last_div`、`sum_gloop_ward_last` 是 `WI_calL`（`1_2:1036-1042`，对 `σ₁ = −σ_n` 的两种次序都成立，右边为 `(2i W^d η_t)⁻¹(𝓛^{(n-1),+} − 𝓛^{(n-1),−})`）在 `σ₁ = +`、`σ_n = −` 时的特例，`η_t` 写作 `Im z`（`z = z_t`，`etaT_eq_zt_im`）。`σ₁ = −`、`σ_n = +` 的情形没有移植（同 RBM2D）。是特例，不是一般陈述。
+
+## D106 · `lem_ConArg` 拆成确定性部分与概率部分（2026-10-03，T2063b；S1-31 `Induction/ConArgDet`，bbd22a5）
+
+`Induction/ConArgDet` 是 `lem_ConArg`（`3_5:42-57`；论文的证明 `3_5:60` 说与 [YY_25] 引理 5.1 "完全相同"）的确定性部分：对固定的厄米矩阵 `H` 证 (6.3)–(6.12)，常数 `C_m = m+1`；Ward 引理对一般矩阵 `H`（带 `IsUnit` 前提）陈述，比 `G_t` 更一般。概率陈述（钉文 `STConArg`）归 S1-32。`t < 1` 的限制见 D26。

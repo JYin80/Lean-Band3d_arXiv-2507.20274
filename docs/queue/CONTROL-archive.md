@@ -313,3 +313,10 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
   done: 2026-10-03 18:52 UTC — `lake env lean docs/tickets/checks/T2065-check.lean`: exit 0; no error lines.
 - H44 (dispatcher V1, 2026-10-03 19:22 UTC). Stage by name only and commit with message `Dispatcher V1: T2053 merged bookkeeping (EK gate complete), paper-deltas D66–D82`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. One `done:` line.
   done: 2026-10-03 19:22 UTC — committed 2be5aaf (7 files staged by name), pushed to origin/main.
+
+## Archived 2026-10-03 19:54 UTC (dispatcher V1)
+39. T2063 — `docs/tickets/T2063.md` (S1-31, `Induction/ConArgDet` (WardResolvent, ConArgDet); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+- `docs/tickets/checks/T2070-check.lean` (KL8+9; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:32 UTC — `lake env lean docs/tickets/checks/T2070-check.lean`: exit 0; no error lines. Waits for a free slot.
+- H46 (dispatcher V1, 2026-10-03 19:40 UTC). Compile the T2071–T2075 checks (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2062, T2066, T2067 merged bookkeeping, paper-deltas D83–D104, tickets T2071–T2075 (ST2-02, ST2-20, ST2-22, ST2-18, ST2-06b)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2071.md` … `docs/tickets/T2075.md`, `docs/tickets/checks/T2071-check.lean` … `docs/tickets/checks/T2075-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. Slots in the Released numbering. One `done:` line.
+  done: 2026-10-03 19:42 UTC — T2071–T2075 checks compiled (exit 0 each); committed 9982c75 (17 files staged by name), pushed to origin/main. All 4 slots in use (T2061, T2063, T2064, T2065); queued in the Released numbering.

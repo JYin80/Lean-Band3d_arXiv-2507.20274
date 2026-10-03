@@ -1,13 +1,13 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 19:40 UTC
+更新：2026-10-03 19:54 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2061 | S1-17 | 证明（Green/FlucVanish：CondRow、GreenDeriv、FlucVanish；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2063 | S1-31 | 证明（Induction/ConArgDet：WardResolvent、ConArgDet） | prover-hard | 同上 |
 | T2064 | S1-05 | 证明（Gauss/LoopFlowStein） | prover-hard | 同上 |
+| T2076 | S1-32 | 证明（Induction/ConArg：概率版 lem_ConArg，证钉文 STConArg） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
 | T2071 | ST2-02 | 证明（Step 2 实数核心入库 Induction/Step2Core，探针 §3–§8） | prover | 检查 exit 0 且有空位即开工（§17） |
 | T2075 | ST2-06b | 证明（lem:propT 的 (TTT2) ∞ 距离版 Evolution/PropTInf） | prover-hard | 同上 |
 | T2072 | ST2-20 | 证明（移植 Path/OneStep + DriftLip） | prover | 同上 |
@@ -21,6 +21,7 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2063（S1-31，bbd22a5，2026-10-03 19:50；`lem_ConArg` 确定性部分）
 - T2067（LW-P，ed199e7，2026-10-03 19:33；修复一次）
 - T2066（ST2-01，86124dc，2026-10-03 19:31）
 - T2062（S1-34，a51b69e，2026-10-03 19:22；`STNetLift` 证出）

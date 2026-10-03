@@ -67,3 +67,4 @@
 | T2066 | 2026-10-03 19:31 UTC (86124dc) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-01 `Induction/Step2Defs`（ST-2 钉文入库，登记 18 行）；D83–D92 |
 | T2062 | 2026-10-03 19:22 UTC (a51b69e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-34 `Induction/Continuity`（`stNetLift_holds`）；D104 |
 | T2067 | 2026-10-03 19:33 UTC (ed199e7) | prover（修复 repairer） | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次：缺两个实例） | LW-P `Graph/LWPins`（LW 钉文入库）；D93–D103 |
+| T2063 | 2026-10-03 19:50 UTC (bbd22a5) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-31 `Induction/ConArgDet`（`lem_ConArg` 确定性部分）；D105–D106 |

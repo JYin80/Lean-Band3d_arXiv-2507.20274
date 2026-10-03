@@ -93,3 +93,4 @@
 - 2026-10-03 19:22 UTC 心跳：H43 已做（5f0a683）；T2053（EK-6）合并 fc76526（Amend 1 后一次 PASS）→ **EK gate 完成**。T2061 重开（预检中）。补编 paper-deltas D66–D82（断线期间 12 张的候选；T2033c 命名不记、T2059b 只引 D50、T2052 无）。H44。
 - 2026-10-03 19:25 UTC：写票 T2070（KL8+9：`KLmolecule_holds`、`KLsumZero_holds`，钉文贴在检查文件里；看 `KLShort` 能否由 PT 推出）；H45。
 - 2026-10-03 19:40 UTC 心跳：H44、H45 已做（2be5aaf、a9ad27c；T2070 检查 exit 0）；合并 T2062（S1-34，a51b69e，`STNetLift` 证出）、T2066（ST2-01，86124dc）、T2067（LW-P，ed199e7，修复一次）；补编 D83–D104；返工 9/63。写票 T2071（ST2-02）、T2075（ST2-06b，prover-hard）、T2072（ST2-20）、T2073（ST2-22）、T2074（ST2-18），检查文件已写；H46。CONTROL 归档 H44、H45 及旧预检行。
+- 2026-10-03 19:54 UTC 心跳：H46 已做（9982c75；T2071–T2075 检查 exit 0）；T2063（S1-31）合并 bbd22a5（审核一次 PASS）→ D105–D106；返工 9/64。T2070 开工（prover-max）。写票 T2076（S1-32，`stConArg_holds : STConArg d`，prover-hard，排在 T2070 之后）；H47。ROUTES ST-1 计数改按"设计 + 已合并 + 已放行"口径：21 / 38。
