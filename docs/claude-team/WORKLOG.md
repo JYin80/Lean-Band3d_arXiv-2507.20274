@@ -52,3 +52,5 @@
 - 2026-10-03 04:23 UTC T2021 合并（58bedae，一次 PASS）→ MD gate 完成（MD-1…5）；rework-ledger、ROUTES、QUEUE、CONTROL。在跑：T2015、T2020（审核中）、T2023、T2024；排队 T2022。
 - 2026-10-03 04:41 UTC T2020（KL3，e2aa5fe）、T2022（EK-1，5fb7729）合并，均一次 PASS → rework-ledger、ROUTES、QUEUE。写 T2026（EK-2：钉文 3 条 EKXiDecay/EKXiBall/EKSameRow）、T2025（KL4+5：KLuniquePin + 退役 + 旋转/平移）与检查文件，按 §17 列 Released；H20。
 - 2026-10-03 05:14 UTC T2026（EK-2）、T2024（PT-F2）、T2023（PT-F1：性质 5、8 证出）、T2015（ST-D1，修复一次后 PASS）合并 → DECISIONS §19（ST-1 钉文、36 张拆单、登记；STGbEXP_BA/STConArg_BA 改记 owed，因 §5 只授权 LSY）；ST1-COMMON.md；写 T2027（PT-G）、T2028–T2033（ST-1 第一波 6 张）与检查文件，按 §17 列 Released；H21。
+- 2026-10-03 05:26 UTC H21 完成（1892ec6）；T2027–T2033 检查文件全部 exit 0；T2027、T2028、T2029 开跑（连 T2025 共 4 槽），T2030、T2032、T2033、T2031 排队。CONTROL 整理：已合并票的 Pre-release 条目与 H7–H11、H13–H21 移进 CONTROL-archive（H12 常设保留）。
+- 2026-10-03 05:29 UTC 写 T2034（EK-3：(sum_res_1)、(sum_res_2_NAL) 全部 n，prover-hard，排在排队 ST-1 票前——EK-3→EK-4 是 EK 最长串行链）、T2035（EK-5：lem:sum_decay_nonzero 无损，prover），检查文件只 #check 已合并钉文与输入；CONTROL Released 20、25，Pre-release，H22；ROUTES、QUEUE。
