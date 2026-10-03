@@ -110,6 +110,7 @@ import RBM3D.Induction.ConArg
 import RBM3D.Induction.Step2Core
 import RBM3D.Evolution.PropTInf
 import RBM3D.Path.StepDecomp
+import RBM3D.Loop.KLMolecule
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
