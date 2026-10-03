@@ -331,3 +331,7 @@ RBM2D 的 `RangeCond`（论文无）；`v3_premises_of_stFlow` 由 `Im z ≥ N^{
 ## D44 · `GbEXPHypV3` 的无指示函数条款（2026-10-03，T2028f）
 
 `AsGMcSeq c → GijSeq ∧ GiiSeq ∧ …`：在 `(asGMc)` 下不带 `1(Ω)` 的 `(GijGEX)`、`(GiiGEX)`，论文 `lem_GbEXP` 未显示（它只显示指示函数形式）。是 RBM2D 的读法，照移植保留；由 S1-30 的 `gbEXPV3` 证出。
+
+## D45 · `(sum_res_2)` 要求 `L` 关于 `W` 多项式：`L^d ≤ W^K`（2026-10-03，T2042a；`EKSumDecay2`，`RBM3D/Evolution/Pins.lean`，T2042 合并 d9de66f；DECISIONS §21）
+
+论文 A.2（A_deterministic_estimates.tex:186–190）把远处余项记成 `W^{-D+n}`；实际是 `W^{-D} L^{d(n−1)}`（`Σ_{b_i} |ΔΞ_{a_i;b_1 b_i}|` 中 `Ξ_{a_i b_1}` 一项对 `b_i` 求和得 `L^d`）。只有 `log L ≤ W^ε` 时钉文为假（T2042 预检的反例族）。Lean 加常数 `K > 0`（在 `∃ C` 之前）与前提 `(L : ℝ)^d ≤ W^K`，`C` 依赖 `K`（证明里 `C` 含 `K(n−1)`）。论文的 `(Main_DEL_COND)` `W ≥ N^𝔠` 给出 `K = 1/𝔠`，所以对论文的模型没有损失。
