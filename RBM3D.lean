@@ -68,6 +68,7 @@ import RBM3D.Propagator.Prop5Hold
 import RBM3D.Loop.KLUnique
 import RBM3D.Propagator.Prop6Hold
 import RBM3D.Green.EntryCore
+import RBM3D.Gauss.FlowCalculus
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
