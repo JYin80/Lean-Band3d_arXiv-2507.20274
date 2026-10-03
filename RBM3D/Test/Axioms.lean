@@ -175,6 +175,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWAssmExp, -- conjunction of the hypotheses of `lem: EWGn2_N` with random parts (§20: unsure, owed)
    `RBM.Gauss.Sizes.STNewKLKAt, -- `lem:newKLK` (`3_5:371-378`) pointwise in `(n, E, u, D, ℓ, H)`, the form `ST_good_engine` takes: ST2-07 (+ST2-06b), `STNewKLK` is its `∃ C δ₀` form (T2071; class proposed: owed)
    `RBM.Gauss.Sizes.STGoodAt, -- the pathwise good event (E1)-(E5) of one self-improving step of Step 2 (`3_5:537-577`), hypothesis of `ST_good_engine`; holds w.h.p. by `ST_good_prob` (T2039 probe §11): ST2-03/ST2-04 (T2071; class proposed: owed)
+   `RBM.Ind.Step1TargetV3, -- Step 1 of `lem:main_ind` (`1_2:1317-1328`) under `STGbEXPii`, `STGbEXPij`, RBM2D `Step1TargetV3` (`Induction/Step1.lean:84`): proved by S1-36 (T2079, §20 rule)
    `RBM.Gauss.Sizes.STLocalEntry] -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
 
 /-- Predicates that *define the objects under study* rather than assert a result about
