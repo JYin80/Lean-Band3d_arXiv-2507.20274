@@ -105,13 +105,16 @@ def EKSumDecayNAL (d n : ℕ) (Λ κ : ℝ) : Prop :=
 /-- **Pin `lem:sum_decay` (II), `(sumAzero)` ⟹ `(sum_res_2)`**: for a sum-zero `A` the factor
 `ℓ_t²/ℓ_s²` disappears and the exponent stays `n`; hypotheses: pins 5, 5s, 6 (at `c = 1/2`);
 `log L ≤ W^ε` is the paper's absorption of `log L` in `(eq:bddfA)` (needed at `d = 3`, candidate
-`T2016a`). -/
+`T2016a`).  `L^d ≤ W^K` (candidate `T2042a`, DECISIONS §21) is the paper's `(Main_DEL_COND)` read
+with `K = 1/𝔠`; `C` depends on `K`. -/
 def EKSumDecay2 (d n : ℕ) (Λ κ : ℝ) : Prop :=
   Prop5Decay d Λ → Prop5Short d Λ κ → Prop6Diff1 d Λ κ (1 / 2) →
     3 ≤ d → 2 ≤ n → 0 < Λ → 0 < κ →
+    ∀ K : ℝ, 0 < K →
     ∃ C : ℝ, 0 < C ∧
       ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ →
         ∀ W ε D : ℝ, 1 < W → 0 < ε → ε < 1 → 1 < D → 4 ≤ W ^ ε → Real.log L ≤ W ^ ε →
+        (L : ℝ) ^ d ≤ W ^ K →
         ∀ s t : ℝ, 0 ≤ s → s ≤ t → t ≤ 1 - g ^ 2 / (L : ℝ) ^ 2 → W⁻¹ ≤ (1 - t) / (1 - s) →
         ∀ m : ℂ, ‖m‖ = 1 → κ ≤ m.im → ∀ σ : Fin n → Bool, ∀ A : (Fin n → Zd d L) → ℂ,
           haveI : NeZero L := ⟨by omega⟩
@@ -363,10 +366,11 @@ private theorem ekInstDecay2 (h : EKSumDecay2 3 2 1 (1 / 2)) (h5 : Prop5Decay 3 
         (((1 / 2 : ℝ) ^ 2 + |1 - 1 / 2|) / ((1 / 2 : ℝ) ^ 2 + |1 - 9 / 10|)) ^ 2 * ‖ekAz‖
       + (25 : ℝ) ^ (-2 + C) := by
   obtain ⟨C, hC, H⟩ := h h5 (prop5Short_holds 3 1 (1 / 2)) h6 (by norm_num) le_rfl one_pos
-    (by norm_num)
+    (by norm_num) 2 two_pos
   refine ⟨C, hC, H 5 (by norm_num) (1 / 2) (by norm_num) (by norm_num) 25 (1 / 2) 2
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by rw [ek_sqrt25]; norm_num)
-    ek_log5 (1 / 2) (9 / 10) (by norm_num) (by norm_num) (by norm_num) (by norm_num) Complex.I
+    ek_log5 (by norm_num [Real.rpow_two]) (1 / 2) (9 / 10) (by norm_num) (by norm_num)
+    (by norm_num) (by norm_num) Complex.I
     Complex.norm_I (by norm_num [Complex.I_im]) ![true, false] ekAz ek_fastDecay_Az ek_sumZero_Az⟩
 
 /-- instance of `EKSumDecayNonzero` (`(sum_res_Ndecay_nonzero)`, `A = {0,1} ⊇ I_diff(+,-)`;
