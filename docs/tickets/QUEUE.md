@@ -1,6 +1,6 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 05:56 UTC
+更新：2026-10-03 06:15 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
@@ -8,7 +8,9 @@
 | T2028 | S1-07 | 证明（ST 钉文入库、Green/Pins 移植、登记） | prover-max | 同上 |
 | T2034 | EK-3 | 证明（(sum_res_1)、(sum_res_2_NAL)，全部 n） | prover-hard | 检查 exit 0 且有空位即开工（§17）；排在排队的 ST-1 票之前 |
 | T2036 | KL6 | 证明（Ward 恒等式 KLK_ward，全部 n，两种电荷顺序） | prover-max | 同上 |
-| T2032 | S1-03 | 证明（Hierarchy/ContractionBasic） | prover | 同上 |
+| T2040 | LW-D1 | 设计（光权重层：图词汇、钉文、拆单、体量） | prover-max | 检查 exit 0 且有空位即开工（§17） |
+| T2039 | ST-D2 | 设计（Step 2 与路径层，d ≥ 3 新论证） | prover-max | 同上 |
+| T2041 | ST-D3 | 设计（Steps 3–4，EK-6 消费形式） | prover-max | 同上 |
 | T2033 | S1-09 | 证明（Induction/Split） | prover-hard | 同上 |
 | T2038 | S1-11 | 证明（Green/RowIndep，供 S1-17，关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
 | T2031 | S1-12 | 证明（Green/LDEQuad） | prover | 同上 |
@@ -20,6 +22,7 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2032（S1-03，e318c24，2026-10-03 06:00）
 - T2030（S1-01，6f99812，2026-10-03 05:53）
 - T2029（S1-10，890a89f，2026-10-03 05:52；登记 Amend 1，§20）
 - T2027（PT-G，6cc5032，2026-10-03 05:46）——PT gate 完成
@@ -52,7 +55,7 @@
 
 ## 下一批（等上面的结果再写）
 - PT：gate 完成（T2027）；剩 KL14/总清理时删 `ThetaDiffOne/Two`、`PropTH`。
-- KL4+5 = T2025 已合并；KL6 = T2036 已放行；KL7（三张）等 KL6；MD 全部合并；ST-D1 = T2015；ST-D2（与 LW-D1 同写）、ST-D3 待写。
+- KL4+5 = T2025 已合并；KL6 = T2036 已放行；KL7（三张）等 KL6；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039、ST-D3 = T2041、LW-D1 = T2040 已放行（设计）。
 - EK：EK-3 = T2034、EK-5 = T2035 已放行；EK-4 等 EK-3（T2034）；EK-6 等 ST-D3。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。

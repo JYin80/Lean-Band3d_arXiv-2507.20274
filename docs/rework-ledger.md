@@ -33,3 +33,4 @@
 | T2027 | 2026-10-03 05:46 UTC (6cc5032) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；PT-G：性质 6、7（路径引理）、`prop5to8_holds`、旧接口 `thetaDecay/Short/ZeroMode_holds`；登记表删借用项；**PT gate 完成**；1065 定理 / 0 公理 |
 | T2029 | 2026-10-03 05:52 UTC (890a89f) | prover（Amend 1：repairer） | Sonnet 5.5 effort high | 否（票面错） | 审核一次 PASS；合并第 5 步被登记拦（5 个事件/条件谓词未登记）是总调度票面缺陷（ST1-COMMON 第 8 条 + 预检盲区）→ DECISIONS §20、Amend 1，第 2 轮审核 PASS；S1-10；1110 定理 / 0 公理 |
 | T2030 | 2026-10-03 05:53 UTC (6f99812) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-01 `Gauss/FlowCalculus`；1166 定理 / 0 公理 |
+| T2032 | 2026-10-03 06:00 UTC (e318c24) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-03 `Hierarchy/ContractionBasic`（收缩系数 `W^d`，T2032c 数值核对）；1196 定理 / 0 公理 |
