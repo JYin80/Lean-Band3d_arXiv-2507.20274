@@ -1,0 +1,4 @@
+state: audit-pass
+reason: workflow wf_3896ea8b-de3: preflight PASS, prover DONE (0ad5adb), audit PASS; merging
+updated: Sat Oct  3 23:10:59 UTC 2026
+reports: docs/reports/T2083-prove.md, docs/reports/T2083-audit.md

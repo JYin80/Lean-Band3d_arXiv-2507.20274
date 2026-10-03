@@ -119,6 +119,8 @@ import RBM3D.Green.LDE
 import RBM3D.Induction.Step2Scale
 import RBM3D.Induction.Step1Setup
 import RBM3D.Induction.Step2Events
+import RBM3D.Path.DriftAlgebra
+import RBM3D.Path.LoopStep
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
