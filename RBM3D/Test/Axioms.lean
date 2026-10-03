@@ -143,7 +143,34 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate, bridge in ST2-03 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STLWassmExp] -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
+   -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins, proved by LW-01..LW-14 (T2040 b.9)
+   `RBM.Graph.LWweightExp, -- `(Owx)` (`7_8:294-306`): LW-05
+   `RBM.Graph.LWedgeExp, -- `(Oe1x)` (`7_8:309-330`): LW-06
+   `RBM.Graph.LWggExp, -- `(Oe2x)` (`7_8:334-349`): LW-07
+   `RBM.Gauss.Sizes.LWterm, -- `lem:LWterm` (`3_5:385-404`): LW-01
+   `RBM.Gauss.Sizes.LWtermB, -- `lem:LWterm`, "in particular" (`3_5:393-397`): LW-01
+   `RBM.Gauss.Sizes.LWtermExp, -- `lem: EWGn2_N` (`3_5:406-415`): LW-01, LW-16
+   `RBM.Gauss.Sizes.LWtermExpS, -- `lem: EWGn2_N`, strict regime: LW-01
+   `RBM.Gauss.Sizes.LWtermExpN, -- `lem: EWGn2_N`, `1 - t ≤ ĝ²/L²`: LW-16
+   `RBM.Gauss.Sizes.LWtermEXP, -- `lem:LWterm_EXP` (`6:83-88`): LW-14
+   `RBM.Gauss.Sizes.LWMoment, -- `lem:LW_moment` (`7_8:72-77`): LW-02
+   `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-02, LW-13
+   `RBM.Gauss.Sizes.LWAnpKey, -- `lem:Anp_key` (`7_8:960-985`): LW-12
+   `RBM.Gauss.Sizes.LWAnpKeyGh, -- `lem:Anp_key_gh` (`7_8:1041-1077`): LW-12
+   `RBM.Gauss.Sizes.LWAnp, -- `lem:Anp` (`7_8:933-939`): LW-12
+   `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
+   `RBM.Gauss.Sizes.LWReduceT, -- reduction of `lem: EWGn2_N` to `lem:LW_moment_exp`: LW-01
+   -- T2067: the random premises of the LW pins (ST chain)
+   `RBM.Gauss.Sizes.LWInteg, -- integrability of `|f_{xy}|^p`
+   `RBM.Gauss.Sizes.LWInit, -- `(initialGT2)` (`3_5:30`)
+   `RBM.Gauss.Sizes.LWLoop2, -- `(LW_assm)` (`3_5:388`)
+   `RBM.Gauss.Sizes.LWLoopExp, -- `(LW_assm_exp)` (`3_5:411`)
+   `RBM.Gauss.Sizes.LWXi, -- `(eq:Gbyxi3)` (`7_8:963-966`)
+   `RBM.Gauss.Sizes.LWAvgLaw, -- `(Gt_avgbound_flow)` (`1_2:1344`)
+   `RBM.Gauss.Sizes.LWAssm, -- conjunction of the hypotheses of `lem:LWterm` with random parts (§20: unsure, owed)
+   `RBM.Gauss.Sizes.LWAssmExp, -- conjunction of the hypotheses of `lem: EWGn2_N` with random parts (§20: unsure, owed)
+   `RBM.Gauss.Sizes.STLocalEntry] -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -176,6 +203,13 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STFlow, -- the setting of `MR:locSC` and `zztE`: `Admissible` and `locDomain` (T2028, DECISIONS §19)
    `RBM.Graph.LGraph.DotWF, -- at most one dotted edge per pair of vertices, none a loop (`def_graph1`, `7_8:141`; T2050)
    `RBM.Gauss.Sizes.STPsiClass, -- the class of profiles `Ψ_t(|a-b|)` of `(eq:Psi)` (`3_5:385-393`): data condition of `STLWB`, `STEMn2Poly` (T2066)
+   `RBM.Gauss.Sizes.LWWindow, -- the window `W^{-d/2} ≤ Ψ_t ≤ W^{-ε₀}` of the control parameter (T2051; registered by T2067)
+   `RBM.Gauss.Sizes.LWClass, -- the class `Ψ_t(·)` of `lem:LWterm` (`3_5:388-392`): positivity and window (T2051; registered by T2067)
+   `RBM.Gauss.Sizes.LWPsiRel, -- monotonicity and `(eq:Psi)` of the class (`3_5:391`) (T2051; registered by T2067)
+   `RBM.Gauss.Sizes.LWPsiAll, -- the hypotheses on the class shared by the graph lemmas (T2051; registered by T2067)
+   `RBM.Graph.NGraph.IsNested, -- properties (1)-(3) of a nested graph (`7_8:956`): a data condition on the graph (T2050; registered by T2067)
+   `RBM.Graph.NGraph.NoGhost, -- no ghost edge: a data condition on the graph (T2050; registered by T2067)
+   `RBM.Graph.NGraph.GhostOK, -- at most one ghost edge per path, an ending edge: a data condition on the graph (T2050; registered by T2067)
    `RBM.Graph.LGraph.Consistent] -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
 
 /-- The premises the audit reports on: borrowed plus owed. -/

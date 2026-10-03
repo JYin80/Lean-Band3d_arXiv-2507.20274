@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor2 PASS after one rule-(B) repair (inst_LWReduceB/T); merge per CLAUDE.md §3 (A), Axioms.lean union-merged (H23 b; 118 names = union of main 86 and branch 101): lake build 3786 jobs, axiom audit 2231 theorems / 0 axioms
+updated: 2026-10-03 19:33:46 UTC
+reports: docs/reports/T2067-prove.md, docs/reports/T2067-audit.md
