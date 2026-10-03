@@ -2,46 +2,49 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-03 19:54 UTC (dispatcher V1: T2063 merged; T2076 released; H46 archived; H47)
+updated: 2026-10-03 21:59 UTC (dispatcher V1: T2061, T2064, T2065, T2070–T2076 merged; T2077–T2085 released; H47 archived; H48)
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-48. T2061 — `docs/tickets/T2061.md` (S1-17, `Green/FlucVanish` (CondRow, GreenDeriv, FlucVanish); role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-49. T2064 — `docs/tickets/T2064.md` (S1-05, `Gauss/LoopFlowStein`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-50. T2065 — `docs/tickets/T2065.md` (S1-04, `Hierarchy/ContractionSecondLoop` (13 small files); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-51. T2070 — `docs/tickets/T2070.md` (KL8+9, molecule decay `KLmoleculePin` and sum-zero `KLsumZeroPin`, `Loop/KLMolecule`; role `prover-max`; KL chain to KL10). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-52. T2076 — `docs/tickets/T2076.md` (S1-32, `Induction/ConArg` (probabilistic `lem_ConArg`, proves the pin `STConArg`); role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-53. T2071 — `docs/tickets/T2071.md` (ST2-02, Step 2 real-number core into the library `Induction/Step2Core` (probe §3–§8); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-54. T2075 — `docs/tickets/T2075.md` (ST2-06b, `(TTT2)` of `lem:propT` for `zdistInf`, `Evolution/PropTInf`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-55. T2072 — `docs/tickets/T2072.md` (ST2-20, port `Path/OneStep` + `DriftLip`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-56. T2073 — `docs/tickets/T2073.md` (ST2-22, port `Path/StepDecomp`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-57. T2074 — `docs/tickets/T2074.md` (ST2-18, port `Path/NetLift` part 1, `Step2NetLift`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+58. T2079 — `docs/tickets/T2079.md` (S1-35, `Induction/Step1Setup` (first part of Step 1; §26 probe lemmas); role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+59. T2078 — `docs/tickets/T2078.md` (S1-18, `Green/LDE` (FlucAvg, LDE; bounded weights §30); role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+60. T2077 — `docs/tickets/T2077.md` (S1-06, `Gauss/LoopGenerator` (nine small files); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+61. T2080 — `docs/tickets/T2080.md` (ST2-03, `Induction/Step2Events` (probe §9, §11 events + the three ST-2 ↔ LW bridges, §29); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+62. T2082 — `docs/tickets/T2082.md` (ST2-19, `Path/NetLift2` (`Step2LocalNetLift`; proves the pin `STNetLift2`); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+63. T2081 — `docs/tickets/T2081.md` (ST2-05, `Induction/Step2Scale` (proves the pin `STScaleExists`); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+64. T2083 — `docs/tickets/T2083.md` (ST2-21, port `Path/LoopStep` + `Path/DriftAlgebra`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+65. T2084 — `docs/tickets/T2084.md` (ST2-23, port `Path/QVForm` + `Path/QVIdentity`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+66. T2085 — `docs/tickets/T2085.md` (ST2-24, port `Path/StepDecompLoop` + `Path/Kernel`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
-- `docs/tickets/checks/T2071-check.lean` (ST2-02; released conditionally above, DECISIONS §17).
-  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2071-check.lean`: exit 0; no error lines. Waits for a free slot.
-- `docs/tickets/checks/T2075-check.lean` (ST2-06b; released conditionally above, DECISIONS §17).
-  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2075-check.lean`: exit 0; no error lines. Waits for a free slot.
-- `docs/tickets/checks/T2072-check.lean` (ST2-20; released conditionally above, DECISIONS §17).
-  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2072-check.lean`: exit 0; no error lines. Waits for a free slot.
-- `docs/tickets/checks/T2073-check.lean` (ST2-22; released conditionally above, DECISIONS §17).
-  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2073-check.lean`: exit 0; no error lines. Waits for a free slot.
-- `docs/tickets/checks/T2074-check.lean` (ST2-18; released conditionally above, DECISIONS §17).
-  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2074-check.lean`: exit 0; no error lines. Waits for a free slot.
-- `docs/tickets/checks/T2076-check.lean` (S1-32; released conditionally above, DECISIONS §17).
-  done: 2026-10-03 19:54 UTC — `lake env lean docs/tickets/checks/T2076-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2079-check.lean` (S1-35; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2079-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2078-check.lean` (S1-18; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2078-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2077-check.lean` (S1-06; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2077-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2080-check.lean` (ST2-03; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2080-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2082-check.lean` (ST2-19; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2082-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2081-check.lean` (ST2-05; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2081-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2083-check.lean` (ST2-21; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2083-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2084-check.lean` (ST2-23; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2084-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2085-check.lean` (ST2-24; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 22:02 UTC — `lake env lean docs/tickets/checks/T2085-check.lean`: exit 0; no error lines.
 
 ## Approved instructions
 - H12 (dispatcher V1, 2026-10-03 01:19 UTC). Standing from now (DECISIONS §17): a Released ticket whose start condition names its Pre-release check starts in the same loop iteration in which you compile that check with exit 0, if a slot is free. Now: stage by name only and commit with message `Dispatcher V1: T2011–T2014 released, ticket T2015 (ST-D1), DECISIONS §17`: `docs/DECISIONS.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2015.md`, `docs/tickets/checks/T2015-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
   done: 2026-10-03 01:22 UTC — committed c950f27 (7 files staged by name), pushed to origin/main. T2015 check exit 0; T2015 waits for a free slot (4 of 4 in use by T2011, T2013, T2012, T2014).
-- H45 (dispatcher V1, 2026-10-03 19:25 UTC). After H44: compile the T2070 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: ticket T2070 (KL8+9)`: `docs/tickets/T2070.md`, `docs/tickets/checks/T2070-check.lean`, `docs/tickets/QUEUE.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; push. One `done:` line.
-  done: 2026-10-03 19:32 UTC — T2070 check compiled (exit 0); committed a9ad27c (6 files staged by name), pushed to origin/main.
-- H47 (dispatcher V1, 2026-10-03 19:54 UTC). Compile the T2076 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2063 merged bookkeeping, paper-deltas D105–D106, ticket T2076 (S1-32)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2076.md`, `docs/tickets/checks/T2076-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. T2076 takes its slot in the Released numbering (after T2070). One `done:` line.
-(H1–H11, H13–H46 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it. Standing from H23 (DECISIONS §20): (b) when two branches both append lines to the registry lists of `RBM3D/Test/Axioms.lean`, keep both sides (union), then run the full build; (c) a merge that stops at step 5 only on unregistered premises gets state `blocked` with the names, and if the ticket has an Amend 1 of DECISIONS §20 you run its `repairer` stage for the registry lines and a round-2 `auditor` of that diff at once. Standing from H28: every workflow keeps its scratch files in its own subdirectory `scratchpad/<ticket>/` (T2036 report (d): concurrent workflows overwrote each other's generic file names).)
+- H48 (dispatcher V1, 2026-10-03 21:59 UTC). Compile the nine checks T2077–T2085 (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2061, T2064, T2065, T2070–T2076 merged bookkeeping, tickets T2077–T2085 (S1-06, S1-18, S1-35, ST2-03, ST2-05, ST2-19, ST2-21, ST2-23, ST2-24)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2077.md` … `docs/tickets/T2085.md`, `docs/tickets/checks/T2077-check.lean` … `docs/tickets/checks/T2085-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. Start the released tickets in priority order as slots allow. One `done:` line.
+(H1–H11, H13–H47 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it. Standing from H23 (DECISIONS §20): (b) when two branches both append lines to the registry lists of `RBM3D/Test/Axioms.lean`, keep both sides (union), then run the full build; (c) a merge that stops at step 5 only on unregistered premises gets state `blocked` with the names, and if the ticket has an Amend 1 of DECISIONS §20 you run its `repairer` stage for the registry lines and a round-2 `auditor` of that diff at once. Standing from H28: every workflow keeps its scratch files in its own subdirectory `scratchpad/<ticket>/` (T2036 report (d): concurrent workflows overwrote each other's generic file names).)
 
 ## Merge log (the hub appends one `done:` line per merge)
 done: 2026-10-02 19:05 UTC — T2001 merged a62eeef (report only: state, prove, audit, coverage reports); audit PASS round 2 after one repair; pushed 3c11d7b..a62eeef.
@@ -109,6 +112,15 @@ done: 2026-10-03 19:31 UTC — T2066 merged 86124dc (RBM3D/Induction/Step2Defs.l
 done: 2026-10-03 19:33 UTC — T2067 merged ed199e7 (RBM3D/Graph/LWPins.lean, RBM3D/Test/Axioms.lean union-merged with T2066's lines (H23 b; 118 registry names = union), root import; lake build 3786 jobs, axiom audit 2231 theorems / 0 axioms); audit PASS round 2 after one repair; pushed.
 done: 2026-10-03 19:50 UTC — T2063 merged bbd22a5 (RBM3D/Induction/ConArgDet.lean, root import; lake build 3787 jobs, axiom audit 2284 theorems / 0 axioms); audit PASS round 1; pushed.
 done: 2026-10-03 19:54 UTC — T2065 merged 64a33ea (RBM3D/Hierarchy/ContractionSecondLoop.lean, root import; lake build 3788 jobs, axiom audit 2333 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 19:55 UTC — T2061 merged 40f70b9 (RBM3D/Green/FlucVanish.lean, RBM3D/Test/Axioms.lean (IsRowCoord applied onto main, H23 b), root import; lake build 3789 jobs, axiom audit 2440 theorems / 0 axioms); audit PASS round 1 after Amend 1 restart; pushed.
+done: 2026-10-03 20:09 UTC — T2064 merged 06429ba (RBM3D/Gauss/LoopFlowStein.lean, root import; lake build 3790 jobs, axiom audit 2473 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:23 UTC — T2076 merged 8a8cfeb (RBM3D/Induction/ConArg.lean, root import; lake build 3791 jobs, axiom audit 2475 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:25 UTC — T2071 merged 092aaf0 (RBM3D/Induction/Step2Core.lean, RBM3D/Test/Axioms.lean (registry lines applied onto main, H23 b), root import; lake build 3792 jobs, axiom audit 2510 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:32 UTC — T2075 merged a84c579 (RBM3D/Evolution/PropTInf.lean, root import; lake build 3793 jobs, axiom audit 2511 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:40 UTC — T2073 merged a262beb (RBM3D/Path/StepDecomp.lean, RBM3D/Test/Axioms.lean (registry line applied onto main, H23 b), root import; lake build 3794 jobs, axiom audit 2527 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:52 UTC — T2070 merged eaf0614 (RBM3D/Loop/KLMolecule.lean, root import; lake build 3795 jobs, axiom audit 2534 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:55 UTC — T2072 merged 593e519 (RBM3D/Path/OneStep.lean, root import; lake build 3818 jobs, axiom audit 2538 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 20:58 UTC — T2074 merged 06b49b2 (RBM3D/Path/NetLift1.lean, RBM3D/Test/Axioms.lean (registry line applied onto main, H23 b), root import; lake build 3819 jobs, axiom audit 2540 theorems / 0 axioms); audit PASS round 1; pushed.
 
 ## Pending approval (information only — the hub must NOT act on these)
 (none)

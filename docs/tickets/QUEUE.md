@@ -1,26 +1,35 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 19:54 UTC
+更新：2026-10-03 22:00 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
-| T2061 | S1-17 | 证明（Green/FlucVanish：CondRow、GreenDeriv、FlucVanish；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2064 | S1-05 | 证明（Gauss/LoopFlowStein） | prover-hard | 同上 |
-| T2076 | S1-32 | 证明（Induction/ConArg：概率版 lem_ConArg，证钉文 STConArg） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2071 | ST2-02 | 证明（Step 2 实数核心入库 Induction/Step2Core，探针 §3–§8） | prover | 检查 exit 0 且有空位即开工（§17） |
-| T2075 | ST2-06b | 证明（lem:propT 的 (TTT2) ∞ 距离版 Evolution/PropTInf） | prover-hard | 同上 |
-| T2072 | ST2-20 | 证明（移植 Path/OneStep + DriftLip） | prover | 同上 |
-| T2073 | ST2-22 | 证明（移植 Path/StepDecomp） | prover | 同上 |
-| T2074 | ST2-18 | 证明（移植 Path/NetLift 前半：Step2NetLift） | prover | 同上 |
-| T2070 | KL8+9 | 证明（分子衰减 KLmoleculePin、和为零 KLsumZeroPin） | prover-max | 同上 |
-| T2065 | S1-04 | 证明（Hierarchy/ContractionSecondLoop，13 个小文件） | prover | 同上 |
+| T2079 | S1-35 | 证明（Induction/Step1Setup：Step 1 前半；§26 探针引理；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
+| T2078 | S1-18 | 证明（Green/LDE：FlucAvg、LDE；有界权 §30；关键路径） | prover-hard | 同上 |
+| T2077 | S1-06 | 证明（Gauss/LoopGenerator，九个小文件） | prover | 同上 |
+| T2080 | ST2-03 | 证明（Induction/Step2Events：探针 §9、§11 事件 + §29 三座 ST-2↔LW 桥） | prover | 同上 |
+| T2082 | ST2-19 | 证明（Path/NetLift2：Step2LocalNetLift，证钉文 STNetLift2） | prover | 同上 |
+| T2081 | ST2-05 | 证明（Induction/Step2Scale：证钉文 STScaleExists） | prover-hard | 同上 |
+| T2083 | ST2-21 | 证明（移植 Path/LoopStep + DriftAlgebra） | prover | 同上 |
+| T2084 | ST2-23 | 证明（移植 Path/QVForm + QVIdentity） | prover | 同上 |
+| T2085 | ST2-24 | 证明（移植 Path/StepDecompLoop + Kernel） | prover | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 
 ## 已合并
+- T2074（ST2-18，06b49b2，2026-10-03 20:58；`stNetLift2_part1`）
+- T2072（ST2-20，593e519，2026-10-03 20:55）
+- T2070（KL8+9，eaf0614，2026-10-03 20:52；分子衰减与和为零）
+- T2073（ST2-22，a262beb，2026-10-03 20:40）
+- T2075（ST2-06b，a84c579，2026-10-03 20:32；`(TTT2)` ∞ 距离版）
+- T2071（ST2-02，092aaf0，2026-10-03 20:25；Step 2 实数核心）
+- T2076（S1-32，8a8cfeb，2026-10-03 20:23；`STConArg` 证出）
+- T2064（S1-05，06429ba，2026-10-03 20:09）
+- T2061（S1-17，40f70b9，2026-10-03 19:55；有界权 §30）
+- T2065（S1-04，64a33ea，2026-10-03 19:54）
 - T2063（S1-31，bbd22a5，2026-10-03 19:50；`lem_ConArg` 确定性部分）
 - T2067（LW-P，ed199e7，2026-10-03 19:33；修复一次）
 - T2066（ST2-01，86124dc，2026-10-03 19:31）

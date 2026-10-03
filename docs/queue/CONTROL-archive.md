@@ -320,3 +320,31 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
   done: 2026-10-03 19:32 UTC — `lake env lean docs/tickets/checks/T2070-check.lean`: exit 0; no error lines. Waits for a free slot.
 - H46 (dispatcher V1, 2026-10-03 19:40 UTC). Compile the T2071–T2075 checks (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2062, T2066, T2067 merged bookkeeping, paper-deltas D83–D104, tickets T2071–T2075 (ST2-02, ST2-20, ST2-22, ST2-18, ST2-06b)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2071.md` … `docs/tickets/T2075.md`, `docs/tickets/checks/T2071-check.lean` … `docs/tickets/checks/T2075-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. Slots in the Released numbering. One `done:` line.
   done: 2026-10-03 19:42 UTC — T2071–T2075 checks compiled (exit 0 each); committed 9982c75 (17 files staged by name), pushed to origin/main. All 4 slots in use (T2061, T2063, T2064, T2065); queued in the Released numbering.
+
+## Archived 2026-10-03 21:59 UTC (dispatcher V1)
+48. T2061 — `docs/tickets/T2061.md` (S1-17, `Green/FlucVanish` (CondRow, GreenDeriv, FlucVanish); role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+49. T2064 — `docs/tickets/T2064.md` (S1-05, `Gauss/LoopFlowStein`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+50. T2065 — `docs/tickets/T2065.md` (S1-04, `Hierarchy/ContractionSecondLoop` (13 small files); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+51. T2070 — `docs/tickets/T2070.md` (KL8+9, molecule decay `KLmoleculePin` and sum-zero `KLsumZeroPin`, `Loop/KLMolecule`; role `prover-max`; KL chain to KL10). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+52. T2076 — `docs/tickets/T2076.md` (S1-32, `Induction/ConArg` (probabilistic `lem_ConArg`, proves the pin `STConArg`); role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+53. T2071 — `docs/tickets/T2071.md` (ST2-02, Step 2 real-number core into the library `Induction/Step2Core` (probe §3–§8); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+54. T2075 — `docs/tickets/T2075.md` (ST2-06b, `(TTT2)` of `lem:propT` for `zdistInf`, `Evolution/PropTInf`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+55. T2072 — `docs/tickets/T2072.md` (ST2-20, port `Path/OneStep` + `DriftLip`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+56. T2073 — `docs/tickets/T2073.md` (ST2-22, port `Path/StepDecomp`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+57. T2074 — `docs/tickets/T2074.md` (ST2-18, port `Path/NetLift` part 1, `Step2NetLift`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+- `docs/tickets/checks/T2071-check.lean` (ST2-02; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2071-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2075-check.lean` (ST2-06b; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2075-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2072-check.lean` (ST2-20; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2072-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2073-check.lean` (ST2-22; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2073-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2074-check.lean` (ST2-18; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:42 UTC — `lake env lean docs/tickets/checks/T2074-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2076-check.lean` (S1-32; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 19:54 UTC — `lake env lean docs/tickets/checks/T2076-check.lean`: exit 0; no error lines.
+- H47 (dispatcher V1, 2026-10-03 19:54 UTC). Compile the T2076 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2063 merged bookkeeping, paper-deltas D105–D106, ticket T2076 (S1-32)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2076.md`, `docs/tickets/checks/T2076-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. T2076 takes its slot in the Released numbering (after T2070). One `done:` line.
+  done: 2026-10-03 19:55 UTC — T2076 check compiled (exit 0); committed 467824d (9 files staged by name), pushed to origin/main.
+- H45 (dispatcher V1, 2026-10-03 19:25 UTC). After H44: compile the T2070 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: ticket T2070 (KL8+9)`: `docs/tickets/T2070.md`, `docs/tickets/checks/T2070-check.lean`, `docs/tickets/QUEUE.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; push. One `done:` line.
+  done: 2026-10-03 19:32 UTC — T2070 check compiled (exit 0); committed a9ad27c (6 files staged by name), pushed to origin/main.

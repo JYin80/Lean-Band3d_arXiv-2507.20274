@@ -68,3 +68,13 @@
 | T2062 | 2026-10-03 19:22 UTC (a51b69e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-34 `Induction/Continuity`（`stNetLift_holds`）；D104 |
 | T2067 | 2026-10-03 19:33 UTC (ed199e7) | prover（修复 repairer） | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次：缺两个实例） | LW-P `Graph/LWPins`（LW 钉文入库）；D93–D103 |
 | T2063 | 2026-10-03 19:50 UTC (bbd22a5) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-31 `Induction/ConArgDet`（`lem_ConArg` 确定性部分）；D105–D106 |
+| T2065 | 2026-10-03 19:54 UTC (64a33ea) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-04 `Hierarchy/ContractionSecondLoop` |
+| T2061 | 2026-10-03 19:55 UTC (40f70b9) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-17 `Green/FlucVanish`（Amend 1 有界权重开不算返工，§30） |
+| T2064 | 2026-10-03 20:09 UTC (06429ba) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-05 `Gauss/LoopFlowStein` |
+| T2076 | 2026-10-03 20:23 UTC (8a8cfeb) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-32 `Induction/ConArg`（`STConArg` 证出） |
+| T2071 | 2026-10-03 20:25 UTC (092aaf0) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-02 `Induction/Step2Core` |
+| T2075 | 2026-10-03 20:32 UTC (a84c579) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；ST2-06b `Evolution/PropTInf` |
+| T2073 | 2026-10-03 20:40 UTC (a262beb) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-22 `Path/StepDecomp` |
+| T2070 | 2026-10-03 20:52 UTC (eaf0614) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KL8+9 `Loop/KLMolecule` |
+| T2072 | 2026-10-03 20:55 UTC (593e519) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-20 `Path/OneStep` |
+| T2074 | 2026-10-03 20:58 UTC (06b49b2) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-18 `Path/NetLift1`（`stNetLift2_part1`） |
