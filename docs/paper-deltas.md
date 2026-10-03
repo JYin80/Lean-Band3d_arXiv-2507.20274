@@ -302,7 +302,7 @@ Lean 用 `ZMod (W*L)`，块 `[a] = a.val·W + {0, …, W−1}`；论文用 `⟦�
 
 ## D37 · `lem:sum_decay_nonzero` 无损、两种电荷（2026-10-03，T2016e；`EKSumDecayNonzero`）
 
-强于论文：论文是 `≺`（含 `L^τ` 损失）且只写一种电荷；Lean 是 `C‖𝒜‖`，`C` 只依赖 `(d, n, Λ, κ)`。
+强于论文：论文是 `≺`（含 `L^τ` 损失）且只写一种电荷；Lean 是 `C‖𝒜‖`，`C` 只依赖 `(d, n, Λ, κ)`。钉文另带 `0 ≤ s`（EK-1 钉文，已冻结），在论文的区间 `1 − λ²/L² ≤ s` 里自动成立（`λ ≤ 𝔡⁻¹`、`L ≥ 3`）。T2035 合并 c163ca8 证出此钉文（`ekSumDecayNonzero_holds`）。
 
 ## D38 · EK 钉文的常数对 `g ∈ (0, Λ]` 一致，距离用 `ℓ¹`（2026-10-03，T2016f）
 
@@ -335,3 +335,11 @@ RBM2D 的 `RangeCond`（论文无）；`v3_premises_of_stFlow` 由 `Im z ≥ N^{
 ## D45 · `(sum_res_2)` 要求 `L` 关于 `W` 多项式：`L^d ≤ W^K`（2026-10-03，T2042a；`EKSumDecay2`，`RBM3D/Evolution/Pins.lean`，T2042 合并 d9de66f；DECISIONS §21）
 
 论文 A.2（A_deterministic_estimates.tex:186–190）把远处余项记成 `W^{-D+n}`；实际是 `W^{-D} L^{d(n−1)}`（`Σ_{b_i} |ΔΞ_{a_i;b_1 b_i}|` 中 `Ξ_{a_i b_1}` 一项对 `b_i` 求和得 `L^d`）。只有 `log L ≤ W^ε` 时钉文为假（T2042 预检的反例族）。Lean 加常数 `K > 0`（在 `∃ C` 之前）与前提 `(L : ℝ)^d ≤ W^K`，`C` 依赖 `K`（证明里 `C` 含 `K(n−1)`）。论文的 `(Main_DEL_COND)` `W ≥ N^𝔠` 给出 `K = 1/𝔠`，所以对论文的模型没有损失。
+
+## D46 · `scaleFacts_R1` 在 `W^{-d}B_{t,0}` 上，前提加 `(eq:WO)`；比率事实不要 `0 ≤ s`（2026-10-03，T2045a；`RBM3D/Induction/ScaleFacts.lean`；DECISIONS §26）
+
+RBM2D 的 R1 是关于 `M_t⁻¹ Im m` 的；本文 d ≥ 3 的控制参数是 `a_t = W^{-d}B_{t,0}`（`1_2:1108`）。Lean 的 `scaleFacts_R1` 结论为 `a_u ≤ 2 N^{-min(2𝔠𝔡, τ)}`，来自 `a_u ≤ (λ²W^d)⁻¹ + (N(1−u))⁻¹`，所以用到本文的常设假设 `(eq:WO)`（`1_2:363`）；`scaleFacts_R1_needs_WO` 编译了去掉它的反例。这不是新假设。`scaleFacts_ellT_ratio`、`scaleFacts_ellT_pow_four`（`1_2:1121`）的前提比 RBM2D 少 `0 ≤ s`。
+
+## D47 · RBM2D 链式网格与 Step 5 近端事实不在 ST-1 移植（2026-10-03，T2045b；DECISIONS §26）
+
+RBM2D `ChainStepCond`、`chainStepCond`（网格 `CondStInd`，指数 30）和 `scaleFacts_inv_sq_le_tailT`（2D Step 5 的 `tailT`、`ellStar`、`scaleM`）在本文的 Lean 里没有对应物。本文 `1_2:1308-1312` 的时间归纳分两段，不固定网格；链式归纳在 ST-6 按本文重写。

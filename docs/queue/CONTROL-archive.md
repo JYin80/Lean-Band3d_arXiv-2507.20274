@@ -206,3 +206,24 @@
 ### Approved instructions (done)
 - H34 (dispatcher V1, 2026-10-03 10:44 UTC). After compiling the T2052 check: stage by name only and commit with message `Dispatcher V1: T2044 merged bookkeeping, ticket T2052 (S1-14)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2052.md`, `docs/tickets/checks/T2052-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push.
   done: 2026-10-03 10:52 UTC — T2052 check compiled (exit 0); committed 8808a2e (8 files staged by name), pushed to origin/main.
+
+## Archived 2026-10-03 13:06 UTC (dispatcher V1)
+19. T2048 — `docs/tickets/T2048.md` (KL7b, port `Loop/SumAll`: total-sum bound; role `prover-max`; KL chain). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+- `docs/tickets/checks/T2035-check.lean` (EK-5; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:32 UTC — `lake env lean docs/tickets/checks/T2035-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2039-check.lean` (ST-D2; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 06:19 UTC — `lake env lean docs/tickets/checks/T2039-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2045-check.lean` (S1-08; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 08:22 UTC — `lake env lean docs/tickets/checks/T2045-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2048-check.lean` (KL7b; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 09:22 UTC — `lake env lean docs/tickets/checks/T2048-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2050-check.lean` (LW-03; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 10:37 UTC — `lake env lean docs/tickets/checks/T2050-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2054-check.lean` (S3-02; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 12:52 UTC — `lake env lean docs/tickets/checks/T2054-check.lean`: exit 0; no error lines.
+- H35 (dispatcher V1, 2026-10-03 11:01 UTC). After compiling the T2053, T2054, T2055 checks: stage by name only and commit with message `Dispatcher V1: T2049 merged bookkeeping, tickets T2053 (EK-6), T2054 (S3-02), T2055 (S3-04); EK-5 moved ahead`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2053.md`, `docs/tickets/T2054.md`, `docs/tickets/T2055.md`, `docs/tickets/checks/T2053-check.lean`, `docs/tickets/checks/T2054-check.lean`, `docs/tickets/checks/T2055-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. Order: the next free slot goes to T2035 (EK-5), then T2054, T2055 (the Released numbering).
+  done: 2026-10-03 12:52 UTC — T2053/T2054/T2055 checks compiled (exit 0 each); committed dda5966 (12 files staged by name), pushed to origin/main. All 4 slots are held by T2039, T2045, T2048, T2050, whose stages failed on the usage limit (reset 12:50 UTC) and are being rerun (rule H); T2035 takes the next free slot.
+18. T2045 — `docs/tickets/T2045.md` (S1-08, `Induction/{ScaleFacts,PerTimeCalc}`; role `prover-hard`; S1-16 on the critical path needs it). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+20. T2035 — `docs/tickets/T2035.md` (EK-5, `lem:sum_decay_nonzero` loss-free, both charges; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17). (Moved ahead: EK-6 = T2053 waits for it.)
+- H36 (dispatcher V1, 2026-10-03 13:06 UTC). T2045: the auditor's "PASS — needs dispatcher sign-off" (audit §5) is signed: DECISIONS §26 accepts that `ChainStepCond`, `chainStepCond`, `scaleFacts_inv_sq_le_tailT` are not ported (deferred to ST-6). Merge `t/T2045` (60dac4a) now by the normal merge steps (CLAUDE.md §3 (A)), with the root imports of prove report (d).3 (`import RBM3D.Induction.PerTimeCalc`, `import RBM3D.Induction.ScaleFacts`); state `merged <hash>`, one Merge-log line, push. No repair, no new audit. Also: the empty untracked file `B.lean` at the repository root (08:42 UTC, a stray redirect) — remove it. Do not commit the dispatcher's working files (`docs/DECISIONS.md`, `docs/paper-deltas.md`, …) in this merge; they follow in the next H instruction. One `done:` line.
+  done: 2026-10-03 13:08 UTC — T2045 merged 5d1e6b1 (full build 3750 jobs, 0 axioms; merge-log line; state merged); `B.lean` (0 bytes, untracked) removed; dispatcher working files left uncommitted.

@@ -1,22 +1,21 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 11:01 UTC
+更新：2026-10-03 13:14 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2039 | ST-D2 | 设计（Step 2 与路径层，d ≥ 3 新论证） | prover-max | 同上 |
-| T2048 | KL7b | 证明（移植 Loop/SumAll：总和界） | prover-max | 检查 exit 0 且有空位即开工（§17） |
-| T2045 | S1-08 | 证明（Induction/ScaleFacts + PerTimeCalc） | prover-hard | 同上 |
 | T2050 | LW-03 | 证明（图词汇 Graph/LWVocab） | prover-hard | 同上 |
 | T2054 | S3-02 | 证明（收缩不等式 STContract，d ≥ 3 新） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
+| T2057 | S1-16 | 证明（Green/EntryDom：块平均误差与 (GavLGEX)，关键路径） | prover-hard | 检查 exit 0 且有空位（T2045 已合并） |
+| T2056 | KL7c | 证明（移植 Loop/SumZeroWard：Q(alt)(1)=0 与有号求和为零） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2055 | S3-04 | 证明（光滑化尺度的 mollifier + 𝒫/ϑ/𝒬_t 代数） | prover-hard | 同上 |
-| T2053 | EK-6 | 证明（STEK* 消费形式由 EK* 推出） | prover-hard | 检查 exit 0 且 T2035 已合并 |
+| T2053 | EK-6 | 证明（STEK* 消费形式由 EK* 推出） | prover-hard | 检查 exit 0 且有空位（T2035 已合并） |
 | T2047 | S1-33 | 证明（Induction/ContinuityNet） | prover-hard | 同上 |
 | T2052 | S1-14 | 证明（Green/LDEQuadT） | prover | 检查 exit 0 且有空位即开工（§17） |
 | T2033 | S1-09 | 证明（Induction/Split） | prover-hard | 同上 |
 | T2037 | S1-02 | 证明（Gauss/LoopCoordinate） | prover | 同上 |
-| T2035 | EK-5 | 证明（lem:sum_decay_nonzero 无损、两种电荷） | prover | 同上 |
 | T2051 | LW-15 | 证明（Ψ_t 确定性事实 Graph/LWPsi） | prover | 同上 |
 
 ## 待放行（检查文件编译中）
@@ -24,6 +23,9 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2045（S1-08，5d1e6b1，2026-10-03 13:08；签字 §26）
+- T2035（EK-5，c163ca8，2026-10-03 13:08）
+- T2048（KL7b，057edb0，2026-10-03 12:55）
 - T2049（S3-01，56c30fb，2026-10-03 10:57）
 - T2044（S1-13，84e54a8，2026-10-03 10:36）
 - T2046（S1-15，ea63565，2026-10-03 10:24）
@@ -69,8 +71,8 @@
 
 ## 下一批（等上面的结果再写）
 - PT：gate 完成（T2027）；剩 KL14/总清理时删 `ThetaDiffOne/Two`、`PropTH`。
-- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7b = T2048 已放行，KL7c 在后；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039 在跑；ST-D3、LW-D1 已合并（§24、§25）。
-- EK：EK-3、EK-4 已合并；EK-5 = T2035 已放行（提前）；EK-6 = T2053 已放行（等 EK-5）。
+- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7b = T2048 已合并，KL7c = T2056 已放行；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039 在跑；ST-D3、LW-D1 已合并（§24、§25）。
+- EK：EK-3、EK-4 已合并；EK-5 = T2035 已合并；EK-6 = T2053 已放行（可开工）。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。
 - MA：终点冻结票，等 T2001、T2002。

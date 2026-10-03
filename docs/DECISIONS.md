@@ -210,3 +210,9 @@
 - **paper-delta 候选 T2041a–i 签字**（合并成 Lean 时编号）；T2041c（`lem_+Q` 带 `4 ≤ W^ε`、`L^d ≤ W^K`）与 §21 同源；T2041i（Steps 3–4 只用 (a) 加 `STKbound`、`STKward`，前提比论文少）照准。
 - **登记**照 (d)：`STKward`、`STStep2Concl` 及其三部分、`STLmaxU`、`STXiBoot`、`STIterHyp`、各配料、`STEK*` 记 owed；`STMollifierProps`、区间谓词、`STEKDecay`/`Low`/`Win`、`STAlternating` 记 structural。
 - **风险**：`STIterationsII`（情形 (ii) 的迭代，论文 3_5:1594 "we omit the details"）无印刷证明；`lem:iterations` 用了 [YY_25] (5.118)（RBM2D 有 `loopXi_le`，S1-09）。`STContract` 只有数值核对。这些票（S3-02、S3-22、S3-24b）照 prover-max 写，卡住先起 Fable。
+
+## §26 T2045（S1-08）审核要求签字：照准未移植的三条（总调度，2026-10-03 13:05 UTC；依据 `docs/reports/T2045-audit.md` §5，`t/T2045` 的 60dac4a）
+- **事**：RBM2D `Induction/ScaleFacts.lean` 的 `ChainStepCond`、`chainStepCond`、`scaleFacts_inv_sq_le_tailT` 没有移植，portmap 也没标"不用"。票面说"portmap 不标不用就移植"，审核据此要求签字。
+- **签字**：照准，不算返工。三条的消费者都不在 ST-1（`Chain`、`MainInd` 归 ST-6，`Step45` 的 Step 5 部分归 ST-6；T2041 portmap 已记 `chainStepCond→6`、`step5→6`），而且它们的 3D 形式不只是改名（RBM2D 的 `CondStInd` 网格指数 30；`tailT`、`ellStar`、`scaleM` 是 2D Step 5 的对象），ST1-COMMON 第 6 条本来就要求停下报告。本文 `1_2:1308-1312` 的时间归纳分两段，不固定网格 `s_k`；链式归纳的一步就是 `scaleFacts_R1` + `scaleFacts_R2` 在所选网格上。**推迟到 ST-6 的链式归纳票**（写那张票时按本文重写，不照搬 RBM2D）。
+- **paper-delta**：T2045a（`scaleFacts_R1` 在 `W^{-d}B_{t,0}` 上、前提加 `(eq:WO)`；比率事实去掉 `0 ≤ s`）、T2045b（三条不移植）照准，编 D46、D47。
+- **给 S1-35 的话**（写进票）：probe `752e027:RBM3D/Probe/T2015Pins.lean` 4.0 节的 `StochDomAt.of_subset_whp`、`StochDomAt.of_subset_compl` 还没入库（T2045 证明报告 (d).2），Step 1 的组合要用；合并的 MD-2 若没有同义引理，由 S1-35 移入。

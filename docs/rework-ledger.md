@@ -46,3 +46,6 @@
 | T2046 | 2026-10-03 10:24 UTC (ea63565) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S1-15 `Green/Stability`（d ≥ 3 常数，ST-1 关键路径第二张）；1484 定理 / 0 公理 |
 | T2044 | 2026-10-03 10:36 UTC (84e54a8) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-13 `Green/LDEQuadMom`（与维数无关） |
 | T2049 | 2026-10-03 10:57 UTC (56c30fb) | prover（修复 repairer） | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次：D1） | S3-01：Steps 3–4 钉文入库 `Induction/Step34Pins`、登记 24 个 owed |
+| T2048 | 2026-10-03 12:55 UTC (057edb0) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS（用量触顶后按规则 (H) 重跑，不算返工）；KL7b `Loop/KLSumAll` 总和界；1569 定理 / 0 公理 |
+| T2035 | 2026-10-03 13:08 UTC (c163ca8) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；EK-5 `Evolution/Nonzero`（`lem:sum_decay_nonzero` 无损、两种电荷）；1570 定理 / 0 公理 |
+| T2045 | 2026-10-03 13:08 UTC (5d1e6b1) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS，要求签字（三条未移植，§26 照准，不算返工）；S1-08 `Induction/{ScaleFacts,PerTimeCalc}`（D46、D47） |
