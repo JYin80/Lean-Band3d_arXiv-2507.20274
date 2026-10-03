@@ -50,3 +50,4 @@
 | T2035 | 2026-10-03 13:08 UTC (c163ca8) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；EK-5 `Evolution/Nonzero`（`lem:sum_decay_nonzero` 无损、两种电荷）；1570 定理 / 0 公理 |
 | T2045 | 2026-10-03 13:08 UTC (5d1e6b1) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS，要求签字（三条未移植，§26 照准，不算返工）；S1-08 `Induction/{ScaleFacts,PerTimeCalc}`（D46、D47） |
 | T2055 | 2026-10-03 13:44 UTC (6b2494e) | prover-hard（修复 repairer） | Sonnet 5.5 effort xhigh（修复 claude-opus-5-5） | 是（审核 RETURN 一次：缺两个编译实例） | S3-04 `Induction/QopAlgebra`：`stMollifierEx_holds`（光滑化尺度）与 `𝒫/ϑ/𝒬_t` 代数 |
+| T2050 | 2026-10-03 14:02 UTC (37db678) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-03 `Graph/LWVocab`（图词汇，表示法 A；登记 `DotWF`、`Consistent` structural）；D57–D62 |

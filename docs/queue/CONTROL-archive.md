@@ -236,3 +236,8 @@
 24. T2055 — `docs/tickets/T2055.md` (S3-04, mollifier `STMollifierEx` (smoothed scale) and the `𝒫, ϑ, 𝒬_t` algebra; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 - `docs/tickets/checks/T2057-check.lean` (S1-16; released conditionally above; starts after T2045 merges).
   done: 2026-10-03 13:12 UTC — `lake env lean docs/tickets/checks/T2057-check.lean`: exit 0; no error lines. Waits for a free slot.
+18. T2050 — `docs/tickets/T2050.md` (LW-03, graph vocabulary `Graph/LWVocab`; role `prover-hard`; first LW ticket). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+- `docs/tickets/checks/T2056-check.lean` (KL7c; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 13:12 UTC — `lake env lean docs/tickets/checks/T2056-check.lean`: exit 0; no error lines. Waits for a free slot.
+- H39 (dispatcher V1, 2026-10-03 13:54 UTC). Compile the T2059 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2055 merged bookkeeping, paper-deltas D48–D56 (T2041a–i), ticket T2059 (S3-05)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2059.md`, `docs/tickets/checks/T2059-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. One `done:` line.
+  done: 2026-10-03 14:02 UTC — T2059 check compiled (exit 0); committed 48578e3 (9 files staged by name), pushed to origin/main.
