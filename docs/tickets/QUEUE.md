@@ -1,29 +1,36 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 14:12 UTC
+更新：2026-10-03 18:50 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
-| T2039 | ST-D2 | 设计（Step 2 与路径层，d ≥ 3 新论证） | prover-max | 同上 |
-| T2054 | S3-02 | 证明（收缩不等式 STContract，d ≥ 3 新） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2057 | S1-16 | 证明（Green/EntryDom：块平均误差与 (GavLGEX)，关键路径） | prover-hard | 检查 exit 0 且有空位（T2045 已合并） |
-| T2056 | KL7c | 证明（移植 Loop/SumZeroWard：Q(alt)(1)=0 与有号求和为零） | prover-max | 检查 exit 0 且有空位即开工（§17） |
-| T2059 | S3-05 | 证明（lem_+Q：STQopNorm 与衰减条款） | prover | 检查 exit 0 且有空位即开工（§17） |
-| T2060 | LW-04 | 证明（Stein 桥：∂_h、复 Stein（GaussIBP 作前提）、E Z_w = 0、图导数） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2058 | S3-23 | 证明（Steps 3–4 的确定性尺度事实：hscale/k_min、hBA、窗口、分段） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2053 | EK-6 | 证明（STEK* 消费形式由 EK* 推出） | prover-hard | 检查 exit 0 且有空位（T2035 已合并） |
-| T2047 | S1-33 | 证明（Induction/ContinuityNet） | prover-hard | 同上 |
-| T2052 | S1-14 | 证明（Green/LDEQuadT） | prover | 检查 exit 0 且有空位即开工（§17） |
-| T2033 | S1-09 | 证明（Induction/Split） | prover-hard | 同上 |
-| T2037 | S1-02 | 证明（Gauss/LoopCoordinate） | prover | 同上 |
-| T2051 | LW-15 | 证明（Ψ_t 确定性事实 Graph/LWPsi） | prover | 同上 |
+| T2061 | S1-17 | 证明（Green/FlucVanish：CondRow、GreenDeriv、FlucVanish；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
+| T2066 | ST2-01 | 证明（Step 2 词汇与全部 ST-2 钉文入库 Induction/Step2Defs，§28） | prover | 检查 exit 0 且有空位即开工（§17） |
+| T2053 | EK-6 | 证明（STEK* 消费形式；钉文 STEKNonzero 补 0 ≤ s，§27，Amend 1 重开） | prover-hard | H41 |
+| T2067 | LW-P | 证明（LW 钉文入库 Graph/LWPins，§24、§28） | prover | 同上 |
+| T2062 | S1-34 | 证明（Induction/Continuity 后半：gopbound、stNetLift_holds） | prover-hard | 同上 |
+| T2063 | S1-31 | 证明（Induction/ConArgDet：WardResolvent、ConArgDet） | prover-hard | 同上 |
+| T2064 | S1-05 | 证明（Gauss/LoopFlowStein） | prover-hard | 同上 |
+| T2065 | S1-04 | 证明（Hierarchy/ContractionSecondLoop，13 个小文件） | prover | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 
 ## 已合并
+- T2060（LW-04，89f29cf，2026-10-03 16:10）
+- T2033（S1-09，aa42e43，2026-10-03 15:45）
+- T2051（LW-15，461ae86，2026-10-03 15:39）
+- T2037（S1-02，31476de，2026-10-03 15:28）
+- T2054（S3-02，86368fa，2026-10-03 15:16）
+- T2052（S1-14，bc637ce，2026-10-03 15:13）
+- T2059（S3-05，eb6d67a，2026-10-03 15:12）
+- T2058（S3-23，7c3072a，2026-10-03 15:02）
+- T2056（KL7c，c1d4ebe，2026-10-03 14:58）
+- T2047（S1-33，5b6cbc1，2026-10-03 14:57）
+- T2057（S1-16，a68a954，2026-10-03 14:33）
+- T2039（ST-D2，6ef5d49，2026-10-03 14:16；待签字）
 - T2050（LW-03，37db678，2026-10-03 14:02）
 - T2055（S3-04，6b2494e，2026-10-03 13:44；修复一次）
 - T2045（S1-08，5d1e6b1，2026-10-03 13:08；签字 §26）
@@ -74,7 +81,7 @@
 
 ## 下一批（等上面的结果再写）
 - PT：gate 完成（T2027）；剩 KL14/总清理时删 `ThetaDiffOne/Two`、`PropTH`。
-- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7b = T2048 已合并，KL7c = T2056 已放行；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039 在跑；ST-D3、LW-D1 已合并（§24、§25）。
+- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7 三张全部合并（KL7c = T2056）；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039 已合并（签字 §28：ST-2 记 37 张，ST2-36…39 移 ST-4）；ST-D3、LW-D1 已合并（§24、§25）。
 - EK：EK-3、EK-4 已合并；EK-5 = T2035 已合并；EK-6 = T2053 已放行（可开工）。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。

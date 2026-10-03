@@ -216,3 +216,27 @@
 - **签字**：照准，不算返工。三条的消费者都不在 ST-1（`Chain`、`MainInd` 归 ST-6，`Step45` 的 Step 5 部分归 ST-6；T2041 portmap 已记 `chainStepCond→6`、`step5→6`），而且它们的 3D 形式不只是改名（RBM2D 的 `CondStInd` 网格指数 30；`tailT`、`ellStar`、`scaleM` 是 2D Step 5 的对象），ST1-COMMON 第 6 条本来就要求停下报告。本文 `1_2:1308-1312` 的时间归纳分两段，不固定网格 `s_k`；链式归纳的一步就是 `scaleFacts_R1` + `scaleFacts_R2` 在所选网格上。**推迟到 ST-6 的链式归纳票**（写那张票时按本文重写，不照搬 RBM2D）。
 - **paper-delta**：T2045a（`scaleFacts_R1` 在 `W^{-d}B_{t,0}` 上、前提加 `(eq:WO)`；比率事实去掉 `0 ≤ s`）、T2045b（三条不移植）照准，编 D46、D47。
 - **给 S1-35 的话**（写进票）：probe `752e027:RBM3D/Probe/T2015Pins.lean` 4.0 节的 `StochDomAt.of_subset_whp`、`StochDomAt.of_subset_compl` 还没入库（T2045 证明报告 (d).2），Step 1 的组合要用；合并的 MD-2 若没有同义引理，由 S1-35 移入。
+
+## §27 EK-6 预检否掉钉文 `STEKNonzero`：补 `0 ≤ s`（总调度，2026-10-03 18:43 UTC，按 §4 签字的小改动；依据 `docs/reports/T2053-prove.md` (a) 第 16 行与反例）
+- **事**：T2053（EK-6）预检判 FAIL：随 T2049 入库的 `STEKNonzero`（`RBM3D/Induction/Step34Pins.lean:665`）只要 `1 − ilambda²/L² ≤ s`，没有 `0 ≤ s`；`ilambda > L` 时窗口伸到负时间，`U_{v,t}` 在 `t_n < 0` 近奇异，反例 `L = 4, g = 50, s = −3/2` 让左边超过任何 `N^τ`。已证的 `EKSumDecayNonzero`（T2035）与 Props 5s、8 都要 `0 ≤ s`（`0 ≤ t < 1`）。论文 case (ii) 本来就在 `[0, 1)` 里（`lem:main_ind` 的时间），是我在 §25 签钉文时漏看。
+- **改法**：`STEKNonzero` 在 `(∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ s n) →` 之后加 `(∀ n, 0 ≤ s n) →`，别的不动。消费者 S3-21（`STOeqQtNZ`）的设定里 `0 ≤ s` 本来就有（`STIngR`），不受影响。不记 paper-delta（论文的时间本就非负），不算返工（钉文缺陷，记在总调度 §25 签字账上）。
+- **实例数据**：票面"每条在 `(sz0, sInst, tInst)` 与 `(szB, 15/16, 31/32)`"不对——`STEKSumRes1/NAL/Res2` 要情形 (i) 的窗口 `STEKWin`，用 `(sz0, 0, 1/16)` 与 `(szB, 7/8, 15/16)`；`STEKNonzero` 要情形 (ii)，只用 `(szB, 15/16, 31/32)`；`STEKSumNdecay` 两处都行。照预检 (ii) 的选择。
+- **落实**：`docs/tickets/T2053.md` Amend 1；T2053 在原分支从预检重开。
+
+## §28 T2039（ST-D2：Step 2 与路径层设计）合并后的签字（总调度按 §4 签字，2026-10-03 18:47 UTC；依据审核第 2 轮 PASS（一次修复），6ef5d49；探针 `RBM3D/Probe/T2039Pins.lean` 在 `t/T2039` 的 0362cbc）
+- **钉文照 P.9 接受**：`STStep2`（结论 `STStep2Local`、`STStep2Avg`、`STStep2Decay`，`∃ C_d ∃ 𝔠_d ≤ 10⁻²`，常数在序列之前），配料 `STNewKLK`、`STContractPt`、`STLWB`、`STLWT`、`STEMn2Poly`、`STEMn2Exp`、`STGridRepN`（每个圈长；`STGridMart` 是 `m = 2`）、`STK2decay`、`STNetLift2`、`STScaleExists`（审核后重述的 `STScaleOk`/`STScaleAdm`，"对大 `n`"）、`STOptL2`、`STLocalAvgOfL2`。骨架 `ST_step2_of_pins`/`ST_step2_of_pinsN` 与实例已编译。
+- **§25 的接口对上了**：`ST_step2_concl` 编译证明 Step 2 的结论蕴含 `STStep2Concl`（`STAvgU` 经 `𝓛^{(1)}_- = conj 𝓛^{(1)}_+`）。常数 `C_d = 3C + 1`、`𝔠_d = min(1/100, 1/(60 C_d), 𝔠₀)`，满足预检的 `𝔠_d(C_0 + 1/6) < 1/30`。给 ST-6 链的话：Steps 3–4 的 `∃ 𝔠_d`（`STIngR`/`STIterR`）与 Step 2 的 `𝔠_d` 取较小者；`STConStInd` 在 `Bctl ≤ 1` 时对 `𝔠_d` 单调（小的更强），链式票里要写出这一步。
+- **LW 钉文对齐（F15）**：结论相同（`STLWB` = `LWterm`，`STLWT` = `LWtermExp`，界与指数一致）；五处形式差别。照 §24 **以 LW 设计为准**：LW 钉文入库（`LWterm` 等，下面 LW-P 票）；ST-2 保留消费形式 `STLWB`/`STLWT`，桥 `STLWB_of_LWterm`、`STLWT_of_LWtermExp`（含差别 (1)：`STEGtM` 与 `LWE` 差一个圈的循环旋转与两项次序，要证）放进 ST2-03。
+- **拆单照 P.5**：41 张，4.13 万行；`lem_dec_calE` 四张（ST2-36…39）是 Step 5 用的（`3_5:2317`），**移到 ST-4**，ST-2 记 37 张，在 25–40 之间（§9 O2），不问 Jun。`StoppedEndDefs` 不移植（T2049 已钉 `STOeqNQ`/`STOeqQt`/`STOeqQtNZ`，F16）照准；`HierAlgebra`、`HierarchyN` 是 ST2-28a；ST2-32（`GridGoodN`）不用 class-c 的 `GoodSet/Bootstrap` 重写（prover-hard）；ST2-06b（`(TTT2)` 的 `|·|_∞` 版）先于 ST2-07。
+- **`lem:newKLK` 钉成确定性的**（对每个 Hermitian `H`、`‖G−M‖_max ≤ δ₀`）照准；ST2-07 若证明要更多，停下报告。
+- **登记**照 (d).7：owed——`STNewKLK`、`STContractPt`、`STEMn2Poly`、`STEMn2Exp`、`STGridRepN`、`STK2decay`、`STNetLift2`、`STScaleExists`、`STOptL2`、`STLocalAvgOfL2`、`STStep2`、`STLWB`、`STLWT`、`STInitialGT2`、`STLWassm`、`STLWassmExp`；structural——`STPsiClass`；`Prop5Decay` borrowed（ST2-06、07 内）。由 ST2-01 一次登记。
+- **paper-delta 候选 T2039a–j 签字**（随 ST2-01 入库时编号）。
+- **风险**：高——ST2-09…11（`lem: EMn2_N`）；中高——ST2-12/13（`STGridRepN`）；`STScaleExists` 的真伪 Lean 未验证（第一版被审核反驳，修后不再被同一反例驳倒）。这些票照 prover-max / prover-hard 写，卡住先起 Fable 子代理。
+- **顺序**：ST2-01（钉文与词汇入库，探针 §0 的 24 条 ST-1 钉文副本换成已合并的名字）先行；同时开 LW-P（LW 钉文入库，§24）、ST2-05、ST2-06b、ST2-20、ST2-22（只依赖已合并的东西）。
+
+## §29 钉文边界核对成为固定项（总调度，2026-10-03 18:51 UTC；依据监督结论 `docs/supervisor/2026-10-03-1849.md` O2、O3）
+- **事**：24 小时内三条签过或入库的钉文按原样为假：`EKSumDecay2`（缺 `L^d ≤ W^K`，§21）、`STScaleExists`（`∀ n` 在小 `n` 强迫 `Bctl ≤ 1`，T2039 审核第 1 轮）、`STEKNonzero`（缺 `0 ≤ s`，§27）。都在被证明消费之前拦下，但属同一类：窗口边界。
+- **固定核对项（四条）**：今后①我签设计单的钉文时，②钉文入库票与 EK/ST 消费形式票的预检，都对每条钉文逐条核：(1) 时间域 `0 ≤ s`、`t < 1`（及 `t ≤ lemT z`）；(2) 情形 (ii) 的边界 `1 − ilambda²/L²`，特别是 `ilambda > L` 时它伸到负时间；(3) `L` 与 `W` 的多项式关系（`L^d ≤ W^K`，由 `(Main_DEL_COND)` 保证）是否被用到而没写进前提；(4) `∀ n` 与 `∀ᶠ n`（有限个 `n` 处的条件不应被强加）。每条给编译实例或纸面论证，否则给反例并停下报告。常数不得暗含 `W`、`L`、`ilambda`（T2039 审核 O4）。
+- **当前落实**：T2066（ST2-01，ST-2 钉文入库）与 T2067（LW-P）的预检已加这四条（开工前改票，不算 Amend）。已入库、尚未被证的 Steps 3–4 钉文（T2049）中已核过 `0 ≤ s` 的不再重做；S3 票的预检照此执行。
+- **O3 的三座桥**（ST-2 ↔ LW，F15 的 (1)(2)(4)）都放在 **ST2-03**：(1) `STEGtM` 与 `LWE` 差一个圈的循环旋转与两项次序（迹的循环不变性）；(2) `STLWB` 把 `(initialGT2)` 的控制 `Ψ` 绑到 `Ψ_t(0)`；(4) `STLWT` 的 `ℓ` 范围是 `∀ᶠ n`，`LWAssmExp` 是 `∀ n`，要一条"有限个 `n` 处改动不影响"的引理（同 `ST_scaleAdm_congr`）。写 ST2-03 时逐条写进票。
+- **O1** 已由 §28 处理（ST2-36…39 移 ST-4，ST-2 计 37）。**O4**：ROUTES 的票数分成"已用（宽口径，含返工）"与"计划"两列，下面改。

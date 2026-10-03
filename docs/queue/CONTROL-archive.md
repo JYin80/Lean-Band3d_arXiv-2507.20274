@@ -241,3 +241,44 @@
   done: 2026-10-03 13:12 UTC — `lake env lean docs/tickets/checks/T2056-check.lean`: exit 0; no error lines. Waits for a free slot.
 - H39 (dispatcher V1, 2026-10-03 13:54 UTC). Compile the T2059 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2055 merged bookkeeping, paper-deltas D48–D56 (T2041a–i), ticket T2059 (S3-05)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2059.md`, `docs/tickets/checks/T2059-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. One `done:` line.
   done: 2026-10-03 14:02 UTC — T2059 check compiled (exit 0); committed 48578e3 (9 files staged by name), pushed to origin/main.
+
+## Archived 2026-10-03 18:48 UTC (dispatcher V1)
+## Released tickets (only those not yet merged)
+Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
+17. T2039 — `docs/tickets/T2039.md` (ST-D2, design of Step 2 and the path layer, `d ≥ 3` argument; role `prover-max`, report only). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+18. T2054 — `docs/tickets/T2054.md` (S3-02, contraction inequality `STContract`, new at d ≥ 3; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+19. T2057 — `docs/tickets/T2057.md` (S1-16, `Green/EntryDom`: block-average error and `(GavLGEX)`; role `prover-hard`; ST-1 critical path). Start: when the `done:` line of its Pre-release check below says exit 0, **T2045 (S1-08) is merged** (done: 5d1e6b1), and a slot is free.
+20. T2056 — `docs/tickets/T2056.md` (KL7c, port `Loop/SumZeroWard`: `Q(σ_alt, ∅)|_{t=1} = 0` and the signed sum-zero bound; role `prover-max`; KL chain). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+21. T2053 — `docs/tickets/T2053.md` (EK-6, the `STEK*` consumer pins from the merged `EK*` pins; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0, **T2035 (EK-5) is merged** (done: c163ca8), and a slot is free.
+22. T2058 — `docs/tickets/T2058.md` (S3-23, deterministic scale facts of Steps 3–4: `hscale`/`k_min`, `hBA`, window, regime split; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+23. T2059 — `docs/tickets/T2059.md` (S3-05, `lem_+Q`: `STQopNorm` and the decay clause; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+24. T2060 — `docs/tickets/T2060.md` (LW-04, Stein bridge of the expansions: `∂_{h_{αw}}`, complex Stein from `GaussIBP` (hypothesis), `E Z_w = 0`, graph derivative; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+25. T2047 — `docs/tickets/T2047.md` (S1-33, `Induction/ContinuityNet` (first part of `Continuity`); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+26. T2052 — `docs/tickets/T2052.md` (S1-14, `Green/LDEQuadT`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+27. T2033 — `docs/tickets/T2033.md` (S1-09, `Induction/Split`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+28. T2037 — `docs/tickets/T2037.md` (S1-02, `Gauss/LoopCoordinate`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+29. T2051 — `docs/tickets/T2051.md` (LW-15, deterministic `Ψ_t` facts `Graph/LWPsi`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+
+## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
+Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
+- `docs/tickets/checks/T2033-check.lean` (T2033; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2033-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2037-check.lean` (S1-02; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 06:00 UTC — `lake env lean docs/tickets/checks/T2037-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2047-check.lean` (S1-33; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 08:22 UTC — `lake env lean docs/tickets/checks/T2047-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2051-check.lean` (LW-15; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 10:37 UTC — `lake env lean docs/tickets/checks/T2051-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2052-check.lean` (S1-14; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 10:52 UTC — `lake env lean docs/tickets/checks/T2052-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2053-check.lean` (EK-6; released conditionally above; starts after T2035 merges).
+  done: 2026-10-03 12:52 UTC — `lake env lean docs/tickets/checks/T2053-check.lean`: exit 0; no error lines.
+- `docs/tickets/checks/T2058-check.lean` (S3-23; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 13:32 UTC — `lake env lean docs/tickets/checks/T2058-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2059-check.lean` (S3-05; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 14:02 UTC — `lake env lean docs/tickets/checks/T2059-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2060-check.lean` (LW-04; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 14:12 UTC — `lake env lean docs/tickets/checks/T2060-check.lean`: exit 0; no error lines. Waits for a free slot.
+
+- H40 (dispatcher V1, 2026-10-03 14:12 UTC). Compile the T2060 check (Pre-release list), then stage by name only and commit with message `Dispatcher V1: T2050 merged bookkeeping, paper-deltas D57–D65 (T2050a–f, T2040c/d/i), ticket T2060 (LW-04)`: `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2060.md`, `docs/tickets/checks/T2060-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. One `done:` line.
+  done: 2026-10-03 14:12 UTC — T2060 check compiled (exit 0); committed e0cfc9d (9 files staged by name), pushed to origin/main.

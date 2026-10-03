@@ -51,3 +51,15 @@
 | T2045 | 2026-10-03 13:08 UTC (5d1e6b1) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS，要求签字（三条未移植，§26 照准，不算返工）；S1-08 `Induction/{ScaleFacts,PerTimeCalc}`（D46、D47） |
 | T2055 | 2026-10-03 13:44 UTC (6b2494e) | prover-hard（修复 repairer） | Sonnet 5.5 effort xhigh（修复 claude-opus-5-5） | 是（审核 RETURN 一次：缺两个编译实例） | S3-04 `Induction/QopAlgebra`：`stMollifierEx_holds`（光滑化尺度）与 `𝒫/ϑ/𝒬_t` 代数 |
 | T2050 | 2026-10-03 14:02 UTC (37db678) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-03 `Graph/LWVocab`（图词汇，表示法 A；登记 `DotWF`、`Consistent` structural）；D57–D62 |
+| T2039 | 2026-10-03 14:16 UTC (6ef5d49) | prover-max（修复 repairer） | Sonnet 5.5 effort max（修复 claude-opus-5-5） | 是（审核 RETURN 一次） | ST-D2：Step 2 与路径层设计（仅报告；探针 `t/T2039` 0362cbc）；待签字 |
+| T2057 | 2026-10-03 14:33 UTC (a68a954) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-16 `Green/EntryDom`（关键路径） |
+| T2047 | 2026-10-03 14:57 UTC (5b6cbc1) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-33 `Induction/ContinuityNet` |
+| T2056 | 2026-10-03 14:58 UTC (c1d4ebe) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KL7c `Loop/KLSumZeroWard`（KL7 完结） |
+| T2058 | 2026-10-03 15:02 UTC (7c3072a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-23 `Induction/ScaleFacts3` |
+| T2059 | 2026-10-03 15:12 UTC (eb6d67a) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS（观察：一个实例结论空真）；S3-05 `Induction/QopNorm`（`STQopNorm` 证出） |
+| T2052 | 2026-10-03 15:13 UTC (bc637ce) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-14 `Green/LDEQuadT` |
+| T2054 | 2026-10-03 15:16 UTC (86368fa) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-02 `Induction/Contract`（`STContract` 证出） |
+| T2037 | 2026-10-03 15:28 UTC (31476de) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-02 `Gauss/LoopCoordinate` |
+| T2051 | 2026-10-03 15:39 UTC (461ae86) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；LW-15 `Graph/LWPsi` |
+| T2033 | 2026-10-03 15:45 UTC (aa42e43) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-09 `Induction/Split` |
+| T2060 | 2026-10-03 16:10 UTC (89f29cf) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-04 `Graph/LWStein`（登记 `Tame1` structural） |
