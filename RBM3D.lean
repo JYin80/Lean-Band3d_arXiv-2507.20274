@@ -99,6 +99,7 @@ import RBM3D.Graph.LWPsi
 import RBM3D.Induction.Split
 import RBM3D.Graph.LWStein
 import RBM3D.Evolution.Prec
+import RBM3D.Induction.Continuity
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
