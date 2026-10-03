@@ -51,3 +51,4 @@
 - 2026-10-03 04:10 UTC T2019（cf8e79e）、T2016（c154f29，仅报告）合并 → DECISIONS §18 签 EK 设计（钉文 7 条、EK-1…6、T2016a–f、登记规则）；写 T2022（EK-1）、T2023（PT-F1：P5、P8 装配）、T2024（PT-F2：单位差分钉文 2 条）与检查文件，按 §17 列 Released；H19。
 - 2026-10-03 04:23 UTC T2021 合并（58bedae，一次 PASS）→ MD gate 完成（MD-1…5）；rework-ledger、ROUTES、QUEUE、CONTROL。在跑：T2015、T2020（审核中）、T2023、T2024；排队 T2022。
 - 2026-10-03 04:41 UTC T2020（KL3，e2aa5fe）、T2022（EK-1，5fb7729）合并，均一次 PASS → rework-ledger、ROUTES、QUEUE。写 T2026（EK-2：钉文 3 条 EKXiDecay/EKXiBall/EKSameRow）、T2025（KL4+5：KLuniquePin + 退役 + 旋转/平移）与检查文件，按 §17 列 Released；H20。
+- 2026-10-03 05:14 UTC T2026（EK-2）、T2024（PT-F2）、T2023（PT-F1：性质 5、8 证出）、T2015（ST-D1，修复一次后 PASS）合并 → DECISIONS §19（ST-1 钉文、36 张拆单、登记；STGbEXP_BA/STConArg_BA 改记 owed，因 §5 只授权 LSY）；ST1-COMMON.md；写 T2027（PT-G）、T2028–T2033（ST-1 第一波 6 张）与检查文件，按 §17 列 Released；H21。

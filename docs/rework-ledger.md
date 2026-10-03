@@ -25,3 +25,7 @@
 | T2021 | 2026-10-03 04:19 UTC (58bedae) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；网格 Markov、停时、Azuma/Doob 移植；MD gate 收尾（MD-1…MD-5 全部合并）；1017 定理 / 0 公理 |
 | T2020 | 2026-10-03 04:23 UTC (e2aa5fe) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KLisKLoopPin（树和满足树方程）；1027 定理 / 0 公理 |
 | T2022 | 2026-10-03 04:31 UTC (5fb7729) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；EK 钉文 7 条与 3 条桥接；1032 定理 / 0 公理 |
+| T2026 | 2026-10-03 04:54 UTC (3dc4f1c) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；EK-2：Ξ 衰减、球和、同号行界（挂 PT 钉文）；1037 定理 / 0 公理 |
+| T2024 | 2026-10-03 04:56 UTC (1c434bb) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；PT-F2：Θ 的单位一、二阶差分界；1039 定理 / 0 公理 |
+| T2023 | 2026-10-03 04:57 UTC (f40d8ca) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；PT-F1：**性质 5（prop5Decay_holds）、性质 8（prop8ZeroMode_holds）对每个 d ≥ 3 证出**；1041 定理 / 0 公理 |
+| T2015 | 2026-10-03 05:00 UTC (5e7de62) | prover-max（修复 repairer） | Sonnet 5.5 effort max（修复 claude-opus-5-5） | 是（审核 RETURN 一次，仅报告） | ST-D1 设计：钉文、ST-1 拆 36 张；审核 D1 缺一个实例、D2 两条 paper-delta 未列，修复一次后 PASS；签字 §19 |

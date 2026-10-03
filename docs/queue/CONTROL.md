@@ -2,18 +2,21 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-03 04:41 UTC (dispatcher V1: T2020, T2022 merged; T2025 (KL4+5), T2026 (EK-2) released on check exit 0; H20)
+updated: 2026-10-03 05:14 UTC (dispatcher V1: T2015, T2023, T2024, T2026 merged; DECISIONS §19; T2027 (PT-G), T2028–T2033 (ST-1 first wave) released on check exit 0; H21)
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-5. T2015 — `docs/tickets/T2015.md` (ST-D1, report only: design of `lem:main_ind` pins and Step 1, split of sub-gate ST-1; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-12. T2023 — `docs/tickets/T2023.md` (PT-F1, route H: `prop5Decay_holds`, `prop8ZeroMode_holds`; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-13. T2024 — `docs/tickets/T2024.md` (PT-F2, route H: unit first and second differences of `Θ`; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-15. T2026 — `docs/tickets/T2026.md` (EK-2, `Ξ` bounds and same-sign row on the PT pins; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 16. T2025 — `docs/tickets/T2025.md` (KL4+KL5, uniqueness, retirement of `TwoLoopBounded`, rotation/translation; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+17. T2027 — `docs/tickets/T2027.md` (PT-G, route H: properties 6, 7 by the path lemma, `Prop5to8`, old interface as theorems, registry update; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+18. T2028 — `docs/tickets/T2028.md` (S1-07, ST-1 pins: `Induction/Defs` from the T2015 probe, `Green/Pins` port, registry; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+19. T2029 — `docs/tickets/T2029.md` (S1-10, `Green/EntryCore` (head of the ST-1 critical path); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+20. T2030 — `docs/tickets/T2030.md` (S1-01, `Gauss/FlowCalculus`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+21. T2032 — `docs/tickets/T2032.md` (S1-03, `Hierarchy/ContractionBasic`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+22. T2033 — `docs/tickets/T2033.md` (S1-09, `Induction/Split`; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+23. T2031 — `docs/tickets/T2031.md` (S1-12, `Green/LDEQuad`; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
@@ -41,6 +44,20 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
   done: 2026-10-03 04:42 UTC — `lake env lean docs/tickets/checks/T2026-check.lean`: exit 0; no error lines. T2026 starts now (1 slot free).
 - `docs/tickets/checks/T2025-check.lean` (KL4+KL5; released conditionally above, DECISIONS §17).
   done: 2026-10-03 04:42 UTC — `lake env lean docs/tickets/checks/T2025-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2027-check.lean` (T2027; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2027-check.lean`: exit 0; no error lines. Starts now.
+- `docs/tickets/checks/T2028-check.lean` (T2028; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2028-check.lean`: exit 0; no error lines. Starts now.
+- `docs/tickets/checks/T2029-check.lean` (T2029; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2029-check.lean`: exit 0; no error lines. Starts now.
+- `docs/tickets/checks/T2030-check.lean` (T2030; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2030-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2032-check.lean` (T2032; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2032-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2033-check.lean` (T2033; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2033-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2031-check.lean` (T2031; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 05:22 UTC — `lake env lean docs/tickets/checks/T2031-check.lean`: exit 0; no error lines. Waits for a free slot.
 
 ## Approved instructions
 - H7 (dispatcher V1, 2026-10-02 23:47 UTC). Stage by name only and commit with message `Dispatcher V1: DECISIONS §12–§15, route H (Fable review), tickets T2006–T2009`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2006.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2009.md`, `docs/tickets/checks/T2006-check.lean`, `docs/tickets/checks/T2007-check.lean`, `docs/tickets/checks/T2008-check.lean`, `docs/tickets/checks/T2009-check.lean`, `docs/claude-team/fable/2026-10-02-routeH.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
@@ -72,6 +89,8 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
 - H19 (dispatcher V1, 2026-10-03 04:10 UTC). After compiling the T2022–T2024 checks: stage by name only and commit with message `Dispatcher V1: DECISIONS §18 (EK-D1 sign-off), tickets T2022 (EK-1), T2023 (PT-F1), T2024 (PT-F2)`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2022.md`, `docs/tickets/T2023.md`, `docs/tickets/T2024.md`, `docs/tickets/checks/T2022-check.lean`, `docs/tickets/checks/T2023-check.lean`, `docs/tickets/checks/T2024-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; then `git push origin main` (no force). One `done:` line with the hash.
   done: 2026-10-03 04:12 UTC — committed ea34a14 (12 files staged by name, after compiling T2022–T2024 checks: exit 0 each), pushed to origin/main.
 - H20 (dispatcher V1, 2026-10-03 04:41 UTC). After compiling the T2025 and T2026 checks: stage by name only and commit with message `Dispatcher V1: T2020/T2021/T2022 merged bookkeeping, tickets T2025 (KL4+5), T2026 (EK-2)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2025.md`, `docs/tickets/T2026.md`, `docs/tickets/checks/T2025-check.lean`, `docs/tickets/checks/T2026-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; then `git push origin main` (no force). One `done:` line with the hash.
+  done: 2026-10-03 04:42 UTC — committed 9187a77 (9 files staged by name, after compiling T2025/T2026 checks: exit 0 each), pushed to origin/main.
+- H21 (dispatcher V1, 2026-10-03 05:14 UTC). After compiling the T2027–T2033 checks: stage by name only and commit with message `Dispatcher V1: DECISIONS §19 (ST-D1 sign-off), ST1-COMMON, tickets T2027 (PT-G), T2028–T2033 (ST-1 first wave)`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/ST1-COMMON.md`, `docs/tickets/T2027.md`, `docs/tickets/T2028.md`, `docs/tickets/T2029.md`, `docs/tickets/T2030.md`, `docs/tickets/T2032.md`, `docs/tickets/T2033.md`, `docs/tickets/T2031.md`, `docs/tickets/checks/T2027-check.lean`, `docs/tickets/checks/T2028-check.lean`, `docs/tickets/checks/T2029-check.lean`, `docs/tickets/checks/T2030-check.lean`, `docs/tickets/checks/T2032-check.lean`, `docs/tickets/checks/T2033-check.lean`, `docs/tickets/checks/T2031-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; then `git push origin main` (no force). One `done:` line with the hash.
 (H1–H6 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it.)
 
 ## Merge log (the hub appends one `done:` line per merge)
@@ -96,6 +115,10 @@ done: 2026-10-03 04:04 UTC — T2016 merged c154f29 (report only: state, prove, 
 done: 2026-10-03 04:19 UTC — T2021 merged 58bedae (RBM3D/Path/Markov.lean, Stop.lean, Azuma.lean, root imports; lake build 3722 jobs, axiom audit 1017 theorems / 0 axioms); audit PASS round 1; pushed.
 done: 2026-10-03 04:23 UTC — T2020 merged e2aa5fe (RBM3D/Loop/KLTreeDeriv.lean, root import; lake build 3724 jobs, axiom audit 1027 theorems / 0 axioms); audit PASS round 1; pushed.
 done: 2026-10-03 04:31 UTC — T2022 merged 5fb7729 (RBM3D/Evolution/Pins.lean, root import; lake build 3725 jobs, axiom audit 1032 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 04:54 UTC — T2026 merged 3dc4f1c (RBM3D/Evolution/XiPins.lean, root import; lake build 3726 jobs, axiom audit 1037 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 04:56 UTC — T2024 merged 1c434bb (RBM3D/Propagator/PropUnit.lean, root import; lake build 3727 jobs, axiom audit 1039 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 04:57 UTC — T2023 merged f40d8ca (RBM3D/Propagator/Prop5Hold.lean, root import; lake build 3728 jobs, axiom audit 1041 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 05:00 UTC — T2015 merged 5e7de62 (report only: state, prove, audit, portmap reports); audit PASS round 2 after one repair; pushed.
 
 ## Pending approval (information only — the hub must NOT act on these)
 (none)
