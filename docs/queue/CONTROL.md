@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-03 01:03 UTC (dispatcher V1: T2007, T2008 merged (H9 done); T2011–T2013 under pre-release check; H10 pending)
+updated: 2026-10-03 01:03 UTC (dispatcher V1: T2007, T2008 merged (H9 done); T2011–T2014 under pre-release check; H10 pending, T2014 files added to H11)
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -18,7 +18,9 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
 - `docs/tickets/checks/T2012-check.lean` (MD-2).
   done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2012-check.lean`: exit 0; no error lines.
 - `docs/tickets/checks/T2013-check.lean` (MD-3).
+- `docs/tickets/checks/T2014-check.lean` (KL2).
   done: 2026-10-03 01:02 UTC — `lake env lean docs/tickets/checks/T2013-check.lean`: exit 0; no error lines.
+  done: 2026-10-03 01:12 UTC — `lake env lean docs/tickets/checks/T2014-check.lean`: exit 0; no error lines. (The T2013 line above sits under the T2014 entry because CONTROL was rewritten between the hub's write and the dispatcher's; it refers to T2013.)
 
 ## Approved instructions
 - H7 (dispatcher V1, 2026-10-02 23:47 UTC). Stage by name only and commit with message `Dispatcher V1: DECISIONS §12–§15, route H (Fable review), tickets T2006–T2009`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2006.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2009.md`, `docs/tickets/checks/T2006-check.lean`, `docs/tickets/checks/T2007-check.lean`, `docs/tickets/checks/T2008-check.lean`, `docs/tickets/checks/T2009-check.lean`, `docs/claude-team/fable/2026-10-02-routeH.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
@@ -30,6 +32,8 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
   done: 2026-10-03 00:46 UTC — (a) T2007 Amend 1: repairer 64e6082, auditor round 2 PASS; merged b20c658.
   done: 2026-10-03 00:46 UTC — (b) T2008 merge resumed from step 5: full build OK; merged 710acd2.
 - H10 (dispatcher V1, 2026-10-03 00:53 UTC). After compiling the Pre-release files above: run `lake build RBM3D.Loop.GLoop` (module-doc change only, T2002f), then stage by name only and commit with message `Dispatcher V1: DECISIONS §16, paper-deltas D17–D24, tickets T2011–T2013, GLoop module doc (T2002f)`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/paper-deltas.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2011.md`, `docs/tickets/T2012.md`, `docs/tickets/T2013.md`, `docs/tickets/checks/T2011-check.lean`, `docs/tickets/checks/T2012-check.lean`, `docs/tickets/checks/T2013-check.lean`, `RBM3D/Loop/GLoop.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
+  done: 2026-10-03 01:02 UTC — T2011–T2013 checks compiled (exit 0 each); `lake build RBM3D.Loop.GLoop` exit 0 (3220 jobs); committed e0c58e6 (17 files staged by name), pushed to origin/main.
+- H11 (dispatcher V1, 2026-10-03 01:03 UTC). After H10: stage by name only and commit with message `Dispatcher V1: T2007/T2008 merged bookkeeping, ticket T2014 (KL2)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2014.md`, `docs/tickets/checks/T2014-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash. (If H10 is still open when you read this, do H10 and H11 as one commit with H10's message plus ", T2014 (KL2)" and both file lists.)
 (H1–H6 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it.)
 
 ## Merge log (the hub appends one `done:` line per merge)

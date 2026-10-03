@@ -36,3 +36,4 @@
 - 2026-10-03 00:34 UTC T2007、T2008 审核 PASS，合并第 5 步被根文件 #assert_rbm_axioms 拦（未登记的假设 Prop：Prop5to8/Prop5Decay/Prop8ZeroMode、Loop.KLPT）→ DECISIONS §16 归类（borrowed；T2006 的 Sizes.{WO,Bandwidth,SizeTendsto,Admissible,locDomain} 预记 structural），T2007 Amend 1、T2008 Note 1、H9。T2010 00:21 开 Workflow（T2007/T2008 让出位置）；T2009 preflight PASS。
 - 2026-10-03 00:54 UTC T2006（0a873f1）、T2009（73cf5c1，试点前半）、T2010（315e65e）合并，均一次 PASS → rework-ledger 三行、paper-deltas D17–D24（T2002a–i 与 T2006a；D1 补 three_le_L）、ROUTES。T2007 Amend 1 在跑（H9）。写 T2011（PT-B2，试点后半，钉文 3 条，数值核对 sup 比 1.0/1.09/2.0）、T2012（MD-2）、T2013（MD-3）与检查文件，列 Pre-release；GLoop.lean 模块文档按 T2002f 修正；H10。
 - 2026-10-03 01:03 UTC H9 完成：T2007 Amend 1（repairer 64e6082，第 2 轮审核 PASS）合并 b20c658；T2008 续合并 710acd2 → rework-ledger 两行（流程缺口，不算返工）、ROUTES、QUEUE、CONTROL。
+- 2026-10-03 01:03 UTC 写 T2014（KL2：移植 RBM2D TreeRep.lean:545–1674 的切割与切割双射，公开化，KL 前缀）与检查文件，列 Pre-release；H11 例行提交。
