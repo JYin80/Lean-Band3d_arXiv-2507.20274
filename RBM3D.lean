@@ -62,6 +62,7 @@ import RBM3D.Path.Stop
 import RBM3D.Path.Azuma
 import RBM3D.Loop.KLTreeDeriv
 import RBM3D.Evolution.Pins
+import RBM3D.Evolution.XiPins
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
