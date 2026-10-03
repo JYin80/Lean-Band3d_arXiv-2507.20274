@@ -41,3 +41,4 @@
 - 2026-10-03 01:19 UTC 写 T2015（ST-D1，报告型：lem:main_ind 序列级钉文、Step 1、ST-1 拆单与 O2 计数）与检查文件；DECISIONS §17（新票直接列 Released，检查 exit 0 即开工）；H12。
 - 2026-10-03 01:33 UTC T2014 preflight-fail（票面两处错：KLtreeValW_cut 的实例 n = 3 不存在；gval 不是 KLtreeValG，是 RBM2D 的通用树值，不在 RBM3D）→ Amend 1（移植区间扩到 TreeRep.lean:415–543，公开 KLgval 等；实例改 n = 4、F = {(0,2)}）、H13（下一个空位重开，不计 RETURN）。T2015 01:31 占用空位开工；T2011–T2013 preflight PASS，1b 在跑。
 - 2026-10-03 01:49 UTC 写 T2016（EK-D1，报告型：演化核钉文改挂 PT 钉文、核对已合并 Kernel/* 的常数次序与损失、RBM2D Evolution 中属本 gate 的文件、拆单）与检查文件，按 §17 列 Released（第 6）。T2014 等位；T2011–T2013、T2015 在跑。
+- 2026-10-03 02:05 UTC T2011 合并（13dbbc0，一次 PASS）→ 路线 H 试点 B1+B2 通过（DECISIONS §14 记），不回 F。写 T2017（PT-C：环面热核 4 条钉文，数值核对 sup 比 1.02/1.04/2.08，gap ≤ 1e-4）与检查文件，按 §17 列 Released；H15。T2012 进审核；T2014 按 Amend 1 重开、preflight PASS；T2016 检查 exit 0 等位。
