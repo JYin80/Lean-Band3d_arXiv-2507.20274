@@ -49,3 +49,5 @@
 - 2026-10-03 03:22 UTC T2017 合并（33049c0，一次 PASS）→ rework-ledger、ROUTES、QUEUE。写 T2019（PT-D：Θ 的 Laplace–乘积精确表示 + 1/d 引理 + 乘积核 4 条界；表示式数值误差 1.4e-11，1/d 引理 2e5 随机无反例）与检查文件，按 §17 列 Released；H17。T2018 03:12 开工；T2014–T2016 1b 重跑中。
 - 2026-10-03 03:37 UTC T2014（fa2ebc7，Amend 1 后一次 PASS）、T2018（ddf5f74，一次 PASS）合并 → rework-ledger 两行、ROUTES、QUEUE。写 T2020（KL3：KLisKLoopPin，移植 TreeRep.lean:1675–2587）、T2021（MD-5：Path/{Markov,Stop,Azuma} 移植）与检查文件，按 §17 列 Released；H18。T2019 03:28 开工；T2015、T2016 1b 重跑中。
 - 2026-10-03 04:10 UTC T2019（cf8e79e）、T2016（c154f29，仅报告）合并 → DECISIONS §18 签 EK 设计（钉文 7 条、EK-1…6、T2016a–f、登记规则）；写 T2022（EK-1）、T2023（PT-F1：P5、P8 装配）、T2024（PT-F2：单位差分钉文 2 条）与检查文件，按 §17 列 Released；H19。
+- 2026-10-03 04:23 UTC T2021 合并（58bedae，一次 PASS）→ MD gate 完成（MD-1…5）；rework-ledger、ROUTES、QUEUE、CONTROL。在跑：T2015、T2020（审核中）、T2023、T2024；排队 T2022。
+- 2026-10-03 04:41 UTC T2020（KL3，e2aa5fe）、T2022（EK-1，5fb7729）合并，均一次 PASS → rework-ledger、ROUTES、QUEUE。写 T2026（EK-2：钉文 3 条 EKXiDecay/EKXiBall/EKSameRow）、T2025（KL4+5：KLuniquePin + 退役 + 旋转/平移）与检查文件，按 §17 列 Released；H20。

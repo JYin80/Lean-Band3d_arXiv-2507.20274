@@ -1,22 +1,24 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 04:10 UTC
+更新：2026-10-03 04:41 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2015 | ST-D1 | 报告（Step 1 与 lem:main_ind 钉文、ST-1 拆单） | prover-max | 01:31 开工 |
-| T2020 | KL3 | 证明（树和满足树方程，KLisKLoopPin） | prover-max | 检查 exit 0 且有空位即开工（§17） |
-| T2021 | MD-5 | 证明（网格 Markov、停时、Azuma/Doob，移植） | prover | 检查 exit 0 且有空位即开工（§17） |
 | T2023 | PT-F1 | 证明（性质 5、8 装配：prop5Decay_holds、prop8ZeroMode_holds） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2024 | PT-F2 | 证明（Θ 的单位一、二阶差分界） | prover-max | 同上 |
-| T2022 | EK-1 | 证明（EK 钉文与 3 条桥接，抄探针） | prover | 同上 |
+| T2026 | EK-2 | 证明（Ξ 的衰减、球和、同号行界，挂 PT 钉文） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
+| T2025 | KL4+5 | 证明（K-loop 唯一性、退役 TwoLoopBounded、旋转/平移对称） | prover-max | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 
 ## 已合并
+- T2022（EK-1，5fb7729，2026-10-03 04:31）
+- T2020（KL3，e2aa5fe，2026-10-03 04:23）
+- T2021（MD-5，58bedae，2026-10-03 04:19；MD gate 完成）
 - T2016（EK-D1，c154f29，2026-10-03 04:04；签字 §18）
 - T2019（PT-D，cf8e79e，2026-10-03 04:01）
 - T2018（MD-4，ddf5f74，2026-10-03 03:28）
@@ -38,8 +40,8 @@
 
 ## 下一批（等上面的结果再写）
 - PT-F1 = T2023、PT-F2 = T2024；G 等二者（F 接手设计行 E 的按性质组装，DECISIONS §14）。
-- KL3 = T2020；KL4 等 KL3；MD-5 = T2021（MD 收尾）；ST-D1 = T2015；ST-D2（与 LW-D1 同写）、ST-D3 待写。
-- EK：EK-1 = T2022；EK-2 等 EK-1；EK-3 等 EK-2；EK-4 等 EK-2、EK-3；EK-5 等 EK-1、EK-2；EK-6 等 ST-D3。
+- KL4+5 = T2025；KL6 等 KL4+5；MD 全部合并；ST-D1 = T2015；ST-D2（与 LW-D1 同写）、ST-D3 待写。
+- EK：EK-2 = T2026；EK-3 等 EK-2；EK-4 等 EK-2、EK-3；EK-5 等 EK-1、EK-2；EK-6 等 ST-D3。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。
 - MA：终点冻结票，等 T2001、T2002。

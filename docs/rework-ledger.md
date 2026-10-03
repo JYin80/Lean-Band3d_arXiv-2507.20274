@@ -22,3 +22,6 @@
 | T2018 | 2026-10-03 03:28 UTC (ddf5f74) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；网格游走、转移律、独立增量、逐时刻转移；978 定理 / 0 公理 |
 | T2019 | 2026-10-03 04:01 UTC (cf8e79e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；Θ 的 Laplace–乘积精确表示、1/d 引理、乘积核与差分的界；985 定理 / 0 公理 |
 | T2016 | 2026-10-03 04:04 UTC (c154f29) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS（仅报告）；EK 钉文 7 条、拆 EK-1…EK-6（约 4.0k 行），签字 DECISIONS §18；1b 因额度重跑（规则 H，不计） |
+| T2021 | 2026-10-03 04:19 UTC (58bedae) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；网格 Markov、停时、Azuma/Doob 移植；MD gate 收尾（MD-1…MD-5 全部合并）；1017 定理 / 0 公理 |
+| T2020 | 2026-10-03 04:23 UTC (e2aa5fe) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KLisKLoopPin（树和满足树方程）；1027 定理 / 0 公理 |
+| T2022 | 2026-10-03 04:31 UTC (5fb7729) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；EK 钉文 7 条与 3 条桥接；1032 定理 / 0 公理 |
