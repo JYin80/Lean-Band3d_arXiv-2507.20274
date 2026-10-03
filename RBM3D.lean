@@ -102,6 +102,7 @@ import RBM3D.Evolution.Prec
 import RBM3D.Induction.Continuity
 import RBM3D.Induction.Step2Defs
 import RBM3D.Graph.LWPins
+import RBM3D.Induction.ConArgDet
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
