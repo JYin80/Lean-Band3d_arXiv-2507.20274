@@ -105,7 +105,12 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.Bandwidth, -- `(Main_DEL_COND)`: `W ≥ N^𝔠`
    `RBM.Gauss.Sizes.SizeTendsto, -- `N → ∞` along the size sequence
    `RBM.Gauss.Sizes.Admissible, -- the standing hypotheses of the main results
-   `RBM.Gauss.Sizes.locDomain] -- the spectral domain `𝐃_{κ,ε}`
+   `RBM.Gauss.Sizes.locDomain, -- the spectral domain `𝐃_{κ,ε}`
+   `RBM.Green.GoodEvent,      -- the event Ω of (4.10): every entry of `G` within `δ` of `m·I`
+   `RBM.Green.LDERow,         -- row large-deviation event, input of `lem_GbEXP` (later ST-1)
+   `RBM.Green.LDECol,         -- column large-deviation event, input of `lem_GbEXP` (later ST-1)
+   `RBM.Green.LDEQuad,        -- quadratic large-deviation event; h.p. bound S1-19 `stochDom_ldeQuad`
+   `RBM.Green.Stable]         -- stability of `1 − ξS` with constant `K`; band profile S1-24
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
