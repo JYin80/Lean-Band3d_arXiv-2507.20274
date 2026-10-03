@@ -92,6 +92,7 @@ import RBM3D.Induction.ContinuityNet
 import RBM3D.Loop.KLSumZeroWard
 import RBM3D.Induction.ScaleFacts3
 import RBM3D.Induction.QopNorm
+import RBM3D.Green.LDEQuadT
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
