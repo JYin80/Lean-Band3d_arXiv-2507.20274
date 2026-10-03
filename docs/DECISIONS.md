@@ -186,3 +186,8 @@
 - **T2028b–f** 记为 D40–D44（形式上的加强或 RBM2D 读法，照移植保留）；T2028b 由 S1-16 定：d ≥ 3 只能证对称右端时，把 `gexRHS` 换成 `STgexRHS`，由 S1-16 报告、我改票。
 - **登记归类确认**（T2028 按 §20 自登记、§19 未签的七个）：`STMainInd`（ST-6 链终点）、`STConArg`（S1-32）、`STStep1`、`STBootstrap`、`STForbidden`（S1-36；`forbidden_region` 由 S1-08 移植）、`STNetLift`（S1-34）、`GbEXPV3Theorem`（S1-30）、`GijOmegaSeq`（S1-24）、`AsGMcPT`（Step 1 的 `(Gtmwc)`）——都由后续票证出，**owed** 正确。
 - **paper-deltas 编号补齐**：§18 的 T2016a–f（钉文已随 T2022 入库）记 D33–D38；§19 的 T2015b–h（随 T2028 入库）记 D26–D32；T2042a（§21）等 EK-4 合并时编号。
+
+## §23 T2043（KL7a）审核要求签字：照准 R1/R2（总调度，2026-10-03 08:57 UTC；依据 `docs/reports/T2043-audit.md` §7）
+- **事**：移植 RBM2D `Loop/SumZero.lean` 时，`Alayer` 的定义体（R1）和 `sum_SigmaPi`、`SumZero_sum_slice` 的右端（R2）多了因子 `∏_i m(σ_i)`，超出了票面"只改名字和指数"。原因是已合并、冻结的 `KLKpi`/`KLSigmaPi`（`RBM3D/Loop/KLTree.lean:353, 368`）照论文（`A_deterministic_estimates.tex:357, 611`）带这个因子，RBM2D 的没有；RBM2D 原式对合并的定义为假（编译的反例 `KLSumZero_neg_Kpi_closed_2Dform`）。`SumZero_sum_slice_alt` 与条件界因 `∏ m(σ^alt_i) = 1`（`n` 偶、`‖m‖ = 1`）保持 RBM2D 原式。
+- **签字**：R1、R2 照准——是被合并定义逼出来的，且与论文一致，不是 paper-delta。prover 没停下来报告就继续做了，这次结果正确，不追究；票面那句"stop and report"的本意是防止偏离论文，这里没有偏离。
+- **给 KL7b/KL7c 的话**（写进票）：`Alayer` 现含 `∏ m(σ_i)`；RBM2D `Alayer_cut`（`SumZeroWard`）的前因子在 KL7c 要相应调整（审核 O3）。票面的"`W²η_t → W^dη_t`"对 `SigmaPi_alt_sumZero_le_of_Qlayer_one` 不适用（RBM2D :802 与论文 A:731 都不含 `W`；审核 O1），是我写票的笔误。
