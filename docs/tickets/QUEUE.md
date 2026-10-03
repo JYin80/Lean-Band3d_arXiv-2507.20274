@@ -1,6 +1,6 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 22:00 UTC
+更新：2026-10-03 22:11 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
@@ -14,6 +14,8 @@
 | T2083 | ST2-21 | 证明（移植 Path/LoopStep + DriftAlgebra） | prover | 同上 |
 | T2084 | ST2-23 | 证明（移植 Path/QVForm + QVIdentity） | prover | 同上 |
 | T2085 | ST2-24 | 证明（移植 Path/StepDecompLoop + Kernel） | prover | 同上 |
+| T2086 | S3-03 | 证明（Induction/NewPQ：证钉文 STNewPQ，lem: newPQ） | prover-hard | 同上 |
+| T2087 | S3-24a | 证明（Induction/IterationsA：RBM2D Step 3 前半 + 探针 ≺ 引理） | prover-hard | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |

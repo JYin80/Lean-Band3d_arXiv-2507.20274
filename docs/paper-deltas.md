@@ -429,3 +429,85 @@ RBM2D `ChainStepCond`、`chainStepCond`（网格 `CondStInd`，指数 30）和 `
 ## D106 · `lem_ConArg` 拆成确定性部分与概率部分（2026-10-03，T2063b；S1-31 `Induction/ConArgDet`，bbd22a5）
 
 `Induction/ConArgDet` 是 `lem_ConArg`（`3_5:42-57`；论文的证明 `3_5:60` 说与 [YY_25] 引理 5.1 "完全相同"）的确定性部分：对固定的厄米矩阵 `H` 证 (6.3)–(6.12)，常数 `C_m = m+1`；Ward 引理对一般矩阵 `H`（带 `IsUnit` 前提）陈述，比 `G_t` 更一般。概率陈述（钉文 `STConArg`）归 S1-32。`t < 1` 的限制见 D26。
+
+## D107 · 波动平均的行权用有界权（2026-10-03，T2061a；S1-17 `Green/FlucVanish`，40f70b9；DECISIONS §30）
+
+行权 `j ↦ S_ij` 在 Lean 里陈述为 `BoundedWeight`：在 `i` 所在块及其 `2d` 个邻块共 `(2d+1) W^d` 个点上 `0 ≤ t ≤ W^{-d}`，其余为 `0`，`Σ t ≤ 1`。RBM2D 用 `UniformWeight`（支撑上取同一值），在 `d ≥ 3`、`g² ≠ 1` 时为假（`not_uniformWeight_svarF`）。论文没有单列这条引理；块平均 `W^{-d} 1(k ∈ 𝓘_a)` 仍是 `UniformWeight`。
+
+## D108 · 圈流 Stein 层带参数 `g`（2026-10-03，T2064a；S1-05 `Gauss/LoopFlowStein`，06429ba）
+
+关于律的七条陈述带额外参数 `g`，在 `PF d L W g` 下陈述（理由同 D68 = T2037a）；证明只用 `PF d L W g` 是概率测度、边缘为 `gaussianReal 0 (gvarF d L W g c)`（对每个 `g`）。
+
+## D109 · 圈流 Stein 层的记号（2026-10-03，T2064b；S1-05 `Gauss/LoopFlowStein`，06429ba）
+
+`blockMat d L W (Xmat d L W ω)` 代替 RBM2D 的 `(Xmat ω).submatrix …`（`rfl` 相等）；`spectralWordBound d W`、`driftA`、`driftD` 显式带 `d`。只是记号。
+
+## D110 · 第二圈收缩系数 `W^d` 与参数 `g`（2026-10-03，T2065a；S1-04 `Hierarchy/ContractionSecondLoop`，64a33ea）
+
+13 个 RBM2D 文件里的 17 个收缩系数 `W^2` 都换成 `W^d`（与合并的 `sum_allCoords_trace_blocks` 一致，T2032）；陈述带 `svarF`/`SB` 的实参数 `g`（RBM2D 没有）。论文的系数正是 `W^d`（`(eq:variancematrix)`）。
+
+## D111 · `ContractionSecondLoopReverse` 未移植（2026-10-03，T2065b；S1-04，64a33ea）
+
+没有消费者，故未移植；后面的票若要 `coordinateSecondWordDeriv_two_edges`，需另行申请。
+
+## D112 · `(eq:Sigma-empty-sum-zero)` 第二个估计在 Lean 内证出（2026-10-03，T2070a；KL8+9 `Loop/KLMolecule`，eaf0614）
+
+论文（`A_deterministic_estimates.tex:731`）写 `OO(ilambda² + |1-t|)` 并引 [RBSO1D] Claim 4.30（"与维数无关"）。Lean 在 `d ≥ 3` 由 `(prop:ThfadC_short)` 与带符号估计证出：`∑_{δ_0=x}|Σ^{(∅)}(σ^{alt},δ)| ≤ C(g² + (1-t))`，`C = C(d,n,κ,gmax)`，对每个 `0 < g ≤ gmax`、`|E| ≤ 2-κ`、`t ∈ [0,1)`、`L ≥ 3`、`W ≥ 1`、`n ≥ 4` 偶数成立。所以 [RBSO1D] Claim 4.30 不再是外部输入。
+
+## D113 · 分子衰减与和为零的常数显式化（2026-10-03，T2070b；KL8+9，eaf0614）
+
+`(eq:molecule-decay)`（`:691`）与 `(eq:Sigma-empty-sum-zero)` 带符号估计里论文的"某些常数 `c, C`"和 `OO(|1-t|)` 在 Lean 里是显式的，依赖 `(d, n, κ, gmax)`（体内 `|E| ≤ 2-κ`、`g ≤ gmax`）；分子衰减率 `c = c_κ/2`。其余与论文相同。K-圈模型限于带状/`Theta` 传播子、和为零钉文要 `n ≥ 4` 偶数、层 `π = ∅`：沿用 T2004 探针钉文，不是本票新增。
+
+## D114 · Step 2 核心的命名空间（2026-10-03，T2071a；ST2-02 `Induction/Step2Core`，092aaf0）
+
+探针 §3–§7 原在 `RBM.Probe.T2039`（§8 在 `RBM.Gauss.Sizes`），入库后都在 `RBM.Gauss.Sizes`。探针 §9–§12 在 `RBM.Probe.T2039` 下并 `open RBM.Gauss.Sizes`；后面搬它们的票在 `RBM.Gauss.Sizes` 里找这些名字。只是记号。
+
+## D115 · 探针的 `ST2_Bctl_*` 即合并的 `STBctl_*`（2026-10-03，T2071b；ST2-02，092aaf0）
+
+探针 `ST2_Bctl_pos`/`ST2_Bctl_mono`（探针 1738、1748 行）就是合并的 `STBctl_pos`/`STBctl_mono`；探针 2723、3013、3091、3821、3905、4696、4697、4704、4706 行用到它们，后面搬 §9–§12 的票要改名。
+
+## D116 · `hsmall` 的指数 `1/30` 要求 `W` 很大（2026-10-03，T2071c；ST2-02，092aaf0）
+
+`hsmall` 里的 `b^{1/30}` 要 `b < 6^{-30}`，即 `W^3` 约 `2.2·10^{23}`；所以实例取 `n = 100`，不取小 `n`。`ST_good_engine` 逐 `n` 成立（不带 `∀ᶠ`）。论文对应处只说"`W` 足够大"。
+
+## D117 · 一步生成元带参数 `d`、`g`（2026-10-03，T2072a；ST2-20 `Path/OneStep`，593e519）
+
+`genMat`、`OneStepEnvelope`、`loopDrift`、`DriftLip_eGterm`、`norm_loopDrift_sub_le` 加参数 `d` 与 `g`，`envConst`、`driftLip` 加 `d`（RBM2D 隐含 `L W`，方差剖面是固定的五点剖面，没有 `g`）。陈述对每个实数 `g` 成立，常数不含 `g`。
+
+## D118 · 树方程右端用 `treeEqRhs d L W g`（2026-10-03，T2072b；ST2-20，593e519）
+
+`Loop.treeEqRhs d L W g`（权 `W^d`、`S^{(B)}(g)`，论文 `1_2:990` `(pro_dyncalK)`）代替 RBM2D 的 `KLoop.primRhs`（权 `W^2`），`mSigma` 代替 `KLoop.mSig`；改名后陈述相同。
+
+## D119 · 单位球点数对所有 `L` 证出，不加 `3 ≤ L`（2026-10-03，T2072c；ST2-20，593e519）
+
+不加 `3 ≤ L` 前提（RBM2D 也没有）。`d ≥ 3` 的证明要 `Z_L^d` 的单位球至多 `2d` 个点（对每个 `L ≥ 1`），在本文件内私有证出（`OneStep_card_sphere_le`）；合并的邻点计数只对 `3 ≤ L`。
+
+## D120 · `stepDecomp` 的观测量类 `HermTestFun`（2026-10-03，T2073a；ST2-22 `Path/StepDecomp`，a262beb）
+
+观测量通过类 `HermTestFun`（`C²` 且在厄米点有界）进入 `stepDecomp`，另加沿厄米方向 `fderiv²` 的前提 `hC₂`；论文对预解式多项式的 Taylor 展开不写这样的类。沿用 RBM2D T2076a，本票未对照论文 TeX 核对。
+
+## D121 · `stepDecomp` 余项的粗矩界（2026-10-03，T2073b；ST2-22，a262beb）
+
+矩界 `E‖X‖² ≤ 16 N⁴`、`E‖X‖⁴ ≤ 768 N⁸` 是只为余项可积性用的粗多项式界，不是论文的陈述。
+
+## D122 · `Step2NetLift` 去掉不用的参数（2026-10-03，T2074a；ST2-18 `Path/NetLift1`，06b49b2）
+
+RBM2D `Step2NetLift` 的 `Bandwidth d c` 与 `CondStInd d E s t` 证明不用，去掉（同 D104 = T2062a、RBM2D T2070b 对 Step 1 的处理）。
+
+## D123 · `Step2NetLift` 带 `sz.WO 𝔡`（2026-10-03，T2074b；ST2-18，06b49b2）
+
+`Step2NetLift` 带 `sz.WO 𝔡`（RBM2D 的控制没有 `ĝ`，所以没有）；`stNetLift2_part1` 从 `STFlow`（`Admissible`）取得它，钉文不变。
+
+## D124 · `stNetLift2_part1` 只是衰减那一项（2026-10-03，T2074c；ST2-18，06b49b2）
+
+`stNetLift2_part1` 只证 `STNetLift2` 的衰减合取项（前提只用 `STStep2DecayPT`）；`STStep2Local ∧ STStep2Avg` 归 ST2-19（T2082），由它闭合 `STNetLift2`。
+
+## D125 · `ConArgPin` 允许 `k ≥ 1`、`C₀ ≥ 0`（2026-10-03，T2076a；S1-32 `Induction/ConArg`，8a8cfeb；说明性）
+
+`ConArgPin`/`conArg` 陈述 `k ≥ 1`（论文 `lem_ConArg` 为 `n ≥ 2`，钉文 `STConArg` 保留 `k ≥ 2`）并取 `0 ≤ C₀`；`k = 1` 时界为 `Y_1 ≤ C₀`（基础情形）。对钉文不构成差别。`STConArg` 本身与论文的差别已记在 D26（`t < 1`）、D32（只留第一个界）。
+
+## D126 · `ConArgPin` 的时间前提 `c ≤ s`（2026-10-03，T2076b；S1-32，8a8cfeb；说明性）
+
+前提 `c ≤ s`（论文 `ε ≤ s`）代替 RBM2D 的 `c < t_1`；合并的 `ztTilde_arith`（T2063）取 `c ≤ t_1`。
+
+（T2075 = ST2-06b `Evolution/PropTInf`，a84c579：无 paper-delta。合并的 `propT`/`EKPropT` 用 `ℓ¹` 距离 `zdistD`，论文的 `|·|` 是 `L^∞`（`1_2_Intro_model_result.tex:274`），`EKPropTInf` 就是论文的陈述。）
