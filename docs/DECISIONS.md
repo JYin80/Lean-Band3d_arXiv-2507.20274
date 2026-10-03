@@ -240,3 +240,9 @@
 - **当前落实**：T2066（ST2-01，ST-2 钉文入库）与 T2067（LW-P）的预检已加这四条（开工前改票，不算 Amend）。已入库、尚未被证的 Steps 3–4 钉文（T2049）中已核过 `0 ≤ s` 的不再重做；S3 票的预检照此执行。
 - **O3 的三座桥**（ST-2 ↔ LW，F15 的 (1)(2)(4)）都放在 **ST2-03**：(1) `STEGtM` 与 `LWE` 差一个圈的循环旋转与两项次序（迹的循环不变性）；(2) `STLWB` 把 `(initialGT2)` 的控制 `Ψ` 绑到 `Ψ_t(0)`；(4) `STLWT` 的 `ℓ` 范围是 `∀ᶠ n`，`LWAssmExp` 是 `∀ n`，要一条"有限个 `n` 处改动不影响"的引理（同 `ST_scaleAdm_congr`）。写 ST2-03 时逐条写进票。
 - **O1** 已由 §28 处理（ST2-36…39 移 ST-4，ST-2 计 37）。**O4**：ROUTES 的票数分成"已用（宽口径，含返工）"与"计划"两列，下面改。
+
+## §30 S1-17 预检：RBM2D 的均匀权 `uniformWeight_svar` 在 d ≥ 3 不成立——改成有界权（总调度，2026-10-03 19:06 UTC，按 §4 的小改动；依据 `docs/reports/T2061-prove.md` (a)）
+- **事**：RBM2D 的方差剖面 `svar` 是固定的五点均匀剖面（无 `g`），所以行 `j ↦ svar i j` 是 `UniformWeight`（支撑上取同一值 `c`）。本文的 `svarF d L W g`（`(eq:variancematrix)`）带 `g`：同块取 `W^{-d}/(1+2dg²)`，邻块取 `g² W^{-d}/(1+2dg²)`，只有 `g² = 1` 时均匀；`lam` 是可以趋于 0 的序列。所以 `uniformWeight_svar` 照搬为假（预检数值：0.05 与 0.0125 对 0.017857）。三条关键目标不受影响（预检 PASS）。
+- **决定（候选 A 的变体）**：保留 `UniformWeight`（块平均 `uniformWeight_blockAvg2` 在任何 `d` 都均匀），另立**有界权** `BoundedWeight t c A`：`0 ≤ t k ≤ c` 在 `A` 上、`A` 外为 `0`（需要时加 `Σ t = 1`），证 `UniformWeight → BoundedWeight`，并把 `uniformWeight_svar` 换成 `boundedWeight_svarF`：`c = W^{-d}`（`1/(1+2dg²) ≤ 1`、`g²/(1+2dg²) ≤ 1`），`A = {j : a_j − a_i ∈ {0} ∪ 邻块}`，`#A = (2d+1) W^d`。RBM2D 后续证明（`FlucIter.lean:980-995` 取 `|t(v i)| = c`）只用到 `≤ c`；S1-18、S1-20、S1-30 的票照此把前提 `UniformWeight` 换成 `BoundedWeight`（前提更弱，结论更强），各票预检逐处核对"`= c` 只当 `≤ c` 用"，有例外就停下报告。
+- **paper-delta 候选 T2061a**：论文的波动平均对一般的有界、和为一的权成立，Lean 以 `BoundedWeight` 陈述；RBM2D 的均匀权是 `d = 2` 模型（无 `g`）的特例。不算返工（照搬类的偏差，ST1-COMMON 第 6 条要求停下报告，做得对）。
+- **落实**：`docs/tickets/T2061.md` Amend 1；T2061 在原分支从预检重开。
