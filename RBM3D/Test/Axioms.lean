@@ -86,7 +86,8 @@ additional modifications to handle the higher-dimensional setting `d ≥ 3`.  Fo
 reader's convenience, we provide the proof below", and then gives it in full.  Assuming it
 here is a debt of this formalization (the molecule layer is missing), not a borrowing. -/
 def owedProps : List Name :=
-  [`RBM.Loop.TwoLoopBounded, `RBM.Loop.KLoopBound]
+  [`RBM.Loop.TwoLoopBounded, `RBM.Loop.KLoopBound,
+   `RBM.Green.GaussIBP]  -- Stein identity and finite polynomial moments of `Sizes.seqP`; proved by S1-19 (RBM2D `IBPPoly:299`), taken by `Tame.integrable` (T2031)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -112,7 +113,8 @@ def structuralProps : List Name :=
    `RBM.Green.LDEQuad,        -- quadratic large-deviation event; h.p. bound S1-19 `stochDom_ldeQuad`
    `RBM.Green.Stable,         -- stability of `1 − ξS` with constant `K`; band profile S1-24
    `RBM.EKFastDecay,          -- `(deccA0)`: decay of the tensor `A` beyond the window `W^ε ℓ_s`, a data condition on `A` (EK-3, T2034)
-   `RBM.Green.AgreeOffRow]    -- two samples agree on every coordinate off row `i` (S1-11 RowIndep)
+   `RBM.Green.AgreeOffRow,    -- two samples agree on every coordinate off row `i` (S1-11 RowIndep)
+   `RBM.Green.FinDep]         -- `g` reads finitely many Gaussian coordinates: a property of the function, hypothesis of `Tame.ofBdd` (T2031)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
