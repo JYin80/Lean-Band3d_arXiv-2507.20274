@@ -191,3 +191,22 @@
 - **事**：移植 RBM2D `Loop/SumZero.lean` 时，`Alayer` 的定义体（R1）和 `sum_SigmaPi`、`SumZero_sum_slice` 的右端（R2）多了因子 `∏_i m(σ_i)`，超出了票面"只改名字和指数"。原因是已合并、冻结的 `KLKpi`/`KLSigmaPi`（`RBM3D/Loop/KLTree.lean:353, 368`）照论文（`A_deterministic_estimates.tex:357, 611`）带这个因子，RBM2D 的没有；RBM2D 原式对合并的定义为假（编译的反例 `KLSumZero_neg_Kpi_closed_2Dform`）。`SumZero_sum_slice_alt` 与条件界因 `∏ m(σ^alt_i) = 1`（`n` 偶、`‖m‖ = 1`）保持 RBM2D 原式。
 - **签字**：R1、R2 照准——是被合并定义逼出来的，且与论文一致，不是 paper-delta。prover 没停下来报告就继续做了，这次结果正确，不追究；票面那句"stop and report"的本意是防止偏离论文，这里没有偏离。
 - **给 KL7b/KL7c 的话**（写进票）：`Alayer` 现含 `∏ m(σ_i)`；RBM2D `Alayer_cut`（`SumZeroWard`）的前因子在 KL7c 要相应调整（审核 O3）。票面的"`W²η_t → W^dη_t`"对 `SigmaPi_alt_sumZero_le_of_Qlayer_one` 不适用（RBM2D :802 与论文 A:731 都不含 `W`；审核 O1），是我写票的笔误。
+
+## §24 T2040（LW-D1 光权重层设计）合并后的签字（总调度按 §4 签字，2026-10-03 10:30 UTC；依据审核第 2 轮 PASS（一次修复），45e2630；探针 `RBM3D/Probe/T2040Graphs.lean` 在 `t/T2040` 的 eeda441）
+- **体量**：gate LW 27 张（21–39，每张约 1000 行），加 BA 33 张（27–48）；都不过 50（§9 O2），中值在 25–40 之间，不问 Jun。LW-12（`lem:Anp` 及其钥匙引理，估 4.9k/7.3k/12.2k 行）写票时再拆成 5–8 张，总数仍按 27 计。
+- **表示法照报告 b.3 选 A**：记录型 `LGraph`（边多重集、计数器、分子、`ord` 都在记录上）；B（`GTerm` 绑定项）只可作打印语法，不作陈述。
+- **钉文照 b.4 接受**：`LWterm`、`LWtermB`、`LWtermExp`（含 `LWtermExpS`/`N` 两段）、`LWtermEXP`、`LWMoment`、`LWMomentExp`、`LWAnpKey`、`LWAnpKeyGh`、`LWAnp`、`LWReduceB/T`；三条展开式 `LWweightExp`、`LWedgeExp`、`LWggExp` 钉成期望的恒等式，余项是显式的 Stein 缺陷（"=_E"，合并的 MD-2 Stein）。常数先于序列，`≺` 一律尺度 `N`，距离 `zdistInf`。`lem:LWterm`、`lem: EWGn2_N` 的文本等 ST-D2（T2039）签字时与它的消费者形式对齐，以此处为准、差异在那时记。
+- **缩减路线 R1**（把 [yang2021] 引理 3.5、3.10、3.14、3.22 当外部输入，省约 6 张）**不取**：§5 只允许 LSY Thm 2.2；照全内部证明走（这不是需要 Jun 决定的事，除非他想改 §5）。R2（只做 Step 6）不成路线。
+- **paper-delta 候选 T2040a–o 签字**（合并成 Lean 时编号）：T2040a（`Ψ_t` 加窗口 `W^{-d/2} ≤ Ψ_t` 与常数 `C₃`）、c（奇数 `L`）、d（`f` 取预解式多项式）、e（流版本展开 `S_t = tS`）、f（`lem: EWGn2_N` 的 `t ≤ lemT z`）、g、h（"不妨设 `Ψ_t` 递减" 作前提）、i（`∂_{h_{αx}}` 的定义）、j、k（`1 − t ≤ g²/L²` 一段单列 `LWtermExpN`）、l、m（`claim:size`、`claim:xi` 论文无证明，LW-09、LW-11 补）、n（`lem:LWterm_EXP` 的前提读法）、o（约化步骤不是论文编号陈述）。T2040b 已在预检里关闭。
+- **登记**：照报告 b.11——钉文的随机前提（`LWInit`、`LWLoop2`、`LWLoopExp`、`LWXi`、局部律）由 ST 链给出，记 owed；数据条件记 structural；照 §20 由首次当前提的票登记。
+- **首批票**：LW-03（词汇，MD-1…3 与已合并 `Graph/{Model,ScalingOrder}`）、LW-15（`(eq:Psi)` 与 `Ψ_t` 窗口，已合并 `Defs/Tail`）、LW-04（Stein 桥，`GaussIBP` 作前提——owed，S1-19 证）。钉文入库（`LWterm` 等）放在 ST-D2 签字之后的一张票里。
+
+## §25 T2041（ST-D3：Steps 3–4 设计）合并后的签字（总调度按 §4 签字，2026-10-03 10:30 UTC；依据审核第 2 轮 PASS（一次修复），3747ff7；探针 `RBM3D/Probe/T2041Pins.lean` 在 `t/T2041` 的 3c58211）
+- **钉文照 P.2 接受**：`STStep3R`、`STStep4R`（按区间谓词 `STAny`/`STCaseI`/`STCaseII`），配料 `STContract`、`STSEforLn`、`STXiBoot`、`STOeqNQ`、`STOeqQt`、`STOeqQtNZ`、`STNewPQ`、`STIterations`/`STIterationsII`、`STMollifierProps`、`STQopNorm`；对 `u ∈ [s,t]` 一致的 `STLmaxU`、`STLKU`（端点即 ST-1 的 `STLmax`/`STLK`）。
+- **Step 2 的接口**：Step 3 要的是 `STStep2Concl`（`STLocalEntryU`、`STAvgU`、`STGdecayW`，对 `u ∈ [s,t]` 一致，后者带 `((1−s)/(1−u))^{C_d}`）；T2039（ST-D2）签字时核对它的结论蕴含这三条。
+- **EK-6 消费形式照 P.3**：`STEKSumNdecay`、`STEKSumRes2NAL`、`STEKSumRes2`、`STEKNonzero`（以及票面要求的 `STEKSumRes1`），尺度 `N`；`lem:propT`、`claim:TTk`、`(eq:latticesum_d3)` Steps 3–4 不用。EK-6 = 由合并的 `EK*` 钉文推出这些 `STEK*`（`STEKSumRes2` 用 §21 的 `L^d ≤ W^K`，`K` 取自 `Admissible` 的 `𝔠`）。
+- **拆单照 P.7**：34 张（S3-01…S3-27，含 a/b），约 3.8 万行，25–40 之间（§9 O2），不问 Jun；9 张高风险，无 RBM2D 源的 7 张（S3-02、03、20–23、27）。RBM2D 10 个文件不移植（`PP*` (+,+) 基、`LocalForm*`、`AltSymm`：d ≥ 3 走 EK-4），照准（F-A）。
+- **顺序**：S3-01（钉文入库）、S3-06（K 环衰减、`STKward` 桥）要先于 ST-2 的网格证明（F-D）；`HierAlgebra`、`HierarchyN` 归 ST-2（T2039）。S3-10…22 要等 ST-D2 的网格钉文与 EK-6。
+- **paper-delta 候选 T2041a–i 签字**（合并成 Lean 时编号）；T2041c（`lem_+Q` 带 `4 ≤ W^ε`、`L^d ≤ W^K`）与 §21 同源；T2041i（Steps 3–4 只用 (a) 加 `STKbound`、`STKward`，前提比论文少）照准。
+- **登记**照 (d)：`STKward`、`STStep2Concl` 及其三部分、`STLmaxU`、`STXiBoot`、`STIterHyp`、各配料、`STEK*` 记 owed；`STMollifierProps`、区间谓词、`STEKDecay`/`Low`/`Win`、`STAlternating` 记 structural。
+- **风险**：`STIterationsII`（情形 (ii) 的迭代，论文 3_5:1594 "we omit the details"）无印刷证明；`lem:iterations` 用了 [YY_25] (5.118)（RBM2D 有 `loopXi_le`，S1-09）。`STContract` 只有数值核对。这些票（S3-02、S3-22、S3-24b）照 prover-max 写，卡住先起 Fable。

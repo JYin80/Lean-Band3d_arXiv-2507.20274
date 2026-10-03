@@ -1,27 +1,30 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 09:58 UTC
+更新：2026-10-03 10:30 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
-| T2040 | LW-D1 | 设计（光权重层：图词汇、钉文、拆单、体量） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2039 | ST-D2 | 设计（Step 2 与路径层，d ≥ 3 新论证） | prover-max | 同上 |
-| T2041 | ST-D3 | 设计（Steps 3–4，EK-6 消费形式） | prover-max | 同上 |
 | T2048 | KL7b | 证明（移植 Loop/SumAll：总和界） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2044 | S1-13 | 证明（Green/LDEQuadMom） | prover | 同上 |
-| T2046 | S1-15 | 证明（Green/Stability，d ≥ 3 常数；关键路径） | prover-max | 检查 exit 0 且有空位即开工（§17） |
 | T2045 | S1-08 | 证明（Induction/ScaleFacts + PerTimeCalc） | prover-hard | 同上 |
+| T2049 | S3-01 | 证明（Steps 3–4 钉文入库、登记） | prover | 检查 exit 0 且有空位即开工（§17） |
+| T2050 | LW-03 | 证明（图词汇 Graph/LWVocab） | prover-hard | 同上 |
 | T2047 | S1-33 | 证明（Induction/ContinuityNet） | prover-hard | 同上 |
 | T2033 | S1-09 | 证明（Induction/Split） | prover-hard | 同上 |
 | T2037 | S1-02 | 证明（Gauss/LoopCoordinate） | prover | 同上 |
 | T2035 | EK-5 | 证明（lem:sum_decay_nonzero 无损、两种电荷） | prover | 同上 |
+| T2051 | LW-15 | 证明（Ψ_t 确定性事实 Graph/LWPsi） | prover | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 
 ## 已合并
+- T2046（S1-15，ea63565，2026-10-03 10:24）
+- T2040（LW-D1，45e2630，2026-10-03 10:23；签字 §24）
+- T2041（ST-D3，3747ff7，2026-10-03 10:21；签字 §25）
 - T2042（EK-4，d9de66f，2026-10-03 09:45；钉文修补 §21）
 - T2043（KL7a，cb7d4ba，2026-10-03 09:02；签字 §23）
 - T2028（S1-07，64bdfd3，2026-10-03 08:03；签字 §22）
@@ -62,7 +65,7 @@
 
 ## 下一批（等上面的结果再写）
 - PT：gate 完成（T2027）；剩 KL14/总清理时删 `ThetaDiffOne/Two`、`PropTH`。
-- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7b = T2048 已放行，KL7c 在后；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039、ST-D3 = T2041、LW-D1 = T2040 已放行（设计）。
+- KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7b = T2048 已放行，KL7c 在后；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039 在跑；ST-D3、LW-D1 已合并（§24、§25）。
 - EK：EK-3、EK-4 已合并；EK-5 = T2035 已放行；EK-6 等 ST-D3（T2041）。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。

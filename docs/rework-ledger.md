@@ -41,3 +41,6 @@
 | T2028 | 2026-10-03 08:03 UTC (64bdfd3) | prover-max（修复 repairer） | Sonnet 5.5 effort max（修复 claude-opus-5-5） | 是（审核 RETURN 一次，仅报告：补 paper-delta 候选 T2028e/f） | S1-07：ST-1 钉文入库 `Induction/Defs`、`Green/Pins`、登记（owed 9 个由 §20 自登记，§22 确认）；审核撞用量墙两次（H27，不计）；1441 定理 / 0 公理 |
 | T2042 | 2026-10-03 09:45 UTC (d9de66f) | prover-max | Sonnet 5.5 effort max | 否（钉文错） | 第一次预检 FAIL：§18 签的 `EKSumDecay2` 为假（缺 `L^d ≤ W^K`）→ DECISIONS §21、Amend 1 从预检重开；重开后审核一次 PASS；EK-4 `(sumAzero) ⟹ (sum_res_2)`（唯一高风险票）；1477 定理 / 0 公理 |
 | T2043 | 2026-10-03 09:02 UTC (cb7d4ba) | prover-max | Sonnet 5.5 effort max | 否 | 审核 PASS 但要签字（R1/R2：`∏ m(σ_i)` 因子，被冻结的 `KLKpi` 逼出、与论文一致）→ DECISIONS §23 照准后合并；KL7a `Loop/KLSumZero`；1476 定理 / 0 公理 |
+| T2041 | 2026-10-03 10:21 UTC (3747ff7) | prover-max（修复 claude-opus-5-5） | Sonnet 5.5 effort max | 是（审核 RETURN 一次：R1–R3，补 T2041i 等） | ST-D3 设计：Steps 3–4 钉文、EK-6 消费形式、拆 34 张；签字 §25 |
+| T2040 | 2026-10-03 10:23 UTC (45e2630) | prover-max（修复） | Sonnet 5.5 effort max | 是（审核 RETURN 一次：实例窗口 `ℓT`、`inst_LWtermExpN`） | LW-D1 设计：图词汇（记录 A）、钉文、展开式按 =_E、27 张；签字 §24 |
+| T2046 | 2026-10-03 10:24 UTC (ea63565) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S1-15 `Green/Stability`（d ≥ 3 常数，ST-1 关键路径第二张）；1484 定理 / 0 公理 |

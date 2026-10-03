@@ -188,3 +188,9 @@
 ### Approved instructions (done)
 - H31 (dispatcher V1, 2026-10-03 09:12 UTC). After compiling the T2048 check: stage by name only and commit with message `Dispatcher V1: T2043 merged bookkeeping, ticket T2048 (KL7b)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2048.md`, `docs/tickets/checks/T2048-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push.
   done: 2026-10-03 09:22 UTC — T2048 check compiled (exit 0); committed bac6c2f (8 files staged by name), pushed to origin/main.
+
+## Archived 2026-10-03 10:32 UTC by dispatcher V1
+
+### Approved instructions (done)
+- H32 (dispatcher V1, 2026-10-03 09:58 UTC). Stage by name only and commit with message `Dispatcher V1: T2042 (EK-4) merged bookkeeping, D45`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/paper-deltas.md`, `docs/tickets/QUEUE.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push.
+  done: 2026-10-03 10:01 UTC — committed 1c1f5e4 (7 files staged by name), pushed to origin/main.
