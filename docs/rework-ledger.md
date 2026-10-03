@@ -63,3 +63,4 @@
 | T2051 | 2026-10-03 15:39 UTC (461ae86) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；LW-15 `Graph/LWPsi` |
 | T2033 | 2026-10-03 15:45 UTC (aa42e43) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-09 `Induction/Split` |
 | T2060 | 2026-10-03 16:10 UTC (89f29cf) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-04 `Graph/LWStein`（登记 `Tame1` structural） |
+| T2053 | 2026-10-03 19:12 UTC (fc76526) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（Amend 1 重开不算返工，§27）；EK-6 `Evolution/Prec`（五条 `STEK*` 消费钉文）；EK gate 完成 |

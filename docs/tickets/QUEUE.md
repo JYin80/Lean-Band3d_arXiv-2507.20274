@@ -1,13 +1,12 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 18:50 UTC
+更新：2026-10-03 19:22 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2061 | S1-17 | 证明（Green/FlucVanish：CondRow、GreenDeriv、FlucVanish；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
 | T2066 | ST2-01 | 证明（Step 2 词汇与全部 ST-2 钉文入库 Induction/Step2Defs，§28） | prover | 检查 exit 0 且有空位即开工（§17） |
-| T2053 | EK-6 | 证明（STEK* 消费形式；钉文 STEKNonzero 补 0 ≤ s，§27，Amend 1 重开） | prover-hard | H41 |
 | T2067 | LW-P | 证明（LW 钉文入库 Graph/LWPins，§24、§28） | prover | 同上 |
 | T2062 | S1-34 | 证明（Induction/Continuity 后半：gopbound、stNetLift_holds） | prover-hard | 同上 |
 | T2063 | S1-31 | 证明（Induction/ConArgDet：WardResolvent、ConArgDet） | prover-hard | 同上 |
@@ -19,6 +18,7 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2053（EK-6，fc76526，2026-10-03 19:12；钉文修补 §27；EK gate 完成）
 - T2060（LW-04，89f29cf，2026-10-03 16:10）
 - T2033（S1-09，aa42e43，2026-10-03 15:45）
 - T2051（LW-15，461ae86，2026-10-03 15:39）
@@ -82,7 +82,7 @@
 ## 下一批（等上面的结果再写）
 - PT：gate 完成（T2027）；剩 KL14/总清理时删 `ThetaDiffOne/Two`、`PropTH`。
 - KL4+5 = T2025 已合并；KL6 = T2036 已合并；KL7a 已合并，KL7 三张全部合并（KL7c = T2056）；MD 全部合并；ST-D1 = T2015；ST-D2 = T2039 已合并（签字 §28：ST-2 记 37 张，ST2-36…39 移 ST-4）；ST-D3、LW-D1 已合并（§24、§25）。
-- EK：EK-3、EK-4 已合并；EK-5 = T2035 已合并；EK-6 = T2053 已放行（可开工）。
+- EK：EK-3、EK-4 已合并；EK-5 = T2035 已合并；EK-6 = T2053 已合并，EK gate 完成。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。
 - MA：终点冻结票，等 T2001、T2002。
