@@ -1,17 +1,17 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 10:30 UTC
+更新：2026-10-03 10:44 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2039 | ST-D2 | 设计（Step 2 与路径层，d ≥ 3 新论证） | prover-max | 同上 |
 | T2048 | KL7b | 证明（移植 Loop/SumAll：总和界） | prover-max | 检查 exit 0 且有空位即开工（§17） |
-| T2044 | S1-13 | 证明（Green/LDEQuadMom） | prover | 同上 |
 | T2045 | S1-08 | 证明（Induction/ScaleFacts + PerTimeCalc） | prover-hard | 同上 |
 | T2049 | S3-01 | 证明（Steps 3–4 钉文入库、登记） | prover | 检查 exit 0 且有空位即开工（§17） |
 | T2050 | LW-03 | 证明（图词汇 Graph/LWVocab） | prover-hard | 同上 |
 | T2047 | S1-33 | 证明（Induction/ContinuityNet） | prover-hard | 同上 |
+| T2052 | S1-14 | 证明（Green/LDEQuadT） | prover | 检查 exit 0 且有空位即开工（§17） |
 | T2033 | S1-09 | 证明（Induction/Split） | prover-hard | 同上 |
 | T2037 | S1-02 | 证明（Gauss/LoopCoordinate） | prover | 同上 |
 | T2035 | EK-5 | 证明（lem:sum_decay_nonzero 无损、两种电荷） | prover | 同上 |
@@ -22,6 +22,7 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2044（S1-13，84e54a8，2026-10-03 10:36）
 - T2046（S1-15，ea63565，2026-10-03 10:24）
 - T2040（LW-D1，45e2630，2026-10-03 10:23；签字 §24）
 - T2041（ST-D3，3747ff7，2026-10-03 10:21；签字 §25）

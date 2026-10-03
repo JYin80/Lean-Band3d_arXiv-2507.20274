@@ -44,3 +44,4 @@
 | T2041 | 2026-10-03 10:21 UTC (3747ff7) | prover-max（修复 claude-opus-5-5） | Sonnet 5.5 effort max | 是（审核 RETURN 一次：R1–R3，补 T2041i 等） | ST-D3 设计：Steps 3–4 钉文、EK-6 消费形式、拆 34 张；签字 §25 |
 | T2040 | 2026-10-03 10:23 UTC (45e2630) | prover-max（修复） | Sonnet 5.5 effort max | 是（审核 RETURN 一次：实例窗口 `ℓT`、`inst_LWtermExpN`） | LW-D1 设计：图词汇（记录 A）、钉文、展开式按 =_E、27 张；签字 §24 |
 | T2046 | 2026-10-03 10:24 UTC (ea63565) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S1-15 `Green/Stability`（d ≥ 3 常数，ST-1 关键路径第二张）；1484 定理 / 0 公理 |
+| T2044 | 2026-10-03 10:36 UTC (84e54a8) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-13 `Green/LDEQuadMom`（与维数无关） |
