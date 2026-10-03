@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor2 PASS after one rule-(B) repair; report-only merge (probe stays on t/T2040 at eeda441)
+updated: 2026-10-03 10:23:29 UTC
+reports: docs/reports/T2040-prove.md, docs/reports/T2040-audit.md
