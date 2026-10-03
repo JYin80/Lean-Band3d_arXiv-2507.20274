@@ -661,10 +661,11 @@ def STEKSumRes2 (d : ℕ) : Prop :=
         (fun n v ω => ((sz.lam n ^ 2 + |1 - (v : ℝ)|) / (sz.lam n ^ 2 + |1 - t n|)) ^ n_ * X n v ω)
 
 /-- **`lem:sum_decay_nonzero`** (`3_5:1666`) at scale `N`, case (ii) `1 - ilambda²/L² ≤ s ≤ t < 1`, `A ⊇ I_diff(σ)`,
-bulk `κ ≤ Im m` (both charges): `‖Q^{(A)}∘U_{v,t,σ}∘𝒜_v‖_∞ ≺ X` from `‖𝒜_v‖_∞ ≺ X` (no decay hypothesis). -/
+bulk `κ ≤ Im m` (both charges): `‖Q^{(A)}∘U_{v,t,σ}∘𝒜_v‖_∞ ≺ X` from `‖𝒜_v‖_∞ ≺ X` (no decay hypothesis).
+The window carries `0 ≤ s` (DECISIONS §27, T2053 Amend 1): without it `ilambda > L` lets `[s,t]` reach negative times. -/
 def STEKNonzero (d : ℕ) : Prop :=
   3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
-    ∀ s t : ℕ → ℝ, (∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
+    ∀ s t : ℕ → ℝ, (∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ s n) → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
     ∀ m : ℕ → ℂ, (∀ n, ‖m n‖ = 1) → (∀ n, κ ≤ (m n).im) →
     ∀ σ : Fin n_ → Bool, ∀ A : Finset (Fin n_), (∀ i, σ i ≠ σ (finRotate n_ i) → i ∈ A) →
     ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ),
