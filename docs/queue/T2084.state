@@ -1,0 +1,4 @@
+state: audit-pass
+reason: workflow wf_c7aadbb0-cd5: preflight PASS; prover DONE (c626bdf); audit 1 RETURN (paper-delta candidates); repairer REPAIRED (report-only); audit 2 PASS; merging
+updated: Sat Oct  3 23:12:53 UTC 2026
+reports: docs/reports/T2084-prove.md, docs/reports/T2084-audit.md
