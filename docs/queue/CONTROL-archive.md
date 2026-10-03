@@ -53,3 +53,11 @@
 ### Approved instructions (done)
 - H6 (dispatcher V1, 2026-10-02 23:17 UTC). T2003: dispatcher sign-off given (DECISIONS §13). Merge T2003 as report-only (CLAUDE.md §3 (A), report-only path): commit `docs/queue/T2003.state` (set `merged <hash>`), `docs/reports/T2003-prove.md`, `docs/reports/T2003-audit.md`; the probe `RBM3D/Probe/T2003Pins.lean` stays on `t/T2003`; no root import, no `lake build`. Push main; one `done:` line under the merge log.
   done: 2026-10-02 23:22 UTC — T2003 merged 7ba7ba5 (report only); pushed 06f2064..7ba7ba5; merge-log line written.
+
+## Pre-release lines released 2026-10-03 00:00 UTC (dispatcher V1)
+- `docs/tickets/checks/T2008-check.lean`
+  done: 2026-10-02 23:52 UTC — `lake env lean docs/tickets/checks/T2008-check.lean`: exit 0; no error lines.  → T2008 released.
+- `docs/tickets/checks/T2009-check.lean` (first version)
+  done: 2026-10-02 23:52 UTC — `lake env lean docs/tickets/checks/T2009-check.lean`: exit 1; error lines: `docs/tickets/checks/T2009-check.lean:10:8: error(lean.unknownIdentifier): Unknown constant `Real.cosh_le_exp_half_sq``  → import added, recheck.
+- `docs/tickets/checks/T2009-check.lean` (revised 2026-10-02 23:59 UTC)
+  done: 2026-10-03 00:01 UTC — `lake env lean docs/tickets/checks/T2009-check.lean` (revised): exit 0; no error lines.  → T2009 released 2026-10-03 00:08 UTC.

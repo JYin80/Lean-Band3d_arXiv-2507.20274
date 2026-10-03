@@ -4,8 +4,10 @@ Pinned definitions and `Prop` statements of the PT-B1 pilot (route H, Fable revi
 Namespace `RBM.Heat.T2009Check` here becomes `RBM.Heat` in the ticket.
 Definitions and `#check` only: no proofs, no `sorry`.  Never imported or merged.
 Run from the main worktree: `lake env lean docs/tickets/checks/T2009-check.lean`.
+Revised 2026-10-02 23:59 UTC: `Real.cosh_le_exp_half_sq` lives in `Mathlib.Analysis.SpecialFunctions.Trigonometric.Series`, which `RBM3D` does not import; import added.
 -/
 import RBM3D
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
 
 #check @Real.cosh_le_exp_half_sq
 #check @integral_gaussian

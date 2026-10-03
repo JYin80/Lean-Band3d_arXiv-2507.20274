@@ -29,3 +29,6 @@
 - 2026-10-02 23:24 UTC Jun 答路线：H，但先用 Fable 5.1 high 子代理复核 → DECISIONS §14；起 Fable 子代理。
 - 2026-10-02 23:42 UTC T2003 合并（7ba7ba5，H6）、T2004 合并（0b91f7a，一次 PASS）；T2006、T2007 检查文件 exit 0 → 放行。Fable 复核路线 H：AGREE（附更正）。
 - 2026-10-02 23:47 UTC DECISIONS §14 落实（Fable AGREE → 路线 H，报告存 docs/claude-team/fable/）、§15（T2004 签字）；写 T2008（KL1）、T2009（PT-B1 试点）与检查文件，列 Pre-release；H7 例行提交。
+- 2026-10-03 00:00 UTC T2008 检查 exit 0 → 放行（并行 3/4）；T2009 检查 exit 1（`Real.cosh_le_exp_half_sq` 在 Mathlib.Analysis.SpecialFunctions.Trigonometric.Series，RBM3D 未导入）→ 检查文件与票补 import，重编。T2006、T2007 23:52 开 Workflow。
+- 2026-10-03 00:06 UTC 写 T2010（PT-E：Fable §2 S5 的 L1–L3，钉文 7 条，数值核对无反例；L1 按 ε ≤ 1 / ε ≥ 1 分两式；设计行 E 的按性质组装挪到 F）与检查文件，列 Pre-release（排 T2009 后）→ DECISIONS §14 补一条。
+- 2026-10-03 00:08 UTC T2009 重编 exit 0 → 放行（并行 4 满：T2006、T2007、T2008、T2009）；T2010 待编译，有空位再放；H8 例行提交。

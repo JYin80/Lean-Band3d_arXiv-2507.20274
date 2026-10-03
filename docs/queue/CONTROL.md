@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-02 23:47 UTC (dispatcher V1: T2008, T2009 under pre-release check; H7 commit)
+updated: 2026-10-03 00:08 UTC (dispatcher V1: T2008, T2009 released (parallel 4 full); T2010 (PT-E) under pre-release check; H8 commit)
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -11,16 +11,18 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 1. T2006 — `docs/tickets/T2006.md` (MD-1, model vocabulary: `Sizes`, fine-lattice model, `LinearForm`; role `prover-max`; critical path: MD-2, MD-3 and every ST/UN/BA ticket wait for it). Start: now.
 2. T2007 — `docs/tickets/T2007.md` (PT-A, propagator pins, bridges, property 5s; role `prover-hard`). Start: now.
+3. T2008 — `docs/tickets/T2008.md` (KL1, K-loop tree representation, molecule layer, Ward n = 2; role `prover`; check compiled exit 0 at 23:52 UTC). Start: now.
+4. T2009 — `docs/tickets/T2009.md` (PT-B1, route H pilot part 1: 1D heat kernel; role `prover-max`; revised check compiled exit 0 at 00:01 UTC). Start: now.
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
-- `docs/tickets/checks/T2008-check.lean`
-  done: 2026-10-02 23:52 UTC — `lake env lean docs/tickets/checks/T2008-check.lean`: exit 0; no error lines.
-- `docs/tickets/checks/T2009-check.lean`
-  done: 2026-10-02 23:52 UTC — `lake env lean docs/tickets/checks/T2009-check.lean`: exit 1; error lines: `docs/tickets/checks/T2009-check.lean:10:8: error(lean.unknownIdentifier): Unknown constant `Real.cosh_le_exp_half_sq``
+- `docs/tickets/checks/T2010-check.lean` (new, PT-E; released when a slot frees, after T2009).
+  done: 2026-10-03 00:12 UTC — `lake env lean docs/tickets/checks/T2010-check.lean`: exit 0; no error lines.
 
 ## Approved instructions
 - H7 (dispatcher V1, 2026-10-02 23:47 UTC). Stage by name only and commit with message `Dispatcher V1: DECISIONS §12–§15, route H (Fable review), tickets T2006–T2009`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2006.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2009.md`, `docs/tickets/checks/T2006-check.lean`, `docs/tickets/checks/T2007-check.lean`, `docs/tickets/checks/T2008-check.lean`, `docs/tickets/checks/T2009-check.lean`, `docs/claude-team/fable/2026-10-02-routeH.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
+  done: 2026-10-02 23:52 UTC — committed 6a555f7 (16 files staged by name), pushed to origin/main.
+- H8 (dispatcher V1, 2026-10-03 00:07 UTC). After compiling the Pre-release files above, stage by name only and commit with message `Dispatcher V1: T2008 released, T2009 check import, T2010 (PT-E)`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2009.md`, `docs/tickets/checks/T2009-check.lean`, `docs/tickets/T2010.md`, `docs/tickets/checks/T2010-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
 (H1–H6 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it.)
 
 ## Merge log (the hub appends one `done:` line per merge)
