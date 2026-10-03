@@ -11,6 +11,7 @@
 | T2062 | S1-34 | 证明（Induction/Continuity 后半：gopbound、stNetLift_holds） | prover-hard | 同上 |
 | T2063 | S1-31 | 证明（Induction/ConArgDet：WardResolvent、ConArgDet） | prover-hard | 同上 |
 | T2064 | S1-05 | 证明（Gauss/LoopFlowStein） | prover-hard | 同上 |
+| T2070 | KL8+9 | 证明（分子衰减 KLmoleculePin、和为零 KLsumZeroPin） | prover-max | 同上 |
 | T2065 | S1-04 | 证明（Hierarchy/ContractionSecondLoop，13 个小文件） | prover | 同上 |
 
 ## 待放行（检查文件编译中）

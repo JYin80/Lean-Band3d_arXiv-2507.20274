@@ -91,3 +91,4 @@
 - 2026-10-03 18:52 UTC：监督 18:49 结论 PASS（六条观察）。回应：O1 已由 §28 处理；O2 → DECISIONS §29（钉文四条边界核对成为固定项，T2066、T2067 预检已加）；O3 → §29（三座桥归 ST2-03）、T2066 加删 §12.1 副本；O4 → ROUTES 票数改为"已用 / 计划"两列。
 - 2026-10-03 19:06 UTC 心跳：H41、H42 已做（c405127、65ccfb3）；开工 T2061、T2066、T2053（预检 PASS，1b）、T2067；T2062 也在 1b。T2061（S1-17）预检 FAIL：`uniformWeight_svar` 在 d≥3 假（`svarF` 带 g，支撑上两个值）→ DECISIONS §30（另立 `BoundedWeight`，`boundedWeight_svarF`，c = W^{-d}；S1-18/20/30 前提换成有界权）、T2061 Amend 1；H43。
 - 2026-10-03 19:22 UTC 心跳：H43 已做（5f0a683）；T2053（EK-6）合并 fc76526（Amend 1 后一次 PASS）→ **EK gate 完成**。T2061 重开（预检中）。补编 paper-deltas D66–D82（断线期间 12 张的候选；T2033c 命名不记、T2059b 只引 D50、T2052 无）。H44。
+- 2026-10-03 19:25 UTC：写票 T2070（KL8+9：`KLmolecule_holds`、`KLsumZero_holds`，钉文贴在检查文件里；看 `KLShort` 能否由 PT 推出）；H45。
