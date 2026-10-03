@@ -97,6 +97,7 @@ import RBM3D.Induction.Contract
 import RBM3D.Gauss.LoopCoordinate
 import RBM3D.Graph.LWPsi
 import RBM3D.Induction.Split
+import RBM3D.Graph.LWStein
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
