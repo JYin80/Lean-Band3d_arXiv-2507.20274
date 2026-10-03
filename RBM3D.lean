@@ -74,6 +74,8 @@ import RBM3D.Evolution.SumDecay
 import RBM3D.Green.RowIndep
 import RBM3D.Loop.KLWard
 import RBM3D.Green.LDEQuad
+import RBM3D.Induction.Defs
+import RBM3D.Green.Pins
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

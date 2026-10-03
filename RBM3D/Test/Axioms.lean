@@ -87,7 +87,23 @@ reader's convenience, we provide the proof below", and then gives it in full.  A
 here is a debt of this formalization (the molecule layer is missing), not a borrowing. -/
 def owedProps : List Name :=
   [`RBM.Loop.TwoLoopBounded, `RBM.Loop.KLoopBound,
-   `RBM.Green.GaussIBP]  -- Stein identity and finite polynomial moments of `Sizes.seqP`; proved by S1-19 (RBM2D `IBPPoly:299`), taken by `Tame.integrable` (T2031)
+   `RBM.Green.GaussIBP,  -- Stein identity and finite polynomial moments of `Sizes.seqP`; proved by S1-19 (RBM2D `IBPPoly:299`), taken by `Tame.integrable` (T2031)
+   `RBM.Gauss.Sizes.STKbound,       -- `ML:Kbound` (`1_2:1056`), hypothesis of `STStep1`: proved by KL7 (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STLK,           -- (a) of `lem:main_ind` at `s`: ST-6 chain induction (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STLmax,         -- `(eq:loopbound_s)`: ST-6 chain induction (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STDecay,        -- (b), first part: ST-6 chain induction (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STDecayStrong,  -- (b), second part: ST-6 chain induction (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STLocalMax,     -- (c) `(Gt_bound+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STExp2,         -- (d) `(Eq:Gtlp_exp+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STMainInd,      -- `lem:main_ind`: end of the ST-6 chain; class not signed in §19, owed by the §20 rule (T2028)
+   `RBM.Gauss.Sizes.STConArg,       -- `lem_ConArg` (`3_5:42`): S1-32 (T2028, §20 rule; class not signed in §19)
+   `RBM.Gauss.Sizes.STStep1,        -- Step 1 of `lem:main_ind` (`1_2:1317`): S1-36 (T2028, §20 rule; class not signed in §19)
+   `RBM.Gauss.Sizes.STBootstrap,    -- continuity bootstrap of Step 1 (`3_5:64`): S1-36 (T2028, T2015 b.10)
+   `RBM.Gauss.Sizes.STNetLift,      -- net lift of Step 1: S1-34 (T2028, T2015 b.10)
+   `RBM.Gauss.Sizes.STForbidden,    -- forbidden-region estimate of Step 1: S1-36 (T2028, §20 rule; class not signed in §19)
+   `RBM.Green.GbEXPV3Theorem,       -- `lem_GbEXP` in the RBM2D form (`3_5:14`): S1-30 `gbEXPV3` (T2028)
+   `RBM.Green.GijOmegaSeq,          -- `(GijGEX)` on `Ω` per sequence: S1-24 `gijOmegaSeq`, RBM2D `Green/EntryGauss.lean:55` (T2028)
+   `RBM.Green.AsGMcPT]              -- `(asGMc)` per time: from (`Gtmwc`) of Step 1, RBM2D `Path/GoodSet.lean:439` `goodSet_asGMc` (T2028, §20 rule)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -114,7 +130,9 @@ def structuralProps : List Name :=
    `RBM.Green.Stable,         -- stability of `1 − ξS` with constant `K`; band profile S1-24
    `RBM.EKFastDecay,          -- `(deccA0)`: decay of the tensor `A` beyond the window `W^ε ℓ_s`, a data condition on `A` (EK-3, T2034)
    `RBM.Green.AgreeOffRow,    -- two samples agree on every coordinate off row `i` (S1-11 RowIndep)
-   `RBM.Green.FinDep]         -- `g` reads finitely many Gaussian coordinates: a property of the function, hypothesis of `Tame.ofBdd` (T2031)
+   `RBM.Green.FinDep,         -- `g` reads finitely many Gaussian coordinates: a property of the function, hypothesis of `Tame.ofBdd` (T2031)
+   `RBM.Gauss.Sizes.STConStInd, -- `(con_st_ind)` (`1_2:1296`): a condition on the time sequences (T2028, DECISIONS §19)
+   `RBM.Gauss.Sizes.STFlow] -- the setting of `MR:locSC` and `zztE`: `Admissible` and `locDomain` (T2028, DECISIONS §19)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
