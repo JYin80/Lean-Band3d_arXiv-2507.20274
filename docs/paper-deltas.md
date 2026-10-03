@@ -343,3 +343,15 @@ RBM2D 的 R1 是关于 `M_t⁻¹ Im m` 的；本文 d ≥ 3 的控制参数是 `
 ## D47 · RBM2D 链式网格与 Step 5 近端事实不在 ST-1 移植（2026-10-03，T2045b；DECISIONS §26）
 
 RBM2D `ChainStepCond`、`chainStepCond`（网格 `CondStInd`，指数 30）和 `scaleFacts_inv_sq_le_tailT`（2D Step 5 的 `tailT`、`ellStar`、`scaleM`）在本文的 Lean 里没有对应物。本文 `1_2:1308-1312` 的时间归纳分两段，不固定网格；链式归纳在 ST-6 按本文重写。
+
+## D48–D56 · Steps 3–4 钉文（2026-10-03，T2041a–i；签字 §25；钉文随 T2049 入库 56c30fb，`RBM3D/Induction/Step34Pins.lean`）
+
+- **D48（T2041a）**：`(am;asoi222)` 的控制参数在 `v ∈ [s,u]` 上取常数（依赖端点 `u`），`O(1)` 项的最大写成和，只控制出现的长度；`lem:STOeq_NQ` 右端带帽自项的上确界。
+- **D49（T2041b）**：`rmk:choosechi` 的 mollifier 按性质钉（`STMollifierProps`：和为一、上界、可微、`∂_t` 界）加存在性钉文；`f_t` 里的尺度要光滑化（`ℓ_t` 有折点）。T2055 合并 6b2494e 证出存在性（`stMollifierEx_holds`，光滑化尺度 `ℓ̃_t`）。
+- **D50（T2041c）**：`lem_+Q` 带 `4 ≤ W^ε` 与 `L^d ≤ W^K`（与 D45 / §21 同源：远处项有 `L^{dm}` 个）。
+- **D51（T2041d）**：Steps 3–4 按区间谓词 `R ∈ {STAny, STCaseI, STCaseII}` 分别钉；一般 `(s,t)` 的陈述是组装钉文（S3-27）。
+- **D52（T2041e）**：量词次序 `∀ C_d ∃ 𝔠_d`（`(eq:sumtwoloop)`、`3_5:1070`："sufficiently small depending on `C_d`"），`C_d` 取 Step 2 的指数时与 `STMainInd` 一致。
+- **D53（T2041f）**：情形 (ii) 取 `A = (W^{-d}B_{s,0})⁻¹`（论文印出的 `Ψ`）；情形 (i) 取 `A = ilambda² W^d`。
+- **D54（T2041g）**：`lem:SEforLn` (4) 钉的是 `(ℰ⊗ℰ)^{M,(n)} = Σ_k (ℰ⊗ℰ)^{M,(n;k)}`（`defEOTE`，`3_5:176-180`）；论文对每个 `(n;k)` 陈述，差因子 `n`。
+- **D55（T2041h）**：`lem_wardineq_K` 钉在尺度 `N` 上（`STKward`），来自 KL12 的 `L^τ` 损失形式。
+- **D56（T2041i）**：论文在 `lem:main_ind` 的全部假设下证 Steps 3–4；`STStep3R`、`STStep4R`、`STIngR`、`STIterR` 只取 (a) `(Eq:L-KGt+IND)` 在 `s`（`STLK`），去掉 (b)–(d)（由 `STMainInd` 携带），另加 `STKbound`（`ML:Kbound`）与 `STKward`。正文只在 `3_5:1159,1681,1902` 引用归纳假设，所以钉文比论文强、假设集不同。
