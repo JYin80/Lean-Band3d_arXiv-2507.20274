@@ -17,3 +17,4 @@
 | T2011 | 2026-10-03 01:56 UTC (13dbbc0) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；路线 H 试点后半（ℤ 上热核的衰减与一、二阶差分界），3695 jobs / 0 公理；试点 B1+B2 通过（DECISIONS §14） |
 | T2012 | 2026-10-03 02:07 UTC (9e2b00f) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；尺度 N 的 ≺、逐时刻控制、矩/Stein 桥接；Axioms.lean 记 2 条 structural（§16 预授权）；832 定理 / 0 公理；paper-delta D25 |
 | T2013 | 2026-10-03 02:17 UTC (868b3b4) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；流数据、G_t、细格点 G-loop、BA 包装、包络 (5.2)（RBM2D 无对应文件，按秩 W^d 新证）；880 定理 / 0 公理 |
+| T2017 | 2026-10-03 03:12 UTC (33049c0) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；环面热核 τ ≤ L² 的界与 τ ≥ L² 的零模/谱隙，884 定理 / 0 公理；1b 因额度两次 API 失败重跑（规则 H，不计） |

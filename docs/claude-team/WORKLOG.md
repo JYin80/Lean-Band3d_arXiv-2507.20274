@@ -45,3 +45,5 @@
 - 2026-10-03 02:20 UTC T2012（9e2b00f）、T2013（868b3b4）合并，均一次 PASS → rework-ledger 两行、paper-deltas D25（T2012a；T2012b 是 API，不记）、ROUTES、QUEUE。写 T2018（MD-4：probe 第 8 节 + RBM2D Path/Walk 全文 + Transfer:1–150）与检查文件，按 §17 列 Released；H16。在跑：T2014、T2015、T2016、T2017。
 - 2026-10-03 02:35 UTC 中枢 HUB.alive 停在 02:18（STALE 第 1 轮）；无新合并。
 - 2026-10-03 02:50 UTC 中枢仍 STALE（HUB.alive 02:18，最后写入 02:21），第 2 轮 → 告诉 Jun。
+- 2026-10-03 02:57 UTC 中枢 02:52 恢复（额度到 02:50）；T2014–T2017 1b 按规则 (H) 重跑。
+- 2026-10-03 03:22 UTC T2017 合并（33049c0，一次 PASS）→ rework-ledger、ROUTES、QUEUE。写 T2019（PT-D：Θ 的 Laplace–乘积精确表示 + 1/d 引理 + 乘积核 4 条界；表示式数值误差 1.4e-11，1/d 引理 2e5 随机无反例）与检查文件，按 §17 列 Released；H17。T2018 03:12 开工；T2014–T2016 1b 重跑中。
