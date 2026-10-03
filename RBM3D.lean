@@ -89,6 +89,7 @@ import RBM3D.Induction.QopAlgebra
 import RBM3D.Graph.LWVocab
 import RBM3D.Green.EntryDom
 import RBM3D.Induction.ContinuityNet
+import RBM3D.Loop.KLSumZeroWard
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
