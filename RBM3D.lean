@@ -105,6 +105,7 @@ import RBM3D.Graph.LWPins
 import RBM3D.Induction.ConArgDet
 import RBM3D.Hierarchy.ContractionSecondLoop
 import RBM3D.Green.FlucVanish
+import RBM3D.Gauss.LoopFlowStein
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
