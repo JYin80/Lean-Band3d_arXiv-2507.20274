@@ -32,3 +32,7 @@
 - 2026-10-03 00:00 UTC T2008 检查 exit 0 → 放行（并行 3/4）；T2009 检查 exit 1（`Real.cosh_le_exp_half_sq` 在 Mathlib.Analysis.SpecialFunctions.Trigonometric.Series，RBM3D 未导入）→ 检查文件与票补 import，重编。T2006、T2007 23:52 开 Workflow。
 - 2026-10-03 00:06 UTC 写 T2010（PT-E：Fable §2 S5 的 L1–L3，钉文 7 条，数值核对无反例；L1 按 ε ≤ 1 / ε ≥ 1 分两式；设计行 E 的按性质组装挪到 F）与检查文件，列 Pre-release（排 T2009 后）→ DECISIONS §14 补一条。
 - 2026-10-03 00:08 UTC T2009 重编 exit 0 → 放行（并行 4 满：T2006、T2007、T2008、T2009）；T2010 待编译，有空位再放；H8 例行提交。
+- 2026-10-03 00:16 UTC T2010 检查 exit 0 → 放行（列第 5，下一个空位开工）；H8 done（01b7ed8）。T2006/T2007 preflight PASS、1b 在跑；T2008 preflight PASS；T2007 进入审核。
+- 2026-10-03 00:34 UTC T2007、T2008 审核 PASS，合并第 5 步被根文件 #assert_rbm_axioms 拦（未登记的假设 Prop：Prop5to8/Prop5Decay/Prop8ZeroMode、Loop.KLPT）→ DECISIONS §16 归类（borrowed；T2006 的 Sizes.{WO,Bandwidth,SizeTendsto,Admissible,locDomain} 预记 structural），T2007 Amend 1、T2008 Note 1、H9。T2010 00:21 开 Workflow（T2007/T2008 让出位置）；T2009 preflight PASS。
+- 2026-10-03 00:54 UTC T2006（0a873f1）、T2009（73cf5c1，试点前半）、T2010（315e65e）合并，均一次 PASS → rework-ledger 三行、paper-deltas D17–D24（T2002a–i 与 T2006a；D1 补 three_le_L）、ROUTES。T2007 Amend 1 在跑（H9）。写 T2011（PT-B2，试点后半，钉文 3 条，数值核对 sup 比 1.0/1.09/2.0）、T2012（MD-2）、T2013（MD-3）与检查文件，列 Pre-release；GLoop.lean 模块文档按 T2002f 修正；H10。
+- 2026-10-03 01:03 UTC H9 完成：T2007 Amend 1（repairer 64e6082，第 2 轮审核 PASS）合并 b20c658；T2008 续合并 710acd2 → rework-ledger 两行（流程缺口，不算返工）、ROUTES、QUEUE、CONTROL。

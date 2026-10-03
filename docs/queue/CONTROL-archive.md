@@ -61,3 +61,8 @@
   done: 2026-10-02 23:52 UTC — `lake env lean docs/tickets/checks/T2009-check.lean`: exit 1; error lines: `docs/tickets/checks/T2009-check.lean:10:8: error(lean.unknownIdentifier): Unknown constant `Real.cosh_le_exp_half_sq``  → import added, recheck.
 - `docs/tickets/checks/T2009-check.lean` (revised 2026-10-02 23:59 UTC)
   done: 2026-10-03 00:01 UTC — `lake env lean docs/tickets/checks/T2009-check.lean` (revised): exit 0; no error lines.  → T2009 released 2026-10-03 00:08 UTC.
+- `docs/tickets/checks/T2010-check.lean`
+  done: 2026-10-03 00:12 UTC — `lake env lean docs/tickets/checks/T2010-check.lean`: exit 0; no error lines.  → T2010 released 2026-10-03 00:16 UTC (starts at the next free slot).
+
+## Released-ticket lines removed 2026-10-03 00:53 UTC (merged)
+- T2006 (MD-1) merged 0a873f1 at 00:38 UTC; T2009 (PT-B1) merged 73cf5c1 at 00:40 UTC; T2010 (PT-E) merged 315e65e at 00:41 UTC (merge log in CONTROL).

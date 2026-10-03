@@ -142,3 +142,9 @@
 - **拆单**：KL1…KL14（报告 b 的 ROW 行；KL4+5、KL8+9 合票，KL7 三张，KL10 两张，KL13 可选）。KL1 = T2008（`prover`，立即）；KL10（`(eq:ind-step-bound)`，d ≥ 3 新估计）是高风险行。审核观察 O2（KL10 的叶子只取 `Θ`，即 RBM2D 的 `innerId` 路线）由 KL10/KL11 的设计确认。
 - 预计票数约 15（< 25），KL gate 不触发预判（§9 O2）。
 
+
+## §16 公理审计登记：T2007、T2008 合并被拦（总调度，2026-10-03 00:34 UTC，流程决定）
+- **事由**：T2007（PT-A）、T2008（KL1）审核都 PASS，合并第 5 步全量 `lake build` 在根文件 `#assert_rbm_axioms` 失败：扫描出「作为假设、本库没有定理证明」的 `Prop` 未登记在 `RBM3D/Test/Axioms.lean` 三张表（borrowed / owed / structural）里——T2007：`RBM.Prop5to8`、`RBM.Prop5Decay`、`RBM.Prop8ZeroMode`；T2008：`RBM.Loop.KLPT`。没有提交，main 已复原。
+- **归类**：四个都记 **borrowed**（论文对 `lem_propTH` 5–8 是引用不是证明；它们取代旧的 `ThetaDecay` … `PropTH`，后者本来就在 borrowed；`KLPT` 是同一批性质的 KL 局部形）。账本记的是论文的状态；按 §5 它们不是授权外部输入，路线 H（§14）要把它们证掉。T2006 在跑的标准假设 `RBM.Gauss.Sizes.{WO, Bandwidth, SizeTendsto, Admissible, locDomain}` 预先记 **structural**（参数区间与谱域，是对象的定义，不是借来的结果），免得 T2006 合并时同样被拦；登记了暂时没人用只出提示，不报错。
+- **落实**：T2007 Amend 1（`repairer` 只改 `Axioms.lean` 两张表和一句文档串 → 第 2 轮审核只看 amend → 合并）；T2007 合并后 T2008 从合并第 5 步续做（分支不动）；H9。
+- **以后的票**：凡票里新出现「当假设用、本票不证」的 `Prop`，总调度在票面写明归类并把 `RBM3D/Test/Axioms.lean` 列进唯一可写文件；验收条件写「全量 `lake build`（含根文件 `#assert_rbm_axioms`）」，prover 交审核前自己跑一遍。

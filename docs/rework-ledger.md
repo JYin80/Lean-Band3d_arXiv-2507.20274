@@ -9,3 +9,8 @@
 | T2002 | 2026-10-02 23:11 UTC (06f2064) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；1b 因额度两次 API 失败重跑（规则 H，不计返工） |
 | T2003 | 2026-10-02 23:22 UTC (7ba7ba5) | prover-max | Sonnet 5.5 effort max | 否 | 审核 PASS 但要求总调度签字（路线 H 交 Jun，DECISIONS §13）；1b 因额度重跑（不计） |
 | T2004 | 2026-10-02 23:23 UTC (0b91f7a) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；1b 因额度重跑（规则 H，不计） |
+| T2006 | 2026-10-03 00:38 UTC (0a873f1) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；词汇层（Sizes、FineModel、LinearForm）+ RBM2D 移植，全库 3326 jobs / 0 公理；paper-delta D17–D24 |
+| T2009 | 2026-10-03 00:40 UTC (73cf5c1) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；路线 H 试点之一（一维热核：级数、母函数、倾斜反演、周期化），3686 jobs / 0 公理 |
+| T2010 | 2026-10-03 00:41 UTC (315e65e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；Laplace–Gauss 引理 L1–L3，3688 jobs / 0 公理；T2010a 是路线内部修正（DECISIONS §14），不进 paper-deltas |
+| T2007 | 2026-10-03 00:46 UTC (b20c658) | prover-hard（Amend 1：repairer） | Sonnet 5.5 effort xhigh（repairer claude-opus-5-5） | 否（流程缺口） | 审核一次 PASS；合并被根文件 `#assert_rbm_axioms` 拦（未登记假设 Prop），DECISIONS §16 归类后 Amend 1 只改 Axioms.lean，第 2 轮审核 PASS；性质 5s 已证（`prop5Short_holds`） |
+| T2008 | 2026-10-03 00:46 UTC (710acd2) | prover | Sonnet 5.5 effort high | 否（流程缺口） | 审核一次 PASS；同 T2007 被公理登记拦，`KLPT` 由 T2007 Amend 1 登记后从第 5 步续合并 |

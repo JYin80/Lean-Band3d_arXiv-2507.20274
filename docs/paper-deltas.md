@@ -8,6 +8,7 @@
 `1 = -1` in `ZMod 2`，每点的 `2d` 个邻居塌成 `d` 个，行和变成
 `(1 + d g²)/(1 + 2d g²) ≠ 1`。所以 `3 ≤ L` 在本项目里是显式假设，
 和两个姊妹项目的处理一致。
+（2026-10-03 补，T2002c / DECISIONS §10 T2001a、§12）尺寸序列 `Sizes d` 把它做成字段 `three_le_L`（T2006，`RBM3D/Defs/Sizes.lean`）；论文只说 `L` 为偶数（1_2:269）。
 
 ## D2 · 周期距离取 ℓ¹
 
@@ -202,3 +203,48 @@ Lean 里 `sfT_pair_le` 把三条并成一条：多项式因子取 `|x_i−α| �
 `not_inv_pow_pair_le_single` 是机器可核的反面测试：单独一项不够。
 
 **建议**：论文那句话后面加一行，把这条不等式写出来。读者现在只能自己猜「额外修改」指什么。
+
+## D17 · `lam` 是论文的 `\ilambda`（印作 `g`）（2026-10-03，T2002a，DECISIONS §12；T2006 合并 0a873f1）
+
+`Sizes d` 的字段 `lam : ℕ → ℝ` 是论文 `def:ilambda`（1_2:256）的 `\ilambda`，已合并代码一律印作 `g`。
+论文正文另有 `λ` 指未缩放的耦合（1_2:253，「λ ≫ W^{d/2}」，即 `\ilambda^{-1}`）。只是命名，陈述不变。
+
+## D18 · 随机层与终点陈述用 `L^∞` 距离，传播子层用 `ℓ¹`（2026-10-03，T2002b，DECISIONS §12；T2006）
+
+论文固定 `L^∞`（1_2:274）；已合并的 `Defs/Lattice.lean` 固定 `ℓ¹`（D2）。`e^{-(|a|/ℓ)^{1/2}}`、`B_{t,|a|}`
+带的是固定常数，所以随机层与终点陈述用新的 `zdistInf`（`L^∞`），传播子与 K-loop 层仍用 `zdistD`（`ℓ¹`）。
+二者差常数 `d`：`zdistInf ≤ zdistD ≤ d · zdistInf`（`zdistInf_le_zdistD`、`zdistD_le_mul_zdistInf`，已编译）。
+
+## D19 · 格点从 0 起编号（2026-10-03，T2002d，DECISIONS §12；T2006）
+
+Lean 用 `ZMod (W*L)`，块 `[a] = a.val·W + {0, …, W−1}`；论文用 `⟦−WL/2+1, WL/2⟧` 与 `⟦(a(i)−1)W+1, a(i)W⟧`
+（1_2:262–267）。差一个平移；模型只读块标号，所有陈述平移不变。
+
+## D20 · 「`N` 充分大」写成沿序列 `∀ᶠ n`，并显式要求 `N → ∞`（2026-10-03，T2002e = T2001a，DECISIONS §10、§12；T2006）
+
+论文的「provided `N` is sufficiently large」（1_2:366）在 Lean 里是尺寸序列上的 `∀ᶠ n in atTop`，
+`N → ∞` 是 `Sizes.SizeTendsto`，进 `Admissible`。论文默认 `N → ∞`，没写出来。
+
+## D21 · 流用单时刻律与网格游走表示，全体尺寸放在一个乘积空间上（2026-10-03，T2002g，DECISIONS §7、§12；T2006 部分）
+
+论文的矩阵布朗运动 `(MBM)`（1_2:686）在 Lean 里由单时刻律 `seqHflow = √u • seqXmat` 承载；论文用停时的地方
+改用 `pathP` 上的网格游走 `pathH`（独立增量；BDG 换成 Azuma 与 Doob，ST 层）。所有尺寸放在一个可数乘积空间
+`seqP` 上（每个尺寸的边缘就是单尺寸的律，`seqP_map_slice`）。逐时刻的 `≺` 在 `P` 外取对 `u` 的并；论文用
+`N^{-C}` 网把结论推到全体 `z`（1_2:1228），这里沿用 RBM2D 的 `NetLift`（时间）与 `RegionUnif`（谱域）（MA gate）。
+本次 T2006 合并的是 `seqP`、`seqXmat`、`seqHflow`；`pathH` 随 ST 票进来。
+
+## D22 · `G(z)` 写成 `Ring.inverse (H − z•1)`（2026-10-03，T2002h，DECISIONS §12）
+
+`Gres`、`Mres` 用 `Ring.inverse`：全函数，可逆时等于逆矩阵（厄米 `H`、`Im z ≠ 0` 时恒可逆，
+`isUnit_sub_smul_of_isHermitian`）。只是写法。
+
+## D23 · `(G_bound)` 的 `W^τ` 统一写成 `N^τ`（2026-10-03，T2002i，DECISIONS §12；T2006）
+
+论文 `(G_bound)`、`(G_bound_ave)` 带 `W^τ`（1_2:388–393），而它的 `≺` 带 `N^τ`（1_2:229）。钉文一律用 `N^τ`；
+在 `W ≥ N^𝔠`、`W^d ≤ N` 下两者等价（`size_rpow_le_W_rpow`、`W_rpow_le`，T2006 已证）。
+
+## D24 · 样本空间多带了几列不用的独立坐标（2026-10-03，T2006a；T2006 合并 0a873f1）
+
+`Ω d L W`（与 `Sizes.SeqΩ`）带有 `Xentry` 不读的独立实坐标：`idxKey b < idxKey a` 的对 `(a, b, ·)`，以及对角线上的虚部
+（`RBM3D/Gauss/FineModel.lean:105–111`）；论文的 `(bandcw0)` 没有这些。`X` 的律与 `(bandcw0)` 完全一致
+（`integral_normSq_Xentry`、`Xmat_isHermitian`、`Xentry_swap`）。只是表示，陈述不变。

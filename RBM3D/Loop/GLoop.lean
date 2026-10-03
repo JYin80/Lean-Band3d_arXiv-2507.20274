@@ -17,6 +17,11 @@ import RBM3D.Analysis.Resolvent
 with `G_t(+) = (H_t - z_t)^{-1}` and `G_t(-) = G_t^*`, along the flow
 `z_t = E + (1-t) m^{(E)}` of `(eq:zt)`.
 
+Note (DECISIONS §12, T2002f): `Gsig ω E t σ` below takes `Hmat ω`, the matrix at time one, for
+every `t`; it is `(H - z_t)^{-1}`, not `(H_t - z_t)^{-1}`.  The flow version with `H_t` on the
+fine lattice is `RBM.Gauss.Sizes.Gt` (`RBM3D/Loop/GLoopFlow.lean`, MD-3), and `Gsig_eq_Gres` there
+relates the two resolvent conventions.
+
 ## What is here
 
 The definitions, and the two facts that do not need any operator-norm machinery:
