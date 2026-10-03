@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor2 PASS after one rule-(B) repair (R1-R3); report-only merge (probe stays on t/T2041 at 3c58211)
+updated: 2026-10-03 10:21:15 UTC
+reports: docs/reports/T2041-prove.md, docs/reports/T2041-audit.md
