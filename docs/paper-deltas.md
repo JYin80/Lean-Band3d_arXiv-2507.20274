@@ -248,3 +248,10 @@ Lean 用 `ZMod (W*L)`，块 `[a] = a.val·W + {0, …, W−1}`；论文用 `⟦�
 `Ω d L W`（与 `Sizes.SeqΩ`）带有 `Xentry` 不读的独立实坐标：`idxKey b < idxKey a` 的对 `(a, b, ·)`，以及对角线上的虚部
 （`RBM3D/Gauss/FineModel.lean:105–111`）；论文的 `(bandcw0)` 没有这些。`X` 的律与 `(bandcw0)` 完全一致
 （`integral_normSq_Xentry`、`Xmat_isHermitian`、`Xentry_swap`）。只是表示，陈述不变。
+
+## D25 · `≺` 对任意测度与实值族定义，符号与有限性只在用到处要求（2026-10-03，T2012a；T2012 合并 9e2b00f）
+
+`StochDomAt`、`HighProbAt`、`PerTimeDomAt`、`MomentDomAt`（`RBM3D/Defs/StochDomAt.lean`、`Gauss/DominationAt.lean`）对任意测度 `P`、
+实值族定义，定义里不要求非负；论文的 `≺`（1_2:227–231）是对概率空间上的非负量。非负性只在 `refl`、`mul`、`const_mul_*` 等引理
+里作为前提（`0 ≤ ζ`），矩桥接要求 `IsFiniteMeasure P`。与已合并的 `StochDom` 同一约定；用在 `seqP`（概率测度）与非负控制量上时
+与论文一致。

@@ -15,3 +15,5 @@
 | T2007 | 2026-10-03 00:46 UTC (b20c658) | prover-hard（Amend 1：repairer） | Sonnet 5.5 effort xhigh（repairer claude-opus-5-5） | 否（流程缺口） | 审核一次 PASS；合并被根文件 `#assert_rbm_axioms` 拦（未登记假设 Prop），DECISIONS §16 归类后 Amend 1 只改 Axioms.lean，第 2 轮审核 PASS；性质 5s 已证（`prop5Short_holds`） |
 | T2008 | 2026-10-03 00:46 UTC (710acd2) | prover | Sonnet 5.5 effort high | 否（流程缺口） | 审核一次 PASS；同 T2007 被公理登记拦，`KLPT` 由 T2007 Amend 1 登记后从第 5 步续合并 |
 | T2011 | 2026-10-03 01:56 UTC (13dbbc0) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；路线 H 试点后半（ℤ 上热核的衰减与一、二阶差分界），3695 jobs / 0 公理；试点 B1+B2 通过（DECISIONS §14） |
+| T2012 | 2026-10-03 02:07 UTC (9e2b00f) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；尺度 N 的 ≺、逐时刻控制、矩/Stein 桥接；Axioms.lean 记 2 条 structural（§16 预授权）；832 定理 / 0 公理；paper-delta D25 |
+| T2013 | 2026-10-03 02:17 UTC (868b3b4) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；流数据、G_t、细格点 G-loop、BA 包装、包络 (5.2)（RBM2D 无对应文件，按秩 W^d 新证）；880 定理 / 0 公理 |
