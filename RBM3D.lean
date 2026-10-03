@@ -83,6 +83,8 @@ import RBM3D.Green.LDEQuadMom
 import RBM3D.Induction.Step34Pins
 import RBM3D.Loop.KLSumAll
 import RBM3D.Evolution.Nonzero
+import RBM3D.Induction.PerTimeCalc
+import RBM3D.Induction.ScaleFacts
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor1 PASS + dispatcher sign-off (H36, DECISIONS §26); merge per CLAUDE.md §3 (A): lake build 3750 jobs, axiom audit 1653 theorems / 0 axioms
+updated: 2026-10-03 13:08:52 UTC
+reports: docs/reports/T2045-prove.md, docs/reports/T2045-audit.md
