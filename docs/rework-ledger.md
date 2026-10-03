@@ -78,3 +78,6 @@
 | T2070 | 2026-10-03 20:52 UTC (eaf0614) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KL8+9 `Loop/KLMolecule` |
 | T2072 | 2026-10-03 20:55 UTC (593e519) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-20 `Path/OneStep` |
 | T2074 | 2026-10-03 20:58 UTC (06b49b2) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-18 `Path/NetLift1`（`stNetLift2_part1`） |
+| T2082 | 2026-10-03 22:27 UTC (efeda82) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-19 `Path/NetLift2`（`STNetLift2` 证出）；D132–D134 |
+| T2077 | 2026-10-03 22:32 UTC (3b98b27) | prover | Sonnet 5.5 effort high | 否 | Amend 1 后审核一次 PASS（删死代码两条目标，§31，票面错误不算返工）；S1-06 `Gauss/LoopGenerator`；D127–D128 |
+| T2078 | 2026-10-03 22:36 UTC (7c7652e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-18 `Green/LDE`（有界权）；D129–D131 |

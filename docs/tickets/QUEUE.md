@@ -1,16 +1,15 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 22:11 UTC
+更新：2026-10-03 22:40 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 | T2079 | S1-35 | 证明（Induction/Step1Setup：Step 1 前半；§26 探针引理；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2078 | S1-18 | 证明（Green/LDE：FlucAvg、LDE；有界权 §30；关键路径） | prover-hard | 同上 |
-| T2077 | S1-06 | 证明（Gauss/LoopGenerator，九个小文件） | prover | 同上 |
 | T2080 | ST2-03 | 证明（Induction/Step2Events：探针 §9、§11 事件 + §29 三座 ST-2↔LW 桥） | prover | 同上 |
-| T2082 | ST2-19 | 证明（Path/NetLift2：Step2LocalNetLift，证钉文 STNetLift2） | prover | 同上 |
 | T2081 | ST2-05 | 证明（Induction/Step2Scale：证钉文 STScaleExists） | prover-hard | 同上 |
+| T2088 | S1-19 | 证明（Green/IBPPoly：IBPPoly、LDEQuadInst；证 GaussIBP） | prover | 检查 exit 0 且有空位即开工（§17） |
+| T2089 | S1-20 | 证明（Green/FlucIter 前半；关键路径） | prover-hard | 同上 |
 | T2083 | ST2-21 | 证明（移植 Path/LoopStep + DriftAlgebra） | prover | 同上 |
 | T2084 | ST2-23 | 证明（移植 Path/QVForm + QVIdentity） | prover | 同上 |
 | T2085 | ST2-24 | 证明（移植 Path/StepDecompLoop + Kernel） | prover | 同上 |
@@ -22,6 +21,9 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2078（S1-18，7c7652e，2026-10-03 22:36；有界权）
+- T2077（S1-06，3b98b27，2026-10-03 22:32；Amend 1）
+- T2082（ST2-19，efeda82，2026-10-03 22:27；`STNetLift2` 证出）
 - T2074（ST2-18，06b49b2，2026-10-03 20:58；`stNetLift2_part1`）
 - T2072（ST2-20，593e519，2026-10-03 20:55）
 - T2070（KL8+9，eaf0614，2026-10-03 20:52；分子衰减与和为零）

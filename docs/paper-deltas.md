@@ -511,3 +511,35 @@ RBM2D `Step2NetLift` 的 `Bandwidth d c` 与 `CondStInd d E s t` 证明不用，
 前提 `c ≤ s`（论文 `ε ≤ s`）代替 RBM2D 的 `c < t_1`；合并的 `ztTilde_arith`（T2063）取 `c ≤ t_1`。
 
 （T2075 = ST2-06b `Evolution/PropTInf`，a84c579：无 paper-delta。合并的 `propT`/`EKPropT` 用 `ℓ¹` 距离 `zdistD`，论文的 `|·|` 是 `L^∞`（`1_2_Intro_model_result.tex:274`），`EKPropTInf` 就是论文的陈述。）
+
+## D127 · 圈生成元带参数 `g`（2026-10-03，T2077a；S1-06 `Gauss/LoopGenerator`，3b98b27）
+
+关于 `PF d L W g`、`SB d L g` 的每条陈述都带显式参数 `g`（同 D108 = T2064a）。
+
+## D128 · 圈初值与邻块权的指数（2026-10-03，T2077b；S1-06，3b98b27）
+
+`adjacentBlockWeight_three` 的值为 `((W⁻¹)^d)^2 = W^{-2d}`（RBM2D `W^{-4}`）；`initialLoopValue_all_same` 的指数为 `d·(n-1)`；`initialLoopValue_two_edges` 的权为 `W^{-d}`。与 `eq:initial_K`（`M^{(k)} = W^{-(k-1)d}∏m(σ_i)1(a_1=…=a_k)`）一致。另：票里点名的 `sum_norm_integral_pairCutIntegrand_le`、`expected_gloop_hierarchy_integral_unconditional` 依赖 RBM2D 上游已删的死代码，未移植（DECISIONS §31）。
+
+## D129 · 方差剖面行支撑的方向与大小（2026-10-03，T2078a；S1-18 `Green/LDE`，7c7652e）
+
+行支撑写成 `{j : blk j - blk i ∈ flucVanish_sbSupport d L}`（与 `boundedWeight_svarF` 同向；RBM2D 为 `blk i - blk j`，因支撑对称而是同一集合），大小 `(2d+1) W^d`（RBM2D `5 W²`）。
+
+## D130 · 方差剖面对角元带 `g`（2026-10-03，T2078b；S1-18，7c7652e）
+
+`svar d L W g i i = W^{-d}(1 + 2dg²)⁻¹`，对每个实数 `g` 为正（RBM2D 为 `1/(5W²)`，无耦合参数）。
+
+## D131 · 波动平均的有界权形式（2026-10-03，T2078c；S1-18，7c7652e）
+
+新增 `LDE_norm_flucAvg_le_of_boundedWeight`：`norm_flucAvg_le` 的 `BoundedWeight` 形式（依 D107 = T2061a，DECISIONS §30），RBM2D 无对应。
+
+## D132 · Step 2 局部网提升去掉不用的参数并改控制（2026-10-03，T2082a；ST2-19 `Path/NetLift2`，efeda82）
+
+`Step2LocalNetLift` 去掉 RBM2D 的 `c`、`Bandwidth d c`、`CondStInd d E s t`（证明不用，同 D104、D122）；`Step2LocalUnif` 的形式就是合并钉文 `STStep2Local`（平方项，`d ≥ 3` 时控制为 `STWB_{u,|[x]-[y]|}`，代替 `M_u^{-1/2}`）。
+
+## D133 · `STStep2Avg` 的网提升是新增（2026-10-03，T2082b；ST2-19，efeda82）
+
+`STStep2Avg` 的提升在 RBM2D 没有对应（`d ≥ 3` 新增）；`(Gt_avgbound_flow)` 的网提升用 `1_2:1400` 的标准论证，对象是 `‖𝓛^{(1)}_{u,+,a} − m(E)‖` 对 `Bctl`。
+
+## D134 · 局部与平均提升不需要 `(eq:WO)`（2026-10-03，T2082c；ST2-19，efeda82）
+
+Local/Avg 两项提升不需要 `(eq:WO)`，而 `step2NetLift` 需要（D123）；Local/Avg 的控制不含 `ℓ_u`。`stNetLift2_holds : STNetLift2 d` 证出，`STNetLift2` 的 owed 行可删（清理票）。
