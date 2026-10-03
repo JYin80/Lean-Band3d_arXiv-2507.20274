@@ -40,6 +40,9 @@ import RBM3D.Test.Axioms
 import RBM3D.Test.AuditNegative
 import RBM3D.Test.InterfaceShape
 import RBM3D.Defs.SemicircleIntegral
+import RBM3D.Defs.Sizes
+import RBM3D.Gauss.FineModel
+import RBM3D.Gauss.LinearForm
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
