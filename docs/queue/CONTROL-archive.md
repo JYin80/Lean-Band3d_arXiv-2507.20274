@@ -148,3 +148,9 @@
 ### Approved instructions (done)
 - H24 (dispatcher V1, 2026-10-03 05:56 UTC). After compiling the T2037 and T2038 checks: stage by name only and commit with message `Dispatcher V1: T2027/T2029/T2030 merged bookkeeping (gate PT complete), tickets T2037 (S1-02), T2038 (S1-11)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/ST1-COMMON.md`, `docs/tickets/T2037.md`, `docs/tickets/T2038.md`, `docs/tickets/checks/T2037-check.lean`, `docs/tickets/checks/T2038-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push. Order of the queued tickets is the Released numbering (T2038 before T2031, T2033).
   done: 2026-10-03 06:00 UTC — T2037/T2038 checks compiled (exit 0 each); committed 55f30d1 (11 files staged by name), pushed to origin/main.
+
+## Archived 2026-10-03 06:27 UTC by dispatcher V1
+
+### Approved instructions (done)
+- H25 (dispatcher V1, 2026-10-03 06:15 UTC). After compiling the T2039, T2040, T2041 checks: stage by name only and commit with message `Dispatcher V1: T2032 merged bookkeeping, design tickets T2039 (ST-D2), T2040 (LW-D1), T2041 (ST-D3)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/ST1-COMMON.md`, `docs/tickets/T2039.md`, `docs/tickets/T2040.md`, `docs/tickets/T2041.md`, `docs/tickets/checks/T2039-check.lean`, `docs/tickets/checks/T2040-check.lean`, `docs/tickets/checks/T2041-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; push.
+  done: 2026-10-03 06:19 UTC — T2039/T2040/T2041 checks compiled (exit 0 each); committed 6231342 (13 files staged by name), pushed to origin/main.

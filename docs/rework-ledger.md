@@ -34,3 +34,4 @@
 | T2029 | 2026-10-03 05:52 UTC (890a89f) | prover（Amend 1：repairer） | Sonnet 5.5 effort high | 否（票面错） | 审核一次 PASS；合并第 5 步被登记拦（5 个事件/条件谓词未登记）是总调度票面缺陷（ST1-COMMON 第 8 条 + 预检盲区）→ DECISIONS §20、Amend 1，第 2 轮审核 PASS；S1-10；1110 定理 / 0 公理 |
 | T2030 | 2026-10-03 05:53 UTC (6f99812) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-01 `Gauss/FlowCalculus`；1166 定理 / 0 公理 |
 | T2032 | 2026-10-03 06:00 UTC (e318c24) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-03 `Hierarchy/ContractionBasic`（收缩系数 `W^d`，T2032c 数值核对）；1196 定理 / 0 公理 |
+| T2034 | 2026-10-03 06:18 UTC (1678ea4) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；EK-3：`(sum_res_1)`、`(sum_res_2_NAL)` 全部 n；首次照 §20 自登记（`EKFastDecay` structural），合并按 H23 b 取并集；1206 定理 / 0 公理 |
