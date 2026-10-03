@@ -47,3 +47,4 @@
 - 2026-10-03 02:50 UTC 中枢仍 STALE（HUB.alive 02:18，最后写入 02:21），第 2 轮 → 告诉 Jun。
 - 2026-10-03 02:57 UTC 中枢 02:52 恢复（额度到 02:50）；T2014–T2017 1b 按规则 (H) 重跑。
 - 2026-10-03 03:22 UTC T2017 合并（33049c0，一次 PASS）→ rework-ledger、ROUTES、QUEUE。写 T2019（PT-D：Θ 的 Laplace–乘积精确表示 + 1/d 引理 + 乘积核 4 条界；表示式数值误差 1.4e-11，1/d 引理 2e5 随机无反例）与检查文件，按 §17 列 Released；H17。T2018 03:12 开工；T2014–T2016 1b 重跑中。
+- 2026-10-03 03:37 UTC T2014（fa2ebc7，Amend 1 后一次 PASS）、T2018（ddf5f74，一次 PASS）合并 → rework-ledger 两行、ROUTES、QUEUE。写 T2020（KL3：KLisKLoopPin，移植 TreeRep.lean:1675–2587）、T2021（MD-5：Path/{Markov,Stop,Azuma} 移植）与检查文件，按 §17 列 Released；H18。T2019 03:28 开工；T2015、T2016 1b 重跑中。
