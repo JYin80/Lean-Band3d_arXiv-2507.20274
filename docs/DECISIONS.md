@@ -167,3 +167,10 @@
 - **公理登记（§16）**：`STKbound` 记 owed（KL7 证），`STLK`、`STLmax`、`STDecay`、`STDecayStrong`、`STLocalMax`、`STExp2` 记 owed（ST-6 的链式归纳证），`STConStInd`、`STFlow` 记 structural；由 S1-07 写进 `Axioms.lean`。**修正报告 b.8 的一处**：`STGbEXP_BA`、`STConArg_BA`（论文说「逐字照 [RBSO1D] Lemma 6.1」）报告提议记 borrowed，但 §5 只授权 LSY 一条外部结果，所以记 **owed**：BA gate 要在内部证（照 RBSO1D 的论证）。BA-D1 若认定内部证不可行，再问 Jun。
 - **paper-delta 候选签字**（合并成 Lean 时编号）：T2015b（`lem_ConArg` 限 `t < 1`）、T2015c（`lem:main_ind` 的时间限 `t ≤ t₀`）、T2015d（「小 `ε₀`」读作任意 `ε₀ > 0`）、T2015e（Step 1 对任意起点 `s ≥ 0`，`u < 1/2` 用尖锐包络，时间连续性 `Gopboundu` 在 d ≥ 3 论文里无陈述）、T2015f（`(Eq:Gdecay+IND_s<g)` 只在 `g² ≤ 1−τ` 的尺寸上）、T2015g（`STStep1` 对每个 `𝔠_d ∈ (0, 10^{-2}]`，只用 (a)、(c)、`ML:Kbound`，强于论文）、T2015h（`STConArg` 只留 `(res_lo_bo_eta)` 第一个界，第二个是确定性的 `STBctl_mono`）。T2015a 作废。
 - **未决小项**：(i) `𝔠_d` 排在 `𝔠` 之前——接受（Step 1 对 `𝔠_d ≤ 1/4` 都成立，Steps 2–5 的约束等 ST-D2/D3 再核）；(ii)(iii) 的一般证明归 S1-08、S1-36。
+
+## §20 公理登记的盲区与 T2029 合并被拦（总调度，2026-10-03 05:42 UTC，流程决定；接 §16）
+- **事**：T2029（S1-10 `Green/EntryCore`）审核 PASS，合并第 5 步全量 `lake build` 在根 `#assert_rbm_axioms` 处失败：票自己定义、又被确定性引理当假设的五个 `Prop` 谓词 `RBM.Green.{GoodEvent, LDERow, LDECol, LDEQuad, Stable}` 没登记。prover 和审核员没发现，是因为新文件要等合并时中枢才加根导入，交付前的全量构建扫不到它（§16 的盲区）；ST1-COMMON 第 8 条「只有 S1-07 写 `Axioms.lean`」也挡住了自登记。票面缺陷，记在总调度账上。
+- **归类口径**：一个 `Prop` 值定义，若描述的是样本、矩阵或参数满足的条件（事件 Ω、LDE 事件、稳定性条件、`(deccA0)`/`(sumAzero)` 这类数据条件），由确定性引理当假设，它本身不是要证的结论 → **structural**；它以高概率成立、或对具体对象成立，由别的票证明（在注释里写明，知道的话）。论文证过而我们还没证的结论 → **owed**；外部文献 → **borrowed**（只允许 LSY，§5）。拿不准就记 owed 并在报告里提出。
+- **今后所有证明票**（不止 ST-1）：(1) `RBM3D/Test/Axioms.lean` 对每张证明票都可写，但只能在三张表里追加登记行（每行一个名字，带一行注释），不改别的；(2) prover 交付前在主工作树外跑一次「登记预检」：一个不提交的临时文件 `import RBM3D` + `import <本票新模块>…` + `#assert_rbm_axioms`，`lake env lean` 退出 0；报告里贴输出；(3) 中枢合并时 `Axioms.lean` 若只在登记表里冲突，取两边并集，再跑全量构建。
+- **T2029**：`docs/tickets/T2029.md` Amend 1——在 `t/T2029` 上跑一次 `repairer`，把上面五个名字记进 `structuralProps`，跑预检和全量构建；再一轮审核（只看 `Axioms.lean` 的差异与预检输出）；然后从第 5 步续合并。
+- 已放行未合并的票（T2027、T2028、T2030–T2035）各加 Amend 1，照上面三条；正在跑的若已错过，合并被拦时照 T2029 的办法补一次 repairer，不算返工。

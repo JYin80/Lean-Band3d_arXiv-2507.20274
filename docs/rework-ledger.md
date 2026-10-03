@@ -29,3 +29,4 @@
 | T2024 | 2026-10-03 04:56 UTC (1c434bb) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；PT-F2：Θ 的单位一、二阶差分界；1039 定理 / 0 公理 |
 | T2023 | 2026-10-03 04:57 UTC (f40d8ca) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；PT-F1：**性质 5（prop5Decay_holds）、性质 8（prop8ZeroMode_holds）对每个 d ≥ 3 证出**；1041 定理 / 0 公理 |
 | T2015 | 2026-10-03 05:00 UTC (5e7de62) | prover-max（修复 repairer） | Sonnet 5.5 effort max（修复 claude-opus-5-5） | 是（审核 RETURN 一次，仅报告） | ST-D1 设计：钉文、ST-1 拆 36 张；审核 D1 缺一个实例、D2 两条 paper-delta 未列，修复一次后 PASS；签字 §19 |
+| T2025 | 2026-10-03 05:38 UTC (c8bedf7) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；KL4+5：`KLK_unique`、`TwoLoopBounded` 退役三条、`KLK_rotate`/`KLK_translate`；1058 定理 / 0 公理；T2025a 仅备注（论文用旋转/平移不变性未单列引理），不入 paper-deltas |

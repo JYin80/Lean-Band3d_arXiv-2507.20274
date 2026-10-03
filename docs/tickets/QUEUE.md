@@ -1,15 +1,15 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 05:29 UTC
+更新：2026-10-03 05:46 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
-| T2025 | KL4+5 | 证明（K-loop 唯一性、退役 TwoLoopBounded、旋转/平移对称） | prover-max | 在跑 |
 | T2027 | PT-G | 证明（性质 6、7 路径引理，Prop5to8，旧接口成定理，登记更新） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
 | T2028 | S1-07 | 证明（ST 钉文入库、Green/Pins 移植、登记） | prover-max | 同上 |
-| T2029 | S1-10 | 证明（Green/EntryCore，ST-1 关键路径起点） | prover | 同上 |
+| T2029 | S1-10 | 证明（Green/EntryCore，ST-1 关键路径起点） | prover | 审核 PASS，合并卡在登记 → Amend 1（§20，H23） |
 | T2034 | EK-3 | 证明（(sum_res_1)、(sum_res_2_NAL)，全部 n） | prover-hard | 检查 exit 0 且有空位即开工（§17）；排在排队的 ST-1 票之前 |
+| T2036 | KL6 | 证明（Ward 恒等式 KLK_ward，全部 n，两种电荷顺序） | prover-max | 同上 |
 | T2030 | S1-01 | 证明（Gauss/FlowCalculus） | prover | 同上 |
 | T2032 | S1-03 | 证明（Hierarchy/ContractionBasic） | prover | 同上 |
 | T2033 | S1-09 | 证明（Induction/Split） | prover-hard | 同上 |
@@ -21,6 +21,7 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2025（KL4+5，c8bedf7，2026-10-03 05:38）
 - T2015（ST-D1，5e7de62，2026-10-03 05:00；签字 §19）
 - T2023（PT-F1，f40d8ca，2026-10-03 04:57）
 - T2024（PT-F2，1c434bb，2026-10-03 04:56）
@@ -49,7 +50,7 @@
 
 ## 下一批（等上面的结果再写）
 - PT-G = T2027（PT 收尾）（F 接手设计行 E 的按性质组装，DECISIONS §14）。
-- KL4+5 = T2025；KL6 等 KL4+5；MD 全部合并；ST-D1 = T2015；ST-D2（与 LW-D1 同写）、ST-D3 待写。
+- KL4+5 = T2025 已合并；KL6 = T2036 已放行；KL7（三张）等 KL6；MD 全部合并；ST-D1 = T2015；ST-D2（与 LW-D1 同写）、ST-D3 待写。
 - EK：EK-3 = T2034、EK-5 = T2035 已放行；EK-4 等 EK-3（T2034）；EK-6 等 ST-D3。
 - ST-D1（随机层子 gate 与 Step 1–2 设计）、LW-D1、UN-D1：等 T2002。
 - BA-D1：等 T2003、T2004。
