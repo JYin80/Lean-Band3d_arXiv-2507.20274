@@ -127,7 +127,23 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STMollifierEx, -- `rmk:choosechi`: existence of the mollifier (DECISIONS §25)
    `RBM.Gauss.Sizes.STQopNorm, -- `lem_+Q` with `4 ≤ W^ε`, `L^d ≤ W^K` (DECISIONS §25)
    `RBM.Gauss.Sizes.STWardTypePPin, -- `(eq:Ward_typeP)` (DECISIONS §25)
-   `RBM.Gauss.Sizes.STB45Pin] -- `(y27kasdfg)` (DECISIONS §25)
+   `RBM.Gauss.Sizes.STB45Pin, -- `(y27kasdfg)` (DECISIONS §25)
+   `RBM.Gauss.Sizes.STNewKLK, -- `lem:newKLK` (`3_5:371-378`): ST2-07 (+ST2-06b) (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STContractPt, -- pointwise contraction inequality `ygdhmsgq0` (`3_5:751-797`): ST2-08 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STEMn2Poly, -- `lem: EMn2_N`, `(eq:MG_conclusion)` (`3_5:427-432`): ST2-09 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STEMn2Exp, -- `lem: EMn2_N`, `(eq:MG_conclusion3)` (`3_5:437-440`): ST2-10, ST2-11 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STGridRepN, -- `Sol_CalL` + `lem:DIfREP` on the grid, every loop length (`3_5:134-148`, `218-240`); `STGridMart` is `m = 2`: ST2-12, ST2-13 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STK2decay, -- `(eq:kn2sol_decay)`, `(eq:simpleboundK)` (`3_5:457`, `518`): ST2-06 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STNetLift2, -- net lift of Step 2 (`1_2:1400`): ST2-18, ST2-19 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STScaleExists, -- scale family of `(eq:def_ell1)` (`3_5:521-527`, `571-577`): ST2-05 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLocalAvgOfL2, -- closing paragraph of Step 2 (`3_5:455-465`): ST2-16, ST2-17 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STStep2, -- Step 2 of `lem:main_ind` (`1_2:1340-1357`): ST2-04 (`ST_step2_of_pins`) (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate, bridge in ST2-03 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate, bridge in ST2-03 (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWassmExp] -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -159,6 +175,7 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STConStInd, -- `(con_st_ind)` (`1_2:1296`): a condition on the time sequences (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STFlow, -- the setting of `MR:locSC` and `zztE`: `Admissible` and `locDomain` (T2028, DECISIONS §19)
    `RBM.Graph.LGraph.DotWF, -- at most one dotted edge per pair of vertices, none a loop (`def_graph1`, `7_8:141`; T2050)
+   `RBM.Gauss.Sizes.STPsiClass, -- the class of profiles `Ψ_t(|a-b|)` of `(eq:Psi)` (`3_5:385-393`): data condition of `STLWB`, `STEMn2Poly` (T2066)
    `RBM.Graph.LGraph.Consistent] -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
