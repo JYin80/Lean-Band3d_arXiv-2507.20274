@@ -153,3 +153,10 @@
 ## §17 放行改为「编译通过即开工」（总调度，2026-10-03 01:19 UTC，流程决定）
 - **事由**：检查文件由中枢在它的循环里编译，总调度要等下一次心跳才看到 exit 0 再放行，每张票平白多等 10–15 分钟（T2011–T2014 01:02 编完、01:18 才放行）。
 - **做法**：新票写好后直接列进 CONTROL 的 Released，开工条件写「Pre-release 里本票检查文件的 done 行为 exit 0」；检查文件同时列在 Pre-release。中枢编译后若 exit 0、又有空位，同一循环里开工；exit 1 则不开工，等总调度改检查文件。放行仍是总调度的决定（CLAUDE.md §4 第 0 步不变），只是把条件写在票面上。
+
+## §18 T2016（EK-D1 演化核设计）合并后的签字与落实（总调度按 §4 签字，2026-10-03 04:07 UTC；依据 T2016 审核 PASS，c154f29；探针 `RBM3D/Probe/T2016Pins.lean` 在 `t/T2016` 的 c961e62）
+- **钉文照报告 b2 接受**：词汇 `EKsgn`、`EKFastDecay`（= `(deccA0)`）、`EKSumZero`（= `(sumAzero)`）；钉文 `EKSumNdecay`、`EKSumDecay1`（`(sum_res_1)`）、`EKSumDecayNAL`（`(sum_res_2_NAL)`）、`EKSumDecay2`（`(sum_res_2)`）、`EKSumDecayNonzero`、`EKPropT`、`EKTTk`。常数在 `(d, n, Λ, κ)` 之后、`L, g, W, ε, D, s, t, m, σ, A` 之前，`g ∈ (0, Λ]`，两种电荷都含，无 `L^τ` 损失；PT 钉文 `Prop5Decay`、`Prop5Short`、`Prop6Diff1`（`c = 1/2`）、`Prop8ZeroMode` 作前提（路线 H 证掉）。
+- **已合并的 `RBM3D/Kernel/*` 不够用**（报告 N2）：六条用旧假设的陈述常数排在 `g` 之后，两条带 `L^τ`，`norm_zeroModeSet_UN_le` 排除了负电荷；EK-2、EK-3、EK-5 取代它们（`Kernel/` 以外只有 `Loop/PureLoop.lean` 导入，没有文件引用其声明），旧文件不改，退役放到最后的死代码清理。三条钉文已由合并定理证出（`norm_UN_le`、`propT`、`key_T_reduce_absorbed` 加桥接），`(eq:latticesum_d3)` 已合并。
+- **拆单**（报告 b9）：EK-1 钉文与桥接（prover，300 行）→ EK-2 `Ξ` 界（prover-hard，500）→ EK-3 `(sum_res_1)`、`(sum_res_2_NAL)` 全部 `n`（prover-hard，800）→ EK-4 `ΔΞ` 与 `(sumAzero) ⟹ (sum_res_2)`（prover-max，1450，**唯一高风险**：d ≥ 3 新论证）；EK-5 `lem:sum_decay_nonzero` 无损版（prover，450，在 EK-1、EK-2 后）；EK-6 钉文 ⟹ 尺度 `N` 的 `≺`（prover，500，等 ST-D3 定下消费者形式）。6 张约 4.0k 行，宽口径 12–15，低于 25（§9 O2）。
+- **paper-delta 候选签字**（合并成 Lean 时编号）：T2016a（`(sum_res_2)` 带 `log L ≤ W^ε`，论文 A.2 自己说用它吸收）、T2016b（`4 ≤ W^ε`：`≲` 的常数只在 `W^ε` 有下界时才能吸进 `W^{C_nε}`）、T2016c（`lem:propT` 只含区间 (i)(ii)，中间区间无下游使用）、T2016d（`claim:TTk` 的 `D` 为任意 `ℓ`-球内集合、`ℓ ≥ 1`、`Λ²` 显式、`η_t ≍ 1−t`）、T2016e（`lem:sum_decay_nonzero` 无损、两种电荷，强于论文）、T2016f（常数对 `g ∈ (0, Λ]` 一致；`(deccA0)`、`(sumAzero)` 用 `ℓ¹` 距离，见 D18）。
+- **公理登记（§16）**：`Prop6Diff1` 记 borrowed，由第一张把它当假设的 EK-4 写进 `Axioms.lean`；`EKSumDecay1`、`EKSumDecayNAL`、`EKSumDecay2`、`EKSumDecayNonzero` 若在 EK-3..5 合并前被 ST 票当假设，由那张票记 owed。

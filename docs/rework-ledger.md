@@ -20,3 +20,5 @@
 | T2017 | 2026-10-03 03:12 UTC (33049c0) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；环面热核 τ ≤ L² 的界与 τ ≥ L² 的零模/谱隙，884 定理 / 0 公理；1b 因额度两次 API 失败重跑（规则 H，不计） |
 | T2014 | 2026-10-03 03:20 UTC (fa2ebc7) | prover-max | Sonnet 5.5 effort max | 否（票面错） | 第一次 preflight-fail 是总调度票面两处错（实例 n = 3 不存在、gval 映射错）→ Amend 1 重开，不计 RETURN；审核一次 PASS（O1：22 个公开 KL 辅助，仅可见性）；948 定理 / 0 公理 |
 | T2018 | 2026-10-03 03:28 UTC (ddf5f74) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；网格游走、转移律、独立增量、逐时刻转移；978 定理 / 0 公理 |
+| T2019 | 2026-10-03 04:01 UTC (cf8e79e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；Θ 的 Laplace–乘积精确表示、1/d 引理、乘积核与差分的界；985 定理 / 0 公理 |
+| T2016 | 2026-10-03 04:04 UTC (c154f29) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS（仅报告）；EK 钉文 7 条、拆 EK-1…EK-6（约 4.0k 行），签字 DECISIONS §18；1b 因额度重跑（规则 H，不计） |

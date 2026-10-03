@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-03 03:37 UTC (dispatcher V1: T2014, T2018 merged; T2020 (KL3), T2021 (MD-5) released on check exit 0; H18)
+updated: 2026-10-03 04:10 UTC (dispatcher V1: T2016, T2019 merged; DECISIONS §18; T2022–T2024 released on check exit 0; H19)
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -10,10 +10,11 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 5. T2015 — `docs/tickets/T2015.md` (ST-D1, report only: design of `lem:main_ind` pins and Step 1, split of sub-gate ST-1; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-6. T2016 — `docs/tickets/T2016.md` (EK-D1, report only: evolution-kernel pins on the PT pins, audit of `RBM3D/Kernel/*`, split; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-9. T2019 — `docs/tickets/T2019.md` (PT-D, route H: exact Laplace–product representation of `Θ_t`, `1/d` lemma, product-kernel bounds; role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 10. T2020 — `docs/tickets/T2020.md` (KL3, `KLisKLoopPin`: the tree sum solves the tree equations; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 11. T2021 — `docs/tickets/T2021.md` (MD-5, grid Markov property, stopping times, Azuma/Doob; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+12. T2023 — `docs/tickets/T2023.md` (PT-F1, route H: `prop5Decay_holds`, `prop8ZeroMode_holds`; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+13. T2024 — `docs/tickets/T2024.md` (PT-F2, route H: unit first and second differences of `Θ`; role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+14. T2022 — `docs/tickets/T2022.md` (EK-1, EK pins and bridges; role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
@@ -31,6 +32,12 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
   done: 2026-10-03 03:42 UTC — `lake env lean docs/tickets/checks/T2020-check.lean`: exit 0; no error lines. T2020 starts now (1 slot free).
 - `docs/tickets/checks/T2021-check.lean` (MD-5; released conditionally above, DECISIONS §17).
   done: 2026-10-03 03:42 UTC — `lake env lean docs/tickets/checks/T2021-check.lean`: exit 0; no error lines. T2021 waits for a free slot.
+- `docs/tickets/checks/T2023-check.lean` (PT-F1; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 04:12 UTC — `lake env lean docs/tickets/checks/T2023-check.lean`: exit 0; no error lines. T2023 starts now (1 slot free).
+- `docs/tickets/checks/T2024-check.lean` (PT-F2; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 04:12 UTC — `lake env lean docs/tickets/checks/T2024-check.lean`: exit 0; no error lines. Waits for a free slot.
+- `docs/tickets/checks/T2022-check.lean` (EK-1; released conditionally above, DECISIONS §17).
+  done: 2026-10-03 04:12 UTC — `lake env lean docs/tickets/checks/T2022-check.lean`: exit 0; no error lines. Waits for a free slot.
 
 ## Approved instructions
 - H7 (dispatcher V1, 2026-10-02 23:47 UTC). Stage by name only and commit with message `Dispatcher V1: DECISIONS §12–§15, route H (Fable review), tickets T2006–T2009`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2006.md`, `docs/tickets/T2007.md`, `docs/tickets/T2008.md`, `docs/tickets/T2009.md`, `docs/tickets/checks/T2006-check.lean`, `docs/tickets/checks/T2007-check.lean`, `docs/tickets/checks/T2008-check.lean`, `docs/tickets/checks/T2009-check.lean`, `docs/claude-team/fable/2026-10-02-routeH.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
@@ -58,6 +65,8 @@ Compile each file with `lake env lean <file>` in the main worktree and append on
 - H17 (dispatcher V1, 2026-10-03 03:22 UTC). After compiling the T2019 check: stage by name only and commit with message `Dispatcher V1: T2017 merged bookkeeping, ticket T2019 (PT-D)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2019.md`, `docs/tickets/checks/T2019-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; then `git push origin main` (no force). One `done:` line with the hash.
   done: 2026-10-03 03:28 UTC — committed 022103c (7 files staged by name, after compiling T2019-check: exit 0), pushed to origin/main.
 - H18 (dispatcher V1, 2026-10-03 03:37 UTC). After compiling the T2020 and T2021 checks: stage by name only and commit with message `Dispatcher V1: T2014/T2018 merged bookkeeping, tickets T2020 (KL3), T2021 (MD-5)`: `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2020.md`, `docs/tickets/T2021.md`, `docs/tickets/checks/T2020-check.lean`, `docs/tickets/checks/T2021-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; then `git push origin main` (no force). One `done:` line with the hash.
+  done: 2026-10-03 03:42 UTC — committed 5d3b282 (9 files staged by name, after compiling T2020/T2021 checks: exit 0 each), pushed to origin/main.
+- H19 (dispatcher V1, 2026-10-03 04:10 UTC). After compiling the T2022–T2024 checks: stage by name only and commit with message `Dispatcher V1: DECISIONS §18 (EK-D1 sign-off), tickets T2022 (EK-1), T2023 (PT-F1), T2024 (PT-F2)`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2022.md`, `docs/tickets/T2023.md`, `docs/tickets/T2024.md`, `docs/tickets/checks/T2022-check.lean`, `docs/tickets/checks/T2023-check.lean`, `docs/tickets/checks/T2024-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`; then `git push origin main` (no force). One `done:` line with the hash.
 (H1–H6 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it.)
 
 ## Merge log (the hub appends one `done:` line per merge)
@@ -77,6 +86,8 @@ done: 2026-10-03 02:17 UTC — T2013 merged 868b3b4 (RBM3D/Loop/GLoopFlow.lean, 
 done: 2026-10-03 03:12 UTC — T2017 merged 33049c0 (RBM3D/Propagator/HeatTorus1D.lean, root import; lake build 3701 jobs, axiom audit 884 theorems / 0 axioms); audit PASS round 1; pushed.
 done: 2026-10-03 03:20 UTC — T2014 merged fa2ebc7 (RBM3D/Loop/KLCut.lean, root import; lake build 3702 jobs, axiom audit 948 theorems / 0 axioms); audit PASS round 1 after Amend 1 restart (observation O1: 22 public KL helpers); pushed.
 done: 2026-10-03 03:28 UTC — T2018 merged ddf5f74 (RBM3D/Path/Walk.lean, root import; lake build 3712 jobs, axiom audit 978 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 04:01 UTC — T2019 merged cf8e79e (RBM3D/Propagator/HeatProduct.lean, root import; lake build 3715 jobs, axiom audit 985 theorems / 0 axioms); audit PASS round 1; pushed.
+done: 2026-10-03 04:04 UTC — T2016 merged c154f29 (report only: state, prove, audit reports); audit PASS round 1 (after rule-(H) prover-max rerun); pushed.
 
 ## Pending approval (information only — the hub must NOT act on these)
 (none)
