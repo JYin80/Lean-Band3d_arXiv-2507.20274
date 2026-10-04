@@ -193,6 +193,7 @@ import RBM3D.Induction.TailtoTail
 import RBM3D.Induction.WardII
 import RBM3D.Graph.LocalRegular
 import RBM3D.Evolution.CltGood
+import RBM3D.Induction.NewKLKL
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
