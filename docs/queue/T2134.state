@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_8d0d9210-8a4 (rule H rerun): report-only design ticket; audit 1 RETURN (degenerate probe instances inst_cltFar, inst_cltIso), one repair (rule B, probe 7b2b789), audit 2 PASS (Auditor model: claude-opus-5-5); probe RBM3D/Probe/T2134Pins.lean stays on t/T2134 (branch only, per ticket); reports merged
+updated: Sun Oct  4 15:54:47 UTC 2026
+reports: docs/reports/T2134-prove.md, docs/reports/T2134-audit.md, docs/reports/T2134-portmap.md
