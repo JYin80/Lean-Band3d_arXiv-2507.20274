@@ -207,6 +207,10 @@ def structuralProps : List Name :=
    `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
+   `RBM.Graph.LGraph.XBetween, -- `Γ` has a `×`-dotted edge between `u` and `v`: a defining predicate of normal graphs (`defnlvl0` (iii), `7_8:205`; T2050), hypothesis of the counting lemmas `lvl1_master`, `lvl1_k1`, `lvl1_k2` (T2128)
+   `RBM.Graph.lvl1Split, -- how the weight split of the dotted edge partition (`dot-def`) changes a list of solid edges: a relation that describes the objects, mentioned only by the `brecOn` that Lean generates for it (T2128)
+   `RBM.Graph.lvl1Split.below, -- auxiliary predicate that Lean generates for the recursive inductive `lvl1Split` (T2128)
+   `RBM.Graph.Lvl1Reach.below, -- auxiliary predicate that Lean generates for the recursive inductive `Lvl1Reach` (reachability by `strat_local`, `B:135-157`) (T2128)
    `RBM.Green.AgreeOffRows,   -- two samples agree on every coordinate off the rows in the finite set `S` (the `Finset` version of `AgreeOffRow`): hypothesis of `Xentry_congr_of_not_mem`, `Hflow_submatrix_set_congr` (T2105, S1-22)
    `RBM.Path.UkerFar] -- the far-kernel condition `‖ukerMat 1 u v a b‖ ≤ W^{-D'}` beyond distance `R`: a data condition on the kernel, hypothesis of `uopLocalMax`, `uopPairLocalMax`; supplied by `kellStarEv` (T2097, ST2-25; DECISIONS §20)
 
