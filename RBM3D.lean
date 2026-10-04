@@ -177,6 +177,7 @@ import RBM3D.Induction.LocalAvg2
 import RBM3D.Graph.LWSymm
 import RBM3D.Induction.DecayLoopA
 import RBM3D.Induction.QGridA
+import RBM3D.Induction.DecayLoopB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

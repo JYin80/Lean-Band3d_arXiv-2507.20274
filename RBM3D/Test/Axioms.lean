@@ -121,6 +121,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STB45Pin, -- `(y27kasdfg)` (DECISIONS §25)
    `RBM.Gauss.Sizes.STGridRepN, -- `Sol_CalL` + `lem:DIfREP` on the grid, every loop length (`3_5:134-148`, `218-240`); `STGridMart` is `m = 2`: ST2-12, ST2-13 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STStep2DecayPT, -- `(Eq:Gdecay_w)` per time (`1_2:1349-1351`): hypothesis of `stNetLift2_part1`/`step2NetLift`; proved by the Step 2 chain ST2-04 (T2074, DECISIONS §20 rule: owed)
+   `RBM.Gauss.Sizes.STGdecayW, -- `(Eq:Gdecay_w)` uniformly in `u ∈ [s,t]` (`1_2:1349`, `Step34Pins.lean:208`): hypothesis of `stDecayLoopU_of_step2` (T2135 Amend 1, DECISIONS §39); proved by the Step 2 chain ST2-04 (DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2LocalPT, -- `(Gt_bound_flow)` per time (`1_2:1343`): hypothesis of `step2LocalNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2AvgPT, -- `(Gt_avgbound_flow)` per time (`1_2:1345`): hypothesis of `step2AvgNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28); `stOptL2_of_pins` (T2116) proves it from `STLWB` and `STGridMart`, so it stays owed through those two
