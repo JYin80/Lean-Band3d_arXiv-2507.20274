@@ -139,6 +139,7 @@ import RBM3D.Path.Expansion
 import RBM3D.Path.UBounds
 import RBM3D.Path.UTransport
 import RBM3D.Path.KellStar
+import RBM3D.Green.FlucIterGain
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

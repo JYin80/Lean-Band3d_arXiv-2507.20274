@@ -188,7 +188,8 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Avg, -- `(Gt_avgbound_flow)` single-charge form of the probe (paper-delta T2039g): hypothesis of `ST_avgU_of_avg`, `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
    `RBM.Ind.STLoopGenNForm, -- general-`n` loop generator `genMat(𝓛_I) = pair + 𝓔^{G̃}` (`eq:mainStoflow`, `1_2`), RBM2D `LoopGenN`: proved by ST2-28; hypothesis of `hierarchyN_of_loopGenN` (T2095, Amend 1, DECISIONS §32)
-   `RBM.Gauss.Sizes.STLocalEntry] -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
+   `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
+   `RBM.Green.FlucGainUpTo'] -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
