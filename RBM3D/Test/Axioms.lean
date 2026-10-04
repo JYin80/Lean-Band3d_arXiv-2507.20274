@@ -109,7 +109,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep4II, -- Step 4, case (ii): assembly S3-27 (T2049 proposal)
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
-   `RBM.Gauss.Sizes.STSEforLn, -- `lem:SEforLn` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqQt, -- `lem:STOeq_Qt` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqQtNZ, -- `lem:STOeq_Qt_nonzero` (DECISIONS §25)
