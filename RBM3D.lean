@@ -129,6 +129,7 @@ import RBM3D.Path.StepDecompLoop
 import RBM3D.Induction.NewPQ
 import RBM3D.Induction.Step2K2
 import RBM3D.Induction.IterationsA
+import RBM3D.Induction.ContractPt
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
