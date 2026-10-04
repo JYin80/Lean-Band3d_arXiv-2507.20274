@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_7556eb6e-53e: audit 1 PASS (Auditor model: claude-opus-5-5); full lake build OK (3867 jobs)
+updated: Sun Oct  4 07:04:59 UTC 2026
+reports: docs/reports/T2112-prove.md, docs/reports/T2112-audit.md
