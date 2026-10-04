@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_bed55479-13b: report-only design ticket; audit 1 PASS with sign-off items settled by H70 (DECISIONS §48); probe RBM3D/Probe/T2162Pins.lean stays on t/T2162 at 73b451c; reports merged
+updated: Sun Oct  4 23:12:14 UTC 2026
+reports: docs/reports/T2162-prove.md, docs/reports/T2162-audit.md, docs/reports/T2162-portmap.md
