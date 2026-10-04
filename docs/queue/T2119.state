@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_ead14a74-204: audit 1 PASS (Auditor model: claude-opus-5-5); registry LWedgeExp removed as proved (applied onto main, H23 b); full lake build OK (3870 jobs)
+updated: Sun Oct  4 07:56:49 UTC 2026
+reports: docs/reports/T2119-prove.md, docs/reports/T2119-audit.md
