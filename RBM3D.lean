@@ -124,6 +124,8 @@ import RBM3D.Path.LoopStep
 import RBM3D.Path.QVIdentity
 import RBM3D.Green.IBPPoly
 import RBM3D.Green.FlucIter
+import RBM3D.Path.Kernel
+import RBM3D.Path.StepDecompLoop
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
