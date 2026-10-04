@@ -172,7 +172,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STDuhamelII, -- integrated hierarchy with `Q^{(1)}`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STIniTermI, -- initial term `(iksjuwjx0)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STIniTermII, -- initial term `(zYU2)`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STWardII, -- Ward identity `(zYU1)`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STNewKLKL, -- `lem:newKLK` sharp at `ℓ = L` (paper-delta T2134a); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STCltFar, -- `lem;CLT`, far part (`3_5:2160-2250`); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STCltIso, -- `(eq:bound_isolated)`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
