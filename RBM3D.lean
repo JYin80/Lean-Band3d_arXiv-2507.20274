@@ -152,6 +152,7 @@ import RBM3D.Green.MinorGoodLe
 import RBM3D.Green.LocalLaw
 import RBM3D.Loop.KLIndStepB
 import RBM3D.Induction.OptL2a
+import RBM3D.Green.MinorDiff
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
