@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_4c00b2ec-cd9: audit 1 PASS (Auditor model: claude-opus-5-5); prover-max, no escalation; registry STStep1, GbEXPV3Theorem, FixedTimeFAThm, IBPDetThm removed as proved (H23 b); full lake build OK (3877 jobs)
+updated: Sun Oct  4 10:56:01 UTC 2026
+reports: docs/reports/T2126-prove.md, docs/reports/T2126-audit.md

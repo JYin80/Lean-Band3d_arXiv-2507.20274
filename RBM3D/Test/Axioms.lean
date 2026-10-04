@@ -97,11 +97,9 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STExp2,         -- (d) `(Eq:Gtlp_exp+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STMainInd,      -- `lem:main_ind`: end of the ST-6 chain; class not signed in §19, owed by the §20 rule (T2028)
    `RBM.Gauss.Sizes.STConArg,       -- `lem_ConArg` (`3_5:42`): S1-32 (T2028, §20 rule; class not signed in §19)
-   `RBM.Gauss.Sizes.STStep1,        -- Step 1 of `lem:main_ind` (`1_2:1317`): S1-36 (T2028, §20 rule; class not signed in §19)
    `RBM.Gauss.Sizes.STBootstrap,    -- continuity bootstrap of Step 1 (`3_5:64`): S1-36 (T2028, T2015 b.10)
    `RBM.Gauss.Sizes.STNetLift,      -- net lift of Step 1: S1-34 (T2028, T2015 b.10)
    `RBM.Gauss.Sizes.STForbidden,    -- forbidden-region estimate of Step 1: S1-36 (T2028, §20 rule; class not signed in §19)
-   `RBM.Green.GbEXPV3Theorem,       -- `lem_GbEXP` in the RBM2D form (`3_5:14`): S1-30 `gbEXPV3` (T2028)
    `RBM.Green.GijOmegaSeq,          -- `(GijGEX)` on `Ω` per sequence: S1-24 `gijOmegaSeq`, RBM2D `Green/EntryGauss.lean:55` (T2028)
    `RBM.Green.AsGMcPT,              -- `(asGMc)` per time: from (`Gtmwc`) of Step 1, RBM2D `Path/GoodSet.lean:439` `goodSet_asGMc` (T2028, §20 rule)
    `RBM.Gauss.Sizes.STLmaxU, -- `(Eq:LGxb)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 4
@@ -185,9 +183,7 @@ def owedProps : List Name :=
    `RBM.Ind.STLoopGenNForm, -- general-`n` loop generator `genMat(𝓛_I) = pair + 𝓔^{G̃}` (`eq:mainStoflow`, `1_2`), RBM2D `LoopGenN`: proved by ST2-28; hypothesis of `hierarchyN_of_loopGenN` (T2095, Amend 1, DECISIONS §32)
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
    `RBM.Green.MinorDiffGainUpTo', -- the minor-difference gain for the iterated differences `applyOps L (Δ_{κ_1} ⋯ Δ_{κ_q} Z^{(·)}_k)` behind `(GavLGEX)` (`3_5:33`; Lemma 4.1 of `[YY_25]`): hypothesis of `flucGainUpTo'_of_minorDiffGainUpTo'` (T2105, S1-22); proved by S1-25 `Green/MinorDiff` (class proposed: owed)
-   `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
-   `RBM.Green.FixedTimeFAThm, -- fixed-time fluctuation averaging `jasdu` (`Acta:4571`, deterministic control) for the (`GavLGEX`) chain (`3_5:33`): hypothesis of `gavLDetFloorThm_of_parts`, `gbEXPV3Theorem_of_parts/_of_ports`, `LocalLaw_gbEXPV3Theorem_of_fa_ibp`; proved by S1-30 `fixedTimeFAThm` (T2108, ST1-COMMON item 8: owed)
-   `RBM.Green.IBPDetThm] -- IBP display (`Acta:4587`, deterministic control) for the (`GavLGEX`) chain (`3_5:33`): hypothesis of `gavLDetFloorThm_of_parts`, `gbEXPV3Theorem_of_parts/_of_ports`, `LocalLaw_gbEXPV3Theorem_of_fa_ibp`; proved by S1-29, S1-30 `ibpDetThm` (T2108, ST1-COMMON item 8: owed)
+   `RBM.Green.FlucGainUpTo'] -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
