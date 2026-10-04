@@ -132,7 +132,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STB45Pin, -- `(y27kasdfg)` (DECISIONS §25)
    `RBM.Gauss.Sizes.STContractPt, -- pointwise contraction inequality `ygdhmsgq0` (`3_5:751-797`): ST2-08 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STEMn2Poly, -- `lem: EMn2_N`, `(eq:MG_conclusion)` (`3_5:427-432`): ST2-09 (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STEMn2Exp, -- `lem: EMn2_N`, `(eq:MG_conclusion3)` (`3_5:437-440`): ST2-10, ST2-11 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STGridRepN, -- `Sol_CalL` + `lem:DIfREP` on the grid, every loop length (`3_5:134-148`, `218-240`); `STGridMart` is `m = 2`: ST2-12, ST2-13 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STK2decay, -- `(eq:kn2sol_decay)`, `(eq:simpleboundK)` (`3_5:457`, `518`): ST2-06 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STNetLift2, -- net lift of Step 2 (`1_2:1400`): ST2-18, ST2-19 (T2066, DECISIONS §28)
