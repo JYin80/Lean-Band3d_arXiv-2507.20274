@@ -179,7 +179,8 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STExpInv, -- translation and reflection invariance of `𝔼 𝓛^{(2)}`; S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STTailtoTail, -- `(neiwuj)`, `tailtoTail` with the tail `T_{u,D}`: S5-04; S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STLemDecCalE, -- `lem_dec_calE`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STPfStep5] -- `lem:pf_step5`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STPfStep5, -- `lem:pf_step5`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STStep5Concl] -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
