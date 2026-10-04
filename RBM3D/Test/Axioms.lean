@@ -80,13 +80,13 @@ def borrowedProps : List Name :=
 
 /-- Premises **this development** owes: provable here, assumed for now.
 
-`KLoopBound` is here rather than in `borrowedProps` because the paper does prove it:
+`KLoopBound` was here rather than in `borrowedProps` because the paper does prove it:
 Appendix A.5 says the proof "is analogous to that of Lemma 3.11 in `[YY_25]`, but requires
 additional modifications to handle the higher-dimensional setting `d ≥ 3`.  For the
-reader's convenience, we provide the proof below", and then gives it in full.  Assuming it
-here is a debt of this formalization (the molecule layer is missing), not a borrowing. -/
+reader's convenience, we provide the proof below", and then gives it in full.  T2125 left
+it: no theorem assumes it, and `KLoopBound_KLK` (`Loop/KLFinal.lean`) proves it for `K = KLK`. -/
 def owedProps : List Name :=
-  [`RBM.Loop.TwoLoopBounded, `RBM.Loop.KLoopBound,
+  [`RBM.Loop.TwoLoopBounded,
    `RBM.Green.GaussIBP,  -- Stein identity and finite polynomial moments of `Sizes.seqP`; proved by S1-19 (RBM2D `IBPPoly:299`), taken by `Tame.integrable` (T2031)
    `RBM.Gauss.Sizes.STKbound,       -- `ML:Kbound` (`1_2:1056`), hypothesis of `STStep1`: proved by KL7 (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STLK,           -- (a) of `lem:main_ind` at `s`: ST-6 chain induction (T2028, DECISIONS §19)
