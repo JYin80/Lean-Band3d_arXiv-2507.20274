@@ -206,6 +206,7 @@ import RBM3D.Evolution.MeanFar
 import RBM3D.Induction.AzumaProxyN2
 import RBM3D.Path.LemDecCalE
 import RBM3D.Induction.IniTermII
+import RBM3D.Graph.LocalRegular2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
