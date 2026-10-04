@@ -188,6 +188,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
    `RBM.Ind.STLoopGenNForm, -- general-`n` loop generator `genMat(𝓛_I) = pair + 𝓔^{G̃}` (`eq:mainStoflow`, `1_2`), RBM2D `LoopGenN`: proved by ST2-28; hypothesis of `hierarchyN_of_loopGenN` (T2095, Amend 1, DECISIONS §32)
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
+   `RBM.Green.MinorDiffGainUpTo', -- the minor-difference gain for the iterated differences `applyOps L (Δ_{κ_1} ⋯ Δ_{κ_q} Z^{(·)}_k)` behind `(GavLGEX)` (`3_5:33`; Lemma 4.1 of `[YY_25]`): hypothesis of `flucGainUpTo'_of_minorDiffGainUpTo'` (T2105, S1-22); proved by S1-25 `Green/MinorDiff` (class proposed: owed)
    `RBM.Green.FlucGainUpTo'] -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
@@ -232,6 +233,7 @@ def structuralProps : List Name :=
    `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
+   `RBM.Green.AgreeOffRows,   -- two samples agree on every coordinate off the rows in the finite set `S` (the `Finset` version of `AgreeOffRow`): hypothesis of `Xentry_congr_of_not_mem`, `Hflow_submatrix_set_congr` (T2105, S1-22)
    `RBM.Path.UkerFar] -- the far-kernel condition `‖ukerMat 1 u v a b‖ ≤ W^{-D'}` beyond distance `R`: a data condition on the kernel, hypothesis of `uopLocalMax`, `uopPairLocalMax`; supplied by `kellStarEv` (T2097, ST2-25; DECISIONS §20)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
