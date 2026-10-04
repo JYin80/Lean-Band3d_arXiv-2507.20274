@@ -364,7 +364,7 @@ theorem KLShort_holds (d : ℕ) (κ gmax : ℝ) (hd : 3 ≤ d) (hκ : 0 < κ) (h
 (equal charges): a bound `B e^{-c|x-y|}` for all `x, y`, and the bound `C_κ g² e^{-c|x-y|}` for
 `x ≠ y` (no `1_{a=0}` term).  The constants depend on the constants of `KLShort` and on `gmax`
 only (not on `L`, `W`, `g`, `E`, `t`, `s`). -/
-private theorem KLMolecule_edge {d : ℕ} {κ gmax : ℝ} (hκ : 0 < κ) (hshort : KLShort d κ gmax) :
+theorem KLMolecule_edge {d : ℕ} {κ gmax : ℝ} (hκ : 0 < κ) (hshort : KLShort d κ gmax) :
     ∃ B : ℝ, 1 ≤ B ∧ ∃ Cκ : ℝ, 0 < Cκ ∧ ∃ c : ℝ, 0 < c ∧ ∀ (p : KLPar κ gmax) (s : Bool),
       (∀ x y : Zd d p.L, ‖(thetaEdge d p.L p.g (mSigma p.E) p.t s s - 1) x y‖ ≤
           B * Real.exp (-(c * (zdistD d p.L (x - y) : ℝ)))) ∧
@@ -543,7 +543,7 @@ private theorem KLMolecule_selfW_bound {F : Finset (Fin n × Fin n)} (hF : KLIsT
 
 /-- **The molecule bound for one tree and a non-constant `δ`**: the off-diagonal edge of every
 labelling consistent with `δ` carries the factor `ε` (here `ε = C_κ g²`) instead of `B`. -/
-private theorem KLMolecule_selfW_bound_nc {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F)
+theorem KLMolecule_selfW_bound_nc {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F)
     (hn : 2 ≤ n) (k : ℕ) {L : ℕ} [NeZero L] (δ : Fin n → Zd (k + 2) L)
     (E : ↥F → Matrix (Zd (k + 2) L) (Zd (k + 2) L) ℂ) {B ε κ : ℝ} (hB : 1 ≤ B) (hε : 0 ≤ ε)
     (hκ : 0 < κ)
@@ -563,7 +563,7 @@ private theorem KLMolecule_selfW_bound_nc {F : Finset (Fin n × Fin n)} (hF : KL
 
 /-- From a bound for every tree of the layer `π = ∅` to a bound for `Σ^{(∅)}`:
 `‖∏ m(σ_i)‖ = 1` and `|T_{SP}(σ, ∅)| ≤ |TSP(n)|`. -/
-private theorem KLMolecule_SigmaPi_of_tree {g E t : ℝ} (hE2 : |E| ≤ 2) (σ : Fin n → Bool)
+theorem KLMolecule_SigmaPi_of_tree {g E t : ℝ} (hE2 : |E| ≤ 2) (σ : Fin n → Bool)
     (δ : Fin n → Zd d L) {X : ℝ} (hX : 0 ≤ X)
     (htree : ∀ F ∈ KLTSPlong n σ ∅,
       ‖KLselfW d L F (fun J => thetaEdge d L g (mSigma E) t (σ J.1.1) (σ J.1.2) - 1) δ‖ ≤ X) :
@@ -581,7 +581,7 @@ private theorem KLMolecule_SigmaPi_of_tree {g E t : ℝ} (hE2 : |E| ≤ 2) (σ :
 
 omit [NeZero L] in
 /-- A pair of indices realising `max_{i,j} |δ_i - δ_j|`. -/
-private theorem KLMolecule_exists_pair (a : Fin n → Zd d L) :
+theorem KLMolecule_exists_pair (a : Fin n → Zd d L) :
     ∃ i j : Fin n, KLmaxDist d L a = zdistD d L (a i - a j) := by
   obtain ⟨p, -, hp⟩ := Finset.exists_mem_eq_sup (Finset.univ : Finset (Fin n × Fin n))
     Finset.univ_nonempty fun p : Fin n × Fin n => zdistD d L (a p.1 - a p.2)
@@ -589,7 +589,7 @@ private theorem KLMolecule_exists_pair (a : Fin n → Zd d L) :
 
 omit [NeZero n] in
 /-- A tree of the layer `π = ∅` has equal charges at the two ends of every internal edge. -/
-private theorem KLMolecule_same_charge {σ : Fin n → Bool} {F : Finset (Fin n × Fin n)}
+theorem KLMolecule_same_charge {σ : Fin n → Bool} {F : Finset (Fin n × Fin n)}
     (hF : F ∈ KLTSPlong n σ ∅) : ∀ e ∈ F, σ e.1 = σ e.2 := by
   intro e he
   by_contra h
@@ -719,7 +719,7 @@ private theorem KLMolecule_sum_slice (x : Zd d L) (f : Zd d L → ℝ) :
     Fintype.card_fin]
 
 /-- `∑_{δ_0 = x} e^{-c max|δ_i - δ_j|} ≤ expC(c/n)^{n-1}`. -/
-private theorem KLMolecule_sum_exp_maxDist (k : ℕ) {c : ℝ} (hc : 0 < c) (x : Zd (k + 2) L) :
+theorem KLMolecule_sum_exp_maxDist (k : ℕ) {c : ℝ} (hc : 0 < c) (x : Zd (k + 2) L) :
     ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) L => δ 0 = x),
         Real.exp (-(c * (KLmaxDist (k + 2) L δ : ℝ))) ≤ (expC k (c / n)) ^ (n - 1) := by
   have hn0 : (0 : ℝ) < n := by exact_mod_cast NeZero.pos n

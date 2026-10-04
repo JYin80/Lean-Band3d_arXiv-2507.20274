@@ -30,10 +30,10 @@ and summing the corresponding `(k,l)` term against `S^(B)` rebuilds exactly that
 * `RBM.Loop.treeSum_three`   : the tree sum is the star
 * `RBM.Loop.kThree`, `RBM.Loop.hasDerivAt_kThree`, `RBM.Loop.kThree_zero` : the tree value
   solves `(pro_dyncalK)` with the `M`-loop initial value
-* `RBM.Loop.kThree_eq_of_isKLoop` : **every** family of `K`-loops whose `2`-loops are
-  bounded has these `3`-loops -- `(eq_Ktree)` at `n = 3`, with no hypothesis about the shape
-  of the solution.  This is `eq_on_level` (Q22a) at `n = 3`, fed by
-  `kTwoFormula_of_isKLoop` at length `2`.
+* `RBM.Loop.kThree_eq_of_isKLoop` : **every** family of `K`-loops has these `3`-loops --
+  `(eq_Ktree)` at `n = 3`, with no hypothesis about the shape or the size of the solution
+  (the bound on the `2`-loops is `KLretire_twoLoopBounded`, `Loop/Unique.lean`).
+  This is `eq_on_level` (Q22a) at `n = 3`, fed by `kTwoFormula_of_isKLoop` at length `2`.
 
 The general `n` is `docs/QUEUE.md`, Q22b; `n = 4` is where internal edges first appear, and
 the `polyVal` recursion of `Loop/Partition.lean` is what will carry them.
@@ -341,20 +341,19 @@ theorem exists_eq_of_length_three {I : LoopIdx (Zd d L)} (hI : I.WF) (h3 : I.len
   obtain ⟨σ₀, σ₁, σ₂, rfl⟩ := List.length_eq_three.mp hσ
   exact ⟨σ₀, σ₁, σ₂, a₀, a₁, a₂, rfl⟩
 
-/-- **`(eq_Ktree)` at `n = 3` holds of every family of `K`-loops** whose `2`-loops are
-bounded on each `[0,T₀]`, `T₀ < 1`.
+/-- **`(eq_Ktree)` at `n = 3` holds of every family of `K`-loops** on `[0,1)` (the a priori bound
+of its `2`-loops is `KLretire_twoLoopBounded`).
 
 The proof is `eq_on_level` at `n = 3`: `K` and `kLoop3` solve the same equation at length
 `3` -- linear in the `3`-loops, with the `2`-loops as coefficients -- they agree at length
 `2` by `kTwoFormula_of_isKLoop`, and they agree at `t = 0` by `kThree_zero`. -/
 theorem kThree_eq_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bool → ℂ}
     (hm : ∀ s, ‖m s‖ = 1) {K : ℝ → LoopIdx (Zd d L) → ℂ}
-    (hK : IsKLoop d L W g m (Set.Ico 0 1) K)
-    (hbdd : TwoLoopBounded d L K) :
+    (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
     ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ₀ σ₁ σ₂ : Bool) (a₀ a₁ a₂ : Zd d L),
       K t ⟨[σ₀, σ₁, σ₂], [a₀, a₁, a₂]⟩ = kThree d L W g m t σ₀ σ₁ σ₂ a₀ a₁ a₂ := by
   intro t ht0 ht1 σ₀ σ₁ σ₂ a₀ a₁ a₂
-  obtain ⟨R, hR0, hRK⟩ := hbdd t ht1
+  obtain ⟨R, hR0, hRK⟩ := KLretire_twoLoopBounded hK t ht1
   have hS : ‖SB d L g‖ = 1 := norm_SB d L g hL
   set R' : ℝ := max R (‖((W : ℂ) ^ d)⁻¹‖ * (1 - t)⁻¹) with hR'
   have hR'0 : 0 ≤ R' := le_trans hR0 (le_max_left _ _)
@@ -388,7 +387,7 @@ theorem kThree_eq_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bool
     intro s hs I hI h2 h3
     have hlen : I.length = 2 := by omega
     obtain ⟨τ₀, τ₁, b₀, b₁, rfl⟩ := exists_eq_of_length_two hI hlen
-    rw [kTwoFormula_of_isKLoop hL hW hm hK hbdd s hs.1 (lt_of_le_of_lt hs.2 ht1) τ₀ τ₁ b₀ b₁]
+    rw [kTwoFormula_of_isKLoop hL hW hm hK s hs.1 (lt_of_le_of_lt hs.2 ht1) τ₀ τ₁ b₀ b₁]
     rfl
   have key := eq_on_level d L W g hL K (kLoop3 d L W g m) t R' 3 hR'0
     (fun s hs I hI h3 => hK.1 s (hsub s hs) I hI (by omega))
@@ -412,8 +411,7 @@ theorem pureLoop_three {k : ℕ} {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd (k 
     (hd : 3 ≤ k + 2) (hg : 0 < g) (hL : 3 ≤ L) (hW : (W : ℂ) ^ (k + 2) ≠ 0) {σ : Bool}
     (hm : ∀ s, ‖m s‖ = 1) (hmi : 0 < (m σ).im)
     (hshort : ThetaDecayShort (k + 2) g (m σ))
-    (hK : IsKLoop (k + 2) L W g m (Set.Ico 0 1) K)
-    (hbdd : TwoLoopBounded (k + 2) L K) :
+    (hK : IsKLoop (k + 2) L W g m (Set.Ico 0 1) K) :
     ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 →
       ∀ (a : Fin 3 → Zd (k + 2) L) (p q : Fin 3),
         ‖K t ⟨[σ, σ, σ], [a 0, a 1, a 2]⟩‖
@@ -444,7 +442,7 @@ theorem pureLoop_three {k : ℕ} {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd (k 
     rwa [hdist] at this
   have hstar := norm_sum_prod_le (L := L) k
     (E := fun x y => Theta (k + 2) L g ((t : ℂ) * (m σ * m σ)) x y) hC.le hc hE a p q
-  rw [kThree_eq_of_isKLoop hL hW hm hK hbdd t ht0 ht1 σ σ σ (a 0) (a 1) (a 2), kThree,
+  rw [kThree_eq_of_isKLoop hL hW hm hK t ht0 ht1 σ σ σ (a 0) (a 1) (a 2), kThree,
     treeSum_three]
   have hval : ‖((((W : ℂ) ^ (k + 2))⁻¹) ^ 2 * (m σ * (m σ * m σ)))
         * ∑ b : Zd (k + 2) L, thetaEdge (k + 2) L g m t σ σ (a 0) b

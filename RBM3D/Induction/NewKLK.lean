@@ -1313,4 +1313,20 @@ example : ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (
     zero_le_one (by norm_num) hL4 0 Matrix.isHermitian_zero
     (fun x y => (nkl_STGMM_zero sz0 0 (by norm_num) (by norm_num) x y).trans (by norm_num)) σ a
 
+/-! ### The pointwise form `STNewKLKAt`, concluded (T2099 audit O1; ticket T2127) -/
+
+/-- **`lem:newKLK`, pointwise form.**  `STNewKLKAt` holds at the constants `C, δ₀` that
+`stNewKLK_holds` chooses for `(d, κ, 𝔡)`; it is the conclusion the registry scan of
+`RBM3D/Test/Axioms.lean` looks for. -/
+theorem stNewKLKAt_holds (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
+    STNewKLKAt d κ 𝔡 (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose
+      (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose_spec.choose :=
+  (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose_spec.choose_spec.2.2
+
+/-- Nonempty instance of `stNewKLKAt_holds`: `d = 3`, `κ = 𝔡 = 1/10`. -/
+example : STNewKLKAt 3 (1 / 10) (1 / 10)
+    (stNewKLK_holds 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)).choose
+    (stNewKLK_holds 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)).choose_spec.choose :=
+  stNewKLKAt_holds 3 le_rfl (1 / 10) (1 / 10) (by norm_num) (by norm_num)
+
 end RBM.Gauss.Sizes

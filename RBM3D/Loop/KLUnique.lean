@@ -5,9 +5,10 @@ Authors: Jun Yin
 -/
 import RBM3D.Loop.KLTreeDeriv
 import RBM3D.Loop.TreeThree
+import RBM3D.Propagator.Prop6Hold
 
 /-!
-# The `K`-loop layer, fourth and fifth rows (KL4 + KL5): uniqueness, retirement of `TwoLoopBounded`,
+# The `K`-loop layer, fourth and fifth rows (KL4 + KL5): uniqueness,
 # rotation and translation invariance of `𝒦`, `d ≥ 3`
 
 Ticket T2025 (design ticket T2004, rows KL4 and KL5).  Names are in `RBM.Loop`.
@@ -19,9 +20,9 @@ Ticket T2025 (design ticket T2004, rows KL4 and KL5).  Names are in `RBM.Loop`.
   `[0,t] ⊆ [0,1)` (`KLretire_twoLoopBounded`), and the merged `isKLoop_unique`
   (`RBM3D/Loop/Unique.lean:247`) does the rest for length `≥ 2`; length `1` is the third clause of
   `IsKLoop`, for `K` and (by `KLK_isKLoop`, KL3) for `KLK`.
-* **`KLretire_twoLoopBounded`, `KLretire_kTwoFormula`, `KLretire_kThree`** retire the old hypothesis
-  `TwoLoopBounded` (`RBM3D/Loop/TreeRep.lean:172`) in the merged `kTwoFormula_of_isKLoop`,
-  `kThree_eq_of_isKLoop`: copied verbatim from the T2004 probe
+* **`KLretire_twoLoopBounded`** (now in `RBM3D/Loop/Unique.lean`, moved there by ticket T2127)
+  retires the old a priori hypothesis (deleted) of the merged `kTwoFormula_of_isKLoop`,
+  `kThree_eq_of_isKLoop`, `pureLoop_two_of_isKLoop`, `pureLoop_three`; copied from the T2004 probe
   (`64b58eb:RBM3D/Probe/T2004Pins.lean:915-971`, compiled there).  `KLretire_KLoopBound` of that
   probe section needs `KLBoundAt` (KL11) and is not here.
 * **`RBM.Loop.KLK_rotate`, `RBM.Loop.KLK_translate`**: the cyclic and the translation symmetry of
@@ -72,44 +73,7 @@ namespace RBM.Loop
 
 open Finset
 
-/-! ## 1. Retirement of `TwoLoopBounded` (copied verbatim from the T2004 probe, section 8) -/
-
-/-- **`TwoLoopBounded` is a theorem for every family of `K`-loops on `[0,1)`**: each coordinate
-`s ↦ K s I` has a derivative, hence is continuous on the compact `[0,T₀] ⊆ [0,1)`, and there are
-finitely many `2`-loops (port of `RBM2D/Loop/Unique.lean:250-268`, c9a24cf).  So the premise of
-`kTwoFormula_of_isKLoop`, `kThree_eq_of_isKLoop`, `pureLoop_two_of_isKLoop` is discharged. -/
-theorem KLretire_twoLoopBounded {d L W : ℕ} [NeZero L] {g : ℝ} {m : Bool → ℂ}
-    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
-    TwoLoopBounded d L K := by
-  intro T₀ hT₀
-  let f : ℝ → LoopVec d L 2 → ℂ := fun s p => K s (p.toLoop d L)
-  have hf : ContinuousOn f (Set.Icc 0 T₀) := by
-    refine continuousOn_pi.2 fun p s hs => ?_
-    have := hK.1 s ⟨hs.1, lt_of_le_of_lt hs.2 hT₀⟩ (p.toLoop d L) p.wf (by rw [p.length])
-    exact this.continuousAt.continuousWithinAt
-  obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hf
-  refine ⟨max C 0, le_max_right _ _, fun t ht I hI hI2 => ?_⟩
-  obtain ⟨p, rfl⟩ := LoopVec.exists_toLoop I hI hI2
-  exact ((norm_le_pi_norm (f t) p).trans (hC t ht)).trans (le_max_left _ _)
-
-/-- The four merged theorems that took `TwoLoopBounded` as a premise
-(`kTwoFormula_of_isKLoop`, `kThree_eq_of_isKLoop`, `pureLoop_two_of_isKLoop`, `pureLoop_three`;
-`Loop/Unique.lean:297,344`, `Loop/TreeThree.lean:350,411`) now need only `IsKLoop`; two of them
-are re-stated here as the check. -/
-theorem KLretire_kTwoFormula {d L W : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L)
-    (hW : (W : ℂ) ^ d ≠ 0) {m : Bool → ℂ} (hm : ∀ s, ‖m s‖ = 1)
-    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
-    KTwoFormula d L W g m K :=
-  kTwoFormula_of_isKLoop hL hW hm hK (KLretire_twoLoopBounded hK)
-
-theorem KLretire_kThree {d L W : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L)
-    (hW : (W : ℂ) ^ d ≠ 0) {m : Bool → ℂ} (hm : ∀ s, ‖m s‖ = 1)
-    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
-    ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ₀ σ₁ σ₂ : Bool) (a₀ a₁ a₂ : Zd d L),
-      K t ⟨[σ₀, σ₁, σ₂], [a₀, a₁, a₂]⟩ = kThree d L W g m t σ₀ σ₁ σ₂ a₀ a₁ a₂ :=
-  kThree_eq_of_isKLoop hL hW hm hK (KLretire_twoLoopBounded hK)
-
-/-! ## 2. The pinned theorem `KLK_unique` -/
+/-! ## 2. The pinned theorem `KLK_unique` (section 1, `KLretire_twoLoopBounded`, is in `Loop/Unique.lean`) -/
 
 /-- **Pin `Def_Ktza`, "unique"**: every family of `K`-loops on `[0,1)` is `KLK` (no a priori
 bound on the `2`-loops: it follows from continuity on `[0,t] ⊆ [0,1)`).  The type is the body
@@ -667,9 +631,12 @@ instance `KLTreeDerivInst_isKLoop` of `KLK_isKLoop` (`K = 𝒦`, the trivial cas
 `KLUnique_isKLoop_shift` (a family of `K`-loops different from `𝒦` as a function).  The loops have
 length `1` (`KLK_unique`: third clause of `IsKLoop`), `2` and `3` (`KLK_unique`: through
 `isKLoop_unique`), `3` (`KLK_unique` with the shifted family `𝒦(r, shift_{e₁} J)`), `3` and `4`
-(`KLK_rotate`), `3` (`KLK_translate`, by `e₁`).  The retirement lemmas are applied to the family
-`K = 𝒦` (`‖m(±)‖ = 1` by `norm_mSigma`): `TwoLoopBounded` and `KTwoFormula` hold of `𝒦` with no a
-priori bound assumed, and `𝒦^{(3)} = kThree` at `t = 9/10`. -/
+(`KLK_rotate`), `3` (`KLK_translate`, by `e₁`).  The merged theorems `kTwoFormula_of_isKLoop`,
+`kThree_eq_of_isKLoop`, `pureLoop_two_of_isKLoop`, `pureLoop_three`, which no longer take the a
+priori bound of the `2`-loops as a premise (it is `KLretire_twoLoopBounded`), are applied to the
+family `K = 𝒦` (`‖m(±)‖ = 1` by `norm_mSigma`, `Im m(+) > 0` by `mE_im_pos`, `ThetaDecayShort` by
+the proved `thetaDecayShort_holds`): `KTwoFormula` and `𝒦^{(3)} = kThree` at `t = 9/10` hold of
+`𝒦` with no bound assumed, and the pure `2`- and `3`-loops of `𝒦` decay. -/
 
 section Instances
 
@@ -742,25 +709,57 @@ theorem KLUniqueInst_translate_three :
     ⟨by norm_num, by norm_num⟩ (![1, 0, 0] : Zd 3 5)
     ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ rfl
 
-/-- `KLretire_twoLoopBounded` at the instance data: `TwoLoopBounded` holds of `𝒦`, it is not
-assumed. -/
+/-- `KLretire_twoLoopBounded` at the instance data: the a priori bound of the `2`-loops of `𝒦` on
+every `[0,T₀]`, `T₀ < 1`, is a theorem, not an assumption. -/
 theorem KLUniqueInst_retire_twoLoopBounded :
-    TwoLoopBounded 3 5 (fun t I => KLK 3 5 (1 / 2) 2 0 t I) :=
-  KLretire_twoLoopBounded KLTreeDerivInst_isKLoop
+    ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
+      ∀ I : LoopIdx (Zd 3 5), I.WF → I.length = 2 → ‖KLK 3 5 (1 / 2) 2 0 t I‖ ≤ R :=
+  KLretire_twoLoopBounded (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
 
-/-- `KLretire_kTwoFormula` at the instance data: `(Kn2sol)` for `𝒦`, with `‖m(±)‖ = 1`. -/
-theorem KLUniqueInst_retire_kTwoFormula :
+/-- `kTwoFormula_of_isKLoop` at the instance data: `(Kn2sol)` for `𝒦`, with `‖m(±)‖ = 1` and no
+bound on the `2`-loops assumed. -/
+theorem KLUniqueInst_kTwoFormula :
     KTwoFormula 3 5 2 (1 / 2) (mSigma 0) (fun t I => KLK 3 5 (1 / 2) 2 0 t I) :=
-  KLretire_kTwoFormula (by norm_num) (by norm_num) (fun s => norm_mSigma (by norm_num) s)
+  kTwoFormula_of_isKLoop (by norm_num) (by norm_num) (fun s => norm_mSigma (by norm_num) s)
     KLTreeDerivInst_isKLoop
 
-/-- `KLretire_kThree` at the instance data, at `t = 9/10`: `𝒦^{(3)}` at charges `(+,-,+)` and labels
-`(0, 1, 2)` is `kThree`. -/
-theorem KLUniqueInst_retire_kThree :
+/-- `kThree_eq_of_isKLoop` at the instance data, at `t = 9/10`: `𝒦^{(3)}` at charges `(+,-,+)` and
+labels `(0, 1, 2)` is `kThree`. -/
+theorem KLUniqueInst_kThree :
     (fun t I => KLK 3 5 (1 / 2) 2 0 t I) (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩
       = kThree 3 5 2 (1 / 2) (mSigma 0) (9 / 10) true false true 0 1 2 :=
-  KLretire_kThree (by norm_num) (by norm_num) (fun s => norm_mSigma (by norm_num) s)
+  kThree_eq_of_isKLoop (by norm_num) (by norm_num) (fun s => norm_mSigma (by norm_num) s)
     KLTreeDerivInst_isKLoop (9 / 10) (by norm_num) (by norm_num) true false true 0 1 2
+
+/-- `Im m(+) > 0` at `E = 0` (`m(+) = i`). -/
+private theorem KLUnique_inst_im : 0 < (mSigma 0 true).im := by
+  simpa [mSigma] using mE_im_pos (E := 0) (by norm_num)
+
+/-- `pureLoop_two_of_isKLoop` at `d = k + 2 = 3` (`k = 1`), `L = 5`, `W = 2`, `g = 1/2`, `E = 0`,
+`σ = +`: the pure `2`-loops of `𝒦` decay exponentially in the distance of their labels.
+`ThetaDecayShort` is the proved `thetaDecayShort_holds`. -/
+theorem KLUniqueInst_pureLoop_two :
+    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 → ∀ a₁ a₂ : Zd (1 + 2) 5,
+      ‖KLK 3 5 (1 / 2) 2 0 t ⟨[true, true], [a₁, a₂]⟩‖
+        ≤ C * ‖(((2 : ℕ) : ℂ) ^ (1 + 2))⁻¹‖
+          * Real.exp (-(c * (zdistD (1 + 2) 5 (a₁ - a₂) : ℝ))) :=
+  pureLoop_two_of_isKLoop (k := 1) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (fun s => norm_mSigma (by norm_num) s)
+    KLUnique_inst_im (thetaDecayShort_holds (1 + 2) (1 / 2) (mSigma 0 true))
+    (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
+
+/-- `pureLoop_three` at the same data: the pure `3`-loops of `𝒦` decay exponentially in the diameter
+of their labels. -/
+theorem KLUniqueInst_pureLoop_three :
+    ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 →
+      ∀ (a : Fin 3 → Zd (1 + 2) 5) (p q : Fin 3),
+        ‖KLK 3 5 (1 / 2) 2 0 t ⟨[true, true, true], [a 0, a 1, a 2]⟩‖
+          ≤ C * ‖((((2 : ℕ) : ℂ) ^ (1 + 2))⁻¹) ^ 2‖
+            * Real.exp (-(c * (zdistD (1 + 2) 5 (a p - a q) : ℝ))) :=
+  pureLoop_three (k := 1) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (fun s => norm_mSigma (by norm_num) s)
+    KLUnique_inst_im (thetaDecayShort_holds (1 + 2) (1 / 2) (mSigma 0 true))
+    (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
 
 end Instances
 

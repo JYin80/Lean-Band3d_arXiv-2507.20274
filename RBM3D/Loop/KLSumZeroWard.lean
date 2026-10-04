@@ -67,12 +67,12 @@ variable {n : ℕ} [NeZero n]
 
 /-- The charges of the inside polygon of the cut `J = (i, j)`: its vertex `k` is the vertex
 `i + k`.  (RBM2D `Loop/KBoundCut.lean:45`; not in the merged `KLCut`.) -/
-private def sigmaIn (σ : Fin n → Bool) (J : Fin n × Fin n) : Fin (KLwIn J + 1) → Bool :=
+def sigmaIn (σ : Fin n → Bool) (J : Fin n × Fin n) : Fin (KLwIn J + 1) → Bool :=
   fun k => σ ⟨min (J.1.val + k.val) (n - 1), by have := NeZero.pos n; omega⟩
 
 /-- The charges of the outside polygon of the cut `J` (`n - KLwIn J + 1` vertices): the arc of
 `J` is collapsed to its left end.  (RBM2D `Loop/KBoundCut.lean:59`.) -/
-private def sigmaOut (σ : Fin n → Bool) (J : Fin n × Fin n) : Fin (n - KLwIn J + 1) → Bool :=
+def sigmaOut (σ : Fin n → Bool) (J : Fin n × Fin n) : Fin (n - KLwIn J + 1) → Bool :=
   fun k => σ ⟨min (KLunCol J k.val) (n - 1), by have := NeZero.pos n; omega⟩
 
 end Charges
@@ -88,7 +88,7 @@ private theorem mem_Flong {F : Finset (Fin n × Fin n)} {σ : Fin n → Bool} {d
     d ∈ KLFlong F σ ↔ d ∈ F ∧ σ d.1 ≠ σ d.2 := mem_filter
 
 omit [NeZero n] in
-private theorem Flong_subset (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) :
+theorem Flong_subset (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) :
     KLFlong F σ ⊆ F :=
   filter_subset _ _
 
@@ -162,7 +162,7 @@ private theorem Flong_FIn (σ : Fin n → Bool) :
 /-- **The layer condition across the cut.**  Let `π = F_long(F₀, σ)` for some tree `F₀` and let
 `J ∈ π` be innermost.  Then a tree `F ∋ J` lies in the layer `π` iff its inside family has no
 long edges and the long edges of its outside family are `π ∖ {J}`, collapsed. -/
-private theorem Flong_eq_iff_cut (σ : Fin n → Bool) {F₀ : Finset (Fin n × Fin n)}
+theorem Flong_eq_iff_cut (σ : Fin n → Bool) {F₀ : Finset (Fin n × Fin n)}
     (hF₀ : KLIsTSP F₀)
     {π : Finset (Fin n × Fin n)} (hπ : KLFlong F₀ σ = π) (hJπ : J ∈ π)
     (hinner : ∀ e ∈ π, KLArcLe e J → e = J) :
@@ -369,7 +369,7 @@ variable {n : ℕ} [NeZero n] {J : Fin n × Fin n}
 
 /-- **The boundary edges across the cut**:
 `∏_v g(σ_v, σ_{v+1}) · g(σ_j, σ_i) g(σ_i, σ_j) = ∏_{in} · ∏_{out}`. -/
-private theorem prod_leaves_cut (hJd : IsDiag n J.1 J.2) (σ : Fin n → Bool)
+theorem prod_leaves_cut (hJd : IsDiag n J.1 J.2) (σ : Fin n → Bool)
     (g : Bool → Bool → ℂ) :
     (∏ v : Fin n, g (σ v) (σ (v + 1))) * (g (σ J.2) (σ J.1) * g (σ J.1) (σ J.2)) =
       (∏ k : Fin (KLwIn J + 1), g (sigmaIn σ J k) (sigmaIn σ J (k + 1))) *
@@ -574,7 +574,7 @@ variable {n : ℕ}
 /-- **An innermost long edge**: a long edge of `π` of smallest arc has no other edge of `π`
 inside its arc (RBM2D `KBoundCut.lean:1876`, a port of RBM1D `exists_innermost`,
 `SumZero.lean:814`; not in the merged `KLCut`). -/
-private theorem exists_innermost {π : Finset (Fin n × Fin n)}
+theorem exists_innermost {π : Finset (Fin n × Fin n)}
     (hπ : π ⊆ diagonals n) (hne : π.Nonempty) :
     ∃ J ∈ π, ∀ e ∈ π, KLArcLe e J → e = J := by
   obtain ⟨J, hJ, hmin⟩ := π.exists_min_image KLarcWidth hne
@@ -591,7 +591,7 @@ private theorem exists_innermost {π : Finset (Fin n × Fin n)}
   exact Prod.ext (Fin.ext (by omega)) (Fin.ext (by omega))
 
 /-- `π ⊆ diagonals n` for the long edges of a tree (RBM2D `KBoundCut.lean:1893`). -/
-private theorem Flong_subset_diagonals {F₀ : Finset (Fin n × Fin n)} (hF₀ : F₀ ∈ TSP n)
+theorem Flong_subset_diagonals {F₀ : Finset (Fin n × Fin n)} (hF₀ : F₀ ∈ TSP n)
     (σ : Fin n → Bool) : KLFlong F₀ σ ⊆ diagonals n :=
   (Finset.filter_subset _ _).trans (Finset.mem_powerset.1 (Finset.mem_filter.1 hF₀).1)
 

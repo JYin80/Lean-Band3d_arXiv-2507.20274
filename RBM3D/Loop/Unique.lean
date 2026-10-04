@@ -285,22 +285,42 @@ theorem exists_eq_of_length_two {I : LoopIdx (Zd d L)} (hI : I.WF) (h2 : I.lengt
   obtain ⟨σ₁, σ₂, rfl⟩ := List.length_eq_two.mp hσ
   exact ⟨σ₁, σ₂, a₁, a₂, rfl⟩
 
+/-- **The a priori bound on the `2`-loops is a theorem** for every family of `K`-loops on `[0,1)`:
+each coordinate `s ↦ K s I` has a derivative, hence is continuous on the compact `[0,T₀] ⊆ [0,1)`,
+and there are finitely many `2`-loops (port of `RBM2D/Loop/Unique.lean:250-268`, c9a24cf; moved here
+from `Loop/KLUnique.lean` by ticket T2127, where it retired the old hypothesis of the four theorems
+below).  The conclusion is the unfolded bound: for every `T₀ < 1` there is `R ≥ 0` with
+`‖K t I‖ ≤ R` for all `t ∈ [0,T₀]` and all well-formed loops of length `2`. -/
+theorem KLretire_twoLoopBounded {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd d L) → ℂ}
+    (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
+    ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
+      ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R := by
+  intro T₀ hT₀
+  let f : ℝ → LoopVec d L 2 → ℂ := fun s p => K s (p.toLoop d L)
+  have hf : ContinuousOn f (Set.Icc 0 T₀) := by
+    refine continuousOn_pi.2 fun p s hs => ?_
+    have := hK.1 s ⟨hs.1, lt_of_le_of_lt hs.2 hT₀⟩ (p.toLoop d L) p.wf (by rw [p.length])
+    exact this.continuousAt.continuousWithinAt
+  obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hf
+  refine ⟨max C 0, le_max_right _ _, fun t ht I hI hI2 => ?_⟩
+  obtain ⟨p, rfl⟩ := LoopVec.exists_toLoop I hI hI2
+  exact ((norm_le_pi_norm (f t) p).trans (hC t ht)).trans (le_max_left _ _)
+
 /-- **`(Kn2sol)` is a theorem about every family of `K`-loops, not a hypothesis.**
 
-If `K` is a family of `K`-loops on `[0,1)` whose `2`-loops are bounded on each `[0,T₀]`,
-`T₀ < 1`, then `RBM.Loop.KTwoFormula` holds of it: its `2`-loops *are*
-`W^{-d}m(σ₁)m(σ₂)Θ_{t m(σ₁)m(σ₂)}`.
+If `K` is a family of `K`-loops on `[0,1)`, then `RBM.Loop.KTwoFormula` holds of it: its `2`-loops
+*are* `W^{-d}m(σ₁)m(σ₂)Θ_{t m(σ₁)m(σ₂)}`.  The a priori bound of its `2`-loops on each `[0,T₀]`,
+`T₀ < 1`, is `KLretire_twoLoopBounded`.
 
 The proof compares `K` with `RBM.Loop.kTwoLoop` at length `2` only (`eq_on_level` with
 `n = 2`, where the hypothesis on shorter loops is vacuous): both solve the same Riccati
 equation and both take the `M`-loop value at `t = 0`. -/
 theorem kTwoFormula_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bool → ℂ}
     (hm : ∀ s, ‖m s‖ = 1) {K : ℝ → LoopIdx (Zd d L) → ℂ}
-    (hK : IsKLoop d L W g m (Set.Ico 0 1) K)
-    (hbdd : TwoLoopBounded d L K) :
+    (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
     KTwoFormula d L W g m K := by
   intro t ht0 ht1 σ₁ σ₂ a₁ a₂
-  obtain ⟨R, hR0, hRK⟩ := hbdd t ht1
+  obtain ⟨R, hR0, hRK⟩ := KLretire_twoLoopBounded hK t ht1
   set R' : ℝ := max R (‖((W : ℂ) ^ d)⁻¹‖ * (1 - t)⁻¹) with hR'
   have hR'0 : 0 ≤ R' := le_trans hR0 (le_max_left _ _)
   have hsub : ∀ s ∈ Set.Icc (0 : ℝ) t, s ∈ Set.Ico (0 : ℝ) 1 := fun s hs =>
@@ -340,16 +360,15 @@ theorem kTwoFormula_of_isKLoop (hL : 3 ≤ L) (hW : (W : ℂ) ^ d ≠ 0) {m : Bo
 
 /-- **`res_pureKes` at `n = 2` for an arbitrary family of `K`-loops.**  Combining the two
 previous results with `pureLoop_two`: no assumption about the shape of the `2`-loops is
-left, only the a priori bound and `ThetaDecayShort`, which the paper genuinely borrows. -/
+left (and none about their size), only `ThetaDecayShort`, which the paper genuinely borrows. -/
 theorem pureLoop_two_of_isKLoop {k : ℕ} (hd : 3 ≤ k + 2) (hg : 0 < g) (hL : 3 ≤ L)
     (hW : (W : ℂ) ^ (k + 2) ≠ 0) {m : Bool → ℂ} (hm : ∀ s, ‖m s‖ = 1) {σ : Bool}
     (hmi : 0 < (m σ).im) (hshort : ThetaDecayShort (k + 2) g (m σ))
-    {K : ℝ → LoopIdx (Zd (k + 2) L) → ℂ} (hK : IsKLoop (k + 2) L W g m (Set.Ico 0 1) K)
-    (hbdd : TwoLoopBounded (k + 2) L K) :
+    {K : ℝ → LoopIdx (Zd (k + 2) L) → ℂ} (hK : IsKLoop (k + 2) L W g m (Set.Ico 0 1) K) :
     ∃ C > (0 : ℝ), ∃ c > (0 : ℝ), ∀ (t : ℝ), 0 ≤ t → t < 1 → ∀ a₁ a₂ : Zd (k + 2) L,
       ‖K t ⟨[σ, σ], [a₁, a₂]⟩‖
         ≤ C * ‖((W : ℂ) ^ (k + 2))⁻¹‖
           * Real.exp (-(c * (zdistD (k + 2) L (a₁ - a₂) : ℝ))) :=
-  pureLoop_two hd hg hL (hm σ) hmi hshort (kTwoFormula_of_isKLoop hL hW hm hK hbdd)
+  pureLoop_two hd hg hL (hm σ) hmi hshort (kTwoFormula_of_isKLoop hL hW hm hK)
 
 end RBM.Loop

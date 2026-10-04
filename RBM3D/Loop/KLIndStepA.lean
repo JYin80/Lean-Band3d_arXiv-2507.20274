@@ -30,17 +30,12 @@ and proves the pin `KLindStepPin` from the declarations below.
 * §7 the compiled instances at `d = 3`, `L = 5`, `g = 1/2`, `E = 0`, `t = 9/10`.
 
 Reuse.  The merged `KLMolecule.lean` proves the pointwise `g²` gain for a non-constant `δ` only
-inside `KLsumZero_holds` (private chain `KLMolecule_edge`, `KLMolecule_selfW_bound_nc`, …).
-`KLsumZero_weighted` needs it as a pointwise bound, so this file reaches those private lemmas with
-`open private … from RBM3D.Loop.KLMolecule` (Batteries) instead of copying them.
+inside `KLsumZero_holds` (chain `KLMolecule_edge`, `KLMolecule_selfW_bound_nc`, …).
+`KLsumZero_weighted` needs it as a pointwise bound, so this file uses those lemmas directly
+(they were `private` until ticket T2127).
 -/
 
 set_option linter.style.longLine false
-
-open private KLMolecule_edge KLMolecule_selfW_bound_nc KLMolecule_SigmaPi_of_tree
-  KLMolecule_same_charge KLMolecule_exists_pair KLMolecule_sum_exp_maxDist
-  from RBM3D.Loop.KLMolecule
-open private KLmSigma_mul_not from RBM3D.Loop.KLTree
 
 namespace RBM.Loop
 

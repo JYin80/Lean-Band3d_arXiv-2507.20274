@@ -19,7 +19,7 @@ Any `sorry` (`sorryAx`) therefore breaks the build, and so does any new `axiom` 
 not been added to the list deliberately.
 
 The interface list is **empty**, as in the sister projects `RBM1D` and `RBM2D`: what this
-paper cites rather than proves is carried as hypotheses (`RBM.PropTH`, see
+paper cites rather than proves is carried as hypotheses (`RBM.ThetaDecay`, see
 `RBM3D/Propagator/Interface.lean`), so a result resting on a borrowed estimate says so in
 its own statement.  The list is kept, and the command still checks it, so that a future
 exception would have to be written down here.
@@ -48,7 +48,7 @@ open Lean Elab Command
 def allowedAxioms : List Name := [``propext, ``Classical.choice, ``Quot.sound]
 
 /-- Interface axioms: **none**.  The results this paper cites but does not prove are
-`Prop`s in `RBM3D/Propagator/Interface.lean` (`RBM.PropTH`), assumed by the theorems that
+`Prop`s in `RBM3D/Propagator/Interface.lean` (`RBM.ThetaDecay`), assumed by the theorems that
 need them, not asserted.  The list is kept so that the exception remains available and
 visible: adding a name here would be a deliberate act, recording that the development is
 allowed to rest on a result from outside the paper. -/
@@ -70,13 +70,14 @@ Reporting them in one list makes "zero axioms" look better than the situation is
 -/
 
 /-- Premises the **paper** cites rather than proves.  The pins of `lem_propTH` properties
-5–8 (T2003, DECISIONS §13) and their KL-local form (T2004, §15) replace the old `ThetaDecay`
-… `PropTH` as the statements route H (DECISIONS §14) discharges; they are not authorised
+5–8 (T2003, DECISIONS §13) and their KL-local form (T2004, §15) replace the old bundle
+of four estimates and its two false difference bounds (deleted by T2127) as the statements route H
+(DECISIONS §14) discharges; they are not authorised
 external inputs (DECISIONS §5), so they must end up proved.  Route H proved `lem_propTH`
 5–8 for every `d ≥ 3` (T2023, T2024, T2027), so `Prop5Decay`, `Prop8ZeroMode`, `Prop5to8`,
 `ThetaDecay`, `ThetaDecayShort` and `ThetaZeroMode` left this list. -/
 def borrowedProps : List Name :=
-  [`RBM.ThetaDiffOne, `RBM.ThetaDiffTwo, `RBM.PropTH, `RBM.Loop.KTreeRep, `RBM.Loop.KLPT]
+  [`RBM.Loop.KLPT]
 
 /-- Premises **this development** owes: provable here, assumed for now.
 
@@ -86,21 +87,15 @@ additional modifications to handle the higher-dimensional setting `d ≥ 3`.  Fo
 reader's convenience, we provide the proof below", and then gives it in full.  T2125 left
 it: no theorem assumes it, and `KLoopBound_KLK` (`Loop/KLFinal.lean`) proves it for `K = KLK`. -/
 def owedProps : List Name :=
-  [`RBM.Loop.TwoLoopBounded,
-   `RBM.Green.GaussIBP,  -- Stein identity and finite polynomial moments of `Sizes.seqP`; proved by S1-19 (RBM2D `IBPPoly:299`), taken by `Tame.integrable` (T2031)
-   `RBM.Gauss.Sizes.STKbound,       -- `ML:Kbound` (`1_2:1056`), hypothesis of `STStep1`: proved by KL7 (T2028, DECISIONS §19)
-   `RBM.Gauss.Sizes.STLK,           -- (a) of `lem:main_ind` at `s`: ST-6 chain induction (T2028, DECISIONS §19)
+  [`RBM.Gauss.Sizes.STLK,           -- (a) of `lem:main_ind` at `s`: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STLmax,         -- `(eq:loopbound_s)`: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STDecay,        -- (b), first part: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STDecayStrong,  -- (b), second part: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STLocalMax,     -- (c) `(Gt_bound+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STExp2,         -- (d) `(Eq:Gtlp_exp+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STMainInd,      -- `lem:main_ind`: end of the ST-6 chain; class not signed in §19, owed by the §20 rule (T2028)
-   `RBM.Gauss.Sizes.STConArg,       -- `lem_ConArg` (`3_5:42`): S1-32 (T2028, §20 rule; class not signed in §19)
    `RBM.Gauss.Sizes.STBootstrap,    -- continuity bootstrap of Step 1 (`3_5:64`): S1-36 (T2028, T2015 b.10)
-   `RBM.Gauss.Sizes.STNetLift,      -- net lift of Step 1: S1-34 (T2028, T2015 b.10)
    `RBM.Gauss.Sizes.STForbidden,    -- forbidden-region estimate of Step 1: S1-36 (T2028, §20 rule; class not signed in §19)
-   `RBM.Green.GijOmegaSeq,          -- `(GijGEX)` on `Ω` per sequence: S1-24 `gijOmegaSeq`, RBM2D `Green/EntryGauss.lean:55` (T2028)
    `RBM.Green.AsGMcPT,              -- `(asGMc)` per time: from (`Gtmwc`) of Step 1, RBM2D `Path/GoodSet.lean:439` `goodSet_asGMc` (T2028, §20 rule)
    `RBM.Gauss.Sizes.STLmaxU, -- `(Eq:LGxb)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 4
    `RBM.Gauss.Sizes.STLKU, -- `(Eq:L-KGt-flow)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 3 (not in the §25 list; owed, T2049 proposal)
@@ -114,8 +109,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep4II, -- Step 4, case (ii): assembly S3-27 (T2049 proposal)
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
-   `RBM.Gauss.Sizes.STContract, -- `(yi2oslxj2)`, `(u2jzooi-2)`: new at d >= 3 (DECISIONS §25)
-   `RBM.Gauss.Sizes.STNewPQ, -- `lem: newPQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STSEforLn, -- `lem:SEforLn` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqQt, -- `lem:STOeq_Qt` (DECISIONS §25)
@@ -124,19 +117,12 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STAvgU, -- `(Gt_avgbound_flow)` uniform in `u ∈ [s,t]` (`1_2:1344`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `iterationsA_avg_of_STAvgU` (T2087)
    `RBM.Gauss.Sizes.STIterations, -- `lem:iterations`, case (i) (DECISIONS §25)
    `RBM.Gauss.Sizes.STIterationsII, -- `lem:iterations`, case (ii) (DECISIONS §25)
-   `RBM.Gauss.Sizes.STMollifierEx, -- `rmk:choosechi`: existence of the mollifier (DECISIONS §25)
-   `RBM.Gauss.Sizes.STQopNorm, -- `lem_+Q` with `4 ≤ W^ε`, `L^d ≤ W^K` (DECISIONS §25)
    `RBM.Gauss.Sizes.STWardTypePPin, -- `(eq:Ward_typeP)` (DECISIONS §25)
    `RBM.Gauss.Sizes.STB45Pin, -- `(y27kasdfg)` (DECISIONS §25)
-   `RBM.Gauss.Sizes.STContractPt, -- pointwise contraction inequality `ygdhmsgq0` (`3_5:751-797`): ST2-08 (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STEMn2Poly, -- `lem: EMn2_N`, `(eq:MG_conclusion)` (`3_5:427-432`): ST2-09 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STGridRepN, -- `Sol_CalL` + `lem:DIfREP` on the grid, every loop length (`3_5:134-148`, `218-240`); `STGridMart` is `m = 2`: ST2-12, ST2-13 (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STK2decay, -- `(eq:kn2sol_decay)`, `(eq:simpleboundK)` (`3_5:457`, `518`): ST2-06 (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STNetLift2, -- net lift of Step 2 (`1_2:1400`): ST2-18, ST2-19 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STStep2DecayPT, -- `(Eq:Gdecay_w)` per time (`1_2:1349-1351`): hypothesis of `stNetLift2_part1`/`step2NetLift`; proved by the Step 2 chain ST2-04 (T2074, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2LocalPT, -- `(Gt_bound_flow)` per time (`1_2:1343`): hypothesis of `step2LocalNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2AvgPT, -- `(Gt_avgbound_flow)` per time (`1_2:1345`): hypothesis of `step2AvgNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
-   `RBM.Gauss.Sizes.STScaleExists, -- scale family of `(eq:def_ell1)` (`3_5:521-527`, `571-577`): ST2-05 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28); `stOptL2_of_pins` (T2116) proves it from `STLWB` and `STGridMart`, so it stays owed through those two
    `RBM.Gauss.Sizes.STLocalAvgOfL2, -- closing paragraph of Step 2 (`3_5:455-465`): ST2-16, ST2-17 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STStep2, -- Step 2 of `lem:main_ind` (`1_2:1340-1357`): ST2-04 (`ST_step2_of_pins`) (T2066, DECISIONS §28)
@@ -168,11 +154,9 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWAvgLaw, -- `(Gt_avgbound_flow)` (`1_2:1344`)
    `RBM.Gauss.Sizes.LWAssm, -- conjunction of the hypotheses of `lem:LWterm` with random parts (§20: unsure, owed)
    `RBM.Gauss.Sizes.LWAssmExp, -- conjunction of the hypotheses of `lem: EWGn2_N` with random parts (§20: unsure, owed)
-   `RBM.Gauss.Sizes.STNewKLKAt, -- `lem:newKLK` (`3_5:371-378`) pointwise in `(n, E, u, D, ℓ, H)`, the form `ST_good_engine` takes: ST2-07 (+ST2-06b), `STNewKLK` is its `∃ C δ₀` form and is proved by `stNewKLK_holds` (T2099; its registry line is removed); this pointwise form stays registered because no theorem concludes `STNewKLKAt` itself (T2071; class proposed: owed)
    `RBM.Gauss.Sizes.STGoodAt, -- the pathwise good event (E1)-(E5) of one self-improving step of Step 2 (`3_5:537-577`), hypothesis of `ST_good_engine`; `ST_good_prob` (T2080) proves `P(¬ STGoodAt) ≤ N^{-D'}` from (E1)-(E4) and the pins, not `STGoodAt` itself: ST2-04 (T2071; class proposed: owed)
    `RBM.Gauss.Sizes.STStep1Weak, -- `(Gtmwc)` (`1_2:1327`), the weak-law conclusion of `STStep1`, uniform in `u ∈ [s,t]`; hypothesis of the ST2-03 event theorems: S1-36 (T2080; class proposed: owed)
    `RBM.Gauss.Sizes.STScaleInv, -- `(eq:LW_assm_exp)` at the scale family at every time section (`3_5:409`, `521-527`); hypothesis of `ST_LW_sections`, `ST_event_lw`, `ST_event_mg`: ST2-04/ST2-05 (T2080; class proposed: owed)
-   `RBM.Ind.Step1TargetV3, -- Step 1 of `lem:main_ind` (`1_2:1317-1328`) under `STGbEXPii`, `STGbEXPij`, RBM2D `Step1TargetV3` (`Induction/Step1.lean:84`): proved by S1-36 (T2079, §20 rule)
    -- T2092 (ST2-04, class proposed: owed): hypotheses of the Step 2 iteration and closure (`Induction/Step2Iterate.lean`)
    `RBM.Gauss.Sizes.STScaleOk, -- admissible scale family `K_u` (`3_5:521-527`): clause of `STScaleAdm`, supplied by `stScaleExists_holds` (T2081); hypothesis of `ST_selfImprove`, `ST_next`
    `RBM.Gauss.Sizes.STScaleAdm, -- scale iteration `(eq:def_ell1)` (`3_5:571-577`): supplied by `stScaleExists_holds` (T2081); hypothesis of `ST_iterate`, `ST_decay_pt`
@@ -180,9 +164,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Local, -- `(Gt_bound_flow)` single-charge form of the probe: proved by `ST_step2_of_pins` through `STNetLift2`; hypothesis of `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Avg, -- `(Gt_avgbound_flow)` single-charge form of the probe (paper-delta T2039g): hypothesis of `ST_avgU_of_avg`, `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
-   `RBM.Ind.STLoopGenNForm, -- general-`n` loop generator `genMat(𝓛_I) = pair + 𝓔^{G̃}` (`eq:mainStoflow`, `1_2`), RBM2D `LoopGenN`: proved by ST2-28; hypothesis of `hierarchyN_of_loopGenN` (T2095, Amend 1, DECISIONS §32)
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
-   `RBM.Green.MinorDiffGainUpTo', -- the minor-difference gain for the iterated differences `applyOps L (Δ_{κ_1} ⋯ Δ_{κ_q} Z^{(·)}_k)` behind `(GavLGEX)` (`3_5:33`; Lemma 4.1 of `[YY_25]`): hypothesis of `flucGainUpTo'_of_minorDiffGainUpTo'` (T2105, S1-22); proved by S1-25 `Green/MinorDiff` (class proposed: owed)
    `RBM.Green.FlucGainUpTo'] -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
@@ -246,11 +228,7 @@ halves and says, premise by premise, what a certificate would take.
 
 A certificate must name a real theorem, for a registered premise; otherwise the build
 fails.  The column is deliberately mostly empty: it reports a gap rather than hiding it. -/
-def certificates : List (Name × Name) :=
-  [(`RBM.ThetaDiffOne, `RBM.Test.thetaDiffOne_fixedL),
-   (`RBM.ThetaDiffTwo, `RBM.Test.thetaDiffTwo_fixedL),
-   (`RBM.PropTH, `RBM.Test.propTH_fixedL),
-   (`RBM.Loop.TwoLoopBounded, `RBM.Test.twoLoopBounded_kTwoLoop)]
+def certificates : List (Name × Name) := []
 
 /-! ### Finding the premises, instead of being told them
 
@@ -280,13 +258,12 @@ private partial def conclusionHead : Expr → Option Name
 /-- `Prop`-valued definitions of `RBM`, the theorems that assume them, and the theorems
 that prove them.  `ignore` keeps the audit's own fixtures out of the development.
 
-A structure's projections do not count as proving its fields: `PropTH.decay` produces a
-`ThetaDecay` from a `PropTH`, which is bookkeeping, not a proof.
+A structure's projections do not count as proving its fields: the projection `P.f` of a bundle `P`
+produces a `Prop` of the field from a `P`, which is bookkeeping, not a proof.
 
-Neither does a **certificate**: `twoLoopBounded_kTwoLoop` concludes
-`TwoLoopBounded d L (kTwoLoop …)`, so its conclusion head is the premise, but it proves it
-of *one* family, not of the arbitrary `K` that every theorem carrying the premise quantifies
-over.  Counting it as a proof made the premise disappear from the scan -- a report that
+Neither does a **certificate**: a theorem that concludes the premise `p` of *one* family has the
+premise as its conclusion head, but it does not prove it of the arbitrary object that every theorem
+carrying the premise quantifies over.  Counting it as a proof made the premise disappear from the scan -- a report that
 goes quiet exactly when someone certifies an assumption is worse than no report -- so the
 names in `certificates` are excluded here (`witness`). -/
 def scanPremises (env : Environment) (ignore : Name → Bool) (witness : Name → Bool) :
@@ -375,7 +352,7 @@ elab "#assert_rbm_axioms" : command => do
       Classify each of them: borrowed from the literature, owed by this formalization, \
       or a predicate that defines the objects under study."
   -- how much of the development rests on each premise
-  -- a Prop's own projections (`PropTH.decay`, …) mention it but rest on nothing
+  -- a Prop's own projections (`P.f`, …) mention it but rest on nothing
   let isInterfaceOwn (n : Name) : Bool := interfaceProps.any fun p => p.isPrefixOf n
   let usageOf (ps : List Name) := ps.map fun p =>
     (p, (thms.filter fun (n, ci) =>

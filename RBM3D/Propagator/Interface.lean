@@ -9,50 +9,43 @@ import RBM3D.Defs.Domination
 /-!
 # The interface: propagator estimates the paper does not prove
 
-Properties 5–8 of `lem_propTH` are the analytic heart of the propagator layer, and
-**this paper does not prove them.**  Appendix A.1 attributes them to earlier work:
+Properties 5 and 8 of `lem_propTH` are analytic estimates that **this paper does not prove.**
+Appendix A.1 attributes them to earlier work:
 
 | statement | paper label | attributed to |
 |---|---|---|
 | polynomial + exponential decay | `(prop:ThfadC)` | `[DYYY25]` Lemma 2.14, "we omit the details" |
 | strong decay for `σ₁ = σ₂` | `(prop:ThfadC_short)` | proved, via `[bourgade2019random]` L. 4.2 |
-| first-order difference | `(prop:BD1)` | "not stated explicitly in `[yang2024Del]`" |
-| second-order difference | `(prop:BD2)` | `[yang2024Del]` (E.19) |
 | propagator without zero mode | `(prop:ThfadC0)` | `[yang2024Del]` Lemma 3.1 |
 
 Under this repository's rule that the paper being formalized is the only source, the
 development may not *prove* them.  They are therefore stated here as **`Prop`s** --
-`RBM.ThetaDecay` and its four companions -- and bundled into `RBM.PropTH`.  A theorem
-that needs them takes `(hP : PropTH d g m)` as a hypothesis and uses `hP.decay`; nothing
-is asserted, so the axiom audit of `RBM3D.Test.Axioms` admits **no** project axiom at
-all, exactly as in the sister projects `RBM1D` and `RBM2D`.
+`RBM.ThetaDecay`, `RBM.ThetaDecayShort`, `RBM.ThetaZeroMode`.  A theorem that needs one
+takes it as a hypothesis; nothing is asserted, so the axiom audit of `RBM3D.Test.Axioms`
+admits **no** project axiom at all, exactly as in the sister projects `RBM1D` and `RBM2D`.
+
+The first-order and second-order difference bounds `(prop:BD1)`, `(prop:BD2)` (properties 6
+and 7) and the structure that bundled the four properties were **deleted** (DECISIONS §14,
+ticket T2127): written for every `c > 0` with the loss `L^τ`, the two difference bounds were
+false (at `t = 0`, `c = 1`), the bundle with them, and no merged result took any of the three as
+a premise.  The pins `Prop6Diff1`, `Prop7Diff2`, `Prop5to8` of `Propagator/Pins.lean` (with
+`c < 1`, no loss) replace them.
 
 This is the form every borrowed statement in this repository takes: `Graph.Case.Rel` in
 `Graph/Model.lean` and the hypotheses `hS`, `hone` that `Propagator/Basic.lean` carried
 until `RBM.norm_SB` and `RBM.SB_mulVec_one` discharged them -- at which point no
-downstream signature had to change.  Discharging one of the five here means proving, say,
+downstream signature had to change.  Discharging one of them here means proving, say,
 `theorem thetaDecay_of (hd : 3 ≤ d) ... : ThetaDecay d g m`; every statement that assumed
 it keeps its wording, and the assumption is supplied rather than postulated.
 
-For `(prop:BD1)`, `(prop:BD2)` and `(prop:ThfadC0)` that proof is the summation-by-parts
-argument of `[RBSO1D]` Appendix B, which this paper says "extends directly to dimensions
-`d ≥ 3`", and which the sister project `RBM2D` is formalizing for `d = 2`.  Each has its
-own ticket in `docs/QUEUE.md`.
-
 ## Form of the statements
 
-The paper writes properties 6–8 with `≺`.  Rather than route them through
-`RBM.UnifDetDom`, the three are written out here in the explicit
-`∀ τ > 0, ∃ C > 0, ∀ L ≥ 3, ...` form that `≺` abbreviates: a reader checking these
-against the paper should not have to unfold a definition to see what is being assumed.
+Property 8 is written out in the explicit `∀ τ > 0, ∃ C > 0, ∀ L ≥ 3, ...` form that the
+paper's `≺` abbreviates: a reader checking it against the paper should not have to unfold a
+definition to see what is being assumed.
 
 Each `Prop` carries the paper's standing assumptions `3 ≤ d`, `0 < g`, `‖m‖ = 1` as
 hypotheses of its own, so that it can be stated, assumed and discharged on its own.
-
-Properties 6 and 7 hold "for all `a, r` satisfying `|r| ≲ |a|`".  That `≲` is read the
-way the paper uses it: for **every** constant `c > 0`, on the set `|r| ≤ c |a|`, with the
-constant of `≺` allowed to depend on `c`.  Writing it as `|r| ≤ |a|` (the case `c = 1`)
-would assume strictly less than the paper claims; see `docs/paper-deltas.md`, D12.
 
 Properties 5 and 5' carry explicit constants in the paper and need no `≺` at all.
 
@@ -107,40 +100,6 @@ def ThetaDecayShort (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
           ≤ Cκ * ((if a = 0 then 1 else 0)
               + g ^ 2 * Real.exp (-cκ * (zdistD d L a : ℝ)))
 
-/-- **`(prop:BD1)`**, property 6 of `lem_propTH`: the first-order difference bound
-
-  `|Θ_t(0,a+r) - Θ_t(0,a)| ≺ (g² + |1-t|)⁻¹ · |r| / (|a|+1)^(d-1)`   for `|r| ≲ |a|`.
-
-The paper: "Although the bound `(prop:BD1)` is not stated explicitly in
-`[yang2024Del]`, its proof proceeds analogously ... We therefore omit the details."
-This is the one estimate in `lem_propTH` with no proof anywhere in the literature the
-paper points to. -/
-def ThetaDiffOne (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
-  3 ≤ d → 0 < g → ‖m‖ = 1 → ∀ c : ℝ, 0 < c → ∀ τ : ℝ, 0 < τ →
-    ∃ C > (0 : ℝ),
-      ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-        (zdistD d L r : ℝ) ≤ c * (zdistD d L a : ℝ) →
-        haveI : NeZero L := ⟨by omega⟩
-        ‖Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a‖
-          ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-              * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹
-
-/-- **`(prop:BD2)`**, property 7 of `lem_propTH`: the second-order difference bound
-
-  `|Θ_t(0,a+r) + Θ_t(0,a-r) - 2 Θ_t(0,a)| ≺ (g² + |1-t|)⁻¹ · |r|² / (|a|+1)^d`.
-
-`[yang2024Del]` equation (E.19). -/
-def ThetaDiffTwo (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
-  3 ≤ d → 0 < g → ‖m‖ = 1 → ∀ c : ℝ, 0 < c → ∀ τ : ℝ, 0 < τ →
-    ∃ C > (0 : ℝ),
-      ∀ (L : ℕ) (hL : 3 ≤ L) (t : ℝ), 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-        (zdistD d L r : ℝ) ≤ c * (zdistD d L a : ℝ) →
-        haveI : NeZero L := ⟨by omega⟩
-        ‖Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
-            - 2 * Theta d L g ((t : ℂ) * m) 0 a‖
-          ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-              * (zdistD d L r : ℝ) ^ 2 * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹
-
 /-- **`(prop:ThfadC0)`**, property 8 of `lem_propTH`: the zero-mode-removed propagator
 
   `|Θ̊_t(0,a)| ≺ (g² + |1-t|)⁻¹ / (|a|+1)^(d-2)`.
@@ -154,25 +113,5 @@ def ThetaZeroMode (d : ℕ) (g : ℝ) (m : ℂ) : Prop :=
         ‖Theta0 d L g ((t : ℂ) * m) 0 a‖
           ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
               * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹
-
-/-- **Properties 5, 6, 7, 8 of `lem_propTH`** at one spectral parameter `m = m(σ₁)m(σ₂)`,
-the estimates this paper cites rather than proves, bundled.  A result that rests on them
-takes `(hP : PropTH d g m)` and projects out the one it needs; when a field is discharged
-by a theorem, the results keep their statements and the hypothesis is supplied instead of
-assumed.
-
-`ThetaDecayShort` is deliberately **not** a field: it is the `σ₁ = σ₂` statement, whose
-parameter is `m(σ)²` rather than `m(σ₁)m(σ₂)`, so it is assumed separately by the results
-that need it.  Bundling it here would make `PropTH d g 1` -- the `σ₁ ≠ σ₂` case, which is
-needed everywhere -- an assumption that is false. -/
-structure PropTH (d : ℕ) (g : ℝ) (m : ℂ) : Prop where
-  /-- `(prop:ThfadC)`, property 5: polynomial and exponential decay. -/
-  decay : ThetaDecay d g m
-  /-- `(prop:BD1)`, property 6: the first-order difference bound. -/
-  diffOne : ThetaDiffOne d g m
-  /-- `(prop:BD2)`, property 7: the second-order difference bound. -/
-  diffTwo : ThetaDiffTwo d g m
-  /-- `(prop:ThfadC0)`, property 8: the zero-mode-removed propagator. -/
-  zeroMode : ThetaZeroMode d g m
 
 end RBM

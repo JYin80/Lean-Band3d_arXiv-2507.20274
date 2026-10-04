@@ -21,8 +21,7 @@ except what is proved below.  Form common to all pins (paper `lem_propTH`,
 Contents: the pins `PropSpin`, `Prop5Decay`, `Prop5Short`, `Prop6Diff1`, `Prop7Diff2`,
 `Prop8ZeroMode`, `Prop5to8`, `PropThetaQ`, `Prop5DecayQ` (the statements are the ticket's pinned
 text); the bridges to the merged consumer interfaces `ThetaDecay`, `ThetaDecayShort`,
-`ThetaZeroMode`; the refutations of the old interface `ThetaDiffOne`, `ThetaDiffTwo`, `PropTH`
-(nothing merged assumes them); and `Prop5_needs_Lambda`.
+`ThetaZeroMode`; and `Prop5_needs_Lambda`.
 -/
 
 namespace RBM
@@ -107,150 +106,6 @@ structure Prop5to8 (d : ℕ) (Λ κ c : ℝ) : Prop where
   /-- `(prop:ThfadC0)` -/
   zeroMode : Prop8ZeroMode d Λ κ
 
-/-! ### The old interface is false for `c ≥ 1`: `ThetaDiffOne`, `ThetaDiffTwo` (old D12)
-
-`RBM.ThetaDiffOne` / `ThetaDiffTwo` (`Interface.lean:118,133`) quantify `∀ c > 0`.  At `t = 0`
-one has `Θ_0 = 1`; with `c = 1`, `r = -a` (resp. `a = r`) and `|a| = ⌊L/2⌋` the left side is
-`≥ 1` while the right side is `≤ 2C L^{-1/2}` for the loss `L^{1/2}` (`τ = 1/2 < d - 2`).  So both
-are false for every `d ≥ 3`, `g > 0`, `‖m‖ = 1`, and so is the bundle `RBM.PropTH`.  No
-merged result takes any of the three as a hypothesis (grep in the report), so nothing is vacuous.
-The new pins carry `c < 1`. -/
-
-private theorem pins_Theta_zero (d L : ℕ) [NeZero L] (g : ℝ) : Theta d L g 0 = 1 := by
-  simp [Theta]
-
-private noncomputable def pinsAxis (d M : ℕ) (hd : 0 < d) : Zd d (2 * M + 1) :=
-  fun i => if i = ⟨0, hd⟩ then ((M : ℕ) : ZMod (2 * M + 1)) else 0
-
-private theorem pins_zdist_axis (M : ℕ) : zdist (2 * M + 1) ((M : ℕ) : ZMod (2 * M + 1)) = M := by
-  have hlt : M < 2 * M + 1 := by omega
-  have hval : ((M : ℕ) : ZMod (2 * M + 1)).val = M := ZMod.val_natCast_of_lt hlt
-  simp only [zdist, hval]
-  omega
-
-private theorem pins_zdistD_axis (d M : ℕ) (hd : 0 < d) :
-    zdistD d (2 * M + 1) (pinsAxis d M hd) = M := by
-  unfold zdistD pinsAxis
-  rw [Finset.sum_eq_single (⟨0, hd⟩ : Fin d)]
-  · simp [pins_zdist_axis]
-  · intro i _ hi
-    simp [hi]
-  · intro h; exact absurd (Finset.mem_univ _) h
-
-/-- the arithmetic core of both negative results: `1 ≤ C √L / (M+1)` is impossible for large `M`. -/
-private theorem pins_arith {C : ℝ} {M : ℕ} (hM : 4 * C ^ 2 + 1 ≤ M) (hM1 : 1 ≤ M) :
-    ¬ (1 ≤ C * (((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ)) / ((M : ℝ) + 1)) := by
-  intro h
-  have hM1' : (0 : ℝ) < (M : ℝ) + 1 := by positivity
-  have hL : (0 : ℝ) ≤ ((2 * M + 1 : ℕ) : ℝ) := by positivity
-  rw [← Real.sqrt_eq_rpow] at h
-  rw [le_div_iff₀ hM1'] at h
-  have hsq : (((M : ℝ) + 1)) ^ 2 ≤ (C * √(((2 * M + 1 : ℕ) : ℝ))) ^ 2 := by
-    have h1 : ((M : ℝ) + 1) ≤ C * √(((2 * M + 1 : ℕ) : ℝ)) := by linarith
-    simpa using pow_le_pow_left₀ (by linarith) h1 2
-  rw [mul_pow, Real.sq_sqrt hL] at hsq
-  push_cast at hsq
-  nlinarith
-
-/-- The merged `ThetaDiffOne` (all `c > 0`, loss `L^τ`) is false for every `d ≥ 3`, `g > 0`,
-`‖m‖ = 1`: at `t = 0`, `c = 1`, `r = -a`. -/
-theorem Prop6Old_false (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) (hm : ‖m‖ = 1) :
-    ¬ ThetaDiffOne d g m := by
-  intro h
-  obtain ⟨C, hC, H⟩ := h hd hg hm 1 one_pos (1 / 2) (by norm_num)
-  obtain ⟨M, hM⟩ := exists_nat_ge (4 * C ^ 2 + 1)
-  have hM1 : 1 ≤ M := by
-    have : (1 : ℝ) ≤ M := by nlinarith [sq_nonneg C]
-    exact_mod_cast this
-  have hdpos : 0 < d := by omega
-  have hL3 : 3 ≤ 2 * M + 1 := by omega
-  have hda : zdistD d (2 * M + 1) (pinsAxis d M hdpos) = M := pins_zdistD_axis d M hdpos
-  have hr : zdistD d (2 * M + 1) (-(pinsAxis d M hdpos)) = M := by rw [zdistD_neg, hda]
-  have hne : pinsAxis d M hdpos ≠ 0 := by
-    intro h0; rw [h0, zdistD_zero] at hda; omega
-  have hle : (zdistD d (2 * M + 1) (-(pinsAxis d M hdpos)) : ℝ)
-      ≤ 1 * (zdistD d (2 * M + 1) (pinsAxis d M hdpos) : ℝ) := by
-    rw [hr, hda]; simp
-  have key := H (2 * M + 1) hL3 0 le_rfl zero_lt_one (pinsAxis d M hdpos)
-    (-(pinsAxis d M hdpos)) hle
-  simp only [Complex.ofReal_zero, zero_mul, pins_Theta_zero, add_neg_cancel, hr, hda,
-    Matrix.one_apply_eq, Matrix.one_apply_ne (Ne.symm hne), sub_zero, norm_one, abs_one] at key
-  have h1 : (g ^ 2 + 1)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by nlinarith [sq_nonneg g])
-  have hM0 : (0 : ℝ) < (M : ℝ) + 1 := by positivity
-  have hpow : ((M : ℝ) + 1) ^ 2 ≤ ((M : ℝ) + 1) ^ (d - 1) :=
-    pow_le_pow_right₀ (by linarith [(Nat.cast_nonneg M : (0 : ℝ) ≤ M)]) (by omega)
-  have hM' : (M : ℝ) * (((M : ℝ) + 1) ^ (d - 1))⁻¹ ≤ ((M : ℝ) + 1)⁻¹ := by
-    calc (M : ℝ) * (((M : ℝ) + 1) ^ (d - 1))⁻¹ ≤ (M : ℝ) * (((M : ℝ) + 1) ^ 2)⁻¹ := by
-          gcongr
-      _ ≤ ((M : ℝ) + 1)⁻¹ := by
-          rw [← div_eq_mul_inv, div_le_iff₀ (by positivity), inv_mul_eq_div, le_div_iff₀ hM0]
-          nlinarith [(Nat.cast_nonneg M : (0 : ℝ) ≤ M)]
-  have hX : 0 ≤ C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) := by positivity
-  have key2 : 1 ≤ C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) * (1 * ((M : ℝ) + 1)⁻¹) := by
-    refine key.trans ?_
-    calc C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) * (g ^ 2 + 1)⁻¹ * (M : ℝ)
-          * (((M : ℝ) + 1) ^ (d - 1))⁻¹
-        = C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ)
-          * ((g ^ 2 + 1)⁻¹ * ((M : ℝ) * (((M : ℝ) + 1) ^ (d - 1))⁻¹)) := by ring
-      _ ≤ C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) * (1 * ((M : ℝ) + 1)⁻¹) := by
-          gcongr
-  exact pins_arith hM hM1 (by simpa [div_eq_mul_inv] using key2)
-
-
-/-- The merged `ThetaDiffTwo` is false for every `d ≥ 3`, `g > 0`, `‖m‖ = 1`: at `t = 0`,
-`c = 1`, `r = a`. -/
-theorem Prop7Old_false (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) (hm : ‖m‖ = 1) :
-    ¬ ThetaDiffTwo d g m := by
-  intro h
-  obtain ⟨C, hC, H⟩ := h hd hg hm 1 one_pos (1 / 2) (by norm_num)
-  obtain ⟨M, hM⟩ := exists_nat_ge (4 * C ^ 2 + 1)
-  have hM1 : 1 ≤ M := by
-    have : (1 : ℝ) ≤ M := by nlinarith [sq_nonneg C]
-    exact_mod_cast this
-  have hdpos : 0 < d := by omega
-  have hL3 : 3 ≤ 2 * M + 1 := by omega
-  have hda : zdistD d (2 * M + 1) (pinsAxis d M hdpos) = M := pins_zdistD_axis d M hdpos
-  have hne : pinsAxis d M hdpos ≠ 0 := by
-    intro h0; rw [h0, zdistD_zero] at hda; omega
-  have hle : (zdistD d (2 * M + 1) (pinsAxis d M hdpos) : ℝ)
-      ≤ 1 * (zdistD d (2 * M + 1) (pinsAxis d M hdpos) : ℝ) := by simp
-  have key := H (2 * M + 1) hL3 0 le_rfl zero_lt_one (pinsAxis d M hdpos) (pinsAxis d M hdpos) hle
-  simp only [Complex.ofReal_zero, zero_mul, pins_Theta_zero, sub_self, hda,
-    Matrix.one_apply_eq, Matrix.one_apply_ne (Ne.symm hne), sub_zero, mul_zero, abs_one] at key
-  have hlow : (1 : ℝ) ≤ ‖((1 : Matrix (Zd d (2 * M + 1)) (Zd d (2 * M + 1)) ℂ) 0
-      (pinsAxis d M hdpos + pinsAxis d M hdpos)) + 1‖ := by
-    rw [Matrix.one_apply]
-    split_ifs
-    · norm_num
-    · simp
-  have h1 : (g ^ 2 + 1)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by nlinarith [sq_nonneg g])
-  have hM0 : (0 : ℝ) < (M : ℝ) + 1 := by positivity
-  have hMn : (0 : ℝ) ≤ M := Nat.cast_nonneg M
-  have hpow : ((M : ℝ) + 1) ^ 3 ≤ ((M : ℝ) + 1) ^ d :=
-    pow_le_pow_right₀ (by linarith) hd
-  have hM' : (M : ℝ) ^ 2 * (((M : ℝ) + 1) ^ d)⁻¹ ≤ ((M : ℝ) + 1)⁻¹ := by
-    calc (M : ℝ) ^ 2 * (((M : ℝ) + 1) ^ d)⁻¹ ≤ (M : ℝ) ^ 2 * (((M : ℝ) + 1) ^ 3)⁻¹ := by
-          gcongr
-      _ ≤ ((M : ℝ) + 1)⁻¹ := by
-          rw [← div_eq_mul_inv, div_le_iff₀ (by positivity), inv_mul_eq_div, le_div_iff₀ hM0]
-          nlinarith
-  have hX : 0 ≤ C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) := by positivity
-  have key2 : 1 ≤ C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) * (1 * ((M : ℝ) + 1)⁻¹) := by
-    refine hlow.trans (key.trans ?_)
-    calc C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) * (g ^ 2 + 1)⁻¹ * (M : ℝ) ^ 2
-          * (((M : ℝ) + 1) ^ d)⁻¹
-        = C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ)
-          * ((g ^ 2 + 1)⁻¹ * ((M : ℝ) ^ 2 * (((M : ℝ) + 1) ^ d)⁻¹)) := by ring
-      _ ≤ C * ((2 * M + 1 : ℕ) : ℝ) ^ (1 / 2 : ℝ) * (1 * ((M : ℝ) + 1)⁻¹) := by
-          gcongr
-  exact pins_arith hM hM1 (by simpa [div_eq_mul_inv] using key2)
-
-
-/-- The merged bundle `PropTH` is false (its field `diffOne` is). -/
-theorem PropTH_false (d : ℕ) (hd : 3 ≤ d) (g : ℝ) (hg : 0 < g) (m : ℂ) (hm : ‖m‖ = 1) :
-    ¬ PropTH d g m :=
-  fun h => Prop6Old_false d hd g hg m hm h.diffOne
-
 /-! ### The constants of pin 5 must depend on `Λ` (candidate `T2003a`)
 
 At `t = 0`, `Θ_0 = 1` and `B_{0,0} = (g²+1)⁻¹ + L⁻ᵈ`, so `|Θ_0(0,0)| = 1 ≤ C B_{0,0}` forces
@@ -300,7 +155,7 @@ theorem Prop5_needs_Lambda (d : ℕ) (hd : 1 ≤ d) :
 `ThetaDecay d g μ`, `Kernel/Evolution` takes `ThetaZeroMode d g μ` (constants after `g`, `m`; loss
 `L^τ`).  Each follows
 from the corresponding pin at `Λ = g`, `κ = Im m` (and `L^τ ≥ 1`); so the merged consumers need no
-change when a pin is proved.  (`ThetaDiffOne`, `ThetaDiffTwo`, `PropTH` have no consumers.) -/
+change when a pin is proved. -/
 
 private theorem pins_exists_sq (μ : ℂ) (hμ : ‖μ‖ = 1) : ∃ n : ℂ, ‖n‖ = 1 ∧ n * n = μ := by
   refine ⟨Complex.exp (↑(Complex.arg μ / 2) * Complex.I), Complex.norm_exp_ofReal_mul_I _, ?_⟩
@@ -417,15 +272,6 @@ example (h5 : Prop5Decay 3 1) (h5s : Prop5Short 3 1 (1 / 2)) (h6 : Prop6Diff1 3 
     (h7 : Prop7Diff2 3 1 (1 / 2) (1 / 2)) (h8 : Prop8ZeroMode 3 1 (1 / 2)) :
     Prop5to8 3 1 (1 / 2) (1 / 2) :=
   ⟨h5, h5s, h6, h7, h8⟩
-
-example : ¬ ThetaDiffOne 3 (1 / 2) Complex.I :=
-  Prop6Old_false 3 le_rfl (1 / 2) (by norm_num) Complex.I Complex.norm_I
-
-example : ¬ ThetaDiffTwo 3 (1 / 2) Complex.I :=
-  Prop7Old_false 3 le_rfl (1 / 2) (by norm_num) Complex.I Complex.norm_I
-
-example : ¬ PropTH 3 (1 / 2) Complex.I :=
-  PropTH_false 3 le_rfl (1 / 2) (by norm_num) Complex.I Complex.norm_I
 
 example : ¬ ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧
       ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g →

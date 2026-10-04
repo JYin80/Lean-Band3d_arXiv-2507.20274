@@ -31,7 +31,8 @@ Lean statement departs from the paper, and `blueprint/` for the dependency graph
 * `RBM3D.Propagator.Gap`     — `S^(B)` connects the torus: `(S^(B))^n > 0` entrywise for `n ≥ |a−b|`
 * `RBM3D.Kernel.Evolution`    — the evolution kernel `U^(n)` and `lem:sum_Ndecay`
 * `RBM3D.Kernel.PropT`        — `lem:propT`, the convolution bound `(TTT2)` for `𝒯_t`
-* `RBM3D.Propagator.Interface` — properties 5–8 of `lem_propTH`, as hypotheses (`PropTH`)
+* `RBM3D.Propagator.Interface` — properties 5, 5′, 8 of `lem_propTH`, as hypotheses
+  (`ThetaDecay`, `ThetaDecayShort`, `ThetaZeroMode`)
 * `RBM3D.Graph.Defs`         — scaling size and scaling order of `def scalingBA`
 * `RBM3D.Graph.Expansions`   — `∂_{h_{αw}} G_{ij} = -G_{iα} G_{wj}`, the deterministic core of `(Owx)`/`(Oe2x)`
 * `RBM3D.Graph.ScalingOrder` — the bookkeeping proved on top of them
@@ -69,8 +70,9 @@ proves them from scratch in its Section 8.  This paper does not: properties 5–
 `lem_propTH` are attributed to `[yang2024Del]` Lemma 3.1 and (E.19) and to
 `[DYYY25]` Lemma 2.14, with the details omitted, and Appendix B quotes its three
 expansion lemmas from `[yang2024Del]` B.9–B.11.  Under this repository's rule that
-the paper being formalized is the only source, they are stated in
-`RBM3D.Propagator.Interface` as `Prop`s and bundled as `RBM.PropTH`; a result that
+the paper being formalized is the only source, the ones that merged results use are stated in
+`RBM3D.Propagator.Interface` as `Prop`s (`ThetaDecay`, `ThetaDecayShort`, `ThetaZeroMode`; the
+pins of all five are in `RBM3D.Propagator.Pins`); a result that
 rests on one of them takes it as a hypothesis, so the borrowing is visible in that
 result's own statement.  Nothing is asserted: the audit in `RBM3D.Test.Axioms`
 admits no project axiom at all.

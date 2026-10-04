@@ -442,7 +442,7 @@ theorem KLKpi_eq_sum_SigmaPi {n : ℕ} [NeZero n] (m : Bool → ℂ) (t : ℝ) (
   refine Finset.sum_congr rfl fun F _ => ?_
   rw [KLtreeValG, KLtreeValW_eq_sum_selfW d L F a, Finset.mul_sum]
 
-private theorem KLmSigma_mul_not {E : ℝ} (hE : |E| ≤ 2) (s : Bool) :
+theorem KLmSigma_mul_not {E : ℝ} (hE : |E| ≤ 2) (s : Bool) :
     mSigma E s * mSigma E (!s) = 1 := by
   have h := norm_mE hE
   have h1 : mE E * (starRingEnd ℂ) (mE E) = 1 := by

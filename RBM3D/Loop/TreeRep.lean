@@ -22,7 +22,7 @@ random band matrix model `M^(k)_{σ,a} = W^{-(k-1)d} ∏_i m(σ_i) 1(a_1 = … =
 
   `(eq_Ktree)`   `K^(n)_{t,σ,a} = W^{-d(n-1)} Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}`.
 
-## What is here, and what is assumed
+## What is here
 
 The cut-and-glue operators and the equations are *defined* here, so that the statement of
 `(eq_Ktree)` is a statement about a concrete object: `RBM.Loop.IsKLoop` says that a family
@@ -30,19 +30,11 @@ The cut-and-glue operators and the equations are *defined* here, so that the sta
 project (`RBM1D/Loop/Index.lean`), which is already generic in the label type; only
 `W ↦ W^d` changes, the `d`-dimensional weight of a block.
 
-`(eq_Ktree)` itself is **assumed**, as `RBM.Loop.KTreeRep`, in the form the repository
-uses for everything the paper cites rather than proves (`CLAUDE.md`, and `PropTH` in
-`Propagator/Interface.lean`): a `Prop`, not an axiom, so that a result resting on it says
-so in its own statement and the audit stays empty.
-
-**Why assumed rather than ported.**  `RBM1D` proves it, and not by a combinatorial
-bijection: it shows that the tree sum satisfies the same equations with the same initial
-value, and concludes by uniqueness of solutions.  Carrying that over needs
-`RBM1D/Loop/TreeRep.lean` (729 lines, `n ≤ 4`) and `TreeRepGeneral.lean` (2546 lines),
-*and* a derivative layer for `Θ_t` in `t` that this project does not have yet
-(`RBM1D/Propagator/Deriv.lean`).  That is a project of its own; see `docs/QUEUE.md`, Q22.
-The shape here is chosen so the port can replace the hypothesis without changing a single
-downstream statement.
+`(eq_Ktree)` itself is not a hypothesis: the tree-representation definition and the tree sum
+`KLK` (`Loop/KLTree.lean`) with its uniqueness `KLK_unique` (`Loop/KLUnique.lean`) replace the
+two retired hypotheses of the first version of this file (DECISIONS §15; deleted in ticket
+T2127).  The a priori bound on the `2`-loops is a theorem, `KLretire_twoLoopBounded`
+(`Loop/Unique.lean`).
 
 ## Main definitions
 
@@ -51,7 +43,6 @@ downstream statement.
 * `RBM.Loop.treeEqRhs` : the right-hand side of `(pro_dyncalK)`
 * `RBM.Loop.MLoop` : `(eq:initial_K)` for the random band matrix model
 * `RBM.Loop.IsKLoop` : `\Cref{Def_Ktza}` as a predicate
-* `RBM.Loop.KTreeRep` : `(eq_Ktree)` as a hypothesis
 -/
 
 namespace RBM.Loop
@@ -160,30 +151,6 @@ def IsKLoop (m : Bool → ℂ) (T : Set ℝ) (K : ℝ → LoopIdx (Zd d L) → �
       HasDerivAt (fun s => K s I) (treeEqRhs d L W g (K t) I) t) ∧
   (∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length → K 0 I = MLoop d L W m I) ∧
   (∀ t ∈ T, ∀ (s : Bool) (a : Zd d L), K t ⟨[s], [a]⟩ = m s)
-
-/-- **The a priori bound on `2`-loops.**  `K`'s two-loops stay bounded on every
-`[0, T₀]` with `T₀ < 1`, with a bound that may depend on `T₀`.
-
-This is a mathematical premise the project does not prove -- the paper obtains it along
-the way, from `(prop:ThfadC)` -- so by the house rule it is a named `Prop` rather than an
-anonymous clause in a signature: that is what lets the audit count the theorems resting on
-it.  It is the *only* thing still assumed by `(Kn2sol)` (`kTwoFormula_of_isKLoop`) and by
-`(eq_Ktree)` at `n = 3` (`kThree_eq_of_isKLoop`). -/
-def TwoLoopBounded (K : ℝ → LoopIdx (Zd d L) → ℂ) : Prop :=
-  ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
-    ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R
-
-/-- **`(eq_Ktree)`**, `\Cref{tree-representation}` (`[YY_25]` Lemma 3.4): for `n ≥ 4`,
-`K^(n)_{t,σ,a} = W^{-d(n-1)} Σ_{Γ ∈ TSP(P_a)} Γ^(n)_{t,σ,a}`.
-
-Assumed, not asserted: a result that uses it takes it as a hypothesis.  `RBM1D` proves the
-corresponding statement by showing that the tree sum solves the same equations with the
-same initial value; porting that is `docs/QUEUE.md`, Q22. -/
-def KTreeRep (m : Bool → ℂ) (K : ℝ → LoopIdx (Zd d L) → ℂ) : Prop :=
-  ∀ (n : ℕ), 4 ≤ n → ∀ (t : ℝ), 0 ≤ t → t < 1 →
-    ∀ (σ : Fin n → Bool) (a : Fin n → Zd d L),
-      K t ⟨List.ofFn σ, List.ofFn a⟩
-        = (((W : ℂ) ^ d)⁻¹) ^ (n - 1) * GammaSum d L g m t σ a
 
 variable {d L W g}
 

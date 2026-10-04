@@ -70,15 +70,14 @@ polygon vertices for the standard `K^{(π)}`.  (ii) The case (S) is proved here.
 
 Reused from the merged files: `KLKpi_cut`, `KLInduct_aIn`, `KLInduct_aOut`, `KLindStepPin_holds`,
 `KLmolecule_holds`, `KLedge_sup`, `KLedge_l1`, `KLone_le_rpow`, `KLK_eq_sum_Kpi`,
-`KLKpi_eq_sum_SigmaPi`, `KLK_two`, `sum_norm_Theta_row_le`, `sum_norm_SB_row`.  Copied, because they
-are `private` in merged files and the ticket allows `open private` only for `sigmaIn`, `sigmaOut`:
-`KLMolecule_sum_slice` and `KLMolecule_sum_exp_maxDist` (`KLMolecule.lean:688`, `:722`),
-`exists_innermost` and `Flong_subset_diagonals` (`KLSumZeroWard.lean:577`, `:594`).
+`KLKpi_eq_sum_SigmaPi`, `KLK_two`, `sum_norm_Theta_row_le`, `sum_norm_SB_row`, and (public since
+ticket T2127, `private` when this file was written) `sigmaIn`, `sigmaOut`.  Copied, because they
+were `private` in merged files when this file was written: `KLMolecule_sum_slice` (still private)
+and `KLMolecule_sum_exp_maxDist` (`KLMolecule.lean:688`, `:722`), `exists_innermost` and
+`Flong_subset_diagonals` (`KLSumZeroWard.lean:577`, `:594`; the last three are public since T2127).
 -/
 
 set_option linter.style.longLine false
-
-open private sigmaIn sigmaOut from RBM3D.Loop.KLSumZeroWard
 
 namespace RBM.Loop
 
@@ -217,7 +216,7 @@ section Short
 variable {n : ℕ} [NeZero n] {d L : ℕ} [NeZero L]
 
 /-- A sum over the slice `δ_0 = x` of a product of one-point functions (copy of the private
-`KLMolecule_sum_slice`, `KLMolecule.lean:688`; the ticket allows no further `open private`). -/
+`KLMolecule_sum_slice`, `KLMolecule.lean:688`). -/
 private theorem KLWardIneq_sum_slice (x : Zd d L) (f : Zd d L → ℝ) :
     ∑ δ ∈ univ.filter (fun δ : Fin n → Zd d L => δ 0 = x), ∏ i : Fin n, f (δ i)
       = f x * (∑ y, f y) ^ (n - 1) := by

@@ -76,9 +76,6 @@ constant, not an `N^{τ/2}`.
 
 set_option linter.style.longLine false
 
-open private sigmaIn sigmaOut Flong_eq_iff_cut prod_leaves_cut exists_innermost
-  Flong_subset_diagonals Flong_subset from RBM3D.Loop.KLSumZeroWard
-
 namespace RBM.Loop
 
 open Finset

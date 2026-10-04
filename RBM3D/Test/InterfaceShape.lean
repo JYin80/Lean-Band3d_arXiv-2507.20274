@@ -204,9 +204,7 @@ never have been produced.
   as the crude bound `‖Θ_t‖_{∞→∞} ≤ (1-t)⁻¹`; that is what makes the fixed-`L` version
   provable, and `exists_norm_Theta_ge` shows the rate is attained, so the term is not
   decoration.
-* `TwoLoopBounded` -- certified (`twoLoopBounded_kTwoLoop`), and not by a weakening: the
-  explicit two-loop of `(Kn2sol)` satisfies it outright.
-* `ThetaDecayShort`, `ThetaDiffOne`, `ThetaDiffTwo`, `ThetaZeroMode` -- **not certified.**
+* `ThetaDecayShort`, `ThetaZeroMode` -- **not certified.**
   Their right-hand sides stay bounded as `t → 1` at fixed `L`, while individual entries of
   `Θ_t` do not (`not_exists_uniform_entry_bound`).  A fixed-`L` proof would therefore have
   to exhibit a cancellation: the difference of two entries, or the removal of the zero
@@ -215,14 +213,9 @@ never have been produced.
   is a positive, self-contained work order rather than a borrowing (`docs/QUEUE.md`, Q51).
 
   What *is* checked here is that the refutation which killed the old property 5' cannot be
-  run against these four: it went through the row sum, and the row sums of the
+  run against these two: it went through the row sum, and the row sums of the
   zero-mode-removed propagator and of every first difference are `0`
   (`RBM.sum_Theta0_row`, `sum_Theta_diff_row` below).
-* `KTreeRep` -- **not certified**, and the honest certificate is not cheap: exhibiting
-  *some* `K` with `KTreeRep m K` is possible by taking the tree formula itself as the
-  definition of `K`, but that witness says nothing, because the premise is only ever used
-  together with `IsKLoop`.  The certificate that matters is a `K` satisfying **both**,
-  which is the existence half of `(eq_Ktree)` -- Q30, Q31.
 -/
 
 open Finset
@@ -423,175 +416,5 @@ theorem thetaZeroMode_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) (hg
         refine mul_le_mul_of_nonneg_left hY ?_
         have : (0 : ℝ) ≤ (L : ℝ) ^ τ := by positivity
         positivity
-
-/-- **Certificate for `RBM.ThetaDiffOne` (`(prop:BD1)`), fixed `L`.**  Property 6 holds at
-each fixed `L`, with a constant depending on `L`.
-
-Like property 8 and unlike property 5, this needs a cancellation rather than a size bound,
-and it is the same one: a difference kills the constant mode, so the geometric mixing of
-`S^(B)` bounds `Θ_t(0,a+r) - Θ_t(0,a)` uniformly in `t` (`RBM.exists_norm_Theta_sub_le`).
-
-`r = 0` is a separate case, and not a formality: there the right-hand side is `0`, because
-of its factor `|r|`.  The bound still holds -- the left-hand side is `0` too -- but no
-estimate can give it; only the algebra can. -/
-theorem thetaDiffOne_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) (hg : 0 < g)
-    {m : ℂ} (hm : ‖m‖ = 1) {τ : ℝ} (hτ : 0 ≤ τ) :
-    ∃ C > (0 : ℝ), ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-      ‖Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a‖
-        ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹ := by
-  obtain ⟨C₀, hC₀0, hC₀⟩ := exists_norm_Theta_sub_le (d := d) (L := L) (g := g) hL hg
-  set D : ℝ := ((torusDiam d L : ℝ) + 1) ^ (d - 1) with hD
-  have hD0 : 0 < D := by rw [hD]; positivity
-  refine ⟨C₀ * (g ^ 2 + 1) * D + 1, by positivity, ?_⟩
-  intro t ht0 ht1 a r
-  have hξ : ‖(t : ℂ) * m‖ < 1 := norm_t_mul_lt_one ht0 ht1 hm
-  rcases eq_or_ne r 0 with hr0 | hr0
-  · -- both sides vanish
-    rw [hr0, add_zero, sub_self, norm_zero, zdistD_zero]
-    simp
-  · have hr1 : (1 : ℝ) ≤ (zdistD d L r : ℝ) := by
-      have : zdistD d L r ≠ 0 := fun h => hr0 ((zdistD_eq_zero_iff d L).mp h)
-      have : 1 ≤ zdistD d L r := by omega
-      exact_mod_cast this
-    have hmain : ‖Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a‖ ≤ C₀ :=
-      hC₀ _ hξ 0 (a + r) a
-    refine le_trans hmain ?_
-    have hLrpow : (1 : ℝ) ≤ (L : ℝ) ^ τ := by
-      refine Real.one_le_rpow ?_ hτ
-      have : (1 : ℕ) ≤ L := by omega
-      exact_mod_cast this
-    have habs : |1 - t| ≤ 1 := by rw [abs_of_pos (by linarith)]; linarith
-    have hY : D⁻¹ ≤ (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹ := by
-      refine inv_anti₀ (by positivity) ?_
-      rw [hD]
-      refine pow_le_pow_left₀ (by positivity) ?_ _
-      have h := zdistD_le_torusDiam d L a
-      have : ((zdistD d L a : ℕ) : ℝ) ≤ (torusDiam d L : ℝ) := by exact_mod_cast h
-      linarith
-    have hsplit : (C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + 1)⁻¹ * D⁻¹
-        = C₀ + ((g ^ 2 + 1) * D)⁻¹ := by field_simp
-    calc C₀ ≤ (C₀ * (g ^ 2 + 1) * D + 1) * 1 * (g ^ 2 + 1)⁻¹ * 1 * D⁻¹ := by
-          rw [mul_one, mul_one, hsplit]
-          have : (0 : ℝ) < ((g ^ 2 + 1) * D)⁻¹ := by positivity
-          linarith
-      _ ≤ (C₀ * (g ^ 2 + 1) * D + 1) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹ := by
-          gcongr
-
-/-- **Certificate for `RBM.ThetaDiffTwo` (`(prop:BD2)`), fixed `L`.**  Property 7 at fixed
-`L`, from the same bound applied twice: the second difference is
-`(Θ(0,a+r) - Θ(0,a)) + (Θ(0,a-r) - Θ(0,a))`. -/
-theorem thetaDiffTwo_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) (hg : 0 < g)
-    {m : ℂ} (hm : ‖m‖ = 1) {τ : ℝ} (hτ : 0 ≤ τ) :
-    ∃ C > (0 : ℝ), ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-      ‖Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
-          - 2 * Theta d L g ((t : ℂ) * m) 0 a‖
-        ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (zdistD d L r : ℝ) ^ 2 * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹ := by
-  obtain ⟨C₀, hC₀0, hC₀⟩ := exists_norm_Theta_sub_le (d := d) (L := L) (g := g) hL hg
-  set D : ℝ := ((torusDiam d L : ℝ) + 1) ^ d with hD
-  have hD0 : 0 < D := by rw [hD]; positivity
-  refine ⟨2 * C₀ * (g ^ 2 + 1) * D + 1, by positivity, ?_⟩
-  intro t ht0 ht1 a r
-  have hξ : ‖(t : ℂ) * m‖ < 1 := norm_t_mul_lt_one ht0 ht1 hm
-  rcases eq_or_ne r 0 with hr0 | hr0
-  · have hz : (zdistD d L r : ℝ) = 0 := by rw [hr0, zdistD_zero]; norm_num
-    have hzero : Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
-        - 2 * Theta d L g ((t : ℂ) * m) 0 a = 0 := by
-      rw [hr0, add_zero, sub_zero]
-      ring
-    rw [hzero, norm_zero, hz]
-    norm_num
-  · have hr1 : (1 : ℝ) ≤ (zdistD d L r : ℝ) ^ 2 := by
-      have hne : zdistD d L r ≠ 0 := fun h => hr0 ((zdistD_eq_zero_iff d L).mp h)
-      have h1 : 1 ≤ zdistD d L r := by omega
-      have : (1 : ℝ) ≤ (zdistD d L r : ℝ) := by exact_mod_cast h1
-      nlinarith
-    have hmain : ‖Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
-        - 2 * Theta d L g ((t : ℂ) * m) 0 a‖ ≤ 2 * C₀ := by
-      have hsplit : Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
-          - 2 * Theta d L g ((t : ℂ) * m) 0 a
-          = (Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a)
-            + (Theta d L g ((t : ℂ) * m) 0 (a - r) - Theta d L g ((t : ℂ) * m) 0 a) := by
-        ring
-      rw [hsplit]
-      refine le_trans (norm_add_le _ _) ?_
-      have h1 := hC₀ _ hξ 0 (a + r) a
-      have h2 := hC₀ _ hξ 0 (a - r) a
-      linarith
-    refine le_trans hmain ?_
-    have hLrpow : (1 : ℝ) ≤ (L : ℝ) ^ τ := by
-      refine Real.one_le_rpow ?_ hτ
-      have : (1 : ℕ) ≤ L := by omega
-      exact_mod_cast this
-    have habs : |1 - t| ≤ 1 := by rw [abs_of_pos (by linarith)]; linarith
-    have hY : D⁻¹ ≤ (((zdistD d L a : ℝ) + 1) ^ d)⁻¹ := by
-      refine inv_anti₀ (by positivity) ?_
-      rw [hD]
-      refine pow_le_pow_left₀ (by positivity) ?_ _
-      have h := zdistD_le_torusDiam d L a
-      have : ((zdistD d L a : ℕ) : ℝ) ≤ (torusDiam d L : ℝ) := by exact_mod_cast h
-      linarith
-    have hsplit : (2 * C₀ * (g ^ 2 + 1) * D + 1) * (g ^ 2 + 1)⁻¹ * D⁻¹
-        = 2 * C₀ + ((g ^ 2 + 1) * D)⁻¹ := by field_simp
-    calc 2 * C₀ ≤ (2 * C₀ * (g ^ 2 + 1) * D + 1) * 1 * (g ^ 2 + 1)⁻¹ * 1 * D⁻¹ := by
-          rw [mul_one, mul_one, hsplit]
-          have : (0 : ℝ) < ((g ^ 2 + 1) * D)⁻¹ := by positivity
-          linarith
-      _ ≤ (2 * C₀ * (g ^ 2 + 1) * D + 1) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (zdistD d L r : ℝ) ^ 2 * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹ := by
-          gcongr
-
-/-- **Certificate for `RBM.PropTH`, fixed `L`.**  The bundle is the conjunction of its
-four fields, so this is the conjunction of their fixed-`L` certificates and carries no
-information the three theorems above do not.  It is stated because the audit asks the
-question premise by premise, and `PropTH` is a premise: a bundle whose fields are
-separately satisfiable is satisfiable, and saying so once is cheaper than explaining each
-time why the row is empty. -/
-theorem propTH_fixedL (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g : ℝ) (hg : 0 < g)
-    {m : ℂ} (hm : ‖m‖ = 1) {τ : ℝ} (hτ : 0 ≤ τ) :
-    (∃ Cd > (0 : ℝ), ∃ cd > (0 : ℝ),
-        ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a : Zd d L,
-          ‖Theta d L g ((t : ℂ) * m) 0 a‖
-            ≤ Cd * Bparam d L g t (zdistD d L a)
-                * Real.exp (-cd * (zdistD d L a : ℝ) / ellT L g t))
-      ∧ (∃ C > (0 : ℝ), ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-          ‖Theta d L g ((t : ℂ) * m) 0 (a + r) - Theta d L g ((t : ℂ) * m) 0 a‖
-            ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-                * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹)
-      ∧ (∃ C > (0 : ℝ), ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a r : Zd d L,
-          ‖Theta d L g ((t : ℂ) * m) 0 (a + r) + Theta d L g ((t : ℂ) * m) 0 (a - r)
-              - 2 * Theta d L g ((t : ℂ) * m) 0 a‖
-            ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-                * (zdistD d L r : ℝ) ^ 2 * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹)
-      ∧ (∃ C > (0 : ℝ), ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a : Zd d L,
-          ‖Theta0 d L g ((t : ℂ) * m) 0 a‖
-            ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-                * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹) :=
-  ⟨thetaDecay_fixedL d L hL g hm, thetaDiffOne_fixedL d L hL g hg hm hτ,
-    thetaDiffTwo_fixedL d L hL g hg hm hτ, thetaZeroMode_fixedL d L hL g hg hm hτ⟩
-
-/-- **Certificate for `RBM.Loop.TwoLoopBounded`**, and not by a weakening: the explicit
-two-loop of `(Kn2sol)` satisfies it, with the bound `W^{-d}(1-T₀)⁻¹` of
-`RBM.Loop.norm_kTwo_le`.
-
-This is the certificate in the sense `RBM.Loop.kTwoFormula_kTwoLoop` set: the premise is
-satisfied by an object this development builds, so a theorem carrying it is not vacuous.
-`TwoLoopBounded` is an *owed* premise -- the paper obtains it along the way -- and what is
-missing is only its a priori form, for a family of `K`-loops not yet known to be this
-solution. -/
-theorem twoLoopBounded_kTwoLoop {d L W : ℕ} [NeZero L] {g : ℝ} (hL : 3 ≤ L)
-    {m : Bool → ℂ} (hm : ∀ s, ‖m s‖ = 1) :
-    RBM.Loop.TwoLoopBounded d L (RBM.Loop.kTwoLoop d L W g m) := by
-  intro T₀ hT₀
-  refine ⟨‖((W : ℂ) ^ d)⁻¹‖ * (1 - T₀)⁻¹, by positivity, ?_⟩
-  intro t ht I hI h2
-  obtain ⟨σ₁, σ₂, a₁, a₂, rfl⟩ := RBM.Loop.exists_eq_of_length_two hI h2
-  have ht1 : t < 1 := lt_of_le_of_lt ht.2 hT₀
-  have hmono : (1 - t)⁻¹ ≤ (1 - T₀)⁻¹ :=
-    inv_anti₀ (by linarith) (by linarith [ht.2])
-  exact le_trans (RBM.Loop.norm_kTwo_le hL (hm σ₁) (hm σ₂) ht.1 ht1 a₁ a₂)
-    (mul_le_mul_of_nonneg_left hmono (norm_nonneg _))
 
 end RBM.Test
