@@ -195,6 +195,7 @@ import RBM3D.Graph.LocalRegular
 import RBM3D.Evolution.CltGood
 import RBM3D.Induction.NewKLKL
 import RBM3D.Induction.GridGoodN
+import RBM3D.Induction.GridEnvelopeN
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
