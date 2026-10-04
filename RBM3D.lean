@@ -133,6 +133,8 @@ import RBM3D.Induction.ContractPt
 import RBM3D.Induction.Step1
 import RBM3D.Green.IBP
 import RBM3D.Induction.Step2Iterate
+import RBM3D.Induction.HierAlgebra
+import RBM3D.Induction.HierarchyN
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

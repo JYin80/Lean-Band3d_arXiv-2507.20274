@@ -187,6 +187,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Local, -- `(Gt_bound_flow)` single-charge form of the probe: proved by `ST_step2_of_pins` through `STNetLift2`; hypothesis of `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Avg, -- `(Gt_avgbound_flow)` single-charge form of the probe (paper-delta T2039g): hypothesis of `ST_avgU_of_avg`, `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
+   `RBM.Ind.STLoopGenNForm, -- general-`n` loop generator `genMat(𝓛_I) = pair + 𝓔^{G̃}` (`eq:mainStoflow`, `1_2`), RBM2D `LoopGenN`: proved by ST2-28; hypothesis of `hierarchyN_of_loopGenN` (T2095, Amend 1, DECISIONS §32)
    `RBM.Gauss.Sizes.STLocalEntry] -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
 
 /-- Predicates that *define the objects under study* rather than assert a result about
