@@ -145,6 +145,8 @@ import RBM3D.Induction.NewKLK
 import RBM3D.Green.CondDom
 import RBM3D.Induction.LoopGenN
 import RBM3D.Induction.QVN
+import RBM3D.Path.DuhamelTail
+import RBM3D.Induction.GridDuhamelN
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
