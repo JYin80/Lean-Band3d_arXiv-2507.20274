@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_57e42024-517: audit 1 PASS (Auditor model: claude-opus-5-5); Defs/Tail.lean append-only (tailTD); 23 Step-5 registry lines applied onto main (H23 b, DECISIONS §40); full lake build OK (3889 jobs)
+updated: Sun Oct  4 16:36:59 UTC 2026
+reports: docs/reports/T2138-prove.md, docs/reports/T2138-audit.md

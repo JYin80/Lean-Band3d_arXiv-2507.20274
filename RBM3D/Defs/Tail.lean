@@ -166,4 +166,17 @@ theorem exp_tail_ge (hg : 0 ≤ g) (ht : t < 1) (hL : 1 ≤ (L : ℝ))
       _ = 1 := Real.sqrt_one
   exact Real.exp_le_exp.mpr (neg_le_neg h2)
 
+/-- **`T_{u,D}(r)`** of `def_WTuD` (`3_5:2297`), the tail function of Step 5 in the regime `1 - u ≥ ilambda²`:
+`T_{u,D}(r) = (W^d |1-u|)^{-2} exp(-√r) + W^{-D}`.  Not the `𝒯_u` / `𝒯̃^ℓ_{u,D}` of `def: TTfunc` (`tailT`, `tailW`
+in `Defs/Tail.lean`): its amplitude is `η_u^{-2}`, as in `d = 1, 2` (`docs/claude-team/fable/2026-10-04-tailtotail.md`,
+DECISIONS §33 correction). -/
+noncomputable def tailTD (d : ℕ) (W u D r : ℝ) : ℝ :=
+  ((W ^ d * |1 - u|)⁻¹) ^ 2 * Real.exp (-Real.sqrt r) + W ^ (-D)
+
+/-- `tailTD ≥ 0` for `W ≥ 0`. -/
+theorem tailTD_nonneg {d : ℕ} {W u D r : ℝ} (hW : 0 ≤ W) : 0 ≤ tailTD d W u D r := by
+  unfold tailTD
+  have := Real.rpow_nonneg hW (-D)
+  positivity
+
 end RBM

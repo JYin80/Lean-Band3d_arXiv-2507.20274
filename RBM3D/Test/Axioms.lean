@@ -163,7 +163,24 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Avg, -- `(Gt_avgbound_flow)` single-charge form of the probe (paper-delta T2039g): hypothesis of `ST_avgU_of_avg`, `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
-   `RBM.Green.FlucGainUpTo'] -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
+   `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
+   `RBM.Gauss.Sizes.STStep5I, -- `lem:main_ind` Step 5, case (i) `3_5:1939`: S5-02; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STStep5II, -- Step 5, case (ii): S5-02; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STStep5III, -- Step 5, case (iii): from `STPfStep5` (S5-03), proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STStep5, -- Step 5, general `0 ≤ s < t < 1`: assembly S5-29; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STDuhamelI, -- integrated hierarchy `(iois-mtx2)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STDuhamelII, -- integrated hierarchy with `Q^{(1)}`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STIniTermI, -- initial term `(iksjuwjx0)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STIniTermII, -- initial term `(zYU2)`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STWardII, -- Ward identity `(zYU1)`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STNewKLKL, -- `lem:newKLK` sharp at `ℓ = L` (paper-delta T2134a); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STCltFar, -- `lem;CLT`, far part (`3_5:2160-2250`); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STCltIso, -- `(eq:bound_isolated)`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STExpInv, -- translation and reflection invariance of `𝔼 𝓛^{(2)}`; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STTailtoTail, -- `(neiwuj)`, `tailtoTail` with the tail `T_{u,D}`: S5-04; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STLemDecCalE, -- `lem_dec_calE`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STPfStep5] -- `lem:pf_step5`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -212,7 +229,13 @@ def structuralProps : List Name :=
    `RBM.Graph.lvl1Split.below, -- auxiliary predicate that Lean generates for the recursive inductive `lvl1Split` (T2128)
    `RBM.Graph.Lvl1Reach.below, -- auxiliary predicate that Lean generates for the recursive inductive `Lvl1Reach` (reachability by `strat_local`, `B:135-157`) (T2128)
    `RBM.Green.AgreeOffRows,   -- two samples agree on every coordinate off the rows in the finite set `S` (the `Finset` version of `AgreeOffRow`): hypothesis of `Xentry_congr_of_not_mem`, `Hflow_submatrix_set_congr` (T2105, S1-22)
-   `RBM.Path.UkerFar] -- the far-kernel condition `‖ukerMat 1 u v a b‖ ≤ W^{-D'}` beyond distance `R`: a data condition on the kernel, hypothesis of `uopLocalMax`, `uopPairLocalMax`; supplied by `kellStarEv` (T2097, ST2-25; DECISIONS §20)
+   `RBM.Path.UkerFar, -- the far-kernel condition `‖ukerMat 1 u v a b‖ ≤ W^{-D'}` beyond distance `R`: a data condition on the kernel, hypothesis of `uopLocalMax`, `uopPairLocalMax`; supplied by `kellStarEv` (T2097, ST2-25; DECISIONS §20)
+   `RBM.Gauss.Sizes.STIngR5, -- the shape of every Step-5 pin: `∀ 3 ≤ d, 𝔠d` with the Step 1-4 premises implying the conclusion `Concl` in the regime `R`; S5-01 (T2138, DECISIONS §40)
+   `RBM.Gauss.Sizes.STReg5I, -- Step 5 regime (i) `3_5:1939`: a data condition on the times; S5-01 (T2138, DECISIONS §40)
+   `RBM.Gauss.Sizes.STReg5II, -- Step 5 regime (ii); S5-01 (T2138, DECISIONS §40)
+   `RBM.Gauss.Sizes.STReg5Mid, -- Step 5 window of cases (i)+(ii); S5-01 (T2138, DECISIONS §40)
+   `RBM.Gauss.Sizes.STReg5III, -- Step 5 regime (iii); S5-01 (T2138, DECISIONS §40)
+   `RBM.Gauss.Sizes.STReg5IV] -- Step 5 regime (iv); S5-01 (T2138, DECISIONS §40)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
