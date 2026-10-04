@@ -199,6 +199,7 @@ import RBM3D.Induction.GridEnvelopeN
 import RBM3D.Evolution.ExpInv
 import RBM3D.Evolution.CltStep
 import RBM3D.Induction.QGridB
+import RBM3D.Induction.GridAssemblyN
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
