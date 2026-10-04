@@ -149,7 +149,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins, proved by LW-01..LW-14 (T2040 b.9)
-   `RBM.Graph.LWweightExp, -- `(Owx)` (`7_8:294-306`): LW-05
    `RBM.Graph.LWedgeExp, -- `(Oe1x)` (`7_8:309-330`): LW-06
    `RBM.Graph.LWggExp, -- `(Oe2x)` (`7_8:334-349`): LW-07
    `RBM.Gauss.Sizes.LWterm, -- `lem:LWterm` (`3_5:385-404`): LW-01

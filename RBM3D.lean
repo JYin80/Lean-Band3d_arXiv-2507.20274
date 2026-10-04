@@ -154,6 +154,7 @@ import RBM3D.Loop.KLIndStepB
 import RBM3D.Induction.OptL2a
 import RBM3D.Green.MinorDiff
 import RBM3D.Green.IBPRem
+import RBM3D.Graph.LWWeightExp
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

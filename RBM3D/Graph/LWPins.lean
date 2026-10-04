@@ -109,10 +109,10 @@ def LWweightExp (d : ℕ) : Prop :=
       ∫ ω, LWPins_lwGc d L W E t ω x x * LWPins_lwf d L W E t P ω ∂(PF d L W g) =
         ∫ ω, (mE E * ∑ α, LWPins_lwS d L W g t x α * LWPins_lwGc d L W E t ω x x * LWPins_lwGc d L W E t ω α α *
                 LWPins_lwf d L W E t P ω +
-            mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W E g t x α * LWPins_lwS d L W g t α β *
+            mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W g E t x α * LWPins_lwS d L W g t α β *
                 LWPins_lwGc d L W E t ω α α * LWPins_lwGc d L W E t ω β β * LWPins_lwf d L W E t P ω -
             mE E * ∑ α, LWPins_lwS d L W g t x α * LWPins_lwG d L W E t ω α x * LWPins_lwdf d L W E t P ω α x -
-            mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W E g t x α * LWPins_lwS d L W g t α β *
+            mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W g E t x α * LWPins_lwS d L W g t α β *
                 LWPins_lwG d L W E t ω β α * LWPins_lwdf d L W E t P ω β α) ∂(PF d L W g)
 
 /-- The product `𝒢 / (G_{xy₁} f)` of `(Oe1x)` (`7_8:312`): `k₁` further blue out-edges `G_{xy_i}`, the
@@ -166,18 +166,18 @@ def LWggExp (d : ℕ) : Prop :=
     ∀ (x y y' : Idx d L W) (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ),
       ∫ ω, LWPins_lwG d L W E t ω x y * LWPins_lwG d L W E t ω y' x * LWPins_lwf d L W E t P ω ∂(PF d L W g) =
         ∫ ω, (mE E * (if x = y then 1 else 0) * LWPins_lwG d L W E t ω y' x * LWPins_lwf d L W E t P ω +
-          mE E ^ 3 * LWPins_lwSp d L W E g t x y * LWPins_lwG d L W E t ω y' y * LWPins_lwf d L W E t P ω +
+          mE E ^ 3 * LWPins_lwSp d L W g E t x y * LWPins_lwG d L W E t ω y' y * LWPins_lwf d L W E t P ω +
           mE E * (∑ α, LWPins_lwS d L W g t x α * LWPins_lwGc d L W E t ω α α) *
             (LWPins_lwG d L W E t ω x y * LWPins_lwG d L W E t ω y' x * LWPins_lwf d L W E t P ω) +
-          mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W E g t x α * LWPins_lwS d L W g t α β * LWPins_lwGc d L W E t ω β β *
+          mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W g E t x α * LWPins_lwS d L W g t α β * LWPins_lwGc d L W E t ω β β *
             LWPins_lwG d L W E t ω α y * LWPins_lwG d L W E t ω y' α * LWPins_lwf d L W E t P ω +
           mE E * LWPins_lwGc d L W E t ω x x * ∑ α, LWPins_lwS d L W g t x α * LWPins_lwG d L W E t ω α y *
             LWPins_lwG d L W E t ω y' α * LWPins_lwf d L W E t P ω +
-          mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W E g t x α * LWPins_lwS d L W g t α β * LWPins_lwGc d L W E t ω α α *
+          mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W g E t x α * LWPins_lwS d L W g t α β * LWPins_lwGc d L W E t ω α α *
             LWPins_lwG d L W E t ω β y * LWPins_lwG d L W E t ω y' β * LWPins_lwf d L W E t P ω -
           mE E * ∑ α, LWPins_lwS d L W g t x α * LWPins_lwG d L W E t ω α y * LWPins_lwG d L W E t ω y' x *
             LWPins_lwdf d L W E t P ω α x -
-          mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W E g t x α * LWPins_lwS d L W g t α β * LWPins_lwG d L W E t ω β y *
+          mE E ^ 3 * ∑ α, ∑ β, LWPins_lwSp d L W g E t x α * LWPins_lwS d L W g t α β * LWPins_lwG d L W E t ω β y *
             LWPins_lwG d L W E t ω y' α * LWPins_lwdf d L W E t P ω β α) ∂(PF d L W g)
 
 end ExpansionPins
