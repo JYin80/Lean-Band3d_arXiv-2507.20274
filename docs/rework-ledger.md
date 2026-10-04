@@ -81,3 +81,9 @@
 | T2082 | 2026-10-03 22:27 UTC (efeda82) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-19 `Path/NetLift2`（`STNetLift2` 证出）；D132–D134 |
 | T2077 | 2026-10-03 22:32 UTC (3b98b27) | prover | Sonnet 5.5 effort high | 否 | Amend 1 后审核一次 PASS（删死代码两条目标，§31，票面错误不算返工）；S1-06 `Gauss/LoopGenerator`；D127–D128 |
 | T2078 | 2026-10-03 22:36 UTC (7c7652e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-18 `Green/LDE`（有界权）；D129–D131 |
+| T2081 | 2026-10-03 22:39 UTC (6e7bb9c) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；ST2-05 `Induction/Step2Scale`（`STScaleExists` 证出）；D135–D137 |
+| T2079 | 2026-10-03 22:55 UTC (4f186cf) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S1-35 `Induction/Step1Setup`；D138–D142 |
+| T2080 | 2026-10-03 22:59 UTC (7f9bfa1) | prover | Sonnet 5.5 effort high | 否 | Amend 1 后审核一次 PASS（桥加 `3 ≤ d`，§31，票面错误不算返工）；ST2-03 `Induction/Step2Events`；D143–D148 |
+| T2083 | 2026-10-03 23:11 UTC (07ede19) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；ST2-21 `Path/LoopStep`、`Path/DriftAlgebra`；D149–D151 |
+| T2084 | 2026-10-03 23:12 UTC (fe32346) | prover（修复 repairer） | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次：paper-delta 候选缺两条，只改报告） | ST2-23 `Path/QVIdentity`；D152–D155 |
+| T2088 | 2026-10-03 23:13 UTC (3b8c687) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S1-19 `Green/IBPPoly`（`GaussIBP` 证出）；D156–D157 |

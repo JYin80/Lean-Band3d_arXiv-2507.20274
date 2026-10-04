@@ -1,26 +1,32 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-03 22:40 UTC
+更新：2026-10-04 00:37 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
-| T2079 | S1-35 | 证明（Induction/Step1Setup：Step 1 前半；§26 探针引理；关键路径） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
-| T2080 | ST2-03 | 证明（Induction/Step2Events：探针 §9、§11 事件 + §29 三座 ST-2↔LW 桥） | prover | 同上 |
-| T2081 | ST2-05 | 证明（Induction/Step2Scale：证钉文 STScaleExists） | prover-hard | 同上 |
-| T2088 | S1-19 | 证明（Green/IBPPoly：IBPPoly、LDEQuadInst；证 GaussIBP） | prover | 检查 exit 0 且有空位即开工（§17） |
 | T2089 | S1-20 | 证明（Green/FlucIter 前半；关键路径） | prover-hard | 同上 |
-| T2083 | ST2-21 | 证明（移植 Path/LoopStep + DriftAlgebra） | prover | 同上 |
-| T2084 | ST2-23 | 证明（移植 Path/QVForm + QVIdentity） | prover | 同上 |
 | T2085 | ST2-24 | 证明（移植 Path/StepDecompLoop + Kernel） | prover | 同上 |
 | T2086 | S3-03 | 证明（Induction/NewPQ：证钉文 STNewPQ，lem: newPQ） | prover-hard | 同上 |
 | T2087 | S3-24a | 证明（Induction/IterationsA：RBM2D Step 3 前半 + 探针 ≺ 引理） | prover-hard | 同上 |
+| T2090 | S1-36 | 证明（Induction/Step1：Step 1 后半，证钉文 Step1TargetV3；关键路径） | prover-max | 检查 exit 0 且有空位即开工（§17） |
+| T2091 | S1-23 | 证明（Green/IBP：ibpRem_eq_add） | prover-hard | 同上 |
+| T2093 | ST2-06 | 证明（Induction/Step2K2：证钉文 STK2decay） | prover-hard | 同上 |
+| T2094 | ST2-08 | 证明（Induction/ContractPt：证钉文 STContractPt） | prover-hard | 同上 |
+| T2092 | ST2-04 | 证明（Induction/Step2Iterate：探针 §10–§12.2，Step 2 收尾） | prover | 同上 |
+| T2095 | ST2-28a | 证明（Induction/HierAlgebra + HierarchyN） | prover | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 
 ## 已合并
+- T2088（S1-19，3b8c687，2026-10-03 23:13；`GaussIBP` 证出）
+- T2084（ST2-23，fe32346，2026-10-03 23:12；修复一次，只改报告）
+- T2083（ST2-21，07ede19，2026-10-03 23:11）
+- T2080（ST2-03，7f9bfa1，2026-10-03 22:59；Amend 1，ST-2↔LW 桥）
+- T2079（S1-35，4f186cf，2026-10-03 22:55）
+- T2081（ST2-05，6e7bb9c，2026-10-03 22:39；`STScaleExists` 证出）
 - T2078（S1-18，7c7652e，2026-10-03 22:36；有界权）
 - T2077（S1-06，3b98b27，2026-10-03 22:32；Amend 1）
 - T2082（ST2-19，efeda82，2026-10-03 22:27；`STNetLift2` 证出）

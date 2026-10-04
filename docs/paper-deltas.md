@@ -543,3 +543,95 @@ RBM2D `Step2NetLift` 的 `Bandwidth d c` 与 `CondStInd d E s t` 证明不用，
 ## D134 · 局部与平均提升不需要 `(eq:WO)`（2026-10-03，T2082c；ST2-19，efeda82）
 
 Local/Avg 两项提升不需要 `(eq:WO)`，而 `step2NetLift` 需要（D123）；Local/Avg 的控制不含 `ℓ_u`。`stNetLift2_holds : STNetLift2 d` 证出，`STNetLift2` 的 owed 行可删（清理票）。
+
+## D135 · 尺度族取"一个解"而非"唯一正解"（2026-10-03，T2081a；ST2-05 `Induction/Step2Scale`，6e7bb9c）
+
+论文（`(eq:def_ell1)`，`3_5:570-571`）取"唯一正解 `K'_u`"；Lean 的 `st2sStep` 取 `𝒯_u(r) = q 𝒯_u(K)` 的一个解 `r ≥ K`，在 `L` 处截断（`min r L`；论文以 `𝒯̃^K ≍ 𝒯̃^L` 的说明处理 `K_u ≥ L`），无解处（`n < n₀`）保持 `K`。唯一性未证（不需要）。`L` 处截断见 D87，对大 `N` 才要求的条款见 D92。
+
+## D136 · 地板步数 `M(D)` 的依赖（2026-10-03，T2081b；ST2-05，6e7bb9c）
+
+钉文把 `M(D)` 留作 `∃ M`；文件里 `M(D) = 6⌈(2+D)/c₀⌉`，`c₀ = min(2𝔠𝔡, ε/2)`，依赖 `𝔠, 𝔡, ε`，不只依赖钉文文档串所写的 `(D+d)/c`（钉文陈述不变，只是文档串措辞）。
+
+## D137 · 上限 `K ≤ (log W)^{10} ℓ_u` 对每个 `m` 逐个成立（2026-10-03，T2081c；ST2-05，6e7bb9c）
+
+钉文的上限对固定的 `m` 成立，`n₀` 依赖 `m`（钉文是 `∀ m` 之后 `∀ᶠ n`）；不声称对 `m` 一致。`stScaleExists_holds : STScaleExists d` 证出，`STScaleExists` 的 owed 行可删（清理票）。
+
+## D138 · `Step1TargetV3` 的 d 维形式（2026-10-03，T2079a；S1-35 `Induction/Step1Setup`，4f186cf）
+
+d 维形式是 `STGbEXPii d → STGbEXPij d → STStep1 d`；RBM2D 的 `GbEXPHypV3 d (κ/2) c τ` 针对一条尺寸序列和固定的 `c, τ`，钉文则对所有 `κ ε 𝔡 ε₀` 量化；`STGbEXPav` 不用。
+
+## D139 · Step 1 的维数常数（2026-10-03，T2079b；S1-35，4f186cf）
+
+`s1_near_card ≤ 3^d`（`zdistInf` 球；票面写的 `2d+1` 不对）；`s1_gexRHS_le` 为 `2·9^d B + W^{-d}`（RBM2D `25 B + W⁻²`）；`s1_wl_det` 为 `(2·9^d+1) N^{2τ} g`（RBM2D `26`）；`C_d = 2·3^d`（RBM2D `6`）。
+
+## D140 · `S1Std` 的新字段与 `𝔠_d` 的范围（2026-10-03，T2079c；S1-35，4f186cf）
+
+新增字段 `hWO`（参 D46 = T2045a）、`h𝔠d`、`h𝔠d'`；RBM2D `CondStInd` 的指数 `30` 即 `STConStInd` 的参数 `𝔠_d`；`s1_ratio_ev` 需 `𝔠_d ≤ 1/15`（钉文取 `1/100`，满足）。
+
+## D141 · Step 1 在 `u < 1/2` 区间的处理（2026-10-03，T2079d；S1-35，4f186cf）
+
+`‖𝓛‖ ≤ (2/c₁)^k (W^{-d})^{k-1} ≤ C a_s^{k-1}`，`C = (2/c₁)^k (𝔡⁻²+1)^{k-1}`，需 `0 ≤ s` 与（最终）`ilambda ≤ 𝔡⁻¹`；RBM2D 的 `M_u ≤ W²` 在 d 维无对应。
+
+## D142 · 常数 `c' = c₀/8`（2026-10-03，T2079e；S1-35，4f186cf）
+
+`F5` 的 `c' = c₀/8`（RBM2D 用 `W² ≤ N` 得 `c₀/4`），对每个 `d ≥ 1` 成立。
+
+## D143 · ST-2 ↔ LW 两座桥带 `3 ≤ d`（2026-10-03，T2080a；ST2-03 `Induction/Step2Events`，7f9bfa1；DECISIONS §31）
+
+`STLWB_of_LWterm`、`STLWT_of_LWtermExp` 带 `(hd : 3 ≤ d)`：Step 2 钉文 `STLWB d`、`STLWT d` 没有 `3 ≤ d` 前提，`LWterm d`、`LWtermExp d` 有（论文的 `lem:LWterm`、`lem: EWGn2_N` 本就只对 `d ≥ 3`）。
+
+## D144 · `STLWB` 的控制 `Ψ` 的绑定（2026-10-03，T2080b；ST2-03，7f9bfa1）
+
+`STLWB` 把 `(initialGT2)` 的控制绑到 `Ψ_t(0)`，`LWAssm` 单独取 `Ψ'`；桥取 `Ψ' = max(Ψ_t(0), W^{-d/2})`，因为 `LWWindow` 不带常数而 `STPsiClass` (3) 带常数。
+
+## D145 · 实数 `ℓ` 与自然数 `r` 的对接（2026-10-03，T2080c；ST2-03，7f9bfa1）
+
+`Φ_t(r) = Ψ_t(⌊r⌋₊)`（`LWPsiRel` 对 `ℓ ∈ ℝ` 陈述，`STPsiClass` 对 `r ∈ ℕ`），常数 `C₁' = C₁ 2^{C₂}`。
+
+## D146 · 第二座桥在有限个 `n` 处改 `ℓ_n`（2026-10-03，T2080d；ST2-03，7f9bfa1）
+
+`STLWT` 是 `∀ᶠ n`，`LWAssmExp` 是 `∀ n`；桥在有限个 `n` 处改动 `ℓ_n`，不影响结论。
+
+## D147 · 探针 §10 三条声明并入 `Step2Events`（2026-10-03，T2080e；ST2-03，7f9bfa1；DECISIONS §31）
+
+接 D114、D115：命名空间 `RBM.Gauss.Sizes`，`ST2_Bctl_pos` 即 `STBctl_pos`；`STScaleInv`、`ST_STprof_pos`、`ST_card_lab_le`（探针 §10）现在在 `Step2Events.lean`，ST2-04 导入。只是记号。
+
+## D148 · 登记新增 `STStep1Weak`、`STScaleInv`（2026-10-03，T2080f；ST2-03，7f9bfa1）
+
+`STStep1Weak`、`STScaleInv` 加入 owed 登记；`STLWB`、`STLWT`、`STGoodAt` 的登记注释更新。登记事项，非论文差别。
+
+## D149 · ST2-21 的漂移代数只做 `n = 2`、`σ = (+,−)`（2026-10-03，T2083a；ST2-21 `Path/LoopStep`、`Path/DriftAlgebra`，07ede19）
+
+`KpmODE`、`LoopGenN2`、`HierarchyN2` 是 `(pro_dyncalK)`、`(eq:mainStoflow)`、`(LK_SDE)` 在 `n = 2`、`σ = (+,−)` 的特例，不是一般 `n`、一般 `σ` 的陈述；并在 `g = sz.lam n` 处陈述（矩阵层核心 `DriftAlgebra_loopGen_core` 私有，对每个实数 `g` 成立）。ST2-28a（`HierAlgebra`、`HierarchyN`）须沿用这一 `∀ sz n` 形状与合并的 `ST*` 词汇。
+
+## D150 · ST2-21 用合并的 `ST*` 词汇（2026-10-03，T2083b；ST2-21，07ede19）
+
+RBM2D 的 `Kpm`、`lkMat`、`LLpair`、`EGt`、`ELKLK`、`thetaGen` 换成合并的 `ST*` 项；`STELKLKM` 的下标次序为 `LK(x,a₂) S_{xy} LK(a₁,y)`。只是陈述形状，无数学差别。
+
+## D151 · `condExp_loop_drift` 的界（2026-10-03，T2083c；ST2-21，07ede19）
+
+`condExp_loop_drift` 的界为 `envConst · Δ^{3/2}`（合并的 `oneStepEnvelope`），不经 RBM1D 的 `loopDrift`/`zMotionLip`/`genPtLip`（同 RBM2D）；前提 `_hK`、`_hk` 未用。
+
+## D152 · 二次变差层带耦合 `g`（2026-10-03，T2084a；ST2-23 `Path/QVIdentity`，fe32346）
+
+`S^{(B)}(g)` 的耦合 `g` 是 `EE`、`EECutIdentity`、`QVPropagated`、`EEShift` 的参数（RBM2D 无耦合）；`v_gradMat_eq_quadVar` 的 `gvarF` 取在 `sz.lam n`。
+
+## D153 · `loop6`、`EE` 等在 `RBM.Path` 里（2026-10-03，T2084b；ST2-23，fe32346）
+
+`loop6`、`EE`、`cutDeriv1`、`cutDeriv2`、`loopDeriv` 公开在本文件的 `RBM.Path` 里，不在 `Step2Defs.lean`；用到它们的 ST2-26、ST2-28 须导入 `RBM3D.Path.QVIdentity`。流程事项。
+
+## D154 · `(𝓔⊗𝓔)` 并不字面上就是鞅项的二次变差（2026-10-03，T2084c；ST2-23，fe32346；审核第 1 轮）
+
+论文（`3_5:166`，`defEOTE` `3_5:166-190`）称 `(𝓔⊗𝓔)` 为"`def_Edif` 中鞅项的二次变差"，但它字面上不是。Lean 证的是：(i) 逐切口恒等式 `EECutIdentity`：`(𝓔⊗𝓔)_{a,a'} = Σ_c S_c Σ_{k=1,2} ∂^{(k)}_c𝓛_a · conj ∂^{(k)}_c𝓛_{a'}`（无 `k ≠ k'` 的交叉项）；(ii) 界 `QVPropagated`：`Σ_c S_c |Σ_b κ_b ∂_c𝓛_b|² ≤ 2 Re Σ_{b,b'} κ_b κ̄_{b'} (𝓔⊗𝓔)_{b,b'}`（因子 `2 = n`）。`d = 3` 的见证（`M = 0`、`u = 0`、`E = 0`，`z = i`，`a = a'`）：二次变差为 `0` 而 `(𝓔⊗𝓔)_{a,a} > 0`，故两者不相等。参 D54（`lem:SEforLn` (4) 的因子 `n`）与 RBM2D delta #22 的更正（T2049e）。论文的用法只需要 (ii) 的不等式，结论不受影响；措辞应改为"控制二次变差"。
+
+## D155 · `EE` 只在 `n = 2`、`σ = (+,−)`；`EEShift` 是 Lean 独有（2026-10-03，T2084d；ST2-23，fe32346）
+
+`EE` 只是 `defEOTE` 在 `n = 2`、`σ = (+,−)` 的情形（两个切口 `k = 1, 2`）；论文对所有 `n`、`σ ∈ {+,−}^n` 定义并取 `max_σ`（`eq:MG_nloop`，`3_5:1043`）。`EEShift`（`‖EE(u+Δ) − EE(u)‖ ≤ 16 N² η_{u+Δ}^{-7} Δ`，`N = (WL)^d`）是 Lean 独有的时间离散化界，论文无对应陈述。
+
+## D156 · 二次大偏差在 Lean 内证出（2026-10-03，T2088a；S1-19 `Green/IBPPoly`，3b8c687）
+
+论文引 [YY_25, Lemma 4.2] 取二次大偏差 (4.7)；这里 `stochDom_ldeQuad` 对高斯流证出（陈述 `hLquad`，常数 `hwConst q`，门槛 `N^{τ(q+1)-D}`），所以调用方用上此定理后，`diag_bound_stochDom` 的 `hLquad` 不再是输入。其它陈述不变。
+
+## D157 · `GaussIBP` 证出（2026-10-03，T2088b；S1-19，3b8c687）
+
+`GaussIBP sz`（登记为 owed，`Test/Axioms.lean:90`）现在是定理 `gaussIBP`；登记行多余，清理票删。`Tame.integrable`、`RowChaos.mom_le_momVpow`、`RowChaos.integrable_norm_pow` 现在可直接用 `gaussIBP sz`。
