@@ -177,7 +177,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STCltFar, -- `lem;CLT`, far part (`3_5:2160-2250`); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STCltIso, -- `(eq:bound_isolated)`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STExpInv, -- translation and reflection invariance of `𝔼 𝓛^{(2)}`; S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STTailtoTail, -- `(neiwuj)`, `tailtoTail` with the tail `T_{u,D}`: S5-04; S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STLemDecCalE, -- `lem_dec_calE`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STPfStep5, -- `lem:pf_step5`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STStep5Concl] -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
