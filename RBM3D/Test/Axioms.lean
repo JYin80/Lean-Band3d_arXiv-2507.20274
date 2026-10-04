@@ -124,7 +124,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2LocalPT, -- `(Gt_bound_flow)` per time (`1_2:1343`): hypothesis of `step2LocalNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2AvgPT, -- `(Gt_avgbound_flow)` per time (`1_2:1345`): hypothesis of `step2AvgNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28); `stOptL2_of_pins` (T2116) proves it from `STLWB` and `STGridMart`, so it stays owed through those two
-   `RBM.Gauss.Sizes.STLocalAvgOfL2, -- closing paragraph of Step 2 (`3_5:455-465`): ST2-16, ST2-17 (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STStep2, -- Step 2 of `lem:main_ind` (`1_2:1340-1357`): ST2-04 (`ST_step2_of_pins`) (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, so it stays owed through `LWterm`/`LWtermExp` (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, so it stays owed through `LWterm`/`LWtermExp` (T2066, DECISIONS §28)
