@@ -231,7 +231,8 @@ def structuralProps : List Name :=
    `RBM.Graph.NGraph.GhostOK, -- at most one ghost edge per path, an ending edge: a data condition on the graph (T2050; registered by T2067)
    `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
-   `RBM.Graph.LGraph.Consistent] -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
+   `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
+   `RBM.Path.UkerFar] -- the far-kernel condition `‖ukerMat 1 u v a b‖ ≤ W^{-D'}` beyond distance `R`: a data condition on the kernel, hypothesis of `uopLocalMax`, `uopPairLocalMax`; supplied by `kellStarEv` (T2097, ST2-25; DECISIONS §20)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
