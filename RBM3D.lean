@@ -142,6 +142,7 @@ import RBM3D.Path.KellStar
 import RBM3D.Green.FlucIterGain
 import RBM3D.Loop.KLIndStepA
 import RBM3D.Induction.NewKLK
+import RBM3D.Green.CondDom
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
