@@ -180,6 +180,13 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep1Weak, -- `(Gtmwc)` (`1_2:1327`), the weak-law conclusion of `STStep1`, uniform in `u ∈ [s,t]`; hypothesis of the ST2-03 event theorems: S1-36 (T2080; class proposed: owed)
    `RBM.Gauss.Sizes.STScaleInv, -- `(eq:LW_assm_exp)` at the scale family at every time section (`3_5:409`, `521-527`); hypothesis of `ST_LW_sections`, `ST_event_lw`, `ST_event_mg`: ST2-04/ST2-05 (T2080; class proposed: owed)
    `RBM.Ind.Step1TargetV3, -- Step 1 of `lem:main_ind` (`1_2:1317-1328`) under `STGbEXPii`, `STGbEXPij`, RBM2D `Step1TargetV3` (`Induction/Step1.lean:84`): proved by S1-36 (T2079, §20 rule)
+   -- T2092 (ST2-04, class proposed: owed): hypotheses of the Step 2 iteration and closure (`Induction/Step2Iterate.lean`)
+   `RBM.Gauss.Sizes.STScaleOk, -- admissible scale family `K_u` (`3_5:521-527`): clause of `STScaleAdm`, supplied by `stScaleExists_holds` (T2081); hypothesis of `ST_selfImprove`, `ST_next`
+   `RBM.Gauss.Sizes.STScaleAdm, -- scale iteration `(eq:def_ell1)` (`3_5:571-577`): supplied by `stScaleExists_holds` (T2081); hypothesis of `ST_iterate`, `ST_decay_pt`
+   `RBM.Gauss.Sizes.STGridMartAt, -- the grid martingale pin `STGridMart` at one `C₀` (`3_5:218-240`): hypothesis of `ST_selfImprove_section`
+   `RBM.Gauss.Sizes.STStep2Local, -- `(Gt_bound_flow)` single-charge form of the probe: proved by `ST_step2_of_pins` through `STNetLift2`; hypothesis of `ST_concl_of_step2`
+   `RBM.Gauss.Sizes.STStep2Avg, -- `(Gt_avgbound_flow)` single-charge form of the probe (paper-delta T2039g): hypothesis of `ST_avgU_of_avg`, `ST_concl_of_step2`
+   `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
    `RBM.Gauss.Sizes.STLocalEntry] -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
 
 /-- Predicates that *define the objects under study* rather than assert a result about

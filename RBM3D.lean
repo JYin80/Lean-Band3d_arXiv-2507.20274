@@ -132,6 +132,7 @@ import RBM3D.Induction.IterationsA
 import RBM3D.Induction.ContractPt
 import RBM3D.Induction.Step1
 import RBM3D.Green.IBP
+import RBM3D.Induction.Step2Iterate
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
