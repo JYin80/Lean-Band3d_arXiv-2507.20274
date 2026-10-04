@@ -150,6 +150,7 @@ import RBM3D.Induction.GridDuhamelN
 import RBM3D.Induction.EMn2Poly
 import RBM3D.Green.MinorGoodLe
 import RBM3D.Green.LocalLaw
+import RBM3D.Loop.KLIndStepB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
