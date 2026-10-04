@@ -160,3 +160,4 @@ The final chat reply of any subagent is one line: ticket, verdict, report path.
 - **Blueprint and CI.**
   - Blueprint nodes (`\lean{}`, `\leanok`) are updated only by blueprint-sync tickets.
   - CI publishes only on push.
+  - The blueprint workflow does not run on push (Jun, 2026-10-04; DECISIONS §46); no blueprint-sync tickets.

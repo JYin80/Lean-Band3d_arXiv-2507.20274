@@ -13,17 +13,6 @@ name: Compile blueprint
 # that docgen-action only deploys on a push event, so a manual run builds
 # without publishing.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'RBM3D/**'
-      - 'blueprint/**'
-      - 'home_page/**'
-      - 'lakefile.toml'
-      - 'lake-manifest.json'
-      - 'lean-toolchain'
-      - '.github/workflows/blueprint.yml'
   workflow_dispatch:
 
 # Do NOT cancel in progress: a deploy that is most of the way through a
