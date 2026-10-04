@@ -165,6 +165,7 @@ import RBM3D.Green.MinorDiffCond
 import RBM3D.Graph.LWGGExp
 import RBM3D.Graph.LWEdgeExp
 import RBM3D.Loop.KLWardIneq
+import RBM3D.Induction.StepDecompN
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
