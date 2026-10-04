@@ -122,6 +122,8 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqQt, -- `lem:STOeq_Qt` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqQtNZ, -- `lem:STOeq_Qt_nonzero` (DECISIONS §25)
+   `RBM.Gauss.Sizes.STXiBoot, -- `(am;asoi222)` (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`: S3-18b, S3-22; hypothesis of `iterationsA_step` (T2087)
+   `RBM.Gauss.Sizes.STAvgU, -- `(Gt_avgbound_flow)` uniform in `u ∈ [s,t]` (`1_2:1344`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `iterationsA_avg_of_STAvgU` (T2087)
    `RBM.Gauss.Sizes.STIterations, -- `lem:iterations`, case (i) (DECISIONS §25)
    `RBM.Gauss.Sizes.STIterationsII, -- `lem:iterations`, case (ii) (DECISIONS §25)
    `RBM.Gauss.Sizes.STMollifierEx, -- `rmk:choosechi`: existence of the mollifier (DECISIONS §25)

@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_2c04f25d-42b: audit 1 PASS (Auditor model: claude-opus-5-5; observation O1 for the dispatcher); registry lines applied onto main (H23 b); full lake build OK (3835 jobs)
+updated: Sun Oct  4 00:58:01 UTC 2026
+reports: docs/reports/T2087-prove.md, docs/reports/T2087-audit.md
