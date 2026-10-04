@@ -158,6 +158,7 @@ import RBM3D.Graph.LWWeightExp
 import RBM3D.Induction.EMn2Exp1
 import RBM3D.Induction.LoopC2N
 import RBM3D.Induction.GridDriftN
+import RBM3D.Induction.OptL2b
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
