@@ -166,6 +166,7 @@ import RBM3D.Graph.LWGGExp
 import RBM3D.Graph.LWEdgeExp
 import RBM3D.Loop.KLWardIneq
 import RBM3D.Induction.StepDecompN
+import RBM3D.Green.FlucThreshold
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

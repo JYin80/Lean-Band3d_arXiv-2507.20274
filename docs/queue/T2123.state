@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_e672a7d6-0fa (rule H audit rerun after session-limit API error): audit 1 PASS (Auditor model: claude-opus-5-5); full lake build OK (3873 jobs)
+updated: Sun Oct  4 09:46:47 UTC 2026
+reports: docs/reports/T2123-prove.md, docs/reports/T2123-audit.md
