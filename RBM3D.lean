@@ -253,6 +253,7 @@ import RBM3D.Induction.Step6Kit
 import RBM3D.Graph.LocalRegular6c
 import RBM3D.Universality.GUEPhase.BootstrapAt
 import RBM3D.Induction.PfStep5Alg
+import RBM3D.Universality.Step1Band
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
