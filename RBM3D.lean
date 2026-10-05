@@ -262,6 +262,7 @@ import RBM3D.Main.ZTransfer
 import RBM3D.Universality.Step1RegularityGUE
 import RBM3D.Induction.ExpEtermsA
 import RBM3D.Induction.ExpIniI
+import RBM3D.Induction.ExpDuhamel
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
