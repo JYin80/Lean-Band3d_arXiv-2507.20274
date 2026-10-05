@@ -1,0 +1,99 @@
+=== dense vs FFT cross-check (d=3, L=6) ===
+g=0.01 1-s=0.50 1-t=0.01: dense ratio r=2 1.005171, max 1.021634 | FFT 1.005171, max 1.021634
+g=0.1 1-s=0.50 1-t=0.01: dense ratio r=2 1.017187, max 1.322522 | FFT 1.017187, max 1.322522
+g=0.3 1-s=0.80 1-t=0.10: dense ratio r=2 1.041995, max 1.294538 | FFT 1.041995, max 1.294538
+
+=== regime of the lemma: 1-s >= 1-t >= g^2 (ell_s = ell_t = 1) ===
+columns: paper T_{u,D} ratio (U o T_s)(a)/T_t(|a1-a2|) at r=1,2,3,L/2 and max over a; then the same with the team's calT_u (B_{u,r} e^{-sqrt(r/ell_u)})
+L=16 g=0.01  1-s=0.5    1-t=0.01    rho=     50.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   1.022   1.005   1.003   1.008 | max   1.022
+      team  calT_u :     53.63     51.37     50.94     51.17 | max     53.63   (rho=50.0)
+L=16 g=0.01  1-s=0.1    1-t=0.01    rho=     10.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   1.020   1.005   1.003   1.007 | max   1.020
+      team  calT_u :     10.67     10.25     10.17     10.21 | max     10.67   (rho=10.0)
+L=16 g=0.01  1-s=0.02   1-t=0.01    rho=      2.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   1.011   1.003   1.001   1.004 | max   1.011
+      team  calT_u :      2.08      2.03      2.02      2.02 | max      2.08   (rho=2.0)
+L=16 g=0.1   1-s=0.5    1-t=0.01    rho=     50.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.675   0.867   0.982   1.343 | max   1.343
+      team  calT_u :     55.26     89.01    111.58    172.27 | max    172.27   (rho=50.0)
+L=16 g=0.1   1-s=0.9    1-t=0.01    rho=     90.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.672   0.865   0.981   1.346 | max   1.346
+      team  calT_u :     99.52    161.13    202.51    313.90 | max    313.90   (rho=90.0)
+L=16 g=0.1   1-s=0.999  1-t=0.01    rho=     99.9 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.672   0.865   0.981   1.346 | max   1.346
+      team  calT_u :    110.47    178.98    225.02    348.96 | max    348.96   (rho=99.9)
+L=16 g=0.1   1-s=0.1    1-t=0.01    rho=     10.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.702   0.883   0.988   1.320 | max   1.320
+      team  calT_u :     10.99     16.93     20.75     30.93 | max     30.93   (rho=10.0)
+L=16 g=0.3   1-s=0.9    1-t=0.09    rho=     10.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.769   0.941   1.024   1.255 | max   1.255
+      team  calT_u :     12.81     18.80     21.80     27.75 | max     27.75   (rho=10.0)
+L=16 g=0.3   1-s=0.5    1-t=0.09    rho=      5.6 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.793   0.952   1.026   1.235 | max   1.235
+      team  calT_u :      7.00      9.85     11.22     13.96 | max     13.96   (rho=5.6)
+L=16 g=0.5   1-s=0.99   1-t=0.25    rho=      4.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.896   1.012   1.046   1.157 | max   1.157
+      team  calT_u :      5.77      7.27      7.59      8.21 | max      8.21   (rho=4.0)
+L=16 g=0.5   1-s=0.5    1-t=0.25    rho=      2.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.946   1.017   1.035   1.109 | max   1.109
+      team  calT_u :      2.63      3.00      3.05      3.21 | max      3.21   (rho=2.0)
+L=16 g=1.0   1-s=1.0    1-t=1.0     rho=      1.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   1.000   1.000   1.000   1.000 | max   1.000
+      team  calT_u :      1.00      1.00      1.00      1.00 | max      1.00   (rho=1.0)
+L=16 g=0.01  1-s=0.5    1-t=0.0001  rho=   5000.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.658   0.853   0.973   1.360 | max   1.360
+      team  calT_u :   5386.29   8837.04  11237.06  18026.36 | max  18026.36   (rho=5000.0)
+L=16 g=0.001 1-s=0.5    1-t=1e-06   rho= 500000.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.658   0.853   0.973   1.360 | max   1.360
+      team  calT_u : 538483.97 883630.55 1123775.55 1803468.55 | max 1803468.55   (rho=500000.0)
+L=32 g=0.1   1-s=0.5    1-t=0.01    rho=     50.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.675   0.866   0.980   1.219 | max   1.219
+      team  calT_u :     55.26     89.02    111.54    134.24 | max    134.24   (rho=50.0)
+L=32 g=0.3   1-s=0.9    1-t=0.09    rho=     10.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.769   0.941   1.024   1.160 | max   1.160
+      team  calT_u :     12.81     18.81     21.81     22.91 | max     22.91   (rho=10.0)
+L=64 g=0.1   1-s=0.5    1-t=0.01    rho=     50.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.675   0.866   0.980   1.141 | max   1.141
+      team  calT_u :     55.27     89.03    111.56    117.67 | max    127.76   (rho=50.0)
+L=64 g=0.3   1-s=0.9    1-t=0.09    rho=     10.0 ell_s=1.00 ell_t=1.00
+      paper T_{u,D}:   0.769   0.941   1.024   1.105 | max   1.105
+      team  calT_u :     12.81     18.81     21.82     20.87 | max     22.79   (rho=10.0)
+
+=== OUTSIDE the lemma's hypothesis: 1-t < g^2 (ell_t > 1): paper's T_{u,D} ratio grows (expected) ===
+L=16 g=1.0   1-s=0.5    1-t=0.01    rho=     50.0 ell_s=1.41 ell_t=10.00
+      paper T_{u,D}:      0.29      0.44      0.59      1.63 | max      1.63
+      team  calT_u :    134.75    217.30    300.03    738.79 | max    738.79
+L=16 g=1.0   1-s=0.1    1-t=0.01    rho=     10.0 ell_s=3.16 ell_t=10.00
+      paper T_{u,D}:      0.31      0.46      0.61      1.61 | max      1.61
+      team  calT_u :     14.32     22.41     30.45     73.13 | max     73.13
+L=32 g=1.0   1-s=0.5    1-t=0.01    rho=     50.0 ell_s=1.41 ell_t=10.00
+      paper T_{u,D}:      0.21      0.32      0.42      2.01 | max      2.01
+      team  calT_u :    100.31    161.41    219.73    590.51 | max    590.51
+L=32 g=1.0   1-s=0.5    1-t=0.001   rho=    500.0 ell_s=1.41 ell_t=31.62
+      paper T_{u,D}:      0.11      0.16      0.22      2.07 | max      2.07
+      team  calT_u :   2650.95   4146.31   5662.98  24922.83 | max  24922.83
+
+=== analytic constant C_d = 1 + sum_{x != 0} q^{|x|_1} e^{sqrt|x|_1}, q = 2d/(2d+1) (d=3) ===
+C_3 = 3.6194e+05, C_3^2 = 1.3100e+11  (crude explicit constant for (neiwuj) at d=3)
+=== (1) Neumann bound (1-t)Theta_t(0,a) <= q^{|a|_1}, and Ptilde bounds ===
+L=16 g=0.1 1-s=0.50 1-t=0.0100: q=0.8486 (<= 6/7=0.8571: True); (1-t)Theta <= q^|a|_1 : True; Ptilde bounds: True; Ptilde(0)=0.1880, max ratio (1-t)Theta/q^|a|_1 = 0.1797
+L=16 g=0.3 1-s=0.90 1-t=0.0900: q=0.7800 (<= 6/7=0.8571: True); (1-t)Theta <= q^|a|_1 : True; Ptilde bounds: True; Ptilde(0)=0.2597, max ratio (1-t)Theta/q^|a|_1 = 0.2514
+L=16 g=0.5 1-s=0.99 1-t=0.2500: q=0.6429 (<= 6/7=0.8571: True); (1-t)Theta <= q^|a|_1 : True; Ptilde bounds: True; Ptilde(0)=0.3894, max ratio (1-t)Theta/q^|a|_1 = 0.3874
+L=16 g=0.01 1-s=0.50 1-t=0.0001: q=0.8571 (<= 6/7=0.8571: True); (1-t)Theta <= q^|a|_1 : True; Ptilde bounds: True; Ptilde(0)=0.1707, max ratio (1-t)Theta/q^|a|_1 = 0.1706
+
+=== (2) charge (+,+): |P^{(+,+)}_{ab}| <= P^{(+,-)}_{ab} entrywise ===
+E=0.0: |m|=1.000000, max(|P++| - P+-) = -1.306e-08 (<= 0 expected), sum|P++| = 0.8098 vs rho = 10.0000
+E=1.0: |m|=1.000000, max(|P++| - P+-) = -1.306e-08 (<= 0 expected), sum|P++| = 0.9243 vs rho = 10.0000
+E=1.9: |m|=1.000000, max(|P++| - P+-) = -1.306e-08 (<= 0 expected), sum|P++| = 2.5054 vs rho = 10.0000
+
+=== (3) squared profile e^{-2 sqrt r} (quadratic variation), amplitude rho^4 (W^d(1-s))^{-4} = (W^d(1-t))^{-4} ===
+L=16 g=0.01 1-s=0.5 1-t=0.01: max_a (Ptilde*Ptilde*e^{-2sqrt})/e^{-2sqrt} = 1.0944, at r=1,2,3: 1.0944 1.0186 1.0096
+L=16 g=0.1 1-s=0.5 1-t=0.01: max_a (Ptilde*Ptilde*e^{-2sqrt})/e^{-2sqrt} = 2.0139, at r=1,2,3: 0.5930 0.9289 1.1651
+L=16 g=0.3 1-s=0.9 1-t=0.09: max_a (Ptilde*Ptilde*e^{-2sqrt})/e^{-2sqrt} = 1.6962, at r=1,2,3: 0.7528 1.0643 1.2291
+L=32 g=0.1 1-s=0.5 1-t=0.01: max_a (Ptilde*Ptilde*e^{-2sqrt})/e^{-2sqrt} = 1.5638, at r=1,2,3: 0.5929 0.9285 1.1637
+
+=== (4) literal (neiwuj) with W, D: (U o T_{s,D})(a) <= 1.4 T_{t,D}(|a1-a2|) + rho^2 W^{-D} ? ===
+L=16 W=10 D=5.0 g=0.1 1-s=0.5 1-t=0.01: holds everywhere: True; max (U T_s)/(T_t + rho^2 W^-D) = 1.0075
+L=16 W=10 D=8.0 g=0.01 1-s=0.5 1-t=0.0001: holds everywhere: True; max (U T_s)/(T_t + rho^2 W^-D) = 1.3456
+L=16 W=100 D=12.0 g=0.3 1-s=0.9 1-t=0.09: holds everywhere: True; max (U T_s)/(T_t + rho^2 W^-D) = 1.2546

@@ -1,26 +1,105 @@
 # RBM3D 工单总表（总调度维护）
 
-更新：2026-10-04 00:37 UTC
+更新：2026-10-05 03:40 UTC
 
 ## 已放行
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
-| T2089 | S1-20 | 证明（Green/FlucIter 前半；关键路径） | prover-hard | 同上 |
-| T2085 | ST2-24 | 证明（移植 Path/StepDecompLoop + Kernel） | prover | 同上 |
-| T2086 | S3-03 | 证明（Induction/NewPQ：证钉文 STNewPQ，lem: newPQ） | prover-hard | 同上 |
-| T2087 | S3-24a | 证明（Induction/IterationsA：RBM2D Step 3 前半 + 探针 ≺ 引理） | prover-hard | 同上 |
-| T2090 | S1-36 | 证明（Induction/Step1：Step 1 后半，证钉文 Step1TargetV3；关键路径） | prover-max | 检查 exit 0 且有空位即开工（§17） |
-| T2091 | S1-23 | 证明（Green/IBP：ibpRem_eq_add） | prover-hard | 同上 |
-| T2093 | ST2-06 | 证明（Induction/Step2K2：证钉文 STK2decay） | prover-hard | 同上 |
-| T2094 | ST2-08 | 证明（Induction/ContractPt：证钉文 STContractPt） | prover-hard | 同上 |
-| T2092 | ST2-04 | 证明（Induction/Step2Iterate：探针 §10–§12.2，Step 2 收尾） | prover | 同上 |
-| T2095 | ST2-28a | 证明（Induction/HierAlgebra + HierarchyN） | prover | 同上 |
+| T2167 | S3-10b | 移植（Induction/NQGood2：非交错情形的类与常数、`GridAssemblyHypN` 各字段、QV 常数、`subGaussStop_nonAltN`；§49） | prover-hard | H72：检查文件改后重编译，exit 0 即开工（优先） |
+| T2168 | ST2-12 | 证明（Path/DifREP1：`STGridRepN` 第一部分：分解、余项界、由两条尾界组装；§53） | prover-hard | 检查 exit 0 且有空位即开工（§17） |
+| T2169 | S5-24 | 移植+新（Evolution/CltMoments2：`(eq:2p_product)` 展开、孤立/配对分拆、Markov） | prover-hard | 同上 |
+| T2170 | LW-11a | 证明（Graph/AuxGraph：辅助图、`GtoAG`、scalemole、nested 形式；不用性质 (6)；§53） | prover-hard | 同上 |
+| T2171 | S5-06 | 移植（Path/LemDecCalEdif：`res_deccalE_dif` 第一部分；§53） | prover-hard | 同上 |
+| T2172 | S5-08 | 移植（Path/LemDecCalEwG：`res_deccalE_wG`） | prover-hard | 同上 |
+| T2173 | BA-DS | 设计（block Anderson 的 Claim (417)：OU 流下 QUE、带漂移的 EMCTE2、Jak/Uyw；只出报告；§48 (i)、§52；Amend 1 改标签） | prover-max | 同上 |
+| T2174 | UN-01 | 移植（Universality/Pins：UN-D1 探针入库、登记；§50） | prover | 同上 |
 
 ## 待放行（检查文件编译中）
 | 票 | gate | 类型 | 角色 | 开工条件 |
 |---|---|---|---|---|
 
 ## 已合并
+- T2161（BA-D1，87f617a，2026-10-05 03:02；设计，只出报告；§51、§52；D402–D404）
+- T2166（S3-10a，691566a，2026-10-05 01:20；`Induction/NQGood1`；D395–D401）
+- T2165（S5-23，daa7cc1，2026-10-04 23:39；`Evolution/CltMoments1`；修复一次；D391–D394）
+- T2151（LW-10b，32d895b，2026-10-04 23:31；`Graph/LocalRegular2`；Amend 1 §47；D389–D390）
+- T2162（UN-D1，04aedec，2026-10-04 23:12；设计，只出报告；§48、§50；D382–D388）
+- T2163（S5-27，69b1099，2026-10-04 22:41；`Induction/IniTermII`；`STIniTermII` 证出；D378–D381）
+- T2164（S5-05，6e63fbc，2026-10-04 22:29；`Path/LemDecCalE`；`res_deccalE_lk`；D374–D377；M1–M3 留给 S5-09）
+- T2160（ST2-35，88183f4，2026-10-04 21:43；`Induction/AzumaProxyN2`；`YMomentsUnifN` 证出；D371–D373）
+- T2157（S5-22b，a21a819，2026-10-04 21:18；`Evolution/MeanFar`；`STMeanFar` 证出；D367–D370）
+- T2159（ST2-34，43ab861，2026-10-04 21:04；`Induction/AzumaProxyN`；`AzumaSubGN` 证出；D366）
+- T2158（S5-14，19a2b09，2026-10-04 20:21；`Induction/Step5Kernel`）
+- T2154（ST2-33，686cf71，2026-10-04 19:57；`Induction/GridAssemblyN`）
+- T2156（S3-13b，3013163，2026-10-04 19:20；`Induction/QGridB`）
+- T2152（S5-21，74400b7，2026-10-04 19:14；`Evolution/CltStep`，`STCltIso` 证出）
+- T2155（S5-22a，88600b1，2026-10-04 19:07；`Evolution/ExpInv`，`STExpInv` 证出）
+- T2153（ST2-31，a438a51，2026-10-04 18:55；`Induction/GridEnvelopeN`）
+- T2146（ST2-32，2f246bf，2026-10-04 18:26；`Induction/GridGoodN`）
+- T2150（S5-12，7388d13，2026-10-04 18:23；`Induction/NewKLKL`，`STNewKLKL` 证出）
+- T2149（S5-20，4f4612b，2026-10-04 18:11；`Evolution/CltGood`）
+- T2142（LW-10a，3bf20e1，2026-10-04 18:07；`Graph/LocalRegular`）
+- T2148（S5-28，8ec98a6，2026-10-04 18:00；`Induction/WardII`，`STWardII` 证出）
+- T2147（S5-04，37f3a22，2026-10-04 17:53；`Induction/TailtoTail`，`STTailtoTail` 证出）
+- T2144（S5-18，5a8f89e，2026-10-04 17:44；`Evolution/CltResolvent` + `CltPath`）
+- T2141（S5-19，3b1c6a5，2026-10-04 17:34；`Evolution/FarEntry`，`STFarEntryAtLog`）
+- T2145（S5-03，30ed55a，2026-10-04 17:31；`Induction/Step5Cases`）
+- T2143（S5-02，85e43db，2026-10-04 17:05；`Induction/Step5Kit`）
+- T2139（S3-09，ae259a6，2026-10-04 17:04；`Induction/SEforLn2`，`STSEforLn` 证出）
+- T2138（S5-01，c8e4f17，2026-10-04 16:37；`Induction/Step5Pins` + `tailTD`；Step 5 钉文入库）
+- T2140（S5-17，f22c63c，2026-10-04 16:23；`Evolution/CltSwap`）
+- T2137（S3-08，7f82dd6，2026-10-04 15:56；lem:SEforLn (1)(2)）
+- T2134（ST-D4，3668596，2026-10-04 15:54；Step 5 设计，签字 §40）
+- T2128（LW-08，c967b9c，2026-10-04 15:43；lvl1 lemma）
+- T2136（S3-19，1ef8fa7，2026-10-04 14:58；`STWardTypePPin`、`STB45Pin`）
+- T2135（S3-07b，250a118，2026-10-04 14:56；割的衰减、ℰ 项标号衰减；§39）
+- T2132（S3-13a，549a62d，2026-10-04 12:28；网格 𝒬 过程）
+- T2133（S3-07a，6179d8c，2026-10-04 12:26；`lem_decayLoop`）
+- T2131（LW-08a，a871db4，2026-10-04 12:16；图共轭、转置、外部顶点 (Owx)）
+- T2130（ST2-16+17，3389d24，2026-10-04 11:48；`STLocalAvgOfL2` 证出）
+- T2129（S3-06，dab074c，2026-10-04 11:45；`STKcalDecay`；§37）
+- T2127（KL14b，b06ff9b，2026-10-04 11:23；清理；KL gate 完成）
+- T2126（S1-30，0ce09c2，2026-10-04 10:56；`gbEXPV3`、`STGbEXP`、`STStep1` 证出；ST-1 完成）
+- T2118（ST2-11，6329018，2026-10-04 10:35；`STEMn2Exp` 证出；Amend 1 §35、Amend 2 §36）
+- T2124（LW-09，dd1748c，2026-10-04 10:23；`claim:size` 确定性证出）
+- T2125（KL14a，471b643，2026-10-04 10:10；`KLPT_holds`、`KLbound_holds`、`KLwardIneq_holds`；`STKbound` 条件形式）
+- T2123（S1-28，aa6e061，2026-10-04 09:46；`hsmall_of_highProb` 清 S1-26 欠账）
+- T2121（ST2-30，45ca385，2026-10-04 08:09；Amend 1）
+- T2122（KL12，1cd777f，2026-10-04 08:05；`KLwardIneqPin` 证出）
+- T2119（LW-06，3fcd6c6，2026-10-04 07:56；`LWedgeExp` 证出）
+- T2120（LW-07，5c69cb4，2026-10-04 07:54；`LWggExp` 证出）
+- T2117（S1-26，c24f54b，2026-10-04 07:18；修复一次；`hsmall` 欠账交 S1-28）
+- T2112（S3-20，d1cb5a6，2026-10-04 07:05）
+- T2115（KL11，f4cc46d，2026-10-04 07:03；`KLKpiBoundPin`、`KLboundPin` 证出）
+- T2116（ST2-15，2270c89，2026-10-04 06:46；`stOptL2_of_pins`）
+- T2111（ST2-29，14137ce，2026-10-04 06:35）
+- T2109（ST2-10，aaf704f，2026-10-04 06:26）
+- T2107（LW-05，975f4ff，2026-10-04 06:24；Amend 1，§34；`LWweightExp` 证出）
+- T2114（S1-29，37ac2ae，2026-10-04 06:09）
+- T2113（S1-25，778bdf7，2026-10-04 05:59）
+- T2110（ST2-14，6f8ca5b，2026-10-04 05:50）
+- T2106（KL10b，f590e74，2026-10-04 05:41；`KLindStepPin` 证出，KL10 完成）
+- T2108（S1-27，6187713，2026-10-04 04:59；下界 `W^{-d/2}`，D213）
+- T2105（S1-22，ec0e7d5，2026-10-04 04:58）
+- T2102（ST2-09，90a2761，2026-10-04 03:42；`STEMn2Poly` 证出）
+- T2104（ST2-27，2ebee73，2026-10-04 03:38）
+- T2103（ST2-28，e56d95c，2026-10-04 03:29；`STLoopGenNForm`、`hierarchyN_holds` 证出）
+- T2101（S1-24，d4a34da，2026-10-04 03:22；CondDom、CondStable、EntryGauss）
+- T2099（ST2-07，b9875c0，2026-10-04 03:12；`STNewKLK` 证出）
+- T2100（KL10a，c4c1f80，2026-10-04 02:57；KL10 前半）
+- T2096（S1-21，54c61da，2026-10-04 02:42；修复一次）
+- T2097（ST2-25，5bef95c，2026-10-04 02:35；Amend 1）
+- T2098（ST2-26，2b7cab5，2026-10-04 02:27；修复一次，只改报告）
+- T2095（ST2-28a，9bb2cbe，2026-10-04 02:05；Amend 1，条件形式 `hierarchyN_of_loopGenN`）
+- T2092（ST2-04，c5bbae7，2026-10-04 01:25；Step 2 收尾）
+- T2091（S1-23，382b6d9，2026-10-04 01:18）
+- T2090（S1-36，b969625，2026-10-04 01:18；`Step1TargetV3` 证出：Step 1 在 GbEXP 下成立）
+- T2094（ST2-08，2b7c4f6，2026-10-04 01:16；`STContractPt` 证出）
+- T2087（S3-24a，6583ca2，2026-10-04 00:58）
+- T2093（ST2-06，0fc2597，2026-10-04 00:52；`STK2decay` 证出）
+- T2086（S3-03，f28fd9c，2026-10-04 00:37；`STNewPQ` 证出）
+- T2085（ST2-24，e88681b，2026-10-04 00:36；修复一次，只改报告）
+- T2089（S1-20，55f611e，2026-10-04 00:35）
 - T2088（S1-19，3b8c687，2026-10-03 23:13；`GaussIBP` 证出）
 - T2084（ST2-23，fe32346，2026-10-03 23:12；修复一次，只改报告）
 - T2083（ST2-21，07ede19，2026-10-03 23:11）

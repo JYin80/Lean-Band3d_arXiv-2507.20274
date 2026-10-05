@@ -1,0 +1,60 @@
+# S~3 sums on the torus, d=3, g=1/2; a=0, b ranges over |b|>l^dag; F=W^{-D} the floor.
+# (i) fixed L=40, u=0.05, scan the floor: the Hoelder-route ratio grows when the floor
+#     enters the region; the split's Hoelder part stays bounded.
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=1.0e-06 rho_D=inf #floor c'=     0 | Hoelder route u*H/P(r)=  3841.3 | split: u*Hn/P(r)= 3686.0 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=   762.3 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=1.0e-03 rho_D=inf #floor c'=     0 | Hoelder route u*H/P(r)=  3841.3 | split: u*Hn/P(r)= 3686.0 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=   762.3 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=3.0e-03 rho_D=inf #floor c'=     0 | Hoelder route u*H/P(r)=  3841.3 | split: u*Hn/P(r)= 3686.0 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=   762.3 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=1.0e-02 rho_D= 19 #floor c'=  8666 | Hoelder route u*H/P(r)=  3506.6 | split: u*Hn/P(r)= 3348.5 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=   784.9 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=2.0e-02 rho_D= 14 #floor c'= 39636 | Hoelder route u*H/P(r)=  2739.0 | split: u*Hn/P(r)= 1514.9 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=  1413.6 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=3.0e-02 rho_D= 12 #floor c'= 47152 | Hoelder route u*H/P(r)=  2979.2 | split: u*Hn/P(r)= 1043.9 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=  2125.7 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=5.0e-02 rho_D=  9 #floor c'= 54406 | Hoelder route u*H/P(r)=  4008.0 | split: u*Hn/P(r)=  506.6 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=  3560.6 (= what Hoelder needs on A^f)
+# (ii) floor at the level of T(r) for r in the far zone, growing L with l = L/2-1 (l/l_t grows):
+  L= 24 u=0.05 l_t=2.24 l*=4 ldag=8 l=11 F=2.0e-02 rho_D=inf #floor c'=     0 | Hoelder route u*H/P(r)=  1290.4 | split: u*Hn/P(r)= 1171.4 <= R0+R1=1542.2+1113.5 ok ; u*Hf/P(r)=   368.3 (= what Hoelder needs on A^f)
+  L= 32 u=0.05 l_t=2.24 l*=4 ldag=8 l=15 F=2.0e-02 rho_D= 14 #floor c'= 10108 | Hoelder route u*H/P(r)=  2093.7 | split: u*Hn/P(r)= 1768.2 <= R0+R1=2921.1+1574.9 ok ; u*Hf/P(r)=   647.4 (= what Hoelder needs on A^f)
+  L= 40 u=0.05 l_t=2.24 l*=4 ldag=8 l=19 F=2.0e-02 rho_D= 14 #floor c'= 39636 | Hoelder route u*H/P(r)=  2739.0 | split: u*Hn/P(r)= 1514.9 <= R0+R1=4334.1+2006.2 ok ; u*Hf/P(r)=  1413.6 (= what Hoelder needs on A^f)
+  L= 48 u=0.05 l_t=2.24 l*=4 ldag=8 l=23 F=2.0e-02 rho_D= 14 #floor c'= 84140 | Hoelder route u*H/P(r)=  3931.9 | split: u*Hn/P(r)= 1529.1 <= R0+R1=5753.1+2400.9 ok ; u*Hf/P(r)=  2610.8 (= what Hoelder needs on A^f)
+  L= 56 u=0.05 l_t=2.24 l*=4 ldag=8 l=27 F=2.0e-02 rho_D= 14 #floor c'=146692 | Hoelder route u*H/P(r)=  5592.4 | split: u*Hn/P(r)= 1553.4 <= R0+R1=7156.7+2758.3 ok ; u*Hf/P(r)=  4268.3 (= what Hoelder needs on A^f)
+# (iii) smaller u (l_t larger), the same picture:
+  L= 32 u=0.01 l_t=5.00 l*=6 ldag=10 l=15 F=1.0e-02 rho_D=inf #floor c'=     0 | Hoelder route u*H/P(r)=   760.4 | split: u*Hn/P(r)=  702.1 <= R0+R1=854.5+708.0 ok ; u*Hf/P(r)=   249.9 (= what Hoelder needs on A^f)
+  L= 32 u=0.01 l_t=5.00 l*=6 ldag=10 l=15 F=4.0e-02 rho_D= 16 #floor c'=     0 | Hoelder route u*H/P(r)=   760.4 | split: u*Hn/P(r)=  702.1 <= R0+R1=854.5+708.0 ok ; u*Hf/P(r)=   249.9 (= what Hoelder needs on A^f)
+  L= 48 u=0.01 l_t=5.00 l*=6 ldag=10 l=23 F=1.0e-02 rho_D=inf #floor c'=     0 | Hoelder route u*H/P(r)=  1987.5 | split: u*Hn/P(r)= 1910.1 <= R0+R1=2165.2+1218.6 ok ; u*Hf/P(r)=   480.2 (= what Hoelder needs on A^f)
+  L= 48 u=0.01 l_t=5.00 l*=6 ldag=10 l=23 F=4.0e-02 rho_D= 16 #floor c'= 74032 | Hoelder route u*H/P(r)=  1490.2 | split: u*Hn/P(r)=  650.7 <= R0+R1=2165.2+1218.6 ok ; u*Hf/P(r)=   918.5 (= what Hoelder needs on A^f)
+  L= 64 u=0.01 l_t=5.00 l*=6 ldag=10 l=31 F=1.0e-02 rho_D= 31 #floor c'= 23066 | Hoelder route u*H/P(r)=  3346.7 | split: u*Hn/P(r)= 3257.8 <= R0+R1=3587.6+1722.7 ok ; u*Hf/P(r)=   710.3 (= what Hoelder needs on A^f)
+  L= 64 u=0.01 l_t=5.00 l*=6 ldag=10 l=31 F=4.0e-02 rho_D= 16 #floor c'=220256 | Hoelder route u*H/P(r)=  3044.0 | split: u*Hn/P(r)=  666.3 <= R0+R1=3587.6+1722.7 ok ; u*Hf/P(r)=  2467.5 (= what Hoelder needs on A^f)
+# (iv) regime u >= g^2 (l_t = 1): trivially fine, floor irrelevant
+  L= 32 u=0.5 l_t=1.00 l*=3 ldag=6 l=15 F=1.0e-02 rho_D=  8 #floor c'= 26416 | Hoelder route u*H/P(r)=  4461.4 | split: u*Hn/P(r)= 1017.1 <= R0+R1=6335.2+2473.4 ok ; u*Hf/P(r)=  3589.6 (= what Hoelder needs on A^f)
+  L= 32 u=0.5 l_t=1.00 l*=3 ldag=6 l=15 F=1.0e-01 rho_D=  3 #floor c'= 29448 | Hoelder route u*H/P(r)= 36470.7 | split: u*Hn/P(r)=    0.0 <= R0+R1=6335.2+2473.4 ok ; u*Hf/P(r)= 36470.7 (= what Hoelder needs on A^f)
+# (v) l_t = 1.12 (u = 0.2): L up to 160 so that the TTT2 sums (R0, R1) saturate (tail e^{-sqrt(rho/l_t)}
+#     converges at rho ~ 100 l_t); r sampled every 8th value; Hf grows ~ l^d, Hn and R0+R1 saturate.
+  L= 64 u=0.2 l_t=1.12 l*=3 ldag=6 l=31 F=1.0e-03 rho_D= 23 #floor c'=158922 | Hoelder route u*H/P(r)=  6518.3 | split: u*Hn/P(r)= 4896.5 <= R0+R1=9758.3+2978.2 ok ; u*Hf/P(r)=  2221.5 (= what Hoelder needs on A^f)
+  L= 64 u=0.2 l_t=1.12 l*=3 ldag=6 l=31 F=3.0e-03 rho_D= 16 #floor c'=220256 | Hoelder route u*H/P(r)=  6257.7 | split: u*Hn/P(r)= 2800.9 <= R0+R1=9758.3+2978.2 ok ; u*Hf/P(r)=  4462.1 (= what Hoelder needs on A^f)
+  L= 96 u=0.2 l_t=1.12 l*=3 ldag=6 l=47 F=1.0e-03 rho_D= 23 #floor c'=766250 | Hoelder route u*H/P(r)=  9816.9 | split: u*Hn/P(r)= 4926.9 <= R0+R1=13931.8+3445.7 ok ; u*Hf/P(r)=  5635.9 (= what Hoelder needs on A^f)
+  L= 96 u=0.2 l_t=1.12 l*=3 ldag=6 l=47 F=3.0e-03 rho_D= 16 #floor c'=827584 | Hoelder route u*H/P(r)= 15825.3 | split: u*Hn/P(r)= 2800.9 <= R0+R1=13931.8+3445.7 ok ; u*Hf/P(r)= 14146.0 (= what Hoelder needs on A^f)
+  L=128 u=0.2 l_t=1.12 l*=3 ldag=6 l=63 F=1.0e-03 rho_D= 23 #floor c'=1957258 | Hoelder route u*H/P(r)= 16159.0 | split: u*Hn/P(r)= 4926.7 <= R0+R1=16773.1+3664.9 ok ; u*Hf/P(r)= 12027.6 (= what Hoelder needs on A^f)
+  L=128 u=0.2 l_t=1.12 l*=3 ldag=6 l=63 F=3.0e-03 rho_D= 16 #floor c'=2018592 | Hoelder route u*H/P(r)= 34852.0 | split: u*Hn/P(r)= 2800.9 <= R0+R1=16773.1+3664.9 ok ; u*Hf/P(r)= 33173.6 (= what Hoelder needs on A^f)
+  L=160 u=0.2 l_t=1.12 l*=3 ldag=6 l=79 F=1.0e-03 rho_D= 23 #floor c'=3928554 | Hoelder route u*H/P(r)= 26688.9 | split: u*Hn/P(r)= 4926.6 <= R0+R1=18643.5+3774.2 ok ; u*Hf/P(r)= 22559.1 (= what Hoelder needs on A^f)
+  L=160 u=0.2 l_t=1.12 l*=3 ldag=6 l=79 F=3.0e-03 rho_D= 16 #floor c'=3989888 | Hoelder route u*H/P(r)= 66442.0 | split: u*Hn/P(r)= 2800.9 <= R0+R1=18643.5+3774.2 ok ; u*Hf/P(r)= 64763.5 (= what Hoelder needs on A^f)
+
+# exponent bookkeeping, S~3 far sum, preflight regime W = 10^(10^40) (only exponents matter)
+# d=3, lam=0.3 (l_t = W^lam), exponents are log_W(bound/target); max over j in last column
+D=0.05 : j=0    PF+0.000 SF-1.500 SN+0.000  j=0.25 PF+0.250 SF-0.750 SN+0.000  j=0.5  PF+0.250 SF+0.000 SN+0.000  j=0.75 PF-0.500 SF+0.000 SN-0.750  j=1    PF-1.250 SF+0.000 SN-1.500  j=2    PF-4.250 SF+0.000 SN-4.500  | max PF=+0.250 max SF=+0.000 max SN=+0.000
+D=0.1  : j=0    PF+0.000 SF-1.500 SN+0.000  j=0.25 PF+0.200 SF-0.750 SN+0.000  j=0.5  PF+0.200 SF+0.000 SN+0.000  j=0.75 PF-0.550 SF+0.000 SN-0.750  j=1    PF-1.300 SF+0.000 SN-1.500  j=2    PF-4.300 SF+0.000 SN-4.500  | max PF=+0.200 max SF=+0.000 max SN=+0.000
+D=0.2  : j=0    PF+0.000 SF-1.500 SN+0.000  j=0.25 PF+0.100 SF-0.750 SN+0.000  j=0.5  PF+0.100 SF+0.000 SN+0.000  j=0.75 PF-0.650 SF+0.000 SN-0.750  j=1    PF-1.400 SF+0.000 SN-1.500  j=2    PF-4.400 SF+0.000 SN-4.500  | max PF=+0.100 max SF=+0.000 max SN=+0.000
+D=0.28 : j=0    PF+0.000 SF-1.500 SN+0.000  j=0.25 PF+0.020 SF-0.750 SN+0.000  j=0.5  PF+0.020 SF+0.000 SN+0.000  j=0.75 PF-0.730 SF+0.000 SN-0.750  j=1    PF-1.480 SF+0.000 SN-1.500  j=2    PF-4.480 SF+0.000 SN-4.500  | max PF=+0.020 max SF=+0.000 max SN=+0.000
+D=0.35 : j=0    PF-0.100 SF-1.500 SN+0.000  j=0.25 PF-0.100 SF-0.750 SN+0.000  j=0.5  PF-0.100 SF+0.000 SN+0.000  j=0.75 PF-0.850 SF+0.000 SN-0.750  j=1    PF-1.600 SF+0.000 SN-1.500  j=2    PF-4.600 SF+0.000 SN-4.500  | max PF=-0.100 max SF=+0.000 max SN=+0.000
+D=1    : j=0    PF-1.400 SF-1.500 SN+0.000  j=0.25 PF-1.400 SF-0.750 SN+0.000  j=0.5  PF-1.400 SF+0.000 SN+0.000  j=0.75 PF-2.150 SF+0.000 SN-0.750  j=1    PF-2.900 SF+0.000 SN-1.500  j=2    PF-5.900 SF+0.000 SN-4.500  | max PF=-1.400 max SF=+0.000 max SN=+0.000
+# (d-2)*lam = 0.300: PF closes iff D >= (d-2) lam (row 7 of the preflight); SF, SN close for every D>0.
+# d=3, lam=1.0 (l_t = W^lam), exponents are log_W(bound/target); max over j in last column
+D=0.05 : j=0    PF+0.000 SF-1.500 SN+0.000  j=0.25 PF+0.250 SF-0.750 SN+0.000  j=0.5  PF+0.500 SF+0.000 SN+0.000  j=1    PF-0.550 SF+0.000 SN-1.500  | max PF=+0.500 max SF=+0.000 max SN=+0.000
+D=0.5  : j=0    PF+0.000 SF-1.500 SN+0.000  j=0.25 PF+0.250 SF-0.750 SN+0.000  j=0.5  PF+0.500 SF+0.000 SN+0.000  j=1    PF-1.000 SF+0.000 SN-1.500  | max PF=+0.500 max SF=+0.000 max SN=+0.000
+D=0.9  : j=0    PF+0.000 SF-1.500 SN-0.000  j=0.25 PF+0.100 SF-0.750 SN-0.000  j=0.5  PF+0.100 SF+0.000 SN-0.000  j=1    PF-1.400 SF+0.000 SN-1.500  | max PF=+0.100 max SF=+0.000 max SN=-0.000
+D=1.1  : j=0    PF-0.200 SF-1.500 SN+0.000  j=0.25 PF-0.200 SF-0.750 SN+0.000  j=0.5  PF-0.200 SF+0.000 SN+0.000  j=1    PF-1.700 SF+0.000 SN-1.500  | max PF=-0.200 max SF=+0.000 max SN=+0.000
+D=3    : j=0    PF-4.000 SF-1.500 SN+0.000  j=0.25 PF-4.000 SF-0.750 SN+0.000  j=0.5  PF-4.000 SF+0.000 SN+0.000  j=1    PF-5.500 SF+0.000 SN-1.500  | max PF=-4.000 max SF=+0.000 max SN=+0.000
+# (d-2)*lam = 1.000: PF closes iff D >= (d-2) lam (row 7 of the preflight); SF, SN close for every D>0.
+# non-monotonicity in D of Jhat_D^3 P_D(r)^2: maximizer of Jhat at a floor pair s, r not at the floor
+  D=0.05, D0=1.0: Jhat_D=1.995e-06 Jhat_D0=1.000e+00; RHS(D0)/RHS(D) = 1.259e+17 = W^2.85 (= W^(3(D0-D))): the large-D statement does not imply the small-D one
+  D=0.1, D0=2.0: Jhat_D=3.981e-12 Jhat_D0=1.000e+00; RHS(D0)/RHS(D) = 1.585e+34 = W^5.70 (= W^(3(D0-D))): the large-D statement does not imply the small-D one
+  D=0.5, D0=4.0: Jhat_D=1.000e-21 Jhat_D0=1.000e+00; RHS(D0)/RHS(D) = 1.000e+63 = W^10.50 (= W^(3(D0-D))): the large-D statement does not imply the small-D one
+  STprof check: max(T=1e-4, W^-0.05) = 5.012e-01  (decreasing in D)
+  STprof check: max(T=1e-4, W^-0.5) = 1.000e-03  (decreasing in D)
+  STprof check: max(T=1e-4, W^-2.0) = 1.000e-04  (decreasing in D)

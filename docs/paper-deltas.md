@@ -31,7 +31,7 @@
 
 **形式（2026-09-19，Q19 改）**：性质 5–8 **不是 `axiom`**，而是
 `Propagator/Interface.lean` 里的五个 `Prop` 定义（`ThetaDecay`、`ThetaDecayShort`、
-`ThetaDiffOne`、`ThetaDiffTwo`、`ThetaZeroMode`），打包成 `structure PropTH d g m`。
+`ThetaDiffOne`、`ThetaDiffTwo`、`ThetaZeroMode`），打包成 `structure PropTH d g m`。 〔T2127：此 Lean 声明已删，见 D277〕
 用到它们的定理多带一个参数 `(hP : PropTH d g m)`，取 `hP.decay` 之类。
 于是 `Test/Axioms.lean` 的 `interfaceAxioms` **为空**，审计回到 RBM1D 那种最严形式：
 只允许 `propext` / `Classical.choice` / `Quot.sound`。
@@ -133,7 +133,7 @@ Wirtinger 导数 `∂_{h_{αx}}` 与 `f` 的具体函数类——前三者正是
 
 **修正**：`ThetaDecayShort d g m` 现在是 `σ₁ = σ₂` 的陈述——谱参数取 `t·(m*m)`（即 `m(σ)²`），
 并加上论文的默认假设 `0 < m.im`（`Im m > 0`，常数按论文本来就允许依赖 `κ`），它保证 `m² ≠ 1`。
-`structure PropTH` 只打包性质 5、6、7、8（这四条对任意单位谱参数都成立），
+`structure PropTH` 只打包性质 5、6、7、8（这四条对任意单位谱参数都成立）， 〔T2127：此 Lean 声明已删，见 D277〕
 **性质 5' 不进 bundle**——否则 `PropTH d g 1` 就成了一个假的假设，而 `σ₁ ≠ σ₂` 的情形到处都要用。
 
 **教训**：这个缺陷在它还是 `axiom` 的时候就存在，而那时它意味着**不一致**（可以推出任何东西），
@@ -145,7 +145,7 @@ Wirtinger 导数 `∂_{h_{αx}}` 与 `f` 的具体函数类——前三者正是
 
 论文性质 6、7（`(prop:BD1)`、`(prop:BD2)`）写的是「holds for all `a, r ∈ Z_L^d` satisfying `|r| ≲ |a|`」。
 `≲` 在本文里表示「至多差一个常数倍」，所以忠实的读法是：**对每个常数 `c > 0`**，在 `|r| ≤ c|a|` 上成立，
-而 `≺` 的常数可以依赖 `c`。`Propagator/Interface.lean` 的 `ThetaDiffOne` / `ThetaDiffTwo` 因此带一个
+而 `≺` 的常数可以依赖 `c`。`Propagator/Interface.lean` 的 `ThetaDiffOne` / `ThetaDiffTwo` 因此带一个 〔T2127：此 Lean 声明已删，见 D277〕
 `∀ c : ℝ, 0 < c →` 前件，条件写成 `(zdistD d L r : ℝ) ≤ c * (zdistD d L a : ℝ)`。
 
 **原先写成 `zdistD r ≤ zdistD a`（即 `c = 1`）**，假设的比论文claim的弱；下游若在 `|r| ≤ 2|a|` 上用就接不上。
@@ -157,7 +157,7 @@ Wirtinger 导数 `∂_{h_{αx}}` 与 `f` 的具体函数类——前三者正是
 Lean 里五条都是以 `(d, g, m)` 为参数的 `Prop`，`∃ C` 在参数之内，所以常数也可以依赖 `g` 和 `m`。
 **这是有意的弱化**：作为假设，弱的版本更安全（更容易为真、更容易将来证出来），
 而下游用到的只是「存在不依赖 `L, t, a, r` 的常数」这一点。若将来要求常数对 `g` 一致，
-需要把 `g` 移到 `∃ C` 之后——届时再改，届时的下游签名不受影响（`PropTH` 仍是参数化的）。
+需要把 `g` 移到 `∃ C` 之后——届时再改，届时的下游签名不受影响（`PropTH` 仍是参数化的）。 〔T2127：此 Lean 声明已删，见 D277〕
 
 ## D14 · `claim:TTk` 的三种情形在 Lean 里合并成一条（2026-09-19，Q20）
 
@@ -635,3 +635,730 @@ RBM2D 的 `Kpm`、`lkMat`、`LLpair`、`EGt`、`ELKLK`、`thetaGen` 换成合并
 ## D157 · `GaussIBP` 证出（2026-10-03，T2088b；S1-19，3b8c687）
 
 `GaussIBP sz`（登记为 owed，`Test/Axioms.lean:90`）现在是定理 `gaussIBP`；登记行多余，清理票删。`Tame.integrable`、`RowChaos.mom_le_momVpow`、`RowChaos.integrable_norm_pow` 现在可直接用 `gaussIBP sz`。
+
+## D158 · 演化核带传播子参数（2026-10-04，T2085a；ST2-24 `Path/Kernel`、`Path/StepDecompLoop`，e88681b）
+
+`ukerMat`、`Uop`、`UopSemigroup`、`uopSemigroup` 与 `Uop_*` 引理显式带传播子参数 `(d, L, g)`（RBM2D 只带 `L`）；模型处 `g = sz.lam n`。数学不变（`def_Ustz`）。
+
+## D159 · 一步分解的 `W^{-2d}` 与常数（2026-10-04，T2085b；ST2-24，e88681b）
+
+`hermTestFun_loopPM`、`stepDecomp_loopPM` 的证明用 `W^{-2d}`（RBM2D `W^{-4}`）；所陈述的 `C₂ = 6 N η⁻⁴` 中 `N = (LW)^d`。
+
+## D160 · 私有副本 `StepDecompLoop_ukerNonneg`（2026-10-04，T2085c；ST2-24，e88681b）
+
+`StepDecompLoop_ukerNonneg`（私有）重复 RBM2D `Path/UBounds`（ST2-25）的内容；ST2-25 移植后可替换，无公开名依赖它。流程事项。
+
+## D161 · 演化核只做 `n = 2`（2026-10-04，T2085d；ST2-24，e88681b；审核第 1 轮）
+
+`ukerMat`（`Kernel.lean:46`）、`Uop`（`:51`）、`UopSemigroup`（`:56`）、`uopSemigroup`（`:173`）与 `Uop_*` 引理（`:108–:311`）只把 `(def_Ustz)`（`DefTHUST`，`3_5:108–118`）的演化核 `𝒰^{(n)}_{s,t,σ}` 形式化到 `n = 2`，两个下标槽用同一个标量 `ξ`（即 `σ = (+,−)`，用处 `M^{(+,−)} = |m|²`）；论文对每个 `n ≥ 2`、`σ ∈ {+,−}^n` 定义，每个槽各用 `M^{(σ_i,σ_{i+1})}`。
+
+## D162 · Duhamel 只有离散代数部分（2026-10-04，T2085e；ST2-24，e88681b；审核第 1 轮）
+
+`Uop_duhamel_telescope`（`Kernel.lean:292`）、`Uop_duhamel_telescope_stopped`（`:311`）与抽象的 `duhamel_telescope`（`:193`）、`duhamel_telescope_stopped`（`:236`）是离散网格上的伸缩和 `A_m = 𝒰_{u_0,u_m}A_0 + Σ_{j<m} 𝒰_{u_{j+1},u_m}(A_{j+1} − 𝒰_{u_j,u_{j+1}}A_j)`（对任意序列 `A`）；论文的 `(int_K-L_ST)`、`(int_K-LcalE)`（`Sol_CalL`，`3_5:134–147`）是连续时间的 Duhamel 公式，带各类积分项与鞅项 `d𝓔^M`。Lean 这里只有代数（半群）部分。
+
+## D163 · 一步分解是 Lean 独有的时间离散陈述（2026-10-04，T2085f；ST2-24，e88681b；审核第 1 轮）
+
+`stepDecomp_loopPM`（`StepDecompLoop.lean:692`）与 `stepDecomp_Z_subG_loopPM`（`:788`）是时间离散化的 Lean 独有陈述（一步 `ξ_b = Z_b + Y_b`、`Ab` 可测、路径界、`Y_b` 条件均值为零、`L²` 项 `stepDecomp_Y_sq`、`1_S Z_b` 条件次高斯）；论文无此陈述。权 `Σ_a U b a` 代替 `Σ_a |U b a|`，需 `0 ≤ v ≤ w < 1`。
+
+## D164 · `lem: newPQ` 证明在 `i = n` 处的循环处理（2026-10-04，T2086a；S3-03 `Induction/NewPQ`，f28fd9c）
+
+论文 `lem: newPQ` 的证明（`3_5:1866-1886`）写 `(y2ussz)` 时的集合 `A_(i)` 与删去位置 `i` 的写法默认 `i < n`；`i = n` 时（循环，`σ_{n+1} = σ_1`）删去的是 `σ_n`、替换的是 `σ_1`；印出的 `σ_± = (σ_1 … σ_{i-1}, ±, σ_{i+2} …)` 只在循环旋转意义下是同一个圈。Lean 的 `npqSg` 从 `i + 1` 起循环列出位置。论文措辞小疏漏，结论不变。
+
+## D165 · `ι_α` 是旋转后的复合（2026-10-04，T2086b；S3-03，f28fd9c）
+
+Lean 的标签 `ι_α` 是 `ρ^(i+1) ∘ castSucc` 的复合（循环旋转，非递增）；论文的 `ι` 是保序嵌入。钉文只用 `a ∘ ι_α`，陈述不变。
+
+## D166 · Ward 恒等式的另一符号与循环不变性（2026-10-04，T2086c；S3-03，f28fd9c；补 D105）
+
+`(WI_calL)` 在 `σ₁ = −` 的情形与 `𝓛` 的循环不变性在本文件私有证出（`npq_loopL_ward`、`npq_loopL_rotate`）；若别的票需要，清理票可把它们移到 `ConArgDet.lean` 作公开引理。`stNewPQ_holds : STNewPQ d` 证出，`STNewPQ` 的 owed 行可删（清理票）。
+
+（T2089 = S1-20 `Green/FlucIter` 前半，55f611e：无 paper-delta。）
+
+## D167 · `STK2decay` 文档串里的 `c_d` 不需要（2026-10-04，T2093a；ST2-06 `Induction/Step2K2`，0fc2597）
+
+钉文文档串（`Step2Defs.lean:564-567`）说 `ℓ¹` 与 `L^∞` 距离之差"只在指数里花一个常数 `c_d`"；证明只用 `zdistInf ≤ zdistD`（无 `c_d`，也不用把 `𝒯` 加倍）。陈述不受影响。
+
+## D168 · `Prop5Decay` 已证，文档串过时（2026-10-04，T2093b；ST2-06，0fc2597）
+
+文档串与票都称 `Prop5Decay` 为借用钉文；它已证出（`prop5Decay_holds`，`Propagator/Prop5Hold.lean:784`）。`STK2decay` 文档串过时（`Step2Defs.lean` 文件头已说明探针文档串的这一点）。
+
+## D169 · `(eq:kn2sol_decay)` 与 `(eq:simpleboundK)` 的两种形式（2026-10-04，T2093c；ST2-06，0fc2597）
+
+论文 `(eq:kn2sol_decay)`（`3_5:457`）是 `𝒦^{(2)}_{u,(-,+),(a₁,a₂)} ≺ W^{-d} B_{u,|a₁-a₂|}`，`(eq:simpleboundK)`（`3_5:518`）是 `𝒦^{(2)}_{u,σ,a} ≺ W^{-d} 𝒯̃^L_{u,D}(|a-b|)`，都对确定量用 `≺`。钉文对四个 `σ` 以显式常数 `C` 陈述第二种（无 `N^ε` 损失；`|·|` 为 `zdistInf`，见 T2002b）。只含 `B` 的形式由 `‖Θ‖ ≤ C 𝒯_u(r) ≤ C B_{u,r}`（`k2d_theta_tail`）得到，但没有单独的 Lean 陈述。`stK2decay_holds : STK2decay d` 证出，`STK2decay` 的 owed 行可删（T2093d，清理票）。
+
+## D170 · Step 3 的 `Ψ` 演算在 `d ≥ 3` 重述（2026-10-04，T2087a；S3-24a `Induction/IterationsA`，6583ca2）
+
+RBM2D `Induction/Step3.lean:1-777` 是 `d = 2`；`d ≥ 3` 的 `Ψ` 为 `A^{3/4} + ρ^{n-1} A^{1-k/8}`（`3_5:1396`），`b = A^{1/8}`。RBM2D 的实数引理、`Step3Scales`、`Lemma514`、`step3_Psi` 不能照搬，须重述；`Lemma514` 的位置由 `STXiBoot` 承担。票面"`b³, b⁴, R²` 与维数无关"的说法不成立（前提问题，非论文陈述）。
+
+## D171 · 链式界取 `p ≥ 2`（论文 `p ≥ 4`）（2026-10-04，T2087 审核 O1；S3-24a，6583ca2）
+
+`iterationsA_chain_term`、`iterationsA_boot_bound` 的前提是 `p ≥ 2`（论文 `3_5:1785` 为 `p ≥ 4`），前提更弱、Lean 陈述更强。
+
+## D172 · Step 3 一步需要比合并的 `hBA` 更强的尺度前提（2026-10-04，T2087b；S3-24a，6583ca2）
+
+合并的 `hBA`（T2058：`B_v A^{3/4} ≤ c`，即 `δ = 1/4`）对这一步太弱；需要 `B_v ≤ cB A^{-1+δ}` 且 `ρ² A^δ ≤ K A^{1/8}`（`IterationsAScale` 的字段 `rho`、`TA`、`Bctl`；情形 (i) `δ = 0`，情形 (ii) `δ = 𝔠d`）。S3-24b 须用 `IterationsAScale`，不能只靠 `st_hBA_I/II`。
+
+## D173 · 情形 (ii) 的 `(rela_XILXILK)` 损失（2026-10-04，T2087c；S3-24a，6583ca2）
+
+情形 (ii) 用 `(rela_XILXILK)`，损失 `T = A^{-1+𝔠d}`（`B_v ≤ B_s^{1-𝔠d}`），因 `𝔠d ≤ 1/24` 而被吸收；论文略去情形 (ii)（`3_5:1594`）。
+
+## D174 · `(prop:BD1)`、`(prop:BD2)` 只在 `|r| ≤ c|a|`、`c < 1` 时成立（2026-10-04 补编，T2004c；KL 设计 T2004，0b91f7a；更正 D12）
+
+`(prop:BD1)`、`(prop:BD2)`（`1_2:1153`、`1159`）写"`|r| ≲ |a|`"。D12 曾读作"对每个常数 `c > 0`"；T2004 的脚本（`bd` 块）表明 `c ≥ 1` 时为假：`r = −a`、`t = 0` 时 `Θ_0 = I`，左边为 `1`，右边量级为 `L^τ/|a|`，常数随 `L` 线性增长（`L = 17` 到 `65`，`g = 1`：`46.10` 到 `190.02`）；`|r| ≤ |a|/2` 时常数不超过 `7.77`。正确读法：对每个固定的 `c < 1`，在 `|r| ≤ c|a|` 上成立，常数依赖 `c`。KL 层的钉文 `KLDiffOne`、`KLDiffTwo`（`Loop/KLTree.lean`）已带此范围；按 D12 写的旧接口 `ThetaDiffOne`、`ThetaDiffTwo` 为假，清理票（KL14）删除。`(eq:ind-step-bound)` 的证明只在 `|s_j| ≺ 1` 时用 `(eq:f12)`，`|a_j − b_1| ≲ |s_j|` 的部分由 `(prop:ThfadC0)` 处理，所以范围限制不影响论文结论。 〔T2127：此 Lean 声明已删，见 D277〕
+
+## D175 · `ML:Kbound` 在 `n = 3` 的证明还要 `(prop:ThfadC_short)`（2026-10-04 补编，T2004a；T2004，0b91f7a）
+
+论文 `ML:Kbound` 在 `n = 3` 的证明（`A:673`）只引 `(prop:ThfadC)`；要得到锐利的界还需要 `(prop:ThfadC_short)`（短边以 `O(1)` 而非 `1/(1−t)` 求和）。`KLBoundAt_three` 用 `KLDecay` 与 `KLShort`。
+
+## D176 · `ML:Kbound` 的常数对 `g` 一致只在 `g ≤ gmax` 时成立（2026-10-04 补编，T2004b；T2004，0b91f7a）
+
+`ML:Kbound` 的常数对 `g` 一致，只在 `g ≤ g_max` 时成立（论文 `λ ≤ 𝔡⁻¹`，`(eq:WO)` `1_2:363`）；`g = 10` 时 `n = 2, 3, 4` 的比值为 `13.9`、`223.6`、`4071.7`。钉文带 `g ≤ gmax`，常数为 `C(d, κ, gmax, n, τ)`。
+
+## D177 · `Def_Ktza` 与 `Θ_t` 定义里的 `t ∈ [0,1]` 应为 `[0,1)`（2026-10-04 补编，T2004d；T2004，0b91f7a；笔误）
+
+`Def_Ktza`（`1_2:988–989`）与 `Θ_t` 的定义（`1_2:1072`）写 `t ∈ [0,1]`，应为 `t ∈ [0,1)`：`Σ_b Θ_t(0,b) = 1/(1−t)`，所以 `t = 1` 时 `Θ_1^{(+,−)}` 与 `𝒦^{(2)}` 不存在，`(WI_calK)` 里 `η_1 = 0`。
+
+## D178 · KL 钉文的 `≺` 读作损失 `L^τ`（2026-10-04 补编，T2004e；T2004，0b91f7a）
+
+KL 层钉文把 `≺` 读成对每个 `τ > 0` 的损失 `L^τ`，对 `g ∈ (0, gmax]`、体内 `E`、`t ∈ [0,1)`、`σ`、`a` 一致；`KLBoundAt_prec` 由它给出论文的 `≺`（`N = (WL)^d`），反之不成立。这是更强的形式。
+
+## D179 · `Green/IBP` 证出论文留给 [YY_25] 的部分（2026-10-04，T2091a；S1-23 `Green/IBP`，382b6d9）
+
+`Green/IBP.lean` 不对应论文的编号陈述：`3_5:37` 把 `(GavLGEX)`（`3_5:33`）的证明交给 [YY_25] Lemma 4.1（"与维数无关"）；本文件证出确切的展开式 `condExpDiag_eq_sum_Sblk` 与带显式余项 `ibpRem` 的分拆 `ibpRem_eq_add`。
+
+## D180 · `(eq_sym_loop_bound)` 的常数显式为 `3^d/(W^d η_t)`（2026-10-04，T2094a；ST2-08 `Induction/ContractPt`，2b7c4f6）
+
+论文 `(eq_sym_loop_bound)` 的 `≲` 在钉文里是显式常数 `3^d/(W^d η_t)`（锐利）；左边取 `Σ ‖𝓛^{(6)}‖`、最大值取 `max_{σ'} ‖𝓛^{(3)}‖`（范数；论文的 `𝓛^{(4)}_{alt}` 为非负实数：`= W^{-4d} hs(A_{c'})`）。`max_{c'∈𝒜}(𝓛^{(4)}_{alt})^{1/2}` 是前提 `‖𝓛^{(4)}‖^{1/2} ≤ M`。对称的另一式 `(eq_sym_loop_bound2)`（`3_5:758`）未单列。`stContractPt_holds : STContractPt d` 证出。
+
+## D181 · `STContractPt` 文档串引用的比值（2026-10-04，T2094b；ST2-08，2b7c4f6）
+
+钉文文档串（`Step2Defs.lean:380-390`）引 T2039 的比值 `0.39`；本票的检查在其数据上比值 `≤ 0.105`，在实例数据上为 `0.0055`、`0.0056`。陈述照写成立，只是所引数字来自另一组样本。
+
+（T2090 = S1-36 `Induction/Step1`，b969625：无新 paper-delta；`step1TargetV3_holds` 证出，与 `stStep1_of_target` 合起来在 `STGbEXPii`、`STGbEXPij` 下给出 `STStep1`（论文 `(lRB1)` `1_2:1321`、`(Gtmwc)` `1_2:1327`）。）
+
+## D182 · Step 2 结论的两种形式（2026-10-04，T2092a；ST2-04 `Induction/Step2Iterate`，c5bbae7）
+
+合并的 `STStep2` 结论是打包的 `STStep2Concl`（`STLocalEntryU ∧ STAvgU ∧ STGdecayW`）；探针的三元形式现在叫 `STStep2Parts`（本文件新立），由 `ST_concl_of_step2`、`ST_avgU_of_avg` 桥接（`STStep2Avg` 是 `^1`、单电荷形式，`STAvgU` 含两种电荷；见 T2039g）。`ST_step2_concl` 取 `h : STStep2Parts d`，结论是合并的 `STStep2` 的陈述文本。
+
+## D183 · Step 2 收尾新增的名字与登记（2026-10-04，T2092b–c；ST2-04，c5bbae7）
+
+登记新增六行 owed；`ST_step2_of_pins'`、`ST_step2_of_pinsN'`、`ST_step2_of_pinsLW'`（用已证的 `stScaleExists_holds`、`stNetLift2_holds` 卸掉对应钉文，LW 形式带 `3 ≤ d`）、`ST_K2e_of_flow`、`ST_hq_of_data` 是探针里没有的新名字。登记与命名事项。
+
+## D184 · `hierarchyN` 先取条件形式（2026-10-04，T2095a；ST2-28a `Induction/HierAlgebra`、`Induction/HierarchyN`，9bb2cbe；DECISIONS §32）
+
+本文件的 `hierarchyN` 是条件形式 `hierarchyN_of_loopGenN : STLoopGenNForm d → HierarchyN d`；RBM2D 用 `loopGenN` 无条件证出。ST2-28 证出 `STLoopGenNForm d` 后去掉前提。论文陈述不变。
+
+## D185 · `DefTHUST` 的算子即合并的 `ThetaN`（2026-10-04，T2095b；ST2-28a，9bb2cbe）
+
+`DefTHUST`（`3_5:109`）的算子是合并的 `ThetaN`（`thetaKer = μ S Θ_{tμ}`、`cycProd`）；`k = 2` 时等于 `STthetaOp`（在 `hierarchyN_two` 内证出）。数学不变。
+
+## D186 · `KellStarEv` 的尺度与新增前提（2026-10-04，T2097b；ST2-25 `Path/UBounds`、`UTransport`、`KellStar`，5bef95c）
+
+`KellStarEv` 的尺度 `ℓ*_u = (log W)^{3/2} ℓ_u` 是 Lean 一侧的尺度（论文的定义是注释掉的一行，`3_5:2313`）；新增前提 `3 ≤ d`、`0 < Λ`、最终 `0 < lam ≤ Λ`、`0 < 𝔠`、`0 < τ`；远距离用 `zdistInf`。（T2097a 基于预检认错尾函数，已由 DECISIONS §33 更正撤销，不编号。）
+
+## D187 · 局部极大值引理的远点计数为 `L^d`（2026-10-04，T2097c；ST2-25，5bef95c）
+
+`UopLocalMax`、`UopPairLocalMax` 的远点计数是 `card (Zd d L) = L^d`（RBM2D `L²`）；消费者须让 `4 L^d W^{-D'}` 小（例如 `L^d ≤ W^K`，DECISIONS §21）。
+
+## D188 · 网格展开带 `∀ n` 前提（2026-10-04，T2098a；ST2-26 `Path/Expansion`，2b7cab5）
+
+`StoppedDuhamel105`、`grid_expansion_all`、`grid_expansion`、`grid_expansion'`、`grid_expansion_all'` 对 `s, t, K` 带 `∀ n` 前提（同 RBM2D 钉文），论文无此量词；`_at` 形式是在单个 `n` 处的前提，供 `∀ᶠ n` 的消费者用。钉文形式，非数学改动。
+
+## D189 · `Avec`、`Dgrid` 的词汇与形状（2026-10-04，T2098b；ST2-26，2b7cab5）
+
+`Avec`、`Dgrid` 用合并的 `STLKM`、`STELKLKM`、`STEGtM` 在 `σ = (+,−)` 定义；`Avec sz E s t K n k ω` 是 `Zd × Zd` 上的函数，而 `Step2Defs` 的张量是 `Fin 2 → Zd` 上的函数（私有桥 `Expansion_STthetaOp_eq`）。ST-3 消费者须对照其钉文核对形状。
+
+## D190 · `(int_K-L_ST)` 的时间离散、逐路径形式（2026-10-04，T2098c；ST2-26，2b7cab5）
+
+`StoppedDuhamel105`、`grid_expansion(_all)` 等是 `(int_K-L_ST)`（`3_5:134-139`，`Sol_CalL`，"[YY_25] Lemma 5.3"）的时间离散、逐路径形式：论文是停时 `τ ≥ s` 处的连续时间积分方程，Lean 是网格 `u_j` 上的伸缩和（参 D162）。
+
+## D191 · `condExp_A_succ` 是 Lean 独有的 Euler 一步漂移分拆（2026-10-04，T2098d；ST2-26，2b7cab5）
+
+`condExp_A_succ`（及 `Expansion_condExp_A_succ_of_lt_one`、`…_rpow`）是论文没有的 Euler 一步漂移分拆：`predInc_j = Δ·(E^{LK×LK} + E^{G̃})_{u_j} + R_j`，`‖R_j‖ ≤ envConst · Δ^{3/2} + 7 N η_{u_{j+1}}^{-4} Δ²`（几乎处处），`N = (WL)^d`；`d` 维常数来自 `W^{-d}`、`W^{-2d}`。
+
+## D192 · `sum_prod_abs_card_image_le` 的证明换成标号论证（2026-10-04，T2096a；S1-21 `Green/FlucIterGain`，54c61da；DECISIONS §30）
+
+RBM2D `sum_prod_abs_card_image_le`（`:966`）用均匀权的质量界 `c·#A ≤ 1`（`:1017`）证；对 `S` 的行在 `d ≥ 3` 为假（`c·#A = 2d + 1`）。Lean 用标号论证在界 `min c 1` 处证出同一陈述（RBM2D 的签名，`UniformWeight → BoundedWeight`）；前提 `hs : s ≤ #A` 未用。只是证明不同，陈述不变；预算常数不变（审核第 1 轮指出签名问题，修复一次）。
+
+## D193 · `(eq:f12)` 对一切 `s` 成立须带 `(|s|+1)` 权（2026-10-04，T2100a；KL10a `Loop/KLIndStepA`，c4c1f80）
+
+`KLf12_bound`：`|f₁| ≤ C L^τ (g²+|1−t|)⁻¹ (|s|+1)^{d−1}/(|y|+1)^{d−1}`、`|f₂| ≤ C L^τ (g²+|1−t|)⁻¹ (|s|+1)^d/(|y|+1)^d`，对一切 `s`（`q₁ = d−1`、`q₂ = d`、`c = 1/2`）；论文（tex l.748）只对 `|s| ≺ 1` 陈述。不带权时常数随 `L` 增长（预检脚本：`L` 由 9 到 17，`f₁` 比值 169→625，`f₂` 2197→15625），所以权是必需的；权由 D194 的带权和为零估计吸收。
+
+## D194 · `(eq:Sigma-empty-sum-zero)` 的第二估计用带权形式（2026-10-04，T2100b；KL10a，c4c1f80）
+
+`KLsumZero_weighted`：`Σ_{δ_r=x} |Σ^{(∅)}(σ,δ)| (max|δ_i−δ_j|+1)^Q ≤ C(g²+|1−t|)`，`σ ∈ {σ_alt, ¬σ_alt}`、任意根 `r`、任意 `Q`；由非常数 `δ` 的逐点 `g²` 因子与带号估计推出。论文引 [RBSO1D] Claim 4.30 的不带权形式；只由 `KLmolecule_holds` 与 `KLsumZeroAt` 推不出（质量 `A` 可落在 `M ≈ c⁻¹ log(1/A)`，给 `A·log^Q(1/A)`，在固定 `L` 下 `g, τ → 0` 时无界）。
+
+## D195 · 情形 (i) 无损失（2026-10-04，T2100c；KL10a，c4c1f80）
+
+`KLindStep_nonAlt_noloss`：非交错 `σ`（某个 `j ≠ r` 为短叶）时 `(eq:ind-step-bound)` 不带 `L^τ` 也不带 `log L`，比论文强。
+
+## D196 · 衰减剖面写成 `(|x|+1)^p`（2026-10-04，T2100d；KL10a，c4c1f80）
+
+Lean 用 `(|x|+1)^p`，论文用 `|x|^p + 1`；两者相差至多 `2^p`（`pow_add_pow_le`、`KLIndStepA_pow_le`）。记号事项。
+
+## D197 · `lem:newKLK` 的证明用近/远分拆代替截断 `K`（2026-10-04，T2099a；ST2-07 `Induction/NewKLK`，b9875c0）
+
+`3_5:611` 先设"不妨 `𝒯_u(ℓ) ≥ W^{-D}`"，再取截断 `K ≤ ℓ` 使 `𝒯_u(K) = W^{-D}`；Lean 保留下界、按 `1 ≤ ℓ`、`r ≤ ℓ`、`W^{-D} ≤ 𝒯(r)` 分近/远，用 `𝒯(max(r−1,0)) ≤ 2^{d−2} e 𝒯(r)` 代替 `𝒯_u(K+1) ≍ 𝒯_u(K)`（`3_5:651`），不用 `ℓ ≤ L`。证明路线，陈述不变。
+
+## D198 · 弱局部律取显式 `δ₀ = κ/2`（2026-10-04，T2099b；ST2-07，b9875c0）
+
+`3_5:644` 的"弱局部律 `(Gtmwc)`，`1 + o(1)`"在 Lean 中是 `‖G_u − M‖_max ≤ δ₀ = κ/2`（`Ind.half_le_mE_im`：`κ/2 ≤ Im m`），给 `Im G_{xx} ≤ 2 Im m` 与 Ward 因子 `5 W^{-d}/(1−u)`（`𝓛` 贡献 4、`𝒦` 贡献 1），代替 `(1+o(1))/(W^d(1−u))`；吸收进 `C`。钉文本已带 `δ₀`（D83），签名不变。
+
+## D199 · `𝓛` 用逐项 Ward 界，`𝒦` 不用 Ward（2026-10-04，T2099c；ST2-07，b9875c0）
+
+论文用 Cauchy–Schwarz 把 `|𝓛_{±±}|` 比到 `𝓛_{−+}`，并用 `(WI_calL)`、`(WI_calK)`；Lean 对四种符号都证 `|𝓛_σ(a,b)| ≤ W^{-2d}(Q_{ab}+Q_{ba})`，`Σ_c |𝒦_σ(a,c)| ≤ W^{-d}(1−u)⁻¹` 直接来自 `sum_norm_Theta_row_le`。证明路线。登记表删 `STNewKLK`（已证）；`STNewKLKAt` 一行保留（它是 `ST_good_engine` 的前提，无定理直接给出它），KL14 时可补一行推论再删。
+
+## D200 · `W_le_self`、`perTimeDomAt_of_le_left_on` 带 `1 ≤ d`（2026-10-04，T2101a；S1-24 `Green/CondDom`，d4a34da）
+
+RBM2D 的 `size = (W L)² ≥ 9` 白给；`d = 0` 时 `size = 1`，所以 Lean 加前提 `hd : 1 ≤ d`。消费者都在 `d ≥ 3`。登记与形式事项。
+
+## D201 · `giiOmegaSeq`、`giiSeq_of_asGMc` 带 `3 ≤ d`（2026-10-04，T2101b；S1-24，d4a34da）
+
+两条与合并的 `diag_bound_stochDom` 一样带 `hd : 3 ≤ d`；其余前提用 `Admissible` 形式（D39）；`hG : GaussIBP` 去掉（T2091 审核 O1）。`gijOmegaSeq`、`giiOmegaSeq` 对高斯流在 `Admissible` 下无条件证出：登记表里 `RBM.Green.GijOmegaSeq`（owed，注释"S1-24"）可改类（T2101 审核 O2，KL14 清理时处理）。
+
+## D202 · `qvPropagatedN` 带因子 `k`（切口数）（2026-10-04，T2103a；ST2-28 `Induction/LoopGenN`、`Induction/QVN`，e56d95c）
+
+`defEOTE`（`3_5:166-190`）的 `(𝓔⊗𝓔)` 不是字面意义上的二次变差（有跨切口项），所以一般 `n` 的 `qvPropagatedN` 带因子 `k`，不是 `1`；这是 T2084c / D152–D155 在一般 `n` 的重复（预检数值：`d = 3, L = 3, W = 1` 时 `LHS/Re = 1.0931 > 1`）。只用不等式；论文数学不变。`STLoopGenNForm` 由 `stLoopGenNForm_holds` 证出，`hierarchyN_holds` 无条件成立（D184 的前提去掉）；`QVPropagatedN` 是已证的钉文，由第一个消费者（ST-3）登记。
+
+## D203 · `loopGenN`、`QVN_core` 以耦合 `g` 为参数（2026-10-04，T2103b；ST2-28，e56d95c）
+
+`S^{(B)}(g)` 的 `g` 是参数（同 T2084a、T2077a）；RBM2D 的 `W²` 一律为 `W^d`。形式事项。
+
+## D204 · `Ugen` 与 `*N` 词汇去掉 `[NeZero k]`（2026-10-04，T2104a；ST2-27 `Path/DuhamelTail`、`Induction/GridDuhamelN`，2ebee73）
+
+用 `finRotate` 形式；`Ugen` 是合并的 `UN` 在 `m i = m(σ_i)` 处。形式事项。
+
+## D205 · `StoppedDuhamelN`、`StoppedAzumaN` 的能量是序列（2026-10-04，T2104b；ST2-27，2ebee73）
+
+同 RBM2D 取 `E : ℕ → ℝ`；合并的 `StoppedDuhamel105`、`StoppedAzuma108` 取标量 `E`；桥是 `stoppedDuhamel105_of_stoppedDuhamelN` 与 `AvecN_two`、`martIncN_two`、`predIncN_two`。
+
+## D206 · `_at` 形式更强（2026-10-04，T2104c；ST2-27，2ebee73）
+
+`stoppedAzuma108_at`、`stoppedAzumaN_at` 不需要窗口前提；`stoppedDuhamelN_at` 只在下标 `n` 处要 `|E n| < 2`、`0 ≤ s n ≤ t n < 1`、`K n ≠ 0`。停止的 Azuma 的次高斯输入（停止鞅差的条件 Hoeffding）是钉文前提，不在此证。
+
+## D207 · `stopped_duhamel_cheb_tail` 的标号数 `L^{2d}`（2026-10-04，T2104d；ST2-27，2ebee73）
+
+RBM2D 是 `L⁴`；Lean 独有的中间量，无论文陈述。BDG 换成 Azuma（常数 `4`、`4 Σ c`）见 D21、D90（T2104 报告误引 D10，审核 O2 已更正）。
+
+## D208 · `STEMn2Poly` 不需 `STGbEXP*`（2026-10-04，T2102a；ST2-09 `Induction/EMn2Poly`，90a2761）
+
+论文用条目界 `(GijGEX)`、`(GiiGEX)` 估 `(𝓛⁴)^{1/2}` 与 `𝓛³`（`3_5:812–825`）；Lean 用分块 Cauchy–Schwarz（F1、F2），只需 `(eq:LW_assm)`，所以 `stEMn2Poly_holds` 无条件成立；钉文的前提 `(initialGT2)` 没用到。证明路线，陈述不变。登记表 `STEMn2Poly` 的 owed 行可删（KL14 清理）。
+
+## D209 · `(eq_sym_loop_bound2)` 的交错 4-圈（2026-10-04，T2102b；ST2-09，90a2761）
+
+`(eq_sym_loop_bound2)`（`3_5:758`）在 Lean 中是 `emn2Poly_contractPt_partner`（旋转并翻转全部荷）；其交错 4-圈是 `(c,a,c,a)` 处的 `(−σ₁,σ₁,−σ₁,σ₁)`，论文写 `σ^{(alt)} = (σ₁,−σ₁,σ₁,−σ₁)`，涉及分块 `P_aGP_c` 而非 `P_cGP_a`，一般不同。无害：两者都 `≤ |𝓛²_{(±)}|`（F1）。
+
+## D210 · `flucGainUpTo'_of_minorDiffGainUpTo'`、`minorGoodLe_of_goodEvent_flow` 对一切实 `u` 成立（2026-10-04，T2105a；S1-22 `Green/MinorGoodLe`，ec0e7d5）
+
+目标 1 在 `|E| < 2`、`t < 1` 下对一切实 `u` 成立，目标 2 在 `(zt E u).im ≠ 0`、`|E| ≤ 2` 下对一切实 `u` 成立；论文的流时间是 `0 ≤ s ≤ t < 1`。推广，无损失。
+
+## D211 · 高阶子式展开、`MinorDiffGainUpTo'` 与 `MinorGoodLe` 是 Lean 的构造（2026-10-04，T2105b；S1-22，ec0e7d5）
+
+论文没有高阶子式展开、子式 `G^{(S)}` 与层预算：`(GavLGEX)`（`3_5:33`）推给 [YY_25] Lemma 4.1（`3_5:37`）。Lean 加 `MinorDiffGainUpTo'`（前提，S1-25/S1-26 证）与 `MinorGoodLe`，常数 `2Ψ`、`8MΨ ≤ 1`、`‖(G^{(S)}_{aa})⁻¹‖ ≤ 2` 是与维数无关的 Lean 选择。预检：`q = 0` 层的增益量级 `B ≈ 0.55 W^{-d/2}`（指数 `d/2`，RBM2D 为 1），`q ≥ 1` 未核。
+
+## D212 · 文档串中的方程号 (4.1)–(4.3)、(4.9) 是 [YY_25] 的（2026-10-04，T2105c；S1-22，ec0e7d5）
+
+继承自 RBM2D；arXiv:2507.20274 无此编号。记号事项。
+
+## D213 · `LocalLawDetThm` 等的下界取 `W^{-d/2} ≤ Ψ`（2026-10-04，T2108a；S1-27 `Green/LocalLaw`，6187713）
+
+`LocalLawDetThm d`、`FixedTimeFAThm d`、`IBPDetThm d`、`GavLDetFloorThm d` 的下界是 `W^{-d/2} ≤ Ψ`（论文 `3_5:27`），RBM2D 是 `W⁻¹ ≤ Ψ`；`LoopFloorThm d` 的结论是 `(W^d)⁻¹ ≤ 4 N^ε Ψ²`（RBM2D `(W⁻¹)² ≤ …`）。照字面移植在 `d = 3` 编译为假，所以按 R3 重算指数；审核认定在 ST1-COMMON 第 6 条范围内，无需签字。**后果**：钉文 `FixedTimeFAThm d`、`IBPDetThm d`（S1-29/S1-30 证）带论文的较弱前提 `W^{-d/2} ≤ Ψ`；RBM2D 在 `W⁻¹ ≤ Ψ` 下的证明是否在此下界成立，由 S1-29、S1-30 的预检核对。另：近邻集合用 `zdistInf`，点数 `3^d`、`9^d`（票面 `2d+1` 有误，审核 O1）。
+
+## D214 · `KLindStepAt` 的叶子与根（2026-10-04，T2106a；KL10b `Loop/KLIndStepB`，f590e74）
+
+`KLindStepAt` 对叶子 `Θ_t^{(σ_i,σ_{i+1})}`（交错 `σ` 时即 `Θ_t`）与任一满足 `σ_r ≠ σ_{r+1}` 的根 `r` 陈述 `(eq:ind-step-bound)`（`A_deterministic_estimates.tex:703`）；论文的叶子是 `Θ̃_t ∈ {Θ_t, tS^{(B)}Θ_t^{(+,−)}}`、根为 `1`。叶子更窄、根更一般；`tSΘ` 叶子此处既不陈述也不证（钉文文档串：`tSΘ^{(+,−)} = Θ^{(+,−)} − I`），由 KL11（T2115）在切割处说明如何化归。承自签过的探针钉文。`KLindStepPin_holds` 证出：KL10 完成。
+
+## D215 · 成对格点和是 `O(1 + log L)`（2026-10-04，T2106b；KL10b，f590e74）
+
+`Σ_b [(|y_i|+1)(|y_k|+1)]^{-(d−1)}` 在 Lean 是 `O(1 + log L)`（`KLlat_pair_rpow`），论文 item 4 末行（`:776`）写 `≲ 1`；`log L` 由损失 `L^τ` 付（G3 用 `τ/3 × 3`，无余量）。证明预算，陈述不变（T2100 审核已判）。
+
+## D216 · `STOptL2` 不需 `N^{-C}` 网（2026-10-04，T2110a；ST2-14 `Induction/OptL2a`，6f8ca5b）
+
+论文对 `u` 的 `N^{-C}` 网与扰动论证（`3_5:511`）对逐时刻钉文 `STOptL2`（`PrecPT`，`ST_PT_of_sections`）不需要。证明路线。
+
+## D217 · `(lokis2)` 的 `W^{-c₀}` 是 `λ = ((1−s)/(1−T)) W^{-d}B_{T,0}`（2026-10-04，T2110b；ST2-14，6f8ca5b）
+
+`OptL2alam`；`(lokis2)` 由 `STStep1Loop` 与 `STBctl_mono` 推出（`OptL2a_loop_ctl`）。记号事项。
+
+## D218 · `(eq:Psi)` 的 `Ψ_t` 取 `min(√λ, W^{-ε₀})`（2026-10-04，T2110c；ST2-14，6f8ca5b）
+
+因 `STPsiClass` 要求对每个 `n` 有 `0 < Ψ ≤ W^{-ε₀}`；终究不起作用（同 T2109b 的截断）。形式事项。
+
+## D219 · `(con_st_ind)` 只用第一合取（2026-10-04，T2110d；ST2-14，6f8ca5b）
+
+`(con_st_ind)` 只经第一合取 `B_T^{𝔠_d} ≤ (1−T)/(1−s)` 与 `𝔠_d ≤ 1/2` 进入；第二合取 `(1−T)/(1−s) < 1` 在截面 `T = s` 不成立，所以截面上的定理只取第一合取。§29 边界事项，钉文不变。
+
+## D220 · `O_≺` 项显式化（2026-10-04，T2110e；ST2-14，6f8ca5b）
+
+初值 `N^τ B_s²`、余项 `≤ N^{-2}`、鞅 `≤ N^τ λ^{5/4}`、轻权漂移 `≤ N^τ η⁻¹ λ^{3/2}`；Grönwall 右边 `α` 为常数（不减）、`β_j = C₀/(1−u_j)`。证明路线。`stOptL2_of_pins` 需 `3 ≤ d`（T2110f，由 ST2-15 的票写明）。
+
+## D221 · 子式差分的常数与预算是 Lean 的构造（2026-10-04，T2113a；S1-25 `Green/MinorDiff`，778bdf7）
+
+论文没有子式 `G^{(S)}`、子式差、预算 `M`、常数 `atomC`、`minorDiffC`、`DiffBd.mul` 的 `2^n`；`(GavLGEX)`（`3_5:33`）推给 [YY_25] Lemma 4.1（`3_5:37`）。常数、预算与 `Ψ ≤ 1` 是 Lean 的构造，与维数无关（RBM2D T2158a）。常数极大（`minorDiffC 2 = 2^91`），不影响陈述（CLAUDE.md §7）。登记表 `MinorDiffGainUpTo'` 一行的注释应为 S1-26（KL14 清理时改）。
+
+## D222 · `LWweightExp`、`LWggExp` 的 `S⁺` 实参次序（2026-10-04，T2107a；LW-05 `Graph/LWWeightExp`，975f4ff；DECISIONS §34）
+
+钉文的 `S⁺` 是 `S(g)(1 − m(E)² S(g))⁻¹`（`eq:def-Spm`），定义的实参次序 `(g, E, t)`；T2067 入库时两条钉文把 `E`、`g` 写反，§34 改了六处。Lean 内部的钉文更正，非论文差别；记录在此备查。`lwWeightExp_holds` 证出，登记删 `LWweightExp`。
+
+## D223 · `(Owx)` 的图运算形式只对蓝色带圈权、内点、`0 < u`（2026-10-04，T2107b；LW-05，975f4ff）
+
+陈述对内点 `x` 的蓝色权 `Ǧ_{xx}`、`p ∈ lwSplit Γ.solid`、`0 < u`、`M_{aa} = m`；红色权与 `u = 0` 未陈述（另行的陈述，目标不需要）。
+
+## D224 · `(Owx)` 的导数项：每条实边一个图（2026-10-04，T2107c；LW-05，975f4ff）
+
+导数项是 `f` 的每条实边各一个图（`lwSplit p.2`），`w = x` 由边表实现（`owxDE`），不用 `LGraph.dTerm`（后者有两个新外点）；`∂_{h_{αx}}` 是 T2060a 的 `dhSample`。
+
+## D225 · 桥接在常数尺寸序列上（2026-10-04，T2107d；LW-05，975f4ff）
+
+桥对常数序列 `lwWxSizes d L W g hL` 在 `n = 0` 陈述；`lwWx_integral` 要求被积函数连续（钉文的被积函数都是样本的连续函数）。形式事项。
+
+## D226 · `|b−c'| ≥ (1−o(1))|a−b|` 用作 `2(ℓ*+1) ≤ ℓ†`（2026-10-04，T2109a；ST2-10 `Induction/EMn2Exp1`，aaf704f）
+
+`3_5:851–852` 的估计在 Lean 是 `2(ℓ*+1) ≤ ℓ†`（`emn2Exp_profile_cmp` 的前提；`emn2Exp_scale_gap` 在 `(log W)^{1/4} ≥ 4` 下，终究成立；精确门槛 `log W ≳ 16.94`）。小 `n` 不成立，钉文是终究形式，无碍。
+
+## D227 · 截断剖面 `Ψ'` 带上限与 `W^{-D}`（2026-10-04，T2109b；ST2-10，aaf704f）
+
+`3_5:833–838` 的 `Ψ_t(r) = (W^{-d}B_{t,r∧ℓ})^{1/2}` 换成 `Ψ'_n(r) = min(√(W^{-d}(B_{t,r∧ℓ⁺} + W^{-D})), W^{-ε'})`：上限使 `STPsiClass` 的 `Ψ ≤ W^{-ε'}`（每个 `n`）成立；`+W^{-D}` 给出对一切 `r`、`D` 的 `W^{-d}𝒯̃ ≤ Ψ'²`（论文的第二个事实需 `W^{-D} ≲ B_{t,r∧ℓ}`）。
+
+## D228 · `(eq:pointwise_loop2)` 与 3-圈界不需条目界（2026-10-04，T2109c；ST2-10，aaf704f）
+
+由 `(eq:LW_assm_exp)` 经分块 Cauchy–Schwarz 得到，`(GijGEX)`、`(GiiGEX)` 不出现（同 D208）。证明路线。
+
+## D229 · `R₃` 的读法（2026-10-04，T2109d；ST2-10，aaf704f）
+
+`3_5:842–845` 的 `R₃` 读作 `ℓ* < |c'−b| ≤ ℓ` 且 `ℓ* < |c−a| ≤ ℓ`，即 `R₁ ∪ R₂` 的补；覆盖常数为 `1`（`|S^{(B)}| ≤ 1`）。
+
+## D230 · 损失 `K_n` 等为 `N^{o(1)}`（2026-10-04，T2109e；ST2-10，aaf704f）
+
+`K_n`、`√(1 + c_B⁻¹)`（`c_B` 只依赖 `𝔡`）、近处的 `4√(1+c_B⁻¹) exp(2(log W)^{7/8})` 都是 `N^{o(1)}`，吸收进 `≺`（`emn2Exp_ev_exp_pow`）。
+
+## D231 · 未用到的前提（2026-10-04，T2109f；ST2-10，aaf704f）
+
+两条定理与钉文逐字相同但未用到：`Ψ` 及其窗口、`STInitialGT2.2`、`ℓ ≤ (log W)^{10}ℓ_t`；`emn2Exp_far12` 另有 `ε₀`、`STInitialGT2.1` 未用。`STEMn2Exp` 不变，仍欠（ST2-11）。
+
+## D232 · `exists_norm_Kcal_le_win` 沿尺寸序列、以欠下的 `STKbound` 为前提（2026-10-04，T2111a；ST2-29 `Induction/LoopC2N`、`GridDriftN`，14137ce）
+
+RBM2D 由已证的 `Kbound_prec_uncond` 对 `(L,W,E,u,v)` 一致地证；本库沿尺寸序列陈述，前提为欠下的 `STKbound sz E` 与 `SizeTendsto`，对一切 `w ∈ [0, v_n]`。总调度 06:20 照准（票末注）；消费者 ST2-31 须用此形式；`STKbound` 由 KL11 的 `KLboundPin` 与 PT 证明在 KL14 推出。
+
+## D233 · `HermTestFunLoopN`、`GridDriftN` 去掉 `[NeZero k]`（2026-10-04，T2111b；ST2-29，14137ce）
+
+同 D204；更强，`k = 0` 也被证明覆盖。（文件文档串里误标为 T2111a，以报告编号为准，审核 O1。）
+
+## D234 · `GridDriftN_exists_envelope` 是新的逐 `n` 确定性包络（2026-10-04，T2111c；ST2-29，14137ce）
+
+论文无对应陈述。
+
+## D235 · `stepErrN`、`kStepC` 是 Lean 中间量（2026-10-04，T2111d；ST2-29，14137ce）
+
+带 `W^d`、`L^d`；论文无对应陈述。`hermTestFunLoopN` 的证明用 `‖E_b‖ ≤ 1`，丢掉 `W^{-dk}` 增益（同 2D 钉文，审核 O3）。
+
+## D236 · `𝔠₀ = 1/(8C₀ + 10)`（2026-10-04，T2116a；ST2-15 `Induction/OptL2b`，2270c89）
+
+`3_5:508–509` "取 `𝔠_d` 依 `C₀` 足够小"：Lean 给出 `𝔠₀ = 1/(8C₀ + 10)`，`C₀` 是 `stOptL2a_gronwall` 的常数（在 `κ ε 𝔡` 之后、`𝔠` 与序列之前取定）。`stOptL2_of_pins (hd : 3 ≤ d) : STLWB d → STGridMart d → STOptL2 d` 证出（条件于欠下的 `STLWB`、`STGridMart`）。
+
+## D237 · `(eq:L-K2max)` 的末步用 `B_T` 与指数计数（2026-10-04，T2116b；ST2-15，2270c89）
+
+论文以 `ρ^{C₀+5/4}(W^{-d}B_{t,0})^{1/4} ≪ 1` 收尾；Lean 用 `B_s ≤ B_T`（`STBctl_mono`），两项各自由 `1 + 𝔠_d(C₀ + 5/4) ≤ 5/4`、`1 + 𝔠_d C₀ ≤ 2`、`B_T ≤ 1` 精确地 `≤ B_T`，不需要 `B_T^{1/4}` 小；和为 `≤ 2B_T`，因子 `2` 吸收进 `≺` 的损失。证明路线。
+
+## D238 · `(eq:K-pi-bound)` 的归纳按顶点数、只对标准 `K^{(π)}`（2026-10-04，T2115a；KL11 `Loop/KLInduct`，f4cc46d）
+
+论文（`A_deterministic_estimates.tex:678–680, 791–805`）对推广的 `K̃^{(π)}`（叶子 `Θ̃ ∈ {Θ, tSΘ}`，`(eq:wtKpi)`）按分子数 `r` 归纳、切下一个叶分子（`(eq:Kpipi)`）；Lean 按多边形顶点数 `n` 归纳，在最内长边处切树（RBM2D `Kpi_cut`），只对标准 `K^{(π)}`（钉文 `KLKpiBoundAt` 即 `K̃` 的 `Θ̃ = Θ` 情形）；`k = l+1`、`n'' − 1 = n − l` 给出同样的指数。`tSΘ` 叶子从不出现：粘合边是 `ξ_J S^{(B)}` 乘标准叶子（回答 D214）。证明路线。`KLKpiBoundPin_holds`、`KLboundPin_holds` 证出：`ML:Kbound` 对一切 `n ≥ 1` 在 `KLPT` 下成立；`KLoopBound`（`KBound.lean:74`，欠）由其蕴含，KL14 处理。
+
+## D239 · 切割前因子是 `t`（2026-10-04，T2115b；KL11，f4cc46d）
+
+合并的 `KLKpi` 下 `∏_{in} m ∏_{out} m = (∏ m) m(σ_i) m(σ_j)`，RBM2D 的 `ξ_J` 变为 `t`（票面写的"模为 1 的 `∏ m`"不确）。票面事项，无论文差别。
+
+## D240 · `n ≤ 3` 的界取 `KLPT` 为前提（2026-10-04，T2115c；KL11，f4cc46d）
+
+`KLedge_sup`、`KLBoundAt_two`、`KLBoundAt_three` 取 `KLPT d κ gmax`，探针取 `KLDecay d gmax`（及 `KLShort`）；要按 `KLDecay` 陈述须先登记 `KLDecay`。形式事项。
+
+## D241 · 交换关系的前提（2026-10-04，T2112a；S3-20 `Induction/ZeroModeCalc`，d1cb5a6）
+
+论文的交换说明（`3_5:1540–1545`）无前提；Lean 需 `3 ≤ L` 与 `‖t m_i m_{i+1}‖ < 1`（`Θ_{tμ}` 存在），`Ugen` 另需 `|E| ≤ 2`、`0 ≤ w < 1`。
+
+## D242 · `(normQA2)` 对 `Q^{(A)}` 取 `2^{|A|}`（2026-10-04，T2112b；S3-20，d1cb5a6）
+
+论文对 `Q^{(i)}` 给常数 2；Lean 另对 `Q^{(A)}` 陈述，常数 `2^{|A|}`（单指标界之积）。
+
+## D243 · `(iisuwjyys)` 是逐路径的停止网格 Duhamel 恒等式（2026-10-04，T2112c；S3-20，d1cb5a6）
+
+对 `i < j∧τ` 求和，核 `𝒰_{u_{i+1}, u_{j∧τ}}`，不是对 `u` 的积分；`Q^{(A)}` 在外与在内两种形式都陈述。可预测部分的核在合并的伸缩和里是 `u_{j+1}`（票面写 `u_j`，预检 F2）。`Q^{(A)} martIncN` 是鞅增量（坐标的有限线性组合）留给 S3-21 证（审核 O1）。
+
+## D244 · `lem: newPQ` 的组合对一切 `A`（2026-10-04，T2112d；S3-20，d1cb5a6）
+
+论文 `3_5:1590` 只用 `A = ∅`；Lean 对一切 `A` 陈述，`(𝓛−𝒦) = STLKM sz n E τ (sz.seqHflow n τ ω)`。
+
+## D245 · `norm_zeroModeSet_UN_le` 只适用于全正荷（2026-10-04，T2112e；合并的 EK-5 `Kernel/Evolution.lean:629` 的观察）
+
+其前提 `hmi : ∀ i, 0 < (m i).im` 对 `m i = mSigma E false` 不可满足，只对全 `+` 荷可用；混合荷 `σ` 须经 `ekSumDecayNonzero_holds` / `STEKNonzero`。S3-21 的票照此路由。
+
+## D246 · 坏事件塔与条件包络是 Lean 的构造（2026-10-04，T2117a；S1-26 `Green/MinorDiffCond`，c24f54b）
+
+`badStep`、`badTower`、`BadFamily`、`badBase`、`condEnv`、`condCost`、`condEps`、`minorDiffGainUpTo'_of_le_on` 与常数 `minorDiffC M` 是 Lean 从事件 `Ω(t, ε₀)`（`def_asGMc`，`3_5:16`）过渡到矩界的装置；论文推给 [YY_25] Lemma 4.1（`3_5:37`）。
+
+## D247 · 端点以显式 `hB1`、`hsmall` 代替 `≺`（2026-10-04，T2117b；S1-26，c24f54b）
+
+`hsmall` 由 `P(Ω^c) ≤ N^{-D}`（`D ≥ D_W`）推出，`∀ᶠ n` 由消费者给；`hB1` 在 `M = 1` 需 `δ ≤ 2^{-19}`。两者只对固定 `M, K, c` 终究成立。**欠账**：`hsmall` 对公理扫描不可见，S1-28（`FlucThreshold`）须由高概率局部律推出或作具名前提带上。登记表 `MinorDiffGainUpTo'` 一行此后扫描不再报出（KL14 删或改注释，S1-25 → S1-26）。
+
+## D248 · `hB1 ∧ hsmall` 的联合可满足性（2026-10-04，T2117c；S1-26，c24f54b）
+
+`M ≥ 1` 时 `hB1` 迫使 `δ ≤ 2^{-19}`（`M = 1`）、`2^{-93}`（`M = 2`），与 `W, t` 无关；`hsmall` 需 `P(‖G_t − m‖_max > δ) ≤ (δ/4)^K`。`W = 2` 时只有 `t ≤ 10^{-17}` 的极端数据可用；`t` 为常数阶时要求 `W^{d/2} ≫ 2^{19}`。系继承的常数 `minorDiffC`（无论文对应）所致，不影响陈述。
+
+## D249 · `(Oe1x)` 第 1 项的 `Δn_M ≤ 0`（2026-10-04，T2119a；LW-06 `Graph/LWEdgeExp`，3fcd6c6）
+
+T2040 (a)(i) 的表列 `Oe1x-delta` 的 `Δn_M = 0`；Lean 证 `Δn_M ≤ 0`：`x` 并入外点或另一分子时为 `−1`，同一分子内为 `0`（尺寸 `(L^d)^{n_M}` 只要 `≤`）。`lwEdgeExp_holds` 证出，登记删 `LWedgeExp`。
+
+## D250 · 第 7、8 项每条边一个图（2026-10-04，T2119b；LW-06，3fcd6c6）
+
+钉文保留 `k₁ m`、`k₄ m`；图层面是 `x` 的每条蓝出边 / 红入边各一个图 `oe1xD`（系数 `m`），值相同（`oe1x_pointwise`）。
+
+## D251 · 第 3–6 项的拆分图（2026-10-04，T2119c；LW-06，3fcd6c6）
+
+未拆的导数图 `oe1xD` 带不带圈的环 `Ḡ_{xx}` / `G_{xx}`（`Δord = +1`）；论文的第 3、4 项（`Δord = 0`）与 5、6 项是 `oe1xDs` 的拆分图（`G_{xx} = Ǧ_{xx} + m`，前提 `M_{aa} = m`）；按被求导边的 `(σ, 起点, 终点)` 分类。
+
+## D252 · `y₁ = x` 的情形（2026-10-04，T2119d；LW-06，3fcd6c6）
+
+第 1 项的合并需 `y₁ ≠ x`；`y₁ = x`（`e₀` 是不带圈的环，即权）时第 1 项是 `oe1xT1loop`，`Δ(n_S, n_V) = (−1, 0)`、`Δord = −1`；论文表只列合并情形。
+
+## D253 · `(Oe1x)` 的适用范围（2026-10-04，T2119e；LW-06，3fcd6c6）
+
+`e₀` 为蓝色、不带圈；其余边任意（含带圈）；带圈的 `e₀ = (G − M)_{xy₁}` 不陈述。钉文（值层面）不需要。
+
+## D254 · `(Oe2x)` 的 R1、R2 的 `n_M` 变化（2026-10-04，T2120a；LW-07 `Graph/LWGGExp`，5c69cb4）
+
+T2040 表（`Oe2x-R1`、`R2`）列 `Δn_M = 0`；Lean 给 `n_M(Γ) − 1 ≤ n_M(R) ≤ n_M(Γ)`（合并 `x ↦ y` 与新的波边 `S⁺_{xy}` 可能连起两个分子），`n_M(R) = n_M(Γ) − 1` 确有实例。`ord` 不含 `n_M`。`lwGGExp_holds` 证出（§34 修后的钉文），登记删 `LWggExp`。
+
+## D255 · R1 的计数需 `y ≠ x`（2026-10-04，T2120b；LW-07，5c69cb4）
+
+`R1`（`m δ_{xy} G_{y'x} f`）只在 `x` 并入别的顶点时 `Δ(n_S, n_W, n_V) = (−1, 0, −1)`；`oe2x_graph_E` 设 `y ≠ x`；`y = x` 时 `G_{xx}` 为权，`Δord = −1`，未陈述；值恒等式对一切 `y` 成立。
+
+## D256 · `(Oe2x)` 的 `=_E` 读作期望相等（2026-10-04，T2120c；LW-07，5c69cb4）
+
+对一切预解多项式 `f`（T2040d）与流数据 `S = t svarF`、`z + tm = −m⁻¹`、`S⁺ = S(1 − m²S)⁻¹`（§34 的实参次序）。图层面恒等式设 `0 < u`（同 `owx_graph_E`），`t = 0` 只在钉文层面（审核 O1）。只陈述 `GG` 形式，`ḠḠ` 由共轭得（审核 O2）。
+
+## D257 · `(Oe2x)` 作图运算时 `f` 的读法（2026-10-04，T2120d；LW-07，5c69cb4）
+
+`f` 是除 `G_{xy}`、`G_{y'x}` 外的实边之积（`q.2`），每条（含权与轻权）在 `R7`、`R8` 各求导一个图；`G_{xy}`、`G_{y'x}` 蓝色无圈；允许 `y' = x`。
+
+## D258 · `lem_wardineq_K` 的 `π = ∅` 一行只写了 `σ_n ≠ σ_1`（2026-10-04，T2122a；KL12 `Loop/KLWardIneq`，1cd777f）
+
+论文 `A_deterministic_estimates.tex:816–818` 把最后一片叶子写成 `Θ^{(+,−)}_{t,a_n b_n}`（即 `σ_n ≠ σ_1`），而引理是对 `max_σ`；`σ_n = σ_1` 时 Lean 用绝对值界（短程叶子）。论文的小缺口，陈述不变。`KLwardIneqPin_holds` 证出：KL10–KL12 完成。
+
+## D259 · `(eq:K-pi-bound_partial)` 的归纳（2026-10-04，T2122b；KL12，1cd777f）
+
+同 D238：对标准 `K^{(π)}` 按顶点数归纳，求和标号放在最后，不按分子数归纳 `K̃^{(π)}`；指数与论文同（`B^{l−1} · η⁻¹B^{n−l−1}`）。
+
+## D260 · `(eq:K-pi-bound_partial)` 对 `n ≥ 3`（2026-10-04，T2122c；KL12，1cd777f）
+
+`(eq_K-Kpi)` 与 `K^{(π)}` 只在 `n ≥ 3` 有定义（`KLgen` 在长度 2 用 `kTwo`）；`n = 2` 是 `(Kn2sol)`。
+
+## D261 · `StepDecompN` 去掉 `[NeZero k]`、`Ugen` 用合并的形式（2026-10-04，T2121a；ST2-30 `Induction/StepDecompN`，45ca385）
+
+`stoppedEdgeN`、`SubGaussStopN`、`Ugen_stepZCN`、`Ugen_stepYCN`、`StepDecompN_subGaussStopN_zvecN` 去掉 `[NeZero k]`（更强，同 D204、D233）；`Ugen` 是合并的 `Ugen d L g`，`g = sz.lam n`。形式事项。`dirDerivN` 作为第七个词汇定义（Amend 1），ST2-32 从此文件导入。
+
+## D262 · 涨落增益阈值引理的下界与权（2026-10-04，T2123a；S1-28 `Green/FlucThreshold`，aa6e061）
+
+`flucGain_of_localLaw` 用论文的下界 `W^{-d/2} ≤ Ψ`（`3_5:27`，接 D213/T2108a）与有界权 `c = W^{-d} ≤ ρ²`（D192/§30），不是 RBM2D 的 `W⁻¹ ≤ Ψ`、`c = W⁻²`；RBM2D 的结论项在 `d = 3` 为假（`flucThreshold_literal_false`，只在 `n = 3` 编译）。`hsmall_of_highProb` 与 RBM2D 同，清掉 S1-26 的 `hsmall` 欠账（D247）。`PolyLo`、`PolyHi`、`detFlucDelta` 是 Lean 从 `Ω(t,c)` 到矩界的内部过渡，论文无对应。
+
+## D263 · 序列层 `ML:Kbound`、`lem_wardineq_K` 要 `N → ∞`、体内能量与 `lam` 的范围（2026-10-04，T2125a；KL14a `Loop/KLFinal`，471b643）
+
+钉文 `STKbound sz E`（任意 `sz`、任意 `E`）照字面为假：`KLFinal_not_stKbound`（`L ≡ 3, W ≡ 1, lam ≡ 1/2`，`k = 2`，`τ ≡ 0`）；`STKward` 同形。Lean 证的是条件形式 `stKbound_holds`、`stKward_holds`：`SizeTendsto`、最终 `|E n| ≤ 2 − κ`、最终 `0 < lam n ≤ gmax`；`STFlow`（`stKbound_of_flow`、`stKward_of_flow`）与 `S1Std`（审核 §3 编译核对）都提供这些。论文的序列层陈述隐含这些条件。钉文不改；以之为前提的消费者（`Step1Setup.lean:671,693`、`Step34Pins.lean:255`）照旧，可在使用处用上述定理卸掉。
+
+## D264 · `KLPT` 由 PT 证明得出时的常数（2026-10-04，T2125b；KL14a，471b643）
+
+`Prop5Short ↦ KLShort` 取 `κ' = min κ 1 / 2`；`Prop6/7/8 ↦ KLDiffOne/Two/KLZero` 取 `m = I`、`κ'' = 1`；`m(+) m(−) = 1`。`KLoopBound_KLK`：`KLoopBound` 对 `K = KLK` 在 `|E| < 2` 下成立（`KLoopBound` 登记行删）。KL10–KL14a 完成：`KLPT_holds`、`KLbound_holds`、`KLwardIneq_holds` 无条件（`3 ≤ d`）。
+
+## D265 · `claim:size` 里 `scalemole` 换成确定性的 `L¹` 剥树界（2026-10-04，T2124a；LW-09 `Graph/LWSizeClaim`，dd1748c）
+
+`scalemole`（`7_8:190-193`，局限在 `W (log W)^{3/2}` 内）在 `claim:size` 的证明里换成 `lwForest_sum_le`、`LGraph.waved_sum_le`：每条树边付 `K₁`（`S`、`S^±` 的行列和），其余波边付入口界 `K₀ W^{-d}`，每个内分子付 `N`；没有 `W^{-D}` 误差，也没有 `log W`。局限本身另存为 `lwKernel_tail`、`lwTail_log32`。
+
+## D266 · `claim:size` 是确定性的（2026-10-04，T2124b；LW-09，dd1748c）
+
+论文 `7_8:264-266` 只陈述、不证。Lean 逐样本证明：入口界 `|G_xy| ≤ Ψ`（`x ≠ y`）、`|G_xx − m| ≤ Ψ` 作假设，任意 `Ψ ≥ 0`，不要窗口 `W^{-d/2} ≤ Ψ`，不要 `N^τ`；论文的 `≺` 取 `Ψ := N^τ Ψ_t` 得到（`LGraph.scalingSize_mul`）。随机情形下这两条假设是 `STGbEXPii`/`STGbEXPij`（S1-30），LW-08 要逐样本供给。
+
+## D267 · `(eq:estSpm-W)` 要 `0 < g` 与体内能量（2026-10-04，T2124c；LW-09，dd1748c）
+
+对 `0 < g ≤ Λ`、`|E| ≤ 2 − κ` 证出，常数依赖 `(d, Λ, κ)`（性质 5s 的钉文要 `0 < g`）。DECISIONS §29 的"`|E| < 2`、常数不依赖 `E`"在这里为假：`sup_y |S^+_{0y}| e^{|y|/2}` 在 `E → 2` 时发散（预检脚本 3）。
+
+## D268 · 衰减用块 `ℓ¹` 距离（2026-10-04，T2124d；LW-09，dd1748c）
+
+衰减用 `lwBdist`（`[x] − [y]` 的周期 `ℓ¹`）陈述，不是论文的 `|x − y|/W`（细格 `ℓ^∞`）。二者差一个因子 `e^{cd}`，报告里有论证，未形式化（审核 O2）。
+
+## D269 · `S̃₃` 按剖面分区，`(eq:MG_conclusion3)` 对一切 `D > 0`（2026-10-04，T2118a；ST2-11 `Induction/EMn2Exp2`，6329018；DECISIONS §35）
+
+论文 `3_5:885-886` 的 `Σ_c[𝒯+W^{-D}][𝒯+W^{-D}]` 含 `W^{-2D}Σ_c 1`，要 `D ≥ (d−2) log_W ℓ_t`。Lean 在 `𝒯̃(|c'−b|) ≤ 𝒯̃(|a−b|)` 处把 `S̃₃` 分两块：这一块照 `S̃₁` 用收缩不等式，另一块用六腿 Hölder 与 `(TTT2)`；结论对一切 `D > 0` 成立。论文的小缺口，陈述不变。
+
+## D270 · `stEMn2Exp_holds` 带 `3 ≤ d`（2026-10-04，T2118b；ST2-11，6329018；DECISIONS §36）
+
+输入 `EKPropTInf`、`KellStarEv` 只对 `d ≥ 3` 陈述；所有消费者都在 `STStep2 d := 3 ≤ d → …` 之下。钉文 `STEMn2Exp` 不改，登记行删。
+
+## D271 · 六条腿用 2-圈与 Hilbert–Schmidt 范数（2026-10-04，T2118c；ST2-11，6329018）
+
+论文 `3_5:871, 876` 用 `(GijGEX)` 界六条腿；Lean 用三个 2-圈与 Hilbert–Schmidt 范数（同 T2102a、T2109c），不需要入口界。
+
+## D272 · `(eq_L2-J)` 的小项是 `W^{-d}`（2026-10-04，T2118d；ST2-11，6329018）
+
+`3_5:872-875` 远场的小项在 Lean 里是 `W^{-d}`（`D_K = D + d`），不是 `W^{-D}`；最后一步 `(Ĵ + W^{-d})³ ≲ Ĵ³ + (W^{-d}B_{t,0})^{1/2}` 最终成立。
+
+## D273 · `3_5:886` 最后的 `≲ η_t⁻¹`（2026-10-04，T2118e；ST2-11，6329018）
+
+是 `(1−t)⁻¹ ≤ η_t⁻¹`（`Im m ≤ 1`），这里不用体内假设。
+
+## D274 · FA/IBP 在论文的下界 `W^{-d/2} ≤ Ψ` 下（2026-10-04，T2126a；S1-30 `Green/GbEXP`，0ce09c2）
+
+接 D213、D262：`fixedTimeFAThm`、`ibpDetThm` 用 `W^{-d/2} ≤ Ψ`（`3_5:27`）与 `W^d ≤ N`，不是 RBM2D 的 `W⁻¹ ≤ Ψ`、`W ≤ size`。
+
+## D275 · 涨落平均的权是有界权（2026-10-04，T2126b；S1-30，0ce09c2）
+
+接 D192（§30）：行族 `c = W^{-d}`、`#A = (2d+1) W^d`，块族 `c = W^{-d}`、`#A = W^d`（`BoundedWeight`）；即 `jasdu`（`Acta:4571`：`0 ≤ |t_k| ≤ W^{-1}`、`Σ|t_k| ≤ 1`）的 `d` 维形式。
+
+## D276 · `lem_GbEXP` 与 Step 1 在 `3 ≤ d` 下证出（2026-10-04，T2126c；S1-30，0ce09c2）
+
+`fixedTimeFAThm`、`ibpDetThm` 带 `hd : 1 ≤ d`（D200、D201 的样式；`1 ≤ d` 可由 `SizeTendsto` 推出）；`gbEXPV3 : GbEXPV3Theorem d`、`stGbEXP_holds : STGbEXP d`、`stStep1_holds : STStep1 d` 带 `hd : 3 ≤ d`（§36）。登记删 `GbEXPV3Theorem`、`FixedTimeFAThm`、`IBPDetThm`、`STStep1`。**ST-1 完成。**
+
+## D277 · 旧传播子接口与退役 K 环假设从 Lean 中删除（2026-10-04，T2127a；KL14b 清理，b06ff9b）
+
+`ThetaDiffOne`、`ThetaDiffTwo`、`structure PropTH`（照字面为假，DECISIONS §14）及其反例定理、`KTreeRep`、`TwoLoopBounded`（由树表示定义与退役引理取代，DECISIONS §15）已删；四条以 `TwoLoopBounded` 为前提的定理（`Loop/Unique.lean`、`Loop/TreeThree.lean`）前提已卸去。上文 D 条目里出现这些名字的段落（行尾标 〔T2127〕）是历史记录；D12（`c ≥ 1` 为假）的数学不变，由钉文的 `c < 1` 承担，反例陈述记在 `docs/reports/T2127-prove.md` 第 5 块。K-loop 私有引理已改公开，除 `KLIndStepB.lean:13` 的一行注释与 `Induction/EMn2Exp2.lean`（审核 O1）外不再有 `open private`。登记表删去已证钉文的 owed 行（`GaussIBP`、`STKbound`、`STConArg`、`STContractPt`、`STEMn2Poly`、`MinorDiffGainUpTo'`、`GijOmegaSeq` 等，见报告 Block 7）。**KL gate 完成**（KL13 可选）。
+
+## D278 · `STKcalDecay` 要 `W^{-Q} ≤ g`（2026-10-04，T2129a；S3-06 `Induction/KDecay`，dab074c；DECISIONS §37）
+
+没有 `g` 的下界时为假（`|𝒦^{(3)}| ≈ g⁻⁴`）；论文由 `(eq:WO)`（`W^{-d/2+𝔡} ≤ λ`）得到，`Q = d/2`（编译于 `inst_stKcalDecay_admissible`）。
+
+## D279 · `𝒯_t` 的格点和用块 `l^∞` 距离（2026-10-04，T2129b；S3-06，dab074c）
+
+`Σ_a 𝒯_t(|a|_∞) ≤ C_∞(d)(1−t)⁻¹`，`C_∞(d) = d^{d−2} 2^d radC(1/d) + 1`，对 `L ≥ 1`、`g ≥ 0`、`t < 1` 一致；常数较粗（避开 `√d`），预检表最大值 223.9。
+
+## D280 · `(eq:sumtwoloop)` 的第二个 `≺`（2026-10-04，T2129c；S3-06，dab074c）
+
+`stSumTwoLoop`：确定性不等式，常数 `C = C_∞(d)`，最终成立，条件 `𝔠d · C_d ≤ 1/30`（`stSumTwoLoop_exists`：`𝔠d = min(1/100, 1/(30 C_d))`，T2041e 的量词次序）。第一个 `≺`（含 `+W^{-D}`）是 Step 2 钉文 `STGdecayW`，不在此证。
+
+## D281 · `STKbound`/`STKward` 在 `[s,t]` 上一致（2026-10-04，T2129d；S3-06，dab074c）
+
+`stKbound_timeIcc`、`stKward_timeIcc` 要 `0 ≤ s n ≤ t n < 1`（对一切 `n`）与 `stKbound_holds` 的前提；论文的"关于 `u ∈ [s,t]` 一致"没有单独陈述。
+
+## D282 · S3-06 的维数条件（2026-10-04，T2129e；S3-06，dab074c）
+
+`stKcalDecay_holds`、`stKbound_timeIcc`、`stKward_timeIcc` 带 `3 ≤ d`（§36）；`KDecay_sum_tailT_le`、`stSumTwoLoop` 带 `2 ≤ d`。
+
+## D283 · `(initialGT2)` 的控制取 `max(W^{-d/2}, (W^{-d}B_{u,0})^{1/2})`（2026-10-04，T2130a；ST2-16+17 `Induction/LocalAvg1/2`，3389d24）
+
+论文的 `(W^{-d}B_{u,0})^{1/2}` 只在常数 `cB < 1` 之内满足下窗口 `W^{-d/2} ≤ Ψ_u`（`ST_Bdata_holds`）；`Ψ_u² ≤ (cB⁻¹ + 1) W^{-d}B_{u,0}`。同 T2040a/D93 的办法。
+
+## D284 · `stLocalAvgOfL2_holds` 带 `3 ≤ d`（2026-10-04，T2130b；ST2-16+17，3389d24）
+
+§36；钉文 `STLocalAvgOfL2` 不改，登记行删。
+
+## D285 · `(initialGT2)` 的 `ε₀` 取一个固定值（2026-10-04，T2130c；ST2-16+17，3389d24）
+
+Lean 里 `ε₀` 存在量化（只经 `c` 依赖 `d, 𝔠, 𝔡, ε`），即论文"小常数 `ε₀`"；T2015d 对 `lem_GbEXP` 读作一切 `ε₀ > 0`，这里用一个值即可。
+
+## D286 · 虚部翻转取 `b = false` 坐标（2026-10-04，T2131a；LW-08a `Graph/LWSymm`，a871db4）
+
+`Gauss/FineModel.lean:105-109` 里虚部是 `(i, j, false)` 坐标；翻转它保持 `seqP`，且 `G(ω') = G(ω)ᵀ`。票面写的翻 `b = true`（实部）给出 `X(ω') = −X(ω)ᵀ`（编译反例 `lwSymm_flipLit_ne`）。形式事项。
+
+## D287 · 图共轭用同一份数据（2026-10-04，T2131b；LW-08a，a871db4）
+
+`Γ.conj.val D = conj(Γ.val D)`，数据 `D` 不变（红边本来就读 `star G`）；按"共轭数据"的读法为假（`lwSymm_conj_literal_false`）。
+
+## D288 · 共轭交换彩色波边的两端（2026-10-04，T2131c；LW-08a，a871db4）
+
+`conj S^+_{xy} = S^-_{yx}`（由 `WEdge.val`）；黑色波边 `S` 为实，不变。
+
+## D289 · `(Owx)` 对任意顶点（2026-10-04，T2131d；LW-08a，a871db4）
+
+外部顶点 `x : E` 与内部顶点一样展开；合并的 `owxT1…owxT4` 是其内部情形（`owxET*_inr`）。论文的 `ssl` 只写内部顶点。
+
+## D290 · 带圈非自环选定边（2026-10-04，T2131e；LW-08a，a871db4）
+
+T2128 (a) C4 由 `M a b = 0` 加两端之间的 `×` 点边处理（正规图对每条非自环实边都有，`defnlvl0` (iii)，`lwSymm_hX_of_normal`），不靠消去 `m δ_{xy}` 项。
+
+## D291 · 转置形式要 `S⁺ᵀ = S⁺`（2026-10-04，T2131f；LW-08a，a871db4）
+
+作为前提携带（`lwSymm_lwSplus_symm` 对 `S⁺ = lwSplus` 证出）。
+
+## D292 · 网格 𝒬 过程的漂移写成 `𝒬_u D + ℬ₄ + ℬ₅`（2026-10-04，T2132a；S3-13a `Induction/QGridA`，549a62d）
+
+论文 `int_K-L+Q`（`3_5:1337–1346`）写 `𝒰∘𝒬_u∘Σ_{k=1}^5 ℬ_k`；二者相等因为 `𝒫ℬ₄ = 0`（`QopAlgebra_ThetaN_sumZero`）、`𝒫ℬ₅ = 0`（`QopAlgebra_Psum_deriv`），故 `𝒬_uℬ_k = ℬ_k`（同 RBM2D #130）；此桥本票未证。
+
+## D293 · `ϑ` 的二阶时间正则性（2026-10-04，T2132b；S3-13a，549a62d）
+
+Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文 `eq:derv_Theta` 只给一阶。对合并的磨光子（平滑尺度，T2041b）证出，不进 `STMollifierProps`；只用一阶界的余项与 `K` 无关，求和不收敛（预检）。
+
+## D294 · 张量指标 `m + 1`（2026-10-04，T2132c；S3-13a，549a62d）
+
+`m ≥ 1` 代替 `n ≥ 2`，不要 `[NeZero k]`。形式事项。
+
+## D295 · 时间可微性在 `[0,1)` 上逐点（2026-10-04，T2132d；S3-13a，549a62d）
+
+一般定理要 `t ↦ ϑ_t(a)` 在 `[0,1)` 每点 `DifferentiableAt`，`STMollifierProps` 只给 `DifferentiableOn (Ico 0 1)`；假设只在尺寸 `n` 处，另要 `0 < lam n`。
+
+## D296 · `lem_decayLoop` 不用 `(GijGEX)`（2026-10-04，T2133a；S3-07a `Induction/DecayLoopA`，6179d8c）
+
+论文 `3_5:1113` 用 `(GijGEX)` 得到一般 `G` 圈的衰减，`lem_decayLoop`（`3_5:1126-1127`）列 `(Gt_bound_flow)`、`(Eq:Gdecay_w)` 为前提；Lean 用 Cauchy–Schwarz 切割，只从 `(+,−)` 2-圈衰减得出，前提更弱。
+
+## D297 · `stDecayLoopAt_holds` 带 `3 ≤ d`（2026-10-04，T2133b；S3-07a，6179d8c）
+
+来自 `stKcalDecay_holds`（§36）。
+
+## D298 · `res_decayLK` 的写法（2026-10-04，T2133c；S3-07a，6179d8c）
+
+论文界 `|𝓛| + |𝒦|`，Lean 界 `|𝓛| + |𝓛−𝒦|`（相差因子 2，归入 `≺`）；含 `k = 1`（空真）；`τ' = ε`；按时刻 `≺`，误差 `W^{-D'}`。关于 `(σ,a)` 一致的形式未证（审核 O4）。
+
+## D299 · `(Eq:Gdecay_w)` 的前因子（2026-10-04，T2133d；S3-07a，6179d8c）
+
+`P' = max(((1−s)/(1−u))^{Cd} Bctl^{1/5}, 1)`，`C₀ = max Cd 0 + 1`；论文不追踪（RBM2D 用 `P = (η_s/η_u)^4`、`C₀ = 4`）。
+
+## D300 · 割的衰减引理无论文钉文（2026-10-04，T2135a；S3-07b `Induction/DecayLoopB`，250a118）
+
+`LoopDecay`（`zdistInf`）、窗口和 `(2R+1)^d M + L^d δ`、`glueTerm`、`eeLoop` 标号引理：论文只陈述 `Def_decay`（`3_5:1115`）与 `lem_decayLoop`（`3_5:1126`）。窗口与粘接引理带 `3 ≤ L`。
+
+## D301 · 衰减输入关于 `u` 一致（2026-10-04，T2135b；S3-07b，250a118；DECISIONS §39）
+
+`STDecayLoopU`（`Prec`）由 `STGdecayW`（`Prec`）得到，代替按时刻的 `STDecayLoopPT`/`STStep2DecayPT`；论文 `(Eq:L-KGt-flow)`（`1_2:1371-1373`）的 `∀ u ∈ [s,t]` 本在 `≺` 之内。
+
+## D302 · `ℰ` 项标号衰减的写法（2026-10-04，T2135c；S3-07b，250a118）
+
+`stEtermDecay`：`STksimLK` 对一切 `l`（论文 `3 ≤ l ≤ n`，`3_5:1027`）；`STee` 作为 `(a, a')` 的 `2k` 标号张量；`l¹ → l^∞` 换算 `ε → ε/2`；另要 `0 ≤ s ≤ t < 1`、`|E| ≤ 2 − κ`、`Admissible`。`STGdecayW` 仍 owed（Step 2 链）。
+
+## D303 · 磨光子常数 `c` 对一切实数（2026-10-04，T2136a；S3-19 `Induction/B45`，1ef8fa7）
+
+钉文对 `C, c ∈ ℝ` 量化（`STMollifierProps`），论文 `3_5:1214` 是 `c > 0`；Lean 对一切实 `c` 证出（`c < 0` 时上界多 `2 max(0, −log g) ≤ log N`，归入 `N^{τ₁}`）。更强。
+
+## D304 · `(ℓ_u^d η_u)⁻¹ ≲ B_{u,0}` 对一切 `u < 1`（2026-10-04，T2136b；S3-19，1ef8fa7）
+
+论文 `3_5:1264` 在 `1 − u ≥ g²/L²` 下陈述；Lean 的 `ellT`、`Bparam` 下对一切 `u < 1` 成立，常数 `2/Im m_E ≤ 4/√κ`（`B45_scale`，`d ≥ 2`）；两个钉文的证明不用情形 (i) 条件。
+
+## D305 · S3-19 只用 Step 2 结论的 `STGdecayW`（2026-10-04，T2136c；S3-19，1ef8fa7）
+
+加上 `Ξ̂ ≺ X`；比 `STIngR` 提供的前提少（同 T2041i）。
+
+## D306 · 偶数 `m` 时钉文为空（2026-10-04，T2136d；S3-19，1ef8fa7）
+
+`m + 1` 为奇数时 `STAlternating` 为空（编译了 3、5 个指标），两个钉文在偶数 `m` 无内容；实例取 `m = 1, 3`。观察。
+
+## D307 · `lvl1 lemma` 的数据假设（2026-10-04，T2128a；LW-08 `Graph/LWLvl1`，c967b9c）
+
+除三个合并的 `*_graph_E` 外另要 `Spᵀ = Sp`（T2131；`lwSymm_lwSplus_symm` 在 `0 ≤ u`、`‖m‖²u < 1` 时对 `S⁺ = lwSplus` 证出）与 `M a b = 0`（`a ≠ b`，§38 C4）。
+
+## D308 · 截断用 `ord ≥ K`（2026-10-04，T2128b；LW-08，c967b9c）
+
+代替 `(eq:smallsize)`（`B:140`）；`errs` 里也可有阶 `≥ K` 的局部标准图；`lvl1_size_le` 常数 1，需 `1 ≤ W`、`1 ≤ L`、`L^d ≤ W^{K₀}`、`W^{-d/2} ≤ Ψ ≤ W^{-c}`，给出 `size ≤ W^{-D}`。
+
+## D309 · `(Oe1x)` 的 `m 1_{x=y₁}` 与 `(Oe2x)` 的 `R1` 不出现（2026-10-04，T2128c；LW-08，c967b9c）
+
+在正规图上取值为 0，`LocStep` 的输出里略去。
+
+## D310 · 终止度量（2026-10-04，T2128d；LW-08，c967b9c）
+
+`(K − ord, nLoops, nS, nPairs)` 字典序，代替预检的 `(·, w, Φ, n_S)`；内部事项，陈述不变。论文引 [yang2021] Lemma 3.22 不证，此处证出。
+
+## D311 · 正规权分解放在 partition 里（2026-10-04，T2128e；LW-08，c967b9c）
+
+`(G_αα − m) + m` 由每个输出的 `LGraph.partition m` 完成，不在 Step 1 内（`B:138-145`）；引理对正规打包图陈述。
+
+## D312 · `(bEwGn)` 的证明要循环旋转（2026-10-04，T2137a；S3-08 `Induction/SEforLn1`，7f82dd6）
+
+`(yi2oslxj2)` 对最后一个标号求和，而 `cut_k^{(b)}` 的粘接标号在第 `k` 位；论文 `3_5:1048-1053` 未提旋转。证明细节，陈述不变。
+
+## D313 · `(eq:KsimL-K)` 用 `𝒦` 的循环不变性（2026-10-04，T2137b；S3-08，7f82dd6）
+
+二阶项的求和标号在第 `k < l` 位，先用 `KLK_rotate` 再用 `(wardineq_K)`；论文 `3_5:1054-1061` 未提。
+
+## D314 · `(eq:KsimL-K)` 不需 `(eq:bcal_k)`（2026-10-04，T2137c；S3-08，7f82dd6）
+
+只用 `(wardineq_K)`；论文 `3_5:1056` 引的 `(eq:bcal_k)` 用不到（圈数 `≤ 2m²` 归入 `N^τ`）。观察。
+
+## D315–D324 · Step 5 钉文（2026-10-04，T2134a–j；ST-D4 设计，3668596；签字 §40）
+
+- **D315（T2134a）**：`lem:newKLK` 在 `ℓ = L` 取锐形式 `C/(1−u)(Ĵ² W^{-d}𝒯̃^L + Ĵ W^{-d-D})`（`STNewKLKL`）；论文印的 `(juwo=Lklk)` 带 `Ĵ + Ĵ²`，对情形 (i) 弱 `ρA^{1/30}`；依据论文 `3_5:1968` 的注。
+- **D316（T2134b）**：`TailtoTail` 用 `def_WTuD` 的 `T_{u,D}`，显式常数 `C_d² T_{t,D} + ((1−s)/(1−t))² W^{-D}`，`0 ≤ s ≤ t < 1`、`g² ≤ 1−t`，一切荷、`zdistInf`（§33 更正）。
+- **D317（T2134c）**：`lem_dec_calE` 写成 `Prec`：控制量 `J*_{u,D} ≥ 1` 为假设函数，`W^D ≥ N` 为 `∀ᶠ n, size ≤ W^D`，关于 `u ∈ [s,t]` 一致。
+- **D318（T2134d）**：`lem:pf_step5` 写成"对一切 `D > 0`，`max|𝓛−𝒦|/T_{u,D} ≺ 1`"（论文：小 `ε` 时 `T ≥ t` 高概率）。
+- **D319（T2134e）**：`(eq:bound_isolated)` 论文引用，此处钉为 `STCltIso` 并内部证明（S5-17…S5-21）。
+- **D320（T2134f）**：`lem;CLT` 以 `(eq:ells_to_ellt)`、`(eq:ells_to_ellt2)` 为指标集条件，`σ₁ ≠ σ₂`；`d ≥ 3` 的两标号形式保留 `1/(|a₁−a₂|^{d−2}+1)`，矩和要 `(d−1)k > d`（`d = 3` 时 `k ≥ 2`），单点由隔离去掉。
+- **D321（T2134g）**：情形 (ii) 钉为 `STDuhamelII`（异号用 `Q^{(1)}`，同号不用）、`STIniTermII`、`STWardII`；论文"类似论证、从略"（`3_5:2253, 2268`）；闭合用一个 `ρ`：`(1−s)²‖Θ̊‖‖Θ‖ ≤ ρ(1−s)L²/g² ≤ ρ`。
+- **D322（T2134h）**：`(iksjuwjx0)` 用 `A^{-1/5}W^{-d}𝒯̃^L_{u,D} + W^{-D}` 代替 `A^{-1/5}W^{-d}𝒯_t + W^{-D}`（`≺` 下等价）。
+- **D323（T2134i）**：`𝔼𝓛^{(2)}` 的平移/反射不变性（`3_5:2196` 非正式使用）钉为 `STExpInv`；`STDecayStrongU` 的指标集为 `g² ≤ 1−t`（否则空），同合并的 `STDecayStrong`。
+- **D324（T2134j）**：积分层级 `(iois-mtx2)`（`3_5:2067`）条件化钉为 `STDuhamelConcl`：对一切确定的 `F ≥ 0`，初始项 `≺ F` 则 `Q∘(𝓛−𝒦)_u ≺ F + A^{-1/5}W^{-d}𝒯̃^L_{u,D} + W^{-D}`，关于 `u` 一致。
+- 另：`(eq:assmtlarge)` 不能在具体 `W` 实例化（大 `ρ` 分支要 `log W ≳ 1.26·10⁴`），钉文不假设它，证明两支都处理（F-E）；情形 (iii) 强估计推弱估计只差一个多对数，`≺` 吸收（F-G）。
+- **D325（T2140a）**：`(eq:bound_isolated)`（`3_5:2245`，引 [DYYY25] (7.39)）的证明第一块（S5-17，`Evolution/CltSwap`，f22c63c）：独立副本 `H'` 与逐坐标交换的路线论文里没有；伸缩和对 `2(WL)^{2d}` 个实坐标求和，不是对 `i ≤ j` 的矩阵元；陈述与 RBM2D 同（换模型 `PF d L W g`）。
+- **D326（T2139a）**：`(eq:sumtwoloop)` 在运行时刻 `u ∈ [s,t]` 上用，`(con_st_ind)` 只取弱形式 `B_u^{𝔠_d} ≤ (1−u)/(1−s)`、`B_u ≤ 1`（`u = s` 时严格的 `< 1` 不成立）；S3-09 `Induction/SEforLn2`，ae259a6；私有副本 `SEforLn2_sumTwo_pt`。
+- **D327（T2139b）**：`(eq:sumtwoloop)` 里 `W^{−D}` 项的吸收用 `D = 2/𝔠` 与 `W ≥ N^𝔠`（`Bandwidth`，`(Main_DEL_COND)`），不是票面写的 `(eq:WO)`；`lem:SEforLn` 全文（`STSEforLn`）在 `3 ≤ d` 证出，登记行删除。
+- **D328（T2141a）**：`(eq:bound_isolated)` 证明里的远距矩阵元衰减取对数尺度：远集 `{c (log W)^3 ℓ_τ ≤ |[x]−[y]|_∞}`（每个 `c > 0`），`|G_xy| ≺ W^{−D'}`（`STFarEntryAtLog`，S5-19 `Evolution/FarEntry`，3b1c6a5；§43）；RBM2D 用 `W^{τ'}ℓ`。论文此处引 [DYYY25, (7.39)]，无证明。
+- **D329（T2141b）**：`stFarEntryAtLog` 需要 `0 < ε`（`STGbEXPij` 的量词，论文 `𝐃_{κ,ε}`），不需要 `s < t`；结论对两种荷与一切细格点对 `(x,y)`。
+- **D330（T2144a）**：替换步的局部形式带标号数 `k`（`LocalForm d L W k K`、`…Multi` 形式）；RBM2D 只有 `k = 1`（S5-18 `Evolution/CltResolvent`、`CltPath`，5a8f89e）。
+- **D331（T2144b）**：`CltFarGeomNear` 以局部半径 `ρ`、隔离距离 `R` 为参数，结论 `R/2 − ρ − 1`；RBM2D 为 `w ≥ 6`、`ρ = ℓw`、`R = w²ℓ`（§43 的对数尺度要用线性形式）。
+- **D332（T2144c）**：`CltCoordAdj` 显式带 `g`、不要 `3 ≤ L`，邻接用 `zdistInf ≤ 1`（`S^{(B)}` 支撑 `2d+1` 点，`∞` 球 `3^d` 点）。
+- **D333（T2144d）**：`cltGoodAt`/`CltPathBound` 以远距门槛 `θ ≤ R/2 − ρ − 1` 为参数（RBM2D：`ρ = ℓ W^τ`）；`gEntry` 即合并的 `Gres` 矩阵元。
+- **D334（T2147a）**：`TailtoTail` `(neiwuj)`（`3_5:2344-2362`）对一切实数 `D` 成立（论文：某个 `D > 0`，`≲`），显式常数 `C = (3 e^{(4d+1)/4})²`（S5-04 `Induction/TailtoTail`，37f3a22；`STTailtoTail` 证出，登记删）。
+- **D335（T2147b）**：证明路线不用 `(prop:ThfadC)` 与论文的连续微积分事实（`3_5:2365`，从略）：改用加权预解式界 `Σ_b Θ_t(a,b) e^{c|a−b|_∞} ≤ 2/(1−t)`，`c = 1/(4d+1)`（`g² ≤ 1−t` 区域，含边界）。
+- **D336（T2148a）**：`(zYU1)` 对 `σ ∈ {(+,−),(−,+)}` 都是 `+` 号；Lean 陈述要 `H` Hermitian、`|E| < 2`、`0 ≤ u < 1`（S5-28 `Induction/WardII`，8ec98a6；`STWardII` 证出，登记删）。
+- **D337（T2148b）**：`3_5:2259` 的 `Δ_u ≍ A⁻¹` 只用上界 `W^{−d}B_{u,0} ≤ 2A⁻¹`（由 `1−u ≥ ilambda²/L^d`），常数被 `≺` 吸收。
+- **D338（T2142a）**：`lem:localregular` (3)–(5) 是分子多重图上的游走（每条边的出现只用一次，分子可重访），不是简单路径；不假设 `(eq:far_ab)`（`7_8:792`），`𝓜_x = 𝓜_y` 时为闭游走（LW-10a `Graph/LocalRegular`，3bf20e1）。
+- **D339（T2142b）**：(5) 由不变量里的 Hall 条件携带，不用 `B:178-199` 的「路径 ↔ 分子」带标号对应（(4) 要它，LW-10b）。
+- **D340（T2142c）**：`(eq:MolVW)`（`7_8:798`）对分子的一切顶点（含外部顶点）成立，比论文强。
+- **D341（T2142d）**：起点图 `fxyPowGraph p`、路径不变量与 `lw_localregular_expansion` 对一切 `p`；`p` 偶只用于值恒等式。
+- **D342（T2149a）**：坐标尾 `CltCoordTail` 只要 `2 ≤ d`（`W^{d−1} ≥ W`）；门槛 `W^{−1/2}` 即 `CltPathBound` 的步长（论文无显式陈述）（S5-20 `Evolution/CltGood`，4f4612b）。
+- **D343（T2149b）**：替换步好事件属论文没有的 i.i.d. 副本路线；`HClt` 只用到 `STLocalEntryU` 与（经 `stFarEntryAtLog`）`STGdecayW`，不用 `STAvgU`。
+- **D344（T2149c）**：`CltGoodWhp` 的远距门槛取序列 `θ n ≥ c (log W)^3 ℓ_τ`（消费者的 `θ = 4(log W)^3ℓ_s − 1` 取 `c = 1`）；`cltGoodAt` 对门槛单调。
+- **D345（T2146a）**：网格好集 `GoodSetN`（ST2-32 `Induction/GridGoodN`，2f246bf）不再有 RBM2D 的 (G1) `Ξ^{(𝓛)}_{2k+2} ≤ ΓΛ`、(G3) 乘积、(G4) `Ξ^{(𝓛)}_{k+1} ≤ ΓΦ` 三条；`Λ` 经 `lem:SEforLn` (4) 的参数 `q` 进入（前提 `hQ`），`Φ` 经 `hX`、`hY`。
+- **D346（T2146b）**：(D1)–(D4) 的水平为 `Γ(ΓΦ)B^k/η`、`Γk(ΓΦ)²B^k/η`、`Γ(ΓΦ)B^k/η`、`Γ(ΓΛ)B^{2k}/η`，无附加 `W^{−D'}`，(D1) 无 `(k−1)`（RBM2D 为 `Γ(k−1)(ΓΦ)M^{−k}η⁻¹ (+W^{−D'})`）。
+- **D347（T2146c）**：远距子句用 `ℓ^∞` 跨度 `STdiamInf` 与 `ℓ_u W^{τ'}`；`GridGoodN` 是 `STIngR` 形状的钉文，RBM2D 的 `MainIndHyp…PT` 前提逐一换成合并的一致陈述。
+- **D348（T2150a）**：`lem:newKLK` 锐形式（D315）的证明用逐点近/远分割代替论文的「不妨设 `𝒯_u(ℓ) ≥ W^{−D}`」（`3_5:612-616`），`ℓ = L` 时远处取值恰为 `W^{−D}`（S5-12 `Induction/NewKLKL`，7388d13；`STNewKLKL` 证出，登记删）。
+- **D349（T2150b）**：常数 `C = 10 + 2^{d−2} e C_T`、`δ₀ = κ/2`；论文「高概率、`1+o(1)`」（`3_5:640-646`）写成显式前提 `‖G_u − M‖_max ≤ δ₀`、`Im G_xx ≤ 2 Im m`（同 `STNewKLK`）。
+- **D350（T2153a）**：`gridDriftN_envelope` 多一个前提 `STKbound`（KL 的条件形式，经合并的 `exists_norm_Kcal_le_win`，T2111a）；RBM2D 无条件（ST2-31 `Induction/GridEnvelopeN`，a438a51）。
+- **D351（T2153b）**：`gridDriftN_envelope`、`SumWeightedStepErrN_Stmt` 去掉 `[NeZero k]`（更强）。
+- **D352（T2152a）**：`(eq:bound_isolated)`（`3_5:2245-2248`，论文引 [DYYY25, (7.39)]、[RBSO1D, (A.112)]）在 Lean 中由 RBM2D 的 i.i.d. 副本 + 坐标伸缩路线证出（S5-21 `Evolution/CltStep`，74400b7；`STCltIso` 证出，登记删）；对数尺度常数 `ρ = w+1`、`R = 8w`、`θ = 3w−2`、`w = (log W)^3 ℓ_s` 论文中没有。
+- **D353（T2152b）**：`stCltIso_holds` 对一切 `σ ∈ {±}²` 成立（钉文要 `σ 0 ≠ σ 1`），且不要 regime `STReg5I`：只用 `STFlow` 与 `STStep2Concl`。
+- **D354（T2152c）**：`𝗕_b` 编码为局部形式，系数 `scale·W^{−2d}` 乘单项式 `G(σ₁)_{yx}G(σ₂)_{xy}`，窗口 `|b₁−b₂|_∞ ≤ w` 外为零；论文对 `𝗕` 无局部形式陈述。
+- **D355（T2155a）**：`STExpInv` 对一切实数 `E`、`u` 成立（钉文带 `|E| < 2`、`0 ≤ u < 1`，未用）（S5-22a `Evolution/ExpInv`，88600b1；`STExpInv` 证出，登记删）。
+- **D356（T2155b）**：`STExpInv` 对单时刻流 `H_u = √u X`（合并的 `seqHflow`，§7 的模型）证出，不涉矩阵布朗运动。
+- **D357（T2156a）**：`sum_weighted_qErrQN_le` 的陈述带固定常数 `0 ≤ C`、`0 ≤ C₂`（合并的 `qStepErrN` 的参数），量词在 `∀ᶠ n` 之前；RBM2D 无（S3-13b `Induction/QGridB`，3013163）。
+- **D358（T2156b）**：衰减指数用 `D_t + (m+1)`（RBM2D `D_t + k`）；张量指标 `m ≥ 1`、圈长 `m+1`，结论对一切 `p ≤ K n`。
+- **D359（T2156c）**：陈述不带 `STKbound`（它在消费者处经 `gridDriftN_envelope` 进入），与 RBM2D 同为确定性陈述。
+- **D360（T2154a）**：组装钉文与目标去掉 `[NeZero k]`（更强，同合并的 `SubGaussStopN`）（ST2-33 `Induction/GridAssemblyN`，686cf71）。
+- **D361（T2154b）**：`YMomentsN` 照 RBM2D 把 `∃ C_P` 放在 `K` 之后，`AssembledN` 用不上；由 ST2-35 的 `YMomentsUnifN`（`C_P` 在 `K` 之前）补（§45 O3）。
+- **D362（T2158a）**：`(uwp2-92kj)`、`(uwftgwesj)` 的 `≺`/`≲` 写成显式常数 `C(d, Λ)`（`0 < g ≤ Λ`，来自 `prop5Decay_holds`），不是 `C(d)`（S5-14 `Induction/Step5Kernel`，19a2b09）。
+- **D363（T2158b）**：`(TTT2)` 要 `g²/L² ≤ 1−t ∨ 1−u ≤ g²/L²`（同 `EKPropTInf`）；(uwftgwesj) 带 `g²/L² ≤ 1−t ∨ 1−s ≤ g²/L²`。
+- **D364（T2158c）**：**论文 `(uwp2-92kj)` 的最后一个 `≲`**，`(1−u)/(1−t) W^{−D} ≲ 𝒯̃_{t,D−1}`，对与 `L` 无关的常数不成立（`step5Kernel_profile_not_unconditional`）；正确形式：显式的 `C 𝒯_t + (1−u)/(1−t) W^{−D}`，或在前提 `(1−u)/(1−t) ≤ W^θ` 下损失 `D−θ`、`D−2θ`（论文的 `D−1`、`D−2` 即 `θ = 1`）。S5-15 须提供 `θ`（流给 `1−t ≥ N^{−κ}`、`W ≥ N^𝔠` 时 `θ = κ/𝔠`）。
+- **D365（T2158d）**：`max_{u∈[s,t]}` 写成 `∀ u ∈ [s,t]` 与 `Set.Icc s t` 上的 `sSup`；`𝒜` 里 `Θ^{(+,−)}` 取 `Re Theta`；`(eq:decompU)` 要 `t ≠ 0`。
+- **D366（T2159a）**：`0 ∈ GoodSetN`（`u = 0`、`H = 0`）的 (D4) 条款要 `k S_cc η_0 ≤ Γ²Λ b^{2k}`（`S_cc = (1+2dg²)^{-1}`，`b = (1+g²)^{-1} + L^{-d}`）；RBM2D `NonAltGood:996` 的 `k/5 ≤ Γ²Λ` 不照搬，单位水平 `Γ = Λ = Φ = 1` 不满足（`sz0` 上 `k = 2, 3` 门槛 1.82、2.65）；Lean 用充分条件 `Γ²Λ ≥ k(1+g²)^{2k}`（`zero_mem_goodSetN_of_levels`）。消费者（ST2-35、S3-10、S3-14）须按此传水平（ST2-34 `Induction/AzumaProxyN`，43ab861；`AzumaSubGN` 证出）。
+- **D367（T2157a）**：`(eq:boundEfar)` 的 `≺` 藏了 `(log W)^{12}` 与 `log L`：Lean 的界带 `(d (log W)³ ℓ_s + 1)⁴`（窗口 `w₁ = d(log W)³ℓ_s` 的 `|r|²` 与体积）与 `1 + log(L+1)`（临界和 `Σ_b (|b−a₂|+1)^{-d}`），两者最终都 `≤ N^{τ/4}`；票面字面的 `C K (1−s)² ilambda^{-4} ℓ_s⁴` 不成立（S5-22b `Evolution/MeanFar`，a21a819；`STMeanFar` 证出）。
+- **D368（T2157b）**：窗口与 `(prop:BD2)` 用 `ℓ¹`（`|r|₁ ≤ w₁`），轮廓用 `ℓ^∞`（`|x|₁ ≤ d|x|_∞`）；前提 `2w₁ ≤ ⌊ρ⌋₊ + 1`，由 `log W ≥ 2d` 给出。
+- **D369（T2157c）**：均值部分对一切 `σ ∈ {±}²`、一切 `a` 成立；`σ₁ ≠ σ₂`、`(eq:ells_to_ellt)`、`(eq:ells_to_ellt2)` 只是 `STCltFarConcl` 的指标集条件，证明未用。
+- **D370（T2157d）**：`≺ ⟹ 𝔼` 给出证明（坏事件上的 a.s. 包络 `η_s^{-2} + ‖𝒦^{(2)}‖`，`D₁ = 5d+19`，`D_w = (5d+13)/𝔠`）；论文对 `𝔼𝓑` 直接用 `(eq:propcalB)`，未说明。
+- **D371（T2160a）**：论文用 BDG 界鞅项（`3_5:166`、`3_5:216`）；Lean 的网格游走有二阶余项 `Y`，其矩钉文 `v_j = Δ²P`、`w_j = Δ⁴P²`、`P ≤ N^{C_P}`，显式 `C_P = 11 + (4k+4)·max 0 (1−τ')`（同 RBM2D 的 T2160a/b）（ST2-35 `Induction/AzumaProxyN2`，88183f4；`YMomentsUnifN`、`yMomentsN` 证出）。
+- **D372（T2160b）**：`𝔼 ω_c⁸ ≤ 105` 用 `gvarF ≤ 1`，需 `3 ≤ L`（`sum_sbKernelR`），写作 `sz.three_le_L n`（同 T2001a）。
+- **D373（T2160c）**：`YMomentsUnifN`（`C_P` 在网格 `K` 之前）是 `AssembledN` 能用的形式；合并的 `YMomentsN` 保留，由 `yMomentsN_of_unif` 推出（陈述形状，非论文差异）。
+- **D374（T2164a）**：`lem_dec_calE` 的前提「`W^D ≥ N`」（`3_5:2317`）对这里证出的 `res_deccalE_lk` 不够，用的是 `L^d W^{2d} ≤ W^D`（约 `N² ≤ W^D`）；因 `T_{u,D}` 随 `D` 递减，下游无碍（S5-05 `Path/LemDecCalE`，6e63fbc）。
+- **D375（T2164b）**：`gexRHS` 的邻对（`zdistInf ≤ 1`）在 `d = 3` 是 `9^d = 729` 对，不是 portmap 的 `(1+2d)² = 49`（常数）。
+- **D376（T2164c）**：`M_u = W^d(1−u)`（不带 `Im m`，`ℓ_u = 1`）；尾函数 `tailTD`（幅度 `M_u^{-2}`）；`E2Hyp` 不带 `s`、`v`（与 RBM2D 不同）。
+- **D377（T2164d）**：`lossE2` 的首常数 `10^12 (1600 d⁴)^d`、对数 `log(L^d W^{2d})`；卷积常数 `S_d = (1+1536 d⁴)^d`（非最优）。
+- **D378（T2163a）**：`(zYU2)` 的第二项 `(1−s)²(Θ̊_t(𝓛−𝒦)_sΘ_t)_a` 是精确展开 `Q^{(1)}𝒰^{(2)}_{s,u}X = [(s/u)(I − L^{-d}J) + ((u−s)/u)Θ̊_u] ⊗ [(s/u)I + ((u−s)/u)Θ_u] X` 的 `β²` 项，另三项在 Lean 中另行界住；`(u−s)/u ≤ 1−s`（S5-27 `Induction/IniTermII`，69b1099；`STIniTermII` 证出，登记删）。
+- **D379（T2163b）**：`3_5:2275-2281` 里传播子的时间是指标的运行时间 `u ∈ [s,t]`（论文写 `t`）；输出的下限是 `((1−s)/(1−u)) W^{-D'}`，不是 `W^{-D}`，取 `STDecay` 的 `D' = D + 1/𝔠` 即 `≤ W^{-D}`。四个 `≲` 本身都成立。
+- **D380（T2163c）**：票面的实例数据（`L = 3`、`g = 1/2`、`s = 15/16`）不在情形 (ii) 内；实例改用 `L = 4`、`g = 1`（票面笔误，非论文差异）。
+- **D381（T2163d）**：核心常数依赖 `(d, Λ, κ_m)`（`Λ = 𝔡^{-1}`、`κ_m = √(κ(4−κ))/2`），不是论文的 `C(d)`（同 D362）。
+- **D382（T2162a）**：`M_{y,α}`（论文引 [DYYY25] (2.24)，d ≥ 3 未定义）读作按 `S^{(B)}` 权重的加权平均 `N Σ_x |ψ_α(x)|² S°_{xy}`（权和为 1、至多 `2d+1` 块），`ℙ(𝓑(y)) ≤ (2d+1)·ℙ(QUE 坏)`（RBM2D 是五个等权）（UN-D1 设计，T2162 合并 04aedec，探针在 `t/T2162`）。
+- **D383（T2162b）**：Thm 2.4 的证明除论文列出的 `MR:decol`、`MR:locSC`、`(Meq:QUE)`（`1_2:567-568`）外，还要 `𝐇_t`（`t ≤ N^{-1+τ_U}`）的 QUE 与对角 local law、`ML:GLoop`/`ML:GLoop_expec`/`ML:GtLocal` 沿 `z` 序列的输出、弱 GUE local law；论文只写「同 [YY_25] §7.2」（同 RBM2D paper-delta #95/#139）。按 §50 内部证明（GUE 相 28 张）。
+- **D384（T2162c）**：`(Meq:QUE)` 的窗口只用到 `W^{-ε₀}(λ∧1)W^{d/2} ≥ W^{2𝔡/3}`（脚注 `1_2:372`），`λ` 与 `λ∧1` 两种读法都可。
+- **D385（T2162d）**：`UNGreenCorr` 对伸缩序列 `r_n ∈ [a,b]` 陈述（BA 的密度 `ρ_N(E)` 随 `n` 变；带状模型 `r ≡ 1`）（设计形状，非论文差异）。
+- **D386（T2162e）**：`τ_U` 的范围：Step 1 中 `τ_s ≤ 𝔠𝔡`，`τ_U ≤ c'/(2(C_n+1))`，`c' = 𝔠𝔡/30`（d ≥ 3 是 `ℙ(𝓑)` 起约束，RBM2D 是 θ）；RBM2D 的常数 `C = 3n_f+16`、`C_n = 1` 要按 d ≥ 3 重算。
+- **D387（T2162f）**：§11 的 BA 形式是 `UNUnivDilAt`，`ρ_n = π⁻¹ Im m_n(E+i0)`（与 §51 的体内条件一致）。
+- **D388（T2162g）**：票面的 `L ∈ {W^{1/𝔠−1}}` 是 d = 1 的形式，d ≥ 3 为 `L ≤ W^{1/(d𝔠)−1}`（`un_dc_lt_one`）（票面笔误，非论文差异）。
+- **D389（T2151d）**：lem:localregular 性质 (4) 用带颜色的精确不变量证（同色 walk、每条非环分子边恰在一条 walk 上、颜色访问条款），不是 `B:178-199` 的带标号对应「walk `i` ↔ `M_i`」；是 walk 不是简单路径，不用 `(eq:far_ab)`（同 T2142a）（LW-10b `Graph/LocalRegular2`，32d895b）。
+- **D390（T2151e）**：`B:197` 中被拉出的 `Ḡ` 边落在分子内部（或是权）的情形是 `localReg2_Fam.thr` 的闭合绕行，要用不变量的 (c) 条款处理权与分子内部的边（论文从略）。T2151a–c（性质 (6) 的远离假设、`B:232-249` 情形 (iii)(iv) 声称 Δord ≥ 2 实测 0、`B:275-277` 的步进断言 (E) 不成立）留给 LW-10c 编号（§47，Fable 报告 `docs/claude-team/fable/2026-10-04-localreg6.md`）。
+- **D391（T2165a）**：`(eq:pairingcond)` 论文写 `≤`，Lean 取严格 `<`（`(eq:bound_isolated)` 的 `≥` 的精确补集，二者在等号处重叠）；聚类取 `2R` 分离覆盖、最近点归属（成员在 `2R` 内），不是连通分支（S5-23 `Evolution/CltMoments1`，daa7cc1）。
+- **D392（T2165b）**：`a₂` 处权重的分子是窗口 `C₆ d (log W)³ ℓ_s`，不是 `ℓ_s`；`(eq:simplecalculus)` 成立的形式为 `λ^q ρ^{-((d−1)q−d)}`，`ℓ ≤ ρ`（`log W ≥ 1`）时为 `ℓ^d/(ℓ^{d−2})^q`。
+- **D393（T2165c）**：`(eq:2p_product_pair)` 的 `≺` 每个聚类藏 `lw^{d+(13−d)|A|} ≤ lw^{12|A|}`，合计 `lw^{24p}`（`cltMom1_clusterSum_le` 里显式）。
+- **D394（T2165d）**：尺度前提：半径 `2R` 的可比性要 `log W ≥ 40`（`2pR` 要 `≥ 40p`），`(prop:BD1)` 要 `log W ≥ 2d`（D368 形式）；Lean 陈述写作 `2r ≤ ρ`、`2dw ≤ ρ`。
+- **D395（T2166a）**：非交错 `σ` 的 `hker` 系数是 EK-6 的 `W^{Cε} r^{k−1}` 与 `W^C δ`（`r = (g²+|1−s|)/(g²+|1−t|)`），类为 `δ ≤ W^{-D}`、`D > 1`；不同于 RBM2D 的 `cCase1(1+log L)^k…`（S3-10a `Induction/NQGood1`，691566a）。
+- **D396（T2166b）**：二次变差上界 `κ₁(κ₁Γ(ΓΛ)B_u^{2k}/η_u + W^C W^{-D'}) + W^C W^k W^{-D'}` 要 `D' > k+1`；路线是两次用 EK-6 加行和，不是论文的一步 pair 估计。
+- **D397（T2166c）**：`η⁻¹` 平移取改正形式 `η_{u'}⁻¹ ≤ η_u⁻¹(1 + 2Δη_u⁻¹)`（`2Δ ≤ η_u`）；`(1 + Δη_u⁻¹)` 在 `E = 0`、`u = 0`、`Δ = 1/10` 为假（同 RBM2D 票面的错）。
+- **D398（T2166d）**：`goodSetN_dec_shiftN` 的前提取 `2 ≤ ℓ ≤ 2k+2`，结论只含 `𝓛` 部分；`ℓ = 1` 空真。
+- **D399（T2166e）**：对一切实数 `g` 有 `ℓ_u ≤ ℓ_{u'}`（`nqGood1_ellT_mono`），不需要 `0 ≤ lam n`（§45 O3 (3) 了结）。
+- **D400（T2166f）**：`Ξ̂^{(𝓛)}` 的平移用 `Bctl` 单调（`STBctl_mono`）；`GoodSetN` 没有 `Ξ̂^{(𝓛)}` 条款（T2146a），无须平移；`STXiLKM_crudeN` 要 `B_u ≤ 1` 与 `‖𝒦‖` 的界 `M_K`。
+- **D401（T2166g）**：`nqGood1C` 是 EK-6 对 `(d, k, Λ_g, κ')` 的常数，`κ' = min κ (4/5)`（由 `|E| ≤ 2−κ`）；`driftTensorN` 是 `GridDriftN` 内联和的新名字（陈述形状，非论文差异）。
+- **D402（T2161a）**：`GGGamma`（`B:393-405`）前两个和里的系数 `S^+_{xβ}` 应为 `(M^+S^+)_{xβ} = (1+M^+S^+)_{xβ} − δ_{xβ}`（数值核对 b.7；探针 `BAGGGamma` 用改正形式；第三个和、`lanlw`、`lem_lweight` 原样成立）（BA-D1 设计，T2161 合并 87f617a，探针在 `t/T2161` 的 82e72b3）。
+- **D403（T2161b）**：体内条件 `|E| ≤ e_λ − κ`（`1_2:649`、`7_8:1817`）与 `lem:propM`(2) 的 `Im m ≳ 1`（`7_8:1908`）在 L 为奇数时无定义、有 gap 时为空、cusp 处 `Im m = 0`；按 §51 改为 `ρ_N(E) ≥ κ`。另：[RBSO1D] Lemma 3.9 在 TeX 里只出现在注释中（`7_8:1844, 1846`）。
+- **D404（T2161c）**（约定）：`B_{t,K}`（`1_2:1107-1108`）与 `ℓ_t`（`1_2:1121-1123`）带 `λ`；BA 流里耦合是 `g_0 = √t_0 g`，探针保留模型的 `g_n`（合并的 `Bparam`）；二者差常数 `t_0 ≥ κ/(κ+1)`（`Im m ≥ κ`、`Im z ≤ 1`）；论文未说明取哪个。
+

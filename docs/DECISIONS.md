@@ -250,3 +250,128 @@
 ## §31 T2077、T2080 的票面修正（总调度，2026-10-03 22:24 UTC，流程事项与小改动；依据 `docs/reports/T2077-prove.md` (b.9)(d.1)、`docs/reports/T2080-prove.md` (a) Verdicts D1–D3）
 - **T2077（S1-06）**：票里点名的两条关键陈述 `sum_norm_integral_pairCutIntegrand_le`（BlockSumBound:78）、`expected_gloop_hierarchy_integral_unconditional`（Continuity:307）及其周边，依赖 RBM2D 上游已删的死代码链（`ContractionSecondLoopExpectedCuts`、`LoopHierarchyGenerator`、`LoopHierarchyCutNormBounds`、`LoopHierarchyIntegral` 等，约 1000 行；portmap 记为 class d，RBM2D T2274 删除，9e0f275 上已不存在），portmap 后续无消费者。**决定：删去这两条目标，不移植死代码链**。是票面错误（我从 portmap P.7 注记照抄了已删的名字），不算返工。`sum_norm_SB_row` 不另立别名：消费者用合并的 `RBM.sum_norm_SB_row d L g hL a`（`Defs/Block.lean:118`）。T2077 在原分支 586e57c 直接进审核。
 - **T2080（ST2-03）**：LW 钉文 `LWterm d`、`LWtermExp d` 以 `3 ≤ d →` 开头，ST-2 消费形式 `STLWB d`、`STLWT d` 没有，`Sizes d` 也不带 `d ≥ 3`；`d ∈ {1,2}` 时前提空真而结论实在，桥按原签名推不出。**决定：两座桥加前提 `(hd : 3 ≤ d)`**（不改任何钉文；`STStep2` 等消费者都在 `3 ≤ d →` 之下，主定理只要 `d ≥ 3`）。另：探针 §10 的 `STScaleInv`（2260–2263）、`ST_STprof_pos`（2309–2313）、`ST_card_lab_le`（2315–2335）被 ST2-03 的搬移范围用到，**移入 `Step2Events.lean`**，ST2-04 导入、不再复制。D2（`Ψ' = max(Ψ(0), W^{-d/2})`）照预检做法，无须改陈述。票面疏漏，不算返工。T2080 在原分支从 1b 重开（预检报告 (a) 已覆盖修正后的票）。
+
+## §32 T2095（ST2-28a）预检 BLOCKED：`hierarchyN` 取条件形式（总调度，2026-10-04 01:41 UTC，流程事项；依据 `docs/reports/T2095-prove.md` (a) Verdicts）
+- **事**：无条件的 `hierarchyN : HierarchyN d` 的 RBM2D 证明（`HN:31-34`）是 `rw [loopGenN …]` 再用 `loopDrift_sub_K_deriv_n`；一般 `n` 的 `LoopGenN`（`genMat 𝓛 = llPairN + egtN`）属 ST2-28（536 行，未合并），不是 T2095 的依赖（portmap P.5 漏写）。`HierAlgebra` 各目标与 `HierarchyN` 的 `Prop`、`n = 2` 约化：预检 PASS。
+- **决定**：照预检提议，`hierarchyN` 取条件形式 `hierarchyN_of_loopGenN : STLoopGenNForm d → HierarchyN d`，`STLoopGenNForm` 是一般 `n` 的圈生成元恒等式，按合并的 `LoopGenN2` 的形状（`∀ sz n`、`g = sz.lam n`、合并的 `ST*` 词汇）在本票文件里定义，登记为 owed（ST2-28）。ST2-28 的票须证出 `STLoopGenNForm d` 本身（类型一字不改），合并后再组合出无条件的 `hierarchyN`（ST2-28 票里写）。不算返工（票面依赖漏写）。
+- **落实**：`docs/tickets/T2095.md` Amend 1；T2095 在原分支从 1b 重开，预检报告 (a) 沿用。
+
+## §33 T2097（ST2-25）预检 FAIL：`tailtoTail` 照搬在 d ≥ 3 不成立——本票删去，留给 ST-D4（总调度，2026-10-04 01:57 UTC，流程事项；依据 `docs/reports/T2097-prove.md` (a) "Verdict per target" 与 part C）
+- **事**：RBM2D `tailtoTail`（`Path/UTransport:422`，论文 `TailtoTail`/`(neiwuj)`，`3_5:2345–2362`，Step 5）照搬为假：`d = 2` 的恒等式 `r²M_s⁻² = ρ_ℓ⁴M_t⁻²` 靠振幅 `∝ η⁻²`；`d ≥ 3` 的振幅 `B_{t,r} ∝ (g² + 1 − t)⁻¹`，留下因子 `ρ_η = (1−s)/(1−t)`。数值（part C，精确的 `U`）：`g = 0.01`、`1 − t = 0.01`、`1 − s = 0.5`（论文的区间 `1 − s ≥ 1 − t ≥ g²` 之内）比值约 `53.6`，与 `ρ_η = 50` 同阶；`g = 1` 时还随 `L` 增长。其余五组目标预检 PASS。
+- **决定**：`tailtoTail` 从 ST2-25 删去（P.1 的 ST-2 消费者 `Path/StepBound` 属 c 类、不移植；论文的用处是 Step 5 的 `lem:pf_step5`，属 ST-4）。`(neiwuj)` 在 `d ≥ 3` 的正确形式（带 `ρ_η`，或换论证）交给 ST-4 的设计票 ST-D4 先查清，再决定 `lem:pf_step5` 怎么走；**这可能是论文 Step 5 的一处真缺口**，paper-delta 候选 T2097a 暂记为"待核"。不算返工。
+- **落实**：`docs/tickets/T2097.md` Amend 1；T2097 在原分支从 1b 重开，预检报告 (a) 沿用。
+- **更正（总调度，2026-10-04 02:40 UTC；依据 Fable 复核 `docs/claude-team/fable/2026-10-04-tailtotail.md`，Jun 指派）**：`(neiwuj)` **成立**，上面"可能是论文缺口"的判断撤回。T2097 预检把尾函数认错了：`TailtoTail`（`3_5:2344–2362`）用的是 Step 5 自己的 `T_{u,D}(r) = (W^d|1−u|)^{-2} e^{−√r} + W^{-D}`（`def_WTuD`，`3_5:2296`，振幅 `η_u^{-2}`，与一、二维相同），不是 `def: TTfunc` 的 `𝒯_t`/`𝒯̃^ℓ_{t,D}`（`3_5:311–322`，Lean 的 `tailT`/`tailW`，振幅 `(g²+1−t)^{-1}`）。用正确的 `T`：`sum_res_Ndecay` 的因子 `((1−s)/(1−t))²` 恰好把 `(W^d(1−s))^{-2}` 变成 `(W^d(1−t))^{-2}`；`1−t ≥ g²` 时 `ℓ_t = 1`，核按 `(2d/(2d+1))^{|x|₁}` 衰减，`e^{−√r}` 由 `√` 的三角不等式保住；常数只依赖 `d`。数值（`d = 3`，精确的 `U`，`L = 16, 32, 64`，`ρ_η` 到 `5·10⁵`）：比值都在 `[0.66, 1.36]`；用 `𝒯` 则重现预检的 `53.6`。`lem:pf_step5` 照论文的停时论证闭合，无缺口（Fable 置信约 95% / 85%）。T2097a 撤销，不编 paper-delta。
+- **后续**：`tailtoTail` 仍不放回 T2097（已按 Amend 1 在 1b）；Step 5（ST-4）移植时新增 `tailTD`（= `def_WTuD`）到 `Defs/Tail.lean`，按 Fable 给的陈述移植 `tailtoTail`：`0 ≤ s ≤ t < 1`、`g² ≤ 1−t`、`‖A b‖ ≤ T_{s,D}(|b₁−b₂|)` ⟹ `‖U∘A (a)‖ ≤ C_d² T_{t,D}(|a₁−a₂|) + ((1−s)/(1−t))² W^{-D}`（证明用 `ukerNonneg`、`ukerRowSum`、`√` 三角不等式、Neumann 界）。写进 ST-D4 的设计要求。
+
+## §34 T2107（LW-05）BLOCKED：钉文 `LWweightExp`、`LWggExp` 把 `LWPins_lwSp` 的实参 `E`、`g` 写反了——改钉文（总调度，2026-10-04 05:50 UTC，按 §4 签字的小改动，同 §27；依据 `docs/reports/T2107-prove.md` (d) 第 1 项与 `docs/queue/T2107.state`）
+- **事**：`LWPins_lwSp` 的显式实参顺序是 `d L W g E t`（`Graph/LWPins.lean:84`，节变量 `(g E t : ℝ)`），而 `LWweightExp`（`:112`、`:115`）与 `LWggExp`（`:169`、`:172`、`:176`、`:180`）写成 `LWPins_lwSp d L W E g t`，即以能量当耦合、以耦合当能量。照字面钉文为假：`LWweightExp 0` 已编译出反例（`LWweightExp_zero_false`），`d = 3` 的蒙特卡罗偏 16.8 个标准差。文档串与设计（T2040，§24）写的都是 `S⁺ = S(1 − m²S)⁻¹`，本意无歧义。
+- **决定**：六处一律改成 `LWPins_lwSp d L W g E t`，其余一字不改。改后的 `LWweightExp` 就是 T2107 已证的 `LWweightExpFix`（`lwWeightExpFix_holds`，对一切 `d`），所以不另立新名：删去 `LWweightExpFix` 与反例 `LWweightExp_zero_false`，定理改名 `lwWeightExp_holds : LWweightExp d`。`LWggExp` 同修，LW-07 照修后的钉文证。
+- **落实**：`docs/tickets/T2107.md` Amend 1（`RBM3D/Graph/LWPins.lean` 只许改这六处实参）；T2107 在原分支从 1b 续做（预检 (a)、(a′) 沿用），再审核。钉文笔误不算返工（同 §27、§32）。
+- **教训**：钉文入库票（T2067）的预检核了边界四项（§29），没核实参顺序；同名实数参数多的定义（`g E t`）调用时易错位。今后钉文入库票的预检加一项：每个调用对照定义的显式实参顺序。
+
+## §35 T2118（ST2-11）预检 FAIL：`S̃₃` 的论文路线要"大 D"，钉文 `STEMn2Exp` 是 ∀ D > 0——钉文不动，换路线（总调度，2026-10-04 07:49 UTC，流程事项；依据 `docs/reports/T2118-prove.md` (a) Verdicts 与 Fable 复核 `docs/claude-team/fable/2026-10-04-emn2exp-D.md`）
+- **事**：T2118 预检按论文 `3_5:871–888` 的路线（六条腿都用 `(Ĵ + W^{-D}) W^{-d}𝒯̃` 界）估 `S̃₃`，第 7 行"底对底"项 `u|Reg|W^{-D}` 要 `D ≥ log_W(g²ℓ_t^{d−2})`；论文写"任意大常数 D"（`3_5:437`），合并的钉文 `STEMn2Exp`（`Step2Defs.lean:456`）与 `emn2Exp_of_far3` 的 `h3` 是 `∀ D > 0`。预检没有说钉文为假。
+- **Fable 复核结论**：钉文按 `∀ D > 0` **不假**，不需要 `D` 的下界。第 7 行是论文链的副产物（`3_5:881–886` 的 `W^{-2D}Σ_c 1`）。按 `(b,c')` 腿上剖面的大小把 `S̃₃` 分开即对每个 `D > 0` 闭合：`A^f = {c' : P_D(|c'−b|) ≤ P_D(|a−b|)}`（含该腿的整个底区）用收缩不等式（同 `S̃₁` 的 `emn2Exp_part1`，`M = y²P_D(|a−b|)`、`K = 1`）给出 `(W^{-d}B_{t,0})^{1/2}` 项，不求和、不用 `Ĵ`、不要 `D` 的条件；`A^n` 上该腿是真尾巴，六腿 Hölder 只遇到 `Σ_c 𝒯𝒯`（`(TTT2)`）与 `W^{-D}Σ_c 𝒯 ≤ C₁W^{-D}/(1−t)`，"底对底"项不出现。配料都已合并或已在预检计划里；脚本见 Fable 报告第 2 节（手算与脚本核对，非 Lean）。另：`STLWT` 无此问题（右边对 `D` 反单调，前提不含 `D`）。若改钉文成"∀ 大 D"约需一天，修改 `ST_LW_sections`、`ST_event_mg`、`ST_selfImprove_section`、`ST_selfImprove`、`ST_step2_of_pins*` 等，无数学风险但不必要。
+- **决定**：钉文 `STEMn2Exp` 与 `emn2Exp_of_far3` 不改；`docs/tickets/T2118.md` Amend 1 换成分区路线，从 1a 重开（预检只补分区部分的 (a′)：`A^f` 的收缩不等式与 `A^n` 的 Hölder，其余行沿用 (a)），再 1b、审核。paper-delta 候选 T2118a：`3_5:881–886` 需 `D ≥ (d−2)log_W ℓ_t`；形式化在 `𝒯̃(|c'−b|) ≤ 𝒯̃(|a−b|)` 处分开 `S̃₃`，底区用收缩不等式，故 `(eq:MG_conclusion3)` 对每个 `D > 0` 成立。不算返工（预检按规则停下报告）。
+
+## §36 T2118（ST2-11）审核 RETURN：证明多带 `(hd : 3 ≤ d)`——签字接受，并定为常设（总调度，2026-10-04 10:31 UTC，流程事项；依据 `docs/reports/T2118-audit.md` §1、§6，`docs/reports/T2118-prove.md` (d) 1）
+- **事**：T2118 在 e9983a2 证出 `emn2Exp_far3 (d) (hd : 3 ≤ d)` 与 `stEMn2Exp_holds (d) (hd : 3 ≤ d) : STEMn2Exp d`；钉文要的是对一切 `d`。多出的 `hd` 来自已合并的输入 `EKPropTInf`（`Evolution/PropTInf.lean:523`）、`KellStarEv`（`Path/KellStar.lean:55`），二者只对 `d ≥ 3` 陈述；论文本身也只在 `d ≥ 3`。消费者 `ST_step2_of_pins'` 等都在 `STStep2 d := 3 ≤ d → …` 之下用它，文件末的例子已编译这条链。审核其余全部 PASS。
+- **决定（签字）**：接受 `(hd : 3 ≤ d)`，钉文 `STEMn2Exp`、`emn2Exp_of_far3` 不改。**常设**（推广 §31）：证明钉文的定理可以多带 `(hd : 3 ≤ d)`，条件是 (i) 用到的已合并输入只对 `d ≥ 3` 陈述，(ii) 每个消费者都在 `3 ≤ d` 之下用到它（主定理只要 `d ≥ 3`），(iii) 报告里列出消费者并编译一条到 `3 ≤ d` 端点的例子。满足这三条不再要签字，审核按 PASS 处理。
+- **登记表**：这样证出的钉文，登记预检通过就可以删其 owed 行；`3 ≤ d` 这一条件记在 paper-delta（如 T2118b）里，证明定理的文档串最好也写上（缺了只记观察，不退回）。带别的条件的条件形式（如 T2125 的 `STKbound`）仍按审核逐个核对消费者。
+- **落实**：`docs/tickets/T2118.md` Amend 2；H64：t/T2118 在 e9983a2 直接跑第 2 轮 `auditor`（按 Amend 2 核对），PASS 即合并。不算返工（钉文写成对一切 `d` 是票面疏漏）。
+
+## §37 T2129（S3-06）预检 FAIL：新钉文 `STKcalDecay` 对一切 `g ∈ (0, gmax]` 为假——加 `Q` 与 `W^{-Q} ≤ g`（总调度，2026-10-04 11:01 UTC，流程事项（票面钉文由我起草）；依据 `docs/reports/T2129-prove.md` (a) row 5、Finding 1、Verdicts）
+- **事**：我在票里起草的 `STKcalDecay`（RBM2D `KcalDecay` 的 `d` 维形式）对每个 `g ∈ (0, gmax]` 量化。预检数值：`d = 3`、`L = 9`、`W = 2`、`1 − u = g²` 时异号传播子 `≈ g⁻²`，`|𝒦^{(3)}| ≈ c W^{-6} g⁻⁴`，`g = 0.01` 时 `1.6·10³ > W^{-D}`；对每个大 `N` 取 `L = W = N^{1/6}` 前提全成立而结论不成立，所以照字面为假。RBM2D 的 `KcalDecay` 没有 `g`（常数与 `g` 无关），是我移植时漏的。目标 2、3 预检 PASS。
+- **决定**：钉文改为：在 `∀ᶠ N` 之前加 `∀ Q > 0`，并加前提 `(W : ℝ)^(-Q) ≤ g`；其余不变。消费者（`lem_decayLoop`、`lem_BcalE`、`GridGoodEvent`）由 `(eq:WO)`（`lam ≥ W^{-d/2+𝔡}`）以 `Q = d/2` 供给，`g ≤ gmax` 由 `lam ≤ 𝔡⁻¹`。paper-delta 候选 T2129a（论文由 `(eq:WO)` 隐含此下界）。不算返工（票面钉文错）。
+- **落实**：`docs/tickets/T2129.md` Amend 1；H65：T2129 在原分支从 1b（`prover-hard`）续，预检报告 (a) 沿用。
+
+## §38 T2128（LW-08）预检 BLOCKED：合并的三个展开只覆盖蓝色、出边、内部顶点——另开 LW-08a 补对称性（总调度，2026-10-04 11:18 UTC，流程事项；依据 `docs/reports/T2128-prove.md` (a) rows C1–C4、Verdicts）
+- **事**：预检数学上 PASS：终止度量 `μ = ((K − ord)^+, w, Φ, n_S)` 字典序，290335 个一步输出无一违反；`ord ≥ K` 截断（选 (a)），`size ≤ W^{-D}` 的推论成立（`n_M`、`n_V − n_W` 不增）。但目标 2（`LocStep` 的期望恒等式）缺输入：合并的 `owx_graph_E`、`oe1x_graph_E`、`oe2x_graph_E` 只对蓝色权（内部顶点）、蓝色出边、蓝色 `G_{xy}G_{y'x}` 成立；`strat_local` 会遇到红色、入边、外部顶点上的权（`G_{xv}G_{yv}` 无蓝色出边；2648 个需走第 2 步的随机图里 1206 个无蓝色出边坏顶点；`p2Graph` 第一步 736 个输出里 352 个外部顶点带轻权）。缺：(S1) 图的共轭，(S2) 虚部翻转下 `seqP` 不变、`G ↦ Gᵀ` 的转置不变性，(S3) 外部顶点的 `(Owx)`；(C4) 带圈非自环边要数据 `M a b = 0`（`a ≠ b`）。
+- **决定**：S1–S3 另开一张票 **LW-08a = T2131**（`Graph/LWSymm`，`prover-hard`），T2128 不扩范围；C4 作为 T2128 的数据假设（`M = m·1`，同 `lwClaimSize`）。T2131 合并后 T2128 在原分支从 1b（`prover-max`）续，预检 (a) 沿用。LW gate 总数 29 → 30。不算返工（设计拆单漏了对称性输入）。
+- **落实**：`docs/tickets/T2131.md`（新，Released 100）；`docs/tickets/T2128.md` Amend 1。
+
+## §39 T2135（S3-07b）预检 FAIL：目标 2 的前提是按时刻的 `STDecayLoopPT`，`STEKDecay` 要关于时间一致——本票加一个一致形式（总调度，2026-10-04 13:07 UTC，流程事项（票面前提由我起草）；依据 `docs/reports/T2135-prove.md` (a) row 12、Verdicts）
+- **事**：目标 1（割的引理、窗口和、`glueTerm`、`eeLoop`）预检 PASS。目标 2（`ℰ` 项的标号衰减，`STEKDecay` 形式）照票面 FAIL：`STEKDecay` 是 `Whp{∀ v ∈ [s_n,t_n], …}`（时间并在概率之内），票面给的前提 `STDecayLoopPT` 是按时刻的 `PrecPT`（并在概率之外）；按时刻推不出一致（连续时间，`stochDomAt_of_perTimeDomAt` 要有限指标集）。用一致形式的前提，第 1–11 行全部闭合（`τ' = ε/2`、`D'' = D + (m+2)/𝔠 + 1`）。
+- **决定**：本票加目标 3：`STDecayLoopU`（`STDecayLoopPT` 把 `PrecPT` 换成 `Prec`，即关于 `u ∈ [s,t]` 一致）与 `stDecayLoopU_of_step2`：由合并的一致形式 Step-2 衰减 `STGdecayW`（`Prec`，`Step34Pins.lean:208`）在一致事件上逐点套用 S3-07a 的确定性切割论证得到（S3-07a 的 `stDecayLoopAt_holds` 本是逐点蕴含）；目标 2 改以 `STDecayLoopU` 为前提。paper-delta 候选 T2135b（论文 `1_2:1371` 的"关于 `u` 一致"）。不算返工（票面前提错）。
+- **落实**：`docs/tickets/T2135.md` Amend 1；H66：T2135 在原分支从 1b 续，预检 (a) 沿用；目标 3 的预检只补一行 (a′)（一致事件上的逐点蕴含）。
+
+## §40 ST-D4（T2134）合并后的签字与落实（总调度按 §4 签字，2026-10-04 15:59 UTC；依据 T2134 审核第 2 轮 PASS，3668596；报告 `docs/reports/T2134-prove.md`、`T2134-portmap.md` P.1–P.10）
+- **钉文接受**：探针 `RBM3D/Probe/T2134Pins.lean`（`t/T2134` 7b2b789）的 18 个钉文与形状 `STIngR5`（同 `STIngR`）、`STStep5Concl = STGdecayW … 0 ∧ STDecayStrongU`、组装 `ST_step5_assembly`（得 `t` 时的 `STDecay ∧ STDecayStrong`）、情形 (iv) 由 Step 4 证出（`stStep5IV_holds`）。
+- **签字接受的 paper-delta 候选**：T2134a–j（入库为 D315–D324）。路线照论文（情形 (i) CLT、(ii) 零模、(iii) 停时 + `tailtoTail`），不是路线级改动；`lem:newKLK` 的锐形式（F-C）、情形 (ii) 的闭合（F-F）是把论文"从略"之处写实。
+- **登记类别（改动一处）**：报告提议 `STLemDecCalE`、`STPfStep5`、`STCltIso` 记 borrowed；**不接受**：§5 只授权 LSY 为借用，这三条由 S5-05…S5-11、S5-17…S5-21 内部证明，**记 owed**（同 §19 对 `STGbEXP_BA` 的处理）。其余照报告：`STStep5I/II/III`、`STStep5`、`STEtermsMid`、`STDuhamelI/II`、`STIniTermI/II`、`STWardII`、`STNewKLKL`、`STCltFar`、`STExpInv`、`STTailtoTail` owed；`STReg5*` structural。
+- **`tailTD`**：放进 `RBM3D/Defs/Tail.lean`（S5-01 对该文件只准追加 `tailTD` 及其基本引理），与 `tailT`、`tailW` 同处。
+- **拆单**：29 张（S5-01…S5-29，其中 S5-05…S5-08 即 T2039 的 ST2-36…39，§28），约 2.6 万行，在 25–40 区间，不问 Jun（§9 O2）。ST-4 计数改为 1 / 30（设计 + 29）。依赖链：S5-01 先行；S5-17（CltSwapPath）、S5-19（FarEntry）只依赖合并文件，可与 S5-01 并行。高风险：S5-10/11（`lem:pf_step5`）、S5-15、S5-23…25（CLT 矩与组装）。
+- 不算返工（设计票审核退回一次已记在返工账）。
+
+
+## §41 T2134 拆单表 S5-17 的依赖更正：CltPath 依赖 CltResolvent（总调度，2026-10-04 16:06 UTC，流程事项；依据 RBM2D `c9a24cf` 的 `Evolution/CltPath.lean:6` `import RBM2D.Evolution.CltResolvent`）
+- portmap P.5 行 S5-17（`Evolution/CltSwapPath` = CltSwap + CltPath，"只依赖 Gauss/Model、Gauss/Envelope"）有误：`CltPath` 用 `CltResolvent` 的 `cltPert_max_le`、`cltPert_sub_le`、`cltDeriv_eval_le`、`cltFarGeomNear` 与 `Case3Defs` 的 `LocalForm`。
+- 改为：**S5-17 = `Evolution/CltSwap`**（只移植 CltSwap，329 行，prover，低风险，可立即开工）；**CltPath 并入 S5-18**（`Evolution/CltResolvent` 之后同票，或 S5-18 的第二个文件），S5-18 估计约 1170 行，仍 prover、中风险。张数不变，ST-4 仍记 30。
+- 不算返工。
+
+## §42 LW-10（lem:localregular）拆两张（总调度，2026-10-04 16:32 UTC，流程事项；依据 T2040 拆单表行 LW-10（2525 行，prover-max，高风险）、论文 `B:172-278`）
+- **LW-10a**：起点图 `|f_xy|^p`（一般偶数 `p`；合并的只有 `p2Graph`）及其值恒等式与计数器、性质 (1)–(6) 的谓词（全部钉出）、`lvl1_lemma_size` 作用于起点图得到 `(eq:local_Gs)`，并证 (1)、(2)（含 `(eq:MolVW)`）、(3)、(5)：分子图上 `p` 条两两边不交的路径跨每一步 `LocStep` 保持（`B:178-199` 三种情形），用 `lvl1_lemma_induction`。
+- **LW-10b**：(4)（每个内部分子至少两条路径经过，`B:184-199`）与 (6)（`ord ≥ 2p`，`B:200-278`：特殊轻权与特殊顶点的记账，权重阶段 `ord + n_dv + n_lw` 不减、边与 GG 阶段每去掉一个特殊顶点 `ord` 至少加 1/2；论文对边与 GG 展开"从略"），并组装 `lem:localregular` 全文。等 LW-10a。
+- 理由：两部分的不变量互相独立（分子与路径 / 阶与记号），合在一张约 2500 行且论文有"从略"处；拆开各自可审。LW 总张数 30 → 31（LW-10a、LW-10b），计数口径不变。
+- 不算返工。
+
+## §43 T2141（S5-19）预检 BLOCKED：票面钉文的远距尺度 `W^{τ'}ℓ` 不够 CLT 用——改用对数尺度（总调度，2026-10-04 16:45 UTC，流程事项（票面钉文由我起草）；依据 `docs/reports/T2141-prove.md` (a) Consumer check、rows 9–10、Verdicts）
+- 消费者 `STCltIsoConcl`（`Step5Pins`，`3_5:2245`）的隔离尺度是 `10 (log W)^3 ℓ_s`，而 `(log W)^3 < W^{τ'}`：`W^{τ'}ℓ` 形式的远距衰减用不上。
+- 采纳预检的变体 **`STFarEntryAtLog`**：对一切 `c > 0`、`D' > 0`，`‖G_τ(σ)_{xy}‖ · 1[c (log W)^3 ℓ_τ ≤ |[x]−[y]|_∞] ≺ W^{−D'}`，两种荷。它蕴含原票面形式（指示函数单调），原形式无消费者，不再证。
+- 路线：(a) rows 1–8、10–13；`𝒦` 部分用 `RBM.Path.kellStarEv`（阈值 `(log W)^{3/2}ℓ`），`B45_far_main` 只到 `W^{τ}ℓ`，不够。邻居数是 `3^{2d}`（`STgexRHS` 用 `zdistInf ≤ 1` 的立方体），票面写的 `(2d+1)²` 是我的笔误，只差常数。
+- 实例改在 `Step5Inst.szCL`（`L_n = 2(n+24)^5`，`W_n = 2^{n+24}`）上：`sz0` 的远集在 `n ≈ 3·10^5` 之前是空的。
+- T2141 Amend 1，从 1b（`prover-hard`）续，以现有 (a) 为预检；H67。不算返工（票面钉文是我起草的）。
+
+## §44 S5-22 拆两张（总调度，2026-10-04 18:49 UTC，流程事项；依据 T2134 portmap P.5 行 S5-22、RBM2D `Evolution/MLExpInv.lean`）
+- **S5-22a**：钉文 `STExpInv`（`𝔼𝓛^{(2)}` 的平移、反射不变性，`3_5:2196`）——移植 RBM2D `expInvariant` 的路线（块格自同构、细格提升、坐标重标保持高斯律、圈的等变性），`Z2 ↦ Zd d`；确定性 + 律的不变性，约 800 行，prover。
+- **S5-22b**：`f^{far}` 的均值部分 `(eq:boundEfar)`（`3_5:2184-2212`：一阶差变二阶差，`(prop:BD2)`）——新陈述，由预检定，S5-25 用；等 S5-22a。
+- 理由：S5-22 原估 1200 行，两部分无共同证明工具；前者是端点钉文，可立即开工。ST-4 总数 30 → 31。不算返工。
+
+## §45 监督 2026-10-04 19:48 PASS 的五条观察：照办（总调度，2026-10-04 19:50 UTC，流程事项；依据 `docs/supervisor/2026-10-04-1948.md` O1–O5）
+- **O1 计数**：ROUTES「宽口径」一列照页首规则改正（动了 Lean 的返工计入、只改报告的不计、总调度票面/钉文缺陷的 Amend 不计）：ST-1 **40**（已闭合）、ST-2 **34**、ST-4 **16 / 32**、LW **15 / 33**；以后每次放行同步。监督请求照 TEAM §6 写：**ST-3 到 25**、**ST-2 到 40** 时各写一份 `REQ-…`（放行该票的同一轮）。
+- **O2 钉文起草**：总调度在证明票里起草新钉文时，票面写出**消费者陈述（file:line）**，预检的「消费者核对」为必填一行。§29 的固定核对项加三条：(5) 按时刻（`PrecPT`，并集在概率外）还是关于时间一致（`Prec`，并集在概率内）；(6) 由 `(eq:WO)`、`SizeTendsto` 提供的参数下界（`g ≥ W^{-Q}`、`N → ∞`、`0 < lam` 最终成立）是否写进前提；(7) 尺度是否对上消费者（`(log W)^k ℓ` 还是 `W^{τ}ℓ`）。
+- **O3 接口**（写进下列票的目标）：(1) ST2-34/35 以 RBM2D `YMomentsUnifN`（`AzumaProxyN:2042`）为目标（`C_P` 在 `C_K`、`K` 之前），并核对它在 portmap 给 ST2-34/35 的范围内；(2) `u = 0` 时 `0 ∈ GoodSetN` 写成 Lean 引理，放进 ST2-34（或 S3-10）的目标；(3) S3-10 票面写明 `ellT_mono` 的逐点 `0 ≤ lam n` 的处理（最终形式 + 有限项改动引理，或 `g < 0` 时 `ellT = min 1 L` 的直接论证）。
+- **O4 设计单**：BA-D1、UN-D1（只出报告的设计单）在有槽位时尽早放行；ST-D5、ST-D6、MA 冻结单随后。若设计单预判某块超过 50 张，在开工前问 Jun（§9 O2）。ROUTES 的 MA、EK 行过时文字顺手改。
+- **O5 孤儿 owed 项**（`STBootstrap`、`STForbidden`）：并入最后的清理票，不单开。
+
+## §46 停掉 blueprint 的发布（Jun，2026-10-04 20:16 UTC：「不要再push blue print 总出错搞不定算了」）
+- `.github/workflows/blueprint.yml`（"Compile blueprint"，doc-gen4 + Pages）不再随 push 触发：去掉 `on: push`，只留 `workflow_dispatch`（手动）。快速编译检查 `lean_action_ci.yml` 不动。
+- 从此不写 blueprint-sync 票，`blueprint/` 目录不动；CLAUDE.md「Blueprint and CI」一节加一行说明。由中枢执行 H68。
+
+## §47 LW-10b 的性质 (6) 预检受阻：拆出 LW-10c，起 Fable 查证明（总调度，2026-10-04 21:58 UTC，流程事项；依据 `docs/reports/T2151-prove.md` (a) Verdicts、`docs/queue/T2151.state` BLOCKED）
+- **事**：T2151（LW-10b）预检：性质 (4) PASS（需一个带颜色的新不变量族）；性质 (6) `ord ≥ 2p` 受阻——票面照论文 `B:275-277` 写的步进断言 (E)（「去掉一个 distinguished vertex 使 `ord` 至少升 1/2，故 `2·ord + n_dv` 不降」）**不成立**（`M_x = M_y` 时 9 → ≤ 8；`M_x ≠ M_y` 的 bubble 例中也不单调，候选 A3 亦不单调）；但 (6) 本身未被数值反驳（`p = 2` 最小 4、`p = 4` 最小 8，都 `= 2p`）。论文对边与 `GG` 情形写「we omit the details」。
+- **定**：(1) **T2151 Amend 1**：目标 2（性质 (6)）移出；目标 3 改成 (1)–(5) 的组装 `lw_localregular_upto5`（`(eq:local_Gs)` 与每个 `Q ∈ outs` 的 `LocReg1 ∧ LocReg2 p ∧ LocReg345 p`，一族共同路径）；从 1b 续跑，现有 (a) 作预检。(2) **新 LW-10c**：性质 (6) 与带 (6) 的完整组装 `lw_localregular`；(6) 照论文在 `(eq:far_ab)`（`M_x ≠ M_y`，`7_8:792`）下陈述，`M_x = M_y` 的输出照 `(scalemole)` 归入误差项（做法由 LW-10c 预检定）。LW-10c 等 Fable 报告再写。(3) **起 Fable 5.1 子代理一个**：找 (6) 的正确归纳不变量（对 `LocStep` 每一情形单调）或反例，报告写到 `docs/claude-team/fable/2026-10-04-localreg6.md`。
+- **理由**：(4) 与 (1)–(5) 的组装已可证，LW-11（AuxGraph，用 (2) `(eq:MolVW)`）不必等 (6)；(6) 是论文略去的证明，先查清再开票。若 Fable 发现 (6) 在 `M_x ≠ M_y` 下不成立，再按路线级问题问 Jun。LW 总数 33 → 34。不算返工（票面照论文略去的论证写错）。
+
+## §48 UN-D1（T2162）签字：核心接口照报告；52 张交 Jun（总调度，2026-10-04 23:20 UTC；依据 `docs/reports/T2162-prove.md`、`docs/reports/T2162-audit.md`（PASS，要签字两项））
+- **(i) 2(b) 接口签字**：核心 `UNCore`（探针 `:759`）对抽象模型 `UNModel` 与抽象密度陈述，输入为 `UNL32`（借用，§5）、`UNGUELocal`、`UNGreenCorrAll`、`UNDens`、`UNTrLocal`、`UNNormBound` 与 **`UNClaimAll`（Claim (417)）**；delocalization 与 `(Meq:QUE)` 只进带状模型的行（`UNOURow`、`UNJakUywRow`），由它们产出带状模型的 `UNClaimAll`。理由照报告 b.8 第 2 项：`(EMCTE2)` 的 OU 生成元恒等式对均值非零的 BA 模型带一阶漂移项，核心不能直接吃 BA 的 QUE。**落实**：BA 的 Claim (417)（OU 下的 QUE、带漂移的 `EMCTE2`、Jak/Uyw）归 BA 块，由 BA-D1（T2161）或其后续拆单负责；T2161 不改票（在跑），其报告到时由总调度核对是否已计入，未计入则补一张 BA 设计补充单。
+- **(ii) 设计报告合并**：T2162 照常合并（只合并报告与 portmap；探针留在分支 `t/T2162`），由中枢执行 H70。
+- **(iii) 张数 52 > 50**（§9 O2）：交 Jun 决定；回复前任何 UN 证明票不开工。UN 的拆单、registry 分类（报告 (d) 4）照报告。
+- paper-delta 候选 T2162a–g 在合并簿记时编号。
+
+## §49 S3-10 拆两张（总调度，2026-10-04 23:30 UTC，流程事项；依据 T2041 portmap 行 S3-10、RBM2D `Induction/NonAltGood.lean` 在 `c9a24cf` 已有 2308 行）
+- **S3-10a**（`Induction/NQGood1`）：漂移张量及其与 `GoodSetN` 的三条复合、`qvFormN` 的上界、`hker_of_case1`（EK-6），以及好集的时间平移 `u_j → u_{j+1}`（RBM2D §1–§2，连同 `StoppedEndDefs` 里这些要用的定义：`driftTensor`、`qvFormN_eq_re_UgenPair`；那个文件没有分给任何 ST-2 票）。
+- **S3-10b**（`Induction/NQGood2`）：常数与类、`GridAssemblyHypN` 各字段、二次变差常数、`subGaussStop_nonAlt`、实例（RBM2D §4–§6）；等 S3-10a。RBM2D §3（`zero_mem_goodSetN`）已由 T2159 合并（D366），不再移植。
+- 理由：portmap 估 950 行时 RBM2D 文件约 830 行，现已 2308 行；两半各约 1200 行。ST-3 总数 38 → 39。不算返工。
+
+## §50 UN 批 52 张（Jun，2026-10-05 02:56 UTC 记录：「A」——回答总调度 02:25 UTC 的提问：Thm 2.4 的 UN-D1 拆单 52 张 > 50，A = 批 52 张，B = 把 H_t 的 QUE 与对角 local law 列为第二条授权外部输入、减到 24 张，C = UN 推后）
+- UN 按 T2162 的拆单做 52 张（UN-01…UN-52，含 GUE 相 28 张，从 RBM2D 移植并按 d ≥ 3 重做）；外部输入仍只有 LSY Thm 2.2（§5）。
+- UN gate 的预算上限按 52 张计；监督的 50 张自动 HOLD 规则对 UN 改为 60 张（52 + 返工余量），25、40 两个请求点照旧。
+- §48 (iii) 的「回复前任何 UN 证明票不开工」解除：UN 证明票照 T2162 portmap P.3 的顺序随槽位写票、放行（UN-01 钉文入库先行）。
+
+## §51 BA 的体内条件改成 ρ_N(E) ≥ κ（Jun，2026-10-05 02:58 UTC 记录：「第二个问题A」——回答总调度 02:57 UTC 的提问：Thm 2.7 的体内能量条件，A = 改成 `ρ_N(E) ≥ κ`，B = 保留 `|E| ≤ e_λ − κ` 另加假设，C = BA 推后）
+- 依据：T2161（BA-D1）报告 top notice 1、(a)、b.3、b.5 与审核 §2：论文的 `|E| ≤ e_λ − κ`（`1_2:649`、`7_8:1817-1819`）预设 `supp μ_N = [−e_λ, e_λ]`；在可容许参数下 L 为奇数时不对称、L = 4 且 λ ≥ 1/2 时有内部 gap、gap 刚打开处有 cusp（`L = 4`、`λ ≈ 0.354`、`E* ≈ 2.508`，`ρ_N(E*) = 0`），`lem:propM`(2) 的 `Im m ≳ 1` 在那里不成立。
+- **定**：Thm 2.7 各项的能量集取 `B_κ = {E : ρ_N(E) ≥ κ}`，`ρ_N(E) = π⁻¹ Im m(E + i0, λ)`（探针的 `BAbulk`）；链上的定义域 `Im m(z, λ) ≥ κ`，桥接钉文 `BAImmLower`；universality 照 §11 的密度归一化。这就是 T2001d、T2001l 的结论（§10 当时暂不签的两项）。paper-delta：T2161b（编号在 T2161 合并簿记时给）。
+- T2161 的签字项 (1) 由此了结；签字项 (2)（57 张 > 50）另问 Jun。
+
+## §52 BA 批准，预算上限 70 张（Jun，2026-10-05 02:59 UTC 记录：「A」——回答总调度 02:59 UTC 的提问：Thm 2.7 的 BA 拆单 57 张 > 50；A = 批准、上限 70 张、BA 设计补充单出来后若超过 70 再问，B = 批 57 张但 universality 项暂缓，C = BA 推后）
+- BA 照 T2161 的拆单做（57 张：D 6、P 8、K 5、E 3、G 6、S 3、T 8、U 6、V 3、L 4、M 3、N 2），体内条件照 §51。BA gate 预算上限 70 张；监督的 50 张自动 HOLD 规则对 BA 改为 70 张，25、40 两个请求点照旧。
+- **BA 设计补充单（BA-D2）**：照 §48 (i)，BA 的 Claim (417)（OU 流下的 QUE、带一阶漂移的 `EMCTE2`、Jak/Uyw 的 BA 形式）未计入 T2161，另派一张只出报告的设计单补上；补充后总数若超过 70，开工前再问 Jun。
+- T2161 的两个签字项至此了结（§51、§52）：照常合并报告（只合并报告与 portmap，探针留在 `t/T2161`），由中枢执行 H71。
+
+## §53 拆单：ST2-13、LW-11、S5-06/07（总调度，2026-10-05 03:35 UTC，流程事项；依据 T2168、T2170、T2171 票面）
+- **ST2-12/13**：`STGridRepN` 全部约 4000 行，T2168 只做 ST2-12（分解、余项界、由两条尾界组装）；ST2-13 拆 **ST2-13a**（普通尾，之后 `STGridMart` 由 `stGridMart_of_tail` 得出）与 **ST2-13b**（`𝒰` 加权尾，对 `k ≤ K` 一致），都等 T2168。ST-2 39 → 40；放行 13a/13b 那一轮照 §45 O1 写 REQ（ST-2 到 40）。
+- **LW-11**：T2170 = **LW-11a**（辅助图、`GtoAG`、scalemole、nested 形式，不用性质 (6)）；`claim:xi` 移到 **LW-11b**。LW 34 → 35。
+- **S5-06/07**：整份移植约 2100 行，T2171 = S5-06（`Path/LemDecCalEdif`）；S5-07 另开文件 `Path/LemDecCalEdif2`，等 T2171。T2172（S5-08）约 1700 行，照收。
+- T2171/T2172 的新前提（`E2Hyp` 补回 3/4/6-loop 界，下限加强为 `(L^dW^{6d})² ≤ W^D`）由预检核实；T2164 的 M1 因此更紧，S5-09 写票前定。
+- （03:53 UTC 补）§52 所说的 BA 设计补充单写为 T2173，标签改称 **BA-DS**（T2173 Amend 1）：T2161 拆单表 P.9 里 BA-D1…BA-D6 是确定性层的行名，避免混淆。
