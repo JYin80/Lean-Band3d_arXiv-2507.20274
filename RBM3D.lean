@@ -237,6 +237,7 @@ import RBM3D.Universality.FreeConvRegular
 import RBM3D.Induction.Step34PinsP
 import RBM3D.Induction.NQLin
 import RBM3D.Universality.GUEPhase.AuxCarrier
+import RBM3D.Graph.LocalRegular6b
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
