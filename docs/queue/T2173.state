@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_d8372d84-21c: BA-DS report-only design ticket; audit 1 PASS with sign-off items settled by H77 (DECISIONS §57); probe stays on t/T2173 at a543154; reports merged
+updated: Mon Oct  5 07:02:33 UTC 2026
+reports: docs/reports/T2173-audit.md docs/reports/T2173-portmap.md docs/reports/T2173-prove.md 
