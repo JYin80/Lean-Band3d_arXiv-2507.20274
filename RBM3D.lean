@@ -212,6 +212,7 @@ import RBM3D.Induction.NQGood1
 import RBM3D.Induction.NQGood2
 import RBM3D.Path.DifREP1
 import RBM3D.Evolution.CltMoments2
+import RBM3D.Graph.AuxGraph
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_a56b607b-9d6: audit 1 PASS (Auditor model: claude-opus-5-5); registry line IsExtMol applied onto main (H23 b); full lake build OK (3946 jobs)
+updated: Mon Oct  5 04:36:17 UTC 2026
+reports: docs/reports/T2170-prove.md, docs/reports/T2170-audit.md

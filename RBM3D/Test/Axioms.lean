@@ -221,6 +221,7 @@ def structuralProps : List Name :=
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
    `RBM.Graph.LGraph.XBetween, -- `Γ` has a `×`-dotted edge between `u` and `v`: a defining predicate of normal graphs (`defnlvl0` (iii), `7_8:205`; T2050), hypothesis of the counting lemmas `lvl1_master`, `lvl1_k1`, `lvl1_k2` (T2128)
+   `RBM.Graph.LGraph.IsExtMol, -- an external molecule: a molecule containing an external vertex (`def_poly`, `7_8:172`): a defining predicate of the auxiliary graph, hypothesis of the nested-form lemmas of `Graph/AuxGraph` (T2170)
    `RBM.Graph.lvl1Split, -- how the weight split of the dotted edge partition (`dot-def`) changes a list of solid edges: a relation that describes the objects, mentioned only by the `brecOn` that Lean generates for it (T2128)
    `RBM.Graph.lvl1Split.below, -- auxiliary predicate that Lean generates for the recursive inductive `lvl1Split` (T2128)
    `RBM.Graph.Lvl1Reach.below, -- auxiliary predicate that Lean generates for the recursive inductive `Lvl1Reach` (reachability by `strat_local`, `B:135-157`) (T2128)
