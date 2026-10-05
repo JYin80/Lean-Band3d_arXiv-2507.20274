@@ -219,6 +219,8 @@ import RBM3D.Path.LemDecCalEwG
 import RBM3D.Universality.GUEInvariance
 import RBM3D.Universality.OU
 import RBM3D.Universality.EigenMeasurable
+import RBM3D.Universality.FreeConv
+import RBM3D.Universality.FreeConvStability
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

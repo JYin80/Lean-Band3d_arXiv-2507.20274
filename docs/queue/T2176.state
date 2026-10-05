@@ -1,0 +1,4 @@
+state: merged (pending hash)
+reason: workflow wf_51ce74a4-970: audit 1 BLOCKED on sign-off, settled by H74 (DECISIONS §56, T2176-amend-1: freeConv_stable_local instance with hyp kept accepted); merged at 23ab8ce; full lake build OK (3982 jobs)
+updated: Mon Oct  5 06:23:13 UTC 2026
+reports: docs/reports/T2176-prove.md, docs/reports/T2176-audit.md
