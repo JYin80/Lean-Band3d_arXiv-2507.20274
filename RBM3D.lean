@@ -266,6 +266,7 @@ import RBM3D.Induction.ExpDuhamel
 import RBM3D.Main.FixedZ
 import RBM3D.Induction.PfStep5Grid
 import RBM3D.Graph.LocalRegular6d
+import RBM3D.BA.CouplingWindow
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
