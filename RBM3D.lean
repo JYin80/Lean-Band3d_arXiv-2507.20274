@@ -217,6 +217,8 @@ import RBM3D.Universality.Pins
 import RBM3D.Path.LemDecCalEdif
 import RBM3D.Path.LemDecCalEwG
 import RBM3D.Universality.GUEInvariance
+import RBM3D.Universality.OU
+import RBM3D.Universality.EigenMeasurable
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
