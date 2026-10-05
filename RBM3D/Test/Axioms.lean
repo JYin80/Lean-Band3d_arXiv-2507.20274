@@ -38,6 +38,12 @@ The command also:
   measure of how much of the development rests on what the paper cites rather than proves:
   it is `0` while the borrowing is inert, and turns positive the moment a real result
   depends on it.
+
+A third class sits outside both ledgers: **refuted** premises (`refutedProps`, DECISIONS §66 (2)), pins shown
+false -- by a compiled theorem or by the argument of a named supervisor verdict -- and superseded by a primed
+successor.  A refuted pin is not a debt (nobody can prove it) and not a borrowing; its definition stays in the
+library (CLAUDE.md §5.3) and a theorem carrying it is vacuously true, so it is reported and classified but kept
+out of the two ledgers, and `#assert_rbm_axioms` fails if a refuted name is also in one of the other three lists.
 -/
 
 namespace RBM.Audit
@@ -178,7 +184,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNBUniv, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNGUELocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNTrLocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNStep1Good, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNClaim417, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNApriori, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
@@ -189,7 +194,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNMLOut, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNLocAvgBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNQueBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNInfty1Row, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNUnivMainRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOURow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNEMCTE2Row, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
@@ -203,8 +207,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNGreenCorrC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNGreenCorrAllC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNTrLocalInit, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNStep1GoodC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNCoreC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNOUQUEk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNOUDiagk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNEMCTE2k, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
@@ -216,6 +218,10 @@ def owedProps : List Name :=
    `RBM.Univ.UNEMCTE2Rowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNClaimRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNStep1Good', -- bulk universality pin, primed successor of the refuted UNStep1Good (T2201, UN-01c: owed; UN-12)
+   `RBM.Univ.UNInfty1Row', -- bulk universality pin, primed successor of the refuted UNInfty1Row (T2201, UN-01c: owed; UN-14)
+   `RBM.Univ.UNStep1GoodC', -- bulk universality pin, primed successor of the refuted UNStep1GoodC (T2201, UN-01c: owed; UN-12 or a BA-N ticket)
+   `RBM.Univ.UNCoreC', -- bulk universality pin, primed successor of the refuted UNCoreC (T2201, UN-01c: owed; BA-C1b)
    `RBM.Gauss.Sizes.STStep5Concl] -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
@@ -280,7 +286,22 @@ def structuralProps : List Name :=
    `RBM.Univ.UNBadY, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.InjSum_IsTestFun, -- T2178: test-function condition (smooth, compact support) on data; a hypothesis of deterministic lemmas (DECISIONS §20, §56)
    `RBM.Univ.UNKind.bulk, -- bulk universality: the energy set of a model class (`|E| ≤ 2 - κ` for the band model), a Prop-valued field of data; a hypothesis of the generic pins (T2187, UN-01b; DECISIONS §20: condition on data)
+   `RBM.Univ.UNDens', -- bulk universality: condition on data, UNDens plus the box hypotheses of freeConv_stable_lip (T2201, UN-01c; DECISIONS §66)
    `RBM.Gauss.Sizes.STReg5IV] -- Step 5 regime (iv); S5-01 (T2138, DECISIONS §40)
+
+/-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
+theorem or by the argument of the named supervisor verdict, and superseded by a primed successor.  Their
+definitions stay in the library (CLAUDE.md §5.3: no merged signature is changed), and a theorem that carries one
+as a hypothesis is vacuously true; so they are **neither borrowed nor owed**: they are in neither ledger, which
+keeps "owed = ∅" reachable.  They stay classified so that the scan, which still finds them in the hypotheses of the
+merged theorems and of the refutations, does not report them as unregistered; and a name may be in this list or in
+the three above, never in both (`#assert_rbm_axioms` checks the disjointness, so that a union merge cannot
+silently put a refuted pin back into `owedProps`). -/
+def refutedProps : List Name :=
+  [`RBM.Univ.UNStep1Good,   -- false: `not_UNStep1Good`, `not_UNStep1Good_band` (T2201, `Universality/PinsDens.lean`); successor `UNStep1Good'`
+   `RBM.Univ.UNInfty1Row,   -- false: argued, supervisor 2026-10-05-1651 1.3 (needs the GUE bulk one-point limit; not compiled); successor `UNInfty1Row'`
+   `RBM.Univ.UNStep1GoodC,  -- false: `not_UNStep1GoodC` (T2201); successor `UNStep1GoodC'`
+   `RBM.Univ.UNCoreC]       -- false: argued, supervisor 2026-10-05-1651 1.3 (not compiled); successor `UNCoreC'`
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
@@ -413,14 +434,20 @@ elab "#assert_rbm_axioms" : command => do
   -- the premises, found rather than declared
   let found := scanPremises env (fun n => (`RBM.Audit).isPrefixOf n)
     (fun n => certificates.any fun (_, c) => c == n)
-  let classified := borrowedProps ++ owedProps ++ structuralProps
+  let classified := borrowedProps ++ owedProps ++ structuralProps ++ refutedProps
+  -- a refuted premise must not also be borrowed, owed or structural
+  let revived := refutedProps.filter fun n => (borrowedProps ++ owedProps ++ structuralProps).contains n
+  unless revived.isEmpty do
+    throwError m!"axiom audit: {revived.length} refuted premise(s) are also in `borrowedProps`, \
+      `owedProps` or `structuralProps`: {revived}\n\
+      A refuted pin is in `refutedProps` only (DECISIONS §66 (2)); never put it back into a ledger."
   let unregistered := found.filter fun n => !classified.contains n
   unless unregistered.isEmpty do
     throwError m!"axiom audit: {unregistered.size} premise(s) that no theorem of this \
       development proves are in none of `borrowedProps`, `owedProps`, \
-      `structuralProps`:\n  {unregistered.toList}\n\
+      `structuralProps`, `refutedProps`:\n  {unregistered.toList}\n\
       Classify each of them: borrowed from the literature, owed by this formalization, \
-      or a predicate that defines the objects under study."
+      a predicate that defines the objects under study, or refuted (shown false and superseded)."
   -- how much of the development rests on each premise
   -- a Prop's own projections (`P.f`, …) mention it but rest on nothing
   let isInterfaceOwn (n : Name) : Bool := interfaceProps.any fun p => p.isPrefixOf n
@@ -450,15 +477,17 @@ elab "#assert_rbm_axioms" : command => do
   let foundBorrowed := found.filter (borrowedProps.contains ·)
   let foundOwed := found.filter (owedProps.contains ·)
   let foundStructural := found.filter (structuralProps.contains ·)
+  let foundRefuted := found.filter (refutedProps.contains ·)
   let unused := classified.filter fun n => !found.contains n
   let registryLine :=
     if unused.isEmpty then
       m!"registry: {borrowedProps.length} borrowed + {owedProps.length} owed + \
-        {structuralProps.length} structural, every one of them carrying something"
+        {structuralProps.length} structural + {refutedProps.length} refuted, every one of them \
+        carrying something"
     else
       m!"registry: {borrowedProps.length} borrowed + {owedProps.length} owed + \
-        {structuralProps.length} structural; {unused.length} registered premise(s) carry \
-        nothing yet: {unused}"
+        {structuralProps.length} structural + {refutedProps.length} refuted; {unused.length} \
+        registered premise(s) carry nothing yet: {unused}"
   let carriedLine :=
     if carried = 0 then
       m!"no theorem yet rests on a premise"
@@ -470,7 +499,7 @@ elab "#assert_rbm_axioms" : command => do
     All within {allowedAxioms}; {axiomLine}.\n\
     {carriedLine}\n\
     premises found by scanning: {found.size} (borrowed {foundBorrowed.size}, \
-    owed {foundOwed.size}, structural {foundStructural.size}).\n\
+    owed {foundOwed.size}, structural {foundStructural.size}, refuted {foundRefuted.size}).\n\
     {registryLine}.\n\
     non-vacuity certificates: {certificates.length} of \
     {borrowedProps.length + owedProps.length} premises in the two ledgers; the rest are \
@@ -486,7 +515,7 @@ elab "#assert_rbm_audit_detects " p:ident : command => do
   let n := p.getId
   let found := scanPremises env (fun _ => false)
     (fun n => certificates.any fun (_, c) => c == n)
-  let classified := borrowedProps ++ owedProps ++ structuralProps
+  let classified := borrowedProps ++ owedProps ++ structuralProps ++ refutedProps
   let unregistered := found.filter fun m => !classified.contains m
   unless unregistered.contains n do
     throwError m!"audit reverse test: the scan did not report `{n}` as an unclassified \
