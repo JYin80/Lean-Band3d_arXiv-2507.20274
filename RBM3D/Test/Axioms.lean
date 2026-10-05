@@ -265,6 +265,7 @@ def structuralProps : List Name :=
    `RBM.Univ.InWindow, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.queBadMat, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.UNBadY, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.InjSum_IsTestFun, -- T2178: test-function condition (smooth, compact support) on data; a hypothesis of deterministic lemmas (DECISIONS §20, §56)
    `RBM.Gauss.Sizes.STReg5IV] -- Step 5 regime (iv); S5-01 (T2138, DECISIONS §40)
 
 /-- The premises the audit reports on: borrowed plus owed. -/

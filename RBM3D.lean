@@ -221,6 +221,8 @@ import RBM3D.Universality.OU
 import RBM3D.Universality.EigenMeasurable
 import RBM3D.Universality.FreeConv
 import RBM3D.Universality.FreeConvStability
+import RBM3D.Universality.InjSum
+import RBM3D.Universality.PoissonSmoothing
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
