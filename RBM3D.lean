@@ -230,6 +230,7 @@ import RBM3D.Evolution.CltFar
 import RBM3D.Universality.PinsK
 import RBM3D.Graph.AuxGraph2
 import RBM3D.Graph.LocalRegular6a
+import RBM3D.BA.MFixedPoint
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
