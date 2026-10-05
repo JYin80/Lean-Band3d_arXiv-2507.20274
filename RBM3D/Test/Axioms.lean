@@ -118,7 +118,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STIterations, -- `lem:iterations`, case (i) (DECISIONS §25)
    `RBM.Gauss.Sizes.STIterationsII, -- `lem:iterations`, case (ii) (DECISIONS §25)
    `RBM.Gauss.Sizes.STGridRepN, -- `Sol_CalL` + `lem:DIfREP` on the grid, every loop length (`3_5:134-148`, `218-240`); `STGridMart` is `m = 2`: ST2-12, ST2-13 (T2066, DECISIONS §28)
-   `RBM.Ind.GridRepTailNAt, -- clause (iii) / (iv) of `STGridRepNAt` for `difRepMartN`: ST2-13 (T2168)
    `RBM.Ind.GridRepWTailNAt, -- clause (iii) / (iv) of `STGridRepNAt` for `difRepMartN`: ST2-13 (T2168)
    `RBM.Gauss.Sizes.STStep2DecayPT, -- `(Eq:Gdecay_w)` per time (`1_2:1349-1351`): hypothesis of `stNetLift2_part1`/`step2NetLift`; proved by the Step 2 chain ST2-04 (T2074, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STGdecayW, -- `(Eq:Gdecay_w)` uniformly in `u ∈ [s,t]` (`1_2:1349`, `Step34Pins.lean:208`): hypothesis of `stDecayLoopU_of_step2` (T2135 Amend 1, DECISIONS §39); proved by the Step 2 chain ST2-04 (DECISIONS §20 rule: owed)
@@ -160,7 +159,6 @@ def owedProps : List Name :=
    -- T2092 (ST2-04, class proposed: owed): hypotheses of the Step 2 iteration and closure (`Induction/Step2Iterate.lean`)
    `RBM.Gauss.Sizes.STScaleOk, -- admissible scale family `K_u` (`3_5:521-527`): clause of `STScaleAdm`, supplied by `stScaleExists_holds` (T2081); hypothesis of `ST_selfImprove`, `ST_next`
    `RBM.Gauss.Sizes.STScaleAdm, -- scale iteration `(eq:def_ell1)` (`3_5:571-577`): supplied by `stScaleExists_holds` (T2081); hypothesis of `ST_iterate`, `ST_decay_pt`
-   `RBM.Gauss.Sizes.STGridMartAt, -- the grid martingale pin `STGridMart` at one `C₀` (`3_5:218-240`): hypothesis of `ST_selfImprove_section`
    `RBM.Gauss.Sizes.STStep2Local, -- `(Gt_bound_flow)` single-charge form of the probe: proved by `ST_step2_of_pins` through `STNetLift2`; hypothesis of `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Avg, -- `(Gt_avgbound_flow)` single-charge form of the probe (paper-delta T2039g): hypothesis of `ST_avgU_of_avg`, `ST_concl_of_step2`
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
