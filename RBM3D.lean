@@ -223,6 +223,7 @@ import RBM3D.Universality.FreeConv
 import RBM3D.Universality.FreeConvStability
 import RBM3D.Universality.InjSum
 import RBM3D.Universality.PoissonSmoothing
+import RBM3D.Induction.NQBudget
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
