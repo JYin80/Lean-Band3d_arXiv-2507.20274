@@ -214,6 +214,7 @@ import RBM3D.Path.DifREP1
 import RBM3D.Evolution.CltMoments2
 import RBM3D.Graph.AuxGraph
 import RBM3D.Universality.Pins
+import RBM3D.Path.LemDecCalEdif
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
