@@ -1,0 +1,4 @@
+state: audit-pass
+reason: workflow wf_0c84a347-9a9: preflight PASS, prover-max DONE (96e4087), auditor1 PASS; report-only merge under rule (A)
+updated: Mon Oct  5 22:01:41 UTC 2026
+reports: docs/reports/T2205-prove.md, docs/reports/T2205-audit.md, docs/reports/T2205-portmap.md
