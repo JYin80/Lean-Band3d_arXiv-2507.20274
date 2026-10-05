@@ -1,0 +1,215 @@
+# 2026-10-05-localreg6-locallemma-output.txt -- Fable, LW-10c local lemma; Python 3.13.16; Mon Oct  5 05:37:27 UTC 2026
+# scripts: 2026-10-05-locallemma-enum.py (abstract enumeration, 17 terms), 2026-10-05-locallemma-prims.py (primitives, decomposition, tables),
+#          2026-10-05-locallemma-check.py (concrete checks on the LocStep model 2026-10-04-localreg6-model.py); md5:
+#   35176bb08ca65958156491fbf882e094  2026-10-05-locallemma-enum.py
+#   5c12a022e740f89d3bbf733930b63258  2026-10-05-locallemma-prims.py
+#   243dd6cf0bb049d2fcd4a029141dce68  2026-10-05-locallemma-check.py
+#   e63ec62baad21e75846301e7cc182b1c  2026-10-04-localreg6-model.py
+
+$ python3 2026-10-05-locallemma-enum.py --shapes          # 17 terms, all named classes internal (the dominant case)
+[weight/T1] configs (all classes internal) 6, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[weight/T2] configs (all classes internal) 37, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[weight/T3] configs (all classes internal) 140, min Delta c by q-variant: {"('b', 'a', 'b', False)": 0, "('r', 'a', 'b', False)": 0, "('b', 'a', 'a', True)": 0, "('r', 'a', 'a', True)": 0}; naive failures: 0; failing shapes: {}
+[weight/T4] configs (all classes internal) 1008, min Delta c by q-variant: {"('b', 'a', 'b', False)": 2, "('r', 'a', 'b', False)": 0, "('b', 'a', 'a', True)": 0, "('r', 'a', 'a', True)": 0}; naive failures: 0; failing shapes: {}
+[edge/Oe1xOwx] configs (all classes internal) 13, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[edge/D] configs (all classes internal) 448, min Delta c by q-variant: {"('b', 'a', 'b', False)": -2, "('r', 'a', 'b', False)": 0, "('b', 'x', 'b', False)": 2, "('r', 'a', 'x', False)": 0}; naive failures: 1; failing shapes: {('2-cycle', -2): 1}
+[edge/P5] configs (all classes internal) 35, min Delta c by q-variant: {'None': 1}; naive failures: 0; failing shapes: {}
+[edge/P3] configs (all classes internal) 35, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[edge/P6] configs (all classes internal) 35, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[edge/P4] configs (all classes internal) 35, min Delta c by q-variant: {'None': -2}; naive failures: 1; failing shapes: {('2-cycle', -2): 1}
+[gg/R2] configs (all classes internal) 5, min Delta c by q-variant: {'None': -2}; naive failures: 1; failing shapes: {('2-cycle', -2): 1}
+[gg/R3] configs (all classes internal) 35, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[gg/R4] configs (all classes internal) 252, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[gg/R5] configs (all classes internal) 35, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[gg/R6] configs (all classes internal) 252, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[gg/R7] configs (all classes internal) 2466, min Delta c by q-variant: {"('b', 'a', 'b', False)": -2, "('r', 'a', 'b', False)": 0, "('b', 'x', 'b', False)": 2, "('b', 'a', 'x', False)": -2, "('r', 'x', 'b', False)": 0, "('r', 'a', 'x', False)": 0}; naive failures: 9; failing shapes: {('2-cycle', -2): 4, ('2-cycle', -1): 5}
+[gg/R8] configs (all classes internal) 19998, min Delta c by q-variant: {"('b', 'a', 'b', False)": -2, "('r', 'a', 'b', False)": 0, "('b', 'x', 'b', False)": 0, "('b', 'a', 'x', False)": 0, "('r', 'x', 'b', False)": 1, "('r', 'a', 'x', False)": 1}; naive failures: 1; failing shapes: {('3-cycle', -2): 1}
+GRAND: {'configs': 24835, 'naive_fail': 13, 'other': 0} t=0s
+collapse configurations (term, q, classes, placement, k, min Delta c):
+   edge/D q=('b', 'a', 'b', False) {v,a}I {x,b}I al->('named', 0) k=2 min Delta c=-2
+   edge/P4 q=None {x}I {v,s}I al->('named', 1) k=2 min Delta c=-2
+   gg/R2 q=None {x}I {y,yp}I  k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'b', False) {y,a}I {x,yp,b}I al->('named', 0) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'b', False) {yp}I {y,a}I {x,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a,b}I al->('named', 1) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}I {y,a,b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {y,a}I {x,yp,b}I al->('named', 0) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {x}I {y,a}I {yp,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a}I {b}I al->('named', 1) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {yp}I {y,a}I {x,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}I {y,a}I {b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R8 q=('b', 'a', 'b', False) {x}I {y,a}I {yp,b}I al->('named', 2) be->('named', 1) k=3 min Delta c=-2
+2-cycle collapse repair: tested 104004 residual configurations; c(G1) < c(G0) in 319; >= 2 external classes among them: 0; repair (merge the k classes) fails: 0
+
+$ python3 2026-10-05-locallemma-enum.py --shapes --ext    # 17 terms, external flags included (the label "all classes internal" is the all-internal count in the first run; here every ext/int assignment is enumerated)
+[weight/T1] configs (all classes internal) 12, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[weight/T2] configs (all classes internal) 74, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[weight/T3] configs (all classes internal) 640, min Delta c by q-variant: {"('b', 'a', 'b', False)": 0, "('r', 'a', 'b', False)": 0, "('b', 'a', 'a', True)": 0, "('r', 'a', 'a', True)": 0}; naive failures: 0; failing shapes: {}
+[weight/T4] configs (all classes internal) 4776, min Delta c by q-variant: {"('b', 'a', 'b', False)": 2, "('r', 'a', 'b', False)": 0, "('b', 'a', 'a', True)": 0, "('r', 'a', 'a', True)": 0}; naive failures: 0; failing shapes: {}
+[edge/Oe1xOwx] configs (all classes internal) 40, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[edge/D] configs (all classes internal) 2944, min Delta c by q-variant: {"('b', 'a', 'b', False)": -2, "('r', 'a', 'b', False)": 0, "('b', 'x', 'b', False)": 2, "('r', 'a', 'x', False)": 0}; naive failures: 3; failing shapes: {('2-cycle', -2): 1, ('2-cycle', -1): 2}
+[edge/P5] configs (all classes internal) 160, min Delta c by q-variant: {'None': 1}; naive failures: 0; failing shapes: {}
+[edge/P3] configs (all classes internal) 160, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[edge/P6] configs (all classes internal) 160, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[edge/P4] configs (all classes internal) 160, min Delta c by q-variant: {'None': -2}; naive failures: 3; failing shapes: {('2-cycle', -2): 1, ('2-cycle', -1): 2}
+[gg/R2] configs (all classes internal) 22, min Delta c by q-variant: {'None': -2}; naive failures: 3; failing shapes: {('2-cycle', -2): 1, ('2-cycle', -1): 2}
+[gg/R3] configs (all classes internal) 160, min Delta c by q-variant: {'None': 2}; naive failures: 0; failing shapes: {}
+[gg/R4] configs (all classes internal) 1194, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[gg/R5] configs (all classes internal) 160, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[gg/R6] configs (all classes internal) 1194, min Delta c by q-variant: {'None': 0}; naive failures: 0; failing shapes: {}
+[gg/R7] configs (all classes internal) 22752, min Delta c by q-variant: {"('b', 'a', 'b', False)": -2, "('r', 'a', 'b', False)": 0, "('b', 'x', 'b', False)": 2, "('b', 'a', 'x', False)": -2, "('r', 'x', 'b', False)": 0, "('r', 'a', 'x', False)": 0}; naive failures: 39; failing shapes: {('2-cycle', -2): 5, ('2-cycle', -1): 34}
+[gg/R8] configs (all classes internal) 194556, min Delta c by q-variant: {"('b', 'a', 'b', False)": -2, "('r', 'a', 'b', False)": 0, "('b', 'x', 'b', False)": 0, "('b', 'a', 'x', False)": 0, "('r', 'x', 'b', False)": 1, "('r', 'a', 'x', False)": 1}; naive failures: 4; failing shapes: {('3-cycle', -2): 1, ('3-cycle', -1): 3}
+GRAND: {'configs': 229164, 'naive_fail': 52, 'other': 0} t=3s
+collapse configurations (term, q, classes, placement, k, min Delta c):
+   edge/D q=('b', 'a', 'b', False) {v,a}I {x,b}I al->('named', 0) k=2 min Delta c=-2
+   edge/D q=('b', 'a', 'b', False) {v,a}I {x,b}E al->('named', 0) k=2 min Delta c=-1
+   edge/D q=('b', 'a', 'b', False) {v,a}E {x,b}I al->('named', 0) k=2 min Delta c=-1
+   edge/P4 q=None {x}I {v,s}I al->('named', 1) k=2 min Delta c=-2
+   edge/P4 q=None {x}I {v,s}E al->('named', 1) k=2 min Delta c=-1
+   edge/P4 q=None {x}E {v,s}I al->('named', 1) k=2 min Delta c=-1
+   gg/R2 q=None {x}I {y,yp}I  k=2 min Delta c=-2
+   gg/R2 q=None {x}I {y,yp}E  k=2 min Delta c=-1
+   gg/R2 q=None {x}E {y,yp}I  k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'b', False) {y,a}I {x,yp,b}I al->('named', 0) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'b', False) {y,a}I {x,yp,b}E al->('named', 0) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'b', False) {y,a}E {x,yp,b}I al->('named', 0) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'b', False) {yp}I {y,a}I {x,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'b', False) {yp}I {y,a}I {x,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'b', False) {yp}E {y,a}I {x,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'b', False) {yp}E {y,a}I {x,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a,b}I al->('named', 1) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}E {y,a,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}I {y,a,b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}E {y,a,b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {yp}I {y,a,b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {yp}E {y,a,b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {y,a}I {x,yp,b}I al->('named', 0) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {y,a}I {x,yp,b}E al->('named', 0) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {y,a}E {x,yp,b}I al->('named', 0) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {y,a}I {yp,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {y,a}I {yp,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {y,a}I {yp,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {y,a}I {yp,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a}I {b}I al->('named', 1) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a}I {b}E al->('named', 1) k=2 min Delta c=-2
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a}E {b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}I {y,a}E {b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}E {y,a}I {b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x,yp}E {y,a}I {b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {yp}I {y,a}I {x,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {yp}I {y,a}I {x,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {yp}E {y,a}I {x,b}I al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {yp}E {y,a}I {x,b}E al->('named', 1) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}I {y,a}I {b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}I {y,a}I {b}E al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}E {y,a}I {b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}I {yp}E {y,a}I {b}E al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {yp}I {y,a}I {b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {yp}I {y,a}I {b}E al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {yp}E {y,a}I {b}I al->('named', 2) k=2 min Delta c=-1
+   gg/R7 q=('b', 'a', 'x', False) {x}E {yp}E {y,a}I {b}E al->('named', 2) k=2 min Delta c=-1
+   gg/R8 q=('b', 'a', 'b', False) {x}I {y,a}I {yp,b}I al->('named', 2) be->('named', 1) k=3 min Delta c=-2
+   gg/R8 q=('b', 'a', 'b', False) {x}I {y,a}I {yp,b}E al->('named', 2) be->('named', 1) k=3 min Delta c=-1
+   gg/R8 q=('b', 'a', 'b', False) {x}I {y,a}E {yp,b}I al->('named', 2) be->('named', 1) k=3 min Delta c=-1
+   gg/R8 q=('b', 'a', 'b', False) {x}E {y,a}I {yp,b}I al->('named', 2) be->('named', 1) k=3 min Delta c=-1
+2-cycle collapse repair: tested 26244 residual patterns (x ext flags); failing (pattern, residual-edge) cases 319; >= 2 external classes among them: 0; repair (merge the k classes) fails: 0
+3-cycle collapse repair: tested 4251528 residual patterns (x ext flags); failing (pattern, residual-edge) cases 478; >= 2 external classes among them: 0; repair (merge the k classes) fails: 0
+
+$ python3 2026-10-05-locallemma-prims.py                  # the 7 primitive moves: decomposition of the 17 terms + abstract enumeration
+decomposition of the 17 term formulas into primitives (symbolic, in the frame):
+  T1       OK
+  T2       OK
+  T3/('b', 'a', 'b', False) OK
+  T3/('r', 'a', 'b', False) OK
+  T3/('b', 'a', 'a', True) OK
+  T3/('r', 'a', 'a', True) OK
+  T4/('b', 'a', 'b', False) OK
+  T4/('r', 'a', 'b', False) OK
+  T4/('b', 'a', 'a', True) OK
+  T4/('r', 'a', 'a', True) OK
+  Oe1xOwx  OK
+  D/('b', 'a', 'b', False) OK
+  D/('r', 'a', 'b', False) OK
+  D/('b', 'x', 'b', False) OK
+  D/('r', 'a', 'x', False) OK
+  P5       OK
+  P3       OK
+  P6       OK
+  P4       OK
+  R2       OK
+  R3       OK
+  R4       OK
+  R5       OK
+  R6       OK
+  R7/('b', 'a', 'b', False) OK
+  R7/('r', 'a', 'b', False) OK
+  R7/('b', 'x', 'b', False) OK
+  R7/('b', 'a', 'x', False) OK
+  R7/('r', 'x', 'b', False) OK
+  R7/('r', 'a', 'x', False) OK
+  R8/('b', 'a', 'b', False) OK
+  R8/('r', 'a', 'b', False) OK
+  R8/('b', 'x', 'b', False) OK
+  R8/('b', 'a', 'x', False) OK
+  R8/('r', 'x', 'b', False) OK
+  R8/('r', 'a', 'x', False) OK
+all decompositions verified: True
+
+[Loop] abstract configurations (all internal) 6, min Delta c by variant: {'None': 2}; naive failures 0: {}
+[AddLoop] abstract configurations (all internal) 2, min Delta c by variant: {'b': 0, 'r': 0}; naive failures 0: {}
+[MoveLoop] abstract configurations (all internal) 6, min Delta c by variant: {'None': 0}; naive failures 0: {}
+[MoveSC] abstract configurations (all internal) 35, min Delta c by variant: {'None': -2}; naive failures 1: {('2-cycle', -2): 1}
+    collapse: None {z}I {u,v}I al->('named', 1)
+[MoveOut] abstract configurations (all internal) 35, min Delta c by variant: {'None': 0}; naive failures 0: {}
+[Dmove] abstract configurations (all internal) 896, min Delta c by variant: {"('edge', ('b', 'z', 'v', False), ('b', 'a', 'b', False))": -2, "('edge', ('b', 'z', 'v', False), ('r', 'a', 'b', False))": 0, "('edge', ('b', 'z', 'v', False), ('b', 'a', 'a', True))": 0, "('edge', ('b', 'z', 'v', False), ('r', 'a', 'a', True))": 0, "('lw', ('b', 'z', 'z', True), ('b', 'a', 'b', False))": 0, "('lw', ('b', 'z', 'z', True), ('r', 'a', 'b', False))": 0, "('lw', ('b', 'z', 'z', True), ('b', 'a', 'a', True))": 0, "('lw', ('b', 'z', 'z', True), ('r', 'a', 'a', True))": 0}; naive failures 1: {('2-cycle', -2): 1}
+    collapse: ('edge', ('b', 'z', 'v', False), ('b', 'a', 'b', False)) {v,a}I {z,b}I al->('named', 0)
+[Contract] abstract configurations (all internal) 5, min Delta c by variant: {'None': -2}; naive failures 1: {('2-cycle', -2): 1}
+    collapse: None {z}I {u,v}I 
+GRAND (primitives): {'configs': 985, 'fail': 3, 'other': 0} t=0.0s
+
+$ python3 2026-10-05-locallemma-check.py init 3
+Gamma_1: ord=1 c=3 Phi^far=3 (3p=3) Phi^all=2 (2p=2); t=0s
+Gamma_2: ord=2 c=6 Phi^far=6 (3p=6) Phi^all=4 (2p=4); t=0s
+Gamma_3: ord=3 c=9 Phi^far=9 (3p=9) Phi^all=6 (2p=6); t=0s
+
+$ python3 2026-10-05-locallemma-check.py lemmaA 2 30 1 10
+lemma A for c: 609 loop removals on reachable states (p=2), c increased in 0
+
+$ python3 2026-10-05-locallemma-check.py premerge 2 25 11 10 6 far
+DONE premerge(c) p=2 seed=11 allow_xy=False descents=25 depth<=10: {('realizable', 'collapse2'): 238, ('realizable', 'collapse3'): 86, ('realizable', 'naive_fail'): 324, ('realizable', 'repaired'): 324, ('realizable', 'tests'): 220157, ('unrealizable', 'tests'): 1268851}; t=76s
+$ python3 2026-10-05-locallemma-check.py premerge 2 25 12 10 6 xy
+DONE premerge(c) p=2 seed=12 allow_xy=True descents=25 depth<=10: {('realizable', 'collapse2'): 332, ('realizable', 'collapse3'): 104, ('realizable', 'naive_fail'): 436, ('realizable', 'repaired'): 436, ('realizable', 'tests'): 203827, ('unrealizable', 'tests'): 1037353}; t=61s
+$ python3 2026-10-05-locallemma-check.py premerge 3 6 13 8 4 far
+DONE premerge(c) p=3 seed=13 allow_xy=False descents=6 depth<=8: {('realizable', 'collapse2'): 26, ('realizable', 'collapse3'): 4, ('realizable', 'naive_fail'): 30, ('realizable', 'repaired'): 30, ('realizable', 'tests'): 52932, ('unrealizable', 'tests'): 462592}; t=30s
+$ python3 2026-10-05-locallemma-check.py premerge 4 3 14 6 3 xy
+DONE premerge(c) p=4 seed=14 allow_xy=True descents=3 depth<=6: {('realizable', 'collapse2'): 20, ('realizable', 'collapse3'): 8, ('realizable', 'naive_fail'): 28, ('realizable', 'repaired'): 28, ('realizable', 'tests'): 30154, ('unrealizable', 'tests'): 368286}; t=28s
+
+$ python3 2026-10-05-locallemma-check.py placement 2 20 21 10 3
+placement lemma: {('k', 0): 37309, ('k', 1): 14460, ('k', 2): 5610}; t=4s
+
+$ python3 2026-10-05-locallemma-check.py phi 2 3 10 7
+DONE phi p=2 ORDMAX=3: states 67 (|V| <= 8), children checked {'far': 391, 'all': 670}, violations {}, min Phi over states {'far': 6, 'all': 4}, min ord of loc. std. children {'all': 4}; t=28s
+$ python3 2026-10-05-locallemma-check.py phi 2 4 4 8
+DONE phi p=2 ORDMAX=4: states 1173 (|V| <= 8), children checked {'far': 1476, 'all': 4540}, violations {}, min Phi over states {'far': 6, 'all': 4}, min ord of loc. std. children {'all': 4, 'far': 6}; t=318s
+
+$ python3 2026-10-05-locallemma-check.py cexpath 2026-10-04-localreg6-cexpath.txt   # the path on which Psi decreased (previous report, section 2.3)
+state 0: |V|=6 ord=2 Psi=6 c=6 Phi^far=6 Phi^all=4
+state 1: |V|=5 ord=8 Psi=10 c=10 Phi^far=10 Phi^all=8  (non-decreasing)
+state 2: |V|=5 ord=13 Psi=14 c=14 Phi^far=14 Phi^all=12  (non-decreasing)
+state 3: |V|=5 ord=17 Psi=18 c=18 Phi^far=18 Phi^all=16  (non-decreasing)
+state 4: |V|=4 ord=22 Psi=22 c=22 Phi^far=22 Phi^all=20  (non-decreasing)
+state 5: |V|=4 ord=25 Psi=25 c=25 Phi^far=25 Phi^all=23  (non-decreasing)
+state 6: |V|=5 ord=28 Psi=28 c=28 Phi^far=28 Phi^all=26  (non-decreasing)
+state 7: |V|=5 ord=30 Psi=30 c=30 Phi^far=30 Phi^all=28  (non-decreasing)
+state 8: |V|=6 ord=33 Psi=33 c=33 Phi^far=33 Phi^all=31  (non-decreasing)
+state 9: |V|=6 ord=37 Psi=37 c=37 Phi^far=37 Phi^all=35  (non-decreasing)
+state 10: |V|=6 ord=42 Psi=42 c=42 Phi^far=42 Phi^all=40  (non-decreasing)
+state 11: |V|=6 ord=47 Psi=47 c=47 Phi^far=47 Phi^all=45  (non-decreasing)
+state 12: |V|=7 ord=49 Psi=50 c=50 Phi^far=50 Phi^all=48  (non-decreasing)
+state 13: |V|=8 ord=51 Psi=53 c=53 Phi^far=53 Phi^all=51  (non-decreasing)
+state 14: |V|=9 ord=54 Psi=56 c=56 Phi^far=56 Phi^all=54  (non-decreasing)
+state 15: |V|=9 ord=56 Psi=58 c=58 Phi^far=58 Phi^all=56  (non-decreasing)
+state 16: |V|=9 ord=58 Psi=61 c=61 Phi^far=60 Phi^all=58  (non-decreasing)
+state 17: |V|=8 ord=62 Psi=65 c=65 Phi^far=63 Phi^all=61  (non-decreasing)
+child: |V|=7 ord=64 Psi=64 c=67 Phi^far=64 Phi^all=62  (non-decreasing)

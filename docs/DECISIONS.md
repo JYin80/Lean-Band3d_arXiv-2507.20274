@@ -375,3 +375,52 @@
 - **S5-06/07**：整份移植约 2100 行，T2171 = S5-06（`Path/LemDecCalEdif`）；S5-07 另开文件 `Path/LemDecCalEdif2`，等 T2171。T2172（S5-08）约 1700 行，照收。
 - T2171/T2172 的新前提（`E2Hyp` 补回 3/4/6-loop 界，下限加强为 `(L^dW^{6d})² ≤ W^D`）由预检核实；T2164 的 M1 因此更紧，S5-09 写票前定。
 - （03:53 UTC 补）§52 所说的 BA 设计补充单写为 T2173，标签改称 **BA-DS**（T2173 Amend 1）：T2161 拆单表 P.9 里 BA-D1…BA-D6 是确定性层的行名，避免混淆。
+
+## §54 UN 拆单按导入关系重切（总调度，2026-10-05 05:50 UTC，流程事项；依据 RBM2D `c9a24cf` 各源文件的 `import` 行）
+- T2162 portmap P.3 的 UN-02（`OU` + `Step1Cond`）、UN-03（`EigenInterlacing` + `InjSum`）、UN-05（`GreenCorr` + `EigenMeasurable`）各含一个依赖未合并文件的源：`Step1Cond` 导入 `GUEInvariance`、`EigenMeasurable`；`EigenInterlacing` 导入 `RBM2D.Delocalization`；`GreenCorr` 导入 `PoissonSmoothing`、`EigenMeasurable`。按导入重切：**UN-02a** = `OU` + `EigenMeasurable`（T2177）、**UN-03a** = `InjSum` + `PoissonSmoothing`（T2178）、UN-06 = `FreeConv` + `FreeConvStability`（T2176）、UN-08 = `GUEInvariance`（T2175）；之后 `Step1Cond`（等 T2175、T2177）、`GreenCorr`（等 T2177、T2178）、`EigenInterlacing`（先查 `RBM2D.Delocalization` 在 RBM3D 的对应）。总张数大致不变（52 ± 2，在 §50 的 60 张上限内）。
+
+## §55 LW-10c：Fable 证出局部引理，性质 (6) 按 `2p ≤ ord` 对所有输出陈述（总调度，2026-10-05 05:50 UTC，流程事项；依据 `docs/claude-team/fable/2026-10-05-localreg6-locallemma.md`）
+- Fable（claude-fable-5-1）把代价改成局部代价 `c = ord + #elem`（elementary = 孤立 light-weight 或 SC 顶点，不再记链），`Φ(Q) = min_π c(M_π Q)`；对每个 `LocStep` 输出证明步进引理 `Φ(Q') ≥ Φ(Q)`（17 个项分解为 7 个原语，逐原语有手证与表；唯一 `Δc < 0` 的形状是 2-圈塌缩，由合并修复，不合并两个外部顶点）；`Φ^all(Γ_p) = 2p`、`Φ^far(Γ_p) = 3p`。数值：229164 个抽象构型、3.6 M 具体实例、1240 个可达状态上暴力求 `Φ`，0 反例。**无数学缺口。**
+- **定**：LW-10c 照报告 §(4) 的钉文形状（`LGraph.scost`、`PGraph.LocCostGe far k`、`locCostGe_locStep`、`fxyPowGraph_locCostGe`、`locReg6_of_locCostGe`），(6) 陈述为对每个输出 `2p ≤ ord`，`M_x ≠ M_y` 下 `3p ≤ ord` 作推论；§47 里「`M_x = M_y` 的输出照 `(scalemole)` 归入误差项」不再需要。拆 4 张（LW-10c1…c4，约 1300/1400/1300/1200 行），LW 35 → 38。paper-delta：T2151a–c 在 LW-10c 合并时编号。
+
+## §56 T2176、T2178 的合并签字（总调度，2026-10-05 06:14 UTC，流程事项；依据 `docs/reports/T2176-audit.md` §3、`docs/queue/T2178.state`）
+- **T2176（UN-06）**：`freeConv_stable_local` 的实例保留确定性前提 `hyp`（`mV v` 在窗口上接近伸缩半圆），其余前提全部卸掉；照审核的方案 (A) 签字。理由：满足 `hyp` 的 `v` 至少约 `2.3·10^5` 个点（审核 §3 脚本），Lean 见证不可行；`hyp` 由下游 local law 提供（同 RBM2D `FreeConvStabilityCheck`）；非空真由报告 (a)(ii-c) 的 `N = 10^6` 分位测度数值核对支持。票面建议的 `v ≡ 0`（`Fin 3`）被证明违反 `hyp`，是票面错，不算返工。T2176 Amend 1，H74 合并。
+- **T2178（UN-03a）**：未登记的前提 `RBM.Univ.InjSum_IsTestFun`（测试函数光滑且紧支）按 §20 归 **structural**；T2178 Amend 1（repairer 只加一行登记、预检、第 2 轮只审 `Axioms.lean` 差异），H75。不算返工（§20 同 T2029）。
+- **今后的移植票**：票面「唯一可写文件」一律加上 `RBM3D/Test/Axioms.lean`（只追加登记行），并写明登记预检（§20 (1)(2)）。
+
+## §57 BA-DS（T2173）签字：中心化 OU 流按「加主撇后继」实现，UN-25…52 写成模型通用（总调度，2026-10-05 06:58 UTC，流程事项；依据 `docs/reports/T2173-prove.md`、`docs/reports/T2173-audit.md` §6）
+- **事**：BA 的 Claim (417) 要走中心化 OU 流 `λΨ + e^{-t/2}V + √(1−e^{-t})H'`（T2162 的 `ouMat` 带均值 `e^{-t/2}λΨ`，生成元恒等式的漂移项不衰减，报告 b.5）。报告方案 A1 改动已合并的 `UNModel`（加 `mean`）与 `ouMat`（T2174 `Universality/Pins.lean:104,150`）及 `OU.lean` 三行；另给不改动的方案（(d)2：流与初值放进 `UNKind`，主撇的 pin 副本）。BA 总数 62（61…66）≤ 70 的前提是 UN-25…52 写成模型通用；只写带状则 75 > 70。
+- **定**：(1) **不改已合并的签名**（CLAUDE.md §5.3）：UN-01b 在新文件里加 `UNKind`、中心化流与初值、模型通用的主撇 pin 与行（报告的 `UN*k`、`un_claimAll_of_rowsk`），以及「`mean = 0` 时与 `ouMat` 一致」的桥接引理；`Universality/Pins.lean`、`OU.lean`、`EigenMeasurable.lean` 与在跑的 T2183（`Step1Cond`）都不动。(2) **UN-25…52 一律写成模型通用**（对 `UNKind`），BA 不另做 28 张双胞胎；BA 总数按 62 计（上限 70，不问 Jun）；UN 53 张（加 UN-01b，上限 60）。(3) **T2173a**：T2161 的 BA 钉文用的是 `sz.seqP`（高斯部分是带状剖面），BA 的律应为 `(sz.withLam 0).seqP`（编译见证 `seqGvar_ne_withLam_zero`）；BA 第一批票（BA-C1 起）照报告带律参数（`PrecL`、`BAEnd_QUEL`）重钉，T2161 探针里的旧形式不照抄。(4) T2173 照常合并报告（探针留在 `t/T2173`），H77。
+
+## §58 S3-12 暂停：预算里的 `Φ²` 吸收不进 `STNQConcl` 的线性右端；BA-D1 拆 a/b；UN-01b 的结构（总调度，2026-10-05 07:19 UTC，流程事项；依据 S3-12 票面草稿（未发）、`docs/reports/T2179-prove.md` (d) T2179a、`docs/reports/T2146-prove.md` 表行 4）
+- **事**：起草 S3-12（`STNQConcl` 端点）时查出：合并的 `GoodSetN`（T2146）只有一个水平 `Φ`，(D2) 条款给漂移 `Γk(ΓΦ)²`，于是 S3-11 的预算是 `(Λ^{1/2} + Φ + Φ²)B_v^k`（D449）；`Φ` 要覆盖 `XLK m`（`2 ≤ m ≤ k−1`）等控制量，取 `XL ≡ 1`、`XLK ≡ N^δ` 时钉文右端是 `O(N^δ + …)`，而这条路线至少给 `N^{-2ε₁}N^{2δ}`，故不能证出钉文。钉文本身（论文 `(sahwNQ)` 对乘积线性）没问题；RBM2D 有单独的乘积条款 (G3)、预算线性，T2146 以「无消费者、`k = 2` 太强」删掉了 (G3)（D345）。另一缺口：`STNQConcl` 对当前长度无前提，`GridGoodNConcl` 要 `Ξ̂^{(𝓛−𝒦)}_k` 的界，需按随机水平切片，也要 (D2) 线性才闭合。
+- **定**：(1) S3-12 **暂不写票**。候选修法 A：在新文件里加一条线性的 (D2′) 条款与单独的水平 `Φ₂`（`GoodSetN′`，不改已合并签名），重做线性预算（「S3-11b」约 900 行），再写 S3-12a（端点在网格上）、S3-12b（`STNQConcl` 的论文形式）。(2) 修法 A 先请监督复核路线（REQ-2026-10-05-0719）；必要时起 Fable。改钉文（修法 B）是口径级，不采用，除非 A 不通再问 Jun。(3) **BA-D1 拆 a/b**：T2189 = BA-D1a（无律的确定性词汇与钉文，探针 §§0–3）+ BA-D2；BA-D1b（PT 钉文、流、载体、链钉文，探针 §§4–7）照 §57 (3) 用律 `(sz.withLam 0).seqP` 重钉，随 BA-C1；BA 总数仍 62。(4) **UN-01b（T2187）**：均值放进模型（`UNModelC extends UNModel` 加 `mean`），流 `ouMatC` 由均值定义（`UNCoreC` 对所有模型量化，任意流会使它为假）；照准。
+
+## §59 监督 2026-10-05 06:53 PASS 的五条观察：照办（总调度，2026-10-05 07:21 UTC，流程事项；依据 `docs/supervisor/2026-10-05-0653.md` O1–O5）
+- **O1 计数**：宽口径只在**放行时**（或动了 Lean 的返工时）加一，合并时不再加；ROUTES 改正为 ST-2 38、ST-3 23、ST-4 25、LW 18、UN 9、BA 3（含 06:13 后放行的票）。ST-4 已到 25，补写 REQ-2026-10-05-0721；ST-3 到 25 时照写。
+- **O2**：T2180 Amend 2（只开放接口：粗界与 peeling 引理改公开、各带实例；目标陈述不变；作用于 1b），H78；不算返工（不改陈述）。
+- **O3**：ST2-13b 票面写明：核心对 `zeroModeSet Q ∘ UN`、对一切 `Q` 证，`GridRepWTailNAt` 为 `Q = ∅` 的情形（S5-26 的 `STDuhamelConcl` 要 `Q`）；路线照监督答 1 (a)–(d)：一个向量鞅 `V_k = Σ P_j ΔMart_j`、与 `K` 无关的粗**时间**网格、`v_p → u_k` 的转移、二阶部分用 Doob。
+- **O4**：Step 2 收尾组合（`3 ≤ d → LWterm d → LWtermExp d → STStep2 d`，经 `ST_step2_of_pins'`、`stGridMart_holds`、`stOptL2_of_pins` 与两条桥）及登记删除（`STStep2`、`STOptL2`、`STLWB`、`STLWT`、陈旧的 `STOptL2` 注释）写进 LW-01 票（或最先证出 `LWterm`、`LWtermExp` 的票）的目标。
+- **O5**：T2173 的签字已由 §57 定（不改已合并签名，加主撇后继 `UNModelC`/`ouMatC`，见 T2187），消费者核对由 T2187 的桥接引理承担。
+
+## §60 监督 07:55 建议 HOLD（只限 ST-3 非交错端点）：照办，钉文形式交 Jun（总调度，2026-10-05 08:16 UTC；依据 `docs/supervisor/2026-10-05-0755.md`）
+- **事**：(1) `Φ²` 障碍成立；(2) 修法 A 也到不了 `STNQConcl`：钉文右端的随机跨时刻自项 `B_u^{1/6}·sup_{w∈[s,u]} Ξ̂^{(𝓛−𝒦)}_w`（`STsupXiLK`）定义在单时刻耦合 `seqHflow = √u X` 上，§7 的网格游走路线只能传递单时刻事件，确定性水平的命题推不出随机形式（两点反例）；(3) 唯一可行是把钉文改成 RBM2D `STOeqPT` 的形式（当前长度有确定性控制 `XLK n_`，结论用 `B_u^{1/6}·XLK n_`），自吸收挪到 `STXiBoot`（S3-18b）作有限步确定性自举；路线 (R) 用合并的 `GoodSetN`（粗水平）交一个新的线性集合 `G_lin`，约 3 张票，不复制 `GridGoodN`。交错链（S3-14…18）同样要用确定性水平钉。
+- **定**：(1) 照办 HOLD 的范围：不写 S3-11b、S3-12a/b，也不写消费 `STNQConcl` 的票（S3-18b、S3-24b、S3-26），交错链 S3-14…18 在钉文形式定之前也不开工；不改 CONTROL 的 mode（无在跑的 ST-3 票），其他 gate 照常。(2) 钉文改形式是口径级（论文 `lem:STOeq_NQ` 的陈述），已问 Jun（2026-10-05 08:16 UTC，A = 照 RBM2D 确定性形式、自吸收挪到 bootstrap；B = 保留论文形式，需真正的矩阵布朗运动，等于换路线；C = 其他）。
+
+## §61 监督 08:03 PASS（ST-4 到 25）：M1、M3 并入一次钉文修改，由 S5-09 执行（总调度，2026-10-05 08:16 UTC，按 §4 签字的小改动，同 §27、§37；依据 `docs/supervisor/2026-10-05-0803.md`）
+- **定**：`STLemDecCalEConcl`（`RBM3D/Induction/Step5Pins.lean:161-163`）的下限前提 `∀ᶠ n, size n ≤ W^D` 改为 `∀ᶠ n, (L^d W^{6d})² ≤ W^D`（T2171/T2172 的下限，D429、D434、D437），并加前提 `∀ n u D, Jst n u D ≤ W_n`（M3：`E2Hyp` 仍带 `J ≤ W` 合取项）。这是削弱（限定 `D` 的范围）；唯一的证明消费者是 `lem:pf_step5`（S5-10/11，未写），其 `STPfConcl` 对 `D` 单调，S5-10 的预检写明下降 `D′ = max(D, D₀)`。合并的消费者只有 `inst_lemDecCalE` 与登记行。S5-09 的票让 `Step5Pins.lean` 对这一处修改可写（同 §34 的做法）。M2 不改钉文（由 `stGbEXP_holds` 经去指示函数、网格提升得到，S5-09 预检）。paper-delta 在 S5-09 合并时编号（续 D374、D429）。
+- ST-4 计划改为 33 张（O4）。
+
+## §62 S3-12 钉文改用 RBM2D 确定性形式（Jun，2026-10-05 14:30 UTC：「A」——回答 §60 的问题）；监督 0755 的范围 HOLD 解除；路线 (R) 三张
+- **定（Jun）**：A。`STNQConcl`/`STOeqNQ`（`Induction/Step34Pins.lean:428-445`）照 RBM2D `STOeqPT`（`Induction/Defs.lean:247`）的形式重钉：前提 `Ξ̂^{(𝓛−𝒦)}_m ≺ XLK m` 对 `1 ≤ m ≤ n_`（含当前长度）；结论里 `B_u^{1/6}·STsupXiLK … (s n) u n_` 换成 `B_u^{1/6}·XLK n_ u`。原钉文蕴含新钉文（新钉文更弱）。自吸收挪到 `STXiBoot`（S3-18b）的证明里，作有限步确定性自举：起点 `STXiLKM_crudeN` 的 `Ξ̂_n ≤ N^{C₀}`（`𝒦` 用 `STKbound`），每轮用非交错与交错端点（`XLK n_ :=` 当前控制），`B_u^{1/6} ≤ N^{-c}`（`(eq:WO)` 下，S3-18b 预检核对），`⌈C₀/c⌉ + 1` 轮得 `STXiBoot` 的确定性右端。
+- **执行（总调度，照监督 0755 答 3）**：
+  (1) **钉文用主撇后继**（§57、CLAUDE.md §5.3）：新文件里写 `STNQConcl′`、`STOeqNQ′`，已合并的 `STNQConcl`/`STOeqNQ`/`inst_OeqNQ` 不动；登记表 owed 行从 `STOeqNQ` 改记 `STOeqNQ′`（S3-12a 的票让 `Test/Axioms.lean` 对这一行可写，§20/§56）。paper-delta 在 S3-12a 合并时编号：「`(am;asoiuw)` 的随机跨时刻自项换成当前长度的确定性控制，同 RBM2D `STOeqPT`（§7 所需）」。
+  (2) **路线 (R)，三张**：**S3-12a** = 钉文′ + 新集合 `G_lin`（(D1′)、(D2′)、(D3′) 各用自己的确定性水平：(D1′) 取长度 `≤ k−1` 的控制，(D3′) 取 `𝓛` 长度 `n−1…n+1` 的控制，(D2′) 取 `Φ₂ = Σ_{n'} XLK(k+2−n')(XL(n₁')XL(n₂'))^{1/2} + B_u^{1/6}·XLK k`）+ `G_lin` 的可测性（照 `GridGoodN.lean` 的私有 `gridGood_meas_*` 复制）+ 高概率（`stSEforLn_holds` 合取 3、`StochDomAt.mul`、`map_pathH_eq`、至多 `N^C` 个网格时刻取并，同 `gridGoodN_holds` 对 (D2) 的推法）+ 线性预算（`tbInitNonAltN`、`tbQvNonAltN`、`tbDriftN` 取线性水平）+ 主撇 `subGaussStop` 包装，约 1000–1300 行；**S3-12b** = 网格端点（约 1200 行）；**S3-12c** = 流端点（`TimeIcc` 上一致，`Prec`，连续性网；约 800–1000 行）。合并的 `GoodSetN` 取粗水平 `Φ = N^{C₀}`（`hX`、`hY` 确定性成立，`hQ` 保留真 `Λ`），只用它的无水平条款（Herm、Dec、Va、Vb）与 (D4)；不复制 `GridGoodN`；**`GoodSetN` 的水平不得要求控制当前长度**（否则线性预算仍带 `N^{ε₀}·XLK k`）。不能用的已合并件：`dDriftNonAltN`/`nonAlt_hdriftN`（`Φ²` 水平）与 `budgetNonAltN`。
+  (3) **S3-11b 取消**（并入 S3-12a 的线性预算）；§58 的「S3-11b + S3-12a/b」换成「S3-12a/b/c」，ST-3 计划仍 41（监督 0755 O1：现实总数 44–46，过 40 那次放行写请求）。
+  (4) **交错链 S3-14…18 从一开始就用确定性的当前长度水平钉**（监督 0755 O2；其漂移里的 `ℰ^{(𝓛−𝒦)×(𝓛−𝒦)}` 有同样的自项）；S3-18b 的票写上面的自举；S3-24b、S3-26 消费 `STOeqNQ′`。
+  (5) 监督 0755 的范围 HOLD 只到「钉文形式定之前」，条件已满足，解除：S3-12a 现在可写；S3-14…18、S3-18b、S3-24b、S3-26 照依赖写。
+
+## §63 §61 的 M3 前提改为 `Jst ≤ W^{1/2}`；S5-09 的 M2 走 `GijGEXPTSwap` + 网格提升（总调度，2026-10-05 14:58 UTC，按 §4 签字的小改动，同 §61；依据 S5-09 票面起草（T2193）的核对）
+- **事**：(1) M3：S5-09 把 `≺` 前提 `Prec STLK2 ≤ Jst·T` 换成确定性 `E2Hyp` 条款时要取 `J := N^{τ'}·Jst`（`≺` 的余量），`E2Hyp`（`Path/LemDecCalE.lean:84`）要 `J ≤ W`；§61 加的前提 `Jst ≤ W` 推不出 `N^{τ'}·Jst ≤ W`。(2) M2：`stGbEXP_holds` 的 `STGijGEX` 右端 `STgexRHS`（`Induction/Defs.lean:92`，两个定向）大于 `E2Hyp` 要的单定向 `gexRHS … [q] [p]`，`Green/Pins.lean:792-793` 的文档串写明反向推不出；监督 0803 说的「由 `stGbEXP_holds` 得」不成立。
+- **定**：(1) `STLemDecCalEConcl` 新加的前提写成 `∀ n u D, Jst n u D ≤ W_n^{1/2}`（不是 §61 的 `≤ W_n`）：新下限给 `N ≤ L^dW^{6d} ≤ W^{D/2}`，故 `τ' ≤ 1/D` 时 `N^{τ'} ≤ W^{1/2}`，`J ≤ W` 成立；消费者 `lem:pf_step5` 的停时给 `J* < W^ε`（`ε < 1/2`），照样满足。仍是削弱（多一个前提），已合并消费者不变。S5-10 的票写明供 `Jst ≤ W^{1/2}`。(2) M2 走 `gbEXPV3` → `gijGEXPTSwap_giiGEXPT_of_V3`（每个时刻、无指示函数，需 `AsGMcPT`，由 `STLocalEntryU` 得），再做网格提升到对 `u` 一致（照抄 `Path/NetLift2` 的私有 Lipschitz 辅助引理）；这是 S5-09 的目标 2。预检必须写出网格误差的吸收论证；若要右端带 `W^{-D}` 下限才能吸收，或目标 2 超过 800 行，1a 后停，总调度把它拆成 S5-09a（ST-4 计划 33 → 34）。
+- paper-delta 在 S5-09 合并时编号（T2193a 下限、T2193b `J* ≤ W^{1/2}`、T2193c 单定向 `(GijGEX)` 一致形式）。

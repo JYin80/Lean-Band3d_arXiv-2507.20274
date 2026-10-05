@@ -2,38 +2,52 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-05 03:51 UTC (dispatcher V1: CONTROL archived (H60–H72, old merge log); H73 commits the dispatcher files; T2167–T2170 running, T2171–T2174 queued)
+updated: 2026-10-05 15:34 UTC (dispatcher V1: T2188 merged; T2193 preflight FAIL, held; released T2194 (S3-14), T2195 (LW-10c2))
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-130. T2161 — `docs/tickets/T2161.md` (BA-D1, block Anderson design (report only)); audit PASS, both sign-off items settled by Jun (DECISIONS §51 bulk form `ρ_N(E) ≥ κ`, §52 BA approved, cap 70) — merge per H71.
-136. T2167 — `docs/tickets/T2167.md` (S3-10b, `Induction/NQGood2` (non-alternating good-set inputs part 2: classes and constants, the `GridAssemblyHypN` fields, the QV constant, `subGaussStop_nonAltN`; §49); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-137. T2168 — `docs/tickets/T2168.md` (ST2-12, `Path/DifREP1` (`STGridRepN` part 1: grid split, remainder bound, assembly from the two tails; ST2-13a/b follow); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-138. T2169 — `docs/tickets/T2169.md` (S5-24, `Evolution/CltMoments2` (CLT moment counting part 2: `(eq:2p_product)` expansion, isolated/paired split, Markov); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-139. T2170 — `docs/tickets/T2170.md` (LW-11a, `Graph/AuxGraph` (auxiliary graph, `GtoAG`, scalemole, nested form; claim:xi to LW-11b); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-140. T2171 — `docs/tickets/T2171.md` (S5-06, `Path/LemDecCalEdif` (`res_deccalE_dif` part 1; S5-07 follows in `LemDecCalEdif2`); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-141. T2172 — `docs/tickets/T2172.md` (S5-08, `Path/LemDecCalEwG` (`res_deccalE_wG`); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-142. T2173 — `docs/tickets/T2173.md` + `T2173-amend-1.md` (BA-DS (label per Amend 1), block Anderson form of Claim (417) (design supplement, report only; §48 (i), §52); role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-143. T2174 — `docs/tickets/T2174.md` (UN-01, `Universality/Pins` (the UN-D1 probe promoted to the library: vocabulary, pins, rows, registry lines; DECISIONS §50); role `prover`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+149. T2180 — `docs/tickets/T2180.md` + `T2180-amend-1.md` + `T2180-amend-2.md` (ST2-13a, `Path/DifREP2` (plain tail `GridRepTailNAt`, random-proxy Azuma; makes `STGridMart` unconditional; §53); role `prover-max`). Start: as above.
+161. T2186 — `docs/tickets/T2186.md` (S3-12a, `Induction/Step34PinsP` + `Induction/NQLin` (primed pins `STNQConcl'`/`STOeqNQ'` in RBM2D `STOeqPT` form, `GoodLinN`, `nqLinGood_holds`, linear drift, `subGaussStop_linN`, `budgetNonAltLinN`; DECISIONS §62); role `prover-max`). Priority: start before 158–160. Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+158. T2190 — `docs/tickets/T2190.md` (UN-07, `Universality/FreeConvRegular` (stability of the free convolution against a Lipschitz reference; joint modulus of `freeConvST`; finding T2190a on `UNDens`); role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+159. T2191 — `docs/tickets/T2191.md` (ST-D5, Step 6 design (report only)); role `prover-max`). Start: as above.
+160. T2192 — `docs/tickets/T2192.md` (MA-D1, main-theorem assembly and endpoint freeze design (report only)); role `prover-max`). Start: as above.
+163. T2194 — `docs/tickets/T2194.md` (S3-14, `Induction/QProxy` (alternating chain: `Q ⊗ Q` variance proxy, generic exit times, no level on the current length; DECISIONS §62 (4)); role `prover-max`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+164. T2195 — `docs/tickets/T2195.md` (LW-10c2, `Graph/LocalRegular6b` (composition, surgery, placement, repair, `Loop`, `AddLoop`, `MoveLoop`, `Contract`; c2 pins of T2184; §55); role `prover-max`). Start: as above.
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
-- `docs/tickets/checks/T2167-check.lean` (S3-10b; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2168-check.lean` (ST2-12; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2169-check.lean` (S5-24; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2170-check.lean` (LW-11a; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2171-check.lean` (S5-06; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2172-check.lean` (S5-08; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2173-check.lean` (BA-DS; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2174-check.lean` (UN-01; released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2192-check.lean` (released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2194-check.lean` (released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2195-check.lean` (released conditionally above, DECISIONS §17).
+done: Mon Oct  5 14:21:21 UTC 2026 — `lake env lean docs/tickets/checks/T2192-check.lean`: exit 0, no error lines.
+done: Mon Oct  5 15:36:03 UTC 2026 — `lake env lean docs/tickets/checks/T2194-check.lean`: exit 1; error lines:
+  `docs/tickets/checks/T2194-check.lean:148:4: error(lean.dependsOnNoncomputable): failed to compile definition, consider marking it as 'noncomputable' because it depends on 'uKer', which is 'noncomputable'`
+  `docs/tickets/checks/T2194-check.lean:160:4: error(lean.dependsOnNoncomputable): failed to compile definition, consider marking it as 'noncomputable' because it depends on 'gridTime', which is 'noncomputable'`
+  `docs/tickets/checks/T2194-check.lean:166:4: error(lean.dependsOnNoncomputable): failed to compile definition, consider marking it as 'noncomputable' because it depends on 'gridTime', which is 'noncomputable'`
+  T2194 not started.
+done: Mon Oct  5 15:36:07 UTC 2026 — `lake env lean docs/tickets/checks/T2195-check.lean`: exit 0, no error lines. T2195 waits for a free slot (4 of 4 in use: T2190, T2186, T2191, T2192).
 
 ## Approved instructions
 - H12 (dispatcher V1, 2026-10-03 01:19 UTC). Standing from now (DECISIONS §17): a Released ticket whose start condition names its Pre-release check starts in the same loop iteration in which you compile that check with exit 0, if a slot is free. Now: stage by name only and commit with message `Dispatcher V1: T2011–T2014 released, ticket T2015 (ST-D1), DECISIONS §17`: `docs/DECISIONS.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2015.md`, `docs/tickets/checks/T2015-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
   done: 2026-10-03 01:22 UTC — committed c950f27 (7 files staged by name), pushed to origin/main. T2015 check exit 0; T2015 waits for a free slot (4 of 4 in use by T2011, T2013, T2012, T2014).
 - H73 (dispatcher V1, 2026-10-05 03:51 UTC; replaces the commit part of H60, which was never executed). Commit the dispatcher's files that have been waiting since H52. In the main worktree: (1) build the file list by script, `git status --porcelain --untracked-files=all -- docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor | awk '{print $2}' | grep -v __pycache__ > /tmp/H73-files.txt` (it must contain no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; if it does, stop and report); (2) `git add -- $(cat /tmp/H73-files.txt)` (explicit names, no `-A`, no `.`); (3) commit with message `Dispatcher V1: bookkeeping D158–D404, DECISIONS §32–§53, tickets T2095–T2174, supervisor verdicts, CONTROL archive (H73)`; (4) `git push origin main` (no force). One `done:` line with the hash and the number of files. Do this in the next loop iteration; it does not touch any running ticket.
+  done: Mon Oct  5 03:57:52 UTC 2026 — committed d2ebc07 (184 files staged by name from the scripted list; none under RBM3D/, docs/reports/ or docs/queue/T*.state), pushed 87f617a..d2ebc07 (Jun approved the commit and push in the hub session).
+- H74 (dispatcher V1, 2026-10-05 06:12 UTC; DECISIONS §56). T2176: the audit's sign-off item is settled by `docs/tickets/T2176-amend-1.md` (instance of `freeConv_stable_local` with `hyp` kept is accepted; no code change). Merge t/T2176 at 23ab8ce as usual (rule (A) steps 2–8). One `done:` line.
+  done: Mon Oct  5 06:23:15 UTC 2026 — T2176 merged 52c856e (t/T2176 at 23ab8ce, rule A steps 2–8), pushed.
+- H75 (dispatcher V1, 2026-10-05 06:12 UTC; DECISIONS §20, §56). T2178: run `docs/tickets/T2178-amend-1.md` — one `repairer` stage on t/T2178 adding `RBM.Univ.InjSum_IsTestFun` to `structuralProps` (registry line only), the registry pre-check and the full build, a round-2 `auditor` of the `Axioms.lean` diff and the pre-check output only, then resume the merge from step 5. One `done:` line.
+  done: Mon Oct  5 06:45:54 UTC 2026 — repairer added the registry line (t/T2178 a28f98e), pre-check and full build OK, round-2 auditor PASS; merge resumed, T2178 merged 4c52041, pushed.
+- H76 (dispatcher V1, 2026-10-05 06:14 UTC). T2180: its check is fixed (`RBM.Path.walk_measurable_loopL`, `…_blockMat` → `RBM.Gauss.…`; `docs/tickets/T2180-amend-1.md`). Recompile `docs/tickets/checks/T2180-check.lean`; on exit 0 overwrite `docs/queue/T2180.state` and start T2180 (with its Amend 1) in the next free slot. One `done:` line.
+  done: Mon Oct  5 06:46:12 UTC 2026 — `lake env lean docs/tickets/checks/T2180-check.lean`: exit 0, no error lines (06:23 UTC); docs/queue/T2180.state overwritten; T2180 started with its Amend 1 (workflow wf_c355dfe6-137).
+- H77 (dispatcher V1, 2026-10-05 06:58 UTC; DECISIONS §57). T2173 (BA-DS, report only): the audit's sign-off items are settled by §57 (no amendment of merged signatures: the centred flow and the model-generic pins go into a new file by UN-01b; UN-25..52 model-generic; BA total 62 ≤ 70). Merge t/T2173 as usual for a report-only design ticket: the reports `docs/reports/T2173-prove.md`, `docs/reports/T2173-audit.md`, `docs/reports/T2173-portmap.md` (if present) and the state file; the probe stays on the branch. One `done:` line.
+  done: Mon Oct  5 07:02:34 UTC 2026 — T2173 merged c2609b9 as a report-only design ticket (reports and state file; probe stays on t/T2173), pushed.
+- H78 (dispatcher V1, 2026-10-05 07:21 UTC; supervisor 2026-10-05-0653 O2, DECISIONS §59). T2180: pass `docs/tickets/T2180-amend-2.md` to its stage 1b (interface only: two helper groups made public with instances; no target statement changes; the running stage 1a stands). One `done:` line.
+  done: Mon Oct  5 07:23:06 UTC 2026 — stage 1b of T2180 was already running without Amend 2 and cannot be messaged, so it was stopped (no commits on t/T2180) and restarted with T2180-amend-1.md and T2180-amend-2.md passed explicitly (workflow wf_7178b668-962); section (a) stands.
+- H79 (dispatcher V1, 2026-10-05 15:13 UTC). T2193: its check failed only on the namespace of `stNetLift2_holds` (`RBM.Ind.` → `RBM.Gauss.Sizes.`, `Path/NetLift2.lean:674-688`); `docs/tickets/checks/T2193-check.lean` is fixed (that one `#check` line). Recompile it; on exit 0 append the `done:` line under Pre-release checks and start T2193 in the next free slot after T2186 (T2186's check passed at 15:04; T2186 has priority over T2191, T2192). One `done:` line here.
+  done: Mon Oct  5 15:13:41 UTC 2026 — T2193 check recompiled: exit 0, no error lines (15:13:24 UTC); T2186 (wf_2c8af186-579) and then T2193 (wf_56690770-e4d) started in the two slots freed by the T2189 and T2188 merges; T2191 waits.
+- H80 (dispatcher V1, 2026-10-05 15:37 UTC). Commit the dispatcher's files written since H73 (d2ebc07), exactly as H73: (1) `git status --porcelain --untracked-files=all -- docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor | awk '{print $2}' | grep -v __pycache__ > /tmp/H80-files.txt` (no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh` excluded — drop them from the list if present); (2) `git add -- $(cat /tmp/H80-files.txt)`; (3) commit `Dispatcher V1: bookkeeping D405–D472, DECISIONS §54–§63, tickets T2175–T2195, supervisor verdicts and requests (H80)`; (4) `git push origin main` (no force). Do it between merges; it touches no running ticket. One `done:` line with the hash and the number of files.
 (H1–H11, H13–H72 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it. Standing from H23 (DECISIONS §20): (b) when two branches both append lines to the registry lists of `RBM3D/Test/Axioms.lean`, keep both sides (union), then run the full build; (c) a merge that stops at step 5 only on unregistered premises gets state `blocked` with the names, and if the ticket has an Amend 1 of DECISIONS §20 you run its `repairer` stage for the registry lines and a round-2 `auditor` of that diff at once. Standing from H28: every workflow keeps its scratch files in its own subdirectory `scratchpad/<ticket>/` (T2036 report (d): concurrent workflows overwrote each other's generic file names).)
 
 
@@ -44,6 +58,28 @@ done: Sun Oct  4 23:31:04 UTC 2026 — T2151 merged 32d895b (RBM3D/Graph/LocalRe
 done: Sun Oct  4 23:39:58 UTC 2026 — T2165 merged daa7cc1 (RBM3D/Evolution/CltMoments1.lean, root import; lake build 3938 jobs); audit PASS round 2 after one repair (rule B); pushed.
 done: Mon Oct  5 01:20:07 UTC 2026 — T2166 merged 691566a (RBM3D/Induction/NQGood1.lean, root import; lake build 3941 jobs); audit PASS round 1 (stage 1b rerun after session-limit API error, rule H); pushed.
 done: Mon Oct  5 03:02:16 UTC 2026 — T2161 merged 87f617a (report only: state, prove, audit, portmap reports; probe RBM3D/Probe/T2161Pins.lean stays on t/T2161 at 82e72b3); audit PASS round 1, sign-off per H71 (DECISIONS §51, §52); pushed.
+done: Mon Oct  5 04:12:26 UTC 2026 — T2167 merged cc96b69 (RBM3D/Induction/NQGood2.lean, root import; lake build 3942 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 04:15:51 UTC 2026 — T2168 merged 3df1812 (RBM3D/Path/DifREP1.lean, RBM3D/Test/Axioms.lean (GridRepTailNAt, GridRepWTailNAt, H23 b), root import; lake build 3943 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 04:26:19 UTC 2026 — T2169 merged 7738afa (RBM3D/Evolution/CltMoments2.lean, root import; lake build 3945 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 04:36:19 UTC 2026 — T2170 merged 87cf70c (RBM3D/Graph/AuxGraph.lean, RBM3D/Test/Axioms.lean (IsExtMol, H23 b), root import; lake build 3946 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 04:47:59 UTC 2026 — T2174 merged f8ad4b4 (RBM3D/Universality/Pins.lean, RBM3D/Test/Axioms.lean (UNL32 borrowed, 26 UN pins owed, 6 data conditions structural, H23 b), root import; lake build 3959 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 05:00:41 UTC 2026 — T2171 merged 7d9f111 (RBM3D/Path/LemDecCalEdif.lean, root import; lake build 3960 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 05:23:49 UTC 2026 — T2172 merged 3e22603 (RBM3D/Path/LemDecCalEwG.lean, root import; lake build 3961 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 06:00:19 UTC 2026 — T2175 merged d5e2848 (RBM3D/Universality/GUEInvariance.lean, root import; lake build 3976 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 06:03:25 UTC 2026 — T2177 merged a52eb85 (RBM3D/Universality/OU.lean, RBM3D/Universality/EigenMeasurable.lean, root imports; lake build 3978 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 06:23:15 UTC 2026 — T2176 merged 52c856e (RBM3D/Universality/FreeConv.lean, RBM3D/Universality/FreeConvStability.lean, root imports; lake build 3982 jobs); audit sign-off per H74 (DECISIONS §56); pushed.
+done: Mon Oct  5 06:45:54 UTC 2026 — T2178 merged 4c52041 (RBM3D/Universality/InjSum.lean, RBM3D/Universality/PoissonSmoothing.lean, RBM3D/Test/Axioms.lean (InjSum_IsTestFun in structuralProps, Amend 1), root imports; lake build 3986 jobs); audit PASS round 1, Amend 1 repair + round-2 audit PASS (H75); pushed.
+done: Mon Oct  5 06:55:34 UTC 2026 — T2179 merged 5b887a6 (RBM3D/Induction/NQBudget.lean, root import; lake build 3987 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 06:56:27 UTC 2026 — T2181 merged a34c217 (RBM3D/Path/LemDecCalEdif2.lean, root import; lake build 3988 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 07:02:34 UTC 2026 — T2173 merged c2609b9 (report only: state and reports; probe stays on t/T2173 at a543154); audit PASS round 1, sign-off per H77 (DECISIONS §57); pushed.
+done: Mon Oct  5 07:09:43 UTC 2026 — T2183 merged 7771372 (RBM3D/Universality/Step1Cond.lean, root import; lake build 3989 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 07:27:23 UTC 2026 — T2182 merged f23811b (RBM3D/Evolution/CltFar.lean, RBM3D/Test/Axioms.lean (STCltFar removed as proved, H23 b), root import; lake build 3990 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 14:49:20 UTC 2026 — T2187 merged fdbb6f0 (RBM3D/Universality/PinsK.lean, RBM3D/Test/Axioms.lean (17 UN owed pins, H23 b), root import; lake build 3991 jobs); audit PASS round 1 (preflight rerun under rule H after the usage-limit error); pushed.
+done: Mon Oct  5 14:50:20 UTC 2026 — T2185 merged fbaa460 (RBM3D/Graph/AuxGraph2.lean, root import; lake build 3992 jobs); audit PASS round 1 (stage 1b rerun under rule H after the usage-limit error); pushed.
+done: Mon Oct  5 15:03:57 UTC 2026 — T2184 merged 2a42f07 (RBM3D/Graph/LocalRegular6a.lean, root import; lake build 3993 jobs); audit PASS round 1 (stage 1b rerun under rule H after the usage-limit error); pushed.
+done: Mon Oct  5 15:12:12 UTC 2026 — T2189 merged ae63e74 (RBM3D/BA/MFixedPoint.lean, root import; lake build 3994 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 15:13:02 UTC 2026 — T2188 merged 0818c49 (RBM3D/Universality/GreenCorr.lean, RBM3D/Test/Axioms.lean (UNGreenCorr, UNGreenCorrAll removed as proved, H23 b), root import; lake build 3995 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 15:35:41 UTC 2026 — T2180 merged 76b840e (RBM3D/Path/DifREP2.lean, RBM3D/Test/Axioms.lean (GridRepTailNAt, STGridMartAt removed as proved; branch diff applied onto main's registry, H23 b), root import; lake build 3996 jobs); audit PASS round 1; pushed.
 
 ## Pending approval (information only — the hub must NOT act on these)
 (none)

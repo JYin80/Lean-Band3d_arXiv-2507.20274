@@ -168,3 +168,24 @@
 | T2165 | 2026-10-04 23:39 UTC (daa7cc1) | prover-hard | Sonnet 5.5 effort xhigh | 是（审核 RETURN 一次：缺 `cltMom1_simplecalculus_ell` 的编译实例） | 修复一次后第 2 轮 PASS；S5-23 `Evolution/CltMoments1`（聚类、权重、`(eq:simplecalculus)`）；D391–D394 |
 | T2166 | 2026-10-05 01:20 UTC (691566a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 规则 H 重跑 1b 后审核一次 PASS；S3-10a `Induction/NQGood1`（漂移张量、`hker_of_case1N`、好集平移）；D395–D401 |
 | T2161 | 2026-10-05 03:02 UTC (87f617a) | prover-max | Sonnet 5.5 effort max | 否 | 设计单（只出报告）；审核一次 PASS，签字两项由 Jun 定（§51 体内条件 `ρ_N ≥ κ`，§52 BA 批准、上限 70）；BA-D1 拆 57 张；D402–D404 |
+| T2167 | 2026-10-05 04:12 UTC (cc96b69) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 检查文件名字错（`gridAsm_bundle` 少命名空间，H72 改后重编译）；审核一次 PASS；S3-10b `Induction/NQGood2` |
+| T2168 | 2026-10-05 04:15 UTC (3df1812) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；ST2-12 `Path/DifREP1`（`STGridRepN` 由两条尾界组装；登记 `GridRepTailNAt`、`GridRepWTailNAt` owed） |
+| T2169 | 2026-10-05 04:26 UTC (7738afa) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-24 `Evolution/CltMoments2` |
+| T2170 | 2026-10-05 04:36 UTC (87cf70c) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-11a `Graph/AuxGraph`（登记 `IsExtMol`） |
+| T2174 | 2026-10-05 04:47 UTC (f8ad4b4) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-01 `Universality/Pins`（UN 探针入库；登记 UNL32 borrowed、26 owed、6 structural） |
+| T2171 | 2026-10-05 05:00 UTC (7d9f111) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-06 `Path/LemDecCalEdif` |
+| T2172 | 2026-10-05 05:23 UTC (3e22603) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-08 `Path/LemDecCalEwG` |
+| T2175 | 2026-10-05 06:00 UTC (d5e2848) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-08 `Universality/GUEInvariance` |
+| T2177 | 2026-10-05 06:03 UTC (a52eb85) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-02a `Universality/OU` + `EigenMeasurable` |
+| T2176 | 2026-10-05 06:23 UTC (52c856e) | prover-hard | Sonnet 5.5 effort xhigh | 否（票面错） | 审核 BLOCKED 一项（票面建议的实例违反 `hyp`）→ §56 签字方案 (A)、Amend 1，H74 合并；UN-06 `Universality/FreeConv` + `FreeConvStability` |
+| T2178 | 2026-10-05 06:45 UTC (4c52041) | prover | Sonnet 5.5 effort high | 否（票面漏登记行，§20/§56） | 审核一次 PASS；合并停在未登记前提，Amend 1 修复 + 第 2 轮只审登记差异 PASS；UN-03a `Universality/InjSum` + `PoissonSmoothing`；D448 |
+| T2179 | 2026-10-05 06:55 UTC (5b887a6) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-11 `Induction/NQBudget`；D449–D453 |
+| T2181 | 2026-10-05 06:56 UTC (a34c217) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-07 `Path/LemDecCalEdif2`（`lemDecCalE_dif` 证出）；D454–D456 |
+| T2173 | 2026-10-05 07:02 UTC (c2609b9) | prover-max | Sonnet 5.5 effort max | 否 | 设计单（只出报告）；审核一次 PASS，签字项由 §57 定（加主撇后继、UN-25…52 模型通用、BA 62）；BA-DS；D443–D447 |
+| T2183 | 2026-10-05 07:09 UTC (7771372) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-02b `Universality/Step1Cond`；D457 |
+| T2182 | 2026-10-05 07:27 UTC (f23811b) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS，未升级；S5-25 `Evolution/CltFar`（`STCltFar` 证出，CLT 线闭合）；D458–D463 |
+| T2187 | 2026-10-05 14:49 UTC (fdbb6f0) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；1a 因额度重跑（规则 H，不计）；UN-01b `Universality/PinsK`（`UNModelC`、`ouMatC`、模型通用主撇钉文与行，§57）；登记 17 条 UN owed；D468 |
+| T2185 | 2026-10-05 14:50 UTC (fbaa460) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；1b 因额度重跑（规则 H，不计）；LW-11b `Graph/AuxGraph2`（`claim:xi`）；D464–D467 |
+| T2184 | 2026-10-05 15:03 UTC (2a42f07) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；1b 因额度重跑（规则 H，不计）；LW-10c1 `Graph/LocalRegular6a`（性质 (6) 的局部代价、引理 A/B、初值；c2–c4 的钉文）；D469–D470 |
+| T2189 | 2026-10-05 15:12 UTC (ae63e74) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-D1a + BA-D2 `BA/MFixedPoint`（`m(z,λ)` 存在唯一、`ρ_N`、bulk 集、`lem:propM` 钉文）；D471–D472 |
+| T2188 | 2026-10-05 15:13 UTC (0818c49) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-05 余部 `Universality/GreenCorr`（`UNGreenCorr`、`UNGreenCorrAll` 证出，登记删）；无新 paper-delta（伸缩序列即 D385） |

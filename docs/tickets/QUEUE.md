@@ -19,6 +19,12 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2188（UN-05 余部，0818c49，2026-10-05 15:13；`Universality/GreenCorr`；无新 delta）
+- T2189（BA-D1a + BA-D2，ae63e74，2026-10-05 15:12；`BA/MFixedPoint`；D471–D472）
+- T2184（LW-10c1，2a42f07，2026-10-05 15:03；`Graph/LocalRegular6a`；§55；D469–D470）
+- T2185（LW-11b，fbaa460，2026-10-05 14:50；`Graph/AuxGraph2`；`claim:xi`；D464–D467）
+- T2187（UN-01b，fdbb6f0，2026-10-05 14:49；`Universality/PinsK`；§57；D468）
+- （T2167–T2183 的合并见 rework-ledger 与 paper-deltas D405–D463，此表未逐张补。）
 - T2161（BA-D1，87f617a，2026-10-05 03:02；设计，只出报告；§51、§52；D402–D404）
 - T2166（S3-10a，691566a，2026-10-05 01:20；`Induction/NQGood1`；D395–D401）
 - T2165（S5-23，daa7cc1，2026-10-04 23:39；`Evolution/CltMoments1`；修复一次；D391–D394）

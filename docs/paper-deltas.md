@@ -1361,4 +1361,72 @@ Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文
 - **D402（T2161a）**：`GGGamma`（`B:393-405`）前两个和里的系数 `S^+_{xβ}` 应为 `(M^+S^+)_{xβ} = (1+M^+S^+)_{xβ} − δ_{xβ}`（数值核对 b.7；探针 `BAGGGamma` 用改正形式；第三个和、`lanlw`、`lem_lweight` 原样成立）（BA-D1 设计，T2161 合并 87f617a，探针在 `t/T2161` 的 82e72b3）。
 - **D403（T2161b）**：体内条件 `|E| ≤ e_λ − κ`（`1_2:649`、`7_8:1817`）与 `lem:propM`(2) 的 `Im m ≳ 1`（`7_8:1908`）在 L 为奇数时无定义、有 gap 时为空、cusp 处 `Im m = 0`；按 §51 改为 `ρ_N(E) ≥ κ`。另：[RBSO1D] Lemma 3.9 在 TeX 里只出现在注释中（`7_8:1844, 1846`）。
 - **D404（T2161c）**（约定）：`B_{t,K}`（`1_2:1107-1108`）与 `ℓ_t`（`1_2:1121-1123`）带 `λ`；BA 流里耦合是 `g_0 = √t_0 g`，探针保留模型的 `g_n`（合并的 `Bparam`）；二者差常数 `t_0 ≥ κ/(κ+1)`（`Im m ≥ κ`、`Im z ≤ 1`）；论文未说明取哪个。
+- **D405（T2167a）**：(5.93)（`3_5:1158`）在 d ≥ 3 是不等式 `r_{u,t} B_u ≤ B_t`（亏量 `g²(t−u) ≥ 0`），不是 RBM2D 的恒等式；核权满足 `κ_{i,m} B_{u_i}^k ≤ W^{Cε} B_{u_m}^k`（S3-10b `Induction/NQGood2`，cc96b69）。
+- **D406（T2167b）**：核类带 `δ ≤ W^{-Dc}`、`1 < Dc ≤ D'`，加性权 `εK = W^C`（EK-6），`κ_{i,m} = W^{Cε} r^{k−1}`；无 RBM2D 的 `(1+log L)^k K_w^{2(k−1)}`。
+- **D407（T2167c）**：平移后的二次变差上界要 `k+1 < D''`、`W^{-D'} + eeShiftErrN ≤ W^{-D''}`（故 `D'' ≤ D'`）与 `|E| < 2`。
+- **D408（T2167d）**：`hc_pos` 要 `Δ > 0`（`s n < v n` 且 `K n ≠ 0`）；`AssembledN` 只给 `0 ≤ Δ`。
+- **D409（T2167e）**：`qvBdNonAltN_pos`、`cQVNonAltN_sum_pos` 不要能量条件、不要 `1 < W`。
+- **D410（T2167f）**：漂移水平 `dDriftNonAltN` 无加性 `2W^{-D'}`（同 T2154 (d)）（陈述形状）。
+- **D411（T2168a）**：`Rem`、`Mart` 是网格上的 Lean 构造（论文是精确 SDE `(int_K-L_ST)`，`3_5:136`）：`difRepMartN` 含二阶部分的全鞅（ST2-12 `Path/DifREP1`，3df1812）。
+- **D412（T2168b）**：常数 `C₀ = m+9`、`CK = 8m+20`，只依赖 `m`（钉文文档串写 `C₀(d,m)`）。
+- **D413（T2168c）**：`difRep_identity` 对每个 `k`、`ω` 逐路径成立（钉文条款 (i) 保留 a.e. 形式）（强于需要）。
+- **D414（T2168d）**：`3 ≤ d` 经 `STKbound` 进入（D263，§36）。
+- **D415（T2168e）**：`STGridRepN`、`STGridMart` 只在两条 owed 尾界下证出；余项部分（条款 (i)(ii)）对 `3 ≤ d` 无条件（条件形式，§53：尾界交 ST2-13a/b）。
+- **D416（T2169a）**：`(eq:2p_product_pair)` 第一行逐因子的 `≺` 写成窗口上按剖面归一化的最大值加尾 `(Λ', q₁)`（`CltMom2.DomHyp`）与 a.s. 包络 `CltMom2.BY`，`≺ ⟹ 𝔼` 为 `CltMom2.rhs` 中的因子（D370）（S5-24 `Evolution/CltMoments2`，7738afa）。
+- **D417（T2169b）**：`(eq:2p_product)` 的 `O(W^{-D})` 是单独的精确项 `CltMom2.off`（`f^{far} − 𝔼f^{far} = c_n·fluc + off`），不在矩内。
+- **D418（T2169c）**：聚类半径 `2R = 20w` 的可比性付因子 `4^d`；权常数 `M_w = C₅(1+2^{d−1})C₆ d`；`log W ≥ 40`、`log W ≥ 2d` 为前提。
+- **D419（T2169d）**：矩界在单个 `n` 陈述，孤立窗口组 `|𝔼∏𝕀𝔼𝗕| ≤ εf`，显式 `Λ'、q₁、εf`、中心化 `2^{2p}` 与 `lw^{24p}`（D393）。
+- **D420（T2170a）**：`GtoAG` 的确定性形式：项界、`S`/`S^±` 衰减与 `R`-球上的 `ξ` 控制作样本前提；`W^{-D}` 为显式尾 `e^{-cr/2}C'_Γ size(Γ)`；无 `(log W)` 损失（LW-11a `Graph/AuxGraph`，87cf70c）。
+- **D421（T2170b）**：`Γ^aux` 对外部顶点分属不同分子的正规图定义；`(eq:MolVW)` 只以求和形式用（`n_V − n_M ≤ n_W`）。
+- **D422（T2170c）**：`ξ` 取任意在 `R`-球上控制非对角项的非负块函数；`(eq:xia1a2)`、`claim:xi` 归 LW-11b。
+- **D423（T2170d）**：nested 形式要 `𝓜_x ≠ 𝓜_y`、`p ≥ 1`、对称 `ξ`；用 walk（D338）。
+- **D424（T2170e）**：两外部顶点在同一分子时的 `(scalemole)`，确定性形式（`(eq:far_ab)` 下 `𝓜_x = 𝓜_y` 的输出）。
+- **D425（T2170f）**：`GtoAG` 的 `hext` 对界不需要（钉文保留）（陈述形状）。
+- **D426（T2170g）**：目标 4 的实例用 `S^+_{xy}`（带色波浪边），票面写 `S_{xy}`（票面笔误）。
+- **D427（T2174a）**：（只改文档串）`un_step1_floor` 的文档串原写「sharp up to `τ_s < 16𝔠𝔡/(3+𝔠)`」有误：`W = N^𝔠` 时不等式成立当且仅当 `τ_s ≤ 32𝔠𝔡/(15+2𝔠)`；陈述 `τ_s ≤ 𝔠𝔡` 不变（UN-01 `Universality/Pins`，f8ad4b4）。
+- **D428（T2171a）**：四、六圈界是 `E2HypDif` 的前提（RBM2D `goodSet` 条款 2，`k = 4, 6`），`E2Hyp` 不带（S5-06 `Path/LemDecCalEdif`，7d9f111）。
+- **D429（T2171b）**：下限 `(L^dW^{6d})² ≤ W^D`，强于 D374 的 `L^dW^{2d} ≤ W^D` 与论文的 `W^D ≥ N`（T2164 的 M1 更紧，S5-09 写前定）。
+- **D430（T2171c）**：`σ ∈ {+,−}²` 全部四种（RBM2D 只 `(+,−)`）。
+- **D431（T2171d）**：`lossE2dif = lossE2·729^d(1+log(L^dW^{6d}))^{2d}` 是 `res_deccalE_dif` 中 `≺` 的显式损失。
+- **D432（T2171e）**：`_cut_far` 的四圈因子写作 `Λ((W^d(1−u))^{-1})^{3/2}`（先取逆再实幂），值同 `M_u^{-3/2}`（陈述形状）。
+- **D433（T2172a）**：三圈前提 `|𝓛^{(3)}_{u,σ,a}| ≤ Λ(W^d(1−u))^{-2}`（RBM2D `goodSet` 条款 2，`k = 3`）是 `E2HypWG` 的第三合取项，`E2Hyp` 不带（S5-08 `Path/LemDecCalEwG`，3e22603）。
+- **D434（T2172b）**：下限 `(L^dW^{6d})² ≤ W^D`（同 D429）；`STIngR5` 不供。
+- **D435（T2172c）**：`σ ∈ {±}²` 全部（RBM2D 只 `(+,−)`）。
+- **D436（T2172d）**：`J^{3/2}` 照论文（RBM2D 钉文是 `J²`）：`fG_off` 保留 `√J`。
+- **D437（T2172e）**：`lossE2wG = lossE2·1000^d(1+log P)^{2d}`，`P = L^dW^{6d}`。
+- **D438（T2172f）**：`LemDecCalEwG_sum_sqrt_tail`：`C_sq(d) = 5(1+24576 d⁴)^d`，条件 `wL^{2d} ≤ A`。
+- **D439（T2172g）**：不用 `J ≤ W`；近区远 `y` 项为 `W^{-6d} ≤ M_u^{-2}√(M_u^{-1})`（T2164 的 M3 在此了结）。
+- **D440（T2177a）**：（形状）`ouSample_law` 只对 `UNModel.band sz` 陈述（抽象模型无高斯律）；`ouMat = Xmat ∘ ouSample` 为 `ouMat_eq_Xmat_ouSample`（UN-02a `Universality/OU`，a52eb85）。
+- **D441（T2177b）**：`ouMat_zero_map` 对每个 `UNModel` 陈述为 `M.μ.map (M.H n)`；带状实例 `seqXmat_map_eq_ouMat_zero`。
+- **D442（T2177c）**：`measurable_ouMat` 取 `M : UNModel sz` 与 `n`；其余取 `sz : Sizes d`（陈述形状）。
+- **D443（T2173a）**：T2161 的 BA 钉文写在 `sz.seqP` 下（高斯部分是带状剖面 `S^{(B)}(λ)`），BA 的律是 `(sz.withLam 0).seqP`（编译见证 `seqGvar_ne_withLam_zero`）；BA 票照 §57 带律参数重钉（BA-DS 设计，T2173；探针在 `t/T2173`）。
+- **D444（T2173b）**：`BAGlueUniv`（T2161 `:1847`）缺 `BAEnd_QUE` 与 BA-V3 的流输出，而 OU 行要用；论文只列 decol、locSC、QUE 为输入（`1_2:567-568`）。
+- **D445（T2173c）**：对 BA，Thm 2.4 的证明走中心化流 `(MBM)`（`1_2:686`）；论文只写「同带状情形」（`7_8:1835`）。
+- **D446（T2173d）**：`m(z, λ)` 在体内关于 `(z, λ)` 的一致连续模（`UNDens`）超出 `lem:propM`，T2161 的钉文里没有（新 BA-C2）。
+- **D447（T2173e）**：BA 的 `M_{y,α}` 权重为 `S^V = I`（单块），是对「[DYYY25] (2.24) 下方定义」的读法（T2162a 的变体，D382）。
+- **D448（T2178a）**：（陈述形状）`InjSum_stieltjes`（`green` 形式）与 `stieltjesN`（`Gres _ _ true`）只在定义上不同，由 `InjSum_stieltjesN_eq_stieltjes` 连接，不是 `rfl`（UN-03a `Universality/InjSum` + `PoissonSmoothing`，4c52041）。
+- **D449（T2179a）**：预算目标为 `assembledRHSNonAltN ≤ N^{ε₀}(Λ^{1/2} + Φ + Φ²)B_v^k`；`Φ²` 来自 `dDriftNonAltN` 的 `kΓ³Φ²`（`GoodSetN` 条款 (D2)），RBM2D `budgetNonAlt` 是 `(Λ^{1/2}+Φ)M_v^{-k}`；S3-12 要把 `Φ²` 压到 `STNQConcl` 的线性右端（S3-11 `Induction/NQBudget`，5b887a6）。
+- **D450（T2179b）**：前提 `Δη_v^{-1} ≤ 1` 代替 RBM2D 的 `ΔN ≤ 1`（后者在实例处为假）。
+- **D451（T2179c）**：远处部分带 `W^C`（`C = nqGood1C`）：`D'`、`D''` 须在 `C` 之后取；无 `cCase1`、`cPair1`、`(1+log L)^k`。
+- **D452（T2179d）**：`N^{-1} ≤ B_v`（`cont_inv_size_le_Bctl`）代替 `M_v ≤ N`；`κ_{i,m} ≤ nqBudget_kapFar` 经 `r_{i,m} ≤ (1+g²)N`。
+- **D453（T2179e）**：`ha2` 为 `kW^{Cε}(N^{ε₁})³Ls ≤ N^{ε₀}/12`（由 `Γ ≥ 1`）（常数形状）。
+- **D454（T2181a）**：`E2Hyp` 的合取项 `J ≤ W`（T2164 M3）不用：近区远项为 `W^dL^dP^{-1} = W^{-5d} ≤ M_u^{-1/2}M_u^{-4}`（S5-07 `Path/LemDecCalEdif2`，a34c217；`lemDecCalE_dif` 证出）。
+- **D455（T2181b）**：远区单项 `(1−u)^{-1}M_u^{-1/2}J³`（RBM2D 两项）。
+- **D456（T2181c）**：RBM2D 的 `convTailT` 换成 `LemDecCalE_sum_tail_tail`（`(2S_d+1)M_u^{-2}`，`S_d = (1+1536d⁴)^d`）。
+- **D457（T2183a）**：（陈述形状）合并的 `ouMat` 按模型索引（`Pins.lean:150`），故 `integral_kPoint_ouMat_cond` 对 `M : UNModel sz` 陈述（`ouP M n`、`M.μ`、`M.herm n`），`gueP_prod_map_ouMat` 对显式矩阵陈述；非数学差异（UN-02b `Universality/Step1Cond`，7771372）。
+- **D458（T2182a）**：`(eq:ells_to_ellt)`、`(eq:ells_to_ellt2)` 远处部分不用：估计对一切 `σ₀ ≠ σ₁` 与 `a` 成立；它们只描述 `STCltFarConcl` 的指标集（同 D369）（S5-25 `Evolution/CltFar`，f23811b；`STCltFar` 证出，登记删）。
+- **D459（T2182b）**：`(eq:propcalB)`（`3_5:2155`）是 `(Eq:Gdecay_w)` 在 `u = s` 的事件 `{N^τ ζ' < |𝓑|}`，标度 `Λ' = N^τ`；窗外一半 `‖off‖ ≤ W^{-D}` 对所有 `(σ, a)` 在同一事件外成立。
+- **D460（T2182c）**：矩阶与指数显式：`p = ⌈(D+2)/τ⌉`、`Λ' = N^{τ/2}`、`q₁ = N^{-D₁}`、`D₁ = 18p+⌈D⌉+4`、`εf = W^{-D'}`、`D' = (6p+⌈D⌉+3)/𝔠`（论文「任意固定 `p`」与 `≺` 藏着）。
+- **D461（T2182d）**：`‖Θ_t‖ ≤ c_Θ/g²` 不是常数；和式用 `1−s ≤ g²`（`STReg5I.2`），论文 `≲`（`3_5:2204-2211`）藏着。
+- **D462（T2182e）**：指标集上的 `≺` 是显式有限并（`≤ 4N²` 个元素），在 `P` 内（不是 `PrecPT`）。
+- **D463（T2182f）**：（§36）陈述在 `3 ≤ d` 下；消费者经 `STIngR5` 有此条件。
+- **D464（T2185a）**：`ξ²` 把两个荷 `![true,false]`、`![false,true]` 相加（论文 `7_8:882` 取最大，差因子 2）（LW-11b `Graph/AuxGraph2`，fbaa460）。
+- **D465（T2185b）**：`(eq:xia1a2)` 的半径 `ρ` 是参数，`ρ + 1 = N^{o(1)}`，球按块上的 `zdistInf`；LW-02 取 `R = (log W)^{3/2}`、`ρ = 2(log W)^{3/2} + 1`，代替论文的 `(log W)^{1+ε₁}`、`(log W)^{1+2ε₁}`（论文那一对要 `(log W)^{ε₁} ≥ 3` 才有 `2R + 1 ≤ ρ`）。
+- **D466（T2185c）**：`(eq:Gbyxi)` 拆成 `‖G − M‖_max ≺ Ψ_t(0)`（全部元素，`(GiiGEX)` + `(LW_assm)`）与 `R` 球上（`2R + 1 ≤ ρ`）一致的 `|G_{xy}| ≺ ξ(a,b)`；无 `W^{-D}`（禁闭由 LW-11a 的尾项给）。
+- **D467（T2185d）**：`claim:xi` 除 `(LW_assm)`、`(eq:Psi)`、Ward 外只用 `‖G_t − M‖_max ≺ W^{-ε₁}`（给 `|𝓛^{(1)}| ≤ 1 + A`）。
+- **D468（T2187a）**：（Lean 结构，非数学）探针在原处改 `UNModel`（加 `mean`）与 `ouMat`；合并版用 `UNModelC extends UNModel`、中心化流 `ouMatC`、`UNKind.M : ∀ sz, UNModelC sz`，钉文 `UNClaim417C … UNUnivMainC` 是对 `UNModelC` 的副本；数学修改（中心化流）即 D445（T2173c）（UN-01b `Universality/PinsK`，fdbb6f0；§57）。登记：`RBM.Univ.UNKind.bulk` 记为结构性（T2187b，总调度确认）。
+- **D469（T2184a）**：性质 (6) 经局部代价 `c = ord + #elem`（对合并取最小，`scost`、`LocCostGe`）证，不经论文的 `ord + n_dv + n_lw`（`B:200-278`）；初值 `Φ^far(Γ_p) ≥ 3p`、`Φ^all(Γ_p) ≥ 2p`（`fxyPowGraph_locCostGe`）代替 `3p − n_dv/2 > 2p`（LW-10c1 `Graph/LocalRegular6a`，2a42f07；§55）。
+- **D470（T2184b）**：合并是 `Setoid (E ⊕ I)`；一类含外部成员即为外部类；边保留当且仅当被圈或连两个类；`scost = #kept + 2n_W − 2#intCls + #elemCls`。（T2184c：`B:272-275` 略去的边与 `GG` 情形由 c2–c4 补，随它们编号。）
+- **D471（T2189a）**：论文在 `C_+` 中陈述 `m(z)` 唯一，用 `m(E) = m(E + i0)` 而未陈述实轴唯一；文件对一切 `Im z ≥ 0`（含实轴）、`L ≥ 1`、实 `g` 证 `BASelf_unique`；实 `E` 处 `BAm` 取实轴唯一解（无解为 0，`BAm_real_eq_of_self`）；与边界值 `m(E + i0)` 的等同是 owed 钉文 `BAmBoundary`（BA-D1a + BA-D2 `BA/MFixedPoint`，ae63e74）。
+- **D472（T2189b）**：`(self_m)` 论文是精细 `N × N` 矩阵上的 `N⁻¹ tr`；`BASelf` 在块格上陈述为 `L^{-d} tr M^{(B)}`（`Ψ = Ψ^{(B)} ⊗ I_{W^d}`）；两个归一化迹相等本文件未证（BA-C1 或其消费者须补）。
 
