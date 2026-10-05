@@ -327,7 +327,8 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STExpWardIIConcl, -- conclusion of the Ward term, regime (ii) (`6:137-141`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpIntConcl, -- conclusion of the integrated estimate (`6:94-132`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpIntQConcl, -- conclusion of the integrated estimate with Q (`6:94-132`); S6-01 (T2204, DECISIONS §67: structural)
-   `RBM.Gauss.Sizes.STExpIniIConcl] -- conclusion of the initial term, regime (i) (`6:117`); S6-01 (T2204, DECISIONS §67: structural)
+   `RBM.Gauss.Sizes.STExpIniIConcl, -- conclusion of the initial term, regime (i) (`6:117`); S6-01 (T2204, DECISIONS §67: structural)
+   `RBM.Gauss.Sizes.STExpIniIConcl'] -- conclusion of the initial term, regime (i), positive mollifier constants (`6:117`; T2223a); S6-11 (T2223, DECISIONS §20: structural)
 
 /-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
 theorem or by the argument of the named supervisor verdict, and superseded by a primed successor.  Their
