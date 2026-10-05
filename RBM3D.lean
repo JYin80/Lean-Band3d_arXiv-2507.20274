@@ -245,6 +245,7 @@ import RBM3D.Universality.PinsDens
 import RBM3D.Induction.LemDecCalEPrec
 import RBM3D.Path.DifREP3
 import RBM3D.Universality.GUEPhase.Bootstrap
+import RBM3D.Induction.Step6Pins
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
