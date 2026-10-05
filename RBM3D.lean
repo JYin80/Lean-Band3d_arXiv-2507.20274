@@ -209,6 +209,7 @@ import RBM3D.Induction.IniTermII
 import RBM3D.Graph.LocalRegular2
 import RBM3D.Evolution.CltMoments1
 import RBM3D.Induction.NQGood1
+import RBM3D.Induction.NQGood2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
