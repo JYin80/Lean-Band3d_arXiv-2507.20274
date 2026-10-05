@@ -111,6 +111,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
+   `RBM.Gauss.Sizes.STOeqNQ', -- `lem:STOeq_NQ`, primed (DECISIONS §62): S3-12c
    `RBM.Gauss.Sizes.STOeqQt, -- `lem:STOeq_Qt` (DECISIONS §25)
    `RBM.Gauss.Sizes.STOeqQtNZ, -- `lem:STOeq_Qt_nonzero` (DECISIONS §25)
    `RBM.Gauss.Sizes.STXiBoot, -- `(am;asoi222)` (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`: S3-18b, S3-22; hypothesis of `iterationsA_step` (T2087)
