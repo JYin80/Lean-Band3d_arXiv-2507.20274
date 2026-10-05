@@ -216,7 +216,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNEMCTE2Rowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNClaimRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNStep1Good', -- bulk universality pin, primed successor of the refuted UNStep1Good (T2201, UN-01c: owed; UN-12)
    `RBM.Univ.UNInfty1Row', -- bulk universality pin, primed successor of the refuted UNInfty1Row (T2201, UN-01c: owed; UN-14)
    `RBM.Univ.UNStep1GoodC', -- bulk universality pin, primed successor of the refuted UNStep1GoodC (T2201, UN-01c: owed; UN-12 or a BA-N ticket)
    `RBM.Univ.UNCoreC', -- bulk universality pin, primed successor of the refuted UNCoreC (T2201, UN-01c: owed; BA-C1b)
