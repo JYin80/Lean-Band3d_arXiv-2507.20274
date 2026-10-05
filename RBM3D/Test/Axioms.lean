@@ -204,7 +204,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNClaim417C, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNGreenCorrC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNGreenCorrAllC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNTrLocalInit, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNOUQUEk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNOUDiagk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNEMCTE2k, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
@@ -217,8 +216,8 @@ def owedProps : List Name :=
    `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNClaimRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNInfty1Row', -- bulk universality pin, primed successor of the refuted UNInfty1Row (T2201, UN-01c: owed; UN-14)
-   `RBM.Univ.UNStep1GoodC', -- bulk universality pin, primed successor of the refuted UNStep1GoodC (T2201, UN-01c: owed; UN-12 or a BA-N ticket)
-   `RBM.Univ.UNCoreC', -- bulk universality pin, primed successor of the refuted UNCoreC (T2201, UN-01c: owed; BA-C1b)
+   `RBM.Univ.UNTrLocalInit', -- bulk universality pin, primed successor of the refuted UNTrLocalInit, tolerance W^τ (Bctl + t*) (T2213, UN-12b: owed; band: unTrLocalInit'_band_zero; BA: BA-C1b row)
+   `RBM.Univ.UNCoreC'', -- bulk universality pin, successor of the superseded UNCoreC' (T2213, UN-12b: owed; BA-C1b)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U, -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: S6-13, through `STStep6`; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STStep6I, -- `6:97` regime (i) pin: S6-02 skeleton; ingredients S6-03...S6-07, S6-09...S6-11; S6-01 (T2204, DECISIONS §67: owed)
@@ -309,6 +308,7 @@ def structuralProps : List Name :=
    `RBM.Univ.InjSum_IsTestFun, -- T2178: test-function condition (smooth, compact support) on data; a hypothesis of deterministic lemmas (DECISIONS §20, §56)
    `RBM.Univ.UNKind.bulk, -- bulk universality: the energy set of a model class (`|E| ≤ 2 - κ` for the band model), a Prop-valued field of data; a hypothesis of the generic pins (T2187, UN-01b; DECISIONS §20: condition on data)
    `RBM.Univ.UNDens', -- bulk universality: condition on data, UNDens plus the box hypotheses of freeConv_stable_lip (T2201, UN-01c; DECISIONS §66)
+   `RBM.Univ.UNMeanBound, -- bulk universality: condition on data, eigenvalue bound of the deterministic mean of a centred model (T2213, UN-12b; DECISIONS §69)
    `RBM.Gauss.Sizes.STReg5IV, -- Step 5 regime (iv); S5-01 (T2138, DECISIONS §40)
    `RBM.Gauss.Sizes.STStep2Core, -- Step-2 conclusion restricted to sub-intervals (`1_2:1342-1344`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STRegSeq, -- a two-stage regime cut at an intermediate time; S6-01 (T2204, DECISIONS §67: structural)
@@ -343,7 +343,10 @@ def refutedProps : List Name :=
   [`RBM.Univ.UNStep1Good,   -- false: `not_UNStep1Good`, `not_UNStep1Good_band` (T2201, `Universality/PinsDens.lean`); successor `UNStep1Good'`
    `RBM.Univ.UNInfty1Row,   -- false: argued, supervisor 2026-10-05-1651 1.3 (needs the GUE bulk one-point limit; not compiled); successor `UNInfty1Row'`
    `RBM.Univ.UNStep1GoodC,  -- false: `not_UNStep1GoodC` (T2201); successor `UNStep1GoodC'`
-   `RBM.Univ.UNCoreC]       -- false: argued, supervisor 2026-10-05-1651 1.3 (not compiled); successor `UNCoreC'`
+   `RBM.Univ.UNCoreC,       -- false: argued, supervisor 2026-10-05-1651 1.3 (not compiled); successor `UNCoreC'`
+   `RBM.Univ.UNTrLocalInit, -- false for the band model at every admissible sequence: argued, supervisor 2026-10-05-1955 B1 (T2208b; not compiled); successor `UNTrLocalInit'`
+   `RBM.Univ.UNStep1GoodC', -- false: `not_UNStep1GoodC'_of_diag` (T2213; on a diagonal model meeting its hypotheses), argued in general, supervisor 2026-10-05-1955 B1 (T2208a); successor `UNStep1GoodC''` (proved: `step1GoodC''`)
+   `RBM.Univ.UNCoreC']      -- superseded, not shown false: its hypothesis `UNTrLocalInit` fails for the band model (supervisor 2026-10-05-1955 B1-B2); successor `UNCoreC''`
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
