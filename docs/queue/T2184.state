@@ -1,0 +1,4 @@
+state: audit-pass
+reason: workflow wf_e533eba5-967: stage 1b prover-max DONE (7889bd2), auditor1 PASS; merging under rule (A)
+updated: Mon Oct  5 15:03:55 UTC 2026
+reports: docs/reports/T2184-prove.md, docs/reports/T2184-audit.md
