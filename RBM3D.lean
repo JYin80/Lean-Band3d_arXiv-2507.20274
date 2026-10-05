@@ -258,6 +258,7 @@ import RBM3D.Universality.PinsC2
 import RBM3D.Induction.TailtoTailSq
 import RBM3D.Induction.ExpHier
 import RBM3D.Induction.ExpAvg
+import RBM3D.Main.ZTransfer
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
