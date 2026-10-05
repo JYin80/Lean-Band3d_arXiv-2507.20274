@@ -153,14 +153,16 @@ def STtailTD (n : ℕ) (u D : ℝ) (a : Fin 2 → Zd d (sz.L n)) : ℝ :=
 
 /-- **`lem_dec_calE`** (`3_5:2314-2338`) for `1 - t ≥ ilambda²`, deterministic control `J*_{u,D} ≥ 1` of
 `max_{σ,a} |(𝓛-𝒦)^{(2)}_{u,σ,a}| / T_{u,D}(|a₁-a₂|) ≺ J*_{u,D}` (`(eq:def_new_J*)`, `3_5:2310`), uniformly in `u ∈ [s,t]`,
-for `D` with `W^D ≥ N`: the three bounds (`res_deccalE_lk`) `ℰ^{LK×LK}/T ≺ (1-u)⁻¹ (W^d|1-u|)⁻¹ (J*)²`,
+for `D` with eventually `(L^dW^{6d})² ≤ W^D` and `J*_{u,D} ≤ W^{1/2}` (DECISIONS §61, §63; paper `W^D ≥ N`, paper-delta T2193a/b): the three bounds (`res_deccalE_lk`) `ℰ^{LK×LK}/T ≺ (1-u)⁻¹ (W^d|1-u|)⁻¹ (J*)²`,
 (`res_deccalE_wG`) `ℰ^{G̃}/T ≺ (1-u)⁻¹ [1(|a₁-a₂| ≤ (log W)^{3/2}) + (W^d|1-u|)^{-1/2} (J*)^{3/2}]`, and (`res_deccalE_dif`) for
 `|a_i - a'_i| ≤ (log W)^{3/2}`: `(ℰ⊗ℰ)^{M,(2)}_{u,σ,a,a'}/T² ≺ (1-u)⁻¹ [1(|a₁-a₂| ≤ 4(log W)^{3/2}) + (W^d|1-u|)^{-1/2} (J*)³]`.
 The paper omits the proof ("a special case of [YY_25, Lemma 5.7]"); RBM2D has it deterministically
 (`Path/LemDecCalE*.lean`, `lossE2`, `E2Hyp`), the d = 2 exponents `M_u = W² ℓ_u² η_u`. -/
 def STLemDecCalEConcl (E s t : ℕ → ℝ) : Prop :=
   ∀ Jst : ℕ → ℝ → ℝ → ℝ, (∀ n u D, 1 ≤ Jst n u D) →
-    ∀ D : ℝ, 0 < D → (∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ D) →
+    (∀ n u D, Jst n u D ≤ ((sz.W n : ℕ) : ℝ) ^ (1 / 2 : ℝ)) →
+    ∀ D : ℝ, 0 < D →
+      (∀ᶠ n in atTop, (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D) →
       Prec sz (U := STIdx2 sz s t)
         (fun n p ω => STLK2 sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω)
         (fun n p _ => Jst n (p.1 : ℝ) D * STtailTD sz n (p.1 : ℝ) D p.2.2) →
