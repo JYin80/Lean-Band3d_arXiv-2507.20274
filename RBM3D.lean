@@ -216,6 +216,7 @@ import RBM3D.Graph.AuxGraph
 import RBM3D.Universality.Pins
 import RBM3D.Path.LemDecCalEdif
 import RBM3D.Path.LemDecCalEwG
+import RBM3D.Universality.GUEInvariance
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
