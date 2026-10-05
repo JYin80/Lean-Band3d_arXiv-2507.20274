@@ -240,6 +240,7 @@ import RBM3D.Universality.GUEPhase.AuxCarrier
 import RBM3D.Graph.LocalRegular6b
 import RBM3D.Induction.QProxy
 import RBM3D.Induction.LemDecCalELip
+import RBM3D.Induction.NQEndLin
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
