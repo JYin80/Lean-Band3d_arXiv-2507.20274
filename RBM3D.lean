@@ -256,6 +256,7 @@ import RBM3D.Induction.PfStep5Alg
 import RBM3D.Universality.Step1Band
 import RBM3D.Universality.PinsC2
 import RBM3D.Induction.TailtoTailSq
+import RBM3D.Induction.ExpHier
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
