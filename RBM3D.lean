@@ -251,6 +251,7 @@ import RBM3D.Universality.Step1Good
 import RBM3D.Endpoints
 import RBM3D.Induction.Step6Kit
 import RBM3D.Graph.LocalRegular6c
+import RBM3D.Universality.GUEPhase.BootstrapAt
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

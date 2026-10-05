@@ -1,0 +1,4 @@
+state: audit-pass
+reason: workflow wf_edad4ef3-586: preflight PASS, prover DONE, auditor1 PASS; merging under rule (A)
+updated: Mon Oct  5 20:48:48 UTC 2026
+reports: docs/reports/T2212-prove.md, docs/reports/T2212-audit.md
