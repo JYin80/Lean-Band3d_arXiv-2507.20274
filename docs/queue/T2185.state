@@ -1,0 +1,4 @@
+state: audit-pass
+reason: workflow wf_d3c1c900-f70: stage 1b prover-hard DONE (7435b5a), auditor1 PASS; merging under rule (A)
+updated: Mon Oct  5 14:50:18 UTC 2026
+reports: docs/reports/T2185-prove.md, docs/reports/T2185-audit.md
