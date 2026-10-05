@@ -264,6 +264,7 @@ import RBM3D.Induction.ExpEtermsA
 import RBM3D.Induction.ExpIniI
 import RBM3D.Induction.ExpDuhamel
 import RBM3D.Main.FixedZ
+import RBM3D.Induction.PfStep5Grid
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
