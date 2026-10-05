@@ -19,6 +19,15 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2192（MA-D1，3429d7d，2026-10-05 18:17；设计，只出报告；MA 拆 6 张；D500–D506）
+- T2198（S5-09a，e4126a2，2026-10-05 18:17；`Induction/LemDecCalELip`；D497–D499）
+- T2194（S3-14，9a207a1，2026-10-05 17:58；`Induction/QProxy`；Amend 1；D493–D496）
+- T2195（LW-10c2，b43cb93，2026-10-05 17:57；`Graph/LocalRegular6b`；D490–D492）
+- T2191（ST-D5，4fecaa2，2026-10-05 17:54；设计，只出报告；§67；D485–D489）
+- T2196（UN-25，9eb0502，2026-10-05 16:46；`Universality/GUEPhase/AuxCarrier`；D484）
+- T2186（S3-12a，d783ee3，2026-10-05 16:08；`Induction/Step34PinsP` + `Induction/NQLin`；§62；D473–D477）
+- T2190（UN-07，d1a0316，2026-10-05 16:07；`Universality/FreeConvRegular`；T2190a §65；D478）
+- T2180（ST2-13a，76b840e，2026-10-05 15:35；`Path/DifREP2`；`STGridMart` 无条件）
 - T2188（UN-05 余部，0818c49，2026-10-05 15:13；`Universality/GreenCorr`；无新 delta）
 - T2189（BA-D1a + BA-D2，ae63e74，2026-10-05 15:12；`BA/MFixedPoint`；D471–D472）
 - T2184（LW-10c1，2a42f07，2026-10-05 15:03；`Graph/LocalRegular6a`；§55；D469–D470）

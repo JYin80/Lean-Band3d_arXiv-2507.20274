@@ -145,7 +145,7 @@ def qqTensorN {d L m : ℕ} [NeZero L] (ϑ : ℝ → (Fin (m + 1) → Zd d L) �
 
 /-- The merged `qvFormN` (`GridAssemblyN.lean:105`) with `𝓔 ⊗ 𝓔` (`STeeM`) replaced by
 `(𝒬_v ⊗ 𝒬̄_v)(𝓔 ⊗ 𝓔)` (RBM2D `qvFormQN`, `AltProxyQ:98`). -/
-def qvFormQN {d : ℕ} (sz : Sizes d) (n : ℕ) {m : ℕ} (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ)
+noncomputable def qvFormQN {d : ℕ} (sz : Sizes d) (n : ℕ) {m : ℕ} (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ)
     (E v w : ℝ) (σ : Fin (m + 1) → Bool)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     (a : Fin (m + 1) → Zd d (sz.L n)) : ℝ :=
@@ -157,13 +157,13 @@ def qvFormQN {d : ℕ} (sz : Sizes d) (n : ℕ) {m : ℕ} (ϑ : ℝ → (Fin (m 
       qqTensorN ϑ v (fun c c' => sz.STeeM n E v M σ c c') b b').re
 
 /-- The first-chaos part of the `𝒬`-martingale increment, `𝒬_{u_{j+1}} ZvecN` (RBM2D `zVecQN`, `AltProxyQ:107`). -/
-def zVecQN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
+noncomputable def zVecQN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool) (ω : PathΩ sz) :
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   STQop (d := d) ϑ (gridTime s t K n (j + 1)) (ZvecN sz E s t K n j σ ω)
 
 /-- The second-order part, `𝒬_{u_{j+1}} YvecN` (RBM2D `yVecQN`, `AltProxyQ:112`). -/
-def yVecQN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
+noncomputable def yVecQN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool) (ω : PathΩ sz) :
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   STQop (d := d) ϑ (gridTime s t K n (j + 1)) (YvecN sz E s t K n j σ ω)
@@ -240,7 +240,7 @@ def T2194_yMomentsQUnifN : Prop :=
   ∀ {d : ℕ} (sz : Sizes d) (κ τ' : ℝ) (E s t : ℕ → ℝ),
     0 < κ → (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
     sz.SizeTendsto → sz.RangeCond τ' t →
-    ∀ (m : ℕ) (C c : ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), 0 < C →
+    ∀ (m : ℕ) (C c : ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), 0 < C → 0 ≤ c →
       (∀ n, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) → ∀ σ : Fin (m + 1) → Bool,
       ∃ C_P : ℝ, 0 ≤ C_P ∧ ∀ K : ℕ → ℕ, (∀ n, K n ≠ 0) →
         ∀ᶠ n : ℕ in atTop, ∃ P : ℝ, 0 ≤ P ∧ P ≤ ((sz.size n : ℕ) : ℝ) ^ C_P ∧

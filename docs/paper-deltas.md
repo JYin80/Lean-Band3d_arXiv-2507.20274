@@ -1429,4 +1429,38 @@ Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文
 - **D470（T2184b）**：合并是 `Setoid (E ⊕ I)`；一类含外部成员即为外部类；边保留当且仅当被圈或连两个类；`scost = #kept + 2n_W − 2#intCls + #elemCls`。（T2184c：`B:272-275` 略去的边与 `GG` 情形由 c2–c4 补，随它们编号。）
 - **D471（T2189a）**：论文在 `C_+` 中陈述 `m(z)` 唯一，用 `m(E) = m(E + i0)` 而未陈述实轴唯一；文件对一切 `Im z ≥ 0`（含实轴）、`L ≥ 1`、实 `g` 证 `BASelf_unique`；实 `E` 处 `BAm` 取实轴唯一解（无解为 0，`BAm_real_eq_of_self`）；与边界值 `m(E + i0)` 的等同是 owed 钉文 `BAmBoundary`（BA-D1a + BA-D2 `BA/MFixedPoint`，ae63e74）。
 - **D472（T2189b）**：`(self_m)` 论文是精细 `N × N` 矩阵上的 `N⁻¹ tr`；`BASelf` 在块格上陈述为 `L^{-d} tr M^{(B)}`（`Ψ = Ψ^{(B)} ⊗ I_{W^d}`）；两个归一化迹相等本文件未证（BA-C1 或其消费者须补）。
+- **D473（T2186a）**：`lem:STOeq_NQ`（`3_5:1136`，`(am;asoiuw)` `3_5:1143-1148`）的随机自项 `B_u^{1/6} sup_{w∈[s,u]} Ξ̂^{𝓛−𝒦}_{w,n_}` 换成确定性 `B_u^{1/6}·XLK n_ n u`，前提 `Ξ̂^{𝓛−𝒦}_m ≺ XLK m` 对 `m ≤ n_`（同 RBM2D `STOeqPT`）；合并钉文蕴含主撇钉文（`stOeqNQ'_of_stOeqNQ`）；自吸收挪到 S3-18b（§60、§62）（S3-12a `Induction/Step34PinsP` + `Induction/NQLin`，d783ee3）。
+- **D474（T2186b）**：论文好集（`lem:SEforLn`）的条款 (D1)–(D3) 在 `GoodLinN` 中各取确定性水平 `Φ₁, Φ₂, Φ₃`，`Φ₂` 线性（`Γ(ΓΦ₂)B^k/η`，代替 `Γk(ΓΦ)²`）；`GoodSetN` 只在粗水平上用。
+- **D475（T2186c）**：`lem:SEforLn` 与假设 `XL`、`XLK` 的每个 `≺` 都在指数 `ε/3` 上用；损失 `Γ = N^ε` 以 `Γ(ΓΦ_i)` 出现（(D1′)(D3′) 余量 `4ε/3`，(D2′) `ε`）。
+- **D476（T2186d）**：`NQLinConcl` 的控制量取在网格窗 `[s_n, v_n]`（不是 `[s_n, t_n]`）；`lem:SEforLn` 从 `[s,t]` 限制到 `[s,v]`，`Φ₂` 带 `B_v^{1/6}`（`B_{u,0}` 单调）。
+- **D477（T2186e）**：`budgetNonAltLinN` 的 `ha2` 是 `(N^{ε₁})²`（`budgetNonAltN` 是 `(N^{ε₁})³`），结论对控制量一次：`N^{ε₀}(Λ^{1/2} + Φ₁ + Φ₂ + Φ₃)B_v^k`（代替 `Φ + Φ²`）。留给 S3-12b/c：`ha2`、`ha3` 只在固定 `ε₀` 下 `n` 大时成立（`log₁₀ N ≥ 48.6 / 51.5 / 56.2`，`k = 2/3/6`）。
+- **D478（T2190b）**：（设计）`7_8_light_weight.tex:1835` 说离域、QUE 与体普适性「作为推论」得出（`subsec:main`）；对 `m(·,λ)`（不是 `msc`）的 Step 1 稳定性带目标 4–5 的 `O(t*)` 项 `C₀(ε + t)`，`C₀` 只依赖 `(c, K, Lp, δ, A)`（T2173c 的变体）（UN-07 `Universality/FreeConvRegular`，d1a0316）。（T2190a 是钉文问题，见 DECISIONS §65。）
+- **D479（T2180a）**：BDG `(aaswtghh)` + Markov 换成带可料代理、对 `K` 一致的极大指数界（D90）：`μ(max ≥ x) ≤ e^{-x²/(2V)}`；水平 `V_ℓ = 2^ℓ N^{-D}`，对 `ℓ` 取并，`±Re, ±Im` 因子 4（ST2-13a `Path/DifREP2`，76b840e；`STGridMart` 无条件）。
+- **D480（T2180b）**：一阶混沌代理是 `u_{j+1}` 处的 `k Re(𝓔⊗𝓔)`（`ZvecN` 在 `H_j` 对 `𝓛_{u_{j+1}}` 求导），挪到论文的 `u_j` 代价 `m(2m+2)16^{2m+3}N^{2m+4}Δ`（`difRep2_eeShift_sum_le`），吸收进 `N^{-D}` 下限。
+- **D481（T2180c）**：二阶部分 `Y` 用 Doob `L²` 不等式，在同一 `N^{-D}` 下限内；`AzumaProxyN_YfieldsW` 的 `L⁴` 字段只用于平方可积。
+- **D482（T2180d）**：`CK = 2m + 2D + 16` 只依赖 `m, D`（与 `ε'` 无关）；尾项 `GridRepTailNAt d m` 对一切 `d` 成立，`3 ≤ d` 只在组装处用。
+- **D483（T2180e）**：`STGridMart d`、`STGridMartAt d 11` 在 `3 ≤ d` 下无条件；`C₀ = 2 + 9 = 11` 显式（论文 `C₀(d)`）。（T2180f，Lean 写法：`Mart = Σ ZvecN + Σ YvecN`，`YvecN := martIncN − ZvecN` 按定义。）
+- **D484（T2196a）**：二次大偏差 (4.7) 对 `A + X` 的子式成立（`A` 确定性 Hermite，`gaussLaw_quad_tail`、`kind_quad_tail`）；RBM2D 只有中心化情形（`A = 0` 即 `gue_quad_tail`）；论文（`3_5_Loop_Hierarchy.tex:13-38`，`lem_GbEXP`）引 [YY_25] 引理 4.1，未陈述平移形式（UN-25 `Universality/GUEPhase/AuxCarrier`，9eb0502）。（T2196b、T2196c 是 Lean 写法：辅助方差在一块上的正性由 `sbKernelR d L g 0 = (1+2dg²)⁻¹` 对一切 `d, g` 得；`mixVar`、`Smix` 带剖面耦合 `g`，与合并的 `ouVar` 一致。）
+- **D485（T2191a）**：`6:97` 区域 (ii)、`σ₁ = σ₂`：论文引 `(sum_res_2_NAL)`，其引理 `lem:sum_decay`（`3_5:1632-1637`）要 `t ≤ 1 − ilambda²/L²`，与 `1 − t < 1 − s ≤ ilambda²/L²` 合起来迫使 `s = t`；Lean 用 `(sum_res_Ndecay_nonzero)`（`3_5:1667`）在 `A = ∅`（`I_diff = ∅`）（ST-D5 设计 T2191，签字 §67）。
+- **D486（T2191b）**：（形状）Step 6 钉文去掉 `STKbound`、`STKward`、`STDecayStrong s`、`STDecayStrongU`、`STStep1Loop`，用 `STStep2Core` 代替 `STStep2Concl … C_d`，无 `∀ C_d`（论文 Step 6 都不用）。
+- **D487（T2191c）**：`lem:improve_exp_aver`（`6:12-21`）按时间序列 `u` 钉（两前提都在 `u`）；论文对 `[s,t]` 一致的形式是 `STExpAvgU`，对确定性左端由 (g) 得。
+- **D488（T2191d）**：Ward 界 `(eq:EPL-K)`、`(eq:boundELKQ1)`、`(eq:boundcommutator)` 与区域 (ii) 分解对 `u ∈ [s,t]` 一致地钉（论文在 `t`），前三者对一切满足 `STMollifierProps` 的磨光族（论文：`Def:QtPt` 那一族）（`6:104-132`、`6:137-141`）。
+- **D489（T2191e）**：`(Eq:Gtlp_exp_flow)` 的 `max_{σ,a}` 是 `Prec` 内对 `(u,σ,a)` 的并，尺度 `N`（合并约定）；`lam n > 0` 只最终成立（`(eq:WO)`）（`1_2:1390-1396`）。
+- **D490（T2195a）**：局部引理可复合（Fable §3），把新顶点放进至多与其一个邻点相交的类的合并，代价不低于不动它（Fable §4.3），故 17 项归为 7 个基本操作（论文按项记账，`B:213-262`）（LW-10c2 `Graph/LocalRegular6b`，b43cb93；§55）。
+- **D491（T2195b）**：`GG` 项 `R2`（`Contract`）：2-圈坍缩降低平凡合并的代价（`localReg6b_instCyc_repair_forced`），故 `B:272-273` 无逐步对应；对合并取最小由把圈的两类合并恢复（`scostLL_repair`），从不合并两个外部类。
+- **D492（T2195c；即 T2184c 的一部分）**：c2 补 `Loop`（`Oe1xOwx`、`R3`、`T1`）、`Contract`（`R2`）与因子 `AddLoop`（`P5`、`P6`、`R5`）、`Loop`（`R4`、`R6`）、`MoveLoop`（`T2`、`T4`）的局部引理；其余边与 `GG` 项由 c3 的 `MoveSC`、`MoveOut`、`Dmove` 补。
+- **D493（T2194a）**：`𝒬` 过程的次高斯输入在任意可测族 `G` 的离出时 `gridExitTauN … G` 陈述（7a：任意停时族），代替 RBM2D 写死单水平的 `azumaSubGQ_goodExit`（§62 (4)）（S3-14 `Induction/QProxy`，9a207a1）。
+- **D494（T2194b）**：交错鞅的方差代理是对 `(𝒬_v⊗𝒬̄_v)(𝓔⊗𝓔)` 两次用 `(sum_res_2)`（EK-4）：块内和为零、块内 `ℓ¹` 衰减、对一切 `σ`；代替 RBM2D 的 `d = 2` Case 5 核界。
+- **D495（T2194c）**：`d ≥ 3` 的双副本 `lem_+Q` 带加项 `W^{-D+C_Q}`，`C_Q = 2C_n + 2`。
+- **D496（T2194d）**：`C_P` 多 `2m + 2`，来自 `𝒬_u` 的行和 `1 + C(L^d)^m ≤ N^{m+1}`（`‖ϑ‖ ≤ C` 不是 `≤ 1`；要 `0 ≤ c`，T2194 Amend 1）。
+- **D497（T2198a）**：Hölder-1/2 界、`J♯` 与提升在 `contGood`（每个高斯坐标 `≤ N`，概率 `≥ 1 − N^{-D}`）上、前提 `(1 − t_n)⁻¹ ≤ N`（最终）下做（S5-09a `Induction/LemDecCalELip`，e4126a2；§64）。
+- **D498（T2198b）**：(G) 陈述为 `PrecPT(ξ ≺ R₀ + J^m R) → Prec(ξ ≺ R₀ + J^m R)`，`m ≥ 0`、确定性 `R₀ ≥ 0`、`R ≥ N^{-C_R}`、`R₀, R, J` 相对连续 `1 + N^C√|u−u'|`、`ξ` Hölder-1/2。
+- **D499（T2198c）**：`J♯ := max(1, max_{σ,a} |(𝓛−𝒦)^{(2)}_{u,σ,a}|/T_{u,D}(|a₁−a₂|))` 是单时刻的实现随机控制量（监督 1550 的 1.3），不是 `(eq:def_new_J*)`（`3_5:2310`）的确定性 `J*`；与 T2193c′ 一起编号。
+- **D500（T2192a）**：`(Meq:QdS1)`、`(Meq:QdS2)` 读作「对每个 `z ∈ 𝐃_{κ,ε}`、`N` 大」，`N₀` 对 `𝐃_{κ,ε}` 一致（`QDiff` 第三、四合取项）（MA-D1 设计 T2192，3429d7d）。
+- **D501（T2192b）**：`(G_bound)` 的 `|x−y|` 与 `(eq:diffu1,2)` 的 `W|a−b|` 读作 `W|[x]−[y]|_∞`（`L^∞` 块距离，`1_2:274`，同合并的 `STLocalEntry`）；T2001、T2161 用 `ℓ¹` 块距离（`calB_distB_compare`：因子 `d^{-(d-2)}`）；精细格点距离的字面形式未编译。
+- **D502（T2192c）**：Thm 2.1 的证明：`η = N^{-1+τ}` 给 `‖ψ_k‖² ≤ 2N^{-1+τ}`；编译的证明用 `η = N^{-1+ε}`，`ε = min(τ/2, 1/2)`。
+- **D503（T2192d）**：`(eq:diffu1)`、`(eq:diffu2)` 的「对一切 `a, b`」读作 `a, b` 在概率之内（对 `L^{2d} ≤ N²` 对取并），同 `∩_z`。
+- **D504（T2192e）**：终点形式：Thm 2.1–2.5、2.7 用显式 `W^τ`、`N^{-D}`；与合并的 `Prec` 等价（`explicit_of_stochDomAt`、`prec_of_explicit`）；是决定，不改陈述。
+- **D505（T2192f）**：区域 `𝐃_{κ,ε}` 恰在 `κ > 2` 或 `ε > 1`（`N > 1`）时为空，等号处不空。
+- **D506（T2192g）**：`(eq:diffu1,2)` 归为 `ML:GLoop`，环指标 `(b,a)`（`zTrace`）；剖面对称，陈述不变。
 

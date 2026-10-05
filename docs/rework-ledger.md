@@ -189,3 +189,12 @@
 | T2184 | 2026-10-05 15:03 UTC (2a42f07) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；1b 因额度重跑（规则 H，不计）；LW-10c1 `Graph/LocalRegular6a`（性质 (6) 的局部代价、引理 A/B、初值；c2–c4 的钉文）；D469–D470 |
 | T2189 | 2026-10-05 15:12 UTC (ae63e74) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-D1a + BA-D2 `BA/MFixedPoint`（`m(z,λ)` 存在唯一、`ρ_N`、bulk 集、`lem:propM` 钉文）；D471–D472 |
 | T2188 | 2026-10-05 15:13 UTC (0818c49) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-05 余部 `Universality/GreenCorr`（`UNGreenCorr`、`UNGreenCorrAll` 证出，登记删）；无新 paper-delta（伸缩序列即 D385） |
+| T2190 | 2026-10-05 16:07 UTC (d1a0316) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；UN-07 `Universality/FreeConvRegular`（自由卷积对 Lipschitz 参照的稳定性；T2190a 见证 `UNDens` 偏弱已编译，§65）；D478 |
+| T2186 | 2026-10-05 16:08 UTC (d783ee3) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S3-12a `Induction/Step34PinsP` + `Induction/NQLin`（主撇钉文 `STNQConcl'`/`STOeqNQ'`、`GoodLinN`、线性预算，§62）；D473–D477 |
+| T2180 | 2026-10-05 15:35 UTC (76b840e) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；检查文件命名空间修一次（Amend 1，未动 Lean，不计）、Amend 2 接口；1b 因额度重跑（规则 H，不计）；ST2-13a `Path/DifREP2`（`STGridMart` 无条件）；D479–D483 |
+| T2196 | 2026-10-05 16:46 UTC (9eb0502) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-25 `Universality/GUEPhase/AuxCarrier`（辅助载体、行混沌大偏差尾，模型通用）；D484 |
+| T2191 | 2026-10-05 17:54 UTC (4fecaa2) | prover-max | Sonnet 5.5 effort max | 否 | 设计单（只出报告）；审核 BLOCKED 一项（一般 `STStep6` 拼接）由 §67 签字移交 S6-13 与 REQ-1746；ST-D5 Step 6；D485–D489 |
+| T2195 | 2026-10-05 17:57 UTC (b43cb93) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；LW-10c2 `Graph/LocalRegular6b`；D490–D492 |
+| T2194 | 2026-10-05 17:58 UTC (9a207a1) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；检查文件 noncomputable 修（H81）、1a BLOCKED 于 T8 钉文缺 `0 ≤ c` → Amend 1（未动 Lean，不计）；S3-14 `Induction/QProxy`；D493–D496 |
+| T2198 | 2026-10-05 18:17 UTC (e4126a2) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-09a `Induction/LemDecCalELip`（§64 路线 (d) 的 (L1)(L2)(G)）；D497–D499 |
+| T2192 | 2026-10-05 18:17 UTC (3429d7d) | prover-max | Sonnet 5.5 effort max | 否 | 设计单（只出报告）；审核一次 PASS；MA-D1 主定理装配与终点冻结；MA 拆 6 张（MA-01…06）；D500–D506 |
