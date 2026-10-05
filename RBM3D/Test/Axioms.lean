@@ -77,7 +77,8 @@ external inputs (DECISIONS §5), so they must end up proved.  Route H proved `le
 5–8 for every `d ≥ 3` (T2023, T2024, T2027), so `Prop5Decay`, `Prop8ZeroMode`, `Prop5to8`,
 `ThetaDecay`, `ThetaDecayShort` and `ThetaZeroMode` left this list. -/
 def borrowedProps : List Name :=
-  [`RBM.Loop.KLPT]
+  [`RBM.Loop.KLPT,
+   `RBM.Univ.UNL32] -- LSY Thm 2.2 (arXiv:1609.09011), the one external input of bulk universality (DECISIONS §5; T2174, UN-01)
 
 /-- Premises **this development** owes: provable here, assumed for now.
 
@@ -176,6 +177,32 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STCltFar, -- `lem;CLT`, far part (`3_5:2160-2250`); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STLemDecCalE, -- `lem_dec_calE`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STPfStep5, -- `lem:pf_step5`; proved internally (DECISIONS §40); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Univ.UNBUniv, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNGUELocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNTrLocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNStep1Good, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNClaim417, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNApriori, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNGreenCorr, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNOUDiag, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNEMCTE2, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNJak, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNUyw, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNMLOut, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNLocAvgBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNQueBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNInfty1Row, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNUnivMainRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNOURow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNEMCTE2Row, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNJakUywRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNClaimRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNGreenCorrAll, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNNormBound, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNNormBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNTrLocalBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNDensBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Gauss.Sizes.STStep5Concl] -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
@@ -232,6 +259,12 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STReg5II, -- Step 5 regime (ii); S5-01 (T2138, DECISIONS §40)
    `RBM.Gauss.Sizes.STReg5Mid, -- Step 5 window of cases (i)+(ii); S5-01 (T2138, DECISIONS §40)
    `RBM.Gauss.Sizes.STReg5III, -- Step 5 regime (iii); S5-01 (T2138, DECISIONS §40)
+   `RBM.Univ.UNDens, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.IsRegular32, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.IsFreeConv32, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.InWindow, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.queBadMat, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.UNBadY, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Gauss.Sizes.STReg5IV] -- Step 5 regime (iv); S5-01 (T2138, DECISIONS §40)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
