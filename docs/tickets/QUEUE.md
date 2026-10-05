@@ -19,6 +19,22 @@
 |---|---|---|---|---|
 
 ## 已合并
+- T2215（S5-10a，5d313ca，2026-10-05 21:48；`Induction/TailtoTailSq`）
+- T2213（UN-12b，122f299，2026-10-05 21:36；`Universality/PinsC2`；D532）
+- T2214（UN-13，18a41d3，2026-10-05 21:31；`Universality/Step1Band`；D531）
+- T2209（S5-10，14513ee，2026-10-05 21:19；`Induction/PfStep5Alg`；Amend 1；D527–D530）
+- T2212（UN-26b，0bc4633，2026-10-05 20:48；`Universality/GUEPhase/BootstrapAt`）
+- T2203（LW-10c3，ed9c0f1，2026-10-05 20:39；`Graph/LocalRegular6c`；D525–D526）
+- T2211（S6-02，9e0d6a7，2026-10-05 20:30；`Induction/Step6Kit`）
+- T2210（MA-01，8a43715，2026-10-05 20:29；`RBM3D/Endpoints.lean`）
+- T2208（UN-12，a42cad0，2026-10-05 20:10；`Universality/Step1Good`；`UNStep1Good'` 证出；D524）
+- T2206（ST-A，8810a23，2026-10-05 20:01；`Induction/SizesComp`；D523）
+- T2204（S6-01，cda3bb2，2026-10-05 19:40；`Induction/Step6Pins`）
+- T2202（UN-26a，98e6d5b，2026-10-05 19:29；`Universality/GUEPhase/Bootstrap`；D520–D522）
+- T2200（ST2-13b，b3c37aa，2026-10-05 19:21；`Path/DifREP3`；`STGridRepN` 证出，ST-2 完成；D516–D519）
+- T2193（S5-09，d7da51e，2026-10-05 19:19；`Induction/LemDecCalEPrec`；`STLemDecCalE` 证出；D513–D515）
+- T2201（UN-01c，3fc9d03，2026-10-05 19:03；`Universality/PinsDens`；修复一次；D512）
+- T2199（S3-12b，cef761a，2026-10-05 19:01；`Induction/NQEndLin`；D507–D511）
 - T2192（MA-D1，3429d7d，2026-10-05 18:17；设计，只出报告；MA 拆 6 张；D500–D506）
 - T2198（S5-09a，e4126a2，2026-10-05 18:17；`Induction/LemDecCalELip`；D497–D499）
 - T2194（S3-14，9a207a1，2026-10-05 17:58；`Induction/QProxy`；Amend 1；D493–D496）

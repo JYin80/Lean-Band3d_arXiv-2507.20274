@@ -1463,4 +1463,36 @@ Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文
 - **D504（T2192e）**：终点形式：Thm 2.1–2.5、2.7 用显式 `W^τ`、`N^{-D}`；与合并的 `Prec` 等价（`explicit_of_stochDomAt`、`prec_of_explicit`）；是决定，不改陈述。
 - **D505（T2192f）**：区域 `𝐃_{κ,ε}` 恰在 `κ > 2` 或 `ε > 1`（`N > 1`）时为空，等号处不空。
 - **D506（T2192g）**：`(eq:diffu1,2)` 归为 `ML:GLoop`，环指标 `(b,a)`（`zTrace`）；剖面对称，陈述不变。
-
+- **D507（T2199a）**：`lem:STOeq_NQ` 在网格上对一个终点时刻 `v` 证出：`GoodSetN` 取自由粗水平 `Φc`，`GoodLinN` 取确定性水平 `Φ₁ Φ₂ Φ₃`（S3-12b `Induction/NQEndLin`，cef761a；§62）。
+- **D508（T2199b）**：「`N` 足够大」的显式指数与最终门槛：`ε₀' = min ε₀ 1`、`ε₁ = εq = ε₀'/8`、`ε = min(ε₀'/(8C), 1/2)`、`τ' = ε/2`、`D'' = C + k + 2 + (4k+2)/𝔠`、`D' = D'' + 1`、`C_K = D₁ + 2C_P* + 6k + 20 + D''`。
+- **D509（T2199c）**：塌缩窗 `v_n = s_n`（`Δ = 0`、`H_j = H_0`、`G = univ`）单独处理。
+- **D510（T2199d）**：端点前提：最终 `W⁻¹ ≤ (1−t)/(1−s)`（`nonAlt_hkerN` 中 EK-6 的窗）与 `STCaseI`（`1−t ≥ g²/L²`，给 `v ≤ 1 − g²/L²`）。
+- **D511（T2199e）**：`STKbound` 不作前提（由 `stKbound_holds` 从 `3 ≤ d`、`N → ∞`、`|E| ≤ 2−κ`、`WO` 给的 `0 < g ≤ 𝔡⁻¹` 得）。
+- **D512（T2201c）**：（登记）新类 `refutedProps`（§66 (2)）：`UNStep1Good`、`UNInfty1Row`、`UNStep1GoodC`、`UNCoreC` 移入；合并文件里它们的文档串仍写 owed，不改（CLAUDE.md §5.3）；主撇后继 owed，`UNDens'` 结构性（UN-01c `Universality/PinsDens`，3fc9d03）。（T2201a、b：Lean 结构，无陈述差异。）
+- **D513（T2193a，续 D374、D429）**：钉文下限 `(L^dW^{6d})² ≤ W^D`（最终）代替论文 `W^D ≥ N`（`3_5:2317`）（S5-09 `Induction/LemDecCalEPrec`，d7da51e；§61、§63、§64；`STLemDecCalE` 证出）。
+- **D514（T2193b）**：加前提 `J*_{u,D} ≤ W^{1/2}`（由 `lem:pf_step5` 的停时 `J* < W^ε`、`ε < 1/2` 满足）。
+- **D515（T2193c′）**：`lem_dec_calE` 对 `u` 一致：确定性引理逐时刻在实现控制量 `J♯` 上用，三个结论做网格提升（§7），再在假设事件上把 `J♯` 换成 `Jst`（连同 D497–D499）。
+- **D516（T2200a）**：`lem:DIfREP` 的 `(alu9_STime)`（`3_5:229`）对网格上终点 `k ≤ K` 一致成立：用与 `K` 无关的粗时间网格 `v_p`（`P = ⌈N^{C'}⌉` 点）与精确转移 `Σ_{j<k} 𝒰_{u_j,u_k}ξ_j = 𝒰_{v_p,u_k}Σ_{j<k}𝒰_{u_j,v_p}ξ_j`（半群性），`𝒰_{v_p,u_k} = id + O(N^{1−C'})`（ST2-13b `Path/DifREP3`，b3c37aa；`STGridRepN` 证出，ST-2 完成）。
+- **D517（T2200b）**：去零模形式 `Q^{(A)} ∘ 𝒰` 对一切 `A ⊆ ⟦m⟧`（`(sahwNQ2)`，`3_5:1908`），代理 `((Q∘𝒰)⊗(Q∘𝒰̄))∘(ℰ⊗ℰ)`，无情形条件（§59 O3）。
+- **D518（T2200c）**：二阶部分对每个 `(p, a')` 用 Doob，权重同一阶混沌部分。
+- **D519（T2200d）**：代理从 `u_{j+1}` 挪到 `u_j` 代价 `(32N)^{2m}m(2m+2)16^{2m+3}N^{2m+4}Δ`，从 `(u_j, v_p)` 挪到 `(u_j, u_k)` 代价 `c₃N^{4m+4}(v_p − u_k)`（绝对、确定性），都吸收进 `N^{-D}` 下限；加权尾项对一切 `d` 成立（T2200e）。
+- **D520（T2202a）**：(7.30) ⟹ 对合并的带耦合与下限的 `ellT` 有 `ℓ_{t₁} = L`：`ellT_eq_L : 0 ≤ g → t < 1 → L²(1−t) ≤ g² → ellT L g t = L`（RBM2D/[YY_25]：`L²(1−t) ≤ 1`，无耦合、无下限）（UN-26a `Universality/GUEPhase/Bootstrap`，98e6d5b）。
+- **D521（T2202b）**：GUE 相 (7.33)–(7.36) 的 `d ≥ 3` 形式（论文未写出，`1_2:566-570` 指向 [YY_25]（`d = 1`）与 [DYYY25]（`d = 2`））：`S^{(B)}_{GUE} = L^{-d}`、前因子 `W^d`、幂次计数 `n²N`、`N = (WL)^d`。
+- **D522（T2202c）**：（记账）在最大容许 `1 − t₁ = g²/L²` 处 `Nη_{t₁} ≤ g²W^dL^{d−2} Im m`（`d = 2`：`g²W²`）。（T2202d、e：Lean 结构——RBM2D 死代码未移植、多三个 Mathlib 导入。）
+- **D523（T2206a）**：沿序列的 `(stoch_domination)`（`1_2:227-231`）对子列稳定，并可由覆盖一切大 `n` 的有限个子列恢复（ST-A `Induction/SizesComp`，8810a23；§68 (8)）。（T2206b、c：Lean 写法——子列的模型律是 `seqP` 在坐标重标号下的像，对一切集合与被积函数。）
+- **D524（T2208c）**：`C₀ t` 项、`t ≤ N^{-1+τ_s}` 要 `τ_s < 8/11`；钉文的 `τ_s < 1` 不给，`Admissible` 给：`τ_s ≤ 𝔠𝔡 < 1/2`（`un_admissible_c_mul_lt_one`、`un_admissible_d_le_half`）（UN-12 `Universality/Step1Good`，a42cad0；`UNStep1Good'` 证出）。（T2208a、b 见 §69。）
+- **D525（T2203a；续 D492）**：`MoveSC`、`MoveOut`、`Dmove` 的局部引理（Fable §4.5）证出；与 c2 合起来 `strat_local` 的每个边、`GG` 与权项都归为有局部引理的基本操作（论文逐项记账 `B:213-262`）（LW-10c3 `Graph/LocalRegular6c`，ed9c0f1）。
+- **D526（T2203b；续 D491）**：2-圈坍缩也出现在 `MoveSC` 与蓝色 `Dmove` 的 `k = 2`（`P4`、`D`、`T3`、`R7`、`R8` 由它们构成）；由合并圈的两个类修复，从不合并两个外部类；`MoveOut` 与红色 `Dmove` 不坍缩。（T2203c：证明路线——Fable §4.5 的手算行换成一个逐类模式界 `localReg6c_dlb` 加对命名顶点类的相等模式的有限分情形。）
+- **D527（T2209a）**：`lem_dec_calE` 逐时刻在实现控制量 `J♯ ≤ W^ε` 上用于停止过程（S5-09 的逐时刻层），不是作带确定性 `J*` 的 `Prec` 引理（`3_5:2367-2369`）：目标 4′、4 是停时条件那一步（S5-10 `Induction/PfStep5Alg`，14513ee；§70）。
+- **D528（T2209b）**：`(int_K-L_ST)` 的时间积分取 §7 网格上的左黎曼和（常数 1、2 与 `log`，目标 3），不用值域论证。
+- **D529（T2209d）**：`lem:pf_step5` 在随时间变的水平 `D_u = D* + 2 log_W(1−u)`、`D* = max(D, D₀) + 2d + 1` 上证，由目标 1 降下（§70）：目标 2′ 的水平是序列，目标 4′ 的好事件水平 `D₁` 与结论水平分开（续 D513）。
+- **D530（T2209e）**：`lem:pf_step5` 的闭合显式：`ε < 𝔡/4`、`τ = 𝔠ε/2`，括号 `1 + log W + W^{2ε}(ilambda²W^d)^{-1/4}`（目标 6）。
+- **D531（T2214d）**：（证明路线）RBM2D 的归一 `r = ρ'/ρ_sc(E)`、因子 `r^k` 与伸缩 `ρ_sc(0)/ρ_sc(E)` 不出现；密度序列 `ρ_n` 只经其值域进入，Lipschitz 步在 `(ρ_n, ρ'_n)` 上取（抽象模型无固定 `ρ_sc(E)`）（UN-13 `Universality/Step1Band`，18a41d3）。
+- **D532（T2213a–c）**：（登记与文档串）`UNStep1GoodC''` 在本票证出，故不登记；`refutedProps` 的文档串写「已证假」，而 `UNCoreC'` 只是被取代、`UNTrLocalInit` 是对带状模型论证为假的谓词，新条目的注释照实写（「被取代、不需要」类见 §68 (9)）；`τ = τs/8` 时新项 `W^τ t*` 要 `τs < 2/3`（监督的 `8/11` 是 `τ → 0` 的极限），由 `un_admissible_cd_lt_half` 给（UN-12b `Universality/PinsC2`，122f299；§69）。
+- **D533（T2215a）**：二次变差的平方剖面 `TailtoTail`（论文 `3_5:2364-2383` 只用 BDG 加 `(res_deccalE_dif)`，无陈述）：近/远分界在 `(log W)^{3/2}`，常数 `18e^{8d+2}`（`tailtoTailSq_kernelGen`、`tailtoTailSq_kernel`；S5-10a `Induction/TailtoTailSq`，5d313ca）。
+- **D534（T2215b）**：远段余项写成 `4YL^dρ³W^{-D₂}`，指数 `D₂` 与主 `D` 分开、`Y` 取粗界（论文一并写 `W^{-D+C}`）；`D₂` 的选取与 `L`–`W` 关系的吸收归 S5-11（S5-10a，5d313ca）。
+- **D535（T2205a）**：`zztE_BA` 的 `|E| ≤ 2−κ`（`7_8:1797`）是论文路线（从 `t ≈ 0` 起的 ConArg 链）的条件，不是笔误；`d = 3`、有限 `L` 时它保不住耦合路径在体内（L=4、`g₀ ≥ 2`；L=16、`g₀ = 10`；那里 `Im m ∝ η`）；不用，路线换成窗口 `BAWinBulk`，§51 的集合 `ρ_N(E) ≥ κ` 保留（BA-D3 设计单，63d62b4）。
+- **D536（T2205b）**：`lem:main_ind_BA` 的 Step 1（`7_8:1987-1990`，「同 [RBSO1D, §7.1]」）与归纳在流族 `Fam(u)` 上成立：`lem_ConArg_BA`（`7_8:1956-1966`）用 `s` 时刻流 `(E, g_s)`（`g_s = g₀√(s/t)`）的圈界 `t` 时刻流 `(E, g₀)` 的圈，且要 `Im m(E, g_s) ≥ κ`（缺这条 `BAConArg` 为假，F1）（BA-D3，63d62b4）。
+- **D537（T2205c）**：间隙 `Re(1 − L^{-d} tr M²) ≥ 2(Im m)²`（`BAgapReal_holds`）与窗口 `c₁ = min(1/2, κ⁹/(64dΛ))`、`C = 2d/κ⁴`（`BAmWindow_holds`）论文没有；被注释掉的 `7_8:1812-1813`（「`t ≥ 1 − ε` 时 `z_t` 留在体内」）是其连续形式（BA-D3，63d62b4）。
+- **D538（T2205d）**：族钉文带 `∀ n, 0 < sz.lam n`；`BAFlow` 只给最终正（`WO`）；结论是最终的，消费者走尾巴（`Sizes.comp`、`comp_admissible`）（BA-D3，63d62b4）。
+- **D539（T2205e）**：T2161 的 `BAGbEXP`（`:1115`）前提是全局的（`(initialGT2)`、`𝓛^{(2)} ≺ Φ²`）、无事件；带状的 `STGiiGEX`/`STGijGEX`/`STGavLGEX`（`Induction/Defs.lean:202`）带 `1(Ω(t,ε₀))`，`step1TargetV3_holds`（`Induction/Step1.lean:525`）用它们：BA-G6、BA-S2b 要事件形式（BA-G3/G4/G6/S2b 有风险）（BA-D3，63d62b4）。

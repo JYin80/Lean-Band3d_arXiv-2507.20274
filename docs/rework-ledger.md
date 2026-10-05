@@ -198,3 +198,23 @@
 | T2194 | 2026-10-05 17:58 UTC (9a207a1) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；检查文件 noncomputable 修（H81）、1a BLOCKED 于 T8 钉文缺 `0 ≤ c` → Amend 1（未动 Lean，不计）；S3-14 `Induction/QProxy`；D493–D496 |
 | T2198 | 2026-10-05 18:17 UTC (e4126a2) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-09a `Induction/LemDecCalELip`（§64 路线 (d) 的 (L1)(L2)(G)）；D497–D499 |
 | T2192 | 2026-10-05 18:17 UTC (3429d7d) | prover-max | Sonnet 5.5 effort max | 否 | 设计单（只出报告）；审核一次 PASS；MA-D1 主定理装配与终点冻结；MA 拆 6 张（MA-01…06）；D500–D506 |
+| T2199 | 2026-10-05 19:01 UTC (cef761a) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS（证明阶段安全分类器超时，中枢核对分支只动唯一可写文件）；S3-12b `Induction/NQEndLin`（网格端点，线性水平）；D507–D511 |
+| T2201 | 2026-10-05 19:03 UTC (3fc9d03) | prover-hard | Sonnet 5.5 effort xhigh | 是（审核 RETURN 一次，修复补三条实例，规则 B） | 第二轮 PASS；UN-01c `Universality/PinsDens`（主撇后继、`not_UNStep1Good`、新登记类 `refutedProps`）；D512 |
+| T2193 | 2026-10-05 19:19 UTC (d7da51e) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；1a 停于 M2 → §64 路线 (d)、Amend 1，等 T2198 后从 1b 续（未动 Lean 的停顿不计）；S5-09 `Induction/LemDecCalEPrec`（`STLemDecCalE` 证出，钉文改 §61/§63）；D513–D515 |
+| T2200 | 2026-10-05 19:21 UTC (b3c37aa) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；ST2-13b `Path/DifREP3`（`STGridRepN` 证出，ST-2 完成）；D516–D519 |
+| T2202 | 2026-10-05 19:29 UTC (98e6d5b) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（证明阶段安全分类器超时，中枢核对）；检查文件缺 Mathlib 导入修一次（H83，未动 Lean）；UN-26a `Universality/GUEPhase/Bootstrap`；D520–D522 |
+| T2204 | 2026-10-05 19:40 UTC (cda3bb2) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S6-01 `Induction/Step6Pins`（Step 6 钉文，登记 20 owed、20 结构性）；无新 delta |
+| T2206 | 2026-10-05 20:01 UTC (8810a23) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；ST-A `Induction/SizesComp`（通用子列转移）；D523 |
+| T2208 | 2026-10-05 20:10 UTC (a42cad0) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-12 `Universality/Step1Good`（`UNStep1Good'` 证出）；D524 |
+| T2210 | 2026-10-05 20:29 UTC (8a43715) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；MA-01 `RBM3D/Endpoints.lean`（终点钉文冻结；登记 decol、locSC、QUE、QDiff、BUniv owed）；无新 delta |
+| T2211 | 2026-10-05 20:30 UTC (9e0d6a7) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S6-02 `Induction/Step6Kit`；无新 delta |
+| T2203 | 2026-10-05 20:39 UTC (ed9c0f1) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；LW-10c3 `Graph/LocalRegular6c`；D525–D526 |
+| T2212 | 2026-10-05 20:48 UTC (0bc4633) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-26b `Universality/GUEPhase/BootstrapAt` |
+| T2209 | 2026-10-05 21:19 UTC (14513ee) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；1a F2 → Amend 1（`D_u`，目标 7 拆 S5-10a，未动 Lean 不计）；S5-10 `Induction/PfStep5Alg`；D527–D530 |
+| T2214 | 2026-10-05 21:31 UTC (18a41d3) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-13 `Universality/Step1Band`；D531 |
+| T2213 | 2026-10-05 21:36 UTC (122f299) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-12b `Universality/PinsC2`（C″ 重钉、`not_UNStep1GoodC'_of_diag`、C 形式 Step 1）；D532 |
+| T2215 | 2026-10-05 21:48 UTC (5d313ca) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S5-10a `Induction/TailtoTailSq`（平方剖面核界，原 T2209 目标 7）|
+| T2205 | 2026-10-05 22:01 UTC (63d62b4) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；BA-D3 设计单（仅报告，探针留 t/T2205 96e4087）；BA 计划 63 → 66；D535–D539 |
+| T2218 | 2026-10-05 22:10 UTC (bbeeabb) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S6-04 `Induction/ExpHier`（证出 `STExpHier`） |
+| T2217 | 2026-10-05 22:11 UTC (d0d79ce) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（检查曾因命名空间失败，H87，不计返工）；S6-03 `Induction/ExpAvg`（证出 `STImproveExpAver`） |
+| T2219 | 2026-10-05 22:13 UTC (afdb81e) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；MA-02 `Main/ZTransfer`（探针块原样移入） |
