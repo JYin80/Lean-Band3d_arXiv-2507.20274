@@ -303,6 +303,7 @@ def structuralProps : List Name :=
    `RBM.Univ.InWindow, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.queBadMat, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.UNBadY, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
+   `RBM.Univ.Step1LocalEventGUE, -- bulk universality: the GUE-side local event (averaged law at the `UNGUELocal` precision plus the entry bound `‖X x y‖ ≤ 1`), an event on the data; a hypothesis of `gue_err_pow` (T2220, UN-11; DECISIONS §20: condition on data, as `IsRegular32`)
    `RBM.Univ.InjSum_IsTestFun, -- T2178: test-function condition (smooth, compact support) on data; a hypothesis of deterministic lemmas (DECISIONS §20, §56)
    `RBM.Univ.UNKind.bulk, -- bulk universality: the energy set of a model class (`|E| ≤ 2 - κ` for the band model), a Prop-valued field of data; a hypothesis of the generic pins (T2187, UN-01b; DECISIONS §20: condition on data)
    `RBM.Univ.UNDens', -- bulk universality: condition on data, UNDens plus the box hypotheses of freeConv_stable_lip (T2201, UN-01c; DECISIONS §66)
