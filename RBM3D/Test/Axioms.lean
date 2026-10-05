@@ -202,6 +202,23 @@ def owedProps : List Name :=
    `RBM.Univ.UNNormBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNTrLocalBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNDensBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNClaim417C, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNGreenCorrC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNGreenCorrAllC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNTrLocalInit, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNStep1GoodC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNCoreC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNOUQUEk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNOUDiagk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNEMCTE2k, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNJakk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNUywk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNQuek, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNLocAvgk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNOURowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNEMCTE2Rowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
+   `RBM.Univ.UNClaimRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Gauss.Sizes.STStep5Concl] -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
@@ -265,6 +282,7 @@ def structuralProps : List Name :=
    `RBM.Univ.queBadMat, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.UNBadY, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.InjSum_IsTestFun, -- T2178: test-function condition (smooth, compact support) on data; a hypothesis of deterministic lemmas (DECISIONS §20, §56)
+   `RBM.Univ.UNKind.bulk, -- bulk universality: the energy set of a model class (`|E| ≤ 2 - κ` for the band model), a Prop-valued field of data; a hypothesis of the generic pins (T2187, UN-01b; DECISIONS §20: condition on data)
    `RBM.Gauss.Sizes.STReg5IV] -- Step 5 regime (iv); S5-01 (T2138, DECISIONS §40)
 
 /-- The premises the audit reports on: borrowed plus owed. -/

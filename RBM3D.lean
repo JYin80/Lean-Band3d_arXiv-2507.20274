@@ -227,6 +227,7 @@ import RBM3D.Induction.NQBudget
 import RBM3D.Path.LemDecCalEdif2
 import RBM3D.Universality.Step1Cond
 import RBM3D.Evolution.CltFar
+import RBM3D.Universality.PinsK
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
