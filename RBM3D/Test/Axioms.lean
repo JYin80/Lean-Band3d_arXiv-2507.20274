@@ -348,7 +348,8 @@ def structuralProps : List Name :=
    `RBM.Endpoints.locBad2, -- the bad event of `(G_bound_ave)` in `locSC` (MA-01, `Endpoints.lean:140`); hypothesis of the deterministic cover lemma `locBad2_net` (MA-04, T2230, DECISIONS §20: structural)
    `RBM.Endpoints.qd1Bad, -- the bad event of `(eq:diffu1)` in `QDiff` (MA-01, `Endpoints.lean:144`); hypothesis of the deterministic cover lemma `qd1Bad_net` (MA-04, T2230, DECISIONS §20: structural)
    `RBM.Endpoints.qd2Bad, -- the bad event of `(eq:diffu2)` in `QDiff` (MA-01, `Endpoints.lean:148`); hypothesis of the deterministic cover lemma `qd2Bad_net` (MA-04, T2230, DECISIONS §20: structural)
-   `RBM.BA.BAWinBulk] -- the window `[√(1 - c₁) g₀, g₀]` lies in the `κ`-bulk of the block Anderson flow (BA-D8, `CouplingWindow.lean:799`); a predicate on the data, hypothesis of `BAFamZ_im_m_ge`, `BATrivialLmax` (BA-S2a, T2238, DECISIONS §20, T2205 portmap P.2: structural)
+   `RBM.BA.BAWinBulk, -- the window `[√(1 - c₁) g₀, g₀]` lies in the `κ`-bulk of the block Anderson flow (BA-D8, `CouplingWindow.lean:799`); a predicate on the data, hypothesis of `BAFamZ_im_m_ge`, `BATrivialLmax` (BA-S2a, T2238, DECISIONS §20, T2205 portmap P.2: structural)
+   `RBM.Univ.queWindow] -- the energy window `𝓘_E(ε₀) = {x : |x - E| ≤ W^{-ε₀} (ilambda W^{d/2}/N)}` of `(eq:defIE)` (`1_2:409`): a condition on the eigenvalue `x`, hypothesis of the deterministic inclusions `queBad_sub`, `que2Bad_sub` (MA-05a, T2240, DECISIONS §20: structural)
 
 /-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
 theorem or by the argument of the named supervisor verdict, and superseded by a primed successor.  Their
