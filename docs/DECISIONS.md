@@ -526,3 +526,28 @@
 
 ## §85 S3-24b 不等 S3-18b/S3-22（总调度，2026-10-06 04:57 UTC，流程事项）
 - S3-24b = T2259 起草发现：`STIterR`（`Step34Pins.lean:486`）与 `STIterR'`（`NQEndFlow.lean:142`）都把自举界作为自己的前提，所以 S3-24b 原定「等 S3-18b、S3-22」不成立（那两张只对 S3-25 要紧）；情形 (ii) 与步的管线已在 S3-24a 合并。S3-24b 照此只证 `iterationsB_step`（`STXiBoot'` 前提、`hlow` 在 `w = s`）与 `stIterations'_holds`、`stIterationsII'_holds`；私有辅助（`IterationsA.lean:876-1046, 1072-1276`）照旧复制（前缀 `iterationsB_`），不另开公开化小票。`STIterR'` 只在两个区域证出、仍 owed（注释写明）；`STIterR`/`STIterR'` 是否改 structural 留最后清理。ST-3 计划 41 不变。
+
+## §86 T2256（BA-S2b1）1a FAIL：ConArg 前提的时间范围（总调度，2026-10-06 05:15 UTC，流程事项）
+- 预检：`BABootstrap'` 与 `baBoot_LI_stmt` 的 ConArg 前提对 `u` 要求 `max(s n, 1−c₁) ≤ u n ≤ t n`（对一切 n），只要某个 n 有 `t n < 1 − c₁`（实例 `t ≡ 1/16`）这个集合就空，前提不携带信息。照预检的修法：上界改 `u n ≤ max (t n) (1 − c₁)`，逐 n 用 `u' = max(u, s₁)` 粘合。`docs/tickets/T2256-amend-1.md`、检查文件两行、H92（从 1b 续）。不算钉文级问题（新钉文，未合并），不发 REQ。
+
+## §87 BA-S2b2 拆 a/b；LW-12e 走求和证书路线（总调度，2026-10-06 06:29 UTC，流程事项）
+- (1) **BA-S2b2** 拆：**S2b2a = T2262**（`BA/Step1Setup`：复用带状 `S1Std`（能量取占位 `E ≡ 0`，预检 P1 确认）、非标量 `M` 的桥、时间连续与 `BAGt` 时间 Lipschitz、网格提升、`Ω_C ⊆ Ω_{C₀}`）；**S2b2b**（移植 `Step1.lean` §1–§4 加 `baBootstrap'_holds`，删 `BABootstrap'` 登记行）。BA 计划 67 → 68。
+- (2) **LW-12e = T2264** 把 (IV) 前半重定义为一个组合定理 `anpKey5_cert`（每条路径去掉一条边后，余下实边有求和证书 `AnpSumCert`）；LW-12f 欠 `AnpKey6SumPin`（沿证书求和）与 `AnpKey6DirectPin := ∀ d, AnpDetGh d`，由此得 `AnpDetGhCaseIV`、`anpDetGhStep_holds` 与登记删除。起草者称论文 (IV) 的鸽巢（`7_8:1388-1393`）对合并的 `NGraph` 不成立（`figIVext`：q = 1 < p = 2、末边在外顶点），重根步 (iii) 在 α₁–α₂ 边为桥时失效（候选）；`AnpKey5GraphPin`/`AnpKey5CertPin` 只有手证，**预检必须先跑脚本反例搜索，找到反例就在 1a 停**。若 f 的直接路线成立，情形 (I)–(III)（已合并的 LW-12c、在跑的 T2260）对 `LWAnpKeyGh` 不再必需：**T2260 不扣**（已在 1a，代价小，且是 f 失败时的后备），到时把不用的钉文归「被取代」。LW 计划 41 不变（e 仍一张）。
+
+## §88 LW-14e 改证主撇 `LWG5Expand'`、拆出 LW-14f；UN-18 拆出 UN-18b（总调度，2026-10-06 06:48 UTC，流程事项）
+- (1) **LW-14e = T2265** 起草判合并的 `LWG5Expand`（T2255 起草者自定的建模钉文，`LWExpTerm3.lean:1781`）照写不可证：F1 系数——红自环拆分产生 `m̄ = m^{-1}`，不能写成 E 之前固定列表上的 `m^j`；F2 外分子——分拆项 α=x、β=y 非零且 x、y 在同一分子，`lwGraphPrec1`/`LWScalemole` 不覆盖（T2255 审核观察 1 已提示）。照主撇规则：新文件钉 `LWG5Expand'`（系数 `m^j·m̄^{j'}`，每图外分子互异或 `LWJoined`）并证；`LWG5Expand` 移 `supersededProps`。预检先确认 F1/F2，否证则回原钉文。**LW-14f**（`Graph/LWExpTerm6`，700–1000 行）：连接图的界、`lwExpG5'_of_expand'`、无条件 `lwExpG5'_holds`、`lwCutExp_holds`、`lwTermEXP_holds`，删 `LWtermEXP`、`LWCutExp`、`LWExpG5'` 登记行；§84 (1) 的「后合并者补一行式」规则移给 LW-14f。LW 计划 41 → 42。
+- (2) **UN-18 = T2266** 只做 `EMCTE2` 一半（证带状 `UNEMCTE2`、`UNEMCTE2Row`，删两条 owed）；`Apriori` 一半（`UNApriori`，要 UN-04）为 **UN-18b**。UN 计划 56 → 57（上限 60）。T2266a (2)：BA 行 `UNEMCTE2RowBA` 无漂移（`ouMatC` 固定均值），要平移 `Φ ↦ Φ(λΨ + ·)` 与 `UNModel.ba` 的载体转移（约 150–250 行），留 BA 侧。
+- (3) 两件都请监督核（REQ）：LW-14e 的主撇是否必要、`LWG5Expand'` 形状；LW-12e = T2264 称论文 (IV) 鸽巢（`7_8:1388-1393`）对合并 `NGraph` 不成立（§87 (2)）。都不扣票（预检先查）。
+
+## §89 监督 0752：LW-14e 主撇与 LW-12e 证书路线都 PASS；门槛 REQ 规程（总调度，2026-10-06 08:12 UTC，照办）
+- (1) A：F1、F2 成立；`LWG5Expand'` 形状对；LW-14f 需要（连接图的界是辅助图为空的 GtoAG）；若 T2265 的 1a 发现外顶点合并的 3 阶叶，后备为 `ext 0 = ext 1` 时阈值取 3。B：论文 (IV) 鸽巢与重根 (iii) 有缺口（写作缺口，引理成立）；证书路线可靠（T2264 已合并）；LW-12f = T2270 走直接路线；LW-12c/d（已合并）对 `LWAnpKeyGh` 非必需、作后备（不移被取代：它们的钉文 `AnpDetGhCaseI/III` 由 T2270 一并证出并删登记行）。
+- (2) **门槛规程（监督 O2/O4）**：每次放行后对每个 gate 比较计数与 25/40/50，过线的那一轮写 `REQ-…`（第 1 行 `status: open`）。已漏两次（LW 25、UN 25，监督已补查 PASS）。下一门槛：LW 40、ST-3 40、UN 40、ST-4 35（计划）。写进 HEARTBEAT 每轮做法。
+
+## §90 条件证明与 owed 行（总调度，2026-10-06 08:25 UTC，流程事项）
+- 一张票以另一条 owed 钉文为前提证出某钉文 X（`P → X`，P 已登记 owed 或本票登记为 owed）时，可以删 X 的 owed 行：未证的内容由 P 的 owed 行承载，owed 总数不减（先例 T2266 的 `UNEMCTE2`）。T2273（UN-21）照此：新登记 `UNOUClaims` owed（`Pins.lean:659`，此前不在任何列表），删 `UNJak` owed 行。前提若不在任何登记表，必须同票登记。
+
+## §91 UN GUE 段按导入重排、拆出 UN-51a；S3-22 拆 a/b/c；T2269c 照准（总调度，2026-10-06 08:54 UTC，流程事项）
+- (1) **UN GUE 段**：T2162 拆分表 UN-27…UN-52 的依赖列是顺序不是导入（17:28 UTC 已注意到 UN-27 要 `ZeroModeProfile`）。照 §54 按 RBM2D `import` 行重排：`ZeroModeProfile ← Pins, OU, OUHessian`（都已合并）先做，拆成 **UN-51a = T2276**（UN-51 留 `RandomLayerA/B`）；UN 计划 57 → 58（上限 60）。现在可写：`GUEPhase/Generator`（UN-28，← `Bootstrap`；但 `HierVocab`、`ContractionSecondLoopAllCuts`、`OperationsPairWord` 三个导入在 RBM3D 无对应文件，起草前先找名字）、`GUEPhase/EntryDet`（UN-30，← `AuxCarrier`；`Green/EntryBlock` 无 RBM3D 文件，`Sblk2` 辅助私有复制）。T2276 合并后：`QUEFlow`、`KPrim`（`Kcal` 改名）、`Grid`（UN-27，要 `Main/ZRescale` 的子移植，8 个名字 RBM3D 都没有）；`Markov`、`OneLoop`、`LLTransfer` ← `Grid`；`Proc` ← `Grid, Bootstrap, Generator, KPrim, EntryDet`；`EntryTail` ← `AuxCarrier, EntryDet`。UN-24（`UnivMain`）按导入只要 `Apriori, GreenCorr, EigenMeasurable`，写票前再核行级依赖。**UN-18b = T2275**（`Apriori`，`UNApriori` 由 owed 的 `UNTrLocal` 条件证出，§90）。
+- (2) **S3-22 拆 a/b/c**（S3-21 = T2274 起草）：照情形 (i) 已合并链（S3-12a/b/c1/c2 共约 5600 行）比较，S3-21 后剩约 3000 行：**S3-22a**（网格端点 `nzGridEndN`）、**S3-22b**（逐时刻流 + 提升）、**S3-22c**（`newPQ` 组合 + 自举 → `stOeqQtNZ'_holds`，删 owed 行）。预算项挪进 S3-21（同 S3-12a）。ST-3 计划 41 → 43。§83 的情形 (ii) 类比成立且更强：EK-5 无衰减、无和为零前提，不要衰减类、远部分、比权与近/远 QV 拆分。写 S3-18b 时让自举在区域上写成通用形，S3-22c 照用。
+- (3) **T2269c**（审核 O1）：T2269 为实例登记 `STKboundgL`、`STLKgL`、`STLocalMaxgL` 为 owed（净 owed +2），照 §90 照准；证明票：BA 链 BA-K4/BA-V2/BA-S3（登记注释已写）。T2269b（`BABootstrap'` 有未用前提）记 D581，留 BA-S3 起草时参考；不另开瘦身主撇。
+- (4) T2276 新钉的 d≥3 OU 接口行（`UNOULL`、`UNOUEq747`、`UNG1Row`、`UNG2bRow`；删 `UNOURow`、`UNOUDiag` 的 owed 行）与 `ouTauMax` 的设计值（T2276a/b）、S3-22 三拆，一并请监督核（REQ-2026-10-06-0854）；不扣票（预检先查）。

@@ -252,3 +252,21 @@
 | T2251 | 2026-10-06 04:22 UTC (88183b6) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-19 `Universality/JakSpectral`；D564 |
 | T2249 | 2026-10-06 04:34 UTC (24b85cd) | prover | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次，实例窗口塌缩，只改实例段） | 第 2 轮 PASS；S6-09c `Induction/QopDecay`；D565 |
 | T2250 | 2026-10-06 04:47 UTC (88ee6fd) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-15a `Induction/QDriftA`（交错链 d≥3 重排）；D566 |
+| T2252 | 2026-10-06 04:58 UTC (8aa37bf) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-12c `Graph/AnpKey3`（`anpDetGhCaseI_holds`）；D567 |
+| T2253 | 2026-10-06 04:59 UTC (a18620d) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-17 `Universality/OUContraction`；D568 |
+| T2254 | 2026-10-06 05:26 UTC (3a3ed6a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-14d `Graph/LWExpTerm4`（三项界）；1838 行超估计；D569 |
+| T2256 | 2026-10-06 05:51 UTC (7672749) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（1a FAIL 后 Amend 1，H92，未写 Lean，不计返工）；BA-S2b1 `BA/Step1Boot`；D570 |
+| T2258 | 2026-10-06 05:57 UTC (d0484be) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S3-12c2 `Induction/NQEndFlowLift`（`STOeqNQ''`）；D571 |
+| T2257 | 2026-10-06 06:02 UTC (193512b) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S6-09b `Induction/ExpIntIQ`（`STExpIntI'`、`stStep6I_of_LW`）；D572 |
+| T2261 | 2026-10-06 06:18 UTC (a1d865a) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-15 `Universality/OUGenerator`（对载体 + 推前）；D574 |
+| T2259 | 2026-10-06 06:20 UTC (64ed77f) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-24b `Induction/IterationsB`（`STIterations'`、`STIterationsII'` 证出） |
+| T2255 | 2026-10-06 06:21 UTC (20de014) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-14c `Graph/LWExpTerm3`（`lwExpG5'_of_expand`、条件 `LWCutExp`/`LWtermEXP`）；2301 行超估计；D573 |
+| T2260 | 2026-10-06 06:36 UTC (14c583b) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（检查曾因类型推断失败，H93，不计返工）；LW-12d `Graph/AnpKey4`（`anpDetGhCaseIII_holds`） |
+| T2263 | 2026-10-06 07:06 UTC (c01b292) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-15b `Induction/QDriftB`（`alt_hDclsQN`）；D575 |
+| T2262 | 2026-10-06 07:23 UTC (8bb6f82) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-S2b2a `BA/Step1Setup`；D576 |
+| T2266 | 2026-10-06 07:29 UTC (061aa73) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-18 `Universality/EMCTE2`（`UNEMCTE2`、`UNEMCTE2Row`）；D577 |
+| T2264 | 2026-10-06 07:39 UTC (1462fdb) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-12e `Graph/AnpKey5`（证书路线 `anpKey5_cert`）；D578 |
+| T2267 | 2026-10-06 07:43 UTC (c77e68c) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-20 `Universality/JakKernel`；D579 |
+| T2268 | 2026-10-06 07:58 UTC (f515695) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-16a `Induction/QLevelsA`（§83 重定范围）；D580 |
+| T2269 | 2026-10-06 08:39 UTC (c22b80b) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-S2b2b `BA/Step1`（`baBootstrap'_holds`；登记 +3 owed，T2269c，§91 (3)）；D581 |
+| T2271 | 2026-10-06 08:46 UTC (ed29a8b) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-22 `Universality/UywKernel`；D582 |

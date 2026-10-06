@@ -159,7 +159,7 @@ def BABootstrap' (d : ℕ) : Prop :=
               STKboundgL (baFMz sz z') (Sizes.seqP (sz.withLam 0)) →
               STLKgL (baFMz sz z') (Sizes.seqP (sz.withLam 0)) s →
               STLocalMaxgL (baFMz sz z') (Sizes.seqP (sz.withLam 0)) s → STConStInd sz 𝔠d s t →
-              (∀ u : ℕ → ℝ, (∀ n, max (s n) (1 - c₁) ≤ u n) → (∀ n, u n ≤ t n) →
+              (∀ u : ℕ → ℝ, (∀ n, max (s n) (1 - c₁) ≤ u n) → (∀ n, u n ≤ max (t n) (1 - c₁)) →
                 (∀ C₀ : ℝ, 0 < C₀ → ∀ k : ℕ, 2 ≤ k →
                     BAConArgLoop'' sz z' (fun n => max (s n) (1 - c₁)) u k C₀) ∧
                   BAConArgVec sz z' (fun n => max (s n) (1 - c₁)) u) →
@@ -207,7 +207,7 @@ def baBoot_LI_stmt (d : ℕ) : Prop :=
       ∀ c₁ : ℝ, 0 < c₁ → c₁ ≤ 1 / 2 → BAWinBulk sz z c₁ κ →
         ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
           ∀ z' : ℕ → ℂ, BAFamZ sz z c₁ t z' →
-            (∀ u : ℕ → ℝ, (∀ n, max (s n) (1 - c₁) ≤ u n) → (∀ n, u n ≤ t n) →
+            (∀ u : ℕ → ℝ, (∀ n, max (s n) (1 - c₁) ≤ u n) → (∀ n, u n ≤ max (t n) (1 - c₁)) →
               ∀ C₀ : ℝ, 0 < C₀ → ∀ k : ℕ, 2 ≤ k →
                 BAConArgLoop'' sz z' (fun n => max (s n) (1 - c₁)) u k C₀) →
             ∀ C₀ : ℝ, 0 < C₀ → ∀ u : ℕ → ℝ, (∀ n, u n ∈ Set.Icc (s n) (t n)) → ∀ k : ℕ, 1 ≤ k →
