@@ -157,6 +157,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWAnpKey, -- `lem:Anp_key` (`7_8:960-985`): LW-12
    `RBM.Gauss.Sizes.LWAnpKeyGh, -- `lem:Anp_key_gh` (`7_8:1041-1077`): LW-12
    `RBM.Gauss.Sizes.LWAnp, -- `lem:Anp` (`7_8:933-939`): LW-12
+   `RBM.Graph.AnpDetGhStep, -- induction step of `lem:Anp_key_gh`, cases (I)-(IV) after the A2 replacement (`7_8:1110-1599`): LW-12b-f (T2234, DECISIONS §24)
    `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
    `RBM.Gauss.Sizes.LWReduceT, -- reduction of `lem: EWGn2_N` to `lem:LW_moment_exp`: LW-01
    -- T2067: the random premises of the LW pins (ST chain)
