@@ -328,6 +328,7 @@ import RBM3D.Graph.LWMomExp
 import RBM3D.Induction.QtNonzeroEnd
 import RBM3D.Induction.QBudgetB
 import RBM3D.Graph.BAVocab
+import RBM3D.Graph.LWMomExpFar
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
