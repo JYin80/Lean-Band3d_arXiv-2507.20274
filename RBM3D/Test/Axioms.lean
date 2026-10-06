@@ -239,7 +239,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STExpWardI, -- `6:104-107`, `6:121-131` Ward term, regime (i): S6-10; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIniI, -- `6:117`, `3_5:1649`, `3_5:1659` initial term, regime (i): S6-11; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntII, -- `6:97`, `6:142-147` integrated estimate, regime (ii): S6-12; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STExpWardII, -- `6:137-141` Ward term, regime (ii): S6-12; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Endpoints.decol, -- Thm 2.1 `1_2:357-370`: MA-03 `decol_of_locSC` + MA-04; MA-01 (T2210, DECISIONS §16, §20: owed)
    `RBM.Endpoints.locSC, -- Thm 2.2 `1_2:386-395`: MA-04 `MANetLoc` from MA-03; MA-01 (T2210, DECISIONS §16, §20: owed)
    `RBM.Endpoints.QUE, -- Thm 2.3 `1_2:406-420`: MA-05 `MAQUE`; MA-01 (T2210, DECISIONS §16, §20: owed)
