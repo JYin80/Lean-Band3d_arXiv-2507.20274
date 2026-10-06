@@ -146,7 +146,6 @@ def owedProps : List Name :=
    `RBM.BA.BAProp7, -- property 7 (`prop:BD2`) for `Θ_BA`: BA-P6 (T2197; T2161 b.2: owed)
    `RBM.BA.BAProp8, -- property 8 (`prop:ThfadC0`) for `Θ_BA`: BA-P7 (T2197; T2161 b.2: owed)
    `RBM.BA.BAProp5to8, -- the bundle of properties 5-8 for `Θ_BA` (its projections are the only theorems that assume it): BA-P8 (T2197; T2161 b.2: owed)
-   `RBM.BA.BAConArg', -- `lem_ConArg_BA` repaired (`7_8:1956-1987`, premise `κ ≤ Im m(E, g_s)`; Amend 1, DECISIONS §68): BA-S1 (T2197: owed)
    `RBM.BA.STLmaxgL, -- `(Eq:L-KGt2)` at a law `μ` over a flow carrier, hypothesis of the instance `inst_BAConArg'` and of `not_BAConArg_of_data`; owed like its band form `STLmax`: BA chain, BA-V2/BA-K4 (T2197)
    -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins, proved by LW-01..LW-14 (T2040 b.9)
    `RBM.Gauss.Sizes.LWterm, -- `lem:LWterm` (`3_5:385-404`): LW-01
@@ -390,6 +389,7 @@ not debts (nothing needs them): the closure of `lem:main_ind` goes through `ST_m
 other four, never in two (`#assert_rbm_axioms` checks the disjointness). -/
 def supersededProps : List Name :=
   [`RBM.Gauss.Sizes.STStep3,    -- Step 3, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep3I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
+   `RBM.BA.BAConArg',            -- `lem_ConArg_BA` in the `Φ_t` form (T2197 Amend 1): not refuted, not provable from its premises by the band route (T2237a, DECISIONS §81); its event-form successor `BAConArg''` is proved (`baConArg''_holds`, T2237)
    `RBM.Gauss.Sizes.STStep4,    -- Step 4, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep4I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep5,    -- Step 5, general `0 ≤ s < t < 1`: S5-29 cancelled (DECISIONS §68 (9)); the regime pins `STStep5I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep6,    -- Step 6, general `0 ≤ s < t ≤ t₀`: S6-13 cancelled (DECISIONS §68 (10)); still carried by `ST_step6R_of_any`; the regime pins `STStep6I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
