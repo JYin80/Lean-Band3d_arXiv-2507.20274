@@ -301,6 +301,7 @@ import RBM3D.Induction.NQEndFlowLift
 import RBM3D.Induction.ExpIntIQ
 import RBM3D.Universality.OUGenerator
 import RBM3D.Induction.IterationsB
+import RBM3D.Graph.LWExpTerm3
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

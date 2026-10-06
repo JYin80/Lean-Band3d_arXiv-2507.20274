@@ -155,6 +155,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWtermEXP, -- `lem:LWterm_EXP` (`6:83-88`): LW-14
    `RBM.Gauss.Sizes.LWCutExp, -- one cut of `(eq:EGC)` in expectation, `(eq:ELW_term)` (`B:10-13`), premise of `lwTermEXP_of_cut` (T2236): LW-14b
    `RBM.Gauss.Sizes.LWExpG5', -- `I₄₂`, `J₄₂` (`(eq;I42inG)`, `(eq;EGxy:x=y)`) with first kernel `S^{(B)}` or `K⁺` and last charge `±`, premise of `lwCutExp_of_terms` (T2243): LW-14c
+   `RBM.Gauss.Sizes.LWG5Expand, -- `(eq:sizeGammamu_E)`, `B:91-108`: the fixed list of packed graphs with `𝔼 𝒢_xy = Σ m^j 𝔼 Γ_μ` (`n_M ≤ 1`, `n_W ≥ 2`, attached, `ord ≥ 4·1_{x=y} + 5·1_{x≠y}`), premise of `lwExpG5'_of_expand` (T2255): LW-14e
    `RBM.Gauss.Sizes.LWMoment, -- `lem:LW_moment` (`7_8:72-77`): LW-02
    `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-02, LW-13
    `RBM.Gauss.Sizes.LWAnpKey, -- `lem:Anp_key` (`7_8:960-985`): LW-12
@@ -309,6 +310,7 @@ def structuralProps : List Name :=
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
    `RBM.Graph.LGraph.XBetween, -- `Γ` has a `×`-dotted edge between `u` and `v`: a defining predicate of normal graphs (`defnlvl0` (iii), `7_8:205`; T2050), hypothesis of the counting lemmas `lvl1_master`, `lvl1_k1`, `lvl1_k2` (T2128)
+   `RBM.Gauss.Sizes.LWAttached, -- every internal molecule of a packed graph is attached to two solid edges between different molecules (`B:84-86`): a data condition on the graph, hypothesis of `lwGraphPrec1` (T2255)
    `RBM.Graph.LGraph.IsExtMol, -- an external molecule: a molecule containing an external vertex (`def_poly`, `7_8:172`): a defining predicate of the auxiliary graph, hypothesis of the nested-form lemmas of `Graph/AuxGraph` (T2170)
    `RBM.Graph.lvl1Split, -- how the weight split of the dotted edge partition (`dot-def`) changes a list of solid edges: a relation that describes the objects, mentioned only by the `brecOn` that Lean generates for it (T2128)
    `RBM.Graph.lvl1Split.below, -- auxiliary predicate that Lean generates for the recursive inductive `lvl1Split` (T2128)
