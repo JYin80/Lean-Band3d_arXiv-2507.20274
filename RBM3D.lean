@@ -322,6 +322,7 @@ import RBM3D.BA.Step1Fam
 import RBM3D.Universality.Uyw
 import RBM3D.Induction.QBudgetA
 import RBM3D.Universality.OUInterfaceK
+import RBM3D.BA.Boundary
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
