@@ -121,12 +121,10 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STXiBoot, -- `(am;asoi222)` (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`: S3-18b, S3-22; hypothesis of `iterationsA_step` (T2087)
-   `RBM.Gauss.Sizes.STXiBoot', -- `(am;asoi222)` at `B_s` (DECISIONS §80): S3-18b, S3-22; hypothesis of `STIterR'`
+   `RBM.Gauss.Sizes.STXiBoot', -- `(am;asoi222)` at `B_s` (DECISIONS §80): S3-18b, S3-22; hypothesis of `STIterR'`; hypothesis of `iterationsB_step` (T2259)
    `RBM.Gauss.Sizes.STOeqQt', -- `lem:STOeq_Qt`, R2* (DECISIONS §80): S3-18b
    `RBM.Gauss.Sizes.STOeqQtNZ', -- `lem:STOeq_Qt_nonzero`, R2* (DECISIONS §80): S3-22
-   `RBM.Gauss.Sizes.STIterR', -- generic setting of `lem:iterations` over `STXiBoot'` (DECISIONS §80): S3-24b
-   `RBM.Gauss.Sizes.STIterations', -- `lem:iterations`, case (i), R2* (DECISIONS §80): S3-24b
-   `RBM.Gauss.Sizes.STIterationsII', -- `lem:iterations`, case (ii), R2* (DECISIONS §80): S3-24b
+   `RBM.Gauss.Sizes.STIterR', -- generic setting of `lem:iterations` over `STXiBoot'` (DECISIONS §80); proved at both regimes by T2259 (`stIterations'_holds`, `stIterationsII'_holds`); no generic proof
    `RBM.Gauss.Sizes.STAvgU, -- `(Gt_avgbound_flow)` uniform in `u ∈ [s,t]` (`1_2:1344`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `iterationsA_avg_of_STAvgU` (T2087)
    `RBM.Gauss.Sizes.STLocalEntryU, -- `(Gt_bound_flow)` uniform in `u ∈ [s,t]` (`1_2:1342`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `lemDecCalEPrec_gij`, `lemDecCalEPrec_perTime_bounds` (T2193, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2DecayPT, -- `(Eq:Gdecay_w)` per time (`1_2:1349-1351`): hypothesis of `stNetLift2_part1`/`step2NetLift`; proved by the Step 2 chain ST2-04 (T2074, DECISIONS §20 rule: owed)
