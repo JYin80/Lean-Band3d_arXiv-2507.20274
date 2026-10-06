@@ -304,6 +304,7 @@ import RBM3D.Induction.IterationsB
 import RBM3D.Graph.LWExpTerm3
 import RBM3D.Graph.AnpKey4
 import RBM3D.Induction.QDriftB
+import RBM3D.BA.Step1Setup
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
