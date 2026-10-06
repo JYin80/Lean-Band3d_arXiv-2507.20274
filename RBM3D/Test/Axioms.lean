@@ -358,6 +358,7 @@ def structuralProps : List Name :=
    `RBM.Endpoints.qd2Bad, -- the bad event of `(eq:diffu2)` in `QDiff` (MA-01, `Endpoints.lean:148`); hypothesis of the deterministic cover lemma `qd2Bad_net` (MA-04, T2230, DECISIONS §20: structural)
    `RBM.BA.BAWinBulk, -- the window `[√(1 - c₁) g₀, g₀]` lies in the `κ`-bulk of the block Anderson flow (BA-D8, `CouplingWindow.lean:799`); a predicate on the data, hypothesis of `BAFamZ_im_m_ge`, `BATrivialLmax` (BA-S2a, T2238, DECISIONS §20, T2205 portmap P.2: structural)
    `RBM.BA.FlowFM.EvEq, -- two flow carriers agree for large `n` (T2277, BA-S3, portmap P.2: structural)
+   `RBM.Adj, -- the nearest-neighbour relation `a ∼ b` of `(eq:variancematrix)` on `Z_L^d` (`Defs/Lattice.lean:108`, `zdistD (a - b) = 1`): a predicate on the lattice data, hypothesis of `BAzdist_adj_lip` and `BAMB_lower_small` (BA-D4, T2290, DECISIONS §20: structural)
    `RBM.Univ.queWindow] -- the energy window `𝓘_E(ε₀) = {x : |x - E| ≤ W^{-ε₀} (ilambda W^{d/2}/N)}` of `(eq:defIE)` (`1_2:409`): a condition on the eigenvalue `x`, hypothesis of the deterministic inclusions `queBad_sub`, `que2Bad_sub` (MA-05a, T2240, DECISIONS §20: structural)
 
 /-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
