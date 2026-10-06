@@ -194,7 +194,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNGUELocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNTrLocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNClaim417, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNApriori, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOUDiag, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNJak, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
