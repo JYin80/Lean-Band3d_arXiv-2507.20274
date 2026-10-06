@@ -292,6 +292,7 @@ import RBM3D.BA.ConArg
 import RBM3D.Induction.NQEndFlow
 import RBM3D.Universality.JakSpectral
 import RBM3D.Induction.QopDecay
+import RBM3D.Induction.QDriftA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
