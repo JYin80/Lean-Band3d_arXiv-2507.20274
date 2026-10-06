@@ -319,6 +319,7 @@ import RBM3D.Universality.ZeroModeProfile
 import RBM3D.Induction.QtNonzero
 import RBM3D.Universality.GUEPhase.EntryDet
 import RBM3D.BA.Step1Fam
+import RBM3D.Universality.Uyw
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
