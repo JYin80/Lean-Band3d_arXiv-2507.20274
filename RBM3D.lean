@@ -307,6 +307,7 @@ import RBM3D.Induction.QDriftB
 import RBM3D.BA.Step1Setup
 import RBM3D.Universality.EMCTE2
 import RBM3D.Graph.AnpKey5
+import RBM3D.Universality.JakKernel
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
