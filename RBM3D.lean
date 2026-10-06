@@ -287,6 +287,7 @@ import RBM3D.Universality.GUELocalBootstrap
 import RBM3D.Graph.AnpKey2
 import RBM3D.Universality.OUHessian
 import RBM3D.Main.QUEFromQDiff
+import RBM3D.Graph.LWExpTerm2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
