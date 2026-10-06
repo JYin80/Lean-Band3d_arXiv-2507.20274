@@ -335,6 +335,7 @@ import RBM3D.Universality.GUEPhase.EntryTail
 import RBM3D.Induction.QtNonzeroFlow
 import RBM3D.BA.GreenSchur
 import RBM3D.Graph.BAExpand
+import RBM3D.Universality.GUEPhase.EntryTailMain
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

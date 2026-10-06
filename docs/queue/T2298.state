@@ -1,0 +1,4 @@
+state: audit-pass
+reason: auditor claude-opus-5-5 PASS; merging
+updated: Tue Oct  6 13:51:10 UTC 2026
+reports: docs/reports/T2298-prove.md, docs/reports/T2298-audit.md
