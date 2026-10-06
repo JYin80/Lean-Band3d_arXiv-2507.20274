@@ -284,6 +284,7 @@ import RBM3D.BA.UNPins
 import RBM3D.Main.QUECore
 import RBM3D.Induction.MainIndRegimes
 import RBM3D.Universality.GUELocalBootstrap
+import RBM3D.Graph.AnpKey2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

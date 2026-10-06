@@ -162,6 +162,9 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWAnpKeyGh, -- `lem:Anp_key_gh` (`7_8:1041-1077`): LW-12
    `RBM.Gauss.Sizes.LWAnp, -- `lem:Anp` (`7_8:933-939`): LW-12
    `RBM.Graph.AnpDetGhStep, -- induction step of `lem:Anp_key_gh`, cases (I)-(IV) after the A2 replacement (`7_8:1110-1599`): LW-12b-f (T2234, DECISIONS §24)
+   `RBM.Graph.AnpDetGhCaseI, -- cases (I)+(II) of the induction step of `lem:Anp_key_gh` (`7_8:1152-1244`): LW-12c (T2242, DECISIONS §24, §74)
+   `RBM.Graph.AnpDetGhCaseIII, -- case (III) of the induction step of `lem:Anp_key_gh` (`7_8:1245-1384`): LW-12d (T2242, DECISIONS §24, §74)
+   `RBM.Graph.AnpDetGhCaseIV, -- case (IV) of the induction step of `lem:Anp_key_gh` (`7_8:1385-1599`): LW-12e/f (T2242, DECISIONS §24, §74)
    `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
    `RBM.Gauss.Sizes.LWReduceT, -- reduction of `lem: EWGn2_N` to `lem:LW_moment_exp`: LW-01
    -- T2067: the random premises of the LW pins (ST chain)
@@ -293,6 +296,11 @@ def structuralProps : List Name :=
    `RBM.Graph.NGraph.IsNested, -- properties (1)-(3) of a nested graph (`7_8:956`): a data condition on the graph (T2050; registered by T2067)
    `RBM.Graph.NGraph.NoGhost, -- no ghost edge: a data condition on the graph (T2050; registered by T2067)
    `RBM.Graph.NGraph.GhostOK, -- at most one ghost edge per path, an ending edge: a data condition on the graph (T2050; registered by T2067)
+   `RBM.Graph.NGraph.EndAt, -- the ending edge `k` of the path `𝔓_j` at its end `s` is attached to `α_i` (`7_8:1123-1125`): a defining predicate of the ending-edge types, hypothesis of `anpKey2_endAt_ends` and the type lemmas of `Graph/AnpKey2` (T2242)
+   `RBM.Graph.NGraph.IsA1, -- ending edge of type A1 on `𝐃_π` (`7_8:1127`): a defining predicate of the case split, hypothesis of `anpKey2_caseI_ne` (T2242)
+   `RBM.Graph.NGraph.IsA2, -- ending edge of type A2 on `𝐃_π` (`7_8:1130`): a defining predicate of the A2 replacement, hypothesis of `anpKey2_A2_factor`, `anpKey2_A2_val` (T2242)
+   `RBM.Graph.NGraph.IsB1, -- ending edge of type B1 (`7_8:1134`): a defining predicate of the case split, hypothesis of `anpKey2_caseI_ne` (T2242)
+   `RBM.Graph.NGraph.NoA2, -- `(eq:noA2)` (`7_8:1146`), no A2 edge on `𝐃_π`: a data condition on the graph, hypothesis of `anpDetGhReg_of_noA2` and of the case pins (T2242)
    `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
