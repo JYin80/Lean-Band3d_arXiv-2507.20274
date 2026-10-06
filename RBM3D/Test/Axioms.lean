@@ -44,6 +44,11 @@ false -- by a compiled theorem or by the argument of a named supervisor verdict 
 successor.  A refuted pin is not a debt (nobody can prove it) and not a borrowing; its definition stays in the
 library (CLAUDE.md §5.3) and a theorem carrying it is vacuously true, so it is reported and classified but kept
 out of the two ledgers, and `#assert_rbm_axioms` fails if a refuted name is also in one of the other three lists.
+
+A fourth class is **superseded, not needed** (`supersededProps`, DECISIONS §66 (2) class, §68 (9), §73 (4), §76 (3)): pins
+that nothing the closure needs consumes any more (the generic Steps 3-6, the unprimed Step-6 ingredients of regime (i)); their
+definitions stay (CLAUDE.md §5.3), they are neither borrowed nor owed, and `#assert_rbm_axioms` fails if a superseded name is
+also in one of the other four lists.
 -/
 
 namespace RBM.Audit
@@ -106,14 +111,12 @@ def owedProps : List Name :=
    `RBM.Green.AsGMcPT,              -- `(asGMc)` per time: from (`Gtmwc`) of Step 1, RBM2D `Path/GoodSet.lean:439` `goodSet_asGMc` (T2028, §20 rule)
    `RBM.Gauss.Sizes.STLmaxU, -- `(Eq:LGxb)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 4
    `RBM.Gauss.Sizes.STLKU, -- `(Eq:L-KGt-flow)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 3 (not in the §25 list; owed, T2049 proposal)
-   `RBM.Gauss.Sizes.STStep3R, -- Step 3 per regime `R` (generic form): assembly S3-27 (not in the §25 list; owed, T2049 proposal)
-   `RBM.Gauss.Sizes.STStep4R, -- Step 4 per regime `R` (generic form): assembly S3-27 (not in the §25 list; owed, T2049 proposal)
-   `RBM.Gauss.Sizes.STStep3, -- Step 3, any regime: assembly S3-27 (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep3I, -- Step 3, case (i): assembly S3-27 (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep3II, -- Step 3, case (ii): assembly S3-27 (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep4, -- Step 4, any regime: assembly S3-27 (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep4I, -- Step 4, case (i): assembly S3-27 (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep4II, -- Step 4, case (ii): assembly S3-27 (T2049 proposal)
+   `RBM.Gauss.Sizes.STStep3R, -- Step 3 per regime `R` (generic form): consumer `ST_mainIndR_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (not in the §25 list; owed, T2049 proposal)
+   `RBM.Gauss.Sizes.STStep4R, -- Step 4 per regime `R` (generic form): consumer `ST_mainIndR_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (not in the §25 list; owed, T2049 proposal)
+   `RBM.Gauss.Sizes.STStep3I, -- Step 3, case (i): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
+   `RBM.Gauss.Sizes.STStep3II, -- Step 3, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
+   `RBM.Gauss.Sizes.STStep4I, -- Step 4, case (i): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
+   `RBM.Gauss.Sizes.STStep4II, -- Step 4, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
@@ -181,9 +184,8 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
    `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
-   `RBM.Gauss.Sizes.STStep5I, -- `lem:main_ind` Step 5, case (i) `3_5:1939`: S5-02; S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STStep5II, -- Step 5, case (ii): S5-02; S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STStep5, -- Step 5, general `0 ≤ s < t < 1`: assembly S5-29; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STStep5I, -- `lem:main_ind` Step 5, case (i) `3_5:1939`: consumer `ST_mainIndR_*_of_steps` (T2245), producer S5-02; S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STStep5II, -- Step 5, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245), producer S5-02; S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STDuhamelI, -- integrated hierarchy `(iois-mtx2)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STDuhamelII, -- integrated hierarchy with `Q^{(1)}`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
@@ -240,13 +242,10 @@ def owedProps : List Name :=
    `RBM.Univ.UNNormBARow, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, `‖V‖ + λ‖Ψ‖`)
    `RBM.BA.BAEnd_QUEL, -- `(Meq:QUE)`, `(Meq:QUE2)` for block Anderson, `MR:decol_BA` third bullet `1_2:655` (T2241, BA-C1b: owed; owner BA-M3)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
-   `RBM.Gauss.Sizes.STExp2U, -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: S6-13, through `STStep6`; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6I, -- `6:97` regime (i) pin: S6-02 skeleton; ingredients S6-03...S6-07, S6-09...S6-11; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6II, -- `6:97` regime (ii) pin: S6-02; S6-12; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6III, -- `6:94-96` regime (iii) pin: S6-02; S6-08; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6, -- `6:93-97` general Step-6 pin: S6-13, after REQ-2026-10-05-1746; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STExpIntI, -- superseded, not needed (DECISIONS §68 (9), §73 (4)): successor STExpIntI' (S6-09) / STExpIniI' (proved, T2223); consumer ST_step6_caseI_of_pins'' (T2239)
-   `RBM.Gauss.Sizes.STExpIniI, -- superseded, not needed (DECISIONS §68 (9), §73 (4)): successor STExpIntI' (S6-09) / STExpIniI' (proved, T2223); consumer ST_step6_caseI_of_pins'' (T2239)
+   `RBM.Gauss.Sizes.STExp2U, -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
+   `RBM.Gauss.Sizes.STStep6I, -- `6:97` regime (i) pin: consumer `ST_mainIndR_*_of_steps` (T2245); S6-02 skeleton; ingredients S6-03...S6-07, S6-09...S6-11; S6-01 (T2204, DECISIONS §67: owed)
+   `RBM.Gauss.Sizes.STStep6II, -- `6:97` regime (ii) pin: consumer `ST_mainIndR_*_of_steps` (T2245); S6-02; S6-12; S6-01 (T2204, DECISIONS §67: owed)
+   `RBM.Gauss.Sizes.STStep6III, -- `6:94-96` regime (iii) pin: consumer `ST_mainIndR_*_of_steps` (T2245); S6-02; S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntI', -- `6:97`, `6:104-132` integrated estimate, regime (i), primed (premise `STExpWardIConcl'`; DECISIONS §73 (3)): S6-09b; S6-09a (T2239, DECISIONS §20: owed)
    `RBM.Endpoints.decol, -- Thm 2.1 `1_2:357-370`: MA-03 `decol_of_locSC` + MA-04; MA-01 (T2210, DECISIONS §16, §20: owed)
    `RBM.Endpoints.locSC, -- Thm 2.2 `1_2:386-395`: MA-04 `MANetLoc` from MA-03; MA-01 (T2210, DECISIONS §16, §20: owed)
@@ -325,6 +324,8 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STRegSeq, -- a two-stage regime cut at an intermediate time; S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STIngR6, -- the shape of the Step-6 regime pins (`1_2:1281`, `1295-1297`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STStep6R, -- the Step-6 pin at one regime; S6-01 (T2204, DECISIONS §67: structural)
+   `RBM.Gauss.Sizes.STStep5R, -- the Step-5 pin at one regime `R` (`STIngR5` with `STStep5Concl`), the hypothesis of the generic step `ST_mainIndR_of_steps` (T2245, DECISIONS §68 (7), §20: structural, as `STStep6R`)
+   `RBM.Gauss.Sizes.STMainIndR, -- `lem:main_ind` under a regime `R` of the time sequences (supervisor 1806 Q2 "The fix"); T2245, DECISIONS §68 (7), §20: structural, as `STStep6R`
    `RBM.Gauss.Sizes.STStep6Concl, -- the Step-6 conclusion (`Eq:Gtlp_exp_flow` on the window); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpAvgAt, -- averaged improved bound at a time (`6:12-17`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpAvgU, -- averaged improved bound uniformly in u (`6:14-16`); S6-01 (T2204, DECISIONS §67: structural)
@@ -367,6 +368,20 @@ def refutedProps : List Name :=
    `RBM.Univ.UNTrLocalInit, -- false for the band model at every admissible sequence: argued, supervisor 2026-10-05-1955 B1 (T2208b; not compiled); successor `UNTrLocalInit'`
    `RBM.Univ.UNStep1GoodC', -- false: `not_UNStep1GoodC'_of_diag` (T2213; on a diagonal model meeting its hypotheses), argued in general, supervisor 2026-10-05-1955 B1 (T2208a); successor `UNStep1GoodC''` (proved: `step1GoodC''`)
    `RBM.Univ.UNCoreC']      -- superseded, not shown false: its hypothesis `UNTrLocalInit` fails for the band model (supervisor 2026-10-05-1955 B1-B2); successor `UNCoreC''`
+
+/-- **Superseded, not needed** (DECISIONS §66 (2) class, §68 (9), §73 (4), §76 (3)): definitions kept (CLAUDE.md §5.3),
+consumed by nothing that the closure needs; **neither borrowed nor owed**.  They are not false (as `refutedProps`) and
+not debts (nothing needs them): the closure of `lem:main_ind` goes through `ST_mainIndR_*_of_steps` and
+`ST_mainInd_of_regimes` (T2245), which consume the regime pins `STStep3I/II`, `STStep4I/II`, `STStep5I/II`,
+`STStep6I/II/III`, and through the primed successors of the Step-6 ingredients; a name is in this list or in the
+other four, never in two (`#assert_rbm_axioms` checks the disjointness). -/
+def supersededProps : List Name :=
+  [`RBM.Gauss.Sizes.STStep3,    -- Step 3, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep3I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
+   `RBM.Gauss.Sizes.STStep4,    -- Step 4, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep4I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
+   `RBM.Gauss.Sizes.STStep5,    -- Step 5, general `0 ≤ s < t < 1`: S5-29 cancelled (DECISIONS §68 (9)); the regime pins `STStep5I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
+   `RBM.Gauss.Sizes.STStep6,    -- Step 6, general `0 ≤ s < t ≤ t₀`: S6-13 cancelled (DECISIONS §68 (10)); still carried by `ST_step6R_of_any`; the regime pins `STStep6I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
+   `RBM.Gauss.Sizes.STExpIniI,  -- initial term of regime (i), unprimed: successor `STExpIniI'` (proved, T2223); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
+   `RBM.Gauss.Sizes.STExpIntI]  -- integrated estimate of regime (i), unprimed: successor `STExpIntI'` (S6-09b); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
@@ -499,20 +514,28 @@ elab "#assert_rbm_axioms" : command => do
   -- the premises, found rather than declared
   let found := scanPremises env (fun n => (`RBM.Audit).isPrefixOf n)
     (fun n => certificates.any fun (_, c) => c == n)
-  let classified := borrowedProps ++ owedProps ++ structuralProps ++ refutedProps
+  let classified := borrowedProps ++ owedProps ++ structuralProps ++ refutedProps ++ supersededProps
   -- a refuted premise must not also be borrowed, owed or structural
   let revived := refutedProps.filter fun n => (borrowedProps ++ owedProps ++ structuralProps).contains n
   unless revived.isEmpty do
     throwError m!"axiom audit: {revived.length} refuted premise(s) are also in `borrowedProps`, \
       `owedProps` or `structuralProps`: {revived}\n\
       A refuted pin is in `refutedProps` only (DECISIONS §66 (2)); never put it back into a ledger."
+  -- a superseded premise must not also be borrowed, owed, structural or refuted
+  let resurrected := supersededProps.filter fun n =>
+    (borrowedProps ++ owedProps ++ structuralProps ++ refutedProps).contains n
+  unless resurrected.isEmpty do
+    throwError m!"axiom audit: {resurrected.length} superseded premise(s) are also in `borrowedProps`, \
+      `owedProps`, `structuralProps` or `refutedProps`: {resurrected}\n\
+      A superseded pin is in `supersededProps` only (DECISIONS §76 (3)); never put it back into a ledger."
   let unregistered := found.filter fun n => !classified.contains n
   unless unregistered.isEmpty do
     throwError m!"axiom audit: {unregistered.size} premise(s) that no theorem of this \
       development proves are in none of `borrowedProps`, `owedProps`, \
-      `structuralProps`, `refutedProps`:\n  {unregistered.toList}\n\
+      `structuralProps`, `refutedProps`, `supersededProps`:\n  {unregistered.toList}\n\
       Classify each of them: borrowed from the literature, owed by this formalization, \
-      a predicate that defines the objects under study, or refuted (shown false and superseded)."
+      a predicate that defines the objects under study, refuted (shown false and superseded), or superseded \
+      (not needed)."
   -- how much of the development rests on each premise
   -- a Prop's own projections (`P.f`, …) mention it but rest on nothing
   let isInterfaceOwn (n : Name) : Bool := interfaceProps.any fun p => p.isPrefixOf n
@@ -543,15 +566,17 @@ elab "#assert_rbm_axioms" : command => do
   let foundOwed := found.filter (owedProps.contains ·)
   let foundStructural := found.filter (structuralProps.contains ·)
   let foundRefuted := found.filter (refutedProps.contains ·)
+  let foundSuperseded := found.filter (supersededProps.contains ·)
   let unused := classified.filter fun n => !found.contains n
   let registryLine :=
     if unused.isEmpty then
       m!"registry: {borrowedProps.length} borrowed + {owedProps.length} owed + \
-        {structuralProps.length} structural + {refutedProps.length} refuted, every one of them \
+        {structuralProps.length} structural + {refutedProps.length} refuted + {supersededProps.length} superseded, \
+        every one of them \
         carrying something"
     else
       m!"registry: {borrowedProps.length} borrowed + {owedProps.length} owed + \
-        {structuralProps.length} structural + {refutedProps.length} refuted; {unused.length} \
+        {structuralProps.length} structural + {refutedProps.length} refuted + {supersededProps.length} superseded; {unused.length} \
         registered premise(s) carry nothing yet: {unused}"
   let carriedLine :=
     if carried = 0 then
@@ -564,7 +589,7 @@ elab "#assert_rbm_axioms" : command => do
     All within {allowedAxioms}; {axiomLine}.\n\
     {carriedLine}\n\
     premises found by scanning: {found.size} (borrowed {foundBorrowed.size}, \
-    owed {foundOwed.size}, structural {foundStructural.size}, refuted {foundRefuted.size}).\n\
+    owed {foundOwed.size}, structural {foundStructural.size}, refuted {foundRefuted.size}, superseded {foundSuperseded.size}).\n\
     {registryLine}.\n\
     non-vacuity certificates: {certificates.length} of \
     {borrowedProps.length + owedProps.length} premises in the two ledgers; the rest are \
@@ -580,7 +605,7 @@ elab "#assert_rbm_audit_detects " p:ident : command => do
   let n := p.getId
   let found := scanPremises env (fun _ => false)
     (fun n => certificates.any fun (_, c) => c == n)
-  let classified := borrowedProps ++ owedProps ++ structuralProps ++ refutedProps
+  let classified := borrowedProps ++ owedProps ++ structuralProps ++ refutedProps ++ supersededProps
   let unregistered := found.filter fun m => !classified.contains m
   unless unregistered.contains n do
     throwError m!"audit reverse test: the scan did not report `{n}` as an unclassified \
