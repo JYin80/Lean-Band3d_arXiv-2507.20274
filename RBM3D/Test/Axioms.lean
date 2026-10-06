@@ -136,6 +136,15 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
+   -- T2197 (BA-C1a, DECISIONS §20): the block Anderson chain pins over a law (`RBM3D/BA/FlowPins.lean`)
+   `RBM.BA.BAProp5, -- `lem_propTH` property 5 (`prop:ThfadC`) for `Θ_BA`: BA-P5 (T2197; T2161 b.2: owed)
+   `RBM.BA.BAProp5s, -- property 5, short form (`prop:ThfadC_short`) for `Θ_BA`: BA-P1 (T2197; T2161 b.2: owed)
+   `RBM.BA.BAProp6, -- property 6 (`prop:BD1`) for `Θ_BA`: BA-P6 (T2197; T2161 b.2: owed)
+   `RBM.BA.BAProp7, -- property 7 (`prop:BD2`) for `Θ_BA`: BA-P6 (T2197; T2161 b.2: owed)
+   `RBM.BA.BAProp8, -- property 8 (`prop:ThfadC0`) for `Θ_BA`: BA-P7 (T2197; T2161 b.2: owed)
+   `RBM.BA.BAProp5to8, -- the bundle of properties 5-8 for `Θ_BA` (its projections are the only theorems that assume it): BA-P8 (T2197; T2161 b.2: owed)
+   `RBM.BA.BAConArg', -- `lem_ConArg_BA` repaired (`7_8:1956-1987`, premise `κ ≤ Im m(E, g_s)`; Amend 1, DECISIONS §68): BA-S1 (T2197: owed)
+   `RBM.BA.STLmaxgL, -- `(Eq:L-KGt2)` at a law `μ` over a flow carrier, hypothesis of the instance `inst_BAConArg'` and of `not_BAConArg_of_data`; owed like its band form `STLmax`: BA chain, BA-V2/BA-K4 (T2197)
    -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins, proved by LW-01..LW-14 (T2040 b.9)
    `RBM.Gauss.Sizes.LWterm, -- `lem:LWterm` (`3_5:385-404`): LW-01
    `RBM.Gauss.Sizes.LWtermB, -- `lem:LWterm`, "in particular" (`3_5:393-397`): LW-01
