@@ -458,3 +458,43 @@
 - **S5-11**：起草估计全票 1900–2400 行（> 1500，§9），拆成 **S5-11a = T2221**（`Induction/PfStep5Grid`：水平 `D_u`、矩阵 `J♯`、(eq:def_TTT) 的网格停时下标、网格分解的确定性 Duhamel 形式；不登记、不提升）与 **S5-11b**（`Induction/PfStep5`：概率、停时、`PrecPT → Prec` 提升（只提升 `STLK2 ≤ N^τ T_{u,D}`，右端确定且有 `W^{-D}` 下限，合 §64 (4)）、`STIngR5` 组装、删 `STPfStep5` 的登记行；等 T2221）。远段指数取 `D₂ = 2D* + C_Y + 2d/𝔠 + 3d + 1`（`4YL^dρ³W^{-D₂} ≤ W^{-2D*}`）。ST-4 计划 34 → 35。
 - **S6-11（T2223，T2223a）**：合并的 `STExpIniIConcl`（`Step6Pins.lean:463`）第二部分对任意磨光常数 `c`（含 `c ≤ 0`）量化，论文工具（lem_+Q、sum_res_2）只在 `c > 0` 时可用。票给两条路：A（主撇后继 `STExpIniI'` 加 `0 < C → 0 < c`、新文件里主撇消费者 `ST_step6_caseI_of_pins'`；消费者只造正常数）；B（证合并的 `STExpIniI`、删登记行）。1a 预检定路线；走 A 时总调度写 REQ 请监督核。**`STExpIntQConcl`（S6-09）、`STExpWardIConcl`（S6-10）有同样的量词**：写这两张票前先看 T2223 预检结论。
 - **S6-06（T2222）**：格点和已由 `RBM.Loop.KDecay_sum_tailT_le`（`Induction/KDecay.lean:1241`）给出，期望一步走 RBM2D 的一阶矩引理（不需可测性或下限）；`momentDomAt_of_stochDomAt` 路线作备选。估计降到约 900 行。
+
+## §72 BA 范围 HOLD 解除；T2197 Amend 2；BA 事件形式重钉（总调度，2026-10-05 22:54 UTC，流程事项；依据监督 `2026-10-05-2252.md`，PASS）
+- (1) 监督 1806 §1.4–§1.6 的范围 HOLD 全部解除。Amend 1 的 `BAConArg'` 与 BA-D3 编译用的钉文逐字一致；`s ≥ 1 − c₁` 是消费者（`BAStep1_of_parts`）的条件，不是钉文的。
+- (2) **T2197 Amend 2**（`docs/tickets/T2197-amend-2.md`）：实例 `inst_BAConArg'` 取 `s ≡ t`（一般引理 `BAConArg'_premise_diag`）；额外目标 (b) 改为条件形式 `not_BAConArg_of_data`（> 150 行就删）；推迟 `BAGbEXP*`（不登记）。T2197 随 Amend 1、2 重新放行。`s < t` 的 ConArg 实例（`sz0_conArg_bulk`）进 BA-S3 的移植单；BA-S3 另加 `BALmaxFromLK_holds` 的具体实例（审核 O1）。
+- (3) BA-D8、BA-S1、BA-S2a、BA-S3 可写；BA-S1 的依赖去掉 BA-G6、BA-K4（预检确认）；BA-V2a/b 只等依赖，票里写出 `κ/2` 一步（`BAWinBulk_of_dom`，审核 O5）。
+- (4) **T2205e 不是 HOLD**：全局 `BAGbEXP` 不假（事件形式的推论），但带状镜像路线上无消费者。写 BA-G3…G6、S2b、T2、U5 中第一张之前，在那张票（或 BA-G6）里钉 BA 事件形式 `BAGbEXPii/ij/av`（`STGbEXP*` 加载体上的 `STindMax`、律 `Sizes.seqP (sz.withLam 0)`）；BA 计数不变（66）。
+- (5) D539 照监督 O2 补一句：论文的全局形式是对的，事件形式是连续性论证在形式化里的要求。
+
+## §73 S6-12 拆 a/b；Step 6 区域 (i) 磨光常数照监督 2347 定（总调度，2026-10-05 23:57 UTC，流程事项；依据 `docs/supervisor/2026-10-05-2347.md`，PASS）
+- (1) **S6-12** 估计 1550 行（> 1500），拆成 **S6-12a = T2229**（`Induction/ExpWardII`，证 `STExpWardII`；合并的 `stWardII_identity` `WardII.lean:143` 可用）与 **S6-12b**（`Induction/ExpIntII`，证 `STExpIntII`，prover-max，约 850 行，可与 a 并行）。ST-5 计划 15 → 16。
+- (2) **S6-10** 证主撇后继 `STExpWardI'`（`STExpWardIConcl'` = 原文在 `∀ (C c : ℝ)` 后加 `0 < C → 0 < c →`）；可选变体：先证无符号 `STExpWardI`、一行推出 `STExpWardI'`——只在 1a 预检确认尺寸引理（`‖ϑ_u‖_∞ ≤ C(e^{|c|d/2} + 2/d) ℓ_u^{-d}`）≤ 100 行、其余证明不用 `c` 时取。
+- (3) **S6-09** 证 `STExpIntI'`（前提用 **`STExpWardIConcl'`**，结论第二部分 `STExpIntQConcl'`），并写消费者 `ST_step6_caseI_of_pins''`（只改 `hward`、`hint.2` 两处应用）与 `inst_skeleton6I''`；S6-09 等 S6-10、S6-07。两张都并行时，后合并的那张放消费者。检查文件里放主撇定义；S6-09 的检查加消费者比对（监督 O2）。主撇实例给正常数族（`∃ C c > 0, ϑ`）。
+- (4) `ST_step6_caseI_of_pins''` 合并后，无符号 `STExpIniI`、`STExpIntI`、`STExpWardI` 移到「被取代、不需要」（§68 (9)），不进 refuted；`STExpIntQConcl'`、`STExpWardIConcl'` 登记 structural（同 `STExpIniIConcl'`）。在此之前 `STExpIniI` 仍 owed。
+- (5) S6-07（T2228）、S6-12 不受影响（无磨光量词）。
+
+## §74 LW-12（`lem:Anp`）拆 6 张（总调度，2026-10-06 00:18 UTC，流程事项；照 §24「写票时再拆成 5–8 张，总数仍按原计划计」）
+- **LW-12a = T2234**（`Graph/AnpKey`：`(adsuu22)` 的确定性钉文 `AnpDetGh`、`q = 0` 基例、归纳组装、`≺` 提升 `AnpDetGh → LWAnpKeyGh`、化归 `LWAnpKeyGh → LWAnpKey → LWAnp`；新 owed 行 `AnpDetGhStep`、`AnpDetGh`）；**LW-12b**（`AnpKey2`：区域、末边类型 A1/A2/B1/B2、定点）；**LW-12c/d/e**（`AnpKey3/4/5`：情形 (I)+(II)、(III)、(IV) 前半；b 之后可并行）；**LW-12f**（`AnpKey6`：(IV) 后半、归纳步、删 `LWAnp*` 的登记行）。每张 1000–1500 行，共约 7.5k。LW 计划 38 不变（§24 已按 5–8 张计）。
+- 确定性钉文由起草者写成，只假设 ψ 正且不增；若情形 (I)–(IV) 还要 `(eq:Psi)`，LW-12a 预检加成主撇后继，再写 LW-12b。
+- LW-14 不要 `lem:Anp`（`B:84-89` 用 Cauchy–Schwarz），依赖已齐，可与 LW-12 并行。
+
+## §75 LW-14 拆 a/b/c（总调度，2026-10-06 00:44 UTC，流程事项）
+- LW-14 照 T2040 的中值约 2524 行，拆三张：**LW-14a = T2236**（`Graph/LWExpTerm`：化归 `LWE → LWcut`、圈层项 I₁、I₄₁；新 owed 行 `LWCutExp`、`LWExpG5`）；**LW-14b**（`LWExpTerm2`：GG 展开、∂ 分拆 I₄ = I₄₁ + I₄₂、I₂、I₃、J₁–J₄、组装 `LWExpG5 → LWCutExp`；预检定 `η_t^{-1} ≤ C(1−t)^{-1}` 的归一与 J₄ 是否要主撇 `LWExpG5'`）；**LW-14c**（`LWExpTerm3`：图展开证 I₄₂、删 `LWtermEXP` 登记行）。T2040 计 2.5 张，现 3 张：LW 计划 38 → 39。
+- T2236a（候选）：I₁、I₄₁ 用 `(res_ELK_n=1)`，合并钉文与引理陈述都没列；单时刻可由 `LWAvgLaw` 经 `stImproveExpAver_holds` 得，钉文仍可证。
+
+## §76 S6-09 拆 a/b；「被取代」登记暂缓（总调度，2026-10-06 01:22 UTC，流程事项）
+- (1) **S6-09** 估计 1700–1900 行，拆成 **S6-09a = T2239**（`Induction/ExpIntI`：定义 `STExpIntQConcl'`、`STExpIntI'`；σ₁=σ₂ 一半、区域 (i) 核界、积分组装；消费者 `ST_step6_caseI_of_pins''`（`hInt : STExpIntI' d` 作前提）、`ST_step6I_of_LW_Int`、`inst_skeleton6I''`）与 **S6-09b**（`Induction/ExpIntIQ`：𝒬 一半、`stExpIntI'_holds`、`inst_expIntI'`、`stStep6I_of_LW`）。ST-5 计划 16 → 17。
+- (2) **T2239a**（起草者疑点，列为 T2239 预检必查项）：`(sum_res_2)` 要整个 𝒬 源（含 `(𝒫f)∂ϑ`）快速衰减，而 `STMollifierProps` 的导数条款只给 `∂ϑ` 的大小、不给衰减，`STExpIntQConcl'` 对一切这样的 ϑ 量化。预检确认则 S6-09b 写之前先发 REQ 给监督。
+- (3) `Test/Axioms.lean` 没有「被取代、不需要」的列表（§68 (9) 的类），`STStep3/4/5/6` 等仍在 `owedProps`。在建该列表之前（要一张改 `Test/Axioms.lean` 结构的小票，与区域组装或最后清理一起），被取代的钉文保留在 `owedProps`、只改注释；§73 (4) 的移动到那时一起做。
+
+## §77 MA-05 拆 a/b；T2237（BA-S1）1a BLOCKED → REQ（总调度，2026-10-06 01:50 UTC，流程事项）
+- (1) **MA-05** 估计约 1580 行，拆成 **MA-05a = T2240**（`Main/QUECore`：RBM2D `QUEFromQDiff.lean:38-812` 的 d≥3 移植（去掉 d=2 的剖面差 `:451-501`）、探针 ThetaDiff `:665-772` 原样、`MAThetaDiff`）与 **MA-05b**（`Main/QUEFromQDiff`：探针 QUE 段 `:1864-2020`、d=3 链、`QUE_of_QDiff`、实例，约 600 行；要重声明 MA-01 的私有 `W_pos_real`、`L_pos_real`、`size_cast`）。MA 计划 7 → 8。
+- (2) **T2237（BA-S1）** 1a 判 BLOCKED（P1）：`BAConArgLoop` 对随机因子 `Φ_t = max_a tr(Im G_t E_a)` 线性，带状递归给不出；缺 `Φ_s` 的下界与基界 `|tr G_t E_a| ≲ Φ_t`（数值上一般不成立，`Y_1/Φ_t = 347`）；钉文未证假。后继候选 S-A（加 `STLocalMaxgL`，不够）、S-B（带状的 `Ω_t` 事件形）；都要改 `BABootstrap`（BA-S2b）与骨架 `BAStep1_of_parts`（BA-S3）。**钉文级问题，交监督（REQ-2026-10-06-0149）**；答复前 T2237 扣着（CONTROL 注明）、BA-S2b、BA-S3 不写；BA-S2a（T2238）、BA-C1b（T2241）不受影响。
+
+## §78 LW-14 再拆出 LW-14d（总调度，2026-10-06 02:08 UTC，流程事项）
+- LW-14b 起草估计 1900–2300 行，再拆：**LW-14b = T2243**（`Graph/LWExpTerm2`：GG 展开（`oe2x_integral`）、∂ 分拆、σc 共轭、十项与钉文配对、组装 `lwCutExp_of_terms`）；**LW-14d**（`LWExpTerm4`，1100–1400 行：项界 `LWExpI1K`、`LWExpI23K`、`LWExpI41K`）；**LW-14c** 改证主撇 `LWExpG5'`（S 边换成 S⁺；J₄ 要它，§75 (ii) 结论），`LwExpG5OfG5'` 在 b。LW 计划 39 → 40。
+- §75 (i)：`η_t^{-1} ≤ √(2/κ)(1−t)^{-1}` 由 `st6_mE_im_ge`（`Step6Kit:544`）给。候选 T2243b：论文「σ = + 同理」（`B:14`）合并钉文未覆盖，`LWExpI41K`、`LWExpG5'` 都写成含 σo = + 的情形，预检查其成立。
+
+## §79 T2239a 确认 → REQ；S6-09b 暂不写；区域组装票（总调度，2026-10-06 02:27 UTC，流程事项）
+- (1) T2239 预检确认 T2239a（`STMollifierProps` 第 4 条只给 `∂_tϑ` 的大小、不给衰减；`(sum_res_2)` 要 `(𝒫f)∂ϑ` 衰减；`STExpIntQConcl'` 未证假）。照 §76 (2) 发 REQ-2026-10-06-0226（选项：分部积分 / 加导数衰减条款的后继 `STExpIntQConcl''` 由 `QopAlgebra_mollifier` 满足 / 单独证 `Θ^{(2)}` 像的衰减）。答复前 S6-09b 不写；`STStep6I` 是 Step 6 唯一卡在这里的区域。
+- (2) 主归纳区域组装 = **T2245**（`Induction/MainIndRegimes`，§68 (7)）：四个区域的 `ST_mainIndR_of_steps`、十种阶段模式的 `ST_mainInd_of_regimes`、`ST_mainInd_of_pins`（以尚欠的步钉文为前提）；对 R2* 中立（`STStep3I/II`、`STStep4I/II` 作前提）；同票在 `Test/Axioms.lean` 加 `supersededProps` 列表（照 §76 (3)），把 `STStep3/4/5/6`、`STExpIniI`、`STExpIntI` 移进去（§73 (4)：消费者 `ST_step6_caseI_of_pins''` 已随 T2239 合并）。计入 ST-6（计划待 ST-D6）。注：`ST_mainInd_of_steps`、`ST_step6_compose` 等不在 `Step6Kit`（留在 `t/T2191` 探针，`Step6Kit.lean:32-35`），票指向探针 `:351-404`。

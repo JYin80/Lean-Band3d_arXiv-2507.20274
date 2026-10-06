@@ -218,3 +218,24 @@
 | T2218 | 2026-10-05 22:10 UTC (bbeeabb) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；S6-04 `Induction/ExpHier`（证出 `STExpHier`） |
 | T2217 | 2026-10-05 22:11 UTC (d0d79ce) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（检查曾因命名空间失败，H87，不计返工）；S6-03 `Induction/ExpAvg`（证出 `STImproveExpAver`） |
 | T2219 | 2026-10-05 22:13 UTC (afdb81e) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；MA-02 `Main/ZTransfer`（探针块原样移入） |
+| T2220 | 2026-10-05 22:41 UTC (e9ef940) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-11 `Universality/Step1RegularityGUE`（UN-14 的前置）；D540 |
+| T2222 | 2026-10-05 22:55 UTC (cd6fcba) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-06 `Induction/ExpEtermsA`（证出 `STExpLKLKHi`）；D541 |
+| T2223 | 2026-10-05 23:12 UTC (f2766db) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-11 `Induction/ExpIniI`（路线 A：`STExpIniI'`、`ST_step6_caseI_of_pins'`）；D542 |
+| T2224 | 2026-10-05 23:25 UTC (1fb83da) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-05 `Induction/ExpDuhamel`（证出 `STExpDuhamelZ`、`STExpDuhamelQ`） |
+| T2225 | 2026-10-05 23:26 UTC (0d5868e) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；MA-03 `Main/FixedZ`（探针块原样移入，`fixed_of_ML`、`decol_of_locSC`） |
+| T2221 | 2026-10-05 23:35 UTC (0f44a56) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（检查曾因命名空间失败，H88，不计返工）；S5-11a `Induction/PfStep5Grid`；D543 |
+| T2216 | 2026-10-05 23:39 UTC (37289f6) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；LW-10c4 `Graph/LocalRegular6d`（`lw_localregular`，LW-10 闭合）；D544 |
+| T2227 | 2026-10-05 23:46 UTC (e1fec21) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；BA-D8 `BA/CouplingWindow`（探针移入） |
+| T2226 | 2026-10-06 00:04 UTC (dc2d99b) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-14 `Universality/GUETranslation`（证出 `UNInfty1Row'`）；D545 |
+| T2228 | 2026-10-06 00:11 UTC (6b4fe24) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-07 `Induction/ExpEtermsB`（证出 `STExpDriftLo`、`STExpDriftDecay`）；D546 |
+| T2197 | 2026-10-06 00:22 UTC (b750bf3) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-C1a `BA/FlowPins`（Amend 1、2；HOLD 期间未开工，不计返工）；1582 行超估计；D547 |
+| T2229 | 2026-10-06 00:28 UTC (e64e4f0) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-12a `Induction/ExpWardII`（证出 `STExpWardII`）；D548 |
+| T2232 | 2026-10-06 00:48 UTC (b112700) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-10 `Induction/ExpWardI`（路线 U：证出无符号 `STExpWardI` 与 `STExpWardI'`）；D549 |
+| T2230 | 2026-10-06 00:49 UTC (3a58663) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；MA-04 `Main/ZNet`（证出 `MANetLoc`、`MANetQD`） |
+| T2233 | 2026-10-06 01:00 UTC (f6650b2) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S6-12b `Induction/ExpIntII`（证出 `STExpIntII`）；D550 |
+| T2235 | 2026-10-06 01:14 UTC (cc4d165) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S6-08 `Induction/ExpIntEasy`（证出 `STExpIntIII`、`STExpIntIV`、`STStep6IV`）；D551 |
+| T2234 | 2026-10-06 01:26 UTC (e5b944a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-12a `Graph/AnpKey`（确定性 `AnpDetGh`、基例、提升与化归）；D553 |
+| T2236 | 2026-10-06 01:42 UTC (23d83c4) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-14a `Graph/LWExpTerm`（化归、I₁、I₄₁）；D554 |
+| T2231 | 2026-10-06 01:45 UTC (e2ec919) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S5-11b `Induction/PfStep5`（证出 `STPfStep5`、`STStep5III`）；2581 行超估计；D552 |
+| T2238 | 2026-10-06 01:59 UTC (fd80185) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；BA-S2a `BA/Step1Trivial`（`BATrivialLmax` 钉并证出，定义 `BAFamZ`） |
+| T2239 | 2026-10-06 02:11 UTC (25362ad) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S6-09a `Induction/ExpIntI`（`STExpIntI'` 定义、σ₁=σ₂、核界、消费者 `ST_step6_caseI_of_pins''`）；T2239a 确认 → REQ-0226；D555 |

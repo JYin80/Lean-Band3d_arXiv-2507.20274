@@ -2,35 +2,27 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-05 22:36 UTC (dispatcher V1: released T2224 (S6-05), T2225 (MA-03); H88 (T2221 check namespace))
+updated: 2026-10-06 02:26 UTC (dispatcher V1: T2239 merged; released T2244 (UN-09), T2245 (ST regime assembly))
 reason: RUN (Jun, DECISIONS §8). Scope and rules: DECISIONS §3–§7.
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-184. T2216 — `docs/tickets/T2216.md` (LW-10c4, `Graph/LocalRegular6d` (twists, step lemmas, ten new term decompositions, assembly: `lw_localregular`, closes LW-10; §55); role `prover-max`). Start: as above.
-188. T2220 — `docs/tickets/T2220.md` (UN-11, `Universality/Step1RegularityGUE` (GUE side of the Step-1 regularity event; needed by UN-14); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-189. T2221 — `docs/tickets/T2221.md` (S5-11a, `Induction/PfStep5Grid` (level `D_u`, matrix `J♯`, grid stopping index of (eq:def_TTT), deterministic Duhamel form of the grid decomposition; S5-11 split a/b, DECISIONS §71); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-190. T2222 — `docs/tickets/T2222.md` (S6-06, `Induction/ExpEtermsA` (proves `STExpLKLKHi`); role `prover-hard`). Start: as above.
-191. T2223 — `docs/tickets/T2223.md` (S6-11, `Induction/ExpIniI` (initial term of regime (i): `STExpIniI`, or the primed successor `STExpIniI'` with `0 < c` if the preflight confirms the `c ≤ 0` gap, DECISIONS §71); role `prover-hard`). Start: as above.
-192. T2224 — `docs/tickets/T2224.md` (S6-05, `Induction/ExpDuhamel` (proves `STExpDuhamelZ`, `STExpDuhamelQ`; port of RBM2D `MLExpDuhamel`); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
-193. T2225 — `docs/tickets/T2225.md` (MA-03, `Main/FixedZ` (verbatim port of the MA-D1 probe blocks `locSCFixed`, `QDiffFixed`, `MAFixed`, `MADecol`, instances); role `prover`). Start: as above.
-(T2197 is HELD — not released — until its Amend 1 and the BA Step-1 design note are re-checked by the supervisor: verdict 2026-10-05-1806 §1.6, DECISIONS §68. Do not start it.)
+(T2237 (BA-S1) is BLOCKED at stage 1a (P1, `docs/reports/T2237-prove.md`) and HELD pending the supervisor's answer to `REQ-2026-10-06-0149` (DECISIONS §77). Do not restart it; keep its branch.)
+209. T2240 — `docs/tickets/T2240.md` (MA-05a, `Main/QUECore` (d≥3 port of RBM2D `QUEFromQDiff` core, `MAThetaDiff`; MA-05 split a/b, DECISIONS §77); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+210. T2241 — `docs/tickets/T2241.md` (BA-C1b, `BA/UNPins` (UN-side BA pins per the T2197 split note, primed UN forms, `UNCoreC''` route, `unMeanBound_ba`); role `prover-hard`). Start: as above.
+211. T2242 — `docs/tickets/T2242.md` (LW-12b, `Graph/AnpKey2` (regions, ending-edge types A1/A2/B1/B2, A2 → ghost on a region, vertex fixing, the case statements for LW-12c–f; DECISIONS §74); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+212. T2243 — `docs/tickets/T2243.md` (LW-14b, `Graph/LWExpTerm2` (GG expansion, ∂ split, conjugation, term matching, assembly `lwCutExp_of_terms`; term bounds to LW-14d, `LWExpG5'` to LW-14c; DECISIONS §78); role `prover-hard`). Start: as above.
+213. T2244 — `docs/tickets/T2244.md` (UN-09, `Universality/GUELocalBootstrap` (`un_gueLocal_of_tail : UNGUESchurTail → UNGUELocal`, `gue_local_det`; new owed `UNGUESchurTail` for UN-10); role `prover-hard`). Start: when the `done:` line of its Pre-release check below says exit 0 and a slot is free (DECISIONS §17).
+214. T2245 — `docs/tickets/T2245.md` (ST main-induction regime assembly, `Induction/MainIndRegimes` (`ST_mainIndR_of_steps` per regime, `ST_mainInd_of_regimes`, `ST_mainInd_of_pins`; adds `supersededProps` to `Test/Axioms.lean` and moves `STStep3/4/5/6`, `STExpIniI`, `STExpIntI` there; DECISIONS §68 (7), §73 (4), §76 (3)); role `prover-hard`). Start: as above.
 
 ## Pre-release checks (the hub compiles in the same loop iteration; the dispatcher releases — CLAUDE.md §4 step 0, H4)
 Compile each file with `lake env lean <file>` in the main worktree and append one `done:` line under this list per file: the exit code and the error lines, verbatim.
-- `docs/tickets/checks/T2221-check.lean` (released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2222-check.lean` (released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2223-check.lean` (released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2224-check.lean` (released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2225-check.lean` (released conditionally above, DECISIONS §17).
-done: Mon Oct  5 22:23:49 UTC 2026 — `lake env lean docs/tickets/checks/T2221-check.lean`: exit 1; error lines: `docs/tickets/checks/T2221-check.lean:122:7: error(lean.unknownIdentifier): Unknown identifier `inst_pfStep5``. T2221 not started.
-done: Mon Oct  5 22:23:53 UTC 2026 — `lake env lean docs/tickets/checks/T2222-check.lean`: exit 0, no error lines.
-done: Mon Oct  5 22:23:57 UTC 2026 — `lake env lean docs/tickets/checks/T2223-check.lean`: exit 0, no error lines.
-done: Mon Oct  5 22:41:26 UTC 2026 — `lake env lean docs/tickets/checks/T2221-check.lean` (after the H88 fix): exit 0, no error lines.
-done: Mon Oct  5 22:41:29 UTC 2026 — `lake env lean docs/tickets/checks/T2224-check.lean`: exit 0, no error lines. T2224 waits for a free slot.
-done: Mon Oct  5 22:41:33 UTC 2026 — `lake env lean docs/tickets/checks/T2225-check.lean`: exit 0, no error lines. T2225 waits for a free slot.
+- `docs/tickets/checks/T2244-check.lean` (released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2245-check.lean` (released conditionally above, DECISIONS §17).
+done: Tue Oct  6 02:33:21 UTC 2026 — `lake env lean docs/tickets/checks/T2244-check.lean`: exit 0, no error lines.
+done: Tue Oct  6 02:33:25 UTC 2026 — `lake env lean docs/tickets/checks/T2245-check.lean`: exit 0, no error lines.
 
 ## Approved instructions
 - H12 (dispatcher V1, 2026-10-03 01:19 UTC). Standing from now (DECISIONS §17): a Released ticket whose start condition names its Pre-release check starts in the same loop iteration in which you compile that check with exit 0, if a slot is free. Now: stage by name only and commit with message `Dispatcher V1: T2011–T2014 released, ticket T2015 (ST-D1), DECISIONS §17`: `docs/DECISIONS.md`, `docs/tickets/QUEUE.md`, `docs/tickets/T2015.md`, `docs/tickets/checks/T2015-check.lean`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`; then `git push origin main` (no force). One `done:` line with the hash.
@@ -68,6 +60,8 @@ done: Mon Oct  5 22:41:33 UTC 2026 — `lake env lean docs/tickets/checks/T2225-
 - H88 (dispatcher V1, 2026-10-05 22:36 UTC). T2221: its check failed only on a namespace (`inst_pfStep5` is in `RBM.Gauss.Step5Inst`, `Induction/Step5Pins.lean:492-601`); `docs/tickets/checks/T2221-check.lean` line 122 now reads `#check RBM.Gauss.Step5Inst.inst_pfStep5` (that line only). Recompile the check; on exit 0 append the `done:` line under Pre-release checks; T2221 then waits for a free slot in its list position. One `done:` line here.
   done: Mon Oct  5 22:41:47 UTC 2026 — T2221 check recompiled: exit 0, no error lines (22:41:26 UTC); T2221 started in the slot freed by the T2220 merge (workflow wf_c3138054-cad).
 - H89 (dispatcher V1, 2026-10-05 22:36 UTC). Commit the dispatcher's files written since H85 (698da3b), exactly as H85 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: bookkeeping D507–D539, DECISIONS §69–§71, tickets T2207 (draft)–T2225 and amendments, supervisor verdicts and requests (H89)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
+  done: Mon Oct  5 22:43:59 UTC 2026 — committed 3b51ca4 (50 files staged by name from the scripted list; none under RBM3D/, docs/reports/ or docs/queue/T*.state; HEARTBEAT-STATE.md and hb.sh excluded), pushed. CONTROL.md as committed includes the hub's done: lines up to 22:41 UTC.
+- H90 (dispatcher V1, 2026-10-06 02:27 UTC). Commit the dispatcher's files written since H89 (3b51ca4), exactly as H89 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: bookkeeping D540–D555, DECISIONS §72–§79, tickets T2197 Amend 2, T2226–T2245, supervisor verdicts and requests (H90)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
 (H1–H11, H13–H72 archived in `docs/queue/CONTROL-archive.md`. Standing from H4: compile every file listed under Pre-release checks in the same loop iteration you see it. Standing from H23 (DECISIONS §20): (b) when two branches both append lines to the registry lists of `RBM3D/Test/Axioms.lean`, keep both sides (union), then run the full build; (c) a merge that stops at step 5 only on unregistered premises gets state `blocked` with the names, and if the ticket has an Amend 1 of DECISIONS §20 you run its `repairer` stage for the registry lines and a round-2 `auditor` of that diff at once. Standing from H28: every workflow keeps its scratch files in its own subdirectory `scratchpad/<ticket>/` (T2036 report (d): concurrent workflows overwrote each other's generic file names).)
 
 
@@ -129,6 +123,28 @@ done: Mon Oct  5 22:10:17 UTC 2026 — T2218 merged bbeeabb (RBM3D/Induction/Exp
 done: Mon Oct  5 22:11:11 UTC 2026 — T2217 merged d0d79ce (RBM3D/Induction/ExpAvg.lean, RBM3D/Test/Axioms.lean (STImproveExpAver removed as proved; deleted by exact line after T2218's adjacent deletion, H23 b), root import; lake build 4023 jobs); audit PASS round 1; pushed.
 done: Mon Oct  5 22:13:26 UTC 2026 — T2219 merged afdb81e (RBM3D/Main/ZTransfer.lean, root import; lake build 4024 jobs); audit PASS round 1; pushed.
 done: Mon Oct  5 22:41:17 UTC 2026 — T2220 merged e9ef940 (RBM3D/Universality/Step1RegularityGUE.lean, RBM3D/Test/Axioms.lean (Step1LocalEventGUE structural), root import; lake build 4025 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 22:55:01 UTC 2026 — T2222 merged cd6fcba (RBM3D/Induction/ExpEtermsA.lean, RBM3D/Test/Axioms.lean (STExpLKLKHi removed as proved), root import; lake build 4026 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 23:12:48 UTC 2026 — T2223 merged f2766db (RBM3D/Induction/ExpIniI.lean, RBM3D/Test/Axioms.lean (route A: primed STExpIniI' proved, STExpIniIConcl' structural; merged STExpIniI stays owed), root import; lake build 4027 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 23:25:13 UTC 2026 — T2224 merged 1fb83da (RBM3D/Induction/ExpDuhamel.lean, RBM3D/Test/Axioms.lean (STExpDuhamelZ, STExpDuhamelQ removed as proved), root import; lake build 4028 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 23:26:09 UTC 2026 — T2225 merged 0d5868e (RBM3D/Main/FixedZ.lean, RBM3D/Test/Axioms.lean (locBad1 structural), root import; lake build 4029 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 23:35:26 UTC 2026 — T2221 merged 0f44a56 (RBM3D/Induction/PfStep5Grid.lean, root import; lake build 4030 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 23:39:03 UTC 2026 — T2216 merged 37289f6 (RBM3D/Graph/LocalRegular6d.lean (lw_localregular; closes LW-10), root import; lake build 4031 jobs); audit PASS round 1; pushed.
+done: Mon Oct  5 23:46:56 UTC 2026 — T2227 merged e1fec21 (RBM3D/BA/CouplingWindow.lean, root import; lake build 4032 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 00:04:03 UTC 2026 — T2226 merged dc2d99b (RBM3D/Universality/GUETranslation.lean, RBM3D/Test/Axioms.lean (UNInfty1Row' removed as proved; GUEGoodAt structural), root import; lake build 4033 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 00:11:32 UTC 2026 — T2228 merged 6b4fe24 (RBM3D/Induction/ExpEtermsB.lean, RBM3D/Test/Axioms.lean (STExpDriftLo, STExpDriftDecay removed as proved); safety classifier timed out on the auditor stage, hub checked branch and main unchanged by it and no change under ../RBM1D or ../RBM2D, root import; lake build 4034 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 00:22:39 UTC 2026 — T2197 merged b750bf3 (RBM3D/BA/FlowPins.lean with Amend 1 and Amend 2 (DECISIONS §72), RBM3D/Test/Axioms.lean (BAProp5..8, BAProp5to8, BAConArg' owed; STLmaxgL), root import; lake build 4035 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 00:28:00 UTC 2026 — T2229 merged e64e4f0 (RBM3D/Induction/ExpWardII.lean, RBM3D/Test/Axioms.lean (STExpWardII removed as proved), root import; lake build 4036 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 00:48:02 UTC 2026 — T2232 merged b112700 (RBM3D/Induction/ExpWardI.lean, RBM3D/Test/Axioms.lean (route U: STExpWardI removed as proved, STExpWardIConcl' structural; applied by exact line after T2229's adjacent deletion, H23 b), root import; lake build 4037 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 00:49:08 UTC 2026 — T2230 merged 3a58663 (RBM3D/Main/ZNet.lean (proves MANetLoc, MANetQD), RBM3D/Test/Axioms.lean (locBad2, qd1Bad, qd2Bad structural; applied by exact line after T2232's adjacent insertion, H23 b), root import; lake build 4038 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 01:00:02 UTC 2026 — T2233 merged f6650b2 (RBM3D/Induction/ExpIntII.lean, RBM3D/Test/Axioms.lean (STExpIntII removed as proved), root import; lake build 4039 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 01:14:49 UTC 2026 — T2235 merged cc4d165 (RBM3D/Induction/ExpIntEasy.lean, RBM3D/Test/Axioms.lean (STStep6IV, STExpIntIII, STExpIntIV removed as proved), root import; lake build 4040 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 01:26:03 UTC 2026 — T2234 merged e5b944a (RBM3D/Graph/AnpKey.lean, RBM3D/Test/Axioms.lean (AnpDetGhStep owed), root import; lake build 4041 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 01:42:01 UTC 2026 — T2236 merged 23d83c4 (RBM3D/Graph/LWExpTerm.lean, RBM3D/Test/Axioms.lean (LWCutExp owed), root import; lake build 4042 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 01:45:31 UTC 2026 — T2231 merged e2ec919 (RBM3D/Induction/PfStep5.lean, RBM3D/Test/Axioms.lean (STPfStep5, STStep5III removed as proved; PfStep5_walkConcl registered), root import; lake build 4043 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 01:59:08 UTC 2026 — T2238 merged fd80185 (RBM3D/BA/Step1Trivial.lean (BATrivialLmax proved), RBM3D/Test/Axioms.lean (BAWinBulk structural), root import; lake build 4044 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 02:11:28 UTC 2026 — T2239 merged 25362ad (RBM3D/Induction/ExpIntI.lean, RBM3D/Test/Axioms.lean (STExpIntI, STExpIniI reclassified as superseded per §68 (9), §73 (4); STExpIntI' owed; STExpIntQConcl' structural); finding T2239a for the dispatcher before S6-09b, root import; lake build 4045 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 02:32:06 UTC 2026 — T2241 merged 88d7676 (RBM3D/BA/UNPins.lean, RBM3D/Test/Axioms.lean (11 owed UN-side BA pins), root import; lake build 4046 jobs); audit PASS round 1; pushed.
+done: Tue Oct  6 02:33:12 UTC 2026 — T2240 merged 389ad9e (RBM3D/Main/QUECore.lean, RBM3D/Test/Axioms.lean (queWindow structural; union with BAWinBulk at the end of structuralProps, H23 b), root import; lake build 4047 jobs); audit PASS round 1; pushed.
 
 ## Pending approval (information only — the hub must NOT act on these)
 (none)
