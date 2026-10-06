@@ -229,6 +229,7 @@ def owedProps : List Name :=
    `RBM.Univ.UNClaimRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNTrLocalInit', -- bulk universality pin, primed successor of the refuted UNTrLocalInit, tolerance W^τ (Bctl + t*) (T2213, UN-12b: owed; band: unTrLocalInit'_band_zero; BA: BA-C1b row)
    `RBM.Univ.UNCoreC'', -- bulk universality pin, successor of the superseded UNCoreC' (T2213, UN-12b: owed; BA-C1b)
+   `RBM.Univ.UNGUESchurTail, -- bulk universality pin, the Schur tail of the GUE local law (T2244, UN-09: owed; UN-10 GUELocalSchur; with un_gueLocal_of_tail gives UNGUELocal)
    -- T2241 (BA-C1b, DECISIONS §20): the UN-side block Anderson pins (`RBM3D/BA/UNPins.lean`)
    `RBM.Univ.UNLocAvgBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-M1, `(G_bound_ave)` from `BAEnd_locSC`)
    `RBM.Univ.UNMLOutBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-V3, `lem:main_ind_BA` outputs on the T2197 carrier)
