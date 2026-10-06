@@ -498,3 +498,31 @@
 ## §79 T2239a 确认 → REQ；S6-09b 暂不写；区域组装票（总调度，2026-10-06 02:27 UTC，流程事项）
 - (1) T2239 预检确认 T2239a（`STMollifierProps` 第 4 条只给 `∂_tϑ` 的大小、不给衰减；`(sum_res_2)` 要 `(𝒫f)∂ϑ` 衰减；`STExpIntQConcl'` 未证假）。照 §76 (2) 发 REQ-2026-10-06-0226（选项：分部积分 / 加导数衰减条款的后继 `STExpIntQConcl''` 由 `QopAlgebra_mollifier` 满足 / 单独证 `Θ^{(2)}` 像的衰减）。答复前 S6-09b 不写；`STStep6I` 是 Step 6 唯一卡在这里的区域。
 - (2) 主归纳区域组装 = **T2245**（`Induction/MainIndRegimes`，§68 (7)）：四个区域的 `ST_mainIndR_of_steps`、十种阶段模式的 `ST_mainInd_of_regimes`、`ST_mainInd_of_pins`（以尚欠的步钉文为前提）；对 R2* 中立（`STStep3I/II`、`STStep4I/II` 作前提）；同票在 `Test/Axioms.lean` 加 `supersededProps` 列表（照 §76 (3)），把 `STStep3/4/5/6`、`STExpIniI`、`STExpIntI` 移进去（§73 (4)：消费者 `ST_step6_caseI_of_pins''` 已随 T2239 合并）。计入 ST-6（计划待 ST-D6）。注：`ST_mainInd_of_steps`、`ST_step6_compose` 等不在 `Step6Kit`（留在 `t/T2191` 探针，`Step6Kit.lean:32-35`），票指向探针 `:351-404`。
+
+## §80 Jun 答 R2*：A（总调度记，2026-10-06 02:46 UTC；Jun 原话「A」，02:4x UTC）
+- (1) 照监督 1955 A1 的 R2*：自举钉文右端首项的 `B_u` 换成窗口起点 `B_s`（`STbootRHS … (sz.Bctl n (s n))`），其余项（`B_u^{1/6}·XLK`）不变。主撇后继：`STNQConcl″`、`STOeqNQ″`、`STXiBoot′`、`STOeqQt′`、`STOeqQtNZ′`、`STIterR′`（前提 `STXiBoot′`，推出 `STIterations′`、`STIterationsII′`）。平凡桥 `STNQConcl′ → STNQConcl″`、`STXiBoot → STXiBoot′`。旧 owed（`STOeqNQ′`、`STOeqQt`、`STOeqQtNZ`、`STIterations`、`STIterationsII`）移「被取代、不需要」（`supersededProps` 由 T2245 建；它未合并前照 §76 (3) 留 owed 改注释）。合并的 S3-12b、S3-14 照用；不要 S3-12b′。改的是 §62（Jun「A」）签的钉文内容，Jun 已签。
+- (2) 票的安排（监督 1955 A4，总调度定）：钉文定义与桥放进 **S3-12c1**（逐时刻端点，`B_s`，约 800 行）；**S3-12c2**（包络 `X♯`、单侧核、`𝒦` 模、提升，约 600–700 行）等 c1；`STIterR′` 的证明（`iterationsA_step` 在 `w = s` 取 `hlow`，约 50 行）放 **S3-24b**。ST-3 计划 40 → 41（c1/c2 拆；钉文不单开票）。T2207 草稿作废，c1 另编票号重写。
+- (3) 解冻：S3-12c1 现在写；S3-15…18、S3-21/22 按主撇最终形式写（依赖到时查）；T2207d（`3_5:1676-1690` 的 `B_{u,0}` 不随所引核界得出）合并 c1 时编号。
+
+## §81 监督 0255：BA-S1 走 S-B（`BAConArg''`，事件形）；S6-09b 走转移 (d)，拆出 S6-09c（总调度，2026-10-06 03:06 UTC，照办；依据 `docs/supervisor/2026-10-06-0255.md`）
+- (1) **REQ-0149 PASS，S-B**：`BAConArg''` = `BAConArg'` 的前提照抄，结论换成带状 `STConArg` 的事件形（`Ω_t = {‖G_t‖_max ≤ C₀}`，右端 `((η_s/η_t)Bctl_s)^{k-1}`，无 `Φ_t`）。T2237 照自身目标 1 的停报路径续做：`docs/tickets/T2237-amend-1.md`，从 1a 重启。`BAConArg'` 不进 refuted，进「被取代」。BA-S2b 用 `BABootstrap'`、BA-S3 用 `BAStep1_of_parts'`（从起草起就用）。BA 计数不变 9/66。paper-delta T2237a 合并时编号。不问 Jun。
+- (2) **REQ-0226 PASS，路线 (d)**：`STExpIntQConcl'` 照合并形式可证——结论只经 `ϑ_s`、`ϑ_u` 依赖 ϑ，两个容许磨光函数之差 `(𝒫f)(ϑ − ϑ*)` 由前提 `STExpWardIConcl'` 界到 `B³`，故由显式 `ϑ* = QopAlgebra_mollifier`（`C* = (1+40d)6^d`、`c* = 1/4`）转移到整个类。不要新钉文、不要 `''` 后继与消费者孪生。(b) 只在 S6-09b 的 1a 否定转移时作后备；(a) 否决；(c)（`Θ^{(n)}` 像的衰减传递）任何路线都要。
+- (3) **S6-09c**（新，确定性，`Induction/QopDecay.lean`，对 `m` 一般、公开，供 ST-3 交错链 O3 用）：`QopAlgebra_mollifier_derivDecay`（约 60 行，`qa_core` 里把 `uSe^{-uS} ≤ 1` 换成 `≤ (2/e)e^{-uS/2}`、用 `qaU_lb`）+ `Θ^{(n)}` 衰减传递（150–300 行，预检确认合并的性质 5 的衰减形式）。S6-09b（转移，100–150 行 + 组装）等 S6-09c。ST-5 计划 17 → 18。paper-delta T2239a（`(eq:derv_Theta)` 应同时给 `∂_tϑ` 衰减；`6:132`、`(eq:alternatecase2)` `3_5:1711-1714` 与 `ℬ₄` 用到的 `Θ^{(n)}` 像衰减未写）现编号 D556。
+- (4) 监督 O3：写 S3-15…18（交错链）时把 S6-09c 的引理列为输入（或移植 RBM2D 等价物）。O4：计数过 25/40/50 那轮要写 REQ（LW 过 25 时漏写，监督已补查 PASS）；下次门槛 LW 40、ST-3 40、ST-4 35（计划）。
+
+## §82 `STStep5R` 登记类；返工计数（总调度，2026-10-06 03:20 UTC，流程事项）
+- T2245 把 `STStep5R`（`ST_mainIndR_of_steps` 的前提，原不在任何登记表）登记为 structural（同 `STStep6R`）：照准。`STStep3R`/`STStep4R` 仍 owed（不一致，留最后清理）。`supersededProps` 已由 T2245 建（05e5052），之后的被取代钉文都移进去（§76 (3)、§80 (1)、§81 (1)）。
+- T2244 审核 RETURN 一次（只改实例段）后 PASS：返工 18/239。
+
+## §83 ST-3 交错链 S3-15 按 d≥3 重排（总调度，2026-10-06 03:40 UTC，流程事项）
+- S3-15a = T2250 起草发现：合并的 EK-4 `(sum_res_2)` 只要和为零加衰减，对一切 σ 成立，漂移 `𝒬_u(ℬ₁+ℬ₂+ℬ₃)+ℬ₄+ℬ₅` 逐路径和为零，所以 RBM2D 的 Q/E 分拆（Case 3/4、局部形、`AltExpSymm`、`AltQPartGrid`、T 版）不移植（候选 T2250a）。S3-15a 改为：漂移恒等式、ℬ₄/ℬ₅ 与漂移的和为零、初值项的和为零与核类、经 `𝒬_t` 的衰减、由 EK-4 得 `hker`、可测性；全为确定性，不用 R2* 主撇钉文（不等 T2246），不用磨光导数衰减（不等 T2249）。
+- **S3-15b** 换新范围：漂移的衰减类 `hDcls`（ℬ₄、ℬ₅ 的衰减），要 T2249（S6-09c）的磨光导数衰减与 `Θ^{(n)}` 衰减传递（监督 0255 O3）；等 T2250、T2249。ST-3 计划 41 不变（S3-15 仍 a/b 两张）；S3-16…18 写票前照此新口径细查（RBM2D 源可能也有不用移植的部分）。
+- T2242 把 `NGraph.EndAt`、`IsA1`、`IsA2`、`IsB1`、`NoA2` 登记 structural：照准（组合谓词）。
+
+## §84 LW-14c 拆出 LW-14e；BA-S2b 拆 S2b1/S2b2（总调度，2026-10-06 04:38 UTC，流程事项）
+- (1) **LW-14c = T2255**（`Graph/LWExpTerm3`）：5-圈到细图 `𝒢_xy` 的桥、至多一个内分子的图的 `≺` 界、`lwExpG5'_of_expand : LWG5Expand → LWExpG5'`、以 LW-14d 三项与 `LWG5Expand` 为前提的 `LWCutExp`、`LWtermEXP`；新 owed `LWG5Expand`。**LW-14e**（`Graph/LWExpTerm5`：图展开组合，情形 (1)–(4)、`oe2x_graph_E`、阶计数）证 `LWG5Expand`。规则：LW-14d 与 LW-14e 后合并的那张补无条件一行式，删 `LWtermEXP`、`LWCutExp`、`LWExpG5'`、`LWG5Expand` 的登记行。LW 计划 40 → 41。
+- (2) **BA-S2b** 估计 1500–2600 行，拆：**S2b1 = T2256**（`BA/Step1Boot`：BA 事件形式 G 钉文 `BAGbEXPii/ij/av`（owed，BA-G6；监督 2252 Q2 要求在第一张 G 相关票里钉）、`BAFlowMember`（owed，BA-S3）、`BABootstrap'`（owed，S2b2）、事件桥接引理）；**S2b2**（证 `baBootstrap'_holds : BAFlowMember → BAGbEXPii → BAGbEXPij → BABootstrap'`，移植 `step1TargetV3_holds` 与 `Step1Setup` 的相应部分）。BA 计划 66 → 67。T2256 预检 P2 判定 `BAGijGEX` 是否须写在 `(G − M)_xy` 上（BA 的 `M` 未必对角）。
+- (3) T2249 审核 RETURN 一次（实例窗口塌缩）后 PASS：返工 19/247。
+
+## §85 S3-24b 不等 S3-18b/S3-22（总调度，2026-10-06 04:57 UTC，流程事项）
+- S3-24b = T2259 起草发现：`STIterR`（`Step34Pins.lean:486`）与 `STIterR'`（`NQEndFlow.lean:142`）都把自举界作为自己的前提，所以 S3-24b 原定「等 S3-18b、S3-22」不成立（那两张只对 S3-25 要紧）；情形 (ii) 与步的管线已在 S3-24a 合并。S3-24b 照此只证 `iterationsB_step`（`STXiBoot'` 前提、`hlow` 在 `w = s`）与 `stIterations'_holds`、`stIterationsII'_holds`；私有辅助（`IterationsA.lean:876-1046, 1072-1276`）照旧复制（前缀 `iterationsB_`），不另开公开化小票。`STIterR'` 只在两个区域证出、仍 owed（注释写明）；`STIterR`/`STIterR'` 是否改 structural 留最后清理。ST-3 计划 41 不变。

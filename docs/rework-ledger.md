@@ -239,3 +239,16 @@
 | T2231 | 2026-10-06 01:45 UTC (e2ec919) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S5-11b `Induction/PfStep5`（证出 `STPfStep5`、`STStep5III`）；2581 行超估计；D552 |
 | T2238 | 2026-10-06 01:59 UTC (fd80185) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；BA-S2a `BA/Step1Trivial`（`BATrivialLmax` 钉并证出，定义 `BAFamZ`） |
 | T2239 | 2026-10-06 02:11 UTC (25362ad) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S6-09a `Induction/ExpIntI`（`STExpIntI'` 定义、σ₁=σ₂、核界、消费者 `ST_step6_caseI_of_pins''`）；T2239a 确认 → REQ-0226；D555 |
+| T2241 | 2026-10-06 02:32 UTC (88d7676) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-C1b `BA/UNPins`（UN 侧 BA 钉文，主撇 UN 形式、`UNCoreC''` 路线、`unMeanBound_ba`） |
+| T2240 | 2026-10-06 02:33 UTC (389ad9e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；MA-05a `Main/QUECore`（`MAThetaDiff`、`queX_core`） |
+| T2245 | 2026-10-06 03:07 UTC (05e5052) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；主归纳区域组装 `Induction/MainIndRegimes`（`ST_mainIndR_of_steps`、`ST_mainInd_of_regimes`、`ST_mainInd_of_pins`）；建 `supersededProps`；`STStep5R` 登记 structural；D558 |
+| T2244 | 2026-10-06 03:12 UTC (b35643d) | prover-hard | Sonnet 5.5 effort xhigh（修复 claude-opus-5-5） | 是（审核 RETURN 一次，只改实例段） | 第 2 轮 PASS；UN-09 `Universality/GUELocalBootstrap`；D557 |
+| T2242 | 2026-10-06 03:22 UTC (e362f4b) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-12b `Graph/AnpKey2`（区域、末边类型、定点、情形陈述）；D559 |
+| T2247 | 2026-10-06 03:39 UTC (398ebe4) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-16 `Universality/OUHessian`（移植，`lam` 参数）；D560 |
+| T2248 | 2026-10-06 03:54 UTC (d822fd7) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；MA-05b `Main/QUEFromQDiff`（`QUE_of_QDiff : MAQUE`） |
+| T2243 | 2026-10-06 04:04 UTC (d6ebc39) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；LW-14b `Graph/LWExpTerm2`（`lwCutExp_of_terms`）；D561 |
+| T2237 | 2026-10-06 04:05 UTC (9403c24) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（1a BLOCKED 后照监督 0255 改钉 S-B，Amend 1，不计返工）；BA-S1 `BA/ConArg`（`BAConArg''`）；D562 |
+| T2246 | 2026-10-06 04:21 UTC (0f60da2) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；S3-12c1 `Induction/NQEndFlow`（R2* 主撇钉文、桥、`B_s` 逐时刻端点）；D563 |
+| T2251 | 2026-10-06 04:22 UTC (88183b6) | prover | Sonnet 5.5 effort high | 否 | 审核一次 PASS；UN-19 `Universality/JakSpectral`；D564 |
+| T2249 | 2026-10-06 04:34 UTC (24b85cd) | prover | Sonnet 5.5 effort high（修复 claude-opus-5-5） | 是（审核 RETURN 一次，实例窗口塌缩，只改实例段） | 第 2 轮 PASS；S6-09c `Induction/QopDecay`；D565 |
+| T2250 | 2026-10-06 04:47 UTC (88ee6fd) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；S3-15a `Induction/QDriftA`（交错链 d≥3 重排）；D566 |
