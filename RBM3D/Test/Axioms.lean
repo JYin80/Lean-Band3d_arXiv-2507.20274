@@ -224,8 +224,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep6III, -- `6:94-96` regime (iii) pin: S6-02; S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STStep6IV, -- `6:94-96` regime (iv) pin: S6-02; S6-07, S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STStep6, -- `6:93-97` general Step-6 pin: S6-13, after REQ-2026-10-05-1746; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STExpDriftLo, -- `6:63-66`, `6:73-79` drift bound in regime (iv): S6-07; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STExpDriftDecay, -- `3_5:1634` drift decay: S6-07; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntIII, -- `6:94-96` integrated estimate, regime (iii): S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntIV, -- `6:94-96` integrated estimate, regime (iv): S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntI, -- `6:97`, `6:104-132` integrated estimate, regime (i): S6-09; S6-01 (T2204, DECISIONS §67: owed)

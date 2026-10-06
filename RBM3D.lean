@@ -268,6 +268,7 @@ import RBM3D.Induction.PfStep5Grid
 import RBM3D.Graph.LocalRegular6d
 import RBM3D.BA.CouplingWindow
 import RBM3D.Universality.GUETranslation
+import RBM3D.Induction.ExpEtermsB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
