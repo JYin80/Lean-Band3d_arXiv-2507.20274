@@ -315,6 +315,7 @@ import RBM3D.Induction.QLevelsB
 import RBM3D.Graph.AnpKey6
 import RBM3D.Universality.Apriori
 import RBM3D.Universality.Jak
+import RBM3D.Universality.ZeroModeProfile
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
