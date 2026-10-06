@@ -311,6 +311,7 @@ import RBM3D.Universality.JakKernel
 import RBM3D.Induction.QLevelsA
 import RBM3D.BA.Step1
 import RBM3D.Universality.UywKernel
+import RBM3D.Induction.QLevelsB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
