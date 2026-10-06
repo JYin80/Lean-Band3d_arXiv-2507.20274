@@ -170,6 +170,7 @@ def owedProps : List Name :=
    `RBM.Graph.AnpDetGhCaseI, -- cases (I)+(II) of the induction step of `lem:Anp_key_gh` (`7_8:1152-1244`): LW-12c (T2242, DECISIONS §24, §74)
    `RBM.Graph.AnpDetGhCaseIII, -- case (III) of the induction step of `lem:Anp_key_gh` (`7_8:1245-1384`): LW-12d (T2242, DECISIONS §24, §74)
    `RBM.Graph.AnpDetGhCaseIV, -- case (IV) of the induction step of `lem:Anp_key_gh` (`7_8:1385-1599`): LW-12e/f (T2242, DECISIONS §24, §74)
+   `RBM.Graph.AnpIH, -- the induction hypothesis of `AnpDetGhStep` (`7_8:1107`) for `k < q`, premise of the compiled instances of LW-12c (`anpKey3_inst_*`, T2252); proved inside `anpDetGh_of_step` (T2234) once LW-12f proves `AnpDetGhStep` (DECISIONS §20: owed)
    `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
    `RBM.Gauss.Sizes.LWReduceT, -- reduction of `lem: EWGn2_N` to `lem:LW_moment_exp`: LW-01
    -- T2067: the random premises of the LW pins (ST chain)
