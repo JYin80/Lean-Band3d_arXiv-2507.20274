@@ -305,6 +305,8 @@ def structuralProps : List Name :=
    `RBM.Graph.NGraph.IsA1, -- ending edge of type A1 on `𝐃_π` (`7_8:1127`): a defining predicate of the case split, hypothesis of `anpKey2_caseI_ne` (T2242)
    `RBM.Graph.NGraph.IsA2, -- ending edge of type A2 on `𝐃_π` (`7_8:1130`): a defining predicate of the A2 replacement, hypothesis of `anpKey2_A2_factor`, `anpKey2_A2_val` (T2242)
    `RBM.Graph.NGraph.IsB1, -- ending edge of type B1 (`7_8:1134`): a defining predicate of the case split, hypothesis of `anpKey2_caseI_ne` (T2242)
+   `RBM.Graph.NGraph.IsB2, -- ending edge of type B2 (`7_8:1136`): a defining predicate of the case split, hypothesis of `anpKey4_caseIII_ne`, `anpKey4_solid` (T2260)
+   `RBM.Graph.AnpCaseIII, -- case (III) of the induction step (`7_8:1245`): two B2 ending edges at an internal vertex with `deg_s = 2`, a defining predicate of the case split, hypothesis of `anpKey4_reduce` (T2260)
    `RBM.Graph.NGraph.NoA2, -- `(eq:noA2)` (`7_8:1146`), no A2 edge on `𝐃_π`: a data condition on the graph, hypothesis of `anpDetGhReg_of_noA2` and of the case pins (T2242)
    `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
