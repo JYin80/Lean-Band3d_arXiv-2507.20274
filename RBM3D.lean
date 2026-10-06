@@ -277,6 +277,7 @@ import RBM3D.Induction.ExpIntII
 import RBM3D.Induction.ExpIntEasy
 import RBM3D.Graph.AnpKey
 import RBM3D.Graph.LWExpTerm
+import RBM3D.Induction.PfStep5
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
