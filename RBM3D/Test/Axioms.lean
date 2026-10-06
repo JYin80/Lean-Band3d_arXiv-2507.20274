@@ -120,14 +120,16 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
-   `RBM.Gauss.Sizes.STOeqNQ', -- `lem:STOeq_NQ`, primed (DECISIONS §62): S3-12c
-   `RBM.Gauss.Sizes.STOeqQt, -- `lem:STOeq_Qt` (DECISIONS §25)
-   `RBM.Gauss.Sizes.STOeqQtNZ, -- `lem:STOeq_Qt_nonzero` (DECISIONS §25)
    `RBM.Gauss.Sizes.STXiBoot, -- `(am;asoi222)` (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`: S3-18b, S3-22; hypothesis of `iterationsA_step` (T2087)
+   `RBM.Gauss.Sizes.STOeqNQ'', -- `lem:STOeq_NQ`, R2* (DECISIONS §80): per-time form proved by T2246 (`stOeqNQPT''_holds`), lift S3-12c2
+   `RBM.Gauss.Sizes.STXiBoot', -- `(am;asoi222)` at `B_s` (DECISIONS §80): S3-18b, S3-22; hypothesis of `STIterR'`
+   `RBM.Gauss.Sizes.STOeqQt', -- `lem:STOeq_Qt`, R2* (DECISIONS §80): S3-18b
+   `RBM.Gauss.Sizes.STOeqQtNZ', -- `lem:STOeq_Qt_nonzero`, R2* (DECISIONS §80): S3-22
+   `RBM.Gauss.Sizes.STIterR', -- generic setting of `lem:iterations` over `STXiBoot'` (DECISIONS §80): S3-24b
+   `RBM.Gauss.Sizes.STIterations', -- `lem:iterations`, case (i), R2* (DECISIONS §80): S3-24b
+   `RBM.Gauss.Sizes.STIterationsII', -- `lem:iterations`, case (ii), R2* (DECISIONS §80): S3-24b
    `RBM.Gauss.Sizes.STAvgU, -- `(Gt_avgbound_flow)` uniform in `u ∈ [s,t]` (`1_2:1344`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `iterationsA_avg_of_STAvgU` (T2087)
    `RBM.Gauss.Sizes.STLocalEntryU, -- `(Gt_bound_flow)` uniform in `u ∈ [s,t]` (`1_2:1342`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `lemDecCalEPrec_gij`, `lemDecCalEPrec_perTime_bounds` (T2193, DECISIONS §20 rule: owed)
-   `RBM.Gauss.Sizes.STIterations, -- `lem:iterations`, case (i) (DECISIONS §25)
-   `RBM.Gauss.Sizes.STIterationsII, -- `lem:iterations`, case (ii) (DECISIONS §25)
    `RBM.Gauss.Sizes.STStep2DecayPT, -- `(Eq:Gdecay_w)` per time (`1_2:1349-1351`): hypothesis of `stNetLift2_part1`/`step2NetLift`; proved by the Step 2 chain ST2-04 (T2074, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STGdecayW, -- `(Eq:Gdecay_w)` uniformly in `u ∈ [s,t]` (`1_2:1349`, `Step34Pins.lean:208`): hypothesis of `stDecayLoopU_of_step2` (T2135 Amend 1, DECISIONS §39); proved by the Step 2 chain ST2-04 (DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2LocalPT, -- `(Gt_bound_flow)` per time (`1_2:1343`): hypothesis of `step2LocalNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
@@ -394,7 +396,12 @@ def supersededProps : List Name :=
    `RBM.Gauss.Sizes.STStep5,    -- Step 5, general `0 ≤ s < t < 1`: S5-29 cancelled (DECISIONS §68 (9)); the regime pins `STStep5I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep6,    -- Step 6, general `0 ≤ s < t ≤ t₀`: S6-13 cancelled (DECISIONS §68 (10)); still carried by `ST_step6R_of_any`; the regime pins `STStep6I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STExpIniI,  -- initial term of regime (i), unprimed: successor `STExpIniI'` (proved, T2223); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
-   `RBM.Gauss.Sizes.STExpIntI]  -- integrated estimate of regime (i), unprimed: successor `STExpIntI'` (S6-09b); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
+   `RBM.Gauss.Sizes.STExpIntI,  -- integrated estimate of regime (i), unprimed: successor `STExpIntI'` (S6-09b); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
+   `RBM.Gauss.Sizes.STOeqNQ',   -- superseded by `STOeqNQ''` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STOeqQt,    -- superseded by `STOeqQt'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STOeqQtNZ,  -- superseded by `STOeqQtNZ'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STIterations,  -- superseded by `STIterations'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STIterationsII]  -- superseded by `STIterationsII'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps
