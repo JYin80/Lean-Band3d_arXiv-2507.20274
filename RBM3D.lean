@@ -274,6 +274,7 @@ import RBM3D.Induction.ExpWardII
 import RBM3D.Induction.ExpWardI
 import RBM3D.Main.ZNet
 import RBM3D.Induction.ExpIntII
+import RBM3D.Induction.ExpIntEasy
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
