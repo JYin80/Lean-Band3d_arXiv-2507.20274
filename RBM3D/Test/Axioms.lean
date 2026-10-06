@@ -121,7 +121,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STXiBoot, -- `(am;asoi222)` (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`: S3-18b, S3-22; hypothesis of `iterationsA_step` (T2087)
-   `RBM.Gauss.Sizes.STOeqNQ'', -- `lem:STOeq_NQ`, R2* (DECISIONS §80): per-time form proved by T2246 (`stOeqNQPT''_holds`), lift S3-12c2
    `RBM.Gauss.Sizes.STXiBoot', -- `(am;asoi222)` at `B_s` (DECISIONS §80): S3-18b, S3-22; hypothesis of `STIterR'`
    `RBM.Gauss.Sizes.STOeqQt', -- `lem:STOeq_Qt`, R2* (DECISIONS §80): S3-18b
    `RBM.Gauss.Sizes.STOeqQtNZ', -- `lem:STOeq_Qt_nonzero`, R2* (DECISIONS §80): S3-22
