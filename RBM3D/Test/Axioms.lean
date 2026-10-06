@@ -196,7 +196,7 @@ def owedProps : List Name :=
    `RBM.Univ.UNClaim417, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOUDiag, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNJak, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
+   `RBM.Univ.UNOUClaims, -- bulk universality pin, the two 𝐇_t claims (T2273, UN-21: owed; owner UNOURow)
    `RBM.Univ.UNUyw, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNMLOut, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNLocAvgBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
