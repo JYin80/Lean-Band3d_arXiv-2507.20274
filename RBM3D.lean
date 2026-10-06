@@ -296,6 +296,7 @@ import RBM3D.Induction.QDriftA
 import RBM3D.Graph.AnpKey3
 import RBM3D.Universality.OUContraction
 import RBM3D.Graph.LWExpTerm4
+import RBM3D.BA.Step1Boot
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
