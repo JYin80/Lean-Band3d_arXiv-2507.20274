@@ -306,6 +306,7 @@ def structuralProps : List Name :=
    `RBM.Graph.NGraph.IsB2, -- ending edge of type B2 (`7_8:1136`): a defining predicate of the case split, hypothesis of `anpKey4_caseIII_ne`, `anpKey4_solid` (T2260)
    `RBM.Graph.AnpCaseIII, -- case (III) of the induction step (`7_8:1245`): two B2 ending edges at an internal vertex with `deg_s = 2`, a defining predicate of the case split, hypothesis of `anpKey4_reduce` (T2260)
    `RBM.Graph.NGraph.NoA2, -- `(eq:noA2)` (`7_8:1146`), no A2 edge on `𝐃_π`: a data condition on the graph, hypothesis of `anpDetGhReg_of_noA2` and of the case pins (T2242)
+   `RBM.Graph.anpKey5_perPath, -- every path of a nested graph has at most one edge that is a ghost or in the reserved set `M` (the long edges of LW-12f's union bound): a data condition on the pair `(Γ, M)`, hypothesis of `anpKey5_cert`, `anpKey5_cross_ge`, `anpKey5_inside_ge` (T2264)
    `RBM.Path.HermTestFun,      -- the class of observables `Φ` (`C²` and bounded at Hermitian points): a data condition on `Φ`, hypothesis of `stepDecomp` (T2073, ST2-22; DECISIONS §20)
    `RBM.Gauss.AdjacentMismatch, -- two consecutive block labels of a finite label word differ: a data condition on the labels, hypothesis of `initialLoopValue_zero_of_adjacentMismatch` (T2077, S1-06; DECISIONS §20)
    `RBM.Graph.LGraph.Consistent, -- a term `Dot · Γ` of the dotted edge partition has no `×`-dotted edge inside a class of `=`-dotted edges (`dot-def`, `7_8:221`; T2050)
