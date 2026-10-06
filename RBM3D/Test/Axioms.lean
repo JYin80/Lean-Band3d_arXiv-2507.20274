@@ -231,7 +231,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNEMCTE2RowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
    `RBM.Univ.UNJakUywRowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
    `RBM.Univ.UNClaimRowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
-   `RBM.Univ.UNDensBARow', -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-C2, `unDens'_freeConvST`)
    `RBM.Univ.UNTrLocalBARow, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1)
    `RBM.Univ.UNTrLocalInitBARow', -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, BA model at coupling `λ e^{t*/2}`, BA-D8)
    `RBM.Univ.UNNormBARow, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, `‖V‖ + λ‖Ψ‖`)
