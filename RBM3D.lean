@@ -331,6 +331,7 @@ import RBM3D.Graph.BAVocab
 import RBM3D.Graph.LWMomExpFar
 import RBM3D.BA.ImmLower
 import RBM3D.BA.CombesThomas
+import RBM3D.Universality.GUEPhase.EntryTail
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
