@@ -236,7 +236,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STExpIntIII, -- `6:94-96` integrated estimate, regime (iii): S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntIV, -- `6:94-96` integrated estimate, regime (iv): S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntI, -- `6:97`, `6:104-132` integrated estimate, regime (i): S6-09; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STExpWardI, -- `6:104-107`, `6:121-131` Ward term, regime (i): S6-10; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIniI, -- `6:117`, `3_5:1649`, `3_5:1659` initial term, regime (i): S6-11; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Gauss.Sizes.STExpIntII, -- `6:97`, `6:142-147` integrated estimate, regime (ii): S6-12; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Endpoints.decol, -- Thm 2.1 `1_2:357-370`: MA-03 `decol_of_locSC` + MA-04; MA-01 (T2210, DECISIONS §16, §20: owed)
@@ -333,6 +332,7 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STExpIntQConcl, -- conclusion of the integrated estimate with Q (`6:94-132`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpIniIConcl, -- conclusion of the initial term, regime (i) (`6:117`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpIniIConcl', -- conclusion of the initial term, regime (i), positive mollifier constants (`6:117`; T2223a); S6-11 (T2223, DECISIONS §20: structural)
+   `RBM.Gauss.Sizes.STExpWardIConcl', -- conclusion of the Ward term, regime (i), positive mollifier constants (`6:104-107`, `6:121-131`; DECISIONS §73); S6-10 (T2232, DECISIONS §20: structural)
    `RBM.Endpoints.locBad1] -- the bad event of `(G_bound)` in `locSC` (MA-01, `Endpoints.lean:136`); `¬ locBad1` is a hypothesis of the deterministic `decol_core` (MA-03, T2225, DECISIONS §20: structural)
 
 /-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
