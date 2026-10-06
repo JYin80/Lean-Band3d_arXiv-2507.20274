@@ -152,6 +152,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWtermExpS, -- `lem: EWGn2_N`, strict regime: LW-01
    `RBM.Gauss.Sizes.LWtermExpN, -- `lem: EWGn2_N`, `1 - t ≤ ĝ²/L²`: LW-16
    `RBM.Gauss.Sizes.LWtermEXP, -- `lem:LWterm_EXP` (`6:83-88`): LW-14
+   `RBM.Gauss.Sizes.LWCutExp, -- one cut of `(eq:EGC)` in expectation, `(eq:ELW_term)` (`B:10-13`), premise of `lwTermEXP_of_cut` (T2236): LW-14b
    `RBM.Gauss.Sizes.LWMoment, -- `lem:LW_moment` (`7_8:72-77`): LW-02
    `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-02, LW-13
    `RBM.Gauss.Sizes.LWAnpKey, -- `lem:Anp_key` (`7_8:960-985`): LW-12
