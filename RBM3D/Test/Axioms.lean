@@ -157,9 +157,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWtermExpN, -- `lem: EWGn2_N`, `1 - t ≤ ĝ²/L²`: LW-16
    `RBM.Gauss.Sizes.LWtermEXP, -- `lem:LWterm_EXP` (`6:83-88`): LW-14
    `RBM.Gauss.Sizes.LWCutExp, -- one cut of `(eq:EGC)` in expectation, `(eq:ELW_term)` (`B:10-13`), premise of `lwTermEXP_of_cut` (T2236): LW-14b
-   `RBM.Gauss.Sizes.LWExpI1K, -- `I₁`, `J₁` (`(eq:termI1)`, `B:37-41`) with a decaying first kernel `K`, premise of `lwCutExp_of_terms` (T2243): LW-14d
-   `RBM.Gauss.Sizes.LWExpI23K, -- `I₂`, `I₃`, `J₂`, `J₃` (`(eq:termI2)`, `B:43-49`) with a decaying first kernel `K`, premise of `lwCutExp_of_terms` (T2243): LW-14d
-   `RBM.Gauss.Sizes.LWExpI41K, -- `I₄₁`, `J₄₁` (`(eq:termI41)`, `B:57-70`) with a decaying first kernel `K` and the 2-loops of charge `(s, +)`, premise of `lwCutExp_of_terms` (T2243): LW-14d
    `RBM.Gauss.Sizes.LWExpG5', -- `I₄₂`, `J₄₂` (`(eq;I42inG)`, `(eq;EGxy:x=y)`) with first kernel `S^{(B)}` or `K⁺` and last charge `±`, premise of `lwCutExp_of_terms` (T2243): LW-14c
    `RBM.Gauss.Sizes.LWMoment, -- `lem:LW_moment` (`7_8:72-77`): LW-02
    `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-02, LW-13
