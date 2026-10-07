@@ -699,3 +699,22 @@ Hub 报告无票可做（所有已放行票均已合并）。总调度：
 - CONTROL.md 放行 T2310（278）和 T2311（279），加入 Pre-release checks
 - CONTROL.md 写 H103（commit 指令：自 H94 b2529ba 起的调度文件，§92–§115，提交 + push）
 - 数学监督 trig_01R1NVdwWjDU2P5KMhtTLr43 将在 07:41 UTC 处理三个 open REQ（REQ-1459、REQ-0623、REQ-0650）
+
+## §117 — T2310-check / T2311-check 重写（2026-10-07 08:xx UTC）
+
+H103 执行后 Hub 报告两个 check 文件均编译失败：
+
+- **T2310-check.lean**：exit 1，"object file '.../QEndB1.olean' does not exist"。
+  原因：check 文件直接 import 了待创建的新模块 `RBM3D.Induction.QEndB1`（照抄 T2310 §7 格式，格式不符合
+  预发布 check 规范）。修复：去掉新模块 import，改为 import 真实依赖（QEndGrid、QEndA、NQEndFlow、
+  QLevelsA、NQLin、GridGoodN、NQBudget、KLFinal），Section 1 `#check` 已合并符号，Section 2 在临时
+  namespace `RBM.Gauss.Sizes.T2310Check` 内定义 `STXiBootPT'`、`STOeqQtPT'`，Section 3 声明 pin Prop。
+
+- **T2311-check.lean**：exit 1，17 个 unknown identifier 错误（`MNode`、`cMerge` 等）。
+  Hub 注记："the merged cert names are in namespace `RBM.Graph.LWCert` (`RBM3D/Graph/LWExpCert.lean:35`);
+  the check opens only `RBM.Gauss.Sizes`"。修复：去掉 `open RBM.Gauss.Sizes` 对 cert 符号的依赖，
+  Section 1 改用 `#check @RBM.Graph.LWCert.MNode` 等全限定名；Section 2 从 `#check` 不存在符号改为
+  在临时 namespace `RBM.Graph.T2311Check` 内定义新符号（逐字照探针文本），`Cand.toR` 因需 proof term
+  `cands_spec` 而以 `axiom` 声明（仅用于类型检查，此文件永不被 import）。
+
+正确格式参照：`docs/tickets/checks/T2308-check.lean`（§92）。写 H104（commit 两个修复后的 check 文件）。
