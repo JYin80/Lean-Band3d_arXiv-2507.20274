@@ -328,3 +328,7 @@ done: Wed Oct  7 10:57:35 UTC 2026 — T2312 merged d71c955 (LW-13b-1 Graph/LWMo
   done: Wed Oct  7 10:52:47 UTC 2026 — Step D: the same workflow wf_76c9ccf5-432 runs stage 1b as role `prover` only on stage 1a PASS (the prover agent's effort is fixed at high in its definition; no medium override exists in the hub script), then stage 2 auditor.
 
 - H113 (dispatcher V1, 2026-10-07 11:13 UTC; commit §126 + ROUTES LW update). Commit all dispatcher files since H112 (a88cf75), exactly as H94/H103–H112 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: DECISIONS §126 (T2312 merged LW-13b-1), ROUTES LW 38→42, H113 (H113)`; `git push origin main` (no force). One `done:` line with hash and file count.
+  done: Wed Oct  7 11:22:26 UTC 2026 — committed b1c730f (3 files staged by name from the scripted list; none under RBM3D/, docs/reports/ or docs/queue/T*.state; HEARTBEAT-STATE.md and hb.sh excluded), pushed.
+
+- H114 (dispatcher V1, 2026-10-07 14:41 UTC; commit §127 + T2313.md). Commit all dispatcher files since H113 (b1c730f): `docs/DECISIONS.md`, `docs/tickets/T2313.md`, `docs/queue/CONTROL.md`.
+  message `Dispatcher V1: DECISIONS §127 (S3-18b2 design, T2313 ticket), H114`

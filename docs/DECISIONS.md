@@ -875,3 +875,57 @@ theorem lwMomExp_valOnD_eq_valOn {p q : ℕ} {ι : Type*}
 - T2311（LW-14e-3 Sim，7e7b3be，09:43 UTC Oct 7）：LW 40→41（过 41 → 监督 O1 满足）  
 - T2312（LW-13b-1，d71c955，10:57 UTC Oct 7）：LW 41→42（本节）  
 **H113：** commit 本节 + ROUTES LW 更新（38→42，四条合并记录）。
+
+## §127 — S3-18b2 设计：PrecPT→Prec 提升 + n_=2 缺口；拆为 T2313（S3-18b2a）+ T2314（S3-18b2b）（总调度，2026-10-07 14:37 UTC）
+
+**来源：** Fable 5.1 子代理调查（aee8f35731ec80f34，71 工具调用，292157 token；14:12–14:27 UTC）
+
+### STXiRound' vs STXiRoundPT' 差异
+
+两者**仅两处不同**：（a）阈值 `2 ≤ n_` vs `3 ≤ n_`；（b）结论中 `Prec` vs `PrecPT`（index set 均为 `STPair s t`）。假设（四条 `Prec` 前提）、控制参数和 RHS（`B_u^{1/6} XLK n_ + STbootRHS 1`）完全相同。
+
+签名（`variable (sz : Sizes d)`，namespace `RBM.Gauss.Sizes`）：
+- `STXiRound'`（QtNonzeroBoot.lean:92）：`∀ n_ p, 2 ≤ n_ → … → Prec sz (U := STPair s t) (STXiLK n_) (ζ)`
+- `STXiRoundPT'`（QEndB1.lean:84）：同上但 `3 ≤ n_`，结论为 `PrecPT`
+
+`STIngR`（Step34Pins.lean:445）：`3 ≤ d` → ∃ 𝔠d > 0 → …（流条件）→ `R sz s t` → `Concl sz (STflowE z) s t`。
+
+### PrecPT→Prec 桥接模式
+
+无通用桥（`stochDomAt_of_perTimeDomAt` 需 `Fintype (U l)`，`STPair` 为无界不可数集）。已有模式（T2258 NQEndFlowLift.lean、T2299 QtNonzeroFlowLift.lean，均为 `private`）：
+
+1. **包络**：`nqFlowSharp t XL/XLK`（公开，非降，`1 ≤ X♯ ≤ X`）；转移 pair 假设
+2. **ζ♯ 引理**（lo=1）：`1 ≤ ζ♯`，`ζ♯` 对 u 单调，`ζ♯ ≤ ζ`（可从 lo=2 版本直接复制）
+3. **对角约束**：LHS 仅依赖 `q.1.1`，ζ♯ 对 `q.1.2` 单调 → 在 `TimeIcc s t n × Unit` 上 PT 约束对角化
+4. **单侧网提升**（~150 行 private copy）：`(w ↦ ξ(w,n_) ≺ ζ♯(w))` PrecPT → Prec
+5. **对角→pair 传播**（~30 行）：`StochDomAt.of_subset` + `prec_of_le_right ζ♯ ≤ ζ`
+6. **组装**：`stXiBootR_of_round d STCaseI H` 得 `STOeqQt' d`
+
+第三份 private copy 不可避免（T2299 已接受 verbatim copy 先例）。
+
+### n_=2 缺口（实质性）
+
+T2310 的 `3 ≤ n_` 来源：`altGridEndQN`（QEndGrid.lean:1326，`1 ≤ m`）→ `altGrid_arith`（:1225，`τ' = min(ε/4, e₂/(40·d·m))`，`m=0` 分母为零）。底层层（QProxy、altYGridN、startLevelQN）无下界，`m=0` 有效。
+
+解决方案：Primed successor `altGridEndQN'`（`τ' := min(ε/4, e₂/(40·d·(m+1)))`）+ `STXiRoundPT''`（`2 ≤ n_`，PrecPT）→ `stOeqQtRoundPT''_holds : ∀ d, STOeqQtRoundPT'' d`。改动限于 QEndGrid/QEndA/QEndB1 中的 primed successor（原签名冻结，TEAM §5.3），≈250-350 行。
+
+`altQFlow_core`（QEndB1.lean:721）at `m=0`：`XLK 1 ≤ STbootRHS 1 … 2 p` 因 `Icc 1 1` 平凡成立；数值行 `altGrid_arith` 以 `m+1` 替换 `m` 后 `τ'·d·m = τ'·d·(m+1)-τ'·d` 边界仍满足（需重检，放入 T2313 工单）。
+
+### 设计决定：拆两票
+
+**T2313 = S3-18b2a**（前置）：
+- 目标 pin：`stOeqQtRoundPT''_holds : ∀ d, STOeqQtRoundPT'' d`（`STXiRoundPT''`，`2 ≤ n_`，PrecPT 结论）
+- 改动：QEndGrid（`altGridEndQN'`，~120 行）+ QEndA（`gridDriftQN_envelope'`，~15 行）+ QEndB1（`STXiRoundPT''` 定义 + `stOeqQtRoundPT''_holds`，~150 行）
+- 依赖：T2302（S3-18a2，QEndGrid，ec3f678）+ T2294（S3-18a1，QEndA，8a0c4cd）+ T2310（S3-18b1，QEndB1，319bf17）；均已合并；无 HELD 依赖 → **可立即开工**
+- 估计：250–350 行；角色：`prover-hard`
+
+**T2314 = S3-18b2b**（主，依赖 T2310 + T2313）：
+- 目标 pin：`stOeqQt'_holds : ∀ d, STOeqQt' d`（`STIngR d STCaseI STXiBoot'`，`STOeqQt'` NQEndFlow.lean:127）
+- 新文件：`RBM3D/Induction/QtXiRoundLift.lean`；包络 + ζ♯(lo=1) + 对角 + 单侧网 + 对角→pair + 组装
+- 依赖：T2310（319bf17）+ T2313（待合并）+ T2304（S3-22c，7812b3c，`stXiBootR_of_round`）
+- 估计：700–750 行；角色：`prover-hard`
+
+### ST-3 下游
+T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:134）→ ST-3 46/46。
+
+**H114：** commit 本节（§127）+ T2313.md。
