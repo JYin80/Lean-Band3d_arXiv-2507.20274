@@ -40,7 +40,7 @@ open RBM RBM.Graph NGraph
 `lwMomExp_valOnD Γ ξ a b D` equals `NGraph.valOn` restricted to `D^q = piFinset D`.
 Declared here without proof (this check file contains no proofs). -/
 def lwMomExp_valOnD_eq_valOn_pin : Prop :=
-  ∀ {p q : ℕ} {ι : Type*}
+  ∀ {p q : ℕ} {ι : Type}
     (Γ : NGraph p q) (ξ : ι → ι → ℝ) (a b : Fin p → ι) (D : Finset ι),
     lwMomExp_valOnD Γ ξ a b D =
       Γ.valOn ξ a b (Fintype.piFinset (fun _ : Fin q => D))
