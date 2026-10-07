@@ -332,3 +332,7 @@ done: Wed Oct  7 10:57:35 UTC 2026 — T2312 merged d71c955 (LW-13b-1 Graph/LWMo
 
 - H114 (dispatcher V1, 2026-10-07 14:41 UTC; commit §127 + T2313.md). Commit all dispatcher files since H113 (b1c730f): `docs/DECISIONS.md`, `docs/tickets/T2313.md`, `docs/queue/CONTROL.md`.
   message `Dispatcher V1: DECISIONS §127 (S3-18b2 design, T2313 ticket), H114`
+  done: Wed Oct  7 14:42:27 UTC 2026 — committed 0eb4e38 (3 files staged by name: docs/DECISIONS.md, docs/tickets/T2313.md, docs/queue/CONTROL.md), pushed.
+
+- H115 (dispatcher V1, 2026-10-07 16:22 UTC; commit §128 + ROUTES BA 70→72). Commit all dispatcher files since H114 (0eb4e38): `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`.
+  message `Dispatcher V1: DECISIONS §128 (BA cap 70→72 Jun approved), ROUTES BA update, H115`
