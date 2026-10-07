@@ -718,3 +718,22 @@ H103 执行后 Hub 报告两个 check 文件均编译失败：
   `cands_spec` 而以 `axiom` 声明（仅用于类型检查，此文件永不被 import）。
 
 正确格式参照：`docs/tickets/checks/T2308-check.lean`（§92）。写 H104（commit 两个修复后的 check 文件）。
+
+## §118 — T2310-check / T2311-check 第二轮修复（2026-10-07 08:38 UTC）
+
+H104 执行后 Hub 编译两个 check 文件，再次失败：
+
+- **T2310-check.lean**（exit 1）：`RBM.Gauss.Sizes.perTimeDomAt_iff_forall_section` 不存在。
+  Hub 注：the merged lemma is `RBM.Path.perTimeDomAt_iff_forall_section`，定义在
+  `RBM3D/Defs/StochDomAt.lean:213`（namespace `RBM.Path`，开于 line 183）。
+  修复：将 `#check` 行改为 `@RBM.Path.perTimeDomAt_iff_forall_section`；import 不变（NQEndFlow 已
+  间接引入 StochDomAt）。
+
+- **T2311-check.lean**（exit 1）：`RBM.Graph.LWCert.MNode.toP` 不存在（line 79 & 111）。
+  原因：在 namespace `RBM.Graph.T2311Check` 内写 `def MNode.toP`，全限定名为
+  `RBM.Graph.T2311Check.MNode.toP`；但使用处 `N.toP h`（dot 语法）令 Lean 查找
+  `RBM.Graph.LWCert.MNode.toP`（`N : MNode` 的类型命名空间），后者不存在。
+  修复：将两处 `N.toP h` 替换为显式调用 `MNode.toP N h`（Lean 在当前 namespace 下先找
+  `RBM.Graph.T2311Check.MNode.toP`，正确解析）。
+
+写 H105（commit 两个第二轮修复后的 check 文件 + DECISIONS §118）。

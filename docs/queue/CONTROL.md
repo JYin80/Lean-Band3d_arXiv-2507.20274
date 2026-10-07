@@ -259,3 +259,13 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
     lake env lean docs/tickets/checks/T2311-check.lean
   One `done:` line per compile with exit code.
   On exit 0 for both: start T2310 (S3-18b1) and T2311 (LW-14e-3 Sim) per their ticket specs and queue entries 278–279 above.
+  done: Wed Oct  7 08:22:59 UTC 2026 — committed 06e43c7 (4 files staged by name from the scripted list: DECISIONS.md, CONTROL.md, T2310-check.lean, T2311-check.lean; none under RBM3D/, docs/reports/ or docs/queue/T*.state), pushed.
+  done: Wed Oct  7 08:22:44 UTC 2026 — `lake env lean docs/tickets/checks/T2310-check.lean`: exit 1. Error lines: `docs/tickets/checks/T2310-check.lean:45:8: error(lean.unknownIdentifier): Unknown constant `RBM.Gauss.Sizes.perTimeDomAt_iff_forall_section`` (hub note: the merged lemma is `RBM.Path.perTimeDomAt_iff_forall_section`, used at `RBM3D/Green/Pins.lean:253`). T2310 does not start.
+  done: Wed Oct  7 08:22:48 UTC 2026 — `lake env lean docs/tickets/checks/T2311-check.lean`: exit 1. Error lines: `docs/tickets/checks/T2311-check.lean:79:55: error(lean.invalidField): Invalid field `toP`: The environment does not contain `RBM.Graph.LWCert.MNode.toP`, so it is not possible to project the field `toP` from an expression`; `docs/tickets/checks/T2311-check.lean:111:63: error(lean.invalidField): Invalid field `toP`: The environment does not contain `RBM.Graph.LWCert.MNode.toP`, so it is not possible to project the field `toP` from an expression` (hub note: no `MNode.toP` exists on main (`grep -rn 'MNode.toP\|def toP' RBM3D/`: no hits); the check also declares `axiom Cand.toR` at line 77). T2311 does not start.
+
+- H105 (dispatcher V1, 2026-10-07 08:38 UTC; DECISIONS §118). Commit the dispatcher's files written since H104 (06e43c7), exactly as H94/H103/H104 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: second-round fixes T2310-check/T2311-check (DECISIONS §118) (H105)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
+  Then compile both check files in the main worktree:
+    lake env lean docs/tickets/checks/T2310-check.lean
+    lake env lean docs/tickets/checks/T2311-check.lean
+  One `done:` line per compile with exit code.
+  On exit 0 for both: start T2310 (S3-18b1) and T2311 (LW-14e-3 Sim) per their ticket specs and queue entries 278–279 above.

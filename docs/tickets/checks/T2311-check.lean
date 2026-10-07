@@ -76,7 +76,7 @@ def Rel (N : MNode) (P : PGraph (Fin 2)) : Prop :=
 /-- `Cand.toR` (probe 547-552): needs `cands_spec` (proved in LWExpSim.lean);
     declared as `axiom` here — never imported into the main build. -/
 axiom Cand.toR (N : MNode) (h : Function.Surjective N.ext)
-    (c : Cand N.a N.b) (hc : c ∈ cands N.g) : RCand (N.toP h)
+    (c : Cand N.a N.b) (hc : c ∈ cands N.g) : RCand (MNode.toP N h)
 
 /-- `cPartitionX` (probe 572-577): model partition with exponents. -/
 def cPartitionX {a b : ℕ} (Γ : LGraph (Fin (a+1)) (Fin b))
@@ -108,7 +108,7 @@ def PartitionSim : Prop :=
   ∀ (N : MNode) (h : Function.Surjective N.ext) (m : ℂ),
     List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : PGraph (Fin 2)) =>
         Rel r.2 Q ∧ Q.g.coeff = m ^ r.1.1 * star m ^ r.1.2 * r.2.g.coeff)
-      (cPartitionX N.g N.ext) ((N.g.partition m).map (pcomp (N.toP h)))
+      (cPartitionX N.g N.ext) ((N.g.partition m).map (pcomp (MNode.toP N h)))
 
 /-- `ChildrenSim` (probe 606-610): Bridge 2 — model children vs real children. -/
 def ChildrenSim : Prop :=

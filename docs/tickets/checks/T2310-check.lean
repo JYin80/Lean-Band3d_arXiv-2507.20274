@@ -42,7 +42,7 @@ open scoped NNReal ENNReal
 #check @RBM.Gauss.Sizes.STCaseI
 #check @RBM.Gauss.Sizes.STOeqNQ
 -- StochDomAt (transitively imported), namespace `RBM.Gauss.Sizes`
-#check @RBM.Gauss.Sizes.perTimeDomAt_iff_forall_section
+#check @RBM.Path.perTimeDomAt_iff_forall_section
 -- KLFinal (`RBM3D/Loop/KLFinal.lean`), namespace `RBM.Loop` (`:49`)
 #check @RBM.Loop.KLbound_holds
 
