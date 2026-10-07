@@ -551,3 +551,151 @@
 - (2) **S3-22 拆 a/b/c**（S3-21 = T2274 起草）：照情形 (i) 已合并链（S3-12a/b/c1/c2 共约 5600 行）比较，S3-21 后剩约 3000 行：**S3-22a**（网格端点 `nzGridEndN`）、**S3-22b**（逐时刻流 + 提升）、**S3-22c**（`newPQ` 组合 + 自举 → `stOeqQtNZ'_holds`，删 owed 行）。预算项挪进 S3-21（同 S3-12a）。ST-3 计划 41 → 43。§83 的情形 (ii) 类比成立且更强：EK-5 无衰减、无和为零前提，不要衰减类、远部分、比权与近/远 QV 拆分。写 S3-18b 时让自举在区域上写成通用形，S3-22c 照用。
 - (3) **T2269c**（审核 O1）：T2269 为实例登记 `STKboundgL`、`STLKgL`、`STLocalMaxgL` 为 owed（净 owed +2），照 §90 照准；证明票：BA 链 BA-K4/BA-V2/BA-S3（登记注释已写）。T2269b（`BABootstrap'` 有未用前提）记 D581，留 BA-S3 起草时参考；不另开瘦身主撇。
 - (4) T2276 新钉的 d≥3 OU 接口行（`UNOULL`、`UNOUEq747`、`UNG1Row`、`UNG2bRow`；删 `UNOURow`、`UNOUDiag` 的 owed 行）与 `ouTauMax` 的设计值（T2276a/b）、S3-22 三拆，一并请监督核（REQ-2026-10-06-0854）；不扣票（预检先查）。
+
+## §92 BA 可写清单；§91 (1) 更正；监督 0956；S3-17a 线性水平；T2265 形状；LW-13 拆分（总调度，2026-10-06 10:00 UTC，流程事项）
+- (1) **BA 盘点**（T2161/T2205/T2173 计划表对合并文件）：现可写 **BA-D3（Ward）**（`BA/Ward` + `BA/OffDiag`：`BAWard`、`BAoffDiag`、`BAPropM` (1)(2)，钉文在 `MFixedPoint.lean:557-591`，T2161-portmap:998、1056；为免与 BA-D3 设计单同名，票里称「P.9 row BA-D3 (Ward)」）、**BA-D6**（`BA/Boundary`：`BAmBoundary`，`:1000`、`:1058`；RBM2D 源 `FreeConvStability` 已移植，或低于估计）、**BA-L1**（`Graph/BAVocab`，`:1044`、`:1102`）。下一层：D4 ← D3；D7 ← D6；G1 ← D4、D7；L2 ← L1（套 D402 的 GGGamma 系数修正）；C2 ← D2、D3、D4、D6、D7；L3 还要 LW-12f（已合并），L4 要 LW-14e/f。计划表过时处：BA-S3 文件名（现 `BA/Step1Fam`）、BA-S1 依赖 G6/K4 已去（§72 (3)）、G6 现欠三条事件形钉文、`BAWard` 等确定性钉文无登记行（第一个用到的票补）。BA-S3 = T2277、UN-30 = T2278 已放行（09:43）。
+- (2) **§91 (1) 更正**：`EntryDet` 不需要 `Sblk2` 私有复制：RBM2D `Green/EntryBlock` 已移植为 `RBM3D/Green/EntryDom.lean`（T2057）。`EntryDet` 只带状（类 T）；BA 形属 BA-C3（`BA/GUEEntry`）。
+- (3) **监督 0956（REQ-0854）A、B 都 PASS**，照办：**O1** 写 UN-51 或 UN-52 的 QUEFlow 一半之前，先钉模型通用接口 `UNOULLk`、`UNOUEq747k`、`UNG1Rowk`、`UNG2bRowk` → `UNOURowk`（剖面作显式参数或新结构，不加 `UNKind` 字段，§57 (1)；T2276 的钉文作带状实例，照 `UNOUQUEk_band`）：新票 **UN-51g**（UN 计划 58 → 59）；否则 BA 要 P 类孪生 +2。**O2** UN-51 预检列 RandomLayerA 在 d≥3 的 `τ_U` 约束表；需更小值则 `ouTauMax'` + `UNG1Row'`；`UNG2bRow` 不用 `τ_U ≤ ouTauMax` 证。**O3** UN-47/50/51 的产出钉文取 `η_Q` 处 `qdBoundExp` 形（带 `Θ̃`）与 `η_LL` 处矩形，不抄 d=2 的 `Meta⁻³` 形。**O4** S3-22a 取 `D'' ≥ 2(k+2)/𝔠` 加余量（不是 `2k+4d+10`）。**O5** S3-22b 预定后备切法：逐时刻端点 / 一致提升（同 c1/c2），用到则 ST-3 43 → 44。**O6** `UNOUClaims` 登记注释改由 T2280 顺带。**O7** UN 计划 52 → 59，外推约 63 > 上限 60（Jun §50）：UN 到 40 的 REQ 写外推；超 60 是问 Jun 的事。**O8** 见 (5)。
+- (4) **S3-17a = T2279** 起草发现：合并的 S3-16b 漂移水平 `dDriftAltQN`/`alt_hdriftQN` 对 `Φ` 是二次的（来自 `GoodSetN` 的 (D2)，`STelklkM` 在 (2, k) 处含当前长度），高概率水平要控制 `Ξ̂_{n_}`，预算带 `N^{ε₀}·XLK(n_)²`，正是 §62 (2)/(4) 排除的，照原样闭不了 `STXiBoot'`。T2279 写成通用预算（`budgetAltQN`，同 `budgetNonAltLinN` 形）并钉线性水平 `dDriftAltLinQN`（经 `GoodLinN`，σ 通用）；**S3-17b** 改为线性漂移水平（`dFlowQN_levelLin`、`alt_hdriftLinQN`，约 200 行）+ 8 条假设的最终形式（RBM2D 13 条缩为 8 条），约 900 行；ST-3 计划不变（43）。S3-18a 要从它的好集族取 `n_−1` 长度处的 `hY`。请监督核（REQ）。
+- (5) **T2265（LW-14e）形状**（监督 0956 O8）：参考列表 30,609 / 31,159 片叶（票估约 400）；`LocStep.gg` 要 `hwf`，不适用带权图。决定：列表由展开过程本身定义（递归 `def`），目标 2 沿过程归纳、由逐步事实证，不枚举、不 `decide`；实例 (2) 去掉；带权的步事实直接证（私有），不走 `LocStep`；1b 预计超 1500 行则 RETURN 带切法（T2265a/b，LW 43 → 44）。`docs/tickets/T2265-amend-1.md`、H96。
+- (6) **LW-13 拆分**（T2281 起草）：设计行估 2511 行（高 3766）；论文短距区直接取自 `lem:LW_moment`（`7_8:1602`）。**LW-13a = T2281**（`Graph/LWMomExp`：远 `(adsuu33)`、近 `(adsuu_exp2)` 的确定性图核心）；顺序改为 LW-13a → LW-02 → **LW-13b**（`LWMomentExp`）→ LW-01（写 LW-02 前核 T2216:40 说它要 LW-13 的那一处）。LW 计划 42 → 43。疑点 S1：`𝐃_{>ℓ}` 用「或」定义（`7_8:1636`），路径不必有长于 `ℓ` 的边，远钉文可能不成立——预检先测，假则停报；S2：`EKTTk` 用 `zdistD`、`LWMomentExp` 用 `zdistInf`，LW-13b 要从 `LWLoopExp` 取 `zdistD` 边界或给 `EKTTk` 加 `zdistInf` 版。请监督核（REQ）。
+- (7) **UN-23 = T2280**：合并的 `UNUyw` 在 d≥3 以 `c' = 𝔠𝔡/30` 成立，无主撇；删 `UNUyw`、`UNJakUywRow` 两条 owed；角色降为 prover。
+- (8) 本轮 H95：T2265 工作流活着（09:41 仍有动作），未重启。
+
+## §93 UN-51g 与 BA-D3（Ward）放行；S3-21 合并（总调度，2026-10-06 10:15 UTC，流程事项）
+- (1) **UN-51g = T2282**（`Universality/OUInterfaceK`）照监督 0956 O1：新结构 `UNOUProfile K`（字段 `pm`、`pp`，`UNKind` 不加字段）、通用钉文 `UNOULLk`、`UNOUEq747k`（`qdBoundExp` 形，O3）、`UNG1Rowk`、`UNG2bRowk`（不要 `τ_U ≤ ouTauMax`，O2）、`UNOUProfRowk`；`ouRowk_of_pins`、`ouDiagk_of_ouLLk`、带状桥。登记：加 `UNOULLk`、`UNG1Rowk`、`UNG2bRowk`、`UNOUProfRowk`，删 `UNOURowk`、`UNOUDiagk`、`UNOULL`、`UNG1Row`、`UNG2bRow`（净 −1，§90）；`UNOURowBA` 留到 BA-C3。设计改动：bulk 条件放进 `∀ᶠ n`（BA 的 bulk 在个别 `n` 可为空，否则 `ouDiagk_of_ouLLk` 假），带状桥用补齐论证而非 `rfl`；`UNOUProfRowk` 用带状行差形 `C lam⁻² W^{-d}`，BA 剖面是否满足由 BA-C3 核。并入 REQ-1000 D 请监督核。UN 计划 58 → 59（§92 (3)），本票计入：UN 34/59。
+- (2) **P.9 row BA-D3（Ward）= T2283**（`BA/Ward`）：`BAWard`、`BAoffDiag` 无条件证，`BAPropM` 的 (1)(2) 作新钉 `BAPropM12`（`BAPropM` 本身随 (3) 归 BA-D4 登记）；无登记改动；`ε = κ²/4`（常数只依赖 `κ`，T2161 b.4 说依赖 `Λ` 不确）；未用的钉文前提照留并在报告列出。BA 14/68。
+- (3) S3-21 = T2274 合并（95d8b2a）：S3-22a 可写（`D'' ≥ 2(k+2)/𝔠`，O4）。
+
+## §94 T2281（LW-13a）远钉文不成立 → 只做近区；S3-22a、BA-D6 放行；BA-S3 合并（总调度，2026-10-06 10:34 UTC，流程事项）
+- (1) **T2281 1a FAIL（远目标）**：`AnpDetFarAt 3 anpKey_oneEdge` 照钉文假——`farD` 只限制内部标号，没有内部顶点的路径（`q = 0`）对 `ℓ > |a₀ − b₀|` 得不到因子 `T(ℓ)`（脚本反例，违背随 `ℓ` 增长）；`q ≥ 1` 且每条路径过内部顶点的情形（S1）未证未否。近区 `AnpDetNear` PASS；步引理照钉文（「新图仍 `IsNested`」）对 `loopG` 假，改正形：自环与不在路径上的边各以 `T(0) ≤ Ψ` 界掉、不变式「去掉 (1) 的 nested、删自环」。决定：**Amend 1** 只做近区（`lwMomExp_near`、实例、改正步 `lwMomExp_near_step'`），远区退回总调度，并入 REQ-1000 B4 请监督定改正钉文（候选：加「每条路径过内部顶点」或在 `farD` 限制外部标号；S1 的长边因子）。远区之后另票（LW-13c，LW 43 → 44，等答复）。S2（`zdistD` 对 `zdistInf`）确认，归 LW-13b。H97。
+- (2) **S3-22a = T2284**（`Induction/QtNonzeroEnd`，prover-max，1150/1400/1650，预定切法 T2284a/b）：`D'' := 2(k+2)/𝔠 + 1`（O4，d=3 表在票里）；初值假设取 `Q^{(A)}` 投影后的环（`budgetNZN` 对 `Γ`、`X0` 用同一 `ε₁`），S3-22b 由 `STLK s` 在 `ε₁/2` 推出（约 30 行）。ST-3 36/43。
+- (3) **BA-D6 = T2285**（`BA/Boundary`）：无条件证 `BAmBoundary`（各 `d`）；§92 (1) 说可复用 `FreeConvStability` 不对（那里只对小 `t`、谱近半圆；BA 是 `t = 1`），不导入；计划行的「`ρ_N` 连续」「bulk 开集」不在钉文里，归 BA-C2、BA-D7。BA 15/68。
+- (4) BA-S3 = T2277 合并（596a83a）：`BAFlowMember`、`BAStep1` 证出（`baStep1_holds` 以 `BAGbEXPii/ij` 为前提，§90）；`FlowFM.EvEq` 登记 structural。
+
+## §95 监督 1102；T2265 扣住、先做设计探针 LW-14e-D；LW-13c（「且」远域）；ST-3 水平规则（总调度，2026-10-06 11:28 UTC，流程事项）
+- (1) **T2265（LW-14e）扣住**：1b 在 Amend 1 上限处 RETURN（10:45）：不是大小问题，是**进展**——「每片叶 `ord ≥ tg`」要「`ord < tg` 的结点总有候选顶点」，Amend 1 的不变式推不出（`stuckG` 满足全部不变式、`ord = 3 < 5`、无候选；有界搜索 2/3 个内部顶点各 442/10,655 个卡住图）；论文 `B:97-108` 说 `(Oe2x)` 严格升 `ord`，Lean 只有「不降」（`Lvl1Good`）。监督 1102 C/O7：再放行前先做设计/探针步，按 (B) 证书路线（可计算模型 + 到 `LGraph.partition` 的正确性桥 + 内核检查具体树的进展与 `ord ≥ tg`）、(A) 限时脚本搜不变式、(C) 逐根项叶界的顺序选。决定：**LW-14e-D = T2288**（设计/探针，仅报告，prover-max，下一个空槽优先；探针里对具体树放开 `decide`/`rfl`，永不 `native_decide`）；T2265 在 CONTROL 里注明扣住，等 T2288 的切法再写 Amend 2 或新票。LW-14e 至少再两张。临界路径：`LWtermEXP` → Step 6 全部区域 → ST-6、MA-06。
+- (2) **LW-13（监督 1102 B）**：顺序 13a → 02 → 13b → 01 对（LW-02 = `LWMoment` 不要 LW-13；`Axioms.lean:163` 注释日后改「LW-13b」）。远钉文 (a)(b) 都修不好（`figAux` 反例，比值按 `e^{(√10−√6)√(m/ℓ_t)}` 增长）；改用「且」域 `𝐃^∧_{>ℓ}`，由合并的 `anpDetGh_holds` 得，S1 不再相关；近区覆盖两球之并（`2^q` 常数）。**LW-13c = T2289**（`Graph/LWMomExpFar`）；起草加前提 `ownExt`（每条路径只碰自己的 `a_i`、`b_i`，`lwAuxNested_holds` 的输出满足），并证 `LWAuxNestedOwn`；预检 (iii) 若确认 `f^{>ℓ}` 只限制 `a_1` 则 1a 后停。S2：要 `EKTTk` 的 `zdistInf` 版（O6），放进 LW-13b 或单开一票（+0/+1）。T2281 = LW-13a 近区已合并（e7d495b，`zdistD`/交集形）；O5（一般化近区步）来不及，LW-13b 需要时加孪生（加行不加票）。LW 计划 43 → 44；外推 45–48（O11）：LW 到 40 的 REQ 写外推；到 50 未闭合照 TEAM §6 建议 HOLD——在那之前安排 LW-14 的数学复核。
+- (3) **ST-3 水平规则（监督 1102 O3，照办）**：每张钉漂移水平或好集水平的 ST-3 票，票头引 §62 (2)/(4)，预检用一行核「没有水平要求控制当前长度的 `Ξ̂`」。T2272 的二次水平 `dFlowQN_levelM`、`alt_hdriftQN` 已合并但无消费者；下一张碰 `QLevelsB` 的票加一行文档串「不可用于 `STXiBoot'`（§62 (2)）」。**S3-18a** 要写出 `n_−1` 长度处 `hY` 的高概率事件（确定性水平 `Ξ̂_{n_−1} ≤ N^ε XLK(n_−1)`，`Prec` → 网格，同 `gridGoodN_holds` 的 (G2)）（O1）。
+- (4) **UN（监督 1102 D）**：bulk 放进 `∀ᶠ n` 对；`UNOUProfRowk` 的无损行差形对 BA 依赖两条未核事实（无损 `BAProp8`；由 `ρ_N ≥ κ` 得 `Im m` 下界）——T2282 已合并，记为 **BA-C3 的无损义务**（O9）。**UN-51 设计**（O8）：要钉模型通用的 ML 输入（`UNMLOut` 与 `UNMLOutBA` 为其实例），`g1Rowk` 加「`P` 是 `K` 的方差与 `m` 的 `Θ̃` 剖面」前提；否则 BA 仍要 RandomLayerB 孪生。O10：UN-51 用于 BA 时核 `BAFlow` 的 `∀ n, BAdom` 是否要在更小 `κ''` 处补齐。
+
+## §96 BA-D4、BA-D7 放行；S3-22a 合并（总调度，2026-10-06 11:43 UTC，流程事项）
+- (1) **BA-D4 = T2290**（`BA/CombesThomas`）：`BAPropM` 在 d≥3 照钉文成立，无条件；(3) 用加权 ℓ² Combes–Thomas（`BAMB_ct_core`，基于 `RBM.norm_sub_smul_ge_of_isHermitian`），常数 `C = 16d²/κ³`、`c = min(log(1 + κ/(4dΛ)), κ/2)`；不导入 RBM2D 的 CombesThomas（那是小耦合 Neumann 级数）；未用前提 `(2C)⁻¹ ≤ g`、`3 ≤ d` 列报告。`MFixedPoint.lean` 的「Owed: BA-D3/D4/D6/D7」文档串过时，留待清理（不改合并文件，§57 (1)）。
+- (2) **BA-D7 = T2291**（`BA/ImmLower`）：`BAImmLower` 照钉文成立，`c = κ⁵/64`，代数路线（两点估计 + 实点 Ward 界）代替计划的 Hölder-1/3 + Poisson 平滑；BA-D7 实际不依赖 BA-D6（只要 D2 与 T2283 的 `BAm_norm_le_one`）。监督 1102 O9 (b)（由 `ρ_N ≥ κ` 得 `Im m` 下界）由 `BAm_im_lower_of_bulk` 覆盖；O9 (a)（无损 `BAProp8`）仍归 BA-C3。角色降为 prover-hard。BA 18/68。
+- (3) S3-22a = T2284 合并（9664e13，`nzGridEndN`）：S3-22b 可写（后备切法：逐时刻端点 / 一致提升，监督 0956 O5；初值假设由 `STLK s` 在 `ε₁/2` 推出，§94 (2)）。
+
+## §97 S3-22b 拆 b/b2；UN-41/42 切法；S3-17b、BA-L1、LW-13c 合并（总调度，2026-10-06 12:01 UTC，流程事项）
+- (1) **S3-22b = T2292**（`Induction/QtNonzeroFlow`，逐时刻端点 `stOeqNZPT''_holds`，新钉 `STNZConclPT''`、`STOeqNZPT''`）；起草估全部约 1800 行，照监督 0956 O5 的预定后备切法拆出 **S3-22b2**（一致提升，`QtNonzeroFlowLift`：`STNZConcl''`、`STOeqNZ''`、`stOeqNZ''_holds`；票文在 `docs/tickets/T2292.md` 的 "Split" 节，T2292 合并后另编号放行，prover-hard）。ST-3 计划 43 → 44；本票计入：ST-3 38/44。`𝔠d := min 𝔠G 𝔠L`（情形 (ii) 不用 `st_window`，去掉情形 (i) 的 `1/(2d)`）。
+- (2) **UN-41 = T2293**（`GUEPhase/EntryTail` `:1-874`），**UN-42**（`EntryTailMain` `:876-1525`，约 680 行）T2293 合并后另编号放行（票文在 `docs/tickets/T2293.md` 的 "T2293b" 节；CONTROL 只放行 T2293 节）。类 T，只带状，不要 ML 输入；RBM2D 的 `Kstab2`/log 渐近在 d≥3 消失。UN 计划不变；本票计入：UN 35/59。
+- (3) 合并：S3-17b = T2286（acb4f83，线性漂移水平；S3-18a 可写，带 `n_−1` 处 `hY` 事件，§95 (3)）、BA-L1 = T2287（c230ce5，BA 图词汇；BA-L2 可写，套 D402 GGGamma 修正，`BAlanlw`/`BAlweight`/`BAGGGamma` 由 BA-L2 自加）、LW-13c = T2289（fbec579，「且」远域）。
+
+## §98 S3-18a 拆 a1/a2；BA-L2 拆 a/b/c（BA 到上限 70）；BA-D7 合并（总调度，2026-10-06 12:15 UTC，流程事项）
+- (1) **S3-18a1 = T2294**（`Induction/QEndA`）：词汇 `altYSetN`、`altExitTauN`；`n_−1` 长度处的 `hY` 事件 `altYGridN`（监督 1102 O1；`Prec` → 网格，复用 `gridGoodN_holds` 的 (G2)）；组合 C1–C5。全部约 2050 行，拆出 **S3-18a2**（`Induction/QEndGrid`，网格端点 `altGridEndQN`，prover-max，约 1250 行，T2294 合并后另编号）。ST-3 计划 44 → 45；本票计入 39/45。起草发现第三处 ST-3 形状失误：合并的 `assembledRHSAltQN`/`budgetAltQN` 的 `hR` 用非交错的 `stepErrN`，而 𝒬 过程余项 `rGridQN` 只由 `qErrQN` 界（`QGridA.lean:2114`）；T2294 加桥 C1b `assembledRHSAltQN_qErr_le`（约 50 行，右端加 `N^{−D_t}`，S3-18a2 以 `ε₀/2` 吸收），不改钉文。ST-3 过 40 那轮的 REQ 一并报。
+- (2) **BA-L2 拆 a/b/c**：全部约 3600 行（计划 2400）；**BA-L2a = T2295**（`Graph/BAExpand`：BA 流 `g₀Ψ + √t V` 的 Stein 层，钉 `BAlanlw` 并证，`lanlw` 作 `BAGraph` 运算，`scalingOrderG` 记阶）；**BA-L2b**（`Graph/BAExpandW`，`BAlweight`）、**BA-L2c**（`Graph/BAExpandGG`，`BAGGGamma` 带 D402 修正）后续。BA 计划 68 → **70 = 上限**（§57）。**此后 BA 再加票即超上限，是要问 Jun 的事**；新的拆分优先在既有票内消化。本票计入 BA 19/70。
+- (3) BA-D7 = T2291 合并（30f7ef8，479 行，低于估计）：BA-G1（等 T2290）、BA-C2（等 T2290）可写。
+
+## §99 BA-G1、LW-02 放行（总调度，2026-10-06 12:30 UTC，流程事项）
+- (1) **BA-G1 = T2296**（`BA/GreenSchur`）：计划行未给 G1 钉文；定为后续 G 票要的确定性层（11 个目标：流处实轴 bulk 数据、耦合窗、D3/D4 的细格 `M` 事实、预解恒等式 `BAGt_sub_BAMfine`（新 def `BAflowPert`）、Schur 结构）；`(eq_resolventunderpoly)` 的格和一步留给 BA-T2（`(eq:Psi)` 未入库）；`V` 的块外零只几乎处处成立（`Xentry` 无方差因子），两个 Schur 目标以块支撑为前提，证明归 BA-G2。不证钉文、不改登记。预设切法在同一分支内（不加票）；超 1500 行则 RETURN，因 BA 已到上限，要问 Jun。BA 20/70。
+- (2) **LW-02 = T2297**（`Graph/LWMoment`）：照钉文证 `LWMoment`，删其 owed 行，`LWMomentExp` 注释改「LW-13b」（监督 1102 §2.1）。疑点 S1：`LWf` 用 `S = svarF`，展开用方差 `t·svarF`，直接走会损 `t^{-p}`；修法为齐次性 + 新不变式（每个展开输出保留至少 `p` 条黑色波浪边，沿 `LocStep` 传）——预检确认无 `LocStep` 规则删掉它，否则 1a 后停，由总调度定主撇 `LWMoment'`。预设切法：超 1500 行则 §1–§2 移 LW-02′（`Graph/LWMomentA`），LW 44 → 45。LW 36/44。
+
+## §100 UN-42 = T2298（总调度，2026-10-06 12:51 UTC，流程事项）
+- UN-41 = T2293 合并（e5c3253）后，UN-42 放行为 **T2298**：票文即 `docs/tickets/T2293.md` 的 "Ticket: T2293b" 节（改号，免得中枢工具处理带字母的票号），检查文件照抄 T2293 的（12:04 已编译 exit 0）；合并名与 T2293 票文不同处以合并为准。UN 计划不变；本票计入 UN 36/59。以后拆出的后半票一律另编号放行（S3-22b2、S3-18a2、BA-L2b/c 同此）。
+
+## §101 S3-22b2 = T2299；ST-3 过 40 写 REQ（总调度，2026-10-06 13:06 UTC，流程事项）
+- (1) S3-22b = T2292 合并（59a0ab5，`stOeqNZPT''_holds`）后，S3-22b2（一致提升）放行为 **T2299**（票文即 T2292.md 的 "Split" 段，改号，§100；检查文件照抄 T2292 的）。ST-3 40/45。
+- (2) **门槛（§89）**：ST-3 宽口径计数到 40，本轮写 `REQ-2026-10-06-1307`：外推、三处形状失误（§62 (2)/§92 (4) 二次水平、§98 (1) 余项界）、剩余链。
+
+## §102 T2295（BA-L2a）只合并 L2a1；L2a2 并入 BA-L2b（总调度，2026-10-06 13:23 UTC，流程事项）
+- T2295 的 1b 在票内 1500 行切点停下，交了 BA-L2a1（d57aa36，904 行：词汇、钉文 `BAlanlw`、`baLanlw_holds`、实例 I1–I2，构建通过）。因 BA 已到上限 70（§98 (2)），不另开 L2a2：**Amend 1** 把 T2295 的目标缩为已交部分，审核后合并（H99）；目标 3（`lanlw` 作 `BAGraph` 运算、值恒等式、`scalingOrderG` 断言）与实例 I3–I4 并入 **BA-L2b**（`Graph/BAExpandW`，`BAlweight`），写 L2b 时一并起草，必要时 L2b 内部分节、超限则 RETURN 问 Jun。BA 仍 20/70。
+
+## §103 T2297（LW-02）扣住：缺与 m 无关的展开列表（与 LW-14e 同类）（总调度，2026-10-06 13:38 UTC，流程事项）
+- T2297 1a BLOCKED：`lwMoment_val_smul`、`lwMoment_fxy_bridge` PASS，S1（时间尺度）闭合；但 `lwMoment_holds` 缺一个输入——对每个偶数 `p`，一张**与 `m` 无关的有限展开列表**（系数 `mE E ^ j`）及其期望恒等式（即 `LWG5Expand` 那一类钉文）：合并的 `lw_localregular`（`LocalRegular6d.lean:1107`）在 `∃ outs errs` 前固定 `m`，而钉文的 `∃ c` 在 `z` 之前、`m = mE(STflowE z n)` 随 `n` 变。另有路线修正 F2：近对（块距 `≤ (2+n_V)(log W)²`）要用最大界 `|f| ≺ η⁻¹Ψ²`（`7_8:62-66, 95`），不能用尺寸界（`𝓜_x = 𝓜_y` 输出带 `(L^d)^{n_M}`）。
+- 这与 LW-14e（T2265，§95 (1)）同根：都要一个按过程定义、系数跟踪、与 `m` 无关的展开列表及「叶的性质」。决定：T2297 扣住；等 **T2288（LW-14e-D 设计探针）** 的结论，再为两者设计共用的展开引擎（可能是一张新的 LW 引擎票，LW 计划 +1，到时写 REQ）。F2 记入 LW-02 改写时的范围。并入 REQ-1307 Q4 请监督看。LW 计数不变（T2297 已计入 36）。
+
+## §104 BA-C2、UN-29 放行；BA-L2a1、UN-42 合并（总调度，2026-10-06 13:56 UTC，流程事项）
+- (1) **BA-C2 = T2300**（`BA/MReg`）：无额外前提证 `UNDensBARow'`（模由 D7 的 `BASelf_sub_le`，`κ → κ/2` 窗由子列极限 + D6 的 `BASelf_of_tendsto`；常数只依赖 `κ`），删其 owed 行；计划行说要 D4，实不需要；耦合平移 `|m(z, λe^{t/2}) − m(z, λ)| ≤ Ct` 属 BA-N1（登记与 `UNTrLocalInitBARow'` 文档串已如此），不在本票。BA 21/70（计划内行，不超上限）。
+- (2) **UN-29 = T2301**（`GUEPhase/KPrim`）：类 T、只带状（BA 形归 BA-C3），d≥3 只改 `W⁻²→W^{-d}`、`L²→L^d`；KPrim 不读 `UNOUProfile`，而是给带状剖面（桥到 `profPMTilde`/`profPPTilde`）；源 909 行（表记 799）。UN 37/59。
+- (3) 合并：BA-L2a1 = T2295（ad9bb6d，Amend 1 目标；中枢注：H99 的仅审核运行误重跑了 1a（中枢脚本缺陷，已修），改写了 prove 报告 (a) 节）、UN-42 = T2298（90ce008，`gueEntryMix`）。
+
+## §105 监督 1356（REQ-1307）：ST-3 剩余计划、S3-18b 预拆、LW 展开引擎、LW 复核、BA 上限（总调度，2026-10-06 13:57 UTC，照办）
+- (1) **ST-3**（Q1–Q3 PASS）：外推 46–48（<50）。C1b 桥可靠，`budgetAltQN` 不要主撇（O5；`QBudgetA` 加一行文档串，留下次碰该文件的票）。**自举的区域通用形放进 S3-22c**（不放 S3-18b）：S3-22c 预检写出 `B_u^{1/6} ≤ N^{−c}` 的收缩指数 `c` 及来源，两区域对 `n` 一致（T2292 表有 `log_N B_s` 小 `n` 处到 `−0.004`），即 §62 (1) 核（O2）。**S3-18b 预拆 b1（逐时刻）/b2（提升 + 情形 (i) 实例）**，b1 带 `m = n_` 的粗界注（O3）：ST-3 计划 45 → 46。S3-25/26 的目标是 `STStep3I/II`、`STStep4I/II`；四个证出后参数形 `STStep3R`/`STStep4R` 出 `owedProps`（O4）。**新规（O1）**：每张钉预算或组装右端的 ST-3 票带「前提 ↔ 产出」表（同 T2294 的 G3）：后续票要卸的每个前提，写其合并产出 file:line 或「新」（抓第 (3) 类失误）。
+- (2) **LW 展开引擎**（Q4 PASS，范围放宽，O6）：一个与 `m` 无关的 `lw_localregular` 引擎钉文，供 LW-02 与 LW-13b 共用；路线为沿 `Lvl1Reach m` 运输（每个 `LocStep` 在 `m` 处的输出是某个与 `m` 无关输出在 `m` 处的取值；T2288 探针的 `lwSplitLoopsX_spec`、`partitionX` 正是分拆的这一步）；建在 LW-14e-2 载体上，T2265a 对抽象步写归纳。顺序 **LW-14e-2 → 引擎 → LW-02 / LW-13b**；LW-13b 票须写明引擎钉文为其展开输入；`zdistInf` 版 `EKTTk` 并入 LW-13b，LW-02 的剩余（F2：近对用 `STGbEXPav` 的最大界）并入 T2297 改写。没有更便宜的紧性路线。
+- (3) **LW 预算**（O7）：算上 T2288 的拆分（+3，portmap 13:37）、引擎（+1）、`EKTTk`（0/+1）、LW-02′（0/+1），LW 外推 48–50（未计返工）；TEAM §6 在 50 未闭合时建议 HOLD。**现在安排 LW 数学复核**（§95 (2)）：由总调度起一个 Fable 5.1 子代理做（只读，报告写 `docs/claude-team/fable/2026-10-06-lw-review.md`），范围：LW-14e 进展缺口与 T2288 路线、LW 引擎、LW-13 远/近、LW-01 收尾的剩余张数与风险。LW 到 40 的 REQ 须重述外推。
+- (4) **T2288 拆分**（O8）：证书模块由中枢单独构建；第 4 张票经 `Rel` 证 `k = true` 的转移，否则要第二份证书（写票时照此）。
+- (5) **BA 上限**（O9）：BA-L2b 背着 T2295 移来的目标 3（其合并孪生 `(Owx)` 935 行）与 I3–I4，加 `BAlweight`，可能超 1500 行——这将是第一个 BA 上限问题，起草 BA-L2b 定尺寸后，如超则**作为一件事问 Jun**（TEAM §4）。
+
+## §106 S3-18a2 放行；BA-L2b 超上限 → 问 Jun（总调度，2026-10-06 14:13 UTC）
+- (1) **S3-18a2 = T2302**（`Induction/QEndGrid`，prover-max，1200/1400/1650，预设切法 T2302a/b，用则 ST-3 46 → 47）：照 T2294 钉文形状证 `altGridEndQN`；T2294d（`yMomentsQUnifN` 要 `∀ n, 0 < sz.lam n`，`STFlow` 只给最终成立）在票内用 `lam ≤ 0` 处的 δ 磨光函数解决（`ellT = 1`），不加钉文前提；投影初值是唯一无合并产出的前提，归 S3-18b1（约 40 行）。ST-3 41/46。
+- (2) **BA-L2b 起草（T2303，草稿 `docs/tickets/drafts/T2303-draft.md`）**：尺寸 1630/2050/2750（`BAlweight` 380/500/750 + T2295 移来的目标 3 与 I3–I4 1250/1550/2000；后者的 LW 孪生 935 行，另加原子、`scalingOrderG`、BA 版 `lwStein_term_eq`）；要拆 T2303a/b → BA 71，超上限 70（§98 (2)）；把 3(c) 挪进 BA-L2c 会让 L2c 到约 2000 行，挪进 BA-L3 不行（其孪生 4462 行）。另：`lem_lweight` 的图运算现在不在任何票里，BA-L3 要它，可能再 +1（BA 72）。**这是第一个 BA 上限问题，问 Jun（一件事）**；答前 T2303 不放（CONTROL「Pending approval」注明），BA 其他计划内票照常。
+- (3) S3-22b2 = T2299 合并（2cf288c）：S3-22c 可写（区域通用自举，§105 (1) O2）。
+
+## §107 LW-14e 按 T2288 拆四张；T2265 撤回；BA-C2、UN-29 合并（总调度，2026-10-06 14:40 UTC，流程事项）
+- (1) **T2288（LW-14e-D）合并**（4686e08，仅报告；探针留 t/T2288 5f3d37f）：选路线 (B) 内核证书（R-all：每个低于目标结点的每个候选都检查，不固定选择规则；B-full 叶性质），载体为真 `PGraph (Fin 2)` + `LGraph.partition`（追指数的副本），过程对 `sel` 与燃料通用；在 `(Oe2x)` 新建顶点处展开也可（证书覆盖全部候选）；`R1` 在恒等式层由 `oe2xR1_val` 去掉；钉文 `LWG5Expand'` 不变。拆四张：**LW-14e-1 Cert = T2306**（模型 + 证书，三模块，prover，**中枢单独逐个构建**，最重块 7.1 GB）、**LW-14e-2 恒等式 = T2307**（过程 + `lwExpandIdentity_holds`；另钉抽象 `expandG`/`ExpandGSum` 供 LW 引擎）、LW-14e-3 Sim（等 1、2，prover-max）、LW-14e-4 Sound（等 3，prover-max：`lwG5Expand'_holds`、`LWG5Expand` 移 superseded；经 `Rel` 证 `k = true` 的转移，否则要第二份证书）。1 ∥ 2 → 3 → 4 → LW-14f。
+- (2) **T2265 撤回**（被 T2306–T2309 取代；状态记为 superseded，分支不合并）。LW 计划 44 → 47（T2288 portmap §6）；T2306、T2307 计入：LW 38/47。外推 48–50（监督 1356 O7）；LW 数学复核待安排。
+- (3) 论文差异（T2288a–e）：`(eq:GGraisesord)`（`B:98-100`）在深度 ≥ 1 的带点再分拆后不成立（36/40 个子结点阶不升）；情形 (4) 的「两次展开共升 ≥ 2」树深 3、叶界余量 0；进展对展开顶点的任何选法都成立（树内），树外有卡住图；`GtoAG` 要的分子事实在每片叶上由枚举成立；Lean 以有限内核证书证叶界，论文说「检查可见」。
+- (4) 合并：BA-C2 = T2300（3deaafe，`UNDensBARow'` 证出，owed 147 → 146）、UN-29 = T2301（241ebfd，`KPrim`）。
+
+## §108 T2306 构建规则放宽；BA-P1 放行；LW 数学复核（Fable）结论（总调度，2026-10-06 14:59 UTC，流程事项）
+- (1) **T2306（LW-14e-1 Cert）**：中枢问「单独构建」是否要停其他槽。决定（H101）：三个证书模块永远逐个构建；其他工作流照跑；证书模块构建期间不开新工作流、不跑别的全量构建；空闲内存 < 12 GB 时等；被杀或严重换页则在无其他构建时重试。避免空槽一小时以上。
+- (2) **BA-P1 = T2308**（`BA/Prop5Short`）：无额外前提证 owed 的 `BAProp5s`（`FlowPins.lean:182`），加权 ℓ^∞ Combes–Thomas 路线代替论文的截断 Taylor（`M'` 稠密，合并的卷积界每用一次衰减率减半；候选 T2308a：`A:41` 的卷积界要损衰减率）；删其 owed 行。BA 22/70（计划内）。
+- (3) **LW 数学复核**（Fable 5.1，`docs/claude-team/fable/2026-10-06-lw-review.md`）：剩余已命名 7 行（14e-3、14e-4、14f、引擎、13b、01、LW-16），不拆则 45；现实 48–50，尾部 51–53；超支在 **LW-13b**。风险：(a) **LW-13b 隐藏缺口**——`f = f^{>ℓ} + f^{≤ℓ}` 限制的是内部顶点 `β` 的块（`7_8:1607-1611`），而 `LGraph.val` 与 `lw_localregular` 对内部标号全求和，无合并机制把域带过展开（`T2289-prove.md:264`）；选项 (i) 带域的孪生恒等式、(ii) 不限制展开再在 `NGraph` 层按叶拆近/远（出现混合模式，要新钉）、(iii) 让 `β` 外部化；写 LW-13b 前须定（REQ）。`zdistInf` 版 `EKTTk` 要重证（换范数损 `e^{Θ((log W)^5)}`），300–600 行，并入 13b 的拆分。(b) 引擎自然性对三条 `LocStep` 规则都可信（`m` 只作系数、无系数为零的分支）；但 X 载体要逐构造子追 `(j, j')`、共轭交换，且递归要照 `lvl1_exists_aux` 的良基/截断形（不是 T2307 的燃料 `expandG`）；900–1700 行。(c) LW-14e-4 的 `k = true` 靠 `Rel` 不看波浪边颜色；若 L6/L7 某性质读颜色要第二份证书。(d) LW-02 F2 的输入 `STGbEXPav` 已合并且形对；用 `Ψ' := max(Φ n 0)(W^{-d/2})`，不要用 `LWInit` 的 `Ψ`。建议：照 14e-2 → 引擎 → LW-02 ∥ 14e-3 → 14e-4 → 14f 推进，13b 待域机制定；不并引擎入 14e-4，不并 13b 入 02。写票前先钉：引擎 X 载体/递归形、LW-02 的 `Ψ'` 路线；**REQ 给监督问 LW-13b 的域机制**（REQ-1459）；14e-4 列 L6/L7 性质核颜色；LW-16 核 `tailW` 类的 `LWPsiRel` 是否确定性。若 13b 定为 ≥ 2 行，LW 到 40 的 REQ 把外推改为 49–51，HOLD 复核那时就排。
+
+## §109 UN-24 放行（总调度，2026-10-06 15:26 UTC，流程事项）
+- **UN-24 = T2309**（`Universality/UnivMain`）：`UNUnivMainRow`、`UNClaimRow` 在 d≥3 照钉文成立（`un_core_of_rows'` 用的是不带撇的 `UNUnivMainRow`；该行只要 `c/π ≤ ρ_n ≤ C/π`，§65 的 `UNDens` 弱点无碍）；另证模型通用 `UNClaimRowk`（同算术 + `ouMatC` 可测），带状由 `UNClaimRowk_band` 得；附 `unCore'_holds : UNCore'`（一行，自合并的 `un_core'_of_univMainRow`）。删 owed：`UNUnivMainRow`、`UNClaimRow`、`UNClaimRowk`；`UNClaimRowBA` 留 BA 侧一行跟进。起草者称合并后 `UNCore'` 不再依赖任何开放行——合并时核实，若属实记入 ROUTES（UN 核心闭合）。UN 39/59。
+
+## §110 UN 过 40 → REQ-0623；T2308+T2309 合并簿记（总调度，2026-10-07 06:23 UTC，流程事项）
+- (1) **T2308（BA-P1）合并**（1d19466，06:02 UTC Oct 7）：`BA/Prop5Short`，`baProp5s_holds`，owed 146 → 145。BA 23/70（计划内）。
+- (2) **T2309（UN-24）合并**（3eca2db，06:17 UTC Oct 7）：`Universality/UnivMain`，删 owed `UNUnivMainRow`/`UNClaimRow`/`UNClaimRowk`，owed 145 → 142。UN 40/59。中枢核实：合并后 `UNCore'` 不再依赖任何开放行（§109 条件满足）——已记。
+- (3) **UN 过 40 → REQ-2026-10-07-0623 已写**（`docs/supervisor/requests/REQ-2026-10-07-0623.md`）：外推约 63 > 上限 60（0956 O7）；Q1 问外推是否合理、Q2 问是否需提上限及提到多少、Q3 问可否合并减张；BA 上限问题已挂 Jun，UN 先过监督。监督 trig_01LMeV5aP8ieHGcixDbpLYEx 下次 06:41 UTC 读取。
+- (4) **当前状态**：只跑 T2306（LW-14e-1 Cert，prover-max）；三槽空闲；下一批准备：S3-18b1、LW 引擎票、LW-14e-3 Sim、BA-P2、BA-L2c（依 Jun 答复）。
+
+## §111 T2310 写就（总调度，2026-10-07 07:05 UTC，流程事项）
+- **T2310（S3-18b1 / QEndB1）已写**：`docs/tickets/T2310.md`；新文件 `Induction/QEndB1.lean`；新 pin `STXiBootPT'`（`STXiBoot'` 的逐时刻版，`Prec` → `PrecPT`）+ `STOeqQtPT'`（= `STIngR d STCaseI STXiBootPT'`）；公开定理 `stOeqQtPT'_holds : ∀ d, STOeqQtPT' d`。
+- **证明结构**：`altQFlow_initQ`（~40 行，新；STLK s at ε₁/2 + startLevelQN at u=s,X=1）→ `altQFlow_core`（private；调 `altGridEndQN`，放 G3 表 9 行，O3 注：m=n_ crude bound 用 `STXiLKM_crudeN`，非 pair 假设）→ `altQFlow_section`（private；collapsed window）→ `stOeqQtPT'_holds`（perTimeDomAt_iff_forall_section）。
+- **计数**：ST-3 45/46；欠账 142（无变化，T2310 合并后 +1 owed STOeqQtPT'，-0 released）；下一票 T2311。
+
+## §112 T2306 审计 PASS（总调度，2026-10-07 06:39 UTC，流程事项）
+- **T2306（LW-14e-1 / LW Cert）审计 PASS**（claude-opus-5-5 round 1，533adf0；`cert_all`、`cert_FF`、`cert_FT`、`goodB_succ_of`、`inner_node_one`、`root_F?_shape`、`lwCert_root0_nonleaf`、`lwCert_roots_below` 全部 PASS）。构建时间 8.4s/3.73GB + 563.9s/6.99GB + 621.2s/7.01GB，均在 ≤30min ≤8GB 限内；公理：仅 [propext, Classical.choice, Quot.sound]；`git diff --name-only main...t/T2306` 仅 3 新文件；D612（T2288e）已覆盖论文差异。state=audit-pass，hub 正在合并（rule (A) + H101）。
+- **合并后**：LW 40/47（现实 48–50）→ **写 LW-40 REQ**（下一步，等 merge commit 确认后写；外推 48–50，~8–10 张尾部；LW-13b 仍待域机制，REQ-1459 已开放）。同时解锁：LW-14e-3 Sim 票可写（T2306+T2307 均已合并 ✓）。
+- **当前 main**：3eca2db；T2306 merge 后将移动；LW 39→40（合并确认后更新计数）。
+
+## §113 T2306 合并 + LW 过 40 → REQ-0650（总调度，2026-10-07 06:50 UTC，流程事项）
+- **T2306（LW-14e-1 Cert）合并**（8096694，06:49 UTC Oct 7）：`Graph/LWExpCert`/`LWExpCertS0`/`LWExpCertS1`，`cert_all`（有限核证书，`decide +kernel`）；full lake build 4120 jobs PASS。LW **40/47**（现实 48–50）。
+- **LW 过 40 → REQ-2026-10-07-0650 已写**（`docs/supervisor/requests/REQ-2026-10-07-0650.md`）：Q1 外推合理性，Q2 LW-13b 域机制（REQ-1459 已开放，优先决定），Q3 合并/删减；监督下次 :41 UTC 读取。
+- **T2306+T2307 均已合并** → LW-14e-3 Sim（T2311 候选）解锁；LW 引擎票亦解锁（T2307 合并 ✓）。
+- **当前开放 REQ**：REQ-1459（LW-13b 域机制）、REQ-0623（UN 上限）、REQ-0650（LW 上限/13b）。仍扣住：T2297（LW-02，等引擎）、T2303（BA-L2b，等 Jun）。
+
+## §114 — T2311 写出（2026-10-07 07:14 UTC）
+
+**决策**：T2306（LW-14e-1 Cert，8096694）+ T2307（LW-14e-2，3c11598）均已合并，解锁 LW-14e-3 Sim → 写 T2311。
+
+**内容**：T2311（LW-14e-3 Sim）= `RBM3D/Graph/LWExpSim.lean`；模型桥接票。证明：
+- `PartitionSim`（Bridge 1）：模型分拆 `cPartitionX` ↔ 真实分拆 `partitionX` via `List.Forall₂ (Rel …)`。
+- `ChildrenSim`（Bridge 2）：模型子节点 `childrenX` ↔ 真实子节点 `RCand.kids` via `List.Forall₂ (Rel …)`。
+模拟关系 `Rel`：顶点类型的等价 `eE : Fin (N.a+1) ≃ P.E'`、`eI : Fin N.b ≃ P.I'`。
+证明层次：L1 `labsOf_spec`、L2 `cMerge_rel`（等价类 `Equiv.ofBijective`）、L3 `partitionSim`、L4 分拆在 `relabel` 下的自然性、L5 八个 family 在 `relabel`/`renum` 下的对应 → `childrenSim`。
+角色：prover-max，估计 650/800/1100 行，上限 1500（超则 RETURN 提出 3a/3b 拆分）。
+pin 定义逐字来自 `t/T2288:RBM3D/Probe/T2288Cert.lean`（probe 457-610，已经审计）。
+票号 T2311，检查文件 `docs/tickets/checks/T2311-check.lean`，门槛 LW → 41/47（合并后）。
+
+## §115 — 数学监督重建（2026-10-07 07:40 UTC）
+
+Jun 的旧监督账号不可用（trig_01LMeV5aP8ieHGcixDbpLYEx 自 Oct 6 13:56 UTC 停报）。
+新监督在 misslose 账号建立：
+
+- 触发器：trig_01R1NVdwWjDU2P5KMhtTLr43
+- 名称：RBM3D 数学监督（每小时看请求队列）
+- Cron：`41 * * * *`
+- 设备：mac-lan（a8df38d8-bcfe-42ee-8376-b92f5dad7fe5），连接 /Users/junyin/Lean_proof/RBM3D
+- 权限：auto（自动批准），push 通知开
+- 首次运行：2026-10-07T07:41:00Z，预期处理 REQ-1459、REQ-0623、REQ-0650
+- 提示词来源：STARTUP.md §3（原样）
+
+## §116 — T2310、T2311 放行，H103 写就（2026-10-07 07:42 UTC）
+
+Hub 报告无票可做（所有已放行票均已合并）。总调度：
+
+- 写 `docs/tickets/checks/T2310-check.lean`（逐字照 T2310 §7）
+- CONTROL.md 放行 T2310（278）和 T2311（279），加入 Pre-release checks
+- CONTROL.md 写 H103（commit 指令：自 H94 b2529ba 起的调度文件，§92–§115，提交 + push）
+- 数学监督 trig_01R1NVdwWjDU2P5KMhtTLr43 将在 07:41 UTC 处理三个 open REQ（REQ-1459、REQ-0623、REQ-0650）
