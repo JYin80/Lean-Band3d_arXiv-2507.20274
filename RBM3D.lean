@@ -346,6 +346,9 @@ import RBM3D.Induction.QtNonzeroBoot
 import RBM3D.Graph.LWExpTerm5
 import RBM3D.BA.Prop5Short
 import RBM3D.Universality.UnivMain
+import RBM3D.Graph.LWExpCert
+import RBM3D.Graph.LWExpCertS0
+import RBM3D.Graph.LWExpCertS1
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
