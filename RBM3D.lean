@@ -344,6 +344,7 @@ import RBM3D.Universality.GUEPhase.Generator
 import RBM3D.Induction.QEndGrid
 import RBM3D.Induction.QtNonzeroBoot
 import RBM3D.Graph.LWExpTerm5
+import RBM3D.BA.Prop5Short
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
