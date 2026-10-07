@@ -249,6 +249,7 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
 
 - H103 (dispatcher V1, 2026-10-07 07:42 UTC; DECISIONS §112–§115). Commit the dispatcher's files written since H94 (b2529ba), exactly as H94 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: bookkeeping DECISIONS §92–§115, tickets T2303 draft, T2310–T2311, checks T2310/T2311, supervisor trig_01R1NVdwWjDU2P5KMhtTLr43 (H103)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
   done: Wed Oct  7 07:53:06 UTC 2026 — committed cc2fd59 (89 files staged by name from the scripted list; none under RBM3D/, docs/reports/ or docs/queue/T*.state; HEARTBEAT-STATE.md and hb.sh excluded), pushed.
+done: Wed Oct  7 09:43:21 UTC 2026 — T2311 merged 7e7b3be (LW-14e-3 Sim Graph/LWExpSim (partitionSim, childrenSim, rel_self), no registry change needed (full build's #assert_rbm_axioms passed), root import; audit PASS claude-opus-5-5; full lake build 4121 jobs; pushed).
 
 ## Pending approval (information only — the hub must NOT act on these)
 - T2303 (BA-L2b, draft `docs/tickets/drafts/T2303-draft.md`): waits for Jun's decision on the BA ticket cap (DECISIONS §106). Do not start.
@@ -291,3 +292,9 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
   target `stOeqQtRoundPT'_holds : ∀ d, STOeqQtRoundPT' d`; role prover-max; fresh branch from
   main after Step B push; queue entry 278). Update `docs/queue/T2310.state` to `proving` with
   reason and the new workflow id. One `done:` line per step.
+  done: Wed Oct  7 09:22:30 UTC 2026 — Step A: wf_65a5d720-667 had already ended (stage 1a FAIL at 08:50 UTC); nothing to stop.
+  done: Wed Oct  7 09:22:30 UTC 2026 — Step B: committed ed2bea2 (4 files staged by name from the scripted list: DECISIONS.md, CONTROL.md, tickets/T2310.md, checks/T2310-check.lean; none under RBM3D/, docs/reports/ or docs/queue/T*.state), pushed.
+  done: Wed Oct  7 09:22:34 UTC 2026 — Step C: `lake env lean docs/tickets/checks/T2310-check.lean`: exit 0, no error lines.
+  done: Wed Oct  7 09:22:51 UTC 2026 — Step D: T2310 restarted, role prover-max, workflow wf_3f89a0e7-de8; t/T2310 had no commits and was fast-forwarded to main ed2bea2; the preflight was told to replace the old section (a); docs/queue/T2310.state set to proving.
+
+- H107 (dispatcher V1, 2026-10-07 09:44 UTC; DECISIONS §121–§122). Commit the dispatcher's files written since H106 (ed2bea2), exactly as H94/H103–H106 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: DECISIONS §121-§122 T2311 merge + T2310 preflight PASS, T2310.md §2a τN correction (H107)`; `git push origin main` (no force). Between merges; T2310 stage 1b already running — do NOT restart. One `done:` line with the hash and the number of files.

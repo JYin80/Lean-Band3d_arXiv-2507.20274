@@ -790,3 +790,38 @@ def STXiRoundPT' (E s t : ℕ → ℝ) : Prop :=
 
 **文件更新（本节写就时同步）：** `docs/tickets/T2310.md`、`docs/tickets/checks/T2310-check.lean`；
 H106（CONTROL.md）commit 本节 + 重启 T2310 证明器。
+
+## §121 — T2311 合并：LW-14e-3 Sim `Graph/LWExpSim`（总调度，2026-10-07 09:44 UTC）
+
+**Ticket:** T2311 (LW-14e-3 Sim, `Graph/LWExpSim`)  
+**合并哈希：** 7e7b3be  
+**Gate：** LW 40 → 41/47  
+**审计：** PASS（claude-opus-5-5，round 1）；full lake build 4121 jobs；无 registry 变更  
+**交付物：** `partitionSim : PartitionSim`、`childrenSim : ChildrenSim`、`rel_self`；1211 行，67 个 private 辅助定理，std 3 公理；kernel-checked 实例（163 partition terms，550 children）  
+**合并方式：** Hub rule (A) 自动合并（审计 PASS 后无需总调度 H 指令）
+
+**下游：**
+- S3-18b2 设计待开展：使用 `stXiBootR_of_round`（QtNonzeroBoot.lean:581）将 `STXiRoundPT'` 提升为 `STXiBoot'`/`STOeqQt'`；在 T2310 合并后启动；合并后 ST-3 关闭于 46/46
+- LW-13b 设计：`lwMomExp_valOnD` identity twin（监督 O1）；在 LW=41 后、草稿 LW-13b-1 之前设计 pin（当前 LW=41/47，满足条件）
+
+## §122 — T2310 预检 PASS + §2a τN 修正（总调度，2026-10-07 09:44 UTC）
+
+**工作流：** wf_3f89a0e7-de8，stage 1a 预检报告 09:28:54 UTC  
+**Pin：** `STXiRoundPT'` — **PASS**（逐行 verdict：行 1–11 全部 closes）  
+**Stage 1b：** 工作流继续运行中（预检 PASS 后自动推进）
+
+**行 8 修正（原 ticket §2a 错误）：**  
+`startLevelQN` 的 `hMΛ` 条件要求 `c₀ν² ≤ N^{τN}`；原 ticket §2a 取 `τN = ε₁/8`，则需 `c₀ N^{ε₁/4} ≤ N^{ε₁/8}`，对一切 N 均失败（c₀ 约 3×10¹⁰）。  
+**修正：`τN = ε₁/2`**；则 `c₀ N^{ε₁/4} ≤ N^{ε₁/2}` iff log₁₀N ≥ 67074，eventual。  
+综合输出：`N^{ε₁/8} + N^{ε₁/2} ≤ N^{ε₁}`（log₁₀N ≥ 963.3，eventual）✓  
+ticket §2a steps 2–3 已更新（本节写就时同步）。
+
+**Stage 1b 必要事项（来自预检）：**
+1. 行 2：非交替 σ 半部分需 `nqFlow_core`（NQEndFlow.lean:642，private）的副本，含 pair-constant 控制（行 3）与 union bound（2^{n_} N^{n_} at D+n_+1）（行 10）
+2. 行 8：τN = ε₁/2（非 ε₁/8）；联合界为和 N^{ε₁/8} + N^{ε₁/2} ≤ N^{ε₁}
+3. 行 5：常数因子 2 被 N^{τ/2} 吸收（eventual）
+4. 行 9：hF 由 `stDecayLoopU_of_step2`（DecayLoopB.lean:1637）提供，D_F = (2m+6)/𝔠
+
+**论文 delta T2310a（新增候选，已在 §120 中预告）：** `STXiRoundPT'` 对应论文 §3.5:1687 `(eq:alternatecase1)`；参数上确界被常数 `XLK m n u` 与 `B_v^{1/6} ≤ B_u^{1/6}` 替换；pin 在 `STPair` 上用 `Prec` 陈述（pair (v,u)，参数取 u 处）。
+
+**文件更新（本节写就时同步）：** `docs/tickets/T2310.md` §2a；H107（CONTROL.md）commit 本节。
