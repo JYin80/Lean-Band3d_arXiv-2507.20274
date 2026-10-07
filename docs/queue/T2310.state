@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5, t/T2310 at a6e597e; restarted under H106 with pin STXiRoundPT'); merged under rule (A), full lake build 4122 jobs
+updated: Wed Oct  7 10:18:01 UTC 2026
+reports: docs/reports/T2310-prove.md, docs/reports/T2310-audit.md
