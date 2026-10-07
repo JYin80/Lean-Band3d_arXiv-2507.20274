@@ -825,3 +825,24 @@ ticket §2a steps 2–3 已更新（本节写就时同步）。
 **论文 delta T2310a（新增候选，已在 §120 中预告）：** `STXiRoundPT'` 对应论文 §3.5:1687 `(eq:alternatecase1)`；参数上确界被常数 `XLK m n u` 与 `B_v^{1/6} ≤ B_u^{1/6}` 替换；pin 在 `STPair` 上用 `Prec` 陈述（pair (v,u)，参数取 u 处）。
 
 **文件更新（本节写就时同步）：** `docs/tickets/T2310.md` §2a；H107（CONTROL.md）commit 本节。
+
+## §123 — LW-13b-1 pin 设计：`lwMomExp_valOnD_eq_valOn` identity twin（总调度，2026-10-07 10:07 UTC）
+**监督 O1 满足：** LW=41（T2311 合并，DECISIONS §121）  
+**域机制（REQ-1459，Fable §108 选项 (i)）：** `anpKey6_w`（AnpKey6.lean:664，`namespace RBM.Graph`）与 `NGraph.valOn` 的每条边因子完全一致——均为 `if ghost then 1 else ξ(Sum.elim (Sum.elim a b) ℓ e.u)(Sum.elim (Sum.elim a b) ℓ e.v)`。  
+`lwMomExp_valOnD Γ ξ a b D`（LWMomExp.lean:526）= `Σ_{ℓ ∈ piFinset D} Π_k anpKey6_w ℓ k` = `Γ.valOn ξ a b (piFinset D)`（AnpKey2.lean:54），与 `anpKey6_val_eq`（AnpKey6.lean:669）同一 unfold + `List.prod_ofFn` + `rfl` 证明，仅域从 `Fintype.univ` 收缩为 `piFinset D`。  
+
+**Pin（T2312, LW-13b-1，文件 `RBM3D/Graph/LWMomExpD.lean`）：**
+```lean
+theorem lwMomExp_valOnD_eq_valOn {p q : ℕ} {ι : Type*}
+    (Γ : NGraph p q) (ξ : ι → ι → ℝ) (a b : Fin p → ι) (D : Finset ι) :
+    lwMomExp_valOnD Γ ξ a b D =
+      Γ.valOn ξ a b (Fintype.piFinset (fun _ : Fin q => D)) := by
+  unfold lwMomExp_valOnD NGraph.valOn
+  refine Finset.sum_congr rfl fun ℓ _ => ?_
+  rw [← List.ofFn_getElem_eq_map, List.prod_ofFn]
+  rfl
+```
+**作用：** 桥接 `AnpDetNearAt`（近区用 `lwMomExp_valOnD`，LWMomExp.lean:900）与 `AnpFarAndAt`（远区用 `Γ.valOn`，LWMomExpFar.lean:80），使两者在域分解中统一为 `NGraph.valOn`。  
+**依赖：** T2281（`RBM3D.Graph.LWMomExp`），T2289（`RBM3D.Graph.LWMomExpFar`）均已合并；无需 T2297（LW-02）。  
+**大小：** ≈15 行（namespace `RBM.Graph`；开放 Hub 放行）。  
+**下游（LW-13b-2，待后续设计）：** 组装 `∀ d, LWMomentExp d`（LWPins.lean:341，`RBM.Gauss.Sizes`）；依赖 T2312 + T2297（HELD）+ T2281（`lwMomExp_near`）+ T2289（`lwMomExpFar_and`）。
