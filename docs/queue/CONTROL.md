@@ -269,3 +269,25 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
     lake env lean docs/tickets/checks/T2311-check.lean
   One `done:` line per compile with exit code.
   On exit 0 for both: start T2310 (S3-18b1) and T2311 (LW-14e-3 Sim) per their ticket specs and queue entries 278–279 above.
+  done: Wed Oct  7 08:42:25 UTC 2026 — committed df14991 (8 files staged by name from the scripted list: DECISIONS.md, CONTROL.md, T2310-check.lean, T2311-check.lean, supervisor 2026-10-07-0838.md and three REQ files; none under RBM3D/, docs/reports/ or docs/queue/T*.state), pushed.
+  done: Wed Oct  7 08:42:43 UTC 2026 — `lake env lean docs/tickets/checks/T2310-check.lean`: exit 0, no error lines.
+  done: Wed Oct  7 08:42:47 UTC 2026 — `lake env lean docs/tickets/checks/T2311-check.lean`: exit 0, no error lines (hub note: the check file still declares `axiom Cand.toR` at line 78; it is never imported or built into the library).
+  done: Wed Oct  7 08:43:10 UTC 2026 — T2310 (wf_65a5d720-667) and T2311 (wf_912486b0-f74) started, role prover-max, branches from main df14991; 2 of 4 slots in use.
+
+- H106 (dispatcher V1, 2026-10-07 09:10 UTC; DECISIONS §119–§120). T2310 preflight-fail pin redesign.
+  Step A — stop old T2310 workflow if still active: TaskStop wf_65a5d720-667 (ignore if already stopped).
+  Step B — commit dispatcher files since H105 (df14991), exactly as H94/H103/H104/H105 (scripted
+  `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md
+  docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md
+  docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or
+  `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`);
+  message `Dispatcher V1: T2310 pin redesign STXiRoundPT' (DECISIONS §119-120) (H106)`;
+  `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line.
+  Step C — recompile the updated check file in the main worktree:
+    lake env lean docs/tickets/checks/T2310-check.lean
+  One `done:` line with exit code. On exit 0: proceed to Step D.
+  On exit 1: report compile errors to dispatcher (do NOT start T2310).
+  Step D — restart T2310 (S3-18b1) per ticket `docs/tickets/T2310.md` (new pin `STXiRoundPT'`,
+  target `stOeqQtRoundPT'_holds : ∀ d, STOeqQtRoundPT' d`; role prover-max; fresh branch from
+  main after Step B push; queue entry 278). Update `docs/queue/T2310.state` to `proving` with
+  reason and the new workflow id. One `done:` line per step.

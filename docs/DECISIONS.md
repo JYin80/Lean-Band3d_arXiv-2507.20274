@@ -737,3 +737,56 @@ H104 执行后 Hub 编译两个 check 文件，再次失败：
   `RBM.Graph.T2311Check.MNode.toP`，正确解析）。
 
 写 H105（commit 两个第二轮修复后的 check 文件 + DECISIONS §118）。
+
+## §119 — 数学监督 2026-10-07-0838 判决：PASS，O1–O5（总调度，2026-10-07 09:10 UTC）
+
+监督报告：`docs/supervisor/2026-10-07-0838.md`（07:41 UTC 触发，处理三个 open REQ）。
+
+**处理结果（open REQ 归零）：**
+- REQ-1459（LW-13b 域机制）→ 接受；方向：`lwMomExp_valOnD` identity twin 作 LW-13b-1 pin。
+- REQ-0623（UN 上限）→ 搁置；等 Jun 决定（见 O4）。
+- REQ-0650（LW 上限/13b）→ 接受；LW 上限 ≤ 50，13b 设计在 LW=41 后继续。
+
+**标志 O1–O5：**
+- O1：LW-13b 域机制确定（`lwMomExp_valOnD` identity twin）→ 在 LW=41 后起草 LW-13b-1 之前先设计 pin。
+- O2：LW-14e-4 waved colour 检查 → 在 LW-14e-4 票草稿前阅读对应纸张节（waved colour 部分）。
+- O3：`(eq:Psi)` tailW 覆盖确认 → 在放行 LW-16 之前确认 `(eq:Psi)` 涵盖 tailW 情形。
+- O4：**UN 上限询问（Jun 单问）**：UN 当前 40/59，预计 ~63，上限 60；是否提升至 65？（TEAM §4：每次只问一件；已在本节写就后提出）
+- O5：下一个 REQ 在 LW=43。
+
+## §120 — T2310 pin 重设计：`STXiBootPT'` → `STXiRoundPT'`（总调度，2026-10-07 09:10 UTC）
+
+**背景：** T2310（S3-18b1）于 08:50 UTC 预检失败（状态 `preflight-fail`，报告 `docs/reports/T2310-prove.md`）。
+原 pin `STXiBootPT'`（最终拼接形状）逐行验证失败：
+
+| 行 | 失败原因 |
+|---|---|
+| 行 2 | `2 ≤ n_` 不足：`m = n_ − 2 ≥ 1` 要求 `n_ ≥ 3` |
+| 行 7 | 缺少 `m = n_` 假设（当前长度控制） |
+| 行 8–10 | 最终拼接形状；各轮由 `stXiBootR_of_round` 完成，需使用轮形状 |
+| 行 9 | 非交替 σ 无来源（旧 `m+1≤n_` 不含 `m=n_`） |
+| 行 5 | ν = N^{ε₁/2} 分解失败；正确：ν = N^{ε₁/8} |
+| 行 6 | hF 来源 `STKbound` 错误；应为 `stDecayLoopU_of_step2`（DecayLoopB.lean:1637） |
+
+**新 pin `STXiRoundPT'`（对齐 `STXiRound'` at QtNonzeroBoot.lean:92–106）：**
+```lean
+def STXiRoundPT' (E s t : ℕ → ℝ) : Prop :=
+  ∀ n_ p : ℕ, 3 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
+    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
+    (∀ m, 1 ≤ m → STlenL n_ p m →
+      Prec sz (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 m ω)
+        (fun n q _ => XL m n q.1.2)) →
+    (∀ m, 1 ≤ m → m ≤ n_ →                        -- KEY: m ≤ n_ covers m = n_
+      Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 m ω)
+        (fun n q _ => XLK m n q.1.2)) →
+    PrecPT sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 n_ ω)
+      (fun n q _ => sz.Bctl n q.1.2 ^ (1 / 6 : ℝ) * XLK n_ n q.1.2 +
+        STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2)
+          (sz.Bctl n (s n)) n_ p)
+```
+
+**论文 delta T2310a：** §3.5 per-time 轮引理直接给出 `PrecPT` 结论；从轮到 boot 的提升在 S3-18b2 完成
+（对应 §3.5:1676–1714 alternating case 最后组合）。
+
+**文件更新（本节写就时同步）：** `docs/tickets/T2310.md`、`docs/tickets/checks/T2310-check.lean`；
+H106（CONTROL.md）commit 本节 + 重启 T2310 证明器。
