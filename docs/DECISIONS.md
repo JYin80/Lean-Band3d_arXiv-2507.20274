@@ -846,3 +846,20 @@ theorem lwMomExp_valOnD_eq_valOn {p q : ℕ} {ι : Type*}
 **依赖：** T2281（`RBM3D.Graph.LWMomExp`），T2289（`RBM3D.Graph.LWMomExpFar`）均已合并；无需 T2297（LW-02）。  
 **大小：** ≈15 行（namespace `RBM.Graph`；开放 Hub 放行）。  
 **下游（LW-13b-2，待后续设计）：** 组装 `∀ d, LWMomentExp d`（LWPins.lean:341，`RBM.Gauss.Sizes`）；依赖 T2312 + T2297（HELD）+ T2281（`lwMomExp_near`）+ T2289（`lwMomExpFar_and`）。
+
+## §124 — Jun 批准 UN 上限 → 65（总调度，2026-10-07 10:10 UTC）
+**Jun 回复：** "UN OK"  
+**决定：** UN 上限从 60 提升至 **65**（当前 UN=40/59，预计约 63，新上限内）。  
+**依据询问：** DECISIONS §119 O4（UN 当前 40/59，预计 ~63，上限 60，是否提升至 65？）  
+**REQ-0623 Q2 已答：** 提升至 65，批准。Q1（外推是否合理）与 Q3（可否合并减张）由监督另行判决。  
+**Gate 更新：** UN 40/65（原 40/59 上限 60 → 新上限 65）。  
+**TEAM §4 单问解除：** 下一个 Jun 问题已发出（见下）。  
+**下一个 Jun 问题（BA 上限）：** BA-L2b (T2303) 拆 a/b = BA 71；加 `lem_lweight` 图运算单独票 = BA 72，超上限 70（§57）。是否提升 BA 上限至 72？（答前 T2303 不放行）
+
+## §125 — T2310 合并（S3-18b1，`stOeqQtRoundPT'_holds`）（总调度，2026-10-07 10:28 UTC）
+**合并提交：** 319bf17（`Induction/QEndB1`，`stOeqQtRoundPT'_holds : ∀ d, STOeqQtRoundPT' d`；lake 全量编译 4122 任务 PASS）  
+**审计：** PASS 第 1 轮（claude-opus-5-5；pin `STXiRoundPT'`、`STOeqQtRoundPT'` 与 check 文件完全一致）  
+**监督报告 2026-10-07-1008.md：** 无新操作项；UN cap 65 已在 §124 记录，本次仅确认。  
+**Gate 更新：** ST-3 42 → **43/46**  
+**下游：** S3-18b2 设计开放（目标：`stXiBootR_of_round` 提升 `STXiRoundPT'` → `STXiBoot'`/`STOeqQt'`）。  
+**H109：** commit 本节 + ROUTES 更新。
