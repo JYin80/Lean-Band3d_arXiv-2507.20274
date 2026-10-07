@@ -251,6 +251,7 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
   done: Wed Oct  7 07:53:06 UTC 2026 — committed cc2fd59 (89 files staged by name from the scripted list; none under RBM3D/, docs/reports/ or docs/queue/T*.state; HEARTBEAT-STATE.md and hb.sh excluded), pushed.
 done: Wed Oct  7 09:43:21 UTC 2026 — T2311 merged 7e7b3be (LW-14e-3 Sim Graph/LWExpSim (partitionSim, childrenSim, rel_self), no registry change needed (full build's #assert_rbm_axioms passed), root import; audit PASS claude-opus-5-5; full lake build 4121 jobs; pushed).
 done: Wed Oct  7 10:18:03 UTC 2026 — T2310 merged 319bf17 (S3-18b1 Induction/QEndB1 (stOeqQtRoundPT'_holds, pin STXiRoundPT' per H106), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4122 jobs; pushed).
+done: Wed Oct  7 10:57:35 UTC 2026 — T2312 merged d71c955 (LW-13b-1 Graph/LWMomExpD (lwMomExp_valOnD_eq_valOn), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4123 jobs; pushed).
 
 ## Pending approval (information only — the hub must NOT act on these)
 - T2303 (BA-L2b, draft `docs/tickets/drafts/T2303-draft.md`): waits for Jun's decision on the BA ticket cap (DECISIONS §106). Do not start.
@@ -321,3 +322,9 @@ done: Wed Oct  7 10:18:03 UTC 2026 — T2310 merged 319bf17 (S3-18b1 Induction/Q
   Step B — re-run check file: `lake env lean docs/tickets/checks/T2312-check.lean` (main after Step A). One `done:` line with exit code. On exit 1: report errors; do not proceed.
   Step C — stage 1a for T2312: role `preflight`; branch `t/T2312` from main (Step A hash); target file `RBM3D/Graph/LWMomExpD.lean` (new file, import `RBM3D.Graph.LWMomExp` only, namespace `RBM.Graph`, theorem `lwMomExp_valOnD_eq_valOn` per T2312.md pin). Set `docs/queue/T2312.state` to `preflight`. One `done:` line with workflow id.
   Step D — on stage 1a PASS: stage 1b with role `prover` (effort: medium is sufficient for ≈15 lines). One `done:` line with workflow id.
+  done: Wed Oct  7 10:52:26 UTC 2026 — Step A: committed a88cf75 (2 files staged by name from the scripted list: CONTROL.md, checks/T2312-check.lean; none under RBM3D/, docs/reports/ or docs/queue/T*.state), pushed.
+  done: Wed Oct  7 10:52:31 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2312-check.lean`: exit 0, no error lines.
+  done: Wed Oct  7 10:52:47 UTC 2026 — Step C: T2312 stage 1a (preflight) started, workflow wf_76c9ccf5-432, branch t/T2312 from main a88cf75; docs/queue/T2312.state set to preflight.
+  done: Wed Oct  7 10:52:47 UTC 2026 — Step D: the same workflow wf_76c9ccf5-432 runs stage 1b as role `prover` only on stage 1a PASS (the prover agent's effort is fixed at high in its definition; no medium override exists in the hub script), then stage 2 auditor.
+
+- H113 (dispatcher V1, 2026-10-07 11:13 UTC; commit §126 + ROUTES LW update). Commit all dispatcher files since H112 (a88cf75), exactly as H94/H103–H112 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: DECISIONS §126 (T2312 merged LW-13b-1), ROUTES LW 38→42, H113 (H113)`; `git push origin main` (no force). One `done:` line with hash and file count.

@@ -863,3 +863,15 @@ theorem lwMomExp_valOnD_eq_valOn {p q : ℕ} {ι : Type*}
 **Gate 更新：** ST-3 42 → **43/46**  
 **下游：** S3-18b2 设计开放（目标：`stXiBootR_of_round` 提升 `STXiRoundPT'` → `STXiBoot'`/`STOeqQt'`）。  
 **H109：** commit 本节 + ROUTES 更新。
+
+## §126 — T2312 合并：LW-13b-1 `lwMomExp_valOnD_eq_valOn`（总调度，2026-10-07 11:13 UTC）
+**合并提交：** d71c955（`Graph/LWMomExpD.lean`，`lwMomExp_valOnD_eq_valOn`；full lake build 4123 tasks PASS）  
+**审计：** PASS 第 1 轮（claude-opus-5-5，t/T2312 at de44f57；pin 完全一致；`unfold lwMomExp_valOnD NGraph.valOn`，≈7 行）  
+**Gate 更新：** LW 41 → **42**/47  
+**下游：** LW-13b-2（组装 `∀ d, LWMomentExp d`，LWPins.lean:341）待 T2297（LW-02，HELD，等引擎）+ T2281（`lwMomExp_near`）+ T2289（`lwMomExpFar_and`），后两者已合并  
+**ROUTES 补记（§108 以来四次 LW 合并均未写 ROUTES）：**  
+- T2307（LW-14e-2，3c11598，05:32 UTC Oct 7）：LW 38→39  
+- T2306（LW-14e-1 Cert，8096694，06:49 UTC Oct 7）：LW 39→40（过 40 → REQ-0650）  
+- T2311（LW-14e-3 Sim，7e7b3be，09:43 UTC Oct 7）：LW 40→41（过 41 → 监督 O1 满足）  
+- T2312（LW-13b-1，d71c955，10:57 UTC Oct 7）：LW 41→42（本节）  
+**H113：** commit 本节 + ROUTES LW 更新（38→42，四条合并记录）。
