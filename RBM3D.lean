@@ -386,6 +386,7 @@ import RBM3D.Induction.MainIndChain
 import RBM3D.Induction.MainIndOut
 import RBM3D.Universality.GUEPhase.Drift
 import RBM3D.Universality.GUEPhase.DuhamelA1
+import RBM3D.Universality.GUEPhase.DuhamelA2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
