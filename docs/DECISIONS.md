@@ -958,3 +958,17 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) **T2318 Amend 1**（`docs/tickets/T2318-amend-1.md`）：`BelowOfSound`/`SoundStep`/`SoundRoot` 改用 `belowOf'`/`childrenB'`/`rootInfo'`（定理名不变），check 文件已改（依赖 T2319 模块，T2319 合并后再编译）。T2318 等 T2319 合并 + 中枢 H101 合并后构建 B 模块，然后从 1a 重开；02:11 报告留作 `T2318-prove-1a-fail.md`。不计返工。
 - (5) 旧 `LWExpCertS0/S1` 在 T2318 改用 B 模块后成死代码（从头构建约 20 分钟内核时间）；删不删由 LW-14f 定。
 - (6) 计数：ST-3 45/46、LW 42/48、UN 41/65、BA 24/72。在跑：T2303。下一张票号 T2320。
+
+## §131 — T2303 合并 → BA 25，REQ-0305；放行 T2315（总调度，2026-10-08 03:05 UTC）
+
+- (1) **T2303（BA-L2b1）合并** 8f90d6d（审核一轮 PASS，4127 jobs）：`BAlweight`、`baLweight_holds`、`lanlw_val`、图词汇。**BA 25/72** → **REQ-2026-10-08-0305 已写**（Q1 BA 外推与拆分；Q2 BA-P3 大 g 符号间隙路线——答复前 BA-P3 不放；Q3 T2318/T2319 修复确认）。
+- (2) **T2315 = BA-L2b2**（`Graph/BAExpandWOrd`，prover-hard，650/850/1200）：目标 3(c)（`lanlwT1_counters`、`lanlwD_counters`、`lanlw_ord`、`lanlw_scalingOrderG`）+ (I3)–(I4)，陈述取 T2303 草稿 check 原文（`T2303_` → `T2315_`），check §1 沿用已编译的 T2303-check §1 再加 T2303 合并名。BAVocab 私有闭包引理本地重证。
+- (3) 票面起草从此由总调度自写，Fable 子代理只用于数学卡住、一次一个（Jun 2026-10-08 02:4x UTC 指出用量过大）。
+- (4) 在跑：T2319（H101 构建）。待写（总调度自写）：S3-25/26（ST-3 末张）、UN-31 `Proc`。下一张票号 T2320。
+
+## §132 — S3-25 = T2320：Step 3 按消费的区域证；`STStep3I` 不作目标（总调度，2026-10-08 03:10 UTC）
+
+- (1) ST-3 计划 46 → 47：S3-25（Step 3）、S3-26（Step 4）两张都还没做（S3-27 已取消，§68 (9)）；在外推 46–48 之内。
+- (2) **S3-25 = T2320**（`Induction/Step3.lean`，prover-hard，600/800/1100）。论文在 case (i) 内以 `1-u = ilambda²` 再分（`3_5:1384`：`1-s > ilambda²` 时由 `(lRB1)` 直接得；其余靠 `lem:iterations`），且加中间时刻（`3_5:1105` 脚注）；形式化里 Steps 2–5 不能加中间时刻（§68 (9)），而 `ST_mainIndR_of_steps`（`MainIndRegimes.lean:165`）对 Step 3/4 的区域 `R34 ⊇ R` 是泛型的。所以 S3-25 证三个区域钉：`STStep3R d STReg5III`（`(lRB1)` + `((1-s)/(1-u))B_s ≤ 4B_u`，纯实代数）、`STStep3R d STReg5I`（迭代，`STReg5I = STRegIterI`）、`STStep3II d`（迭代 case (ii)）。探针骨架 `st_step3_skeleton`（`3c58211`）私有移植。删 owed `STStep3II`。
+- (3) `STStep3I`（case (i) 含跨 `ilambda²` 的 `[s,t]`）不作目标：S3-26 加带撇组装 `ST_mainIndR_III/I_of_steps'`（吃区域钉）后，登记把 `STStep3I`、`STStep4I` 标为 superseded。路线与 §68 (9) 一致，不改已合并文件；REQ 下次告知监督。
+- (4) 下一张票号 T2321（S3-26），然后 UN-31 `Proc`。
