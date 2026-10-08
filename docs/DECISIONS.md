@@ -1066,3 +1066,17 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) 小比值情形 `ρ_u ≤ (log W)^{10}`（`(eq:assmtlarge)` 的补集，论文 `3_5:1950-1954` 一句带过）在 T2329 里要写出来：两次 `(uwp2-92kj)`，`(log W)^{20}` 被 `≺` 吸收。
 - (5) 其余方向现状：LW-14 = T2319 合并中 → H128 重启 T2318 → LW-14f（`LWtermEXP` 组装，同时放开 `STStep2`/Step 6 三区域）；UN 链 T2323 待合并、T2327 预检中；MA 7/8 待 UN 链。S5-15 在 T2328 合并后写；ST-D6（主归纳组装设计）在 ST-4 闭合前写好。下一张票号 T2330。
 
+## §146 — 监督 1048：阶段 P PASS（附 C1–C5）；合并 T2319、T2323、T2327；放 UN-33、BA-P4a；LW 43 / UN 45 的 REQ（总调度，2026-10-08 11:00 UTC）
+
+- (1) **合并**（中枢，10:2x UTC）：T2319 = LW-14e-1′（ba2ddf3）→ **LW 43**；T2323 = UN-31b `ProcK`（9cd356f）、T2327 = UN-32 `Markov`（c99e133）→ **UN 44**。H128 已执行：T2318 从 1a 重开，1a PASS，1b（prover-max）中。H131 已执行：T2328 1a PASS、1b 中；T2329 1a 中。
+- (2) **监督 1048（REQ-1010）：阶段 P 可开，PASS，附设计改正 C1–C5**，照办（写进阶段 P 各票）：
+  - C1：P4 不能用单区域「`+L^{-d}` 地板」形，要和带状一样两个区域：(i) `τ ≤ L²` 无地板（`kProd_le` 孪生），(ii) `τ ≥ L²` 零模 + 能隙（`kProd_gap` 孪生）；切点是扩散时间 `τ = g² s ≥ L²`，不是 `n ≥ L²`。
+  - C2：连续时间（Poisson 化）`P_s = e^{-s} Σ sⁿ/n! Kⁿ`，`Θ = ∫ e^{-(1-t)u} P_{tu} du`，与 `Theta_eq_laplace_prod` 同形，`LaplaceGauss` 按 `γ = t g²` 代入；只要 `BAK_gap`，不要懒性。
+  - C3：倾斜在提升上做（居中提升 `K̃`，逐坐标 Chernoff 由 `BAK_exp_moment_le`，半群合并）；`A:58-67` 的 `Z^d` 游走读作环面核的居中提升 → P4b 报告记论文差异。
+  - C4：P6 要的差分正则性没人产出 → 新行 P4c（单方向符号正则性由 `BAK_off_le`；区域 (i) 的单位差分，多项式衰减 `M = ⌊d/2⌋+1`）；P6 改路线须先 REQ。
+  - C5：`σ₁ = σ₂` 四条归约（由 `BAProp5s`）进 P8。
+  - 行：**P4a `KHeat`、P4b `KHeatTail`、P4c `KHeatDiff`、P5 `Prop5`（旧 P7 并入）、P6 `PropUnit`、P8 `Prop6Path`**，共 6 张；顺序 P4a →（P4b ∥ P4c）→（P5 ← P4b；P6 ← P4c）→ P8。阶段 P 超 9 张（1.5 倍）须 REQ。关阶段 REQ 列 `BAProp5to8` 四个电荷对全证、`Test/Axioms.lean:137-141` 五行删掉（O5）。
+- (3) **放行（自写，不用 Fable）**：**T2330 = UN-33**（`Universality/GUEPhase/BoundsA.lean`，RBM2D 718 行移植，prover-hard，700/780/1000；两处与 `d` 有关：`HC` 控制 `(W^d)⁻¹`、`hellN : L^d(1-t₁) ≤ 1`，由 O4 的零模区域推出；登记只给 `GUEPathBounds` 行注释加条件生产者）；**T2331 = BA-P4a**（`BA/KHeat.lean`，prover-hard，800/1000/1400：`BAP`、`kBA`、Laplace 恒等式、半群/平移、基本性质、Fourier 形、对角界、`kBA_gap`（`kProd_gap` 逐字孪生））。槽位满（T2318、T2326、T2328、T2329），两张排队：先 T2330（§145 UN 先于 BA），后 T2331。
+- (4) **REQ-2026-10-08-1100**（计划中的 LW 43、UN 45 说明）：L1 问 T2318 之后的顺序（LW-14f 先，因 `STLWT` 是 T2328 唯一未证前提、Step 6 等 `LWtermEXP`）及 LW-02 = T2297 能否带 Amend 重开；U1 问 UN 余 20 行（计划正好到上限 65）的路线信号。
+- (5) 计数（宽口径，含已放行）：ST-4 33/35、LW 43/48（上限 50）、UN 45/65（上限 65）、BA 29（不设上限；阶段 P 计划 +6）、MA 7/8。下一张票号 T2332。
+
