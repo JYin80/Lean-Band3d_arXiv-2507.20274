@@ -360,6 +360,7 @@ import RBM3D.Induction.Step4
 import RBM3D.Induction.Step3
 import RBM3D.Universality.GUEPhase.Proc
 import RBM3D.Graph.BAExpandWOrd
+import RBM3D.BA.KSymbol
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
