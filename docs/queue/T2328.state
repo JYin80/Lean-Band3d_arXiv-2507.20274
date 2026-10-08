@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5, t/T2328 at 0174c09); merged under rule (A), full lake build 4138 jobs; file 1757 lines, over the ticket stop rule 1500 (audit observation O2; for the dispatcher)
+updated: Thu Oct  8 11:18:17 UTC 2026
+reports: docs/reports/T2328-prove.md, docs/reports/T2328-audit.md

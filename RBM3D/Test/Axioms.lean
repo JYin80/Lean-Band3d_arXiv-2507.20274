@@ -179,7 +179,7 @@ def owedProps : List Name :=
    `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
    `RBM.Gauss.Sizes.STStep5I, -- `lem:main_ind` Step 5, case (i) `3_5:1939`: consumer `ST_mainIndR_*_of_steps` (T2245), producer S5-02; S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STStep5II, -- Step 5, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245), producer S5-02; S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed)
+   `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed); proved from `STLWT` by `stEtermsMid_of_LWT` (T2328, S5-13)
    `RBM.Gauss.Sizes.STDuhamelI, -- integrated hierarchy `(iois-mtx2)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STDuhamelII, -- integrated hierarchy with `Q^{(1)}`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STIniTermI, -- initial term `(iksjuwjx0)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
