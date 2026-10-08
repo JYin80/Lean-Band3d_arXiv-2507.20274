@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 2 after one repair (rule B; claude-opus-5-5, t/T2319 at 6cbecb2); merged under rule (A) and H101 (LWExpCertB 8.1 s / 3.84 GB, BS0 1563.7 s / 6.20 GB, BS1 1780.7 s / 6.16 GB, built one at a time in the main worktree, 0 swaps); full lake build 4136 jobs with T2323
+updated: Thu Oct  8 10:21:59 UTC 2026
+reports: docs/reports/T2319-prove.md, docs/reports/T2319-audit.md

@@ -361,6 +361,9 @@ import RBM3D.Induction.Step3
 import RBM3D.Universality.GUEPhase.Proc
 import RBM3D.Graph.BAExpandWOrd
 import RBM3D.BA.KSymbol
+import RBM3D.Graph.LWExpCertB
+import RBM3D.Graph.LWExpCertBS0
+import RBM3D.Graph.LWExpCertBS1
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
