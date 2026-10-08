@@ -336,3 +336,9 @@ done: Wed Oct  7 10:57:35 UTC 2026 — T2312 merged d71c955 (LW-13b-1 Graph/LWMo
 
 - H115 (dispatcher V1, 2026-10-07 16:22 UTC; commit §128 + ROUTES BA 70→72). Commit all dispatcher files since H114 (0eb4e38): `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`.
   message `Dispatcher V1: DECISIONS §128 (BA cap 70→72 Jun approved), ROUTES BA update, H115`
+  done: Wed Oct  7 16:52:29 UTC 2026 — committed e29ec4f (3 files staged by name: docs/DECISIONS.md, docs/ROUTES.md, docs/queue/CONTROL.md), pushed.
+
+- H116 (dispatcher V1, 2026-10-08 01:15 UTC; commit T2313-check.lean + release T2313).
+  Step A — commit `docs/tickets/checks/T2313-check.lean` and `docs/queue/CONTROL.md` since H115 (e29ec4f); message `Dispatcher V1: T2313-check.lean (S3-18b2a release check), H116`; `git push origin main`. One `done:` line with hash and file count.
+  Step B — run check file: `lake env lean docs/tickets/checks/T2313-check.lean` (main after Step A). One `done:` line with exit code. On exit 1: report errors to dispatcher; do not proceed to Step C.
+  Step C — release T2313 (S3-18b2a): role `prover-hard`; fresh branch `t/T2313` from main (Step A hash); target files `RBM3D/Induction/QEndGrid.lean`, `RBM3D/Induction/QEndA.lean`, `RBM3D/Induction/QEndB1.lean` (primed successors; originals frozen per TEAM §5.3); stage 1a preflight required (CLAUDE.md §4). Set `docs/queue/T2313.state` to `preflight` with workflow id. One `done:` line.
