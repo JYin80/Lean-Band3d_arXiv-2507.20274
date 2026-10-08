@@ -149,9 +149,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWtermExp, -- `lem: EWGn2_N` (`3_5:406-415`): LW-01, LW-16
    `RBM.Gauss.Sizes.LWtermExpS, -- `lem: EWGn2_N`, strict regime: LW-01
    `RBM.Gauss.Sizes.LWtermExpN, -- `lem: EWGn2_N`, `1 - t ≤ ĝ²/L²`: LW-16
-   `RBM.Gauss.Sizes.LWtermEXP, -- `lem:LWterm_EXP` (`6:83-88`): LW-14
-   `RBM.Gauss.Sizes.LWCutExp, -- one cut of `(eq:EGC)` in expectation, `(eq:ELW_term)` (`B:10-13`), premise of `lwTermEXP_of_cut` (T2236): LW-14b
-   `RBM.Gauss.Sizes.LWExpG5', -- `I₄₂`, `J₄₂` (`(eq;I42inG)`, `(eq;EGxy:x=y)`) with first kernel `S^{(B)}` or `K⁺` and last charge `±`, premise of `lwCutExp_of_terms` (T2243): LW-14c
    `RBM.Gauss.Sizes.LWMoment, -- `lem:LW_moment` (`7_8:72-77`): LW-02
    `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-02, LW-13
    `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
@@ -230,9 +227,6 @@ def owedProps : List Name :=
    `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U, -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6I, -- `6:97` regime (i) pin: consumer `ST_mainIndR_*_of_steps` (T2245); S6-02 skeleton; ingredients S6-03...S6-07, S6-09...S6-11; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6II, -- `6:97` regime (ii) pin: consumer `ST_mainIndR_*_of_steps` (T2245); S6-02; S6-12; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Gauss.Sizes.STStep6III, -- `6:94-96` regime (iii) pin: consumer `ST_mainIndR_*_of_steps` (T2245); S6-02; S6-08; S6-01 (T2204, DECISIONS §67: owed)
    `RBM.Endpoints.decol, -- Thm 2.1 `1_2:357-370`: MA-03 `decol_of_locSC` + MA-04; MA-01 (T2210, DECISIONS §16, §20: owed)
    `RBM.Endpoints.locSC, -- Thm 2.2 `1_2:386-395`: MA-04 `MANetLoc` from MA-03; MA-01 (T2210, DECISIONS §16, §20: owed)
    `RBM.Endpoints.QUE, -- Thm 2.3 `1_2:406-420`: MA-05 `MAQUE`; MA-01 (T2210, DECISIONS §16, §20: owed)

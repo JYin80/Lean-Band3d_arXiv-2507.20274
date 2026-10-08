@@ -372,6 +372,7 @@ import RBM3D.Induction.IniTermI
 import RBM3D.BA.KHeat
 import RBM3D.Graph.LWExpSound
 import RBM3D.BA.KHeatTail
+import RBM3D.Graph.LWExpTerm6
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
