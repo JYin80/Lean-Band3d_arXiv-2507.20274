@@ -125,24 +125,24 @@ private lemma GUEPhaseGrid_slice_sum {ι : Type*} (n : ℕ) (S : Finset ι) (ω 
   funext c
   simp [Sizes.slice, Finset.sum_apply]
 
-private lemma GUEPhaseGrid_seqXmat_add (n : ℕ) (ω ν : Sizes.SeqΩ sz) :
+lemma GUEPhaseGrid_seqXmat_add (n : ℕ) (ω ν : Sizes.SeqΩ sz) :
     Sizes.seqXmat sz n (ω + ν) = Sizes.seqXmat sz n ω + Sizes.seqXmat sz n ν := by
   unfold Sizes.seqXmat
   rw [GUEPhaseGrid_slice_add, Xmat_add]
 
-private lemma GUEPhaseGrid_seqXmat_smul (n : ℕ) (a : ℝ) (ω : Sizes.SeqΩ sz) :
+lemma GUEPhaseGrid_seqXmat_smul (n : ℕ) (a : ℝ) (ω : Sizes.SeqΩ sz) :
     Sizes.seqXmat sz n (a • ω) = a • Sizes.seqXmat sz n ω := by
   unfold Sizes.seqXmat
   rw [GUEPhaseGrid_slice_smul, Xmat_smul]
 
-private lemma GUEPhaseGrid_seqXmat_sum {ι : Type*} (n : ℕ) (S : Finset ι)
+lemma GUEPhaseGrid_seqXmat_sum {ι : Type*} (n : ℕ) (S : Finset ι)
     (ω : ι → Sizes.SeqΩ sz) :
     Sizes.seqXmat sz n (∑ l ∈ S, ω l) = ∑ l ∈ S, Sizes.seqXmat sz n (ω l) := by
   unfold Sizes.seqXmat
   rw [GUEPhaseGrid_slice_sum]
   exact map_sum (Xlinear d (sz.L n) (sz.W n)) (fun l => Sizes.slice sz n (ω l)) S
 
-private lemma GUEPhaseGrid_real_smul_matrix {m : Type*} (r : ℝ) (M : Matrix m m ℂ) :
+lemma GUEPhaseGrid_real_smul_matrix {m : Type*} (r : ℝ) (M : Matrix m m ℂ) :
     r • M = (r : ℂ) • M := by
   ext i j
   simp [Complex.real_smul]
@@ -425,7 +425,7 @@ private lemma GUEPhaseGrid_map_column_eq_mixed (v0 v1 : Sizes.SeqCoord sz → �
   exact GUEPhaseGrid_weightedSum_map_gaussianReal_mixed hYm hY hY0 hY1 a b k
 
 /-- **The mixed-grid combined law.** -/
-private lemma GUEPhaseGrid_map_combined_eq_mixed (v0 v1 : Sizes.SeqCoord sz → ℝ≥0) (a b : ℝ)
+lemma GUEPhaseGrid_map_combined_eq_mixed (v0 v1 : Sizes.SeqCoord sz → ℝ≥0) (a b : ℝ)
     (k : ℕ) :
     (Measure.infinitePi (GUEPhaseGrid_mixedStepMeasure v0 v1)).map
         (fun ω : PathΩ sz => a • ω 0 + b • ∑ i ∈ Finset.Icc 1 k, ω i)
@@ -470,7 +470,7 @@ section Identification
 
 variable {sz}
 
-private lemma GUEPhaseGrid_Pgue_eq_mixed :
+lemma GUEPhaseGrid_Pgue_eq_mixed :
     Pgue sz = Measure.infinitePi
       (GUEPhaseGrid_mixedStepMeasure (Sizes.seqGvar sz) (gueUnitVar sz)) := by
   unfold Pgue
@@ -481,7 +481,7 @@ private lemma GUEPhaseGrid_Pgue_eq_mixed :
 
 /-- The size-`n` slice of an independent Gaussian family on `SeqCoord sz` (generalising
 `Sizes.seqP_map_slice` from `seqGvar sz` to any variance family). -/
-private lemma GUEPhaseGrid_map_slice_infinitePi (w : Sizes.SeqCoord sz → ℝ≥0) (n : ℕ) :
+lemma GUEPhaseGrid_map_slice_infinitePi (w : Sizes.SeqCoord sz → ℝ≥0) (n : ℕ) :
     (Measure.infinitePi fun c => gaussianReal 0 (w c)).map (Sizes.slice sz n)
       = Measure.infinitePi fun c : CoordF d (sz.L n) (sz.W n) => gaussianReal 0 (w ⟨n, c⟩) := by
   classical
@@ -513,7 +513,7 @@ private lemma GUEPhaseGrid_map_slice_infinitePi (w : Sizes.SeqCoord sz → ℝ�
   intro a ha
   simp [t', e]
 
-private lemma GUEPhaseGrid_measurable_Xmat (L W : ℕ) [NeZero L] [NeZero W] :
+lemma GUEPhaseGrid_measurable_Xmat (L W : ℕ) [NeZero L] [NeZero W] :
     Measurable (Xmat d L W) :=
   measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j => measurable_Xentry d L W i j
 
