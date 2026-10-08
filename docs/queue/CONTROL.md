@@ -277,6 +277,8 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
 310. T2341 — `docs/tickets/T2341.md` (BA-P6, role `prover-hard`). Released by H138 (check exit 0).
 311. T2343 — `docs/tickets/T2343.md` (UN-34+35, role `prover-hard`). Released by H139 (check exit 0); first free slot.
 312. T2344 — `docs/tickets/T2344.md` (LW-13b-2, role `prover-max`). Released by H140 (check exit 0).
+313. T2345 — `docs/tickets/T2345.md` (UN-36, role `prover-hard`). Released by H142 (check exit 0).
+314. T2346 — `docs/tickets/T2346.md` (UN-37, role `prover-hard`). Released by H142 (check exit 0).
 287. T2315 — `docs/tickets/T2315.md` (BA-L2b2, role `prover-hard`). Released by H119 (check exit 0).
 
 - H103 (dispatcher V1, 2026-10-07 07:42 UTC; DECISIONS §112–§115). Commit the dispatcher's files written since H94 (b2529ba), exactly as H94 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: bookkeeping DECISIONS §92–§115, tickets T2303 draft, T2310–T2311, checks T2310/T2311, supervisor trig_01R1NVdwWjDU2P5KMhtTLr43 (H103)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
@@ -652,3 +654,14 @@ done: Thu Oct  8 21:41:10 UTC 2026 — T2343 merged 5d0b6da (UN-34+35 Universali
   Step A — commit `docs/tickets/checks/T2345-check.lean`, `docs/tickets/checks/T2346-check.lean`, `docs/queue/CONTROL.md`, exactly as H117 Step A. Message `Dispatcher V1: T2345/T2346 check fix, H142`; push. One `done:` line.
   Step B — compile `T2345-check.lean`, then `T2346-check.lean` (main at the Step A hash). One `done:` line per file with exit code; on exit 1 paste the first 30 error lines.
   Step C — on exit 0: release **T2345** (UN-36) and **T2346** (UN-37), `prover-hard`, fresh branches from main, as H141 Step C. **T2344 stays stopped** after its 1a FAIL (§156: REQ to the supervisor); do not restart it. One `done:` line per ticket.
+  done: Thu Oct  8 21:52:27 UTC 2026 — Step A: committed b7d4b45 (3 files staged by name: checks/T2345-check.lean, checks/T2346-check.lean, CONTROL.md), pushed. Hub note: DECISIONS.md (§156), REQ-2026-10-08-1851.md (modified), supervisor/2026-10-08-1942.md and requests/REQ-2026-10-08-2152.md also differ from main; not in H142's list, left uncommitted.
+  done: Thu Oct  8 21:52:45 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2345-check.lean`: exit 0, no error lines.
+  done: Thu Oct  8 21:52:49 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2346-check.lean`: exit 0, no error lines.
+  done: Thu Oct  8 21:53:30 UTC 2026 — Step C: T2345 started (wf_1d974903-f18, prover-hard), branch t/T2345 from main b7d4b45; state preflight; Released list 313.
+  done: Thu Oct  8 21:53:30 UTC 2026 — Step C: T2346 started (wf_fd17648a-2e3, prover-hard), branch t/T2346 from main b7d4b45; state preflight; Released list 314. T2344 stays stopped (preflight-fail).
+
+- H143 (dispatcher V1, 2026-10-08 21:53 UTC; DECISIONS §156, §157).  Run after H142.
+  Step A — commit the dispatcher's files written since H141 that are not in H142's commit, exactly as H117 Step A (drop `docs/claude-team/fable/__pycache__/`): `docs/DECISIONS.md` (§156, §157), `docs/supervisor/requests/REQ-2026-10-08-2152.md`, `docs/tickets/T2347.md`, `docs/tickets/checks/T2347-check.lean`, `docs/queue/CONTROL.md` (and `docs/ROUTES.md` if changed). Message `Dispatcher V1: DECISIONS §156-157 (T2344 1a FAIL → REQ-2152; UN-43 = T2347), H143`; push. One `done:` line with hash and file count.
+  Step B — compile `docs/tickets/checks/T2347-check.lean`. One `done:` line with exit code; on exit 1 paste the first 30 error lines.
+  Step C — on exit 0: release **T2347** (UN-43, `prover-hard`), fresh branch from main. With T2345, T2346 that is 3 of 4. Stop-rule sentence (§148 (5)) in the stage-1b prompt; the stage-2 auditor prompt includes the script check that the `Grid.lean` diff is only `private` deletions. One `done:` line.
+

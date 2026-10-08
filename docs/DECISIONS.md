@@ -1171,3 +1171,16 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) 其他可并行的 UN 行（导入已齐）：UN-43 `EntryGrid`、UN-44 `Eq729A`、UN-48 `HypA`、UN-45/46 `OneLoop`（风险行）、`LLTransfer`（UN-50 的一半）、`QUEFlow`（UN-52 的一半）。下一个空位：UN-43 或 BA-P8（§145：UN 先）。
 - (4) 计数（宽口径）：UN 48/64（T2345、T2346 计入）；LW 47；ST-6 3/4；BA 33（阶段 P 余 P8）；MA 7/8。下一张票号 T2347。
 
+## §156 — T2343 合并；T2344 1a FAIL → 监督 REQ-2152；T2345/T2346 检查文件修正（总调度，2026-10-08 21:52 UTC）
+
+- (0) **合并**：T2343 = UN-34+35（5d0b6da，`GUEPhase/Drift`；`OneStep.lean` 只删 21 个 `private`；合并构建 61 分钟，`OneStep` 改动触发证书模块重建）。
+- (1) **T2344（LW-13b-2）1a FAIL**（报告 (a)）：A、Asm PASS；度量缺口用 `zdistInf` 孪生（候选 2）PASS，重标 `ℓ_t ↦ dℓ_t` FAIL；**域机制 FAIL**：黑边吸收指示函数不成立（所有黑波浪边、包括 IBP 产生的，都按 `D.S` 取值，Stein 一步要行和 `s`），REQ-1459 的选项 (i) 也带不过展开（`LGraph.val`、引擎、`GtoAG` 都对内部标签全求和）；缺的是**带初始顶点权重的展开恒等式**（顶点来源穿过引擎的每一步 `LocStep`，即 `T2289d`）。另有 G2（指数类 `ξ` 的界不能经 `LWPsiAll`，半径 `(log W)^{3/2}` 才渐近成立）、G4（近区是两球之并，已合并的近区域是交，改三分 `f^{>} + f^{(a)} + f^{(b)}`）。按票面规则：停在 1a，向监督发 **REQ-2152**（R1 域机制路线、R2 G2、R3 行数与 50 的 HOLD 审查）。T2344 不重启，等回复。这是数学卡点；若监督判断需要专门的数学设计，至多开一张设计票或一次 Fable 复核。
+- (2) **T2345/T2346 检查文件 exit 1**：两行 `#check`（`isUnit_sub_smul_one_of_im_ne_zero`、`green_sub_green`）在 `Induction/ConArgDet.lean`，检查文件没引；删去这两行（只是给证明者的参考名）。H142 重编译后放行。
+- (3) 排队：T2345、T2346 放行后 2 张在跑；再补 UN-43 `EntryGrid`（与 DuhamelA 无关，导入已齐）和 BA-P8，保持 4 张。
+- (4) 计数（宽口径）：LW 47（T2344 计入；路线 (a) 则 +2 行，到 LW-01 时 50–51，HOLD 审查问题已提给监督）；UN 48/64；ST-6 3/4；BA 33；MA 7/8。下一张票号 T2347。
+
+## §157 — UN-43 = T2347（`EntryGrid`，复用 `Grid.lean` 的私有混合网格引理）（总调度，2026-10-08 21:53 UTC）
+
+- (1) RBM2D `EntryGrid.lean`（902 行）自述把 `Grid.lean` 的私有混合网格引理拷了一份（约 290 行）；RBM3D 的 `GUEPhase/Grid.lean` 有同样的引理（前缀 `GUEPhaseGrid_`，`:117-530`）。同 §153：**删 `Grid.lean` 里用到的那些声明的 `private`，不拷**；审核用脚本核对差分只删关键词（监督 1942 O3 的规则）。**UN-43 = T2347**，`prover-hard`，550 / 700 / 900，停止线 1100。导入（`EntryTail`、`EntryTailMain`、`Proc`）都已合并，与 DuhamelA 无关，可并行。
+- (2) 计数（宽口径）：UN 49/64（T2347 计入）。其余同 §156。下一张票号 T2348。
+
