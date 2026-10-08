@@ -369,6 +369,7 @@ import RBM3D.Universality.GUEPhase.Markov
 import RBM3D.Induction.EtermsMid
 import RBM3D.Universality.GUEPhase.BoundsA
 import RBM3D.Induction.IniTermI
+import RBM3D.BA.KHeat
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
