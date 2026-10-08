@@ -143,6 +143,14 @@ def owedProps : List Name :=
    `RBM.BA.STKboundgL, -- `ML:Kbound` `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d}B_{τ,0})^{k-1}` at a law `μ` over a flow carrier (`1_2:1056`), hypothesis of the instance `inst_baBootstrap'` (T2269); owed: the BA chain, BA-K4/BA-V2
    `RBM.BA.STLKgL, -- `(Eq:L-KGt)` (a) at a law `μ` over a flow carrier, hypothesis of the instance `inst_baBootstrap'` (T2269); owed like its band form `STLK`: BA chain, BA-V2/BA-K4
    `RBM.BA.STLocalMaxgL, -- `(Gt_bound+IND)` at a law `μ` over a flow carrier, hypothesis of the instances `inst_baS1_boot`, `inst_baS1_weakPT`, `inst_baS1_loopPT`, `inst_baBootstrap'` (T2269); owed like its band form `STLocalMax`: BA chain, BA-V2/BA-S3
+   -- T2340 (ST-6 R1-R3, DECISIONS §151): carrier facts of the final assembly; the band instances are proved there (`stBase_band`, `stHorizon_band`), the BA instances are owed to BA-V
+   `RBM.BA.STLK0, -- `𝓛_0 = 𝒦_0` (`1_2:1240-1243`) over a flow carrier; band: `azumaProxy_loopFine_sub_STKloop`; BA: BA-V `GLoopAtT0`
+   `RBM.BA.STG0M, -- `G_0 = M` (`1_2:1240`) over a flow carrier; band: `lwExpTerm3_Gt_zero`; BA: BA-V `GLoopAtT0`
+   `RBM.BA.STBaseG, -- the six conclusions of `lem:main_ind` at the zero sequence over a carrier; band: `stBase_band`; BA: BA-V (from `STLK0`, `STG0M`, `STKboundgL` by `stBaseG_of_init`)
+   `RBM.BA.STHorizonG, -- admissible sizes, `0 < T0 < 1` and `N^{-1+ε/2} ≤ 1 - T0` eventually; band: `stHorizon_band`; BA: BA-V (`BAflowT0`, `Im m ≤ 1`)
+   -- T2340: existing pins that the new theorems (`stMLOutG_of_mainIndG`, `STLocalMaxgL_of_STLocalEntrygL`) take as hypotheses, found by the scan once `MainIndOut` is imported
+   `RBM.BA.STMainIndG, -- `lem:main_ind` over a carrier `(law, Flow, mk, T0)` (`BA/FlowPins.lean:565`), hypothesis of `stMLOutG_of_mainIndG`; band form `STMainInd` (`STMainInd_iff`, `Iff.rfl`): owed, ST-6 R4 after LW-01; BA form: BA-V
+   `RBM.BA.STLocalEntrygL, -- `(Gt_bound)` at a law `μ` over a flow carrier, hypothesis of `STLocalMaxgL_of_STLocalEntrygL`; owed like its band form `STLocalEntry`: BA chain, BA-V
    -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins, proved by LW-01..LW-14 (T2040 b.9)
    `RBM.Gauss.Sizes.LWterm, -- `lem:LWterm` (`3_5:385-404`): LW-01
    `RBM.Gauss.Sizes.LWtermB, -- `lem:LWterm`, "in particular" (`3_5:393-397`): LW-01
@@ -313,6 +321,8 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STStep6R, -- the Step-6 pin at one regime; S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STStep5R, -- the Step-5 pin at one regime `R` (`STIngR5` with `STStep5Concl`), the hypothesis of the generic step `ST_mainIndR_of_steps` (T2245, DECISIONS §68 (7), §20: structural, as `STStep6R`)
    `RBM.Gauss.Sizes.STMainIndR, -- `lem:main_ind` under a regime `R` of the time sequences (supervisor 1806 Q2 "The fix"); T2245, DECISIONS §68 (7), §20: structural, as `STStep6R`
+   `RBM.BA.STConclgL, -- the six conclusions of `lem:main_ind` at a time sequence over a carrier (a bundle); T2340 (DECISIONS §151): structural
+   `RBM.BA.STMLOutG, -- the ST-6 output over a carrier `(law, Flow, mk, T0)`, `UNMLOut` at the band data and `UNMLOutBA` at the BA data by `Iff.rfl`; T2340 (DECISIONS §151): structural
    `RBM.Gauss.Sizes.STStep6Concl, -- the Step-6 conclusion (`Eq:Gtlp_exp_flow` on the window); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpAvgAt, -- averaged improved bound at a time (`6:12-17`); S6-01 (T2204, DECISIONS §67: structural)
    `RBM.Gauss.Sizes.STExpAvgU, -- averaged improved bound uniformly in u (`6:14-16`); S6-01 (T2204, DECISIONS §67: structural)
