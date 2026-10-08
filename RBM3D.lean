@@ -357,6 +357,7 @@ import RBM3D.BA.KKernel
 import RBM3D.Induction.QtXiRoundLift
 import RBM3D.Graph.BAExpandW
 import RBM3D.Induction.Step4
+import RBM3D.Induction.Step3
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

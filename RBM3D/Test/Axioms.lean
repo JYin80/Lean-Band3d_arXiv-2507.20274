@@ -113,7 +113,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLKU, -- `(Eq:L-KGt-flow)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 3 (not in the §25 list; owed, T2049 proposal)
    `RBM.Gauss.Sizes.STStep3R, -- Step 3 per regime `R` (generic form): consumer `ST_mainIndR_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (not in the §25 list; owed, T2049 proposal)
    `RBM.Gauss.Sizes.STStep4R, -- Step 4 per regime `R` (generic form): consumer `ST_mainIndR_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (not in the §25 list; owed, T2049 proposal)
-   `RBM.Gauss.Sizes.STStep3II, -- Step 3, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
