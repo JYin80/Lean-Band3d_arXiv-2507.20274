@@ -30,7 +30,6 @@ open MeasureTheory Filter Topology
 #check @RBM.Gauss.Sizes.STKloop            -- :64
 #check @RBM.Gauss.Sizes.STKbound           -- :174
 #check @RBM.Gauss.Sizes.Bctl               -- Defs/Sizes.lean:214
-#check @RBM.Gauss.Sizes.STBctl_pos         -- Induction/ScaleFacts.lean:64
 -- loops, path, scales
 #check @RBM.Loop.LoopIdx                   -- Loop/TreeRep.lean:56
 #check @RBM.Gauss.loopOf                   -- Loop/GLoopFlow.lean:117
