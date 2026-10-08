@@ -306,6 +306,72 @@ theorem gridDriftQN_envelope {d : ℕ} (sz : Sizes d) (κ : ℝ) (hκ : 0 < κ) 
     exact h.mono fun ω hω _ a => hω a
   · exact Eventually.of_forall fun ω h => absurd h hj
 
+/-- **`gridDriftQN_envelope'`** (T2313, S3-18b2a): the primed successor of `gridDriftQN_envelope` (`m ≥ 1` dropped).  The
+hypothesis `hm : 1 ≤ m` of the original is not used in its body (the call to `gridDriftQN` is at the mollifier index `m + 1 ≥ 1`,
+`(by omega)`), so the statement is the same with `m : ℕ` arbitrary (tensors of `m + 2 ≥ 2` indices) and the proof is a copy.
+-/
+theorem gridDriftQN_envelope' {d : ℕ} (sz : Sizes d) (κ : ℝ) (hκ : 0 < κ) (m : ℕ)
+    (τK : ℝ) (hτK : 0 < τK) {E s v : ℕ → ℝ} {K : ℕ → ℕ} (hsize : sz.SizeTendsto)
+    (hKb : sz.STKbound E) (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n)
+    (hv1 : ∀ n, v n < 1) (hK0 : ∀ n, K n ≠ 0) (hlam : ∀ᶠ n : ℕ in atTop, 0 < sz.lam n)
+    (σ : Fin (m + 1 + 1) → Bool) :
+    ∀ᶠ n : ℕ in atTop, ∀ᵐ ω ∂(pathP sz), ∀ j, j < K n → ∀ a : Fin (m + 1 + 1) → Zd d (sz.L n),
+      ‖rGridQN sz E s v K n (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) σ j ω a‖ ≤
+        qErrQN sz E s v K n (m + 1) ((1 + 40 * ((d * (m + 1) : ℕ) : ℝ)) * 6 ^ (d * (m + 1)))
+          (1000 * (1 + ((d * (m + 1) : ℕ) : ℝ)) ^ 2)
+          (((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)) j := by
+  classical
+  have hE2 : ∀ n, |E n| < 2 := fun n => by have := hE n; linarith
+  have hv1' : ∀ n j, j < K n → gridTime s v K n (j + 1) < 1 := fun n j hj =>
+    altEnd_gridTime_lt_one (hsv n) (hK0 n) (hv1 n) (show j + 1 ≤ K n by omega)
+  -- the deterministic envelope statement at the grid step `j`
+  let P : ℕ → ℕ → Prop := fun n j => ∀ w ∈ Set.Icc (0 : ℝ) (gridTime s v K n (j + 1)),
+    ∀ J : LoopIdx (Zd d (sz.L n)), J.WF → 2 ≤ J.length → J.length ≤ m + 1 + 1 →
+      ‖KLK d (sz.L n) (sz.lam n) (sz.W n) (E n) w J‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)
+  have hP : ∀ᶠ n in atTop, ∀ j, j < K n → P n j := by
+    by_contra hcon
+    have hfreq := Filter.not_eventually.1 hcon
+    let bad : ℕ → Prop := fun n => ∃ j, j < K n ∧ ¬ P n j
+    have hbad : ∀ n, ¬ (∀ j, j < K n → P n j) → bad n := by
+      intro n hn
+      by_contra hb
+      exact hn fun j hj => by
+        by_contra hc
+        exact hb ⟨j, hj, hc⟩
+    let w₀ : ℕ → ℝ := fun n =>
+      if h : bad n then gridTime s v K n (Classical.choose h + 1) else 0
+    have hvmem : ∀ n, 0 ≤ w₀ n ∧ w₀ n < 1 := by
+      intro n
+      by_cases h : bad n
+      · have e : w₀ n = gridTime s v K n (Classical.choose h + 1) := by simp [w₀, h]
+        rw [e]
+        exact ⟨altEnd_gridTime_nonneg (hs0 n) (hsv n) _, hv1' n _ (Classical.choose_spec h).1⟩
+      · have e : w₀ n = 0 := by simp [w₀, h]
+        rw [e]
+        exact ⟨le_rfl, one_pos⟩
+    have hwin := exists_norm_Kcal_le_win sz hsize E hKb hE2 w₀ (fun n => (hvmem n).1)
+      (fun n => (hvmem n).2) (m + 1 + 1) τK hτK
+    obtain ⟨n, hn1, hn2⟩ := (hfreq.and_eventually hwin).exists
+    have hbn : bad n := hbad n hn1
+    obtain ⟨hjlt, hnP⟩ := Classical.choose_spec hbn
+    have e : w₀ n = gridTime s v K n (Classical.choose hbn + 1) := by simp [w₀, hbn]
+    apply hnP
+    intro w hw J hJ h2 hJk
+    have hb := hn2 w (by rw [e]; exact hw) J hJ h2 hJk
+    rw [e] at hb
+    exact hb
+  filter_upwards [hP, hlam] with n hn hlamn
+  refine ae_all_iff.2 fun j => ?_
+  by_cases hj : j < K n
+  · have hη : 0 < etaT (E n) (gridTime s v K n (j + 1)) := etaT_pos (hE2 n) (hv1' n j hj)
+    have hBk : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1) :=
+      mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (pow_nonneg (inv_nonneg.2 hη.le) _)
+    have h := gridDriftQN sz E s v K n j (hE2 n) (hs0 n) (hsv n) (hv1 n) (hK0 n) hj hlamn (m := m + 1)
+      (by omega) σ _ hBk (hn j hj)
+    exact h.mono fun ω hω _ a => hω a
+  · exact Eventually.of_forall fun ω h => absurd h hj
+
 /-- `kappaAltQN` is nonnegative (copy of the private `QBudgetA_kappa_nonneg`, `QBudgetA.lean:125`). -/
 private theorem altEnd_kappa_nonneg (d k : ℕ) (Λg κ' KL g W ε : ℝ) (hW : 0 ≤ W) (u : ℕ → ℝ)
     (i m : ℕ) : 0 ≤ kappaAltQN d k Λg κ' KL g W ε u i m := by
@@ -1459,6 +1525,27 @@ theorem gridDriftQN_envelope_instance :
     (fun _ => by norm_num [E0]) (fun _ => le_rfl) (fun _ => by norm_num) (fun _ => by norm_num)
     (fun _ => by norm_num) (Filter.Eventually.of_forall lam_pos_n) σalt).exists
 
+/-- The alternating sign of length `m + 2 = 2` (`m = 0`) of the instance of `gridDriftQN_envelope'`. -/
+private abbrev σalt0 : Fin (0 + 1 + 1) → Bool := ![true, false]
+
+/-- **Instance of `gridDriftQN_envelope'` at `m = 0`** (T2313; tensors of `m + 2 = 2` indices, mollifier at `m + 1 = 1`): the data
+of `gridDriftQN_envelope_instance` (`sz0`, `κ = 1`, `τ_K = 1`, `E ≡ 0`, `s ≡ 0`, `v ≡ 1/2`, `K ≡ 4`; `STKbound E0` by the proved
+`stKbound_holds`) with `m = 0` and the alternating `σ = (true, false)`.  There is an `n` where, a.e. in the walk, every grid
+step `j < 4` and label has `‖rGridQN‖ ≤ qErrQN` at the envelope `N η_{u_{j+1}}^{-2}`.  No hypothesis is left. -/
+theorem gridDriftQN_envelope'_instance :
+    ∃ n : ℕ, ∀ᵐ ω ∂(pathP sz0), ∀ j, j < 4 → ∀ a : Fin (0 + 1 + 1) → Zd 3 (sz0.L n),
+      ‖rGridQN sz0 E0 sg0 vg2 (fun _ => 4) n (QopAlgebra_mollifier 3 (sz0.L n) (0 + 1) (sz0.lam n)) σalt0 j ω a‖ ≤
+        qErrQN sz0 E0 sg0 vg2 (fun _ => 4) n (0 + 1) ((1 + 40 * ((3 * (0 + 1) : ℕ) : ℝ)) * 6 ^ (3 * (0 + 1)))
+          (1000 * (1 + ((3 * (0 + 1) : ℕ) : ℝ)) ^ 2)
+          (((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ) * (etaT (E0 n) (gridTime sg0 vg2 (fun _ => 4) n (j + 1)))⁻¹ ^
+            (0 + 1 + 1)) j := by
+  have hKb : sz0.STKbound E0 := stKbound_holds sz0 (by norm_num) (κ := 1) (gmax := 10) one_pos
+    (by norm_num) sz0_tendsto (Filter.Eventually.of_forall fun n => by norm_num [E0])
+    (Filter.Eventually.of_forall fun n => ⟨lam_pos_n n, (lam_le_one n).trans (by norm_num)⟩)
+  exact (gridDriftQN_envelope' sz0 1 one_pos 0 1 one_pos sz0_tendsto hKb
+    (fun _ => by norm_num [E0]) (fun _ => le_rfl) (fun _ => by norm_num) (fun _ => by norm_num)
+    (fun _ => by norm_num) (Filter.Eventually.of_forall lam_pos_n) σalt0).exists
+
 /-- The kernel weight of the instance of C1b (`k = 4` indices, `Λ_g = κ' = K_L = 1`, `ε = 1/10`, grid `K n = N_n^{31}`). -/
 private noncomputable abbrev kapI (n i m' : ℕ) : ℝ :=
   kappaAltQN 3 (2 + 1 + 1) 1 1 1 (sz0.lam n) ((sz0.W n : ℕ) : ℝ) (1 / 10) (gridTime sg0 vg2 Kc31 n) i m'
@@ -1936,6 +2023,8 @@ end
 #print axioms RBM.Ind.altExitMeasN
 #print axioms RBM.Ind.altYGridN
 #print axioms RBM.Ind.gridDriftQN_envelope
+#print axioms RBM.Ind.gridDriftQN_envelope'
+#print axioms RBM.Ind.QEndAInst.gridDriftQN_envelope'_instance
 #print axioms RBM.Ind.assembledRHSAltQN_qErr_le
 #print axioms RBM.Ind.hQ_altQN
 #print axioms RBM.Ind.subGaussStop_altQN

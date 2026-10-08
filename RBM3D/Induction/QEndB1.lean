@@ -95,11 +95,31 @@ def STXiRoundPT' (E s t : ℕ → ℝ) : Prop :=
         STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2)
           (sz.Bctl n (s n)) n_ p)
 
+/-- Per-time round at `n_ ≥ 2`: primed successor of `STXiRoundPT'` (T2310) lowering the threshold from `3` to `2`.  Target of
+`stOeqQtRoundPT''_holds` (T2313). -/
+def STXiRoundPT'' (E s t : ℕ → ℝ) : Prop :=
+  ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
+    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
+    (∀ m, 1 ≤ m → STlenL n_ p m →
+      Prec sz (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 m ω)
+        (fun n q _ => XL m n q.1.2)) →
+    (∀ m, 1 ≤ m → m ≤ n_ →
+      Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 m ω)
+        (fun n q _ => XLK m n q.1.2)) →
+    PrecPT sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 n_ ω)
+      (fun n q _ => sz.Bctl n q.1.2 ^ (1 / 6 : ℝ) * XLK n_ n q.1.2 +
+        STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2)
+          (sz.Bctl n (s n)) n_ p)
+
 end Pins
 
 /-- Per-time round ingredient: `STXiRoundPT'` packed into the `STIngR` shape. -/
 def STOeqQtRoundPT' (d : ℕ) : Prop :=
   STIngR d STCaseI (fun sz E s t => STXiRoundPT' sz E s t)
+
+/-- `STXiRoundPT''` packed into the `STIngR` shape. -/
+def STOeqQtRoundPT'' (d : ℕ) : Prop :=
+  STIngR d STCaseI (fun sz E s t => STXiRoundPT'' sz E s t)
 
 end RBM.Gauss.Sizes
 
@@ -1170,6 +1190,589 @@ private theorem altQFlow_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 �
         _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ := mul_le_mul_of_nonneg_left hζ1 hNτ
     exact absurd hω (not_lt.2 (hXi.trans this))
 
+/-! ## §5' (T2313, S3-18b2a) the endpoint at `m ≥ 0`: copies of §2, §3, §5 for the loop length `n_ = m + 2 ≥ 2`
+
+`altQFlow0_initQ`, `altQFlow0_core`, `altQFlow0_section` are copies of `altQFlow_initQ`, `altQFlow_core`, `altQFlow_section` without
+`1 ≤ m`.  The changes are: the far-decay window `τ'' = e/(8 d (m+1))` of the initial loops (`τ'' d m ≤ e/8`); `altGridEndQN'`
+(`QEndGrid.lean`) in place of `altGridEndQN`; the conclusion of the core with `STbootRHS 1` (`altQFlow0_Ylow_le_bootRHS`: at `m = 0`
+the level `X = Y 1` is `XLK (k-1)` with `k = 2`, which `STbootRHS 2` does not contain); and in the section the non-alternating
+bound `STbootRHS 2 ≤ STbootRHS 1`.  The originals are untouched. -/
+
+/-- **`altQFlow0_initQ`** (T2313): `altQFlow_initQ` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped).  The only use of `1 ≤ m` was
+`0 < τ''` for the far-decay window `ωf = W^{τ''}`; here `τ'' = e / (8 d (m+1))` is positive for every `m`, and
+`ωf^{d m} = W^{τ'' d m} ≤ W^{e/8} ≤ N^{e/8} = ν` (`τ'' d m ≤ e/8`).  The statement is that of `altQFlow_initQ`. -/
+private theorem altQFlow0_initQ (sz : Sizes d) (hd : 3 ≤ d) {E s t : ℕ → ℝ} {κ' 𝔠 𝔡 τR : ℝ} (hκ : 0 < κ')
+    (h𝔠 : 0 < 𝔠) (hsize : sz.SizeTendsto) (hband : sz.Bandwidth 𝔠) (hWO : sz.WO 𝔡)
+    (hE : ∀ n, |E n| ≤ 2 - κ') (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1)
+    (hrange : sz.RangeCond τR t) (hτR : 0 < τR) (hLK : STLK sz E s) (hDecay : STDecayLoopU sz E s t)
+    {m : ℕ} {ε : ℝ} (hε : 0 < ε) :
+    HighProbAt (seqP sz) sz.size (fun n => {ω | ∀ x : (Fin (m + 1 + 1) → Bool) × (Fin (m + 1 + 1) → Zd d (sz.L n)),
+      x.1 (Fin.last (m + 1)) = !x.1 0 →
+        ‖STQop (d := d) (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) (s n)
+          (fun b => sz.STLKM n (E n) (s n) (sz.seqHflow n (s n) ω) x.1 b) x.2‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε * (sz.Bctl n (s n)) ^ (m + 1 + 1)}) := by
+  classical
+  have hd1 : 1 ≤ d := by omega
+  have hsz := tendsto_size sz hsize
+  obtain ⟨e, he⟩ : ∃ e : ℝ, e = min ε 1 := ⟨_, rfl⟩
+  have he0 : 0 < e := by rw [he]; exact lt_min hε one_pos
+  have he1 : e ≤ 1 := by rw [he]; exact min_le_right _ _
+  have heε : e ≤ ε := by rw [he]; exact min_le_left _ _
+  have hdm : (0 : ℝ) < ((d * (m + 1) : ℕ) : ℝ) := by
+    have : 0 < d * (m + 1) := Nat.mul_pos (by omega) (by omega)
+    exact_mod_cast this
+  obtain ⟨τ'', hτ''⟩ : ∃ τ'' : ℝ, τ'' = e / (8 * ((d * (m + 1) : ℕ) : ℝ)) := ⟨_, rfl⟩
+  have hτ''0 : 0 < τ'' := by rw [hτ'']; positivity
+  obtain ⟨DF, hDF⟩ : ∃ DF : ℝ, DF = (2 * (m : ℝ) + 5) / 𝔠 := ⟨_, rfl⟩
+  have hDF0 : 0 < DF := by rw [hDF]; positivity
+  obtain ⟨C, hC⟩ : ∃ C : ℝ, C = (1 + 40 * ((d * (m + 1) : ℕ) : ℝ)) * 6 ^ (d * (m + 1)) := ⟨_, rfl⟩
+  have hC0 : 0 < C := by rw [hC]; positivity
+  obtain ⟨c₀, hc₀⟩ : ∃ c₀ : ℝ,
+      c₀ = (2 * (m : ℝ) + 5) * (3 * 4 ^ (d * m) * (2 / Real.sqrt κ') * C) := ⟨_, rfl⟩
+  have hA1 := Prec.whp sz (hLK (m + 1) (by omega)) (τ := e / 8) (by positivity)
+  have hA2 := Prec.whp sz (hLK (m + 1 + 1) (by omega)) (τ := e / 8) (by positivity)
+  have hA3 := Prec.whp sz (hDecay (m + 1) (by omega) τ'' hτ''0 DF hDF0) (τ := 1) one_pos
+  refine HighProbAt.mono (HighProbAt.inter hsz (HighProbAt.inter hsz hA1 hA2) hA3) ?_
+  have hc₀ev : ∀ᶠ n in atTop, c₀ ≤ ((sz.size n : ℕ) : ℝ) ^ (e / 4) :=
+    ((tendsto_rpow_atTop (by positivity : (0 : ℝ) < e / 4)).comp hsize).eventually_ge_atTop c₀
+  have h2ev : ∀ᶠ n in atTop, (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (e / 2) :=
+    ((tendsto_rpow_atTop (by positivity : (0 : ℝ) < e / 2)).comp hsize).eventually_ge_atTop 2
+  filter_upwards [hWO, hband, hrange, hc₀ev, h2ev] with n hwo hbd hrg hc hN2
+  rintro ω ⟨⟨hY1, hYtop'⟩, hFar⟩ x hx
+  -- the scalar facts at the size index `n`
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith
+  have hWN := altQFlow_W_le_size sz hd1 n
+  have hlam : 0 < sz.lam n := lt_of_lt_of_le (Real.rpow_pos_of_pos hW0 _) hwo.1
+  have hu1 : s n < 1 := (hst n).trans_lt (ht1 n)
+  have hBs : 0 < sz.Bctl n (s n) := st_Bctl_pos sz hu1
+  have hNu : (((sz.size n : ℕ) : ℝ))⁻¹ ≤ 1 - s n := by
+    have h1 : ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-1 + τR) :=
+      Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
+    rw [Real.rpow_neg_one] at h1
+    linarith [hst n]
+  obtain ⟨ν, hν⟩ : ∃ ν : ℝ, ν = ((sz.size n : ℕ) : ℝ) ^ (e / 8) := ⟨_, rfl⟩
+  have hν1 : 1 ≤ ν := by rw [hν]; exact Real.one_le_rpow hN1 (by positivity)
+  have hνN : ν ≤ ((sz.size n : ℕ) : ℝ) := by
+    rw [hν]
+    calc ((sz.size n : ℕ) : ℝ) ^ (e / 8) ≤ ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) :=
+          Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
+      _ = _ := Real.rpow_one _
+  have hν2 : ν ^ 2 = ((sz.size n : ℕ) : ℝ) ^ (e / 4) := by
+    rw [hν, sq, ← Real.rpow_add hN0]; congr 1; ring
+  -- the window `ωf = W^{τ''}`
+  obtain ⟨ωf, hωfdef⟩ : ∃ ωf : ℝ, ωf = ((sz.W n : ℕ) : ℝ) ^ τ'' := ⟨_, rfl⟩
+  have hωf : 1 ≤ ωf := by rw [hωfdef]; exact Real.one_le_rpow hW1 hτ''0.le
+  have hωd : ωf ^ (d * m) ≤ ν := by
+    have e1 : ωf ^ (d * m) = ((sz.W n : ℕ) : ℝ) ^ (τ'' * ((d * m : ℕ) : ℝ)) := by
+      rw [hωfdef, ← Real.rpow_natCast, ← Real.rpow_mul hW0.le]
+    have hle : τ'' * ((d * m : ℕ) : ℝ) ≤ e / 8 := by
+      have h1 : ((d * m : ℕ) : ℝ) ≤ ((d * (m + 1) : ℕ) : ℝ) := by
+        exact_mod_cast Nat.mul_le_mul_left d (Nat.le_succ m)
+      rw [hτ'']
+      calc e / (8 * ((d * (m + 1) : ℕ) : ℝ)) * ((d * m : ℕ) : ℝ)
+          ≤ e / (8 * ((d * (m + 1) : ℕ) : ℝ)) * ((d * (m + 1) : ℕ) : ℝ) :=
+            mul_le_mul_of_nonneg_left h1 (by positivity)
+        _ = e / 8 := by field_simp
+    rw [e1, hν]
+    calc ((sz.W n : ℕ) : ℝ) ^ (τ'' * ((d * m : ℕ) : ℝ)) ≤ ((sz.W n : ℕ) : ℝ) ^ (e / 8) :=
+          Real.rpow_le_rpow_of_exponent_le hW1 hle
+      _ ≤ ((sz.size n : ℕ) : ℝ) ^ (e / 8) := Real.rpow_le_rpow hW0.le hWN (by positivity)
+  -- the far decay level
+  obtain ⟨Fv, hFvdef⟩ : ∃ Fv : ℝ, Fv = ((sz.size n : ℕ) : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-DF) := ⟨_, rfl⟩
+  have hFv0 : 0 ≤ Fv := by rw [hFvdef]; positivity
+  have hFv : Fv ≤ ν * (((sz.size n : ℕ) : ℝ) ^ (2 * m + 4))⁻¹ := by
+    have hWD : ((sz.size n : ℕ) : ℝ) ^ (2 * m + 5) ≤ ((sz.W n : ℕ) : ℝ) ^ DF := by
+      calc ((sz.size n : ℕ) : ℝ) ^ (2 * m + 5) = (((sz.size n : ℕ) : ℝ) ^ 𝔠) ^ DF := by
+            rw [← Real.rpow_mul hN0.le, show 𝔠 * DF = ((2 * m + 5 : ℕ) : ℝ) by
+              rw [hDF]; push_cast; field_simp, Real.rpow_natCast]
+        _ ≤ ((sz.W n : ℕ) : ℝ) ^ DF := Real.rpow_le_rpow (Real.rpow_nonneg hN0.le _) hbd hDF0.le
+    have hWneg : ((sz.W n : ℕ) : ℝ) ^ (-DF) ≤ (((sz.size n : ℕ) : ℝ) ^ (2 * m + 5))⁻¹ := by
+      rw [Real.rpow_neg hW0.le]
+      exact inv_anti₀ (by positivity) hWD
+    have h1 : ((sz.size n : ℕ) : ℝ) * (((sz.size n : ℕ) : ℝ) ^ (2 * m + 5))⁻¹ =
+        (((sz.size n : ℕ) : ℝ) ^ (2 * m + 4))⁻¹ := by
+      rw [show 2 * m + 5 = (2 * m + 4) + 1 by ring, pow_succ]
+      field_simp
+    have h2 : (((sz.size n : ℕ) : ℝ) ^ (2 * m + 4))⁻¹ ≤ ν * (((sz.size n : ℕ) : ℝ) ^ (2 * m + 4))⁻¹ :=
+      le_mul_of_one_le_left (by positivity) hν1
+    rw [hFvdef]
+    calc ((sz.size n : ℕ) : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-DF)
+        ≤ ((sz.size n : ℕ) : ℝ) * (((sz.size n : ℕ) : ℝ) ^ (2 * m + 5))⁻¹ :=
+          mul_le_mul_of_nonneg_left hWneg hN0.le
+      _ = _ := h1
+      _ ≤ _ := h2
+  -- `hMΛ`
+  have hMΛ : (2 * (m : ℝ) + 5) * (3 * 4 ^ (d * m) * (2 / Real.sqrt κ') * C * ν ^ 2) ≤
+      ((sz.size n : ℕ) : ℝ) ^ (e / 2) := by
+    have hsq : ((sz.size n : ℕ) : ℝ) ^ (e / 2) = ((sz.size n : ℕ) : ℝ) ^ (e / 4) * ((sz.size n : ℕ) : ℝ) ^ (e / 4) := by
+      rw [← Real.rpow_add hN0]; congr 1; ring
+    have hp : 0 ≤ ν ^ 2 := by positivity
+    calc (2 * (m : ℝ) + 5) * (3 * 4 ^ (d * m) * (2 / Real.sqrt κ') * C * ν ^ 2)
+        = c₀ * ν ^ 2 := by rw [hc₀]; ring
+      _ ≤ ((sz.size n : ℕ) : ℝ) ^ (e / 4) * ν ^ 2 := mul_le_mul_of_nonneg_right hc hp
+      _ = _ := by rw [hsq, hν2]
+  -- the levels read off the three events
+  obtain ⟨H, hH⟩ : ∃ H, H = sz.seqHflow n (s n) ω := ⟨_, rfl⟩
+  have hHherm : H.IsHermitian := by rw [hH]; exact Sizes.seqHflow_isHermitian sz n (s n) ω
+  have hY : ∀ (σ' : Fin (m + 1) → Bool) (a' : Fin (m + 1) → Zd d (sz.L n)),
+      ‖sz.STLKM n (E n) (s n) H σ' a'‖ ≤ ν * 1 * sz.Bctl n (s n) ^ (m + 1) := by
+    intro σ' a'
+    have h : ‖Lloop sz n (E n) (s n) σ' a' ω - STKloop sz n (E n) (s n) σ' a'‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ (e / 8) * sz.Bctl n (s n) ^ (m + 1) := hY1 (σ', a')
+    rw [hH, mul_one, hν]
+    exact h
+  have hF : ∀ (σ' : Fin (m + 1) → Bool) (a' : Fin (m + 1) → Zd d (sz.L n)),
+      ellT (sz.L n) (sz.lam n) (s n) * ωf ≤ (STdiamInf a' : ℝ) → ‖sz.STLKM n (E n) (s n) H σ' a'‖ ≤ Fv := by
+    intro σ' a' hfar
+    have h : (‖Lloop sz n (E n) (s n) σ' a' ω‖ + ‖Lloop sz n (E n) (s n) σ' a' ω - STKloop sz n (E n) (s n) σ' a'‖) *
+        (if ellT (sz.L n) (sz.lam n) (s n) * ((sz.W n : ℕ) : ℝ) ^ τ'' ≤ (STdiamInf a' : ℝ) then 1 else 0) ≤
+        ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-DF) := hFar (⟨s n, le_rfl, hst n⟩, σ', a')
+    rw [← hωfdef] at h
+    simp only [hfar, ↓reduceIte, mul_one, Real.rpow_one] at h
+    rw [hH, hFvdef]
+    exact le_trans (le_add_of_nonneg_left (norm_nonneg _)) h
+  have hYtop : ∀ b : Fin (m + 1 + 1) → Zd d (sz.L n),
+      ‖sz.STLKM n (E n) (s n) H x.1 b‖ ≤ ν * sz.Bctl n (s n) ^ (m + 1 + 1) := by
+    intro b
+    have h : ‖Lloop sz n (E n) (s n) x.1 b ω - STKloop sz n (E n) (s n) x.1 b‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ (e / 8) * sz.Bctl n (s n) ^ (m + 1 + 1) := hYtop' (x.1, b)
+    rw [hH, hν]
+    exact h
+  -- the mollifier bound
+  have hϑ : STMollifierProps (d := d) (sz.lam n) C (1 / 2)
+      (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) := by
+    rw [hC]; exact QopAlgebra_mollifier_props d (sz.L n) (m + 1) (sz.three_le_L n) hlam
+  have hexp : ∀ a : Fin (m + 1 + 1) → Zd d (sz.L n),
+      ‖QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n) (s n) a‖ ≤
+        C * (((ellT (sz.L n) (sz.lam n) (s n) ^ d)⁻¹) ^ (m + 1)) := by
+    intro a
+    refine (hϑ.2.1 (s n) (hs0 n) hu1 a).trans ?_
+    have hl : 0 < ellT (sz.L n) (sz.lam n) (s n) := ellT_pos (by
+      exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n))
+    have hS : 0 ≤ ∑ i ∈ Finset.univ.erase (0 : Fin (m + 1 + 1)),
+        (zdistD d (sz.L n) (a i - a 0) : ℝ) := Finset.sum_nonneg (fun _ _ => Nat.cast_nonneg _)
+    have hex : Real.exp (-(1 / 2 : ℝ) * (∑ i ∈ Finset.univ.erase (0 : Fin (m + 1 + 1)),
+        (zdistD d (sz.L n) (a i - a 0) : ℝ)) / ellT (sz.L n) (sz.lam n) (s n)) ≤ 1 := by
+      rw [Real.exp_le_one_iff]
+      exact div_nonpos_of_nonpos_of_nonneg (by nlinarith [hS]) hl.le
+    have hC1 : 0 ≤ C * (((ellT (sz.L n) (sz.lam n) (s n) ^ d)⁻¹) ^ (m + 1)) := by positivity
+    calc _ ≤ C * (((ellT (sz.L n) (sz.lam n) (s n) ^ d)⁻¹) ^ (m + 1)) * 1 :=
+          mul_le_mul_of_nonneg_left hex hC1
+      _ = _ := by rw [mul_one]
+  have key := startLevelQN d (by omega) sz n (E n) (s n) κ' hκ (hE n) (hs0 n) hu1 hlam hNu H hHherm m
+    (2 / Real.sqrt κ') ν 1 ωf Fv C (e / 2) (ν * sz.Bctl n (s n) ^ (m + 2)) rfl hν1 le_rfl hωf hωd hνN hFv hFv0
+    hC0.le hMΛ hY hF _ hexp x.1 hx hYtop x.2
+  rw [hH] at key
+  -- `ν + N^{e/2} ≤ N^ε`
+  have hsq : ((sz.size n : ℕ) : ℝ) ^ e = ((sz.size n : ℕ) : ℝ) ^ (e / 2) * ((sz.size n : ℕ) : ℝ) ^ (e / 2) :=
+    (UnifDetDom.rpow_half_mul_rpow_half _ he0).symm
+  have hle1 : ν ≤ ((sz.size n : ℕ) : ℝ) ^ (e / 2) := by
+    rw [hν]; exact Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
+  have hle2 : ((sz.size n : ℕ) : ℝ) ^ e ≤ ((sz.size n : ℕ) : ℝ) ^ ε :=
+    Real.rpow_le_rpow_of_exponent_le hN1 heε
+  have hsum : ν + ((sz.size n : ℕ) : ℝ) ^ (e / 2) ≤ ((sz.size n : ℕ) : ℝ) ^ ε := by
+    have : (2 : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (e / 2) ≤
+        ((sz.size n : ℕ) : ℝ) ^ (e / 2) * ((sz.size n : ℕ) : ℝ) ^ (e / 2) :=
+      mul_le_mul_of_nonneg_right hN2 (Real.rpow_nonneg hN0.le _)
+    linarith
+  have hBp : 0 ≤ sz.Bctl n (s n) ^ (m + 2) := (pow_pos hBs _).le
+  calc _ ≤ ν * sz.Bctl n (s n) ^ (m + 2) + ((sz.size n : ℕ) : ℝ) ^ (e / 2) * (sz.Bctl n (s n) ^ (m + 2) * 1) := key
+    _ = (ν + ((sz.size n : ℕ) : ℝ) ^ (e / 2)) * sz.Bctl n (s n) ^ (m + 2) := by ring
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε * sz.Bctl n (s n) ^ (m + 1 + 1) :=
+        mul_le_mul_of_nonneg_right hsum hBp
+
+/-- `XLK (k-1) ≤ STbootRHS 1 XL XLK B k p` for `2 ≤ k` (T2313; the length `k - 1 ≥ 1` is in the sum over `Icc 1 (k-1)`).
+At `k = 2` it is the only inequality of this kind: `XLK 1 ≤ STbootRHS 2 …` is false (`Icc 2 1 = ∅`). -/
+private theorem altQFlow0_Ylow_le_bootRHS {XL XLK : ℕ → ℝ} {B : ℝ} {k p : ℕ} (hk : 2 ≤ k)
+    (hXL : ∀ i, 0 ≤ XL i) (hXLK : ∀ i, 0 ≤ XLK i) (hB : 0 ≤ B) :
+    XLK (k - 1) ≤ STbootRHS 1 XL XLK B k p := by
+  unfold STbootRHS
+  have h1 : 0 ≤ B ^ (-(1 : ℝ) / (4 * (p : ℝ))) * XL (2 * k - 1) ^ (1 / 2 : ℝ) *
+      XL (4 * p) ^ (1 / (4 * (p : ℝ))) :=
+    mul_nonneg (mul_nonneg (Real.rpow_nonneg hB _) (Real.rpow_nonneg (hXL _) _))
+      (Real.rpow_nonneg (hXL _) _)
+  have h2 : XLK (k - 1) ≤ ∑ i ∈ Finset.Icc 1 (k - 1), XLK i :=
+    Finset.single_le_sum (f := XLK) (fun i _ => hXLK i) (Finset.mem_Icc.2 ⟨by omega, le_rfl⟩)
+  have h3 : 0 ≤ ∑ i ∈ Finset.Icc (k - 1) (k + 1), XL i := Finset.sum_nonneg fun i _ => hXL i
+  have h4 : 0 ≤ ∑ i ∈ Finset.Icc ((k + 1) / 2 + 1) (k - 1),
+      XLK (k + 2 - i) * (XL (STn12 i).1 * XL (STn12 i).2) ^ (1 / 2 : ℝ) :=
+    Finset.sum_nonneg fun i _ => mul_nonneg (hXLK _) (Real.rpow_nonneg (mul_nonneg (hXL _) (hXL _)) _)
+  linarith
+
+/-- **`altQFlow0_core`** (T2313): `altQFlow_core` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped; loop length `m + 2 ≥ 2`).  Uses
+`altGridEndQN'` and `altQFlow0_initQ`, and concludes with `STbootRHS 1` in place of `STbootRHS 2`: at `m = 0` the level
+`X = Y (m+1) = Y 1` is bounded by `STbootRHS 1` (`altQFlow0_Ylow_le_bootRHS`) and not by `STbootRHS 2` (`Icc 2 1 = ∅`); the
+degree-1 inequality `altQFlow_level_le` (with `STbootRHS 2`) and `STbootRHS 2 ≤ STbootRHS 1` give the same level bound. -/
+private theorem altQFlow0_core (sz : Sizes d) {E s t v : ℕ → ℝ} (hd : 3 ≤ d) {κ' 𝔠 τR 𝔡 : ℝ} (hκ : 0 < κ')
+    (h𝔠 : 0 < 𝔠) (hτR : 0 < τR) (h𝔡 : 0 < 𝔡) (hsize : sz.SizeTendsto) (hband : sz.Bandwidth 𝔠)
+    (hWO : sz.WO 𝔡) (hE : ∀ n, |E n| ≤ 2 - κ') (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n)
+    (ht1 : ∀ n, t n < 1) (hcase : sz.STCaseI s t) (hrange : sz.RangeCond τR t)
+    (hWt : ∀ᶠ n : ℕ in atTop, (((sz.W n : ℕ) : ℝ))⁻¹ ≤ (1 - t n) / (1 - s n))
+    (hsv : ∀ n, s n < v n) (hvt : ∀ n, v n ≤ t n) (hLK : STLK sz E s) (hDecay : STDecayLoopU sz E s t)
+    (hGrid : GridGoodNConcl sz E s v) (hLin : NQLinConcl sz E s t) {m p : ℕ} (hp : 1 ≤ p)
+    {X Y : ℕ → ℕ → ℝ} (hX1 : ∀ i n, 1 ≤ X i n) (hY1 : ∀ i n, 1 ≤ Y i n)
+    (hX : ∀ i : ℕ, 1 ≤ i → STlenL (m + 1 + 1) p i →
+      Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiL sz n (E n) (u : ℝ) i ω)
+        (fun n _ _ => X i n))
+    (hY : ∀ i : ℕ, 1 ≤ i → i ≤ m + 1 + 1 →
+      Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiLK sz n (E n) (u : ℝ) i ω)
+        (fun n _ _ => Y i n)) :
+    StochDomAt sz.seqP sz.size
+      (fun n (x : {σ : Fin (m + 1 + 1) → Bool // σ (Fin.last (m + 1)) = !σ 0} ×
+          (Fin (m + 1 + 1) → Zd d (sz.L n))) ω =>
+        ‖Lloop sz n (E n) (v n) x.1.1 x.2 ω - STKloop sz n (E n) (v n) x.1.1 x.2‖ /
+          (sz.Bctl n (v n)) ^ (m + 1 + 1))
+      (fun n _ _ => (sz.Bctl n (v n)) ^ (1 / 6 : ℝ) * Y (m + 1 + 1) n +
+        STbootRHS 1 (fun i => X i n) (fun i => Y i n) (sz.Bctl n (s n)) (m + 1 + 1) p) := by
+  intro τ hτ D hD
+  have hsz := tendsto_size sz hsize
+  have hv1 : ∀ n, v n < 1 := fun n => (hvt n).trans_lt (ht1 n)
+  have hBv : ∀ n, 0 < sz.Bctl n (v n) := fun n => st_Bctl_pos sz (hv1 n)
+  have hBs : ∀ n, 0 < sz.Bctl n (s n) := fun n => st_Bctl_pos sz ((hsv n).le.trans_lt (hv1 n))
+  -- the levels
+  set Λ : ℕ → ℝ := fun n => max 1 (nqFlowLam (fun i => X i n) (sz.Bctl n (s n)) (m + 1 + 1) p) with hΛdef
+  set Φ₁ : ℕ → ℝ := fun n => nqLinPhi1 (fun i => Y i n) (m + 1 + 1) with hΦ₁def
+  set Φ₂ : ℕ → ℝ := fun n =>
+    nqLinPhi2 (fun i => X i n) (fun i => Y i n) (sz.Bctl n (v n)) (m + 1 + 1) (Y (m + 1 + 1) n) with hΦ₂def
+  set Φ₃ : ℕ → ℝ := fun n => nqLinPhi3 (fun i => X i n) (m + 1 + 1) with hΦ₃def
+  set Φc : ℕ → ℝ := fun n => nqFlowPhiC (fun i => X i n) (fun i => Y i n) (m + 1 + 1) with hΦcdef
+  set Xl : ℕ → ℝ := fun n => Y (m + 1) n with hXldef
+  have hΛ1 : ∀ n, 1 ≤ Λ n := fun n => le_max_left _ _
+  have hΛ0 : ∀ n, 0 ≤ Λ n := fun n => zero_le_one.trans (hΛ1 n)
+  have hΦ : ∀ n, 0 ≤ Φ₁ n ∧ 0 ≤ Φ₂ n ∧ 0 ≤ Φ₃ n := fun n =>
+    altQFlow_phi_nonneg (fun i => hX1 i n) (fun i => hY1 i n) (hBv n).le
+  have hΦc1 : ∀ n, 1 ≤ Φc n := fun n => altQFlow_phiC_one_le (fun i => hX1 i n) (fun i => hY1 i n)
+  have hXl1 : ∀ n, 1 ≤ Xl n := fun n => hY1 _ n
+  -- the endpoint of the grid walk at `ε₀ = τ/2`, `D₁ = D + 2`
+  obtain ⟨ε₁, τ', D', C_K, hε₁, hτ', hD', hCK, hend⟩ := altGridEndQN' sz κ' 𝔠 τR 𝔡 E s t hd hκ h𝔠 hτR h𝔡
+    hsize hband hWO hE hs0 hst ht1 hcase hrange hWt m Λ Φ₁ Φ₂ Φ₃ Xl hΛ0 (Eventually.of_forall hΛ1)
+    (fun n => (hΦ n).1) (fun n => (hΦ n).2.1) (fun n => (hΦ n).2.2) hXl1 v (fun n => (hsv n).le) hvt
+    (τ / 2) (half_pos hτ) (D + 2) (by linarith)
+  -- the grid
+  set K : ℕ → ℕ := altQFlow_K sz C_K with hKdef
+  have hK0 : ∀ n, K n ≠ 0 := altQFlow_K_ne_zero sz C_K
+  have hKcard := altQFlow_K_card sz hsize hCK
+  have hpin := hend Φc K hK0 (Eventually.of_forall (altQFlow_K_low sz C_K))
+    (Eventually.of_forall (altQFlow_K_up sz C_K))
+  -- the hypotheses of the good-event lemma on `[s, v]` at the crude level `Φc` and the level `Λ_s`
+  have hXg : ∀ i : ℕ, 1 ≤ i → i ≤ m + 1 + 1 + 1 →
+      Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiL sz n (E n) (u : ℝ) i ω)
+        (fun n _ _ => Φc n) :=
+    fun i hi hi' => altQFlow_prec_of_le_right (hX i hi (Or.inl hi')) fun n u ω =>
+      (altQFlow_phiC_ge (fun i => hX1 i n) (fun i => hY1 i n) (Finset.mem_Icc.2 ⟨hi, hi'⟩)).1
+  have hYg : ∀ i : ℕ, 1 ≤ i → i ≤ m + 1 + 1 →
+      Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiLK sz n (E n) (u : ℝ) i ω)
+        (fun n _ _ => Φc n) :=
+    fun i hi hi' => altQFlow_prec_of_le_right (hY i hi hi') fun n u ω =>
+      (altQFlow_phiC_ge (fun i => hX1 i n) (fun i => hY1 i n) (Finset.mem_Icc.2 ⟨hi, by omega⟩)).2
+  have hQ : Prec sz (U := fun n => TimeIcc s v n)
+      (fun n u ω => STXiL sz n (E n) (u : ℝ) (2 * (m + 1 + 1) - 1) ω *
+        (STXiL sz n (E n) (u : ℝ) (4 * p) ω / sz.Bctl n (u : ℝ)) ^ (1 / (2 * (p : ℝ))))
+      (fun n _ _ => Λ n) :=
+    altQFlow_hQ sz hsize (fun n => (hsv n).le) hv1 (a := 2 * (m + 1 + 1) - 1) (b := 4 * p) hp
+      (Xa := fun n => X (2 * (m + 1 + 1) - 1) n) (Xb := fun n => X (4 * p) n)
+      (fun n => zero_le_one.trans (hX1 _ n)) (fun n => zero_le_one.trans (hX1 _ n))
+      (hX (2 * (m + 1 + 1) - 1) (by omega) (Or.inr (Or.inl rfl))) (hX (4 * p) (by omega) (Or.inr (Or.inr rfl)))
+  have hgood := hGrid v (fun n => (hsv n).le) (fun n => le_rfl) K hK0 (m + 1 + 1) (by omega) Λ Φc hΛ1 hΦc1 hXg hYg
+    p hp hQ (C_K + 2) hKcard ε₁ hε₁ τ' hτ' D' hD'
+  have hlin := hLin v (fun n => (hsv n).le) hvt K hK0 (m + 1 + 1) (by omega) X Y hX1 hY1
+    (fun i hi hi' => hX i hi (Or.inl hi')) hY (C_K + 2) hKcard ε₁ hε₁
+  have hyg := altYGridN sz E s v K (m + 1) Xl hs0 (fun n => (hsv n).le) hv1 hK0 hXl1
+    (hY (m + 1) (by omega) (by omega)) (C_K + 2) hKcard ε₁ hε₁
+  have hinit := altQFlow0_initQ sz hd hκ h𝔠 hsize hband hWO hE hs0 hst ht1 hrange hτR hLK hDecay (m := m) hε₁
+  -- the initial event on the path space at the grid index `0` (the transfer `map_pathH_eq`)
+  let initGood : ∀ n, Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) := fun n =>
+    {M | ∀ x : (Fin (m + 1 + 1) → Bool) × (Fin (m + 1 + 1) → Zd d (sz.L n)),
+      x.1 (Fin.last (m + 1)) = !x.1 0 →
+        ‖STQop (d := d) (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) (s n)
+          (fun b => sz.STLKM n (E n) (s n) M x.1 b) x.2‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1)}
+  have hinitP : HighProbAt (pathP sz) sz.size (fun n => pathH sz s v K n 0 ⁻¹' initGood n) := by
+    intro D'' hD''
+    filter_upwards [hinit D'' hD''] with n hn
+    have hS : MeasurableSet (initGood n) :=
+      altQFlow_meas_initSet sz n (E n) (s n) (s n)
+        (((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1))
+        (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n))
+    have htr := altQFlow_transfer sz (s := s) (v := v) (K := K) (n := n) 0 (hs0 n) (hsv n).le (hK0 n) hS.compl
+    rw [ST_gridTime_zero] at htr
+    rw [← Set.preimage_compl, htr, Set.preimage_compl]
+    exact hn
+  have hW := HighProbAt.inter hsz (HighProbAt.inter hsz (HighProbAt.inter hsz hgood hlin) hyg) hinitP
+  have h2ev : ∀ᶠ n in atTop, (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) :=
+    ((tendsto_rpow_atTop (half_pos hτ)).comp hsize).eventually_ge_atTop 2
+  filter_upwards [hpin, hW (D + 2) (by linarith), hsize.eventually_ge_atTop 2, h2ev] with n hG hWn hN2 hhalf
+  obtain ⟨G, hGP, hGb⟩ := hG
+  have hNn1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by linarith
+  have hx0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-(D + 2)) := Real.rpow_nonneg (by linarith) _
+  obtain ⟨ζ₂, hζ₂⟩ : ∃ ζ₂ : ℝ, ζ₂ = (sz.Bctl n (v n)) ^ (1 / 6 : ℝ) * Y (m + 1 + 1) n +
+      STbootRHS 1 (fun i => X i n) (fun i => Y i n) (sz.Bctl n (s n)) (m + 1 + 1) p := ⟨_, rfl⟩
+  -- the terminal event
+  set Sterm : Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :=
+    {M | ∃ x : {σ : Fin (m + 1 + 1) → Bool // σ (Fin.last (m + 1)) = !σ 0} ×
+        (Fin (m + 1 + 1) → Zd d (sz.L n)),
+      ((sz.size n : ℕ) : ℝ) ^ τ * ζ₂ <
+        ‖sz.STLKM n (E n) (v n) M x.1.1 x.2‖ / (sz.Bctl n (v n)) ^ (m + 1 + 1)} with hStermdef
+  have hSterm : MeasurableSet Sterm := by
+    have heq : Sterm = ⋃ x : {σ : Fin (m + 1 + 1) → Bool // σ (Fin.last (m + 1)) = !σ 0} ×
+        (Fin (m + 1 + 1) → Zd d (sz.L n)),
+        {M | ((sz.size n : ℕ) : ℝ) ^ τ * ζ₂ <
+          ‖sz.STLKM n (E n) (v n) M x.1.1 x.2‖ / (sz.Bctl n (v n)) ^ (m + 1 + 1)} := by
+      ext M; simp [hStermdef]
+    rw [heq]
+    exact MeasurableSet.iUnion fun x =>
+      measurableSet_lt measurable_const
+        ((altQFlow_meas_STLKM sz n (E n) (v n) x.1.1 x.2).norm.div_const _)
+  have e1 : sz.seqP (sz.seqHflow n (v n) ⁻¹' Sterm) = pathP sz (pathH sz s v K n (K n) ⁻¹' Sterm) := by
+    have := altQFlow_transfer sz (s := s) (v := v) (K := K) (n := n) (K n) (hs0 n) (hsv n).le (hK0 n) hSterm
+    rw [gridTime_last s v K n (hK0 n)] at this
+    exact this.symm
+  have hmain : pathP sz (pathH sz s v K n (K n) ⁻¹' Sterm) ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)) := by
+    refine altQFlow_union2 (B := Gᶜ) hx0 hWn ?_ ?_ (altQFlow_two_pow_le hN2 (by norm_num))
+    · rw [← ofReal_measureReal (measure_ne_top (pathP sz) _)]
+      exact ENNReal.ofReal_le_ofReal hGP
+    · intro ω hω
+      by_contra hno
+      simp only [Set.mem_union, Set.mem_compl_iff, Set.mem_inter_iff, Set.mem_preimage, Set.mem_ofPred_eq, not_or,
+        not_not] at hno
+      obtain ⟨⟨⟨⟨hA, hB⟩, hC⟩, hI⟩, hGω⟩ := hno
+      obtain ⟨x, hx⟩ := hω
+      have hb := hGb ω hGω (fun j hj => ⟨⟨hA j hj, hB j hj⟩, hC j hj⟩) (fun σ hσ a => hI (σ, a) hσ)
+        x.1.1 x.1.2 x.2
+      have hlev : Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n ≤ ζ₂ := by
+        have h1 : Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n ≤ (sz.Bctl n (v n)) ^ (1 / 6 : ℝ) * Y (m + 1 + 1) n +
+            STbootRHS 2 (fun i => X i n) (fun i => Y i n) (sz.Bctl n (s n)) (m + 1 + 1) p :=
+          altQFlow_level_le (by omega) hp (fun i => hX1 i n) (fun i => hY1 i n) (hBs n)
+        have h2 := altQFlow_bootRHS_two_le_one (XL := fun i => X i n) (XLK := fun i => Y i n)
+          (B := sz.Bctl n (s n)) (k := m + 1 + 1) (p := p) (fun i => zero_le_one.trans (hY1 i n))
+        rw [hζ₂]
+        linarith
+      have hXl : Xl n ≤ STbootRHS 1 (fun i => X i n) (fun i => Y i n) (sz.Bctl n (s n)) (m + 1 + 1) p :=
+        altQFlow0_Ylow_le_bootRHS (XL := fun i => X i n) (XLK := fun i => Y i n) (B := sz.Bctl n (s n))
+          (k := m + 1 + 1) (p := p) (by omega) (fun i => zero_le_one.trans (hX1 i n))
+          (fun i => zero_le_one.trans (hY1 i n)) (hBs n).le
+      have hBY : 0 ≤ (sz.Bctl n (v n)) ^ (1 / 6 : ℝ) * Y (m + 1 + 1) n :=
+        mul_nonneg (Real.rpow_nonneg (hBv n).le _) (zero_le_one.trans (hY1 _ n))
+      have hXlζ : Xl n ≤ ζ₂ := by rw [hζ₂]; linarith
+      have hL0 : 0 ≤ Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n := by
+        have h1 := Real.rpow_nonneg (hΛ0 n) ((1 : ℝ) / 2)
+        have h2 := hΦ n
+        linarith [h2.1, h2.2.1, h2.2.2]
+      have hζ0 : 0 ≤ ζ₂ := hL0.trans hlev
+      have hBk : 0 < (sz.Bctl n (v n)) ^ (m + 1 + 1) := pow_pos (hBv n) _
+      have hdiv : ‖sz.STLKM n (E n) (v n) (pathH sz s v K n (K n) ω) x.1.1 x.2‖ /
+          (sz.Bctl n (v n)) ^ (m + 1 + 1) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) *
+            (Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n + Xl n) := (div_le_iff₀ hBk).2 hb
+      have hpos : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := Real.rpow_nonneg (by linarith) _
+      have hsq : ((sz.size n : ℕ) : ℝ) ^ τ =
+          ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) :=
+        (UnifDetDom.rpow_half_mul_rpow_half _ hτ).symm
+      have hfin : ((sz.size n : ℕ) : ℝ) ^ (τ / 2) *
+          (Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n + Xl n) ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ₂ := by
+        have h2z : 2 * ζ₂ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζ₂ := mul_le_mul_of_nonneg_right hhalf hζ0
+        calc ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * (Λ n ^ ((1 : ℝ) / 2) + Φ₁ n + Φ₂ n + Φ₃ n + Xl n)
+            ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * (2 * ζ₂) :=
+              mul_le_mul_of_nonneg_left (by linarith) hpos
+          _ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζ₂) :=
+              mul_le_mul_of_nonneg_left h2z hpos
+          _ = _ := by rw [hsq]; ring
+      exact absurd hx (not_lt.2 (hdiv.trans hfin))
+  calc sz.seqP (badSetAt sz.size _ _ τ n) = sz.seqP (sz.seqHflow n (v n) ⁻¹' Sterm) := by
+        congr 1
+        ext ω
+        simp only [badSetAt, Set.mem_ofPred_eq, Set.mem_preimage, hStermdef, hζ₂]
+        rfl
+    _ = pathP sz (pathH sz s v K n (K n) ⁻¹' Sterm) := e1
+    _ ≤ _ := hmain
+
+/-- **`altQFlow0_section`** (T2313): `altQFlow_section` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped); the alternating part is
+`altQFlow0_core` (bound with `STbootRHS 1`), the non-alternating part is `altQFlow_nq_half` (bound with `STbootRHS 2 ≤ STbootRHS 1`),
+so the common bound is `N^{τ/2} ζ_A` with `ζ_A = B_w^{1/6} XLK (m+2) u + STbootRHS 1 …`.  Same statement as `altQFlow_section`. -/
+private theorem altQFlow0_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 ≤ d) {κ' 𝔠 τR 𝔡 : ℝ} (hκ : 0 < κ')
+    (h𝔠 : 0 < 𝔠) (hτR : 0 < τR) (h𝔡 : 0 < 𝔡) (hsize : sz.SizeTendsto) (hband : sz.Bandwidth 𝔠)
+    (hWO : sz.WO 𝔡) (hE : ∀ n, |E n| ≤ 2 - κ') (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
+    (ht1 : ∀ n, t n < 1) (hcase : sz.STCaseI s t) (hrange : sz.RangeCond τR t)
+    (hWt : ∀ᶠ n : ℕ in atTop, (((sz.W n : ℕ) : ℝ))⁻¹ ≤ (1 - t n) / (1 - s n))
+    (hLK : STLK sz E s) (hDecay : STDecayLoopU sz E s t)
+    (hGrid : ∀ v : ℕ → ℝ, (∀ n, s n < v n) → (∀ n, v n ≤ t n) → GridGoodNConcl sz E s v)
+    (hLin : NQLinConcl sz E s t)
+    (hNQ : ∀ t' : ℕ → ℝ, (∀ n, s n < t' n) → (∀ n, t' n ≤ t n) → STNQConclPT'' sz E s t')
+    {m p : ℕ} (hp : 1 ≤ p) {XL XLK : ℕ → ℕ → ℝ → ℝ}
+    (hXL : ∀ i n u, 1 ≤ XL i n u) (hXLK : ∀ i n u, 1 ≤ XLK i n u)
+    (hXLp : ∀ i, 1 ≤ i → STlenL (m + 1 + 1) p i →
+      Prec sz (U := STPair s t) (fun n q ω => STXiL sz n (E n) q.1.1 i ω) (fun n q _ => XL i n q.1.2))
+    (hXLKp : ∀ i, 1 ≤ i → i ≤ m + 1 + 1 →
+      Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 i ω) (fun n q _ => XLK i n q.1.2))
+    (q : ∀ n, STPair s t n) :
+    StochDomAt sz.seqP sz.size
+      (fun n (_ : Unit) ω => STXiLK sz n (E n) (q n).1.1 (m + 1 + 1) ω)
+      (fun n (_ : Unit) _ => (sz.Bctl n (q n).1.2) ^ (1 / 6 : ℝ) * XLK (m + 1 + 1) n (q n).1.2 +
+        STbootRHS 1 (fun i => XL i n (q n).1.2) (fun i => XLK i n (q n).1.2) (sz.Bctl n (s n))
+          (m + 1 + 1) p) := by
+  classical
+  -- the window `v`, the frozen controls `uu`
+  obtain ⟨v, hvdef⟩ : ∃ v : ℕ → ℝ, v = fun n => if s n < (q n).1.1 then (q n).1.1 else t n := ⟨_, rfl⟩
+  obtain ⟨uu, huudef⟩ : ∃ uu : ℕ → ℝ, uu = fun n => if s n < (q n).1.1 then (q n).1.2 else t n := ⟨_, rfl⟩
+  have hv_pos : ∀ n, s n < (q n).1.1 → v n = (q n).1.1 := fun n h => by simp only [hvdef, h, ↓reduceIte]
+  have hv_neg : ∀ n, ¬ s n < (q n).1.1 → v n = t n := fun n h => by simp only [hvdef, h, ↓reduceIte]
+  have hu_pos : ∀ n, s n < (q n).1.1 → uu n = (q n).1.2 := fun n h => by simp only [huudef, h, ↓reduceIte]
+  have hu_neg : ∀ n, ¬ s n < (q n).1.1 → uu n = t n := fun n h => by simp only [huudef, h, ↓reduceIte]
+  have hsv : ∀ n, s n < v n := fun n => by
+    by_cases h : s n < (q n).1.1
+    · rw [hv_pos n h]; exact h
+    · rw [hv_neg n h]; exact hst n
+  have hvu : ∀ n, v n ≤ uu n := fun n => by
+    by_cases h : s n < (q n).1.1
+    · rw [hv_pos n h, hu_pos n h]; exact (q n).2.2.1
+    · rw [hv_neg n h, hu_neg n h]
+  have hut : ∀ n, uu n ≤ t n := fun n => by
+    by_cases h : s n < (q n).1.1
+    · rw [hu_pos n h]; exact (q n).2.2.2
+    · rw [hu_neg n h]
+  have hvt : ∀ n, v n ≤ t n := fun n => (hvu n).trans (hut n)
+  have hsu : ∀ n, s n < uu n := fun n => (hsv n).trans_le (hvu n)
+  have hwu : ∀ n, (q n).1.1 ≤ uu n := fun n => by
+    by_cases h : s n < (q n).1.1
+    · rw [hu_pos n h]; exact (q n).2.2.1
+    · have : (q n).1.1 = s n := le_antisymm (not_lt.1 h) (q n).2.1
+      rw [hu_neg n h, this]; exact (hst n).le
+  have hBs : ∀ n, 0 < sz.Bctl n (s n) := fun n => st_Bctl_pos sz ((hst n).trans (ht1 n))
+  -- the restricted pair hypotheses on `[s, v]` with the controls at `uu`
+  have hX : ∀ i : ℕ, 1 ≤ i → STlenL (m + 1 + 1) p i →
+      Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiL sz n (E n) (u : ℝ) i ω)
+        (fun n _ _ => XL i n (uu n)) := fun i hi hl =>
+    StochDomAt.precomp_param (V := fun n => TimeIcc s v n) (hXLp i hi hl)
+      (fun n w' => (⟨((w' : ℝ), uu n), w'.2.1, w'.2.2.trans (hvu n), hut n⟩ : STPair s t n))
+  have hY : ∀ i : ℕ, 1 ≤ i → i ≤ m + 1 + 1 →
+      Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiLK sz n (E n) (u : ℝ) i ω)
+        (fun n _ _ => XLK i n (uu n)) := fun i hi hl =>
+    StochDomAt.precomp_param (V := fun n => TimeIcc s v n) (hXLKp i hi hl)
+      (fun n w' => (⟨((w' : ℝ), uu n), w'.2.1, w'.2.2.trans (hvu n), hut n⟩ : STPair s t n))
+  have hAlt := altQFlow0_core sz hd hκ h𝔠 hτR h𝔡 hsize hband hWO hE hs0 (fun n => (hst n).le) ht1 hcase hrange hWt
+    hsv hvt hLK hDecay (hGrid v hsv hvt) hLin hp (X := fun i n => XL i n (uu n))
+    (Y := fun i n => XLK i n (uu n)) (fun i n => hXL i n _) (fun i n => hXLK i n _) hX hY
+  have hNQh := altQFlow_nq_half sz hsize (w := fun n => (q n).1.1) (n_ := m + 1 + 1) (by omega) hp hXL hXLK hXLp
+    hXLKp (fun n => (q n).2.1) hwu hut (hNQ uu hsu hut)
+  have hcoll := altQFlow_collapsed sz hLK (k := m + 1 + 1) (by omega) hBs
+  have h2ev : ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := fun τ hτ =>
+    ((tendsto_rpow_atTop (half_pos hτ)).comp hsize).eventually_ge_atTop 2
+  intro τ hτ D hD
+  filter_upwards [hAlt (τ / 2) (half_pos hτ) (D + 1) (by linarith), hNQh (τ / 2) (half_pos hτ) (D + 1) (by linarith),
+    hcoll (τ / 2) (half_pos hτ) (D + 1) (by linarith), hsize.eventually_ge_atTop 2, h2ev τ hτ] with n h1 h2 h3 hN2 hhalf
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by linarith
+  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-(D + 1)) := Real.rpow_nonneg (by linarith) _
+  have hu1 : (q n).1.2 < 1 := ((q n).2.2.2).trans_lt (ht1 n)
+  have hw1 : (q n).1.1 < 1 := ((q n).2.2.1).trans_lt hu1
+  have hBw : 0 < sz.Bctl n (q n).1.1 := st_Bctl_pos sz hw1
+  have hBu : 0 < sz.Bctl n (q n).1.2 := st_Bctl_pos sz hu1
+  have hBwu : sz.Bctl n (q n).1.1 ≤ sz.Bctl n (q n).1.2 := STBctl_mono sz n (q n).2.2.1 hu1
+  have hNτ : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ := Real.rpow_nonneg (by linarith) _
+  have hpos : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := Real.rpow_nonneg (by linarith) _
+  have hsq : ((sz.size n : ℕ) : ℝ) ^ τ =
+      ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) :=
+    (UnifDetDom.rpow_half_mul_rpow_half _ hτ).symm
+  -- the right side `ζ` of the pin at the pair, and its lower bound `1 ≤ ζ`
+  obtain ⟨ζ, hζ⟩ : ∃ ζ : ℝ, ζ = (sz.Bctl n (q n).1.2) ^ (1 / 6 : ℝ) * XLK (m + 1 + 1) n (q n).1.2 +
+      STbootRHS 1 (fun i => XL i n (q n).1.2) (fun i => XLK i n (q n).1.2) (sz.Bctl n (s n)) (m + 1 + 1) p :=
+    ⟨_, rfl⟩
+  have hζ1 : 1 ≤ ζ := by
+    have h0 : 0 ≤ (sz.Bctl n (q n).1.2) ^ (1 / 6 : ℝ) * XLK (m + 1 + 1) n (q n).1.2 :=
+      mul_nonneg (Real.rpow_nonneg hBu.le _) (zero_le_one.trans (hXLK _ _ _))
+    have := altQFlow_bootRHS_one_le (lo := 1) (XL := fun i => XL i n (q n).1.2)
+      (XLK := fun i => XLK i n (q n).1.2) (B := sz.Bctl n (s n)) (k := m + 1 + 1) (p := p) (by omega)
+      (fun i => hXL _ _ _) (fun i => zero_le_one.trans (hXLK _ _ _)) (hBs n).le
+    rw [hζ]; linarith
+  by_cases hn' : s n < (q n).1.1
+  · -- non-collapsed: `v n = w_n`, `uu n = u_n`; the union of the alternating and non-alternating parts
+    have hv : v n = (q n).1.1 := hv_pos n hn'
+    have hu : uu n = (q n).1.2 := hu_pos n hn'
+    refine altQFlow_union2 hN0 h1 h2 ?_ (altQFlow_two_pow_le hN2 (by norm_num))
+    intro ω hω
+    by_contra hno
+    simp only [Set.mem_union, badSetAt, Set.mem_ofPred_eq, not_or, not_exists, not_lt] at hno
+    obtain ⟨hnoA, hnoB⟩ := hno
+    rw [hv, hu] at hnoA
+    rw [hu] at hnoB
+    simp only [badSetAt, Set.mem_ofPred_eq] at hω
+    obtain ⟨_, hω⟩ := hω
+    obtain ⟨ζA, hζA⟩ : ∃ ζA : ℝ, ζA = (sz.Bctl n (q n).1.1) ^ (1 / 6 : ℝ) * XLK (m + 1 + 1) n (q n).1.2 +
+        STbootRHS 1 (fun i => XL i n (q n).1.2) (fun i => XLK i n (q n).1.2) (sz.Bctl n (s n)) (m + 1 + 1) p :=
+      ⟨_, rfl⟩
+    have hmax : ∀ x : (Fin (m + 1 + 1) → Bool) × (Fin (m + 1 + 1) → Zd d (sz.L n)),
+        ‖Lloop sz n (E n) (q n).1.1 x.1 x.2 ω - STKloop sz n (E n) (q n).1.1 x.1 x.2‖ /
+          (sz.Bctl n (q n).1.1) ^ (m + 1 + 1) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA := by
+      intro x
+      by_cases hσ : x.1 (Fin.last (m + 1)) = !x.1 0
+      · rw [hζA]; exact hnoA (⟨x.1, hσ⟩, x.2)
+      · have hσ0 : x.1 (Fin.last (m + 1)) = x.1 0 := by
+          revert hσ
+          generalize x.1 (Fin.last (m + 1)) = b
+          generalize x.1 0 = c
+          cases b <;> cases c <;> simp
+        have hσ' : ∃ k, x.1 k = x.1 (finRotate (m + 1 + 1) k) :=
+          ⟨Fin.last (m + 1), by rw [finRotate_last]; exact hσ0⟩
+        have hB2 := altQFlow_bootRHS_two_le_one (XL := fun i => XL i n (q n).1.2)
+          (XLK := fun i => XLK i n (q n).1.2) (B := sz.Bctl n (s n)) (k := m + 1 + 1) (p := p)
+          (fun i => zero_le_one.trans (hXLK _ _ _))
+        refine (hnoB (⟨x.1, hσ'⟩, x.2)).trans (mul_le_mul_of_nonneg_left ?_ hpos)
+        rw [hζA]; linarith
+    have hXi := altQFlow_xi_le hBw hmax
+    have hζA1 : 1 ≤ ζA := by
+      have h0 : 0 ≤ (sz.Bctl n (q n).1.1) ^ (1 / 6 : ℝ) * XLK (m + 1 + 1) n (q n).1.2 :=
+        mul_nonneg (Real.rpow_nonneg hBw.le _) (zero_le_one.trans (hXLK _ _ _))
+      have := altQFlow_bootRHS_one_le (lo := 1) (XL := fun i => XL i n (q n).1.2)
+        (XLK := fun i => XLK i n (q n).1.2) (B := sz.Bctl n (s n)) (k := m + 1 + 1) (p := p) (by omega)
+        (fun i => hXL _ _ _) (fun i => zero_le_one.trans (hXLK _ _ _)) (hBs n).le
+      rw [hζA]; linarith
+    have hζAle : ζA ≤ ζ := by
+      have e1 : (sz.Bctl n (q n).1.1) ^ (1 / 6 : ℝ) ≤ (sz.Bctl n (q n).1.2) ^ (1 / 6 : ℝ) :=
+        Real.rpow_le_rpow hBw.le hBwu (by norm_num)
+      have e3 := mul_le_mul_of_nonneg_right e1 (zero_le_one.trans (hXLK (m + 1 + 1) n (q n).1.2))
+      rw [hζA, hζ]; linarith
+    have hfin : 1 + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ := by
+      have hN1' : 1 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by linarith
+      calc 1 + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA
+          ≤ ζA + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA := by linarith
+        _ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA := by
+            have := mul_le_mul_of_nonneg_right hN1' (by linarith : (0 : ℝ) ≤ ζA)
+            linarith
+        _ = 2 * (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA) := by ring
+        _ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ζA) :=
+            mul_le_mul_of_nonneg_right hhalf (mul_nonneg hpos (by linarith))
+        _ = ((sz.size n : ℕ) : ℝ) ^ τ * ζA := by rw [hsq]; ring
+        _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ := mul_le_mul_of_nonneg_left hζAle hNτ
+    rw [← hζ] at hω
+    exact absurd hω (not_lt.2 (hXi.trans hfin))
+  · -- collapsed: `w_n = s_n`, `STLK s`
+    have hw : (q n).1.1 = s n := le_antisymm (not_lt.1 hn') (q n).2.1
+    refine le_trans (measure_mono ?_) (h3.trans (ENNReal.ofReal_le_ofReal
+      (Real.rpow_le_rpow_of_exponent_le hN1 (by linarith))))
+    intro ω hω
+    simp only [badSetAt, Set.mem_ofPred_eq] at hω ⊢
+    obtain ⟨_, hω⟩ := hω
+    by_contra hno
+    push Not at hno
+    have hmax : ∀ x : (Fin (m + 1 + 1) → Bool) × (Fin (m + 1 + 1) → Zd d (sz.L n)),
+        ‖Lloop sz n (E n) (q n).1.1 x.1 x.2 ω - STKloop sz n (E n) (q n).1.1 x.1 x.2‖ /
+          (sz.Bctl n (q n).1.1) ^ (m + 1 + 1) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
+      intro x
+      rw [hw]
+      simpa using hno x
+    have hXi := altQFlow_xi_le hBw hmax
+    have hN1' : 1 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by linarith
+    rw [← hζ] at hω
+    have : 1 + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ := by
+      calc 1 + ((sz.size n : ℕ) : ℝ) ^ (τ / 2) ≤ 2 * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by linarith
+        _ ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) :=
+            mul_le_mul_of_nonneg_right hhalf hpos
+        _ = ((sz.size n : ℕ) : ℝ) ^ τ := hsq.symm
+        _ = ((sz.size n : ℕ) : ℝ) ^ τ * 1 := (mul_one _).symm
+        _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ := mul_le_mul_of_nonneg_left hζ1 hNτ
+    exact absurd hω (not_lt.2 (hXi.trans this))
+
 end Helpers
 
 /-! ## §6 the per-time round `stOeqQtRoundPT'_holds` -/
@@ -1230,6 +1833,57 @@ theorem stOeqQtRoundPT'_holds : ∀ d : ℕ, STOeqQtRoundPT' d := by
   intro q
   exact altQFlow_section sz hd (half_pos hκ) hA.1 (half_pos hε) hA.2.1 hA.2.2.1 hA.2.2.2.1 hA.2.2.2.2
     (fun n => (hE' n).le) hs hst ht1 hR hrange hWt hLK hDecay hGrid hLin hNQ (by omega) hp hXL hXLK hXLp hXLKp q
+
+/-- **`stOeqQtRoundPT''_holds`** (T2313, S3-18b2a): the per-time round at `n_ ≥ 2`, the primed successor of `stOeqQtRoundPT'_holds`
+(`3 ≤ n_` lowered to `2 ≤ n_`; `n_ = m + 2`, `m ≥ 0`).  The proof is that of `stOeqQtRoundPT'_holds` with `altQFlow0_section` (built on
+`altGridEndQN'`, `gridDriftQN_envelope'`) in place of `altQFlow_section`; the constant `𝔠_d` and every premise are the same.  Together
+with `stOeqQtRoundPT'_holds` it covers every `n_ ≥ 2` (the lift from `PrecPT` to `Prec` is S3-18b2b). -/
+theorem stOeqQtRoundPT''_holds : ∀ d : ℕ, STOeqQtRoundPT'' d := by
+  intro d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  obtain ⟨𝔠G, hG0, hG1, HG⟩ := gridGoodN_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  obtain ⟨𝔠L, hL0, hL1, HL⟩ := nqLinGood_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  obtain ⟨𝔠N, hN0, hN1, HN⟩ := stOeqNQPT''_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  have hd0 : (0 : ℝ) < d := by exact_mod_cast (by omega : 0 < d)
+  have hd2 : (0 : ℝ) < 1 / (2 * d) := by positivity
+  obtain ⟨𝔠d, h𝔠d⟩ : ∃ 𝔠d : ℝ, 𝔠d = min (min (min 𝔠G 𝔠L) 𝔠N) (1 / (2 * d)) := ⟨_, rfl⟩
+  have h𝔠d0 : 0 < 𝔠d := by rw [h𝔠d]; exact lt_min (lt_min (lt_min hG0 hL0) hN0) hd2
+  have h𝔠dG : 𝔠d ≤ 𝔠G := by
+    rw [h𝔠d]; exact (min_le_left _ _).trans ((min_le_left _ _).trans (min_le_left _ _))
+  have h𝔠dL : 𝔠d ≤ 𝔠L := by
+    rw [h𝔠d]; exact (min_le_left _ _).trans ((min_le_left _ _).trans (min_le_right _ _))
+  have h𝔠dN : 𝔠d ≤ 𝔠N := by rw [h𝔠d]; exact (min_le_left _ _).trans (min_le_right _ _)
+  have h𝔠dd : 𝔠d ≤ 1 / (2 * d) := by rw [h𝔠d]; exact min_le_right _ _
+  refine ⟨𝔠d, h𝔠d0, h𝔠dG.trans hG1, ?_⟩
+  intro 𝔠 sz z hflow s t hs hst ht hR hK hKw hLK hcon hStep2
+  obtain ⟨hA, hE', ht1, hrange⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow ht
+  have hconG : sz.STConStInd 𝔠G s t := altQFlow_conStInd_exp_mono sz h𝔠d0 h𝔠dG ht1 hcon
+  have hconL : sz.STConStInd 𝔠L s t := altQFlow_conStInd_exp_mono sz h𝔠d0 h𝔠dL ht1 hcon
+  have hconN : sz.STConStInd 𝔠N s t := altQFlow_conStInd_exp_mono sz h𝔠d0 h𝔠dN ht1 hcon
+  have hdc : (d : ℝ) * 𝔠d < 1 := by
+    calc (d : ℝ) * 𝔠d ≤ d * (1 / (2 * d)) := mul_le_mul_of_nonneg_left h𝔠dd hd0.le
+      _ = 1 / 2 := by field_simp
+      _ < 1 := by norm_num
+  have hWt := st_window sz h𝔠d0 hdc hcon hA.2.2.2.2 (scaleFacts3_W_tendsto sz hA) hs ht1
+  have hGrid : ∀ v : ℕ → ℝ, (∀ n, s n < v n) → (∀ n, v n ≤ t n) →
+      GridGoodNConcl sz (STflowE z) s v := fun v hsv hvt =>
+    HG 𝔠 sz z hflow s v hs hsv (fun n => (hvt n).trans (ht n)) trivial hK hKw hLK
+      (st_conStInd_sub sz hG0 hconG (fun n => le_rfl) hsv hvt ht1) (altQFlow_step2_restrict hvt hStep2)
+  have hLin : NQLinConcl sz (STflowE z) s t :=
+    HL 𝔠 sz z hflow s t hs hst ht trivial hK hKw hLK hconL hStep2
+  have hDecay : STDecayLoopU sz (STflowE z) s t :=
+    stDecayLoopU_of_step2 hd sz hκ hε hflow hs (fun n => (hst n).le) ht Cd hStep2.2.2
+  have hNQ : ∀ t' : ℕ → ℝ, (∀ n, s n < t' n) → (∀ n, t' n ≤ t n) → STNQConclPT'' sz (STflowE z) s t' :=
+    fun t' hst' ht't =>
+      HN 𝔠 sz z hflow s t' hs hst' (fun n => (ht't n).trans (ht n)) (fun n => (hR n).trans (by linarith [ht't n]))
+        hK hKw hLK (st_conStInd_sub sz hN0 hconN (fun n => le_rfl) hst' ht't ht1)
+        (altQFlow_step2_restrict ht't hStep2)
+  intro n_ p hn hp XL XLK hXL hXLK hXLp hXLKp
+  obtain ⟨m, rfl⟩ : ∃ m, n_ = m + 1 + 1 := ⟨n_ - 2, by omega⟩
+  refine (perTimeDomAt_iff_forall_section sz.seqP sz.size
+    (fun n => ⟨(s n, s n), le_rfl, le_rfl, (hst n).le⟩) _ _).2 ?_
+  intro q
+  exact altQFlow0_section sz hd (half_pos hκ) hA.1 (half_pos hε) hA.2.1 hA.2.2.1 hA.2.2.2.1 hA.2.2.2.2
+    (fun n => (hE' n).le) hs hst ht1 hR hrange hWt hLK hDecay hGrid hLin hNQ hp hXL hXLK hXLp hXLKp q
 
 /-! ## §7 Compiled nonempty instances at `d = 3`
 
@@ -1314,6 +1968,60 @@ example : 2 * (4 : ℝ) ^ (-(1 + (1 : ℝ))) ≤ (4 : ℝ) ^ (-(1 : ℝ)) :=
 exactly the type `∀ d : ℕ, STOeqQtRoundPT' d`. -/
 example : ∀ d : ℕ, STOeqQtRoundPT' d := @stOeqQtRoundPT'_holds
 
+/-- **(6) `stOeqQtRoundPT''_holds` at the data**: the per-time round pin at `n_ ≥ 2` at `(sz0, z0, s ≡ 0, t ≡ 1/16)`, `C_d = 1`:
+every deterministic hypothesis (`3 ≤ d`, the flow, `0 ≤ s < t ≤ lemT z`, the regime `STCaseI`, `(con_st_ind)`, `C_d > 0`) is
+discharged by `inst_ing`; the stochastic premises of `STIngR` (`STKbound`, `STKward`, `STLK`, `STStep2Concl`) and the pair controls
+stay as in (1). -/
+theorem inst_OeqQtRoundPT'' :
+    InstIngConcl (fun sz E s t => STXiRoundPT'' sz E s t) sz0 z0 sInst tInst 1 :=
+  inst_ing STCaseI (fun sz E s t => STXiRoundPT'' sz E s t) (stOeqQtRoundPT''_holds 3) sz0 z0 flow_z0 sInst tInst
+    sz0_hs0 sz0_hst sz0_ht sz0_caseI sz0_con 1 one_pos
+
+/-- **(6) with the conclusion applied** at `n_ = 2` (`m = 0`, the new case), `p = 1`, `XL ≡ XLK ≡ 1`: `STKbound`, `STKward` come from
+the flow, the stochastic premises `STLK s`, `STStep2Concl` and the pair hypotheses `Ξ̂ ≺ 1` (the conclusions of Steps 3-4, other
+gates' pins) stay hypotheses; the per-time conclusion is
+`Ξ̂^{(𝓛-𝒦)}_{w,2} ≺ B_u^{1/6} + STbootRHS 1 1 1 B_s 2 1` for every pair `s ≤ w ≤ u ≤ t`.  Here `STlenL 2 1 m` is `m ≤ 3 ∨ m = 3 ∨
+m = 4` and the length controls are `1 ≤ m ≤ 2`. -/
+example (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
+    (hXp : ∀ m, 1 ≤ m → STlenL 2 1 m →
+      Prec sz0 (U := STPair sInst tInst) (fun n q ω => STXiL sz0 n (STflowE z0 n) q.1.1 m ω)
+        (fun n q _ => (1 : ℝ)))
+    (hXKp : ∀ m, 1 ≤ m → m ≤ 2 →
+      Prec sz0 (U := STPair sInst tInst) (fun n q ω => STXiLK sz0 n (STflowE z0 n) q.1.1 m ω)
+        (fun n q _ => (1 : ℝ))) :
+    PrecPT sz0 (U := STPair sInst tInst) (fun n q ω => STXiLK sz0 n (STflowE z0 n) q.1.1 2 ω)
+      (fun n q _ => sz0.Bctl n q.1.2 ^ (1 / 6 : ℝ) * 1 +
+        STbootRHS 1 (fun _ => 1) (fun _ => 1) (sz0.Bctl n (sInst n)) 2 1) := by
+  obtain ⟨𝔠d, -, -, hC⟩ := inst_OeqQtRoundPT''
+  exact hC (stKbound_of_flow sz0 (by norm_num) (by norm_num) flow_z0)
+    (stKward_of_flow sz0 (by norm_num) (by norm_num) flow_z0) hLK hStep2 2 1 le_rfl le_rfl
+    (fun _ _ _ => 1) (fun _ _ _ => 1) (fun _ _ _ => le_rfl) (fun _ _ _ => le_rfl) hXp hXKp
+
+/-- **(6') the same at `n_ = 3`** (`m = 1`) through the primed theorem, `p = 1`: the primed pin also covers the old range. -/
+example (hLK : STLK sz0 (STflowE z0) sInst) (hStep2 : STStep2Concl sz0 (STflowE z0) sInst tInst 1)
+    (hXp : ∀ m, 1 ≤ m → STlenL 3 1 m →
+      Prec sz0 (U := STPair sInst tInst) (fun n q ω => STXiL sz0 n (STflowE z0 n) q.1.1 m ω)
+        (fun n q _ => (1 : ℝ)))
+    (hXKp : ∀ m, 1 ≤ m → m ≤ 3 →
+      Prec sz0 (U := STPair sInst tInst) (fun n q ω => STXiLK sz0 n (STflowE z0 n) q.1.1 m ω)
+        (fun n q _ => (1 : ℝ))) :
+    PrecPT sz0 (U := STPair sInst tInst) (fun n q ω => STXiLK sz0 n (STflowE z0 n) q.1.1 3 ω)
+      (fun n q _ => sz0.Bctl n q.1.2 ^ (1 / 6 : ℝ) * 1 +
+        STbootRHS 1 (fun _ => 1) (fun _ => 1) (sz0.Bctl n (sInst n)) 3 1) := by
+  obtain ⟨𝔠d, -, -, hC⟩ := inst_OeqQtRoundPT''
+  exact hC (stKbound_of_flow sz0 (by norm_num) (by norm_num) flow_z0)
+    (stKward_of_flow sz0 (by norm_num) (by norm_num) flow_z0) hLK hStep2 3 1 (by norm_num) le_rfl
+    (fun _ _ _ => 1) (fun _ _ _ => 1) (fun _ _ _ => le_rfl) (fun _ _ _ => le_rfl) hXp hXKp
+
+/-- **(7) the helper at numbers, `k = 2`**: `XLK (k-1) ≤ STbootRHS 1 …` at `k = 2`, `p = 1`, `B = 1/2`, `XL ≡ 1`, `XLK ≡ 1`
+(`XLK 1 ≤ STbootRHS 1 … 2 1`, the inequality the `n_ = 2` case needs; with `STbootRHS 2` the sum `Icc 2 1` is empty). -/
+example : (fun _ : ℕ => (1 : ℝ)) (2 - 1) ≤ STbootRHS 1 (fun _ => (1 : ℝ)) (fun _ => 1) (1 / 2) 2 1 :=
+  altQFlow0_Ylow_le_bootRHS (k := 2) le_rfl (fun _ => zero_le_one) (fun _ => zero_le_one) (by norm_num)
+
+/-- **(8) the statement of the target** (`T2313_stOeqQtRoundPT''_holds`, check file section 3): `stOeqQtRoundPT''_holds` has
+exactly the type `∀ d : ℕ, STOeqQtRoundPT'' d`. -/
+example : ∀ d : ℕ, STOeqQtRoundPT'' d := @stOeqQtRoundPT''_holds
+
 end QEndB1Inst
 
 end RBM.Ind
@@ -1323,4 +2031,8 @@ end
 #print axioms RBM.Gauss.Sizes.STXiRoundPT'
 #print axioms RBM.Gauss.Sizes.STOeqQtRoundPT'
 #print axioms RBM.Ind.stOeqQtRoundPT'_holds
+#print axioms RBM.Gauss.Sizes.STXiRoundPT''
+#print axioms RBM.Gauss.Sizes.STOeqQtRoundPT''
+#print axioms RBM.Ind.stOeqQtRoundPT''_holds
+#print axioms RBM.Ind.QEndB1Inst.inst_OeqQtRoundPT''
 #print axioms RBM.Ind.QEndB1Inst.inst_OeqQtRoundPT'
