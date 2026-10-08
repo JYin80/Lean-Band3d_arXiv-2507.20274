@@ -355,6 +355,7 @@ import RBM3D.Graph.LWMomExpD
 import RBM3D.Universality.GUEPhase.Grid
 import RBM3D.BA.KKernel
 import RBM3D.Induction.QtXiRoundLift
+import RBM3D.Graph.BAExpandW
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
