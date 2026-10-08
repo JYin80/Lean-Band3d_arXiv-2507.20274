@@ -364,6 +364,7 @@ import RBM3D.BA.KSymbol
 import RBM3D.Graph.LWExpCertB
 import RBM3D.Graph.LWExpCertBS0
 import RBM3D.Graph.LWExpCertBS1
+import RBM3D.Universality.GUEPhase.ProcK
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
