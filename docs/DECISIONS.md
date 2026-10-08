@@ -948,3 +948,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **T2317 = BA-P2 `BA/KKernel`**（prover，500/700/950）：K = |M|²，无现成钉文，新陈述 `BAK…`（对称、Ward 行和、尾、指数矩、邻点下界）；d=3 数值脚本全过。附一条给监督（不扣票）：BA-P3 大 g 的符号间隙无论文出处，需 `1−|m|² ≥ c(d,Λ,κ)g²` 与 M 的超八面体对称，P3 设计时处理。
 - (6) **T2318 = LW-14e-4 Sound**（`Graph/LWExpSound`，prover-max，1100/1400/1800）。**O2（§119）PASS**：waved 颜色只进边值（`7_8:134-139`）；分子、`n_W`、`ord`、辅助图与颜色无关；Lean 中 `WEdge.col/σ` 只被 `WEdge.val` 读。新 `RelKids`（Bridge 2 沿 `Rel`，T2288 审核 §8 obs. 2 的缺口）、`BelowOfSound`；`lwG5Expand'_holds`；登记 `LWG5Expand` → superseded。中心近 1500：整张放行，预设切 T2318a（L5′+L6）/T2318b（L7+L8，LW +1 行），超 1500 在节边界停（T2295 先例）。**流程决定**：允许删 `Graph/LWExpSim.lean` 中 `lwExpSim_*` 前的 `private`（文件名前缀满足 CLAUDE.md §3 (E)；只此一种改动），免第三份拷贝。
 - (7) 放行顺序（parallel 4）：**T2314 → T2318 → T2303 → T2316 → T2317**（第五张等空槽）。计数：ST-3 44/46、LW 42/47、UN 40/65、BA 23/72（ROUTES 原写 22/39 为漏改；§110 已记 BA 23、UN 40）。下一张票号 **T2319**（T2315 已占）。
+
+## §130 — 合并 T2314、T2316、T2317；T2318 预检 FAIL → 修复路线 (A)，新票 T2319（总调度，2026-10-08 02:50 UTC）
+
+- (0) **合并**：T2316（UN-27 `GUEPhase/Grid`，d133012）→ **UN 41/65**；T2317（BA-P2 `BA/KKernel`，fc0904a）→ **BA 24/72**；T2314（S3-18b2b `Induction/QtXiRoundLift`，c8e166a，`stOeqQt'_holds`，删 owed `STOeqQt'`）→ **ST-3 45/46**。解锁：UN-31 `Proc`（Grid、Generator、KPrim 都已合并）、S3-25/26（`STStep3I/II`、`STStep4I/II`）、BA-P3 `KSymbol`（先处理 §129 (5) 记的大 g 符号间隙）。BA 下一张合并即到 25 → 写 REQ。
+- (1) **T2318（LW-14e-4）1a FAIL**（`docs/reports/T2318-prove.md` (a)）：钉文 `BelowOfSound` 为假（反例：一条无实边支撑的 ×-边 b-edge）。原因在已合并的 T2306：`belowOf`（`LWExpCert.lean:157-190`）用 Δ 的全部 ×-边作一致性检验，真实分拆（`dotBase`）丢掉 b-edge；(Oe2x) 家族图保留 dotted、删实边，3061/3394 个家族图受影响，`cert_all` 没覆盖 212194（s=F）/231842（s=T）个真实项（python 镜像：全是满足叶性的叶子，0 个非叶）。目标 1、2、5、7 PASS。不是论文问题（探针簿记错，`t/T2288 … T2288Cert.lean:335-370`），无 paper-delta。
+- (2) **修复路线 (A)**（Fable 设计，`docs/claude-team/fable/2026-10-08-t2318-belowof.md`）：带撇修正旗标 `belowOf'`（一行：`X0 := (Δ.dotBase.filter fun e => !e.eq).map (pairOf a b)`，即恰为 `¬ Consistent`）+ 新证书 `cert_all'`，新文件 `Graph/LWExpCertB`、`LWExpCertBS0`、`LWExpCertBS1`（`RBM.Graph.LWCert`；已合并文件不动）。舍 (B)（再走一遍同一棵树、成本相同、L7 两分支）与 (C)（b-edge 合并后叶性无短论证：可生成新的无圈环，`n_M` 不单调）。
+- (3) **T2319 = LW-14e-1′**（prover，720/790/1000）：构建按 H101 单独跑（S0/S1 各约 12–19 分钟，内存 7.5–9.5 GB；先测最重块 `ch_FF_10_0_8'`，超 8 GB 或 5 分钟按票内预授权按候选拆块）。LW 计划 47 → 48；若 T2318 走预设切 T2318b 则 49（上限 50）——下次 LW REQ（LW=43）告知监督。
+- (4) **T2318 Amend 1**（`docs/tickets/T2318-amend-1.md`）：`BelowOfSound`/`SoundStep`/`SoundRoot` 改用 `belowOf'`/`childrenB'`/`rootInfo'`（定理名不变），check 文件已改（依赖 T2319 模块，T2319 合并后再编译）。T2318 等 T2319 合并 + 中枢 H101 合并后构建 B 模块，然后从 1a 重开；02:11 报告留作 `T2318-prove-1a-fail.md`。不计返工。
+- (5) 旧 `LWExpCertS0/S1` 在 T2318 改用 B 模块后成死代码（从头构建约 20 分钟内核时间）；删不删由 LW-14f 定。
+- (6) 计数：ST-3 45/46、LW 42/48、UN 41/65、BA 24/72。在跑：T2303。下一张票号 T2320。

@@ -1,22 +1,27 @@
 /-
-Release check for T2318 (dispatcher V1, Thu Oct  8 01:40 UTC 2026; CLAUDE.md §4 step 0).
+Release check for T2318 (dispatcher V1, Thu Oct  8 01:40 UTC 2026; CLAUDE.md §4 step 0), **revised by Amend 1
+(Thu Oct  8 02:40 UTC 2026, `docs/tickets/T2318-amend-1.md`, DECISIONS §130)**: the certificate names are T2319's primed
+successors (`belowOf'`, `childrenB'`, `goodB'`, `rootInfo'`, `rootAt'`, `cert_all'`, …; `RBM3D/Graph/LWExpCertB*.lean`),
+so this file compiles only after T2319 merges (the hub runs the pre-release check then).
 Gate LW-14e-4 (Sound): `RBM3D/Graph/LWExpSound.lean` (new file), theorems `relInvariance`, `relKids`,
 `belowOfSound`, `soundStep`, `soundRoot`, `lwG5LeafProps_holds`, `lwG5Expand'_holds`.
-Section 1: merged names the proofs use, with exact namespaces (file:line on `main` e5f819c).
+Section 1: merged names the proofs use, with exact namespaces (file:line on `main` e5f819c; T2319's lines are filled in by
+the dispatcher at its merge).
 Section 2: the pinned definitions (verbatim probe text from t/T2288:RBM3D/Probe/T2288Cert.lean, lines
-  73-78, 89-92, 94-104, 210-211, 563-569, 612-616, 622-627, 629-633) in the temporary namespace
+  73-78, 89-92, 94-104, 210-211, 563-569, 612-616, 622-627, 629-633, with `childrenB` → `childrenB'` in `SoundStep`
+  and `rootInfo` → `rootInfo'` in `SoundRoot` (Amend 1)) in the temporary namespace
   `RBM.Gauss.Sizes.T2318Check`; T2318 defines them in `RBM.Gauss.Sizes` (LWExpSound.lean).
   The merged `MNode.toP`, `Cand.toR` are in `RBM.Graph.LWCert` (LWExpSim.lean:99, :108), so `N.toP h` is
   field notation (DECISIONS §118).
-Section 3: the two new statements of this ticket (`RelKids`, `BelowOfSound`; T2288 audit §8 obs. 2).
+Section 3: the two new statements of this ticket (`RelKids`, `BelowOfSound` with `belowOf'` (Amend 1); T2288 audit §8 obs. 2).
 Section 4: the public theorem shapes as `_pin : Prop` (the probe's `Iff.rfl` theorems as Prop pins).
 Section 5: Prop-valued example.
 Statements and `#check` only: no proof, no tactic block, no `theorem`. Never imported or merged.
 Run from the main worktree: `lake env lean docs/tickets/checks/T2318-check.lean`.
 -/
 import RBM3D.Graph.LWExpSim
-import RBM3D.Graph.LWExpCertS0
-import RBM3D.Graph.LWExpCertS1
+import RBM3D.Graph.LWExpCertBS0
+import RBM3D.Graph.LWExpCertBS1
 
 open MeasureTheory ProbabilityTheory Filter Matrix
 
@@ -39,21 +44,31 @@ open MeasureTheory ProbabilityTheory Filter Matrix
 #check @RBM.Graph.LWCert.fams
 #check @RBM.Graph.LWCert.tgt
 #check @RBM.Graph.LWCert.leaf
-#check @RBM.Graph.LWCert.belowOf
-#check @RBM.Graph.LWCert.childrenB
-#check @RBM.Graph.LWCert.goodB
-#check @RBM.Graph.LWCert.rootInfo
-#check @RBM.Graph.LWCert.rootAt
-#check @RBM.Graph.LWCert.kids
-#check @RBM.Graph.LWCert.kidsOk
-#check @RBM.Graph.LWCert.goodB_succ_of
-#check @RBM.Graph.LWCert.root_FF_shape
-#check @RBM.Graph.LWCert.root_FT_shape
-#check @RBM.Graph.LWCert.lwCert_roots_below
--- T2306: `RBM3D/Graph/LWExpCertS0.lean` (`:277`), `LWExpCertS1.lean` (`:277`, `:297`), namespace `RBM.Graph.LWCert`
-#check @RBM.Graph.LWCert.cert_FF
-#check @RBM.Graph.LWCert.cert_FT
-#check @RBM.Graph.LWCert.cert_all
+-- T2306's `belowOf` `:157` (`X0` = every `×`-edge of `Δ`), `childrenB`, `goodB`, `rootInfo`, `rootAt`, `kids`, `kidsOk`,
+-- `goodB_succ_of`, `root_F?_shape`, `lwCert_roots_below`, `cert_FF`, `cert_FT`, `cert_all` are **not used** (Amend 1,
+-- DECISIONS §130: the flag skips the b-edge choices of the real partition); their successors are T2319's:
+-- T2319 (LW-14e-1′ Cert′): `RBM3D/Graph/LWExpCertB.lean`, namespace `RBM.Graph.LWCert` (`belowOf'`: `X0` from `Δ.dotBase`)
+#check @RBM.Graph.LWCert.belowOf'
+#check @RBM.Graph.LWCert.childrenB'
+#check @RBM.Graph.LWCert.goodB'
+#check @RBM.Graph.LWCert.rootInfo'
+#check @RBM.Graph.LWCert.rootAt'
+#check @RBM.Graph.LWCert.kids'
+#check @RBM.Graph.LWCert.kidsOk'
+#check @RBM.Graph.LWCert.kid'
+#check @RBM.Graph.LWCert.goodB'_succ_of
+#check @RBM.Graph.LWCert.root_FF_shape'
+#check @RBM.Graph.LWCert.root_FT_shape'
+#check @RBM.Graph.LWCert.lwCert_roots_below'
+#check @RBM.Graph.LWCert.lostAt
+-- T2319: `RBM3D/Graph/LWExpCertBS0.lean`, `LWExpCertBS1.lean`, namespace `RBM.Graph.LWCert`
+#check @RBM.Graph.LWCert.cert_FF'
+#check @RBM.Graph.LWCert.cert_FT'
+#check @RBM.Graph.LWCert.cert_all'
+-- LW-03: the real partition's dotted edges (`withDots`: `dotBase ++ c.2`; the b-edges `isB` are dropped) — L7 of Amend 1
+#check @RBM.Graph.LGraph.isB
+#check @RBM.Graph.LGraph.bEdges
+#check @RBM.Graph.LGraph.dotBase
 -- T2311 (LW-14e-3 Sim, 7e7b3be): `RBM3D/Graph/LWExpSim.lean`; `MNode.toP` `:99`, `Cand.toR` `:108` in `RBM.Graph.LWCert`
 #check @RBM.Graph.LWCert.MNode.toP
 #check @RBM.Graph.LWCert.Cand.toR
@@ -233,20 +248,20 @@ def LeafOK (P : PGraph (Fin 2)) : Prop :=
     ((∀ a b : P.E', P.g.molOf (Sum.inl a) = P.g.molOf (Sum.inl b) → a = b) ∨ LWJoined P) ∧
     (if P.ext 0 = P.ext 1 then (4 : ℤ) else 5) ≤ P.g.scalingOrder
 
-/-- **Soundness of the lite classification at a node** (probe 622-627; the flag of `childrenB`): if the flag holds,
+/-- **Soundness of the lite classification at a node** (probe 622-627 with `childrenB'` (Amend 1); the flag of `childrenB'`): if the flag holds,
 every real child of the packed node at the candidate is a leaf satisfying the leaf properties or is related to a
 below-target model child. -/
 def SoundStep : Prop :=
-  ∀ (N : MNode) (h : Function.Surjective N.ext) (c : Cand N.a N.b) (hc : c ∈ cands N.g), (childrenB N c).1 = true →
+  ∀ (N : MNode) (h : Function.Surjective N.ext) (c : Cand N.a N.b) (hc : c ∈ cands N.g), (childrenB' N c).1 = true →
     ∀ Q ∈ (Cand.toR N h c hc).kids,
       ((if Q.2.ext 0 = Q.2.ext 1 then (4 : ℤ) else 5) ≤ Q.2.g.scalingOrder → LeafOK Q.2) ∧
-      (¬ (if Q.2.ext 0 = Q.2.ext 1 then (4 : ℤ) else 5) ≤ Q.2.g.scalingOrder → ∃ M ∈ (childrenB N c).2, Rel M Q.2)
+      (¬ (if Q.2.ext 0 = Q.2.ext 1 then (4 : ℤ) else 5) ≤ Q.2.g.scalingOrder → ∃ M ∈ (childrenB' N c).2, Rel M Q.2)
 
-/-- **Soundness at the root** (probe 629-633; `k` is arbitrary: `Rel` ignores the waved colours). -/
+/-- **Soundness at the root** (probe 629-633 with `rootInfo'` (Amend 1); `k` is arbitrary: `Rel` ignores the waved colours). -/
 def SoundRoot : Prop :=
-  ∀ (k s : Bool), (rootInfo false s).1 = true → ∀ r ∈ partitionX (LWG5Graph k s),
+  ∀ (k s : Bool), (rootInfo' false s).1 = true → ∀ r ∈ partitionX (LWG5Graph k s),
     ((if r.2.ext 0 = r.2.ext 1 then (4 : ℤ) else 5) ≤ r.2.g.scalingOrder → LeafOK r.2) ∧
-    (¬ (if r.2.ext 0 = r.2.ext 1 then (4 : ℤ) else 5) ≤ r.2.g.scalingOrder → ∃ M ∈ (rootInfo false s).2, Rel M r.2)
+    (¬ (if r.2.ext 0 = r.2.ext 1 then (4 : ℤ) else 5) ≤ r.2.g.scalingOrder → ∃ M ∈ (rootInfo' false s).2, Rel M r.2)
 
 /-! ## 3. The two new statements of this ticket (T2288 audit §8 observation 2: the induction along `expand`
 needs the transport of candidates and children along `Rel` at every node, not only at `N.toP h`) -/
@@ -260,14 +275,16 @@ def RelKids : Prop :=
       List.Forall₂ (fun (r : (ℕ × ℕ) × MNode) (Q : (ℕ × ℕ) × PGraph (Fin 2)) => Rel r.2 Q.2 ∧ r.1 = Q.1)
         (childrenX N c) c'.kids
 
-/-- **Soundness of the lite flag of `belowOf`** (L7, model level): under the flag, every model partition term that is a
-leaf has the leaf properties in every related packed graph, and every term that is not a leaf is represented in the
-below-target list up to `Rel`. -/
+/-- **Soundness of the lite flag of `belowOf'`** (L7, model level; Amend 1: the corrected flag of T2319, whose skip test is
+`cMerge (Δ.withDots c) ext = none`, so every term of `cPartitionX` is covered — T2306's `belowOf` skipped the b-edge
+choices and the statement was false for it, `docs/reports/T2318-prove.md` (a)): under the flag, every model partition term
+that is a leaf has the leaf properties in every related packed graph, and every term that is not a leaf is represented in
+the below-target list up to `Rel`. -/
 def BelowOfSound : Prop :=
   ∀ (a b : ℕ) (Δ : LGraph (Fin (a+1)) (Fin b)) (ext : Fin 2 → Fin (a+1)), Function.Surjective ext →
-    (belowOf Δ ext).1 = true → ∀ r ∈ cPartitionX Δ ext,
+    (belowOf' Δ ext).1 = true → ∀ r ∈ cPartitionX Δ ext,
       (leaf r.2 = true → ∀ Q : PGraph (Fin 2), Rel r.2 Q → LeafOK Q) ∧
-      (leaf r.2 = false → ∃ M ∈ (belowOf Δ ext).2, ∀ Q : PGraph (Fin 2), Rel r.2 Q → Rel M Q)
+      (leaf r.2 = false → ∃ M ∈ (belowOf' Δ ext).2, ∀ Q : PGraph (Fin 2), Rel r.2 Q → Rel M Q)
 
 /-! ## 4. Public theorem shapes (the probe's `Iff.rfl` theorems `lwG5ExpandSplit_iff` 106, `lwG5LeafProps_iff` 618
 and the assembly `lwG5ExpandOfHalves` 213 as Prop pins) -/
@@ -284,14 +301,20 @@ def soundRoot_pin : Prop := SoundRoot
 def lwG5LeafProps_holds_pin : Prop := LWG5LeafProps (expandRoot selClassical 4)
 def lwG5Expand'_holds_pin : Prop := ∀ d : ℕ, LWG5Expand' d
 
-/-! ## 5. Statement shapes at concrete merged data (the certificate side and the instance of the identity half) -/
+/-! ## 5. Statement shapes at concrete merged data (the certificate side (T2319's primed names) and the instance of the identity half) -/
 
 example : Prop := relInvariance_pin ∧ relKids_pin ∧ belowOfSound_pin ∧ soundStep_pin ∧ soundRoot_pin ∧
   lwG5LeafProps_holds_pin ∧ lwG5Expand'_holds_pin
-example : Prop := (∀ s, (rootInfo false s).1 = true ∧ (rootInfo false s).2.all (goodB 3) = true) →
+example : Prop := (∀ s, (rootInfo' false s).1 = true ∧ (rootInfo' false s).2.all (goodB' 3) = true) →
   LWExpandIdentity selClassical 4 → LWG5Expand' 3
-example : Prop := ∀ (h : Function.Surjective (rootAt false false 9).ext),
-  Rel (rootAt false false 9) (MNode.toP (rootAt false false 9) h)
+example : Prop := ∀ (h : Function.Surjective (rootAt' false false 9).ext),
+  Rel (rootAt' false false 9) (MNode.toP (rootAt' false false 9) h)
+-- Amend 1: the new instance of `belowOfSound` at a family graph with b-edges (R2 at root term 9, candidate 0; `lostAt … = 5`)
+example : Prop := ∀ (c : Cand (rootAt' false false 9).a (rootAt' false false 9).b)
+    (f : Σ b' : ℕ, LGraph (Fin ((rootAt' false false 9).a + 1)) (Fin b')),
+  c ∈ cands (rootAt' false false 9).g → f ∈ fams (rootAt' false false 9).g c →
+  (belowOf' f.2 (rootAt' false false 9).ext).1 = true → 0 < lostAt (rootAt' false false 9) 0 0 →
+  ∀ r ∈ cPartitionX f.2 (rootAt' false false 9).ext, leaf r.2 = true → ∀ Q : PGraph (Fin 2), Rel r.2 Q → LeafOK Q
 
 end T2318Check
 
