@@ -1127,3 +1127,22 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) 排队（T2336 在跑，3 个空位）：**T2338 → T2297 → T2339**，三张同时开。之后：LW-16（先核 0838 O3）、P4c 合并后写 P6、P6 合并后写 P8。
 - (6) 计数（宽口径）：ST-4 35/35、ST-6 2/设计、LW 45/48–49、UN 45/65、BA 32、MA 7/8。下一张票号 T2340。
 
+## §151 — ST-4 闭合；T2297 Amend 2；ST-6 R1–R3 = T2340（总调度，2026-10-08 18:44 UTC）
+
+- (0) **合并**：T2336 = BA-P4c（f234507，`kBA_diff1_le`、`kBA_diff2_le`，1757 行，停止线 1800 内）；T2339 = S5-26（0853ac1，`stDuhamelII_holds`，登记删 `STDuhamelII`）→ **ST-4 35/35 闭合**；T2338 = ST-D6（7154d50，仅报告，审核 PASS；探针留在 `t/T2338` 854aa29）。16:22 UTC 中枢额度用尽，16:20 重置后三张 1b 按规则 (H) 重跑（H136 done 行）。
+- (1) **T2297 停止线 RETURN**（`LWMoment.lean` 1566 > 1500，第 9 节）：剩余 (R1)–(R3) 约 290 行，报告逐条列出，无新数学，估计全文约 1860 行。决定：不走预设切分 LW-02′，**停止线改 2000，从 9f9d1a2 接着跑 1b**（`docs/tickets/T2297-amend-2.md`）；再超 2000 就切分，不再改。理由：切分要多一张票、一个检查文件和一轮部分审核，换来的只是把约 290 行搬到另一个文件；剩余部分已经逐项估过。LW 计数 +0。
+- (2) **ST-D6 设计签字**（报告 §7；审核 O1–O3）：R1–R3 合为**一张票 T2340**（`prover-hard`，三文件 `Induction/MainIndBase`、`MainIndChain`、`MainIndOut`，650 / 900 / 1100，停止线总计 1200）；R1 走**改一词路线**：删 `AzumaProxyN.lean:597` 的 `private`（不搬 120 行，不用 `open private`——库代码不用这个写法）；于是 `STLoopZeroId` 不进库，`stBase_band`、`unMLOut_of_mainInd` 都不带这个假设。命名空间：载体上的定义与定理放 `RBM.BA`（挨着 `STMainIndG`），`stMainInd_of_LW` 放 `RBM.Gauss.Sizes`，`UNMLOut` 一侧放 `RBM.Univ`。新增 `stMainInd_of_LW : ∀ d, LWterm d → LWtermExp d → STMainInd d`、`unMLOut_of_LW`（`STDuhamelII` 已由 T2339 证出）。
+- (3) 登记（设计 §7 提议，签）：`STLK0`、`STG0M`、`STBaseG`、`STHorizonG` 入 `owedProps`（载体事实；带模型实例本票证出，BA 实例欠 BA-V）；`STConclgL`、`STMLOutG` 入 `structuralProps`。
+- (4) R4（`stMainInd_holds`、`unMLOut_holds`，删 `STMainInd`、`UNMLOut` 两行）等 LW-01，可并入 LW-01 的收尾票。设计开放问题 2（`Test/Axioms.lean:102-107` 六行 `STLK … STExp2`）到 R4 时定：R4 后若已无定理以它们为假设，移入 `structuralProps`（它们只是 `STMainInd` 的组成部分）。
+- (5) 排队：T2297（续 1b）、T2340。下一步写 BA-P6（P4c 已合并）与 LW-16，两张都放上后 4 张在跑。
+- (6) 计数（宽口径）：ST-4 35/35 闭合、ST-6 3/4（T2338、T2340、R4；主归纳区域组装 T2245 另计）、LW 45/48–49、UN 45/65、BA 32、MA 7/8。下一张票号 T2341。
+
+## §152 — BA-P6 = T2341；LW-16 = T2342（0838 O3 书面回答）；监督 REQ-1851（总调度，2026-10-08 18:51 UTC）
+
+- (1) **BA-P6 = T2341**（`BA/PropUnit.lean`，`prover-hard`，900 / 1200 / 1500，停止线 1700）：混合电荷 `σ₁ ≠ σ₂` 的单位一阶、二阶差分 `baPropUnit1mixed_holds`、`baPropUnit2mixed_holds`；钉 P4c 的原样输出（`kBA_diff1_le`、`kBA_diff2_le`），新加一条多项式衰减的 Laplace 引理（`lg_bulk` 的多项式版，在 `τ = 1` 处分段）。允许删 `BA/Prop5.lean` 中至多 8 个声明的 `private`（同 §151 (2) 的改一词路线）。登记不动（`BAProp6/7` 等 P8）。
+- (2) **C4 更正告知监督**：P4c 的衰减因子用 `max τ 1`（监督 C4 的字面形式在 `τ → 0` 不成立），T2336 已按此证出并审核通过；P6 消费这一形式。写进 REQ-1851 B1，不阻塞（P6 在监督 1048 已放行的阶段 P 行内，路线不变）。
+- (3) **监督 0838 O3 的书面回答**（LW-16 放行前要求）：`tailW` 类作为全体实数 `r` 上的类**不满足** `(eq:Psi)`——`ℓ > L` 时（`LWAssmExp` 允许 `ℓ ≤ (log W)^{10} ℓ_t`），`r` 从 `L` 到 `ℓ` 之间的因子 `exp(√(r∧ℓ/ℓ_t))` 是伸展指数，不是多项式。所以 LW-16 不拿 `tailW` 类当 `Φ`，而是对**已合并的 B 类** `LWPhiB`（`c₀ = d`，`K = ⌊ℓ⌋ ∧ L`）用 `LWterm`：`(eq:Psi)` 由 `LWPhiB_psiAll`（T2051）给出；`LWLoop2` 在任何区域都由 `LWLoopExp` 推出（指数因子 `≤ 1`，取大的 `D'`）；在 `1 - t ≤ ĝ²/L²` 的子类型上，`r ≤ L` 时 B 界 `≤ e · tailW`（`tailT_regime2_bounds`，`ℓ_t = L`）。不加新钉文，也不需要子序列转移（指标集本身就是逐个 `n` 的子类型）。**LW-16 = T2342**（`Graph/LWTermExpN.lean`，`lwtermExpN_of_LWterm : ∀ d, LWterm d → LWtermExpN d`，`prover`，300 / 450 / 650，停止线 800）；登记不动（LW-01 删 `LWtermExpN`）。
+- (4) **REQ-1851**（不阻塞）：B1 `max τ 1`、B2 O3 的回答、B3 ST-D6 签字（§151 (2)–(4)）、B4 T2297 Amend 2。监督对任何一条说 HOLD，相关票在下一个阶段边界停。
+- (5) 排队：H138 放 T2342（LW，先）、T2341（BA）。**下一个空位给 UN-34**（§145：先闭合其他方向；UN 首次拆分前 REQ），P8 等 P6 合并。
+- (6) 计数（宽口径）：ST-4 35/35、ST-6 3/4、LW 46/48–49（T2342 计入）、UN 45/65、BA 33（T2341 计入；阶段 P 余 P8）、MA 7/8。下一张票号 T2343。
+
