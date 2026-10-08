@@ -149,8 +149,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.LWtermExp, -- `lem: EWGn2_N` (`3_5:406-415`): LW-01, LW-16
    `RBM.Gauss.Sizes.LWtermExpS, -- `lem: EWGn2_N`, strict regime: LW-01
    `RBM.Gauss.Sizes.LWtermExpN, -- `lem: EWGn2_N`, `1 - t ≤ ĝ²/L²`: LW-16
-   `RBM.Gauss.Sizes.LWMoment, -- `lem:LW_moment` (`7_8:72-77`): LW-02
-   `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-02, LW-13
+   `RBM.Gauss.Sizes.LWMomentExp, -- `lem:LW_moment_exp` (`7_8:78-83`): LW-13b
    `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
    `RBM.Gauss.Sizes.LWReduceT, -- reduction of `lem: EWGn2_N` to `lem:LW_moment_exp`: LW-01
    -- T2067: the random premises of the LW pins (ST chain)
@@ -341,6 +340,7 @@ def structuralProps : List Name :=
    `RBM.BA.BAWinBulk, -- the window `[√(1 - c₁) g₀, g₀]` lies in the `κ`-bulk of the block Anderson flow (BA-D8, `CouplingWindow.lean:799`); a predicate on the data, hypothesis of `BAFamZ_im_m_ge`, `BATrivialLmax` (BA-S2a, T2238, DECISIONS §20, T2205 portmap P.2: structural)
    `RBM.BA.FlowFM.EvEq, -- two flow carriers agree for large `n` (T2277, BA-S3, portmap P.2: structural)
    `RBM.Adj, -- the nearest-neighbour relation `a ∼ b` of `(eq:variancematrix)` on `Z_L^d` (`Defs/Lattice.lean:108`, `zdistD (a - b) = 1`): a predicate on the lattice data, hypothesis of `BAzdist_adj_lip` and `BAMB_lower_small` (BA-D4, T2290, DECISIONS §20: structural)
+   `RBM.Gauss.Sizes.LWMomentCtx, -- the hypotheses of `lem:LW_moment` for one choice of the constants and sequences, bundled as the binder of the internal lemmas of `LWMoment.lean` (fields = the pin's hypotheses, nothing else; LW-02, T2297, DECISIONS §20: structural)
    `RBM.Univ.queWindow] -- the energy window `𝓘_E(ε₀) = {x : |x - E| ≤ W^{-ε₀} (ilambda W^{d/2}/N)}` of `(eq:defIE)` (`1_2:409`): a condition on the eigenvalue `x`, hypothesis of the deterministic inclusions `queBad_sub`, `que2Bad_sub` (MA-05a, T2240, DECISIONS §20: structural)
 
 /-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
