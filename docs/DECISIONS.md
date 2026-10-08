@@ -937,3 +937,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 **效果：** T2303（BA-L2b）HOLD 解除，可立即开工（不再受上限阻挡）。ROUTES BA 更新：22 / **72**；"上限 70" → "上限 72（§52/§57→§128）"；T2303 blocker 注释替换为可开工提示。
 
 **H115：** commit 本节（§128）+ ROUTES BA 更新。
+
+## §129 — T2313 合并；放行五张：T2314、T2303（拆）、T2316、T2317、T2318（总调度，2026-10-08 02:15 UTC，流程事项）
+
+- (0) **T2313（S3-18b2a）合并** ae94fa7（审核一轮 PASS，4123 jobs）：`STXiRoundPT''`、`STOeqQtRoundPT''`、`stOeqQtRoundPT''_holds`（n_ ≥ 2）。**ST-3 43 → 44/46**。
+- (1) **BA-L2b 拆两张**（§128 上限 72）：**T2303 = BA-L2b1**（`Graph/BAExpandW`：`BAlweight` + 图词汇 + `lanlw_val`，中心约 1180，prover-hard；超 1500 在节边界停）；**T2315 = BA-L2b2**（`Graph/BAExpandWOrd`：目标 3(c) 计数、`lanlw_ord`、`lanlw_scalingOrderG` + (I3)–(I4)，约 850），T2303 合并后写 check 再放行。BA 计划 70 → 71。草稿 `docs/tickets/drafts/T2303-*` 保留作底稿。
+- (2) `lem_lweight` 的图运算（T2303 草稿 stale (2)）不在任何票内：BA-L3 设计时定（并入 L3，或在上限 72 内再加一张）。
+- (3) **T2314 = S3-18b2b**（`Induction/QtXiRoundLift`，prover-hard，720/850/1000）：`stXiRoundQt_holds`（PrecPT→Prec 提升，§127 模式，T2258/T2299 私有引理第三份拷贝）+ `stOeqQt'_holds := stXiBootR_of_round d STCaseI (stXiRoundQt_holds d)`；删 owed `STOeqQt'`。`STXiRoundPT''` 单独覆盖全部 n_ ≥ 2（与 `STXiRoundPT'` 只差门槛；与 `STXiRound'` 只差 Prec/PrecPT），`stOeqQtRoundPT'_holds` 不用。关键路径，列表顶。合并后 ST-3 45/46。
+- (4) **T2316 = UN-27 `Grid`**（RBM2D 移植，`RBM.Univ.GUEPhase`，prover-hard，820/900/1000）：§91 记的 ZRescale 缺名现已在 `Defs/Semicircle`；`green_smul_mul` 私有（`Induction/ConArg.lean:386-417`）照拷。`GUEPathBounds` 只做 band 形（BA 形归 BA-C5，T2173 类 G），本票不加登记行（首个消费者 UN-33 登记）。解锁 UN-31 `Proc`。
+- (5) **T2317 = BA-P2 `BA/KKernel`**（prover，500/700/950）：K = |M|²，无现成钉文，新陈述 `BAK…`（对称、Ward 行和、尾、指数矩、邻点下界）；d=3 数值脚本全过。附一条给监督（不扣票）：BA-P3 大 g 的符号间隙无论文出处，需 `1−|m|² ≥ c(d,Λ,κ)g²` 与 M 的超八面体对称，P3 设计时处理。
+- (6) **T2318 = LW-14e-4 Sound**（`Graph/LWExpSound`，prover-max，1100/1400/1800）。**O2（§119）PASS**：waved 颜色只进边值（`7_8:134-139`）；分子、`n_W`、`ord`、辅助图与颜色无关；Lean 中 `WEdge.col/σ` 只被 `WEdge.val` 读。新 `RelKids`（Bridge 2 沿 `Rel`，T2288 审核 §8 obs. 2 的缺口）、`BelowOfSound`；`lwG5Expand'_holds`；登记 `LWG5Expand` → superseded。中心近 1500：整张放行，预设切 T2318a（L5′+L6）/T2318b（L7+L8，LW +1 行），超 1500 在节边界停（T2295 先例）。**流程决定**：允许删 `Graph/LWExpSim.lean` 中 `lwExpSim_*` 前的 `private`（文件名前缀满足 CLAUDE.md §3 (E)；只此一种改动），免第三份拷贝。
+- (7) 放行顺序（parallel 4）：**T2314 → T2318 → T2303 → T2316 → T2317**（第五张等空槽）。计数：ST-3 44/46、LW 42/47、UN 40/65、BA 23/72（ROUTES 原写 22/39 为漏改；§110 已记 BA 23、UN 40）。下一张票号 **T2319**（T2315 已占）。
