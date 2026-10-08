@@ -29,8 +29,6 @@ open scoped NNReal ENNReal Matrix.Norms.L2Operator
 #check @RBM.Path.HermTestFun                      -- Path/StepDecomp.lean:186
 #check @RBM.Ind.loopMax                           -- Induction/Split.lean:515
 #check @RBM.Ind.loopMax_le                        -- Induction/Split.lean:533
-#check @RBM.Ind.isUnit_sub_smul_one_of_im_ne_zero -- Induction/ConArgDet.lean:380
-#check @RBM.green_sub_green                       -- Induction/ConArgDet.lean:73
 #check @RBM.green                                 -- Green/EntryCore.lean:34
 #check @RBM.Gauss.loopL                           -- Loop/GLoopFlow.lean:123
 #check @RBM.Gauss.blockMat                        -- Loop/GLoopFlow.lean:105
