@@ -113,10 +113,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLKU, -- `(Eq:L-KGt-flow)` uniform in `u ∈ [s,t]`: ST-6 chain / Step 3 (not in the §25 list; owed, T2049 proposal)
    `RBM.Gauss.Sizes.STStep3R, -- Step 3 per regime `R` (generic form): consumer `ST_mainIndR_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (not in the §25 list; owed, T2049 proposal)
    `RBM.Gauss.Sizes.STStep4R, -- Step 4 per regime `R` (generic form): consumer `ST_mainIndR_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (not in the §25 list; owed, T2049 proposal)
-   `RBM.Gauss.Sizes.STStep3I, -- Step 3, case (i): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
    `RBM.Gauss.Sizes.STStep3II, -- Step 3, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep4I, -- Step 4, case (i): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
-   `RBM.Gauss.Sizes.STStep4II, -- Step 4, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245; S3-27 cancelled, DECISIONS §68 (9)) (T2049 proposal)
    `RBM.Gauss.Sizes.STIngR, -- generic setting of an ingredient of Steps 3-4 (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STIterR, -- generic setting of `lem:iterations` (T2049 proposal; owed)
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
@@ -382,6 +379,7 @@ other four, never in two (`#assert_rbm_axioms` checks the disjointness). -/
 def supersededProps : List Name :=
   [`RBM.Gauss.Sizes.STStep3,    -- Step 3, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep3I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.BA.BAConArg',            -- `lem_ConArg_BA` in the `Φ_t` form (T2197 Amend 1): not refuted, not provable from its premises by the band route (T2237a, DECISIONS §81); its event-form successor `BAConArg''` is proved (`baConArg''_holds`, T2237)
+   `RBM.Gauss.Sizes.STStep3I,   -- superseded by the regime pins `STStep3R · STReg5III`, `STStep3R · STReg5I` (T2320) and `ST_mainInd_of_pins'` (T2321), DECISIONS §133; definition kept (CLAUDE.md §5.3)
    `RBM.Gauss.Sizes.STStep4,    -- Step 4, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep4I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep5,    -- Step 5, general `0 ≤ s < t < 1`: S5-29 cancelled (DECISIONS §68 (9)); the regime pins `STStep5I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep6,    -- Step 6, general `0 ≤ s < t ≤ t₀`: S6-13 cancelled (DECISIONS §68 (10)); still carried by `ST_step6R_of_any`; the regime pins `STStep6I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
