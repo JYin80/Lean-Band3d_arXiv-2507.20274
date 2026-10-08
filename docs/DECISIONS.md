@@ -1055,3 +1055,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **防走错路的排序（沿用 §142 (4)）**：T/U/V 与 L 阶段不早于 ST-4…ST-6、LW-14 闭合及其「公开」票合并；T/U/V 的路线（模型通用载体 G / 实例化 I / 孪生 T）由 T2326 试点结果 + 监督 PASS 决定。P 阶段（BA-P4…P8）不依赖路线，现在可开，但先过开阶段闸门。
 - (4) ROUTES 的 BA 行改为「不设上限（Jun §144），阶段闸门」；BA 计数仍照实记。LW（≤ 50）、UN（65）上限不变。
 - (5) **第一个开阶段闸门：阶段 P** → **REQ-2026-10-08-1010**（P4 `KHeat` 的 Fourier 路线、P5/P7 零模、P6 分部求和所需正则性、拆分；5–7 张）。监督 PASS 前不放 BA-P4。
+
+## §145 — **Jun：其他方向尽量先闭合（与 BA 并行）**；ST-4 收尾两张（总调度，2026-10-08 10:17 UTC）
+
+- (1) **Jun（2026-10-08 03:1x PDT）**：「另一方面 尽量同时让其他方向先闭合。」→ 排序（流程，总调度定）：BA 阶段 P 等监督（REQ-1010）期间，槽位优先给 **ST-4 收尾 → LW-14 → UN 链 → MA**；BA 只放闸门已过的票。
+- (2) **ST-4（31 / 35）剩四行**（T2134 portmap 447–460）：S5-13 `EtermsMid`、S5-15 `DuhamelI`（← S5-13）、S5-16 `IniTermI`、S5-26 `DuhamelII`（← S5-15）。现在放两张互不依赖的：
+  - **S5-13 = T2328**（`Induction/EtermsMid.lean`，`stEtermsMid_of_LWT : ∀ d, STLWT d → STEtermsMid d`，prover-hard，700/900/1300）。`STLWT` 留作前提（LW 闸门证，经 `STLWT_of_LWtermExp`），与 `ST_step2_of_pinsLW'` 同一做法；登记行 `STEtermsMid` 留 owed，注释写上「由 `STLWT` 证出」。
+  - **S5-16 = T2329**（`Induction/IniTermI.lean`，`stIniTermI_holds : ∀ d, STIniTermI d`，prover-hard，1100/1400/1900，超 2200 拆出 `IniTermIUnif`）。登记删 `STIniTermI` 行。
+- (3) **T2329 的一处论文外的接线（总调度查出，交 1a 核）**：`STCltFar`（S5-25 已证）只在序列终点 `t n` 给 `f^{far}`，而 `STIniTermConcl` 要对 `u ∈ [s,t]` 一致（`Prec` 的并在概率里面）。路线：`f^{far}_u` 只经确定性 `Θ_u` 依赖 `u`（预解式恒等式给 Lipschitz），`u` 网格间距 `N^{-C'}`；每个网格点对「最坏序列」`t'_n` 用 `stCltFar_holds`，再对 `≤ N^C` 个点取并；`STIngR5` 的前提从 `[s,t]` 限制到 `[s,t']`（`Prec` 指标集单调；`STConStInd` 用 `STBctl_mono`），作公开引理 `stIngR5_hyps_restrict`（S5-15 也可用）。1a 若有一条前提不能限制 → FAIL 并点名，不硬做。
+- (4) 小比值情形 `ρ_u ≤ (log W)^{10}`（`(eq:assmtlarge)` 的补集，论文 `3_5:1950-1954` 一句带过）在 T2329 里要写出来：两次 `(uwp2-92kj)`，`(log W)^{20}` 被 `≺` 吸收。
+- (5) 其余方向现状：LW-14 = T2319 合并中 → H128 重启 T2318 → LW-14f（`LWtermEXP` 组装，同时放开 `STStep2`/Step 6 三区域）；UN 链 T2323 待合并、T2327 预检中；MA 7/8 待 UN 链。S5-15 在 T2328 合并后写；ST-D6（主归纳组装设计）在 ST-4 闭合前写好。下一张票号 T2330。
+
