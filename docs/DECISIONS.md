@@ -1095,3 +1095,16 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 排队顺序（4 槽全满：T2318、T2326、T2329、T2330）：**T2332 → T2333 → T2331**（§145：ST/LW 先于 BA；引擎在 `STLWT` 长链之首）。
 - (4) 计数（宽口径）：ST-4 34/35、LW 44/48–49（尾 50–52）、UN 45/65（外推 68–71）、BA 29、MA 7/8。下一张票号 T2334。
 
+## §148 — 合并 T2326/T2329/T2330/T2331；T2318 签字；LW-14f、P4b、P4c；T2332 检查文件修正；停止线（总调度，2026-10-08 12:52 UTC）
+
+- (1) **合并**：T2329 = S5-16（850a8a3，`stIniTermI_holds`、`stIngR5_hyps_restrict`）；T2330 = UN-33（2686aaf）；T2331 = BA-P4a（8a6c908，`BA/KHeat`）；T2326 = BA-DP3 试点（d760deb，仅报告）。T2326 结论：**推荐路线 G**（Steps 2–6 链在原处泛化，链约 39 张 [33..61]；图层 L2c–L4 走路线 I），BA 合计约 141 张 [136–163]，规划数 165。按 §144 这是给阶段闸门的规划数，不是上限；**交给 T/U/V 开阶段 REQ**（在 ST-4…ST-6 闭合、发布票合并之后），不问 Jun。
+- (2) **T2318 签字（流程，总调度定）**：审核 8 个目标全 PASS，只差一行登记：分支把 `RBM.Graph.LGraph.IsExtCls`（`LWVocab.lean:741`，`∃ a, Γ.cls (inl a) = q`，定义性谓词）加进 `structuralProps`。**批准**：与 `IsExtMol`、`XBetween` 同类，是结构性的不是欠账；按规则 (A) 合并，证书模块构建照 H101。
+- (3) **T2332 检查文件 exit 1**：T2307 的 `partitionX`、`lwSplitLoopsX`、`lwSplitLoopsX_spec`、`partitionX_spec`、`val_eq_partitionX` 在命名空间 `RBM.Gauss.Sizes`（`LWExpTerm5.lean:51`），不在 `RBM.Graph`。五行 `#check` 已改，票文注明命名空间；重编译后放行。以后每个检查文件的每个 `#check` 都过 `nsof` 脚本（`inductive` 手查）。
+- (4) **新票（自写，不用 Fable）**：
+  - **T2334 = LW-14f**（`Graph/LWExpTerm6.lean`，prover-hard，700/900/1200）：`LwGraphPrecJoin`（T2265 检查文件第 3 节草案，`LWJoinedPin ↦ LWJoined`）及其证明、`lwExpG5'_of_expand'`、无条件 `lwExpG5'_holds`、`lwCutExp_holds`、`lwTermEXP_holds`、`stStep6I/II/III_holds`；登记删 `LWtermEXP`、`LWCutExp`、`LWExpG5'`、`STStep6I/II/III` 六行（§84 (1) 收尾规则）。检查文件引 `LWExpSound`，**T2318 合并后才能编译**。旧证书模块 `LWExpCertS0/S1` 本票不删，报告消费者，另排。
+  - **T2335 = BA-P4b**（`BA/KHeatTail.lean`，prover-hard，700/900/1300）：`kBA_le` = `kProd_le` 逐字孪生（C1 (i)、O1），居中提升 + 坐标 Chernoff + 半群合并（C3）；报告论文差异候选（O4）。
+  - **T2336 = BA-P4c**（`BA/KHeatDiff.lean`，prover-max，900/1200/1700，风险行，O2）：`kBA_diff1_le`、`kBA_diff2_le`，多项式衰减 `M = ⌊d/2⌋+1`，单方向分部求和（阶 `2M ≤ d+2`，1a 逐 `d` 列表核对）。**总调度改正 C4 的形式**：`(1+|a|²/τ)^{-M}` 在 `τ → 0`、固定 `a ≠ 0` 时不成立（差 ≍ `τ e^{-c|a|}`，不是 `O(τ^M)`），钉文用 `(1+|a|²/max τ 1)^{-M}`；`τ < 1` 段对 `τ` 积分代价 `(1+|a|²)^{-M} ≤ (|a|+1)^{-(d-1)}`（`2M ≥ d-1`），P6 的新 Laplace 引理在 `τ = 1` 处分段。1a 若认为此形式不够 P6 用，FAIL 并指出哪个积分。下次阶段 P 的 REQ 里告诉监督这处改正。
+- (5) **停止线（流程）**：T2328（1757/1500）、T2329（3823/2200）都超了停止线没停，审核都过了、内容没问题，但文件过大拖慢构建、也让拆分失去意义。**新规则**：中枢在 1b 的提示里写明「每个小节提交时 `wc -l`，超过停止线就提交、停下、RETURN」；审核把超线记为流程发现（不阻塞合并）；总调度在票里写「停止线有约束力」（T2333 起已写）。
+- (6) 排队（4 槽：T2333 在跑）：**T2332（修正后）→ T2334（T2318 合并、检查编译通过后）→ T2335 → T2336**。之后：S5-26 等 T2333 合并（用其引擎）；LW-16 下一张（先核 0838 O3）；T2297 Amend 等 T2332。
+- (7) 计数（宽口径）：ST-4 34/35、LW 45/48–49、UN 45/65、BA 31（阶段 P 已开 3/6）、MA 7/8。下一张票号 T2337。
+

@@ -28,11 +28,11 @@ import RBM3D.Graph.LWExpTerm5
 #check @RBM.Graph.lvl1GGOuts0                -- LWLvl1.lean:3243
 #check @RBM.Graph.lvl1Pack                   -- LWLvl1.lean:3252
 #check @RBM.Graph.LGraph.partition           -- LWVocab.lean:1303
-#check @RBM.Graph.partitionX                 -- LWExpTerm5.lean:106 (T2307)
-#check @RBM.Graph.lwSplitLoopsX              -- LWExpTerm5.lean (T2307)
-#check @RBM.Graph.lwSplitLoopsX_spec         -- LWExpTerm5.lean:281 (T2307)
-#check @RBM.Graph.partitionX_spec            -- LWExpTerm5.lean:310 (T2307)
-#check @RBM.Graph.val_eq_partitionX          -- LWExpTerm5.lean:337 (T2307)
+#check @RBM.Gauss.Sizes.partitionX                 -- LWExpTerm5.lean:106 (T2307)
+#check @RBM.Gauss.Sizes.lwSplitLoopsX              -- LWExpTerm5.lean (T2307)
+#check @RBM.Gauss.Sizes.lwSplitLoopsX_spec         -- LWExpTerm5.lean:281 (T2307)
+#check @RBM.Gauss.Sizes.partitionX_spec            -- LWExpTerm5.lean:310 (T2307)
+#check @RBM.Gauss.Sizes.val_eq_partitionX          -- LWExpTerm5.lean:337 (T2307)
 #check @RBM.Graph.fxyPowGraph                -- LocalRegular.lean:1354
 #check @RBM.Graph.locReg6Inv_locStep         -- LocalRegular6d.lean:1085
 #check @RBM.Graph.PGraph                     -- LWVocab.lean:653
