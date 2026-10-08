@@ -375,6 +375,7 @@ import RBM3D.BA.KHeatTail
 import RBM3D.Graph.LWExpTerm6
 import RBM3D.Graph.LWEngine
 import RBM3D.Induction.DuhamelI
+import RBM3D.BA.Prop5
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
