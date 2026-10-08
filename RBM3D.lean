@@ -367,6 +367,7 @@ import RBM3D.Graph.LWExpCertBS1
 import RBM3D.Universality.GUEPhase.ProcK
 import RBM3D.Universality.GUEPhase.Markov
 import RBM3D.Induction.EtermsMid
+import RBM3D.Universality.GUEPhase.BoundsA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
