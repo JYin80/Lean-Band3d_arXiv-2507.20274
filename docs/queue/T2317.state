@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5, t/T2317 at 30bcc14); merged under rule (A) with T2316, full lake build 4125 jobs (both)
+updated: Thu Oct  8 02:29:03 UTC 2026
+reports: docs/reports/T2317-prove.md, docs/reports/T2317-audit.md
