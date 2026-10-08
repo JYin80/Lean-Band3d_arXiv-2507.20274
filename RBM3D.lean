@@ -352,6 +352,7 @@ import RBM3D.Graph.LWExpCertS1
 import RBM3D.Graph.LWExpSim
 import RBM3D.Induction.QEndB1
 import RBM3D.Graph.LWMomExpD
+import RBM3D.Universality.GUEPhase.Grid
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
