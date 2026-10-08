@@ -1108,3 +1108,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (6) 排队（4 槽：T2333 在跑）：**T2332（修正后）→ T2334（T2318 合并、检查编译通过后）→ T2335 → T2336**。之后：S5-26 等 T2333 合并（用其引擎）；LW-16 下一张（先核 0838 O3）；T2297 Amend 等 T2332。
 - (7) 计数（宽口径）：ST-4 34/35、LW 45/48–49、UN 45/65、BA 31（阶段 P 已开 3/6）、MA 7/8。下一张票号 T2337。
 
+## §149 — LW-14 闭合、Step 6 证出；BA-P5、ST-D6 放行（总调度，2026-10-08 13:50 UTC）
+
+- (1) **合并**：T2318 = LW-14e-4（a2c8dd6，签字的 `IsExtCls` 结构行；`LWG5Expand` → superseded）；**T2334 = LW-14f**（8a62117）：`lwGraphPrecJoin_holds`、`lwExpG5'_holds`、`lwCutExp_holds`、`lwTermEXP_holds`、**`stStep6I/II/III_holds`**，登记删 `LWtermEXP`、`LWCutExp`、`LWExpG5'`、`STStep6I/II/III` 六行。**LW-14 闭合；Step 6（ST-5）闭合**：ST-5 计 17 张，计划中的第 18 行（Step 6 收尾）由 LW-14f 完成，不再另开。T2335 = BA-P4b（d002ba6，`kBA_le`）。
+- (2) `ST_mainInd_of_pins'` 剩下的前提：`STStep2`（← `STLWT` ← LW-01 链，C6）、`STStep5I`（S5-15 = T2333 1b 中；`STEtermsMid` ← `STLWT`）、`STStep5II`（S5-26，等 T2333 的引擎）。
+- (3) **放行（自写，不用 Fable）**：
+  - **T2338 = ST-D6**（仅报告，prover-max 设计；报告 ≤ 400 行 + 分支上的探针钉文）：从 `STMainInd`（一步 `s → t`）到 `UNMLOut`（每个时间序列 `t_n ≤ lemT z_n` 上的 `ML:GLoop`、`ML:GLoop_expec`、`ML:GtLocal`）：基例 `t = 0`（`G_0 = M`，`𝓛 = 𝒦`）、归纳闭合（结论里有没有下一步要的 `STLocalMax`）、有限时间链与对任意序列的一致性、对消费者 `UNMLOut`/`MAFixed` 的形状核对、路线 G（载体通用，BA 用 `UNMLOutBA` 实例化）的成本、拆行。候选目标 `∀ d, STMainInd d → UNMLOut d`。它在 UN-51/52、MA-06 的关键路径上。
+  - **T2337 = BA-P5**（`BA/Prop5.lean`，prover-hard，800/1000/1400）：`BAProp5mixed`、`BAProp8mixed`（`BAProp5`/`BAProp8` 加 `σ₁ ≠ σ₂`）；照搬 `Prop5Hold`，`kProd ↦ kBA`、`lgGam ↦ t g²`；混合电荷时矩阵就是 `K`，带状的「性质 4 化为实 `Θ`」一步不需要；`LGConvA/B/C` 按 `γ = t g²` 重述。登记不动（P8 收尾）。
+  - 排队（T2332、T2333、T2336 在跑）：**T2338 先**（ST 关键路径，§145），**T2337 次**。
+- (4) 计数（宽口径）：ST-4 34/35、ST-5 闭合、ST-6 2/设计、LW 45/48–49、UN 45/65、BA 32（阶段 P 4/6 已放）、MA 7/8。下一张票号 T2339。
+
