@@ -1163,3 +1163,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) 计数（宽口径）：LW 47（T2344 计入；计划 48 = + LW-01；切分则 49）；ST-6 3/4；UN 46/64；BA 33；MA 7/8。下一张票号 T2345。
 - (6) 排队：空位 1 个（T2340、T2341 等合并占着）→ **T2344 立即放行**。T2340、T2341 合并后：BA-P8（T2341 后）与 UN-36/37（T2343 后）。§145 顺序：LW/ST/UN 先于 BA。
 
+## §155 — T2340、T2341 合并；T2343 审核 PASS；UN-36、UN-37 = T2345、T2346（并行）（总调度，2026-10-08 20:54 UTC）
+
+- (0) **合并**：T2340 = ST-6 R1–R3（03ec112：`Induction/MainIndBase/Chain/Out`，`stMainInd_of_LW`、`unMLOut_of_LW`；登记按审核 O1 三方合入）；T2341 = BA-P6（37426e6：`baPropUnit1mixed_holds`、`baPropUnit2mixed_holds`；`Prop5.lean` 只删 8 个 `private`，脚本核过）。T2343 = UN-34 审核 PASS（`OneStep.lean` 差分只删 `private`，审核脚本 + 中枢复核 21/21，监督 1942 O3 已满足），正在合并。T2344 = LW-13b-2 在 1a（设计）。
+- (1) **UN 关键链**：按 RBM2D 导入关系，`DuhamelA → DuhamelB → DuhamelC → PathBounds → RandomLayerB → UN-52` 是最长的一条，先开。`DuhamelA`（1985 行）的 §5–§7 只通过 `Duhamel_contDiffAt_loop` 一处用到 §1–§4，所以按依赖切成两个文件**并行**：**UN-36 = T2345**（`GUEPhase/DuhamelA1`，§1–§4，`prover-hard`，1000 / 1150 / 1400，停止线 1600；`Duhamel_contDiffAt_loop` 公开）与 **UN-37 = T2346**（`GUEPhase/DuhamelA2`，§5–§7，`prover-hard`，900 / 1050 / 1300，停止线 1500；自己重推 `Duhamel_contDiffAt_loop`，私有前缀 `DuhamelA2_`，`Duhamel_gueH_succ` 不搬，用已合并的 `gueH_succ`）。计划行数不变（portmap 本来就是 UN-36/37 两行）。
+- (2) 钉文：T2345 钉三条（`Duhamel_vGue_le`、`Duhamel_loopMax_le_crude`（`d` 行 `(L W)^d`）、`Duhamel_vGue_gradMat_le`）；其余目标按移植表翻译，证明报告给出翻译表，审核逐行核对（移植票的做法，§155 定）。
+- (3) 其他可并行的 UN 行（导入已齐）：UN-43 `EntryGrid`、UN-44 `Eq729A`、UN-48 `HypA`、UN-45/46 `OneLoop`（风险行）、`LLTransfer`（UN-50 的一半）、`QUEFlow`（UN-52 的一半）。下一个空位：UN-43 或 BA-P8（§145：UN 先）。
+- (4) 计数（宽口径）：UN 48/64（T2345、T2346 计入）；LW 47；ST-6 3/4；BA 33（阶段 P 余 P8）；MA 7/8。下一张票号 T2347。
+
