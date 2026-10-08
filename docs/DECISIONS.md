@@ -972,3 +972,16 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **S3-25 = T2320**（`Induction/Step3.lean`，prover-hard，600/800/1100）。论文在 case (i) 内以 `1-u = ilambda²` 再分（`3_5:1384`：`1-s > ilambda²` 时由 `(lRB1)` 直接得；其余靠 `lem:iterations`），且加中间时刻（`3_5:1105` 脚注）；形式化里 Steps 2–5 不能加中间时刻（§68 (9)），而 `ST_mainIndR_of_steps`（`MainIndRegimes.lean:165`）对 Step 3/4 的区域 `R34 ⊇ R` 是泛型的。所以 S3-25 证三个区域钉：`STStep3R d STReg5III`（`(lRB1)` + `((1-s)/(1-u))B_s ≤ 4B_u`，纯实代数）、`STStep3R d STReg5I`（迭代，`STReg5I = STRegIterI`）、`STStep3II d`（迭代 case (ii)）。探针骨架 `st_step3_skeleton`（`3c58211`）私有移植。删 owed `STStep3II`。
 - (3) `STStep3I`（case (i) 含跨 `ilambda²` 的 `[s,t]`）不作目标：S3-26 加带撇组装 `ST_mainIndR_III/I_of_steps'`（吃区域钉）后，登记把 `STStep3I`、`STStep4I` 标为 superseded。路线与 §68 (9) 一致，不改已合并文件；REQ 下次告知监督。
 - (4) 下一张票号 T2321（S3-26），然后 UN-31 `Proc`。
+
+## §133 — S3-26 = T2321：`STStep4I/II` + 带撇总组装 `ST_mainInd_of_pins'`（总调度，2026-10-08 03:15 UTC）
+
+- (1) Step 4 不分区域：`STStep4R d R` 以 Step 3 的结论 `STLmaxU` 为前提，`STXiBoot'` 在 case (i)（`stOeqQt'_holds`）与 case (ii)（`stOeqQtNZ'_holds`）全域已证，故直接证 owed 的 `STStep4I`、`STStep4II`（探针骨架 `st_step4_skeleton` 换成 R2* 的 `STXiBoot'`，首项 `B_s^{-1/(4p)}` 由 `st_Bctl_ge` 吸收）。
+- (2) **T2321**（`Induction/Step4.lean`，prover-hard，450/600/850）另加 `ST_mainInd_of_pins'`：同 `ST_mainInd_of_pins`（`MainIndRegimes.lean:674`），但 Step 3 用区域钉 `STStep3R · STReg5III`、`STStep3R · STReg5I`、`STStep3II`（作前提，不 import T2320 的文件，两票并行），Step 4 用本票定理；区域 (iii)/(i) 走 `ST_mainIndR_of_steps d R R`。
+- (3) 登记：T2321 删 owed `STStep4I`、`STStep4II`，把 `STStep3I` 从 owed 移到 superseded（被区域钉 + `ST_mainInd_of_pins'` 取代；定义保留）；T2320 只删 `STStep3II`，不碰 `STStep3I`。合并顺序 T2320 先于 T2321（共享 `Axioms.lean` 的锚文本）。
+- (4) T2320 + T2321 合并后 ST-3 47/47（计划 47）；最终把三个 Step-3 定理代入 `ST_mainInd_of_pins'` 归 ST-6（ST-D6 未写）。下一张票号 T2322（UN-31 `Proc`）。
+
+## §134 — UN-31 `Proc` 拆两张：T2322 = UN-31a（`:1-860`），T2323 = UN-31b（`gueKproc_detDom`）（总调度，2026-10-08 03:20 UTC）
+
+- (1) RBM2D `GUEPhase/Proc.lean` 1424 行，按已合并兄弟票的放大比（×1.01–×1.74）整张 1450/1750/2400，超 1500。源文件在 `:860/:862` 有干净切缝：前半只用已合并名字；后半 `KprocDom`/`KprocInput` 用 RBM2D 的 K-loop 机器（`KLoop.Kcal`、`Mt`、`Par`、`Kbound_prec_uncond`、`kloop_Mt_eq`、`scaleM`、`size_eq`），RBM3D 无对应，须走 `STKbound` 路线（先例 `GridDriftN.lean:54`、`GridEnvelopeN.lean:38`）。
+- (2) **T2322 = UN-31a**（`Universality/GUEPhase/Proc.lean`，prover-hard，900/1050/1450）：11 个定义（check §2 原文，按 Grid 的换名规则译成 d 维）、结构事实、loop 最大值事实、`norm_egtNGUE_le`、`gueDev_succ_le`；d 敏感的 `gue_inv_W_le_loopMax`、`norm_egtNGUE_le` 由预检 (i) 写出 d 维陈述（经 `inv_N_le_maxLoopPM`、`ellT_eq_L`）。**T2323 = UN-31b**（`GUEPhase/ProcK.lean`）T2322 合并后写。UN 计划 +1（上限 65 内）。
+- (3) 放行顺序：T2320 → T2321 → T2322 → T2315（ST-3 关键路径先）。下一张票号 T2324（T2323 已占）。
