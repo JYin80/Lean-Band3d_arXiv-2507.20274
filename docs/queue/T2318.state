@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS (claude-opus-5-5, t/T2318 at 4eda3d2); IsExtCls registry line signed off (H134); merged under rule (A); certificate modules not rebuilt (main oleans reused, H101); full lake build 4143 jobs
+updated: Thu Oct  8 13:04:37 UTC 2026
+reports: docs/reports/T2318-prove.md, docs/reports/T2318-audit.md
