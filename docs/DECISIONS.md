@@ -1080,3 +1080,18 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) **REQ-2026-10-08-1100**（计划中的 LW 43、UN 45 说明）：L1 问 T2318 之后的顺序（LW-14f 先，因 `STLWT` 是 T2328 唯一未证前提、Step 6 等 `LWtermEXP`）及 LW-02 = T2297 能否带 Amend 重开；U1 问 UN 余 20 行（计划正好到上限 65）的路线信号。
 - (5) 计数（宽口径，含已放行）：ST-4 33/35、LW 43/48（上限 50）、UN 45/65（上限 65）、BA 29（不设上限；阶段 P 计划 +6）、MA 7/8。下一张票号 T2332。
 
+## §147 — 监督 1143：LW 两条路（C6/C7）；放 LW 引擎 T2332、S5-15 T2333；UN 外推告知 Jun（总调度，2026-10-08 11:52 UTC）
+
+- (1) **合并**：T2328 = S5-13（7b9fefe，`stEtermsMid_of_LWT`）→ ST-4 S5-15 可写。T2329 1a PASS（§145 (3) 的 `u` 一致化路线过预检），1b 中；T2330 1a PASS（两处 `d` 行确认），1b 中；T2331 排队。**流程注**：T2328 写到 1757 行，超过停止线 1500 没停（审核 O2）；以后票里写明「停止线有约束力」，T2333 起照写。
+- (2) **监督 1143（REQ-1100）PASS，改正 C6、C7**，照办：
+  - C6：LW-14f 产出 `LWtermEXP`（期望界，给 Step 6 三区域），**不产出** `LWtermExp`（`≺` 界，`STLWT_of_LWtermExp`、`ST_step2_of_pinsLW'` 用的）。`LWtermExp` ← LW-01 ← LW-13b ← LW-02 = T2297，LW-16（`LWtermExpN`）并行。§145 (2)、(5) 里「`STLWT` 经 LW-14f」那句改正为此。
+  - C7：`m` 无关展开引擎不存在（`lw_localregular` 在 `∃ outs errs` 前固定 `m`），是计划内的一行（0838 表「Engine 1」），T2297 不能只靠 Amend 重开；LW-16 也是计划内行，REQ 漏列。
+  - 新顺序：① **引擎现在写，与 T2318 并行** → ② T2318 合并后 LW-14f → ③ LW-16 有空位就写（先做 0838 O3：`tailW` 类 `LWPsiRel` 在 `1-t ≤ ĝ²/L²` 区域是确定性的）→ ④ T2297 带 Amend 重开（引擎作展开输入；F2 用 `Ψ' := max(Φ n 0)(W^{-d/2})`）→ ⑤ LW-13b-2 → ⑥ LW-01。计数 48–49，尾部 50–52，**很可能在 LW-01 到 50**：LW-01 票要带「前提 ↔ 已合并生产者」表，供到 50 时 TEAM §6 复核（O2）。
+  - O3（UN）：外推 **68–71 > 上限 65**（风险行 UN-47 `Eq729B`、UN-38 `DuhamelB`、UN-45/46 `OneLoop`；UN-51/52 还等 ST-D6）。照监督意见**现在告诉 Jun 一次，作信息，不提问**；首次拆分前写 REQ。
+  - O4（UN 接口）：`hellN` 由 0944 的零模估计 `∀ᶠ n` 推出，不由 O4 的 `hell` 逐点推（`ilambda` 可大于 1）。T2330 不改；`Bounds_path` 的消费者（UN-50/51）照此。
+- (3) **放行（自写，不用 Fable）**：
+  - **T2332 = LW 引擎**（`Graph/LWEngine.lean`，prover-max，900/1200/1700）：`lw_localregularX : ∀ p c, 0 < c → ∀ K0 d D, ∃ outsX errsX, ∀ m ≠ 0, LWLocRegConcl … (outsX.map (lwEvX m)) (errsX.map (lwEvX m)) ∧ (每个图 ≥ p 条黑波浪边)`；`LWLocRegConcl` 逐字取 `lw_localregular` 的结论；递归仿 `lvl1_exists_aux`（WF + 截断），不用 `expandG`；预检 (ii) 查候选选择不读系数。
+  - **T2333 = S5-15**（`Induction/DuhamelI.lean`，prover-max，1100/1400/1900）：`stDuhamelI_holds : ∀ d, STDuhamelI d`；网格 Duhamel（`stGridRepN_holds`）+ 核估计（S5-14）+ 误差项（`STEtermsMidConcl` 是钉的前提）+ `𝒰` 加权 Azuma + 指数闭合 `ρA^{-1/3}, ρA^{-1/2}, ρ³A^{-1/4} ≤ A^{-1/5}`；网格→模型转移照 Step 2（`ST_good_engine`/`ST_good_prob`），预检 (v) 点名；公开 `stDuhamelConcl_engine`（一般 `Q`、`P`）给 S5-26 用；登记删 `STDuhamelI` 行。
+  - 排队顺序（4 槽全满：T2318、T2326、T2329、T2330）：**T2332 → T2333 → T2331**（§145：ST/LW 先于 BA；引擎在 `STLWT` 长链之首）。
+- (4) 计数（宽口径）：ST-4 34/35、LW 44/48–49（尾 50–52）、UN 45/65（外推 68–71）、BA 29、MA 7/8。下一张票号 T2334。
+
