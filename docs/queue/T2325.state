@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5); report-only design probe merged (prove, portmap, audit reports and state); probe RBM3D/Probe/T2325BAGen.lean stays on t/T2325 at 05b9293
+updated: Thu Oct  8 07:35:59 UTC 2026
+reports: docs/reports/T2325-prove.md, docs/reports/T2325-portmap.md, docs/reports/T2325-audit.md
