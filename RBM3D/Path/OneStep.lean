@@ -848,7 +848,7 @@ private theorem OneStep_w0_cons (R : Bool → Matrix n n ℂ) (Ei : ι → Matri
     (l : List (Bool × ι)) :
     OneStep_w0 R Ei (p :: l) = R p.1 * Ei p.2 * OneStep_w0 R Ei l := rfl
 
-private theorem OneStep_norm_one_le : ‖(1 : Matrix n n ℂ)‖ ≤ 1 := by
+theorem OneStep_norm_one_le : ‖(1 : Matrix n n ℂ)‖ ≤ 1 := by
   rw [Matrix.cstar_norm_def, map_one]
   exact ContinuousLinearMap.norm_id_le
 
@@ -1176,7 +1176,7 @@ private theorem OneStep_w1_smul (c : ℝ) (D : Bool → Matrix n n ℂ) (l : Lis
         smul_neg]
 
 /-- `D ↦ w1 R D` is real-linear. -/
-private def OneStep_w1Lin (R : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ)
+def OneStep_w1Lin (R : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n ℂ)
     (l : List (Bool × ι)) : (Bool → Matrix n n ℂ) →ₗ[ℝ] Matrix n n ℂ where
   toFun D := OneStep_w1 R D Ei l
   map_add' D₁ D₂ := OneStep_w1_add D₁ D₂ l
@@ -1185,13 +1185,13 @@ private def OneStep_w1Lin (R : Bool → Matrix n n ℂ) (Ei : ι → Matrix n n 
 variable {X : Type*} [TopologicalSpace X] {Rt : X → Bool → Matrix n n ℂ}
   {D : Bool → Matrix n n ℂ}
 
-private theorem OneStep_continuous_w0 (h : ∀ σ, Continuous fun x => Rt x σ)
+theorem OneStep_continuous_w0 (h : ∀ σ, Continuous fun x => Rt x σ)
     (l : List (Bool × ι)) : Continuous fun x => OneStep_w0 (Rt x) Ei l := by
   induction l with
   | nil => exact continuous_const
   | cons p l ih => exact (((h p.1).mul continuous_const).mul ih)
 
-private theorem OneStep_continuous_w1 (h : ∀ σ, Continuous fun x => Rt x σ)
+theorem OneStep_continuous_w1 (h : ∀ σ, Continuous fun x => Rt x σ)
     (l : List (Bool × ι)) : Continuous fun x => OneStep_w1 (Rt x) D Ei l := by
   induction l with
   | nil => exact continuous_const
@@ -1201,7 +1201,7 @@ private theorem OneStep_continuous_w1 (h : ∀ σ, Continuous fun x => Rt x σ)
       exact ((hr1.mul continuous_const).mul (OneStep_continuous_w0 h l)).add
         (((h p.1).mul continuous_const).mul ih)
 
-private theorem OneStep_continuous_w2 (h : ∀ σ, Continuous fun x => Rt x σ)
+theorem OneStep_continuous_w2 (h : ∀ σ, Continuous fun x => Rt x σ)
     (l : List (Bool × ι)) : Continuous fun x => OneStep_w2 (Rt x) D Ei l := by
   induction l with
   | nil => exact continuous_const
@@ -1261,7 +1261,7 @@ private theorem OneStep_hasDerivAt_line (M A : Matrix n n ℂ) (t : ℝ) :
 omit [Fintype n] [DecidableEq n] in
 /-- A real multiple of a Hermitian matrix added to a Hermitian matrix is Hermitian
 (`RBM2D/Gauss/Envelope.lean:268`). -/
-private theorem OneStep_isHermitian_add_realSmul {M A : Matrix n n ℂ} (hM : M.IsHermitian)
+theorem OneStep_isHermitian_add_realSmul {M A : Matrix n n ℂ} (hM : M.IsHermitian)
     (hA : A.IsHermitian) (s : ℝ) : (M + (s : ℂ) • A).IsHermitian := by
   refine hM.add ?_
   change Matrix.conjTranspose ((s : ℂ) • A) = (s : ℂ) • A
@@ -1275,17 +1275,17 @@ variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- The first jet `tr w1` of the loop functional with resolvent data `Gres H z` and directions
 `D`. -/
-private def OneStep_J1 (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ)
+def OneStep_J1 (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ)
     (D : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ) (I : Loop.LoopIdx (Zd d L)) : ℂ :=
   Matrix.trace (OneStep_w1 (fun σ => Gres H z σ) D (Eblk d L W) (I.σ.zip I.a))
 
 /-- The second jet `tr w2` of the loop functional. -/
-private def OneStep_J2 (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ)
+def OneStep_J2 (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ)
     (D : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ) (I : Loop.LoopIdx (Zd d L)) : ℂ :=
   Matrix.trace (OneStep_w2 (fun σ => Gres H z σ) D (Eblk d L W) (I.σ.zip I.a))
 
 /-- The spectral direction of the factor `G(σ)`: `m_σ · 1`. -/
-private def OneStep_Dsp (d L W : ℕ) (E : ℝ) :
+def OneStep_Dsp (d L W : ℕ) (E : ℝ) :
     Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ :=
   fun σ => spectralMSign E σ • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)
 
@@ -1302,7 +1302,7 @@ private theorem OneStep_hasDerivAt_lineR (hH : H.IsHermitian) (hB : B.IsHermitia
   simpa using this
 
 /-- First derivative of the loop functional along a Hermitian line. -/
-private theorem OneStep_hasDerivAt_line0 (hH : H.IsHermitian) (hB : B.IsHermitian) {z : ℂ}
+theorem OneStep_hasDerivAt_line0 (hH : H.IsHermitian) (hB : B.IsHermitian) {z : ℂ}
     (hz : z.im ≠ 0) (I : Loop.LoopIdx (Zd d L)) (y : ℝ) :
     HasDerivAt (fun s : ℝ => loopL d L W (H + (s : ℂ) • B) z I)
       (OneStep_J1 (H + (y : ℂ) • B) z (fun _ => B) I) y :=
@@ -1311,7 +1311,7 @@ private theorem OneStep_hasDerivAt_line0 (hH : H.IsHermitian) (hB : B.IsHermitia
       (Ei := Eblk d L W) (OneStep_hasDerivAt_lineR hH hB hz y) (I.σ.zip I.a))
 
 /-- Second derivative of the loop functional along a Hermitian line. -/
-private theorem OneStep_hasDerivAt_line1 (hH : H.IsHermitian) (hB : B.IsHermitian) {z : ℂ}
+theorem OneStep_hasDerivAt_line1 (hH : H.IsHermitian) (hB : B.IsHermitian) {z : ℂ}
     (hz : z.im ≠ 0) (I : Loop.LoopIdx (Zd d L)) (y : ℝ) :
     HasDerivAt (fun s : ℝ => OneStep_J1 (H + (s : ℂ) • B) z (fun _ => B) I)
       (OneStep_J2 (H + (y : ℂ) • B) z (fun _ => B) I) y :=
@@ -1333,7 +1333,7 @@ private theorem OneStep_hasDerivAt_specR (hH : H.IsHermitian) {E v : ℝ}
   refine this.congr_deriv ?_
   cases σ <;> simp [OneStep_Dsp, spectralMSign]
 
-private theorem OneStep_hasDerivAt_spec0 (hH : H.IsHermitian) {E v : ℝ}
+theorem OneStep_hasDerivAt_spec0 (hH : H.IsHermitian) {E v : ℝ}
     (hv : (zt E v).im ≠ 0) (I : Loop.LoopIdx (Zd d L)) :
     HasDerivAt (fun s : ℝ => loopL d L W H (zt E s) I)
       (OneStep_J1 H (zt E v) (OneStep_Dsp d L W E) I) v :=
@@ -1341,7 +1341,7 @@ private theorem OneStep_hasDerivAt_spec0 (hH : H.IsHermitian) {E v : ℝ}
     (OneStep_hasDerivAt_w0 (Rt := fun s σ => Gres H (zt E s) σ)
       (D := OneStep_Dsp d L W E) (Ei := Eblk d L W) (OneStep_hasDerivAt_specR hH hv) (I.σ.zip I.a))
 
-private theorem OneStep_hasDerivAt_spec1 (hH : H.IsHermitian) {E v : ℝ}
+theorem OneStep_hasDerivAt_spec1 (hH : H.IsHermitian) {E v : ℝ}
     (hv : (zt E v).im ≠ 0) (I : Loop.LoopIdx (Zd d L)) :
     HasDerivAt (fun s : ℝ => OneStep_J1 H (zt E s) (OneStep_Dsp d L W E) I)
       (OneStep_J2 H (zt E v) (OneStep_Dsp d L W E) I) v :=
@@ -1376,7 +1376,7 @@ private theorem OneStep_data {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     fun a => OneStep_norm_Eblk_le_one a⟩
 
 /-- `‖J1‖ ≤ N k K^{k+1} b`. -/
-private theorem OneStep_norm_J1_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+theorem OneStep_norm_J1_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH : H.IsHermitian) {z : ℂ} {η : ℝ} (hη : 0 < η) (hz : η ≤ |z.im|)
     {D : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ} {b : ℝ} (hb : 0 ≤ b)
     (hD : ∀ σ, ‖D σ‖ ≤ b) {I : Loop.LoopIdx (Zd d L)} (hwf : I.WF) :
@@ -1388,7 +1388,7 @@ private theorem OneStep_norm_J1_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (mul_le_mul_of_nonneg_left h (Nat.cast_nonneg _))
 
 /-- `‖J2‖ ≤ N k (k+1) K^{k+2} b²`. -/
-private theorem OneStep_norm_J2_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+theorem OneStep_norm_J2_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH : H.IsHermitian) {z : ℂ} {η : ℝ} (hη : 0 < η) (hz : η ≤ |z.im|)
     {D : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ} {b : ℝ} (hb : 0 ≤ b)
     (hD : ∀ σ, ‖D σ‖ ≤ b) {I : Loop.LoopIdx (Zd d L)} (hwf : I.WF) :
@@ -1415,7 +1415,7 @@ private theorem OneStep_diff {H₁ H₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ}
   exact mul_le_mul_of_nonneg_right h2 (norm_nonneg _)
 
 /-- `‖J1(H₁) - J1(H₂)‖ ≤ N k (k+1) K^{k+2} b ‖H₁ - H₂‖`. -/
-private theorem OneStep_norm_J1_sub_le {H₁ H₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+theorem OneStep_norm_J1_sub_le {H₁ H₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH₁ : H₁.IsHermitian) (hH₂ : H₂.IsHermitian) {z : ℂ} {η : ℝ} (hη : 0 < η)
     (hz : η ≤ |z.im|)
     {D : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ} {b : ℝ} (hb : 0 ≤ b)
@@ -1432,7 +1432,7 @@ private theorem OneStep_norm_J1_sub_le {H₁ H₂ : Matrix (Vtx d L W) (Vtx d L 
   exact this.trans (mul_le_mul_of_nonneg_left h (Nat.cast_nonneg _))
 
 /-- `‖J2(H₁) - J2(H₂)‖ ≤ N k (k+1) (k+2) K^{k+3} b² ‖H₁ - H₂‖`. -/
-private theorem OneStep_norm_J2_sub_le {H₁ H₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+theorem OneStep_norm_J2_sub_le {H₁ H₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH₁ : H₁.IsHermitian) (hH₂ : H₂.IsHermitian) {z : ℂ} {η : ℝ} (hη : 0 < η)
     (hz : η ≤ |z.im|)
     {D : Bool → Matrix (Vtx d L W) (Vtx d L W) ℂ} {b : ℝ} (hb : 0 ≤ b)
@@ -1495,7 +1495,7 @@ private theorem OneStep_norm_Xentry_le (ω : Ω d L W) (i j : Idx d L W) :
   · rw [Complex.norm_real, Real.norm_eq_abs]
     linarith
 
-private theorem OneStep_sum_coord (f : CoordF d L W → ℝ) :
+theorem OneStep_sum_coord (f : CoordF d L W → ℝ) :
     ∑ c : CoordF d L W, f c = ∑ i : Idx d L W, ∑ j : Idx d L W, (f (i, j, true) + f (i, j, false)) := by
   rw [Fintype.sum_prod_type]
   refine Finset.sum_congr rfl fun i _ => ?_
@@ -1504,7 +1504,7 @@ private theorem OneStep_sum_coord (f : CoordF d L W → ℝ) :
   rw [Fintype.sum_bool]
 
 /-- `‖X‖ ≤ 2 Σ_c |ω_c|`, in block coordinates. -/
-private theorem OneStep_norm_blockMat_Xmat_le (ω : Ω d L W) :
+theorem OneStep_norm_blockMat_Xmat_le (ω : Ω d L W) :
     ‖blockMat d L W (Xmat d L W ω)‖ ≤ 2 * ∑ c : CoordF d L W, |ω c| := by
   refine (OneStep_norm_le_sum_entries _).trans ?_
   have hent : ∑ p : Vtx d L W, ∑ q : Vtx d L W, ‖blockMat d L W (Xmat d L W ω) p q‖
@@ -1594,7 +1594,7 @@ private theorem OneStep_sum_gvar_le :
     _ = 2 * (Fintype.card (Idx d L W) : ℝ) := by simp
 
 /-- `|Idx| = (W L)^d`. -/
-private theorem OneStep_card_Idx : (Fintype.card (Idx d L W) : ℝ) = (((W * L) ^ d : ℕ) : ℝ) := by
+theorem OneStep_card_Idx : (Fintype.card (Idx d L W) : ℝ) = (((W * L) ^ d : ℕ) : ℝ) := by
   rw [card_Idx]
 
 /-! ### First absolute moments of the Gaussian coordinates -/
@@ -1622,7 +1622,7 @@ private theorem OneStep_integral_abs_coord_le (c : CoordF d L W) :
   have := OneStep_gvar_le_one g c
   linarith
 
-private theorem OneStep_continuous_blockMat :
+theorem OneStep_continuous_blockMat :
     Continuous (blockMat d L W : Matrix (Idx d L W) (Idx d L W) ℂ →
       Matrix (Vtx d L W) (Vtx d L W) ℂ) :=
   continuous_id.matrix_submatrix _ _
