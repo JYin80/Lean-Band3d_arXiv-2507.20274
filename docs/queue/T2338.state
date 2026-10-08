@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5); report-only design merged (prove, design, audit reports and state); probe stays on t/T2338 at 854aa29; stage 1b rerun under rule H after the usage-limit error
+updated: Thu Oct  8 17:07:40 UTC 2026
+reports: docs/reports/T2338-prove.md, docs/reports/T2338-design.md, docs/reports/T2338-audit.md
