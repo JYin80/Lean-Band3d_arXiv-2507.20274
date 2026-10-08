@@ -122,8 +122,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STOeqNQ, -- `lem:STOeq_NQ` (DECISIONS §25)
    `RBM.Gauss.Sizes.STXiBoot, -- `(am;asoi222)` (`3_5:1366`), the conclusion of `lem:STOeq_Qt` and `lem:STOeq_Qt_nonzero`: S3-18b, S3-22; hypothesis of `iterationsA_step` (T2087)
    `RBM.Gauss.Sizes.STXiBoot', -- `(am;asoi222)` at `B_s` (DECISIONS §80): S3-18b, S3-22; hypothesis of `STIterR'`; hypothesis of `iterationsB_step` (T2259); concluded from `STXiRound'` by `stXiBootR_of_round` (T2304)
-   `RBM.Gauss.Sizes.STOeqQt', -- `lem:STOeq_Qt`, R2* (DECISIONS §80): S3-18b; S3-18b2 via `stXiBootR_of_round d STCaseI` (T2304)
-   `RBM.Gauss.Sizes.STXiRound', -- one round of `(am;asoi222)` with the current-length control (T2304); premise of `stXiBoot'_of_round`, `stXiBootR_of_round`; case (ii) proved by `stXiRoundNZ_holds` (T2304); case (i): S3-18b2; no generic proof
+   `RBM.Gauss.Sizes.STXiRound', -- one round of `(am;asoi222)` with the current-length control (T2304); premise of `stXiBoot'_of_round`, `stXiBootR_of_round`; case (ii) proved by `stXiRoundNZ_holds` (T2304); case (i) proved by `stXiRoundQt_holds` (T2314); no generic proof
    `RBM.Gauss.Sizes.STIterR', -- generic setting of `lem:iterations` over `STXiBoot'` (DECISIONS §80); proved at both regimes by T2259 (`stIterations'_holds`, `stIterationsII'_holds`); no generic proof
    `RBM.Gauss.Sizes.STAvgU, -- `(Gt_avgbound_flow)` uniform in `u ∈ [s,t]` (`1_2:1344`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `iterationsA_avg_of_STAvgU` (T2087)
    `RBM.Gauss.Sizes.STLocalEntryU, -- `(Gt_bound_flow)` uniform in `u ∈ [s,t]` (`1_2:1342`), one of the three parts of `STStep2Concl` (DECISIONS §25): the Step 2 chain; hypothesis of `lemDecCalEPrec_gij`, `lemDecCalEPrec_perTime_bounds` (T2193, DECISIONS §20 rule: owed)
