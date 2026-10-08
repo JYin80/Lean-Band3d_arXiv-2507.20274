@@ -1,5 +1,6 @@
 /-
 T2297 (LW-02, `lem:LW_moment`) check file.  Compiles on `main` (1ba63a2) as is.
+Amend 1 (dispatcher V1, Thu Oct  8 14:52 UTC 2026; DECISIONS §150): `import RBM3D.Graph.LWEngine` and the engine names (T2332, merged 015198c).
 Only imports of merged modules, `open`/`namespace`, pin texts, `#check` of merged names.
 No proofs, no `sorry`, no `by`.
 -/
@@ -9,6 +10,7 @@ import RBM3D.Graph.AuxGraph2
 import RBM3D.Graph.LWExpTerm2
 import RBM3D.Graph.LWSizeClaim
 import RBM3D.Green.IBPPoly
+import RBM3D.Graph.LWEngine
 
 /-! ## 1. Merged names used by the route (namespace of each from its enclosing `namespace … end`) -/
 
@@ -36,6 +38,12 @@ import RBM3D.Green.IBPPoly
 #check @RBM.Gauss.Sizes.STblk             -- :73
 -- `Graph/LocalRegular6d.lean` (37289f6), `namespace RBM.Graph` (`:111-`)
 #check @RBM.Graph.lw_localregular         -- :1107
+-- Amend 1: `Graph/LWEngine.lean` (T2332, 015198c), `namespace RBM.Graph`: the `m`-free expansion
+#check @RBM.Graph.lw_localregularX        -- LWEngine.lean:771
+#check @RBM.Graph.lwEvX                   -- LWEngine.lean:57
+#check @RBM.Graph.LWLocRegConcl           -- LWEngine.lean:61
+#check @RBM.Graph.lw_nWS_ge               -- LWEngine.lean:605
+#check @RBM.Gauss.Sizes.STGavLGEX         -- Induction/Defs.lean:220 (F2: the max bound)
 -- `Graph/LocalRegular.lean` (3bf20e1), `namespace RBM.Graph` (`:109-`)
 #check @RBM.Graph.fxyPowGraph             -- :1354
 #check @RBM.Graph.fxyPowGraph_val_eq      -- :1739

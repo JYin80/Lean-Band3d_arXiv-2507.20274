@@ -1118,3 +1118,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 排队（T2332、T2333、T2336 在跑）：**T2338 先**（ST 关键路径，§145），**T2337 次**。
 - (4) 计数（宽口径）：ST-4 34/35、ST-5 闭合、ST-6 2/设计、LW 45/48–49、UN 45/65、BA 32（阶段 P 4/6 已放）、MA 7/8。下一张票号 T2339。
 
+## §150 — 合并 T2332/T2333/T2337；T2297 Amend 1 重开；S5-26 放行；T2338 检查文件修正（总调度，2026-10-08 14:49 UTC）
+
+- (1) **合并**：T2332 = LW 引擎（015198c，`lw_localregularX`、`lwEvX`、`LWLocRegConcl`、`lw_nWS_ge`）；T2333 = S5-15（66cfb76，`stDuhamelI_holds`；1994 行，停止线 2000 内；引擎 `stDuhamelConcl_engine` 只做 `Q = ∅`、任意符号类，一般 `Q` 未做——票文允许）；T2337 = BA-P5（dea6588，`baProp5mixed_holds`、`baProp8mixed_holds`，1479 行）。
+- (2) **T2338（ST-D6）检查文件 exit 1**：`UNMLOutBA` 在 `BA/UNPins.lean`，检查文件没引。已加 `import RBM3D.BA.UNPins`，重编译后放行。
+- (3) **T2297 = LW-02，Amend 1**（`docs/tickets/T2297-amend-1.md`；检查文件加一行 import、六行 `#check`，钉文不变）：F1（缺与 `m` 无关的展开列表）由 `lw_localregularX` 解决——在 `z` 之前取一次表，对每个 `n` 在 `m = mE(STflowE z n)` 取值；S1（`nWS ≥ p`）现在是引擎的输出；F2：近对（`GtoAG` 半径内）的 `𝓜_x = 𝓜_y` 输出用最大界 `|f| ≺ η⁻¹Ψ'²`，`Ψ' := max(Φ n 0)(W^{-d/2})`（监督 1143 L1 第 4 项），远对仍用展开。从 1a 新分支重开；LW 计数 +0。
+- (4) **T2339 = S5-26**（`Induction/DuhamelII.lean`，prover-max，900/1200/1700）：`stDuhamelII_holds`；同号 `Q = ∅` 由 `stDuhamelConcl_engine`（`hTTT := Or.inr`）；异号 `Q^{(1)}` 要 `Θ̊` 的两条核估计（`‖Θ̊‖_{∞→∞} ≺ ilambda⁻²L²`、`(uwp2-92kj00)`，由 `prop8ZeroMode_holds`）和 `Φ` 主控的 `Q` 版本（复用 `DuhamelI` 的公开 API）；登记删 `STDuhamelII`。ST-4 最后一张：合并后 ST-4 35/35 闭合。
+- (5) 排队（T2336 在跑，3 个空位）：**T2338 → T2297 → T2339**，三张同时开。之后：LW-16（先核 0838 O3）、P4c 合并后写 P6、P6 合并后写 P8。
+- (6) 计数（宽口径）：ST-4 35/35、ST-6 2/设计、LW 45/48–49、UN 45/65、BA 32、MA 7/8。下一张票号 T2340。
+
