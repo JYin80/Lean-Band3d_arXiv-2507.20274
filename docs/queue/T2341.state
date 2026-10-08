@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5, t/T2341 at 9a65c58); Prop5.lean only the 8 `private` deletions (script); merged under rule (A) with T2340, full lake build 4157 jobs (both)
+updated: Thu Oct  8 20:35:11 UTC 2026
+reports: docs/reports/T2341-prove.md, docs/reports/T2341-audit.md

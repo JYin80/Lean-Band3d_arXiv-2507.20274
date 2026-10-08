@@ -75,15 +75,15 @@ def BAProp8mixed (d : ℕ) (Λ κ : ℝ) : Prop :=
 
 /-- `γ = t g²`: the diffusion constant of `1 - tK` in the time `τ = γ s` (the band has
 `t g² / (1 + 2dg²)`). -/
-private noncomputable def baP5Gam (g t : ℝ) : ℝ := t * g ^ 2
+noncomputable def baP5Gam (g t : ℝ) : ℝ := t * g ^ 2
 
 /-- `ε = e / γ`, the parameter that decides the regime. -/
-private noncomputable def baP5Eps (g t : ℝ) : ℝ := (1 - t) / baP5Gam g t
+noncomputable def baP5Eps (g t : ℝ) : ℝ := (1 - t) / baP5Gam g t
 
-private lemma baP5_gam_pos {g t : ℝ} (hg : 0 < g) (ht : 0 < t) : 0 < baP5Gam g t := by
+lemma baP5_gam_pos {g t : ℝ} (hg : 0 < g) (ht : 0 < t) : 0 < baP5Gam g t := by
   unfold baP5Gam; positivity
 
-private lemma baP5_eps_pos {g t : ℝ} (hg : 0 < g) (ht : 0 < t) (ht1 : t < 1) :
+lemma baP5_eps_pos {g t : ℝ} (hg : 0 < g) (ht : 0 < t) (ht1 : t < 1) :
     0 < baP5Eps g t := by
   unfold baP5Eps
   exact div_pos (by linarith) (baP5_gam_pos hg ht)
@@ -129,7 +129,7 @@ private lemma baP5_F_integrable {d L : ℕ} [NeZero L] {g E : ℝ} {m : ℂ} (hg
     _ = _ := mul_one _
 
 /-- For `σ₁ ≠ σ₂` both mixed charges give the matrix `K` (`BAMss_pm_eq`, `BAMss_mp_eq`). -/
-private lemma baP5_Theta_mixed (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (t : ℝ) {σ₁ σ₂ : Bool}
+lemma baP5_Theta_mixed (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (t : ℝ) {σ₁ σ₂ : Bool}
     (h : σ₁ ≠ σ₂) : BATheta d L g E m t σ₁ σ₂ = BATheta d L g E m t true false := by
   cases σ₁ <;> cases σ₂
   · exact absurd rfl h
@@ -138,12 +138,12 @@ private lemma baP5_Theta_mixed (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (t :
   · rfl
   · exact absurd rfl h
 
-private lemma baP5_Theta_zero (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) :
+lemma baP5_Theta_zero (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) :
     BATheta d L g E m 0 σ₁ σ₂ = 1 := by
   simp [BATheta, PropThetaQ]
 
 /-- `Θ_t(0,a) = γ⁻¹ ∫₀^∞ e^{-ετ} kBA(τ,a) dτ`: `BATheta_eq_laplace_kBA` and `τ = γ s`. -/
-private lemma baP5_theta_eq (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g E : ℝ) (m : ℂ) (t : ℝ)
+lemma baP5_theta_eq (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g E : ℝ) (m : ℂ) (t : ℝ)
     (hg : 0 < g) (hS : BASelf d L g (E : ℂ) m) (ht0 : 0 < t) (ht1 : t < 1) (a : Zd d L) :
     BATheta d L g E m t true false 0 a =
       (((baP5Gam g t)⁻¹ * ∫ τ in Ioi (0 : ℝ), Real.exp (-(baP5Eps g t) * τ) * kBA d L g E m τ a
@@ -167,7 +167,7 @@ private lemma baP5_theta_eq (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (g E : ℝ) (m
 
 /-- (L3) = Fable F5 (a) for `γ = t g²`: `min(1/e, 1/γ) ≤ C_Λ/(g² + e)`, `C_Λ = 3 + 2Λ²`.  Regime
 `ε ≥ 1` (`e ≥ γ`) uses `1/e`, regime `ε < 1` uses `1/γ` (and `t > (1 + Λ²)⁻¹` there). -/
-private lemma baP5_convA (Λ : ℝ) (hΛ : 0 < Λ) : ∃ C : ℝ, 0 < C ∧
+lemma baP5_convA (Λ : ℝ) (hΛ : 0 < Λ) : ∃ C : ℝ, 0 < C ∧
     ∀ g t : ℝ, 0 < g → g ≤ Λ → 0 < t → t < 1 →
       (1 ≤ baP5Eps g t → 1 / (1 - t) ≤ C / (g ^ 2 + (1 - t))) ∧
       (baP5Eps g t < 1 → 1 / baP5Gam g t ≤ C / (g ^ 2 + (1 - t))) := by

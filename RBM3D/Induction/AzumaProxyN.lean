@@ -594,7 +594,7 @@ private theorem azumaProxy_STegtM_zero {E : ℝ} (hE : |E| < 2) (I : LoopIdx (Zd
   simp [azumaProxy_STavgErrM_zero sz n hE]
 
 /-- `loopFine - 𝒦 = 0` at `H = 0`, `u = 0`, for loops of length `m ≥ 1`. -/
-private theorem azumaProxy_loopFine_sub_STKloop {E : ℝ} (hE : |E| < 2) {m : ℕ} (hm : 1 ≤ m)
+theorem azumaProxy_loopFine_sub_STKloop {E : ℝ} (hE : |E| < 2) {m : ℕ} (hm : 1 ≤ m)
     (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n)) :
     loopFine d (sz.L n) (sz.W n)
         (0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (zt E 0) σ a

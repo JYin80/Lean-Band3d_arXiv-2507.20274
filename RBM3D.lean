@@ -380,6 +380,7 @@ import RBM3D.BA.KHeatDiff
 import RBM3D.Induction.DuhamelII
 import RBM3D.Graph.LWTermExpN
 import RBM3D.Graph.LWMoment
+import RBM3D.BA.PropUnit
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
