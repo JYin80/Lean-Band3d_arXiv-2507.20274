@@ -1146,3 +1146,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) 排队：H138 放 T2342（LW，先）、T2341（BA）。**下一个空位给 UN-34**（§145：先闭合其他方向；UN 首次拆分前 REQ），P8 等 P6 合并。
 - (6) 计数（宽口径）：ST-4 35/35、ST-6 3/4、LW 46/48–49（T2342 计入）、UN 45/65、BA 33（T2341 计入；阶段 P 余 P8）、MA 7/8。下一张票号 T2343。
 
+## §153 — UN-34 + UN-35 合并为一张 T2343（复用 `Path/OneStep.lean` §1–§4）（总调度，2026-10-08 18:54 UTC）
+
+- (1) RBM2D `GUEPhase/Drift.lean`（HEAD 9e0f275，2067 行）的私有辅助引理是 `Path/OneStep.lean`、`Path/LoopStep.lean` 的拷贝（源文件头自述）；RBM3D 两者都已合并且对 `d` 通用。决定：**UN-34 与 UN-35 合并为一张 T2343**，只移植源 §4 的 GUE 计数与 §5–§13；源 §1–§3（约 650 行：字的射流、沿直线与沿谱路径的圈泛函、它们的界）**复用** `OneStep.lean` §1–§4，删其中被用到的声明的 `private`（同 §151 (2) 改一词路线，报告列清单）。目标 `oneStepEnvelopeGUE`、`gueH_succ`、`condExp_loop_step_gue`、`condExp_loop_drift_gue`（检查文件第 2 节，按带模型孪生 `OneStepEnvelope`、`pathH_succ`、`condExp_loop_step/drift` 定形）。`prover-hard`，1100 / 1350 / 1700，停止线 1900；超线则按预设切分退回 UN-34（§5–§7）/ UN-35（§8–§13）两行。
+- (2) UN 计划 65 → **64**（对监督 1143 外推 68–71 留出一行余量）；这是合并不是拆分，写进 REQ-2026-10-08-1851 B5 告知监督，不阻塞。
+- (3) 排队：H138 后 4 张在跑（T2297、T2340、T2342、T2341）；**T2343 在下一个空位放行，排在一切之前**（H139）。之后 UN-36/37 `DuhamelA` 等 T2343 合并。
+- (4) 计数（宽口径）：UN 46/64（T2343 计入）；其余同 §152。下一张票号 T2344。
+
