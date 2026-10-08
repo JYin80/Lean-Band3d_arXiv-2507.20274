@@ -388,6 +388,7 @@ import RBM3D.Universality.GUEPhase.Drift
 import RBM3D.Universality.GUEPhase.DuhamelA1
 import RBM3D.Universality.GUEPhase.DuhamelA2
 import RBM3D.Universality.GUEPhase.EntryGrid
+import RBM3D.Universality.GUEPhase.DuhamelB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
