@@ -1153,3 +1153,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) 排队：H138 后 4 张在跑（T2297、T2340、T2342、T2341）；**T2343 在下一个空位放行，排在一切之前**（H139）。之后 UN-36/37 `DuhamelA` 等 T2343 合并。
 - (4) 计数（宽口径）：UN 46/64（T2343 计入）；其余同 §152。下一张票号 T2344。
 
+## §154 — 监督 1942 全部 PASS；T2297、T2342 合并；LW-13b-2 = T2344（总调度，2026-10-08 19:55 UTC）
+
+- (0) **合并**：T2342 = LW-16（84cd789，`lwtermExpN_of_LWterm`）；T2297 = LW-02（1546ef7，`lwMoment_holds`，1872 行，停止线 2000 内，未切分）。T2340、T2341 审核 PASS，合并等 H122（T2343 工作树里的证书模块重建占内存）。T2343 1a 中。
+- (1) **监督 2026-10-08-1942：REQ-1851 的 B1–B5 全部无异议，PASS**。B1：C4 按 `max τ 1` 读，P8 同一计算；B2：0838 O3 关闭（另做了无环检查：LW-01 内部顺序 `LWterm → LWtermExpN → LWtermExp`）；B3：ST-D6 签字无异议；B4：已无意义；B5：合并无异议。
+- (2) **C8 / O2（记给 LW-01）**：Step 2 的收尾已由 `stMainInd_of_LW`（T2340）完成，LW-01 **不得**再证 `3 ≤ d → LWterm → LWtermExp → STStep2`；LW-01 范围：`LWReduceB`、`LWReduceT`、`LWterm`、`LWtermB`、`LWtermExpS`、并 `LWtermExp`，加 R4（`stMainInd_holds`、`unMLOut_holds`）和登记删除；保留 1143 O2 的「前提 ↔ 已合并产出者」表，加票内顺序 `LWterm → LWtermExpN（T2342）→ LWtermExp`。
+- (3) **O3（T2343 审核）**：审核必须用脚本核对 `OneStep.lean`/`LoopStep.lean` 的差分只有删 `private`（同 T2341 对 `Prop5.lean` 的核对）。写进 H140，由中枢放进 T2343 第 2 阶段的审核提示。
+- (4) **LW-13b-2 = T2344**（C9/O1：唯一剩下的 LW 链的头）：`lwMomentExp_holds : ∀ d, LWMomentExp d`，`prover-max`，1200 / 1700 / 2400，停止线 2200。**第 1a 阶段即设计**（这是 LW 的风险行）：(A) 无指数衰减区域由 `lwMoment_holds` + B 类给出（论文 `7_8:1602`，同 T2342 的手法）；(B) 指数区域 `f = f^{>ℓ} + f^{≤ℓ}`，远引理用引擎展开 + `lwMomExpFar_and`（`HeadFar` 域声明 `T2289d` 在此证），近引理用 `lwMomExp_near`，并解决 `zdistD`/`zdistInf` 边度量缺口（T2281 S2）。域机制两个候选：监督 REQ-1459 的选项 (i)，或先试**把指示函数吸收进黑边** `S_{a_1a_2} ↦ 1_{far}(a_1) S_{a_1a_2}`（若引擎对黑边矩阵是参数化的，则不需要改词汇）。**预设切分**：1a 中心估计超过 1800 行就切——本票做 (A) + 组装 + 远引理，近引理与登记删除归 **LW-13b-3**（新行）；1a 两个域机制都不成立 → 停在 1a，向监督发 REQ。
+- (5) 计数（宽口径）：LW 47（T2344 计入；计划 48 = + LW-01；切分则 49）；ST-6 3/4；UN 46/64；BA 33；MA 7/8。下一张票号 T2345。
+- (6) 排队：空位 1 个（T2340、T2341 等合并占着）→ **T2344 立即放行**。T2340、T2341 合并后：BA-P8（T2341 后）与 UN-36/37（T2343 后）。§145 顺序：LW/ST/UN 先于 BA。
+
