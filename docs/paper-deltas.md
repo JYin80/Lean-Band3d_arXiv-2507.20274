@@ -1571,3 +1571,6 @@ Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文
 - **D612（T2288a–e）**：见 §107 (3)：`(eq:GGraisesord)`（`B:98-100`）深度 ≥ 1 时不成立；情形 (4)（`B:107-108`）树深 3、余量 0；进展对任意展开顶点成立（树内）；`GtoAG` 的分子事实（`B:84-85`、`7_8:895`）由枚举；叶界为有限内核证书（`B:98`「检查」）（LW-14e-D 设计，4686e08）。
 - **D613（T2305）**：Lemma 2.11（GUE 剖面）在 d≥3 以对一切 `m`（`0 < m.im`）通用的 `loopGenGUEOf` 证出，带状名为 `m = mE E` 情形；RBM2D 的 `HierVocab.LLf` 换成 `loopL d L W (blockMat d L W M) (zt E u)`（在 `sz` 尺寸处与 `STLIM` 定义相等）；只改 `W^{-d}`、`L^{-d}`（UN-28 `Universality/GUEPhase/Generator`，4db5994）。
 - **D614（T2317a，监督 2026-10-08-0344 Q2）**：BA 游走 `p(0,a) = M^{(+,−)}_{0a}`（`A:58-64`）在 `g ∈ [(2C)⁻¹, Λ]` 的非退化论文无出处（只有 `(Mbound_AO)` 下半在 `g < (2C)⁻¹`，`7_8:1891`）；由平均 Ward `N⁻¹Σ|f_i|² = 1`、`m = N⁻¹Σ f_i` 得 `1 − |m|² = Var(f) ≥ 2dg²/R⁴`（`R = 2dg + |E+m|`），配合坐标置换不变性给 `Σ_{b∼0}K_{0b} ≥ c(d,Λ,κ) g²`，一致于 `L`（BA-P3 `BA/KSymbol` 补；陈述为真）。
+- **D615（T2325a）**：BA 的 `lem:LW_moment` 证明（`B:409-497`）只是草图（「carries over verbatim」），Lean 代价是 LW-08、LW-10、LW-11、LW-13 的孪生（按 0.8 约 31k 行）；性质 (6) 在 LW 已需局部合并代价论证（§47），BA 以 `n_A` 代 `n_V` 须复核（BA-DP2，T2325，5d9506a）。
+- **D616（T2325b）**：`LWGtoAG`、`lwClaimSize` 带标量 `M = m I`；BA 需非标量 `M` 下的 `Ǧ = G − M` 界（探针 `scalarM_hyp_fails_at_baD`）（T2325）。
+- **D617（T2325c）**：BA Step 5 的大 `t` 不在论文中，引 `[RBSO1D S7.3]`（`3_5:2284`、`7_8:2101`）（T2325）。

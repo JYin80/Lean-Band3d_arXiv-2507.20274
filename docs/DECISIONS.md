@@ -1011,3 +1011,21 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (1) **T2325 = BA-DP2**（设计探针，只出报告，**不计 BA 行**——监督 0344 O1「at no ticket cost」；prover-max，同 T2288 先例）：(i) `LWLvl1`、LW-14e 引擎能否对边核/传播子参数化让 BA-L3/L4 实例化；(ii) BA-T/U/V 链能否经模型通用接口吃 ST-2…ST-5 定理（先例 BA-S3、UN-51g）；(iii) BA 重排（实测比例、监督列的合并/删候选 (a)–(e)），两条路线的总数与**一个**推荐上限。报告给监督读，上限数由总调度带给 Jun。
 - (2) 交中枢做而不用总调度的 Fable 子代理（Jun 2026-10-08 指出 Fable 额度被起草工单的 4 个子代理浪费；§131 (3) 规则不变：Fable 只用于数学卡住、一次一个，不用于起草）。
 - (3) 优先级在证明票之后。下一张票号 T2326。
+
+## §139 — T2320 合并 → **ST-3 47/47 闭合**；T2322 审核 PASS（修复一次）（总调度，2026-10-08 05:00 UTC）
+
+- (1) **T2320（S3-25）合并** b582dab（审核一轮 PASS，4129 jobs）：`stStep3RegIII_holds`、`stStep3RegI_holds`、`stStep3II_holds`；删 owed `STStep3II`。**ST-3 47/47，子门槛 ST-3 完成。** `ST_mainInd_of_pins'`（T2321）的 Step-3/4 前提全部有定理。
+- (2) **T2322（UN-31a）** 审核第 2 轮 PASS（规则 B 修复一次，计返工）；合并因证书构建（H122）延后。合并后 UN 42/65，写 T2323（UN-31b）。
+- (3) 主归纳仍欠的步钉：`STStep2`（`ST_step2_of_pins` 等）、`STStep5I/II`、`STStep6I/II/III`（后者等 LW-14 `LWtermEXP`）；ST-4 31/35、ST-5 17/18 的余票与 ST-D6 下一步排查（总调度自做，不用 Fable）。
+
+## §140 — 合并 T2315、T2322、T2324、T2325；BA-DP2 结论：BA 约 163–174 张，推荐上限 175 → REQ-0850（总调度，2026-10-08 08:50 UTC）
+
+- (0) 中枢 05:2x–06:20 UTC 撞上用量上限（"session limit · resets 11:20pm LA"），三个阶段按规则 (H) 在重置后重跑；无数学影响。
+- (1) **合并**：T2322（UN-31a `GUEPhase/Proc`，e17d56f，修复一次）→ **UN 42/65**；T2315（BA-L2b2 `Graph/BAExpandWOrd`，044707b）、T2324（BA-P3 `BA/KSymbol`，0da5856，P3b 切未触发）→ **BA 27/72**；T2325（BA-DP2 设计报告，5d9506a，报告型，不计行；探针留 t/T2325 05b9293）。
+- (2) **T2325 结论**（`docs/reports/T2325-portmap.md`）：(i) 图层除 `expandG_sum`、`lvl1_size_le`、`Lvl1Lt`、`AnpKey*` 外不对边核/传播子参数化（读 Owx/Oe1x/Oe2x 项形、标量 `M = m I`、`GaussIBP`），BA-L2c/L3/L4 须孪生（源 38.8k 行，按 0.8 约 31k 行，portmap 只给 3.1k）；(ii) ST 链定理的前提/结论是 `Lloop sz`/`STKloop sz` 谓词、46% 私有、51% 读带状对象，BA-T/U/V 是移植（Steps 2–6 孪生 78–92k 行，portmap 20.9k）。`Induction/` 自 T2161 估算以来从 57k 长到 114k 行。**重排：路线 I（能实例化处实例化）163 张 [128..214]，路线 T（全孪生）174 [141..223]；推荐上限 175**；可能压低它的杠杆是 §4 的 G-in-place 试点（一张设计票）。paper-delta 候选 T2325a–c → **D615–D617**。
+- (3) 与监督 0344 的 80–85 相差一倍 → **REQ-2026-10-08-0850**：请监督复核 T2325 的计数方法与比例，再定给 Jun 的**一个**上限数（O1）。答复前：BA 只发计划内且不依赖路线的行（BA-P4 `KHeat` 可写）；BA-L3/L4/T1 不写。
+
+## §141 — UN-31b = T2323（`GUEPhase/ProcK`，`gueKproc_detDom`）（总调度，2026-10-08 08:55 UTC）
+
+- (1) **T2323**（prover-hard，600/750/1000）：移植 RBM2D `Proc.lean:862-1424`。唯一改动：`t₁` 处 K-loop 初值由 `STKloop` 给（`hKinit`），其界用 `STKbound E`（新前提 `hKb`，先例 T2153a；流下由 `stKbound_of_flow` 证），代替 RBM2D 的 `Kbound_prec_uncond`；从 `B_{t₁,0}` 换到 `(Nη_{t₁})⁻¹` 需 **`L^d(1−t₁) ≤ ilambda²`**（零模区域；RBM2D 的 `L²(1−t₁) ≤ 1` 是 d=2、λ=1 情形，字面的 `L²` 在 d≥3 差 `L^{d−2}`，`N^ε` 吸收不了）。预检 (ii) 核对消费者的 `t₁` 满足之。
+- (2) 放行时有 3 个空槽（只 T2319 在审核）。下一张票号 T2326。
