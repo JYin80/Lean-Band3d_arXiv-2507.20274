@@ -182,7 +182,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed); proved from `STLWT` by `stEtermsMid_of_LWT` (T2328, S5-13)
    `RBM.Gauss.Sizes.STDuhamelI, -- integrated hierarchy `(iois-mtx2)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.STDuhamelII, -- integrated hierarchy with `Q^{(1)}`, case (ii); S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STIniTermI, -- initial term `(iksjuwjx0)`, case (i); S5-01 (T2138, DECISIONS §40: owed)
    `RBM.Gauss.Sizes.PfStep5_walkConcl, -- `lem:pf_step5` grid conclusion `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for all `k ≤ K` w.h.p. (`3_5:2364-2383`): proved under the premises of `STIngR5` by `pfStep5_walk`; hypothesis of `pfStep5_PT_of_walk` (T2231, S5-11b: owed)
    `RBM.Univ.UNBUniv, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNGUELocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
