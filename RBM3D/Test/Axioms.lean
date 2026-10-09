@@ -191,7 +191,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOULLk, -- (T2282, UN-51g: owed; owner UN-51 `RandomLayerB` `g1Rowk`; hypothesis of `ouDiagk_of_ouLLk` (proves `UNOUDiagk`) and of `UNOULLk_band`)
    `RBM.Univ.UNG1Rowk, -- (T2282, UN-51g: owed; owner UN-51 `RandomLayerA/B`; with `UNG2bRowk` and `UNOUProfRowk` gives `UNOURowk` by `ouRowk_of_pins`)
-   `RBM.Univ.UNG2bRowk, -- (T2282, UN-51g: owed; owner UN-52 `QUEFlow` `g2bRowk`, true for every kind and profile; premise of `ouRowk_of_pins`, `unG2bRow_of_k`)
    `RBM.Univ.UNOUProfRowk, -- (T2282, UN-51g: owed; owner BA-C3 at `UNKind.ba`; band proved: `unOUProfRowk_band`; premise of `ouRowk_of_pins`)
    `RBM.Univ.UNOUClaims, -- bulk universality pin, the two 𝐇_t claims (T2273, UN-21: owed; owner `ouRow_of_pins` (`ZeroModeProfile.lean:719`) + the consumed inputs `UNG1Row`, `UNG2bRow`)
    `RBM.Univ.UNMLOut, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
