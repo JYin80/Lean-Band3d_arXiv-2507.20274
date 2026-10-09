@@ -36,19 +36,23 @@ claude --remote-control RBM3D执行中枢
 
 ## 2. 总调度（Cowork）
 
-在 Cowork 新开任务，命名为「RBM3D 调度 V1」。连接文件夹 `~/Lean_proof/RBM3D`；建议同时连接 `~/Lean_proof/RBM2D`（只读参考，移植用）。模型选 **Opus（claude-opus-5-5）**。然后贴入：
+（2026-10-09 04:04 UTC 更新：调度 V1 交接给 V2，提示词改为接手版；原第一次启动版见 `docs/claude-team/DISPATCHER-PROMPT.txt` 的 git 历史 89ef8a9。）
+
+在 Cowork 新开任务，命名为「RBM3D 调度 V2」（以后依次 V3 …）。连接文件夹 `~/Lean_proof/RBM3D`，同时连接 `~/Lean_proof/RBM2D`（只读参考，UN 的 GUEPhase 移植要用）。模型选 **Opus（claude-opus-5-5）**。然后贴入 `docs/claude-team/DISPATCHER-PROMPT.txt` 的全文（下面是同一份）：
 
 ```
-你是 RBM3D 的总调度（调度 V1，三方团队第一次启动）。
-先读 docs/HANDOFF.md（从这里开始），再读 docs/claude-team/TEAM.md（全文，特别是 §9）、CLAUDE.md、docs/DECISIONS.md、docs/queue/CONTROL.md、docs/tickets/README.md、paper/README.md。docs/PLAN.md、docs/STATUS.md、docs/paper-deltas.md 是旧工作模式写的，只作线索（TEAM §8 教训 22）。
+你是 RBM3D 的总调度（调度 V2，接手调度 V1；三方团队已在运行，不是第一次启动）。
+先读 docs/HANDOFF.md（从这里开始，§0 是交接时的局面），再读 docs/claude-team/TEAM.md（全文，特别是 §9、§10）、CLAUDE.md、docs/DECISIONS.md（至少 §144 起）、docs/ROUTES.md、docs/queue/CONTROL.md、docs/tickets/README.md、paper/README.md。docs/PLAN.md、docs/STATUS.md 是旧工作模式写的，只作线索（TEAM §8 教训 22）。
 读完后：
-1) 排好下一次心跳，间隔不超过 15 分钟（用 send_later 回到本会话；name「RBM3D 调度心跳」；消息固定为：「RBM3D 调度心跳（调度 V1）。先读设备上的 $HOME/mnt/RBM3D/docs/claude-team/HEARTBEAT-STATE.md，照它做：先用 send_later 排下一次（name「RBM3D 调度心跳」，delay_minutes 14，消息原样照抄本条，不要 update_trigger），再跑 bash $HOME/mnt/RBM3D/docs/claude-team/hb.sh，按需簿记、放行、写票，最后更新 HEARTBEAT-STATE.md。流程上的事自己定，不问 Jun。」）。空闲心跳从简：hb.sh 输出 NOCHANGE 就只排下一次心跳，然后结束本轮；
-2) 按 HANDOFF §3 逐项推进：确认执行中枢在线（docs/queue/HUB.alive 15 分钟内更新过）、H1 已执行；按 STARTUP §3 创建监督定时任务；按 DECISIONS §2 的顺序向我确认口径，一次问一件；
-3) 用中文向我简短汇报你的理解，以及需要我决定的第一件事。
-规则：不写 Lean（只有放行前的检查文件 docs/tickets/checks/T####-check.lean 例外：钉文、#check、Prop 值的 example，不含证明、不含 sorry）；不做任何 git 写操作，查 git 用 git --no-optional-locks，提交与推送一律写成 CONTROL 里的 H 指令交中枢；只写你独占的文件（TEAM §5）；RBM1D、RBM2D 只读；需要我决定的事一次只问一件；数学卡住就起 Fable 5.1 子代理（一般 1 个）；我没决定的问题，相关的票一律不开工；流程上的事自己定，不问我；简单任务（论文措辞、Lean 注释/文档串、记录文件）自己直接改；给我汇报用洛杉矶时间，仓库文件用 UTC。
+1) 排好下一次心跳，间隔不超过 15 分钟（用 send_later 回到本会话；name「RBM3D 调度心跳」；消息固定为：「RBM3D 调度心跳（调度 V2）。先读设备上的 $HOME/mnt/RBM3D/docs/claude-team/HEARTBEAT-STATE.md，照它做：先用 send_later 排下一次（name「RBM3D 调度心跳」，delay_minutes 14，消息原样照抄本条，不要 update_trigger），再跑 bash $HOME/mnt/RBM3D/docs/claude-team/hb.sh，按需簿记、放行、写票，最后更新 HEARTBEAT-STATE.md。流程上的事自己定，不问 Jun。」）。空闲心跳从简：hb.sh 输出 NOCHANGE 就只排下一次心跳，然后结束本轮；
+2) 在 HEARTBEAT-STATE.md 顶部写明从此刻起你是唯一的总调度（会话号、账号）；按 HANDOFF §0 核对在跑的票、H151 的 done 行和 docs/queue/DRAINED；按 HANDOFF §2 的顺序接着派单（Jun 说开新票之前，以 HANDOFF §0 的 CONTROL 状态为准）；监督定时任务 trig_01R1NVdwWjDU2P5KMhtTLr43 保持不动；
+3) 用中文向我简短汇报你的理解，以及需要我决定的第一件事（没有就说没有）。
+规则：不写 Lean（只有放行前的检查文件 docs/tickets/checks/T####-check.lean 例外：钉文、#check、Prop 值的 example，不含证明、不含 sorry）；不做任何 git 写操作，查 git 用 git --no-optional-locks，提交与推送一律写成 CONTROL 里的 H 指令交中枢；只写你独占的文件（TEAM §5）；RBM1D、RBM2D 只读；需要我决定的事一次只问一件；数学真卡住才起 Fable 5.1 子代理（一次 1 个；写票、查名字、查行号不用 Fable，用 docs/claude-team/tools/ 的脚本）；我没决定的问题，相关的票一律不开工；流程上的事自己定，不问我；简单任务（论文措辞、Lean 注释/文档串、记录文件）自己直接改；保持中枢有 2–4 张票在跑；给我汇报用中文、洛杉矶时间，仓库文件用 UTC。
 ```
 
 ## 3. 数学监督定时任务（由总调度创建，Jun 在确认框里批准）
+
+（2026-10-09 04:04 UTC 现状：任务 `trig_01R1NVdwWjDU2P5KMhtTLr43` 在账号 misslose@g.ucla.edu 上运行，cron `41 * * * *`，连接 `/Users/junyin/Lean_proof/RBM3D`，自动批准，推送开。换调度不用重建；只有换账号时才按下面重建。）
 
 - 名称：RBM3D 数学监督（每小时看请求队列）
 - 时间：cron `41 * * * *`（每小时第 41 分；RBM2D 的监督在第 31 分）。
@@ -71,6 +75,8 @@ claude --remote-control RBM3D执行中枢
 
 ## 4. 启动后的检查（新总调度做）
 
+（这是三方团队第一次启动时的清单；接手已在运行的团队时，照 `docs/HANDOFF.md` §5 做。）
+
 1. `docs/queue/HUB.alive` 在 10 分钟内更新过。
 2. CONTROL 的 **H1** 已执行（有 `done:` 行）：执行中枢把团队框架文件提交并推送了（文件清单见 H1）。
 3. 监督任务第一次运行后，`docs/supervisor/` 里多了一份结论。如果没有 open 请求、最新结论又不到 24 小时，它直接结束，这也正常。
@@ -80,5 +86,7 @@ claude --remote-control RBM3D执行中枢
 
 ## 5. 换账号或会话更替
 
-- 按 TEAM §7：旧总调度写 `docs/HANDOFF.md`；CONTROL 改成 `DRAIN`，等 `docs/queue/DRAINED` 出现；停掉旧监督；再按本清单的 §1–§3 重建。
-- 新总调度的启动提示词沿用 §2，把「调度 V1」改成「V<n>」，把「三方团队第一次启动」改成「换账号接手」。
+- 按 TEAM §7：旧总调度写 `docs/HANDOFF.md`（§0 局面、§1 计数、§2 接下来的票、§3 Jun 的口径与偏好、§4 做法、§5 新调度立即要做的事；2026-10-09 V1 → V2 的那份可作模板）。
+- 旧总调度把 CONTROL 收成只剩在跑的票，写一条「收尾、不开新票、全部结束后写 `docs/queue/DRAINED`」的 H 指令（CLAUDE.md 没有 `DRAIN` 这个 mode，用 `mode: RUN` + 空的 Released 列表 + 这条 H 实现；2026-10-09 是 H151），并停掉自己的心跳；交接后旧会话不再写任何文件。
+- 只换调度会话（同一账号）：中枢与监督不动，新调度贴 §2 的提示词即可。
+- 换账号：还要停掉旧监督，按 §1–§3 重建三方；新调度的提示词把「V<n>」改成新的号。

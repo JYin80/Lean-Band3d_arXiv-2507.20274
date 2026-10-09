@@ -1243,3 +1243,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **槽位**：T2358、T2359、T2360 在跑；**T2356 1b 先放**（UN-51 的关键路径），T2361 等 T2360 报告合并空出槽位再放（保持 4 张）。
 - (4) 计数（宽口径）：LW 50；UN 58/64；ST-6 3/4；BA 35；MA 7/8。下一张票号 T2362。
 
+## §165 — 交接：调度 V1 → V2；不开新票，收尾在跑的四张；交接包、启动文件、TEAM §10、工具入库；CONTROL 归档（总调度，2026-10-09 04:05 UTC）
+
+- (0) **Jun（2026-10-09 约 04:00 UTC）**：「准备交班给下一个调度，修改一下 doc/team startup 的文件，不要发新工单了，收尾现在在跑的就行。」
+- (1) **不开新票**：Released 只留在跑的 T2356（Eq729B 1b）、T2358（LW R1 1b）、T2360（BA-DK 设计）、T2361（PathBounds 1a）；H151：照常规跑完（审核 PASS 自动合并、RETURN 一次自动修复），不开其他票，四张都结束后中枢写 `docs/queue/DRAINED`。CLAUDE.md 没有 `DRAIN` mode，用 `mode: RUN` + 只含在跑票的 Released 列表 + H151 实现。
+- (2) **交接包** `docs/HANDOFF.md` 重写（§0 局面与四张票各自结束后要做的事；§1 计数；§2 接下来的票：R3、LW-01（并 ST-6 R4）、UN-51（先定监督 0344 E5）、UN-52b、MA-06、BA 阶段 K；§3 Jun 的口径与偏好；§4 做法；§5 新调度立即要做的事）；旧启动交接包原文附在后面。
+- (3) **启动文件**：`docs/claude-team/STARTUP.md` §2 改为接手版提示词（= `DISPATCHER-PROMPT.txt`，调度 V2），§3 记当前监督任务 `trig_01R1NVdwWjDU2P5KMhtTLr43`，§4 注明第一次启动专用，§5 写交接做法；`TEAM.md` 加 §10（V1 期间定下的 13 条常规：中文与中枢不空、Fable 只在数学卡住时用一次一个、BA 阶段门、gate 上限与预设切分、1a FAIL 分流、设计门、删 `private` 或拷贝、检查文件核名与导入、REQ 首行、停止线、时间戳、差异与返工账本、交接）。
+- (4) **工具**入库：`docs/claude-team/tools/nsof.sh`（查声明全名与位置）、`portmap.py`（RBM2D 文件用到的名字在 RBM3D 的孪生或缺失）。
+- (5) **CONTROL 归档**：旧 CONTROL（约 190KB）原样附到 `docs/queue/CONTROL-archive.md` 末尾；新 CONTROL 约 8KB（常设规则 H4/H12/H23/H28/H101/H122、H151、合并记录尾部 6 行）。
+- (6) 调度 V1 的心跳停止；监督定时任务不动。交接后本会话不再写文件。计数（宽口径）：ST-6 3/4；LW 50（计划 52，上限 55）；UN 58/64；BA 35；MA 7/8。下一张票号 T2362，下一节 §166，下一条 H152，下一号差异 D632。
+
