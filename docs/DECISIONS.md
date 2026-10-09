@@ -1200,3 +1200,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) 计数（宽口径）：UN 54/64（T2351、T2352、T2353 计入；两次合并各省一行，计划内剩余：UN-47 `Eq729B`、UN-49 `HypB`、UN-50 `LLTransfer`+`PathBounds`、UN-51、UN-52）。LW 48；ST-6 3/4；BA 33；MA 7/8。下一张票号 T2354。
 - (3) 4 槽：T2348、T2351、T2352、T2353。BA-P8 等空位（§145：UN 先）。
 
+## §160 — T2352、T2353 合并；T2348 报告合并 → 监督 REQ-0100（LW 50 行审查）；UN 三张：HypB+LLTransfer = T2354，QUEFlow = T2355，Eq729B = T2356（1a 设计门）（总调度，2026-10-09 01:02 UTC）
+
+- (0) **合并**：T2352 = UN-48（9b66b53，`HypA`，一次返工）；T2353 = UN-45/46（93b8ec8，`OneLoop`，1 轮审核 PASS）；T2348 = LW-13b-D（d525990，仅报告；审核 1–7 PASS；探针留在 `t/T2348` 9f3bd75）。00:52 起中枢 0 张在跑，本节补 3 张。
+- (1) **UN 行重排（计划行数不变）**：UN-49 `HypB`（1021 行）与原 UN-50 的一半 `LLTransfer`（440 行，只导入 `Grid`、`ZeroModeProfile`）合为一张 **T2354**（两个新文件，`prover-hard`，1250 / 1500 / 1850，停止线 2050，预设切分 HypB | LLTransfer）；`oull_of_pathBounds` 的结论按已合并钉文 `UNOULL` 的体写（UN-51 直接实例化）。`QUEFlow` 从 UN-52 拆出为 **UN-52a = T2355**：RBM3D 的形式是通用行 `g2bRowk : ∀ K P, UNG2bRowk K P`（T2282 已钉，监督 0956 O2），已合并的 `queFixed`/`queChain`（MA-05b）就是论证的分件；`queFixed` 只对 `Sizes.seqP` 陈述，所以在新文件里做私有的通用拷贝，不改合并文件；删欠账 `UNG2bRowk` 一行（`Test/Axioms.lean:194`）；600 / 850 / 1200，停止线 1400。原 UN-50 的另一半 `PathBounds`（要 HypB）以后并入 UN-51（`RandomLayerA/B`），UN-52b = `Main/BUniv` + `BUnivHolds`。
+- (2) **UN-47 `Eq729B` = T2356，1a 设计门**：不是纯移植。RBM2D 的初始项 `MLExpConcl`（`N^ε scaleM^{-3}`）和结论（`trGEGEmat`/`profileTilde`/`W^δ Meta^{-3}`，`η_Q = W^{2/3}/N`）在 RBM3D 已由钉文 `STExp2`（`Bctl²((ilambda² W^d)^{-1/5} + Bctl)`）和 `UNOUEq747`（`qdBoundExp`，`η_Q = W^{-𝔡/3} ilambda W^{d/2}/N`）取代；从 `t₁` 的 `STExp2` 经 GUE 段到 `t₀`、再经 (7.47) 到 `qdBoundExp` 的指数链是 RBM2D 里没有的数学（监督 1143 O3 本就列为风险行）。所以 1a = 设计报告 + 探针（≤ 400 行，只有 Prop 钉文和实变量指数引理），审核 PASS 后只合并报告并停；我把设计作为 REQ 发监督，PASS 后另写 H 指令放 1b（`prover-max`，暂估 1400 / 1750 / 2200，预设切分在源 `:784`）。1a FAIL 则回调度。
+- (3) **T2348 → REQ-2026-10-09-0100**（监督 2244 O2 的 50 行审查）：Q1 路线 (R)（有根 `GtoAG`、精确域，新增行 G ≈ 470）对 (E)（`Rb` 放大）；Q2 三行 R1/R2/R3（LW 49–51）、预设切分 C1–C3、LW-01 = 52（切分最多 55），是否要 HOLD 或升级给 Jun；Q3 PASS 后 R1、R2 同放，R3 等两者合并；Q4 论文差异候选编号（T2344a–d、T2348a–b；T2348c 是对票与 2244 O1 的更正：`LWMomExp.lean` 要删 10 个 `private`，不是 2 个）。PASS 前不放任何 LW 证明行。
+- (4) 计数（宽口径）：UN 57/64（T2354、T2355、T2356 计入；计划内剩 UN-51（`PathBounds` + `RandomLayerA/B`）、UN-52b → 59）；LW 48（R1–R3 待审，LW-01 = 52–55）；ST-6 3/4；BA 33；MA 7/8。下一张票号 T2357。
+- (5) 槽位：3 张（T2354、T2355、T2356 1a）。第 4 张 BA-P8（§144 每阶段监督把关、§145 其他方向优先），下一轮读清 BA 阶段 P 的放行条件后写。
+
