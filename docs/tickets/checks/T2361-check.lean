@@ -8,6 +8,7 @@ import RBM3D.Universality.GUEPhase.DuhamelC
 import RBM3D.Universality.GUEPhase.EntryGrid
 import RBM3D.Universality.GUEPhase.BootstrapAt
 import RBM3D.Universality.GUEPhase.LLTransfer
+import RBM3D.Universality.GUEPhase.ProcK
 
 #check @RBM.Univ.GUEPhase.GUEPathBounds
 #check @RBM.Univ.GUEPhase.Bounds_path

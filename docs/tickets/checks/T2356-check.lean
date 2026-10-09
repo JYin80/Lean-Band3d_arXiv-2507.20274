@@ -9,6 +9,11 @@ import RBM3D.Universality.GUEPhase.KPrim
 import RBM3D.Universality.GUEPhase.BootstrapAt
 import RBM3D.Universality.ZeroModeProfile
 import RBM3D.Loop.KLTree
+-- stage 1b (Fri Oct 9 03:51 UTC 2026, DECISIONS §164, supervisor 0344 E2): HypA, ZTransfer, QUEFromQDiff, KLFinal added; DuhamelC is not imported by Eq729B.lean
+import RBM3D.Universality.GUEPhase.HypA
+import RBM3D.Main.ZTransfer
+import RBM3D.Main.QUEFromQDiff
+import RBM3D.Loop.KLFinal
 
 -- the GUE-phase layers
 #check @RBM.Univ.GUEPhase.eq729F
@@ -60,3 +65,6 @@ import RBM3D.Loop.KLTree
 #check @RBM.lemT
 #check @RBM.lemma28_quant
 #check @RBM.eq_inv_sqrt_mul_zt
+#check @RBM.Univ.GUEPhase.Hyp_Kt_detDom
+#check @RBM.Univ.GUEPhase.Hyp_Kt_one
+#check @RBM.Endpoints.queChain

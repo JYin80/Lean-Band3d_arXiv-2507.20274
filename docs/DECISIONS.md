@@ -1235,3 +1235,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) **T2356 设计 → REQ-2026-10-09-0254**：三个目标的陈述（目标 1 结论带 `I₀(t₁)`；目标 2、3 结论是 `UNOUEq747` 的体）、桥（无新钉文，只用 `STExp2`）、F2 好数据（`goodFlow`）、尺寸 1355 / 1687 / 2265、切分 `:784`、差异候选 T2356a–c；问 1b 放行。BA 种类的 `UNOUEq747k` 我提议归 BA（BA-C3 线），不归 UN。
 - (5) 计数（宽口径）：LW 50（两张修补中）；UN 58/64；ST-6 3/4；BA 35；MA 7/8。槽位 4/4（T2358 A1、T2359 A1、T2360、T2361）。下一张票号 T2362。REQ 第 1 行一律 `status: open`（0143 O4）。
 
+## §164 — 监督 0344 PASS：T2356（Eq729B）放 1b；T2361 检查文件补导入；论文差异 D628–D631（总调度，2026-10-09 03:51 UTC）
+
+- (0) 状态：T2358、T2359 在 Amend 1 下 1a PASS，1b 中（03:32 起）；T2360（BA-DK）设计中；T2361 检查文件 exit 1（`gueKproc_detDom` 在 `GUEPhase/ProcK.lean`，检查文件没导入），未放行——补 `import RBM3D.Universality.GUEPhase.ProcK` 重编。
+- (1) **监督 2026-10-09-0344（回 REQ-0254）：PASS**，条件 E1–E5，写进 `docs/tickets/T2356-1b.md`：Q1 三个目标照设计 §1（目标 1 的 `I₀(t₁)` 是被迫的且能闭合：F1 给 `I₀ ≤ 8𝓑²(X + 𝓑)`，正是 `qdBoundExp` 的形状）；Q2 `∀ n` 目标 + `goodFlow`、`goodFlow` 与 `bridge` 放 `Eq729B.lean`；BA 种类的 `UNOUEq747k` 不归 UN，归 **BA-C5 `BA/GUEHyp`**（不是我提议的 BA-C3；T2173 portmap `:246, :277`，Eq729B 是 T 类）；E2 导入去 `DuhamelC`、加 `HypA`、`Main/ZTransfer`、`Main/QUEFromQDiff`、`Loop/KLFinal`；E3 一行，1355 / 1687 / 2265，停止线 2400，`:784` 切分只作后备；E4（软）与种类无关的链引理保持公开、按实数据陈述，供 BA-C5 复用；E5 记给 UN-51 的设计：`UNG1Rowk` 的 BA 实例由 BA 侧（BA-C5）闭合，或 `UNG1Rowk` 加种类的 `Eq747k` 生产者作前提（`Test/Axioms.lean:188` 的归属注释届时改为「带状：UN-51；BA：BA-C5」）。
+- (2) **论文差异** D628 = T2356a、D629 = T2356b、D630 = T2356c、D631 = T2352a（0344 Q4，补记 T2352a）。
+- (3) **槽位**：T2358、T2359、T2360 在跑；**T2356 1b 先放**（UN-51 的关键路径），T2361 等 T2360 报告合并空出槽位再放（保持 4 张）。
+- (4) 计数（宽口径）：LW 50；UN 58/64；ST-6 3/4；BA 35；MA 7/8。下一张票号 T2362。
+

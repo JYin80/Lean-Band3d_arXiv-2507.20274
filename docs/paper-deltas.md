@@ -1584,4 +1584,8 @@ Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文
 - **D625（T2335b）**：`A:62` 的局部 CLT 由 `kBA_diag_le`（Fourier 与能隙）+ Chernoff 尾 + `A:64` 的半群分解代替（T2335）。
 - **D626（T2335c）**：`kBA_le` 带 `2 ≤ d`、`3 ≤ L`、`0 < g ≤ Λ`、`BAReal`（孪生 `kProd_le` 是 `1 ≤ d`）；`C, c` 只依赖 `(d, Λ, κ)`（T2335）。
 - **D627（T2336a）**：BA-P4c 单位差分的区域 (i) 衰减因子取 `max τ 1`（总调度改监督 1048 C4 的写法，§148），多项式衰减 `M = ⌊d/2⌋+1`（`BA/KHeatDiff`，f234507）。
+- **D628（T2356a，监督 0344 Q4）**：(7.29) 在 `t₀` 的界带初值项 `I₀(t₁)`：`STExp2` 的形式是 `Bctl²((ilambda²W^d)^{-1/5} + Bctl)`，不是 `Λ³`；论文 `1_2:596` 的注只在 `η = N^{-1+2τ_U}`（UN-47 `Eq729B`，数学性）。
+- **D629（T2356b）**：(7.47) 的界为 `W^τ 𝓑²((ilambda²W^d)^{-1/5} + 𝓑)`，在 `η_Q = W^{-𝔡/3} ilambda W^{d/2}/N`，剖面 `Θ̃_{ζ(t_n)}`（= 钉文 `UNOUEq747`，`qdBoundExp`），代替 RBM2D 的 `W^δ Meta^{-3}`、`η_Q = W^{2/3}/N`（陈述层面）。
+- **D630（T2356c）**：`(E', t₀, t₁)` 的 `∀ n` 事实由 `goodFlow` 提供（`Sizes.lam` 无正性字段，`(eq:WO)` 是最终性的，有限个 `n` 处 `Im z_n ≤ 0`）（形式性）。
+- **D631（T2352a）**：`Hyp_Kt_detDom`/`Hyp_Kt_one` 相对 RBM2D 的三处陈述差异（同 T2323a）：`hell : ∀ᶠ n, L^d(1 - t₁) ≤ ilambda²` 代 `L²(1 - t₁) ≤ 1`；新前提 `hKb : sz.STKbound E`（RBM3D 无 `Kbound_prec_uncond`）；`hKinit` 用 `STKloop`（UN-48 `HypA`）。
 
