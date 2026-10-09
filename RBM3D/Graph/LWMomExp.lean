@@ -149,7 +149,7 @@ def lwMomExp_sysVal {ι : Type*} (w : ι → ι → ℝ) (D : Finset ι) (a b : 
   ∑ ℓ ∈ Fintype.piFinset (fun _ : Fin q => D),
     ∏ i, lwMomExp_chain w a ((m i).map (lwMomExp_lab a b ℓ)) b
 
-private theorem lwMomExp_chain_nonneg {ι : Type*} (w : ι → ι → ℝ) (hw0 : ∀ u v, 0 ≤ w u v) :
+theorem lwMomExp_chain_nonneg {ι : Type*} (w : ι → ι → ℝ) (hw0 : ∀ u v, 0 ≤ w u v) :
     ∀ (m : List ι) (x y : ι), 0 ≤ lwMomExp_chain w x m y := by
   intro m
   induction m with
@@ -307,7 +307,7 @@ variable {ι : Type*}
 
 /-- **The corrected one-vertex step** (aux): summing the first internal vertex `α` of a path system
 with `≥ 2` paths through it, with a `claim:TTk`-type bound `hstep` for `k ≤ N` passages. -/
-private theorem lwMomExp_step_aux (w : ι → ι → ℝ) (T0 Ψ K Z : ℝ) (N : ℕ) (D : Finset ι) (a b : ι)
+theorem lwMomExp_step_aux (w : ι → ι → ℝ) (T0 Ψ K Z : ℝ) (N : ℕ) (D : Finset ι) (a b : ι)
     (hw0 : ∀ u v, 0 ≤ w u v) (hww : ∀ c, w c c = T0) (hΨ : T0 ≤ Ψ) (hΨ0 : 0 < Ψ) (hKZ : 0 ≤ K * Z)
     (hstep : ∀ k, 2 ≤ k → k ≤ N → ∀ x y : Fin k → ι,
       ∑ c ∈ D, ∏ i, (w (x i) c * w c (y i)) ≤ K * Z * (Ψ ^ (k - 2) * ∏ i, w (x i) (y i)))
@@ -431,7 +431,7 @@ private theorem lwMomExp_del_length {p q : ℕ} (m : Fin p → List (NV p (q + 1
   omega
 
 /-- The bound for a path system in which every internal vertex lies on two distinct paths. -/
-private theorem lwMomExp_sys_bound (w : ι → ι → ℝ) (T0 Ψ K Z : ℝ) (N : ℕ) (D : Finset ι) (a b : ι)
+theorem lwMomExp_sys_bound (w : ι → ι → ℝ) (T0 Ψ K Z : ℝ) (N : ℕ) (D : Finset ι) (a b : ι)
     (hw0 : ∀ u v, 0 ≤ w u v) (hsym : ∀ u v, w u v = w v u) (hle : ∀ u v, w u v ≤ T0)
     (hww : ∀ c, w c c = T0) (hΨ : T0 ≤ Ψ) (hΨ0 : 0 < Ψ) (hKZ : 0 ≤ K * Z)
     (hstep : ∀ k, 2 ≤ k → k ≤ N → ∀ x y : Fin k → ι,
@@ -707,7 +707,7 @@ section Graph
 variable {p q : ℕ} (Γ : NGraph p q)
 
 /-- The step of `WalkOK`. -/
-private def lwMomExp_stepFn (acc : Option (NV p q)) (st : Fin Γ.es.length × NV p q) : Option (NV p q) :=
+def lwMomExp_stepFn (acc : Option (NV p q)) (st : Fin Γ.es.length × NV p q) : Option (NV p q) :=
   acc.bind fun c =>
     if ((Γ.es.get st.1).u = c ∧ (Γ.es.get st.1).v = st.2) ∨
         ((Γ.es.get st.1).v = c ∧ (Γ.es.get st.1).u = st.2) then some st.2 else none
@@ -749,7 +749,7 @@ private theorem lwMomExp_fold_cons (st : Fin Γ.es.length × NV p q) (t : List (
 
 /-- A walk whose steps are weighted by a symmetric `w` of the labels of the end vertices of the edge:
 the product of the weights is the chain product along the vertex sequence. -/
-private theorem lwMomExp_walk_chain {ι : Type*} (w : ι → ι → ℝ) (hsym : ∀ u v, w u v = w v u)
+theorem lwMomExp_walk_chain {ι : Type*} (w : ι → ι → ℝ) (hsym : ∀ u v, w u v = w v u)
     (lbl : NV p q → ι) :
     ∀ (l : List (Fin Γ.es.length × NV p q)) (x y : NV p q), l ≠ [] →
       l.foldl (lwMomExp_stepFn Γ) (some x) = some y →
@@ -832,7 +832,7 @@ private theorem lwMomExp_walk_visit :
 /-- The path system of a nested graph: the vertex sequence of the path `i` between `a_i` and `b_i`. -/
 def lwMomExp_sysOf : Fin p → List (NV p q) := fun i => ((Γ.path i).map Prod.snd).dropLast
 
-private theorem lwMomExp_path_ne (hN : Γ.IsNested) (i : Fin p) : Γ.path i ≠ [] := by
+theorem lwMomExp_path_ne (hN : Γ.IsNested) (i : Fin p) : Γ.path i ≠ [] := by
   intro h
   have := hN.2.1 i
   unfold NGraph.WalkOK at this
@@ -843,12 +843,12 @@ private theorem lwMomExp_path_split (hN : Γ.IsNested) (i : Fin p) :
     (Γ.path i).map Prod.snd = lwMomExp_sysOf Γ i ++ [Sum.inl (Sum.inr i)] :=
   lwMomExp_walk_last Γ (Γ.path i) _ _ (lwMomExp_path_ne Γ hN i) (hN.2.1 i)
 
-private theorem lwMomExp_sysOf_length (hN : Γ.IsNested) (i : Fin p) :
+theorem lwMomExp_sysOf_length (hN : Γ.IsNested) (i : Fin p) :
     (lwMomExp_sysOf Γ i).length + 1 = (Γ.path i).length := by
   have := congrArg List.length (lwMomExp_path_split Γ hN i)
   simpa using this.symm
 
-private theorem lwMomExp_sysOf_mem (hN : Γ.IsNested) (i : Fin p) (j : Fin q) (h : Γ.Visits i (Sum.inr j)) :
+theorem lwMomExp_sysOf_mem (hN : Γ.IsNested) (i : Fin p) (j : Fin q) (h : Γ.Visits i (Sum.inr j)) :
     (Sum.inr j : NV p q) ∈ lwMomExp_sysOf Γ i := by
   obtain ⟨st, hst, hv⟩ := h
   rcases lwMomExp_walk_visit Γ (Γ.path i) _ _ (hN.2.1 i) st hst _ hv with h0 | h0
@@ -859,7 +859,7 @@ private theorem lwMomExp_sysOf_mem (hN : Γ.IsNested) (i : Fin p) (j : Fin q) (h
     · exact absurd (List.mem_singleton.1 h1) (by simp)
 
 /-- The indices of the edges lying on the paths. -/
-private def lwMomExp_pathEdges : Finset (Fin Γ.es.length) :=
+def lwMomExp_pathEdges : Finset (Fin Γ.es.length) :=
   Finset.univ.biUnion fun i => ((Γ.path i).map Prod.fst).toFinset
 
 private theorem lwMomExp_pathEdges_disj (hN : Γ.IsNested) :
@@ -871,7 +871,7 @@ private theorem lwMomExp_pathEdges_disj (hN : Γ.IsNested) :
   obtain ⟨st', hst', hk⟩ := List.mem_map.1 (List.mem_toFinset.1 hkj)
   exact hN.2.2.2.1 i j hij st hst st' hst' hk.symm
 
-private theorem lwMomExp_pathEdges_card (hN : Γ.IsNested) :
+theorem lwMomExp_pathEdges_card (hN : Γ.IsNested) :
     (lwMomExp_pathEdges Γ).card = ∑ i, (Γ.path i).length := by
   unfold lwMomExp_pathEdges
   rw [Finset.card_biUnion (lwMomExp_pathEdges_disj Γ hN)]
@@ -879,7 +879,7 @@ private theorem lwMomExp_pathEdges_card (hN : Γ.IsNested) :
   rw [List.toFinset_card_of_nodup (hN.2.2.1 i), List.length_map]
 
 /-- The product over all edges is the product over the paths times the product over the other edges. -/
-private theorem lwMomExp_prod_split (hN : Γ.IsNested) (g : Fin Γ.es.length → ℝ) :
+theorem lwMomExp_prod_split (hN : Γ.IsNested) (g : Fin Γ.es.length → ℝ) :
     ∏ k, g k = (∏ i, ((Γ.path i).map fun st => g st.1).prod) *
       ∏ k ∈ (lwMomExp_pathEdges Γ)ᶜ, g k := by
   rw [← Finset.prod_mul_prod_compl (lwMomExp_pathEdges Γ)]
