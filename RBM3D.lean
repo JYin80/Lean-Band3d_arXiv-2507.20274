@@ -395,6 +395,8 @@ import RBM3D.Universality.GUEPhase.HypA
 import RBM3D.Universality.GUEPhase.OneLoop
 import RBM3D.Universality.QUEFlow
 import RBM3D.BA.Prop6Path
+import RBM3D.Universality.GUEPhase.HypB
+import RBM3D.Universality.GUEPhase.LLTransfer
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
