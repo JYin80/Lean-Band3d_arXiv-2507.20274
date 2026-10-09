@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-09 23:01 UTC (dispatcher V2: T2365 BA-K09a released, H157; H155 pending)
+updated: 2026-10-09 23:09 UTC (dispatcher V2: T2366 BA-K01 (generic part) released, H158; H155 pending)
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). H151's drain is complete (`docs/queue/DRAINED`, 20:31:46 UTC); normal operation: new tickets are released here as their inputs merge (HANDOFF §2).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -14,11 +14,14 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 329. T2361 — `docs/tickets/T2361.md` (PathBounds): `audit-pass` (f9cce14); merge per H155 (first).
 330. T2362 — `docs/tickets/T2362.md` (BA-K00): `audit-pass` (708bbd4); merge per H155.
 331. T2365 — `docs/tickets/T2365.md` (BA-K09a, in place `Loop/KLIndStepA.lean`, `Loop/KLIndStepB.lean`): released; starts when its check compiles with exit 0 (H12). Merge yields to critical-path merges (ticket, G2).
+332. T2366 — `docs/tickets/T2366.md` (BA-K01 generic part, in place `Loop/Unique.lean`, `Loop/KLUnique.lean`): released; starts when its check compiles with exit 0 (H12). Merge yields to critical-path merges (ticket, G2).
 
 ## Pre-release checks
 - `docs/tickets/checks/T2362-check.lean` (BA-K00; released conditionally above, DECISIONS §17).
   done: Fri Oct  9 21:03:35 UTC 2026 — `lake env lean docs/tickets/checks/T2362-check.lean`: exit 0, no error lines.
 - `docs/tickets/checks/T2365-check.lean` (BA-K09a; pins + G1 band statements; released conditionally above, DECISIONS §17).
+  done: Fri Oct  9 23:03:44 UTC 2026 — `lake env lean docs/tickets/checks/T2365-check.lean` on main 1fe7b7f: exit 0, no error lines.
+- `docs/tickets/checks/T2366-check.lean` (BA-K01 generic part; pins + G1 band statements; released conditionally above, DECISIONS §17).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -49,6 +52,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Fri Oct  9 22:43:23 UTC 2026 — `lake env lean docs/tickets/checks/K01-statement-dump.lean > docs/tickets/checks/K01-statement-dump.out 2>&1`: exit 0; output 109 lines, 0 lines containing `error`. Not committed.
 
 - H157 (dispatcher V2, 2026-10-09 23:01 UTC; DECISIONS §171). **Step A** — one commit, staging by name only (never `git add -A`; drop `docs/claude-team/fable/__pycache__/`), message `Dispatcher V2: BA-K09a = T2365 (K-b pin SigSumZeroAbs), K01 statement dump, DECISIONS §171, H157`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/tickets/T2365.md`, `docs/tickets/checks/T2365-check.lean`, `docs/tickets/checks/K01-statement-dump.lean`, `docs/tickets/checks/K01-statement-dump.out`; add the uncommitted working-tree edits of `docs/supervisor/requests/REQ-2026-10-09-2010.md` and `REQ-2026-10-09-2025.md` and your own uncommitted hub files as you see fit; push. **Step B** — compile `docs/tickets/checks/T2365-check.lean` on `main` (standing H4); one `done:` line under Pre-release checks with the exit code; if the exit code is not 0, write the first 40 error lines to `docs/tickets/checks/T2365-check.out` and do not start. **Step C** — on exit 0, start T2365 (standing H12; branch `t/T2365` and worktree from `main` at the Step A commit; stage 1a `preflight` with the ticket's N1 numerics, then 1b `prover-hard`, then the auditor). One `done:` line per step. (H155 still stands; its merges are independent of this instruction.)
+  done: Fri Oct  9 23:03:44 UTC 2026 — Step A committed 1fe7b7f (18 files by name: the 8 listed, the two REQ edits, states T2356/T2358/T2361/T2362, reports T2358 prove/audit and T2362 prove/audit; __pycache__ dropped), pushed.
+  done: Fri Oct  9 23:03:44 UTC 2026 — Step B: T2365-check.lean exit 0 (done line under Pre-release checks).
+  done: Fri Oct  9 23:03:44 UTC 2026 — Step C: T2365 started (branch t/T2365 and worktree from main 1fe7b7f, workflow wf_d34cffd1-3d8: preflight, then prover-hard, then auditor).
+
+- H158 (dispatcher V2, 2026-10-09 23:09 UTC; DECISIONS §172). **Step A** — one commit, staging by name only (never `git add -A`), message `Dispatcher V2: BA-K01 generic part = T2366 (BA instances to K03), DECISIONS §172, H158`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/tickets/T2366.md`, `docs/tickets/checks/T2366-check.lean`; push. **Step B** — compile `docs/tickets/checks/T2366-check.lean` on `main` (standing H4); one `done:` line under Pre-release checks; if the exit code is not 0, write the first 40 error lines to `docs/tickets/checks/T2366-check.out` and do not start. **Step C** — on exit 0, start T2366 (standing H12; branch `t/T2366` and worktree from `main` at the Step A commit; 1a `preflight`, 1b `prover-hard`, auditor), alongside T2365. One `done:` line per step. (H155 still stands.)
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Fri Oct  9 00:52:56 UTC 2026 — T2353 merged 93b8ec8 (UN OneLoop Universality/GUEPhase/OneLoop (7 targets; gueGrid_expect_oneLoop adds 3 ≤ d and λ ∈ (0, Λ] eventually, covered by paper-delta candidate T2353a; T2353b/c also proposed), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4166 jobs; pushed). No workflow running.

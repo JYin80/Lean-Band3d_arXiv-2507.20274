@@ -1308,3 +1308,20 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 停止线：`ratio(0.1)/ratio(0.4) > 2`，或反射/平移缺陷 > 1e-10 → 不进 1b，`returned`，调度发 REQ。
 - (5) H157：提交 + 编译 T2365-check + 开工（H12）。H156 已完成（22:43:23，exit 0，109 行），K01 的转储在 `docs/tickets/checks/K01-statement-dump.out`，K01 等 K00 合并后写。
 - (6) 计数：BA 37；在跑 T2365（开工后）；4 张 audit-pass 仍等 Jun 在 Mac 上允许合并（H155 无回复）。下一张票号 T2366，下一节 §172，下一条 H158，下一号差异 D636。
+
+## §172 — BA-K01 的通用部分 = T2366 放行；K01 的 BA 实例移到 K03（总调度 V2，2026-10-09 23:09 UTC）
+
+- (0) H157 完成：提交 1fe7b7f，T2365-check exit 0，T2365 于 23:03:44 开工（wf_d34cffd1-3d8，1a 含 N1）。
+- (1) **调度决定（流程，不涉路线）**：设计行 K01 只因「BA instances」依赖 K00（K-a：提到 `BAMLoop`/`BAKsol` 的陈述须等 K00 合并）。四张合并卡在中枢权限上，K00 何时合并不知道，所以把 K01 拆成两部分：
+  - 通用部分现在放行，即 T2366；
+  - BA 实例并入 **K03**（`BA/KSolve.lean`）：`BAMLoop` 处的唯一性、`BAKsol` 的旋转与平移。K03 本来就依赖 K01 和 K00，所以并入后行数不变，不算 K-d 的拆分，旗标计数不变。
+  - 收尾表「`KLK_rotate` → BA rotation → K01」改记为 K03，在 K-c REQ 和阶段 K 收尾 REQ 里写明。
+- (2) **T2366 = BA-K01 通用部分**（BA 38，阶段 K 第 3 张）：
+  - 范围：在 `Loop/Unique.lean`、`Loop/KLUnique.lean` 原地做（路线 G）。
+  - 钉文：`UniqS`（探针原文）、`RetireS`（两环界，与 `S` 无关）、`RotS`（对称、`‖S‖ ≤ 1`、`M` 旋转不变）、`TranslS`（`S` 平移不变、`‖S‖ ≤ 1`、`M` 平移不变）；对应定理 `*_holds`。
+  - 带状导出：`isKLoop_unique`、`KLretire_twoLoopBounded`、`KLK_rotate`、`KLK_translate`、`eq_on_level`，陈述都不变。
+  - G1：H156 转储的 18 个外用名全部写进检查文件。
+  - 规模：`prover-hard`，约 213 / 272 / 311；停止线为两文件净增 420。
+  - G2：合并让位给关键路径。
+- (3) H158：提交 + 编译 T2366-check + 开工（与 T2365 并行）。
+- (4) 计数：BA 38。在跑 T2365，T2366 开工后变两张。4 张 audit-pass 仍等 Jun 在 Mac 上允许合并。下一张票号 T2367，下一节 §173，下一条 H159，下一号差异 D636。
