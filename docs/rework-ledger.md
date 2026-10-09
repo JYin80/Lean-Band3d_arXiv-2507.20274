@@ -301,3 +301,6 @@
 | T2300 | 2026-10-06 14:16 UTC (3deaafe) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-C2 `BA/MReg`（`UNDensBARow'` 证出）；D610 |
 | T2288 | 2026-10-06 14:29 UTC (4686e08) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS（仅报告：设计探针，路线 B，拆四张）；LW-14e-D；D612 |
 | T2305 | 2026-10-06 15:15 UTC (4db5994) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-28 `Universality/GUEPhase/Generator`（类 P：通用 `loopGenGUEOf`）；D613 |
+| T2358 | 2026-10-09 02:54 UTC (Amend 1) | prover-max | Sonnet 5.5 effort max | 是（开工后改钉文） | 1a FAIL：`LocStepXProv` 缺 `P.g.Normal`（`edge`/`gg` 非正规输入反例）；监督 0243 L1 接受修补，非 O2；从 1a 重开（§163 (1)） |
+| T2359 | 2026-10-09 02:54 UTC (Amend 1) | prover-max | Sonnet 5.5 effort max | 是（开工后改钉文） | 1a FAIL：`LWXiE` 合取 2 在 `1-t < λ²/L²` 不成立；监督 0243 L2 接受限制到子类型、G2 类改 `Φ_E`、补拷贝；停止线仍 2100（§163 (1)） |
+

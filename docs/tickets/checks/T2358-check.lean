@@ -28,3 +28,8 @@ import RBM3D.Graph.LWMoment
 #check @RBM.Gauss.Sizes.STGM
 #check @RBM.Gauss.Sizes.STblk
 #check @RBM.Gauss.Sizes.Gt
+-- Amend 1 (Fri Oct 9 02:52 UTC 2026; DECISIONS §163 (1)): the normality suppliers of `LocStepXProv`'s new hypothesis `P.g.Normal`
+#check @RBM.Graph.fxyPowGraph_normal
+#check @RBM.Graph.lwEngine_exists_stepX
+#check @RBM.Graph.lvl1_step_identity
+#check @RBM.Graph.lvl1_oe1xT1_zero

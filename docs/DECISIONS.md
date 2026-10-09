@@ -1226,3 +1226,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **BA 阶段 P 关闭 → REQ-2026-10-09-0156**（1048 O5）：P4a T2331、P4b T2335、P4c T2336、P5 T2337、P6 T2341、P8 T2357，6 张（上限 9），`BAProp5to8` 四个电荷对全证，五行登记已删；问下一阶段 K 的开法（我提议先开一张仅报告的 BA-DK 设计票出行表）。阶段 K 答复前不写 BA 证明票。
 - (6) 计数（宽口径）：LW 50（R1、R2 计入）；UN 57/64；ST-6 3/4；BA 34（阶段 P 关闭待批）；MA 7/8。槽位 4/4（T2354、T2356 1a、T2358、T2359）。下一张票号 T2360。
 
+## §163 — 监督 0243 PASS：BA 阶段 P 关闭、阶段 K 先设计（BA-DK = T2360）；LW 两个 1a FAIL 改为钉文修补（T2358/T2359 Amend 1）；T2354 合并、T2356 设计 → REQ；UN-50b PathBounds = T2361（总调度，2026-10-09 02:54 UTC）
+
+- (0) **合并**：T2354 = UN-49 + UN-50a（5d8f515，`HypB` + `LLTransfer`，一次返工后审核 PASS）；T2356 1a 设计报告（8d76de9，仅报告，探针留 `t/T2356` fe9888f）。02:15 起中枢 0 张在跑（T2358、T2359 1a FAIL，T2356 等 REQ），本节补满。
+- (1) **LW 两个 1a FAIL（02:09、02:13）**：监督 0243 在本轮主动审了（不等 REQ），判定**不是 0143 O2 情形，不建议 HOLD**：两处都是钉文过强，修补在已合并目标的定义域内。**T2358 Amend 1**（L1）：`LocStepXProv` 加 `P.g.Normal →`（供给：`lwEngine_exists` 里的 `hch`、根 `fxyPowGraph_normal`），C1、C2 数学上已过，从 1a 重开。**T2359 Amend 1**（L2）：`LWXiE` 合取 2 限制到子类型 `λ²/L² < 1 - t`（目标 `LWMomentExp` 本就只在这里），G2 类改为 `Φ_E = (W^{-d} tailW_{ℓ,W,2D})^{1/2}`，核拷贝加 `sfT_TtTt/KtKt/pair_cases`，`AuxGraph2` 17 个私有辅助（244 行）拷入；中心约 +330 行，停止线仍 2100，越线即 O2。0243 O4 对 O2 的澄清照录：1a FAIL 若靠（i）加一个所有调用者都已提供的前提，或（ii）限制到已合并目标的定义域来修补，是钉文修补，不触发 O2；所需事实在目标定义域上为假或未证，才是 O2。修补不算票：LW 仍 50（计划 52，上限 55），记入返工账本；告知 Jun（通知性）。
+- (2) **BA**：阶段 P 关闭（6/9，`baProp5to8_holds` 四电荷对全证、五行已删）。阶段 K 不从旧表（T2161 K1–K5、T2325 重估）开，先开一张仅报告的设计票 **BA-DK = T2360**（`prover-max`，探针 ≤ 400、报告 ≤ 300），条件 K1–K6 写进票：K1 对 19 个带状 KL 文件逐个分 (g) 原地泛化 / (t) 孪生 / (b) BA 新数学；K2 目标按 `STKboundgL` 形状、只在实 `t`、`BAReal` 数据上用 `Θ_BA`；K3 四个只引用未证的 BA 项的论文状态；K4 交付；K5 超 12 行或 (t) 超 10k 中心行要逐文件说理由；K6 BA 35。报告即阶段 K 开启 REQ，PASS 前不写 BA 证明票。论文差异 D624–D627 记入（0243 O1：T2335a–c、T2336a；T2341 审核无差异）。
+- (3) **UN-50b = T2361**（`GUEPhase/PathBounds.lean`，`prover-hard`，550 / 700 / 950，停止线 1100）：HypB 已合并，`PathBounds` 不再等 UN-51（`RandomLayerA` 要 Eq729B，等监督）。RBM2D 的输入 `MLConcl`（`InitLK`、`InitLocal`，`scaleM` 形）在 RBM3D 换成 `UNMLOut` 的 ST 结论（`STLK`、`STLocalEntry` 等，`d ≥ 3` 界），1a 必须写语句表并证明 ST 结论给出 `GUEPathBounds` 的第 0 步输入；做不到即 FAIL 回调度。UN 58/64。
+- (4) **T2356 设计 → REQ-2026-10-09-0254**：三个目标的陈述（目标 1 结论带 `I₀(t₁)`；目标 2、3 结论是 `UNOUEq747` 的体）、桥（无新钉文，只用 `STExp2`）、F2 好数据（`goodFlow`）、尺寸 1355 / 1687 / 2265、切分 `:784`、差异候选 T2356a–c；问 1b 放行。BA 种类的 `UNOUEq747k` 我提议归 BA（BA-C3 线），不归 UN。
+- (5) 计数（宽口径）：LW 50（两张修补中）；UN 58/64；ST-6 3/4；BA 35；MA 7/8。槽位 4/4（T2358 A1、T2359 A1、T2360、T2361）。下一张票号 T2362。REQ 第 1 行一律 `status: open`（0143 O4）。
+

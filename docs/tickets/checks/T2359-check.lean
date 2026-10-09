@@ -3,6 +3,7 @@ Release check for T2359 (dispatcher V1, Fri Oct 9 01:53 UTC 2026; DECISIONS §16
 `claim:TTk` and the near pin in `ℓ^∞`, G2 for the exp class, the `(log W)^{3/2}` tail, (A).
 Section 1: merged names (`main` 83847ef).  Section 2: the target statements (Prop values; no proof), copied from the T2348 probe
 (`t/T2348:RBM3D/Probe/T2348Pins.lean`, 9f3bd75) with the prefix `T2359_`, and the (A) form fixed by §162 (2).
+Amend 1 (Fri Oct 9 02:52 UTC 2026, DECISIONS §163 (1), supervisor 0243 L2): conjunct 2 of `T2359_LWXiE` on the subtype `λ²/L² < 1 - t`.
 Run: `lake env lean docs/tickets/checks/T2359-check.lean`.
 -/
 import RBM3D.Graph.LWEngine
@@ -67,9 +68,10 @@ def T2359_AnpNearInfAt (d : ℕ) {p q : ℕ} (Γ : NGraph p q) : Prop :=
 
 def T2359_LWXiE {d : ℕ} (sz : Sizes d) (E t ℓ : ℕ → ℝ) (D : ℝ) (ξ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → sz.SeqΩ → ℝ) : Prop :=
   (∀ n α β ω, 0 ≤ ξ n α β ω ∧ ξ n α β ω = ξ n β α ω) ∧
-    sz.Prec (U := fun n => Zd d (sz.L n) × Zd d (sz.L n)) (fun n p ω => ξ n p.1 p.2 ω)
+    sz.Prec (U := fun n => {_p : Zd d (sz.L n) × Zd d (sz.L n) // sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 < 1 - t n})
+      (fun n p ω => ξ n p.1.1 p.1.2 ω)
       (fun n p _ => sfT d (sz.L n) ((sz.W n : ℕ) : ℝ) (sz.lam n) (t n)
-        (min ((zdistInf d (sz.L n) (p.1 - p.2) : ℕ) : ℝ) (ℓ n)) + ((sz.W n : ℕ) : ℝ) ^ (-D)) ∧
+        (min ((zdistInf d (sz.L n) (p.1.1 - p.1.2) : ℕ) : ℝ) (ℓ n)) + ((sz.W n : ℕ) : ℝ) ^ (-D)) ∧
     sz.Prec (U := fun n => Zd d (sz.L n)) (fun n α ω => ∑ β, ξ n α β ω ^ 2)
       (fun n _ _ => ((((sz.W n : ℕ) : ℝ) ^ d) * etaT (E n) (t n))⁻¹)
 
@@ -118,3 +120,10 @@ def T2359_lwXiExpClaim_holds : Prop := ∀ d : ℕ, T2359_LWXiExpClaim d
 def T2359_lwMomExpNoExp_holds : Prop := ∀ (d : ℕ) (K : ℝ), 0 < K → T2359_LWMomExpNoExpF d K
 
 end RBM.Graph.T2359Check
+
+#check @RBM.sfT_TtTt
+#check @RBM.sfT_KtKt
+#check @RBM.sfT_pair_cases
+#check @RBM.zeroMode_le_of_ge
+#check @RBM.tailW_pos
+#check @RBM.Gauss.Sizes.LWPhiB_psiAll
