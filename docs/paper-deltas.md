@@ -1588,4 +1588,7 @@ Lean 用 `‖ϑ_v − ϑ_u − Δ∂_uϑ_u‖ ≤ C₂(1−v)⁻²Δ²`；论文
 - **D629（T2356b）**：(7.47) 的界为 `W^τ 𝓑²((ilambda²W^d)^{-1/5} + 𝓑)`，在 `η_Q = W^{-𝔡/3} ilambda W^{d/2}/N`，剖面 `Θ̃_{ζ(t_n)}`（= 钉文 `UNOUEq747`，`qdBoundExp`），代替 RBM2D 的 `W^δ Meta^{-3}`、`η_Q = W^{2/3}/N`（陈述层面）。
 - **D630（T2356c）**：`(E', t₀, t₁)` 的 `∀ n` 事实由 `goodFlow` 提供（`Sizes.lam` 无正性字段，`(eq:WO)` 是最终性的，有限个 `n` 处 `Im z_n ≤ 0`）（形式性）。
 - **D631（T2352a）**：`Hyp_Kt_detDom`/`Hyp_Kt_one` 相对 RBM2D 的三处陈述差异（同 T2323a）：`hell : ∀ᶠ n, L^d(1 - t₁) ≤ ilambda²` 代 `L²(1 - t₁) ≤ 1`；新前提 `hKb : sz.STKbound E`（RBM3D 无 `Kbound_prec_uncond`）；`hKinit` 用 `STKloop`（UN-48 `HypA`）。
-
+- **D632（T2360a，已改正的 Lean 缺陷，同 D11 类）**：已合并的 `BAMLoop`（`BA/FlowPins.lean:274`，T2197/b750bf3 引入）把 `σ_i` 配给 `(a_i, a_{i+1})`；论文 `(eq:KMloop)`（`1_2:1003`）与树规则 `A:571` 配给 `(a_{i-1}, a_i)`（与 `loopM`、`cutGlueL/R` 一致）。`n ≥ 3` 混合电荷时 `(WI_calK)` 与树表示都不成立（T2360 B8，监督 2051 A.0 复核）。由 BA-K00 = T2362 原地改正；改正后无差异（监督 2051 O6）。
+- **D633（T2360b）**：`(f-internal2)` 在 `S^{(B)} = I` 下弦是 `tΘ^{(σ_i,σ_j)}`；`M`-边落在哪个区域（`A:570-574`）论文从图读出，T2360 §3 (a) 给出组合陈述。
+- **D634（T2360d）**：钉文 `BATreeRep`（T2360 探针 362）对 `n ≥ 3` 陈述；`tree-representation_BA` 写 `n ≥ 4`（`A:593`），`n = 3` 即 `(Kn3sol)`（`1_2:1176`），同一公式、一棵树。
+- **D635（T2360e）**：`BAKBoundAt` 把 `ML:Kbound` 的 `≺` 读作损失 `C L^τ`，`C` 对 `L`、`W`、`g ≤ Λ`、`E`、`t` 一致（合并的 `KLBoundAt` 约定，`Loop/KLInduct.lean:84-89`），蕴含论文的 `≺`，反之不成立（比论文强）。（T2360c 是引理不是差异，按监督 2051 O6 不编号。）
