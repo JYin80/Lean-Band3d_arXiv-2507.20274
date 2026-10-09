@@ -280,6 +280,9 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
 313. T2345 — `docs/tickets/T2345.md` (UN-36, role `prover-hard`). Released by H142 (check exit 0).
 314. T2346 — `docs/tickets/T2346.md` (UN-37, role `prover-hard`). Released by H142 (check exit 0).
 315. T2347 — `docs/tickets/T2347.md` (UN-43, role `prover-hard`). Released by H143 (check exit 0).
+316. T2348 — `docs/tickets/T2348.md` (LW-13b-D, report only, role `prover-max`). Released by H144 (check exit 0).
+317. T2349 — `docs/tickets/T2349.md` (UN-38, role `prover-hard`). Released by H144 (check exit 0).
+318. T2350 — `docs/tickets/T2350.md` (UN-44, role `prover-hard`). Released by H144 (check exit 0).
 287. T2315 — `docs/tickets/T2315.md` (BA-L2b2, role `prover-hard`). Released by H119 (check exit 0).
 
 - H103 (dispatcher V1, 2026-10-07 07:42 UTC; DECISIONS §112–§115). Commit the dispatcher's files written since H94 (b2529ba), exactly as H94 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: bookkeeping DECISIONS §92–§115, tickets T2303 draft, T2310–T2311, checks T2310/T2311, supervisor trig_01R1NVdwWjDU2P5KMhtTLr43 (H103)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
@@ -323,6 +326,8 @@ done: Thu Oct  8 21:41:10 UTC 2026 — T2343 merged 5d0b6da (UN-34+35 Universali
 done: Thu Oct  8 22:20:58 UTC 2026 — T2345 merged 1f3eec5 (UN-36 Universality/GUEPhase/DuhamelA1 (seven targets), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4159 jobs; pushed).
 done: Thu Oct  8 22:22:35 UTC 2026 — T2346 merged 168c9fd (UN-37 Universality/GUEPhase/DuhamelA2 (15 targets, 1334 lines, RBM2D port), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4160 jobs; pushed).
 done: Thu Oct  8 22:31:34 UTC 2026 — T2347 merged f9f498d (UN-43 Universality/GUEPhase/EntryGrid (five targets), Grid.lean 8 `private` deletions only (auditor script per H143; hub re-check), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4161 jobs; pushed). No workflow running; T2344 stopped (H142).
+done: Thu Oct  8 23:27:32 UTC 2026 — T2349 merged 198f15c (UN-38 Universality/GUEPhase/DuhamelB (8 targets, 7 defs, RBM2D port), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4162 jobs; pushed).
+done: Thu Oct  8 23:38:51 UTC 2026 — T2350 merged 9c3bfc7 (UN-44 Universality/GUEPhase/Eq729A (17 targets, 1417 lines, RBM2D port), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4163 jobs; pushed).
 
 ## Pending approval (information only — the hub must NOT act on these)
 - T2303 (BA-L2b, draft `docs/tickets/drafts/T2303-draft.md`): waits for Jun's decision on the BA ticket cap (DECISIONS §106). Do not start.
@@ -676,4 +681,16 @@ done: Thu Oct  8 22:31:34 UTC 2026 — T2347 merged f9f498d (UN-43 Universality/
   Step A — commit the dispatcher's files written since H143 (0e53fe5), exactly as H117 Step A (drop `docs/claude-team/fable/__pycache__/`); also commit the supervisor's files `docs/supervisor/2026-10-08-1942.md`, `docs/supervisor/2026-10-08-2244.md` and the status lines of `REQ-2026-10-08-1851.md`, `REQ-2026-10-08-2152.md` if still uncommitted (supervisor files, committed by the hub as before). Dispatcher files: `docs/DECISIONS.md` (§158), `docs/queue/CONTROL.md`, `docs/tickets/T2348.md`, `docs/tickets/checks/T2348-check.lean`, `docs/tickets/T2349.md`, `docs/tickets/checks/T2349-check.lean`, `docs/tickets/T2350.md`, `docs/tickets/checks/T2350-check.lean`. Message `Dispatcher V1: DECISIONS §158 (supervisor 2244 PASS; LW-13b-D = T2348; UN-38/44 = T2349/T2350), H144`; push. One `done:` line with hash and file count.
   Step B — compile, one after the other (H101 (4)): `T2348-check.lean`, `T2349-check.lean`, `T2350-check.lean`. One `done:` line per file with exit code; on exit 1 paste the first 30 error lines of that file and do not release that ticket.
   Step C — on exit 0: release **T2348** (LW-13b-D, report only, `prover-max`; stage 1a = the design report and probe; then auditor; report-only merge), **T2349** (UN-38, `prover-hard`), **T2350** (UN-44, `prover-hard`), fresh branches from the Step A hash; 3 of 4. Stop-rule sentence (§148 (5)) in every stage-1b prompt. **T2344 stays stopped** (superseded by T2348; its state line: `superseded by T2348 (supervisor 2244 O1)`). One `done:` line per ticket.
+  done: Thu Oct  8 23:02:32 UTC 2026 — Step A: committed 692a72b (12 files staged by name: the 8 dispatcher files and the 4 supervisor files 2026-10-08-1942.md, 2026-10-08-2244.md, REQ-2026-10-08-1851.md, REQ-2026-10-08-2152.md), pushed.
+  done: Thu Oct  8 23:02:50 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2348-check.lean`: exit 0, no error lines.
+  done: Thu Oct  8 23:02:54 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2349-check.lean`: exit 0, no error lines.
+  done: Thu Oct  8 23:02:57 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2350-check.lean`: exit 0, no error lines.
+  done: Thu Oct  8 23:03:28 UTC 2026 — Step C: T2348 started (wf_866303a1-db2, prover-max; report-only), branch t/T2348 from 692a72b; state preflight; Released list 316.
+  done: Thu Oct  8 23:03:28 UTC 2026 — Step C: T2349 started (wf_8164537b-456, prover-hard), branch t/T2349 from 692a72b; state preflight; Released list 317.
+  done: Thu Oct  8 23:03:28 UTC 2026 — Step C: T2350 started (wf_6a9ba6c1-98e, prover-hard), branch t/T2350 from 692a72b; state preflight; Released list 318. T2344 state set to `superseded by T2348 (supervisor 2244 O1)`. 3 of 4 in use.
+
+- H145 (dispatcher V1, 2026-10-08 23:52 UTC; DECISIONS §159).
+  Step A — commit the dispatcher's files written since H144 (692a72b), exactly as H117 Step A (drop `docs/claude-team/fable/__pycache__/`): `docs/DECISIONS.md` (§159), `docs/queue/CONTROL.md`, `docs/tickets/T2351.md`, `T2352.md`, `T2353.md` and their three check files. Message `Dispatcher V1: DECISIONS §159 (UN DuhamelC/HypA/OneLoop = T2351/T2352/T2353), H145`; push. One `done:` line with hash and file count.
+  Step B — compile, one after the other (H101 (4)): `T2351-check.lean`, `T2352-check.lean`, `T2353-check.lean`. One `done:` line per file with exit code; on exit 1 paste the first 30 error lines of that file and do not release that ticket.
+  Step C — on exit 0: release **T2351** (`prover-hard`), **T2352** (`prover-hard`), **T2353** (`prover-max`), fresh branches from the Step A hash; with T2348 that is 4 of 4. Stop-rule sentence (§148 (5)) in every stage-1b prompt. One `done:` line per ticket.
 

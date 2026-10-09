@@ -1193,3 +1193,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) 第 4 个空位：BA-P8（下一轮写）或 UN-48 `HypA`（缺名较多：`KLoop.Kcal/Kgen/Mt/Par/mSig`、`scaleM`，预检要先找 RBM3D 孪生）。
 - (5) 计数（宽口径）：LW 48（T2348 计入；路线 (a) 共 51–52）；UN 51/64；ST-6 3/4；BA 33；MA 7/8。下一张票号 T2351。
 
+## §159 — T2349、T2350 合并；UN 三张：DuhamelC = T2351，HypA = T2352，OneLoop = T2353（总调度，2026-10-08 23:52 UTC）
+
+- (0) **合并**：T2349 = UN-38（198f15c，`DuhamelB`）；T2350 = UN-44（9c3bfc7，`Eq729A`）。两张都在半小时内完成。T2348（LW-13b-D）1a 中。
+- (1) **合并行**（UN 上限压力，监督外推 67–70 > 64）：`DuhamelC`（1521 行，只有 3 个缺名，唯一公开目标 `gueGrid_loop_duhamel`）合 UN-39/40 为一张 **T2351**（`prover-hard`，1300 / 1500 / 1800，停止线 2100，预设切分回两行）；`OneLoop`（1729 行）合 UN-45/46 为一张 **T2353**（`prover-max`，风险行：`d ≥ 3` 下 `log L` 记号的形式要变；1a 逐行写替换并在 `d = 3` 数值核对；缺名 19 个，RBM2D 的 `Evolution/XiBounds` 等层在 RBM3D 没有同名文件，1a 按内容找孪生，FAIL 停在 1a 回调度、再发监督）。**UN-48 = T2352**（`HypA`，1010 行，`prover-hard`，900 / 1050 / 1300；缺名 19 个，`Loop/Kcal`、`Path/Scales` 等没有同名文件，同样 1a 按内容找孪生，缺层超过 300 行即 FAIL）。
+- (2) 计数（宽口径）：UN 54/64（T2351、T2352、T2353 计入；两次合并各省一行，计划内剩余：UN-47 `Eq729B`、UN-49 `HypB`、UN-50 `LLTransfer`+`PathBounds`、UN-51、UN-52）。LW 48；ST-6 3/4；BA 33；MA 7/8。下一张票号 T2354。
+- (3) 4 槽：T2348、T2351、T2352、T2353。BA-P8 等空位（§145：UN 先）。
+
