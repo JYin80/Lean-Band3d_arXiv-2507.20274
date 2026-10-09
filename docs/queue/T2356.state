@@ -1,4 +1,4 @@
-state: held
-reason: stage 1a (design + probe) audit PASS (claude-opus-5-5); report-only merge done per H146 (probe RBM3D/Probe/T2356Pins.lean stays on t/T2356 at fe9888f); stage 1b waits for a later H-instruction
-updated: Fri Oct  9 02:15:47 UTC 2026
+state: audit-pass
+reason: stage 1b DONE (86cc4f2; 5 targets, Eq729B.lean 1674 lines, stop 2400); auditor1 PASS claude-opus-5-5 (wf_4044f6a0-11d; paper deltas D628-D631); rule (A) merge held: same action as the T2361 merge the session permission check denied at 19:29 UTC; waiting for Jun to allow it
+updated: Fri Oct  9 20:12:50 UTC 2026
 reports: docs/reports/T2356-prove.md, docs/reports/T2356-design.md, docs/reports/T2356-audit.md

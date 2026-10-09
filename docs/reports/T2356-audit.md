@@ -1,100 +1,108 @@
 Auditor model: claude-opus-5-5
+# T2356 audit (stage 1b, round 1) — Fri Oct  9 20:11:50 UTC 2026
 
-# T2356 audit, round 1: stage 1a (design report + probe, items (1)-(6)), CONTROL H146
+Branch `t/T2356` at `86cc4f2` (merge-base with `main`: `cd712be`); audit worktree `/Users/junyin/Lean_proof/RBM3D-wt/T2356-audit1` (detached, fresh build cache from main). Inputs: `docs/tickets/T2356.md`, `docs/tickets/T2356-1b.md` (E1-E5), `docs/reports/T2356-prove.md`, pins = probe `RBM3D/Probe/T2356Pins.lean` (design section 1, commit `fe9888f`). `$S` = auditor scratchpad `T2356/`.
 
-Written Fri Oct  9 02:14:26 UTC 2026. Audit worktree `/Users/junyin/Lean_proof/RBM3D-wt/T2356-audit1`, detached at `t/T2356` = `fe9888f`.
-Inputs: ticket `docs/tickets/T2356.md`, `docs/reports/T2356-design.md` (235 lines), `docs/reports/T2356-prove.md` (181 lines), probe `RBM3D/Probe/T2356Pins.lean` (398 lines).
-Scope (H146): stage 1a only. The "targets" here are the 1a deliverables: the RBM3D statements of the three 1b targets (Prop pins), the exponent chain, the bridge, the MISS-list table, the token table, the sizes. `Eq729B.lean` is not part of this run and does not exist.
-
-## 1. Build, axioms, hygiene, diff
+## 1. Build, hygiene, scope (item 4)
 ```
-$ lake build RBM3D.Probe.T2356Pins 2>&1 | grep -v "^✔\|^info\|Replayed" | tail -20
-(no `error:` line; the only warnings printed are longLine warnings of the merged Main/QUEFromQDiff.lean:37-44)
-Build completed successfully (3818 jobs).
-$ ls .lake/build/lib/lean/RBM3D/Probe/T2356Pins.olean
-.lake/build/lib/lean/RBM3D/Probe/T2356Pins.olean
-$ lake env lean RBM3D/Probe/T2356Pins.lean; echo "probe exit=$?"
-probe exit=0
-$ lake env lean T2356/ax.lean | sed 's/^.*depends on axioms: //' | sort | uniq -c   # #print axioms of all 16 probe declarations
-  16 [propext, Classical.choice, Quot.sound]
-$ grep -nE "sorry|admit|native_decide|^\s*axiom" RBM3D/Probe/T2356Pins.lean | wc -l
+$ git diff fe9888f t/T2356 -- RBM3D/Probe/T2356Pins.lean | wc -l      # the passed pins are unchanged on the branch
        0
-$ git diff --stat main...HEAD ; git diff --name-only main...HEAD
- RBM3D/Probe/T2356Pins.lean | 398 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 398 insertions(+)
-RBM3D/Probe/T2356Pins.lean
-$ wc -l RBM3D/Probe/T2356Pins.lean docs/reports/T2356-design.md
-     398 (limit 400)      235 (limit 250)
+$ lake build RBM3D.Universality.GUEPhase.Eq729B > $S/build.log 2>&1; echo exit=$?; grep -c "Eq729B.lean" $S/build.log; tail -2 $S/build.log
+exit=0
+0                                                   # no warning/error line in the new file
+Build completed successfully (3818 jobs).
+$ lake env lean RBM3D/Universality/GUEPhase/Eq729B.lean; echo exit=$?   # forced re-elaboration, no output
+exit=0
+$ grep -cE '\bsorry\b|\badmit\b|native_decide|^ *axiom ' Eq729B.lean; grep -c "DuhamelC\|^import RBM3D$" Eq729B.lean; wc -l < Eq729B.lean
+0
+0
+1674                                                # E3: stop line 2400, no cut taken; Eq747.lean absent
+$ git diff --name-status main...HEAD
+A	RBM3D/Probe/T2356Pins.lean                      # probe: stays on the branch, not merged (H150)
+A	RBM3D/Universality/GUEPhase/Eq729B.lean         # sole writable file of stage 1b
 ```
-Sole writable files of 1a: probe + design report. The branch touches only the probe; the reports live in the main worktree (hub convention). No frozen signature touched (no merged file in the diff).
+Imports (lines 6-15): `Eq729A OneLoop KPrim BootstrapAt HypA ZeroModeProfile Main.ZTransfer Main.QUEFromQDiff Loop.KLFinal Loop.KLTree` = the E2 list exactly; no `DuhamelC`, no `import RBM3D`. No merged file is modified, so no frozen signature is touched.
 
-## 2. Item 1: the statements (script comparison against the source under the port map)
-`T2356/sdiff.py`: RBM2D `gueGrid_eq729` (`Eq729B.lean:531-553` @ 9e0f275) with the ticket's port map applied (`d.L`↦`sz.L`, `Z2`↦`Zd d`, `spectralZ`↦`zt`, `gloop … blockMat`↦`loopL d … (blockMat d …)`, `KLoop.mSig`↦`mSigma`, `kTwoGUE`/`primRhsGUE` gain `d`/`sz.lam n`, size cast ↦ `Nsz`) and each conjunct searched in probe `PinGueGrid729` (85-98) / `Eq729Concl` (53-55):
+## 2. Statements against the passed pins, both directions (items 1, 2)
+Independent check `$S/audchk.lean` (imports the probe and the new module; `fd_iff` converts the probe's `FlowData` and the file's `Eq729B_FlowData`, two Prop structures with the same three fields):
 ```
-RBM2D gueGrid_eq729 hypothesis binders: ['hκ', 'hτU', 'hn0', 'hsize', 'hE', 'ht1', 'ht10', 'ht0', 'h730', 'hscale', 'hell', 'Kt', 'hKinit', 'hK', 'hK2', 'hB', 'hP']
-src probe  Tendsto sz.size
---- probe  0 < sz.lam n
-src probe  |E n| ≤ 2 - κ
-src probe  0 ≤ t1 n
-src probe  t1 n ≤ t0 n
-src probe  t0 n < 1
-src probe  t0 n - t1 n ≤ Nsz sz n ^ (-τU) * etaT (E n) (t0 n)
-src probe  (gueScale sz E n (t0 n))⁻¹ ≤ Nsz sz n ^ (-τU)
---- probe  ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2
---- probe  sz.STKbound E
---- probe  sz.STKloop n (E n) (t1 n)
-src probe  primRhsGUE d (sz.L n) (sz.W n) (Kt n s) I
-src probe  kTwoGUE d (sz.L n) (sz.W n) (sz.lam n) (mSigma (E n)) (t1 n) s
---- probe  sz.STExp2 E t1
-src probe  GUEPathBounds sz E t1 t0 (gueGridK sz n0) n0 Kt
---- probe  Nsz sz n ^ δ * ((gueScale sz E n (t0 n))⁻¹ ^ 3 + initTerm
+example : @Eq729Concl = @Eq729B_Concl ∧ @OUBody = @Eq729B_OUBody ∧ @initTerm = @Eq729B_initTerm ∧ @eqErr = @Eq729B_eqErr ∧ @zQ = @Eq729B_zQ := ⟨rfl, rfl, rfl, rfl, rfl⟩
+example : PinGueGrid729 = type_of% @gueGrid_eq729 := rfl                       -- target 1: identical type
+example : PinEq747OfEq729 ↔ type_of% @Eq729B_eq747_of_eq729 := by constructor ... -- target 2, both directions
+example : PinEq747OfInputs ↔ type_of% @Eq729B_eq747_of_inputs := by ...          -- target 3, both directions
+example : PinSTExp2OfUNMLOut ↔ type_of% @Eq729B_bridge := by ...
+example : PinGoodFlow ↔ type_of% @Eq729B_goodFlow := by ...
+example : PinDerived ↔ type_of% @Eq729B_derived := by ...
+example ... : UNOUEq747 sz 𝔡 τU ↔ ∀ κ, 0 < κ → ∀ E, (∀ n, |E n| ≤ 2 - κ) → ∀ t, (∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n) → ∀ τ, 0 < τ → Eq729B_OUBody sz 𝔡 E t τ := Iff.rfl
+$ lake build RBM3D.Probe.T2356Pins | tail -1; lake env lean $S/audchk.lean; echo exit=$?
+Build completed successfully (3818 jobs).
+[12 #print axioms lines, section 4]
+exit=0
 ```
-The six `---` rows are exactly the departures the ticket names ((a)-(c)) and the design tables (design §1): `hlam` (required by the merged `gueGrid_expect_oneLoop`, `OneLoop.lean:1308`, read: `(hlam : ∀ᶠ n, 0 < sz.lam n ∧ sz.lam n ≤ Λ)`); `hell`, `hKb`, `hKinit` in the form of the merged `Hyp_Kt_detDom` (`HypA.lean:690`, read: same three binders, token-equal); `hB := sz.STExp2 E t1`; loss `N^δ((Nη_{t₀})^{-3} + initTerm(t₁))`. `initTerm` (probe 42-43) is token-equal to the right side of `STExp2` (`Induction/Defs.lean:159-164`, read). Quantifier order kept (fixed `κ τU Λ n0` before `∀ δ > 0, ∀ᶠ n`).
-Target 2 (`PinEq747OfEq729`, probe 102-105) vs `RBM2D:1041-1058`: `hE' ht0 ht1` become the eventual `FlowData` (probe 36-39); `H729` becomes `Eq729Concl`; conclusion `OUBody` (probe 58-72). Target 3 (`PinEq747OfInputs`, probe 109-119) vs `RBM2D:1384-1407`: same, plus `hgood : ∀ n, |E'| ≤ 2-κ ∧ 0 ≤ t₁ ≤ t₀ < 1` (RBM2D derives it by `Eq729B_pw`). The conclusion is the body of the merged pin:
+Each bidirectional proof passes the hypotheses in the same order with no extra argument (`intro ...; exact h ... ((fd_iff ..).1/2 hF) ...`). So each file theorem is equivalent to its pin: it is neither stronger nor weaker.
+
+Statement content, checked against the ticket's mathematics and 1b items (`B4` of the prove report matches the file text):
+- Target 1 `gueGrid_eq729` [622-638]: `3 ≤ d`, `hlam`, `hell : ∀ᶠ n, L^d (1 - t₁) ≤ ilambda²`, `hKb : sz.STKbound E`, `hKinit` via `sz.STKloop` (the `Hyp_Kt_detDom` form), `hB : sz.STExp2 E t1`, `hP : GUEPathBounds` (pin). The conclusion `Eq729B_Concl` has `∀ δ > 0, ∀ᶠ n, … ≤ N^δ ((N η_{t₀})^{-3} + I₀(t₁))`, with `I₀` = the right side of `STExp2` (`Induction/Defs.lean:159`, verbatim). Parameters come before `∀ᶠ n`.
+- Target 2 `Eq729B_eq747_of_eq729` [1077-1080]: `H729 : Eq729B_Concl sz E' t1 t0 K` ⇒ `Eq729B_OUBody sz 𝔡 E t τ`. That is the body of `UNOUEq747`, with error `qdBoundExp sz n τ (ouEtaQ sz 𝔡 n)` (Iff.rfl above). There is no `hell`.
+- Target 3 `Eq729B_eq747_of_inputs` [1221-1235]: `τU ≤ ouTauMax 𝔠 𝔡`, `t n ≤ ouTStar`, flow data, `hgood` (∀ n facts, D630), the Kt hypotheses at `E'`, `hB : STExp2 E' t1`, and `hP`. It derives `h730`, `hscale`, `hell`, `hlam` and `hKb` itself; none of them is a hypothesis.
+- Hidden hypotheses: `Eq729B_FlowData` (lines 87-90) has only the three defining equations of (7.47) (`E' = lemE z_n`, `t₀ = lemT z_n`, `t₁ = (1-ζ)t₀`, eventually). These are pinned data, not hidden assumptions, and `Eq729B_flowData_formulas`/`Eq729B_goodFlow` produce them. No other `structure`/`class` is assumed. `STExp2`, `STKbound`, `UNMLOut` and `GUEPathBounds` are merged definitions (`Induction/Defs.lean:159,174`, `Universality/Pins.lean:432`, `GUEPhase/Grid.lean:89`). `hKb` is discharged by merged `Sizes.stKbound_holds` (`Loop/KLFinal.lean:243`).
+- No cycle: the module imports only merged modules (section 1), and the probe is not imported.
+
+## 3. Compiled nonempty instances (item 3, E1)
+`namespace RBM.Univ.GUEPhase.Eq729BInst` (lines 1339-1670) uses `sz0` (`d = 3`, `L = 4(n+1)`, `W = (2(n+1))^5`, `ilambda = (2(n+1))^{-6}`; at `n = 0`: `N = 2^21 = 2097152`):
 ```
-theorem ueq747_iff (sz : Sizes d) (𝔡 τU : ℝ) : UNOUEq747 sz 𝔡 τU ↔ ∀ κ … ∀ τ : ℝ, 0 < τ → OUBody sz 𝔡 E t τ := Iff.rfl   (probe 75-77, compiles)
+[1476] inst_gueGrid_eq729   : ∃ Kt, sz0.STExp2 Ei tw1 → GUEPathBounds sz0 Ei tw1 tw0 (gueGridK sz0 3) 3 Kt → Eq729B_Concl …
+        κ=1/10, τU=1/30, Λ=1, n0=3, E=0, 1-t₀=y=ilambda²/(2L³)>0, t₀-t₁=y/N>0 (window of positive length ∀ n);
+        discharged: hsize (tendsto_size), hlam1, hE0, tw1_nonneg, tw1_le_tw0, tw0_lt_one, h730_at, hscale_at, hell_at,
+        hKb0 (stKbound_holds), hKinit/hK/hK2 (gueK_exists ∀ n). Open: STExp2, GUEPathBounds (other gates' pins).
+[1589] inst_eq747_of_eq729  : (H729 : Eq729B_Concl sz0 Ec T1c T0c (gueGridK sz0 3)) → ∀ τ>0, Eq729B_OUBody sz0 (1/10) Ei tU τ
+        flow data = explicit formulas (fdc), K≠0 by gueGridK_ne_zero, tU = ouTStar = N^{-1+τU} > 0.
+[1598] inst_eq747_of_inputs : (hML : UNMLOut 3) → ∃ E' t0 t1 Kt, FlowData ∧ good ∀ n ∧ (GUEPathBounds … → ∀ τ>0, OUBody …)
+        τU = ouTauMax(1/6,1/10) = 1/720, hB by Eq729B_bridge, Kt by gueK_exists. Open: UNMLOut 3, GUEPathBounds.
+[1562] inst_goodFlow   [1576] inst_derived   [1584] inst_bridge (hML : UNMLOut 3)
+[1529] inst_claimA (n=7, 𝔡=3/10, τU=1/240)  [1535] inst_hell_of_scales (n=7, ζ=N^{-1+1/240}>0)
+[1544] inst_assembly_747 (numeric)  [1617] inst_bctl_le_two_calB (n=0, η=2^{-18})  + 7 `example`s (lines 1621-1667)
 ```
-`hgood` is not a weakening in effect: `goodFlow : PinGoodFlow` (probe 177, proved, standard axioms) produces, for every `(κ, E, t)` admissible, data `E' t0 t1` satisfying `FlowData` and `hgood` at once, and F2 (design §0) shows why the `∀ n` formulas are false at the finitely many `n` with `η_Q ≤ 0` (`Sizes.lam` has no positivity field; `WO` eventual: `Defs/Sizes.lean:177`, read). Recorded as candidate `T2356c`.
-Composition: `pin3_of_pins (P1 : PinGueGrid729) (P2 : PinEq747OfEq729) (P5 : PinDerived) : PinEq747OfInputs` (probe 384) compiles: target 3 is targets 1, 2 plus the derived inputs, with `hKb` discharged by the merged `Sizes.stKbound_holds` and `hlam` from `WO`. Verdict item 1: **PASS**.
+Every endpoint (targets 1-3) and every E1 item (`goodFlow`, `bridge`, `hell_of_scales`, `claimA`, `assembly_747`) has an instance. The data are nondegenerate: `N ≥ 2^21`, nonempty `Zd 3 (L n)`, windows of positive length, no `False` premise, no astronomically large witness. The only hypotheses left open are other gates' pins (`STExp2`, `GUEPathBounds`, `UNMLOut`), plus target 1's own conclusion as the premise of target 2. The prove report's B6 has the limit check for these external pins: sizes go to 0, `Nη → ∞`, and `I₀/Bctl(t₁) → 0`.
 
-## 3. Item 2: the exponent chain (links re-read against the merged signatures)
-| link | probe / merged lemma | auditor check |
-|---|---|---|
-| (i) `Bctl(t₁) ≤ 2 calB(η_Q,0)` from `η_Q ≤ 2(1-t₁)` | `bctl_le_two_calB` (192), proved | `zRange` (`Main/ZTransfer.lean:74-79`, read) gives `z.im/2 ≤ 1 - lemT z`, and `t₁ ≤ t₀`: hypothesis holds eventually. F1 correct. |
-| (i) initial term → `e₀` | `det_of_prec` (`Endpoints.lean:443`, read: `∀ᶠ n, ξ ≤ N^τ ζ` for deterministic `Prec`), `map_gueH_zero` (`Grid.lean:542`, read: law of step 0 = band flow at `t₁`) | `STExp2` quantifies over all `(σ, a) : (Fin 2 → Bool) × (Fin 2 → Zd)`: bounds `Bk` at `k = 0` for every `(s1,s2,x,y)` of `eq729_one_step`. |
-| (i) evolution `t₁ → t₀` | `eq729_one_step` (`Eq729A.lean:731`, read: factor `(1 + Δ·(2NρΛ))`, `Λ = (N etaT(E,t₀))⁻¹`), `gronwall_factor` (364) | `exp(dt·2NρΛ) = exp(2ρ dt/η_{t₀}) ≤ e²` from `h730` and `ρN^{-τ_U} ≤ 1`: matches. `gueGrid_expect_oneLoop` gives `hX`; `gueGrid_loop_duhamel` unused (F4, observation O3). |
-| (ii) GUE terms | `Eq729B_arith` (port, `N`-only), `final_729` (359) | `final_729` proved; the port of `Eq729B_arith` is 1b work (N-only, `9 ≤ N` from `N ≥ 3^d`). |
-| (iii) (7.26), profiles | `map_gueH_last` (`Grid.lean:559`, read: needs `t1 = (1-ζ(τ))t0`, pointwise in `n` since `gueH` reads only `t1 n, t0 n`, `Grid.lean:77-81`), `lemT_mul_kTwoGUE_pm_eq_profPMTilde` / `_pp_eq_profPPTilde` (`KPrim.lean:275,285`, read: `t₀·kTwoGUE(…,(1-ζ)t₀,t₀,true,false/true) = profPMTilde/profPPTilde sz n ζ z`, need `0 < z.im`) | both profile bridges merged; `0 < η_Q` eventually. |
-| (iii) scale and loss | `zt_im_lemma28` (`Semicircle.lean:344`), `lemma28_quant` (`:359`, `1/16 ≤ lemT z`), `qdBoundExp_eq` (322), `assembly_747` (328) | `etaT E u = (1-u) Im mE` (`Loop/GLoop.lean:75`) = `Im zt` (`zt_im`, `Semicircle.lean:182`), so `gueScale(t₀) = N√t₀η_Q` as `assembly_747` uses; constant 12 absorbed by `W^{τ/2}`. |
-| derived inputs | `claimA` (279), `h730_hscale_real` (305), `hell_of_scales` (238), `Ld_mul_etaQ` (215) | `τ_U ≤ ouTauMax ≤ 𝔠𝔡/12` (`ZeroModeProfile.lean:78`, read); thresholds W-only, eventual: `PinDerived` (376) is a statement, its proof is 1b (sized in item 6). |
-Independent evaluation at the design instance (`T2356/aud.py`, mpmath, own code; `L=4, W=32, ilambda=1/64, E=1/2, 𝔠=1/6, 𝔡=1/10, t = ouTStar`):
+## 4. Axioms (item 4)
 ```
-d=3 N=2097152 etaQ=1.2016e-06 t0=0.9999987590 1-t1=1.7275e-06 etaQ<=2(1-t1):True Bctl/calB=0.7677 I0/Tgt=0.5289 t0*Lam0^3/Tgt=0.1948 t0(Lam0^3+I0)/Tgt=0.7237(<=12) hell L^d(1-t1)/lam^2=0.4529 1/16<=t0<=1:True
-d=4 N=268435456 etaQ=5.3102e-08 t0=0.9999999452 1-t1=5.8670e-08 etaQ<=2(1-t1):True Bctl/calB=0.9101 I0/Tgt=0.8146 t0*Lam0^3/Tgt=0.1558 t0(Lam0^3+I0)/Tgt=0.9705(<=12) hell L^d(1-t1)/lam^2=0.0615 1/16<=t0<=1:True
+'RBM.Univ.GUEPhase.gueGrid_eq729' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729B_eq747_of_eq729' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729B_eq747_of_inputs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729B_goodFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729B_bridge' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729B_derived' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729BInst.inst_gueGrid_eq729' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729BInst.inst_eq747_of_eq729' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729BInst.inst_eq747_of_inputs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729BInst.inst_bridge' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729BInst.inst_goodFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.Univ.GUEPhase.Eq729BInst.inst_derived' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
-These agree to all printed digits with design B1 "the chain at the instance". No link is false; every link is a merged lemma, a compiled probe lemma, or a port of an `N`-only RBM2D lemma. Verdict item 2: **PASS**.
+I did not rerun the full `lake build` or the registry pre-check (`#assert_rbm_axioms`). The hub runs them at merge. The prover's run (B9) reports exit 0.
 
-## 4. Item 3: bridge `UNMLOut` → `STExp2 sz E' t₁`
-`UNMLOut d` (`Universality/Pins.lean:432-436`, read) needs `STFlow sz κ ε 𝔠 𝔡 z` (= `Admissible ∧ ∀ n, locDomain κ ε n (z n)`, `Induction/Defs.lean:286-287`, read) and `0 ≤ t ≤ lemT z`; its fourth conjunct is `STExp2 sz (STflowE z) t`. The probe proves `bridge : PinSTExp2OfUNMLOut` (182-187) via `goodFlow_aux` (modify `z_n` at finitely many `n`, `queDomain` eventual, `locDomain_nonempty`) and `STExp2_congr` (`STExp2` is `∀ τ D, ∀ᶠ n`). Axioms standard (§1). No new pin; only `STExp2` consumed. Verdict item 3: **PASS**.
+## 5. Names, E3/E4
+```
+$ grep -nE "^(theorem|lemma|def|structure|abbrev) " Eq729B.lean   → 56 public names: 45 `Eq729B_*`, the pinned `gueGrid_eq729`, 10 `Eq729BInst.inst_*`
+$ grep -rlw gueGrid_eq729 RBM3D | grep -v -e Probe/ -e Eq729B.lean   → RBM3D/Universality/GUEPhase/Eq729A.lean (line 15, docstring text only)
+$ for n in perN arith final_729 gronwall_factor bctl_le_two_calB Ld_mul_etaQ hell_of_scales claimA h730_hscale_real qdBoundExp_eq assembly_747 STExp2_congr FlowData.ev_eq; …  → 13/13 public, UNModel=0 in each statement
+```
+E3: one row, 1674 lines (stop line 2400), no cut, and no 1b FAIL in chain links (i)-(iii) or in `PinDerived` (`Eq729B_derived` is proved; section 4). E4 is satisfied. E5 needs no action.
 
-## 5. Items 4-6
-Item 4: 28 MISS names, each with a twin `file:line`, "not needed", or "re-derive (lines)" (design §4); the declaration-level absence grep is in the prove report B4 (all 0); the cited twin lines are echoed by script in design B4 ("124 citation lines, 26 files, missing lines: 0"). Spot checks (read): `Gres_conjTranspose'` is `private` at `Main/ZTransfer.lean:344` (re-derive, 12 lines: consistent); `STKbound` `Induction/Defs.lean:174`; `profPMTilde` `ZeroModeProfile.lean:88`. Item 5: token table, 16 classes, 48 lines with `^ 2` (design §5, script). Item 6: 1355 / 1687 / 2265, cut at `:784` sized A 658/778/984, B 697/909/1281 (design §6, script). Verdict items 4-6: **PASS**.
+## 6. Paper deltas (item 5)
+The Lean/paper statement differences are D628 (= T2356a: `I₀(t₁)` in (7.29) at `t₀`), D629 (= T2356b: (7.47) as `qdBoundExp` at `η_Q = W^{-𝔡/3} ilambda W^{d/2}/N`, profile `Θ̃_{ζ(t_n)}`), D630 (= T2356c: the `∀ n` flow facts `hgood`/`goodFlow`) and D631 (= T2352a: `hell`, `hKb`, `hKinit`). All four are present in `docs/paper-deltas.md:1587-1590`. The prove report proposes no new difference, and I found none.
 
-## 6. Instances, vacuity, cycles
-- Hidden hypotheses: `FlowData` (probe 36) has three explicit eventual equations only; `GUEPathBounds` (`Grid.lean:89-102`, read) is the merged pin of UN-49/50/51 (fields `lk`, `localLaw`), kept as a hypothesis as in RBM2D. No other structure.
-- Non-vacuity of the pins' deterministic hypotheses: (a)(ii) instance (`d = 3, 4`, `n = 0`, 27 checks True) and the auditor's run above; `hgood ∧ FlowData` jointly witnessed by the proved `goodFlow`; `hKb` by the merged `stKbound_holds`; `Kt` by `gueK_exists` (`KPrim.lean:749`, design risk 1). `STExp2`, `GUEPathBounds`, `UNMLOut` are other gates' pins (allowed as hypotheses).
-- Cycle: none; `pin3_of_pins` composes pins downward; `bridge` consumes `UNMLOut` (owed by ST-6), not any pin of this ticket.
-- Compiled instance: the endpoint theorems of this ticket are the three 1b targets; at 1a they are Prop pins (definitions), so §6 item 3 applies at 1b. The probe carries one example (`bctl_le_two_calB` at `SizesInst.sz0`, line 396-397, compiles, nondegenerate: `N = 2097152`, `η = 2^{-18}`). Observation O1.
-
-## 7. Paper deltas
-Proposed (design §7, prove (d)): `T2356a` ((7.29) at `t₀` carries `I₀(t₁)`), `T2356b` ((7.47) loss `W^τ𝓑²(X+𝓑)` at the new `η_Q`, profile `Θ̃_{ζ}` of the OU matrix), `T2356c` (`∀ n` facts replaced by good data, formal). `hell`, `hKb`, `hKinit` are the existing candidate `T2352a` (`docs/reports/T2352-prove.md:81`, not yet numbered in `docs/paper-deltas.md`: dispatcher bookkeeping). The new `hlam` of target 1 is the departure of the merged `gueGrid_expect_oneLoop` (T2353). Every statement difference in §2 is covered.
-
-## 8. Observations (no RETURN)
-- O1. Only one `example` in the probe; the proved `goodFlow`, `bridge`, `hell_of_scales`, `claimA`, `assembly_747` have no instance. Stage 1b must give each 1b endpoint (and these lemmas if moved into `Eq729B.lean`) a compiled nonempty instance (design §6 plans `Eq729BInst`).
-- O2. (a) rows "(i) initial term" (`iff hell`, constant 512) and "(iii)" (`calB_le_two_inv` needed) are superseded by (a′) items 1, 3 and design F1; the probe agrees with (a′).
-- O3. The ticket names `gueGrid_loop_duhamel` / `DuhamelC` as an ingredient and an import; the design shows it is not used by `Eq729B` (B2: one docstring hit in the source; consumer is `PathBounds.lean`). For the dispatcher when writing the 1b H-instruction (import list), not a defect.
-- O4. Probe comment at line 147 cites `Endpoints.lean:485`; the declaration is at 486 (design cites 486).
-- O5. The design's open questions (1)-(5) (design §7) go to the supervisor REQ that the ticket already prescribes after a 1a PASS; no separate dispatcher sign-off is needed for this audit.
+## Observations (no effect on statement, instance, build, axioms, or delta coverage)
+- O1: target 1's `hlam : ∀ᶠ n, 0 < ilambda_n ≤ Λ` is inherited from the merged `gueGrid_expect_oneLoop` (`OneLoop.lean:1308`). It is a consequence of the paper's `(eq:WO)`, and target 3 derives it, so it is not a paper difference. It has no delta entry; the design passed it (design line 31).
+- O2: the probe stays on the branch (2 files in `git diff main...t/T2356`). Per H150, the merge brings in only `RBM3D/Universality/GUEPhase/Eq729B.lean`.
 
 ## Verdict
-Stage 1a, items (1)-(6): **PASS**. Probe builds (`lake build` and `lake env lean`, exit 0), 16 declarations on the three standard axioms, no forbidden tokens, branch diff = probe only, chain links true and grounded in merged lemmas, bridge proved with no new pin. Per H146: report-only merge; the probe stays on `t/T2356`; stage 1b waits for a later H-instruction.
+| target | statement | hidden hyp / cycle | instance | build / axioms | deltas | verdict |
+|---|---|---|---|---|---|---|
+| `gueGrid_eq729` | = pin (rfl) | none | `inst_gueGrid_eq729` | ok | D628, D631 | **PASS** |
+| `Eq729B_eq747_of_eq729` | ⇔ pin | none | `inst_eq747_of_eq729` | ok | D629 | **PASS** |
+| `Eq729B_eq747_of_inputs` | ⇔ pin | none | `inst_eq747_of_inputs` | ok | D629, D630 | **PASS** |
+| `Eq729B_goodFlow`, `Eq729B_bridge`, `Eq729B_derived` | ⇔ pins | none | `inst_goodFlow`, `inst_bridge`, `inst_derived` | ok | D630 | **PASS** |
+
+Overall: **PASS**. No dispatcher sign-off needed.

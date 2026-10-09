@@ -75,107 +75,219 @@ Section (a) is not edited; verdicts are unchanged (PASS). Three statements of (a
 1. Row (i) "initial term at `t₁`": "`Bctl(t₁) ≤ 2/(N(1-t₁))` **iff `hell`**". The comparison with `calB` needs no `hell`: `Bctl(t₁) ≤ 2𝓑_{η_Q,0}` follows from `η_Q ≤ 2(1 - t₁)` alone (`bctl_le_two_calB`, probe 192, compiled; `zRange`, `Main/ZTransfer.lean:79`: `1 - t₀ ≥ η_Q/2`). The constants of rows (i) and "Λ-scale" become: `1 - t₀ ≥ η_Q/2` (not `/4`), `Bctl(t₁) ≤ 2𝓑` (not `8 calB`), `I₀ ≤ 8·Target` (not `512`); `c_κ = √(κ(4-κ))/2` of row `hell` is `√(κ(4-κ))/8` in the merged `im_msc_ge` (`Main/ZTransfer.lean:130`). `hell` is needed only by the K̃ bounds of target 1 (`Hyp_Kt_detDom`).
 2. Verdicts, `Eq729B_eq747_of_inputs`: "conditional only on the two bookkeeping facts" lacks a third, the `∀ n` facts of the flow data (`|E'| ≤ 2 - κ`, `0 ≤ t₁ ≤ t₀ < 1`), false at the finitely many `n` with `ilambda_n ≤ 0` (design F2); `goodFlow` (probe 177, proved) supplies good data. The bridge of the "tail modification" is proved (`bridge`, probe 182).
 3. `gueGrid_loop_duhamel` is not an ingredient of `Eq729B` (design F4, B2); the ticket lists `DuhamelC` among the imports.
+4. (stage 1b, Fri Oct  9 20:05:22 UTC 2026) Row "loss conversion": the constant is 12, not 23: `Eq729B_assembly_747` gives `t₀ N^{δ'}(Λ³ + I₀) ≤ 12 N^{δ'} 𝓑²(X + 𝓑)` (`4 + 8`, constants of item 1), absorbed by `W^τ` through `Eq729B_loss_absorb` (`12 ≤ N^{𝔠τ/2}`, eventually). Rows `(iii)`: `calB·Nη_Q ≤ 2` (`calB_le_two_inv`) and `etaQ_le` are not used (`grep` count 0 in the new file).
 
-### (b) Script output — Fri Oct  9 02:10:07 UTC 2026 (the scripts `chain2.py twins.py tokens.py rows.py decls.py extract.py echo_cites.py` are in the scratchpad subdirectory `T2356/`, not in the repository; their output is in `docs/reports/T2356-design.md` sections 4-6 and 8)
-**B1 build** (stage 1a: the probe is on branch `t/T2356`, never in the library, so the acceptance command is `lake env lean`; the second command below is the cached re-run of `lake build` of the module)
+### (b) Script output — Fri Oct  9 20:05:22 UTC 2026 (stage 1b; the stage-1a sections (b)-(d) of this file are `git show 8d76de9:docs/reports/T2356-prove.md`; `$SC` is the scratchpad subdirectory `T2356/` of the session, not in the repository; its scripts are named in the commands)
+**B1 build, hygiene, size** (worktree `/Users/junyin/Lean_proof/RBM3D-wt/T2356`, branch `t/T2356`)
 ```
-$ cd /Users/junyin/Lean_proof/RBM3D-wt/T2356 && lake env lean RBM3D/Probe/T2356Pins.lean; echo "exit=$?"; wc -l RBM3D/Probe/T2356Pins.lean
+$ git log -1 --format='%h %s' | cut -c1-96; git status --short | wc -l | tr -d ' '; wc -l RBM3D/Universality/GUEPhase/Eq729B.lean
+86cc4f2 T2356: gueGrid_eq729 closes the evolution factor with Eq729B_gronwall_factor (chain link
+0
+    1674 RBM3D/Universality/GUEPhase/Eq729B.lean
+$ lake build RBM3D.Universality.GUEPhase.Eq729B 2>&1 | grep -n "Eq729B\|Build completed\|error"
+401:Build completed successfully (3818 jobs).
+$ lake env lean RBM3D/Universality/GUEPhase/Eq729B.lean; echo "exit=$?"   # no output: no warning
 exit=0
-     398 RBM3D/Probe/T2356Pins.lean
-$ touch RBM3D/Probe/T2356Pins.lean; lake build RBM3D.Probe.T2356Pins 2>&1 | grep -n "T2356Pins"; lake build RBM3D.Probe.T2356Pins 2>&1 | tail -1
-Build completed successfully (3818 jobs).
-$ grep -cE "sorry|admit|native_decide|^axiom" RBM3D/Probe/T2356Pins.lean
+$ lake build 2>&1 | tail -1   # full library; RBM3D.lean does not import the module yet (the hub adds it at merge), see B9
+Build completed successfully (4170 jobs).
+$ grep -cE "sorry|admit|native_decide|^ *axiom " RBM3D/Universality/GUEPhase/Eq729B.lean
 0
-$ git log -1 --format=%h; git status --short | wc -l; git diff --stat main...t/T2356
-fe9888f
-       0
- RBM3D/Probe/T2356Pins.lean | 398 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 398 insertions(+)
-```
-**B2 axioms** of the 16 declarations of the probe (`#print axioms` in a copy of the probe with the 16 lines appended)
-```
-ueq747_iff : [propext, Classical.choice, Quot.sound]
-STExp2_congr : [propext, Classical.choice, Quot.sound]
-FlowData.ev_eq : [propext, Classical.choice, Quot.sound]
-goodFlow_aux : [propext, Classical.choice, Quot.sound]
-goodFlow : [propext, Classical.choice, Quot.sound]
-bridge : [propext, Classical.choice, Quot.sound]
-bctl_le_two_calB : [propext, Classical.choice, Quot.sound]
-Ld_mul_etaQ : [propext, Classical.choice, Quot.sound]
-hell_of_scales : [propext, Classical.choice, Quot.sound]
-claimA : [propext, Classical.choice, Quot.sound]
-h730_hscale_real : [propext, Classical.choice, Quot.sound]
-qdBoundExp_eq : [propext, Classical.choice, Quot.sound]
-assembly_747 : [propext, Classical.choice, Quot.sound]
-final_729 : [propext, Classical.choice, Quot.sound]
-gronwall_factor : [propext, Classical.choice, Quot.sound]
-pin3_of_pins : [propext, Classical.choice, Quot.sound]
-```
-**B3 statements**, extracted from the probe by `extract.py` (`lines: text`; pins and `Eq729Concl` in full, theorems up to `:=`)
-```
-53-55: def Eq729Concl (sz : Sizes d) (E t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) : Prop := ∀ δ > (0 : ℝ), ∀ᶠ n in atTop, ∀ (σ₂ : Bool) (a b : Zd d (sz.L n)), eqErr sz E t1 t0 K n σ₂ a b ≤ Nsz sz n ^ δ * ((gueScale sz E n (t0 n))⁻¹ ^ 3 + initTerm sz n (t1 n))
-85-98: def PinGueGrid729 : Prop := ∀ {d : ℕ} (sz : Sizes d), 3 ≤ d → ∀ {κ τU Λ : ℝ}, 0 < κ → 0 < τU → ∀ n0 : ℕ, 3 ≤ n0 → ∀ {E t1 t0 : ℕ → ℝ}, Tendsto sz.size atTop atTop → (∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ Λ) → (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ t1 n) → (∀ n, t1 n ≤ t0 n) → (∀ n, t0 n < 1) → (∀ᶠ n in atTop, t0 n - t1 n ≤ Nsz sz n ^ (-τU) * etaT (E n) (t0 n)) → (∀ᶠ n in atTop, (gueScale sz E n (t0 n))⁻¹ ≤ Nsz sz n ^ (-τU)) → (∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2) → sz.STKbound E → ∀ Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ, (∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E n) (t1 n) σ a) → (∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ I : RBM.Loop.LoopIdx (Zd d (sz.L n)), I.WF → 1 ≤ I.length → I.length ≤ 4 * n0 → HasDerivWithinAt (fun u => Kt n u I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n s) I) (Set.Icc (t1 n) (t0 n)) s) → (∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ (σ₁ σ₂ : Bool) (a b : Zd d (sz.L n)), Kt n s ⟨[σ₁, σ₂], [a, b]⟩ = kTwoGUE d (sz.L n) (sz.W n) (sz.lam n) (mSigma (E n)) (t1 n) s σ₁ σ₂ a b) → sz.STExp2 E t1 → GUEPathBounds sz E t1 t0 (gueGridK sz n0) n0 Kt → Eq729Concl sz E t1 t0 (gueGridK sz n0)
-102-105: def PinEq747OfEq729 : Prop := ∀ {d : ℕ} (sz : Sizes d), 3 ≤ d → ∀ {𝔠 𝔡 : ℝ}, sz.Admissible 𝔠 𝔡 → ∀ {κ : ℝ}, 0 < κ → ∀ {E t : ℕ → ℝ}, (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ t n) → ∀ {E' t0 t1 : ℕ → ℝ}, FlowData sz 𝔡 E t E' t0 t1 → ∀ {K : ℕ → ℕ}, (∀ n, K n ≠ 0) → Eq729Concl sz E' t1 t0 K → ∀ τ : ℝ, 0 < τ → OUBody sz 𝔡 E t τ
-109-119: def PinEq747OfInputs : Prop := ∀ {d : ℕ} (sz : Sizes d), 3 ≤ d → ∀ {𝔠 𝔡 : ℝ}, sz.Admissible 𝔠 𝔡 → ∀ {κ τU : ℝ}, 0 < κ → 0 < τU → τU ≤ ouTauMax 𝔠 𝔡 → ∀ n0 : ℕ, 3 ≤ n0 → ∀ {E t : ℕ → ℝ}, (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n) → ∀ {E' t0 t1 : ℕ → ℝ}, FlowData sz 𝔡 E t E' t0 t1 → (∀ n, |E' n| ≤ 2 - κ ∧ 0 ≤ t1 n ∧ t1 n ≤ t0 n ∧ t0 n < 1) → ∀ Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ, (∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E' n) (t1 n) σ a) → (∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ I : RBM.Loop.LoopIdx (Zd d (sz.L n)), I.WF → 1 ≤ I.length → I.length ≤ 4 * n0 → HasDerivWithinAt (fun u => Kt n u I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n s) I) (Set.Icc (t1 n) (t0 n)) s) → (∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ (σ₁ σ₂ : Bool) (a b : Zd d (sz.L n)), Kt n s ⟨[σ₁, σ₂], [a, b]⟩ = kTwoGUE d (sz.L n) (sz.W n) (sz.lam n) (mSigma (E' n)) (t1 n) s σ₁ σ₂ a b) → sz.STExp2 E' t1 → GUEPathBounds sz E' t1 t0 (gueGridK sz n0) n0 Kt → ∀ τ : ℝ, 0 < τ → OUBody sz 𝔡 E t τ
-123-125: def PinSTExp2OfUNMLOut : Prop := ∀ {d : ℕ}, UNMLOut d → 3 ≤ d → ∀ sz : Sizes d, ∀ {𝔠 𝔡 : ℝ}, sz.Admissible 𝔠 𝔡 → ∀ {κ : ℝ}, 0 < κ → ∀ {E t : ℕ → ℝ}, (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ t n) → ∀ {E' t0 t1 : ℕ → ℝ}, FlowData sz 𝔡 E t E' t0 t1 → sz.STExp2 E' t1
-128-130: def PinGoodFlow : Prop := ∀ {d : ℕ} (sz : Sizes d) {𝔠 𝔡 : ℝ}, sz.Admissible 𝔠 𝔡 → ∀ {κ : ℝ}, 0 < κ → ∀ {E t : ℕ → ℝ}, (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ t n) → ∃ E' t0 t1 : ℕ → ℝ, FlowData sz 𝔡 E t E' t0 t1 ∧ ∀ n, |E' n| ≤ 2 - κ ∧ 0 ≤ t1 n ∧ t1 n ≤ t0 n ∧ t0 n < 1
-376-381: def PinDerived : Prop := ∀ {d : ℕ} (sz : Sizes d) {𝔠 𝔡 : ℝ}, sz.Admissible 𝔠 𝔡 → ∀ {κ τU : ℝ}, 0 < κ → 0 < τU → τU ≤ ouTauMax 𝔠 𝔡 → ∀ {E t : ℕ → ℝ}, (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n) → ∀ {E' t0 t1 : ℕ → ℝ}, FlowData sz 𝔡 E t E' t0 t1 → (∀ᶠ n in atTop, t0 n - t1 n ≤ Nsz sz n ^ (-τU) * etaT (E' n) (t0 n)) ∧ (∀ᶠ n in atTop, (gueScale sz E' n (t0 n))⁻¹ ≤ Nsz sz n ^ (-τU)) ∧ (∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2)
-75-77: theorem ueq747_iff (sz : Sizes d) (𝔡 τU : ℝ) : UNOUEq747 sz 𝔡 τU ↔ ∀ κ : ℝ, 0 < κ → ∀ E : ℕ → ℝ, (∀ n, |E n| ≤ 2 - κ) → ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n) → ∀ τ : ℝ, 0 < τ → OUBody sz 𝔡 E t τ := Iff.rfl
-148-175: theorem goodFlow_aux (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ : ℝ} (hκ : 0 < κ) {E t : ℕ → ℝ} (hE : ∀ n, |E n| ≤ 2 - κ) (ht : ∀ n, 0 ≤ t n) : ∃ (ε : ℝ) (z' : ℕ → ℂ) (t1 : ℕ → ℝ), 0 < ε ∧ STFlow sz κ ε 𝔠 𝔡 z' ∧ FlowData sz 𝔡 E t (STflowE z') (fun n => lemT (z' n)) t1 ∧ ∀ n, |STflowE z' n| ≤ 2 - κ ∧ 0 ≤ t1 n ∧ t1 n ≤ lemT (z' n) ∧ lemT (z' n) < 1 
-177-180: theorem goodFlow : PinGoodFlow 
-182-187: theorem bridge : PinSTExp2OfUNMLOut 
-384-393: theorem pin3_of_pins (P1 : PinGueGrid729) (P2 : PinEq747OfEq729) (P5 : PinDerived) : PinEq747OfInputs 
-192-212: theorem bctl_le_two_calB (sz : Sizes d) (n : ℕ) (hd : 2 ≤ d) {t η : ℝ} (hη : 0 < η) (h2 : η ≤ 2 * (1 - t)) : sz.Bctl n t ≤ 2 * calB sz n η 0 
-215-234: theorem Ld_mul_etaQ (sz : Sizes d) (n : ℕ) (𝔡 : ℝ) : ((sz.L n : ℕ) : ℝ) ^ d * ouEtaQ sz 𝔡 n * ((sz.W n : ℕ) : ℝ) ^ (4 * 𝔡 / 3) = sz.lam n * ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) 
-238-275: theorem hell_of_scales (sz : Sizes d) (n : ℕ) {𝔡 c τU ζ t0 : ℝ} (hc : 0 < c) (hlo : ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ sz.lam n) (h1t : 1 - t0 ≤ ouEtaQ sz 𝔡 n / c) (hζ : 0 ≤ ζ) (hζN : ζ ≤ Nsz sz n ^ (-1 + τU)) (ht01 : t0 ≤ 1) (hc4 : 2 / c ≤ ((sz.W n : ℕ) : ℝ) ^ (4 * 𝔡 / 3)) (hN : 2 * Nsz sz n ^ τU ≤ ((sz.W n : ℕ) : ℝ) ^ (2 * 𝔡)) : ((sz.L n : ℕ) : ℝ) ^ d * (1 - (1 - ζ) * t0) ≤ sz.lam n ^ 2 
-279-302: theorem claimA (sz : Sizes d) (n : ℕ) {𝔠 𝔡 τU : ℝ} (h𝔡 : 0 < 𝔡) (hτU : τU ≤ 𝔠 * 𝔡 / 12) (hNW : Nsz sz n ^ 𝔠 ≤ ((sz.W n : ℕ) : ℝ)) (h4 : 4 ≤ ((sz.W n : ℕ) : ℝ) ^ (𝔡 / 2)) (hlo : ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ sz.lam n) : 4 * Nsz sz n ^ (2 * τU) ≤ Nsz sz n * ouEtaQ sz 𝔡 n 
-305-319: theorem h730_hscale_real {N ηQ s ζt τU : ℝ} (hN : 1 ≤ N) (hτ : 0 < τU) (hη : 0 < ηQ) (hs : 1 / 4 ≤ s) (hA : 4 * N ^ (2 * τU) ≤ N * ηQ) (hζ : ζt ≤ N ^ (-1 + τU)) : ζt ≤ N ^ (-τU) * (s * ηQ) ∧ (N * (s * ηQ))⁻¹ ≤ N ^ (-τU) 
-322-324: theorem qdBoundExp_eq (sz : Sizes d) (n : ℕ) (τ η : ℝ) : qdBoundExp sz n τ η = ((sz.W n : ℕ) : ℝ) ^ τ * (calB sz n η 0 ^ 2 * ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + calB sz n η 0)) 
-328-356: theorem assembly_747 {t0 N ηQ B X Bt M Wt : ℝ} (ht0 : 1 / 16 ≤ t0) (ht01 : t0 ≤ 1) (hN : 0 < N) (hη : 0 < ηQ) (hB : (N * ηQ)⁻¹ ≤ B) (hX : 0 ≤ X) (hBt0 : 0 ≤ Bt) (hBt : Bt ≤ 2 * B) (hM : 0 ≤ M) (hW : 12 * M ≤ Wt) : t0 * (M * ((N * (Real.sqrt t0 * ηQ))⁻¹ ^ 3 + Bt ^ 2 * (X + Bt))) ≤ Wt * (B ^ 2 * (X + B)) 
-359-361: theorem final_729 {E ρ I0 Λ3 Kc : ℝ} (hρ : 0 ≤ ρ) (hI : 0 ≤ I0) (hΛ : 0 ≤ Λ3) (he : Real.exp E ≤ 7.4) (harith : Real.exp E * (ρ * Λ3 + Kc) ≤ 56 * ρ * Λ3) : Real.exp E * (ρ * I0 + Kc) ≤ 56 * ρ * (Λ3 + I0) 
-364-370: theorem gronwall_factor {N η dt M ρ : ℝ} (hN : 0 < N) (hη : 0 < η) (hρ0 : 0 ≤ ρ) (h730 : dt ≤ M * η) (hρ : ρ * M ≤ 1) : Real.exp (dt * (2 * N * (ρ * (N * η)⁻¹))) ≤ Real.exp 2 
-```
-**B4 instance and name checks** (instance: `d = 3`, `n = 0`, `sz0`: `L = 4`, `W = 32`, `ilambda = 1/64`, `N = 2097152`, `η_Q = 1 - t₁ = 2^{-18}`; no `hell` is needed)
-```
-/-- Instance (`d = 3`, `n = 0`, `sz0`: `L = 4`, `W = 32`, `ilambda = 1/64`, `N = 2097152`, `η_Q = 1 - t₁ = 2^{-18}`). -/
-example : SizesInst.sz0.Bctl 0 (1 - 1 / 262144) ≤ 2 * calB SizesInst.sz0 0 (1 / 262144) 0 :=
-  bctl_le_two_calB SizesInst.sz0 0 (by norm_num) (by norm_num) (by norm_num)
-$ lake env lean chk_mathlib.lean 2>&1 | grep -c error; wc -l < names_mathlib.txt   # chk_mathlib.lean = import RBM3D.Universality.GUEPhase.HypA + one `#check @NAME` per name of names_mathlib.txt
+$ grep -n "^import" RBM3D/Universality/GUEPhase/Eq729B.lean | sed "s/import RBM3D\.//" | tr "\n" " "; echo; grep -c "DuhamelC\|^import RBM3D$" RBM3D/Universality/GUEPhase/Eq729B.lean
+6:Universality.GUEPhase.Eq729A 7:Universality.GUEPhase.OneLoop 8:Universality.GUEPhase.KPrim 9:Universality.GUEPhase.BootstrapAt 10:Universality.GUEPhase.HypA 11:Universality.ZeroModeProfile 12:Main.ZTransfer 13:Main.QUEFromQDiff 14:Loop.KLFinal 15:Loop.KLTree 
 0
-      48
-$ for n in <the 28 names of the MISS list>; do grep -rnE "^\s*(private |noncomputable |protected )*(theorem|lemma|def|abbrev|structure|inductive) +([A-Za-z0-9_.]*\.)?$n( |$|\()" RBM3D --include="*.lean" | grep -v "^RBM3D/Probe/" | wc -l; done
-Kbound_prec_uncond:0 Kcal:0 Kgen:0 Mt:0 Par:0 mSig:0 kloop_Mt_eq:0 scaleM:0 MLExpConcl:0 expLoopErr:0 ZRescale_lemT_pos:0 ZRescale_blockMat_mul:0 ZRescale_gsig_block:0 ZRescale_trace_block:0 ZRescale_blockMat_Epaper:0 ZRescale_rpow_neg_half:0 GoodEvent_measurable_gloop:0 GoodEvent_gridTime_zero:0 Gsig_true:0 Gsig_conjTranspose:0 gloop_two:0 trGEGEmat:0 profileTilde:0 Meta:0 ellz:0 mSC:0 eq_inv_sqrt_mul_spectralZ:0 zztE_quant:0 
+$ git diff --stat main...t/T2356 | cat
+ RBM3D/Probe/T2356Pins.lean              |  398 ++++++++
+ RBM3D/Universality/GUEPhase/Eq729B.lean | 1674 +++++++++++++++++++++++++++++++
+ 2 files changed, 2072 insertions(+)
+$ for h in $(git log --reverse --format=%h -- RBM3D/Universality/GUEPhase/Eq729B.lean); do echo -n "$h $(git show $h:RBM3D/Universality/GUEPhase/Eq729B.lean | wc -l | tr -d " ") lines; "; done; echo   # stop rule: 2400
+eeaf29c 834 lines; d066a24 1081 lines; d7787f6 1278 lines; a396d18 1667 lines; be22099 1675 lines; 17adae6 1677 lines; 86cc4f2 1674 lines; 
 ```
-The evaluations of the other lemmas at `d = 3, 4` (`n ∈ {0, 10, 2100, 10⁶}`, hypotheses `H` and conclusions `C`, no violation of `H ⇒ C`) are `docs/reports/T2356-design.md` B1; instances of the three targets are a stage-1b deliverable (design section 6).
-**B5 name clash and ports** (run Fri Oct  9 02:10:07 UTC 2026)
+**B2 axioms** (`#print axioms` of the 56 public declarations of the file, listed by `decls.py`)
 ```
-$ grep -rnE "\b(gueGrid_eq729|Eq729B_eq747_of_eq729|Eq729B_eq747_of_inputs|Eq729BInst|Eq729B_[A-Za-z0-9_]*)\b" RBM3D RBM3D.lean --include="*.lean" | grep -v "^RBM3D/Probe/" | cut -c1-110
+$ (echo "import RBM3D.Universality.GUEPhase.Eq729B"; python3 $SC/decls.py RBM3D/Universality/GUEPhase/Eq729B.lean pub | awk -F"\t" '{print "#print axioms " $3}') > $SC/ax.lean; lake env lean $SC/ax.lean > $SC/ax.out 2>&1; echo "exit=$?"; sed -E "s/.*depends on axioms: //" $SC/ax.out | sort | uniq -c
+exit=0
+  56 [propext, Classical.choice, Quot.sound]
+$ grep -E "'RBM.Univ.GUEPhase.(gueGrid_eq729|Eq729B_eq747_of_eq729|Eq729B_eq747_of_inputs|Eq729B_goodFlow|Eq729B_bridge)'" $SC/ax.out | sed "s/RBM.Univ.GUEPhase.//"
+'gueGrid_eq729' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Eq729B_eq747_of_eq729' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Eq729B_eq747_of_inputs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Eq729B_goodFlow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Eq729B_bridge' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+**B3 the statements are the passed pins** (the probe `RBM3D/Probe/T2356Pins.lean` of design section 1, last commit `fe9888f`, against the file, checked by Lean in a scratch file that imports both; the only conversion is the probe's `FlowData` ↔ `Eq729B_FlowData`, two structures with the same three fields)
+```
+$ cat $SC/pincheck2.lean
+import RBM3D.Probe.T2356Pins
+import RBM3D.Universality.GUEPhase.Eq729B
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Univ RBM.Univ.GUEPhase RBM.Endpoints
+set_option linter.unusedVariables false
+namespace RBM.Probe.T2356
+theorem fdB {d} {sz : Sizes d} {𝔡 : ℝ} {E t E' t0 t1 : ℕ → ℝ} (h : FlowData sz 𝔡 E t E' t0 t1) : Eq729B_FlowData sz 𝔡 E t E' t0 t1 := ⟨h.hE', h.ht0, h.ht1⟩
+theorem fdP {d} {sz : Sizes d} {𝔡 : ℝ} {E t E' t0 t1 : ℕ → ℝ} (h : Eq729B_FlowData sz 𝔡 E t E' t0 t1) : FlowData sz 𝔡 E t E' t0 t1 := ⟨h.hE', h.ht0, h.ht1⟩
+example : PinGueGrid729 := @gueGrid_eq729
+example : PinEq747OfEq729 := @fun d sz hd 𝔠 𝔡 hA κ hκ E t hE ht E' t0 t1 hF K hK H τ hτ => Eq729B_eq747_of_eq729 sz hd hA hκ hE ht (fdB hF) hK H τ hτ
+example : PinEq747OfInputs := @fun d sz hd 𝔠 𝔡 hA κ τU hκ hτU hτUm n0 hn0 E t hE ht E' t0 t1 hF hg Kt h1 h2 h3 hB hP τ hτ => Eq729B_eq747_of_inputs sz hd hA hκ hτU hτUm n0 hn0 hE ht (fdB hF) hg Kt h1 h2 h3 hB hP τ hτ
+example : PinSTExp2OfUNMLOut := @fun d hML hd sz 𝔠 𝔡 hA κ hκ E t hE ht E' t0 t1 hF => Eq729B_bridge hML hd sz hA hκ hE ht (fdB hF)
+example : PinGoodFlow := @fun d sz 𝔠 𝔡 hA κ hκ E t hE ht => let ⟨E', t0, t1, hF, hg⟩ := Eq729B_goodFlow sz hA hκ hE ht; ⟨E', t0, t1, fdP hF, hg⟩
+example : PinDerived := @fun d sz 𝔠 𝔡 hA κ τU hκ hτU hτUm E t hE ht E' t0 t1 hF => Eq729B_derived sz hA hκ hτU hτUm hE ht (fdB hF)
+example : @Eq729Concl = @Eq729B_Concl ∧ @OUBody = @Eq729B_OUBody ∧ @initTerm = @Eq729B_initTerm ∧ @eqErr = @Eq729B_eqErr := ⟨rfl, rfl, rfl, rfl⟩
+example : @bctl_le_two_calB = @Eq729B_bctl_le_two_calB ∧ @Ld_mul_etaQ = @Eq729B_Ld_mul_etaQ ∧ @hell_of_scales = @Eq729B_hell_of_scales ∧
+    @claimA = @Eq729B_claimA ∧ @h730_hscale_real = @Eq729B_h730_hscale_real ∧ @qdBoundExp_eq = @Eq729B_qdBoundExp_eq ∧
+    @assembly_747 = @Eq729B_assembly_747 ∧ @final_729 = @Eq729B_final_729 ∧ @gronwall_factor = @Eq729B_gronwall_factor :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+end RBM.Probe.T2356
+$ lake env lean $SC/pincheck2.lean; echo "exit=$?"
+exit=0
+$ lake env lean $SC/pincheck2_neg.lean 2>&1 | grep -c "error: Type mismatch"   # negative controls (a pin proved by the wrong theorem, two false equalities): must fail
+3
+```
+**B4 target statements**, extracted from the file by `stmts.py` (`[a-b]` = lines of the file; theorems from `theorem NAME` to `:=`, definitions whole; whitespace joined)
+```
+$ python3 $SC/stmts.py RBM3D/Universality/GUEPhase/Eq729B.lean gueGrid_eq729 Eq729B_eq747_of_eq729 Eq729B_eq747_of_inputs Eq729B_goodFlow Eq729B_bridge Eq729B_Concl Eq729B_FlowData Eq729B_ueq747_iff
+[622-638] theorem gueGrid_eq729 (sz : Sizes d) (hd : 3 ≤ d) {κ τU Λ : ℝ} (hκ : 0 < κ) (hτU : 0 < τU) (n0 : ℕ) (hn0 : 3 ≤ n0) {E t1 t0 : ℕ → ℝ} (hsize : Tendsto sz.size atTop atTop) (hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ Λ) (hE : ∀ n, |E n| ≤ 2 - κ) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n) (ht0 : ∀ n, t0 n < 1)
+  (h730 : ∀ᶠ n in atTop, t0 n - t1 n ≤ Nsz sz n ^ (-τU) * etaT (E n) (t0 n)) (hscale : ∀ᶠ n in atTop, (gueScale sz E n (t0 n))⁻¹ ≤ Nsz sz n ^ (-τU)) (hell : ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ sz.lam n ^ 2) (hKb : sz.STKbound E) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (hKinit : ∀ n {k : ℕ} (σ : Fin k → Bool)
+  (a : Fin k → Zd d (sz.L n)), Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E n) (t1 n) σ a) (hK : ∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ I : LoopIdx (Zd d (sz.L n)), I.WF → 1 ≤ I.length → I.length ≤ 4 * n0 → HasDerivWithinAt (fun u => Kt n u I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n s) I) (Set.Icc (t1 n) (t0 n)) s) (hK2 : ∀ n, ∀ s ∈
+  Set.Icc (t1 n) (t0 n), ∀ (σ₁ σ₂ : Bool) (a b : Zd d (sz.L n)), Kt n s ⟨[σ₁, σ₂], [a, b]⟩ = kTwoGUE d (sz.L n) (sz.W n) (sz.lam n) (mSigma (E n)) (t1 n) s σ₁ σ₂ a b) (hB : sz.STExp2 E t1) (hP : GUEPathBounds sz E t1 t0 (gueGridK sz n0) n0 Kt) : Eq729B_Concl sz E t1 t0 (gueGridK sz n0)
+[1077-1080] theorem Eq729B_eq747_of_eq729 (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ : ℝ} (hκ : 0 < κ) {E t : ℕ → ℝ} (hE : ∀ n, |E n| ≤ 2 - κ) (ht : ∀ n, 0 ≤ t n) {E' t0 t1 : ℕ → ℝ} (hF : Eq729B_FlowData sz 𝔡 E t E' t0 t1) {K : ℕ → ℕ} (hK : ∀ n, K n ≠ 0) (H729 : Eq729B_Concl sz E' t1 t0 K) (τ : ℝ) (hτ : 0
+  < τ) : Eq729B_OUBody sz 𝔡 E t τ
+[1221-1235] theorem Eq729B_eq747_of_inputs (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ τU : ℝ} (hκ : 0 < κ) (hτU : 0 < τU) (hτUm : τU ≤ ouTauMax 𝔠 𝔡) (n0 : ℕ) (hn0 : 3 ≤ n0) {E t : ℕ → ℝ} (hE : ∀ n, |E n| ≤ 2 - κ) (ht : ∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n) {E' t0 t1 : ℕ → ℝ} (hF : Eq729B_FlowData sz 𝔡 E t
+  E' t0 t1) (hgood : ∀ n, |E' n| ≤ 2 - κ ∧ 0 ≤ t1 n ∧ t1 n ≤ t0 n ∧ t0 n < 1) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (hKinit : ∀ n {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), Kt n (t1 n) (loopOf σ a) = sz.STKloop n (E' n) (t1 n) σ a) (hK : ∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ I : LoopIdx (Zd d (sz.L n)), I.WF → 1
+  ≤ I.length → I.length ≤ 4 * n0 → HasDerivWithinAt (fun u => Kt n u I) (primRhsGUE d (sz.L n) (sz.W n) (Kt n s) I) (Set.Icc (t1 n) (t0 n)) s) (hK2 : ∀ n, ∀ s ∈ Set.Icc (t1 n) (t0 n), ∀ (σ₁ σ₂ : Bool) (a b : Zd d (sz.L n)), Kt n s ⟨[σ₁, σ₂], [a, b]⟩ = kTwoGUE d (sz.L n) (sz.W n) (sz.lam n) (mSigma (E' n)) (t1 n) s σ₁ σ₂ a b) (hB
+  : sz.STExp2 E' t1) (hP : GUEPathBounds sz E' t1 t0 (gueGridK sz n0) n0 Kt) (τ : ℝ) (hτ : 0 < τ) : Eq729B_OUBody sz 𝔡 E t τ
+[1307-1309] theorem Eq729B_goodFlow (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ : ℝ} (hκ : 0 < κ) {E t : ℕ → ℝ} (hE : ∀ n, |E n| ≤ 2 - κ) (ht : ∀ n, 0 ≤ t n) : ∃ E' t0 t1 : ℕ → ℝ, Eq729B_FlowData sz 𝔡 E t E' t0 t1 ∧ ∀ n, |E' n| ≤ 2 - κ ∧ 0 ≤ t1 n ∧ t1 n ≤ t0 n ∧ t0 n < 1
+[1316-1318] theorem Eq729B_bridge (hML : UNMLOut d) (hd : 3 ≤ d) (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ : ℝ} (hκ : 0 < κ) {E t : ℕ → ℝ} (hE : ∀ n, |E n| ≤ 2 - κ) (ht : ∀ n, 0 ≤ t n) {E' t0 t1 : ℕ → ℝ} (hF : Eq729B_FlowData sz 𝔡 E t E' t0 t1) : sz.STExp2 E' t1
+[104-106] def Eq729B_Concl (sz : Sizes d) (E t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) : Prop := ∀ δ > (0 : ℝ), ∀ᶠ n in atTop, ∀ (σ₂ : Bool) (a b : Zd d (sz.L n)), Eq729B_eqErr sz E t1 t0 K n σ₂ a b ≤ Nsz sz n ^ δ * ((gueScale sz E n (t0 n))⁻¹ ^ 3 + Eq729B_initTerm sz n (t1 n))
+[87-90] structure Eq729B_FlowData (sz : Sizes d) (𝔡 : ℝ) (E t E' t0 t1 : ℕ → ℝ) : Prop where hE' : ∀ᶠ n in atTop, E' n = lemE (Eq729B_zQ sz 𝔡 E n) ht0 : ∀ᶠ n in atTop, t0 n = lemT (Eq729B_zQ sz 𝔡 E n) ht1 : ∀ᶠ n in atTop, t1 n = (1 - ouZeta (t n)) * t0 n
+[126-128] theorem Eq729B_ueq747_iff (sz : Sizes d) (𝔡 τU : ℝ) : UNOUEq747 sz 𝔡 τU ↔ ∀ κ : ℝ, 0 < κ → ∀ E : ℕ → ℝ, (∀ n, |E n| ≤ 2 - κ) → ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n) → ∀ τ : ℝ, 0 < τ → Eq729B_OUBody sz 𝔡 E t τ
+```
+**B5 compiled nonempty instances** (`Eq729BInst`, `insts.py`, `[n]` = line of the file; `sz0` = merged `SizesInst.sz0`, `d = 3`, `L = 4(n+1)`, `W = (2(n+1))^5`, `ilambda = (2(n+1))^{-6}`, `n = 0`: `L = 4`, `W = 32`, `N = 2097152`; `𝔠 = 1/6`, `𝔡 = 1/10`, `κ = 1/10`, `E = 0`)
+```
+$ python3 $SC/insts.py RBM3D/Universality/GUEPhase/Eq729B.lean
+[1476] theorem inst_gueGrid_eq729 : ∃ Kt : (n : ℕ) → ℝ → LoopIdx (Zd 3 (sz0.L n)) → ℂ, sz0.STExp2 Ei tw1 → GUEPathBounds sz0 Ei tw1 tw0 (gueGridK sz0 3) 3 Kt → Eq729B_Concl sz0 Ei tw1 tw0 (gueGridK sz0 3)
+  := obtain ⟨Kt, h1, h2, h3⟩ := exists_Kt exact ⟨Kt, fun hB hP => gueGrid_eq729 sz0 (le_refl 3) (κ := 1 / 10) (τU := 1 / 30) (Λ := 1) (by norm_num) (by norm_num) 3 (le_refl 3) (Sizes.tendsto_size sz0 sz0_tendsto) hlam1 hE0 tw1_nonneg tw1_le_tw0 tw0_lt_one (Eventually.of_forall h730_at) (Eventually.of_forall hscale_at)
+    (Eventually.of_forall hell_at) hKb0 Kt h1 h2 h3 hB hP⟩
+[1529] theorem inst_claimA : 4 * Nsz sz0 7 ^ (2 * (1 / 240 : ℝ)) ≤ Nsz sz0 7 * ouEtaQ sz0 (3 / 10) 7
+  := Eq729B_claimA sz0 7 (𝔠 := 1 / 6) (𝔡 := 3 / 10) (τU := 1 / 240) (by norm_num) (by norm_num)
+[1535] theorem inst_hell_of_scales : ((sz0.L 7 : ℕ) : ℝ) ^ 3 * (1 - (1 - Nsz sz0 7 ^ (-1 + 1 / 240 : ℝ)) * (1 - ouEtaQ sz0 (3 / 10) 7)) ≤ sz0.lam 7 ^ 2
+  := Eq729B_hell_of_scales sz0 7 (𝔡 := 3 / 10) (c := 1) (τU := 1 / 240) (ζ := Nsz sz0 7 ^ (-1 + 1 / 240 : ℝ))
+[1544] theorem inst_assembly_747 : (1 / 2 : ℝ) * (1 * ((100 * (Real.sqrt (1 / 2) * (1 / 10)))⁻¹ ^ 3 + (1 / 5) ^ 2 * (1 / 10 + 1 / 5))) ≤ 12 * ((1 / 5) ^ 2 * (1 / 10 + 1 / 5))
+  := Eq729B_assembly_747 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+[1562] theorem inst_goodFlow : ∃ E' t0 t1 : ℕ → ℝ, Eq729B_FlowData sz0 (1 / 10) Ei tU E' t0 t1 ∧ ∀ n, |E' n| ≤ 2 - 1 / 10 ∧ 0 ≤ t1 n ∧ t1 n ≤ t0 n ∧ t0 n < 1
+  := Eq729B_goodFlow sz0 sz0_admissible (κ := 1 / 10) (by norm_num) hE0 (fun n => (tU_ok n).1)
+[1576] theorem inst_derived : (∀ᶠ n in atTop, T0c n - T1c n ≤ Nsz sz0 n ^ (-ouTauMax (1 / 6) (1 / 10)) * etaT (Ec n) (T0c n)) ∧ (∀ᶠ n in atTop, (gueScale sz0 Ec n (T0c n))⁻¹ ≤ Nsz sz0 n ^ (-ouTauMax (1 / 6) (1 / 10))) ∧ (∀ᶠ n in atTop, ((sz0.L n : ℕ) : ℝ) ^ 3 * (1 - T1c n) ≤ sz0.lam n ^ 2)
+  := Eq729B_derived sz0 sz0_admissible (κ := 1 / 10) (by norm_num) hτUi le_rfl hE0 tU_ok fdc
+[1584] theorem inst_bridge (hML : UNMLOut 3) : sz0.STExp2 Ec T1c
+  := Eq729B_bridge hML (le_refl 3) sz0 sz0_admissible (κ := 1 / 10) (by norm_num) hE0 (fun n => (tU_ok n).1) fdc
+[1589] theorem inst_eq747_of_eq729 (H729 : Eq729B_Concl sz0 Ec T1c T0c (gueGridK sz0 3)) (τ : ℝ) (hτ : 0 < τ) : Eq729B_OUBody sz0 (1 / 10) Ei tU τ
+  := Eq729B_eq747_of_eq729 sz0 (le_refl 3) sz0_admissible (κ := 1 / 10) (by norm_num) hE0 (fun n => (tU_ok n).1) fd
+[1598] theorem inst_eq747_of_inputs (hML : UNMLOut 3) : ∃ (E' t0 t1 : ℕ → ℝ) (Kt : ∀ n, ℝ → LoopIdx (Zd 3 (sz0.L n)) → ℂ), Eq729B_FlowData sz0 (1 / 10) Ei tU E' t0 t1 ∧ (∀ n, |E' n| ≤ 2 - 1 / 10 ∧ 0 ≤ t1 n ∧ t1 n ≤ t0 n ∧ t0 n < 1) ∧ (GUEPathBounds sz0 E' t1 t0 (gueGridK sz0 3) 3 Kt → ∀ τ : ℝ, 0 < τ → Eq729B_OUBody sz0 (1 / 10)
+  Ei tU τ)
+  := obtain ⟨E', t0, t1, hF, hgood⟩ := inst_goodFlow choose Kt h1 h2 h3 using fun n => gueK_exists 3 (sz0.L n) (sz0.W n) (sz0.three_le_L n) (sz0.lam n) (E := E' n) (by linarith [(hgood n).1, abs_nonneg (E' n)] : |E' n| < 2) (hgood n).2.1 (hgood n).2.2.1 (hgood n).2.2.2 (4 * 3) refine ⟨E', t0, t1, Kt, hF, hgood, fun hP τ hτ =>
+    ?_⟩ exact Eq729B_eq747_of_inputs sz0 (le_refl 3) sz0_admissible (κ := 1 / 10) (τU := ouTauMax (1 / 6) (1 / 10)) (by norm_num) hτUi le_rfl 3 (le_refl 3) hE0 tU_ok hF hgood Kt (fun n k σ a => h1 n _) (fun n t ht I hI h hl => h2 n t ht I hI h hl) h3 (Eq729B_bridge hML (le_refl 3) sz0 sz0_admissible (κ := 1 / 10) (by norm_num)
+    hE0 (fun n => (tU_ok n).1) hF) hP τ hτ
+-- plus 10 more (`inst_bctl_le_two_calB` and unnamed `example`s: real-variable lemmas, STExp2_congr, FlowData.ev_eq, bridge + congr)
+```
+**B6 limit check of the external hypotheses** `STExp2`, `GUEPathBounds`, `UNMLOut` of the instances (TEAM §8 lesson 14; `lim.py`, `mpmath` 600 digits; `inst_gueGrid_eq729` window and the OU window of `inst_eq747_*`): the sizes go to `0` and `Nη → ∞`, and `I₀/Bctl(t₁) = Bctl(X + Bctl) → 0` (the error is of smaller order than `‖𝒦₂(t₁)‖ ≲ Bctl(t₁)`)
+```
+$ python3 $SC/lim.py
+instance inst_gueGrid_eq729 (E=0, y=lam^2/(2L^3), t0=1-y, t1=1-y-y/N): eta_t0=y, G=N*eta_t0 (gueScale)
+  n        N*eta_t0     Lambda^3     Bctl(t1)     I0=Bctl^2(X+Bctl)   I0/Bctl(t1)
+  0        4.0          0.01562      0.374        0.1446              0.3867
+  1        32.0         3.052e-5     0.04686      0.001059            0.02259
+  10       5324.0       6.627e-12    0.0002817    1.245e-8            4.418e-5
+  1000     4.012e+9     1.549e-29    3.739e-10    1.461e-21           3.907e-12
+  1000000  4.0e+18      1.562e-56    3.75e-19     2.33e-41            6.215e-23
+instances inst_eq747_* (E=0, dd=1/10, tauU=ouTauMax=1/720, t_n=N^(-1+tauU), z=i*eta_Q):
+  n        N*eta_Q      1-t0         zeta         Bctl(t1)     calB         Bctl(t1)/calB  qd(tau=0)=calB^2(X+calB)
+  0        2.52         1.202e-6     4.866e-7     0.4066       0.5212       0.7801         0.3209
+  1        6.35         1.155e-11    1.889e-12    0.151        0.1731       0.8721         0.01823
+  10       61.64        5.287e-24    9.292e-26    0.01604      0.01632      0.9828         4.601e-5
+  1000     2.523e+4     1.182e-56    5.68e-61     3.963e-5     3.963e-5     1.0            1.648e-11
+  1000000  2.52e+8      1.202e-106   6.873e-115   3.968e-9     3.968e-9     1.0            2.61e-21
+```
+**B7 name clash and ports** (RBM2D read-only: `grep`/`git --no-optional-locks` only)
+```
+$ python3 $SC/decls.py RBM3D/Universality/GUEPhase/Eq729B.lean pub | awk -F"\t" '{n=split($3,a,"."); print a[n]}' | sort -u > $SC/pubnames.txt; python3 $SC/clash.py $SC/pubnames.txt
+56 public short names checked, declaration-level hits outside Probe/ and outside the new file: 0
+$ grep -rnE "\b(gueGrid_eq729|Eq729B_eq747_of_eq729|Eq729B_eq747_of_inputs|Eq729BInst|Eq729B_[A-Za-z0-9_]*)\b" RBM3D RBM3D.lean --include="*.lean" | grep -v "^RBM3D/Probe/" | grep -v "^RBM3D/Universality/GUEPhase/Eq729B.lean" | cut -c1-100
 RBM3D/Universality/GUEPhase/Eq729A.lean:15:`gueGrid_eq729`) is UN-47 `Eq729B`.
-$ (the same at declaration level) grep -rnE "^\s*(private |noncomputable )*(theorem|lemma|def|abbrev|structure|instance) +(RBM\.Univ\.GUEPhase\.)?(gueGrid_eq729|Eq729B_[A-Za-z0-9_]*|Eq729BInst[A-Za-z0-9_.]*)" RBM3D --include="*.lean" | wc -l
-       0
-$ ls RBM3D/Universality/GUEPhase/Eq729B.lean
-ls: RBM3D/Universality/GUEPhase/Eq729B.lean: No such file or directory
-$ git -C ../RBM2D --no-optional-locks log -1 --format=%h
+$ grep -c "etaQ_le\|calB_le_two_inv" RBM3D/Universality/GUEPhase/Eq729B.lean
+0
+$ cd /Users/junyin/Lean_proof/RBM3D; git -C ../RBM2D --no-optional-locks log -1 --format=%h; git -C ../RBM2D --no-optional-locks diff --stat 9e0f275 HEAD -- RBM2D/Universality/GUEPhase/Eq729B.lean | wc -l | tr -d " "; git -C ../RBM2D --no-optional-locks status --short -- RBM2D/Universality/GUEPhase/Eq729B.lean | wc -l | tr -d " "; wc -l < ../RBM2D/RBM2D/Universality/GUEPhase/Eq729B.lean | tr -d " "   # main worktree, so that ../RBM2D is the sister project
 9e0f275
-$ git -C ../RBM2D --no-optional-locks diff --stat 9e0f275 HEAD -- RBM2D/Universality/GUEPhase/Eq729B.lean | wc -l
-       0
-$ git -C ../RBM2D --no-optional-locks status --short -- RBM2D/Universality/GUEPhase/Eq729B.lean | wc -l
-       0
-(the one hit of the first grep is the docstring of Eq729A.lean:15, not a declaration; the source is unchanged since 9e0f275; no RBM2D proof text was copied at stage 1a: the pins are statements rewritten under the port map)
+0
+0
+1419
 ```
-**Narrative** (prover `claude-sonnet-5-5`)
-1. Stage 1a only (CONTROL H146): the deliverables are the probe `RBM3D/Probe/T2356Pins.lean` (398 lines, limit 400, commit `fe9888f`; `lake env lean` exit 0, no output; `lake build RBM3D.Probe.T2356Pins` after the last edit printed `✔ [3818/3818] Built RBM3D.Probe.T2356Pins (5.3s)` and no warning for the probe; the 16 declarations of B2 depend on the three standard axioms only) and `docs/reports/T2356-design.md` (items (1)-(6), verdict PASS). `RBM3D/Universality/GUEPhase/Eq729B.lean` was not written.
-2. The probe has five parts: the vocabulary (`FlowData`, `initTerm`, `eqErr`, `Eq729Concl`, `OUBody`; `ueq747_iff` shows by `Iff.rfl` that `OUBody` is the body of the merged pin `UNOUEq747`); the Prop pins of the three targets and of the bridge (probe 85-130, statements only); `goodFlow` and `bridge`, proved (probe 132-187); nine real-variable lemmas of the exponent chain (probe 189-371); the pin `PinDerived` and `pin3_of_pins` (target 3 from targets 1 and 2 and the derived inputs, probe 373-393) with one example.
-3. The chain lemmas are stated over `Sizes`, `calB`, `Bctl`, `ouEtaQ`, so that they are reused as they are in stage 1b; `Eq729B_arith` (RBM2D `:368`, `N`-only) is not re-proved: `final_729` takes its conclusion as hypothesis `harith`.
-4. No RBM2D proof text was copied at this stage; RBM2D was read only (B5: `git status` of the source file empty, diff-stat 0 lines).
-5. The statements and the numbers (the table of sizes, the twin table, the token table) are in the design report; its findings F1-F4 correct readings of (a) and of the ticket (see (a′)).
-6. The stop rule of the ticket (probe over 400 lines: commit, stop, RETURN) was respected: the probe is 398 lines; the design report is within its limit.
+**B8 translation table** RBM2D `Eq729B.lean:line` (commit `9e0f275`, unchanged: diff-stat above is empty) → RBM3D (`name@line` in the new file, or `file:line` of the merged twin); `table2.py`; token similarity = `difflib` ratio of the Lean token sequences after the port-map renaming (`d.L`→`sz.L`, `Z2`→`Zd d`, `gloop`→`loopL d`, `spectralZ`→`zt`, `KLoop.mSig`→`mSigma`, …)
+```
+$ python3 $SC/table2.py
+RBM2D Eq729B_c_nonneg:67, Eq729B_perN:75 -> Eq729B_c_nonneg@132, Eq729B_perN@140  [port; token similarity c_nonneg 0.99, perN 0.99]
+RBM2D Eq729B_exp_two_lt:358, Eq729B_arith:368 -> Eq729B_exp_two_lt@214, Eq729B_arith@224  [port, N-only; token similarity exp_two_lt 0.99, arith 1.00]
+RBM2D Eq729B_nine_le_size:183, Eq729B_gueScale_pos:191, Eq729B_gueScale_anti:196, Eq729B_inv_scale_le:201 -> Eq729B_nine_le_size@538, Eq729B_gueScale_pos@547, Eq729B_gueScale_anti@551, Eq729B_inv_scale_le@555  [port; nine_le_size adapted (9 <= N from 3^d <= (W L)^d, d >= 3), the others over sz, Nsz; token similarity nine_le_size 0.81, gueScale_pos 0.88, gueScale_anti 0.92, inv_scale_le 0.93]
+RBM2D Eq729B_transfer:330, Eq729B_Bad:504, Eq729B_not_bad:513 -> Eq729B_transfer@569, Eq729B_Bad@594, Eq729B_not_bad@603  [port, renamed (gloop, Z2, blockMat); token similarity transfer 0.85, Bad 0.96, not_bad 0.96]
+RBM2D gueGrid_eq729:531 -> gueGrid_eq729@622  [TARGET 1 (Hyp_Kt_* instead of Eq729B_Kt_one/_initial/_K_bounds; hB := STExp2; I0 term); token similarity gueGrid_eq729 0.87]
+RBM2D Eq729B_size_pos:175, Eq729B_Kt_one:156, Eq729B_initial:224, Eq729B_K_bounds:264, Eq729B_loopOf_eq:212 -> Nsz_pos@Endpoints.lean:476, Hyp_Kt_one@Universality/GUEPhase/HypA.lean:712, Hyp_Kt_detDom@Universality/GUEPhase/HypA.lean:690, Hyp_exists_loopOf@Universality/GUEPhase/HypA.lean:299  [merged twins (T2352; T2352a = hell, hKb, hKinit); Eq729B_ofFn_getD:205 not needed]
+RBM2D Eq729B_trGEGEmat_eq_gloop:787, Eq729B_spectralZ_eq:806 -> Eq729B_avg2_eq_loop@879, Eq729B_avg2_abs_sq@914  [re-derived: avg2 of Gres = loopL (b,a), |G|^2 = G G^-; spectralZ_eq:806 not needed (eq729_zt_im, zt_im_lemma28)]
+RBM2D Eq729B_law726:822 -> Eq729B_law726@935  [port (avg2 of Gres, ouMat band carrier, map_gueH_last, GUEPhaseGrid_gloop_two_smul_lemT_eq); token similarity law726 0.77]
+RBM2D Eq729B_etaQ_pos:890, Eq729B_etaQ_mul_size:899, Eq729B_etaQ_le_inv_sq:912 -> locDomain_im_pos@Endpoints.lean:481, Eq729B_Ld_mul_etaQ@377, etaQ_le@Main/QUEFromQDiff.lean:208  [queDomain/locDomain_im_pos (eta_Q > 0, <= 1); Ld_mul_etaQ re-derived (d >= 3 form); etaQ_le (twin) not used (no hell at 7.47)]
+RBM2D Eq729B_meta_eq:938, Eq729B_meta_cmp:957 -> Eq729B_qdBoundExp_eq@484, Eq729B_bctl_le_two_calB@354  [re-derived: Meta -> calB, qdBoundExp; Bctl <= 2 calB from eta_Q <= 2(1-t1)]
+RBM2D Eq729B_profile_eq:869, Eq729B_etaT_lemT:972, Eq729B_lemT_lt_one:979, Eq729B_one_sub_lemT_le:987 -> lemT_mul_kTwoGUE_pm_eq_profPMTilde@Universality/GUEPhase/KPrim.lean:275, Eq729B_kTwoGUE_symm@988, zt_im_lemma28@Defs/Semicircle.lean:344, lemT_lt_one@Defs/Semicircle.lean:209, zRange@Main/ZTransfer.lean:79, im_msc_ge@Main/ZTransfer.lean:130  [merged twins (profile_eq + 10 lines: Theta_transpose)]
+RBM2D Eq729B_scale_747:1011 -> Eq729B_assembly_747@490  [re-derived with I0 and calB (constant 12)]
+RBM2D Eq729B_eq747_of_eq729:1041 -> Eq729B_eq747_of_eq729@1077  [TARGET 2; token similarity eq747_of_eq729 0.24]
+RBM2D Eq729B_pw:1139 -> Eq729B_goodFlow_aux@1274, Eq729B_goodFlow@1307, Eq729B_flowData_formulas@1258  [replaced by good data for every n (design F2, T2356c)]
+RBM2D Eq729B_claimA:1163, Eq729B_Ntau_le_etaQ:1185 -> Eq729B_claimA@441  [re-derived at the new eta_Q (W^{-dd/3} ilambda W^{d/2}/N); token similarity claimA 0.47]
+RBM2D Eq729B_good_pw:1207 -> Eq729B_h730_hscale_real@467, Eq729B_hell_of_scales@400  [re-derived (L^d (1-t1) <= ilambda^2)]
+RBM2D Eq729B_derived:1339 -> Eq729B_derived@1125  [re-derived at the new eta_Q, L^d, ilambda^2; token similarity derived 0.34]
+RBM2D Eq729B_eq747_of_inputs:1384 -> Eq729B_eq747_of_inputs@1221  [TARGET 3; token similarity eq747_of_inputs 0.61]
+new in RBM3D (no RBM2D source): Eq729B_zQ, Eq729B_FlowData, Eq729B_initTerm, Eq729B_eqErr, Eq729B_Concl, Eq729B_OUBody, Eq729B_ueq747_iff, Eq729B_final_729, Eq729B_gronwall_factor, Eq729B_loss_absorb, Eq729B_core747, Eq729B_STExp2_congr, Eq729B_FlowData.ev_eq, Eq729B_bridge, Eq729B_flowData_formulas
+```
+**B9 registry pre-check** (scratch `reg.lean` = `import RBM3D` + `import RBM3D.Universality.GUEPhase.Eq729B` + `#assert_rbm_axioms`; `reg_base.lean` = the same without the new import; neither is committed)
+```
+$ lake env lean $SC/reg.lean > $SC/reg.out 2>&1; echo "exit=$?"; head -1 $SC/reg.out; grep -c error $SC/reg.out
+exit=0
+axiom audit: 10577 theorems, 3085 definitions, 0 axioms in `RBM` (compiler-generated declarations excluded).
+0
+$ lake env lean $SC/reg_base.lean > $SC/reg_base.out 2>&1; echo "exit=$?"; diff $SC/reg_base.out $SC/reg.out | grep "^[<>]" | cut -c1-110
+exit=0
+< axiom audit: 10524 theorems, 3078 definitions, 0 axioms in `RBM` (compiler-generated declarations excluded).
+> axiom audit: 10577 theorems, 3085 definitions, 0 axioms in `RBM` (compiler-generated declarations excluded).
+<   RBM.Gauss.Sizes.STExp2: 18 [no certificate]
+>   RBM.Gauss.Sizes.STExp2: 24 [no certificate]
+<   RBM.Univ.UNMLOut: 26 [no certificate]
+>   RBM.Univ.UNMLOut: 29 [no certificate]
+<   RBM.Univ.GUEPhase.GUEPathBounds: 2 [no certificate]
+>   RBM.Univ.GUEPhase.GUEPathBounds: 6 [no certificate]
+```
+**B10 reuse (E4)** the real-variable chain lemmas, the Grönwall/arithmetic ports, `final_729`, `assembly_747`, `STExp2_congr`, `FlowData.ev_eq` (`e4.py`)
+```
+$ python3 $SC/e4.py
+E4 reuse lemmas: 13 of 13 public; statements mentioning UNModel: []
+```
+**Narrative** (prover `claude-sonnet-5-5`, stage 1b; every number is from B1-B10)
+1. Result: `RBM3D/Universality/GUEPhase/Eq729B.lean` has 1674 lines (stop line 2400; sizes at its section commits `eeaf29c d066a24 d7787f6 a396d18 be22099 17adae6 86cc4f2`: 834 1081 1278 1667 1675 1677 1674); the three targets, `Eq729B_goodFlow`, `Eq729B_bridge` and the instances compile; `lake env lean` prints nothing (exit 0); the 56 public declarations depend on the three standard axioms only (B2); the registry pre-check exits 0 and the ledgers change only by `STExp2` 18 → 24, `UNMLOut` 26 → 29, `GUEPathBounds` 2 → 6 theorems resting on them (B9).
+2. E3: no cut was taken and no 1b mathematical FAIL occurred. Chain link (i) is `Eq729B_perN` (discrete Grönwall), `Eq729B_gronwall_factor` (`exp((t₀ - t₁)·2NρΛ) ≤ e²` from `h730`, used in `gueGrid_eq729`) and the merged `gueGrid_expect_oneLoop`; (ii) is `Eq729B_arith` with `Eq729B_final_729`; (iii) is `Eq729B_bctl_le_two_calB`, `Eq729B_assembly_747`, `Eq729B_core747`; `PinDerived` is `Eq729B_derived`. All are proved (B2), so no RETURN condition of E3 holds.
+3. Statements (B3, B4): each pin of design section 1 (`PinGueGrid729`, `PinEq747OfEq729`, `PinEq747OfInputs`, `PinSTExp2OfUNMLOut`, `PinGoodFlow`, `PinDerived`) is proved by the corresponding theorem of the file, the four vocabulary definitions are defeq to the probe's and the nine real-variable lemmas have identical statements; the negative controls fail. `Eq729B_OUBody` is the body of the merged pin `UNOUEq747` (`Eq729B_ueq747_iff` is `Iff.rfl`).
+4. Hypotheses that stay: target 1 takes `hB := sz.STExp2 E t1` and `hP : GUEPathBounds` (pins of ST-6 and UN-49/50/51); targets 2 and 3 take the flow data `(E', t₀, t₁)` of `Eq729B_FlowData` (eventual formulas) and target 3 the `∀ n` facts `hgood` that `Eq729B_goodFlow` supplies (design F2); `Eq729B_bridge` takes `UNMLOut d` and modifies `z_n` at finitely many `n` (`Eq729B_goodFlow_aux`). Target 3 derives `h730`, `hscale`, `hell` (`Eq729B_derived`: all thresholds are `W`-only), `hlam` (from `(eq:WO)`) and `hKb` (`Sizes.stKbound_holds`).
+5. Instances (E1, B5): `inst_gueGrid_eq729` discharges every deterministic hypothesis of target 1 at `sz0`, `E = 0`, `τ_U = 1/30`, `n₀ = 3` and the window `0 < t₀ - t₁ = y/N`, `1 - t₀ = y = ilambda²/(2 L³)` (`hKb` by `stKbound_holds`, `Kt` by `gueK_exists` at every `n`); `inst_eq747_of_inputs` does the same for target 3 at the data of `Eq729B_goodFlow`; `inst_derived`, `inst_bridge`, `inst_eq747_of_eq729` use the explicit formulas (`Eq729B_flowData_formulas`, `ζ(t_n) > 0`, so `t₁ < t₀`); `inst_goodFlow`, `inst_claimA`, `inst_hell_of_scales` (`n = 7`, `ζ = N^{-1+τ_U} > 0`), `inst_assembly_747` and the unnamed examples cover the rest. The pins `STExp2`, `GUEPathBounds`, `UNMLOut 3` and, for target 2, `Eq729B_Concl` remain hypotheses; B6 gives their sizes along the sequence.
+6. Not instantiated: `Eq729B_perN` (its hypotheses are events of the GUE path), `Eq729B_core747`, `Eq729B_law726`, `Eq729B_transfer`, `Eq729B_avg2_*` (internal lemmas used by the targets). No instance witnesses a conclusion at a fixed `n`: `Eq729B_loss_absorb` needs `12 ≤ N^{𝔠τ/2}`, true eventually (design risk 3).
+7. Premise scan: the audit scan of `#assert_rbm_axioms` lists a `Prop`-valued `def`/`structure` that some theorem assumes and no theorem concludes; `Eq729B_FlowData` (three defining equations) is such a structure, so `Eq729B_flowData_formulas` concludes it for the explicit formulas (without that theorem the pre-check printed `1 premise(s) ... [RBM.Univ.GUEPhase.Eq729B_FlowData]` and exit 1).
+8. Ports (B8): `Eq729B_perN`, `Eq729B_arith`, `Eq729B_exp_two_lt`, `Eq729B_c_nonneg` are textual ports (token similarity 0.99-1.00); `Eq729B_transfer`, `Eq729B_Bad`, `Eq729B_not_bad`, `gueGrid_eq729` are renamed ports (0.85-0.96); `Eq729B_law726` is a port onto `avg2` of `Gres` (0.77); the rest are merged twins or re-derived. E4: the 13 reuse lemmas are public and state no `UNModel` (B10). E5: no action here.
 
-### (c) Verified Mathlib names (run Fri Oct  9 02:10:07 UTC 2026)
-48 names (B4: `#check @NAME` each, 0 errors): `Real.exp_le_exp` `Real.exp_pos` `Real.mul_self_sqrt` `Real.rpow_add` `Real.rpow_le_rpow` `Real.rpow_le_rpow_of_exponent_le` `Real.rpow_mul` `Real.rpow_natCast` `Real.rpow_neg` `Real.rpow_neg_one` `Real.rpow_nonneg` `Real.rpow_pos_of_pos` `Real.sqrt_pos` `Real.sqrt_le_sqrt` `Real.sqrt_sq` `Filter.Eventually.of_forall` `abs_nonneg` `abs_of_pos` `add_le_add` `div_le_iff₀` `le_div_iff₀` `div_mul_eq_mul_div` `inv_anti₀` `inv_le_comm₀` `inv_mul_le_iff₀` `inv_nonneg` `inv_pos` `inv_one` `le_trans` `lt_min` `lt_of_lt_of_le` `min_le_left` `min_le_right` `mul_add` `mul_le_mul_of_nonneg_left` `mul_le_mul_of_nonneg_right` `mul_nonneg` `mul_one` `mul_pos` `mul_pow` `neg_div` `one_pos` `one_pow` `pow_add` `pow_pos` `sq_nonneg` `zero_add` `Nat.cast_zero`.
-Merged RBM3D names used (they elaborate in the probe, B1): `Sizes.stKbound_holds` (`Loop/KLFinal.lean:243`), `Sizes.tendsto_size` (`Defs/StochDomAt.lean:735`), `queDomain` (`Main/QUEFromQDiff.lean:91`), `locDomain_nonempty`, `locDomain_im_pos` (`Endpoints.lean:486, 481`), `lemma28_quant` (`Defs/Semicircle.lean:359`), `lemT_pos`, `lemT_lt_one`, `ZeroModeProfile_ouZeta_nonneg`, `ZeroModeProfile_ouZeta_le_one`, `gueGridK_ne_zero`, `SizesInst.sz0`.
-Verified absent from RBM3D (B4, declaration-level grep, 0 each): `Kbound_prec_uncond` `Kcal` `Kgen` `Mt` `Par` `mSig` `kloop_Mt_eq` `scaleM` `MLExpConcl` `expLoopErr` `ZRescale_*` (6) `GoodEvent_*` (2) `Gsig_true` `Gsig_conjTranspose` `gloop_two` `trGEGEmat` `profileTilde` `Meta` `ellz` `mSC` `eq_inv_sqrt_mul_spectralZ` `zztE_quant`; twins in the design report section 4.
+### (c) Verified Mathlib names (run Fri Oct  9 20:07:49 UTC 2026)
+`toks.py` + `resolve.lean` (each identifier token of the code with comments stripped, 782 tokens, resolved by `resolveGlobalName` under the file's `open` lines; the file compiles, so each name exists with the used signature): 118 Mathlib theorem names, one wrapped list:
+Complex.conj_conj Complex.im_le_norm Complex.mul_conj Complex.normSq_eq_norm_sq Complex.norm_real Complex.star_def ENNReal.ofReal_add Filter.Eventually.of_forall Filter.eventually_ge_atTop Finset.sum_congr Matrix.conjTranspose_apply
+Matrix.conjTranspose_nonsing_inv Matrix.conjTranspose_one Matrix.conjTranspose_smul Matrix.conjTranspose_sub Matrix.ext Matrix.mul_assoc Matrix.nonsing_inv_eq_ringInverse Matrix.smul_apply Matrix.submatrix_apply Matrix.transpose_apply
+MeasureTheory.integral_congr_ae MeasureTheory.integral_const_mul MeasureTheory.integral_map MeasureTheory.measure_mono MeasureTheory.measure_union_le Nat.cast_nonneg Nat.cast_succ Nat.cast_zero Real.add_one_le_exp Real.exp_nat_mul
+Real.exp_one_lt_d9 Real.exp_pos Real.mul_self_sqrt Real.norm_eq_abs Real.one_le_rpow Real.rpow_add Real.rpow_add' Real.rpow_le_one_of_one_le_of_nonpos Real.rpow_le_rpow Real.rpow_le_rpow_of_exponent_le Real.rpow_mul Real.rpow_natCast
+Real.rpow_neg Real.rpow_neg_one Real.rpow_nonneg Real.rpow_one Real.rpow_pos_of_pos Real.sqrt_eq_rpow Real.sqrt_inv Real.sqrt_le_sqrt Real.sqrt_nonneg Real.sqrt_sq abs_nonneg abs_of_nonneg abs_of_pos add_le_add div_eq_mul_inv
+div_le_div_iff₀ div_le_div_of_nonneg_left div_le_iff₀ div_le_one div_le_self div_mul_eq_mul_div div_nonneg div_pos inv_anti₀ inv_le_comm₀ inv_le_one_of_one_le₀ inv_mul_le_iff₀ inv_one inv_pow le_div_iff₀ le_mul_of_one_le_left le_of_eq
+le_refl le_rfl le_self_pow₀ le_trans lt_min lt_of_le_of_lt lt_of_lt_of_le lt_of_not_ge min_le_left min_le_right mul_add mul_assoc mul_comm mul_div_assoc' mul_le_mul mul_le_mul_of_nonneg_left mul_le_mul_of_nonneg_right mul_le_of_le_one_right
+mul_nonneg mul_one mul_one_div mul_pos mul_pow mul_sub neg_div norm_mul norm_nonneg one_div one_div_pow one_le_pow₀ one_mul one_pos one_pow pow_add pow_le_pow_left₀ pow_le_pow_right₀ pow_mul' pow_one pow_pos sq_nonneg tendsto_rpow_atTop
+zero_add zero_le_one
+Verified absent: none sought. Merged RBM3D names used (they elaborate): see B8 (twins) and the imports of B1.
 
 ### (d) Open issues and paper-delta candidates
-* Open issues: (1) targets 1 and 3 keep the `∀ n` hypotheses and the consumer uses `goodFlow` (design F2, open question 1); (2) `goodFlow` and `bridge` in `Eq729B.lean` or in UN-51 (47 proved lines); (3) the import of `HypA` (it imports `Proc`); (4) one row (central 1687 lines) with the pre-named cut at `:784` as fallback; (5) the block Anderson kind `UNOUEq747k` needs its own target 3. All five are in `docs/reports/T2356-design.md` section 7 for the REQ to the supervisor.
-* Paper-delta candidates (temporary tags; the dispatcher numbers them): `T2356a` (7.29) at `t₀` carries the initial term `I₀(t₁)`: `N^δ[(Nη_{t₀})^{-3} + I₀(t₁)]` for `N^δ(Nη_{t₀})^{-3}` ([YY_25] (7.29); RBM2D `Eq729B.lean:531`; `1_2:1281`); `T2356b` (7.47): `W^δ Meta^{-3}` ↦ `W^τ𝓑²((ilambda²W^d)^{-1/5} + 𝓑)` at `η_Q = W^{-𝔡/3} ilambda W^{d/2}/N`, profile `Θ̃_{ζ(t_n)}` of the OU matrix (`1_2:504-512`, merged `UNOUEq747`); `T2356c` the `∀ n` facts replaced by data good for every `n` (formal, not a paper difference); `hell`, `hKb`, `hKinit` forms are T2352a.
+* Paper deltas: no new candidate beyond the numbered ones. D628 (T2356a): (7.29) at `t₀` carries `I₀(t₁)` (`Eq729B_Concl`, `Eq729B_initTerm`); D629 (T2356b): (7.47) as `qdBoundExp` at `η_Q = W^{-𝔡/3} ilambda W^{d/2}/N` with profile `Θ̃_{ζ(t_n)}` (`Eq729B_OUBody` = body of `UNOUEq747`); D630 (T2356c): the `∀ n` facts of `(E', t₀, t₁)` by `Eq729B_goodFlow` and `hgood` in `Eq729B_eq747_of_inputs` (formal); D631 (T2352a): `hell`, `hKb`, `hKinit` of `gueGrid_eq729` as `Hyp_Kt_detDom`.
+* Open 1 (UN-51): the consumer builds `Kt` and `hP : GUEPathBounds` for the data of `Eq729B_goodFlow` once (design risk 1; `gueK_exists` needs only `|E| < 2`, `0 ≤ t₁ ≤ t₀ < 1`). Open 2 (E5): the block Anderson kind `UNOUEq747k` needs its own target 3 or the kind's `Eq747k` producer as a premise of `UNG1Rowk`; the 13 lemmas of B10 are public for that reuse.
+* Open 3: the instances witness hypotheses only (item 6); the registry ledger counts of B9 grow by the theorems that assume `STExp2`, `UNMLOut`, `GUEPathBounds`; no registry change is requested. Open 4: `Eq729B_FlowData` is a `Prop` structure that the premise scan flags unless a theorem concludes it (item 7): a later file that adds such a vocabulary structure needs the same.

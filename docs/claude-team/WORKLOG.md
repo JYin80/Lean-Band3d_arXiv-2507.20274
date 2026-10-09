@@ -273,3 +273,9 @@
 - 2026-10-06 15:17 UTC 心跳：T2305（UN-28，4db5994）合并 → D613；T2306 照 H101 开工。
 - 2026-10-06 15:26 UTC：放行 T2309（UN-24）；§109。门槛核：UN 39（下一张 UN 放行即过 40 → REQ，写外推约 63 vs 上限 60）。
 - 2026-10-09 04:05 UTC — 调度 V1：按 Jun 的要求交接给 V2（DECISIONS §165）：HANDOFF.md 重写、STARTUP §2–§5 与 DISPATCHER-PROMPT 改接手版、TEAM §10、工具 nsof.sh/portmap.py 入库、CONTROL 归档、H151（收尾 T2356/T2358/T2360/T2361，不开新票，结束后写 DRAINED）；V1 心跳停止。
+- 2026-10-09 19:24 UTC 调度 V2 接手（会话 session_01MtDU5B1PoJEbaNvMuRAPrx，misslose@ucla.edu；Jun 指定）：读 HANDOFF、TEAM、CLAUDE、DECISIONS §144–§165、ROUTES、CONTROL；中枢 04:22–19:22 UTC 停摆（周用量上限），19:22 恢复；四张票（T2356、T2358、T2360、T2361）停在 04:1x，待中枢按 (H) 重跑；DRAINED 未写；无 open REQ。心跳 trig_01ED63NBYbkhjKEHrhFrikGT（19:37）。
+- 2026-10-09 19:38 UTC 心跳：中枢 19:25 按 (H) 重跑 T2356/T2358/T2360 的 1b；T2361 审核 PASS，合并被中枢会话权限分类器拒绝，等 Jun 批准（已告知）。
+- 2026-10-09 19:53 UTC 心跳：T2361 合并仍被中枢权限检查拦着；写 H152（授权按规则 (A) 重试合并）。
+- 2026-10-09 20:12 UTC 心跳：T2360（BA-DK）合并 76106b7；写 REQ-2026-10-09-2010（阶段 K 开启，含 F1 `BAMLoop` 配对缺陷）；DECISIONS §166；T2361 合并须 Jun 在中枢会话允许。
+- 2026-10-09 20:27 UTC 心跳：T2356 审核 PASS，合并与 T2361 同被权限检查挡住（等 Jun）；写 REQ-2026-10-09-2025（UN-51 E5，建议 (a)）。
+- 2026-10-09 20:42 UTC 心跳：DRAINED（H151 完成）；T2358 审核 BLOCKED（值索引钉文）→ 签 R-a，Amend 2，DECISIONS §167，H153（提交调度文件 + 跑 Amend 2）；CONTROL 回到正常 RUN。

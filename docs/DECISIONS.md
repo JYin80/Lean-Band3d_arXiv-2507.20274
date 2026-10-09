@@ -1253,3 +1253,16 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **CONTROL 归档**：旧 CONTROL（约 190KB）原样附到 `docs/queue/CONTROL-archive.md` 末尾；新 CONTROL 约 8KB（常设规则 H4/H12/H23/H28/H101/H122、H151、合并记录尾部 6 行）。
 - (6) 调度 V1 的心跳停止；监督定时任务不动。交接后本会话不再写文件。计数（宽口径）：ST-6 3/4；LW 50（计划 52，上限 55）；UN 58/64；BA 35；MA 7/8。下一张票号 T2362，下一节 §166，下一条 H152，下一号差异 D632。
 
+## §166 — 调度 V2 接手；中枢周额度停摆后恢复；T2360（BA-DK）合并 → 阶段 K 开启 REQ-2026-10-09-2010（总调度 V2，2026-10-09 20:12 UTC）
+
+- (0) **接手**：Jun 在 2026-10-09 19:2x UTC 指定 Cowork 会话 session_01MtDU5B1PoJEbaNvMuRAPrx（账号 misslose@ucla.edu）为调度 V2，接手调度 V1（session_01RThagGKa4jNgUEWeKViyyg）；按 HANDOFF §5 排心跳（STARTUP §2 的 V2 固定消息）、在 `HEARTBEAT-STATE.md` 顶部写明唯一总调度。监督任务 `trig_01R1NVdwWjDU2P5KMhtTLr43` 不动。
+- (1) **中枢停摆**：04:22–19:22 UTC（周用量上限，12:00 PT 重置）。19:25 中枢按规则 (H) 重跑 T2356、T2358、T2360 的 1b；T2361 审核 PASS（19:29），但合并第 3 步被中枢会话的权限检查拒绝；H152（授权重试）中枢答「拒绝覆盖重试，须 Jun 在该会话里允许」——已告知 Jun。
+- (2) **T2360 = BA-DK 合并**（76106b7，仅报告，审核 PASS）：K1–K6 已答；16 行、中心 12.7k 行、阶段旗标 24 张；**F1：已合并的 `BAMLoop`（`BA/FlowPins.lean:274`）与论文 `(eq:KMloop)` 的配对不同**（`σ_i` 配 `(a_i,a_{i+1})` 而非 `(a_{i-1},a_i)`），`n ≥ 3` 混合电荷时 `(WI_calK)` 与树表示都不成立（数值，审核独立复核）。按 HANDOFF §2.6 与 §144 (2) 写 **REQ-2026-10-09-2010**（阶段 K 开启）：Q1 开阶段 K（16 行、旗标 24、K04 后设计核对）；Q2 F1 原地修还是加撇后继；Q3 四个带状 KL 文件原地泛化还是孪生（原地会触发导入树底层重编）；Q4 不新增外部输入（K05、K08 以带状 Lean 证明为蓝本）；Q5 阶段 K 的关闭条件（`BAKbound`、`BAKsolve`、`BAKward`、`STKward` 的载体形式）。**PASS 前不写 BA 证明票。** T2360a–e 待监督无异议后编 D632–D636。
+- (3) **派单**：H151 收尾中（T2356、T2358 1b，T2361 待合并）；按 HANDOFF §2：T2358 合并 → LW R3；T2356、T2361 合并 → UN-51（先定 0344 E5）；阶段 K 等 REQ-2010。BA 计数 35 不变；其余同 HANDOFF §1。下一张票号 T2362，下一节 §167，下一条 H153，下一号差异 D632。
+
+## §167 — H151 收尾完成（DRAINED）；T2358 审核 BLOCKED → 签 R-a（Amend 2）；回到正常运行（总调度 V2，2026-10-09 20:41 UTC）
+
+- (0) **DRAINED**（20:31:46 UTC）：T2360 已合并（76106b7）；T2356、T2361 审核 PASS，合并等 Jun 在中枢会话里允许（权限检查拒绝，§166 (1)）；T2358 审核 BLOCKED。H151 完成。CONTROL 的 reason 改回正常运行（RUN），按 HANDOFF §2 随输入合并补票。
+- (1) **T2358 = LW-13b R1 签字：选 R-a**（流程，总调度定；0243 O4 的钉文修补）：除 `locStepXProv_holds : LocStepXProv` 外全部目标证出（da182dc，1890 行，审核其余全 PASS）。原钉文按**值** `r ∈ LX` 给映射，构造按**位置**给，列表有重复值时值决定性未证；位置版 `lwProv_LocStepXProvPos` 已证（`lwProv_locStepXProvPos_holds`），引擎目标 `lw_localregularXP : LWEngineProv` 由它证出；审核 grep 核过 R3 的消费者都不提 `LocStepXProv`。所以目标换成位置版，删掉值版定义与其条件适配（`docs/tickets/T2358-amend-2.md`），repairer 只做这些删改，第 2 轮审核按脚本核 diff。不是新票：LW 计数 +0；返工账本 +1（开工后改目标）。不发 REQ：不是 0143 O2 的情形（不是切分、不是数学性 1a FAIL；替代陈述已证、无消费者）。REQ-2010 的 For information 未列此事，下次 REQ 顺带告知监督。
+- (2) **H153**：Step A 提交调度文件（§166、§167、REQ-2010、REQ-2025、T2358 Amend 2、ROUTES、CONTROL、WORKLOG、DRAINED 与中枢未入库的报告由中枢按名自定）；Step C 跑 T2358 Amend 2（repairer → 第 2 轮 auditor → 规则 (A) 合并）。T2356、T2361 的合并仍等 Jun 的权限。
+- (3) 计数不变：LW 50（R1 修补中，R3 = 51、LW-01 = 52，上限 55）；UN 58/64；BA 35；ST-6 3/4；MA 7/8。下一张票号 T2362，下一节 §168，下一条 H154，下一号差异 D632。

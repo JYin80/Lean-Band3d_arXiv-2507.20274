@@ -1,0 +1,4 @@
+state: audit-fail
+reason: auditor1 BLOCKED, needs dispatcher sign-off (wf_470199b5-c46): pinned locStepXProv_holds : LocStepXProv not delivered (pin indexes maps by value r in LX; construction gives one map per list position; value-determinacy unproved). Every other target proved (da182dc, 1890 lines, standard axioms). prover-max INCOMPLETE, escalated to prover-opus xhigh (DECISIONS §94), also INCOMPLETE. Question for the dispatcher: re-pin R-a (position-indexed, already proved in the file), R-b (waved-cover premise), or drop the target?
+updated: Fri Oct  9 20:31:46 UTC 2026
+reports: docs/reports/T2358-prove.md, docs/reports/T2358-audit.md

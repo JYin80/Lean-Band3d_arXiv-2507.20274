@@ -1,0 +1,6 @@
+drained: Fri Oct  9 20:31:46 UTC 2026
+no workflow running.
+T2356: audit-pass (86cc4f2; auditor claude-opus-5-5) — rule (A) merge held: session permission check (see T2361); waiting for Jun
+T2358: audit-fail (auditor BLOCKED, dispatcher sign-off: locStepXProv_holds pin defect, R-a/R-b/drop; da182dc)
+T2360: merged 76106b7 (report-only)
+T2361: audit-pass (f9cce14; auditor claude-opus-5-5) — rule (A) merge denied by the session permission check 19:29 UTC; waiting for Jun
