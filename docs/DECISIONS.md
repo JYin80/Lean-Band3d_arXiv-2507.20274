@@ -1275,3 +1275,36 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **票**（自写，不用 Fable）：**T2362 = BA-K00**（`BA/FlowPins.lean` 272–276 原地 + `BA/KBase.lean`，`prover-hard`，503 / 579 / 744，停止线 950；现在放行，H154）。**T2363 = UN-51**（`GUEPhase/RandomLayerA/B`，`prover-hard`，800–1000，停止线 1300，预设切分 A|B；检查文件导入 `Eq729B`、`PathBounds`，**两者合并后**才列入 Pre-release 并放行）。LW R3 等 T2358 合并后写（HANDOFF §2.1：C5、C6、0243 L1、§162 (2)）。K01、K09a 等 K00 合并（K-a）与 K-b 的谓词与数值核对。
 - (4) **差异**：D632（T2360a，已改正的 Lean 缺陷）、D633（T2360b）、D634（T2360d）、D635（T2360e）；T2360c 不编号。
 - (5) 计数：BA 36（K00 计入）；UN 58（UN-51 写好未放）；LW 50；ST-6 3/4；MA 7/8。下一张票号 T2364，下一节 §169，下一条 H155，下一号差异 D636。
+
+## §169 — LW-13b R3 = T2364 写好，等 T2358 合并（总调度 V2，2026-10-09 21:15 UTC）
+
+- (1) **T2364 = LW-13b R3 = G + F**（`Graph/AuxGraphRooted.lean`、`Graph/LWMomentExp.lean`、`Test/Axioms.lean` 删欠账 `LWMomentExp`；`prover-max`，1183 / 1567 / 2337，停止线 2100，预设切分 C3 = G | F；LW 51）：条件 C5（1a 先编有根森林；换 (E) 要 REQ）、C6 取 **(α)**（`∀ p, ∃ K`，远尾半径为论文尺度）、0243 L1（步引理只经引擎递归，即只用 `lw_localregularXP`）、§162 (2)（`LWfD … univ = LWf` 转换）。检查文件导入 `LWProv`，**T2358 合并后**才列入 Pre-release 并放行。
+- (2) 待放的票（合并后当轮放）：T2363（UN-51，等 T2356 + T2361）、T2364（R3，等 T2358）。在跑：T2362（BA-K00，1a）。三张审核 PASS 的票（T2356、T2358、T2361）等 Jun 在中枢会话里允许合并。下一张票号 T2365，下一节 §170，下一条 H155，下一号差异 D636。
+
+## §170 — Jun 授权中枢的合并动作（总调度 V2，2026-10-09 21:55 UTC）
+
+- (0) **Jun（2026-10-09 约 21:47 UTC，本会话）**：「我允许你告诉他吧， 我现在没法用那台电脑」——回答调度请他在中枢会话里允许 T2356、T2358、T2361、T2362 的合并。
+- (1) **落实**：H155 原样转述 Jun 的话，授权 CLAUDE.md §3 规则 (A) 的合并动作（检出本单文件到 `main`、加根导入、全库构建、提交、推送 main），顺序 T2361 → T2356 → T2358 → T2362，以后规则 (A) 的合并同此。若中枢会话的权限检查仍拒绝，中枢保持 `audit-pass`，done 行写明被拒的动作；调度不改中枢的权限设置（`.claude/settings.json`）。
+
+## §171 — BA-K09a = T2365 放行（K-b 的谓词钉定）（总调度 V2，2026-10-09 23:01 UTC）
+
+- (0) 更正 §168 (3)：K09a **不等** K00 合并。监督 2051 K-a 写明「K09a contains no BA object and may run in parallel with K00, subject to K-b」，G2 写明「K01 and K09a may be released now」。K01 仍等 K00（设计行 K01 依赖 K00，且含 BA 实例）。
+- (1) **T2365 = BA-K09a**（BA 37，阶段 K 第 2 张）：在 `Loop/KLIndStepA.lean`、`Loop/KLIndStepB.lean` 原地把 `(eq:ind-step-bound)` 改写到抽象数据 `(ι, L, g, t, Sig, TH)` 上，即路线 G。`prover-hard`，355 / 472 / 549，停止线：两文件净增 700 行。
+  - 目标：`indStepAbs_of`，陈述钉为检查文件的 `IndStepAbsOfStmt`；三个带状实例；`KLindStepAt_iff`（`Iff.rfl`）；`KLindStepAt_holds` 改由新路线导出，陈述不变。
+  - G1：两文件在外部使用的 9 个公开名，加上 `KLindStepPin` 的定义体，旧陈述写进检查文件（`example … := @名` / `Iff.rfl`）。名单由脚本找出：`KLIndStepA_Theta_apply_sub`、`KLlat_inv_le_Bparam`、`KLIndStepA_Bparam_le_zero`、`KLIndStepA_Bparam_nonneg`、`KLIndStepA_Theta_norm_le`、`KLIndStepA_thetaEdge_long`、`KLindStep_nonAlt_noloss`、`KLindStepAt`、`KLindStepPin_holds`。
+  - G2：合并让位给关键路径。
+- (2) **K-b（发现 F2）：取形式 (i)**，钉为 `SigSumZeroAbs`。它既是 K09a 的假设，也是 K08b 的目标，取代探针的 `SumZeroAbs`。内容如下，交替 `σ` 时成立：
+  - 反射与平移不变；
+  - 每个根 `r`、每个切片 `δ_r = x` 上，带号估计 `≤ C(1-t)`，带权绝对估计 `Σ|Σ(δ)|(maxDist+1)^Q ≤ C(g²+1-t)`，对每个 `Q ≤ 2(d-1)` 成立。
+  
+  不取形式 (ii)（逐点 `g²` 因子）：(i) 更弱，而且已经够用（带状步只用 `Q = d` 与 `Q = 2(d-1)`）。带状形式就是 `KLsumZero_weighted`（D194），不算新差异。
+- (3) **另外两个抽象假设包**：
+  - `SigDecayAbs`：`(eq:molecule-decay)`，情形 (i) 用；BA 的来源是 K07。
+  - `IndStepTH`：取代 `KLPT` 的叶包。内容是性质 5、5'、6、7、8，形状同 `KLPT`/`BAProp5to8`；6、7 只在 `c = 1/2` 处（带状证明只用这一处，`KLIndStepA.lean:182, 291`）；另加平移和长边行和。BA 的来源是 K12 的 `baProp5to8_holds`。
+  - 参数范围只用 `KLPar` 那一组（`3 ≤ L`、`0 < g ≤ gmax`、`0 ≤ t < 1`）。
+  - 若 1a 发现还缺假设，按钉文修补处理，走 amend（0243 O4）。
+- (4) **K-b 的数值核对 N1 放在 K09a 的 1a**（监督允许「as K09a's step 0」）。
+  - 设置：BA 分子 `Σ^{(∅)}`，K00 约定，B8 设置；`g ∈ {0.1, 0.2, 0.4, 0.8}`，`1-t ∈ {1e-3, 1e-4}`，`Q ∈ {1, 2, 4}`；比值取 `S_Q/(g²+1-t)`，并查反射、平移。
+  - 停止线：`ratio(0.1)/ratio(0.4) > 2`，或反射/平移缺陷 > 1e-10 → 不进 1b，`returned`，调度发 REQ。
+- (5) H157：提交 + 编译 T2365-check + 开工（H12）。H156 已完成（22:43:23，exit 0，109 行），K01 的转储在 `docs/tickets/checks/K01-statement-dump.out`，K01 等 K00 合并后写。
+- (6) 计数：BA 37；在跑 T2365（开工后）；4 张 audit-pass 仍等 Jun 在 Mac 上允许合并（H155 无回复）。下一张票号 T2366，下一节 §172，下一条 H158，下一号差异 D636。

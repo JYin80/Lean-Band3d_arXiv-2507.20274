@@ -2,20 +2,23 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-09 21:01 UTC (dispatcher V2: supervisor 2051 PASS; released T2362 (BA-K00), H154; DECISIONS §168)
+updated: 2026-10-09 23:01 UTC (dispatcher V2: T2365 BA-K09a released, H157; H155 pending)
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). H151's drain is complete (`docs/queue/DRAINED`, 20:31:46 UTC); normal operation: new tickets are released here as their inputs merge (HANDOFF §2).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-324. T2356 — `docs/tickets/T2356.md` (UN Eq729B): `audit-pass` (86cc4f2); merge by rule (A) as soon as Jun allows the merge actions in the hub's session.
-326. T2358 — `docs/tickets/T2358.md` (LW-13b R1): **Amend 2** (`docs/tickets/T2358-amend-2.md`, DECISIONS §167 (1)) per H153 — repairer, then auditor round 2.
-329. T2361 — `docs/tickets/T2361.md` (PathBounds): `audit-pass` (f9cce14); merge by rule (A) as soon as Jun allows the merge actions in the hub's session.
-330. T2362 — `docs/tickets/T2362.md` (BA-K00: `BAMLoop` in place + `BA/KBase`, role `prover-hard`, stop 950; DECISIONS §168). Start: when the `done:` line of its Pre-release check says exit 0 and a slot is free (DECISIONS §17).
+324. T2356 — `docs/tickets/T2356.md` (UN Eq729B): `audit-pass` (86cc4f2); merge per H155.
+326. T2358 — `docs/tickets/T2358.md` (LW-13b R1): Amend 2 done, `audit-pass` round 2 (6d6ef4d); merge per H155.
+329. T2361 — `docs/tickets/T2361.md` (PathBounds): `audit-pass` (f9cce14); merge per H155 (first).
+330. T2362 — `docs/tickets/T2362.md` (BA-K00): `audit-pass` (708bbd4); merge per H155.
+331. T2365 — `docs/tickets/T2365.md` (BA-K09a, in place `Loop/KLIndStepA.lean`, `Loop/KLIndStepB.lean`): released; starts when its check compiles with exit 0 (H12). Merge yields to critical-path merges (ticket, G2).
 
 ## Pre-release checks
 - `docs/tickets/checks/T2362-check.lean` (BA-K00; released conditionally above, DECISIONS §17).
+  done: Fri Oct  9 21:03:35 UTC 2026 — `lake env lean docs/tickets/checks/T2362-check.lean`: exit 0, no error lines.
+- `docs/tickets/checks/T2365-check.lean` (BA-K09a; pins + G1 band statements; released conditionally above, DECISIONS §17).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -36,6 +39,16 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Fri Oct  9 20:43:30 UTC 2026 — Step C started: workflow wf_8857e67f-af3 (repairer per Amend 2 on t/T2358 at da182dc, then auditor round 2 with the diff check).
 
 - H154 (dispatcher V2, 2026-10-09 21:01 UTC; DECISIONS §168). **Step A** — one commit, by name only, message `Dispatcher V2: supervisor 2051 (stage K open, UN-51 (a)), T2362 BA-K00, T2363 UN-51 (held), D632-D635, H154`: `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/tickets/T2362.md`, `docs/tickets/checks/T2362-check.lean`, `docs/tickets/T2363.md`, `docs/tickets/checks/T2363-check.lean`, and the supervisor files `docs/supervisor/2026-10-09-2051.md`, `docs/supervisor/requests/REQ-2026-10-09-2010.md`, `docs/supervisor/requests/REQ-2026-10-09-2025.md` if not yet on `main`. Push. **Step B** — compile `docs/tickets/checks/T2362-check.lean` (`lake env lean`) and append its `done:` line under Pre-release checks (exit code + error lines verbatim). **Step C** — on exit 0, start T2362 in the next free slot (H12). Do **not** compile `T2363-check.lean` yet (it imports `Eq729B` and `PathBounds`, which are not merged). One `done:` line per step.
+  done: Fri Oct  9 21:03:35 UTC 2026 — Step A committed fde321d (10 files by name: DECISIONS, paper-deltas, ROUTES, CONTROL, WORKLOG, T2362.md, T2362-check.lean, T2363.md, T2363-check.lean, supervisor/2026-10-09-2051.md; the two REQ files were already on main since a4bc3b3, their later working-tree edits are not in this commit), pushed.
+  done: Fri Oct  9 21:03:35 UTC 2026 — Step B: T2362-check.lean exit 0 (done line under Pre-release checks). T2363-check not compiled.
+  done: Fri Oct  9 21:03:35 UTC 2026 — Step C: T2362 started (branch t/T2362 and worktree from main fde321d, workflow wf_b7245be0-125, prover-hard).
+
+- H155 (dispatcher V2, 2026-10-09 21:55 UTC; relays Jun's authorization). **Jun's words** (Cowork dispatcher session, 2026-10-09 ~21:47 UTC, replying to the dispatcher's request that he allow the held merges of T2356, T2358, T2361 and T2362 in the hub session): 「我允许你告诉他吧， 我现在没法用那台电脑」 ("I allow it — you tell him; I can't use that computer right now"). So Jun authorizes the CLAUDE.md §3 rule (A) merge actions for the four `audit-pass` tickets **T2361, T2356, T2358, T2362** (in this order) and for later rule-(A) merges of released tickets: bring in exactly the ticket's sole writable files from `t/T####` into `main`, add the root import after the last `import` line of `RBM3D.lean`, run the full `lake build`, commit the ticket's files + `RBM3D.lean` + state + reports with message `T####: merge <title>`, and `git push origin main` (main only, never force). Retry the four merges now, one at a time, each with its own full build (T2362 also edits `BA/FlowPins.lean` lines 272–276; T2358's audit-pass is round 2 after Amend 2). If the session permission check still denies an action, stop there, keep the state `audit-pass`, and say in the `done:` line exactly which action was denied. One `done:` line per merge.
+
+- H156 (dispatcher V2, 2026-10-09 22:33 UTC; DECISIONS §168 (supervisor 2051 G1) — preparation for BA-K01). On the main worktree, run `lake env lean docs/tickets/checks/K01-statement-dump.lean > docs/tickets/checks/K01-statement-dump.out 2>&1` (it only `#check`s 18 merged declarations of `Loop/Unique.lean` and `Loop/KLUnique.lean`; no build, no commit). One `done:` line with the exit code. (H155 still stands: if a merge action was denied, say so in a `done:` line under H155.)
+  done: Fri Oct  9 22:43:23 UTC 2026 — `lake env lean docs/tickets/checks/K01-statement-dump.lean > docs/tickets/checks/K01-statement-dump.out 2>&1`: exit 0; output 109 lines, 0 lines containing `error`. Not committed.
+
+- H157 (dispatcher V2, 2026-10-09 23:01 UTC; DECISIONS §171). **Step A** — one commit, staging by name only (never `git add -A`; drop `docs/claude-team/fable/__pycache__/`), message `Dispatcher V2: BA-K09a = T2365 (K-b pin SigSumZeroAbs), K01 statement dump, DECISIONS §171, H157`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/tickets/T2365.md`, `docs/tickets/checks/T2365-check.lean`, `docs/tickets/checks/K01-statement-dump.lean`, `docs/tickets/checks/K01-statement-dump.out`; add the uncommitted working-tree edits of `docs/supervisor/requests/REQ-2026-10-09-2010.md` and `REQ-2026-10-09-2025.md` and your own uncommitted hub files as you see fit; push. **Step B** — compile `docs/tickets/checks/T2365-check.lean` on `main` (standing H4); one `done:` line under Pre-release checks with the exit code; if the exit code is not 0, write the first 40 error lines to `docs/tickets/checks/T2365-check.out` and do not start. **Step C** — on exit 0, start T2365 (standing H12; branch `t/T2365` and worktree from `main` at the Step A commit; stage 1a `preflight` with the ticket's N1 numerics, then 1b `prover-hard`, then the auditor). One `done:` line per step. (H155 still stands; its merges are independent of this instruction.)
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Fri Oct  9 00:52:56 UTC 2026 — T2353 merged 93b8ec8 (UN OneLoop Universality/GUEPhase/OneLoop (7 targets; gueGrid_expect_oneLoop adds 3 ≤ d and λ ∈ (0, Λ] eventually, covered by paper-delta candidate T2353a; T2353b/c also proposed), no registry change, root import; audit PASS claude-opus-5-5; full lake build 4166 jobs; pushed). No workflow running.

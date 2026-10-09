@@ -1,0 +1,109 @@
+@RBM.Loop.LoopIdx.two_le_length_cutGlueL : ∀ {α : Type u_1} (x : RBM.Loop.LoopIdx α) (b : α) {k l : ℕ},
+  1 ≤ k → k < l → l ≤ x.length → 2 ≤ (RBM.Loop.LoopIdx.cutGlueL k l b x).length
+@RBM.Loop.LoopIdx.two_le_length_cutGlueR : ∀ {α : Type u_1} (x : RBM.Loop.LoopIdx α) (b : α) {k l : ℕ},
+  1 ≤ k → k < l → l ≤ x.length → 2 ≤ (RBM.Loop.LoopIdx.cutGlueR k l b x).length
+@RBM.Loop.LoopIdx.length_cutGlueR_eq_two : ∀ {α : Type u_1} (x : RBM.Loop.LoopIdx α) (a b : α) {k l : ℕ},
+  1 ≤ k →
+    k < l →
+      l ≤ x.length →
+        (RBM.Loop.LoopIdx.cutGlueL k l a x).length = x.length → (RBM.Loop.LoopIdx.cutGlueR k l b x).length = 2
+@RBM.Loop.LoopIdx.length_cutGlueL_eq_two : ∀ {α : Type u_1} (x : RBM.Loop.LoopIdx α) (a b : α) {k l : ℕ},
+  1 ≤ k →
+    k < l →
+      l ≤ x.length →
+        (RBM.Loop.LoopIdx.cutGlueR k l b x).length = x.length → (RBM.Loop.LoopIdx.cutGlueL k l a x).length = 2
+RBM.Loop.LoopVec : ℕ → ℕ → ℕ → Type
+RBM.Loop.LoopVec.toLoop : (d L : ℕ) → {n : ℕ} → RBM.Loop.LoopVec d L n → RBM.Loop.LoopIdx (RBM.Zd d L)
+@RBM.Loop.LoopVec.exists_toLoop : ∀ {d L n : ℕ} (J : RBM.Loop.LoopIdx (RBM.Zd d L)),
+  J.WF → J.length = n → ∃ (p : RBM.Loop.LoopVec d L n), RBM.Loop.LoopVec.toLoop d L p = J
+@RBM.Loop.norm_SB_apply_le : ∀ {d L : ℕ} [NeZero L] (g : ℝ), 3 ≤ L → ∀ (a b : RBM.Zd d L), ‖RBM.SB d L g a b‖ ≤ 1
+@RBM.Loop.norm_mul_mul_sub_le : ∀ {X X' Y Y' s : ℂ} {R D : ℝ},
+  ‖s‖ ≤ 1 → ‖X - X'‖ * ‖Y‖ ≤ R * D → ‖X'‖ * ‖Y - Y'‖ ≤ R * D → ‖X * s * Y - X' * s * Y'‖ ≤ 2 * (R * D)
+RBM.Loop.eq_on_level : ∀ (d L : ℕ) [inst : NeZero L] (W : ℕ) (g : ℝ),
+  3 ≤ L →
+    ∀ (K K' : ℝ → RBM.Loop.LoopIdx (RBM.Zd d L) → ℂ) (T₀ R : ℝ) (n : ℕ),
+      0 ≤ R →
+        (∀ t ∈ Set.Icc 0 T₀,
+            ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)),
+              I.WF → I.length = n → HasDerivAt (fun (s : ℝ) => K s I) (RBM.Loop.treeEqRhs d L W g (K t) I) t) →
+          (∀ t ∈ Set.Icc 0 T₀,
+              ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)),
+                I.WF → I.length = n → HasDerivAt (fun (s : ℝ) => K' s I) (RBM.Loop.treeEqRhs d L W g (K' t) I) t) →
+            (∀ t ∈ Set.Icc 0 T₀,
+                ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → I.length = 2 → ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R) →
+              (∀ t ∈ Set.Icc 0 T₀,
+                  ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → 2 ≤ I.length → I.length < n → K t I = K' t I) →
+                (∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → I.length = n → K 0 I = K' 0 I) →
+                  ∀ t ∈ Set.Icc 0 T₀, ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → I.length = n → K t I = K' t I
+@RBM.Loop.isKLoop_unique : ∀ {d L : ℕ} [inst : NeZero L] {W : ℕ} {g : ℝ},
+  3 ≤ L →
+    ∀ (m : Bool → ℂ) {T : Set ℝ} {K K' : ℝ → RBM.Loop.LoopIdx (RBM.Zd d L) → ℂ},
+      RBM.Loop.IsKLoop d L W g m T K →
+        RBM.Loop.IsKLoop d L W g m T K' →
+          ∀ {T₀ R : ℝ},
+            Set.Icc 0 T₀ ⊆ T →
+              0 ≤ R →
+                (∀ t ∈ Set.Icc 0 T₀,
+                    ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → I.length = 2 → ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R) →
+                  ∀ t ∈ Set.Icc 0 T₀, ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → 2 ≤ I.length → K t I = K' t I
+@RBM.Loop.exists_eq_of_length_two : ∀ {d L : ℕ} {I : RBM.Loop.LoopIdx (RBM.Zd d L)},
+  I.WF →
+    I.length = 2 → ∃ (σ₁ : Bool) (σ₂ : Bool) (a₁ : RBM.Zd d L) (a₂ : RBM.Zd d L), I = { σ := [σ₁, σ₂], a := [a₁, a₂] }
+@RBM.Loop.KLretire_twoLoopBounded : ∀ {d L : ℕ} [inst : NeZero L] {W : ℕ} {g : ℝ} {m : Bool → ℂ}
+  {K : ℝ → RBM.Loop.LoopIdx (RBM.Zd d L) → ℂ},
+  RBM.Loop.IsKLoop d L W g m (Set.Ico 0 1) K →
+    ∀ T₀ < 1,
+      ∃ (R : ℝ), 0 ≤ R ∧ ∀ t ∈ Set.Icc 0 T₀, ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → I.length = 2 → ‖K t I‖ ≤ R
+@RBM.Loop.kTwoFormula_of_isKLoop : ∀ {d L : ℕ} [inst : NeZero L] {W : ℕ} {g : ℝ},
+  3 ≤ L →
+    ↑W ^ d ≠ 0 →
+      ∀ {m : Bool → ℂ},
+        (∀ (s : Bool), ‖m s‖ = 1) →
+          ∀ {K : ℝ → RBM.Loop.LoopIdx (RBM.Zd d L) → ℂ},
+            RBM.Loop.IsKLoop d L W g m (Set.Ico 0 1) K → RBM.Loop.KTwoFormula d L W g m K
+@RBM.Loop.pureLoop_two_of_isKLoop : ∀ {L : ℕ} [inst : NeZero L] {W : ℕ} {g : ℝ} {k : ℕ},
+  3 ≤ k + 2 →
+    0 < g →
+      3 ≤ L →
+        ↑W ^ (k + 2) ≠ 0 →
+          ∀ {m : Bool → ℂ},
+            (∀ (s : Bool), ‖m s‖ = 1) →
+              ∀ {σ : Bool},
+                0 < (m σ).im →
+                  RBM.ThetaDecayShort (k + 2) g (m σ) →
+                    ∀ {K : ℝ → RBM.Loop.LoopIdx (RBM.Zd (k + 2) L) → ℂ},
+                      RBM.Loop.IsKLoop (k + 2) L W g m (Set.Ico 0 1) K →
+                        ∃ C > 0,
+                          ∃ c > 0,
+                            ∀ (t : ℝ),
+                              0 ≤ t →
+                                t < 1 →
+                                  ∀ (a₁ a₂ : RBM.Zd (k + 2) L),
+                                    ‖K t { σ := [σ, σ], a := [a₁, a₂] }‖ ≤
+                                      C * ‖(↑W ^ (k + 2))⁻¹‖ * Real.exp (-(c * ↑(RBM.zdistD (k + 2) L (a₁ - a₂))))
+RBM.Loop.KLK_unique : ∀ (d L W : ℕ) [inst : NeZero L] (g E : ℝ),
+  3 ≤ L →
+    1 ≤ W →
+      |E| < 2 →
+        ∀ (K : ℝ → RBM.Loop.LoopIdx (RBM.Zd d L) → ℂ),
+          RBM.Loop.IsKLoop d L W g (RBM.mSigma E) (Set.Ico 0 1) K →
+            ∀ t ∈ Set.Ico 0 1,
+              ∀ (I : RBM.Loop.LoopIdx (RBM.Zd d L)), I.WF → 1 ≤ I.length → K t I = RBM.Loop.KLK d L g W E t I
+RBM.Loop.KLK_translate : ∀ (d L W : ℕ) [inst : NeZero L] (g E : ℝ),
+  3 ≤ L →
+    1 ≤ W →
+      |E| < 2 →
+        ∀ t ∈ Set.Ico 0 1,
+          ∀ (c : RBM.Zd d L) (I : RBM.Loop.LoopIdx (RBM.Zd d L)),
+            I.WF →
+              RBM.Loop.KLK d L g W E t { σ := I.σ, a := List.map (fun (x : RBM.Zd d L) => x + c) I.a } =
+                RBM.Loop.KLK d L g W E t I
+RBM.Loop.KLK_rotate : ∀ (d L W : ℕ) [inst : NeZero L] (g E : ℝ),
+  3 ≤ L →
+    1 ≤ W →
+      |E| < 2 →
+        ∀ t ∈ Set.Ico 0 1,
+          ∀ (s : Bool) (b : RBM.Zd d L) (σ : List Bool) (a : List (RBM.Zd d L)),
+            σ.length = a.length →
+              RBM.Loop.KLK d L g W E t { σ := s :: σ, a := b :: a } =
+                RBM.Loop.KLK d L g W E t { σ := σ ++ [s], a := a ++ [b] }
