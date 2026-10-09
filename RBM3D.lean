@@ -392,6 +392,7 @@ import RBM3D.Universality.GUEPhase.DuhamelB
 import RBM3D.Universality.GUEPhase.Eq729A
 import RBM3D.Universality.GUEPhase.DuhamelC
 import RBM3D.Universality.GUEPhase.HypA
+import RBM3D.Universality.GUEPhase.OneLoop
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
