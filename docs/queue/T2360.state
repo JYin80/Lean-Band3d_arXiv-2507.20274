@@ -1,0 +1,4 @@
+state: audit-pass
+reason: stage 1b DONE (6a3b821; K1-K6, probe 396 lines, finding F1: merged BAMLoop is not paper eq:KMloop); auditor1 PASS claude-opus-5-5 (wf_d5c99b42-8c2); report-only merge (probe stays on t/T2360)
+updated: Fri Oct  9 20:05:40 UTC 2026
+reports: docs/reports/T2360-prove.md, docs/reports/T2360-design.md, docs/reports/T2360-audit.md
