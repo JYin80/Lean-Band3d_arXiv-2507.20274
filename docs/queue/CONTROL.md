@@ -286,6 +286,9 @@ done: Wed Oct  7 06:50:01 UTC 2026 — T2306 merged 8096694 (LW-14e-1 Graph/LWEx
 319. T2351 — `docs/tickets/T2351.md` (UN DuhamelC, role `prover-hard`). Released by H145 (check exit 0).
 320. T2352 — `docs/tickets/T2352.md` (UN HypA, role `prover-hard`). Released by H145 (check exit 0).
 321. T2353 — `docs/tickets/T2353.md` (UN OneLoop, role `prover-max`). Released by H145 (check exit 0).
+322. T2354 — `docs/tickets/T2354.md` (UN HypB + LLTransfer, role `prover-hard`). Released by H146 (check exit 0).
+323. T2355 — `docs/tickets/T2355.md` (UN QUEFlow, role `prover-hard`). Released by H146 (check exit 0).
+324. T2356 — `docs/tickets/T2356.md` (UN Eq729B, role `prover-max`; stage 1a only per H146). Released by H146 (check exit 0).
 287. T2315 — `docs/tickets/T2315.md` (BA-L2b2, role `prover-hard`). Released by H119 (check exit 0).
 
 - H103 (dispatcher V1, 2026-10-07 07:42 UTC; DECISIONS §112–§115). Commit the dispatcher's files written since H94 (b2529ba), exactly as H94 (scripted `git status --porcelain --untracked-files=all` over `docs/DECISIONS.md docs/ROUTES.md docs/rework-ledger.md docs/paper-deltas.md docs/tickets docs/claude-team docs/queue/CONTROL.md docs/queue/CONTROL-archive.md docs/supervisor`; no path under `RBM3D/`, `docs/reports/` or `docs/queue/T*.state`; drop `docs/claude-team/HEARTBEAT-STATE.md` and `docs/claude-team/hb.sh`); message `Dispatcher V1: bookkeeping DECISIONS §92–§115, tickets T2303 draft, T2310–T2311, checks T2310/T2311, supervisor trig_01R1NVdwWjDU2P5KMhtTLr43 (H103)`; `git push origin main` (no force). Between merges; touches no running ticket. One `done:` line with the hash and the number of files.
@@ -712,4 +715,16 @@ done: Fri Oct  9 00:52:56 UTC 2026 — T2353 merged 93b8ec8 (UN OneLoop Universa
   Step A — commit the dispatcher's files written since H145 (bb0dc24), exactly as H117 Step A (drop `docs/claude-team/fable/__pycache__/`): `docs/DECISIONS.md` (§160), `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/tickets/T2354.md`, `T2355.md`, `T2356.md` and their three check files, `docs/supervisor/requests/REQ-2026-10-09-0100.md`; also any supervisor files under `docs/supervisor/` not yet on `main`. Message `Dispatcher V1: DECISIONS §160 (UN HypB+LLTransfer/QUEFlow/Eq729B = T2354/T2355/T2356; REQ-0100), H146`. Push.
   Step B — compile, one after the other (H101 (4)): `T2354-check.lean`, `T2355-check.lean`, `T2356-check.lean`. One `done:` line per file with exit code; on exit 1 paste the first 30 error lines of that file and do not release that ticket.
   Step C — on exit 0: release **T2354** (`prover-hard`), **T2355** (`prover-hard`), **T2356** (`prover-max`, **stage 1a only**: design report + probe; after the 1a audit PASS merge the reports only (the probe stays on `t/T2356`, as T2348) and stop; no stage 1b until a later H-instruction; on 1a FAIL return the report), fresh branches from the Step A hash; 3 of 4 in use. Stop-rule sentence (§148 (5)) in every stage prompt. One `done:` line per ticket.
+  done: Fri Oct  9 01:02:38 UTC 2026 — Step A: committed 5869c29 (10 files staged by name: DECISIONS.md, ROUTES.md, CONTROL.md, tickets T2354/T2355/T2356 and their check files, REQ-2026-10-09-0100.md; no other supervisor file differed from main), pushed.
+  done: Fri Oct  9 01:02:42 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2354-check.lean`: exit 0, no error lines.
+  done: Fri Oct  9 01:02:46 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2355-check.lean`: exit 0, no error lines.
+  done: Fri Oct  9 01:02:49 UTC 2026 — Step B: `lake env lean docs/tickets/checks/T2356-check.lean`: exit 0, no error lines.
+  done: Fri Oct  9 01:03:24 UTC 2026 — Step C: T2354 started (wf_abaec3df-ac4, prover-hard), branch t/T2354 from 5869c29; state preflight; Released list 322.
+  done: Fri Oct  9 01:03:24 UTC 2026 — Step C: T2355 started (wf_7eaf23bf-73c, prover-hard), branch t/T2355 from 5869c29; state preflight; Released list 323.
+  done: Fri Oct  9 01:03:24 UTC 2026 — Step C: T2356 started for its stage 1a only (wf_2e28157a-2a3: math preflight, prover-max design report + probe, auditor on the 1a report; told not to write Eq729B.lean), branch t/T2356 from 5869c29; report-only merge then stop; Released list 324. 3 of 4 in use.
+
+- H147 (dispatcher V1, 2026-10-09 01:04 UTC; DECISIONS §161).
+  Step A — commit the dispatcher's files written since H146 (5869c29), exactly as H117 Step A (drop `docs/claude-team/fable/__pycache__/`): `docs/DECISIONS.md` (§161), `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/tickets/T2357.md`, `docs/tickets/checks/T2357-check.lean`; also any supervisor files under `docs/supervisor/` not yet on `main`. Message `Dispatcher V1: DECISIONS §161 (BA-P8 = T2357), H147`. Push.
+  Step B — compile `T2357-check.lean` (after H146 Step B is done; one at a time, H101 (4)). One `done:` line with exit code; on exit 1 paste the first 30 error lines and do not release.
+  Step C — on exit 0: release **T2357** (`prover-hard`), fresh branch from the Step A hash; with T2354, T2355, T2356 that is 4 of 4. Stop-rule sentence (§148 (5)) in every stage prompt. One `done:` line.
 
