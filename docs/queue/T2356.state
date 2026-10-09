@@ -1,0 +1,4 @@
+state: held
+reason: stage 1a (design + probe) audit PASS (claude-opus-5-5); report-only merge done per H146 (probe RBM3D/Probe/T2356Pins.lean stays on t/T2356 at fe9888f); stage 1b waits for a later H-instruction
+updated: Fri Oct  9 02:15:47 UTC 2026
+reports: docs/reports/T2356-prove.md, docs/reports/T2356-design.md, docs/reports/T2356-audit.md
