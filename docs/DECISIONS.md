@@ -1216,3 +1216,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) 阶段 P：第 6 张（上限 9）；P8 合并后发阶段 P 关闭 REQ（`BAProp5to8` 四个电荷对全证、五行已删，1048 O5）。BA 34。
 - (4) 槽位 4/4（T2354、T2355、T2356 1a、T2357）。下一张票号 T2358。
 
+## §162 — 监督 0143 PASS（LW 50 行审查）：放 R1 = T2358、R2 = T2359，LW 上限 55；T2355、T2357 合并；BA 阶段 P 关闭 REQ（总调度，2026-10-09 01:56 UTC）
+
+- (0) **合并**：T2355 = UN-52a（5d7a660，`g2bRowk` 证出，删欠账 `UNG2bRowk`）；T2357 = BA-P8（83847ef，`baProp5to8_holds` 四个电荷对全证，删 `Test/Axioms.lean` 五行）。都是 1 轮审核 PASS。T2354 1b 中，T2356 1a（设计）中。
+- (1) **监督 2026-10-09-0143（回 REQ-0100）：PASS**。Q1 走 (R)（有根 `GtoAG` 是 `auxGraph_exists_forest` 去掉 `choose` 的机械推广；(E) 只在 R3 1a 遇到具体障碍时作后备，换 (E) 要 REQ）；Q2 接受 R1/R2/R3、预设切分 C1–C3、LW-01 = 52，**LW 上限 55（含 LW-01），硬约束**：第 56 张、C1–C3 以外的切分、或 R1–R3 的数学性 1a FAIL，任一出现即 REQ，监督会建议 LW 门 HOLD 并上报 Jun；Q3 R1、R2 现在同放，R3 等两者合并，条件 C1–C6；Q4 论文差异编号（见 (4)）。另：REQ 第 1 行必须恰为 `status: open`（O4），本 REQ 漏了，以后照办。
+- (2) **R1 = T2358**（`Graph/LWProv.lean`，`prover-max`，1003 / 1440 / 2170，停止线 1950）：陈述 = 探针 `:29-185, 291-310` 逐字（审核脚本 diff），唯一改动 C3（`LWExpData` 不立为定义，九个合取式写进 `WExp`/`WExp.prod` 的绑定）；1a 先编出 C1（加权桥 `lwProv_bridge`，`lwMoment_fxyPow_val` 的孪生）与 C2（`weight` 构造子的 `Molecular`、`fxyPowGraph p` 的初始 `Cover`），失败即停回调度发 REQ。**R2 = T2359**（`Graph/LWMomExpInf.lean`、`LWXiExp.lean`、`LWMomentExpA.lean`，`LWMomExp.lean` 只删 **11** 个 `private`（C4 (a)，含 `lwMomExp_stepFn`），`prover-max`，1182 / 1573 / 2344，停止线 2100）。**流程决定**：`LWfD`（受限的 `f`）放在 R1（加权桥要它），R2 与 R1 并行不共文件，所以 (A) 用已合并的 `LWf` 在目标 `LWMomentExp` 的子类型上加 `regA d K` 来陈述（`LWMomExpNoExpF`，对一切 `K > 0`，C4 (b)），R3 用 `LWfD … univ = LWf` 转换；探针的 `LWMomentExpOn`、域、远/近钉文、`LWMomentExpOfParts` 归 R3（按 C6 选 (α)：`∀ p, ∃ K`）。
+- (3) **LW 计数**：48 → T2358 = 49、T2359 = 50；R3 = 51，LW-01 = 52；上限 55。告知 Jun：LW 过 50，审查已做（PASS），名义 52，上限 55。
+- (4) **论文差异**（监督 0143 Q4）：D618 = T2344a、D619 = T2344b、D620 = T2344c、D621 = T2344d、D622 = T2348a、D623 = T2348b，记入 `docs/paper-deltas.md`；T2348c 不是差异，是对票与 2244 O1 的更正（11 个关键词）。
+- (5) **BA 阶段 P 关闭 → REQ-2026-10-09-0156**（1048 O5）：P4a T2331、P4b T2335、P4c T2336、P5 T2337、P6 T2341、P8 T2357，6 张（上限 9），`BAProp5to8` 四个电荷对全证，五行登记已删；问下一阶段 K 的开法（我提议先开一张仅报告的 BA-DK 设计票出行表）。阶段 K 答复前不写 BA 证明票。
+- (6) 计数（宽口径）：LW 50（R1、R2 计入）；UN 57/64；ST-6 3/4；BA 34（阶段 P 关闭待批）；MA 7/8。槽位 4/4（T2354、T2356 1a、T2358、T2359）。下一张票号 T2360。
+
