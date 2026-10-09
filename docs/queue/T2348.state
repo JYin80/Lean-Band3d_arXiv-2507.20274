@@ -1,0 +1,4 @@
+state: merged PENDING
+reason: audit PASS round 1 (claude-opus-5-5); report-only design merged (prove, design, audit reports and state); probe RBM3D/Probe/T2348Pins.lean stays on t/T2348 at 9f3bd75
+updated: Fri Oct  9 00:45:51 UTC 2026
+reports: docs/reports/T2348-prove.md, docs/reports/T2348-design.md, docs/reports/T2348-audit.md
