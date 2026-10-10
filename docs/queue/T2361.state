@@ -1,4 +1,4 @@
 state: audit-pass
-reason: auditor1 PASS (claude-opus-5-5, wf_efcf843d-12f); diff only PathBounds.lean; rule (A) step 3 denied by the session permission check at 19:29 UTC; H152 not retried (the denial stands until Jun allows it in this session)
-updated: Fri Oct  9 20:03:15 UTC 2026
+reason: auditor1 PASS claude-opus-5-5 (wf_efcf843d-12f); merging under H155 with Jun's direct authorization in the hub session (Sat Oct 10 00:56:06 UTC 2026)
+updated: Sat Oct 10 00:56:06 UTC 2026
 reports: docs/reports/T2361-prove.md, docs/reports/T2361-audit.md
