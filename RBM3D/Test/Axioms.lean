@@ -129,7 +129,7 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
-   -- T2197 (BA-C1a, DECISIONS §20): the block Anderson chain pins over a law (`RBM3D/BA/FlowPins.lean`)
+   -- T2197 (BA-C1a, DECISIONS §20): the block Anderson chain pins over a law (`RBM3D/BA/FlowPins.lean`; the carrier `FlowFM` and the `…gL` predicates below moved to `RBM3D/Chain/Carrier.lean` by T2382)
    `RBM.BA.STLmaxgL, -- `(Eq:L-KGt2)` at a law `μ` over a flow carrier, hypothesis of the instance `inst_BAConArg'` and of `not_BAConArg_of_data`; owed like its band form `STLmax`: BA chain, BA-V2/BA-K4 (T2197)
    `RBM.BA.STKboundgL, -- `ML:Kbound` `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d}B_{τ,0})^{k-1}` at a law `μ` over a flow carrier (`1_2:1056`), hypothesis of the instance `inst_baBootstrap'` (T2269); owed: the BA chain, BA-K4/BA-V2
    `RBM.BA.STLKgL, -- `(Eq:L-KGt)` (a) at a law `μ` over a flow carrier, hypothesis of the instance `inst_baBootstrap'` (T2269); owed like its band form `STLK`: BA chain, BA-V2/BA-K4
@@ -140,7 +140,7 @@ def owedProps : List Name :=
    `RBM.BA.STBaseG, -- the six conclusions of `lem:main_ind` at the zero sequence over a carrier; band: `stBase_band`; BA: BA-V (from `STLK0`, `STG0M`, `STKboundgL` by `stBaseG_of_init`)
    `RBM.BA.STHorizonG, -- admissible sizes, `0 < T0 < 1` and `N^{-1+ε/2} ≤ 1 - T0` eventually; band: `stHorizon_band`; BA: BA-V (`BAflowT0`, `Im m ≤ 1`)
    -- T2340: existing pins that the new theorems (`stMLOutG_of_mainIndG`, `STLocalMaxgL_of_STLocalEntrygL`) take as hypotheses, found by the scan once `MainIndOut` is imported
-   `RBM.BA.STMainIndG, -- `lem:main_ind` over a carrier `(law, Flow, mk, T0)` (`BA/FlowPins.lean:565`), hypothesis of `stMLOutG_of_mainIndG`; band form `STMainInd` (`STMainInd_iff`, `Iff.rfl`): proved for every `d` by `stMainInd_holds` (T2375); BA form: BA-V
+   `RBM.BA.STMainIndG, -- `lem:main_ind` over a carrier `(law, Flow, mk, T0)` (`BA/FlowPins.lean:434`), hypothesis of `stMLOutG_of_mainIndG`; band form `STMainInd` (`STMainInd_iff`, `Iff.rfl`): proved for every `d` by `stMainInd_holds` (T2375); BA form: BA-V
    `RBM.BA.STLocalEntrygL, -- `(Gt_bound)` at a law `μ` over a flow carrier, hypothesis of `STLocalMaxgL_of_STLocalEntrygL`; owed like its band form `STLocalEntry`: BA chain, BA-V
    -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins `LWterm`, `LWtermB`, `LWtermExp`, `LWtermExpS`, `LWtermExpN`, `LWReduceB`, `LWReduceT`, `LWInteg` are proved for every `d` (T2375, `Graph/LWTermHolds.lean`); `STMainInd`, `STStep2`, `UNMLOut` too (T2375, `Induction/MainIndHolds.lean`)
    -- T2067: the random premises of the LW pins (ST chain)
