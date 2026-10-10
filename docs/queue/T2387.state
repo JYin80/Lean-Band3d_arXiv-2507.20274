@@ -1,4 +1,4 @@
-state: proving
-reason: H179: check exit 0 on main 61849a6; design ticket, workflow wf_bfc43433-6db (1a → design + probe prover-max → auditor → report-only merge); branch from main 61849a6
-updated: Sat Oct 10 12:43:41 UTC 2026
+state: audit-pass
+reason: design delivered (LD1-LD7; probe at fe433f2, 52 declarations on standard axioms); auditor1 PASS claude-opus-5-5 (wf_a0fb8d25-519); report-only merge, probe stays on t/T2387
+updated: Sat Oct 10 16:26:29 UTC 2026
 reports: docs/reports/T2387-prove.md, docs/reports/T2387-design.md, docs/reports/T2387-audit.md
