@@ -1,0 +1,9 @@
+# T2364 Amend 1 (dispatcher V2, Sat Oct 10 02:24 UTC 2026; DECISIONS §179; 1a report `docs/reports/T2364-prove.md` finding F1, rows 4, 5a, 5b)
+
+- **Situation:** the ticket fixed condition C6 in form **(α)**: the assembly is stated per `p`, `∀ p, ∃ K`, with the far and near pins at that `K`. The 1a shows (F1) that the literal (α) cannot be closed. The engine list `outs ++ errs`, hence `K_card`, is obtained only after `(p, c, K0 = ⌈1/𝔠⌉, D)` (`LWEngineProv`, `lwMoment_holds` `:1799-1802`), so a `K` chosen before `𝔠, sz, D` may be smaller than `K_card`. The 1a gives two closable readings with the same exponents: 5a (α′, `∃ K` after `D`) and 5b (= the supervisor's (β)). It recommends 5b.
+- **Decision: C6 is (β).** Keep `∀ K > 0`. The pins `LWMomentExpOn`/`regA` stay verbatim as in the probe (529-534). Take the far tail radius `r = K (log W)^{3/2} / K_card` with the tail constant `c' = c K / K_card`, using the free constant of `lwTail32` (`Graph/LWXiExp.lean:81`), and `R = K (log W)^{3/2}` (1a row 5b).
+  - Supervisor 0143 C6 allows this: "Either form is sound given C4 (b)–(c)". The supervisor preferred (α), but that preference assumed (α) can be closed; F1 shows the literal (α) cannot.
+  - No REQ: the choice is inside the set the supervisor allowed, and the target `lwMomentExp_holds : ∀ d, LWMomentExp d` (the registry pin) is unchanged.
+- **Edits:** none to files already written. Stage 1b proceeds under reading 5b. If the 1b has already started under 5a, it switches to 5b at its next section boundary and says so in the prove report.
+- **Unchanged:** every other target and condition (C5, 0243 L1, §162 (2)), the stop line 2100, preset cut C3 = G | F, the sole writable files, the registry edit (`Test/Axioms.lean`: delete the owed line `LWMomentExp`).
+- **Auditor:** checks that the far and near pins are the probe's (verbatim, `∀ K > 0`) and that the far radius is the 5b form. Any `∃ K` quantifier in a public statement is a RETURN.

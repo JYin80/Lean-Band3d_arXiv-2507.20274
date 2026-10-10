@@ -2,19 +2,18 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 02:09 UTC (dispatcher V2: T2366 merged; T2363, T2364, T2367 running; T2368, T2369 released, H161)
+updated: 2026-10-10 03:58 UTC (dispatcher V2: T2368 Amend 1 (H163); T2370 BA-K05a released (H164))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-331. T2365 — `docs/tickets/T2365.md` (BA-K09a, in place `Loop/KLIndStepA.lean`, `Loop/KLIndStepB.lean`): `audit-pass` (b74e5fd); merge by rule (A) after T2366 (the auditor's field-wise check of the structure pin `IndStepTH` replaces the ticket's `rfl` check, DECISIONS §175).
 333. T2363 — `docs/tickets/T2363.md` (UN-51, `Universality/GUEPhase/RandomLayerA.lean`, `RandomLayerB.lean`): released (inputs T2356, T2361 merged); starts when its check compiles with exit 0 (H12). Preset cut A|B.
-334. T2364 — `docs/tickets/T2364.md` (LW-13b R3 = G + F, `Graph/AuxGraphRooted.lean`, `Graph/LWMomentExp.lean`): released (input T2358 merged); starts when its check compiles with exit 0 (H12). Preset cut C3 = G|F.
-335. T2367 — `docs/tickets/T2367.md` (BA-K04, new `BA/KCactus.lean`): released (input K00 merged 8050043); starts when its check compiles with exit 0 (H12).
-336. T2368 — `docs/tickets/T2368.md` (BA-K03, new `BA/KSolve.lean`; inputs K00, K01 merged): released; starts when its check compiles with exit 0 (H12).
+334. T2364 — `docs/tickets/T2364.md` (LW-13b R3 = G + F, `Graph/AuxGraphRooted.lean`, `Graph/LWMomentExp.lean`): released (input T2358 merged); starts when its check compiles with exit 0 (H12). Preset cut C3 = G|F. **Amend 1** (`docs/tickets/T2364-amend-1.md`, C6 → (β)) is in force from stage 1b.
+336. T2368 — `docs/tickets/T2368.md` (BA-K03, `BA/KSolve.lean`): audit-pass (057f0f4), merge blocked on the registry → **Amend 1** (`docs/tickets/T2368-amend-1.md`: `BAKsolve` owed, one line in `Test/Axioms.lean`), H163.
 337. T2369 — `docs/tickets/T2369.md` (BA-K02, in place `Loop/KLWard.lean` + new `BA/KWard.lean`; input K01 merged): released; starts when its check compiles with exit 0 and a slot is free (H12), after T2368. Merge yields to critical-path merges (ticket, G2).
+338. T2370 — `docs/tickets/T2370.md` (BA-K05a, new `BA/KTreeDeriv.lean`; inputs K00, K04 merged): released; starts when its check compiles with exit 0 and a slot is free (H12). Stage 1a is a design gate followed by a 1a-audit before 1b (ticket).
 
 ## Pre-release checks
 - `docs/tickets/checks/T2363-check.lean` (UN-51; imports `Eq729B`, `PathBounds`, merged 96f2390, 16b812a; released conditionally above, DECISIONS §17).
@@ -24,7 +23,10 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 - `docs/tickets/checks/T2367-check.lean` (BA-K04; pins `BAGammaType`, `BATreeRep`; released conditionally above, DECISIONS §17).
   done: Sat Oct 10 02:03:17 UTC 2026 — `lake env lean docs/tickets/checks/T2367-check.lean` on main 010cad9: exit 0, no error lines.
 - `docs/tickets/checks/T2368-check.lean` (BA-K03; imports T2366's pins, merged 010cad9; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 03:11:50 UTC 2026 — `lake env lean docs/tickets/checks/T2368-check.lean` on main a5c1a1a: exit 0, no error lines.
 - `docs/tickets/checks/T2369-check.lean` (BA-K02; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 03:11:50 UTC 2026 — `lake env lean docs/tickets/checks/T2369-check.lean` on main a5c1a1a: exit 0, no error lines.
+- `docs/tickets/checks/T2370-check.lean` (BA-K05a; pins `BASplicedFam`, `BAGammaDerivRHS`, `BAGammaDerivStmt`, `BALeafPairsStmt`; released conditionally above, DECISIONS §17).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -48,6 +50,16 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 02:03:17 UTC 2026 — Steps B/C: T2367 check exit 0 on main 010cad9; started from main 010cad9, workflow wf_8d618949-445 (prover-max). Running: T2363, T2364, T2367 (3 of 4); T2365 merge next.
 
 - H161 (dispatcher V2, 2026-10-10 02:09 UTC; DECISIONS §178). **Step A** — one commit, staging by name only, message `Dispatcher V2: BA-K03 = T2368, BA-K02 = T2369 (after the K01 merge), DECISIONS §176-§178, H161`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`, `docs/tickets/T2368.md`, `docs/tickets/checks/T2368-check.lean`, `docs/tickets/T2369.md`, `docs/tickets/checks/T2369-check.lean`; push. **Step B** — compile both checks on `main` (H4; if T2365's merge build is running, after it, as for H159); one `done:` line each under Pre-release checks; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T23xx-check.out` and do not start that ticket. **Step C** — start T2368 in the free slot (H12; branch from the current `main`); T2369 starts when the next slot frees (H12). One `done:` line per step.
+  done: Sat Oct 10 02:13:11 UTC 2026 — Step A committed c06b2d7 (the 9 listed files + states T2363/T2364/T2366/T2367, by name; T2365's staged Lean files excluded by pathspec), pushed. Steps B/C wait for the running T2365 merge build.
+  done: Sat Oct 10 03:11:50 UTC 2026 — Step B: T2368 and T2369 checks exit 0 on main a5c1a1a (after the T2365 merge build). Step C: T2368 started from main a5c1a1a, workflow wf_9023974a-9dd (prover-hard); running T2363, T2364, T2367, T2368 (4 of 4); T2369 waits for the next free slot.
+  done: Sat Oct 10 03:19:24 UTC 2026 — T2369 started in the slot freed by T2367 (audit-pass): branch from main a5c1a1a, workflow wf_45e50cee-6cc (prover-hard).
+
+- H162 (dispatcher V2, 2026-10-10 02:24 UTC; DECISIONS §179). **T2364 Amend 1** (`docs/tickets/T2364-amend-1.md`): pass it to T2364's stage 1b now (workflow wf_154407b3-dcb). C6 is (β), reading 5b of the 1a, so no 1a rerun. Commit the amend file with the next Step A commit by name. One `done:` line.
+  done: Sat Oct 10 02:33:16 UTC 2026 — Amend 1 sent to T2364's running stage-1b agent (prover-max a196100f0c965a804 in wf_154407b3-dcb) by message: read docs/tickets/T2364-amend-1.md with the ticket; C6 = (β), no 1a rerun. The workflow's auditor prompt was fixed at launch without the amend; the auditor reads the ticket directory, and if its report does not cite Amend 1 the hub re-audits with it. Amend file goes into the next Step A commit.
+
+- H163 (dispatcher V2, 2026-10-10 03:54 UTC; DECISIONS §20, §181; answers the question in `docs/queue/T2368.state`). Run **T2368 Amend 1** (`docs/tickets/T2368-amend-1.md`) at once under H23 (c): a `repairer` stage on `t/T2368` adds the one `owedProps` line for `RBM.BA.BAKsolve`; then a round-2 `auditor` checks that diff by script; then merge by rule (A). Commit `docs/tickets/T2368-amend-1.md`, `docs/tickets/T2364-amend-1.md`, `docs/supervisor/requests/REQ-2026-10-10-0324.md`, `docs/supervisor/2026-10-10-0350.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md` by name with the next commit you make. One `done:` line per step.
+
+- H164 (dispatcher V2, 2026-10-10 03:58 UTC; DECISIONS §182). With the commit of H163 (or before it, whichever comes first) also commit by name `docs/tickets/T2370.md`, `docs/tickets/checks/T2370-check.lean`; compile `docs/tickets/checks/T2370-check.lean` on `main` (H4; one `done:` line under Pre-release checks; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T2370-check.out`); start T2370 in the next free slot (H12), with the 1a-audit stage between 1a and 1b as the ticket says. One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 00:56:16 UTC 2026 — T2361 merged 16b812a (UN-50b Universality/GUEPhase/PathBounds (gueBds_h745E, gueBds_h746, gueGrid_pathBounds), root import, no registry change; audit PASS claude-opus-5-5; full lake build 4174 jobs; pushed). Authorized by Jun in the hub session (H155).
@@ -55,3 +67,6 @@ done: Sat Oct 10 00:57:36 UTC 2026 — T2356 merged 96f2390 (UN Eq729B Universal
 done: Sat Oct 10 00:59:00 UTC 2026 — T2358 merged c587dcd (LW-13b R1 Graph/LWProv (1820 lines, stop 1950; Amend 1 + Amend 2 R-a: LocStepXProv and 4 helpers deleted, pinned step lemma lwProv_locStepXProvPos_holds), root import, no registry change; audit PASS round 2 claude-opus-5-5; full lake build 4176 jobs; pushed). Authorized by Jun in the hub session (H155).
 done: Sat Oct 10 01:01:53 UTC 2026 — T2362 merged 8050043 (BA-K00: BAMLoop repaired in place, BA/FlowPins.lean 3 lines changed within 269-279 (definition + docstring, eq:KMloop), new BA/KBase, root import, no registry change; audit PASS claude-opus-5-5; full lake build 4177 jobs incl. BA/Step1Fam re-check; pushed). Authorized by Jun in the hub session (H155).
 done: Sat Oct 10 02:02:24 UTC 2026 — T2366 merged 010cad9 (BA-K01 generic part: Loop/Unique.lean, Loop/KLUnique.lean in place (UniqS, RetireS, RotS, TranslS), no root import, no registry change; audit PASS claude-opus-5-5; full lake build 4177 jobs (rebuilt the certificate modules, ~52 min); pushed). Rule (A), authorized by Jun in the hub session.
+done: Sat Oct 10 03:11:27 UTC 2026 — T2365 merged a5c1a1a (BA-K09a: Loop/KLIndStepA.lean, Loop/KLIndStepB.lean in place, no root import, no registry change; audit PASS claude-opus-5-5 (field-wise IndStepTH check, DECISIONS §175); full lake build 4177 jobs (rebuilt the certificate modules); pushed). Rule (A).
+done: Sat Oct 10 03:20:46 UTC 2026 — T2367 merged 9b94993 (BA-K04 BA/KCactus (1263 lines), root import, no registry change; audit PASS claude-opus-5-5; full lake build 4178 jobs; pushed). Rule (A).
+done: Sat Oct 10 03:40:03 UTC 2026 — T2368 NOT merged: audit PASS (claude-opus-5-5, 057f0f4), but the full lake build with BA/KSolve imported fails at #assert_rbm_axioms on 1 unregistered premise [RBM.BA.BAKsolve]; ticket says Registry: none and has no §20 Amend 1, so state `blocked` with the question (H23 c). main restored (RBM3D.lean, KSolve.lean removed from the working tree); nothing committed.

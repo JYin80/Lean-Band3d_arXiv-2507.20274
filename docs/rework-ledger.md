@@ -309,3 +309,5 @@
 | T2358 | 2026-10-10 00:59 UTC (c587dcd) | prover-max（Amend 2：repairer） | claude-opus-5-5 | 是（Amend 1 已记；Amend 2 R-a 改钉） | 审核 BLOCKED（值索引钉文）→ R-a 改钉 `lwProv_locStepXProvPos_holds`，删 `LocStepXProv` 与 4 个助手；第 2 轮审核 PASS；1820 行 |
 | T2362 | 2026-10-10 01:01 UTC (8050043) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K00：`BAMLoop` 原地修（F1，D632）+ `BA/KBase`（Θ_BA 演算） |
 | T2366 | 2026-10-10 02:02 UTC (010cad9) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K01 通用部分（`Loop/Unique`、`KLUnique` 原地：`UniqS`、`RetireS`、`RotS`、`TranslS`）；合并构建约 1 小时（证书模块重编，H101/H122） |
+| T2365 | 2026-10-10 03:11 UTC (a5c1a1a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（结构体钉文 `IndStepTH` 逐字段核对，DECISIONS §175）；BA-K09a 抽象归纳步；1a N1（K-b）通过 |
+| T2367 | 2026-10-10 03:20 UTC (9b94993) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；BA-K04 `BA/KCactus`（1263 行，停止线 1300）；镜像 (α) 1.9e-15、(β) 1.24e-9；`BACactusVal_sum_zero_BAMLoop` 在 Lean 里核对了 `t = 0` 的树表示 |

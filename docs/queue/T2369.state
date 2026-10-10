@@ -1,0 +1,4 @@
+state: proving
+reason: H161 Step C: check exit 0; stage 1a preflight running (workflow wf_45e50cee-6cc, role prover-hard; branch from main a5c1a1a)
+updated: Sat Oct 10 03:19:24 UTC 2026
+reports: docs/reports/T2369-prove.md, docs/reports/T2369-audit.md
