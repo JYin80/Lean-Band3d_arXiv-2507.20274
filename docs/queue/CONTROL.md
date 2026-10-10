@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 21:22 UTC (dispatcher V2: new hub; T2390 resumes (H185); K08b T2391, E2 T2392, T6 T2393 released (H186))
+updated: 2026-10-10 21:57 UTC (dispatcher V2: T2393 merged; stage L opened (supervisor 2149): L0 T2394, L3a3 gate T2395 released (H189))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -12,12 +12,14 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 358. T2390 — `docs/tickets/T2390.md` (BA-G3a: design gate for G3a/G3b/G4, then new `BA/GreenCore.lean`): 1a-audit RETURN answered by **Amend 1** (`docs/tickets/T2390-amend-1.md`); **resumes now (H185)**: D1 probe step → (a′) → 1a-audit round 2 → 1b `prover-max` → auditor.
 359. T2391 — `docs/tickets/T2391.md` (BA-K08b, new `BA/KSumZeroB.lean`; K08a merged; design gate passed in T2385): released; starts when its check compiles with exit 0 and a slot is free (H12). Not in the certificate lane.
 360. T2392 — `docs/tickets/T2392.md` (BA-E2, new `BA/EKSum.lean`; removes three owed lines): released; starts when its check compiles with exit 0 and a slot is free (H12). Not in the certificate lane.
-361. T2393 — `docs/tickets/T2393.md` (BA-T T6, `Induction/Contract.lean` in place): released; starts when its check compiles with exit 0 and a slot is free (H12). Not in the certificate lane.
+362. T2395 — `docs/tickets/T2395.md` (BA-L3a3 design gate: G1 + the S test, report only; supervisor 2149 L4 (a)): released; starts when its check compiles with exit 0 and a slot is free (H12). **Priority: first among new tickets.**
+363. T2394 — `docs/tickets/T2394.md` (BA-L0: new `Chain/LWGen.lean`, `BA/LWPinsBA.lean`): released; starts when its check compiles with exit 0 and a slot is free (H12). Not in the certificate lane.
 
 ## Pre-release checks
+- `docs/tickets/checks/T2394-check.lean` (BA-L0; merged names only).
+- `docs/tickets/checks/T2395-check.lean` (BA-L3a3 gate; merged names only).
 - `docs/tickets/checks/T2391-check.lean` (BA-K08b; merged names only).
 - `docs/tickets/checks/T2392-check.lean` (BA-E2; merged names only).
-- `docs/tickets/checks/T2393-check.lean` (T6; G1 names).
 - `docs/tickets/checks/T2390-check.lean` (BA-G3a; merged names only).
   done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2387-check.lean` on main 61849a6: exit 0, no error lines.
   done: Sat Oct 10 12:53:23 UTC 2026 — `lake env lean docs/tickets/checks/T2389-check.lean` on main 69b7abc: exit 0, no error lines.
@@ -47,14 +49,7 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 13:37:06 UTC 2026 — T2386 resumed in the slot freed by T2390: workflow wf_c9feb2f8-435 ((a′) under Amend 1 → 1a-audit round 2 → 1b prover-hard → auditor). T2388 is next.
   done: Sat Oct 10 15:23:41 UTC 2026 — every running workflow (T2386, T2387, T2388, T2389) stopped on the API session limit ("resets 8:20am America/Los_Angeles" = 15:20 UTC) at about 13:5x UTC; T2385's passed merge build was committed at Sat Oct 10 15:23:41 UTC 2026 (e67bfbd). Rule (H) reruns: T2386 wf_9469c03c-5e4 ((a′) → 1a-audit round 2 → 1b), T2389 wf_04d9402d-1cf (1b), T2388 wf_fa73b085-d9d (1a), T2387 wf_a0fb8d25-519 (1b). Blocked: T2390 (1a-audit sign-off).
 
-- H185 (dispatcher V2, 2026-10-10 21:18 UTC; DECISIONS §204). **New hub session (Jun, 21:1x UTC: "new hub is ready"). H184 (2) is lifted: normal operation resumes.** (1) Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; `git rm docs/queue/DRAINED` in the same commit. (2) **Resume T2390 now under Amend 1** (`docs/tickets/T2390-amend-1.md`; Amend 1 goes into every prompt), in this order: (a) the D1 probe step, role `prover-max`, sole writable `RBM3D/Probe/T2390Pins.lean` on `t/T2390` (never merged), `lake env lean` output pasted as `(a″)`; (b) stage 1a repair `(a′)` by `preflight` (D3, D4); (c) 1a-audit round 2; (d) stage 1b `prover-max` (T2389 has merged, no further wait); (e) auditor. Rebase `t/T2390` on `main` before (a). (3) New tickets follow in this round's next H lines as they are written; start each when its check compiles and a slot is free (H12). One `done:` line per step.
-
-- H186 (dispatcher V2, 2026-10-10 21:22 UTC; DECISIONS §205). Commit by name with your next commit `docs/tickets/T2391.md`, `docs/tickets/checks/T2391-check.lean`, `docs/tickets/T2392.md`, `docs/tickets/checks/T2392-check.lean`, `docs/tickets/T2393.md`, `docs/tickets/checks/T2393-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`, `docs/claude-team/WORKLOG.md` (one commit with H185's files is fine). Compile the three checks on `main` (H4; one `done:` line). Start T2391, T2392, T2393 in the free slots beside T2390 (H12; slot order T2390, T2391, T2392, T2393). One `done:` line per step.
-  done: Sat Oct 10 21:22:41 UTC 2026 — (1) DECISIONS.md, CONTROL.md, WORKLOG.md committed by name with `git rm docs/queue/DRAINED` in 5d3d24b, pushed.
-  done: Sat Oct 10 21:22:41 UTC 2026 — (2) T2390 resumed under Amend 1: t/T2390 (no own commits) fast-forwarded to main 5d3d24b; workflow wf_06156d6d-a7f runs (a) D1 probe (prover-max) → (b) (a′) preflight → (c) 1a-audit round 2 → (d) 1b prover-max → (e) auditor, Amend 1 in every prompt.
-  done: Sat Oct 10 21:22:41 UTC 2026 — (3) no new ticket listed yet; 1 of 4 slots in use.
-
-- H187 (dispatcher V2, 2026-10-10 21:24 UTC; DECISIONS §206). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-10-2124-L.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md` (with H186's files if not yet committed). Nothing to start. One `done:` line.
+- H189 (dispatcher V2, 2026-10-10 21:57 UTC; DECISIONS §208). Commit by name with your next commit `docs/tickets/T2394.md`, `docs/tickets/checks/T2394-check.lean`, `docs/tickets/T2395.md`, `docs/tickets/checks/T2395-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`, `docs/queue/CONTROL-archive.md`. Compile both checks on `main` (H4; one `done:` line). Slot order: **T2395 first, then T2394**; start T2395 in the free slot now (H12). One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 11:46:34 UTC 2026 — T2381 merged 306957f (BA-K10: new BA/KInduct (991 lines, stop 2000; 2 defs + 11 theorems), root import, no registry change; 1a-audit PASS (routing notes D1-D3 for the dispatcher), audit PASS claude-opus-5-5; full lake build 4197 jobs; pushed).
@@ -67,3 +62,4 @@ done: Sat Oct 10 15:59:26 UTC 2026 — T2388 merged 76458c2 (BA-E1: new BA/EKPin
 done: Sat Oct 10 16:26:31 UTC 2026 — T2387 report-only merge 8994389 (stage-L design: state, prove, design, audit reports; probe RBM3D/Probe/T2387Pins.lean (52 declarations, standard axioms) stays on t/T2387 at fe433f2; LD1-LD7 answered: 33 rows, central 42.3k lines, flag 50; audit PASS claude-opus-5-5; pushed).
 done: Sat Oct 10 16:30:10 UTC 2026 — T2386 merged 2a05b1d (T8 under Amend 1: new Chain/Step2Gen; BA/FlowPins, Chain/Carrier, Induction/LocalAvg1, LocalAvg2 in place (net 1317 lines, stop 1500; 7 targets); RBM3D/Test/Axioms.lean owed lines of the carrier-level ST inputs (3-way onto main, H23 b); root import re-added after the last import (the branch's RBM3D.lean hunk conflicted with imports merged since); (a′) + 1a-audit round 2 PASS, audit PASS claude-opus-5-5; full lake build 4203 jobs; pushed).
 done: Sat Oct 10 17:38:33 UTC 2026 — T2389 merged b6cc9d2 (BA-G2: new BA/GreenLDE; Green/LDE, RowIndep, IBPPoly in place (978 of 1800); open issue D1: only stochDom_ldeRow/Col/Quad are literal corollaries at D = 0; root import; certificate-lane merge (H176), alone; audit PASS claude-opus-5-5; full lake build 4204 jobs; pushed). T2390 1b may start once its 1a-audit question is answered.
+done: Sat Oct 10 21:51:52 UTC 2026 — T2393 merged b53fd22 (BA-T T6: Induction/Contract.lean in place (+130 -53, stop 600); STContractM, stContractM_holds, stContract_holds as corollary; no root import, no registry change; audit PASS claude-opus-5-5; full lake build 4204 jobs; pushed).

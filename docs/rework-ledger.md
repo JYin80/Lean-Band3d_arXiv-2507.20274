@@ -335,3 +335,4 @@
 | T2387 | 2026-10-10 16:26 UTC (8994389) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（阶段 L：33 行，中心 42.3k，旗标 50；探针留在 t/T2387）；审核一次 PASS |
 | T2386 | 2026-10-10 16:30 UTC (2a05b1d) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-T T8：1a-audit RETURN（16 个名字被推迟）→ Amend 1（R1）→ (a′) 第二轮 PASS；新 `Chain/Step2Gen` 等，净 1317 行（停止线 1500）；审核一次 PASS |
 | T2389 | 2026-10-10 17:38 UTC (b6cc9d2) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-G2：`Green/LDE`、`RowIndep`、`IBPPoly` 原地 + 新 `BA/GreenLDE`（978 行，停止线 1800），证书合并道；D1：只有三条是 `D = 0` 字面推论；审核一次 PASS |
+| T2393 | 2026-10-10 21:51 UTC (b53fd22) | prover | Sonnet 5.5 effort high | 否 | BA-T T6：`Induction/Contract.lean` 原地（+130 −53），矩阵形式 `STContractM`，`stContract_holds` 作带状推论（G1）；审核一次 PASS |
