@@ -1934,6 +1934,10 @@ example (ω : sz0.SeqΩ) (x y : Vtx 3 (sz0.L 3) (sz0.W 3)) := by
 example (u y : Vtx 3 (sz0.L 3) (sz0.W 3)) := GreenCore_Xrow_sq (by norm_num) zero_le_one icr.1 iLDE.1 u y
 example (x w : Vtx 3 (sz0.L 3) (sz0.W 3)) := GreenCore_Xcol_sq (by norm_num) zero_le_one icr.1 iLDE.2.1 x w
 example (w : Vtx 3 (sz0.L 3) (sz0.W 3)) := GreenCore_eps1_loc (by norm_num) zero_le_one icr.1 iLDE.2.2.1 w
+example (w v y : Vtx 3 (sz0.L 3) (sz0.W 3)) := GreenCore_m1 (G := G₁) (by norm_num) (icr.1 w) v y
+example (u : Vtx 3 (sz0.L 3) (sz0.W 3)) := by
+  obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := iC1
+  exact GreenCore_Qxd_sq (G := G₁) (X := X₁) (Q := 0) hg.1.le (sz0.three_le_L 3) hD (u := u) fun l => by simp [GreenCore_Xrow, X0]
 example (w : Vtx 3 (sz0.L 3) (sz0.W 3)) := GreenCore_eps2_loc (G := G₁) (t := t₁) (by norm_num) (by norm_num) (by norm_num) icr.1 w
 example (w : Vtx 3 (sz0.L 3) (sz0.W 3)) := by
   obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := iC1
