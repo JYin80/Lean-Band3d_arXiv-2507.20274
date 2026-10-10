@@ -942,6 +942,580 @@ private theorem EKSum_core (i₀ : Fin n) (Ξ : Fin n → X → X → ℂ) (a : 
 
 end Core
 
+/-! ## 5. Part II: the lattice estimates (`Evolution/SumDecayZero.lean:603-820` copied; the first difference of `Ξ` is new) -/
+
+section Concrete
+
+variable {d L : ℕ} [NeZero L]
+
+/-- the `ℓ¹` ball of radius `N` has at most `(2N+1)^d` points. -/
+private theorem EKSum_card_ball (N : ℕ) (x : Zd d L) :
+    (Finset.univ.filter (fun y : Zd d L => zdistD d L (x - y) ≤ N)).card ≤ (2 * N + 1) ^ d := by
+  classical
+  have h1 : (Finset.univ.filter (fun y : Zd d L => zdistD d L (x - y) ≤ N)).card
+      ≤ (Finset.univ.filter (fun z : Zd d L => zdistD d L z ≤ N)).card := by
+    refine Finset.card_le_card_of_injOn (fun y => x - y) ?_ ?_
+    · intro y hy
+      simpa using hy
+    · intro y _ y' _ h
+      simpa using h
+  have h2 : Finset.univ.filter (fun z : Zd d L => zdistD d L z ≤ N)
+      ⊆ Fintype.piFinset
+        (fun _ : Fin d => Finset.univ.filter (fun u : ZMod L => zdist L u ≤ N)) := by
+    intro z hz
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Fintype.mem_piFinset] at hz ⊢
+    intro i
+    have : zdist L (z i) ≤ zdistD d L z :=
+      Finset.single_le_sum (f := fun i => zdist L (z i)) (fun _ _ => Nat.zero_le _)
+        (Finset.mem_univ i)
+    omega
+  calc (Finset.univ.filter (fun y : Zd d L => zdistD d L (x - y) ≤ N)).card
+      ≤ (Finset.univ.filter (fun z : Zd d L => zdistD d L z ≤ N)).card := h1
+    _ ≤ (Fintype.piFinset
+        (fun _ : Fin d => Finset.univ.filter (fun u : ZMod L => zdist L u ≤ N))).card :=
+        Finset.card_le_card h2
+    _ = ∏ _i : Fin d, (Finset.univ.filter (fun u : ZMod L => zdist L u ≤ N)).card :=
+        Fintype.card_piFinset _
+    _ ≤ ∏ _i : Fin d, (2 * N + 1) := Finset.prod_le_prod (fun i _ => card_zdist_le_le N)
+    _ = (2 * N + 1) ^ d := by simp
+
+/-- the window `{y : |x - y| < R}` has at most `(2R+1)^d` points. -/
+private theorem EKSum_card_win (x : Zd d L) {R : ℝ} (hR : 0 ≤ R) :
+    (((Finset.univ.filter (fun y : Zd d L => (zdistD d L (x - y) : ℝ) < R)).card : ℕ) : ℝ)
+      ≤ (2 * R + 1) ^ d := by
+  classical
+  have hsub : Finset.univ.filter (fun y : Zd d L => (zdistD d L (x - y) : ℝ) < R)
+      ⊆ Finset.univ.filter (fun y : Zd d L => zdistD d L (x - y) ≤ ⌊R⌋₊) := by
+    intro y hy
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hy ⊢
+    exact Nat.le_floor hy.le
+  have h1 := (Finset.card_le_card hsub).trans (EKSum_card_ball (d := d) (L := L) ⌊R⌋₊ x)
+  calc (((Finset.univ.filter (fun y : Zd d L => (zdistD d L (x - y) : ℝ) < R)).card : ℕ) : ℝ)
+      ≤ (((2 * ⌊R⌋₊ + 1) ^ d : ℕ) : ℝ) := by exact_mod_cast h1
+    _ = (2 * (⌊R⌋₊ : ℝ) + 1) ^ d := by push_cast; ring
+    _ ≤ (2 * R + 1) ^ d := by
+        gcongr
+        exact Nat.floor_le hR
+
+
+/-- `M^{(σ₁σ₂)}` is invariant under the diagonal shift (copy of the private `EKPins_Mss_shift`, `EKPins.lean:276`). -/
+private theorem EKSum_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
+    BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ (a + r) (b + r) = BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ a b := by
+  have hM := BAMB_shift d L g (E : ℂ) m
+  have hs : ∀ (σ : Bool) (x y : Zd d L),
+      BAMsigma d L (BAMB d L g (E : ℂ) m) σ (x + r) (y + r) = BAMsigma d L (BAMB d L g (E : ℂ) m) σ x y := by
+    intro σ x y
+    cases σ
+    · simp only [BAMsigma, Bool.false_eq_true, ite_false, Matrix.conjTranspose_apply, hM]
+    · simp only [BAMsigma, ite_true, hM]
+  simp only [BAMss, Matrix.of_apply, hs]
+
+/-- `Θ_t(a + r, b + r) = Θ_t(a, b)` (copy of the private `EKPins_Theta_shift`, `EKPins.lean:289`). -/
+private theorem EKSum_Theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
+    BATheta d L g E m t σ₁ σ₂ (a + r) (b + r) = BATheta d L g E m t σ₁ σ₂ a b := by
+  have hA : (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂).submatrix
+      (Equiv.addRight r) (Equiv.addRight r)
+      = 1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ := by
+    ext x y
+    have h1 : (x + r = y + r) ↔ (x = y) := add_left_inj r
+    simp only [Matrix.submatrix_apply, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply,
+      Equiv.coe_addRight, h1, EKSum_Mss_shift]
+  have h2 := Matrix.inv_submatrix_equiv
+    (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) (Equiv.addRight r) (Equiv.addRight r)
+  rw [hA] at h2
+  unfold BATheta PropThetaQ
+  rw [← Matrix.nonsing_inv_eq_ringInverse]
+  have h3 := congrFun (congrFun h2 a) b
+  rw [Matrix.submatrix_apply] at h3
+  exact h3.symm
+
+/-- `Θ_t(a, b) = Θ_t(0, b - a)`. -/
+private theorem EKSum_Theta_apply (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b : Zd d L) :
+    BATheta d L g E m t σ₁ σ₂ a b = BATheta d L g E m t σ₁ σ₂ 0 (b - a) := by
+  have h := EKSum_Theta_shift g E m t σ₁ σ₂ 0 (b - a) a
+  simpa using h
+
+/-- For `t > 0`: `Ξ = ((t - s)/t) (Θ_t - 1)` (copy of the private `EKPins_Xi_eq`, `EKPins.lean:314`). -/
+private theorem EKSum_Xi_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (ht0 : 0 < t) (ht1 : t < 1)
+    (σ₁ σ₂ : Bool) :
+    BAXi d L g E m s t σ₁ σ₂ = (((t - s) / t : ℝ) : ℂ) • (BATheta d L g E m t σ₁ σ₂ - 1) := by
+  have h := (BATheta_resolvent d L g κ E m hr t ht0.le ht1 σ₁ σ₂).1
+  have htc : (t : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ht0.ne'
+  have h' : BATheta d L g E m t σ₁ σ₂ - 1 = (t : ℂ) • (BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ *
+      BATheta d L g E m t σ₁ σ₂) := sub_eq_of_eq_add' h
+  unfold BAXi
+  rw [h', smul_smul]
+  congr 1
+  push_cast
+  field_simp
+
+/-- **The first difference of `Ξ` from `(prop:BD1)` at BA** (`(eq:Xibb)`, second bound; `A:140-149`): for `|y - b|` at most
+`(|a - b| - 1)/2`, `|Ξ_{ay} - Ξ_{ab}| ≤ (1-s) C₆ (g²+|1-t|)⁻¹ |y - b| |a - b|^{-(d-1)}`.  For `t > 0`,
+`Ξ = ((t-s)/t)(Θ_t - 1)` with `(t-s)/t ≤ 1-s`, and the unit `1` does not see `a ≠ y, a ≠ b`; `h6` is `baProp6_holds` at
+`c = 1/2` for the charge pair, `Θ_t(a, y) = Θ_t(0, y - a)`.  (Not the band's `S^{(B)}` route: BA has no
+nearest-neighbour support.) -/
+private theorem EKSum_dXi_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (hs : 0 ≤ s)
+    (hst : s ≤ t) (ht : t < 1) {C6 : ℝ} (hC6 : 0 ≤ C6) (σ₁ σ₂ : Bool)
+    (h6 : ∀ a r : Zd d L, (zdistD d L r : ℝ) ≤ 1 / 2 * (zdistD d L a : ℝ) →
+      ‖BATheta d L g E m t σ₁ σ₂ 0 (a + r) - BATheta d L g E m t σ₁ σ₂ 0 a‖
+        ≤ C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹)
+    (a b y : Zd d L) (hay : 2 * (zdistD d L (y - b) : ℝ) + 1 ≤ (zdistD d L (a - b) : ℝ)) :
+    ‖BAXi d L g E m s t σ₁ σ₂ a y - BAXi d L g E m s t σ₁ σ₂ a b‖
+      ≤ (1 - s) * (C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L (y - b) : ℝ)
+          * ((zdistD d L (a - b) : ℝ) ^ (d - 1))⁻¹) := by
+  have ht0 : 0 ≤ t := hs.trans hst
+  have hv : 0 ≤ 1 - s := by linarith
+  have hyb0 : (0 : ℝ) ≤ (zdistD d L (y - b) : ℝ) := Nat.cast_nonneg _
+  have hab1 : (1 : ℝ) ≤ (zdistD d L (a - b) : ℝ) := by linarith
+  have hRHS : 0 ≤ (1 - s) * (C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L (y - b) : ℝ)
+      * ((zdistD d L (a - b) : ℝ) ^ (d - 1))⁻¹) := by positivity
+  by_cases ht00 : t = 0
+  · have hs0 : s = 0 := le_antisymm (ht00 ▸ hst) hs
+    have hΞ : BAXi d L g E m s t σ₁ σ₂ = 0 := by
+      unfold BAXi; rw [ht00, hs0]; simp
+    rw [hΞ]
+    simp only [Matrix.zero_apply, sub_self, norm_zero]
+    exact hRHS
+  · have htpos : 0 < t := lt_of_le_of_ne ht0 (Ne.symm ht00)
+    have hcoef0 : 0 ≤ (t - s) / t := div_nonneg (by linarith) htpos.le
+    have hcoef : (t - s) / t ≤ 1 - s := by
+      rw [div_le_iff₀ htpos]; nlinarith
+    have hab : a ≠ b := by
+      intro h; rw [h, sub_self, zdistD_zero] at hay
+      have : (0 : ℝ) ≤ (zdistD d L (y - b) : ℝ) := hyb0
+      simp at hay; linarith
+    have hay' : a ≠ y := by
+      intro h
+      have hyb : zdistD d L (y - b) = zdistD d L (a - b) := by rw [h]
+      rw [hyb] at hay
+      linarith
+    have hΞab : ∀ z, a ≠ z → BAXi d L g E m s t σ₁ σ₂ a z
+        = (((t - s) / t : ℝ) : ℂ) * BATheta d L g E m t σ₁ σ₂ a z := by
+      intro z hz
+      rw [EKSum_Xi_eq hr htpos ht]
+      simp [Matrix.one_apply_ne hz]
+    rw [hΞab y hay', hΞab b hab, ← mul_sub, norm_mul, Complex.norm_real, Real.norm_of_nonneg hcoef0]
+    rw [EKSum_Theta_apply g E m t σ₁ σ₂ a y, EKSum_Theta_apply g E m t σ₁ σ₂ a b]
+    have hba : zdistD d L (b - a) = zdistD d L (a - b) := by
+      rw [← zdistD_neg d L (b - a), neg_sub]
+    have hr' : (zdistD d L (y - b) : ℝ) ≤ 1 / 2 * (zdistD d L (b - a) : ℝ) := by
+      rw [hba]; linarith
+    have h6c := h6 (b - a) (y - b) hr'
+    have e : (b - a) + (y - b) = y - a := by abel
+    rw [e, hba] at h6c
+    refine mul_le_mul hcoef ?_ (norm_nonneg _) hv
+    refine h6c.trans ?_
+    have hpow : (zdistD d L (a - b) : ℝ) ^ (d - 1) ≤ ((zdistD d L (a - b) : ℝ) + 1) ^ (d - 1) :=
+      pow_le_pow_left₀ (by linarith) (by linarith) _
+    have hinv : ((((zdistD d L (a - b) : ℝ) + 1)) ^ (d - 1))⁻¹ ≤ ((zdistD d L (a - b) : ℝ) ^ (d - 1))⁻¹ :=
+      inv_anti₀ (by positivity) hpow
+    have hpre : 0 ≤ C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L (y - b) : ℝ) := by positivity
+    exact mul_le_mul_of_nonneg_left hinv hpre
+
+/-- window count against a polynomial gain: `N (c R^{-(k+1)}) ≤ 3^{k+3} c R²` for `N ≤ (2R+1)^{k+3}`. -/
+private theorem EKSum_ar_win {R c N : ℝ} {k : ℕ} (hR : 1 ≤ R) (hc : 0 ≤ c)
+    (hN : N ≤ (2 * R + 1) ^ (k + 3)) :
+    N * (c * (R ^ (k + 1))⁻¹) ≤ 3 ^ (k + 3) * (c * R ^ 2) := by
+  have hR0 : 0 < R := by linarith
+  have hpow : (2 * R + 1) ^ (k + 3) ≤ (3 * R) ^ (k + 3) :=
+    pow_le_pow_left₀ (by linarith) (by linarith) _
+  have hRk : 0 < R ^ (k + 1) := by positivity
+  have h0 : 0 ≤ c * (R ^ (k + 1))⁻¹ := by positivity
+  calc N * (c * (R ^ (k + 1))⁻¹) ≤ (3 * R) ^ (k + 3) * (c * (R ^ (k + 1))⁻¹) :=
+        mul_le_mul_of_nonneg_right (hN.trans hpow) h0
+    _ = 3 ^ (k + 3) * (c * R ^ 2) := by
+        field_simp
+        ring
+
+/-- the arithmetic of the lattice sum of the distinguished index. -/
+private theorem EKSum_ar_psi {k : ℕ} {R Rn κX r ρ CD C6 lat lg : ℝ} (hR : 1 ≤ R) (hRn : R ≤ Rn)
+    (hκ0 : 0 ≤ κX) (hκ : κX * R ^ 2 ≤ ρ ^ 2 * r) (hCD : 0 ≤ CD) (hC6 : 0 ≤ C6) (hlat : 0 ≤ lat)
+    (hlg : 0 ≤ lg) :
+    CD * C6 * κX ^ 2 * ((2 * R + 1) ^ (k + 3) * R) * (lat * lg / Rn ^ k)
+      ≤ 3 ^ (k + 3) * C6 * CD * lat * lg * ρ ^ 4 * r ^ 2 := by
+  have hR0 : 0 < R := by linarith
+  have hRn0 : 0 < Rn := lt_of_lt_of_le hR0 hRn
+  have hRk : 0 < R ^ k := by positivity
+  have hRnk : R ^ k ≤ Rn ^ k := pow_le_pow_left₀ hR0.le hRn _
+  have hpow : (2 * R + 1) ^ (k + 3) ≤ (3 * R) ^ (k + 3) :=
+    pow_le_pow_left₀ (by linarith) (by linarith) _
+  have hinv : (Rn ^ k)⁻¹ ≤ (R ^ k)⁻¹ := inv_anti₀ hRk hRnk
+  have hlatlg : 0 ≤ lat * lg := mul_nonneg hlat hlg
+  have h1 : lat * lg / Rn ^ k ≤ lat * lg * (R ^ k)⁻¹ := by
+    rw [div_eq_mul_inv]; exact mul_le_mul_of_nonneg_left hinv hlatlg
+  have hκsq : (κX * R ^ 2) ^ 2 ≤ (ρ ^ 2 * r) ^ 2 :=
+    pow_le_pow_left₀ (by positivity) hκ 2
+  have hcoef : 0 ≤ CD * C6 * κX ^ 2 := by positivity
+  calc CD * C6 * κX ^ 2 * ((2 * R + 1) ^ (k + 3) * R) * (lat * lg / Rn ^ k)
+      ≤ CD * C6 * κX ^ 2 * ((3 * R) ^ (k + 3) * R) * (lat * lg * (R ^ k)⁻¹) := by
+        have h2 : (2 * R + 1) ^ (k + 3) * R ≤ (3 * R) ^ (k + 3) * R :=
+          mul_le_mul_of_nonneg_right hpow hR0.le
+        have hc3 : 0 ≤ lat * lg / Rn ^ k := by positivity
+        have hc4 : 0 ≤ CD * C6 * κX ^ 2 * ((3 * R) ^ (k + 3) * R) := by positivity
+        exact mul_le_mul (mul_le_mul_of_nonneg_left h2 hcoef) h1 hc3 hc4
+    _ = 3 ^ (k + 3) * C6 * CD * lat * lg * ((κX * R ^ 2) ^ 2) := by
+        field_simp
+        ring
+    _ ≤ 3 ^ (k + 3) * C6 * CD * lat * lg * ((ρ ^ 2 * r) ^ 2) :=
+        mul_le_mul_of_nonneg_left hκsq (by positivity)
+    _ = 3 ^ (k + 3) * C6 * CD * lat * lg * ρ ^ 4 * r ^ 2 := by ring
+
+/-- **`(eq:latticesum_d3)` over the far set** `{x : R₂ < |a₁ - x|, R₂ < |a₂ - x|}`, `R₂ ≥ 1`, with the
+cutoff `⌊R₂⌋`. -/
+private theorem EKSum_lattice (k : ℕ) (hL : 3 ≤ L) {c ℓ : ℝ} (hc : 0 < c) (hℓ : 0 < ℓ) {R₂ : ℝ}
+    (hR₂ : 1 ≤ R₂) (a₁ a₂ : Zd (k + 3) L) :
+    ∑ x ∈ Finset.univ.filter (fun x : Zd (k + 3) L =>
+        R₂ < (zdistD (k + 3) L (a₁ - x) : ℝ) ∧ R₂ < (zdistD (k + 3) L (a₂ - x) : ℝ)),
+      Real.exp (-(c * (zdistD (k + 3) L (a₁ - x) : ℝ)) / ℓ)
+        / (((zdistD (k + 3) L (a₁ - x) : ℝ) ^ (k + 1)) * ((zdistD (k + 3) L (a₂ - x) : ℝ) ^ (k + 2)))
+      ≤ latC k * Real.log L / (⌊R₂⌋₊ : ℝ) ^ k := by
+  classical
+  have hRn : 1 ≤ ⌊R₂⌋₊ := Nat.le_floor (by simpa using hR₂)
+  have h := latticesum_d3 (L := L) k hc hℓ hRn hL a₁ a₂
+  refine le_trans ?_ h
+  have hsub : Finset.univ.filter (fun x : Zd (k + 3) L =>
+        R₂ < (zdistD (k + 3) L (a₁ - x) : ℝ) ∧ R₂ < (zdistD (k + 3) L (a₂ - x) : ℝ))
+      ⊆ Finset.univ.filter (fun x : Zd (k + 3) L =>
+        ⌊R₂⌋₊ < zdistD (k + 3) L (a₁ - x) ∧ ⌊R₂⌋₊ < zdistD (k + 3) L (a₂ - x)) := by
+    intro x hx
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx ⊢
+    have hfl : (⌊R₂⌋₊ : ℝ) ≤ R₂ := Nat.floor_le (by linarith)
+    constructor
+    · exact_mod_cast lt_of_le_of_lt hfl hx.1
+    · exact_mod_cast lt_of_le_of_lt hfl hx.2
+  have hnn : ∀ x ∈ Finset.univ.filter (fun x : Zd (k + 3) L =>
+        ⌊R₂⌋₊ < zdistD (k + 3) L (a₁ - x) ∧ ⌊R₂⌋₊ < zdistD (k + 3) L (a₂ - x)),
+      x ∉ Finset.univ.filter (fun x : Zd (k + 3) L =>
+        R₂ < (zdistD (k + 3) L (a₁ - x) : ℝ) ∧ R₂ < (zdistD (k + 3) L (a₂ - x) : ℝ)) →
+      0 ≤ Real.exp (-(c * (zdistD (k + 3) L (a₁ - x) : ℝ)) / ℓ)
+        / (((zdistD (k + 3) L (a₁ - x) : ℝ) ^ (k + 1)) * ((zdistD (k + 3) L (a₂ - x) : ℝ) ^ (k + 2))) := by
+    intro x _ _
+    positivity
+  refine le_trans (Finset.sum_le_sum_of_subset_of_nonneg hsub hnn) (le_of_eq ?_)
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [neg_div]
+
+/-- **The deterministic bound of `(sumAzero) ⟹ (sum_res_2)`, constants explicit** (the BA twin of the band `ekSZ_concrete`,
+`SumDecayZero.lean:816-1157`, abstract in `Ξ`).  Inputs: the ball sums and the decay of `Ξ` (`hball`, `hdec`), the first
+difference of `Ξ` (`hdΞ`) and the row norm (`hrowΞ`); the output is the sum of the five terms of `EKSum_core` with `M = ‖A‖`,
+`δ = W^{-D}`, `Q = (t-s)/(1-t)`, `Sξ = C_B ρ² r`, `Rn = n C_B ρ⁴ r`, `Snon = 3^d (C_D + C₆) ρ² r`,
+`Ψ = 3^d C₆ C_D C_lat log L ρ⁴ r²`, `ρ = W^ε`. -/
+private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {s t : ℝ} (hs : 0 ≤ s)
+    (hst : s ≤ t) (ht : t < 1) {n : ℕ} (hn : 2 ≤ n) (Ξ : Fin n → Zd (k + 3) L → Zd (k + 3) L → ℂ)
+    {CB CD c C6 : ℝ} (hCB : 0 ≤ CB) (hCD : 0 ≤ CD) (hc : 0 < c) (hC6 : 0 ≤ C6)
+    (hball : ∀ i, ∀ Λ' : ℝ, 1 ≤ Λ' → ∀ R : ℝ, 1 ≤ R → R ≤ Λ' * ellT L g s →
+        ∀ (a ctr : Zd (k + 3) L) (D : Finset (Zd (k + 3) L)),
+          (∀ b ∈ D, (zdistD (k + 3) L (ctr - b) : ℝ) ≤ R) →
+          ∑ b ∈ D, ‖Ξ i a b‖ ≤ CB * Λ' ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)))
+    (hdec : ∀ i, ∀ x y : Zd (k + 3) L, ‖Ξ i x y‖
+          ≤ CD * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+            * (((zdistD (k + 3) L (x - y) : ℝ) + 1) ^ (k + 1))⁻¹
+            * Real.exp (-(c * (zdistD (k + 3) L (x - y) : ℝ)) / ellT L g t))
+    (hdΞ : ∀ i, ∀ a b y : Zd (k + 3) L,
+      2 * (zdistD (k + 3) L (y - b) : ℝ) + 1 ≤ (zdistD (k + 3) L (a - b) : ℝ) →
+      ‖Ξ i a y - Ξ i a b‖ ≤ (1 - s) * (C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD (k + 3) L (y - b) : ℝ)
+          * ((zdistD (k + 3) L (a - b) : ℝ) ^ (k + 2))⁻¹))
+    (hrowΞ : ∀ i, ∀ x : Zd (k + 3) L, ∑ y, ‖Ξ i x y‖ ≤ (t - s) / (1 - t))
+    {W ε D ρ r Q Sξ Rn Snon Ψ : ℝ} (hρdef : ρ = W ^ ε) (hρ : 4 ≤ ρ)
+    (hr : r = (g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) (hQ : Q = (t - s) / (1 - t))
+    (hSξ : Sξ = CB * ρ ^ 2 * r) (hRn : Rn = n * (CB * (ρ ^ 2) ^ 2 * r))
+    (hSnon : Snon = 3 ^ (k + 3) * (CD + C6) * ρ ^ 2 * r)
+    (hΨdef : Ψ = 3 ^ (k + 3) * C6 * CD * latC k * Real.log L * ρ ^ 4 * r ^ 2)
+    (hWD : 0 ≤ W ^ (-D)) (A : (Fin n → Zd (k + 3) L) → ℂ) (hA : EKFastDecay g s W ε D A)
+    (hz : EKSumZero A) (a : Fin n → Zd (k + 3) L) :
+    ‖∑ b : Fin n → Zd (k + 3) L, (∏ i, EKSum_U Ξ a i (b i)) * A b‖ ≤
+      (‖A‖ * ((1 + Rn) * (1 + Sξ) ^ (n - 1)) + W ^ (-D) * ((1 + Rn) * (1 + Q) ^ (n - 1)))
+        + W ^ (-D) * (Q * (1 + Q) ^ (n - 1)) + W ^ (-D) * (Q ^ n * ((L : ℝ) ^ (k + 3)) ^ (n - 1))
+        + 2 ^ (n - 1) * (‖A‖ * (Snon ^ (n - 2) * Ψ)) := by
+  classical
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast (by omega : 1 ≤ L)
+  have ht0 : 0 ≤ t := hs.trans hst
+  have hu : 0 < 1 - t := by linarith
+  have hv : 0 < 1 - s := by linarith
+  have hgt0 : 0 < g ^ 2 + |1 - t| := by positivity
+  have hρ0 : 0 < ρ := by linarith
+  have hℓs1 : 1 ≤ ellT L g s := one_le_ellT hL1
+  have hℓt0 : 0 < ellT L g t := ellT_pos hL1
+  have hr1 : 1 ≤ r := by
+    rw [hr, abs_of_pos hu, abs_of_pos hv, le_div_iff₀ (by positivity)]
+    linarith
+  have hr0 : 0 < r := by linarith
+  -- the radii
+  obtain ⟨R, hRdef⟩ : ∃ R : ℝ, R = ρ * ellT L g s := ⟨_, rfl⟩
+  have hR1 : 1 ≤ R := by rw [hRdef]; nlinarith
+  have hR0 : 0 < R := by linarith
+  have hRρ : 4 * R ≤ ρ * R := by nlinarith
+  have hR₂1 : 1 ≤ ρ * R := by nlinarith
+  have hρ2 : 1 ≤ ρ ^ 2 := one_le_pow₀ (by linarith)
+  -- `κX = (1-s)/(g²+|1-t|)` and `κX R² ≤ ρ² r`
+  obtain ⟨κX, hκX⟩ : ∃ κX : ℝ, κX = (1 - s) * (g ^ 2 + |1 - t|)⁻¹ := ⟨_, rfl⟩
+  have hκ0 : 0 ≤ κX := by rw [hκX]; positivity
+  have hκR : κX * R ^ 2 ≤ ρ ^ 2 * r := by
+    have h := one_sub_mul_ellT_sq_le (L := L) (g := g) (s := s) hg.le (by linarith)
+    rw [abs_of_pos hv] at h
+    rw [hκX, hRdef, hr, abs_of_pos hv]
+    calc (1 - s) * (g ^ 2 + |1 - t|)⁻¹ * (ρ * ellT L g s) ^ 2
+        = ρ ^ 2 * ((1 - s) * ellT L g s ^ 2) * (g ^ 2 + |1 - t|)⁻¹ := by ring
+      _ ≤ ρ ^ 2 * (g ^ 2 + (1 - s)) * (g ^ 2 + |1 - t|)⁻¹ := by gcongr
+      _ = ρ ^ 2 * ((g ^ 2 + (1 - s)) / (g ^ 2 + |1 - t|)) := by rw [div_eq_mul_inv]; ring
+  -- the objects of the abstract core
+  obtain ⟨Win, hWin⟩ : ∃ Win : Zd (k + 3) L → Finset (Zd (k + 3) L),
+      Win = fun x => Finset.univ.filter (fun y => (zdistD (k + 3) L (x - y) : ℝ) < R) := ⟨_, rfl⟩
+  have hmemWin : ∀ x y, y ∈ Win x ↔ (zdistD (k + 3) L (x - y) : ℝ) < R := by
+    intro x y; simp [hWin]
+  obtain ⟨far, hfar⟩ : ∃ far : Zd (k + 3) L → Prop,
+      far = fun x => ∀ j : Fin n, ρ * R < (zdistD (k + 3) L (a j - x) : ℝ) := ⟨_, rfl⟩
+  have hfar' : ∀ x, far x ↔ ∀ j : Fin n, ρ * R < (zdistD (k + 3) L (a j - x) : ℝ) := by
+    intro x; simp [hfar]
+  set i₀ : Fin n := ⟨0, by omega⟩ with hi₀
+  -- nonnegativity
+  have hQ0 : 0 ≤ Q := by rw [hQ]; exact div_nonneg (by linarith) hu.le
+  have hSξ0 : 0 ≤ Sξ := by rw [hSξ]; positivity
+  have hSnon0 : 0 ≤ Snon := by rw [hSnon]; positivity
+  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hlat0 : 0 ≤ latC k := (latC_pos k).le
+  have hΨ0 : 0 ≤ Ψ := by rw [hΨdef]; positivity
+  -- `(deccA0)`, `(sumAzero)`
+  have htail : ∀ b : Fin n → Zd (k + 3) L, ¬ (∀ i, i ≠ i₀ → b i ∈ Win (b i₀)) → ‖A b‖ ≤ W ^ (-D) := by
+    intro b hb
+    push Not at hb
+    obtain ⟨i, hi, hbi⟩ := hb
+    rw [hmemWin, not_lt] at hbi
+    exact hA b ⟨i₀, i, by rw [← hρdef, ← hRdef]; exact hbi⟩
+  have hsz : ∀ x, ∑ b ∈ Finset.univ.filter (fun b : Fin n → Zd (k + 3) L => b i₀ = x), A b = 0 :=
+    fun x => hz i₀ rfl x
+  -- the rows of `Ξ`
+  have hrow : ∀ i x, ∑ y, ‖Ξ i x y‖ ≤ Q := by
+    intro i x
+    rw [hQ]
+    exact hrowΞ i x
+  -- the window sums of `Ξ` (pin 5, ball sums)
+  have hwin : ∀ i, i ≠ i₀ → ∀ x, ∑ y ∈ Win x, ‖Ξ i (a i) y‖ ≤ Sξ := by
+    intro i _ x
+    rw [hSξ, hr]
+    refine hball i ρ (by linarith) R hR1 (le_of_eq hRdef) (a i) x (Win x) ?_
+    intro y hy
+    exact ((hmemWin x y).mp hy).le
+  -- the near set
+  have hfar_not : ∀ x, ¬ far x ↔ ∃ j, (zdistD (k + 3) L (a j - x) : ℝ) ≤ ρ * R := by
+    intro x; rw [hfar']; simp only [not_forall, not_lt]
+  have hnear : ∑ x ∈ Finset.univ.filter (fun x => ¬ far x), ‖Ξ i₀ (a i₀) x‖ ≤ Rn := by
+    have hballj : ∀ j : Fin n, ∑ x ∈ Finset.univ.filter
+        (fun x : Zd (k + 3) L => (zdistD (k + 3) L (a j - x) : ℝ) ≤ ρ * R), ‖Ξ i₀ (a i₀) x‖
+        ≤ CB * (ρ ^ 2) ^ 2 * r := by
+      intro j
+      rw [hr]
+      refine hball i₀ (ρ ^ 2) hρ2 (ρ * R) hR₂1 (le_of_eq (by rw [hRdef]; ring))
+        (a i₀) (a j) _ ?_
+      intro x hx
+      simpa using hx
+    calc ∑ x ∈ Finset.univ.filter (fun x => ¬ far x), ‖Ξ i₀ (a i₀) x‖
+        = ∑ x : Zd (k + 3) L, (if ¬ far x then ‖Ξ i₀ (a i₀) x‖ else 0) := Finset.sum_filter _ _
+      _ ≤ ∑ x : Zd (k + 3) L, ∑ j : Fin n,
+            (if (zdistD (k + 3) L (a j - x) : ℝ) ≤ ρ * R then ‖Ξ i₀ (a i₀) x‖ else 0) := by
+          refine Finset.sum_le_sum fun x _ => ?_
+          by_cases hx : far x
+          · simp only [hx, not_true_eq_false, ↓reduceIte]
+            exact Finset.sum_nonneg fun j _ => by split_ifs <;> simp
+          · obtain ⟨j₀, hj₀⟩ := (hfar_not x).mp hx
+            simp only [hx, not_false_eq_true, ↓reduceIte]
+            have := Finset.single_le_sum
+              (f := fun j => if (zdistD (k + 3) L (a j - x) : ℝ) ≤ ρ * R then ‖Ξ i₀ (a i₀) x‖ else 0)
+              (fun j _ => by split_ifs <;> simp) (Finset.mem_univ j₀)
+            simpa [hj₀] using this
+      _ = ∑ j : Fin n, ∑ x : Zd (k + 3) L,
+            (if (zdistD (k + 3) L (a j - x) : ℝ) ≤ ρ * R then ‖Ξ i₀ (a i₀) x‖ else 0) :=
+          Finset.sum_comm
+      _ = ∑ j : Fin n, ∑ x ∈ Finset.univ.filter
+            (fun x : Zd (k + 3) L => (zdistD (k + 3) L (a j - x) : ℝ) ≤ ρ * R), ‖Ξ i₀ (a i₀) x‖ := by
+          simp only [Finset.sum_filter]
+      _ ≤ ∑ _j : Fin n, CB * (ρ ^ 2) ^ 2 * r := Finset.sum_le_sum fun j _ => hballj j
+      _ = Rn := by rw [hRn]; simp
+  -- far points are not equal to any `a_i` inside the window
+  have hne : ∀ x, far x → ∀ i, i ≠ i₀ → ∀ y ∈ Win x, a i ≠ y := by
+    intro x hfx i _ y hy hay
+    have hy' := (hmemWin x y).mp hy
+    have h1 := (hfar' x).mp hfx i
+    have h2 : zdistD (k + 3) L (x - y) = zdistD (k + 3) L (a i - x) := by
+      rw [← hay, show x - a i = -(a i - x) by abel, zdistD_neg]
+    rw [h2] at hy'
+    linarith
+  -- pointwise decay of `Ξ` (pin 5)
+  have hEpt : ∀ i x, ‖Ξ i (a i) x‖ ≤ CD * κX
+      * (((zdistD (k + 3) L (a i - x) : ℝ) + 1) ^ (k + 1))⁻¹
+      * Real.exp (-(c * (zdistD (k + 3) L (a i - x) : ℝ)) / ellT L g t) := by
+    intro i x
+    refine (hdec i (a i) x).trans (le_of_eq ?_)
+    rw [hκX]; ring
+  have hexp1 : ∀ i x, Real.exp (-(c * (zdistD (k + 3) L (a i - x) : ℝ)) / ellT L g t) ≤ 1 := by
+    intro i x
+    rw [Real.exp_le_one_iff]
+    have : 0 ≤ c * (zdistD (k + 3) L (a i - x) : ℝ) := by positivity
+    exact div_nonpos_of_nonpos_of_nonneg (by linarith) hℓt0.le
+  have hEpt2 : ∀ i x, ρ * R < (zdistD (k + 3) L (a i - x) : ℝ) →
+      ‖Ξ i (a i) x‖ ≤ CD * κX * (R ^ (k + 1))⁻¹ := by
+    intro i x hZ
+    have hpow : (((zdistD (k + 3) L (a i - x) : ℝ) + 1) ^ (k + 1))⁻¹ ≤ (R ^ (k + 1))⁻¹ :=
+      inv_anti₀ (by positivity) (pow_le_pow_left₀ hR0.le (by linarith) _)
+    have h0 : 0 ≤ CD * κX := mul_nonneg hCD hκ0
+    calc ‖Ξ i (a i) x‖ ≤ CD * κX * (((zdistD (k + 3) L (a i - x) : ℝ) + 1) ^ (k + 1))⁻¹
+          * Real.exp (-(c * (zdistD (k + 3) L (a i - x) : ℝ)) / ellT L g t) := hEpt i x
+      _ ≤ CD * κX * (R ^ (k + 1))⁻¹ * 1 := by
+          refine mul_le_mul (mul_le_mul_of_nonneg_left hpow h0) (hexp1 i x) (Real.exp_pos _).le ?_
+          positivity
+      _ = CD * κX * (R ^ (k + 1))⁻¹ := mul_one _
+  -- the first difference (pin 6)
+  have hDpt : ∀ i, ∀ x, far x → ∀ y ∈ Win x, ‖Ξ i (a i) y - Ξ i (a i) x‖
+      ≤ C6 * κX * R * (((zdistD (k + 3) L (a i - x) : ℝ) ^ (k + 2))⁻¹) := by
+    intro i x hfx y hy
+    have hy' := (hmemWin x y).mp hy
+    have hz : ρ * R < (zdistD (k + 3) L (a i - x) : ℝ) := (hfar' x).mp hfx i
+    have hyx : zdistD (k + 3) L (y - x) = zdistD (k + 3) L (x - y) := by
+      rw [← zdistD_neg, neg_sub]
+    have hyx' : (zdistD (k + 3) L (y - x) : ℝ) = (zdistD (k + 3) L (x - y) : ℝ) := by rw [hyx]
+    have h2R : 2 * (zdistD (k + 3) L (y - x) : ℝ) + 1 ≤ (zdistD (k + 3) L (a i - x) : ℝ) := by
+      rw [hyx']; linarith
+    have hdx := hdΞ i (a i) x y h2R
+    refine hdx.trans ?_
+    have hzR : (zdistD (k + 3) L (y - x) : ℝ) ≤ R := by rw [hyx']; exact hy'.le
+    have hZR : R ≤ (zdistD (k + 3) L (a i - x) : ℝ) := by linarith
+    have hz0 : 0 ≤ (zdistD (k + 3) L (y - x) : ℝ) := Nat.cast_nonneg _
+    have hpre : 0 ≤ C6 * (g ^ 2 + |1 - t|)⁻¹ := by positivity
+    calc (1 - s) * (C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD (k + 3) L (y - x) : ℝ)
+            * (((zdistD (k + 3) L (a i - x) : ℝ)) ^ (k + 2))⁻¹)
+        ≤ (1 - s) * (C6 * (g ^ 2 + |1 - t|)⁻¹ * R
+            * (((zdistD (k + 3) L (a i - x) : ℝ)) ^ (k + 2))⁻¹) := by
+          refine mul_le_mul_of_nonneg_left ?_ hv.le
+          refine mul_le_mul_of_nonneg_right ?_ (by positivity)
+          exact mul_le_mul_of_nonneg_left hzR hpre
+      _ = C6 * κX * R * (((zdistD (k + 3) L (a i - x) : ℝ) ^ (k + 2))⁻¹) := by
+          rw [hκX]; ring
+  -- the window count
+  have hcard : ∀ x, (((Win x).card : ℕ) : ℝ) ≤ (2 * R + 1) ^ (k + 3) := by
+    intro x
+    have := EKSum_card_win (d := k + 3) (L := L) x hR0.le
+    simpa [hWin] using this
+  -- the constants `Snon`
+  have hSnon_ge : ∀ c' : ℝ, 0 ≤ c' → c' ≤ CD + C6 → 3 ^ (k + 3) * (c' * κX * R ^ 2) ≤ Snon := by
+    intro c' hc' hc'le
+    rw [hSnon]
+    calc 3 ^ (k + 3) * (c' * κX * R ^ 2) = 3 ^ (k + 3) * c' * (κX * R ^ 2) := by ring
+      _ ≤ 3 ^ (k + 3) * c' * (ρ ^ 2 * r) := mul_le_mul_of_nonneg_left hκR (by positivity)
+      _ ≤ 3 ^ (k + 3) * (CD + C6) * (ρ ^ 2 * r) := by gcongr
+      _ = 3 ^ (k + 3) * (CD + C6) * ρ ^ 2 * r := by ring
+  have hX : ∀ x, far x → ∀ i, i ≠ i₀ → ((Win x).card : ℝ) * ‖Ξ i (a i) x‖ ≤ Snon := by
+    intro x hfx i _
+    have hz : ρ * R < (zdistD (k + 3) L (a i - x) : ℝ) := (hfar' x).mp hfx i
+    calc ((Win x).card : ℝ) * ‖Ξ i (a i) x‖ ≤ ((Win x).card : ℝ) * (CD * κX * (R ^ (k + 1))⁻¹) :=
+          mul_le_mul_of_nonneg_left (hEpt2 i x hz) (Nat.cast_nonneg _)
+      _ ≤ 3 ^ (k + 3) * (CD * κX * R ^ 2) :=
+          EKSum_ar_win hR1 (mul_nonneg hCD hκ0) (hcard x)
+      _ ≤ Snon := hSnon_ge CD hCD (by linarith)
+  have hΔ : ∀ x, far x → ∀ i, i ≠ i₀ → ∑ y ∈ Win x, ‖Ξ i (a i) y - Ξ i (a i) x‖ ≤ Snon := by
+    intro x hfx i _
+    have hz : ρ * R < (zdistD (k + 3) L (a i - x) : ℝ) := (hfar' x).mp hfx i
+    have hZR : R ≤ (zdistD (k + 3) L (a i - x) : ℝ) := by linarith
+    have hpt : ∀ y ∈ Win x, ‖Ξ i (a i) y - Ξ i (a i) x‖ ≤ C6 * κX * (R ^ (k + 1))⁻¹ := by
+      intro y hy
+      refine (hDpt i x hfx y hy).trans ?_
+      have hinv : (((zdistD (k + 3) L (a i - x) : ℝ)) ^ (k + 2))⁻¹ ≤ (R ^ (k + 2))⁻¹ :=
+        inv_anti₀ (by positivity) (pow_le_pow_left₀ hR0.le hZR _)
+      have h0 : 0 ≤ C6 * κX * R := by positivity
+      calc C6 * κX * R * (((zdistD (k + 3) L (a i - x) : ℝ)) ^ (k + 2))⁻¹
+          ≤ C6 * κX * R * (R ^ (k + 2))⁻¹ := mul_le_mul_of_nonneg_left hinv h0
+        _ = C6 * κX * (R ^ (k + 1))⁻¹ := by field_simp; ring
+    calc ∑ y ∈ Win x, ‖Ξ i (a i) y - Ξ i (a i) x‖ ≤ ∑ _y ∈ Win x, C6 * κX * (R ^ (k + 1))⁻¹ :=
+          Finset.sum_le_sum hpt
+      _ = ((Win x).card : ℝ) * (C6 * κX * (R ^ (k + 1))⁻¹) := by
+          rw [Finset.sum_const, nsmul_eq_mul]
+      _ ≤ 3 ^ (k + 3) * (C6 * κX * R ^ 2) := EKSum_ar_win hR1 (by positivity) (hcard x)
+      _ ≤ Snon := hSnon_ge C6 hC6 (by linarith)
+  -- the lattice sum of the distinguished pair `(i₀, j)`
+  have hΨ' : ∀ j, j ≠ i₀ → ∑ x ∈ Finset.univ.filter far, ‖Ξ i₀ (a i₀) x‖ *
+      ∑ y ∈ Win x, ‖Ξ j (a j) y - Ξ j (a j) x‖ ≤ Ψ := by
+    intro j hj
+    set T : ℝ := CD * C6 * κX ^ 2 * ((2 * R + 1) ^ (k + 3) * R) with hT
+    set G : Zd (k + 3) L → ℝ := fun x =>
+      Real.exp (-(c * (zdistD (k + 3) L (a i₀ - x) : ℝ)) / ellT L g t)
+        / (((zdistD (k + 3) L (a i₀ - x) : ℝ) ^ (k + 1))
+          * ((zdistD (k + 3) L (a j - x) : ℝ) ^ (k + 2))) with hG
+    have hT0 : 0 ≤ T := by rw [hT]; positivity
+    have hpt : ∀ x ∈ Finset.univ.filter far, ‖Ξ i₀ (a i₀) x‖ *
+        ∑ y ∈ Win x, ‖Ξ j (a j) y - Ξ j (a j) x‖ ≤ T * G x := by
+      intro x hx
+      have hfx : far x := (Finset.mem_filter.mp hx).2
+      have hz0 : ρ * R < (zdistD (k + 3) L (a i₀ - x) : ℝ) := (hfar' x).mp hfx i₀
+      have hzj : ρ * R < (zdistD (k + 3) L (a j - x) : ℝ) := (hfar' x).mp hfx j
+      have hz0pos : 0 < (zdistD (k + 3) L (a i₀ - x) : ℝ) := by linarith
+      have hzjpos : 0 < (zdistD (k + 3) L (a j - x) : ℝ) := by linarith
+      have h1 : ‖Ξ i₀ (a i₀) x‖ ≤ CD * κX *
+          (Real.exp (-(c * (zdistD (k + 3) L (a i₀ - x) : ℝ)) / ellT L g t)
+            / (zdistD (k + 3) L (a i₀ - x) : ℝ) ^ (k + 1)) := by
+        refine (hEpt i₀ x).trans ?_
+        have hinv : (((zdistD (k + 3) L (a i₀ - x) : ℝ) + 1) ^ (k + 1))⁻¹
+            ≤ ((zdistD (k + 3) L (a i₀ - x) : ℝ) ^ (k + 1))⁻¹ :=
+          inv_anti₀ (by positivity) (pow_le_pow_left₀ hz0pos.le (by linarith) _)
+        calc CD * κX * (((zdistD (k + 3) L (a i₀ - x) : ℝ) + 1) ^ (k + 1))⁻¹
+              * Real.exp (-(c * (zdistD (k + 3) L (a i₀ - x) : ℝ)) / ellT L g t)
+            ≤ CD * κX * ((zdistD (k + 3) L (a i₀ - x) : ℝ) ^ (k + 1))⁻¹
+              * Real.exp (-(c * (zdistD (k + 3) L (a i₀ - x) : ℝ)) / ellT L g t) := by
+              gcongr
+          _ = CD * κX * (Real.exp (-(c * (zdistD (k + 3) L (a i₀ - x) : ℝ)) / ellT L g t)
+              / (zdistD (k + 3) L (a i₀ - x) : ℝ) ^ (k + 1)) := by
+              rw [div_eq_mul_inv]; ring
+      have h2 : ∑ y ∈ Win x, ‖Ξ j (a j) y - Ξ j (a j) x‖
+          ≤ (2 * R + 1) ^ (k + 3) * (C6 * κX * R
+            * (((zdistD (k + 3) L (a j - x) : ℝ) ^ (k + 2))⁻¹)) := by
+        calc ∑ y ∈ Win x, ‖Ξ j (a j) y - Ξ j (a j) x‖
+            ≤ ∑ _y ∈ Win x, C6 * κX * R * (((zdistD (k + 3) L (a j - x) : ℝ) ^ (k + 2))⁻¹) :=
+              Finset.sum_le_sum fun y hy => hDpt j x hfx y hy
+          _ = ((Win x).card : ℝ) * (C6 * κX * R
+              * (((zdistD (k + 3) L (a j - x) : ℝ) ^ (k + 2))⁻¹)) := by
+              rw [Finset.sum_const, nsmul_eq_mul]
+          _ ≤ (2 * R + 1) ^ (k + 3) * (C6 * κX * R
+              * (((zdistD (k + 3) L (a j - x) : ℝ) ^ (k + 2))⁻¹)) :=
+              mul_le_mul_of_nonneg_right (hcard x) (by positivity)
+      calc ‖Ξ i₀ (a i₀) x‖ * ∑ y ∈ Win x, ‖Ξ j (a j) y - Ξ j (a j) x‖
+          ≤ (CD * κX * (Real.exp (-(c * (zdistD (k + 3) L (a i₀ - x) : ℝ)) / ellT L g t)
+              / (zdistD (k + 3) L (a i₀ - x) : ℝ) ^ (k + 1)))
+            * ((2 * R + 1) ^ (k + 3) * (C6 * κX * R
+              * (((zdistD (k + 3) L (a j - x) : ℝ) ^ (k + 2))⁻¹))) :=
+            mul_le_mul h1 h2 (Finset.sum_nonneg fun y _ => norm_nonneg _) (by positivity)
+        _ = T * G x := by
+            rw [hT, hG]
+            simp only [div_eq_mul_inv, mul_inv]
+            ring
+    have hlat := EKSum_lattice k hL hc hℓt0 hR₂1 (a i₀) (a j)
+    have hfl : R ≤ (⌊ρ * R⌋₊ : ℝ) := by
+      have := Nat.lt_floor_add_one (ρ * R)
+      linarith
+    have hpsi := EKSum_ar_psi (k := k) (R := R) (Rn := (⌊ρ * R⌋₊ : ℝ)) (κX := κX) (r := r) (ρ := ρ)
+      (CD := CD) (C6 := C6) (lat := latC k) (lg := Real.log L) hR1 hfl hκ0 hκR hCD hC6 hlat0 hlog0
+    calc ∑ x ∈ Finset.univ.filter far, ‖Ξ i₀ (a i₀) x‖ *
+          ∑ y ∈ Win x, ‖Ξ j (a j) y - Ξ j (a j) x‖
+        ≤ ∑ x ∈ Finset.univ.filter far, T * G x := Finset.sum_le_sum hpt
+      _ = T * ∑ x ∈ Finset.univ.filter far, G x := by rw [Finset.mul_sum]
+      _ ≤ T * ∑ x ∈ Finset.univ.filter (fun x : Zd (k + 3) L =>
+            ρ * R < (zdistD (k + 3) L (a i₀ - x) : ℝ) ∧ ρ * R < (zdistD (k + 3) L (a j - x) : ℝ)),
+            G x := by
+          refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum_of_subset_of_nonneg ?_ ?_) hT0
+          · intro x hx
+            simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx ⊢
+            exact ⟨(hfar' x).mp hx i₀, (hfar' x).mp hx j⟩
+          · intro x _ _
+            rw [hG]
+            positivity
+      _ ≤ T * (latC k * Real.log L / (⌊ρ * R⌋₊ : ℝ) ^ k) :=
+          mul_le_mul_of_nonneg_left hlat hT0
+      _ ≤ Ψ := by rw [hΨdef, hT]; exact hpsi
+  -- the conclusion
+  have hcore := EKSum_core i₀ Ξ a A Win far (M := ‖A‖) (δ := W ^ (-D)) (Q := Q) (Sξ := Sξ)
+    (Rn := Rn) (Snon := Snon) (Ψ := Ψ) (norm_nonneg _) hWD hQ0 hSξ0 hSnon0 hΨ0
+    (fun b => norm_le_pi_norm A b) htail hsz hrow hwin hnear hne hX hΔ hΨ'
+  refine hcore.trans (le_of_eq ?_)
+  rw [card_Zd, Nat.cast_pow]
+end Concrete
+
 end RBM.BA
 
 end
