@@ -28,7 +28,8 @@ and `W` except through `W^d`; `3 ≤ d` is not used.
   of the pin (`eq:CS1`, `eq;genWard0`, `eq:Apsipsi`);
 * §5 splitting the list of a loop at `a_k`, `a_l`, `a_n`;
 * §6 the loop matrices on `Vtx d L W`: `P_a = W^d E_a`, and parts (1) and (2) at the matrix level;
-* §7 `STLI`, `STmaxL` as words, and `stContract_holds`; §8 compiled instances at `d = 3`.
+* §7 the matrix form `STContractM` (`stContractM_holds`) and `stContract_holds` as its corollary at
+  `H = seqHflow sz n τ ω`, `z = zt E τ`; §8 compiled instances at `d = 3`.
 -/
 
 set_option linter.style.longLine false
@@ -991,18 +992,39 @@ end Bounds
 end LoopMatrix
 
 
-/-! ## 7. The pins: `STLI` and `STmaxL` as words, and `stContract_holds` -/
+/-! ## 7. The matrix form `STContractM`, its proof, and `stContract_holds` as its corollary -/
 
 section Pin
 
 open RBM.Gauss RBM.Loop
 
-variable {d : ℕ} (sz : Sizes d)
+/-- `max_{σ,a} ‖𝓛^{(k)}_{σ,a}‖` of the loops of a fine-lattice matrix `H` at `z`: the matrix form of
+`STmaxL` (the same `sup'` over `σ : Fin k → Bool`, `a : Fin k → Zd d L`). -/
+def Contract_maxLoopM (d L W : ℕ) [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (z : ℂ) (k : ℕ) : ℝ :=
+  Finset.univ.sup' ⟨((fun _ => true), (fun _ => (0 : Zd d L))), Finset.mem_univ _⟩
+    (fun p : (Fin k → Bool) × (Fin k → Zd d L) => ‖loopFine d L W H z p.1 p.2‖)
 
-/-- The block flow matrix `H_τ` on the block-product index is Hermitian. -/
-private lemma blockMat_flow_isHermitian (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) :
-    (blockMat d (sz.L n) (sz.W n) (seqHflow sz n τ ω)).IsHermitian :=
-  (seqHflow_isHermitian sz n τ ω).submatrix _
+/-- **The contraction inequality over any Hermitian matrix** (`ygdhmsgq`, `(yi2oslxj2)`, `(u2jzooi-2)`,
+`3_5:918-1000`): `STContract` with the band data `(blockMat (seqHflow sz n τ ω), zt E τ)` replaced by
+an arbitrary Hermitian fine-lattice matrix `H` and `z` with `Im z > 0`; `η = Im z`. -/
+def STContractM (d : ℕ) : Prop :=
+  ∀ (L W : ℕ) [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ),
+    H.IsHermitian → 0 < z.im →
+    (∀ (m k : ℕ), 1 ≤ k → k + 1 ≤ m → ∀ (σ : Fin m → Bool) (a : Fin (m - 1) → Zd d L),
+      ∑ x : Zd d L, ‖loopL d L W (blockMat d L W H) z ⟨List.ofFn σ, List.ofFn a ++ [x]⟩‖ ≤
+        (((W : ℕ) : ℝ) ^ d * z.im)⁻¹ *
+          (Contract_maxLoopM d L W H z (2 * k - 1) * Contract_maxLoopM d L W H z (2 * m - 2 * k - 1)) ^
+            (1 / 2 : ℝ)) ∧
+    (∀ (m k l p : ℕ) (j : Fin (m - 1)) (C : ℝ), 4 ≤ m → 1 ≤ p → 1 ≤ k → k < j.val + 1 →
+      j.val + 1 < l → l + 1 ≤ m → 0 ≤ C → ∀ (𝒜 : Zd d L → Finset (Zd d L)),
+      (∀ x, ((𝒜 x).card : ℝ) ≤ C) → ∀ (σ : Fin m → Bool) (a : Fin (m - 1) → Zd d L),
+      ∑ x : Zd d L, ∑ y ∈ 𝒜 x,
+          ‖loopL d L W (blockMat d L W H) z ⟨List.ofFn σ, List.ofFn (Function.update a j y) ++ [x]⟩‖ ≤
+        C * (((W : ℕ) : ℝ) ^ d * z.im)⁻¹ *
+          (Contract_maxLoopM d L W H z (2 * k - 1) * Contract_maxLoopM d L W H z (2 * m - 2 * l - 1)) ^
+            (1 / 2 : ℝ) *
+          Contract_maxLoopM d L W H z (2 * (l - k) * p) ^ (1 / (2 * (p : ℝ))))
 
 private lemma foldr_eq_wd {ι κ : Type*} [Fintype ι] [DecidableEq ι] (G : Bool → Matrix ι ι ℂ)
     (E : κ → Matrix ι ι ℂ) (l : List (Bool × κ)) :
@@ -1011,87 +1033,101 @@ private lemma foldr_eq_wd {ι κ : Type*} [Fintype ι] [DecidableEq ι] (G : Boo
   | nil => simp
   | cons p l ih => simp [ih]
 
-/-- `𝓛_I` of the pin (`STLI`) is the trace of the word of its pairs. -/
-private lemma STLI_eq_trace_wd (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) :
-    STLI sz n E τ ω I =
-      (wd (Gres (blockMat d (sz.L n) (sz.W n) (seqHflow sz n τ ω)) (zt E τ))
-        (Eblk d (sz.L n) (sz.W n)) (I.σ.zip I.a)).trace := by
-  unfold STLI loopL
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- `𝓛_I` is the trace of the word of its pairs. -/
+private lemma Contract_loopL_eq_trace_wd (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ)
+    (I : LoopIdx (Zd d L)) :
+    loopL d L W H z I = (wd (Gres H z) (Eblk d L W) (I.σ.zip I.a)).trace := by
+  unfold loopL
   rw [foldr_eq_wd]
 
-/-- Every word is a loop of the pins: `|tr ∏ G E| ≤ max_{σ,a} |𝓛^{(n)}|` with `n` its length. -/
-private lemma norm_trace_wd_le_STmaxL (n : ℕ) (E t : ℝ) (ω : sz.SeqΩ)
-    (Lst : List (Bool × Zd d (sz.L n))) :
-    ‖(wd (Gres (blockMat d (sz.L n) (sz.W n) (seqHflow sz n t ω)) (zt E t))
-        (Eblk d (sz.L n) (sz.W n)) Lst).trace‖ ≤ STmaxL sz n E t Lst.length ω := by
-  unfold STmaxL
+/-- Every word is a loop: `|tr ∏ G E| ≤ max_{σ,a} |𝓛^{(n)}|` with `n` its length. -/
+private lemma Contract_norm_trace_wd_le (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
+    (Lst : List (Bool × Zd d L)) :
+    ‖(wd (Gres (blockMat d L W H) z) (Eblk d L W) Lst).trace‖ ≤
+      Contract_maxLoopM d L W H z Lst.length := by
+  unfold Contract_maxLoopM
   refine le_trans (le_of_eq ?_)
-    (Finset.le_sup' (fun p : (Fin Lst.length → Bool) × (Fin Lst.length → Zd d (sz.L n)) =>
-      ‖Lloop sz n E t p.1 p.2 ω‖)
+    (Finset.le_sup' (fun p : (Fin Lst.length → Bool) × (Fin Lst.length → Zd d L) =>
+      ‖loopFine d L W H z p.1 p.2‖)
       (Finset.mem_univ ((fun i => (Lst.get i).1), (fun i => (Lst.get i).2))))
-  unfold Lloop loopFine loopM wd
-  have hmap : ∀ f : Bool × Zd d (sz.L n) → Matrix (Vtx d (sz.L n) (sz.W n)) (Vtx d (sz.L n) (sz.W n)) ℂ,
+  unfold loopFine loopM wd
+  have hmap : ∀ f : Bool × Zd d L → Matrix (Vtx d L W) (Vtx d L W) ℂ,
       Lst.map f = List.ofFn (fun i : Fin Lst.length => f (Lst.get i)) := fun f =>
     List.ext_getElem (by simp) fun i h1 h2 => by simp
   dsimp only
   rw [hmap]
 
-private lemma STmaxL_nonneg (n : ℕ) (E t : ℝ) (k : ℕ) (ω : sz.SeqΩ) : 0 ≤ STmaxL sz n E t k ω :=
-  (norm_nonneg _).trans (Finset.le_sup' (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) =>
-    ‖Lloop sz n E t p.1 p.2 ω‖) (Finset.mem_univ ((fun _ => true), (fun _ => 0))))
+private lemma Contract_maxLoopM_nonneg (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (k : ℕ) :
+    0 ≤ Contract_maxLoopM d L W H z k :=
+  (norm_nonneg _).trans (Finset.le_sup' (fun p : (Fin k → Bool) × (Fin k → Zd d L) =>
+    ‖loopFine d L W H z p.1 p.2‖) (Finset.mem_univ ((fun _ => true), (fun _ => 0))))
 
-/-- **`STContract`** (`ygdhmsgq`, `(yi2oslxj2)`, `(u2jzooi-2)`, `3_5:918-1000`): the contraction
-inequality holds for every `d`, every size sequence, every sample and every flow time
-`τ ∈ [0, 1)`, `|E| < 2`: no hypothesis beyond those of the pin. -/
-theorem stContract_holds (d : ℕ) : STContract d := by
-  intro sz n E τ hE h0 h1 ω
-  have hη : 0 < etaT E τ := etaT_pos hE h1
-  have hzim : (zt E τ).im = etaT E τ := (etaT_eq_zt_im).symm
-  have hz : 0 < (zt E τ).im := by rw [hzim]; exact hη
-  have hH := blockMat_flow_isHermitian sz n τ ω
-  have hM0 : ∀ k, 0 ≤ (fun k => STmaxL sz n E τ k ω) k := fun k => STmaxL_nonneg sz n E τ k ω
-  have hM := norm_trace_wd_le_STmaxL sz n E τ ω
+/-- **`STContractM`** (`ygdhmsgq`, `(yi2oslxj2)`, `(u2jzooi-2)`, `3_5:918-1000`): the contraction
+inequality holds for every `L`, `W`, every Hermitian `H` on `Z_{WL}^d` and every `z` with `Im z > 0`. -/
+theorem stContractM_holds (d : ℕ) : STContractM d := by
+  intro L W _ _ H z hHerm hz
+  have hH : (blockMat d L W H).IsHermitian := hHerm.submatrix _
+  have hM0 : ∀ k, 0 ≤ (fun k => Contract_maxLoopM d L W H z k) k :=
+    fun k => Contract_maxLoopM_nonneg H z k
+  have hM := Contract_norm_trace_wd_le H z
   constructor
   · intro m k hk hkm σ a
     obtain ⟨l, q, r, s, hl, hr, hsplit⟩ :=
       list_split1 hk hkm (List.ofFn σ) (by simp) (List.ofFn a) (by simp)
-    have hpart := part1_matrix hH hz (fun k => STmaxL sz n E τ k ω) hM0 hM l r q s
+    have hpart := part1_matrix hH hz (fun k => Contract_maxLoopM d L W H z k) hM0 hM l r q s
     have e1 : 2 * l.length + 1 = 2 * k - 1 := by omega
     have e2 : 2 * r.length + 1 = 2 * m - 2 * k - 1 := by omega
-    calc ∑ x : Zd d (sz.L n), ‖STLI sz n E τ ω ⟨List.ofFn σ, List.ofFn a ++ [x]⟩‖
-        = ∑ x : Zd d (sz.L n), ‖(wd (Gres (blockMat d (sz.L n) (sz.W n) (seqHflow sz n τ ω))
-            (zt E τ)) (Eblk d (sz.L n) (sz.W n)) (l ++ [q] ++ r ++ [(s, x)])).trace‖ := by
+    calc ∑ x : Zd d L, ‖loopL d L W (blockMat d L W H) z ⟨List.ofFn σ, List.ofFn a ++ [x]⟩‖
+        = ∑ x : Zd d L, ‖(wd (Gres (blockMat d L W H) z) (Eblk d L W)
+            (l ++ [q] ++ r ++ [(s, x)])).trace‖ := by
           refine Finset.sum_congr rfl fun x _ => ?_
-          rw [STLI_eq_trace_wd sz n E τ ω ⟨List.ofFn σ, List.ofFn a ++ [x]⟩]
+          rw [Contract_loopL_eq_trace_wd _ z ⟨List.ofFn σ, List.ofFn a ++ [x]⟩]
           change ‖(wd _ _ ((List.ofFn σ).zip (List.ofFn a ++ [x]))).trace‖ = _
           rw [hsplit x]
       _ ≤ _ := hpart
       _ = _ := by
-          simp only [e1, e2, hzim, Real.sqrt_eq_rpow]
+          simp only [e1, e2, Real.sqrt_eq_rpow]
   · intro m k l p j C hm hp hk hkj hjl hlm hC 𝒜 hcard σ a
     obtain ⟨l₁, q, r₃, q₂, s, r₂, hl₁, hr₃, hr₂, hsplit⟩ :=
       list_split2 (m := m) (k := k) (l := l) (List.ofFn σ) (by simp) (List.ofFn a) (by simp)
         (j := j.val) j.2 hk (by omega) (by omega) hlm
-    have hpart := part2_matrix hH hz (fun k => STmaxL sz n E τ k ω) hM0 hM hp hC 𝒜 hcard
+    have hpart := part2_matrix hH hz (fun k => Contract_maxLoopM d L W H z k) hM0 hM hp hC 𝒜 hcard
       l₁ r₃ q q₂ s r₂ (l - k - 1) hr₂
     have e1 : 2 * l₁.length + 1 = 2 * k - 1 := by omega
     have e2 : 2 * r₃.length + 1 = 2 * m - 2 * l - 1 := by omega
     have e3 : 2 * (l - k - 1 + 1) * p = 2 * (l - k) * p := by
       have : l - k - 1 + 1 = l - k := by omega
       rw [this]
-    calc ∑ x : Zd d (sz.L n), ∑ y ∈ 𝒜 x,
-          ‖STLI sz n E τ ω ⟨List.ofFn σ, List.ofFn (Function.update a j y) ++ [x]⟩‖
-        = ∑ x : Zd d (sz.L n), ∑ y ∈ 𝒜 x,
-            ‖(wd (Gres (blockMat d (sz.L n) (sz.W n) (seqHflow sz n τ ω)) (zt E τ))
-              (Eblk d (sz.L n) (sz.W n)) (l₁ ++ [q] ++ r₂ y ++ [q₂] ++ r₃ ++ [(s, x)])).trace‖ := by
+    calc ∑ x : Zd d L, ∑ y ∈ 𝒜 x,
+          ‖loopL d L W (blockMat d L W H) z
+            ⟨List.ofFn σ, List.ofFn (Function.update a j y) ++ [x]⟩‖
+        = ∑ x : Zd d L, ∑ y ∈ 𝒜 x,
+            ‖(wd (Gres (blockMat d L W H) z) (Eblk d L W)
+              (l₁ ++ [q] ++ r₂ y ++ [q₂] ++ r₃ ++ [(s, x)])).trace‖ := by
           refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => ?_
-          rw [STLI_eq_trace_wd sz n E τ ω ⟨List.ofFn σ, List.ofFn (Function.update a j y) ++ [x]⟩]
+          rw [Contract_loopL_eq_trace_wd _ z
+            ⟨List.ofFn σ, List.ofFn (Function.update a j y) ++ [x]⟩]
           change ‖(wd _ _ ((List.ofFn σ).zip (List.ofFn (Function.update a j y) ++ [x]))).trace‖ = _
           rw [ofFn_update_eq_set, hsplit x y]
       _ ≤ _ := hpart
       _ = _ := by
-          simp only [e1, e2, e3, hzim, Real.sqrt_eq_rpow]
+          simp only [e1, e2, e3, Real.sqrt_eq_rpow]
           ring
+
+/-- **`STContract`** (`ygdhmsgq`, `(yi2oslxj2)`, `(u2jzooi-2)`, `3_5:918-1000`): the contraction
+inequality holds for every `d`, every size sequence, every sample and every flow time
+`τ ∈ [0, 1)`, `|E| < 2`: no hypothesis beyond those of the pin.  The corollary of
+`stContractM_holds` at `H = seqHflow sz n τ ω`, `z = zt E τ` (`Im z = η_τ > 0`). -/
+theorem stContract_holds (d : ℕ) : STContract d := by
+  intro sz n E τ hE h0 h1 ω
+  have hzim : (zt E τ).im = etaT E τ := (etaT_eq_zt_im).symm
+  have hz : 0 < (zt E τ).im := by rw [hzim]; exact etaT_pos hE h1
+  have h := stContractM_holds d (sz.L n) (sz.W n) (seqHflow sz n τ ω) (zt E τ)
+    (seqHflow_isHermitian sz n τ ω) hz
+  rw [hzim] at h
+  exact h
 
 end Pin
 
@@ -1137,6 +1173,47 @@ example :
     ⟨1, by norm_num⟩ 1 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
     (by norm_num) (by norm_num) (fun x => {x}) (fun x => by simp) ![true, false, true, false]
     ![0, 0, 0]
+
+/-- `stContractM_holds` at a non-band Hermitian matrix: `d = 3`, `L = 3`, `W = 2` (`Idx 3 3 2` has
+`216` sites), `H = X_{(0,1)} + X_{(1,0)}` (non-scalar, one off-diagonal pair), `z = i`
+(`Im z = 1`).  Part (1) at `m = 2`, `k = 1`, `σ = (+,-)`, `a_1 = 0`. -/
+example :
+    (∑ x : Zd 3 3, ‖loopL 3 3 2 (blockMat 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+          coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true))) Complex.I
+        ⟨List.ofFn (![true, false] : Fin 2 → Bool),
+          List.ofFn (![0] : Fin 1 → Zd 3 3) ++ [x]⟩‖) ≤
+      (((2 : ℕ) : ℝ) ^ 3 * Complex.I.im)⁻¹ *
+        (Contract_maxLoopM 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+            coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true)) Complex.I (2 * 1 - 1) *
+          Contract_maxLoopM 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+            coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true)) Complex.I
+            (2 * 2 - 2 * 1 - 1)) ^ (1 / 2 : ℝ) :=
+  (stContractM_holds 3 3 2 _ Complex.I
+    ((coordinateMatrix_isHermitian 3 3 2 _).add (coordinateMatrix_isHermitian 3 3 2 _))
+    (by simp)).1 2 1 (by norm_num) (by norm_num) ![true, false] ![0]
+
+/-- Part (2) of `stContractM_holds` at the same non-band matrix: `m = 4`, `k = 1`, `l = 3`, `p = 1`,
+`j = 2`, `C = 1`, `𝒜 x = {x}`. -/
+example :
+    (∑ x : Zd 3 3, ∑ y ∈ ({x} : Finset (Zd 3 3)),
+        ‖loopL 3 3 2 (blockMat 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+          coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true))) Complex.I
+          ⟨List.ofFn (![true, false, true, false] : Fin 4 → Bool),
+            List.ofFn (Function.update (![0, 0, 0] : Fin 3 → Zd 3 3) (1 : Fin 3) y) ++ [x]⟩‖) ≤
+      1 * (((2 : ℕ) : ℝ) ^ 3 * Complex.I.im)⁻¹ *
+        (Contract_maxLoopM 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+            coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true)) Complex.I (2 * 1 - 1) *
+          Contract_maxLoopM 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+            coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true)) Complex.I
+            (2 * 4 - 2 * 3 - 1)) ^ (1 / 2 : ℝ) *
+        Contract_maxLoopM 3 3 2 (coordinateMatrix 3 3 2 ((0 : Idx 3 3 2), (1 : Idx 3 3 2), true) +
+          coordinateMatrix 3 3 2 ((1 : Idx 3 3 2), (0 : Idx 3 3 2), true)) Complex.I
+          (2 * (3 - 1) * 1) ^ (1 / (2 * ((1 : ℕ) : ℝ))) :=
+  (stContractM_holds 3 3 2 _ Complex.I
+    ((coordinateMatrix_isHermitian 3 3 2 _).add (coordinateMatrix_isHermitian 3 3 2 _))
+    (by simp)).2 4 1 3 1 ⟨1, by norm_num⟩ 1 (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (by norm_num) (by norm_num) (by norm_num) (fun x => {x}) (fun x => by simp)
+    ![true, false, true, false] ![0, 0, 0]
 
 end Instances
 
