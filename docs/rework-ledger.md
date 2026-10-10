@@ -330,3 +330,8 @@
 | T2382 | 2026-10-10 12:29 UTC (ada2b54) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T row 0：新 `Chain/Carrier.lean`（178 行），从 `BA/FlowPins` 搬出 16 个声明（PrecL、FlowFM、FlowFM.GM 与泛型谓词），`STJhatg`、`STLWassmExpgL` 留下；审核一次 PASS |
 | T2383 | 2026-10-10 12:37 UTC (5c50416) | prover | Sonnet 5.5 effort high | 是 | BA-T T5s1：1a target 2 卡住（`HierarchyN` 需要 T8/T5s2 的词汇）→ Amend 1 (A)：只改 `LoopGenN.lean`（+160 −99），`HierarchyN` 归 T5s2，BA 实例归 T5-BA；绊线 g = 0.239、f_sem = 0 未触发；审核一次 PASS |
 | T2384 | 2026-10-10 13:07 UTC (85e7cd6) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS（D1/D2 要签字，1b 未等签字即跑，§202 追认）；BA-K11 `BA/KWardIneq`（1338 行，停止线 2000）：`baWardIneq_holds`，文件内桥 `KWardIneq_IndAt_of_abs`，无登记变动；审核一次 PASS |
+| T2385 | 2026-10-10 15:23 UTC (e67bfbd) | prover-max | Sonnet 5.5 effort max | 是 | 1a 设计门（K08a+b）第一轮 1a-audit RETURN（`baK_sumAll_eq_layers` 在 `W = 0` 假、缺正性假设、`..` 藏假设），规则 (B) 修一次后 PASS；BA-K08a `BA/KSumZeroA`（1195 行，停止线 2400）；审核一次 PASS |
+| T2388 | 2026-10-10 15:59 UTC (76458c2) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-E1 `BA/EKPins`（856 行）：`baEKSumNdecay_holds`、BA `Ξ` 三条，4 条 owed；审核第一轮 RETURN（目标 4 的差异覆盖），只修报告（T2388d、T2388e）后 PASS |
+| T2387 | 2026-10-10 16:26 UTC (8994389) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（阶段 L：33 行，中心 42.3k，旗标 50；探针留在 t/T2387）；审核一次 PASS |
+| T2386 | 2026-10-10 16:30 UTC (2a05b1d) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-T T8：1a-audit RETURN（16 个名字被推迟）→ Amend 1（R1）→ (a′) 第二轮 PASS；新 `Chain/Step2Gen` 等，净 1317 行（停止线 1500）；审核一次 PASS |
+| T2389 | 2026-10-10 17:38 UTC (b6cc9d2) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-G2：`Green/LDE`、`RowIndep`、`IBPPoly` 原地 + 新 `BA/GreenLDE`（978 行，停止线 1800），证书合并道；D1：只有三条是 `D = 0` 字面推论；审核一次 PASS |
