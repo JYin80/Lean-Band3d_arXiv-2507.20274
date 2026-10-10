@@ -1051,7 +1051,7 @@ private theorem EKSum_Xi_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) 
   push_cast
   field_simp
 
-/-- **The first difference of `Ξ` from `(prop:BD1)` at BA** (`(eq:Xibb)`, second bound; `A:140-149`): for `|y - b|` at most
+/-- **The first difference of `Ξ` from `(prop:BD1)` at BA** (`(eq:Xibb)`, second bound; `A:179-182`): for `|y - b|` at most
 `(|a - b| - 1)/2`, `|Ξ_{ay} - Ξ_{ab}| ≤ (1-s) C₆ (g²+|1-t|)⁻¹ |y - b| |a - b|^{-(d-1)}`.  For `t > 0`,
 `Ξ = ((t-s)/t)(Θ_t - 1)` with `(t-s)/t ≤ 1-s`, and the unit `1` does not see `a ≠ y, a ≠ b`; `h6` is `baProp6_holds` at
 `c = 1/2` for the charge pair, `Θ_t(a, y) = Θ_t(0, y - a)`.  (Not the band's `S^{(B)}` route: BA has no
