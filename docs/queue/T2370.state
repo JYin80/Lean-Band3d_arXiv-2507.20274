@@ -1,4 +1,4 @@
 state: audit-pass
-reason: 1a-audit PASS; stage 1b DONE (d8bc699; BA/KTreeDeriv.lean 612 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_bf7c1036-4c7; full registry check left to the merge build). Merge by rule (A) queued after T2369, T2364, T2372
-updated: Sat Oct 10 07:15:29 UTC 2026
+reason: 1a-audit PASS; stage 1b DONE (d8bc699; BA/KTreeDeriv.lean 612 lines); auditor1 PASS claude-opus-5-5 (wf_bf7c1036-4c7); full lake build 4187 jobs exit 0
+updated: Sat Oct 10 07:37:37 UTC 2026
 reports: docs/reports/T2370-prove.md, docs/reports/T2370-1a-audit.md, docs/reports/T2370-audit.md
