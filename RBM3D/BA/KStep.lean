@@ -238,4 +238,220 @@ theorem kStep_all {ι : Type} (d : ℕ) (L : ι → ℕ) [∀ i, NeZero (L i)] (
 
 end Abstract
 
+/-! ## 2. The `Θ` calculus at the BA data (private copies: the originals in `KInduct`, `KWardIneq` are private) -/
+
+section Calculus
+
+variable {d L : ℕ} [NeZero L]
+
+/-- `Θ^{(s,s')} = (1 - t M^{(s,s')})⁻¹` is invariant under a permutation `e` of the labels fixing every `M(σ)` (a copy of the private
+`KInduct_theta_perm`, `BA/KInduct.lean:128`). -/
+private theorem KStep_theta_perm (e : Zd d L ≃ Zd d L) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
+    (hM : ∀ σ x y, M σ (e x) (e y) = M σ x y) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
+    BAThetaOf M t s s' (e x) (e y) = BAThetaOf M t s s' x y := by
+  have hQ : ∀ x y, BAMssOf M s s' (e x) (e y) = BAMssOf M s s' x y := fun x y => by
+    simp only [BAMssOf, Matrix.of_apply, hM]
+  have hA : ((1 : Matrix (Zd d L) (Zd d L) ℂ) - (t : ℂ) • BAMssOf M s s').submatrix e e =
+      1 - (t : ℂ) • BAMssOf M s s' := by
+    ext x y
+    simp only [Matrix.submatrix_apply, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply,
+      e.injective.eq_iff, hQ]
+  have h2 := Matrix.inv_submatrix_equiv ((1 : Matrix (Zd d L) (Zd d L) ℂ) - (t : ℂ) • BAMssOf M s s') e e
+  rw [hA] at h2
+  unfold BAThetaOf PropThetaQ
+  rw [← Matrix.nonsing_inv_eq_ringInverse]
+  have h3 := congrFun (congrFun h2 x) y
+  rw [Matrix.submatrix_apply] at h3
+  exact h3.symm
+
+/-- Translation invariance of `Θ`: `Θ_t^{(s,s')}(x, y) = Θ_t^{(s,s')}(0, y - x)` (a copy of the private `KInduct_theta_shift`,
+`BA/KInduct.lean:147`). -/
+private theorem KStep_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
+    BATheta d L g E m t s s' x y = BATheta d L g E m t s s' 0 (y - x) := by
+  have h := KStep_theta_perm (Equiv.addRight (-x)) (BAMsigma d L (BAMB d L g (E : ℂ) m))
+    (fun σ u v => BAMsigma_shift d L g (E : ℂ) m σ u v (-x)) t s s' x y
+  simp only [Equiv.coe_addRight, add_neg_cancel, ← sub_eq_add_neg] at h
+  exact h.symm
+
+/-- `Σ_b |Θ(a,b)| ≤ (1-t)⁻¹` from the right resolvent identity `Θ = 1 + t Θ Q` and `Σ_b |Q(c,b)| ≤ 1` (a copy of the private
+`KWardIneq_row_of_resolvent`, `BA/KWardIneq.lean:184`). -/
+private theorem KStep_row_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] (Θ Q : Matrix G G ℂ)
+    {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hres : Θ = 1 + (t : ℂ) • (Θ * Q))
+    (hQ : ∀ c, ∑ b, ‖Q c b‖ ≤ 1) (a : G) : ∑ b, ‖Θ a b‖ ≤ (1 - t)⁻¹ := by
+  set R : ℝ := ∑ b, ‖Θ a b‖ with hR
+  have hpt : ∀ b, ‖Θ a b‖ ≤ (if a = b then (1 : ℝ) else 0) + t * ∑ c, ‖Θ a c‖ * ‖Q c b‖ := by
+    intro b
+    have h := congrFun (congrFun hres a) b
+    simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, Matrix.mul_apply] at h
+    rw [h]
+    refine (norm_add_le _ _).trans ?_
+    have h1 : ‖(if a = b then (1 : ℂ) else 0)‖ = if a = b then (1 : ℝ) else 0 := by split_ifs <;> simp
+    have h2 : ‖(t : ℂ) * ∑ c, Θ a c * Q c b‖ ≤ t * ∑ c, ‖Θ a c‖ * ‖Q c b‖ := by
+      rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+      refine mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (le_of_eq ?_)) ht0
+      exact Finset.sum_congr rfl fun c _ => norm_mul _ _
+    rw [h1]
+    linarith
+  have hsum : R ≤ 1 + t * R := by
+    calc R = ∑ b, ‖Θ a b‖ := rfl
+      _ ≤ ∑ b, ((if a = b then (1 : ℝ) else 0) + t * ∑ c, ‖Θ a c‖ * ‖Q c b‖) := Finset.sum_le_sum fun b _ => hpt b
+      _ = 1 + t * ∑ c, ‖Θ a c‖ * ∑ b, ‖Q c b‖ := by
+          rw [Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_comm]
+          simp only [Finset.sum_ite_eq, Finset.mem_univ, ite_true, ← Finset.mul_sum]
+      _ ≤ 1 + t * ∑ c, ‖Θ a c‖ * 1 := by
+          gcongr with c _
+          exact hQ c
+      _ = 1 + t * R := by simp [hR]
+  have h1t : 0 < 1 - t := by linarith
+  rw [← one_div, le_div_iff₀ h1t]
+  nlinarith
+
+/-- **`(eq:THETAinftinf)` at BA, rows**: `Σ_b |Θ_t^{(s,s')}(a,b)| ≤ (1-t)⁻¹` for all four charge pairs: the right resolvent identity
+(`BATheta_resolvent`) and `Σ_b |M^{(s,s')}_{cb}| = Σ_b K_{cb} = 1` (`BAMss_norm_eq_BAK`, `BAK_row_sum`); a copy of the private
+`KWardIneq_theta_row_le`, `BA/KWardIneq.lean:255`. -/
+private theorem KStep_theta_row_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+    (s s' : Bool) (a : Zd d L) :
+    ∑ b, ‖BAThetaOf (BAMsigma d L (BAMB d L g (E : ℂ) m)) t s s' a b‖ ≤ (1 - t)⁻¹ := by
+  refine KStep_row_of_resolvent (BATheta d L g E m t s s') (BAMss d L (BAMB d L g (E : ℂ) m) s s') ht0 ht1
+    (BATheta_resolvent d L g κ E m hr t ht0 ht1 s s').2 (fun c => ?_) a
+  simp only [BAMss_norm_eq_BAK]
+  exact (BAK_row_sum d L g E m hr.1 c).le
+
+end Calculus
+
+section Constants
+
+/-- `1 ≤ L^τ` for `L ≥ 3`, `τ > 0`. -/
+private theorem KStep_one_le_rpow {L : ℕ} (hL : 3 ≤ L) {τ : ℝ} (hτ : 0 < τ) : (1 : ℝ) ≤ (L : ℝ) ^ τ :=
+  Real.one_le_rpow (by exact_mod_cast (by omega : 1 ≤ L)) hτ.le
+
+/-- `C P ≤ C L' P` for `C, P ≥ 0`, `L' ≥ 1` (a loss factor is spent). -/
+private theorem KStep_mul_loss {C L' P : ℝ} (hC : 0 ≤ C) (hP : 0 ≤ P) (hL : 1 ≤ L') : C * P ≤ C * L' * P := by
+  nlinarith [mul_nonneg (mul_nonneg hC hP) (sub_nonneg.2 hL)]
+
+/-- **Properties 4 + 5** (`BAProp5`): every entry of every `Θ_t^{(σ₁,σ₂)}` is `≤ C_d B_{t,0}` (a copy of the private
+`KInduct_theta_sup`, `BA/KInduct.lean:188`). -/
+private theorem KStep_theta_sup {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    ∃ Cd : ℝ, 0 < Cd ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
+      haveI : NeZero L := ⟨by omega⟩
+      BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ₁ σ₂ : Bool) (x y : Zd d L),
+        ‖BATheta d L g E m t σ₁ σ₂ x y‖ ≤ Cd * Bparam d L g t 0 := by
+  obtain ⟨Cd, hCd, cd, hcd, hbd⟩ := baProp5_holds d Λ κ hd hΛ hκ
+  refine ⟨Cd, hCd, fun L hL g hg hgΛ E m => ?_⟩
+  have : NeZero L := ⟨by omega⟩
+  intro hr t ht0 ht1 σ₁ σ₂ x y
+  rw [KStep_theta_shift]
+  exact KLIndStepA_decay_le_zero (by omega) hCd.le hcd.le (y - x)
+    (hbd L hL g hg hgΛ E m hr t ht0 ht1 σ₁ σ₂ (y - x))
+
+/-- **Property 5'** (`BAProp5s`): `Σ_b |Θ_t^{(σ,σ)}(x, b)| ≤ S`, `S = C_s (1 + Λ² expC k c_s)` (`d = k + 2`; a copy of the private
+`KInduct_theta_l1`, `BA/KInduct.lean:203`). -/
+private theorem KStep_theta_l1 {k : ℕ} (hd : 3 ≤ k + 2) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    ∃ S : ℝ, 0 < S ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
+      haveI : NeZero L := ⟨by omega⟩
+      BAReal (k + 2) L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ : Bool) (x : Zd (k + 2) L),
+        ∑ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t σ σ x b‖ ≤ S := by
+  obtain ⟨Cs, hCs, cs, hcs, hbd⟩ := baProp5s_holds (k + 2) Λ κ hd hΛ hκ
+  have hexpC : 0 ≤ expC k cs := by unfold expC; positivity
+  refine ⟨Cs * (1 + Λ ^ 2 * expC k cs), by positivity, fun L hL g hg hgΛ E m => ?_⟩
+  have : NeZero L := ⟨by omega⟩
+  intro hr t ht0 ht1 σ x
+  have hpt : ∀ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t σ σ x b‖
+      ≤ Cs * ((if b - x = 0 then (1 : ℝ) else 0)
+          + g ^ 2 * Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ)))) := by
+    intro b
+    rw [KStep_theta_shift]
+    have := hbd L hL g hg hgΛ E m hr t ht0 ht1 σ (b - x)
+    simpa [neg_mul] using this
+  have h1 : ∑ b : Zd (k + 2) L, (if b - x = 0 then (1 : ℝ) else 0) = 1 := by
+    simp [sub_eq_zero]
+  have h2 : ∑ b : Zd (k + 2) L, Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ))) ≤ expC k cs :=
+    (le_of_eq (Fintype.sum_equiv (Equiv.subRight x) _
+      (fun y : Zd (k + 2) L => Real.exp (-(cs * (zdistD (k + 2) L y : ℝ)))) fun b => rfl)).trans
+      (sum_radial_exp_decay_le k hcs)
+  calc ∑ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t σ σ x b‖
+      ≤ ∑ b : Zd (k + 2) L, Cs * ((if b - x = 0 then (1 : ℝ) else 0)
+          + g ^ 2 * Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ)))) :=
+        Finset.sum_le_sum fun b _ => hpt b
+    _ = Cs * (1 + g ^ 2 * ∑ b : Zd (k + 2) L, Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ)))) := by
+        rw [← Finset.mul_sum, Finset.sum_add_distrib, h1, ← Finset.mul_sum]
+    _ ≤ Cs * (1 + g ^ 2 * expC k cs) := by gcongr
+    _ ≤ Cs * (1 + Λ ^ 2 * expC k cs) := by
+        have : g ^ 2 ≤ Λ ^ 2 := pow_le_pow_left₀ hg.le hgΛ 2
+        gcongr
+
+end Constants
+
+/-! ## 3. The leaf bundle `IndStepTH` at the BA edges, and `IndStepAbs` at BA -/
+
+section Bundle
+
+/-- **The leaf bundle at BA** (the BA twin of `indStepTH_band`, `Loop/KLIndStepA.lean:1100`): `IndStepTH` for the edges `Θ` of the BA data at the
+family `KWardIneq_Data d Λ κ`.  Properties 5, 5', 6, 7, 8 are `baProp5to8_holds` (6 and 7 at `c = 1/2`; the loss `L^τ ≥ 1` of the fields is not
+needed by the BA statements), the translation field is `KStep_theta_shift`, the row sum `KStep_theta_row_le`
+(`BAThetaOf (BAMsigma ..) = BATheta` by `rfl`, `BATheta0` is the zero-mode expression of the field). -/
+private theorem KStep_indStepTH {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    IndStepTH (ι := KWardIneq_Data d Λ κ) d (fun i => i.L) (fun i => i.g) (fun i => i.t)
+      (fun i s s' => BAThetaOf (BAMsigma d i.L (BAMB d i.L i.g (i.E : ℂ) i.m)) i.t s s') := by
+  obtain ⟨C5, hC5, c5, hc5, H5⟩ := baProp5_holds d Λ κ hd hΛ hκ
+  obtain ⟨Cs, hCs, cs, hcs, Hs⟩ := baProp5s_holds d Λ κ hd hΛ hκ
+  refine ⟨fun i s s' a b => KStep_theta_shift i.g i.E i.m i.t s s' a b, ⟨C5, hC5, c5, hc5, ?_⟩,
+    ⟨Cs, hCs, cs, hcs, ?_⟩, fun τ hτ => ?_, fun τ hτ => ?_, fun τ hτ => ?_, ?_⟩
+  · intro i s s' _ a
+    exact H5 i.L i.hL i.g i.hg i.hgΛ i.E i.m i.hr i.t i.ht0 i.ht1 s s' a
+  · intro i s a
+    exact Hs i.L i.hL i.g i.hg i.hgΛ i.E i.m i.hr i.t i.ht0 i.ht1 s a
+  · obtain ⟨C, hC, H⟩ := baProp6_holds d Λ κ (1 / 2) hd hΛ hκ (by norm_num) (by norm_num)
+    refine ⟨C, hC, fun i s s' _ a r hr => ?_⟩
+    refine (H i.L i.hL i.g i.hg i.hgΛ i.E i.m i.hr i.t i.ht0 i.ht1 s s' a r hr).trans ?_
+    have h0 : 0 ≤ (i.g ^ 2 + |1 - i.t|)⁻¹ * (zdistD d i.L r : ℝ) * (((zdistD d i.L a : ℝ) + 1) ^ (d - 1))⁻¹ := by
+      positivity
+    have key := KStep_mul_loss hC.le h0 (KStep_one_le_rpow i.hL hτ)
+    calc _ = C * ((i.g ^ 2 + |1 - i.t|)⁻¹ * (zdistD d i.L r : ℝ) * (((zdistD d i.L a : ℝ) + 1) ^ (d - 1))⁻¹) := by
+          ring
+      _ ≤ _ := key.trans (le_of_eq (by ring))
+  · obtain ⟨C, hC, H⟩ := baProp7_holds d Λ κ (1 / 2) hd hΛ hκ (by norm_num) (by norm_num)
+    refine ⟨C, hC, fun i s s' _ a r hr => ?_⟩
+    refine (H i.L i.hL i.g i.hg i.hgΛ i.E i.m i.hr i.t i.ht0 i.ht1 s s' a r hr).trans ?_
+    have h0 : 0 ≤ (i.g ^ 2 + |1 - i.t|)⁻¹ * (zdistD d i.L r : ℝ) ^ 2 * (((zdistD d i.L a : ℝ) + 1) ^ d)⁻¹ := by
+      positivity
+    have key := KStep_mul_loss hC.le h0 (KStep_one_le_rpow i.hL hτ)
+    calc _ = C * ((i.g ^ 2 + |1 - i.t|)⁻¹ * (zdistD d i.L r : ℝ) ^ 2 * (((zdistD d i.L a : ℝ) + 1) ^ d)⁻¹) := by
+          ring
+      _ ≤ _ := key.trans (le_of_eq (by ring))
+  · obtain ⟨C, hC, H⟩ := baProp8_holds d Λ κ hd hΛ hκ
+    refine ⟨C, hC, fun i s s' _ a => ?_⟩
+    have h := H i.L i.hL i.g i.hg i.hgΛ i.E i.m i.hr i.t i.ht0 i.ht1 s s' a
+    have e : BATheta0 d i.L i.g i.E i.m i.t s s' 0 a
+        = BATheta d i.L i.g i.E i.m i.t s s' 0 a
+          - ((i.L : ℂ) ^ (2 * d))⁻¹ * ∑ a', ∑ b', BATheta d i.L i.g i.E i.m i.t s s' a' b' := rfl
+    rw [e] at h
+    have h0 : 0 ≤ (i.g ^ 2 + |1 - i.t|)⁻¹ * (((zdistD d i.L a : ℝ) + 1) ^ (d - 2))⁻¹ := by positivity
+    have key := KStep_mul_loss hC.le h0 (KStep_one_le_rpow i.hL hτ)
+    refine h.trans ?_
+    calc _ = C * ((i.g ^ 2 + |1 - i.t|)⁻¹ * (((zdistD d i.L a : ℝ) + 1) ^ (d - 2))⁻¹) := by ring
+      _ ≤ _ := key.trans (le_of_eq (by ring))
+  · intro i s s' _ a
+    exact KStep_theta_row_le i.hr i.ht0 i.ht1 s s' a
+
+/-- **`(eq:ind-step-bound)` at BA is proved** (K09a's `indStepAbs_of` at the BA data): `IndStepAbs` for the molecule weight `BASig`, the edges
+`Θ` of the BA data and `Bp = B_{t,0}`, at the family `KWardIneq_Data d Λ κ` of the real-axis data, every `k ≥ 3`.  The inputs are the
+molecule decay `baSig_decay` (K07), the sum-zero interface `baSig_sumZeroAbs` (K08b, `3 ≤ k`, `t < 1`) and the leaf bundle `KStep_indStepTH`.
+Its image under `KWardIneq_IndAt_of_abs` is the premise of `baWardIneq_holds` (K11, consumed by K12). -/
+theorem baIndStepAbs_holds {d : ℕ} (k : ℕ) [NeZero k] (hd : 3 ≤ d) (hk : 3 ≤ k) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    IndStepAbs (ι := KWardIneq_Data d Λ κ) d k (fun i => i.L) (fun i => Bparam d i.L i.g i.t 0)
+      (BASig (ι := KWardIneq_Data d Λ κ) d k (fun i => i.L) (fun i => i.g) (fun i => i.E) (fun i => i.m)
+        (fun i => i.t))
+      (fun i s s' => BAThetaOf (BAMsigma d i.L (BAMB d i.L i.g (i.E : ℂ) i.m)) i.t s s') :=
+  indStepAbs_of d k Λ (fun i : KWardIneq_Data d Λ κ => i.L) (fun i => i.g) (fun i => i.t) _ _ hd hk
+    (fun i => ⟨i.hL, i.hg, i.hgΛ, i.ht0, i.ht1⟩) (KStep_indStepTH hd hΛ hκ)
+    (baSig_decay hd hk hΛ hκ (fun i : KWardIneq_Data d Λ κ => i.L) (fun i => i.g) (fun i => i.E) (fun i => i.m)
+      (fun i => i.t) (fun i => i.hL) (fun i => i.hg) (fun i => i.hgΛ) (fun i => i.hr) (fun i => i.ht0)
+      (fun i => i.ht1.le))
+    (baSig_sumZeroAbs hd hk hΛ hκ (fun i : KWardIneq_Data d Λ κ => i.L) (fun i => i.g) (fun i => i.E)
+      (fun i => i.m) (fun i => i.t) (fun i => i.hL) (fun i => i.hg) (fun i => i.hgΛ) (fun i => i.hr)
+      (fun i => i.ht0) (fun i => i.ht1))
+
+end Bundle
+
 end RBM.BA
