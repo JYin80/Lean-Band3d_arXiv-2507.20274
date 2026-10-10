@@ -192,7 +192,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNLocAvgBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNQueBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNNormBound, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNNormBandRow, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNClaim417C, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNGreenCorrC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNGreenCorrAllC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)

@@ -1,4 +1,4 @@
 state: audit-pass
-reason: stage 1b DONE (7df528d; unNormBandRow, CV0 = 3); auditor1 PASS claude-opus-5-5 (wf_430dec8f-b5a; its registry pre-check was stopped during the certificate rebuild, the merge build decides). Merge by rule (A) queued after T2369 and T2364
-updated: Sat Oct 10 07:05:25 UTC 2026
+reason: stage 1b DONE (7df528d); auditor1 PASS claude-opus-5-5 (wf_430dec8f-b5a); registry line UNNormBandRow removed on main by exact-line deletion (the branch patch's context had moved; H23 b); full lake build 4188 jobs exit 0
+updated: Sat Oct 10 07:38:58 UTC 2026
 reports: docs/reports/T2372-prove.md, docs/reports/T2372-audit.md
