@@ -1,4 +1,4 @@
-state: proving
-reason: H157 Step C: check exit 0; stage 1a preflight running (workflow wf_d34cffd1-3d8, role prover-hard, stop net growth 700)
-updated: Fri Oct  9 23:03:44 UTC 2026
+state: audit-pass
+reason: stage 1b DONE (b74e5fd); auditor1 PASS claude-opus-5-5 (wf_d34cffd1-3d8; field-wise IndStepTH check replaces the rfl check, DECISIONS §175); merging by rule (A)
+updated: Sat Oct 10 03:11:25 UTC 2026
 reports: docs/reports/T2365-prove.md, docs/reports/T2365-audit.md

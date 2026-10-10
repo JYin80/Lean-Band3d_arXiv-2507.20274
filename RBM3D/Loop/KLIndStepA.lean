@@ -20,13 +20,20 @@ and proves the pin `KLindStepPin` from the declarations below.
   (`|f₁| ≤ C L^τ (g²+|1-t|)⁻¹ (|s|+1)^{d-1}/(|a-b|+1)^{d-1}`, `|f₂| ≤ … (|s|+1)^d/(|a-b|+1)^d`).
   Near `|s| ≤ |a-b|/2`: `KLDiffOne`, `KLDiffTwo` at `c = 1/2`; far: the zero mode cancels and
   `KLZero` gives `L^τ (g²+|1-t|)⁻¹`.  Also `(1-t) Σ_b |Θ_t(a,b)| ≤ 1` and the long edge `= Θ_t`.
+  T2365: the proofs of `KLf12_bound` are the private cores `KLIndStepA_f1_core`, `KLIndStepA_f2_core`
+  for one matrix, also used by `KLIndStepA_f12_abs` (§5b).
 * §3 the lattice sums on `Zd d L` (`KLlat_*`) and `(g²+|1-t|)⁻¹ ≤ B_{t,0}`.
 * §4 `KLSigmaPi_reflect` (`Σ^{(∅)}(c - δ) = Σ^{(∅)}(δ)`), translation invariance, the exact
-  vanishing of group (G1) `KLslice_f1_vanish`, and the reindexing of a slice sum to another root.
+  vanishing of group (G1) `KLslice_f1_vanish` (the instance of `KLIndStepA_slice_vanish`), and the
+  reindexing of a slice sum to another root.
 * §5 alternating `σ`, the signed (`KLIndStepA_sumZero_signed`) and **weighted**
   (`KLsumZero_weighted`) sum-zero estimates on every slice `δ_r = x`, for `σ^{(alt)}` and its
   complement.
-* §6 case (i): `KLindStep_nonAlt` (a short non-root leaf), `KLindStep_nonAlt_noloss`.
+* §5b (T2365) the abstract data of the induction step: the bundles `IndStepTH`, `SigDecayAbs`,
+  `SigSumZeroAbs`, their band instances (`indStepTH_band`, `sigDecayAbs_band`, `sigSumZeroAbs_band`)
+  and `KLIndStepA_f12_abs`.
+* §6 case (i): the abstract `KLIndStepA_leaf_abs`, `KLIndStepA_crude_abs`, `KLIndStepA_nonAlt_abs`
+  and the band statements `KLindStep_nonAlt` (a short non-root leaf), `KLindStep_nonAlt_noloss`.
 * §7 the compiled instances at `d = 3`, `L = 5`, `g = 1/2`, `E = 0`, `t = 9/10`.
 
 Reuse.  The merged `KLMolecule.lean` proves the pointwise `g²` gain for a non-constant `δ` only
@@ -128,6 +135,26 @@ theorem KLIndStepA_Bparam_le_zero (t : ℝ) (K : ℕ) : Bparam d L g t K ≤ Bpa
 theorem KLIndStepA_Bparam_nonneg (t : ℝ) (K : ℕ) : 0 ≤ Bparam d L g t K := by
   unfold Bparam; positivity
 
+/-- The decay `|z| ≤ C B_{t,|a|} e^{-c|a|/ℓ_t}` of property 5 implies `|z| ≤ C B_{t,0}`. -/
+theorem KLIndStepA_decay_le_zero {t Cd cd : ℝ} {z : ℂ} (hL : 1 ≤ L) (hCd : 0 ≤ Cd) (hcd : 0 ≤ cd)
+    (a : Zd d L)
+    (h : ‖z‖ ≤ Cd * Bparam d L g t (zdistD d L a)
+      * Real.exp (-cd * (zdistD d L a : ℝ) / ellT L g t)) :
+    ‖z‖ ≤ Cd * Bparam d L g t 0 := by
+  have hell : 0 < ellT L g t := ellT_pos (by exact_mod_cast hL)
+  have hexp : Real.exp (-cd * (zdistD d L a : ℝ) / ellT L g t) ≤ 1 := by
+    apply Real.exp_le_one_iff.2
+    have : 0 ≤ cd * (zdistD d L a : ℝ) / ellT L g t := by positivity
+    have e : -cd * (zdistD d L a : ℝ) / ellT L g t = -(cd * (zdistD d L a : ℝ) / ellT L g t) := by
+      ring
+    rw [e]; linarith
+  have hB := KLIndStepA_Bparam_le_zero (d := d) (L := L) (g := g) t (zdistD d L a)
+  have hB0 := KLIndStepA_Bparam_nonneg (d := d) (L := L) (g := g) t (zdistD d L a)
+  have hB00 : 0 ≤ Cd * Bparam d L g t 0 := mul_nonneg hCd (hB0.trans hB)
+  calc ‖z‖ ≤ Cd * Bparam d L g t (zdistD d L a) * Real.exp (-cd * (zdistD d L a : ℝ) / ellT L g t) := h
+    _ ≤ Cd * Bparam d L g t 0 * 1 := by gcongr
+    _ = Cd * Bparam d L g t 0 := mul_one _
+
 end ThetaFacts
 
 section F12
@@ -143,21 +170,8 @@ theorem KLIndStepA_Theta_norm_le (hPT : KLPT d κ gmax) :
   refine ⟨Cd, hCd, fun L _ hL g hg0 hg1 t ht0 ht1 a b => ?_⟩
   have hξ : ‖(t : ℂ)‖ < 1 := by rwa [Complex.norm_real, Real.norm_of_nonneg ht0]
   rw [KLIndStepA_Theta_apply_sub hL hξ a b]
-  refine (H L hL g hg0 hg1 t ht0 ht1 (b - a)).trans ?_
-  have hell : 0 < ellT L g t := ellT_pos (by exact_mod_cast (by omega : 1 ≤ L))
-  have hexp : Real.exp (-cd * (zdistD d L (b - a) : ℝ) / ellT L g t) ≤ 1 := by
-    apply Real.exp_le_one_iff.2
-    have : 0 ≤ cd * (zdistD d L (b - a) : ℝ) / ellT L g t := by positivity
-    have e : -cd * (zdistD d L (b - a) : ℝ) / ellT L g t
-        = -(cd * (zdistD d L (b - a) : ℝ) / ellT L g t) := by ring
-    rw [e]; linarith
-  have hB := KLIndStepA_Bparam_le_zero (d := d) (L := L) (g := g) t (zdistD d L (b - a))
-  have hB0 := KLIndStepA_Bparam_nonneg (d := d) (L := L) (g := g) t (zdistD d L (b - a))
-  have hB00 : 0 ≤ Cd * Bparam d L g t 0 := mul_nonneg hCd.le (hB0.trans hB)
-  calc Cd * Bparam d L g t (zdistD d L (b - a))
-        * Real.exp (-cd * (zdistD d L (b - a) : ℝ) / ellT L g t)
-      ≤ Cd * Bparam d L g t 0 * 1 := by gcongr
-    _ = Cd * Bparam d L g t 0 := mul_one _
+  exact KLIndStepA_decay_le_zero (by omega) hCd.le hcd.le (b - a)
+    (H L hL g hg0 hg1 t ht0 ht1 (b - a))
 
 private theorem KLIndStepA_far_le (m : ℕ) {x y : ℝ} (hy : 0 ≤ y)
     (hfar : ¬ x ≤ 1 / 2 * y) :
@@ -171,221 +185,159 @@ private theorem KLIndStepA_far_le (m : ℕ) {x y : ℝ} (hy : 0 ≤ y)
   calc (1 : ℝ) ≤ (2 ^ m * (x + 1) ^ m) * ((y + 1) ^ m)⁻¹ := h4
     _ = 2 ^ m * ((x + 1) ^ m * ((y + 1) ^ m)⁻¹) := by ring
 
-/-- `(eq:f12)`, the antisymmetric part, for every `s`: the factor `(|s|+1)^{d-1}` replaces the
-paper's restriction `|s| ≺ 1`. -/
-private theorem KLIndStepA_f1 (hd : 3 ≤ d) (hPT : KLPT d κ gmax) (τ : ℝ) (hτ : 0 < τ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ g : ℝ, 0 < g → g ≤ gmax →
-      ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a b s : Zd d L,
-        ‖KLf1 (fun s => Theta d L g (t : ℂ) a (b + s)) s‖
-          ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
-              * ((((zdistD d L (a - b) : ℝ) + 1) ^ (d - 1))⁻¹) := by
-  obtain ⟨CD, hCD, H1⟩ := hPT.diffOne (1 / 2) (by norm_num) (by norm_num) τ hτ
-  obtain ⟨CZ, hCZ, HZ⟩ := hPT.zeroMode τ hτ
-  refine ⟨max CD (2 ^ (d - 1) * CZ), lt_max_of_lt_left hCD,
-    fun L _ hL g hg0 hg1 t ht0 ht1 a b s => ?_⟩
-  have hξ : ‖(t : ℂ)‖ < 1 := by rwa [Complex.norm_real, Real.norm_of_nonneg ht0]
-  have hLτ : 0 ≤ (L : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg L) τ
-  have hA : 0 ≤ (g ^ 2 + |1 - t|)⁻¹ := by positivity
+end F12
+
+section F12core
+
+/-- The zero-mode bound `(|a|+1)^{-(d-2)} ≤ 1`: `‖f(z) - c₀‖ ≤ C_Z L^τ (g²+|1-t|)⁻¹` for every `z`. -/
+private theorem KLIndStepA_zero_key {d L : ℕ} [NeZero L] (f : Zd d L → ℂ) {c0 : ℂ} {CZ Lt A : ℝ}
+    (hZ0 : 0 ≤ CZ * Lt * A)
+    (hZ : ∀ a : Zd d L, ‖f a - c0‖ ≤ CZ * Lt * A * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹)
+    (z : Zd d L) : ‖f z - c0‖ ≤ CZ * Lt * A :=
+  (hZ z).trans (mul_le_of_le_one_right hZ0 (inv_le_one_of_one_le₀ (one_le_pow₀
+    (by linarith [(Nat.cast_nonneg _ : (0 : ℝ) ≤ zdistD d L z)]))))
+
+/-- `(eq:f12)`, the antisymmetric part, for every `s`, for one matrix `T`: translation invariance
+`htr`, the near-range bound `hD` (property 6 at `c = 1/2`) and the zero-mode bound `hZ` (property 8,
+`c₀` the mean).  `Lt`, `A` stand for `L^τ`, `(g²+|1-t|)⁻¹`.  The factor `(|s|+1)^{d-1}` replaces the
+paper's restriction `|s| ≺ 1`.  Used by `KLf12_bound` (band) and `KLIndStepA_f12_abs`. -/
+private theorem KLIndStepA_f1_core {d L : ℕ} [NeZero L] (hd : 2 ≤ d) (T : Matrix (Zd d L) (Zd d L) ℂ)
+    {CD CZ C Lt A : ℝ} {c0 : ℂ} (hLt : 0 ≤ Lt) (hA : 0 ≤ A) (hCD0 : 0 ≤ CD) (hCZ0 : 0 ≤ CZ)
+    (hCD : CD ≤ C) (hCZ : 2 ^ d * 2 * CZ ≤ C) (htr : ∀ a b, T a b = T 0 (b - a))
+    (hD : ∀ a r : Zd d L, (zdistD d L r : ℝ) ≤ 1 / 2 * (zdistD d L a : ℝ) →
+      ‖T 0 (a + r) - T 0 a‖ ≤ CD * Lt * A * (zdistD d L r : ℝ)
+        * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹)
+    (hZ : ∀ a : Zd d L, ‖T 0 a - c0‖ ≤ CZ * Lt * A * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹)
+    (a b s : Zd d L) :
+    ‖KLf1 (fun s => T a (b + s)) s‖
+      ≤ C * Lt * A * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
+          * ((((zdistD d L (a - b) : ℝ) + 1) ^ (d - 1))⁻¹) := by
+  have hC0 : 0 ≤ C := hCD0.trans hCD
+  have hZ0 : 0 ≤ CZ * Lt * A := by positivity
   set y : Zd d L := b - a with hy
   have hya : zdistD d L (a - b) = zdistD d L y := by
     rw [hy, ← zdistD_neg d L (b - a), neg_sub]
   rw [hya]
-  have hF : ∀ z : Zd d L, Theta d L g (t : ℂ) a (b + z) = Theta d L g (t : ℂ) 0 (y + z) := by
+  have hF : ∀ z : Zd d L, T a (b + z) = T 0 (y + z) := by
     intro z
-    rw [KLIndStepA_Theta_apply_sub hL hξ a (b + z), hy]
+    rw [htr a (b + z), hy]
     congr 1; abel
-  have hid : KLf1 (fun s => Theta d L g (t : ℂ) a (b + s)) s
-      = (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + s)
-        - (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + -s) := by
+  have hid : KLf1 (fun s => T a (b + s)) s = (1 / 2 : ℂ) * T 0 (y + s) - (1 / 2 : ℂ) * T 0 (y + -s) := by
     simp only [KLf1]; rw [hF, hF]
   rw [hid]
   have hs0 : (0 : ℝ) ≤ (zdistD d L s : ℝ) := Nat.cast_nonneg _
   have hy0 : (0 : ℝ) ≤ (zdistD d L y : ℝ) := Nat.cast_nonneg _
   by_cases hnear : (zdistD d L s : ℝ) ≤ 1 / 2 * (zdistD d L y : ℝ)
-  · -- near range: `KLDiffOne`
-    have h1 := H1 L hL g hg0 hg1 t ht0 ht1 y s hnear
-    have h2 := H1 L hL g hg0 hg1 t ht0 ht1 y (-s) (by rwa [zdistD_neg])
+  · -- near range: property 6
+    have h1 := hD y s hnear
+    have h2 := hD y (-s) (by rwa [zdistD_neg])
     rw [zdistD_neg] at h2
-    have hid2 : (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + s)
-        - (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + -s)
-        = (1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + s) - Theta d L g (t : ℂ) 0 y)
-          - (1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + -s) - Theta d L g (t : ℂ) 0 y) := by ring
+    have hid2 : (1 / 2 : ℂ) * T 0 (y + s) - (1 / 2 : ℂ) * T 0 (y + -s)
+        = (1 / 2 : ℂ) * (T 0 (y + s) - T 0 y) - (1 / 2 : ℂ) * (T 0 (y + -s) - T 0 y) := by ring
     rw [hid2]
-    set X := CD * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L s : ℝ)
-      * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) with hX
-    have hX0 : 0 ≤ X := by rw [hX]; positivity
-    have hsle : (zdistD d L s : ℝ) ≤ ((zdistD d L s : ℝ) + 1) ^ (d - 1) := by
-      calc (zdistD d L s : ℝ) ≤ (zdistD d L s : ℝ) + 1 := by linarith
-        _ ≤ ((zdistD d L s : ℝ) + 1) ^ (d - 1) :=
-            le_self_pow₀ (by linarith) (by omega)
-    calc ‖(1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + s) - Theta d L g (t : ℂ) 0 y)
-          - (1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + -s) - Theta d L g (t : ℂ) 0 y)‖
-        ≤ ‖(1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + s) - Theta d L g (t : ℂ) 0 y)‖
-          + ‖(1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + -s) - Theta d L g (t : ℂ) 0 y)‖ :=
+    set X := CD * Lt * A * (zdistD d L s : ℝ) * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) with hX
+    have hsle : (zdistD d L s : ℝ) ≤ ((zdistD d L s : ℝ) + 1) ^ (d - 1) :=
+      (by linarith : (zdistD d L s : ℝ) ≤ (zdistD d L s : ℝ) + 1).trans
+        (le_self_pow₀ (by linarith) (by omega))
+    calc ‖(1 / 2 : ℂ) * (T 0 (y + s) - T 0 y) - (1 / 2 : ℂ) * (T 0 (y + -s) - T 0 y)‖
+        ≤ ‖(1 / 2 : ℂ) * (T 0 (y + s) - T 0 y)‖ + ‖(1 / 2 : ℂ) * (T 0 (y + -s) - T 0 y)‖ :=
           norm_sub_le _ _
-      _ = ‖Theta d L g (t : ℂ) 0 (y + s) - Theta d L g (t : ℂ) 0 y‖ / 2
-          + ‖Theta d L g (t : ℂ) 0 (y + -s) - Theta d L g (t : ℂ) 0 y‖ / 2 := by
-          simp; ring
+      _ = ‖T 0 (y + s) - T 0 y‖ / 2 + ‖T 0 (y + -s) - T 0 y‖ / 2 := by simp; ring
       _ ≤ X := by rw [hX]; linarith
-      _ ≤ max CD (2 ^ (d - 1) * CZ) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
-              * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) := by
-          rw [hX]
-          gcongr
-          exact le_max_left _ _
-  · -- far range: the zero mode cancels, `KLZero`
-    have hz1 := HZ L hL g hg0 hg1 t ht0 ht1 (y + s)
-    have hz2 := HZ L hL g hg0 hg1 t ht0 ht1 (y + -s)
-    have hc1 : (((zdistD d L (y + s) : ℝ) + 1) ^ (d - 2))⁻¹ ≤ 1 :=
-      inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [(Nat.cast_nonneg _ : (0 : ℝ) ≤ zdistD d L (y + s))]))
-    have hc2 : (((zdistD d L (y + -s) : ℝ) + 1) ^ (d - 2))⁻¹ ≤ 1 :=
-      inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [(Nat.cast_nonneg _ : (0 : ℝ) ≤ zdistD d L (y + -s))]))
-    have hZ0 : 0 ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by positivity
-    have hz1' : ‖Theta0 d L g (t : ℂ) 0 (y + s)‖ ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by
-      refine hz1.trans ?_
-      calc CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (((zdistD d L (y + s) : ℝ) + 1) ^ (d - 2))⁻¹
-          ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * 1 := by gcongr
-        _ = _ := mul_one _
-    have hz2' : ‖Theta0 d L g (t : ℂ) 0 (y + -s)‖ ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by
-      refine hz2.trans ?_
-      calc CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (((zdistD d L (y + -s) : ℝ) + 1) ^ (d - 2))⁻¹
-          ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * 1 := by gcongr
-        _ = _ := mul_one _
-    have hθ0 : ∀ z : Zd d L, Theta d L g (t : ℂ) 0 z
-        = Theta0 d L g (t : ℂ) 0 z + ((L : ℂ) ^ d)⁻¹ * (1 - (t : ℂ))⁻¹ := fun z => by
-      rw [Theta0_apply_eq hL hξ 0 z]; ring
-    have hid2 : (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + s)
-        - (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + -s)
-        = (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)
-          - (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s) := by
-      rw [hθ0 (y + s), hθ0 (y + -s)]; ring
+      _ ≤ C * Lt * A * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
+            * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) := by rw [hX]; gcongr
+  · -- far range: the zero mode cancels, property 8
+    have hid2 : (1 / 2 : ℂ) * T 0 (y + s) - (1 / 2 : ℂ) * T 0 (y + -s)
+        = (1 / 2 : ℂ) * (T 0 (y + s) - c0) - (1 / 2 : ℂ) * (T 0 (y + -s) - c0) := by ring
     rw [hid2]
     have hfar := KLIndStepA_far_le (d - 1) hy0 hnear
-    calc ‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)
-          - (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s)‖
-        ≤ ‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)‖
-          + ‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s)‖ := norm_sub_le _ _
-      _ = ‖Theta0 d L g (t : ℂ) 0 (y + s)‖ / 2 + ‖Theta0 d L g (t : ℂ) 0 (y + -s)‖ / 2 := by
-          simp; ring
-      _ ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by linarith
-      _ = (CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹) * 1 := (mul_one _).symm
-      _ ≤ (CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹)
-            * (2 ^ (d - 1) * ((((zdistD d L s : ℝ) + 1) ^ (d - 1))
+    have hk1 := KLIndStepA_zero_key (T 0) hZ0 hZ (y + s)
+    have hk2 := KLIndStepA_zero_key (T 0) hZ0 hZ (y + -s)
+    have h2d : (2 : ℝ) ^ (d - 1) * CZ ≤ C :=
+      le_trans (mul_le_mul_of_nonneg_right ((pow_le_pow_right₀ (by norm_num) (Nat.sub_le d 1)).trans
+        (le_mul_of_one_le_right (by positivity) (by norm_num))) hCZ0) hCZ
+    calc ‖(1 / 2 : ℂ) * (T 0 (y + s) - c0) - (1 / 2 : ℂ) * (T 0 (y + -s) - c0)‖
+        ≤ ‖(1 / 2 : ℂ) * (T 0 (y + s) - c0)‖ + ‖(1 / 2 : ℂ) * (T 0 (y + -s) - c0)‖ :=
+          norm_sub_le _ _
+      _ = ‖T 0 (y + s) - c0‖ / 2 + ‖T 0 (y + -s) - c0‖ / 2 := by simp; ring
+      _ ≤ CZ * Lt * A := by linarith
+      _ = (CZ * Lt * A) * 1 := (mul_one _).symm
+      _ ≤ (CZ * Lt * A) * (2 ^ (d - 1) * ((((zdistD d L s : ℝ) + 1) ^ (d - 1))
               * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹))) := by gcongr
-      _ = (2 ^ (d - 1) * CZ) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
+      _ = (2 ^ (d - 1) * CZ) * Lt * A * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
               * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) := by ring
-      _ ≤ max CD (2 ^ (d - 1) * CZ) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
-              * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) := by
-          gcongr
-          exact le_max_right _ _
+      _ ≤ C * Lt * A * (((zdistD d L s : ℝ) + 1) ^ (d - 1))
+              * ((((zdistD d L y : ℝ) + 1) ^ (d - 1))⁻¹) := by gcongr
 
-/-- `(eq:f12)`, the symmetric part, for every `s`: the factor `(|s|+1)^d`. -/
-private theorem KLIndStepA_f2 (hd : 3 ≤ d) (hPT : KLPT d κ gmax) (τ : ℝ) (hτ : 0 < τ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ g : ℝ, 0 < g → g ≤ gmax →
-      ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ a b s : Zd d L,
-        ‖KLf2 (fun s => Theta d L g (t : ℂ) a (b + s)) s‖
-          ≤ C * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (((zdistD d L s : ℝ) + 1) ^ d)
-              * ((((zdistD d L (a - b) : ℝ) + 1) ^ d)⁻¹) := by
-  obtain ⟨CD, hCD, H2⟩ := hPT.diffTwo (1 / 2) (by norm_num) (by norm_num) τ hτ
-  obtain ⟨CZ, hCZ, HZ⟩ := hPT.zeroMode τ hτ
-  refine ⟨max CD (2 ^ d * 2 * CZ), lt_max_of_lt_left hCD,
-    fun L _ hL g hg0 hg1 t ht0 ht1 a b s => ?_⟩
-  have hξ : ‖(t : ℂ)‖ < 1 := by rwa [Complex.norm_real, Real.norm_of_nonneg ht0]
-  have hLτ : 0 ≤ (L : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg L) τ
-  have hA : 0 ≤ (g ^ 2 + |1 - t|)⁻¹ := by positivity
+/-- `(eq:f12)`, the symmetric part, for every `s`, for one matrix `T` (as `KLIndStepA_f1_core`; the
+factor `(|s|+1)^d`; property 7 at `c = 1/2`). -/
+private theorem KLIndStepA_f2_core {d L : ℕ} [NeZero L] (hd : 2 ≤ d) (T : Matrix (Zd d L) (Zd d L) ℂ)
+    {CD CZ C Lt A : ℝ} {c0 : ℂ} (hLt : 0 ≤ Lt) (hA : 0 ≤ A) (hCD0 : 0 ≤ CD) (hCZ0 : 0 ≤ CZ)
+    (hCD : CD ≤ C) (hCZ : 2 ^ d * 2 * CZ ≤ C) (htr : ∀ a b, T a b = T 0 (b - a))
+    (hD : ∀ a r : Zd d L, (zdistD d L r : ℝ) ≤ 1 / 2 * (zdistD d L a : ℝ) →
+      ‖T 0 (a + r) + T 0 (a - r) - 2 * T 0 a‖ ≤ CD * Lt * A * (zdistD d L r : ℝ) ^ 2
+        * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹)
+    (hZ : ∀ a : Zd d L, ‖T 0 a - c0‖ ≤ CZ * Lt * A * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹)
+    (a b s : Zd d L) :
+    ‖KLf2 (fun s => T a (b + s)) s‖
+      ≤ C * Lt * A * (((zdistD d L s : ℝ) + 1) ^ d) * ((((zdistD d L (a - b) : ℝ) + 1) ^ d)⁻¹) := by
+  have hC0 : 0 ≤ C := hCD0.trans hCD
+  have hZ0 : 0 ≤ CZ * Lt * A := by positivity
   set y : Zd d L := b - a with hy
   have hya : zdistD d L (a - b) = zdistD d L y := by
     rw [hy, ← zdistD_neg d L (b - a), neg_sub]
   rw [hya]
-  have hF : ∀ z : Zd d L, Theta d L g (t : ℂ) a (b + z) = Theta d L g (t : ℂ) 0 (y + z) := by
+  have hF : ∀ z : Zd d L, T a (b + z) = T 0 (y + z) := by
     intro z
-    rw [KLIndStepA_Theta_apply_sub hL hξ a (b + z), hy]
+    rw [htr a (b + z), hy]
     congr 1; abel
-  have hid : KLf2 (fun s => Theta d L g (t : ℂ) a (b + s)) s
-      = (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + s)
-        + (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + -s)
-        - Theta d L g (t : ℂ) 0 y := by
+  have hid : KLf2 (fun s => T a (b + s)) s
+      = (1 / 2 : ℂ) * T 0 (y + s) + (1 / 2 : ℂ) * T 0 (y + -s) - T 0 y := by
     simp only [KLf2]; rw [hF, hF, hF]; simp
   rw [hid]
   have hs0 : (0 : ℝ) ≤ (zdistD d L s : ℝ) := Nat.cast_nonneg _
   have hy0 : (0 : ℝ) ≤ (zdistD d L y : ℝ) := Nat.cast_nonneg _
   by_cases hnear : (zdistD d L s : ℝ) ≤ 1 / 2 * (zdistD d L y : ℝ)
-  · -- near range: `KLDiffTwo`
-    have h1 := H2 L hL g hg0 hg1 t ht0 ht1 y s hnear
-    have hid2 : (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + s)
-        + (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + -s) - Theta d L g (t : ℂ) 0 y
-        = (1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + s) + Theta d L g (t : ℂ) 0 (y - s)
-          - 2 * Theta d L g (t : ℂ) 0 y) := by
+  · -- near range: property 7
+    have h1 := hD y s hnear
+    have hid2 : (1 / 2 : ℂ) * T 0 (y + s) + (1 / 2 : ℂ) * T 0 (y + -s) - T 0 y
+        = (1 / 2 : ℂ) * (T 0 (y + s) + T 0 (y - s) - 2 * T 0 y) := by
       rw [sub_eq_add_neg y s]; ring
     rw [hid2]
-    have hsle : (zdistD d L s : ℝ) ^ 2 ≤ ((zdistD d L s : ℝ) + 1) ^ d := by
-      calc (zdistD d L s : ℝ) ^ 2 ≤ ((zdistD d L s : ℝ) + 1) ^ 2 := by gcongr; linarith
-        _ ≤ ((zdistD d L s : ℝ) + 1) ^ d :=
-            pow_le_pow_right₀ (by linarith) (by omega)
-    set X := CD * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L s : ℝ) ^ 2
-      * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) with hX
+    have hsle : (zdistD d L s : ℝ) ^ 2 ≤ ((zdistD d L s : ℝ) + 1) ^ d :=
+      (pow_le_pow_left₀ hs0 (by linarith) 2).trans (pow_le_pow_right₀ (by linarith) hd)
+    set X := CD * Lt * A * (zdistD d L s : ℝ) ^ 2 * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) with hX
     have hX0 : 0 ≤ X := by rw [hX]; positivity
-    calc ‖(1 / 2 : ℂ) * (Theta d L g (t : ℂ) 0 (y + s) + Theta d L g (t : ℂ) 0 (y - s)
-          - 2 * Theta d L g (t : ℂ) 0 y)‖
-        = ‖Theta d L g (t : ℂ) 0 (y + s) + Theta d L g (t : ℂ) 0 (y - s)
-          - 2 * Theta d L g (t : ℂ) 0 y‖ / 2 := by simp; ring
+    calc ‖(1 / 2 : ℂ) * (T 0 (y + s) + T 0 (y - s) - 2 * T 0 y)‖
+        = ‖T 0 (y + s) + T 0 (y - s) - 2 * T 0 y‖ / 2 := by simp; ring
       _ ≤ X := by rw [hX]; linarith
-      _ ≤ max CD (2 ^ d * 2 * CZ) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (((zdistD d L s : ℝ) + 1) ^ d)
-              * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) := by
-          rw [hX]
-          gcongr
-          exact le_max_left _ _
-  · -- far range: the zero mode cancels, `KLZero`
-    have hZ0 : 0 ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by positivity
-    have key : ∀ z : Zd d L, ‖Theta0 d L g (t : ℂ) 0 z‖ ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ := by
-      intro z
-      refine (HZ L hL g hg0 hg1 t ht0 ht1 z).trans ?_
-      have hc1 : (((zdistD d L z : ℝ) + 1) ^ (d - 2))⁻¹ ≤ 1 :=
-        inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [(Nat.cast_nonneg _ : (0 : ℝ) ≤ zdistD d L z)]))
-      calc CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * (((zdistD d L z : ℝ) + 1) ^ (d - 2))⁻¹
-          ≤ CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹ * 1 := by gcongr
-        _ = _ := mul_one _
-    have hθ0 : ∀ z : Zd d L, Theta d L g (t : ℂ) 0 z
-        = Theta0 d L g (t : ℂ) 0 z + ((L : ℂ) ^ d)⁻¹ * (1 - (t : ℂ))⁻¹ := fun z => by
-      rw [Theta0_apply_eq hL hξ 0 z]; ring
-    have hid2 : (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + s)
-        + (1 / 2 : ℂ) * Theta d L g (t : ℂ) 0 (y + -s) - Theta d L g (t : ℂ) 0 y
-        = (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)
-          + (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s) - Theta0 d L g (t : ℂ) 0 y := by
-      rw [hθ0 (y + s), hθ0 (y + -s), hθ0 y]; ring
+      _ ≤ C * Lt * A * (((zdistD d L s : ℝ) + 1) ^ d) * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) := by
+          rw [hX]; gcongr
+  · -- far range: the zero mode cancels, property 8
+    have hid2 : (1 / 2 : ℂ) * T 0 (y + s) + (1 / 2 : ℂ) * T 0 (y + -s) - T 0 y
+        = (1 / 2 : ℂ) * (T 0 (y + s) - c0) + (1 / 2 : ℂ) * (T 0 (y + -s) - c0)
+          - (T 0 y - c0) := by ring
     rw [hid2]
     have hfar := KLIndStepA_far_le d hy0 hnear
-    have hk1 := key (y + s)
-    have hk2 := key (y + -s)
-    have hk3 := key y
-    calc ‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)
-          + (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s) - Theta0 d L g (t : ℂ) 0 y‖
-        ≤ ‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)
-          + (1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s)‖ + ‖Theta0 d L g (t : ℂ) 0 y‖ :=
-          norm_sub_le _ _
-      _ ≤ (‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + s)‖
-          + ‖(1 / 2 : ℂ) * Theta0 d L g (t : ℂ) 0 (y + -s)‖) + ‖Theta0 d L g (t : ℂ) 0 y‖ := by
-          gcongr; exact norm_add_le _ _
-      _ = ‖Theta0 d L g (t : ℂ) 0 (y + s)‖ / 2 + ‖Theta0 d L g (t : ℂ) 0 (y + -s)‖ / 2
-          + ‖Theta0 d L g (t : ℂ) 0 y‖ := by simp; ring
-      _ ≤ 2 * (CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹) := by linarith
-      _ = (2 * (CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹)) * 1 := (mul_one _).symm
-      _ ≤ (2 * (CZ * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹))
-            * (2 ^ d * ((((zdistD d L s : ℝ) + 1) ^ d)
-              * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹))) := by gcongr
-      _ = (2 ^ d * 2 * CZ) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (((zdistD d L s : ℝ) + 1) ^ d)
-              * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) := by ring
-      _ ≤ max CD (2 ^ d * 2 * CZ) * (L : ℝ) ^ τ * (g ^ 2 + |1 - t|)⁻¹
-            * (((zdistD d L s : ℝ) + 1) ^ d)
-              * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) := by
+    have hk1 := KLIndStepA_zero_key (T 0) hZ0 hZ (y + s)
+    have hk2 := KLIndStepA_zero_key (T 0) hZ0 hZ (y + -s)
+    have hk3 := KLIndStepA_zero_key (T 0) hZ0 hZ y
+    calc ‖(1 / 2 : ℂ) * (T 0 (y + s) - c0) + (1 / 2 : ℂ) * (T 0 (y + -s) - c0) - (T 0 y - c0)‖
+        ≤ ‖(1 / 2 : ℂ) * (T 0 (y + s) - c0) + (1 / 2 : ℂ) * (T 0 (y + -s) - c0)‖
+          + ‖T 0 y - c0‖ := norm_sub_le _ _
+      _ ≤ (‖(1 / 2 : ℂ) * (T 0 (y + s) - c0)‖ + ‖(1 / 2 : ℂ) * (T 0 (y + -s) - c0)‖)
+          + ‖T 0 y - c0‖ := by gcongr; exact norm_add_le _ _
+      _ = ‖T 0 (y + s) - c0‖ / 2 + ‖T 0 (y + -s) - c0‖ / 2 + ‖T 0 y - c0‖ := by simp; ring
+      _ ≤ 2 * (CZ * Lt * A) := by linarith
+      _ = (2 * (CZ * Lt * A)) * 1 := (mul_one _).symm
+      _ ≤ (2 * (CZ * Lt * A)) * (2 ^ d * ((((zdistD d L s : ℝ) + 1) ^ d)
+            * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹))) := by gcongr
+      _ = (2 ^ d * 2 * CZ) * Lt * A * (((zdistD d L s : ℝ) + 1) ^ d)
+            * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) := by ring
+      _ ≤ C * Lt * A * (((zdistD d L s : ℝ) + 1) ^ d) * ((((zdistD d L y : ℝ) + 1) ^ d)⁻¹) := by
           gcongr
-          exact le_max_right _ _
 
-end F12
+end F12core
 
 
 section Public
@@ -435,15 +387,29 @@ theorem KLf12_bound (hd : 3 ≤ d) (hPT : KLPT d κ gmax) (τ : ℝ) (hτ : 0 < 
       ‖KLf2 (fun s => Theta d p.L p.g (p.t : ℂ) a (b + s)) s‖
         ≤ C * (p.L : ℝ) ^ τ * (p.g ^ 2 + |1 - p.t|)⁻¹ * (((zdistD d p.L s : ℝ) + 1) ^ d)
             * ((((zdistD d p.L (a - b) : ℝ) + 1) ^ d)⁻¹) := by
-  obtain ⟨C1, hC1, H1⟩ := KLIndStepA_f1 hd hPT τ hτ
-  obtain ⟨C2, hC2, H2⟩ := KLIndStepA_f2 hd hPT τ hτ
-  refine ⟨max C1 C2, lt_max_of_lt_left hC1, fun p a b s => ⟨?_, ?_⟩⟩
-  · refine (H1 p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a b s).trans ?_
-    gcongr
-    exact le_max_left _ _
-  · refine (H2 p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a b s).trans ?_
-    gcongr
-    exact le_max_right _ _
+  obtain ⟨CD1, hCD1, H1⟩ := hPT.diffOne (1 / 2) (by norm_num) (by norm_num) τ hτ
+  obtain ⟨CD2, hCD2, H2⟩ := hPT.diffTwo (1 / 2) (by norm_num) (by norm_num) τ hτ
+  obtain ⟨CZ, hCZ, HZ⟩ := hPT.zeroMode τ hτ
+  refine ⟨max (max CD1 CD2) (2 ^ d * 2 * CZ), lt_max_of_lt_left (lt_max_of_lt_left hCD1),
+    fun p a b s => ?_⟩
+  have hξ : ‖(p.t : ℂ)‖ < 1 := by
+    rw [Complex.norm_real, Real.norm_of_nonneg p.ht0]; exact p.ht1
+  have htr : ∀ a b : Zd d p.L, Theta d p.L p.g (p.t : ℂ) a b = Theta d p.L p.g (p.t : ℂ) 0 (b - a) :=
+    fun a b => KLIndStepA_Theta_apply_sub p.hL hξ a b
+  have hLt : 0 ≤ (p.L : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) τ
+  have hA : 0 ≤ (p.g ^ 2 + |1 - p.t|)⁻¹ := by positivity
+  have hZ : ∀ a : Zd d p.L,
+      ‖Theta d p.L p.g (p.t : ℂ) 0 a - ((p.L : ℂ) ^ (2 * d))⁻¹
+          * ∑ a' : Zd d p.L, ∑ b' : Zd d p.L, Theta d p.L p.g (p.t : ℂ) a' b'‖
+        ≤ CZ * (p.L : ℝ) ^ τ * (p.g ^ 2 + |1 - p.t|)⁻¹ * (((zdistD d p.L a : ℝ) + 1) ^ (d - 2))⁻¹ :=
+    fun a => HZ p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a
+  have hCZ' : 2 ^ d * 2 * CZ ≤ max (max CD1 CD2) (2 ^ d * 2 * CZ) := le_max_right _ _
+  exact ⟨KLIndStepA_f1_core (by omega) _ hLt hA hCD1.le hCZ.le
+      ((le_max_left _ _).trans (le_max_left _ _)) hCZ' htr
+      (fun a r h => H1 p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a r h) hZ a b s,
+    KLIndStepA_f2_core (by omega) _ hLt hA hCD2.le hCZ.le
+      ((le_max_right _ _).trans (le_max_left _ _)) hCZ' htr
+      (fun a r h => H2 p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a r h) hZ a b s⟩
 
 end Public
 
@@ -705,18 +671,17 @@ theorem KLIndStepA_SigmaPi_add_const (hκ : 0 < κ) (p : KLPar κ gmax) {n : ℕ
   exact SumZero_SigmaPi_add_const d p.L p.g (mSigma p.E)
     (fun s s' => norm_mul_mSigma_lt_one hE2 p.ht0 p.ht1 s s') p.hL σ π δ c
 
-/-- **Group (G1) of case (ii)**: on the slice `δ_r = b` the antisymmetric part `f₁` of a leaf
-integrates to zero against `Σ^{(∅)}`: `Σ_{δ_r = b} Σ^{(∅)}(δ) f₁(δ_i - b) = 0`, for every `σ`, `i`
-and every function `f`.  Proof: the involution `δ ↦ 2b - δ` of the slice, `KLSigmaPi_reflect` and
-`KLf1_neg`. -/
-theorem KLslice_f1_vanish (hκ : 0 < κ) (p : KLPar κ gmax) {n : ℕ} [NeZero n] (σ : Fin n → Bool)
-    (r i : Fin n) (b : Zd d p.L) (f : Zd d p.L → ℂ) :
-    ∑ δ ∈ univ.filter (fun δ : Fin n → Zd d p.L => δ r = b),
-        KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ * KLf1 f (δ i - b) = 0 := by
-  set S := univ.filter (fun δ : Fin n → Zd d p.L => δ r = b) with hS
-  set F : (Fin n → Zd d p.L) → ℂ := fun δ =>
-    KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ * KLf1 f (δ i - b) with hF
-  set ι : (Fin n → Zd d p.L) → (Fin n → Zd d p.L) := fun δ j => (b + b) - δ j with hι
+/-- **Group (G1) of case (ii), abstract**: if `Sg(c - δ) = Sg(δ)` for every `c`, then on the slice
+`δ_r = b` the antisymmetric part `f₁` of a leaf integrates to zero against `Sg`:
+`Σ_{δ_r = b} Sg(δ) f₁(δ_i - b) = 0`, for every `i` and every function `f`.  Proof: the involution
+`δ ↦ 2b - δ` of the slice and `KLf1_neg`. -/
+theorem KLIndStepA_slice_vanish {d L n : ℕ} [NeZero L] (Sg : (Fin n → Zd d L) → ℂ)
+    (hrefl : ∀ (c : Zd d L) (δ : Fin n → Zd d L), Sg (fun j => c - δ j) = Sg δ) (r i : Fin n)
+    (b : Zd d L) (f : Zd d L → ℂ) :
+    ∑ δ ∈ univ.filter (fun δ : Fin n → Zd d L => δ r = b), Sg δ * KLf1 f (δ i - b) = 0 := by
+  set S := univ.filter (fun δ : Fin n → Zd d L => δ r = b) with hS
+  set F : (Fin n → Zd d L) → ℂ := fun δ => Sg δ * KLf1 f (δ i - b) with hF
+  set ι : (Fin n → Zd d L) → (Fin n → Zd d L) := fun δ j => (b + b) - δ j with hι
   have hmem : ∀ δ, δ ∈ S ↔ δ r = b := fun δ => by simp [hS]
   have hιι : ∀ δ, ι (ι δ) = δ := fun δ => funext fun j => by simp [hι]
   have h1 : ∑ δ ∈ S, F (ι δ) = ∑ δ ∈ S, F δ := by
@@ -727,7 +692,7 @@ theorem KLslice_f1_vanish (hκ : 0 < κ) (p : KLPar κ gmax) {n : ℕ} [NeZero n
   have hneg : ∀ δ, F (ι δ) = - F δ := by
     intro δ
     simp only [hF, hι]
-    rw [KLSigmaPi_reflect hκ p σ (b + b) δ]
+    rw [hrefl (b + b) δ]
     have : (b + b - δ i - b) = -(δ i - b) := by abel
     rw [this, KLf1_neg]; ring
   have h2 : ∑ δ ∈ S, F (ι δ) = - ∑ δ ∈ S, F δ := by
@@ -736,6 +701,15 @@ theorem KLslice_f1_vanish (hκ : 0 < κ) (p : KLPar κ gmax) {n : ℕ} [NeZero n
   have h3 : ∑ δ ∈ S, F δ = - ∑ δ ∈ S, F δ := by rw [← h2, h1]
   change ∑ δ ∈ S, F δ = 0
   linear_combination (1 / 2 : ℂ) * h3
+
+/-- **Group (G1) of case (ii)**: the band instance of `KLIndStepA_slice_vanish` for `Σ^{(∅)}`
+(`KLSigmaPi_reflect`), every `σ`, `i` and `f`. -/
+theorem KLslice_f1_vanish (hκ : 0 < κ) (p : KLPar κ gmax) {n : ℕ} [NeZero n] (σ : Fin n → Bool)
+    (r i : Fin n) (b : Zd d p.L) (f : Zd d p.L → ℂ) :
+    ∑ δ ∈ univ.filter (fun δ : Fin n → Zd d p.L => δ r = b),
+        KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ * KLf1 f (δ i - b) = 0 :=
+  KLIndStepA_slice_vanish (fun δ => KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ)
+    (fun c δ => KLSigmaPi_reflect hκ p σ c δ) r i b f
 
 /-- A sum over the slice `δ_i = x` of a translation-invariant function does not depend on the
 index `i`. -/
@@ -1046,91 +1020,349 @@ theorem KLsumZero_weighted (n : ℕ) [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) (h
 end Weighted
 
 
+/-! ## 5b. The abstract data of the induction step: three bundles and their band instances
+
+The pins of the abstract step (`indStepAbs_of`, `KLIndStepB.lean` §6): the leaf bundle `IndStepTH`
+(properties 5, 5', 6, 7, 8 of `lem_propTH`, translation invariance, the row sum), the molecule
+decay `SigDecayAbs` and the sum-zero interface `SigSumZeroAbs` (D194).  The band instances are
+at `ι = KLPar κ gmax`, `L = (·.L)`, `g = (·.g)`, `t = (·.t)`, `Sig = Σ^{(∅)}`, `TH = thetaEdge`. -/
+
+section Abstract
+
+/-- **`SigSumZeroAbs`** (K-b, form (i)): for every alternating `σ`, reflection `Σ(c - δ) = Σ(δ)`,
+translation `Σ(δ + c) = Σ(δ)`, and on every slice `δ_r = x` the signed estimate `O(1-t)` and the
+weighted absolute estimate `O(g² + 1 - t)` with weight `(max_{i,j}|δ_i - δ_j| + 1)^Q`, every
+`Q ≤ 2(d-1)`.  Band form: `KLsumZero_weighted`. -/
+def SigSumZeroAbs {ι : Type} (d n : ℕ) [NeZero n] (L : ι → ℕ) [∀ i, NeZero (L i)] (g t : ι → ℝ)
+    (Sig : ∀ i, (Fin n → Bool) → (Fin n → Zd d (L i)) → ℂ) : Prop :=
+  (∀ (i : ι) (σ : Fin n → Bool), (∀ j, σ j ≠ σ (j + 1)) → ∀ (c : Zd d (L i)) (δ : Fin n → Zd d (L i)),
+      Sig i σ (fun j => c - δ j) = Sig i σ δ) ∧
+  (∀ (i : ι) (σ : Fin n → Bool), (∀ j, σ j ≠ σ (j + 1)) → ∀ (δ : Fin n → Zd d (L i)) (c : Zd d (L i)),
+      Sig i σ (fun j => δ j + c) = Sig i σ δ) ∧
+  ∀ Q : ℕ, Q ≤ 2 * (d - 1) → ∃ C : ℝ, 0 < C ∧
+    ∀ (i : ι) (σ : Fin n → Bool), (∀ j, σ j ≠ σ (j + 1)) → ∀ (r : Fin n) (x : Zd d (L i)),
+      ‖∑ δ ∈ Finset.univ.filter (fun δ : Fin n → Zd d (L i) => δ r = x), Sig i σ δ‖ ≤ C * (1 - t i) ∧
+      ∑ δ ∈ Finset.univ.filter (fun δ : Fin n → Zd d (L i) => δ r = x),
+          ‖Sig i σ δ‖ * ((KLmaxDist d (L i) δ : ℝ) + 1) ^ Q ≤ C * (g i ^ 2 + (1 - t i))
+
+/-- **`SigDecayAbs`**: `|Σ(σ, δ)| ≤ C e^{-c max_{i,j}|δ_i - δ_j|}` for every `σ`
+(`(eq:molecule-decay)`; band form `KLmoleculeAt`). -/
+def SigDecayAbs {ι : Type} (d n : ℕ) [NeZero n] (L : ι → ℕ) [∀ i, NeZero (L i)]
+    (Sig : ∀ i, (Fin n → Bool) → (Fin n → Zd d (L i)) → ℂ) : Prop :=
+  ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ ∀ (i : ι) (σ : Fin n → Bool) (δ : Fin n → Zd d (L i)),
+    ‖Sig i σ δ‖ ≤ C * Real.exp (-(c * (KLmaxDist d (L i) δ : ℝ)))
+
+/-- **`IndStepTH`**, the leaf bundle in place of `KLPT`: properties 5, 5', 6, 7, 8 of `lem_propTH` for
+the edge family `TH` (long edges `s ≠ s'` for 5, 6, 7, 8; short edges `s = s'` for 5'; 6 and 7 at
+`c = 1/2`; loss `L^τ` in 6-8), translation invariance, and the row sum of a long edge. -/
+structure IndStepTH {ι : Type} (d : ℕ) (L : ι → ℕ) [∀ i, NeZero (L i)] (g t : ι → ℝ)
+    (TH : ∀ i, Bool → Bool → Matrix (Zd d (L i)) (Zd d (L i)) ℂ) : Prop where
+  transl : ∀ (i : ι) (s s' : Bool) (a b : Zd d (L i)), TH i s s' a b = TH i s s' 0 (b - a)
+  decay : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ ∀ (i : ι) (s s' : Bool), s ≠ s' → ∀ a : Zd d (L i),
+    ‖TH i s s' 0 a‖ ≤ C * Bparam d (L i) (g i) (t i) (zdistD d (L i) a)
+      * Real.exp (-c * (zdistD d (L i) a : ℝ) / ellT (L i) (g i) (t i))
+  short : ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ ∀ (i : ι) (s : Bool) (a : Zd d (L i)),
+    ‖TH i s s 0 a‖ ≤ C * ((if a = 0 then (1 : ℝ) else 0) + g i ^ 2 * Real.exp (-c * (zdistD d (L i) a : ℝ)))
+  diffOne : ∀ τ : ℝ, 0 < τ → ∃ C : ℝ, 0 < C ∧ ∀ (i : ι) (s s' : Bool), s ≠ s' → ∀ a r : Zd d (L i),
+    (zdistD d (L i) r : ℝ) ≤ (1 / 2 : ℝ) * (zdistD d (L i) a : ℝ) →
+    ‖TH i s s' 0 (a + r) - TH i s s' 0 a‖
+      ≤ C * (L i : ℝ) ^ τ * (g i ^ 2 + |1 - t i|)⁻¹ * (zdistD d (L i) r : ℝ)
+        * (((zdistD d (L i) a : ℝ) + 1) ^ (d - 1))⁻¹
+  diffTwo : ∀ τ : ℝ, 0 < τ → ∃ C : ℝ, 0 < C ∧ ∀ (i : ι) (s s' : Bool), s ≠ s' → ∀ a r : Zd d (L i),
+    (zdistD d (L i) r : ℝ) ≤ (1 / 2 : ℝ) * (zdistD d (L i) a : ℝ) →
+    ‖TH i s s' 0 (a + r) + TH i s s' 0 (a - r) - 2 * TH i s s' 0 a‖
+      ≤ C * (L i : ℝ) ^ τ * (g i ^ 2 + |1 - t i|)⁻¹ * (zdistD d (L i) r : ℝ) ^ 2
+        * (((zdistD d (L i) a : ℝ) + 1) ^ d)⁻¹
+  zeroMode : ∀ τ : ℝ, 0 < τ → ∃ C : ℝ, 0 < C ∧ ∀ (i : ι) (s s' : Bool), s ≠ s' → ∀ a : Zd d (L i),
+    ‖TH i s s' 0 a - ((L i : ℂ) ^ (2 * d))⁻¹ * ∑ a' : Zd d (L i), ∑ b' : Zd d (L i), TH i s s' a' b'‖
+      ≤ C * (L i : ℝ) ^ τ * (g i ^ 2 + |1 - t i|)⁻¹ * (((zdistD d (L i) a : ℝ) + 1) ^ (d - 2))⁻¹
+  rowSum : ∀ (i : ι) (s s' : Bool), s ≠ s' → ∀ a : Zd d (L i),
+    ∑ b : Zd d (L i), ‖TH i s s' a b‖ ≤ (1 - t i)⁻¹
+
+end Abstract
+
+section BandInstances
+
+variable {d : ℕ} {κ gmax : ℝ}
+
+/-- The band `Σ^{(∅)}` satisfies `SigSumZeroAbs`: `KLSigmaPi_reflect`, `KLIndStepA_SigmaPi_add_const`
+and `KLsumZero_weighted` (with `KLShort_holds`). -/
+theorem sigSumZeroAbs_band (n : ℕ) [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) (hκ : 0 < κ) (hg : 0 < gmax) :
+    SigSumZeroAbs (ι := KLPar κ gmax) d n (fun p => p.L) (fun p => p.g) (fun p => p.t)
+      (fun p σ δ => KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ) :=
+  ⟨fun p σ _ c δ => KLSigmaPi_reflect hκ p σ c δ,
+    fun p σ _ δ c => KLIndStepA_SigmaPi_add_const hκ p σ ∅ δ c,
+    fun Q _ => KLsumZero_weighted n hd hn hκ hg (KLShort_holds d κ gmax hd hκ hg) Q⟩
+
+/-- The band `Σ^{(∅)}` satisfies `SigDecayAbs`: `KLmolecule_holds`. -/
+theorem sigDecayAbs_band (n : ℕ) [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) (hκ : 0 < κ) (hg : 0 < gmax) :
+    SigDecayAbs (ι := KLPar κ gmax) d n (fun p => p.L)
+      (fun p σ δ => KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ) :=
+  KLmolecule_holds d n κ gmax hd hn hκ hg (KLShort_holds d κ gmax hd hκ hg)
+
+/-- The band edges `thetaEdge` satisfy `IndStepTH` (the fields of `KLPT`; a long edge is `Θ_t`,
+`KLIndStepA_thetaEdge_long`; translation `KLIndStepA_Theta_apply_sub`; row sum
+`KLlat_sum_norm_Theta_row_le`).  `0 < κ` gives `|E| ≤ 2` from `|E| ≤ 2 - κ`. -/
+theorem indStepTH_band (hκ : 0 < κ) (hPT : KLPT d κ gmax) :
+    IndStepTH (ι := KLPar κ gmax) d (fun p => p.L) (fun p => p.g) (fun p => p.t)
+      (fun p s s' => thetaEdge d p.L p.g (mSigma p.E) p.t s s') := by
+  have hE2 : ∀ p : KLPar κ gmax, |p.E| ≤ 2 := fun p => by linarith [p.hE]
+  refine ⟨fun p s s' a b => ?_, ?_, ?_, fun τ hτ => ?_, fun τ hτ => ?_, fun τ hτ => ?_,
+    fun p s s' hss a => ?_⟩
+  · exact KLIndStepA_Theta_apply_sub p.hL (norm_mul_mSigma_lt_one (hE2 p) p.ht0 p.ht1 s s') a b
+  · obtain ⟨C, hC, c, hc, H⟩ := hPT.decay
+    refine ⟨C, hC, c, hc, fun p s s' hss a => ?_⟩
+    rw [KLIndStepA_thetaEdge_long (hE2 p) p.t hss]
+    exact H p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a
+  · obtain ⟨C, hC, c, hc, H⟩ := hPT.short
+    exact ⟨C, hC, c, hc, fun p s a => H p.L p.hL p.g p.hg0 p.hg1 p.E p.hE s p.t p.ht0 p.ht1 a⟩
+  · obtain ⟨C, hC, H⟩ := hPT.diffOne (1 / 2) (by norm_num) (by norm_num) τ hτ
+    refine ⟨C, hC, fun p s s' hss a r hr => ?_⟩
+    rw [KLIndStepA_thetaEdge_long (hE2 p) p.t hss]
+    exact H p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a r hr
+  · obtain ⟨C, hC, H⟩ := hPT.diffTwo (1 / 2) (by norm_num) (by norm_num) τ hτ
+    refine ⟨C, hC, fun p s s' hss a r hr => ?_⟩
+    rw [KLIndStepA_thetaEdge_long (hE2 p) p.t hss]
+    exact H p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a r hr
+  · obtain ⟨C, hC, H⟩ := hPT.zeroMode τ hτ
+    refine ⟨C, hC, fun p s s' hss a => ?_⟩
+    rw [KLIndStepA_thetaEdge_long (hE2 p) p.t hss]
+    exact H p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a
+  · rw [KLIndStepA_thetaEdge_long (hE2 p) p.t hss]
+    exact KLlat_sum_norm_Theta_row_le p.hL p.ht0 p.ht1 a
+
+end BandInstances
+
+section AbstractF12
+
+variable {ι : Type} {d : ℕ} {L : ι → ℕ} [∀ i, NeZero (L i)] {g t : ι → ℝ}
+  {TH : ∀ i, Bool → Bool → Matrix (Zd d (L i)) (Zd d (L i)) ℂ}
+
+/-- **`(eq:f12)` over abstract data**: `|f₁| ≤ C L^τ (g²+|1-t|)⁻¹ (|s|+1)^{d-1}/(|a-b|+1)^{d-1}` and
+`|f₂| ≤ C L^τ (g²+|1-t|)⁻¹ (|s|+1)^d/(|a-b|+1)^d` for the leaf `s ↦ TH(a, b + s)` of a long edge, from
+the `transl`, `diffOne`, `diffTwo`, `zeroMode` fields of `IndStepTH` (the generalisation of
+`KLf12_bound`); `C` is uniform in `i`. -/
+theorem KLIndStepA_f12_abs (hd : 3 ≤ d) (hTH : IndStepTH d L g t TH) (τ : ℝ) (hτ : 0 < τ) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (i : ι) (s s' : Bool), s ≠ s' → ∀ a b x : Zd d (L i),
+      ‖KLf1 (fun y => TH i s s' a (b + y)) x‖
+        ≤ C * (L i : ℝ) ^ τ * (g i ^ 2 + |1 - t i|)⁻¹ * (((zdistD d (L i) x : ℝ) + 1) ^ (d - 1))
+            * ((((zdistD d (L i) (a - b) : ℝ) + 1) ^ (d - 1))⁻¹) ∧
+      ‖KLf2 (fun y => TH i s s' a (b + y)) x‖
+        ≤ C * (L i : ℝ) ^ τ * (g i ^ 2 + |1 - t i|)⁻¹ * (((zdistD d (L i) x : ℝ) + 1) ^ d)
+            * ((((zdistD d (L i) (a - b) : ℝ) + 1) ^ d)⁻¹) := by
+  obtain ⟨CD1, hCD1, H1⟩ := hTH.diffOne τ hτ
+  obtain ⟨CD2, hCD2, H2⟩ := hTH.diffTwo τ hτ
+  obtain ⟨CZ, hCZ, HZ⟩ := hTH.zeroMode τ hτ
+  refine ⟨max (max CD1 CD2) (2 ^ d * 2 * CZ), lt_max_of_lt_left (lt_max_of_lt_left hCD1),
+    fun i s s' hss a b x => ?_⟩
+  have hLt : 0 ≤ (L i : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) τ
+  have hA : 0 ≤ (g i ^ 2 + |1 - t i|)⁻¹ := by positivity
+  have hCZ' : 2 ^ d * 2 * CZ ≤ max (max CD1 CD2) (2 ^ d * 2 * CZ) := le_max_right _ _
+  exact ⟨KLIndStepA_f1_core (by omega) _ hLt hA hCD1.le hCZ.le
+      ((le_max_left _ _).trans (le_max_left _ _)) hCZ' (hTH.transl i s s')
+      (H1 i s s' hss) (HZ i s s' hss) a b x,
+    KLIndStepA_f2_core (by omega) _ hLt hA hCD2.le hCZ.le
+      ((le_max_right _ _).trans (le_max_left _ _)) hCZ' (hTH.transl i s s')
+      (H2 i s s' hss) (HZ i s s' hss) a b x⟩
+
+end AbstractF12
+
+
+
 /-! ## 6. Case (i): a short leaf -/
 
 section NonAlt
 
 variable {d : ℕ} {κ gmax : ℝ}
 
-/-- The two bounds on a leaf: every leaf is `≤ K₁ B_{t,0}`, a short leaf is `≤ K₂ e^{-c_s |a - x|}`. -/
-private theorem KLIndStepA_leaf (hκ : 0 < κ) (hg : 0 < gmax) (hPT : KLPT d κ gmax) :
-    ∃ K₁ K₂ cs : ℝ, 0 < K₁ ∧ 0 < K₂ ∧ 0 < cs ∧ ∀ (p : KLPar κ gmax) (s s' : Bool)
-      (a x : Zd d p.L),
-      ‖thetaEdge d p.L p.g (mSigma p.E) p.t s s' a x‖ ≤ K₁ * Bparam d p.L p.g p.t 0 ∧
-      (s = s' → ‖thetaEdge d p.L p.g (mSigma p.E) p.t s s' a x‖
-        ≤ K₂ * Real.exp (-(cs * (zdistD d p.L (a - x) : ℝ)))) := by
-  obtain ⟨Cd, hCd, HD⟩ := KLIndStepA_Theta_norm_le hPT
-  obtain ⟨Cs, hCs, cs, hcs, HS⟩ := hPT.short
-  have hg2 : 0 < gmax ^ 2 := by positivity
+/-- The two bounds on a leaf over abstract data: every leaf is `≤ K₁ B_{t,0}`, a short leaf is
+`≤ K₂ e^{-c_s |a - x|}` (`decay`, `short`, `transl` of `IndStepTH`; `B_{t,0} ≥ (1+g_max²)⁻¹` from the
+range). -/
+theorem KLIndStepA_leaf_abs {ι : Type} {L : ι → ℕ} [∀ i, NeZero (L i)] {g t : ι → ℝ}
+    {TH : ∀ i, Bool → Bool → Matrix (Zd d (L i)) (Zd d (L i)) ℂ}
+    (hr : ∀ i, 3 ≤ L i ∧ 0 < g i ∧ g i ≤ gmax ∧ 0 ≤ t i ∧ t i < 1) (hTH : IndStepTH d L g t TH) :
+    ∃ K₁ K₂ cs : ℝ, 0 < K₁ ∧ 0 < K₂ ∧ 0 < cs ∧ ∀ (i : ι) (s s' : Bool) (a x : Zd d (L i)),
+      ‖TH i s s' a x‖ ≤ K₁ * Bparam d (L i) (g i) (t i) 0 ∧
+      (s = s' → ‖TH i s s' a x‖ ≤ K₂ * Real.exp (-(cs * (zdistD d (L i) (a - x) : ℝ)))) := by
+  obtain ⟨Cd, hCd, cd, hcd, HD⟩ := hTH.decay
+  obtain ⟨Cs, hCs, cs, hcs, HS⟩ := hTH.short
   refine ⟨Cd + Cs * (1 + gmax ^ 2) ^ 2, Cs * (1 + gmax ^ 2), cs, by positivity, by positivity,
-    hcs, fun p s s' a x => ⟨?_, fun hss => ?_⟩⟩
+    hcs, fun i s s' a x => ⟨?_, fun hss => ?_⟩⟩
   · by_cases hss : s = s'
     · subst hss
-      have hE2 : |p.E| ≤ 2 := by linarith [p.hE]
-      have hξ := norm_mul_mSigma_lt_one hE2 p.ht0 p.ht1 s s
-      have h1 : ‖thetaEdge d p.L p.g (mSigma p.E) p.t s s a x‖
-          ≤ Cs * ((if x - a = 0 then (1 : ℝ) else 0) + p.g ^ 2 * Real.exp (-cs * (zdistD d p.L (x - a) : ℝ))) := by
-        unfold thetaEdge
-        rw [KLIndStepA_Theta_apply_sub p.hL hξ a x]
-        exact HS p.L p.hL p.g p.hg0 p.hg1 p.E p.hE s p.t p.ht0 p.ht1 (x - a)
+      obtain ⟨hL, hg0, hg1, ht0, ht1⟩ := hr i
+      have h1 : ‖TH i s s a x‖
+          ≤ Cs * ((if x - a = 0 then (1 : ℝ) else 0) + g i ^ 2 * Real.exp (-cs * (zdistD d (L i) (x - a) : ℝ))) := by
+        rw [hTH.transl i s s a x]
+        exact HS i s (x - a)
       refine h1.trans ?_
-      have hg2' : p.g ^ 2 ≤ gmax ^ 2 := pow_le_pow_left₀ p.hg0.le p.hg1 2
+      have hg2' : g i ^ 2 ≤ gmax ^ 2 := pow_le_pow_left₀ hg0.le hg1 2
       have hite : (if x - a = 0 then (1 : ℝ) else 0) ≤ 1 := by split_ifs <;> norm_num
-      have hexp : Real.exp (-cs * (zdistD d p.L (x - a) : ℝ)) ≤ 1 :=
-        Real.exp_le_one_iff.2 (by have := Nat.cast_nonneg (α := ℝ) (zdistD d p.L (x - a)); nlinarith)
-      have hA : (1 + gmax ^ 2)⁻¹ ≤ Bparam d p.L p.g p.t 0 := by
-        refine le_trans ?_ (KLlat_inv_le_Bparam p.t)
-        have hg0 := p.hg0
+      have hexp : Real.exp (-cs * (zdistD d (L i) (x - a) : ℝ)) ≤ 1 :=
+        Real.exp_le_one_iff.2 (by have := Nat.cast_nonneg (α := ℝ) (zdistD d (L i) (x - a)); nlinarith)
+      have hA : (1 + gmax ^ 2)⁻¹ ≤ Bparam d (L i) (g i) (t i) 0 := by
+        refine le_trans ?_ (KLlat_inv_le_Bparam (t i))
         apply inv_anti₀ (by positivity)
-        have : |1 - p.t| ≤ 1 := by rw [abs_le]; constructor <;> linarith [p.ht0, p.ht1]
+        have : |1 - t i| ≤ 1 := by rw [abs_le]; constructor <;> linarith
         linarith
-      have hB1 : 1 ≤ (1 + gmax ^ 2) * Bparam d p.L p.g p.t 0 := by
+      have hB1 : 1 ≤ (1 + gmax ^ 2) * Bparam d (L i) (g i) (t i) 0 := by
         have h := mul_le_mul_of_nonneg_left hA (by positivity : (0 : ℝ) ≤ 1 + gmax ^ 2)
         rwa [mul_inv_cancel₀ (by positivity)] at h
-      calc Cs * ((if x - a = 0 then (1 : ℝ) else 0) + p.g ^ 2 * Real.exp (-cs * (zdistD d p.L (x - a) : ℝ)))
+      calc Cs * ((if x - a = 0 then (1 : ℝ) else 0) + g i ^ 2 * Real.exp (-cs * (zdistD d (L i) (x - a) : ℝ)))
           ≤ Cs * (1 + gmax ^ 2 * 1) := by gcongr
         _ = Cs * (1 + gmax ^ 2) * 1 := by ring
-        _ ≤ Cs * (1 + gmax ^ 2) * ((1 + gmax ^ 2) * Bparam d p.L p.g p.t 0) := by gcongr
-        _ = Cs * (1 + gmax ^ 2) ^ 2 * Bparam d p.L p.g p.t 0 := by ring
-        _ ≤ (Cd + Cs * (1 + gmax ^ 2) ^ 2) * Bparam d p.L p.g p.t 0 := by
-            have : 0 ≤ Bparam d p.L p.g p.t 0 := KLIndStepA_Bparam_nonneg _ _
+        _ ≤ Cs * (1 + gmax ^ 2) * ((1 + gmax ^ 2) * Bparam d (L i) (g i) (t i) 0) := by gcongr
+        _ = Cs * (1 + gmax ^ 2) ^ 2 * Bparam d (L i) (g i) (t i) 0 := by ring
+        _ ≤ (Cd + Cs * (1 + gmax ^ 2) ^ 2) * Bparam d (L i) (g i) (t i) 0 := by
+            have : 0 ≤ Bparam d (L i) (g i) (t i) 0 := KLIndStepA_Bparam_nonneg _ _
             nlinarith
-    · have hE2 : |p.E| ≤ 2 := by linarith [p.hE]
-      rw [KLIndStepA_thetaEdge_long hE2 p.t hss]
-      have := HD p.L p.hL p.g p.hg0 p.hg1 p.t p.ht0 p.ht1 a x
-      have h0 : 0 ≤ Bparam d p.L p.g p.t 0 := KLIndStepA_Bparam_nonneg _ _
+    · rw [hTH.transl i s s' a x]
+      have := KLIndStepA_decay_le_zero (by have := (hr i).1; omega) hCd.le hcd.le (x - a) (HD i s s' hss (x - a))
+      have h0 : 0 ≤ Bparam d (L i) (g i) (t i) 0 := KLIndStepA_Bparam_nonneg _ _
       nlinarith [mul_nonneg (by positivity : (0 : ℝ) ≤ Cs * (1 + gmax ^ 2) ^ 2) h0]
   · subst hss
-    have hE2 : |p.E| ≤ 2 := by linarith [p.hE]
-    have hξ := norm_mul_mSigma_lt_one hE2 p.ht0 p.ht1 s s
-    have h1 : ‖thetaEdge d p.L p.g (mSigma p.E) p.t s s a x‖
-        ≤ Cs * ((if x - a = 0 then (1 : ℝ) else 0) + p.g ^ 2 * Real.exp (-cs * (zdistD d p.L (x - a) : ℝ))) := by
-      unfold thetaEdge
-      rw [KLIndStepA_Theta_apply_sub p.hL hξ a x]
-      exact HS p.L p.hL p.g p.hg0 p.hg1 p.E p.hE s p.t p.ht0 p.ht1 (x - a)
+    have h1 : ‖TH i s s a x‖
+        ≤ Cs * ((if x - a = 0 then (1 : ℝ) else 0) + g i ^ 2 * Real.exp (-cs * (zdistD d (L i) (x - a) : ℝ))) := by
+      rw [hTH.transl i s s a x]
+      exact HS i s (x - a)
     refine h1.trans ?_
-    have hg2' : p.g ^ 2 ≤ gmax ^ 2 := pow_le_pow_left₀ p.hg0.le p.hg1 2
-    have hxa : zdistD d p.L (x - a) = zdistD d p.L (a - x) := by
-      rw [← zdistD_neg d p.L (x - a), neg_sub]
+    have hg2' : g i ^ 2 ≤ gmax ^ 2 := pow_le_pow_left₀ (hr i).2.1.le (hr i).2.2.1 2
+    have hxa : zdistD d (L i) (x - a) = zdistD d (L i) (a - x) := by
+      rw [← zdistD_neg d (L i) (x - a), neg_sub]
     rw [hxa]
-    have hite : (if x - a = 0 then (1 : ℝ) else 0) ≤ Real.exp (-cs * (zdistD d p.L (a - x) : ℝ)) := by
+    have hite : (if x - a = 0 then (1 : ℝ) else 0) ≤ Real.exp (-cs * (zdistD d (L i) (a - x) : ℝ)) := by
       split_ifs with h
-      · have : zdistD d p.L (a - x) = 0 := by
+      · have : zdistD d (L i) (a - x) = 0 := by
           rw [← hxa, h]; simp
         rw [this]; simp
       · exact (Real.exp_pos _).le
-    calc Cs * ((if x - a = 0 then (1 : ℝ) else 0) + p.g ^ 2 * Real.exp (-cs * (zdistD d p.L (a - x) : ℝ)))
-        ≤ Cs * (Real.exp (-cs * (zdistD d p.L (a - x) : ℝ))
-            + gmax ^ 2 * Real.exp (-cs * (zdistD d p.L (a - x) : ℝ))) := by gcongr
-      _ = Cs * (1 + gmax ^ 2) * Real.exp (-(cs * (zdistD d p.L (a - x) : ℝ))) := by
+    calc Cs * ((if x - a = 0 then (1 : ℝ) else 0) + g i ^ 2 * Real.exp (-cs * (zdistD d (L i) (a - x) : ℝ)))
+        ≤ Cs * (Real.exp (-cs * (zdistD d (L i) (a - x) : ℝ))
+            + gmax ^ 2 * Real.exp (-cs * (zdistD d (L i) (a - x) : ℝ))) := by gcongr
+      _ = Cs * (1 + gmax ^ 2) * Real.exp (-(cs * (zdistD d (L i) (a - x) : ℝ))) := by
           rw [neg_mul]; ring
 
-/-- **Case (i) of `(eq:ind-step-bound)`, without loss** (`(eq:shortexternal)`, `(eq:pointwise_Theta)`,
-`(eq:molecule-decay)`): if some non-root leaf `j ≠ r` is short (`σ_j = σ_{j+1}`),
-`Σ_b |Σ_{δ_r = b} Σ^{(∅)}(δ) ∏_{i≠r} Θ^{(σ_i,σ_{i+1})}_{t,a_i δ_i}| ≤ C B_{t,0}^{n-2}`, `C = C(d,n,κ,gmax)`.
-The short leaf has decay `e^{-c|a_j - δ_j|}` (`KLShort`), the other `n-2` leaves are `≤ K B_{t,0}`
-pointwise (`KLDecay`, resp. `KLShort` and `B_{t,0} ≥ (1+g_max²)⁻¹`), `Σ^{(∅)}` decays in
-`max|δ_i - δ_j|` (`KLmolecule_holds`); the sum over `δ` closes with `sum_exp_decay_centre`. -/
+/-- The crude pointwise bound over abstract data (the generalisation of `KLf_crude_bound`): the three
+parts `f₀`, `f₁`, `f₂` of a leaf are each `≤ K B_{t,0}`; no loss, no `s`-dependence. -/
+theorem KLIndStepA_crude_abs {ι : Type} {L : ι → ℕ} [∀ i, NeZero (L i)] {g t : ι → ℝ}
+    {TH : ∀ i, Bool → Bool → Matrix (Zd d (L i)) (Zd d (L i)) ℂ}
+    (hr : ∀ i, 3 ≤ L i ∧ 0 < g i ∧ g i ≤ gmax ∧ 0 ≤ t i ∧ t i < 1) (hTH : IndStepTH d L g t TH) :
+    ∃ K : ℝ, 0 < K ∧ ∀ (i : ι) (s s' : Bool) (a b x : Zd d (L i)),
+      ‖KLf0 (fun y => TH i s s' a (b + y))‖ ≤ K * Bparam d (L i) (g i) (t i) 0 ∧
+      ‖KLf1 (fun y => TH i s s' a (b + y)) x‖ ≤ K * Bparam d (L i) (g i) (t i) 0 ∧
+      ‖KLf2 (fun y => TH i s s' a (b + y)) x‖ ≤ K * Bparam d (L i) (g i) (t i) 0 := by
+  obtain ⟨K₁, K₂, cs, hK₁, hK₂, hcs, hleaf⟩ := KLIndStepA_leaf_abs hr hTH
+  refine ⟨2 * K₁, by positivity, fun i s s' a b x => ?_⟩
+  have h : ∀ y : Zd d (L i), ‖TH i s s' a (b + y)‖ ≤ K₁ * Bparam d (L i) (g i) (t i) 0 :=
+    fun y => (hleaf i s s' a (b + y)).1
+  have hB : 0 ≤ Bparam d (L i) (g i) (t i) 0 := KLIndStepA_Bparam_nonneg _ _
+  refine ⟨?_, ?_, ?_⟩
+  · have := KLIndStepA_norm_f0_le h
+    nlinarith [mul_nonneg hK₁.le hB]
+  · have := KLIndStepA_norm_f1_le h x
+    nlinarith [mul_nonneg hK₁.le hB]
+  · have := KLIndStepA_norm_f2_le h x
+    linarith
+
+/-- **Case (i) of `(eq:ind-step-bound)` over abstract data, without loss**: if some non-root leaf
+`j ≠ r` is short (`σ_j = σ_{j+1}`), `Σ_b |Σ_{δ_r = b} Sig(δ) ∏_{i≠r} TH(a_i, δ_i)| ≤ C B_{t,0}^{n-2}`.
+The short leaf has decay `e^{-c|a_j - δ_j|}`, the other `n-2` leaves are `≤ K B_{t,0}` pointwise
+(`KLIndStepA_leaf_abs`), `Sig` decays in `max|δ_i - δ_j|` (`SigDecayAbs`); the sum over `δ` closes with
+`sum_exp_decay_centre`. -/
+theorem KLIndStepA_nonAlt_abs {ι : Type} (n : ℕ) [NeZero n] (hd : 3 ≤ d) {L : ι → ℕ}
+    [∀ i, NeZero (L i)] {g t : ι → ℝ}
+    {Sig : ∀ i, (Fin n → Bool) → (Fin n → Zd d (L i)) → ℂ}
+    {TH : ∀ i, Bool → Bool → Matrix (Zd d (L i)) (Zd d (L i)) ℂ}
+    (hr : ∀ i, 3 ≤ L i ∧ 0 < g i ∧ g i ≤ gmax ∧ 0 ≤ t i ∧ t i < 1) (hTH : IndStepTH d L g t TH)
+    (hS : SigDecayAbs d n L Sig) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (p : ι) (σ : Fin n → Bool) (j r : Fin n), j ≠ r → σ j = σ (j + 1) →
+      ∀ a : Fin n → Zd d (L p),
+      ∑ b : Zd d (L p), ‖∑ δ ∈ univ.filter (fun δ : Fin n → Zd d (L p) => δ r = b),
+          Sig p σ δ * ∏ i ∈ univ.erase r, TH p (σ i) (σ (i + 1)) (a i) (δ i)‖
+        ≤ C * (Bparam d (L p) (g p) (t p) 0) ^ (n - 2) := by
+  obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
+  obtain ⟨K₁, K₂, cs, hK₁, hK₂, hcs, hleaf⟩ := KLIndStepA_leaf_abs hr hTH
+  obtain ⟨Cm, hCm, cm, hcm, hmol⟩ := hS
+  have hn0 : (0 : ℝ) < n := by exact_mod_cast NeZero.pos n
+  have hcn : 0 < cm / n := by positivity
+  have hE1 : 0 < expC k cs := by unfold expC; positivity
+  have hE2 : 0 < expC k (cm / n) := by unfold expC; positivity
+  refine ⟨Cm * K₂ * K₁ ^ (n - 2) * expC k cs * (expC k (cm / n)) ^ (n - 1), by positivity,
+    fun p σ j r hjr hj a => ?_⟩
+  set B0 := Bparam (k + 2) (L p) (g p) (t p) 0 with hB0def
+  have hB0 : 0 ≤ B0 := KLIndStepA_Bparam_nonneg _ _
+  have hjr' : j ∈ univ.erase r := mem_erase.2 ⟨hjr, mem_univ j⟩
+  have hcard : ((univ.erase r).erase j).card = n - 2 := by
+    rw [card_erase_of_mem hjr', card_erase_of_mem (mem_univ r), card_univ, Fintype.card_fin]
+    omega
+  set F : (Fin n → Zd (k + 2) (L p)) → ℂ := fun δ =>
+    Sig p σ δ *
+      ∏ i ∈ univ.erase r,
+        TH p (σ i) (σ (i + 1)) (a i) (δ i) with hF
+  set e1 : (Fin n → Zd (k + 2) (L p)) → ℝ := fun δ =>
+    Real.exp (-(cm * (KLmaxDist (k + 2) (L p) δ : ℝ))) with he1
+  set e2 : (Fin n → Zd (k + 2) (L p)) → ℝ := fun δ =>
+    Real.exp (-(cs * (zdistD (k + 2) (L p) (a j - δ j) : ℝ))) with he2
+  set P : ℝ := Cm * K₂ * (K₁ * B0) ^ (n - 2) with hP
+  have hP0 : 0 ≤ P := by rw [hP]; positivity
+  have hpt : ∀ δ : Fin n → Zd (k + 2) (L p), ‖F δ‖ ≤ P * (e1 δ * e2 δ) := by
+    intro δ
+    simp only [hF]
+    rw [norm_mul, norm_prod, ← Finset.mul_prod_erase (univ.erase r) _ hjr']
+    have h1 := hmol p σ δ
+    have h2 := (hleaf p (σ j) (σ (j + 1)) (a j) (δ j)).2 hj
+    have h3 : ∏ i ∈ (univ.erase r).erase j,
+        ‖TH p (σ i) (σ (i + 1)) (a i) (δ i)‖
+        ≤ (K₁ * B0) ^ (n - 2) := by
+      calc _ ≤ ∏ _i ∈ (univ.erase r).erase j, (K₁ * B0) :=
+            prod_le_prod₀ (fun _ _ => norm_nonneg _)
+              fun i _ => (hleaf p (σ i) (σ (i + 1)) (a i) (δ i)).1
+        _ = (K₁ * B0) ^ (n - 2) := by rw [prod_const, hcard]
+    have h4 : 0 ≤ ∏ i ∈ (univ.erase r).erase j,
+        ‖TH p (σ i) (σ (i + 1)) (a i) (δ i)‖ :=
+      prod_nonneg fun _ _ => norm_nonneg _
+    calc ‖Sig p σ δ‖ *
+          (‖TH p (σ j) (σ (j + 1)) (a j) (δ j)‖ *
+            ∏ i ∈ (univ.erase r).erase j,
+              ‖TH p (σ i) (σ (i + 1)) (a i) (δ i)‖)
+        ≤ (Cm * e1 δ) * ((K₂ * e2 δ) * (K₁ * B0) ^ (n - 2)) := by
+          gcongr
+      _ = P * (e1 δ * e2 δ) := by rw [hP]; ring
+  have hsum : ∑ δ : Fin n → Zd (k + 2) (L p), e1 δ * e2 δ
+      ≤ expC k cs * (expC k (cm / n)) ^ (n - 1) := by
+    calc ∑ δ : Fin n → Zd (k + 2) (L p), e1 δ * e2 δ
+        = ∑ x : Zd (k + 2) (L p), ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) (L p) => δ j = x),
+            e1 δ * e2 δ := (sum_fiberwise univ (fun δ : Fin n → Zd (k + 2) (L p) => δ j)
+              (fun δ => e1 δ * e2 δ)).symm
+      _ = ∑ x : Zd (k + 2) (L p), Real.exp (-(cs * (zdistD (k + 2) (L p) (a j - x) : ℝ))) *
+            ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) (L p) => δ j = x), e1 δ := by
+          refine sum_congr rfl fun x _ => ?_
+          rw [mul_sum]
+          refine sum_congr rfl fun δ hδ => ?_
+          have hδj : δ j = x := (mem_filter.1 hδ).2
+          simp only [he2, hδj]
+          ring
+      _ ≤ ∑ x : Zd (k + 2) (L p), Real.exp (-(cs * (zdistD (k + 2) (L p) (a j - x) : ℝ))) *
+            (expC k (cm / n)) ^ (n - 1) := by
+          refine sum_le_sum fun x _ => ?_
+          exact mul_le_mul_of_nonneg_left (KLIndStepA_sum_exp_root k hcm j x) (Real.exp_pos _).le
+      _ = (∑ x : Zd (k + 2) (L p), Real.exp (-(cs * (zdistD (k + 2) (L p) (a j - x) : ℝ)))) *
+            (expC k (cm / n)) ^ (n - 1) := by rw [sum_mul]
+      _ ≤ expC k cs * (expC k (cm / n)) ^ (n - 1) :=
+          mul_le_mul_of_nonneg_right (sum_exp_decay_centre k hcs (a j)) (by positivity)
+  calc ∑ b : Zd (k + 2) (L p), ‖∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) (L p) => δ r = b), F δ‖
+      ≤ ∑ b : Zd (k + 2) (L p), ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) (L p) => δ r = b), ‖F δ‖ :=
+        sum_le_sum fun b _ => norm_sum_le _ _
+    _ = ∑ δ : Fin n → Zd (k + 2) (L p), ‖F δ‖ :=
+        sum_fiberwise univ (fun δ : Fin n → Zd (k + 2) (L p) => δ r) (fun δ => ‖F δ‖)
+    _ ≤ ∑ δ : Fin n → Zd (k + 2) (L p), P * (e1 δ * e2 δ) := sum_le_sum fun δ _ => hpt δ
+    _ = P * ∑ δ : Fin n → Zd (k + 2) (L p), e1 δ * e2 δ := by rw [mul_sum]
+    _ ≤ P * (expC k cs * (expC k (cm / n)) ^ (n - 1)) := mul_le_mul_of_nonneg_left hsum hP0
+    _ = Cm * K₂ * K₁ ^ (n - 2) * expC k cs * (expC k (cm / n)) ^ (n - 1) * B0 ^ (n - 2) := by
+        rw [hP, mul_pow]; ring
+
+/-- **Case (i), without loss**: the band instance of `KLIndStepA_nonAlt_abs` (`indStepTH_band`,
+`sigDecayAbs_band`). -/
 theorem KLindStep_nonAlt_noloss (n : ℕ) [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) (hκ : 0 < κ)
     (hg : 0 < gmax) (hPT : KLPT d κ gmax) :
     ∃ C : ℝ, 0 < C ∧ ∀ (p : KLPar κ gmax) (σ : Fin n → Bool) (j r : Fin n), j ≠ r →
@@ -1139,87 +1371,9 @@ theorem KLindStep_nonAlt_noloss (n : ℕ) [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ 
           KLSigmaPi d p.L p.g (mSigma p.E) p.t σ ∅ δ *
             ∏ i ∈ univ.erase r,
               thetaEdge d p.L p.g (mSigma p.E) p.t (σ i) (σ (i + 1)) (a i) (δ i)‖
-        ≤ C * (Bparam d p.L p.g p.t 0) ^ (n - 2) := by
-  obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
-  obtain ⟨K₁, K₂, cs, hK₁, hK₂, hcs, hleaf⟩ := KLIndStepA_leaf hκ hg hPT
-  obtain ⟨Cm, hCm, cm, hcm, hmol⟩ := KLmolecule_holds (k + 2) n κ gmax hd hn hκ hg hPT.short
-  have hn0 : (0 : ℝ) < n := by exact_mod_cast NeZero.pos n
-  have hcn : 0 < cm / n := by positivity
-  have hE1 : 0 < expC k cs := by unfold expC; positivity
-  have hE2 : 0 < expC k (cm / n) := by unfold expC; positivity
-  refine ⟨Cm * K₂ * K₁ ^ (n - 2) * expC k cs * (expC k (cm / n)) ^ (n - 1), by positivity,
-    fun p σ j r hjr hj a => ?_⟩
-  set B0 := Bparam (k + 2) p.L p.g p.t 0 with hB0def
-  have hB0 : 0 ≤ B0 := KLIndStepA_Bparam_nonneg _ _
-  have hjr' : j ∈ univ.erase r := mem_erase.2 ⟨hjr, mem_univ j⟩
-  have hcard : ((univ.erase r).erase j).card = n - 2 := by
-    rw [card_erase_of_mem hjr', card_erase_of_mem (mem_univ r), card_univ, Fintype.card_fin]
-    omega
-  set F : (Fin n → Zd (k + 2) p.L) → ℂ := fun δ =>
-    KLSigmaPi (k + 2) p.L p.g (mSigma p.E) p.t σ ∅ δ *
-      ∏ i ∈ univ.erase r,
-        thetaEdge (k + 2) p.L p.g (mSigma p.E) p.t (σ i) (σ (i + 1)) (a i) (δ i) with hF
-  set e1 : (Fin n → Zd (k + 2) p.L) → ℝ := fun δ =>
-    Real.exp (-(cm * (KLmaxDist (k + 2) p.L δ : ℝ))) with he1
-  set e2 : (Fin n → Zd (k + 2) p.L) → ℝ := fun δ =>
-    Real.exp (-(cs * (zdistD (k + 2) p.L (a j - δ j) : ℝ))) with he2
-  set P : ℝ := Cm * K₂ * (K₁ * B0) ^ (n - 2) with hP
-  have hP0 : 0 ≤ P := by rw [hP]; positivity
-  have hpt : ∀ δ : Fin n → Zd (k + 2) p.L, ‖F δ‖ ≤ P * (e1 δ * e2 δ) := by
-    intro δ
-    simp only [hF]
-    rw [norm_mul, norm_prod, ← Finset.mul_prod_erase (univ.erase r) _ hjr']
-    have h1 := hmol p σ δ
-    have h2 := (hleaf p (σ j) (σ (j + 1)) (a j) (δ j)).2 hj
-    have h3 : ∏ i ∈ (univ.erase r).erase j,
-        ‖thetaEdge (k + 2) p.L p.g (mSigma p.E) p.t (σ i) (σ (i + 1)) (a i) (δ i)‖
-        ≤ (K₁ * B0) ^ (n - 2) := by
-      calc _ ≤ ∏ _i ∈ (univ.erase r).erase j, (K₁ * B0) :=
-            prod_le_prod₀ (fun _ _ => norm_nonneg _)
-              fun i _ => (hleaf p (σ i) (σ (i + 1)) (a i) (δ i)).1
-        _ = (K₁ * B0) ^ (n - 2) := by rw [prod_const, hcard]
-    have h4 : 0 ≤ ∏ i ∈ (univ.erase r).erase j,
-        ‖thetaEdge (k + 2) p.L p.g (mSigma p.E) p.t (σ i) (σ (i + 1)) (a i) (δ i)‖ :=
-      prod_nonneg fun _ _ => norm_nonneg _
-    calc ‖KLSigmaPi (k + 2) p.L p.g (mSigma p.E) p.t σ ∅ δ‖ *
-          (‖thetaEdge (k + 2) p.L p.g (mSigma p.E) p.t (σ j) (σ (j + 1)) (a j) (δ j)‖ *
-            ∏ i ∈ (univ.erase r).erase j,
-              ‖thetaEdge (k + 2) p.L p.g (mSigma p.E) p.t (σ i) (σ (i + 1)) (a i) (δ i)‖)
-        ≤ (Cm * e1 δ) * ((K₂ * e2 δ) * (K₁ * B0) ^ (n - 2)) := by
-          gcongr
-      _ = P * (e1 δ * e2 δ) := by rw [hP]; ring
-  have hsum : ∑ δ : Fin n → Zd (k + 2) p.L, e1 δ * e2 δ
-      ≤ expC k cs * (expC k (cm / n)) ^ (n - 1) := by
-    calc ∑ δ : Fin n → Zd (k + 2) p.L, e1 δ * e2 δ
-        = ∑ x : Zd (k + 2) p.L, ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) p.L => δ j = x),
-            e1 δ * e2 δ := (sum_fiberwise univ (fun δ : Fin n → Zd (k + 2) p.L => δ j)
-              (fun δ => e1 δ * e2 δ)).symm
-      _ = ∑ x : Zd (k + 2) p.L, Real.exp (-(cs * (zdistD (k + 2) p.L (a j - x) : ℝ))) *
-            ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) p.L => δ j = x), e1 δ := by
-          refine sum_congr rfl fun x _ => ?_
-          rw [mul_sum]
-          refine sum_congr rfl fun δ hδ => ?_
-          have hδj : δ j = x := (mem_filter.1 hδ).2
-          simp only [he2, hδj]
-          ring
-      _ ≤ ∑ x : Zd (k + 2) p.L, Real.exp (-(cs * (zdistD (k + 2) p.L (a j - x) : ℝ))) *
-            (expC k (cm / n)) ^ (n - 1) := by
-          refine sum_le_sum fun x _ => ?_
-          exact mul_le_mul_of_nonneg_left (KLIndStepA_sum_exp_root k hcm j x) (Real.exp_pos _).le
-      _ = (∑ x : Zd (k + 2) p.L, Real.exp (-(cs * (zdistD (k + 2) p.L (a j - x) : ℝ)))) *
-            (expC k (cm / n)) ^ (n - 1) := by rw [sum_mul]
-      _ ≤ expC k cs * (expC k (cm / n)) ^ (n - 1) :=
-          mul_le_mul_of_nonneg_right (sum_exp_decay_centre k hcs (a j)) (by positivity)
-  calc ∑ b : Zd (k + 2) p.L, ‖∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) p.L => δ r = b), F δ‖
-      ≤ ∑ b : Zd (k + 2) p.L, ∑ δ ∈ univ.filter (fun δ : Fin n → Zd (k + 2) p.L => δ r = b), ‖F δ‖ :=
-        sum_le_sum fun b _ => norm_sum_le _ _
-    _ = ∑ δ : Fin n → Zd (k + 2) p.L, ‖F δ‖ :=
-        sum_fiberwise univ (fun δ : Fin n → Zd (k + 2) p.L => δ r) (fun δ => ‖F δ‖)
-    _ ≤ ∑ δ : Fin n → Zd (k + 2) p.L, P * (e1 δ * e2 δ) := sum_le_sum fun δ _ => hpt δ
-    _ = P * ∑ δ : Fin n → Zd (k + 2) p.L, e1 δ * e2 δ := by rw [mul_sum]
-    _ ≤ P * (expC k cs * (expC k (cm / n)) ^ (n - 1)) := mul_le_mul_of_nonneg_left hsum hP0
-    _ = Cm * K₂ * K₁ ^ (n - 2) * expC k cs * (expC k (cm / n)) ^ (n - 1) * B0 ^ (n - 2) := by
-        rw [hP, mul_pow]; ring
+        ≤ C * (Bparam d p.L p.g p.t 0) ^ (n - 2) :=
+  KLIndStepA_nonAlt_abs n hd (fun p : KLPar κ gmax => ⟨p.hL, p.hg0, p.hg1, p.ht0, p.ht1⟩)
+    (indStepTH_band hκ hPT) (sigDecayAbs_band n hd hn hκ hg)
 
 /-- **`KLindStep_nonAlt`** (target 1): the pin's inequality (`KLindStepAt`, with its quantifier
 order `∀ τ, ∃ C, ∀ p σ r, σ_r ≠ σ_{r+1} → ∀ a`) for every `σ` that is not alternating.  The loss
@@ -1467,6 +1621,37 @@ example :
       ≤ (1 + (((3 : ℕ) : ℝ) + 1) ^ (1 : ℝ) / 1) * ((5 : ℕ) : ℝ) ^ (1 : ℝ) :=
   ⟨KLIndStepA_alt_cases (KLsigAlt 4) (by decide), KLIndStepA_Qlayer_not 0 (9 / 10) (KLsigAlt 4),
     KLIndStepA_thetaEdge_long (by norm_num) (9 / 10) (by decide), KLlat_log_le (L := 5) 3 (by norm_num) one_pos⟩
+
+/-- T2365, the three band bundles (`indStepTH_band`, `sigDecayAbs_band`, `sigSumZeroAbs_band`) at the §7
+data (`KLinstPar`, `n = 4`, `σ = σ^{(alt)}`, `a = (0, 1, 2, 3)`): translation and the row sum of a long
+edge (`IndStepTH`), the decay (`SigDecayAbs`), the reflection and the `Q = 2(d-1) = 4` estimates on the
+slice `δ_1 = 0` (`SigSumZeroAbs`).  `KLPT 3 1 1` is the only hypothesis left. -/
+example (hPT : KLPT 3 1 1) :
+    thetaEdge 3 5 (1 / 2) (mSigma 0) (9 / 10) true false (1 : Zd 3 5) 2
+        = thetaEdge 3 5 (1 / 2) (mSigma 0) (9 / 10) true false 0 (2 - 1) ∧
+    ∑ b : Zd 3 5, ‖thetaEdge 3 5 (1 / 2) (mSigma 0) (9 / 10) true false 0 b‖ ≤ (1 - 9 / 10 : ℝ)⁻¹ ∧
+    (∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧
+      ‖KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) (KLsigAlt 4) ∅ (![0, 1, 2, 3] : Fin 4 → Zd 3 5)‖
+        ≤ C * Real.exp (-(c * (KLmaxDist 3 5 (![0, 1, 2, 3] : Fin 4 → Zd 3 5) : ℝ)))) ∧
+    KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) (KLsigAlt 4) ∅
+        (fun j => (1 + 1 : Zd 3 5) - (![0, 1, 2, 3] : Fin 4 → Zd 3 5) j)
+      = KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) (KLsigAlt 4) ∅ (![0, 1, 2, 3] : Fin 4 → Zd 3 5) ∧
+    (∃ C : ℝ, 0 < C ∧
+      ‖∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 5 => δ 1 = 0),
+          KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) (KLsigAlt 4) ∅ δ‖ ≤ C * (1 - 9 / 10) ∧
+      ∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 5 => δ 1 = 0),
+          ‖KLSigmaPi 3 5 (1 / 2) (mSigma 0) (9 / 10) (KLsigAlt 4) ∅ δ‖
+            * ((KLmaxDist 3 5 δ : ℝ) + 1) ^ 4 ≤ C * ((1 / 2) ^ 2 + (1 - 9 / 10))) := by
+  have hTH := indStepTH_band (d := 3) (κ := 1) (gmax := 1) one_pos hPT
+  have hD := sigDecayAbs_band (d := 3) (κ := 1) (gmax := 1) 4 (by norm_num) (by norm_num) one_pos one_pos
+  have hS := sigSumZeroAbs_band (d := 3) (κ := 1) (gmax := 1) 4 (by norm_num) (by norm_num)
+    one_pos one_pos
+  obtain ⟨C, hC, c, hc, HD⟩ := hD
+  obtain ⟨C', hC', HS⟩ := hS.2.2 4 (by norm_num)
+  exact ⟨hTH.transl KLinstPar true false 1 2, hTH.rowSum KLinstPar true false (by decide) 0,
+    ⟨C, hC, c, hc, HD KLinstPar (KLsigAlt 4) ![0, 1, 2, 3]⟩,
+    hS.1 KLinstPar (KLsigAlt 4) (by decide) (1 + 1) ![0, 1, 2, 3],
+    ⟨C', hC', HS KLinstPar (KLsigAlt 4) (by decide) 1 0⟩⟩
 
 end Instances
 
