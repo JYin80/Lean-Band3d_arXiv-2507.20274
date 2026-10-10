@@ -1,4 +1,4 @@
-state: proving
-reason: H174: check exit 0 on main 442d3aa; workflow wf_1102a6aa-901 (1a design gate → 1a-audit → 1b prover-max, stop 2000 on BA/KPure.lean → auditor); branch from main 442d3aa
-updated: Sat Oct 10 10:33:37 UTC 2026
+state: audit-pass
+reason: 1a + 1a-audit PASS; stage 1b DONE (88476fa; BA/KPure.lean 1016 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_1102a6aa-901); full lake build 4198 jobs exit 0
+updated: Sat Oct 10 12:09:33 UTC 2026
 reports: docs/reports/T2380-prove.md, docs/reports/T2380-1a-audit.md, docs/reports/T2380-audit.md
