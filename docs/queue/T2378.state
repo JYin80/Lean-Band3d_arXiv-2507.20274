@@ -1,0 +1,4 @@
+state: proving
+reason: H173: check exit 0 on main 1f710ee; design ticket (1a preflight → design + probe (prover-max) → auditor → report-only merge); workflow wf_478c4193-8fd; branch from main 1f710ee
+updated: Sat Oct 10 10:03:40 UTC 2026
+reports: docs/reports/T2378-prove.md, docs/reports/T2378-design.md, docs/reports/T2378-audit.md

@@ -1594,3 +1594,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - **T2379 = BA-DT**（BA 46）：阶段 T/U/V（链：Steps 2–6、主归纳、`GLoopAtT0`）。§144 (3) 的前提（ST-4…6、LW-14 闭合）已经满足。问题 TV1–TV6：在一个语义重的块上复测路线 G 的 `g` 和 `f_sem`（触发线 `g > 0.5` 或 `f_sem > 0.30` 就改走路线 I）；载体与钉文；对 K/G/E/L 的依赖；行表与配对；张数，超过 40 行拆子阶段；对已关闭的带状文件做原地编辑的代价。
   - 两张都是 `prover-max`、只出报告，探针不合并。
 - (3) 计数：MA 8/9；BA 46（阶段 K 9/24；另有设计票 T2378、T2379）。下一张票号 T2380，下一节 §192，下一条 H173，下一号差异 D636。
+
+## §192 — T2376（K06）合并；K07 = T2380、K10 = T2381 并行放行（总调度 V2，2026-10-10 10:26 UTC）
+
+- (1) **T2376 合并 d2fb5b1**（10:22 UTC，`BA/KMolecule` + `BA/KCactusCut`，共 1737 行，停止线 2000，审核一次 PASS）：`BAKpi`、`baK_eq_sum_Kpi`、`BASigmaPi`、`baKpi_eq_sum_SigmaPi`、`baSigmaPi_cut`、`BASig`、`baSig_transl`、`baSigmaPi_reflect`，以及公开的 `baCactus_cut`。阶段 K 已合并 9 行。返工账本记「是」：计划超线，加开第二个文件，是调度的估计缺口。
+- (2) 按设计顺序（K06 → K07、K10），两行并行放行：
+  - **T2380 = BA-K07**（BA 47）：`BA/KPure.lean`，纯回路与 `(eq:molecule-decay)`。论证：每条边核 `≤ B e^{−κ|x−y|}`（`Mbound_AO`、`(prop:ThfadC_short)`），用生成树约化得出衰减；结论以 `SigDecayAbs` 的形式落在 `BASig` 上。
+  - **T2381 = BA-K10**（BA 48）：`BA/KInduct.lean`，包括 `n ≤ 3` 的基础层（经 `baK_unique` 转给 `BAKsol`）和 `baKpi_cut`。`baKpi_cut` 的粘合边是 BA 的 `tΘ`，前因子正好是 `t`，复用 `baCactus_cut`。陈述按 K09b 的泛型第 7 节接口写。
+  - 两张都是 1a 设计门加 1a-audit，`prover-max`，停止线 2000。
+- (3) 中枢：T2378、T2379（设计票）加 T2380、T2381，共 4 张。
+- (4) 计数：BA 48（阶段 K 11/24：已合并 9 行，K07、K10 在跑；另有设计票 T2378、T2379）。下一张票号 T2382，下一节 §193，下一条 H175，下一号差异 D636。

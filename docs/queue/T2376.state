@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged d2fb5b1
 reason: Amend 1 stage 1b DONE (3fa3746; KMolecule + KCactusCut 1737 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_7177a252-c1e); full lake build 4196 jobs exit 0
-updated: Sat Oct 10 10:22:03 UTC 2026
+updated: Sat Oct 10 10:22:04 UTC 2026
 reports: docs/reports/T2376-prove.md, docs/reports/T2376-1a-audit.md, docs/reports/T2376-audit.md
