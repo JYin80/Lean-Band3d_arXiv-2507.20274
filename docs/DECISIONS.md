@@ -1766,3 +1766,9 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 恢复后的次序：D1 → (a′) → 1a-audit 第二轮 → 1b → 审核。
 - (4) 在手但不发的（留给新中枢）：K08b、E2、G3b（等 C2 REQ）、T7 / T1 / T2 / T3 / T4 / T5s2 / T6（ST 侧）、BA-T 钉文 REQ（C7，row 0 与 T8 已合并）、阶段 L 开阶段 REQ（T2387）。下一张票号 T2391，下一节 §204，下一条 H185。
 - (5) **Jun 21:1x UTC 选定：T2390 留给新中枢。**旧中枢按 H184 排空，写 `DRAINED`；新中枢接手后，由一条新的 H 指令按 Amend 1 恢复 T2390。
+
+## §204 — 新中枢就位，恢复正常运行；T2390 按 Amend 1 恢复（总调度 V2，2026-10-10 21:18 UTC）
+
+- (1) Jun 21:1x UTC：「new hub is ready」。新中枢 HUB.alive 21:15:27 UTC；旧中枢的 H184 已执行（907ddea，DRAINED 21:15:47）。**H184 (2) 解除，恢复正常运行**（H185）。`DRAINED` 在下一次提交里删掉。
+- (2) **T2390 现在恢复**，照 Amend 1 走：D1 探针编译（`prover-max`，只写 `Probe/T2390Pins.lean`）→ (a′) → 1a-audit 第二轮 → 1b → 审核。
+- (3) 本轮接着写：K08b、E2、ST 侧的 T7；之后写 BA-T 钉文 REQ（C7）和阶段 L 开阶段 REQ。

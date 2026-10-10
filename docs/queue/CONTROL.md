@@ -2,14 +2,14 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 21:10 UTC (dispatcher V2: T2385, T2386, T2387, T2388, T2389 merged; Jun: hub switch after this wave, no new starts (H184))
+updated: 2026-10-10 21:18 UTC (dispatcher V2: new hub; T2390 resumes under Amend 1 (H185))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-358. T2390 — `docs/tickets/T2390.md` (BA-G3a: design gate for G3a/G3b/G4, then new `BA/GreenCore.lean`): 1a-audit RETURN answered by **Amend 1** (`docs/tickets/T2390-amend-1.md`); **held: does not resume until a dispatcher H line says so** (Jun: hub switch after this wave; H184).
+358. T2390 — `docs/tickets/T2390.md` (BA-G3a: design gate for G3a/G3b/G4, then new `BA/GreenCore.lean`): 1a-audit RETURN answered by **Amend 1** (`docs/tickets/T2390-amend-1.md`); **resumes now (H185)**: D1 probe step → (a′) → 1a-audit round 2 → 1b `prover-max` → auditor.
 
 ## Pre-release checks
 - `docs/tickets/checks/T2386-check.lean` (T8; merged names only).
@@ -55,6 +55,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 15:23:41 UTC 2026 — every running workflow (T2386, T2387, T2388, T2389) stopped on the API session limit ("resets 8:20am America/Los_Angeles" = 15:20 UTC) at about 13:5x UTC; T2385's passed merge build was committed at Sat Oct 10 15:23:41 UTC 2026 (e67bfbd). Rule (H) reruns: T2386 wf_9469c03c-5e4 ((a′) → 1a-audit round 2 → 1b), T2389 wf_04d9402d-1cf (1b), T2388 wf_fa73b085-d9d (1a), T2387 wf_a0fb8d25-519 (1b). Blocked: T2390 (1a-audit sign-off).
 
 - H184 (dispatcher V2, 2026-10-10 21:10 UTC; DECISIONS §203; relays Jun). **Jun (Cowork dispatcher session, 2026-10-10 21:09 UTC): "这波工单结束好我要换hub，所以这波结束后先不要发新单了。"** (After this wave of tickets ends, Jun is switching the hub, so no new tickets after this wave.) (1) Commit by name with your next commit `docs/tickets/T2390-amend-1.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) **Start nothing.** No ticket is released, and T2390 stays `blocked`/held until a dispatcher H line resumes it (Amend 1 is the answer it will run under). (3) When the commit is pushed and no workflow runs, write `docs/queue/DRAINED` (one line: UTC time, last `main` commit, "no workflow running; T2390 held (Amend 1)"). One `done:` line per step.
+  done: Sat Oct 10 21:15:47 UTC 2026 — (1) the 6 listed files committed by name in 907ddea, pushed.
+  done: Sat Oct 10 21:15:47 UTC 2026 — (2) nothing started; no ticket released; T2390 stays `blocked`/held (Amend 1).
+  done: Sat Oct 10 21:15:47 UTC 2026 — (3) no workflow running (new hub session, none in flight; no lake process); `docs/queue/DRAINED` written: "Sat Oct 10 21:15:47 UTC 2026 — last main commit 907ddea; no workflow running; T2390 held (Amend 1)".
+
+- H185 (dispatcher V2, 2026-10-10 21:18 UTC; DECISIONS §204). **New hub session (Jun, 21:1x UTC: "new hub is ready"). H184 (2) is lifted: normal operation resumes.** (1) Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; `git rm docs/queue/DRAINED` in the same commit. (2) **Resume T2390 now under Amend 1** (`docs/tickets/T2390-amend-1.md`; Amend 1 goes into every prompt), in this order: (a) the D1 probe step, role `prover-max`, sole writable `RBM3D/Probe/T2390Pins.lean` on `t/T2390` (never merged), `lake env lean` output pasted as `(a″)`; (b) stage 1a repair `(a′)` by `preflight` (D3, D4); (c) 1a-audit round 2; (d) stage 1b `prover-max` (T2389 has merged, no further wait); (e) auditor. Rebase `t/T2390` on `main` before (a). (3) New tickets follow in this round's next H lines as they are written; start each when its check compiles and a slot is free (H12). One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 11:46:34 UTC 2026 — T2381 merged 306957f (BA-K10: new BA/KInduct (991 lines, stop 2000; 2 defs + 11 theorems), root import, no registry change; 1a-audit PASS (routing notes D1-D3 for the dispatcher), audit PASS claude-opus-5-5; full lake build 4197 jobs; pushed).
