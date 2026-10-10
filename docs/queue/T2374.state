@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged ab54184
 reason: stage 1a + 1a-audit PASS; stage 1b DONE (edaa2ec; BA/KTreeRep.lean 1763 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_0e5634e3-169); owed line BAKsolve removed on main by exact match (H23 b); full lake build 4191 jobs exit 0
-updated: Sat Oct 10 08:46:43 UTC 2026
+updated: Sat Oct 10 08:46:45 UTC 2026
 reports: docs/reports/T2374-prove.md, docs/reports/T2374-1a-audit.md, docs/reports/T2374-audit.md
