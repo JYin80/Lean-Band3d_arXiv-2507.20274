@@ -1,0 +1,4 @@
+state: proving
+reason: started (H189, H12): workflow wf_39c8fddd-adb, stage 1a preflight → 1b prover-max (design + probe, report only) → auditor; branch t/T2395 from main 699d51b
+updated: Sat Oct 10 22:01:46 UTC 2026
+reports: docs/reports/T2395-prove.md, docs/reports/T2395-design.md, docs/reports/T2395-audit.md

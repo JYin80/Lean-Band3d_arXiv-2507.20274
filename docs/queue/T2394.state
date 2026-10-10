@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover 3efd9da, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sat Oct 10 22:16:59 UTC 2026
+state: merged f136ab5
+reason: audit PASS round 1 (claude-opus-5-5); new Chain/LWGen (151) + BA/LWPinsBA (111), root imports (conflict with KSumZeroB import resolved as union); full lake build 4208 jobs; pushed
+updated: Sat Oct 10 22:17:01 UTC 2026
 reports: docs/reports/T2394-prove.md, docs/reports/T2394-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 2177c1a, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sat Oct 10 22:04:26 UTC 2026
+state: merged 5ba1ebe
+reason: audit PASS round 1 (claude-opus-5-5); new BA/EKSum (1929 lines, stop 2000; over the 1,500 split mark, auditor observation), Test/Axioms.lean 3 owed lines removed, root import; full lake build 4205 jobs; pushed
+updated: Sat Oct 10 22:04:28 UTC 2026
 reports: docs/reports/T2392-prove.md, docs/reports/T2392-audit.md
