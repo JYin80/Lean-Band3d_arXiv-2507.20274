@@ -1560,3 +1560,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   阶段 M/N 开启 REQ 的设计里逐项决定走转移（`ouMatC (ba sz) = λΨ + ouMat …`，加平移 `Φ ↦ Φ(λΨ + ·)`）还是写泛型孪生。E5（BA 流是否满足 `etaT`、`|fE| ≤ 2 − κ`）放进 BA-C5 的 1a。ROUTES 的 UN 行据此记为「带状关闭；E1–E4 交 BA-N3」。
 - (4) **T2376 已由 Jun 在中枢直接开工**（中枢会话「开始啊」，08:53:51 UTC；9d5d47d 提交了票和检查文件）。H169 剩下的提交步骤照常执行。
 - (5) 计数：UN 62（关闭）；MA 7 / 计划 9；BA 44（阶段 M/N 加 BA-N3）。下一张票号 T2377，下一节 §189，下一条 H171，下一号差异 D636。
+
+## §189 — MA-06a = T2377 预先放行（T2375 合并后开工）（总调度 V2，2026-10-10 09:09 UTC）
+
+- (1) T2375（LW-01）的证明阶段 09:07 UTC 交了报告，正在审核。为了它一合并就能开工，先写好 **T2377 = MA-06a**（带状终端，MA 8，计划 9）。
+  - 新文件 `Main/BandTerminal.lean`：`locSC_holds`、`QDiff_holds`、`QUE_holds`、`decol_holds`、`unLocAvgBand_holds`、`unQueBand_holds`、`unOUClaims_holds`、`unBUniv_of_L32`、`band_terminal : UNL32 → decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff`、`unClaimRowBA_holds`。
+  - 登记编辑：按 0853 的 C1、O3 删行、移类别；E1–E4 的归属注释改成 BA-N3。
+  - `prover-hard`，150 / 250 / 400，停止线 500。
+  - **开工条件：T2375 合并。**
+- (2) 下一张票号 T2378，下一节 §190，下一条 H172，下一号差异 D636。

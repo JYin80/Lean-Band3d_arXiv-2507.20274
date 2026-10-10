@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 08:56 UTC (dispatcher V2: supervisor 0853 PASS: UN closed (band), MA-06 split a/b, E1–E4 to BA-N3 (H170); T2376 running)
+updated: 2026-10-10 09:09 UTC (dispatcher V2: MA-06a T2377 released, starts after T2375 merges (H171))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -11,9 +11,12 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 343. T2375 — `docs/tickets/T2375.md` (LW-01 + ST-6 R4, new `Graph/LWTermHolds.lean`, `Induction/MainIndHolds.lean`; input T2364 merged 9b484e2): stage 1a PASS (no cut needed); stage 1b running (wf_92cb9793-01c, branch from main e004671).
 344. T2376 — `docs/tickets/T2376.md` (BA-K06, new `BA/KMolecule.lean`; input K05b merged ab54184): released; starts when its check compiles with exit 0 and a slot is free (H12). Stage 1a is a design gate followed by a 1a-audit before 1b (ticket).
+345. T2377 — `docs/tickets/T2377.md` (MA-06a band terminal, new `Main/BandTerminal.lean`; input T2375): released; **starts only after T2375 has merged** and its check compiles with exit 0 (H12). First in line at that point (critical path), before any BA row.
 
 ## Pre-release checks
 - `docs/tickets/checks/T2376-check.lean` (BA-K06; no new pin, merged names only; released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2377-check.lean` (MA-06a; no new pin; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 09:13:17 UTC 2026 — `lake env lean docs/tickets/checks/T2377-check.lean` on main d38df76: exit 0, no error lines.
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -43,6 +46,9 @@ Standing instructions carried over from the archived CONTROL (verbatim):
 
 - H170 (dispatcher V2, 2026-10-10 08:56 UTC; DECISIONS §188). Commit by name with your next commit `docs/supervisor/2026-10-10-0853.md`, `docs/supervisor/requests/REQ-2026-10-10-0806.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md` (together with H169's files if not yet committed). Nothing to start. One `done:` line.
   done: Sat Oct 10 09:03:08 UTC 2026 — H169's and H170's remaining files committed by name (with states T2374/T2376), pushed; nothing started.
+
+- H171 (dispatcher V2, 2026-10-10 09:09 UTC; DECISIONS §189). Commit by name with your next commit `docs/tickets/T2377.md`, `docs/tickets/checks/T2377-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line). Start T2377 in the loop in which T2375 merges (it needs `unMLOut_holds`). One `done:` line per step.
+  done: Sat Oct 10 09:13:17 UTC 2026 — the 6 listed files committed by name (with state T2377), pushed; check `lake env lean docs/tickets/checks/T2377-check.lean` on main d38df76: exit 0, no error lines. T2377 `held` until T2375 merges.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 03:11:27 UTC 2026 — T2365 merged a5c1a1a (BA-K09a: Loop/KLIndStepA.lean, Loop/KLIndStepB.lean in place, no root import, no registry change; audit PASS claude-opus-5-5 (field-wise IndStepTH check, DECISIONS §175); full lake build 4177 jobs (rebuilt the certificate modules); pushed). Rule (A).
