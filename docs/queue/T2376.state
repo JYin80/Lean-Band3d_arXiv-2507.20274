@@ -1,4 +1,4 @@
-state: proving
-reason: H172 (DECISIONS §190): Amend 1 (prover-max; KMolecule.lean + KCactusCut.lean; combined stop 2000); stage 1b running on t/T2376 (workflow wf_7177a252-c1e), Amend 1 in prover and auditor prompts; section (a) and 1a-audit (i)-(iii) stand
-updated: Sat Oct 10 09:33:16 UTC 2026
+state: audit-pass
+reason: Amend 1 stage 1b DONE (3fa3746; KMolecule + KCactusCut 1737 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_7177a252-c1e); full lake build 4196 jobs exit 0
+updated: Sat Oct 10 10:22:03 UTC 2026
 reports: docs/reports/T2376-prove.md, docs/reports/T2376-1a-audit.md, docs/reports/T2376-audit.md
