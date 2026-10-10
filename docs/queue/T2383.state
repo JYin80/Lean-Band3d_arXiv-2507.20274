@@ -1,4 +1,4 @@
-state: blocked
-reason: stage 1a BLOCKED (wf_95b5463d-fc9; docs/reports/T2383-prove.md:74): Target 2 (HierarchyN.lean generic restatement) needs a generic KLK/ST* vocabulary and generic loopDrift_sub_K_deriv_n (HierAlgebra, T5s2) outside the sole writable files. Question for the dispatcher: does Target 2 mean (A) leave the HierarchyN.lean declarations band-only and unchanged, (B) add private generic twins of STllPairN/STegtM/STLoopGenNForm only, or (C) wait for T5s2? Targets 1, 3-6 PASS at 1a. Stage 1b not started.
-updated: Sat Oct 10 12:07:27 UTC 2026
-reports: docs/reports/T2383-prove.md
+state: audit-pass
+reason: Amend 1 stage 1b DONE (ddf93af; option A; tripwire not fired); auditor1 PASS claude-opus-5-5 (wf_37e41384-673); full lake build 4199 jobs exit 0
+updated: Sat Oct 10 12:37:35 UTC 2026
+reports: docs/reports/T2383-prove.md, docs/reports/T2383-audit.md

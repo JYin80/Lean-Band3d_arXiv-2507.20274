@@ -142,67 +142,75 @@ private theorem LoopGenN_word_eq (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : �
   rw [gloopProd, hzip]
   rfl
 
+/-- The derivative of the generic spectral flow: `d_u ztOf m E u = -m`. -/
+private theorem LoopGenN_hasDerivAt_ztOf (m : ℂ) (E u : ℝ) : HasDerivAt (ztOf m E) (-m) u := by
+  have h1 : HasDerivAt (fun v : ℝ => (v : ℂ)) 1 u := (hasDerivAt_id u).ofReal_comp
+  have h2 : HasDerivAt (fun v : ℝ => ((E : ℂ) + (1 - (v : ℂ)) * m)) (-m) u := by
+    have h := (((hasDerivAt_const u (1 : ℂ)).sub h1).mul_const m).const_add (E : ℂ)
+    simpa using h
+  exact h2
+
 /-- The spectral derivative of one signed resolvent at a fixed Hermitian matrix
 (the generic-`H` form of the private `OneStep_hasDerivAt_spec0`). -/
 private theorem LoopGenN_hasDerivAt_Gsig_spec {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
-    (hH : H.IsHermitian) {E u : ℝ} (hE : |E| < 2) (hu : u < 1) (σ : Bool) :
-    HasDerivAt (fun v : ℝ => Gres H (zt E v) σ)
-      (-(Gres H (zt E u) σ *
-        (spectralMSign E σ • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) *
-        Gres H (zt E u) σ)) u := by
-  have him : (zt E u).im ≠ 0 := by
-    rw [spectralZ_im]
-    exact ne_of_gt (mul_pos (by linarith) (spectralM_im_pos hE))
+    (hH : H.IsHermitian) {m : ℂ} (hm : 0 < m.im) (E : ℝ) {u : ℝ} (hu : u < 1) (σ : Bool) :
+    HasDerivAt (fun v : ℝ => Gres H (ztOf m E v) σ)
+      (-(Gres H (ztOf m E u) σ *
+        (PropSpin m σ • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) *
+        Gres H (ztOf m E u) σ)) u := by
+  have him : (ztOf m E u).im ≠ 0 := by
+    rw [ztOf_im, etaOf]
+    exact ne_of_gt (mul_pos (by linarith) hm)
   cases σ with
   | true =>
-      have h := hasDerivAt_green_moving (hasDerivAt_const u H) (hasDerivAt_spectralZ E u) hH him
-      simpa only [spectralMSign, ite_true, zero_sub, neg_smul, neg_neg] using h
+      have h := hasDerivAt_green_moving (hasDerivAt_const u H) (LoopGenN_hasDerivAt_ztOf m E u) hH him
+      simpa only [PropSpin, ite_true, zero_sub, neg_smul, neg_neg] using h
   | false =>
-      have hz : HasDerivAt (fun v : ℝ => (starRingEnd ℂ) (zt E v))
-          (-((starRingEnd ℂ) (mE E))) u := by
-        simpa using (hasDerivAt_spectralZ E u).star
-      have him' : ((starRingEnd ℂ) (zt E u)).im ≠ 0 := by simpa using him
+      have hz : HasDerivAt (fun v : ℝ => (starRingEnd ℂ) (ztOf m E v))
+          (-((starRingEnd ℂ) m)) u := by
+        simpa using (LoopGenN_hasDerivAt_ztOf m E u).star
+      have him' : ((starRingEnd ℂ) (ztOf m E u)).im ≠ 0 := by simpa using him
       have h := hasDerivAt_green_moving (hasDerivAt_const u H) hz hH him'
-      have hfun : (fun v : ℝ => Gres H (zt E v) false) =
-          fun v : ℝ => Gres H ((starRingEnd ℂ) (zt E v)) true := by
+      have hfun : (fun v : ℝ => Gres H (ztOf m E v) false) =
+          fun v : ℝ => Gres H ((starRingEnd ℂ) (ztOf m E v)) true := by
         funext v
         simp [Gres]
       rw [hfun]
-      have hG : Gres H (zt E u) false = Gres H ((starRingEnd ℂ) (zt E u)) true := by
+      have hG : Gres H (ztOf m E u) false = Gres H ((starRingEnd ℂ) (ztOf m E u)) true := by
         simp [Gres]
       rw [hG]
-      simpa only [spectralMSign, Bool.false_eq_true, ite_false, zero_sub, neg_smul, neg_neg] using h
+      simpa only [PropSpin, Bool.false_eq_true, ite_false, zero_sub, neg_smul, neg_neg] using h
 
 /-- The scalar insertion at one selected edge. -/
-private def LoopGenN_edgeTerm (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (E u : ℝ)
+private def LoopGenN_edgeTerm (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (m : ℂ) (E u : ℝ)
     (e : EdgeSplit (Bool × Zd d L)) : Matrix (Vtx d L W) (Vtx d L W) ℂ :=
-  -(LoopGenN_word H (zt E u) e.before *
-    (Gres H (zt E u) e.selected.1 *
-        (spectralMSign E e.selected.1 • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) *
-      (Gres H (zt E u) e.selected.1 * Eblk d L W e.selected.2 *
-        LoopGenN_word H (zt E u) e.after)))
+  -(LoopGenN_word H (ztOf m E u) e.before *
+    (Gres H (ztOf m E u) e.selected.1 *
+        (PropSpin m e.selected.1 • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) *
+      (Gres H (ztOf m E u) e.selected.1 * Eblk d L W e.selected.2 *
+        LoopGenN_word H (ztOf m E u) e.after)))
 
 /-- The product rule over the word: the spectral derivative is the sum of the edge insertions. -/
 private theorem LoopGenN_hasDerivAt_word_spec {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
-    (hH : H.IsHermitian) {E u : ℝ} (hE : |E| < 2) (hu : u < 1) (l : List (Bool × Zd d L)) :
-    HasDerivAt (fun v : ℝ => LoopGenN_word H (zt E v) l)
-      (((edgeSplits l).map (LoopGenN_edgeTerm H E u)).sum) u := by
+    (hH : H.IsHermitian) {m : ℂ} (hm : 0 < m.im) (E : ℝ) {u : ℝ} (hu : u < 1) (l : List (Bool × Zd d L)) :
+    HasDerivAt (fun v : ℝ => LoopGenN_word H (ztOf m E v) l)
+      (((edgeSplits l).map (LoopGenN_edgeTerm H m E u)).sum) u := by
   induction l with
   | nil =>
       simpa [LoopGenN_word, edgeSplits] using
         hasDerivAt_const u (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)
   | cons p l ih =>
-      have h := ((LoopGenN_hasDerivAt_Gsig_spec hH hE hu p.1).mul_const (Eblk d L W p.2)).mul ih
-      have hfun : (fun v : ℝ => Gres H (zt E v) p.1 * Eblk d L W p.2) *
-          (fun v : ℝ => LoopGenN_word H (zt E v) l) =
-          fun v : ℝ => LoopGenN_word H (zt E v) (p :: l) := by
+      have h := ((LoopGenN_hasDerivAt_Gsig_spec hH hm E hu p.1).mul_const (Eblk d L W p.2)).mul ih
+      have hfun : (fun v : ℝ => Gres H (ztOf m E v) p.1 * Eblk d L W p.2) *
+          (fun v : ℝ => LoopGenN_word H (ztOf m E v) l) =
+          fun v : ℝ => LoopGenN_word H (ztOf m E v) (p :: l) := by
         funext v
         rfl
       rw [hfun] at h
       refine h.congr_deriv ?_
       have hcons : ∀ e : EdgeSplit (Bool × Zd d L),
-          LoopGenN_edgeTerm H E u ⟨p :: e.before, e.selected, e.after⟩ =
-            (Gres H (zt E u) p.1 * Eblk d L W p.2) * LoopGenN_edgeTerm H E u e := by
+          LoopGenN_edgeTerm H m E u ⟨p :: e.before, e.selected, e.after⟩ =
+            (Gres H (ztOf m E u) p.1 * Eblk d L W p.2) * LoopGenN_edgeTerm H m E u e := by
         intro e
         simp only [LoopGenN_edgeTerm, LoopGenN_word, List.foldr_cons, Matrix.mul_neg,
           Matrix.mul_assoc]
@@ -213,38 +221,39 @@ private theorem LoopGenN_hasDerivAt_word_spec {H : Matrix (Vtx d L W) (Vtx d L W
 
 /-- The spectral derivative of a loop at a fixed Hermitian block matrix. -/
 private theorem LoopGenN_deriv_spec {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
-    (hH : H.IsHermitian) {E u : ℝ} (hE : |E| < 2) (hu : u < 1) (I : Loop.LoopIdx (Zd d L)) :
-    deriv (fun v : ℝ => loopL d L W H (zt E v) I) u =
+    (hH : H.IsHermitian) {m : ℂ} (hm : 0 < m.im) (E : ℝ) {u : ℝ} (hu : u < 1) (I : Loop.LoopIdx (Zd d L)) :
+    deriv (fun v : ℝ => loopL d L W H (ztOf m E v) I) u =
       ((edgeSplits (I.σ.zip I.a)).map
-        (fun e => Matrix.trace (LoopGenN_edgeTerm H E u e))).sum := by
+        (fun e => Matrix.trace (LoopGenN_edgeTerm H m E u e))).sum := by
   set T : Matrix (Vtx d L W) (Vtx d L W) ℂ →L[ℝ] ℂ :=
     LinearMap.toContinuousLinearMap
       ((Matrix.traceLinearMap (Vtx d L W) ℂ ℂ).restrictScalars ℝ)
   have hT : ∀ M, T M = Matrix.trace M := fun _ => rfl
   have h := T.hasFDerivAt.comp_hasDerivAt u
-    (LoopGenN_hasDerivAt_word_spec hH hE hu (I.σ.zip I.a))
+    (LoopGenN_hasDerivAt_word_spec hH hm E hu (I.σ.zip I.a))
   simp only [hT, Function.comp_def] at h
-  have hfun : (fun v : ℝ => loopL d L W H (zt E v) I) =
-      fun v : ℝ => Matrix.trace (LoopGenN_word H (zt E v) (I.σ.zip I.a)) := by
+  have hfun : (fun v : ℝ => loopL d L W H (ztOf m E v) I) =
+      fun v : ℝ => Matrix.trace (LoopGenN_word H (ztOf m E v) (I.σ.zip I.a)) := by
     funext v
     rfl
   rw [hfun, h.deriv, Matrix.trace_list_sum, List.map_map]
   rfl
 
+
 /-- One edge insertion is a sum of single-edge cuts. -/
 private theorem LoopGenN_trace_edgeTerm (H : Matrix (Vtx d L W) (Vtx d L W) ℂ)
-    (E u : ℝ) (e : EdgeSplit (Bool × Zd d L)) :
-    Matrix.trace (LoopGenN_edgeTerm H E u e) =
-      -(spectralMSign E e.selected.1 * (W : ℂ) ^ d) *
-        ∑ b : Zd d L, loopL d L W H (zt E u)
+    (m : ℂ) (E u : ℝ) (e : EdgeSplit (Bool × Zd d L)) :
+    Matrix.trace (LoopGenN_edgeTerm H m E u e) =
+      -(PropSpin m e.selected.1 * (W : ℂ) ^ d) *
+        ∑ b : Zd d L, loopL d L W H (ztOf m E u)
           ((⟨e.before.map Prod.fst ++ e.selected.1 :: e.after.map Prod.fst,
               e.before.map Prod.snd ++ e.selected.2 :: e.after.map Prod.snd⟩ :
             Loop.LoopIdx (Zd d L)).cutGlue ((e.before.map Prod.fst).length + 1) b) := by
   have hpre : (e.before.map Prod.fst).length = (e.before.map Prod.snd).length := by simp
-  have h := neg_trace_scalarDrift_cutGlue_split d L W H (zt E u)
+  have h := neg_trace_scalarDrift_cutGlue_split d L W H (ztOf m E u)
     (e.before.map Prod.fst) (e.after.map Prod.fst)
     (e.before.map Prod.snd) (e.after.map Prod.snd)
-    e.selected.1 e.selected.2 (spectralMSign E e.selected.1) hpre
+    e.selected.1 e.selected.2 (PropSpin m e.selected.1) hpre
   rw [← h, LoopGenN_edgeTerm, Matrix.trace_neg, LoopGenN_word_eq, LoopGenN_word_eq]
 
 end SpectralBridge
@@ -445,13 +454,13 @@ private theorem LoopGenN_sameEdge {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM :
 
 /-- The pair cut value at two selected edges, as a function of their one-based positions. -/
 private theorem LoopGenN_pairCut {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian)
-    (E u : ℝ) (I : Loop.LoopIdx (Zd d L)) (hI : I.WF)
+    (z : ℂ) (I : Loop.LoopIdx (Zd d L)) (hI : I.WF)
     (p : PairSplit (Bool × Zd d L)) (hp : p ∈ pairSplits (I.σ.zip I.a)) :
-    pairCutValue d L W g 1 (LoopGenN_omega M) (zt E u) p =
+    pairCutValue d L W g 1 (LoopGenN_omega M) z p =
       ∑ v : Zd d L, ∑ w : Zd d L,
-        loopL d L W (blockMat d L W M) (zt E u) (I.cutGlueL (p.before.length + 1)
+        loopL d L W (blockMat d L W M) z (I.cutGlueL (p.before.length + 1)
             (p.before.length + p.middle.length + 2) v) * SB d L g v w *
-          loopL d L W (blockMat d L W M) (zt E u) (I.cutGlueR (p.before.length + 1)
+          loopL d L W (blockMat d L W M) z (I.cutGlueR (p.before.length + 1)
             (p.before.length + p.middle.length + 2) w) := by
   have hIp := LoopGenN_pair_eq I hI p hp
   simp only [pairCutValue, segmentLoopIdx, LoopGenN_HflowBlock_one hM, List.length_map]
@@ -459,14 +468,15 @@ private theorem LoopGenN_pairCut {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : 
 
 /-- The spectral insertion at a selected edge, as a function of its one-based position. -/
 private theorem LoopGenN_specEdge (H : Matrix (Vtx d L W) (Vtx d L W) ℂ)
-    (E u : ℝ) (I : Loop.LoopIdx (Zd d L)) (hI : I.WF)
+    (m : ℂ) (E u : ℝ) (I : Loop.LoopIdx (Zd d L)) (hI : I.WF)
     (e : EdgeSplit (Bool × Zd d L)) (he : e ∈ edgeSplits (I.σ.zip I.a)) :
-    Matrix.trace (LoopGenN_edgeTerm H E u e) =
-      -(spectralMSign E (I.σ.getD (e.before.length + 1 - 1) false) * (W : ℂ) ^ d) *
-        ∑ b : Zd d L, loopL d L W H (zt E u) (I.cutGlue (e.before.length + 1) b) := by
+    Matrix.trace (LoopGenN_edgeTerm H m E u e) =
+      -(PropSpin m (I.σ.getD (e.before.length + 1 - 1) false) * (W : ℂ) ^ d) *
+        ∑ b : Zd d L, loopL d L W H (ztOf m E u) (I.cutGlue (e.before.length + 1) b) := by
   have hIe := LoopGenN_edge_eq I hI e he
   rw [LoopGenN_trace_edgeTerm, List.length_map]
   conv_rhs => rw [hIe, LoopGenN_getD]
+
 
 end Cuts
 
@@ -477,18 +487,18 @@ section Assembly
 variable {d L W : ℕ} {g : ℝ} [NeZero L] [NeZero W]
 
 /-- `⟨G̃(σ) E_a⟩ = 𝓛^{(1)}_{(σ),(a)} - m(σ)` (the body of `STavgErrM`, `def_EwtG`). -/
-private def LoopGenN_avg (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
+private def LoopGenN_avg (m : ℂ) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
     (a : Zd d L) : ℂ :=
-  loopL d L W (blockMat d L W M) (zt E u) ⟨[σ], [a]⟩ - mSigma E σ
+  loopL d L W (blockMat d L W M) (ztOf m E u) ⟨[σ], [a]⟩ - PropSpin m σ
 
 /-- `⟨G̃(σ) E_a⟩ = ⟨G(σ) E_a⟩ - m(σ)`. -/
-private theorem LoopGenN_avg_eq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
+private theorem LoopGenN_avg_eq (m : ℂ) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
     (a : Zd d L) :
-    LoopGenN_avg E u M σ a =
-      Matrix.trace (Gres (blockMat d L W M) (zt E u) σ * Eblk d L W a) - spectralMSign E σ := by
+    LoopGenN_avg m E u M σ a =
+      Matrix.trace (Gres (blockMat d L W M) (ztOf m E u) σ * Eblk d L W a) - PropSpin m σ := by
   simp only [LoopGenN_avg, loopL, List.zip_cons_cons, List.zip_nil_left, List.foldr_cons,
     List.foldr_nil, Matrix.mul_one]
-  rfl
+
 
 /-- Column sums of `S^{(B)}` are `1`. -/
 private theorem LoopGenN_sum_SB_col (hL : 3 ≤ L) (b : Zd d L) : ∑ a : Zd d L, SB d L g a b = 1 := by
@@ -519,30 +529,108 @@ private theorem LoopGenN_sum_algebra (hL : 3 ≤ L) (f t : Zd d L → ℂ) (m : 
   ring
 
 /-- The same-edge cuts and the spectral cuts of one edge combine into its `𝓔^{(G̃)}` term. -/
-private theorem LoopGenN_edge_algebra (hL : 3 ≤ L) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+private theorem LoopGenN_edge_algebra (hL : 3 ≤ L) (m : ℂ) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
     (I : Loop.LoopIdx (Zd d L)) (k : ℕ) :
     (W : ℂ) ^ d * ∑ p : Zd d L, ∑ q : Zd d L,
-        loopL d L W (blockMat d L W M) (zt E u) (I.cutGlue k p) * SB d L g p q *
-          Matrix.trace (Gres (blockMat d L W M) (zt E u) (I.σ.getD (k - 1) false) *
+        loopL d L W (blockMat d L W M) (ztOf m E u) (I.cutGlue k p) * SB d L g p q *
+          Matrix.trace (Gres (blockMat d L W M) (ztOf m E u) (I.σ.getD (k - 1) false) *
             Eblk d L W q) +
-      -(spectralMSign E (I.σ.getD (k - 1) false) * (W : ℂ) ^ d) *
-        ∑ b : Zd d L, loopL d L W (blockMat d L W M) (zt E u) (I.cutGlue k b) =
+      -(PropSpin m (I.σ.getD (k - 1) false) * (W : ℂ) ^ d) *
+        ∑ b : Zd d L, loopL d L W (blockMat d L W M) (ztOf m E u) (I.cutGlue k b) =
     (W : ℂ) ^ d * ∑ a : Zd d L, ∑ b : Zd d L,
-      LoopGenN_avg E u M (I.σ.getD (k - 1) false) a * SB d L g a b *
-        loopL d L W (blockMat d L W M) (zt E u) (I.cutGlue k b) := by
+      LoopGenN_avg m E u M (I.σ.getD (k - 1) false) a * SB d L g a b *
+        loopL d L W (blockMat d L W M) (ztOf m E u) (I.cutGlue k b) := by
   simp only [LoopGenN_avg_eq]
-  rw [LoopGenN_sum_algebra hL (fun b => loopL d L W (blockMat d L W M) (zt E u) (I.cutGlue k b))
-    (fun a => Matrix.trace (Gres (blockMat d L W M) (zt E u) (I.σ.getD (k - 1) false) *
+  rw [LoopGenN_sum_algebra hL (fun b => loopL d L W (blockMat d L W M) (ztOf m E u) (I.cutGlue k b))
+    (fun a => Matrix.trace (Gres (blockMat d L W M) (ztOf m E u) (I.σ.getD (k - 1) false) *
       Eblk d L W a))]
   ring
 
+
 end Assembly
 
+/-- `genMat` along the generic flow `ztOf m E u` (the generic-`m` form of `Path/OneStep.lean:68`;
+`genMat_eq_genMatOf` is `rfl`). -/
+def genMatOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (I : Loop.LoopIdx (Zd d L)) : ℂ :=
+  (1 / 2 : ℂ) * ∑ c : CoordF d L W, ((gvarF d L W g c : ℝ) : ℂ) *
+      deriv (deriv (fun y : ℝ =>
+        loopL d L W (blockMat d L W (M + (y : ℂ) • coordinateMatrix d L W c)) (ztOf m E u) I)) 0 +
+    deriv (fun v : ℝ => loopL d L W (blockMat d L W M) (ztOf m E v) I) u
+
+theorem genMat_eq_genMatOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (E u : ℝ)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (I : Loop.LoopIdx (Zd d L)) :
+    genMat d L W g E u M I = genMatOf d L W g (mE E) E u M I := rfl
+
+/-- **`loopGenNOf`** (the generic form of `loopGenN`): the loop generator identity along the flow
+`ztOf m E u` for every one-loop value `m` with `0 < m.im`, every coupling `g` of `S^{(B)}(g)` and `3 ≤ L`. -/
+theorem loopGenNOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (m : ℂ) (E : ℝ) (hL : 3 ≤ L)
+    (hm : 0 < m.im) (u : ℝ) (hu1 : u < 1) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (hM : M.IsHermitian)
+    {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d L) :
+    genMatOf d L W g m E u M (loopOf σ a) =
+      (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 (loopOf σ a).length,
+          ∑ l' ∈ Finset.Ioc k' (loopOf σ a).length, ∑ x : Zd d L, ∑ y : Zd d L,
+        loopL d L W (blockMat d L W M) (ztOf m E u) ((loopOf σ a).cutGlueL k' l' x) * SB d L g x y *
+          loopL d L W (blockMat d L W M) (ztOf m E u) ((loopOf σ a).cutGlueR k' l' y) +
+        (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 (loopOf σ a).length, ∑ x : Zd d L, ∑ y : Zd d L,
+          (loopL d L W (blockMat d L W M) (ztOf m E u)
+              ⟨[(loopOf σ a).σ.getD (k' - 1) false], [x]⟩ -
+            PropSpin m ((loopOf σ a).σ.getD (k' - 1) false)) * SB d L g x y *
+          loopL d L W (blockMat d L W M) (ztOf m E u) ((loopOf σ a).cutGlue k' y) := by
+  set I : Loop.LoopIdx (Zd d L) := loopOf σ a with hIdef
+  have hI : I.WF := by simp [hIdef, loopOf, Loop.LoopIdx.WF]
+  have hlen : (I.σ.zip I.a).length = I.length := by
+    simp [Loop.LoopIdx.length, List.length_zip, hI.symm]
+  have hz : (ztOf m E u).im ≠ 0 := by
+    rw [ztOf_im, etaOf]
+    exact ne_of_gt (mul_pos (by linarith) hm)
+  have hH : (blockMat d L W M).IsHermitian := hM.submatrix _
+  set l := I.σ.zip I.a with hl
+  set ω := LoopGenN_omega M with hω
+  set z := ztOf m E u with hzdef
+  -- the three families of cut terms as functions of the one-based positions
+  set Fs : ℕ → ℂ := fun k' => ∑ p : Zd d L, ∑ q : Zd d L,
+    loopL d L W (blockMat d L W M) z (I.cutGlue k' p) * SB d L g p q *
+      Matrix.trace (Gres (blockMat d L W M) z (I.σ.getD (k' - 1) false) * Eblk d L W q) with hFs
+  set Fsp : ℕ → ℂ := fun k' => -(PropSpin m (I.σ.getD (k' - 1) false) * (W : ℂ) ^ d) *
+    ∑ b : Zd d L, loopL d L W (blockMat d L W M) z (I.cutGlue k' b) with hFsp
+  set Fp : ℕ → ℕ → ℂ := fun k' l' => ∑ v : Zd d L, ∑ w : Zd d L,
+    loopL d L W (blockMat d L W M) z (I.cutGlueL k' l' v) * SB d L g v w *
+      loopL d L W (blockMat d L W M) z (I.cutGlueR k' l' w) with hFp
+  have hsame := LoopGenN_sum_edgeSplits l (sameEdgeCutValue d L W g 1 ω z) Fs
+    (fun e he => LoopGenN_sameEdge hM z I hI e he)
+  have hpair := LoopGenN_sum_pairSplits l (pairCutValue d L W g 1 ω z) Fp
+    (fun p hp => LoopGenN_pairCut hM z I hI p hp)
+  have hspec := LoopGenN_sum_edgeSplits l
+    (fun e => Matrix.trace (LoopGenN_edgeTerm (blockMat d L W M) m E u e)) Fsp
+    (fun e he => LoopGenN_specEdge (blockMat d L W M) m E u I hI e he)
+  -- the left side
+  have hlhs : genMatOf d L W g m E u M I =
+      (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, Fs k' +
+        (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, ∑ l' ∈ Finset.Ioc k' I.length, Fp k' l' +
+        ∑ k' ∈ Finset.Icc 1 I.length, Fsp k' := by
+    rw [genMatOf, Finset.sum_congr rfl fun c _ => by rw [LoopGenN_deriv2 hM c hz I hI],
+      sum_coordinateSecondWordDeriv_allCuts d L W g 1 zero_le_one ω z l,
+      LoopGenN_deriv_spec hH hm E hu1 I, hsame, hpair, hspec, hlen]
+    push_cast
+    ring
+  have hedge : ∑ k' ∈ Finset.Icc 1 I.length, ((W : ℂ) ^ d * Fs k' + Fsp k') =
+      (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, ∑ x : Zd d L, ∑ y : Zd d L,
+        LoopGenN_avg m E u M (I.σ.getD (k' - 1) false) x * SB d L g x y *
+          loopL d L W (blockMat d L W M) (ztOf m E u) (I.cutGlue k' y) := by
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun k' _ => LoopGenN_edge_algebra hL m E u M I k'
+  rw [hlhs]
+  change _ = _ + (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, ∑ x : Zd d L, ∑ y : Zd d L,
+        LoopGenN_avg m E u M (I.σ.getD (k' - 1) false) x * SB d L g x y *
+          loopL d L W (blockMat d L W M) (ztOf m E u) (I.cutGlue k' y)
+  rw [← hedge, Finset.sum_add_distrib, ← Finset.mul_sum]
+  simp only [hFp]
+  ring
+
 /-- **`loopGenN`** (RBM2D `LoopGenN`, `Induction/LoopGenN.lean:484`; `eq:mainStoflow`, `1_2`, drift part
-with `def_EwtG`): for Hermitian `M`, every loop `(σ, a)`, every block size `W`, every coupling `g`
-of `S^{(B)}(g)` and `3 ≤ L`,
-`genMat(𝓛_{σ,a}) = W^d Σ_{k<l} Σ_{x,y} 𝓛(cutL^{(x)}_{k,l}) S^{(B)}_{xy} 𝓛(cutR^{(y)}_{k,l})
-  + W^d Σ_k Σ_{x,y} (𝓛_{(σ_k),(x)} - m(σ_k)) S^{(B)}_{xy} 𝓛(cut^{(y)}_k)`.
+with `def_EwtG`): the band statement, unchanged, is the generic `loopGenNOf` at `m = mE E`
+(`zt E u = ztOf (mE E) E u` and `mSigma E = PropSpin (mE E)` by unfolding; `0 < (mE E).im` is `mE_im_pos`).
 At `(L, W, g) = (sz.L n, sz.W n, sz.lam n)` the two terms are `STllPairN` and `STegtM`
 (`stLoopGenNForm_holds`). -/
 theorem loopGenN (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (E : ℝ) (hL : 3 ≤ L) (hE : |E| < 2)
@@ -557,57 +645,9 @@ theorem loopGenN (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (E : ℝ) (hL : 3
           (loopL d L W (blockMat d L W M) (zt E u)
               ⟨[(loopOf σ a).σ.getD (k' - 1) false], [x]⟩ -
             mSigma E ((loopOf σ a).σ.getD (k' - 1) false)) * SB d L g x y *
-          loopL d L W (blockMat d L W M) (zt E u) ((loopOf σ a).cutGlue k' y) := by
-  set I : Loop.LoopIdx (Zd d L) := loopOf σ a with hIdef
-  have hI : I.WF := by simp [hIdef, loopOf, Loop.LoopIdx.WF]
-  have hlen : (I.σ.zip I.a).length = I.length := by
-    simp [Loop.LoopIdx.length, List.length_zip, hI.symm]
-  have hz : (zt E u).im ≠ 0 := by
-    rw [spectralZ_im]
-    exact ne_of_gt (mul_pos (by linarith) (spectralM_im_pos hE))
-  have hH : (blockMat d L W M).IsHermitian := hM.submatrix _
-  set l := I.σ.zip I.a with hl
-  set ω := LoopGenN_omega M with hω
-  set z := zt E u with hzdef
-  -- the three families of cut terms as functions of the one-based positions
-  set Fs : ℕ → ℂ := fun k' => ∑ p : Zd d L, ∑ q : Zd d L,
-    loopL d L W (blockMat d L W M) z (I.cutGlue k' p) * SB d L g p q *
-      Matrix.trace (Gres (blockMat d L W M) z (I.σ.getD (k' - 1) false) * Eblk d L W q) with hFs
-  set Fsp : ℕ → ℂ := fun k' => -(spectralMSign E (I.σ.getD (k' - 1) false) * (W : ℂ) ^ d) *
-    ∑ b : Zd d L, loopL d L W (blockMat d L W M) z (I.cutGlue k' b) with hFsp
-  set Fp : ℕ → ℕ → ℂ := fun k' l' => ∑ v : Zd d L, ∑ w : Zd d L,
-    loopL d L W (blockMat d L W M) z (I.cutGlueL k' l' v) * SB d L g v w *
-      loopL d L W (blockMat d L W M) z (I.cutGlueR k' l' w) with hFp
-  have hsame := LoopGenN_sum_edgeSplits l (sameEdgeCutValue d L W g 1 ω z) Fs
-    (fun e he => LoopGenN_sameEdge hM z I hI e he)
-  have hpair := LoopGenN_sum_pairSplits l (pairCutValue d L W g 1 ω z) Fp
-    (fun p hp => LoopGenN_pairCut hM E u I hI p hp)
-  have hspec := LoopGenN_sum_edgeSplits l
-    (fun e => Matrix.trace (LoopGenN_edgeTerm (blockMat d L W M) E u e)) Fsp
-    (fun e he => LoopGenN_specEdge (blockMat d L W M) E u I hI e he)
-  -- the left side
-  have hlhs : genMat d L W g E u M I =
-      (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, Fs k' +
-        (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, ∑ l' ∈ Finset.Ioc k' I.length, Fp k' l' +
-        ∑ k' ∈ Finset.Icc 1 I.length, Fsp k' := by
-    rw [genMat, Finset.sum_congr rfl fun c _ => by rw [LoopGenN_deriv2 hM c hz I hI],
-      sum_coordinateSecondWordDeriv_allCuts d L W g 1 zero_le_one ω z l,
-      LoopGenN_deriv_spec hH hE hu1 I, hsame, hpair, hspec, hlen]
-    push_cast
-    ring
-  have hedge : ∑ k' ∈ Finset.Icc 1 I.length, ((W : ℂ) ^ d * Fs k' + Fsp k') =
-      (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, ∑ x : Zd d L, ∑ y : Zd d L,
-        LoopGenN_avg E u M (I.σ.getD (k' - 1) false) x * SB d L g x y *
-          loopL d L W (blockMat d L W M) (zt E u) (I.cutGlue k' y) := by
-    rw [Finset.mul_sum]
-    exact Finset.sum_congr rfl fun k' _ => LoopGenN_edge_algebra hL E u M I k'
-  rw [hlhs]
-  change _ = _ + (W : ℂ) ^ d * ∑ k' ∈ Finset.Icc 1 I.length, ∑ x : Zd d L, ∑ y : Zd d L,
-        LoopGenN_avg E u M (I.σ.getD (k' - 1) false) x * SB d L g x y *
-          loopL d L W (blockMat d L W M) (zt E u) (I.cutGlue k' y)
-  rw [← hedge, Finset.sum_add_distrib, ← Finset.mul_sum]
-  simp only [hFp]
-  ring
+          loopL d L W (blockMat d L W M) (zt E u) ((loopOf σ a).cutGlue k' y) :=
+  loopGenNOf d L W g (mE E) E hL (mE_im_pos hE) u hu1 M hM σ a
+
 
 /-- **`STLoopGenNForm` holds** (DECISIONS §32; `eq:mainStoflow`, `1_2`, drift part, with
 `def_EwtG`): `genMat(𝓛_{σ,a}) = STllPairN + STegtM` at `(L, W, g) = (sz.L n, sz.W n, sz.lam n)`,
@@ -620,6 +660,11 @@ theorem stLoopGenNForm_holds (d : ℕ) : STLoopGenNForm d := by
 general-`n` hierarchy identity, from `hierarchyN_of_loopGenN` and `stLoopGenNForm_holds`. -/
 theorem hierarchyN_holds (d : ℕ) : HierarchyN d :=
   hierarchyN_of_loopGenN d (stLoopGenNForm_holds d)
+
+/-- **G1 (band statement unchanged)**: the merged `loopGenN` has the type `loopGenNOf` gives at `m = mE E`. -/
+theorem recovers_loopGenN : type_of% @loopGenN :=
+  fun d L W g _ _ E hL hE u hu1 M hM _ σ a =>
+    loopGenNOf d L W g (mE E) E hL (mE_im_pos hE) u hu1 M hM σ a
 
 /-! ## Compiled nonempty instances
 
@@ -709,12 +754,28 @@ theorem LoopGenN_check_hierarchyN_sz0 :
   hierarchyN_holds 3 sz0 0 0 (by norm_num) (1 / 2) (by norm_num) (by norm_num) 1
     Matrix.isHermitian_one 3 (by norm_num) _ _
 
+/-- **Generic non-band instance**: `loopGenNOf` at `m = i` (`0 < m.im`), `E = 3` (outside the band,
+`|E| ≥ 2`, where `mE E` is not in the upper half-plane), `d = 3`, `L = 3`, `W = 2`, `g = 1/2`,
+`u = 1/2`, the non-scalar Hermitian `LoopGenN_M0`, the loop `(+,-,+)`, `a = (0,1,2)`; no `BA/*` import. -/
+example :=
+  loopGenNOf 3 3 2 (1 / 2) Complex.I 3 le_rfl (by simp) (1 / 2) (by norm_num)
+    LoopGenN_M0 LoopGenN_M0_isHermitian ![true, false, true] ![(0 : Zd 3 3), 1, 2]
+
+/-- The generic theorem at the band value `m = mE (1/2)` (the instance of `loopGenN` above, through
+`recovers_loopGenN`). -/
+example :=
+  loopGenNOf 3 3 2 (1 / 2) (mE (1 / 2)) (1 / 2) le_rfl (mE_im_pos (by norm_num [abs_of_pos])) (1 / 2)
+    (by norm_num) LoopGenN_M0 LoopGenN_M0_isHermitian ![true, false, true] ![(0 : Zd 3 3), 1, 2]
+
 end Instances
 
 end RBM.Ind
 
 end
 
+#print axioms RBM.Ind.loopGenNOf
 #print axioms RBM.Ind.loopGenN
+#print axioms RBM.Ind.recovers_loopGenN
+#print axioms RBM.Ind.genMat_eq_genMatOf
 #print axioms RBM.Ind.stLoopGenNForm_holds
 #print axioms RBM.Ind.hierarchyN_holds
