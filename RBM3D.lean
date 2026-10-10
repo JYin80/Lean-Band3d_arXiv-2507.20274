@@ -411,6 +411,8 @@ import RBM3D.BA.KSolve
 import RBM3D.Main.BUniv
 import RBM3D.Main.BUnivHolds
 import RBM3D.BA.KWard
+import RBM3D.Graph.AuxGraphRooted
+import RBM3D.Graph.LWMomentExp
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

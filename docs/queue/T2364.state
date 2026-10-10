@@ -1,4 +1,4 @@
-state: proving
-reason: stage 1b prover-max reported DONE at 9ca7389 (form β per Amend 1; registry owed line removed); waiting for workflow wf_154407b3-dcb to move to the auditor
-updated: Sat Oct 10 04:30:18 UTC 2026
+state: audit-pass
+reason: stage 1b rerun DONE (0b74a90, form beta per Amend 1); auditor1 PASS claude-opus-5-5 (wf_50a93c7f-58c); Axioms.lean patch applied onto main (H23 b); full lake build 4186 jobs exit 0
+updated: Sat Oct 10 07:36:25 UTC 2026
 reports: docs/reports/T2364-prove.md, docs/reports/T2364-audit.md
