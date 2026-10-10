@@ -2,21 +2,18 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 09:09 UTC (dispatcher V2: MA-06a T2377 released, starts after T2375 merges (H171))
+updated: 2026-10-10 09:23 UTC (dispatcher V2: T2375 merged (LW and ST-6 closed); T2377 running; T2376 Amend 1 (H172))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-343. T2375 — `docs/tickets/T2375.md` (LW-01 + ST-6 R4, new `Graph/LWTermHolds.lean`, `Induction/MainIndHolds.lean`; input T2364 merged 9b484e2): stage 1a PASS (no cut needed); stage 1b running (wf_92cb9793-01c, branch from main e004671).
-344. T2376 — `docs/tickets/T2376.md` (BA-K06, new `BA/KMolecule.lean`; input K05b merged ab54184): released; starts when its check compiles with exit 0 and a slot is free (H12). Stage 1a is a design gate followed by a 1a-audit before 1b (ticket).
-345. T2377 — `docs/tickets/T2377.md` (MA-06a band terminal, new `Main/BandTerminal.lean`; input T2375): released; **starts only after T2375 has merged** and its check compiles with exit 0 (H12). First in line at that point (critical path), before any BA row.
+344. T2376 — `docs/tickets/T2376.md` (BA-K06, new `BA/KMolecule.lean` **and `BA/KCactusCut.lean`** (Amend 1); input K05b merged): 1a PASS, 1a-audit RETURN on size only → **Amend 1** (`docs/tickets/T2376-amend-1.md`: second file, combined stop line 2000, `prover-max`); stage 1b starts now (H172).
+345. T2377 — `docs/tickets/T2377.md` (MA-06a band terminal, new `Main/BandTerminal.lean`; input T2375 merged 17ccf68): running (wf_4aabe6c1-3ac, branch from 17ccf68).
 
 ## Pre-release checks
-- `docs/tickets/checks/T2376-check.lean` (BA-K06; no new pin, merged names only; released conditionally above, DECISIONS §17).
-- `docs/tickets/checks/T2377-check.lean` (MA-06a; no new pin; released conditionally above, DECISIONS §17).
-  done: Sat Oct 10 09:13:17 UTC 2026 — `lake env lean docs/tickets/checks/T2377-check.lean` on main d38df76: exit 0, no error lines.
+(none pending)
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -43,12 +40,18 @@ Standing instructions carried over from the archived CONTROL (verbatim):
 
 - H169 (dispatcher V2, 2026-10-10 08:53 UTC; DECISIONS §187). Commit by name with your next commit `docs/tickets/T2376.md`, `docs/tickets/checks/T2376-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile `docs/tickets/checks/T2376-check.lean` on `main` (H4; one `done:` line; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T2376-check.out`); start T2376 in a free slot (H12), with its 1a-audit between 1a and 1b. One `done:` line per step.
   done: Sat Oct 10 09:03:08 UTC 2026 — already done on Jun's direct instruction in the hub session ("开始啊") before H169 was read: T2376.md and T2376-check.lean committed in 9d5d47d (08:5x UTC), pushed; check `lake env lean docs/tickets/checks/T2376-check.lean` on main ab54184: exit 0, no error lines; T2376 started from main 9d5d47d, workflow wf_4664d08c-d3f (1a design gate → 1a-audit → 1b prover-hard → auditor). The other H169 files are committed now with H170's.
+  done: Sat Oct 10 09:18:25 UTC 2026 — T2376: 1a PASS, 1a-audit RETURN with dispatcher sign-off (central estimate ~1598 lines > stop line 1500); state `blocked` with the question; 1b not started.
 
 - H170 (dispatcher V2, 2026-10-10 08:56 UTC; DECISIONS §188). Commit by name with your next commit `docs/supervisor/2026-10-10-0853.md`, `docs/supervisor/requests/REQ-2026-10-10-0806.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md` (together with H169's files if not yet committed). Nothing to start. One `done:` line.
   done: Sat Oct 10 09:03:08 UTC 2026 — H169's and H170's remaining files committed by name (with states T2374/T2376), pushed; nothing started.
 
 - H171 (dispatcher V2, 2026-10-10 09:09 UTC; DECISIONS §189). Commit by name with your next commit `docs/tickets/T2377.md`, `docs/tickets/checks/T2377-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line). Start T2377 in the loop in which T2375 merges (it needs `unMLOut_holds`). One `done:` line per step.
   done: Sat Oct 10 09:13:17 UTC 2026 — the 6 listed files committed by name (with state T2377), pushed; check `lake env lean docs/tickets/checks/T2377-check.lean` on main d38df76: exit 0, no error lines. T2377 `held` until T2375 merges.
+  done: Sat Oct 10 09:17:40 UTC 2026 — T2375 merged 17ccf68; T2377 started in the same loop: branch from main 17ccf68, workflow wf_4aabe6c1-3ac (prover-hard).
+
+- H172 (dispatcher V2, 2026-10-10 09:23 UTC; DECISIONS §190; answers the question in `docs/queue/T2376.state`). (1) Commit by name with your next commit `docs/tickets/T2376-amend-1.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) **Run T2376 stage 1b now** under Amend 1 (role `prover-max`; sole writable files `RBM3D/BA/KMolecule.lean` and `RBM3D/BA/KCactusCut.lean`; combined stop line 2000), on the existing branch `t/T2376`, with Amend 1 in the prover and auditor prompts; the 1a report and the 1a-audit verdicts (i)–(iii) stand. One `done:` line per step.
+  done: Sat Oct 10 09:33:16 UTC 2026 — (1) the 6 listed files committed by name (with states T2375/T2376/T2377), pushed.
+  done: Sat Oct 10 09:33:16 UTC 2026 — (2) T2376 stage 1b started under Amend 1 on t/T2376: workflow wf_7177a252-c1e (prover-max, sole writable KMolecule.lean + KCactusCut.lean, combined stop 2000; Amend 1 in prover and auditor prompts).
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 03:11:27 UTC 2026 — T2365 merged a5c1a1a (BA-K09a: Loop/KLIndStepA.lean, Loop/KLIndStepB.lean in place, no root import, no registry change; audit PASS claude-opus-5-5 (field-wise IndStepTH check, DECISIONS §175); full lake build 4177 jobs (rebuilt the certificate modules); pushed). Rule (A).
@@ -63,3 +66,4 @@ done: Sat Oct 10 07:37:38 UTC 2026 — T2370 merged 06fd533 (BA-K05a: new BA/KTr
 done: Sat Oct 10 07:39:00 UTC 2026 — T2372 merged e004671 (UN-10a: new Universality/NormBand (unNormBandRow, CV0 = 3), RBM3D/Test/Axioms.lean owed line UNNormBandRow removed (the branch diff did not apply as a patch because T2371 changed the neighbouring lines; the same one-line deletion was made on main by exact match, H23 b), root import; audit PASS claude-opus-5-5; full lake build 4188 jobs (registry check passes); pushed).
 done: Sat Oct 10 07:57:33 UTC 2026 — T2373 merged ff39b72 (UN-10b: new Universality/EigenInterlacing, Universality/GUELocalSchur (gueSchurTail proves UNGUESchurTail, gueLocal proves UNGUELocal), RBM3D/Test/Axioms.lean owed lines UNGUELocal and UNGUESchurTail removed on main by exact match (H23 b), root imports; 1a design gate PASS (no split); audit PASS claude-opus-5-5; full lake build 4190 jobs; pushed).
 done: Sat Oct 10 08:46:45 UTC 2026 — T2374 merged ab54184 (BA-K05b: new BA/KTreeRep (1763 lines, stop 2000; 7 targets), RBM3D/Test/Axioms.lean owed line RBM.BA.BAKsolve removed on main by exact match (H23 b), root import; 1a-audit PASS, audit PASS claude-opus-5-5; full lake build 4191 jobs; pushed).
+done: Sat Oct 10 09:17:40 UTC 2026 — T2375 merged 17ccf68 (LW-01 + ST-6 R4: new Graph/LWTermHolds, Induction/MainIndHolds (1894 lines, stop 2300), RBM3D/Test/Axioms.lean (owed lines of the proved LW/ST pins removed, hypothesis comments updated; branch diff applied by 3-way merge onto main, H23 b; T2373/T2374 removals kept), root imports; audit PASS claude-opus-5-5; full lake build 4193 jobs; pushed). T2377 started in the same loop (H171).

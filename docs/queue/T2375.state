@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 17ccf68
 reason: stage 1a PASS; stage 1b DONE (6646c14; 1894 lines of 2300); auditor1 PASS claude-opus-5-5 (wf_92cb9793-01c); Axioms.lean diff applied by 3-way merge onto main (H23 b); full lake build 4193 jobs exit 0
-updated: Sat Oct 10 09:17:23 UTC 2026
+updated: Sat Oct 10 09:17:25 UTC 2026
 reports: docs/reports/T2375-prove.md, docs/reports/T2375-audit.md

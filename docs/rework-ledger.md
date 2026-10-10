@@ -320,3 +320,4 @@
 | T2372 | 2026-10-10 07:39 UTC (e004671) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-10a `Universality/NormBand`（299 行，停止线 500），`CV₀ = 3`；登记行按整行删除重放（H23 b） |
 | T2373 | 2026-10-10 07:57 UTC (ff39b72) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 PASS（中心 1320，不拆），审核一次 PASS；UN-10b `EigenInterlacing` + `GUELocalSchur`；删登记 `UNGUESchurTail`、`UNGUELocal` 两行（整行删除重放，H23 b） |
 | T2374 | 2026-10-10 08:46 UTC (ab54184) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS（C3 1.35e-13；Q4 1912 < 3.3k），审核一次 PASS；BA-K05b `BA/KTreeRep`（1763 行，停止线 2000）：`baChordPairs`、`baKcac_isKLoopS`、`baKsolve`、`baTreeRep`；删登记 `BAKsolve` |
+| T2375 | 2026-10-10 09:17 UTC (17ccf68) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 PASS（无需切分），审核一次 PASS；LW-01 + ST-6 R4 `Graph/LWTermHolds` + `Induction/MainIndHolds`（1894 行，停止线 2300）；另证 `stEtermsMid_holds`、`stStep5I/II_holds`；`Test/Axioms.lean` 三方合并重放（H23 b） |

@@ -1,4 +1,4 @@
 state: proving
-reason: started on Jun's direct instruction in the hub session ("开始啊", Sat Oct 10 08:53:51 UTC 2026) before CONTROL listed it; check exit 0 on main 9d5d47d; workflow wf_4664d08c-d3f (1a design gate → 1a-audit → 1b prover-hard, stop 1500 → auditor); branch from main 9d5d47d
-updated: Sat Oct 10 08:53:51 UTC 2026
+reason: H172 (DECISIONS §190): Amend 1 (prover-max; KMolecule.lean + KCactusCut.lean; combined stop 2000); stage 1b running on t/T2376 (workflow wf_7177a252-c1e), Amend 1 in prover and auditor prompts; section (a) and 1a-audit (i)-(iii) stand
+updated: Sat Oct 10 09:33:16 UTC 2026
 reports: docs/reports/T2376-prove.md, docs/reports/T2376-1a-audit.md, docs/reports/T2376-audit.md
