@@ -256,7 +256,7 @@ private theorem KSumZeroB_theta_shift (M : Bool → Matrix (Zd d L) (Zd d L) ℂ
   rw [Matrix.submatrix_apply] at h3
   exact h3.symm
 
-/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (a copy of the private `KInduct_norm_sigma`, `BA/KInduct.lean:158`). -/
+/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (a copy of the private `KInduct_norm_sigma`, `BA/KInduct.lean:156`). -/
 private theorem KSumZeroB_norm_sigma (g E : ℝ) (m : ℂ) (σ : Bool) (a b : Zd d L) :
     ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ a b‖ = ‖BAMB d L g (E : ℂ) m a b‖ := by
   cases σ
@@ -618,5 +618,135 @@ theorem baSig_sumZeroAbs {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn :
       (mul_le_mul_of_nonneg_right (le_max_left _ _) (by linarith [ht1 i]))
   · exact (hw i σ halt r x).trans
       (mul_le_mul_of_nonneg_right (le_max_right _ _) (by nlinarith [ht1 i, sq_nonneg (g i)]))
+
+/-! ## 5. Compiled nonempty instances
+
+Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`,
+`0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `n = 4`, `σ = KLsigAlt 4 = (+,-,+,-)` (cyclically alternating), `t = 1/2`
+and `t = 999/1000` (near `1`), the family `ι = Unit`.  The label vector `δ₀ = (0, 0, 0, e₁)` is not constant.  Every
+deterministic hypothesis of every theorem is discharged at this datum; no hypothesis of another gate remains. -/
+
+namespace KSumZeroBInst
+
+open RBM.BA.MFixedPointInst
+
+/-- The non-constant label vector `δ₀ = (0, 0, 0, e₁)` of `Z_4^3` (`e₁ = (1, 0, 0)` at the vertex `3`). -/
+private def KSumZeroB_nc : Fin 4 → Zd 3 4 := fun v j => if v = 3 ∧ j = 0 then 1 else 0
+
+private theorem KSumZeroB_nc_nonconst : ∃ v w : Fin 4, KSumZeroB_nc v ≠ KSumZeroB_nc w := ⟨0, 3, by decide⟩
+
+/-- The tree `{(0, 2)}` of the quadrilateral (one chord, `6` slots) is a `TSP`. -/
+private theorem KSumZeroB_F02 : KLIsTSP ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) :=
+  KLisTSP_of_mem_TSP (by rw [TSP_four]; decide)
+
+/-- **B1** (`KSumZeroB_unequal_edge`) at the tree `F = {(0, 2)}` (a chord, `n + 2 |F| = 6` slots) and the labelling
+`β = (δ₀ on the four leaves, 0 on the two chord slots)`: the leaf labels are not constant. -/
+example :=
+  KSumZeroB_unequal_edge (d := 3) (L := 4) (n := 4) (F := {((0 : Fin 4), (2 : Fin 4))}) KSumZeroB_F02
+    (by norm_num) (Sum.elim KSumZeroB_nc (fun _ => 0)) KSumZeroB_nc_nonconst
+
+/-- The same labelling has equal ends at the chord (both chord slots carry `0`), so B1 yields two unequal `M`-edges of
+one node. -/
+example : ∃ s s' : BAslot ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)), s ≠ s' ∧
+    BAslotNode ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) s =
+      BAslotNode ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) s' ∧
+    (Sum.elim KSumZeroB_nc (fun _ => (0 : Zd 3 4)) : BAslot ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) →
+        Zd 3 4) s ≠
+      Sum.elim KSumZeroB_nc (fun _ => (0 : Zd 3 4)) (BAnextSlot ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) s) ∧
+    Sum.elim KSumZeroB_nc (fun _ => (0 : Zd 3 4)) s' ≠
+      Sum.elim KSumZeroB_nc (fun _ => (0 : Zd 3 4)) (BAnextSlot ({((0 : Fin 4), (2 : Fin 4))} : Finset (Fin 4 × Fin 4)) s') :=
+  (KSumZeroB_unequal_edge (d := 3) (L := 4) (n := 4) (F := {((0 : Fin 4), (2 : Fin 4))}) KSumZeroB_F02
+    (by norm_num) (Sum.elim KSumZeroB_nc (fun _ => 0)) KSumZeroB_nc_nonconst).resolve_left (by decide)
+
+/-- **B2** (`baSig_nc_pointwise`) at `P`, `t = 1/2`, the alternating `σ = KLsigAlt 4` and the non-constant `δ₀`. -/
+example : ∃ G : ℝ, 0 < G ∧ ∃ c : ℝ, 0 < c ∧
+    ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (1 : ℝ) / 2) ()
+      (KLsigAlt 4) KSumZeroB_nc‖ ≤ G * P.g0 ^ 2 * Real.exp (-(c * (KLmaxDist 3 4 KSumZeroB_nc : ℝ))) := by
+  obtain ⟨G, hG, c, hc, h⟩ := baSig_nc_pointwise (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num)
+    (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (1 : ℝ) / 2) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num)
+  exact ⟨G, hG, c, hc, h () (KLsigAlt 4) KSumZeroB_nc KSumZeroB_nc_nonconst⟩
+
+/-- **B2** at `t = 999/1000` (near `1`), `σ = KLsigAlt 4`. -/
+example : ∃ G : ℝ, 0 < G ∧ ∃ c : ℝ, 0 < c ∧
+    ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (999 : ℝ) / 1000) ()
+      (KLsigAlt 4) KSumZeroB_nc‖ ≤ G * P.g0 ^ 2 * Real.exp (-(c * (KLmaxDist 3 4 KSumZeroB_nc : ℝ))) := by
+  obtain ⟨G, hG, c, hc, h⟩ := baSig_nc_pointwise (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num)
+    (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (999 : ℝ) / 1000) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num)
+  exact ⟨G, hG, c, hc, h () (KLsigAlt 4) KSumZeroB_nc KSumZeroB_nc_nonconst⟩
+
+/-- **B2** at `t = 1/2` and a charge vector that is not alternating, `σ = (+,+,-,+)` (B2 holds for every `σ`). -/
+example : ∃ G : ℝ, 0 < G ∧ ∃ c : ℝ, 0 < c ∧
+    ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (1 : ℝ) / 2) ()
+      (fun v : Fin 4 => decide (v ≠ 2)) KSumZeroB_nc‖ ≤
+        G * P.g0 ^ 2 * Real.exp (-(c * (KLmaxDist 3 4 KSumZeroB_nc : ℝ))) := by
+  obtain ⟨G, hG, c, hc, h⟩ := baSig_nc_pointwise (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num)
+    (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (1 : ℝ) / 2) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num)
+  exact ⟨G, hG, c, hc, h () (fun v : Fin 4 => decide (v ≠ 2)) KSumZeroB_nc KSumZeroB_nc_nonconst⟩
+
+/-- **B3** (`baSig_weighted`) at `P`, `t = 1/2`, `Q = 4 = 2 (d - 1)`, `σ = KLsigAlt 4`, root `0`, label `0`: the weighted
+absolute sum over the slice `δ_0 = 0` (`4^{3·3} = 262144` points). -/
+example : ∃ C : ℝ, 0 < C ∧
+    ∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 4 => δ 0 = 0),
+      ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (1 : ℝ) / 2) ()
+        (KLsigAlt 4) δ‖ * ((KLmaxDist 3 4 δ : ℝ) + 1) ^ 4 ≤ C * (P.g0 ^ 2 + (1 - 1 / 2)) := by
+  obtain ⟨C, hC, h⟩ := baSig_weighted (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num)
+    (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (1 : ℝ) / 2) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num) 4
+  exact ⟨C, hC, h () (KLsigAlt 4) (by decide) 0 0⟩
+
+/-- **B3** at `t = 999/1000`, `Q = 4`, `σ = KLsigAlt 4`, root `3`, label `e₁ = (1, 0, 0)`. -/
+example : ∃ C : ℝ, 0 < C ∧
+    ∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 4 => δ 3 = fun j => if j = 0 then 1 else 0),
+      ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (999 : ℝ) / 1000) ()
+        (KLsigAlt 4) δ‖ * ((KLmaxDist 3 4 δ : ℝ) + 1) ^ 4 ≤ C * (P.g0 ^ 2 + (1 - 999 / 1000)) := by
+  obtain ⟨C, hC, h⟩ := baSig_weighted (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num)
+    (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (999 : ℝ) / 1000) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num) 4
+  exact ⟨C, hC, h () (KLsigAlt 4) (by decide) 3 (fun j => if j = 0 then 1 else 0)⟩
+
+/-- **B3** at `t = 1/2`, `Q = 2`, the complementary alternating vector `(-,+,-,+)`, root `1`, label `0`. -/
+example : ∃ C : ℝ, 0 < C ∧
+    ∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 4 => δ 1 = 0),
+      ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (1 : ℝ) / 2) ()
+        (fun k => !KLsigAlt 4 k) δ‖ * ((KLmaxDist 3 4 δ : ℝ) + 1) ^ 2 ≤ C * (P.g0 ^ 2 + (1 - 1 / 2)) := by
+  obtain ⟨C, hC, h⟩ := baSig_weighted (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num)
+    (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (1 : ℝ) / 2) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num) 2
+  exact ⟨C, hC, h () (fun k => !KLsigAlt 4 k) (by decide) 1 0⟩
+
+/-- **B4** (`baSig_sumZeroAbs`, the K-b predicate `SigSumZeroAbs`) at `P`, `t = 999/1000`: all three conjuncts. -/
+example : SigSumZeroAbs 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => (999 : ℝ) / 1000)
+    (BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (999 : ℝ) / 1000)) :=
+  baSig_sumZeroAbs (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num) (Λ := 10) (κ := P.m0.im) (by norm_num)
+    P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (999 : ℝ) / 1000)
+    (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real) (fun _ => by norm_num)
+    (fun _ => by norm_num)
+
+/-- **B4**, the third conjunct at `Q = 4 = 2 (d - 1)`, `t = 1/2`, `σ = KLsigAlt 4`, root `0`, label `0`: one constant `C`
+for the signed estimate `O(1 - t)` and the weighted one `O(g² + 1 - t)`. -/
+example : ∃ C : ℝ, 0 < C ∧
+    ‖∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 4 => δ 0 = 0),
+        BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (1 : ℝ) / 2) ()
+          (KLsigAlt 4) δ‖ ≤ C * (1 - 1 / 2) ∧
+      ∑ δ ∈ Finset.univ.filter (fun δ : Fin 4 → Zd 3 4 => δ 0 = 0),
+        ‖BASig 3 4 (fun _ : Unit => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0) (fun _ => (1 : ℝ) / 2) ()
+          (KLsigAlt 4) δ‖ * ((KLmaxDist 3 4 δ : ℝ) + 1) ^ 4 ≤ C * (P.g0 ^ 2 + (1 - 1 / 2)) := by
+  obtain ⟨-, -, hQ⟩ := baSig_sumZeroAbs (ι := Unit) (d := 3) (n := 4) (by norm_num) (by norm_num) (Λ := 10)
+    (κ := P.m0.im) (by norm_num) P.real.1.1 (fun _ => 4) (fun _ => P.g0) (fun _ => P.E) (fun _ => P.m0)
+    (fun _ => (1 : ℝ) / 2) (fun _ => by norm_num) (fun _ => P.g0_pos) (fun _ => P.g0_le) (fun _ => P.real)
+    (fun _ => by norm_num) (fun _ => by norm_num)
+  obtain ⟨C, hC, h⟩ := hQ 4 (by norm_num)
+  exact ⟨C, hC, h () (KLsigAlt 4) (by decide) 0 0⟩
+
+end KSumZeroBInst
 
 end RBM.BA
