@@ -1,0 +1,4 @@
+state: proving
+reason: check exit 0; stage 1a preflight running (workflow wf_702a489c-bf3, role prover-hard; branch from main 010cad9)
+updated: Sat Oct 10 02:03:17 UTC 2026
+reports: docs/reports/T2363-prove.md, docs/reports/T2363-audit.md

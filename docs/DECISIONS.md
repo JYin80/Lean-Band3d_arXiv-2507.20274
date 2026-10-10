@@ -1369,3 +1369,32 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 1a 是设计门（监督 Q4 的意思）：Lean 定义的 Python 镜像对照 T2360 B8 的 `mgraph.py`，逐棵树误差 ≤ 1e-12，树和对 ODE 误差 ≤ 1e-8（`n ≤ 6`）；`n ≤ 5` 有失败就不进 1b。
   - `prover-max`，500 / 700 / 1000，停止线 1300。合并后发 K-c REQ。
 - (3) 中枢：T2366 合并构建中（证书模块重编，H101/H122）；H159（T2363、T2364）、H160（T2367）的编译与开工排在它之后。计数 BA 39。下一张票号 T2368，下一节 §176，下一条 H161，下一号差异 D636。
+
+## §176 — BA-K03 = T2368 写好，等 T2366 合并（总调度 V2，2026-10-10 01:41 UTC）
+
+- (1) **T2368 = BA-K03**（BA 40，阶段 K 第 5 张）：新文件 `BA/KSolve.lean`。
+  - 钉文：`IsKLoopSLe`（长度 ≤ N 的方程组，封闭）、`BAKsolve`（探针原文；K05b 的目标，在这里先钉）、`BAKsolveLe3`。`BAKsolveLe3` 要求：长度 2 是 `(Kn2sol)`，长度 3 是 `(Kn3sol)`（K00 约定下逐字写出：叶 `a_v` 带 `Θ^{(σ_v,σ_{v+1})}`，乘以 `BAMLoop`），长度 1 是 `PropSpin m`。
+  - 从 K01 移来的 BA 实例（§172）：`baK_unique`、`baK_rotate`、`baK_translate`（`BAMLoop_rot`、`BAMLoop_translate`、`BAMB_shift`），以及 `BAKsolve` 条件下的 `BAKsol_isKLoopS`、`BAKsol_rotate`、`BAKsol_translate`。收尾表中「BA rotation」由这里交付。
+  - 1a 的 N3：在 B8 设置下用 RK4 求解 `n = 2, 3`，与钉住的闭式比较，目标误差 ≤ 1e-8；`n = 3` 超过 1e-6 就不进 1b（钉文修补，走 amend）。
+  - `prover-hard`，约 700 / 844 / 1085，停止线 1400。
+  - 检查文件导入 T2366 的新名字，所以 **T2366 合并后**才列入 Pre-release 并放行。
+- (2) 计数：BA 40（K03 写好未放）。下一张票号 T2369，下一节 §177，下一条 H161，下一号差异 D636。
+
+## §177 — BA-K02 = T2369 写好，等 T2366 合并（总调度 V2，2026-10-10 01:56 UTC）
+
+- (1) **T2369 = BA-K02**（BA 41，阶段 K 第 6 张）：在 `Loop/KLWard.lean` 原地做通用 Ward（路线 G），另开新文件 `BA/KWard.lean` 放 BA 实例。
+  - 钉文：`KernelFacts`（探针原文，结构体，逐字段核对）、`WardS`。`WardS` 的条件：`KernelFacts S`；`Im m(+) > 0`；`m(-) = conj m(+)`；`M` 翻转后取共轭；`M` 循环不变；`M` 在 `t = 0`、长度 ≥ 3 时满足恒等式；`K` 在长度 2 时满足恒等式。结论是对 `[0,1)` 上的任一解 `(WI_calK)` 成立，`η_t = (1-t) Im m(+)`。
+  - 目标：`wardS_holds`；带状的 `kernelFacts_one/SB`；G1 是 `KLK_ward`、`KLWard_flip`。
+  - BA 实例 `baK_ward`：任一 BA 解只要满足 `(Kn2sol)` 子句，就满足 Ward。`t = 0` 的条件由 `BAMB_ward_row` 给出，长度 2 的条件由 `BATheta_row_sum_pm` 与 `BAK_row_sum` 给出。
+  - 1a 的 N2：在 B8 设置下核对 `t = 0` 的条件与 ODE 解的 Ward；`t = 0` 的缺陷超过 1e-6 就不进 1b。
+  - `prover-hard`，425 / 612 / 770，停止线 1000（净增 + 新文件）。
+- (2) **收尾表**：「`KLK_ward` → `BAKward` → K02」改为：K02 交付 `baK_ward`（对任一解成立）；`BAKward`（探针 306，陈述在 `BAKsol` 上）在 K12 组装，即 `baK_ward` 加上 K03 的 `BAKsol_isKLoopS`，前提是 `BAKsolve d`（K05b）。这样 K02 不依赖 K03，`BAKsolve` 只钉一次（K03）。阶段 K 收尾 REQ 写明这一点。
+- (3) T2366 合并后当轮放行 T2368（K03）与 T2369（K02）。两张检查文件都导入 T2366 的新名字；T2369 的检查文件在今天的 main 上也能编译，但票依赖 T2366。名额：T2363、T2364、T2367 开工后只剩 1 个空位，先放 K03（`BAKsolve` 等关键路径），K02 等下一个空位。
+- (4) 计数：BA 41（K02、K03 写好未放）。下一张票号 T2370，下一节 §178，下一条 H161，下一号差异 D636。
+
+## §178 — T2366 合并；T2363、T2364、T2367 开工；T2368、T2369 放行（总调度 V2，2026-10-10 02:09 UTC）
+
+- (1) **T2366（BA-K01 通用部分）合并 010cad9**，02:02 UTC，全库 4177 jobs。合并构建约 1 小时：`KLK_rotate` 的下游含证书模块，要按 H101/H122 重编。这就是 G2 说的原地合并的代价。之后 T2365（K09a）按规则 (A) 接着合并。
+- (2) H159/H160 的 B/C 已完成：T2363（UN-51）、T2364（LW R3）、T2367（K04）的检查都 exit 0，从 main 010cad9 开工。现在在跑 3 张。
+- (3) **放行 T2368（K03）**，补第 4 个名额；**放行 T2369（K02）**，等下一个空位（H12）。H161 负责提交、编译、开工。
+- (4) 计数：UN 59；LW 51；BA 41。下一张票号 T2370，下一节 §179，下一条 H162，下一号差异 D636。

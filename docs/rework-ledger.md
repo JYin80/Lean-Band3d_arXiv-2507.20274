@@ -308,3 +308,4 @@
 | T2356 | 2026-10-10 00:57 UTC (96f2390) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；UN `Eq729B`（1674 行，停止线 2400）；1a 报告先合并（8d76de9）；D628–D631 |
 | T2358 | 2026-10-10 00:59 UTC (c587dcd) | prover-max（Amend 2：repairer） | claude-opus-5-5 | 是（Amend 1 已记；Amend 2 R-a 改钉） | 审核 BLOCKED（值索引钉文）→ R-a 改钉 `lwProv_locStepXProvPos_holds`，删 `LocStepXProv` 与 4 个助手；第 2 轮审核 PASS；1820 行 |
 | T2362 | 2026-10-10 01:01 UTC (8050043) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K00：`BAMLoop` 原地修（F1，D632）+ `BA/KBase`（Θ_BA 演算） |
+| T2366 | 2026-10-10 02:02 UTC (010cad9) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K01 通用部分（`Loop/Unique`、`KLUnique` 原地：`UniqS`、`RetireS`、`RotS`、`TranslS`）；合并构建约 1 小时（证书模块重编，H101/H122） |
