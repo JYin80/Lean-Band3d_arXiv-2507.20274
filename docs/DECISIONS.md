@@ -1509,3 +1509,20 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - **1a 现在开**（读 `t/T2364`）；**1b 等 T2364 合并后**开。
 - (5) 返工账本补 T2371 一行（否）。
 - (6) 计数：UN 62（计划 64，上限 65）；LW 52（上限 55）；ST-6 4/4（R4 并入 T2375）；BA 43；MA 7/8。下一张票号 T2376，下一节 §186，下一条 H168，下一号差异 D636。
+
+## §186 — T2373（UN-10b）合并；UN 收尾 REQ（总调度 V2，2026-10-10 08:07 UTC）
+
+- (1) **T2373 合并 ff39b72**（07:57 UTC）：`gueSchurTail : UNGUESchurTail`、`gueLocal : UNGUELocal` 已证，删了两行登记。至此 UN 带状链的票全部合并：UN-51、UN-52b、UN-10a、UN-10b。UN 计数 62，上限 65。
+- (2) `bUniv_holds` 剩下的叶：
+  - `UNNormBandRow`、`UNGUESchurTail`：已证；
+  - `UNMLOut`：T2375 的 `unMLOut_holds`；
+  - `UNLocAvgBand`、`UNQueBand`：由 MA 的 `locSC`、`QUE` 经已合并的桥得到；
+  - `UNL32`：借用。
+  T2375 合并后，`UNBUniv` 只差一行组装，归 MA-06。
+- (3) **REQ-2026-10-10-0806**（UN 收尾，不阻塞在跑的票）：
+  - Q1：UN 闸门对带状模型关闭，最后一行放进 MA-06，还是另开 UN-52c；
+  - Q2：剩下的 UN 登记行分 (a)–(e) 五类，问 (d) 类是否改登记类别、(e) 类是否归 BA 终端阶段；
+  - Q3：有没有漏掉、没有生产者的叶。
+  答复前不开任何 UN 票。
+- (4) 中枢：T2374（K05b）、T2375（LW-01）都在 1b，共 2 张在跑。暂时没有可放的票：K06 等 K05b，MA-06 等 T2375 和 BA 终端。
+- (5) 下一张票号 T2376，下一节 §187，下一条 H169，下一号差异 D636。

@@ -314,3 +314,8 @@
 | T2363 | 2026-10-10 04:08 UTC (0347cb8) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核 PASS；UN-51 `GUEPhase/RandomLayerA/B`（1042 行，切分 A|B 未触发；U3 无需改钉）；`Test/Axioms.lean` 只改归属注释 |
 | T2368 | 2026-10-10 04:12 UTC (79dec34) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 审核 PASS（057f0f4），合并被登记拦下：`BAKsolve` 未登记（票上误写「Registry: none」，调度的流程缺口，§181）；Amend 1 repairer 加一行 owed，第 2 轮审核 PASS；BA-K03 `BA/KSolve`（767 行） |
 | T2371 | 2026-10-10 05:36 UTC (c0a7747) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-52b `Main/BUniv`、`Main/BUnivHolds`（313 行，停止线 500）；叶 9 `UNDensBandRow`、叶 10 `UNTrLocalBandRow` 本票证出；Amend 1：叶 11 归 T2372；中途 API 上限停摆后按 (H) 重跑 1b |
+| T2369 | 2026-10-10 07:32 UTC (1db2fba) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K02 `Loop/KLWard` 原地（`KernelFacts` 上的通用 Ward）+ `BA/KWard`（`baK_ward`）；API 上限停摆后按 (H) 重跑 1b；原地改动使合并构建约 1 小时 45 分（下游重编） |
+| T2364 | 2026-10-10 07:36 UTC (9b484e2) | prover-max | Sonnet 5.5 effort max | 是 | 审核 PASS；LW-13b R3（`AuxGraphRooted` 569 行 + `LWMomentExp` 1509 行，停止线 2100，切分 C3 未触发）；1a F1 后 Amend 1 把 C6 改为 (β)（开工后改钉文条件）；API 上限停摆后重跑 1b |
+| T2370 | 2026-10-10 07:37 UTC (06fd533) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS，审核一次 PASS；BA-K05a `BA/KTreeDeriv`（612 行，设计中心 932）；C3 数值 (a) 9.1e-9、(b) 7.1e-14 |
+| T2372 | 2026-10-10 07:39 UTC (e004671) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-10a `Universality/NormBand`（299 行，停止线 500），`CV₀ = 3`；登记行按整行删除重放（H23 b） |
+| T2373 | 2026-10-10 07:57 UTC (ff39b72) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 PASS（中心 1320，不拆），审核一次 PASS；UN-10b `EigenInterlacing` + `GUELocalSchur`；删登记 `UNGUESchurTail`、`UNGUELocal` 两行（整行删除重放，H23 b） |

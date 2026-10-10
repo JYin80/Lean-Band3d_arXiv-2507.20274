@@ -1,0 +1,4 @@
+state: proving
+reason: stage 1a PASS (wf_96267b45-1f9, read t/T2364); input T2364 merged 9b484e2; stage 1b prover-max running on t/T2375 from main e004671 (workflow wf_92cb9793-01c, stop 2300), then auditor
+updated: Sat Oct 10 07:45:54 UTC 2026
+reports: docs/reports/T2375-prove.md, docs/reports/T2375-audit.md

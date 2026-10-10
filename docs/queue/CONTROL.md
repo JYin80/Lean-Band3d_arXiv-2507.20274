@@ -2,24 +2,21 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 07:26 UTC (dispatcher V2: T2371 merged; merge order T2370 → T2364 → T2372 after T2369; BA-K05b T2374 and LW-01 + ST-6 R4 T2375 released, stage 1a now (H167))
+updated: 2026-10-10 08:07 UTC (dispatcher V2: T2373 merged; UN closing REQ-2026-10-10-0806 (H168))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-334. T2364 — `docs/tickets/T2364.md` (LW-13b R3 = G + F, `Graph/AuxGraphRooted.lean`, `Graph/LWMomentExp.lean`): released (input T2358 merged); starts when its check compiles with exit 0 (H12). Preset cut C3 = G|F. **Amend 1** (`docs/tickets/T2364-amend-1.md`, C6 → (β)) is in force from stage 1b.
-337. T2369 — `docs/tickets/T2369.md` (BA-K02, in place `Loop/KLWard.lean` + new `BA/KWard.lean`; input K01 merged): released; starts when its check compiles with exit 0 and a slot is free (H12), after T2368. Merge yields to critical-path merges (ticket, G2).
-338. T2370 — `docs/tickets/T2370.md` (BA-K05a, new `BA/KTreeDeriv.lean`; inputs K00, K04 merged): released; starts when its check compiles with exit 0 and a slot is free (H12). Stage 1a is a design gate followed by a 1a-audit before 1b (ticket).
-340. T2372 — `docs/tickets/T2372.md` (UN-10a, new `Universality/NormBand.lean`, `unNormBandRow`; every input merged): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority after T2371, before the BA tickets (DECISIONS §184 (3)).
-341. T2373 — `docs/tickets/T2373.md` (UN-10b, new `Universality/EigenInterlacing.lean`, `Universality/GUELocalSchur.lean`, `gueSchurTail`, `gueLocal`; every input merged): released; starts when its check compiles with exit 0 and a slot is free (H12), after T2372. Stage 1a is a design gate with a split rule (ticket): a RETURN with a split proposal is answered by the dispatcher.
-342. T2374 — `docs/tickets/T2374.md` (BA-K05b, new `BA/KTreeRep.lean`; input K05a = T2370): released in two steps (H167): **stage 1a and the 1a-audit start now** (the 1a reads `t/T2370`; no `lake`); **stage 1b starts only after T2370 has merged**, on a branch `t/T2374` created from `main` then.
-343. T2375 — `docs/tickets/T2375.md` (LW-01 + ST-6 R4, new `Graph/LWTermHolds.lean`, `Induction/MainIndHolds.lean`; input T2364): released in two steps (H167): **stage 1a starts now** (reads `t/T2364`; no `lake`); **stage 1b starts only after T2364 has merged**, on a branch `t/T2375` created from `main` then. A 1a RETURN with a cut proposal is answered by the dispatcher (REQ, supervisor 0143).
+342. T2374 — `docs/tickets/T2374.md` (BA-K05b, new `BA/KTreeRep.lean`; input K05a merged 06fd533): stage 1a + 1a-audit PASS; stage 1b running (wf_0e5634e3-169, branch from main e004671).
+343. T2375 — `docs/tickets/T2375.md` (LW-01 + ST-6 R4, new `Graph/LWTermHolds.lean`, `Induction/MainIndHolds.lean`; input T2364 merged 9b484e2): stage 1a PASS (no cut needed); stage 1b running (wf_92cb9793-01c, branch from main e004671).
 
 ## Pre-release checks
 - `docs/tickets/checks/T2374-check.lean` (BA-K05b; pin `BATreeRep`, verbatim from the probe; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 07:34:11 UTC 2026 — `lake env lean docs/tickets/checks/T2374-check.lean` on main cf6d593: exit 0, no error lines.
 - `docs/tickets/checks/T2375-check.lean` (LW-01 + R4; targets are existing pins; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 07:34:11 UTC 2026 — `lake env lean docs/tickets/checks/T2375-check.lean` on main cf6d593: exit 0, no error lines.
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -35,6 +32,14 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 01:01:53 UTC 2026 — T2362 merged 8050043 under Jun's direct authorization in the hub session.
 
 - H167 (dispatcher V2, 2026-10-10 07:26 UTC; DECISIONS §185). (1) Commit by name with your next commit `docs/tickets/T2374.md`, `docs/tickets/checks/T2374-check.lean`, `docs/tickets/T2375.md`, `docs/tickets/checks/T2375-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) Compile both check files on `main` (H4; one `done:` line each; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T####-check.out`). (3) **Start stage 1a of T2374 and of T2375 now**, in two free slots (only T2373 is proving): each 1a is a preflight that reads the input branch named in its ticket (`t/T2370`, `t/T2364`) and runs no `lake`; T2374's workflow runs its 1a-audit right after its 1a. Each workflow then **waits before stage 1b** until its input has merged; at that point create the branch `t/T####` from `main` and run 1b → auditor (the 1a report stays valid; the prover re-reads the merged input). (4) **Merge order** after the running T2369 merge: **T2370, then T2364, then T2372** (CLAUDE.md §3 (G): K05b and LW-01 wait on the first two; nothing waits on T2372 yet). Each merge as usual by rule (A) with its own full build. One `done:` line per step.
+  done: Sat Oct 10 07:34:11 UTC 2026 — (1) the 10 listed files committed by name in cf6d593 (with states T2369/T2370/T2372/T2373), pushed. (2) T2374 and T2375 checks exit 0.
+  done: Sat Oct 10 07:34:11 UTC 2026 — (3) stage 1a started: T2374 wf_83e9acb1-c1c (1a + 1a-audit, reads t/T2370), T2375 wf_96267b45-1f9 (1a, reads t/T2364); each workflow stops after 1a, and stage 1b is a new workflow on t/T####, branched from main once the input has merged.
+  done: Sat Oct 10 07:34:11 UTC 2026 — (4) merge order: T2369 merged 1db2fba before H167 was read, and T2364's merge build was already running when H167 arrived (started ~07:25 UTC), so the order is T2364 (running), then T2370, then T2372. Stopping a running full build would only lose time; both are inputs of the new tickets.
+  done: Sat Oct 10 07:45:54 UTC 2026 — T2375: stage 1a PASS; input T2364 merged 9b484e2; branch t/T2375 from main e004671; stage 1b prover-max → auditor started (wf_92cb9793-01c).
+  done: Sat Oct 10 07:49:28 UTC 2026 — T2374: stage 1a PASS, 1a-audit PASS; input T2370 merged 06fd533; branch t/T2374 from main e004671; stage 1b prover-max → auditor started (wf_0e5634e3-169).
+
+- H168 (dispatcher V2, 2026-10-10 08:07 UTC; DECISIONS §186). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-10-0806.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. Nothing to start. One `done:` line.
+  done: Sat Oct 10 08:13:06 UTC 2026 — the 6 listed files committed by name (with states T2374/T2375), pushed; nothing started.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 03:11:27 UTC 2026 — T2365 merged a5c1a1a (BA-K09a: Loop/KLIndStepA.lean, Loop/KLIndStepB.lean in place, no root import, no registry change; audit PASS claude-opus-5-5 (field-wise IndStepTH check, DECISIONS §175); full lake build 4177 jobs (rebuilt the certificate modules); pushed). Rule (A).
@@ -44,3 +49,7 @@ done: Sat Oct 10 04:08:29 UTC 2026 — T2363 merged 0347cb8 (UN-51 Universality/
 done: Sat Oct 10 04:12:08 UTC 2026 — T2368 merged 79dec34 (BA-K03 BA/KSolve (767 lines), RBM3D/Test/Axioms.lean one owedProps line RBM.BA.BAKsolve (Amend 1; patch applied onto main, H23 b), root import; audit PASS round 2 claude-opus-5-5; full lake build 4181 jobs; pushed).
 done: Sat Oct 10 05:36:50 UTC 2026 — T2371 merged c0a7747 (UN-52b Main/BUniv, Main/BUnivHolds (313 lines, stop 500; Amend 1: UNNormBandRow stays a hypothesis; unDensBandRow, unTrLocalBandRow proved), RBM3D/Test/Axioms.lean registry lines/comments (main's Axioms.lean unchanged since the branch base), root imports; audit PASS claude-opus-5-5; full lake build 4183 jobs; pushed). Freed slot → T2372 (wf_430dec8f-b5a).
 done: Sat Oct 10 07:32:54 UTC 2026 — T2369 merged 1db2fba (BA-K02: Loop/KLWard.lean in place (KernelFacts/WardS pins, wardS_holds, kernelFacts_one/SB, KLK_ward/KLWard_flip re-derived), new BA/KWard (baK_ward), root import, no registry change; audit PASS claude-opus-5-5; full lake build 4184 jobs (rebuilt the certificate modules under swap pressure from concurrent audit builds); pushed).
+done: Sat Oct 10 07:36:27 UTC 2026 — T2364 merged 9b484e2 (LW-13b R3: new Graph/AuxGraphRooted, Graph/LWMomentExp (form beta of C6 per Amend 1), RBM3D/Test/Axioms.lean owed line LWMomentExp removed (patch applied onto main, H23 b), root imports; audit PASS claude-opus-5-5 (with Amend 1); full lake build 4186 jobs; pushed). T2375 stage 1b may start once its 1a passes.
+done: Sat Oct 10 07:37:38 UTC 2026 — T2370 merged 06fd533 (BA-K05a: new BA/KTreeDeriv (612 lines, stop 2000; pins BASplicedFam, BAGammaDerivRHS, BAGammaDerivStmt, BALeafPairsStmt; baGamma_hasDerivAt, baLeafPairs, BAKcac, BAKcac_spliced), root import, no registry change; 1a-audit PASS, audit PASS claude-opus-5-5; full lake build 4187 jobs; pushed). T2374 stage 1b may start once its 1a/1a-audit pass.
+done: Sat Oct 10 07:39:00 UTC 2026 — T2372 merged e004671 (UN-10a: new Universality/NormBand (unNormBandRow, CV0 = 3), RBM3D/Test/Axioms.lean owed line UNNormBandRow removed (the branch diff did not apply as a patch because T2371 changed the neighbouring lines; the same one-line deletion was made on main by exact match, H23 b), root import; audit PASS claude-opus-5-5; full lake build 4188 jobs (registry check passes); pushed).
+done: Sat Oct 10 07:57:33 UTC 2026 — T2373 merged ff39b72 (UN-10b: new Universality/EigenInterlacing, Universality/GUELocalSchur (gueSchurTail proves UNGUESchurTail, gueLocal proves UNGUELocal), RBM3D/Test/Axioms.lean owed lines UNGUELocal and UNGUESchurTail removed on main by exact match (H23 b), root imports; 1a design gate PASS (no split); audit PASS claude-opus-5-5; full lake build 4190 jobs; pushed).
