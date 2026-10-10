@@ -432,6 +432,8 @@ import RBM3D.BA.EKPins
 import RBM3D.Chain.Step2Gen
 import RBM3D.BA.GreenLDE
 import RBM3D.BA.EKSum
+import RBM3D.Chain.LWGen
+import RBM3D.BA.LWPinsBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
