@@ -454,4 +454,145 @@ theorem baIndStepAbs_holds {d : ℕ} (k : ℕ) [NeZero k] (hd : 3 ≤ d) (hk : 3
 
 end Bundle
 
+/-! ## 4. The layer `π = ∅` at BA (D3) -/
+
+section Empty
+
+/-- `‖∑_b T(b) X(b)‖ ≤ C_b C_s` when `‖T b‖ ≤ C_b` and `∑_b ‖X b‖ ≤ C_s` (a long root leaf in sup norm times the root sum). -/
+private theorem KStep_long_root {G : Type*} [Fintype G] (T X : G → ℂ) {Cb Cs : ℝ} (hCb : 0 ≤ Cb)
+    (hT : ∀ b, ‖T b‖ ≤ Cb) (hX : ∑ b, ‖X b‖ ≤ Cs) : ‖∑ b, T b * X b‖ ≤ Cb * Cs := by
+  calc ‖∑ b, T b * X b‖ ≤ ∑ b, ‖T b‖ * ‖X b‖ := by
+        refine (norm_sum_le _ _).trans (le_of_eq ?_)
+        simp only [norm_mul]
+    _ ≤ ∑ b, Cb * ‖X b‖ := Finset.sum_le_sum fun b _ => mul_le_mul_of_nonneg_right (hT b) (norm_nonneg _)
+    _ = Cb * ∑ b, ‖X b‖ := by rw [Finset.mul_sum]
+    _ ≤ Cb * Cs := mul_le_mul_of_nonneg_left hX hCb
+
+/-- **D3: the layer `π = ∅` at BA** (the BA twin of `KLInduct_Kpi_empty_bound`, `Loop/KLInduct.lean:833`): `|K^{(∅)}_{t,σ,a}| ≤ C L^τ B_{t,0}^{n-1}`, for every
+`n ≥ 3`, uniformly in `L ≥ 3`, `g ∈ (0, Λ]`, the real-axis data `BAReal d L g κ E m` and `t ∈ [0,1)`; `C` depends on `(d, n, Λ, κ, τ)` only.  The
+merged bound `|K^{(∅)}| ≤ C_Σ S^n` (`baKpi_empty_short`) alone does not suffice: a long leaf has `ℓ¹` norm `≤ (1-t)⁻¹` only, which exceeds `B` by the
+factor `(g² + |1-t|)/(1-t)`.  If every charge is equal to the next one, `|Σ^{(∅)}| ≤ C_Σ` (`baWardMol_holds`, `(eq:molecule-decay)`) and the `ℓ¹`
+bound of property 5' (`KStep_theta_l1`) give `C_Σ S^n ≤ C_Σ S^n (1+Λ²)^{n-1} B^{n-1}` because `(1+Λ²) B ≥ 1`; otherwise a long leaf `Θ_t^{(+,-)}` is
+bounded in sup norm by `C_d B` (property 5, `KStep_theta_sup`) and the root sum is `baIndStepAbs_holds`, `≺ B^{n-2}`
+(`baKpi_empty_slice`). -/
+theorem baKpi_empty_bound {d : ℕ} (n : ℕ) [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ)
+    (τ : ℝ) (hτ : 0 < τ) :
+    ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
+      haveI : NeZero L := ⟨by omega⟩
+      BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (σ : Fin n → Bool) (a : Fin n → Zd d L),
+        ‖BAKpi d L n (BAMsigma d L (BAMB d L g (E : ℂ) m)) t σ a ∅‖
+          ≤ C * (L : ℝ) ^ τ * (Bparam d L g t 0) ^ (n - 1) := by
+  obtain ⟨Cm, hCm, c, hc, hmol⟩ := baWardMol_holds hd hn hΛ hκ
+  obtain ⟨Cd, hCd, hTh⟩ := KStep_theta_sup hd hΛ hκ
+  obtain ⟨Ci, hCi, hind⟩ := baIndStepAbs_holds n hd hn hΛ hκ τ hτ
+  obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
+  obtain ⟨S, hS0, hS⟩ := KStep_theta_l1 hd hΛ hκ
+  refine ⟨Cm * S ^ n * (1 + Λ ^ 2) ^ (n - 1) + Cd * Ci, by positivity, ?_⟩
+  intro L hL g hg hgΛ E m
+  have : NeZero L := ⟨by omega⟩
+  intro hr t ht0 ht1 σ a
+  have hB0 : 0 ≤ Bparam (k + 2) L g t 0 := KLIndStepA_Bparam_nonneg _ _
+  have hL1 := KStep_one_le_rpow hL hτ
+  have hLτ0 : 0 ≤ (L : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have hBn : 0 ≤ (Bparam (k + 2) L g t 0) ^ (n - 1) := pow_nonneg hB0 _
+  have hextra : 0 ≤ Cd * Ci * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 1) := by positivity
+  by_cases hσ : ∀ v, σ v = σ (v + 1)
+  · -- equal charges: the molecule is bounded and every leaf is short
+    have hcm : ∀ δ, ‖BASigmaPi (k + 2) L n (BAMsigma (k + 2) L (BAMB (k + 2) L g (E : ℂ) m)) t σ ∅ δ‖ ≤ Cm := by
+      intro δ
+      refine (hmol L hL g hg hgΛ E m hr t ht0 ht1 σ δ).trans ?_
+      have h1 : Real.exp (-(c * (KLmaxDist (k + 2) L δ : ℝ))) ≤ 1 :=
+        Real.exp_le_one_iff.2 (by
+          have : 0 ≤ c * (KLmaxDist (k + 2) L δ : ℝ) := by positivity
+          linarith)
+      calc Cm * Real.exp (-(c * (KLmaxDist (k + 2) L δ : ℝ))) ≤ Cm * 1 := mul_le_mul_of_nonneg_left h1 hCm.le
+        _ = Cm := mul_one _
+    have hS' : ∀ (v : Fin n) (x : Zd (k + 2) L),
+        ∑ b, ‖BAThetaOf (BAMsigma (k + 2) L (BAMB (k + 2) L g (E : ℂ) m)) t (σ v) (σ (v + 1)) x b‖ ≤ S := by
+      intro v x
+      rw [← hσ v]
+      exact hS L hL g hg hgΛ E m hr t ht0 ht1 (σ v) x
+    have h1 := baKpi_empty_short (BAMsigma (k + 2) L (BAMB (k + 2) L g (E : ℂ) m)) t σ a hcm hS'
+    -- `(1 + Λ²) B ≥ 1`: `B ≥ (g² + |1-t|)⁻¹ ≥ (1 + Λ²)⁻¹`
+    have hden : g ^ 2 + |1 - t| ≤ 1 + Λ ^ 2 := by
+      have h1 : g ^ 2 ≤ Λ ^ 2 := pow_le_pow_left₀ hg.le hgΛ 2
+      have h2 : |1 - t| ≤ 1 := by
+        rw [abs_of_pos (by linarith)]; linarith
+      linarith
+    have hden0 : 0 < g ^ 2 + |1 - t| := by positivity
+    have hinv : (1 + Λ ^ 2)⁻¹ ≤ Bparam (k + 2) L g t 0 :=
+      (inv_anti₀ hden0 hden).trans (KLlat_inv_le_Bparam t)
+    have hAB : 1 ≤ (1 + Λ ^ 2) * Bparam (k + 2) L g t 0 := by
+      have h1pos : (0 : ℝ) < 1 + Λ ^ 2 := by positivity
+      calc (1 : ℝ) = (1 + Λ ^ 2) * (1 + Λ ^ 2)⁻¹ := (mul_inv_cancel₀ h1pos.ne').symm
+        _ ≤ (1 + Λ ^ 2) * Bparam (k + 2) L g t 0 := mul_le_mul_of_nonneg_left hinv h1pos.le
+    have hpow : 1 ≤ (1 + Λ ^ 2) ^ (n - 1) * (Bparam (k + 2) L g t 0) ^ (n - 1) := by
+      rw [← mul_pow]; exact one_le_pow₀ hAB
+    have hCS : 0 ≤ Cm * S ^ n := by positivity
+    calc ‖BAKpi (k + 2) L n (BAMsigma (k + 2) L (BAMB (k + 2) L g (E : ℂ) m)) t σ a ∅‖ ≤ Cm * S ^ n := h1
+      _ = (Cm * S ^ n) * 1 * 1 := by ring
+      _ ≤ (Cm * S ^ n) * ((1 + Λ ^ 2) ^ (n - 1) * (Bparam (k + 2) L g t 0) ^ (n - 1)) * (L : ℝ) ^ τ := by
+          gcongr
+      _ = Cm * S ^ n * (1 + Λ ^ 2) ^ (n - 1) * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 1) := by ring
+      _ ≤ (Cm * S ^ n * (1 + Λ ^ 2) ^ (n - 1) + Cd * Ci) * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 1) := by
+          nlinarith [hextra]
+  · -- a long leaf: `Θ_t` in sup norm times the root sum
+    obtain ⟨r, hrσ⟩ := not_forall.1 hσ
+    have hlong : ∀ b : Zd (k + 2) L,
+        ‖BAThetaOf (BAMsigma (k + 2) L (BAMB (k + 2) L g (E : ℂ) m)) t (σ r) (σ (r + 1)) (a r) b‖
+          ≤ Cd * Bparam (k + 2) L g t 0 := fun b =>
+      hTh L hL g hg hgΛ E m hr t ht0 ht1 (σ r) (σ (r + 1)) (a r) b
+    have hroot := hind ⟨L, hL, g, hg, hgΛ, E, m, hr, t, ht0, ht1⟩ σ r hrσ a
+    rw [baKpi_empty_slice (BAMsigma (k + 2) L (BAMB (k + 2) L g (E : ℂ) m)) t σ a r]
+    calc _ ≤ (Cd * Bparam (k + 2) L g t 0) * (Ci * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 2)) :=
+          KStep_long_root _ _ (by positivity) hlong hroot
+      _ = Cd * Ci * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 1) := by
+          have : n - 1 = (n - 2) + 1 := by omega
+          rw [this, pow_succ]; ring
+      _ ≤ (Cm * S ^ n * (1 + Λ ^ 2) ^ (n - 1) + Cd * Ci) * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 1) := by
+          have : 0 ≤ Cm * S ^ n * (1 + Λ ^ 2) ^ (n - 1) * (L : ℝ) ^ τ * (Bparam (k + 2) L g t 0) ^ (n - 1) := by
+            positivity
+          nlinarith [this]
+
+end Empty
+
+/-! ## 5. `(eq:K-pi-bound)` at BA for every `n ≥ 3` -/
+
+section Main
+
+/-- **`(eq:K-pi-bound)` is proved at BA** for every `n ≥ 3`, every `π`: the abstract induction `kStep_all` at the family `KWardIneq_Data d Λ κ`, the
+molecule weight `BASig`, the edges `Θ` of the BA data and `Kp = BAKpi`.  The ingredients are the merged theorems:
+* layer `∅`: `baKpi_empty_bound` (D3, from K10's `baKpi_empty_slice`, `baKpi_empty_short`);
+* the cut: `baKpi_cut_abs` (K10), a layer with no tree is `0` (`BAKpi` is a sum over `KLTSPlong`);
+* the inner root sum: `baIndStepAbs_holds` (K09a `indStepAbs_of` with K08b `baSig_sumZeroAbs`, K07 `baSig_decay`, the leaf bundle);
+* the glue weight is the real `t ∈ [0,1)`.
+No other input: the Ward inequality `baWardIneq_holds` (K11) is a consumer of `IndStepAbs` (via `KWardIneq_IndAt_of_abs`), not an input.  Constants depend
+on `(d, n, Λ, κ, τ)` only. -/
+theorem baKpiBoundAt_holds (d n : ℕ) [NeZero n] {Λ κ : ℝ} (hd : 3 ≤ d) (hn : 3 ≤ n) (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    BAKpiBoundAt d n Λ κ := by
+  have key := kStep_all (ι := KWardIneq_Data d Λ κ) d (fun i => i.L) (fun i => Bparam d i.L i.g i.t 0) (fun i => i.t)
+    (fun k _ i σ δ => BASig (ι := KWardIneq_Data d Λ κ) d k (fun i => i.L) (fun i => i.g) (fun i => i.E)
+      (fun i => i.m) (fun i => i.t) i σ δ)
+    (fun i s s' => BAThetaOf (BAMsigma d i.L (BAMB d i.L i.g (i.E : ℂ) i.m)) i.t s s')
+    (fun k _ i σ a π => BAKpi d i.L k (BAMsigma d i.L (BAMB d i.L i.g (i.E : ℂ) i.m)) i.t σ a π)
+    (fun i => KLIndStepA_Bparam_nonneg _ _)
+    (fun i => by rw [Complex.norm_real, Real.norm_of_nonneg i.ht0]; exact i.ht1.le)
+    (fun k _ hk τ hτ => by
+      obtain ⟨C, hC, H⟩ := baKpi_empty_bound k hd hk hΛ hκ τ hτ
+      exact ⟨C, hC, fun i σ a => H i.L i.hL i.g i.hg i.hgΛ i.E i.m i.hr i.t i.ht0 i.ht1 σ a⟩)
+    (fun k _ hk i σ π a h => by
+      show BAKpi d i.L k _ i.t σ a π = 0
+      unfold BAKpi
+      rw [h, Finset.sum_empty])
+    (fun k _ hk i σ F₀ hF₀ π hπ J hJ hinner a =>
+      baKpi_cut_abs (ι := KWardIneq_Data d Λ κ) d (fun i => i.L) (fun i => i.g) (fun i => i.E) (fun i => i.m)
+        (fun i => i.t) i hk σ hF₀ hπ hJ hinner a)
+    (fun k _ hk => baIndStepAbs_holds k hd hk hΛ hκ)
+  intro τ hτ
+  obtain ⟨C, hC, H⟩ := key n hn τ hτ
+  exact ⟨C, hC, fun L hL g hg hgΛ E m hr t ht0 ht1 σ π a =>
+    H ⟨L, hL, g, hg, hgΛ, E, m, hr, t, ht0, ht1⟩ σ π a⟩
+
+end Main
+
 end RBM.BA
