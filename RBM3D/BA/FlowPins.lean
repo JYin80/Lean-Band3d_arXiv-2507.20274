@@ -269,11 +269,11 @@ section KLoops
 
 variable (d L W : ℕ) [NeZero L]
 
-/-- The block Anderson `M`-loop initial data `𝓜^{(k)}_{σ,a} = W^{-(k-1)d} ∏_i M_{a_i a_{i+1}}(σ_i)` (cyclic,
-`(eq:KMloop)`, `A:567`, `M = M^{(B)} ⊗ I_{W^d}`); the band case is `M(σ) = m(σ) I` (merged `MLoop`). -/
+/-- The block Anderson `M`-loop initial data `𝓜^{(k)}_{σ,a} = tr ∏_i (M(σ_i) E_{a_i}) = W^{-(k-1)d} ∏_i M(σ_i)_{a_{i-1} a_i}` (cyclic, `a_{-1} = a_{k-1}`: `σ_i` sits on the edge `(a_{i-1}, a_i)`; `(eq:KMloop)` `1_2:1003`,
+`A:571`, merged `loopM`); `M = M^{(B)} ⊗ I_{W^d}`; the band case is `M(σ) = m(σ) I` (merged `MLoop`). -/
 def BAMLoop (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (I : LoopIdx (Zd d L)) : ℂ :=
   (((W : ℂ) ^ d)⁻¹) ^ (I.length - 1) *
-    ((I.σ.zip (I.a.zip (I.a.rotate 1))).map fun p => M p.1 p.2.1 p.2.2).prod
+    ((I.σ.zip ((I.a.rotate (I.length - 1)).zip I.a)).map fun p => M p.1 p.2.1 p.2.2).prod
 
 /-- **The `𝒦`-loops of the block Anderson model**: the solution of the convolution tree equations with the
 kernel `S^{(B)}(0) = I` and the initial data `𝓜` (`Def_Ktza` for `BA`, `1_2:1051`; the merged kernel-generic

@@ -1,4 +1,4 @@
 state: audit-pass
-reason: stage 1b DONE (708bbd4; BAMLoop in place at FlowPins 272-276 + BA/KBase); auditor1 PASS claude-opus-5-5 (wf_b7245be0-125). Rule (A) merge held: same action as the T2361 merge the session permission check denied at 19:29 UTC; waiting for Jun
-updated: Fri Oct  9 21:30:49 UTC 2026
+reason: stage 1b DONE (708bbd4); auditor1 PASS claude-opus-5-5 (wf_b7245be0-125); merging under H155 with Jun's direct authorization in the hub session
+updated: Sat Oct 10 01:01:51 UTC 2026
 reports: docs/reports/T2362-prove.md, docs/reports/T2362-audit.md
