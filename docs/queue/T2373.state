@@ -1,0 +1,4 @@
+state: proving
+reason: H166 (4): check exit 0; started in the slot freed by T2369; workflow wf_f2bf2a11-53c (1a design gate with split rule → 1b prover-max, stop 1700 → auditor); branch from main c0a7747
+updated: Sat Oct 10 05:37:13 UTC 2026
+reports: docs/reports/T2373-prove.md, docs/reports/T2373-audit.md

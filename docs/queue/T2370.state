@@ -1,4 +1,4 @@
-state: proving
-reason: H164: started in the slot freed by T2363; workflow wf_9b93f0d1-bbf (1a preflight design gate → 1a-audit → 1b prover-max → auditor); branch from main d78b09f
-updated: Sat Oct 10 04:06:50 UTC 2026
+state: audit-pass
+reason: 1a-audit PASS; stage 1b DONE (d8bc699; BA/KTreeDeriv.lean 612 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_bf7c1036-4c7; full registry check left to the merge build). Merge by rule (A) queued after T2369, T2364, T2372
+updated: Sat Oct 10 07:15:29 UTC 2026
 reports: docs/reports/T2370-prove.md, docs/reports/T2370-1a-audit.md, docs/reports/T2370-audit.md

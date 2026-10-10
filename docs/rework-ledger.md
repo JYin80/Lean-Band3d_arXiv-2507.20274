@@ -313,3 +313,4 @@
 | T2367 | 2026-10-10 03:20 UTC (9b94993) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；BA-K04 `BA/KCactus`（1263 行，停止线 1300）；镜像 (α) 1.9e-15、(β) 1.24e-9；`BACactusVal_sum_zero_BAMLoop` 在 Lean 里核对了 `t = 0` 的树表示 |
 | T2363 | 2026-10-10 04:08 UTC (0347cb8) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核 PASS；UN-51 `GUEPhase/RandomLayerA/B`（1042 行，切分 A|B 未触发；U3 无需改钉）；`Test/Axioms.lean` 只改归属注释 |
 | T2368 | 2026-10-10 04:12 UTC (79dec34) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 审核 PASS（057f0f4），合并被登记拦下：`BAKsolve` 未登记（票上误写「Registry: none」，调度的流程缺口，§181）；Amend 1 repairer 加一行 owed，第 2 轮审核 PASS；BA-K03 `BA/KSolve`（767 行） |
+| T2371 | 2026-10-10 05:36 UTC (c0a7747) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-52b `Main/BUniv`、`Main/BUnivHolds`（313 行，停止线 500）；叶 9 `UNDensBandRow`、叶 10 `UNTrLocalBandRow` 本票证出；Amend 1：叶 11 归 T2372；中途 API 上限停摆后按 (H) 重跑 1b |

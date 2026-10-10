@@ -1488,3 +1488,24 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) **T2371 Amend 1**：叶 11 不在本票做（有生产者 T2372）。`bUniv_holds` 的文档串写明各叶的生产者。由 H166 送给正在跑的 prover。
 - (5) UN 收尾：T2371、T2372、T2373 合并后，`bUniv_holds` 剩下的叶只有 `UNNormBandRow`、`UNGUESchurTail`（都已证，由 MA-06 接上），加上 `UNL32`（borrowed）、`UNMLOut`（ST-6）、`UNLocAvgBand`、`UNQueBand`（MA 输入）。那时发 UN 收尾 REQ。是否要再加一张 UN-52c 把已证的叶接进 `bUniv_holds`，在收尾 REQ 里一起问。
 - (6) 计数：UN 62（写好），计划 64，上限 65；BA 42。下一张票号 T2374，下一节 §185，下一条 H167，下一号差异 D636。
+
+## §185 — T2371 合并；四张 audit-pass 排队合并；K05b = T2374、LW-01 + ST-6 R4 = T2375（总调度 V2，2026-10-10 07:25 UTC）
+
+- (1) **局面**：中枢 04:2x–05:20 UTC 停在 API 会话上限，05:24 按规则 (H) 重跑。心跳链断了约 2 小时 40 分（04:39 那次的通知 07:19 才送到）。之后：
+  - **T2371（UN-52b）合并 c0a7747**：313 行；叶 9、10 本票证出；Amend 1 生效，叶 11 留作前提。
+  - T2369（K02）、T2364（LW R3）、T2372（UN-10a）、T2370（K05a）都已 audit-pass，排队合并。T2369 的合并构建 05:47 起在跑，`KLWard` 原地改动，下游要重编。
+  - T2373（UN-10b）的 1a 设计门 PASS：中心 1320 行，不触发拆分；现在在 1b。
+  - 中枢只剩 T2373 一张在证明，三个名额空着。
+- (2) **合并顺序**（H167）：T2369 之后先合 T2370，再合 T2364，最后 T2372。理由：K05b 的 1b 等 T2370，LW-01 的 1b 等 T2364；T2372 下游没有人在等（UN 收尾 REQ 还要等 T2373）。
+- (3) **T2374 = BA-K05b**（BA 43，阶段 K 第 8 行）：新文件 `BA/KTreeRep.lean`。
+  - 内容：弦对（每条对角 `J` 对 `(i+1, j+1)` 项，用 `KLsum_cut` 和 `KLFIn/KLFOut/KLshift*/KLinV/KLoutV`）；`baKcac_isKLoopS`；`baKsolve : ∀ d, BAKsolve d`；`baTreeRep : ∀ d, BATreeRep d (@BAGamma d)`，经 `BAKsol_isKLoopS` + `baK_unique` 得到（0350 C4）。
+  - 钉文 `BATreeRep`：照探针逐字。删登记 `BAKsolve` 一行（0350 O4）。
+  - 1a 设计门：书面论证、C3 逐弦数值、C5 的 Q4 线读数；之后 1a-audit。`prover-max`，800 / 1100 / 1600，停止线 2000。
+  - **1a 现在开**：读 `t/T2370`，不跑 `lake`。**1b 等 T2370 合并后**从 `main` 开分支。
+- (4) **T2375 = LW-01 + ST-6 R4**（LW 52，上限 55；ST-6 4/4）：新文件 `Graph/LWTermHolds.lean`、`Induction/MainIndHolds.lean`。
+  - 内容：`LWInteg`、Markov 一步、`LWReduceB`、`LWterm`、`LWtermB`、`LWReduceT`、`LWtermExpS`、`LWtermExpN`（用已合并的 `lwtermExpN_of_LWterm`）、`LWtermExp`；R4 `stMainInd_holds`（= `stMainInd_of_LW`，按 1942 C8 不重证 Step 2）、`unMLOut_holds`；删相应登记行。
+  - 1a 设计门：前提 ↔ 生产者表（1143 O2）、指数表、实例。`prover-max`，1000 / 1300 / 2000，停止线 2300。
+  - **不预授切分**：0143 规定 C1–C3 以外的 LW 切分要发 REQ。1a 中心估计超过 2000 行就退回，附 B/T 两半的切分方案，由调度发 REQ。
+  - **1a 现在开**（读 `t/T2364`）；**1b 等 T2364 合并后**开。
+- (5) 返工账本补 T2371 一行（否）。
+- (6) 计数：UN 62（计划 64，上限 65）；LW 52（上限 55）；ST-6 4/4（R4 并入 T2375）；BA 43；MA 7/8。下一张票号 T2376，下一节 §186，下一条 H168，下一号差异 D636。

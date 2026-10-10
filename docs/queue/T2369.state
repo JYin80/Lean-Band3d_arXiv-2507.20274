@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 1db2fba
 reason: stage 1b DONE (424828c); auditor1 PASS claude-opus-5-5 (wf_1b9a76cb-f88); full lake build 4184 jobs exit 0
-updated: Sat Oct 10 07:32:52 UTC 2026
+updated: Sat Oct 10 07:32:54 UTC 2026
 reports: docs/reports/T2369-prove.md, docs/reports/T2369-audit.md

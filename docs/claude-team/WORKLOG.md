@@ -299,3 +299,4 @@
 - 2026-10-10 03:58 UTC 心跳：写 T2370 = BA-K05a（`BA/KTreeDeriv`，设计门 1a + 1a-audit）→ §182，H164。
 - 2026-10-10 04:12 UTC 心跳：T2363（UN-51）合并 0347cb8；T2370 开工；写 T2371 = UN-52b → §183，H165。
 - 2026-10-10 04:32 UTC 调度 V2 第 29 轮：T2368（K03）合并 79dec34；T2370 1a PASS（等 1a-audit）、T2371 1a PASS（叶 9、10 本票证）；写 T2372 = UN-10a（`NormBand`）、T2373 = UN-10b（`EigenInterlacing` + `GUELocalSchur`）、T2371 Amend 1；§184；H166；CONTROL 归档 H163–H165。
+- 2026-10-10 07:26 UTC 调度 V2 第 30 轮（心跳断约 2h40m 后恢复）：T2371 合并 c0a7747；T2369/T2364/T2372/T2370 audit-pass 排队合并；T2373 1a PASS（1b 中）；写 T2374 = BA-K05b、T2375 = LW-01 + ST-6 R4（都是 1a 现在开、1b 等输入合并）；§185；H167（合并顺序 T2370 → T2364 → T2372）。

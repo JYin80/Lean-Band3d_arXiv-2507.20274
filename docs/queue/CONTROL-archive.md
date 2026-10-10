@@ -1479,3 +1479,18 @@ done: Sat Oct 10 02:02:24 UTC 2026 — T2366 merged 010cad9 (BA-K01 generic part
 - H165 (dispatcher V2, 2026-10-10 04:12 UTC; DECISIONS §183). Commit by name with your next commit `docs/tickets/T2371.md`, `docs/tickets/checks/T2371-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile `docs/tickets/checks/T2371-check.lean` on `main` (H4; one `done:` line; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T2371-check.out`); start T2371 in the **next free slot, before T2370 if T2370 has not started** (critical path, §3 (G)). One `done:` line per step.
   done: Sat Oct 10 04:13:26 UTC 2026 — the 7 listed files committed by name in e586ec8 (with states T2363/T2368/T2370), pushed. Check exit 0. T2371 started in the slot freed by T2368 (T2370 had already started): branch from main e586ec8, workflow wf_3e65928d-811 (prover-hard). Running: T2364, T2369, T2370, T2371.
 
+
+
+## Archived from CONTROL on 2026-10-10 07:26 UTC (dispatcher V2): H166 (done), pre-release checks of T2372, T2373 (done)
+- `docs/tickets/checks/T2372-check.lean` (UN-10a; target `UNNormBandRow`, an existing pin; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 05:24:12 UTC 2026 — `lake env lean docs/tickets/checks/T2372-check.lean` on main f184210: exit 0, no error lines.
+- `docs/tickets/checks/T2373-check.lean` (UN-10b; targets `UNGUESchurTail`, `UNGUELocal`, existing pins; released conditionally above, DECISIONS §17).
+  done: Sat Oct 10 05:24:12 UTC 2026 — `lake env lean docs/tickets/checks/T2373-check.lean` on main f184210: exit 0, no error lines.
+
+- H166 (dispatcher V2, 2026-10-10 04:31 UTC; DECISIONS §184). (1) Commit by name with your next commit `docs/tickets/T2372.md`, `docs/tickets/checks/T2372-check.lean`, `docs/tickets/T2373.md`, `docs/tickets/checks/T2373-check.lean`, `docs/tickets/T2371-amend-1.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) Compile both check files on `main` (H4; one `done:` line each under Pre-release checks; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T####-check.out`). (3) Send **T2371 Amend 1** to the running T2371 workflow at once (as H162 did for T2364): it applies from the prover's next section boundary. (4) Start T2372, then T2373, in the next free slots (H12; both before any new BA ticket). One `done:` line per step.
+  done: Sat Oct 10 05:24:12 UTC 2026 — (1) the 11 listed files committed by name in f184210 (with states T2364/T2371), pushed. (2) T2372 and T2373 checks exit 0.
+  done: Sat Oct 10 05:24:12 UTC 2026 — (3) every running workflow (T2364, T2369, T2370, T2371) had stopped on the API session limit ("resets 10:20pm America/Los_Angeles" = 05:20 UTC) before H166 was read; under rule (H) the four stage-1b stages were rerun at Sat Oct 10 05:24:12 UTC 2026: T2371 wf_86ee722a-547 with Amend 1 in its prompt (prover and auditor), T2364 wf_50a93c7f-58c (Amend 1 in prover and auditor prompts; a second stage-1b agent, resumed by the H162 message, had worked in the same worktree and reported DONE at 9ca7389), T2369 wf_1b9a76cb-f88, T2370 wf_bf7c1036-4c7.
+  done: Sat Oct 10 05:24:12 UTC 2026 — (4) T2372, then T2373, start in the next free slots (4 of 4 running).
+  done: Sat Oct 10 05:36:50 UTC 2026 — T2372 started in the slot freed by T2371: branch from main f184210, workflow wf_430dec8f-b5a (prover-hard). T2373 waits for the next free slot.
+  done: Sat Oct 10 05:47:24 UTC 2026 — T2373 started in the slot freed by T2369: branch from main c0a7747, workflow wf_f2bf2a11-53c (prover-max; 1a design gate with the split rule).
+
