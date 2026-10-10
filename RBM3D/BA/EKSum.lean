@@ -1516,6 +1516,379 @@ private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {
   rw [card_Zd, Nat.cast_pow]
 end Concrete
 
+/-! ## 6. Part III: the constants (copy of `Evolution/SumDecayZero.lean:1161-1397`) -/
+
+section Arith
+
+/-- the `‖A‖`-coefficient: constants and powers of `ρ = W^ε` and `r` (the pin's `W^{Cε} r^n`);
+`lg` is the `log L` of `(eq:latticesum_d3)`, absorbed by `ρ ≥ log L`. -/
+private theorem EKSum_arith_M {n : ℕ} (hn : 2 ≤ n) {CB a₁ a₂ lg ρ r : ℝ} (hCB : 0 ≤ CB) (ha₁ : 0 ≤ a₁)
+    (ha₂ : 0 ≤ a₂) (hρ : 4 ≤ ρ) (hr : 1 ≤ r) (hlg : lg ≤ ρ) :
+    (1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (n - 1)
+      + 2 ^ (n - 1) * ((a₁ * ρ ^ 2 * r) ^ (n - 2) * (a₂ * lg * ρ ^ 4 * r ^ 2))
+      ≤ ((1 + n * CB) * (1 + CB) ^ (n - 1) + 2 ^ (n - 1) * a₁ ^ (n - 2) * a₂)
+          * ρ ^ (2 * n + 2) * r ^ n := by
+  obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+  have e1 : m + 2 - 1 = m + 1 := by omega
+  have e2 : m + 2 - 2 = m := by omega
+  rw [e1, e2]
+  have hρ0 : 0 < ρ := by linarith
+  have hr0 : 0 < r := by linarith
+  have hρ1 : 1 ≤ ρ := by linarith
+  have hX1 : 1 ≤ ρ ^ 2 * r := by
+    have : 1 ≤ ρ ^ 2 := one_le_pow₀ hρ1
+    nlinarith
+  have hY1 : 1 ≤ ρ ^ 4 * r := by
+    have : 1 ≤ ρ ^ 4 := one_le_pow₀ hρ1
+    nlinarith
+  have hcast : ((m + 2 : ℕ) : ℝ) = (m : ℝ) + 2 := by push_cast; ring
+  rw [hcast]
+  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+  -- (i)
+  have h1 : 1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r) ≤ (1 + ((m : ℝ) + 2) * CB) * (ρ ^ 4 * r) := by
+    have : ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r) = ((m : ℝ) + 2) * CB * (ρ ^ 4 * r) := by ring
+    rw [this]
+    nlinarith [mul_nonneg (by positivity : (0 : ℝ) ≤ ((m : ℝ) + 2) * CB) (by positivity : (0 : ℝ) ≤ ρ ^ 4 * r)]
+  -- (ii)
+  have h2 : (1 + CB * ρ ^ 2 * r) ^ (m + 1) ≤ ((1 + CB) * (ρ ^ 2 * r)) ^ (m + 1) := by
+    refine pow_le_pow_left₀ (by positivity) ?_ _
+    nlinarith
+  have hpos1 : 0 ≤ 1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r) := by positivity
+  have hterm1 : (1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (m + 1)
+      ≤ (1 + ((m : ℝ) + 2) * CB) * (1 + CB) ^ (m + 1) * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := by
+    calc (1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (m + 1)
+        ≤ ((1 + ((m : ℝ) + 2) * CB) * (ρ ^ 4 * r)) * ((1 + CB) * (ρ ^ 2 * r)) ^ (m + 1) :=
+          mul_le_mul h1 h2 (by positivity) (by positivity)
+      _ = (1 + ((m : ℝ) + 2) * CB) * (1 + CB) ^ (m + 1) * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := by
+          rw [mul_pow, mul_pow]
+          ring
+  -- (iv)
+  have hterm2 : 2 ^ (m + 1) * ((a₁ * ρ ^ 2 * r) ^ m * (a₂ * lg * ρ ^ 4 * r ^ 2))
+      ≤ 2 ^ (m + 1) * a₁ ^ m * a₂ * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := by
+    have hlgρ : lg * ρ ^ (2 * (m + 2)) ≤ ρ ^ (2 * (m + 2) + 2) := by
+      calc lg * ρ ^ (2 * (m + 2)) ≤ ρ * ρ ^ (2 * (m + 2)) :=
+            mul_le_mul_of_nonneg_right hlg (by positivity)
+        _ = ρ ^ (2 * (m + 2) + 1) := by ring
+        _ ≤ ρ ^ (2 * (m + 2) + 2) := pow_le_pow_right₀ hρ1 (by omega)
+    calc 2 ^ (m + 1) * ((a₁ * ρ ^ 2 * r) ^ m * (a₂ * lg * ρ ^ 4 * r ^ 2))
+        = 2 ^ (m + 1) * a₁ ^ m * a₂ * (lg * ρ ^ (2 * (m + 2))) * r ^ (m + 2) := by
+          rw [mul_pow, mul_pow]; ring
+      _ ≤ 2 ^ (m + 1) * a₁ ^ m * a₂ * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := by
+          have h0 : 0 ≤ 2 ^ (m + 1) * a₁ ^ m * a₂ := by positivity
+          have h3 : 0 ≤ r ^ (m + 2) := by positivity
+          calc 2 ^ (m + 1) * a₁ ^ m * a₂ * (lg * ρ ^ (2 * (m + 2))) * r ^ (m + 2)
+              ≤ 2 ^ (m + 1) * a₁ ^ m * a₂ * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := by
+                exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hlgρ h0) h3
+            _ = _ := rfl
+  calc (1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (m + 1)
+        + 2 ^ (m + 1) * ((a₁ * ρ ^ 2 * r) ^ m * (a₂ * lg * ρ ^ 4 * r ^ 2))
+      ≤ (1 + ((m : ℝ) + 2) * CB) * (1 + CB) ^ (m + 1) * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2)
+        + 2 ^ (m + 1) * a₁ ^ m * a₂ * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := add_le_add hterm1 hterm2
+    _ = ((1 + ((m : ℝ) + 2) * CB) * (1 + CB) ^ (m + 1) + 2 ^ (m + 1) * a₁ ^ m * a₂)
+          * ρ ^ (2 * (m + 2) + 2) * r ^ (m + 2) := by ring
+
+
+/-- the `W^{-D}`-coefficient: powers of `W` and the complement count `V^{n-1}` with `V = W^K`. -/
+private theorem EKSum_arith_D {n : ℕ} (hn : 2 ≤ n) {CB Q W V Lk ρ r : ℝ} (hCB : 0 ≤ CB) (hQ0 : 0 ≤ Q)
+    (hW : 1 ≤ W) (hQW : 1 + Q ≤ W) (hr1 : 1 ≤ r) (hrQ : r ≤ 1 + Q) (hρ : 4 ≤ ρ) (hρW : ρ ≤ W)
+    (hV : 1 ≤ V) (hLk0 : 0 ≤ Lk) (hLk : Lk ≤ V) :
+    (1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (n - 1) + Q * (1 + Q) ^ (n - 1)
+        + Q ^ n * Lk ^ (n - 1)
+      ≤ (3 + n * CB) * (W ^ (n + 4) * V ^ (n - 1)) := by
+  obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+  have e1 : m + 2 - 1 = m + 1 := by omega
+  rw [e1]
+  have hW0 : 0 < W := by linarith
+  have hρ0 : 0 < ρ := by linarith
+  have hr0 : 0 < r := by linarith
+  have hcast : ((m + 2 : ℕ) : ℝ) = (m : ℝ) + 2 := by push_cast; ring
+  rw [hcast]
+  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+  have hrW : r ≤ W := hrQ.trans hQW
+  have hQW' : Q ≤ W := by linarith
+  have hW5 : 1 ≤ W ^ 5 := one_le_pow₀ hW
+  have hρ4 : ρ ^ 4 ≤ W ^ 4 := pow_le_pow_left₀ hρ0.le hρW 4
+  -- the first factor
+  have hRn : 1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r) ≤ (1 + ((m : ℝ) + 2) * CB) * W ^ 5 := by
+    have h1 : (ρ ^ 2) ^ 2 * r ≤ W ^ 5 := by
+      calc (ρ ^ 2) ^ 2 * r = ρ ^ 4 * r := by ring
+        _ ≤ W ^ 4 * W := mul_le_mul hρ4 hrW hr0.le (by positivity)
+        _ = W ^ 5 := by ring
+    have h2 : CB * (ρ ^ 2) ^ 2 * r ≤ CB * W ^ 5 := by
+      rw [mul_assoc]; exact mul_le_mul_of_nonneg_left h1 hCB
+    have h3 : ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r) ≤ ((m : ℝ) + 2) * (CB * W ^ 5) :=
+      mul_le_mul_of_nonneg_left h2 (by positivity)
+    nlinarith
+  have hpow : (1 + Q) ^ (m + 1) ≤ W ^ (m + 1) := pow_le_pow_left₀ (by linarith) hQW _
+  have hterm1 : (1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (m + 1)
+      ≤ (1 + ((m : ℝ) + 2) * CB) * (W ^ (m + 2 + 4) * V ^ (m + 1)) := by
+    have hV1 : 1 ≤ V ^ (m + 1) := one_le_pow₀ hV
+    calc (1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (m + 1)
+        ≤ ((1 + ((m : ℝ) + 2) * CB) * W ^ 5) * W ^ (m + 1) :=
+          mul_le_mul hRn hpow (by positivity) (by positivity)
+      _ = (1 + ((m : ℝ) + 2) * CB) * W ^ (m + 2 + 4) := by ring
+      _ ≤ (1 + ((m : ℝ) + 2) * CB) * (W ^ (m + 2 + 4) * V ^ (m + 1)) := by
+          have h0 : 0 ≤ (1 + ((m : ℝ) + 2) * CB) := by positivity
+          refine mul_le_mul_of_nonneg_left ?_ h0
+          have : 0 ≤ W ^ (m + 2 + 4) := by positivity
+          nlinarith
+  have hterm2 : Q * (1 + Q) ^ (m + 1) ≤ W ^ (m + 2 + 4) * V ^ (m + 1) := by
+    have hV1 : 1 ≤ V ^ (m + 1) := one_le_pow₀ hV
+    calc Q * (1 + Q) ^ (m + 1) ≤ (1 + Q) * (1 + Q) ^ (m + 1) :=
+          mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+      _ = (1 + Q) ^ (m + 2) := by ring
+      _ ≤ W ^ (m + 2) := pow_le_pow_left₀ (by linarith) hQW _
+      _ ≤ W ^ (m + 2 + 4) := pow_le_pow_right₀ hW (by omega)
+      _ = W ^ (m + 2 + 4) * 1 := (mul_one _).symm
+      _ ≤ W ^ (m + 2 + 4) * V ^ (m + 1) :=
+          mul_le_mul_of_nonneg_left hV1 (by positivity)
+  have hterm3 : Q ^ (m + 2) * Lk ^ (m + 1) ≤ W ^ (m + 2 + 4) * V ^ (m + 1) := by
+    calc Q ^ (m + 2) * Lk ^ (m + 1) ≤ W ^ (m + 2) * V ^ (m + 1) :=
+          mul_le_mul (pow_le_pow_left₀ hQ0 hQW' _) (pow_le_pow_left₀ hLk0 hLk _)
+            (by positivity) (by positivity)
+      _ ≤ W ^ (m + 2 + 4) * V ^ (m + 1) :=
+          mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hW (by omega)) (by positivity)
+  have hfin : (1 + ((m : ℝ) + 2) * CB) * (W ^ (m + 2 + 4) * V ^ (m + 1)) + W ^ (m + 2 + 4) * V ^ (m + 1)
+      + W ^ (m + 2 + 4) * V ^ (m + 1) = (3 + ((m : ℝ) + 2) * CB) * (W ^ (m + 2 + 4) * V ^ (m + 1)) := by
+    ring
+  calc (1 + ((m : ℝ) + 2) * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (m + 1) + Q * (1 + Q) ^ (m + 1)
+        + Q ^ (m + 2) * Lk ^ (m + 1)
+      ≤ (1 + ((m : ℝ) + 2) * CB) * (W ^ (m + 2 + 4) * V ^ (m + 1)) + W ^ (m + 2 + 4) * V ^ (m + 1)
+        + W ^ (m + 2 + 4) * V ^ (m + 1) := add_le_add (add_le_add hterm1 hterm2) hterm3
+    _ = (3 + ((m : ℝ) + 2) * CB) * (W ^ (m + 2 + 4) * V ^ (m + 1)) := hfin
+
+/-- `W^a (W^K)^b = W^{a + K b}`. -/
+private theorem EKSum_rpow_combine {W K : ℝ} (hW : 0 < W) (a b : ℕ) :
+    W ^ a * (W ^ K) ^ b = W ^ ((a : ℝ) + K * (b : ℝ)) := by
+  rw [← Real.rpow_natCast, ← Real.rpow_natCast, ← Real.rpow_mul hW.le, ← Real.rpow_add hW]
+
+/-- the final arithmetic of the pin: the two coefficients of `(‖A‖, W^{-D})` against the pin's
+`W^{Cε} r^n ‖A‖ + W^{-D+C}`, `C = (m₁ + 2n + 2) + (m₂ + n + 4 + K(n-1))`. -/
+private theorem EKSum_final_arith {n : ℕ} (hn : 2 ≤ n)
+    {CB a₁ a₂ K W ε D ρ r Q lg Lk A' : ℝ} {m₁ m₂ : ℕ}
+    (hCB : 0 ≤ CB) (ha₁ : 0 ≤ a₁) (ha₂ : 0 ≤ a₂) (hK : 0 < K) (hW1 : 1 ≤ W) (hε0 : 0 < ε)
+    (hρdef : ρ = W ^ ε) (hρ4 : 4 ≤ ρ) (hρW : ρ ≤ W) (hr1 : 1 ≤ r) (hrP : r ≤ 1 + Q)
+    (hQ0 : 0 ≤ Q) (hPW : 1 + Q ≤ W) (hlog : lg ≤ ρ)
+    (hm₁ : (1 + n * CB) * (1 + CB) ^ (n - 1) + 2 ^ (n - 1) * a₁ ^ (n - 2) * a₂ < 4 ^ m₁)
+    (hm₂ : 3 + n * CB < 4 ^ m₂) (hLK : Lk ≤ W ^ K) (hLk0 : 0 ≤ Lk) (hWD : 0 ≤ W ^ (-D))
+    (hA' : 0 ≤ A') :
+    A' * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (n - 1)
+          + 2 ^ (n - 1) * ((a₁ * ρ ^ 2 * r) ^ (n - 2) * (a₂ * lg * ρ ^ 4 * r ^ 2)))
+        + W ^ (-D) * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (n - 1)
+          + Q * (1 + Q) ^ (n - 1) + Q ^ n * Lk ^ (n - 1))
+      ≤ W ^ ((((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) * ε) * r ^ n * A'
+        + W ^ (-D + (((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1)))) := by
+  have hW0 : 0 < W := by linarith
+  have hW4 : 4 ≤ W := hρ4.trans hρW
+  have hM := EKSum_arith_M hn hCB ha₁ ha₂ hρ4 hr1 hlog
+  have hV1 : 1 ≤ W ^ K := Real.one_le_rpow hW1 hK.le
+  have hD := EKSum_arith_D hn hCB hQ0 hW1 hPW hr1 hrP hρ4 hρW (V := W ^ K) (Lk := Lk) hV1 hLk0 hLK
+  have hE₂0 : (0 : ℝ) ≤ (m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1) := by
+    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    have hn2 : (2 : ℝ) ≤ n := by exact_mod_cast hn
+    have : 0 ≤ K * ((n : ℝ) - 1) := mul_nonneg hK.le (by linarith)
+    have : (0 : ℝ) ≤ m₂ := Nat.cast_nonneg m₂
+    linarith
+  have hE₁0 : (0 : ℝ) ≤ (m₁ : ℝ) + 2 * n + 2 := by
+    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    have : (0 : ℝ) ≤ m₁ := Nat.cast_nonneg m₁
+    linarith
+  -- `A'`-coefficient
+  have h1 : A' * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (n - 1)
+        + 2 ^ (n - 1) * ((a₁ * ρ ^ 2 * r) ^ (n - 2) * (a₂ * lg * ρ ^ 4 * r ^ 2)))
+      ≤ W ^ ((((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) * ε) * r ^ n * A' := by
+    have hQ1 : (1 + n * CB) * (1 + CB) ^ (n - 1) + 2 ^ (n - 1) * a₁ ^ (n - 2) * a₂ ≤ ρ ^ m₁ :=
+      hm₁.le.trans (pow_le_pow_left₀ (by norm_num) hρ4 m₁)
+    have hρN : ρ ^ (m₁ + (2 * n + 2)) = W ^ (((m₁ : ℝ) + 2 * n + 2) * ε) := by
+      rw [hρdef, ← Real.rpow_natCast, ← Real.rpow_mul hW0.le]
+      congr 1
+      push_cast
+      ring
+    have hρ0 : 0 < ρ := by linarith
+    have hr0 : 0 < r := by linarith
+    have hrn : 0 ≤ r ^ n := by positivity
+    have hρpow : 0 ≤ ρ ^ (2 * n + 2) := by positivity
+    have hexp : W ^ (((m₁ : ℝ) + 2 * n + 2) * ε)
+        ≤ W ^ ((((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) * ε) := by
+      refine Real.rpow_le_rpow_of_exponent_le hW1 ?_
+      have := mul_nonneg hE₂0 hε0.le
+      linarith
+    calc A' * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (n - 1)
+          + 2 ^ (n - 1) * ((a₁ * ρ ^ 2 * r) ^ (n - 2) * (a₂ * lg * ρ ^ 4 * r ^ 2)))
+        ≤ A' * (((1 + n * CB) * (1 + CB) ^ (n - 1) + 2 ^ (n - 1) * a₁ ^ (n - 2) * a₂)
+            * ρ ^ (2 * n + 2) * r ^ n) := mul_le_mul_of_nonneg_left hM hA'
+      _ ≤ A' * (ρ ^ m₁ * ρ ^ (2 * n + 2) * r ^ n) := by
+          refine mul_le_mul_of_nonneg_left ?_ hA'
+          exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hQ1 hρpow) hrn
+      _ = W ^ (((m₁ : ℝ) + 2 * n + 2) * ε) * r ^ n * A' := by
+          rw [← pow_add, hρN]; ring
+      _ ≤ W ^ ((((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) * ε) * r ^ n
+            * A' := by
+          exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hexp hrn) hA'
+  -- `W^{-D}`-coefficient
+  have h2 : W ^ (-D) * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (n - 1)
+        + Q * (1 + Q) ^ (n - 1) + Q ^ n * Lk ^ (n - 1))
+      ≤ W ^ (-D + (((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1)))) := by
+    have hQ2 : 3 + n * CB ≤ W ^ m₂ := hm₂.le.trans (pow_le_pow_left₀ (by norm_num) hW4 m₂)
+    have hWm : (3 + (n : ℝ) * CB) * (W ^ (n + 4) * (W ^ K) ^ (n - 1))
+        ≤ W ^ (((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) := by
+      calc (3 + (n : ℝ) * CB) * (W ^ (n + 4) * (W ^ K) ^ (n - 1))
+          ≤ W ^ m₂ * (W ^ (n + 4) * (W ^ K) ^ (n - 1)) :=
+            mul_le_mul_of_nonneg_right hQ2 (by positivity)
+        _ = W ^ (m₂ + (n + 4)) * (W ^ K) ^ (n - 1) := by rw [pow_add]; ring
+        _ = W ^ (((m₂ + (n + 4) : ℕ) : ℝ) + K * ((n - 1 : ℕ) : ℝ)) := EKSum_rpow_combine hW0 _ _
+        _ = W ^ (((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) := by
+            congr 1
+            rw [Nat.cast_sub (by omega : 1 ≤ n)]
+            push_cast
+            ring
+    calc W ^ (-D) * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (n - 1)
+          + Q * (1 + Q) ^ (n - 1) + Q ^ n * Lk ^ (n - 1))
+        ≤ W ^ (-D) * W ^ (((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) :=
+          mul_le_mul_of_nonneg_left (hD.trans hWm) hWD
+      _ = W ^ (-D + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1))) := (Real.rpow_add hW0 _ _).symm
+      _ ≤ W ^ (-D + (((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1)))) := by
+          refine Real.rpow_le_rpow_of_exponent_le hW1 ?_
+          linarith
+  exact add_le_add h1 h2
+
+end Arith
+
+/-! ## 7. Part IV: the pin -/
+
+section Pin2
+
+open scoped Matrix.Norms.Operator
+
+/-- **`(sumAzero) ⟹ (sum_res_2)` of `lem:sum_decay` at BA** (`A:159-198`), every `n ≥ 2`, `d ≥ 3`, uniform in `g ∈ (0, Λ]`.  The
+route is the paper's `(sum_res_2_red)`: `b₁` is split into `S_near` and `S_far`; on `S_far` the product `∏_i Ξ_i(a_i, b_i)` is
+expanded around `b₁`, the leading term dies by `(sumAzero)`, the other terms carry the first differences of `Ξ`
+(`baProp6_holds` at `c = 1/2`, through `Ξ = ((t-s)/t)(Θ_t - 1)`) and the lattice sum `(eq:latticesum_d3)`.  The constant is
+`C = (m₁ + 2n + 2) + (m₂ + n + 4 + K(n-1))`, `m₁` with `Q₁ < 4^{m₁}`, `Q₁ = (1 + n C_B)(1 + C_B)^{n-1} + 2^{n-1} a₁^{n-2} a₂`,
+`a₁ = 3^d (C_D + C₆)`, `a₂ = 3^d C₆ C_D C_lat` (`C_B`, `C_D`: `baEKXiBall_holds`, `baEKXiDecay_holds`; `C₆`: `baProp6_holds`;
+`C_lat = latC (d-3)`), `m₂` with `3 + n C_B < 4^{m₂}`; it depends on `(d, n, Λ, κ, K)` only. -/
+theorem baEKSumDecay2_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumDecay2 d n Λ κ := by
+  intro hd hn hΛ hκ K hK
+  obtain ⟨k, rfl⟩ : ∃ k, d = k + 3 := ⟨d - 3, by omega⟩
+  obtain ⟨CB, hCB, hball⟩ := baEKXiBall_holds (k + 3) Λ κ hd hΛ hκ
+  obtain ⟨CD, c, hCD, hc, hdec⟩ := baEKXiDecay_holds (k + 3) Λ κ hd hΛ hκ
+  obtain ⟨C6, hC6, h6'⟩ := baProp6_holds (k + 3) Λ κ (1 / 2) hd hΛ hκ (by norm_num) (by norm_num)
+  have hn2 : (2 : ℝ) ≤ n := by exact_mod_cast hn
+  have hlat0 : 0 ≤ latC k := (latC_pos k).le
+  -- the constants
+  obtain ⟨a₁, ha₁def⟩ : ∃ a₁ : ℝ, a₁ = 3 ^ (k + 3) * (CD + C6) := ⟨_, rfl⟩
+  obtain ⟨a₂, ha₂def⟩ : ∃ a₂ : ℝ, a₂ = 3 ^ (k + 3) * C6 * CD * latC k := ⟨_, rfl⟩
+  have ha₁ : 0 ≤ a₁ := by rw [ha₁def]; positivity
+  have ha₂ : 0 ≤ a₂ := by rw [ha₂def]; positivity
+  obtain ⟨m₁, hm₁⟩ := pow_unbounded_of_one_lt
+    ((1 + n * CB) * (1 + CB) ^ (n - 1) + 2 ^ (n - 1) * a₁ ^ (n - 2) * a₂) (by norm_num : (1 : ℝ) < 4)
+  obtain ⟨m₂, hm₂⟩ := pow_unbounded_of_one_lt (3 + n * CB) (by norm_num : (1 : ℝ) < 4)
+  have hK1 : 0 ≤ K * ((n : ℝ) - 1) := mul_nonneg hK.le (by linarith)
+  have hm₁0 : (0 : ℝ) ≤ m₁ := Nat.cast_nonneg m₁
+  have hm₂0 : (0 : ℝ) ≤ m₂ := Nat.cast_nonneg m₂
+  refine ⟨((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1)), by linarith, ?_⟩
+  intro L hL g hg hgΛ W ε D hW1 hε0 hε1 hD hρ4 hlog hLK s t hs hst ht hWt E m hreal σ A hA hz
+  have : NeZero L := ⟨by omega⟩
+  -- basic facts
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast (by omega : 1 ≤ L)
+  have hL0 : (0 : ℝ) < (L : ℝ) ^ 2 := by positivity
+  have hgt : g ^ 2 / (L : ℝ) ^ 2 ≤ 1 - t := by linarith
+  have ht1 : t < 1 := by
+    have : 0 < g ^ 2 / (L : ℝ) ^ 2 := by positivity
+    linarith
+  have ht0 : 0 ≤ t := hs.trans hst
+  have hs1 : s < 1 := lt_of_le_of_lt hst ht1
+  have hu : (0 : ℝ) < 1 - t := by linarith
+  have hv : (0 : ℝ) < 1 - s := by linarith
+  have hW0 : 0 < W := by linarith
+  have hW1' : (1 : ℝ) ≤ W := hW1.le
+  have hρW : W ^ ε ≤ W := by
+    have h1 : W ^ ε ≤ W ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hW1' hε1.le
+    rwa [Real.rpow_one] at h1
+  have hW4 : 4 ≤ W := hρ4.trans hρW
+  have hWD : 0 ≤ W ^ (-D) := Real.rpow_nonneg hW0.le _
+  -- `r`, `P = 1 + Q`
+  obtain ⟨r, hr⟩ : ∃ r : ℝ, r = (g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|) := ⟨_, rfl⟩
+  obtain ⟨Q, hQ⟩ : ∃ Q : ℝ, Q = (t - s) / (1 - t) := ⟨_, rfl⟩
+  obtain ⟨ρ, hρdef⟩ : ∃ ρ : ℝ, ρ = W ^ ε := ⟨_, rfl⟩
+  rw [← hr]
+  have hr1 : 1 ≤ r := by
+    rw [hr, abs_of_pos hu, abs_of_pos hv, le_div_iff₀ (by positivity)]
+    linarith
+  have hQ0 : 0 ≤ Q := by rw [hQ]; exact div_nonneg (by linarith) hu.le
+  have hPeq : 1 + Q = (1 - s) / (1 - t) := by rw [hQ]; field_simp; ring
+  have hPW : 1 + Q ≤ W := by
+    have h1 : ((1 - t) / (1 - s))⁻¹ ≤ W := inv_le_of_inv_le₀ hW0 hWt
+    rw [inv_div] at h1
+    rw [hPeq]; exact h1
+  have hrP : r ≤ 1 + Q := by
+    rw [hr, hPeq, abs_of_pos hu, abs_of_pos hv, div_le_div_iff₀ (by positivity) hu]
+    have : 0 ≤ g ^ 2 * (t - s) := mul_nonneg (sq_nonneg g) (by linarith)
+    nlinarith
+  have hρ4' : 4 ≤ ρ := by rw [hρdef]; exact hρ4
+  have hρW' : ρ ≤ W := by rw [hρdef]; exact hρW
+  have hlog' : Real.log L ≤ ρ := by rw [hρdef]; exact hlog
+  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  -- the analytic inputs at the one-index kernels `Ξ_i = BAXi (σ_i) (σ_{i+1})`
+  have hball' : ∀ i : Fin n, ∀ Λ' : ℝ, 1 ≤ Λ' → ∀ R : ℝ, 1 ≤ R → R ≤ Λ' * ellT L g s →
+      ∀ (a ctr : Zd (k + 3) L) (D : Finset (Zd (k + 3) L)),
+        (∀ b ∈ D, (zdistD (k + 3) L (ctr - b) : ℝ) ≤ R) →
+        ∑ b ∈ D, ‖BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) a b‖
+          ≤ CB * Λ' ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) := by
+    intro i Λ' hΛ' R hR hRℓ a ctr D hD
+    exact hball L hL g hg hgΛ E m hreal s t hs hst ht1 hgt (σ i) (σ (finRotate n i)) Λ' hΛ' R hR hRℓ a ctr D hD
+  have hdec' : ∀ i : Fin n, ∀ x y : Zd (k + 3) L,
+      ‖BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) x y‖
+        ≤ CD * (1 - s) * (g ^ 2 + |1 - t|)⁻¹
+          * (((zdistD (k + 3) L (x - y) : ℝ) + 1) ^ (k + 1))⁻¹
+          * Real.exp (-(c * (zdistD (k + 3) L (x - y) : ℝ)) / ellT L g t) := by
+    intro i x y
+    exact hdec L hL g hg hgΛ E m hreal s t hs hst ht1 hgt (σ i) (σ (finRotate n i)) x y
+  have hdΞ : ∀ i : Fin n, ∀ a b y : Zd (k + 3) L,
+      2 * (zdistD (k + 3) L (y - b) : ℝ) + 1 ≤ (zdistD (k + 3) L (a - b) : ℝ) →
+      ‖BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) a y
+          - BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) a b‖
+        ≤ (1 - s) * (C6 * (g ^ 2 + |1 - t|)⁻¹ * (zdistD (k + 3) L (y - b) : ℝ)
+          * ((zdistD (k + 3) L (a - b) : ℝ) ^ (k + 2))⁻¹) := by
+    intro i a b y hay
+    exact EKSum_dXi_le hreal hs hst ht1 hC6.le (σ i) (σ (finRotate n i))
+      (fun a' r' hr' => h6' L hL g hg hgΛ E m hreal t ht0 ht1 (σ i) (σ (finRotate n i)) a' r' hr') a b y hay
+  have hrowΞ : ∀ i : Fin n, ∀ x : Zd (k + 3) L,
+      ∑ y, ‖BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) x y‖ ≤ (t - s) / (1 - t) := fun i x =>
+    (sum_norm_row_le _ x).trans (EKSum_norm_Xi_le hreal hs hst ht1 _ _)
+  -- the pointwise claim
+  have hpos : 0 ≤ W ^ (((((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1)))) * ε)
+        * r ^ n * ‖A‖
+      + W ^ (-D + (((m₁ : ℝ) + 2 * n + 2) + ((m₂ : ℝ) + n + 4 + K * ((n : ℝ) - 1)))) := by
+    positivity
+  refine (pi_norm_le_iff_of_nonneg hpos).mpr fun a => ?_
+  have hconc := EKSum_concrete (L := L) k hL hg hs hst ht1 hn
+    (fun i x y => BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) x y)
+    hCB.le hCD.le hc hC6.le hball' hdec' hdΞ hrowΞ (W := W) (ε := ε) (D := D) (ρ := ρ) (r := r) (Q := Q)
+    (Sξ := CB * ρ ^ 2 * r) (Rn := n * (CB * (ρ ^ 2) ^ 2 * r)) (Snon := a₁ * ρ ^ 2 * r)
+    (Ψ := a₂ * Real.log L * ρ ^ 4 * r ^ 2) hρdef hρ4' hr hQ rfl rfl
+    (by rw [ha₁def]) (by rw [ha₂def]) hWD A hA hz a
+  have hUN : ‖BAUN (k + 3) L g E m σ s t A a‖
+      = ‖∑ b : Fin n → Zd (k + 3) L, (∏ i, EKSum_U
+          (fun i x y => BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) x y) a i (b i)) * A b‖ := by
+    unfold BAUN
+    refine congrArg _ (Finset.sum_congr rfl fun b _ => ?_)
+    refine congrArg (· * A b) (Finset.prod_congr rfl fun i _ => ?_)
+    rw [BAuKer_eq_one_add_Xi hreal ht0 ht1, Matrix.add_apply, Matrix.one_apply]
+    rfl
+  calc ‖BAUN (k + 3) L g E m σ s t A a‖
+      = ‖∑ b : Fin n → Zd (k + 3) L, (∏ i, EKSum_U
+          (fun i x y => BAXi (k + 3) L g E m s t (σ i) (σ (finRotate n i)) x y) a i (b i)) * A b‖ := hUN
+    _ ≤ _ := hconc
+    _ = ‖A‖ * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (n - 1)
+          + 2 ^ (n - 1) * ((a₁ * ρ ^ 2 * r) ^ (n - 2) * (a₂ * Real.log L * ρ ^ 4 * r ^ 2)))
+        + W ^ (-D) * ((1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + Q) ^ (n - 1)
+          + Q * (1 + Q) ^ (n - 1) + Q ^ n * ((L : ℝ) ^ (k + 3)) ^ (n - 1)) := by
+        rw [ha₁def, ha₂def]; ring
+    _ ≤ _ := EKSum_final_arith hn hCB.le ha₁ ha₂ hK hW1' hε0 hρdef hρ4' hρW' hr1 hrP hQ0 hPW
+        hlog' hm₁ hm₂ hLK (by positivity) hWD (norm_nonneg _)
+end Pin2
+
 end RBM.BA
 
 end
