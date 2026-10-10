@@ -52,6 +52,10 @@ index type `Idx d L W`, the cardinality `N = (W L)^d` (`Sizes.card_Idx`), and th
 * `stochDom_rowSum_general`, `highProb_norm_rowSum_sq_le`: the row LDE as `StochDomAt` and
   `HighProbAt` along a size sequence with `N → ∞`.
 
+* T2389 (BA-G2): `RowIndep_minorColD`, `RowIndep_minorRowConjD` and their measurability, off-row determination
+  and alignment lemmas (`RowIndep_*`) for the resolvent of `D + X`, `D` a deterministic matrix (the block
+  Anderson hopping `g₀ Ψ`): the section "The shifted minor resolvent".  The band declarations are unchanged.
+
 ## Renaming (RBM2D `c9a24cf` → here; `docs/tickets/ST1-COMMON.md` item 2)
 
 R1 `d : Sizes` → `sz : Sizes d` (the dimension `d` is the implicit parameter of `Sizes d`);
@@ -1286,6 +1290,241 @@ theorem measurable_minorRowConj (u : ℝ) (z : ℂ) (j : Idx d (sz.L n) (sz.W n)
       (fun a b => (Sizes.measurable_seqHflow_entry sz n u a.1 b.1).sub measurable_const) _ _
   · exact measurable_const
 
+/-! ### The shifted minor resolvent (T2389, BA-G2)
+
+The block Anderson flow is `H = D + X` with `D = g₀ Ψ` deterministic and `X` the Gaussian part
+(`seqHflow` of `sz.withLam 0`).  The coefficients below are the entries of the minor of `D + X`;
+`D` is a constant, so the proofs are those of `minorCol`, `minorRowConj` above (`D = 0` is the band).
+The band declarations stay as they are; the row of `X` is still `seqHflow`. -/
+
+/-- The `j`-th column of the minor resolvent of `D + X`, as coefficients on all of `Idx` (zero at `i`). -/
+noncomputable def RowIndep_minorColD {d : ℕ} (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z : ℂ)
+    (i : Idx d (sz.L n) (sz.W n)) (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) (ω : Sizes.SeqΩ sz)
+    (k : Idx d (sz.L n) (sz.W n)) : ℂ :=
+  if h : k ≠ i then
+    (((D + Sizes.seqHflow sz n u ω).submatrix
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+      - z • (1 : Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ i}
+        {a : Idx d (sz.L n) (sz.W n) // a ≠ i} ℂ))⁻¹) ⟨k, h⟩ j
+  else 0
+
+/-- The conjugate of the `k`-th row of the minor resolvent of `D + X` (the column sum of the paper is
+the conjugate of a row sum with these coefficients). -/
+noncomputable def RowIndep_minorRowConjD {d : ℕ} (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z : ℂ)
+    (j : Idx d (sz.L n) (sz.W n)) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j}) (ω : Sizes.SeqΩ sz)
+    (l : Idx d (sz.L n) (sz.W n)) : ℂ :=
+  if h : l ≠ j then
+    (starRingEnd ℂ) ((((D + Sizes.seqHflow sz n u ω).submatrix
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ j} → _)
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ j} → _)
+      - z • (1 : Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ j}
+        {a : Idx d (sz.L n) (sz.W n) // a ≠ j} ℂ))⁻¹) k ⟨l, h⟩)
+  else 0
+
+section Shift
+
+variable (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+
+private theorem RowIndep_submatrix_add (A B : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (i : Idx d (sz.L n) (sz.W n)) :
+    (A + B).submatrix (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+      = A.submatrix (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+          (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        + B.submatrix (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+          (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _) := rfl
+
+/-- The minor of `D + X` reads only the off-row block of `X`. -/
+theorem RowIndep_submatrix_shift_congr (u : ℝ) {i : Idx d (sz.L n) (sz.W n)}
+    {ω ω' : Sizes.SeqΩ sz} (h : ∀ c ∈ offRowCoord sz n i, ω c = ω' c) :
+    (D + Sizes.seqHflow sz n u ω).submatrix
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+      = (D + Sizes.seqHflow sz n u ω').submatrix
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _) := by
+  rw [RowIndep_submatrix_add, RowIndep_submatrix_add, Hflow_submatrix_congr_offRowCoord u h]
+
+theorem RowIndep_minorColD_congr (u : ℝ) (z : ℂ) {i : Idx d (sz.L n) (sz.W n)}
+    (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i})
+    {ω ω' : Sizes.SeqΩ sz} (h : ∀ c ∈ offRowCoord sz n i, ω c = ω' c) :
+    RowIndep_minorColD sz n D u z i j ω = RowIndep_minorColD sz n D u z i j ω' := by
+  funext k
+  unfold RowIndep_minorColD
+  rw [RowIndep_submatrix_shift_congr D u h]
+
+theorem RowIndep_minorRowConjD_congr (u : ℝ) (z : ℂ) {j : Idx d (sz.L n) (sz.W n)}
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j})
+    {ω ω' : Sizes.SeqΩ sz} (h : ∀ c ∈ offRowCoord sz n j, ω c = ω' c) :
+    RowIndep_minorRowConjD sz n D u z j k ω = RowIndep_minorRowConjD sz n D u z j k ω' := by
+  funext l
+  unfold RowIndep_minorRowConjD
+  rw [RowIndep_submatrix_shift_congr D u h]
+
+/-- Every entry of `(D + X)^{(i)} - z` is measurable in `ω`. -/
+private theorem RowIndep_measurable_shift_entry (u : ℝ) (z : ℂ) (i : Idx d (sz.L n) (sz.W n))
+    (a b : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
+    Measurable fun ω : Sizes.SeqΩ sz => ((D + Sizes.seqHflow sz n u ω).submatrix
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
+        - z • (1 : Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ i}
+          {a : Idx d (sz.L n) (sz.W n) // a ≠ i} ℂ)) a b := by
+  simp only [Matrix.sub_apply, Matrix.submatrix_apply, Matrix.add_apply]
+  exact (measurable_const.add (Sizes.measurable_seqHflow_entry sz n u a.1 b.1)).sub measurable_const
+
+theorem RowIndep_measurable_minorColD (u : ℝ) (z : ℂ) (i : Idx d (sz.L n) (sz.W n))
+    (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
+    Measurable (RowIndep_minorColD sz n D u z i j) := by
+  refine Measurable.of_eval fun k => ?_
+  unfold RowIndep_minorColD
+  split
+  · exact measurable_inv_entries (RowIndep_measurable_shift_entry D u z i) _ _
+  · exact measurable_const
+
+theorem RowIndep_measurable_minorRowConjD (u : ℝ) (z : ℂ) (j : Idx d (sz.L n) (sz.W n))
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j}) :
+    Measurable (RowIndep_minorRowConjD sz n D u z j k) := by
+  refine Measurable.of_eval fun l => ?_
+  unfold RowIndep_minorRowConjD
+  split
+  · exact Complex.continuous_conj.measurable.comp
+      (measurable_inv_entries (RowIndep_measurable_shift_entry D u z j) _ _)
+  · exact measurable_const
+
+
+/-- Where the resolvent of `D + X` exists, `minorColD` is the entries of its minor `G^{(i)}`. -/
+theorem RowIndep_minorColD_eq_greenMinor (u : ℝ) {i : Idx d (sz.L n) (sz.W n)}
+    (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) {ω : Sizes.SeqΩ sz}
+    (hdet : IsUnit (D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGii : green (D + Sizes.seqHflow sz n u ω) z i i ≠ 0) {k : Idx d (sz.L n) (sz.W n)}
+    (hk : k ≠ i) :
+    RowIndep_minorColD sz n D u z i j ω k
+      = greenMinor (green (D + Sizes.seqHflow sz n u ω) z) i k j.1 := by
+  unfold RowIndep_minorColD
+  simp only [ne_eq, hk, not_false_eq_true, ↓reduceDIte]
+  rw [inv_minor_resolvent hdet i hGii]
+  rfl
+
+/-- Where the resolvent of `D + X` exists, `minorRowConjD` is the conjugated entries of `G^{(j)}`. -/
+theorem RowIndep_minorRowConjD_eq_greenMinor (u : ℝ) {j : Idx d (sz.L n) (sz.W n)}
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j}) {ω : Sizes.SeqΩ sz}
+    (hdet : IsUnit (D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGjj : green (D + Sizes.seqHflow sz n u ω) z j j ≠ 0) {l : Idx d (sz.L n) (sz.W n)}
+    (hl : l ≠ j) :
+    RowIndep_minorRowConjD sz n D u z j k ω l
+      = (starRingEnd ℂ) (greenMinor (green (D + Sizes.seqHflow sz n u ω) z) j k.1 l) := by
+  unfold RowIndep_minorRowConjD
+  rw [dite_eq_left_of_eq_true (by simpa using hl), inv_minor_resolvent hdet j hGjj]
+  rfl
+
+/-- **The left-hand side of the row LDE** (row of `X`, resolvent of `D + X`) is the row sum with the
+minor column of `D + X`. -/
+theorem RowIndep_ldeRowLHS_eqD (u : ℝ) {i : Idx d (sz.L n) (sz.W n)}
+    (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) {ω : Sizes.SeqΩ sz}
+    (hdet : IsUnit (D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGii : green (D + Sizes.seqHflow sz n u ω) z i i ≠ 0) :
+    ldeRowLHS (Sizes.seqHflow sz n u ω) (green (D + Sizes.seqHflow sz n u ω) z) i j.1
+      = ‖rowSum sz n u i (RowIndep_minorColD sz n D u z i j) ω‖ ^ 2 := by
+  unfold ldeRowLHS rowSum
+  congr 2
+  rw [Finset.sum_subtype (p := fun k => k ≠ i) (Finset.univ.erase i)
+    (fun k => by simp [Finset.mem_erase]) _]
+  exact Finset.sum_congr rfl fun k _ =>
+    by rw [RowIndep_minorColD_eq_greenMinor D u j hdet hGii k.2]
+
+/-- The variance of that row sum is `u` times the right-hand side of the row LDE. -/
+theorem RowIndep_rowVarSum_eqD (u : ℝ) {i : Idx d (sz.L n) (sz.W n)}
+    (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) {ω : Sizes.SeqΩ sz}
+    (hdet : IsUnit (D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGii : green (D + Sizes.seqHflow sz n u ω) z i i ≠ 0) :
+    rowVarSum sz n u i (RowIndep_minorColD sz n D u z i j) ω
+      = u * ldeRowRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
+          (green (D + Sizes.seqHflow sz n u ω) z) i j.1 := by
+  unfold rowVarSum ldeRowRHS
+  congr 1
+  rw [Finset.sum_subtype (p := fun k => k ≠ i) (Finset.univ.erase i)
+    (fun k => by simp [Finset.mem_erase]) _]
+  exact Finset.sum_congr rfl fun k _ =>
+    by rw [RowIndep_minorColD_eq_greenMinor D u j hdet hGii k.2]
+
+/-- **The left-hand side of the column LDE** is the conjugate of the row sum with the conjugated minor row. -/
+theorem RowIndep_ldeColLHS_eqD (u : ℝ) {j : Idx d (sz.L n) (sz.W n)}
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j}) {ω : Sizes.SeqΩ sz}
+    (hdet : IsUnit (D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGjj : green (D + Sizes.seqHflow sz n u ω) z j j ≠ 0) :
+    ldeColLHS (Sizes.seqHflow sz n u ω) (green (D + Sizes.seqHflow sz n u ω) z) k.1 j
+      = ‖rowSum sz n u j (RowIndep_minorRowConjD sz n D u z j k) ω‖ ^ 2 := by
+  have key : rowSum sz n u j (RowIndep_minorRowConjD sz n D u z j k) ω
+      = (starRingEnd ℂ) (∑ l ∈ Finset.univ.erase j,
+          greenMinor (green (D + Sizes.seqHflow sz n u ω) z) j k.1 l
+            * Sizes.seqHflow sz n u ω l j) := by
+    unfold rowSum
+    rw [map_sum, Finset.sum_subtype (p := fun l => l ≠ j) (Finset.univ.erase j)
+      (fun l => by simp [Finset.mem_erase]) _]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    rw [RowIndep_minorRowConjD_eq_greenMinor D u k hdet hGjj l.2, map_mul,
+      show (starRingEnd ℂ) (Sizes.seqHflow sz n u ω l.1 j) = Sizes.seqHflow sz n u ω j l.1 from
+        (Sizes.seqHflow_isHermitian sz n u ω).apply j l.1]
+    ring
+  rw [key, Complex.norm_conj, ldeColLHS]
+
+/-- The variance of the conjugated row sum is `u` times the right-hand side of the column LDE. -/
+theorem RowIndep_rowVarSum_minorRowConjD_eq (u : ℝ) {j : Idx d (sz.L n) (sz.W n)}
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j}) {ω : Sizes.SeqΩ sz}
+    (hdet : IsUnit (D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGjj : green (D + Sizes.seqHflow sz n u ω) z j j ≠ 0) :
+    rowVarSum sz n u j (RowIndep_minorRowConjD sz n D u z j k) ω
+      = u * ldeColRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
+          (green (D + Sizes.seqHflow sz n u ω) z) k.1 j := by
+  unfold rowVarSum ldeColRHS
+  congr 1
+  rw [Finset.sum_subtype (p := fun l => l ≠ j) (Finset.univ.erase j)
+    (fun l => by simp [Finset.mem_erase]) _]
+  refine Finset.sum_congr rfl fun l _ => ?_
+  rw [RowIndep_minorRowConjD_eq_greenMinor D u k hdet hGjj l.2, Complex.norm_conj,
+    svarF_comm d (sz.L n) (sz.W n) (sz.lam n) j l.1]
+  ring
+
+/-- **The band is the shift `D = 0`:** the shifted minor column of `0 + X` is the band minor column. -/
+theorem RowIndep_minorColD_zero (u : ℝ) (z : ℂ) (i : Idx d (sz.L n) (sz.W n))
+    (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
+    RowIndep_minorColD sz n 0 u z i j = minorCol sz n u z i j := by
+  funext ω k
+  simp only [RowIndep_minorColD, minorCol, zero_add]
+
+/-- The same for the conjugated minor rows. -/
+theorem RowIndep_minorRowConjD_zero (u : ℝ) (z : ℂ) (j : Idx d (sz.L n) (sz.W n))
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ j}) :
+    RowIndep_minorRowConjD sz n 0 u z j k = minorRowConj sz n u z j k := by
+  funext ω l
+  simp only [RowIndep_minorRowConjD, minorRowConj, zero_add]
+
+end Shift
+
+/-- **The band row identity `ldeRowLHS_eq` is the corollary at `D = 0`** of `RowIndep_ldeRowLHS_eqD`. -/
+example (u : ℝ) {i : Idx d (sz.L n) (sz.W n)} (j : {a : Idx d (sz.L n) (sz.W n) // a ≠ i})
+    {ω : Sizes.SeqΩ sz} {z : ℂ}
+    (hdet : IsUnit (Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det)
+    (hGii : green (Sizes.seqHflow sz n u ω) z i i ≠ 0) :
+    ldeRowLHS (Sizes.seqHflow sz n u ω) (green (Sizes.seqHflow sz n u ω) z) i j.1
+      = ‖rowSum sz n u i (minorCol sz n u z i j) ω‖ ^ 2 := by
+  have h0 : ∀ ω' : Sizes.SeqΩ sz, (0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+      + Sizes.seqHflow sz n u ω' = Sizes.seqHflow sz n u ω' := fun ω' => zero_add _
+  have h := RowIndep_ldeRowLHS_eqD (z := z) (0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    u j (ω := ω) (by rw [h0]; exact hdet) (by rw [h0]; exact hGii)
+  rw [h0, RowIndep_minorColD_zero] at h
+  exact h
+
 /-- **The degenerate case.**  Where the conditional variance vanishes, so does the row sum,
 almost surely: freezing the coefficients to `0` off that event gives a family whose variance is
 identically `0`, hence whose second moment vanishes. -/
@@ -1514,6 +1753,38 @@ theorem stochDom_rowSum_generalTime_sz0 (z : ℂ) :
     (fun _ q => q.1) (fun n q => minorCol sz0 n (1 / 2) z q.1 q.2)
     (fun _ q => measurable_minorCol (1 / 2) z q.1 q.2)
     (fun _ q _ _ h => minorCol_congr (1 / 2) z q.2 h)
+
+/-- A nonzero Hermitian shift for the instances of the `D`-versions (T2389): `D = (1/2) I` at `sz0`. -/
+private noncomputable def shiftD (n : ℕ) :
+    Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ :=
+  ((1 / 2 : ℝ) : ℂ) • (1 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ)
+
+/-- **Instance of the shifted minor columns** at `sz0`, `u = 1/2`, `D = (1/2) I`: the normalised row sums with the
+coefficients `RowIndep_minorColD` (measurable, reading only the off-row block) are `≺ 1`, uniformly over `LdeIdx sz0 n`. -/
+theorem RowIndep_stochDom_rowSum_generalTime_shift_sz0 (z : ℂ) :
+    StochDomAt (Sizes.seqP sz0) sz0.size
+      (fun n (q : LdeIdx sz0 n) ω =>
+        ‖rowSum sz0 n (1 / 2) q.1
+          (rowCoeffNorm sz0 n (1 / 2) q.1 (RowIndep_minorColD sz0 n (shiftD n) (1 / 2) z q.1 q.2)) ω‖)
+      (fun _ _ _ => 1) :=
+  stochDom_rowSum_generalTime (U := fun n => LdeIdx sz0 n) (Ccard := 2)
+    sz0_size_tendsto (eventually_card_LdeIdx_le sz0) (fun _ _ => 1 / 2) (fun _ _ => by norm_num)
+    (fun _ q => q.1) (fun n q => RowIndep_minorColD sz0 n (shiftD n) (1 / 2) z q.1 q.2)
+    (fun n q => RowIndep_measurable_minorColD (shiftD n) (1 / 2) z q.1 q.2)
+    (fun n q _ _ h => RowIndep_minorColD_congr (shiftD n) (1 / 2) z q.2 h)
+
+/-- The same for the conjugated minor rows `RowIndep_minorRowConjD` (the column LDE). -/
+example (z : ℂ) :
+    StochDomAt (Sizes.seqP sz0) sz0.size
+      (fun n (q : LdeIdx sz0 n) ω =>
+        ‖rowSum sz0 n (1 / 2) q.1
+          (rowCoeffNorm sz0 n (1 / 2) q.1 (RowIndep_minorRowConjD sz0 n (shiftD n) (1 / 2) z q.1 q.2)) ω‖)
+      (fun _ _ _ => 1) :=
+  stochDom_rowSum_generalTime (U := fun n => LdeIdx sz0 n) (Ccard := 2)
+    sz0_size_tendsto (eventually_card_LdeIdx_le sz0) (fun _ _ => 1 / 2) (fun _ _ => by norm_num)
+    (fun _ q => q.1) (fun n q => RowIndep_minorRowConjD sz0 n (shiftD n) (1 / 2) z q.1 q.2)
+    (fun n q => RowIndep_measurable_minorRowConjD (shiftD n) (1 / 2) z q.1 q.2)
+    (fun n q _ _ h => RowIndep_minorRowConjD_congr (shiftD n) (1 / 2) z q.2 h)
 
 /-- Each row of the variance profile sums to `1` (`3 ≤ L`): `∑_k S_{xk} = ∑_b S^{(B)}_{ab} = 1`
 (`sum_sbKernelR`, `Defs/Block.lean:93`; the bridge `splitEquiv`). -/

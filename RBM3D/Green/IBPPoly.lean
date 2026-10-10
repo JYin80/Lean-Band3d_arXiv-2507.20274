@@ -31,6 +31,10 @@ the Gaussian flow, the quadratic large deviation input `hLquad` of `diag_bound_s
 * `RBM.Green.stochDom_ldeQuad` : `sz.PrecPT (ldeQuadLHS …) (ldeQuadRHS …)`, the literal text of the
   hypothesis `hLquad` of `diag_bound_stochDom`, for every size sequence with `sz.SizeTendsto`.
 
+* T2389 (BA-G2): the minor resolvent, the chaos instance and the tail bounds carry a deterministic Hermitian shift
+  `D` (`minorRes sz n D u z i ω` is the resolvent of the minor of `D + X`); `IBPPoly_stochDom_ldeQuad_shift` is the
+  quadratic input for `D + X`, and `stochDom_ldeQuad` is its corollary at `D = 0`.
+
 ## Differences from RBM2D (residual, after the renaming of `docs/tickets/ST1-COMMON.md`)
 
 * `d : Sizes` becomes `sz : Sizes d`; `Idx L W` becomes `Idx d L W`; `PerTimeDomAt (seqP d) d.size`
@@ -419,6 +423,10 @@ end OpNorm
 
 variable {d : ℕ} {sz : Sizes d} {n : ℕ} {u : ℝ} {z : ℂ}
 
+-- The deterministic Hermitian shift `D` of the flow `D + X` (`D = 0` is the band; `D = g₀ Ψ` is the block Anderson
+-- model): an implicit argument of every statement about the minors of `D + X` below.
+variable {D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+
 private theorem LDEQuadInst_seqHflow_zero (sz : Sizes d) (n : ℕ) (ω : Sizes.SeqΩ sz) :
     Sizes.seqHflow sz n 0 ω = 0 := by
   rw [Sizes.seqHflow_eq_smul]
@@ -432,50 +440,54 @@ private theorem LDEQuadInst_continuous_seqHflow (sz : Sizes d) (n : ℕ) (u : �
 
 /-! ### The minor resolvent as the matrix of the chaos -/
 
-/-- `(H^{(i)} - z)^{-1}`, the resolvent of the minor. -/
-noncomputable def minorRes (sz : Sizes d) (n : ℕ) (u : ℝ) (z : ℂ) (i : Idx d (sz.L n) (sz.W n))
-    (ω : Sizes.SeqΩ sz) :
+/-- `((D + H)^{(i)} - z)^{-1}`, the resolvent of the minor of `D + H`. -/
+noncomputable def minorRes (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z : ℂ)
+    (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
     Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ i} {a : Idx d (sz.L n) (sz.W n) // a ≠ i} ℂ :=
-  green ((Sizes.seqHflow sz n u ω).submatrix
+  green ((D + Sizes.seqHflow sz n u ω).submatrix
     (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → Idx d (sz.L n) (sz.W n))
     (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → Idx d (sz.L n) (sz.W n))) z
 
-theorem isHermitian_Hflow_submatrix (sz : Sizes d) (n : ℕ) (u : ℝ) (ω : Sizes.SeqΩ sz)
+theorem isHermitian_Hflow_submatrix (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (hD : D.IsHermitian) (u : ℝ) (ω : Sizes.SeqΩ sz)
     (i : Idx d (sz.L n) (sz.W n)) :
-    ((Sizes.seqHflow sz n u ω).submatrix
+    ((D + Sizes.seqHflow sz n u ω).submatrix
       (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → Idx d (sz.L n) (sz.W n))
       (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → Idx d (sz.L n) (sz.W n))).IsHermitian :=
-  (Sizes.seqHflow_isHermitian sz n u ω).submatrix _
+  (hD.add (Sizes.seqHflow_isHermitian sz n u ω)).submatrix _
 
 /-- **The minor resolvent is bounded by `|Im z|⁻¹`, for every `ω`.** -/
-theorem norm_minorRes_le (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz)
-    (k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) : ‖minorRes sz n u z i ω k l‖ ≤ |z.im|⁻¹ := by
-  exact LDEQuadInst_norm_green_apply_le (isHermitian_Hflow_submatrix sz n u ω i) hz k l
+theorem norm_minorRes_le (hD : D.IsHermitian) (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz)
+    (k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) : ‖minorRes sz n D u z i ω k l‖ ≤ |z.im|⁻¹ := by
+  exact LDEQuadInst_norm_green_apply_le (isHermitian_Hflow_submatrix sz n D hD u ω i) hz k l
 
-theorem continuous_minorRes (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n))
+theorem continuous_minorRes (hD : D.IsHermitian) (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n))
     (k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
-    Continuous fun ω : Sizes.SeqΩ sz => minorRes sz n u z i ω k l := by
+    Continuous fun ω : Sizes.SeqΩ sz => minorRes sz n D u z i ω k l := by
   refine Continuous.matrix_elem ?_ k l
   have h := continuous_green_of_isHermitian
-    ((LDEQuadInst_continuous_seqHflow sz n u).matrix_submatrix
+    ((show Continuous fun ω : Sizes.SeqΩ sz => D + Sizes.seqHflow sz n u ω from
+      continuous_const.add (LDEQuadInst_continuous_seqHflow sz n u)).matrix_submatrix
       (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _)
       (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → _))
-    (fun ω => isHermitian_Hflow_submatrix sz n u ω i) hz
+    (fun ω => isHermitian_Hflow_submatrix sz n D hD u ω i) hz
   unfold minorRes
   simpa only [LDEQuadInst_Gres_true] using h
 
 /-- The minor resolvent reads only the off-row block. -/
 theorem minorRes_congr (i : Idx d (sz.L n) (sz.W n)) {ω ω' : Sizes.SeqΩ sz}
     (h : ∀ c ∈ offRowCoord sz n i, ω c = ω' c) :
-    minorRes sz n u z i ω = minorRes sz n u z i ω' := by
+    minorRes sz n D u z i ω = minorRes sz n D u z i ω' := by
   unfold minorRes
-  rw [Hflow_submatrix_congr_offRowCoord u h]
+  rw [RowIndep_submatrix_shift_congr D u h]
 
 /-! ### The instance -/
 
 /-- **The row chaos of the Gaussian model at row `i`.**  The row is `h_k = (H_u)_{ik}`, the
-matrix is the minor resolvent `(H^{(i)} - z)^{-1}`, and the scale is `r = √u`. -/
-noncomputable def modelChaos (sz : Sizes d) (n : ℕ) (u : ℝ) {z : ℂ} (hz : z.im ≠ 0)
+matrix is the minor resolvent `((D + H)^{(i)} - z)^{-1}`, and the scale is `r = √u`. -/
+noncomputable def modelChaos (sz : Sizes d) (n : ℕ) (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hD : D.IsHermitian) (u : ℝ) {z : ℂ} (hz : z.im ≠ 0)
     (i : Idx d (sz.L n) (sz.W n)) : RowChaos sz {a : Idx d (sz.L n) (sz.W n) // a ≠ i} where
   co k b := rowCoord sz n i k.1 b
   co_inj := by
@@ -486,30 +498,30 @@ noncomputable def modelChaos (sz : Sizes d) (n : ℕ) (u : ℝ) {z : ℂ} (hz : 
   eps k := rowSign sz n i k.1
   eps_sq k := by unfold rowSign; split_ifs <;> norm_num
   r := Real.sqrt u
-  B ω k l := minorRes sz n u z i ω k l
-  B_cont k l := continuous_minorRes hz i k l
+  B ω k l := minorRes sz n D u z i ω k l
+  B_cont k l := continuous_minorRes hD hz i k l
   Bbd := |z.im|⁻¹
-  B_bdd ω k l := norm_minorRes_le hz i ω k l
+  B_bdd ω k l := norm_minorRes_le hD hz i ω k l
   Ifree := offRowCoord sz n i
   Ifree_free k b := by
     intro hmem
     exact (Finset.mem_sdiff.1 hmem).2 (rowCoord_mem_rowSet i k.1 b)
   B_free ω ω' h := by
     funext k l
-    rw [minorRes_congr (u := u) (z := z) i h]
+    rw [minorRes_congr (D := D) (u := u) (z := z) i h]
 
 /-! ### What the instance is -/
 
 section Instance
 
-variable (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n))
+variable (hD : D.IsHermitian) (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n))
 
 @[simp] theorem modelChaos_B (ω : Sizes.SeqΩ sz) (k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
-    (modelChaos sz n u hz i).B ω k l = minorRes sz n u z i ω k l := rfl
+    (modelChaos sz n D hD u hz i).B ω k l = minorRes sz n D u z i ω k l := rfl
 
 /-- **The row of the chaos is the `i`-th row of `H_u`.** -/
 theorem modelChaos_h (ω : Sizes.SeqΩ sz) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
-    (modelChaos sz n u hz i).h ω k = Sizes.seqHflow sz n u ω i k.1 := by
+    (modelChaos sz n D hD u hz i).h ω k = Sizes.seqHflow sz n u ω i k.1 := by
   change (Real.sqrt u : ℂ) * ((ω (rowCoord sz n i k.1 true) : ℂ)
       + ((rowSign sz n i k.1 : ℂ) * Complex.I) * (ω (rowCoord sz n i k.1 false) : ℂ))
     = (Real.sqrt u : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) i k.1
@@ -517,7 +529,7 @@ theorem modelChaos_h (ω : Sizes.SeqΩ sz) (k : {a : Idx d (sz.L n) (sz.W n) // 
 
 /-- **The variance of the row is `σ_k = u S_{ik}`** (`S = svarF`, the fine-lattice profile of `Defs`/`Gauss/FineModel`). -/
 theorem modelChaos_sg (hu : 0 ≤ u) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
-    (modelChaos sz n u hz i).sg k = u * svarF d (sz.L n) (sz.W n) (sz.lam n) i k.1 := by
+    (modelChaos sz n D hD u hz i).sg k = u * svarF d (sz.L n) (sz.W n) (sz.lam n) i k.1 := by
   change 2 * Real.sqrt u ^ 2 * (Sizes.seqGvar sz (rowCoord sz n i k.1 true) : ℝ) = _
   rw [gvar_rowCoord k.2, Real.sq_sqrt hu]
   ring
@@ -525,134 +537,139 @@ theorem modelChaos_sg (hu : 0 ≤ u) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ 
 /-- **The matrix of the chaos is `G^{(i)}`, for every `ω`.**  The two side conditions of
 `RBM.Green.inv_minor_resolvent` hold unconditionally off the real axis. -/
 theorem modelChaos_B_eq (ω : Sizes.SeqΩ sz) (k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}) :
-    (modelChaos sz n u hz i).B ω k l
-      = greenMinor (green (Sizes.seqHflow sz n u ω) z) i k.1 l.1 := by
-  change minorRes sz n u z i ω k l = _
+    (modelChaos sz n D hD u hz i).B ω k l
+      = greenMinor (green (D + Sizes.seqHflow sz n u ω) z) i k.1 l.1 := by
+  change minorRes sz n D u z i ω k l = _
   unfold minorRes
-  rw [show green ((Sizes.seqHflow sz n u ω).submatrix
+  have hH : (D + Sizes.seqHflow sz n u ω).IsHermitian := hD.add (Sizes.seqHflow_isHermitian sz n u ω)
+  rw [show green ((D + Sizes.seqHflow sz n u ω).submatrix
       (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → Idx d (sz.L n) (sz.W n))
       (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → Idx d (sz.L n) (sz.W n))) z
-      = ((Sizes.seqHflow sz n u ω).submatrix Subtype.val Subtype.val
+      = ((D + Sizes.seqHflow sz n u ω).submatrix Subtype.val Subtype.val
         - z • (1 : Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ i} _ ℂ))⁻¹ from rfl,
-    inv_minor_resolvent (isUnit_det_Hflow_sub sz n u ω hz) i
-      (green_Hflow_diag_ne_zero sz n u ω hz i)]
+    inv_minor_resolvent ((Matrix.isUnit_iff_isUnit_det _).1 (RBM.isUnit_sub_smul_of_isHermitian hH hz)) i
+      (green_diag_ne_zero hH hz i)]
   rfl
 
 /-! ### The two sides of (4.7), in the paper's notation -/
 
 /-- **The chaos of the instance is `ldeQuadLHS`.** -/
 theorem modelChaos_normSq_chaos (hu : 0 ≤ u) (ω : Sizes.SeqΩ sz) :
-    ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2
-      = ldeQuadLHS (Sizes.seqHflow sz n u ω) (green (Sizes.seqHflow sz n u ω) z)
+    ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2
+      = ldeQuadLHS (Sizes.seqHflow sz n u ω) (green (D + Sizes.seqHflow sz n u ω) z)
           (svarF d (sz.L n) (sz.W n) (sz.lam n)) u i :=
-  RowChaos.norm_chaos_sq_eq_ldeQuadLHS (modelChaos sz n u hz i) ω
-    (Sizes.seqHflow sz n u ω) (green (Sizes.seqHflow sz n u ω) z) (svarF d (sz.L n) (sz.W n) (sz.lam n)) u
-    (fun k => modelChaos_h hz i ω k)
+  RowChaos.norm_chaos_sq_eq_ldeQuadLHS (modelChaos sz n D hD u hz i) ω
+    (Sizes.seqHflow sz n u ω) (green (D + Sizes.seqHflow sz n u ω) z) (svarF d (sz.L n) (sz.W n) (sz.lam n)) u
+    (fun k => modelChaos_h hD hz i ω k)
     (fun k => by
-      rw [modelChaos_h hz i ω k]
+      rw [modelChaos_h hD hz i ω k]
       exact (Sizes.seqHflow_isHermitian sz n u ω).apply k.1 i)
-    (fun k l => modelChaos_B_eq hz i ω k l)
-    (fun k => modelChaos_sg hz i hu k)
+    (fun k l => modelChaos_B_eq hD hz i ω k l)
+    (fun k => modelChaos_sg hD hz i hu k)
 
 /-- **The control of the instance is `u² · ldeQuadRHS`.**  The factor `u²` comes from
 `E|H_{ik}|² = u S_{ik}` while `ldeQuadRHS` is written with `S`; the column form `hsg'` of
 `RowChaos.Vq_eq_ldeQuadRHS` is `modelChaos_sg` with `svar_comm`. -/
 theorem modelChaos_Vq (hu : 0 ≤ u) (ω : Sizes.SeqΩ sz) :
-    (modelChaos sz n u hz i).Vq ω
-      = u ^ 2 * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (Sizes.seqHflow sz n u ω) z) i :=
-  RowChaos.Vq_eq_ldeQuadRHS (modelChaos sz n u hz i) ω
-    (green (Sizes.seqHflow sz n u ω) z) (svarF d (sz.L n) (sz.W n) (sz.lam n)) u
-    (fun k l => modelChaos_B_eq hz i ω k l)
-    (fun k => modelChaos_sg hz i hu k)
-    (fun k => by rw [modelChaos_sg hz i hu k, svarF_comm d (sz.L n) (sz.W n) (sz.lam n) i k.1])
+    (modelChaos sz n D hD u hz i).Vq ω
+      = u ^ 2 * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (D + Sizes.seqHflow sz n u ω) z) i :=
+  RowChaos.Vq_eq_ldeQuadRHS (modelChaos sz n D hD u hz i) ω
+    (green (D + Sizes.seqHflow sz n u ω) z) (svarF d (sz.L n) (sz.W n) (sz.lam n)) u
+    (fun k l => modelChaos_B_eq hD hz i ω k l)
+    (fun k => modelChaos_sg hD hz i hu k)
+    (fun k => by rw [modelChaos_sg hD hz i hu k, svarF_comm d (sz.L n) (sz.W n) (sz.lam n) i k.1])
 
 end Instance
 
 /-! ### The control of the model instance, as a function of `ω` -/
 
 /-- `V_q` of the model instance, written out: `∑_{k,l} (uS_{ik})‖G^{(i)}_{kl}‖²(uS_{il})`. -/
-noncomputable def vqM (sz : Sizes d) (n : ℕ) (u : ℝ) (z : ℂ) (i : Idx d (sz.L n) (sz.W n))
-    (ω : Sizes.SeqΩ sz) : ℝ :=
+noncomputable def vqM (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z : ℂ)
+    (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) : ℝ :=
   ∑ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}, ∑ l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i},
-    (u * svarF d (sz.L n) (sz.W n) (sz.lam n) i k.1) * ‖minorRes sz n u z i ω k l‖ ^ 2 *
+    (u * svarF d (sz.L n) (sz.W n) (sz.lam n) i k.1) * ‖minorRes sz n D u z i ω k l‖ ^ 2 *
       (u * svarF d (sz.L n) (sz.W n) (sz.lam n) i l.1)
 
 theorem vqM_nonneg (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
-    0 ≤ vqM sz n u z i ω :=
+    0 ≤ vqM sz n D u z i ω :=
   Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ =>
     mul_nonneg (mul_nonneg (mul_nonneg hu (svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n) _ _)) (by positivity))
       (mul_nonneg hu (svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n) _ _))
 
-theorem continuous_vqM (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n)) :
-    Continuous fun ω : Sizes.SeqΩ sz => vqM sz n u z i ω := by
+theorem continuous_vqM (hD : D.IsHermitian) (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n)) :
+    Continuous fun ω : Sizes.SeqΩ sz => vqM sz n D u z i ω := by
   refine continuous_finsetSum _ fun k _ => continuous_finsetSum _ fun l _ => ?_
-  exact ((continuous_const.mul (((continuous_minorRes hz i k l).norm).pow 2)).mul
+  exact ((continuous_const.mul (((continuous_minorRes hD hz i k l).norm).pow 2)).mul
     continuous_const)
 
 theorem vqM_congr (i : Idx d (sz.L n) (sz.W n)) {ω ω' : Sizes.SeqΩ sz}
     (h : ∀ c ∈ offRowCoord sz n i, ω c = ω' c) :
-    vqM sz n u z i ω = vqM sz n u z i ω' := by
+    vqM sz n D u z i ω = vqM sz n D u z i ω' := by
   unfold vqM
-  rw [minorRes_congr (u := u) (z := z) i h]
+  rw [minorRes_congr (D := D) (u := u) (z := z) i h]
 
-theorem vqM_eq (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
-    (modelChaos sz n u hz i).Vq ω = vqM sz n u z i ω := by
+theorem vqM_eq (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    (modelChaos sz n D hD u hz i).Vq ω = vqM sz n D u z i ω := by
   refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
-  rw [modelChaos_sg hz i hu k, modelChaos_sg hz i hu l]
+  rw [modelChaos_sg hD hz i hu k, modelChaos_sg hD hz i hu l]
   rfl
 
 /-! ### The `ε`-normalised instance -/
 
 /-- The normalising factor `(V_q + ε)^{1/2}`. -/
-noncomputable def sqVq (sz : Sizes d) (n : ℕ) (u : ℝ) (z : ℂ) (i : Idx d (sz.L n) (sz.W n)) (ε : ℝ)
-    (ω : Sizes.SeqΩ sz) : ℝ :=
-  Real.sqrt (vqM sz n u z i ω + ε)
+noncomputable def sqVq (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z : ℂ)
+    (i : Idx d (sz.L n) (sz.W n)) (ε : ℝ) (ω : Sizes.SeqΩ sz) : ℝ :=
+  Real.sqrt (vqM sz n D u z i ω + ε)
 
 theorem sqVq_pos (hu : 0 ≤ u) {ε : ℝ} (hε : 0 < ε) (i : Idx d (sz.L n) (sz.W n))
-    (ω : Sizes.SeqΩ sz) : 0 < sqVq sz n u z i ε ω :=
-  Real.sqrt_pos.2 (by linarith [vqM_nonneg (z := z) hu i ω])
+    (ω : Sizes.SeqΩ sz) : 0 < sqVq sz n D u z i ε ω :=
+  Real.sqrt_pos.2 (by linarith [vqM_nonneg (D := D) (z := z) hu i ω])
 
 theorem sq_sqVq (hu : 0 ≤ u) {ε : ℝ} (hε : 0 < ε) (i : Idx d (sz.L n) (sz.W n))
-    (ω : Sizes.SeqΩ sz) : sqVq sz n u z i ε ω ^ 2 = vqM sz n u z i ω + ε :=
-  Real.sq_sqrt (by linarith [vqM_nonneg (z := z) hu i ω])
+    (ω : Sizes.SeqΩ sz) : sqVq sz n D u z i ε ω ^ 2 = vqM sz n D u z i ω + ε :=
+  Real.sq_sqrt (by linarith [vqM_nonneg (D := D) (z := z) hu i ω])
 
 theorem sqVq_ge (hu : 0 ≤ u) {ε : ℝ} (_hε : 0 < ε) (i : Idx d (sz.L n) (sz.W n))
-    (ω : Sizes.SeqΩ sz) : Real.sqrt ε ≤ sqVq sz n u z i ε ω :=
-  Real.sqrt_le_sqrt (by linarith [vqM_nonneg (z := z) hu i ω])
+    (ω : Sizes.SeqΩ sz) : Real.sqrt ε ≤ sqVq sz n D u z i ε ω :=
+  Real.sqrt_le_sqrt (by linarith [vqM_nonneg (D := D) (z := z) hu i ω])
 
 /-- **The `ε`-normalised row chaos**: the same row, with the matrix divided by
 `(V_q + ε)^{1/2}`.  The factor does not depend on `(k, l)`, so the chaos is divided by it too,
 and it reads only the off-row block, so `B_free` survives. -/
-noncomputable def modelChaosEps (sz : Sizes d) (n : ℕ) (u : ℝ) {z : ℂ} (hz : z.im ≠ 0)
+noncomputable def modelChaosEps (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (hD : D.IsHermitian) (u : ℝ) {z : ℂ}
+    (hz : z.im ≠ 0)
     (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) (ε : ℝ) (hε : 0 < ε) :
     RowChaos sz {a : Idx d (sz.L n) (sz.W n) // a ≠ i} :=
-  { modelChaos sz n u hz i with
-    B := fun ω k l => minorRes sz n u z i ω k l / ((sqVq sz n u z i ε ω : ℝ) : ℂ)
+  { modelChaos sz n D hD u hz i with
+    B := fun ω k l => minorRes sz n D u z i ω k l / ((sqVq sz n D u z i ε ω : ℝ) : ℂ)
     B_cont := fun k l => by
-      refine (continuous_minorRes hz i k l).div ?_ ?_
+      refine (continuous_minorRes hD hz i k l).div ?_ ?_
       · exact Complex.continuous_ofReal.comp
-          ((continuous_vqM (u := u) hz i).add continuous_const).sqrt
+          ((continuous_vqM (D := D) (u := u) hD hz i).add continuous_const).sqrt
       · intro ω
-        exact_mod_cast (sqVq_pos (z := z) hu hε i ω).ne'
+        exact_mod_cast (sqVq_pos (D := D) (z := z) hu hε i ω).ne'
     Bbd := |z.im|⁻¹ / Real.sqrt ε
     B_bdd := fun ω k l => by
-      have hpos := sqVq_pos (z := z) hu hε i ω
-      have hge := sqVq_ge (z := z) hu hε i ω
+      have hpos := sqVq_pos (D := D) (z := z) hu hε i ω
+      have hge := sqVq_ge (D := D) (z := z) hu hε i ω
       have hεp : (0 : ℝ) < Real.sqrt ε := Real.sqrt_pos.2 hε
       rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hpos.le]
-      exact div_le_div₀ (by positivity) (norm_minorRes_le hz i ω k l) hεp hge
+      exact div_le_div₀ (by positivity) (norm_minorRes_le hD hz i ω k l) hεp hge
     B_free := fun ω ω' h => by
-      have hs : sqVq sz n u z i ε ω = sqVq sz n u z i ε ω' := by
+      have hs : sqVq sz n D u z i ε ω = sqVq sz n D u z i ε ω' := by
         unfold sqVq
-        rw [vqM_congr (u := u) (z := z) i h]
+        rw [vqM_congr (D := D) (u := u) (z := z) i h]
       funext k l
-      rw [minorRes_congr (u := u) (z := z) i h, hs] }
+      rw [minorRes_congr (D := D) (u := u) (z := z) i h, hs] }
 
 /-- **The normalised chaos is the chaos, divided by `(V_q+ε)^{1/2}`.** -/
-theorem chaos_modelChaosEps (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) {ε : ℝ}
+theorem chaos_modelChaosEps (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) {ε : ℝ}
     (hε : 0 < ε) (ω : Sizes.SeqΩ sz) :
-    (modelChaosEps sz n u hz hu i ε hε).chaos ω
-      = (modelChaos sz n u hz i).chaos ω / ((sqVq sz n u z i ε ω : ℝ) : ℂ) := by
+    (modelChaosEps sz n D hD u hz hu i ε hε).chaos ω
+      = (modelChaos sz n D hD u hz i).chaos ω / ((sqVq sz n D u z i ε ω : ℝ) : ℂ) := by
   unfold RowChaos.chaos RowChaos.cen
   rw [sub_div]
   congr 1
@@ -660,40 +677,40 @@ theorem chaos_modelChaosEps (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n)
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [Finset.sum_div]
     refine Finset.sum_congr rfl fun l _ => ?_
-    change (modelChaos sz n u hz i).h ω k *
-        (minorRes sz n u z i ω k l / ((sqVq sz n u z i ε ω : ℝ) : ℂ)) *
-        (starRingEnd ℂ) ((modelChaos sz n u hz i).h ω l)
-      = (modelChaos sz n u hz i).h ω k * minorRes sz n u z i ω k l *
-        (starRingEnd ℂ) ((modelChaos sz n u hz i).h ω l) / ((sqVq sz n u z i ε ω : ℝ) : ℂ)
+    change (modelChaos sz n D hD u hz i).h ω k *
+        (minorRes sz n D u z i ω k l / ((sqVq sz n D u z i ε ω : ℝ) : ℂ)) *
+        (starRingEnd ℂ) ((modelChaos sz n D hD u hz i).h ω l)
+      = (modelChaos sz n D hD u hz i).h ω k * minorRes sz n D u z i ω k l *
+        (starRingEnd ℂ) ((modelChaos sz n D hD u hz i).h ω l) / ((sqVq sz n D u z i ε ω : ℝ) : ℂ)
     ring
   · rw [Finset.sum_div]
     refine Finset.sum_congr rfl fun k _ => ?_
-    change (((modelChaos sz n u hz i).sg k : ℝ) : ℂ) *
-        (minorRes sz n u z i ω k k / ((sqVq sz n u z i ε ω : ℝ) : ℂ))
-      = (((modelChaos sz n u hz i).sg k : ℝ) : ℂ) * minorRes sz n u z i ω k k /
-        ((sqVq sz n u z i ε ω : ℝ) : ℂ)
+    change (((modelChaos sz n D hD u hz i).sg k : ℝ) : ℂ) *
+        (minorRes sz n D u z i ω k k / ((sqVq sz n D u z i ε ω : ℝ) : ℂ))
+      = (((modelChaos sz n D hD u hz i).sg k : ℝ) : ℂ) * minorRes sz n D u z i ω k k /
+        ((sqVq sz n D u z i ε ω : ℝ) : ℂ)
     ring
 
 /-- **The normalised control is `V_q/(V_q+ε)`.** -/
-theorem Vq_modelChaosEps (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) {ε : ℝ}
+theorem Vq_modelChaosEps (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n)) {ε : ℝ}
     (hε : 0 < ε) (ω : Sizes.SeqΩ sz) :
-    (modelChaosEps sz n u hz hu i ε hε).Vq ω
-      = vqM sz n u z i ω / (vqM sz n u z i ω + ε) := by
-  have hpos := sqVq_pos (z := z) hu hε i ω
-  have hsq := sq_sqVq (z := z) hu hε i ω
+    (modelChaosEps sz n D hD u hz hu i ε hε).Vq ω
+      = vqM sz n D u z i ω / (vqM sz n D u z i ω + ε) := by
+  have hpos := sqVq_pos (D := D) (z := z) hu hε i ω
+  have hsq := sq_sqVq (D := D) (z := z) hu hε i ω
   have hpt : ∀ k l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i},
-      (modelChaosEps sz n u hz hu i ε hε).sg k *
-          ‖(modelChaosEps sz n u hz hu i ε hε).B ω k l‖ ^ 2 *
-          (modelChaosEps sz n u hz hu i ε hε).sg l
-        = ((modelChaos sz n u hz i).sg k * ‖(modelChaos sz n u hz i).B ω k l‖ ^ 2 *
-            (modelChaos sz n u hz i).sg l) / (vqM sz n u z i ω + ε) := by
+      (modelChaosEps sz n D hD u hz hu i ε hε).sg k *
+          ‖(modelChaosEps sz n D hD u hz hu i ε hε).B ω k l‖ ^ 2 *
+          (modelChaosEps sz n D hD u hz hu i ε hε).sg l
+        = ((modelChaos sz n D hD u hz i).sg k * ‖(modelChaos sz n D hD u hz i).B ω k l‖ ^ 2 *
+            (modelChaos sz n D hD u hz i).sg l) / (vqM sz n D u z i ω + ε) := by
     intro k l
-    change (modelChaos sz n u hz i).sg k *
-        ‖minorRes sz n u z i ω k l / ((sqVq sz n u z i ε ω : ℝ) : ℂ)‖ ^ 2 *
-        (modelChaos sz n u hz i).sg l = _
+    change (modelChaos sz n D hD u hz i).sg k *
+        ‖minorRes sz n D u z i ω k l / ((sqVq sz n D u z i ε ω : ℝ) : ℂ)‖ ^ 2 *
+        (modelChaos sz n D hD u hz i).sg l = _
     rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hpos.le, div_pow, hsq]
-    change _ = ((modelChaos sz n u hz i).sg k * ‖minorRes sz n u z i ω k l‖ ^ 2 *
-      (modelChaos sz n u hz i).sg l) / (vqM sz n u z i ω + ε)
+    change _ = ((modelChaos sz n D hD u hz i).sg k * ‖minorRes sz n D u z i ω k l‖ ^ 2 *
+      (modelChaos sz n D hD u hz i).sg l) / (vqM sz n D u z i ω + ε)
     ring
   have hd : ∀ (A : {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → {a : Idx d (sz.L n) (sz.W n) // a ≠ i} → ℝ)
       (c : ℝ), (∑ k, ∑ l, A k l / c) = (∑ k, ∑ l, A k l) / c := by
@@ -702,16 +719,16 @@ theorem Vq_modelChaosEps (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (s
     exact Finset.sum_congr rfl fun k _ => (Finset.sum_div _ _ _).symm
   unfold RowChaos.Vq
   rw [Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => hpt k l,
-    hd (fun k l => (modelChaos sz n u hz i).sg k * ‖(modelChaos sz n u hz i).B ω k l‖ ^ 2 *
-      (modelChaos sz n u hz i).sg l) (vqM sz n u z i ω + ε),
-    show (∑ k, ∑ l, (modelChaos sz n u hz i).sg k *
-        ‖(modelChaos sz n u hz i).B ω k l‖ ^ 2 * (modelChaos sz n u hz i).sg l)
-      = vqM sz n u z i ω from vqM_eq hz hu i ω]
+    hd (fun k l => (modelChaos sz n D hD u hz i).sg k * ‖(modelChaos sz n D hD u hz i).B ω k l‖ ^ 2 *
+      (modelChaos sz n D hD u hz i).sg l) (vqM sz n D u z i ω + ε),
+    show (∑ k, ∑ l, (modelChaos sz n D hD u hz i).sg k *
+        ‖(modelChaos sz n D hD u hz i).B ω k l‖ ^ 2 * (modelChaos sz n D hD u hz i).sg l)
+      = vqM sz n D u z i ω from vqM_eq hD hz hu i ω]
 
-theorem Vq_modelChaosEps_le_one (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
-    {ε : ℝ} (hε : 0 < ε) (ω : Sizes.SeqΩ sz) : (modelChaosEps sz n u hz hu i ε hε).Vq ω ≤ 1 := by
-  rw [Vq_modelChaosEps hz hu i hε ω]
-  have h0 := vqM_nonneg (z := z) hu i ω
+theorem Vq_modelChaosEps_le_one (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
+    {ε : ℝ} (hε : 0 < ε) (ω : Sizes.SeqΩ sz) : (modelChaosEps sz n D hD u hz hu i ε hε).Vq ω ≤ 1 := by
+  rw [Vq_modelChaosEps hD hz hu i hε ω]
+  have h0 := vqM_nonneg (D := D) (z := z) hu i ω
   rw [div_le_one (by linarith)]
   linarith
 
@@ -723,42 +740,42 @@ noncomputable def hwConst (q : ℕ) : ℝ := ((2 * (q : ℝ) + 1) * (4 * (q : �
 theorem hwConst_pos (q : ℕ) : 0 < hwConst q := by unfold hwConst; positivity
 
 /-- **`E[(|Q|²/(V_q+ε))^{q+1}] ≤ A_{q+1}`, uniformly in `ε`.** -/
-theorem mom_modelChaosEps_le (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
+theorem mom_modelChaosEps_le (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
     {ε : ℝ} (hε : 0 < ε) (q : ℕ) :
-    (modelChaosEps sz n u hz hu i ε hε).mom (q + 1) ≤ hwConst q := by
-  have h := (modelChaosEps sz n u hz hu i ε hε).mom_le_momVpow (gaussIBP sz) q
-  have hV : (modelChaosEps sz n u hz hu i ε hε).momVpow (q + 1) ≤ 1 := by
-    change (∫ ω, (modelChaosEps sz n u hz hu i ε hε).Vq ω ^ (q + 1) ∂(Sizes.seqP sz)) ≤ 1
-    calc ∫ ω, (modelChaosEps sz n u hz hu i ε hε).Vq ω ^ (q + 1) ∂(Sizes.seqP sz)
+    (modelChaosEps sz n D hD u hz hu i ε hε).mom (q + 1) ≤ hwConst q := by
+  have h := (modelChaosEps sz n D hD u hz hu i ε hε).mom_le_momVpow (gaussIBP sz) q
+  have hV : (modelChaosEps sz n D hD u hz hu i ε hε).momVpow (q + 1) ≤ 1 := by
+    change (∫ ω, (modelChaosEps sz n D hD u hz hu i ε hε).Vq ω ^ (q + 1) ∂(Sizes.seqP sz)) ≤ 1
+    calc ∫ ω, (modelChaosEps sz n D hD u hz hu i ε hε).Vq ω ^ (q + 1) ∂(Sizes.seqP sz)
         ≤ ∫ _ω : Sizes.SeqΩ sz, (1 : ℝ) ∂(Sizes.seqP sz) :=
           MeasureTheory.integral_mono
-            ((modelChaosEps sz n u hz hu i ε hε).integrable_Vq_pow (gaussIBP sz) (q + 1))
+            ((modelChaosEps sz n D hD u hz hu i ε hε).integrable_Vq_pow (gaussIBP sz) (q + 1))
             (MeasureTheory.integrable_const 1)
             (fun ω => pow_le_one₀ (RowChaos.Vq_nonneg ω)
-              (Vq_modelChaosEps_le_one hz hu i hε ω))
+              (Vq_modelChaosEps_le_one hD hz hu i hε ω))
       _ = 1 := by simp
   have hc : (0 : ℝ) ≤ hwConst q := (hwConst_pos q).le
   refine h.trans ?_
-  calc hwConst q * (modelChaosEps sz n u hz hu i ε hε).momVpow (q + 1)
+  calc hwConst q * (modelChaosEps sz n D hD u hz hu i ε hε).momVpow (q + 1)
       ≤ hwConst q * 1 := mul_le_mul_of_nonneg_left hV hc
     _ = hwConst q := mul_one _
 
 /-! ### The tail bound, at fixed `ε` and then in the limit -/
 
-theorem norm_chaos_modelChaosEps (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
+theorem norm_chaos_modelChaosEps (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
     {ε : ℝ} (hε : 0 < ε) (ω : Sizes.SeqΩ sz) :
-    ‖(modelChaosEps sz n u hz hu i ε hε).chaos ω‖
-      = ‖(modelChaos sz n u hz i).chaos ω‖ / sqVq sz n u z i ε ω := by
-  rw [chaos_modelChaosEps hz hu i hε ω, norm_div, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (sqVq_pos (z := z) hu hε i ω).le]
+    ‖(modelChaosEps sz n D hD u hz hu i ε hε).chaos ω‖
+      = ‖(modelChaos sz n D hD u hz i).chaos ω‖ / sqVq sz n D u z i ε ω := by
+  rw [chaos_modelChaosEps hD hz hu i hε ω, norm_div, Complex.norm_real, Real.norm_eq_abs,
+    abs_of_nonneg (sqVq_pos (D := D) (z := z) hu hε i ω).le]
 
 /-- **Markov at fixed `ε`.** -/
-theorem meas_lt_normSq_chaos_le_eps (hz : z.im ≠ 0) (hu : 0 ≤ u)
+theorem meas_lt_normSq_chaos_le_eps (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u)
     (i : Idx d (sz.L n) (sz.W n)) {lam : ℝ} (hlam : 0 < lam) (q : ℕ) {ε : ℝ} (hε : 0 < ε) :
     (Sizes.seqP sz)
-        {ω | lam * (vqM sz n u z i ω + ε) < ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2}
+        {ω | lam * (vqM sz n D u z i ω + ε) < ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2}
       ≤ ENNReal.ofReal (hwConst q / lam ^ (q + 1)) := by
-  set C' := modelChaosEps sz n u hz hu i ε hε with hC'
+  set C' := modelChaosEps sz n D hD u hz hu i ε hε with hC'
   set Y : Sizes.SeqΩ sz → ℝ := fun ω => ‖C'.chaos ω‖ with hY
   have hYnn : ∀ ω, 0 ≤ Y ω := fun ω => norm_nonneg _
   have habs : ∀ ω, |Y ω| ^ (2 * (q + 1)) = ‖C'.chaos ω‖ ^ (2 * (q + 1)) := fun ω => by
@@ -766,19 +783,19 @@ theorem meas_lt_normSq_chaos_le_eps (hz : z.im ≠ 0) (hu : 0 ≤ u)
   have hint : Integrable (fun ω => |Y ω| ^ (2 * (q + 1))) (Sizes.seqP sz) := by
     simpa only [habs] using C'.integrable_norm_pow (gaussIBP sz) (q + 1)
   have hmom0 : (∫ ω, ‖C'.chaos ω‖ ^ (2 * (q + 1)) ∂(Sizes.seqP sz)) ≤ hwConst q :=
-    mom_modelChaosEps_le hz hu i hε q
+    mom_modelChaosEps_le hD hz hu i hε q
   have hmom : ∫ ω, |Y ω| ^ (2 * (q + 1)) ∂(Sizes.seqP sz) ≤ hwConst q := by
     simpa only [habs] using hmom0
   have ht : (0 : ℝ) < Real.sqrt lam := Real.sqrt_pos.2 hlam
   have hmark := meas_gt_le_of_moment (P := Sizes.seqP sz) (Y := Y) ht hint hmom
-  have hset : {ω | lam * (vqM sz n u z i ω + ε) < ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2}
+  have hset : {ω | lam * (vqM sz n D u z i ω + ε) < ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2}
       = {ω | Real.sqrt lam < Y ω} := by
     ext ω
-    have hs := sqVq_pos (z := z) hu hε i ω
-    have hsq := sq_sqVq (z := z) hu hε i ω
-    have hYv : Y ω = ‖(modelChaos sz n u hz i).chaos ω‖ / sqVq sz n u z i ε ω := by
-      rw [hY, hC']; exact norm_chaos_modelChaosEps hz hu i hε ω
-    have hc : (0 : ℝ) ≤ ‖(modelChaos sz n u hz i).chaos ω‖ := norm_nonneg _
+    have hs := sqVq_pos (D := D) (z := z) hu hε i ω
+    have hsq := sq_sqVq (D := D) (z := z) hu hε i ω
+    have hYv : Y ω = ‖(modelChaos sz n D hD u hz i).chaos ω‖ / sqVq sz n D u z i ε ω := by
+      rw [hY, hC']; exact norm_chaos_modelChaosEps hD hz hu i hε ω
+    have hc : (0 : ℝ) ≤ ‖(modelChaos sz n D hD u hz i).chaos ω‖ := norm_nonneg _
     have hsl : Real.sqrt lam ^ 2 = lam := Real.sq_sqrt hlam.le
     have hsln : (0 : ℝ) ≤ Real.sqrt lam := Real.sqrt_nonneg lam
     simp only [Set.mem_ofPred_eq, hYv]
@@ -786,8 +803,8 @@ theorem meas_lt_normSq_chaos_le_eps (hz : z.im ≠ 0) (hu : 0 ≤ u)
     constructor
     · intro h
       nlinarith [h, hs, hc, hsl, hsln,
-        sq_nonneg (Real.sqrt lam * sqVq sz n u z i ε ω - ‖(modelChaos sz n u hz i).chaos ω‖),
-        sq_nonneg (Real.sqrt lam * sqVq sz n u z i ε ω + ‖(modelChaos sz n u hz i).chaos ω‖)]
+        sq_nonneg (Real.sqrt lam * sqVq sz n D u z i ε ω - ‖(modelChaos sz n D hD u hz i).chaos ω‖),
+        sq_nonneg (Real.sqrt lam * sqVq sz n D u z i ε ω + ‖(modelChaos sz n D hD u hz i).chaos ω‖)]
     · intro h
       have hms := mul_self_lt_mul_self (mul_nonneg hsln hs.le) h
       nlinarith [hms, hsl, hs]
@@ -800,13 +817,13 @@ theorem meas_lt_normSq_chaos_le_eps (hz : z.im ≠ 0) (hu : 0 ≤ u)
 /-- **The tail bound with the true control.**  `{λV_q < |Q|²} = ⋃_m {λ(V_q + 1/(m+1)) < |Q|²}`
 is an increasing union, so continuity of the measure from below removes `ε`: no integral limit
 theorem, and no separate treatment of `{V_q = 0}`. -/
-theorem meas_lt_normSq_chaos_le (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
+theorem meas_lt_normSq_chaos_le (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.L n) (sz.W n))
     {lam : ℝ} (hlam : 0 < lam) (q : ℕ) :
-    (Sizes.seqP sz) {ω | lam * vqM sz n u z i ω < ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2}
+    (Sizes.seqP sz) {ω | lam * vqM sz n D u z i ω < ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2}
       ≤ ENNReal.ofReal (hwConst q / lam ^ (q + 1)) := by
   set S : ℕ → Set (Sizes.SeqΩ sz) := fun m =>
-    {ω | lam * (vqM sz n u z i ω + 1 / ((m : ℝ) + 1))
-      < ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2} with hS
+    {ω | lam * (vqM sz n D u z i ω + 1 / ((m : ℝ) + 1))
+      < ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2} with hS
   have hmono : Monotone S := by
     intro m m' hmm ω hω
     simp only [hS, Set.mem_ofPred_eq] at hω ⊢
@@ -818,7 +835,7 @@ theorem meas_lt_normSq_chaos_le (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.
       exact one_div_le_one_div_of_le hm hmm'
     nlinarith [hω, h1, hlam]
   have hunion : (⋃ m, S m)
-      = {ω | lam * vqM sz n u z i ω < ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2} := by
+      = {ω | lam * vqM sz n D u z i ω < ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2} := by
     ext ω
     simp only [Set.mem_iUnion, hS, Set.mem_ofPred_eq]
     constructor
@@ -827,8 +844,8 @@ theorem meas_lt_normSq_chaos_le (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.
       nlinarith [hm, hlam, hpos]
     · intro h
       obtain ⟨m, hm⟩ := exists_nat_one_div_lt
-        (show (0 : ℝ) < (‖(modelChaos sz n u hz i).chaos ω‖ ^ 2
-          - lam * vqM sz n u z i ω) / lam by
+        (show (0 : ℝ) < (‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2
+          - lam * vqM sz n D u z i ω) / lam by
           apply div_pos _ hlam; linarith)
       refine ⟨m, ?_⟩
       rw [lt_div_iff₀ hlam] at hm
@@ -836,27 +853,27 @@ theorem meas_lt_normSq_chaos_le (hz : z.im ≠ 0) (hu : 0 ≤ u) (i : Idx d (sz.
   rw [← hunion]
   refine le_of_tendsto (tendsto_measure_iUnion_atTop (μ := Sizes.seqP sz) hmono)
     (Filter.Eventually.of_forall fun m => ?_)
-  exact meas_lt_normSq_chaos_le_eps hz hu i hlam q (by positivity)
+  exact meas_lt_normSq_chaos_le_eps hD hz hu i hlam q (by positivity)
 
 /-- With `u = 0` the flow is the zero matrix, so the chaos vanishes. -/
-theorem chaos_modelChaos_zero (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
-    (modelChaos sz n 0 hz i).chaos ω = 0 := by
-  have hh : ∀ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}, (modelChaos sz n 0 hz i).h ω k = 0 := by
+theorem chaos_modelChaos_zero (hD : D.IsHermitian) (hz : z.im ≠ 0) (i : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    (modelChaos sz n D hD 0 hz i).chaos ω = 0 := by
+  have hh : ∀ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}, (modelChaos sz n D hD 0 hz i).h ω k = 0 := by
     intro k
-    rw [modelChaos_h hz i ω k, LDEQuadInst_seqHflow_zero]
+    rw [modelChaos_h hD hz i ω k, LDEQuadInst_seqHflow_zero]
     rfl
-  have hsg : ∀ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}, (modelChaos sz n 0 hz i).sg k = 0 := by
+  have hsg : ∀ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}, (modelChaos sz n D hD 0 hz i).sg k = 0 := by
     intro k
-    rw [modelChaos_sg hz i le_rfl k]
+    rw [modelChaos_sg hD hz i le_rfl k]
     ring
   change (∑ k, ∑ l, _) - (∑ k, _) = 0
   rw [show (∑ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i}, ∑ l : {a : Idx d (sz.L n) (sz.W n) // a ≠ i},
-        (modelChaos sz n 0 hz i).h ω k * (modelChaos sz n 0 hz i).B ω k l *
-          (starRingEnd ℂ) ((modelChaos sz n 0 hz i).h ω l)) = 0 from by
+        (modelChaos sz n D hD 0 hz i).h ω k * (modelChaos sz n D hD 0 hz i).B ω k l *
+          (starRingEnd ℂ) ((modelChaos sz n D hD 0 hz i).h ω l)) = 0 from by
       refine Finset.sum_eq_zero fun k _ => Finset.sum_eq_zero fun l _ => ?_
       rw [hh k]; ring,
     show (∑ k : {a : Idx d (sz.L n) (sz.W n) // a ≠ i},
-        (((modelChaos sz n 0 hz i).sg k : ℝ) : ℂ) * (modelChaos sz n 0 hz i).B ω k k) = 0 from by
+        (((modelChaos sz n D hD 0 hz i).sg k : ℝ) : ℂ) * (modelChaos sz n D hD 0 hz i).B ω k k) = 0 from by
       refine Finset.sum_eq_zero fun k _ => ?_
       rw [hsg k]; simp]
   ring
@@ -939,19 +956,19 @@ private theorem LDEQuadInst_svar_funext (g : ℝ) :
     (splitEquiv d L W).apply_symm_apply q
   rw [h1, h2]
 
-private theorem LDEQuadInst_blk_quadLHS (M : Matrix (Idx d L W) (Idx d L W) ℂ) (E t g : ℝ)
+private theorem LDEQuadInst_blk_quadLHS (M G : Matrix (Idx d L W) (Idx d L W) ℂ) (t g : ℝ)
     (a : Vtx d L W) :
-    ldeQuadLHS (blockMat d L W M) (greenBlk d L W E t M true) (svar d L W g) t a
-      = ldeQuadLHS M (green M (zt E t)) (svarF d L W g) t ((splitEquiv d L W).symm a) := by
-  rw [LDEQuadInst_greenBlk_true, LDEQuadInst_svar_funext g]
-  exact LDEQuadInst_ldeQuadLHS_submatrix (splitEquiv d L W).symm M _ (svarF d L W g) t a
+    ldeQuadLHS (blockMat d L W M) (blockMat d L W G) (svar d L W g) t a
+      = ldeQuadLHS M G (svarF d L W g) t ((splitEquiv d L W).symm a) := by
+  rw [LDEQuadInst_svar_funext g]
+  exact LDEQuadInst_ldeQuadLHS_submatrix (splitEquiv d L W).symm M G (svarF d L W g) t a
 
-private theorem LDEQuadInst_blk_quadRHS (M : Matrix (Idx d L W) (Idx d L W) ℂ) (E t g : ℝ)
+private theorem LDEQuadInst_blk_quadRHS (G : Matrix (Idx d L W) (Idx d L W) ℂ) (g : ℝ)
     (a : Vtx d L W) :
-    ldeQuadRHS (svar d L W g) (greenBlk d L W E t M true) a
-      = ldeQuadRHS (svarF d L W g) (green M (zt E t)) ((splitEquiv d L W).symm a) := by
-  rw [LDEQuadInst_greenBlk_true, LDEQuadInst_svar_funext g]
-  exact LDEQuadInst_ldeQuadRHS_submatrix (splitEquiv d L W).symm (svarF d L W g) _ a
+    ldeQuadRHS (svar d L W g) (blockMat d L W G) a
+      = ldeQuadRHS (svarF d L W g) G ((splitEquiv d L W).symm a) := by
+  rw [LDEQuadInst_svar_funext g]
+  exact LDEQuadInst_ldeQuadRHS_submatrix (splitEquiv d L W).symm (svarF d L W g) G a
 
 end RelabelBlock
 
@@ -959,27 +976,27 @@ end RelabelBlock
 
 /-- The tail bound at one size and one index, with a deterministic threshold `s > 0` and
 `0 ≤ u ≤ 1`, on the fine lattice. -/
-private theorem LDEQuadInst_meas_le (hz : z.im ≠ 0) (hu0 : 0 ≤ u) (hu1 : u ≤ 1)
+private theorem LDEQuadInst_meas_le (hD : D.IsHermitian) (hz : z.im ≠ 0) (hu0 : 0 ≤ u) (hu1 : u ≤ 1)
     (i : Idx d (sz.L n) (sz.W n)) {s : ℝ} (hs : 0 < s) (q : ℕ) :
     (Sizes.seqP sz) {ω | s * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
-          (green (Sizes.seqHflow sz n u ω) z) i
-        < ldeQuadLHS (Sizes.seqHflow sz n u ω) (green (Sizes.seqHflow sz n u ω) z)
+          (green (D + Sizes.seqHflow sz n u ω) z) i
+        < ldeQuadLHS (Sizes.seqHflow sz n u ω) (green (D + Sizes.seqHflow sz n u ω) z)
           (svarF d (sz.L n) (sz.W n) (sz.lam n)) u i}
       ≤ ENNReal.ofReal (hwConst q / s ^ (q + 1)) := by
   have hrhs : ∀ ω : Sizes.SeqΩ sz,
-      0 ≤ ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (Sizes.seqHflow sz n u ω) z) i := fun ω =>
+      0 ≤ ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (D + Sizes.seqHflow sz n u ω) z) i := fun ω =>
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ =>
       mul_nonneg (mul_nonneg (svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n) _ _) (by positivity)) (svarF_nonneg d (sz.L n) (sz.W n) (sz.lam n) _ _)
   rcases eq_or_lt_of_le hu0 with hu | hupos
   · -- `u = 0`: the chaos vanishes, so the failure event is empty
     subst hu
     have hempty : {ω : Sizes.SeqΩ sz | s * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
-          (green (Sizes.seqHflow sz n 0 ω) z) i
-        < ldeQuadLHS (Sizes.seqHflow sz n 0 ω) (green (Sizes.seqHflow sz n 0 ω) z)
+          (green (D + Sizes.seqHflow sz n 0 ω) z) i
+        < ldeQuadLHS (Sizes.seqHflow sz n 0 ω) (green (D + Sizes.seqHflow sz n 0 ω) z)
           (svarF d (sz.L n) (sz.W n) (sz.lam n)) 0 i} = ∅ := by
       ext ω
       simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_lt]
-      rw [← modelChaos_normSq_chaos hz i le_rfl ω, chaos_modelChaos_zero hz i ω, norm_zero]
+      rw [← modelChaos_normSq_chaos hD hz i le_rfl ω, chaos_modelChaos_zero hD hz i ω, norm_zero]
       have := hrhs ω
       have : (0 : ℝ) ^ 2 = 0 := by norm_num
       nlinarith
@@ -992,25 +1009,88 @@ private theorem LDEQuadInst_meas_le (hz : z.im ≠ 0) (hu0 : 0 ≤ u) (hu1 : u �
       rw [hlamdef, le_div_iff₀ (by positivity)]
       nlinarith [hs, hu2]
     have hset : {ω : Sizes.SeqΩ sz | s * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
-          (green (Sizes.seqHflow sz n u ω) z) i
-        < ldeQuadLHS (Sizes.seqHflow sz n u ω) (green (Sizes.seqHflow sz n u ω) z)
+          (green (D + Sizes.seqHflow sz n u ω) z) i
+        < ldeQuadLHS (Sizes.seqHflow sz n u ω) (green (D + Sizes.seqHflow sz n u ω) z)
           (svarF d (sz.L n) (sz.W n) (sz.lam n)) u i}
-        = {ω | lam * vqM sz n u z i ω < ‖(modelChaos sz n u hz i).chaos ω‖ ^ 2} := by
+        = {ω | lam * vqM sz n D u z i ω < ‖(modelChaos sz n D hD u hz i).chaos ω‖ ^ 2} := by
       ext ω
-      have hL := modelChaos_normSq_chaos hz i hu0 ω
-      have hV : vqM sz n u z i ω
-          = u ^ 2 * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (Sizes.seqHflow sz n u ω) z) i := by
-        rw [← vqM_eq hz hu0 i ω]; exact modelChaos_Vq hz i hu0 ω
+      have hL := modelChaos_normSq_chaos hD hz i hu0 ω
+      have hV : vqM sz n D u z i ω
+          = u ^ 2 * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (D + Sizes.seqHflow sz n u ω) z) i := by
+        rw [← vqM_eq hD hz hu0 i ω]; exact modelChaos_Vq hD hz i hu0 ω
       have hune : u ≠ 0 := ne_of_gt hupos
       simp only [Set.mem_ofPred_eq, ← hL, hV, hlamdef]
       rw [show s / u ^ 2 * (u ^ 2 *
-          ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (Sizes.seqHflow sz n u ω) z) i)
-          = s * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (Sizes.seqHflow sz n u ω) z) i from by
+          ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (D + Sizes.seqHflow sz n u ω) z) i)
+          = s * ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n)) (green (D + Sizes.seqHflow sz n u ω) z) i from by
         field_simp]
     rw [hset]
-    refine (meas_lt_normSq_chaos_le hz hu0 i hlam q).trans (ENNReal.ofReal_le_ofReal ?_)
+    refine (meas_lt_normSq_chaos_le hD hz hu0 i hlam q).trans (ENNReal.ofReal_le_ofReal ?_)
     have hden : s ^ (q + 1) ≤ lam ^ (q + 1) := pow_le_pow_left₀ hs.le hlamge (q + 1)
     exact div_le_div_of_nonneg_left (hwConst_pos q).le (by positivity) hden
+
+/-- **The quadratic large deviation input `hLquad`, for the flow `D + X` with a deterministic Hermitian shift**
+(`D n` Hermitian, `Im z n ≠ 0`, `0 ≤ t n ≤ 1`; the random matrix `X` is the flow of `sz`, the row of the quadratic
+form, and the resolvent `G = (D + X - z)⁻¹` supplies its minors).  The proof is that of the band
+`stochDom_ldeQuad`: `D` is a constant of the minor, so only `D + X` Hermitian and `Im z ≠ 0` are used.
+`D = 0`, `z = z_t` is the band; `D = g₀ Ψ` and `sz.withLam 0` is the block Anderson model (`BA/GreenLDE.lean`). -/
+theorem IBPPoly_stochDom_ldeQuad_shift (sz : Sizes d) (hsz : sz.SizeTendsto)
+    (D : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hD : ∀ n, (D n).IsHermitian) {z : ℕ → ℂ} (hz : ∀ n, (z n).im ≠ 0)
+    {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n ≤ 1) :
+    sz.PrecPT (U := fun n => Vtx d (sz.L n) (sz.W n))
+      (fun n i ω => ldeQuadLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n)))
+        (svar d (sz.L n) (sz.W n) (sz.lam n)) (t n) i)
+      (fun n i ω => ldeQuadRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) i) := by
+  have hsz' : Filter.Tendsto sz.size Filter.atTop Filter.atTop :=
+    tendsto_natCast_atTop_iff.mp hsz
+  intro τ hτ K hK
+  obtain ⟨q, hq⟩ := exists_nat_ge ((K + 1) / τ)
+  have hKq : K + 1 ≤ τ * (q : ℝ) := by rw [div_le_iff₀ hτ] at hq; linarith
+  have hexp : 0 < τ * ((q : ℝ) + 1) - K := by nlinarith
+  filter_upwards [hsz'.eventually (eventually_le_rpow (hwConst q) hexp),
+    hsz'.eventually_ge_atTop 1] with n hCN hn1 i
+  have hN0 : (0 : ℝ) < (sz.size n : ℝ) := by exact_mod_cast hn1
+  have hNτ : (0 : ℝ) < (sz.size n : ℝ) ^ τ := Real.rpow_pos_of_pos hN0 τ
+  have hset : {ω : Sizes.SeqΩ sz | (sz.size n : ℝ) ^ τ *
+        ldeQuadRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
+          (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) i
+      < ldeQuadLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n)))
+        (svar d (sz.L n) (sz.W n) (sz.lam n)) (t n) i}
+      = {ω : Sizes.SeqΩ sz | (sz.size n : ℝ) ^ τ *
+          ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
+            (green (D n + sz.seqHflow n (t n) ω) (z n))
+            ((splitEquiv d (sz.L n) (sz.W n)).symm i)
+        < ldeQuadLHS (sz.seqHflow n (t n) ω)
+          (green (D n + sz.seqHflow n (t n) ω) (z n))
+          (svarF d (sz.L n) (sz.W n) (sz.lam n)) (t n)
+          ((splitEquiv d (sz.L n) (sz.W n)).symm i)} := by
+    ext ω
+    simp only [Set.mem_ofPred_eq, LDEQuadInst_blk_quadLHS, LDEQuadInst_blk_quadRHS]
+  change (Sizes.seqP sz) {ω : Sizes.SeqΩ sz | (sz.size n : ℝ) ^ τ *
+        ldeQuadRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
+          (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) i
+      < ldeQuadLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n)))
+        (svar d (sz.L n) (sz.W n) (sz.lam n)) (t n) i} ≤ _
+  rw [hset]
+  refine (LDEQuadInst_meas_le (hD n) (hz n) (ht0 n) (ht1 n) _ hNτ q).trans
+    (ENNReal.ofReal_le_ofReal ?_)
+  have hpow : (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1)) = ((sz.size n : ℝ) ^ τ) ^ (q + 1) := by
+    rw [← Real.rpow_natCast ((sz.size n : ℝ) ^ τ) (q + 1), ← Real.rpow_mul hN0.le]
+    push_cast
+    ring_nf
+  calc hwConst q / ((sz.size n : ℝ) ^ τ) ^ (q + 1)
+      = hwConst q / (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1)) := by rw [hpow]
+    _ ≤ (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1) - K) / (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1)) := by
+        gcongr
+    _ = (sz.size n : ℝ) ^ (-K) := by
+        rw [← Real.rpow_sub hN0]
+        congr 1
+        ring
 
 /-- **The quadratic large deviation input `hLquad` of `diag_bound_stochDom`,** for the Gaussian
 flow `H_{t_n}`:
@@ -1018,7 +1098,8 @@ flow `H_{t_n}`:
   ≺ ∑_{k,l≠i}S_{ik}|G^{(i)}_{kl}|²S_{li}`,
 uniformly in `i`, per time `t n` (the conclusion is the text of `hLquad`; RBM2D
 `Green/LDEQuadInst.lean:641`, RBM1D `stochDom_ldeQuad`, `86573b9:Gauss/LDEQuadDom.lean:356`, in the
-per-time form, so without the union bound). -/
+per-time form, so without the union bound).  The band statement is the corollary of
+`IBPPoly_stochDom_ldeQuad_shift` at `D = 0`, `z = z_t`. -/
 theorem stochDom_ldeQuad (sz : Sizes d) {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto)
     {E t : ℕ → ℝ} (hE : ∀ n, |E n| ≤ 2 - κ) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n < 1) :
     sz.PrecPT (U := fun n => Vtx d (sz.L n) (sz.W n))
@@ -1027,54 +1108,9 @@ theorem stochDom_ldeQuad (sz : Sizes d) {κ : ℝ} (hκ : 0 < κ) (hsz : sz.Size
         (svar d (sz.L n) (sz.W n) (sz.lam n)) (t n) i)
       (fun n i ω => ldeQuadRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
         (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) i) := by
-  have hsz' : Filter.Tendsto sz.size Filter.atTop Filter.atTop :=
-    tendsto_natCast_atTop_iff.mp hsz
-  intro τ hτ D hD
-  obtain ⟨q, hq⟩ := exists_nat_ge ((D + 1) / τ)
-  have hDq : D + 1 ≤ τ * (q : ℝ) := by rw [div_le_iff₀ hτ] at hq; linarith
-  have hexp : 0 < τ * ((q : ℝ) + 1) - D := by nlinarith
-  filter_upwards [hsz'.eventually (eventually_le_rpow (hwConst q) hexp),
-    hsz'.eventually_ge_atTop 1] with n hCN hn1 i
-  have hz : (zt (E n) (t n)).im ≠ 0 := zt_im_ne_zero hκ (hE n) (ht1 n)
-  have hN0 : (0 : ℝ) < (sz.size n : ℝ) := by exact_mod_cast hn1
-  have hNτ : (0 : ℝ) < (sz.size n : ℝ) ^ τ := Real.rpow_pos_of_pos hN0 τ
-  have hset : {ω : Sizes.SeqΩ sz | (sz.size n : ℝ) ^ τ *
-        ldeQuadRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
-          (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) i
-      < ldeQuadLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
-        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true)
-        (svar d (sz.L n) (sz.W n) (sz.lam n)) (t n) i}
-      = {ω : Sizes.SeqΩ sz | (sz.size n : ℝ) ^ τ *
-          ldeQuadRHS (svarF d (sz.L n) (sz.W n) (sz.lam n))
-            (green (sz.seqHflow n (t n) ω) (zt (E n) (t n)))
-            ((splitEquiv d (sz.L n) (sz.W n)).symm i)
-        < ldeQuadLHS (sz.seqHflow n (t n) ω)
-          (green (sz.seqHflow n (t n) ω) (zt (E n) (t n)))
-          (svarF d (sz.L n) (sz.W n) (sz.lam n)) (t n)
-          ((splitEquiv d (sz.L n) (sz.W n)).symm i)} := by
-    ext ω
-    simp only [Set.mem_ofPred_eq, LDEQuadInst_blk_quadLHS, LDEQuadInst_blk_quadRHS]
-  change (Sizes.seqP sz) {ω : Sizes.SeqΩ sz | (sz.size n : ℝ) ^ τ *
-        ldeQuadRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
-          (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) i
-      < ldeQuadLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
-        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true)
-        (svar d (sz.L n) (sz.W n) (sz.lam n)) (t n) i} ≤ _
-  rw [hset]
-  refine (LDEQuadInst_meas_le hz (ht0 n) (ht1 n).le _ hNτ q).trans
-    (ENNReal.ofReal_le_ofReal ?_)
-  have hpow : (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1)) = ((sz.size n : ℝ) ^ τ) ^ (q + 1) := by
-    rw [← Real.rpow_natCast ((sz.size n : ℝ) ^ τ) (q + 1), ← Real.rpow_mul hN0.le]
-    push_cast
-    ring_nf
-  calc hwConst q / ((sz.size n : ℝ) ^ τ) ^ (q + 1)
-      = hwConst q / (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1)) := by rw [hpow]
-    _ ≤ (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1) - D) / (sz.size n : ℝ) ^ (τ * ((q : ℝ) + 1)) := by
-        gcongr
-    _ = (sz.size n : ℝ) ^ (-D) := by
-        rw [← Real.rpow_sub hN0]
-        congr 1
-        ring
+  have h := IBPPoly_stochDom_ldeQuad_shift sz hsz (fun _ => 0) (fun _ => Matrix.isHermitian_zero)
+    (z := fun n => zt (E n) (t n)) (fun n => zt_im_ne_zero hκ (hE n) (ht1 n)) ht0 fun n => (ht1 n).le
+  simpa only [zero_add, LDEQuadInst_greenBlk_true, blockMat] using h
 
 /-! ### Compiled nonempty instances (`RBM.Green.IBPInst`)
 
@@ -1137,6 +1173,13 @@ theorem stochDom_ldeQuad_sz0 :
         (greenBlk 3 (sz0.L n) (sz0.W n) 0 (1 / 2) (sz0.seqHflow n (1 / 2) ω) true) i) :=
   stochDom_ldeQuad sz0 (κ := 1) one_pos sz0_tendsto (E := fun _ => 0) (t := fun _ => 1 / 2)
     (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
+
+/-- **Instance of `IBPPoly_stochDom_ldeQuad_shift`** at `sz0`, `t ≡ 1/2`, `z ≡ z_{1/2}` and the nonzero shift
+`D = (1/2) I` (`LDE_shiftD_sz0`): only `SizeTendsto` (computed at `sz0`), `D` Hermitian, `Im z ≠ 0`, `0 ≤ t ≤ 1`. -/
+example := IBPPoly_stochDom_ldeQuad_shift sz0 sz0_tendsto LDE_shiftD_sz0 LDE_shiftD_sz0_isHermitian
+  (z := fun _ => zt 0 (1 / 2)) (fun _ => zt_im_ne_zero (κ := 1) one_pos (by norm_num) (by norm_num))
+  (t := fun _ => 1 / 2)
+  (fun _ => by norm_num) (fun _ => by norm_num)
 
 /-- **`(GiiGEX)`, `3_5:21`, with no large deviation hypothesis left**: `GiiOmegaSeq` at `sz0`,
 `E ≡ 0`, `t ≡ 1/2`, `κ = 1`, `𝔠 = 1/6`, `𝔡 = 1/10`, `c = 1`, from the four proved inputs

@@ -44,6 +44,12 @@ that their proofs are dimension-independent (resolvent identities and large devi
   `entry_bound_stochDom` of `Green/EntryDom.lean`), and the diagonal `|H_xx|² ≺ S_xx`:
   **`stochDom_normSq_Hflow_diag`** (the hypothesis `hLdiag` of `diag_bound_stochDom`).
 
+* T2389 (BA-G2): the same inputs for a deterministic Hermitian shift `D` (`green (D + seqHflow …) z`, any `z` with
+  `Im z ≠ 0`): `LDE_stochDom_ldeRow_shift`, `LDE_stochDom_ldeCol_shift` (the band `stochDom_ldeRow`,
+  `stochDom_ldeCol` are their corollaries at `D = 0`), and the twins of the fluctuation layer
+  (`LDE_greenMinorMatD`, …, `LDE_FlucBoundD`, `LDE_flucBound_envD`, `LDE_integrable_norm_flucAvg_powD`; `LDE_shift_zero`
+  is the bridge to the band at `D = 0`).
+
 * Instances (`RBM.Green.LDEInst`, at the end): compiled nonempty applications of the targets at the
   preflight sequence `sz0` (`d = 3`, `E ≡ 0`, `t ≡ 1/2`), among them `eventually_le_W_sz0`,
   `stochDom_normSq_Hflow_diag_sz0`, `stochDom_ldeRow_sz0`, `stochDom_ldeCol_sz0`, and an `example`
@@ -454,6 +460,306 @@ theorem eventually_le_W {d : ℕ} (sz : Sizes d) {c : ℝ} (hc : 0 < c) (hsz : s
 
 end Families
 
+/-! ### The fluctuation layer for a deterministic Hermitian shift (T2389, BA-G2)
+
+The block Anderson resolvent is `G = (D + X - z)⁻¹` with `D = g₀ Ψ` deterministic and Hermitian and `X = seqHflow`
+the Gaussian part.  The declarations of `FlucVanish` (`greenMinorMat`, `greenDiagCentered`, `flucDiag`,
+`flucDiagMinor`, `flucAvg`; group B, not writable by this ticket) read `green (seqHflow …) z`; the twins below
+read `green (D + seqHflow …) z`, and `D = 0` is the band (`LDE_shift_zero`).  The proofs use only `D + X` Hermitian,
+`Im z ≠ 0` and, for the envelopes of the centred diagonals, `‖m‖ ≤ 1`: `D` is a constant of every conditional
+expectation `E_k`, which only resamples row `k` of `X`.  The band declarations stay as they are. -/
+
+section FlucShift
+
+variable {d : ℕ} {sz : Sizes d} {n : ℕ}
+
+/-- The minor resolvent `G^{(κ)} = ((D + X)^{(κ)} - z)⁻¹` as a total function of `ω`. -/
+noncomputable def LDE_greenMinorMatD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z : ℂ)
+    (κ : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} ℂ :=
+  ((D + Sizes.seqHflow sz n u ω).submatrix
+    (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} → Idx d (sz.L n) (sz.W n))
+    (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} → Idx d (sz.L n) (sz.W n))
+      - z • (1 : Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}
+        {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} ℂ))⁻¹
+
+/-- `G_{kk} - m` for the resolvent of `D + X`. -/
+noncomputable def LDE_greenDiagCenteredD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ)
+    (k : Idx d (sz.L n) (sz.W n)) : Sizes.SeqΩ sz → ℂ :=
+  fun ω => green (D + Sizes.seqHflow sz n u ω) z k k - m
+
+/-- `G^{(κ)}_{kk} - m` for the minor of `D + X`. -/
+noncomputable def LDE_greenMinorDiagCenteredD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ)
+    (κ : Idx d (sz.L n) (sz.W n)) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) :
+    Sizes.SeqΩ sz → ℂ :=
+  fun ω => LDE_greenMinorMatD sz n D u z κ ω k k - m
+
+/-- `Z_k = (1 - E_k)(G_{kk} - m)` for `D + X`. -/
+noncomputable def LDE_flucDiagD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ)
+    (k : Idx d (sz.L n) (sz.W n)) : Sizes.SeqΩ sz → ℂ :=
+  fun ω => LDE_greenDiagCenteredD sz n D u z m k ω - condRow sz n k (LDE_greenDiagCenteredD sz n D u z m k) ω
+
+/-- `Z^{(κ)}_k = (1 - E_k)(G^{(κ)}_{kk} - m)` for `D + X`. -/
+noncomputable def LDE_flucDiagMinorD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ)
+    (κ : Idx d (sz.L n) (sz.W n)) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) :
+    Sizes.SeqΩ sz → ℂ :=
+  fun ω => LDE_greenMinorDiagCenteredD sz n D u z m κ k ω
+    - condRow sz n k.1 (LDE_greenMinorDiagCenteredD sz n D u z m κ k) ω
+
+/-- `∑_k t_k Z_k` for `D + X`. -/
+noncomputable def LDE_flucAvgD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ)
+    (T : Idx d (sz.L n) (sz.W n) → ℝ) : Sizes.SeqΩ sz → ℂ :=
+  fun ω => ∑ k, (T k : ℂ) * LDE_flucDiagD sz n D u z m k ω
+
+/-- `E_k(G_{kk} - m)` for `D + X`. -/
+noncomputable def LDE_condExpDiagD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ)
+    (k : Idx d (sz.L n) (sz.W n)) : Sizes.SeqΩ sz → ℂ :=
+  condRow sz n k (LDE_greenDiagCenteredD sz n D u z m k)
+
+/-- At `D = 0` the twins are the band declarations of `FlucVanish` and `condExpDiag`. -/
+theorem LDE_shift_zero (sz : Sizes d) (n : ℕ) (u : ℝ) (z m : ℂ) (k : Idx d (sz.L n) (sz.W n))
+    (κ : Idx d (sz.L n) (sz.W n)) (T : Idx d (sz.L n) (sz.W n) → ℝ)
+    (k' : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) :
+    LDE_greenMinorMatD sz n 0 u z κ = greenMinorMat sz n u z κ ∧
+    LDE_greenDiagCenteredD sz n 0 u z m k = greenDiagCentered sz n u z m k ∧
+    LDE_greenMinorDiagCenteredD sz n 0 u z m κ k' = greenMinorDiagCentered sz n u z m κ k' ∧
+    LDE_flucDiagD sz n 0 u z m k = flucDiag sz n u z m k ∧
+    LDE_flucDiagMinorD sz n 0 u z m κ k' = flucDiagMinor sz n u z m κ k' ∧
+    LDE_flucAvgD sz n 0 u z m T = flucAvg sz n u z m T ∧
+    LDE_condExpDiagD sz n 0 u z m k = condExpDiag sz n u z m k := by
+  have h1 : LDE_greenMinorMatD sz n 0 u z κ = greenMinorMat sz n u z κ := by
+    funext ω; simp [LDE_greenMinorMatD, greenMinorMat]
+  have h2 : ∀ k, LDE_greenDiagCenteredD sz n 0 u z m k = greenDiagCentered sz n u z m k := by
+    intro k; funext ω; simp [LDE_greenDiagCenteredD, greenDiagCentered]
+  have h3 : LDE_greenMinorDiagCenteredD sz n 0 u z m κ k' = greenMinorDiagCentered sz n u z m κ k' := by
+    funext ω; simp [LDE_greenMinorDiagCenteredD, greenMinorDiagCentered, h1]
+  have h4 : ∀ k, LDE_flucDiagD sz n 0 u z m k = flucDiag sz n u z m k := by
+    intro k; funext ω; simp [LDE_flucDiagD, flucDiag, h2]
+  refine ⟨h1, h2 k, h3, h4 k, ?_, ?_, ?_⟩
+  · funext ω; simp [LDE_flucDiagMinorD, flucDiagMinor, h3]
+  · funext ω; simp [LDE_flucAvgD, flucAvg, h4]
+  · simp [LDE_condExpDiagD, condExpDiag, h2]
+
+variable (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+
+/-- Every entry of `D + X - z` is measurable in `ω`. -/
+theorem LDE_measurable_HflowD_sub (u : ℝ) (z : ℂ) :
+    Measurable fun ω : Sizes.SeqΩ sz =>
+      D + Sizes.seqHflow sz n u ω - z • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) := by
+  refine Matrix.measurable_iff.2 fun a b => ?_
+  simp only [Matrix.sub_apply, Matrix.add_apply, Matrix.smul_apply]
+  exact (measurable_const.add (Sizes.measurable_seqHflow_entry sz n u a b)).sub measurable_const
+
+/-- **`ω ↦ G_{ij}(ω)` is measurable** for the resolvent of `D + X`. -/
+theorem LDE_measurable_green_applyD (u : ℝ) (z : ℂ) (i j : Idx d (sz.L n) (sz.W n)) :
+    Measurable fun ω : Sizes.SeqΩ sz => green (D + Sizes.seqHflow sz n u ω) z i j :=
+  flucAvg_measurable_matrix_inv_apply (LDE_measurable_HflowD_sub D u z) i j
+
+/-- The same for the minor resolvent `G^{(κ)}` of `D + X`. -/
+theorem LDE_measurable_greenMinorMat_applyD (u : ℝ) (z : ℂ) (κ : Idx d (sz.L n) (sz.W n))
+    (a b : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) :
+    Measurable fun ω : Sizes.SeqΩ sz => LDE_greenMinorMatD sz n D u z κ ω a b := by
+  refine flucAvg_measurable_matrix_inv_apply (M := fun ω : Sizes.SeqΩ sz =>
+    (D + Sizes.seqHflow sz n u ω).submatrix
+      (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} → Idx d (sz.L n) (sz.W n))
+      (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} → Idx d (sz.L n) (sz.W n))
+      - z • (1 : Matrix {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}
+        {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} ℂ)) ?_ a b
+  refine Matrix.measurable_iff.2 fun p q => ?_
+  simp only [Matrix.sub_apply, Matrix.submatrix_apply, Matrix.add_apply, Matrix.smul_apply]
+  exact (measurable_const.add (Sizes.measurable_seqHflow_entry sz n u p.1 q.1)).sub measurable_const
+
+theorem LDE_measurable_greenDiagCenteredD (u : ℝ) (z m : ℂ) (k : Idx d (sz.L n) (sz.W n)) :
+    Measurable (LDE_greenDiagCenteredD sz n D u z m k) :=
+  (LDE_measurable_green_applyD D u z k k).sub measurable_const
+
+theorem LDE_measurable_greenMinorDiagCenteredD (u : ℝ) (z m : ℂ) (κ : Idx d (sz.L n) (sz.W n))
+    (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) :
+    Measurable (LDE_greenMinorDiagCenteredD sz n D u z m κ k) :=
+  (LDE_measurable_greenMinorMat_applyD D u z κ k k).sub measurable_const
+
+/-- Measurability of `Z_k = (1 - E_k)(G_{kk} - m)` for `D + X`. -/
+theorem LDE_measurable_flucDiagD (u : ℝ) (z m : ℂ) (k : Idx d (sz.L n) (sz.W n)) :
+    Measurable (LDE_flucDiagD sz n D u z m k) :=
+  (LDE_measurable_greenDiagCenteredD D u z m k).sub
+    (measurable_condRow sz n k (LDE_measurable_greenDiagCenteredD D u z m k))
+
+/-- Measurability of the weighted fluctuation average for `D + X`. -/
+theorem LDE_measurable_flucAvgD (u : ℝ) (z m : ℂ) (T : Idx d (sz.L n) (sz.W n) → ℝ) :
+    Measurable (LDE_flucAvgD sz n D u z m T) :=
+  Finset.measurable_sum _ fun k _ => measurable_const.mul (LDE_measurable_flucDiagD D u z m k)
+
+section EnvelopeD
+
+open scoped Matrix.Norms.L2Operator
+
+/-- **The envelope for `D + X`:** `|G_{ij}| ≤ |Im z|⁻¹` for every `ω`, `D + X` being Hermitian (no spectral
+bound on `D` or on `X`; `z_t` of the band has `|Im z_t| = η_t`). -/
+theorem LDE_norm_green_apply_leD (hD : D.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) (u : ℝ)
+    (i j : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    ‖green (D + Sizes.seqHflow sz n u ω) z i j‖ ≤ |z.im|⁻¹ := by
+  have h := norm_Gsig_le_inv_eta (hD.add (Sizes.seqHflow_isHermitian sz n u ω)) (abs_pos.2 hz) le_rfl true
+  rw [flucAvg_Gres_true_eq_green] at h
+  exact (norm_matrix_entry_le_opNorm _ i j).trans h
+
+/-- `|G^{(κ)}_{ab}| ≤ |Im z|⁻¹` for every `ω`: the minor of a Hermitian matrix is Hermitian. -/
+theorem LDE_norm_greenMinorMat_apply_leD (hD : D.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) (u : ℝ)
+    {κ : Idx d (sz.L n) (sz.W n)} (a b : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) (ω : Sizes.SeqΩ sz) :
+    ‖LDE_greenMinorMatD sz n D u z κ ω a b‖ ≤ |z.im|⁻¹ := by
+  have h := norm_Gsig_le_inv_eta
+    ((hD.add (Sizes.seqHflow_isHermitian sz n u ω)).submatrix
+      (Subtype.val : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ} → Idx d (sz.L n) (sz.W n)))
+    (abs_pos.2 hz) le_rfl true
+  rw [flucAvg_Gres_true_eq_green] at h
+  exact (norm_matrix_entry_le_opNorm _ a b).trans h
+
+/-- `|G_{kk} - m| ≤ |Im z|⁻¹ + 1` for every `ω` (`‖m‖ ≤ 1`). -/
+theorem LDE_norm_greenDiagCentered_le_envD (hD : D.IsHermitian) {z m : ℂ} (hz : z.im ≠ 0) (hm : ‖m‖ ≤ 1)
+    (u : ℝ) (k : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    ‖LDE_greenDiagCenteredD sz n D u z m k ω‖ ≤ |z.im|⁻¹ + 1 :=
+  (norm_sub_le _ _).trans (add_le_add (LDE_norm_green_apply_leD D hD hz u k k ω) hm)
+
+theorem LDE_norm_greenMinorDiagCentered_le_envD (hD : D.IsHermitian) {z m : ℂ} (hz : z.im ≠ 0) (hm : ‖m‖ ≤ 1)
+    (u : ℝ) {κ : Idx d (sz.L n) (sz.W n)} (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}) (ω : Sizes.SeqΩ sz) :
+    ‖LDE_greenMinorDiagCenteredD sz n D u z m κ k ω‖ ≤ |z.im|⁻¹ + 1 :=
+  (norm_sub_le _ _).trans (add_le_add (LDE_norm_greenMinorMat_apply_leD D hD hz u k k ω) hm)
+
+end EnvelopeD
+
+/-- The three uniform bounds the moment bound consumes, packaged, for `D + X` (`FlucBound` of the band). -/
+structure LDE_FlucBoundD (sz : Sizes d) (n : ℕ)
+    (D : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (u : ℝ) (z m : ℂ) (B ε : ℝ) : Prop where
+  /-- `B` is nonnegative. -/
+  B_nonneg : 0 ≤ B
+  /-- `ε` is nonnegative. -/
+  eps_nonneg : 0 ≤ ε
+  /-- Every factor `Z_k` is bounded by `B`, for every `ω`. -/
+  flucDiag_le : ∀ (k : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz),
+    ‖LDE_flucDiagD sz n D u z m k ω‖ ≤ B
+  /-- Every replaced factor `Z^{(κ)}_k` is bounded by `B`, for every `ω`. -/
+  flucDiagMinor_le : ∀ (κ : Idx d (sz.L n) (sz.W n)) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ})
+    (ω : Sizes.SeqΩ sz), ‖LDE_flucDiagMinorD sz n D u z m κ k ω‖ ≤ B
+  /-- The replacement `Z_k ↦ Z^{(κ)}_k` costs at most `ε`, for every `ω`. -/
+  repl_le : ∀ (κ : Idx d (sz.L n) (sz.W n)) (k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ})
+    (ω : Sizes.SeqΩ sz), ‖LDE_flucDiagD sz n D u z m k.1 ω - LDE_flucDiagMinorD sz n D u z m κ k ω‖ ≤ ε
+
+/-- **The replacement error of a factor** (`norm_flucDiag_sub_flucDiagMinor_le` of `FlucVanish` for `D + X`): from a
+uniform bound `e` on `G_{kk} - G^{(κ)}_{kk}` and row integrability, `‖Z_k - Z^{(κ)}_k‖ ≤ 2e`. -/
+theorem LDE_norm_flucDiag_sub_flucDiagMinor_leD {u : ℝ} {z m : ℂ} {κ : Idx d (sz.L n) (sz.W n)}
+    {k : {a : Idx d (sz.L n) (sz.W n) // a ≠ κ}} {e : ℝ}
+    (hrow : RowIntegrable sz n k.1 (LDE_greenDiagCenteredD sz n D u z m k.1))
+    (hrow' : RowIntegrable sz n k.1 (LDE_greenMinorDiagCenteredD sz n D u z m κ k))
+    (he : ∀ ω, ‖green (D + Sizes.seqHflow sz n u ω) z k.1 k.1 - LDE_greenMinorMatD sz n D u z κ ω k k‖ ≤ e)
+    (ω : Sizes.SeqΩ sz) :
+    ‖LDE_flucDiagD sz n D u z m k.1 ω - LDE_flucDiagMinorD sz n D u z m κ k ω‖ ≤ 2 * e := by
+  have hD' : ∀ ω' : Sizes.SeqΩ sz, LDE_greenDiagCenteredD sz n D u z m k.1 ω'
+      - LDE_greenMinorDiagCenteredD sz n D u z m κ k ω'
+      = green (D + Sizes.seqHflow sz n u ω') z k.1 k.1 - LDE_greenMinorMatD sz n D u z κ ω' k k := by
+    intro ω'
+    simp only [LDE_greenDiagCenteredD, LDE_greenMinorDiagCenteredD]
+    ring
+  have hcondpt : condRow sz n k.1 (LDE_greenDiagCenteredD sz n D u z m k.1) ω
+      - condRow sz n k.1 (LDE_greenMinorDiagCenteredD sz n D u z m κ k) ω
+      = condRow sz n k.1 (fun ω' => green (D + Sizes.seqHflow sz n u ω') z k.1 k.1
+          - LDE_greenMinorMatD sz n D u z κ ω' k k) ω := by
+    have := congrFun (condRow_sub k.1 hrow hrow') ω
+    rw [← this]
+    simp only [condRow_apply, hD']
+  have hbound : ‖condRow sz n k.1 (fun ω' => green (D + Sizes.seqHflow sz n u ω') z k.1 k.1
+      - LDE_greenMinorMatD sz n D u z κ ω' k k) ω‖ ≤ e := by
+    rw [condRow_apply]
+    simpa using norm_integral_le_of_norm_le_const (μ := Sizes.seqP sz)
+      (f := fun ω' => green (D + Sizes.seqHflow sz n u (rowSplit sz n k.1 ω ω')) z k.1 k.1
+        - LDE_greenMinorMatD sz n D u z κ (rowSplit sz n k.1 ω ω') k k)
+      (C := e) (Filter.Eventually.of_forall fun ω' => he _)
+  have hsplit : LDE_flucDiagD sz n D u z m k.1 ω - LDE_flucDiagMinorD sz n D u z m κ k ω
+      = (green (D + Sizes.seqHflow sz n u ω) z k.1 k.1 - LDE_greenMinorMatD sz n D u z κ ω k k)
+        - condRow sz n k.1 (fun ω' => green (D + Sizes.seqHflow sz n u ω') z k.1 k.1
+            - LDE_greenMinorMatD sz n D u z κ ω' k k) ω := by
+    rw [← hcondpt, ← hD' ω]
+    simp only [LDE_flucDiagD, LDE_flucDiagMinorD]
+    ring
+  rw [hsplit]
+  calc _ ≤ ‖green (D + Sizes.seqHflow sz n u ω) z k.1 k.1 - LDE_greenMinorMatD sz n D u z κ ω k k‖
+        + ‖condRow sz n k.1 (fun ω' => green (D + Sizes.seqHflow sz n u ω') z k.1 k.1
+            - LDE_greenMinorMatD sz n D u z κ ω' k k) ω‖ := norm_sub_le _ _
+    _ ≤ e + e := add_le_add (he ω) hbound
+    _ = 2 * e := by ring
+
+/-- **The pointwise parameters exist, unconditionally, for `D + X`:** `B = 2(|Im z|⁻¹ + 1)`, `ε = 4 |Im z|⁻¹`
+(`flucBound_env` of the band, with `|Im z_t| = η_t`; `‖m‖ ≤ 1`). -/
+theorem LDE_flucBound_envD (hD : D.IsHermitian) {z m : ℂ} (hz : z.im ≠ 0) (hm : ‖m‖ ≤ 1) (u : ℝ) :
+    LDE_FlucBoundD sz n D u z m (2 * (|z.im|⁻¹ + 1)) (4 * |z.im|⁻¹) := by
+  have hη : 0 < |z.im|⁻¹ := inv_pos.2 (abs_pos.2 hz)
+  refine ⟨by positivity, by positivity, fun k ω => ?_, fun κ k ω => ?_, fun κ k ω => ?_⟩
+  · exact norm_sub_condRow_le (LDE_norm_greenDiagCentered_le_envD D hD hz hm u k) ω
+  · exact norm_sub_condRow_le (LDE_norm_greenMinorDiagCentered_le_envD D hD hz hm u k) ω
+  · have he : ∀ ω' : Sizes.SeqΩ sz,
+        ‖green (D + Sizes.seqHflow sz n u ω') z k.1 k.1 - LDE_greenMinorMatD sz n D u z κ ω' k k‖
+          ≤ 2 * |z.im|⁻¹ := by
+      intro ω'
+      have h1 := LDE_norm_green_apply_leD D hD hz u k.1 k.1 ω'
+      have h2 := LDE_norm_greenMinorMat_apply_leD D hD hz u k k ω'
+      linarith [norm_sub_le (green (D + Sizes.seqHflow sz n u ω') z k.1 k.1)
+        (LDE_greenMinorMatD sz n D u z κ ω' k k)]
+    have := LDE_norm_flucDiag_sub_flucDiagMinor_leD D (u := u) (z := z) (m := m) (κ := κ) (k := k)
+      (rowIntegrable_of_measurable_of_bound (LDE_measurable_greenDiagCenteredD D u z m k.1)
+        (LDE_norm_greenDiagCentered_le_envD D hD hz hm u k.1))
+      (rowIntegrable_of_measurable_of_bound (LDE_measurable_greenMinorDiagCenteredD D u z m κ k)
+        (LDE_norm_greenMinorDiagCentered_le_envD D hD hz hm u k)) he ω
+    linarith
+
+/-- `‖∑_k t_k Z_k‖ ≤ (∑_k |t_k|) B` for `D + X`. -/
+theorem LDE_norm_flucAvg_leD {u : ℝ} {z m : ℂ} {T : Idx d (sz.L n) (sz.W n) → ℝ} {B : ℝ}
+    (hB : ∀ (k : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz), ‖LDE_flucDiagD sz n D u z m k ω‖ ≤ B)
+    (ω : Sizes.SeqΩ sz) : ‖LDE_flucAvgD sz n D u z m T ω‖ ≤ (∑ k, |T k|) * B := by
+  calc ‖LDE_flucAvgD sz n D u z m T ω‖
+      ≤ ∑ k, ‖(T k : ℂ) * LDE_flucDiagD sz n D u z m k ω‖ := norm_sum_le _ _
+    _ ≤ ∑ k, |T k| * B := by
+        refine Finset.sum_le_sum fun k _ => ?_
+        rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+        exact mul_le_mul_of_nonneg_left (hB k ω) (abs_nonneg _)
+    _ = (∑ k, |T k|) * B := by rw [Finset.sum_mul]
+
+/-- A bounded weight gives `‖∑_k t_k Z_k‖ ≤ B` for `D + X` (`LDE_norm_flucAvg_le_of_boundedWeight`). -/
+theorem LDE_norm_flucAvg_le_of_boundedWeightD {u : ℝ} {z m : ℂ} {T : Idx d (sz.L n) (sz.W n) → ℝ}
+    {B c : ℝ} {A : Finset (Idx d (sz.L n) (sz.W n))} (hT : BoundedWeight T c A)
+    (hB : ∀ (k : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz), ‖LDE_flucDiagD sz n D u z m k ω‖ ≤ B)
+    (ω : Sizes.SeqΩ sz) : ‖LDE_flucAvgD sz n D u z m T ω‖ ≤ B := by
+  have h0 : 0 ≤ B := le_trans (norm_nonneg _) (hB 0 ω)
+  have hsum : ∑ k, |T k| ≤ 1 := by
+    rw [Finset.sum_congr rfl fun k _ => abs_of_nonneg (hT.nonneg k)]
+    exact hT.sum_le
+  calc ‖LDE_flucAvgD sz n D u z m T ω‖ ≤ (∑ k, |T k|) * B := LDE_norm_flucAvg_leD D hB ω
+    _ ≤ 1 * B := mul_le_mul_of_nonneg_right hsum h0
+    _ = B := one_mul B
+
+/-- The `2p`-th power of `|∑_k t_k Z_k|` is integrable under a uniform bound on the `Z_k`, for `D + X`. -/
+theorem LDE_integrable_norm_flucAvg_powD {u : ℝ} {z m : ℂ} {T : Idx d (sz.L n) (sz.W n) → ℝ} {B : ℝ}
+    (hB : ∀ (k : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz), ‖LDE_flucDiagD sz n D u z m k ω‖ ≤ B)
+    (p : ℕ) :
+    Integrable (fun ω => |‖LDE_flucAvgD sz n D u z m T ω‖| ^ (2 * p)) (Sizes.seqP sz) := by
+  have hrw : (fun ω => |‖LDE_flucAvgD sz n D u z m T ω‖| ^ (2 * p))
+      = fun ω => ‖LDE_flucAvgD sz n D u z m T ω‖ ^ (2 * p) := by
+    funext ω; rw [abs_norm]
+  rw [hrw]
+  refine Integrable.mono' (integrable_const (((∑ k, |T k|) * B) ^ (2 * p)))
+    (((LDE_measurable_flucAvgD D u z m T).norm.pow_const (2 * p)).aestronglyMeasurable)
+    (Filter.Eventually.of_forall fun ω => ?_)
+  have h0 : (0 : ℝ) ≤ ∑ k, |T k| := Finset.sum_nonneg fun k _ => abs_nonneg _
+  have hB0 : 0 ≤ B := le_trans (norm_nonneg _) (hB 0 ω)
+  rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+  exact pow_le_pow_left₀ (norm_nonneg _) (LDE_norm_flucAvg_leD D hB ω) _
+
+end FlucShift
+
 end FlucAvgPart
 
 section LDEPart
@@ -666,8 +972,6 @@ private theorem LDE_greenBlk_true (E t : ℝ) (M : Matrix (Idx d L W) (Idx d L W
     simp [Matrix.submatrix_apply, Matrix.one_apply, (splitEquiv d L W).symm.injective.eq_iff]
   rw [← h, Matrix.inv_submatrix_equiv]
 
-variable (M : Matrix (Idx d L W) (Idx d L W) ℂ) (E t : ℝ)
-
 /-- The block profile `svar` is the fine-lattice profile `svarF` read through `splitEquiv`
 (RBM2D `Sblk2_eq_svar`). -/
 private theorem LDE_svar_eq_svarF (g : ℝ) (a b : Vtx d L W) :
@@ -685,33 +989,27 @@ private theorem LDE_svar_funext (g : ℝ) :
       = fun p q => svarF d L W g ((splitEquiv d L W).symm p) ((splitEquiv d L W).symm q) := by
   funext p q; exact LDE_svar_eq_svarF g p q
 
-private theorem LDE_blk_rowLHS (a b : Vtx d L W) :
-    ldeRowLHS (blockMat d L W M) (greenBlk d L W E t M true) a b
-      = ldeRowLHS M (green M (zt E t)) ((splitEquiv d L W).symm a)
-          ((splitEquiv d L W).symm b) := by
-  rw [LDE_greenBlk_true]
-  exact LDE_ldeRowLHS_submatrix (splitEquiv d L W).symm M _ a b
+private theorem LDE_blk_rowLHS (M G : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Vtx d L W) :
+    ldeRowLHS (blockMat d L W M) (blockMat d L W G) a b
+      = ldeRowLHS M G ((splitEquiv d L W).symm a) ((splitEquiv d L W).symm b) :=
+  LDE_ldeRowLHS_submatrix (splitEquiv d L W).symm M G a b
 
-private theorem LDE_blk_rowRHS (g : ℝ) (a b : Vtx d L W) :
-    ldeRowRHS (svar d L W g) (greenBlk d L W E t M true) a b
-      = ldeRowRHS (svarF d L W g) (green M (zt E t)) ((splitEquiv d L W).symm a)
-          ((splitEquiv d L W).symm b) := by
-  rw [LDE_greenBlk_true, LDE_svar_funext g]
-  exact LDE_ldeRowRHS_submatrix (splitEquiv d L W).symm (svarF d L W g) _ a b
+private theorem LDE_blk_rowRHS (G : Matrix (Idx d L W) (Idx d L W) ℂ) (g : ℝ) (a b : Vtx d L W) :
+    ldeRowRHS (svar d L W g) (blockMat d L W G) a b
+      = ldeRowRHS (svarF d L W g) G ((splitEquiv d L W).symm a) ((splitEquiv d L W).symm b) := by
+  rw [LDE_svar_funext g]
+  exact LDE_ldeRowRHS_submatrix (splitEquiv d L W).symm (svarF d L W g) G a b
 
-private theorem LDE_blk_colLHS (a b : Vtx d L W) :
-    ldeColLHS (blockMat d L W M) (greenBlk d L W E t M true) a b
-      = ldeColLHS M (green M (zt E t)) ((splitEquiv d L W).symm a)
-          ((splitEquiv d L W).symm b) := by
-  rw [LDE_greenBlk_true]
-  exact LDE_ldeColLHS_submatrix (splitEquiv d L W).symm M _ a b
+private theorem LDE_blk_colLHS (M G : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Vtx d L W) :
+    ldeColLHS (blockMat d L W M) (blockMat d L W G) a b
+      = ldeColLHS M G ((splitEquiv d L W).symm a) ((splitEquiv d L W).symm b) :=
+  LDE_ldeColLHS_submatrix (splitEquiv d L W).symm M G a b
 
-private theorem LDE_blk_colRHS (g : ℝ) (a b : Vtx d L W) :
-    ldeColRHS (svar d L W g) (greenBlk d L W E t M true) a b
-      = ldeColRHS (svarF d L W g) (green M (zt E t)) ((splitEquiv d L W).symm a)
-          ((splitEquiv d L W).symm b) := by
-  rw [LDE_greenBlk_true, LDE_svar_funext g]
-  exact LDE_ldeColRHS_submatrix (splitEquiv d L W).symm (svarF d L W g) _ a b
+private theorem LDE_blk_colRHS (G : Matrix (Idx d L W) (Idx d L W) ℂ) (g : ℝ) (a b : Vtx d L W) :
+    ldeColRHS (svar d L W g) (blockMat d L W G) a b
+      = ldeColRHS (svarF d L W g) G ((splitEquiv d L W).symm a) ((splitEquiv d L W).symm b) := by
+  rw [LDE_svar_funext g]
+  exact LDE_ldeColRHS_submatrix (splitEquiv d L W).symm (svarF d L W g) G a b
 
 end RelabelBlock
 
@@ -843,25 +1141,32 @@ section RowCol
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **The row large deviation input `hLrow` of `entry_bound_stochDom`,** for the Gaussian flow
-`H_{t_n}`: `|∑_{k≠i} H_{ik} G^{(i)}_{kj}|² ≺ ∑_{k≠i} S_{ik} |G^{(i)}_{kj}|²`, uniformly in
-`i ≠ j`, per time `t n` (the conclusion is the text of `hLrow`, over the block-product index;
-RBM1D `stochDom_ldeRow`, `86573b9:Gauss/LDEHyp.lean:221`; RBM2D `Green/LDE.lean:410`). -/
-theorem stochDom_ldeRow {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto) {E t : ℕ → ℝ}
-    (hE : ∀ n, |E n| ≤ 2 - κ) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n < 1) :
+/-- **The row large deviation input `hLrow` for the flow `D + X` with a deterministic Hermitian shift**
+(`D n` Hermitian, `Im z n ≠ 0`, `0 ≤ t n ≤ 1`; `X = H_{t_n}` of `sz` is the row, the resolvent
+`G = (D + X - z)⁻¹` supplies the minors): `|∑_{k≠i} X_{ik} G^{(i)}_{kj}|² ≺ ∑_{k≠i} S_{ik} |G^{(i)}_{kj}|²`, uniformly in
+`i ≠ j`, per time `t n`.  Only `D + X` Hermitian and `Im z ≠ 0` are used: `D` is a constant of the minor
+(`RowIndep_minorColD`).  `D = 0`, `z = z_t` is `stochDom_ldeRow`. -/
+theorem LDE_stochDom_ldeRow_shift (hsz : sz.SizeTendsto)
+    (D : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hD : ∀ n, (D n).IsHermitian) {z : ℕ → ℂ} (hz : ∀ n, (z n).im ≠ 0)
+    {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n ≤ 1) :
     sz.PrecPT (U := fun n => OffPair d (sz.L n) (sz.W n))
       (fun n u ω => ldeRowLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
-        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2)
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) u.1.1 u.1.2)
       (fun n u ω => ldeRowRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
-        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2) := by
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) u.1.1 u.1.2) := by
   have hsz' : Filter.Tendsto sz.size Filter.atTop Filter.atTop :=
     tendsto_natCast_atTop_iff.mp hsz
-  have hz : ∀ n, (zt (E n) (t n)).im ≠ 0 := fun n => zt_im_ne_zero hκ (hE n) (ht1 n)
-  refine LDE_perTime_sq_of_rowSum (sz := sz) hsz' (eventually_card_LdeIdx_le sz) t ht0
-    (fun n => (ht1 n).le) (fun n q => q.1)
-    (fun n q => minorCol sz n (t n) (zt (E n) (t n)) q.1 q.2)
-    (fun n q => measurable_minorCol (t n) _ q.1 q.2)
-    (fun n q ω ω' h => minorCol_congr (t n) _ q.2 h)
+  have hH : ∀ n ω, (D n + sz.seqHflow n (t n) ω).IsHermitian := fun n ω =>
+    (hD n).add (Sizes.seqHflow_isHermitian sz n (t n) ω)
+  have hdet : ∀ n ω, IsUnit (D n + sz.seqHflow n (t n) ω - z n • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det := fun n ω =>
+    LDE_isUnit_det (hH n ω) (hz n)
+  refine LDE_perTime_sq_of_rowSum (sz := sz) hsz' (eventually_card_LdeIdx_le sz) t ht0 ht1
+    (fun n q => q.1)
+    (fun n q => RowIndep_minorColD sz n (D n) (t n) (z n) q.1 q.2)
+    (fun n q => RowIndep_measurable_minorColD (D n) (t n) _ q.1 q.2)
+    (fun n q ω ω' h => RowIndep_minorColD_congr (D n) (t n) _ q.2 h)
     (V := fun n => OffPair d (sz.L n) (sz.W n))
     (fun n p => (⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.1,
       ⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.2,
@@ -871,39 +1176,41 @@ theorem stochDom_ldeRow {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto) {E t : 
     exact Finset.sum_nonneg fun k _ => mul_nonneg (svar_nonneg _ _ _ _ _ _) (by positivity)
   · intro n p ω
     rw [LDE_blk_rowLHS]
-    exact ldeRowLHS_eq (z := zt (E n) (t n)) (t n)
-      (i := (splitEquiv d (sz.L n) (sz.W n)).symm p.1.1)
+    exact RowIndep_ldeRowLHS_eqD (D n) (t n)
       ⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.2,
         (splitEquiv d (sz.L n) (sz.W n)).symm.injective.ne (Ne.symm p.2)⟩
-      (isUnit_det_Hflow_sub sz n (t n) ω (hz n))
-      (green_Hflow_diag_ne_zero sz n (t n) ω (hz n) _)
+      (hdet n ω) (green_diag_ne_zero (hH n ω) (hz n) _)
   · intro n p ω
     rw [LDE_blk_rowRHS]
-    exact rowVarSum_eq (z := zt (E n) (t n)) (t n)
-      (i := (splitEquiv d (sz.L n) (sz.W n)).symm p.1.1)
+    exact RowIndep_rowVarSum_eqD (D n) (t n)
       ⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.2,
         (splitEquiv d (sz.L n) (sz.W n)).symm.injective.ne (Ne.symm p.2)⟩
-      (isUnit_det_Hflow_sub sz n (t n) ω (hz n))
-      (green_Hflow_diag_ne_zero sz n (t n) ω (hz n) _)
+      (hdet n ω) (green_diag_ne_zero (hH n ω) (hz n) _)
 
-/-- **The column large deviation input `hLcol` of `entry_bound_stochDom`,** for the Gaussian flow
-`H_{t_n}`: `|∑_{l≠j} G^{(j)}_{kl} H_{lj}|² ≺ ∑_{l≠j} |G^{(j)}_{kl}|² S_{lj}`, uniformly in
-`k ≠ j` (RBM1D `stochDom_ldeCol`, `86573b9:Gauss/LDEHyp.lean:246`; RBM2D `Green/LDE.lean:451`). -/
-theorem stochDom_ldeCol {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto) {E t : ℕ → ℝ}
-    (hE : ∀ n, |E n| ≤ 2 - κ) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n < 1) :
+/-- **The column large deviation input `hLcol` for the flow `D + X` with a deterministic Hermitian shift**
+(hypotheses as in `LDE_stochDom_ldeRow_shift`): `|∑_{l≠j} G^{(j)}_{kl} X_{lj}|² ≺ ∑_{l≠j} |G^{(j)}_{kl}|² S_{lj}`,
+uniformly in `k ≠ j`.  `D = 0`, `z = z_t` is `stochDom_ldeCol`. -/
+theorem LDE_stochDom_ldeCol_shift (hsz : sz.SizeTendsto)
+    (D : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hD : ∀ n, (D n).IsHermitian) {z : ℕ → ℂ} (hz : ∀ n, (z n).im ≠ 0)
+    {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n ≤ 1) :
     sz.PrecPT (U := fun n => OffPair d (sz.L n) (sz.W n))
       (fun n u ω => ldeColLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
-        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2)
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) u.1.1 u.1.2)
       (fun n u ω => ldeColRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
-        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2) := by
+        (blockMat d (sz.L n) (sz.W n) (green (D n + sz.seqHflow n (t n) ω) (z n))) u.1.1 u.1.2) := by
   have hsz' : Filter.Tendsto sz.size Filter.atTop Filter.atTop :=
     tendsto_natCast_atTop_iff.mp hsz
-  have hz : ∀ n, (zt (E n) (t n)).im ≠ 0 := fun n => zt_im_ne_zero hκ (hE n) (ht1 n)
-  refine LDE_perTime_sq_of_rowSum (sz := sz) hsz' (eventually_card_LdeIdx_le sz) t ht0
-    (fun n => (ht1 n).le) (fun n q => q.1)
-    (fun n q => minorRowConj sz n (t n) (zt (E n) (t n)) q.1 q.2)
-    (fun n q => measurable_minorRowConj (t n) _ q.1 q.2)
-    (fun n q ω ω' h => minorRowConj_congr (t n) _ q.2 h)
+  have hH : ∀ n ω, (D n + sz.seqHflow n (t n) ω).IsHermitian := fun n ω =>
+    (hD n).add (Sizes.seqHflow_isHermitian sz n (t n) ω)
+  have hdet : ∀ n ω, IsUnit (D n + sz.seqHflow n (t n) ω - z n • (1 : Matrix (Idx d (sz.L n) (sz.W n))
+      (Idx d (sz.L n) (sz.W n)) ℂ)).det := fun n ω =>
+    LDE_isUnit_det (hH n ω) (hz n)
+  refine LDE_perTime_sq_of_rowSum (sz := sz) hsz' (eventually_card_LdeIdx_le sz) t ht0 ht1
+    (fun n q => q.1)
+    (fun n q => RowIndep_minorRowConjD sz n (D n) (t n) (z n) q.1 q.2)
+    (fun n q => RowIndep_measurable_minorRowConjD (D n) (t n) _ q.1 q.2)
+    (fun n q ω ω' h => RowIndep_minorRowConjD_congr (D n) (t n) _ q.2 h)
     (V := fun n => OffPair d (sz.L n) (sz.W n))
     (fun n p => (⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.2,
       ⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.1,
@@ -912,20 +1219,47 @@ theorem stochDom_ldeCol {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto) {E t : 
     exact Finset.sum_nonneg fun l _ => mul_nonneg (by positivity) (svar_nonneg _ _ _ _ _ _)
   · intro n p ω
     rw [LDE_blk_colLHS]
-    exact ldeColLHS_eq (z := zt (E n) (t n)) (t n)
-      (j := (splitEquiv d (sz.L n) (sz.W n)).symm p.1.2)
+    exact RowIndep_ldeColLHS_eqD (D n) (t n)
       ⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.1,
         (splitEquiv d (sz.L n) (sz.W n)).symm.injective.ne p.2⟩
-      (isUnit_det_Hflow_sub sz n (t n) ω (hz n))
-      (green_Hflow_diag_ne_zero sz n (t n) ω (hz n) _)
+      (hdet n ω) (green_diag_ne_zero (hH n ω) (hz n) _)
   · intro n p ω
     rw [LDE_blk_colRHS]
-    exact rowVarSum_minorRowConj_eq (z := zt (E n) (t n)) (t n)
-      (j := (splitEquiv d (sz.L n) (sz.W n)).symm p.1.2)
+    exact RowIndep_rowVarSum_minorRowConjD_eq (D n) (t n)
       ⟨(splitEquiv d (sz.L n) (sz.W n)).symm p.1.1,
         (splitEquiv d (sz.L n) (sz.W n)).symm.injective.ne p.2⟩
-      (isUnit_det_Hflow_sub sz n (t n) ω (hz n))
-      (green_Hflow_diag_ne_zero sz n (t n) ω (hz n) _)
+      (hdet n ω) (green_diag_ne_zero (hH n ω) (hz n) _)
+
+/-- **The row large deviation input `hLrow` of `entry_bound_stochDom`,** for the Gaussian flow
+`H_{t_n}`: `|∑_{k≠i} H_{ik} G^{(i)}_{kj}|² ≺ ∑_{k≠i} S_{ik} |G^{(i)}_{kj}|²`, uniformly in
+`i ≠ j`, per time `t n` (the conclusion is the text of `hLrow`, over the block-product index;
+RBM1D `stochDom_ldeRow`, `86573b9:Gauss/LDEHyp.lean:221`; RBM2D `Green/LDE.lean:410`).  The band
+statement is the corollary of `LDE_stochDom_ldeRow_shift` at `D = 0`, `z = z_t`. -/
+theorem stochDom_ldeRow {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto) {E t : ℕ → ℝ}
+    (hE : ∀ n, |E n| ≤ 2 - κ) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n < 1) :
+    sz.PrecPT (U := fun n => OffPair d (sz.L n) (sz.W n))
+      (fun n u ω => ldeRowLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
+        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2)
+      (fun n u ω => ldeRowRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
+        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2) := by
+  have h := LDE_stochDom_ldeRow_shift sz hsz (fun _ => 0) (fun _ => Matrix.isHermitian_zero)
+    (z := fun n => zt (E n) (t n)) (fun n => zt_im_ne_zero hκ (hE n) (ht1 n)) ht0 fun n => (ht1 n).le
+  simpa only [zero_add, LDE_greenBlk_true, blockMat] using h
+
+/-- **The column large deviation input `hLcol` of `entry_bound_stochDom`,** for the Gaussian flow
+`H_{t_n}`: `|∑_{l≠j} G^{(j)}_{kl} H_{lj}|² ≺ ∑_{l≠j} |G^{(j)}_{kl}|² S_{lj}`, uniformly in
+`k ≠ j` (RBM1D `stochDom_ldeCol`, `86573b9:Gauss/LDEHyp.lean:246`; RBM2D `Green/LDE.lean:451`).  The
+band statement is the corollary of `LDE_stochDom_ldeCol_shift` at `D = 0`, `z = z_t`. -/
+theorem stochDom_ldeCol {κ : ℝ} (hκ : 0 < κ) (hsz : sz.SizeTendsto) {E t : ℕ → ℝ}
+    (hE : ∀ n, |E n| ≤ 2 - κ) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n < 1) :
+    sz.PrecPT (U := fun n => OffPair d (sz.L n) (sz.W n))
+      (fun n u ω => ldeColLHS (blockMat d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω))
+        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2)
+      (fun n u ω => ldeColRHS (svar d (sz.L n) (sz.W n) (sz.lam n))
+        (greenBlk d (sz.L n) (sz.W n) (E n) (t n) (sz.seqHflow n (t n) ω) true) u.1.1 u.1.2) := by
+  have h := LDE_stochDom_ldeCol_shift sz hsz (fun _ => 0) (fun _ => Matrix.isHermitian_zero)
+    (z := fun n => zt (E n) (t n)) (fun n => zt_im_ne_zero hκ (hE n) (ht1 n)) ht0 fun n => (ht1 n).le
+  simpa only [zero_add, LDE_greenBlk_true, blockMat] using h
 
 end RowCol
 
@@ -1258,6 +1592,91 @@ theorem stochDom_ldeCol_sz0 :
         (greenBlk 3 (sz0.L n) (sz0.W n) 0 (1 / 2) (sz0.seqHflow n (1 / 2) ω) true) u.1.1 u.1.2) :=
   stochDom_ldeCol sz0 (κ := 1) one_pos sz0_tendsto (E := fun _ => 0) (t := fun _ => 1 / 2)
     (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
+
+/-- A nonzero Hermitian shift for the instances of the `D`-versions (T2389): `D = (1/2) I` at `sz0`, every `n`
+(`D = 0` is the band, `D = g₀ Ψ` the block Anderson model). -/
+noncomputable def LDE_shiftD_sz0 (n : ℕ) :
+    Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ :=
+  ((1 / 2 : ℝ) : ℂ) • (1 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ)
+
+theorem LDE_shiftD_sz0_isHermitian (n : ℕ) : (LDE_shiftD_sz0 n).IsHermitian :=
+  Matrix.isHermitian_one.smul (by simp [IsSelfAdjoint])
+
+/-- **Instances of `LDE_stochDom_ldeRow_shift` and `LDE_stochDom_ldeCol_shift`** at `sz0`, `t ≡ 1/2`,
+`z ≡ z_{1/2}` and the nonzero shift `D = (1/2) I`: every deterministic hypothesis is discharged (`SizeTendsto`
+is computed at `sz0`). -/
+example := LDE_stochDom_ldeRow_shift sz0 sz0_tendsto LDE_shiftD_sz0 LDE_shiftD_sz0_isHermitian
+  (z := fun _ => zt 0 (1 / 2)) (fun _ => inst_zt_im_ne_zero) (t := fun _ => 1 / 2)
+  (fun _ => by norm_num) (fun _ => by norm_num)
+
+example := LDE_stochDom_ldeCol_shift sz0 sz0_tendsto LDE_shiftD_sz0 LDE_shiftD_sz0_isHermitian
+  (z := fun _ => zt 0 (1 / 2)) (fun _ => inst_zt_im_ne_zero) (t := fun _ => 1 / 2)
+  (fun _ => by norm_num) (fun _ => by norm_num)
+
+/-- **Instance of the `D`-envelopes** at `sz0`, the shift `D = (1/2) I`, `z = z_{1/2}`, `m = m(0)` (`‖m‖ = 1`):
+`B = 2(|Im z|⁻¹ + 1)` and `ε = 4 |Im z|⁻¹` bound the fluctuation layer of `D + X`, for every `u`. -/
+example (u : ℝ) : LDE_FlucBoundD sz0 0 (LDE_shiftD_sz0 0) u (zt 0 (1 / 2)) (mE 0)
+    (2 * (|(zt 0 (1 / 2)).im|⁻¹ + 1)) (4 * |(zt 0 (1 / 2)).im|⁻¹) :=
+  LDE_flucBound_envD (LDE_shiftD_sz0 0) (LDE_shiftD_sz0_isHermitian 0) inst_zt_im_ne_zero
+    (norm_mE (by norm_num : |(0 : ℝ)| ≤ 2)).le u
+
+/-- **Instances of the other `D`-twins of the averaging layer** at `sz0`, `n = 0`, the shift `D = (1/2) I`,
+`z = z_{1/2}`, `m = m(0)` (`‖m‖ = 1`), `u = 1/2`: the envelope of the centred diagonal and of the minor, the bounded
+weight `j ↦ S_{0j}` (not a uniform weight), integrability of `|∑_j S_{0j} Z_j|⁴`, measurability, and the bridge
+`LDE_shift_zero` to the band `FlucVanish` objects. -/
+example (k : Idx 3 (sz0.L 0) (sz0.W 0)) (ω : Sizes.SeqΩ sz0) :
+    ‖LDE_greenDiagCenteredD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) k ω‖
+      ≤ |(zt 0 (1 / 2)).im|⁻¹ + 1 :=
+  LDE_norm_greenDiagCentered_le_envD (LDE_shiftD_sz0 0) (LDE_shiftD_sz0_isHermitian 0) inst_zt_im_ne_zero
+    (norm_mE (by norm_num : |(0 : ℝ)| ≤ 2)).le (1 / 2) k ω
+
+example (κ : Idx 3 (sz0.L 0) (sz0.W 0)) (a b : {a : Idx 3 (sz0.L 0) (sz0.W 0) // a ≠ κ}) (ω : Sizes.SeqΩ sz0) :
+    ‖LDE_greenMinorMatD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) κ ω a b‖ ≤ |(zt 0 (1 / 2)).im|⁻¹ :=
+  LDE_norm_greenMinorMat_apply_leD (LDE_shiftD_sz0 0) (LDE_shiftD_sz0_isHermitian 0) inst_zt_im_ne_zero (1 / 2) a b ω
+
+example (ω : Sizes.SeqΩ sz0) :
+    ‖LDE_flucAvgD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0)
+      (fun j : Idx 3 (sz0.L 0) (sz0.W 0) => svarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 j) ω‖
+      ≤ 2 * (|(zt 0 (1 / 2)).im|⁻¹ + 1) :=
+  LDE_norm_flucAvg_le_of_boundedWeightD (LDE_shiftD_sz0 0)
+    (boundedWeight_svarF 3 (sz0.L 0) (sz0.W 0) (sz0.three_le_L 0) (sz0.lam 0) 0)
+    (LDE_flucBound_envD (LDE_shiftD_sz0 0) (LDE_shiftD_sz0_isHermitian 0) inst_zt_im_ne_zero
+      (norm_mE (by norm_num : |(0 : ℝ)| ≤ 2)).le (1 / 2)).flucDiag_le ω
+
+example : MeasureTheory.Integrable
+    (fun ω => |‖LDE_flucAvgD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0)
+      (fun j : Idx 3 (sz0.L 0) (sz0.W 0) => svarF 3 (sz0.L 0) (sz0.W 0) (sz0.lam 0) 0 j) ω‖| ^ (2 * 2))
+    (Sizes.seqP sz0) :=
+  LDE_integrable_norm_flucAvg_powD (LDE_shiftD_sz0 0)
+    (LDE_flucBound_envD (LDE_shiftD_sz0 0) (LDE_shiftD_sz0_isHermitian 0) inst_zt_im_ne_zero
+      (norm_mE (by norm_num : |(0 : ℝ)| ≤ 2)).le (1 / 2)).flucDiag_le 2
+
+example (κ : Idx 3 (sz0.L 0) (sz0.W 0)) (k : {a : Idx 3 (sz0.L 0) (sz0.W 0) // a ≠ κ}) :
+    Measurable (LDE_greenMinorDiagCenteredD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) κ k) :=
+  LDE_measurable_greenMinorDiagCenteredD (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) κ k
+
+example (k : Idx 3 (sz0.L 0) (sz0.W 0)) (T : Idx 3 (sz0.L 0) (sz0.W 0) → ℝ) :
+    Measurable (LDE_flucDiagD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) k) ∧
+      Measurable (LDE_flucAvgD sz0 0 (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) T) :=
+  ⟨LDE_measurable_flucDiagD (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) k,
+    LDE_measurable_flucAvgD (LDE_shiftD_sz0 0) (1 / 2) (zt 0 (1 / 2)) (mE 0) T⟩
+
+example (κ k : Idx 3 (sz0.L 0) (sz0.W 0)) (T : Idx 3 (sz0.L 0) (sz0.W 0) → ℝ)
+    (k' : {a : Idx 3 (sz0.L 0) (sz0.W 0) // a ≠ κ}) :=
+  LDE_shift_zero sz0 0 (1 / 2) (zt 0 (1 / 2)) (mE 0) k κ T k'
+
+/-- **The band is recovered at `D = 0`** (two of the `D`-versions): `measurable_green_apply` and
+`norm_green_apply_le_etaT` from `LDE_measurable_green_applyD` and `LDE_norm_green_apply_leD`. -/
+example {d : ℕ} (sz : Sizes d) (n : ℕ) (u : ℝ) (z : ℂ) (i j : Idx d (sz.L n) (sz.W n)) :
+    Measurable fun ω => green (Sizes.seqHflow sz n u ω) z i j := by
+  simpa using LDE_measurable_green_applyD (0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) u z i j
+
+example {d : ℕ} {sz : Sizes d} {n : ℕ} {E t : ℝ} (hE : |E| < 2) (ht : t < 1) (u : ℝ)
+    (i j : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    ‖green (Sizes.seqHflow sz n u ω) (zt E t) i j‖ ≤ ((zt E t).im)⁻¹ := by
+  have hη := flucAvg_zt_im_pos hE ht
+  simpa [abs_of_pos hη] using LDE_norm_green_apply_leD
+    (0 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) Matrix.isHermitian_zero hη.ne' u i j ω
 
 /-- **`(GijGEX)`, `3_5:24`, with no large deviation hypothesis left**: `GijOmegaSeq` at `sz0`, `E ≡ 0`, `t ≡ 1/2`,
 `κ = 1`, `𝔠 = 1/6`, `𝔡 = 1/10`, `c = 1`, from the two proved inputs. -/
