@@ -415,6 +415,8 @@ import RBM3D.Graph.AuxGraphRooted
 import RBM3D.Graph.LWMomentExp
 import RBM3D.BA.KTreeDeriv
 import RBM3D.Universality.NormBand
+import RBM3D.Universality.EigenInterlacing
+import RBM3D.Universality.GUELocalSchur
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

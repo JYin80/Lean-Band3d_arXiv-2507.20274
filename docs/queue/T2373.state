@@ -1,4 +1,4 @@
-state: proving
-reason: H166 (4): check exit 0; started in the slot freed by T2369; workflow wf_f2bf2a11-53c (1a design gate with split rule → 1b prover-max, stop 1700 → auditor); branch from main c0a7747
-updated: Sat Oct 10 05:37:13 UTC 2026
+state: audit-pass
+reason: 1a design gate PASS; stage 1b DONE (4aa6933; UNGUESchurTail and UNGUELocal proved); auditor1 PASS claude-opus-5-5 (wf_f2bf2a11-53c); 2 owed registry lines removed on main by exact match (H23 b); full lake build 4190 jobs exit 0
+updated: Sat Oct 10 07:57:32 UTC 2026
 reports: docs/reports/T2373-prove.md, docs/reports/T2373-audit.md

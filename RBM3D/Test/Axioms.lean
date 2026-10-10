@@ -180,7 +180,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed); proved from `STLWT` by `stEtermsMid_of_LWT` (T2328, S5-13)
    `RBM.Gauss.Sizes.PfStep5_walkConcl, -- `lem:pf_step5` grid conclusion `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for all `k ≤ K` w.h.p. (`3_5:2364-2383`): proved under the premises of `STIngR5` by `pfStep5_walk`; hypothesis of `pfStep5_PT_of_walk` (T2231, S5-11b: owed)
    `RBM.Univ.UNBUniv, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed); owner `bUniv_holds` (T2371, UN-52b, `Main/BUnivHolds.lean`): conditional on the borrowed `UNL32`, the consumed `UNMLOut`, `UNLocAvgBand`, `UNQueBand` and the owed `UNNormBandRow` (producer T2372) and `UNGUESchurTail` (producer T2373); the band rows `UNDensBandRow`, `UNTrLocalBandRow` are proved there
-   `RBM.Univ.UNGUELocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNTrLocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNClaim417, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
@@ -205,7 +204,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
    `RBM.Univ.UNTrLocalInit', -- bulk universality pin, primed successor of the refuted UNTrLocalInit, tolerance W^τ (Bctl + t*) (T2213, UN-12b: owed; band: unTrLocalInit'_band_zero; BA: BA-C1b row)
    `RBM.Univ.UNCoreC'', -- bulk universality pin, successor of the superseded UNCoreC' (T2213, UN-12b: owed; BA-C1b)
-   `RBM.Univ.UNGUESchurTail, -- bulk universality pin, the Schur tail of the GUE local law (T2244, UN-09: owed; UN-10 GUELocalSchur; with un_gueLocal_of_tail gives UNGUELocal)
    -- T2241 (BA-C1b, DECISIONS §20): the UN-side block Anderson pins (`RBM3D/BA/UNPins.lean`)
    `RBM.Univ.UNLocAvgBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-M1, `(G_bound_ave)` from `BAEnd_locSC`)
    `RBM.Univ.UNMLOutBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-V3, `lem:main_ind_BA` outputs on the T2197 carrier)
