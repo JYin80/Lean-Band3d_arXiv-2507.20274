@@ -229,4 +229,224 @@ private theorem KSumZeroB_prod_le {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F)
 
 end Prod
 
+/-! ## 3. B2: the pointwise bound with the gain `g²` for a non-constant `δ` -/
+
+section Pointwise
+
+variable {d : ℕ} {Λ κ : ℝ} {L : ℕ} [NeZero L] {g : ℝ} {E : ℝ} {m : ℂ}
+
+/-- `Θ^{(s,s')}` is invariant under the translation `x ↦ x + c` when every `M(σ)` is (a copy of the private
+`KPure_theta_shift`, `BA/KPure.lean:71`). -/
+private theorem KSumZeroB_theta_shift (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
+    (hM : ∀ (σ : Bool) (x y c : Zd d L), M σ (x + c) (y + c) = M σ x y) (t : ℝ) (s s' : Bool) (x y c : Zd d L) :
+    BAThetaOf M t s s' (x + c) (y + c) = BAThetaOf M t s s' x y := by
+  have hQ : ∀ x y, BAMssOf M s s' (x + c) (y + c) = BAMssOf M s s' x y := fun x y => by
+    simp only [BAMssOf, Matrix.of_apply, hM]
+  have hA : ((1 : Matrix (Zd d L) (Zd d L) ℂ) - (t : ℂ) • BAMssOf M s s').submatrix (Equiv.addRight c)
+      (Equiv.addRight c) = 1 - (t : ℂ) • BAMssOf M s s' := by
+    ext x y
+    simp only [Matrix.submatrix_apply, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply,
+      Equiv.coe_addRight, add_left_inj, hQ]
+  have h2 := Matrix.inv_submatrix_equiv ((1 : Matrix (Zd d L) (Zd d L) ℂ) - (t : ℂ) • BAMssOf M s s')
+    (Equiv.addRight c) (Equiv.addRight c)
+  rw [hA] at h2
+  unfold BAThetaOf PropThetaQ
+  rw [← Matrix.nonsing_inv_eq_ringInverse]
+  have h3 := congrFun (congrFun h2 x) y
+  rw [Matrix.submatrix_apply] at h3
+  exact h3.symm
+
+/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (a copy of the private `KInduct_norm_sigma`, `BA/KInduct.lean:158`). -/
+private theorem KSumZeroB_norm_sigma (g E : ℝ) (m : ℂ) (σ : Bool) (a b : Zd d L) :
+    ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ a b‖ = ‖BAMB d L g (E : ℂ) m a b‖ := by
+  cases σ
+  · simp only [BAMsigma, Bool.false_eq_true, ite_false, Matrix.conjTranspose_apply, Complex.star_def,
+      Complex.norm_conj]
+    rw [BAMB_symm d L g (E : ℂ) m b a]
+  · simp only [BAMsigma, ite_true]
+
+/-- **An off-diagonal short chord carries `g²`**: `|t Θ_t^{(s,s)}(x,y)| ≤ B g² e^{-r |x-y|}` for `x ≠ y`, `0 ≤ t ≤ 1`
+(`(prop:ThfadC_short)`, `baProp5s_of_real`, with no `1_{a=0}` term; `B = baPureB`, `r = baPureRate`, `r ≤ c_s`,
+`C₅ ≤ B`). -/
+private theorem KSumZeroB_chord_off (hd : 3 ≤ d) (hΛ : 0 < Λ) (hκ : 0 < κ) (hL : 3 ≤ L) (hg : 0 < g)
+    (hgΛ : g ≤ Λ) (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (s : Bool) {x y : Zd d L}
+    (hxy : x ≠ y) :
+    ‖(t : ℂ) * BAThetaOf (BAMsigma d L (BAMB d L g (E : ℂ) m)) t s s x y‖ ≤
+      baPureB d Λ κ * g ^ 2 * Real.exp (-(baPureRate d Λ κ * (zdistD d L (x - y) : ℝ))) := by
+  have hd0 : 0 < d := by omega
+  have hrs : baPureRate d Λ κ ≤ BAp5s_rate d Λ κ := min_le_right _ _
+  have hBC : BAp5s_C d Λ κ * (1 + Λ ^ 2) ≤ baPureB d Λ κ := le_max_right _ _
+  have hC := BAp5s_C_pos d Λ κ hd0 hΛ hκ
+  have hCB : BAp5s_C d Λ κ ≤ baPureB d Λ κ :=
+    (le_mul_of_one_le_right hC.le (by nlinarith [sq_nonneg Λ])).trans hBC
+  have hshift : BAThetaOf (BAMsigma d L (BAMB d L g (E : ℂ) m)) t s s x y =
+      BATheta d L g E m t s s 0 (y - x) := by
+    have h := KSumZeroB_theta_shift (BAMsigma d L (BAMB d L g (E : ℂ) m))
+      (fun σ x y c => BAMsigma_shift d L g (E : ℂ) m σ x y c) t s s 0 (y - x) x
+    rw [zero_add, sub_add_cancel] at h
+    exact h
+  have h5 := baProp5s_of_real d L hL (by omega) Λ g κ E m hΛ hg hgΛ hκ hr t ht0 ht1 s (y - x)
+  have hyx : y - x ≠ 0 := sub_ne_zero.2 hxy.symm
+  simp only [hyx, ite_false, zero_add] at h5
+  have hzc : zdistD d L (x - y) = zdistD d L (y - x) := by rw [← zdistD_neg d L (x - y), neg_sub]
+  rw [hzc, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0, hshift]
+  set z : ℝ := (zdistD d L (y - x) : ℝ) with hz
+  have hz0 : 0 ≤ z := Nat.cast_nonneg _
+  have hexp : Real.exp (-BAp5s_rate d Λ κ * z) ≤ Real.exp (-(baPureRate d Λ κ * z)) :=
+    Real.exp_le_exp.2 (by nlinarith)
+  have hg2 : 0 ≤ g ^ 2 := sq_nonneg g
+  calc t * ‖BATheta d L g E m t s s 0 (y - x)‖ ≤ ‖BATheta d L g E m t s s 0 (y - x)‖ :=
+        mul_le_of_le_one_left (norm_nonneg _) ht1
+    _ ≤ BAp5s_C d Λ κ * (g ^ 2 * Real.exp (-BAp5s_rate d Λ κ * z)) := h5
+    _ ≤ baPureB d Λ κ * (g ^ 2 * Real.exp (-(baPureRate d Λ κ * z))) :=
+        mul_le_mul hCB (mul_le_mul_of_nonneg_left hexp hg2) (by positivity) (hC.le.trans hCB)
+    _ = baPureB d Λ κ * g ^ 2 * Real.exp (-(baPureRate d Λ κ * z)) := by ring
+
+/-- **An off-diagonal `M`-entry carries `g`**: `|M(σ)_{xy}| ≤ A^{1/2} g e^{-r |x-y|}` for `x ≠ y`
+(`BAK_off_le`: `|M_{xy}|² = K_{xy} ≤ A g² e^{-2 c₀ |x-y|}`, `A = BAp5s_A`, `r ≤ c₀`). -/
+private theorem KSumZeroB_M_off (hd : 3 ≤ d) (hΛ : 0 < Λ) (hκ : 0 < κ) (hL : 3 ≤ L) (hg : 0 < g)
+    (hgΛ : g ≤ Λ) (hr : BAReal d L g κ E m) (σ : Bool) {x y : Zd d L} (hxy : x ≠ y) :
+    ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ x y‖ ≤
+      Real.sqrt (BAp5s_A d Λ κ) * g * Real.exp (-(baPureRate d Λ κ * (zdistD d L (x - y) : ℝ))) := by
+  have hd0 : 0 < d := by omega
+  rw [KSumZeroB_norm_sigma]
+  have hK := BAK_off_le d L hL hd0 Λ g κ E m hΛ hg hgΛ hκ hr x y hxy
+  rw [BAK_apply] at hK
+  have hA : 0 ≤ BAp5s_A d Λ κ := by unfold BAp5s_A; positivity
+  have hrc : baPureRate d Λ κ ≤ BAct_rate d Λ κ := (min_le_left _ _).trans (min_le_left _ _)
+  set z : ℝ := (zdistD d L (x - y) : ℝ) with hz
+  have hz0 : 0 ≤ z := Nat.cast_nonneg _
+  have hsq : (Real.sqrt (BAp5s_A d Λ κ) * g * Real.exp (-(BAct_rate d Λ κ * z))) ^ 2 =
+      BAp5s_A d Λ κ * g ^ 2 * Real.exp (-(2 * BAct_rate d Λ κ * z)) := by
+    rw [mul_pow, mul_pow, Real.sq_sqrt hA, sq (Real.exp _), ← Real.exp_add]
+    congr 2
+    ring
+  have h1 : ‖BAMB d L g (E : ℂ) m x y‖ ≤ Real.sqrt (BAp5s_A d Λ κ) * g * Real.exp (-(BAct_rate d Λ κ * z)) := by
+    refine (sq_le_sq₀ (norm_nonneg _) (by positivity)).1 ?_
+    rw [hsq]
+    exact hK
+  refine h1.trans (mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) (by positivity))
+  nlinarith
+
+end Pointwise
+
+section Tree
+
+variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
+
+/-- **The tree bound with the gain `g²`** (the twin of `baSigmaTree_bound_maxDist` for a non-constant `δ`): under the
+entry bounds of `KSumZeroB_prod_le`, `|Σ_F(δ)| ≤ g² B^{n+3n²} S₀^{N₀} e^{-(r/4) max_{i,j} |δ_i - δ_j|}`
+(`baSigmaTree_bound` in its `hprod` form, `hprod` from `KSumZeroB_prod_le` at every labelling consistent with `δ`). -/
+private theorem KSumZeroB_tree_bound (hd : 2 ≤ d) {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
+    (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (hsame : ∀ e ∈ F, σ e.1 = σ e.2)
+    {B r g : ℝ} (hB : 1 ≤ B) (hr : 0 < r) (hg : 0 ≤ g)
+    (hM : ∀ (s : Bool) (x y : Zd d L), ‖M s x y‖ ≤ B * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (hΘ : ∀ (s : Bool) (x y : Zd d L),
+      ‖(t : ℂ) * BAThetaOf M t s s x y‖ ≤ B * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (hMo : ∀ (s : Bool) (x y : Zd d L), x ≠ y →
+      ‖M s x y‖ ≤ B * g * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (hΘo : ∀ (s : Bool) (x y : Zd d L), x ≠ y →
+      ‖(t : ℂ) * BAThetaOf M t s s x y‖ ≤ B * g ^ 2 * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (δ : Fin n → Zd d L) (hnc : ∃ v w : Fin n, δ v ≠ δ w) :
+    ‖BASigmaTree d L M t F σ δ‖ ≤
+      g ^ 2 * B ^ (n + 3 * (n * n)) *
+        (expC (d - 2) (r / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n)) *
+          Real.exp (-(r / 4 * (KLmaxDist d L δ : ℝ))) := by
+  obtain ⟨i, j, hij⟩ := KLMolecule_exists_pair δ
+  rw [hij]
+  have hΓ : 0 ≤ g ^ 2 * B ^ (n + 3 * (n * n)) := by
+    have : 0 < B := by linarith
+    positivity
+  refine baSigmaTree_bound hd hF hn M t σ δ hr hΓ (fun β hβ => ?_) i j
+  have hnc' : ∃ v w : Fin n, β (BAslotLeaf F v) ≠ β (BAslotLeaf F w) := by
+    obtain ⟨v, w, hvw⟩ := hnc
+    exact ⟨v, w, by rw [hβ v, hβ w]; exact hvw⟩
+  calc _ ≤ B ^ (n + 3 * (n * n)) * g ^ 2 * Real.exp (-(r * ((∑ e : ↥F ⊕ BAslot F,
+          zdistD d L (β (BACactusValSrc F e) - β (BACactusValTgt F e)) : ℕ) : ℝ))) :=
+        KSumZeroB_prod_le hF hn M t σ hsame hB hg hM hΘ hMo hΘo β hnc'
+    _ = _ := by ring
+
+end Tree
+
+/-- **B2 (`baSig_nc_pointwise`): the pointwise `g²` gain of the molecule weight for a non-constant `δ`** (the BA twin of
+`KLIndStepA_nc_pointwise`, `Loop/KLIndStepA.lean:892`): for every charge vector `σ` and every `δ` that is not
+constant, `|Σ^{(∅)}(σ, δ)| ≤ G g² e^{-c max_{i,j} |δ_i - δ_j|}`, uniformly in the family `ι` of `(L, g, E, m, t)`:
+`3 ≤ L i`, `0 < g i ≤ Λ`, `BAReal d (L i) (g i) κ (E i) (m i)`, `0 ≤ t i ≤ 1`.  `G, c` depend on `(d, n, Λ, κ)` only.
+Every edge of a layer-`∅` tree is at most `B e^{-r |x-y|}` (`baPure_edge`), and B1 gives a chord, or two `M`-edges,
+at which the entries are off-diagonal and carry `g²` (`baProp5s_of_real`) or `g · g` (`BAK_off_le`). -/
+theorem baSig_nc_pointwise {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 2 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ)
+    (hκ : 0 < κ) (L : ι → ℕ) [∀ i, NeZero (L i)] (g E : ι → ℝ) (m : ι → ℂ) (t : ι → ℝ) (hL : ∀ i, 3 ≤ L i)
+    (hg : ∀ i, 0 < g i) (hgΛ : ∀ i, g i ≤ Λ) (hr : ∀ i, BAReal d (L i) (g i) κ (E i) (m i))
+    (ht0 : ∀ i, 0 ≤ t i) (ht1 : ∀ i, t i ≤ 1) :
+    ∃ G : ℝ, 0 < G ∧ ∃ c : ℝ, 0 < c ∧ ∀ (i : ι) (σ : Fin n → Bool) (δ : Fin n → Zd d (L i)),
+      (∃ v w : Fin n, δ v ≠ δ w) →
+        ‖BASig d n L g E m t i σ δ‖ ≤ G * g i ^ 2 * Real.exp (-(c * (KLmaxDist d (L i) δ : ℝ))) := by
+  have hd0 : 0 < d := by omega
+  set B : ℝ := max (baPureB d Λ κ) (Real.sqrt (BAp5s_A d Λ κ)) with hBdef
+  have hB1 : 1 ≤ B := (baPureB_one_le d Λ κ).trans (le_max_left _ _)
+  have hB0 : 0 < B := by linarith
+  have hr0 := baPureRate_pos hd0 hΛ hκ
+  have hnn : (0 : ℝ) < ((n + 2 * (n * n) : ℕ) : ℝ) := by
+    have := NeZero.pos n
+    exact_mod_cast (by positivity : 0 < n + 2 * (n * n))
+  have hlam : 0 < baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)) := by positivity
+  have hS0 : 0 < expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ))) := by
+    unfold expC; positivity
+  have hT : 0 < ((TSP n).card : ℝ) := by exact_mod_cast Finset.card_pos.2 ⟨∅, empty_mem_TSP n⟩
+  refine ⟨((TSP n).card : ℝ) * (B ^ (n + 3 * (n * n)) *
+    (expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n))), by positivity,
+    baPureRate d Λ κ / 4, by positivity, fun i σ δ hnc => ?_⟩
+  obtain ⟨hMe, -, hΘe⟩ := baPure_edge hd hΛ hκ (hL i) (hg i) (hgΛ i) (hr i) (ht0 i) (ht1 i)
+  have hg0 : 0 ≤ g i := (hg i).le
+  have hBe : ∀ (z : ℝ), baPureB d Λ κ * Real.exp z ≤ B * Real.exp z := fun z =>
+    mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
+  have hMB : ∀ (s : Bool) (x y : Zd d (L i)),
+      ‖BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i)) s x y‖ ≤
+        B * Real.exp (-(baPureRate d Λ κ * (zdistD d (L i) (x - y) : ℝ))) := fun s x y =>
+    (hMe s x y).trans (hBe _)
+  have hΘB : ∀ (s : Bool) (x y : Zd d (L i)),
+      ‖((t i : ℝ) : ℂ) * BAThetaOf (BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i))) (t i) s s x y‖ ≤
+        B * Real.exp (-(baPureRate d Λ κ * (zdistD d (L i) (x - y) : ℝ))) := fun s x y =>
+    (hΘe s x y).trans (hBe _)
+  have hMo : ∀ (s : Bool) (x y : Zd d (L i)), x ≠ y →
+      ‖BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i)) s x y‖ ≤
+        B * g i * Real.exp (-(baPureRate d Λ κ * (zdistD d (L i) (x - y) : ℝ))) := fun s x y hxy =>
+    (KSumZeroB_M_off hd hΛ hκ (hL i) (hg i) (hgΛ i) (hr i) s hxy).trans
+      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _) hg0) (Real.exp_pos _).le)
+  have hΘo : ∀ (s : Bool) (x y : Zd d (L i)), x ≠ y →
+      ‖((t i : ℝ) : ℂ) * BAThetaOf (BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i))) (t i) s s x y‖ ≤
+        B * g i ^ 2 * Real.exp (-(baPureRate d Λ κ * (zdistD d (L i) (x - y) : ℝ))) := fun s x y hxy =>
+    (KSumZeroB_chord_off hd hΛ hκ (hL i) (hg i) (hgΛ i) (hr i) (ht0 i) (ht1 i) s hxy).trans
+      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
+        (Real.exp_pos _).le)
+  have hX : 0 ≤ g i ^ 2 * B ^ (n + 3 * (n * n)) *
+      (expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n)) *
+        Real.exp (-(baPureRate d Λ κ / 4 * (KLmaxDist d (L i) δ : ℝ))) := by positivity
+  have h : ‖BASigmaPi d (L i) n (BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i))) (t i) σ ∅ δ‖ ≤
+      ((TSP n).card : ℝ) * (g i ^ 2 * B ^ (n + 3 * (n * n)) *
+        (expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n)) *
+          Real.exp (-(baPureRate d Λ κ / 4 * (KLmaxDist d (L i) δ : ℝ)))) := by
+    unfold BASigmaPi
+    calc ‖∑ F ∈ KLTSPlong n σ ∅, BASigmaTree d (L i) (BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i)))
+          (t i) F σ δ‖
+        ≤ ∑ F ∈ KLTSPlong n σ ∅, (g i ^ 2 * B ^ (n + 3 * (n * n)) *
+            (expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n)) *
+              Real.exp (-(baPureRate d Λ κ / 4 * (KLmaxDist d (L i) δ : ℝ)))) := by
+          refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun F hF => ?_)
+          have hsame := KLMolecule_same_charge hF
+          have hFT : F ∈ TSP n := (Finset.mem_filter.1 hF).1
+          exact KSumZeroB_tree_bound (by omega) (KLisTSP_of_mem_TSP hFT) hn _ (t i) σ hsame hB1 hr0 hg0
+            hMB hΘB hMo hΘo δ hnc
+      _ = ((KLTSPlong n σ ∅).card : ℝ) * (g i ^ 2 * B ^ (n + 3 * (n * n)) *
+            (expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n)) *
+              Real.exp (-(baPureRate d Λ κ / 4 * (KLmaxDist d (L i) δ : ℝ)))) := by
+          rw [Finset.sum_const, nsmul_eq_mul]
+      _ ≤ ((TSP n).card : ℝ) * (g i ^ 2 * B ^ (n + 3 * (n * n)) *
+            (expC (d - 2) (baPureRate d Λ κ / (4 * ((n + 2 * (n * n) : ℕ) : ℝ)))) ^ (n + 2 * (n * n)) *
+              Real.exp (-(baPureRate d Λ κ / 4 * (KLmaxDist d (L i) δ : ℝ)))) := by
+          refine mul_le_mul_of_nonneg_right ?_ hX
+          exact_mod_cast Finset.card_le_card (Finset.filter_subset _ _)
+  calc ‖BASig d n L g E m t i σ δ‖ ≤ _ := h
+    _ = _ := by ring
+
 end RBM.BA
