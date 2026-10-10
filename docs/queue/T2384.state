@@ -1,4 +1,4 @@
-state: proving
-reason: H176: check exit 0 on main 2192dea; workflow wf_66bb642b-773 (prover-max, 1a design gate + 1a-audit, stop 2000); branch from main 2192dea
-updated: Sat Oct 10 12:03:47 UTC 2026
-reports: docs/reports/T2384-prove.md, docs/reports/T2384-audit.md
+state: audit-pass
+reason: 1a PASS, 1a-audit PASS (flagged D1/D2 for the dispatcher; 1b avoided D1 with the in-file bridge KWardIneq_IndAt_of_abs, no registry line; D2 resolved by the branch base); stage 1b DONE (7dac9b5; BA/KWardIneq.lean 1338 lines); auditor1 PASS claude-opus-5-5 (wf_66bb642b-773, no sign-off); full lake build 4200 jobs exit 0
+updated: Sat Oct 10 13:06:57 UTC 2026
+reports: docs/reports/T2384-prove.md, docs/reports/T2384-1a-audit.md, docs/reports/T2384-audit.md
