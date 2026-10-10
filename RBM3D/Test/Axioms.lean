@@ -46,9 +46,10 @@ library (CLAUDE.md §5.3) and a theorem carrying it is vacuously true, so it is 
 out of the two ledgers, and `#assert_rbm_axioms` fails if a refuted name is also in one of the other three lists.
 
 A fourth class is **superseded, not needed** (`supersededProps`, DECISIONS §66 (2) class, §68 (9), §73 (4), §76 (3)): pins
-that nothing the closure needs consumes any more (the generic Steps 3-6, the unprimed Step-6 ingredients of regime (i)); their
-definitions stay (CLAUDE.md §5.3), they are neither borrowed nor owed, and `#assert_rbm_axioms` fails if a superseded name is
-also in one of the other four lists.
+that nothing the closure needs consumes any more (the generic Steps 3-6, the unprimed Step-6 ingredients of regime (i)), and
+pins whose unguarded form `∀ d, P d` is not provable (the definition has no `3 ≤ d` premise) and is replaced by a guarded
+consumer (`STLWB`, `STLWT`, `STOptL2`, T2377); their definitions stay (CLAUDE.md §5.3), they are neither borrowed nor owed, and
+`#assert_rbm_axioms` fails if a superseded name is also in one of the other four lists.
 -/
 
 namespace RBM.Audit
@@ -125,9 +126,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STGdecayW, -- `(Eq:Gdecay_w)` uniformly in `u ∈ [s,t]` (`1_2:1349`, `Step34Pins.lean:208`): hypothesis of `stDecayLoopU_of_step2` (T2135 Amend 1, DECISIONS §39); proved by the Step 2 chain ST2-04 (DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2LocalPT, -- `(Gt_bound_flow)` per time (`1_2:1343`): hypothesis of `step2LocalNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2AvgPT, -- `(Gt_avgbound_flow)` per time (`1_2:1345`): hypothesis of `step2AvgNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
-   `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28); `stOptL2_of_pins` (T2116) proves it from `STLWB` and `STGridMart`; `STGridMart` is proved (`stGridMart_holds`) and `STLWB` is proved for `3 ≤ d` by `STLWB_of_LWterm` at `lwterm_holds` (T2375), but the definition has no `3 ≤ d` premise, so `∀ d, STOptL2 d` is not provable and it stays owed
-   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, now proved (`lwterm_holds`, T2375), but only for `3 ≤ d`: the definition has no `3 ≤ d` premise, so `∀ d, STLWB d` is not provable and it stays owed (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, now proved (`lwtermExp_holds`, T2375), but only for `3 ≤ d`: the definition has no `3 ≤ d` premise, so `∀ d, STLWT d` is not provable and it stays owed (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
@@ -165,52 +163,32 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
    `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
    `RBM.Gauss.Sizes.PfStep5_walkConcl, -- `lem:pf_step5` grid conclusion `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for all `k ≤ K` w.h.p. (`3_5:2364-2383`): proved under the premises of `STIngR5` by `pfStep5_walk`; hypothesis of `pfStep5_PT_of_walk` (T2231, S5-11b: owed)
-   `RBM.Univ.UNBUniv, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed); owner `bUniv_holds` (T2371, UN-52b, `Main/BUnivHolds.lean`): conditional on the borrowed `UNL32`, the consumed `UNMLOut`, `UNLocAvgBand`, `UNQueBand` and the owed `UNNormBandRow` (producer T2372) and `UNGUESchurTail` (producer T2373); the band rows `UNDensBandRow`, `UNTrLocalBandRow` are proved there
-   `RBM.Univ.UNTrLocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNClaim417, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNOUQUE, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNOULLk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: BA-C5 (T inputs) + BA-N2 (instance); hypothesis of `ouDiagk_of_ouLLk` (proves `UNOUDiagk`) and of `UNOULLk_band`)
    `RBM.Univ.UNG1Rowk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: BA-C5 (T inputs) + BA-N2 (instance); with `UNG2bRowk` and `UNOUProfRowk` gives `UNOURowk` by `ouRowk_of_pins`)
    `RBM.Univ.UNOUProfRowk, -- (T2282, UN-51g: owed; owner BA-C3 at `UNKind.ba`; band proved: `unOUProfRowk_band`; premise of `ouRowk_of_pins`)
-   `RBM.Univ.UNOUClaims, -- bulk universality pin, the two 𝐇_t claims (T2273, UN-21: owed; owner `ouRow_of_pins` (`ZeroModeProfile.lean:719`) + the consumed inputs `UNG1Row`, `UNG2bRow`; the row `unOURow := ouRow_of_pins g1Row g2bRow` is proved by T2371, `Main/BUniv.lean`, and stays conditional on `UNMLOut`, `UNLocAvgBand`, `UNQueBand`)
-   `RBM.Univ.UNLocAvgBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNQueBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNNormBound, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
-   `RBM.Univ.UNClaim417C, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNGreenCorrC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNGreenCorrAllC, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNOUQUEk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNEMCTE2k, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNJakk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNUywk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNQuek, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNLocAvgk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNEMCTE2Rowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed)
-   `RBM.Univ.UNTrLocalInit', -- bulk universality pin, primed successor of the refuted UNTrLocalInit, tolerance W^τ (Bctl + t*) (T2213, UN-12b: owed; band: unTrLocalInit'_band_zero; BA: BA-C1b row)
-   `RBM.Univ.UNCoreC'', -- bulk universality pin, successor of the superseded UNCoreC' (T2213, UN-12b: owed; BA-C1b)
+   `RBM.Univ.UNGreenCorrC, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNGreenCorrAllC, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNEMCTE2k, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNJakk, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNUywk, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNEMCTE2Rowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNJakUywRowk, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNCoreC'', -- bulk universality pin, successor of the superseded UNCoreC' (T2213, UN-12b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2); consumer BA-C1b)
    -- T2241 (BA-C1b, DECISIONS §20): the UN-side block Anderson pins (`RBM3D/BA/UNPins.lean`)
    `RBM.Univ.UNLocAvgBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-M1, `(G_bound_ave)` from `BAEnd_locSC`)
    `RBM.Univ.UNMLOutBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-V3, `lem:main_ind_BA` outputs on the T2197 carrier)
    `RBM.Univ.UNOURowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
-   `RBM.Univ.UNEMCTE2RowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
-   `RBM.Univ.UNJakUywRowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
-   `RBM.Univ.UNClaimRowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner the model-generic UN rows at `UNKind.ba`)
+   `RBM.Univ.UNEMCTE2RowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
+   `RBM.Univ.UNJakUywRowBA, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
    `RBM.Univ.UNTrLocalBARow, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1)
    `RBM.Univ.UNTrLocalInitBARow', -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, BA model at coupling `λ e^{t*/2}`, BA-D8)
    `RBM.Univ.UNNormBARow, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, `‖V‖ + λ‖Ψ‖`)
-   `RBM.Univ.GUEPhase.GUEPathBounds, -- output of the §7.2 random layer on the GUE-phase grid, (7.28) and `‖G̃ - m‖_max ≺ (N η_u)^{-1/2}` at the grid times (T2316, UN-27: owed by the §20 rule, class unsure; owner UN-33 `BoundsA` `pathBounds_of_forall_highProbAt`; hypothesis of UN-44/47/50/51; conditional producer `BoundsACheck.pathBounds_of_forall_highProbAt` (T2330))
    `RBM.BA.BAEnd_QUEL, -- `(Meq:QUE)`, `(Meq:QUE2)` for block Anderson, `MR:decol_BA` third bullet `1_2:655` (T2241, BA-C1b: owed; owner BA-M3)
    `RBM.BA.BAGbEXPii, -- `lem_GbEXP_BA` `(GiiGEX)` event form `1(Ω(t, ε₀)) ‖G_t - M‖²_max ≺ max 𝓛^{(2)}` over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPij, -- `lem_GbEXP_BA` `(GijGEX)` event form on `(G_t - M)_{xy}`, `x ≠ y`, over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
-   `RBM.Gauss.Sizes.STExp2U, -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
-   `RBM.Endpoints.decol, -- Thm 2.1 `1_2:357-370`: MA-03 `decol_of_locSC` + MA-04; MA-01 (T2210, DECISIONS §16, §20: owed)
-   `RBM.Endpoints.locSC, -- Thm 2.2 `1_2:386-395`: MA-04 `MANetLoc` from MA-03; MA-01 (T2210, DECISIONS §16, §20: owed)
-   `RBM.Endpoints.QUE, -- Thm 2.3 `1_2:406-420`: MA-05 `MAQUE`; MA-01 (T2210, DECISIONS §16, §20: owed)
-   `RBM.Endpoints.QDiff, -- Thm 2.5 `1_2:488-511`: MA-04 `MANetQD` from MA-03; MA-01 (T2210, DECISIONS §16, §20: owed)
-   `RBM.Endpoints.BUniv] -- Thm 2.4 `1_2:452-459`, the `abbrev` of `UNBUniv`: UN-52, MA-06; MA-01 (T2210, DECISIONS §16, §20: owed)
+   `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -325,7 +303,16 @@ def structuralProps : List Name :=
    `RBM.BA.FlowFM.EvEq, -- two flow carriers agree for large `n` (T2277, BA-S3, portmap P.2: structural)
    `RBM.Adj, -- the nearest-neighbour relation `a ∼ b` of `(eq:variancematrix)` on `Z_L^d` (`Defs/Lattice.lean:108`, `zdistD (a - b) = 1`): a predicate on the lattice data, hypothesis of `BAzdist_adj_lip` and `BAMB_lower_small` (BA-D4, T2290, DECISIONS §20: structural)
    `RBM.Gauss.Sizes.LWMomentCtx, -- the hypotheses of `lem:LW_moment` for one choice of the constants and sequences, bundled as the binder of the internal lemmas of `LWMoment.lean` (fields = the pin's hypotheses, nothing else; LW-02, T2297, DECISIONS §20: structural)
-   `RBM.Univ.queWindow] -- the energy window `𝓘_E(ε₀) = {x : |x - E| ≤ W^{-ε₀} (ilambda W^{d/2}/N)}` of `(eq:defIE)` (`1_2:409`): a condition on the eigenvalue `x`, hypothesis of the deterministic inclusions `queBad_sub`, `que2Bad_sub` (MA-05a, T2240, DECISIONS §20: structural)
+   `RBM.Univ.queWindow, -- the energy window `𝓘_E(ε₀) = {x : |x - E| ≤ W^{-ε₀} (ilambda W^{d/2}/N)}` of `(eq:defIE)` (`1_2:409`): a condition on the eigenvalue `x`, hypothesis of the deterministic inclusions `queBad_sub`, `que2Bad_sub` (MA-05a, T2240, DECISIONS §20: structural)
+   `RBM.Univ.UNTrLocal, -- bulk universality: a condition on the data of the generic lemmas (an arbitrary `UNModel`, false for an arbitrary model, so not provable as stated; §20 rule; supervisor 0853 Q2 (d)). Band instance: `unTrLocalBandRow` (`Main/BUnivHolds.lean:205`, T2371), consumed by `bUniv_holds`. BA instance: the registered `UNTrLocalBARow` (owed; producer BA-N1)
+   `RBM.Univ.UNNormBound, -- bulk universality: a condition on the data of the generic lemmas (an arbitrary `UNModel`, false for an arbitrary model, so not provable as stated; §20 rule; supervisor 0853 Q2 (d)). Band instance: `unNormBandRow` (`Universality/NormBand.lean:173`, T2372). BA instance: the registered `UNNormBARow` (owed; producer BA-N1)
+   `RBM.Univ.UNClaim417, -- bulk universality: Claim `(417)` over an arbitrary `UNModel`: a condition on the data of the generic lemmas, false for an arbitrary model (§20 rule; supervisor 0853 Q2 (d)). Band instance: `unClaimRow` (`Universality/UnivMain.lean:476`) with `un_claimAll_of_rows` (`Universality/Pins.lean:849`). BA instance: `un_claimAll_of_rowsBA` (`BA/UNPins.lean:142`), carried by the registered owed rows `UNEMCTE2RowBA`, `UNJakUywRowBA` (producer BA-N3) and `UNOURowBA` (producer: `ouRowk_of_pins` with BA-C3, BA-C5), and by `UNClaimRowBA` (proved: `unClaimRowBA_holds`, T2377)
+   `RBM.Univ.UNClaim417C, -- bulk universality pin, model-generic (T2187, UN-01b): structural as `UNClaim417` (supervisor 0853 Q2 (d), (e)). Band instance: `UNClaim417C_toC` (`Universality/PinsK.lean:174`) at `unClaimRow` (`Universality/UnivMain.lean:476`). BA instance: `un_claimAll_of_rowsBA` (`BA/UNPins.lean:142`), carried by `UNEMCTE2RowBA`, `UNJakUywRowBA` (producer BA-N3), `UNOURowBA` (producer: `ouRowk_of_pins` with BA-C3, BA-C5)
+   `RBM.Univ.UNTrLocalInit', -- bulk universality: tolerance `W^τ (Bctl + t*)`, primed successor of the refuted `UNTrLocalInit` (T2213, UN-12b): a condition on the data of the generic lemmas (§20 rule; supervisor 0853 Q2 (d)). Band instance: `unTrLocalInit'_band_zero` (`Universality/PinsC2.lean:792`). BA instance: the registered `UNTrLocalInitBARow'` (owed; producer BA-N1)
+   `RBM.Univ.GUEPhase.GUEPathBounds, -- output of the §7.2 random layer on the GUE-phase grid, (7.28) and `‖G̃ - m‖_max ≺ (N η_u)^{-1/2}` at the grid times (T2316, UN-27): a condition on an arbitrary family `Kt` and grid, hypothesis of UN-44/47/50/51 (§20 rule; supervisor 0853 Q2 (d)). Band instance: `gueGrid_pathBounds` (`Universality/GUEPhase/PathBounds.lean:550`), used by `g1Row` (`GUEPhase/RandomLayerB.lean:468`). BA instance: the registered `UNG1Rowk` at `UNKind.ba` (owed; producer BA-C5)
+   `RBM.Univ.UNQuek, -- bulk universality pin, model-generic (T2187, UN-01b): structural as `UNTrLocal` (supervisor 0853 Q2 (d), (e)). Band instance: `UNQuek_band` (`Universality/PinsK.lean:552`) at `unQueBand_holds` (T2377). BA instance: `UNQueBA := UNQuek (UNKind.ba)` (`BA/UNPins.lean:99`), proved from the registered `BAEnd_QUEL` (owed; producer BA-M3) by `UNQueBA_of_BAEnd_QUEL` (`BA/UNPins.lean:357`)
+   `RBM.Univ.UNLocAvgk, -- bulk universality pin, model-generic (T2187, UN-01b): structural as `UNTrLocal` (supervisor 0853 Q2 (d), (e)). Band instance: `UNLocAvgk_band` (`Universality/PinsK.lean:554`) at `unLocAvgBand_holds` (T2377). BA instance: the registered `UNLocAvgBA` (owed; producer BA-M1)
+   `RBM.Univ.UNOUQUEk] -- bulk universality pin, model-generic (T2187, UN-01b): structural as `UNTrLocal` (supervisor 0853 Q2 (d), (e)). Band instance: `UNOUQUEk_band` (`Universality/PinsK.lean:522`) at `unOUQUE_holds` (T2377). BA instance: the registered `UNOURowBA` (owed; producer: `ouRowk_of_pins` (`Universality/OUInterfaceK.lean:292`) with BA-C3, BA-C5)
 
 /-- **Refuted** premises (DECISIONS §66 (2), class "superseded, refuted"): pins shown false, by a compiled
 theorem or by the argument of the named supervisor verdict, and superseded by a primed successor.  Their
@@ -348,7 +335,9 @@ def refutedProps : List Name :=
 consumed by nothing that the closure needs; **neither borrowed nor owed**.  They are not false (as `refutedProps`) and
 not debts (nothing needs them): the closure of `lem:main_ind` goes through `ST_mainIndR_*_of_steps` and
 `ST_mainInd_of_regimes` (T2245), which consume the regime pins `STStep3I/II`, `STStep4I/II`, `STStep5I/II`,
-`STStep6I/II/III`, and through the primed successors of the Step-6 ingredients; a name is in this list or in the
+`STStep6I/II/III`, and through the primed successors of the Step-6 ingredients.  A pin whose definition has no `3 ≤ d`
+premise (`STLWB`, `STLWT`, `STOptL2`, T2377) is in this list too: `∀ d, P d` is not provable, the guarded consumer
+(`STLWB_of_LWterm`, `STLWT_of_LWtermExp`, `stOptL2_of_pins`, each with `3 ≤ d`) is named on the line.  A name is in this list or in the
 other four, never in two (`#assert_rbm_axioms` checks the disjointness). -/
 def supersededProps : List Name :=
   [`RBM.Gauss.Sizes.STStep3,    -- Step 3, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep3I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
@@ -364,7 +353,10 @@ def supersededProps : List Name :=
    `RBM.Gauss.Sizes.STOeqQtNZ,  -- superseded by `STOeqQtNZ'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
    `RBM.Gauss.Sizes.STIterations,  -- superseded by `STIterations'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
    `RBM.Gauss.Sizes.STIterationsII,  -- superseded by `STIterationsII'` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
-   `RBM.Gauss.Sizes.LWG5Expand]  -- superseded by `LWG5Expand'` (proved, T2318): the `m^j` coefficient model misses `m̄` (red weights) and outputs with both external vertices in one molecule occur (T2265 F1, F2; DECISIONS §84, §107); still a hypothesis of `lwExpG5'_of_expand`, `lwCutExp_of_expand`, `lwTermEXP_of_expand` (T2255) until LW-14f; definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.LWG5Expand,  -- superseded by `LWG5Expand'` (proved, T2318): the `m^j` coefficient model misses `m̄` (red weights) and outputs with both external vertices in one molecule occur (T2265 F1, F2; DECISIONS §84, §107); still a hypothesis of `lwExpG5'_of_expand`, `lwCutExp_of_expand`, `lwTermEXP_of_expand` (T2255) until LW-14f; definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): superseded (T2377, supervisor 0853 C1): the definition (`Induction/Step2Defs.lean:667`) has no `3 ≤ d` premise, so `∀ d, STOptL2 d` is not provable; the guarded consumer is `stOptL2_of_pins (hd : 3 ≤ d)` (`Induction/OptL2b.lean:195`) at `STLWB_of_LWterm hd (lwterm_holds d)` and `stGridMart_holds d hd` (`Path/DifREP2.lean:2283`), used in `stStep2_holds` (`Induction/MainIndHolds.lean:38`); definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): superseded (T2377, supervisor 0853 C1): the definition (`Induction/Step2Defs.lean:406`) has no `3 ≤ d` premise, so `∀ d, STLWB d` is not provable; the guarded consumer is `STLWB_of_LWterm (hd : 3 ≤ d) : LWterm d → STLWB d` (`Induction/Step2Events.lean:1355`) at `lwterm_holds` (`Graph/LWTermHolds.lean:682`); definition kept (CLAUDE.md §5.3)
+   `RBM.Gauss.Sizes.STLWT] -- `lem: EWGn2_N` (`3_5:406-415`): superseded (T2377, supervisor 0853 C1): the definition (`Induction/Step2Defs.lean:421`) has no `3 ≤ d` premise, so `∀ d, STLWT d` is not provable; the guarded consumer is `STLWT_of_LWtermExp (hd : 3 ≤ d) : LWtermExp d → STLWT d` (`Induction/Step2Events.lean:1427`) at `lwtermExp_holds` (`Graph/LWTermHolds.lean:1604`); definition kept (CLAUDE.md §5.3)
 
 /-- The premises the audit reports on: borrowed plus owed. -/
 def interfaceProps : List Name := borrowedProps ++ owedProps

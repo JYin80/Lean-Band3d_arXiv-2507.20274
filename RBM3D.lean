@@ -420,6 +420,7 @@ import RBM3D.Universality.GUELocalSchur
 import RBM3D.BA.KTreeRep
 import RBM3D.Graph.LWTermHolds
 import RBM3D.Induction.MainIndHolds
+import RBM3D.Main.BandTerminal
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
