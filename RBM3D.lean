@@ -427,6 +427,7 @@ import RBM3D.BA.KInduct
 import RBM3D.BA.KPure
 import RBM3D.Chain.Carrier
 import RBM3D.BA.KWardIneq
+import RBM3D.BA.KSumZeroA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -1,4 +1,4 @@
-state: proving
-reason: 1a-audit round 1 RETURN with a concrete list (no dispatcher sign-off; baK_sumAll_eq_layers false at W = 0, missing 1 <= W, 3 <= L, 0 < kappa, 0 < g; baSigmaPi_total_le and baSig_signed_sum_unif hide hypotheses behind ..). Rule (B) applied once: preflight repair of section (a), then 1a-audit round 2, then 1b prover-max and auditor (workflow wf_355adce4-459)
-updated: Sat Oct 10 12:47:49 UTC 2026
+state: audit-pass
+reason: 1a-audit round 2 PASS (after one rule-(B) repair of section (a)); stage 1b DONE (ab58d55; BA/KSumZeroA.lean 1195 lines of 2400; 6 public theorems, 14 instances); auditor1 PASS claude-opus-5-5 (wf_355adce4-459); full lake build 4201 jobs exit 0
+updated: Sat Oct 10 15:23:11 UTC 2026
 reports: docs/reports/T2385-prove.md, docs/reports/T2385-1a-audit.md, docs/reports/T2385-audit.md
