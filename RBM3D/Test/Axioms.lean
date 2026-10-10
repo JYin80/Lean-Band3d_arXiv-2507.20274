@@ -187,6 +187,10 @@ def owedProps : List Name :=
    `RBM.BA.BAGbEXPii, -- `lem_GbEXP_BA` `(GiiGEX)` event form `1(Ω(t, ε₀)) ‖G_t - M‖²_max ≺ max 𝓛^{(2)}` over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPij, -- `lem_GbEXP_BA` `(GijGEX)` event form on `(G_t - M)_{xy}`, `x ≠ y`, over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
+   `RBM.BA.BAEKSumDecay1, -- `(sum_res_1)` of `lem:sum_decay` at BA (`3_5:1639`), shape of `EKSumDecay1` with `BAReal` (T2388, BA-E1, T2378 §2: owed; owner BA-E2)
+   `RBM.BA.BAEKSumDecayNAL, -- `(sum_res_2_NAL)` at BA (`3_5:1649`) (T2388, BA-E1, T2378 §2: owed; owner BA-E2)
+   `RBM.BA.BAEKSumDecay2, -- `(sum_res_2)` at BA (`3_5:1659`), `(sumAzero)` (T2388, BA-E1, T2378 §2: owed; owner BA-E2)
+   `RBM.BA.BAEKSumDecayNonzero, -- `lem:sum_decay_nonzero` at BA (`3_5:1666`) (T2388, BA-E1, T2378 §2: owed; owner BA-E3)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
