@@ -401,6 +401,7 @@ import RBM3D.Graph.LWMomExpInf
 import RBM3D.Graph.LWXiExp
 import RBM3D.Graph.LWMomentExpA
 import RBM3D.Universality.GUEPhase.PathBounds
+import RBM3D.Universality.GUEPhase.Eq729B
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

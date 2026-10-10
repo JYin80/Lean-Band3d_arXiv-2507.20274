@@ -1,4 +1,4 @@
 state: audit-pass
-reason: stage 1b DONE (86cc4f2; 5 targets, Eq729B.lean 1674 lines, stop 2400); auditor1 PASS claude-opus-5-5 (wf_4044f6a0-11d; paper deltas D628-D631); rule (A) merge held: same action as the T2361 merge the session permission check denied at 19:29 UTC; waiting for Jun to allow it
-updated: Fri Oct  9 20:12:50 UTC 2026
+reason: stage 1b DONE (86cc4f2); auditor1 PASS claude-opus-5-5 (wf_4044f6a0-11d); merging under H155 with Jun's direct authorization in the hub session
+updated: Sat Oct 10 00:57:34 UTC 2026
 reports: docs/reports/T2356-prove.md, docs/reports/T2356-design.md, docs/reports/T2356-audit.md
