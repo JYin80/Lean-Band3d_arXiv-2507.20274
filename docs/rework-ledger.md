@@ -323,3 +323,5 @@
 | T2375 | 2026-10-10 09:17 UTC (17ccf68) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 PASS（无需切分），审核一次 PASS；LW-01 + ST-6 R4 `Graph/LWTermHolds` + `Induction/MainIndHolds`（1894 行，停止线 2300）；另证 `stEtermsMid_holds`、`stStep5I/II_holds`；`Test/Axioms.lean` 三方合并重放（H23 b） |
 | T2377 | 2026-10-10 09:41 UTC (8b66528) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；MA-06a 带状终端 `Main/BandTerminal`（159 行）：`band_terminal : UNL32 → decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff`；按监督 0853 C1/O3 改登记 |
 | T2376 | 2026-10-10 10:22 UTC (d2fb5b1) | prover-max | Sonnet 5.5 effort max | 是 | 1a PASS，1a-audit 因计划超线 RETURN（约 1598 > 1500，调度估计漏了复制量）→ Amend 1：加 `BA/KCactusCut`（公开 `baCactus_cut`），合计停止线 2000，prover-max；审核一次 PASS；BA-K06 共 1737 行 |
+| T2378 | 2026-10-10 11:14 UTC (38eb3ee) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（BA 阶段 G/E：12 行，中心 13.5k，旗标 18；F1–F4）；审核一次 PASS |
+| T2379 | 2026-10-10 11:10 UTC (06f6e38) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（BA 阶段 T/U/V：路线 G 成立，g 0.239，46 行，拆子阶段 T/U/V）；审核一次 PASS |
