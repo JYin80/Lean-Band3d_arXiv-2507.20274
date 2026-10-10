@@ -9,18 +9,20 @@ import RBM3D.Evolution.SumDecay
 /-!
 # Stage E of the block Anderson model (BA-E2): `(sum_res_1)`, `(sum_res_2_NAL)`, `(sum_res_2)`
 
-Ticket T2392.  Paper: `A_deterministic_estimates.tex:111-198` (`(eq:decomp_U2)`, `(sum_res_deriv_red)`,
-`(sum_res_2_red)`, `(eq:latticesum_d3)`), `3_5_Loop_Hierarchy.tex:1630-1665`; design
-`docs/reports/T2378-design.md` §3.  Band blueprints: `Evolution/SumDecay.lean:253-518`,
-`Evolution/SumDecayZero.lean:44-1520` (every `ekSZ_*` there is private, so the generic parts are copied here).
+Ticket T2392.  Paper: `A_deterministic_estimates.tex:111-198` (`(eq:decomp_U2)`,
+`(sum_res_deriv_red)`, `(sum_res_2_red)`, `(eq:latticesum_d3)`), `3_5_Loop_Hierarchy.tex:1630-1665`;
+design `docs/reports/T2378-design.md` §3.  Band blueprints: `Evolution/SumDecay.lean:253-518`,
+`Evolution/SumDecayZero.lean:44-1520` (every `ekSZ_*` there is private, so the generic parts are
+copied here).
 
-1. `baEKSumDecay1_holds`, `baEKSumDecayNAL_holds`: the anchored window/tail split of `ek_core_bound` with the one-index
-   kernel `BAuKer = 1 + BAXi` (`BAuKer_eq_one_add_Xi`), the ball sums `baEKXiBall_holds`, the row sums
-   `‖BAuKer‖_{∞→∞} ≤ (1-s)/(1-t)` and, at a same-sign anchor, `baEKSameRow_holds`.  No smallness of `g` or of
-   `‖M - m₀ I‖`, no `‖m‖ = 1`: only `BAReal`.
-2. `baEKSumDecay2_holds`: the abstract combinatorics (Part I, copied from the band), the lattice estimates with
-   the first difference of `Ξ` from `baProp6_holds` through `Ξ = ((t-s)/t)(Θ_t - 1)` (no nearest-neighbour `S^{(B)}`),
-   the constants (Part III, copied), the pin.
+1. `baEKSumDecay1_holds`, `baEKSumDecayNAL_holds`: the anchored window/tail split of
+   `ek_core_bound` with the one-index kernel `BAuKer = 1 + BAXi` (`BAuKer_eq_one_add_Xi`), the ball
+   sums `baEKXiBall_holds`, the row sums `‖BAuKer‖_{∞→∞} ≤ (1-s)/(1-t)` and, at a same-sign anchor,
+   `baEKSameRow_holds`.  No smallness of `g` or of `‖M - m₀ I‖`, no `‖m‖ = 1`: only `BAReal`.
+2. `baEKSumDecay2_holds`: the abstract combinatorics (Part I, copied from the band), the lattice
+   estimates with the first difference of `Ξ` from `baProp6_holds` through
+   `Ξ = ((t-s)/t)(Θ_t - 1)` (no nearest-neighbour `S^{(B)}`), the constants (Part III, copied), the
+   pin.
 3. Compiled nonempty instances at `d = 3`, the flow datum `n = 0` of `sz0` (`EKPinsInst`).
 
 Private helpers carry the stem `EKSum_`.
@@ -1888,6 +1890,39 @@ theorem baEKSumDecay2_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumDecay2 d n Λ κ 
     _ ≤ _ := EKSum_final_arith hn hCB.le ha₁ ha₂ hK hW1' hε0 hρdef hρ4' hρW' hr1 hrP hQ0 hPW
         hlog' hm₁ hm₂ hLK (by positivity) hWD (norm_nonneg _)
 end Pin2
+
+/-! ## 8. Compiled nonempty instances (`d = 3`, the flow datum `n = 0` of `sz0`)
+
+The instances `EKPinsInst.inst_BAEKSumDecay*` of E1 (`EKPins.lean:737-850`) take the owed pin as a hypothesis; here the
+hypothesis is the theorem.  Data: `L = 4`, `g₀ = √t₀ λ ≤ 1/64`, `κ = 1/2`, `BAReal` by `EKPinsInst.hrI` (`BAflow_real`), `Λ = 1`,
+`n = 2`, `σ = (+,-)` (`(+,+)` for the non-alternating pin), `s = 0`, `t = 1/2 ≤ 1 - g₀²/L²`, `W = 16`, `ε = 1/2` (`W^ε = 4`),
+`D = 2`, `K = 2` (`L³ = 64 ≤ 16² = W^K`, `log 4 ≤ 4`), `A = δ_0` (`(deccA0)` holds), and for the sum-zero pin
+`A = δ_0 ⊗ (δ_0 - δ_e)`, `e = (1,0,0)` (`(sumAzero)` and `(deccA0)` hold).  No hypothesis is left open. -/
+
+namespace EKSumInst
+
+open RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.BA.FlowPinsInst RBM.BA.EKPinsInst
+
+/-- `baEKSumDecay1_holds` at the flow datum: `n = 2`, `σ = (+,-)`, `A = δ_0`. -/
+theorem inst_baEKSumDecay1 : ∃ C : ℝ, 0 < C ∧
+    ‖BAUN 3 (sz0.L 0) gI EI mI ![true, false] 0 (1 / 2) AI‖ ≤ (16 : ℝ) ^ (C * (1 / 2)) *
+      (ellT (sz0.L 0) gI (1 / 2) ^ 2 / ellT (sz0.L 0) gI 0 ^ 2) *
+        ((gI ^ 2 + |1 - 0|) / (gI ^ 2 + |1 - 1 / 2|)) ^ 2 * ‖AI‖ + (16 : ℝ) ^ (-2 + C) :=
+  inst_BAEKSumDecay1 (baEKSumDecay1_holds 3 2 1 (1 / 2))
+
+/-- `baEKSumDecayNAL_holds` at the flow datum: `n = 2`, `σ = (+,+)`, `A = δ_0`. -/
+theorem inst_baEKSumDecayNAL : ∃ C : ℝ, 0 < C ∧
+    ‖BAUN 3 (sz0.L 0) gI EI mI ![true, true] 0 (1 / 2) AI‖ ≤ (16 : ℝ) ^ (C * (1 / 2)) *
+      ((gI ^ 2 + |1 - 0|) / (gI ^ 2 + |1 - 1 / 2|)) ^ (2 - 1) * ‖AI‖ + (16 : ℝ) ^ (-2 + C) :=
+  inst_BAEKSumDecayNAL (baEKSumDecayNAL_holds 3 2 1 (1 / 2))
+
+/-- `baEKSumDecay2_holds` at the flow datum: `n = 2`, `σ = (+,-)`, `K = 2`, `A = δ_0 ⊗ (δ_0 - δ_e)`. -/
+theorem inst_baEKSumDecay2 : ∃ C : ℝ, 0 < C ∧
+    ‖BAUN 3 (sz0.L 0) gI EI mI ![true, false] 0 (1 / 2) AzI‖ ≤ (16 : ℝ) ^ (C * (1 / 2)) *
+      ((gI ^ 2 + |1 - 0|) / (gI ^ 2 + |1 - 1 / 2|)) ^ 2 * ‖AzI‖ + (16 : ℝ) ^ (-2 + C) :=
+  inst_BAEKSumDecay2 (baEKSumDecay2_holds 3 2 1 (1 / 2))
+
+end EKSumInst
 
 end RBM.BA
 
