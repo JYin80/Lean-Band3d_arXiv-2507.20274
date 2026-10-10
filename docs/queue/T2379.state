@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 06f6e38
 reason: design delivered (TV1-TV6; probe 397 lines at 00a2206, standard axioms); auditor1 PASS claude-opus-5-5 (wf_f678e003-bb9); report-only merge, probe stays on t/T2379
-updated: Sat Oct 10 11:10:52 UTC 2026
+updated: Sat Oct 10 11:10:54 UTC 2026
 reports: docs/reports/T2379-prove.md, docs/reports/T2379-design.md, docs/reports/T2379-audit.md

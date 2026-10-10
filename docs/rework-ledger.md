@@ -325,3 +325,4 @@
 | T2376 | 2026-10-10 10:22 UTC (d2fb5b1) | prover-max | Sonnet 5.5 effort max | 是 | 1a PASS，1a-audit 因计划超线 RETURN（约 1598 > 1500，调度估计漏了复制量）→ Amend 1：加 `BA/KCactusCut`（公开 `baCactus_cut`），合计停止线 2000，prover-max；审核一次 PASS；BA-K06 共 1737 行 |
 | T2378 | 2026-10-10 11:14 UTC (38eb3ee) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（BA 阶段 G/E：12 行，中心 13.5k，旗标 18；F1–F4）；审核一次 PASS |
 | T2379 | 2026-10-10 11:10 UTC (06f6e38) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（BA 阶段 T/U/V：路线 G 成立，g 0.239，46 行，拆子阶段 T/U/V）；审核一次 PASS |
+| T2381 | 2026-10-10 11:46 UTC (306957f) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS，审核一次 PASS；BA-K10 `BA/KInduct`（991 行，停止线 2000）：基础层、`baKpi_cut`（及 `_S`、`_abs`）、`BAKBoundAt`、`BAKpiBoundAt` |
