@@ -1,0 +1,4 @@
+state: proving
+reason: started (H190, H12): workflow wf_4a3b742c-f02, stage 1a preflight → 1b prover-hard → auditor; branch t/T2396 from main 5c6613e
+updated: Sat Oct 10 22:21:35 UTC 2026
+reports: docs/reports/T2396-prove.md, docs/reports/T2396-audit.md

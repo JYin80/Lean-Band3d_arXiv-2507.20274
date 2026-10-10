@@ -338,3 +338,4 @@
 | T2393 | 2026-10-10 21:51 UTC (b53fd22) | prover | Sonnet 5.5 effort high | 否 | BA-T T6：`Induction/Contract.lean` 原地（+130 −53），矩阵形式 `STContractM`，`stContract_holds` 作带状推论（G1）；审核一次 PASS |
 | T2391 | 2026-10-10 22:0x UTC (14d7ab4) | prover-max | Sonnet 5.5 effort max | 否 | BA-K08b `BA/KSumZeroB`（755 行，停止线 2000）：B1、`baSig_nc_pointwise`、`baSig_weighted`、K-b 谓词 `baSig_sumZeroAbs`；设计门在 T2385 里已过；审核一次 PASS |
 | T2392 | 2026-10-10 22:0x UTC (5ba1ebe) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-E2 `BA/EKSum`（1929 行，停止线 2000，超 1500 拆分线，审核记作观察）：`BAEKSumDecay1/NAL/2` 证出，删三条 owed；审核一次 PASS |
+| T2394 | 2026-10-10 22:17 UTC (f136ab5) | prover | Sonnet 5.5 effort high | 否 | BA-L0：新 `Chain/LWGen`（151 行）+ `BA/LWPinsBA`（111 行），建在 `Step2Gen` 上（2149 L2）；审核一次 PASS |
