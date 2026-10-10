@@ -1,0 +1,4 @@
+state: proving
+reason: started (H191, H12): workflow wf_77829196-e8e, stage 1a preflight → 1b prover-max (design + probe, report only) → auditor; branch t/T2398 from main 1a5f972
+updated: Sat Oct 10 22:31:39 UTC 2026
+reports: docs/reports/T2398-prove.md, docs/reports/T2398-design.md, docs/reports/T2398-audit.md

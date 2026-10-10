@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 27b48e4, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sat Oct 10 22:46:07 UTC 2026
+state: merged 19fc8cf
+reason: audit PASS round 1 (claude-opus-5-5); new BA/KStep (746 lines, stop 1300; 6 targets), root import; full lake build 4209 jobs; pushed
+updated: Sat Oct 10 22:46:09 UTC 2026
 reports: docs/reports/T2396-prove.md, docs/reports/T2396-audit.md

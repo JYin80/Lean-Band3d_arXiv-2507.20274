@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 22:26 UTC (dispatcher V2: L0 merged; LW-14 gate T2398, L3b3 gate T2397 released (H191))
+updated: 2026-10-10 22:42 UTC (dispatcher V2: T2390 1a-audit round 2 PASS; C2 REQ sent (H192))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -62,6 +62,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 22:21:35 UTC 2026 — T2396 started from main 5c6613e: workflow wf_4a3b742c-f02 (preflight → prover-hard → auditor). Running: T2390, T2395, T2396 (3 of 4).
 
 - H191 (dispatcher V2, 2026-10-10 22:26 UTC; DECISIONS §210). Commit by name with your next commit `docs/tickets/T2397.md`, `docs/tickets/checks/T2397-check.lean`, `docs/tickets/T2398.md`, `docs/tickets/checks/T2398-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile both checks on `main` (H4; one `done:` line); start T2398 in the free slot, T2397 in the next (H12). One `done:` line per step.
+  done: Sat Oct 10 22:31:39 UTC 2026 — the 8 listed files committed by name in 1a5f972 (with state T2396), pushed; T2397, T2398 checks on main 1a5f972: exit 0, no error lines (both).
+  done: Sat Oct 10 22:31:39 UTC 2026 — T2398 started from main 1a5f972: workflow wf_77829196-e8e (preflight → prover-max → auditor). Running: T2390, T2395, T2396, T2398 (4 of 4); T2397 waits for the next free slot.
+  done: Sat Oct 10 22:46:18 UTC 2026 — T2397 started in the slot freed by T2396 (merged 19fc8cf): branch from main 19fc8cf, workflow wf_acdaf7a7-7bc (preflight → prover-max → auditor). Running: T2390, T2395, T2397, T2398 (4 of 4).
+
+- H192 (dispatcher V2, 2026-10-10 22:42 UTC; DECISIONS §211). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-10-2241-G.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Also, per T2390's 1a-audit O1: copy `inst.py`, `sz0.py` and their `.out` files from the T2390 scratchpad into `docs/reports/T2390/` on `t/T2390` (they become part of T2390's merge). Nothing to start. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 11:46:34 UTC 2026 — T2381 merged 306957f (BA-K10: new BA/KInduct (991 lines, stop 2000; 2 defs + 11 theorems), root import, no registry change; 1a-audit PASS (routing notes D1-D3 for the dispatcher), audit PASS claude-opus-5-5; full lake build 4197 jobs; pushed).
@@ -78,3 +83,4 @@ done: Sat Oct 10 21:51:52 UTC 2026 — T2393 merged b53fd22 (BA-T T6: Induction/
 done: Sat Oct 10 22:04:28 UTC 2026 — T2392 merged 5ba1ebe (BA-E2: new BA/EKSum (1929 lines, stop 2000; baEKSumDecay1_holds, baEKSumDecayNAL_holds, baEKSumDecay2_holds + 3 instances), RBM3D/Test/Axioms.lean 3 owed lines removed, root import; the 1b went past the ticket's 1,500-line split mark (E2a/E2b) without stopping: prove report (d) flags it, auditor recorded it as an observation; audit PASS claude-opus-5-5; full lake build 4205 jobs; pushed).
 done: Sat Oct 10 22:06:54 UTC 2026 — T2391 merged 14d7ab4 (BA-K08b: new BA/KSumZeroB (755 lines, stop 2000; B1-B4 incl. baSig_sumZeroAbs, 10 instances), root import added at merge (branch had none), no registry change; audit PASS claude-opus-5-5; full lake build 4206 jobs; pushed).
 done: Sat Oct 10 22:17:01 UTC 2026 — T2394 merged f136ab5 (BA-L0: new Chain/LWGen (151 lines) and BA/LWPinsBA (111 lines), 262 of stop 600; two root imports after the last import (conflict with T2391's KSumZeroB import line resolved as union), no registry change; paper-delta candidates T2394a/b; audit PASS claude-opus-5-5; full lake build 4208 jobs; pushed).
+done: Sat Oct 10 22:46:09 UTC 2026 — T2396 merged 19fc8cf (BA-K09b: new BA/KStep (746 lines, stop 1300; 6 targets), root import, no registry change; audit PASS claude-opus-5-5; full lake build 4209 jobs; pushed).
