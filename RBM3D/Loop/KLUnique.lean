@@ -65,6 +65,17 @@ private lemma `KLUnique_isKLoop_shift` (for a general family; the instance
 Every helper is `private` and carries the file stem `KLUnique_`.  No hypothesis `Prop` is added,
 `d` is a parameter and `3 ≤ d` is not used (no dimension-specific fact enters: the index type,
 `SB`, the cuts and the translation action only).
+
+## Over a general kernel (ticket T2366, gate BA stage K)
+
+The proofs of translation and rotation use `S = SB d L g` and `M = MLoop` only through `‖S a b‖ ≤ 1`,
+`SB_transpose`, `SB_apply_add_right` and the invariance of `MLoop` under `rot` and `shift`.  They are
+restated over `IsKLoopS` for a general kernel `S` and general initial data `M`: `RotS`, `TranslS` (pins)
+and `translS_holds`, `rotS_holds` (proofs, with the uniqueness and two-loop bound `uniqS_holds`,
+`retireS_holds` of `Loop/Unique.lean`).  The band statements `KLK_translate`, `KLK_rotate` (and
+`KLK_unique`) are their instances at `S = SB d L g`, `M = MLoop`; their statements are unchanged.  The
+cut combinatorics of section 4 is `S`-free.  The hypotheses on `S` are compiled at `S = 1` and
+`S = SB d L g` as `kernel_one_rot_transl`, `kernel_SB_rot_transl`.
 -/
 
 set_option linter.style.longLine false
@@ -72,6 +83,32 @@ set_option linter.style.longLine false
 namespace RBM.Loop
 
 open Finset
+
+/-! ## 1. The generic pins (gate BA, stage K, ticket T2366)
+
+`UniqS` and `RetireS` are in `Loop/Unique.lean` (`uniqS_holds`, `retireS_holds`); the pins below are
+proved in sections 3 and 5 and re-derive `KLK_translate` and `KLK_rotate`. -/
+
+/-- **`RotS`**: cyclic invariance of every family of `K`-loops on `[0,1)` (the form of `KLK_rotate`), for a symmetric
+kernel with `‖S a b‖ ≤ 1` and rotation-invariant initial data. -/
+def RotS : Prop :=
+  ∀ (d L W : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ),
+    (∀ a b, S a b = S b a) → (∀ a b, ‖S a b‖ ≤ 1) →
+    (∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)), σ.length = a.length →
+      M ⟨s :: σ, b :: a⟩ = M ⟨σ ++ [s], a ++ [b]⟩) →
+    ∀ {K : ℝ → LoopIdx (Zd d L) → ℂ}, IsKLoopS d L W S m M (Set.Ico 0 1) K →
+    ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)),
+      σ.length = a.length → K t ⟨s :: σ, b :: a⟩ = K t ⟨σ ++ [s], a ++ [b]⟩
+
+/-- **`TranslS`**: translation invariance of every family of `K`-loops on `[0,1)` (the form of `KLK_translate`), for a
+translation-invariant kernel with `‖S a b‖ ≤ 1` and translation-invariant initial data. -/
+def TranslS : Prop :=
+  ∀ (d L W : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ),
+    (∀ a b c : Zd d L, S (a + c) (b + c) = S a b) → (∀ a b, ‖S a b‖ ≤ 1) →
+    (∀ (c : Zd d L) (I : LoopIdx (Zd d L)), M ⟨I.σ, I.a.map (· + c)⟩ = M I) →
+    ∀ {K : ℝ → LoopIdx (Zd d L) → ℂ}, IsKLoopS d L W S m M (Set.Ico 0 1) K →
+    ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ (c : Zd d L) (I : LoopIdx (Zd d L)), I.WF →
+      K t ⟨I.σ, I.a.map (· + c)⟩ = K t I
 
 /-! ## 2. The pinned theorem `KLK_unique` (section 1, `KLretire_twoLoopBounded`, is in `Loop/Unique.lean`) -/
 
@@ -139,13 +176,14 @@ private theorem KLUnique_cutGlueR_shift (c : Zd d L) (I : LoopIdx (Zd d L)) (k l
     (KLUnique_shift d L c I).cutGlueR k l b = KLUnique_shift d L c (I.cutGlueR k l (b - c)) := by
   simp [KLUnique_shift, LoopIdx.cutGlueR, List.map_take, List.map_drop]
 
-/-- Port of `RBM2D/Loop/Cyclic.lean:542` at `c9a24cf` (`Cyclic_primRhs_shift`): `S^(B)` is
-translation invariant (`SB_apply_add_right`). -/
-private theorem KLUnique_treeEqRhs_shift (W : ℕ) (g : ℝ) (K : LoopIdx (Zd d L) → ℂ) (c : Zd d L)
+/-- Port of `RBM2D/Loop/Cyclic.lean:542` at `c9a24cf` (`Cyclic_primRhs_shift`), over a kernel `S` with
+`S (a + c) (b + c) = S a b`. -/
+private theorem KLUnique_treeEqRhsS_shift (W : ℕ) (S : Matrix (Zd d L) (Zd d L) ℂ)
+    (hSt : ∀ a b c : Zd d L, S (a + c) (b + c) = S a b) (K : LoopIdx (Zd d L) → ℂ) (c : Zd d L)
     (I : LoopIdx (Zd d L)) :
-    treeEqRhs d L W g K (KLUnique_shift d L c I)
-      = treeEqRhs d L W g (fun J => K (KLUnique_shift d L c J)) I := by
-  rw [treeEqRhs, treeEqRhs, KLUnique_length_shift]
+    treeEqRhsS d L W S K (KLUnique_shift d L c I)
+      = treeEqRhsS d L W S (fun J => K (KLUnique_shift d L c J)) I := by
+  rw [treeEqRhsS, treeEqRhsS, KLUnique_length_shift]
   congr 1
   refine sum_congr rfl fun k _ => sum_congr rfl fun l _ => ?_
   simp only [KLUnique_cutGlueL_shift, KLUnique_cutGlueR_shift]
@@ -153,7 +191,7 @@ private theorem KLUnique_treeEqRhs_shift (W : ℕ) (g : ℝ) (K : LoopIdx (Zd d 
   refine sum_congr rfl fun a _ => ?_
   rw [← Equiv.sum_comp (Equiv.addRight c)]
   refine sum_congr rfl fun b _ => ?_
-  simp only [Equiv.coe_addRight, add_sub_cancel_right, SB_apply_add_right]
+  simp only [Equiv.coe_addRight, add_sub_cancel_right, hSt]
 
 /-- Port of `RBM2D/Loop/Cyclic.lean:555` at `c9a24cf` (`Cyclic_primInit_shift`). -/
 private theorem KLUnique_MLoop_shift (W : ℕ) (m : Bool → ℂ) (c : Zd d L) (I : LoopIdx (Zd d L)) :
@@ -163,43 +201,67 @@ private theorem KLUnique_MLoop_shift (W : ℕ) (m : Bool → ℂ) (c : Zd d L) (
   simp only [KLUnique_shift, List.mem_map, forall_exists_index, and_imp,
     forall_apply_eq_imp_iff₂, add_left_inj]
 
-/-- The translated family of a family of `K`-loops is a family of `K`-loops: the inline block `hK'`
-of `Kcal_translate` (`RBM2D/Loop/Cyclic.lean:607-616` at `c9a24cf`), stated for a general family. -/
-private theorem KLUnique_isKLoop_shift (W : ℕ) (g : ℝ) (m : Bool → ℂ) {T : Set ℝ}
-    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m T K) (c : Zd d L) :
-    IsKLoop d L W g m T (fun r J => K r (KLUnique_shift d L c J)) := by
+/-- The translated family of an `IsKLoopS` family is an `IsKLoopS` family, for a translation-invariant kernel
+`S` and translation-invariant initial data `M`: the inline block `hK'` of `Kcal_translate`
+(`RBM2D/Loop/Cyclic.lean:607-616` at `c9a24cf`), stated for a general family, kernel and initial data. -/
+private theorem KLUnique_isKLoopS_shift (W : ℕ) (S : Matrix (Zd d L) (Zd d L) ℂ)
+    (hSt : ∀ a b c : Zd d L, S (a + c) (b + c) = S a b) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ)
+    (hM : ∀ (c : Zd d L) (I : LoopIdx (Zd d L)), M ⟨I.σ, I.a.map (· + c)⟩ = M I) {T : Set ℝ}
+    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoopS d L W S m M T K) (c : Zd d L) :
+    IsKLoopS d L W S m M T (fun r J => K r (KLUnique_shift d L c J)) := by
   refine ⟨fun r hr J hJ h2 => ?_, fun J hJ h2 => ?_, fun r hr s a => ?_⟩
   · have := hK.1 r hr (KLUnique_shift d L c J) (KLUnique_shift_WF d L hJ)
       (by rw [KLUnique_length_shift]; exact h2)
-    rwa [KLUnique_treeEqRhs_shift] at this
-  · change K 0 (KLUnique_shift d L c J) = MLoop d L W m J
+    rwa [KLUnique_treeEqRhsS_shift d L W S hSt] at this
+  · change K 0 (KLUnique_shift d L c J) = M J
     exact (hK.2.1 (KLUnique_shift d L c J) (KLUnique_shift_WF d L hJ)
-      (by rw [KLUnique_length_shift]; exact h2)).trans (KLUnique_MLoop_shift d L W m c J)
+      (by rw [KLUnique_length_shift]; exact h2)).trans (hM c J)
   · exact hK.2.2 r hr s (a + c)
+
+/-- The translated family of a family of `K`-loops is a family of `K`-loops (`KLUnique_isKLoopS_shift` at
+`S = SB d L g`, `M = MLoop`). -/
+private theorem KLUnique_isKLoop_shift (W : ℕ) (g : ℝ) (m : Bool → ℂ) {T : Set ℝ}
+    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m T K) (c : Zd d L) :
+    IsKLoop d L W g m T (fun r J => K r (KLUnique_shift d L c J)) :=
+  KLUnique_isKLoopS_shift d L W (SB d L g) (fun a b c => SB_apply_add_right d L g a b c) m
+    (MLoop d L W m) (fun c I => KLUnique_MLoop_shift d L W m c I) hK c
 
 end Translation
 
+/-- **Translation invariance over a general kernel** (the pin `TranslS`).  For a translation-invariant kernel `S`
+with `‖S a b‖ ≤ 1` and translation-invariant initial data `M`, shifting all block labels by `c : Z_L^d` leaves
+every family `K` of `K`-loops on `[0,1)` unchanged: the shifted family is again a family of `K`-loops
+(`KLUnique_isKLoopS_shift`), the `2`-loops of both are bounded (`retireS_holds`), so they agree by `uniqS_holds`;
+the loops of length `1` are the third clause, of length `0` the empty loop. -/
+theorem translS_holds : TranslS := by
+  intro d L W _ S m M hSt hS hM K hK t ht c I hI
+  have hKc := KLUnique_isKLoopS_shift d L W S hSt m M hM hK c
+  have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun r hr => ⟨hr.1, lt_of_le_of_lt hr.2 ht.2⟩
+  obtain ⟨σ, a⟩ := I
+  rcases a with _ | ⟨a₀, _ | ⟨a₁, a'⟩⟩
+  · have h0 : σ = [] := List.length_eq_zero_iff.1 (hI : σ.length = 0)
+    subst h0
+    rfl
+  · have h1 : σ.length = 1 := hI
+    obtain ⟨s, rfl⟩ := List.length_eq_one_iff.1 h1
+    exact (hK.2.2 t ht s (a₀ + c)).trans (hK.2.2 t ht s a₀).symm
+  · obtain ⟨R, hR0, hR⟩ := retireS_holds d L W S m M hK t ht.2
+    obtain ⟨R', hR'0, hR'⟩ := retireS_holds d L W S m M hKc t ht.2
+    exact uniqS_holds d L W S m M hS hKc hK hT (R := max R R') (le_trans hR0 (le_max_left _ _))
+      (fun r hr J hJ hJ2 => ⟨(hR' r hr J hJ hJ2).trans (le_max_right _ _),
+        (hR r hr J hJ hJ2).trans (le_max_left _ _)⟩) t ⟨ht.1, le_rfl⟩ _ hI (by simp [LoopIdx.length])
+
 /-- **Translation invariance of `𝒦`.**  Shifting all block labels by `c : Z_L^d` leaves `𝒦`
-unchanged: the shifted family is again a family of `K`-loops (`KLUnique_isKLoop_shift`, from
-`KLUnique_treeEqRhs_shift`, `KLUnique_MLoop_shift`), so it equals `𝒦` by `KLK_unique`.  Port of `Kcal_translate`
-(`RBM2D/Loop/Cyclic.lean:594` at `c9a24cf`). -/
+unchanged: `translS_holds` at `S = SB d L g` (`SB_apply_add_right`), `M = MLoop` (`KLUnique_MLoop_shift`) and the
+family `𝒦` (`KLK_isKLoop`).  Port of `Kcal_translate` (`RBM2D/Loop/Cyclic.lean:594` at `c9a24cf`). -/
 theorem KLK_translate :
     ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 → ∀ t ∈ Set.Ico (0 : ℝ) 1,
       ∀ (c : Zd d L) (I : LoopIdx (Zd d L)), I.WF →
         KLK d L g W E t ⟨I.σ, I.a.map (· + c)⟩ = KLK d L g W E t I := by
   intro d L W _ g E hL hW hE t ht c I hI
-  have hKc := KLK_isKLoop d L W g E hL hW hE
-  by_cases h0 : I.length = 0
-  · have ha : I.a = [] := List.length_eq_zero_iff.1 h0
-    have hσ : I.σ = [] := List.length_eq_zero_iff.1 (hI.trans h0)
-    obtain ⟨σ, a⟩ := I
-    simp only at ha hσ
-    subst ha hσ
-    rfl
-  · have hK' : IsKLoop d L W g (mSigma E) (Set.Ico 0 1)
-        (fun r J => KLK d L g W E r (KLUnique_shift d L c J)) :=
-      KLUnique_isKLoop_shift d L W g (mSigma E) hKc c
-    exact KLK_unique d L W g E hL hW hE _ hK' t ht I hI (by omega)
+  exact translS_holds d L W (SB d L g) (mSigma E) (MLoop d L W (mSigma E))
+    (fun a b c => SB_apply_add_right d L g a b c) (norm_SB_apply_le g hL)
+    (fun c I => KLUnique_MLoop_shift d L W (mSigma E) c I) (KLK_isKLoop d L W g E hL hW hE) t ht c I hI
 
 /-! ## 4. Rotation: combinatorics of the cuts
 (port of `RBM2D/Loop/Cyclic.lean:135-213` at `c9a24cf`) -/
@@ -299,47 +361,47 @@ end RotCuts
 
 section RotEq
 
-variable (d L : ℕ) [NeZero L] (W : ℕ) (g : ℝ)
+variable (d L : ℕ) [NeZero L] (W : ℕ) (S : Matrix (Zd d L) (Zd d L) ℂ)
 
 /-- Port of `RBM2D/Loop/Cyclic.lean:221` at `c9a24cf` (`Cyclic_primRhs_split`). -/
-private theorem KLUnique_treeEqRhs_split (K : LoopIdx (Zd d L) → ℂ) (I : LoopIdx (Zd d L))
+private theorem KLUnique_treeEqRhsS_split (K : LoopIdx (Zd d L) → ℂ) (I : LoopIdx (Zd d L))
     (hn : 1 ≤ I.length) :
-    treeEqRhs d L W g K I = (W : ℂ) ^ d *
+    treeEqRhsS d L W S K I = (W : ℂ) ^ d *
       (∑ l ∈ Ioc 1 I.length, ∑ a : Zd d L, ∑ b : Zd d L,
-          K (I.cutGlueL 1 l a) * SB d L g a b * K (I.cutGlueR 1 l b)
+          K (I.cutGlueL 1 l a) * S a b * K (I.cutGlueR 1 l b)
         + ∑ k ∈ Icc 2 I.length, ∑ l ∈ Ioc k I.length, ∑ a : Zd d L, ∑ b : Zd d L,
-          K (I.cutGlueL k l a) * SB d L g a b * K (I.cutGlueR k l b)) := by
+          K (I.cutGlueL k l a) * S a b * K (I.cutGlueR k l b)) := by
   have h : Icc 1 I.length = insert 1 (Icc 2 I.length) := by
     ext k
     simp only [mem_Icc, mem_insert]
     omega
-  rw [treeEqRhs, h, sum_insert (by simp)]
+  rw [treeEqRhsS, h, sum_insert (by simp)]
 
 /-- `(pro_dyncalK)`'s right-hand side at the rotated loop of `(s :: ss, c :: cs)`, in terms of
 the cuts of the original loop.  Port of `RBM2D/Loop/Cyclic.lean:236` at `c9a24cf`
 (`Cyclic_primRhs_rot`). -/
-private theorem KLUnique_treeEqRhs_rot (K : LoopIdx (Zd d L) → ℂ) (s : Bool)
-    (ss : List Bool) (c : Zd d L) (cs : List (Zd d L)) (hss : ss.length = cs.length) :
-    treeEqRhs d L W g K (KLUnique_rot (⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L))) = (W : ℂ) ^ d *
+private theorem KLUnique_treeEqRhsS_rot (hsymm : ∀ a b, S a b = S b a) (K : LoopIdx (Zd d L) → ℂ)
+    (s : Bool) (ss : List Bool) (c : Zd d L) (cs : List (Zd d L)) (hss : ss.length = cs.length) :
+    treeEqRhsS d L W S K (KLUnique_rot (⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L))) = (W : ℂ) ^ d *
       (∑ l ∈ Ioc 1 (cs.length + 1), ∑ a : Zd d L, ∑ b : Zd d L,
-          K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueL 1 l a)) * SB d L g a b *
+          K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueL 1 l a)) * S a b *
             K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueR 1 l b))
         + ∑ k ∈ Icc 2 (cs.length + 1), ∑ l ∈ Ioc k (cs.length + 1), ∑ a : Zd d L, ∑ b : Zd d L,
-          K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueL k l a)) * SB d L g a b *
+          K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueL k l a)) * S a b *
             K ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueR k l b)) := by
   have hrlen : (KLUnique_rot (⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L))).length = cs.length + 1 := by
     rw [KLUnique_length_rot]
     simp [LoopIdx.length]
-  rw [treeEqRhs, hrlen, sum_Icc_succ_top (by omega), Ioc_self, sum_empty, add_zero]
+  rw [treeEqRhsS, hrlen, sum_Icc_succ_top (by omega), Ioc_self, sum_empty, add_zero]
   have hsplit : ∀ k ∈ Icc 1 cs.length, ∑ l ∈ Ioc k (cs.length + 1), ∑ a : Zd d L, ∑ b : Zd d L,
-      K ((KLUnique_rot (⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L))).cutGlueL k l a) * SB d L g a b *
+      K ((KLUnique_rot (⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L))).cutGlueL k l a) * S a b *
         K ((KLUnique_rot (⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L))).cutGlueR k l b)
       = ∑ l ∈ Ioc k cs.length, ∑ a : Zd d L, ∑ b : Zd d L,
           K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueL (k + 1) (l + 1) a)) *
-            SB d L g a b * K ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueR (k + 1) (l + 1) b)
+            S a b * K ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueR (k + 1) (l + 1) b)
         + ∑ a : Zd d L, ∑ b : Zd d L,
           K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueL 1 (k + 1) a)) *
-            SB d L g a b *
+            S a b *
             K (KLUnique_rot ((⟨s :: ss, c :: cs⟩ : LoopIdx (Zd d L)).cutGlueR 1 (k + 1) b)) := by
     intro k hk
     rw [mem_Icc] at hk
@@ -354,7 +416,7 @@ private theorem KLUnique_treeEqRhs_rot (K : LoopIdx (Zd d L) → ℂ) (s : Bool)
       refine sum_congr rfl fun a _ => sum_congr rfl fun b _ => ?_
       rw [KLUnique_cutGlueL_rot_last s ss c cs b hss hk.1 hk.2,
         KLUnique_cutGlueR_rot_last s ss c cs a hss hk.1 hk.2,
-        show SB d L g b a = SB d L g a b from congrFun (congrFun (SB_transpose d L g) a) b]
+        hsymm b a]
       ring
   rw [sum_congr rfl hsplit, sum_add_distrib, add_comm]
   refine congrArg _ (congrArg₂ (· + ·) ?_ ?_)
@@ -413,10 +475,11 @@ private theorem KLUnique_MLoop_rot (m : Bool → ℂ) (I : LoopIdx (Zd d L)) :
 /-- One level of the induction for rotation: at length `n`, `K ∘ rot - K` solves a linear
 inequality `‖D'‖ ≤ C ‖D‖` (Grönwall), the `2`-loops being bounded by `R`.  Port of
 `RBM2D/Loop/Cyclic.lean:328` at `c9a24cf` (`Cyclic_rot_eq_on_level`). -/
-private theorem KLUnique_rot_eq_on_level (hL : 3 ≤ L) (K : ℝ → LoopIdx (Zd d L) → ℂ)
+private theorem KLUnique_rot_eq_on_level (hsymm : ∀ a b, S a b = S b a) (hS : ∀ a b, ‖S a b‖ ≤ 1)
+    (K : ℝ → LoopIdx (Zd d L) → ℂ)
     (T₀ R : ℝ) (n : ℕ) (hn : 2 ≤ n) (hR0 : 0 ≤ R)
     (hK : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length →
-      HasDerivAt (fun s => K s I) (treeEqRhs d L W g (K t) I) t)
+      HasDerivAt (fun s => K s I) (treeEqRhsS d L W S (K t) I) t)
     (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R)
     (hlow : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length →
       I.length < n → K t (KLUnique_rot I) = K t I)
@@ -426,7 +489,7 @@ private theorem KLUnique_rot_eq_on_level (hL : 3 ≤ L) (K : ℝ → LoopIdx (Zd
   let D : ℝ → LoopVec d L n → ℂ := fun t p =>
     K t (KLUnique_rot (p.toLoop d L)) - K t (p.toLoop d L)
   let D' : ℝ → LoopVec d L n → ℂ := fun t p =>
-    treeEqRhs d L W g (K t) (KLUnique_rot (p.toLoop d L)) - treeEqRhs d L W g (K t) (p.toLoop d L)
+    treeEqRhsS d L W S (K t) (KLUnique_rot (p.toLoop d L)) - treeEqRhsS d L W S (K t) (p.toLoop d L)
   have hD : ∀ t ∈ Set.Icc 0 T₀, HasDerivAt D (D' t) t := fun t ht =>
     hasDerivAt_pi.2 fun p =>
       (hK t ht _ (KLUnique_WF_rot p.wf)
@@ -486,13 +549,13 @@ private theorem KLUnique_rot_eq_on_level (hL : 3 ≤ L) (K : ℝ → LoopIdx (Zd
       · exact LoopIdx.length_cutGlueR_eq_two I a b hk hkl hlI (h.trans hIlen.symm)
       · exact LoopIdx.length_cutGlueL_eq_two I a b hk hkl hlI (h.trans hIlen.symm)
     have hA : ∀ l ∈ Ioc 1 n, ∀ a b : Zd d L,
-        ‖K t (KLUnique_rot (I.cutGlueL 1 l a)) * SB d L g a b * K t (KLUnique_rot (I.cutGlueR 1 l b))
-          - K t (I.cutGlueL 1 l a) * SB d L g a b * K t (I.cutGlueR 1 l b)‖
+        ‖K t (KLUnique_rot (I.cutGlueL 1 l a)) * S a b * K t (KLUnique_rot (I.cutGlueR 1 l b))
+          - K t (I.cutGlueL 1 l a) * S a b * K t (I.cutGlueR 1 l b)‖
           ≤ 2 * (R * ‖D t‖) := by
       intro l hl a b
       rw [mem_Ioc] at hl
       obtain ⟨hWL, hWR, h2L, h2R, hLn, hRn, hLR, hRL⟩ := hcut 1 l le_rfl hl.1 hl.2 a b
-      refine norm_mul_mul_sub_le (norm_SB_apply_le (g := g) hL a b) ?_ ?_
+      refine norm_mul_mul_sub_le (hS a b) ?_ ?_
       · rcases hLn.lt_or_eq with hlt | heq
         · rw [hlow t ht' _ hWL h2L hlt, sub_self, norm_zero, zero_mul]
           exact hRD
@@ -506,15 +569,15 @@ private theorem KLUnique_rot_eq_on_level (hL : 3 ≤ L) (K : ℝ → LoopIdx (Zd
         · have hX := hR t ht' _ hWL (hRL heq)
           exact mul_le_mul hX (hdiff _ hWR h2R hRn) (norm_nonneg _) hR0
     have hB : ∀ k ∈ Icc 2 n, ∀ l ∈ Ioc k n, ∀ a b : Zd d L,
-        ‖K t (KLUnique_rot (I.cutGlueL k l a)) * SB d L g a b * K t (I.cutGlueR k l b)
-          - K t (I.cutGlueL k l a) * SB d L g a b * K t (I.cutGlueR k l b)‖
+        ‖K t (KLUnique_rot (I.cutGlueL k l a)) * S a b * K t (I.cutGlueR k l b)
+          - K t (I.cutGlueL k l a) * S a b * K t (I.cutGlueR k l b)‖
           ≤ 2 * (R * ‖D t‖) := by
       intro k hk l hl a b
       rw [mem_Icc] at hk
       rw [mem_Ioc] at hl
       obtain ⟨hWL, hWR, h2L, h2R, hLn, hRn, hLR, hRL⟩ :=
         hcut k l (by omega) hl.1 hl.2 a b
-      refine norm_mul_mul_sub_le (norm_SB_apply_le (g := g) hL a b) ?_ ?_
+      refine norm_mul_mul_sub_le (hS a b) ?_ ?_
       · rcases hLn.lt_or_eq with hlt | heq
         · rw [hlow t ht' _ hWL h2L hlt, sub_self, norm_zero, zero_mul]
           exact hRD
@@ -525,25 +588,25 @@ private theorem KLUnique_rot_eq_on_level (hL : 3 ≤ L) (K : ℝ → LoopIdx (Zd
         exact hRD
     have e : D' t p = (W : ℂ) ^ d *
         ((∑ l ∈ Ioc 1 n, ∑ a : Zd d L, ∑ b : Zd d L,
-          (K t (KLUnique_rot (I.cutGlueL 1 l a)) * SB d L g a b * K t (KLUnique_rot (I.cutGlueR 1 l b))
-            - K t (I.cutGlueL 1 l a) * SB d L g a b * K t (I.cutGlueR 1 l b)))
+          (K t (KLUnique_rot (I.cutGlueL 1 l a)) * S a b * K t (KLUnique_rot (I.cutGlueR 1 l b))
+            - K t (I.cutGlueL 1 l a) * S a b * K t (I.cutGlueR 1 l b)))
         + ∑ k ∈ Icc 2 n, ∑ l ∈ Ioc k n, ∑ a : Zd d L, ∑ b : Zd d L,
-          (K t (KLUnique_rot (I.cutGlueL k l a)) * SB d L g a b * K t (I.cutGlueR k l b)
-            - K t (I.cutGlueL k l a) * SB d L g a b * K t (I.cutGlueR k l b))) := by
+          (K t (KLUnique_rot (I.cutGlueL k l a)) * S a b * K t (I.cutGlueR k l b)
+            - K t (I.cutGlueL k l a) * S a b * K t (I.cutGlueR k l b))) := by
       simp only [D']
-      rw [hIeq, KLUnique_treeEqRhs_rot d L W g (K t) s ss c cs hss,
-        KLUnique_treeEqRhs_split d L W g (K t) _ (by rw [hIlen]; omega)]
+      rw [hIeq, KLUnique_treeEqRhsS_rot d L W S hsymm (K t) s ss c cs hss,
+        KLUnique_treeEqRhsS_split d L W S (K t) _ (by rw [hIlen]; omega)]
       simp only [← hIdef]
       rw [hIlen, hn']
       simp only [Finset.sum_sub_distrib]
       ring
     rw [e, norm_mul, norm_pow, Complex.norm_natCast]
     have hsum : ‖(∑ l ∈ Ioc 1 n, ∑ a : Zd d L, ∑ b : Zd d L,
-          (K t (KLUnique_rot (I.cutGlueL 1 l a)) * SB d L g a b * K t (KLUnique_rot (I.cutGlueR 1 l b))
-            - K t (I.cutGlueL 1 l a) * SB d L g a b * K t (I.cutGlueR 1 l b)))
+          (K t (KLUnique_rot (I.cutGlueL 1 l a)) * S a b * K t (KLUnique_rot (I.cutGlueR 1 l b))
+            - K t (I.cutGlueL 1 l a) * S a b * K t (I.cutGlueR 1 l b)))
         + ∑ k ∈ Icc 2 n, ∑ l ∈ Ioc k n, ∑ a : Zd d L, ∑ b : Zd d L,
-          (K t (KLUnique_rot (I.cutGlueL k l a)) * SB d L g a b * K t (I.cutGlueR k l b)
-            - K t (I.cutGlueL k l a) * SB d L g a b * K t (I.cutGlueR k l b))‖
+          (K t (KLUnique_rot (I.cutGlueL k l a)) * S a b * K t (I.cutGlueR k l b)
+            - K t (I.cutGlueL k l a) * S a b * K t (I.cutGlueR k l b))‖
         ≤ (∑ _l ∈ Ioc 1 n, ∑ _a : Zd d L, ∑ _b : Zd d L, 2 * (R * ‖D t‖))
           + ∑ k ∈ Icc 2 n, ∑ _l ∈ Ioc k n, ∑ _a : Zd d L, ∑ _b : Zd d L, 2 * (R * ‖D t‖) := by
       refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
@@ -570,10 +633,36 @@ private theorem KLUnique_rot_eq_on_level (hL : 3 ≤ L) (K : ℝ → LoopIdx (Zd
   obtain ⟨p, rfl⟩ := LoopVec.exists_toLoop I hI hIn
   exact sub_eq_zero.1 (congrFun (hzero t ht) p)
 
-/-- Cyclic invariance of a family of `K`-loops with bounded `2`-loops, at lengths `≥ 2`.  Port of
-`RBM2D/Loop/Cyclic.lean:487` at `c9a24cf` (`Cyclic_isPrimitive_rot`). -/
-private theorem KLUnique_isKLoop_rot (hL : 3 ≤ L) (m : Bool → ℂ) {T : Set ℝ}
-    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m T K) {T₀ R : ℝ}
+/-- `KLUnique_MLoop_rot` in the form of the hypothesis of `RotS` (at `M = MLoop d L W m`). -/
+private theorem KLUnique_MLoop_rot_cons (m : Bool → ℂ) (s : Bool) (b : Zd d L) (σ : List Bool)
+    (a : List (Zd d L)) (_ : σ.length = a.length) :
+    MLoop d L W m ⟨s :: σ, b :: a⟩ = MLoop d L W m ⟨σ ++ [s], a ++ [b]⟩ := by
+  have := KLUnique_MLoop_rot d L W m ⟨s :: σ, b :: a⟩
+  rw [KLUnique_rot_mk_cons] at this
+  exact this.symm
+
+omit [NeZero L] in
+/-- Rotation invariance of the initial data, from the hypothesis in the form of the pin `RotS`: for a
+well-formed loop `J` of length `≥ 1`, `M (rot J) = M J`. -/
+private theorem KLUnique_M_rot (M : LoopIdx (Zd d L) → ℂ)
+    (hMrot : ∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)), σ.length = a.length →
+      M ⟨s :: σ, b :: a⟩ = M ⟨σ ++ [s], a ++ [b]⟩)
+    (J : LoopIdx (Zd d L)) (hJ : J.WF) (h : 1 ≤ J.length) : M (KLUnique_rot J) = M J := by
+  obtain ⟨σ, a⟩ := J
+  obtain ⟨c, cs, rfl⟩ := List.exists_cons_of_length_pos (show 0 < a.length from h)
+  have hl : σ.length = cs.length + 1 := hJ
+  obtain ⟨s, ss, rfl⟩ := List.exists_cons_of_length_pos (show 0 < σ.length by omega)
+  rw [KLUnique_rot_mk_cons]
+  exact (hMrot s c ss cs (by simpa using hl)).symm
+
+/-- Cyclic invariance of an `IsKLoopS` family with bounded `2`-loops, at lengths `≥ 2`, for a symmetric kernel
+with `‖S a b‖ ≤ 1` and rotation-invariant initial data `M`.  Port of `RBM2D/Loop/Cyclic.lean:487` at `c9a24cf`
+(`Cyclic_isPrimitive_rot`). -/
+private theorem KLUnique_isKLoopS_rot (hsymm : ∀ a b, S a b = S b a) (hS : ∀ a b, ‖S a b‖ ≤ 1)
+    (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ)
+    (hMrot : ∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)), σ.length = a.length →
+      M ⟨s :: σ, b :: a⟩ = M ⟨σ ++ [s], a ++ [b]⟩) {T : Set ℝ}
+    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoopS d L W S m M T K) {T₀ R : ℝ}
     (hT : Set.Icc 0 T₀ ⊆ T) (hR0 : 0 ≤ R)
     (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R) :
     ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length →
@@ -585,42 +674,52 @@ private theorem KLUnique_isKLoop_rot (hL : 3 ≤ L) (m : Bool → ℂ) {T : Set 
     | _ n ih =>
       intro t ht I hI h2 hIn
       have hn : 2 ≤ n := hIn ▸ h2
-      refine KLUnique_rot_eq_on_level d L W g hL K T₀ R n hn hR0 (fun s hs => hK.1 s (hT hs)) hR ?_ ?_
-        t ht I hI hIn
+      refine KLUnique_rot_eq_on_level d L W S hsymm hS K T₀ R n hn hR0 (fun s hs => hK.1 s (hT hs)) hR
+        ?_ ?_ t ht I hI hIn
       · intro s hs J hJ hJ2 hJn
         exact ih _ hJn s hs J hJ hJ2 rfl
       · intro J hJ hJn
         rw [hK.2.1 _ (KLUnique_WF_rot hJ) (by rw [KLUnique_length_rot, hJn]; exact hn),
-          hK.2.1 _ hJ (hJn ▸ hn), KLUnique_MLoop_rot]
+          hK.2.1 _ hJ (hJn ▸ hn), KLUnique_M_rot d L M hMrot J hJ (by omega)]
   intro t ht I hI h2
   exact main _ t ht I hI h2 rfl
 
 end RotEq
 
-/-- **Cyclic invariance of `𝒦`.**  `𝒦` is invariant under moving the first edge to the end.  The
-length-`1` case is a syntactic equality; for length `≥ 2` see `KLUnique_isKLoop_rot` with the
-`2`-loop bound from continuity on `[0, t] ⊆ [0, 1)` (`KLretire_twoLoopBounded`).  Port of
-`Kcal_rotate` (`RBM2D/Loop/Cyclic.lean:569` at `c9a24cf`). -/
+/-- **Cyclic invariance over a general kernel** (the pin `RotS`).  Every family of `K`-loops on `[0,1)` over a
+symmetric kernel `S` with `‖S a b‖ ≤ 1` and rotation-invariant initial data `M` is invariant under moving the
+first edge to the end.  The length-`1` case is a syntactic equality; for length `≥ 2` see
+`KLUnique_isKLoopS_rot` with the `2`-loop bound from continuity on `[0, t] ⊆ [0, 1)` (`retireS_holds`). -/
+theorem rotS_holds : RotS := by
+  intro d L W _ S m M hsymm hS hMrot K hK t ht s b σ a hσa
+  rcases a with _ | ⟨a₀, a'⟩
+  · have : σ = [] := List.length_eq_zero_iff.1 (by simpa using hσa)
+    subst this
+    rfl
+  · have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun r hr => ⟨hr.1, lt_of_le_of_lt hr.2 ht.2⟩
+    obtain ⟨R, hR0, hR⟩ := retireS_holds d L W S m M hK t ht.2
+    have hwf : (⟨s :: σ, b :: a₀ :: a'⟩ : LoopIdx (Zd d L)).WF := by
+      simpa [LoopIdx.WF] using hσa
+    have h2 : 2 ≤ (⟨s :: σ, b :: a₀ :: a'⟩ : LoopIdx (Zd d L)).length := by
+      simp [LoopIdx.length]
+    have := KLUnique_isKLoopS_rot d L W S hsymm hS m M hMrot hK hT hR0 hR t
+      ⟨ht.1, le_rfl⟩ _ hwf h2
+    rw [KLUnique_rot_mk_cons] at this
+    exact this.symm
+
+/-- **Cyclic invariance of `𝒦`.**  `𝒦` is invariant under moving the first edge to the end:
+`rotS_holds` at `S = SB d L g` (`SB_transpose`, `norm_SB_apply_le`), `M = MLoop` (`KLUnique_MLoop_rot`) and the
+family `𝒦` (`KLK_isKLoop`).  Port of `Kcal_rotate` (`RBM2D/Loop/Cyclic.lean:569` at `c9a24cf`). -/
 theorem KLK_rotate :
     ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 → ∀ t ∈ Set.Ico (0 : ℝ) 1,
       ∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)), σ.length = a.length →
         KLK d L g W E t ⟨s :: σ, b :: a⟩ = KLK d L g W E t ⟨σ ++ [s], a ++ [b]⟩ := by
   intro d L W _ g E hL hW hE t ht s b σ a hσa
-  rcases a with _ | ⟨a₀, a'⟩
-  · have : σ = [] := List.length_eq_zero_iff.1 (by simpa using hσa)
-    subst this
-    rfl
-  · have hKc := KLK_isKLoop d L W g E hL hW hE
-    have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun r hr => ⟨hr.1, lt_of_le_of_lt hr.2 ht.2⟩
-    obtain ⟨R, hR0, hR⟩ := KLretire_twoLoopBounded hKc t ht.2
-    have hwf : (⟨s :: σ, b :: a₀ :: a'⟩ : LoopIdx (Zd d L)).WF := by
-      simpa [LoopIdx.WF] using hσa
-    have h2 : 2 ≤ (⟨s :: σ, b :: a₀ :: a'⟩ : LoopIdx (Zd d L)).length := by
-      simp [LoopIdx.length]
-    have := KLUnique_isKLoop_rot d L W g hL (mSigma E) hKc hT hR0 hR t
-      ⟨ht.1, le_rfl⟩ _ hwf h2
-    rw [KLUnique_rot_mk_cons] at this
-    exact this.symm
+  exact rotS_holds d L W (SB d L g) (mSigma E) (MLoop d L W (mSigma E))
+    (fun a b => (show SB d L g b a = SB d L g a b from
+      congrFun (congrFun (SB_transpose d L g) a) b).symm)
+    (norm_SB_apply_le g hL) (KLUnique_MLoop_rot_cons d L W (mSigma E)) (KLK_isKLoop d L W g E hL hW hE)
+    t ht s b σ a hσa
 
 /-! ## 6. The compiled instances: `d = 3`, `L = 5`, `W = 2`, `g = 1/2`, `E = 0`, `t = 9/10`
 
@@ -760,6 +859,76 @@ theorem KLUniqueInst_pureLoop_three :
     (fun s => norm_mSigma (by norm_num) s)
     KLUnique_inst_im (thetaDecayShort_holds (1 + 2) (1 / 2) (mSigma 0 true))
     (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop
+
+/-- The hypotheses on `S` of `RotS` and `TranslS` hold at the block Anderson kernel `S = 1`
+(`S^{(B)}(0) = I`, `kernelFacts_one` of the probe `t/T2360`): symmetry, `‖S a b‖ ≤ 1`, translation
+invariance.  Nothing is assumed of `d`, `L` beyond `NeZero L`. -/
+theorem kernel_one_rot_transl {d L : ℕ} [NeZero L] :
+    (∀ a b : Zd d L, (1 : Matrix (Zd d L) (Zd d L) ℂ) a b = (1 : Matrix (Zd d L) (Zd d L) ℂ) b a) ∧
+    (∀ a b : Zd d L, ‖(1 : Matrix (Zd d L) (Zd d L) ℂ) a b‖ ≤ 1) ∧
+    (∀ a b c : Zd d L, (1 : Matrix (Zd d L) (Zd d L) ℂ) (a + c) (b + c)
+      = (1 : Matrix (Zd d L) (Zd d L) ℂ) a b) :=
+  ⟨fun a b => by simp only [Matrix.one_apply]; exact if_congr eq_comm rfl rfl,
+    fun a b => by simp only [Matrix.one_apply]; split_ifs <;> simp,
+    fun a b c => by simp only [Matrix.one_apply, add_left_inj]⟩
+
+/-- The hypotheses on `S` of `RotS` and `TranslS` hold at the band kernel `S = SB d L g` for `3 ≤ L`. -/
+theorem kernel_SB_rot_transl {d L : ℕ} [NeZero L] (g : ℝ) (hL : 3 ≤ L) :
+    (∀ a b : Zd d L, SB d L g a b = SB d L g b a) ∧ (∀ a b : Zd d L, ‖SB d L g a b‖ ≤ 1) ∧
+    (∀ a b c : Zd d L, SB d L g (a + c) (b + c) = SB d L g a b) :=
+  ⟨fun a b => (show SB d L g b a = SB d L g a b from
+      congrFun (congrFun (SB_transpose d L g) a) b).symm,
+    norm_SB_apply_le g hL, fun a b c => SB_apply_add_right d L g a b c⟩
+
+/-- `uniqS_holds` at the instance data (`S = SB 3 5 (1/2)`, `M = MLoop`) for two different families of
+`K`-loops, `K = 𝒦 ∘ shift_{e₁}` and `K' = 𝒦`, with the `2`-loop bounds of `retireS_holds`; the loop has
+charges `(+,-,+)` and labels `(0,0,0), (1,2,3), (4,0,1)`, `t = 9/10`. -/
+theorem KLUniqueInst_uniqS_shifted :
+    (fun r (J : LoopIdx (Zd 3 5)) =>
+        KLK 3 5 (1 / 2) 2 0 r ⟨J.σ, J.a.map (· + (![1, 0, 0] : Zd 3 5))⟩) (9 / 10)
+        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩
+      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
+        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ := by
+  have hK : IsKLoopS 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0)) (Set.Ico 0 1)
+      (fun t I => KLK 3 5 (1 / 2) 2 0 t I) := KLTreeDerivInst_isKLoop
+  have hKc := KLUnique_isKLoopS_shift 3 5 2 (SB 3 5 (1 / 2)) (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.2
+    (mSigma 0) (MLoop 3 5 2 (mSigma 0)) (fun c I => KLUnique_MLoop_shift 3 5 2 (mSigma 0) c I) hK
+    (![1, 0, 0] : Zd 3 5)
+  obtain ⟨R, hR0, hR⟩ := retireS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0)) hK
+    (9 / 10) (by norm_num)
+  obtain ⟨R', hR'0, hR'⟩ := retireS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0)) hKc
+    (9 / 10) (by norm_num)
+  exact uniqS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
+    (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.1 hKc hK (T₀ := 9 / 10) (R := max R R')
+    (fun t ht => ⟨ht.1, by linarith [ht.2]⟩) (le_trans hR0 (le_max_left _ _))
+    (fun r hr J hJ hJ2 => ⟨(hR' r hr J hJ hJ2).trans (le_max_right _ _),
+      (hR r hr J hJ hJ2).trans (le_max_left _ _)⟩) (9 / 10) ⟨by norm_num, by norm_num⟩ _ rfl
+    (by simp [LoopIdx.length])
+
+/-- `rotS_holds` at the instance data (`S = SB 3 5 (1/2)`, `M = MLoop`, `K = 𝒦`): `n = 3`, charges
+`(+,-,+)`, labels `(0, 1, 2)`, `t = 9/10`.  The hypotheses on `S` are `kernel_SB_rot_transl`, the one on `M` is
+`KLUnique_MLoop_rot_cons`. -/
+theorem KLUniqueInst_rotS :
+    KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false, true], (0 : Zd 3 5) :: [1, 2]⟩
+      = KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[false, true] ++ [true], [1, 2] ++ [(0 : Zd 3 5)]⟩ :=
+  rotS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
+    (kernel_SB_rot_transl (1 / 2) (by norm_num)).1 (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.1
+    (KLUnique_MLoop_rot_cons 3 5 2 (mSigma 0)) (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I)
+    KLTreeDerivInst_isKLoop (9 / 10) ⟨by norm_num, by norm_num⟩ true 0 [false, true] [1, 2] rfl
+
+/-- `translS_holds` at the same data: translation by `e₁ = (1,0,0)` of the loop with charges `(+,-,+)` and labels
+`(0,0,0), (1,2,3), (4,0,1)`, `t = 9/10`.  The hypothesis on `M` is `KLUnique_MLoop_shift`. -/
+theorem KLUniqueInst_translS :
+    KLK 3 5 (1 / 2) 2 0 (9 / 10)
+        ⟨[true, false, true],
+          ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5)).map (· + (![1, 0, 0] : Zd 3 5))⟩
+      = KLK 3 5 (1 / 2) 2 0 (9 / 10)
+        ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ :=
+  translS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
+    (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.2 (kernel_SB_rot_transl (1 / 2) (by norm_num)).2.1
+    (fun c I => KLUnique_MLoop_shift 3 5 2 (mSigma 0) c I) (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I)
+    KLTreeDerivInst_isKLoop (9 / 10) ⟨by norm_num, by norm_num⟩ (![1, 0, 0] : Zd 3 5)
+    ⟨[true, false, true], ([![0, 0, 0], ![1, 2, 3], ![4, 0, 1]] : List (Zd 3 5))⟩ rfl
 
 end Instances
 

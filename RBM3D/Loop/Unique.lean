@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Loop.Primitive
+import RBM3D.Loop.KLTreeDeriv
 import Mathlib.Analysis.ODE.Gronwall
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Data.Fintype.Vector
@@ -43,12 +44,19 @@ the Lipschitz bound for the Riccati right-hand side.
 
 ## Main results
 
-* `RBM.Loop.eq_on_level`      : one step of the induction
-* `RBM.Loop.isKLoop_unique`   : **two families of `K`-loops on `[0, T₀]` whose `2`-loops
-  are bounded agree on every loop**
+* `RBM.Loop.eq_on_levelS`     : one step of the induction, over a kernel `S` with `‖S a b‖ ≤ 1`
+* `RBM.Loop.uniqS_holds`      : **two `IsKLoopS` families (any kernel `S` with `‖S a b‖ ≤ 1`,
+  any initial data `M`) on `[0, T₀]` whose `2`-loops are bounded agree on every loop**
+  (the pin `UniqS`)
+* `RBM.Loop.retireS_holds`    : the a priori bound of the `2`-loops on `[0, T₀]`, `T₀ < 1`, over any
+  `S`, `M` (the pin `RetireS`)
+* `RBM.Loop.eq_on_level`, `RBM.Loop.isKLoop_unique`, `RBM.Loop.KLretire_twoLoopBounded` : the band
+  statements (`S = SB d L g`, `M = MLoop`), now wrappers of the three above
 * `RBM.Loop.eq_kTwo_of_isKLoop` : with `(Kn2sol)`'s explicit solution as the comparison
   family, this **discharges `RBM.Loop.KTwoFormula`** -- see `Loop/Primitive.lean`
 -/
+
+set_option linter.style.longLine false
 
 namespace RBM.Loop
 
@@ -82,6 +90,24 @@ theorem length_cutGlueL_eq_two (hk : 1 ≤ k) (hkl : k < l) (hl : l ≤ x.length
   omega
 
 end LoopIdx
+
+/-! ### The generic pins (gate BA, stage K, ticket T2366) -/
+
+/-- **`UniqS`** (verbatim: probe `t/T2360:RBM3D/Probe/T2360Pins.lean:232`): uniqueness of `K`-loops over `IsKLoopS`; the
+only fact about `S` is `‖S a b‖ ≤ 1`. -/
+def UniqS : Prop :=
+  ∀ (d L W : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ),
+    (∀ a b, ‖S a b‖ ≤ 1) → ∀ {T : Set ℝ} {K K' : ℝ → LoopIdx (Zd d L) → ℂ},
+      IsKLoopS d L W S m M T K → IsKLoopS d L W S m M T K' → ∀ {T₀ R : ℝ}, Set.Icc 0 T₀ ⊆ T → 0 ≤ R →
+      (∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R) →
+      ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length → K t I = K' t I
+
+/-- **`RetireS`**: `KLretire_twoLoopBounded` over `IsKLoopS` (continuity on `[0, T₀] ⊆ [0,1)`; no fact about `S`). -/
+def RetireS : Prop :=
+  ∀ (d L W : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ)
+    {K : ℝ → LoopIdx (Zd d L) → ℂ}, IsKLoopS d L W S m M (Set.Ico 0 1) K →
+    ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
+      ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R
 
 open Finset
 open scoped Matrix.Norms.Operator
@@ -133,15 +159,16 @@ theorem norm_mul_mul_sub_le {X X' Y Y' s : ℂ} {R D : ℝ} (hs : ‖s‖ ≤ 1)
 
 variable (d L)
 
-/-- **One step of the induction.**  Two functions satisfying `(pro_dyncalK)` at length `n`
-on `[0, T₀]`, whose `2`-loops are bounded by `R`, which agree on all loops of length `< n`
-and at `t = 0` at length `n`, agree at length `n`. -/
-theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T₀ R : ℝ)
+/-- **One step of the induction, over a general kernel.**  Two functions satisfying `(pro_dyncalK)` with
+the kernel `S` (`‖S a b‖ ≤ 1`) at length `n` on `[0, T₀]`, whose `2`-loops are bounded by `R`, which agree on all
+loops of length `< n` and at `t = 0` at length `n`, agree at length `n`. -/
+theorem eq_on_levelS (S : Matrix (Zd d L) (Zd d L) ℂ) (hS : ∀ a b, ‖S a b‖ ≤ 1)
+    (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T₀ R : ℝ)
     (n : ℕ) (hR0 : 0 ≤ R)
     (hK : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = n →
-      HasDerivAt (fun s => K s I) (treeEqRhs d L W g (K t) I) t)
+      HasDerivAt (fun s => K s I) (treeEqRhsS d L W S (K t) I) t)
     (hK' : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = n →
-      HasDerivAt (fun s => K' s I) (treeEqRhs d L W g (K' t) I) t)
+      HasDerivAt (fun s => K' s I) (treeEqRhsS d L W S (K' t) I) t)
     (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 →
       ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R)
     (hlow : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length →
@@ -150,7 +177,7 @@ theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T�
     ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = n → K t I = K' t I := by
   let D : ℝ → LoopVec d L n → ℂ := fun t p => K t (p.toLoop d L) - K' t (p.toLoop d L)
   let D' : ℝ → LoopVec d L n → ℂ := fun t p =>
-    treeEqRhs d L W g (K t) (p.toLoop d L) - treeEqRhs d L W g (K' t) (p.toLoop d L)
+    treeEqRhsS d L W S (K t) (p.toLoop d L) - treeEqRhsS d L W S (K' t) (p.toLoop d L)
   have hD : ∀ t ∈ Set.Icc 0 T₀, HasDerivAt D (D' t) t := fun t ht =>
     hasDerivAt_pi.2 fun p =>
       (hK t ht _ p.wf p.length).sub (hK' t ht _ p.wf p.length)
@@ -175,8 +202,8 @@ theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T�
     have hI : I.WF := p.wf
     have hIn : I.length = n := p.length
     have hterm : ∀ k ∈ Icc 1 n, ∀ l ∈ Ioc k n, ∀ a b : Zd d L,
-        ‖K t (I.cutGlueL k l a) * SB d L g a b * K t (I.cutGlueR k l b)
-          - K' t (I.cutGlueL k l a) * SB d L g a b * K' t (I.cutGlueR k l b)‖
+        ‖K t (I.cutGlueL k l a) * S a b * K t (I.cutGlueR k l b)
+          - K' t (I.cutGlueL k l a) * S a b * K' t (I.cutGlueR k l b)‖
           ≤ 2 * (R * ‖D t‖) := by
       intro k hk l hl a b
       rw [Finset.mem_Icc] at hk
@@ -193,7 +220,7 @@ theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T�
       have hRle : (I.cutGlueR k l b).length ≤ n :=
         hIn ▸ LoopIdx.length_cutGlueR_le I b hk1 hkl hlI
       have hRD : 0 ≤ R * ‖D t‖ := mul_nonneg hR0 (norm_nonneg _)
-      refine norm_mul_mul_sub_le (norm_SB_apply_le (g := g) hL a b) ?_ ?_
+      refine norm_mul_mul_sub_le (hS a b) ?_ ?_
       · rcases hLle.lt_or_eq with hlt | heq
         · rw [hlow t ht' _ hWL h2L hlt, sub_self, norm_zero, zero_mul]
           exact hRD
@@ -211,13 +238,13 @@ theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T�
           exact mul_le_mul hX hY (norm_nonneg _) hR0
     have e : D' t p = ((W : ℂ) ^ d) * ∑ k ∈ Icc 1 n, ∑ l ∈ Ioc k n,
         ∑ a : Zd d L, ∑ b : Zd d L,
-        (K t (I.cutGlueL k l a) * SB d L g a b * K t (I.cutGlueR k l b)
-          - K' t (I.cutGlueL k l a) * SB d L g a b * K' t (I.cutGlueR k l b)) := by
-      simp only [D', treeEqRhs, ← hIdef, hIn, ← mul_sub, ← Finset.sum_sub_distrib]
+        (K t (I.cutGlueL k l a) * S a b * K t (I.cutGlueR k l b)
+          - K' t (I.cutGlueL k l a) * S a b * K' t (I.cutGlueR k l b)) := by
+      simp only [D', treeEqRhsS, ← hIdef, hIn, ← mul_sub, ← Finset.sum_sub_distrib]
     rw [e, norm_mul, norm_pow, Complex.norm_natCast]
     have hsum : ‖∑ k ∈ Icc 1 n, ∑ l ∈ Ioc k n, ∑ a : Zd d L, ∑ b : Zd d L,
-        (K t (I.cutGlueL k l a) * SB d L g a b * K t (I.cutGlueR k l b)
-          - K' t (I.cutGlueL k l a) * SB d L g a b * K' t (I.cutGlueR k l b))‖
+        (K t (I.cutGlueL k l a) * S a b * K t (I.cutGlueR k l b)
+          - K' t (I.cutGlueL k l a) * S a b * K' t (I.cutGlueR k l b))‖
         ≤ ∑ k ∈ Icc 1 n, ∑ l ∈ Ioc k n, ∑ _a : Zd d L, ∑ _b : Zd d L, 2 * (R * ‖D t‖) := by
       refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun k hk => ?_)
       refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun l hl => ?_)
@@ -238,18 +265,31 @@ theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T�
   obtain ⟨p, rfl⟩ := LoopVec.exists_toLoop I hI hIn
   exact sub_eq_zero.1 (congrFun (hzero t ht) p)
 
+/-- **One step of the induction** (`S = S^{(B)}`).  Two functions satisfying `(pro_dyncalK)` at length `n`
+on `[0, T₀]`, whose `2`-loops are bounded by `R`, which agree on all loops of length `< n`
+and at `t = 0` at length `n`, agree at length `n`.  The wrapper of `eq_on_levelS` at `S = SB d L g`. -/
+theorem eq_on_level (hL : 3 ≤ L) (K K' : ℝ → LoopIdx (Zd d L) → ℂ) (T₀ R : ℝ)
+    (n : ℕ) (hR0 : 0 ≤ R)
+    (hK : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = n →
+      HasDerivAt (fun s => K s I) (treeEqRhs d L W g (K t) I) t)
+    (hK' : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = n →
+      HasDerivAt (fun s => K' s I) (treeEqRhs d L W g (K' t) I) t)
+    (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 →
+      ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R)
+    (hlow : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length →
+      I.length < n → K t I = K' t I)
+    (h0 : ∀ I : LoopIdx (Zd d L), I.WF → I.length = n → K 0 I = K' 0 I) :
+    ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = n → K t I = K' t I :=
+  eq_on_levelS d L W (SB d L g) (norm_SB_apply_le g hL) K K' T₀ R n hR0 hK hK' hR hlow h0
+
 variable {d L W g}
 
-/-- **Uniqueness for `\Cref{Def_Ktza}`.**  Two families of `K`-loops on `[0, T₀]` (same `W`,
-`g`, `m`) whose `2`-loops stay bounded agree on every loop of length `≥ 2`.  The bound is
-needed only on `2`-loops: by the structure lemma they are the only coefficients of the
-linear equations at higher length. -/
-theorem isKLoop_unique (hL : 3 ≤ L) (m : Bool → ℂ) {T : Set ℝ}
-    {K K' : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m T K)
-    (hK' : IsKLoop d L W g m T K') {T₀ R : ℝ} (hT : Set.Icc 0 T₀ ⊆ T) (hR0 : 0 ≤ R)
-    (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 →
-      ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R) :
-    ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length → K t I = K' t I := by
+/-- **Uniqueness for `\Cref{Def_Ktza}`, over a general kernel** (the pin `UniqS`).  Two `IsKLoopS` families
+on `[0, T₀]` (same `W`, `S`, `m`, `M`) whose `2`-loops stay bounded agree on every loop of length `≥ 2`.
+The bound is needed only on `2`-loops: by the structure lemma they are the only coefficients of the linear
+equations at higher length.  The only fact about `S` is `‖S a b‖ ≤ 1`. -/
+theorem uniqS_holds : UniqS := by
+  intro d L W _ S m M hS T K K' hK hK' T₀ R hT hR0 hR
   have main : ∀ n : ℕ, ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length →
       I.length = n → K t I = K' t I := by
     intro n
@@ -257,7 +297,7 @@ theorem isKLoop_unique (hL : 3 ≤ L) (m : Bool → ℂ) {T : Set ℝ}
     | _ n ih =>
       intro t ht I hI h2 hIn
       have hn : 2 ≤ n := hIn ▸ h2
-      refine eq_on_level d L W g hL K K' T₀ R n hR0
+      refine eq_on_levelS d L W S hS K K' T₀ R n hR0
         (fun s hs J hJ hJn => hK.1 s (hT hs) J hJ (hJn ▸ hn))
         (fun s hs J hJ hJn => hK'.1 s (hT hs) J hJ (hJn ▸ hn)) hR ?_ ?_ t ht I hI hIn
       · intro s hs J hJ hJ2 hJn
@@ -265,6 +305,18 @@ theorem isKLoop_unique (hL : 3 ≤ L) (m : Bool → ℂ) {T : Set ℝ}
       · intro J hJ hJn
         rw [hK.2.1 J hJ (hJn ▸ hn), hK'.2.1 J hJ (hJn ▸ hn)]
   exact fun t ht I hI h2 => main _ t ht I hI h2 rfl
+
+/-- **Uniqueness for `\Cref{Def_Ktza}`.**  Two families of `K`-loops on `[0, T₀]` (same `W`,
+`g`, `m`) whose `2`-loops stay bounded agree on every loop of length `≥ 2`.  The bound is
+needed only on `2`-loops: by the structure lemma they are the only coefficients of the
+linear equations at higher length.  `uniqS_holds` at `S = SB d L g`, `M = MLoop`. -/
+theorem isKLoop_unique (hL : 3 ≤ L) (m : Bool → ℂ) {T : Set ℝ}
+    {K K' : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g m T K)
+    (hK' : IsKLoop d L W g m T K') {T₀ R : ℝ} (hT : Set.Icc 0 T₀ ⊆ T) (hR0 : 0 ≤ R)
+    (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 →
+      ‖K t I‖ ≤ R ∧ ‖K' t I‖ ≤ R) :
+    ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → 2 ≤ I.length → K t I = K' t I :=
+  uniqS_holds d L W (SB d L g) m (MLoop d L W m) (norm_SB_apply_le g hL) hK hK' hT hR0 hR
 
 /-! ### Discharging `(Kn2sol)`
 
@@ -285,17 +337,15 @@ theorem exists_eq_of_length_two {I : LoopIdx (Zd d L)} (hI : I.WF) (h2 : I.lengt
   obtain ⟨σ₁, σ₂, rfl⟩ := List.length_eq_two.mp hσ
   exact ⟨σ₁, σ₂, a₁, a₂, rfl⟩
 
-/-- **The a priori bound on the `2`-loops is a theorem** for every family of `K`-loops on `[0,1)`:
-each coordinate `s ↦ K s I` has a derivative, hence is continuous on the compact `[0,T₀] ⊆ [0,1)`,
-and there are finitely many `2`-loops (port of `RBM2D/Loop/Unique.lean:250-268`, c9a24cf; moved here
-from `Loop/KLUnique.lean` by ticket T2127, where it retired the old hypothesis of the four theorems
-below).  The conclusion is the unfolded bound: for every `T₀ < 1` there is `R ≥ 0` with
-`‖K t I‖ ≤ R` for all `t ∈ [0,T₀]` and all well-formed loops of length `2`. -/
-theorem KLretire_twoLoopBounded {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd d L) → ℂ}
-    (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
-    ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
-      ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R := by
-  intro T₀ hT₀
+/-- **The a priori bound on the `2`-loops is a theorem** for every family of `K`-loops on `[0,1)`
+over a general kernel `S` and general initial data `M` (the pin `RetireS`): each coordinate `s ↦ K s I`
+has a derivative, hence is continuous on the compact `[0,T₀] ⊆ [0,1)`, and there are finitely many
+`2`-loops (port of `RBM2D/Loop/Unique.lean:250-268`, c9a24cf; moved here from `Loop/KLUnique.lean` by
+ticket T2127).  No fact about `S`, `m` or `M` is used.  The conclusion is the unfolded bound: for every
+`T₀ < 1` there is `R ≥ 0` with `‖K t I‖ ≤ R` for all `t ∈ [0,T₀]` and all well-formed loops of
+length `2`. -/
+theorem retireS_holds : RetireS := by
+  intro d L W _ S m M K hK T₀ hT₀
   let f : ℝ → LoopVec d L 2 → ℂ := fun s p => K s (p.toLoop d L)
   have hf : ContinuousOn f (Set.Icc 0 T₀) := by
     refine continuousOn_pi.2 fun p s hs => ?_
@@ -305,6 +355,15 @@ theorem KLretire_twoLoopBounded {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd d L)
   refine ⟨max C 0, le_max_right _ _, fun t ht I hI hI2 => ?_⟩
   obtain ⟨p, rfl⟩ := LoopVec.exists_toLoop I hI hI2
   exact ((norm_le_pi_norm (f t) p).trans (hC t ht)).trans (le_max_left _ _)
+
+/-- **The a priori bound on the `2`-loops is a theorem** for every family of `K`-loops on `[0,1)`
+(`retireS_holds` at `S = SB d L g`, `M = MLoop`): for every `T₀ < 1` there is `R ≥ 0` with
+`‖K t I‖ ≤ R` for all `t ∈ [0,T₀]` and all well-formed loops of length `2`. -/
+theorem KLretire_twoLoopBounded {m : Bool → ℂ} {K : ℝ → LoopIdx (Zd d L) → ℂ}
+    (hK : IsKLoop d L W g m (Set.Ico 0 1) K) :
+    ∀ T₀ : ℝ, T₀ < 1 → ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) T₀,
+      ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R :=
+  retireS_holds d L W (SB d L g) m (MLoop d L W m) hK
 
 /-- **`(Kn2sol)` is a theorem about every family of `K`-loops, not a hypothesis.**
 
@@ -370,5 +429,31 @@ theorem pureLoop_two_of_isKLoop {k : ℕ} (hd : 3 ≤ k + 2) (hg : 0 < g) (hL : 
         ≤ C * ‖((W : ℂ) ^ (k + 2))⁻¹‖
           * Real.exp (-(c * (zdistD (k + 2) L (a₁ - a₂) : ℝ))) :=
   pureLoop_two hd hg hL (hm σ) hmi hshort (kTwoFormula_of_isKLoop hL hW hm hK)
+
+/-! ### Instances (T2366): `d = 3`, `L = 5`, `W = 2`, `g = 1/2`, `E = 0`, `t = 9/10`
+
+Kernel `S = S^{(B)} = SB 3 5 (1/2)` (`125` blocks, `‖S a b‖ ≤ 1` from `3 ≤ 5`), initial data `M = MLoop`,
+`m = mSigma 0` (`m(+) = i`), family `K = 𝒦` (the merged instance `KLTreeDerivInst_isKLoop` of
+`KLK_isKLoop`).  Every deterministic hypothesis of `retireS_holds` and `uniqS_holds` is discharged. -/
+
+/-- `retireS_holds` at the instance data: the bound of the `2`-loops of `𝒦` on `[0, 9/10]`. -/
+theorem UniqueInst_retireS :
+    ∃ R : ℝ, 0 ≤ R ∧ ∀ t ∈ Set.Icc (0 : ℝ) (9 / 10), ∀ I : LoopIdx (Zd 3 5), I.WF → I.length = 2 →
+      ‖KLK 3 5 (1 / 2) 2 0 t I‖ ≤ R :=
+  retireS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
+    (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) KLTreeDerivInst_isKLoop (9 / 10) (by norm_num)
+
+/-- `uniqS_holds` at the instance data, with the bound `R` of `UniqueInst_retireS` (two copies of the family
+`𝒦`; the family `𝒦 ∘ shift_{e₁}`, different as a function, is `KLUniqueInst_uniqS_shifted`). -/
+theorem UniqueInst_uniqS :
+    ∀ t ∈ Set.Icc (0 : ℝ) (9 / 10), ∀ I : LoopIdx (Zd 3 5), I.WF → 2 ≤ I.length →
+      KLK 3 5 (1 / 2) 2 0 t I = KLK 3 5 (1 / 2) 2 0 t I := by
+  obtain ⟨R, hR0, hR⟩ := UniqueInst_retireS
+  exact uniqS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
+    (norm_SB_apply_le (1 / 2) (by norm_num))
+    (K := fun t I => KLK 3 5 (1 / 2) 2 0 t I) (K' := fun t I => KLK 3 5 (1 / 2) 2 0 t I)
+    KLTreeDerivInst_isKLoop KLTreeDerivInst_isKLoop (T₀ := 9 / 10) (R := R)
+    (fun t ht => ⟨ht.1, by linarith [ht.2]⟩) hR0
+    (fun t ht I hI h2 => ⟨hR t ht I hI h2, hR t ht I hI h2⟩)
 
 end RBM.Loop
