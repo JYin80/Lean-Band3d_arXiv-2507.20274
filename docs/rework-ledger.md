@@ -327,3 +327,5 @@
 | T2379 | 2026-10-10 11:10 UTC (06f6e38) | prover-max | Sonnet 5.5 effort max | 否 | 设计票，只出报告（BA 阶段 T/U/V：路线 G 成立，g 0.239，46 行，拆子阶段 T/U/V）；审核一次 PASS |
 | T2381 | 2026-10-10 11:46 UTC (306957f) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS，审核一次 PASS；BA-K10 `BA/KInduct`（991 行，停止线 2000）：基础层、`baKpi_cut`（及 `_S`、`_abs`）、`BAKBoundAt`、`BAKpiBoundAt` |
 | T2380 | 2026-10-10 12:09 UTC (8609423) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS，审核一次 PASS；BA-K07 `BA/KPure`（1016 行，停止线 2000）：纯回路、`SigDecayAbs` 落在 `BASig` 上（所有 σ） |
+| T2382 | 2026-10-10 12:29 UTC (ada2b54) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T row 0：新 `Chain/Carrier.lean`（178 行），从 `BA/FlowPins` 搬出 16 个声明（PrecL、FlowFM、FlowFM.GM 与泛型谓词），`STJhatg`、`STLWassmExpgL` 留下；审核一次 PASS |
+| T2383 | 2026-10-10 12:37 UTC (5c50416) | prover | Sonnet 5.5 effort high | 是 | BA-T T5s1：1a target 2 卡住（`HierarchyN` 需要 T8/T5s2 的词汇）→ Amend 1 (A)：只改 `LoopGenN.lean`（+160 −99），`HierarchyN` 归 T5s2，BA 实例归 T5-BA；绊线 g = 0.239、f_sem = 0 未触发；审核一次 PASS |

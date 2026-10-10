@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged ada2b54
 reason: stage 1b DONE (b3ffbd9; 16 declarations moved to Chain/Carrier.lean, STJhatg and STLWassmExpgL stay in FlowPins); auditor1 PASS claude-opus-5-5 (wf_70239078-660); main FlowPins/Axioms unchanged since branch base 2192dea; full lake build 4199 jobs exit 0
-updated: Sat Oct 10 12:29:32 UTC 2026
+updated: Sat Oct 10 12:29:34 UTC 2026
 reports: docs/reports/T2382-prove.md, docs/reports/T2382-audit.md

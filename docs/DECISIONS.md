@@ -1672,3 +1672,25 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - `prover-max`，1000 / 1400 / 2400，停止线 2400。
 - (2) 中枢：T2382、T2383、T2384、T2385，共 4 张。下一张票号 T2386，下一节 §198，下一条 H179，下一号差异 D636。
 - (3) 待写：G3a 设计门、E1、E2、G2、阶段 L 设计票（放在一个空位出现之后）；K08b（等 K08a）。
+
+## §198 — T8 = T2386、阶段 L 设计 = T2387 放行；row 0 已合并（总调度 V2，2026-10-10 12:39 UTC）
+
+- (1) **T2382（row 0）合并 ada2b54**：新 `Chain/Carrier.lean`（178 行，只导入 `Induction/Defs`），从 `BA/FlowPins` 搬出 16 个声明；`STJhatg`、`STLWassmExpgL` 留下；审核一次 PASS。T/U/V 里以载体为基础的票从此可以分支。
+- (2) **T2386 = BA-T T8**（BA 53，子阶段 T 的带状侧，`prover-hard`，700 / 1000 / 1400，停止线 1500）：Step 2 词汇在载体上的泛型读法。
+  - **布局（流程决定，监督 1155 C5 的原则）**：L1 当初把它定为「附加」，是因为 `Step2Defs` 在 `FlowFM` 上游；row 0 之后载体只依赖 `Induction/Defs`。所以附加的泛型文本放进**新文件** `Chain/Step2Gen.lean`（`Step2Data extends FlowFM`、49 个词汇的泛型形式、探针的 Step 2 族、`Iff.rfl` 桥），`Step2Defs` 不动。
+  - `bandFM` 挪进 `Chain/Carrier`，以后链上原地改写的票都在 `bandFM` 上取带状推论，不必导入 `BA/FlowPins`。
+  - `LocalAvg1/2` 原地改写，外部输入（`stGbEXP_holds`、`Step2Iterate` 的事实、尺寸数据）作为假设。
+  - `BAStep2` 只钉不证，放在 `BA/FlowPins`，登记一条 owed。
+  - 实测反向锥：`Step2Defs` 177 个模块，含全部 6 个证书模块；新文件 0；`Carrier` 39 个模块；`LocalAvg1` 8 个模块，都不含证书模块。所以 **T2386 不进证书合并道**（设计原估 56 分钟道时，省下）。若 1a 发现必须改 `Step2Defs`，说明理由，并回到合并道。
+  - 1a 是设计门，后面接 1a-audit；预测超过 1500 行就拆成 T8a / T8b。
+- (3) **T2387 = BA-DL**（BA 54，阶段 L 设计，只出报告，`prover-max`；监督 1155 R1）。问题 LD1–LD7：
+  - 按族实测路线（R / P / G / T）；
+  - 在 BA 上钉住链所需的 L 输出（`LWtermExp`、`LWAssm`、`LWcut`、`LWtermEXP`、`LWAvgLaw`、`STLWB`、`STLWT`、`STEMn2Exp`）；
+  - `B:286-525` 与 `B:118` 的论文状态；
+  - 证书孪生的构建代价和合并道负担（C5）；
+  - 对 K / E / G 的依赖；
+  - 行表与旗标。
+
+  报告作为阶段 L 的开阶段 REQ。
+- (4) **T2383（T5s1）12:37 合并 5c50416**（Amend 1，只改 `LoopGenN.lean`，+160 −99；绊线实测 g = 0.239、f_sem = 0，未触发，路线 G 在测点成立）。中枢：T2384、T2385 在跑；T2386、T2387 补满 4 个位。下一张票号 T2388，下一节 §199，下一条 H180，下一号差异 D636。
+- (5) 待写：G3a 设计门、E1、E2、G2（有空位就放）；K08b（等 K08a）；BA-T 钉文 REQ（C7，等 T8 合并）。
