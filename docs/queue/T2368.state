@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 79dec34
 reason: stage 1b DONE (057f0f4); Amend 1 repairer (f3004f5, one owedProps line for RBM.BA.BAKsolve), auditor2 PASS claude-opus-5-5 (wf_28091e06-d97); full lake build 4181 jobs
-updated: Sat Oct 10 04:12:07 UTC 2026
+updated: Sat Oct 10 04:12:08 UTC 2026
 reports: docs/reports/T2368-prove.md, docs/reports/T2368-audit.md

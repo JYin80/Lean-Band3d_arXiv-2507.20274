@@ -1463,3 +1463,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 不依赖 K03（T2368 还没合并）：二环只通过 `BASplicedFam` 的闭式进来。
 - (2) 现在每张给公开定理加前提钉文的票，都要做登记预检（`#assert_rbm_axioms`），由 §181 (2) 的教训而来。T2370 已写入。
 - (3) 下一张票号 T2371，下一节 §183，下一条 H165，下一号差异 D636。
+
+## §183 — T2363（UN-51）合并；UN-52b = T2371 放行（总调度 V2，2026-10-10 04:12 UTC）
+
+- (1) **T2363 合并 0347cb8**（04:08 UTC，UN-51：`RandomLayerA/B`，11 个目标；`Test/Axioms.lean` 只改 `UNOULLk`、`UNG1Rowk` 的归属注释）。返工账本补一行。中枢：T2370（K05a）已占 T2363 让出的名额（04:06 开工）；T2368 正在跑 Amend 1；T2364、T2369 在 1b。
+- (2) **T2371 = UN-52b**（UN 60，计划 64，上限 65）：新文件 `Main/BUniv.lean`、`Main/BUnivHolds.lean`。
+  - 用合并的 `un_bUniv_of_rows'` 组装 `UNBUniv`，接入所有已证的行：`un_infty1Row'`、`univMainRow`、`unClaimRow`、`unEMCTE2Row`、`jakUywRow`、`greenCorrAll`，以及 `unOURow = ouRow_of_pins g1Row g2bRow`（UN-51 之后两者都已证）。
+  - 钉文 `BUnivFromLeaves`：剩下的叶是三条带状行 `UNDensBandRow`、`UNTrLocalBandRow`、`UNNormBandRow`（登记为 owed，归属写的是「UN-01」）；`UNL32`（borrowed）；`UNMLOut`、`UNLocAvgBand`、`UNQueBand`（消费的 MA/ST-6 输入）；`UNGUELocal`。
+  - `bUniv_holds` 只能去掉 1a 证出或已有定理覆盖的叶。
+  - 1a 做叶表，列每片叶的状态和生产者，作为 UN 收尾 REQ 的材料。三条带状行若在任何计划里都没有生产者，在 1a 报告里报给调度，由调度决定是在 UN 上限 65 以内加票，还是发 REQ。
+  - `prover-hard`，150 / 250 / 400，停止线 500。属关键路径，下一个空位优先给它。
+- (3) 计数：UN 60（写好）；BA 42。下一张票号 T2372，下一节 §184，下一条 H166，下一号差异 D636。

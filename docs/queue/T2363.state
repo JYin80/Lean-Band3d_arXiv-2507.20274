@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 0347cb8
 reason: stage 1b DONE (d11d0a4); auditor1 RETURN (target 2 band-only inputs), rule (B) repairer DONE (f2adfa5), auditor2 PASS claude-opus-5-5 (wf_702a489c-bf3); open issue (4) in the prove report; full lake build 4180 jobs
-updated: Sat Oct 10 04:08:27 UTC 2026
+updated: Sat Oct 10 04:08:29 UTC 2026
 reports: docs/reports/T2363-prove.md, docs/reports/T2363-audit.md

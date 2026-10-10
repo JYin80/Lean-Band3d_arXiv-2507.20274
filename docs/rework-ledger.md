@@ -311,3 +311,4 @@
 | T2366 | 2026-10-10 02:02 UTC (010cad9) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K01 通用部分（`Loop/Unique`、`KLUnique` 原地：`UniqS`、`RetireS`、`RotS`、`TranslS`）；合并构建约 1 小时（证书模块重编，H101/H122） |
 | T2365 | 2026-10-10 03:11 UTC (a5c1a1a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（结构体钉文 `IndStepTH` 逐字段核对，DECISIONS §175）；BA-K09a 抽象归纳步；1a N1（K-b）通过 |
 | T2367 | 2026-10-10 03:20 UTC (9b94993) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；BA-K04 `BA/KCactus`（1263 行，停止线 1300）；镜像 (α) 1.9e-15、(β) 1.24e-9；`BACactusVal_sum_zero_BAMLoop` 在 Lean 里核对了 `t = 0` 的树表示 |
+| T2363 | 2026-10-10 04:08 UTC (0347cb8) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核 PASS；UN-51 `GUEPhase/RandomLayerA/B`（1042 行，切分 A|B 未触发；U3 无需改钉）；`Test/Axioms.lean` 只改归属注释 |
