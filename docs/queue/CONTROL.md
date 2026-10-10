@@ -2,21 +2,23 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 01:11 UTC (dispatcher V2: T2361, T2356, T2358, T2362 merged; T2363, T2364 released, H159; CONTROL archived)
+updated: 2026-10-10 01:26 UTC (dispatcher V2: T2365 audit-pass; T2367 BA-K04 released, H160)
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-331. T2365 — `docs/tickets/T2365.md` (BA-K09a, in place `Loop/KLIndStepA.lean`, `Loop/KLIndStepB.lean`): released; starts when its check compiles with exit 0 (H12). Merge yields to critical-path merges (ticket, G2).
+331. T2365 — `docs/tickets/T2365.md` (BA-K09a, in place `Loop/KLIndStepA.lean`, `Loop/KLIndStepB.lean`): `audit-pass` (b74e5fd); merge by rule (A) after T2366 (the auditor's field-wise check of the structure pin `IndStepTH` replaces the ticket's `rfl` check, DECISIONS §175).
 332. T2366 — `docs/tickets/T2366.md` (BA-K01 generic part, in place `Loop/Unique.lean`, `Loop/KLUnique.lean`): `audit-pass` (f4e179e); merge by rule (A) (Jun authorized rule (A) merges in the hub session, H155 done lines).
 333. T2363 — `docs/tickets/T2363.md` (UN-51, `Universality/GUEPhase/RandomLayerA.lean`, `RandomLayerB.lean`): released (inputs T2356, T2361 merged); starts when its check compiles with exit 0 (H12). Preset cut A|B.
 334. T2364 — `docs/tickets/T2364.md` (LW-13b R3 = G + F, `Graph/AuxGraphRooted.lean`, `Graph/LWMomentExp.lean`): released (input T2358 merged); starts when its check compiles with exit 0 (H12). Preset cut C3 = G|F.
+335. T2367 — `docs/tickets/T2367.md` (BA-K04, new `BA/KCactus.lean`): released (input K00 merged 8050043); starts when its check compiles with exit 0 (H12).
 
 ## Pre-release checks
 - `docs/tickets/checks/T2363-check.lean` (UN-51; imports `Eq729B`, `PathBounds`, merged 96f2390, 16b812a; released conditionally above, DECISIONS §17).
 - `docs/tickets/checks/T2364-check.lean` (LW R3; imports `LWProv`, merged c587dcd; released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2367-check.lean` (BA-K04; pins `BAGammaType`, `BATreeRep`; released conditionally above, DECISIONS §17).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -32,6 +34,9 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 01:01:53 UTC 2026 — T2362 merged 8050043 under Jun's direct authorization in the hub session.
 
 - H159 (dispatcher V2, 2026-10-10 01:11 UTC; DECISIONS §174). **Step A** — one commit, staging by name only (never `git add -A`), message `Dispatcher V2: release T2363 (UN-51) and T2364 (LW R3) after merges, CONTROL archived, DECISIONS §174, H159`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; add your own uncommitted hub files as you see fit; push. **Step B** — compile `docs/tickets/checks/T2363-check.lean` and `docs/tickets/checks/T2364-check.lean` on `main` (standing H4); one `done:` line each under Pre-release checks; if an exit code is not 0, write the first 40 error lines to `docs/tickets/checks/T23xx-check.out` and do not start that ticket. **Step C** — start each ticket whose check exits 0 (standing H12; branch and worktree from `main` at the Step A commit), T2363 first: with T2365 running that makes 3 workflows (`parallel: 4`). T2366's merge (rule (A)) is independent of this instruction. One `done:` line per step.
+  done: Sat Oct 10 01:12:54 UTC 2026 — Step A committed 5898c46 (11 files by name: the 6 listed + states T2356/T2358/T2361/T2362/T2365; T2366's staged Lean files excluded by pathspec), pushed. Steps B/C wait for the running T2366 merge build (it is rebuilding the certificate modules LWExpCertS0/LWExpCertBS0, H101/H122: no other build alongside).
+
+- H160 (dispatcher V2, 2026-10-10 01:26 UTC; DECISIONS §175). **Step A** — one commit, staging by name only, message `Dispatcher V2: BA-K04 = T2367 (cactus), DECISIONS §175, H160`: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/tickets/T2367.md`, `docs/tickets/checks/T2367-check.lean`; push (after H159's Step A; it may share the loop with H159's Steps B/C). **Step B** — compile `docs/tickets/checks/T2367-check.lean` on `main` (H4), together with H159's Step B once the running merge build allows; one `done:` line under Pre-release checks. **Step C** — on exit 0, start T2367 (H12) in the next free slot after T2363 and T2364 (`parallel: 4`). One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 00:56:16 UTC 2026 — T2361 merged 16b812a (UN-50b Universality/GUEPhase/PathBounds (gueBds_h745E, gueBds_h746, gueGrid_pathBounds), root import, no registry change; audit PASS claude-opus-5-5; full lake build 4174 jobs; pushed). Authorized by Jun in the hub session (H155).
