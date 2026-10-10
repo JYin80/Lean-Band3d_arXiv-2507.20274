@@ -105,7 +105,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STDecayStrong,  -- (b), second part: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STLocalMax,     -- (c) `(Gt_bound+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
    `RBM.Gauss.Sizes.STExp2,         -- (d) `(Eq:Gtlp_exp+IND)`: ST-6 chain induction (T2028, DECISIONS §19)
-   `RBM.Gauss.Sizes.STMainInd,      -- `lem:main_ind`: end of the ST-6 chain; class not signed in §19, owed by the §20 rule (T2028)
    `RBM.Gauss.Sizes.STBootstrap,    -- continuity bootstrap of Step 1 (`3_5:64`): S1-36 (T2028, T2015 b.10)
    `RBM.Gauss.Sizes.STForbidden,    -- forbidden-region estimate of Step 1: S1-36 (T2028, §20 rule; class not signed in §19)
    `RBM.Green.AsGMcPT,              -- `(asGMc)` per time: from (`Gtmwc`) of Step 1, RBM2D `Path/GoodSet.lean:439` `goodSet_asGMc` (T2028, §20 rule)
@@ -126,10 +125,9 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STGdecayW, -- `(Eq:Gdecay_w)` uniformly in `u ∈ [s,t]` (`1_2:1349`, `Step34Pins.lean:208`): hypothesis of `stDecayLoopU_of_step2` (T2135 Amend 1, DECISIONS §39); proved by the Step 2 chain ST2-04 (DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2LocalPT, -- `(Gt_bound_flow)` per time (`1_2:1343`): hypothesis of `step2LocalNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
    `RBM.Gauss.Sizes.STStep2AvgPT, -- `(Gt_avgbound_flow)` per time (`1_2:1345`): hypothesis of `step2AvgNetLift`/`stNetLift2_holds`; proved by the Step 2 chain ST2-04 (T2082, DECISIONS §20 rule: owed)
-   `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28); `stOptL2_of_pins` (T2116) proves it from `STLWB` and `STGridMart`, so it stays owed through those two
-   `RBM.Gauss.Sizes.STStep2, -- Step 2 of `lem:main_ind` (`1_2:1340-1357`): ST2-04 (`ST_step2_of_pins`) (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, so it stays owed through `LWterm`/`LWtermExp` (T2066, DECISIONS §28)
-   `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, so it stays owed through `LWterm`/`LWtermExp` (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STOptL2, -- `(eq:opt_L2)` (`3_5:470`): ST2-14, ST2-15 (T2066, DECISIONS §28); `stOptL2_of_pins` (T2116) proves it from `STLWB` and `STGridMart`; `STGridMart` is proved (`stGridMart_holds`) and `STLWB` is proved for `3 ≤ d` by `STLWB_of_LWterm` at `lwterm_holds` (T2375), but the definition has no `3 ≤ d` premise, so `∀ d, STOptL2 d` is not provable and it stays owed
+   `RBM.Gauss.Sizes.STLWB, -- `lem:LWterm` (`3_5:385-404`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, now proved (`lwterm_holds`, T2375), but only for `3 ≤ d`: the definition has no `3 ≤ d` premise, so `∀ d, STLWB d` is not provable and it stays owed (T2066, DECISIONS §28)
+   `RBM.Gauss.Sizes.STLWT, -- `lem: EWGn2_N` (`3_5:406-415`): LW gate; `STLWB_of_LWterm`/`STLWT_of_LWtermExp` (T2080) prove it from the LW pin, now proved (`lwtermExp_holds`, T2375), but only for `3 ≤ d`: the definition has no `3 ≤ d` premise, so `∀ d, STLWT d` is not provable and it stays owed (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STInitialGT2, -- `(initialGT2)` (`3_5:28-30`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
@@ -144,21 +142,13 @@ def owedProps : List Name :=
    `RBM.BA.STBaseG, -- the six conclusions of `lem:main_ind` at the zero sequence over a carrier; band: `stBase_band`; BA: BA-V (from `STLK0`, `STG0M`, `STKboundgL` by `stBaseG_of_init`)
    `RBM.BA.STHorizonG, -- admissible sizes, `0 < T0 < 1` and `N^{-1+ε/2} ≤ 1 - T0` eventually; band: `stHorizon_band`; BA: BA-V (`BAflowT0`, `Im m ≤ 1`)
    -- T2340: existing pins that the new theorems (`stMLOutG_of_mainIndG`, `STLocalMaxgL_of_STLocalEntrygL`) take as hypotheses, found by the scan once `MainIndOut` is imported
-   `RBM.BA.STMainIndG, -- `lem:main_ind` over a carrier `(law, Flow, mk, T0)` (`BA/FlowPins.lean:565`), hypothesis of `stMLOutG_of_mainIndG`; band form `STMainInd` (`STMainInd_iff`, `Iff.rfl`): owed, ST-6 R4 after LW-01; BA form: BA-V
+   `RBM.BA.STMainIndG, -- `lem:main_ind` over a carrier `(law, Flow, mk, T0)` (`BA/FlowPins.lean:565`), hypothesis of `stMLOutG_of_mainIndG`; band form `STMainInd` (`STMainInd_iff`, `Iff.rfl`): proved for every `d` by `stMainInd_holds` (T2375); BA form: BA-V
    `RBM.BA.STLocalEntrygL, -- `(Gt_bound)` at a law `μ` over a flow carrier, hypothesis of `STLocalMaxgL_of_STLocalEntrygL`; owed like its band form `STLocalEntry`: BA chain, BA-V
-   -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins, proved by LW-01..LW-14 (T2040 b.9)
-   `RBM.Gauss.Sizes.LWterm, -- `lem:LWterm` (`3_5:385-404`): LW-01
-   `RBM.Gauss.Sizes.LWtermB, -- `lem:LWterm`, "in particular" (`3_5:393-397`): LW-01
-   `RBM.Gauss.Sizes.LWtermExp, -- `lem: EWGn2_N` (`3_5:406-415`): LW-01, LW-16
-   `RBM.Gauss.Sizes.LWtermExpS, -- `lem: EWGn2_N`, strict regime: LW-01
-   `RBM.Gauss.Sizes.LWtermExpN, -- `lem: EWGn2_N`, `1 - t ≤ ĝ²/L²`: LW-16
-   `RBM.Gauss.Sizes.LWReduceB, -- reduction of `lem:LWterm` to `lem:LW_moment` (`7_8:20-91`): LW-01
-   `RBM.Gauss.Sizes.LWReduceT, -- reduction of `lem: EWGn2_N` to `lem:LW_moment_exp`: LW-01
+   -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins `LWterm`, `LWtermB`, `LWtermExp`, `LWtermExpS`, `LWtermExpN`, `LWReduceB`, `LWReduceT`, `LWInteg` are proved for every `d` (T2375, `Graph/LWTermHolds.lean`); `STMainInd`, `STStep2`, `UNMLOut` too (T2375, `Induction/MainIndHolds.lean`)
    -- T2067: the random premises of the LW pins (ST chain)
-   `RBM.Gauss.Sizes.LWInteg, -- integrability of `|f_{xy}|^p`
-   `RBM.Gauss.Sizes.LWInit, -- `(initialGT2)` (`3_5:30`)
-   `RBM.Gauss.Sizes.LWLoop2, -- `(LW_assm)` (`3_5:388`)
-   `RBM.Gauss.Sizes.LWLoopExp, -- `(LW_assm_exp)` (`3_5:411`)
+   `RBM.Gauss.Sizes.LWInit, -- `(initialGT2)` (`3_5:30`): hypothesis of `lwterm_holds`, `lwtermExp_holds` (T2375); ST chain
+   `RBM.Gauss.Sizes.LWLoop2, -- `(LW_assm)` (`3_5:388`): hypothesis of `lwterm_holds` (T2375); ST chain
+   `RBM.Gauss.Sizes.LWLoopExp, -- `(LW_assm_exp)` (`3_5:411`): hypothesis of `lwtermExp_holds` (T2375); ST chain
    `RBM.Gauss.Sizes.LWXi, -- `(eq:Gbyxi3)` (`7_8:963-966`)
    `RBM.Gauss.Sizes.LWAvgLaw, -- `(Gt_avgbound_flow)` (`1_2:1344`)
    `RBM.Gauss.Sizes.LWAssm, -- conjunction of the hypotheses of `lem:LWterm` with random parts (§20: unsure, owed)
@@ -174,9 +164,6 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STStep2Parts, -- the probe's `STStep2` (triple conclusion): hypothesis of `ST_step2_concl` (T2092a)
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
    `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
-   `RBM.Gauss.Sizes.STStep5I, -- `lem:main_ind` Step 5, case (i) `3_5:1939`: consumer `ST_mainIndR_*_of_steps` (T2245), producer S5-02; S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STStep5II, -- Step 5, case (ii): consumer `ST_mainIndR_*_of_steps` (T2245), producer S5-02; S5-01 (T2138, DECISIONS §40: owed)
-   `RBM.Gauss.Sizes.STEtermsMid, -- `(S5WG+M000)`, `(S5WG+M)` (`3_5:1961-1979`); S5-01 (T2138, DECISIONS §40: owed); proved from `STLWT` by `stEtermsMid_of_LWT` (T2328, S5-13)
    `RBM.Gauss.Sizes.PfStep5_walkConcl, -- `lem:pf_step5` grid conclusion `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for all `k ≤ K` w.h.p. (`3_5:2364-2383`): proved under the premises of `STIngR5` by `pfStep5_walk`; hypothesis of `pfStep5_PT_of_walk` (T2231, S5-11b: owed)
    `RBM.Univ.UNBUniv, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed); owner `bUniv_holds` (T2371, UN-52b, `Main/BUnivHolds.lean`): conditional on the borrowed `UNL32`, the consumed `UNMLOut`, `UNLocAvgBand`, `UNQueBand` and the owed `UNNormBandRow` (producer T2372) and `UNGUESchurTail` (producer T2373); the band rows `UNDensBandRow`, `UNTrLocalBandRow` are proved there
    `RBM.Univ.UNTrLocal, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
@@ -186,7 +173,6 @@ def owedProps : List Name :=
    `RBM.Univ.UNG1Rowk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: BA-C5 (T inputs) + BA-N2 (instance); with `UNG2bRowk` and `UNOUProfRowk` gives `UNOURowk` by `ouRowk_of_pins`)
    `RBM.Univ.UNOUProfRowk, -- (T2282, UN-51g: owed; owner BA-C3 at `UNKind.ba`; band proved: `unOUProfRowk_band`; premise of `ouRowk_of_pins`)
    `RBM.Univ.UNOUClaims, -- bulk universality pin, the two 𝐇_t claims (T2273, UN-21: owed; owner `ouRow_of_pins` (`ZeroModeProfile.lean:719`) + the consumed inputs `UNG1Row`, `UNG2bRow`; the row `unOURow := ouRow_of_pins g1Row g2bRow` is proved by T2371, `Main/BUniv.lean`, and stays conditional on `UNMLOut`, `UNLocAvgBand`, `UNQueBand`)
-   `RBM.Univ.UNMLOut, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNLocAvgBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNQueBand, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
    `RBM.Univ.UNNormBound, -- bulk universality pin (T2162 portmap P.4; T2174, UN-01: owed)
