@@ -1526,3 +1526,37 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   答复前不开任何 UN 票。
 - (4) 中枢：T2374（K05b）、T2375（LW-01）都在 1b，共 2 张在跑。暂时没有可放的票：K06 等 K05b，MA-06 等 T2375 和 BA 终端。
 - (5) 下一张票号 T2376，下一节 §187，下一条 H169，下一号差异 D636。
+
+## §187 — T2374（K05b）合并；BA-K06 = T2376 放行（总调度 V2，2026-10-10 08:53 UTC）
+
+- (1) **T2374 合并 ab54184**（08:46 UTC，`BA/KTreeRep`，1763 行）：`baKsolve : ∀ d, BAKsolve d`、`baTreeRep : ∀ d, BATreeRep d (@BAGamma d)` 已证，登记的 `BAKsolve` 已删（0350 O4）。阶段 K 已合并 8 行：K00、K01g、K09a、K04、K03、K02、K05a、K05b。K05 合计 612 + 1763 = 2375 行，低于 Q4 线 3.3k。
+- (2) **T2376 = BA-K06**（BA 44，阶段 K 第 9 行）：新文件 `BA/KMolecule.lean`，是带状 `KLTree` §4–§5 加 `KLSumZeroWard` §1–§3 的 BA 孪生。
+  - 内容：`BAKpi`、`(eq_K-Kpi)`、`BASigmaPi`、`(eq:molecule-Kpi)` 的第一步、在最内长边处的分解、作为接口族的分子权 `BASig`（`SigSumZeroAbs` / `IndStepAbs` 的 `Sig` 类型，含两条平移条款）。
+  - 通用的层组合学直接用已合并的（`Flong_eq_iff_cut`、`exists_innermost`、`sigmaIn/Out`、`KLsum_cut`）。
+  - 1a 设计门：定出全部公开陈述，并对照下游 K07、K08、K10、K09b 的用法；数值核对 ≤ 1e-12。之后 1a-audit。
+  - `prover-hard`，500 / 750 / 1200，停止线 1500。
+- (3) 中枢：T2375（LW-01）在 1b，加上 T2376，共 2 张。UN 收尾 REQ-0806 仍未答。
+- (4) 计数：BA 44（阶段 K 9/24）；UN 62；LW 52；ST-6 4/4；MA 7/8。下一张票号 T2377，下一节 §188，下一条 H170，下一号差异 D636。
+
+## §188 — 监督 0853（回 REQ-0806）PASS：UN 带状关闭；MA-06 拆 a/b；E1–E4 交 BA（总调度 V2，2026-10-10 08:56 UTC）
+
+- (1) **监督 2026-10-10-0853：PASS**。
+  - Q1：UN 对带状模型关闭，不开 UN-52c，UN 停在 62。
+  - Q2：(a)–(c) 同意；(d) 按规则移入 `structuralProps`，但 `UNOUQUE` 归 (a)；(e) 同意，E1–E4 除外。
+  - Q3：有四项没有生产者（E1–E4），都属 BA 体普适性（Thm 2.7 第 3b 条），不影响 Thm 2.4。
+- (2) **采纳 R1：MA-06 拆成 a/b**（MA 计划 8 → 9）。
+  - **MA-06a = 带状终端**：`UNL32 → decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff`，约十行组装，T2375 合并后放行。它负责 C1 和 O3 的登记编辑：
+    - 删 `UNBUniv`、`Endpoints.{decol, locSC, QUE, QDiff, BUniv}`、`UNOUClaims`、`UNLocAvgBand`、`UNQueBand`，配 `unOUClaims_holds`、`unLocAvgBand_holds`、`unQueBand_holds`；`UNOUQUE` 随 `UNOUClaims` 一起删，或附注留下；
+    - `UNTrLocal`、`UNNormBound`、`UNClaim417`、`GUEPathBounds`、`UNTrLocalInit'` 移入 `structuralProps`，注释写明带状实例和 BA 行的指针；
+    - `STLWB`、`STLWT`、`STOptL2` 给出类别决定（superseded，并写明替代它的带守卫的消费者）；
+    - `UNClaimRowBA` 用 `unClaimRowk _` 消掉。
+  - **MA-06b**：`Thm27` 和 `final_shape`，等 BA 终端。
+  - 理由：Jun §145（其他方向先收尾，与 BA 并行）。带状 Thm 2.1–2.5 不应等 BA。
+- (3) **C2：E1–E4 交 BA，记为 BA-N3**（阶段 M/N，「`UNKind.ba` 上的 UN 侧形式」）：
+  - E1：`UNEMCTE2RowBA` + `UNEMCTE2k`、`UNEMCTE2Rowk`；
+  - E2：`UNJakUywRowBA` + `UNJakk`、`UNUywk`、`UNJakUywRowk`；
+  - E3：`UNCoreC''`；
+  - E4：`UNGreenCorrAllC`、`UNGreenCorrC`。
+  阶段 M/N 开启 REQ 的设计里逐项决定走转移（`ouMatC (ba sz) = λΨ + ouMat …`，加平移 `Φ ↦ Φ(λΨ + ·)`）还是写泛型孪生。E5（BA 流是否满足 `etaT`、`|fE| ≤ 2 − κ`）放进 BA-C5 的 1a。ROUTES 的 UN 行据此记为「带状关闭；E1–E4 交 BA-N3」。
+- (4) **T2376 已由 Jun 在中枢直接开工**（中枢会话「开始啊」，08:53:51 UTC；9d5d47d 提交了票和检查文件）。H169 剩下的提交步骤照常执行。
+- (5) 计数：UN 62（关闭）；MA 7 / 计划 9；BA 44（阶段 M/N 加 BA-N3）。下一张票号 T2377，下一节 §189，下一条 H171，下一号差异 D636。

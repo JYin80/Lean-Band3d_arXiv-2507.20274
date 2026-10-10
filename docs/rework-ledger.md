@@ -319,3 +319,4 @@
 | T2370 | 2026-10-10 07:37 UTC (06fd533) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS，审核一次 PASS；BA-K05a `BA/KTreeDeriv`（612 行，设计中心 932）；C3 数值 (a) 9.1e-9、(b) 7.1e-14 |
 | T2372 | 2026-10-10 07:39 UTC (e004671) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-10a `Universality/NormBand`（299 行，停止线 500），`CV₀ = 3`；登记行按整行删除重放（H23 b） |
 | T2373 | 2026-10-10 07:57 UTC (ff39b72) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 PASS（中心 1320，不拆），审核一次 PASS；UN-10b `EigenInterlacing` + `GUELocalSchur`；删登记 `UNGUESchurTail`、`UNGUELocal` 两行（整行删除重放，H23 b） |
+| T2374 | 2026-10-10 08:46 UTC (ab54184) | prover-max | Sonnet 5.5 effort max | 否 | 1a 设计门 + 1a-audit PASS（C3 1.35e-13；Q4 1912 < 3.3k），审核一次 PASS；BA-K05b `BA/KTreeRep`（1763 行，停止线 2000）：`baChordPairs`、`baKcac_isKLoopS`、`baKsolve`、`baTreeRep`；删登记 `BAKsolve` |
