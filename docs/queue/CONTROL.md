@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 12:48 UTC (dispatcher V2: BA-E1 T2388, BA-G2 T2389 released for the next free slots (H180, H181))
+updated: 2026-10-10 13:01 UTC (dispatcher V2: BA-G3a T2390 released (design-gate 1a; 1b after T2389 merges) (H182))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -15,14 +15,18 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 355. T2387 — `docs/tickets/T2387.md` (BA-DL, stage-L design, report only; probe on `t/T2387`): released; starts when its check compiles with exit 0 and a slot is free (H12); with T2383 merged there are two free slots.
 356. T2388 — `docs/tickets/T2388.md` (BA-E1, new `BA/EKPins.lean`; inputs merged): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority: after T2387. Not in the certificate lane.
 357. T2389 — `docs/tickets/T2389.md` (BA-G2: `Green/LDE`, `RowIndep`, `IBPPoly` in place, new `BA/GreenLDE.lean`): released; starts when its check compiles with exit 0 and a slot is free (H12). **Priority: before T2388.** Certificate lane at merge (H176).
+358. T2390 — `docs/tickets/T2390.md` (BA-G3a: design gate for G3a/G3b/G4, then new `BA/GreenCore.lean`): released; **stage 1a** starts when its check compiles with exit 0 and a slot is free (H12); **stage 1b only after the 1a-audit PASS and T2389 merged** (hold the slot for other work in between). Slot order: after T2389, before T2388. Not in the certificate lane.
 
 ## Pre-release checks
 - `docs/tickets/checks/T2386-check.lean` (T8; merged names only).
   done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2386-check.lean` on main 61849a6: exit 0, no error lines.
 - `docs/tickets/checks/T2387-check.lean` (stage-L design; merged names only).
 - `docs/tickets/checks/T2388-check.lean` (BA-E1; merged names only).
+  done: Sat Oct 10 12:53:23 UTC 2026 — `lake env lean docs/tickets/checks/T2388-check.lean` on main 69b7abc: exit 0, no error lines.
 - `docs/tickets/checks/T2389-check.lean` (BA-G2; merged names only).
+- `docs/tickets/checks/T2390-check.lean` (BA-G3a; merged names only).
   done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2387-check.lean` on main 61849a6: exit 0, no error lines.
+  done: Sat Oct 10 12:53:23 UTC 2026 — `lake env lean docs/tickets/checks/T2389-check.lean` on main 69b7abc: exit 0, no error lines.
 - `docs/tickets/checks/T2384-check.lean` (BA-K11; merged names only).
   done: Sat Oct 10 12:03:47 UTC 2026 — `lake env lean docs/tickets/checks/T2384-check.lean` on main 2192dea: exit 0, no error lines.
 - `docs/tickets/checks/T2383-check.lean` (T5s1; G1 names).
@@ -63,8 +67,12 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 12:43:41 UTC 2026 — (4) noted: before T2386's merge, check whether its build cone includes Graph/LWExpCert*.
 
 - H180 (dispatcher V2, 2026-10-10 12:47 UTC; DECISIONS §199). Commit by name with your next commit `docs/tickets/T2388.md`, `docs/tickets/checks/T2388-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line); start T2388 in the next free slot (H12). One `done:` line per step.
+  done: Sat Oct 10 12:53:23 UTC 2026 — files committed by name in 69b7abc (with H181's and states T2385/T2386/T2387), pushed; check exit 0 on main 69b7abc; T2388 held for the second free slot (H181 order).
 
 - H181 (dispatcher V2, 2026-10-10 12:48 UTC; DECISIONS §200). Commit by name with your next commit `docs/tickets/T2389.md`, `docs/tickets/checks/T2389-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line). **Slot order: the next free slot goes to T2389, the one after to T2388** (this overrides the order in H180). T2389's merge is a certificate-lane merge (H176). One `done:` line per step.
+  done: Sat Oct 10 12:53:23 UTC 2026 — files committed in 69b7abc, pushed; check exit 0 on main 69b7abc; T2389 held for the next free slot (4 of 4 running).
+
+- H182 (dispatcher V2, 2026-10-10 13:01 UTC; DECISIONS §201). Commit by name with your next commit `docs/tickets/T2390.md`, `docs/tickets/checks/T2390-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line). **Slot order: T2389, then T2390 (stage 1a, then 1a-audit), then T2388.** After T2390's 1a-audit PASS, set its state `held` (reason: waits for T2389's merge) and free the slot; resume T2390 at stage 1b when T2389 has merged. One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 11:46:34 UTC 2026 — T2381 merged 306957f (BA-K10: new BA/KInduct (991 lines, stop 2000; 2 defs + 11 theorems), root import, no registry change; 1a-audit PASS (routing notes D1-D3 for the dispatcher), audit PASS claude-opus-5-5; full lake build 4197 jobs; pushed).

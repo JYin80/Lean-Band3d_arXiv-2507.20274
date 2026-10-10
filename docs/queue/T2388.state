@@ -1,0 +1,4 @@
+state: held
+reason: check exit 0 on main 69b7abc; waits for a free slot (4 of 4 running: T2384, T2385, T2386, T2387); slot order T2389 first, then T2388 (H181)
+updated: Sat Oct 10 12:53:23 UTC 2026
+reports: docs/reports/T2388-prove.md, docs/reports/T2388-audit.md
