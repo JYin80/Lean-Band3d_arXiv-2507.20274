@@ -298,3 +298,4 @@
 - 2026-10-10 03:54 UTC 心跳：监督 0350 PASS（K-c，C1–C5）；T2368 合并被登记拦 → Amend 1（`BAKsolve` owed），H163 → §181。
 - 2026-10-10 03:58 UTC 心跳：写 T2370 = BA-K05a（`BA/KTreeDeriv`，设计门 1a + 1a-audit）→ §182，H164。
 - 2026-10-10 04:12 UTC 心跳：T2363（UN-51）合并 0347cb8；T2370 开工；写 T2371 = UN-52b → §183，H165。
+- 2026-10-10 04:32 UTC 调度 V2 第 29 轮：T2368（K03）合并 79dec34；T2370 1a PASS（等 1a-audit）、T2371 1a PASS（叶 9、10 本票证）；写 T2372 = UN-10a（`NormBand`）、T2373 = UN-10b（`EigenInterlacing` + `GUELocalSchur`）、T2371 Amend 1；§184；H166；CONTROL 归档 H163–H165。

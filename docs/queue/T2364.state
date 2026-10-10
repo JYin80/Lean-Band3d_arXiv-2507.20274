@@ -1,4 +1,4 @@
 state: proving
-reason: stage 1a PASS; stage 1b prover-max running (wf_154407b3-dcb); Amend 1 (H162, C6 = β) sent to the prover Sat Oct 10 02:33:16 UTC 2026
-updated: Sat Oct 10 02:33:16 UTC 2026
+reason: stage 1b prover-max reported DONE at 9ca7389 (form β per Amend 1; registry owed line removed); waiting for workflow wf_154407b3-dcb to move to the auditor
+updated: Sat Oct 10 04:30:18 UTC 2026
 reports: docs/reports/T2364-prove.md, docs/reports/T2364-audit.md

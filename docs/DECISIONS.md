@@ -1474,3 +1474,17 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 1a 做叶表，列每片叶的状态和生产者，作为 UN 收尾 REQ 的材料。三条带状行若在任何计划里都没有生产者，在 1a 报告里报给调度，由调度决定是在 UN 上限 65 以内加票，还是发 REQ。
   - `prover-hard`，150 / 250 / 400，停止线 500。属关键路径，下一个空位优先给它。
 - (3) 计数：UN 60（写好）；BA 42。下一张票号 T2372，下一节 §184，下一条 H166，下一号差异 D636。
+
+## §184 — T2368（K03）合并；T2371 1a 叶表 → UN-10a = T2372、UN-10b = T2373（总调度 V2，2026-10-10 04:31 UTC）
+
+- (1) **T2368 合并 79dec34**（04:12 UTC，BA-K03 `BA/KSolve`，767 行；Amend 1 在 `Test/Axioms.lean` 加一行 owed `BAKsolve`，生产者 K05b）。返工账本记：是（流程缺口，§181 (2)）。
+- (2) **T2371 1a PASS**（叶表）。叶 9 `UNDensBandRow` 和叶 10 `UNTrLocalBandRow` 在本票证出（确定性；`UNLocAvgBand` 是叶 10 自带的前提）。剩下两片 owed 叶在任何计划里都没有票：
+  - 叶 11 `UNNormBandRow`：高斯尾 + 并集界 + 厄米矩阵特征值 ≤ N·最大元，200–320 行；
+  - 叶 16 `UNGUESchurTail`：门户表 UN-10 的 `GUELocalSchur`（RBM2D 570 行），加上它导入的 `EigenInterlacing`（RBM2D 588 行，RBM3D 没有孪生）。
+- (3) 两张票都在上限 65 以内，所以调度自定，不发 REQ。门户表 UN-10 原来是一张，现在拆成两张：
+  - **T2372 = UN-10a**：`Universality/NormBand.lean`，`unNormBandRow`。`prover-hard`，200 / 280 / 380，停止线 500。删登记一行 `UNNormBandRow`。
+  - **T2373 = UN-10b**：`Universality/EigenInterlacing.lean`、`Universality/GUELocalSchur.lean`，`gueSchurTail`、`gueLocal`。`prover-max`，1000 / 1250 / 1550，停止线 1700。1a 是设计门，内容是孪生表和指数表。中心估计超过 1500 行，或缺的孪生超过 200 行，就退回，拆成 (a) `EigenInterlacing`、(b) `GUELocalSchur`，那时 UN 到 63。删登记 `UNGUESchurTail`；`UNGUELocal` 按 T2357 的规则一并删，以预检为准。
+  - 优先级：T2371 > T2372 > T2373 > BA 新票（其他方向先收尾）。
+- (4) **T2371 Amend 1**：叶 11 不在本票做（有生产者 T2372）。`bUniv_holds` 的文档串写明各叶的生产者。由 H166 送给正在跑的 prover。
+- (5) UN 收尾：T2371、T2372、T2373 合并后，`bUniv_holds` 剩下的叶只有 `UNNormBandRow`、`UNGUESchurTail`（都已证，由 MA-06 接上），加上 `UNL32`（borrowed）、`UNMLOut`（ST-6）、`UNLocAvgBand`、`UNQueBand`（MA 输入）。那时发 UN 收尾 REQ。是否要再加一张 UN-52c 把已证的叶接进 `bUniv_holds`，在收尾 REQ 里一起问。
+- (6) 计数：UN 62（写好），计划 64，上限 65；BA 42。下一张票号 T2374，下一节 §185，下一条 H167，下一号差异 D636。

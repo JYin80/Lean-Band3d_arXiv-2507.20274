@@ -312,3 +312,4 @@
 | T2365 | 2026-10-10 03:11 UTC (a5c1a1a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS（结构体钉文 `IndStepTH` 逐字段核对，DECISIONS §175）；BA-K09a 抽象归纳步；1a N1（K-b）通过 |
 | T2367 | 2026-10-10 03:20 UTC (9b94993) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；BA-K04 `BA/KCactus`（1263 行，停止线 1300）；镜像 (α) 1.9e-15、(β) 1.24e-9；`BACactusVal_sum_zero_BAMLoop` 在 Lean 里核对了 `t = 0` 的树表示 |
 | T2363 | 2026-10-10 04:08 UTC (0347cb8) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核 PASS；UN-51 `GUEPhase/RandomLayerA/B`（1042 行，切分 A|B 未触发；U3 无需改钉）；`Test/Axioms.lean` 只改归属注释 |
+| T2368 | 2026-10-10 04:12 UTC (79dec34) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 审核 PASS（057f0f4），合并被登记拦下：`BAKsolve` 未登记（票上误写「Registry: none」，调度的流程缺口，§181）；Amend 1 repairer 加一行 owed，第 2 轮审核 PASS；BA-K03 `BA/KSolve`（767 行） |

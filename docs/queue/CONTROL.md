@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 04:12 UTC (dispatcher V2: T2363 merged; T2371 UN-52b released (H165))
+updated: 2026-10-10 04:31 UTC (dispatcher V2: T2368 merged; UN-10a T2372 and UN-10b T2373 released; T2371 Amend 1 (H166))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -10,15 +10,15 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 334. T2364 — `docs/tickets/T2364.md` (LW-13b R3 = G + F, `Graph/AuxGraphRooted.lean`, `Graph/LWMomentExp.lean`): released (input T2358 merged); starts when its check compiles with exit 0 (H12). Preset cut C3 = G|F. **Amend 1** (`docs/tickets/T2364-amend-1.md`, C6 → (β)) is in force from stage 1b.
-336. T2368 — `docs/tickets/T2368.md` (BA-K03, `BA/KSolve.lean`): audit-pass (057f0f4), merge blocked on the registry → **Amend 1** (`docs/tickets/T2368-amend-1.md`: `BAKsolve` owed, one line in `Test/Axioms.lean`), H163.
 337. T2369 — `docs/tickets/T2369.md` (BA-K02, in place `Loop/KLWard.lean` + new `BA/KWard.lean`; input K01 merged): released; starts when its check compiles with exit 0 and a slot is free (H12), after T2368. Merge yields to critical-path merges (ticket, G2).
 338. T2370 — `docs/tickets/T2370.md` (BA-K05a, new `BA/KTreeDeriv.lean`; inputs K00, K04 merged): released; starts when its check compiles with exit 0 and a slot is free (H12). Stage 1a is a design gate followed by a 1a-audit before 1b (ticket).
-339. T2371 — `docs/tickets/T2371.md` (UN-52b, new `Main/BUniv.lean`, `Main/BUnivHolds.lean`; input UN-51 merged 0347cb8): released; starts when its check compiles with exit 0 and a slot is free (H12). Critical path: priority over the BA tickets for the next free slot (CLAUDE.md §3 (G), G2).
+339. T2371 — `docs/tickets/T2371.md` (UN-52b, new `Main/BUniv.lean`, `Main/BUnivHolds.lean`; input UN-51 merged 0347cb8): released; starts when its check compiles with exit 0 and a slot is free (H12). Critical path: priority over the BA tickets for the next free slot (CLAUDE.md §3 (G), G2). **Amend 1** (`docs/tickets/T2371-amend-1.md`: leaf 11 is T2372's, not done here) is in force from now (H166).
+340. T2372 — `docs/tickets/T2372.md` (UN-10a, new `Universality/NormBand.lean`, `unNormBandRow`; every input merged): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority after T2371, before the BA tickets (DECISIONS §184 (3)).
+341. T2373 — `docs/tickets/T2373.md` (UN-10b, new `Universality/EigenInterlacing.lean`, `Universality/GUELocalSchur.lean`, `gueSchurTail`, `gueLocal`; every input merged): released; starts when its check compiles with exit 0 and a slot is free (H12), after T2372. Stage 1a is a design gate with a split rule (ticket): a RETURN with a split proposal is answered by the dispatcher.
 
 ## Pre-release checks
-- `docs/tickets/checks/T2370-check.lean` (BA-K05a; pins `BASplicedFam`, `BAGammaDerivRHS`, `BAGammaDerivStmt`, `BALeafPairsStmt`; released conditionally above, DECISIONS §17).
-  done: Sat Oct 10 04:03:52 UTC 2026 — `lake env lean docs/tickets/checks/T2370-check.lean` on main d78b09f: exit 0, no error lines.
-- `docs/tickets/checks/T2371-check.lean` (UN-52b; pin `BUnivFromLeaves`; released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2372-check.lean` (UN-10a; target `UNNormBandRow`, an existing pin; released conditionally above, DECISIONS §17).
+- `docs/tickets/checks/T2373-check.lean` (UN-10b; targets `UNGUESchurTail`, `UNGUELocal`, existing pins; released conditionally above, DECISIONS §17).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -33,16 +33,7 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 00:59:00 UTC 2026 — T2358 merged c587dcd under Jun's direct authorization in the hub session.
   done: Sat Oct 10 01:01:53 UTC 2026 — T2362 merged 8050043 under Jun's direct authorization in the hub session.
 
-- H163 (dispatcher V2, 2026-10-10 03:54 UTC; DECISIONS §20, §181; answers the question in `docs/queue/T2368.state`). Run **T2368 Amend 1** (`docs/tickets/T2368-amend-1.md`) at once under H23 (c): a `repairer` stage on `t/T2368` adds the one `owedProps` line for `RBM.BA.BAKsolve`; then a round-2 `auditor` checks that diff by script; then merge by rule (A). Commit `docs/tickets/T2368-amend-1.md`, `docs/tickets/T2364-amend-1.md`, `docs/supervisor/requests/REQ-2026-10-10-0324.md`, `docs/supervisor/2026-10-10-0350.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md` by name with the next commit you make. One `done:` line per step.
-  done: Sat Oct 10 04:03:52 UTC 2026 — the 9 listed files committed by name with the H164 files in d78b09f (with states T2363/T2364/T2365/T2367/T2368/T2369), pushed.
-  done: Sat Oct 10 04:03:52 UTC 2026 — T2368 Amend 1 started: workflow wf_28091e06-d97 (repairer on t/T2368 at 057f0f4, then auditor round 2 with the diff check and registry pre-check; merge by rule (A) on PASS).
-  done: Sat Oct 10 04:12:08 UTC 2026 — T2368 Amend 1 done: repairer f3004f5, auditor2 PASS; merged 79dec34 (see Merge log).
-
-- H164 (dispatcher V2, 2026-10-10 03:58 UTC; DECISIONS §182). With the commit of H163 (or before it, whichever comes first) also commit by name `docs/tickets/T2370.md`, `docs/tickets/checks/T2370-check.lean`; compile `docs/tickets/checks/T2370-check.lean` on `main` (H4; one `done:` line under Pre-release checks; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T2370-check.out`); start T2370 in the next free slot (H12), with the 1a-audit stage between 1a and 1b as the ticket says. One `done:` line per step.
-  done: Sat Oct 10 04:03:52 UTC 2026 — T2370.md and T2370-check.lean committed in d78b09f, pushed; check exit 0. T2370 waits for the next free slot (4 of 4 running: T2363, T2364, T2368 Amend 1, T2369). Its workflow will run 1a preflight → 1a-audit (auditor, report docs/reports/T2370-1a-audit.md) → 1b prover-max → auditor.
-  done: Sat Oct 10 04:08:29 UTC 2026 — T2370 started in the slot freed by T2363: branch from main d78b09f, workflow wf_9b93f0d1-bbf (1a preflight → 1a-audit → 1b prover-max → auditor).
-
-- H165 (dispatcher V2, 2026-10-10 04:12 UTC; DECISIONS §183). Commit by name with your next commit `docs/tickets/T2371.md`, `docs/tickets/checks/T2371-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile `docs/tickets/checks/T2371-check.lean` on `main` (H4; one `done:` line; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T2371-check.out`); start T2371 in the **next free slot, before T2370 if T2370 has not started** (critical path, §3 (G)). One `done:` line per step.
+- H166 (dispatcher V2, 2026-10-10 04:31 UTC; DECISIONS §184). (1) Commit by name with your next commit `docs/tickets/T2372.md`, `docs/tickets/checks/T2372-check.lean`, `docs/tickets/T2373.md`, `docs/tickets/checks/T2373-check.lean`, `docs/tickets/T2371-amend-1.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) Compile both check files on `main` (H4; one `done:` line each under Pre-release checks; on a non-zero exit write the first 40 error lines to `docs/tickets/checks/T####-check.out`). (3) Send **T2371 Amend 1** to the running T2371 workflow at once (as H162 did for T2364): it applies from the prover's next section boundary. (4) Start T2372, then T2373, in the next free slots (H12; both before any new BA ticket). One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 03:11:27 UTC 2026 — T2365 merged a5c1a1a (BA-K09a: Loop/KLIndStepA.lean, Loop/KLIndStepB.lean in place, no root import, no registry change; audit PASS claude-opus-5-5 (field-wise IndStepTH check, DECISIONS §175); full lake build 4177 jobs (rebuilt the certificate modules); pushed). Rule (A).
