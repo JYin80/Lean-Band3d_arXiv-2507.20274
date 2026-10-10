@@ -1772,3 +1772,20 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (1) Jun 21:1x UTC：「new hub is ready」。新中枢 HUB.alive 21:15:27 UTC；旧中枢的 H184 已执行（907ddea，DRAINED 21:15:47）。**H184 (2) 解除，恢复正常运行**（H185）。`DRAINED` 在下一次提交里删掉。
 - (2) **T2390 现在恢复**，照 Amend 1 走：D1 探针编译（`prover-max`，只写 `Probe/T2390Pins.lean`）→ (a′) → 1a-audit 第二轮 → 1b → 审核。
 - (3) 本轮接着写：K08b、E2、ST 侧的 T7；之后写 BA-T 钉文 REQ（C7）和阶段 L 开阶段 REQ。
+
+## §205 — 新中枢的第一批：K08b = T2391、E2 = T2392、T6 = T2393（总调度 V2，2026-10-10 21:22 UTC）
+
+- (1) **T2391 = BA-K08b**（BA 58，阶段 K 关键路径 K08b → K09b → K12）。新文件 `BA/KSumZeroB.lean`，内容是 B1 组合、`baSig_nc_pointwise`（`g²` 增益）、`baSig_weighted`（每个 `Q`），以及 K-b 谓词 `baSig_sumZeroAbs : SigSumZeroAbs … (BASig …)`（带 `3 ≤ n`、`t i < 1`；`SigSumZeroAbs` 本身不改，T2385b）。设计门已在 T2385 (a+) 过了，这里只做普通 1a。`prover-max`，700 / 1000 / 1500，停止线 2000，不进合并道。
+- (2) **T2392 = BA-E2**（BA 59）。新文件 `BA/EKSum.lean`，证三个属主是 BA-E2 的 owed 钉文 `BAEKSumDecay1`、`BAEKSumDecayNAL`、`BAEKSumDecay2`（`A:111-198`，论证完整），并删掉那三条 owed 登记。`prover-hard`，700 / 950 / 1500，停止线 2000，不进合并道。
+- (3) **T2393 = BA-T T6**（BA 60，子阶段 T 带状侧）：`Contract.lean` 原地加矩阵形式 `STContractM`（任意厄米 `H`、`Im z > 0`），`stContract_holds` 以旧名、旧陈述作为推论（G1）。`STContractPt` 本来就是矩阵通用的，不动。`prover`，150 / 250 / 400，停止线 600。锥 47 个模块，不含证书模块，不进合并道。
+- (4) 中枢：T2390（恢复）、T2391、T2392、T2393，共 4 张。空位次序 T2390 → T2391 → T2392 → T2393。下一张票号 T2394，下一节 §206，下一条 H187。待写：BA-T 钉文 REQ（C7）、阶段 L 开阶段 REQ（T2387）、T7（ST 侧，进合并道）、K09b（等 K08b）、E3（等 E2）。
+
+## §206 — 阶段 L 开阶段 REQ 已发（总调度 V2，2026-10-10 21:24 UTC）
+
+- (1) **REQ-2026-10-10-2124-L**（T2387 设计合并 8994389）的问题：
+  - Q1：路线 R/P / G（L3d2、L5、L4a，在第一处设绊线）/ 孪生；33 行，旗标 50；只有一次证书合并（L4e2）。
+  - Q2：首批开没有 L 前驱的六行：L0、L2c1、L2c2（D402 修正后的系数）、L3c2、L4a、L4a2（K12 合并前把它的钉文当假设）。
+  - Q3：G1–G6 这六处缺口，TeX 指向 [yang2024Del] App. B，仓库里没有。默认在 1a 里自己写（§5）；1a 卡住才问 Jun 一个问题（请他提供 App. B 的文本作阅读材料，不作外部输入）。
+  - Q4：杠杆 (S)、(C) 等 L3a3、L4e1 的 1a 出来以后再提请求。
+  - Q5：关闭条件。
+- (2) 监督 :41 答复之前，阶段 L 不放任何证明票。下一张票号 T2394，下一节 §207，下一条 H188。

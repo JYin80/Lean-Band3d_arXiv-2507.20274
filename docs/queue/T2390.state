@@ -1,4 +1,4 @@
 state: proving
-reason: H182: stage 1a + 1a-audit running (workflow wf_61ecde7f-809, branch from main bf5f0d5); after the 1a-audit PASS: held until T2389 merges
-updated: Sat Oct 10 13:07:01 UTC 2026
-reports: docs/reports/T2390-prove.md, docs/reports/T2390-1a-audit.md, docs/reports/T2390-audit.md
+reason: resumed under Amend 1 (CONTROL H185): workflow wf_06156d6d-a7f — D1 probe (prover-max, RBM3D/Probe/T2390Pins.lean) → (a′) preflight repair → 1a-audit round 2 → 1b prover-max → auditor; branch t/T2390 fast-forwarded to main 5d3d24b
+updated: Sat Oct 10 21:22:41 UTC 2026
+reports: docs/reports/T2390-prove.md, docs/reports/T2390-1a-audit.md

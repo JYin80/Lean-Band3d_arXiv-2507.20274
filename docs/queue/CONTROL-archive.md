@@ -1571,3 +1571,21 @@ done: Sat Oct 10 11:14:36 UTC 2026 — T2378 report-only merge 38eb3ee (BA stage
 - H181 (dispatcher V2, 2026-10-10 12:48 UTC; DECISIONS §200). Commit by name with your next commit `docs/tickets/T2389.md`, `docs/tickets/checks/T2389-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line). **Slot order: the next free slot goes to T2389, the one after to T2388** (this overrides the order in H180). T2389's merge is a certificate-lane merge (H176). One `done:` line per step.
   done: Sat Oct 10 12:53:23 UTC 2026 — files committed in 69b7abc, pushed; check exit 0 on main 69b7abc; T2389 held for the next free slot (4 of 4 running).
   done: Sat Oct 10 13:04:54 UTC 2026 — T2389 started in the slot freed by T2386: branch from main bf5f0d5, workflow wf_fdd5a772-7ae (prover-hard). Next free slot: T2390 (1a + 1a-audit), then T2388.
+
+## Archived 2026-10-10 21:22 UTC (dispatcher V2, H186 round)
+- `docs/tickets/checks/T2386-check.lean` (T8; merged names only).
+  done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2386-check.lean` on main 61849a6: exit 0, no error lines.
+- `docs/tickets/checks/T2387-check.lean` (stage-L design; merged names only).
+- `docs/tickets/checks/T2388-check.lean` (BA-E1; merged names only).
+  done: Sat Oct 10 12:53:23 UTC 2026 — `lake env lean docs/tickets/checks/T2388-check.lean` on main 69b7abc: exit 0, no error lines.
+- `docs/tickets/checks/T2389-check.lean` (BA-G2; merged names only).
+- `docs/tickets/checks/T2385-check.lean` (BA-K08a; merged names only).
+  done: Sat Oct 10 12:23:38 UTC 2026 — `lake env lean docs/tickets/checks/T2385-check.lean` on main 5bc433a: exit 0, no error lines.
+- H182 (dispatcher V2, 2026-10-10 13:01 UTC; DECISIONS §201). Commit by name with your next commit `docs/tickets/T2390.md`, `docs/tickets/checks/T2390-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line). **Slot order: T2389, then T2390 (stage 1a, then 1a-audit), then T2388.** After T2390's 1a-audit PASS, set its state `held` (reason: waits for T2389's merge) and free the slot; resume T2390 at stage 1b when T2389 has merged. One `done:` line per step.
+  done: Sat Oct 10 13:03:16 UTC 2026 — files committed by name in bf5f0d5 (with states T2388/T2389), pushed; check exit 0 on main bf5f0d5. Slot queue: T2389, T2390 (1a + 1a-audit), T2388; 4 of 4 running.
+  done: Sat Oct 10 13:07:01 UTC 2026 — T2390 stage 1a + 1a-audit started in the slot freed by T2384: branch from main bf5f0d5, workflow wf_61ecde7f-809 (stops after the 1a-audit; 1b after T2389 merges). Next free slot: T2388.
+  done: Sat Oct 10 13:37:06 UTC 2026 — T2390: 1a PASS, 1a-audit RETURN with dispatcher sign-off (primed pins not compiled in the probe; BAGbEXPii' dropped without a decision; G.3/G.4 locality step and constants missing; G3a instance plan degenerate, t = 0); state `blocked` with the question.
+- H184 (dispatcher V2, 2026-10-10 21:10 UTC; DECISIONS §203; relays Jun). **Jun (Cowork dispatcher session, 2026-10-10 21:09 UTC): "这波工单结束好我要换hub，所以这波结束后先不要发新单了。"** (After this wave of tickets ends, Jun is switching the hub, so no new tickets after this wave.) (1) Commit by name with your next commit `docs/tickets/T2390-amend-1.md`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) **Start nothing.** No ticket is released, and T2390 stays `blocked`/held until a dispatcher H line resumes it (Amend 1 is the answer it will run under). (3) When the commit is pushed and no workflow runs, write `docs/queue/DRAINED` (one line: UTC time, last `main` commit, "no workflow running; T2390 held (Amend 1)"). One `done:` line per step.
+  done: Sat Oct 10 21:15:47 UTC 2026 — (1) the 6 listed files committed by name in 907ddea, pushed.
+  done: Sat Oct 10 21:15:47 UTC 2026 — (2) nothing started; no ticket released; T2390 stays `blocked`/held (Amend 1).
+  done: Sat Oct 10 21:15:47 UTC 2026 — (3) no workflow running (new hub session, none in flight; no lake process); `docs/queue/DRAINED` written: "Sat Oct 10 21:15:47 UTC 2026 — last main commit 907ddea; no workflow running; T2390 held (Amend 1)".
