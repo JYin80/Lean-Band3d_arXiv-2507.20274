@@ -303,4 +303,8 @@
 | T2305 | 2026-10-06 15:15 UTC (4db5994) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-28 `Universality/GUEPhase/Generator`（类 P：通用 `loopGenGUEOf`）；D613 |
 | T2358 | 2026-10-09 02:54 UTC (Amend 1) | prover-max | Sonnet 5.5 effort max | 是（开工后改钉文） | 1a FAIL：`LocStepXProv` 缺 `P.g.Normal`（`edge`/`gg` 非正规输入反例）；监督 0243 L1 接受修补，非 O2；从 1a 重开（§163 (1)） |
 | T2359 | 2026-10-09 02:54 UTC (Amend 1) | prover-max | Sonnet 5.5 effort max | 是（开工后改钉文） | 1a FAIL：`LWXiE` 合取 2 在 `1-t < λ²/L²` 不成立；监督 0243 L2 接受限制到子类型、G2 类改 `Φ_E`、补拷贝；停止线仍 2100（§163 (1)） |
-
+| T2360 | 2026-10-09 20:05 UTC (76106b7) | prover-max | Sonnet 5.5 effort max | 否 | 仅报告（BA-DK 设计）；审核一次 PASS；1b 因周额度停摆按规则 H 重跑（不计）；发现 F1 |
+| T2361 | 2026-10-10 00:56 UTC (16b812a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；UN-50b `PathBounds`；合并因中枢权限检查拖延约 5 小时（Jun 在 Mac 上放行） |
+| T2356 | 2026-10-10 00:57 UTC (96f2390) | prover-max | Sonnet 5.5 effort max | 否 | 审核一次 PASS；UN `Eq729B`（1674 行，停止线 2400）；1a 报告先合并（8d76de9）；D628–D631 |
+| T2358 | 2026-10-10 00:59 UTC (c587dcd) | prover-max（Amend 2：repairer） | claude-opus-5-5 | 是（Amend 1 已记；Amend 2 R-a 改钉） | 审核 BLOCKED（值索引钉文）→ R-a 改钉 `lwProv_locStepXProvPos_holds`，删 `LocStepXProv` 与 4 个助手；第 2 轮审核 PASS；1820 行 |
+| T2362 | 2026-10-10 01:01 UTC (8050043) | prover-hard | Sonnet 5.5 effort xhigh | 否 | 审核一次 PASS；BA-K00：`BAMLoop` 原地修（F1，D632）+ `BA/KBase`（Θ_BA 演算） |

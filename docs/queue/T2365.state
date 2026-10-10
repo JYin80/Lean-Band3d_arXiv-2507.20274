@@ -1,0 +1,4 @@
+state: proving
+reason: H157 Step C: check exit 0; stage 1a preflight running (workflow wf_d34cffd1-3d8, role prover-hard, stop net growth 700)
+updated: Fri Oct  9 23:03:44 UTC 2026
+reports: docs/reports/T2365-prove.md, docs/reports/T2365-audit.md

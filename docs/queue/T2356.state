@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 96f2390
 reason: stage 1b DONE (86cc4f2); auditor1 PASS claude-opus-5-5 (wf_4044f6a0-11d); merging under H155 with Jun's direct authorization in the hub session
-updated: Sat Oct 10 00:57:34 UTC 2026
+updated: Sat Oct 10 00:57:36 UTC 2026
 reports: docs/reports/T2356-prove.md, docs/reports/T2356-design.md, docs/reports/T2356-audit.md

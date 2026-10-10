@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 16b812a
 reason: auditor1 PASS claude-opus-5-5 (wf_efcf843d-12f); merging under H155 with Jun's direct authorization in the hub session (Sat Oct 10 00:56:06 UTC 2026)
-updated: Sat Oct 10 00:56:06 UTC 2026
+updated: Sat Oct 10 00:56:08 UTC 2026
 reports: docs/reports/T2361-prove.md, docs/reports/T2361-audit.md

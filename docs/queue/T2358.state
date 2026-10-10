@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged c587dcd
 reason: Amend 2 repairer DONE (6d6ef4d); auditor2 PASS claude-opus-5-5 (wf_8857e67f-af3); merging under H155 with Jun's direct authorization in the hub session
-updated: Sat Oct 10 00:58:58 UTC 2026
+updated: Sat Oct 10 00:59:00 UTC 2026
 reports: docs/reports/T2358-prove.md, docs/reports/T2358-audit.md
