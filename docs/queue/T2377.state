@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 8b66528
 reason: stage 1b DONE (a8cba44; band_terminal + registry edits); auditor1 PASS claude-opus-5-5 (wf_4aabe6c1-3ac); main Axioms.lean unchanged since the branch base 17ccf68; full lake build 4194 jobs exit 0
-updated: Sat Oct 10 09:41:06 UTC 2026
+updated: Sat Oct 10 09:41:08 UTC 2026
 reports: docs/reports/T2377-prove.md, docs/reports/T2377-audit.md
