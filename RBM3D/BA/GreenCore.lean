@@ -1262,4 +1262,315 @@ theorem GreenCore_Rbound (hL : 3 ≤ L) {t g₀ c₀ ρ ρe S : ℝ} {s z : ℂ}
 
 end Reentry
 
+
+section Coupled
+variable {d L W : ℕ} [NeZero L] [NeZero W] {G X M D : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+  {Mb : Matrix (Zd d L) (Zd d L) ℂ} {m : ℂ} {κ Φ δ : ℝ}
+
+/-- **(E0) + (E1)** in entries (row form): `Δ_{xy} = -Σ_{b'} M^{(B)}_{[x]b'} (A_u G_{uy} + 𝔛_{uy})`, `u = (b', o_x)`. -/
+theorem GreenCore_Delta_row {t : ℝ} {s z : ℂ} (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
+    (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
+    (hMR : M * (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1) (hz : z = s - (t : ℂ) * m)
+    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hG0 : ∀ u, G u u ≠ 0) (x y : Vtx d L W) :
+    G x y - M x y = -∑ b', Mb x.1 b' * (GreenCore_Arow G X D t m (b', x.2) * G (b', x.2) y +
+      GreenCore_Xrow G X (b', x.2) y) := by
+  have key : (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) - (D + X - z • 1) =
+      -(X + ((t : ℂ) * m) • 1) := by rw [hz]; module
+  have e0 : G - M = -(M * ((X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G)) := by
+    calc G - M = M * (D - s • 1) * G - M * (D + X - z • 1) * G := by
+          rw [mul_assoc M (D + X - z • 1) G, hRG, mul_one, hMR, one_mul]
+      _ = _ := by rw [← sub_mul, ← mul_sub, key, mul_neg, neg_mul, mul_assoc]
+  have e1 : ∀ u, ((X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G) u y =
+      GreenCore_Arow G X D t m u * G u y + GreenCore_Xrow G X u y := by
+    intro u
+    have h1 := GreenCore_E1 (X := X) hGR u y (hG0 u)
+    have h2 : ((X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G) u y =
+        ∑ v, X u v * G v y + (t : ℂ) * m * G u y := by
+      rw [Matrix.mul_apply]
+      simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, add_mul, Finset.sum_add_distrib]
+      congr 1
+      rw [Finset.sum_eq_single u (fun b _ hb => by simp [Ne.symm hb]) (by simp)]
+      simp
+    rw [h2, h1]; unfold GreenCore_Arow GreenCore_Xrow; ring
+  have h3 := congrFun (congrFun e0 x) y
+  rw [Matrix.sub_apply, Matrix.neg_apply] at h3
+  rw [h3, Matrix.mul_apply]
+  congr 1
+  have h4 := GreenCore_sum_kron' hM (fun u => ((X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G) u y) x
+  rw [h4]
+  refine Finset.sum_congr rfl fun b' _ => ?_
+  rw [e1 (b', x.2)]
+
+/-- `𝒦_{uy} = t v̄_{[u]} Δ_{uy} - (A_u + t v̄_{[u]}) G_{uy} - 𝔛_{uy}`: the residual of the coupled system (E3). -/
+def GreenCore_K (G M X D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (t : ℝ) (m : ℂ) (u y : Vtx d L W) : ℂ :=
+  (t : ℂ) * GreenCore_vbar G M u.1 * (G u y - M u y) -
+    (GreenCore_Arow G X D t m u + (t : ℂ) * GreenCore_vbar G M u.1) * G u y - GreenCore_Xrow G X u y
+
+/-- **(E3)**: `Δ = M 𝒮[Δ] M + M 𝒦`, `𝒮[Δ] = diag(t v̄_{[u]})`, in entries. -/
+theorem GreenCore_E3 {t : ℝ} {s z : ℂ} (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
+    (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
+    (hMR : M * (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1) (hz : z = s - (t : ℂ) * m)
+    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hG0 : ∀ u, G u u ≠ 0) (x y : Vtx d L W) :
+    G x y - M x y = ∑ b', Mb x.1 b' * ((t : ℂ) * GreenCore_vbar G M b' * M (b', x.2) y) +
+      ∑ b', Mb x.1 b' * GreenCore_K G M X D t m (b', x.2) y := by
+  rw [GreenCore_Delta_row hGR hRG hMR hz hM hG0, ← Finset.sum_add_distrib, ← Finset.sum_neg_distrib]
+  refine Finset.sum_congr rfl fun b' _ => ?_
+  unfold GreenCore_K
+  ring
+
+
+/-- **The stability of the coupled system**, the block Anderson twin of `Stable S ξ K` (`Green/EntryCore.lean:911`):
+`‖(1 - t M^{(+,+)})⁻¹‖_{max→max} ≤ K` at the real-axis data `(g, E, m)` of `M^{(B)} = (g Ψ^{(B)} - E - m)⁻¹`,
+`M^{(+,+)}_{ab} = M^{(B)}_{ba} M^{(B)}_{ab}` (`BAMss`, `BA/MFixedPoint.lean:511`); stated without forming the inverse.
+`K = 16 κ⁻⁴` at `BAReal` data is G3b's theorem. -/
+def BAStab (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (t K : ℝ) : Prop :=
+  ∀ (v : Zd d L → ℂ) (B : ℝ),
+    (∀ a, ‖v a - (t : ℂ) * ∑ b, BAMss d L (BAMB d L g (E : ℂ) m) true true a b * v b‖ ≤ B) →
+      ∀ a, ‖v a‖ ≤ K * B
+
+/-- **The coupled bound** `‖Δ‖_max ≤ K_BA ‖𝒦‖_max`, `K_BA = ρ (1 + ρ₂ K_Θ)`: from `Δ = M 𝒮[Δ] M + M 𝒦` (E3), the
+stability `hstab` of `1 - t M^{(+,+)}` (block averages `v̄_a = W^{-d} Σ_{k∈a} Δ_{kk}` solve it with the right side
+`⟨M𝒦⟩`), `ρ ≥ max_a Σ_b |M_{ab}|`, `ρ₂ ≥ max_{a,c} Σ_b |M_{ab}||M_{bc}|`. -/
+theorem GreenCore_coupled {Δ 𝒦 : Vtx d L W → Vtx d L W → ℂ} {vb : Zd d L → ℂ} {t Kθ ρ ρ₂ K𝒦 : ℝ}
+    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (hKθ : 0 ≤ Kθ)
+    (hρ : ∀ a, ∑ b, ‖Mb a b‖ ≤ ρ) (hρ₂ : ∀ a c, ∑ b, ‖Mb a b‖ * ‖Mb b c‖ ≤ ρ₂)
+    (hv : ∀ a, vb a = (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, Δ (a, o) (a, o))
+    (hE3 : ∀ x y, Δ x y = ∑ b', Mb x.1 b' * ((t : ℂ) * vb b' * M (b', x.2) y) +
+      ∑ b', Mb x.1 b' * 𝒦 (b', x.2) y)
+    (hstab : ∀ (v : Zd d L → ℂ) (B : ℝ), (∀ a, ‖v a - (t : ℂ) * ∑ b, (Mb b a * Mb a b) * v b‖ ≤ B) →
+      ∀ a, ‖v a‖ ≤ Kθ * B)
+    (hK : ∀ u y, ‖𝒦 u y‖ ≤ K𝒦) (x y : Vtx d L W) : ‖Δ x y‖ ≤ ρ * (1 + ρ₂ * Kθ) * K𝒦 := by
+  have hw := GreenCore_w_pos (d := d) (W := W)
+  have hK0 : 0 ≤ K𝒦 := le_trans (norm_nonneg _) (hK x y)
+  have hρ0 : 0 ≤ ρ := le_trans (Finset.sum_nonneg fun b _ => norm_nonneg _) (hρ 0)
+  have hρ20 : 0 ≤ ρ₂ := le_trans (Finset.sum_nonneg fun b _ => by positivity) (hρ₂ 0 0)
+  -- the averaged equation for `v̄`
+  have hM' : ∀ (b' a : Zd d L) (o : Fin (W ^ d)), M (b', o) (a, o) = Mb b' a := fun b' a o => by simp [hM]
+  have hbar : ∀ a, vb a - (t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b =
+      (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, ∑ b', Mb a b' * 𝒦 (b', o) (a, o) := by
+    intro a
+    have h1 : ∀ o : Fin (W ^ d), Δ (a, o) (a, o) = (t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b +
+        ∑ b', Mb a b' * 𝒦 (b', o) (a, o) := by
+      intro o
+      rw [hE3 (a, o) (a, o)]
+      congr 1
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun b _ => by simp only [hM']; ring
+    rw [hv a]
+    simp only [h1, Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_add]
+    have : (((W : ℝ) ^ d)⁻¹ : ℝ) * (((W ^ d : ℕ) : ℂ) * ((t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b)) =
+        (t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b := by
+      have h3 : (((W : ℝ) ^ d)⁻¹ : ℝ) * ((W ^ d : ℕ) : ℂ) = 1 := by
+        have := GreenCore_w_mul (d := d) (W := W)
+        exact_mod_cast this
+      rw [← mul_assoc, h3, one_mul]
+    rw [this]; ring
+  have hv1 : ∀ a, ‖vb a‖ ≤ Kθ * (ρ * K𝒦) := by
+    refine hstab vb (ρ * K𝒦) fun a => ?_
+    rw [hbar a, norm_mul, Complex.norm_real, Real.norm_of_nonneg hw.le]
+    refine (mul_le_mul_of_nonneg_left (norm_sum_le _ _) hw.le).trans (GreenCore_avg_le fun o => ?_)
+    refine (norm_sum_le _ _).trans ?_
+    calc ∑ b', ‖Mb a b' * 𝒦 (b', o) (a, o)‖ ≤ ∑ b', ‖Mb a b'‖ * K𝒦 :=
+          Finset.sum_le_sum fun b' _ => by rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hK _ _) (norm_nonneg _)
+      _ ≤ ρ * K𝒦 := by rw [← Finset.sum_mul]; exact mul_le_mul_of_nonneg_right (hρ _) hK0
+  rw [hE3 x y]
+  have h2 : ‖∑ b', Mb x.1 b' * ((t : ℂ) * vb b' * M (b', x.2) y)‖ ≤ (ρ₂ * Kθ * (ρ * K𝒦)) := by
+    refine (norm_sum_le _ _).trans ?_
+    have hMy : ∀ b', ‖M (b', x.2) y‖ ≤ ‖Mb b' y.1‖ := fun b' => by
+      rw [hM]; split_ifs
+      · exact le_rfl
+      · simp
+    calc ∑ b', ‖Mb x.1 b' * ((t : ℂ) * vb b' * M (b', x.2) y)‖
+        ≤ ∑ b', ‖Mb x.1 b'‖ * ‖Mb b' y.1‖ * (Kθ * (ρ * K𝒦)) := by
+          refine Finset.sum_le_sum fun b' _ => ?_
+          rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+          have := mul_le_mul (mul_le_mul ht1 (hv1 b') (norm_nonneg _) zero_le_one) (hMy b') (norm_nonneg _)
+            (mul_nonneg zero_le_one (mul_nonneg hKθ (mul_nonneg hρ0 hK0)))
+          calc ‖Mb x.1 b'‖ * (t * ‖vb b'‖ * ‖M (b', x.2) y‖) ≤ ‖Mb x.1 b'‖ * (1 * (Kθ * (ρ * K𝒦)) * ‖Mb b' y.1‖) :=
+                mul_le_mul_of_nonneg_left this (norm_nonneg _)
+            _ = _ := by ring
+      _ = (∑ b', ‖Mb x.1 b'‖ * ‖Mb b' y.1‖) * (Kθ * (ρ * K𝒦)) := by rw [Finset.sum_mul]
+      _ ≤ ρ₂ * (Kθ * (ρ * K𝒦)) := mul_le_mul_of_nonneg_right (hρ₂ _ _) (mul_nonneg hKθ (mul_nonneg hρ0 hK0))
+      _ = _ := by ring
+  have h3 : ‖∑ b', Mb x.1 b' * 𝒦 (b', x.2) y‖ ≤ ρ * K𝒦 := by
+    refine (norm_sum_le _ _).trans ?_
+    calc ∑ b', ‖Mb x.1 b' * 𝒦 (b', x.2) y‖ ≤ ∑ b', ‖Mb x.1 b'‖ * K𝒦 :=
+          Finset.sum_le_sum fun b' _ => by rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hK _ _) (norm_nonneg _)
+      _ ≤ ρ * K𝒦 := by rw [← Finset.sum_mul]; exact mul_le_mul_of_nonneg_right (hρ _) hK0
+  calc _ ≤ _ := norm_add_le _ _
+    _ ≤ ρ₂ * Kθ * (ρ * K𝒦) + ρ * K𝒦 := add_le_add h2 h3
+    _ = ρ * (1 + ρ₂ * Kθ) * K𝒦 := by ring
+
+
+/-- Constants of the diagonal law: `R₀ = 4 c₀⁻² S W^{-d} + 16 ρ Φ c₀⁻¹ S² L` (the sup form of (R*)), `X_b = Φ (2 + 18 κ⁻²) R₀`
+(bound of `|𝔛|²`), `A_b = 5 (4κ⁻² R₀ (13/4) δ² + Φ (2 L + 8 κ⁻² R₀ (13/4) δ²) + Φ W^{-d} + (2 d g₀)² X_b)` (bound of `|A_u + t v̄|²`). -/
+def GreenCore_R0 (c₀ ρ S Φ w₀ Lm : ℝ) : ℝ := 4 * c₀⁻¹ ^ 2 * S * w₀ + 16 * ρ * Φ * c₀⁻¹ * S * (S * Lm)
+
+def GreenCore_Xb (κ Φ c₀ ρ S w₀ Lm : ℝ) : ℝ := Φ * (2 + 18 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ w₀ Lm
+
+def GreenCore_Ab (d : ℕ) (κ Φ δ c₀ ρ S g₀ w₀ Lm : ℝ) : ℝ :=
+  5 * ((4 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ w₀ Lm * (13 / 4 * δ ^ 2) +
+    Φ * (2 * Lm + (8 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ w₀ Lm * (13 / 4 * δ ^ 2)) + Φ * w₀ +
+    (2 * d * g₀) ^ 2 * GreenCore_Xb κ Φ c₀ ρ S w₀ Lm)
+
+
+/-- **The diagonal law**, `G3a` row R4 (the BA reading of `(4.3)`): on `Ω ∩ LDE`, with `L = max_{a,b} 𝓛^{(2)}_{(-,+),(a,b)}`
+and `K_BA = ρ (1 + ρ₂ K_Θ)`, `K_BA δ ≤ 1/2`: `‖G - M‖²_max ≤ 8 K_BA² ((9/4) A_b + X_b)`, which is `≲ K_BA² Φ² (L + W^{-d})`
+(`GreenCore_Ab`, `GreenCore_Xb`: polynomial in `L` and `W^{-d}`).  The stability of the coupled system enters only as
+`BAStab` (G3b); the proof: (R*) in sup form, `|𝔛|` (`Xrow_sq`), `|A_u + t v̄| = |ε_2 - ε_1 + X_{uu} - Q^{XD}_u|` (E2), (E3), `coupled`. -/
+theorem GreenCore_diag (hL : 3 ≤ L) {t g₀ c₀ ρ ρe S E Kθ ρ₂ Lm : ℝ} {s z : ℂ}
+    (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
+    (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
+    (hMR : (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * M = 1)
+    (hMR' : M * (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1) (hz : z = s - (t : ℂ) * m)
+    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hMd : ∀ a, Mb a a = m)
+    (hD : ∀ u l, D u l = if u.2 = l.2 ∧ Adj d L u.1 l.1 then (g₀ : ℂ) else 0)
+    (hκ : 0 < κ) (hκm : κ ≤ ‖m‖) (hm1 : ‖m‖ ≤ 1) (hMb1 : ∀ a b, ‖Mb a b‖ ≤ 1) (hc₀ : 0 < c₀)
+    (hdec : ∀ a b, ‖Mb a b‖ ≤ c₀⁻¹ * Real.exp (-c₀ * (zdistD d L (a - b) : ℝ)))
+    (hρ : ∀ c, ∑ b, ‖Mb b c‖ ≤ ρ)
+    (hρe : ∀ c, ∑ b, ‖Mb b c‖ * Real.exp ((c₀ / 2) * (zdistD d L (c - b) : ℝ)) ≤ ρe)
+    (hS : ∀ a, ∑ b, Real.exp (-(c₀ / 2) * (zdistD d L (a - b) : ℝ)) ≤ S)
+    (hg : 0 ≤ g₀) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (hΦ : 1 ≤ Φ) (hδ : δ ≤ κ / 2) (hδ0 : 0 ≤ δ)
+    (hwd : ((W : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hΩ : ∀ u v, ‖G u v - M u v‖ ≤ δ)
+    (hLrow : LDERow X G (svar d L W 0) Φ) (hLcol : LDECol X G (svar d L W 0) Φ)
+    (hLquad : LDEQuad X G (svar d L W 0) t Φ) (hLdiag : ∀ i, ‖X i i‖ ^ 2 ≤ Φ * svar d L W 0 i i)
+    (hC1 : 8 * ρ * ρe * (((251 + 1300 * d ^ 2 * g₀ ^ 2) / κ ^ 2) * Φ * δ ^ 2) ≤ 1)
+    (hLm : ∀ a b, GreenCore_loop G a b ≤ Lm) (hLm0 : 0 ≤ Lm)
+    (hMb : Mb = BAMB d L g₀ (E : ℂ) m) (hstab : BAStab d L g₀ E m t Kθ) (hKθ : 0 ≤ Kθ)
+    (hρr : ∀ a, ∑ b, ‖Mb a b‖ ≤ ρ) (hρ₂ : ∀ a c, ∑ b, ‖Mb a b‖ * ‖Mb b c‖ ≤ ρ₂)
+    (hKδ : ρ * (1 + ρ₂ * Kθ) * δ ≤ 1 / 2) (x y : Vtx d L W) :
+    ‖G x y - M x y‖ ^ 2 ≤ 8 * (ρ * (1 + ρ₂ * Kθ)) ^ 2 *
+      (9 / 4 * GreenCore_Ab d κ Φ δ c₀ ρ S g₀ ((W : ℝ) ^ d)⁻¹ Lm + GreenCore_Xb κ Φ c₀ ρ S ((W : ℝ) ^ d)⁻¹ Lm) := by
+  have hw := GreenCore_w_pos (d := d) (W := W)
+  have hΦ0 : 0 ≤ Φ := by linarith
+  have hκ1 : κ ≤ 1 := hκm.trans hm1
+  obtain ⟨hGuu, hG32, hGoff⟩ := GreenCore_crude hM hMd hMb1 hκm hm1 hδ hΩ
+  have hG0 : ∀ u, G u u ≠ 0 := fun u h => by
+    have := hGuu u; rw [h, norm_zero] at this; linarith
+  have hS0 : 0 ≤ S := le_trans (Finset.sum_nonneg fun b _ => (Real.exp_pos _).le) (hS 0)
+  have hρ0 : 0 ≤ ρ := le_trans (Finset.sum_nonneg fun b _ => norm_nonneg _) (hρ 0)
+  have hρ20 : 0 ≤ ρ₂ := le_trans (Finset.sum_nonneg fun b _ => by positivity) (hρ₂ 0 0)
+  have hap := GreenCore_apriori hG32 hGoff hδ0 hwd
+  -- (1) the sup form of (R*)
+  have hR : ∀ a y, GreenCore_R G a y ≤ GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm := by
+    intro a y
+    obtain ⟨c, o⟩ := y
+    have h := GreenCore_Rbound hL hGR hRG hMR hz hM hMd hD hκ hκm hm1 hMb1 hc₀ hdec hρ hρe hS hg ht0 ht1 hΦ hδ hδ0
+      hwd hΩ hLcol hLquad hLdiag hC1 (fun _ _ => Real.sqrt Lm)
+      (fun a b => by rw [Real.sq_sqrt hLm0]; exact hLm a b) a c o
+    refine h.trans ?_
+    unfold GreenCore_R0
+    have e1 : Real.exp (-(c₀ / 2) * (zdistD d L (a - c) : ℝ)) ≤ 1 :=
+      Real.exp_le_one_iff.2 (by nlinarith [(Nat.cast_nonneg (zdistD d L (a - c)) : (0 : ℝ) ≤ _)])
+    have e2 : ∑ b'', Real.exp (-(c₀ / 2) * (zdistD d L (c - b'') : ℝ)) * Real.sqrt Lm ^ 2 ≤ S * Lm := by
+      rw [Real.sq_sqrt hLm0, ← Finset.sum_mul]; exact mul_le_mul_of_nonneg_right (hS c) hLm0
+    have h1 : 4 * c₀⁻¹ ^ 2 * S * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c₀ / 2) * (zdistD d L (a - c) : ℝ)) ≤
+        4 * c₀⁻¹ ^ 2 * S * ((W : ℝ) ^ d)⁻¹ := by
+      calc _ ≤ 4 * c₀⁻¹ ^ 2 * S * ((W : ℝ) ^ d)⁻¹ * 1 := mul_le_mul_of_nonneg_left e1 (by positivity)
+        _ = _ := mul_one _
+    have h2 := mul_le_mul_of_nonneg_left e2 (by positivity : (0 : ℝ) ≤ 16 * ρ * Φ * c₀⁻¹ * S)
+    linarith
+  -- (2) the bound for `𝔛`
+  have hXr : ∀ u y, ‖GreenCore_Xrow G X u y‖ ^ 2 ≤ GreenCore_Xb κ Φ c₀ ρ S ((W : ℝ) ^ d)⁻¹ Lm := by
+    intro u y
+    refine (GreenCore_Xrow_sq hκ hΦ0 hGuu hLrow u y).trans ?_
+    have h1 : ‖G u y‖ ^ 2 ≤ 9 / 4 := by nlinarith [norm_nonneg (G u y), hG32 u y]
+    have h2 := hR u.1 y
+    have h3 := hR u.1 u
+    have h4 : 0 ≤ GreenCore_R G u.1 u := mul_nonneg hw.le (Finset.sum_nonneg fun _ _ => by positivity)
+    have h5 : (8 / κ ^ 2) * ‖G u y‖ ^ 2 * GreenCore_R G u.1 u ≤ (8 / κ ^ 2) * (9 / 4) * GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm :=
+      mul_le_mul (mul_le_mul_of_nonneg_left h1 (by positivity)) h3 h4 (by positivity)
+    unfold GreenCore_Xb
+    have e : Φ * (2 + 18 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm =
+        Φ * (2 * GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm + (8 / κ ^ 2) * (9 / 4) * GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm) := by
+      field_simp; ring
+    rw [e]
+    exact mul_le_mul_of_nonneg_left (by linarith) hΦ0
+  -- (3) the bound for `A_u + t v̄`
+  have hA : ∀ u, ‖GreenCore_Arow G X D t m u + (t : ℂ) * GreenCore_vbar G M u.1‖ ^ 2 ≤
+      GreenCore_Ab d κ Φ δ c₀ ρ S g₀ ((W : ℝ) ^ d)⁻¹ Lm := by
+    intro u
+    refine (GreenCore_Arow_four hM hMd (hG0 u)).trans ?_
+    unfold GreenCore_Ab
+    have hR1 := hR u.1 u
+    have hR2 : 0 ≤ GreenCore_R G u.1 u := mul_nonneg hw.le (Finset.sum_nonneg fun _ _ => by positivity)
+    have hR3 := hap.2 u u.1
+    have hR4 : 0 ≤ GreenCore_Rrow G u u.1 := mul_nonneg hw.le (Finset.sum_nonneg fun _ _ => by positivity)
+    have hRR : GreenCore_R G u.1 u * GreenCore_Rrow G u u.1 ≤ GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm * (13 / 4 * δ ^ 2) :=
+      mul_le_mul hR1 hR3 hR4 (le_trans hR2 hR1)
+    have b2 : ‖GreenCore_eps2 G t u‖ ^ 2 ≤
+        (4 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm * (13 / 4 * δ ^ 2) := by
+      refine (GreenCore_eps2_loc (G := G) ht0 ht1 hκ hGuu u).trans ?_
+      rw [mul_assoc, mul_assoc]; exact mul_le_mul_of_nonneg_left hRR (by positivity)
+    have b1 : ‖GreenCore_eps1 G X t u‖ ^ 2 ≤ Φ * (2 * Lm + (8 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ ((W : ℝ) ^ d)⁻¹ Lm * (13 / 4 * δ ^ 2)) := by
+      refine (GreenCore_eps1_loc hκ hΦ0 hGuu hLquad u).trans (mul_le_mul_of_nonneg_left (add_le_add
+        (mul_le_mul_of_nonneg_left (hLm _ _) two_pos.le) ?_) hΦ0)
+      rw [mul_assoc, mul_assoc]; exact mul_le_mul_of_nonneg_left hRR (by positivity)
+    have b3 : ‖X u u‖ ^ 2 ≤ Φ * ((W : ℝ) ^ d)⁻¹ := by
+      have := hLdiag u
+      rw [GreenCore_svar0] at this; simpa using this
+    have b4 := GreenCore_Qxd_sq (G := G) (X := X) hg hL hD (fun l => hXr u l)
+    linarith
+  -- (4) the residual `𝒦` and the coupled bound at the maximum of `|Δ|`
+  obtain ⟨p₀, hp₀⟩ := Finite.exists_max (fun p : Vtx d L W × Vtx d L W => ‖G p.1 p.2 - M p.1 p.2‖)
+  have hDm : ∀ x y, ‖G x y - M x y‖ ≤ ‖G p₀.1 p₀.2 - M p₀.1 p₀.2‖ := fun x y => hp₀ (x, y)
+  have hDm0 : 0 ≤ ‖G p₀.1 p₀.2 - M p₀.1 p₀.2‖ := norm_nonneg _
+  generalize hDmdef : ‖G p₀.1 p₀.2 - M p₀.1 p₀.2‖ = Dm at hDm hDm0
+  have hDmδ : Dm ≤ δ := hDmdef ▸ hΩ _ _
+  have hvb : ∀ a, ‖GreenCore_vbar G M a‖ ≤ Dm := fun a => by
+    unfold GreenCore_vbar
+    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hw.le]
+    exact (mul_le_mul_of_nonneg_left (norm_sum_le _ _) hw.le).trans (GreenCore_avg_le fun o => hDm _ _)
+  have hKb : ∀ u y, ‖GreenCore_K G M X D t m u y‖ ≤
+      Dm * δ + 3 / 2 * Real.sqrt (GreenCore_Ab d κ Φ δ c₀ ρ S g₀ ((W : ℝ) ^ d)⁻¹ Lm) +
+        Real.sqrt (GreenCore_Xb κ Φ c₀ ρ S ((W : ℝ) ^ d)⁻¹ Lm) := by
+    intro u y
+    unfold GreenCore_K
+    have h1 : ‖(t : ℂ) * GreenCore_vbar G M u.1 * (G u y - M u y)‖ ≤ Dm * δ := by
+      rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+      calc t * ‖GreenCore_vbar G M u.1‖ * ‖G u y - M u y‖ ≤ 1 * Dm * δ :=
+            mul_le_mul (mul_le_mul ht1 (hvb _) (norm_nonneg _) zero_le_one) (hΩ _ _) (norm_nonneg _)
+              (mul_nonneg zero_le_one hDm0)
+        _ = Dm * δ := by ring
+    have h2 : ‖(GreenCore_Arow G X D t m u + (t : ℂ) * GreenCore_vbar G M u.1) * G u y‖ ≤
+        Real.sqrt (GreenCore_Ab d κ Φ δ c₀ ρ S g₀ ((W : ℝ) ^ d)⁻¹ Lm) * (3 / 2) := by
+      rw [norm_mul]
+      exact mul_le_mul ((le_abs_self _).trans (Real.abs_le_sqrt (hA u))) (hG32 u y) (norm_nonneg _) (Real.sqrt_nonneg _)
+    have h3 : ‖GreenCore_Xrow G X u y‖ ≤ Real.sqrt (GreenCore_Xb κ Φ c₀ ρ S ((W : ℝ) ^ d)⁻¹ Lm) :=
+      (le_abs_self _).trans (Real.abs_le_sqrt (hXr u y))
+    calc _ ≤ ‖(t : ℂ) * GreenCore_vbar G M u.1 * (G u y - M u y) -
+          (GreenCore_Arow G X D t m u + (t : ℂ) * GreenCore_vbar G M u.1) * G u y‖ + ‖GreenCore_Xrow G X u y‖ :=
+          norm_sub_le _ _
+      _ ≤ (‖(t : ℂ) * GreenCore_vbar G M u.1 * (G u y - M u y)‖ +
+          ‖(GreenCore_Arow G X D t m u + (t : ℂ) * GreenCore_vbar G M u.1) * G u y‖) + ‖GreenCore_Xrow G X u y‖ :=
+          add_le_add (norm_sub_le _ _) le_rfl
+      _ ≤ _ := by linarith
+  have hstab' : ∀ (v : Zd d L → ℂ) (B : ℝ), (∀ a, ‖v a - (t : ℂ) * ∑ b, (Mb b a * Mb a b) * v b‖ ≤ B) →
+      ∀ a, ‖v a‖ ≤ Kθ * B := by
+    subst hMb
+    intro v B hv a
+    exact hstab v B (fun a' => by simpa [BAMss, BAMsigma] using hv a') a
+  have hcoup := fun x y => GreenCore_coupled (M := M) (Mb := Mb) (Δ := fun x y => G x y - M x y)
+    (𝒦 := GreenCore_K G M X D t m) (vb := GreenCore_vbar G M) hM ht0 ht1 hKθ hρr hρ₂ (fun a => rfl)
+    (fun x y => GreenCore_E3 hGR hRG hMR' hz hM hG0 x y) hstab' hKb x y
+  have hmax := hcoup p₀.1 p₀.2
+  rw [hDmdef] at hmax
+  have hAb0 : 0 ≤ GreenCore_Ab d κ Φ δ c₀ ρ S g₀ ((W : ℝ) ^ d)⁻¹ Lm := le_trans (sq_nonneg _) (hA x)
+  have hXb0 : 0 ≤ GreenCore_Xb κ Φ c₀ ρ S ((W : ℝ) ^ d)⁻¹ Lm := le_trans (sq_nonneg _) (hXr x y)
+  have ha := Real.sq_sqrt hAb0
+  have hb := Real.sq_sqrt hXb0
+  generalize Real.sqrt (GreenCore_Ab d κ Φ δ c₀ ρ S g₀ ((W : ℝ) ^ d)⁻¹ Lm) = a at *
+  generalize Real.sqrt (GreenCore_Xb κ Φ c₀ ρ S ((W : ℝ) ^ d)⁻¹ Lm) = b at *
+  have hK0 : 0 ≤ ρ * (1 + ρ₂ * Kθ) := by positivity
+  have h2 : Dm ≤ 2 * (ρ * (1 + ρ₂ * Kθ)) * (3 / 2 * a + b) := by
+    have := mul_le_mul_of_nonneg_right hKδ hDm0
+    nlinarith
+  have h3 : ‖G x y - M x y‖ ^ 2 ≤ (2 * (ρ * (1 + ρ₂ * Kθ)) * (3 / 2 * a + b)) ^ 2 :=
+    pow_le_pow_left₀ (norm_nonneg _) ((hDm x y).trans h2) 2
+  refine h3.trans ?_
+  rw [← ha, ← hb]
+  nlinarith [sq_nonneg (3 / 2 * a - b), sq_nonneg (ρ * (1 + ρ₂ * Kθ))]
+
+end Coupled
+
 end RBM.BA
