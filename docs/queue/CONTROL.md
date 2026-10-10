@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-10 22:42 UTC (dispatcher V2: T2390 1a-audit round 2 PASS; C2 REQ sent (H192))
+updated: 2026-10-10 22:58 UTC (dispatcher V2: K09b merged; supervisor 2254 PASS (C2); K12 T2399, G3b T2400 released; T2397/T2398 Amend 1 (G2) (H193))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -11,18 +11,17 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 358. T2390 — `docs/tickets/T2390.md` (BA-G3a: design gate for G3a/G3b/G4, then new `BA/GreenCore.lean`): 1a-audit RETURN answered by **Amend 1** (`docs/tickets/T2390-amend-1.md`); **resumes now (H185)**: D1 probe step → (a′) → 1a-audit round 2 → 1b `prover-max` → auditor.
 362. T2395 — `docs/tickets/T2395.md` (BA-L3a3 design gate: G1 + the S test, report only; supervisor 2149 L4 (a)): released; starts when its check compiles with exit 0 and a slot is free (H12). **Priority: first among new tickets.**
-364. T2396 — `docs/tickets/T2396.md` (BA-K09b, new `BA/KStep.lean`; `Loop/KLInduct.lean` not edited): released; starts when its check compiles with exit 0 and a slot is free (H12). **Priority: first** (stage-K critical path). Not in the certificate lane.
 365. T2398 — `docs/tickets/T2398.md` (BA LW-14 design gate: G6 + lever C, report only; supervisor 2149 L3, L4 (c)): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority: next free slot.
 366. T2397 — `docs/tickets/T2397.md` (BA-L3b3 design gate: G2, report only; supervisor 2149 L4 (b)): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority: after T2398.
+367. T2399 — `docs/tickets/T2399.md` (BA-K12, new `BA/KBound.lean`, `STKwardgL` in `Chain/Carrier.lean`; closes stage K): released; starts when its check compiles with exit 0 and a slot is free (H12). **Priority: first.** Not in the certificate lane.
+368. T2400 — `docs/tickets/T2400.md` (BA-G3b, new `BA/GreenStab.lean`; supervisor 2254 Q1): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority: after T2399. Not in the certificate lane.
 
 ## Pre-release checks
+- `docs/tickets/checks/T2399-check.lean` (BA-K12; merged names only).
+- `docs/tickets/checks/T2400-check.lean` (BA-G3b; merged names only).
 - `docs/tickets/checks/T2397-check.lean` (L3b3 gate; merged names only).
 - `docs/tickets/checks/T2398-check.lean` (LW-14 gate; merged names only).
-- `docs/tickets/checks/T2396-check.lean` (BA-K09b; merged names only).
-- `docs/tickets/checks/T2394-check.lean` (BA-L0; merged names only).
 - `docs/tickets/checks/T2395-check.lean` (BA-L3a3 gate; merged names only).
-- `docs/tickets/checks/T2391-check.lean` (BA-K08b; merged names only).
-- `docs/tickets/checks/T2392-check.lean` (BA-E2; merged names only).
 - `docs/tickets/checks/T2390-check.lean` (BA-G3a; merged names only).
   done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2387-check.lean` on main 61849a6: exit 0, no error lines.
   done: Sat Oct 10 12:53:23 UTC 2026 — `lake env lean docs/tickets/checks/T2389-check.lean` on main 69b7abc: exit 0, no error lines.
@@ -52,21 +51,7 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 10 13:37:06 UTC 2026 — T2386 resumed in the slot freed by T2390: workflow wf_c9feb2f8-435 ((a′) under Amend 1 → 1a-audit round 2 → 1b prover-hard → auditor). T2388 is next.
   done: Sat Oct 10 15:23:41 UTC 2026 — every running workflow (T2386, T2387, T2388, T2389) stopped on the API session limit ("resets 8:20am America/Los_Angeles" = 15:20 UTC) at about 13:5x UTC; T2385's passed merge build was committed at Sat Oct 10 15:23:41 UTC 2026 (e67bfbd). Rule (H) reruns: T2386 wf_9469c03c-5e4 ((a′) → 1a-audit round 2 → 1b), T2389 wf_04d9402d-1cf (1b), T2388 wf_fa73b085-d9d (1a), T2387 wf_a0fb8d25-519 (1b). Blocked: T2390 (1a-audit sign-off).
 
-- H189 (dispatcher V2, 2026-10-10 21:57 UTC; DECISIONS §208). Commit by name with your next commit `docs/tickets/T2394.md`, `docs/tickets/checks/T2394-check.lean`, `docs/tickets/T2395.md`, `docs/tickets/checks/T2395-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`, `docs/queue/CONTROL-archive.md`. Compile both checks on `main` (H4; one `done:` line). Slot order: **T2395 first, then T2394**; start T2395 in the free slot now (H12). One `done:` line per step.
-  done: Sat Oct 10 22:01:46 UTC 2026 — the 9 listed files committed by name in 699d51b (with state T2393), pushed; T2394, T2395 checks on main 699d51b: exit 0, no error lines (both).
-  done: Sat Oct 10 22:01:46 UTC 2026 — T2395 started from main 699d51b: workflow wf_39c8fddd-adb (preflight → prover-max → auditor). Running: T2390, T2391, T2392, T2395 (4 of 4); T2394 waits for the next free slot.
-  done: Sat Oct 10 22:04:39 UTC 2026 — T2394 started in the slot freed by T2392 (merged 5ba1ebe): branch from main 5ba1ebe, workflow wf_ea44cf8b-592 (preflight → prover → auditor). Running: T2390, T2391, T2394, T2395 (4 of 4).
-
-- H190 (dispatcher V2, 2026-10-10 22:12 UTC; DECISIONS §209). Commit by name with your next commit `docs/tickets/T2396.md`, `docs/tickets/checks/T2396-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile the check on `main` (H4; one `done:` line); start T2396 in the free slot (H12). One `done:` line per step.
-  done: Sat Oct 10 22:21:35 UTC 2026 — the 6 listed files committed by name in 5c6613e (with states T2391/T2392/T2394/T2395), pushed; T2396 check on main 5c6613e: exit 0, no error lines.
-  done: Sat Oct 10 22:21:35 UTC 2026 — T2396 started from main 5c6613e: workflow wf_4a3b742c-f02 (preflight → prover-hard → auditor). Running: T2390, T2395, T2396 (3 of 4).
-
-- H191 (dispatcher V2, 2026-10-10 22:26 UTC; DECISIONS §210). Commit by name with your next commit `docs/tickets/T2397.md`, `docs/tickets/checks/T2397-check.lean`, `docs/tickets/T2398.md`, `docs/tickets/checks/T2398-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile both checks on `main` (H4; one `done:` line); start T2398 in the free slot, T2397 in the next (H12). One `done:` line per step.
-  done: Sat Oct 10 22:31:39 UTC 2026 — the 8 listed files committed by name in 1a5f972 (with state T2396), pushed; T2397, T2398 checks on main 1a5f972: exit 0, no error lines (both).
-  done: Sat Oct 10 22:31:39 UTC 2026 — T2398 started from main 1a5f972: workflow wf_77829196-e8e (preflight → prover-max → auditor). Running: T2390, T2395, T2396, T2398 (4 of 4); T2397 waits for the next free slot.
-  done: Sat Oct 10 22:46:18 UTC 2026 — T2397 started in the slot freed by T2396 (merged 19fc8cf): branch from main 19fc8cf, workflow wf_acdaf7a7-7bc (preflight → prover-max → auditor). Running: T2390, T2395, T2397, T2398 (4 of 4).
-
-- H192 (dispatcher V2, 2026-10-10 22:42 UTC; DECISIONS §211). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-10-2241-G.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Also, per T2390's 1a-audit O1: copy `inst.py`, `sz0.py` and their `.out` files from the T2390 scratchpad into `docs/reports/T2390/` on `t/T2390` (they become part of T2390's merge). Nothing to start. One `done:` line.
+- H193 (dispatcher V2, 2026-10-10 22:58 UTC; DECISIONS §212). (1) Commit by name with your next commit `docs/tickets/T2397-amend-1.md`, `docs/tickets/T2398-amend-1.md`, `docs/tickets/T2399.md`, `docs/tickets/checks/T2399-check.lean`, `docs/tickets/T2400.md`, `docs/tickets/checks/T2400-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`, `docs/queue/CONTROL-archive.md`. (2) **T2397 and T2398 (running): pass their Amend 1 (supervisor 2254 G2: `κ` uniform in `L`, `Λ = 𝔡⁻¹ = 10` in every constant check) into the prompts of their remaining stages (the rest of the design stage, and the auditor).** No restart. (3) Compile the T2399 and T2400 checks on `main` (H4; one `done:` line); start them in the next free slots (H12; order T2399, T2400). (4) **T2390 (G3a 1b, `BA/GreenCore.lean` already 1265 lines in WIP):** if it reaches the stop line 2000, split along the row map of (a′) (R3: the `R` closure; R4: `𝒦` and `Δ`) at a section boundary, never inside a closure (supervisor 2254, note on G3a's 1b); report the split in the state file. One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 11:46:34 UTC 2026 — T2381 merged 306957f (BA-K10: new BA/KInduct (991 lines, stop 2000; 2 defs + 11 theorems), root import, no registry change; 1a-audit PASS (routing notes D1-D3 for the dispatcher), audit PASS claude-opus-5-5; full lake build 4197 jobs; pushed).
