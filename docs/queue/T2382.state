@@ -1,0 +1,4 @@
+state: proving
+reason: H176: check exit 0 on main 2192dea; workflow wf_70239078-660 (prover-hard, stop 500); branch from main 2192dea
+updated: Sat Oct 10 12:03:47 UTC 2026
+reports: docs/reports/T2382-prove.md, docs/reports/T2382-audit.md
