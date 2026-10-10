@@ -114,4 +114,119 @@ theorem KSumZeroB_unequal_edge {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (h
 
 end Combinatorics
 
+/-! ## 2. The product of the edge entries with the gain `g²` -/
+
+section Prod
+
+/-- The gain in a product: if `f ≤ h` termwise (`f, h ≥ 0`) and one factor has the extra gain `g²`, or two factors
+have the extra gain `g` each, then `∏ f ≤ g² ∏ h`. -/
+private theorem KSumZeroB_prod_gain {Eg : Type*} [Fintype Eg] (f h : Eg → ℝ) {g : ℝ}
+    (hf : ∀ e, 0 ≤ f e) (hh : ∀ e, 0 ≤ h e) (hg : 0 ≤ g) (hle : ∀ e, f e ≤ h e)
+    (hdis : (∃ e, f e ≤ h e * g ^ 2) ∨ ∃ e e', e ≠ e' ∧ f e ≤ h e * g ∧ f e' ≤ h e' * g) :
+    ∏ e, f e ≤ (∏ e, h e) * g ^ 2 := by
+  classical
+  rcases hdis with ⟨e, he⟩ | ⟨e, e', hne, he, he'⟩
+  · rw [← Finset.mul_prod_erase Finset.univ f (Finset.mem_univ e),
+      ← Finset.mul_prod_erase Finset.univ h (Finset.mem_univ e)]
+    have hrest : ∏ x ∈ Finset.univ.erase e, f x ≤ ∏ x ∈ Finset.univ.erase e, h x :=
+      Finset.prod_le_prod₀ (fun x _ => hf x) (fun x _ => hle x)
+    calc f e * ∏ x ∈ Finset.univ.erase e, f x
+        ≤ (h e * g ^ 2) * ∏ x ∈ Finset.univ.erase e, h x :=
+          mul_le_mul he hrest (Finset.prod_nonneg fun x _ => hf x) (mul_nonneg (hh e) (sq_nonneg g))
+      _ = (h e * ∏ x ∈ Finset.univ.erase e, h x) * g ^ 2 := by ring
+  · have he'mem : e' ∈ Finset.univ.erase e := Finset.mem_erase.2 ⟨hne.symm, Finset.mem_univ e'⟩
+    rw [← Finset.mul_prod_erase Finset.univ f (Finset.mem_univ e), ← Finset.mul_prod_erase _ f he'mem,
+      ← Finset.mul_prod_erase Finset.univ h (Finset.mem_univ e), ← Finset.mul_prod_erase _ h he'mem]
+    have hrest : ∏ x ∈ (Finset.univ.erase e).erase e', f x ≤ ∏ x ∈ (Finset.univ.erase e).erase e', h x :=
+      Finset.prod_le_prod₀ (fun x _ => hf x) (fun x _ => hle x)
+    have hP : 0 ≤ ∏ x ∈ (Finset.univ.erase e).erase e', f x := Finset.prod_nonneg fun x _ => hf x
+    calc f e * (f e' * ∏ x ∈ (Finset.univ.erase e).erase e', f x)
+        ≤ (h e * g) * ((h e' * g) * ∏ x ∈ (Finset.univ.erase e).erase e', h x) :=
+          mul_le_mul he (mul_le_mul he' hrest hP (mul_nonneg (hh e') hg)) (mul_nonneg (hf e') hP)
+            (mul_nonneg (hh e) hg)
+      _ = (h e * (h e' * ∏ x ∈ (Finset.univ.erase e).erase e', h x)) * g ^ 2 := by ring
+
+/-- `∏_e B e^{-r z_e} = B^{|E|} e^{-r Σ z_e}` (a copy of the private `KPure_prod_const_exp`, `BA/KPure.lean:399`). -/
+private theorem KSumZeroB_prod_exp {Eg : Type*} [Fintype Eg] (z : Eg → ℕ) (B r : ℝ) :
+    ∏ e, (B * Real.exp (-(r * (z e : ℝ)))) =
+      B ^ Fintype.card Eg * Real.exp (-(r * ((∑ e, z e : ℕ) : ℝ))) := by
+  rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, ← Real.exp_sum]
+  congr 2
+  simp only [Nat.cast_sum, Finset.mul_sum, Finset.sum_neg_distrib]
+
+variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
+
+omit [NeZero L] [NeZero n] in
+/-- The number of edges of the cactus of `F` is at most `n + 3 n²` (`n + 3 |F|`, `|F| ≤ n²`). -/
+private theorem KSumZeroB_card_edges (F : Finset (Fin n × Fin n)) :
+    Fintype.card (↥F ⊕ BAslot F) ≤ n + 3 * (n * n) := by
+  rw [Fintype.card_sum, Fintype.card_coe, BAslot_card]
+  have : F.card ≤ n * n := by simpa using Finset.card_le_univ F
+  omega
+
+/-- **The product of the edge entries with the gain `g²`**: let every edge entry of the cactus of `F` be at most
+`B e^{-r |x-y|}` (`hM`, `hΘ`; the chords are short, `hsame`), an off-diagonal `M`-entry at most `B g e^{-r |x-y|}`
+(`hMo`) and an off-diagonal short chord at most `B g² e^{-r |x-y|}` (`hΘo`).  At every labelling `β` of the slots
+whose leaf labels are not constant (B1: an unequal chord or two unequal `M`-edges),
+`∏_e |E_e(β src, β tgt)| ≤ B^{n+3n²} g² e^{-r T(β)}`, `T(β)` the total edge length. -/
+private theorem KSumZeroB_prod_le {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
+    (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (hsame : ∀ e ∈ F, σ e.1 = σ e.2)
+    {B r g : ℝ} (hB : 1 ≤ B) (hg : 0 ≤ g)
+    (hM : ∀ (s : Bool) (x y : Zd d L), ‖M s x y‖ ≤ B * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (hΘ : ∀ (s : Bool) (x y : Zd d L),
+      ‖(t : ℂ) * BAThetaOf M t s s x y‖ ≤ B * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (hMo : ∀ (s : Bool) (x y : Zd d L), x ≠ y →
+      ‖M s x y‖ ≤ B * g * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (hΘo : ∀ (s : Bool) (x y : Zd d L), x ≠ y →
+      ‖(t : ℂ) * BAThetaOf M t s s x y‖ ≤ B * g ^ 2 * Real.exp (-(r * (zdistD d L (x - y) : ℝ))))
+    (β : BAslot F → Zd d L) (hnc : ∃ v w : Fin n, β (BAslotLeaf F v) ≠ β (BAslotLeaf F w)) :
+    ∏ e : ↥F ⊕ BAslot F, ‖BACactusValEdgeW M t F σ e (β (BACactusValSrc F e)) (β (BACactusValTgt F e))‖ ≤
+      B ^ (n + 3 * (n * n)) * g ^ 2 * Real.exp (-(r * ((∑ e : ↥F ⊕ BAslot F,
+        zdistD d L (β (BACactusValSrc F e) - β (BACactusValTgt F e)) : ℕ) : ℝ))) := by
+  classical
+  have hB0 : 0 < B := by linarith
+  set z : ↥F ⊕ BAslot F → ℕ := fun e => zdistD d L (β (BACactusValSrc F e) - β (BACactusValTgt F e)) with hz
+  set f : ↥F ⊕ BAslot F → ℝ :=
+    fun e => ‖BACactusValEdgeW M t F σ e (β (BACactusValSrc F e)) (β (BACactusValTgt F e))‖ with hf
+  set h : ↥F ⊕ BAslot F → ℝ := fun e => B * Real.exp (-(r * (z e : ℝ))) with hh
+  have hle : ∀ e, f e ≤ h e := by
+    rintro (J | s)
+    · change ‖((t : ℂ) • BAThetaOf M t (σ J.1.1) (σ J.1.2)) (β (BAslotIn F J)) (β (BAslotOut F J))‖ ≤
+        B * Real.exp (-(r * (zdistD d L (β (BAslotIn F J) - β (BAslotOut F J)) : ℝ)))
+      rw [Matrix.smul_apply, smul_eq_mul, ← hsame J.1 J.2]
+      exact hΘ _ _ _
+    · exact hM _ _ _
+  have hdis : (∃ e, f e ≤ h e * g ^ 2) ∨ ∃ e e', e ≠ e' ∧ f e ≤ h e * g ∧ f e' ≤ h e' * g := by
+    rcases KSumZeroB_unequal_edge hF hn β hnc with ⟨J, hJ⟩ | ⟨s, s', hss', -, hs, hs'⟩
+    · left
+      refine ⟨Sum.inl J, ?_⟩
+      change ‖((t : ℂ) • BAThetaOf M t (σ J.1.1) (σ J.1.2)) (β (BAslotIn F J)) (β (BAslotOut F J))‖ ≤
+        B * Real.exp (-(r * (zdistD d L (β (BAslotIn F J) - β (BAslotOut F J)) : ℝ))) * g ^ 2
+      rw [Matrix.smul_apply, smul_eq_mul, ← hsame J.1 J.2]
+      calc _ ≤ B * g ^ 2 * Real.exp (-(r * (zdistD d L (β (BAslotIn F J) - β (BAslotOut F J)) : ℝ))) :=
+            hΘo _ _ _ hJ
+        _ = _ := by ring
+    · right
+      refine ⟨Sum.inr s, Sum.inr s', fun hss => hss' (Sum.inr.inj hss), ?_, ?_⟩
+      · change ‖M (BAMcharge F σ s) (β s) (β (BAnextSlot F s))‖ ≤
+          B * Real.exp (-(r * (zdistD d L (β s - β (BAnextSlot F s)) : ℝ))) * g
+        calc _ ≤ B * g * Real.exp (-(r * (zdistD d L (β s - β (BAnextSlot F s)) : ℝ))) := hMo _ _ _ hs
+          _ = _ := by ring
+      · change ‖M (BAMcharge F σ s') (β s') (β (BAnextSlot F s'))‖ ≤
+          B * Real.exp (-(r * (zdistD d L (β s' - β (BAnextSlot F s')) : ℝ))) * g
+        calc _ ≤ B * g * Real.exp (-(r * (zdistD d L (β s' - β (BAnextSlot F s')) : ℝ))) := hMo _ _ _ hs'
+          _ = _ := by ring
+  have hmain := KSumZeroB_prod_gain f h (fun e => norm_nonneg _) (fun e => by positivity) hg hle hdis
+  have hprodh : ∏ e, h e = B ^ Fintype.card (↥F ⊕ BAslot F) * Real.exp (-(r * ((∑ e, z e : ℕ) : ℝ))) :=
+    KSumZeroB_prod_exp z B r
+  have hpow : B ^ Fintype.card (↥F ⊕ BAslot F) ≤ B ^ (n + 3 * (n * n)) :=
+    pow_le_pow_right₀ hB (KSumZeroB_card_edges F)
+  calc ∏ e, f e ≤ (∏ e, h e) * g ^ 2 := hmain
+    _ = (B ^ Fintype.card (↥F ⊕ BAslot F) * g ^ 2) * Real.exp (-(r * ((∑ e, z e : ℕ) : ℝ))) := by
+      rw [hprodh]; ring
+    _ ≤ (B ^ (n + 3 * (n * n)) * g ^ 2) * Real.exp (-(r * ((∑ e, z e : ℕ) : ℝ))) := by
+      gcongr
+
+end Prod
+
 end RBM.BA
