@@ -1,4 +1,4 @@
-state: blocked
-reason: auditor1 PASS claude-opus-5-5 (wf_9023974a-9dd; 057f0f4, KSolve.lean 767 lines), but the merge stopped at rule (A) step 5: full lake build fails on #assert_rbm_axioms, 1 unregistered premise [RBM.BA.BAKsolve] (in none of borrowedProps, owedProps, structuralProps, refutedProps, supersededProps). The ticket says "Registry: none (BAKsolve is a pin, not a registry line; Test/Axioms.lean untouched)" and has no DECISIONS §20 Amend 1 (H23 c). Question for the dispatcher: how is BAKsolve classified (which list in RBM3D/Test/Axioms.lean), and which ticket writes the line? main restored, nothing committed.
-updated: Sat Oct 10 03:40:03 UTC 2026
+state: audit-pass
+reason: stage 1b DONE (057f0f4); Amend 1 repairer (f3004f5, one owedProps line for RBM.BA.BAKsolve), auditor2 PASS claude-opus-5-5 (wf_28091e06-d97); full lake build 4181 jobs
+updated: Sat Oct 10 04:12:07 UTC 2026
 reports: docs/reports/T2368-prove.md, docs/reports/T2368-audit.md

@@ -407,6 +407,7 @@ import RBM3D.BA.KBase
 import RBM3D.BA.KCactus
 import RBM3D.Universality.GUEPhase.RandomLayerA
 import RBM3D.Universality.GUEPhase.RandomLayerB
+import RBM3D.BA.KSolve
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
