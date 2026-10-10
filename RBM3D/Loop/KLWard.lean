@@ -36,6 +36,26 @@ and carries the file stem `KLWard_` (one public helper, `KLWard_flip`; the insta
   `m(-s) = conj m(s)`, and `flip` commutes with the cuts), hence equals `𝒦`.  With
   `conj κ_t = -κ_t` this gives the case `s = -` from `s = +`.
 
+## Ticket T2369 (gate BA, stage K, row K02): the proof over a general kernel (route G in place)
+
+The band proof uses `S = SB d L g` only through four facts (`KernelFacts`: `S` symmetric, real, with
+column sums `1` and entries of norm `≤ 1`) and the initial data `MLoop` only through the flip, the
+rotation and the identity at `t = 0` on the loops of length `≥ 3`.  The proof is restated over
+`(S, m, M)`:
+* **`KernelFacts`**, **`WardS`** are the pins (verbatim from the check file
+  `docs/tickets/checks/T2369-check.lean`);
+  **`wardS_holds : WardS`** is the generic theorem (`KLWard_of_isKLoopS`: ODE defect and Grönwall;
+  `KLWard_K_flip`: the flip by `uniqS_holds`, `retireS_holds`; cyclic invariance `rotS_holds`).
+  Sections 2-4 below are the former band sections with `SB d L g ↦ S`, `treeEqRhs ↦ treeEqRhsS`,
+  `hL`, `hE ↦` the fields of `KernelFacts` and `0 < Im m(+)`; `κ_t = (2 i W^d (1 - t) Im m(+))⁻¹`.
+  `‖m‖ = 1` is not used.
+* **G1** (section 6b): `kernelFacts_one`, `kernelFacts_SB` (probe
+  `t/T2360:RBM3D/Probe/T2360Pins.lean:211,218`); `KLK_ward` and `KLWard_flip` (statements unchanged)
+  are re-derived from `wardS_holds` and `KLWard_K_flip` at `S = SB d L g`, `m = mSigma E`,
+  `M = MLoop`; `KLWard_wD_MLoop` (the old band initial value) is the band instance of the `t = 0`
+  hypothesis, `KLward_two` the band instance of the level-`2` hypothesis.
+* The BA instance (`S = 1`, `M = BAMLoop`) is `RBM3D/BA/KWard.lean` (`baK_ward`).
+
 ## Sources and changes
 
 Port of RBM2D at commit `c9a24cf` (read-only), `RBM2D/Loop/Ward.lean`: index bookkeeping
@@ -65,6 +85,38 @@ set_option linter.style.longLine false
 namespace RBM.Loop
 
 open Finset
+
+/-! ## 0. The pins (gate BA, stage K, ticket T2369) -/
+
+/-- **`KernelFacts`** (verbatim: probe `t/T2360:RBM3D/Probe/T2360Pins.lean:204`): the four properties of `S` that
+`Loop/KLWard.lean` uses (`SB_transpose`, `conj (SB a b) = SB a b`, `sum_SB_row`, `norm_SB_apply_le`). -/
+structure KernelFacts {d L : ℕ} [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) : Prop where
+  symm : ∀ a b, S a b = S b a
+  real : ∀ a b, (starRingEnd ℂ) (S a b) = S a b
+  colSum : ∀ b, ∑ a, S a b = 1
+  entry : ∀ a b, ‖S a b‖ ≤ 1
+
+/-- **`WardS`**: `(WI_calK)` for every family of `K`-loops on `[0,1)` over a kernel with `KernelFacts`, from:
+`Im m(+) > 0` and `m(-) = conj m(+)`; the initial data flip to their conjugate and are cyclically invariant; the
+initial data satisfy the identity at `t = 0` on the loops of length `≥ 3`; the family satisfies it at length `2`.
+`η_t = (1 - t) Im m(+)`. -/
+def WardS : Prop :=
+  ∀ (d L W : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ),
+    KernelFacts S → 1 ≤ W → 0 < (m true).im → m false = (starRingEnd ℂ) (m true) →
+    (∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 2 ≤ a.length →
+      M ⟨σ.map not, a⟩ = (starRingEnd ℂ) (M ⟨σ, a⟩)) →
+    (∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)), σ.length = a.length →
+      M ⟨s :: σ, b :: a⟩ = M ⟨σ ++ [s], a ++ [b]⟩) →
+    (∀ (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 → 1 ≤ μ.length →
+      ∑ x : Zd d L, M ⟨true :: μ ++ [false], a ++ [x]⟩
+        = (2 * Complex.I * (W : ℂ) ^ d * ((m true).im : ℂ))⁻¹ * (M ⟨true :: μ, a⟩ - M ⟨false :: μ, a⟩)) →
+    ∀ {K : ℝ → LoopIdx (Zd d L) → ℂ}, IsKLoopS d L W S m M (Set.Ico 0 1) K →
+    (∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ a : Zd d L,
+      ∑ x : Zd d L, K t ⟨[true, false], [a, x]⟩ = (((W : ℂ) ^ d) * ((1 - t : ℝ) : ℂ))⁻¹) →
+    ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ (s : Bool) (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 →
+      ∑ x : Zd d L, K t ⟨s :: μ ++ [!s], a ++ [x]⟩
+        = (2 * Complex.I * (W : ℂ) ^ d * (((1 - t) * (m true).im : ℝ) : ℂ))⁻¹ *
+            (K t ⟨true :: μ, a⟩ - K t ⟨false :: μ, a⟩)
 
 /-! ## 1. Index bookkeeping (port of `RBM2D/Loop/Ward.lean:37-167` at `c9a24cf`) -/
 
@@ -202,7 +254,7 @@ end Ind
 
 section Step
 
-variable (d L : ℕ) [NeZero L] (g : ℝ)
+variable (d L : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ)
 
 /-- `∑_x K_{(+,μ,-),(a',x)}`: the left-hand side of `(WI_calK)`. -/
 private noncomputable def KLWard_wStar (K : LoopIdx (Zd d L) → ℂ) (μ : List Bool)
@@ -218,27 +270,27 @@ private noncomputable def KLWard_wD (K : LoopIdx (Zd d L) → ℂ) (κ : ℂ) (�
 cuts with `l ≤ N` and the cuts `(k, N + 1)`. -/
 private theorem KLWard_sum_treeEqRhs_fullLoop (W : ℕ) (K : LoopIdx (Zd d L) → ℂ) (μ : List Bool)
     (a' : List (Zd d L)) :
-    ∑ x : Zd d L, treeEqRhs d L W g K (KLWard_fullLoop μ a' x) = (W : ℂ) ^ d *
+    ∑ x : Zd d L, treeEqRhsS d L W S K (KLWard_fullLoop μ a' x) = (W : ℂ) ^ d *
       (∑ k ∈ Icc 1 a'.length, ∑ l ∈ Ioc k a'.length, ∑ a : Zd d L, ∑ b : Zd d L,
-          (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * SB d L g a b *
+          (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * S a b *
             K ((KLWard_fullLoop μ a' 0).cutGlueR k l b)
         + ∑ k ∈ Icc 1 a'.length, ∑ a : Zd d L, ∑ b : Zd d L,
-          (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a)) * SB d L g a b *
+          (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a)) * S a b *
             K ((KLWard_fullLoop μ a' 0).cutGlueR k (a'.length + 1) b)) := by
   have hlen : ∀ x : Zd d L, (KLWard_fullLoop μ a' x).length = a'.length + 1 := fun x => by
     simp [KLWard_fullLoop, LoopIdx.length]
   have hR : ∀ x : Zd d L, ∀ k l, 1 ≤ k → k < l → l ≤ a'.length + 1 → ∀ b : Zd d L,
       (KLWard_fullLoop μ a' x).cutGlueR k l b = (KLWard_fullLoop μ a' 0).cutGlueR k l b :=
     fun x k l hk hkl hl b => KLWard_cutGlueR_fullLoop_indep μ a' x b 0 hk hkl hl
-  have hsplit : ∀ x : Zd d L, treeEqRhs d L W g K (KLWard_fullLoop μ a' x) = (W : ℂ) ^ d *
+  have hsplit : ∀ x : Zd d L, treeEqRhsS d L W S K (KLWard_fullLoop μ a' x) = (W : ℂ) ^ d *
       (∑ k ∈ Icc 1 a'.length, ∑ l ∈ Ioc k a'.length, ∑ a : Zd d L, ∑ b : Zd d L,
-          K ((KLWard_fullLoop μ a' x).cutGlueL k l a) * SB d L g a b *
+          K ((KLWard_fullLoop μ a' x).cutGlueL k l a) * S a b *
             K ((KLWard_fullLoop μ a' 0).cutGlueR k l b)
         + ∑ k ∈ Icc 1 a'.length, ∑ a : Zd d L, ∑ b : Zd d L,
-          K ((KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a) * SB d L g a b *
+          K ((KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a) * S a b *
             K ((KLWard_fullLoop μ a' 0).cutGlueR k (a'.length + 1) b)) := by
     intro x
-    rw [treeEqRhs, hlen, sum_Icc_succ_top (by omega), Ioc_self, sum_empty, add_zero,
+    rw [treeEqRhsS, hlen, sum_Icc_succ_top (by omega), Ioc_self, sum_empty, add_zero,
       ← sum_add_distrib]
     congr 1
     refine sum_congr rfl fun k hk => ?_
@@ -283,15 +335,15 @@ private theorem KLWard_wStar_eq (μ' : List Bool) (a'' : List (Zd d L)) :
 /-- **W1**: a cut `(k, l)` with `l ≤ N`. -/
 private theorem KLWard_cut_inner (hμ : μ.length + 1 = a'.length) {k l : ℕ} (hk : 1 ≤ k)
     (hkl : k < l) (hl : l ≤ a'.length) (a b : Zd d L) :
-    (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * SB d L g a b *
+    (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * S a b *
         K ((KLWard_fullLoop μ a' 0).cutGlueR k l b)
-      - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * SB d L g a b *
+      - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * S a b *
             K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-          - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * SB d L g a b *
+          - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * S a b *
             K ((KLWard_pmLoop false μ a').cutGlueR k l b))
-      = KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+      = KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
           K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-        + κ * K ((KLWard_pmLoop false μ a').cutGlueL k l a) * SB d L g a b *
+        + κ * K ((KLWard_pmLoop false μ a').cutGlueL k l a) * S a b *
           (K ((KLWard_pmLoop false μ a').cutGlueR k l b)
             - K ((KLWard_pmLoop true μ a').cutGlueR k l b)) := by
   have hL : ∀ x, (KLWard_fullLoop μ a' x).cutGlueL k l a
@@ -320,11 +372,11 @@ private theorem KLWard_cutGlueR_pmLoop_indep (hμ : μ.length + 1 = a'.length) {
 private theorem KLWard_cut_last (hμ : μ.length + 1 = a'.length) {k : ℕ} (hk : 2 ≤ k)
     (hkN : k ≤ a'.length)
     (hcyc : ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length → K (KLWard_rot J) = K J) (a b : Zd d L) :
-    (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a)) * SB d L g a b *
+    (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a)) * S a b *
         K ((KLWard_fullLoop μ a' 0).cutGlueR k (a'.length + 1) b)
       = (KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a])
           + κ * (K ((KLWard_pmLoop true μ a').cutGlueR 1 k a)
-            - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a))) * SB d L g a b *
+            - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a))) * S a b *
           K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) := by
   have hL : ∀ x, (KLWard_fullLoop μ a' x).cutGlueL k (a'.length + 1) a
       = KLWard_fullLoop (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) x :=
@@ -343,10 +395,10 @@ private theorem KLWard_cut_last (hμ : μ.length + 1 = a'.length) {k : ℕ} (hk 
       = KLWard_wStar d L K (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) from rfl, KLWard_wStar_eq d L K κ]
 
 /-- **W3**: the cut `(1, N + 1)`; the column sums of `S^(B)` are `1`. -/
-private theorem KLWard_cut_one_last (hL : 3 ≤ L) (hμ : μ.length + 1 = a'.length) (c : ℂ)
+private theorem KLWard_cut_one_last (hS : KernelFacts S) (hμ : μ.length + 1 = a'.length) (c : ℂ)
     (h2 : ∀ a : Zd d L, KLWard_wStar d L K [] [a] = c) :
     ∑ a : Zd d L, ∑ b : Zd d L,
-        (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL 1 (a'.length + 1) a)) * SB d L g a b *
+        (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL 1 (a'.length + 1) a)) * S a b *
           K ((KLWard_fullLoop μ a' 0).cutGlueR 1 (a'.length + 1) b)
       = c * KLWard_wStar d L K μ a' := by
   have hL1 : ∀ x a, (KLWard_fullLoop μ a' x).cutGlueL 1 (a'.length + 1) a
@@ -359,11 +411,7 @@ private theorem KLWard_cut_one_last (hL : 3 ≤ L) (hμ : μ.length + 1 = a'.len
     from fun _ => rfl, h2]
   rw [Finset.sum_comm, KLWard_wStar, Finset.mul_sum]
   refine sum_congr rfl fun b _ => ?_
-  rw [← Finset.sum_mul, ← Finset.mul_sum]
-  have hcol : ∑ a : Zd d L, SB d L g a b = 1 := by
-    rw [← sum_SB_row d L g hL b]
-    exact sum_congr rfl fun a _ => congrFun (congrFun (SB_transpose d L g) b) a
-  rw [hcol, mul_one]
+  rw [← Finset.sum_mul, ← Finset.mul_sum, hS.colSum b, mul_one]
 
 /-- A double sum over `1 ≤ k < l ≤ N` of a function vanishing unless `l = k + 1`. -/
 private theorem KLWard_sum_Icc_Ioc_adjacent {M : Type*} [AddCommMonoid M] (N : ℕ)
@@ -382,64 +430,64 @@ private theorem KLWard_sum_Icc_Ioc_adjacent {M : Type*} [AddCommMonoid M] (N : �
   omega
 
 /-- **The right-hand side of the derivative of `(WI_calK)`**, at a fixed time. -/
-private theorem KLWard_rhs_identity (hL : 3 ≤ L) (W : ℕ) (c : ℂ)
+private theorem KLWard_rhs_identity (hS : KernelFacts S) (W : ℕ) (c : ℂ)
     (hμ : μ.length + 1 = a'.length) (hN : 2 ≤ a'.length)
     (hcyc : ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length → K (KLWard_rot J) = K J)
     (h2 : ∀ a : Zd d L, KLWard_wStar d L K [] [a] = c)
     (hlow : ∀ (μ'' : List Bool) (a'' : List (Zd d L)), μ''.length + 1 = a''.length →
       a''.length < a'.length → KLWard_wD d L K κ μ'' a'' = 0) :
-    ∑ x : Zd d L, treeEqRhs d L W g K (KLWard_fullLoop μ a' x)
-      - κ * (treeEqRhs d L W g K (KLWard_pmLoop true μ a') - treeEqRhs d L W g K (KLWard_pmLoop false μ a'))
+    ∑ x : Zd d L, treeEqRhsS d L W S K (KLWard_fullLoop μ a' x)
+      - κ * (treeEqRhsS d L W S K (KLWard_pmLoop true μ a') - treeEqRhsS d L W S K (KLWard_pmLoop false μ a'))
       = (W : ℂ) ^ d *
         (∑ k ∈ Icc 1 (a'.length - 1), ∑ a : Zd d L, ∑ b : Zd d L,
-            KLWard_wD d L K κ (KLWard_cutMu k (k + 1) μ) (KLWard_cutA k (k + 1) a a') * SB d L g a b *
+            KLWard_wD d L K κ (KLWard_cutMu k (k + 1) μ) (KLWard_cutA k (k + 1) a a') * S a b *
               K ((KLWard_pmLoop true μ a').cutGlueR k (k + 1) b)
           + ∑ a : Zd d L, ∑ b : Zd d L,
             KLWard_wD d L K κ (μ.take (a'.length - 1)) (a'.take (a'.length - 1) ++ [a])
-              * SB d L g a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 a'.length b)
+              * S a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 a'.length b)
           + c * KLWard_wStar d L K μ a') := by
   set N := a'.length with hNdef
   have hpmlen : ∀ s, (KLWard_pmLoop s μ a').length = N := fun s => by
     simp [LoopIdx.length, KLWard_pmLoop, hNdef]
-  have hpm : ∀ s, treeEqRhs d L W g K (KLWard_pmLoop s μ a') = (W : ℂ) ^ d *
+  have hpm : ∀ s, treeEqRhsS d L W S K (KLWard_pmLoop s μ a') = (W : ℂ) ^ d *
       ∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-        K ((KLWard_pmLoop s μ a').cutGlueL k l a) * SB d L g a b *
+        K ((KLWard_pmLoop s μ a').cutGlueL k l a) * S a b *
           K ((KLWard_pmLoop s μ a').cutGlueR k l b) :=
-    fun s => by rw [treeEqRhs, hpmlen]
-  rw [KLWard_sum_treeEqRhs_fullLoop d L g W K μ a', hpm, hpm]
+    fun s => by rw [treeEqRhsS, hpmlen]
+  rw [KLWard_sum_treeEqRhs_fullLoop d L S W K μ a', hpm, hpm]
   -- (i) the cuts with `l ≤ N`
   have hA : ∀ k ∈ Icc 1 N, ∀ l ∈ Ioc k N, ∀ a b : Zd d L,
-      (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * SB d L g a b *
+      (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * S a b *
           K ((KLWard_fullLoop μ a' 0).cutGlueR k l b)
-        - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * SB d L g a b *
+        - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * S a b *
               K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-            - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * SB d L g a b *
+            - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * S a b *
               K ((KLWard_pmLoop false μ a').cutGlueR k l b))
-        = KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+        = KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
             K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-          + (if k = 1 then κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * SB d L g a b *
+          + (if k = 1 then κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * S a b *
               (K ((KLWard_pmLoop false μ a').cutGlueR 1 l b)
                 - K ((KLWard_pmLoop true μ a').cutGlueR 1 l b)) else 0) := by
     intro k hk l hl a b
     rw [mem_Icc] at hk
     rw [mem_Ioc] at hl
-    rw [KLWard_cut_inner d L g K κ μ a' hμ hk.1 hl.1 hl.2]
+    rw [KLWard_cut_inner d L S K κ μ a' hμ hk.1 hl.1 hl.2]
     split_ifs with h1
     · subst h1
       rfl
     · rw [KLWard_cutGlueR_pmLoop_indep d L μ a' hμ (by omega) hl.1 hl.2, sub_self, mul_zero]
   -- (ii) the cuts `(k, N + 1)`
   have hB : ∀ k ∈ Icc 2 N, ∀ a b : Zd d L,
-      (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (N + 1) a)) * SB d L g a b *
+      (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (N + 1) a)) * S a b *
           K ((KLWard_fullLoop μ a' 0).cutGlueR k (N + 1) b)
-        = KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) * SB d L g a b *
+        = KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) * S a b *
             K ((KLWard_pmLoop false μ a').cutGlueL 1 k b)
           + κ * (K ((KLWard_pmLoop true μ a').cutGlueR 1 k a)
               - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a))
-            * SB d L g a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) := by
+            * S a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) := by
     intro k hk a b
     rw [mem_Icc] at hk
-    rw [KLWard_cut_last d L g K κ μ a' hμ hk.1 hk.2 hcyc]
+    rw [KLWard_cut_last d L S K κ μ a' hμ hk.1 hk.2 hcyc]
     ring
   have hIcc : Icc 1 N = insert 1 (Icc 2 N) := by
     ext k
@@ -457,13 +505,13 @@ private theorem KLWard_rhs_identity (hL : 3 ≤ L) (W : ℕ) (c : ℂ)
       List.length_cons]
     omega
   have hT1 : ∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-      KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+      KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
         K ((KLWard_pmLoop true μ a').cutGlueR k l b)
       = ∑ k ∈ Icc 1 (N - 1), ∑ a : Zd d L, ∑ b : Zd d L,
-          KLWard_wD d L K κ (KLWard_cutMu k (k + 1) μ) (KLWard_cutA k (k + 1) a a') * SB d L g a b *
+          KLWard_wD d L K κ (KLWard_cutMu k (k + 1) μ) (KLWard_cutA k (k + 1) a a') * S a b *
             K ((KLWard_pmLoop true μ a').cutGlueR k (k + 1) b) := by
     refine KLWard_sum_Icc_Ioc_adjacent N (fun k l => ∑ a : Zd d L, ∑ b : Zd d L,
-      KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+      KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
         K ((KLWard_pmLoop true μ a').cutGlueR k l b)) ?_
     intro k hk l hl hkl
     rw [mem_Icc] at hk
@@ -472,10 +520,10 @@ private theorem KLWard_rhs_identity (hL : 3 ≤ L) (W : ℕ) (c : ℂ)
     obtain ⟨h1, h2⟩ := hcutlen k l hk.1 hl.1 hl.2 a
     rw [hlow _ _ h1 (by omega), zero_mul, zero_mul]
   have hU2 : ∑ k ∈ Icc 2 N, ∑ a : Zd d L, ∑ b : Zd d L,
-      KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) * SB d L g a b *
+      KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) * S a b *
         K ((KLWard_pmLoop false μ a').cutGlueL 1 k b)
       = ∑ a : Zd d L, ∑ b : Zd d L,
-          KLWard_wD d L K κ (μ.take (N - 1)) (a'.take (N - 1) ++ [a]) * SB d L g a b *
+          KLWard_wD d L K κ (μ.take (N - 1)) (a'.take (N - 1) ++ [a]) * S a b *
             K ((KLWard_pmLoop false μ a').cutGlueL 1 N b) := by
     rw [Finset.sum_eq_single_of_mem N (by rw [mem_Icc]; omega)]
     intro k hk hkN
@@ -485,67 +533,67 @@ private theorem KLWard_rhs_identity (hL : 3 ≤ L) (W : ℕ) (c : ℂ)
       (by simp only [List.length_append, List.length_take, List.length_singleton]; omega),
       zero_mul, zero_mul]
   have hcancel : (∑ l ∈ Ioc 1 N, ∑ a : Zd d L, ∑ b : Zd d L,
-        κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * SB d L g a b *
+        κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * S a b *
           (K ((KLWard_pmLoop false μ a').cutGlueR 1 l b)
             - K ((KLWard_pmLoop true μ a').cutGlueR 1 l b)))
       + ∑ k ∈ Icc 2 N, ∑ a : Zd d L, ∑ b : Zd d L,
         κ * (K ((KLWard_pmLoop true μ a').cutGlueR 1 k a)
             - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a))
-          * SB d L g a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) = 0 := by
+          * S a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) = 0 := by
     rw [hIoc, ← sum_add_distrib]
     refine Finset.sum_eq_zero fun k _ => ?_
     rw [Finset.sum_comm (s := (univ : Finset (Zd d L))) (t := (univ : Finset (Zd d L)))
       (f := fun a b => κ * (K ((KLWard_pmLoop true μ a').cutGlueR 1 k a)
-        - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a)) * SB d L g a b *
+        - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a)) * S a b *
           K ((KLWard_pmLoop false μ a').cutGlueL 1 k b)), ← sum_add_distrib]
     refine Finset.sum_eq_zero fun a _ => ?_
     rw [← sum_add_distrib]
     refine Finset.sum_eq_zero fun b _ => ?_
-    rw [show SB d L g b a = SB d L g a b from congrFun (congrFun (SB_transpose d L g) a) b]
+    rw [hS.symm b a]
     ring
   simp only [← hNdef]
   -- the Ward-bracket part
   have eA : (∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-        (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * SB d L g a b *
+        (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * S a b *
           K ((KLWard_fullLoop μ a' 0).cutGlueR k l b))
       - κ * ((∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-          K ((KLWard_pmLoop true μ a').cutGlueL k l a) * SB d L g a b *
+          K ((KLWard_pmLoop true μ a').cutGlueL k l a) * S a b *
             K ((KLWard_pmLoop true μ a').cutGlueR k l b))
         - ∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-          K ((KLWard_pmLoop false μ a').cutGlueL k l a) * SB d L g a b *
+          K ((KLWard_pmLoop false μ a').cutGlueL k l a) * S a b *
             K ((KLWard_pmLoop false μ a').cutGlueR k l b))
       = (∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-          KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+          KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
             K ((KLWard_pmLoop true μ a').cutGlueR k l b))
         + ∑ l ∈ Ioc 1 N, ∑ a : Zd d L, ∑ b : Zd d L,
-          κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * SB d L g a b *
+          κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * S a b *
             (K ((KLWard_pmLoop false μ a').cutGlueR 1 l b)
               - K ((KLWard_pmLoop true μ a').cutGlueR 1 l b)) := by
     have e1 : ∀ k ∈ Icc 1 N, ∀ l ∈ Ioc k N, ∀ a : Zd d L,
-        ∑ b : Zd d L, ((∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * SB d L g a b *
+        ∑ b : Zd d L, ((∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * S a b *
             K ((KLWard_fullLoop μ a' 0).cutGlueR k l b)
-          - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * SB d L g a b *
+          - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * S a b *
                 K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-              - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * SB d L g a b *
+              - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * S a b *
                 K ((KLWard_pmLoop false μ a').cutGlueR k l b)))
-        = ∑ b : Zd d L, (KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+        = ∑ b : Zd d L, (KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
               K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-            + (if k = 1 then κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * SB d L g a b *
+            + (if k = 1 then κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * S a b *
                 (K ((KLWard_pmLoop false μ a').cutGlueR 1 l b)
                   - K ((KLWard_pmLoop true μ a').cutGlueR 1 l b)) else 0)) :=
       fun k hk l hl a => sum_congr rfl fun b _ => hA k hk l hl a b
     calc _ = ∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-          ((∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * SB d L g a b *
+          ((∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k l a)) * S a b *
               K ((KLWard_fullLoop μ a' 0).cutGlueR k l b)
-            - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * SB d L g a b *
+            - κ * (K ((KLWard_pmLoop true μ a').cutGlueL k l a) * S a b *
                   K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-                - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * SB d L g a b *
+                - K ((KLWard_pmLoop false μ a').cutGlueL k l a) * S a b *
                   K ((KLWard_pmLoop false μ a').cutGlueR k l b))) := by
           simp only [mul_sub, Finset.mul_sum, Finset.sum_sub_distrib]
       _ = ∑ k ∈ Icc 1 N, ∑ l ∈ Ioc k N, ∑ a : Zd d L, ∑ b : Zd d L,
-          (KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * SB d L g a b *
+          (KLWard_wD d L K κ (KLWard_cutMu k l μ) (KLWard_cutA k l a a') * S a b *
               K ((KLWard_pmLoop true μ a').cutGlueR k l b)
-            + (if k = 1 then κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * SB d L g a b *
+            + (if k = 1 then κ * K ((KLWard_pmLoop false μ a').cutGlueL 1 l a) * S a b *
                 (K ((KLWard_pmLoop false μ a').cutGlueR 1 l b)
                   - K ((KLWard_pmLoop true μ a').cutGlueR 1 l b)) else 0)) :=
           sum_congr rfl fun k hk => sum_congr rfl fun l hl => sum_congr rfl fun a _ =>
@@ -560,17 +608,17 @@ private theorem KLWard_rhs_identity (hL : 3 ≤ L) (W : ℕ) (c : ℂ)
           simp only [show k ≠ 1 by omega, ite_false, Finset.sum_const_zero]
   -- the cuts `(k, N + 1)`
   have eB : (∑ k ∈ Icc 1 N, ∑ a : Zd d L, ∑ b : Zd d L,
-        (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (N + 1) a)) * SB d L g a b *
+        (∑ x : Zd d L, K ((KLWard_fullLoop μ a' x).cutGlueL k (N + 1) a)) * S a b *
           K ((KLWard_fullLoop μ a' 0).cutGlueR k (N + 1) b))
       = c * KLWard_wStar d L K μ a'
         + (∑ k ∈ Icc 2 N, ∑ a : Zd d L, ∑ b : Zd d L,
-            KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) * SB d L g a b *
+            KLWard_wD d L K κ (μ.take (k - 1)) (a'.take (k - 1) ++ [a]) * S a b *
               K ((KLWard_pmLoop false μ a').cutGlueL 1 k b))
         + ∑ k ∈ Icc 2 N, ∑ a : Zd d L, ∑ b : Zd d L,
             κ * (K ((KLWard_pmLoop true μ a').cutGlueR 1 k a)
                 - K ((KLWard_pmLoop false μ a').cutGlueR 1 k a))
-              * SB d L g a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) := by
-    rw [hIcc, sum_insert (by simp), hNdef, KLWard_cut_one_last d L g K μ a' hL hμ c h2, ← hNdef,
+              * S a b * K ((KLWard_pmLoop false μ a').cutGlueL 1 k b) := by
+    rw [hIcc, sum_insert (by simp), hNdef, KLWard_cut_one_last d L S K μ a' hS hμ c h2, ← hNdef,
       add_assoc, ← sum_add_distrib]
     congr 1
     refine sum_congr rfl fun k hk => ?_
@@ -591,61 +639,65 @@ end Step
 
 section Kappa
 
-variable (d : ℕ) {E : ℝ}
+variable (d : ℕ)
 
-/-- `κ_t = (2 i W^d η_t)⁻¹`, the coefficient of `(WI_calK)`. -/
-private noncomputable def KLWard_kappa (W : ℕ) (E t : ℝ) : ℂ :=
-  (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹
+/-- `κ_t = (2 i W^d η_t)⁻¹`, `η_t = (1 − t) y` with `y = Im m(+)`, the coefficient of `(WI_calK)`. -/
+private noncomputable def KLWard_kappa (W : ℕ) (y t : ℝ) : ℂ :=
+  (2 * Complex.I * (W : ℂ) ^ d * (((1 - t) * y : ℝ) : ℂ))⁻¹
 
 /-- `c_t = (W^d (1 − t))⁻¹`, the common value of the two sides at `n = 2`. -/
 private noncomputable def KLWard_c (W : ℕ) (t : ℝ) : ℂ := ((W : ℂ) ^ d * (1 - t))⁻¹
 
-/-- `η_t = (1 − t) Im m^{(E)}` (`(eta)`). -/
-private theorem KLWard_etaT_eq (E t : ℝ) : Gauss.etaT E t = (1 - t) * (mE E).im := rfl
-
-private theorem KLWard_mSigma_mul (hE : |E| ≤ 2) : mSigma E true * mSigma E false = 1 := by
+private theorem KLWard_mSigma_mul {E : ℝ} (hE : |E| ≤ 2) : mSigma E true * mSigma E false = 1 := by
   simp only [mSigma, ↓reduceIte, Bool.false_eq_true]
   rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, norm_mE hE]
   simp
 
-/-- `κ_t (m − m̄) = c_t`. -/
-private theorem KLWard_kappa_mul (W : ℕ) (hW : W ≠ 0) (hE : |E| < 2) {t : ℝ} (ht1 : t < 1) :
-    KLWard_kappa d W E t * (mSigma E true - mSigma E false) = KLWard_c d W t := by
-  have him : ((mE E).im : ℂ) ≠ 0 := by
-    exact_mod_cast (mE_im_pos hE).ne'
+/-- `κ_t (m(+) − m(−)) = c_t`, from `m(−) = conj m(+)` and `Im m(+) > 0` alone (no `‖m‖ = 1`). -/
+private theorem KLWard_kappa_mul (W : ℕ) (hW : W ≠ 0) (m : Bool → ℂ)
+    (hm : m false = (starRingEnd ℂ) (m true)) (hy : 0 < (m true).im) {t : ℝ} (ht1 : t < 1) :
+    KLWard_kappa d W (m true).im t * (m true - m false) = KLWard_c d W t := by
+  have him : ((m true).im : ℂ) ≠ 0 := by
+    exact_mod_cast hy.ne'
   have hW0 : (W : ℂ) ≠ 0 := by exact_mod_cast hW
   have ht : (1 : ℂ) - t ≠ 0 := by
     rw [sub_ne_zero, ne_comm]
     exact_mod_cast ht1.ne
-  simp only [KLWard_kappa, KLWard_c, mSigma, ↓reduceIte, Bool.false_eq_true, Complex.sub_conj,
-    KLWard_etaT_eq]
+  simp only [KLWard_kappa, KLWard_c, hm, Complex.sub_conj]
   push_cast
   field_simp
 
 /-- `∂_t κ_t = κ_t / (1 − t)`. -/
-private theorem KLWard_hasDerivAt_kappa (W : ℕ) (hW : W ≠ 0) (hE : |E| < 2) {t : ℝ}
-    (ht1 : t < 1) : HasDerivAt (KLWard_kappa d W E) (KLWard_kappa d W E t / (1 - t)) t := by
+private theorem KLWard_hasDerivAt_kappa (W : ℕ) (hW : W ≠ 0) {y : ℝ} (hy : 0 < y) {t : ℝ}
+    (ht1 : t < 1) : HasDerivAt (KLWard_kappa d W y) (KLWard_kappa d W y t / (1 - t)) t := by
   have hW0 : (W : ℂ) ≠ 0 := by exact_mod_cast hW
-  have hIm : ((mE E).im : ℂ) ≠ 0 := by
-    exact_mod_cast (mE_im_pos hE).ne'
+  have hIm : (y : ℂ) ≠ 0 := by
+    exact_mod_cast hy.ne'
   have ht : (1 : ℂ) - t ≠ 0 := by
     rw [sub_ne_zero, ne_comm]
     exact_mod_cast ht1.ne
-  have hg : HasDerivAt (fun s : ℝ => 2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E s : ℂ))
-      (-(2 * Complex.I * (W : ℂ) ^ d * (mE E).im)) t := by
-    have h1 : HasDerivAt (fun s : ℝ => (Gauss.etaT E s : ℂ)) (-((mE E).im : ℂ)) t := by
-      have := (((hasDerivAt_id t).const_sub 1).mul_const (mE E).im).ofReal_comp
-      simpa [KLWard_etaT_eq] using this
+  have hg : HasDerivAt (fun s : ℝ => 2 * Complex.I * (W : ℂ) ^ d * (((1 - s) * y : ℝ) : ℂ))
+      (-(2 * Complex.I * (W : ℂ) ^ d * y)) t := by
+    have h1 : HasDerivAt (fun s : ℝ => (((1 - s) * y : ℝ) : ℂ)) (-(y : ℂ)) t := by
+      have := (((hasDerivAt_id t).const_sub 1).mul_const y).ofReal_comp
+      simpa using this
     exact (h1.const_mul (2 * Complex.I * (W : ℂ) ^ d)).congr_deriv (by ring)
-  have hne : 2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ) ≠ 0 := by
-    rw [KLWard_etaT_eq]
+  have hne : 2 * Complex.I * (W : ℂ) ^ d * (((1 - t) * y : ℝ) : ℂ) ≠ 0 := by
     push_cast
     exact mul_ne_zero (mul_ne_zero (mul_ne_zero two_ne_zero Complex.I_ne_zero)
       (pow_ne_zero d hW0)) (mul_ne_zero ht hIm)
   refine (hg.inv hne).congr_deriv ?_
-  simp only [KLWard_kappa, KLWard_etaT_eq]
+  simp only [KLWard_kappa]
   push_cast
   field_simp
+
+/-- The band charge function: `m(-) = conj m(+)`. -/
+private theorem KLWard_mSigma_false (E : ℝ) : mSigma E false = (starRingEnd ℂ) (mSigma E true) := by
+  simp [mSigma]
+
+/-- The band charge function: `Im m(+) = Im m^{(E)}`. -/
+private theorem KLWard_mSigma_im (E : ℝ) : (mSigma E true).im = (mE E).im := by
+  simp [mSigma]
 
 end Kappa
 
@@ -684,7 +736,7 @@ private theorem KLWard_sum_allEq_append (a' : List (Zd d L)) (ha : a' ≠ []) :
 /-- **The initial value.**  At `t = 0`, `(WI_calK)` holds for the initial value `MLoop`. -/
 private theorem KLWard_wD_MLoop (W : ℕ) (hW : W ≠ 0) {E : ℝ} (hE : |E| < 2) (μ : List Bool)
     (a' : List (Zd d L)) (hμ : μ.length + 1 = a'.length) :
-    KLWard_wD d L (MLoop d L W (mSigma E)) (KLWard_kappa d W E 0) μ a' = 0 := by
+    KLWard_wD d L (MLoop d L W (mSigma E)) (KLWard_kappa d W (mSigma E true).im 0) μ a' = 0 := by
   have ha : a' ≠ [] := by
     intro h
     rw [h] at hμ
@@ -705,17 +757,18 @@ private theorem KLWard_wD_MLoop (W : ℕ) (hW : W ≠ 0) {E : ℝ} (hE : |E| < 2
     simp only [MLoop, KLWard_pmLoop, LoopIdx.length, hN, Nat.add_sub_cancel, List.map_cons,
       List.prod_cons]
     rfl
-  have hk := KLWard_kappa_mul d W hW hE (t := 0) (by norm_num)
+  have hk := KLWard_kappa_mul d W hW (mSigma E) (KLWard_mSigma_false E)
+    (by rw [KLWard_mSigma_im]; exact mE_im_pos hE) (t := 0) (by norm_num)
   have hc0 : KLWard_c d W 0 = ((W : ℂ) ^ d)⁻¹ := by simp [KLWard_c]
   have hmm : mSigma E true * mSigma E false = 1 := KLWard_mSigma_mul hE.le
   simp only [KLWard_wD, KLWard_wStar, hfull, hpm, ← Finset.mul_sum, KLWard_sum_allEq_append d L a' ha]
   set P := (μ.map (mSigma E)).prod
   set I := (if ∀ y ∈ a', ∀ z ∈ a', y = z then (1 : ℂ) else 0)
   calc ((W : ℂ) ^ d)⁻¹ ^ (N + 1) * (mSigma E true * P * mSigma E false) * I
-        - KLWard_kappa d W E 0 * (((W : ℂ) ^ d)⁻¹ ^ N * (mSigma E true * P) * I
+        - KLWard_kappa d W (mSigma E true).im 0 * (((W : ℂ) ^ d)⁻¹ ^ N * (mSigma E true * P) * I
           - ((W : ℂ) ^ d)⁻¹ ^ N * (mSigma E false * P) * I)
       = ((W : ℂ) ^ d)⁻¹ ^ N * P * I * (((W : ℂ) ^ d)⁻¹ * (mSigma E true * mSigma E false)
-          - KLWard_kappa d W E 0 * (mSigma E true - mSigma E false)) := by ring
+          - KLWard_kappa d W (mSigma E true).im 0 * (mSigma E true - mSigma E false)) := by ring
     _ = 0 := by rw [hmm, hk, hc0, mul_one, sub_self, mul_zero]
 
 end Init
@@ -724,7 +777,7 @@ end Init
 
 section Level
 
-variable (d L : ℕ) [NeZero L] (g : ℝ) {E : ℝ}
+variable (d L : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ) {y : ℝ}
 
 private theorem KLWard_cutMu_adjacent (μ : List Bool) (k : ℕ) : KLWard_cutMu k (k + 1) μ = μ := by
   simp only [KLWard_cutMu, show k + 1 - 2 = k - 1 by omega, List.take_append_drop]
@@ -736,32 +789,26 @@ private theorem KLWard_length_cutA_adjacent (a' : List (Zd d L)) (a : Zd d L) {k
     List.length_drop, Nat.add_sub_cancel]
   omega
 
-private theorem KLWard_norm_SB_apply_le (hL : 3 ≤ L) (a b : Zd d L) : ‖SB d L g a b‖ ≤ 1 := by
-  have h := Finset.single_le_sum (f := fun b => ‖SB d L g a b‖₊) (fun _ _ => by positivity)
-    (Finset.mem_univ b)
-  rw [sum_nnnorm_SB_row d L g hL a] at h
-  exact_mod_cast h
-
 /-- The index set of the level-`N` Ward defects: middle charges and labels. -/
 private abbrev KLWard_Vec (N : ℕ) := List.Vector Bool (N - 1) × List.Vector (Zd d L) N
 
 /-- **One level of the induction** (loops of length `N + 1 ≥ 3`). -/
-private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| < 2)
+private theorem KLWard_level (hS : KernelFacts S) (W : ℕ) (hW : W ≠ 0) (hy : 0 < y)
     (K : ℝ → LoopIdx (Zd d L) → ℂ) (T₀ R : ℝ) (N : ℕ) (hN : 2 ≤ N) (hT₀ : T₀ < 1)
     (hR0 : 0 ≤ R)
     (hK : ∀ t ∈ Set.Icc 0 T₀, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
-      HasDerivAt (fun s => K s J) (treeEqRhs d L W g (K t) J) t)
+      HasDerivAt (fun s => K s J) (treeEqRhsS d L W S (K t) J) t)
     (hcyc : ∀ t ∈ Set.Icc 0 T₀, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
       K t (KLWard_rot J) = K t J)
     (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ J : LoopIdx (Zd d L), J.WF → J.length = 2 → ‖K t J‖ ≤ R)
     (h2 : ∀ t ∈ Set.Icc 0 T₀, ∀ a : Zd d L, KLWard_wStar d L (K t) [] [a] = KLWard_c d W t)
     (hlow : ∀ t ∈ Set.Icc 0 T₀, ∀ (μ : List Bool) (a' : List (Zd d L)),
-      μ.length + 1 = a'.length → a'.length < N → KLWard_wD d L (K t) (KLWard_kappa d W E t) μ a' = 0)
+      μ.length + 1 = a'.length → a'.length < N → KLWard_wD d L (K t) (KLWard_kappa d W y t) μ a' = 0)
     (h0 : ∀ (μ : List Bool) (a' : List (Zd d L)), μ.length + 1 = a'.length → a'.length = N →
-      KLWard_wD d L (K 0) (KLWard_kappa d W E 0) μ a' = 0) :
+      KLWard_wD d L (K 0) (KLWard_kappa d W y 0) μ a' = 0) :
     ∀ t ∈ Set.Icc 0 T₀, ∀ (μ : List Bool) (a' : List (Zd d L)), μ.length + 1 = a'.length →
-      a'.length = N → KLWard_wD d L (K t) (KLWard_kappa d W E t) μ a' = 0 := by
-  let κ := KLWard_kappa d W E
+      a'.length = N → KLWard_wD d L (K t) (KLWard_kappa d W y t) μ a' = 0 := by
+  let κ := KLWard_kappa d W y
   let D : ℝ → KLWard_Vec d L N → ℂ := fun t p => KLWard_wD d L (K t) (κ t) p.1.1 p.2.1
   have hp : ∀ p : KLWard_Vec d L N, p.1.1.length + 1 = p.2.1.length := fun p => by
     rw [p.1.2, p.2.2]
@@ -770,9 +817,9 @@ private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| <
   let T : ℝ → KLWard_Vec d L N → ℂ := fun t p =>
     (∑ k ∈ Icc 1 (N - 1), ∑ a : Zd d L, ∑ b : Zd d L,
         KLWard_wD d L (K t) (κ t) (KLWard_cutMu k (k + 1) p.1.1) (KLWard_cutA k (k + 1) a p.2.1)
-          * SB d L g a b * K t ((KLWard_pmLoop true p.1.1 p.2.1).cutGlueR k (k + 1) b))
+          * S a b * K t ((KLWard_pmLoop true p.1.1 p.2.1).cutGlueR k (k + 1) b))
       + ∑ a : Zd d L, ∑ b : Zd d L,
-        KLWard_wD d L (K t) (κ t) (p.1.1.take (N - 1)) (p.2.1.take (N - 1) ++ [a]) * SB d L g a b *
+        KLWard_wD d L (K t) (κ t) (p.1.1.take (N - 1)) (p.2.1.take (N - 1) ++ [a]) * S a b *
           K t ((KLWard_pmLoop false p.1.1 p.2.1).cutGlueL 1 N b)
   let D' : ℝ → KLWard_Vec d L N → ℂ := fun t p =>
     (W : ℂ) ^ d * T t p + (1 - (t : ℂ))⁻¹ * D t p
@@ -795,14 +842,14 @@ private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| <
     obtain ⟨hWFp, hlp⟩ := hpmWF true p.1.1 p.2.1 (hp p)
     obtain ⟨hWFm, hlm⟩ := hpmWF false p.1.1 p.2.1 (hp p)
     have hsum : HasDerivAt (fun s => ∑ x : Zd d L, K s (KLWard_fullLoop p.1.1 p.2.1 x))
-        (∑ x : Zd d L, treeEqRhs d L W g (K t) (KLWard_fullLoop p.1.1 p.2.1 x)) t :=
+        (∑ x : Zd d L, treeEqRhsS d L W S (K t) (KLWard_fullLoop p.1.1 p.2.1 x)) t :=
       HasDerivAt.fun_sum fun x _ => hK t ht _ (hfullWF _ _ x (hp p)).1
         (by rw [(hfullWF _ _ x (hp p)).2, hpN]; omega)
     have hplus := hK t ht _ hWFp (by rw [hlp, hpN]; omega)
     have hminus := hK t ht _ hWFm (by rw [hlm, hpN]; omega)
-    have hprod := (KLWard_hasDerivAt_kappa d W hW hE ht1).mul (hplus.sub hminus)
+    have hprod := (KLWard_hasDerivAt_kappa d W hW hy ht1).mul (hplus.sub hminus)
     refine (hsum.sub hprod).congr_deriv ?_
-    have hid := KLWard_rhs_identity d L g (K t) (κ t) p.1.1 p.2.1 hL W (KLWard_c d W t) (hp p)
+    have hid := KLWard_rhs_identity d L S (K t) (κ t) p.1.1 p.2.1 hS W (KLWard_c d W t) (hp p)
       (by rw [hpN]; exact hN) (hcyc t ht) (h2 t ht)
       (fun μ'' a'' h1 h2' => hlow t ht μ'' a'' h1 (by rw [hpN] at h2'; exact h2'))
     have hWc : (W : ℂ) ^ d * KLWard_c d W t = (1 - (t : ℂ))⁻¹ := by
@@ -831,7 +878,7 @@ private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| <
     obtain ⟨hWFm, hlm⟩ := hpmWF false p.1.1 p.2.1 (hp p)
     have hT1 : ∀ k ∈ Icc 1 (N - 1), ∀ a b : Zd d L,
         ‖KLWard_wD d L (K t) (κ t) (KLWard_cutMu k (k + 1) p.1.1) (KLWard_cutA k (k + 1) a p.2.1)
-          * SB d L g a b * K t ((KLWard_pmLoop true p.1.1 p.2.1).cutGlueR k (k + 1) b)‖
+          * S a b * K t ((KLWard_pmLoop true p.1.1 p.2.1).cutGlueR k (k + 1) b)‖
           ≤ R * ‖D t‖ := by
       intro k hk a b
       rw [mem_Icc] at hk
@@ -846,10 +893,10 @@ private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| <
       rw [norm_mul, norm_mul]
       calc _ ≤ ‖D t‖ * 1 * R := by
             gcongr
-            exact KLWard_norm_SB_apply_le d L g hL a b
+            exact hS.entry a b
         _ = R * ‖D t‖ := by ring
     have hT2 : ∀ a b : Zd d L,
-        ‖KLWard_wD d L (K t) (κ t) (p.1.1.take (N - 1)) (p.2.1.take (N - 1) ++ [a]) * SB d L g a b *
+        ‖KLWard_wD d L (K t) (κ t) (p.1.1.take (N - 1)) (p.2.1.take (N - 1) ++ [a]) * S a b *
           K t ((KLWard_pmLoop false p.1.1 p.2.1).cutGlueL 1 N b)‖ ≤ R * ‖D t‖ := by
       intro a b
       have hlmN : N ≤ (KLWard_pmLoop false p.1.1 p.2.1).length := by rw [hlm, hpN]
@@ -863,7 +910,7 @@ private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| <
       rw [norm_mul, norm_mul]
       calc _ ≤ ‖D t‖ * 1 * R := by
             gcongr
-            exact KLWard_norm_SB_apply_le d L g hL a b
+            exact hS.entry a b
         _ = R * ‖D t‖ := by ring
     have hinv : ‖(1 - (t : ℂ))⁻¹‖ ≤ (1 - T₀)⁻¹ := by
       rw [norm_inv, show (1 : ℂ) - t = ((1 - t : ℝ) : ℂ) by push_cast; ring, Complex.norm_real,
@@ -896,44 +943,56 @@ private theorem KLWard_level (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| <
   have hμ' : μ.length = N - 1 := by omega
   exact congrFun (hzero t ht) (⟨μ, hμ'⟩, ⟨a', ha'⟩)
 
-/-- **`(WI_calK)` at every length** for a family of `K`-loops with bounded `2`-loops, cyclic
-invariance and the level-`2` identity (the level-`2` identity and the cyclic invariance are
-hypotheses `hlev2`, `hcyc`). -/
-private theorem KLWard_of_isKLoop (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : |E| < 2)
-    {T : Set ℝ} {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoop d L W g (mSigma E) T K) {T₀ R : ℝ}
+/-- **`(WI_calK)` at every length** for a family of `K`-loops over a kernel with `KernelFacts`, with bounded
+`2`-loops, cyclic invariance, the level-`2` identity (`hlev2`) and the identity of the initial data at `t = 0`
+on the loops of length `≥ 3` (`hM0`). -/
+private theorem KLWard_of_isKLoopS (hS : KernelFacts S) (W : ℕ) (hW : W ≠ 0) (m : Bool → ℂ)
+    (M : LoopIdx (Zd d L) → ℂ) (hm : m false = (starRingEnd ℂ) (m true)) (hy : 0 < (m true).im)
+    {T : Set ℝ} {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoopS d L W S m M T K) {T₀ R : ℝ}
     (hT₀ : T₀ < 1) (hT : Set.Icc 0 T₀ ⊆ T) (hR0 : 0 ≤ R)
     (hR : ∀ t ∈ Set.Icc 0 T₀, ∀ I : LoopIdx (Zd d L), I.WF → I.length = 2 → ‖K t I‖ ≤ R)
     (hcyc : ∀ t ∈ Set.Icc 0 T₀, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
       K t (KLWard_rot J) = K t J)
-    (hlev2 : ∀ t ∈ Set.Icc 0 T₀, ∀ a : Zd d L, KLWard_wD d L (K t) (KLWard_kappa d W E t) [] [a] = 0) :
+    (hM0 : ∀ (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 → 1 ≤ μ.length →
+      ∑ x : Zd d L, M ⟨true :: μ ++ [false], a ++ [x]⟩
+        = (2 * Complex.I * (W : ℂ) ^ d * ((m true).im : ℂ))⁻¹ * (M ⟨true :: μ, a⟩ - M ⟨false :: μ, a⟩))
+    (hlev2 : ∀ t ∈ Set.Icc 0 T₀, ∀ a : Zd d L,
+      ∑ x : Zd d L, K t ⟨[true, false], [a, x]⟩ = (((W : ℂ) ^ d) * ((1 - t : ℝ) : ℂ))⁻¹) :
     ∀ t ∈ Set.Icc 0 T₀, ∀ (μ : List Bool) (a' : List (Zd d L)), μ.length + 1 = a'.length →
-      KLWard_wD d L (K t) (KLWard_kappa d W E t) μ a' = 0 := by
-  have h2 : ∀ t ∈ Set.Icc 0 T₀, ∀ a : Zd d L, KLWard_wStar d L (K t) [] [a] = KLWard_c d W t := by
+      KLWard_wD d L (K t) (KLWard_kappa d W (m true).im t) μ a' = 0 := by
+  have h2 : ∀ t ∈ Set.Icc 0 T₀, ∀ a : Zd d L,
+      KLWard_wStar d L (K t) [] [a] = KLWard_c d W t := by
     intro t ht a
     have h := hlev2 t ht a
+    rw [KLWard_c]
+    push_cast at h
+    exact h
+  have hlev2' : ∀ t ∈ Set.Icc 0 T₀, ∀ a : Zd d L,
+      KLWard_wD d L (K t) (KLWard_kappa d W (m true).im t) [] [a] = 0 := by
+    intro t ht a
     have ht1 : t < 1 := lt_of_le_of_lt ht.2 hT₀
-    simp only [KLWard_wD, sub_eq_zero] at h
-    rw [h]
-    simp only [KLWard_pmLoop]
-    rw [hK.2.2 t (hT ht) true a, hK.2.2 t (hT ht) false a, KLWard_kappa_mul d W hW hE ht1]
+    simp only [KLWard_wD, KLWard_pmLoop]
+    rw [h2 t ht a, hK.2.2 t (hT ht) true a, hK.2.2 t (hT ht) false a,
+      KLWard_kappa_mul d W hW m hm hy ht1, sub_self]
   -- the initial value
   have h0 : ∀ (μ : List Bool) (a' : List (Zd d L)), μ.length + 1 = a'.length → 2 ≤ a'.length →
-      KLWard_wD d L (K 0) (KLWard_kappa d W E 0) μ a' = 0 := by
+      KLWard_wD d L (K 0) (KLWard_kappa d W (m true).im 0) μ a' = 0 := by
     intro μ a' hμ h2'
-    rw [← KLWard_wD_MLoop d L W hW hE μ a' hμ]
-    simp only [KLWard_wD, KLWard_wStar]
-    congr 1
-    · refine Finset.sum_congr rfl fun x _ => hK.2.1 _ ?_ ?_
-      · simp [LoopIdx.WF, KLWard_fullLoop]; omega
-      · simp [LoopIdx.length, KLWard_fullLoop]; omega
-    · rw [hK.2.1 _ (by simp [LoopIdx.WF, KLWard_pmLoop]; omega)
+    have h := hM0 μ a' hμ.symm (by omega)
+    simp only [KLWard_wD, KLWard_wStar, KLWard_kappa, sub_zero, one_mul]
+    rw [Finset.sum_congr rfl fun x _ => hK.2.1 _ (by simp [LoopIdx.WF, KLWard_fullLoop]; omega)
+          (by simp [LoopIdx.length, KLWard_fullLoop]; omega),
+      hK.2.1 _ (by simp [LoopIdx.WF, KLWard_pmLoop]; omega)
           (by simp [LoopIdx.length, KLWard_pmLoop]; omega),
-        hK.2.1 _ (by simp [LoopIdx.WF, KLWard_pmLoop]; omega)
+      hK.2.1 _ (by simp [LoopIdx.WF, KLWard_pmLoop]; omega)
           (by simp [LoopIdx.length, KLWard_pmLoop]; omega)]
+    simp only [KLWard_fullLoop, KLWard_pmLoop]
+    rw [h]
+    simp
   -- induction on the length
   have main : ∀ N : ℕ, ∀ t ∈ Set.Icc 0 T₀, ∀ (μ : List Bool) (a' : List (Zd d L)),
       μ.length + 1 = a'.length → a'.length = N →
-        KLWard_wD d L (K t) (KLWard_kappa d W E t) μ a' = 0 := by
+        KLWard_wD d L (K t) (KLWard_kappa d W (m true).im t) μ a' = 0 := by
     intro N
     induction N using Nat.strong_induction_on with
     | _ N ih =>
@@ -942,8 +1001,8 @@ private theorem KLWard_of_isKLoop (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : 
       · have hμ0 : μ = [] := List.eq_nil_of_length_eq_zero (by omega)
         obtain ⟨a, ha⟩ : ∃ a, a' = [a] := List.length_eq_one_iff.mp (by omega)
         rw [hμ0, ha]
-        exact hlev2 t ht a
-      · refine KLWard_level d L g hL W hW hE K T₀ R N hN2 hT₀ hR0 (fun s hs => hK.1 s (hT hs))
+        exact hlev2' t ht a
+      · refine KLWard_level d L S hS W hW hy K T₀ R N hN2 hT₀ hR0 (fun s hs => hK.1 s (hT hs))
           hcyc hR h2 ?_ ?_ t ht μ a' hμ hN
         · intro s hs μ'' a'' h1 hlt
           exact ih _ hlt s hs μ'' a'' h1 rfl
@@ -954,11 +1013,11 @@ private theorem KLWard_of_isKLoop (hL : 3 ≤ L) (W : ℕ) (hW : W ≠ 0) (hE : 
 
 end Level
 
-/-! ## 5. Flipping all charges: `𝒦_{t,-σ,a} = conj 𝒦_{t,σ,a}`
+/-! ## 5. Flipping all charges: `K_{t,-σ,a} = conj K_{t,σ,a}`
 
 New (no RBM2D source: RBM2D proves `(WI_calK)` for `σ = (+, …, -)` only and flips only the layer
-`Alayer`, `RBM2D/Loop/SumZeroWard.lean:1369-1395` at `c9a24cf`).  The proof is by uniqueness of the
-family of `K`-loops (`KLK_unique`). -/
+`Alayer`, `RBM2D/Loop/SumZeroWard.lean:1369-1395` at `c9a24cf`).  Over a kernel `S` with `KernelFacts`, the proof
+is by uniqueness of the family of `K`-loops (`uniqS_holds`, `retireS_holds`). -/
 
 section Flip
 
@@ -989,24 +1048,190 @@ private theorem KLWard_flipIdx_cutGlueR {α : Type*} (I : LoopIdx α) (k l : ℕ
     (KLWard_flipIdx I).cutGlueR k l b = KLWard_flipIdx (I.cutGlueR k l b) := by
   simp [KLWard_flipIdx, LoopIdx.cutGlueR, List.map_take, List.map_drop]
 
-variable (d L : ℕ) [NeZero L] (g : ℝ)
-
-omit [NeZero L] in
-/-- `S^(B)` is real. -/
-private theorem KLWard_conj_SB (a b : Zd d L) :
-    (starRingEnd ℂ) (SB d L g a b) = SB d L g a b := by
-  rw [SB_apply, sbKernel_eq_ofReal, Complex.conj_ofReal]
+variable (d L : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ)
 
 /-- The right-hand side of `(pro_dyncalK)` of the family `conj ∘ K ∘ flip` is the conjugate of the
-right-hand side of `K` at the flipped loop. -/
-private theorem KLWard_treeEqRhs_flip (W : ℕ) (K : LoopIdx (Zd d L) → ℂ) (I : LoopIdx (Zd d L)) :
-    treeEqRhs d L W g (fun J => (starRingEnd ℂ) (K (KLWard_flipIdx J))) I
-      = (starRingEnd ℂ) (treeEqRhs d L W g K (KLWard_flipIdx I)) := by
-  unfold treeEqRhs
+right-hand side of `K` at the flipped loop (`S` real). -/
+private theorem KLWard_treeEqRhsS_flip (hreal : ∀ a b, (starRingEnd ℂ) (S a b) = S a b) (W : ℕ)
+    (K : LoopIdx (Zd d L) → ℂ) (I : LoopIdx (Zd d L)) :
+    treeEqRhsS d L W S (fun J => (starRingEnd ℂ) (K (KLWard_flipIdx J))) I
+      = (starRingEnd ℂ) (treeEqRhsS d L W S K (KLWard_flipIdx I)) := by
+  unfold treeEqRhsS
   rw [map_mul, map_pow, Complex.conj_natCast]
   congr 1
-  simp only [map_sum, map_mul, KLWard_conj_SB, KLWard_flipIdx_cutGlueL, KLWard_flipIdx_cutGlueR,
+  simp only [map_sum, map_mul, hreal, KLWard_flipIdx_cutGlueL, KLWard_flipIdx_cutGlueR,
     KLWard_flipIdx_length]
+
+/-- `m(-s) = conj m(s)`. -/
+private theorem KLWard_m_not (m : Bool → ℂ) (hm : m false = (starRingEnd ℂ) (m true)) (s : Bool) :
+    m (!s) = (starRingEnd ℂ) (m s) := by
+  cases s <;> simp [hm]
+
+/-- The family `(t, I) ↦ conj K_{t, flip I}` is a family of `K`-loops over the same `(S, m, M)`: the equations
+`(pro_dyncalK)` (the right-hand side is conjugated, `S` is real, `flip` commutes with the cuts), the initial
+value (`M` flips to its conjugate) and `K^{(1)} = m` (`conj m(-s) = m(s)`). -/
+private theorem KLWard_isKLoopS_flip (hreal : ∀ a b, (starRingEnd ℂ) (S a b) = S a b) (W : ℕ)
+    (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ) (hm : m false = (starRingEnd ℂ) (m true))
+    (hMf : ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 2 ≤ a.length →
+      M ⟨σ.map not, a⟩ = (starRingEnd ℂ) (M ⟨σ, a⟩))
+    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoopS d L W S m M (Set.Ico 0 1) K) :
+    IsKLoopS d L W S m M (Set.Ico 0 1) (fun t I => (starRingEnd ℂ) (K t (KLWard_flipIdx I))) := by
+  refine ⟨fun t ht I hI h2 => ?_, fun I hI h2 => ?_, fun t ht s a => ?_⟩
+  · have h := (hK.1 t ht (KLWard_flipIdx I) (KLWard_flipIdx_WF hI) h2).star
+    rw [KLWard_treeEqRhsS_flip d L S hreal]
+    exact h
+  · obtain ⟨σ, a⟩ := I
+    change (starRingEnd ℂ) (K 0 (KLWard_flipIdx ⟨σ, a⟩)) = M ⟨σ, a⟩
+    rw [hK.2.1 _ (KLWard_flipIdx_WF hI) h2]
+    change (starRingEnd ℂ) (M ⟨σ.map not, a⟩) = M ⟨σ, a⟩
+    rw [hMf σ a hI h2, Complex.conj_conj]
+  · change (starRingEnd ℂ) (K t ⟨[!s], [a]⟩) = m s
+    rw [hK.2.2 t ht (!s) a, KLWard_m_not m hm, Complex.conj_conj]
+
+/-- **Flipping all charges conjugates `K`**: `K_{t,-σ,a} = conj K_{t,σ,a}` for every well-formed loop of
+length `≥ 1`.  By `uniqS_holds`: `(t, I) ↦ conj K_{t, flip I}` is a family of `K`-loops. -/
+private theorem KLWard_K_flip (hS : KernelFacts S) (W : ℕ) (m : Bool → ℂ) (M : LoopIdx (Zd d L) → ℂ)
+    (hm : m false = (starRingEnd ℂ) (m true))
+    (hMf : ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 2 ≤ a.length →
+      M ⟨σ.map not, a⟩ = (starRingEnd ℂ) (M ⟨σ, a⟩))
+    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoopS d L W S m M (Set.Ico 0 1) K) :
+    ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 1 ≤ a.length →
+      K t ⟨σ.map not, a⟩ = (starRingEnd ℂ) (K t ⟨σ, a⟩) := by
+  intro t ht σ a hσa h1
+  have hK' := KLWard_isKLoopS_flip d L S hS.real W m M hm hMf hK
+  rcases h1.lt_or_eq with h2 | h1
+  · have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun r hr => ⟨hr.1, lt_of_le_of_lt hr.2 ht.2⟩
+    obtain ⟨R, hR0, hR⟩ := retireS_holds d L W S m M hK t ht.2
+    obtain ⟨R', hR'0, hR'⟩ := retireS_holds d L W S m M hK' t ht.2
+    have h : K t (KLWard_flipIdx ⟨σ, a⟩)
+        = (starRingEnd ℂ) (K t (KLWard_flipIdx (KLWard_flipIdx ⟨σ, a⟩))) :=
+      uniqS_holds d L W S m M hS.entry hK hK' hT (R := max R R') (le_trans hR0 (le_max_left _ _))
+        (fun r hr J hJ hJ2 => ⟨(hR r hr J hJ hJ2).trans (le_max_left _ _),
+          (hR' r hr J hJ hJ2).trans (le_max_right _ _)⟩) t ⟨ht.1, le_rfl⟩ _
+        (KLWard_flipIdx_WF hσa) (by change 2 ≤ a.length; omega)
+    rw [KLWard_flipIdx_involutive] at h
+    exact h
+  · obtain ⟨x, rfl⟩ := List.length_eq_one_iff.1 h1.symm
+    obtain ⟨s, rfl⟩ := List.length_eq_one_iff.1 (hσa.trans List.length_singleton)
+    change K t ⟨[!s], [x]⟩ = (starRingEnd ℂ) (K t ⟨[s], [x]⟩)
+    rw [hK.2.2 t ht (!s) x, hK.2.2 t ht s x, KLWard_m_not m hm]
+
+end Flip
+
+/-! ## 6. The pinned theorem `wardS_holds` -/
+
+section Main
+
+variable (d L : ℕ) [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ)
+
+/-- `(WI_calK)` for `σ₁ = +`, `σₙ = −`, over a kernel `S` with `KernelFacts`: port of `Kcal_ward`
+(`RBM2D/Loop/Ward.lean:969-1000` at `c9a24cf`). -/
+private theorem KLWard_posS (hS : KernelFacts S) (W : ℕ) (hW : 1 ≤ W) (m : Bool → ℂ)
+    (M : LoopIdx (Zd d L) → ℂ) (hm : m false = (starRingEnd ℂ) (m true)) (hy : 0 < (m true).im)
+    (hMrot : ∀ (s : Bool) (b : Zd d L) (σ : List Bool) (a : List (Zd d L)), σ.length = a.length →
+      M ⟨s :: σ, b :: a⟩ = M ⟨σ ++ [s], a ++ [b]⟩)
+    (hM0 : ∀ (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 → 1 ≤ μ.length →
+      ∑ x : Zd d L, M ⟨true :: μ ++ [false], a ++ [x]⟩
+        = (2 * Complex.I * (W : ℂ) ^ d * ((m true).im : ℂ))⁻¹ * (M ⟨true :: μ, a⟩ - M ⟨false :: μ, a⟩))
+    {K : ℝ → LoopIdx (Zd d L) → ℂ} (hK : IsKLoopS d L W S m M (Set.Ico 0 1) K)
+    (hlev2 : ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ a : Zd d L,
+      ∑ x : Zd d L, K t ⟨[true, false], [a, x]⟩ = (((W : ℂ) ^ d) * ((1 - t : ℝ) : ℂ))⁻¹)
+    {t : ℝ} (ht : t ∈ Set.Ico (0 : ℝ) 1) (μ : List Bool) (a : List (Zd d L))
+    (ha : a.length = μ.length + 1) :
+    ∑ x : Zd d L, K t ⟨true :: μ ++ [false], a ++ [x]⟩
+      = KLWard_kappa d W (m true).im t * (K t ⟨true :: μ, a⟩ - K t ⟨false :: μ, a⟩) := by
+  have hW0 : W ≠ 0 := by omega
+  have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun r hr => ⟨hr.1, lt_of_le_of_lt hr.2 ht.2⟩
+  obtain ⟨R, hR0, hR⟩ := retireS_holds d L W S m M hK t ht.2
+  have hcyc : ∀ r ∈ Set.Icc 0 t, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
+      K r (KLWard_rot J) = K r J := by
+    intro r hr J hJ hJ2
+    obtain ⟨σJ, aJ⟩ := J
+    rcases aJ with _ | ⟨b, aJ⟩
+    · simp [LoopIdx.length] at hJ2
+    rcases σJ with _ | ⟨s, σJ⟩
+    · simp [LoopIdx.WF] at hJ
+    rw [KLWard_rot_mk_cons]
+    exact (rotS_holds d L W S m M hS.symm hS.entry hMrot hK r (hT hr) s b σJ aJ
+      (by simpa [LoopIdx.WF] using hJ)).symm
+  have h := KLWard_of_isKLoopS d L S hS W hW0 m M hm hy hK ht.2 hT hR0 hR hcyc hM0
+    (fun r hr a => hlev2 r (hT hr) a) t ⟨ht.1, le_rfl⟩ μ a ha.symm
+  simp only [KLWard_wD, KLWard_wStar, KLWard_fullLoop, KLWard_pmLoop, sub_eq_zero] at h
+  exact h
+
+/-- `κ_t` is purely imaginary: `conj κ_t = -κ_t`. -/
+private theorem KLWard_conj_kappa (W : ℕ) (y t : ℝ) :
+    (starRingEnd ℂ) (KLWard_kappa d W y t) = -KLWard_kappa d W y t := by
+  have h1 : (starRingEnd ℂ) (2 * Complex.I * (W : ℂ) ^ d * (((1 - t) * y : ℝ) : ℂ))
+      = -(2 * Complex.I * (W : ℂ) ^ d * (((1 - t) * y : ℝ) : ℂ)) := by
+    simp only [map_mul, map_pow, Complex.conj_I, Complex.conj_ofReal, Complex.conj_natCast, map_ofNat]
+    ring
+  rw [KLWard_kappa, map_inv₀, h1, inv_neg]
+
+/-- **`wardS_holds`: `lem_WI_K`, `(WI_calK)`, over a general kernel** (the pin `WardS`), both charge orders
+`σ = (s, μ, -s)`: the band proof (`s = +`: the defect `D_t` solves `∂_t D = W^d T[D] + (1 - t)⁻¹ D` with `D_0 = 0`,
+Grönwall by strong induction on the length; `s = -`: complex conjugation, `K_{t,-σ,a} = conj K_{t,σ,a}` by
+uniqueness) uses `S` only through the four fields of `KernelFacts`; `‖m‖ = 1` is not used. -/
+theorem wardS_holds : WardS := by
+  intro d L W _ S m M hS hW hy hm hMf hMrot hM0 K hK hlev2 t ht s μ a ha
+  cases s with
+  | true => exact KLWard_posS d L S hS W hW m M hm hy hMrot hM0 hK hlev2 ht μ a ha
+  | false =>
+    set μ' : List Bool := μ.map not with hμ'
+    have hlen' : a.length = μ'.length + 1 := by rw [hμ', List.length_map]; exact ha
+    have hpos := KLWard_posS d L S hS W hW m M hm hy hMrot hM0 hK hlev2 ht μ' a hlen'
+    have hμμ : μ'.map not = μ := by simp [hμ', List.map_map, Function.comp_def]
+    have hflip := KLWard_K_flip d L S hS W m M hm hMf hK t ht
+    have f1 : ∀ x : Zd d L, K t ⟨false :: μ ++ [!false], a ++ [x]⟩
+        = (starRingEnd ℂ) (K t ⟨true :: μ' ++ [false], a ++ [x]⟩) := by
+      intro x
+      have h := hflip (true :: μ' ++ [false]) (a ++ [x]) (by simp; omega) (by simp)
+      rwa [show (true :: μ' ++ [false]).map not = false :: μ ++ [!false] by simp [hμμ]] at h
+    have f2 : K t ⟨true :: μ, a⟩ = (starRingEnd ℂ) (K t ⟨false :: μ', a⟩) := by
+      have h := hflip (false :: μ') a (by simp; omega) (by omega)
+      rwa [show (false :: μ').map not = true :: μ by simp [hμμ]] at h
+    have f3 : K t ⟨false :: μ, a⟩ = (starRingEnd ℂ) (K t ⟨true :: μ', a⟩) := by
+      have h := hflip (true :: μ') a (by simp; omega) (by omega)
+      rwa [show (true :: μ').map not = false :: μ by simp [hμμ]] at h
+    calc ∑ x : Zd d L, K t ⟨false :: μ ++ [!false], a ++ [x]⟩
+        = ∑ x : Zd d L, (starRingEnd ℂ) (K t ⟨true :: μ' ++ [false], a ++ [x]⟩) :=
+          Finset.sum_congr rfl fun x _ => f1 x
+      _ = (starRingEnd ℂ) (∑ x : Zd d L, K t ⟨true :: μ' ++ [false], a ++ [x]⟩) :=
+          (map_sum _ _ _).symm
+      _ = (starRingEnd ℂ) (KLWard_kappa d W (m true).im t *
+            (K t ⟨true :: μ', a⟩ - K t ⟨false :: μ', a⟩)) := by
+          rw [hpos]
+      _ = KLWard_kappa d W (m true).im t * (K t ⟨true :: μ, a⟩ - K t ⟨false :: μ, a⟩) := by
+          rw [map_mul, map_sub, KLWard_conj_kappa d W, ← f3, ← f2]
+          ring
+
+end Main
+
+/-! ## 6b. The band instances (G1): `kernelFacts_one`, `kernelFacts_SB`, `KLK_ward`, `KLWard_flip` -/
+
+section Band
+
+/-- The block Anderson kernel `S^{(B)}(0) = I` has the four facts (probe `t/T2360:RBM3D/Probe/T2360Pins.lean:211`). -/
+theorem kernelFacts_one {d L : ℕ} [NeZero L] : KernelFacts (1 : Matrix (Zd d L) (Zd d L) ℂ) where
+  symm a b := by simp only [Matrix.one_apply]; exact if_congr eq_comm rfl rfl
+  real a b := by simp only [Matrix.one_apply]; split_ifs <;> simp
+  colSum b := by simp [Matrix.one_apply]
+  entry a b := by simp only [Matrix.one_apply]; split_ifs <;> simp
+
+/-- The band kernel `S^{(B)}(λ)` has the four facts (probe `t/T2360:RBM3D/Probe/T2360Pins.lean:218`). -/
+theorem kernelFacts_SB {d L : ℕ} [NeZero L] (g : ℝ) (hL : 3 ≤ L) : KernelFacts (SB d L g) where
+  symm a b := by
+    have := congrFun (congrFun (SB_transpose d L g) a) b
+    simpa [Matrix.transpose_apply] using this.symm
+  real a b := by rw [SB_apply, sbKernel_eq_ofReal, Complex.conj_ofReal]
+  colSum b := by
+    rw [← sum_SB_row d L g hL b]
+    exact Finset.sum_congr rfl fun a _ => by
+      have := congrFun (congrFun (SB_transpose d L g) b) a
+      simpa [Matrix.transpose_apply] using this
+  entry a b := norm_SB_apply_le g hL a b
+
+variable (d L W : ℕ) [NeZero L]
 
 /-- `conj m(-s) = m(s)`. -/
 private theorem KLWard_conj_mSigma_not (E : ℝ) (s : Bool) :
@@ -1015,7 +1240,7 @@ private theorem KLWard_conj_mSigma_not (E : ℝ) (s : Bool) :
 
 /-- The initial value `(eq:initial_K)` at the flipped loop, conjugated, is the initial value for the
 charge function `s ↦ conj m(-s)`. -/
-private theorem KLWard_conj_MLoop_flip (W : ℕ) (m : Bool → ℂ) (I : LoopIdx (Zd d L)) :
+private theorem KLWard_conj_MLoop_flip (m : Bool → ℂ) (I : LoopIdx (Zd d L)) :
     (starRingEnd ℂ) (MLoop d L W m (KLWard_flipIdx I))
       = MLoop d L W (fun s => (starRingEnd ℂ) (m (!s))) I := by
   have hc : MLoop d L W m (KLWard_flipIdx I) = ((W : ℂ) ^ d)⁻¹ ^ (I.length - 1) *
@@ -1026,100 +1251,70 @@ private theorem KLWard_conj_MLoop_flip (W : ℕ) (m : Bool → ℂ) (I : LoopIdx
   congr 1
   split_ifs <;> simp
 
-/-- The family `(t, I) ↦ conj 𝒦_{t, flip I}` is a family of `K`-loops on `[0,1)`: the equations
-`(pro_dyncalK)` (the right-hand side is conjugated, `S^(B)` is real, `flip` commutes with the cuts),
-the initial value `(eq:initial_K)` and `K^{(1)} = m` (`conj m(-s) = m(s)`). -/
-private theorem KLWard_isKLoop_flip (hL : 3 ≤ L) (W : ℕ) (hW : 1 ≤ W) {E : ℝ} (hE : |E| < 2) :
-    IsKLoop d L W g (mSigma E) (Set.Ico 0 1)
-      (fun t I => (starRingEnd ℂ) (KLK d L g W E t (KLWard_flipIdx I))) := by
-  have hKc := KLK_isKLoop d L W g E hL hW hE
-  refine ⟨fun t ht I hI h2 => ?_, fun I hI h2 => ?_, fun t ht s a => ?_⟩
-  · have h := (hKc.1 t ht (KLWard_flipIdx I) (KLWard_flipIdx_WF hI) h2).star
-    rw [KLWard_treeEqRhs_flip]
-    exact h
-  · change (starRingEnd ℂ) (KLK d L g W E 0 (KLWard_flipIdx I)) = MLoop d L W (mSigma E) I
-    rw [show KLK d L g W E 0 (KLWard_flipIdx I) = MLoop d L W (mSigma E) (KLWard_flipIdx I) from
-      hKc.2.1 _ (KLWard_flipIdx_WF hI) h2, KLWard_conj_MLoop_flip]
-    congr 1
-    funext s
-    exact KLWard_conj_mSigma_not E s
-  · change (starRingEnd ℂ) (KLK d L g W E t ⟨[!s], [a]⟩) = mSigma E s
-    rw [KLK_one, KLWard_conj_mSigma_not]
+/-- The initial data `MLoop` rotate (private reproof of `KLUnique_MLoop_rot`, `KLUnique.lean:467`). -/
+private theorem KLWard_MLoop_rot (m : Bool → ℂ) (I : LoopIdx (Zd d L)) :
+    MLoop d L W m (KLWard_rot I) = MLoop d L W m I := by
+  have hl : (KLWard_rot I).length = I.length := by
+    simp [KLWard_rot, LoopIdx.length, List.length_rotate]
+  simp only [MLoop, hl]
+  congr 2
+  · simp only [KLWard_rot, List.map_rotate]
+    exact (List.rotate_perm _ 1).prod_eq
+  · simp only [KLWard_rot, List.mem_rotate]
 
-/-- **Flipping all charges conjugates `𝒦`**: `𝒦_{t,-σ,a} = conj 𝒦_{t,σ,a}` for every well-formed
-loop of length `≥ 1`.  By `KLK_unique`: `(t, I) ↦ conj 𝒦_{t, flip I}` is a family of `K`-loops. -/
-theorem KLWard_flip :
-    ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 → ∀ t ∈ Set.Ico (0 : ℝ) 1,
-      ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 1 ≤ a.length →
-        KLK d L g W E t ⟨σ.map not, a⟩ = (starRingEnd ℂ) (KLK d L g W E t ⟨σ, a⟩) := by
-  intro d L W _ g E hL hW hE t ht σ a hσa h1
-  have h := KLK_unique d L W g E hL hW hE _ (KLWard_isKLoop_flip d L g hL W hW hE) t ht
-    (KLWard_flipIdx ⟨σ, a⟩) (KLWard_flipIdx_WF hσa) h1
-  rw [KLWard_flipIdx_involutive] at h
-  exact h.symm
+/-- `MLoop` in the form of the rotation hypothesis of `WardS`. -/
+private theorem KLWard_MLoop_rot_cons (m : Bool → ℂ) (s : Bool) (b : Zd d L) (σ : List Bool)
+    (a : List (Zd d L)) (_ : σ.length = a.length) :
+    MLoop d L W m ⟨s :: σ, b :: a⟩ = MLoop d L W m ⟨σ ++ [s], a ++ [b]⟩ := by
+  have := KLWard_MLoop_rot d L W m ⟨s :: σ, b :: a⟩
+  rw [KLWard_rot_mk_cons] at this
+  exact this.symm
 
-end Flip
+/-- `MLoop` flips to its conjugate (the flip hypothesis of `WardS` at `m = mSigma E`). -/
+private theorem KLWard_band_flip (E : ℝ) :
+    ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 2 ≤ a.length →
+      MLoop d L W (mSigma E) ⟨σ.map not, a⟩ = (starRingEnd ℂ) (MLoop d L W (mSigma E) ⟨σ, a⟩) := by
+  intro σ a _ _
+  have h := KLWard_conj_MLoop_flip d L W (mSigma E) ⟨σ, a⟩
+  have e : (fun s => (starRingEnd ℂ) (mSigma E (!s))) = mSigma E :=
+    funext (KLWard_conj_mSigma_not E)
+  rw [e] at h
+  calc MLoop d L W (mSigma E) ⟨σ.map not, a⟩
+      = (starRingEnd ℂ) ((starRingEnd ℂ) (MLoop d L W (mSigma E) (KLWard_flipIdx ⟨σ, a⟩))) :=
+        (Complex.conj_conj _).symm
+    _ = (starRingEnd ℂ) (MLoop d L W (mSigma E) ⟨σ, a⟩) := by rw [h]
 
-/-! ## 6. The pinned theorem -/
-
-section Main
-
-variable (d L : ℕ) [NeZero L] (g : ℝ)
-
-/-- `(WI_calK)` for `σ₁ = +`, `σₙ = −`: port of `Kcal_ward` (`RBM2D/Loop/Ward.lean:969-1000` at
-`c9a24cf`). -/
-private theorem KLWard_pos (hL : 3 ≤ L) (W : ℕ) (hW : 1 ≤ W) {E : ℝ} (hE : |E| < 2) {t : ℝ}
-    (ht : t ∈ Set.Ico (0 : ℝ) 1) (μ : List Bool) (a : List (Zd d L))
-    (ha : a.length = μ.length + 1) :
-    ∑ x : Zd d L, KLK d L g W E t ⟨true :: μ ++ [false], a ++ [x]⟩
-      = (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹ *
-          (KLK d L g W E t ⟨true :: μ, a⟩ - KLK d L g W E t ⟨false :: μ, a⟩) := by
-  have hW0 : W ≠ 0 := by omega
-  have hKc := KLK_isKLoop d L W g E hL hW hE
-  have hT : Set.Icc 0 t ⊆ Set.Ico 0 1 := fun r hr => ⟨hr.1, lt_of_le_of_lt hr.2 ht.2⟩
-  obtain ⟨R, hR0, hR⟩ := KLretire_twoLoopBounded hKc t ht.2
-  have hcyc : ∀ r ∈ Set.Icc 0 t, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
-      KLK d L g W E r (KLWard_rot J) = KLK d L g W E r J := by
-    intro r hr J hJ hJ2
-    obtain ⟨σJ, aJ⟩ := J
-    rcases aJ with _ | ⟨b, aJ⟩
-    · simp [LoopIdx.length] at hJ2
-    rcases σJ with _ | ⟨s, σJ⟩
-    · simp [LoopIdx.WF] at hJ
-    rw [KLWard_rot_mk_cons]
-    exact (KLK_rotate d L W g E hL hW hE r (hT hr) s b σJ aJ
-      (by simpa [LoopIdx.WF] using hJ)).symm
-  have hlev2 : ∀ r ∈ Set.Icc 0 t, ∀ a₁ : Zd d L,
-      KLWard_wD d L (KLK d L g W E r) (KLWard_kappa d W E r) [] [a₁] = 0 := by
-    intro r hr a₁
-    have h : ∑ x : Zd d L, KLK d L g W E r ⟨true :: [] ++ [false], [a₁] ++ [x]⟩
-        = (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E r : ℂ))⁻¹ *
-            (KLK d L g W E r ⟨true :: [], [a₁]⟩ - KLK d L g W E r ⟨false :: [], [a₁]⟩) :=
-      KLward_two d L g hL W hW hE (hT hr) true a₁
-    simp only [KLWard_wD, KLWard_wStar, KLWard_fullLoop, KLWard_pmLoop, KLWard_kappa]
-    exact sub_eq_zero.2 h
-  have h := KLWard_of_isKLoop d L g hL W hW0 hE hKc ht.2 hT hR0 hR hcyc hlev2 t
-    ⟨ht.1, le_rfl⟩ μ a ha.symm
-  simp only [KLWard_wD, KLWard_wStar, KLWard_fullLoop, KLWard_pmLoop, KLWard_kappa,
+/-- The `t = 0` hypothesis of `WardS` for the band initial data (`KLWard_wD_MLoop`). -/
+private theorem KLWard_band_zero (hW : 1 ≤ W) {E : ℝ} (hE : |E| < 2) :
+    ∀ (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 → 1 ≤ μ.length →
+      ∑ x : Zd d L, MLoop d L W (mSigma E) ⟨true :: μ ++ [false], a ++ [x]⟩
+        = (2 * Complex.I * (W : ℂ) ^ d * ((mSigma E true).im : ℂ))⁻¹ *
+            (MLoop d L W (mSigma E) ⟨true :: μ, a⟩ - MLoop d L W (mSigma E) ⟨false :: μ, a⟩) := by
+  intro μ a ha _
+  have h := KLWard_wD_MLoop d L W (by omega) hE μ a ha.symm
+  simp only [KLWard_wD, KLWard_wStar, KLWard_fullLoop, KLWard_pmLoop, KLWard_kappa, sub_zero, one_mul,
     sub_eq_zero] at h
   exact h
 
-/-- `κ_t` is purely imaginary: `conj κ_t = -κ_t`. -/
-private theorem KLWard_conj_kappa (W : ℕ) (E t : ℝ) :
-    (starRingEnd ℂ) (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹
-      = -(2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹ := by
-  have h1 : (starRingEnd ℂ) (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))
-      = -(2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ)) := by
-    simp only [map_mul, map_pow, Complex.conj_I, Complex.conj_ofReal, Complex.conj_natCast, map_ofNat]
-    ring
-  rw [map_inv₀, h1, inv_neg]
+/-- The level-`2` hypothesis of `WardS` for `𝒦` (`KLward_two`). -/
+private theorem KLWard_band_two (g E : ℝ) (hL : 3 ≤ L) (hW : 1 ≤ W) (hE : |E| < 2) :
+    ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ a : Zd d L,
+      ∑ x : Zd d L, KLK d L g W E t ⟨[true, false], [a, x]⟩ = (((W : ℂ) ^ d) * ((1 - t : ℝ) : ℂ))⁻¹ := by
+  intro t ht a
+  have h := KLward_two d L g hL W hW hE ht true a
+  have hk := KLWard_kappa_mul d W (by omega) (mSigma E) (KLWard_mSigma_false E)
+    (by rw [KLWard_mSigma_im]; exact mE_im_pos hE) ht.2
+  rw [KLWard_c] at hk
+  simp only [Bool.not_true] at h
+  rw [h, KLK_one, KLK_one]
+  push_cast
+  exact hk
 
 /-- **`lem_WI_K`, `(WI_calK)`**, both charge orders (pin `KLwardPin`,
 `64b58eb:RBM3D/Probe/T2004Pins.lean:770-779`; the type is the body of the pin): for
 `σ = (s, μ, -s)`, `n = |μ| + 2 ≥ 2`,
 `∑_{a_n} 𝒦^{(n)}_{t,σ,a} = (2 i W^d η_t)⁻¹ (𝒦^{(n-1)}_{t,(+,μ),â} - 𝒦^{(n-1)}_{t,(-,μ),â})`,
-`η_t = (1 - t) Im m(E)`.  For `s = +` this is the port of `Kcal_ward`; for `s = -` it follows by
-complex conjugation (`KLWard_flip`). -/
+`η_t = (1 - t) Im m(E)`.  Re-derived (G1) from `wardS_holds` at `S = SB d L g`, `m = mSigma E`, `M = MLoop`. -/
 theorem KLK_ward :
     ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 → ∀ t : ℝ, 0 ≤ t → t < 1 →
       ∀ (s : Bool) (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 →
@@ -1127,42 +1322,23 @@ theorem KLK_ward :
           = (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹ *
               (KLK d L g W E t ⟨true :: μ, a⟩ - KLK d L g W E t ⟨false :: μ, a⟩) := by
   intro d L W _ g E hL hW hE t ht0 ht1 s μ a ha
-  have ht : t ∈ Set.Ico (0 : ℝ) 1 := ⟨ht0, ht1⟩
-  cases s with
-  | true => exact KLWard_pos d L g hL W hW hE ht μ a ha
-  | false =>
-    set μ' : List Bool := μ.map not with hμ'
-    have hlen' : a.length = μ'.length + 1 := by rw [hμ', List.length_map]; exact ha
-    have hpos := KLWard_pos d L g hL W hW hE ht μ' a hlen'
-    have hμμ : μ'.map not = μ := by simp [hμ', List.map_map, Function.comp_def]
-    have f1 : ∀ x : Zd d L, KLK d L g W E t ⟨false :: μ ++ [!false], a ++ [x]⟩
-        = (starRingEnd ℂ) (KLK d L g W E t ⟨true :: μ' ++ [false], a ++ [x]⟩) := by
-      intro x
-      have h := KLWard_flip d L W g E hL hW hE t ht (true :: μ' ++ [false]) (a ++ [x])
-        (by simp; omega) (by simp)
-      rwa [show (true :: μ' ++ [false]).map not = false :: μ ++ [!false] by simp [hμμ]] at h
-    have f2 : KLK d L g W E t ⟨true :: μ, a⟩
-        = (starRingEnd ℂ) (KLK d L g W E t ⟨false :: μ', a⟩) := by
-      have h := KLWard_flip d L W g E hL hW hE t ht (false :: μ') a (by simp; omega) (by omega)
-      rwa [show (false :: μ').map not = true :: μ by simp [hμμ]] at h
-    have f3 : KLK d L g W E t ⟨false :: μ, a⟩
-        = (starRingEnd ℂ) (KLK d L g W E t ⟨true :: μ', a⟩) := by
-      have h := KLWard_flip d L W g E hL hW hE t ht (true :: μ') a (by simp; omega) (by omega)
-      rwa [show (true :: μ').map not = false :: μ by simp [hμμ]] at h
-    calc ∑ x : Zd d L, KLK d L g W E t ⟨false :: μ ++ [!false], a ++ [x]⟩
-        = ∑ x : Zd d L, (starRingEnd ℂ) (KLK d L g W E t ⟨true :: μ' ++ [false], a ++ [x]⟩) :=
-          Finset.sum_congr rfl fun x _ => f1 x
-      _ = (starRingEnd ℂ) (∑ x : Zd d L, KLK d L g W E t ⟨true :: μ' ++ [false], a ++ [x]⟩) :=
-          (map_sum _ _ _).symm
-      _ = (starRingEnd ℂ) ((2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹ *
-            (KLK d L g W E t ⟨true :: μ', a⟩ - KLK d L g W E t ⟨false :: μ', a⟩)) := by
-          rw [hpos]
-      _ = (2 * Complex.I * (W : ℂ) ^ d * (Gauss.etaT E t : ℂ))⁻¹ *
-            (KLK d L g W E t ⟨true :: μ, a⟩ - KLK d L g W E t ⟨false :: μ, a⟩) := by
-          rw [map_mul, map_sub, KLWard_conj_kappa d W E t, ← f3, ← f2]
-          ring
+  exact wardS_holds d L W (SB d L g) (mSigma E) (MLoop d L W (mSigma E)) (kernelFacts_SB g hL) hW
+    (by rw [KLWard_mSigma_im]; exact mE_im_pos hE) (KLWard_mSigma_false E)
+    (KLWard_band_flip d L W E) (KLWard_MLoop_rot_cons d L W (mSigma E))
+    (KLWard_band_zero d L W hW hE) (KLK_isKLoop d L W g E hL hW hE)
+    (KLWard_band_two d L W g E hL hW hE) t ⟨ht0, ht1⟩ s μ a ha
 
-end Main
+/-- **Flipping all charges conjugates `𝒦`**: `𝒦_{t,-σ,a} = conj 𝒦_{t,σ,a}` for every well-formed
+loop of length `≥ 1` (`KLWard_K_flip` at `S = SB d L g`, `m = mSigma E`, `M = MLoop`). -/
+theorem KLWard_flip :
+    ∀ (d L W : ℕ) [NeZero L] (g E : ℝ), 3 ≤ L → 1 ≤ W → |E| < 2 → ∀ t ∈ Set.Ico (0 : ℝ) 1,
+      ∀ (σ : List Bool) (a : List (Zd d L)), σ.length = a.length → 1 ≤ a.length →
+        KLK d L g W E t ⟨σ.map not, a⟩ = (starRingEnd ℂ) (KLK d L g W E t ⟨σ, a⟩) := by
+  intro d L W _ g E hL hW hE t ht σ a hσa h1
+  exact KLWard_K_flip d L (SB d L g) (kernelFacts_SB g hL) W (mSigma E) (MLoop d L W (mSigma E))
+    (KLWard_mSigma_false E) (KLWard_band_flip d L W E) (KLK_isKLoop d L W g E hL hW hE) t ht σ a hσa h1
+
+end Band
 
 /-! ## 7. The compiled instances: `d = 3`, `L = 5`, `W = 2`, `g = 1/2`, `E = 0`, `t = 9/10`
 
@@ -1218,6 +1394,30 @@ theorem KLWardInst_flip :
       = (starRingEnd ℂ) (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨[true, false, true], [0, 1, 2]⟩) := by
   simpa using KLWard_flip 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num) (9 / 10)
     ⟨by norm_num, by norm_num⟩ [true, false, true] [0, 1, 2] rfl (by simp)
+
+/-- `kernelFacts_one` at `d = 3`, `L = 5` (the block Anderson kernel). -/
+theorem KLWardInst_kernelFacts_one : KernelFacts (1 : Matrix (Zd 3 5) (Zd 3 5) ℂ) := kernelFacts_one
+
+/-- `kernelFacts_SB` at `d = 3`, `L = 5`, `g = 1/2` (the band kernel). -/
+theorem KLWardInst_kernelFacts_SB : KernelFacts (SB 3 5 (1 / 2)) := kernelFacts_SB (1 / 2) (by norm_num)
+
+/-- **`wardS_holds` at the band data** `d = 3`, `L = 5`, `W = 2`, `S = SB 3 5 (1/2)`, `m = mSigma 0`
+(`Im m(+) = 1`), `M = MLoop`, the family `K = 𝒦`, `t = 9/10`, the loop `(+, -, -)`, `a = (0, 1, x)`: every
+hypothesis (`KernelFacts`, `1 ≤ W`, `0 < Im m(+)`, `m(-) = conj m(+)`, flip, rotation, `t = 0` identity, the family
+of `K`-loops, the level-`2` identity, `t ∈ [0,1)`) is discharged. -/
+theorem KLWardInst_wardS :
+    ∑ x : Zd 3 5, KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false] ++ [!true], [0, 1] ++ [x]⟩
+      = (2 * Complex.I * (2 : ℂ) ^ 3 * (((1 - 9 / 10) * (mSigma 0 true).im : ℝ) : ℂ))⁻¹ *
+          (KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨true :: [false], [0, 1]⟩
+            - KLK 3 5 (1 / 2) 2 0 (9 / 10) ⟨false :: [false], [0, 1]⟩) :=
+  wardS_holds 3 5 2 (SB 3 5 (1 / 2)) (mSigma 0) (MLoop 3 5 2 (mSigma 0))
+    (kernelFacts_SB _ (by norm_num)) (by norm_num)
+    (by rw [KLWard_mSigma_im]; exact mE_im_pos (by norm_num)) (KLWard_mSigma_false 0)
+    (KLWard_band_flip 3 5 2 0) (KLWard_MLoop_rot_cons 3 5 2 (mSigma 0))
+    (KLWard_band_zero 3 5 2 (by norm_num) (by norm_num))
+    (KLK_isKLoop 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num))
+    (KLWard_band_two 3 5 2 (1 / 2) 0 (by norm_num) (by norm_num) (by norm_num)) (9 / 10)
+    ⟨by norm_num, by norm_num⟩ true [false] [0, 1] rfl
 
 end Instances
 
