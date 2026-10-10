@@ -417,6 +417,7 @@ import RBM3D.BA.KTreeDeriv
 import RBM3D.Universality.NormBand
 import RBM3D.Universality.EigenInterlacing
 import RBM3D.Universality.GUELocalSchur
+import RBM3D.BA.KTreeRep
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

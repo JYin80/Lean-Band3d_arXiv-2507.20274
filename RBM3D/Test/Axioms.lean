@@ -138,7 +138,6 @@ def owedProps : List Name :=
    `RBM.BA.STKboundgL, -- `ML:Kbound` `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d}B_{τ,0})^{k-1}` at a law `μ` over a flow carrier (`1_2:1056`), hypothesis of the instance `inst_baBootstrap'` (T2269); owed: the BA chain, BA-K4/BA-V2
    `RBM.BA.STLKgL, -- `(Eq:L-KGt)` (a) at a law `μ` over a flow carrier, hypothesis of the instance `inst_baBootstrap'` (T2269); owed like its band form `STLK`: BA chain, BA-V2/BA-K4
    `RBM.BA.STLocalMaxgL, -- `(Gt_bound+IND)` at a law `μ` over a flow carrier, hypothesis of the instances `inst_baS1_boot`, `inst_baS1_weakPT`, `inst_baS1_loopPT`, `inst_baBootstrap'` (T2269); owed like its band form `STLocalMax`: BA chain, BA-V2/BA-S3
-   `RBM.BA.BAKsolve, -- existence of the BA `𝒦` on `[0,1)` with `(Kn2sol)` (`1_2:1175`), hypothesis of `BAKsol_isKLoopS`, `BAKsol_rotate`, `BAKsol_translate` (T2368, DECISIONS §181); owed: BA-K05b (supervisor 2051 K-e, 0350 O4), which removes this line
    -- T2340 (ST-6 R1-R3, DECISIONS §151): carrier facts of the final assembly; the band instances are proved there (`stBase_band`, `stHorizon_band`), the BA instances are owed to BA-V
    `RBM.BA.STLK0, -- `𝓛_0 = 𝒦_0` (`1_2:1240-1243`) over a flow carrier; band: `azumaProxy_loopFine_sub_STKloop`; BA: BA-V `GLoopAtT0`
    `RBM.BA.STG0M, -- `G_0 = M` (`1_2:1240`) over a flow carrier; band: `lwExpTerm3_Gt_zero`; BA: BA-V `GLoopAtT0`

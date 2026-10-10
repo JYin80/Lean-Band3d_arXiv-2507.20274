@@ -1,4 +1,4 @@
-state: proving
-reason: stage 1a PASS and 1a-audit PASS (wf_83e9acb1-c1c, read t/T2370); input T2370 merged 06fd533; stage 1b prover-max running on t/T2374 from main e004671 (workflow wf_0e5634e3-169, stop 2000), then auditor
-updated: Sat Oct 10 07:49:28 UTC 2026
+state: audit-pass
+reason: stage 1a + 1a-audit PASS; stage 1b DONE (edaa2ec; BA/KTreeRep.lean 1763 lines of 2000); auditor1 PASS claude-opus-5-5 (wf_0e5634e3-169); owed line BAKsolve removed on main by exact match (H23 b); full lake build 4191 jobs exit 0
+updated: Sat Oct 10 08:46:43 UTC 2026
 reports: docs/reports/T2374-prove.md, docs/reports/T2374-1a-audit.md, docs/reports/T2374-audit.md
