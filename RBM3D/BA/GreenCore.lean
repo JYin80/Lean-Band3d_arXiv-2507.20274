@@ -1142,7 +1142,7 @@ theorem GreenCore_twoSided {t ρ α2 : ℝ} (hρ0 : 0 ≤ ρ) (hκ : 0 < κ) (h�
           exact Finset.sum_congr rfl fun i _ => by ring
 
 
-/-- The block distance `|a - b|` (`zdistD`) as a real function: the axioms used by the closure. -/
+/-- The block distance `|a - b|` (`zdistD`) as a real function: the metric properties used by the closure. -/
 theorem GreenCore_dist : (∀ a : Zd d L, ((zdistD d L (a - a) : ℕ) : ℝ) = 0) ∧
     (∀ a b : Zd d L, 0 ≤ ((zdistD d L (a - b) : ℕ) : ℝ)) ∧
     (∀ a b : Zd d L, ((zdistD d L (a - b) : ℕ) : ℝ) = ((zdistD d L (b - a) : ℕ) : ℝ)) ∧
