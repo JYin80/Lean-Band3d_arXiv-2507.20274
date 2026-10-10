@@ -44,8 +44,9 @@ open scoped Matrix
 
 section Cycle
 
-/-- A cycle with at most one unequal edge has none: if `b s ≠ b (nx s)` and every other element of the orbit of `s` has
-`b s' = b (nx s')`, then going once round the orbit `nx s, nx² s, …, s` shows `b (nx s) = b s`. -/
+/-- A cycle with at most one unequal edge has none: if `b s ≠ b (nx s)` and every other slot `s'` of the node of `s`
+(`nd s' = nd s`) has `b s' = b (nx s')`, then going once round the cycle `nx s, nx² s, …, s` (`horb`: one cycle per
+node) shows `b (nx s) = b s`, a contradiction. -/
 private theorem KSumZeroB_cycle {α β X : Type*} (nx : α → α) (nd : α → β) (hnd : ∀ s, nd (nx s) = nd s)
     (horb : ∀ s t, nd s = nd t → ∃ k : ℕ, nx^[k] s = t) (b : α → X) {s : α} (hs : b s ≠ b (nx s)) :
     ∃ s' : α, s' ≠ s ∧ nd s' = nd s ∧ b s' ≠ b (nx s') := by
@@ -449,7 +450,7 @@ theorem baSig_nc_pointwise {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn
   calc ‖BASig d n L g E m t i σ δ‖ ≤ _ := h
     _ = _ := by ring
 
-/-! ## 4. B3: the weighted absolute sum on a slice
+/-! ## 4. The slice arithmetic of the weighted estimate (B3)
 
 The proof of the band `KLsumZero_weighted` (`Loop/KLIndStepA.lean:941`), in two steps: the slice arithmetic for an
 abstract weight `Sg` (a signed sum-zero bound and a pointwise `g²` bound for the non-constant `δ`), then its
@@ -573,6 +574,8 @@ private theorem KSumZeroB_weighted_of (Sg : (Fin n → Zd (k + 2) L) → ℂ) {�
 
 end Weighted
 
+/-! ## 5. B3 and B4: the weighted clause and the K-b predicate -/
+
 /-- **B3 (`baSig_weighted`): the weighted absolute sum-zero estimate on every slice**, for every `Q`: for `σ` cyclically
 alternating, every root `r` and label `x`, `Σ_{δ_r = x} |Σ^{(∅)}(σ, δ)| (max_{i,j} |δ_i - δ_j| + 1)^Q ≤ C (g² + (1 - t))`,
 `C = C(d, n, Λ, κ, Q)`.  The BA twin of `KLsumZero_weighted` (`Loop/KLIndStepA.lean:941`), at the family data of
@@ -619,7 +622,7 @@ theorem baSig_sumZeroAbs {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn :
   · exact (hw i σ halt r x).trans
       (mul_le_mul_of_nonneg_right (le_max_right _ _) (by nlinarith [ht1 i, sq_nonneg (g i)]))
 
-/-! ## 5. Compiled nonempty instances
+/-! ## 6. Compiled nonempty instances
 
 Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`,
 `0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `n = 4`, `σ = KLsigAlt 4 = (+,-,+,-)` (cyclically alternating), `t = 1/2`
