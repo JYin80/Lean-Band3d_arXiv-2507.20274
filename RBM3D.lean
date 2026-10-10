@@ -435,6 +435,7 @@ import RBM3D.BA.EKSum
 import RBM3D.BA.KSumZeroB
 import RBM3D.Chain.LWGen
 import RBM3D.BA.LWPinsBA
+import RBM3D.BA.KStep
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
