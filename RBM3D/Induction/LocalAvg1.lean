@@ -5,6 +5,7 @@ Authors: Jun Yin
 -/
 import RBM3D.Induction.Step2Iterate
 import RBM3D.Green.GbEXP
+import RBM3D.Chain.Step2Gen
 
 /-!
 # ST2-16 (ticket T2130, part 1): `(initialGT2)` at every time and `(Gt_avgbound_flow)`
@@ -20,6 +21,11 @@ gives `(Gt_bound_flow)` and the pin `STLocalAvgOfL2`.
   `W^{-d/2} ≤ Ψ_u ≤ W^{-ε₀}` (paper-delta candidate `T2130a`).
 * `ε₀ = min(1/2, d c / 8)`, `c` of the size data `ST_Bdata_holds`: `W^{-d} B_{u,0} ≤ N^{-c}` for
   `u ≤ t_n ≤ lemT z_n`, and `cB W^{-d} ≤ W^{-d} B_{u,0}`.
+* T2386 (BA-T row T8): every theorem that reads a band object is restated over a carrier
+  (`localAvg1_whp_L2G`, `localAvg1_whp_omegaG`, `localAvg1_maxLoop2_leG`, `stInitialGT2_of_L2decayG`,
+  `stStep2AvgPT_of_L2decayG`, over `FlowFM` / `Step2Data` of `Chain/Step2Gen.lean`), with the inputs of
+  other blocks as arguments (`hdat`: `ST_Bdata_holds`; `hGav`: `stGbEXP_holds`); each band theorem stays,
+  under its old name and statement, as the corollary at `bandFM` / `bandStep2Data`.
 -/
 
 set_option linter.style.longLine false
@@ -31,7 +37,7 @@ open scoped NNReal ENNReal
 
 namespace RBM.Gauss.Sizes
 
-open RBM RBM.Loop RBM.Path RBM.Gauss
+open RBM RBM.Loop RBM.Path RBM.Gauss RBM.BA
 
 /-! ## 1. Generic tools for `StochDomAt` -/
 
@@ -252,22 +258,26 @@ private theorem localAvg1_card_Zd (n : ℕ) : Fintype.card (Zd d (sz.L n)) ≤ s
   unfold Sizes.size
   exact Nat.pow_le_pow_left (Nat.le_mul_of_pos_left _ (sz.W_pos n)) d
 
-/-- **`(eq:L2_decay)` at a section, uniformly in `(a,b)`** (the union over the `≤ N²` pairs is
-absorbed: `D ↦ D + 2`): w.h.p., for every `τ > 0`, `‖𝓛^{(2)}_{u,(-,+),(a,b)}‖ ≤ N^τ W^{-d}
-B_{u,|a-b|}` for all `a, b`. -/
-theorem localAvg1_whp_L2 {E s t : ℕ → ℝ} (hL2 : STL2decayPT sz E s t) {u : ℕ → ℝ}
+end Events
+
+section EventsG
+
+variable {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ)
+
+/-- **`(eq:L2_decay)` at a section, uniformly in `(a,b)`, over a carrier** (`localAvg1_whp_L2` at `(C, μ)`). -/
+theorem localAvg1_whp_L2G {s t : ℕ → ℝ} (hL2 : STL2decayPTgL C μ s t) {u : ℕ → ℝ}
     (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {τ : ℝ} (hτ : 0 < τ) :
-    sz.Whp (fun n => {ω | ∀ a b : Zd d (sz.L n),
-      ‖Lloop sz n (E n) (u n) ![false, true] ![a, b] ω‖ ≤
+    HighProbAt μ sz.size (fun n => {ω | ∀ a b : Zd d (sz.L n),
+      ‖C.L n (u n) ![false, true] ![a, b] ω‖ ≤
         ((sz.size n : ℕ) : ℝ) ^ τ * STWB sz n (u n) (zdistInf d (sz.L n) (a - b))}) := by
-  have hsec := Green.perSeq_of_perTime_timeIcc sz.seqP sz.size (s := s) (t := t)
+  have hsec := Green.perSeq_of_perTime_timeIcc μ sz.size (s := s) (t := t)
     (V := fun n => Fin 2 → Zd d (sz.L n)) (fun n => ⟨0⟩)
-    (fun n v p ω => ‖Lloop sz n (E n) v ![false, true] p ω‖)
+    (fun n v p ω => ‖C.L n v ![false, true] p ω‖)
     (fun n v p _ => STWB sz n v (zdistInf d (sz.L n) (p 0 - p 1))) hL2 u hu
-  have h1 : HighProbAt sz.seqP sz.size (fun n => ⋂ k : Fin 2 → Zd d (sz.L n),
-      {ω | ‖Lloop sz n (E n) (u n) ![false, true] k ω‖ ≤
+  have h1 : HighProbAt μ sz.size (fun n => ⋂ k : Fin 2 → Zd d (sz.L n),
+      {ω | ‖C.L n (u n) ![false, true] k ω‖ ≤
         ((sz.size n : ℕ) : ℝ) ^ τ * STWB sz n (u n) (zdistInf d (sz.L n) (k 0 - k 1))}) := by
-    refine Path.highProbAt_iInter sz.seqP sz.size (C := 2) (by norm_num)
+    refine Path.highProbAt_iInter μ sz.size (C := 2) (by norm_num)
       (Eventually.of_forall fun n => ?_) ?_
     · have hc : Fintype.card (Fin 2 → Zd d (sz.L n)) = Fintype.card (Zd d (sz.L n)) ^ 2 := by
         simp
@@ -280,11 +290,11 @@ theorem localAvg1_whp_L2 {E s t : ℕ → ℝ} (hL2 : STL2decayPT sz E s t) {u :
     · intro D hD
       filter_upwards [hsec τ hτ D hD] with n hn k
       have h3 := hn ((), k)
-      have : (({ω | ‖Lloop sz n (E n) (u n) ![false, true] k ω‖ ≤
+      have : (({ω | ‖C.L n (u n) ![false, true] k ω‖ ≤
           ((sz.size n : ℕ) : ℝ) ^ τ * STWB sz n (u n) (zdistInf d (sz.L n) (k 0 - k 1))} :
           Set sz.SeqΩ))ᶜ = {ω | ((sz.size n : ℕ) : ℝ) ^ τ *
             STWB sz n (u n) (zdistInf d (sz.L n) (k 0 - k 1)) <
-            ‖Lloop sz n (E n) (u n) ![false, true] k ω‖} := by
+            ‖C.L n (u n) ![false, true] k ω‖} := by
         ext ω; simp
       rw [this]
       exact h3
@@ -292,18 +302,16 @@ theorem localAvg1_whp_L2 {E s t : ℕ → ℝ} (hL2 : STL2decayPT sz E s t) {u :
   have := Set.mem_iInter.1 hω ![a, b]
   simpa using this
 
-/-- **`‖G_u - M‖_max ≤ W^{-ε₀}` w.h.p.** (`Ω(u, ε₀)`), from the weak law `(Gtmwc)` at the section
-`u` (`‖G_u - M‖_max ≺ (W^{-d}B_{u,0})^{1/4}`) at the exponent `τ = c/8`, when
-`N^{c/8} (W^{-d}B_{u,0})^{1/4} ≤ W^{-ε₀}` eventually. -/
-theorem localAvg1_whp_omega {E s t : ℕ → ℝ} (hweak : STStep1Weak sz E s t) {u : ℕ → ℝ}
+/-- **`‖G_u - M‖_max ≤ W^{-ε₀}` w.h.p. over a carrier** (`localAvg1_whp_omega` at `(C, μ)`). -/
+theorem localAvg1_whp_omegaG {s t : ℕ → ℝ} (hweak : STStep1WeakgL C μ s t) {u : ℕ → ℝ}
     (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {c ε₀ : ℝ} (hc : 0 < c)
     (hev : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (c / 8) * (sz.Bctl n (u n)) ^ (1 / 4 : ℝ) ≤
       ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) :
-    sz.Whp (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
-      ‖STGM sz n (E n) (u n) ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)}) := by
-  have hweak' : StochDomAt sz.seqP sz.size
+    HighProbAt μ sz.size (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
+      ‖C.GM n (u n) ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)}) := by
+  have hweak' : StochDomAt μ sz.size
       (U := fun n => TimeIcc s t n × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
-      (fun n p ω => ‖STGM sz n (E n) (p.1 : ℝ) ω p.2.1 p.2.2‖)
+      (fun n p ω => ‖C.GM n (p.1 : ℝ) ω p.2.1 p.2.2‖)
       (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ (1 / 4 : ℝ)) := hweak
   have h1 := StochDomAt.precomp_param hweak'
     (V := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
@@ -313,17 +321,51 @@ theorem localAvg1_whp_omega {E s t : ℕ → ℝ} (hweak : STStep1Weak sz E s t)
   filter_upwards [hev] with n hn ω hω x y
   exact (hω (x, y)).trans hn
 
-/-- The maximum over `(a,b)` of the two-loops is controlled by the bound on every `𝓛^{(2)}`:
-`max_{a,b} ‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ X · W^{-d} B_{u,0}`. -/
-theorem localAvg1_maxLoop2_le (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) {X : ℝ} (hX : 0 ≤ X)
-    (hL : ∀ a b : Zd d (sz.L n), ‖Lloop sz n E u ![false, true] ![a, b] ω‖ ≤
+/-- `max_{a,b} ‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ X · W^{-d} B_{u,0}` over a carrier (`localAvg1_maxLoop2_le` at `C`). -/
+theorem localAvg1_maxLoop2_leG (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) {X : ℝ} (hX : 0 ≤ X)
+    (hL : ∀ a b : Zd d (sz.L n), ‖C.L n u ![false, true] ![a, b] ω‖ ≤
       X * STWB sz n u (zdistInf d (sz.L n) (a - b))) :
-    STmaxLoop2 sz n E u ω ≤ X * sz.Bctl n u := by
-  unfold STmaxLoop2
+    STmaxLoop2g C n u ω ≤ X * sz.Bctl n u := by
+  unfold STmaxLoop2g
   refine Finset.sup'_le _ _ fun p _ => ?_
   exact (hL p.1 p.2).trans (mul_le_mul_of_nonneg_left (localAvg1_STWB_le sz n u _) hX)
 
-end Events
+end EventsG
+
+section EventsB
+
+variable {d : ℕ} (sz : Sizes d)
+
+/-- **`(eq:L2_decay)` at a section, uniformly in `(a,b)`** (the union over the `≤ N²` pairs is
+absorbed: `D ↦ D + 2`): w.h.p., for every `τ > 0`, `‖𝓛^{(2)}_{u,(-,+),(a,b)}‖ ≤ N^τ W^{-d}
+B_{u,|a-b|}` for all `a, b`.  The band case of `localAvg1_whp_L2G`. -/
+theorem localAvg1_whp_L2 {E s t : ℕ → ℝ} (hL2 : STL2decayPT sz E s t) {u : ℕ → ℝ}
+    (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {τ : ℝ} (hτ : 0 < τ) :
+    sz.Whp (fun n => {ω | ∀ a b : Zd d (sz.L n),
+      ‖Lloop sz n (E n) (u n) ![false, true] ![a, b] ω‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ τ * STWB sz n (u n) (zdistInf d (sz.L n) (a - b))}) :=
+  localAvg1_whp_L2G (bandFM sz E) sz.seqP ((bandFM_STL2decayPT sz E s t).1 hL2) hu hτ
+
+/-- **`‖G_u - M‖_max ≤ W^{-ε₀}` w.h.p.** (`Ω(u, ε₀)`), from the weak law `(Gtmwc)` at the section
+`u` (`‖G_u - M‖_max ≺ (W^{-d}B_{u,0})^{1/4}`) at the exponent `τ = c/8`, when
+`N^{c/8} (W^{-d}B_{u,0})^{1/4} ≤ W^{-ε₀}` eventually.  The band case of `localAvg1_whp_omegaG`. -/
+theorem localAvg1_whp_omega {E s t : ℕ → ℝ} (hweak : STStep1Weak sz E s t) {u : ℕ → ℝ}
+    (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {c ε₀ : ℝ} (hc : 0 < c)
+    (hev : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (c / 8) * (sz.Bctl n (u n)) ^ (1 / 4 : ℝ) ≤
+      ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) :
+    sz.Whp (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
+      ‖STGM sz n (E n) (u n) ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)}) :=
+  localAvg1_whp_omegaG (bandFM sz E) sz.seqP hweak hu hc hev
+
+/-- The maximum over `(a,b)` of the two-loops is controlled by the bound on every `𝓛^{(2)}`:
+`max_{a,b} ‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ X · W^{-d} B_{u,0}`.  The band case of `localAvg1_maxLoop2_leG`. -/
+theorem localAvg1_maxLoop2_le (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) {X : ℝ} (hX : 0 ≤ X)
+    (hL : ∀ a b : Zd d (sz.L n), ‖Lloop sz n E u ![false, true] ![a, b] ω‖ ≤
+      X * STWB sz n u (zdistInf d (sz.L n) (a - b))) :
+    STmaxLoop2 sz n E u ω ≤ X * sz.Bctl n u :=
+  localAvg1_maxLoop2_leG (bandFM sz fun _ => E) n u ω hX hL
+
+end EventsB
 
 /-! ## 4. Item 1: `(initialGT2)` at every time -/
 
@@ -331,28 +373,25 @@ section Item1
 
 variable {d : ℕ}
 
-/-- **`(initialGT2)` at every time** (`3_5:28–30`, `455–460`): under `(eq:L2_decay)` (`STL2decayPT`)
-and the weak law `(Gtmwc)` (`STStep1Weak`), for every flow and `0 ≤ s ≤ t ≤ lemT z`, there are
-`ε₀ > 0` and `CΨ > 0` (depending only on `d, κ, ε, 𝔡, 𝔠`) such that for every time sequence
-`u_n ∈ [s_n, t_n]`, the control `Ψ_u = max(W^{-d/2}, (W^{-d} B_{u,0})^{1/2})` (`stLocalPsi`)
-satisfies, eventually in `n`, the window `W^{-d/2} ≤ Ψ_u ≤ W^{-ε₀}` and `W^{-d} B_{u,0} ≤ Ψ_u² ≤
-CΨ W^{-d} B_{u,0}`, and `(initialGT2)` holds at `(u, ε₀, Ψ_u)`: `‖G_u - M‖_max ≺ W^{-ε₀}` and
-`max_{a,b} 𝓛^{(2)}_{u,(-,+),(a,b)} ≺ Ψ_u²`.  Here `ε₀ = min(1/2, d c/8)`, `CΨ = cB⁻¹ + 1`, with
-`cB, c` of the size data `ST_Bdata_holds` (`Ψ_u ≤ W^{-ε₀}` comes from `W^{-d} B_{u,0} ≤ N^{-c}`
-for `u ≤ t ≤ lemT z`).  Needs only `0 < d` (no `lem_GbEXP` input; items 2-4 add `3 ≤ d`). -/
-theorem stInitialGT2_of_L2decay (hd : 0 < d) {κ ε 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
-    {𝔠 : ℝ} {sz : Sizes d} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
-    {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (htl : ∀ n, t n ≤ lemT (z n))
-    (hweak : STStep1Weak sz (STflowE z) s t) (hL2 : STL2decayPT sz (STflowE z) s t) :
+/-- **`(initialGT2)` at every time, over a carrier** (`stInitialGT2_of_L2decay` at `(Cm, μ)`; `0 < d` only).  The size data
+`ST_Bdata_holds` is the argument `hdat` (`cB W^{-d} ≤ W^{-d} B_{u,0} ≤ N^{-c}` for `0 ≤ u ≤ t_n ≤ T0`, eventually in `n`, some
+`cB, c > 0`); `ε₀ = min(1/2, d c/8)`, `CΨ = cB⁻¹ + 1`. -/
+theorem stInitialGT2_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measure sz.SeqΩ) (hd : 0 < d)
+    {κ ε 𝔠 𝔡 : ℝ} (hflow : Cm.flowOK κ ε 𝔠 𝔡) {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n)
+    (htl : ∀ n, t n ≤ Cm.T0 n)
+    (hdat : ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ Cm.T0 n) →
+      ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ t n →
+        cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u ∧ sz.Bctl n u ≤ ((sz.size n : ℕ) : ℝ) ^ (-c))
+    (hweak : STStep1WeakgL Cm.toFlowFM μ s t) (hL2 : STL2decayPTgL Cm.toFlowFM μ s t) :
     ∃ ε₀ CΨ : ℝ, 0 < ε₀ ∧ 0 < CΨ ∧ ∀ u : ℕ → ℝ, (∀ n, u n ∈ Set.Icc (s n) (t n)) →
       (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ stLocalPsi sz u n ∧
         stLocalPsi sz u n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀) ∧
         sz.Bctl n (u n) ≤ stLocalPsi sz u n ^ 2 ∧
         stLocalPsi sz u n ^ 2 ≤ CΨ * sz.Bctl n (u n)) ∧
-      STInitialGT2 sz (STflowE z) u ε₀ (stLocalPsi sz u) := by
-  obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data hd hκ hε h𝔡 𝔠
-  have hev := hdat sz z hflow t (fun n => (hs n).trans (hst n)) htl
-  have hsize : Tendsto sz.size atTop atTop := tendsto_size sz hflow.1.2.2.1
+      STInitialGT2gL Cm.toFlowFM μ u ε₀ (stLocalPsi sz u) := by
+  obtain ⟨cB, c, hcB, hc, hdat'⟩ := hdat
+  have hev := hdat' t (fun n => (hs n).trans (hst n)) htl
+  have hsize : Tendsto sz.size atTop atTop := tendsto_size sz (Cm.flowOK_adm hflow).2.2.1
   have hε₀pos : 0 < min (1 / 2 : ℝ) (d * c / 8) :=
     lt_min (by norm_num) (by have : (0 : ℝ) < d := by exact_mod_cast hd
                              positivity)
@@ -373,23 +412,47 @@ theorem stInitialGT2_of_L2decay (hd : 0 < d) {κ ε 𝔡 : ℝ} (hκ : 0 < κ) (
     exact ⟨le_max_left _ _, hn.2.1, hn.2.2.1, hn.2.2.2⟩
   · -- `‖G_u - M‖_max ≺ W^{-ε₀}`
     refine localAvg1_stochDomAt_of_whp fun τ hτ => ?_
-    refine ⟨_, localAvg1_whp_omega sz hweak hu hc (hfact.mono fun n hn => hn.1), ?_⟩
+    refine ⟨_, localAvg1_whp_omegaG Cm.toFlowFM μ hweak hu hc (hfact.mono fun n hn => hn.1), ?_⟩
     refine Eventually.of_forall fun n ω hω v => ?_
     have h1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ τ :=
       Real.one_le_rpow (by exact_mod_cast sz.one_le_size n) hτ.le
     have h2 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (-min (1 / 2 : ℝ) (d * c / 8)) :=
       Real.rpow_nonneg (Nat.cast_nonneg _) _
-    calc ‖STGM sz n (STflowE z n) (u n) ω v.1 v.2‖ ≤
+    calc ‖Cm.toFlowFM.GM n (u n) ω v.1 v.2‖ ≤
           ((sz.W n : ℕ) : ℝ) ^ (-min (1 / 2 : ℝ) (d * c / 8)) := hω v.1 v.2
       _ ≤ _ := by nlinarith
   · -- `max_{a,b} 𝓛^{(2)} ≺ Ψ_u²`
     refine localAvg1_stochDomAt_of_whp fun τ hτ => ?_
-    refine ⟨_, localAvg1_whp_L2 sz hL2 hu hτ, ?_⟩
+    refine ⟨_, localAvg1_whp_L2G Cm.toFlowFM μ hL2 hu hτ, ?_⟩
     filter_upwards [hfact] with n hn ω hω _
-    have h1 := localAvg1_maxLoop2_le sz n (STflowE z n) (u n) ω
+    have h1 := localAvg1_maxLoop2_leG Cm.toFlowFM n (u n) ω
       (Real.rpow_nonneg (Nat.cast_nonneg _) _) (hω)
     refine h1.trans ?_
     exact mul_le_mul_of_nonneg_left hn.2.2.1 (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+
+/-- **`(initialGT2)` at every time** (`3_5:28–30`, `455–460`): under `(eq:L2_decay)` (`STL2decayPT`)
+and the weak law `(Gtmwc)` (`STStep1Weak`), for every flow and `0 ≤ s ≤ t ≤ lemT z`, there are
+`ε₀ > 0` and `CΨ > 0` (depending only on `d, κ, ε, 𝔡, 𝔠`) such that for every time sequence
+`u_n ∈ [s_n, t_n]`, the control `Ψ_u = max(W^{-d/2}, (W^{-d} B_{u,0})^{1/2})` (`stLocalPsi`)
+satisfies, eventually in `n`, the window `W^{-d/2} ≤ Ψ_u ≤ W^{-ε₀}` and `W^{-d} B_{u,0} ≤ Ψ_u² ≤
+CΨ W^{-d} B_{u,0}`, and `(initialGT2)` holds at `(u, ε₀, Ψ_u)`: `‖G_u - M‖_max ≺ W^{-ε₀}` and
+`max_{a,b} 𝓛^{(2)}_{u,(-,+),(a,b)} ≺ Ψ_u²`.  Here `ε₀ = min(1/2, d c/8)`, `CΨ = cB⁻¹ + 1`, with
+`cB, c` of the size data `ST_Bdata_holds` (`Ψ_u ≤ W^{-ε₀}` comes from `W^{-d} B_{u,0} ≤ N^{-c}`
+for `u ≤ t ≤ lemT z`).  Needs only `0 < d` (no `lem_GbEXP` input; items 2-4 add `3 ≤ d`).  The band case of
+`stInitialGT2_of_L2decayG` at `bandStep2Data sz z`. -/
+theorem stInitialGT2_of_L2decay (hd : 0 < d) {κ ε 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
+    {𝔠 : ℝ} {sz : Sizes d} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
+    {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (htl : ∀ n, t n ≤ lemT (z n))
+    (hweak : STStep1Weak sz (STflowE z) s t) (hL2 : STL2decayPT sz (STflowE z) s t) :
+    ∃ ε₀ CΨ : ℝ, 0 < ε₀ ∧ 0 < CΨ ∧ ∀ u : ℕ → ℝ, (∀ n, u n ∈ Set.Icc (s n) (t n)) →
+      (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ stLocalPsi sz u n ∧
+        stLocalPsi sz u n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀) ∧
+        sz.Bctl n (u n) ≤ stLocalPsi sz u n ^ 2 ∧
+        stLocalPsi sz u n ^ 2 ≤ CΨ * sz.Bctl n (u n)) ∧
+      STInitialGT2 sz (STflowE z) u ε₀ (stLocalPsi sz u) := by
+  obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data hd hκ hε h𝔡 𝔠
+  exact stInitialGT2_of_L2decayG (bandStep2Data sz z) sz.seqP hd hflow hs hst htl
+    ⟨cB, c, hcB, hc, hdat sz z hflow⟩ hweak hL2
 
 end Item1
 
@@ -399,38 +462,54 @@ section Item2
 
 variable {d : ℕ}
 
+/-- **`(Gt_avgbound_flow)` per time, over a carrier** (`stStep2AvgPT_of_L2decay` at `(Cm, μ)`).  The inputs of other blocks
+are arguments: the size data `hdat` (`ST_Bdata_holds`) and `(GavLGEX)` of `lem_GbEXP` at every `u ≤ T0` (`hGav`; band:
+`stGbEXP_holds`). -/
+theorem stStep2AvgPT_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measure sz.SeqΩ) (hd : 0 < d)
+    {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hflow : Cm.flowOK κ ε 𝔠 𝔡) {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n)
+    (hst : ∀ n, s n ≤ t n) (htl : ∀ n, t n ≤ Cm.T0 n)
+    (hdat : ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ Cm.T0 n) →
+      ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ t n →
+        cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u ∧ sz.Bctl n u ≤ ((sz.size n : ℕ) : ℝ) ^ (-c))
+    (hGav : ∀ u : ℕ → ℝ, (∀ n, 0 ≤ u n) → (∀ n, u n ≤ Cm.T0 n) → ∀ ε₀ : ℝ, 0 < ε₀ →
+      STGavLGEXgL Cm.toFlowFM μ u ε₀)
+    (hweak : STStep1WeakgL Cm.toFlowFM μ s t) (hL2 : STL2decayPTgL Cm.toFlowFM μ s t) :
+    STStep2AvgPTgL Cm.toFlowFM μ s t := by
+  obtain ⟨ε₀, CΨ, hε₀, hCΨ, hinit⟩ := stInitialGT2_of_L2decayG Cm μ hd hflow hs hst htl hdat hweak hL2
+  have hsize : Tendsto sz.size atTop atTop := tendsto_size sz (Cm.flowOK_adm hflow).2.2.1
+  refine Green.perTime_timeIcc_of_forall_seq μ sz.size hst
+    (V := fun n => Zd d (sz.L n)) (fun n => ⟨0⟩)
+    (fun n v a ω => ‖Cm.L n v (fun _ : Fin 1 => true) (fun _ => a) ω - Cm.m n‖)
+    (fun n v _ _ => sz.Bctl n v) ?_
+  intro u hu
+  obtain ⟨hwin, hinit_u⟩ := hinit u hu
+  have hav := hGav u (fun n => (hs n).trans (hu n).1) (fun n => (hu n).2.trans (htl n)) ε₀ hε₀
+    (stLocalPsi sz u) (hwin.mono fun n h => h.1) (hwin.mono fun n h => h.2.1)
+    hinit_u.1 hinit_u.2
+  have h2 : StochDomAt μ sz.size (U := fun n => Zd d (sz.L n))
+      (fun n a ω => ‖Cm.L n (u n) (fun _ : Fin 1 => true) (fun _ => a) ω - Cm.m n‖)
+      (fun n _ _ => sz.Bctl n (u n)) :=
+    localAvg1_domAt_of_le_const hsize hav (C := CΨ)
+      (hwin.mono fun n h => ⟨fun _ _ => (STBctl_pos sz n ((hu n).2.trans_lt
+        ((htl n).trans_lt (Cm.flowOK_T hκ hflow n)))).le, fun _ _ => h.2.2.2⟩)
+  exact localAvg1_perTime_of_stoch (h2.precomp_param (V := fun n => Unit × Zd d (sz.L n))
+    (fun n p => p.2))
+
 /-- **`(Gt_avgbound_flow)` per time** (`3_5:462–465`): `max_a |𝓛^{(1)}_{u,+,a} - m| ≺ W^{-d} B_{u,0}`
 uniformly in `u ∈ [s,t]` (per time), from `(GavLGEX)` of `lem_GbEXP` (`stGbEXP_holds`) at the
-control `Ψ_u` of `stInitialGT2_of_L2decay` and `Ψ_u² ≤ CΨ W^{-d} B_{u,0}`.  The hypothesis
-`3 ≤ d` is that of `stGbEXP_holds` (DECISIONS §36). -/
+control `Ψ_u` of `stInitialGT2_of_L2decay` and `Ψ_u² ≤ CΨ W^{-d} B_{u,0}`.  The hypothesis `3 ≤ d`
+is that of `stGbEXP_holds` (DECISIONS §36).  The band case of `stStep2AvgPT_of_L2decayG`. -/
 theorem stStep2AvgPT_of_L2decay (hd : 3 ≤ d) {κ ε 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
     {𝔠 : ℝ} {sz : Sizes d} {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
     {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (htl : ∀ n, t n ≤ lemT (z n))
     (hweak : STStep1Weak sz (STflowE z) s t) (hL2 : STL2decayPT sz (STflowE z) s t) :
     STStep2AvgPT sz (STflowE z) s t := by
   have hd0 : 0 < d := by omega
-  obtain ⟨ε₀, CΨ, hε₀, hCΨ, hinit⟩ :=
-    stInitialGT2_of_L2decay hd0 hκ hε h𝔡 hflow hs hst htl hweak hL2
-  have hsize : Tendsto sz.size atTop atTop := tendsto_size sz hflow.1.2.2.1
-  refine Green.perTime_timeIcc_of_forall_seq sz.seqP sz.size hst
-    (V := fun n => Zd d (sz.L n)) (fun n => ⟨0⟩)
-    (fun n v a ω => ‖Lloop sz n (STflowE z n) v (fun _ : Fin 1 => true) (fun _ => a) ω -
-      mE (STflowE z n)‖)
-    (fun n v _ _ => sz.Bctl n v) ?_
-  intro u hu
-  obtain ⟨hwin, hinit_u⟩ := hinit u hu
-  have hav := (Green.stGbEXP_holds hd).2.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u
-    (fun n => (hs n).trans (hu n).1) (fun n => (hu n).2.trans (htl n)) ε₀ hε₀
-    (stLocalPsi sz u) (hwin.mono fun n h => h.1) (hwin.mono fun n h => h.2.1)
-    hinit_u.1 hinit_u.2
-  have h2 : StochDomAt sz.seqP sz.size (U := fun n => Zd d (sz.L n))
-      (fun n a ω => ‖Lloop sz n (STflowE z n) (u n) (fun _ : Fin 1 => true) (fun _ => a) ω -
-        mE (STflowE z n)‖) (fun n _ _ => sz.Bctl n (u n)) :=
-    localAvg1_domAt_of_le_const hsize hav (C := CΨ)
-      (hwin.mono fun n h => ⟨fun _ _ => (STBctl_pos sz n ((hu n).2.trans_lt
-        ((htl n).trans_lt (lemT_lt_one (ST_flow_im_pos sz hflow n))))).le, fun _ _ => h.2.2.2⟩)
-  exact localAvg1_perTime_of_stoch (h2.precomp_param (V := fun n => Unit × Zd d (sz.L n))
-    (fun n p => p.2))
+  obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_data hd0 hκ hε h𝔡 𝔠
+  exact stStep2AvgPT_of_L2decayG (bandStep2Data sz z) sz.seqP hd0 hκ hflow hs hst htl
+    ⟨cB, c, hcB, hc, hdat sz z hflow⟩
+    (fun u hu0 hul ε₀ hε₀ => (Green.stGbEXP_holds hd).2.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
+    hweak hL2
 
 end Item2
 
@@ -446,7 +525,7 @@ weak law `STStep1Weak` and `(eq:L2_decay)` `STL2decayPT`, the outputs of other g
 namespace RBM.Gauss.LocalAvg1Inst
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
-  RBM.Gauss.Step2IterateInst Filter
+  RBM.Gauss.Step2IterateInst RBM.BA Filter
 
 /-- **Item 1 at the data**: `(initialGT2)` at the time section `u ≡ 1/32`, with the window
 `W^{-3/2} ≤ Ψ_u ≤ W^{-ε₀}`. -/
@@ -470,5 +549,69 @@ example (hweak : STStep1Weak sz0 (STflowE z0) sInst tInst)
     STStep2AvgPT sz0 (STflowE z0) sInst tInst :=
   stStep2AvgPT_of_L2decay (by norm_num : 3 ≤ 3) (by norm_num : (0 : ℝ) < 1 / 10)
     (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) flow_z0 hs0 hst htT hweak hL2
+
+/-- The size data `hdat` of the generic theorems at `(sz0, z0)`: `ST_Bdata_holds` at `(κ, ε, 𝔡, 𝔠) = (1/10, 1/10, 1/10, 1/6)`. -/
+theorem localAvg1_inst_hdat : ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) →
+    (∀ n, t n ≤ (bandStep2Data sz0 z0).T0 n) → ∀ᶠ n in atTop, ∀ u : ℝ, 0 ≤ u → u ≤ t n →
+      cB * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz0.Bctl n u ∧ sz0.Bctl n u ≤ ((sz0.size n : ℕ) : ℝ) ^ (-c) := by
+  obtain ⟨cB, c, hcB, hc, h⟩ := localAvg1_data (by norm_num : 0 < 3) (by norm_num : (0 : ℝ) < 1 / 10)
+    (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) (1 / 6)
+  exact ⟨cB, c, hcB, hc, h sz0 z0 flow_z0⟩
+
+/-- **Item 1 over the carrier `bandStep2Data sz0 z0`** (`stInitialGT2_of_L2decayG`): `hdat` is discharged; the weak law and
+`(eq:L2_decay)` stay hypotheses. -/
+example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
+    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) :=
+  stInitialGT2_of_L2decayG (bandStep2Data sz0 z0) sz0.seqP (by norm_num : 0 < 3) flow_z0 hs0 hst htT
+    localAvg1_inst_hdat hweak hL2
+
+/-- **Item 2 over the carrier `bandStep2Data sz0 z0`** (`stStep2AvgPT_of_L2decayG`): `hdat` and `(GavLGEX)` (`stGbEXP_holds`
+at `d = 3`) are discharged. -/
+example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
+    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) :
+    STStep2AvgPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst :=
+  stStep2AvgPT_of_L2decayG (bandStep2Data sz0 z0) sz0.seqP (by norm_num : 0 < 3) (by norm_num : (0 : ℝ) < 1 / 10)
+    flow_z0 hs0 hst htT localAvg1_inst_hdat
+    (fun u hu0 hul ε₀ hε₀ => (Green.stGbEXP_holds (by norm_num : 3 ≤ 3)).2.2 (1 / 10) (1 / 10) (1 / 10)
+      (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 u hu0 hul ε₀ hε₀) hweak hL2
+
+/-- The bound `hL` of the helpers at any carrier, sample and `u < 1` (the sum over the finitely many pairs): there is `X ≥ 1`
+with `‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ X W^{-d} B_{u,|a-b|}` for all `a, b`. -/
+theorem localAvg1_inst_hL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) {u : ℝ} (hu : u < 1) (ω : sz.SeqΩ) :
+    ∃ X : ℝ, 1 ≤ X ∧ ∀ a b : Zd d (sz.L n), ‖C.L n u ![false, true] ![a, b] ω‖ ≤
+      X * STWB sz n u (zdistInf d (sz.L n) (a - b)) := by
+  classical
+  have hpos : ∀ K : ℕ, 0 < STWB sz n u K := fun K =>
+    lt_of_lt_of_le (mul_pos (inv_pos.2 (pow_pos (by positivity) _)) (STBctl_pos sz n hu))
+      (localAvg1_STWB_ge sz n u K)
+  set f : Zd d (sz.L n) × Zd d (sz.L n) → ℝ := fun p =>
+    ‖C.L n u ![false, true] ![p.1, p.2] ω‖ / STWB sz n u (zdistInf d (sz.L n) (p.1 - p.2)) with hf
+  have hf0 : ∀ p ∈ Finset.univ, 0 ≤ f p := fun p _ => div_nonneg (norm_nonneg _) (hpos _).le
+  refine ⟨1 + ∑ p, f p, by linarith [Finset.sum_nonneg hf0], fun a b => ?_⟩
+  have h1 : f (a, b) ≤ ∑ p, f p := Finset.single_le_sum hf0 (Finset.mem_univ (a, b))
+  have h2 := (div_le_iff₀ (hpos (zdistInf d (sz.L n) (a - b)))).1 h1
+  nlinarith [hpos (zdistInf d (sz.L n) (a - b))]
+
+/-- **`localAvg1_whp_L2G`, `localAvg1_whp_omegaG`, `localAvg1_maxLoop2_leG` over `bandStep2Data sz0 z0`** at the section
+`u ≡ 1/32` (`n = 0` for the last): `hev` and `hL` are discharged; the weak law and `(eq:L2_decay)` stay hypotheses. -/
+example (hweak : STStep1WeakgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst)
+    (hL2 : STL2decayPTgL (bandStep2Data sz0 z0).toFlowFM sz0.seqP sInst tInst) (ω : sz0.SeqΩ) :=
+  have hu : ∀ n, (fun _ => (1 / 32 : ℝ)) n ∈ Set.Icc (sInst n) (tInst n) := fun n => by
+    simp only [sInst, tInst, Set.mem_Icc]; norm_num
+  And.intro (localAvg1_whp_L2G (bandStep2Data sz0 z0).toFlowFM sz0.seqP hL2 hu (τ := 1) one_pos) <|
+  And.intro (by
+    obtain ⟨cB, c, hcB, hc, hdat⟩ := localAvg1_inst_hdat
+    have hev := hdat tInst (fun n => by simp only [tInst]; norm_num) htT
+    refine ⟨min (1 / 2) (((3 : ℕ) : ℝ) * c / 8), lt_min (by norm_num) (by positivity),
+      localAvg1_whp_omegaG (bandStep2Data sz0 z0).toFlowFM sz0.seqP hweak hu hc ?_⟩
+    filter_upwards [hev] with n hn
+    obtain ⟨h1, h2⟩ := hn (1 / 32) (by norm_num) (by simp only [tInst]; norm_num)
+    exact (localAvg1_det sz0 n (by norm_num) hcB hc (min_le_left _ _) (min_le_right _ _) h1 h2).1 :
+      ∃ ε₀ : ℝ, 0 < ε₀ ∧ HighProbAt sz0.seqP sz0.size (fun n => {ω | ∀ x y : Idx 3 (sz0.L n) (sz0.W n),
+        ‖(bandStep2Data sz0 z0).toFlowFM.GM n (1 / 32) ω x y‖ ≤ ((sz0.W n : ℕ) : ℝ) ^ (-ε₀)})) <|
+  (by
+    obtain ⟨X, hX, hL⟩ := localAvg1_inst_hL (bandStep2Data sz0 z0).toFlowFM 0 (by norm_num : (1 / 32 : ℝ) < 1) ω
+    exact ⟨X, by linarith, localAvg1_maxLoop2_leG (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ω (by linarith) hL⟩ :
+      ∃ X : ℝ, 0 ≤ X ∧ STmaxLoop2g (bandStep2Data sz0 z0).toFlowFM 0 (1 / 32) ω ≤ X * sz0.Bctl 0 (1 / 32))
 
 end RBM.Gauss.LocalAvg1Inst

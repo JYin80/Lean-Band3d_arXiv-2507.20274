@@ -15,7 +15,8 @@ and the generic predicates `STLKgL`, ..., `STEEg` over a carrier `C : FlowFM sz`
 law `μ`.  The namespace is `RBM.BA`, so every name keeps its full name.  The only import
 is `RBM3D.Induction.Defs` (for `STWB`, `STblk`, `Bctl`, `zdistInf`, `ellT`, `StochDomAt`,
 `TimeIcc`), hence a chain file above `Induction/Defs` can import this file.  `STJhatg`
-and `STLWassmExpgL` use `STprof` (`Induction/Step2Defs`) and stay in `BA/FlowPins.lean`.
+and `STLWassmExpgL` use `STprof` (`Induction/Step2Defs`) and are in `Chain/Step2Gen.lean` (T2386).
+The band carrier `bandFM` (moved from `BA/FlowPins.lean`, T2386) closes the file.
 -/
 
 set_option linter.style.longLine false
@@ -174,5 +175,15 @@ def STEEg (n : ℕ) (u : ℝ) (k : Fin 2) (σ : Fin 2 → Bool) (a : Fin 2 → Z
         C.L n u ![σ 1, σ 0, σ 1, !(σ 1), !(σ 0), !(σ 1)] ![a 1, a 0, c', a 0, a 1, c] ω)
 
 end Generic
+
+/-- **The band carrier at the energy sequence `E`.** -/
+def bandFM {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) : FlowFM sz where
+  L := fun n t {_k} σ a ω => Lloop sz n (E n) t σ a ω
+  K := fun n t {_k} σ a => STKloop sz n (E n) t σ a
+  G := fun n t ω x y => Gt sz n (E n) t true ω x y
+  M := fun n x y => if x = y then mE (E n) else 0
+  S := fun n => SB d (sz.L n) (sz.lam n)
+  eta := fun n t => etaT (E n) t
+  m := fun n => mE (E n)
 
 end RBM.BA

@@ -142,6 +142,12 @@ def owedProps : List Name :=
    -- T2340: existing pins that the new theorems (`stMLOutG_of_mainIndG`, `STLocalMaxgL_of_STLocalEntrygL`) take as hypotheses, found by the scan once `MainIndOut` is imported
    `RBM.BA.STMainIndG, -- `lem:main_ind` over a carrier `(law, Flow, mk, T0)` (`BA/FlowPins.lean:434`), hypothesis of `stMLOutG_of_mainIndG`; band form `STMainInd` (`STMainInd_iff`, `Iff.rfl`): proved for every `d` by `stMainInd_holds` (T2375); BA form: BA-V
    `RBM.BA.STLocalEntrygL, -- `(Gt_bound)` at a law `μ` over a flow carrier, hypothesis of `STLocalMaxgL_of_STLocalEntrygL`; owed like its band form `STLocalEntry`: BA chain, BA-V
+   -- T2386 (BA-T T8): the generic inputs of `LocalAvg1/2` over a carrier (`Induction/LocalAvg1.lean`, `LocalAvg2.lean`)
+   `RBM.BA.STStep1WeakgL, -- `(Gtmwc)` (`1_2:1327`) at a law `μ` over a flow carrier, hypothesis of `localAvg1_whp_omegaG`, `stInitialGT2_of_L2decayG`, ...; owed like its band form `STStep1Weak`: the chain's Step 1 (band: S1-36; BA: BA chain, BA-S3)
+   `RBM.BA.STL2decayPTgL, -- `(eq:L2_decay)` per time at a law `μ` over a flow carrier, hypothesis of `localAvg1_whp_L2G`, `stInitialGT2_of_L2decayG`, ...; owed like its band form `STL2decayPT`: owner T1 (the Step 2 iteration)
+   `RBM.BA.STGiiGEXgL, -- `(GiiGEX)` (`3_5:21`) over a flow carrier, hypothesis of `stStep2LocalPT_of_L2decayG`; band: proved (`stGbEXP_holds`, `bandFM_STGiiGEX`); BA: BA stage G (G6b / G7)
+   `RBM.BA.STGijGEXgL, -- `(GijGEX)` (`3_5:24`) for `(G_t - M)_{xy}`, `x ≠ y`, over a flow carrier (paper-delta candidate T2386a), hypothesis of `stStep2LocalPT_of_L2decayG`; band: proved (`stGbEXP_holds`, `bandFM_STGijGEX`); BA: BA stage G (G6b / G7)
+   `RBM.BA.STGavLGEXgL, -- `(GavLGEX)` (`3_5:33`) under `(initialGT2)` over a flow carrier, hypothesis of `stStep2AvgPT_of_L2decayG`; band: proved (`stGbEXP_holds`, `bandFM_STGavLGEX`); BA: BA stage G (G6b / G7)
    -- T2067 (LW-P, DECISIONS §20, §24 b.11): the LW pins `LWterm`, `LWtermB`, `LWtermExp`, `LWtermExpS`, `LWtermExpN`, `LWReduceB`, `LWReduceT`, `LWInteg` are proved for every `d` (T2375, `Graph/LWTermHolds.lean`); `STMainInd`, `STStep2`, `UNMLOut` too (T2375, `Induction/MainIndHolds.lean`)
    -- T2067: the random premises of the LW pins (ST chain)
    `RBM.Gauss.Sizes.LWInit, -- `(initialGT2)` (`3_5:30`): hypothesis of `lwterm_holds`, `lwtermExp_holds` (T2375); ST chain
@@ -211,6 +217,7 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.Bandwidth, -- `(Main_DEL_COND)`: `W ≥ N^𝔠`
    `RBM.Gauss.Sizes.SizeTendsto, -- `N → ∞` along the size sequence
    `RBM.Gauss.Sizes.Admissible, -- the standing hypotheses of the main results
+   `RBM.BA.Step2Data.flowOK, -- the setting of the flow carried by a `Step2Data` (band: `STFlow`; BA: `BAFlow`): a predicate on the data (T2386)
    `RBM.Gauss.Sizes.locDomain, -- the spectral domain `𝐃_{κ,ε}`
    `RBM.Green.GoodEvent,      -- the event Ω of (4.10): every entry of `G` within `δ` of `m·I`
    `RBM.Green.LDERow,         -- row large-deviation event, input of `lem_GbEXP` (later ST-1)

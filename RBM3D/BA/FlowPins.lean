@@ -5,6 +5,7 @@ Authors: Jun Yin
 -/
 import RBM3D.BA.MFixedPoint
 import RBM3D.Chain.Carrier
+import RBM3D.Chain.Step2Gen
 import RBM3D.Induction.Defs
 import RBM3D.Induction.Step2Defs
 import RBM3D.Loop.KLTree
@@ -313,36 +314,9 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 4. Target 4 (moved, T2382): `PrecL`, `FlowFM`, `FlowFM.GM` and the generic predicates are in `RBM3D/Chain/Carrier.lean`;
-`STJhatg` and `STLWassmExpgL` stay here because they use `STprof` of `Induction/Step2Defs`. -/
-
-section Generic
-
-variable {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ)
-
-/-- The random control `Ĵ^ℓ_{u,D}` (`(defCALJ)`, `3_5:365`): `max |(𝓛-𝒦)^{(2)}_{u,σ,a}| / [W^{-d} 𝒯̃^ℓ_{u,D}(|a₁-a₂|)]`. -/
-def STJhatg (n : ℕ) (D ℓ u : ℝ) (ω : sz.SeqΩ) : ℝ :=
-  Finset.univ.sup' ⟨((fun _ => true), (fun _ => 0)), Finset.mem_univ _⟩
-    (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
-      ‖C.L n u p.1 p.2 ω - C.K n u p.1 p.2‖ / STprof sz n u D ℓ (p.2 0) (p.2 1))
-
-/-- `(eq:LW_assm_exp)` (`3_5:409`): `𝓛^{(2)}_{t,σ,(a,b)} ≺ W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|)`, `σ ∈ {(+,-),(-,+)}`. -/
-def STLWassmExpgL (t : ℕ → ℝ) (D : ℝ) (ℓ : ℕ → ℝ) : Prop :=
-  PrecL sz μ (U := fun n => {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)))
-    (fun n p ω => ‖C.L n (t n) p.1.1 p.2 ω‖)
-    (fun n p _ => STprof sz n (t n) D (ℓ n) (p.2 0) (p.2 1))
-
-end Generic
-
-/-- **The band carrier at the energy sequence `E`.** -/
-def bandFM {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) : FlowFM sz where
-  L := fun n t {_k} σ a ω => Lloop sz n (E n) t σ a ω
-  K := fun n t {_k} σ a => STKloop sz n (E n) t σ a
-  G := fun n t ω x y => Gt sz n (E n) t true ω x y
-  M := fun n x y => if x = y then mE (E n) else 0
-  S := fun n => SB d (sz.L n) (sz.lam n)
-  eta := fun n t => etaT (E n) t
-  m := fun n => mE (E n)
+/-! ## 4. Target 4 (moved, T2382, T2386): `PrecL`, `FlowFM`, `FlowFM.GM`, the generic predicates and the band carrier
+`bandFM` are in `RBM3D/Chain/Carrier.lean`; `STJhatg` and `STLWassmExpgL` (they use `STprof` of `Induction/Step2Defs`) are in
+`RBM3D/Chain/Step2Gen.lean`. -/
 
 /-- **The block Anderson carrier at the flow parameters `(g₀, E)`.** -/
 def baFM {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) : FlowFM sz where
@@ -452,6 +426,11 @@ setting, carrier and horizon. -/
 theorem STMainInd_iff (d : ℕ) :
     STMainInd d ↔ STMainIndG d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
       (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
+
+/-- **The block Anderson reading of Step 2** (`STStep2G` at the law `seqP (sz.withLam 0)`, the setting `BAFlow`, the carrier
+`baFMz` and the horizon `BAflowT0`; T2386, probe `t/T2379:95-96`).  A pin: its BA instance and data facts are the BA row T8-BA. -/
+def BAStep2 (d : ℕ) : Prop :=
+  STStep2G d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0
 
 end MainInd
 
@@ -1445,6 +1424,11 @@ theorem seqGvar_ne_withLam_zero :
     e1.symm.trans (h1.trans e2)
   linarith
 
+
+/-- **`BAStep2` at `d = 3`** (T2386): a `Prop`-valued pin with no numeric hypothesis; it unfolds to `STStep2G` at the block Anderson
+law `seqP (sz.withLam 0)`, setting `BAFlow`, carrier `baFMz` and horizon `BAflowT0`. -/
+example : BAStep2 3 = STStep2G 3 (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz
+    BAflowT0 := rfl
 
 end RBM.BA.FlowPinsInst
 
