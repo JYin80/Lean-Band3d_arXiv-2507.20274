@@ -1,0 +1,4 @@
+state: proving
+reason: H179: check exit 0 on main 61849a6; workflow wf_293a89d7-785 (1a design gate → 1a-audit → 1b prover-hard, stop 1500 → auditor); branch from main 61849a6. At merge: check the build cone for Graph/LWExpCert* (H179 (4))
+updated: Sat Oct 10 12:43:41 UTC 2026
+reports: docs/reports/T2386-prove.md, docs/reports/T2386-1a-audit.md, docs/reports/T2386-audit.md

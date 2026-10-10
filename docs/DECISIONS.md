@@ -1694,3 +1694,22 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   报告作为阶段 L 的开阶段 REQ。
 - (4) **T2383（T5s1）12:37 合并 5c50416**（Amend 1，只改 `LoopGenN.lean`，+160 −99；绊线实测 g = 0.239、f_sem = 0，未触发，路线 G 在测点成立）。中枢：T2384、T2385 在跑；T2386、T2387 补满 4 个位。下一张票号 T2388，下一节 §199，下一条 H180，下一号差异 D636。
 - (5) 待写：G3a 设计门、E1、E2、G2（有空位就放）；K08b（等 K08a）；BA-T 钉文 REQ（C7，等 T8 合并）。
+
+## §199 — BA-E1 = T2388 预放行（总调度 V2，2026-10-10 12:47 UTC）
+
+- (1) 中枢 4 张满（T2384、T2385、T2386、T2387；H179 已执行，61849a6）。**T2388 = BA-E1**（BA 55，阶段 E 第一行；监督 1155 GE/O1：E 现在开）先放进 Released，有空位就开工，排在 T2387 之后。
+  - 新文件 `BA/EKPins.lean`：`BAuKer`、`BAUN`、五个阶段 E 钉文（探针 208-250 原文）；证 `baEKSumNdecay_holds`（`A:95-110`），以及 BA 的 `Ξ` 三条（`BAEKXiDecay`、`BAEKXiBall`、`BAEKSameRow`，由 `BAuKer_convex` + `baProp5_holds` 证，F4：不要 `Mbound_AO`；C1：只用均匀事实）。
+  - 另四个钉文登记 owed（E2：Decay1、NAL、2；E3：Nonzero）。
+  - `prover-hard`，900 / 1200 / 1900，停止线 2000（1500 行在节边界停下汇报）。论文论证完整，不设设计门。新 BA 文件，不进证书合并道。
+- (2) 待写：G2（进合并道）、G3a 设计门（C1/C2/C3）、E2（等 E1）；K08b（等 K08a）。
+
+## §200 — BA-G2 = T2389 预放行，排在 T2388 之前（总调度 V2，2026-10-10 12:48 UTC）
+
+- (1) **T2389 = BA-G2**（BA 56，阶段 G 第一行，关键路径 G2 → G3a → G3b → G4 → G6a → G6b；监督 1155 GE/O1）。
+  - `Green/LDE`、`RowIndep`、`IBPPoly` 的 G 段原地改写到确定性厄米平移 `D` 上（`green (D + seqHflow …) z`），`D = 0` 时以旧名、旧陈述取回带状定理（G1，28 个名字）。
+  - 新 `BA/GreenLDE`：`BAGt_eq_green`、`BAX`、钉文 `BALDEin` 并证 `baLDEin_holds`；`X` 的几乎处处块支撑由 `gaussianReal_zero_var` 得到。
+  - 高斯计算，论证完整，不设设计门；C1：不加任何小量假设。
+  - `prover-hard`，900 / 1200 / 1550，停止线 1800。
+  - **进证书合并道**：三个文件的锥 156 个模块，含 6 个证书模块（实测）。
+- (2) 次序：阶段 G 的链比 E 长，所以 **T2389 排在 T2388 之前**，抢下一个空位。
+- (3) 下一张票号 T2390，下一节 §201，下一条 H182。待写：G3a 设计门（C1/C2/C3；只跑 1a 设计门，1b 等 G2 合并）、E2（等 E1）；K08b（等 K08a）；BA-T 钉文 REQ（等 T8）。
