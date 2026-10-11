@@ -452,6 +452,7 @@ import RBM3D.Graph.BAGGOp
 import RBM3D.Graph.BASizeClaim
 import RBM3D.Graph.BASizeClaim2
 import RBM3D.BA.Step2BA
+import RBM3D.BA.EMn2BA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -16,19 +16,24 @@ import RBM3D.BA.Ward
 /-!
 # `lem:EMn2_N` at block Anderson (BA-T row T2-BA with T6-BA, ticket T2416)
 
-Supervisor `docs/supervisor/2026-10-11-0853.md` REQ-BAT (Q1, Q2, BAT-C2); design `docs/reports/T2379-design.md` §2 (row T2);
-T2404 (`Induction/EMn2Poly.lean:835`, `EMn2Exp1.lean:811`, `EMn2Exp2.lean:934, 1226, 1260`).  Paper: `7_8:1994-2002`
+Supervisor `docs/supervisor/2026-10-11-0853.md` REQ-BAT (Q1, Q2, BAT-C2); design
+`docs/reports/T2379-design.md` §2 (row T2); T2404 (`Induction/EMn2Poly.lean:835`,
+`EMn2Exp1.lean:811`, `EMn2Exp2.lean:934, 1226, 1260`).  Paper: `7_8:1994-2002`
 (`(eq:MG_conclusion3_BA)`, `(Kn2sol)`, `BAProp5`).
 
-T2404 proved the three estimates of `lem:EMn2_N` over any carrier under the fact blocks `emn2PolyFacts`, `emn2ExpFacts`,
-`emn2ExpHK`.  This file discharges the blocks at the BA reading `Flow := BAFlow`, `mk := baFMz`, `T0 := BAflowT0`,
-`Hf := baEMn2Hf` (`seqHflowBA` at `BAflowLam0`), `ζf := baEMn2Zf` (`ztOf` at the real-axis `m_F`), and states the BA pins.
+T2404 proved the three estimates of `lem:EMn2_N` over any carrier under the fact blocks
+`emn2PolyFacts`, `emn2ExpFacts`, `emn2ExpHK`.  This file discharges the blocks at the BA reading
+`Flow := BAFlow`, `mk := baFMz`, `T0 := BAflowT0`, `Hf := baEMn2Hf` (`seqHflowBA` at `BAflowLam0`),
+`ζf := baEMn2Zf` (`ztOf` at the real-axis `m_F`), and states the BA pins.
 
-* `baEMn2PolyFacts`, `baEMn2ExpFacts`: the clauses (A), (R), (S), (T), (E), (B) from `BAFlow` alone (constants in `(d, κ, 𝔡)`).
-* `baComp_*` (BAT-C2): the composition `Θ_BA M^{(σσ')}` has row and column sums `≤ (1-t)⁻¹` and decays beyond `ℓ_t(g)`.
+* `baEMn2PolyFacts`, `baEMn2ExpFacts`: the clauses (A), (R), (S), (T), (E), (B) from `BAFlow`
+  alone (constants in `(d, κ, 𝔡)`).
+* `baComp_*`, `baComp_holds` (BAT-C2): the composition `Θ_BA M^{(σσ')}` has row and column sums
+  `≤ (1-t)⁻¹` and decays beyond `ℓ_t(g)`, for every charge pair.
 * `baEMn2ExpHK`: `(HK)` from `(Kn2sol)` (`baKsol_two`) and BAT-C2.
-* `baSTEMn2Poly`, `baSTEMn2ExpJ`, `baSTEMn2Exp`: the pins at the BA reading; the three stage-L premises stay premises of the pins.
-* `baSTContractM`: `STContractM` at `H = seqHflowBA`, `z = ztOf` (T6-BA).
+* `baSTEMn2Poly`, `baSTEMn2ExpJ`, `baSTEMn2Exp`: the pins at the BA reading; the three stage-L
+  premises stay premises of the pins.
+* `baSTContractM`, `baSTContractM_flow`: `STContractM` at `H = seqHflowBA`, `z = ztOf` (T6-BA).
 
 No scalar `m`, no smallness of `g`, no `‖M - m₀ I‖` small.  Nothing imports this file.
 -/
@@ -146,12 +151,13 @@ theorem baEMn2PolyFacts : emn2PolyFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Z
   · exact (baEMn2_SB_zero (sz.L n)).symm
 
 set_option maxHeartbeats 800000 in
+-- the copied proof of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1048`) carries the same limit
 /-- **Target 2** (rows (T), (E), (B)): `emn2ExpFacts` at the BA reading.
 
 (B) is the BA twin of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1049`): `Bctl` reads `sz.lam n = g` (`Defs/Sizes.lean:214`),
 `cB = (𝔡⁻² + 1)⁻¹`, `c = min (2𝔡𝔠) ε / 2`; the upper bound is `(g² W^d)⁻¹ + (N(1-u))⁻¹ ≤ N^{-2𝔡𝔠} + 2N^{-ε}`
 with `1 - u ≥ 1 - t₀ ≥ Im z_n / 2 ≥ N^{-1+ε}/2` (`baEMn2_one_sub_T0`). -/
-theorem baEMn2ExpFacts (hd : 0 < d) :
+theorem baEMn2ExpFacts :
     emn2ExpFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Zf := by
   refine ⟨baEMn2PolyFacts d, ?_⟩
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
@@ -765,12 +771,12 @@ def BAEMn2ExpJ : Prop :=
 
 /-- **The BA `J` form** (`3 ≤ d`): `stEMn2ExpJgL_of` with the BA fact blocks `baEMn2ExpFacts` and `baEMn2ExpHK`. -/
 theorem baSTEMn2ExpJ (hd : 3 ≤ d) : BAEMn2ExpJ d :=
-  stEMn2ExpJgL_of _ hd (baEMn2ExpFacts d (by omega)) (baEMn2ExpHK hd)
+  stEMn2ExpJgL_of _ hd (baEMn2ExpFacts d) (baEMn2ExpHK hd)
 
 /-- **The BA `Ĵ` form** (`3 ≤ d`): `STEMn2ExpgL` at the BA reading, `stEMn2ExpgL_of` (the `J = Ĵ` corollary, every `D > 0`). -/
 theorem baSTEMn2Exp (hd : 3 ≤ d) :
     STEMn2ExpgL d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0 :=
-  stEMn2ExpgL_of _ hd (baEMn2ExpFacts d (by omega)) (baEMn2ExpHK hd)
+  stEMn2ExpgL_of _ hd (baEMn2ExpFacts d) (baEMn2ExpHK hd)
 
 end Pins
 
@@ -825,3 +831,259 @@ theorem baSTContractM_flow {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε
 end Contract
 
 end RBM.BA
+
+/-! ## 7. Compiled nonempty instances at `d = 3`
+
+**Data of the fact blocks and the pins** (`BA/FlowPins.lean:1181, 1214`): `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `g_n = (2(n+1))^{-6}`),
+`zSeq` (`z_n = z_S(L_n, g_n)`, `Im z_n ∈ [11/30, 7/10]`), `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, the proved `flow_sz0 : BAFlow …`
+(`BAdom`: `Im m ≥ 4/5`; `t₀_n ≥ 2/3`, `t0_sz0`), times `t ≡ 1/2 ≤ t₀` (`half_lt_t0`).  The fact blocks are theorems; (HK) is a theorem;
+the stochastic premises `STInitialGT2gL`, `STLWassmgL`, `STLWassmExpgL` (stage L / BA-V) stay hypotheses of the examples.
+
+**Data of BAT-C2** (`MFixedPointInst.P`, `L = 4`, `Λ = 10`): the flow point of `(L, g) = (4, 10)` with `g₀ = √t₀ g` (not small),
+`BAReal 3 4 g₀ (Im m₀) E m₀`; `t = 1/2`, the mixed and the equal pair, `a = 0`, `b = (2,0,0)` (`|b| = 2`). -/
+
+namespace RBM.BA.EMn2BAInst
+
+open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA RBM.Gauss.SizesInst RBM.Gauss.Step2DefsInst RBM.BA.FlowPinsInst
+  RBM.BA.MFixedPointInst Filter
+
+/-! ### Target 1: `baEMn2PolyFacts` at `sz0` -/
+
+/-- **Target 1 at the instance**: (A) `Admissible`; (R) at `n = 3`, `u = 1/2 ≤ t₀_3`: `seqHflowBA` is Hermitian for every sample,
+`Im ζ = η_u = (1/2) Im m_F > 0`, the loops of the carrier are `loopFine (seqHflowBA) ζ`; (S) `S_3 = SB 3 (L_3) 0` with `L_3 = 16`. -/
+example : sz0.Admissible (1 / 6) (1 / 10) ∧ sz0.L 3 = 16 ∧ sz0.W 3 = 32768 ∧
+    (∀ ω : sz0.SeqΩ, (baEMn2Hf sz0 zSeq 3 (1 / 2) ω).IsHermitian) ∧ 0 < (baEMn2Zf sz0 zSeq 3 (1 / 2)).im ∧
+    (baEMn2Zf sz0 zSeq 3 (1 / 2)).im = (baFMz sz0 zSeq).eta 3 (1 / 2) ∧
+    (∀ (ω : sz0.SeqΩ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd 3 (sz0.L 3)),
+      (baFMz sz0 zSeq).L 3 (1 / 2) σ a ω =
+        loopFine 3 (sz0.L 3) (sz0.W 3) (baEMn2Hf sz0 zSeq 3 (1 / 2) ω) (baEMn2Zf sz0 zSeq 3 (1 / 2)) σ a) ∧
+    (baFMz sz0 zSeq).S 3 = SB 3 (sz0.L 3) 0 := by
+  obtain ⟨hadm, hR, hS⟩ := baEMn2PolyFacts 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+    (1 / 6) sz0 zSeq flow_sz0
+  obtain ⟨hH, hz, hη, hL⟩ := hR 3 (1 / 2) (by norm_num) (half_lt_t0 3).le
+  refine ⟨hadm, rfl, rfl, hH, hz, hη, hL, ?_⟩
+  exact (baEMn2_SB_zero (sz0.L 3)).symm
+
+/-! ### Target 2: `baEMn2ExpFacts` at `sz0` -/
+
+/-- **Target 2 at the instance**: (T) `t₀_3 < 1`; (E) `η_{1/2} ≤ 1/2`, and at the end of the horizon `η_{t₀} ≤ 1 - t₀`; (B) there are
+`c_B, c > 0` and an index `n` with `c_B W^{-3} ≤ B_{u} ≤ N^{-c}` at `u = 1/2` (`B_u = W^{-3} B_{u,0}`, `sz.Bctl`). -/
+example : BAflowT0 sz0 zSeq 3 < 1 ∧ (baFMz sz0 zSeq).eta 3 (1 / 2) ≤ 1 - 1 / 2 ∧
+    (baFMz sz0 zSeq).eta 3 (BAflowT0 sz0 zSeq 3) ≤ 1 - BAflowT0 sz0 zSeq 3 ∧
+    ∃ cB c : ℝ, 0 < cB ∧ 0 < c ∧ ∃ n : ℕ, cB * (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ sz0.Bctl n (1 / 2) ∧
+      sz0.Bctl n (1 / 2) ≤ ((sz0.size n : ℕ) : ℝ) ^ (-c) := by
+  obtain ⟨hT, hE, cB, c, hcB, hc, hB⟩ := (baEMn2ExpFacts 3).2 (1 / 2) (1 / 10) (1 / 10)
+    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+  refine ⟨hT 3, hE 3 (1 / 2) (by norm_num) (half_lt_t0 3).le, hE 3 _ (by have := t0_sz0 3; linarith) le_rfl, cB, c, hcB, hc, ?_⟩
+  obtain ⟨n, hn⟩ := hB.exists
+  exact ⟨n, hn (1 / 2) (by norm_num) (half_lt_t0 n).le⟩
+
+/-! ### Target 3 (BAT-C2) at the flow point `P` of `(L, g) = (4, 10)` -/
+
+/-- **BAT-C2 at the instance** (`d = 3`, `Λ = 10`, `κ = Im m₀`, `0 < g₀ ≤ 10`, `L = 4`, `t = 1/2`): for the **mixed pair** `(+,-)` and
+the equal pair `(+,+)`: the marginals of `Θ M^{(σσ')}` at `a = 0` (rows) and `b = 0` (columns) are `≤ (1 - t)⁻¹ = 2`, and
+`|(ΘM)(0, (2,0,0))| ≤ C (1-t)⁻¹ exp(-c |b| / ℓ_t(g₀))`, `|b| = 2`. -/
+example : ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
+    ∀ σ : Bool × Bool,
+      (∑ b, ‖(BATheta 3 4 P.g0 P.E P.m0 (1 / 2) σ.1 σ.2 * BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) σ.1 σ.2) 0 b‖ ≤
+          (1 - 1 / 2 : ℝ)⁻¹) ∧
+      (∑ a, ‖(BATheta 3 4 P.g0 P.E P.m0 (1 / 2) σ.1 σ.2 * BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) σ.1 σ.2) a 0‖ ≤
+          (1 - 1 / 2 : ℝ)⁻¹) ∧
+      ‖(BATheta 3 4 P.g0 P.E P.m0 (1 / 2) σ.1 σ.2 * BAMss 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0) σ.1 σ.2) 0 ![2, 0, 0]‖ ≤
+        C * (1 - 1 / 2 : ℝ)⁻¹ *
+          Real.exp (-c * (zdistD 3 4 (0 - ![2, 0, 0] : Zd 3 4) : ℝ) / ellT 4 P.g0 (1 / 2)) := by
+  obtain ⟨C, hC, c, hc, H⟩ := baComp_holds 3 10 P.m0.im (by norm_num) (by norm_num) P.real.1.1
+  refine ⟨C, c, hC, hc, fun σ => ?_⟩
+  obtain ⟨h1, h2, h3⟩ := H 4 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num)
+    (by norm_num) σ.1 σ.2
+  exact ⟨h1 0, h2 0, h3 0 ![2, 0, 0]⟩
+
+/-- The same at the mixed pair, as the application of `baComp_holds` (the displacement is nondegenerate: `|(0 - (2,0,0))| = 2`). -/
+example : zdistD 3 4 (0 - ![2, 0, 0] : Zd 3 4) = 2 := by decide
+
+/-! ### Target 4: `baEMn2ExpHK` at `sz0` -/
+
+/-- `ℓ_{1/2}(g_n) ≤ 1` along `sz0`: `g_n ≤ 1/8` (`sz0_lam_L`), so `g_n / √(1/2) ≤ 1`. -/
+private theorem EMn2BAInst_ellT_le (n : ℕ) : ellT (sz0.L n) (sz0.lam n) (1 / 2) ≤ 1 := by
+  unfold ellT
+  refine (min_le_left _ _).trans (max_le ?_ le_rfl)
+  have hs : (0 : ℝ) < Real.sqrt |1 - 1 / 2| := Real.sqrt_pos.2 (by norm_num)
+  rw [div_le_one hs]
+  have hL : (1 : ℝ) ≤ (((sz0.L n) ^ 3 : ℕ) : ℝ) := by
+    have : 1 ≤ (sz0.L n) ^ 3 := Nat.one_le_pow _ _ (by have := sz0.three_le_L n; omega)
+    exact_mod_cast this
+  have h1 : (sz0.lam n) ^ 2 ≤ |1 - 1 / 2| := by
+    have h0 := sz0_lam_L n
+    have hp := (sz0_lam_pos n).le
+    rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 - 1 / 2)]
+    nlinarith [sq_nonneg (sz0.lam n)]
+  calc sz0.lam n = Real.sqrt ((sz0.lam n) ^ 2) := (Real.sqrt_sq (sz0_lam_pos n).le).symm
+    _ ≤ Real.sqrt |1 - 1 / 2| := Real.sqrt_le_sqrt h1
+
+/-- `(log W_n)^{3/2} ≤ 2(n+1) = L_n/2` eventually (`W = y^5`, `y = 2(n+1)`: `(5 log y)^{3/2} ≤ y`, since `x^{3/2} = o(e^x)`);
+the far window `ℓ* ≤ L/2` of `emn2ExpHK` is nonempty from `n = 79` (preflight (a), row 15). -/
+private theorem EMn2BAInst_far_ev : ∀ᶠ n : ℕ in atTop,
+    Real.log ((sz0.W n : ℕ) : ℝ) ^ ((3 : ℝ) / 2) ≤ 2 * ((n : ℝ) + 1) := by
+  have hlo := (isLittleO_rpow_exp_pos_mul_atTop ((3 : ℝ) / 2) one_pos).def
+    (c := (((5 : ℝ) ^ ((3 : ℝ) / 2))⁻¹)) (by positivity)
+  have hy : Tendsto (fun n : ℕ => 2 * ((n : ℝ) + 1)) atTop atTop := by
+    refine Tendsto.const_mul_atTop (by norm_num) ?_
+    exact tendsto_atTop_add_const_right _ _ tendsto_natCast_atTop_atTop
+  have hu : Tendsto (fun n : ℕ => Real.log (2 * ((n : ℝ) + 1))) atTop atTop :=
+    Real.tendsto_log_atTop.comp hy
+  filter_upwards [hu.eventually hlo, hu.eventually (eventually_ge_atTop 0)] with n hn hn0
+  set y : ℝ := 2 * ((n : ℝ) + 1) with hydef
+  have hy2 : (2 : ℝ) ≤ y := by
+    rw [hydef]; have := Nat.cast_nonneg (α := ℝ) n; linarith
+  have hy0 : 0 < y := by linarith
+  have hW : ((sz0.W n : ℕ) : ℝ) = y ^ 5 := by simp [sz0, hydef]
+  have hlog : Real.log ((sz0.W n : ℕ) : ℝ) = 5 * Real.log y := by
+    rw [hW, Real.log_pow]; norm_num
+  rw [hlog, Real.mul_rpow (by norm_num) hn0]
+  rw [Real.norm_of_nonneg (Real.rpow_nonneg hn0 _), Real.norm_of_nonneg (Real.exp_pos _).le, one_mul,
+    Real.exp_log hy0] at hn
+  have h5 : (0 : ℝ) < (5 : ℝ) ^ ((3 : ℝ) / 2) := by positivity
+  calc (5 : ℝ) ^ ((3 : ℝ) / 2) * Real.log y ^ ((3 : ℝ) / 2)
+      ≤ (5 : ℝ) ^ ((3 : ℝ) / 2) * (((5 : ℝ) ^ ((3 : ℝ) / 2))⁻¹ * y) :=
+        mul_le_mul_of_nonneg_left hn h5.le
+    _ = y := by field_simp
+
+/-- The far pair `a = (k,k,k)`, `b = 0`, `k = 2(n+1) = L_n / 2`: `|a - b|_∞ = k`
+(the pattern of `Path/KellStar.lean:407`, private there). -/
+private theorem EMn2BAInst_zdistInf (n : ℕ) :
+    zdistInf 3 (sz0.L n) ((fun _ => (((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) : Zd 3 (sz0.L n)) - 0) =
+      2 * (n + 1) := by
+  have hL : sz0.L n = 4 * (n + 1) := rfl
+  have hv : ((((2 * (n + 1) : ℕ) : ZMod (sz0.L n))).val) = 2 * (n + 1) := by
+    rw [ZMod.val_natCast, Nat.mod_eq_of_lt (by rw [hL]; omega)]
+  unfold zdistInf
+  simp only [sub_zero]
+  rw [Finset.sup_const Finset.univ_nonempty]
+  unfold zdist
+  rw [hv, hL]
+  omega
+
+/-- **(HK) at the instance** (`D` arbitrary, `t ≡ 1/2 ≤ t₀`): the far window is nonempty (`|a - b|_∞ = L/2 ≥ ℓ*`, `a ≠ b`) at some
+index `n`, and there `‖𝒦^{(2)}_{1/2,(s,-s),(a,b)}‖ ≤ W^{-3} W^{-(D+3)}` for the mixed pair `s = +`. -/
+example (D : ℝ) (hD : 0 < D) : ∃ n : ℕ, ∃ a b : Zd 3 (sz0.L n), a ≠ b ∧
+    emn2ExpEllStar sz0 n (1 / 2) ≤ (zdistInf 3 (sz0.L n) (a - b) : ℝ) ∧
+      ‖(baFMz sz0 zSeq).K n (1 / 2) ![true, !true] ![a, b]‖ ≤
+        (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((sz0.W n : ℕ) : ℝ) ^ (-(D + ((3 : ℕ) : ℝ))) := by
+  have hHK := baEMn2ExpHK (by norm_num : 3 ≤ 3) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+    (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun n => by norm_num) (fun n => (half_lt_t0 n).le) D hD
+  obtain ⟨n, hn, hfar⟩ := (hHK.and EMn2BAInst_far_ev).exists
+  refine ⟨n, (fun _ => (((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) : Zd 3 (sz0.L n)), 0, ?_, ?_, ?_⟩
+  · intro h
+    have h1 := EMn2BAInst_zdistInf n
+    rw [h, sub_self] at h1
+    have : zdistInf 3 (sz0.L n) (0 : Zd 3 (sz0.L n)) = 0 := by
+      unfold zdistInf; simp
+    omega
+  · have hℓ := EMn2BAInst_ellT_le n
+    have hlg : 0 ≤ Real.log (sz0.W n : ℝ) ^ ((3 : ℝ) / 2) :=
+      Real.rpow_nonneg (Real.log_natCast_nonneg _) _
+    unfold emn2ExpEllStar
+    rw [EMn2BAInst_zdistInf]
+    push_cast
+    nlinarith [mul_le_mul_of_nonneg_left hℓ hlg]
+  · refine hn _ _ true ?_
+    have hℓ := EMn2BAInst_ellT_le n
+    have hlg : 0 ≤ Real.log (sz0.W n : ℝ) ^ ((3 : ℝ) / 2) :=
+      Real.rpow_nonneg (Real.log_natCast_nonneg _) _
+    unfold emn2ExpEllStar
+    rw [EMn2BAInst_zdistInf]
+    push_cast
+    nlinarith [mul_le_mul_of_nonneg_left hℓ hlg]
+
+/-! ### Target 5: the BA pins at `sz0` (`t ≡ 1/2`, `ε₀ = 1/20`, `Ψ_n = W_n^{-1}`, `D` arbitrary) -/
+
+/-- `1 ≤ log W_n` along `sz0` (`W ≥ 32`; `Induction/EMn2Exp1.lean:2103`, private there). -/
+private theorem EMn2BAInst_logW (n : ℕ) : 1 ≤ Real.log ((sz0.W n : ℕ) : ℝ) := by
+  have h32 : (32 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := by
+    have : (32 : ℕ) ≤ sz0.W n := by
+      change 32 ≤ (2 * (n + 1)) ^ 5
+      calc 32 = 2 ^ 5 := by norm_num
+        _ ≤ (2 * (n + 1)) ^ 5 := Nat.pow_le_pow_left (by omega) 5
+    exact_mod_cast this
+  have h1 : Real.log 32 ≤ Real.log ((sz0.W n : ℕ) : ℝ) := Real.log_le_log (by norm_num) h32
+  have h2 : Real.log 32 = 5 * Real.log 2 := by
+    rw [show (32 : ℝ) = 2 ^ 5 by norm_num, Real.log_pow]; norm_num
+  have := Real.log_two_gt_d9
+  linarith
+
+/-- The scale `ℓ_n = ℓ_{1/2}(g_n)` lies in `[0, (log W)^{10} ℓ_t]`. -/
+private theorem EMn2BAInst_ell_range : ∀ᶠ n in atTop,
+    0 ≤ ellT (sz0.L n) (sz0.lam n) ((fun _ => (1 / 2 : ℝ)) n) ∧
+      ellT (sz0.L n) (sz0.lam n) ((fun _ => (1 / 2 : ℝ)) n) ≤
+        (Real.log ((sz0.W n : ℕ) : ℝ)) ^ 10 * ellT (sz0.L n) (sz0.lam n) ((fun _ => (1 / 2 : ℝ)) n) :=
+  Eventually.of_forall fun n => ⟨ellT_nonneg, le_mul_of_one_le_left ellT_nonneg
+    (one_le_pow₀ (EMn2BAInst_logW n))⟩
+
+/-- **`baSTEMn2Poly`** (the first estimate `(eq:MG_conclusion)`) at the BA carrier of `sz0`, law `seqP (sz0.withLam 0)`: the
+conclusion at `t ≡ 1/2`; `STInitialGT2gL` and `STLWassmgL` (stage L / BA-V) stay hypotheses. -/
+example (hI : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 20) (fun n => Ψ0 n 0))
+    (hA : STLWassmgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) Ψ0) :
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
+      (fun n p ω => ‖STEEg (baFMz sz0 zSeq) n (1 / 2) p.1 p.2.1 p.2.2 ω‖)
+      (fun n p _ => ((baFMz sz0 zSeq).eta n (1 / 2))⁻¹ * Ψ0 n 0 *
+        (Ψ0 n (zdistInf 3 (sz0.L n) (p.2.2 0 - p.2.2 1))) ^ 4) :=
+  baSTEMn2Poly 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun n => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 20) (by norm_num) Ψ0 Ψ0_class hI hA
+
+/-- **`baSTEMn2Exp`** (the `Ĵ` form of `(eq:MG_conclusion3)`) at the same data, `ℓ_n = ℓ_{1/2}(g_n)`, `3 ≤ d`, every `D > 0`:
+`STInitialGT2gL` and `STLWassmExpgL` (all `D`) stay hypotheses. -/
+example (hI : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 20)
+      (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))))
+    (hA : ∀ D : ℝ, 0 < D → STLWassmExpgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) D
+      (fun n => ellT (sz0.L n) (sz0.lam n) (1 / 2)))
+    (D : ℝ) (hD : 0 < D) :
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
+      (fun n p ω => ‖STEEg (baFMz sz0 zSeq) n (1 / 2) p.1 p.2.1 p.2.2 ω‖)
+      (fun n p ω => ((baFMz sz0 zSeq).eta n (1 / 2))⁻¹ *
+        ((sz0.Bctl n (1 / 2)) ^ (1 / 2 : ℝ) +
+          (STJhatg (baFMz sz0 zSeq) n D (ellT (sz0.L n) (sz0.lam n) (1 / 2)) (1 / 2) ω) ^ 3) *
+        (STprof sz0 n (1 / 2) D (ellT (sz0.L n) (sz0.lam n) (1 / 2)) (p.2.2 0) (p.2.2 1)) ^ 2) :=
+  baSTEMn2Exp 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
+    flow_sz0 (fun _ => 1 / 2) (fun n => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 20) (by norm_num)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) Ψ1_window hI (fun n => ellT (sz0.L n) (sz0.lam n) (1 / 2))
+    EMn2BAInst_ell_range hA D hD
+
+/-- **`baSTEMn2ExpJ`** (the `J` form, `(eq:MG_conclusion3_BA)`) at the same data: every random `J ≥ 0` with `Ĵ ≺ J` (the control
+`J = Ĵ` is admissible: the previous example). -/
+example (hI : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 20)
+      (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))))
+    (hA : ∀ D : ℝ, 0 < D → STLWassmExpgL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) D
+      (fun n => ellT (sz0.L n) (sz0.lam n) (1 / 2)))
+    (D : ℝ) (hD : 0 < D) (J : ℕ → sz0.SeqΩ → ℝ) (hJ0 : ∀ n ω, 0 ≤ J n ω)
+    (hJ : PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun _ => Unit)
+      (fun n _ ω => STJhatg (baFMz sz0 zSeq) n D (ellT (sz0.L n) (sz0.lam n) (1 / 2)) (1 / 2) ω) (fun n _ ω => J n ω)) :
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
+      (fun n p ω => ‖STEEg (baFMz sz0 zSeq) n (1 / 2) p.1 p.2.1 p.2.2 ω‖)
+      (fun n p ω => ((baFMz sz0 zSeq).eta n (1 / 2))⁻¹ * ((sz0.Bctl n (1 / 2)) ^ (1 / 2 : ℝ) + (J n ω) ^ 3) *
+        (STprof sz0 n (1 / 2) D (ellT (sz0.L n) (sz0.lam n) (1 / 2)) (p.2.2 0) (p.2.2 1)) ^ 2) :=
+  baSTEMn2ExpJ 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq
+    flow_sz0 (fun _ => 1 / 2) (fun n => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 20) (by norm_num)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) Ψ1_window hI (fun n => ellT (sz0.L n) (sz0.lam n) (1 / 2))
+    EMn2BAInst_ell_range hA D hD J hJ0 hJ
+
+/-! ### Target 6 (T6-BA): the contraction inequality at the BA matrix of `sz0` -/
+
+/-- **T6-BA at the instance**: `n = 3` (`L = 16`, `W = 32768`), `u = 1/2`, any sample `ω`: `Hf = seqHflowBA`, `ζ = ztOf` with
+`Im ζ = (1/2) Im m_F > 0`; the first inequality of `STContractM` at `(m, k) = (2, 1)`, `σ = (+,-)`, `a = (0)`:
+`Σ_x |𝓛_{(+,-),(0,x)}| ≤ (W^3 Im ζ)⁻¹ (max |𝓛^{(1)}| · max |𝓛^{(1)}|)^{1/2}` (the loops of the realization `(Hf, ζ)`). -/
+example (ω : sz0.SeqΩ) :
+    ∑ x : Zd 3 (sz0.L 3), ‖loopL 3 (sz0.L 3) (sz0.W 3) (blockMat 3 (sz0.L 3) (sz0.W 3) (baEMn2Hf sz0 zSeq 3 (1 / 2) ω))
+        (baEMn2Zf sz0 zSeq 3 (1 / 2)) ⟨List.ofFn ![true, false], List.ofFn ![(0 : Zd 3 (sz0.L 3))] ++ [x]⟩‖ ≤
+      (((sz0.W 3 : ℕ) : ℝ) ^ 3 * (baEMn2Zf sz0 zSeq 3 (1 / 2)).im)⁻¹ *
+        (Contract_maxLoopM 3 (sz0.L 3) (sz0.W 3) (baEMn2Hf sz0 zSeq 3 (1 / 2) ω) (baEMn2Zf sz0 zSeq 3 (1 / 2)) (2 * 1 - 1) *
+          Contract_maxLoopM 3 (sz0.L 3) (sz0.W 3) (baEMn2Hf sz0 zSeq 3 (1 / 2) ω) (baEMn2Zf sz0 zSeq 3 (1 / 2))
+            (2 * 2 - 2 * 1 - 1)) ^ (1 / 2 : ℝ) :=
+  (baSTContractM_flow (by norm_num : (0 : ℝ) < 1 / 2) (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) sz0
+    flow_sz0 3 (by norm_num) (half_lt_t0 3).le ω).1 2 1 le_rfl le_rfl ![true, false] ![0]
+
+/-- The same data through the generic `baSTContractM` (any `m` with `Im m > 0`, `u < 1`): `Im ztOf > 0`. -/
+example (ω : sz0.SeqΩ) (m : ℂ) (E : ℕ → ℝ) (hm : 0 < m.im) :
+    BAContractAt 3 (sz0.L 3) (sz0.W 3) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 3 (1 / 2) ω) (ztOf m (E 3) (1 / 2)) :=
+  baSTContractM sz0 _ 3 (1 / 2) ω m (E 3) hm (by norm_num)
+
+end RBM.BA.EMn2BAInst
