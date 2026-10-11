@@ -1,4 +1,4 @@
-state: held
-reason: waits for Jun's answer to the design §8 question (offset-twisted loops, T3C-Ḡ), relayed 00:31 UTC (H195); not merged; probe stays on t/T2398 at 2257f54; audit BLOCKED with sign-off (wf_6cf4a7d1-fd0)
-updated: Sun Oct 11 00:31:25 UTC 2026
+state: proving
+reason: resumed from held under Amend 2 (H204, Jun route R1): workflow wf_83d44b42-95c, one prover-max design-update step on t/T2398 (probe Twist section D2, design (b′), row table D3, T2398d) → auditor (round 2) → rule (A) report-only merge
+updated: Sun Oct 11 07:52:23 UTC 2026
 reports: docs/reports/T2398-prove.md, docs/reports/T2398-design.md, docs/reports/T2398-audit.md

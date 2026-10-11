@@ -1,0 +1,4 @@
+state: proving
+reason: started (H204, H12): workflow wf_21b62cb4-adb, stage 1a preflight → 1b prover-max → auditor; branch t/T2411 from main 3dbc25f
+updated: Sun Oct 11 07:52:23 UTC 2026
+reports: docs/reports/T2411-prove.md, docs/reports/T2411-audit.md

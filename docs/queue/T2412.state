@@ -1,0 +1,4 @@
+state: proving
+reason: started (H205, H12): workflow wf_d476209a-ae0, 1a design gate → probe prover-max (RBM3D/Probe/T2412Pins.lean) → 1a-audit → 1b prover-hard → auditor; a 1a-audit sign-off request stops before 1b (H183 (3)); branch t/T2412 from main 3dbc25f
+updated: Sun Oct 11 07:52:23 UTC 2026
+reports: docs/reports/T2412-prove.md, docs/reports/T2412-1a-audit.md, docs/reports/T2412-audit.md

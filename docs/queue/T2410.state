@@ -1,0 +1,4 @@
+state: proving
+reason: started (H204, H12): workflow wf_10099939-de3, stage 1a preflight → 1b prover-hard → auditor; branch t/T2410 from main 3dbc25f
+updated: Sun Oct 11 07:52:23 UTC 2026
+reports: docs/reports/T2410-prove.md, docs/reports/T2410-audit.md
