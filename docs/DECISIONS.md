@@ -2148,3 +2148,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 流程：从 1b（`prover-max`）续跑 → 审核。下个空位先开它。
 - (4) **返工账本**补 T2418（是：1a-audit RETURN，Amend 1 + 探针步骤）、T2419（是：审核 RETURN 要签字，Amend 1 修补一次）、T2421（否：1a 卡在钉文，Amend 1 在写 Lean 前，按先例不计）、T2424、T2425、T2420、T2426（否）。CONTROL 超过 30KB，H208–H220 与合并记录归档。
 - (5) 计数：BA 93（阶段 L 18 / 50，TL 2 / 15，T 10 / 28.5，G/E 12 / 19.5）。下一张票号 T2427，下一节 §241，下一条 H222。下一批（本轮写）：TL1a、TL2a、TL2b、TL2c、TL-V（TL0、T8b、T6-BA 都已合并，TL-D §7 的依赖都满足）；之后 L4b1、L3a2、L3c3a、L4e-C、G7、带状侧 T7/T1/T4s1/T4s2/T5s2。
+
+## §241 — 阶段 TL 放五行：TL1a = T2427、TL2a = T2428、TL2b = T2429、TL2c = T2430、TL-V = T2431（总调度 V3，2026-10-11 22:08 UTC）
+
+- (1) **依据**：TL-D（T2413）§7 的依赖——TL0 已合并（T2421），T8b（T2414）、T8-BA（T2415）、T6-BA（T2416）已合并，所以 TL1a、TL2a、TL2b、TL2c、TL-V 都可以开工；TL1b 等 TL1a，TL2d 等 TL2a、TL2b、TL2c、TL1b，TL2e 最后（TLF-C2：`BATwistLoopStep` 由 TL2e 产出）。BA 94–98；阶段 TL 7 / 15。
+- (2) **T2427 = TL1a**（`prover-max`，`BA/TwistAvgA` + `TwistAvgA2`，TLF-C1）：T.7 Steps 1–4 一直做到 2p 阶矩递推不等式（TP:89），新钉文 `BATwistAvgRec`（名字由探针定），前提与 `BATwistAvgProd` 相同。**行内容调整**：T.6 和 Hölder 从 TL1b 挪到 TL1a，TL1b 只做 Step 5 的 bootstrap（含 S1）、Step 6、`BATwistAvgProd`；文件逼近停止线时 1a 可以把 T.6 退回 TL1b（1a-audit 记下）。IBP 路线优先用已合并的 `baLanlw_holds`（`Graph/BAExpand.lean:744`）：(C.3)–(C.4) 是镜像形式（求和块在扭转的另一侧），数学等价，记文章差异候选 T2427a。设计门带探针步骤（§238）。
+- (3) **T2428 = TL2a**（`prover-max`，`BA/TwistGrid` + `TwistGrid2`）：T.8、T.9 的网格形式，`BATwistGen`、`BATwistHier`、`BATwistDuhamel`、`BATwistGridMart`（名字由探针定）。TLF-C3 照做；两处更正记下：`STGridMartAtgL` 在 T8b 之后位于 `Chain/Step2Gen.lean:857`（1049 写的 `:659` 是旧行号）；T8b 是**原地**重钉 `Step2Gen_*` 核（块核），所以规则写成"陈述用 BA 名（`BATheta`、`BAMss`、`BAuKer`），`Step2Gen_thetaKer`/`Step2Gen_uKer` 只出现在两条桥引理里，`STthetaOpg` 一律不出现"。`Ũ` 加权尾项（`STGridRepNAtgL` 第四合取项）列入目标 4(b)(iv)：(D.5) 的鞅项要它。**风险**：4(b) 的余项和两个鞅尾在带状侧由 `Path/DifREP1` §3–§4、`DifREP2`、`DifREP3`（约 6,000 行）证明，不在本行估价基础内；1a 若判断两个文件放不下就停，由总调度决定拆行（若加行，TL 旗标 15 以内处理，超出再发短 REQ）。
+- (4) **T2429 = TL2b**（`prover-hard`，探针步骤 `prover-max`；`BA/TwistKer` + `TwistKer2`）：T.10 (a)(b)(d) = `BATwKerA/Far/Zero`，T.1 (iii) 新钉文 `BATwKDecay`，T.11 (i)(ii)(iv)(v) = `BATwistSrc1/2/4/5`（对所有 regime `R`）。**私有引理**：照监督 1049 的建议删 `private` 关键字，不拷贝——`BA/EKPins` 的反向导入只有 5 个模块，`BA/EKNonzero` 没有，都不在证书通道、也不在在跑票的可写集里；两个文件列为可写，审核用脚本核对 diff 只删关键词；具体删哪些由探针步骤定。
+- (5) **T2430 = TL2c**（`prover-max`，`BA/TwistQV`，必要时 `TwistQV2`）：T.11 (iii) = `BATwistSrc3`（对所有 `R`）。公开的 `STContractM`/`STContractPt` 只界未扭转的圈，Schatten 工具在 `Induction/Contract.lean`、`ContractPt.lean` 里都是 `private`；`Induction/Contract` 处在导入树下层，按 §161 (1) **拷贝**（词干 `TwistQV_`），不删关键字。
+- (6) **T2431 = TL-V**（`prover-hard`，`BA/TwistChain`，停止线 1,000）：`baTwistLoopBase_holds`、`baChainTL_holds`（带第七合取项的链）。`BAChainTL` 里的 `BATwistLoopBase` 前提有了目标 1 就多余，但不另加推论（V3、BA-M1 直接用两条定理）。
+- (7) 开工次序：T2423（在跑）→ T2427 → T2428 → T2429 → T2430 → T2431。登记（`Test/Axioms.lean`）五张都不改。下一张票号 T2432，下一节 §242，下一条 H223。下一批：L4b1、L3a2、L3c3a、L4e-C、G7、带状侧 T7/T1/T4s1/T4s2/T5s2；TL1b 在 T2427 合并后。
+

@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 21:48 UTC (dispatcher V3: takeover; T2423 Amend 1 (H221); CONTROL archived)
+updated: 2026-10-11 22:08 UTC (dispatcher V3: TL1a = T2427, TL2a = T2428, TL2b = T2429, TL2c = T2430, TL-V = T2431 released (H222))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -10,9 +10,18 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 391. T2423 — `docs/tickets/T2423.md` + **Amend 1** (`docs/tickets/T2423-amend-1.md`: sign-off S1 = frame level only, `BAMatchTw` → L3b4′; S2 = third file `Graph/BASim3.lean`; report ≤ 400 lines; two pinned names; 1b from current `main`) (BA-L R1: new `Graph/BASim.lean` + `BASim2.lean` + `BASim3.lean`: the graph-level matching of a BA step with a band `LocStep` up to relabelling, `BAsim m`/`BAsim'`, Lemma E at graph level; 1a-audit round 2 PASS): released; **resume at 1b (`prover-max`) → auditor in the next free slot, first** (H221). Not in the certificate lane.
+395. T2427 — `docs/tickets/T2427.md` (BA-TL TL1a: new `BA/TwistAvgA.lean` + `TwistAvgA2.lean`: T.7 Steps 1–4 up to the 2p-moment recursion, new pin `BATwistAvgRec`; design gate with a `prover-max` probe step → 1a-audit → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: after T2423. Not in the certificate lane.
+396. T2428 — `docs/tickets/T2428.md` (BA-TL TL2a: new `BA/TwistGrid.lean` + `TwistGrid2.lean`: T.8, T.9 in grid form over `baStep2Mat` and T8b's kernels; design gate with a `prover-max` probe step → 1a-audit → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: after T2427. Not in the certificate lane.
+397. T2429 — `docs/tickets/T2429.md` (BA-TL TL2b: new `BA/TwistKer.lean` + `TwistKer2.lean`; `private` keyword removal only in `BA/EKPins.lean`, `BA/EKNonzero.lean`: T.10 (a)(b)(d), T.1 (iii) `BATwKDecay`, T.11 (i)(ii)(iv)(v); probe step `prover-max` → 1a-audit → 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2428. Not in the certificate lane.
+398. T2430 — `docs/tickets/T2430.md` (BA-TL TL2c: new `BA/TwistQV.lean` (split `TwistQV2` named): T.11 (iii) = `BATwistSrc3`; 1a → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: after T2429. Not in the certificate lane.
+399. T2431 — `docs/tickets/T2431.md` (BA-TL TL-V: new `BA/TwistChain.lean`: `baTwistLoopBase_holds`, `baChainTL_holds`; 1a → 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2430. Not in the certificate lane.
 
 ## Pre-release checks
-(none waiting)
+- `docs/tickets/checks/T2427-check.lean` (BA-TL TL1a; merged names only).
+- `docs/tickets/checks/T2428-check.lean` (BA-TL TL2a; merged names only).
+- `docs/tickets/checks/T2429-check.lean` (BA-TL TL2b; merged names only).
+- `docs/tickets/checks/T2430-check.lean` (BA-TL TL2c; merged names only).
+- `docs/tickets/checks/T2431-check.lean` (BA-TL TL-V; merged names only).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -32,6 +41,10 @@ Standing instructions carried over from the archived CONTROL (verbatim):
 - H183 (3) (standing; full text archived 2026-10-10 23:13 UTC): when a 1a-audit verdict says "Needs dispatcher sign-off", stage 1b does not start until an H line answers it; set the state `blocked` with the question.
 
 - H221 (dispatcher V3, 2026-10-11 21:48 UTC; DECISIONS §240; answers the question in `docs/queue/T2423.state`, H183 (3)). (1) Commit by name with your next commit `docs/tickets/T2423-amend-1.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/queue/CONTROL-archive.md` (H208–H220 and 15 merge-log lines archived 21:48 UTC), `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. Nothing else. (2) **T2423:** resume under Amend 1 at stage 1b (`prover-max` on `t/T2423`, rebased or merged onto current `main`; sole writable files now include `RBM3D/Graph/BASim3.lean`) → auditor, in the next free slot, first. One `done:` line per item.
+  done: Sun Oct 11 21:51:40 UTC 2026 — (1) the 6 listed files committed by name in e6fc599, pushed.
+  done: Sun Oct 11 21:51:40 UTC 2026 — (2) T2423 resumed under Amend 1: main e6fc599 merged into t/T2423 (e1782fc, no conflict), build cache refreshed; wf_b437998a-f00 (1b prover-max → auditor). Running: T2423 (1 of 4).
+
+- H222 (dispatcher V3, 2026-10-11 22:08 UTC; DECISIONS §241). (1) Commit by name with your next commit `docs/tickets/T2427.md`, `docs/tickets/T2428.md`, `docs/tickets/T2429.md`, `docs/tickets/T2430.md`, `docs/tickets/T2431.md`, `docs/tickets/checks/T2427-check.lean`, `docs/tickets/checks/T2428-check.lean`, `docs/tickets/checks/T2429-check.lean`, `docs/tickets/checks/T2430-check.lean`, `docs/tickets/checks/T2431-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile the five checks on `main` in the same loop iteration (H4); the tickets start as slots free, in priority order **T2427 → T2428 → T2429 → T2430 → T2431** (now: T2423 running, three slots free). One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).

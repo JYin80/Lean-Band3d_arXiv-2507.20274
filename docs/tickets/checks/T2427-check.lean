@@ -1,0 +1,72 @@
+/-
+Release check for T2427 (dispatcher V3, Sun Oct 11 22:07 UTC 2026; DECISIONS §241).  BA-TL TL1a: T.7 Steps 1-4 at the BA carrier, up to the
+2p-moment recursion (supervisor 1049 TLF-C1).  Merged names only.  No proofs, no sorry.
+Run: lake env lean docs/tickets/checks/T2427-check.lean
+-/
+import RBM3D.BA.TwistPins
+import RBM3D.Chain.LWGen
+import RBM3D.Chain.Carrier
+import RBM3D.BA.FlowPins
+import RBM3D.Defs.Sizes
+import RBM3D.Gauss.FineModel
+import RBM3D.Graph.BAExpand
+import RBM3D.Graph.BAExp14aB
+import RBM3D.Graph.LWExpTerm
+import RBM3D.Green.IBP
+import RBM3D.Induction.EMn2Poly
+import RBM3D.BA.GreenSchur
+import RBM3D.BA.GreenLDE
+import RBM3D.BA.Ward
+import RBM3D.BA.MFixedPoint
+import RBM3D.BA.CombesThomas
+
+#check @RBM.BA.BATwistAvgLaw
+#check @RBM.BA.BATwistAvgProd
+#check @RBM.BA.twTr
+#check @RBM.BA.twTrP
+#check @RBM.BA.twShift
+#check @RBM.BA.twBlk
+#check @RBM.BA.twChg
+#check @RBM.BA.twMB
+#check @RBM.BA.twSq
+#check @RBM.BA.twFold_holds
+#check @RBM.BA.LWAvgLawgL
+#check @RBM.BA.STLmaxgL
+#check @RBM.BA.PrecL
+#check @RBM.BA.FlowFM.GM
+#check @RBM.BA.baFMz
+#check @RBM.BA.BAFlow
+#check @RBM.BA.BAflowT0
+#check @RBM.Gauss.Sizes.Bctl
+#check @RBM.Gauss.Sizes.slice
+#check @RBM.Gauss.Sizes.seqP_map_slice
+#check @RBM.Graph.BAlanlw
+#check @RBM.Graph.baLanlw_holds
+#check @RBM.Graph.dhSample_baG
+#check @RBM.Graph.dhSample_baG_star
+#check @RBM.Graph.stein_baPoly
+#check @RBM.Graph.baWx_dh
+#check @RBM.BA.BAExp14a_X
+#check @RBM.BA.BAExp14a_X_eq
+#check @RBM.BA.BAExp14a_L1_eq
+#check @RBM.BA.BAExp14a_slc
+#check @RBM.BA.BAExp14a_int_slice
+#check @RBM.BA.BAExp14a_lanlw_diag
+#check @RBM.BA.BAExp14a_integrable
+#check @RBM.Gauss.Sizes.lwExpTerm_prec_integral
+#check @RBM.Green.integral_coord_mul_green_apply
+#check @RBM.Green.sum_gvar_Bmat_sandwich_diag
+#check @RBM.Gauss.Sizes.emn2Poly_norm_loop4_alt_le
+#check @RBM.BA.BAflow_real
+#check @RBM.BA.BAflow_lam0_window
+#check @RBM.BA.BAMfine_eq
+#check @RBM.BA.BAMfine_norm_le_one
+#check @RBM.BA.BAMB_row_l1
+#check @RBM.BA.BAMB_row_sq_real
+#check @RBM.BA.ba_G_data
+#check @RBM.BA.BAPropM
+#check @RBM.BA.baPropM_holds
+#check @RBM.Gauss.SizesInst.sz0
+#check @RBM.BA.FlowPinsInst.zSeq
+#check @RBM.BA.FlowPinsInst.flow_sz0
+#check @RBM.BA.FlowPinsInst.half_lt_t0
