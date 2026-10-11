@@ -1,0 +1,4 @@
+state: blocked
+reason: 1a PASS (conditional over mk), 1a-audit RETURN with dispatcher sign-off (wf_2f3bc241-55b; docs/reports/T2405-1a-audit.md): design-gate items (i), (iii), (iv), (v) missing; row 2 should read κ/2 ≤ Im m, and Im m ≥ κ/2 fails at BA inside the pin's domain (L = 16, g = 10, E = 1: Im m ≈ 0). Question for the dispatcher: how is the Im m domain fact handled at BA (primed pin with premise κ ≤ Im m, or a restricted lam range), and does the 1a get a rule-(B) repair for (i), (iii)-(v) after that? 1b not started (H183 (3)).
+updated: Sun Oct 11 03:00:05 UTC 2026
+reports: docs/reports/T2405-prove.md, docs/reports/T2405-1a-audit.md
