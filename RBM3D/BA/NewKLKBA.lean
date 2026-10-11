@@ -22,8 +22,10 @@ The generic theorem `stNewKLKgL'_of` (`Chain/NewKLKGen.lean:617`) needs `NewKLKG
 family `baStep2Fam` (`BA/Step2BA.lean:157`, `S = 1`, `m = BAmF`), so the primed pins hold at BA.
 
 * `baNewKLKGenHyp` (target 1): F5-F9 at `fun sz E => baStep2Fam sz E`, for `3 ≤ d`, `κ, 𝔡 > 0`.
-* `baSTNewKLKgL'` (target 2): `STNewKLKgL' d (fun sz E => baStep2Fam sz E)`.
-* `baSTK2decaygL'` (target 3, BAT-F2): `STK2decaygL' d (fun sz E => baStep2Fam sz E)`.
+* `stNewKLKgL'_ba` (target 2): `STNewKLKgL' d (fun sz E => baStep2Fam sz E)`.
+* `stK2decaygL'_ba` (target 3, BAT-F2): `STK2decaygL' d (fun sz E => baStep2Fam sz E)`.
+* §5 `NewKLKBA_GMM_small` (private): `‖G_u(g₀Ψ) - M‖_max ≤ u/((1-u)κ)`, the hypothesis of the pin at the pointwise instance of §6.
+* §6 compiled nonempty instances (`d = 3`, the BA datum `(gI, EI, mI)` of `EKPinsInst`, `u = 1/32`).
 
 F7 (BAT-F1) is the real BA `Θ`-convolution: `thetaKer = Θ_BA M^{(σσ')}` (`Step2Kern_thetaKer_BA`), whose entries decay as
 `‖(Θ M^{(σσ')})_{ab}‖ ≤ Q₀ 𝒯_u(|a-b|_∞)` for every `0 ≤ u < 1` (`NewKLKBA_tail`: `u ≥ 1/2` from the resolvent identity and
@@ -555,7 +557,7 @@ variable {d : ℕ}
 
 /-- **Target 2: the BA pin `STNewKLKgL'`** (`lem:newKLK` at the block Anderson carrier, `δ₀ = κ/2`): the generic theorem
 `stNewKLKgL'_of` (`Chain/NewKLKGen.lean:617`) with `baNewKLKGenHyp` for every `κ, 𝔡 > 0`; the constant `C` is the one it gives. -/
-theorem stNewKLKgL'_ba : STNewKLKgL' d (fun sz E => baStep2Fam sz E) :=
+theorem stNewKLKgL'_ba (d : ℕ) : STNewKLKgL' d (fun sz E => baStep2Fam sz E) :=
   stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => baNewKLKGenHyp hd κ 𝔡 hκ h𝔡
 
 /-- **Target 3 (BAT-F2): the BA pin `STK2decaygL'`**, the BA twin of `stK2decay_holds` (`Induction/Step2K2.lean:132`):
@@ -600,5 +602,224 @@ theorem stK2decaygL'_ba (d : ℕ) : STK2decaygL' d (fun sz E => baStep2Fam sz E)
           ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ)) := by ring
 
 end Pins
+
+/-! ## 5. The flow matrix at time `0` is a small perturbation of `M`: a Hermitian `H` with `‖G_u - M‖_max` small (for the instance) -/
+
+section GMMSmall
+
+variable {d : ℕ}
+
+/-- The flow matrix at disorder `0`, `g₀ Ψ`, is Hermitian (`PsiI_isHermitian`, `g₀` real). -/
+private theorem NewKLKBA_hermitian (sz : Sizes d) (n : ℕ) :
+    ((sz.lam n : ℂ) • PsiI d (sz.L n) (sz.W n)).IsHermitian := by
+  unfold Matrix.IsHermitian
+  rw [Matrix.conjTranspose_smul, (PsiI_isHermitian d (sz.L n) (sz.W n)).eq,
+    show star (sz.lam n : ℂ) = (sz.lam n : ℂ) from Complex.conj_ofReal _]
+
+/-- **`‖G_u(g₀Ψ) - M‖_max ≤ u/((1-u) κ)`** at the unperturbed Hermitian matrix `H = g₀ Ψ` (the flow matrix at disorder `0`), where
+`M = (g₀Ψ - (E + m))⁻¹` is the non-scalar BA `M` and `G_u = (g₀Ψ - z_u)⁻¹`, `z_u = E + (1-u) m`.  Resolvent identity
+`G - M = -u m M G`, the Ward identities `Σ_z |M_{zx}|² = 1` and `Σ_z |G_{zy}|² = Im G_{yy}/Im z_u ≤ (Im z_u)⁻²`, Cauchy-Schwarz,
+`|m| ≤ 1`, `κ ≤ Im m`.  Used only for the pointwise instance of the pin (the pin takes `‖GMM‖ ≤ δ₀` as a hypothesis). -/
+private theorem NewKLKBA_GMM_small {κ : ℝ} (hκ : 0 < κ) (sz : Sizes d) (n : ℕ) (E : ℝ)
+    (hIm : κ ≤ ((baStep2Fam sz (fun _ => E)).m n).im) {u : ℝ} (hu0 : 0 ≤ u) (hu1 : u < 1)
+    (x y : Idx d (sz.L n) (sz.W n)) :
+    ‖(baStep2Fam sz (fun _ => E)).GMM n u ((sz.lam n : ℂ) • PsiI d (sz.L n) (sz.W n)) x y‖ ≤
+      u / ((1 - u) * κ) := by
+  have hr := NewKLKBA_real hκ sz n E hIm
+  have hmpos : 0 < (BAmF sz sz.lam (fun _ => E) n).im := hr.1.1
+  have hmκ : κ ≤ (BAmF sz sz.lam (fun _ => E) n).im := hIm
+  have hv : 0 < 1 - u := by linarith
+  have hm1 : ‖BAmF sz sz.lam (fun _ => E) n‖ ≤ 1 :=
+    BAm_norm_le_one d (sz.L n) (sz.lam n) (E : ℂ) _ (by simp) hr.1
+  set m : ℂ := BAmF sz sz.lam (fun _ => E) n with hm
+  set Hm : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+    (sz.lam n : ℂ) • PsiI d (sz.L n) (sz.W n) with hHm
+  have hH : Hm.IsHermitian := NewKLKBA_hermitian sz n
+  set w₁ : ℂ := (E : ℂ) + m with hw₁def
+  set ζ : ℂ := ztOf m E u with hζdef
+  have hw₁ : w₁.im = m.im := by simp [hw₁def]
+  have hζ : ζ.im = (1 - u) * m.im := ztOf_im _ _ _
+  have hζpos : 0 < ζ.im := by rw [hζ]; positivity
+  have hw₁pos : 0 < w₁.im := by rw [hw₁]; exact hmpos
+  set M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+    Ring.inverse (Hm - w₁ • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) with hMdef
+  set G : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+    Ring.inverse (Hm - ζ • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) with hGdef
+  have hMfine : BAMfine sz sz.lam (fun _ => E) n = M := rfl
+  have hGMM : (baStep2Fam sz (fun _ => E)).GMM n u Hm x y = (G - M) x y := rfl
+  have hA := isUnit_sub_smul_of_isHermitian hH hζpos.ne'
+  have hB := isUnit_sub_smul_of_isHermitian hH hw₁pos.ne'
+  have hdiff : G - M = (-((u : ℂ) * m)) • (M * G) := by
+    have h1 : M * (Hm - w₁ • (1 : Matrix _ _ ℂ)) = 1 := Ring.inverse_mul_cancel _ hB
+    have h2 : (Hm - ζ • (1 : Matrix _ _ ℂ)) * G = 1 := Ring.mul_inverse_cancel _ hA
+    have hzw : ζ - w₁ = -((u : ℂ) * m) := by
+      simp only [hζdef, hw₁def, ztOf]; ring
+    calc G - M = M * (Hm - w₁ • (1 : Matrix _ _ ℂ)) * G - M * ((Hm - ζ • (1 : Matrix _ _ ℂ)) * G) := by
+          rw [h1, h2, one_mul, mul_one]
+      _ = M * (((Hm - w₁ • (1 : Matrix _ _ ℂ))) - (Hm - ζ • (1 : Matrix _ _ ℂ))) * G := by
+          simp only [mul_sub, sub_mul, mul_assoc]
+      _ = M * ((ζ - w₁) • (1 : Matrix _ _ ℂ)) * G := by
+          congr 2
+          rw [sub_smul]; abel
+      _ = _ := by
+          rw [hzw, Matrix.mul_smul, Matrix.mul_one, Matrix.smul_mul]
+  have hentry : (G - M) x y = (-((u : ℂ) * m)) * ∑ z, M x z * G z y := by
+    rw [hdiff, Matrix.smul_apply, smul_eq_mul, Matrix.mul_apply]
+  -- the diagonal of `M`
+  have hMdiag : ∀ z : Idx d (sz.L n) (sz.W n), M z z = m := by
+    intro z
+    change BAMfine sz sz.lam (fun _ => E) n z z = m
+    rw [BAMfine_eq sz sz.lam (fun _ => E) n hmpos z z]
+    simp only [ite_true]
+    exact BAMB_diag_eq d (sz.L n) (sz.lam n) (E : ℂ) _ hr.1 _
+  have hMsymm : ∀ a b : Idx d (sz.L n) (sz.W n), M a b = M b a := by
+    intro a b
+    change BAMfine sz sz.lam (fun _ => E) n a b = BAMfine sz sz.lam (fun _ => E) n b a
+    rw [BAMfine_eq sz sz.lam (fun _ => E) n hmpos a b, BAMfine_eq sz sz.lam (fun _ => E) n hmpos b a]
+    split_ifs with h1 h2 h2
+    · exact BAMB_symm d (sz.L n) (sz.lam n) (E : ℂ) _ _ _
+    · exact absurd h1.symm h2
+    · exact absurd h2.symm h1
+    · rfl
+  -- Ward for `M`: `Σ_z |M_{zx}|² = 1`
+  have hWardM : ∑ z, ‖M x z‖ ^ 2 = 1 := by
+    have h := BAimInv_diag hH hw₁pos x
+    rw [← hMdef, hMdiag x, hw₁] at h
+    have h2 : ∑ z, ‖M x z‖ ^ 2 = ∑ z, ‖M z x‖ ^ 2 :=
+      Finset.sum_congr rfl fun z _ => by rw [hMsymm x z]
+    rw [h2]
+    have : m.im * (∑ z, ‖M z x‖ ^ 2 - 1) = 0 := by nlinarith
+    rcases mul_eq_zero.1 this with h0 | h0
+    · exact absurd h0 hmpos.ne'
+    · linarith
+  -- Ward for `G`: `Σ_z |G_{zy}|² ≤ (Im ζ)⁻²`
+  have hWardG : ∑ z, ‖G z y‖ ^ 2 ≤ (ζ.im⁻¹) ^ 2 := by
+    have h := BAimInv_diag hH hζpos y
+    rw [← hGdef] at h
+    have hGy : ‖G y y‖ ≤ |ζ.im|⁻¹ := norm_inverse_entry_le hH hζpos.ne' y y
+    rw [abs_of_pos hζpos] at hGy
+    have him : (G y y).im ≤ ζ.im⁻¹ := (Complex.im_le_norm _).trans hGy
+    have h1 : ∑ z, ‖G z y‖ ^ 2 ≤ ζ.im⁻¹ / ζ.im := by
+      rw [le_div_iff₀ hζpos]; nlinarith [h, him]
+    calc ∑ z, ‖G z y‖ ^ 2 ≤ ζ.im⁻¹ / ζ.im := h1
+      _ = (ζ.im⁻¹) ^ 2 := by field_simp
+  have hCS : (∑ z, ‖M x z‖ * ‖G z y‖) ^ 2 ≤ (ζ.im⁻¹) ^ 2 := by
+    calc (∑ z, ‖M x z‖ * ‖G z y‖) ^ 2 ≤ (∑ z, ‖M x z‖ ^ 2) * ∑ z, ‖G z y‖ ^ 2 :=
+          Finset.sum_mul_sq_le_sq_mul_sq _ _ _
+      _ ≤ (ζ.im⁻¹) ^ 2 := by rw [hWardM, one_mul]; exact hWardG
+  have hS : ∑ z, ‖M x z‖ * ‖G z y‖ ≤ ζ.im⁻¹ :=
+    (le_abs_self _).trans (abs_le_of_sq_le_sq hCS (inv_nonneg.2 hζpos.le))
+  have hinv : ζ.im⁻¹ ≤ ((1 - u) * κ)⁻¹ :=
+    inv_anti₀ (by positivity) (by rw [hζ]; exact mul_le_mul_of_nonneg_left hmκ hv.le)
+  calc ‖(baStep2Fam sz (fun _ => E)).GMM n u Hm x y‖ = ‖(G - M) x y‖ := by rw [hGMM]
+    _ = u * ‖m‖ * ‖∑ z, M x z * G z y‖ := by
+        rw [hentry, norm_mul, norm_neg, norm_mul, Complex.norm_real, Real.norm_of_nonneg hu0]
+    _ ≤ u * ‖m‖ * ζ.im⁻¹ := by
+        refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+        exact (norm_sum_le _ _).trans (by simp only [norm_mul]; exact hS)
+    _ ≤ u * 1 * ((1 - u) * κ)⁻¹ := by
+        have h0 : 0 ≤ ζ.im⁻¹ := inv_nonneg.2 hζpos.le
+        have h1 : u * ‖m‖ ≤ u * 1 := mul_le_mul_of_nonneg_left hm1 hu0
+        calc u * ‖m‖ * ζ.im⁻¹ ≤ u * 1 * ζ.im⁻¹ := mul_le_mul_of_nonneg_right h1 h0
+          _ ≤ _ := mul_le_mul_of_nonneg_left hinv (by positivity)
+    _ = u / ((1 - u) * κ) := by rw [mul_one, div_eq_mul_inv]
+
+end GMMSmall
+
+/-! ## 6. Compiled nonempty instances (`d = 3`, the BA datum of `sz0` along `zSeq` at `n = 0`)
+
+The BA datum `(g₀, E, m) = (gI, EI, mI)` of `EKPinsInst` (`BA/EKPins.lean:643-645`): `d = 3`, `L = 4`, `W = 32`,
+`g₀ = √t₀/64 ≈ 0.0130 ≤ 1/64`, `E = EI ≈ 0`, `m = mI`, `Im m ≈ 0.9995`, `BAReal 3 4 gI (1/2) EI mI` (`hrI`, `BAflow_real` at the merged flow
+`flow_sz0`).  The sizes are `szI = sz0.withLam (BAflowLam0 sz0 zSeq)`, so that `(baStep2Fam szI E).m 0 = mI`
+(`baStep2Fam_m`, `rfl`).  Pin constants `κ = 1/2`, `𝔡 = 1` (`lam 0 = gI ≤ 1 = 𝔡⁻¹`).  Every hypothesis is discharged by a merged
+theorem: no external pin, no `N = 0`, no collapsed window.  The pointwise instance of the pin is at `u = 1/32`, `D = 1`, `ℓ = 2`
+(the indicator `1_{ℓ≥1}` is on), `H = g₀ Ψ` (Hermitian, `G_u(H) ≠ M`: `‖G_u - M‖_max ≤ 2/31 ≤ 1/4 = δ₀` by `NewKLKBA_GMM_small`). -/
+
+namespace NewKLKBAInst
+
+open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst RBM.BA.EKPinsInst
+
+/-- The BA sizes of the instances: `sz0` with the flow coupling `g₀ = BAflowLam0 sz0 zSeq`. -/
+private abbrev szI : Sizes 3 := sz0.withLam (BAflowLam0 sz0 zSeq)
+
+/-- The BA carrier at the instance: `baStep2Fam szI (fun _ => EI)`. -/
+private abbrev cmI : Step2Mat szI := baStep2Fam szI (fun _ => EI)
+
+private theorem szI_lam : szI.lam 0 = gI := rfl
+
+private theorem szI_lam_pos : 0 < szI.lam 0 := gI_pos
+
+private theorem szI_lam_le : szI.lam 0 ≤ ((1 : ℝ))⁻¹ := gI_le.trans (by norm_num)
+
+private theorem szI_im : (1 / 2 : ℝ) ≤ (cmI.m 0).im := hrI.2
+
+private theorem szI_L : (2 : ℝ) ≤ ((szI.L 0 : ℕ) : ℝ) := by
+  have : szI.L 0 = 4 := sz0_values.1
+  rw [this]; norm_num
+
+/-- **Target 1 at the BA datum**: `baNewKLKGenHyp` at `d = 3`, `κ = 1/2`, `𝔡 = 1`, and its five clauses F5-F9 applied at `(szI, n = 0, E = EI)`,
+`u = 1/32`, `ℓ' = 2`, `D' = 1` (every deterministic hypothesis discharged; `K_c, C_K` are the constants of `baNewKLKGenHyp`). -/
+example : ∃ K_c C_K : ℝ, 0 ≤ K_c ∧ 0 ≤ C_K ∧
+    ((∀ x y, cmI.S 0 x y ≠ 0 → zdistInf 3 (szI.L 0) (x - y) ≤ 1) ∧ (∀ x, ∑ y, ‖cmI.S 0 x y‖ ≤ 1) ∧
+      (∀ x y, ‖cmI.S 0 x y‖ = ‖cmI.S 0 y x‖)) ∧
+    ‖cmI.m 0‖ ≤ 1 ∧
+    (∀ (s s' : Bool) (a a' : Zd 3 (szI.L 0)),
+      ∑ b, ‖Step2Gen_thetaKer cmI.toFlowFM 0 s s' (1 / 32) a b‖ *
+          tailW 3 (szI.L 0) (szI.lam 0) (1 / 32) 2 ((szI.W 0 : ℕ) : ℝ) 1 ((zdistInf 3 (szI.L 0) (b - a') : ℕ) : ℝ) ≤
+        K_c / (1 - 1 / 32) *
+          tailW 3 (szI.L 0) (szI.lam 0) (1 / 32) 2 ((szI.W 0 : ℕ) : ℝ) 1 ((zdistInf 3 (szI.L 0) (a - a') : ℕ) : ℝ)) ∧
+    (∀ σ : Fin 2 → Bool,
+      (∀ a₁ : Zd 3 (szI.L 0), ∑ x, ‖cmI.K 0 (1 / 32) σ ![x, a₁]‖ ≤
+        C_K * ((((szI.W 0 : ℕ) : ℝ) ^ 3)⁻¹ * (1 - 1 / 32)⁻¹)) ∧
+      (∀ a₀ : Zd 3 (szI.L 0), ∑ y, ‖cmI.K 0 (1 / 32) σ ![a₀, y]‖ ≤
+        C_K * ((((szI.W 0 : ℕ) : ℝ) ^ 3)⁻¹ * (1 - 1 / 32)⁻¹))) ∧
+    (∃ ζ : ℂ, ζ.im = (1 - 1 / 32) * (cmI.m 0).im ∧
+      (∀ (H : Matrix (Idx 3 (szI.L 0) (szI.W 0)) (Idx 3 (szI.L 0) (szI.W 0)) ℂ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (szI.L 0)),
+        cmI.LM 0 (1 / 32) H σ a = loopFine 3 (szI.L 0) (szI.W 0) H ζ σ a) ∧
+      (∀ (H : Matrix (Idx 3 (szI.L 0) (szI.W 0)) (Idx 3 (szI.L 0) (szI.W 0)) ℂ) x, cmI.GMM 0 (1 / 32) H x x = Gres H ζ true x x - cmI.m 0)) := by
+  obtain ⟨K_c, C_K, hKc, hCK, h5, h6, h7, h8, h9⟩ :=
+    baNewKLKGenHyp (d := 3) (by norm_num) (1 / 2) 1 (by norm_num) (by norm_num)
+  exact ⟨K_c, C_K, hKc, hCK, h5 szI 0 EI szI_lam_pos szI_lam_le szI_im, h6 szI 0 EI szI_lam_pos szI_lam_le szI_im,
+    fun s s' a a' => h7 szI 0 EI (1 / 32) szI_lam_pos szI_lam_le szI_im (by norm_num) (by norm_num) s s' 2 1
+      (by norm_num) (by norm_num) a a',
+    fun σ => h8 szI 0 EI (1 / 32) szI_lam_pos szI_lam_le szI_im (by norm_num) (by norm_num) σ,
+    h9 szI 0 EI (1 / 32) szI_lam_pos szI_lam_le szI_im (by norm_num) (by norm_num)⟩
+
+/-- The flow matrix at disorder `0` at the instance: `H = g₀ Ψ` (Hermitian, `NewKLKBA_hermitian`). -/
+private abbrev HI : Matrix (Idx 3 (szI.L 0) (szI.W 0)) (Idx 3 (szI.L 0) (szI.W 0)) ℂ :=
+  (szI.lam 0 : ℂ) • PsiI 3 (szI.L 0) (szI.W 0)
+
+/-- **Target 2 at the BA datum**: the pin `STNewKLKgL'` holds at `d = 3` (`stNewKLKgL'_ba`), and its conclusion `STNewKLKAtgL'` at
+`κ = 1/2`, `𝔡 = 1`, `δ₀ = κ/2 = 1/4` (the `δ₀` of `stNewKLKAtgL'_of`, through which `stNewKLKgL'_ba` is built) is applied at
+`(szI, n = 0, E = EI, u = 1/32, D = 1, ℓ = 2, H = g₀ Ψ)`, all `σ`, `a`: the hypothesis `‖G_u - M‖_max ≤ δ₀` is `NewKLKBA_GMM_small`
+(`‖G_u - M‖_max ≤ 2/31`); `ℓ = 2 ≤ L = 4`. -/
+example : STNewKLKgL' 3 (fun sz E => baStep2Fam sz E) := stNewKLKgL'_ba 3
+
+example : ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (szI.L 0)),
+    ‖STthetaOpg cmI 0 (1 / 32) σ (STLKMg cmI 0 (1 / 32) HI σ) a‖ ≤
+        C / (1 - 1 / 32) * STJhatMg cmI 0 1 2 (1 / 32) HI * STprof szI 0 (1 / 32) 1 2 (a 0) (a 1) ∧
+      ‖STELKLKMg cmI 0 (1 / 32) HI σ a‖ ≤
+        C / (1 - 1 / 32) * (STJhatMg cmI 0 1 2 (1 / 32) HI +
+          STJhatMg cmI 0 1 2 (1 / 32) HI ^ 2 * (if 1 ≤ (2 : ℝ) then 1 else 0)) *
+          STprof szI 0 (1 / 32) 1 2 (a 0) (a 1) := by
+  obtain ⟨C, hC, h⟩ := stNewKLKAtgL'_of (d := 3) (by norm_num) (1 / 2) 1 (by norm_num) _
+    (baNewKLKGenHyp (d := 3) (by norm_num) (1 / 2) 1 (by norm_num) (by norm_num))
+  refine ⟨C, hC, fun σ a => ?_⟩
+  exact h szI 0 EI (1 / 32) 1 2 szI_lam_pos szI_lam_le szI_im (by norm_num) (by norm_num) zero_le_one
+    (by norm_num) szI_L HI (NewKLKBA_hermitian szI 0)
+    (fun x y => (NewKLKBA_GMM_small (κ := 1 / 2) (by norm_num) szI 0 EI szI_im (u := 1 / 32) (by norm_num)
+      (by norm_num) x y).trans (by norm_num)) σ a
+
+/-- **Target 3 (BAT-F2) at the BA datum**: the pin `STK2decaygL'` at `d = 3` (`stK2decaygL'_ba`), applied at `κ = 1/2`, `𝔡 = 1`,
+`(szI, n = 0, E = EI, u = 1/32, D = 1)`, all `σ`, `a`. -/
+example : STK2decaygL' 3 (fun sz E => baStep2Fam sz E) := stK2decaygL'_ba 3
+
+example : ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (szI.L 0)),
+    ‖cmI.K 0 (1 / 32) σ a‖ ≤ C * STprof szI 0 (1 / 32) 1 ((szI.L 0 : ℕ) : ℝ) (a 0) (a 1) := by
+  obtain ⟨C, hC, h⟩ := stK2decaygL'_ba 3 (by norm_num) (1 / 2) 1 (by norm_num) (by norm_num)
+  exact ⟨C, hC, fun σ a => h szI 0 EI (1 / 32) 1 szI_lam_pos szI_lam_le szI_im (by norm_num) (by norm_num)
+    zero_le_one σ a⟩
+
+end NewKLKBAInst
 
 end RBM.BA
