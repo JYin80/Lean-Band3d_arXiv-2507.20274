@@ -305,4 +305,84 @@ theorem baKward_holds (d : ℕ) : BAKward d :=
 
 end Reduction
 
+/-! ## 3. Compiled nonempty instances
+
+Flow data: `d = 3`, `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2097152`),
+`zSeq`, `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`, proved).  The pins
+`inst_BAKbound`, `inst_BAKward` are the theorems `baKbound_holds`, `baKward_holds` at this data: no hypothesis is left, since the uniform
+bounds `U` are the proved `baKBoundAt_holds`, `baWardIneq_holds`.  Deterministic datum: the flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`;
+`P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`, `0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `W = 2` (`W^d = 8`), `t = 1/2`, `τ = 1`, distinct labels of `Z_4^3`. -/
+
+/-- **`inst_BAKbound`**: the pin `BAKbound` at `d = 3`, `sz0`, `zSeq`; no hypothesis left. -/
+theorem inst_BAKbound :
+    STKboundgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) :=
+  baKbound_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
+    SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0
+
+/-- **`inst_BAKward`**: the pin `BAKward` at `d = 3`, `sz0`, `zSeq`; no hypothesis left. -/
+theorem inst_BAKward :
+    STKwardgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) :=
+  baKward_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
+    SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0
+
+/-- The two pins at `d = 3` as statements. -/
+example : BAKbound 3 ∧ BAKward 3 := ⟨baKbound_holds 3, baKward_holds 3⟩
+
+/-- `inst_BAKbound` at the time sequence `τ ≡ 1/2` and the loop length `k = 4`: `max_{σ,a} |𝒦^{(4)}_{1/2,σ,a}| ≺ (W^{-d} B_{1/2,0})^3` along `sz0`. -/
+example :
+    PrecL SizesInst.sz0 (Sizes.seqP (SizesInst.sz0.withLam 0))
+      (U := fun n => (Fin 4 → Bool) × (Fin 4 → Zd 3 (SizesInst.sz0.L n)))
+      (fun n p _ => ‖(baFMz SizesInst.sz0 FlowPinsInst.zSeq).K n (1 / 2) p.1 p.2‖)
+      (fun n _ _ => (SizesInst.sz0.Bctl n (1 / 2)) ^ (4 - 1)) :=
+  inst_BAKbound (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 4 (by norm_num)
+
+/-- `inst_BAKward` at `τ ≡ 1/2` and `k = 3`: `max_σ Σ_{a_3} |𝒦^{(3)}_{1/2,σ,a}| ≺ (W^d η_{1/2})⁻¹ (W^{-d} B_{1/2,0})` along `sz0`; the last label is summed. -/
+example :
+    PrecL SizesInst.sz0 (Sizes.seqP (SizesInst.sz0.withLam 0))
+      (U := fun n => (Fin 3 → Bool) × (Fin (3 - 1) → Zd 3 (SizesInst.sz0.L n)))
+      (fun n p _ => ∑ x : Zd 3 (SizesInst.sz0.L n),
+        ‖(baFMz SizesInst.sz0 FlowPinsInst.zSeq).K n (1 / 2) p.1
+          (fun i : Fin 3 => if h : (i : ℕ) < 3 - 1 then p.2 ⟨i, h⟩ else x)‖)
+      (fun n _ _ => (((SizesInst.sz0.W n : ℕ) : ℝ) ^ 3 *
+          (baFMz SizesInst.sz0 FlowPinsInst.zSeq).eta n (1 / 2))⁻¹ * (SizesInst.sz0.Bctl n (1 / 2)) ^ (3 - 2)) :=
+  inst_BAKward (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 3 (by norm_num)
+
+/-- **The bridge `bandFM_STKward` applied** at the band flow `(sz0, z0)`: the proved band `STKward` (`stKward_of_flow`) is the generic
+`STKwardgL` at the band carrier and the band law. -/
+example : STKwardgL (bandFM SizesInst.sz0 (STflowE InductionDefsInst.z0)) (Sizes.seqP SizesInst.sz0) :=
+  (bandFM_STKward SizesInst.sz0 (STflowE InductionDefsInst.z0)).1
+    (stKward_of_flow SizesInst.sz0 le_rfl (by norm_num) InductionDefsInst.flow_z0)
+
+namespace KBoundInst
+
+open RBM.BA.MFixedPointInst
+
+/-- **`baKBoundAt_holds`** at the flow point, `n = 4` (`n ≥ 4`: the layers), `σ = (+,+,-,+)`, distinct labels, `W = 2`, `t = 1/2`, `τ = 1`:
+`|𝒦^{(4)}| ≤ C L^τ (W^{-d} B_{t,0})^{3}`. -/
+example : ∃ C : ℝ, 0 < C ∧
+    ‖BAKsol 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (PropSpin P.m0) (1 / 2)
+        (KLloopOf 3 4 ![true, true, false, true] ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0]])‖
+      ≤ C * (4 : ℝ) ^ (1 : ℝ) * (((2 : ℝ) ^ 3)⁻¹ * Bparam 3 4 P.g0 (1 / 2) 0) ^ (4 - 1) := by
+  obtain ⟨C, hC, H⟩ := baKBoundAt_holds 3 (Λ := 10) (κ := P.m0.im) le_rfl (by norm_num) P.real.1.1 4 (by norm_num) 1 one_pos
+  exact ⟨C, hC, H 4 (by norm_num) 2 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num) _ _⟩
+
+/-- `baKBoundAt_holds` at the flow point, `n = 5`, `σ = (+,+,-,+,+)` (the two-edge layer has a tree), `W = 2`, `t = 1/2`, `τ = 1`. -/
+example : ∃ C : ℝ, 0 < C ∧
+    ‖BAKsol 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (PropSpin P.m0) (1 / 2)
+        (KLloopOf 3 4 ![true, true, false, true, true]
+          ![![0, 0, 0], ![1, 0, 0], ![2, 0, 0], ![3, 0, 0], ![0, 1, 0]])‖
+      ≤ C * (4 : ℝ) ^ (1 : ℝ) * (((2 : ℝ) ^ 3)⁻¹ * Bparam 3 4 P.g0 (1 / 2) 0) ^ (5 - 1) := by
+  obtain ⟨C, hC, H⟩ := baKBoundAt_holds 3 (Λ := 10) (κ := P.m0.im) le_rfl (by norm_num) P.real.1.1 5 (by norm_num) 1 one_pos
+  exact ⟨C, hC, H 4 (by norm_num) 2 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num) _ _⟩
+
+/-- `baKBoundAt_holds` at the flow point, `n = 3` (the base `baKBoundAt_three`), `σ = (+,-,+)`, `W = 2`, `t = 1/2`, `τ = 1`. -/
+example : ∃ C : ℝ, 0 < C ∧
+    ‖BAKsol 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (PropSpin P.m0) (1 / 2)
+        (KLloopOf 3 4 ![true, false, true] ![![0, 0, 0], ![1, 0, 0], ![2, 1, 0]])‖
+      ≤ C * (4 : ℝ) ^ (1 : ℝ) * (((2 : ℝ) ^ 3)⁻¹ * Bparam 3 4 P.g0 (1 / 2) 0) ^ (3 - 1) := by
+  obtain ⟨C, hC, H⟩ := baKBoundAt_holds 3 (Λ := 10) (κ := P.m0.im) le_rfl (by norm_num) P.real.1.1 3 (by norm_num) 1 one_pos
+  exact ⟨C, hC, H 4 (by norm_num) 2 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num) _ _⟩
+
+end KBoundInst
+
 end RBM.BA
