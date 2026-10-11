@@ -568,6 +568,355 @@ theorem BAAtom_term_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d
 
 end Pointwise
 
+/-! ## 5. The roots of the molecular forest, the sum over the children (twin of `AuxGraph` §6-7, per-edge constants) -/
+
+section Roots
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- Two vertices joined by an edge of the shadow lie in one molecule of the shadow. -/
+private theorem BAAtom_molOf_eq_of_adj (Γ : LGraph E I) {u v : E ⊕ I} (h : Γ.adj u v = true) :
+    Γ.molOf u = Γ.molOf v := by
+  by_cases huv : u = v
+  · rw [huv]
+  · exact SimpleGraph.ConnectedComponent.eq.2
+      (SimpleGraph.Adj.reachable ((owx_molGraph_adj Γ u v).2 ⟨huv, h⟩))
+
+/-- The two ends of every `J`-edge lie in one molecule of the shadow. -/
+private theorem BAAtom_molOf_ends (Γ : BAGraph E I) (j : Γ.Jx) :
+    Γ.shadow.molOf (Γ.edgeEnds j).1 = Γ.shadow.molOf (Γ.edgeEnds j).2 := by
+  refine BAAtom_molOf_eq_of_adj Γ.shadow ?_
+  unfold LGraph.adj
+  rw [Bool.or_eq_true]
+  left
+  rw [List.any_eq_true]
+  rcases j with j | j | j
+  · refine ⟨Γ.waved.get j, ?_, ?_⟩
+    · simp only [BAGraph.shadow, List.mem_append]
+      exact Or.inl (Or.inl (List.get_mem _ j))
+    · simp [BAGraph.edgeEnds]
+  · refine ⟨⟨false, true, (Γ.mdot.get j).x, (Γ.mdot.get j).y⟩, ?_, ?_⟩
+    · simp only [BAGraph.shadow, List.mem_append, List.mem_map]
+      exact Or.inl (Or.inr ⟨Γ.mdot.get j, List.get_mem _ j, rfl⟩)
+    · simp [BAGraph.edgeEnds]
+  · refine ⟨⟨false, true, (Γ.psi.get j).x, (Γ.psi.get j).y⟩, ?_, ?_⟩
+    · simp only [BAGraph.shadow, List.mem_append, List.mem_map]
+      exact Or.inr ⟨Γ.psi.get j, List.get_mem _ j, rfl⟩
+    · simp [BAGraph.edgeEnds]
+
+/-- **The roots of the molecular forest** (`BAGraph.exists_forest` with the root map): in the molecular forest of a graph without
+`=`-dotted edges the children are exactly the internal vertices outside the range of an injective map `root` that picks one
+vertex in every internal molecule of the shadow (`n_M` roots: `|C| + n_M = |I|`). -/
+theorem BAAtom_exists_roots (Γ : BAGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = false) :
+    ∃ (root : LGraph.AuxIMol Γ.shadow → I) (C : Finset I) (par : I → E ⊕ I) (edge : I → Option Γ.Jx) (ρ : I → ℕ),
+      Function.Injective root ∧ (∀ c, Γ.shadow.molOf (Sum.inr (root c)) = c.1) ∧
+      (∀ i, i ∈ C ↔ i ∉ Set.range root) ∧
+      (C.filter fun c => ∃ j, edge c = some (Sum.inl j)).card + Γ.nM = Γ.nA ∧
+      (∀ c ∈ C, ∀ w, par c = Sum.inr w → ρ w < ρ c) ∧
+      (∀ c ∈ C, ∃ j, edge c = some j ∧
+        (((Γ.edgeEnds j).1 = Sum.inr c ∧ (Γ.edgeEnds j).2 = par c) ∨
+         ((Γ.edgeEnds j).2 = Sum.inr c ∧ (Γ.edgeEnds j).1 = par c))) ∧
+      (∀ c₁ ∈ C, ∀ c₂ ∈ C, edge c₁ = edge c₂ → c₁ = c₂) := by
+  classical
+  obtain ⟨C, par, edge, ρ, hcard, hgcard, hrank, hedge, hinj⟩ := Γ.exists_forest hD
+  have hmolpar : ∀ c ∈ C, Γ.shadow.molOf (par c) = Γ.shadow.molOf (Sum.inr c) := by
+    intro c hc
+    obtain ⟨j, hj, hends⟩ := hedge c hc
+    have := BAAtom_molOf_ends Γ j
+    rcases hends with ⟨h1, h2⟩ | ⟨h1, h2⟩
+    · rw [h1, h2] at this; exact this.symm
+    · rw [h1, h2] at this; exact this
+  have hreach : ∀ n : ℕ, ∀ v : I, ρ v = n →
+      ((∃ a : E, Γ.shadow.molOf (Sum.inl a) = Γ.shadow.molOf (Sum.inr v)) ∨
+        ∃ w : I, w ∉ C ∧ Γ.shadow.molOf (Sum.inr w) = Γ.shadow.molOf (Sum.inr v)) := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+      intro v hv
+      by_cases hvC : v ∈ C
+      · rcases hpar : par v with a | w
+        · left
+          refine ⟨a, ?_⟩
+          rw [← hmolpar v hvC, hpar]
+        · have hlt := hrank v hvC w hpar
+          have hmw : Γ.shadow.molOf (Sum.inr w) = Γ.shadow.molOf (Sum.inr v) := by
+            rw [← hpar]; exact hmolpar v hvC
+          rcases ih (ρ w) (hv ▸ hlt) w rfl with ⟨a, ha⟩ | ⟨w', hw'C, hw'⟩
+          · left; exact ⟨a, ha.trans hmw⟩
+          · right; exact ⟨w', hw'C, hw'.trans hmw⟩
+      · right; exact ⟨v, hvC, rfl⟩
+  have hMi : ∀ c : LGraph.AuxIMol Γ.shadow, ∃ w : I, w ∉ C ∧ Γ.shadow.molOf (Sum.inr w) = c.1 := by
+    rintro ⟨c, hc⟩
+    induction c using SimpleGraph.ConnectedComponent.ind with | h v => ?_
+    rcases v with a | i
+    · exact absurd ⟨a, rfl⟩ hc
+    · rcases hreach _ i rfl with ⟨a, ha⟩ | ⟨w, hwC, hw⟩
+      · exact absurd ⟨a, ha⟩ hc
+      · exact ⟨w, hwC, hw⟩
+  choose root hrootC hrootmol using hMi
+  have hinjroot : Function.Injective root := by
+    intro c c' h
+    apply Subtype.ext
+    rw [← hrootmol c, ← hrootmol c', h]
+  refine ⟨root, C, par, edge, ρ, hinjroot, hrootmol, ?_, hgcard, hrank, hedge, hinj⟩
+  have : Fintype (LGraph.AuxIMol Γ.shadow) := Fintype.ofFinite _
+  have hsub : (Finset.univ.image root) ⊆ Cᶜ := by
+    intro w hw
+    obtain ⟨c, -, rfl⟩ := Finset.mem_image.1 hw
+    exact Finset.mem_compl.2 (hrootC c)
+  have hAuxCard : Fintype.card (LGraph.AuxIMol Γ.shadow) = Γ.nM := by
+    rw [auxGraph_card_aux, BAGraph.shadow_nM]
+  have hc1 : (Finset.univ.image root).card = Γ.nM := by
+    rw [Finset.card_image_of_injective _ hinjroot, Finset.card_univ, hAuxCard]
+  have hc2 : Cᶜ.card = Γ.nM := by
+    rw [Finset.card_compl]; omega
+  have heq : Finset.univ.image root = Cᶜ := Finset.eq_of_subset_of_card_le hsub (by omega)
+  intro i
+  constructor
+  · intro hi ⟨c, hc⟩
+    exact hrootC c (hc ▸ hi)
+  · intro hi
+    by_contra hnC
+    have : i ∈ Cᶜ := Finset.mem_compl.2 hnC
+    rw [← heq] at this
+    obtain ⟨c, -, hc⟩ := Finset.mem_image.1 this
+    exact hi ⟨c, hc⟩
+
+end Roots
+
+section ForestSum
+
+/-- **The sum over the children with the roots as external labels, per-edge constants** (the BA twin of
+`auxGraph_forest_roots`, `AuxGraph.lean:551`, from `BASizeClaim_forest_sum_le` in place of `lwForest_sum_le`). -/
+theorem BAAtom_forest_roots {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] {E I Rt J : Type}
+    [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype Rt] [DecidableEq Rt] [Fintype J] [DecidableEq J]
+    (ℓe : E → ι) (u v : J → E ⊕ I) (f : J → ι → ι → ℝ) (a K : J → ℝ)
+    (hf0 : ∀ j x y, 0 ≤ f j x y) (hfa : ∀ j x y, f j x y ≤ a j)
+    (hrow : ∀ j x, ∑ y, f j x y ≤ K j) (hcol : ∀ j y, ∑ x, f j x y ≤ K j)
+    (root : Rt → I) (hroot : Function.Injective root) (C : Finset I) (hC : ∀ i, i ∈ C ↔ i ∉ Set.range root)
+    (par : I → E ⊕ I) (edge : C → J) (ρ : I → ℕ) (hinj : Function.Injective edge)
+    (hedge : ∀ c : C, (u (edge c) = Sum.inr c.1 ∧ v (edge c) = par c.1) ∨
+      (v (edge c) = Sum.inr c.1 ∧ u (edge c) = par c.1))
+    (hrank : ∀ c : C, ∀ w, par c.1 = Sum.inr w → ρ w < ρ c.1)
+    (Φ : (Rt → ι) → ℝ) (hΦ : ∀ x, 0 ≤ Φ x) :
+    ∑ ℓ : I → ι, Φ (fun t => ℓ (root t)) * ∏ j, f j (Sum.elim ℓe ℓ (u j)) (Sum.elim ℓe ℓ (v j)) ≤
+      (∑ x : Rt → ι, Φ x) * ((∏ c : C, K (edge c)) * ∏ j ∈ (Finset.univ.image edge)ᶜ, a j) := by
+  classical
+  let eI : Rt ⊕ C ≃ I :=
+    (Equiv.sumCongr (Equiv.ofInjective root hroot) (Equiv.subtypeEquivRight hC)).trans
+      (Equiv.sumCompl (· ∈ Set.range root))
+  have heIl : ∀ t, eI (Sum.inl t) = root t := fun t => rfl
+  have heIr : ∀ c : C, eI (Sum.inr c) = c.1 := fun c => rfl
+  let e1 : (I → ι) ≃ (Rt → ι) × (C → ι) :=
+    (Equiv.arrowCongr eI.symm (Equiv.refl ι)).trans (Equiv.sumArrowEquivProdArrow Rt C ι)
+  have hsymm : ∀ (x : Rt → ι) (y : C → ι) (i : I), e1.symm (x, y) i = Sum.elim x y (eI.symm i) := fun _ _ _ => rfl
+  have hcardI : Fintype.card Rt + Fintype.card C = Fintype.card I := by
+    rw [← Fintype.card_sum]; exact Fintype.card_congr eI
+  -- the relabelling of the vertices
+  let φ : E ⊕ I → (E ⊕ Rt) ⊕ C := fun x => match x with
+    | Sum.inl a => Sum.inl (Sum.inl a)
+    | Sum.inr i => Sum.elim (fun m => Sum.inl (Sum.inr m)) Sum.inr (eI.symm i)
+  have hφ : ∀ (x : Rt → ι) (y : C → ι) (z : E ⊕ I),
+      Sum.elim (Sum.elim ℓe x) y (φ z) = Sum.elim ℓe (e1.symm (x, y)) z := by
+    intro x y z
+    rcases z with a | i
+    · rfl
+    · rw [Sum.elim_inr, hsymm]
+      change Sum.elim (Sum.elim ℓe x) y (Sum.elim (fun m => Sum.inl (Sum.inr m)) Sum.inr (eI.symm i)) = _
+      rcases eI.symm i with m | c <;> rfl
+  have hroots : ∀ (x : Rt → ι) (y : C → ι) (t : Rt), e1.symm (x, y) (root t) = x t := by
+    intro x y t
+    rw [hsymm]
+    have : eI.symm (root t) = Sum.inl t := by rw [Equiv.symm_apply_eq]; rfl
+    rw [this]; rfl
+  have hN : (0 : ℝ) < Fintype.card ι := Nat.cast_pos.2 Fintype.card_pos
+  -- the bound for fixed roots
+  have hfix : ∀ x : Rt → ι, ∑ y : C → ι,
+      ∏ j, f j (Sum.elim ℓe (e1.symm (x, y)) (u j)) (Sum.elim ℓe (e1.symm (x, y)) (v j)) ≤
+        (∏ c : C, K (edge c)) * ∏ j ∈ (Finset.univ.image edge)ᶜ, a j := by
+    intro x
+    have hmain := BASizeClaim_forest_sum_le (ι := ι) (E := E ⊕ Rt) (I := C) (J := J) (Sum.elim ℓe x)
+      (fun j => φ (u j)) (fun j => φ (v j)) f a K hf0 hfa hrow hcol (Finset.univ : Finset C)
+      (fun c => φ (par c.1)) edge (fun c => ρ c.1)
+      (fun c₁ _ c₂ _ h => hinj h)
+      (fun c _ => by
+        have hc : eI.symm c.1 = Sum.inr c := by rw [Equiv.symm_apply_eq]; rfl
+        have hφc : φ (Sum.inr c.1) = Sum.inr c := by
+          change Sum.elim (fun m => Sum.inl (Sum.inr m)) Sum.inr (eI.symm c.1) = _
+          rw [hc]; rfl
+        rcases hedge c with ⟨h1, h2⟩ | ⟨h1, h2⟩
+        · exact Or.inl ⟨by rw [h1, hφc], by rw [h2]⟩
+        · exact Or.inr ⟨by rw [h1, hφc], by rw [h2]⟩)
+      (fun c _ w hw => by
+        rcases hpc : par c.1 with a' | i
+        · rw [hpc] at hw
+          exact absurd hw (by simp [φ])
+        · rw [hpc] at hw
+          change Sum.elim (fun m => Sum.inl (Sum.inr m)) Sum.inr (eI.symm i) = Sum.inr w at hw
+          rcases hi : eI.symm i with m | c'
+          · rw [hi] at hw; exact absurd hw (by simp)
+          · rw [hi] at hw
+            have hcw : c' = w := Sum.inr_injective hw
+            have hi' : i = c'.1 := by rw [← heIr c', ← hi]; simp
+            have := hrank c w.1 (by rw [hpc, hi', hcw])
+            exact this)
+    have h' : ∀ y : C → ι, ∏ j, f j (Sum.elim ℓe (e1.symm (x, y)) (u j)) (Sum.elim ℓe (e1.symm (x, y)) (v j)) =
+        ∏ j, f j (Sum.elim (Sum.elim ℓe x) y (φ (u j))) (Sum.elim (Sum.elim ℓe x) y (φ (v j))) := by
+      intro y; simp only [hφ]
+    simp only [h', Finset.card_univ] at hmain ⊢
+    have hpos : 0 < (Fintype.card ι : ℝ) ^ Fintype.card C := pow_pos hN _
+    refine le_of_mul_le_mul_left ?_ hpos
+    calc (Fintype.card ι : ℝ) ^ Fintype.card C * ∑ y : C → ι,
+          ∏ j, f j (Sum.elim (Sum.elim ℓe x) y (φ (u j))) (Sum.elim (Sum.elim ℓe x) y (φ (v j)))
+        ≤ (Fintype.card ι : ℝ) ^ Fintype.card C * (∏ c ∈ (Finset.univ : Finset C), K (edge c)) *
+          ∏ j ∈ (Finset.univ.image edge)ᶜ, a j := hmain
+      _ = _ := by ring
+  -- the sum over the roots
+  calc ∑ ℓ : I → ι, Φ (fun t => ℓ (root t)) * ∏ j, f j (Sum.elim ℓe ℓ (u j)) (Sum.elim ℓe ℓ (v j))
+      = ∑ q : (Rt → ι) × (C → ι), Φ (fun t => e1.symm q (root t)) *
+          ∏ j, f j (Sum.elim ℓe (e1.symm q) (u j)) (Sum.elim ℓe (e1.symm q) (v j)) :=
+        (Equiv.sum_comp e1.symm (fun ℓ : I → ι => Φ (fun t => ℓ (root t)) *
+          ∏ j, f j (Sum.elim ℓe ℓ (u j)) (Sum.elim ℓe ℓ (v j)))).symm
+    _ = ∑ x : Rt → ι, ∑ y : C → ι, Φ x *
+          ∏ j, f j (Sum.elim ℓe (e1.symm (x, y)) (u j)) (Sum.elim ℓe (e1.symm (x, y)) (v j)) := by
+        rw [Fintype.sum_prod_type]
+        refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => ?_
+        simp only [hroots]
+    _ = ∑ x : Rt → ι, Φ x * ∑ y : C → ι,
+          ∏ j, f j (Sum.elim ℓe (e1.symm (x, y)) (u j)) (Sum.elim ℓe (e1.symm (x, y)) (v j)) := by
+        refine Finset.sum_congr rfl fun x _ => ?_
+        rw [Finset.mul_sum]
+    _ ≤ ∑ x : Rt → ι, Φ x * ((∏ c : C, K (edge c)) * ∏ j ∈ (Finset.univ.image edge)ᶜ, a j) :=
+        Finset.sum_le_sum fun x _ => mul_le_mul_of_nonneg_left (hfix x) (hΦ x)
+    _ = _ := by rw [Finset.sum_mul]
+
+end ForestSum
+
+section SumJ
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- The algebra of the forest bound: a tree edge costs `K_j`, every other edge `a_j`; the dotted edges cost `Kd` in both
+cases, the waved edges `K₁` or `a` (a copy of the private `BASizeClaim_alg_prod`, `BASizeClaim2.lean:193`). -/
+private theorem BAAtom_alg_prod {I : Type} [Fintype I] [DecidableEq I] {p q r : ℕ} (a K₁ Kd : ℝ)
+    (KJ aJ : Fin p ⊕ Fin q ⊕ Fin r → ℝ) (hK1 : ∀ jw, KJ (Sum.inl jw) = K₁) (hK2 : ∀ j', KJ (Sum.inr j') = Kd)
+    (ha1 : ∀ jw, aJ (Sum.inl jw) = a) (ha2 : ∀ j', aJ (Sum.inr j') = Kd)
+    (C : Finset I) (edgeT : I → Fin p ⊕ Fin q ⊕ Fin r) (hinj : Set.InjOn edgeT C) :
+    (∏ c ∈ C, KJ (edgeT c)) * ∏ j ∈ (C.image edgeT)ᶜ, aJ j =
+      K₁ ^ (C.filter fun c => ∃ jw, edgeT c = Sum.inl jw).card *
+        a ^ (p - (C.filter fun c => ∃ jw, edgeT c = Sum.inl jw).card) * Kd ^ (q + r) := by
+  classical
+  set S := C.image edgeT with hS
+  set TW := C.filter fun c => ∃ jw, edgeT c = Sum.inl jw with hTW
+  have h1 : (∏ c ∈ C, KJ (edgeT c)) = ∏ j ∈ S, KJ j := (Finset.prod_image hinj).symm
+  set g : Fin p ⊕ Fin q ⊕ Fin r → ℝ := fun j => if j ∈ S then KJ j else aJ j with hg
+  have h2 : (∏ j ∈ S, KJ j) * ∏ j ∈ Sᶜ, aJ j = ∏ j, g j := by
+    rw [← Finset.prod_mul_prod_compl S g]
+    congr 1
+    · exact Finset.prod_congr rfl fun j hj => by simp [hg, hj]
+    · exact Finset.prod_congr rfl fun j hj => by simp [hg, (Finset.mem_compl.1 hj)]
+  rw [h1, h2, Fintype.prod_sum_type, Fintype.prod_sum_type]
+  have h3 : ∀ j', g (Sum.inr j') = Kd := fun j' => by
+    simp only [hg]
+    split_ifs
+    · exact hK2 j'
+    · exact ha2 j'
+  simp only [h3, Finset.prod_const, Finset.card_univ, Fintype.card_fin, ← pow_add]
+  set U := Finset.univ.filter (fun jw : Fin p => Sum.inl jw ∈ S) with hU
+  have h4 : ∏ jw : Fin p, g (Sum.inl jw) = K₁ ^ U.card * a ^ (p - U.card) := by
+    have : ∀ jw : Fin p, g (Sum.inl jw) = if Sum.inl jw ∈ S then K₁ else a := fun jw => by
+      simp only [hg]
+      split_ifs
+      · exact hK1 jw
+      · exact ha1 jw
+    simp only [this]
+    rw [Finset.prod_ite, Finset.prod_const, Finset.prod_const]
+    have hUc := Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset (Fin p)))
+      (fun jw => Sum.inl jw ∈ S)
+    rw [Finset.card_univ, Fintype.card_fin] at hUc
+    have e1 : (Finset.univ.filter fun jw : Fin p => ¬ Sum.inl jw ∈ S).card = p - U.card := by
+      simp only [hU]
+      omega
+    rw [e1]
+  have h5 : U.card = TW.card := by
+    symm
+    refine Finset.card_bij (fun c hc => (Finset.mem_filter.1 hc).2.choose) (fun c hc => ?_)
+      (fun c₁ h₁ c₂ h₂ h => ?_) (fun jw hjw => ?_)
+    · have hc' := Finset.mem_filter.1 hc
+      simp only [hU, Finset.mem_filter, Finset.mem_univ, true_and, hS]
+      rw [← hc'.2.choose_spec]
+      exact Finset.mem_image_of_mem _ hc'.1
+    · have h₁' := Finset.mem_filter.1 h₁
+      have h₂' := Finset.mem_filter.1 h₂
+      refine hinj h₁'.1 h₂'.1 ?_
+      rw [h₁'.2.choose_spec, h₂'.2.choose_spec, h]
+    · have hjw' : Sum.inl jw ∈ S := by simpa [hU] using hjw
+      obtain ⟨c, hcC, hc⟩ := Finset.mem_image.1 hjw'
+      have hcT : c ∈ TW := Finset.mem_filter.2 ⟨hcC, jw, hc⟩
+      refine ⟨c, hcT, ?_⟩
+      have h6 := (Finset.mem_filter.1 hcT).2.choose_spec
+      exact Sum.inl_injective (h6.symm.trans hc)
+  rw [h4, h5]
+
+/-- **The sum over the internal labels with the roots as free labels, per-edge constants** (the BA twin of `auxGraph_main_sum`'s
+use of `auxGraph_forest_roots`; `BASizeClaim_sum_le`, `BASizeClaim2.lean:317`, with a weight `Φ` of the labels of the roots):
+for weights `f_j` (waved: entries `≤ a`, row and column sums `≤ K₁`; `M`- and `Ψ`-dotted: entries, row and column sums `≤ Kd`),
+`Σ_{ℓ_I} Φ(ℓ ∘ root) ∏_J f_j ≤ (Σ_x Φ x) K₁^{n_A - n_M} a^{n_W - (n_A - n_M)} Kd^{#M + #Ψ}`. -/
+theorem BAAtom_sum_J {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (Γ : BAGraph E I)
+    (hD : ∀ e ∈ Γ.dotted, e.eq = false) (f : Γ.Jx → ι → ι → ℝ) {a K₁ Kd : ℝ}
+    (hf0 : ∀ j x y, 0 ≤ f j x y)
+    (hwa : ∀ (j : Fin Γ.waved.length) x y, f (Sum.inl j) x y ≤ a)
+    (hwr : ∀ (j : Fin Γ.waved.length) x, ∑ y, f (Sum.inl j) x y ≤ K₁)
+    (hwc : ∀ (j : Fin Γ.waved.length) y, ∑ x, f (Sum.inl j) x y ≤ K₁)
+    (hda : ∀ (j : Fin Γ.mdot.length ⊕ Fin Γ.psi.length) x y, f (Sum.inr j) x y ≤ Kd)
+    (hdr : ∀ (j : Fin Γ.mdot.length ⊕ Fin Γ.psi.length) x, ∑ y, f (Sum.inr j) x y ≤ Kd)
+    (hdc : ∀ (j : Fin Γ.mdot.length ⊕ Fin Γ.psi.length) y, ∑ x, f (Sum.inr j) x y ≤ Kd)
+    [Fintype (LGraph.AuxIMol Γ.shadow)] [DecidableEq (LGraph.AuxIMol Γ.shadow)] (ℓe : E → ι) :
+    ∃ root : LGraph.AuxIMol Γ.shadow → I, Function.Injective root ∧
+      (∀ c, Γ.shadow.molOf (Sum.inr (root c)) = c.1) ∧
+      ∀ Φ : (LGraph.AuxIMol Γ.shadow → ι) → ℝ, (∀ x, 0 ≤ Φ x) →
+        ∑ ℓi : I → ι, Φ (fun t => ℓi (root t)) *
+            ∏ j : Γ.Jx, f j (Sum.elim ℓe ℓi (Γ.edgeEnds j).1) (Sum.elim ℓe ℓi (Γ.edgeEnds j).2) ≤
+          (∑ x : LGraph.AuxIMol Γ.shadow → ι, Φ x) *
+            (K₁ ^ (Γ.nA - Γ.nM) * a ^ (Γ.nW - (Γ.nA - Γ.nM)) * Kd ^ (Γ.mdot.length + Γ.psi.length)) := by
+  classical
+  obtain ⟨root, C, par, edge, ρ, hroot, hrootmol, hC, hgcard, hrank, hedge, hinj⟩ := BAAtom_exists_roots Γ hD
+  refine ⟨root, hroot, hrootmol, fun Φ hΦ => ?_⟩
+  choose edgeJ hedgeJ using fun c : C => hedge c.1 c.2
+  have hinjJ : Function.Injective edgeJ := fun c₁ c₂ h =>
+    Subtype.ext (hinj c₁.1 c₁.2 c₂.1 c₂.2 (by rw [(hedgeJ c₁).1, (hedgeJ c₂).1, h]))
+  let aJ : Γ.Jx → ℝ := fun j => match j with
+    | Sum.inl _ => a
+    | Sum.inr _ => Kd
+  let KJ : Γ.Jx → ℝ := fun j => match j with
+    | Sum.inl _ => K₁
+    | Sum.inr _ => Kd
+  have hmain := BAAtom_forest_roots (ι := ι) (E := E) (I := I) (Rt := LGraph.AuxIMol Γ.shadow) (J := Γ.Jx) ℓe
+    (fun j => (Γ.edgeEnds j).1) (fun j => (Γ.edgeEnds j).2) f aJ KJ hf0
+    (by rintro (j | j) x y; exacts [hwa j x y, hda j x y])
+    (by rintro (j | j) x; exacts [hwr j x, hdr j x])
+    (by rintro (j | j) y; exacts [hwc j y, hdc j y])
+    root hroot C hC par edgeJ ρ hinjJ (fun c => (hedgeJ c).2) (fun c => hrank c.1 c.2) Φ hΦ
+  have halg := BAAtom_alg_prod (I := C) (p := Γ.waved.length) (q := Γ.mdot.length) (r := Γ.psi.length)
+    a K₁ Kd KJ aJ (fun _ => rfl) (fun _ => rfl) (fun _ => rfl) (fun _ => rfl) (Finset.univ : Finset C) edgeJ
+    hinjJ.injOn
+  have hw : (Finset.univ.filter fun c : C => ∃ jw, edgeJ c = Sum.inl jw).card = Γ.nA - Γ.nM := by
+    have h1 : (Finset.univ.filter fun c : C => ∃ jw, edgeJ c = Sum.inl jw).card =
+        (C.filter fun c => ∃ j, edge c = some (Sum.inl j)).card := by
+      refine Finset.card_bij (fun c _ => c.1) (fun c hc => ?_) (fun c₁ _ c₂ _ h => Subtype.ext h) (fun c hc => ?_)
+      · obtain ⟨jw, hjw⟩ := (Finset.mem_filter.1 hc).2
+        exact Finset.mem_filter.2 ⟨c.2, jw, by rw [(hedgeJ c).1, hjw]⟩
+      · obtain ⟨hcC, jw, hjw⟩ := Finset.mem_filter.1 hc
+        refine ⟨⟨c, hcC⟩, Finset.mem_filter.2 ⟨Finset.mem_univ _, jw, ?_⟩, rfl⟩
+        have := (hedgeJ ⟨c, hcC⟩).1
+        rw [hjw] at this
+        exact (Option.some.inj this).symm
+    omega
+  rw [halg, hw] at hmain
+  exact hmain
+
+end SumJ
+
 end RBM.Graph
 
 end
