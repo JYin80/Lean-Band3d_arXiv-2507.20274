@@ -155,13 +155,13 @@ private def BAWeightOp_tail4 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SE
     [bpW true (bpv 0) (bpv 1), bpW false (bpv 2) (bpv 3)]
     [bpM (owxEmb 4 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 4 p.1.src), bpM (bpv 1) (bpv 2)]
 
-theorem BAWeightOp_lw2_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
+private theorem BAWeightOp_lw2_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
     Γ.lw2 p = BAWeightOp_leaf2 Γ p :: (lwSplit p.2).map (BAGraph.lanlwD Γ p) := rfl
 
-theorem BAWeightOp_lw4_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
+private theorem BAWeightOp_lw4_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
     Γ.lw4 p = BAWeightOp_leaf4 Γ p :: (lwSplit p.2).map (BAWeightOp_tail4 Γ p) := rfl
 
-theorem BAWeightOp_leaf2_term (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
+private theorem BAWeightOp_leaf2_term (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
     (ℓe : E → ι) (ℓi : I → ι) (α β : ι) :
     (BAWeightOp_leaf2 Γ p).term D (owxLab2 ℓe ℓi α β) =
       ({ Γ with solid := p.2 } : BAGraph E I).term D (Sum.elim ℓe ℓi) *
@@ -176,7 +176,7 @@ theorem BAWeightOp_leaf2_term (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (S
   simp
   ring
 
-theorem BAWeightOp_leaf4_term (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
+private theorem BAWeightOp_leaf4_term (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
     (ℓe : E → ι) (ℓi : I → ι) (z y α β : ι) :
     (BAWeightOp_leaf4 Γ p).term D (BAWeightOp_lab4 ℓe ℓi z y α β) =
       ({ Γ with solid := p.2 } : BAGraph E I).term D (Sum.elim ℓe ℓi) *
@@ -193,7 +193,7 @@ theorem BAWeightOp_leaf4_term (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (S
   simp
   ring
 
-theorem BAWeightOp_tail4_term (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
+private theorem BAWeightOp_tail4_term (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
     (ℓe : E → ι) (ℓi : I → ι) (z y α β : ι) :
     (BAWeightOp_tail4 Γ p q).term D (BAWeightOp_lab4 ℓe ℓi z y α β) =
       ({ Γ with solid := q.2 } : BAGraph E I).term D (Sum.elim ℓe ℓi) *
