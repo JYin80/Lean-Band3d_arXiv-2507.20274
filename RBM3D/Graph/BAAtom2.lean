@@ -16,13 +16,14 @@ roots of the molecular forest); this file imports it.  The BA twin of `Graph/Aux
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAAtom_`)
 
-6. **The tail on a non-confined labelling** (twin of `AuxGraph` §8, `7_8:255-258`): the weights `f_j e^{(c/2) d_B}` of the four kernels
-   `S`, `S⁺`, `M`, `g Ψ` (`M`, `g Ψ` offset-diagonal), the pointwise tail bound, the tail sum.
-7. **G3, `(G_by_auxG_BA)`** (`B:486-490`): `BAGtoAG`, `baGtoAG_holds` (deterministic form: `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`,
-   window `W^{-d} ≤ A Ψ²`), and `baGtoAG_E` with the constants of the BA model depending on `(d, Λ, κ)` only.
-8. **The nested form** `baAuxNested_holds` (the walks of `lem:localregular` (3)-(5) of the shadow) and **G4** `BAAnpAux` (`B:491-497`,
-   the pin of L3d1).
-9. Compiled instances at `d = 3`, `L = 4`, `W = 2`.
+6. **The tail on a non-confined labelling** (twin of `AuxGraph` §8, `7_8:255-258`): the weights `f_j e^{(c/2) d_B}` of the four
+   kernels `S`, `S⁺`, `M`, `g Ψ` (`M`, `g Ψ` offset-diagonal), the pointwise tail bound, the tail sum.
+7. **G3, `(G_by_auxG_BA)`** (`B:486-490`): the main sum, `BAGtoAG`, `baGtoAG_holds` (deterministic form: `‖G - M‖ ≤ Ψ` entrywise,
+   no `hM : M = m I`, window `W^{-d} ≤ A Ψ²`).
+8. **G3 with the constants of the BA model** `baGtoAG_E` (constants of `(d, Λ, κ)` only), `BAAtom_decay_E`.
+9. **The nested form** `baAuxNested_holds` (the walks of `lem:localregular` (3)-(5) of the shadow) and **G4** `BAAnpAux`
+   (`B:491-497`, the pin of L3d1).
+10. Compiled instances at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
 
 Paper-delta candidates (report (d)): `T2420a` the auxiliary graph at the molecule centres (retained atoms folded in; same order),
 `T2420b` the window `W^{-d} ≤ A Ψ²`, `A = g² + 1`, `T2420c` the exponent identity `ord Γ - ord Γ^aux = n_S^{within} + 2 (n_W - n_A + n_M)`.
@@ -676,6 +677,89 @@ def BAAnpAux (d : ℕ) : Prop :=
                   (fun n ab ω => P.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = P.ext 0 then ab.1 else ab.2))
                   (fun n ab _ => ((((sz.W n : ℕ) : ℝ) ^ d) * etaT (STflowE z n) (t n))⁻¹ ^ P.g.nM *
                     Φ n (c * ((zdistInf d (sz.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ p * Φ n 0 ^ (P.g.auxOrd - p))
+
+/-! ## 10. Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, `t = 1/2`, the flow point `P : FlowPt 4 10`)
+
+The data and the graph `G*` are those of the instances of `Graph/BAAtom` (`BAAtomInst.Gstar`, `BASizeClaimInst2.D0`: `G = M + 1/100`,
+`|Ǧ_{xy}| = 1/100` for all `x, y`; the external labels `ellInst`, `ξ ≡ 1/100`).  The window is `W^{-3} = 1/8 ≤ A Ψ² = 2000 · 10^{-4}`,
+`r = 1`, `R = 7 = |E ⊕ I| r`.  Every deterministic hypothesis of `baGtoAG_holds` is discharged: `(K₀, K₁, Kd)` are `baKBound_E`'s, `(C, c)`
+`BAAtom_decay_E`'s (`S`, `S⁺`, `M`, `g Ψ` decay and offsets at `P`). -/
+
+namespace BAAtomInst2
+
+open RBM.BA.MFixedPointInst BASizeClaimInst2 BAAtomInst
+
+/-- **Instance of G3, `baGtoAG_holds`** at `G*`, `D0`: the bound `|G*| ≤ C_Γ(K₀ A, K₁, Kd) Ψ^{ord Γ - ord Γ^aux} (W^d)^{n_M} Γ^aux +
+e^{-cr/2} C'_Γ size(Γ)`, with exponent `3`, `Γ^aux = 64 (1/100)^3 > 0`. -/
+example : ∃ K₀ K₁ Kd C c : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧ 0 ≤ C ∧ 0 < c ∧
+    Gstar.scalingOrder - Gstar.auxOrd = 3 ∧
+    Gstar.auxVal xiInst (fun a => (split 3 4 2 (ellInst a)).1) = 64 * (1 / 100 : ℝ) ^ 3 ∧
+    ‖Gstar.val D0 ellInst‖ ≤
+      Gstar.sizeConst (K₀ * 2000) K₁ Kd * (1 / 100 : ℝ) ^ (Gstar.scalingOrder - Gstar.auxOrd) *
+          ((((2 : ℕ) : ℝ) ^ 3) ^ Gstar.nM * Gstar.auxVal xiInst (fun a => (split 3 4 2 (ellInst a)).1)) +
+        Real.exp (-(c * 1 / 2)) * Gstar.sizeConst C (C * expC (3 - 2) (c / 2)) (C * (1 + expC (3 - 2) (c / 2))) *
+          Gstar.scalingSize (1 / 100) 2 3 4 := by
+  have hκ : 0 < P.m0.im := P.real.1.1
+  obtain ⟨K₀, K₁, Kd, hK₀, hK₁, hKd, hK⟩ := baKBound_E 3 le_rfl 10 P.m0.im (by norm_num) hκ
+  obtain ⟨hS, hSp, hM, hP⟩ := hK 4 2 (by norm_num) P.g0 P.E (1 / 2) P.m0 P.g0_pos P.g0_le P.real (by norm_num)
+    (by norm_num)
+  obtain ⟨C, c, hC, hc, hdec⟩ := BAAtom_decay_E 3 le_rfl 10 P.m0.im (by norm_num) hκ
+  obtain ⟨hdS, hdSp, hdMP, hoff⟩ := hdec 4 2 (by norm_num) P.g0 P.E (1 / 2) P.m0 P.g0_pos P.g0_le P.real
+    (by norm_num) (by norm_num)
+  have hn : Gstar.nM = 1 ∧ Gstar.shadow.molSolid.length = 3 := by
+    refine ⟨by decide, ?_⟩
+    rw [auxGraph_molSolid_length]; decide
+  refine ⟨K₀, K₁, Kd, C, c, hK₀, hK₁, hKd, hC, hc, ?_, ?_, baGtoAG_holds 3 le_rfl 4 2 Gstar Gstar_normal Gstar_ext D0 (1 / 100)
+    2000 K₀ K₁ Kd C c 1 7 xiInst D0_hG (by norm_num) (by norm_num) hS hSp hM hP hC hc hdS hdSp hdMP hoff
+    (by norm_num) (by simp) (fun _ _ => by norm_num [xiInst]) (fun x y _ _ _ _ => by simpa [xiInst] using D0_hG x y) ellInst⟩
+  · have h1 := Gstar.scalingOrder_sub_auxOrd
+    have h2 : Gstar.nS = 4 ∧ Gstar.nW = 3 ∧ Gstar.nA = 3 := by decide
+    rw [h1, hn.2, hn.1, h2.1, h2.2.1, h2.2.2]
+    norm_num
+  · unfold BAGraph.auxVal
+    rw [show xiInst = fun _ _ => (1 / 100 : ℝ) from rfl, auxGraph_auxVal_const, BAGraph.shadow_nM, hn.1,
+      show Gstar.shadow.molSolid.length = 3 from hn.2, card_Zd]
+    norm_num
+
+/-- **Instance of `baGtoAG_E`** (the model form) at the same data: `(K₀, K₁, Kd, C, c)` depend on `(d, Λ, κ) = (3, 10, Im m₀)` only. -/
+example : ∃ K₀ K₁ Kd C c : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧ 0 ≤ C ∧ 0 < c ∧
+    ‖Gstar.val D0 ellInst‖ ≤
+      Gstar.sizeConst (K₀ * 2000) K₁ Kd * (1 / 100 : ℝ) ^ (Gstar.scalingOrder - Gstar.auxOrd) *
+          ((((2 : ℕ) : ℝ) ^ 3) ^ Gstar.nM * Gstar.auxVal xiInst (fun a => (split 3 4 2 (ellInst a)).1)) +
+        Real.exp (-(c * 1 / 2)) * Gstar.sizeConst C (C * expC (3 - 2) (c / 2)) (C * (1 + expC (3 - 2) (c / 2))) *
+          Gstar.scalingSize (1 / 100) 2 3 4 := by
+  obtain ⟨K₀, K₁, Kd, C, c, hK₀, hK₁, hKd, hC, hc, H⟩ := baGtoAG_E 3 le_rfl 10 P.m0.im (by norm_num) P.real.1.1
+  exact ⟨K₀, K₁, Kd, C, c, hK₀, hK₁, hKd, hC, hc, H 4 2 (by norm_num) P.g0 P.E (1 / 2) P.m0 P.g0_pos P.g0_le P.real
+    (by norm_num) (by norm_num) (Fin 2) (Fin 5) Gstar Gstar_normal Gstar_ext D0 rfl rfl rfl rfl (1 / 100) 2000 1 7 xiInst
+    D0_hG (by norm_num) (by norm_num) (by norm_num) (by simp) (fun _ _ => by norm_num [xiInst])
+    (fun x y _ _ _ _ => by simpa [xiInst] using D0_hG x y) ellInst⟩
+
+/-- The packed BA graph of the locally standard graph `localReg2_inst_Q` (two external, two internal vertices, no `M`- or
+`Ψ`-dotted edge: its shadow is the band graph), for the nested form and G4. -/
+def baPQ : BAPGraph (Fin 2) := ⟨Fin 2, Fin 2, id, Function.surjective_id, BAGraph.ofLGraph localReg2_inst_Q⟩
+
+/-- **Instance of the nested form** `baAuxNested_holds` at `baPQ` (`p = 2`, `n_M = 1 ≤ p`; `(BAShadowPG baPQ).LocReg345 2` is, up to
+definitional unfolding, `localReg2_inst_Q_locReg345`, `LocalRegular2.lean:2036`): an `NGraph` with two paths, one internal vertex, no ghost
+edge, nested, of order `ord Γ^aux = 2`, whose value at the constant `ξ ≡ 1/100` on `Z_4^3` is `Γ^aux = 64 (1/100)^4`. -/
+example : ∃ Γa : NGraph 2 baPQ.g.nM, Γa.NoGhost ∧ Γa.IsNested ∧ Γa.ordN = baPQ.g.auxOrd ∧ baPQ.g.nM ≤ 2 ∧
+    Γa.val xiInst (fun _ => (0 : Zd 3 4)) (fun _ => 0) = baPQ.g.auxVal xiInst (fun _ => (0 : Zd 3 4)) := by
+  obtain ⟨Γa, h1, h2, h3, h4⟩ := baAuxNested_holds 2 baPQ (by norm_num) localReg2_inst_Q_locReg345 (by decide)
+  exact ⟨Γa, h1, h2, h3, by decide, h4 xiInst (fun _ _ => rfl) (fun _ => (0 : Zd 3 4))⟩
+
+open RBM.Gauss.LWInst RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Sizes in
+/-- **Instance of G4** (`BAAnpAux 3`, the pin of L3d1, not proved here) at `baPQ`, `p = 2`, the band data of `inst_Anp`
+(`LWPins.lean:699`: `sz0`, `z0`, `flow_z0`, `tInst`, `Φ0`, `psiAll0`); the pin `h : BAAnpAux 3` and the edge variables `ξ` with
+`(eq:Gbyxi3)` (`LWXi`, the pin of stage G / L3c3) stay hypotheses, as in `inst_Anp`. -/
+example (h : BAAnpAux 3) (ξ : ∀ n, Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → sz0.SeqΩ → ℝ) (hξ : LWXi sz0 (STflowE z0) tInst Φ0 ξ) :
+    ∃ c : ℝ, 0 < c ∧ Prec sz0 (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
+      (fun n ab ω => baPQ.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = baPQ.ext 0 then ab.1 else ab.2))
+      (fun n ab _ => ((((sz0.W n : ℕ) : ℝ) ^ 3) * etaT (STflowE z0 n) (tInst n))⁻¹ ^ baPQ.g.nM *
+        Φ0 n (c * ((zdistInf 3 (sz0.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ 2 * Φ0 n 0 ^ (baPQ.g.auxOrd - (2 : ℕ))) := by
+  obtain ⟨c, hc, H⟩ := h le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 baPQ (by norm_num)
+    (by decide) localReg2_inst_Q_locReg345 (by decide) (1 / 20) 2 2 1 (fun _ => 1)
+  exact ⟨c, hc, H (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 Φ0 psiAll0 ξ hξ⟩
+
+end BAAtomInst2
 
 end RBM.Graph
 
