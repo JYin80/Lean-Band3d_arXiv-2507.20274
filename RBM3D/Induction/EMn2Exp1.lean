@@ -1835,6 +1835,7 @@ theorem emn2Exp_EEk_split (n : ℕ) (E u ℓ : ℝ) (k : Fin 2) (σ : Fin 2 → 
     exact le_rfl
 
 
+variable {sz} in
 /-- **The three-way split of `(𝓔⊗𝓔)^{M,(2;k)}` over a carrier** (`3_5:840-845`): for the loops `C.L` realized by
 `(H, ζ)` and the kernel `C.S = S^{(B)}(g)`, pointwise `|(𝓔⊗𝓔)^{M,(2;k)}|` is at most its value on the near pairs plus
 `S̃₁ + S̃₂` and `S̃₃` on the far pairs (`emn2Exp_EEk_split` at the carrier). -/

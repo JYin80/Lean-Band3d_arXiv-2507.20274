@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Induction.EMn2Exp1
+import RBM3D.BA.FlowPins
 import RBM3D.Evolution.PropTInf
 
 /-!
@@ -60,6 +61,7 @@ open Matrix Finset Filter MeasureTheory
 namespace RBM.Gauss.Sizes
 
 open RBM RBM.Gauss RBM.Loop RBM.Path
+open RBM.BA (FlowFM PrecL STEEg STJhatg STInitialGT2gL STLWassmgL STLWassmExpgL STEMn2ExpgL)
 
 /-! ## 1. Hilbert-Schmidt submultiplicativity -/
 
@@ -789,6 +791,59 @@ theorem emn2Exp2_loop2_far_le (n : ℕ) {E : ℝ} (hE : |E| ≤ 2) (u D ℓ : �
         exact (mul_le_mul_of_nonneg_left hΘ hw.le).trans hPle
     _ = _ := by ring
 
+variable {sz}
+
+/-- `Ĵ ≥ 0` over a carrier (`ST_JhatM_nonneg`, `Step2Events.lean:699`). -/
+private lemma emn2Exp2_Jhatg_nonneg (C : FlowFM sz) (n : ℕ) (D ℓ u : ℝ) (ω : sz.SeqΩ) :
+    0 ≤ STJhatg C n D ℓ u ω :=
+  le_trans (div_nonneg (norm_nonneg _) (ST_STprof_pos sz n u D ℓ (0 : Zd d (sz.L n)) 0).le)
+    (Finset.le_sup' (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
+      ‖C.L n u p.1 p.2 ω - C.K n u p.1 p.2‖ / STprof sz n u D ℓ (p.2 0) (p.2 1))
+      (Finset.mem_univ ((fun _ => true), (fun _ => 0))))
+
+/-- **`(eq_L2-J)` over a carrier** (`3_5:871-875`): at a pair `x, x'` where the kernel is small,
+`‖𝒦^{(2)}_{(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}` (`emn2ExpHK`), the 2-loop `𝓛^{(2)}_{(s,-s),(x,x')} = (𝓛-𝒦) + 𝒦` is at
+most `(Ĵ + W^{-d}) W^{-d} 𝒯̃^ℓ_{u,D}(|x-x'|)`: the generic form of `emn2Exp2_loop2_far_le`. -/
+theorem emn2Exp2_loop2_far_leg {C : FlowFM sz} (n : ℕ) (u D ℓ : ℝ) (ω : sz.SeqΩ) (s : Bool)
+    (x x' : Zd d (sz.L n))
+    (hK : ‖C.K n u ![s, !s] ![x, x']‖ ≤
+      (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ)))) :
+    ‖C.L n u ![s, !s] ![x, x'] ω‖ ≤
+      (STJhatg C n D ℓ u ω + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) * STprof sz n u D ℓ x x' := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  set w : ℝ := (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ with hwdef
+  have hw : 0 < w := inv_pos.mpr (pow_pos hW d)
+  have hP := ST_STprof_pos sz n u D ℓ x x'
+  have hJ : ‖C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']‖ ≤
+      STJhatg C n D ℓ u ω * STprof sz n u D ℓ x x' := by
+    have h := Finset.le_sup' (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
+      ‖C.L n u p.1 p.2 ω - C.K n u p.1 p.2‖ / STprof sz n u D ℓ (p.2 0) (p.2 1))
+      (Finset.mem_univ (![s, !s], ![x, x']))
+    have h' : ‖C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']‖ / STprof sz n u D ℓ x x' ≤
+        STJhatg C n D ℓ u ω := h
+    rwa [div_le_iff₀ hP] at h'
+  -- `w · W^{-(D+d)} ≤ w · P` (`P ≥ W^{-d-D}`)
+  have hrpow : ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ))) = ((sz.W n : ℕ) : ℝ) ^ (-D) * w := by
+    rw [hwdef, neg_add, Real.rpow_add hW, ← Real.rpow_natCast, ← Real.rpow_neg hW.le]
+  have hfloor : ((sz.W n : ℕ) : ℝ) ^ (-D) ≤
+      tailW d (sz.L n) (sz.lam n) u ℓ ((sz.W n : ℕ) : ℝ) D
+        ((zdistInf d (sz.L n) (x - x') : ℕ) : ℝ) := rpow_neg_le_tailW _
+  have hPle : w * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ))) ≤ w * STprof sz n u D ℓ x x' := by
+    rw [hrpow]
+    unfold STprof
+    calc w * (((sz.W n : ℕ) : ℝ) ^ (-D) * w)
+        = w * (w * ((sz.W n : ℕ) : ℝ) ^ (-D)) := by ring
+      _ ≤ w * (w * tailW d (sz.L n) (sz.lam n) u ℓ ((sz.W n : ℕ) : ℝ) D
+          ((zdistInf d (sz.L n) (x - x') : ℕ) : ℝ)) := by gcongr
+  calc ‖C.L n u ![s, !s] ![x, x'] ω‖
+      = ‖(C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']) + C.K n u ![s, !s] ![x, x']‖ := by
+        rw [sub_add_cancel]
+    _ ≤ ‖C.L n u ![s, !s] ![x, x'] ω - C.K n u ![s, !s] ![x, x']‖ + ‖C.K n u ![s, !s] ![x, x']‖ :=
+        norm_add_le _ _
+    _ ≤ STJhatg C n D ℓ u ω * STprof sz n u D ℓ x x' + w * STprof sz n u D ℓ x x' :=
+        add_le_add hJ (hK.trans hPle)
+    _ = _ := by ring
+
 end L2J
 
 
@@ -873,6 +928,47 @@ private lemma emn2Exp2_star_le_dag (n : ℕ) (u : ℝ) (hLg1 : 1 ≤ Real.log ((
   exact mul_le_mul_of_nonneg_right
     (Real.rpow_le_rpow_of_exponent_le hLg1 (by norm_num)) (by linarith)
 
+/-- **The far field of the two-loop kernel** (the one input of the far sum `S̃₃` that the model supplies; the
+`(eq_L2-J)` step, `3_5:871-875`): for every `D > 0`, eventually in `n`, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}`
+once `ℓ*_{t_n} ≤ |x - x'|`, `ℓ*_u = (log W)^{3/2} ℓ_u` (`emn2ExpEllStar`).  Band: `𝒦^{(2)} = W^{-d} m₁ m₂ Θ_{u m₁ m₂}` and the
+far field of `kellStarEv` (`emn2Exp2_bandHK`); block Anderson: `(Kn2sol)` of `BAKsolve` (`BA/KSolve.lean:63-66`,
+`W^{-d} Θ M^{(σσ')}`) with the `Θ` bounds of `BAProp5` (`7_8:2002`). -/
+def emn2ExpHK (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
+    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+      ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ T0 sz z n) → ∀ D : ℝ, 0 < D →
+        ∀ᶠ n in atTop, ∀ (x x' : Zd d (sz.L n)) (s : Bool),
+          emn2ExpEllStar sz n (t n) ≤ (zdistInf d (sz.L n) (x - x') : ℝ) →
+            ‖(mk sz z).K n (t n) ![s, !s] ![x, x']‖ ≤
+              (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ)))
+
+/-- **The far field `emn2ExpHK` at the band**: `𝒦^{(2)}_{(s,-s)} = W^{-d} ‖Θ_u‖` (`emn2Exp2_norm_STKloop`) and the far
+field of `kellStarEv` at `δ = 1`, `D_K = D + d` (`emn2Exp_kellStar_far`). -/
+theorem emn2Exp2_bandHK (d : ℕ) (hd : 3 ≤ d) :
+    emn2ExpHK d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => RBM.BA.bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT D hD
+  obtain ⟨-, -, ht1, hrange⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htT
+  have hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
+    filter_upwards [hflow.1.2.2.2.2] with n hn
+    exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1, hn.2⟩
+  have hK := emn2Exp_kellStar_far sz 𝔠 𝔡⁻¹ (ε / 2) 1 (D + (d : ℝ)) t hd hflow.1.1 (inv_pos.mpr h𝔡)
+    (half_pos hε) one_pos hflow.1.2.2.1 hflow.1.2.2.2.1 hrange ht1 hlam
+  filter_upwards [hK] with n hKn x x' s hfar
+  have h := (hKn 0 (t n) le_rfl (ht0 n) le_rfl x x' (by rw [one_mul]; exact hfar)).1
+  change ‖STKloop sz n (STflowE z n) (t n) ![s, !s] ![x, x']‖ ≤ _
+  have hE2 : |STflowE z n| ≤ 2 := (abs_lemE_lt_two (ST_flow_im_pos sz hflow n)).le
+  rw [emn2Exp2_norm_STKloop sz hE2 n (t n) s x x']
+  exact mul_le_mul_of_nonneg_left h (inv_nonneg.mpr (pow_nonneg (by positivity) d))
+
+variable (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
+  {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
+  {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
+  {Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+  {ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ}
+
 /-- **`S̃₃` on the far pairs** (`3_5:871-888`, the hypothesis `h3` of `emn2Exp_of_far3`): under the premises
 of `STEMn2Exp` and `3 ≤ d`, on the pairs with `|a-b| > ℓ†_t`,
 `S̃₃ ≺ η_t^{-1} [(W^{-d} B_{t,0})^{1/2} + (Ĵ^ℓ_{t,D})³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`, for **every** `D > 0`.
@@ -881,63 +977,46 @@ Proof: on the good event of `(eq:LW_assm_exp)` at `τ/5`, `emn2Exp2_S3_le` with 
 `(TTT2)` (`ekPropTInf_holds`) and the radial sum; `(1-t)⁻¹ ≤ η⁻¹`, `(Ĵ + W^{-d})³ ≤ 4(Ĵ³ + W^{-3d})`,
 `W^{-3d} ≤ Bctl^{1/2}` eventually, and the constants `3^d, K₁, C_I, C_R, √(1+cB⁻¹)` are `≤ N^{τ/2}` eventually.
 The premises `Ψ`, its window, `STInitialGT2`, `ε₀` and the upper bound on `ℓ` are not used. -/
-theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
-    ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
-      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
-        ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ lemT (z n)) →
-          ∀ ε₀ : ℝ, 0 < ε₀ → ∀ Ψ : ℕ → ℝ,
-            (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψ n ∧
-              Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) →
-            STInitialGT2 sz (STflowE z) t ε₀ Ψ →
-            ∀ ℓ : ℕ → ℝ, (∀ᶠ n in atTop, 0 ≤ ℓ n ∧ ℓ n ≤ (Real.log ((sz.W n : ℕ) : ℝ)) ^ 10 *
-                ellT (sz.L n) (sz.lam n) (t n)) →
-              (∀ D : ℝ, 0 < D → STLWassmExp sz (STflowE z) t D ℓ) →
-              ∀ D : ℝ, 0 < D →
-                Prec sz (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
-                  (fun n p ω => if emn2ExpEllDag sz n (t n) <
-                      (zdistInf d (sz.L n) (p.2.2 0 - p.2.2 1) : ℝ) then
-                    emn2ExpS3M sz n (STflowE z n) (t n) (ℓ n) p.1 p.2.1 p.2.2 ω else 0)
-                  (fun n p ω => (etaT (STflowE z n) (t n))⁻¹ *
-                    ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) +
-                      (STJhat sz n (STflowE z n) D (ℓ n) (t n) ω) ^ 3) *
-                    (STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) ^ 2) := by
-  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ _hΨ _hI ℓ hℓ hA D hD
+theorem emn2Exp_far3g (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
+    emn2ExpPrem d law Flow mk T0 (fun sz z t ℓ D =>
+      ∀ J : ℕ → sz.SeqΩ → ℝ, (∀ n ω, 0 ≤ J n ω) →
+        PrecL sz (law sz) (U := fun _ => Unit)
+          (fun n _ ω => STJhatg (mk sz z) n D (ℓ n) (t n) ω) (fun n _ ω => J n ω) →
+        PrecL sz (law sz) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+          (fun n p ω => if emn2ExpEllDag sz n (t n) <
+              (zdistInf d (sz.L n) (p.2.2 0 - p.2.2 1) : ℝ) then
+            emn2ExpS3g sz n (Hf sz z n (t n) ω) (ζf sz z n (t n)) (t n) (ℓ n) p.1 p.2.1 p.2.2 else 0)
+          (fun n p ω => ((mk sz z).eta n (t n))⁻¹ *
+            ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) + (J n ω) ^ 3) *
+            (STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) ^ 2)) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ _hΨ _hI ℓ hℓ hA D hD J hJ0 hJ
   classical
-  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  obtain ⟨hadm, hR, -⟩ := hF.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  obtain ⟨hT1, hEv, cB, c, hcB, hc, hbd⟩ := hF.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  have hsz : sz.SizeTendsto := hadm.2.2.1
   have hsize : Tendsto sz.size atTop atTop := tendsto_size sz hsz
-  have h𝔠 : 0 < 𝔠 := hflow.1.1
-  have hband : sz.Bandwidth 𝔠 := hflow.1.2.2.2.1
-  have hWO : sz.WO 𝔡 := hflow.1.2.2.2.2
+  have h𝔠 : 0 < 𝔠 := hadm.1
+  have hband : sz.Bandwidth 𝔠 := hadm.2.2.2.1
+  have hWO : sz.WO 𝔡 := hadm.2.2.2.2
   have hd0 : 0 < d := by omega
   have hWt := ST_W_tendsto sz hsz h𝔠 hband
-  obtain ⟨-, -, ht1, hrange⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htT
-  have hη : ∀ n, 0 < etaT (STflowE z n) (t n) := by
+  have ht1 : ∀ n, t n < 1 := fun n => (htT n).trans_lt (hT1 n)
+  have hη : ∀ n, 0 < (mk sz z).eta n (t n) := by
     intro n
-    have hzim := ST_flow_im_pos sz hflow n
-    exact etaT_pos (abs_lemE_lt_two hzim) ((htT n).trans_lt (lemT_lt_one hzim))
-  have hE2 : ∀ n, |STflowE z n| ≤ 2 := fun n => (abs_lemE_lt_two (ST_flow_im_pos sz hflow n)).le
-  -- `η = (1 - t) Im m ≤ 1 - t`
-  have hηv : ∀ n, etaT (STflowE z n) (t n) ≤ 1 - t n := by
-    intro n
-    have h1 : 0 < 1 - t n := by linarith [ht1 n]
-    have hm1 : (mE (STflowE z n)).im ≤ 1 := (Complex.im_le_norm _).trans (norm_mE (hE2 n)).le
-    unfold etaT
-    exact mul_le_of_le_one_right h1.le hm1
+    obtain ⟨-, h1, h2, -⟩ := hR n (t n) (ht0 n) (htT n)
+    rw [← h2]; exact h1
+  have hηv : ∀ n, (mk sz z).eta n (t n) ≤ 1 - t n := fun n => hEv n (t n) (ht0 n) (htT n)
   have hW1 : ∀ n, (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz.W_pos n
   have hWpos : ∀ n, (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz.W_pos n
-  obtain ⟨cB, hcB, hBd⟩ := ST_Bdata_holds hd0 κ ε 𝔡 hκ hε h𝔡
-  obtain ⟨c, hc, hbd⟩ := hBd 𝔠
-  have hbdn := hbd sz z hflow t ht0 htT
   have hBt : ∀ᶠ n in atTop, cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n (t n) :=
-    hbdn.mono fun n hn => (hn (t n) (ht0 n) le_rfl).1
+    hbd.mono fun n hn => (hn (t n) (ht0 n) (htT n)).1
   have hLg1 : ∀ᶠ n in atTop, 1 ≤ Real.log ((sz.W n : ℕ) : ℝ) :=
     (Real.tendsto_log_atTop.comp hWt).eventually (eventually_ge_atTop _)
   have hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
     filter_upwards [hWO] with n hn
     exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos (hWpos n) _) hn.1, hn.2⟩
-  -- the far field of `Θ_t` beyond `ℓ*_t` (`δ = 1`) at `D_K = D + d`
-  have hK := emn2Exp_kellStar_far sz 𝔠 𝔡⁻¹ (ε / 2) 1 (D + (d : ℝ)) t hd h𝔠 (inv_pos.mpr h𝔡)
-    (half_pos hε) one_pos hsz hband hrange ht1 hlam
+  -- the far field of `𝒦^{(2)}_t` beyond `ℓ*_t` at `D_K = D + d`
+  have hK := hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT D hD
   -- `(TTT2)` and the radial sum: constants depending on `d` only
   obtain ⟨CI, hCI, hTTT⟩ := ekPropTInf_holds d hd
   obtain ⟨CR, hCR, hrad⟩ := emn2Exp2_exists_CR d hd
@@ -961,20 +1040,24 @@ theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
     calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ :=
           pow_le_of_le_one (inv_nonneg.mpr (pow_nonneg (hWpos n).le d)) hw_le1 (by norm_num)
       _ ≤ cB := hw_le
-  refine emn2Exp_stochDomAt_of_subset (hA D hD) ?_
+  refine StochDomAt.of_subset_union hsize (hA D hD) hJ ?_
   intro τ hτ
-  refine ⟨τ / 5, by positivity, ?_⟩
-  have hQ := ST_size_pow_big sz hsize (a := τ / 2) (M := 2 * (A1 + A2 + 1)) (by positivity)
+  refine ⟨τ / 10, by positivity, ?_⟩
+  have hQ := ST_size_pow_big sz hsize (a := τ / 5) (M := 2 * (A1 + A2 + 1)) (by positivity)
   filter_upwards [hℓ, hBt, hLg1, hK, hw5, hlam, hQ] with n hℓn hBn hLg1n hKn hw5n hlamn hQn
   intro ω hω
   obtain ⟨p, hp⟩ := hω
   by_contra hno
-  have hgood : ∀ u' : {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)),
-      ‖Lloop sz n (STflowE z n) (t n) u'.1.1 u'.2 ω‖ ≤
-        ((sz.size n : ℕ) : ℝ) ^ (τ / 5) * STprof sz n (t n) D (ℓ n) (u'.2 0) (u'.2 1) :=
-    fun u' => not_lt.mp fun h => hno ⟨u', h⟩
-  obtain ⟨k, σ, a⟩ := p
   have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hgood : ∀ u' : {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)),
+      ‖(mk sz z).L n (t n) u'.1.1 u'.2 ω‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ (τ / 5) * STprof sz n (t n) D (ℓ n) (u'.2 0) (u'.2 1) :=
+    fun u' => (not_lt.mp fun h => hno (Or.inl ⟨u', h⟩)).trans (mul_le_mul_of_nonneg_right
+      (Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)) (ST_STprof_pos sz n _ _ _ _ _).le)
+  have hJhat : STJhatg (mk sz z) n D (ℓ n) (t n) ω ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 10) * J n ω :=
+    not_lt.mp fun h => hno (Or.inr ⟨(), h⟩)
+  obtain ⟨k, σ, a⟩ := p
   have hBpos : 0 ≤ sz.Bctl n (t n) :=
     (mul_nonneg hcB.le (inv_nonneg.mpr (pow_nonneg (hWpos n).le d))).trans hBn
   have hηn := hη n
@@ -1000,31 +1083,28 @@ theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
       unfold emn2ExpPf
       exact mul_nonneg (inv_nonneg.mpr (pow_nonneg (hWpos n).le d))
         (tailW_pos (hWpos n) _).le
-    have hH : (sz.seqHflow n (t n) ω).IsHermitian := sz.seqHflow_isHermitian n (t n) ω
-    have hz' : 0 < (zt (STflowE z n) (t n)).im := by
-      rw [← etaT_eq_zt_im]; exact hηn
+    obtain ⟨hH, hz', hzeta, hLoop⟩ := hR n (t n) (ht0 n) (htT n)
     have h2 : ∀ (s : Bool) (x x' : Zd d (sz.L n)),
-        ‖loopFine d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω) (zt (STflowE z n) (t n))
+        ‖loopFine d (sz.L n) (sz.W n) (Hf sz z n (t n) ω) (ζf sz z n (t n))
             ![s, !s] ![x, x']‖ ≤ y ^ 2 * Pf (zdistInf d (sz.L n) (x - x')) := by
       intro s x x'
       have hne : (![s, !s] : Fin 2 → Bool) 0 ≠ (![s, !s] : Fin 2 → Bool) 1 := by
         cases s <;> simp
-      rw [hy2]
+      rw [hy2, ← hLoop ω ![s, !s] ![x, x']]
       exact hgood (⟨![s, !s], hne⟩, ![x, x'])
     -- the random control and `(eq_L2-J)`
-    obtain ⟨Jh, hJh⟩ : ∃ Jh : ℝ, Jh = STJhat sz n (STflowE z n) D (ℓ n) (t n) ω := ⟨_, rfl⟩
-    have hJ0 : 0 ≤ Jh := by
-      rw [hJh]; exact ST_JhatM_nonneg sz n _ _ _ _ _
+    obtain ⟨Jh, hJh⟩ : ∃ Jh : ℝ, Jh = STJhatg (mk sz z) n D (ℓ n) (t n) ω := ⟨_, rfl⟩
+    have hJh0 : 0 ≤ Jh := by
+      rw [hJh]; exact emn2Exp2_Jhatg_nonneg _ n _ _ _ _
     obtain ⟨w, hwdef⟩ : ∃ w : ℝ, w = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := ⟨_, rfl⟩
     have hw : 0 < w := by rw [hwdef]; exact inv_pos.mpr (pow_pos (hWpos n) d)
     have hF : ∀ (s : Bool) (x x' : Zd d (sz.L n)),
         emn2ExpEllStar sz n (t n) < (zdistInf d (sz.L n) (x - x') : ℝ) →
-        ‖loopFine d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω) (zt (STflowE z n) (t n))
+        ‖loopFine d (sz.L n) (sz.W n) (Hf sz z n (t n) ω) (ζf sz z n (t n))
             ![s, !s] ![x, x']‖ ≤ (Jh + w) * Pf (zdistInf d (sz.L n) (x - x')) := by
       intro s x x' hfar'
-      have hΘ := (hKn 0 (t n) le_rfl (ht0 n) le_rfl x x' (by rw [one_mul]; exact hfar'.le)).1
-      have := emn2Exp2_loop2_far_le sz n (hE2 n) (t n) D (ℓ n)
-        (sz.seqHflow n (t n) ω) s x x' hΘ
+      rw [← hLoop ω ![s, !s] ![x, x']]
+      have := emn2Exp2_loop2_far_leg (C := mk sz z) n (t n) D (ℓ n) ω s x x' (hKn x x' s hfar'.le)
       rw [hJh, hwdef]
       exact this
     have hsw := emn2Exp_sw_dist sz n k a
@@ -1036,7 +1116,13 @@ theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
     have hTTTn := hTTT (sz.L n) (sz.lam n) (t n) (t n) hlamn.1 (ht0 n) le_rfl (ht1 n)
       (le_total _ _) (emn2ExpSw k a 0) (emn2ExpSw k a 1)
     have hradn := hrad (sz.L n) (sz.lam n) (t n) hlamn.1.le (ht1 n) (emn2ExpSw k a 1)
-    have hS := emn2Exp2_S3_le (sz.seqHflow n (t n) ω) (zt (STflowE z n) (t n)) hH hz'
+    have hyJ : Jh + w ≤ y * (J n ω + w) := by
+      have hy1 : 1 ≤ y := Real.one_le_rpow hN1 (by positivity)
+      calc Jh + w ≤ y * J n ω + y * w := add_le_add (by rw [hJh]; exact hJhat) (by nlinarith)
+        _ = y * (J n ω + w) := by ring
+    have hF3 : (Jh + w) ^ 3 ≤ y ^ 3 * (J n ω + w) ^ 3 := by
+      rw [← mul_pow]; exact pow_le_pow_left₀ (by positivity) hyJ 3
+    have hS := emn2Exp2_S3_le (Hf sz z n (t n) ω) (ζf sz z n (t n)) (hH ω) hz'
       (emn2ExpSw k σ) (emn2ExpSw k a 0) (emn2ExpSw k a 1) (g := sz.lam n) (t := t n) (D := D)
       (ℓ := ℓ n) (ℓs := emn2ExpEllStar sz n (t n)) (y := y) (F := Jh + w) (CT := CI / (1 - t n))
       (CR := CR / (1 - t n)) hℓn.1 hy0 (by positivity) (div_nonneg hCI.le hv.le)
@@ -1053,44 +1139,149 @@ theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
     have hw3 : w ^ 3 ≤ (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := by
       rw [hwdef] at hw ⊢
       exact emn2Exp2_w3_le hw hBn hw5n
-    unfold emn2ExpS3M at hp
-    rw [← etaT_eq_zt_im] at hS
+    unfold emn2ExpS3g at hp
+    rw [hzeta] at hS
     have hb0 : 0 ≤ (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := Real.rpow_nonneg hBpos _
+    -- the loss `(Ĵ + w)³ ≤ y³ (J + w)³` of `Ĵ ≤ N^{τ/10} J`, absorbed in `A₂' = y³ A₂`
+    have hcoef : 0 ≤ (3 : ℝ) ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI / (1 - t n) + CR / (1 - t n)) :=
+      mul_nonneg (by positivity) (add_nonneg (div_nonneg hCI.le hv.le) (div_nonneg hCR.le hv.le))
+    have hsecond : 3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI / (1 - t n) + CR / (1 - t n)) *
+          (Jh + w) ^ 3 * Pf (zdistInf d (sz.L n) (a 0 - a 1)) ^ 2 ≤
+        3 ^ d * (y ^ 3 * (2 ^ (d - 2) * Real.exp 1)) * (CI / (1 - t n) + CR / (1 - t n)) *
+          (J n ω + w) ^ 3 * Pf (zdistInf d (sz.L n) (a 0 - a 1)) ^ 2 :=
+      calc _ ≤ 3 ^ d * (2 ^ (d - 2) * Real.exp 1) * (CI / (1 - t n) + CR / (1 - t n)) *
+            (y ^ 3 * (J n ω + w) ^ 3) * Pf (zdistInf d (sz.L n) (a 0 - a 1)) ^ 2 :=
+          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hF3 hcoef) (sq_nonneg _)
+        _ = _ := by ring
+    obtain ⟨A2', hA2'⟩ : ∃ A2' : ℝ, A2' = 4 * (3 ^ d * (y ^ 3 * (2 ^ (d - 2) * Real.exp 1)) *
+      (CI + CR)) := ⟨_, rfl⟩
+    have hA2'0 : 0 ≤ A2' := by rw [hA2']; positivity
+    have hY' : 2 * (A1 + A2' + 1) ≤ y ^ 5 := by
+      have h3 : 1 ≤ y ^ 3 := one_le_pow₀ (Real.one_le_rpow hN1 (by positivity))
+      have hA2e : A2' = y ^ 3 * A2 := by rw [hA2', hA2]; ring
+      calc 2 * (A1 + A2' + 1) ≤ y ^ 3 * (2 * (A1 + A2 + 1)) := by
+            rw [hA2e]
+            have := mul_nonneg (sub_nonneg.2 h3) (add_nonneg hA1' zero_le_one)
+            linear_combination 2 * this
+        _ ≤ y ^ 3 * N ^ (τ / 5) := mul_le_mul_of_nonneg_left hQn (by positivity)
+        _ = y ^ 5 := by rw [← hy2]; ring
     have hfinal := emn2Exp2_assemble (hηn) (hηv n) (by positivity : (0 : ℝ) ≤ 3 ^ d)
-      (by positivity : (0 : ℝ) ≤ 2 ^ (d - 2) * Real.exp 1) hCI.le hCR.le hJ0
-      hw.le hb0 (sq_nonneg _) hsq0 hw3 hS hA1 hA2 hA1' hA2'
-      (by rw [hy5]; exact hQn)
+      (by positivity : (0 : ℝ) ≤ y ^ 3 * (2 ^ (d - 2) * Real.exp 1)) hCI.le hCR.le (hJ0 n ω)
+      hw.le hb0 (sq_nonneg _) hsq0 hw3 (hS.trans (add_le_add le_rfl hsecond)) hA1 hA2' hA1' hA2'0 hY'
     rw [hy5, ← hNτ] at hfinal
-    refine absurd hp (not_lt.mpr (hfinal.trans (le_of_eq ?_)))
-    rw [hJh]
-    rfl
+    exact absurd hp (not_lt.mpr (hfinal.trans (le_of_eq rfl)))
   · exfalso
     simp only [hfar, ↓reduceIte] at hp
-    have : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ((etaT (STflowE z n) (t n))⁻¹ *
-        ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) +
-          STJhat sz n (STflowE z n) D (ℓ n) (t n) ω ^ 3) *
+    have : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (((mk sz z).eta n (t n))⁻¹ *
+        ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) + J n ω ^ 3) *
         (STprof sz n (t n) D (ℓ n) (a 0) (a 1)) ^ 2) := by
-      have hJ := ST_JhatM_nonneg sz n (STflowE z n) D (ℓ n) (t n) (sz.seqHflow n (t n) ω)
-      have : 0 ≤ STJhat sz n (STflowE z n) D (ℓ n) (t n) ω ^ 3 := by
-        unfold STJhat; positivity
+      have := hJ0 n ω
       positivity
     linarith
+
+/-- **`S̃₃` on the far pairs** at the band carrier (the Ĵ-form `h3` of `emn2Exp_of_far3`): `emn2Exp_far3g` at the band
+(`emn2Exp_bandFacts`, `emn2Exp2_bandHK`) and `J = Ĵ`, under its old name and statement. -/
+theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
+    ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
+      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
+        ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ lemT (z n)) →
+          ∀ ε₀ : ℝ, 0 < ε₀ → ∀ Ψ : ℕ → ℝ,
+            (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψ n ∧
+              Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) →
+            STInitialGT2 sz (STflowE z) t ε₀ Ψ →
+            ∀ ℓ : ℕ → ℝ, (∀ᶠ n in atTop, 0 ≤ ℓ n ∧ ℓ n ≤ (Real.log ((sz.W n : ℕ) : ℝ)) ^ 10 *
+                ellT (sz.L n) (sz.lam n) (t n)) →
+              (∀ D : ℝ, 0 < D → STLWassmExp sz (STflowE z) t D ℓ) →
+              ∀ D : ℝ, 0 < D →
+                Prec sz (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+                  (fun n p ω => if emn2ExpEllDag sz n (t n) <
+                      (zdistInf d (sz.L n) (p.2.2 0 - p.2.2 1) : ℝ) then
+                    emn2ExpS3M sz n (STflowE z n) (t n) (ℓ n) p.1 p.2.1 p.2.2 ω else 0)
+                  (fun n p ω => (etaT (STflowE z n) (t n))⁻¹ *
+                    ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) +
+                      (STJhat sz n (STflowE z n) D (ℓ n) (t n) ω) ^ 3) *
+                    (STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) ^ 2) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+  have hJ0 : ∀ n ω, 0 ≤ STJhat sz n (STflowE z n) D (ℓ n) (t n) ω := fun n ω =>
+    ST_JhatM_nonneg sz n _ _ _ _ _
+  exact emn2Exp_far3g (fun sz => Sizes.seqP sz) hd (emn2Exp_bandFacts d) (emn2Exp2_bandHK d hd) κ ε 𝔡 hκ hε
+    h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD (fun n ω => STJhat sz n (STflowE z n) D (ℓ n) (t n) ω)
+    hJ0 (StochDomAt.refl (tendsto_size sz hflow.1.2.2.1) fun n _ ω => hJ0 n ω)
 
 end Far3
 
 
-/-! ## 10. The pin `STEMn2Exp` -/
+/-! ## 10. The pin `STEMn2Exp` over the carrier (T2404) -/
 
 section Pin
 
-/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)`** (`3_5:437-440`, proof `3_5:829-888`): the pin
-`STEMn2Exp d` for `d ≥ 3`, from the merged near case `emn2Exp_near`, `S̃₁ + S̃₂` (`emn2Exp_far12`) and the far sum
-`S̃₃` (`emn2Exp_far3`) by the assembly `emn2Exp_of_far3`.  For every `D > 0` (the paper's "large `D`" is not needed:
-paper-delta candidate `T2118a`).  **`3 ≤ d` is a hypothesis** (the pin has none; see the module docstring). -/
-theorem stEMn2Exp_holds (d : ℕ) (hd : 3 ≤ d) : STEMn2Exp d :=
-  emn2Exp_of_far3 d (emn2Exp_far3 d hd)
+variable {d : ℕ} (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
+  {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
+  {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
+  {Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+  {ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ}
+
+/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)` over a carrier, with a control `J ≥ Ĵ`** (`3_5:437-440`, proof
+`3_5:829-888`; the paper form `(eq:MG_conclusion3_BA)`, `7_8:1999`): for every `D > 0` and every `J ≥ 0`
+with `Ĵ^ℓ_{t,D} ≺ J`, `(𝓔⊗𝓔)^{M,(2;k)}_{t,σ,a,a} ≺ η_t^{-1} [(W^{-d} B_{t,0})^{1/2} + J³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`.
+`J ≥ W^{-d}` is not used and `J` may depend on `ω` (paper-delta candidate `T2404a`).  The near case, `S̃₁ + S̃₂` and `S̃₃`
+are `emn2Exp_nearg`, `emn2Exp_far12g`, `emn2Exp_far3g`; they are assembled by `emn2Exp_assemble`.  **`3 ≤ d` is a
+hypothesis**; the inputs of the model are `emn2ExpFacts` and the far field `emn2ExpHK` of the two-loop kernel. -/
+theorem stEMn2ExpJgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
+    emn2ExpPrem d law Flow mk T0 (fun sz z t ℓ D =>
+      ∀ J : ℕ → sz.SeqΩ → ℝ, (∀ n ω, 0 ≤ J n ω) →
+        PrecL sz (law sz) (U := fun _ => Unit)
+          (fun n _ ω => STJhatg (mk sz z) n D (ℓ n) (t n) ω) (fun n _ ω => J n ω) →
+        PrecL sz (law sz) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
+          (fun n p ω => ‖STEEg (mk sz z) n (t n) p.1 p.2.1 p.2.2 ω‖)
+          (fun n p ω => ((mk sz z).eta n (t n))⁻¹ *
+            ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) + (J n ω) ^ 3) *
+            (STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) ^ 2)) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD J hJ0 hJ
+  obtain ⟨hadm, hR, hS⟩ := hF.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  obtain ⟨hT1, -, -⟩ := hF.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  have hη : ∀ n, 0 < (mk sz z).eta n (t n) := by
+    intro n
+    obtain ⟨-, h1, h2, -⟩ := hR n (t n) (ht0 n) (htT n)
+    rw [← h2]; exact h1
+  exact emn2Exp_assemble (law sz) (tendsto_size sz hadm.2.2.1) (fun n => (mk sz z).eta n (t n))
+    (fun n => (sz.Bctl n (t n)) ^ (1 / 2 : ℝ))
+    (fun n p => STprof sz n (t n) D (ℓ n) (p.2.2 0) (p.2.2 1)) J hη
+    (fun n => Real.rpow_nonneg (STBctl_pos sz n ((htT n).trans_lt (hT1 n))).le _) hJ0
+    (fun n p ω => by
+      obtain ⟨hH, hz', hzeta, hLoop⟩ := hR n (t n) (ht0 n) (htT n)
+      obtain ⟨g, hg⟩ := hS n
+      exact emn2Exp_EEg_split n (t n) (ℓ n) ω (Hf sz z n (t n) ω) (ζf sz z n (t n)) g hg (hLoop ω)
+        p.1 p.2.1 p.2.2)
+    (emn2Exp_nearg law hF κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD)
+    (emn2Exp_far12g law hF κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD)
+    (emn2Exp_far3g law hd hF hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+      J hJ0 hJ)
+
+/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)` over a carrier** (`3_5:437-440`, proof `3_5:829-888`): the pin
+`STEMn2ExpgL` (`Chain/Step2Gen.lean:483`, with the random control `Ĵ`) for `d ≥ 3`, from `stEMn2ExpJgL_of` at `J = Ĵ`.
+For every `D > 0` (the paper's "large `D`" is not needed: paper-delta candidate `T2118a`).  **`3 ≤ d` is a hypothesis**
+(the pin has none). -/
+theorem stEMn2ExpgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
+    STEMn2ExpgL d law Flow mk T0 := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+  have hsize := tendsto_size sz (hF.1 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow).1.2.2.1
+  exact stEMn2ExpJgL_of law hd hF hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
+    (fun n ω => STJhatg (mk sz z) n D (ℓ n) (t n) ω)
+    (fun n ω => emn2Exp2_Jhatg_nonneg _ n D (ℓ n) (t n) ω)
+    (StochDomAt.refl hsize fun n _ ω => emn2Exp2_Jhatg_nonneg _ n D (ℓ n) (t n) ω)
 
 end Pin
+
+/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)`** (`3_5:437-440`, proof `3_5:829-888`): the pin
+`STEMn2Exp d` for `d ≥ 3`: the corollary of `stEMn2ExpgL_of` at the band carrier (`bandFM_STEMn2Exp`, `Iff.rfl`), under its
+old name and statement.  For every `D > 0` (the paper's "large `D`" is not needed: paper-delta candidate `T2118a`).
+**`3 ≤ d` is a hypothesis** (the pin has none; see the module docstring). -/
+theorem stEMn2Exp_holds (d : ℕ) (hd : 3 ≤ d) : STEMn2Exp d :=
+  (RBM.BA.bandFM_STEMn2Exp d).2
+    (stEMn2ExpgL_of (fun sz => Sizes.seqP sz) hd (emn2Exp_bandFacts d) (emn2Exp2_bandHK d hd))
+
 
 
 end RBM.Gauss.Sizes
