@@ -965,4 +965,183 @@ theorem GreenOff_carrier_decay (hd : 2 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 <
 
 end PinDet
 
+/-! ### The dependence on `Φ_N` and on the coupling: polynomial bounds -/
+
+section Numerics
+
+variable {d : ℕ}
+
+theorem GreenOff_eta_le {κ c₀ P δ g₀ γ Λ : ℝ} (hκ : 0 < κ) (hc₀ : 0 < c₀) (hP : 1 ≤ P) (hδ0 : 0 ≤ δ) (hg0 : 0 ≤ g₀)
+    (hgΛ : g₀ ≤ Λ) :
+    GreenOff_eta d κ c₀ P δ g₀ γ (GreenOff_alpha d κ δ g₀) ≤
+      ((2 / κ) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) +
+        Real.sqrt 2 * Real.sqrt 13 / κ * (1 + 2 * d * Λ * Real.exp γ / c₀)) * (Real.sqrt P * δ) := by
+  have ha : 1 ≤ Real.sqrt P := Real.one_le_sqrt.2 hP
+  have e2 : Real.sqrt (2 * P) = Real.sqrt 2 * Real.sqrt P := Real.sqrt_mul (by norm_num) P
+  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  have hq : 2 * (d : ℝ) * g₀ + (1 + 2 * d * g₀) / κ ≤ 2 * d * Λ + (1 + 2 * d * Λ) / κ := by
+    have := div_le_div_of_nonneg_right (show 1 + 2 * (d : ℝ) * g₀ ≤ 1 + 2 * d * Λ by nlinarith) hκ.le
+    nlinarith
+  have hq0 : 0 ≤ 2 * (d : ℝ) * Λ + (1 + 2 * d * Λ) / κ := by
+    have : 0 ≤ Λ := hg0.trans hgΛ
+    positivity
+  have h1 : δ * (2 * d * g₀ + (1 + 2 * d * g₀) / κ) ≤ Real.sqrt P * (δ * (2 * d * Λ + (1 + 2 * d * Λ) / κ)) :=
+    (mul_le_mul_of_nonneg_left hq hδ0).trans (by nlinarith [mul_nonneg hδ0 hq0])
+  have hex : 0 ≤ Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ) := by positivity
+  have h2' : 2 * (d : ℝ) * g₀ * Real.exp γ * (Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ)) ≤
+      2 * d * Λ * Real.exp γ * (Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ)) :=
+    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (by nlinarith) (Real.exp_pos _).le) hex
+  have h2 : 2 * (d : ℝ) * g₀ * Real.exp γ * (Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ)) / c₀ ≤
+      2 * d * Λ * Real.exp γ / c₀ * (Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ)) := by
+    rw [div_mul_eq_mul_div (2 * (d : ℝ) * Λ * Real.exp γ) c₀ (Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ))]
+    exact div_le_div_of_nonneg_right h2' hc₀.le
+  unfold GreenOff_eta GreenOff_alpha GreenOff_eX
+  rw [e2]
+  calc _ ≤ 2 / κ * (Real.sqrt P * (δ * (2 * d * Λ + (1 + 2 * d * Λ) / κ))) +
+        Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ) +
+        2 * d * Λ * Real.exp γ / c₀ * (Real.sqrt 2 * Real.sqrt P * (Real.sqrt 13 / κ * δ)) :=
+        add_le_add (add_le_add (mul_le_mul_of_nonneg_left h1 (by positivity)) le_rfl) h2
+    _ = _ := by ring
+
+theorem GreenOff_theta_le {κ P δ g₀ Λ : ℝ} (hκ : 0 < κ) (hP : 1 ≤ P) (hg0 : 0 ≤ g₀) (hgΛ : g₀ ≤ Λ) :
+    GreenCore_theta d κ P δ g₀ ≤
+      ((4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 + 26 / κ ^ 2) * (P * δ ^ 2) := by
+  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  have hq : 2 * (d : ℝ) * g₀ + (1 + 2 * d * g₀) / κ ≤ 2 * d * Λ + (1 + 2 * d * Λ) / κ := by
+    have := div_le_div_of_nonneg_right (show 1 + 2 * (d : ℝ) * g₀ ≤ 1 + 2 * d * Λ by nlinarith) hκ.le
+    nlinarith
+  have hq0 : 0 ≤ 2 * (d : ℝ) * g₀ + (1 + 2 * d * g₀) / κ := by positivity
+  have h1 : (2 * (d : ℝ) * g₀ + (1 + 2 * d * g₀) / κ) ^ 2 ≤ (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 :=
+    pow_le_pow_left₀ hq0 hq 2
+  unfold GreenCore_theta
+  have h2 : (4 / κ ^ 2) * (2 * (d : ℝ) * g₀ + (1 + 2 * d * g₀) / κ) ^ 2 * δ ^ 2 ≤
+      (4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 * (P * δ ^ 2) := by
+    have h3 := mul_le_mul_of_nonneg_left h1 (show 0 ≤ 4 / κ ^ 2 by positivity)
+    have h4 : δ ^ 2 ≤ P * δ ^ 2 := by nlinarith [sq_nonneg δ]
+    calc _ ≤ (4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 * δ ^ 2 :=
+          mul_le_mul_of_nonneg_right h3 (sq_nonneg _)
+      _ ≤ _ := mul_le_mul_of_nonneg_left h4 (by positivity)
+  nlinarith
+
+theorem GreenOff_CT_le {c₀ ρ S P : ℝ} (hc₀ : 0 < c₀) (hP : 1 ≤ P) :
+    GreenOff_CT c₀ ρ S P ≤ Real.sqrt P * GreenOff_CT c₀ ρ S 1 := by
+  have ha : 1 ≤ Real.sqrt P := Real.one_le_sqrt.2 hP
+  have e : Real.sqrt (16 * ρ * P * c₀⁻¹ * S) = Real.sqrt P * Real.sqrt (16 * ρ * 1 * c₀⁻¹ * S) := by
+    rw [← Real.sqrt_mul (by linarith)]; congr 1; ring
+  unfold GreenOff_CT
+  rw [e]
+  have h0 : 0 ≤ 2 * c₀⁻¹ * Real.sqrt S := by positivity
+  nlinarith [mul_le_mul_of_nonneg_right ha h0]
+
+theorem GreenOff_sX_le {κ c₀ ρ S P : ℝ} (hκ : 0 < κ) (hc₀ : 0 < c₀) (hP : 1 ≤ P) :
+    GreenOff_sX κ c₀ ρ S P ≤ P * GreenOff_sX κ c₀ ρ S 1 := by
+  have hCT := GreenOff_CT_le (ρ := ρ) (S := S) hc₀ hP
+  have e2 : Real.sqrt (2 * P) = Real.sqrt 2 * Real.sqrt P := Real.sqrt_mul (by norm_num) P
+  have ePP : Real.sqrt P * Real.sqrt P = P := Real.mul_self_sqrt (by linarith)
+  unfold GreenOff_sX
+  rw [e2, mul_one 2]
+  calc Real.sqrt 2 * Real.sqrt P * (1 + 2 / (κ * c₀)) * GreenOff_CT c₀ ρ S P ≤
+        Real.sqrt 2 * Real.sqrt P * (1 + 2 / (κ * c₀)) * (Real.sqrt P * GreenOff_CT c₀ ρ S 1) :=
+        mul_le_mul_of_nonneg_left hCT (by positivity)
+    _ = (Real.sqrt P * Real.sqrt P) * (Real.sqrt 2 * (1 + 2 / (κ * c₀)) * GreenOff_CT c₀ ρ S 1) := by ring
+    _ = _ := by rw [ePP]
+
+theorem GreenOff_sA_le {κ c₀ ρ S P δ g₀ Λ : ℝ} (hκ : 0 < κ) (hc₀ : 0 < c₀) (hP : 1 ≤ P) (hδ0 : 0 ≤ δ) (hδ : δ ≤ κ / 2)
+    (hg0 : 0 ≤ g₀) (hgΛ : g₀ ≤ Λ) :
+    GreenOff_sA d κ c₀ ρ S P δ g₀ ≤ P * GreenOff_sA d κ c₀ ρ S 1 (κ / 2) Λ := by
+  have hCT := GreenOff_CT_le (ρ := ρ) (S := S) hc₀ hP
+  have hCT0 := GreenOff_CT_nonneg (ρ := ρ) (S := S) (P := 1) hc₀
+  have ha : 1 ≤ Real.sqrt P := Real.one_le_sqrt.2 hP
+  have e2 : Real.sqrt (2 * P) = Real.sqrt 2 * Real.sqrt P := Real.sqrt_mul (by norm_num) P
+  have ePP : Real.sqrt P * Real.sqrt P = P := Real.mul_self_sqrt (by linarith)
+  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  have hΛ0 : 0 ≤ Λ := hg0.trans hgΛ
+  have hs2 : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg _
+  have hu : 0 ≤ Real.sqrt 13 / κ := by positivity
+  have hv : 0 ≤ (1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) := by positivity
+  have hv' : (1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * g₀) ≤ (1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * Λ) :=
+    mul_le_mul_of_nonneg_left (by nlinarith) hv
+  have hv0 : 0 ≤ (1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * Λ) := by positivity
+  have hpa : Real.sqrt P ≤ P := by nlinarith
+  have e1 : Real.sqrt (2 * 1) = Real.sqrt 2 := by rw [mul_one]
+  have hb : Real.sqrt 13 / κ * δ * (1 + Real.sqrt 2 * Real.sqrt P) + Real.sqrt 2 * Real.sqrt P *
+      ((1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * g₀)) ≤
+      Real.sqrt P * (Real.sqrt 13 / κ * (κ / 2) * (1 + Real.sqrt 2) + Real.sqrt 2 *
+        ((1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * Λ))) := by
+    have h1 : Real.sqrt 13 / κ * δ ≤ Real.sqrt 13 / κ * (κ / 2) := mul_le_mul_of_nonneg_left hδ hu
+    have h2 := mul_le_mul h1 (show 1 + Real.sqrt 2 * Real.sqrt P ≤ Real.sqrt P * (1 + Real.sqrt 2) by nlinarith)
+      (by positivity) (by positivity)
+    have h3 := mul_le_mul_of_nonneg_left hv' (mul_nonneg hs2 (Real.sqrt_nonneg P))
+    nlinarith
+  unfold GreenOff_sA
+  rw [e2, e1, Real.sqrt_one]
+  set Z : ℝ := Real.sqrt 13 / κ * (κ / 2) * (1 + Real.sqrt 2) + Real.sqrt 2 *
+    ((1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * Λ)) with hZ
+  have hZ0 : 0 ≤ Z := by rw [hZ]; positivity
+  calc (Real.sqrt 13 / κ * δ * (1 + Real.sqrt 2 * Real.sqrt P) + Real.sqrt 2 * Real.sqrt P *
+        ((1 + 2 / (κ * c₀)) * Real.exp (c₀ / 4) * (2 * d * g₀))) * GreenOff_CT c₀ ρ S P +
+        Real.sqrt 2 * Real.sqrt P + Real.sqrt P
+      ≤ (Real.sqrt P * Z) * (Real.sqrt P * GreenOff_CT c₀ ρ S 1) + (Real.sqrt 2 + 1) * P := by
+        have := mul_le_mul hb hCT (GreenOff_CT_nonneg hc₀) (by positivity)
+        nlinarith [mul_le_mul_of_nonneg_left hpa (show 0 ≤ Real.sqrt 2 by positivity)]
+    _ = P * (Z * GreenOff_CT c₀ ρ S 1 + Real.sqrt 2 + 1) := by
+        have : (Real.sqrt P * Z) * (Real.sqrt P * GreenOff_CT c₀ ρ S 1) =
+          (Real.sqrt P * Real.sqrt P) * (Z * GreenOff_CT c₀ ρ S 1) := by ring
+        rw [this, ePP]; ring
+
+theorem GreenOff_Cl_le {κ c₀ ρ S P δ g₀ Λ CΘ : ℝ} (hκ : 0 < κ) (hc₀ : 0 < c₀) (hP : 1 ≤ P) (hδ0 : 0 ≤ δ)
+    (hδ : δ ≤ κ / 2) (hg0 : 0 ≤ g₀) (hgΛ : g₀ ≤ Λ) (hρh : 0 ≤ c₀⁻¹ * S) (hCΘ : 0 ≤ CΘ) :
+    GreenOff_Cl d κ c₀ ρ S P δ g₀ CΘ ≤ P * GreenOff_Cl d κ c₀ ρ S 1 (κ / 2) Λ CΘ := by
+  have h1 := GreenOff_sA_le (d := d) (ρ := ρ) (S := S) hκ hc₀ hP hδ0 hδ hg0 hgΛ
+  have h2 := GreenOff_sX_le (ρ := ρ) (S := S) hκ hc₀ hP
+  have hA : 0 ≤ 1 + c₀⁻¹ * S * c₀⁻¹ * CΘ := by positivity
+  unfold GreenOff_Cl
+  calc (1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S * (GreenOff_sA d κ c₀ ρ S P δ g₀ / c₀ + GreenOff_sX κ c₀ ρ S P)) ≤
+        (1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S * (P * GreenOff_sA d κ c₀ ρ S 1 (κ / 2) Λ / c₀ +
+          P * GreenOff_sX κ c₀ ρ S 1)) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (add_le_add
+          (div_le_div_of_nonneg_right h1 hc₀.le) h2) hρh) hA
+    _ = _ := by ring
+
+end Numerics
+
+/-! ### The kernel against the printed right side of `(GijGEX_BA)` and the constants of `(κ, 𝔡)` -/
+
+section Pin
+
+variable {d : ℕ}
+
+theorem GreenOff_T_scale {L : ℕ} [NeZero L] {γ Ψ s : ℝ} {Φ : Zd d L → Zd d L → ℝ} (hs : 1 ≤ s) (hΦ : ∀ a b, 0 ≤ Φ a b)
+    (hΨ : 0 ≤ Ψ) (a c : Zd d L) :
+    GreenOff_T d L γ Ψ (fun a b => s * Φ a b) a c ≤ s * GreenOff_T d L γ Ψ Φ a c := by
+  unfold GreenOff_T
+  rw [mul_add, Finset.mul_sum]
+  refine add_le_add (le_of_eq (Finset.sum_congr rfl fun a' _ => ?_)) ?_
+  · rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun b' _ => by ring
+  · have := mul_nonneg hΨ (Real.exp_pos (-γ * (zdistD d L (a - c) : ℝ))).le
+    nlinarith
+
+/-- `𝔗_γ ≤` the printed right side `Σ Φ e^{-γ(…)} + Ψ e^{-γ|a-b|} + W^{-D}` of `(GijGEX_BA)` (`zdistInf ≤ zdistD`). -/
+theorem GreenOff_T_le_decayRHS {L W : ℕ} [NeZero L] {γ D Ψ : ℝ} {Φ : Zd d L → Zd d L → ℝ} (hγ : 0 ≤ γ)
+    (hΦ : ∀ a b, 0 ≤ Φ a b) (hΨ : 0 ≤ Ψ) (a b : Zd d L) :
+    GreenOff_T d L γ Ψ Φ a b ≤ GreenCore_decayRHS d L W γ D Φ Ψ a b := by
+  have hi : ∀ x : Zd d L, -γ * (zdistD d L x : ℝ) ≤ -γ * (zdistInf d L x : ℝ) := fun x => by
+    nlinarith [mul_le_mul_of_nonneg_left (show (zdistInf d L x : ℝ) ≤ zdistD d L x by
+      exact_mod_cast zdistInf_le_zdistD d L x) hγ]
+  unfold GreenOff_T GreenCore_decayRHS
+  have h0 : 0 ≤ (W : ℝ) ^ (-D) := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have h1 : (∑ a' : Zd d L, ∑ b' : Zd d L, Φ a' b' *
+      Real.exp (-γ * ((zdistD d L (a' - a) : ℝ) + (zdistD d L (b' - b) : ℝ)))) ≤
+      ∑ a' : Zd d L, ∑ b' : Zd d L, Φ a' b' *
+        Real.exp (-γ * ((zdistInf d L (a' - a) : ℝ) + (zdistInf d L (b' - b) : ℝ))) :=
+    Finset.sum_le_sum fun a' _ => Finset.sum_le_sum fun b' _ => mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by
+      nlinarith [mul_le_mul_of_nonneg_left (show (zdistInf d L (a' - a) : ℝ) + zdistInf d L (b' - b) ≤
+        zdistD d L (a' - a) + zdistD d L (b' - b) by
+          exact_mod_cast add_le_add (zdistInf_le_zdistD d L _) (zdistInf_le_zdistD d L _)) hγ])) (hΦ _ _)
+  have h2 : Ψ * Real.exp (-γ * (zdistD d L (a - b) : ℝ)) ≤ Ψ * Real.exp (-γ * (zdistInf d L (a - b) : ℝ)) :=
+    mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (hi _)) hΨ
+  linarith
+
+end Pin
+
 end RBM.BA
