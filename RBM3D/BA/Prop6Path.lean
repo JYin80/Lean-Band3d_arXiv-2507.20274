@@ -494,7 +494,7 @@ private lemma baP8_BAMss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b r
   simp only [BAMss, Matrix.of_apply, hs]
 
 /-- `Θ_t(a + r, b + r) = Θ_t(a, b)`, every `(σ₁, σ₂)`, unconditional (also at a singular `1 - tQ`). -/
-private lemma baP8_BATheta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
+lemma baP8_BATheta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BATheta d L g E m t σ₁ σ₂ (a + r) (b + r) = BATheta d L g E m t σ₁ σ₂ a b := by
   have hA : (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂).submatrix
       (Equiv.addRight r) (Equiv.addRight r)
