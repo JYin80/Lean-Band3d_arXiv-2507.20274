@@ -763,7 +763,7 @@ open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
 local notation "μ0" => Sizes.seqP (sz0.withLam 0)
 
 /-- Every deterministic hypothesis of a `BATwFrame` statement at `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `sz0`, `s ≡ 1/2`, `t ≡ 2/3`, regime `STAny`. -/
-theorem twFrame_inst {Q : ∀ sz : Sizes 3, FlowFM sz → Measure sz.SeqΩ → (ℕ → ℝ) → (ℕ → ℝ) → Prop} (h : BATwFrame 3 STAny Q) {Cd : ℝ} (hC : 0 < Cd)
+private theorem TwistPins_frame_inst {Q : ∀ sz : Sizes 3, FlowFM sz → Measure sz.SeqΩ → (ℕ → ℝ) → (ℕ → ℝ) → Prop} (h : BATwFrame 3 STAny Q) {Cd : ℝ} (hC : 0 < Cd)
     (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd) : Q sz0 (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) := by
   obtain ⟨c, hc, -, H⟩ := h le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) Cd hC
   exact H (1 / 6) sz0 zSeq flow_sz0 _ _ (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) trivial
@@ -773,12 +773,12 @@ variable {Cd : ℝ} (hC : 0 < Cd) (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1
 include hC hS
 
 /-- T.12' (needs TL2 at `s`), T.11 (i)-(v). -/
-example (h : BATwistLoopStep 3 STAny) := twFrame_inst h hC hS
-example (h : BATwistSrc1 3 STAny) := twFrame_inst h hC hS
-example (h : BATwistSrc2 3 STAny) := twFrame_inst h hC hS
-example (h : BATwistSrc3 3 STAny) := twFrame_inst h hC hS
-example (h : BATwistSrc4 3 STAny) := twFrame_inst h hC hS
-example (h : BATwistSrc5 3 STAny) := twFrame_inst h hC hS
+example (h : BATwistLoopStep 3 STAny) := TwistPins_frame_inst h hC hS
+example (h : BATwistSrc1 3 STAny) := TwistPins_frame_inst h hC hS
+example (h : BATwistSrc2 3 STAny) := TwistPins_frame_inst h hC hS
+example (h : BATwistSrc3 3 STAny) := TwistPins_frame_inst h hC hS
+example (h : BATwistSrc4 3 STAny) := TwistPins_frame_inst h hC hS
+example (h : BATwistSrc5 3 STAny) := TwistPins_frame_inst h hC hS
 omit hC hS
 
 /-- TL1 producer (T.7), base case, TL-V (the chain statement and its output): applied at the datum, with the owed pins as hypotheses. -/
