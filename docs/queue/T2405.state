@@ -1,4 +1,4 @@
-state: held
-reason: Amend 1 (H199) gives the 1a-audit sign-off; rule-(B) repair ((a′) by preflight with Amend 1 → 1a-audit round 2 → 1b prover-hard → auditor) starts in the next free slot after T2403
-updated: Sun Oct 11 03:11:38 UTC 2026
-reports: docs/reports/T2405-prove.md, docs/reports/T2405-1a-audit.md
+state: proving
+reason: rule-(B) repair under Amend 1 (H199): workflow wf_74a84543-be4, (a′) by preflight → 1a-audit round 2 → 1b prover-hard → auditor; branch t/T2405 at main a34b8d9
+updated: Sun Oct 11 03:37:52 UTC 2026
+reports: docs/reports/T2405-prove.md, docs/reports/T2405-1a-audit.md, docs/reports/T2405-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 6dfc2c9, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 03:55:31 UTC 2026
+state: merged 6f4572a
+reason: audit PASS round 1 (claude-opus-5-5); new BA/EKNonzero (357 lines, stop 800), Test/Axioms.lean registry edit (+3 -4), root import; full lake build 4213 jobs; pushed
+updated: Sun Oct 11 03:55:33 UTC 2026
 reports: docs/reports/T2406-prove.md, docs/reports/T2406-audit.md

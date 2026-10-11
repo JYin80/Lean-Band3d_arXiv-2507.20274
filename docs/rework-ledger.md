@@ -345,3 +345,5 @@
 | T2400 | 2026-10-11 00:59 UTC (4a4327e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-G3b：新 `BA/GreenStab`（442 行，停止线 1000），`baStab_of_real`（`K = 16κ⁻⁴`）、`M` 与 `Θ` 的行界；审核一次 PASS |
 | T2399 | 2026-10-11 01:08 UTC (561093a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-K12：新 `BA/KBound`（418 行），`Chain/Carrier` +23（`STKwardgL`），`Chain/Step2Gen` +28；469 / 停止线 1300；审核一次 PASS；阶段 K 收尾 |
 | T2397 | 2026-10-11 02:48 UTC (a34b8d9) | prover-max | Sonnet 5.5 max | 是 | BA-L3b3 设计门（G2，仅报告）：审核第一轮 RETURN（`BAImgSim` 证不出来、被 T2395 否定，S 行定价缺 BA 专属形状）→ 规则 (B) 修补 → 第二轮 PASS；中途碰到 API 会话限额（01:1x–02:10） |
+| T2404 | 2026-10-11 03:58 UTC (aa396d7) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-T T2（ST 侧）：设计门 1a-audit 第一轮 RETURN（(ii)–(iv) 缺）→ 规则 (B) 修补 → PASS；`EMn2*` 三个文件原地改，+724 −274，净 450 / 停止线 1000；审核一次 PASS |
+| T2406 | 2026-10-11 03:55 UTC (6f4572a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-E3：新 `BA/EKNonzero`（357 / 800），`baEKSumDecayNonzero_holds`；登记去一行、按 K1 改三行注释；审核一次 PASS；阶段 E 收尾 |
