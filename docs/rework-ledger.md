@@ -347,3 +347,9 @@
 | T2397 | 2026-10-11 02:48 UTC (a34b8d9) | prover-max | Sonnet 5.5 max | 是 | BA-L3b3 设计门（G2，仅报告）：审核第一轮 RETURN（`BAImgSim` 证不出来、被 T2395 否定，S 行定价缺 BA 专属形状）→ 规则 (B) 修补 → 第二轮 PASS；中途碰到 API 会话限额（01:1x–02:10） |
 | T2404 | 2026-10-11 03:58 UTC (aa396d7) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-T T2（ST 侧）：设计门 1a-audit 第一轮 RETURN（(ii)–(iv) 缺）→ 规则 (B) 修补 → PASS；`EMn2*` 三个文件原地改，+724 −274，净 450 / 停止线 1000；审核一次 PASS |
 | T2406 | 2026-10-11 03:55 UTC (6f4572a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-E3：新 `BA/EKNonzero`（357 / 800），`baEKSumDecayNonzero_holds`；登记去一行、按 K1 改三行注释；审核一次 PASS；阶段 E 收尾 |
+| T2403 | 2026-10-11 04:23 UTC (292a855) | prover-max | Sonnet 5.5 max | 是 | BA-G4：1a BLOCKED（签名：钉文没有 `d ≥ 3`）→ Amend 1（`hd : 2 ≤ d`）→ 1b；新 `BA/GreenOff` 1,568 / 1,600；去掉两条 owed；审核一次 PASS |
+| T2405 | 2026-10-11 04:24 UTC (2af090d) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-T T3（ST 侧）：1a-audit RETURN 并要求签字（BA 上 Im m 的定义域）→ Amend 1（带撇钉文）→ 修补 → PASS；新 `Chain/NewKLKGen` 816 / 900 |
+| T2401 | 2026-10-11 05:50 UTC (1aa96d2) | prover-max | Sonnet 5.5 max | 是 | BA-G5a：设计门 1a-audit RETURN 并要求签字（D1–D4）→ Amend 1（R6 移到 G5b，允许第三个文件）→ 修补 → PASS；中途碰到 API 限额，重跑一次；`GreenMinor` 434 + `GreenMinor2` 685 + `GreenMinor3` 1,003；owed `BAFamGain`、`BAFAav` |
+| T2407 | 2026-10-11 05:43 UTC (1f79c74) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L2c1：新 `Graph/BAWeightOp` 1,941 / 2,000（`lw2`/`lw4` 照 T2395，`baExpFrame_lw`）；Amend 1 在 1a 时加进去；审核一次 PASS |
+| T2408 | 2026-10-11 06:09 UTC (b11dee1) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-G6a：设计门，审核第一轮 RETURN（D1：owed 的 `BAGbEXPii` 被提前去掉）→ 修补 → PASS；新 `BA/GreenLocal` 1,005 行 |
+| T2409 | 2026-10-11 05:08 UTC (d354b8d) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L2c2a：新 `Graph/BAGGExp` 533 / 1,300（`baGGGamma_holds`，D402）；审核一次 PASS |

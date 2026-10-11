@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a, probe, 1a-audit sign-off (Amend 1, H201) → (a′) repair → probe recompile aec5a16 → 1a-audit round 2 PASS; prover-max 8104042; audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 05:50:33 UTC 2026
+state: merged 1aa96d2
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new BA/GreenMinor (434), GreenMinor2 (685), GreenMinor3 (1003; authorised by Amend 1 D4), Test/Axioms.lean owed lines BAFamGain and BAFAav, three root imports (union with BAGGExp/BAWeightOp); probe stays on t/T2401 (aec5a16); full lake build 4220 jobs; pushed
+updated: Sun Oct 11 05:50:35 UTC 2026
 reports: docs/reports/T2401-prove.md, docs/reports/T2401-1a-audit.md, docs/reports/T2401-audit.md

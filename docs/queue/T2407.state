@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a PASS; Amend 1 1a-audit RETURN → one rule-(B) (a′) repair → round 2 PASS; prover-hard 849a959; audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 05:43:42 UTC 2026
+state: merged 1f79c74
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new Graph/BAWeightOp (1941 lines, stop 2000), root import added at merge; full lake build 4217 jobs; pushed
+updated: Sun Oct 11 05:43:44 UTC 2026
 reports: docs/reports/T2407-prove.md, docs/reports/T2407-1a-audit.md, docs/reports/T2407-audit.md
