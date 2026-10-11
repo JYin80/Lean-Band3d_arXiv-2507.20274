@@ -26,7 +26,8 @@ Dispatcher V2, DECISIONS §212; design `docs/reports/T2360-design.md:133` (row K
    `t ∈ [0,1)` at `BAReal` data (`BAKBoundAt`, resp. `BAWardIneqAt`, `BA/KWardIneq.lean:93`): the data of the carrier are `BAReal` for every `n`
    (`BAflow_real`), eventually `0 < g₀_n ≤ 𝔡⁻¹` (`BAflow_lam0_window`), `B_{t,0}(g₀) ≤ ((κ+1)/κ) B_{t,0}(g)` (`g₀² = t₀ g²`,
    `t₀ ≥ κ/(κ+1)`), and the loss `C L^s` is a `≺` (`L^s ≤ N^{s/d}`, `N → ∞`).  `baKbound_holds`, `baKward_holds` are the unconditional theorems.
-3. The nonempty instances (section 4): `inst_BAKbound`, `inst_BAKward`, `baKBoundAt_holds` at the flow point of `(d, L) = (3, 4)`.
+3. `KBound_baKsol_ward`: the Ward identity on `BAKsol` (`baK_ward` at `BAKsol_isKLoopS`).
+4. The nonempty instances (section 3): `inst_BAKbound`, `BAKward` at `d = 3`, `baKBoundAt_holds` and `KBound_baKsol_ward` at the flow point of `(d, L) = (3, 4)`.
 -/
 
 set_option linter.style.longLine false
@@ -248,7 +249,7 @@ theorem baKbound_holds (d : ℕ) : BAKbound d :=
 `STKwardgL` along every flow, by the same reduction as `BAKbound_of_uniform`; `η` is `etaOf (BAmF ..) t = (1 - t) Im m_F`, the same factor
 `((1 - t) m.im)` on both sides (no `c` on `η`), so the constant of the pin is `C ((κ+1)/κ)^{k-2}`.  The last label is `x`, and the loop is
 `KLloopOf d L σ (a, x) = ⟨List.ofFn σ, List.ofFn a ++ [x]⟩` (`Carrier_ofFn_ext`). -/
-theorem BAKward_of_uniform (d : ℕ)
+private theorem KBound_BAKward_of_uniform (d : ℕ)
     (U : 3 ≤ d → ∀ (Λ κ : ℝ) (n : ℕ), 0 < Λ → 0 < κ → 2 ≤ n → BAWardIneqAt d n Λ κ) : BAKward d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow τ hτ0 hτ1 k hk
   have hB : ∀ n, 0 ≤ sz.Bctl n (τ n) := fun n => by
@@ -299,9 +300,25 @@ theorem BAKward_of_uniform (d : ℕ)
 /-- **`lem_wardineq_K` at BA is proved**: `BAKward d`, for every `d`, no hypothesis of another gate.  The premises `KWardIneq_IndAt d k Λ κ`
 (`3 ≤ k ≤ n`) of K11's `baWardIneq_holds` are discharged by `KWardIneq_IndAt_of_abs` of K09b's `KStep_baIndStepAbs_holds`. -/
 theorem baKward_holds (d : ℕ) : BAKward d :=
-  BAKward_of_uniform d fun hd _ _ n hΛ hκ hn =>
+  KBound_BAKward_of_uniform d fun hd _ _ n hΛ hκ hn =>
     baWardIneq_holds d n hd hn hΛ hκ
       (fun k hk _ _ => KWardIneq_IndAt_of_abs (KStep_baIndStepAbs_holds k hd hk hΛ hκ))
+
+/-- **The Ward identity on `BAKsol`, unconditional** (`lem_WI_K`, `(WI_calK)`, `1_2:1034-1046`; band: `KLK_ward`, `Loop/KLWard.lean:1318`):
+for `σ = (s, μ, -s)`, `n = |μ| + 2`, `Σ_{a_n} 𝒦^{(n)}_{t,σ,a} = (2 i W^d η_t)⁻¹ (𝒦^{(n-1)}_{t,(+,μ),â} - 𝒦^{(n-1)}_{t,(-,μ),â})`.
+This is the probe's `BAKward` (`t/T2360:RBM3D/Probe/T2360Pins.lean:306`, on `BAKsol`), which K02 (`BA/KWard.lean:304`, T2369) leaves to this row:
+`baK_ward` (K02) at the family `BAKsol` (`BAKsol_isKLoopS (baKsolve d)`, K05b) and its level-2 clause (`baKsol_two`, K10).  Distinct from the
+flow-level pin `BAKward` above (an estimate), which is the ticket's `BAKward`. -/
+theorem KBound_baKsol_ward (d : ℕ) {Λ κ g : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) {L : ℕ} [NeZero L] (hL : 3 ≤ L) {W : ℕ}
+    (hW : 1 ≤ W) (hg : 0 < g) (hgΛ : g ≤ Λ) {E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) :
+    ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ (s : Bool) (μ : List Bool) (a : List (Zd d L)), a.length = μ.length + 1 →
+      ∑ x : Zd d L, BAKsol d L W (BAMsigma d L (BAMB d L g (E : ℂ) m)) (PropSpin m) t ⟨s :: μ ++ [!s], a ++ [x]⟩
+        = (2 * Complex.I * (W : ℂ) ^ d * (((1 - t) * (PropSpin m true).im : ℝ) : ℂ))⁻¹ *
+            (BAKsol d L W (BAMsigma d L (BAMB d L g (E : ℂ) m)) (PropSpin m) t ⟨true :: μ, a⟩
+              - BAKsol d L W (BAMsigma d L (BAMB d L g (E : ℂ) m)) (PropSpin m) t ⟨false :: μ, a⟩) :=
+  baK_ward d L W g κ E m hr hL hW (BAKsol_isKLoopS (baKsolve d) hΛ hκ hL hg hgΛ hr)
+    (fun (t : ℝ) (ht : t ∈ Set.Ico (0 : ℝ) 1) (σ : Bool × Bool) (a₁ a₂ : Zd d L) => by
+    simpa [KLloopOf, List.ofFn_succ] using baKsol_two d hκ hg hL W hr ht ![σ.1, σ.2] ![a₁, a₂])
 
 end Reduction
 
@@ -309,7 +326,7 @@ end Reduction
 
 Flow data: `d = 3`, `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2097152`),
 `zSeq`, `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`, proved).  The pins
-`inst_BAKbound`, `inst_BAKward` are the theorems `baKbound_holds`, `baKward_holds` at this data: no hypothesis is left, since the uniform
+`inst_BAKbound` and the `BAKward` examples are the theorems `baKbound_holds`, `baKward_holds` at this data: no hypothesis is left, since the uniform
 bounds `U` are the proved `baKBoundAt_holds`, `baWardIneq_holds`.  Deterministic datum: the flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`;
 `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`, `0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `W = 2` (`W^d = 8`), `t = 1/2`, `τ = 1`, distinct labels of `Z_4^3`. -/
 
@@ -319,9 +336,8 @@ theorem inst_BAKbound :
   baKbound_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
     SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0
 
-/-- **`inst_BAKward`**: the pin `BAKward` at `d = 3`, `sz0`, `zSeq`; no hypothesis left. -/
-theorem inst_BAKward :
-    STKwardgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) :=
+/-- **The pin `BAKward` at `d = 3`, `sz0`, `zSeq`** (`STKwardgL` at the carrier `baFMz`); no hypothesis left. -/
+example : STKwardgL (baFMz SizesInst.sz0 FlowPinsInst.zSeq) (Sizes.seqP (SizesInst.sz0.withLam 0)) :=
   baKward_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
     SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0
 
@@ -336,7 +352,7 @@ example :
       (fun n _ _ => (SizesInst.sz0.Bctl n (1 / 2)) ^ (4 - 1)) :=
   inst_BAKbound (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 4 (by norm_num)
 
-/-- `inst_BAKward` at `τ ≡ 1/2` and `k = 3`: `max_σ Σ_{a_3} |𝒦^{(3)}_{1/2,σ,a}| ≺ (W^d η_{1/2})⁻¹ (W^{-d} B_{1/2,0})` along `sz0`; the last label is summed. -/
+/-- `BAKward` at `d = 3`, `sz0`, `zSeq`, `τ ≡ 1/2` and `k = 3`: `max_σ Σ_{a_3} |𝒦^{(3)}_{1/2,σ,a}| ≺ (W^d η_{1/2})⁻¹ (W^{-d} B_{1/2,0})` along `sz0`; the last label is summed. -/
 example :
     PrecL SizesInst.sz0 (Sizes.seqP (SizesInst.sz0.withLam 0))
       (U := fun n => (Fin 3 → Bool) × (Fin (3 - 1) → Zd 3 (SizesInst.sz0.L n)))
@@ -345,7 +361,9 @@ example :
           (fun i : Fin 3 => if h : (i : ℕ) < 3 - 1 then p.2 ⟨i, h⟩ else x)‖)
       (fun n _ _ => (((SizesInst.sz0.W n : ℕ) : ℝ) ^ 3 *
           (baFMz SizesInst.sz0 FlowPinsInst.zSeq).eta n (1 / 2))⁻¹ * (SizesInst.sz0.Bctl n (1 / 2)) ^ (3 - 2)) :=
-  inst_BAKward (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 3 (by norm_num)
+  baKward_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
+    SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun _ => by norm_num) 3
+    (by norm_num)
 
 /-- **The bridge `bandFM_STKward` applied** at the band flow `(sz0, z0)`: the proved band `STKward` (`stKward_of_flow`) is the generic
 `STKwardgL` at the band carrier and the band law. -/
@@ -382,6 +400,18 @@ example : ∃ C : ℝ, 0 < C ∧
       ≤ C * (4 : ℝ) ^ (1 : ℝ) * (((2 : ℝ) ^ 3)⁻¹ * Bparam 3 4 P.g0 (1 / 2) 0) ^ (3 - 1) := by
   obtain ⟨C, hC, H⟩ := baKBoundAt_holds 3 (Λ := 10) (κ := P.m0.im) le_rfl (by norm_num) P.real.1.1 3 (by norm_num) 1 one_pos
   exact ⟨C, hC, H 4 (by norm_num) 2 (by norm_num) P.g0 P.g0_pos P.g0_le P.E P.m0 P.real (1 / 2) (by norm_num) (by norm_num) _ _⟩
+
+/-- **`KBound_baKsol_ward`** at the flow point: `σ = (+, μ, -)` with `μ = (+, -)`, `n = 4`, labels `a = (a₁, a₂, a₃)` and the last label summed,
+`W = 2`, `t = 1/2`. -/
+example : ∑ x : Zd 3 4, BAKsol 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (PropSpin P.m0) (1 / 2)
+        ⟨true :: [true, false] ++ [!true], [![0, 0, 0], ![1, 0, 0], ![2, 1, 0]] ++ [x]⟩
+      = (2 * Complex.I * ((2 : ℕ) : ℂ) ^ 3 * (((1 - 1 / 2) * (PropSpin P.m0 true).im : ℝ) : ℂ))⁻¹ *
+          (BAKsol 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (PropSpin P.m0) (1 / 2)
+              ⟨true :: [true, false], [![0, 0, 0], ![1, 0, 0], ![2, 1, 0]]⟩
+            - BAKsol 3 4 2 (BAMsigma 3 4 (BAMB 3 4 P.g0 (P.E : ℂ) P.m0)) (PropSpin P.m0) (1 / 2)
+              ⟨false :: [true, false], [![0, 0, 0], ![1, 0, 0], ![2, 1, 0]]⟩) :=
+  KBound_baKsol_ward 3 (Λ := 10) (κ := P.m0.im) (by norm_num) P.real.1.1 (by norm_num) (by norm_num) P.g0_pos P.g0_le P.real
+    (1 / 2) ⟨by norm_num, by norm_num⟩ true [true, false] _ rfl
 
 end KBoundInst
 
