@@ -8,20 +8,28 @@ import RBM3D.Graph.BAExpandWOrd
 /-!
 # BA-L2c1: the weight expansion `lem_lweight` (B.19) as a graph operation (T2407)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:376-387` (cited `B:line`; `lem_lweight` =
-`(eq:LW)`, [yang2024Del, Lemma B.10]).  The identity of the polynomial `f` is `baLweight_holds`
-(`Graph/BAExpandW.lean`); this file is its graph form at a self-loop `Ǧ_{xx}` (Amend 1: the term lists are
-those of the T2395 probe, copied verbatim).
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:376-387` (cited `B:line`;
+`lem_lweight` = `(eq:LW)`, [yang2024Del, Lemma B.10]).  The identity of the polynomial `f` is
+`baLweight_holds` (`Graph/BAExpandW.lean`); this file is its graph form at a self-loop `Ǧ_{xx}`.
+Under Amend 1 the term lists are those of the T2395 probe
+(`t/T2395:RBM3D/Probe/T2395Pins.lean` at `4c1de4c`), copied verbatim.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAWeightOp_`)
 
-1. **Target 1**: `BAGraph.ext`, `bpv`, `bpS`, `bpM`, `bpW`, `BAGraph.lw2`, `BAGraph.lw4`, `baSum`
-   (T2395 probe `t/T2395:RBM3D/Probe/T2395Pins.lean` at `4c1de4c`, lines 105-126 and 239-241).
-2. **Target 2** (`baExpFrame_lw`, the first conjunct of `BAexpFrameE`): the expectation of `Γ.val` is that of
-   `baSum (Γ.lw2 p) + baSum (Γ.lw4 p)`, from `baLweight_holds` and `W = 1 + M⁺ (S W)` (`baW_mul`).
-3. **Target 3**: the raw counters of the terms (`lw_counters`), the raw order (`lw_raw`), the counter half
-   of `BAstepMono` at `T°` (`lw_mono`), and `lw_scalingOrderG`.
-4. Compiled instances (`RBM.Graph.BAWeightOpInst`).
+1. **Target 1**: `BAGraph.ext`, `bpv`, `bpS`, `bpM`, `bpW`, `BAGraph.lw2`, `BAGraph.lw4` (probe
+   lines 105-126), `baSum` (probe lines 239-241).
+2. **Target 2** (`baExpFrame_lw`, the first conjunct of `BAexpFrameE`):
+   `𝔼 Γ.val = 𝔼 (baSum (Γ.lw2 p) + baSum (Γ.lw4 p))` at `BAlwData` over `PF d L W 0`, for a circled
+   blue self-loop `p.1`.  It follows from `baLweight_holds` and `W = 1 + M⁺ (S W)` (`baW_mul`,
+   `BAWeightOp_W_sub_one`), pathwise on the sequence space (`BAWeightOp_pathwise`,
+   `BAWeightOp_core`) and transported by `lwWx_integral`.
+3. **Target 3** (`T°` is `T` with every solid edge circled, `BAWeightOp_circ`): the raw counters of
+   the terms (`lw_counters`: `n_W + 1`, `n_A + 1` for `lw2`, `n_W + 2`, `n_A + 2` for `lw4`, `n_M`
+   fixed), the raw order `ord T° = ord Γ + 1` (`lw_raw`), the counters of `BAstepMono` at `T°`
+   (`lw_mono`: `n_M`, `n_A - n_W`, the number of external atoms), and `lw_scalingOrderG`
+   (`ord Γ ≤ ordG T`, `Γ` normal).  The `Fin 4` bookkeeping re-proves locally the closure lemmas
+   that are private in `Graph/BAExpandWOrd`.
+4. Compiled instances (`RBM.Graph.BAWeightOpInst`) at `baGcxx` and `baGwx`.
 -/
 
 set_option linter.style.setOption false
@@ -1796,9 +1804,9 @@ private theorem BAWeightOp_mono_aux (Γ : BAGraph E I) {k : ℕ} (T : BAGraph E 
   have h2 := BAWeightOp_nExt_add_nA Γ
   rw [n] at h1
   refine ⟨hnM, ?_, ?_⟩
-  · show (T.nA : ℤ) - T.nW = _
+  · change (T.nA : ℤ) - T.nW = _
     rw [hnA, hnW]; push_cast; ring
-  · show ((Finset.univ.filter fun v : E ⊕ (I ⊕ Fin k) => v.isLeft = true).image T.atom).card ≤ _
+  · change ((Finset.univ.filter fun v : E ⊕ (I ⊕ Fin k) => v.isLeft = true).image T.atom).card ≤ _
     omega
 
 /-- **Target 3, the counters of `BAstepMono` at `T°`** (T2395 design §3 Step 3 (a), (c); L3a4): `n_M`, `n_A - n_W` are those of `Γ`
@@ -1822,6 +1830,111 @@ theorem lw_mono :
     fun T hT => BAWeightOp_mono_aux Γ T 2 (c4 T hT) (n4 T hT)⟩
 
 end Targets
+
+
+/-! ## 5. Compiled instances (namespace `RBM.Graph.BAWeightOpInst`)
+
+The weight `Ǧ_{xx}` of `baGcxx` (`BAExpandW.lean:980`, the circled diagonal of `BAExpandWOrdInst`, `x = inr 0` internal) and
+`baGwx = Ǧ_{xx} Ǧ_{ex}` (`e = inl 0` external), at `d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2`
+(`BASelf` is `BAExpandInst.baSelf_zero`): every hypothesis is discharged. -/
+
+namespace BAWeightOpInst
+
+set_option maxRecDepth 100000
+
+/-- `Ǧ_{xx} Ǧ_{ex}`: the weight and one more solid edge (`x = inr 0` internal, `e = inl 0` external). -/
+def baGwx : BAGraph (Fin 1) (Fin 1) where
+  solid := [⟨true, true, .inr 0, .inr 0⟩, ⟨true, true, .inl 0, .inr 0⟩]
+  waved := []
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := []
+
+/-- The weight and the other edges of the two instance graphs. -/
+abbrev p0 : SEdge (Fin 0 ⊕ Fin 1) × List (SEdge (Fin 0 ⊕ Fin 1)) := (⟨true, true, .inr 0, .inr 0⟩, [])
+
+abbrev p1 : SEdge (Fin 1 ⊕ Fin 1) × List (SEdge (Fin 1 ⊕ Fin 1)) :=
+  (⟨true, true, .inr 0, .inr 0⟩, [⟨true, true, .inl 0, .inr 0⟩])
+
+theorem hp0 : p0 ∈ lwSplit baGcxx.solid := by simp [baGcxx, lwSplit]
+
+theorem hp1 : p1 ∈ lwSplit baGwx.solid := List.mem_cons_self ..
+
+theorem hN0 : baGcxx.Normal := by simp [BAGraph.Normal, baGcxx]
+
+theorem hN1 : baGwx.Normal := by simp [BAGraph.Normal, baGwx]
+
+/-- **Target 1, one term per kind with its counters** (`n_S, n_W, n_A, n_M`): `baGcxx` has one term in each of `lw2`, `lw4`; `baGwx`
+has two in each (the leaf and the derivative term of `q = Ǧ_{ex}`). -/
+theorem lists_baGcxx :
+    (baGcxx.lw2 p0).length = 1 ∧ (∀ T ∈ baGcxx.lw2 p0, T.nS = 2 ∧ T.nW = 1 ∧ T.nA = 2 ∧ T.nM = 1) ∧
+    (baGcxx.lw4 p0).length = 1 ∧ (∀ T ∈ baGcxx.lw4 p0, T.nS = 2 ∧ T.nW = 2 ∧ T.nA = 3 ∧ T.nM = 1) := by
+  decide
+
+theorem lists_baGwx :
+    (baGwx.lw2 p1).length = 2 ∧ (∀ T ∈ baGwx.lw2 p1, T.nS = 3 ∧ T.nW = 1 ∧ T.nA = 2 ∧ T.nM = 1) ∧
+    (baGwx.lw4 p1).length = 2 ∧ (∀ T ∈ baGwx.lw4 p1, T.nS = 3 ∧ T.nW = 2 ∧ T.nA = 3 ∧ T.nM = 1) := by
+  decide
+
+/-- **Target 2 at `baGcxx`**: `𝔼 baGcxx.val = 𝔼 (Σ lw2 + Σ lw4)` (`x = inr 0` summed over `Idx 3 3 1`). -/
+example :
+    ∫ ω, baGcxx.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) (fun i => i.elim0) ∂(PF 3 3 1 0) =
+      ∫ ω, baSum (baGcxx.lw2 p0) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) (fun i => i.elim0) +
+        baSum (baGcxx.lw4 p0) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) (fun i => i.elim0) ∂(PF 3 3 1 0) :=
+  baExpFrame_lw 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
+    baGcxx _ p0 hp0 rfl rfl rfl
+
+/-- **Target 2 at `baGwx`**, the external label `e = e₀ ≠ 0` (the derivative terms are present). -/
+example :
+    ∫ ω, baGwx.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![fun i => if i = 0 then 1 else 0] ∂(PF 3 3 1 0) =
+      ∫ ω, baSum (baGwx.lw2 p1) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![fun i => if i = 0 then 1 else 0] +
+        baSum (baGwx.lw4 p1) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![fun i => if i = 0 then 1 else 0]
+          ∂(PF 3 3 1 0) :=
+  baExpFrame_lw 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
+    baGwx _ p1 hp1 rfl rfl rfl
+
+/-- **Target 3 at `baGcxx`, `baGwx`**: `lw_counters`, `lw_raw`, `lw_mono`, `lw_scalingOrderG` applied (`ord baGcxx = -1`, the terms have
+`ord 0`; `ord baGwx = 0`, the terms have `ord 1`). -/
+example : (∀ T ∈ baGcxx.lw2 p0, T.counters = ⟨baGcxx.nS + 1, baGcxx.nW + 1, baGcxx.nA + 1, baGcxx.nM, 0, 0⟩) ∧
+    (∀ T ∈ baGcxx.lw4 p0, T.counters = ⟨baGcxx.nS + 1, baGcxx.nW + 2, baGcxx.nA + 2, baGcxx.nM, 0, 0⟩) :=
+  lw_counters baGcxx p0 hp0 rfl rfl
+
+example : (∀ T ∈ baGwx.lw2 p1, T.counters = ⟨baGwx.nS + 1, baGwx.nW + 1, baGwx.nA + 1, baGwx.nM, 0, 0⟩) ∧
+    (∀ T ∈ baGwx.lw4 p1, T.counters = ⟨baGwx.nS + 1, baGwx.nW + 2, baGwx.nA + 2, baGwx.nM, 0, 0⟩) :=
+  lw_counters baGwx p1 hp1 rfl rfl
+
+example : (∀ T ∈ baGwx.lw2 p1, (BAWeightOp_circ T).scalingOrder = baGwx.scalingOrder + 1) ∧
+    (∀ T ∈ baGwx.lw4 p1, (BAWeightOp_circ T).scalingOrder = baGwx.scalingOrder + 1) :=
+  lw_raw baGwx p1 hp1 rfl rfl
+
+example := lw_mono baGwx p1 hp1 rfl rfl
+
+example := lw_mono baGcxx p0 hp0 rfl rfl
+
+example : (∀ T ∈ baGwx.lw2 p1, ((baGwx.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) ∧
+    (∀ T ∈ baGwx.lw4 p1, ((baGwx.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) :=
+  lw_scalingOrderG baGwx p1 hp1 rfl rfl hN1
+
+example : (∀ T ∈ baGcxx.lw2 p0, ((baGcxx.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) ∧
+    (∀ T ∈ baGcxx.lw4 p0, ((baGcxx.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) :=
+  lw_scalingOrderG baGcxx p0 hp0 rfl rfl hN0
+
+/-- The first conjunct of `BAexpFrameE` as it is pinned in the T2395 probe (`:244-251`), copied for a fit check. -/
+def frameE1 (d : ℕ) : Prop :=
+  ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t →
+    t < 1 → ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
+    (ℓe : Ex → Idx d L W),
+      (∀ p ∈ lwSplit Γ.solid, p.1.σ = true → p.1.circ = true → p.1.src = p.1.dst →
+        ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+          ∫ ω, baSum (Γ.lw2 p) (BAlwData d L W g0 Em t m ω) ℓe + baSum (Γ.lw4 p) (BAlwData d L W g0 Em t m ω) ℓe
+            ∂(PF d L W 0))
+
+/-- **Fit check**: `baExpFrame_lw` is the first conjunct of `BAexpFrameE`, for every `d`. -/
+example (d : ℕ) : frameE1 d := fun L W _ _ hL g0 Em t m hS h0 h1 _ _ _ _ _ _ Γ ℓe =>
+  baExpFrame_lw d L W hL g0 Em t m hS h0 h1 Γ ℓe
+
+end BAWeightOpInst
 
 end RBM.Graph
 
