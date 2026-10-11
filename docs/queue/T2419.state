@@ -1,4 +1,4 @@
-state: audit-fail
-reason: preflight PASS, prover-hard de1eb31 (462 lines), audit RETURN with dispatcher sign-off (wf_b567ec0e-a2d; docs/reports/T2419-audit.md): BARCand handles only blue (σ = true) pairs, a special case of the ticket's same-charge GG step, because the merged baExpFrame_gg covers only blue; build, axioms, probe-pin diff and instances pass. Question for the dispatcher: accept the blue-only special case (with a follow-up row for red), or amend the targets? No rule-(B) repair started (sign-off asked).
-updated: Sun Oct 11 10:50:39 UTC 2026
+state: proving
+reason: rule-(B) repair under Amend 1 (H217, decision (b) both charges): workflow wf_97b90849-041, 1b prover-hard on t/T2419 at de1eb31 → auditor round 2 (a second RETURN goes to the dispatcher)
+updated: Sun Oct 11 11:01:43 UTC 2026
 reports: docs/reports/T2419-prove.md, docs/reports/T2419-audit.md

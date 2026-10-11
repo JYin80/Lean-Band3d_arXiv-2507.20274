@@ -1,4 +1,4 @@
-state: blocked
-reason: stage 1a preflight BLOCKED (wf_e372e7fe-076; docs/reports/T2421-prove.md Verdicts): twK_bound as pinned (every n) needs 0 < g0_n ≤ 𝔡⁻¹ for all n; BAFlow gives it only eventually and no repository lemma gives it from BAdom (the statement is not shown false). Question for the dispatcher: amend twK_bound to ∀ᶠ n in atTop, ∀ σ c1 c2, … (constant C(d,κ,ε,𝔡) before sz, z) as the preflight proposes, or otherwise? 1b not started.
-updated: Sun Oct 11 10:49:57 UTC 2026
-reports: docs/reports/T2421-prove.md
+state: proving
+reason: resumed under Amend 1 (H217): workflow wf_3556f467-662, (a′) by preflight → 1b prover-hard → auditor; branch t/T2421 at 913f555
+updated: Sun Oct 11 11:01:43 UTC 2026
+reports: docs/reports/T2421-prove.md, docs/reports/T2421-audit.md

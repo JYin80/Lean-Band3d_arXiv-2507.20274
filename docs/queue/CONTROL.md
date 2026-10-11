@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 10:59 UTC (dispatcher V2: T2414, T2422 merged; sign-offs T2421 Amend 1, T2419 Amend 1 (H217))
+updated: 2026-10-11 11:01 UTC (dispatcher V2: T2423 = R1 (after T2417) and T2424 = T3-BA released (H218))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -14,8 +14,12 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 387. T2419 — `docs/tickets/T2419.md` + **Amend 1** (`docs/tickets/T2419-amend-1.md`: both charges, the red `GG` identity by conjugation; rule-(B) 1b repair) (BA-L L4d: new `Graph/BAExpandId.lean`: `baG5Graph`, `BAG5Identity`, the GG step and the expansion identity by `expandG_sum`): released; starts when its check compiles and a slot is free (H12). Priority: after T2418. Not in the certificate lane.
 388. T2420 — `docs/tickets/T2420.md` (BA-L L3c1: new `Graph/BAAtom.lean` + `BAAtom2.lean`: atoms, the auxiliary graph, `(G_by_auxG_BA)`; design gate G3, G4 with a probe, 1a-audit, 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: after T2419. Not in the certificate lane.
 389. T2421 — `docs/tickets/T2421.md` + **Amend 1** (`docs/tickets/T2421-amend-1.md`: `twK_bound` eventually in `n`; registry texts of supervisor 1049 TLF-C4) (BA-TL TL0: new `BA/TwistPins.lean`: the TL pins file verbatim from the T2413 probe, `twFold`/`twWard`/`twCirc`/`twK_bound` proved, T2398 audit O2–O4, two `owedProps` lines; supervisor 0853 TL-C2, TL-C3): released; starts when its check compiles and a slot is free (H12). **Priority: next to start (before T2420).** Not in the certificate lane.
+391. T2423 — `docs/tickets/T2423.md` (BA-L R1: new `Graph/BASim.lean` + `BASim2.lean`: the graph-level matching of a BA step with a band `LocStep` up to relabelling, `BAsim m`/`BAsim'`, Lemma E at graph level; design gate with a probe, 1a-audit, 1b `prover-max`; supervisor 0951 L4-C1): released; **starts after T2417 merges** and a slot is free (H12). Priority: after T2421 and T2419 (sign-off repairs), first among new stage-L rows. Not in the certificate lane.
+392. T2424 — `docs/tickets/T2424.md` (BA-T T3-BA: new `BA/NewKLKBA.lean`: `NewKLKGenHyp` F5–F9 at `baStep2Fam` (F7 = the BA Θ-convolution over T8b's kernel, from BAT-C2), `STNewKLKgL'` and `STK2decaygL'` at BA; supervisor 0853 BAT-F1, BAT-F2): released; starts when its check compiles and a slot is free (H12). Priority: after T2423 (if T2423 is waiting for T2417, T2424 starts first). Not in the certificate lane.
 
 ## Pre-release checks
+- `docs/tickets/checks/T2423-check.lean` (BA-L R1; merged names only).
+- `docs/tickets/checks/T2424-check.lean` (BA-T T3-BA; merged names only).
 - `docs/tickets/checks/T2421-check.lean` (BA-TL TL0; merged names only).
 - `docs/tickets/checks/T2417-check.lean` (stage L; merged names only).
 - `docs/tickets/checks/T2418-check.lean` (stage L; merged names only).
@@ -85,6 +89,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 11:00:50 UTC 2026 — T2418: (a′) written; preflight BLOCKED on Amend 1 repair item (i) only (compiling the S1 def is Lean, which the preflight role may not write; (ii)-(v) delivered); state `blocked` with the question (a prover-max probe step as T2390 Amend 1 D1?). Running: T2417, T2420 (2 of 4); no released ticket waiting.
 
 - H217 (dispatcher V2, 2026-10-11 10:59 UTC; DECISIONS §236; answers the questions in `docs/queue/T2421.state` and `docs/queue/T2419.state`, H183 (3)). (1) Commit by name with your next commit `docs/tickets/T2421-amend-1.md`, `docs/tickets/T2419-amend-1.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`, `docs/ROUTES.md`. Nothing else. (2) **T2421:** resume under Amend 1 ((a′) → 1b `prover-hard` → auditor) in the next free slot, first. (3) **T2419:** rule-(B) repair under Amend 1 (1b `prover-hard` on `t/T2419` at de1eb31 → auditor round 2), second. One `done:` line per item.
+  done: Sun Oct 11 11:01:43 UTC 2026 — (1) the 7 listed files committed by name in 5d88807 (with states), pushed.
+  done: Sun Oct 11 11:01:43 UTC 2026 — (2) T2421 resumed under Amend 1: wf_3556f467-662 ((a′) → 1b prover-hard → auditor).
+  done: Sun Oct 11 11:01:43 UTC 2026 — (3) T2419 rule-(B) repair under Amend 1: wf_97b90849-041 (1b prover-hard on t/T2419 at de1eb31 → auditor round 2). Running: T2417, T2419, T2420, T2421 (4 of 4); T2418 blocked (S1 def compile).
+
+- H218 (dispatcher V2, 2026-10-11 11:01 UTC; DECISIONS §237). (1) Commit by name with your next commit `docs/tickets/T2423.md`, `docs/tickets/checks/T2423-check.lean`, `docs/tickets/T2424.md`, `docs/tickets/checks/T2424-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (may share a commit with H217). (2) Compile the two checks on `main`. Start order as slots free: T2421 (resume, H217), T2419 (repair, H217), then T2423 once T2417 has merged, else T2424. One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 08:34:36 UTC 2026 — T2398 report-only merge 7b0a10a under Amend 2 (BA LW-14 design gate, route R1: probe Twist section with BATwistAvgLaw, twK, BATwistLoopLaw (D2), row table under R1 with the new row L4t, 10,858 central lines (D3), paper delta T2398d (D4); design (b′) 113 lines; probe RBM3D/Probe/T2398Pins.lean (498 lines, standard axioms) stays on t/T2398 at 6429bb5; audit PASS claude-opus-5-5; pushed).
@@ -96,3 +105,4 @@ done: Sun Oct 11 10:20:48 UTC 2026 — T2413 report-only merge 1d34da3 (TL-D, de
 done: Sun Oct 11 10:24:13 UTC 2026 — T2411 merged bd0efad (BA-G5b: new BA/GreenCond (1989) and BA/GreenCond2 (1990), each under the 2,000 stop; 8 targets incl. baFamGain_holds, baFAav_holds for every d; RBM3D/Test/Axioms.lean: owed lines BAFamGain and BAFAav removed, and one owed line STInitialGT2gL added (the ticket names "the two removals or comments"; the auditor lists the addition as an observation for the dispatcher, with the slice instance at t = 0 instead of the ticket's t = 1/2); two root imports (conflict resolved as union); audit PASS claude-opus-5-5; full lake build 4228 jobs; pushed).
 done: Sun Oct 11 10:49:51 UTC 2026 — T2414 merged 6c42b16 (T8b: new Chain/Step2Kern (207 lines), Chain/Step2Gen (+376 -102 incl. NewKLKGen) in place, 20 instances; root import for Step2Kern added at merge (the branch had none; the ticket names it); no registry change; probe RBM3D/Probe/T2414Pins.lean (769 lines) not merged, stays on t/T2414 at 6111b33; 1a-audit PASS, audit PASS claude-opus-5-5; full lake build 4229 jobs; pushed).
 done: Sun Oct 11 10:57:47 UTC 2026 — T2422 merged 6daccd4 (BA-G6b: new BA/GbEXPav (30 lines), RBM3D/Test/Axioms.lean owed lines BAGbEXPii and BAGbEXPav removed (the STInitialGT2gL owner comment updated), root import; audit PASS claude-opus-5-5; full lake build 4230 jobs; pushed).
+done: Sun Oct 11 11:07:59 UTC 2026 — T2417 merged 1dc7516 (BA-L R0: new Graph/BAAtomic (985) and Graph/BAAtomic2 (262), stop 2,000 per file; two root imports added at merge (the branch had none; the ticket names them); no registry change; audit PASS claude-opus-5-5; full lake build 4232 jobs; pushed).
