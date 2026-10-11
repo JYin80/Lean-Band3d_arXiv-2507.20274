@@ -816,6 +816,14 @@ example : ∃ C : ℝ, 0 < C ∧ ∀ᶠ n in atTop, ∃ c₁ c₂ : Zd 3 (sz0.L 
   have : Fact (1 < sz0.L n) := ⟨by have := sz0.three_le_L n; omega⟩
   exact ⟨0, ![1, 0, 0], fun hh => by simpa using congrFun hh 0, (hn ![false, true] 0 ![1, 0, 0]).1, (hn ![false, true] 0 ![1, 0, 0]).2⟩
 
+/-- Instances of `twTr_eq`, `twMB_ba`, `twK_ba` at the datum `sz0`, `n = 0`, `t = 1/2`, `σ = (-,+)`, blocks `a = 0`, `c₁ = 0`, `c₂ = (1,0,0)`; the hypothesis
+`Im m_F > 0` is `BAmF_sz0_im_pos`. -/
+example (t : ℝ) (ω : (sz0).SeqΩ) (c₁ c₂ : Zd 3 (sz0.L 0)) :
+    twTr (baFMz sz0 zSeq) 0 t ω c₁ c₂ = twTrP 0 ((baFMz sz0 zSeq).GM 0 t ω) c₂ c₁ := twTr_eq (baFMz sz0 zSeq) 0 t ω c₁ c₂
+example : twMB (baFMz sz0 zSeq) 0 = BAMB 3 (sz0.L 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0 : ℂ)
+    (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0) := twMB_ba zSeq 0 (BAmF_sz0_im_pos 0)
+example := twK_ba (sz := sz0) zSeq 0 (BAmF_sz0_im_pos 0) (1 / 2) ![false, true] 0 0 ![1, 0, 0]
+
 /-- `Tr(X P_{cc})` of a scalar matrix `r · 1` is `r` (`c₁ = c₂`: `twShift n c w = w` on `[c]`, `|[c]| = W^d`). -/
 private theorem TwistPins_trP_diag {d : ℕ} {sz : Sizes d} (n : ℕ) (c : Zd d (sz.L n)) (r : ℂ) :
     twTrP n (fun x y : Idx d (sz.L n) (sz.W n) => if x = y then r else 0) c c = r := by
@@ -864,7 +872,7 @@ example (X₁ X₂ : Idx 3 (sz0.L 0) (sz0.W 0) → Idx 3 (sz0.L 0) (sz0.W 0) →
     (fun w γ => BAMfine_eq sz0 _ _ 0 (BAmF_sz0_im_pos 0) w γ) a c₁ c₂
 
 /-- `twFold` at a twisted nonzero datum: `X₂ x w = 1[x = (a, o_w)]` (the block shift `[c₁] → [a]`), `X₁ y x = 1[y = (c₂, o_x)]` (`[a] → [c₂]`);
-for three distinct blocks `a, c₁, c₂` the loop is `W^{-d}`. -/
+for all blocks `a, c₁, c₂` (in particular pairwise distinct ones) the loop is `W^{-d}`. -/
 private theorem TwistPins_loopX_perm {d : ℕ} {sz : Sizes d} (n : ℕ) (a c₁ c₂ : Zd d (sz.L n)) :
     twLoopX n (fun y x : Idx d (sz.L n) (sz.W n) => if y = twShift n c₂ x then (1 : ℂ) else 0)
       (fun x w : Idx d (sz.L n) (sz.W n) => if x = twShift n a w then (1 : ℂ) else 0) a c₁ c₂ = (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ := by
@@ -884,17 +892,36 @@ private theorem TwistPins_loopX_perm {d : ℕ} {sz : Sizes d} (n : ℕ) (a c₁ 
   push_cast
   field_simp
 
-example (a c₁ c₂ : Zd 3 (sz0.L 0)) :
-    0 < ‖twLoopX 0 (fun y x : Idx 3 (sz0.L 0) (sz0.W 0) => if y = twShift 0 c₂ x then (1 : ℂ) else 0)
-      (fun x w : Idx 3 (sz0.L 0) (sz0.W 0) => if x = twShift 0 a w then (1 : ℂ) else 0) a c₁ c₂‖ ∧
-    ‖twLoopX 0 (fun y x : Idx 3 (sz0.L 0) (sz0.W 0) => if y = twShift 0 c₂ x then (1 : ℂ) else 0)
-      (fun x w : Idx 3 (sz0.L 0) (sz0.W 0) => if x = twShift 0 a w then (1 : ℂ) else 0) a c₁ c₂‖ ^ 2 ≤
-    twSq 0 (fun y x : Idx 3 (sz0.L 0) (sz0.W 0) => if y = twShift 0 c₂ x then (1 : ℂ) else 0) c₂ a *
-      twSq 0 (fun x w : Idx 3 (sz0.L 0) (sz0.W 0) => if x = twShift 0 a w then (1 : ℂ) else 0) a c₁ := by
-  refine ⟨?_, twFold_holds sz0 0 _ _ a c₁ c₂⟩
+/-- `twFold` at pairwise distinct blocks `a = 0`, `c₁ = (1,0,0)`, `c₂ = (2,0,0)` (`L = 4`) and the twisted nonzero datum of `TwistPins_loopX_perm`: the left side
+is `W^{-d} > 0`. -/
+example : (0 : Zd 3 (sz0.L 0)) ≠ ![1, 0, 0] ∧ (![1, 0, 0] : Zd 3 (sz0.L 0)) ≠ ![2, 0, 0] ∧ (0 : Zd 3 (sz0.L 0)) ≠ ![2, 0, 0] ∧
+    0 < ‖twLoopX 0 (fun y x : Idx 3 (sz0.L 0) (sz0.W 0) => if y = twShift 0 ![2, 0, 0] x then (1 : ℂ) else 0)
+      (fun x w : Idx 3 (sz0.L 0) (sz0.W 0) => if x = twShift 0 0 w then (1 : ℂ) else 0) 0 ![1, 0, 0] ![2, 0, 0]‖ ∧
+    ‖twLoopX 0 (fun y x : Idx 3 (sz0.L 0) (sz0.W 0) => if y = twShift 0 ![2, 0, 0] x then (1 : ℂ) else 0)
+      (fun x w : Idx 3 (sz0.L 0) (sz0.W 0) => if x = twShift 0 0 w then (1 : ℂ) else 0) 0 ![1, 0, 0] ![2, 0, 0]‖ ^ 2 ≤
+    twSq 0 (fun y x : Idx 3 (sz0.L 0) (sz0.W 0) => if y = twShift 0 ![2, 0, 0] x then (1 : ℂ) else 0) ![2, 0, 0] 0 *
+      twSq 0 (fun x w : Idx 3 (sz0.L 0) (sz0.W 0) => if x = twShift 0 0 w then (1 : ℂ) else 0) 0 ![1, 0, 0] := by
+  refine ⟨by decide, by decide, by decide, ?_, twFold_holds sz0 0 _ _ 0 ![1, 0, 0] ![2, 0, 0]⟩
   rw [TwistPins_loopX_perm]
   have hW : ((sz0.W 0 : ℕ) : ℂ) ^ 3 ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.2 (sz0.W_pos 0).ne')
   exact norm_pos_iff.2 (inv_ne_zero hW)
+
+/-- Non-degeneracy of `twCirc`: at `X₁ = 1`, `a = c₁ = c₂ = 0` the correction term `W^{-d} M^{(B)}_{00} Tr(X₁ P_{00}) = W^{-d} m_F ≠ 0` (`M^{(B)}_{aa} = m`,
+`Im m_F > 0`), so the circled and uncircled loops differ. -/
+example (X₂ : Idx 3 (sz0.L 0) (sz0.W 0) → Idx 3 (sz0.L 0) (sz0.W 0) → ℂ) :
+    twLoopX 0 (fun x y : Idx 3 (sz0.L 0) (sz0.W 0) => if x = y then (1 : ℂ) else 0) (fun x y => X₂ x y - (baFMz sz0 zSeq).M 0 x y) 0 0 0 ≠
+      twLoopX 0 (fun x y : Idx 3 (sz0.L 0) (sz0.W 0) => if x = y then (1 : ℂ) else 0) X₂ 0 0 0 := by
+  have hreal := BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0
+  have h := twCirc_holds sz0 0 (fun x y : Idx 3 (sz0.L 0) (sz0.W 0) => if x = y then (1 : ℂ) else 0) X₂ ((baFMz sz0 zSeq).M 0)
+    (BAMB 3 (sz0.L 0) (BAflowLam0 sz0 zSeq 0) (BAflowEs sz0 zSeq 0 : ℂ) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0))
+    (fun w γ => BAMfine_eq sz0 _ _ 0 (BAmF_sz0_im_pos 0) w γ) 0 0 0
+  rw [h, TwistPins_trP_diag, BAMB_diag_eq _ _ _ _ _ hreal.1 0]
+  intro hh
+  have h0 := sub_eq_self.1 hh
+  have hW : ((sz0.W 0 : ℕ) : ℂ) ^ 3 ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.2 (sz0.W_pos 0).ne')
+  have hm : BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 ≠ 0 := fun h' => by
+    have := BAmF_sz0_im_pos 0; rw [h'] at this; simp at this
+  simp [hW, hm] at h0
 
 /-- T.10 at the flow point `Pf` of `(L, g) = (4, 1/2)` (`BA/MFixedPoint.lean:877-885`: `0 < Pf.g0 ≤ 1/2`, `BAReal`, `κ = Im Pf.m0`, `Λ = 1`): (a); (b) with `A = δ_0`, `W = 16`,
 `ε = 1/2`, `D = 2`, `v = 0`, `u = 1/2`; (c) is merged; (d) with `A = 1` at `v = 1 - g₀²/16 < u = 1 - g₀²/32`. -/
