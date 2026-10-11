@@ -23,7 +23,7 @@ is deterministic, for one sample.
   `‖Y^X_{uy}‖ ≤ ((‖s‖ + 2 d g₀)(1/κ + 1) + 4 d g₀ δ'/κ) δ'` (uniform in the coupling: `g₀` enters
   only through `Σ_l ‖D_{ul}‖ = 2 d g₀`).
 
-Every theorem has a compiled nonempty instance in the last section.
+Every target theorem has a compiled nonempty instance in the last section.
 -/
 
 set_option linter.style.longLine false

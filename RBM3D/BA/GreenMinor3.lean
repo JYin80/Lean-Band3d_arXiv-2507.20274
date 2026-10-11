@@ -30,7 +30,7 @@ is deterministic, for one sample, except the registry definitions of section 3.
   `GreenMinor_famA`, `GreenMinor_famX`, and the owed pins `BAFamGain`, `BAFAav` (owner BA-G5b,
   consumer BA-G6b).
 
-Every theorem has a compiled nonempty instance (sections 4 and 5).
+Every target theorem has a compiled nonempty instance (sections 4 and 5).
 -/
 
 set_option linter.style.longLine false
@@ -454,7 +454,7 @@ theorem GreenMinor_iFam_le (hκ : 0 < κ) (hgood : GreenMinor_good Gs M κ δ m�
       _ = 2 / κ := by field_simp
 
 /-- **The `r`-fold difference estimate for the two kinds of atom, proved together** (the twin of `Green.diffBd_atom`,
-`MinorDiff.lean:570`): for `k ≤ r` protected rows `k_1, …, k_m` distinct from each other and from every row the atom mentions
+`MinorDiff.lean:570`): for `m ≤ r` protected rows `k_1, …, k_m` distinct from each other and from every row the atom mentions
 (`I`), with `c = a_r` and `Ψ = 2δ`,
 `‖Δ_{k_1} ⋯ Δ_{k_m} Δ^{(·)}_{ab}‖ ≤ c Ψ^{m+1}` and `‖Δ_{k_1} ⋯ Δ_{k_m} (G^{(·)}_{aa})⁻¹‖ ≤ c Ψ^{m}`.
 Each difference gains a power of `Ψ`: `(4.9)` (`GreenMinor_eFam_delta`, three atoms) and the reciprocal rule
