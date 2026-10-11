@@ -449,6 +449,8 @@ import RBM3D.BA.GreenMinor2
 import RBM3D.BA.GreenMinor3
 import RBM3D.BA.GreenLocal
 import RBM3D.Graph.BAGGOp
+import RBM3D.Graph.BASizeClaim
+import RBM3D.Graph.BASizeClaim2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
