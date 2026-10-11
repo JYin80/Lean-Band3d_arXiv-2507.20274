@@ -383,24 +383,25 @@ theorem GreenCond_norm_fam_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow
 
 theorem GreenCond_bddMeas_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℝ} (ht0 : 0 ≤ t)
     (ht : t ≤ BAflowT0 sz z n) (hg0 : 0 ≤ BAflowLam0 sz z n) (k : Idx d (sz.L n) (sz.W n)) (S : Finset (Idx d (sz.L n) (sz.W n))) :
-    BddMeas sz (GreenCond_famS sz z n t (GreenCond_ΦA sz z n k) S) :=
+    BddMeas (sz.withLam 0) (GreenCond_famS sz z n t (GreenCond_ΦA sz z n k) S) :=
   ⟨GreenCond_measurable_YA (fun x y => GreenCond_measurable_Gs sz z n t S x y) _ _ _ _ _, _,
     fun ω => (GreenCond_norm_fam_le sz z n hκ h ht0 ht hg0 S ω k 0).1⟩
 
 theorem GreenCond_bddMeas_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℝ} (ht0 : 0 ≤ t)
     (ht : t ≤ BAflowT0 sz z n) (hg0 : 0 ≤ BAflowLam0 sz z n) (α : Zd d (sz.L n)) (k : Idx d (sz.L n) (sz.W n))
     (S : Finset (Idx d (sz.L n) (sz.W n))) :
-    BddMeas sz (GreenCond_famS sz z n t (GreenCond_ΦX sz z n α k) S) :=
+    BddMeas (sz.withLam 0) (GreenCond_famS sz z n t (GreenCond_ΦX sz z n α k) S) :=
   ⟨GreenCond_measurable_YX (fun x y => GreenCond_measurable_Gs sz z n t S x y) _ _ _ _ _ _, _,
     fun ω => (GreenCond_norm_fam_le sz z n hκ h ht0 ht hg0 S ω k α).2⟩
 
 theorem GreenCond_minorDiff_eq (t : ℝ) (Φ : Matrix (Vtx d (sz.L n) (sz.W n)) (Vtx d (sz.L n) (sz.W n)) ℂ → ℂ)
     (l : List (Idx d (sz.L n) (sz.W n))) (ω : sz.SeqΩ) :
-    minorDiff sz n l (GreenCond_famS sz z n t Φ) ω =
+    minorDiff (sz.withLam 0) n l (GreenCond_famS sz z n t Φ) ω =
       iterDeltaFam (l.map (splitEquiv d (sz.L n) (sz.W n))) (fun S' => Φ (GreenCond_GsV sz z n t ω S')) ∅ := by
-  rw [minorDiff_eq_iterDeltaFam]
+  refine (minorDiff_eq_iterDeltaFam (sz := sz.withLam 0) (n := n) l (GreenCond_famS sz z n t Φ) ω).trans ?_
   have := GreenCond_iterDeltaFam_map (splitEquiv d (sz.L n) (sz.W n)) (fun S' => Φ (GreenCond_GsV sz z n t ω S')) l ∅
-  simpa only [GreenCond_famS, GreenCond_Gs_eq, Finset.map_empty] using this
+  rw [Finset.map_empty] at this
+  exact this
 
 /-- **The minor difference on the good event** (`GreenMinor_diff` transported along `splitEquiv`): for `ω` with `‖G_t - M‖_max ≤ δ`, a word `L`
 on the slot `k` whose rows `x` are `≠ k` and in the block of `k`, and `α` another block, the `numQ L`-fold difference of `Y^A_{[k]}` and of
@@ -412,9 +413,9 @@ theorem GreenCond_minorDiff_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlo
     (k : Idx d (sz.L n) (sz.W n)) (L : List (Bool × Idx d (sz.L n) (sz.W n))) (hL1 : (L.map Prod.snd).Nodup)
     (hL2 : ∀ x ∈ L, x.2 ≠ k ∧ (split d (sz.L n) (sz.W n) x.2).1 = (split d (sz.L n) (sz.W n) k).1) (hLm : numQ L ≤ m₀)
     (α : Zd d (sz.L n)) (hα : α ≠ (split d (sz.L n) (sz.W n) k).1) :
-    ‖minorDiff sz n (qList L) (GreenCond_famS sz z n t (GreenCond_ΦA sz z n k)) ω‖ ≤
+    ‖minorDiff (sz.withLam 0) n (qList L) (GreenCond_famS sz z n t (GreenCond_ΦA sz z n k)) ω‖ ≤
         GreenMinor_cY d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ (numQ L) * (2 * δ) ^ (numQ L + 1) ∧
-      ‖minorDiff sz n (qList L) (GreenCond_famS sz z n t (GreenCond_ΦX sz z n α k)) ω‖ ≤
+      ‖minorDiff (sz.withLam 0) n (qList L) (GreenCond_famS sz z n t (GreenCond_ΦX sz z n α k)) ω‖ ≤
         GreenMinor_cY d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ (numQ L) * (2 * δ) ^ (numQ L + 1) := by
   have dat := GreenCond_data hκ sz h n ht0 ht hg0
   have hT := GreenMinor_tower_carrier hκ sz h n ht0 ht ω
@@ -439,9 +440,9 @@ theorem GreenCond_minorDiff_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlo
     (Gs := GreenCond_GsV sz z n t ω) (s := GreenCond_s sz z n) (m := GreenCond_m sz z n) (κ := κ) (δ := δ) (g₀ := BAflowLam0 sz z n)
     (m₀ := m₀) (β := u.1) (o := u.2) (u := u) (y := (α, u.2)) dat.hL dat.hg0 dat.hD dat.hM dat.hκ dat.hκ1 dat.hκm
     (dat.hMle _ _) hT hgood rfl ⟨rfl, hα⟩ _ hnd hR hlen hδ2
-  rw [GreenCond_minorDiff_eq, GreenCond_minorDiff_eq]
   simp only [List.length_map, hlq] at hdiff
-  exact ⟨hdiff.2, hdiff.1⟩
+  exact ⟨(le_of_eq (congrArg norm (GreenCond_minorDiff_eq sz z n t (GreenCond_ΦA sz z n k) (qList L) ω))).trans hdiff.2,
+    (le_of_eq (congrArg norm (GreenCond_minorDiff_eq sz z n t (GreenCond_ΦX sz z n α k) (qList L) ω))).trans hdiff.1⟩
 
 end MinorDiff
 
@@ -625,6 +626,102 @@ theorem GreenCond_famGain_of_good {A : Finset (Idx d (sz.L n) (sz.W n))}
         mul_le_mul_of_nonneg_right hdouble hmainnn
     _ = (2 * B₀) ^ Fintype.card ι * (2 * Ψ) ^ ∑ i, numQ (L i) := by
         rw [mul_pow (2 : ℝ) B₀ (Fintype.card ι)]; ring
+
+section Slice
+variable {d : ℕ}
+
+/-- **The base of the tower of exceptional sets**: a measurable hull (for the carrier law `seqP (sz.withLam 0)`) of the complement of the per-time
+good event `{ω | ‖G_t(ω) - M‖_max ≤ δ}`. -/
+def GreenCond_badBase (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t δ : ℝ) : Set (sz.withLam 0).SeqΩ :=
+  toMeasurable (Sizes.seqP (sz.withLam 0))
+    {ω : (sz.withLam 0).SeqΩ | ¬ ∀ x y : Vtx d (sz.L n) (sz.W n), ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ}
+
+theorem GreenCond_measurableSet_badBase (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t δ : ℝ) :
+    MeasurableSet (GreenCond_badBase sz z n t δ) := measurableSet_toMeasurable _ _
+
+theorem GreenCond_meas_badBase (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t δ : ℝ) :
+    (Sizes.seqP (sz.withLam 0)) (GreenCond_badBase sz z n t δ) =
+      (Sizes.seqP (sz.withLam 0)) {ω : (sz.withLam 0).SeqΩ | ¬ ∀ x y : Vtx d (sz.L n) (sz.W n),
+        ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ} := measure_toMeasurable _
+
+theorem GreenCond_good_of_notMem_badBase (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t δ : ℝ) {ω : (sz.withLam 0).SeqΩ}
+    (hω : ω ∉ GreenCond_badBase sz z n t δ) (x y : Vtx d (sz.L n) (sz.W n)) :
+    ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ := by
+  by_contra hxy
+  exact hω (subset_toMeasurable _ _ fun hall => hxy (hall x y))
+
+/-- **The BA gain interface at one slice**: with `Bad = badTower` over the hull of the complement of `{‖G_t - M‖_max ≤ δ}` (row-section
+threshold `ε'`), `Ψ = 2δ` (`4δ ≤ κ`, `8Mδ ≤ κ`, `2δ ≤ 1`), `c_M ≥ c_Y(M)`, the envelope `Env ≥ GreenCond_Env`, and the two numerical conditions
+`hB1`, `hsmall`, the families `Y^A` and `Y^X_{·, (α, o)}` on the block `β ≠ α` satisfy `famGain(B, 4δ, M, K)`, `B = 2 (4 c_M δ + condCost)`. -/
+theorem GreenCond_famGain_slice {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (t : ℕ → ℝ) (n : ℕ)
+    (ht0 : 0 ≤ t n) (ht : t n ≤ BAflowT0 sz z n) (hg0 : 0 ≤ BAflowLam0 sz z n) {δ ε' Env cM : ℝ} {M K : ℕ}
+    (hδ0 : 0 < δ) (hδ4 : 4 * δ ≤ κ) (hMδ : 8 * (M : ℝ) * δ ≤ κ) (hδ2 : 2 * δ ≤ 1) (hε' : 0 ≤ ε')
+    (hEnv : GreenCond_Env d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ (|(GreenCond_zt sz z n (t n)).im|⁻¹ + 1) ≤ Env) (hEnv1 : 1 ≤ Env)
+    (hcM : GreenMinor_cY d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ M ≤ cM)
+    (hB1 : 2 * cM * (2 * δ) + GreenCond_cost Env M (2 * δ) ε' ≤ 1)
+    (hsmall : GreenCond_genv Env M ^ K *
+        (Sizes.seqP (sz.withLam 0)).real (badTower (sz.withLam 0) n ε' (GreenCond_badBase sz z n (t n) δ) (M + 1)) ≤
+      (2 * cM * (2 * δ) + GreenCond_cost Env M (2 * δ) ε') ^ K * (2 * (2 * δ)) ^ (K * M))
+    (β α : Zd d (sz.L n)) (hβα : β ≠ α) :
+    GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (GreenMinor_famA sz z t n)
+        (2 * (2 * cM * (2 * δ) + GreenCond_cost Env M (2 * δ) ε')) (2 * (2 * δ)) M K ∧
+      GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (GreenMinor_famX sz z t n α)
+        (2 * (2 * cM * (2 * δ) + GreenCond_cost Env M (2 * δ) ε')) (2 * (2 * δ)) M K := by
+  classical
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hfam : BadFamily (sz.withLam 0) n ε' (badTower (sz.withLam 0) n ε' (GreenCond_badBase sz z n (t n) δ)) :=
+    badFamily_badTower (sz.withLam 0) n ε' (GreenCond_measurableSet_badBase sz z n (t n) δ)
+  have hs0 : 0 ≤ ‖GreenCond_s sz z n‖ := norm_nonneg _
+  have hcM0 : 0 ≤ cM := by
+    refine le_trans ?_ hcM
+    have ha := GreenMinor_a_nonneg dat.hκ dat.hκ1 M
+    unfold GreenMinor_cY
+    have hd : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+    have := dat.hκ
+    positivity
+  have hΨ0 : 0 < 2 * δ := by linarith
+  have hΨ1 : 2 * (2 * δ) ≤ 1 := by linarith [dat.hκ1]
+  have hgoodX : ∀ ω ∉ badTower (sz.withLam 0) n ε' (GreenCond_badBase sz z n (t n) δ) 0, ∀ k ∈ Iblk d (sz.L n) (sz.W n) β,
+      ∀ L : List (Bool × Idx d (sz.L n) (sz.W n)), (L.map Prod.snd).Nodup →
+      (∀ x ∈ L, x.2 ≠ k ∧ x.2 ∈ Iblk d (sz.L n) (sz.W n) β) → L.length ≤ M →
+      (‖minorDiff (sz.withLam 0) n (qList L) (GreenCond_famS sz z n (t n) (GreenCond_ΦA sz z n k)) ω‖ ≤ cM * (2 * δ) ^ (numQ L + 1)) ∧
+      (‖minorDiff (sz.withLam 0) n (qList L) (GreenCond_famS sz z n (t n) (GreenCond_ΦX sz z n α k)) ω‖ ≤ cM * (2 * δ) ^ (numQ L + 1)) := by
+    intro ω hω k hk L hL1 hL2 hlen
+    have hG := GreenCond_good_of_notMem_badBase sz z n (t n) δ (by simpa using hω)
+    have hkβ : (split d (sz.L n) (sz.W n) k).1 = β := by simpa [Iblk] using hk
+    have hL2' : ∀ x ∈ L, x.2 ≠ k ∧ (split d (sz.L n) (sz.W n) x.2).1 = (split d (sz.L n) (sz.W n) k).1 :=
+      fun x hx => ⟨(hL2 x hx).1, by rw [hkβ]; simpa [Iblk] using (hL2 x hx).2⟩
+    have hqM : numQ L ≤ M := le_trans List.countP_le_length hlen
+    have hmain := GreenCond_minorDiff_le sz z n hκ h ht0 ht hg0 hδ0.le hδ4 hMδ hδ2 hG k L hL1 hL2' hqM α (by rw [hkβ]; exact hβα.symm)
+    have hc : GreenMinor_cY d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ (numQ L) ≤ cM :=
+      (GreenCond_cY_mono dat.hκ dat.hκ1 hg0 le_rfl hs0 le_rfl hqM).trans hcM
+    have hp : 0 ≤ (2 * δ) ^ (numQ L + 1) := by positivity
+    exact ⟨hmain.1.trans (mul_le_mul_of_nonneg_right hc hp), hmain.2.trans (mul_le_mul_of_nonneg_right hc hp)⟩
+  have hempA : (fun k => GreenCond_famS sz z n (t n) (GreenCond_ΦA sz z n k) ∅) = GreenMinor_famA sz z t n := by
+    funext k
+    rw [GreenCond_famS_empty sz z n hκ h ht0 ht]
+    rfl
+  have hempX : (fun k => GreenCond_famS sz z n (t n) (GreenCond_ΦX sz z n α k) ∅) = GreenMinor_famX sz z t n α := by
+    funext k
+    rw [GreenCond_famS_empty sz z n hκ h ht0 ht]
+    rfl
+  constructor
+  · rw [← hempA]
+    exact GreenCond_famGain_of_good (sz := sz.withLam 0) (n := n) (A := Iblk d (sz.L n) (sz.W n) β)
+      (Yq := fun k S => GreenCond_famS sz z n (t n) (GreenCond_ΦA sz z n k) S) (Env := Env) (cM := cM) (Ψ := 2 * δ) (ε := ε')
+      (M := M) (K := K) (Bad := badTower (sz.withLam 0) n ε' (GreenCond_badBase sz z n (t n) δ))
+      (fun k S => GreenCond_bddMeas_A sz z n hκ h ht0 ht hg0 k S) (fun k S => GreenCond_finDepOffRows sz z n (t n) S _)
+      (fun k S ω => (GreenCond_norm_fam_le sz z n hκ h ht0 ht hg0 S ω k α).1.trans hEnv) hfam hε' hΨ0 hΨ1 hcM0 hEnv1
+      (fun ω hω k hk L hL1 hL2 hlen => (hgoodX ω hω k hk L hL1 hL2 hlen).1) hB1 hsmall
+  · rw [← hempX]
+    exact GreenCond_famGain_of_good (sz := sz.withLam 0) (n := n) (A := Iblk d (sz.L n) (sz.W n) β)
+      (Yq := fun k S => GreenCond_famS sz z n (t n) (GreenCond_ΦX sz z n α k) S) (Env := Env) (cM := cM) (Ψ := 2 * δ) (ε := ε')
+      (M := M) (K := K) (Bad := badTower (sz.withLam 0) n ε' (GreenCond_badBase sz z n (t n) δ))
+      (fun k S => GreenCond_bddMeas_X sz z n hκ h ht0 ht hg0 α k S) (fun k S => GreenCond_finDepOffRows sz z n (t n) S _)
+      (fun k S ω => (GreenCond_norm_fam_le sz z n hκ h ht0 ht hg0 S ω k α).2.trans hEnv) hfam hε' hΨ0 hΨ1 hcM0 hEnv1
+      (fun ω hω k hk L hL1 hL2 hlen => (hgoodX ω hω k hk L hL1 hL2 hlen).2) hB1 hsmall
+
+end Slice
 
 end Cond
 
