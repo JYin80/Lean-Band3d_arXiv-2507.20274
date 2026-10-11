@@ -130,9 +130,9 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLWassm, -- `(eq:LW_assm)` (`3_5:388`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    `RBM.Gauss.Sizes.STLWassmExp, -- `(eq:LW_assm_exp)` (`3_5:409`): Step 1 / ST-6 chain (T2066, DECISIONS §28)
    -- T2197 (BA-C1a, DECISIONS §20): the block Anderson chain pins over a law (`RBM3D/BA/FlowPins.lean`; the carrier `FlowFM` and the `…gL` predicates below moved to `RBM3D/Chain/Carrier.lean` by T2382)
-   `RBM.BA.STLmaxgL, -- `(Eq:L-KGt2)` at a law `μ` over a flow carrier, hypothesis of the instance `inst_BAConArg'` and of `not_BAConArg_of_data`; owed like its band form `STLmax`: BA chain, BA-V2/BA-K4 (T2197)
-   `RBM.BA.STKboundgL, -- `ML:Kbound` `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d}B_{τ,0})^{k-1}` at a law `μ` over a flow carrier (`1_2:1056`), hypothesis of the instance `inst_baBootstrap'` (T2269); owed: the BA chain, BA-K4/BA-V2
-   `RBM.BA.STLKgL, -- `(Eq:L-KGt)` (a) at a law `μ` over a flow carrier, hypothesis of the instance `inst_baBootstrap'` (T2269); owed like its band form `STLK`: BA chain, BA-V2/BA-K4
+   `RBM.BA.STLmaxgL, -- `(Eq:L-KGt2)` at a law `μ` over a flow carrier, hypothesis of the instance `inst_BAConArg'` and of `not_BAConArg_of_data`; owner BA-V (main induction); at BA it follows from `STLKgL` by `BALmaxFromLK_holds` once `STKboundgL` is supplied (K12) (T2197)
+   `RBM.BA.STKboundgL, -- `ML:Kbound` `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d}B_{τ,0})^{k-1}` at a law `μ` over a flow carrier (`1_2:1056`), hypothesis of the instance `inst_baBootstrap'` (T2269); owner: BA: proved at `baFMz` by `baKbound_holds` (K12); generic premise of `stBaseG_of_init`, `BALmaxFromLK`, `BAStep1`, `BABootstrap'`; discharged at BA by BA-V (instances: G7)
+   `RBM.BA.STLKgL, -- `(Eq:L-KGt)` (a) at a law `μ` over a flow carrier, hypothesis of the instance `inst_baBootstrap'` (T2269); owed like its band form `STLK`: owner BA-V (main induction)
    `RBM.BA.STLocalMaxgL, -- `(Gt_bound+IND)` at a law `μ` over a flow carrier, hypothesis of the instances `inst_baS1_boot`, `inst_baS1_weakPT`, `inst_baS1_loopPT`, `inst_baBootstrap'` (T2269); owed like its band form `STLocalMax`: BA chain, BA-V2/BA-S3
    -- T2340 (ST-6 R1-R3, DECISIONS §151): carrier facts of the final assembly; the band instances are proved there (`stBase_band`, `stHorizon_band`), the BA instances are owed to BA-V
    `RBM.BA.STLK0, -- `𝓛_0 = 𝒦_0` (`1_2:1240-1243`) over a flow carrier; band: `azumaProxy_loopFine_sub_STKloop`; BA: BA-V `GLoopAtT0`
@@ -193,7 +193,6 @@ def owedProps : List Name :=
    `RBM.BA.BAGbEXPii, -- `lem_GbEXP_BA` `(GiiGEX)` event form `1(Ω(t, ε₀)) ‖G_t - M‖²_max ≺ max 𝓛^{(2)}` over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPij, -- `lem_GbEXP_BA` `(GijGEX)` event form on `(G_t - M)_{xy}`, `x ≠ y`, over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
-   `RBM.BA.BAEKSumDecayNonzero, -- `lem:sum_decay_nonzero` at BA (`3_5:1666`) (T2388, BA-E1, T2378 §2: owed; owner BA-E3)
    `RBM.BA.BAStab, -- stability `‖(1 - t M^{(+,+)})⁻¹‖_{max→max} ≤ K` of the BA coupled system at `BAReal` data, the twin of `Stable` (`Green/EntryCore.lean:911`); hypothesis of `GreenCore_coupled`, `GreenCore_diag` (T2390, BA-G3a; owed; owner BA-G3b, `K = 16 κ⁻⁴`)
    `RBM.BA.BAGbEXPij', -- `lem_GbEXP_BA` `(GijGEX_BA)` in the paper's shape, event form with `1_Ω` on premise and conclusion and the decay `c_λ` after `(κ, ε, 𝔡)` (`7_8:1916-1946`; T2390, BA-G3a, paper-delta T2390a: owed; owner BA-G4 (deterministic core), consumed by BA-G6a/G6b, supersedes `BAGbEXPij` once the primed consumers merge)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
