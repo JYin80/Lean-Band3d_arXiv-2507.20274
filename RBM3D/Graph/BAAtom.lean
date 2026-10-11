@@ -18,11 +18,11 @@ Part 2 is `Graph/BAAtom2` (it imports this file).  The BA twin of `Graph/AuxGrap
 ## Contents (namespace `RBM.Graph`, private prefix `BAAtom_`)
 
 1. **Vocabulary.**  `BAGraph.shadow` (every `M`- and `Ψ`-dotted edge also a waved edge: the molecules, `n_M`, `IsExtMol`, `molSolid` are
-   those of the band graph `shadow`), `BAGraph.auxVal`, `BAGraph.auxOrd`, `BAShadowPG`; the order comparison
-   `BAGraph.scalingOrder_sub_auxOrd`, `BAGraph.auxOrd_le_scalingOrder` (twin of `AuxGraph` §2).
-2. **`scaleatom`, `Gyiyjatom`, `Gyiyjatom2`** (the four `baAtom_*` statements).
-3. **The pointwise bound on a confined labelling** (twin of `AuxGraph` §5 with `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`).
-4. **The roots of the molecular forest and the sum over the children** (twin of `AuxGraph` §6-7, per-edge constants).
+   those of the band graph `shadow`), `BAGraph.auxVal`, `BAGraph.auxOrd`, `BAShadowPG`.
+2. **The order comparison** `BAGraph.scalingOrder_sub_auxOrd`, `BAGraph.auxOrd_le_scalingOrder` (twin of `AuxGraph` §2).
+3. **`scaleatom`, `Gyiyjatom`, `Gyiyjatom2`** (the four `baAtom_*` statements).
+4. **The pointwise bound on a confined labelling** (twin of `AuxGraph` §5 with `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`).
+5. **The roots of the molecular forest and the sum over the children** (twin of `AuxGraph` §6-7, per-edge constants).
 
 The centre-level auxiliary graph is the band's on `BAGraph.shadow`: the retained atoms `x_{i,j}` of `B:448` are folded into the
 molecule centre (paper-delta candidate `T2420a`); the orders agree (`T2420`, report (a) E2).
