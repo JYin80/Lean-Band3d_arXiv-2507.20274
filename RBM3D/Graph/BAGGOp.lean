@@ -10,25 +10,30 @@ import RBM3D.Graph.BAGGExp
 # BA-L2c2b: the GG expansion `(B.20)` as a graph operation and the frame identity (T2410)
 
 Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:393-405` (cited `B:line`; `GGGamma`,
-[yang2024Del, Lemma B.11]) with the corrected coefficient `(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the first two
-sums (paper delta D402, `ba_W_sub_one`).  `baGGGamma_holds` (`Graph/BAGGExp.lean:358`) is the identity of
-expectations; this file is its graph form.  The term lists are those of the T2395 probe
-(`t/T2395:RBM3D/Probe/T2395Pins.lean:129-148` at `4c1de4c`), copied verbatim.
+[yang2024Del, Lemma B.11]) with the corrected coefficient `(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the
+first two sums (paper delta D402, `ba_W_sub_one`).  `baGGGamma_holds` (`Graph/BAGGExp.lean:358`)
+is the identity of expectations; this file is its graph form.  The term lists are those of the
+T2395 probe (`t/T2395:RBM3D/Probe/T2395Pins.lean:129-148` at `4c1de4c`), copied verbatim.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAGGOp_`)
 
-1. **Target 1**: `BAGraph.gg2`, `BAGraph.gg4` (the merged `BAGraph.ext`, `bpv`, `bpS`, `bpM`, `bpW`,
-   `baSum` of `Graph/BAWeightOp.lean`).
+1. **Target 1**: `BAGraph.gg2`, `BAGraph.gg4` (with the merged `BAGraph.ext`, `bpv`, `bpS`, `bpM`,
+   `bpW`, `baSum` of `Graph/BAWeightOp.lean`) and the named terms `BAGGOp_A1 … A5, AD, B1, B2, BD`.
 2. **Target 2** (`baExpFrame_gg`, the second conjunct of `BAexpFrameE`): `𝔼 Γ.val = 𝔼 (baSum gg2 +
    baSum gg4)` at `BAlwData` over `PF d L W 0`, for circled blue `p ∈ lwSplit Γ.solid`,
    `q ∈ lwSplit p.2`, `p.1.src = q.1.dst`.  It follows from `baGGGamma_holds`, pathwise on the
-   sequence space as `baExpFrame_lw` follows from `baLweight_holds`.
+   sequence space (`BAGGOp_pathwise`, `BAGGOp_core`) as `baExpFrame_lw` follows from
+   `baLweight_holds`, and `t = 0` is trivial (`Ǧ = 0`, `S = S⁺ = 0`).
 3. **Target 3**: `BAexpFrameE` (probe `:244-251`) and `baExpFrameE_holds : ∀ d, BAexpFrameE d`.
-4. **Target 4** (counters and order of the terms, `BAstepMono`): see the section header.
-5. Compiled instances (`RBM.Graph.BAGGOpInst`).
+4. **Target 4** (section 5, the counters of `BAstepMono`): `gg_counters`, `gg_raw`,
+   `gg_scalingOrderG`, `gg_mono`; the table at the head of section 5 says which terms keep the
+   order (`A1` with `κ = 0`) and which gain.
+5. Compiled instances (`RBM.Graph.BAGGOpInst`): `baGGLhs` (`BAVocab`), `baGG3` (derivative terms),
+   `baGG4` (`A1` gains `2`).
 
-The private declarations of `Graph/BAWeightOp.lean` that the order bookkeeping reuses are reached with
-`open private` (Batteries; precedent `Induction/DuhamelII.lean:42`) instead of being copied.
+The private declarations of `Graph/BAWeightOp.lean` and `Graph/BAExpandWOrd.lean` that the order
+bookkeeping reuses (`BAWeightOp_ext4_ge`, `BAExpandWOrd_ext_ge`, the closure lemmas, ...) are
+reached with `open private` (Batteries; precedent `Induction/DuhamelII.lean:42`), not copied.
 -/
 
 set_option linter.style.setOption false
@@ -41,9 +46,9 @@ set_option linter.unusedDecidableInType false
 
 open private BAWeightOp_ext4 BAWeightOp_ext4_ge BAWeightOp_val2 BAWeightOp_val4 BAWeightOp_sd
   BAWeightOp_edgePoly0 BAWeightOp_rename_edgePoly0 BAWeightOp_val_tame BAWeightOp_ext_normal
-  BAWeightOp_ext4_counters BAWeightOp_ext4_atoms BAWeightOp_ext2_cnt BAWeightOp_nA_le BAWeightOp_nA_lt
-  BAWeightOp_cnt BAWeightOp_mono_aux BAWeightOp_packMerge_counters BAWeightOp_split3 BAWeightOp_core4
-  BAWeightOp_ext_atomAdj BAWeightOp_ext_adj BAWeightOp_ext4_nM BAWeightOp_nExt_add_nA
+  BAWeightOp_ext4_counters BAWeightOp_ext4_atoms BAWeightOp_ext2_cnt BAWeightOp_nA_le
+  BAWeightOp_cnt BAWeightOp_mono_aux BAWeightOp_packMerge_counters BAWeightOp_split3
+  BAWeightOp_ext_atomAdj BAWeightOp_ext_adj BAWeightOp_nExt_add_nA
   BAWeightOp_circ_counters BAWeightOp_emb_ne BAWeightOp_D4_split BAWeightOp_atomAdj_comm BAWeightOp_adj_comm
   BAWeightOp_self_mem_atom BAWeightOp_atom_eq_of_mem BAWeightOp_cnt_ext BAWeightOp_isRight_emb BAWeightOp_rtg_symm
   from RBM3D.Graph.BAWeightOp
@@ -1359,8 +1364,10 @@ private theorem BAGGOp_cnt_merge {V : Type*} [Fintype V] [DecidableEq V] (i : V 
       refine ⟨?_, Or.inl⟩
       rintro (h | ⟨h1 | h1, h2⟩)
       · exact h
-      · rw [hsym _ _ ((hmem v).1 h1)]; rcases h2 with h2 | h2; exact h2; rw [hab]; exact h2
-      · rw [hsym _ _ ((hmemb v).1 h1), ← hab]; rcases h2 with h2 | h2; exact h2; rw [hab]; exact h2
+      · rw [hsym _ _ ((hmem v).1 h1)]
+        exact h2.elim id fun h2 => hab ▸ h2
+      · rw [hsym _ _ ((hmemb v).1 h1), ← hab]
+        exact h2.elim id fun h2 => hab ▸ h2
     simp [this, hab]
   · have hin : ∀ v, (v ∈ cl a ∨ v ∈ cl b) → cl₂ v = cl a ∪ cl b := by
       intro v hv; ext w; rw [hcl, Finset.mem_union]
@@ -1719,6 +1726,126 @@ theorem gg_mono {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [Decid
   · exact tail _ 2 (BAGGOp_tail4_cnt Γ p q hp hq T hT).1 (BAGGOp_tail4_cnt Γ p q hp hq T hT).2
 
 end Order
+
+/-! ## 6. Compiled instances (namespace `RBM.Graph.BAGGOpInst`)
+
+`Γ = baGGLhs` (`BAVocab.lean:1181`, `Ǧ_{y'x} Ǧ_{xy}`; `y', y = inl 0, inl 1` external, `x = inr 0` internal), `p = (Ǧ_{xy}, [Ǧ_{y'x}])`,
+`q = (Ǧ_{y'x}, [])`: `gg2` has five terms and `gg4` two (no derivative terms, `q.2 = []`); `baGG3` has one more circled edge
+`Ǧ_{yy'}`, so `gg2` has six terms and `gg4` three (`AD`, `BD` present); `baGG4` has `y, y'` internal and distinct (`κ = 1`).  At `d = 3`,
+`L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2` (`BASelf` is `BAExpandInst.baSelf_zero`) every hypothesis is discharged. -/
+
+namespace BAGGOpInst
+
+open BAVocabInst
+
+set_option maxRecDepth 100000
+
+/-- `Ǧ_{y'x} Ǧ_{xy} Ǧ_{yy'}`: `baGGLhs` with one more circled edge. -/
+def baGG3 : BAGraph (Fin 2) (Fin 1) where
+  solid := [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inr 0, .inl 1⟩, ⟨true, true, .inl 1, .inl 0⟩]
+  waved := []
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := []
+
+/-- `Ǧ_{y'x} Ǧ_{xy}` with `y' = inr 2`, `y = inr 1`, `x = inr 0` all internal. -/
+def baGG4 : BAGraph (Fin 0) (Fin 3) where
+  solid := [⟨true, true, .inr 2, .inr 0⟩, ⟨true, true, .inr 0, .inr 1⟩]
+  waved := []
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := []
+
+abbrev p0 : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) := (⟨true, true, .inr 0, .inl 1⟩, [⟨true, true, .inl 0, .inr 0⟩])
+abbrev q0 : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) := (⟨true, true, .inl 0, .inr 0⟩, [])
+abbrev p3 : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) :=
+  (⟨true, true, .inr 0, .inl 1⟩, [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inl 0⟩])
+abbrev q3 : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) := (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inl 1, .inl 0⟩])
+abbrev p4 : SEdge (Fin 0 ⊕ Fin 3) × List (SEdge (Fin 0 ⊕ Fin 3)) := (⟨true, true, .inr 0, .inr 1⟩, [⟨true, true, .inr 2, .inr 0⟩])
+abbrev q4 : SEdge (Fin 0 ⊕ Fin 3) × List (SEdge (Fin 0 ⊕ Fin 3)) := (⟨true, true, .inr 2, .inr 0⟩, [])
+
+theorem hp0 : p0 ∈ lwSplit baGGLhs.solid := by simp [baGGLhs, lwSplit]
+theorem hq0 : q0 ∈ lwSplit p0.2 := by simp [lwSplit]
+theorem hp3 : p3 ∈ lwSplit baGG3.solid := by simp [baGG3, lwSplit]
+theorem hq3 : q3 ∈ lwSplit p3.2 := by simp [lwSplit]
+theorem hp4 : p4 ∈ lwSplit baGG4.solid := by simp [baGG4, lwSplit]
+theorem hq4 : q4 ∈ lwSplit p4.2 := by simp [lwSplit]
+theorem hN0 : baGGLhs.Normal := ⟨by decide, by decide⟩
+theorem hN3 : baGG3.Normal := ⟨by decide, by decide⟩
+theorem hN4 : baGG4.Normal := ⟨by decide, by decide⟩
+
+/-- `(n_S, n_W, n_A, n_M) = (a, b, c, d)`. -/
+def Cnt {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (T : BAGraph E I) (a b c d : ℕ) : Prop :=
+  T.nS = a ∧ T.nW = b ∧ T.nA = c ∧ T.nM = d
+
+instance {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (T : BAGraph E I) (a b c d : ℕ) :
+    Decidable (Cnt T a b c d) := by unfold Cnt; infer_instance
+
+/-- **Targets 1 and 4, one term per kind with its counters `(n_S, n_W, n_A, n_M)`** at `baGGLhs` (`A1` is `baGGT1` up to names,
+`baGGT1_counters`): `gg2` has the five terms `A1, …, A5`, `gg4` the two terms `B1`, `B2`. -/
+theorem lists_baGGLhs :
+    (baGGLhs.gg2 p0 q0).length = 5 ∧ (baGGLhs.gg4 p0 q0).length = 2 ∧ Cnt (BAGGOp_A1 baGGLhs p0 q0) 0 1 1 0 ∧
+    Cnt (BAGGOp_A2 baGGLhs p0 q0) 1 1 1 0 ∧ Cnt (BAGGOp_A3 baGGLhs p0 q0) 1 1 1 0 ∧
+    Cnt (BAGGOp_A4 baGGLhs p0 q0) 3 1 2 1 ∧ Cnt (BAGGOp_A5 baGGLhs p0 q0) 3 1 2 1 ∧
+    Cnt (BAGGOp_B1 baGGLhs p0 q0) 3 2 3 1 ∧ Cnt (BAGGOp_B2 baGGLhs p0 q0) 3 2 3 1 := by
+  decide
+
+/-- At `baGG3` the derivative terms are present: `gg2` has six terms, `gg4` three; `AD` and `BD` have `n_S = 4`. -/
+theorem lists_baGG3 :
+    (baGG3.gg2 p3 q3).length = 6 ∧ (baGG3.gg4 p3 q3).length = 3 ∧ Cnt baGG3 3 0 1 1 ∧
+    Cnt (BAGGOp_A1 baGG3 p3 q3) 1 1 1 0 ∧ Cnt (BAGGOp_AD baGG3 p3 q3 (⟨true, true, .inl 1, .inl 0⟩, [])) 4 1 2 1 ∧
+    Cnt (BAGGOp_BD baGG3 p3 q3 (⟨true, true, .inl 1, .inl 0⟩, [])) 4 2 3 1 := by
+  decide
+
+/-- **Target 4 at the three graphs**: the raw counters, the raw order, the order of the partition and the counters of `BAstepMono`. -/
+example := gg_counters baGGLhs p0 q0 hp0 hq0
+example := gg_counters baGG3 p3 q3 hp3 hq3
+example := gg_raw baGG3 p3 q3 hp3 hq3
+example := gg_scalingOrderG baGGLhs p0 q0 hp0 hq0 hN0
+example := gg_scalingOrderG baGG3 p3 q3 hp3 hq3 hN3
+example := gg_mono baGGLhs p0 q0 hp0 hq0
+example := gg_mono baGG3 p3 q3 hp3 hq3
+
+/-- `κ = 0` at `baGGLhs` (`y, y'` external): the first sum **keeps the order** (`baGGT1_ord`, `(eq:GGraisesord)` of T2398b). -/
+theorem A1_keeps : (BAGGOp_A1 baGGLhs p0 q0).scalingOrder = baGGLhs.scalingOrder := by
+  have h : BAGGOp_kappa baGGLhs (Sum.inl 0) (Sum.inl 1) = 0 := by decide
+  rw [(gg_raw baGGLhs p0 q0 hp0 hq0).1]
+  change baGGLhs.scalingOrder + 2 * (BAGGOp_kappa baGGLhs (Sum.inl 0) (Sum.inl 1) : ℤ) = _
+  rw [h]; simp
+
+/-- `κ = 1` at `baGG4` (`y, y'` internal and distinct): the first sum **gains `2`**. -/
+theorem A1_gains : (BAGGOp_A1 baGG4 p4 q4).scalingOrder = baGG4.scalingOrder + 2 := by
+  have h : BAGGOp_kappa baGG4 (Sum.inr 2) (Sum.inr 1) = 1 := by decide
+  rw [(gg_raw baGG4 p4 q4 hp4 hq4).1]
+  change baGG4.scalingOrder + 2 * (BAGGOp_kappa baGG4 (Sum.inr 2) (Sum.inr 1) : ℤ) = _
+  rw [h]; simp
+
+/-- **Targets 2 and 3 at `baGGLhs`**: `𝔼 baGGLhs.val = 𝔼 (Σ gg2 + Σ gg4)`, from `baExpFrameE_holds 3` (second conjunct), with
+`y' = e₁`, `y = e₀`, `x = inr 0` summed over `Idx 3 3 1`. -/
+example :
+    ∫ ω, baGGLhs.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω)
+        ![fun i => if i = 1 then 1 else 0, fun i => if i = 0 then 1 else 0] ∂(PF 3 3 1 0) =
+      ∫ ω, baSum (baGGLhs.gg2 p0 q0) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω)
+          ![fun i => if i = 1 then 1 else 0, fun i => if i = 0 then 1 else 0] +
+        baSum (baGGLhs.gg4 p0 q0) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω)
+          ![fun i => if i = 1 then 1 else 0, fun i => if i = 0 then 1 else 0] ∂(PF 3 3 1 0) :=
+  (baExpFrameE_holds 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
+    baGGLhs _).2 p0 hp0 q0 hq0 rfl rfl rfl rfl rfl
+
+/-- **Target 2 at `baGG3`** (the derivative terms `AD`, `BD` are present, `q.2 ≠ []`). -/
+example :
+    ∫ ω, baGG3.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω)
+        ![fun i => if i = 1 then 1 else 0, fun i => if i = 0 then 1 else 0] ∂(PF 3 3 1 0) =
+      ∫ ω, baSum (baGG3.gg2 p3 q3) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω)
+          ![fun i => if i = 1 then 1 else 0, fun i => if i = 0 then 1 else 0] +
+        baSum (baGG3.gg4 p3 q3) (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω)
+          ![fun i => if i = 1 then 1 else 0, fun i => if i = 0 then 1 else 0] ∂(PF 3 3 1 0) :=
+  baExpFrame_gg 3 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
+    baGG3 _ p3 hp3 q3 hq3 rfl rfl rfl rfl rfl
+
+end BAGGOpInst
 
 end RBM.Graph
 
