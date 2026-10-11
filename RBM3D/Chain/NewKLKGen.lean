@@ -364,8 +364,8 @@ section Main
 
 variable {d : ℕ}
 
-/-- **The carrier facts F5-F9 of `lem:newKLK`** (hypotheses of the generic theorem), each through the family `mk` on the
-domain of the primed pin (`0 < lam ≤ 𝔡⁻¹`, `κ ≤ Im m`, and `0 ≤ u < 1` where `u` occurs):
+/-- **The carrier facts F5-F9 of `lem:newKLK`** (the hypothesis of the generic theorems), each through the family `mk` on the
+domain of the primed pin (`0 < lam ≤ 𝔡⁻¹`, `κ ≤ Im m`, and `0 ≤ u < 1` where `u` occurs), with some constants `K_c, C_K ≥ 0`:
 * F5: the support of `S` is in `|x-y|_∞ ≤ 1`, the row sums of `‖S‖` are `≤ 1`, `‖S_{xy}‖ = ‖S_{yx}‖`;
 * F6: `‖m‖ ≤ 1`;
 * F7 (the `Θ`-convolution): `Σ_b ‖(SΘ_σ)(a,b)‖ 𝒯̃(|b-a'|_∞) ≤ K_c/(1-u) 𝒯̃(|a-a'|_∞)` for every `ℓ', D' ≥ 0`, where
@@ -373,7 +373,8 @@ domain of the primed pin (`0 < lam ≤ 𝔡⁻¹`, `κ ≤ Im m`, and `0 ≤ u <
 * F8 (marginals of `𝒦^{(2)}`): `Σ_x ‖K_{(x,a₁)}‖ ≤ C_K W^{-d} (1-u)⁻¹` and the same in the second slot;
 * F9 (link): `LM` and the diagonal of `GMM` are the resolvent loop `loopFine` and `Gres - m` at some `ζ`,
   `Im ζ = (1-u) Im m`. -/
-def NewKLKGenHyp (d : ℕ) (κ 𝔡 K_c C_K : ℝ) (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) : Prop :=
+def NewKLKGenHyp (d : ℕ) (κ 𝔡 : ℝ) (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) : Prop :=
+  ∃ K_c C_K : ℝ, 0 ≤ K_c ∧ 0 ≤ C_K ∧
   (∀ (sz : Sizes d) (n : ℕ) (E : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ →
       κ ≤ ((mk sz (fun _ => E)).m n).im →
       (∀ x y, (mk sz (fun _ => E)).S n x y ≠ 0 → zdistInf d (sz.L n) (x - y) ≤ 1) ∧
@@ -404,12 +405,12 @@ def NewKLKGenHyp (d : ℕ) (κ 𝔡 K_c C_K : ℝ) (mk : ∀ sz : Sizes d, (ℕ 
           (mk sz (fun _ => E)).GMM n u H x x = Gres H ζ true x x - (mk sz (fun _ => E)).m n))
 
 /-- **`lem:newKLK` over the carrier at `δ₀ = κ/2`** (target 1; the proof of `nkl_at`, `NewKLK.lean:993`, with `S`, `Θ`, `m`,
-`K`, `LM`, `GMM` read from the family `mk`): under `NewKLKGenHyp d κ 𝔡 K_c C_K mk`,
+`K`, `LM`, `GMM` read from the family `mk`): under `NewKLKGenHyp d κ 𝔡 mk` (constants `K_c, C_K`),
 `C = 2 K_c + 2 C_s (4 + C_K) + C_s C_T` with `C_s = 2^{d-2} e` and `C_T` of `ekPropTInf_holds d` works. -/
-theorem stNewKLKAtgL'_of (hd : 3 ≤ d) (κ 𝔡 K_c C_K : ℝ) (hκ : 0 < κ) (hKc : 0 ≤ K_c) (hCK : 0 ≤ C_K)
-    (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) (hyp : NewKLKGenHyp d κ 𝔡 K_c C_K mk) :
+theorem stNewKLKAtgL'_of (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
+    (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) (hyp : NewKLKGenHyp d κ 𝔡 mk) :
     ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' d κ 𝔡 C (κ / 2) mk := by
-  obtain ⟨hS, hm, hconv, hK, hlink⟩ := hyp
+  obtain ⟨K_c, C_K, hKc, hCK, hS, hm, hconv, hK, hlink⟩ := hyp
   obtain ⟨CT, hCT, HT⟩ := ekPropTInf_holds d hd
   have hCs := nkl_Cs_ge_one (d := d)
   set Cs : ℝ := 2 ^ (d - 2) * Real.exp 1 with hCsdef
@@ -609,15 +610,20 @@ theorem stNewKLKAtgL'_of (hd : 3 ≤ d) (κ 𝔡 K_c C_K : ℝ) (hκ : 0 < κ) (
         have := div_nonneg hCc2 hv.le; positivity
       linarith
 
-/-- **Target 2**: `STNewKLKgL' d mk` from the facts, quantified as the pin quantifies `κ 𝔡` (the constants `K_c, C_K` may
-depend on `(κ, 𝔡)`); `δ₀ = κ/2`. -/
+/-- **Target 1, pointwise form**: `STNewKLKAtgL'` at the constant that `stNewKLKAtgL'_of` chooses (the shape of
+`stNewKLKAt_holds`, the conclusion the registry scan of `Test/Axioms.lean` looks for). -/
+theorem stNewKLKAtgL'_holds (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
+    (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) (hyp : NewKLKGenHyp d κ 𝔡 mk) :
+    STNewKLKAtgL' d κ 𝔡 (stNewKLKAtgL'_of hd κ 𝔡 hκ mk hyp).choose (κ / 2) mk :=
+  (stNewKLKAtgL'_of hd κ 𝔡 hκ mk hyp).choose_spec.2
+
+/-- **Target 2**: `STNewKLKgL' d mk` from the facts, quantified as the pin quantifies `κ 𝔡` (the constants `K_c, C_K` of
+`NewKLKGenHyp` may depend on `(κ, 𝔡)`); `δ₀ = κ/2`. -/
 theorem stNewKLKgL'_of (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz)
-    (h : 3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 →
-      ∃ K_c C_K : ℝ, 0 ≤ K_c ∧ 0 ≤ C_K ∧ NewKLKGenHyp d κ 𝔡 K_c C_K mk) :
+    (h : 3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → NewKLKGenHyp d κ 𝔡 mk) :
     STNewKLKgL' d mk := by
   intro hd κ 𝔡 hκ h𝔡
-  obtain ⟨K_c, C_K, hKc, hCK, hyp⟩ := h hd κ 𝔡 hκ h𝔡
-  obtain ⟨C, hC, hAt⟩ := stNewKLKAtgL'_of hd κ 𝔡 K_c C_K hκ hKc hCK mk hyp
+  obtain ⟨C, hC, hAt⟩ := stNewKLKAtgL'_of hd κ 𝔡 hκ mk (h hd κ 𝔡 hκ h𝔡)
   exact ⟨C, κ / 2, hC, by positivity, hAt⟩
 
 /-! ## 5. The unprimed pins as corollaries (Amend 1 D1′) -/
@@ -651,9 +657,10 @@ variable {d : ℕ}
 
 /-- **F5-F9 at the band family** `fun sz E => bandStep2Mat sz E`, for `3 ≤ d`, `κ > 0`: the facts are the merged band lemmas
 (`nkl_SB_support`, `sum_norm_SB_row`, `SB_transpose`; `norm_mE`; `prop5Decay_holds` with `nkl_theta_tail`, `nkl_SBTheta_*`,
-`nkl_conv_P`, `ekPropTInf_holds`; `nkl_ward_K`; `zt_im`), with `K_c = C₁ C_s C_T + C_s`, `C_K = 1`. -/
-private theorem NewKLKGen_band_hyp (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
-    ∃ K_c C_K : ℝ, 0 ≤ K_c ∧ 0 ≤ C_K ∧ NewKLKGenHyp d κ 𝔡 K_c C_K (fun sz E => bandStep2Mat sz E) := by
+`nkl_conv_P`, `ekPropTInf_holds`; `nkl_ward_K`; `zt_im`), with `K_c = C₁ C_s C_T + C_s`, `C_K = 1`.  This is a
+proof at the band only; at BA the facts are owed to T3-BA. -/
+theorem newKLKGenHyp_band (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
+    NewKLKGenHyp d κ 𝔡 (fun sz E => bandStep2Mat sz E) := by
   obtain ⟨C₅, hC₅, c, hc, H5⟩ := prop5Decay_holds d 𝔡⁻¹ hd (inv_pos.2 h𝔡)
   obtain ⟨CT, hCT, HT⟩ := ekPropTInf_holds d hd
   have hCs := nkl_Cs_ge_one (d := d)
@@ -667,6 +674,7 @@ private theorem NewKLKGen_band_hyp (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
     have h0 : 0 < Real.sqrt (4 - E ^ 2) := by linarith
     have h1 : 0 < 4 - E ^ 2 := Real.sqrt_pos.1 h0
     exact abs_le.2 ⟨by nlinarith, by nlinarith⟩
+  unfold NewKLKGenHyp
   refine ⟨C₁ * Cs * CT + Cs, 1, by positivity, zero_le_one, ?_, ?_, ?_, ?_, ?_⟩
   · -- F5
     intro sz n E hlam hlam' hIm
@@ -734,13 +742,12 @@ section Inst
 
 /-- **Target 2 at the band**: every deterministic hypothesis of `stNewKLKgL'_of` is discharged (`d = 3`). -/
 example : STNewKLKgL' 3 (fun sz E => bandStep2Mat sz E) :=
-  stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => NewKLKGen_band_hyp hd κ 𝔡 hκ h𝔡
+  stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => newKLKGenHyp_band hd κ 𝔡 hκ h𝔡
 
 /-- **Target 1 at the band**: `d = 3`, `κ = 𝔡 = 1/10`, `δ₀ = 1/20`. -/
 example : ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' 3 (1 / 10) (1 / 10) C (1 / 20) (fun sz E => bandStep2Mat sz E) := by
-  obtain ⟨K_c, C_K, hKc, hCK, hyp⟩ := NewKLKGen_band_hyp (by norm_num : 3 ≤ 3) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num)
-  obtain ⟨C, hC, h⟩ := stNewKLKAtgL'_of (by norm_num) (1 / 10) (1 / 10) K_c C_K (by norm_num) hKc hCK _ hyp
+  obtain ⟨C, hC, h⟩ := stNewKLKAtgL'_of (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
+    (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))
   refine ⟨C, hC, ?_⟩
   have e : (1 / 10 : ℝ) / 2 = 1 / 20 := by norm_num
   rw [e] at h
@@ -750,7 +757,7 @@ example : ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' 3 (1 / 10) (1 / 10) C (1 / 20) (f
 `bandStep2_STNewKLK`; the domain fact is `Ind.half_le_mE_im`. -/
 example (d : ℕ) : STNewKLK d :=
   (bandStep2_STNewKLK d).mpr (stNewKLKgL_of_primed
-    (stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => NewKLKGen_band_hyp hd κ 𝔡 hκ h𝔡)
+    (stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => newKLKGenHyp_band hd κ 𝔡 hκ h𝔡)
     fun _ _ hκ _ _ _ _ _ _ hE => Ind.half_le_mE_im hκ.le hE)
 
 open RBM.Gauss.SizesInst in
@@ -772,9 +779,8 @@ example : ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (
           STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32)
             (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ^ 2 *
             (if 1 ≤ (2 : ℝ) then 1 else 0)) * STprof sz0 0 (1 / 32) 1 2 (a 0) (a 1) := by
-  obtain ⟨K_c, C_K, hKc, hCK, hyp⟩ := NewKLKGen_band_hyp (by norm_num : 3 ≤ 3) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num)
-  obtain ⟨C, hC, h⟩ := stNewKLKAtgL'_of (by norm_num) (1 / 10) (1 / 10) K_c C_K (by norm_num) hKc hCK _ hyp
+  obtain ⟨C, hC, h⟩ := stNewKLKAtgL'_of (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
+    (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))
   have hlam : 0 < sz0.lam 0 := by simp [sz0]
   have hlam' : sz0.lam 0 ≤ ((1 : ℝ) / 10)⁻¹ := by
     have : sz0.lam 0 = 1 / 64 := by norm_num [sz0]
@@ -800,10 +806,9 @@ private def NewKLKGen_baMk {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) : Step2Mat
   Hpath := fun _ _ _ _ _ _ => 0
 
 /-- **Target 1 elaborates at a BA family** (statement level): the BA facts F5-F9 are the hypothesis `hyp` (owed to T3-BA). -/
-example (κ 𝔡 K_c C_K : ℝ) (hκ : 0 < κ) (hKc : 0 ≤ K_c) (hCK : 0 ≤ C_K)
-    (hyp : NewKLKGenHyp 3 κ 𝔡 K_c C_K (fun sz E => NewKLKGen_baMk sz E)) :
+example (κ 𝔡 : ℝ) (hκ : 0 < κ) (hyp : NewKLKGenHyp 3 κ 𝔡 (fun sz E => NewKLKGen_baMk sz E)) :
     ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' 3 κ 𝔡 C (κ / 2) (fun sz E => NewKLKGen_baMk sz E) :=
-  stNewKLKAtgL'_of (by norm_num) κ 𝔡 K_c C_K hκ hKc hCK _ hyp
+  stNewKLKAtgL'_of (by norm_num) κ 𝔡 hκ _ hyp
 
 end Inst
 
