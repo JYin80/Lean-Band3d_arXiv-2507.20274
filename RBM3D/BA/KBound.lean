@@ -192,7 +192,7 @@ private theorem KBound_eta_nonneg {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes 
 
 /-- **The stage-K pin `BAKbound`** (`ML:Kbound` for `BA`, `1_2:1056`; probe `T2360Pins.lean:49-52`): along a flow,
 `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d} B_{τ,0})^{k-1}` for every time sequence `τ ∈ [0,1)`, under the block Anderson law
-`seqP (sz.withLam 0)` (the generic `STKboundgL` at the carrier `baFMz`, `3 ≤ d` as in `STMainIndG`, `BA/FlowPins.lean:402`). -/
+`seqP (sz.withLam 0)` (the generic `STKboundgL` at the carrier `baFMz`, `3 ≤ d` as in `STMainIndG`, `BA/FlowPins.lean:408`). -/
 def BAKbound (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
