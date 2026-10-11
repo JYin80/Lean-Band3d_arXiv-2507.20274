@@ -78,7 +78,7 @@ theorem BAAtomic_atom_ofL (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = fal
 theorem BAAtomic_vmap_injective_ofL (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = false) :
     Function.Injective (promoteC (BAGraph.ofLGraph Γ)).vmap := by
   intro u v huv
-  have h1 := (promoteC_vmap_eq_iff _ u v).1 huv
+  have h1 := (BAAtomic_promoteC_vmap_eq_atom _ u v).1 huv
   rw [BAAtomic_atom_ofL Γ h, Finset.mem_singleton] at h1
   exact h1.symm
 
@@ -119,7 +119,7 @@ theorem BAAtomic_cendsMS_ofL (Γ : LGraph E I) :
   have hs : (promoteC (BAGraph.ofLGraph Γ)).merge.solid =
       ((promoteC (BAGraph.ofLGraph Γ)).solid).map (SEdge.map (promoteC (BAGraph.ofLGraph Γ)).vmap) := rfl
   unfold LGraph.localReg2_cendsMS localReg2_mapMS
-  rw [hs, promoteC_solid, Multiset.map_coe, List.map_map, List.map_map, List.map_map]
+  rw [hs, BAAtomic_promoteC_solid, Multiset.map_coe, List.map_map, List.map_map, List.map_map]
   rfl
 
 /-- **The coloured path invariant along the merge at a graph without `=`-dotted edges** (both directions of
