@@ -7,22 +7,29 @@ import RBM3D.Chain.Carrier
 import RBM3D.Induction.ConArgDet
 import RBM3D.Induction.ScaleFacts
 import RBM3D.Graph.BASizeClaim
+import RBM3D.BA.Step1Trivial
+import RBM3D.BA.GreenLDE
+import RBM3D.BA.LWPinsBA
 
 /-!
-# BA-L L4a (T2418), part A: the generic machinery of the crude families S1 of `lem:LWterm_EXP` at BA
+# BA-L L4a (T2418), part A: the generic machinery of the crude families S1 at BA
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`, `B:11-14`), `GGGamma` (`B:393-405`),
-`lanlw` (`B:359-372`); design `docs/reports/T2398-design.md` §1, §2.  This file is the model-free half of the twin of
-`Graph/LWExpTerm4.lean` §§2-5 (`:129-826`): the fine-level Ward identity (the twin of `lwExpTerm4_ward_*`, `:136-192`), the
-`≺ → 𝔼` first moment at an arbitrary law (the twin of `lwExpTerm_prec_integral`, `LWExpTerm.lean:143`), the calculus of `≺`
-for one-index random variables, the block combinatorics of the fine lattice, and the pathwise bounds of the sums `J` of the
-six families.  The BA data, the pin `BAExp14aS1` and its proof are in `Graph/BAExp14aB.lean`.
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`, `B:11-14`),
+`GGGamma` (`B:393-405`), `lanlw` (`B:359-372`); design `docs/reports/T2398-design.md` §1, §2.
+This file is the model-free and deterministic half of the twin of `Graph/LWExpTerm4.lean`
+§§2-5 (`:129-826`): the `≺` toolbox at an arbitrary law (`≺ → 𝔼` first moment, finite
+unions, one-index calculus), the fine-level Ward identity (twin of `lwExpTerm4_ward_*`,
+`:136-192`), the block combinatorics of the fine lattice and the pathwise bounds of the sums
+`J` of the six families, the comparison arithmetic, and the deterministic BA data (`M`,
+`ω = Θ^{(+,+)}`, `W - 1 = lift(ω - 1)`, `B ≤ 2`).  The pin `BAExp14aS1` and its proof are in
+`Graph/BAExp14aB.lean`.
 
-Reuse: `lwExpTerm4_ward_*` (`LWExpTerm4.lean:136-192`, private there; copied), `lwExpTerm_first_moment`,
-`lwExpTerm_prec_integral` (`LWExpTerm.lean:106-143`; the latter at `sz.seqP` only; copied for an arbitrary law),
-`st6_prec_det_iff` (`Induction/Step6Kit.lean:81`; at `seqP` only; copied for an arbitrary law).  Not used: §§6, 9 and the
-twisted part of §8 of the band file (L4b2), `lwExpTerm4_kerSum`, `kward`, `L3` (decisions 2, 3 of Amend 1).
-No `tw*` name, no `BATwistAvgLaw`/`BATwistLoopLaw`.
+Reuse (copies, private there): `lwExpTerm4_ward_*` (`LWExpTerm4.lean:136-192`),
+`lwExpTerm_first_moment`, `lwExpTerm_prec_integral` (`LWExpTerm.lean:106-143`, at `sz.seqP`
+only), `st6_prec_det_iff` (`Induction/Step6Kit.lean:81`, at `seqP` only), `KInduct_theta_l1`,
+`KInduct_theta_shift` (`BA/KInduct.lean`), `B45_STWB_le` (`Induction/B45.lean:1259`).
+Not used: §6, §9 and the twisted part of §8 of the band file (L4b2), `lwExpTerm4_kerSum`,
+`kward`, `L3` (Amend 1 decisions 2, 3).  No `tw*` name, no `BATwistAvgLaw`/`BATwistLoopLaw`.
 
 All private helpers carry the stem `BAExp14a_`.
 -/
@@ -30,6 +37,7 @@ All private helpers carry the stem `BAExp14a_`.
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
 set_option linter.unusedVariables false
+set_option linter.unusedFintypeInType false
 set_option linter.style.setOption false
 
 open MeasureTheory Filter Matrix
@@ -37,9 +45,9 @@ open MeasureTheory Filter Matrix
 noncomputable section
 
 namespace RBM.BA
-open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
+open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 1. The toolbox of `≺` at an arbitrary law -/
+/-! ## A1. The toolbox of `≺` at an arbitrary law -/
 
 section Toolbox
 
@@ -96,6 +104,13 @@ theorem BAExp14a_prec_of_bad {size : ℕ → ℕ} {U₁ U₂ : ℕ → Type*} {�
   obtain ⟨τ', hτ', hs⟩ := hsub τ hτ
   filter_upwards [hs, h τ' hτ' D hD] with l h1 h2
   exact (measure_mono h1).trans h2
+
+/-- A pointwise smaller family is dominated by the same control (the inequality only for large `l`). -/
+theorem BAExp14a_prec_of_le_ev {size : ℕ → ℕ} {U : ℕ → Type*} {ξ ξ₁ ζ : ∀ l, U l → Ω → ℝ}
+    (hle : ∀ᶠ l in atTop, ∀ u ω, ξ l u ω ≤ ξ₁ l u ω) (h : StochDomAt P size ξ₁ ζ) : StochDomAt P size ξ ζ :=
+  BAExp14a_prec_of_bad h fun τ hτ => ⟨τ, hτ, by
+    filter_upwards [hle] with l hl ω ⟨u, hu⟩
+    exact ⟨u, lt_of_lt_of_le hu (hl u ω)⟩⟩
 
 /-- `ξ ≺ ζ₁` and (eventually) `ζ₁ ≤ K ζ₂` give `ξ ≺ ζ₂` (`K > 0`, `ζ₂ ≥ 0`). -/
 theorem BAExp14a_prec_mono {size : ℕ → ℕ} (hsize : Tendsto size atTop atTop) {U : ℕ → Type*}
@@ -235,7 +250,7 @@ theorem BAExp14a_prec_fin {size : ℕ → ℕ} (hsize : Tendsto size atTop atTop
 
 end Toolbox
 
-/-! ## 2. One-index random variables: `f ≺ g` and its calculus at the law `μ` -/
+/-! ## A2. One-index random variables: `f ≺ g` and its calculus at the law `μ` -/
 
 section Dom
 
@@ -297,7 +312,7 @@ theorem BAExp14a_prec_int [IsProbabilityMeasure μ] {V : ℕ → Type} (Φ : ∀
 
 end Dom
 
-/-! ## 3. The fine-level Ward identity (twin of `lwExpTerm4_ward_*`, `LWExpTerm4.lean:136-192`) -/
+/-! ## A3. The fine-level Ward identity (twin of `lwExpTerm4_ward_*`, `LWExpTerm4.lean:136-192`) -/
 
 section FineWard
 
@@ -382,7 +397,7 @@ theorem BAExp14a_green_diag_le {H : Matrix ι ι ℂ} (hH : H.IsHermitian) {z : 
 
 end FineWard
 
-/-! ## 3b. The comparison of the dominating functions with `(1 - t)⁻¹ B^{5/2}` (pure arithmetic) -/
+/-! ## A3b. The comparison of the dominating functions with `(1 - t)⁻¹ B^{5/2}` (pure arithmetic) -/
 
 section Compare
 
@@ -464,7 +479,7 @@ theorem BAExp14a_cmp {B Wd c1 K3 SC ηi κi ω1 : ℝ} (hB0 : 0 < B) (hB2 : B �
 
 end Compare
 
-/-! ## 4. The block combinatorics of the fine lattice and the frame bounds -/
+/-! ## A4. The block combinatorics of the fine lattice and the frame bounds -/
 
 section Lattice
 
@@ -536,9 +551,11 @@ theorem BAExp14a_frame_le_diag (a b : Zd d L) (tl J : Idx d L W → Idx d L W �
   refine (BAExp14a_frame_le a b tl J
     (fun x y => if (split d L W x).2 = (split d L W y).2 then τ * Jm else 0) fun x y => ?_).trans ?_
   · by_cases h : (split d L W x).2 = (split d L W y).2
-    · rw [if_pos h, norm_mul]
+    · simp only [h, ↓reduceIte]
+      rw [norm_mul]
       exact mul_le_mul (htl x y) (hJ x y) (norm_nonneg _) hτ
-    · rw [if_neg h, hs x y h, norm_zero]
+    · simp only [h, ↓reduceIte]
+      rw [hs x y h, norm_zero]
   · have h1 : ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b,
         (if (split d L W x).2 = (split d L W y).2 then τ * Jm else 0) = (τ * Jm) * (W : ℝ) ^ d := by
       rw [← BAExp14a_pair_count (W := W) a b, Finset.mul_sum]
@@ -555,7 +572,7 @@ theorem BAExp14a_frame_le_diag (a b : Zd d L) (tl J : Idx d L W → Idx d L W �
 
 end Lattice
 
-/-! ## 5. The pathwise bounds of the sums `J(x,y)` of the six families
+/-! ## A5. The pathwise bounds of the sums `J(x,y)` of the six families
 
 Fine-lattice absolute-value estimates, model-free: `X : Zd d L → ℂ` the block averages `X_c = tr(Ǧ E_c)` (`|X_c| ≤ a`), `Mm` the
 fine `M` (entries `≤ 1`, row and column sums `≤ CM`, supported on one offset), `Gm = Mm + Gc` the resolvent (`|Gm| ≤ g`,
@@ -875,10 +892,11 @@ theorem BAExp14a_kap_l1 (a b : Zd d L) (tl : Idx d L W → Idx d L W → ℂ)
           (if (split d L W x).2 = (split d L W y).2 then SC else 0) := by
         refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun y _ => ?_) (by positivity)
         by_cases h : (split d L W x).2 = (split d L W y).2
-        · rw [if_pos h]
+        · simp only [h, ↓reduceIte]
           calc ‖tl x y‖ * ∑ α, ‖T x y α‖ ≤ 1 * SC := mul_le_mul (htl x y) (hT x y) (Finset.sum_nonneg fun _ _ => norm_nonneg _) zero_le_one
             _ = SC := one_mul _
-        · rw [if_neg h, hs x y h, norm_zero, zero_mul]
+        · simp only [h, ↓reduceIte]
+          rw [hs x y h, norm_zero, zero_mul]
     _ = ((W : ℝ) ^ d)⁻¹ * SC := by
         have h2 : ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, (if (split d L W x).2 = (split d L W y).2 then SC else 0) =
             SC * (W : ℝ) ^ d := by
@@ -929,6 +947,360 @@ theorem BAExp14a_env_arith {N η A0 a b K3 SC Wd : ℝ} (hN : 1 ≤ N) (hη : 0 
   nlinarith [mul_nonneg hK3 (sub_nonneg.2 h4), mul_nonneg hSC (sub_nonneg.2 h2), mul_nonneg hSC (sub_nonneg.2 h1')]
 
 end Path
+
+
+/-! ## A6. The deterministic BA data: `M`, `Θ^{(+,+)} = ω`, `W - 1`
+
+`M_{xy} = 1(x, y same offset) M^{(B)}_{[x][y]}` (`BAMres_fine_apply`), `ω = Θ^{(+,+)} = (1 - t M^{(B)}∘M^{(B)})⁻¹`
+(`BATheta d L g E m t true true`), `(W - 1)_{αβ} = W^{-d}(ω - 1)_{[α][β]}` (design `T2398-design.md` §1.3, D402). -/
+
+section Deterministic
+
+private theorem BAExp14a_Msigma_shift {d L : ℕ} [NeZero L] (g : ℝ) (z m : ℂ) (σ : Bool) (x y c : Zd d L) :
+    BAMsigma d L (BAMB d L g z m) σ (x + c) (y + c) = BAMsigma d L (BAMB d L g z m) σ x y := by
+  cases σ
+  · simp only [BAMsigma, Bool.false_eq_true, ite_false, Matrix.conjTranspose_apply, BAMB_shift]
+  · exact BAMB_shift d L g z m x y c
+
+/-- Translation invariance of `Θ`: `Θ(x, y) = Θ(0, y - x)` (a copy of `KInduct_theta_shift`, `BA/KInduct.lean`, private there). -/
+private theorem BAExp14a_theta_shift {d L : ℕ} [NeZero L] (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
+    BATheta d L g E m t s s' x y = BATheta d L g E m t s s' 0 (y - x) := by
+  set Q := BAMss d L (BAMB d L g (E : ℂ) m) s s' with hQ
+  let e : Zd d L ≃ Zd d L := Equiv.addRight (-x)
+  have hQe : ∀ a b, Q (e a) (e b) = Q a b := fun a b => by
+    simp only [hQ, BAMss, Matrix.of_apply, e, Equiv.coe_addRight]
+    rw [BAExp14a_Msigma_shift, BAExp14a_Msigma_shift]
+  have hA : ((1 : Matrix (Zd d L) (Zd d L) ℂ) - (t : ℂ) • Q).submatrix e e = 1 - (t : ℂ) • Q := by
+    ext a b
+    simp only [Matrix.submatrix_apply, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply,
+      e.injective.eq_iff, hQe]
+  have h2 := Matrix.inv_submatrix_equiv ((1 : Matrix (Zd d L) (Zd d L) ℂ) - (t : ℂ) • Q) e e
+  rw [hA] at h2
+  unfold BATheta PropThetaQ
+  rw [← Matrix.nonsing_inv_eq_ringInverse]
+  have h3 := congrFun (congrFun h2 x) y
+  rw [Matrix.submatrix_apply] at h3
+  simp only [e, Equiv.coe_addRight, add_neg_cancel, ← sub_eq_add_neg] at h3
+  exact h3
+
+/-- **The `ℓ¹` rows of `ω = Θ^{(+,+)}`, uniform in `t ∈ [0,1)`** (`baProp5s_holds`; the twin of the private `KInduct_theta_l1`,
+`BA/KInduct.lean:203`): `Σ_b |ω_{xb}| ≤ S`, `S = C_s (1 + Λ² expC k c_s)` depends on `(k, Λ, κ)` only. -/
+theorem BAExp14a_theta_l1 {k : ℕ} (hk : 1 ≤ k) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    ∃ S : ℝ, 0 < S ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
+      haveI : NeZero L := ⟨by omega⟩
+      BAReal (k + 2) L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ (x : Zd (k + 2) L),
+        ∑ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t true true x b‖ ≤ S := by
+  obtain ⟨Cs, hCs, cs, hcs, hbd⟩ := baProp5s_holds (k + 2) Λ κ (by omega) hΛ hκ
+  have hexpC : 0 ≤ expC k cs := by unfold expC; positivity
+  refine ⟨Cs * (1 + Λ ^ 2 * expC k cs), by positivity, fun L hL g hg hgΛ E m => ?_⟩
+  have : NeZero L := ⟨by omega⟩
+  intro hr t ht0 ht1 x
+  have hpt : ∀ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t true true x b‖
+      ≤ Cs * ((if b - x = 0 then (1 : ℝ) else 0)
+          + g ^ 2 * Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ)))) := by
+    intro b
+    rw [BAExp14a_theta_shift]
+    have := hbd L hL g hg hgΛ E m hr t ht0 ht1 true (b - x)
+    simpa [neg_mul] using this
+  have h1 : ∑ b : Zd (k + 2) L, (if b - x = 0 then (1 : ℝ) else 0) = 1 := by
+    simp [sub_eq_zero]
+  have h2 : ∑ b : Zd (k + 2) L, Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ))) ≤ expC k cs :=
+    (le_of_eq (Fintype.sum_equiv (Equiv.subRight x) _
+      (fun y : Zd (k + 2) L => Real.exp (-(cs * (zdistD (k + 2) L y : ℝ)))) fun b => rfl)).trans
+      (sum_radial_exp_decay_le k hcs)
+  calc ∑ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t true true x b‖
+      ≤ ∑ b : Zd (k + 2) L, Cs * ((if b - x = 0 then (1 : ℝ) else 0)
+          + g ^ 2 * Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ)))) :=
+        Finset.sum_le_sum fun b _ => hpt b
+    _ = Cs * (1 + g ^ 2 * ∑ b : Zd (k + 2) L, Real.exp (-(cs * (zdistD (k + 2) L (b - x) : ℝ)))) := by
+        rw [← Finset.mul_sum, Finset.sum_add_distrib, h1, ← Finset.mul_sum]
+    _ ≤ Cs * (1 + g ^ 2 * expC k cs) := by gcongr
+    _ ≤ Cs * (1 + Λ ^ 2 * expC k cs) := by
+        have : g ^ 2 ≤ Λ ^ 2 := pow_le_pow_left₀ hg.le hgΛ 2
+        gcongr
+
+/-- The columns of `ω` have the same bound (`ω` is symmetric, `BATheta_isSymm`). -/
+theorem BAExp14a_theta_col {k : ℕ} {L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal (k + 2) L g κ E m) {t : ℝ}
+    (ht0 : 0 ≤ t) (ht1 : t < 1) {S : ℝ}
+    (hS : ∀ x : Zd (k + 2) L, ∑ b : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t true true x b‖ ≤ S) (b : Zd (k + 2) L) :
+    ∑ a : Zd (k + 2) L, ‖BATheta (k + 2) L g E m t true true a b‖ ≤ S := by
+  have hT := BATheta_isSymm (k + 2) L g κ E m hr t ht0 ht1 true true
+  have : ∀ a, BATheta (k + 2) L g E m t true true a b = BATheta (k + 2) L g E m t true true b a := fun a => by
+    have := congrFun (congrFun hT b) a
+    simpa [Matrix.transpose_apply] using this
+  simp only [this]
+  exact hS b
+
+/-- `|M_{xy}| ≤ 1` on the fine lattice (the fine Ward row `Σ_y |M_{xy}|² = 1`, `baM_row_sq`). -/
+theorem BAExp14a_M_le_one {d L W : ℕ} [NeZero L] [NeZero W] {g0 E : ℝ} {m : ℂ} (h : BASelf d L g0 (E : ℂ) m)
+    (x y : Idx d L W) : ‖BAlwM d L W g0 E m x y‖ ≤ 1 := by
+  have hrow := baM_row_sq d L W g0 E m h x
+  have hle : ‖BAlwM d L W g0 E m x y‖ ^ 2 ≤ 1 := by
+    rw [← hrow]
+    exact Finset.single_le_sum (f := fun b => ‖BAlwM d L W g0 E m x b‖ ^ 2) (fun b _ => by positivity)
+      (Finset.mem_univ y)
+  nlinarith [norm_nonneg (BAlwM d L W g0 E m x y)]
+
+/-- `M` is supported on one offset. -/
+theorem BAExp14a_M_supp {d L W : ℕ} [NeZero L] [NeZero W] {g0 E : ℝ} {m : ℂ} (h : BASelf d L g0 (E : ℂ) m)
+    (x y : Idx d L W) (hxy : (split d L W x).2 ≠ (split d L W y).2) : BAlwM d L W g0 E m x y = 0 := by
+  have hw : ((E : ℂ) + m).im ≠ 0 := by simpa using h.1.ne'
+  unfold BAlwM
+  rw [BAMres_fine_apply d L W g0 (E : ℂ) m hw x y]
+  simp [hxy]
+
+/-- The fine row `ℓ¹` sum of `|M|` is the block one: `Σ_y |M_{xy}| = Σ_b |M^{(B)}_{[x] b}|`. -/
+theorem BAExp14a_M_row_eq {d L W : ℕ} [NeZero L] [NeZero W] {g0 E : ℝ} {m : ℂ} (h : BASelf d L g0 (E : ℂ) m)
+    (x : Idx d L W) :
+    ∑ y, ‖BAlwM d L W g0 E m x y‖ = ∑ b : Zd d L, ‖BAMB d L g0 (E : ℂ) m (split d L W x).1 b‖ := by
+  have hw : ((E : ℂ) + m).im ≠ 0 := by simpa using h.1.ne'
+  have h1 : ∑ y, ‖BAlwM d L W g0 E m x y‖ = ∑ y : Idx d L W, (if (split d L W x).2 = (split d L W y).2 then
+      ‖BAMB d L g0 (E : ℂ) m (split d L W x).1 (split d L W y).1‖ else 0) := by
+    refine Finset.sum_congr rfl fun y _ => ?_
+    unfold BAlwM
+    rw [BAMres_fine_apply d L W g0 (E : ℂ) m hw x y]
+    split_ifs <;> simp
+  rw [h1]
+  exact BASizeClaim_fibre_sum x (fun b => ‖BAMB d L g0 (E : ℂ) m (split d L W x).1 b‖)
+
+/-- **`ℓ¹` rows of the fine `M`**, uniform in `L, W` (`BAMB_row_l1`; `d = k + 2`): `Σ_y |M_{xy}| ≤ CM = c⁻¹ expC k c`. -/
+theorem BAExp14a_M_row_l1 {k : ℕ} {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    ∃ CM : ℝ, 0 < CM ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ →
+      BAReal (k + 2) L g κ E m → ∀ x : Idx (k + 2) L W, ∑ y, ‖BAlwM (k + 2) L W g E m x y‖ ≤ CM := by
+  have hc := BAct_rate_pos (k + 2) Λ κ (by omega) hΛ hκ
+  refine ⟨(BAct_rate (k + 2) Λ κ)⁻¹ * expC k (BAct_rate (k + 2) Λ κ), by unfold expC; positivity, ?_⟩
+  intro L W _ _ hL g E m hg hgΛ hr x
+  rw [BAExp14a_M_row_eq hr.1]
+  exact BAMB_row_l1 k L hL Λ g κ E m hΛ hg hgΛ hκ hr _
+
+/-- The columns: `M` is symmetric (`baM_symm`). -/
+theorem BAExp14a_M_col_eq {d L W : ℕ} [NeZero L] [NeZero W] (g0 E : ℝ) (m : ℂ) (y : Idx d L W) :
+    ∑ x, ‖BAlwM d L W g0 E m x y‖ = ∑ x, ‖BAlwM d L W g0 E m y x‖ :=
+  Finset.sum_congr rfl fun x _ => by rw [baM_symm g0 E m x y]
+
+/-- `lift` commutes with scalars (a copy of the private `BASizeClaim_lift_smul`). -/
+private theorem BAExp14a_lift_smul {d L W : ℕ} [NeZero L] [NeZero W] (c : ℂ) (A : Matrix (Zd d L) (Zd d L) ℂ) :
+    lwLift d L W (c • A) = c • lwLift d L W A := by
+  ext x y; simp [lwLift]; ring
+
+/-- `M⁺ · lift(Θ) = lift(M^{(+,+)} Θ)` (`M` is offset-diagonal: one `α` per block, `BASizeClaim_fibre_sum`). -/
+theorem BAExp14a_Mp_lift {d L W : ℕ} [NeZero L] [NeZero W] {g0 E : ℝ} {m : ℂ} (hw : ((E : ℂ) + m).im ≠ 0)
+    (Θ : Matrix (Zd d L) (Zd d L) ℂ) :
+    BAlwMp d L W g0 E m * lwLift d L W Θ = lwLift d L W (BAMss d L (BAMB d L g0 (E : ℂ) m) true true * Θ) := by
+  ext x β
+  simp only [Matrix.mul_apply, lwLift, Matrix.of_apply, BAlwMp, BAlwM]
+  simp only [BAMres_fine_apply d L W g0 (E : ℂ) m hw]
+  have h := BASizeClaim_fibre_sum x (fun b => BAMss d L (BAMB d L g0 (E : ℂ) m) true true (split d L W x).1 b *
+    Θ b (split d L W β).1)
+  have h2 : ∀ α : Idx d L W,
+      (if (split d L W x).2 = (split d L W α).2 then BAMB d L g0 (E : ℂ) m (split d L W x).1 (split d L W α).1 else 0) *
+        (if (split d L W α).2 = (split d L W x).2 then BAMB d L g0 (E : ℂ) m (split d L W α).1 (split d L W x).1 else 0) *
+        (((W : ℂ) ^ d)⁻¹ * Θ (split d L W α).1 (split d L W β).1) =
+      ((W : ℂ) ^ d)⁻¹ * (if (split d L W x).2 = (split d L W α).2 then
+        (fun b => BAMss d L (BAMB d L g0 (E : ℂ) m) true true (split d L W x).1 b * Θ b (split d L W β).1)
+          (split d L W α).1 else 0) := by
+    intro α
+    by_cases ho : (split d L W x).2 = (split d L W α).2
+    · have ho' : (split d L W α).2 = (split d L W x).2 := ho.symm
+      simp only [ho, ↓reduceIte]
+      simp only [BAMss, Matrix.of_apply, BAMsigma, ite_true]
+      ring
+    · have ho' : ¬ (split d L W α).2 = (split d L W x).2 := fun e => ho e.symm
+      simp only [ho, ho', ↓reduceIte]
+      simp
+  simp only [h2, ← Finset.mul_sum]
+  rw [h]
+
+/-- **`W - 1 = lift(ω - 1)`** (`(W - 1)_{αβ} = W^{-d} (ω - 1)_{[α][β]}`, D402, design `T2398-design.md` §1.3), `ω = Θ^{(+,+)}`: from
+`W = 1 + M⁺ (S W)` (`baW_mul`) and `S W = t · lift(ω)` (`baSp_eq`). -/
+theorem BAExp14a_W_sub_one {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) {g0 κ E t : ℝ} {m : ℂ}
+    (hr : BAReal d L g0 κ E m) (ht0 : 0 ≤ t) (ht1 : t < 1) :
+    BAlwW d L W g0 E t m - 1 = lwLift d L W (BATheta d L g0 E m t true true - 1) := by
+  have hw : ((E : ℂ) + m).im ≠ 0 := by simpa using hr.1.1.ne'
+  set Q := BAMss d L (BAMB d L g0 (E : ℂ) m) true true with hQ
+  set Θ := BATheta d L g0 E m t true true with hΘ
+  have hU := BATheta_isUnit d L g0 κ E m hr t ht0 ht1 true true
+  have h1 : (1 - (t : ℂ) • Q) * Θ = 1 := by
+    have : Θ = Ring.inverse (1 - (t : ℂ) • Q) := rfl
+    rw [this]
+    exact Ring.mul_inverse_cancel _ hU
+  have hmul := baW_mul (W := W) hL g0 E t m hr.1 ht0 ht1
+  have hmul' : (1 - BAlwMp d L W g0 E m * Matrix.of (BAlwS d L W t)) * BAlwW d L W g0 E t m = 1 :=
+    mul_eq_one_comm.1 hmul
+  have hSW := baSp_eq d L W hL g0 κ E t m hr ht0 ht1
+  rw [sub_mul, one_mul] at hmul'
+  have hWe : BAlwW d L W g0 E t m - 1 =
+      BAlwMp d L W g0 E m * (Matrix.of (BAlwS d L W t) * BAlwW d L W g0 E t m) := by
+    rw [← Matrix.mul_assoc]
+    exact sub_eq_of_eq_add' (sub_eq_iff_eq_add.1 hmul')
+  have hQΘ : (t : ℂ) • (Q * Θ) = Θ - 1 := by
+    rw [sub_mul, one_mul, smul_mul_assoc] at h1
+    exact (sub_eq_of_eq_add' (sub_eq_iff_eq_add.1 h1)).symm
+  rw [hWe, hSW, Matrix.mul_smul, BAExp14a_Mp_lift hw, ← BAExp14a_lift_smul, hQΘ]
+
+/-- **The column sums of `W - 1`**: `Σ_α |(W - 1)_{αβ}| ≤ S + 1` from the column sums of `ω` (`≤ S`). -/
+theorem BAExp14a_Wsub_col {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) {g0 κ E t : ℝ} {m : ℂ}
+    (hr : BAReal d L g0 κ E m) (ht0 : 0 ≤ t) (ht1 : t < 1) {S : ℝ}
+    (hS : ∀ b : Zd d L, ∑ a : Zd d L, ‖BATheta d L g0 E m t true true a b‖ ≤ S) (β : Idx d L W) :
+    ∑ α : Idx d L W, ‖(BAlwW d L W g0 E t m - 1) α β‖ ≤ S + 1 := by
+  rw [BAExp14a_W_sub_one hL hr ht0 ht1]
+  have hWd : (0 : ℝ) < ((W : ℝ) ^ d) := by
+    have : (0 : ℝ) < (W : ℝ) := Nat.cast_pos.2 (Nat.pos_of_ne_zero (NeZero.ne W))
+    positivity
+  have e1 : ∀ α : Idx d L W, ‖(lwLift d L W (BATheta d L g0 E m t true true - 1)) α β‖ =
+      ((W : ℝ) ^ d)⁻¹ * ‖(BATheta d L g0 E m t true true - 1) (split d L W α).1 (split d L W β).1‖ := by
+    intro α
+    simp only [lwLift, Matrix.of_apply, norm_mul, norm_inv, norm_pow, Complex.norm_natCast]
+  simp only [e1]
+  rw [← Finset.mul_sum, BAExp14a_sum_blk (W := W) (fun c => ‖(BATheta d L g0 E m t true true - 1) c (split d L W β).1‖),
+    ← mul_assoc, inv_mul_cancel₀ hWd.ne', one_mul]
+  calc ∑ c : Zd d L, ‖(BATheta d L g0 E m t true true - 1) c (split d L W β).1‖
+      ≤ ∑ c : Zd d L, (‖BATheta d L g0 E m t true true c (split d L W β).1‖ +
+          (if c = (split d L W β).1 then (1 : ℝ) else 0)) := by
+        refine Finset.sum_le_sum fun c _ => ?_
+        simp only [Matrix.sub_apply, Matrix.one_apply]
+        refine (norm_sub_le _ _).trans (add_le_add le_rfl ?_)
+        split_ifs <;> simp
+    _ = ∑ c : Zd d L, ‖BATheta d L g0 E m t true true c (split d L W β).1‖ + 1 := by
+        rw [Finset.sum_add_distrib]
+        simp
+    _ ≤ S + 1 := by gcongr; exact hS _
+
+end Deterministic
+
+/-! ## A7. The scalars along the flow: `1 - t`, `η`, `B ≤ 2`, `W^{-d} ≤ (λ² + 1) B` -/
+
+section Scalars
+
+variable {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
+
+/-- `1 - t ≥ Im z / 2` for `t ≤ t₀ = Im m/(Im m + Im z)` (`‖m‖ ≤ 1`, `Im z ≤ 1`). -/
+theorem BAExp14a_one_sub_t (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ}
+    (ht : t ≤ BAflowT0 sz z n) : (z n).im / 2 ≤ 1 - t := by
+  obtain ⟨hzpos, hmpos, -, -⟩ := BAflow_T0_bounds hκ hflow n
+  have hz1 : (z n).im ≤ 1 := (hflow.2 n).2.2
+  have hm := BAm_self d (sz.L n) (sz.lam n) (z n) hzpos
+  have hm1 : ‖BAm d (sz.L n) (sz.lam n) (z n)‖ ≤ 1 := BAm_norm_le_one d (sz.L n) (sz.lam n) (z n) _ hzpos.le hm
+  have hmi : (BAm d (sz.L n) (sz.lam n) (z n)).im ≤ 1 := (Complex.im_le_norm _).trans hm1
+  have h0 : BAflowT0 sz z n = (BAm d (sz.L n) (sz.lam n) (z n)).im /
+      ((BAm d (sz.L n) (sz.lam n) (z n)).im + (z n).im) := rfl
+  set mi := (BAm d (sz.L n) (sz.lam n) (z n)).im with hmi_def
+  have hden : 0 < mi + (z n).im := by linarith
+  have h1 : 1 - BAflowT0 sz z n = (z n).im / (mi + (z n).im) := by
+    rw [h0]; field_simp; ring
+  have h2 : (z n).im / 2 ≤ (z n).im / (mi + (z n).im) := by
+    apply div_le_div_of_nonneg_left hzpos.le hden
+    linarith
+  linarith
+
+/-- The three eventual scalar facts along the flow: `N (1 - t) ≥ 1`, `(1 - t)⁻¹ ≤ N`, `4 ≤ N`, `0 < g₀ ≤ 𝔡⁻¹`. -/
+theorem BAExp14a_eventually (hκ : 0 < κ) (hε : 0 < ε) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
+    (ht : ∀ n, t n ≤ BAflowT0 sz z n) :
+    ∀ᶠ n in atTop, (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ∧ (4 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ∧
+      0 < BAflowLam0 sz z n ∧ BAflowLam0 sz z n ≤ 𝔡⁻¹ := by
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hN2 : ∀ᶠ n in atTop, (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ ε :=
+    ((tendsto_rpow_atTop hε).comp hsz).eventually (eventually_ge_atTop 2)
+  filter_upwards [hN2, hsz.eventually (eventually_ge_atTop 4), BAflow_lam0_window κ ε 𝔠 𝔡 sz z hflow]
+    with n hn2 hn4 hlam
+  refine ⟨?_, hn4, hlam.1, hlam.2⟩
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have h1 := BAExp14a_one_sub_t hκ hflow n (ht n)
+  have h2 := (hflow.2 n).2.1
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hN
+  have hpos : 0 < 1 - t n := by
+    have : 0 < (z n).im := lt_of_lt_of_le (Real.rpow_pos_of_pos hN0 _) h2
+    linarith
+  have h3 : N * N ^ (-1 + ε) = N ^ ε := by
+    rw [← Real.rpow_one_add' hN0.le (by linarith)]
+    congr 1; ring
+  have h4 : 1 ≤ N * (1 - t n) := by
+    calc (1 : ℝ) ≤ N ^ ε / 2 := by linarith
+      _ = N * N ^ (-1 + ε) / 2 := by rw [h3]
+      _ ≤ N * (z n).im / 2 := by gcongr
+      _ = N * ((z n).im / 2) := by ring
+      _ ≤ N * (1 - t n) := by gcongr
+  rw [inv_le_comm₀ hpos hN0]
+  rw [inv_eq_one_div, div_le_iff₀ hN0]
+  linarith
+
+/-- `W^{-d} ≤ (λ² + 1) B` (`STBctl_ge`). -/
+theorem BAExp14a_Wd_le (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) :
+    (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (sz.lam n ^ 2 + 1) * sz.Bctl n t := by
+  have h := STBctl_ge sz n ht0 ht1
+  have hl : 0 < sz.lam n ^ 2 + 1 := by positivity
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ = (sz.lam n ^ 2 + 1) * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (sz.lam n ^ 2 + 1)⁻¹) := by
+        field_simp
+    _ ≤ (sz.lam n ^ 2 + 1) * sz.Bctl n t := mul_le_mul_of_nonneg_left h hl.le
+
+end Scalars
+
+/-! ## A8. The Ward identity of the carrier and the pathwise envelope -/
+
+section Carrier
+
+variable {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
+
+/-- `G_t` of the carrier is the resolvent of the Hermitian `H = g₀ Ψ + H_t` at `z_t = E + (1 - t) m`. -/
+theorem BAExp14a_G_green (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) :
+    (baFMz sz z).G n t ω = green (BAExpand_Hm sz n (BAflowLam0 sz z n) t ω)
+      (ztOf ((baFMz sz z).m n) (BAflowEs sz z n) t) :=
+  BAGt_eq_green sz (BAflowLam0 sz z) (BAflowEs sz z) n t ω
+
+theorem BAExp14a_eta_eq (n : ℕ) (t : ℝ) : (baFMz sz z).eta n t = etaOf ((baFMz sz z).m n) t := rfl
+
+/-- **Fine-level Ward identities of the carrier** (row and column): `η Σ_y |G_{xy}|² = Im G_{xx}`, `η Σ_y |G_{yx}|² = Im G_{xx}`. -/
+theorem BAExp14a_G_ward (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ) (x : Idx d (sz.L n) (sz.W n)) :
+    (baFMz sz z).eta n t * ∑ y, ‖(baFMz sz z).G n t ω x y‖ ^ 2 = ((baFMz sz z).G n t ω x x).im ∧
+      (baFMz sz z).eta n t * ∑ y, ‖(baFMz sz z).G n t ω y x‖ ^ 2 = ((baFMz sz z).G n t ω x x).im := by
+  obtain ⟨-, -, hmi, hzi, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  have hH := BAExpand_Hm_isHermitian sz n (BAflowLam0 sz z n) t ω
+  have hz : (ztOf ((baFMz sz z).m n) (BAflowEs sz z n) t).im ≠ 0 := hzi.ne'
+  have e : (baFMz sz z).eta n t = (ztOf ((baFMz sz z).m n) (BAflowEs sz z n) t).im := by
+    rw [ztOf_im]; rfl
+  rw [BAExp14a_G_green, e]
+  exact ⟨BAExp14a_ward_row hH hz x, BAExp14a_ward_col hH hz x⟩
+
+/-- `η > 0`. -/
+theorem BAExp14a_eta_pos (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) : 0 < (baFMz sz z).eta n t := by
+  obtain ⟨-, -, -, hzi, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  rw [ztOf_im] at hzi
+  exact hzi
+
+/-- `‖G_{xy}‖ ≤ η⁻¹` pathwise. -/
+theorem BAExp14a_G_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
+    ‖(baFMz sz z).G n t ω x y‖ ≤ ((baFMz sz z).eta n t)⁻¹ := by
+  obtain ⟨-, -, hmi, hzi, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  have hη := BAExp14a_eta_pos hκ hflow n ht0 ht
+  have hH := BAExpand_Hm_isHermitian sz n (BAflowLam0 sz z n) t ω
+  have hdiag : ‖(baFMz sz z).G n t ω x x‖ ≤ ((baFMz sz z).eta n t)⁻¹ := by
+    have e : (baFMz sz z).eta n t = (ztOf ((baFMz sz z).m n) (BAflowEs sz z n) t).im := by
+      rw [ztOf_im]; rfl
+    rw [BAExp14a_G_green, e]
+    exact BAExp14a_green_diag_le hH hzi x
+  obtain ⟨hw, -⟩ := BAExp14a_G_ward hκ hflow n ht0 ht ω x
+  have h1 : ‖(baFMz sz z).G n t ω x y‖ ^ 2 ≤ ∑ w, ‖(baFMz sz z).G n t ω x w‖ ^ 2 :=
+    Finset.single_le_sum (f := fun w => ‖(baFMz sz z).G n t ω x w‖ ^ 2) (fun _ _ => sq_nonneg _) (Finset.mem_univ y)
+  have h2 : ((baFMz sz z).G n t ω x x).im ≤ ((baFMz sz z).eta n t)⁻¹ :=
+    (Complex.im_le_norm _).trans hdiag
+  have h3 : (baFMz sz z).eta n t * ‖(baFMz sz z).G n t ω x y‖ ^ 2 ≤ ((baFMz sz z).eta n t)⁻¹ := by
+    calc _ ≤ (baFMz sz z).eta n t * ∑ w, ‖(baFMz sz z).G n t ω x w‖ ^ 2 := mul_le_mul_of_nonneg_left h1 hη.le
+      _ = _ := hw
+      _ ≤ _ := h2
+  set e := (baFMz sz z).eta n t with he
+  by_contra hcon
+  push Not at hcon
+  have h4 : e⁻¹ < ‖(baFMz sz z).G n t ω x y‖ := hcon
+  have h5 : 1 < e * ‖(baFMz sz z).G n t ω x y‖ := by
+    have := mul_lt_mul_of_pos_left h4 hη
+    rwa [mul_inv_cancel₀ hη.ne'] at this
+  nlinarith [mul_pos hη hη, norm_nonneg ((baFMz sz z).G n t ω x y), inv_pos.2 hη, mul_inv_cancel₀ hη.ne']
+
+end Carrier
+
 
 end RBM.BA
 
