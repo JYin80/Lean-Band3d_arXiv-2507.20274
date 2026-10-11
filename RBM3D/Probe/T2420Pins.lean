@@ -12,9 +12,9 @@ import RBM3D.BA.GreenSchur
 # T2420 probe (BA-L3c1, the 1a probe step of the ticket; never merged, no root import)
 
 The Lean form of the pins of `docs/reports/T2420-prove.md`, section (a), block "Pins" (namespace `RBM.Graph`): definitions,
-`#check` lines and `example`s only (no theorem); the statement of a theorem `X` is the `Prop` `X_pin`.  Compile:
-`lake env lean RBM3D/Probe/T2420Pins.lean` in the T2420 worktree.  Sections: 1 vocabulary (`BAGraph.shadow`: every `M`- and
-`Ψ`-dotted edge also a waved edge, the adjacency of `BAGraph.adj`; `auxVal`, `auxOrd` at the molecule centres; `BAShadowPG`);
+`#check` lines and `example`s only (no theorem); a theorem of that block is a `Prop` (`X_pin`; `BAGtoAG`, `BAAnpAux` after the
+band's `LWGtoAG`, `LWAnp`).  Compile: `lake env lean RBM3D/Probe/T2420Pins.lean` in the T2420 worktree.  Sections: 1 vocabulary
+(`BAGraph.shadow`: every `M`- and `Ψ`-dotted edge also a waved edge; `auxVal`, `auxOrd` at the molecule centres; `BAShadowPG`);
 2 the vocabulary and atom pins (`scaleatom`, `Gyiyjatom`, `Gyiyjatom2`); 3 **G3** `BAGtoAG`, `baGtoAG_E_pin`; 4 the nested
 form `baAuxNested_pin` and **G4** `BAAnpAux` (owner L3d1); 5 `#check` lines; 6 nonempty instances.
 -/
@@ -37,8 +37,8 @@ section Vocab
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- `Γ` with every `M`-dotted and every `Ψ`-dotted edge also a waved edge: the molecules (waved and dotted edges of all
-three kinds, `BAGraph.adj`) are the molecules of the shadow. -/
+/-- `Γ` with every `M`-dotted and every `Ψ`-dotted edge also a waved edge: the molecules of `Γ` (`BAGraph.adj`: waved,
+`=`-dotted, `Ψ`-dotted and `M`-dotted edges join) are the molecules of the shadow. -/
 def BAGraph.shadow (Γ : BAGraph E I) : LGraph E I where
   solid := Γ.solid
   waved := Γ.waved ++ Γ.mdot.map (fun e => (⟨false, true, e.x, e.y⟩ : WEdge (E ⊕ I))) ++
