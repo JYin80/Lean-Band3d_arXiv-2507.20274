@@ -17,7 +17,7 @@ ticket, three merged twins of `BA/EMn2BA.lean`, the instance data (all on `main`
 the twisted analogue of the fast-decay property `Def_decay`, `paper/tex/3_5_Loop_Hierarchy.tex:1115-1120`; design
 `docs/reports/T2413-design.md` F6).  Section 3: its instance as an `example` at the flow datum `sz0`, `zSeq`,
 `flow_sz0`: every deterministic hypothesis is discharged and the cut-off region is nonempty for every `n`.
-No theorem, no `sorry`.
+The only proofs are the tactic blocks of the `example`s of section 3.
 -/
 
 set_option linter.style.longLine false
