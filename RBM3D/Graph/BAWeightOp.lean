@@ -715,6 +715,619 @@ theorem baExpFrame_lw (d : ℕ) : ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L
 
 end Final
 
+/-! ## 4. Target 3: counters and order -/
+
+/-! ### 4.1 Generic closure lemmas (local copies of the private lemmas of `Graph/BAExpandWOrd`, with the pendant part
+split into an attached part `P` and unattached classes) -/
+
+section Generic
+
+private theorem BAWeightOp_rtg_symm {α : Type*} (r : α → α → Bool) (hs : ∀ u v, r u v = r v u) {v w : α}
+    (h : Relation.ReflTransGen (fun a b => r a b = true) v w) :
+    Relation.ReflTransGen (fun a b => r a b = true) w v := by
+  induction h with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ hbc ih => exact Relation.ReflTransGen.head (by rw [hs]; exact hbc) ih
+
+/-- The class of an attached vertex `v` of a relation `r'` that extends `r` by pendant vertices (`ρ` retracts the attached
+new vertices onto old ones; the edges at unattached vertices stay among unattached ones). -/
+private theorem BAWeightOp_rtg_ext {V V' : Type*} (r : V → V → Bool) (r' : V' → V' → Bool)
+    (hs' : ∀ u v, r' u v = r' v u) (emb : V → V') (ρ : V' → V) (P : V' → Prop)
+    (e1 : ∀ u w, r u w = true → r' (emb u) (emb w) = true)
+    (e2 : ∀ b c, r' b c = true → (P b ∧ P c ∧ (ρ b = ρ c ∨ r (ρ b) (ρ c) = true)) ∨ (¬ P b ∧ ¬ P c))
+    (e3 : ∀ w, P w → Relation.ReflTransGen (fun a b => r' a b = true) w (emb (ρ w))) (v w : V') (hv : P v) :
+    Relation.ReflTransGen (fun a b => r' a b = true) v w ↔
+      w = v ∨ (P w ∧ Relation.ReflTransGen (fun a b => r a b = true) (ρ v) (ρ w)) := by
+  constructor
+  · intro h
+    induction h with
+    | refl => exact Or.inl rfl
+    | @tail b c _ hbc ih =>
+      right
+      rcases e2 b c hbc with ⟨hPb, hPc, hbc'⟩ | ⟨hPb, _⟩
+      · refine ⟨hPc, ?_⟩
+        rcases ih with rfl | ⟨_, hrt⟩
+        · rcases hbc' with h | h
+          · rw [h]
+          · exact Relation.ReflTransGen.single h
+        · rcases hbc' with h | h
+          · rw [← h]; exact hrt
+          · exact hrt.tail h
+      · rcases ih with rfl | ⟨hPb', _⟩
+        · exact absurd hv hPb
+        · exact absurd hPb' hPb
+  · rintro (rfl | ⟨hPw, h⟩)
+    · exact Relation.ReflTransGen.refl
+    · have h1 : Relation.ReflTransGen (fun a b => r' a b = true) (emb (ρ v)) (emb (ρ w)) :=
+        Relation.ReflTransGen.lift emb (fun a b hab => e1 a b hab) _ _ h
+      exact (e3 v hv).trans (h1.trans (BAWeightOp_rtg_symm r' hs' (e3 w hPw)))
+
+/-- The number of classes without a "bad" element (the shape of `BAGraph.nA`, `BAGraph.nM`). -/
+private def BAWeightOp_cnt {V : Type*} [Fintype V] [DecidableEq V] (i : V → Bool) (cl : V → Finset V) : ℕ :=
+  ((Finset.univ.filter (fun v : V => ∀ w ∈ cl v, i w = true)).image cl).card
+
+/-- The count of internal classes of a pendant extension: the classes of the attached vertices are the `G`-images of the
+classes of `cl`, the unattached vertices form `k` further internal classes. -/
+private theorem BAWeightOp_cnt_ext {V V' : Type*} [Fintype V] [DecidableEq V] [Fintype V'] [DecidableEq V']
+    (i : V → Bool) (i' : V' → Bool) (cl : V → Finset V) (cl' : V' → Finset V') (emb : V → V') (ρ : V' → V)
+    (P : V' → Prop) [DecidablePred P] (k : ℕ) (hρ : ∀ a, ρ (emb a) = a) (hi1 : ∀ a, i' (emb a) = i a)
+    (hi2 : ∀ w, i (ρ w) = true → i' w = true) (hP1 : ∀ a, P (emb a)) (hself : ∀ v, v ∈ cl v)
+    (hcl : ∀ v, P v → ∀ w, w ∈ cl' v ↔ w = v ∨ (P w ∧ ρ w ∈ cl (ρ v)))
+    (hnew : ((Finset.univ.filter (fun v => ¬ P v)).image cl').card = k)
+    (hnP : ∀ v, ¬ P v → ∀ w ∈ cl' v, ¬ P w ∧ i' w = true) (hnself : ∀ v, ¬ P v → v ∈ cl' v) :
+    BAWeightOp_cnt i' cl' = BAWeightOp_cnt i cl + k := by
+  classical
+  unfold BAWeightOp_cnt
+  set G : Finset V → Finset V' := fun A => Finset.univ.filter (fun w => P w ∧ ρ w ∈ A) with hG
+  have h2 : ∀ v, P v → cl' v = G (cl (ρ v)) := by
+    intro v hv
+    ext w
+    rw [hcl v hv]
+    simp only [hG, Finset.mem_filter, Finset.mem_univ, true_and]
+    constructor
+    · rintro (rfl | ⟨hw, h⟩)
+      · exact ⟨hv, hself _⟩
+      · exact ⟨hw, h⟩
+    · rintro ⟨hw, h⟩
+      exact Or.inr ⟨hw, h⟩
+  have hGinj : Function.Injective G := by
+    intro A A' h
+    have hA : ∀ B : Finset V, B = (G B).image ρ := by
+      intro B
+      ext a
+      simp only [hG, Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
+      constructor
+      · intro ha
+        exact ⟨emb a, ⟨hP1 a, by rw [hρ]; exact ha⟩, hρ a⟩
+      · rintro ⟨w, ⟨_, hw⟩, rfl⟩
+        exact hw
+    rw [hA A, hA A', h]
+  have himg : (Finset.univ.filter (fun v : V' => ∀ w ∈ cl' v, i' w = true)).image cl' =
+      ((Finset.univ.filter (fun v : V => ∀ w ∈ cl v, i w = true)).image cl).image G ∪
+        (Finset.univ.filter (fun w => ¬ P w)).image cl' := by
+    ext T
+    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+    constructor
+    · rintro ⟨v, hv, rfl⟩
+      by_cases hPv : P v
+      · left
+        refine ⟨cl (ρ v), ⟨ρ v, ?_, rfl⟩, (h2 v hPv).symm⟩
+        intro a ha
+        have : emb a ∈ cl' v := by
+          rw [h2 v hPv]
+          simp only [hG, Finset.mem_filter, Finset.mem_univ, true_and]
+          exact ⟨hP1 a, by rw [hρ]; exact ha⟩
+        have := hv _ this
+        rwa [hi1] at this
+      · right
+        exact ⟨v, hPv, rfl⟩
+    · rintro (⟨_, ⟨u, hu, rfl⟩, rfl⟩ | ⟨v, hv, rfl⟩)
+      · refine ⟨emb u, ?_, ?_⟩
+        · intro w hw
+          rw [h2 _ (hP1 u), hρ] at hw
+          simp only [hG, Finset.mem_filter, Finset.mem_univ, true_and] at hw
+          exact hi2 w (hu _ hw.2)
+        · rw [h2 _ (hP1 u), hρ]
+      · exact ⟨v, fun w hw => (hnP v hv w hw).2, rfl⟩
+  rw [himg, Finset.card_union_of_disjoint, Finset.card_image_of_injective _ hGinj, hnew]
+  rw [Finset.disjoint_left]
+  intro T hT1 hT2
+  obtain ⟨A, _, rfl⟩ := Finset.mem_image.1 hT1
+  obtain ⟨v, hv, hvT⟩ := Finset.mem_image.1 hT2
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
+  have : v ∈ G A := by rw [← hvT]; exact hnself v hv
+  simp only [hG, Finset.mem_filter, Finset.mem_univ, true_and] at this
+  exact hv this.1
+
+end Generic
+
+/-! ### 4.2 Atoms under added dotted edges (local copies) -/
+
+section AtomMono
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+private theorem BAWeightOp_atomAdj_comm (Γ : BAGraph E I) (u v : E ⊕ I) :
+    Γ.atomAdj u v = Γ.atomAdj v u := by
+  simp only [BAGraph.atomAdj, or_comm]
+
+private theorem BAWeightOp_adj_comm (Γ : BAGraph E I) (u v : E ⊕ I) : Γ.adj u v = Γ.adj v u := by
+  simp only [BAGraph.adj, BAWeightOp_atomAdj_comm Γ u v, LGraph.adj, or_comm]
+
+private theorem BAWeightOp_self_mem_atom (Γ : BAGraph E I) (v : E ⊕ I) : v ∈ Γ.atom v := by
+  rw [BAGraph.mem_atom_iff]
+
+private theorem BAWeightOp_atom_eq_of_mem (Γ : BAGraph E I) {v w : E ⊕ I} (h : w ∈ Γ.atom v) :
+    Γ.atom w = Γ.atom v := by
+  rw [BAGraph.mem_atom_iff] at h
+  ext x
+  rw [BAGraph.mem_atom_iff, BAGraph.mem_atom_iff]
+  constructor
+  · intro hx; exact h.trans hx
+  · intro hx
+    exact (BAWeightOp_rtg_symm (fun a b => Γ.atomAdj a b) (BAWeightOp_atomAdj_comm Γ) h).trans hx
+
+/-- Adding atom edges makes the atoms bigger. -/
+private theorem BAWeightOp_atom_subset (Γ₁ Γ₂ : BAGraph E I)
+    (h : ∀ u v, Γ₁.atomAdj u v = true → Γ₂.atomAdj u v = true) (v : E ⊕ I) : Γ₁.atom v ⊆ Γ₂.atom v := by
+  intro w hw
+  rw [BAGraph.mem_atom_iff] at hw ⊢
+  exact Relation.ReflTransGen.mono (fun a b hab => h a b hab) _ _ hw
+
+/-- **Adding `=`-, `Ψ`- or `M`-dotted edges never increases `n_A`** (merging two atoms never creates an internal
+one). -/
+private theorem BAWeightOp_nA_le (Γ₁ Γ₂ : BAGraph E I)
+    (h : ∀ u v, Γ₁.atomAdj u v = true → Γ₂.atomAdj u v = true) : Γ₂.nA ≤ Γ₁.nA := by
+  classical
+  unfold BAGraph.nA
+  set F : Finset (E ⊕ I) → Finset (E ⊕ I) := fun A =>
+    if hA : A.Nonempty then Γ₂.atom hA.choose else ∅ with hF
+  have hsub : (Finset.univ.filter (fun v : E ⊕ I => ∀ w ∈ Γ₂.atom v, w.isRight = true)).image Γ₂.atom ⊆
+      ((Finset.univ.filter (fun v : E ⊕ I => ∀ w ∈ Γ₁.atom v, w.isRight = true)).image Γ₁.atom).image F := by
+    intro T hT
+    obtain ⟨v, hv, rfl⟩ := Finset.mem_image.1 hT
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
+    refine Finset.mem_image.2 ⟨Γ₁.atom v, Finset.mem_image.2 ⟨v, ?_, rfl⟩, ?_⟩
+    · simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      exact fun w hw => hv w (BAWeightOp_atom_subset Γ₁ Γ₂ h v hw)
+    · have hne : (Γ₁.atom v).Nonempty := ⟨v, BAWeightOp_self_mem_atom Γ₁ v⟩
+      simp only [hF, hne, ↓reduceDIte]
+      exact BAWeightOp_atom_eq_of_mem Γ₂ (BAWeightOp_atom_subset Γ₁ Γ₂ h v hne.choose_spec)
+  exact (Finset.card_le_card hsub).trans Finset.card_image_le
+
+/-- **A singleton internal atom `{b}` that is joined to another vertex loses one internal atom.** -/
+private theorem BAWeightOp_nA_lt (Γ₁ Γ₂ : BAGraph E I)
+    (h : ∀ u v, Γ₁.atomAdj u v = true → Γ₂.atomAdj u v = true) (b : E ⊕ I) (hb : b.isRight = true)
+    (hiso : ∀ w, Γ₁.atomAdj b w = false) (u : E ⊕ I) (hu : u ≠ b) (hbu : Γ₂.atomAdj b u = true) :
+    Γ₂.nA + 1 ≤ Γ₁.nA := by
+  classical
+  have hb1 : Γ₁.atom b = {b} := by
+    ext w
+    rw [BAGraph.mem_atom_iff, Finset.mem_singleton]
+    constructor
+    · intro hw
+      induction hw with
+      | refl => rfl
+      | @tail b' c _ hbc ih =>
+        subst ih
+        rw [hiso c] at hbc
+        exact absurd hbc (by simp)
+    · rintro rfl; exact Relation.ReflTransGen.refl
+  unfold BAGraph.nA
+  set IA₁ := (Finset.univ.filter (fun v : E ⊕ I => ∀ w ∈ Γ₁.atom v, w.isRight = true)).image Γ₁.atom with hIA₁
+  have hbmem : ({b} : Finset (E ⊕ I)) ∈ IA₁ := by
+    rw [hIA₁, Finset.mem_image]
+    refine ⟨b, ?_, hb1⟩
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    intro w hw
+    rw [hb1, Finset.mem_singleton] at hw
+    rw [hw]; exact hb
+  set F : Finset (E ⊕ I) → Finset (E ⊕ I) := fun A =>
+    if hA : A.Nonempty then Γ₂.atom hA.choose else ∅ with hF
+  have hsub : (Finset.univ.filter (fun v : E ⊕ I => ∀ w ∈ Γ₂.atom v, w.isRight = true)).image Γ₂.atom ⊆
+      (IA₁.erase {b}).image F := by
+    intro T hT
+    obtain ⟨v, hv, rfl⟩ := Finset.mem_image.1 hT
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
+    set a : E ⊕ I := if v = b then u else v with ha
+    have haT : a ∈ Γ₂.atom v := by
+      by_cases hvb : v = b
+      · subst hvb
+        simp only [ha, ↓reduceIte]
+        rw [BAGraph.mem_atom_iff]
+        exact Relation.ReflTransGen.single hbu
+      · simp only [ha, hvb, ↓reduceIte]; exact BAWeightOp_self_mem_atom Γ₂ v
+    have hab : a ≠ b := by
+      by_cases hvb : v = b
+      · simp only [ha, hvb, ↓reduceIte]; exact hu
+      · simp only [ha, hvb, ↓reduceIte]; exact hvb
+    have hsubT : Γ₁.atom a ⊆ Γ₂.atom v := by
+      intro w hw
+      have := BAWeightOp_atom_subset Γ₁ Γ₂ h a hw
+      rwa [BAWeightOp_atom_eq_of_mem Γ₂ haT] at this
+    refine Finset.mem_image.2 ⟨Γ₁.atom a, Finset.mem_erase.2 ⟨?_, Finset.mem_image.2 ⟨a, ?_, rfl⟩⟩, ?_⟩
+    · intro hAb
+      have := BAWeightOp_self_mem_atom Γ₁ a
+      rw [hAb, Finset.mem_singleton] at this
+      exact hab this
+    · simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      exact fun w hw => hv w (hsubT hw)
+    · have hne : (Γ₁.atom a).Nonempty := ⟨a, BAWeightOp_self_mem_atom Γ₁ a⟩
+      simp only [hF, hne, ↓reduceDIte]
+      exact BAWeightOp_atom_eq_of_mem Γ₂ (hsubT hne.choose_spec)
+  have h1 := (Finset.card_le_card hsub).trans Finset.card_image_le
+  have h2 := Finset.card_erase_of_mem hbmem
+  have h3 : 0 < IA₁.card := Finset.card_pos.2 ⟨_, hbmem⟩
+  omega
+
+end AtomMono
+
+/-! ### 4.3 The extension by `k` vertices: atoms, molecules, counters -/
+
+section ExtGraph
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- The atom edges of a generic extension: those of `Γ` (renamed) and the new `M`-dotted edges. -/
+private theorem BAWeightOp_ext_atomAdj (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin k)))) (w : List (WEdge (E ⊕ (I ⊕ Fin k))))
+    (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) (u v : E ⊕ (I ⊕ Fin k)) :
+    (BAGraph.ext k Γ rest s w md).atomAdj u v = true ↔
+      (∃ a b, u = owxEmb k a ∧ v = owxEmb k b ∧ Γ.atomAdj a b = true) ∨
+        ∃ e ∈ md, (e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u) := by
+  simp only [BAGraph.atomAdj, BAGraph.ext, LGraph.owxExt, Bool.or_eq_true,
+    List.any_eq_true, List.mem_map, List.mem_append, decide_eq_true_eq, Bool.and_eq_true]
+  constructor
+  · rintro (((⟨_, ⟨a, ha, rfl⟩, h1, h2⟩ | ⟨_, ⟨a, ha, rfl⟩, h2⟩) | ⟨e, h1 | ⟨a, ha, rfl⟩, h2⟩))
+    · left
+      simp only [DEdge.map] at h1 h2
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact ⟨a.x, a.y, rfl, rfl, Or.inl (Or.inl ⟨a, ha, h1, Or.inl ⟨rfl, rfl⟩⟩)⟩
+      · exact ⟨a.y, a.x, rfl, rfl, Or.inl (Or.inl ⟨a, ha, h1, Or.inr ⟨rfl, rfl⟩⟩)⟩
+    · left
+      simp only [BAPsiEdge.map] at h2
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact ⟨a.x, a.y, rfl, rfl, Or.inl (Or.inr ⟨a, ha, Or.inl ⟨rfl, rfl⟩⟩)⟩
+      · exact ⟨a.y, a.x, rfl, rfl, Or.inl (Or.inr ⟨a, ha, Or.inr ⟨rfl, rfl⟩⟩)⟩
+    · exact Or.inr ⟨e, h1, h2⟩
+    · left
+      simp only [BAMEdge.map] at h2
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact ⟨a.x, a.y, rfl, rfl, Or.inr ⟨a, ha, Or.inl ⟨rfl, rfl⟩⟩⟩
+      · exact ⟨a.y, a.x, rfl, rfl, Or.inr ⟨a, ha, Or.inr ⟨rfl, rfl⟩⟩⟩
+  · rintro (⟨a, b, rfl, rfl, ((⟨e, he, h1, h2⟩ | ⟨e, he, h2⟩) | ⟨e, he, h2⟩)⟩ | ⟨e, he, h2⟩)
+    · left; left
+      refine ⟨DEdge.map (owxEmb k) e, ⟨e, he, rfl⟩, h1, ?_⟩
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact Or.inl ⟨rfl, rfl⟩
+      · exact Or.inr ⟨rfl, rfl⟩
+    · left; right
+      refine ⟨BAPsiEdge.map (owxEmb k) e, ⟨e, he, rfl⟩, ?_⟩
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact Or.inl ⟨rfl, rfl⟩
+      · exact Or.inr ⟨rfl, rfl⟩
+    · right
+      refine ⟨BAMEdge.map (owxEmb k) e, Or.inr ⟨e, he, rfl⟩, ?_⟩
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact Or.inl ⟨rfl, rfl⟩
+      · exact Or.inr ⟨rfl, rfl⟩
+    · right
+      exact ⟨e, Or.inl he, h2⟩
+
+
+/-- The waved and `=`-dotted edges of a generic extension: those of `Γ` (renamed) and the new waved edges. -/
+private theorem BAWeightOp_ext_ladj (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin k)))) (w : List (WEdge (E ⊕ (I ⊕ Fin k))))
+    (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) (u v : E ⊕ (I ⊕ Fin k)) :
+    (BAGraph.ext k Γ rest s w md).toLGraph.adj u v = true ↔
+      (∃ a b, u = owxEmb k a ∧ v = owxEmb k b ∧ Γ.toLGraph.adj a b = true) ∨
+        ∃ e ∈ w, (e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u) := by
+  simp only [LGraph.adj, BAGraph.ext, LGraph.owxExt, Bool.or_eq_true,
+    List.any_eq_true, List.mem_map, List.mem_append, decide_eq_true_eq, Bool.and_eq_true]
+  constructor
+  · rintro ((⟨e, ⟨a, ha, rfl⟩ | h1, h2⟩) | ⟨_, ⟨a, ha, rfl⟩, h1, h2⟩)
+    · left
+      simp only [WEdge.map] at h2
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact ⟨a.x, a.y, rfl, rfl, Or.inl ⟨a, ha, Or.inl ⟨rfl, rfl⟩⟩⟩
+      · exact ⟨a.y, a.x, rfl, rfl, Or.inl ⟨a, ha, Or.inr ⟨rfl, rfl⟩⟩⟩
+    · exact Or.inr ⟨e, h1, h2⟩
+    · left
+      simp only [DEdge.map] at h1 h2
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact ⟨a.x, a.y, rfl, rfl, Or.inr ⟨a, ha, h1, Or.inl ⟨rfl, rfl⟩⟩⟩
+      · exact ⟨a.y, a.x, rfl, rfl, Or.inr ⟨a, ha, h1, Or.inr ⟨rfl, rfl⟩⟩⟩
+  · rintro (⟨a, b, rfl, rfl, (⟨e, he, h2⟩ | ⟨e, he, h1, h2⟩)⟩ | ⟨e, he, h2⟩)
+    · left
+      refine ⟨WEdge.map (owxEmb k) e, Or.inl ⟨e, he, rfl⟩, ?_⟩
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact Or.inl ⟨rfl, rfl⟩
+      · exact Or.inr ⟨rfl, rfl⟩
+    · right
+      refine ⟨DEdge.map (owxEmb k) e, ⟨e, he, rfl⟩, h1, ?_⟩
+      rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact Or.inl ⟨rfl, rfl⟩
+      · exact Or.inr ⟨rfl, rfl⟩
+    · left
+      exact ⟨e, Or.inr he, h2⟩
+
+/-- The molecule edges of a generic extension. -/
+private theorem BAWeightOp_ext_adj (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin k)))) (w : List (WEdge (E ⊕ (I ⊕ Fin k))))
+    (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) (u v : E ⊕ (I ⊕ Fin k)) :
+    (BAGraph.ext k Γ rest s w md).adj u v = true ↔
+      (∃ a b, u = owxEmb k a ∧ v = owxEmb k b ∧ Γ.adj a b = true) ∨
+        (∃ e ∈ w, (e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u)) ∨
+        ∃ e ∈ md, (e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u) := by
+  simp only [BAGraph.adj, Bool.or_eq_true, BAWeightOp_ext_ladj, BAWeightOp_ext_atomAdj]
+  constructor
+  · rintro ((⟨a, b, h1, h2, h3⟩ | h) | (⟨a, b, h1, h2, h3⟩ | h))
+    · exact Or.inl ⟨a, b, h1, h2, Or.inl h3⟩
+    · exact Or.inr (Or.inl h)
+    · exact Or.inl ⟨a, b, h1, h2, Or.inr h3⟩
+    · exact Or.inr (Or.inr h)
+  · rintro (⟨a, b, h1, h2, h3 | h3⟩ | h | h)
+    · exact Or.inl (Or.inl ⟨a, b, h1, h2, h3⟩)
+    · exact Or.inr (Or.inl ⟨a, b, h1, h2, h3⟩)
+    · exact Or.inl (Or.inr h)
+    · exact Or.inr (Or.inr h)
+
+end ExtGraph
+
+
+/-! ### 4.4 The shape of the terms of `lw4` -/
+
+section Ext4
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- The shape common to the leaf and the derivative terms of `lw4`: `Γ` renamed by `owxEmb 4`, its solid edges replaced
+by `rest`, the solid edges `s`, the waved edges `S⁺_{zy}`, `S_{αβ}` and the `M`-dotted edges `M_{xz}`, `M_{zx}`, `M_{yα}`
+appended (`z, y, α, β = bpv 0..3`). -/
+private def BAWeightOp_ext4 (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin 4)))) (x : E ⊕ I) : BAGraph E (I ⊕ Fin 4) :=
+  BAGraph.ext 4 Γ rest s [bpW true (bpv 0) (bpv 1), bpW false (bpv 2) (bpv 3)]
+    [bpM (owxEmb 4 x) (bpv 0), bpM (bpv 0) (owxEmb 4 x), bpM (bpv 1) (bpv 2)]
+
+/-- The retraction of the vertices of the extension: `z, y, α, β` go to `x`. -/
+private def BAWeightOp_rho (x : E ⊕ I) : E ⊕ (I ⊕ Fin 4) → E ⊕ I
+  | Sum.inl e => Sum.inl e
+  | Sum.inr (Sum.inl i) => Sum.inr i
+  | Sum.inr (Sum.inr _) => x
+
+private theorem BAWeightOp_rho_emb (x : E ⊕ I) (a : E ⊕ I) : BAWeightOp_rho x (owxEmb 4 a) = a := by
+  rcases a with a | a <;> rfl
+
+private theorem BAWeightOp_isRight_emb (a : E ⊕ I) : (owxEmb 4 a : E ⊕ (I ⊕ Fin 4)).isRight = a.isRight := by
+  rcases a with a | a <;> rfl
+
+private theorem BAWeightOp_isRight_rho (x : E ⊕ I) (w : E ⊕ (I ⊕ Fin 4))
+    (h : (BAWeightOp_rho x w).isRight = true) : w.isRight = true := by
+  rcases w with e | i | j
+  · simp [BAWeightOp_rho] at h
+  · rfl
+  · rfl
+
+private theorem BAWeightOp_emb_ne (a : E ⊕ I) (j : Fin 4) : (owxEmb 4 a : E ⊕ (I ⊕ Fin 4)) ≠ bpv j := by
+  rcases a with a | a <;> simp [owxEmb]
+
+/-- The atom edges of the extension: those of `Γ` (renamed), `x – z` and `y – α`. -/
+private theorem BAWeightOp_ext4_atomAdj (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin 4)))) (x : E ⊕ I) (u v : E ⊕ (I ⊕ Fin 4)) :
+    (BAWeightOp_ext4 Γ rest s x).atomAdj u v = true ↔
+      (∃ a b, u = owxEmb 4 a ∧ v = owxEmb 4 b ∧ Γ.atomAdj a b = true) ∨
+        (u = owxEmb 4 x ∧ v = bpv 0) ∨ (u = bpv 0 ∧ v = owxEmb 4 x) ∨ (u = bpv 1 ∧ v = bpv 2) ∨
+        (u = bpv 2 ∧ v = bpv 1) := by
+  rw [BAWeightOp_ext4, BAWeightOp_ext_atomAdj]
+  simp only [List.mem_cons, List.not_mem_nil, or_false, exists_eq_or_imp, exists_eq_left, bpM]
+  constructor
+  · rintro (h | (⟨h1, h2⟩ | ⟨h1, h2⟩) | (⟨h1, h2⟩ | ⟨h1, h2⟩) | (⟨h1, h2⟩ | ⟨h1, h2⟩))
+    · exact Or.inl h
+    · exact Or.inr (Or.inl ⟨h1.symm, h2.symm⟩)
+    · exact Or.inr (Or.inr (Or.inl ⟨h2.symm, h1.symm⟩))
+    · exact Or.inr (Or.inr (Or.inl ⟨h1.symm, h2.symm⟩))
+    · exact Or.inr (Or.inl ⟨h2.symm, h1.symm⟩)
+    · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨h1.symm, h2.symm⟩)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨h2.symm, h1.symm⟩)))
+  · rintro (h | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩)
+    · exact Or.inl h
+    · exact Or.inr (Or.inl (Or.inl ⟨h1.symm, h2.symm⟩))
+    · exact Or.inr (Or.inr (Or.inl (Or.inl ⟨h1.symm, h2.symm⟩)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨h1.symm, h2.symm⟩)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨h2.symm, h1.symm⟩)))
+
+
+/-- The molecule edges of the extension: those of `Γ` (renamed), `z – y`, `α – β`, `x – z` and `y – α`. -/
+private theorem BAWeightOp_ext4_adj (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin 4)))) (x : E ⊕ I) (u v : E ⊕ (I ⊕ Fin 4)) :
+    (BAWeightOp_ext4 Γ rest s x).adj u v = true ↔
+      (∃ a b, u = owxEmb 4 a ∧ v = owxEmb 4 b ∧ Γ.adj a b = true) ∨
+        (u = bpv 0 ∧ v = bpv 1) ∨ (u = bpv 1 ∧ v = bpv 0) ∨ (u = bpv 2 ∧ v = bpv 3) ∨ (u = bpv 3 ∧ v = bpv 2) ∨
+        (u = owxEmb 4 x ∧ v = bpv 0) ∨ (u = bpv 0 ∧ v = owxEmb 4 x) ∨ (u = bpv 1 ∧ v = bpv 2) ∨
+        (u = bpv 2 ∧ v = bpv 1) := by
+  rw [BAWeightOp_ext4, BAWeightOp_ext_adj]
+  simp only [List.mem_cons, List.not_mem_nil, or_false, exists_eq_or_imp, exists_eq_left, bpM, bpW]
+  constructor
+  · rintro (h | ((⟨h1, h2⟩ | ⟨h1, h2⟩) | ⟨h1, h2⟩ | ⟨h1, h2⟩) | (⟨h1, h2⟩ | ⟨h1, h2⟩) |
+      (⟨h1, h2⟩ | ⟨h1, h2⟩) | ⟨h1, h2⟩ | ⟨h1, h2⟩)
+    · exact Or.inl h
+    all_goals (subst h1 h2; simp)
+  · rintro (h | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩)
+    · exact Or.inl h
+    all_goals (subst h1 h2; simp)
+
+
+/-- **`n_A` of the extension is `n_A Γ + 2`**: `z` joins the atom of `x`, `{y, α}` and `{β}` are two new internal atoms. -/
+private theorem BAWeightOp_ext4_nA (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin 4)))) (x : E ⊕ I) :
+    (BAWeightOp_ext4 Γ rest s x).nA = Γ.nA + 2 := by
+  classical
+  set Δ := BAWeightOp_ext4 Γ rest s x with hΔ
+  -- the unattached classes
+  have hcl' : ∀ v : E ⊕ (I ⊕ Fin 4), (v = bpv 1 ∨ v = bpv 2 ∨ v = bpv 3) → ∀ w, w ∈ Δ.atom v ↔
+      (v = bpv 3 ∧ w = bpv 3) ∨ (v ≠ bpv 3 ∧ (w = bpv 1 ∨ w = bpv 2)) := by
+    intro v hv w
+    rw [BAGraph.mem_atom_iff]
+    constructor
+    · intro h
+      induction h with
+      | refl => rcases hv with rfl | rfl | rfl <;> simp
+      | @tail b c _ hbc ih =>
+        rcases (BAWeightOp_ext4_atomAdj Γ rest s x _ _).1 hbc with
+          ⟨a, a', rfl, rfl, _⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+        · rcases ih with ⟨_, h⟩ | ⟨_, h | h⟩ <;> exact absurd h (BAWeightOp_emb_ne _ _)
+        · rcases ih with ⟨_, h⟩ | ⟨_, h | h⟩ <;> exact absurd h (BAWeightOp_emb_ne _ _)
+        · simp at ih
+        · rcases ih with ⟨_, h⟩ | ⟨hv3, _⟩
+          · simp at h
+          · exact Or.inr ⟨hv3, Or.inr rfl⟩
+        · rcases ih with ⟨_, h⟩ | ⟨hv3, _⟩
+          · simp at h
+          · exact Or.inr ⟨hv3, Or.inl rfl⟩
+    · rintro (⟨rfl, rfl⟩ | ⟨hne, rfl | rfl⟩)
+      · exact Relation.ReflTransGen.refl
+      · rcases hv with rfl | rfl | rfl
+        · exact Relation.ReflTransGen.refl
+        · exact Relation.ReflTransGen.single ((BAWeightOp_ext4_atomAdj Γ rest s x _ _).2
+            (Or.inr (Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩)))))
+        · exact absurd rfl hne
+      · rcases hv with rfl | rfl | rfl
+        · exact Relation.ReflTransGen.single ((BAWeightOp_ext4_atomAdj Γ rest s x _ _).2
+            (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩)))))
+        · exact Relation.ReflTransGen.refl
+        · exact absurd rfl hne
+  have hy' : Δ.atom (bpv 1) = {bpv 1, bpv 2} := by
+    ext w; rw [hcl' _ (Or.inl rfl)]; simp
+  have ha' : Δ.atom (bpv 2) = {bpv 1, bpv 2} := by
+    ext w; rw [hcl' _ (Or.inr (Or.inl rfl))]; simp
+  have hb' : Δ.atom (bpv 3) = {bpv 3} := by
+    ext w; rw [hcl' _ (Or.inr (Or.inr rfl))]; simp
+  have hnew : ((Finset.univ.filter fun v : E ⊕ (I ⊕ Fin 4) => ¬ (v ≠ bpv 1 ∧ v ≠ bpv 2 ∧ v ≠ bpv 3)).image
+      Δ.atom).card = 2 := by
+    have : (Finset.univ.filter fun v : E ⊕ (I ⊕ Fin 4) => ¬ (v ≠ bpv 1 ∧ v ≠ bpv 2 ∧ v ≠ bpv 3)) =
+        {bpv 1, bpv 2, bpv 3} := by
+      ext v; simp; tauto
+    rw [this, Finset.image_insert, Finset.image_insert, Finset.image_singleton, hy', ha', hb',
+      Finset.insert_eq_of_mem (by simp)]
+    exact Finset.card_pair fun h => by
+      have := Finset.ext_iff.1 h (bpv 1)
+      simp at this
+  have hnP : ∀ v : E ⊕ (I ⊕ Fin 4), ¬ (v ≠ bpv 1 ∧ v ≠ bpv 2 ∧ v ≠ bpv 3) → ∀ w ∈ Δ.atom v,
+      ¬ (w ≠ bpv 1 ∧ w ≠ bpv 2 ∧ w ≠ bpv 3) ∧ w.isRight = true := by
+    intro v hv w hw
+    have hv' : v = bpv 1 ∨ v = bpv 2 ∨ v = bpv 3 := by tauto
+    rw [hcl' v hv'] at hw
+    rcases hw with ⟨_, rfl⟩ | ⟨_, rfl | rfl⟩ <;> simp [bpv]
+  -- the attached classes
+  have e1 : ∀ u w, Γ.atomAdj u w = true → Δ.atomAdj (owxEmb 4 u) (owxEmb 4 w) = true := fun u w h =>
+    (BAWeightOp_ext4_atomAdj Γ rest s x _ _).2 (Or.inl ⟨u, w, rfl, rfl, h⟩)
+  have e2 : ∀ b c, Δ.atomAdj b c = true →
+      ((b ≠ bpv 1 ∧ b ≠ bpv 2 ∧ b ≠ bpv 3) ∧ (c ≠ bpv 1 ∧ c ≠ bpv 2 ∧ c ≠ bpv 3) ∧
+        (BAWeightOp_rho x b = BAWeightOp_rho x c ∨ Γ.atomAdj (BAWeightOp_rho x b) (BAWeightOp_rho x c) = true)) ∨
+      (¬ (b ≠ bpv 1 ∧ b ≠ bpv 2 ∧ b ≠ bpv 3) ∧ ¬ (c ≠ bpv 1 ∧ c ≠ bpv 2 ∧ c ≠ bpv 3)) := by
+    intro b c hbc
+    rcases (BAWeightOp_ext4_atomAdj Γ rest s x _ _).1 hbc with
+      ⟨a, a', rfl, rfl, h'⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+    · exact Or.inl ⟨⟨BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _⟩,
+        ⟨BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _⟩,
+        Or.inr (by rw [BAWeightOp_rho_emb, BAWeightOp_rho_emb]; exact h')⟩
+    · exact Or.inl ⟨⟨BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _⟩, by simp,
+        Or.inl (by rw [BAWeightOp_rho_emb]; rfl)⟩
+    · exact Or.inl ⟨by simp, ⟨BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _⟩,
+        Or.inl (by rw [BAWeightOp_rho_emb]; rfl)⟩
+    · exact Or.inr ⟨by simp, by simp⟩
+    · exact Or.inr ⟨by simp, by simp⟩
+  have e3 : ∀ w : E ⊕ (I ⊕ Fin 4), (w ≠ bpv 1 ∧ w ≠ bpv 2 ∧ w ≠ bpv 3) →
+      Relation.ReflTransGen (fun a b => Δ.atomAdj a b = true) w (owxEmb 4 (BAWeightOp_rho x w)) := by
+    intro w hw
+    rcases w with e | i | j
+    · exact Relation.ReflTransGen.refl
+    · exact Relation.ReflTransGen.refl
+    · fin_cases j
+      · exact Relation.ReflTransGen.single ((BAWeightOp_ext4_atomAdj Γ rest s x _ _).2
+          (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩))))
+      · exact absurd rfl hw.1
+      · exact absurd rfl hw.2.1
+      · exact absurd rfl hw.2.2
+  have hcl : ∀ v : E ⊕ (I ⊕ Fin 4), (v ≠ bpv 1 ∧ v ≠ bpv 2 ∧ v ≠ bpv 3) → ∀ w, w ∈ Δ.atom v ↔
+      w = v ∨ ((w ≠ bpv 1 ∧ w ≠ bpv 2 ∧ w ≠ bpv 3) ∧ BAWeightOp_rho x w ∈ Γ.atom (BAWeightOp_rho x v)) := by
+    intro v hv w
+    rw [BAGraph.mem_atom_iff, BAGraph.mem_atom_iff]
+    rw [BAWeightOp_rtg_ext (fun a b => Γ.atomAdj a b) (fun a b => Δ.atomAdj a b) (BAWeightOp_atomAdj_comm _)
+      (owxEmb 4) (BAWeightOp_rho x) (fun w => w ≠ bpv 1 ∧ w ≠ bpv 2 ∧ w ≠ bpv 3) e1 e2 e3 v w hv]
+  have key := BAWeightOp_cnt_ext (fun w : E ⊕ I => w.isRight) (fun w : E ⊕ (I ⊕ Fin 4) => w.isRight) Γ.atom Δ.atom
+    (owxEmb 4) (BAWeightOp_rho x) (fun w => w ≠ bpv 1 ∧ w ≠ bpv 2 ∧ w ≠ bpv 3) 2 (BAWeightOp_rho_emb x)
+    BAWeightOp_isRight_emb (BAWeightOp_isRight_rho x)
+    (fun a => ⟨BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _, BAWeightOp_emb_ne _ _⟩)
+    (BAWeightOp_self_mem_atom Γ) hcl hnew hnP (fun v _ => BAWeightOp_self_mem_atom Δ v)
+  exact key
+
+/-- **`n_M` of the extension is `n_M Γ`**: `z, y, α, β` join the molecule of `x`. -/
+private theorem BAWeightOp_ext4_nM (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin 4)))) (x : E ⊕ I) :
+    (BAWeightOp_ext4 Γ rest s x).nM = Γ.nM := by
+  classical
+  set Δ := BAWeightOp_ext4 Γ rest s x with hΔ
+  have e1 : ∀ u w, Γ.adj u w = true → Δ.adj (owxEmb 4 u) (owxEmb 4 w) = true := fun u w h =>
+    (BAWeightOp_ext4_adj Γ rest s x _ _).2 (Or.inl ⟨u, w, rfl, rfl, h⟩)
+  have e2 : ∀ b c, Δ.adj b c = true → (True ∧ True ∧ (BAWeightOp_rho x b = BAWeightOp_rho x c ∨
+      Γ.adj (BAWeightOp_rho x b) (BAWeightOp_rho x c) = true)) ∨ (¬ True ∧ ¬ True) := by
+    intro b c hbc
+    refine Or.inl ⟨trivial, trivial, ?_⟩
+    rcases (BAWeightOp_ext4_adj Γ rest s x _ _).1 hbc with
+      ⟨a, a', rfl, rfl, h'⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+    · exact Or.inr (by rw [BAWeightOp_rho_emb, BAWeightOp_rho_emb]; exact h')
+    · exact Or.inl rfl
+    · exact Or.inl rfl
+    · exact Or.inl rfl
+    · exact Or.inl rfl
+    · exact Or.inl (by rw [BAWeightOp_rho_emb]; rfl)
+    · exact Or.inl (by rw [BAWeightOp_rho_emb]; rfl)
+    · exact Or.inl rfl
+    · exact Or.inl rfl
+  have hz : Relation.ReflTransGen (fun a b => Δ.adj a b = true) (bpv 0) (owxEmb 4 x) :=
+    Relation.ReflTransGen.single ((BAWeightOp_ext4_adj Γ rest s x _ _).2 (Or.inr (Or.inr (Or.inr (Or.inr
+      (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩))))))))
+  have hy : Relation.ReflTransGen (fun a b => Δ.adj a b = true) (bpv 1) (owxEmb 4 x) :=
+    Relation.ReflTransGen.head ((BAWeightOp_ext4_adj Γ rest s x _ _).2 (Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩)))) hz
+  have ha : Relation.ReflTransGen (fun a b => Δ.adj a b = true) (bpv 2) (owxEmb 4 x) :=
+    Relation.ReflTransGen.head ((BAWeightOp_ext4_adj Γ rest s x _ _).2 (Or.inr (Or.inr (Or.inr (Or.inr
+      (Or.inr (Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩))))))))) hy
+  have hb : Relation.ReflTransGen (fun a b => Δ.adj a b = true) (bpv 3) (owxEmb 4 x) :=
+    Relation.ReflTransGen.head ((BAWeightOp_ext4_adj Γ rest s x _ _).2 (Or.inr (Or.inr (Or.inr (Or.inr
+      (Or.inl ⟨rfl, rfl⟩)))))) ha
+  have e3 : ∀ w : E ⊕ (I ⊕ Fin 4), True →
+      Relation.ReflTransGen (fun a b => Δ.adj a b = true) w (owxEmb 4 (BAWeightOp_rho x w)) := by
+    intro w _
+    rcases w with e | i | j
+    · exact Relation.ReflTransGen.refl
+    · exact Relation.ReflTransGen.refl
+    · fin_cases j
+      · exact hz
+      · exact hy
+      · exact ha
+      · exact hb
+  have hcl : ∀ v : E ⊕ (I ⊕ Fin 4), True → ∀ w, w ∈ Δ.mol v ↔
+      w = v ∨ (True ∧ BAWeightOp_rho x w ∈ Γ.mol (BAWeightOp_rho x v)) := by
+    intro v hv w
+    rw [BAGraph.mem_mol_iff, BAGraph.mem_mol_iff]
+    rw [BAWeightOp_rtg_ext (fun a b => Γ.adj a b) (fun a b => Δ.adj a b) (BAWeightOp_adj_comm _)
+      (owxEmb 4) (BAWeightOp_rho x) (fun _ => True) e1 e2 e3 v w hv]
+  have key := BAWeightOp_cnt_ext (fun w : E ⊕ I => w.isRight) (fun w : E ⊕ (I ⊕ Fin 4) => w.isRight) Γ.mol Δ.mol
+    (owxEmb 4) (BAWeightOp_rho x) (fun _ => True) 0 (BAWeightOp_rho_emb x)
+    BAWeightOp_isRight_emb (BAWeightOp_isRight_rho x) (fun _ => trivial) (fun v => by rw [BAGraph.mem_mol_iff])
+    hcl (by simp) (fun v hv => absurd trivial hv) (fun v hv => absurd trivial hv)
+  exact key
+
+private theorem BAWeightOp_ext4_counters (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
+    (s : List (SEdge (E ⊕ (I ⊕ Fin 4)))) (x : E ⊕ I) :
+    (BAWeightOp_ext4 Γ rest s x).counters = ⟨rest.length + s.length, Γ.nW + 2, Γ.nA + 2, Γ.nM, 0, 0⟩ := by
+  simp only [BAGraph.counters, BAWeightOp_ext4_nA, BAWeightOp_ext4_nM]
+  simp [BAGraph.nS, BAGraph.nW, BAWeightOp_ext4, BAGraph.ext, LGraph.owxExt]
+
+end Ext4
+
 end RBM.Graph
 
 end
