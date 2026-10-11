@@ -194,6 +194,8 @@ def owedProps : List Name :=
    `RBM.BA.BAGbEXPij, -- `lem_GbEXP_BA` `(GijGEX)` event form on `(G_t - M)_{xy}`, `x ≠ y`, over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
    `RBM.BA.BAEKSumDecayNonzero, -- `lem:sum_decay_nonzero` at BA (`3_5:1666`) (T2388, BA-E1, T2378 §2: owed; owner BA-E3)
+   `RBM.BA.BAStab, -- stability `‖(1 - t M^{(+,+)})⁻¹‖_{max→max} ≤ K` of the BA coupled system at `BAReal` data, the twin of `Stable` (`Green/EntryCore.lean:911`); hypothesis of `GreenCore_coupled`, `GreenCore_diag` (T2390, BA-G3a; owed; owner BA-G3b, `K = 16 κ⁻⁴`)
+   `RBM.BA.BAGbEXPij', -- `lem_GbEXP_BA` `(GijGEX_BA)` in the paper's shape, event form with `1_Ω` on premise and conclusion and the decay `c_λ` after `(κ, ε, 𝔡)` (`7_8:1916-1946`; T2390, BA-G3a, paper-delta T2390a: owed; owner BA-G4 (deterministic core), consumed by BA-G6a/G6b, supersedes `BAGbEXPij` once the primed consumers merge)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 

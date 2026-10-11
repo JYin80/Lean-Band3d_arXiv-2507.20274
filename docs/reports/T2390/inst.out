@@ -1,0 +1,4 @@
+g      kappa g0      c0       mu        c_lam=min(c0/12,mu/6)  rho_hat  K_Th    K_BA     C_A    C_th    W     eps0 delta    window[W^-3/2,delta]  N^(1/6)<=W  Adm  d<=k/2 W^-d<=d^2 (C1)=8*rho*rho_hat*C_th*Phi*d^2  K_BA*d<=1/2
+0.01562 0.5   0.013  4.16e-03 1.29e-32 2.14e-33  64.80  256  16448  7.9  9.42e+01  4096  1.4  8.76e-06  [3.81e-06,8.76e-06] True  128<=4096 True  True  True  True  7.20e-04 True  0.144 True
+1      0.25  0.561  2.08e-03 9.89e-38 1.65e-38  64.40  4096  262208  83.3  7.07e+03  16384  1.4  1.26e-06  [4.77e-07,1.26e-06] True  256<=16384 True  True  True  True  1.11e-03 True  0.330 True
+10     0.25  4.6723 2.08e-03 9.89e-38 1.65e-38  64.40  4096  262208  642.6  4.13e+05  16384  1.4  1.26e-06  [4.77e-07,1.26e-06] True  256<=16384 True  True  True  True  6.47e-02 True  0.330 True

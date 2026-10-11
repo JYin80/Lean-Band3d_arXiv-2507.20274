@@ -1,4 +1,4 @@
-state: proving
-reason: resumed under Amend 1 (CONTROL H185): workflow wf_06156d6d-a7f — D1 probe (prover-max, RBM3D/Probe/T2390Pins.lean) → (a′) preflight repair → 1a-audit round 2 → 1b prover-max → auditor; branch t/T2390 fast-forwarded to main 5d3d24b
-updated: Sat Oct 10 21:22:41 UTC 2026
-reports: docs/reports/T2390-prove.md, docs/reports/T2390-1a-audit.md
+state: audit-pass
+reason: probe 10fcef2, (a′) PASS, 1a-audit round 2 PASS, 1b prover-max incomplete (6fcdc83) → escalation prover-opus xhigh (e34b6d6) → audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 00:50:59 UTC 2026
+reports: docs/reports/T2390-prove.md, docs/reports/T2390-1a-audit.md, docs/reports/T2390-audit.md
