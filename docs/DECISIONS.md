@@ -2136,3 +2136,15 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - **T2425 = L3a1 `BASymm1`**（BA 92）：BA 图的扭曲（共轭、转置），`ba_twist_counters`、`BAtwistInv`、`BAtwistIntegral`（由 `lwSymm_twist_integral` 在 BA 律下得到）；`LWSymm` §1–§3 的孪生。`prover-hard`，停止线 2,000。
 - **T2426 = L3b3′ `BAScostS′`**（BA 93）：原子层的代价词汇（T2397 探针原样搬入，建在 R0 的 `atomSetoid`/`promoteC` 上），BA Lemma B，五条只在 BA 出现的 `ScostLL` 引理（E1、S1 两原子、E2、宏 (a)/(b) 中间项），`BAInit`。`prover-max`，可拆两个文件。
 - 开工次序：T2418（探针步骤）→ T2424 → T2425 → T2426。阶段 L 已用 18 / 50（T2425、T2426 计入）。下一张票号 T2427，下一节 §240，下一条 H221。
+
+## §240 — 调度 V3 接手；11:17 后七张合并；T2423（R1）签字（Amend 1）（总调度 V3，2026-10-11 21:47 UTC）
+
+- (1) **接手**：Jun 2026-10-11 21:4x UTC 指示「恢复调度工作」。从 21:44 UTC 起唯一的总调度是调度 V3 = Cowork 会话 session_01Qidfbgzdy6FV6jy1eSbZgb（账号 junyin.harvard@gmail.com）。调度 V2（session_01MtDU5B1PoJEbaNvMuRAPrx）最后写入 11:17 UTC，此后心跳中断；中枢自 15:12 UTC 起空转（HUB.alive 新鲜，无可开工的票）。
+- (2) **11:17 后合并（规则 (A)，中枢自动）**：T2419（L4d，977d5da，Amend 1 两种电荷）、T2421（TL0，631b8f4，`BA/TwistPins` 962 行，两条 owed 行按 TLF-C4）、T2424（T3-BA，f3a7401）、T2425（L3a1，3dbb04d）、T2420（L3c1，46120c3，G3/G4）、T2418（L4a，4bd65c3，S1 `baExp14a_S1_holds`）、T2426（L3b3′，135f605；`BReach` 写成 `ReflTransGen` 定义并证与钉文的归纳式等价，文章差异候选 T2426c；审核 O2 留给 L3b4′）。11:2x–12:10 UTC 中枢四个 workflow 撞 API 限额，12:12 起按规则 (H) 重跑，不计返工。
+- (3) **T2423（R1）1a-audit 第二轮 PASS，要签字 → Amend 1**：
+  - S1：R1 只交 frame 层的对应（`BAMatch` 在 `P.img`），这正是 `BAsim m`、`ba_lvl1StepGood_of_sim`、逐输出 `BASimC'` 用的。`BALocStep` 层的推论 `BAMatchTw` 及其三条桥（`img_twist`、`BAEquiv.twist`、`partition` 与 twist 交换）归 **L3b4′**（本来就排在 R1、L3a3、L3b3′ 之后，且由 R1 推 `BASimC`，L4-C1）；L3b4′ 的 1a 若查无使用方就删掉并写明。
+  - S2：现在就命名第三个文件 `Graph/BASim3.lean`（Lemma E + `BAsim'` 组装），停止线仍是每文件 2,000。
+  - O1：本票报告放宽到 400 行，(a)/(a″)/(a′) 可压缩成摘要并引提交号。O4：`PGraph.BAEquivC`、`BAPGraph.twist` 由 Amend 1 钉名（公开），L3b4′ 要导入。O2：1b 从当前 `main` 开始，`BAShape`/`BTStep` 改用 T2426 已合并的定义。
+  - 流程：从 1b（`prover-max`）续跑 → 审核。下个空位先开它。
+- (4) **返工账本**补 T2418（是：1a-audit RETURN，Amend 1 + 探针步骤）、T2419（是：审核 RETURN 要签字，Amend 1 修补一次）、T2421（否：1a 卡在钉文，Amend 1 在写 Lean 前，按先例不计）、T2424、T2425、T2420、T2426（否）。CONTROL 超过 30KB，H208–H220 与合并记录归档。
+- (5) 计数：BA 93（阶段 L 18 / 50，TL 2 / 15，T 10 / 28.5，G/E 12 / 19.5）。下一张票号 T2427，下一节 §241，下一条 H222。下一批（本轮写）：TL1a、TL2a、TL2b、TL2c、TL-V（TL0、T8b、T6-BA 都已合并，TL-D §7 的依赖都满足）；之后 L4b1、L3a2、L3c3a、L4e-C、G7、带状侧 T7/T1/T4s1/T4s2/T5s2。

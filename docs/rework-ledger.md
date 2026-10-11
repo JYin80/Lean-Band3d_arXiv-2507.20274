@@ -363,3 +363,10 @@
 | T2414 | 2026-10-11 10:49 UTC (6c42b16) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T T8b：设计门 1a-audit PASS，审核一次 PASS；新 `Chain/Step2Kern` 207 行 + `Step2Gen`/`NewKLKGen` 原地（净 518 / 1,400）；从载体导出块核，带状桥、BA 恒等式、`BAUN`；子阶段 T 的 BAT-F1 HOLD 解除 |
 | T2422 | 2026-10-11 10:57 UTC (6daccd4) | prover | Sonnet 5.5 | 否 | BA-G6b：新 `BA/GbEXPav` 30 行（组合）；登记去 `BAGbEXPii`、`BAGbEXPav`，`STInitialGT2gL` owner 改 BA-V；审核一次 PASS |
 | T2417 | 2026-10-11 11:07 UTC (1dc7516) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L R0：新 `Graph/BAAtomic` 985 + `BAAtomic2` 262（一个像映射，`BAimg` 与 (m0)–(m2)、`BAPathLift`）；审核一次 PASS |
+| T2419 | 2026-10-11 12:16 UTC (977d5da) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L4d：审核第一轮 RETURN 要签字（`BARCand` 只覆盖蓝色）→ Amend 1 (b) 两种电荷、红色由共轭 → 规则 (B) 修补一次 → 第二轮 PASS（API 限额后重跑，不计）；新 `Graph/BAExpandId` 772 行 |
+| T2421 | 2026-10-11 12:22 UTC (631b8f4) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA TL0：1a 卡在钉文（`twK_bound` 的窗口只是最终成立）→ Amend 1 改 `∀ᶠ n`，未写 Lean，按先例不计；新 `BA/TwistPins` 962 行，两条 owed 行（TLF-C4 文本）；审核一次 PASS |
+| T2424 | 2026-10-11 12:58 UTC (f3a7401) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T T3-BA：新 `BA/NewKLKBA` 824 / 1,200（`baNewKLKGenHyp` F5–F9、`stNewKLKgL'_ba`、`stK2decaygL'_ba`）；审核一次 PASS |
+| T2425 | 2026-10-11 13:23 UTC (3dbb04d) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L L3a1：新 `Graph/BASymm1` 475 / 2,000（`BAGraph.twist`、`ba_twist_counters`、`BAtwistInv`、`BAtwistIntegral`）；审核一次 PASS |
+| T2420 | 2026-10-11 13:48 UTC (46120c3) | prover-max | Sonnet 5.5 max | 否 | BA-L L3c1：设计门 G3/G4，1a-audit PASS，审核一次 PASS；新 `Graph/BAAtom` 1,098 + `BAAtom2` 797；探针 395 行留在 t/T2420 |
+| T2418 | 2026-10-11 14:52 UTC (4bd65c3) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L4a：1a-audit RETURN（交付项缺、三处范围要签字）→ Amend 1 → (a′) 修补 + 探针步骤（H219，预检不能写 Lean）→ 1a-audit 第二轮 PASS → 审核一次 PASS；新 `Graph/BAExp14a` 1,307 + `BAExp14aB` 1,771 |
+| T2426 | 2026-10-11 15:12 UTC (135f605) | prover-max | Sonnet 5.5 max | 否 | BA-L L3b3′：新 `Graph/BAScost` 1,530 + `BAScost2` 225（Lemma B、`BAInit`、五条形状引理）；`BReach` 改写成 `ReflTransGen` 定义并证等价（T2426c）；审核一次 PASS（O2 留给 L3b4′） |
