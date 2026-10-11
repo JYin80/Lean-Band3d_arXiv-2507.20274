@@ -810,7 +810,7 @@ open RBM.BA (FlowFM STEEg STEMn2PolygL)
 
 /-- `(𝓔⊗𝓔)^{M,(2;0)}` over a carrier `C`, unfolded: `W^d Σ_{c,c'} S^{(B)}_{cc'} 𝓛^{(6)}` of the fine matrix `H`
 at `ζ` (the realization of the loops of `C`, `hL`, and of its kernel `S`, `hS`). -/
-private lemma emn2Poly_EEg_zero_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
+lemma emn2Poly_EEg_zero_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (ζ : ℂ) (g : ℝ)
     (hS : C.S n = SB d (sz.L n) g)
     (hL : ∀ {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
@@ -824,7 +824,7 @@ private lemma emn2Poly_EEg_zero_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n :
 
 /-- The cut `k = 1` is the cut `k = 0` with the two edges exchanged: `(σ₁,σ₂), (a₁,a₂)` become
 `(σ₂,σ₁), (a₂,a₁)` (`def:CALE`, `3_5:169-190`; `3_5:670-672`: "without loss of generality"). -/
-private lemma emn2Poly_EEg_one_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
+lemma emn2Poly_EEg_one_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STEEg C n u 1 σ a ω = STEEg C n u 0 ![σ 1, σ 0] ![a 1, a 0] ω := by
   simp [STEEg]
