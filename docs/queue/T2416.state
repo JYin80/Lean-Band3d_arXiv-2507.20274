@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 4c09836, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 10:08:29 UTC 2026
+state: merged e4a1833
+reason: audit PASS round 1 (claude-opus-5-5); new BA/EMn2BA (1090 lines, stop 1800), root import; full lake build 4226 jobs; pushed
+updated: Sun Oct 11 10:08:31 UTC 2026
 reports: docs/reports/T2416-prove.md, docs/reports/T2416-audit.md

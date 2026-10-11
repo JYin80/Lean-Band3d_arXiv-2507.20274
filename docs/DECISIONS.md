@@ -2042,3 +2042,26 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 
 - **T2415 合并 54ecfc4**：`BA/Step2BA` 209 行（估价中心 500），审核一次 PASS。能量族 `baStep2Fam sz E = baStep2Mat sz sz.lam E` 已定义并记给 T3-BA（报告 `:177`）；T3-BA 仍在 BAT-F1 的 HOLD 里，等 T8b（T2414）。
 - 子阶段 T：已合并 row 0、T5s1、T8、T6、T2、T3、T8-BA；在跑 T8b（T2414）、T2-BA（T2416）。中枢：T2411、T2413、T2414、T2416。队列空：L 阶段的行等 L4 REQ（监督 09:41 这次），G6b 等 G5b，TL0 等 TL-D。下一张票号 T2417，下一节 §232，下一条 H212。
+
+## §232 — 监督 0951：L4 REQ PASS（L4-C1–C9）；放阶段 L 的「现在」四行：R0 = T2417、L4a = T2418、L4d = T2419、L3c1 = T2420（总调度 V2，2026-10-11 10:01 UTC）
+
+- (1) **监督 0951 PASS（Q1–Q4）**，两处更正：
+  - 计数是 **38 / 50**，不是 39（剩余 28 行，L3c3 拆后 29；加已用 9）。
+  - L3c3b 排在 L3c3a 之后，不能并行。
+- (2) **条件（写进对应的票）：**
+  - L4-C1：R1 证明一条图层面的对应（允许重新标号），由它推出 `BAsim m`（或 `BAsim'`）；`BASimC` 在 L3b4′ 推出，`BASimP` 在 L3b1 推出；R1 的 1a 是逐形状后备的位置。
+  - L4-C2：R0 只定义一个像映射，两套钉文都对它证明（已写进 T2417）。
+  - L4-C3：L3b4′ 把 `BAFinal` 钉在 `BAGraph.LocStd` 上。
+  - L4-C4：L3b1 的 1a 先用数值核对五种形状的 `PathInv2`；L3d2、L3d4 的 1a 要说明远半部分里 `x ~ y` 的项怎么处理。
+  - L4-C5：带上下文的 GG 引理归 L4e-C。
+  - L4-C6：L4a 的 1a 钉 S1，L4b1/L4b2 钉 S2、S3；L4a 和 L4b2 重叠的 I1K/I41K 归 L4b2（中心约少 370 行）；TL 的名字从 TL0 导入（已写进 T2418）。
+  - L4-C7：L4g 的输入改接 L4e-C 和 L4c2。
+  - L4-C8：中心 ≥ 1,000 的行开票时就写明第二个文件（本批 T2418、T2420 已写）。
+  - L4-C9：「下一批」R1 排最先；L3a3 还要等 R1；L4a2 分两半，组装那一半等 TL0；L4b2 等 TL0 和 L4b1。
+- (3) **校准**（O5，记入 ROUTES）：阶段 L 实际行数约为中心估价的 1.5–2.1 倍；剩余 26,889 中心约合 46k 行。停止线按每文件 2,000 计。
+- (4) **放行四张**（BA 84–87），优先级 T2417 → T2418 → T2419 → T2420：
+  - T2417 = R0 `Graph/BAAtomic`：原子层词汇，一个像映射，`BAimg` 加 (m0)–(m2) 和 `BAPathLift`。`prover-hard`。
+  - T2418 = L4a `Graph/BAExp14a` + `BAExp14aB`：S1 族、核 `ω`、连结和、细格 Ward；`LWExpTerm4` 去掉 §6、§9 后的孪生。1a 钉 S1 → 1a-audit。`prover-hard`。
+  - T2419 = L4d `Graph/BAExpandId`：`baG5Graph`、`BAG5Identity`、GG 一步和展开恒等式（导入 `expandG_sum`）。`prover-hard`。
+  - T2420 = L3c1 `Graph/BAAtom` + `BAAtom2`：设计门 G3（`(G_by_auxG_BA)`，要写出论证）、G4（替 L3d1 钉陈述）。`prover-max`。
+- (5) 中枢：T2411、T2413、T2414、T2416 在跑；四张新票排队。阶段 L 已用 13 / 50。下一张票号 T2421，下一节 §233，下一条 H214。
