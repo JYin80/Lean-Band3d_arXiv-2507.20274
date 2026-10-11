@@ -442,6 +442,9 @@ import RBM3D.BA.KBound
 import RBM3D.BA.EKNonzero
 import RBM3D.BA.GreenOff
 import RBM3D.Chain.NewKLKGen
+import RBM3D.BA.GreenMinor
+import RBM3D.BA.GreenMinor2
+import RBM3D.BA.GreenMinor3
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

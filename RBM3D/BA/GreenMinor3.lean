@@ -8,24 +8,29 @@ import RBM3D.Green.FlucIterGain
 import RBM3D.Green.MinorDiff
 
 /-!
-# The block Anderson minors: the graded minor differences, the averaging identity, the owed pins (BA-G5a, file 3 of 3)
+# The block Anderson minors: graded differences, averaging identity, owed pins (BA-G5a, 3 of 3)
 
-Ticket T2401 (design gate `docs/reports/T2401-prove.md` (a), (a′), (G), stage 1b under Amend 1).  Paper:
-`paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`).  Everything is deterministic, for one sample, except the
-registry definitions of the last section.
+Ticket T2401 (design gate `docs/reports/T2401-prove.md`, sections (a), (a′), (G); stage 1b under
+Amend 1).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`).  Everything
+is deterministic, for one sample, except the registry definitions of section 3.
 
-* R4 (S4): the graded bound on protected rows.  For `u = (β, o)`, `y` of offset `o` in another block, and distinct rows
-  `κ_1, …, κ_r ∈ R_{β,o}`: `‖Δ_{κ_1} ⋯ Δ_{κ_r} Y^X_{uy}‖, ‖Δ_{κ_1} ⋯ Δ_{κ_r} Y^A_u‖ ≤ c_Y(r) (2δ)^{r+1}`
-  (`GreenMinor_diff`), with `c_Y(r) = (‖s‖ + 2 d g₀)(1/κ + 1) a_r + (4 d g₀/κ) 2^r a_r²`, `a_0 = 2/κ`,
-  `a_{r+1} = 16^r a_r⁵`.  It is the twin of `Green.diffBd_atom` (`MinorDiff.lean:570`) for the centred entries of the protected levels;
-  the sum rule (`DiffBd.add`, `DiffBd.smul`, `DiffBd.sum`) is new.  The hypothesis `κ ≤ 1` is the one fact of BA the displayed
-  pin of G.8 lacked (`BAm_norm_le_one`, `BA/Ward.lean:136`; paper-delta candidate `T2401d`): `a_0 = 2/κ ≥ 1`.
-* S6: the exact averaging identity `v̄_a - t Σ_b M^{(B)}_{ab} M^{(B)}_{ba} v̄_b = ⟨M𝒦⟩_a` and its split into the offset averages of
-  `Δ`, `𝒜' = A + t v̄` and `𝔛` (`GreenMinor_avgK_eq`, `GreenMinor_avg_split`).
-* The registry definitions: the gain interface `GreenMinor_famGain`, the carrier families `GreenMinor_famA`, `GreenMinor_famX`, and the
-  owed pins `BAFamGain`, `BAFAav` (owner BA-G5b, consumer BA-G6b).
+* R4 (S4): the graded bound on protected rows.  For `u = (β, o)`, `y` of offset `o` in another
+  block, and distinct rows `κ_1, …, κ_r ∈ R_{β,o}`:
+  `‖Δ_{κ_1} ⋯ Δ_{κ_r} Y^X_{uy}‖, ‖Δ_{κ_1} ⋯ Δ_{κ_r} Y^A_u‖ ≤ c_Y(r) (2δ)^{r+1}`
+  (`GreenMinor_diff`), with `c_Y(r) = (‖s‖ + 2 d g₀)(1/κ + 1) a_r + (4 d g₀/κ) 2^r a_r²`,
+  `a_0 = 2/κ`, `a_{r+1} = 16^r a_r⁵`.  It is the twin of `Green.diffBd_atom`
+  (`MinorDiff.lean:570`) for the centred entries of the protected levels; the sum rule
+  (`GreenMinor_DiffBd_add`, `_smul`, `_sum`) is new.  The hypothesis `κ ≤ 1` is the one fact of BA
+  the displayed pin of G.8 lacked (`BAm_norm_le_one`, `BA/Ward.lean:136`; paper-delta candidate
+  `T2401d`): `a_0 = 2/κ ≥ 1`.
+* S6: the exact averaging identity `v̄_a - t Σ_b M^{(B)}_{ab} M^{(B)}_{ba} v̄_b = ⟨M𝒦⟩_a` and its
+  split into the offset averages of `Δ`, `𝒜' = A + t v̄` and `𝔛` (`GreenMinor_avgK_eq`,
+  `GreenMinor_avg_split`).
+* The registry definitions: the gain interface `GreenMinor_famGain`, the carrier families
+  `GreenMinor_famA`, `GreenMinor_famX`, and the owed pins `BAFamGain`, `BAFAav` (owner BA-G5b,
+  consumer BA-G6b).
 
-Every theorem has a compiled nonempty instance in the last section.
+Every theorem has a compiled nonempty instance (sections 4 and 5).
 -/
 
 set_option linter.style.longLine false
@@ -724,7 +729,7 @@ theorem GreenMinor_diff {G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d 
         by_cases h0 : D u i = 0
         · have h1 : (fun S => D u i * GreenMinor_eFam (β := β) (o := o) Gs M i z ∅ S) = fun _ => (0 : ℂ) := by
             funext S; simp [h0]
-          show DiffBd (2 * δ) ∅ m₀ r (‖D u i‖ * GreenMinor_a κ r) 1 (fun S => D u i * GreenMinor_eFam (β := β) (o := o) Gs M i z ∅ S)
+          change DiffBd (2 * δ) ∅ m₀ r (‖D u i‖ * GreenMinor_a κ r) 1 (fun S => D u i * GreenMinor_eFam (β := β) (o := o) Gs M i z ∅ S)
           rw [h1]
           exact GreenMinor_DiffBd_zero (by positivity) hΨ0
         · exact GreenMinor_DiffBd_smul (D u i) (hE i z (hDi i h0) hz))
@@ -950,5 +955,48 @@ example (h : BAFamGain 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) :
     (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)) hinit (1 / 20) (by norm_num) (by norm_num) 1
 
 end CarrierInst
+
+/-! ## 5. S4 on a real resolvent (`d = 3`, `L = 3`, `W = 2`)
+
+The datum is that of `BA/GreenMinor2.lean` (`GreenMinorInst.hH`): `H = ε J_C` on the cluster `C = {p, q, y}` (`p = (0, 0)`, `q = (0, 1)` a
+protected row of `R_{0,0}`, `y = (e_0, 0)` of offset `0` in another block), `ε = 1/100`, `z = i`, `G = (H - i)⁻¹ = i I + c J_C`, `M = i I`,
+`Δ = c J_C ≠ 0`.  The minors are the real ones (`GreenMinor_Gs`, R1): the tower is `GreenMinor_tower`, the good event is S2, and S4 is applied at
+`u = p`, `l = [q]`, `g₀ = 1/10`, `s = m = i`; `Δ_{pq}, Δ_{qy} ≠ 0`, so the removal of `q` changes `Y^X_{py}` (`Δ_q Δ_{py} = G_{pq} G_{qy}/G_{qq}`). -/
+
+
+section RealResolvent
+open GreenMinorInst
+
+-- S4 at `u = p`, `l = [q]` on the real resolvent `G = (H - i)⁻¹`: the tower (R1), the good event (S2; `κ = 1/2`, `δ = 1/100`, `m₀ = 3`) and the
+-- two bounds; `Δ_{py} ≠ 0`
+example :
+    GreenMinor_Tower (green hH Complex.I) (GreenMinor_Gs hH Complex.I) ∧
+    GreenMinor_good (GreenMinor_Gs hH Complex.I) hM (1 / 2) (1 / 100) 3 0 0 ∧
+    green hH Complex.I hp hy - hM hp hy ≠ 0 ∧
+    ‖iterDeltaFam [hq] (fun S => GreenMinor_YX (GreenMinor_Gs hH Complex.I S) hM hD hm hm hp hy) ∅‖ ≤
+        GreenMinor_cY 3 (1 / 2) (1 / 10) ‖hm‖ [hq].length * (2 * (1 / 100)) ^ ([hq].length + 1) ∧
+    ‖iterDeltaFam [hq] (fun S => GreenMinor_YA (GreenMinor_Gs hH Complex.I S) hM hD hm hm hp) ∅‖ ≤
+        GreenMinor_cY 3 (1 / 2) (1 / 10) ‖hm‖ [hq].length * (2 * (1 / 100)) ^ ([hq].length + 1) := by
+  have hT : GreenMinor_Tower (green hH Complex.I) (GreenMinor_Gs hH Complex.I) :=
+    GreenMinor_tower hH_herm (by simp)
+  have hgood : GreenMinor_good (GreenMinor_Gs hH Complex.I) hM (1 / 2) (1 / 100) 3 0 0 :=
+    GreenMinor_good_of_event (Mb := hMb) (m := hm) (fun _ _ => rfl) (fun a => by simp [hMb]) (by norm_num)
+      (by simp [hm]; norm_num) (by norm_num) (by norm_num) (by norm_num) hT hGΔ 0 0
+  have hy1 : hy.1 ≠ 0 := by decide
+  have hMuy : ‖hM hp hy‖ ≤ 1 := by
+    rw [hMe]
+    simp [hpy]
+  have hΔpy : green hH Complex.I hp hy - hM hp hy ≠ 0 := by
+    rw [green_hH, hGex_sub]
+    have hp' : hp ∈ hC := by simp [hC]
+    have hy' : hy ∈ hC := by simp [hC]
+    simp [hp', hy', hcc_ne]
+  have hdiff := GreenMinor_diff (G := green hH Complex.I) (M := hM) (D := hD) (Mb := hMb)
+    (Gs := GreenMinor_Gs hH Complex.I) (s := hm) (m := hm) (κ := 1 / 2) (δ := 1 / 100) (g₀ := 1 / 10) (m₀ := 3) (β := 0) (o := 0)
+    (u := hp) (y := hy) (by norm_num) (by norm_num) (fun _ _ => rfl) (fun _ _ => rfl) (by norm_num) (by norm_num)
+    (by simp [hm]; norm_num) hMuy hT hgood rfl ⟨rfl, hy1⟩ [hq] (by simp) (by simp [GreenMinor_R, hq]) (by simp) (by norm_num)
+  exact ⟨hT, hgood, hΔpy, hdiff.1, hdiff.2⟩
+
+end RealResolvent
 
 end RBM.BA

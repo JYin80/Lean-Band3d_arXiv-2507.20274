@@ -8,22 +8,25 @@ import RBM3D.BA.GreenCore
 /-!
 # The block Anderson minors: vocabulary, the structural fact, the tower (BA-G5a, file 1 of 3)
 
-Ticket T2401 (design gate `docs/reports/T2401-prove.md` (a), (a′), (G), stage 1b under Amend 1).  Paper:
-`paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`), band `paper/tex/3_5_Loop_Hierarchy.tex`.
-Everything here is deterministic, for one sample.  Sites are `u = (a, o)` of `Vtx d L W` (block `a`, offset `o`),
-`M = M^{(B)} ⊗ I` (`hM`), `G^{(S)}` the resolvent of the principal submatrix on the sites outside `S`, zero-padded.
+Ticket T2401 (design gate `docs/reports/T2401-prove.md`, sections (a), (a′), (G); stage 1b under
+Amend 1).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`), band
+`paper/tex/3_5_Loop_Hierarchy.tex`.  Everything is deterministic, for one sample.  Sites are
+`u = (a, o)` of `Vtx d L W` (block `a`, offset `o`), `M = M^{(B)} ⊗ I` (`hM`), `G^{(S)}` the
+resolvent of the principal submatrix on the sites outside `S`, zero-padded.
 
-* `GreenMinor_T`, `GreenMinor_R`, `GreenMinor_Tower`, `GreenMinor_good`, `GreenMinor_YA`, `GreenMinor_YX`: the vocabulary of
-  G.8 (`T_{β,o} = Y_o ∪ [β]`, the protected rows `R_{β,o} = [β] ∖ {(β, o)}`, the tower of minors `(4.9)`, the protected good
-  event, the polynomial families `Y^A`, `Y^X`).
-* S1 and the structural fact (ii): `o(x) ≠ o(y) ⇒ M_{xy} = 0` (`GreenMinor_cross`), the removal bounds
-  `|G^{(w)}_{xy} - G_{xy}| ≤ (2/κ) |G_{xw}| |G_{wy}|` (`GreenMinor_removal`, one-sided and cross-offset forms),
-  `GreenMinor_offset_ne` (the offset fact used by the recursion of S2).
-* R1: the tower for the real minors, `GreenMinor_Gs H z S = (H^{(S)} - z)⁻¹` zero-padded, satisfies
-  `GreenMinor_Tower ((H - z)⁻¹) (GreenMinor_Gs H z)` for Hermitian `H` and `Im z ≠ 0` (`GreenMinor_tower`), and at the BA carrier
-  (`GreenMinor_tower_carrier`).
+* `GreenMinor_T`, `GreenMinor_R`, `GreenMinor_Tower`, `GreenMinor_good`, `GreenMinor_YA`,
+  `GreenMinor_YX`: the vocabulary of G.8 (`T_{β,o} = Y_o ∪ [β]`, the protected rows
+  `R_{β,o} = [β] ∖ {(β, o)}`, the tower of minors `(4.9)`, the protected good event, the
+  polynomial families `Y^A`, `Y^X`).
+* S1 and the structural fact (ii): `o(x) ≠ o(y) ⇒ M_{xy} = 0` (`GreenMinor_cross`), the removal
+  bounds `|G^{(w)}_{xy} - G_{xy}| ≤ (2/κ) |G_{xw}| |G_{wy}|` (`GreenMinor_removal`, one-sided and
+  cross-offset forms), `GreenMinor_offset_ne` (the offset fact used by the recursion of S2).
+* R1: the tower for the real minors.  `GreenMinor_Gs H z S = (H^{(S)} - z)⁻¹`, zero-padded,
+  satisfies `GreenMinor_Tower ((H - z)⁻¹) (GreenMinor_Gs H z)` for Hermitian `H` and `Im z ≠ 0`
+  (`GreenMinor_tower`), and at the BA carrier (`GreenMinor_tower_carrier`).
 
-Every theorem has a compiled nonempty instance in the last section (`d = 3`, `L = 3`, `W = 2`; the BA carrier `sz0`).
+Every theorem has a compiled nonempty instance in the last section (`d = 3`, `L = 3`, `W = 2`;
+the BA carrier `sz0`).
 -/
 
 set_option linter.style.longLine false

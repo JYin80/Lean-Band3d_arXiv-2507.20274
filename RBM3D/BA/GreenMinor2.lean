@@ -6,19 +6,22 @@ Authors: Jun Yin
 import RBM3D.BA.GreenMinor
 
 /-!
-# The block Anderson minors: the protected good event and the polynomial families (BA-G5a, file 2 of 3)
+# The block Anderson minors: the protected good event, the polynomial families (BA-G5a, 2 of 3)
 
-Ticket T2401 (design gate `docs/reports/T2401-prove.md` (a), (a′), (G), stage 1b under Amend 1).  Paper:
-`paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`).  Everything is deterministic, for one sample.
+Ticket T2401 (design gate `docs/reports/T2401-prove.md`, sections (a), (a′), (G); stage 1b under
+Amend 1).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`).  Everything
+is deterministic, for one sample.
 
-* R2 (S2): the protected good event from `‖G - M‖_max ≤ δ` (`GreenMinor_good_of_event`): for `S ⊆ R_{β,o}`, `|S| ≤ m₀`,
-  `x, y ∈ T_{β,o} ∖ S`, `|G^{(S)}_{xy} - M_{xy}| ≤ 2δ` and `|G^{(S)}_{xx}| ≥ κ/2`.  Only the rows of the block `β` of
-  offset `≠ o` are removed, so each removal is between two different offsets: `M_{xκ} = M_{κy} = 0`
-  (`GreenMinor_offset_ne`, `GreenMinor_cross`) and one step costs `δ_j²/(|m| - δ_j)`.
+* R2 (S2): the protected good event from `‖G - M‖_max ≤ δ` (`GreenMinor_good_of_event`): for
+  `S ⊆ R_{β,o}`, `|S| ≤ m₀`, `x, y ∈ T_{β,o} ∖ S`, `|G^{(S)}_{xy} - M_{xy}| ≤ 2δ` and
+  `|G^{(S)}_{xx}| ≥ κ/2`.  Only the rows of the block `β` of offset `≠ o` are removed, so each
+  removal is between two different offsets: `M_{xκ} = M_{κy} = 0` (`GreenMinor_offset_ne`,
+  `GreenMinor_cross`) and one step costs `δ_j²/(|m| - δ_j)`.
 * R3 (S3): the polynomial families `Y^A`, `Y^X` and the entry forms of the random re-entry
-  `A_u = Y^A_u m / G_{uu}`, `𝔛_{uy} = -Y^X_{uy} m / G_{uu}`, the splits `A_u = Y^A_u - A_u (G_{uu} - m)/m`, and the base bounds
-  `‖Y^A_u‖ ≤ (‖s‖ + 2 d g₀) δ'/κ`, `‖Y^X_{uy}‖ ≤ ((‖s‖ + 2 d g₀)(1/κ + 1) + 4 d g₀ δ'/κ) δ'` (uniform in the coupling:
-  `g₀` enters only through `Σ_l ‖D_{ul}‖ = 2 d g₀`).
+  `A_u = Y^A_u m / G_{uu}`, `𝔛_{uy} = -Y^X_{uy} m / G_{uu}`, the splits
+  `A_u = Y^A_u - A_u (G_{uu} - m)/m`, and the base bounds `‖Y^A_u‖ ≤ (‖s‖ + 2 d g₀) δ'/κ`,
+  `‖Y^X_{uy}‖ ≤ ((‖s‖ + 2 d g₀)(1/κ + 1) + 4 d g₀ δ'/κ) δ'` (uniform in the coupling: `g₀` enters
+  only through `Σ_l ‖D_{ul}‖ = 2 d g₀`).
 
 Every theorem has a compiled nonempty instance in the last section.
 -/
@@ -425,7 +428,7 @@ theorem hTower : GreenMinor_Tower hG hGs := by
       simp [this]
     · simp [hxy]
   · intro S κ hκ x y
-    show hgS (insert κ S) x y = hgS S x y - hgS S x κ * hgS S κ y / hgS S κ κ
+    change hgS (insert κ S) x y = hgS S x y - hgS S x κ * hgS S κ y / hgS S κ κ
     have hgκκ : hgS S κ κ ≠ 0 := by
       simp only [hgS, hκ, or_self, ite_false, ite_true]
       split_ifs
@@ -475,6 +478,144 @@ theorem hTower : GreenMinor_Tower hG hGs := by
     simp [hpq, hqp, hκp, hκq, Ne.symm hκp, Ne.symm hκq]
 
 end GreenMinorInst
+
+/-! ### The real resolvent: `H = ε J_C`, `z = i`
+
+`H = ε J_C` with `J_C = 1_C 1_Cᵀ` on the cluster `C = {p, q, y}` (`p = (0, 0)`, `q = (0, 1)` a protected row of `R_{0,0}`, `y = (e_0, 0)` of
+offset `0` in another block), `ε = 1/100`.  By Sherman-Morrison `G = (H - i)⁻¹ = i I + c J_C`, `c = ε/(1 + 3 i ε)`, so `M = i I` (the resolvent of `0`),
+`Δ = c J_C ≠ 0` and `‖Δ‖_max = |c| ≤ ε`.  Here the minors are the real ones (`GreenMinor_Gs`, R1). -/
+
+namespace GreenMinorInst
+theorem hpy : hp ≠ hy := by decide
+theorem hqy : hq ≠ hy := by decide
+
+/-- the cluster `C = {p, q, y}` -/
+def hC : Finset HV := {hp, hq, hy}
+
+theorem hC_card : hC.card = 3 := by
+  have h1 : hq ∉ ({hy} : Finset HV) := by simpa using hqy
+  have h2 : hp ∉ ({hq, hy} : Finset HV) := by simp [hpq, hpy]
+  rw [hC, Finset.card_insert_of_notMem h2, Finset.card_insert_of_notMem h1]
+  rfl
+
+/-- `J_C = 1_C 1_Cᵀ` -/
+def hJ : Matrix HV HV ℂ := Matrix.of fun x y => if x ∈ hC ∧ y ∈ hC then 1 else 0
+
+theorem hJJ : hJ * hJ = (3 : ℂ) • hJ := by
+  ext x y
+  simp only [Matrix.mul_apply, hJ, Matrix.of_apply, Matrix.smul_apply, smul_eq_mul]
+  by_cases hx : x ∈ hC
+  · by_cases hy' : y ∈ hC
+    · simp [hx, hy', Finset.sum_boole, Finset.filter_mem_eq_inter, hC_card]
+    · simp [hx, hy']
+  · simp [hx]
+
+/-- `H = ε J_C` -/
+def hH : Matrix HV HV ℂ := hε • hJ
+
+/-- `c = ε/(1 + 3 i ε)` -/
+def hcc : ℂ := hε / (1 + 3 * Complex.I * hε)
+
+/-- `G = i I + c J_C` -/
+def hGex : Matrix HV HV ℂ := Complex.I • (1 : Matrix HV HV ℂ) + hcc • hJ
+
+theorem hH_herm : hH.IsHermitian := by
+  ext x y
+  have hstar : star hε = hε := by simp [hε]
+  by_cases h : x ∈ hC ∧ y ∈ hC
+  · have h' : y ∈ hC ∧ x ∈ hC := ⟨h.2, h.1⟩
+    simp [hH, hJ, Matrix.conjTranspose_apply, h, h', hstar]
+  · have h' : ¬ (y ∈ hC ∧ x ∈ hC) := fun hh => h ⟨hh.2, hh.1⟩
+    simp [hH, hJ, Matrix.conjTranspose_apply, h, h']
+
+theorem hden : (1 + 3 * Complex.I * hε : ℂ) ≠ 0 := by
+  intro h0
+  have := congrArg Complex.re h0
+  simp [hε] at this
+
+theorem hcc_eq : Complex.I * hε + 3 * hcc * hε - hcc * Complex.I = 0 := by
+  have hc : hcc * (1 + 3 * Complex.I * hε) = hε := by
+    unfold hcc; exact div_mul_cancel₀ _ hden
+  linear_combination (-Complex.I) * hc + (3 * hε * hcc) * Complex.I_sq
+
+theorem hGex_mul : hGex * (hH - Complex.I • (1 : Matrix HV HV ℂ)) = 1 := by
+  have h : hGex * (hH - Complex.I • (1 : Matrix HV HV ℂ)) = 1 + (Complex.I * hε + 3 * hcc * hε - hcc * Complex.I) • hJ := by
+    unfold hGex hH
+    simp only [Matrix.add_mul, Matrix.mul_sub, Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, Matrix.mul_one, hJJ,
+      smul_smul, smul_sub, smul_add]
+    have hII : Complex.I * Complex.I = -1 := Complex.I_mul_I
+    rw [hII]
+    module
+  rw [h, hcc_eq, zero_smul, add_zero]
+
+theorem green_hH : green hH Complex.I = hGex := by
+  unfold green
+  exact Matrix.inv_eq_left_inv hGex_mul
+
+theorem hGex_sub (x y : HV) : hGex x y - hM x y = if x ∈ hC ∧ y ∈ hC then hcc else 0 := by
+  rw [hMe]
+  simp only [hGex, hJ, Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.of_apply, smul_eq_mul]
+  split_ifs <;> simp [hm]
+
+theorem hcc_norm : ‖hcc‖ ≤ 1 / 100 := by
+  unfold hcc
+  rw [norm_div]
+  have h1 : (1 : ℝ) ≤ ‖(1 + 3 * Complex.I * hε : ℂ)‖ := by
+    have := Complex.abs_re_le_norm (1 + 3 * Complex.I * hε : ℂ)
+    simpa [hε] using this
+  have h2 : ‖hε‖ = 1 / 100 := by simp [hε]
+  rw [h2]
+  calc (1 / 100 : ℝ) / ‖(1 + 3 * Complex.I * hε : ℂ)‖ ≤ 1 / 100 / 1 := by
+        gcongr
+    _ = 1 / 100 := by norm_num
+
+theorem hcc_ne : hcc ≠ 0 := by
+  unfold hcc
+  exact div_ne_zero (by simp [hε]) hden
+
+theorem hGΔ (x y : HV) : ‖green hH Complex.I x y - hM x y‖ ≤ 1 / 100 := by
+  rw [green_hH, hGex_sub]
+  split_ifs
+  · exact hcc_norm
+  · simp
+
+end GreenMinorInst
+
+section RealResolvent
+open GreenMinorInst
+
+-- R1, S2 and the base bounds of S3 on the real resolvent `G = (H - i)⁻¹`: the principal-submatrix resolvents of `H` form the tower
+-- (`GreenMinor_tower`), the good event holds at `κ = 1/2`, `δ = 1/100`, `m₀ = 3` (S2), `Δ_{py} = c ≠ 0`, and the bounds of S3 hold at `d = 3`,
+-- `g₀ = 1/10`, `s = m = i`, `δ' = 1/100` (`Y^A_p` and `Y^X_{py}` involve `Δ_{pp} = c`, `D_{py} Δ_{yp} = g₀ c`, `Δ_{py} = c`: nonzero)
+example :
+    GreenMinor_Tower (green hH Complex.I) (GreenMinor_Gs hH Complex.I) ∧
+    GreenMinor_good (GreenMinor_Gs hH Complex.I) hM (1 / 2) (1 / 100) 3 0 0 ∧
+    green hH Complex.I hp hy - hM hp hy ≠ 0 ∧
+    ‖GreenMinor_YA (green hH Complex.I) hM hD hm hm hp‖ ≤ (‖hm‖ + 2 * ((3 : ℕ) : ℝ) * (1 / 10)) / (1 / 2) * (1 / 100) ∧
+    ‖GreenMinor_YX (green hH Complex.I) hM hD hm hm hp hy‖ ≤
+      ((‖hm‖ + 2 * ((3 : ℕ) : ℝ) * (1 / 10)) * (1 / (1 / 2) + 1) + 4 * ((3 : ℕ) : ℝ) * (1 / 10) * (1 / 100) / (1 / 2)) * (1 / 100) := by
+  have hT : GreenMinor_Tower (green hH Complex.I) (GreenMinor_Gs hH Complex.I) :=
+    GreenMinor_tower hH_herm (by simp)
+  have hgood : GreenMinor_good (GreenMinor_Gs hH Complex.I) hM (1 / 2) (1 / 100) 3 0 0 :=
+    GreenMinor_good_of_event (Mb := hMb) (m := hm) (fun _ _ => rfl) (fun a => by simp [hMb]) (by norm_num)
+      (by simp [hm]; norm_num) (by norm_num) (by norm_num) (by norm_num) hT hGΔ 0 0
+  have hy1 : hy.1 ≠ 0 := by decide
+  have hMuy : ‖hM hp hy‖ ≤ 1 := by
+    rw [hMe]
+    simp [hpy]
+  have hΔpy : green hH Complex.I hp hy - hM hp hy ≠ 0 := by
+    rw [green_hH, hGex_sub]
+    have hp' : hp ∈ hC := by simp [hC]
+    have hy' : hy ∈ hC := by simp [hC]
+    simp [hp', hy', hcc_ne]
+  have hmκ : (1 / 2 : ℝ) ≤ ‖hm‖ := by simp [hm]; norm_num
+  exact ⟨hT, hgood, hΔpy,
+    GreenMinor_YA_le (G := green hH Complex.I) (M := hM) (D := hD) (g₀ := 1 / 10) (κ := 1 / 2) (δ' := 1 / 100) (by norm_num) (by norm_num)
+      (fun _ _ => rfl) hGΔ (by norm_num) hmκ hp,
+    GreenMinor_YX_le (G := green hH Complex.I) (M := hM) (D := hD) (g₀ := 1 / 10) (κ := 1 / 2) (δ' := 1 / 100) (by norm_num) (by norm_num)
+      (fun _ _ => rfl) hGΔ (by norm_num) hmκ hp hy hMuy⟩
+
+end RealResolvent
 
 section HandMade
 open GreenMinorInst
