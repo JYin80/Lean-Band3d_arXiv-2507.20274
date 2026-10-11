@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a, probe 668318f, 1a-audit PASS, prover-hard d858b0b, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 09:14:52 UTC 2026
+state: merged 260732c
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BASizeClaim (1167), BASizeClaim2 (825), root imports (union with BAGGOp); probe stays on t/T2412 (668318f); full lake build 4224 jobs; pushed
+updated: Sun Oct 11 09:14:54 UTC 2026
 reports: docs/reports/T2412-prove.md, docs/reports/T2412-1a-audit.md, docs/reports/T2412-audit.md

@@ -354,3 +354,5 @@
 | T2408 | 2026-10-11 06:09 UTC (b11dee1) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-G6a：设计门，审核第一轮 RETURN（D1：owed 的 `BAGbEXPii` 被提前去掉）→ 修补 → PASS；新 `BA/GreenLocal` 1,005 行 |
 | T2409 | 2026-10-11 05:08 UTC (d354b8d) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L2c2a：新 `Graph/BAGGExp` 533 / 1,300（`baGGGamma_holds`，D402）；审核一次 PASS |
 | T2398 | 2026-10-11 08:34 UTC (7b0a10a) | prover-max | Sonnet 5.5 max | 是 | BA LW-14 设计门（只合并报告）：第一轮 W1–W5 + 杠杆 C，§8 卡在异色扭曲二圈 → Amend 1 → 设计 STOP（问 Jun）→ Jun 选 R1，TL1/TL2 证明经监督 0652 PASS → Amend 2（钉文 `BATwistAvgLaw`、`twK`、`BATwistLoopLaw`，行表重估）→ 审核 PASS；探针留在 t/T2398 |
+| T2410 | 2026-10-11 08:46 UTC (7c0f55a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L2c2b：新 `Graph/BAGGOp` 1,852 / 2,000（`gg2`/`gg4` 照 T2395，`baExpFrame_gg`、`BAexpFrameE`）；审核一次 PASS；估价 800 / 1,000 / 1,800，超出上限 |
+| T2412 | 2026-10-11 09:14 UTC (260732c) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L3c2：设计门（原子进入 size 计数）1a-audit PASS，审核一次 PASS；新 `Graph/BASizeClaim` 1,167 + `BASizeClaim2` 825 = 1,992 行（估价 950 / 1,350 / 2,350）；观察 O1–O4 不改陈述 |

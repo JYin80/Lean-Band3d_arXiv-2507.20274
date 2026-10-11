@@ -2032,3 +2032,8 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - **T2415 = T8-BA**（BA 82）：新 `BA/Step2BA`，`baStep2Mat`（`toFlowFM := baFM`，`LM`/`GMM`/`LIM`/`KI` 取 BA 对象；BAT-C1：`Pp := pathP (sz.withLam 0)`，`Hpath := lam0 • PsiI + pathH (sz.withLam 0)`），`baStep2Data`（`T0 = BAflowT0`，`flowOK = BAFlow`，三条事实），与 `BAStep2` 的桥；能量族里 `lam0` 怎么定由 1a 说明，留给 T3-BA。不用 T8b 的核。`prover-hard`，350 / 500 / 750，停止线 900。
 - **T2416 = T2-BA（并 T6-BA）**（BA 83）：新 `BA/EMn2BA`，在 BA 读法下给出 T2404 的三个假设块（`emn2PolyFacts`、`emn2ExpFacts`、`emn2ExpHK`）；BAT-C2：混合对 `Θ_BA·M^{(σσ')}` 的复合界作公开引理；BA 钉文 `STEMn2PolygL`、J 形式、Ĵ 形式（0853 Q2）；`STContractM` 的 BA 推论。1a 要核对 `emn2ExpEllStar`/`Bctl` 读的 `sz.lam` 与 `BAProp5` 的 `ellT L g t` 一致。`prover-hard`，550 / 850 / 1,500，停止线 1,800。
 - 中枢次序：T2413 → T2414 → T2415 → T2416（并行 4；T2411、T2412 在跑）。子阶段 T 计数：8 张 + T8b 共 9 / 28.5。下一张票号 T2417，下一节 §230，下一条 H211。
+
+## §230 — T2412（L3c2）合并（总调度 V2，2026-10-11 09:27 UTC）
+
+- **T2412 合并 260732c**：`Graph/BASizeClaim` 1,167 行 + `BASizeClaim2` 825 行，设计门 1a-audit PASS，审核一次 PASS（O1–O4 只是观察）。阶段 L 已合并：L0、L2c1、L2c2a、L2c2b、L3c2 和三个设计门。L3c1（1a = G3、G4）按 L4 REQ 的放行次序，等监督 09:41 的结论再写。
+- 中枢：T2411、T2413、T2414、T2415 在跑，T2416 排队。下一张票号 T2417，下一节 §231，下一条 H212。
