@@ -304,4 +304,521 @@ end Budget
 
 end R6
 
+/-! ## 2. The BA data: `η_t`, `‖s‖`, the base event -/
+
+section Data
+variable {d : ℕ}
+
+/-- **`η_t ≥ (κ/2) N^{-1+ε}`** along the flow: `η_t = (1 - t) Im m_F`, `Im m_F ≥ κ` and `1 - t ≥ 1 - T₀ = Im z/(Im m + Im z) ≥ Im z/2`
+(`Im m ≤ ‖m‖ ≤ 1`, `Im z ≤ 1`), `Im z ≥ N^{-1+ε}` (`BAdom`). -/
+theorem GreenCond2_eta_lower {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ}
+    (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) :
+    κ / 2 * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ (GreenCond_zt sz z n t).im := by
+  obtain ⟨hz0, hm0, -, -⟩ := BAflow_T0_bounds hκ h n
+  obtain ⟨hκm, hzlo, hz1⟩ := h.2 n
+  have hmself := BAm_self d (sz.L n) (sz.lam n) (z n) hz0
+  have hm1 : (BAm d (sz.L n) (sz.lam n) (z n)).im ≤ 1 :=
+    ((le_abs_self _).trans (Complex.abs_im_le_norm _)).trans (BAm_norm_le_one (d := d) (L := sz.L n) _ _ _ hz0.le hmself)
+  have hMF : κ ≤ (GreenCond_m sz z n).im := (BAflow_real κ ε 𝔠 𝔡 sz z h n).2
+  have hsum : (BAm d (sz.L n) (sz.lam n) (z n)).im + (z n).im ≤ 2 := by linarith
+  have hT : BAflowT0 sz z n = (BAm d (sz.L n) (sz.lam n) (z n)).im / ((BAm d (sz.L n) (sz.lam n) (z n)).im + (z n).im) := rfl
+  have h1t : (z n).im / 2 ≤ 1 - t := by
+    have : 1 - BAflowT0 sz z n = (z n).im / ((BAm d (sz.L n) (sz.lam n) (z n)).im + (z n).im) := by
+      rw [hT]; field_simp; ring
+    have h2 : (z n).im / 2 ≤ (z n).im / ((BAm d (sz.L n) (sz.lam n) (z n)).im + (z n).im) :=
+      div_le_div_of_nonneg_left hz0.le (by linarith) hsum
+    linarith
+  have hN : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have e : (GreenCond_zt sz z n t).im = (1 - t) * (GreenCond_m sz z n).im := by
+    unfold GreenCond_zt
+    rw [ztOf_im]; rfl
+  rw [e]
+  calc κ / 2 * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) = κ * (((sz.size n : ℕ) : ℝ) ^ (-1 + ε) / 2) := by ring
+    _ ≤ (GreenCond_m sz z n).im * (1 - t) := by
+        refine mul_le_mul hMF ?_ (by positivity) (hκ.le.trans hMF)
+        linarith
+    _ = (1 - t) * (GreenCond_m sz z n).im := mul_comm _ _
+
+/-- `η_t⁻¹ ≤ (2/κ) N`. -/
+theorem GreenCond2_inv_eta_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ)
+    {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) :
+    |(GreenCond_zt sz z n t).im|⁻¹ ≤ 2 / κ * ((sz.size n : ℕ) : ℝ) := by
+  have hl := GreenCond2_eta_lower hκ sz h n ht0 ht
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have hpow : ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) = ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) * ((sz.size n : ℕ) : ℝ) ^ ε := by
+    rw [← Real.rpow_add hNpos]
+  have hpos : 0 < κ / 2 * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) := by positivity
+  have hη : 0 < (GreenCond_zt sz z n t).im := hpos.trans_le hl
+  rw [abs_of_pos hη]
+  have h1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ ε := Real.one_le_rpow hN1 hε.le
+  have h2 : ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) = (((sz.size n : ℕ) : ℝ))⁻¹ := Real.rpow_neg_one _
+  have h3 : κ / 2 * (((sz.size n : ℕ) : ℝ))⁻¹ ≤ (GreenCond_zt sz z n t).im := by
+    refine le_trans ?_ hl
+    rw [hpow, h2]
+    have : (((sz.size n : ℕ) : ℝ))⁻¹ ≤ (((sz.size n : ℕ) : ℝ))⁻¹ * ((sz.size n : ℕ) : ℝ) ^ ε :=
+      le_mul_of_one_le_right (by positivity) h1
+    nlinarith [hκ]
+  calc ((GreenCond_zt sz z n t).im)⁻¹ ≤ (κ / 2 * (((sz.size n : ℕ) : ℝ))⁻¹)⁻¹ := inv_anti₀ (by positivity) h3
+    _ = 2 / κ * ((sz.size n : ℕ) : ℝ) := by field_simp
+
+/-- `‖s‖ ≤ (1 + 2 d g₀)/κ`: from `(D - s) M = 1` at the entry `(u, u)`, `s m = Σ_l D_{ul} M_{lu} - 1`. -/
+theorem GreenCond2_norm_s_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ}
+    (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) (hg0 : 0 ≤ BAflowLam0 sz z n) :
+    ‖GreenCond_s sz z n‖ ≤ (1 + 2 * d * BAflowLam0 sz z n) / κ := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  rw [le_div_iff₀ hκ]
+  calc ‖GreenCond_s sz z n‖ * κ ≤ ‖GreenCond_s sz z n‖ * ‖GreenCond_m sz z n‖ :=
+        mul_le_mul_of_nonneg_left dat.hκm (norm_nonneg _)
+    _ ≤ 1 + 2 * d * BAflowLam0 sz z n := dat.hs
+
+private theorem GreenCond2_prec_of_whp {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
+    {ξ ζ : ∀ l, U l → Ω → ℝ}
+    (h : ∀ τ > (0 : ℝ), HighProbAt P size (fun l => {ω | ∀ u, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω})) :
+    StochDomAt P size ξ ζ := by
+  intro τ hτ D hD
+  filter_upwards [h τ hτ D hD] with l hl
+  refine le_trans (le_of_eq ?_) hl
+  congr 1
+  ext ω
+  simp [badSetAt]
+
+private theorem GreenCond2_le_of_sq_le {a b : ℝ} (hb : 0 ≤ b) (h : a ^ 2 ≤ b ^ 2) : a ≤ b := by
+  by_contra hab
+  push Not at hab
+  nlinarith
+
+/-- `N^{ζ} W^{-ε₀} ≤ W^{-ε₀/2}` eventually, for `ζ = 𝔠 ε₀/2` (`W ≥ N^𝔠`). -/
+private theorem GreenCond2_ev_incl (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {ε₀ : ℝ} (hε₀ : 0 < ε₀) :
+    ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₀ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₀) ≤ ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) := by
+  filter_upwards [hA.2.2.2.1] with n hn
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have h1 : ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₀ / 2) ≤ ((sz.W n : ℕ) : ℝ) ^ (ε₀ / 2) := by
+    calc ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₀ / 2) = (((sz.size n : ℕ) : ℝ) ^ 𝔠) ^ (ε₀ / 2) := by
+          rw [← Real.rpow_mul hN0]; congr 1; ring
+      _ ≤ ((sz.W n : ℕ) : ℝ) ^ (ε₀ / 2) := Real.rpow_le_rpow (Real.rpow_nonneg hN0 _) hn (by linarith)
+  calc ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₀ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₀)
+      ≤ ((sz.W n : ℕ) : ℝ) ^ (ε₀ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₀) :=
+        mul_le_mul_of_nonneg_right h1 (Real.rpow_nonneg hW0.le _)
+    _ = ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) := by rw [← Real.rpow_add hW0]; congr 1; ring
+
+/-- **The local law at a deterministic control, for the BA carrier** (the argument of `greenLocal_localLaw`, `BA/GreenLocal.lean`, with
+`BAGiiGEX` at `ε₀/2` a hypothesis, as in the pins `BAFamGain`, `BAFAav`, and no guard on `d`): `(initialGT2)` gives `‖G_t - M‖_max ≺ Ψ`. -/
+theorem GreenCond2_localLaw {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d) {z : ℕ → ℂ}
+    (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) {ε₀ : ℝ} (hε₀ : 0 < ε₀)
+    (hii : BAGiiGEX sz z t (ε₀ / 2)) {Ψ : ℕ → ℝ} (hΨ : ∀ᶠ n in atTop, 0 ≤ Ψ n)
+    (hinit : STInitialGT2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ) :
+    PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+      (fun n p ω => ‖(baFMz sz z).GM n (t n) ω p.1 p.2‖) (fun n _ _ => Ψ n) := by
+  have h𝔠 : 0 < 𝔠 := hflow.1.1
+  have hsz' : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
+  have hζ : 0 < 𝔠 * ε₀ / 2 := by positivity
+  have hΩ : HighProbAt (Sizes.seqP (sz.withLam 0)) sz.size (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
+      ‖(baFMz sz z).GM n (t n) ω x y‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₀ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₀)}) :=
+    (StochDomAt.highProb hinit.1 hζ).mono (Eventually.of_forall fun n ω hω x y => hω (x, y))
+  refine GreenCond2_prec_of_whp fun τ hτ => ?_
+  have hB := StochDomAt.highProb hinit.2 hτ
+  have hC := StochDomAt.highProb hii hτ
+  refine (HighProbAt.inter hsz' hΩ (HighProbAt.inter hsz' hB hC)).mono ?_
+  filter_upwards [GreenCond2_ev_incl sz hflow.1 hε₀, hΨ] with n hincl hΨn
+  rintro ω ⟨h1, h2, h3⟩ ⟨x, y⟩
+  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hOm : ∀ x y : Idx d (sz.L n) (sz.W n), ‖(baFMz sz z).GM n (t n) ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) :=
+    fun x y => (h1 x y).trans hincl
+  have hi : (baFMz sz z).indMax n (t n) (((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2))) ω = 1 := by simp [FlowFM.indMax, hOm]
+  have h3' := h3 (x, y)
+  simp only [hi, one_mul] at h3'
+  have h2' := h2 ()
+  have hNτ0 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ := Real.rpow_nonneg hN0 _
+  refine GreenCond2_le_of_sq_le (mul_nonneg hNτ0 hΨn) ?_
+  calc ‖(baFMz sz z).GM n (t n) ω x y‖ ^ 2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * STmaxLoop2g (baFMz sz z) n (t n) ω := h3'
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (((sz.size n : ℕ) : ℝ) ^ τ * Ψ n ^ 2) := mul_le_mul_of_nonneg_left h2' hNτ0
+    _ = (((sz.size n : ℕ) : ℝ) ^ τ * Ψ n) ^ 2 := by ring
+
+/-- **`P(S_n) ≤ N^{-D}`**: the hull of the complement of `{‖G_t - M‖_max ≤ W^τ Ψ_n}` is small, for every `τ, D > 0`
+(from `‖G_t - M‖_max ≺ Ψ` and `N^{𝔠τ} ≤ W^τ`). -/
+theorem GreenCond2_prob_badBase {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d) {z : ℕ → ℂ}
+    (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) {ε₀ : ℝ} (hε₀ : 0 < ε₀)
+    (hii : BAGiiGEX sz z t (ε₀ / 2)) {Ψ : ℕ → ℝ} (hΨ : ∀ᶠ n in atTop, 0 ≤ Ψ n)
+    (hinit : STInitialGT2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ) {τ : ℝ} (hτ : 0 < τ) {D : ℝ} (hD : 0 < D) :
+    ∀ᶠ n in atTop, (Sizes.seqP (sz.withLam 0)) (GreenCond_badBase sz z n (t n) (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)) := by
+  have hLL := GreenCond2_localLaw hκ hε h𝔡 sz hflow ht0 htT hε₀ hii hΨ hinit
+  have h𝔠 : 0 < 𝔠 := hflow.1.1
+  filter_upwards [hLL (𝔠 * τ) (by positivity) D hD, hflow.1.2.2.2.1, hΨ] with n hn hband hΨn
+  rw [GreenCond_meas_badBase]
+  refine le_trans (measure_mono ?_) hn
+  intro ω hω
+  simp only [not_forall, not_le] at hω
+  obtain ⟨x, y, hxy⟩ := hω
+  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hNW : ((sz.size n : ℕ) : ℝ) ^ (𝔠 * τ) ≤ ((sz.W n : ℕ) : ℝ) ^ τ := by
+    calc ((sz.size n : ℕ) : ℝ) ^ (𝔠 * τ) = (((sz.size n : ℕ) : ℝ) ^ 𝔠) ^ τ := by rw [← Real.rpow_mul hN0]
+      _ ≤ ((sz.W n : ℕ) : ℝ) ^ τ := Real.rpow_le_rpow (Real.rpow_nonneg hN0 _) hband hτ.le
+  refine ⟨((splitEquiv d (sz.L n) (sz.W n)).symm x, (splitEquiv d (sz.L n) (sz.W n)).symm y), ?_⟩
+  have e : ‖(baFMz sz z).GM n (t n) ω ((splitEquiv d (sz.L n) (sz.W n)).symm x) ((splitEquiv d (sz.L n) (sz.W n)).symm y)‖ =
+      ‖GreenCore_Gc sz z n (t n) ω x y - GreenCore_Mc sz z n x y‖ := rfl
+  show ((sz.size n : ℕ) : ℝ) ^ (𝔠 * τ) * Ψ n < ‖(baFMz sz z).GM n (t n) ω ((splitEquiv d (sz.L n) (sz.W n)).symm x)
+    ((splitEquiv d (sz.L n) (sz.W n)).symm y)‖
+  rw [e]
+  exact lt_of_le_of_lt (mul_le_mul_of_nonneg_right hNW hΨn) hxy
+
+end Data
+
+/-! ## 3. The exponent bookkeeping: `hB1` and `hsmall` eventually -/
+
+section Arith
+
+/-- **The two numerical conditions of `GreenCond_famGain_slice`, from polynomial bounds in `N`** (`N = (WL)^d`): with `δ ≥ N^{-d}`, the
+envelope `Env ≤ C_E N²`, the tower measure `P(Bad_{M+1}) ≤ (2 N^{c₁+1})^{M+1} P(S)`, `P(S) ≤ N^{-D'}`, `c₁ = d(M+1) + 3`,
+`D' = 2K + (c₁+1)(M+1) + dK(M+1) + 1`, and `N` large: the price of conditionalising is `≤ 2δ` at the threshold `ε' = N^{-c₁}`, and `hsmall` holds. -/
+theorem GreenCond2_arith {d M K : ℕ} {N δ Env cM CE Pbad PS : ℝ}
+    (hN1 : 1 ≤ N) (hδ0 : 0 < δ) (hδN : 1 ≤ N ^ d * δ) (hEnv1 : 1 ≤ Env) (hEnv : Env ≤ CE * N ^ 2) (hCE : 1 ≤ CE) (hcM : 1 ≤ cM)
+    (hPb0 : 0 ≤ Pbad) (hPS0 : 0 ≤ PS)
+    (hPbad : Pbad ≤ (2 * N ^ (d * (M + 1) + 4)) ^ (M + 1) * PS)
+    (hPS : PS * N ^ (2 * K + (d * (M + 1) + 4) * (M + 1) + d * K * (M + 1) + 1) ≤ 1)
+    (hN₁ : (M + 1) * 2 ^ (2 * M + 1) * CE ≤ N)
+    (hN₂ : (2 ^ (2 * M + 1) * CE) ^ K * 2 ^ (M + 1) ≤ N) :
+    GreenCond_cost Env M (2 * δ) (1 / N ^ (d * (M + 1) + 3)) ≤ 2 * δ ∧
+      GreenCond_genv Env M ^ K * Pbad ≤
+        (2 * cM * (2 * δ) + GreenCond_cost Env M (2 * δ) (1 / N ^ (d * (M + 1) + 3))) ^ K * (2 * (2 * δ)) ^ (K * M) := by
+  have hN0 : 0 < N := by linarith only [hN1]
+  have hu : ∀ j : ℕ, 1 ≤ (N ^ d * δ) ^ j := fun j => one_le_pow₀ hδN
+  have hcost : GreenCond_cost Env M (2 * δ) (1 / N ^ (d * (M + 1) + 3)) ≤ 2 * δ := by
+    unfold GreenCond_cost GreenCond_genv
+    have hq0 : 0 < (2 * (2 * δ)) ^ M := by positivity
+    have hq : δ ^ M ≤ (2 * (2 * δ)) ^ M := pow_le_pow_left₀ hδ0.le (by linarith) M
+    have hdelta : 1 ≤ δ ^ (M + 1) * N ^ (d * (M + 1)) := by
+      have := hu (M + 1)
+      calc (1 : ℝ) ≤ (N ^ d * δ) ^ (M + 1) := this
+        _ = δ ^ (M + 1) * N ^ (d * (M + 1)) := by rw [mul_pow, ← pow_mul, mul_comm]
+    have hlow : 2 * N ^ 3 ≤ 2 * δ * N ^ (d * (M + 1) + 3) * (2 * (2 * δ)) ^ M := by
+      calc 2 * N ^ 3 ≤ 2 * N ^ 3 * (δ ^ (M + 1) * N ^ (d * (M + 1))) := le_mul_of_one_le_right (by positivity) hdelta
+        _ = 2 * δ * N ^ (d * (M + 1) + 3) * δ ^ M := by rw [pow_add, pow_succ]; ring
+        _ ≤ 2 * δ * N ^ (d * (M + 1) + 3) * (2 * (2 * δ)) ^ M := mul_le_mul_of_nonneg_left hq (by positivity)
+    have hup : ((M : ℝ) + 1) * (2 ^ (2 * M + 1) * Env) ≤ 2 * N ^ 3 := by
+      calc ((M : ℝ) + 1) * (2 ^ (2 * M + 1) * Env) ≤ ((M : ℝ) + 1) * (2 ^ (2 * M + 1) * (CE * N ^ 2)) := by gcongr
+        _ = ((M + 1) * 2 ^ (2 * M + 1) * CE) * N ^ 2 := by ring
+        _ ≤ N * N ^ 2 := by gcongr
+        _ ≤ 2 * N ^ 3 := by nlinarith [pow_pos hN0 3]
+    have e : ((M : ℝ) + 1) * (2 ^ (2 * M + 1) * Env) * (1 / N ^ (d * (M + 1) + 3)) * ((2 * (2 * δ)) ^ M)⁻¹
+        = ((M : ℝ) + 1) * (2 ^ (2 * M + 1) * Env) / (N ^ (d * (M + 1) + 3) * (2 * (2 * δ)) ^ M) := by
+      field_simp
+    rw [e, div_le_iff₀ (by positivity)]
+    nlinarith [hup, hlow]
+  refine ⟨hcost, ?_⟩
+  set cost := GreenCond_cost Env M (2 * δ) (1 / N ^ (d * (M + 1) + 3)) with hcostdef
+  have hcost0 : 0 ≤ cost := by
+    rw [hcostdef]; unfold GreenCond_cost GreenCond_genv; positivity
+  have hB : δ ≤ 2 * cM * (2 * δ) + cost := by nlinarith
+  have hrhs : δ ^ (K * (M + 1)) ≤ (2 * cM * (2 * δ) + cost) ^ K * (2 * (2 * δ)) ^ (K * M) := by
+    calc δ ^ (K * (M + 1)) = δ ^ K * δ ^ (K * M) := by rw [← pow_add]; congr 1; ring
+      _ ≤ (2 * cM * (2 * δ) + cost) ^ K * (2 * (2 * δ)) ^ (K * M) := by
+          gcongr
+          linarith
+  refine le_trans ?_ hrhs
+  -- the left side times `N^{dK(M+1)}` is at most `1`
+  set E : ℕ := 2 * K + (d * (M + 1) + 4) * (M + 1) + d * K * (M + 1) with hE
+  have hLHS : GreenCond_genv Env M ^ K * Pbad ≤ (2 ^ (2 * M + 1) * CE) ^ K * 2 ^ (M + 1) * (N ^ (2 * K + (d * (M + 1) + 4) * (M + 1)) * PS) := by
+    unfold GreenCond_genv
+    calc (2 ^ (2 * M + 1) * Env) ^ K * Pbad ≤ (2 ^ (2 * M + 1) * (CE * N ^ 2)) ^ K * ((2 * N ^ (d * (M + 1) + 4)) ^ (M + 1) * PS) := by
+          have h1 : 0 ≤ 2 ^ (2 * M + 1) * Env := by positivity
+          gcongr
+      _ = (2 ^ (2 * M + 1) * CE) ^ K * 2 ^ (M + 1) * (N ^ (2 * K + (d * (M + 1) + 4) * (M + 1)) * PS) := by
+          rw [mul_pow, mul_pow, mul_pow, ← pow_mul, ← pow_mul, pow_add]; ring
+  have hmain : GreenCond_genv Env M ^ K * Pbad * N ^ (d * K * (M + 1)) ≤ 1 := by
+    calc GreenCond_genv Env M ^ K * Pbad * N ^ (d * K * (M + 1))
+        ≤ (2 ^ (2 * M + 1) * CE) ^ K * 2 ^ (M + 1) * (N ^ (2 * K + (d * (M + 1) + 4) * (M + 1)) * PS) * N ^ (d * K * (M + 1)) :=
+          mul_le_mul_of_nonneg_right hLHS (by positivity)
+      _ ≤ N * (N ^ (2 * K + (d * (M + 1) + 4) * (M + 1)) * PS) * N ^ (d * K * (M + 1)) := by gcongr
+      _ = PS * N ^ (2 * K + (d * (M + 1) + 4) * (M + 1) + d * K * (M + 1) + 1) := by
+          rw [pow_succ, pow_add]; ring
+      _ ≤ 1 := hPS
+  have hpow : 1 ≤ δ ^ (K * (M + 1)) * N ^ (d * K * (M + 1)) := by
+    calc (1 : ℝ) ≤ (N ^ d * δ) ^ (K * (M + 1)) := hu _
+      _ = δ ^ (K * (M + 1)) * N ^ (d * K * (M + 1)) := by rw [mul_pow, ← pow_mul, mul_comm]; ring_nf
+  have hL0 : 0 ≤ GreenCond_genv Env M ^ K * Pbad := by unfold GreenCond_genv; positivity
+  calc GreenCond_genv Env M ^ K * Pbad ≤ GreenCond_genv Env M ^ K * Pbad * (δ ^ (K * (M + 1)) * N ^ (d * K * (M + 1))) :=
+        le_mul_of_one_le_right hL0 hpow
+    _ = (GreenCond_genv Env M ^ K * Pbad * N ^ (d * K * (M + 1))) * δ ^ (K * (M + 1)) := by ring
+    _ ≤ 1 * δ ^ (K * (M + 1)) := mul_le_mul_of_nonneg_right hmain (by positivity)
+    _ = δ ^ (K * (M + 1)) := one_mul _
+
+
+/-- **The tower measure in real numbers**: `ε^j P(Bad_j) ≤ (ε + N)^j P(S)`. -/
+theorem GreenCond2_Pbad_le {d : ℕ} (sz : Sizes d) (n : ℕ) {ε : ℝ} (hε : 0 < ε) {S : Set sz.SeqΩ} (hS : MeasurableSet S) (j : ℕ) :
+    ε ^ j * (Sizes.seqP sz).real (badTower sz n ε S j) ≤ (ε + (sz.size n : ℝ)) ^ j * (Sizes.seqP sz).real S := by
+  have h := minorDiffCond_meas_badTower_le_size sz n (ε := ε) hS j
+  have hfin : (ENNReal.ofReal ε + (sz.size n : ℝ≥0∞)) ^ j * (Sizes.seqP sz) S ≠ ⊤ :=
+    ENNReal.mul_ne_top (ENNReal.pow_ne_top (ENNReal.add_ne_top.2 ⟨ENNReal.ofReal_ne_top, ENNReal.natCast_ne_top _⟩)) (measure_ne_top _ _)
+  have h2 := ENNReal.toReal_mono hfin h
+  rw [ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_pow, ENNReal.toReal_add ENNReal.ofReal_ne_top
+    (ENNReal.natCast_ne_top _), ENNReal.toReal_ofReal hε.le, ENNReal.toReal_natCast] at h2
+  exact h2
+
+/-- `P(Bad_j) ≤ (2 N^{c+1})^j P(S)` for the threshold `ε = N^{-c}` (`N = sz.size n ≥ 1`). -/
+theorem GreenCond2_Pbad_le' {d : ℕ} (sz : Sizes d) (n : ℕ) {S : Set sz.SeqΩ} (hS : MeasurableSet S) (c j : ℕ) :
+    (Sizes.seqP sz).real (badTower sz n (1 / (sz.size n : ℝ) ^ c) S j) ≤
+      (2 * (sz.size n : ℝ) ^ (c + 1)) ^ j * (Sizes.seqP sz).real S := by
+  have hN1 : (1 : ℝ) ≤ (sz.size n : ℝ) := by exact_mod_cast sz.one_le_size n
+  set N : ℝ := (sz.size n : ℝ) with hN
+  have hN0 : 0 < N := by linarith only [hN1]
+  have hε : 0 < 1 / N ^ c := by positivity
+  have h := GreenCond2_Pbad_le sz n hε hS j
+  rw [← hN] at h
+  have hP0 : 0 ≤ (Sizes.seqP sz).real S := measureReal_nonneg
+  have he : (1 / N ^ c + N) = (1 + N ^ (c + 1)) * (1 / N ^ c) := by
+    field_simp
+    ring
+  rw [he, mul_pow] at h
+  have hεj : 0 < (1 / N ^ c) ^ j := by positivity
+  have h1 : (Sizes.seqP sz).real (badTower sz n (1 / N ^ c) S j) ≤ (1 + N ^ (c + 1)) ^ j * (Sizes.seqP sz).real S := by
+    have := h
+    rw [mul_assoc] at this
+    nlinarith [mul_pos hεj hεj, mul_nonneg (pow_nonneg (by positivity : (0 : ℝ) ≤ 1 + N ^ (c + 1)) j) hP0]
+  refine h1.trans ?_
+  refine mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) ?_ j) hP0
+  have : (1 : ℝ) ≤ N ^ (c + 1) := one_le_pow₀ hN1
+  linarith
+
+end Arith
+
+/-! ## 4. `BAFamGain` -/
+
+section FamGain
+variable {d : ℕ}
+
+theorem GreenCond2_one_le_d (sz : Sizes d) (h : sz.SizeTendsto) : 1 ≤ d := by
+  by_contra h0
+  have hd : d = 0 := by omega
+  subst hd
+  have := (h.eventually_ge_atTop 2).exists
+  obtain ⟨n, hn⟩ := this
+  have h1 : ((sz.size n : ℕ) : ℝ) = 1 := by simp [Sizes.size]
+  rw [h1] at hn
+  norm_num at hn
+
+/-- `W ≤ N` (`d ≥ 1`). -/
+theorem GreenCond2_W_le_size (sz : Sizes d) (hd : 1 ≤ d) (n : ℕ) : (sz.W n : ℝ) ≤ (sz.size n : ℝ) := by
+  have h1 : sz.W n ≤ sz.W n * sz.L n := Nat.le_mul_of_pos_right _ (by have := sz.three_le_L n; omega)
+  have h2 : sz.W n * sz.L n ≤ (sz.W n * sz.L n) ^ d := Nat.le_self_pow (by omega) _
+  exact_mod_cast h1.trans h2
+
+theorem GreenCond2_delta_small (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {ε₀ τ : ℝ} (hε₀ : 0 < ε₀) (hτε : τ ≤ ε₀ / 2)
+    {Ψ : ℕ → ℝ} (hΨ0 : ∀ᶠ n in atTop, 0 ≤ Ψ n) (hΨhi : ∀ᶠ n in atTop, Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) {δ₀ : ℝ}
+    (hδ₀ : 0 < δ₀) : ∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ τ * Ψ n ≤ δ₀ := by
+  have hW := tendsto_W sz hA.1 hA.2.2.1 hA.2.2.2.1
+  have hlim := (tendsto_rpow_neg_atTop (show 0 < ε₀ / 2 by positivity)).comp hW
+  filter_upwards [hΨ0, hΨhi, (tendsto_order.1 hlim).2 δ₀ hδ₀, hW.eventually_ge_atTop 1] with n h0 hhi hsm hW1
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith only [hW1]
+  have hsm' : ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) < δ₀ := hsm
+  calc ((sz.W n : ℕ) : ℝ) ^ τ * Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ τ * ((sz.W n : ℕ) : ℝ) ^ (-ε₀) :=
+        mul_le_mul_of_nonneg_left hhi (Real.rpow_nonneg hW0.le _)
+    _ = ((sz.W n : ℕ) : ℝ) ^ (τ + -ε₀) := (Real.rpow_add hW0 _ _).symm
+    _ ≤ ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) := Real.rpow_le_rpow_of_exponent_le hW1 (by linarith)
+    _ ≤ δ₀ := hsm'.le
+
+/-- `δ_n = W^τ Ψ_n ≥ Ψ_n ≥ W^{-d/2}` gives `1 ≤ N^d δ_n`. -/
+theorem GreenCond2_delta_lower (sz : Sizes d) (hd : 1 ≤ d) (n : ℕ) {τ Ψn : ℝ} (hτ : 0 ≤ τ)
+    (hΨ : ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψn) :
+    1 ≤ ((sz.size n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ τ * Ψn) := by
+  have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith only [hW1]
+  have hWN := GreenCond2_W_le_size sz hd n
+  have hΨ0 : 0 ≤ Ψn := le_trans (Real.rpow_nonneg hW0.le _) hΨ
+  have hWτ : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ τ := Real.one_le_rpow hW1 hτ
+  have h1 : ((sz.W n : ℕ) : ℝ) ^ d ≤ ((sz.size n : ℕ) : ℝ) ^ d := pow_le_pow_left₀ hW0.le hWN d
+  have h2 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) := by
+    rw [← Real.rpow_natCast, ← Real.rpow_add hW0]
+    exact Real.one_le_rpow hW1 (by have : (0 : ℝ) ≤ d := Nat.cast_nonneg d; linarith)
+  calc (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) := h2
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ d * Ψn := mul_le_mul h1 hΨ (by positivity) (by positivity)
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ τ * Ψn) :=
+        mul_le_mul_of_nonneg_left (le_mul_of_one_le_left hΨ0 hWτ) (by positivity)
+
+/-- The envelope bound: `Env(g₀, ‖s‖, e) ≤ ((sbd + 2dΛ)(1/κ + 1) + 4dΛ/κ) e²` for `g₀ ≤ Λ`, `‖s‖ ≤ sbd`, `e ≥ 1`. -/
+theorem GreenCond2_Env_le {κ g₀ Λ s sbd e : ℝ} (hκ : 0 < κ) (hg : 0 ≤ g₀) (hgΛ : g₀ ≤ Λ) (hs0 : 0 ≤ s) (hs : s ≤ sbd)
+    (he1 : 1 ≤ e) : GreenCond_Env d κ g₀ s e ≤ ((sbd + 2 * d * Λ) * (1 / κ + 1) + 4 * d * Λ / κ) * e ^ 2 := by
+  unfold GreenCond_Env
+  have hd : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  have hΛ : 0 ≤ Λ := hg.trans hgΛ
+  have he0 : 0 ≤ e := by linarith
+  have hee : e ≤ e ^ 2 := by nlinarith
+  have hκ' : 0 ≤ 1 / κ + 1 := by positivity
+  calc ((s + 2 * d * g₀) * (1 / κ + 1) + 4 * d * g₀ * e / κ) * e
+      ≤ ((sbd + 2 * d * Λ) * (1 / κ + 1) + 4 * d * Λ * e / κ) * e := by
+        gcongr
+    _ = (sbd + 2 * d * Λ) * (1 / κ + 1) * e + 4 * d * Λ / κ * e ^ 2 := by ring
+    _ ≤ (sbd + 2 * d * Λ) * (1 / κ + 1) * e ^ 2 + 4 * d * Λ / κ * e ^ 2 := by
+        have : 0 ≤ (sbd + 2 * d * Λ) * (1 / κ + 1) := by
+          have : 0 ≤ sbd := hs0.trans hs
+          positivity
+        nlinarith
+    _ = ((sbd + 2 * d * Λ) * (1 / κ + 1) + 4 * d * Λ / κ) * e ^ 2 := by ring
+
+/-- The gain interface is monotone in the constant `B`. -/
+theorem GreenCond2_famGain_mono {n : ℕ} {sz : Sizes d} {A : Finset (Idx d (sz.L n) (sz.W n))} {Y : Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ}
+    {B B' ρ : ℝ} {M K : ℕ} (h : GreenMinor_famGain sz n A Y B ρ M K) (hB : B ≤ B') : GreenMinor_famGain sz n A Y B' ρ M K := by
+  refine ⟨h.1.trans hB, h.2.1, fun ι _ k L h1 h2 h3 h4 h5 => ?_⟩
+  refine (h.2.2 ι k L h1 h2 h3 h4 h5).trans ?_
+  exact mul_le_mul_of_nonneg_right (pow_le_pow_left₀ h.1 hB _) (by have := h.2.1; positivity)
+
+/-- The envelope bound at `e = η⁻¹ + 1` with `η⁻¹ ≤ (2/κ) N`: `Env ≤ C_E N²`. -/
+theorem GreenCond2_Env_aux {κ g₀ Λ s sbd N Einv cE CE : ℝ} (hκ : 0 < κ) (hg : 0 ≤ g₀) (hgΛ : g₀ ≤ Λ) (hs0 : 0 ≤ s) (hs : s ≤ sbd)
+    (hE0 : 0 ≤ Einv) (hη : Einv ≤ 2 / κ * N) (hN1 : 1 ≤ N)
+    (hcE : cE = (sbd + 2 * d * Λ) * (1 / κ + 1) + 4 * d * Λ / κ) (hCE : CE = 1 + cE * (2 / κ + 1) ^ 2) (hcE0 : 0 ≤ cE) :
+    GreenCond_Env d κ g₀ s (Einv + 1) ≤ CE * N ^ 2 := by
+  have he1 : (1 : ℝ) ≤ Einv + 1 := by linarith
+  have he : Einv + 1 ≤ (2 / κ + 1) * N := by
+    have : 0 ≤ 2 / κ := by positivity
+    have h2 : 2 / κ * N + 1 ≤ 2 / κ * N + N := by linarith
+    calc Einv + 1 ≤ 2 / κ * N + 1 := by linarith
+      _ ≤ 2 / κ * N + N := h2
+      _ = (2 / κ + 1) * N := by ring
+  refine (GreenCond2_Env_le hκ hg hgΛ hs0 hs he1).trans ?_
+  rw [← hcE]
+  have h2 : (Einv + 1) ^ 2 ≤ ((2 / κ + 1) * N) ^ 2 := pow_le_pow_left₀ (by linarith) he 2
+  calc cE * (Einv + 1) ^ 2 ≤ cE * ((2 / κ + 1) * N) ^ 2 := mul_le_mul_of_nonneg_left h2 hcE0
+    _ = (cE * (2 / κ + 1) ^ 2) * N ^ 2 := by ring
+    _ ≤ CE * N ^ 2 := by rw [hCE]; nlinarith [sq_nonneg N]
+
+/-- **`BAFamGain d`, proved** (the owed pin of the G5b row; consumer: `baFAav_holds`).  Fix the data of the pin, `p` and `τ`.  The constants
+`c_M = 1 + c_Y(M)` (at `Λ = 𝔡⁻¹`, `sbd = (1 + 2dΛ)/κ ≥ ‖s‖`) and `C = 8 c_M + 4` depend on `(d, κ, 𝔡, p)` only; for `n` large the slice
+theorem `GreenCond_famGain_slice` applies with `δ = W^τ Ψ_n`, the tower threshold `ε' = N^{-c₁}`, `c₁ = d(M+1) + 3`, the envelope
+`Env = C_E N²` (`η_t⁻¹ ≤ (2/κ) N`), and `P(S_n) ≤ N^{-D'}` (`GreenCond2_prob_badBase`, `D'` a large integer). -/
+theorem baFamGain_holds (d : ℕ) : BAFamGain d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ hii Ψ hΨlo hΨhi hinit τ hτ hτε p
+  have hd1 : 1 ≤ d := GreenCond2_one_le_d sz hflow.1.2.2.1
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hκ1 : κ ≤ 1 := by
+    have hr := BAflow_real κ ε 𝔠 𝔡 sz z hflow 0
+    have hm1 : ‖GreenCond_m sz z 0‖ ≤ 1 :=
+      BAm_norm_le_one (d := d) (L := sz.L 0) (BAflowLam0 sz z 0) (BAflowEs sz z 0 : ℂ) (GreenCond_m sz z 0) (by simp) hr.1
+    exact hr.2.trans ((le_abs_self _).trans ((Complex.abs_im_le_norm _).trans hm1))
+  obtain ⟨Λ, hΛ⟩ : ∃ Λ : ℝ, Λ = 𝔡⁻¹ := ⟨_, rfl⟩
+  have hΛ0 : 0 < Λ := by rw [hΛ]; exact inv_pos.2 h𝔡
+  obtain ⟨sbd, hsbd⟩ : ∃ sbd : ℝ, sbd = (1 + 2 * d * Λ) / κ := ⟨_, rfl⟩
+  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  have hsbd0 : 0 ≤ sbd := by rw [hsbd]; positivity
+  set M : ℕ := 2 * p with hM
+  obtain ⟨cM, hcM1, hcMgen⟩ : ∃ cM : ℝ, 1 ≤ cM ∧ ∀ g₀ s : ℝ, 0 ≤ g₀ → g₀ ≤ Λ → 0 ≤ s → s ≤ sbd →
+      GreenMinor_cY d κ g₀ s M ≤ cM := by
+    have hcY0 : 0 ≤ GreenMinor_cY d κ Λ sbd M := by
+      have ha := GreenMinor_a_nonneg hκ hκ1 M
+      unfold GreenMinor_cY
+      positivity
+    refine ⟨1 + GreenMinor_cY d κ Λ sbd M, by linarith, fun g₀ s hg hgΛ hs0 hs => ?_⟩
+    have := GreenCond_cY_mono (d := d) hκ hκ1 hg hgΛ hs0 hs (le_refl M)
+    linarith
+  obtain ⟨cE, hcE⟩ : ∃ cE : ℝ, cE = (sbd + 2 * d * Λ) * (1 / κ + 1) + 4 * d * Λ / κ := ⟨_, rfl⟩
+  obtain ⟨CE, hCE⟩ : ∃ CE : ℝ, CE = 1 + cE * (2 / κ + 1) ^ 2 := ⟨_, rfl⟩
+  obtain ⟨δ₀, hδ₀⟩ : ∃ δ₀ : ℝ, δ₀ = min (κ / (8 * M + 4)) (1 / (4 * cM + 2)) := ⟨_, rfl⟩
+  obtain ⟨N₀, hN₀⟩ : ∃ N₀ : ℝ, N₀ = (M + 1) * 2 ^ (2 * M + 1) * CE + (2 ^ (2 * M + 1) * CE) ^ M * 2 ^ (M + 1) := ⟨_, rfl⟩
+  have hcE0 : 0 ≤ cE := by rw [hcE]; have := hsbd0; positivity
+  have hCE1 : 1 ≤ CE := by
+    rw [hCE]
+    have : 0 ≤ cE * (2 / κ + 1) ^ 2 := by positivity
+    linarith
+  have hcM0 : 0 < cM := by linarith
+  have hδ₀0 : 0 < δ₀ := by rw [hδ₀]; exact lt_min (by positivity) (by positivity)
+  refine ⟨8 * cM + 4, by positivity, ?_⟩
+  have hΨ0 : ∀ᶠ n in atTop, 0 ≤ Ψ n := by
+    filter_upwards [hΨlo] with n hn
+    exact le_trans (Real.rpow_nonneg (Nat.cast_nonneg _) _) hn
+  filter_upwards [hΨlo, hΨhi, BAflow_lam0_window κ ε 𝔠 𝔡 sz z hflow, GreenCond2_delta_small sz hflow.1 hε₀ hτε hΨ0 hΨhi hδ₀0,
+    hsz.eventually_ge_atTop N₀, GreenCond2_prob_badBase hκ hε h𝔡 sz hflow ht0 htT hε₀ hii hΨ0 hinit hτ (D := ((2 * M + (d * (M + 1) + 4) * (M + 1) + d * M * (M + 1) + 1 : ℕ) : ℝ)) (by positivity)]
+    with n hΨlon hΨhin hlam hδsm hNbig hPS
+  intro β α hβα
+  clear hii hinit hΨ0
+  -- the sizes
+  obtain ⟨N, hN⟩ : ∃ N : ℝ, N = ((sz.size n : ℕ) : ℝ) := ⟨_, rfl⟩
+  obtain ⟨δ, hδ⟩ : ∃ δ : ℝ, δ = ((sz.W n : ℕ) : ℝ) ^ τ * Ψ n := ⟨_, rfl⟩
+  have hN1 : (1 : ℝ) ≤ N := by rw [hN]; exact_mod_cast sz.one_le_size n
+  have hN0 : 0 < N := by linarith only [hN1]
+  have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by linarith only [hW1]
+  have hΨpos : 0 < Ψ n := lt_of_lt_of_le (Real.rpow_pos_of_pos hW0 _) hΨlon
+  have hδ0 : 0 < δ := by rw [hδ]; positivity
+  have hδN : 1 ≤ N ^ d * δ := by rw [hN, hδ]; exact GreenCond2_delta_lower sz hd1 n hτ.le hΨlon
+  rw [← hδ, ← hN] at hPS
+  obtain ⟨hg0', hgΛ⟩ := hlam
+  have hg0 : 0 ≤ BAflowLam0 sz z n := hg0'.le
+  have hgΛ' : BAflowLam0 sz z n ≤ Λ := by rw [hΛ]; exact hgΛ
+  have hδδ₀ : δ ≤ δ₀ := by rw [hδ]; exact hδsm
+  have hMnn : (0 : ℝ) ≤ M := Nat.cast_nonneg M
+  have hδ1 : δ * (8 * M + 4) ≤ κ := by
+    have h1 : δ ≤ κ / (8 * M + 4) := by rw [hδ₀] at hδδ₀; exact hδδ₀.trans (min_le_left _ _)
+    rwa [le_div_iff₀ (by positivity)] at h1
+  have hMδ0 : 0 ≤ (M : ℝ) * δ := by positivity
+  have hδ4 : 4 * δ ≤ κ := by nlinarith only [hδ1, hMδ0, hδ0]
+  have hMδ : 8 * (M : ℝ) * δ ≤ κ := by nlinarith only [hδ1, hMδ0, hδ0]
+  have hδ2 : 2 * δ ≤ 1 := by linarith only [hδ4, hκ1]
+  have hδc : (4 * cM + 2) * δ ≤ 1 := by
+    have h1 : δ ≤ 1 / (4 * cM + 2) := by rw [hδ₀] at hδδ₀; exact hδδ₀.trans (min_le_right _ _)
+    rw [le_div_iff₀ (by positivity)] at h1
+    linarith only [h1]
+  -- the envelope
+  have hs0 : 0 ≤ ‖GreenCond_s sz z n‖ := norm_nonneg _
+  have hs : ‖GreenCond_s sz z n‖ ≤ sbd := by
+    refine (GreenCond2_norm_s_le hκ sz hflow n (ht0 n) (htT n) hg0).trans ?_
+    rw [hsbd]
+    refine div_le_div_of_nonneg_right ?_ hκ.le
+    have := mul_le_mul_of_nonneg_left hgΛ' (show (0 : ℝ) ≤ 2 * d by positivity)
+    linarith only [this]
+  have hη := GreenCond2_inv_eta_le hκ hε sz hflow n (ht0 n) (htT n)
+  rw [← hN] at hη
+  have hEnvG : GreenCond_Env d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ (|(GreenCond_zt sz z n (t n)).im|⁻¹ + 1) ≤ CE * N ^ 2 :=
+    GreenCond2_Env_aux hκ hg0 hgΛ' hs0 hs (inv_nonneg.2 (abs_nonneg _)) hη hN1 hcE hCE hcE0
+  have hEnv1 : (1 : ℝ) ≤ CE * N ^ 2 := by
+    have h1 : (1 : ℝ) ≤ N ^ 2 := one_le_pow₀ hN1
+    calc (1 : ℝ) = 1 * 1 := by ring
+      _ ≤ CE * N ^ 2 := mul_le_mul hCE1 h1 zero_le_one (by linarith only [hCE1])
+  have hcMc : GreenMinor_cY d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ M ≤ cM := hcMgen _ _ hg0 hgΛ' hs0 hs
+  -- the tower
+  have hS := GreenCond_measurableSet_badBase sz z n (t n) δ
+  obtain ⟨PS, hPSdef⟩ : ∃ PS : ℝ, PS = (Sizes.seqP (sz.withLam 0)).real (GreenCond_badBase sz z n (t n) δ) := ⟨_, rfl⟩
+  have hPS0 : 0 ≤ PS := by rw [hPSdef]; exact measureReal_nonneg
+  obtain ⟨Dn, hDn⟩ : ∃ Dn : ℕ, Dn = 2 * M + (d * (M + 1) + 4) * (M + 1) + d * M * (M + 1) + 1 := ⟨_, rfl⟩
+  rw [← hDn] at hPS
+  have hPSle : PS * N ^ (2 * M + (d * (M + 1) + 4) * (M + 1) + d * M * (M + 1) + 1) ≤ 1 := by
+    rw [← hDn]
+    have h1 : PS ≤ N ^ (-(Dn : ℝ)) := by
+      have := ENNReal.toReal_mono ENNReal.ofReal_ne_top hPS
+      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hN0.le _)] at this
+      rw [hPSdef]
+      exact this
+    calc PS * N ^ Dn ≤ N ^ (-(Dn : ℝ)) * N ^ Dn := mul_le_mul_of_nonneg_right h1 (by positivity)
+      _ = 1 := by rw [← Real.rpow_natCast N Dn, ← Real.rpow_add hN0, neg_add_cancel, Real.rpow_zero]
+  have hPbad : (Sizes.seqP (sz.withLam 0)).real (badTower (sz.withLam 0) n (1 / N ^ (d * (M + 1) + 3)) (GreenCond_badBase sz z n (t n) δ) (M + 1)) ≤
+      (2 * N ^ (d * (M + 1) + 4)) ^ (M + 1) * PS := by
+    rw [hPSdef, hN]
+    exact GreenCond2_Pbad_le' (sz.withLam 0) n hS (d * (M + 1) + 3) (M + 1)
+  have hNbig' : N₀ ≤ N := by rw [hN]; exact hNbig
+  have hNN₁ : ((M : ℝ) + 1) * 2 ^ (2 * M + 1) * CE ≤ N := by
+    have : 0 ≤ (2 ^ (2 * M + 1) * CE) ^ M * 2 ^ (M + 1) := by positivity
+    rw [hN₀] at hNbig'
+    linarith only [hNbig', this]
+  have hNN₂ : (2 ^ (2 * M + 1) * CE) ^ M * 2 ^ (M + 1) ≤ N := by
+    have : 0 ≤ ((M : ℝ) + 1) * 2 ^ (2 * M + 1) * CE := by positivity
+    rw [hN₀] at hNbig'
+    linarith only [hNbig', this]
+  obtain ⟨hcost, hsmall⟩ := GreenCond2_arith (d := d) (M := M) (K := M) (N := N) (δ := δ) (Env := CE * N ^ 2) (cM := cM) (CE := CE)
+    (Pbad := (Sizes.seqP (sz.withLam 0)).real (badTower (sz.withLam 0) n (1 / N ^ (d * (M + 1) + 3)) (GreenCond_badBase sz z n (t n) δ) (M + 1)))
+    (PS := PS) hN1 hδ0 hδN hEnv1 le_rfl hCE1 hcM1 measureReal_nonneg hPS0 hPbad hPSle hNN₁ hNN₂
+  have hB1 : 2 * cM * (2 * δ) + GreenCond_cost (CE * N ^ 2) M (2 * δ) (1 / N ^ (d * (M + 1) + 3)) ≤ 1 := by
+    nlinarith only [hcost, hδc]
+  have hε' : (0 : ℝ) ≤ 1 / N ^ (d * (M + 1) + 3) := by positivity
+  have hslice := GreenCond_famGain_slice hκ sz hflow t n (ht0 n) (htT n) hg0 (δ := δ) (ε' := 1 / N ^ (d * (M + 1) + 3))
+    (Env := CE * N ^ 2) (cM := cM) (M := M) (K := M) hδ0 hδ4 hMδ hδ2 hε' hEnvG hEnv1 hcMc hB1 hsmall β α hβα
+  obtain ⟨hA, hX⟩ := hslice
+  have e : 2 * (2 * δ) = 4 * δ := by ring
+  have hBle : 2 * (2 * cM * (2 * δ) + GreenCond_cost (CE * N ^ 2) M (2 * δ) (1 / N ^ (d * (M + 1) + 3))) ≤ (8 * cM + 4) * δ := by
+    nlinarith only [hcost]
+  rw [← hδ]
+  rw [e] at hA hX
+  exact ⟨GreenCond2_famGain_mono hA hBle, GreenCond2_famGain_mono hX hBle⟩
+
+end FamGain
+
 end RBM.BA
