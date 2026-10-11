@@ -190,10 +190,8 @@ def owedProps : List Name :=
    `RBM.Univ.UNTrLocalInitBARow', -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, BA model at coupling `λ e^{t*/2}`, BA-D8)
    `RBM.Univ.UNNormBARow, -- bulk universality, block Anderson (T2241, BA-C1b: owed; owner BA-N1, `‖V‖ + λ‖Ψ‖`)
    `RBM.BA.BAEnd_QUEL, -- `(Meq:QUE)`, `(Meq:QUE2)` for block Anderson, `MR:decol_BA` third bullet `1_2:655` (T2241, BA-C1b: owed; owner BA-M3)
-   `RBM.BA.BAGbEXPii, -- `lem_GbEXP_BA` `(GiiGEX)` event form `1(Ω(t, ε₀)) ‖G_t - M‖²_max ≺ max 𝓛^{(2)}` over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPij, -- `lem_GbEXP_BA` `(GijGEX)` event form on `(G_t - M)_{xy}`, `x ≠ y`, over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
-   `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
-   `RBM.BA.STInitialGT2gL, -- `(initialGT2)` (`3_5:28-30`) over a flow carrier and a law (`Chain/Carrier.lean`): premise of the proved pins `baFamGain_holds`, `baFAav_holds` (T2411, BA-G5b: the registered `BAFamGain`, `BAFAav` lines are removed); owner BA-G6b (the BA Step 1 / `(initialGT2)` chain)
+   `RBM.BA.STInitialGT2gL, -- `(initialGT2)` (`3_5:28-30`) over a flow carrier and a law (`Chain/Carrier.lean`): premise of the proved pins `baFamGain_holds`, `baFAav_holds` (T2411, BA-G5b: the registered `BAFamGain`, `BAFAav` lines are removed); owner BA-V (the BA Step 1 / main-induction chain), as the band's `STInitialGT2` (`Test/Axioms.lean:129`)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
