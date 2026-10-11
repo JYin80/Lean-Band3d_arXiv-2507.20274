@@ -462,6 +462,7 @@ import RBM3D.Graph.BAAtomic2
 import RBM3D.Graph.BAExpandId
 import RBM3D.BA.TwistPins
 import RBM3D.BA.NewKLKBA
+import RBM3D.Graph.BASymm1
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
