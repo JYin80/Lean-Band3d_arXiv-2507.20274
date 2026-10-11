@@ -9,11 +9,22 @@ import RBM3D.Induction.KDecay
 import RBM3D.Induction.Contract
 
 /-!
-# BA stage TL, row TL2b (T2429), part 2: the sources of the twisted Duhamel formula (T.11 (i), (ii), (iv), (v))
+# BA stage TL, row TL2b (T2429), part 2: the sources of the twisted Duhamel formula
 
-The statements `BATwistSrc1`, `BATwistSrc2`, `BATwistSrc4`, `BATwistSrc5` of `BA/TwistPins.lean:261-277` are proved for every regime `R`,
-in the frame `BATwFrame` (Steps 1-4 on `[s,t]` as the hypothesis `twSteps`, `(con_st_ind)`), from the merged inputs and the deterministic
-kernel facts of `BA/TwistKer.lean`.  Paper: `docs/tickets/T2398-TL-proofs.md` Lemma T.11 (i), (ii), (iv), (v) with T.1 (ii), (iii), T.4, T.5.
+The statements `BATwistSrc1`, `BATwistSrc2`, `BATwistSrc4`, `BATwistSrc5` of
+`BA/TwistPins.lean:261-277` (Lemma T.11 (i), (ii), (iv), (v) of
+`docs/tickets/T2398-TL-proofs.md`) are proved for every regime `R`, in the frame `BATwFrame`
+(Steps 1-4 on `[s,t]` as the hypothesis `twSteps`, `(con_st_ind)`), from the merged inputs and the
+deterministic kernel and fine-lattice facts of `BA/TwistKer.lean`.
+
+* (i): `twK_bound_holds` (made uniform in the time by `TwistKer2_unif`) and the third conjunct of
+  `twSteps` at `k = 2`.
+* (ii): the fold and Ward core `TwistKer_twEG_le` (T.4 at `n = 3`), `STAvgUgL` with
+  `baKsol_one`, the second conjunct of `twSteps` at `k = 1, 3`.
+* (iv): `(4.16)` at the carrier (stem copies of `SEforLn2_{Bctl_ge_inv, WD, conU, sumTwo_pt, sum2}`)
+  and `STGdecayWgL`, with `𝔠_d = min (1/100) (1/(30 C_d))`.
+* (v): entries of `G` from the 2-loop decay (fourth conjunct of `twSteps` at `k = 2`),
+  `baTwKDecay_holds`, against deterministic polynomial bounds.
 
 Private helpers carry the stem `TwistKer2_`.
 -/
@@ -123,7 +134,8 @@ private theorem TwistKer2_eta_pos {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : �
   nlinarith [hm.2]
 
 /-- A maximiser of a function on a nonempty finite type. -/
-private theorem TwistKer2_argmax {ι : Type*} [Fintype ι] [Nonempty ι] (g : ι → ℝ) : ∃ i₀, ∀ i, g i ≤ g i₀ := by
+private theorem TwistKer2_argmax {ι : Type*} [Finite ι] [Nonempty ι] (g : ι → ℝ) : ∃ i₀, ∀ i, g i ≤ g i₀ := by
+  have := Fintype.ofFinite ι
   obtain ⟨i₀, -, h⟩ := Finset.exists_max_image Finset.univ g Finset.univ_nonempty
   exact ⟨i₀, fun i => h i (Finset.mem_univ i)⟩
 
@@ -1265,6 +1277,45 @@ theorem baTwistSrc5_holds (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ
     fun b' => TwistKer2_decEE hκ hε hflow hs htT hsteps b'⟩
 
 end Src5
+
+/-! ## 8. The instances (`d = 3`, `sz0`: `L = 4(n+1)`, `W = (2(n+1))^5`, `λ = (2(n+1))^{-6}`, `flow_sz0`; `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0`, regime `STAny`).  `twSteps` is the hypothesis (other gates' pins). -/
+
+section Inst
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
+local notation "μ0" => Sizes.seqP (sz0.withLam 0)
+
+/-- Every deterministic hypothesis of a `BATwFrame` statement at `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `sz0`, `s ≡ 1/2`, `t ≡ 2/3`, regime `STAny`
+(a stem copy of the private `TwistPins_frame_inst`, `BA/TwistPins.lean:766`). -/
+private theorem TwistKer2_frame_inst {Q : ∀ sz : Sizes 3, FlowFM sz → Measure sz.SeqΩ → (ℕ → ℝ) → (ℕ → ℝ) → Prop} (h : BATwFrame 3 STAny Q) {Cd : ℝ}
+    (hC : 0 < Cd) (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd) :
+    Q sz0 (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) := by
+  obtain ⟨c, hc, -, H⟩ := h le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) Cd hC
+  exact H (1 / 6) sz0 zSeq flow_sz0 _ _ (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) trivial
+    (RBM.Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) hc) hS
+
+variable {Cd : ℝ} (hC : 0 < Cd) (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd)
+include hC hS
+
+/-- T.11 (i): `B̃₁ ≺ η⁻¹ (W^{-d}B)²`. -/
+example : twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB1 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) (fun _ _ => 1) 2 :=
+  TwistKer2_frame_inst (baTwistSrc1_holds 3 STAny) hC hS
+/-- T.11 (ii): `Ẽ^{G̊} ≺ η⁻¹ (W^{-d}B)²`. -/
+example : twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twEG (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) (fun _ _ => 1) 2 :=
+  TwistKer2_frame_inst (baTwistSrc2_holds 3 STAny) hC hS
+/-- T.11 (iv): `B̃₂ ≺ Ξ̃ η⁻¹ (W^{-d}B)^{γ+1/6}`. -/
+example : ∀ γ : ℝ, 1 ≤ γ → γ ≤ 2 → ∀ Ξ : ℕ → (sz0.SeqΩ) → ℝ, (∀ n ω, 1 ≤ Ξ n ω) →
+    (∀ n ω (v : ℝ) σ a c₁ c₂, 1 / 2 ≤ v → v ≤ 2 / 3 → ‖twL2' (baFMz sz0 zSeq) n v ω σ a c₁ c₂ - twK (baFMz sz0 zSeq) n v σ a c₁ c₂‖ ≤ Ξ n ω * sz0.Bctl n v ^ γ) →
+    twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB2 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) Ξ (γ + 1 / 6) :=
+  TwistKer2_frame_inst (baTwistSrc4_holds 3 STAny) hC hS
+/-- T.11 (v): the decay of the five sources beyond `3 W^ε ℓ_v`. -/
+example : twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB1 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) ∧
+    twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB2 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) ∧
+    twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twEG (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) ∧
+    twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twL2' (baFMz sz0 zSeq) n v ω σ a c₁ c₂ - twK (baFMz sz0 zSeq) n v σ a c₁ c₂‖) ∧
+    ∀ b' : ∀ n, Zd 3 (sz0.L n), twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twEE (baFMz sz0 zSeq) n v ω σ a (b' n) c₁ c₂‖) :=
+  TwistKer2_frame_inst (baTwistSrc5_holds 3 STAny) hC hS
+
+end Inst
 
 end RBM.BA
 

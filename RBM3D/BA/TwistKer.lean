@@ -11,20 +11,28 @@ import RBM3D.BA.GreenSchur
 import RBM3D.BA.Prop6Path
 
 /-!
-# BA stage TL, row TL2b (T2429), part 1: the one-index kernel bounds and the decay of `K̃`
+# BA stage TL, row TL2b (T2429), part 1: the kernel bounds, the decay of `K̃`, the fine-lattice core
 
-The deterministic kernel facts of the twisted tree (`docs/tickets/T2398-TL-proofs.md`): Lemma T.10 (a), (b), (d) for the
-one-index kernel `Ũ_{v,u} = BAuKer v u` (the pins `BATwKerA`, `BATwKerFar`, `BATwKerZero` of `BA/TwistPins.lean:193-213`;
-(c) is the merged `baEKSameRow_holds`), and Lemma T.1 (iii), the decay of `K̃` in `|a - c₁|` (new pin `BATwKDecay`).
+Deterministic facts of the twisted tree (`docs/tickets/T2398-TL-proofs.md`).
 
-* T.10 (a), (b) are proved from the public `EKPins_norm_uKer_le`, `EKPins_norm_Q_le`, `EKPins_norm_Theta_le` (their `private`
-  is removed in `BA/EKPins.lean`, DECISIONS §153 (1), §161 (1)) and `baEKXiBall_holds`; (d) is the `A`-form of the merged
-  private lemma `EKNonzero_norm_projMat_mul_uKer_le` (the merged one is at `A = 1`), written here with the helpers of
-  `BA/EKNonzero.lean` made public.
-* T.1 (iii) is the case split of `baComp_holds` (`BA/EMn2BA.lean:472`) for `Σ_{a'} Θ(a,a') M(c₂,a') M(a',c₁)` and the
+* Lemma T.10 (a), (b), (d) for the one-index kernel `Ũ_{v,u} = BAuKer v u`: the pins `BATwKerA`,
+  `BATwKerFar`, `BATwKerZero` of `BA/TwistPins.lean:193-213` (T.10 (c) is the merged
+  `baEKSameRow_holds`).  (a), (b) come from the public `EKPins_norm_uKer_le`, `EKPins_norm_Q_le`,
+  `EKPins_norm_Theta_le` (their `private` is removed in `BA/EKPins.lean`, DECISIONS §153 (1),
+  §161 (1)) and `baEKXiBall_holds`; (d) is the `A`-form of the merged private lemma
+  `EKNonzero_norm_projMat_mul_uKer_le` (the merged one is the case `A = 1`), written here with the
+  helpers of `BA/EKNonzero.lean` made public.
+* Lemma T.1 (iii), the decay of `K̃` in `|a - c₁|` (new pin `BATwKDecay`, `baTwKDecay_holds`): the
+  case split of `baComp_holds` (`BA/EMn2BA.lean:472`) for `Σ_{a'} Θ(a,a') M(c₂,a') M(a',c₁)` and the
   eventual absorption of `baEMn2ExpHK` (`BA/EMn2BA.lean:637`).
+* Section 5, the fine lattice `Idx d (sz.L n) (sz.W n)`: `E_a = W^{-d} 1_{[a]}`, the trace sandwich,
+  the loops `𝓛 = Tr ∏ G(σ_i) E_{a_i}` as traces of fine matrices, the Ward identity, and from them
+  the deterministic cores of Lemmas T.2 (fold), T.4 at `n = 3` (contraction of `L̃^{(3)}`), T.5
+  (entries of `G` from the 2-loop) and of the source bounds `Ẽ^{G̊}`, `L̃`, `(Ẽ⊗Ẽ)` used by
+  `BA/TwistKer2.lean`.
 
-Private helpers carry the stem `TwistKer_`.
+Private helpers carry the stem `TwistKer_`; the helpers `TwistKer_*` used by `BA/TwistKer2.lean`
+are public.
 -/
 
 set_option linter.style.longLine false
