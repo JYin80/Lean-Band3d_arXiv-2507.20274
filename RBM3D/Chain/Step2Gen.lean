@@ -25,8 +25,16 @@ bridges the two by `rfl` / `Iff.rfl`.
   valued in `Step2Mat`; the energy-quantified pins `STNewKLKAt`, `STNewKLK`, `STK2decay` take a
   family `mk : ∀ sz, (ℕ → ℝ) → Step2Mat sz` read at `fun _ => E`.
 * **Bridges.** `bandStep2Mat sz E`, `bandStep2Data sz z` are the band instances; every generic
-  name has a bridge `bandStep2_<band name>` or `bandFM_<band name>` (`rfl` / `Iff.rfl`; the one
-  exception is `bandFM_STGijGEX`).  The probe's family `STAvgUgL`, ..., `STStep2G`,
+  name has a bridge `bandStep2_<band name>` or `bandFM_<band name>` (`rfl` / `Iff.rfl`; the
+  exceptions are `bandFM_STGijGEX` and, since T2414, the ten bridges of the drift (below), which
+  are proved).
+* **Drift kernels (T2414, BA-T row T8b, §2b).** `Step2Kern_Mss` is the block kernel
+  `M^{(σσ')}_{ab} = W^{-d} Σ_{x∈[a], y∈[b]} M(σ)_{yx} M(σ')_{xy}` (`def:Theta_BA`, `1_2:663-664`)
+  read from `FlowFM.M`; `Step2Gen_thetaKer`, `_uKer`, `_ThetaN`, `_UN` are the drift kernels
+  `X Θ_t(X)`, `(1 - sX) Θ_t(X)`, `X = M^{(σσ')} S`, over a carrier (slot `i` of a `k`-loop with
+  the charges `(σ_i, σ_{i+1})`); `STthetaOpg`, `STgDriftNg`, `STeeUMg`, `STGridRepNAtgL` read them.
+  Band identities and the bridges: here; BA identities: `Chain/Step2Kern.lean`; `lem:newKLK`:
+  `Chain/NewKLKGen.lean`.  `STK2decaygL'` (BAT-F2) is the primed `K^{(2)}` decay.  The probe's family `STAvgUgL`, ..., `STStep2G`,
   `STStep2_iff` is section 4.
 * `STJhatg`, `STLWassmExpgL` moved here from `BA/FlowPins.lean` (`STLWTgL`, `STEMn2ExpgL` read
   them, and this file cannot import `BA/FlowPins`).
