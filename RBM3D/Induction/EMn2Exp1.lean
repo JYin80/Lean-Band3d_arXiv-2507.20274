@@ -56,6 +56,9 @@ case uses the truncated profile with the added `W^{-D}` and the cap `W^{-ε'}` (
 `STPsiClass` and `STLWassm` hold for every `n`); the gap `ℓ†_t/2 ≥ ℓ*_t + 1` used in
 `3_5:851-852` ("`(1 - o(1)) |a - b|`") is the hypothesis `2 (ℓ*_t + 1) ≤ ℓ†_t`, true when
 `(log W)^{1/4} ≥ 4` (`emn2Exp_scale_gap`).
+
+T2404: the near case, `S̃₁ + S̃₂` and the assembly are proved over a carrier (`emn2Exp_nearg`, `emn2Exp_far12g`,
+`emn2Exp_assemble`; facts `emn2ExpFacts`); the band theorems are their corollaries.
 -/
 
 set_option linter.style.longLine false
@@ -803,8 +806,6 @@ theorem emn2Exp_ev_exp_pow (hd : 0 < d) (hsize : sz.SizeTendsto) {c a δ : ℝ} 
 
 end Eventually
 
-section CarrierFacts
-
 /-- **The facts the third estimate reads from the model** (`3_5:829-888`): `emn2PolyFacts` and, for every `Flow` and
 `0 ≤ u ≤ T0`: (T) `T0 < 1`; (E) `η_u ≤ 1 - u`; (B) the size data `cB W^{-d} ≤ W^{-d} B_{u,0} ≤ N^{-c}` (`STBdata`). -/
 def emn2ExpFacts (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
@@ -855,7 +856,6 @@ theorem emn2Exp_bandFacts (d : ℕ) :
     exact ⟨cB, c, hcB, hc, hbd sz z hflow (fun n => lemT (z n)) (fun n => by unfold lemT; positivity)
       (fun n => le_rfl)⟩
 
-/-- `Prec`-monotonicity in the control at an arbitrary law (`ST_prec_mono_eventually`, `Step2Events.lean:49`, at `μ`). -/
 private theorem emn2Exp_precL_mono {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) {U : ℕ → Type*}
     {ξ ζ ζ' : ∀ n, U n → sz.SeqΩ → ℝ} (hle : ∀ᶠ n in atTop, ∀ u ω, ζ n u ω ≤ ζ' n u ω)
     (h : PrecL sz μ ξ ζ) : PrecL sz μ ξ ζ' :=
@@ -863,7 +863,6 @@ private theorem emn2Exp_precL_mono {d : ℕ} (sz : Sizes d) (μ : Measure sz.Seq
     ⟨u, lt_of_le_of_lt (mul_le_mul_of_nonneg_left (hn u ω)
       (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hu⟩⟩
 
-/-- The supremum over a finite family of labels (`ST_prec_sup`, `Step2Events.lean:76`, at `μ`). -/
 private theorem emn2Exp_precL_sup {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) {V : ℕ → Type}
     [∀ n, Fintype (V n)] [∀ n, Nonempty (V n)] (ξ : ∀ n, V n → sz.SeqΩ → ℝ) (ζ : ℕ → ℝ)
     (h : PrecL sz μ (U := V) ξ (fun n _ _ => ζ n)) :
@@ -876,8 +875,6 @@ private theorem emn2Exp_precL_sup {d : ℕ} (sz : Sizes d) (μ : Measure sz.Seq�
   rintro ω ⟨_, hu⟩
   obtain ⟨v, -, hv⟩ := (Finset.lt_sup'_iff Finset.univ_nonempty).1 hu
   exact ⟨v, hv⟩
-
-end CarrierFacts
 
 /-! ## 6. The near case `|a - b| ≤ ℓ†_t`: the first estimate with the truncated profile -/
 

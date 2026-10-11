@@ -45,6 +45,8 @@ followed by the flip of all charges (`emn2Poly_contractPt_partner`).
   edges exchanged);
 * §7 the profile comparison `(eq:Psi)`; §8 the pin `stEMn2Poly_holds`; §9 compiled instances at
   `d = 3`.
+
+T2404: §8 proves the pin over a carrier (`stEMn2PolygL_of`, from `emn2PolyFacts`); `stEMn2Poly_holds` is its band corollary.
 -/
 
 set_option linter.style.longLine false
@@ -821,8 +823,7 @@ lemma emn2Poly_EEg_zero_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u
           ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a 0, a 1, c', a 1, a 0, c] := by
   simp [STEEg, hS, hL]
 
-/-- The cut `k = 1` is the cut `k = 0` with the two edges exchanged: `(σ₁,σ₂), (a₁,a₂)` become
-`(σ₂,σ₁), (a₂,a₁)` (`def:CALE`, `3_5:169-190`; `3_5:670-672`: "without loss of generality"). -/
+/-- The cut `k = 1` is the cut `k = 0` with the two edges exchanged (`def:CALE`, `3_5:169-190`, `3_5:670-672`). -/
 lemma emn2Poly_EEg_one_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STEEg C n u 1 σ a ω = STEEg C n u 0 ![σ 1, σ 0] ![a 1, a 0] ω := by

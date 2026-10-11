@@ -39,6 +39,8 @@ so `S̃₃` is split by the value of the profile `P = W^{-d} 𝒯̃^ℓ_{t,D}` o
 the pin `STEMn2Exp d` has no such premise (DECISIONS §31, T2080 entry: the bridges
 `STLWB_of_LWterm`, `STLWT_of_LWtermExp` carry `(hd : 3 ≤ d)` for the same reason; the consumers of
 `STEMn2Exp` are under `3 ≤ d →`, e.g. `STStep2`).
+T2404: `emn2Exp_far3g`, `stEMn2ExpJgL_of`, `stEMn2ExpgL_of` prove the far sum and the pin over a carrier (`J` form, far field
+`emn2ExpHK`); `emn2Exp_far3` and `stEMn2Exp_holds` are their band corollaries.
 The private lemmas of the merged files are reached with `open private` (Batteries) instead of
 being copied, as in `Loop/KLIndStepA.lean`.
 -/
@@ -793,7 +795,6 @@ theorem emn2Exp2_loop2_far_le (n : ℕ) {E : ℝ} (hE : |E| ≤ 2) (u D ℓ : �
 
 variable {sz}
 
-/-- `Ĵ ≥ 0` over a carrier (`ST_JhatM_nonneg`, `Step2Events.lean:699`). -/
 private lemma emn2Exp2_Jhatg_nonneg (C : FlowFM sz) (n : ℕ) (D ℓ u : ℝ) (ω : sz.SeqΩ) :
     0 ≤ STJhatg C n D ℓ u ω :=
   le_trans (div_nonneg (norm_nonneg _) (ST_STprof_pos sz n u D ℓ (0 : Zd d (sz.L n)) 0).le)
@@ -1471,8 +1472,7 @@ example
     sixteenth_le_lemT (1 / 20) (by norm_num) (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)))
     Ψ1_window hI (fun n => ellT (sz0.L n) (sz0.lam n) (tInst n)) ℓ_range_inst hA D hD
 
-/-- **`stEMn2ExpJgL_of`** (the `J` form, target 5′) at the band carrier and the same data, with the nondegenerate
-control `J = Ĵ + W^{-d}` (`≥ W^{-d}` as in the paper form `(eq:MG_conclusion3_BA)`, `Ĵ ≤ J`, `J ≺ J`); every `D > 0`. -/
+/-- **`stEMn2ExpJgL_of`** (the `J` form) at the band carrier and the same data, with `J = Ĵ + W^{-d} ≥ W^{-d}`; every `D > 0`. -/
 example
     (hI : RBM.BA.STInitialGT2gL (RBM.BA.bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst (1 / 20)
       (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))))
