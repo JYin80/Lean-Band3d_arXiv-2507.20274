@@ -11,22 +11,28 @@ import RBM3D.BA.Step1Boot
 /-!
 # The block Anderson local law at a deterministic control, per-sequence layer (BA-G6a)
 
-Ticket T2408 (design gate `docs/reports/T2408-prove.md` (a), (G); the pins GL1-GL6 of (G)(v) and their probe
-`RBM3D/Probe/T2408Pins.lean`, which is not merged).  Paper: `paper/tex/7_8_light_weight.tex` (`7_8:line`, `lem_GbEXP_BA`
-`:1916-1946`), band `paper/tex/3_5_Loop_Hierarchy.tex`.  The band route of `Green/LocalLaw.lean`
-(`AsGMcSeq` + `LoopDetSeq` → `LocalLawDetSeq` → floor → averaged law) read at the block Anderson carrier `baFMz sz z`
-and the law `seqP (sz.withLam 0)`; the per-time deterministic cores are the merged `GreenCore_diag` (G3a), `baStab_holds`
-(G3b), `baGbEXPij'_holds` (G4, not used here).
+Ticket T2408 (design gate `docs/reports/T2408-prove.md` (a), (G); the pins GL1-GL6 of (G)(v) and
+their probe `RBM3D/Probe/T2408Pins.lean`, which is not merged).  Paper:
+`paper/tex/7_8_light_weight.tex` (`7_8:line`, `lem_GbEXP_BA` `:1916-1946`), band
+`paper/tex/3_5_Loop_Hierarchy.tex`.  The band route of `Green/LocalLaw.lean` (`AsGMcSeq` +
+`LoopDetSeq` → `LocalLawDetSeq` → floor → averaged law) read at the block Anderson carrier
+`baFMz sz z` and the law `seqP (sz.withLam 0)`; the per-time deterministic cores are the merged
+`GreenCore_diag` (G3a), `baStab_holds` (G3b); `baGbEXPij'_holds` (G4) is not used here.
 
-* **GL1** `GreenLocal_floor_sample`: one sample, `‖G - M‖_max ≤ κ/2` gives `W^{-d} ≤ (4/κ²) 𝓛^{(2)}_{(-,+),(a,a)}`.
+* **GL1** `GreenLocal_floor_sample`: one sample, `‖G - M‖_max ≤ κ/2` gives
+  `W^{-d} ≤ (4/κ²) 𝓛^{(2)}_{(-,+),(a,a)}`.
 * **GL2** `baGbEXPii_holds`: the pin `BAGbEXPii d` for `2 ≤ d` (`(GiiGEX)`, event form).
 * **GL3** `greenLocal_localLaw`: `(initialGT2)` gives `‖G_t - M‖_max ≺ Ψ`.
 * **GL4** `greenLocal_floor`: `(initialGT2)` gives `W^{-d} ≤ (4/κ²) N^ν Ψ²` eventually.
-* **GL5** `greenLocal_omega`: `‖G_t - M‖_max ≺ W^{-ε₀}` gives the event `{‖G_t - M‖_max ≤ N^ζ W^{-ε₀}}` with high probability.
-* **GL6** `greenLocal_gav_of_fa`: the averaged law of `𝒦` gives `‖L^{(1)}_a - m‖ ≺ Ψ²` (`BAGavLGEX`).
-* The bridges to G5a, G5c and the wiring lemma of G6b (`greenLocal_gbEXPav_of_fa`).
+* **GL5** `greenLocal_omega`: `‖G_t - M‖_max ≺ W^{-ε₀}` gives the event
+  `{‖G_t - M‖_max ≤ N^ζ W^{-ε₀}}` with high probability.
+* **GL6** `greenLocal_gav_of_fa`: the averaged law of `𝒦` gives `‖L^{(1)}_a - m‖ ≺ Ψ²`
+  (`BAGavLGEX`).
+* The bridges to G5a (`greenLocal_gii_of_le`), G5c (`greenLocal_ibp_premises`) and the wiring
+  lemma of G6b (`greenLocal_gbEXPav_of_fa`).
 
-Every constant depends on `(d, κ, 𝔡)` only (`κ` uniform in `L`); no `g ≤ W^{-ε}`, no smallness of `‖M - m₀ I‖`.
+Every constant depends on `(d, κ, 𝔡)` only (`κ` uniform in `L`); no `g ≤ W^{-ε}`, no smallness
+of `‖M - m₀ I‖`.
 -/
 
 set_option linter.style.longLine false
@@ -777,13 +783,223 @@ theorem greenLocal_ibp_premises (d : ℕ) (hd : 2 ≤ d) : GreenLocal_IBPPrem d 
   have h5 := greenLocal_omega d κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ hinit.1 ζ hζ hζ𝔠
   exact ⟨greenLocal_localLaw d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hinit, h5.1, h5.2⟩
 
+/-- The wiring of G6b: `BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`, owed by G5b).  The premise is inside the
+`Prop` (as in `BAGbEXPij'`), so no theorem of this file takes an unproved named premise as a hypothesis. -/
+def GreenLocal_Wiring (d : ℕ) : Prop := GreenLocal_FAav d → BAGbEXPav d
+
 /-- **The wiring lemma of G6b** (twin of `gbEXPV3Theorem_of_parts`, `Green/LocalLaw.lean:427`, with the FA input as a hypothesis):
 `BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`, owed by G5b), the diagonal law GL2 at `ε₀/2` (the premise of
 `GreenLocal_FAav`) and the averaged wiring GL6. -/
-theorem greenLocal_gbEXPav_of_fa (d : ℕ) (hd : 2 ≤ d) (hFA : GreenLocal_FAav d) : BAGbEXPav d := by
-  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hlo hhi hinit
+theorem greenLocal_gbEXPav_of_fa (d : ℕ) (hd : 2 ≤ d) : GreenLocal_Wiring d := by
+  intro hFA κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hlo hhi hinit
   exact greenLocal_gav_of_fa d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT Ψ
     (hFA κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀
       (baGbEXPii_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT (ε₀ / 2) (half_pos hε₀)) Ψ hlo hhi hinit)
+
+/-! ## 8. Compiled nonempty instances
+
+The data: `d = 3`, `sz0` at `n = 0` (`L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow `flow_sz0` (`κ = 1/2`, `ε = 1/10`,
+`𝔠 = 1/6`, `𝔡 = 1/10`), `t ≡ 1/2 ≤ T₀` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ = W^{-1}` (`W^{-3/2} ≤ Ψ ≤ W^{-1/10}`), `ζ = 1/120 = 𝔠 ε₀ / 2`.
+In the examples at `t ≡ 1/2`, `STInitialGT2gL` (the induction's output) and `GreenLocal_FAav` (owed by G5b) stay hypotheses; at
+`t ≡ 0` (`G_0 = M`, `X = 0`, `𝒦 = 0`) `(initialGT2)` is proved and every hypothesis of GL1, GL3, GL4, GL5, GL6 is discharged. -/
+
+namespace GreenLocalInst
+
+open SizesInst FlowPinsInst
+
+/-- `Ψ = W^{-1}`. -/
+private abbrev Ψ0 : ℕ → ℝ := fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)
+/-- `δ_n = N^{1/120} W^{-1/10}`. -/
+private abbrev δ0 : ℕ → ℝ := fun n => ((sz0.size n : ℕ) : ℝ) ^ (1 / 120 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 10 : ℝ))
+
+/-- **Instance of GL2** (`baGbEXPii_holds 3`) at `sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2 ≤ T₀`, `ε₀ = 1/10`: no hypothesis is left. -/
+example : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10) :=
+  baGbEXPii_holds 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num)
+
+/-- The same at `ε₀/2`, the premise of `GreenLocal_FAav` (bridge to G5a, `greenLocal_gii_of_le`). -/
+example : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) :=
+  greenLocal_gii_of_le 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (1 / 10 / 2) (by norm_num) (by norm_num)
+
+/-- **Instance of GL3** at `t ≡ 1/2`: `0 ≤ Ψ` is discharged, `(initialGT2)` is the hypothesis. -/
+example (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10) Ψ0) :
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
+      (fun n p ω => ‖(baFMz sz0 zSeq).GM n (1 / 2) ω p.1 p.2‖) (fun n _ _ => Ψ0 n) :=
+  greenLocal_localLaw 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) Ψ0
+    (Eventually.of_forall fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) hinit
+
+/-- **Instance of GL4** at `t ≡ 1/2` (`ν` arbitrary). -/
+example (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10) Ψ0) (ν : ℝ) (hν : 0 < ν) :
+    ∀ᶠ n in atTop, (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ 4 / (1 / 2 : ℝ) ^ 2 * ((sz0.size n : ℕ) : ℝ) ^ ν * Ψ0 n ^ 2 :=
+  greenLocal_floor 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) Ψ0 hinit ν hν
+
+/-- **Instance of GL5** at `t ≡ 1/2`, from (A) of `hinit`, `ζ = 1/120 = 𝔠 ε₀/2` (the premise pair of `BAIBPDet`, `δ_n = N^ζ W^{-ε₀}`). -/
+example (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10) Ψ0) :
+    (∀ᶠ n in atTop, δ0 n ≤ 1 / 2 / 2) ∧
+      HighProbAt (Sizes.seqP (sz0.withLam 0)) sz0.size
+        (fun n => {ω | ∀ x y : Idx 3 (sz0.L n) (sz0.W n), ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x y‖ ≤ δ0 n}) :=
+  greenLocal_omega 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) hinit.1 (1 / 120)
+    (by norm_num) (by norm_num)
+
+/-- **Instance of GL6** at `t ≡ 1/2`; the premise is the conclusion of `GreenLocal_FAav` (`BAFAav` of G5b) at `Ψ0`. -/
+example (hFA : PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n))
+      (fun n a ω => ‖(((sz0.W n : ℝ) ^ 3)⁻¹ : ℝ) * ∑ o, ∑ b',
+        BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) a b' *
+          GreenCore_K (GreenCore_Gc sz0 zSeq n (1 / 2) ω) (GreenCore_Mc sz0 zSeq n) (GreenCore_Xc sz0 n (1 / 2) ω)
+            (GreenCore_Dc sz0 zSeq n) (1 / 2) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) (b', o) (a, o)‖)
+      (fun n _ _ => Ψ0 n ^ 2)) :
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n))
+      (fun n a ω => ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => a) ω - (baFMz sz0 zSeq).m n‖)
+      (fun n _ _ => Ψ0 n ^ 2) :=
+  greenLocal_gav_of_fa 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) Ψ0 hFA
+
+/-- **Instance of the wiring lemma** (G5a, G6b): `BAGbEXPav 3` from `GreenLocal_FAav 3`, the only hypothesis (owed by G5b). -/
+example (hFA : GreenLocal_FAav 3) : BAGbEXPav 3 := greenLocal_gbEXPav_of_fa 3 (by norm_num) hFA
+
+/-- **Instance of the bridge to G5c** at `t ≡ 1/2`: the premises of `BAIBPDet` from `hinit` (`ζ = 1/120`). -/
+example (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10) Ψ0) :
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
+      (fun n p ω => ‖(baFMz sz0 zSeq).GM n (1 / 2) ω p.1 p.2‖) (fun n _ _ => Ψ0 n) ∧
+    (∀ᶠ n in atTop, δ0 n ≤ 1 / 2 / 2) ∧
+      HighProbAt (Sizes.seqP (sz0.withLam 0)) sz0.size
+        (fun n => {ω | ∀ x y : Idx 3 (sz0.L n) (sz0.W n), ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x y‖ ≤ δ0 n}) :=
+  greenLocal_ibp_premises 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) Ψ0
+    (Eventually.of_forall fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) hinit (1 / 120) (by norm_num) (by norm_num)
+
+/-! ### `t ≡ 0`: `G_0 = M`, `X = 0` (`(initialGT2)` is proved, `𝒦 = 0`); every hypothesis of GL1, GL3-GL6 is discharged at `sz0` -/
+
+/-- **Instances of GL1, GL3, GL4, GL5, GL6 at `t ≡ 0`**, with every hypothesis discharged: `X = 0`, `G_0 = M`, `(initialGT2)` (A) `‖G - M‖ = 0`,
+(B) `𝓛_max ≤ W^{-3} ≤ W^{-2} = Ψ²`, and the premise of GL6 (`𝒦 = 0`). -/
+example :
+    (∀ (ω : sz0.SeqΩ) (a : Zd 3 (sz0.L 0)),
+      (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ ≤ 4 / (1 / 2 : ℝ) ^ 2 * GreenCore_loop (GreenCore_Gc sz0 zSeq 0 0 ω) a a) ∧
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Idx 3 (sz0.L n) (sz0.W n) × Idx 3 (sz0.L n) (sz0.W n))
+      (fun n p ω => ‖(baFMz sz0 zSeq).GM n 0 ω p.1 p.2‖) (fun n _ _ => Ψ0 n) ∧
+    (∀ ν : ℝ, 0 < ν → ∀ᶠ n in atTop,
+      (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ ≤ 4 / (1 / 2 : ℝ) ^ 2 * ((sz0.size n : ℕ) : ℝ) ^ ν * Ψ0 n ^ 2) ∧
+    (∀ᶠ n in atTop, δ0 n ≤ 1 / 2 / 2) ∧
+      HighProbAt (Sizes.seqP (sz0.withLam 0)) sz0.size
+        (fun n => {ω | ∀ x y : Idx 3 (sz0.L n) (sz0.W n), ‖(baFMz sz0 zSeq).GM n 0 ω x y‖ ≤ δ0 n}) ∧
+    PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n))
+      (fun n a ω => ‖(baFMz sz0 zSeq).L n 0 (fun _ : Fin 1 => true) (fun _ => a) ω - (baFMz sz0 zSeq).m n‖)
+      (fun n _ _ => Ψ0 n ^ 2) := by
+  have hT : ∀ n, (0 : ℝ) ≤ BAflowT0 sz0 zSeq n := fun n => ((by norm_num : (0 : ℝ) ≤ 1 / 2)).trans (half_lt_t0 n).le
+  have hW1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
+  -- `X = 0`: `√0 V = 0`
+  have hH0 : ∀ (n : ℕ) (ω : sz0.SeqΩ) (i j : Idx 3 (sz0.L n) (sz0.W n)), Sizes.seqHflow (sz0.withLam 0) n 0 ω i j = 0 := by
+    intro n ω i j
+    change (((Real.sqrt 0 : ℝ) : ℂ) • (sz0.withLam 0).seqXmat n ω) i j = 0
+    rw [Real.sqrt_zero, Complex.ofReal_zero, zero_smul]
+    rfl
+  have hX0 : ∀ (n : ℕ) (ω : sz0.SeqΩ), GreenCore_Xc sz0 n 0 ω = 0 := fun n ω => by
+    ext u v
+    exact hH0 n ω _ _
+  -- `𝒦 = 0` at `t = 0`, `X = 0`
+  have hK0 : ∀ (n : ℕ) (ω : sz0.SeqΩ) (m : ℂ) (u y : Vtx 3 (sz0.L n) (sz0.W n)), GreenCore_K (GreenCore_Gc sz0 zSeq n 0 ω)
+      (GreenCore_Mc sz0 zSeq n) (GreenCore_Xc sz0 n 0 ω) (GreenCore_Dc sz0 zSeq n) 0 m u y = 0 := by
+    intro n ω m u y
+    simp [GreenCore_K, GreenCore_Arow, GreenCore_Xrow, hX0]
+  -- `G_0 = M`: `G - M = -M (√0 V + 0 · m) G = 0`
+  have hZ : ∀ (n : ℕ) (ω : sz0.SeqΩ), BAGt sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n 0 ω =
+      BAMfine sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n := by
+    intro n ω
+    have h := (BAGt_sub_BAMfine sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n 0 ω (by norm_num) (BAmF_sz0_im_pos n)).1
+    have hP : BAflowPert sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n 0 ω = 0 := by
+      ext i j
+      simp only [BAflowPert, Matrix.add_apply, Matrix.of_apply, Matrix.smul_apply, Matrix.one_apply, Matrix.zero_apply]
+      rw [hH0 n ω i j]
+      simp
+    rw [hP, mul_zero, zero_mul, neg_zero] at h
+    exact sub_eq_zero.1 h
+  have hGM : ∀ (n : ℕ) (ω : sz0.SeqΩ), GreenCore_Gc sz0 zSeq n 0 ω = GreenCore_Mc sz0 zSeq n := fun n ω => by
+    ext u v
+    simp only [GreenCore_Gc, GreenCore_Mc, blockMat, Matrix.submatrix_apply]
+    rw [hZ n ω]
+  -- `𝓛^{(2)}(M) = W^{-d} |M^{(B)}_{ab}|² ≤ W^{-d}` (Kronecker structure, `‖M^{(B)}‖_max ≤ 1`)
+  have loopM : ∀ (n : ℕ) (a b : Zd 3 (sz0.L n)), GreenCore_loop (GreenCore_Mc sz0 zSeq n) a b ≤ (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ := by
+    intro n a b
+    obtain ⟨-, -, -, -, -, hM, -, -, -⟩ := GreenCore_carrier (by norm_num : (0 : ℝ) < 1 / 2) sz0 flow_sz0 n (t := 0) le_rfl
+      (hT n) (fun _ => 0) rfl rfl rfl
+    have hr := BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n
+    have hb : ‖BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ)
+        (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) a b‖ ^ 2 ≤ 1 := by
+      have h1 := BAMB_row_sq_real 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n) _ hr.1 a
+      rw [← h1]
+      exact Finset.single_le_sum (f := fun b => ‖BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ)
+        (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) a b‖ ^ 2) (fun _ _ => by positivity) (Finset.mem_univ b)
+    have e : ∀ o : Fin (sz0.W n ^ 3), ∑ o' : Fin (sz0.W n ^ 3), ‖GreenCore_Mc sz0 zSeq n (a, o) (b, o')‖ ^ 2 =
+        ‖BAMB 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ)
+          (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) a b‖ ^ 2 := fun o => by
+      rw [Finset.sum_eq_single o]
+      · simp [hM]
+      · intro o' _ ho'
+        simp [hM, Ne.symm ho']
+      · simp
+    unfold GreenCore_loop
+    rw [sq, mul_assoc]
+    simp only [e]
+    calc (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * ((((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * ∑ _o : Fin (sz0.W n ^ 3), ‖BAMB 3 (sz0.L n)
+          (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) a b‖ ^ 2)
+        ≤ (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ * 1 :=
+          mul_le_mul_of_nonneg_left (GreenCore_avg_le fun _ => hb) GreenCore_w_pos.le
+      _ = _ := mul_one _
+  -- `ξ ≤ ζ`, `0 ≤ ζ` give `ξ ≺ ζ` (the bad set is empty)
+  have det : ∀ {U : ℕ → Type} (ξ ζ : ∀ n, U n → sz0.SeqΩ → ℝ), (∀ n u ω, ξ n u ω ≤ ζ n u ω) →
+      (∀ n u ω, 0 ≤ ζ n u ω) → PrecL sz0 (Sizes.seqP (sz0.withLam 0)) ξ ζ := by
+    intro U ξ ζ hξ hζ τ hτ D hD
+    refine Eventually.of_forall fun n => ?_
+    refine (measure_mono_null (t := ∅) (fun ω hω => ?_) measure_empty).trans_le zero_le
+    obtain ⟨u, hu⟩ := hω
+    have h1 : 1 ≤ ((sz0.size n : ℕ) : ℝ) ^ τ := Real.one_le_rpow (by exact_mod_cast sz0.one_le_size n) hτ.le
+    nlinarith [hξ n u ω, hζ n u ω, mul_nonneg (sub_nonneg.2 h1) (hζ n u ω)]
+  -- `(initialGT2)` at `t ≡ 0`: (A) `‖G - M‖_max = 0`, (B) `max 𝓛 ≤ W^{-3} ≤ W^{-2} = Ψ²`
+  have hinit0 : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 0) (1 / 10) Ψ0 := by
+    refine ⟨det _ _ (fun n p ω => ?_) (fun n _ _ => Real.rpow_nonneg (Nat.cast_nonneg _) _),
+      det _ _ (fun n _ ω => ?_) (fun n _ _ => sq_nonneg _)⟩
+    · change ‖BAGt sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n 0 ω p.1 p.2 -
+        BAMfine sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n p.1 p.2‖ ≤ _
+      rw [hZ n ω, sub_self, norm_zero]
+      exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+    · unfold STmaxLoop2g
+      refine Finset.sup'_le _ _ fun p _ => ?_
+      have hH : (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) n 0 ω).IsHermitian := by
+        unfold Sizes.seqHflowBA
+        refine IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz0.withLam 0) n 0 ω)
+        unfold IsHermitian
+        rw [conjTranspose_smul, (PsiI_isHermitian 3 _ _).eq,
+          show star (BAflowLam0 sz0 zSeq n : ℂ) = (BAflowLam0 sz0 zSeq n : ℂ) from Complex.conj_ofReal _]
+      change ‖loopFine 3 (sz0.L n) (sz0.W n) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) n 0 ω)
+        (ztOf (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) (BAflowEs sz0 zSeq n) 0) ![false, true] ![p.1, p.2]‖ ≤ _
+      rw [GreenOff_loop_eq hH]
+      change GreenCore_loop (GreenCore_Gc sz0 zSeq n 0 ω) p.1 p.2 ≤ Ψ0 n ^ 2
+      rw [hGM n ω]
+      refine (loopM n p.1 p.2).trans ?_
+      have e : Ψ0 n ^ 2 = ((((sz0.W n : ℕ) : ℝ)) ^ 2)⁻¹ := by simp [Ψ0, Real.rpow_neg_one, inv_pow]
+      rw [e]
+      exact inv_anti₀ (by have := hW1 n; positivity) (pow_le_pow_right₀ (hW1 n) (by norm_num))
+  have hΨ : ∀ᶠ n in atTop, 0 ≤ Ψ0 n := Eventually.of_forall fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _
+  refine ⟨fun ω a => ?_, ?_, fun ν hν => ?_, ?_, ?_, ?_⟩
+  · obtain ⟨-, -, -, -, -, hM, hMd, -, -⟩ := GreenCore_carrier (by norm_num : (0 : ℝ) < 1 / 2) sz0 flow_sz0 0 (t := 0) le_rfl
+      (hT 0) ω rfl rfl rfl
+    have hr := BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0
+    exact GreenLocal_floor_sample (by norm_num) hM hMd (hr.2.trans ((le_abs_self _).trans (Complex.abs_im_le_norm _))) (δ := 0) (by norm_num)
+      (fun u v => by rw [hGM 0 ω, sub_self, norm_zero]) a
+  · exact greenLocal_localLaw 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+      (fun _ => 0) (fun _ => le_rfl) hT (1 / 10) (by norm_num) Ψ0 hΨ hinit0
+  · exact greenLocal_floor 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+      (fun _ => 0) (fun _ => le_rfl) hT (1 / 10) (by norm_num) Ψ0 hinit0 ν hν
+  · exact (greenLocal_omega 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+      (fun _ => 0) (fun _ => le_rfl) hT (1 / 10) (by norm_num) hinit0.1 (1 / 120) (by norm_num) (by norm_num)).1
+  · exact (greenLocal_omega 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+      (fun _ => 0) (fun _ => le_rfl) hT (1 / 10) (by norm_num) hinit0.1 (1 / 120) (by norm_num) (by norm_num)).2
+  · exact greenLocal_gav_of_fa 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+      (fun _ => 0) (fun _ => le_rfl) hT Ψ0 (det _ _ (fun n a ω => by simp only [hK0, mul_zero, Finset.sum_const_zero, norm_zero]; exact sq_nonneg _) (fun _ _ _ => sq_nonneg _))
+end GreenLocalInst
 
 end RBM.BA
