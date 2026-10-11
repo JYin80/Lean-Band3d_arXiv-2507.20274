@@ -20,8 +20,11 @@ structural lemma (ii) of the ticket (`GreenMinor_cross`, `GreenMinor_removal_cro
   (`GreenCore_carrier`, `sz0`, `n = 0`, `t = 1/2`) and `sz0` for the moment bound.  `BAGiiGEX`, `STInitialGT2gL` and `GreenMinor_famGain`
   (other gates' pins) stay hypotheses.
 * Where the displayed pseudo-Lean of G.8 omits a hypothesis the statement needs, the pin has it and a comment says so; the list is in
-  section (a″) of the report.  `GreenMinor_diff_pin` is the display; `GreenMinor_diff_pin'` adds `κ ≤ 1`; the last section of the file
-  proves `¬ GreenMinor_diff_pin`.
+  section (a″) of the report.  `GreenMinor_diff_pin'` (S4 with `κ ≤ 1`) is the S4 pin of G.8; `GreenMinor_diff_pin` is only the record of the
+  displayed, false form: the last section of the file proves `¬ GreenMinor_diff_pin`.
+* Amend 1 (`docs/tickets/T2401-amend-1.md`, CONTROL H201; section (a′) of the report) is applied in section 7 and in the instances of
+  sections 9, 10 and 12: D1 (`BAFAav` takes `BAGiiGEX sz z t (ε₀ / 2)`), D2 (S4 is `GreenMinor_diff_pin'`), D3 (`BAFamGain` is a compiled `Prop`
+  with a nonempty instance).  The changes of this probe step are listed in section (a‴).
 
 Compile: `lake env lean RBM3D/Probe/T2401Pins.lean` in the T2401 worktree.
 -/
@@ -204,8 +207,9 @@ def GreenMinor_cY (d : ℕ) (κ g₀ s : ℝ) (r : ℕ) : ℝ :=
 -- G.8 shows `(hT) (hgood) (hu) (hy) (l) (hl) (hR) (hlen) (h2δ)`; `hL`, `0 ≤ g₀`, `hD`, `hM`, `0 < κ`, `κ ≤ ‖m‖`, `‖M u y‖ ≤ 1` (the data of the base
 -- bounds `GreenMinor_YA_le`, `GreenMinor_YX_le` and the weight `‖s‖`, `g₀` of `GreenMinor_cY`) are made explicit.
 
-/-- S4 (`GreenMinor_diff`) as displayed in G.8: `‖Δ_{κ_1} ⋯ Δ_{κ_m} Y^X_{uy}‖, ‖Δ_{κ_1} ⋯ Δ_{κ_m} Y^A_u‖ ≤ c_Y(m) (2δ)^{m+1}`
-on the protected rows.  False without a bound on `κ` (the last section proves `¬ GreenMinor_diff_pin`). -/
+/-- THE RECORD (Amend 1 D2; not a pin): S4 as first displayed in G.8, `‖Δ_{κ_1} ⋯ Δ_{κ_m} Y^X_{uy}‖, ‖Δ_{κ_1} ⋯ Δ_{κ_m} Y^A_u‖ ≤
+c_Y(m) (2δ)^{m+1}` on the protected rows, without a bound on `κ`.  It is false (the last section proves `¬ GreenMinor_diff_pin`); the S4 pin
+of G.8 is `GreenMinor_diff_pin'`. -/
 def GreenMinor_diff_pin : Prop :=
   ∀ {d L W : ℕ} [NeZero L] [NeZero W] {G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ}
     {Gs : Finset (Vtx d L W) → Matrix (Vtx d L W) (Vtx d L W) ℂ} {s m : ℂ} {κ δ g₀ : ℝ} {m₀ : ℕ}
@@ -219,8 +223,8 @@ def GreenMinor_diff_pin : Prop :=
       ‖iterDeltaFam l (fun S => GreenMinor_YA (Gs S) M D s m u) ∅‖ ≤
           GreenMinor_cY d κ g₀ ‖s‖ l.length * (2 * δ) ^ (l.length + 1)
 
-/-- PROPOSED REPAIR of S4 (needs the dispatcher's decision): `GreenMinor_diff_pin` with the hypothesis `κ ≤ 1`
-(BA: `κ ≤ ‖m‖ ≤ 1`, `BAm_norm_le_one`; the constant `a_0 = 2/κ` must be `≥ 1`). -/
+/-- **The S4 pin of G.8** (Amend 1 D2, paper-delta candidate `T2401d`; stage-1b target `GreenMinor_diff`): `GreenMinor_diff_pin` with the
+hypothesis `κ ≤ 1`.  BA supplies it: `κ ≤ ‖m‖ ≤ 1` (`BAm_norm_le_one`, `BA/Ward.lean:136`); the constant `a_0 = 2/κ` must be `≥ 1`. -/
 def GreenMinor_diff_pin' : Prop :=
   ∀ {d L W : ℕ} [NeZero L] [NeZero W] {G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ}
     {Gs : Finset (Vtx d L W) → Matrix (Vtx d L W) (Vtx d L W) ℂ} {s m : ℂ} {κ δ g₀ : ℝ} {m₀ : ℕ}
@@ -234,7 +238,8 @@ def GreenMinor_diff_pin' : Prop :=
       ‖iterDeltaFam l (fun S => GreenMinor_YA (Gs S) M D s m u) ∅‖ ≤
           GreenMinor_cY d κ g₀ ‖s‖ l.length * (2 * δ) ^ (l.length + 1)
 
-/-! ## 5. S5: the gain interface for a family and the moment bound -/
+/-! ## 5. S5: the gain interface for a family and the moment bound (G5b's vocabulary after Amend 1 D4: R6 moves to G5b; kept here because
+`BAFamGain` and the instances use it) -/
 
 /-- S5 (`GreenMinor_famGain`): the gain interface `famGain(B, ρ, M, K)` of the family `Y`, for words whose rows are distinct,
 `≠ k_i` and in `A` (the twin of `FlucGainUpTo'`, `Green/FlucIterGain.lean:727`, with `qRow (k i) (Y (k i))` for `flucDiag`). -/
@@ -290,13 +295,48 @@ def GreenMinor_avg_split_pin : Prop :=
             (G (b', o) (a, o) - M (b', o) (a, o)))
         - GreenMinor_avg (fun o : Fin (W ^ d) => GreenCore_Xrow G X (b', o) (a, o)))
 
-/-! ## 7. S7: the owed pin `BAFAav` (registry; owner BA-G5b, consumer BA-G6b).  `BAFamGain` has no Lean text in G.8 and is not written. -/
+/-! ## 7. S7: the owed pins `BAFamGain` and `BAFAav` (registry; owner BA-G5b, consumer BA-G6b), after Amend 1 D1 and D3 -/
+
+/-- The carrier family `Y^A` on the fine index at `(n, t_n)`: `k ↦ (ω ↦ Y^A_{split k})`, with `Y^A` of S3 at `G = G_{t_n}(ω)`, `M`, `D = g₀ Ψ`,
+`m = BAmF`, `s = E_n + m` (the carriers of `GreenCore_Gc`, `GreenCore_Mc`, `GreenCore_Dc`).  Probe-side name for the family `(fun x ω => Y^A_x)`
+of (a′) D3. -/
+def GreenMinor_famA {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (n : ℕ) : Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ :=
+  fun k ω => GreenMinor_YA (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n)
+    ((BAflowEs sz z n : ℂ) + BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (split d (sz.L n) (sz.W n) k)
+
+/-- The carrier family `Y^X_{x,(α, o(x))}` of the pair of blocks `(β, α)` on the fine index at `(n, t_n)`: `k ↦ (ω ↦ Y^X_{u,(α, o(u))})`, `u = split k`
+(the family of G.5 "Moment bound": the slot `x` of block `β` against the site of block `α` with the same offset). -/
+def GreenMinor_famX {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (n : ℕ) (α : Zd d (sz.L n)) :
+    Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ :=
+  fun k ω => GreenMinor_YX (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n)
+    ((BAflowEs sz z n : ℂ) + BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (split d (sz.L n) (sz.W n) k) (α, (split d (sz.L n) (sz.W n) k).2)
+
+/-- **`BAFamGain`** (Amend 1 D3; registry owed line, owner BA-G5b, consumer: the proof of `BAFAav`).  The family gain interface `famGain(B, ρ, M, K)`
+(`GreenMinor_famGain`) at the carrier, for `Y^A` and `Y^X_{·,(α,o(·))}` on `A = [β]`, `β ≠ α`: `ρ = 4 δ_n`, `B = C δ_n`, `δ_n = W^τ Ψ_n`, `M = K = 2p`,
+eventually in `n`.  Event and window hypotheses as in `BAFAav` (`BAGiiGEX` at `ε₀/2`, the window of `Ψ`, `(initialGT2)`), `0 < τ ≤ ε₀/2`; `C ≥ 0` depends
+on the data and on `p`, not on `n`, `β`, `α`; no `∃ c` before the flow. -/
+def BAFamGain (d : ℕ) : Prop :=
+  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
+    ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t (ε₀ / 2) →
+    ∀ Ψ : ℕ → ℝ, (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψ n) →
+      (∀ᶠ n in atTop, Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) →
+      STInitialGT2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ →
+      ∀ τ : ℝ, 0 < τ → τ ≤ ε₀ / 2 → ∀ p : ℕ,
+        ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ β α : Zd d (sz.L n), β ≠ α →
+          GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (GreenMinor_famA sz z t n)
+            (C * (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) (4 * (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) (2 * p) (2 * p) ∧
+          GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (GreenMinor_famX sz z t n α)
+            (C * (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) (4 * (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) (2 * p) (2 * p)
 
 /-- The averaged law of the offset average of `𝒦`: `|W^{-d} Σ_o Σ_{b'} M^B_{ab'} 𝒦_{(b',o),(a,o)}| ≺ Ψ²`, uniformly in `a`, from `BAGiiGEX` and
-`(initialGT2)` (`STInitialGT2gL`); no `∃ c` before the flow. -/
+`(initialGT2)` (`STInitialGT2gL`); no `∃ c` before the flow.  Amend 1 D1: the entrywise law is taken at the smaller exponent `ε₀/2`
+(`BAGiiGEX sz z t (ε₀ / 2)`), because `‖Δ‖_max ≺ W^{-ε₀}` does not give `P(Ω(ε₀)ᶜ) ≤ N^{-D}`, whereas `Ω(ε₀/2) ⊇ {‖Δ‖_max ≤ N^{𝔠ε₀/2} W^{-ε₀}}`;
+G6's owed `BAGbEXPii` is `∀ ε₀ > 0`, so it supplies the hypothesis at every `ε₀`. -/
 def BAFAav (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
-    ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t ε₀ →
+    ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t (ε₀ / 2) →
     ∀ Ψ : ℕ → ℝ, (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψ n) →
       (∀ᶠ n in atTop, Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) →
       STInitialGT2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ →
@@ -320,6 +360,8 @@ def BAFAav (d : ℕ) : Prop :=
 #check GreenMinor_famGain
 #check GreenMinor_avg
 #check GreenMinor_avgK
+#check GreenMinor_famA
+#check GreenMinor_famX
 #check GreenMinor_removal_pin
 #check GreenMinor_cross_pin
 #check GreenMinor_removal_crossL_pin
@@ -338,6 +380,7 @@ def BAFAav (d : ℕ) : Prop :=
 #check GreenMinor_famAvg_moment_pin
 #check GreenMinor_avgK_pin
 #check GreenMinor_avg_split_pin
+#check BAFamGain
 #check BAFAav
 
 /-! ## 9. Nonemptiness: the hand-made datum (`d = 3`, `L = 3`, `W = 2`; S1, S2, S3 bounds, S4) -/
@@ -610,6 +653,14 @@ example (ω : sz0.SeqΩ) (a : Zd 3 (sz0.L 0)) (hE : GreenMinor_avgK_pin) (hS : G
       (m := c_m₀) (s := c_s₀) (zt := ztOf c_m₀ c_E₀ (1 / 2)) rfl rfl rfl
   exact ⟨hE hGR hRG hMR hz hM hG0 a, hS hM a⟩
 
+-- S4 (D2): the extra hypothesis `κ ≤ 1` of the S4 pin `GreenMinor_diff_pin'` is a BA fact: at the carrier (`κ = 1/2`), `κ ≤ ‖m‖ ≤ 1` for every `n`
+example (n : ℕ) :
+    (1 / 2 : ℝ) ≤ ‖BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n‖ ∧
+      ‖BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n‖ ≤ 1 := by
+  have hr := BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n
+  exact ⟨hr.2.trans ((le_abs_self _).trans (Complex.abs_im_le_norm _)),
+    BAm_norm_le_one 3 (sz0.L n) (BAflowLam0 sz0 zSeq n) (BAflowEs sz0 zSeq n : ℂ) _ (by simp) hr.1⟩
+
 end CarrierInst
 
 /-! ## 11. Nonemptiness: the moment bound at `sz0` (`n = 0`: `L = 4`, `W = 32`; `A = [β]`, `T = W^{-d} 1_{[β]}`, `c = W^{-3} = 1/32768 ≤ ρ² = 1/10⁴`,
@@ -654,13 +705,20 @@ example (h : GreenMinor_famAvg_moment_pin) (β : Zd 3 (sz0.L 0)) (B : ℝ)
 
 end MomentInst
 
-/-! ## 12. Nonemptiness: `BAFAav` at `sz0` and the flow `flow_sz0` (`κ = 1/2`, `ε = 1/10`, `𝔠 = 1/6`, `𝔡 = 1/10`), `t ≡ 1/2 ≤ T₀`, `ε₀ = 1/10`,
-`Ψ = W^{-1}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`); `BAGiiGEX` (G6's pin) and `STInitialGT2gL` (the premise) stay hypotheses -/
+/-! ## 12. Nonemptiness of `BAFAav` and `BAFamGain` (Amend 1 D1, D3): `sz0` and the flow `flow_sz0` (`κ = 1/2`, `ε = 1/10`, `𝔠 = 1/6`, `𝔡 = 1/10`),
+`t ≡ 1/2 ≤ T₀`, `ε₀ = 1/10` (so `ε₀/2 = 1/20`), `Ψ = W^{-1}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`), `τ = 1/20 ≤ ε₀/2`, `p = 1`; `BAGiiGEX` (G6's pin) and
+`STInitialGT2gL` (the premise) stay hypotheses; the `famGain` content of `BAFamGain` is the hypothesis `h` -/
 
 section FAavInst
 open SizesInst FlowPinsInst
 
-example (h : BAFAav 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10)) :
+-- D1: the premise of `BAFAav` / `BAFamGain` at `ε₀/2` is an instance of G6's owed pin `BAGbEXPii` (`∀ ε₀ > 0`, `Step1Boot.lean:108`): no new external hypothesis
+example (hG : BAGbEXPii 3) : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) := by
+  exact hG (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10 / 2) (by norm_num)
+
+-- D1: `BAFAav` at `ε₀ = 1/10`; the entrywise law is the hypothesis `hii` at `ε₀/2 = 1/20`
+example (h : BAFAav 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) :
     STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
         (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) →
       PrecL sz0 (Sizes.seqP (sz0.withLam 0)) (U := fun n => Zd 3 (sz0.L n))
@@ -670,10 +728,32 @@ example (h : BAFAav 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10)) :
               (GreenCore_Dc sz0 zSeq n) (1 / 2) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n) (b', o) (a, o)‖)
         (fun n _ _ => (((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) ^ 2) := by
   have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
+  have hii' : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) := by
+    rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii
   exact h (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
-    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) hii (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) hii' (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))
     (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
     (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
+
+-- D3: `BAFamGain` at the same data, `τ = 1/20`, `p = 1` (`M = K = 2`): the conclusion is `∃ C ≥ 0` and, eventually in `n`, the two `famGain` statements for every `β ≠ α`
+example (h : BAFamGain 3) (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) :
+    STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
+        (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) →
+      ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ β α : Zd 3 (sz0.L n), β ≠ α →
+        GreenMinor_famGain (sz0.withLam 0) n (Iblk 3 (sz0.L n) (sz0.W n) β) (GreenMinor_famA sz0 zSeq (fun _ => 1 / 2) n)
+          (C * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)))
+          (4 * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) (2 * 1) (2 * 1) ∧
+        GreenMinor_famGain (sz0.withLam 0) n (Iblk 3 (sz0.L n) (sz0.W n) β) (GreenMinor_famX sz0 zSeq (fun _ => 1 / 2) n α)
+          (C * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)))
+          (4 * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) (2 * 1) (2 * 1) := by
+  have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
+  have hii' : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 10 / 2) := by
+    rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii
+  intro hinit
+  exact h (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) hii' (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))
+    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
+    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)) hinit (1 / 20) (by norm_num) (by norm_num) 1
 
 end FAavInst
 
