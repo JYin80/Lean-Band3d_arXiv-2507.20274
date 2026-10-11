@@ -13,6 +13,9 @@ Ticket T2411.  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:191
 * §1 **R6**: the graded iteration and the moment bound for the family average `Σ_k T_k Q_k Y_k` over the rows `k ∈ A` of one block
   (the twin of `Green/FlucIterGain.lean:566-895`, with `GreenMinor_famGain`, whose words have rows in `A`, as the interface;
   `FlucGainUpTo'` is not a special case, T2401b).
+* §2-§4 the BA data (`η_t`, `‖s‖`, the local law `‖G_t - M‖_max ≺ Ψ`, `P(badBase) ≤ N^{-D}`), the exponent bookkeeping, `baFamGain_holds`.
+* §5-§9 the decompositions (E) of `𝒜'`, `𝔛` and their remainders, the `ℓ¹` row bound of `M^{(B)}` for every `d ≥ 1`, Markov for the family average,
+  the exceptional set of `BAFAav`, the numerics, `baFAav_holds`; §10 the nonempty instances (`d = 3`, `sz0`, `flow_sz0`, `BAGiiGEX` and `(initialGT2)` hypotheses).
 -/
 
 set_option linter.style.longLine false
@@ -300,8 +303,6 @@ theorem GreenCond2_famAvg_moment {A : Finset (Idx d (sz.L n) (sz.W n))} {Y : Idx
 
 end Budget
 
-
-
 end R6
 
 /-! ## 2. The BA data: `η_t`, `‖s‖`, the base event -/
@@ -544,7 +545,6 @@ theorem GreenCond2_arith {d M K : ℕ} {N δ Env cM CE Pbad PS : ℝ}
     _ = (GreenCond_genv Env M ^ K * Pbad * N ^ (d * K * (M + 1))) * δ ^ (K * (M + 1)) := by ring
     _ ≤ 1 * δ ^ (K * (M + 1)) := mul_le_mul_of_nonneg_right hmain (by positivity)
     _ = δ ^ (K * (M + 1)) := one_mul _
-
 
 /-- **The tower measure in real numbers**: `ε^j P(Bad_j) ≤ (ε + N)^j P(S)`. -/
 theorem GreenCond2_Pbad_le {d : ℕ} (sz : Sizes d) (n : ℕ) {ε : ℝ} (hε : 0 < ε) {S : Set sz.SeqΩ} (hS : MeasurableSet S) (j : ℕ) :
@@ -915,7 +915,6 @@ theorem GreenCond_E_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ �
   simp only [qRow_apply]
   linear_combination hs + hc0
 
-
 /-- The constants of the two pointwise bounds. -/
 def GreenCond_cA (d : ℕ) (κ g₀ s : ℝ) : ℝ := 2 * (s + 2 * d * g₀) / κ ^ 2
 
@@ -1019,7 +1018,6 @@ theorem GreenCond_E_A_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz �
         refine mul_le_mul_of_nonneg_right ?_ hδ
         refine div_le_div_of_nonneg_right ?_ hκ.le
         linarith
-
 
 /-- `4 d g₀ δ/κ ≤ 2 d g₀` for `δ ≤ κ/2`: the pointwise constant of `𝔛` is at most `c_X`. -/
 theorem GreenCond_cX_ge {κ g₀ s δ : ℝ} (hκ : 0 < κ) (hg : 0 ≤ g₀) (hs : 0 ≤ s) (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) :
@@ -1188,7 +1186,6 @@ theorem GreenCond2_norm_avg_le {d W : ℕ} [NeZero W] {f : Fin (W ^ d) → ℂ} 
         rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
         push_cast
         field_simp
-
 
 /-- The block weight turns a sum over the fine index into the offset average of the block. -/
 theorem GreenCond2_sum_block {d L W : ℕ} [NeZero L] [NeZero W] (β : Zd d L) (f : Idx d L W → ℂ) :
@@ -1399,7 +1396,6 @@ theorem GreenCond2_avgA_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz
   rw [add_comm]
   exact add_le_add le_rfl hr
 
-
 /-- **The offset average of `𝔛_{(b',o),(a,o)}` against the family average of `-Q_u Y^X_u`** (`b' ≠ a`): off the bad row slices the difference
 is `≤ C₁ δ²`. -/
 theorem GreenCond2_avgX_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
@@ -1489,7 +1485,6 @@ theorem GreenCond2_FAav_det {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow s
   · intro b' hba
     exact (GreenCond2_avgX_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' ω hG hslice hsqX a b' hba).trans
       (add_le_add (hX ⟨(b', a), hba⟩).le le_rfl)
-
 
 theorem GreenCond2_exists_ne {L : ℕ} (hd : 1 ≤ d) (hL : 2 ≤ L) (β : Zd d L) : ∃ α : Zd d L, α ≠ β := by
   refine ⟨β + fun _ => 1, fun h => ?_⟩
@@ -1687,7 +1682,6 @@ theorem GreenCond2_hsq_arith {N δ Q CQ : ℝ} (hN1 : 1 ≤ N) (hδN : 1 ≤ N ^
   calc Real.sqrt (1 / N ^ (2 * d + 9) * Q) ≤ Real.sqrt ((δ ^ 2) ^ 2) := Real.sqrt_le_sqrt h1
     _ = δ ^ 2 := Real.sqrt_sq (sq_nonneg δ)
 
-
 /-- The probability arithmetic: `P(badStep) ≤ 2 N^{c+1} P(S)`, `P(S) ≤ X/N^{c+3}`, `W_τ^{-2p} ≤ X/N³`, `N ≥ 4` give `P(Bad) ≤ X`, `X = N^{-D}`. -/
 theorem GreenCond2_prob_arith {N X Pstep PS W2p : ℝ} (c : ℕ) (hN4 : 4 ≤ N) (hX : 0 ≤ X) (hPS : PS ≤ X / N ^ (c + 3))
     (hPstep : Pstep ≤ 2 * N ^ (c + 1) * PS) (hW : W2p ≤ X / N ^ 3) : Pstep + (N + N ^ 2) * W2p ≤ X := by
@@ -1803,13 +1797,7 @@ theorem baFAav_holds (d : ℕ) : BAFAav d := by
     have : δ ≤ 1 / 4 := hδδ₀.trans (by rw [hδ₀]; exact min_le_right _ _)
     linarith
   have hWN : (sz.W n : ℝ) ≤ N := GreenCond2_W_le_size sz hd1 n
-  have hwd : ((sz.W n : ℝ) ^ d)⁻¹ ≤ δ ^ 2 := by
-    have e : ((sz.W n : ℝ) ^ (-(d : ℝ) / 2)) ^ 2 = ((sz.W n : ℝ) ^ d)⁻¹ := by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hW0.le, ← Real.rpow_natCast, ← Real.rpow_neg hW0.le]
-      congr 1; push_cast; ring
-    rw [← e]
-    calc ((sz.W n : ℝ) ^ (-(d : ℝ) / 2)) ^ 2 ≤ Ψ n ^ 2 := pow_le_pow_left₀ (Real.rpow_nonneg hW0.le _) hΨlon 2
-      _ ≤ δ ^ 2 := pow_le_pow_left₀ hΨpos.le (by rw [hδ]; exact le_mul_of_one_le_left hΨpos.le hw1) 2
+  have hwd : ((sz.W n : ℝ) ^ d)⁻¹ ≤ δ ^ 2 := hδ ▸ GreenCond_hwd hW1 hw1 hΨlon
   have hδN : 1 ≤ N ^ d * δ ^ 2 := by
     have h1 : (1 : ℝ) ≤ (sz.W n : ℝ) ^ d * δ ^ 2 := by
       calc (1 : ℝ) = (sz.W n : ℝ) ^ d * ((sz.W n : ℝ) ^ d)⁻¹ := by field_simp
@@ -1935,5 +1923,62 @@ theorem baFAav_holds (d : ℕ) : BAFAav d := by
     _ = ENNReal.ofReal ((Sizes.seqP (sz.withLam 0)).real (GreenCond2_Bad sz z n (t n) (1 / N ^ (2 * d + 9)) δ lam)) :=
         (ofReal_measureReal (measure_ne_top _ _)).symm
     _ ≤ ENNReal.ofReal (N ^ (-D)) := ENNReal.ofReal_le_ofReal hBad
+
+/-! ## 10. Nonempty instances of `baFamGain_holds`, `baFAav_holds`, `GreenCond2_famAvg_moment` -/
+
+section Inst
+open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
+
+-- `baFamGain_holds` at `d = 3`, `sz0`, `zSeq`, `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/2`, `ε₀ = 1/10`, `Ψ = W^{-1}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`),
+-- `τ = 1/20`, `p = 1`: `BAGiiGEX` (G6's owed `BAGbEXPii`) and `(initialGT2)` stay hypotheses
+example (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) :=
+  have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
+  baFamGain_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) (by rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
+    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)) hinit (1 / 20) (by norm_num) (by norm_num) 1
+
+-- `baFAav_holds` at the same data: the averaged law `|⟨M𝒦⟩_a| ≺ Ψ²`
+example (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) :=
+  have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
+  baFAav_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) (by rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num))
+    (Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)) hinit
+
+-- R6 (`GreenCond2_famAvg_moment`) for the BA family `Y^A` of the block `0` at a large `n` of the same data (`p = 1`; the gain interface is `baFamGain_holds`)
+example (hii : BAGiiGEX sz0 zSeq (fun _ => 1 / 2) (1 / 20)) (hinit : STInitialGT2gL (baFMz sz0 zSeq) (Sizes.seqP (sz0.withLam 0)) (fun _ => 1 / 2) (1 / 10)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))) : ∃ (n : ℕ) (δ B : ℝ), ∫ ω, ‖∑ k, (((if (split 3 (sz0.L n) (sz0.W n) k).1 = 0 then
+      (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ else 0 : ℝ)) : ℂ) * qRow (sz0.withLam 0) n k (GreenMinor_famA sz0 zSeq (fun _ => 1 / 2) n k) ω‖ ^ (2 * 1) ∂(Sizes.seqP (sz0.withLam 0)) ≤
+    ((2 * ((1 : ℕ) : ℝ)) + 1) * (2 * ((1 : ℕ) : ℝ)) ^ (2 * 1) * ((2 : ℝ) ^ (2 * 1 - 1) * (4 * δ) * B) ^ (2 * 1) := by
+  have h1 : ∀ n, (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast sz0.W_pos n
+  have hlo : ∀ᶠ n in atTop, ((sz0.W n : ℕ) : ℝ) ^ (-((3 : ℕ) : ℝ) / 2) ≤ ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ) :=
+    Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)
+  have hhi : ∀ᶠ n in atTop, ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 10 : ℝ)) :=
+    Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)
+  obtain ⟨C, -, hf⟩ := baFamGain_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) (1 / 10) (by norm_num) (by rw [show (1 / 10 / 2 : ℝ) = 1 / 20 by norm_num]; exact hii)
+    (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) hlo hhi hinit (1 / 20) (by norm_num) (by norm_num) 1
+  have hΨ0 : ∀ᶠ n in atTop, 0 ≤ ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ) := Eventually.of_forall fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _
+  obtain ⟨n, hn, hδ, hW2⟩ := (hf.and ((GreenCond2_delta_small sz0 flow_sz0.1 (by norm_num) (by norm_num : (1 / 20 : ℝ) ≤ 1 / 10 / 2) hΨ0 hhi
+    (δ₀ := 1 / 4) (by norm_num)).and ((tendsto_W sz0 (by norm_num) flow_sz0.1.2.2.1 flow_sz0.1.2.2.2.1).eventually_ge_atTop 2))).exists
+  obtain ⟨α, hα⟩ := GreenCond2_exists_ne (by norm_num) (by have := sz0.three_le_L n; omega) (0 : Zd 3 (sz0.L n))
+  have hw1 : (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) := Real.one_le_rpow (h1 n) (by norm_num)
+  have hg0 : 0 ≤ BAflowLam0 sz0 zSeq n := (mul_pos (Real.sqrt_pos.mpr (by linarith [t0_sz0 n])) (sz0_lam_pos n)).le
+  have hwd := GreenCond_hwd (d := 3) (h1 n) hw1 (Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num : -((3 : ℕ) : ℝ) / 2 ≤ -1))
+  have hp : 2 * 1 ≤ #(Iblk 3 (sz0.L n) (sz0.W n) 0) := by
+    have : 2 ≤ sz0.W n := by exact_mod_cast hW2
+    exact (by omega : 2 * 1 ≤ sz0.W n).trans ((Nat.le_self_pow (by norm_num) _).trans (card_Iblk 3 (sz0.L n) (sz0.W n) 0).ge)
+  exact ⟨n, ((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ), C * (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)),
+    GreenCond2_famAvg_moment (sz := sz0.withLam 0) (n := n) (A := Iblk 3 (sz0.L n) (sz0.W n) 0) (Y := GreenMinor_famA sz0 zSeq (fun _ => 1 / 2) n)
+      (fun k => GreenCond2_bddMeas_famA (t := 1 / 2) (by norm_num) flow_sz0 (by norm_num) (half_lt_t0 n).le hg0 k)
+      (fun k => GreenCond2_finDep (t := 1 / 2) (by norm_num) flow_sz0 (by norm_num) (half_lt_t0 n).le (GreenCond_ΦA sz0 zSeq n k)) (hn 0 α hα.symm).1 le_rfl le_rfl
+      ((mul_le_mul_of_nonneg_left hδ (by norm_num : (0 : ℝ) ≤ 4)).trans (by norm_num))
+      (hwd.trans (by nlinarith [sq_nonneg (((sz0.W n : ℕ) : ℝ) ^ (1 / 20 : ℝ) * ((sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ))]))
+      (uniformWeight_blockAvg2 3 (sz0.L n) (sz0.W n) 0).toBoundedWeight hp⟩
+
+end Inst
 
 end RBM.BA

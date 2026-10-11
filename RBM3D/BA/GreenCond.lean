@@ -9,7 +9,7 @@ import RBM3D.Green.LDE
 
 /-!
 # The block Anderson minors, conditionalised: the sample-level minor tower, the gain interface off a good event
-(BA-G5b, file 1 of 2)
+(BA-G5b, file 1 of 2: the conditionalised families, the conditional means (m5))
 
 Ticket T2411 (design gate `docs/reports/T2401-prove.md` (G.5)-(G.6); G5a is `BA/GreenMinor*.lean`).  Paper:
 `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`), band `paper/tex/3_5_Loop_Hierarchy.tex`.
@@ -21,6 +21,9 @@ Ticket T2411 (design gate `docs/reports/T2401-prove.md` (G.5)-(G.6); G5a is `BA/
 * §3 the conditionalised gain interface (the twin of `Green/MinorDiffCond.lean` `norm_applyOps_minorDiff_flucDiagSet_le_badFamily`,
   `integral_prod_applyOps_minorDiff_le_on`, `minorDiffGainUpTo'_of_le_on`, for an abstract family of minors with envelope `Env`):
   `GreenMinor_famGain` from a good event, the tower `badTower` over its complement, and the smallness `hsmall`.
+* §4-§6 the Gaussian row of the carrier: coordinate moments, the abstract row model (moments of `Φ = t m + h_u - Σ h_k c_{kl} (D_l + conj h_l)`), its instance.
+* §7 the conditional means (m5): the exact `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0`, second moments, the pointwise good-event bounds, the Cauchy-Schwarz
+  split and `GreenCond_m5_A/X`; §8 the nonempty instances of `GreenCond_famGain_slice`, `GreenCond_m5_A/X` (`d = 3`, `sz0`, `flow_sz0`).
 -/
 
 set_option linter.style.longLine false
@@ -748,8 +751,6 @@ theorem GreenCond_integral_coord_mul {c c' : Sizes.SeqCoord sz} (h : c ≠ c') :
   have := hind.integral_mul_eq_mul_integral (measurable_pi_apply c).aestronglyMeasurable (measurable_pi_apply c').aestronglyMeasurable
   simpa [GreenCond_integral_coord] using this
 
-
-
 variable {sz}
 
 theorem GreenCond_h_eq {n : ℕ} (T : ℝ) {u k : Idx d (sz.L n) (sz.W n)} (hk : u ≠ k) (ω : Sizes.SeqΩ sz) :
@@ -837,8 +838,6 @@ theorem GreenCond_RowLaw.sigma_nonneg (H : GreenCond_RowLaw P s h σ) {k : κ} (
     exact_mod_cast this
   rw [← h2]
   exact integral_nonneg fun ω => by positivity
-
-
 
 /-- `Φ = t m + h_u - Σ_{k,l ∈ s} h_k c_{kl} (D_l + conj h_l)`: the random re-entry `A_u` as a polynomial of the row. -/
 def GreenCond_Phi (s : Finset κ) (h : κ → Ω' → ℂ) (hu : Ω' → ℂ) (c : κ → κ → ℂ) (D : κ → ℂ) (tm : ℂ) (ω : Ω') : ℂ :=
@@ -1124,7 +1123,6 @@ theorem GreenCond_integral_norm4_h_le {T : ℝ} (hT : 0 ≤ T) {u k : Idx d (sz.
         simpa using h
     _ = 6 * (T * svarF d (sz.L n) (sz.W n) (sz.lam n) u k) ^ 2 := by ring
 
-
 theorem GreenCond_integrable_coord_mul (sz : Sizes d) (c c' : Sizes.SeqCoord sz) :
     Integrable (fun ω : Sizes.SeqΩ sz => ω c * ω c') (Sizes.seqP sz) := by
   have h1 := (GreenCond_memLp_coord sz c 2 (by simp)).integrable_sq
@@ -1183,7 +1181,6 @@ theorem GreenCond_integral_h_cov {T : ℝ} (hT : 0 ≤ T) {u k l : Idx d (sz.L n
       simp
     rw [integral_add iF.ofReal (iG.ofReal.const_mul _), integral_const_mul, integral_complex_ofReal, integral_complex_ofReal, h0F, h0G]
     simp
-
 
 theorem GreenCond_svarF_le_one {L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) (g : ℝ) (i k : Idx d L W) : svarF d L W g i k ≤ 1 := by
   have hw := boundedWeight_svarF d L W hL g i
@@ -1274,7 +1271,6 @@ theorem GreenCond_Xc_rowSplit_off (u : Idx d (sz.L n) (sz.W n)) (ω₀ ω'' : (G
     (Real.sqrt t : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice (GreenCond_sz0 sz) n ω₀) _ _
   rw [Xentry_congr_of_ne (sz := GreenCond_sz0 sz) (n := n) hagree hj' hk']
 
-
 theorem GreenCond_Gs_agree (S : Finset (Idx d (sz.L n) (sz.W n))) {ω ω' : (GreenCond_sz0 sz).SeqΩ}
     (h : AgreeOffRows (GreenCond_sz0 sz) n S ω ω') : GreenCond_Gs sz z n t S ω = GreenCond_Gs sz z n t S ω' := by
   unfold GreenCond_Gs
@@ -1310,7 +1306,6 @@ theorem GreenCond_greenMinor_rowSplit {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h 
   rw [← GreenCond_Gs_singleton sz z n t hκ h ht0 ht, ← GreenCond_Gs_singleton sz z n t hκ h ht0 ht,
     GreenCond_Gs_agree sz z n t {u} (GreenCond_agreeOffRows_rowSplit sz n u ω₀ ω'')]
 
-
 /-- The row law at the vertex level: `h_{k'} = X_{u'k'}`, `σ_{k'} = t S_{u'k'}`, `k' ≠ u' = e u`. -/
 theorem GreenCond_rowLawV {t : ℝ} (ht0 : 0 ≤ t) (u : Idx d (sz.L n) (sz.W n)) :
     GreenCond_RowLaw (Sizes.seqP (GreenCond_sz0 sz)) (Finset.univ.erase (splitEquiv d (sz.L n) (sz.W n) u))
@@ -1340,7 +1335,6 @@ theorem GreenCond_rowLawV {t : ℝ} (ht0 : 0 ≤ t) (u : Idx d (sz.L n) (sz.W n)
     · have h4 : e.symm k' ≠ e.symm l' := fun h => hkl (e.symm.injective h)
       simpa [hkl, h4] using h3
   · exact GreenCond_integral_norm4_h_le ht0 (hne hk)
-
 
 /-- Algebra of `A_u` as `Φ`: generic in the matrices. -/
 theorem GreenCond_Arow_alg {L W : ℕ} [NeZero L] [NeZero W] {Ω' : Type*} {G G0 Xω D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {X'' : Ω' → Matrix (Vtx d L W) (Vtx d L W) ℂ}
@@ -1381,7 +1375,6 @@ theorem GreenCond_Xrow_eq_lin {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow
   refine Finset.sum_congr rfl fun k hk => ?_
   rw [GreenCond_Xc_rowSplit_row sz n t u ω₀ ω'' k, GreenCond_greenMinor_rowSplit sz z n t hκ h ht0 ht u ω₀ ω'' k y]
 
-
 theorem GreenCond_diagV {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (hL : 3 ≤ sz.L n) (u : Idx d (sz.L n) (sz.W n)) :
     Measurable (fun ω'' : (GreenCond_sz0 sz).SeqΩ => GreenCore_Xc sz n t ω'' (splitEquiv d (sz.L n) (sz.W n) u) (splitEquiv d (sz.L n) (sz.W n) u)) ∧
     Integrable (fun ω'' : (GreenCond_sz0 sz).SeqΩ => ‖GreenCore_Xc sz n t ω'' (splitEquiv d (sz.L n) (sz.W n) u) (splitEquiv d (sz.L n) (sz.W n) u)‖ ^ 2)
@@ -1398,7 +1391,6 @@ theorem GreenCond_diagV {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (hL : 3 ≤ sz
   have : svarF d (sz.L n) (sz.W n) ((GreenCond_sz0 sz).lam n) u u ≤ 1 := GreenCond_svarF_le_one hL _ u u
   have h0 : 0 ≤ svarF d (sz.L n) (sz.W n) ((GreenCond_sz0 sz).lam n) u u := svarF_nonneg _ _ _ _ _ _
   nlinarith
-
 
 /-- `G_{uu} ≠ 0` at every sample. -/
 theorem GreenCond_G_diag_ne {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ)
@@ -1446,7 +1438,6 @@ theorem GreenCond_condRow_Arow {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlo
     push_cast; ring
   rw [hsum, hBs]
   ring
-
 
 theorem GreenCond_card_erase_le (u : Vtx d (sz.L n) (sz.W n)) : ((Finset.univ.erase u).card : ℝ) ≤ (sz.size n : ℝ) := by
   have h1 : (Finset.univ.erase u).card ≤ Fintype.card (Vtx d (sz.L n) (sz.W n)) := (Finset.card_erase_le).trans (by simp)
@@ -1525,7 +1516,6 @@ theorem GreenCond_Arow_moment {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow
   have t2 : 12 * γ ^ 2 * ((Finset.univ.erase (e u)).card : ℝ) ^ 4 ≤ 12 * γ ^ 2 * (sz.size n : ℝ) ^ 4 := by gcongr
   nlinarith [htm2, t1, t2]
 
-
 /-- **The conditional mean and second moment of `𝔛_{uy}`**: `E_u 𝔛_{uy} = 0`, `E_u ‖𝔛_{uy}‖² ≤ γ² N²`. -/
 theorem GreenCond_Xrow_cond {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) (y : Vtx d (sz.L n) (sz.W n)) (ω₀ : (GreenCond_sz0 sz).SeqΩ) :
@@ -1562,7 +1552,6 @@ theorem GreenCond_Xrow_cond {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow s
   have hν0 : (0 : ℝ) ≤ (Finset.univ.erase (e u)).card := Nat.cast_nonneg _
   have h2 : ((Finset.univ.erase (e u)).card : ℝ) ^ 2 ≤ (sz.size n : ℝ) ^ 2 := pow_le_pow_left₀ hν0 hν 2
   exact mul_le_mul_of_nonneg_left h2 (sq_nonneg γ)
-
 
 /-- **The pointwise good-event bounds on `A_w` and `A_w Δ_{ww}`**: `‖A_w‖ ≤ 2 (‖s‖ + 2dg₀) κ⁻² δ`, `‖A_w Δ_{ww}‖ ≤ 2 (‖s‖ + 2dg₀) κ⁻² δ²`
 when `‖G - M‖_max ≤ δ ≤ κ/2`. -/
@@ -1603,7 +1592,6 @@ theorem GreenCond_pointwise_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow
   rw [norm_mul]
   calc _ ≤ 2 * (‖GreenCond_s sz z n‖ + 2 * d * BAflowLam0 sz z n) / κ ^ 2 * δ * δ := mul_le_mul hA0 hΔ (norm_nonneg _) (by positivity)
     _ = _ := by ring
-
 
 /-- **The pointwise good-event bounds on `𝔛_{wy}` and `𝔛_{wy} Δ_{ww}`** (`y ≠ w`). -/
 theorem GreenCond_pointwise_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
@@ -1704,7 +1692,6 @@ theorem GreenCond_norm_condRow_le {k : Idx d (sz.L n) (sz.W n)} {F : Sizes.SeqΩ
     field_simp
   nlinarith [hQ', this]
 
-
 /-- **The Cauchy-Schwarz split, optimised in `lam`**: if `‖F‖ ≤ c` off a measurable `S`, `P(row slice of S at ω) ≤ ε'` and
 `E_k ‖F‖² ≤ Q`, with `ε', Q > 0`, then `‖E_k F(ω)‖ ≤ c + √(ε' Q)`. -/
 theorem GreenCond_norm_condRow_le' {k : Idx d (sz.L n) (sz.W n)} {F : Sizes.SeqΩ sz → ℂ} (hF : Measurable F) {S : Set (Sizes.SeqΩ sz)}
@@ -1787,7 +1774,6 @@ theorem GreenCond_measurable_Xrow {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BA
   rw [e]
   exact (((GreenCond_measurable_YX (fun x y => GreenCond_measurable_Gc hκ h ht0 ht x y) _ _ _ _ _ _).mul_const _).div
     (GreenCond_measurable_Gc hκ h ht0 ht w w)).neg
-
 
 /-- `F^A_u = A_u (G_{uu} - m)`, the remainder of (E) for `𝒜'`. -/
 def GreenCond_FA (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (u : Idx d (sz.L n) (sz.W n)) (σ : (GreenCond_sz0 sz).SeqΩ) : ℂ :=
@@ -1906,5 +1892,72 @@ theorem GreenCond_m5_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ 
     (fun h' => hα (congrArg Prod.fst h'))).2
 
 end M5
+
+/-- `(W^d)⁻¹ ≤ (w Ψ)²` from `W^{-d/2} ≤ Ψ`, `W, w ≥ 1`: the window of `Ψ` gives `W^{-d} ≤ δ²`, `δ = w Ψ` (`w = W^τ`). -/
+theorem GreenCond_hwd {W Ψn w : ℝ} {d : ℕ} (hW : 1 ≤ W) (hw : 1 ≤ w) (hΨ : W ^ (-(d : ℝ) / 2) ≤ Ψn) : (W ^ d)⁻¹ ≤ (w * Ψn) ^ 2 := by
+  have hW0 : 0 < W := by linarith
+  have e : (W ^ (-(d : ℝ) / 2)) ^ 2 = (W ^ d)⁻¹ := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hW0.le, ← Real.rpow_natCast, ← Real.rpow_neg hW0.le]
+    congr 1; push_cast; ring
+  have h0 : 0 ≤ W ^ (-(d : ℝ) / 2) := Real.rpow_nonneg hW0.le _
+  rw [← e]
+  exact pow_le_pow_left₀ h0 (hΨ.trans (le_mul_of_one_le_left (h0.trans hΨ) hw)) 2
+
+/-! ## 8. Nonempty instances of `GreenCond_famGain_slice`, `GreenCond_m5_A`, `GreenCond_m5_X` -/
+
+section Inst
+open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
+
+private theorem GreenCondInst_g0 : 0 ≤ BAflowLam0 sz0 zSeq 0 :=
+  (mul_pos (Real.sqrt_pos.mpr (by linarith [t0_sz0 0])) (sz0_lam_pos 0)).le
+
+-- (m5) at `d = 3`, `sz0` at `n = 0` (`L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`), `t = 1/2 ≤ T₀`, `δ = 1/10 ≤ κ/2`, `ε' = 1`, the sample `ω`; the row
+-- slice has mass `≤ 1`
+example (u : Idx 3 (sz0.L 0) (sz0.W 0)) (ω : (GreenCond_sz0 sz0).SeqΩ) :=
+  GreenCond_m5_A (sz := sz0) (z := zSeq) (n := 0) (t := 1 / 2) (κ := 1 / 2) (by norm_num) flow_sz0 (by norm_num) (half_lt_t0 0).le GreenCondInst_g0
+    (by norm_num) (δ := 1 / 10) (ε' := 1) (by norm_num) (by norm_num) one_pos u ω measureReal_le_one
+
+-- (m5) for `𝔛_{uy}`, `y = (α, o(u))` with `α = (1,1,1) ≠ [u] = 0`
+example (ω : (GreenCond_sz0 sz0).SeqΩ) :=
+  GreenCond_m5_X (sz := sz0) (z := zSeq) (n := 0) (t := 1 / 2) (κ := 1 / 2) (by norm_num) flow_sz0 (by norm_num) (half_lt_t0 0).le GreenCondInst_g0
+    (by norm_num) (δ := 1 / 10) (ε' := 1) (by norm_num) (by norm_num) one_pos ((splitEquiv 3 (sz0.L 0) (sz0.W 0)).symm (0, 0))
+    (α := fun _ => 1) (by rw [Equiv.apply_symm_apply]; decide) ω measureReal_le_one
+
+-- the slice theorem at the same data, `M = K = 2` (`p = 1`), the blocks `0 ≠ (1,1,1)`, `Env`, `c_M` the explicit closed forms (`max 1 (·)`), `δ = 1/(64 c_M)`,
+-- `ε' = δ²/(192 Env)` (the conditioning cost is `1/32`): every deterministic premise is discharged; `hsmall` (`P(Bad) ≤ N^{-D}`, `baLDEin_holds`) stays
+private abbrev GreenCondInst_Env : ℝ := max 1 (GreenCond_Env 3 (1 / 2) (BAflowLam0 sz0 zSeq 0) ‖GreenCond_s sz0 zSeq 0‖ (|(GreenCond_zt sz0 zSeq 0 (1 / 2)).im|⁻¹ + 1))
+private abbrev GreenCondInst_cM : ℝ := max 1 (GreenMinor_cY 3 (1 / 2) (BAflowLam0 sz0 zSeq 0) ‖GreenCond_s sz0 zSeq 0‖ 2)
+private abbrev GreenCondInst_δ : ℝ := 1 / (64 * GreenCondInst_cM)
+private abbrev GreenCondInst_ε : ℝ := GreenCondInst_δ ^ 2 / (192 * GreenCondInst_Env)
+
+example (hsmall : GreenCond_genv GreenCondInst_Env 2 ^ 2 * (Sizes.seqP (sz0.withLam 0)).real (badTower (sz0.withLam 0) 0 GreenCondInst_ε
+      (GreenCond_badBase sz0 zSeq 0 (1 / 2) GreenCondInst_δ) (2 + 1)) ≤ (2 * GreenCondInst_cM * (2 * GreenCondInst_δ) +
+      GreenCond_cost GreenCondInst_Env 2 (2 * GreenCondInst_δ) GreenCondInst_ε) ^ 2 * (2 * (2 * GreenCondInst_δ)) ^ (2 * 2)) :=
+  have hc : 1 ≤ GreenCondInst_cM := le_max_left _ _
+  have he : 1 ≤ GreenCondInst_Env := le_max_left _ _
+  have hd : 0 < GreenCondInst_δ := by unfold GreenCondInst_δ; positivity
+  have hd1 : GreenCondInst_δ ≤ 1 / 64 := by
+    unfold GreenCondInst_δ
+    exact one_div_le_one_div_of_le (by norm_num) (by linarith)
+  have hB1 : 2 * GreenCondInst_cM * (2 * GreenCondInst_δ) + GreenCond_cost GreenCondInst_Env 2 (2 * GreenCondInst_δ) GreenCondInst_ε ≤ 1 := by
+    have : GreenCond_cost GreenCondInst_Env 2 (2 * GreenCondInst_δ) GreenCondInst_ε = 1 / 32 := by
+      unfold GreenCond_cost GreenCond_genv GreenCondInst_ε
+      have : 0 < GreenCondInst_Env := by linarith
+      push_cast
+      field_simp
+      norm_num
+    rw [this]
+    have : 2 * GreenCondInst_cM * (2 * GreenCondInst_δ) = 1 / 16 := by
+      unfold GreenCondInst_δ
+      have : 0 < GreenCondInst_cM := by linarith
+      field_simp
+      norm_num
+    linarith
+  GreenCond_famGain_slice (κ := 1 / 2) (by norm_num) sz0 flow_sz0 (fun _ => 1 / 2) 0 (by norm_num) (half_lt_t0 0).le GreenCondInst_g0
+    (δ := GreenCondInst_δ) (ε' := GreenCondInst_ε) (Env := GreenCondInst_Env) (cM := GreenCondInst_cM) (M := 2) (K := 2) hd
+    (by linarith) (by push_cast; linarith) (by linarith) (by unfold GreenCondInst_ε; positivity) (le_max_right _ _) he (le_max_right _ _) hB1 hsmall
+    0 (fun _ => 1) (by decide)
+
+end Inst
 
 end RBM.BA
