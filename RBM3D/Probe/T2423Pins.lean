@@ -290,7 +290,7 @@ example (m : ℂ) (hM : BAMatch m) (hS : BAsim m) (hS' : BAsim' m) (hU : BAFrame
   have _ := hU _ _ |>.1 hFA
   trivial
 /-- **F1 of T2423 (a), confirmed on the band's own term**: the dotted edge partition (`LGraph.partition`, `LWVocab.lean:1303`) of the real `R2` builder `oe2xR2`
-(`m³ S⁺_{xy} G_{y'y} f`, `LWGGExp.lean:484`) at two external vertices `y = 0`, `y' = 1` has an output with `ext 0 = ext 1`: the option `1_{y'=y}` of `LGraph.aPairs`
+(`m³ S⁺_{xy} G_{y'y} f`, `LWGGExp.lean:485`) at two external vertices `y = 0`, `y' = 1` has an output with `ext 0 = ext 1`: the option `1_{y'=y}` of `LGraph.aPairs`
 (`LWVocab.lean:1061`) merges two external vertices (`T2050b`), the band partner of the BA first sum `A1` (`BAShape.s1` is never assigned). -/
 example (m : ℂ) : ∃ Q ∈ (oe2xR2 m (⟨[], [], [], 1⟩ : LGraph (Fin 2) (Fin 1)) (⟨true, true, .inl 1, .inl 0⟩, []) 0 (.inl 0) (.inl 1)).partition m,
     Q.ext 0 = Q.ext 1 := by
