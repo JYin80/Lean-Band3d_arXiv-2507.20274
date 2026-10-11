@@ -781,6 +781,14 @@ example : ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' 3 (1 / 10) (1 / 10) C (1 / 20) (f
   rw [e] at h
   exact h
 
+/-- **Target 1, pointwise form, at the band**: `stNewKLKAtgL'_holds` at `d = 3`, `κ = 𝔡 = 1/10` (`δ₀ = κ/2 = 1/20`). -/
+example : STNewKLKAtgL' 3 (1 / 10) (1 / 10)
+    (stNewKLKAtgL'_of (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
+      (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))).choose
+    (1 / 10 / 2) (fun sz E => bandStep2Mat sz E) :=
+  stNewKLKAtgL'_holds (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
+    (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))
+
 /-- **The band pin through the generic theorem** (target 6): `STNewKLK d` from target 2, the corollary and the bridge
 `bandStep2_STNewKLK`; the domain fact is `Ind.half_le_mE_im`. -/
 example (d : ℕ) : STNewKLK d :=
