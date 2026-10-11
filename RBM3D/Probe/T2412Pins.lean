@@ -24,7 +24,7 @@ Stage 1b proves the theorem `X` with the binders of `X_pin` as arguments.  Compi
 * Section 3: T2, peeling and atomic forest: `BASizeClaim_forest_sum_le_pin`, `BAGraph_exists_forest_pin`, `BAGraph_counters_le_pin`.
 * Section 4: T3, `claim:size`: `baClaimSize_pin`, `baClaimSizeG_pin` (no `hM`).
 * Section 5: T4, model form and tails: `baClaimSize_E_pin`, `baClaimSizeG_E_pin`, `baSpTail_E_pin`, `baMTail_E_pin`, `baTail_log_pin`.
-* Section 6: `#check` lines.  Section 7: one nonempty instance at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
+* Section 6: `#check` lines.  Section 7: one nonempty instance (an `example`) at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
 
 Reading of the pin text where it is not Lean: `ι, I, E, J` of the forest pin are universe polymorphic; the graph pins use `E I : Type`
 (as `BAGraph.partition`, `Graph/BAVocab.lean:229`); `baSpDecay`, `baKBound_E` quantify `L W` after `d Λ κ` as `lwSpOf_decay`, `lwKBound_E`; `baSp_eq` has no `Λ`.
@@ -225,8 +225,9 @@ def baTail_log_pin : Prop :=
 
 `P.g0 ∈ (0, 10]`, `P.E`, `P.m0` with `BAReal 3 4 P.g0 (Im P.m0) P.E P.m0`; `Λ = 10`, `κ = Im P.m0`; `G = M + (1/100) J`
 (`|Ǧ_{xy}| = 1/100` for all `x, y`, the diagonal included).  The graphs of `BAVocabInst`: `baLWT1` (normal, `(n_S, n_W, n_A, n_M) =
-(2, 1, 2, 1)`, no external vertex) and `baGGT1` (normal, `(0, 1, 1, 0)`, two external vertices).  Every deterministic hypothesis is
-discharged; the pins of the ticket (`baKBound_E_pin`, `baClaimSize_pin`, `baClaimSize_E_pin`) are the hypotheses of the example. -/
+(2, 1, 2, 1)`, no external vertex) and `baGGT1` (normal, `(0, 1, 1, 0)`, two external vertices).  The hypotheses of the example are
+the pins of the ticket (unproved here: they are the targets of stage 1b); every deterministic hypothesis of each pin that is applied
+is discharged at the data.  Not applied: `BASizeClaim_forest_sum_le_pin` (its instance is the forest of a concrete graph, owed by 1b). -/
 
 namespace T2412Inst
 
@@ -245,7 +246,7 @@ end T2412Inst
 open RBM.BA.MFixedPointInst BAVocabInst T2412Inst in
 example (hEq : baSp_eq_pin) (hDec : baSpDecay_pin) (hKB : baKBound_E_pin) (hSz : baClaimSize_pin)
     (hSzG : baClaimSizeG_pin) (hSzE : baClaimSize_E_pin) (hSzGE : baClaimSizeG_E_pin) (hTS : baSpTail_E_pin)
-    (hTM : baMTail_E_pin) (hTL : baTail_log_pin) :
+    (hTM : baMTail_E_pin) (hTL : baTail_log_pin) (hCL : BAGraph_counters_le_pin) (hF : BAGraph_exists_forest_pin) :
     (∃ K₀ K₁ Kd : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧ baLWT1.counters = ⟨2, 1, 2, 1, 0, 0⟩ ∧
       0 < baLWT1.scalingSize (1 / 100) 2 3 4 ∧
       ‖baLWT1.val D0 Fin.elim0‖ ≤ baLWT1.sizeConst K₀ K₁ Kd * baLWT1.scalingSize (1 / 100) 2 3 4 ∧
@@ -270,6 +271,9 @@ example (hEq : baSp_eq_pin) (hDec : baSpDecay_pin) (hKB : baKBound_E_pin) (hSz :
   obtain ⟨C₃, c₃, hC₃, hc₃, hT'⟩ := hTM 3 le_rfl 10 P.m0.im (by norm_num) hκ
   have _hTM := hT' 4 2 (by norm_num) P.g0 P.E P.m0 P.g0_pos P.g0_le P.real 0 1
   have _hTL := hTL 1 one_pos (3 / 2) (by norm_num) 3
+  -- T2 on `baLWT1` (no `=`-dotted edge): the counters and the forest
+  have _hCL := hCL baLWT1 (by decide)
+  have _hF := hF baLWT1 (by decide)
   refine ⟨?_, ?_, ?_⟩
   · -- T1 (`baKBound_E`) feeds T3 and its general form on `baLWT1`
     obtain ⟨K₀, K₁, Kd, hK₀, hK₁, hKd, hK⟩ := hKB 3 le_rfl 10 P.m0.im (by norm_num) hκ
