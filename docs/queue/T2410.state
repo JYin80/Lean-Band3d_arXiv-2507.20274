@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard b763c11, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 08:46:21 UTC 2026
+state: merged 7c0f55a
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAGGOp (1852 lines, stop 2000), root import; full lake build 4222 jobs; pushed
+updated: Sun Oct 11 08:46:23 UTC 2026
 reports: docs/reports/T2410-prove.md, docs/reports/T2410-audit.md

@@ -2,14 +2,13 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 08:11 UTC (dispatcher V2: BA-side T pin REQ (C7, first batch) filed (H207))
+updated: 2026-10-11 08:46 UTC (dispatcher V2: L4 REQ of stage L filed (H208); T2398 merged, line removed)
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-365. T2398 — `docs/tickets/T2398.md` + Amend 1 + **Amend 2** (`docs/tickets/T2398-amend-2.md`: route R1; TL1/TL2 PASS (supervisor 0652); probe pins `BATwistAvgLaw`, `twK`, `BATwistLoopLaw` replace `BATwistLaw`; L4 rows re-priced; T2398d): **resume** in the next free slot: `prover-max` design update (probe compiled in the same step) → auditor → report-only merge (H204). Priority: first.
 378. T2410 — `docs/tickets/T2410.md` (BA-L2c2b, new `Graph/BAGGOp.lean`: `gg2`/`gg4`, `baExpFrame_gg`, `BAexpFrameE`, counters and order): released; starts when its check compiles and a slot is free (H12). Priority: after T2398. Not in the certificate lane.
 379. T2411 — `docs/tickets/T2411.md` (BA-G5b, new `BA/GreenCond.lean`, `GreenCond2.lean`: m5, threshold families, R6, `BAFamGain`, `BAFAav`; registry two removals): released; starts when its check compiles and a slot is free (H12). Priority: after T2410. Not in the certificate lane.
 380. T2412 — `docs/tickets/T2412.md` (BA-L3c2, new `Graph/BASizeClaim*.lean`: claim:size at BA with atoms; design-gate 1a + probe step + 1a-audit; supervisor L5): released; starts when its check compiles and a slot is free (H12). Priority: after T2411. Not in the certificate lane.
@@ -18,8 +17,6 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 - `docs/tickets/checks/T2412-check.lean` (BA-L3c2; merged names only).
 - `docs/tickets/checks/T2410-check.lean` (BA-L2c2b; merged names only).
 - `docs/tickets/checks/T2411-check.lean` (BA-G5b; merged names only).
-- `docs/tickets/checks/T2401-check.lean` (G5a gate; merged names only).
-- `docs/tickets/checks/T2398-check.lean` (LW-14 gate; merged names only).
   done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2387-check.lean` on main 61849a6: exit 0, no error lines.
   done: Sat Oct 10 12:53:23 UTC 2026 — `lake env lean docs/tickets/checks/T2389-check.lean` on main 69b7abc: exit 0, no error lines.
   done: Sat Oct 10 13:03:16 UTC 2026 — `lake env lean docs/tickets/checks/T2390-check.lean` on main bf5f0d5: exit 0, no error lines.
@@ -65,6 +62,9 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 08:01:21 UTC 2026 — the 5 listed files committed by name in db6fb18 (with states T2398/T2410/T2411/T2412), pushed.
 
 - H207 (dispatcher V2, 2026-10-11 08:11 UTC; DECISIONS §226). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-11-0811-BAT.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else. One `done:` line.
+  done: Sun Oct 11 08:21:20 UTC 2026 — the 4 listed files committed by name in 5a2bfc8, pushed.
+
+- H208 (dispatcher V2, 2026-10-11 08:46 UTC; DECISIONS §227). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-11-0845-L4.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. Nothing else. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 04:21:41 UTC 2026 — T2402 report-only merge 0c82091 under Amend 1 (BA-G5c design gate: state, prove ((a), (a″), (a′)), 1a-audit, the docs/reports/T2402/ scripts; probe RBM3D/Probe/T2402Pins.lean (592 lines) stays on t/T2402 at 4b5f864; no 1b (held, F2); pushed).
@@ -75,3 +75,5 @@ done: Sun Oct 11 05:08:48 UTC 2026 — T2409 merged d354b8d (BA-L2c2a: new Graph
 done: Sun Oct 11 05:43:44 UTC 2026 — T2407 merged 1f79c74 (BA-L2c1 under Amend 1: new Graph/BAWeightOp (1941 lines, stop 2000; T2395 term lists BAGraph.ext/lw2/lw4 verbatim, baExpFrame_lw, counters and order), root import added at merge (branch had none), no registry change; 1b restarted once to carry Amend 1 (H203 (2)), 1a-audit RETURN → one rule-(B) repair → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4217 jobs; pushed).
 done: Sun Oct 11 05:50:35 UTC 2026 — T2401 merged 1aa96d2 (BA-G5a under Amend 1: new BA/GreenMinor (434), BA/GreenMinor2 (685), BA/GreenMinor3 (1003; third file authorised by Amend 1 D4, every file under 2,000); 18 targets (S1, R1, S2, S3, S4 as GreenMinor_diff with κ ≤ 1, S6); RBM3D/Test/Axioms.lean owed lines BAFamGain and BAFAav (owner G5b); three root imports (conflict with BAGGExp/BAWeightOp resolved as union); probe RBM3D/Probe/T2401Pins.lean not merged, stays on t/T2401 at aec5a16; 1a-audit sign-off by Amend 1 → (a′) + probe recompile → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4220 jobs; pushed).
 done: Sun Oct 11 06:09:11 UTC 2026 — T2408 merged b11dee1 (BA-G6a: new BA/GreenLocal (1005 lines, one file, stop 2000; GL1-GL6, bridges, wiring lemma, 9 instances), root import (union with BAGGExp/BAWeightOp/GreenMinor*); no registry change: the BAGbEXPii owed line stays until G6b (1a-audit F1; the branch's deletion was repaired); probe RBM3D/Probe/T2408Pins.lean (370 lines) not merged, stays on t/T2408 at 0547dc6; audit round 1 RETURN → one rule-(B) repair → PASS round 2 claude-opus-5-5; full lake build 4221 jobs; pushed).
+done: Sun Oct 11 08:34:36 UTC 2026 — T2398 report-only merge 7b0a10a under Amend 2 (BA LW-14 design gate, route R1: probe Twist section with BATwistAvgLaw, twK, BATwistLoopLaw (D2), row table under R1 with the new row L4t, 10,858 central lines (D3), paper delta T2398d (D4); design (b′) 113 lines; probe RBM3D/Probe/T2398Pins.lean (498 lines, standard axioms) stays on t/T2398 at 6429bb5; audit PASS claude-opus-5-5; pushed).
+done: Sun Oct 11 08:46:23 UTC 2026 — T2410 merged 7c0f55a (BA-L2c2b: new Graph/BAGGOp (1852 lines, stop 2000; gg2/gg4 verbatim from T2395, baExpFrame_gg, BAexpFrameE, baExpFrameE_holds, counters/order, instances), root import, no registry change; audit PASS claude-opus-5-5; full lake build 4222 jobs; pushed).
