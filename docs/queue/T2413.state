@@ -1,4 +1,4 @@
-state: proving
-reason: started (H209): workflow wf_8faef704-c3b, stage 1a preflight → 1b prover-max (design + probe, report only) → auditor; branch t/T2413 from main c33ef56
-updated: Sun Oct 11 09:01:51 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-max fcdfdc0 (design + probe), audit RETURN (BAChainTL lacked STG0M; collapsed window in example 19) → repairer 76c586e → audit PASS round 2 (claude-opus-5-5); report-only merge
+updated: Sun Oct 11 10:20:46 UTC 2026
 reports: docs/reports/T2413-prove.md, docs/reports/T2413-design.md, docs/reports/T2413-audit.md
