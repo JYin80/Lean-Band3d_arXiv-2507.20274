@@ -55,7 +55,7 @@ section OfL
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- Without `=`-dotted edges every atom is a vertex (`BAVocab.lean`, private `BAVocab_atom_ofL`; copied from T2397 probe 130). -/
+/-- Without `=`-dotted edges every atom is a vertex (`BAVocab.lean`, private `BAVocab_atom_ofL`; copied from T2397 probe 195). -/
 theorem BAAtomic_atom_ofL (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = false) (v : E ⊕ I) :
     (BAGraph.ofLGraph Γ).atom v = {v} := by
   have hadj : ∀ u w, (BAGraph.ofLGraph Γ).atomAdj u w = false := by
