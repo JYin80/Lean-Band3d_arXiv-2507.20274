@@ -728,12 +728,11 @@ end GMMSmall
 
 /-! ## 6. Compiled nonempty instances (`d = 3`, the BA datum of `sz0` along `zSeq` at `n = 0`)
 
-The BA datum `(g₀, E, m) = (gI, EI, mI)` of `EKPinsInst` (`BA/EKPins.lean:643-645`): `d = 3`, `L = 4`, `W = 32`,
-`g₀ = √t₀/64 ≈ 0.0130 ≤ 1/64`, `E = EI ≈ 0`, `m = mI`, `Im m ≈ 0.9995`, `BAReal 3 4 gI (1/2) EI mI` (`hrI`, `BAflow_real` at the merged flow
-`flow_sz0`).  The sizes are `szI = sz0.withLam (BAflowLam0 sz0 zSeq)`, so that `(baStep2Fam szI E).m 0 = mI`
+The BA datum `(g₀, E, m) = (gI, EI, mI)` of `EKPinsInst` (`BA/EKPins.lean:643-645`): `d = 3`, `L = 4`, `W = 32` (`sz0_values`),
+`0 < gI ≤ 1/64` (`gI_pos`, `gI_le`), `BAReal 3 4 gI (1/2) EI mI` (`hrI`, `BAflow_real` at the merged flow `flow_sz0`).  The sizes are `szI = sz0.withLam (BAflowLam0 sz0 zSeq)`, so that `(baStep2Fam szI E).m 0 = mI`
 (`baStep2Fam_m`, `rfl`).  Pin constants `κ = 1/2`, `𝔡 = 1` (`lam 0 = gI ≤ 1 = 𝔡⁻¹`).  Every hypothesis is discharged by a merged
 theorem: no external pin, no `N = 0`, no collapsed window.  The pointwise instance of the pin is at `u = 1/32`, `D = 1`, `ℓ = 2`
-(the indicator `1_{ℓ≥1}` is on), `H = g₀ Ψ` (Hermitian, `G_u(H) ≠ M`: `‖G_u - M‖_max ≤ 2/31 ≤ 1/4 = δ₀` by `NewKLKBA_GMM_small`). -/
+(the indicator `1_{ℓ≥1}` is on), `H = g₀ Ψ` (Hermitian; `‖G_u - M‖_max ≤ 2/31 ≤ 1/4 = δ₀` by `NewKLKBA_GMM_small`). -/
 
 namespace NewKLKBAInst
 
