@@ -816,9 +816,10 @@ def BASim_mk20 (P : BAPGraph E) (x' : BASimY P) (a b : P.E' ⊕ P.I') (rest : Li
   sH := sH
   wH := wH
   hd := hd
+  ex := []
   X := X
   hrest := hrest
-  hrestH := hrestH
+  hrestH := by simpa using hrestH
   hfresh := fun j hj => by
     fin_cases j
     · rw [show (⟨0, by decide⟩ : Fin 2) = 0 from rfl, BASim_anch20_zero] at hj; cases hj
@@ -846,7 +847,7 @@ def BASim_mk20 (P : BAPGraph E) (x' : BASimY P) (a b : P.E' ⊕ P.I') (rest : Li
   hmd := hmd
   hX0 := hX0
   hX1 := hX1
-  hs := hs
+  hs := by simpa using hs
   hw := hw
 
 theorem BASim_lwSplit_swap {κ : Type*} (l : List κ) : ∀ p ∈ lwSplit l, ∀ q ∈ lwSplit p.2,
@@ -909,52 +910,54 @@ theorem BASim_exists_inr (P : BAPGraph E) (x : P.I') (hint : P.g.intAtom (Sum.in
   · rw [hvm] at hR; exact absurd hR (by simp)
   · exact ⟨x', rfl⟩
 
-/-- **The band step at the image of a pair** (`LocStep.gg` at `(0, 0)`, and at `(0, 1)` with the two edges exchanged): the image of the internal atom of `x` is an
-internal vertex `x'`, the ends `y`, `y'` of the pair have other images -/
+/-- **The band step at the image of a pair** (`LocStep.gg` at `(0, 0)`, and at `(0, 1)` with the two edges exchanged): the ends `a`, `a'` of the pair at the internal atom
+have one image, an internal vertex `x'`, and the ends `y`, `y'` of the pair have other images -/
 theorem BASim_locStep_gg (P : BAPGraph E) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
-    (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2) (h : p.1.σ = true ∧ q.1.σ = true) (x : P.I')
-    (hx : p.1.src = Sum.inr x ∧ q.1.dst = Sum.inr x) (hwf : ∀ e ∈ P.g.solid, P.g.sameAtom e.src e.dst = false)
-    (hint : P.g.intAtom (Sum.inr x) = true)
+    (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2) (h : p.1.σ = true ∧ q.1.σ = true) (a a' : P.I')
+    (hx : p.1.src = Sum.inr a ∧ q.1.dst = Sum.inr a') (hsame : P.g.sameAtom (Sum.inr a) (Sum.inr a') = true)
+    (hwf : ∀ e ∈ P.g.solid, P.g.sameAtom e.src e.dst = false)
+    (hint : P.g.intAtom (Sum.inr a) = true)
     (hnb : ∀ i : P.I', P.g.intAtom (Sum.inr i) = true → (P.g.atEdges (Sum.inr i)).length = 0 ∨
       ((P.g.atEdges (Sum.inr i)).length = 2 ∧ P.g.atCharge (Sum.inr i) = 0)) :
-    ∃ x' : BASimY P, (promoteC P.g).vmap (Sum.inr x) = Sum.inr x' ∧ (promoteC P.g).vmap p.1.dst ≠ Sum.inr x' ∧
-      (promoteC P.g).vmap q.1.src ≠ Sum.inr x' ∧
+    ∃ x' : BASimY P, (promoteC P.g).vmap p.1.src = Sum.inr x' ∧ (promoteC P.g).vmap q.1.dst = Sum.inr x' ∧
+      (promoteC P.g).vmap p.1.dst ≠ Sum.inr x' ∧ (promoteC P.g).vmap q.1.src ≠ Sum.inr x' ∧
       LocStep m P.img (lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst)
         ((promoteC P.g).vmap q.1.src) false false)) ∧
       ∃ p' ∈ lwSplit P.g.solid, ∃ q' ∈ lwSplit p'.2, p'.1 = q.1 ∧ q'.1 = p.1 ∧ q'.2 = q.2 ∧
         LocStep m P.img (lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p') (BASim_imgP P q') x' ((promoteC P.g).vmap q.1.src)
           ((promoteC P.g).vmap p.1.dst) false true)) := by
-  obtain ⟨x', hx'⟩ := BASim_exists_inr P x hint
+  obtain ⟨x', hx'⟩ := BASim_exists_inr P a hint
   have hpe : p.1 ∈ P.g.solid := lvl1_mem_split_fst _ p hp
   have hqe : q.1 ∈ P.g.solid := lvl1_mem_split _ p hp q.1 (lvl1_mem_split_fst _ q hq)
+  have hxa : (promoteC P.g).vmap p.1.src = Sum.inr x' := by rw [hx.1]; exact hx'
+  have hxq : (promoteC P.g).vmap q.1.dst = Sum.inr x' := by
+    rw [hx.2, ← ((BAAtomic_promoteC_vmap_eq_sameAtom P.g _ _).2 hsame)]; exact hx'
   have hy : (promoteC P.g).vmap p.1.dst ≠ Sum.inr x' := by
     intro hc
-    rw [← hx', ← hx.1] at hc
-    have := (BAAtomic_promoteC_vmap_eq_sameAtom P.g p.1.src p.1.dst).1 hc.symm
+    have := (BAAtomic_promoteC_vmap_eq_sameAtom P.g p.1.src p.1.dst).1 (hxa.trans hc.symm)
     rw [hwf p.1 hpe] at this
     exact Bool.noConfusion this
   have hy' : (promoteC P.g).vmap q.1.src ≠ Sum.inr x' := by
     intro hc
-    rw [← hx', ← hx.2] at hc
-    have := (BAAtomic_promoteC_vmap_eq_sameAtom P.g q.1.src q.1.dst).1 hc
+    have := (BAAtomic_promoteC_vmap_eq_sameAtom P.g q.1.src q.1.dst).1 (hc.trans hxq.symm)
     rw [hwf q.1 hqe] at this
     exact Bool.noConfusion this
   have hwf' := BASim_img_wf P hwf
   have hnb' := BASim_img_nb P hnb
-  refine ⟨x', hx', hy, hy', ?_, ?_⟩
+  refine ⟨x', hxa, hxq, hy, hy', ?_, ?_⟩
   · refine LocStep.gg P.img (BASim_imgP P p) (BASim_imgP P q) (BASim_imgP_mem P hp) (BASim_imgP_mem2 P hq) x' _ _ hy false false ?_ ?_ hwf' hnb'
     · show BAScost_imgE P.g p.1 = ⟨true, (BAScost_imgE P.g p.1).circ, Sum.inr x', (promoteC P.g).vmap p.1.dst⟩
-      simp only [BAScost_imgE, h.1, hx.1, hx']
+      simp only [BAScost_imgE, h.1, hxa]
     · show BAScost_imgE P.g q.1 = ⟨true, (BAScost_imgE P.g q.1).circ, (promoteC P.g).vmap q.1.src, Sum.inr x'⟩
-      simp only [BAScost_imgE, h.2, hx.2, hx']
+      simp only [BAScost_imgE, h.2, hxq]
   · obtain ⟨p', hp', q', hq', h1, h2, h3⟩ := BASim_lwSplit_swap _ p hp q hq
     refine ⟨p', hp', q', hq', h1, h2, h3, ?_⟩
     refine LocStep.gg P.img (BASim_imgP P p') (BASim_imgP P q') (BASim_imgP_mem P hp') (BASim_imgP_mem2 P hq') x' _ _ hy' false true ?_ ?_ hwf' hnb'
     · show lwSymmTwistS false true (BAScost_imgE P.g p'.1) = ⟨true, (BAScost_imgE P.g p'.1).circ, Sum.inr x', (promoteC P.g).vmap q.1.src⟩
-      simp only [lwSymmTwistS, h1, BAScost_imgE, h.2, hx.2, hx', SEdge.transpose]
+      simp only [lwSymmTwistS, h1, BAScost_imgE, h.2, hxq, SEdge.transpose]
       rfl
     · show lwSymmTwistS false true (BAScost_imgE P.g q'.1) = ⟨true, (BAScost_imgE P.g q'.1).circ, (promoteC P.g).vmap p.1.dst, Sum.inr x'⟩
-      simp only [lwSymmTwistS, h2, BAScost_imgE, h.1, hx.1, hx', SEdge.transpose]
+      simp only [lwSymmTwistS, h2, BAScost_imgE, h.1, hxa, SEdge.transpose]
       rfl
 
 theorem BASim_twistS_ff {V : Type} (e : SEdge V) : lwSymmTwistS false false e = e := rfl
@@ -1595,10 +1598,8 @@ theorem BASim_matchLT_gg (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEd
       ((P.g.atEdges (Sum.inr i)).length = 2 ∧ P.g.atCharge (Sum.inr i) = 0))
     {Q : BAPGraph E} (hQ : (BAShape.band, Q) ∈ P.outsT (P.g.tagStd 2) (P.g.gg2 p q) ++ P.outsT (P.g.tagStd 4) (P.g.gg4 p q)) :
     ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img := by
-  obtain ⟨x', hx', hy, hy', hnat, p', hp', q', hq', h1, h2, h3, hswap⟩ :=
-    BASim_locStep_gg P m hp hq ⟨h.1, h.2.2.1⟩ x hx hwf hint hnb
-  have hx1 : (promoteC P.g).vmap p.1.src = Sum.inr x' := by rw [hx.1]; exact hx'
-  have hx2 : (promoteC P.g).vmap q.1.dst = Sum.inr x' := by rw [hx.2]; exact hx'
+  obtain ⟨x', hx1, hx2, hy, hy', hnat, p', hp', q', hq', h1, h2, h3, hswap⟩ :=
+    BASim_locStep_gg P m hp hq ⟨h.1, h.2.2.1⟩ x x hx ((BAAtomic_promoteC_vmap_eq_sameAtom P.g _ _).1 rfl) hwf hint hnb
   have hσ : p.1.σ = true ∧ q.1.σ = true := ⟨h.1, h.2.2.1⟩
   rcases List.mem_append.1 hQ with hQ | hQ
   · obtain ⟨T, hT, T', hT', htag, rfl⟩ := BASim_mem_outsT P _ _ _ _ hQ

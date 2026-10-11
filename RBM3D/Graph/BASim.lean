@@ -1377,9 +1377,10 @@ structure BASimExt (P : BAPGraph E) (k : ℕ) (J' : Type) [Fintype J'] [Decidabl
   sH : List (SEdge ((BASimX P) ⊕ J'))
   wH : List (WEdge ((BASimX P) ⊕ J'))
   hd : List (SEdge ((BASimX P) ⊕ (BASimY P)))
+  ex : List (SEdge ((BASimX P) ⊕ (BASimY P)))
   X : List (SEdge ((BASimX P) ⊕ J'))
   hrest : ∀ e ∈ rest, e ∈ P.g.solid
-  hrestH : restH.Perm (hd ++ rest.map (BAScost_imgE P.g))
+  hrestH : (restH ++ ex).Perm (hd ++ rest.map (BAScost_imgE P.g))
   hfresh : ∀ j, anchor j = none → ∀ v, emb' ((promoteC P.g).vmap v) ≠ Sum.inr (fresh j)
   hsurj : ∀ z : J', (∀ v, emb' ((promoteC P.g).vmap v) ≠ Sum.inr z) → ∃ j, anchor j = none ∧ fresh j = z
   hanch : ∀ j a, anchor j = some a → (BAGraph.ext k P.g rest s w md).sameAtom (bpv j) (owxEmb k a) = true
@@ -1390,7 +1391,7 @@ structure BASimExt (P : BAPGraph E) (k : ℕ) (J' : Type) [Fintype J'] [Decidabl
   hX0 : ∀ h ∈ X, h.circ = false
   hX1 : ∀ h ∈ X, ∃ u v, BASim_phi P emb' anchor fresh u = h.src ∧ BASim_phi P emb' anchor fresh v = h.dst ∧
     (BAGraph.ext k P.g rest s w md).sameAtom u v = true
-  hs : (hd.map (SEdge.map emb') ++ sH).Perm (s.map (BASim_phiE (BASim_phi P emb' anchor fresh)) ++ X)
+  hs : (hd.map (SEdge.map emb') ++ sH).Perm (ex.map (SEdge.map emb') ++ (s.map (BASim_phiE (BASim_phi P emb' anchor fresh)) ++ X))
   hw : List.Forall₂ (fun h w => WEdge.sameRev h (WEdge.map (BASim_phi P emb' anchor fresh) w)) wH w
 
 section ExtProofs
@@ -1508,14 +1509,17 @@ theorem BASimExt.hHs (B : BASimExt P k J' emb') (hN : P.g.Normal) (c : ℂ) :
   rw [e2]
   have e3 : (B.band c).solid = B.restH.map (SEdge.map emb') ++ B.sH := rfl
   rw [e3]
-  have p1 : (B.restH.map (SEdge.map emb')).Perm (B.hd.map (SEdge.map emb') ++ B.rest.map (fun e => SEdge.map emb' (BAScost_imgE P.g e))) := by
+  have p1 : (B.restH.map (SEdge.map emb') ++ B.ex.map (SEdge.map emb')).Perm
+      (B.hd.map (SEdge.map emb') ++ B.rest.map (fun e => SEdge.map emb' (BAScost_imgE P.g e))) := by
     have := B.hrestH.map (SEdge.map emb')
-    rwa [List.map_append, List.map_map] at this
-  refine (p1.append_right _).trans ?_
-  rw [List.append_assoc]
-  refine (List.perm_append_comm_assoc _ _ _).trans ?_
-  rw [List.append_assoc]
-  exact B.hs.append_left _
+    rwa [List.map_append, List.map_append, List.map_map] at this
+  classical
+  rw [List.perm_iff_count]
+  intro a
+  have h1 := p1.count_eq a
+  have h2 := B.hs.count_eq a
+  simp only [List.count_append] at h1 h2 ⊢
+  omega
 
 theorem BASimExt.hHw (B : BASimExt P k J' emb') (c : ℂ) :
     List.Forall₂ (fun h w => WEdge.sameRev h (WEdge.map (BASim_phi P emb' B.anchor B.fresh) w)) (B.band c).waved
@@ -1611,13 +1615,13 @@ theorem BASim_phi21_beta (P : BAPGraph E) (a : P.E' ⊕ P.I') : BASim_phi21 P a 
 
 /-- **The specification of a term with one anchored and one fresh new vertex** (`α ↦ ā`, `β ↦ n0`; the band term has one new vertex): the tables are fixed, the lists are the data.
 `hma`: the `M`-dotted edges of the term are `M_{aα}`, `M_{αa}`. -/
-def BASim_mk21 (P : BAPGraph E) (a : P.E' ⊕ P.I') (rest : List (SEdge (P.E' ⊕ P.I'))) (s : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin 2))))
+def BASim_mk21x (P : BAPGraph E) (a : P.E' ⊕ P.I') (rest : List (SEdge (P.E' ⊕ P.I'))) (s : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin 2))))
     (w : List (WEdge (P.E' ⊕ (P.I' ⊕ Fin 2)))) (md : List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin 2))))
     (restH : List (SEdge ((BASimX P) ⊕ (BASimY P)))) (sH : List (SEdge ((BASimX P) ⊕ ((BASimY P) ⊕ Fin 1))))
-    (wH : List (WEdge ((BASimX P) ⊕ ((BASimY P) ⊕ Fin 1)))) (hd : List (SEdge ((BASimX P) ⊕ (BASimY P))))
-    (hrest : ∀ e ∈ rest, e ∈ P.g.solid) (hrestH : restH.Perm (hd ++ rest.map (BAScost_imgE P.g)))
+    (wH : List (WEdge ((BASimX P) ⊕ ((BASimY P) ⊕ Fin 1)))) (hd ex : List (SEdge ((BASimX P) ⊕ (BASimY P))))
+    (hrest : ∀ e ∈ rest, e ∈ P.g.solid) (hrestH : (restH ++ ex).Perm (hd ++ rest.map (BAScost_imgE P.g)))
     (hma : bpM (owxEmb 2 a) (bpv 0) ∈ md) (hmd : ∀ m' ∈ md, BASim_phi21 P a m'.x = BASim_phi21 P a m'.y)
-    (hs : (hd.map (SEdge.map (owxEmb 1)) ++ sH).Perm (s.map (BASim_phiE (BASim_phi21 P a))))
+    (hs : (hd.map (SEdge.map (owxEmb 1)) ++ sH).Perm (ex.map (SEdge.map (owxEmb 1)) ++ s.map (BASim_phiE (BASim_phi21 P a))))
     (hw : List.Forall₂ (fun h w => WEdge.sameRev h (WEdge.map (BASim_phi21 P a) w)) wH w) :
     BASimExt P 2 ((BASimY P) ⊕ Fin 1) (owxEmb 1) where
   hemb := fun y => rfl
@@ -1632,6 +1636,7 @@ def BASim_mk21 (P : BAPGraph E) (a : P.E' ⊕ P.I') (rest : List (SEdge (P.E' �
   sH := sH
   wH := wH
   hd := hd
+  ex := ex
   X := []
   hrest := hrest
   hrestH := hrestH
@@ -1663,6 +1668,18 @@ def BASim_mk21 (P : BAPGraph E) (a : P.E' ⊕ P.I') (rest : List (SEdge (P.E' �
   hX1 := by simp
   hs := by simpa using hs
   hw := hw
+
+
+def BASim_mk21 (P : BAPGraph E) (a : P.E' ⊕ P.I') (rest : List (SEdge (P.E' ⊕ P.I'))) (s : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin 2))))
+    (w : List (WEdge (P.E' ⊕ (P.I' ⊕ Fin 2)))) (md : List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin 2))))
+    (restH : List (SEdge ((BASimX P) ⊕ (BASimY P)))) (sH : List (SEdge ((BASimX P) ⊕ ((BASimY P) ⊕ Fin 1))))
+    (wH : List (WEdge ((BASimX P) ⊕ ((BASimY P) ⊕ Fin 1)))) (hd : List (SEdge ((BASimX P) ⊕ (BASimY P))))
+    (hrest : ∀ e ∈ rest, e ∈ P.g.solid) (hrestH : restH.Perm (hd ++ rest.map (BAScost_imgE P.g)))
+    (hma : bpM (owxEmb 2 a) (bpv 0) ∈ md) (hmd : ∀ m' ∈ md, BASim_phi21 P a m'.x = BASim_phi21 P a m'.y)
+    (hs : (hd.map (SEdge.map (owxEmb 1)) ++ sH).Perm (s.map (BASim_phiE (BASim_phi21 P a))))
+    (hw : List.Forall₂ (fun h w => WEdge.sameRev h (WEdge.map (BASim_phi21 P a) w)) wH w) :
+    BASimExt P 2 ((BASimY P) ⊕ Fin 1) (owxEmb 1) :=
+  BASim_mk21x P a rest s w md restH sH wH hd [] hrest (by simpa using hrestH) hma hmd (by simpa using hs) hw
 
 theorem BASim_phi21_anchor_dot (P : BAPGraph E) (a : P.E' ⊕ P.I') :
     BASim_phi21 P a (owxEmb 2 a) = BASim_phi21 P a (bpv 0) :=
@@ -1724,9 +1741,10 @@ def BASim_mk42 (P : BAPGraph E) (a : P.E' ⊕ P.I') (rest : List (SEdge (P.E' �
   sH := sH
   wH := wH
   hd := hd
+  ex := []
   X := []
   hrest := hrest
-  hrestH := hrestH
+  hrestH := by simpa using hrestH
   hfresh := fun j _ v => by
     intro h
     exact lwSymm_emb_ne _ 2 (if j = 3 then 1 else 0) (by simpa [BASim_fresh4] using h.symm)
