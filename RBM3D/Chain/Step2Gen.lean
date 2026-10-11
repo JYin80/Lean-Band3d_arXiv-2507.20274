@@ -25,9 +25,17 @@ bridges the two by `rfl` / `Iff.rfl`.
   valued in `Step2Mat`; the energy-quantified pins `STNewKLKAt`, `STNewKLK`, `STK2decay` take a
   family `mk : ∀ sz, (ℕ → ℝ) → Step2Mat sz` read at `fun _ => E`.
 * **Bridges.** `bandStep2Mat sz E`, `bandStep2Data sz z` are the band instances; every generic
-  name has a bridge `bandStep2_<band name>` or `bandFM_<band name>` (`rfl` / `Iff.rfl`; the one
-  exception is `bandFM_STGijGEX`).  The probe's family `STAvgUgL`, ..., `STStep2G`,
-  `STStep2_iff` is section 4.
+  name has a bridge `bandStep2_<band name>` or `bandFM_<band name>` (`rfl` / `Iff.rfl`; the
+  exceptions are `bandFM_STGijGEX` and, since T2414, the ten bridges of the drift (below), which
+  are proved).  The probe's family `STAvgUgL`, ..., `STStep2G`, `STStep2_iff` is section 4.
+* **Drift kernels (T2414, BA-T row T8b, §2b).** `Step2Kern_Mss` is the block kernel
+  `M^{(σσ')}_{ab} = W^{-d} Σ_{x∈[a], y∈[b]} M(σ)_{yx} M(σ')_{xy}` (`def:Theta_BA`,
+  `1_2:663-664`) read from `FlowFM.M`; `Step2Gen_thetaKer`, `_uKer`, `_ThetaN`, `_UN` are the
+  drift kernels `X Θ_t(X)`, `(1 - sX) Θ_t(X)`, `X = M^{(σσ')} S`, over a carrier (slot `i` of a
+  `k`-loop with the charges `(σ_i, σ_{i+1})`); `STthetaOpg`, `STgDriftNg`, `STeeUMg`,
+  `STGridRepNAtgL` read them.  Band identities and the bridges: here; BA identities:
+  `Chain/Step2Kern.lean`; `lem:newKLK`: `Chain/NewKLKGen.lean`.  `STK2decaygL'` (BAT-F2) is the
+  primed `K^{(2)}` decay.
 * `STJhatg`, `STLWassmExpgL` moved here from `BA/FlowPins.lean` (`STLWTgL`, `STEMn2ExpgL` read
   them, and this file cannot import `BA/FlowPins`).
 -/
@@ -146,6 +154,188 @@ def bandStep2Data {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) : Step2Data sz wher
 end BandInst
 
 
+/-! ## 2b. The block kernel `M^{(σσ')}` and the drift kernels read from the carrier (ticket T2414, BAT-F1 (a)-(d)) -/
+
+section Kern
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- The propagator `Θ_ξ = (1 - ξ S)⁻¹` of a kernel `S` (the band `Theta d L g` is the case `S = SB d L g`). -/
+def Step2Gen_Theta {Λ : Type*} [Fintype Λ] [DecidableEq Λ] (S : Matrix Λ Λ ℂ) (ξ : ℂ) : Matrix Λ Λ ℂ :=
+  Ring.inverse (1 - ξ • S)
+
+/-- `M(σ)_{xy}` of the carrier `C`: `M(+) = M`, `M(−) = M^*`, i.e. `M(−)_{xy} = conj M_{yx}` (the charge convention of
+`STmsigg` and of `G(z̄) = G(z)^*`; `BAMsigma`, `BA/MFixedPoint.lean:507`). -/
+def Step2Kern_Msig (C : FlowFM sz) (n : ℕ) (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)) : ℂ :=
+  if σ then C.M n x y else (starRingEnd ℂ) (C.M n y x)
+
+/-- `B(σ)` of a block matrix: `B(+) = B`, `B(−) = B^*` (`BAMsigma` at a general `B`). -/
+def Step2Kern_Bsig {Λ : Type*} (Bm : Matrix Λ Λ ℂ) (σ : Bool) : Matrix Λ Λ ℂ :=
+  if σ then Bm else Bmᴴ
+
+/-- **The block kernel** `M^{(σσ')}_{ab} = W^{-d} Σ_{x∈[a]} Σ_{y∈[b]} M(σ)_{yx} M(σ')_{xy}` (`def:Theta_BA`, `1_2:663-664`;
+`tr(M(σ)E_a M(σ')E_b)` of `eq:Msig`, `1_2:1070`, up to the `W^{±d}` normalisation).  **Charge and index order**: `M(+) = M`,
+`M(−) = M^*`, and the block reading is `M(σ)_{ba} M(σ')_{ab}` (first charge on the entry `(b, a)`), as `BAMss`
+(`BA/MFixedPoint.lean:511`), `BAMssOf` (`BA/KCactus.lean:50`) and the right-hand side of `BAKsolve` (`BA/KSolve.lean:63-66`,
+`W^{-d} (Θ_BA M^{(σ₁σ₂)})_{a₁a₂}`).  It reads only `C.M`. -/
+def Step2Kern_Mss (C : FlowFM sz) (n : ℕ) (σ σ' : Bool) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
+  Matrix.of fun a b => (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ *
+    ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b,
+      Step2Kern_Msig C n σ y x * Step2Kern_Msig C n σ' x y
+
+/-- **`thetaKer`** (`(def:op_thn)`, `3_5:109`): `X Θ_t(X) = X (1 - t X)⁻¹`, `X = M^{(σσ')} S` (T2414; it was `μ S Θ_{tμ}` of the
+scalar `μ = m_σ m_σ'`; at the band `X = μ S`). -/
+def Step2Gen_thetaKer (C : FlowFM sz) (n : ℕ) (σ σ' : Bool) (t : ℝ) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
+  (Step2Kern_Mss C n σ σ' * C.S n) * Step2Gen_Theta (Step2Kern_Mss C n σ σ' * C.S n) (t : ℂ)
+
+/-- **`uKer`** (`(def_Ustz)`, `3_5:116`): `(1 - s X) Θ_t(X)`, `X = M^{(σσ')} S`. -/
+def Step2Gen_uKer (C : FlowFM sz) (n : ℕ) (σ σ' : Bool) (s t : ℝ) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
+  (1 - (s : ℂ) • (Step2Kern_Mss C n σ σ' * C.S n)) * Step2Gen_Theta (Step2Kern_Mss C n σ σ' * C.S n) (t : ℂ)
+
+/-- **`ThetaN`** (`(def:op_thn)`): the operator `Θ^{(k)}_{t,σ}` on `k`-index tensors; slot `i` uses the charge pair
+`(σ_i, σ_{i+1})`, `σ_{k+1} = σ_1` (`finRotate`, as `cycProd`, `Kernel/Evolution.lean:49`, and `BAUN`, `BA/EKPins.lean:53`). -/
+def Step2Gen_ThetaN (C : FlowFM sz) (n : ℕ) {k : ℕ} (σ : Fin k → Bool) (t : ℝ) (A : (Fin k → Zd d (sz.L n)) → ℂ) :
+    (Fin k → Zd d (sz.L n)) → ℂ :=
+  fun a => ∑ i, ∑ b, Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) t (a i) b * A (Function.update a i b)
+
+/-- **`UN`** (`(def_Ustz)`): the evolution kernel `U^{(k)}_{s,t,σ}` on `k`-index tensors, slot `i` with `(σ_i, σ_{i+1})`. -/
+def Step2Gen_UN (C : FlowFM sz) (n : ℕ) {k : ℕ} (σ : Fin k → Bool) (s t : ℝ) (A : (Fin k → Zd d (sz.L n)) → ℂ) :
+    (Fin k → Zd d (sz.L n)) → ℂ :=
+  fun a => ∑ b : Fin k → Zd d (sz.L n), (∏ i, Step2Gen_uKer C n (σ i) (σ (finRotate k i)) s t (a i) (b i)) * A b
+
+private theorem Step2Kern_count_ofs (n : ℕ) (a b : Zd d (sz.L n)) :
+    ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b,
+      (if (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2 then (1 : ℂ) else 0) =
+        (((sz.W n : ℕ) : ℂ) ^ d) := by
+  have h1 : ∀ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b,
+      (if (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2 then (1 : ℂ) else 0) = 1 := by
+    intro x hx
+    rw [Finset.sum_boole]
+    have : (Iblk d (sz.L n) (sz.W n) b).filter
+        (fun y => (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2) =
+        {(splitEquiv d (sz.L n) (sz.W n)).symm (b, (split d (sz.L n) (sz.W n) x).2)} := by
+      ext y
+      simp only [Iblk, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+      constructor
+      · rintro ⟨h1, h2⟩
+        apply (splitEquiv d (sz.L n) (sz.W n)).injective
+        simp only [Equiv.apply_symm_apply]
+        exact Prod.ext h1 h2.symm
+      · rintro rfl
+        have h' : split d (sz.L n) (sz.W n)
+            ((splitEquiv d (sz.L n) (sz.W n)).symm (b, (split d (sz.L n) (sz.W n) x).2)) =
+              (b, (split d (sz.L n) (sz.W n) x).2) :=
+          (splitEquiv d (sz.L n) (sz.W n)).apply_symm_apply (b, (split d (sz.L n) (sz.W n) x).2)
+        rw [h']
+        exact ⟨rfl, rfl⟩
+    rw [this]
+    simp
+  rw [Finset.sum_congr rfl h1]
+  simp [card_Iblk]
+
+/-- **`Step2Kern_Mss_of_kron`**: if `M = Bm ⊗ I_{W^d}`, i.e. `M_{xy} = Bm(blk x, blk y) · 1{ofs x = ofs y}` (`split`,
+`Defs/Sizes.lean:64`), then `M^{(σσ')}_{ab} = Bsig(σ)_{ba} Bsig(σ')_{ab}`. -/
+theorem Step2Kern_Mss_of_kron (C : FlowFM sz) (n : ℕ) (Bm : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ)
+    (hM : ∀ x y : Idx d (sz.L n) (sz.W n), C.M n x y =
+      Bm (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (if (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2 then 1 else 0))
+    (σ σ' : Bool) :
+    Step2Kern_Mss C n σ σ' = Matrix.of fun a b => Step2Kern_Bsig Bm σ b a * Step2Kern_Bsig Bm σ' a b := by
+  ext a b
+  simp only [Step2Kern_Mss, Matrix.of_apply]
+  have hterm : ∀ x ∈ Iblk d (sz.L n) (sz.W n) a, ∀ y ∈ Iblk d (sz.L n) (sz.W n) b,
+      Step2Kern_Msig C n σ y x * Step2Kern_Msig C n σ' x y =
+        (Step2Kern_Bsig Bm σ b a * Step2Kern_Bsig Bm σ' a b) *
+          (if (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2 then (1 : ℂ) else 0) := by
+    intro x hx y hy
+    have hxa : (split d (sz.L n) (sz.W n) x).1 = a := by simpa [Iblk] using hx
+    have hyb : (split d (sz.L n) (sz.W n) y).1 = b := by simpa [Iblk] using hy
+    by_cases ho : (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2
+    · cases σ <;> cases σ' <;>
+        simp [Step2Kern_Msig, Step2Kern_Bsig, hM, hxa, hyb, ho, Matrix.conjTranspose_apply]
+    · have ho' : ¬ (split d (sz.L n) (sz.W n) y).2 = (split d (sz.L n) (sz.W n) x).2 := fun h => ho h.symm
+      cases σ <;> cases σ' <;>
+        simp [Step2Kern_Msig, Step2Kern_Bsig, hM, hxa, hyb, ho, ho', Matrix.conjTranspose_apply]
+  rw [Finset.sum_congr rfl fun x hx => Finset.sum_congr rfl fun y hy => hterm x hx y hy]
+  simp_rw [← Finset.mul_sum]
+  rw [Step2Kern_count_ofs n a b]
+  have hW : (((sz.W n : ℕ) : ℂ) ^ d) ≠ 0 := by
+    have := NeZero.ne (sz.W n)
+    exact pow_ne_zero _ (by exact_mod_cast this)
+  field_simp
+
+/-- **`Step2Kern_Mss_band`**: at `bandFM`, `M = m(E) I` gives `M^{(σσ')} = m(σ) m(σ') I`. -/
+theorem Step2Kern_Mss_band (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) :
+    Step2Kern_Mss (bandFM sz E) n σ σ' =
+      (mSigma (E n) σ * mSigma (E n) σ') • (1 : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) := by
+  have hker : ∀ x y : Idx d (sz.L n) (sz.W n), (bandFM sz E).M n x y =
+      (Matrix.of fun a b : Zd d (sz.L n) => if a = b then mE (E n) else 0) (split d (sz.L n) (sz.W n) x).1
+        (split d (sz.L n) (sz.W n) y).1 *
+      (if (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2 then 1 else 0) := by
+    intro x y
+    by_cases hxy : x = y
+    · subst hxy
+      simp [bandFM]
+    · by_cases h1 : (split d (sz.L n) (sz.W n) x).1 = (split d (sz.L n) (sz.W n) y).1
+      · have h2 : ¬ (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) y).2 := fun h2 =>
+          hxy (split_injective d (sz.L n) (sz.W n) (Prod.ext h1 h2))
+        simp [bandFM, hxy, h2]
+      · simp [bandFM, hxy, h1]
+  rw [Step2Kern_Mss_of_kron (bandFM sz E) n _ hker σ σ']
+  ext a b
+  by_cases h : a = b
+  · subst h
+    cases σ <;> cases σ' <;> simp [Step2Kern_Bsig, mSigma]
+  · cases σ <;> cases σ' <;> simp [Step2Kern_Bsig, mSigma, h, Matrix.one_apply, Ne.symm h]
+
+/-- **`Step2Kern_thetaKer_band`**: the new `thetaKer` at `bandFM` is the merged band kernel `μ S^{(B)} Θ_{tμ}`
+(`RBM.thetaKer`, `Kernel/Evolution.lean:52`), `μ = m(σ) m(σ')`. -/
+theorem Step2Kern_thetaKer_band (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) (t : ℝ) :
+    Step2Gen_thetaKer (bandFM sz E) n σ σ' t =
+      RBM.thetaKer d (sz.L n) (sz.lam n) (mSigma (E n) σ * mSigma (E n) σ') t := by
+  unfold Step2Gen_thetaKer RBM.thetaKer Theta
+  rw [Step2Kern_Mss_band]
+  have hS : (bandFM sz E).S n = SB d (sz.L n) (sz.lam n) := rfl
+  rw [hS, smul_mul_assoc, one_mul]
+  unfold Step2Gen_Theta
+  rw [smul_smul, mul_comm]
+
+/-- **`Step2Kern_uKer_band`**: the new `uKer` at `bandFM` is the merged band kernel `(1 - s μ S^{(B)}) Θ_{tμ}` (`RBM.uKer`,
+`Kernel/Evolution.lean:56`). -/
+theorem Step2Kern_uKer_band (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (σ σ' : Bool) (s t : ℝ) :
+    Step2Gen_uKer (bandFM sz E) n σ σ' s t =
+      RBM.uKer d (sz.L n) (sz.lam n) (mSigma (E n) σ * mSigma (E n) σ') s t := by
+  unfold Step2Gen_uKer RBM.uKer Theta
+  rw [Step2Kern_Mss_band]
+  have hS : (bandFM sz E).S n = SB d (sz.L n) (sz.lam n) := rfl
+  rw [hS, smul_mul_assoc, one_mul]
+  unfold Step2Gen_Theta
+  rw [smul_smul, smul_smul, mul_comm (t : ℂ), mul_comm (s : ℂ)]
+
+/-- **`Step2Kern_ThetaN_band`**: the new `ThetaN` at `bandFM` is the merged band `RBM.ThetaN` at `m_i = m(σ_i)` (slot `i` has
+`cycProd`, `Kernel/Evolution.lean:60`). -/
+theorem Step2Kern_ThetaN_band (sz : Sizes d) (E : ℕ → ℝ) (n k : ℕ) (σ : Fin k → Bool) (t : ℝ)
+    (A : (Fin k → Zd d (sz.L n)) → ℂ) :
+    Step2Gen_ThetaN (bandFM sz E) n σ t A =
+      RBM.ThetaN d (sz.L n) (sz.lam n) (fun i => mSigma (E n) (σ i)) t A := by
+  funext a
+  unfold Step2Gen_ThetaN RBM.ThetaN
+  simp only [Step2Kern_thetaKer_band]
+  rfl
+
+/-- **`Step2Kern_UN_band`**: the new `UN` at `bandFM` is the merged band `RBM.UN` at `m_i = m(σ_i)`
+(`Kernel/Evolution.lean:65`). -/
+theorem Step2Kern_UN_band (sz : Sizes d) (E : ℕ → ℝ) (n k : ℕ) (σ : Fin k → Bool) (s t : ℝ)
+    (A : (Fin k → Zd d (sz.L n)) → ℂ) :
+    Step2Gen_UN (bandFM sz E) n σ s t A =
+      RBM.UN d (sz.L n) (sz.lam n) (fun i => mSigma (E n) (σ i)) s t A := by
+  funext a
+  unfold Step2Gen_UN RBM.UN
+  simp only [Step2Kern_uKer_band]
+  rfl
+
+end Kern
+
 /-! ## 3. The matrix-level and model-level vocabulary (`Step2Defs` §1, §2.2) -/
 
 section Matrix
@@ -187,17 +377,13 @@ def STELKLKMg (n : ℕ) (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ x : Zd d (sz.L n), ∑ y : Zd d (sz.L n),
     STLKMg Cm n u H σ ![x, a 1] * Cm.S n x y * STLKMg Cm n u H σ ![a 0, y]
 
-/-- The propagator `Θ_ξ = (1 - ξ S)⁻¹` of a kernel `S` (the band `Theta d L g` is the case `S = SB d L g`). -/
-def Step2Gen_Theta {Λ : Type*} [Fintype Λ] [DecidableEq Λ] (S : Matrix Λ Λ ℂ) (ξ : ℂ) : Matrix Λ Λ ℂ :=
-  Ring.inverse (1 - ξ • S)
-
-/-- `STthetaOp`: the operator `Θ^{(2)}_{u,σ}` of `DefTHUST` acting on a tensor `A`. -/
+/-- `STthetaOp`: the operator `Θ^{(2)}_{u,σ}` of `DefTHUST` acting on a tensor `A`.  T2414: the drift kernel of slot `i` is the
+block-kernel form `Step2Gen_thetaKer` at the charge pair `(σ_i, σ_{i+1})` (slot 0 has `(σ₀, σ₁)`, slot 1 has `(σ₁, σ₀)`); it was
+`m_{σ₀} m_{σ₁} (S Θ_{u m_{σ₀} m_{σ₁}})` at both slots. -/
 def STthetaOpg (n : ℕ) (u : ℝ) (σ : Fin 2 → Bool) (A : (Fin 2 → Zd d (sz.L n)) → ℂ)
     (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   ∑ i : Fin 2, ∑ b : Zd d (sz.L n),
-    (STmsigg Cm n (σ 0) * STmsigg Cm n (σ 1)) *
-      ((Cm.S n * Step2Gen_Theta (Cm.S n) ((u : ℂ) * (STmsigg Cm n (σ 0) * STmsigg Cm n (σ 1)))) (a i) b) *
-      A (Function.update a i b)
+    Step2Gen_thetaKer Cm.toFlowFM n (σ i) (σ (finRotate 2 i)) u (a i) b * A (Function.update a i b)
 
 /-- `STEEkM`: the quadratic-variation loop `(𝓔⊗𝓔)^{M,(2;k)}_{u,σ,a,a}` of a fine matrix. -/
 def STEEkMg (n : ℕ) (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -238,8 +424,20 @@ theorem bandStep2_STEGtM (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STEGtM sz n (E n) u H σ a = STEGtMg (bandStep2Mat sz E) n u H σ a := rfl
 theorem bandStep2_STELKLKM (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STELKLKM sz n (E n) u H σ a = STELKLKMg (bandStep2Mat sz E) n u H σ a := rfl
+/-- T2414: no longer `rfl` (`Fin.sum_univ_two`, `mul_comm` at slot 1, `Step2Kern_thetaKer_band`). -/
 theorem bandStep2_STthetaOp (σ : Fin 2 → Bool) (A : (Fin 2 → Zd d (sz.L n)) → ℂ) (a : Fin 2 → Zd d (sz.L n)) :
-    STthetaOp sz n (E n) u σ A a = STthetaOpg (bandStep2Mat sz E) n u σ A a := rfl
+    STthetaOp sz n (E n) u σ A a = STthetaOpg (bandStep2Mat sz E) n u σ A a := by
+  unfold STthetaOp STthetaOpg
+  have hfm : (bandStep2Mat sz E).toFlowFM = bandFM sz E := rfl
+  have e0 : finRotate 2 0 = 1 := rfl
+  have e1 : finRotate 2 1 = 0 := rfl
+  rw [Fin.sum_univ_two, Fin.sum_univ_two]
+  simp only [hfm, e0, e1, Step2Kern_thetaKer_band]
+  have hm : ∀ s : Bool, STmsig (E n) s = mSigma (E n) s := fun s => rfl
+  simp only [hm]
+  unfold RBM.thetaKer
+  simp only [Matrix.smul_mul, Matrix.smul_apply, smul_eq_mul]
+  rw [mul_comm (mSigma (E n) (σ 1)) (mSigma (E n) (σ 0))]
 theorem bandStep2_STEEkM (k : Fin 2) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STEEkM sz n (E n) u H k σ a = STEEkMg (bandStep2Mat sz E) n u H k σ a := rfl
 theorem bandStep2_STEEM (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
@@ -691,47 +889,31 @@ variable {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n : �
 
 theorem bandStep2_STgA (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
     STgA sz s t K n (E n) σ a k ω = STgAg (bandStep2Mat sz E) s t K n σ a k ω := rfl
+/-- T2414: no longer `rfl` (through `bandStep2_STthetaOp`). -/
 theorem bandStep2_STgDrift (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
-    STgDrift sz s t K n (E n) σ a k ω = STgDriftg (bandStep2Mat sz E) s t K n σ a k ω := rfl
+    STgDrift sz s t K n (E n) σ a k ω = STgDriftg (bandStep2Mat sz E) s t K n σ a k ω := by
+  unfold STgDrift STgDriftg
+  rw [bandStep2_STthetaOp]
+  rfl
 theorem bandStep2_STstopIdx (D : ℝ) (ℓ : ℕ → ℝ → ℝ) :
     STstopIdx sz s t K E D ℓ n = STstopIdxg (bandStep2Mat sz E) s t K D ℓ n := rfl
+/-- T2414: no longer `Iff.rfl` (the drift reads the block kernel; through `bandStep2_STgDrift`). -/
 theorem bandStep2_STGridMartAt (C₀ : ℝ) :
     STGridMartAt d C₀ ↔ STGridMartAtgL d C₀ (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
+      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+  unfold STGridMartAt STGridMartAtgL
+  simp only [bandStep2_STgDrift]
+  exact Iff.rfl
 theorem bandStep2_STGridMart :
     STGridMart d ↔ STGridMartgL d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
+      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+  unfold STGridMart STGridMartgL
+  simp only [bandStep2_STGridMartAt]
 
 end GridBridge
 
 
 /-! ## 6. The list-indexed loops of `Step2Defs` §3 (`STLIM`, ..., `STGridRepN`) -/
-
-section Kernels
-
-variable {Λ : Type*} [Fintype Λ] [DecidableEq Λ] (S : Matrix Λ Λ ℂ)
-
-/-- `thetaKer`: `μ S Θ_{tμ}` (`(def:op_thn)`) of a kernel `S`. -/
-def Step2Gen_thetaKer (μ : ℂ) (t : ℝ) : Matrix Λ Λ ℂ := (μ • S) * Step2Gen_Theta S ((t : ℂ) * μ)
-
-/-- `uKer`: `(1 - s μ S) Θ_{tμ}` (`(def_Ustz)`) of a kernel `S`. -/
-def Step2Gen_uKer (μ : ℂ) (s t : ℝ) : Matrix Λ Λ ℂ := (1 - ((s : ℂ) * μ) • S) * Step2Gen_Theta S ((t : ℂ) * μ)
-
-end Kernels
-
-section KernelsN
-
-variable {d L : ℕ} [NeZero L] (S : Matrix (Zd d L) (Zd d L) ℂ)
-
-/-- `ThetaN`: the operator `Θ^{(n)}_{t,σ}` on `n`-index tensors (`(def:op_thn)`) of a kernel `S`. -/
-def Step2Gen_ThetaN {n : ℕ} (m : Fin n → ℂ) (t : ℝ) (A : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
-  fun a => ∑ i, ∑ b, Step2Gen_thetaKer S (cycProd m i) t (a i) b * A (Function.update a i b)
-
-/-- `UN`: the evolution kernel `U^{(n)}_{s,t,σ}` on `n`-index tensors (`(def_Ustz)`) of a kernel `S`. -/
-def Step2Gen_UN {n : ℕ} (m : Fin n → ℂ) (s t : ℝ) (A : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
-  fun a => ∑ b : Fin n → Zd d L, (∏ i, Step2Gen_uKer S (cycProd m i) s t (a i) (b i)) * A b
-
-end KernelsN
 
 section ListLoops
 
@@ -785,22 +967,24 @@ def STgANg (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) {m : ℕ} (σ : Fin m
     (ω : PathΩ sz) : ℂ :=
   STLKIMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) (KLloopOf d (sz.L n) σ a)
 
-/-- `STgDriftN`: the drift of `(𝓛-𝒦)^{(m)}` (`(eq_L-Keee)`, `3_5:75-100`) at the grid state. -/
+/-- `STgDriftN`: the drift of `(𝓛-𝒦)^{(m)}` (`(eq_L-Keee)`, `3_5:75-100`) at the grid state (T2414: the call of `ThetaN` reads the
+carrier `Cm.toFlowFM` and the charges `σ`; it was `Cm.S n` and `m_σ`). -/
 def STgDriftNg (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) {m : ℕ} (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n)) (k : ℕ)
     (ω : PathΩ sz) : ℂ :=
-  Step2Gen_ThetaN (Cm.S n) (fun i => STmsigg Cm n (σ i)) (gridTime s t K n k)
+  Step2Gen_ThetaN Cm.toFlowFM n σ (gridTime s t K n k)
       (fun a' => STLKIMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) (KLloopOf d (sz.L n) σ a')) a +
     ∑ l ∈ Finset.Icc 3 m, STksimLKMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) l
       (KLloopOf d (sz.L n) σ a) +
     STelklkMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) (KLloopOf d (sz.L n) σ a) +
     STegtMg Cm n (gridTime s t K n k) (Cm.Hpath s t K n k ω) (KLloopOf d (sz.L n) σ a)
 
-/-- `STeeUM`: the weighted quadratic-variation loop `((𝒰_{v,w,σ} ⊗ 𝒰_{v,w,σ̄}) ∘ (ℰ⊗ℰ)^{M,(m)}_{v,σ})_{a,a}`. -/
+/-- `STeeUM`: the weighted quadratic-variation loop `((𝒰_{v,w,σ} ⊗ 𝒰_{v,w,σ̄}) ∘ (ℰ⊗ℰ)^{M,(m)}_{v,σ})_{a,a}` (T2414: `uKer` at
+`(σ_i, σ_{i+1})` and `(!σ_i, !σ_{i+1})`). -/
 def STeeUMg (n : ℕ) (v w : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     {m : ℕ} (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n)) : ℂ :=
   ∑ b : Fin m → Zd d (sz.L n), ∑ b' : Fin m → Zd d (sz.L n),
-    (∏ i, Step2Gen_uKer (Cm.S n) (cycProd (fun i => STmsigg Cm n (σ i)) i) v w (a i) (b i)) *
-      (∏ i, Step2Gen_uKer (Cm.S n) (cycProd (fun i => STmsigg Cm n (!σ i)) i) v w (a i) (b' i)) *
+    (∏ i, Step2Gen_uKer Cm.toFlowFM n (σ i) (σ (finRotate m i)) v w (a i) (b i)) *
+      (∏ i, Step2Gen_uKer Cm.toFlowFM n (!σ i) (!σ (finRotate m i)) v w (a i) (b' i)) *
         STeeMg Cm n v H σ b b'
 
 end ListLoops
@@ -838,7 +1022,7 @@ def STGridRepNAtgL (d m : ℕ) (C₀ : ℝ) (Flow : ∀ (sz : Sizes d) (κ ε �
                           ((mk sz z).Hpath s t K n j ω) i.1 i.2‖ + ((sz.size n : ℕ) : ℝ) ^ (-D)) ^
                           (1 / 2 : ℝ) <
                     ‖∑ j ∈ Finset.range k,
-                      Step2Gen_UN ((mk sz z).S n) (fun i' => STmsigg (mk sz z) n (i.1 i'))
+                      Step2Gen_UN (mk sz z).toFlowFM n i.1
                         (gridTime s t K n j) (gridTime s t K n k)
                         (fun b => Mart n (i.1, b) (j + 1) ω - Mart n (i.1, b) j ω) i.2‖} ≤
                   ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)))
@@ -868,17 +1052,35 @@ theorem bandStep2_STeeM {m : ℕ} (σ : Fin m → Bool) (a a' : Fin m → Zd d (
     STeeM sz n (E n) u H σ a a' = STeeMg (bandStep2Mat sz E) n u H σ a a' := rfl
 theorem bandStep2_STgAN (s t : ℕ → ℝ) (K : ℕ → ℕ) {m : ℕ} (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n)) (k : ℕ)
     (ω : PathΩ sz) : STgAN sz s t K n (E n) σ a k ω = STgANg (bandStep2Mat sz E) s t K n σ a k ω := rfl
+/-- T2414: no longer `rfl` (through `Step2Kern_ThetaN_band`). -/
 theorem bandStep2_STgDriftN (s t : ℕ → ℝ) (K : ℕ → ℕ) {m : ℕ} (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n))
     (k : ℕ) (ω : PathΩ sz) :
-    STgDriftN sz s t K n (E n) σ a k ω = STgDriftNg (bandStep2Mat sz E) s t K n σ a k ω := rfl
+    STgDriftN sz s t K n (E n) σ a k ω = STgDriftNg (bandStep2Mat sz E) s t K n σ a k ω := by
+  unfold STgDriftN STgDriftNg
+  have hfm : (bandStep2Mat sz E).toFlowFM = bandFM sz E := rfl
+  rw [hfm, Step2Kern_ThetaN_band]
+  rfl
+/-- T2414: no longer `rfl` (through `Step2Kern_uKer_band`; `STeeUMg` reads `uKer` at `(σ_i, σ_{i+1})` and `(!σ_i, !σ_{i+1})`). -/
 theorem bandStep2_STeeUM (v w : ℝ) {m : ℕ} (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n)) :
-    STeeUM sz n (E n) v w H σ a = STeeUMg (bandStep2Mat sz E) n v w H σ a := rfl
+    STeeUM sz n (E n) v w H σ a = STeeUMg (bandStep2Mat sz E) n v w H σ a := by
+  unfold STeeUM STeeUMg
+  have hfm : (bandStep2Mat sz E).toFlowFM = bandFM sz E := rfl
+  simp only [hfm, Step2Kern_uKer_band]
+  rfl
+/-- T2414: no longer `Iff.rfl` (through `bandStep2_STgDriftN`, `bandStep2_STeeUM`, `Step2Kern_UN_band`). -/
 theorem bandStep2_STGridRepNAt (m : ℕ) (C₀ : ℝ) :
     STGridRepNAt d m C₀ ↔ STGridRepNAtgL d m C₀ (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
+      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+  unfold STGridRepNAt STGridRepNAtgL
+  have hfm : ∀ (sz : Sizes d) (z : ℕ → ℂ), (bandStep2Mat sz (STflowE z)).toFlowFM = bandFM sz (STflowE z) :=
+    fun _ _ => rfl
+  simp only [bandStep2_STgDriftN, bandStep2_STeeUM, hfm, Step2Kern_UN_band]
+  exact Iff.rfl
 theorem bandStep2_STGridRepN :
     STGridRepN d ↔ STGridRepNgL d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
-      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
+      (fun sz z => bandStep2Mat sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+  unfold STGridRepN STGridRepNgL
+  simp only [bandStep2_STGridRepNAt]
 
 end ListBridge
 
@@ -910,13 +1112,32 @@ def STK2decaygL (d : ℕ) (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz)
       0 ≤ u → u < 1 → 0 ≤ D → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
         ‖(mk sz (fun _ => E)).K n u σ a‖ ≤ C * STprof sz n u D ((sz.L n : ℕ) : ℝ) (a 0) (a 1)
 
+/-- **`STK2decaygL'`** (BAT-F2, T2414): `STK2decaygL` with the premise `|E| ≤ 2 - κ` replaced by `κ ≤ Im m` (the one-loop value of
+the family at the constant sequence `fun _ => E`), as `STNewKLKgL'` (`Chain/NewKLKGen.lean:69`).  `K` is a carrier field: no
+kernel enters.  The bridge to the unprimed form is `stK2decaygL_of_primed` (`Chain/NewKLKGen.lean` §5). -/
+def STK2decaygL' (d : ℕ) (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) : Prop :=
+  3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∃ C : ℝ, 0 < C ∧
+    ∀ (sz : Sizes d) (n : ℕ) (E u D : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ → κ ≤ ((mk sz (fun _ => E)).m n).im →
+      0 ≤ u → u < 1 → 0 ≤ D → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
+        ‖(mk sz (fun _ => E)).K n u σ a‖ ≤ C * STprof sz n u D ((sz.L n : ℕ) : ℝ) (a 0) (a 1)
+
 section EnergyBridge
 
 variable (d : ℕ)
 
+/-- T2414: no longer `Iff.rfl` (through `bandStep2_STthetaOp` at the constant sequence `fun _ => E`). -/
 theorem bandStep2_STNewKLKAt (κ 𝔡 C δ₀ : ℝ) :
-    STNewKLKAt d κ 𝔡 C δ₀ ↔ STNewKLKAtgL d κ 𝔡 C δ₀ (fun sz E => bandStep2Mat sz E) := Iff.rfl
-theorem bandStep2_STNewKLK : STNewKLK d ↔ STNewKLKgL d (fun sz E => bandStep2Mat sz E) := Iff.rfl
+    STNewKLKAt d κ 𝔡 C δ₀ ↔ STNewKLKAtgL d κ 𝔡 C δ₀ (fun sz E => bandStep2Mat sz E) := by
+  unfold STNewKLKAt STNewKLKAtgL
+  have h : ∀ (sz : Sizes d) (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (A : (Fin 2 → Zd d (sz.L n)) → ℂ)
+      (a : Fin 2 → Zd d (sz.L n)),
+      STthetaOp sz n E u σ A a = STthetaOpg (bandStep2Mat sz (fun _ => E)) n u σ A a :=
+    fun sz n E u σ A a => bandStep2_STthetaOp sz (fun _ => E) n u σ A a
+  simp only [h]
+  exact Iff.rfl
+theorem bandStep2_STNewKLK : STNewKLK d ↔ STNewKLKgL d (fun sz E => bandStep2Mat sz E) := by
+  unfold STNewKLK STNewKLKgL
+  simp only [bandStep2_STNewKLKAt]
 theorem bandStep2_STK2decay : STK2decay d ↔ STK2decaygL d (fun sz E => bandStep2Mat sz E) := Iff.rfl
 
 end EnergyBridge
@@ -1010,5 +1231,54 @@ example (H : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
 /-- The energy-quantified pins `STNewKLKAt`, `STNewKLK`, `STK2decay` at `d = 3`, `κ = 𝔡 = 1/10`, `C = δ₀ = 1`. -/
 example := And.intro (bandStep2_STNewKLKAt 3 (1 / 10) (1 / 10) 1 1) <|
   And.intro (bandStep2_STNewKLK 3) (bandStep2_STK2decay 3)
+
+/-- The band block matrix `Bm = m(0) · 1`, `m(0) = i`, at `sz0`, `n = 0`: the band `M = m I` is `Bm ⊗ I_{W^d}`. -/
+private def Step2Gen_Bm0 : Matrix (Zd 3 (sz0.L 0)) (Zd 3 (sz0.L 0)) ℂ := Matrix.of fun a b => if a = b then mE 0 else 0
+
+/-- **(b) at one band size** (T2414): `sz0` (`L = 4`, `W = 32`, `lam = 1/64`, `N = 2097152`), `E ≡ 0` (`m = i`, `‖m(σ) m(σ')‖ = 1`),
+all four charge pairs: the `kron` hypothesis of `Step2Kern_Mss_of_kron` is discharged (`split_injective`), the two routes to
+`M^{(σσ')}` (`kron`, `band`) agree, and the kernels `thetaKer`, `uKer` (`k = 2`) and `ThetaN`, `UN` (`k = 3` loops, `σ` arbitrary) are
+the merged band kernels. -/
+example :
+    (∀ σ σ' : Bool, ‖mSigma 0 σ * mSigma 0 σ'‖ = 1 ∧
+      Step2Kern_Mss (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' = (mSigma 0 σ * mSigma 0 σ') • 1 ∧
+      Step2Kern_Mss (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' =
+        Matrix.of fun a b => Step2Kern_Bsig Step2Gen_Bm0 σ b a * Step2Kern_Bsig Step2Gen_Bm0 σ' a b) ∧
+    (∀ (σ σ' : Bool) (t : ℝ), Step2Gen_thetaKer (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' t =
+      RBM.thetaKer 3 (sz0.L 0) (sz0.lam 0) (mSigma 0 σ * mSigma 0 σ') t) ∧
+    (∀ (σ σ' : Bool) (s t : ℝ), Step2Gen_uKer (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' s t =
+      RBM.uKer 3 (sz0.L 0) (sz0.lam 0) (mSigma 0 σ * mSigma 0 σ') s t) ∧
+    (∀ (σ : Fin 3 → Bool) (t : ℝ) (A : (Fin 3 → Zd 3 (sz0.L 0)) → ℂ),
+      Step2Gen_ThetaN (bandFM sz0 fun _ => (0 : ℝ)) 0 σ t A =
+        RBM.ThetaN 3 (sz0.L 0) (sz0.lam 0) (fun i => mSigma 0 (σ i)) t A) ∧
+    (∀ (σ : Fin 3 → Bool) (s t : ℝ) (A : (Fin 3 → Zd 3 (sz0.L 0)) → ℂ),
+      Step2Gen_UN (bandFM sz0 fun _ => (0 : ℝ)) 0 σ s t A =
+        RBM.UN 3 (sz0.L 0) (sz0.lam 0) (fun i => mSigma 0 (σ i)) s t A) := by
+  have hker : ∀ x y : Idx 3 (sz0.L 0) (sz0.W 0), (bandFM sz0 fun _ => (0 : ℝ)).M 0 x y =
+      Step2Gen_Bm0 (split 3 (sz0.L 0) (sz0.W 0) x).1 (split 3 (sz0.L 0) (sz0.W 0) y).1 *
+        (if (split 3 (sz0.L 0) (sz0.W 0) x).2 = (split 3 (sz0.L 0) (sz0.W 0) y).2 then 1 else 0) := by
+    intro x y
+    by_cases hxy : x = y
+    · subst hxy
+      simp [bandFM, Step2Gen_Bm0]
+    · by_cases h1 : (split 3 (sz0.L 0) (sz0.W 0) x).1 = (split 3 (sz0.L 0) (sz0.W 0) y).1
+      · have h2 : ¬ (split 3 (sz0.L 0) (sz0.W 0) x).2 = (split 3 (sz0.L 0) (sz0.W 0) y).2 := fun h2 =>
+          hxy (split_injective 3 (sz0.L 0) (sz0.W 0) (Prod.ext h1 h2))
+        simp [bandFM, Step2Gen_Bm0, hxy, h2]
+      · simp [bandFM, Step2Gen_Bm0, hxy, h1]
+  refine ⟨fun σ σ' => ⟨?_, Step2Kern_Mss_band sz0 _ 0 σ σ', Step2Kern_Mss_of_kron _ 0 Step2Gen_Bm0 hker σ σ'⟩,
+    fun σ σ' t => Step2Kern_thetaKer_band sz0 _ 0 σ σ' t, fun σ σ' s t => Step2Kern_uKer_band sz0 _ 0 σ σ' s t,
+    fun σ t A => Step2Kern_ThetaN_band sz0 _ 0 3 σ t A, fun σ s t A => Step2Kern_UN_band sz0 _ 0 3 σ s t A⟩
+  rw [norm_mul, norm_mSigma (by norm_num), norm_mSigma (by norm_num), mul_one]
+
+/-- The block kernel at `Bm0` is `m(σ) m(σ') I` (the `kron` route to `Step2Kern_Mss_band`, for the four charge pairs). -/
+example (σ σ' : Bool) :
+    (Matrix.of fun a b => Step2Kern_Bsig Step2Gen_Bm0 σ b a * Step2Kern_Bsig Step2Gen_Bm0 σ' a b) =
+      (mSigma 0 σ * mSigma 0 σ') • (1 : Matrix (Zd 3 (sz0.L 0)) (Zd 3 (sz0.L 0)) ℂ) := by
+  ext a b
+  by_cases h : a = b
+  · subst h
+    cases σ <;> cases σ' <;> simp [Step2Kern_Bsig, Step2Gen_Bm0, mSigma]
+  · cases σ <;> cases σ' <;> simp [Step2Kern_Bsig, Step2Gen_Bm0, mSigma, h, Matrix.one_apply, Ne.symm h]
 
 end RBM.BA.Step2GenInst

@@ -19,12 +19,15 @@ Design `docs/reports/T2379-design.md` §2 (row T3), §3; layout (A) (Amend 1 D1)
 * **Generic theorems** `stNewKLKAtgL'_of`, `stNewKLKgL'_of` (`δ₀ = κ/2`): the proof of `nkl_at`
   (`NewKLK.lean:993`) with `S`, `Θ`, `m`, `K`, `LM`, `GMM` read from the family `mk`.  The
   hypotheses are `NewKLKGenHyp` (F5-F9, all through `mk`): `S` support, row sum and symmetry
-  (F5), `‖m‖ ≤ 1` (F6), the `SΘ`-convolution against `tailW` (F7), the marginals of `𝒦^{(2)}`
-  (F8), and `LM`, `GMM` as the resolvent of `loopFine` at `ζ`, `Im ζ = (1-u) Im m` (F9).
+  (F5), `‖m‖ ≤ 1` (F6), the block-kernel convolution against `tailW` (F7, T2414), the marginals of
+  `𝒦^{(2)}` (F8), and `LM`, `GMM` as the resolvent of `loopFine` at `ζ`, `Im ζ = (1-u) Im m` (F9).
 * **Unprimed corollaries** `stNewKLKAtgL_of_primed`, `stNewKLKgL_of_primed` (Amend 1 D1′): at
-  `κ' = κ/2` with the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m`.
-* **Band**: F5-F9 hold at `bandStep2Mat` (`NewKLKGen_band_hyp`), so the band pin `STNewKLK d` is
-  re-derived through the generic theorem and `bandStep2_STNewKLK` (compiled `example`s, `d = 3`).
+  `κ' = κ/2` with the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m`; and (T2414, BAT-F2)
+  `stK2decaygL_of_primed`, the same step for the primed `K^{(2)}` decay `STK2decaygL'`
+  (`Chain/Step2Gen.lean`).
+* **Band**: F5-F9 hold at `bandStep2Mat` (`newKLKGenHyp_band`), so the band pin `STNewKLK d` is
+  re-derived through the generic theorem and `bandStep2_STNewKLK` (compiled `example`s, `d = 3`);
+  `stK2decaygL'_band` proves the primed `K^{(2)}` decay at the band (BAT-F2, T2414).
 
 Opened private names of `Induction/NewKLK.lean` (`open private`, precedent `DuhamelII.lean:42`):
 the tail shift/near/far lemmas, the distance lemmas, `nkl_ward_L`, `nkl_gres_blockMat_true`
@@ -369,9 +372,11 @@ variable {d : ℕ}
 /-- **The carrier facts F5-F9 of `lem:newKLK`** (the hypothesis of the generic theorems), each through the family `mk` on the
 domain of the primed pin (`0 < lam ≤ 𝔡⁻¹`, `κ ≤ Im m`, and `0 ≤ u < 1` where `u` occurs), with some constants `K_c, C_K ≥ 0`:
 * F5: the support of `S` is in `|x-y|_∞ ≤ 1`, the row sums of `‖S‖` are `≤ 1`, `‖S_{xy}‖ = ‖S_{yx}‖`;
-* F6: `‖m‖ ≤ 1`;
-* F7 (the `Θ`-convolution): `Σ_b ‖(SΘ_σ)(a,b)‖ 𝒯̃(|b-a'|_∞) ≤ K_c/(1-u) 𝒯̃(|a-a'|_∞)` for every `ℓ', D' ≥ 0`, where
-  `Θ_σ = Step2Gen_Theta S (u m_{σ₀} m_{σ₁})`;
+* F6: `‖m‖ ≤ 1` (kept for the stated interface; the proof of `stNewKLKAtgL'_of` no longer reads it, since `μ` moved inside the kernel);
+* F7 (the `Θ`-convolution; T2414: over the block kernel): for every charge pair `(s, s')` (both slot pairs `(σ₀, σ₁)`, `(σ₁, σ₀)` of
+  every `σ`), `Σ_b ‖thetaKer C n s s' u (a,b)‖ 𝒯̃(|b-a'|_∞) ≤ K_c/(1-u) 𝒯̃(|a-a'|_∞)` for every `ℓ', D' ≥ 0`, where
+  `thetaKer = Step2Gen_thetaKer` (`X Θ_u(X)`, `X = M^{(ss')} S`, `C = mk sz (fun _ => E)`); it was
+  `Σ_b ‖(S Θ_{u m_{σ₀} m_{σ₁}})(a,b)‖ …`;
 * F8 (marginals of `𝒦^{(2)}`): `Σ_x ‖K_{(x,a₁)}‖ ≤ C_K W^{-d} (1-u)⁻¹` and the same in the second slot;
 * F9 (link): `LM` and the diagonal of `GMM` are the resolvent loop `loopFine` and `Gres - m` at some `ζ`,
   `Im ζ = (1-u) Im m`. -/
@@ -385,10 +390,9 @@ def NewKLKGenHyp (d : ℕ) (κ 𝔡 : ℝ) (mk : ∀ sz : Sizes d, (ℕ → ℝ)
   (∀ (sz : Sizes d) (n : ℕ) (E : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ →
       κ ≤ ((mk sz (fun _ => E)).m n).im → ‖(mk sz (fun _ => E)).m n‖ ≤ 1) ∧
   (∀ (sz : Sizes d) (n : ℕ) (E u : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ →
-      κ ≤ ((mk sz (fun _ => E)).m n).im → 0 ≤ u → u < 1 → ∀ (σ : Fin 2 → Bool) (ℓ' D' : ℝ), 0 ≤ ℓ' → 0 ≤ D' →
+      κ ≤ ((mk sz (fun _ => E)).m n).im → 0 ≤ u → u < 1 → ∀ (s s' : Bool) (ℓ' D' : ℝ), 0 ≤ ℓ' → 0 ≤ D' →
       ∀ a a' : Zd d (sz.L n),
-        ∑ b, ‖((mk sz (fun _ => E)).S n * Step2Gen_Theta ((mk sz (fun _ => E)).S n)
-            ((u : ℂ) * (STmsigg (mk sz (fun _ => E)) n (σ 0) * STmsigg (mk sz (fun _ => E)) n (σ 1)))) a b‖ *
+        ∑ b, ‖Step2Gen_thetaKer (mk sz (fun _ => E)).toFlowFM n s s' u a b‖ *
           tailW d (sz.L n) (sz.lam n) u ℓ' ((sz.W n : ℕ) : ℝ) D' ((zdistInf d (sz.L n) (b - a') : ℕ) : ℝ) ≤
         K_c / (1 - u) *
           tailW d (sz.L n) (sz.lam n) u ℓ' ((sz.W n : ℕ) : ℝ) D' ((zdistInf d (sz.L n) (a - a') : ℕ) : ℝ)) ∧
@@ -448,36 +452,30 @@ theorem stNewKLKAtgL'_of (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
     nlinarith
   -- the data of `mk`
   obtain ⟨hsupp, hrow, hsym⟩ := hS sz n E hlam hlam' hIm
-  have hmn : ‖Cm.m n‖ ≤ 1 := hm sz n E hlam hlam' hIm
-  have hms : ∀ s : Bool, ‖STmsigg Cm n s‖ ≤ 1 := fun s => by
-    cases s <;> simpa [STmsigg] using hmn
-  have hmσ : ‖STmsigg Cm n (σ 0) * STmsigg Cm n (σ 1)‖ ≤ 1 := by
-    rw [norm_mul]
-    calc ‖STmsigg Cm n (σ 0)‖ * ‖STmsigg Cm n (σ 1)‖ ≤ 1 * 1 :=
-          mul_le_mul (hms _) (hms _) (norm_nonneg _) zero_le_one
-      _ = 1 := one_mul 1
   have hTTT : ∀ x y : Zd d (sz.L n), ∑ z : Zd d (sz.L n),
       tailT d (sz.L n) g u ((zdistInf d (sz.L n) (x - z) : ℕ) : ℝ) *
         tailT d (sz.L n) g u ((zdistInf d (sz.L n) (z - y) : ℕ) : ℝ) ≤
       (CT / (1 - u)) * tailT d (sz.L n) g u ((zdistInf d (sz.L n) (x - y) : ℕ) : ℝ) :=
     fun x y => HT (sz.L n) g u u hlam hu0 le_rfl hu1 (le_total _ _) x y
   have hCT' : 0 ≤ CT / (1 - u) := by positivity
-  set SΘ : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ := Cm.S n *
-    Step2Gen_Theta (Cm.S n) ((u : ℂ) * (STmsigg Cm n (σ 0) * STmsigg Cm n (σ 1))) with hSΘdef
   -- Bound 1
   set K : ℝ := K_c / (1 - u) with hKdef
-  have hK1 : ∀ p q : Zd d (sz.L n), ∑ b, ‖SΘ p b‖ * P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ) ≤
-      K * P ((zdistInf d (sz.L n) (p - q) : ℕ) : ℝ) :=
-    fun p q => hconv sz n E u hlam hlam' hIm hu0 hu1 σ ℓ D hℓ0 hD p q
+  have hK1 : ∀ (s s' : Bool) (p q : Zd d (sz.L n)),
+      ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n s s' u p b‖ * P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ) ≤
+        K * P ((zdistInf d (sz.L n) (p - q) : ℕ) : ℝ) :=
+    fun s s' p q => hconv sz n E u hlam hlam' hIm hu0 hu1 s s' ℓ D hℓ0 hD p q
   have hK0 : 0 ≤ K := by positivity
-  have hconvJ : ∀ p q : Zd d (sz.L n), ∑ b, ‖SΘ p b‖ *
+  have hconvJ : ∀ (s s' : Bool) (p q : Zd d (sz.L n)),
+      ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n s s' u p b‖ *
         (J * ((Wr ^ d)⁻¹ * P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ))) ≤
       K * J * ((Wr ^ d)⁻¹ * P ((zdistInf d (sz.L n) (p - q) : ℕ) : ℝ)) := by
-    intro p q
-    have h := mul_le_mul_of_nonneg_left (hK1 p q)
+    intro s s' p q
+    have h := mul_le_mul_of_nonneg_left (hK1 s s' p q)
       (mul_nonneg hJ0 (by positivity : (0 : ℝ) ≤ (Wr ^ d)⁻¹))
-    calc ∑ b, ‖SΘ p b‖ * (J * ((Wr ^ d)⁻¹ * P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ)))
-        = (J * (Wr ^ d)⁻¹) * ∑ b, ‖SΘ p b‖ * P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ) := by
+    calc ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n s s' u p b‖ *
+          (J * ((Wr ^ d)⁻¹ * P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ)))
+        = (J * (Wr ^ d)⁻¹) * ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n s s' u p b‖ *
+            P ((zdistInf d (sz.L n) (b - q) : ℕ) : ℝ) := by
           rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun b _ => by ring
       _ ≤ (J * (Wr ^ d)⁻¹) * (K * P ((zdistInf d (sz.L n) (p - q) : ℕ) : ℝ)) := h
       _ = _ := by ring
@@ -485,19 +483,14 @@ theorem stNewKLKAtgL'_of (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
   have hB1 : ‖STthetaOpg Cm n u σ (STLKMg Cm n u H σ) a‖ ≤
       (2 * K_c) / (1 - u) * J * STprof sz n u D ℓ (a 0) (a 1) := by
     unfold STthetaOpg
-    have hterm : ∀ i : Fin 2, ‖∑ b, (STmsigg Cm n (σ 0) * STmsigg Cm n (σ 1)) * (SΘ (a i) b) *
+    have hterm : ∀ i : Fin 2, ‖∑ b, Step2Gen_thetaKer Cm.toFlowFM n (σ i) (σ (finRotate 2 i)) u (a i) b *
         STLKMg Cm n u H σ (Function.update a i b)‖ ≤
-        ∑ b, ‖SΘ (a i) b‖ *
+        ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n (σ i) (σ (finRotate 2 i)) u (a i) b‖ *
           (J * STprof sz n u D ℓ ((Function.update a i b) 0) ((Function.update a i b) 1)) := by
       intro i
       refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun b _ => ?_)
-      rw [norm_mul, norm_mul]
-      calc ‖STmsigg Cm n (σ 0) * STmsigg Cm n (σ 1)‖ * ‖SΘ (a i) b‖ *
-            ‖STLKMg Cm n u H σ (Function.update a i b)‖
-          ≤ 1 * ‖SΘ (a i) b‖ * ‖STLKMg Cm n u H σ (Function.update a i b)‖ := by
-            gcongr
-        _ = ‖SΘ (a i) b‖ * ‖STLKMg Cm n u H σ (Function.update a i b)‖ := by ring
-        _ ≤ _ := mul_le_mul_of_nonneg_left (hF σ _) (norm_nonneg _)
+      rw [norm_mul]
+      exact mul_le_mul_of_nonneg_left (hF σ _) (norm_nonneg _)
     rw [Fin.sum_univ_two]
     refine (norm_add_le _ _).trans ((add_le_add (hterm 0) (hterm 1)).trans ?_)
     have e0 : ∀ b, (Function.update a 0 b) 0 = b := fun b => by simp
@@ -505,13 +498,13 @@ theorem stNewKLKAtgL'_of (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ)
     have e1 : ∀ b, (Function.update a 1 b) 0 = a 0 := fun b => by simp
     have e1' : ∀ b, (Function.update a 1 b) 1 = b := fun b => by simp
     simp only [e0, e0', e1, e1', hprof]
-    have t0 := hconvJ (a 0) (a 1)
-    have t1 : ∑ b, ‖SΘ (a 1) b‖ * (J * ((Wr ^ d)⁻¹ *
+    have t0 := hconvJ (σ 0) (σ (finRotate 2 0)) (a 0) (a 1)
+    have t1 : ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n (σ 1) (σ (finRotate 2 1)) u (a 1) b‖ * (J * ((Wr ^ d)⁻¹ *
         P ((zdistInf d (sz.L n) (a 0 - b) : ℕ) : ℝ))) ≤
         K * J * ((Wr ^ d)⁻¹ * P ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ)) := by
-      have h := hconvJ (a 1) (a 0)
+      have h := hconvJ (σ 1) (σ (finRotate 2 1)) (a 1) (a 0)
       rw [nkl_zdistInf_sub_comm (a 1) (a 0)] at h
-      calc _ = ∑ b, ‖SΘ (a 1) b‖ * (J * ((Wr ^ d)⁻¹ *
+      calc _ = ∑ b, ‖Step2Gen_thetaKer Cm.toFlowFM n (σ 1) (σ (finRotate 2 1)) u (a 1) b‖ * (J * ((Wr ^ d)⁻¹ *
               P ((zdistInf d (sz.L n) (b - a 0) : ℕ) : ℝ))) :=
             Finset.sum_congr rfl fun b _ => by rw [nkl_zdistInf_sub_comm (a 0) b]
         _ ≤ _ := h
@@ -649,6 +642,18 @@ theorem stNewKLKgL_of_primed {mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat 
   obtain ⟨C, δ₀, hC, hδ, hAt⟩ := h hd (κ / 2) 𝔡 (half_pos hκ) h𝔡
   exact ⟨C, δ₀, hC, hδ, stNewKLKAtgL_of_primed hAt (hdom κ 𝔡 hκ h𝔡)⟩
 
+/-- **`STK2decaygL` from `STK2decaygL'`** (BAT-F2, T2414; the shape of `stNewKLKgL_of_primed`): apply the primed pin
+(`Chain/Step2Gen.lean`, next to `STK2decaygL`) at `κ' = κ/2`, given the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m` for every
+`κ, 𝔡 > 0`. -/
+theorem stK2decaygL_of_primed {mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz} (h : STK2decaygL' d mk)
+    (hdom : ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ →
+      |E| ≤ 2 - κ → κ / 2 ≤ ((mk sz (fun _ => E)).m n).im) :
+    STK2decaygL d mk := by
+  intro hd κ 𝔡 hκ h𝔡
+  obtain ⟨C, hC, hK⟩ := h hd (κ / 2) 𝔡 (half_pos hκ) h𝔡
+  exact ⟨C, hC, fun sz n E u D hlam hlam' hE hu0 hu1 hD σ a =>
+    hK sz n E u D hlam hlam' (hdom κ 𝔡 hκ h𝔡 sz n E hlam hlam' hE) hu0 hu1 hD σ a⟩
+
 end Main
 
 /-! ## 6. The band family: F5-F9 hold at `bandStep2Mat` -/
@@ -689,22 +694,22 @@ theorem newKLKGenHyp_band (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 :
     intro sz n E hlam hlam' hIm
     exact (norm_mE (hE2 E hIm)).le
   · -- F7
-    intro sz n E u hlam hlam' hIm hu0 hu1 σ ℓ' D' hℓ' hD' a a'
+    intro sz n E u hlam hlam' hIm hu0 hu1 s s' ℓ' D' hℓ' hD' a a'
     have hE := hE2 E hIm
     have hL : 3 ≤ sz.L n := sz.three_le_L n
     have hv : 0 < 1 - u := by linarith
     have hWpos : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := Nat.cast_pos.2 (sz.W_pos n)
-    have hm : ‖mSigma E (σ 0) * mSigma E (σ 1)‖ = 1 := by
+    have hm : ‖mSigma E s * mSigma E s'‖ = 1 := by
       rw [norm_mul, norm_mSigma hE, norm_mSigma hE, mul_one]
-    have hξ : ‖(u : ℂ) * (mSigma E (σ 0) * mSigma E (σ 1))‖ < 1 :=
-      norm_mul_mSigma_lt_one hE hu0 hu1 (σ 0) (σ 1)
+    have hξ : ‖(u : ℂ) * (mSigma E s * mSigma E s')‖ < 1 :=
+      norm_mul_mSigma_lt_one hE hu0 hu1 s s'
     have hΘ : ∀ x y : Zd d (sz.L n),
-        ‖Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (mSigma E (σ 0) * mSigma E (σ 1))) x y‖ ≤
+        ‖Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (mSigma E s * mSigma E s')) x y‖ ≤
           C₁ * tailT d (sz.L n) (sz.lam n) u ((zdistInf d (sz.L n) (x - y) : ℕ) : ℝ) :=
       nkl_theta_tail hC₅ hc hL hξ
-        (fun x => H5 (sz.L n) hL (sz.lam n) hlam hlam' u hu0 hu1 (mE E) (norm_mE hE) (σ 0) (σ 1) x)
+        (fun x => H5 (sz.L n) hL (sz.lam n) hlam hlam' u hu0 hu1 (mE E) (norm_mE hE) s s' x)
     have hrowΘ : ∀ x : Zd d (sz.L n),
-        ∑ b, ‖Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (mSigma E (σ 0) * mSigma E (σ 1))) x b‖ ≤ (1 - u)⁻¹ :=
+        ∑ b, ‖Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (mSigma E s * mSigma E s')) x b‖ ≤ (1 - u)⁻¹ :=
       fun x => sum_norm_Theta_row_le hL hu0 hu1 hm x
     have hTTT : ∀ x y : Zd d (sz.L n), ∑ z : Zd d (sz.L n),
         tailT d (sz.L n) (sz.lam n) u ((zdistInf d (sz.L n) (x - z) : ℕ) : ℝ) *
@@ -717,6 +722,14 @@ theorem newKLKGenHyp_band (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 :
     have e : C₁ * Cs * (CT / (1 - u)) + Cs * (1 - u)⁻¹ = (C₁ * Cs * CT + Cs) / (1 - u) := by
       field_simp
     rw [e] at hconv
+    have hker : ∀ b, ‖Step2Gen_thetaKer (bandStep2Mat sz fun _ => E).toFlowFM n s s' u a b‖ =
+        ‖(SB d (sz.L n) (sz.lam n) * Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (mSigma E s * mSigma E s'))) a b‖ := by
+      intro b
+      change ‖Step2Gen_thetaKer (bandFM sz fun _ => E) n s s' u a b‖ = _
+      rw [Step2Kern_thetaKer_band]
+      unfold RBM.thetaKer
+      rw [Matrix.smul_mul, Matrix.smul_apply, smul_eq_mul, norm_mul, hm, one_mul]
+    simp only [hker]
     exact hconv
   · -- F8
     intro sz n E u hlam hlam' hIm hu0 hu1 σ
@@ -729,6 +742,19 @@ theorem newKLKGenHyp_band (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 :
     unfold STGMM
     simp
     rfl
+
+/-- **BAT-F2 at the band** (T2414): the primed pin `STK2decaygL'` at `bandStep2Mat`, from the merged band pin `STK2decay d` at
+`κ' = κ²` (`κ ≤ Im m(E) = √(4 - E²)/2` gives `E² ≤ 4 - 4κ²`, so `|E| ≤ 2 - κ²`).  This is a proof at the band only; at BA the
+primed decay is owed to the BA `K^{(2)}` decay ticket (the premise of `stK2decaygL_of_primed`). -/
+theorem stK2decaygL'_band (d : ℕ) : STK2decaygL' d (fun sz E => bandStep2Mat sz E) := by
+  intro hd κ 𝔡 hκ h𝔡
+  obtain ⟨C, hC, h⟩ := (bandStep2_STK2decay d).mp (stK2decay_holds d) hd (κ ^ 2) 𝔡 (by positivity) h𝔡
+  refine ⟨C, hC, fun sz n E u D hlam hlam' hIm hu0 hu1 hD σ a => h sz n E u D hlam hlam' ?_ hu0 hu1 hD σ a⟩
+  change κ ≤ (mE E).im at hIm
+  rw [mE_im, le_div_iff₀ two_pos] at hIm
+  have h2 : (κ * 2) ^ 2 ≤ 4 - E ^ 2 := (Real.le_sqrt' (by positivity)).1 hIm
+  have hκ1 : κ ^ 2 ≤ 1 := by nlinarith [sq_nonneg E]
+  exact abs_le_of_sq_le_sq (by nlinarith [sq_nonneg (κ ^ 2)]) (by linarith)
 
 end Band
 
@@ -755,11 +781,25 @@ example : ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' 3 (1 / 10) (1 / 10) C (1 / 20) (f
   rw [e] at h
   exact h
 
+/-- **Target 1, pointwise form, at the band**: `stNewKLKAtgL'_holds` at `d = 3`, `κ = 𝔡 = 1/10` (`δ₀ = κ/2 = 1/20`). -/
+example : STNewKLKAtgL' 3 (1 / 10) (1 / 10)
+    (stNewKLKAtgL'_of (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
+      (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))).choose
+    (1 / 10 / 2) (fun sz E => bandStep2Mat sz E) :=
+  stNewKLKAtgL'_holds (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
+    (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))
+
 /-- **The band pin through the generic theorem** (target 6): `STNewKLK d` from target 2, the corollary and the bridge
 `bandStep2_STNewKLK`; the domain fact is `Ind.half_le_mE_im`. -/
 example (d : ℕ) : STNewKLK d :=
   (bandStep2_STNewKLK d).mpr (stNewKLKgL_of_primed
     (stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => newKLKGenHyp_band hd κ 𝔡 hκ h𝔡)
+    fun _ _ hκ _ _ _ _ _ _ hE => Ind.half_le_mE_im hκ.le hE)
+
+/-- **BAT-F2 at the band, instance of `stK2decaygL_of_primed`**: the band pin `STK2decay d` from the primed pin at `bandStep2Mat`
+(every deterministic hypothesis discharged; the domain fact is `Ind.half_le_mE_im`) and the merged bridge `bandStep2_STK2decay`. -/
+example (d : ℕ) : STK2decay d :=
+  (bandStep2_STK2decay d).mpr (stK2decaygL_of_primed (stK2decaygL'_band d)
     fun _ _ hκ _ _ _ _ _ _ hE => Ind.half_le_mE_im hκ.le hE)
 
 open RBM.Gauss.SizesInst in
