@@ -87,33 +87,35 @@ n=1000000 L=4000004 W=3.200e+31 L<=W:True  log_W Psi=-0.5 in [-1.5,-0.1]:True  l
 - **W4 (identity in expectation): PASS.** The coefficient algebra needs `W-1 = M⁺SW` (row 11, verified); the expectation identity itself is not re-run here (T2387 B10).
 - **W5, C1/L5, row table: PASS.** Constants and exponents hold at `g = 1/64, 1, 10` (rows 6-12); no `g ≤ W^{-ε}`, no smallness of `M - m₀ I` is used.
 
-## (b) Script output — Sun Oct 11 00:11:24 UTC 2026 (`date -u`)
+## (a′) Preflight corrections — Sun Oct 11 08:27:55 UTC 2026 (`date -u`)
 
-Worktree `/Users/junyin/Lean_proof/RBM3D-wt/T2398`, branch `t/T2398`, commits `2e23b9f`, `e32530a`, `5f96301`, `5c62eb7`, `fdc8c57`, `2257f54` (the probe, one file). `SP` = scratchpad subdirectory `T2398/` (scripts, not in the repository). Design: `docs/reports/T2398-design.md`.
+Rows 8-9 of (i) (`κ := Im m / 2` at `L = 3`, `E = 0`; `BAct_rate(3, Λ = g, κ)`) are the values that Amend 1 forbids (CONTROL H193 (2), H194); the audit of round 1 (`docs/reports/T2398-audit.md` §3, C1/L5, script `amend1.py`) gives the uniform values (`κ = 0.5 / 0.25 / 0.044`, `Λ = 𝔡⁻¹ = 10`) and finds no closure that depends on `κ` or the rate at fixed `n`. No verdict of (a) changes; Amend 2 does not use these rows.
+
+## (b) Script output — round 1 Sun Oct 11 00:11:24 UTC 2026; round 2 (Amend 2, D2) Sun Oct 11 08:26:59 UTC 2026 (`date -u`)
+
+Worktree `/Users/junyin/Lean_proof/RBM3D-wt/T2398`, branch `t/T2398`; round 1: commits `2e23b9f`, `e32530a`, `5f96301`, `5c62eb7`, `fdc8c57`, `2257f54`; round 2 (Amend 2, D2): `4c2955a`, `e46a4d6`, `641c9d4`, `6429bb5` (the probe, one file). The compile output below is of `6429bb5`, run Sun Oct 11 08:21:08 UTC 2026 (`date -u`); the statement extractions and instances of round 1 below are of `2257f54` (their line numbers are of that commit). `SP` = scratchpad subdirectory `T2398/` (scripts, not in the repository). Design: `docs/reports/T2398-design.md`, round 2 is its (b′): the statements of the new pins extracted by script (§A), the convention and numeric checks (§B), the rows (§C), T2398d (§D).
 ```
 $ lake build RBM3D.Probe.T2398Pins | tail -3
-
 Note: This linter can be disabled with `set_option linter.style.longLine false`
+✔ [3975/3975] Built RBM3D.Probe.T2398Pins (5.1s)
 Build completed successfully (3975 jobs).
-$ lake build RBM3D.Probe.T2398Pins 2>&1 | grep -c "Probe/T2398Pins"      # warnings of the probe itself; the `Note` above is from upstream modules (`⚠ Replayed RBM3D.BA.LWPinsBA`, `BA.CouplingWindow`, `BA.GreenSchur`)
+$ lake build RBM3D.Probe.T2398Pins 2>&1 | grep -c "RBM3D/Probe/T2398Pins.lean"      # warnings of the probe itself; the `Note` above is from upstream modules
 0
 $ (lake env lean RBM3D/Probe/T2398Pins.lean ; echo "lake env lean RBM3D/Probe/T2398Pins.lean: exit $?")
 lake env lean RBM3D/Probe/T2398Pins.lean: exit 0
-$ SP/axcheck.sh     # `lake env lean SP/Ax.lean` (`#print axioms` of the 36 top-level declarations of the probe: 35 named, one anonymous `Decidable` instance; Ax.lean generated from the file by `SP/genAx.py`), wrapped lines joined, names replaced by X, `sort | uniq -c`
-  36 X depends on axioms: [propext, Classical.choice, Quot.sound]
+$ SP/axcheck.sh     # `lake env lean SP/Ax.lean` (`#print axioms` of the 52 top-level declarations of the probe, 17 of them new in round 2 (design (b′) §A, `BALWCutExpTw` included); Ax.lean generated from the file by `SP/genAx.py`), wrapped lines joined, names replaced by X, `sort | uniq -c`
+  52 X depends on axioms: [propext, Classical.choice, Quot.sound]
 $ grep -nwE "sorry|admit|axiom|native_decide" RBM3D/Probe/T2398Pins.lean ; echo grep exit $?
 grep exit 1
-$ SP/clash2.sh     # grep -rnw of each of the 36 new names in RBM3D/ and RBM3D.lean outside the probe: matches per name, `uniq -c`
-  36 0
+$ SP/clash2.sh     # grep -rnw of each of the 52 declaration names in RBM3D/ and RBM3D.lean outside the probe: matches per name, `uniq -c`
+  52 0
 $ git diff --stat main...t/T2398
- RBM3D/Probe/T2398Pins.lean | 399 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 399 insertions(+)
-$ wc -l RBM3D/Probe/T2398Pins.lean /Users/junyin/Lean_proof/RBM3D/docs/reports/T2398-design.md
-     399 RBM3D/Probe/T2398Pins.lean
-     169 /Users/junyin/Lean_proof/RBM3D/docs/reports/T2398-design.md
-     568 total
+ RBM3D/Probe/T2398Pins.lean | 498 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 498 insertions(+)
+$ wc -l /Users/junyin/Lean_proof/RBM3D-wt/T2398/RBM3D/Probe/T2398Pins.lean
+     498 /Users/junyin/Lean_proof/RBM3D-wt/T2398/RBM3D/Probe/T2398Pins.lean
 ```
-**Statements extracted by script** (`python3 SP/extract.py <names>`; probe line first). The pins are the targets of this design ticket; there is no endpoint theorem to prove.
+**Statements extracted by script, round 1 at `2257f54`** (`python3 SP/extract.py <names>`; probe line first; the round-2 pins: design (b′) §A). The pins are the targets of this design ticket; there is no endpoint theorem to prove.
 ```
 149: def BAG5Identity (d : ℕ) (Ls : Bool → Bool → List (BAPGraph (Fin 2))) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (E : ℂ) m → 0 ≤ t → t < 1 →
@@ -128,13 +130,7 @@ $ wc -l RBM3D/Probe/T2398Pins.lean /Users/junyin/Lean_proof/RBM3D/docs/reports/T
 97: theorem baTwB_stuck : baTwB.scalingOrder = 3 ∧ ¬ HasGGCand baTwB ∧ (Sum.inl 1 : Fin 2 ⊕ Fin 4) ∉ baTwB.atom (.inl 0)
 184: theorem ba_xy_count {d : ℕ} (sz : Sizes d) (n : ℕ) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s < 1) :
     (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (sz.lam n ^ 2 + 1) * sz.Bctl n s
-281: def BATwistLaw (μ : Measure sz.SeqΩ) (τ : ℕ → ℝ) : Prop :=
-  PrecL sz μ (U := fun n => Zd d (sz.L n) × Zd d (sz.L n)) (fun n p ω => ‖twTr C n (τ n) ω p.1 p.2‖)
-      (fun n _ _ => sz.Bctl n (τ n)) ∧
-    ∃ Kt : ∀ n : ℕ, Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → ℂ, (∀ n a c₁ c₂, ‖Kt n a c₁ c₂‖ ≤ sz.Bctl n (τ n)) ∧
-      PrecL sz μ (U := fun n => Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n))
-        (fun n p ω => ‖twL2 C n (τ n) ω p.1 p.2.1 p.2.2 - Kt n p.1 p.2.1 p.2.2‖)
-        (fun n _ _ => sz.Bctl n (τ n) ^ (3 / 2 : ℝ))
+281: def BATwistLaw ... (round 1 text; replaced in round 2 by `BATwistAvgLaw`, `twK`, `BATwistLoopLaw`: design (b′) §A)
 357: def BAGraphPrecJoin (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
@@ -145,7 +141,7 @@ $ wc -l RBM3D/Probe/T2398Pins.lean /Users/junyin/Lean_proof/RBM3D/docs/reports/T
           (fun n _ _ => (t n) ^ P.g.nW * ((baFMz sz z).eta n (t n))⁻¹ * (sz.Bctl n (t n)) ^ ((P.scalingOrder : ℝ) / 2))
 353: abbrev BALWCutExp : ℕ → Prop := baPin LWCutExpG
 ```
-**Compiled instances** (non-vacuity; the Step 1/2 bounds stay hypotheses, as in `BA/LWPinsBA.lean`):
+**Compiled instances** (non-vacuity; the Step 1/2 bounds stay hypotheses, as in `BA/LWPinsBA.lean`; the last two are round 2 at `6429bb5`: `BALWCutExpTw` with TL1, TL2 as hypotheses (other gates' pins), `twK_bound` with no hypothesis left):
 ```
 example : BAG5Leaf { E' := Fin 2, I' := Fin 1, ext := id, ext_surj := Function.surjective_id, g := baAllM } := by
   have hA : baAllM.atom (Sum.inl 0) = baAllM.atom (Sum.inl 1) := by decide
@@ -173,6 +169,16 @@ example (h : BAGraphPrecJoin 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _
 example (st : BAPGraph (Fin 2) → Option (List ((ℕ × ℕ) × BAPGraph (Fin 2)))) (Inv : BAPGraph (Fin 2) → Prop)
     (Φ : BAPGraph (Fin 2) → ℂ) : ExpandGSum st Inv Φ (fun _ => 1) :=
   expandG_sum st Inv Φ (fun _ => 1)
+...
+example (h : BALWCutExpTw 3) (hE : STLocalEntrygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
+    (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hK : STLKgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hD : STDecaygL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
+    (hT1 : BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hT2 : BATwistLoopLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :=
+  h le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hE hA hM hK hD hT1 hT2
+...
+example (h : twK_bound 3) : ∃ C : ℝ, 0 < C ∧ ∀ a, ‖twK (baFMz sz0 zSeq) 0 (1 / 2) ![false, true] a 0 0‖ ≤ C * sz0.Bctl 0 (1 / 2) := by
+  obtain ⟨C, hC, hall⟩ := h le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+  exact ⟨C, hC, (hall (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) 0 ![false, true] 0 0).1⟩
 ```
 **Ports:** none (no RBM1D/RBM2D text is used; the proof of `ba_W_sub_one` is a copy of `t/T2387:RBM3D/Probe/T2387Pins.lean:287`, never merged).
 
@@ -265,26 +271,28 @@ g=10        B_t0=0.0840 W= 10000: B=W^-d B_t0=8.402e-14  crude/target = B^-1/2 =
 
 **Narrative.**
 - Read: the ticket; section (a); `docs/supervisor/2026-10-10-2149.md`; `docs/reports/T2387-design.md`; `docs/reports/T2325-portmap.md` (rows 14-16, lines 43-46); `t/T2387:RBM3D/Probe/T2387Pins.lean:240-399`; `paper/tex/B_graphical_lemmas.tex:1-125, 286-420`; `7_8_light_weight.tex:296-360` and a `grep` of `:1792-2105`; the Lean files `Chain/LWGen.lean`, `Chain/Carrier.lean:40-200`, `BA/LWPinsBA.lean`, `BA/FlowPins.lean:300-400`, `Graph/LWExpTerm.lean:1-120`, `LWExpTerm2.lean:1-140`, `LWExpTerm3.lean:1-110`, `LWExpTerm4.lean:1-130`, `LWExpTerm5.lean:1-377, 560-739`, `LWExpTerm6.lean:1-120`, `LWExpCert.lean`, `LWExpCertB.lean:1-100`, `BAVocab.lean:1-330, 1170-1260`, `BAExpandWOrd.lean:1-140`, `Loop/GLoopFlow.lean:60-125`, `BA/GreenSchur.lean:80-125`. `LWExpSim.lean:1080-1150` was not read: its names `partitionSim`, `childrenSim` are taken from T2325 row 16.
-- Section (a) was not edited; its rows 2, 6 and 11 agree with the engine and the Monte Carlo of this stage (rows 3, 5, 7 were not re-run), so there is no (a′).
+- Section (a) was not edited; its rows 2, 6 and 11 agree with the engine and the Monte Carlo of this stage (rows 3, 5, 7 were not re-run); round 1 found nothing to correct in it ((a′) is added in round 2).
 - Engine: an independent implementation of the BA rules (`GGGamma` with D402, `lanlw` tail and head, `lweight`, the `G = Ǧ + M` split) at the level of counters and atoms. It reproduces the finding of (a) that the pointwise failures all have `x ~ y`: 28 of 160 normal terms at `x ≠ y` miss the pointwise target, none misses the corrected one.
 - New in this stage: the context lemma for `GGGamma` (design §3.3); the closure table with leaf properties (§3.4); the stall of the pure graph route for `(eq:ELW_term)` (§8); the Monte Carlo of the full `GGGamma` identity for two `f` (§4); the offset-twisted loops and the compiled tie identity `twTie` (§1.2, §2, §8).
-- Probe: 399 lines, 36 declarations on the three standard axioms, `lake build` and `lake env lean` clean, no forbidden token, no name clash; commits `2e23b9f`, `e32530a`, `5f96301`, `5c62eb7`, `fdc8c57`, `2257f54` (the only file of the diff).
-- Decisions: W2 no; W3 C; STOP at one missing step (design §8), one question to Jun. The row table is conditional on that answer.
-- Not done: no Lean proof of the context lemma (owed by L2c2); the family pins of L4a, L4b, L4c are text; `Kt` of `BATwistLaw` is the expected ladder, not derived.
-- Length of this report: 290 lines (limit 300).
+- Probe: round 1 399 lines, 36 declarations (commits `2e23b9f` … `2257f54`); round 2 498 lines (limit 500), 52 declarations on the three standard axioms, `lake build` and `lake env lean` clean, no forbidden token, no name clash; commits `4c2955a`, `e46a4d6`, `641c9d4`, `6429bb5` (the only file of the diff).
+- Decisions: W2 no; W3 C; the STOP of round 1 (design §8, one question to Jun) is resolved by Amend 2: route R1, TL1 and TL2 as owed text pins; the rows under R1 are in design (b′) §C.
+- Not done: no Lean proof of the context lemma (owed by L2c2); the family pins of L4a, L4b, L4c are text; TL1, TL2 are owed text pins, not proved; `twFold`, `twWard`, `twCirc`, `twK_bound` are statements for the row L4t, not proved.
+- Round 2 (Amend 2): read the amend, supervisor 0652, `T2398-analysis-fable.md`, `T2398-TL-proofs.md`, `docs/reports/T2387-design.md` §6-§7, `Chain/Carrier.lean:1-140`, `Chain/LWGen.lean:1-140`, `BA/FlowPins.lean:165-200, 245-400`, `BA/MFixedPoint.lean:495-615`, `BA/KCactus.lean:30-100`, `BA/KBase.lean:318-395`, `BA/KWardIneq.lean:250-275`, `BA/GreenSchur.lean:80-150`, `BA/Prop5.lean:40-80`, `Defs/Sizes.lean:30-130`, `Loop/GLoopFlow.lean:75-175`, `Graph/LWExpTerm4.lean:828-940`. Replaced `BATwistLaw` by the D2 pins, added the L4t statements, `BALWCutExpTw` and two instances; checked the convention and the exponents numerically (design (b′) §B); re-priced the rows (§C); recorded T2398d (§D). Section (a) was not edited; (a′) records the audit's note on its rows 8-9.
+- Length of this report: 298 lines (limit 300).
 
 ## (c) Verified names
 
-- Mathlib, present (the probe builds): `Finset.card_pos`, `Finset.mem_filter`, `Finset.mem_univ`, `Finset.sum_eq_single`, `Finset.sum_congr`, `Finset.mul_sum`, `Matrix.mul_apply`, `Matrix.one_apply_ne`, `Ring.inverse_mul_cancel`, `Ring.mul_inverse_cancel`, `Equiv.symm_apply_apply`, `Equiv.apply_symm_apply`, `Equiv.injective`, `Prod.ext`, `mul_le_mul_of_nonneg_left`, `sub_eq_iff_eq_add`, `sub_mul`, `one_mul`.
-- Tactics: `push Not` (present); `push_neg`, `if_pos`, `if_neg` are deprecated in this Mathlib (warnings of the first builds: "Prefer using `push Not`", "`if_pos` has been deprecated"; `↓reduceIte` is used instead).
-- Project names used, present by `grep` and by the build: `STBctl_ge` (`Induction/ScaleFacts.lean:126`), `expandG_sum`, `ExpandGSum` (`Graph/LWExpTerm5.lean:234, 199`), `BAMfine_eq` (`BA/GreenSchur.lean:93`), `BAMB`, `BAmF`, `BAflowLam0`, `BAflowEs`, `BAPsi_isHermitian`, `isUnit_sub_smul_of_isHermitian`, `card_adj`, `Adj`, `PsiB`, `baW_isUnit`, `BAlwW`, `BAlwMp`, `BAlwS`, `BAlwData`, `BASelf`, `PF`, `splitEquiv`, `split`, `FlowFM.GM`, `PrecL`, `baPin`, `bandPin`, `LWcutg`, `LWCutExp`.
-- Verified absent: none needed.
+- Mathlib, present (the probe builds): `Finset.card_pos`, `Finset.mem_filter`, `Finset.mem_univ`, `Finset.sum_eq_single`, `Finset.sum_congr`, `Finset.mul_sum`, `Matrix.mul_apply`, `Matrix.one_apply_ne`, `Ring.inverse_mul_cancel`, `Ring.mul_inverse_cancel`, `Equiv.symm_apply_apply`, `Equiv.apply_symm_apply`, `Equiv.injective`, `Prod.ext`, `mul_le_mul_of_nonneg_left`, `sub_eq_iff_eq_add`, `sub_mul`, `one_mul`; round 2: `ite_eq_left_of_eq_true`, `Matrix.conjTranspose`, `Matrix.of_apply`, `Complex.I`.
+- Tactics: `push Not` (present); `push_neg`, `if_pos`, `if_neg`, `ite_cond_eq_true` are deprecated in this Mathlib (warnings: "Prefer using `push Not`", "`if_pos` has been deprecated", "`ite_cond_eq_true` has been deprecated: Use `ite_eq_left_of_eq_true`"; `↓reduceIte` and `ite_eq_left_of_eq_true` are used instead).
+- Project names used, present by `grep` and by the build: `STBctl_ge` (`Induction/ScaleFacts.lean:126`), `expandG_sum`, `ExpandGSum` (`Graph/LWExpTerm5.lean:234, 199`), `BAMfine_eq` (`BA/GreenSchur.lean:93`), `BAMB`, `BAmF`, `BAflowLam0`, `BAflowEs`, `BAPsi_isHermitian`, `isUnit_sub_smul_of_isHermitian`, `card_adj`, `Adj`, `PsiB`, `baW_isUnit`, `BAlwW`, `BAlwMp`, `BAlwS`, `BAlwData`, `BASelf`, `PF`, `splitEquiv`, `split`, `FlowFM.GM`, `PrecL`, `baPin`, `bandPin`, `LWcutg`, `LWCutExp`; round 2: `PropThetaQ` (`Propagator/Pins.lean:214`), `BAMss` (`BA/MFixedPoint.lean:511`), `BAMsigma` (`:507`), `BATheta` (`:515`), `baFM`, `baFMz`, `BAFlow`, `BAflowT0`, `Sizes.seqP`, `Sizes.withLam`.
+- Verified absent: as public names in `BA/`, the entrywise domination `|Θ^{(σ₁σ₂)}| ≤ Θ^{(+,−)}` (`grep -i "theorem [A-Za-z_0-9']*theta[A-Za-z_0-9']*(abs|norm|dom|le_|_le)" RBM3D/BA/*.lean` finds only private lemmas: `KWardIneq_theta_row_le`, `KWardIneq_theta_col_le`, `EKPins_norm_Theta_le`, `EKSum_norm_Theta_le`).
 
 ## (d) Open issues and paper-delta candidates
 
-1. **The missing step** (design §8, family `T3C-Ḡ`): one question to Jun, forms (R1) a law for loops with an off-diagonal block insertion, (R2) an expansion of `ǦMǦ` at an atom. No row of L4a, L4b can be fixed before the answer.
+1. **Resolved by Amend 2** (the missing step of design §8, family `T3C-Ḡ`): route R1 (supervisor 0652 PASS): TL1, TL2 are owed text pins (`BATwistAvgLaw`, `BATwistLoopLaw`); their producers are a new BA stage (0652 C4), not priced; the rows are re-priced in design (b′) §C.
 2. L2c2 must prove the context lemma (design §3.3) with the counters of the three `GGGamma` sums; L4e-C is priced without it.
-3. `BARCand` (design §4) is a proposed name, not defined. The pins `BAG5Identity`, `BAG5Expand`, `BATwistLaw` are `Prop`-valued with no proof.
+3. `BARCand` (design §4) is a proposed name, not defined. The pins `BAG5Identity`, `BAG5Expand`, `BATwistAvgLaw`, `BATwistLoopLaw`, `BALWCutExpTw` are `Prop`-valued with no proof; `twFold`, `twWard`, `twCirc`, `twK_bound` are statements for the row L4t.
 4. The scripts are not in the repository: the output in (b) is the record. The engine is a model of counters, atoms and molecules, not of values (design §8, limits).
-5. Row estimates (design §7) use T2387's ratios; L4e-C, the splits and the unpriced input of §8 are estimates.
-6. Paper-delta candidates (temporary tags, texts in design §8): `T2398a` pointwise `(eq:sizeGammamu_E)` is false at BA, corrected target `5 − 2·1[x ~ y]`; `T2398b` `(eq:GGraisesord)` needs three atom conditions (extends `T2387b`); `T2398c` the atomic correspondence (`B:320-323`) fails for the rules; `T2398d` `B:118` omits the offset-twisted loops; `T2398e` `S^{(B)} = I` gives `a₂ = a₁` and the kernel `(1 − tM⁺_B)⁻¹`; `T2398f` D402 checked in expectation (evidence for `T2161a`, `T2387a`).
+5. Row estimates (design §7 and (b′) §C) use T2387's ratios; L4e-C, the splits and L4t are estimates; the producers of TL1, TL2 are unpriced.
+6. Paper-delta candidates (temporary tags, texts in design §8): `T2398a` pointwise `(eq:sizeGammamu_E)` is false at BA, corrected target `5 − 2·1[x ~ y]`; `T2398b` `(eq:GGraisesord)` needs three atom conditions (extends `T2387b`); `T2398c` the atomic correspondence (`B:320-323`) fails for the rules; `T2398d` `B:118` omits the offset-twisted loops (round 2: the supervisor's wording, design (b′) §D); `T2398e` `S^{(B)} = I` gives `a₂ = a₁` and the kernel `(1 − tM⁺_B)⁻¹`; `T2398f` D402 checked in expectation (evidence for `T2161a`, `T2387a`).
+7. Round 2: the merged `BALWtermEXP` (`BA/LWPinsBA.lean:49`) has five premises, BA-L6 pins a seven-premise successor; the L4a basis overlaps L4b2 (370 central lines, design (b′) §C); `twFold`, `twWard`, `twCirc` have no compiled instance (500-line limit; numeric checks in design (b′) §B).

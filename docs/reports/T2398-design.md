@@ -167,3 +167,116 @@ Two closing forms: (R1) a local law for loops with an off-diagonal block inserti
 4. The Monte Carlo is at `W^d = 2`, `L = 3`: an exact identity, not an asymptotic statement.
 5. Rows are extrapolations by T2387's ratios; L4e-C and the splits are estimates; the twisted-law input is unpriced.
 6. The leaf bound `(Gammamuxy)` and the properties beyond `n_M`, `n_W`, attachment (`LWAttached`, `LWJoined`) belong to L4c.
+
+## (b′) Amend 2 (route R1): the TL1/TL2 pins, the rows under R1, T2398d — Sun Oct 11 08:24:56 UTC 2026 (`date -u`)
+
+Prover `claude-sonnet-5-5` (prover-max, design update). Inputs: `docs/tickets/T2398-amend-2.md` (binding), `docs/supervisor/2026-10-11-0652.md` (Q1-Q4, C1-C4), `docs/tickets/T2398-analysis-fable.md` §2-§6, `docs/tickets/T2398-TL-proofs.md` (A.2, T.1-T.3, T.7, T.12). Probe `RBM3D/Probe/T2398Pins.lean`: 498 lines (limit 500), commits `4c2955a`, `e46a4d6`, `641c9d4`, `6429bb5` on `2257f54`. §0-§8 are unchanged (line 3 there, 399 lines and the last edit at 00:08:18 UTC, is the round-1 record). `probe N` below is a line of the probe at `6429bb5`; lines 1-275 keep their round-1 numbers (the citations of §0-§8 to them stay valid), the later citations of §0-§8 are lines of `2257f54`. Build, exit code, axioms, clash grep, diff stat and the instances: `docs/reports/T2398-prove.md` (b), round 2. Scripts (scratchpad `T2398/`, not in the repository): `extract.py`, `cmp_cut.py`, `conv.py`, `limit2.py`, `basis2.py`, `rows.py`. The STOP in line 1 is resolved by Amend 2: TL1 and TL2 enter the BA chain as owed text pins with the standing of `STLKgL` (0652 Q3); their producers are a new BA stage (0652 C4), not priced here.
+
+| item | result |
+|---|---|
+| D2 | `BATwistLaw` is replaced by `BATwistAvgLaw` (probe 323, TL1), `twK` (306), `BATwistLoopLaw` (328, TL2: uncircled `twL2'` 298, exponent 3/2, all `σ ∈ {±}²` and `(a, c₁, c₂)`, per `τ`, no `∃ Kt`); statements `twFold` (340), `twWard` (345), `twK_bound` (360), `twCirc` (352); the index convention (276-278); `twL2_eq`, `twTr_eq` (`rfl`), `twMB_ba` (311); the cut pin with seven premises `BALWCutExpTw` (434), instances (467, 474) |
+| D3 | §C: L4b2 TW 916 / 1,067 / 2,021 (basis 1,255); L4a2 unchanged, seven premises; new row L4t (F, role h) 320 / 450 / 700; central 10,858; no row waits for §8 |
+| D4 | T2398d recorded in the supervisor's wording (§D) |
+
+### A. The statements of D2 (extracted by script, `python3 SP/extract.py <names>`; probe line first)
+```
+323: def BATwistAvgLaw (μ : Measure sz.SeqΩ) (τ : ℕ → ℝ) : Prop :=
+  PrecL sz μ (U := fun n => Zd d (sz.L n) × Zd d (sz.L n)) (fun n p ω => ‖twTr C n (τ n) ω p.1 p.2‖)
+    (fun n _ _ => sz.Bctl n (τ n))
+306: def twK (n : ℕ) (t : ℝ) (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) : ℂ :=
+  (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ a' : Zd d (sz.L n), PropThetaQ (BAMss d (sz.L n) (twMB C n) (σ 0) (σ 1)) t a a' *
+    BAMsigma d (sz.L n) (twMB C n) (σ 0) c₂ a' * BAMsigma d (sz.L n) (twMB C n) (σ 1) a' c₁
+298: def twL2' (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) : ℂ :=
+  twLoopX n (twChg (C.G n t ω) (σ 0)) (twChg (C.G n t ω) (σ 1)) a c₁ c₂
+288: def twLoopX (n : ℕ) (X₁ X₂ : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) (a c₁ c₂ : Zd d (sz.L n)) : ℂ :=
+  ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ twBlk n a, ∑ w ∈ twBlk n c₁, X₂ x w * X₁ (twShift n c₂ w) x
+284: def twTrP (n : ℕ) (X : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) (c₁ c₂ : Zd d (sz.L n)) : ℂ :=
+  (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ w ∈ twBlk n c₂, X w (twShift n c₁ w)
+328: def BATwistLoopLaw (μ : Measure sz.SeqΩ) (τ : ℕ → ℝ) : Prop :=
+  PrecL sz μ (U := fun n => (Fin 2 → Bool) × Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n))
+    (fun n p ω => ‖twL2' C n (τ n) ω p.1 p.2.1 p.2.2.1 p.2.2.2 - twK C n (τ n) p.1 p.2.1 p.2.2.1 p.2.2.2‖)
+    (fun n _ _ => sz.Bctl n (τ n) ^ (3 / 2 : ℝ))
+340: def twFold (sz : Sizes d) : Prop :=
+  ∀ (n : ℕ) (X₁ X₂ : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) (a c₁ c₂ : Zd d (sz.L n)),
+    ‖twLoopX n X₁ X₂ a c₁ c₂‖ ^ 2 ≤ twSq n X₁ c₂ a * twSq n X₂ a c₁
+345: def twWard (sz : Sizes d) : Prop :=
+  ∀ (n : ℕ) (G : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (η : ℝ), η ≠ 0 →
+    G - G.conjTranspose = (2 * (η : ℂ) * Complex.I) • (G * G.conjTranspose) → G - G.conjTranspose = (2 * (η : ℂ) * Complex.I) • (G.conjTranspose * G) →
+    ∀ (σ : Bool) (c₁ c₂ : Zd d (sz.L n)), ∑ a, twLoopX n (twChg G σ) (twChg G (!σ)) a c₁ c₂ =
+      (2 * Complex.I * (((sz.W n : ℕ) : ℂ) ^ d) * (η : ℂ))⁻¹ * (twTrP n (twChg G true) c₁ c₂ - twTrP n (twChg G false) c₁ c₂)
+352: def twCirc (sz : Sizes d) : Prop :=
+  ∀ (n : ℕ) (X₁ X₂ M : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) (MB : Zd d (sz.L n) → Zd d (sz.L n) → ℂ),
+    (∀ w γ, M w γ = if (split d (sz.L n) (sz.W n) w).2 = (split d (sz.L n) (sz.W n) γ).2 then
+      MB (split d (sz.L n) (sz.W n) w).1 (split d (sz.L n) (sz.W n) γ).1 else 0) →
+    ∀ a c₁ c₂ : Zd d (sz.L n), twLoopX n X₁ (fun x y => X₂ x y - M x y) a c₁ c₂ =
+      twLoopX n X₁ X₂ a c₁ c₂ - (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * MB a c₁ * twTrP n X₁ a c₂
+360: def twK_bound (d : ℕ) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∃ C : ℝ, 0 < C ∧
+    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
+      ∀ (n : ℕ) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)),
+        (∀ a, ‖twK (baFMz sz z) n (t n) σ a c₁ c₂‖ ≤ C * sz.Bctl n (t n)) ∧
+        ∑ a, ‖twK (baFMz sz z) n (t n) σ a c₁ c₂‖ ≤ C * ((((sz.W n : ℕ) : ℝ) ^ d) * (baFMz sz z).eta n (t n))⁻¹
+$ python3 SP/cmp_cut.py      # `BALWCutExpTw` (434) against `LWCutExpG` (413)
+conclusions identical (modulo (law sz) = μ, (mk sz z) = baFMz sz z): True
+premises of BALWCutExpTw = premises of LWCutExpG + TL1, TL2: True
+```
+- Convention (probe 276-278, the proofs'): `Tr(X P_{c₁c₂}) = W^{-d} Σ_o X_{(c₂,o),(c₁,o)}` (`twTrP`), `G(−) = G^*` (`twChg`), `L̃_{σ,(a;c₁,c₂)} = Tr(G(σ₁)E_aG(σ₂)P_{c₁c₂})` (`twLoopX`, `twL2'`). The probe's `twL2` is `L̃_{(−,+)}` with the leg at `c₁` circled and `twTr c₁ c₂` is `T̃_{+,(c₂,c₁)}`, both by `rfl` (`twL2_eq`, `twTr_eq`); TL1 over all ordered pairs is unaffected and one charge suffices (`T̃_−(c₁,c₂) = conj T̃_+(c₂,c₁)`, 0652 C3).
+- `twK`: `FlowFM` has no `Θ` field. `Θ^{(σ₁σ₂)}_t = (1 − tM^{(σ₁σ₂)})⁻¹` is `PropThetaQ` (`Propagator/Pins.lean:214`) of `BAMss` (`BA/MFixedPoint.lean:511`; `M^{(σ₁σ₂)}_{ab} = M(σ₁)_{ba}M(σ₂)_{ab}`, `|M^{(B)}_{ab}|²` for `(−,+)`, not `M∘M`) of the block matrix `twMB` read off the carrier's `M`; at `baFMz` it is `BAMB` (`twMB_ba`, from `BAMfine_eq`, `BA/GreenSchur.lean:93`), so `twK` is built from `BATheta` (`BA/MFixedPoint.lean:515`).
+- `BALWCutExpTw` has the conclusion and five premises of `LWCutExpG` and TL1, TL2 as two more (script above); `BALWCutExp` (431, five premises) stays as the statement of round 1.
+
+### B. Numeric checks of the convention and of the exponents (d = 1, `False` = charge −; `conv.py` mirrors the Lean definitions)
+```
+$ python3 SP/conv.py
+resolvent identities G-G* = 2i eta G G* = 2i eta G* G, max err: 7.9e-16 1.1e-15
+twWard  max |lhs - rhs| over sigma, c1, c2: 6.9e-17
+twCirc  max |lhs - rhs|: 3.3e-16
+twFold  max |L|^2 / (sq sq) (must be <= 1): 0.166
+base case: twLoopX of M(s1), M(s2) = W^-1 M(s1)_{c2 a} M(s2)_{a c1} = K~ at t = 0, all 4 charges: max err 2.2e-16
+twTr_eq: err 0.0e+00;  T_-(c1,c2) = conj T_+(c2,c1): err 0.0e+00
+Monte Carlo E L~ vs K~ (static z = i eta, d = 1, L = 4, W = 12, g = 1, eta = 0.3, 1500 samples; a = 0, c1 = 1, c2 = 2):
+  sigma=(False, True): E L~ = 4.196e-05+8.258e-03j  K~ = 0.000e+00+8.214e-03j  |E L~ - K~| = 6.0e-05  MC err 7.4e-05  |E L~ - K~(c1<->c2)| = 1.6e-02
+  sigma=(True, True): E L~ = 1.112e-05-6.442e-03j  K~ = 0.000e+00-6.531e-03j  |E L~ - K~| = 9.0e-05  MC err 8.5e-05  |E L~ - K~(c1<->c2)| = 9.0e-05
+  sigma=(True, False): E L~ = 4.468e-05-8.294e-03j  K~ = 0.000e+00-8.214e-03j  |E L~ - K~| = 9.1e-05  MC err 7.4e-05  |E L~ - K~(c1<->c2)| = 1.7e-02
+  sigma=(False, False): E L~ = 7.576e-05+6.602e-03j  K~ = 0.000e+00+6.531e-03j  |E L~ - K~| = 1.0e-04  MC err 8.5e-05  |E L~ - K~(c1<->c2)| = 1.0e-04
+$ python3 SP/limit2.py
+W    sd|T~|*W   rms|L~-K~|*W^2   rms|L~-K~|*W^{3/2}   (d = 1, B_{t,0} := 1; sigma = (-,+); a = 0, c1 = 1, c2 = 2)
+  6    0.4461        0.4318            0.1763
+ 12    0.4621        0.4218            0.1218
+ 24    0.4689        0.4295            0.0877
+```
+Reading: `twWard`, `twCirc` and the base case `L̃_0 = K̃_0` (`G_0 = M`, `t = 0`, `twK` at `t = 0`) hold at random data to 1e-16, `twFold` with the ratio 0.17 ≤ 1; `E L̃` equals `twK` for the four charges within about one Monte Carlo error, and for `(−,+)`, `(+,−)` not with `c₁ ↔ c₂` swapped (1.6e-2): the sign fixes the convention. `sd T̃ · W` and `rms(L̃ − K̃) · W²` are constant in `W`: `|T̃| ≍ W^{-d}` (TL1 has no slack) and `|L̃ − K̃| ≍ W^{-2d}`, so TL2 at exponent 3/2 has the slack `W^{-d/2}` (last column).
+
+### C. Row table (design §7 under R1; central lines; ratios of T2387 §6: TW 0.73 / 0.85 / 1.61, NW 0.85 / 1.20 / 2.10, F by estimate; role h = `prover-hard`, m = `prover-max`)
+| row | content | basis | cl | lo / central / hi | role | change |
+|---|---|---|---|---|---|---|
+| L4a | BA families S1, kernels `ω`, tie sums, fine-level Ward (twin) | `LWExpTerm4` 1-1838 | TW | 1,342 / 1,562 / 2,959 | h | none; waits for L0 and the K12 pins only |
+| L4a2 | reduction `LWE → LWcut`, `≺ → 𝔼`; assembly of S1-S3 with TL1, TL2 as hypotheses (`BALWCutExpTw`, 434) | `LWExpTerm` 1-1256 | TW | 917 / 1,068 / 2,022 | h | two more premises; price unchanged |
+| L4b1 | `GGGamma` at `α` for `f = tr Ḡ_{xy}`: families, `W − 1` block form | `LWExpTerm2` first half | NW | 900 / 1,270 / 2,220 | m | none |
+| L4b2 | twisted twin of `lwExpI1K_holds` (`MǦ`, `ǦM`, `T2`), `lwExpI23K_holds` (`T3B`: TL1 for `Tr(G̊E_{a₂})`) and `lwExpI41K_holds` (`T3C-Ḡ`) with `(twL2', twK, twTr)` for `(𝓛^{(2)}, 𝒦^{(2)}, Tr(G̊E))`; hypotheses `BATwistAvgLaw`, `BATwistLoopLaw` | `LWExpTerm4` 828-1716 (889) + 14 helpers (366) = 1,255 | TW | 916 / 1,067 / 2,021 | h | was NW 899 / 1,269 / 2,224 (m) |
+| L4c1 | bridge to `𝒢_{xy}`, assembly, `x ~ y` count | `LWExpTerm3` part | NW | 782 / 1,104 / 1,933 | m | none |
+| L4c2 | leaf bound `q ≤ 1`, joined (atoms) | `LWExpTerm3` part | NW | 1,174 / 1,657 / 2,899 | m | none |
+| L4d | BA identity half | `LWExpTerm5` -(189-250) | TW | 494 / 575 / 1,090 | h | none |
+| L4e-C | leaf half: the 9-parent table and the properties | new | F | 800 / 1,200 / 2,200 | m | none |
+| L4g | joined-graph pathwise bound, consumer, Step 6 closures | `LWExpTerm6` | NW | 641 / 905 / 1,583 | m | none |
+| **L4t** | model-free `twFold`, `twWard`, `twCirc`, `twK_bound` (probe 336-365) | statement level (analysis §6: `twFold` ~150, `twWard` ~100, `twK_bound` ~200; `twCirc` inside the margin, its core `twTie` is 27 lines, probe 226) | F | 320 / 450 / 700 | h | new |
+
+Totals 8,286 / **10,858** / 19,627 (round 1: 7,949 / 10,610 / 19,130; `rows.py`); 12,422 with the planning ratio 1.144. Stage L: 33 rows (32 + L4t), flag 1.5 × 33 = 49.5, i.e. 50; no row in the certificate lane. L4b2 basis (`basis2.py`): the sections of `lwExpI1K_holds` 112 lines, kernel sums 164, `lwExpI23K_holds` 290, `lwExpI41K_holds` 323 (889), and the 14 declarations they use directly (366); the analysis' 700 / 1,000 / 1,800 are 24% / 6% / 11% below. Overlap: L4a's basis (all of `LWExpTerm4`) holds the same I1K and I41K text; if the L4a ticket leaves it out (435 basis lines) its central falls by 370; not applied (the amend leaves L4a).
+Order: L4t needs merged BA files only and can start at once. L4d, L4e-C, L4c and the reduction of L4a2 need only §3 and the L3 outputs; L4a needs L0 and the K12 pins; L4b1 needs L2c2 and L4a; L4b2 needs L4t and the two pins as hypotheses (no producer); the assembly of L4a2 needs L4a, L4b1, L4b2, L4c, L4d, L4e-C. No row waits for §8. Not priced: the producers of TL1 and TL2 (a new BA stage, 0652 C4). Until they exist the terminal BA statement is conditional on two text pins: the merged `BALWtermEXP` (`BA/LWPinsBA.lean:49`) has five premises and its BA proof uses TL1, TL2 under R1, so BA-L6 pins a seven-premise successor (a new name; the merged pin is not changed).
+
+### D. Paper delta T2398d (supervisor 0652 Q4, lines 170-177, verbatim; replaces the round-1 text of T2398d in §8)
+> B:118 says the BA case of Lemma B.1 (`lem:LWterm_EXP`) is "analogous … we omit the details". The BA GG-expansion (GGGamma, (B.20)) produces the twisted loops Tr(G^*E_aG̊P_{c1c2}) and Tr(G̊P_{c1c2}) with c1 ≠ c2. These are not G-loops of (2.43), and Theorem 8.2 does not control them. Entrywise bounds plus Ward lose (W^{-d}B)^{1/2}.
+>
+> **Fix.**
+> - (TL1): a lemma in §8, a consequence of Steps 2–3.
+> - (TL2): a fifth hypothesis and conclusion of Theorem 8.2, with the twisted tree K̃ = W^{-d}Σ_{a'}Θ^{(σ1σ2)}(a,a')M^{(B)}(σ1)_{c2a'}M^{(B)}(σ2)_{a'c1}.
+> - With these, the BA proof of (B.1) is the twin of (B.2)–(B.4).
+>
+> Not in [68] (analysis §1).
+
+No further delta: TL1 (one charge, ordered pairs), TL2 (exponent 3/2, the proofs give 2 − δ) and `twK_bound` (`Bctl` for `B_{t,|a−c₁|}`, no `e^{-c|c₁−c₂|/2}`: weaker than T.1 (i)) are weakenings of the statements of T2398d.
+
+### E. Limits
+1. TL1, TL2 are owed text pins: their truth rests on supervisor 0652 (Q1-Q2: PASS) and on `T2398-TL-proofs.md`; §B checks the convention and the exponents at d = 1 only, not constants in d = 3.
+2. `twFold`, `twWard`, `twCirc`, `twK_bound` are statements, not proved in the probe (500-line limit). `twK_bound` (ii) is the private `KWardIneq_theta_col_le` (`BA/KWardIneq.lean:265`, to be copied) with the row identity `Σ_b |M^{(B)}_{ab}|² = 1` of `BAPropM` (third conjunct; `baPropM_holds`, `BA/CombesThomas.lean:562`); (i) needs `baProp5mixed_holds` (`BA/Prop5.lean:928`), `baProp5s_holds` (`BA/Prop5Short.lean:667`) and `BAMfine_decay` (`BA/GreenSchur.lean:124`). Non-vacuity of the hypotheses of `twWard` (a real resolvent) and `twCirc` (a block-tied `M`) is numeric (§B), not compiled; `twK_bound` has the compiled instance 474.
+3. `twMB` reads `M^{(B)}` at offset 0 of the carrier's `M`; it is identified with `BAMB` at `baFMz` only (`twMB_ba`, which needs `0 < Im m`).
+4. Row prices are estimates (basis × T2387's ratios; L4t is the amend's 450); the producers are not priced.
