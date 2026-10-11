@@ -11,28 +11,34 @@ import RBM3D.BA.MFixedPoint
 /-!
 # BA-L L4d (T2419): the BA identity half of `lem:LWterm_EXP`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:393-405` (`GGGamma`, D402 coefficient `W - 1 = M⁺S⁺`);
-design `docs/reports/T2398-design.md` §4 (the identity in expectation), probe
-`t/T2398:RBM3D/Probe/T2398Pins.lean:135-153, 490-494` (statements and engine instance, copied).  The twin of the identity half
-of `Graph/LWExpTerm5.lean` (`lwExpandIdentity_holds`, `:594`) without its leaf-side parts.
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:393-405` (`GGGamma`, D402
+coefficient `W - 1 = M⁺S⁺`); design `docs/reports/T2398-design.md` §4 (the identity in
+expectation), probe `t/T2398:RBM3D/Probe/T2398Pins.lean:135-153, 490-494` (statements and
+engine instance, copied).  The twin of the identity half of `Graph/LWExpTerm5.lean`
+(`lwExpandIdentity_holds`, `:594`) without its leaf-side parts.
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAExpandId_`)
 
 1. **Vocabulary** (probe 135-153): `baG5Graph k s`, `BAG5Identity d Ls`.
-2. **The procedure**: `BAExpandId_pcomp`, `BAExpandId_outsOf` (the packing of the partitions of a list of terms through the
-   external map of the parent), `BARCand` (a `GG` candidate: a vertex `v` and two **blue** circled solid edges
-   `p = Ǧ_{vy}`, `q = Ǧ_{y'v}` of the same graph), `BARCand.kids` (the partitions of `gg2 ++ gg4`, every exponent pair
-   `(0, 0)`), `BASel`, `BAstep`, `BAexpand` (= `expandG` of `LWExpTerm5`), `BAexpandRoot`, `BAselClassical`.
+2. **The procedure**: `BAExpandId_pcomp`, `BAExpandId_outsOf` (the packing of the partitions
+   of a list of terms through the external map of the parent), `BARCand` (a `GG` candidate:
+   a vertex `v` and two **blue** circled solid edges `p = Ǧ_{vy}`, `q = Ǧ_{y'v}` of the same
+   graph), `BARCand.kids` (the partitions of `gg2 ++ gg4`, every exponent pair `(0, 0)`),
+   `BASel`, `BAstep`, `BAexpand` (= `expandG` of `LWExpTerm5`), `BAexpandRoot`,
+   `BAselClassical`.
 3. **Normality** of the children: `BARCand.kids_normal` (`BAGraph.partition_normal`).
-4. **Integrability and packing**: every graph value is integrable over `PF d L W 0`, the partition and the packed
-   graph read through `P.ext`.
-5. **The step**: `BARCand.kids_identity` (`baExpFrame_gg` + `BAGraph.val_eq_partition` + packing).
-6. **The expansion**: `baExpandIdentity_holds`: `BAG5Identity d (BAexpandRoot sel fuel)` for every selector and fuel, from
-   `expandG_sum` of `LWExpTerm5` (imported) with the weight `w = fun _ => 1`.
+4. **Integrability and packing**: every graph value is integrable over `PF d L W 0`, the
+   partition and the packed graph read through `P.ext`.
+5. **The step**: `BARCand.kids_identity` (`baExpFrame_gg` + `BAGraph.val_eq_partition` +
+   packing).
+6. **The expansion**: `baExpandIdentity_holds`: `BAG5Identity d (BAexpandRoot sel fuel)` for
+   every selector and fuel, from `expandG_sum` of `LWExpTerm5` (imported) with the weight
+   `w = fun _ => 1`.
 7. Compiled instances (`BAExpandIdInst`, `d = 3`).
 
-`LWG5Progress` (`LWExpTerm5:72`) is **not** claimed: it fails at BA (`baTwB_stuck`, probe 97); the stop rule and the leaf
-property are L4e-C's.  The candidate rule is blue only, as the merged identity `baExpFrame_gg` (`Graph/BAGGOp.lean:785`) is.
+`LWG5Progress` (`LWExpTerm5:72`) is **not** claimed: it fails at BA (`baTwB_stuck`, probe 97);
+the stop rule and the leaf property are L4e-C's.  The candidate rule is blue only, as the
+merged identity `baExpFrame_gg` (`Graph/BAGGOp.lean:785`) is.
 -/
 
 set_option linter.style.longLine false
@@ -319,7 +325,137 @@ theorem BARCand.kids_identity (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ) (hSelf : R
     simp_rw [h1]
     simp
 
+/-! ## 6. The expansion and its identity -/
+
+/-- The weighted sum over `l.flatMap (g ·)` (outputs only) is the sum over `l`, if `Φ` is the sum over `g` at every member of
+`l` (the weight is `1`; twin of `lwExpTerm5_flat_sum`, `LWExpTerm5.lean:215`). -/
+private theorem BAExpandId_flat_sum {X : Type*} (Φ : X → ℂ) (l : List X) (g : X → List ((ℕ × ℕ) × X))
+    (hg : ∀ r ∈ l, Φ r = ((g r).map fun t => Φ t.2).sum) :
+    ((l.flatMap fun r => (g r).map Prod.snd).map Φ).sum = (l.map Φ).sum := by
+  rw [List.map_flatMap, BAExpandId_sum_flatMap]
+  refine congrArg List.sum (List.map_congr_left fun r hr => ?_)
+  rw [List.map_map, hg r hr]
+  rfl
+
+/-- **The identity half of LW-14e at BA, for every selection rule and every fuel** (`B:78-108`, `B:393-405`): the list of
+`BAexpandRoot sel fuel` satisfies the expectation identity `𝔼 𝒢_{xy} = Σ_μ 𝔼 Γ_μ`.  `expandG_sum` (`LWExpTerm5.lean:234`, any
+carrier) with `X := BAPGraph (Fin 2)`, the invariant `Normal`, the weight `w = fun _ => 1`, and the step lemma
+`kids_normal` + `kids_identity`.  The stop rule and the leaf property are not claimed (`baTwB_stuck`, probe 97).  Hypotheses of
+the statement: `BASelf` and `0 ≤ t < 1` (`BAG5Identity`). -/
+theorem baExpandIdentity_holds (d : ℕ) (sel : BASel) (fuel : ℕ) : BAG5Identity d (BAexpandRoot sel fuel) := by
+  intro L W _ _ hL g0 E t m hSelf ht0 ht1 k s x y
+  have hexp := expandG_sum (BAstep sel) (fun P : BAPGraph (Fin 2) => P.g.Normal)
+    (fun P => ∫ ω, P.val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0)) (fun _ => 1) rfl
+    (fun _ _ _ _ => (one_mul (1 : ℂ)).symm)
+    (by
+      intro P l hP hst
+      obtain ⟨c, hc, rfl⟩ := Option.map_eq_some_iff.1 hst
+      refine ⟨c.kids_normal, ?_⟩
+      simp only [one_mul]
+      exact BARCand.kids_identity hL g0 E t m hSelf ht0 ht1 c x y) fuel
+  rw [BAExpandId_integral_partition hL g0 E t m hSelf ht0 ht1 (baG5Graph k s) ![x, y]]
+  unfold BAexpandRoot
+  exact (BAExpandId_flat_sum (fun P : BAPGraph (Fin 2) => ∫ ω, P.val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0))
+    (baG5Graph k s).partition (fun P => BAexpand sel fuel P) (by
+      intro P _
+      have := (hexp P (BAGraph.partition_normal _ P ‹_›)).1
+      simpa [BAexpand] using this)).symm
+
 end Identity
+
+/-! ## 7. Compiled instances (namespace `RBM.Graph.BAExpandIdInst`)
+
+`d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2` (`BASelf` is `BAExpandInst.baSelf_zero`, `BAExpand.lean:865`); `Idx 3 3 1`
+has `27` points.  The packed graph is the shape of `baG5Graph true true` with every solid edge circled (a normal term of its
+partition): `5` solid edges, `2` waved edges, `3` internal vertices, `E' = Fin 2`, `I' = Fin 3`, `ext = id`.  The candidate is at
+`v = inr 0`: `p = Ǧ_{inr0 inr1}`, `q = Ǧ_{inl0 inr0}`. -/
+
+namespace BAExpandIdInst
+
+set_option maxRecDepth 100000
+
+/-- `baG5Graph true true` with every solid edge circled. -/
+def baG5Circ : BAGraph (Fin 2) (Fin 3) where
+  solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 0) (Sum.inr 1),
+    SEdge.mk true true (Sum.inr 1) (Sum.inr 2), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
+    SEdge.mk true true (Sum.inl 1) (Sum.inl 0)]
+  waved := [WEdge.mk true true (Sum.inr 1) (Sum.inr 0), WEdge.mk false false (Sum.inr 0) (Sum.inr 2)]
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := []
+
+theorem baG5Circ_normal : baG5Circ.Normal := ⟨by decide, by decide⟩
+
+/-- The packed instance graph (external `x, y`, three internal vertices; normal). -/
+abbrev instP : BAPGraph (Fin 2) :=
+  { E' := Fin 2, I' := Fin 3, ext := id, ext_surj := Function.surjective_id, g := baG5Circ }
+
+/-- A `GG` candidate of `instP` at `v = inr 0`: `p = Ǧ_{v,inr1}`, `q = Ǧ_{inl0,v}`. -/
+def instCand : BARCand instP where
+  v := Sum.inr 0
+  p := (SEdge.mk true true (Sum.inr 0) (Sum.inr 1),
+    [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true true (Sum.inr 1) (Sum.inr 2),
+      SEdge.mk true true (Sum.inr 2) (Sum.inl 1), SEdge.mk true true (Sum.inl 1) (Sum.inl 0)])
+  q := (SEdge.mk true true (Sum.inl 0) (Sum.inr 0),
+    [SEdge.mk true true (Sum.inr 1) (Sum.inr 2), SEdge.mk true true (Sum.inr 2) (Sum.inl 1),
+      SEdge.mk true true (Sum.inl 1) (Sum.inl 0)])
+  hp := by simp [lwSplit, instP, baG5Circ]
+  hq := by simp [lwSplit]
+  hpσ := rfl
+  hpc := rfl
+  hqσ := rfl
+  hqc := rfl
+  hpv := rfl
+  hqv := rfl
+
+/-- The step at `instCand` is not degenerate: `gg2` has `8` terms, `gg4` has `5`, and the children number `63`
+(partition term counts), `instP` has a candidate, `BAselClassical` selects one. -/
+theorem instCand_sizes : (instP.g.gg2 instCand.p instCand.q).length = 8 ∧
+    (instP.g.gg4 instCand.p instCand.q).length = 5 ∧ instCand.kids.length = 63 := by
+  decide
+
+theorem instP_selected : BAselClassical instP ≠ none := baSelClassical_isSome _ ⟨instCand⟩
+
+/-- The root is not degenerate either: its partition has `2^5 = 32` terms for every `k`, `s` (each solid edge is circled or an
+`M`-dotted edge). -/
+theorem baG5Graph_partition_length : ∀ k s : Bool, (baG5Graph k s).partition.length = 32 := by
+  decide
+
+/-- **Instance of `BARCand.kids_identity`** (one step of the expansion) at `d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`,
+`m = i`, `t = 1/2`, the packed instance graph and its candidate, all labels `x, y`: no hypothesis. -/
+theorem baExpandId_inst_kids_identity (x y : Idx 3 3 1) :
+    ∫ ω, instP.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
+      (instCand.kids.map fun r => ∫ ω, r.2.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
+  BARCand.kids_identity (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero (by norm_num) (by norm_num)
+    instCand x y
+
+/-- **Instance of `BARCand.kids_normal`** at the same candidate. -/
+theorem baExpandId_inst_kids_normal : ∀ r ∈ instCand.kids, r.2.g.Normal := instCand.kids_normal
+
+/-- **Instance of `baExpandIdentity_holds`** at the root `baG5Graph true true`, fuel `1`, the rule `BAselClassical`, all external
+labels `x, y`: no hypothesis (`BASelf` is `BAExpandInst.baSelf_zero`, `3 ≤ 3`, `0 ≤ 1/2 < 1`). -/
+theorem baExpandId_inst_identity (k s : Bool) (x y : Idx 3 3 1) :
+    ∫ ω, (baG5Graph k s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
+      ((BAexpandRoot BAselClassical 1 k s).map fun q =>
+        ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
+  baExpandIdentity_holds 3 BAselClassical 1 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero
+    (by norm_num) (by norm_num) k s x y
+
+/-- The same at fuel `2`. -/
+example (k s : Bool) (x y : Idx 3 3 1) :
+    ∫ ω, (baG5Graph k s).val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0) =
+      ((BAexpandRoot BAselClassical 2 k s).map fun q =>
+        ∫ ω, q.val (BAlwData 3 3 1 0 0 (1 / 2) Complex.I ω) ![x, y] ∂(PF 3 3 1 0)).sum :=
+  baExpandIdentity_holds 3 BAselClassical 2 3 1 (by norm_num) 0 0 (1 / 2) Complex.I BAExpandInst.baSelf_zero
+    (by norm_num) (by norm_num) k s x y
+
+/-- The engine at the BA carrier with the weight `1` (probe 490-494). -/
+example (st : BAPGraph (Fin 2) → Option (List ((ℕ × ℕ) × BAPGraph (Fin 2)))) (Inv : BAPGraph (Fin 2) → Prop)
+    (Φ : BAPGraph (Fin 2) → ℂ) : ExpandGSum st Inv Φ (fun _ => 1) :=
+  expandG_sum st Inv Φ (fun _ => 1)
+
+end BAExpandIdInst
 
 end RBM.Graph
 
