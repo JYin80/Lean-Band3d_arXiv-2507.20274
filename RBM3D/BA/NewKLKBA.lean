@@ -39,7 +39,7 @@ set_option linter.style.longLine false
 
 open private nkl_Cs_ge_one nkl_tailT_le_tailW nkl_tailW_eq_of_near nkl_tailW_far nkl_tailT_shift
   from RBM3D.Induction.NewKLK
-open private k2d_sqrt_le k2d_zdistInf_neg from RBM3D.Induction.Step2K2
+open private k2d_sqrt_le k2d_zdistInf_neg k2d_zdistInf_le from RBM3D.Induction.Step2K2
 
 noncomputable section
 
@@ -546,5 +546,59 @@ theorem baNewKLKGenHyp (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 
     rfl
 
 end Facts
+
+/-! ## 4. The BA pins: `STNewKLKgL'` and `STK2decaygL'` -/
+
+section Pins
+
+variable {d : ℕ}
+
+/-- **Target 2: the BA pin `STNewKLKgL'`** (`lem:newKLK` at the block Anderson carrier, `δ₀ = κ/2`): the generic theorem
+`stNewKLKgL'_of` (`Chain/NewKLKGen.lean:617`) with `baNewKLKGenHyp` for every `κ, 𝔡 > 0`; the constant `C` is the one it gives. -/
+theorem stNewKLKgL'_ba : STNewKLKgL' d (fun sz E => baStep2Fam sz E) :=
+  stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => baNewKLKGenHyp hd κ 𝔡 hκ h𝔡
+
+/-- **Target 3 (BAT-F2): the BA pin `STK2decaygL'`**, the BA twin of `stK2decay_holds` (`Induction/Step2K2.lean:132`):
+`‖𝒦^{(2)}_{u,σ,a}‖ ≤ Q₀ W^{-d} 𝒯̃^{L}_{u,D}(|a₀-a₁|_∞)` for `0 ≤ u < 1`, `D ≥ 0`, `0 < lam ≤ 𝔡⁻¹`, `κ ≤ Im m`.  `𝒦^{(2)} = W^{-d} Θ_BA M^{(σσ')}`
+(`(Kn2sol)`, `NewKLKBA_K_two`) and the tail `‖(Θ M)_{ab}‖ ≤ Q₀ 𝒯_u(|a-b|_∞)` (`NewKLKBA_tail`); `|a-b|_∞ ≤ L`, so `𝒯_u ≤ 𝒯̃^{L}_{u,D}`.
+The constant `Q₀` depends on `(d, κ, 𝔡)` only. -/
+theorem stK2decaygL'_ba (d : ℕ) : STK2decaygL' d (fun sz E => baStep2Fam sz E) := by
+  intro hd κ 𝔡 hκ h𝔡
+  have hΛ : 0 < 𝔡⁻¹ := inv_pos.2 h𝔡
+  obtain ⟨Q₀, hQ₀, HQ⟩ := NewKLKBA_tail d hd 𝔡⁻¹ κ hΛ hκ
+  refine ⟨Q₀, hQ₀, ?_⟩
+  intro sz n E u D hlam hlam' hIm hu0 hu1 hD σ a
+  have hr := NewKLKBA_real hκ sz n E hIm
+  have hL : 3 ≤ sz.L n := sz.three_le_L n
+  have hW0 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by positivity
+  have hθ := HQ (sz.L n) hL (sz.lam n) hlam hlam' E _ hr u hu0 hu1 (σ 0) (σ 1) (a 0) (a 1)
+  have hrL : ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast k2d_zdistInf_le (a 0 - a 1)
+  have hmin : min ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ) ((sz.L n : ℕ) : ℝ) =
+      ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ) := min_eq_left hrL
+  have htail : tailT d (sz.L n) (sz.lam n) u ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ) ≤
+      tailW d (sz.L n) (sz.lam n) u ((sz.L n : ℕ) : ℝ) ((sz.W n : ℕ) : ℝ) D
+        ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ) := by
+    unfold tailW
+    rw [hmin]
+    exact le_max_left _ _
+  have hnorm : ‖(baStep2Fam sz (fun _ => E)).K n u σ a‖ = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ *
+      ‖(BATheta d (sz.L n) (sz.lam n) E (BAm d (sz.L n) (sz.lam n) (E : ℂ)) u (σ 0) (σ 1) *
+        BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) (E : ℂ) (BAm d (sz.L n) (sz.lam n) (E : ℂ))) (σ 0) (σ 1))
+        (a 0) (a 1)‖ := by
+    rw [NewKLKBA_K_two hΛ hκ sz n E hlam hlam' hIm u hu0 hu1 σ a, norm_mul, norm_inv, norm_pow,
+      Complex.norm_natCast]
+  rw [hnorm]
+  unfold STprof
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖(BATheta d (sz.L n) (sz.lam n) E (BAm d (sz.L n) (sz.lam n) (E : ℂ)) u (σ 0) (σ 1) *
+        BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) (E : ℂ) (BAm d (sz.L n) (sz.lam n) (E : ℂ))) (σ 0) (σ 1))
+        (a 0) (a 1)‖
+      ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (Q₀ * tailW d (sz.L n) (sz.lam n) u ((sz.L n : ℕ) : ℝ) ((sz.W n : ℕ) : ℝ) D
+          ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ)) :=
+        mul_le_mul_of_nonneg_left (hθ.trans (mul_le_mul_of_nonneg_left htail hQ₀.le)) hW0
+    _ = Q₀ * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * tailW d (sz.L n) (sz.lam n) u ((sz.L n : ℕ) : ℝ) ((sz.W n : ℕ) : ℝ) D
+          ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ)) := by ring
+
+end Pins
 
 end RBM.BA
