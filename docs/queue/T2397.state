@@ -1,4 +1,4 @@
-state: auditing
-reason: 1b prover-max returned (416232c): (6) at BA holds on both branches (S transports; rows 10,569 → 3,766 central; twin 8 rows), no question to Jun; workflow wf_acdaf7a7-7bc stopped before its auditor (H193 (2), accepted H194); audit rerun with Amend 1 in the auditor/repairer prompts: workflow wf_a0cdd644-8d3
-updated: Sun Oct 11 01:04:40 UTC 2026
+state: audit-pass
+reason: 1b prover-max 416232c; audit round 1 RETURN (BAImgSim not dischargeable; S not S′) → repairer 54ba7be → audit PASS round 2 (claude-opus-5-5), Amend 1 in both audits; report-only merge
+updated: Sun Oct 11 02:48:28 UTC 2026
 reports: docs/reports/T2397-prove.md, docs/reports/T2397-design.md, docs/reports/T2397-audit.md
