@@ -6,6 +6,7 @@ Authors: Jun Yin
 import RBM3D.BA.GreenCore
 import RBM3D.BA.GreenStab
 import RBM3D.BA.GreenLDE
+import RBM3D.BA.KBase
 
 /-!
 # The off-diagonal decay `(GijGEX_BA)` of the block Anderson resolvent (BA-G4)
@@ -622,6 +623,182 @@ theorem GreenOff_close {Θ : Matrix (Zd d L) (Zd d L) ℂ} {CΘ : ℝ}
     _ ≤ 2 * ((1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S * (GreenOff_sA d κ c₀ ρ S P δ g₀ / c₀ + GreenOff_sX κ c₀ ρ S P))) *
         GreenOff_T d L γ Ψ φ x.1 y.1 := mul_le_mul_of_nonneg_right hfin (hTpos _ _).le
     _ = _ := by unfold GreenOff_Cl; ring
+
+/-! ### The carrier form: (A*) in the row form, and the closure at the BA data -/
+
+/-- `α = (2/κ) δ (2 d g₀ + (1 + 2 d g₀)/κ)`: the bound of `|A_w|` (A*). -/
+def GreenOff_alpha (d : ℕ) (κ δ g₀ : ℝ) : ℝ := (2 / κ) * (δ * (2 * d * g₀ + (1 + 2 * d * g₀) / κ))
+
+/-- **(A\*), row form** (`GreenCore_Acol_sq` is the column form): `(X + t m) G = -(D - s)(G - M)`, so `A_w G_{ww} = -Σ_l (D - s)_{wl} Δ_{lw}` and
+`|A_w| ≤ (2/κ) δ (2 d g₀ + |s|)`, `|s| κ ≤ 1 + 2 d g₀`. -/
+theorem GreenOff_Arow_bd {G X M D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Matrix (Zd d L) (Zd d L) ℂ} {m s z : ℂ}
+    {κ δ t g₀ : ℝ} (hL : 3 ≤ L) (hg : 0 ≤ g₀) (hκ : 0 < κ)
+    (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
+    (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
+    (hMR : (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * M = 1) (hz : z = s - (t : ℂ) * m)
+    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hMd : ∀ a, Mb a a = m)
+    (hD : ∀ u l, D u l = if u.2 = l.2 ∧ Adj d L u.1 l.1 then (g₀ : ℂ) else 0)
+    (hκm : κ ≤ ‖m‖) (hMb1 : ∀ a b, ‖Mb a b‖ ≤ 1) (hGuu : ∀ u, κ / 2 ≤ ‖G u u‖)
+    (hΩ : ∀ u v, ‖G u v - M u v‖ ≤ δ) (w : Vtx d L W) :
+    ‖GreenCore_Arow G X D t m w‖ ≤ GreenOff_alpha d κ δ g₀ := by
+  have hG0 : ∀ u, G u u ≠ 0 := fun u h => by have := hGuu u; rw [h, norm_zero] at this; linarith
+  have hD1 : ∑ l, ‖D w l‖ = 2 * d * g₀ := GreenCore_Drow (W := W) hg hL hD w
+  have hM1 : ∀ u v, ‖M u v‖ ≤ 1 := fun u v => by rw [hM]; split_ifs <;> simp [hMb1]
+  have hs : ‖s‖ * κ ≤ 2 * d * g₀ + 1 := by
+    have h1 := congrFun (congrFun hMR w) w
+    rw [Matrix.mul_apply, Matrix.one_apply_eq] at h1
+    have h2 : ∑ l, (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) w l * M l w = ∑ l, D w l * M l w - s * m := by
+      simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, sub_mul, Finset.sum_sub_distrib,
+        ite_mul, one_mul, zero_mul, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+      rw [show M w w = m by rw [hM]; simp [hMd]]
+    have h4 : ‖s‖ * ‖m‖ ≤ 2 * d * g₀ + 1 := by
+      rw [← norm_mul, show s * m = ∑ l, D w l * M l w - 1 by rw [h2] at h1; linear_combination -h1]
+      refine (norm_sub_le _ _).trans (add_le_add ((norm_sum_le _ _).trans ?_) norm_one.le)
+      calc ∑ l, ‖D w l * M l w‖ ≤ ∑ l, ‖D w l‖ * 1 :=
+            Finset.sum_le_sum fun l _ => by rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hM1 _ _) (norm_nonneg _)
+        _ = 2 * d * g₀ := by simp [hD1]
+    nlinarith [norm_nonneg s]
+  have hYG : (X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G =
+      -((D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * (G - M)) := by
+    have e : X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ) =
+        (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) - (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) := by
+      rw [hz]; module
+    calc (X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G =
+          ((D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) - (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ))) * G := by
+          rw [e]
+      _ = 1 - (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G := by rw [sub_mul, hRG]
+      _ = _ := by rw [mul_sub, hMR]; abel
+  have h1 : ((X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G) w w =
+      GreenCore_Arow G X D t m w * G w w := by
+    have e1 := GreenCore_E1 (X := X) hGR w w (hG0 w)
+    have e2 : ((X + ((t : ℂ) * m) • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G) w w =
+        ∑ v, X w v * G v w + (t : ℂ) * m * G w w := by
+      rw [Matrix.mul_apply]
+      simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, add_mul, Finset.sum_add_distrib]
+      congr 1
+      rw [Finset.sum_eq_single w (fun b _ hb => by simp [Ne.symm hb]) (by simp)]
+      simp
+    have e3 : ∑ v ∈ Finset.univ.erase w, X w v * greenMinor G w v w = 0 :=
+      Finset.sum_eq_zero fun v _ => by rw [GreenCore_minor_right (hG0 w), mul_zero]
+    rw [e2, e1, e3]; unfold GreenCore_Arow; ring
+  have hA : ‖GreenCore_Arow G X D t m w‖ * (κ / 2) ≤ δ * (2 * d * g₀ + ‖s‖) := by
+    have h2 : ‖GreenCore_Arow G X D t m w * G w w‖ ≤ δ * (2 * d * g₀ + ‖s‖) := by
+      rw [← h1, hYG, Matrix.neg_apply, norm_neg, Matrix.mul_apply]
+      refine (norm_sum_le _ _).trans ?_
+      calc ∑ l, ‖(D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) w l * (G - M) l w‖
+          ≤ ∑ l, (‖D w l‖ + ‖s‖ * (if w = l then 1 else 0)) * δ := Finset.sum_le_sum fun l _ => by
+            rw [norm_mul]
+            refine mul_le_mul ?_ (by simpa using hΩ l w) (norm_nonneg _) (by positivity)
+            simp only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul]
+            split_ifs with h
+            · subst h; simpa using norm_sub_le (D w w) (s * 1)
+            · simp
+        _ = δ * (2 * d * g₀ + ‖s‖) := by
+            rw [← Finset.sum_mul, Finset.sum_add_distrib, hD1]; simp [Finset.sum_ite_eq]; ring
+    rw [norm_mul] at h2
+    nlinarith [mul_le_mul_of_nonneg_left (hGuu w) (norm_nonneg (GreenCore_Arow G X D t m w))]
+  have hsκ : ‖s‖ ≤ (1 + 2 * d * g₀) / κ := by
+    rw [le_div_iff₀ hκ]; linarith [hs]
+  unfold GreenOff_alpha
+  rw [show (2 / κ) * (δ * (2 * d * g₀ + (1 + 2 * d * g₀) / κ)) = (δ * (2 * d * g₀ + (1 + 2 * d * g₀) / κ)) / (κ / 2) by
+    field_simp, le_div_iff₀ (by positivity)]
+  exact hA.trans (mul_le_mul_of_nonneg_left (by linarith) (le_trans (norm_nonneg _) (hΩ w w)))
+
+/-- `S = expC (d-2) (c₀/2) ≥ max_a Σ_b e^{-(c₀/2)|a-b|}`, `c₀ = BAct_rate d Λ κ` (`BAsum_exp_decay_le`). -/
+def GreenOff_S (d : ℕ) (Λ κ : ℝ) : ℝ := expC (d - 2) (BAct_rate d Λ κ / 2)
+
+/-- `ρ = c₀⁻¹ expC (d-2) c₀ ≥ max_c Σ_b |M_{bc}|` (`baM_col_l1`). -/
+def GreenOff_rho (d : ℕ) (Λ κ : ℝ) : ℝ := (BAct_rate d Λ κ)⁻¹ * expC (d - 2) (BAct_rate d Λ κ)
+
+/-- **The closure at the BA carrier** (the deterministic core of `(GijGEX_BA)`): for one sample, on `Ω = {‖G - M‖_max ≤ δ}` and the four
+large deviation events (`LDERow`, `LDECol`, `LDEQuad`, the diagonal) with the factor `P = Φ_N`, and the loop control
+`GreenCore_loop G a b ≤ φ(a,b)²`: `|(G - M)_{xy}| ≤ 2 C_ℓ' Φ_N 𝔗_{c_λ}([x],[y])`, with `c₀ = BAct_rate d Λ κ`, `c_λ = GreenStab_clam d Λ κ`,
+`C_Θ̂ = GreenStab_CTheta d Λ κ`, `ρ`, `S` as above, under (C1) and (C2).  The sources are `GreenCore_Xstar`, `GreenCore_Xi`, `GreenOff_Arow_bd`,
+the stability is `Θ = BATheta … t true true` with `baTheta_weighted_l1`; `GreenOff_close` closes. -/
+theorem GreenOff_decay (hd : 2 ≤ d) (hL : 3 ≤ L)
+    {Λ g₀ κ E t δ P Ψ : ℝ} {m s z : ℂ} {G X M D : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+    (hΛ : 0 < Λ) (hg : 0 < g₀) (hgΛ : g₀ ≤ Λ) (hκ : 0 < κ) (hr : BAReal d L g₀ κ E m)
+    (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
+    (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
+    (hMR : (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * M = 1)
+    (hMR' : M * (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1) (hz : z = s - (t : ℂ) * m)
+    (hM : ∀ u v, M u v = if u.2 = v.2 then BAMB d L g₀ (E : ℂ) m u.1 v.1 else 0)
+    (hD : ∀ u l, D u l = if u.2 = l.2 ∧ Adj d L u.1 l.1 then (g₀ : ℂ) else 0)
+    (ht0 : 0 ≤ t) (ht1 : t < 1) (hP : 1 ≤ P) (hδ : δ ≤ κ / 2) (hδ0 : 0 ≤ δ) (hwd : ((W : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (hΩ : ∀ u v, ‖G u v - M u v‖ ≤ δ)
+    (hLrow : LDERow X G (svar d L W 0) P) (hLcol : LDECol X G (svar d L W 0) P)
+    (hLquad : LDEQuad X G (svar d L W 0) t P) (hLdiag : ∀ i, ‖X i i‖ ^ 2 ≤ P * svar d L W 0 i i)
+    (hC1 : 8 * GreenOff_rho d Λ κ * ((BAct_rate d Λ κ)⁻¹ * GreenOff_S d Λ κ) * GreenCore_theta d κ P δ g₀ ≤ 1)
+    (φ : Zd d L → Zd d L → ℝ) (hφ0 : ∀ a b, 0 ≤ φ a b) (hφ : ∀ a b, GreenCore_loop G a b ≤ φ a b ^ 2)
+    (hΨ : 0 < Ψ) (hΨw : Real.sqrt (((W : ℝ) ^ d)⁻¹) ≤ Ψ)
+    (hC2 : (1 + (BAct_rate d Λ κ)⁻¹ * GreenOff_S d Λ κ * (BAct_rate d Λ κ)⁻¹ * GreenStab_CTheta d Λ κ) *
+      ((BAct_rate d Λ κ)⁻¹ * GreenOff_S d Λ κ *
+        GreenOff_eta d κ (BAct_rate d Λ κ) P δ g₀ (GreenStab_clam d Λ κ) (GreenOff_alpha d κ δ g₀)) ≤ 1 / 2)
+    (x y : Vtx d L W) :
+    ‖G x y - M x y‖ ≤ 2 * GreenOff_Cl d κ (BAct_rate d Λ κ) (GreenOff_rho d Λ κ) (GreenOff_S d Λ κ) P δ g₀
+      (GreenStab_CTheta d Λ κ) * GreenOff_T d L (GreenStab_clam d Λ κ) Ψ φ x.1 y.1 := by
+  have hd0 : 0 < d := by omega
+  have hc₀ := BAct_rate_pos d Λ κ hd0 hΛ hκ
+  have hdec : ∀ a b, ‖BAMB d L g₀ (E : ℂ) m a b‖ ≤
+      (BAct_rate d Λ κ)⁻¹ * Real.exp (-BAct_rate d Λ κ * (zdistD d L (a - b) : ℝ)) :=
+    fun a b => BAMB_decay_large d L hL hd0 Λ g₀ κ E m hΛ hg hgΛ hκ hr a b
+  have hS : ∀ a : Zd d L, ∑ b, Real.exp (-(BAct_rate d Λ κ / 2) * (zdistD d L (a - b) : ℝ)) ≤ GreenOff_S d Λ κ :=
+    fun a => by
+      have := BAsum_exp_decay_le d L hd (BAct_rate d Λ κ / 2) (by positivity) a
+      unfold GreenOff_S
+      simpa only [neg_mul] using this
+  have hMd : ∀ a, BAMB d L g₀ (E : ℂ) m a a = m := fun a => BAMB_diag_eq d L g₀ (E : ℂ) m hr.1 a
+  have hMb1 : ∀ a b, ‖BAMB d L g₀ (E : ℂ) m a b‖ ≤ 1 := by
+    intro a b
+    have h1 := BAMB_row_sq_real d L g₀ E m hr.1 a
+    have h2 : ‖BAMB d L g₀ (E : ℂ) m a b‖ ^ 2 ≤ 1 :=
+      h1 ▸ Finset.single_le_sum (f := fun b => ‖BAMB d L g₀ (E : ℂ) m a b‖ ^ 2) (fun _ _ => by positivity)
+        (Finset.mem_univ b)
+    nlinarith [norm_nonneg (BAMB d L g₀ (E : ℂ) m a b)]
+  have hκm : κ ≤ ‖m‖ := hr.2.trans ((le_abs_self _).trans (Complex.abs_im_le_norm _))
+  have hm1 : ‖m‖ ≤ 1 := BAm_norm_le_one d L g₀ (E : ℂ) m (by simp) hr.1
+  have hρ : ∀ c, ∑ b, ‖BAMB d L g₀ (E : ℂ) m b c‖ ≤ GreenOff_rho d Λ κ :=
+    fun c => baM_col_l1 hd hL Λ g₀ κ E m hΛ hg hgΛ hκ hr c
+  obtain ⟨hGuu, hG32, hGoff⟩ := GreenCore_crude hM hMd hMb1 hκm hm1 hδ hΩ
+  have hG0 : ∀ u, G u u ≠ 0 := fun u h => by have := hGuu u; rw [h, norm_zero] at this; linarith
+  have hX := fun u y => GreenCore_Xstar hL hGR hRG hMR hMR' hz hM hMd hD hκ hκm hm1 hMb1 hc₀ hdec hρ hS hg.le hP hδ hδ0
+    hwd hΩ hLrow hLcol hC1 φ hφ0 hφ u y
+  have hXi := fun w => GreenCore_Xi hL hGR hRG hMR hMR' hz hM hMd hD hκ hκm hm1 hMb1 hc₀ hdec hρ hS hg.le ht0 ht1.le hP
+    hδ hδ0 hwd hΩ hLrow hLcol hLquad hLdiag hC1 φ hφ0 hφ w
+  have hD1 : ∀ w, ∑ l, ‖D l w‖ = 2 * d * g₀ := fun w => by
+    simp only [← GreenCore_Dsymm hD w]; exact GreenCore_Drow (W := W) hg.le hL hD w
+  have hDadj : ∀ l w, D l w ≠ 0 → zdistD d L (w.1 - l.1) = 1 := fun l w hDl => by
+    rw [hD] at hDl; split_ifs at hDl with hc
+    · rw [← neg_sub, zdistD_neg]; exact hc.2
+    · exact absurd rfl hDl
+  have hA : ∀ w : Vtx d L W, ‖(t : ℂ) * GreenCore_vbar G M w.1 -
+      (GreenCore_Arow G X D t m w + (t : ℂ) * GreenCore_vbar G M w.1)‖ ≤ GreenOff_alpha d κ δ g₀ := fun w => by
+    rw [show (t : ℂ) * GreenCore_vbar G M w.1 - (GreenCore_Arow G X D t m w + (t : ℂ) * GreenCore_vbar G M w.1) =
+      -GreenCore_Arow G X D t m w by ring, norm_neg]
+    exact GreenOff_Arow_bd hL hg.le hκ hGR hRG hMR hz hM hMd hD hκm hMb1 hGuu hΩ w
+  have hE3 : ∀ x y : Vtx d L W, G x y - M x y = ∑ b', BAMB d L g₀ (E : ℂ) m x.1 b' *
+      ((t : ℂ) * GreenCore_vbar G M b' * M (b', x.2) y +
+        ((t : ℂ) * GreenCore_vbar G M b' - (GreenCore_Arow G X D t m (b', x.2) + (t : ℂ) * GreenCore_vbar G M (b', x.2).1)) *
+          (G (b', x.2) y - M (b', x.2) y) -
+        (GreenCore_Arow G X D t m (b', x.2) + (t : ℂ) * GreenCore_vbar G M (b', x.2).1) * M (b', x.2) y -
+        GreenCore_Xrow G X (b', x.2) y) := by
+    intro x y
+    rw [GreenCore_E3 hGR hRG hMR' hz hM hG0 x y, ← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun b' _ => ?_
+    unfold GreenCore_K
+    ring
+  have hΘ : ∀ b a, BATheta d L g₀ E m t true true b a = (if b = a then 1 else 0) + (t : ℂ) *
+      ∑ c, BATheta d L g₀ E m t true true b c * (BAMB d L g₀ (E : ℂ) m a c * BAMB d L g₀ (E : ℂ) m c a) := by
+    intro b a
+    have h := congrFun (congrFun (BATheta_resolvent d L g₀ κ E m hr t ht0 ht1 true true).2 b) a
+    simpa [Matrix.mul_apply, Matrix.one_apply, BAMss, BAMsigma] using h
+  have hγ0 := GreenStab_clam_pos d Λ κ hd0 hΛ hκ
+  have hγ := GreenStab_clam_le_c0 d Λ κ
+  exact GreenOff_close (Mb := BAMB d L g₀ (E : ℂ) m) (M := M) (D := D) (Δ := fun u v => G u v - M u v)
+    (𝔛 := GreenCore_Xrow G X) (Ap := fun w => GreenCore_Arow G X D t m w + (t : ℂ) * GreenCore_vbar G M w.1)
+    (vb := GreenCore_vbar G M) hc₀ hγ0.le (by linarith) hφ0 hΨ hΨw (by linarith) hκ hδ0 hg.le ht0 ht1.le hdec hS hM
+    (fun a => rfl) hE3 hX hXi hA hD1 hDadj hΘ
+    (fun b => baTheta_weighted_l1 hd hL Λ g₀ κ E m hΛ hg hgΛ hκ hr t ht0 ht1.le true b) hC2 x y
 
 end Close
 
