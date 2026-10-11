@@ -1,4 +1,4 @@
-state: proving
-reason: rule-(B) repair under Amend 1 (H217, decision (b) both charges): workflow wf_97b90849-041, 1b prover-hard on t/T2419 at de1eb31 → auditor round 2 (a second RETURN goes to the dispatcher)
-updated: Sun Oct 11 11:01:43 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-hard de1eb31, audit round 1 RETURN (sign-off) → Amend 1 (both charges) → repair 0de3517 → audit PASS round 2 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 12:16:02 UTC 2026
 reports: docs/reports/T2419-prove.md, docs/reports/T2419-audit.md

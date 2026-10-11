@@ -1,4 +1,4 @@
-state: blocked
-reason: Amend 1 repair: (a′) written (wf_da14d807-6e1); preflight verdict BLOCKED on repair item (i) only: Amend 1 asks for the S1 def to be compiled in the 1a scratch, which the preflight agent's no-Lean rule (CLAUDE.md §4) forbids; items (ii)-(v) delivered, every target PASS in mathematics. Question for the dispatcher: may the hub run a prover-max probe step (as T2390 Amend 1 D1 / H194) that compiles the S1 def (in RBM3D/Probe/T2418Pins.lean on t/T2418, never merged, or in its scratch) and pastes the output into the prove report, then the 1a-audit round 2 → 1b → auditor? 1b not started.
-updated: Sun Oct 11 11:00:50 UTC 2026
-reports: docs/reports/T2418-prove.md, docs/reports/T2418-1a-audit.md
+state: audit-pass
+reason: Amend 1 repair (a′), H219 probe 1d302bb, 1a-audit round 2 PASS, prover-hard 3bccf41, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 14:52:36 UTC 2026
+reports: docs/reports/T2418-prove.md, docs/reports/T2418-1a-audit.md, docs/reports/T2418-audit.md

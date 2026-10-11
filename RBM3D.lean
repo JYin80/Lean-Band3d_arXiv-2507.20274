@@ -459,6 +459,16 @@ import RBM3D.Chain.Step2Kern
 import RBM3D.BA.GbEXPav
 import RBM3D.Graph.BAAtomic
 import RBM3D.Graph.BAAtomic2
+import RBM3D.Graph.BAExpandId
+import RBM3D.BA.TwistPins
+import RBM3D.BA.NewKLKBA
+import RBM3D.Graph.BASymm1
+import RBM3D.Graph.BAAtom
+import RBM3D.Graph.BAAtom2
+import RBM3D.Graph.BAExp14a
+import RBM3D.Graph.BAExp14aB
+import RBM3D.Graph.BAScost
+import RBM3D.Graph.BAScost2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
