@@ -2013,3 +2013,22 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 风险：L2c1 实际 1,941 行，超出估价上限 1,728；TW 比例可能偏低，R0、R1、L4a 首当其冲。
   - 放行次序：先 R0、L4a、L4d（T2410 合并后）、L3c1（T2412 合并后）；再 R1、L3a1、L3b3′、L4b1、L4e-C、L4a2；其余按链。
 - (3) 交给监督的 REQ 现在有四份没回：0755-E、0755-TLS、0811-BAT、0845-L4。中枢三张在跑（T2410、T2411、T2412）；空位用不等 REQ 的票填（ST 侧 T 行，见 §228）。下一张票号 T2413，下一节 §228，下一条 H209。
+
+## §228 — 监督 0853：阶段 E 关闭；阶段 TL 开（TL-D = T2413）；子阶段 T 范围 HOLD（BAT-F1），T8b = T2414；T2410 合并（总调度 V2，2026-10-11 09:01 UTC）
+
+- (1) **T2410（L2c2b）合并 7c0f55a**：`Graph/BAGGOp` 1,852 行，审核一次 PASS。又一张 TW 行超出估价上限（L2c1 1,941）；已补进 L4 REQ 的校准风险一段。
+- (2) **监督 0853**：
+  - REQ-E PASS：阶段 E 关闭，记入 ROUTES（O1）。BA 的 `STEK*` 归 U3-BA，并且要建在 T8b 的核上（E-C1、O2）。
+  - REQ-TLS PASS：阶段 TL 开，临时旗标 12；条件 TL-C1–C4；L4t 进 TL0（L 的旗标仍 50）；登记文本照 Q3。
+  - REQ-BAT：T8-BA PASS（BAT-C1：`Pp`、`Hpath` 的 BA 值）；T2-BA（并 T6-BA）PASS（BAT-C2：混合对 `Θ_BA·M^{(σσ')}` 的复合界作公开引理）；**T3-BA HOLD**。
+  - **BAT-F1**：通用漂移算子 `STthetaOpg` 和 n 圈核 `Step2Gen_*` 是带状的标量 `m` 闭式；在 BA 载体（`S = 1`）上是对角的，不是 `Θ_BA M^{(σσ')}`。T2386 报告 `:109` 的说法不对；T2405a 早就点到了，但当时只记了一笔、没上报。受影响的已合并票只有 T2405（证明可救：F7 重述）。HOLD 范围：T3-BA、带状侧 T1/T7/T4s1/T4s2/T5s2、U3s1 的核与 `STEK*` 形状；不影响 T8-BA、T2-BA、在跑的票、阶段 G/L/TL。T2405a 记为由 T8b 解决，不作文章差异（论文的 `def:Theta_BA` 本来就对）。
+  - BAT-F2：BA 用加撇的 `STK2decaygL'`（前提 `κ ≤ Im m`）。I1（J 形式）PASS；T1 的 1a 要说明带状 Gronwall 取 `J := Ĵ` 够不够，并列出 11 条 site-1 义务（O7）。
+- (3) **T2413 = TL-D**（BA 80；阶段 TL 第 1 张）：只出报告。把 T2398 探针里的 TL 钉文原样抄进新探针；D1–D7 按 TL-C1 六项写：T.12′ 的时间窗、BA 核（不用 `Step2Gen_*`）、`twK_bound` 对 T.1(i)、C1 数值、S1–S3 的去向、TL-V 归谁、行表与最终旗标（多于 8 行要短 REQ）。`prover-max`，探针 ≤ 400 行，报告 ≤ 300 行。优先级第一。
+- (4) **T2414 = T8b**（BA 81；子阶段 T 新行，T 变 19 行、旗标 28.5）：从载体的 `FlowFM.M` 导出块核 `M^{(σσ')}`，漂移核 `M^{(σσ')}S(1 − uM^{(σσ')}S)⁻¹`；n 圈核、`STgDriftg`、`STGridRepN`、`STGridMart` 同形；带状桥接（不再是 `Iff.rfl` 的要证）；BA 恒等式对 `BATheta·BAMss`，n 圈对 `BAUN`；`NewKLKGen` 的 F7 重述后重证；加撇的 `STK2decaygL'`。设计门 1a（`prover-max` 探针）→ 1a-audit → 1b `prover-hard`；估价 450 / 700 / 1,200，停止线 1,400；不在证书通道（`Step2Gen` 的反向锥 76 个模块，不含证书）。(b) 或 (c) 不成立时停，写短 REQ。
+- (5) T8-BA、T2-BA 下一轮写（它们读 `Step2Mat`，不依赖新核）。中枢：T2411、T2412 在跑，T2413、T2414 放行后满四张。下一张票号 T2415，下一节 §229，下一条 H210。
+
+## §229 — T8-BA = T2415、T2-BA = T2416 放行（排在 T2413、T2414 之后）（总调度 V2，2026-10-11 09:04 UTC）
+
+- **T2415 = T8-BA**（BA 82）：新 `BA/Step2BA`，`baStep2Mat`（`toFlowFM := baFM`，`LM`/`GMM`/`LIM`/`KI` 取 BA 对象；BAT-C1：`Pp := pathP (sz.withLam 0)`，`Hpath := lam0 • PsiI + pathH (sz.withLam 0)`），`baStep2Data`（`T0 = BAflowT0`，`flowOK = BAFlow`，三条事实），与 `BAStep2` 的桥；能量族里 `lam0` 怎么定由 1a 说明，留给 T3-BA。不用 T8b 的核。`prover-hard`，350 / 500 / 750，停止线 900。
+- **T2416 = T2-BA（并 T6-BA）**（BA 83）：新 `BA/EMn2BA`，在 BA 读法下给出 T2404 的三个假设块（`emn2PolyFacts`、`emn2ExpFacts`、`emn2ExpHK`）；BAT-C2：混合对 `Θ_BA·M^{(σσ')}` 的复合界作公开引理；BA 钉文 `STEMn2PolygL`、J 形式、Ĵ 形式（0853 Q2）；`STContractM` 的 BA 推论。1a 要核对 `emn2ExpEllStar`/`Bctl` 读的 `sz.lam` 与 `BAProp5` 的 `ellT L g t` 一致。`prover-hard`，550 / 850 / 1,500，停止线 1,800。
+- 中枢次序：T2413 → T2414 → T2415 → T2416（并行 4；T2411、T2412 在跑）。子阶段 T 计数：8 张 + T8b 共 9 / 28.5。下一张票号 T2417，下一节 §230，下一条 H211。
