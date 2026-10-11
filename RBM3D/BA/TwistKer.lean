@@ -1227,6 +1227,363 @@ theorem TwistKer_twEG_le (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (
         have hz0 : z.im ≠ 0 := hz.ne'
         field_simp
 
+/-- `|[a]| = W^d`. -/
+private theorem TwistKer_card_blk (a : Zd d (sz.L n)) : ((twBlk n a).card : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d := by
+  have : (twBlk n a).card = (sz.W n) ^ d := card_Iblk d (sz.L n) (sz.W n) a
+  rw [this]; push_cast; rfl
+
+/-- A sum over a set is at most its cardinality times the bound of the summands. -/
+private theorem TwistKer_norm_sum_le {β : Type*} (s : Finset β) (f : β → ℂ) {m : ℝ} (h : ∀ i ∈ s, ‖f i‖ ≤ m) :
+    ‖∑ i ∈ s, f i‖ ≤ (s.card : ℝ) * m :=
+  (norm_sum_le _ _).trans ((Finset.sum_le_card_nsmul s _ m h).trans (by rw [nsmul_eq_mul]))
+
+/-- `‖W^{-d}‖ = (W^d)⁻¹`. -/
+private theorem TwistKer_norm_winv : ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹‖ = (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by
+  simp
+
+private theorem TwistKer_W_pos : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+  have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  positivity
+
+/-- A double sum over two blocks of summands of norm `≤ m`: `‖Σ_{x∈[a]} Σ_{w∈[c]} f x w‖ ≤ W^{2d} m`. -/
+private theorem TwistKer_norm_sum2_le (a c : Zd d (sz.L n)) (f : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) {m : ℝ}
+    (h : ∀ x ∈ twBlk n a, ∀ w ∈ twBlk n c, ‖f x w‖ ≤ m) :
+    ‖∑ x ∈ twBlk n a, ∑ w ∈ twBlk n c, f x w‖ ≤ ((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * m) := by
+  have := TwistKer_norm_sum_le (twBlk n a) (fun x => ∑ w ∈ twBlk n c, f x w) (m := ((sz.W n : ℕ) : ℝ) ^ d * m) (fun x hx => by
+    have := TwistKer_norm_sum_le (twBlk n c) (fun w => f x w) (m := m) (fun w hw => h x hx w hw)
+    rwa [TwistKer_card_blk] at this)
+  rwa [TwistKer_card_blk] at this
+
+/-- The average of the entries: `|L̃_{σ,(a;c₁,c₂)}| ≤ m` if every summand `|X₂(x,w) X₁(w', x)| ≤ m` (`x ∈ [a]`, `w ∈ [c₁]`). -/
+private theorem TwistKer_twLoopX_le (X₁ X₂ : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (a c₁ c₂ : Zd d (sz.L n)) {m : ℝ}
+    (h : ∀ x ∈ twBlk n a, ∀ w ∈ twBlk n c₁, ‖X₂ x w * X₁ (twShift n c₂ w) x‖ ≤ m) : ‖twLoopX n X₁ X₂ a c₁ c₂‖ ≤ m := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  unfold twLoopX
+  rw [norm_mul, norm_pow, TwistKer_norm_winv]
+  have h2 := TwistKer_norm_sum2_le n a c₁ (fun x w => X₂ x w * X₁ (twShift n c₂ w) x) h
+  calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * ‖∑ x ∈ twBlk n a, ∑ w ∈ twBlk n c₁, X₂ x w * X₁ (twShift n c₂ w) x‖
+      ≤ ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * (((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * m)) :=
+        mul_le_mul_of_nonneg_left h2 (by positivity)
+    _ = m := by field_simp
+
+/-- The average of the entries of `L̃^{(3)}`: `|L̃^{(3)}| ≤ m` if every summand is `≤ m`. -/
+private theorem TwistKer_twL3_le (C : FlowFM sz) (v : ℝ) (ω : sz.SeqΩ) (σ : Fin 3 → Bool) (a₁ a₂ c₁ c₂ : Zd d (sz.L n)) {m : ℝ}
+    (h : ∀ x ∈ twBlk n a₁, ∀ y ∈ twBlk n a₂, ∀ w ∈ twBlk n c₁,
+      ‖twChg (C.G n v ω) (σ 0) (twShift n c₂ w) x * twChg (C.G n v ω) (σ 1) x y * twChg (C.G n v ω) (σ 2) y w‖ ≤ m) :
+    ‖twL3 C n v ω σ a₁ a₂ c₁ c₂‖ ≤ m := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  unfold twL3
+  rw [norm_mul, norm_pow, TwistKer_norm_winv]
+  have h3 := TwistKer_norm_sum_le (twBlk n a₁) (fun x => ∑ y ∈ twBlk n a₂, ∑ w ∈ twBlk n c₁,
+      twChg (C.G n v ω) (σ 0) (twShift n c₂ w) x * twChg (C.G n v ω) (σ 1) x y * twChg (C.G n v ω) (σ 2) y w)
+    (m := ((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * m)) (fun x hx => TwistKer_norm_sum2_le n a₂ c₁ _ (fun y hy w hw => h x hx y hy w hw))
+  rw [TwistKer_card_blk] at h3
+  calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 3 * ‖∑ x ∈ twBlk n a₁, ∑ y ∈ twBlk n a₂, ∑ w ∈ twBlk n c₁,
+        twChg (C.G n v ω) (σ 0) (twShift n c₂ w) x * twChg (C.G n v ω) (σ 1) x y * twChg (C.G n v ω) (σ 2) y w‖
+      ≤ ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 3 * (((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * m))) :=
+        mul_le_mul_of_nonneg_left h3 (by positivity)
+    _ = m := by field_simp
+
+/-- The average of the entries of `∂_{xy} L̃`: `|∂_{xy} L̃_v(b)| ≤ m₁ + m₂`. -/
+private theorem TwistKer_twDer_le (C : FlowFM sz) (v : ℝ) (ω : sz.SeqΩ) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n))
+    (x y : Idx d (sz.L n) (sz.W n)) {m₁ m₂ : ℝ}
+    (h₁ : ∀ z ∈ twBlk n b, ∀ w ∈ twBlk n c₁,
+      ‖twChg (C.G n v ω) (σ 0) y z * twChg (C.G n v ω) (σ 1) z w * twChg (C.G n v ω) (σ 0) (twShift n c₂ w) x‖ ≤ m₁)
+    (h₂ : ∀ w ∈ twBlk n c₁, ∀ z ∈ twBlk n b,
+      ‖twChg (C.G n v ω) (σ 1) y w * twChg (C.G n v ω) (σ 0) (twShift n c₂ w) z * twChg (C.G n v ω) (σ 1) z x‖ ≤ m₂) :
+    ‖twDer C n v ω σ b c₁ c₂ x y‖ ≤ m₁ + m₂ := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  unfold twDer
+  dsimp only
+  rw [norm_mul, norm_neg, norm_pow, TwistKer_norm_winv]
+  have h1 := TwistKer_norm_sum2_le n b c₁ (fun z w => twChg (C.G n v ω) (σ 0) y z * twChg (C.G n v ω) (σ 1) z w *
+    twChg (C.G n v ω) (σ 0) (twShift n c₂ w) x) h₁
+  have h2 := TwistKer_norm_sum2_le n c₁ b (fun w z => twChg (C.G n v ω) (σ 1) y w * twChg (C.G n v ω) (σ 0) (twShift n c₂ w) z *
+    twChg (C.G n v ω) (σ 1) z x) h₂
+  calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * ‖(∑ z ∈ twBlk n b, ∑ w ∈ twBlk n c₁, twChg (C.G n v ω) (σ 0) y z * twChg (C.G n v ω) (σ 1) z w *
+          twChg (C.G n v ω) (σ 0) (twShift n c₂ w) x) +
+        ∑ w ∈ twBlk n c₁, ∑ z ∈ twBlk n b, twChg (C.G n v ω) (σ 1) y w * twChg (C.G n v ω) (σ 0) (twShift n c₂ w) z * twChg (C.G n v ω) (σ 1) z x‖
+      ≤ ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * (((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * m₁) +
+          ((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * m₂)) :=
+        mul_le_mul_of_nonneg_left ((norm_add_le _ _).trans (add_le_add h1 h2)) (by positivity)
+    _ = m₁ + m₂ := by field_simp
+
+/-- Membership in a block. -/
+private theorem TwistKer_mem_blk {c : Zd d (sz.L n)} {x : Idx d (sz.L n) (sz.W n)} :
+    x ∈ twBlk n c ↔ (split d (sz.L n) (sz.W n) x).1 = c := by
+  simp [twBlk]
+
+/-- **Entries of `G`**: `|G(σ)_{yx}| ≤ η⁻¹` (a copy of the private `EMCTE2_norm_Gres_entry_le`, `Universality/EMCTE2.lean:144`). -/
+theorem TwistKer_entry_le {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : 0 < z.im)
+    (σ : Bool) (x y : ι) : ‖Gres H z σ x y‖ ≤ (z.im)⁻¹ :=
+  (RBM.Ind.norm_apply_le_l2_opNorm _ x y).trans
+    (RBM.Gauss.norm_Gsig_le_inv_eta hH hz (le_of_eq (abs_of_pos hz).symm) σ)
+
+/-- **`L̃` (T.11 helper)**: `|L̃_{σ,(a;c₁,c₂)}| ≤ Λ²`, and `≤ ν Λ` if `|a - c₁|_∞ ≥ X` (entries of `G` between blocks at distance `≥ X` are `≤ ν`, all entries `≤ Λ`). -/
+theorem TwistKer_twL2_bounds (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) {Λ ν X : ℝ}
+    (hν : 0 ≤ ν) (hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ y x‖ ≤ Λ)
+    (hDec : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) → ‖Gres H z τ y x‖ ≤ ν) :
+    ‖twL2' C n v ω σ a c₁ c₂‖ ≤ Λ * Λ ∧
+      (X ≤ (zdistInf d (sz.L n) (a - c₁) : ℝ) → ‖twL2' C n v ω σ a c₁ c₂‖ ≤ ν * Λ) := by
+  have e : twL2' C n v ω σ a c₁ c₂ = twLoopX n (Gres H z (σ 0)) (Gres H z (σ 1)) a c₁ c₂ := by
+    unfold twL2'; rw [TwistKer_twChg_eq n hH hG, TwistKer_twChg_eq n hH hG]
+  rw [e]
+  refine ⟨TwistKer_twLoopX_le n _ _ a c₁ c₂ fun x _ w _ => ?_, fun hX => TwistKer_twLoopX_le n _ _ a c₁ c₂ fun x hx w hw => ?_⟩
+  · rw [norm_mul]
+    exact mul_le_mul (hbd _ _ _) (hbd _ _ _) (norm_nonneg _) ((norm_nonneg _).trans (hbd true x w))
+  · have hx' := (TwistKer_mem_blk n).1 hx
+    have hw' := (TwistKer_mem_blk n).1 hw
+    rw [norm_mul]
+    exact mul_le_mul (hDec _ _ _ (by rw [hx', hw']; exact hX)) (hbd _ _ _) (norm_nonneg _) hν
+
+/-- `L̃^{(3)}` decays when one of the entries between `(a₁, a₂)` or `(a₂, c₁)` does: `|L̃^{(3)}| ≤ Λ² ν`. -/
+private theorem TwistKer_twL3_decay (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 3 → Bool) (a₁ a₂ c₁ c₂ : Zd d (sz.L n)) {Λ ν X : ℝ}
+    (hν : 0 ≤ ν) (hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ y x‖ ≤ Λ)
+    (hDec : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) → ‖Gres H z τ y x‖ ≤ ν)
+    (hX : X ≤ (zdistInf d (sz.L n) (a₁ - a₂) : ℝ) ∨ X ≤ (zdistInf d (sz.L n) (a₂ - c₁) : ℝ)) :
+    ‖twL3 C n v ω σ a₁ a₂ c₁ c₂‖ ≤ Λ * (Λ * ν) := by
+  refine TwistKer_twL3_le n C v ω σ a₁ a₂ c₁ c₂ fun x hx y hy w hw => ?_
+  have hx' := (TwistKer_mem_blk n).1 hx
+  have hy' := (TwistKer_mem_blk n).1 hy
+  have hw' := (TwistKer_mem_blk n).1 hw
+  simp only [TwistKer_twChg_eq n hH hG, norm_mul]
+  have hΛ0 : 0 ≤ Λ := (norm_nonneg _).trans (hbd true x w)
+  rcases hX with hX | hX
+  · have h2 := hDec (σ 1) x y (by rw [hx', hy']; exact hX)
+    calc ‖Gres H z (σ 0) (twShift n c₂ w) x‖ * ‖Gres H z (σ 1) x y‖ * ‖Gres H z (σ 2) y w‖ ≤ Λ * ν * Λ :=
+          mul_le_mul (mul_le_mul (hbd _ _ _) h2 (norm_nonneg _) hΛ0) (hbd _ _ _) (norm_nonneg _) (mul_nonneg hΛ0 hν)
+      _ = Λ * (Λ * ν) := by ring
+  · have h3 := hDec (σ 2) y w (by rw [hy', hw']; exact hX)
+    calc ‖Gres H z (σ 0) (twShift n c₂ w) x‖ * ‖Gres H z (σ 1) x y‖ * ‖Gres H z (σ 2) y w‖ ≤ Λ * Λ * ν :=
+          mul_le_mul (mul_le_mul (hbd _ _ _) (hbd _ _ _) (norm_nonneg _) hΛ0) h3 (norm_nonneg _) (mul_nonneg hΛ0 hΛ0)
+      _ = Λ * (Λ * ν) := by ring
+
+/-- Triangle inequality of the `L^∞` distance. -/
+private theorem TwistKer_zdistInf_add_le (L : ℕ) [NeZero L] (x y : Zd d L) : zdistInf d L (x + y) ≤ zdistInf d L x + zdistInf d L y := by
+  refine Finset.sup_le fun i _ => (zdist_add_le L (x i) (y i)).trans (add_le_add ?_ ?_)
+  · exact Finset.le_sup (f := fun j => zdist L (x j)) (Finset.mem_univ i)
+  · exact Finset.le_sup (f := fun j => zdist L (y j)) (Finset.mem_univ i)
+
+/-- `|p - r| ≥ 2X` forces `|p - q| ≥ X` or `|q - r| ≥ X`. -/
+theorem TwistKer_far_split (L : ℕ) [NeZero L] {X : ℝ} (p q r : Zd d L) (h : 2 * X ≤ (zdistInf d L (p - r) : ℝ)) :
+    X ≤ (zdistInf d L (p - q) : ℝ) ∨ X ≤ (zdistInf d L (q - r) : ℝ) := by
+  by_contra hcon
+  push Not at hcon
+  have h1 := TwistKer_zdistInf_add_le (d := d) L (p - q) (q - r)
+  rw [show p - q + (q - r) = p - r by ring] at h1
+  have h2 : (zdistInf d L (p - r) : ℝ) ≤ (zdistInf d L (p - q) : ℝ) + (zdistInf d L (q - r) : ℝ) := by exact_mod_cast h1
+  linarith [hcon.1, hcon.2]
+
+/-- **The source `Ẽ^{G̊}` decays** when `|a - c₁|_∞ ≥ 2X`: `|Ẽ^{G̊}_v(a)| ≤ N · 2 M (Λ² ν)` (`M` bounds `|Tr(G̊(σ)E_{a'})|`). -/
+theorem TwistKer_twEG_decay (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) {Λ ν X Mt : ℝ}
+    (hν : 0 ≤ ν) (hX0 : 0 ≤ X) (hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ y x‖ ≤ Λ)
+    (hDec : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) → ‖Gres H z τ y x‖ ≤ ν)
+    (htr : ∀ (τ : Bool) (a' : Zd d (sz.L n)), ‖C.L n v ![τ] ![a'] ω - (if τ then C.m n else (starRingEnd ℂ) (C.m n))‖ ≤ Mt)
+    (hX : 2 * X ≤ (zdistInf d (sz.L n) (a - c₁) : ℝ)) :
+    ‖twEG C n v ω σ a c₁ c₂‖ ≤ ((sz.size n : ℕ) : ℝ) * (2 * (Mt * (Λ * (Λ * ν)))) := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  have hMt : 0 ≤ Mt := (norm_nonneg _).trans (htr true 0)
+  have hsize : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    simp [Sizes.size, mul_pow]
+  unfold twEG
+  dsimp only
+  rw [norm_mul, norm_pow, Complex.norm_natCast]
+  have hterm : ∀ a' : Zd d (sz.L n), ‖(C.L n v ![σ 0] ![a'] ω - (if σ 0 then C.m n else (starRingEnd ℂ) (C.m n))) *
+        twL3 C n v ω ![σ 0, σ 0, σ 1] a' a c₁ c₂ +
+      (C.L n v ![σ 1] ![a'] ω - (if σ 1 then C.m n else (starRingEnd ℂ) (C.m n))) * twL3 C n v ω ![σ 0, σ 1, σ 1] a a' c₁ c₂‖ ≤
+      2 * (Mt * (Λ * (Λ * ν))) := by
+    intro a'
+    refine (norm_add_le _ _).trans ?_
+    have h1 := TwistKer_twL3_decay n C hH v ω hG ![σ 0, σ 0, σ 1] a' a c₁ c₂ hν hbd hDec (Or.inr (by linarith))
+    have h2 := TwistKer_twL3_decay n C hH v ω hG ![σ 0, σ 1, σ 1] a a' c₁ c₂ hν hbd hDec (TwistKer_far_split (sz.L n) a a' c₁ hX)
+    rw [norm_mul, norm_mul]
+    have hΛ0 : 0 ≤ Λ := (norm_nonneg _).trans (hbd true 0 0)
+    have e1 := mul_le_mul (htr (σ 0) a') h1 (norm_nonneg _) hMt
+    have e2 := mul_le_mul (htr (σ 1) a') h2 (norm_nonneg _) hMt
+    linarith
+  have hsum : ‖∑ a', ((C.L n v ![σ 0] ![a'] ω - (if σ 0 then C.m n else (starRingEnd ℂ) (C.m n))) *
+        twL3 C n v ω ![σ 0, σ 0, σ 1] a' a c₁ c₂ +
+      (C.L n v ![σ 1] ![a'] ω - (if σ 1 then C.m n else (starRingEnd ℂ) (C.m n))) * twL3 C n v ω ![σ 0, σ 1, σ 1] a a' c₁ c₂)‖ ≤
+      ((sz.L n : ℕ) : ℝ) ^ d * (2 * (Mt * (Λ * (Λ * ν)))) := by
+    refine (TwistKer_norm_sum_le Finset.univ _ (fun a' _ => hterm a')).trans ?_
+    rw [Finset.card_univ, card_Zd]
+    push_cast
+    exact le_rfl
+  calc ((sz.W n : ℕ) : ℝ) ^ d * ‖∑ a', _‖ ≤ ((sz.W n : ℕ) : ℝ) ^ d * (((sz.L n : ℕ) : ℝ) ^ d * (2 * (Mt * (Λ * (Λ * ν))))) :=
+        mul_le_mul_of_nonneg_left hsum hW.le
+    _ = ((sz.size n : ℕ) : ℝ) * (2 * (Mt * (Λ * (Λ * ν)))) := by rw [hsize]; ring
+
+/-- `|∂_{xy} L̃_v(b)| ≤ 2 Λ³` for all `x, y`. -/
+private theorem TwistKer_twDer_gen (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n))
+    (x y : Idx d (sz.L n) (sz.W n)) {Λ : ℝ} (hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ y x‖ ≤ Λ) :
+    ‖twDer C n v ω σ b c₁ c₂ x y‖ ≤ 2 * (Λ * (Λ * Λ)) := by
+  have hΛ0 : 0 ≤ Λ := (norm_nonneg _).trans (hbd true 0 0)
+  have h : ∀ (τ₁ τ₂ τ₃ : Bool) (p q r : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ₁ p q * Gres H z τ₂ q r‖ ≤ Λ * Λ := fun _ _ _ p q r => by
+    rw [norm_mul]; exact mul_le_mul (hbd _ _ _) (hbd _ _ _) (norm_nonneg _) hΛ0
+  have h3 : ∀ (τ₁ τ₂ τ₃ : Bool) (p q r s' t u : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ₁ p q * Gres H z τ₂ r s' * Gres H z τ₃ t u‖ ≤ Λ * (Λ * Λ) :=
+    fun τ₁ τ₂ τ₃ p q r s' t u => by
+      rw [norm_mul, norm_mul]
+      calc ‖Gres H z τ₁ p q‖ * ‖Gres H z τ₂ r s'‖ * ‖Gres H z τ₃ t u‖ ≤ Λ * Λ * Λ :=
+          mul_le_mul (mul_le_mul (hbd _ _ _) (hbd _ _ _) (norm_nonneg _) hΛ0) (hbd _ _ _) (norm_nonneg _) (mul_nonneg hΛ0 hΛ0)
+        _ = Λ * (Λ * Λ) := by ring
+  have := TwistKer_twDer_le n C v ω σ b c₁ c₂ x y (m₁ := Λ * (Λ * Λ)) (m₂ := Λ * (Λ * Λ))
+    (fun z' _ w _ => by simp only [TwistKer_twChg_eq n hH hG]; exact h3 _ _ _ _ _ _ _ _ _)
+    (fun w _ z' _ => by simp only [TwistKer_twChg_eq n hH hG]; exact h3 _ _ _ _ _ _ _ _ _)
+  linarith
+
+/-- `∂_{xy} L̃_v(b)` decays when `|b - c₁|_∞ ≥ 2X` and `[x] = [y]`: `|∂_{xy} L̃_v(b)| ≤ 2 Λ² ν`. -/
+private theorem TwistKer_twDer_decay (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n))
+    (x y : Idx d (sz.L n) (sz.W n)) (hxy : (split d (sz.L n) (sz.W n) x).1 = (split d (sz.L n) (sz.W n) y).1) {Λ ν X : ℝ}
+    (hν : 0 ≤ ν) (hX0 : 0 ≤ X) (hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ y x‖ ≤ Λ)
+    (hDec : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) → ‖Gres H z τ y x‖ ≤ ν)
+    (hX : 2 * X ≤ (zdistInf d (sz.L n) (b - c₁) : ℝ)) :
+    ‖twDer C n v ω σ b c₁ c₂ x y‖ ≤ 2 * (Λ * (Λ * ν)) := by
+  have hΛ0 : 0 ≤ Λ := (norm_nonneg _).trans (hbd true 0 0)
+  have := TwistKer_twDer_le n C v ω σ b c₁ c₂ x y (m₁ := Λ * (Λ * ν)) (m₂ := Λ * (Λ * ν))
+    (fun z' hz' w hw => by
+      have hz'' := (TwistKer_mem_blk n).1 hz'
+      have hw'' := (TwistKer_mem_blk n).1 hw
+      simp only [TwistKer_twChg_eq n hH hG, norm_mul]
+      have h2 := hDec (σ 1) z' w (by rw [hz'', hw'']; linarith)
+      calc ‖Gres H z (σ 0) y z'‖ * ‖Gres H z (σ 1) z' w‖ * ‖Gres H z (σ 0) (twShift n c₂ w) x‖ ≤ Λ * ν * Λ :=
+          mul_le_mul (mul_le_mul (hbd _ _ _) h2 (norm_nonneg _) hΛ0) (hbd _ _ _) (norm_nonneg _) (mul_nonneg hΛ0 hν)
+        _ = Λ * (Λ * ν) := by ring)
+    (fun w hw z' hz' => by
+      have hz'' := (TwistKer_mem_blk n).1 hz'
+      have hw'' := (TwistKer_mem_blk n).1 hw
+      simp only [TwistKer_twChg_eq n hH hG, norm_mul]
+      have hsp := TwistKer_far_split (sz.L n) b (split d (sz.L n) (sz.W n) y).1 c₁ hX
+      rcases hsp with h | h
+      · have h2 := hDec (σ 1) z' x (by rw [hz'', hxy]; exact h)
+        calc ‖Gres H z (σ 1) y w‖ * ‖Gres H z (σ 0) (twShift n c₂ w) z'‖ * ‖Gres H z (σ 1) z' x‖ ≤ Λ * Λ * ν :=
+            mul_le_mul (mul_le_mul (hbd _ _ _) (hbd _ _ _) (norm_nonneg _) hΛ0) h2 (norm_nonneg _) (mul_nonneg hΛ0 hΛ0)
+          _ = Λ * (Λ * ν) := by ring
+      · have h2 := hDec (σ 1) y w (by rw [hw'']; exact h)
+        calc ‖Gres H z (σ 1) y w‖ * ‖Gres H z (σ 0) (twShift n c₂ w) z'‖ * ‖Gres H z (σ 1) z' x‖ ≤ ν * Λ * Λ :=
+            mul_le_mul (mul_le_mul h2 (hbd _ _ _) (norm_nonneg _) hν) (hbd _ _ _) (norm_nonneg _) (mul_nonneg hν hΛ0)
+          _ = Λ * (Λ * ν) := by ring)
+  linarith
+
+/-- **The quadratic-variation source `(Ẽ⊗Ẽ)_v(a, b')` decays** in `a` when `|a - c₁|_∞ ≥ 2X` (`S = I` at BA: `C.S` is supported on the diagonal and `≤ 1`):
+`|(Ẽ⊗Ẽ)(a,b')| ≤ N² · 2Λ²ν · 2Λ³` for every `b'`. -/
+theorem TwistKer_twEE_decay (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 2 → Bool) (a b' c₁ c₂ : Zd d (sz.L n)) {Λ ν X : ℝ}
+    (hν : 0 ≤ ν) (hX0 : 0 ≤ X) (hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres H z τ y x‖ ≤ Λ)
+    (hDec : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) → ‖Gres H z τ y x‖ ≤ ν)
+    (hS0 : ∀ p q : Zd d (sz.L n), p ≠ q → C.S n p q = 0) (hS1 : ∀ p q : Zd d (sz.L n), ‖C.S n p q‖ ≤ 1)
+    (hX : 2 * X ≤ (zdistInf d (sz.L n) (a - c₁) : ℝ)) :
+    ‖twEE C n v ω σ a b' c₁ c₂‖ ≤ ((sz.size n : ℕ) : ℝ) ^ 2 * (2 * (Λ * (Λ * ν)) * (2 * (Λ * (Λ * Λ)))) := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  have hΛ0 : 0 ≤ Λ := (norm_nonneg _).trans (hbd true 0 0)
+  have hsize : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    simp [Sizes.size, mul_pow]
+  have hW1 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 1 := by
+    have : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    exact inv_le_one_of_one_le₀ (one_le_pow₀ this)
+  set Bd : ℝ := 2 * (Λ * (Λ * ν)) * (2 * (Λ * (Λ * Λ))) with hBd
+  have hBd0 : 0 ≤ Bd := by positivity
+  have hterm : ∀ x y : Idx d (sz.L n) (sz.W n), ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+      (twDer C n v ω σ a c₁ c₂ x y * (starRingEnd ℂ) (twDer C n v ω σ b' c₁ c₂ x y))‖ ≤ Bd := by
+    intro x y
+    by_cases hxy : (split d (sz.L n) (sz.W n) x).1 = (split d (sz.L n) (sz.W n) y).1
+    · rw [norm_mul, norm_mul, norm_mul, TwistKer_norm_winv, Complex.norm_conj]
+      have h1 := TwistKer_twDer_decay n C hH v ω hG σ a c₁ c₂ x y hxy hν hX0 hbd hDec hX
+      have h2 := TwistKer_twDer_gen n C hH v ω hG σ b' c₁ c₂ x y hbd
+      have hS := hS1 (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1
+      calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖C.S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1‖ *
+            (‖twDer C n v ω σ a c₁ c₂ x y‖ * ‖twDer C n v ω σ b' c₁ c₂ x y‖) ≤ 1 * 1 * Bd := by
+            refine mul_le_mul (mul_le_mul hW1 hS (norm_nonneg _) zero_le_one) (mul_le_mul h1 h2 (norm_nonneg _) (by positivity)) (by positivity) (by positivity)
+        _ = Bd := by ring
+    · rw [hS0 _ _ hxy]
+      simpa using hBd0
+  unfold twEE
+  have hinner : ∀ x : Idx d (sz.L n) (sz.W n), ‖∑ y : Idx d (sz.L n) (sz.W n),
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDer C n v ω σ a c₁ c₂ x y * (starRingEnd ℂ) (twDer C n v ω σ b' c₁ c₂ x y))‖ ≤ ((sz.size n : ℕ) : ℝ) * Bd := by
+    intro x
+    have := TwistKer_norm_sum_le (Finset.univ : Finset (Idx d (sz.L n) (sz.W n))) (fun y =>
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDer C n v ω σ a c₁ c₂ x y * (starRingEnd ℂ) (twDer C n v ω σ b' c₁ c₂ x y))) (m := Bd) (fun y _ => hterm x y)
+    rw [Finset.card_univ, Sizes.card_Idx] at this
+    exact this
+  have hout := TwistKer_norm_sum_le (Finset.univ : Finset (Idx d (sz.L n) (sz.W n))) (fun x => ∑ y : Idx d (sz.L n) (sz.W n),
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDer C n v ω σ a c₁ c₂ x y * (starRingEnd ℂ) (twDer C n v ω σ b' c₁ c₂ x y))) (m := ((sz.size n : ℕ) : ℝ) * Bd) (fun x _ => hinner x)
+  rw [Finset.card_univ, Sizes.card_Idx] at hout
+  calc _ ≤ _ := hout
+    _ = ((sz.size n : ℕ) : ℝ) ^ 2 * Bd := by ring
+
+/-- Symmetry of the `L^∞` distance. -/
+theorem TwistKer_zdistInf_neg (L : ℕ) [NeZero L] (x : Zd d L) : zdistInf d L (-x) = zdistInf d L x := by
+  unfold zdistInf
+  simp only [Pi.neg_apply, zdist_neg]
+
+/-- **`|𝓛^{(2)}| ≤ η⁻²`** (every charge pair): the sandwich of `E_a`, `E_b` against entries `≤ η⁻¹`. -/
+theorem TwistKer_loop2_le {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : 0 < z.im)
+    (σ₀ σ₁ : Bool) (a b : Zd d (sz.L n)) :
+    ‖loopFine d (sz.L n) (sz.W n) H z ![σ₀, σ₁] ![a, b]‖ ≤ (z.im)⁻¹ * (z.im)⁻¹ := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  have hΛ0 : 0 ≤ (z.im)⁻¹ := inv_nonneg.2 hz.le
+  rw [TwistKer_loop2, TwistKer_trace_sandwich, norm_mul, norm_pow, TwistKer_norm_winv]
+  have h2 := TwistKer_norm_sum2_le n b a (fun i j => Gres H z σ₀ i j * Gres H z σ₁ j i) (m := (z.im)⁻¹ * (z.im)⁻¹) (fun i _ j _ => by
+    rw [norm_mul]; exact mul_le_mul (TwistKer_entry_le hH hz _ _ _) (TwistKer_entry_le hH hz _ _ _) (norm_nonneg _) hΛ0)
+  calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * ‖∑ i ∈ twBlk n b, ∑ j ∈ twBlk n a, Gres H z σ₀ i j * Gres H z σ₁ j i‖
+      ≤ ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * (((sz.W n : ℕ) : ℝ) ^ d * (((sz.W n : ℕ) : ℝ) ^ d * ((z.im)⁻¹ * (z.im)⁻¹))) :=
+        mul_le_mul_of_nonneg_left h2 (by positivity)
+    _ = (z.im)⁻¹ * (z.im)⁻¹ := by field_simp
+
+/-- **Entries of `G` between far blocks from the 2-loop** (`TP` Lemma T.5, `n = 2`): if `‖𝓛^{(2)}_{(+,-),(p,q)}‖ ≤ ρ` for all blocks with `|p - q|_∞ ≥ X`, then every entry
+`|G(σ)_{yx}| ≤ W^d ρ^{1/2}` with `|[y] - [x]|_∞ ≥ X`. -/
+theorem TwistKer_entry_decay {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ} {X ρ : ℝ}
+    (hloop : ∀ p q : Zd d (sz.L n), X ≤ (zdistInf d (sz.L n) (p - q) : ℝ) →
+      ‖loopFine d (sz.L n) (sz.W n) H z ![true, false] ![p, q]‖ ≤ ρ) :
+    ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) →
+        ‖Gres H z τ y x‖ ≤ ((sz.W n : ℕ) : ℝ) ^ d * Real.sqrt ρ := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  have hneg : ∀ p q : Zd d (sz.L n), zdistInf d (sz.L n) (q - p) = zdistInf d (sz.L n) (p - q) := fun p q => by
+    rw [← neg_sub p q, TwistKer_zdistInf_neg]
+  have key : ∀ y x : Idx d (sz.L n) (sz.W n),
+      X ≤ (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) y).1 - (split d (sz.L n) (sz.W n) x).1) : ℝ) →
+        ‖Gres H z true y x‖ ≤ ((sz.W n : ℕ) : ℝ) ^ d * Real.sqrt ρ := by
+    intro y x hyx
+    have h1 := TwistKer_entry_le_loop2 n hH z y x
+    have h2 := hloop (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 (by rw [hneg]; exact hyx)
+    have h3 : ‖Gres H z true y x‖ ^ 2 ≤ (((sz.W n : ℕ) : ℝ) ^ d) ^ 2 * ρ :=
+      h1.trans (mul_le_mul_of_nonneg_left h2 (by positivity))
+    have h4 : ‖Gres H z true y x‖ ≤ Real.sqrt ((((sz.W n : ℕ) : ℝ) ^ d) ^ 2 * ρ) := Real.le_sqrt_of_sq_le h3
+    have hρ : 0 ≤ ρ := (norm_nonneg _).trans h2
+    rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hW.le] at h4
+    exact h4
+  intro τ y x hyx
+  cases τ
+  · have h := TwistKer_Gres_conjTranspose hH z true
+    simp only [Bool.not_true] at h
+    rw [← h, Matrix.conjTranspose_apply, Complex.star_def, Complex.norm_conj]
+    exact key x y (by rw [hneg]; exact hyx)
+  · exact key y x hyx
+
+/-- **`|𝓛^{(1)}| ≤ η⁻¹`**: `𝓛^{(1)}_{σ,c} = W^{-d} Σ_{y∈[c]} G(σ)_{yy}`. -/
+theorem TwistKer_loop1_le {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : 0 < z.im)
+    (σ : Bool) (c : Zd d (sz.L n)) : ‖loopFine d (sz.L n) (sz.W n) H z ![σ] ![c]‖ ≤ (z.im)⁻¹ := by
+  have hW := TwistKer_W_pos n (sz := sz)
+  rw [TwistKer_loop1, Matrix.trace_mul_comm, TwistKer_trace_fE_mul, norm_mul, TwistKer_norm_winv]
+  have h := TwistKer_norm_sum_le (twBlk n c) (fun y => Gres H z σ y y) (m := (z.im)⁻¹) (fun y _ => TwistKer_entry_le hH hz _ _ _)
+  rw [TwistKer_card_blk] at h
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖∑ y ∈ twBlk n c, Gres H z σ y y‖ ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ d * (z.im)⁻¹) :=
+        mul_le_mul_of_nonneg_left h (by positivity)
+    _ = (z.im)⁻¹ := by field_simp
+
 end Fine
 
 end RBM.BA
