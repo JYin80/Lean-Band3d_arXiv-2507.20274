@@ -19,18 +19,18 @@ twin of `Graph/AuxGraph` §§8-12.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAAtom_`)
 
-6. **The tail on a non-confined labelling** (twin of `AuxGraph` §8, `7_8:255-258`): the weights
+1. **The tail on a non-confined labelling** (twin of `AuxGraph` §8, `7_8:255-258`): the weights
    `f_j e^{(c/2) d_B}` of the four kernels `S`, `S⁺`, `M`, `g Ψ` (`M`, `g Ψ` offset-diagonal),
    the pointwise tail bound `BAAtom_term_tail`, the tail sum `BAAtom_tail_sum`.
-7. **G3, `(G_by_auxG_BA)`** (`B:486-490`): the main sum `BAAtom_main_sum`, `BAGtoAG`,
+2. **G3, `(G_by_auxG_BA)`** (`B:486-490`): the main sum `BAAtom_main_sum`, `BAGtoAG`,
    `baGtoAG_holds` (deterministic form: `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`, window
    `W^{-d} ≤ A Ψ²`).
-8. **G3 with the constants of the BA model** `baGtoAG_E` (constants of `(d, Λ, κ)` only),
+3. **G3 with the constants of the BA model** `baGtoAG_E` (constants of `(d, Λ, κ)` only),
    `BAAtom_decay_E`.
-9. **The nested form** `baAuxNested_holds` (the walks of `lem:localregular` (3)-(5) of the
+4. **The nested form** `baAuxNested_holds` (the walks of `lem:localregular` (3)-(5) of the
    shadow) and **G4** `BAAnpAux` (`B:491-497`, the pin of L3d1), proved here in the band-flow form
    by `baAnpAux_holds` from the merged `lwAnp_holds`.
-10. Compiled instances at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
+5. Compiled instances at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
 
 Paper-delta candidates (report (d)): `T2420a` the auxiliary graph at the molecule centres
 (retained atoms folded in; same order), `T2420b` the window `W^{-d} ≤ A Ψ²`, `A = g² + 1`,
@@ -52,7 +52,7 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss
 
-/-! ## 6. The tail on a non-confined labelling (twin of `AuxGraph` §8, `7_8:255-258`) -/
+/-! ## 1. The tail on a non-confined labelling (twin of `AuxGraph` §8, `7_8:255-258`) -/
 
 section Tail
 
@@ -326,7 +326,7 @@ theorem BAAtom_tail_sum (hd : 3 ≤ d) (Γ : BAGraph E I) (hN : Γ.Normal) (D : 
 
 end Tail
 
-/-! ## 7. G3: `(G_by_auxG_BA)` (`B:486-490`), the main sum and the assembly -/
+/-! ## 2. G3: `(G_by_auxG_BA)` (`B:486-490`), the main sum and the assembly -/
 
 section Main
 
@@ -525,7 +525,7 @@ theorem baGtoAG_holds (d : ℕ) : BAGtoAG d := by
     _ = _ := Finset.sum_add_distrib
     _ ≤ _ := add_le_add hmain' htail
 
-/-! ## 8. G3 with the constants of the BA model (the form of `baClaimSize_E`) -/
+/-! ## 3. G3 with the constants of the BA model (the form of `baClaimSize_E`) -/
 
 section Model
 
@@ -637,7 +637,7 @@ theorem baGtoAG_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0
 
 end Model
 
-/-! ## 9. The nested form of `Γ^aux` (target for L3c3, L3d1) and G4 (`B:491-497`, the pin of L3d1) -/
+/-! ## 4. The nested form of `Γ^aux` (target for L3c3, L3d1) and G4 (`B:491-497`, the pin of L3d1) -/
 
 /-- **The nested form of `Γ^aux`** (the BA twin of `lwAuxNested_holds`, `AuxGraph.lean:1606`): the walks of `lem:localregular` (3)-(5)
 of the shadow, the molecules `𝓜_x ≠ 𝓜_y`; an `NGraph` with `p` paths and `n_M` internal vertices, no ghost edge, of order
@@ -709,7 +709,7 @@ theorem baAnpAux_holds (d : ℕ) : BAAnpAux d := by
 
 end G4
 
-/-! ## 10. Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, `t = 1/2`, the flow point `P : FlowPt 4 10`)
+/-! ## 5. Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, `t = 1/2`, the flow point `P : FlowPt 4 10`)
 
 The data and the graph `G*` are those of the instances of `Graph/BAAtom` (`BAAtomInst.Gstar`, `BASizeClaimInst2.D0`: `G = M + 1/100`,
 `|Ǧ_{xy}| = 1/100` for all `x, y`; the external labels `ellInst`, `ξ ≡ 1/100`).  The window is `W^{-3} = 1/8 ≤ A Ψ² = 2000 · 10^{-4}`,
