@@ -11,17 +11,17 @@ import RBM3D.BA.KBase
 /-!
 # The off-diagonal decay `(GijGEX_BA)` of the block Anderson resolvent (BA-G4)
 
-Ticket T2403 (with Amend 1).  Design gate `docs/reports/T2390-prove.md` (G) G.4, (a′) D3.2-D3.4.  Paper: `paper/tex/7_8_light_weight.tex`
-(`7_8:line`), `lem_GbEXP_BA` `:1916-1946`.
+Ticket T2403 (with Amend 1).  Design gate `docs/reports/T2390-prove.md` (G) G.4, (a′) D3.2-D3.4.
+Paper: `paper/tex/7_8_light_weight.tex` (`7_8:line`), `lem_GbEXP_BA` `:1916-1946`.
 
-* Section 1: the target kernel `𝔗_γ(a,c) = Σ_{a',b'} φ(a',b') e^{-γ(|a'-a|+|b'-c|)} + Ψ e^{-γ|a-c|}` and its shift, comparison and
-  convolution estimates.
-* Section 2 (**target 1**): the deterministic weighted closure `GreenOff_close`: on the event, `|Δ_xy| ≤ 2 C_ℓ' Φ_N 𝔗_γ([x],[y])`
-  (D3.4: the expansion `Δ = L1 + L2 + L3 + Q` of (E3), the block averages `v̄ = Θ_t u`, the sources bounded by the local (X*), (Ξ),
-  the kernel preservation, the weighted `ℓ¹` bound of `Θ`, absorption under (C2)), in the ratio norm.
-* Section 3 (**target 2**): `baStab_holds`, the link `BAStab … (16 κ⁻⁴)` at `BAReal` data.
-* Section 4 (**target 3**): `baGbEXPij'_holds`.
-* Section 5: compiled nonempty instances.
+* §1: the target kernel `𝔗_γ(a,c) = Σ φ(a',b') e^{-γ(|a'-a|+|b'-c|)} + Ψ e^{-γ|a-c|}`: shift,
+  comparison with `GreenCore_T`, convolution against `M^{(B)}`.
+* §2 (**target 1**) `GreenOff_close`: the deterministic weighted closure in the ratio norm
+  (D3.4: `Δ = L1 + L2 + L3 + Q`, `v̄ = Θ_t u`, the sources (X*), (Ξ), kernel preservation,
+  the weighted `ℓ¹` bound of `Θ`, absorption (C2)); `GreenOff_decay`: its form at the BA data.
+* §3 (**target 2**) `baStab_holds`.  §4: the two-loop identity, the closure along the flow
+  (`GreenOff_carrier_decay`).  §5 (**target 3**) `baGbEXPij'_holds`.
+  §6: compiled nonempty instances.
 -/
 
 set_option linter.style.longLine false
@@ -1524,6 +1524,44 @@ example : ∀ x y : Vtx 3 4 W₁, ‖Δ₁ x y‖ ≤ 2 * GreenOff_Cl 3 (1 / 2) 
     hDadj₁ hΘ₁ hΘw₁ hC2₁ x y
 
 example : ∃ x y : Vtx 3 4 W₁, Δ₁ x y ≠ 0 := ⟨default, default, by simp [Δ₁]⟩
+
+/-- **Instance of target 2** (`baStab_holds`): the flow datum of `sz0` at `n = 0` (`L = 4`, `g₀ ∈ (0, 1/64]`, `κ = 1/2`), `t = 1/2`, the nonzero test
+vector `δ_0`, `B = 3/2` (its hypothesis is proved): `|v_0| = 1 ≤ 16 κ⁻⁴ B = 384`. -/
+example : GreenStabInst.vI 0 = 1 ∧ ‖GreenStabInst.vI 0‖ ≤ 16 * (1 / 2 : ℝ)⁻¹ ^ 4 * (3 / 2) := by
+  refine ⟨GreenStabInst.vI_zero, baStab_holds 3 (SizesInst.sz0.L 0) GreenStabInst.g0I (1 / 2) GreenStabInst.E0I GreenStabInst.m0I
+    (by norm_num) GreenStabInst.hr0I (1 / 2) (by norm_num) (by norm_num) GreenStabInst.vI (3 / 2) (fun a => ?_) 0⟩
+  have hsum : ∑ b, BAMss 3 (SizesInst.sz0.L 0) (BAMB 3 (SizesInst.sz0.L 0) GreenStabInst.g0I (GreenStabInst.E0I : ℂ) GreenStabInst.m0I)
+      true true a b * GreenStabInst.vI b = BAMss 3 (SizesInst.sz0.L 0) (BAMB 3 (SizesInst.sz0.L 0) GreenStabInst.g0I
+        (GreenStabInst.E0I : ℂ) GreenStabInst.m0I) true true a 0 := by simp [GreenStabInst.vI]
+  have hq : ‖BAMss 3 (SizesInst.sz0.L 0) (BAMB 3 (SizesInst.sz0.L 0) GreenStabInst.g0I (GreenStabInst.E0I : ℂ) GreenStabInst.m0I)
+      true true a 0‖ ≤ 1 := by
+    rw [BAMss_ss_norm 3 (SizesInst.sz0.L 0) GreenStabInst.g0I (GreenStabInst.E0I : ℂ) GreenStabInst.m0I true a 0,
+      ← BAMB_row_sq_real 3 (SizesInst.sz0.L 0) GreenStabInst.g0I GreenStabInst.E0I GreenStabInst.m0I GreenStabInst.hr0I.1 a]
+    exact Finset.single_le_sum (f := fun b => ‖BAMB 3 (SizesInst.sz0.L 0) GreenStabInst.g0I (GreenStabInst.E0I : ℂ)
+      GreenStabInst.m0I a b‖ ^ 2) (fun b _ => by positivity) (Finset.mem_univ 0)
+  have hva : ‖GreenStabInst.vI a‖ ≤ 1 := by by_cases ha : a = 0 <;> simp [GreenStabInst.vI, ha]
+  rw [hsum]
+  calc _ ≤ ‖GreenStabInst.vI a‖ + ‖(((1 / 2 : ℝ)) : ℂ) * BAMss 3 (SizesInst.sz0.L 0) (BAMB 3 (SizesInst.sz0.L 0) GreenStabInst.g0I
+        (GreenStabInst.E0I : ℂ) GreenStabInst.m0I) true true a 0‖ := norm_sub_le _ _
+    _ ≤ 1 + 1 / 2 * 1 := add_le_add hva (by rw [norm_mul, Complex.norm_real]; exact mul_le_mul (by norm_num) hq (norm_nonneg _) (by norm_num))
+    _ = 3 / 2 := by norm_num
+
+/-- **Instance of target 3** (`baGbEXPij'_holds 3`) at `d = 3`, `sz0` (`L = 4(n+1)`, `W = (2(n+1))⁵`), the flow `flow_sz0` (`κ = 1/2`, `ε = 1/10`,
+`𝔠 = 1/6`, `𝔡 = 1/10`), `t ≡ 1/2 ≤ T₀`, `ε₀ = 1/10`, `Φ ≡ W^{-1/10}`, `Ψ = W⁻¹` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`, `0 < Φ ≤ W^{-ε₀}`): the pin is
+now proved; the loop premise (the consumer's pin, implied by `STLmaxgL`) stays a hypothesis. -/
+example : ∃ c : ℝ, 0 < c ∧ ∀ D : ℝ, 0 < D →
+    GreenCore_loopPrem SizesInst.sz0 FlowPinsInst.zSeq (fun _ => 1 / 2) (1 / 10)
+      (fun n _ _ => ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (-(1 / 10 : ℝ))) →
+    GreenCore_decayConcl SizesInst.sz0 FlowPinsInst.zSeq (fun _ => 1 / 2) (1 / 10) D c
+      (fun n _ _ => ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (-(1 / 10 : ℝ))) (fun n => ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) := by
+  have h1 : ∀ n, (1 : ℝ) ≤ ((SizesInst.sz0.W n : ℕ) : ℝ) := fun n => by exact_mod_cast SizesInst.sz0.W_pos n
+  obtain ⟨c, hc, hmain⟩ := baGbEXPij'_holds 3 (by norm_num) (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+  refine ⟨c, hc, fun D hD hL => hmain (1 / 6) SizesInst.sz0 FlowPinsInst.zSeq FlowPinsInst.flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (FlowPinsInst.half_lt_t0 n).le) (1 / 10) (by norm_num) D hD _
+    (fun n => ((SizesInst.sz0.W n : ℕ) : ℝ) ^ (-1 : ℝ)) ?_ ?_ ?_ hL⟩
+  · exact Eventually.of_forall fun n a b => ⟨Real.rpow_pos_of_pos (lt_of_lt_of_le one_pos (h1 n)) _, le_rfl⟩
+  · exact Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)
+  · exact Eventually.of_forall fun n => Real.rpow_le_rpow_of_exponent_le (h1 n) (by norm_num)
 
 end GreenOffInst
 
