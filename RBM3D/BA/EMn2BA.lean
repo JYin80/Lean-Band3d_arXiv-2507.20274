@@ -65,7 +65,7 @@ def baEMn2Zf (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) : ℂ :=
   ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) u
 
 /-- `seqHflowBA` is Hermitian (private copies: `FlowPins:925`, `Step1Trivial:103`, `ConArg:310`, `GreenLocal:178`). -/
-theorem baEMn2_seqHflowBA_herm (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) :
+theorem EMn2BA_seqHflowBA_herm (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) :
     (sz.seqHflowBA lam0 n u ω).IsHermitian := by
   unfold Sizes.seqHflowBA
   refine IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz.withLam 0) n u ω)
@@ -74,7 +74,7 @@ theorem baEMn2_seqHflowBA_herm (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u 
     show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _]
 
 /-- `S^{(B)}(0) = 1`: `sbKernel d L 0 = δ₀` (`Defs/Block.lean:38-44`). -/
-theorem baEMn2_SB_zero (L : ℕ) [NeZero L] : SB d L 0 = 1 := by
+theorem EMn2BA_SB_zero (L : ℕ) [NeZero L] : SB d L 0 = 1 := by
   ext a b
   simp only [SB_apply, sbKernel, Matrix.one_apply, sub_eq_zero]
   by_cases h : a = b
@@ -82,7 +82,7 @@ theorem baEMn2_SB_zero (L : ℕ) [NeZero L] : SB d L 0 = 1 := by
   · simp [h]
 
 /-- `Im z_n > 0` on the chain domain (`N^{-1+ε} ≤ Im z_n`, `N ≥ 1`). -/
-theorem baEMn2_zim_pos {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
+theorem EMn2BA_zim_pos {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
     0 < (z n).im := by
   have h1 := (h.2 n).2.1
   have h2 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) := by
@@ -91,28 +91,28 @@ theorem baEMn2_zim_pos {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} 
   linarith
 
 /-- `0 < Im m(z_n, g_n)` on the chain domain (`BAdom`, `κ > 0`). -/
-theorem baEMn2_mim_pos {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
+theorem EMn2BA_mim_pos {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) : 0 < (BAm d (sz.L n) (sz.lam n) (z n)).im :=
   lt_of_lt_of_le hκ (h.2 n).1
 
 /-- `Im m(z_n, g_n) ≤ ‖m‖ ≤ 1` (Ward, `BAm_norm_le_one`, uniform in `g`). -/
-theorem baEMn2_mim_le_one {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
+theorem EMn2BA_mim_le_one {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
     (BAm d (sz.L n) (sz.lam n) (z n)).im ≤ 1 := by
-  have hz := baEMn2_zim_pos sz h n
+  have hz := EMn2BA_zim_pos sz h n
   have hs := BAm_self d (sz.L n) (sz.lam n) (z n) hz
   exact (Complex.im_le_norm _).trans (BAm_norm_le_one d (sz.L n) (sz.lam n) (z n) _ hz.le hs)
 
 /-- `t₀_n < 1`, every `n` (`BAt0_lt_one`). -/
-theorem baEMn2_T0_lt_one {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
+theorem EMn2BA_T0_lt_one {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) : BAflowT0 sz z n < 1 :=
-  BAt0_lt_one (baEMn2_zim_pos sz h n) (baEMn2_mim_pos hκ sz h n)
+  BAt0_lt_one (EMn2BA_zim_pos sz h n) (EMn2BA_mim_pos hκ sz h n)
 
 /-- `1 - t₀_n ≥ Im z_n / 2` (`1 - t₀ = Im z/(Im m + Im z)`, `Im m ≤ 1`, `Im z ≤ 1`). -/
-theorem baEMn2_one_sub_T0 {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
+theorem EMn2BA_one_sub_T0 {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) : (z n).im / 2 ≤ 1 - BAflowT0 sz z n := by
-  have hz := baEMn2_zim_pos sz h n
-  have hm := baEMn2_mim_pos hκ sz h n
-  have hm1 := baEMn2_mim_le_one sz h n
+  have hz := EMn2BA_zim_pos sz h n
+  have hm := EMn2BA_mim_pos hκ sz h n
+  have hm1 := EMn2BA_mim_le_one sz h n
   have hz1 := (h.2 n).2.2
   have e : 1 - BAflowT0 sz z n = (z n).im / ((BAm d (sz.L n) (sz.lam n) (z n)).im + (z n).im) := by
     unfold BAflowT0 BAt0
@@ -122,7 +122,7 @@ theorem baEMn2_one_sub_T0 {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) 
   nlinarith
 
 /-- `‖m_F‖ ≤ 1` and `κ ≤ Im m_F` at the flow parameters (`BAflow_real`). -/
-theorem baEMn2_mF_data {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
+theorem EMn2BA_mF_data {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
     κ ≤ (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im ∧
       (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im ≤ 1 := by
   have hr := BAflow_real κ ε 𝔠 𝔡 sz z h n
@@ -141,14 +141,14 @@ variable (d : ℕ)
 theorem baEMn2PolyFacts : emn2PolyFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Zf := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
   refine ⟨hflow.1, fun n u hu0 huT => ?_, fun n => ⟨0, ?_⟩⟩
-  · have hT := baEMn2_T0_lt_one hκ sz hflow n
-    have hm := (baEMn2_mF_data sz hflow n).1
+  · have hT := EMn2BA_T0_lt_one hκ sz hflow n
+    have hm := (EMn2BA_mF_data sz hflow n).1
     have hη : 0 < (1 - u) * (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im :=
       mul_pos (by linarith) (by linarith)
-    refine ⟨fun ω => baEMn2_seqHflowBA_herm sz _ n u ω, ?_, ?_, fun ω k σ a => rfl⟩
+    refine ⟨fun ω => EMn2BA_seqHflowBA_herm sz _ n u ω, ?_, ?_, fun ω k σ a => rfl⟩
     · exact (ztOf_im _ _ _).symm ▸ hη
     · exact ztOf_im _ _ _
-  · exact (baEMn2_SB_zero (sz.L n)).symm
+  · exact (EMn2BA_SB_zero (sz.L n)).symm
 
 set_option maxHeartbeats 800000 in
 -- the copied proof of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1048`) carries the same limit
@@ -156,17 +156,17 @@ set_option maxHeartbeats 800000 in
 
 (B) is the BA twin of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1049`): `Bctl` reads `sz.lam n = g` (`Defs/Sizes.lean:214`),
 `cB = (𝔡⁻² + 1)⁻¹`, `c = min (2𝔡𝔠) ε / 2`; the upper bound is `(g² W^d)⁻¹ + (N(1-u))⁻¹ ≤ N^{-2𝔡𝔠} + 2N^{-ε}`
-with `1 - u ≥ 1 - t₀ ≥ Im z_n / 2 ≥ N^{-1+ε}/2` (`baEMn2_one_sub_T0`). -/
+with `1 - u ≥ 1 - t₀ ≥ Im z_n / 2 ≥ N^{-1+ε}/2` (`EMn2BA_one_sub_T0`). -/
 theorem baEMn2ExpFacts :
     emn2ExpFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Zf := by
   refine ⟨baEMn2PolyFacts d, ?_⟩
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
   have h𝔠 : 0 < 𝔠 := hflow.1.1
-  have hT1 : ∀ n, BAflowT0 sz z n < 1 := fun n => baEMn2_T0_lt_one hκ sz hflow n
+  have hT1 : ∀ n, BAflowT0 sz z n < 1 := fun n => EMn2BA_T0_lt_one hκ sz hflow n
   refine ⟨hT1, ?_, (𝔡⁻¹ ^ 2 + 1)⁻¹, min (2 * 𝔡 * 𝔠) ε / 2, by positivity, by
     have := lt_min (mul_pos (mul_pos two_pos h𝔡) h𝔠) hε; linarith, ?_⟩
   · intro n u hu0 huT
-    have hm := (baEMn2_mF_data sz hflow n).2
+    have hm := (EMn2BA_mF_data sz hflow n).2
     have hu1 : 0 < 1 - u := by linarith [hT1 n]
     change etaOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) u ≤ 1 - u
     unfold etaOf
@@ -211,9 +211,9 @@ theorem baEMn2ExpFacts :
       inv_nonneg.mpr (mul_nonneg hLd.le (by linarith))
     linarith
   · -- the upper bound
-    have hz := baEMn2_zim_pos sz hflow n
+    have hz := EMn2BA_zim_pos sz hflow n
     have hu1 : (z n).im / 2 ≤ 1 - u := by
-      have := baEMn2_one_sub_T0 hκ sz hflow n
+      have := EMn2BA_one_sub_T0 hκ sz hflow n
       linarith
     have hNim : ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ (z n).im := (hflow.2 n).2.1
     have hsz2 : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
@@ -421,14 +421,14 @@ theorem baComp_col_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : �
         simp only [this, mul_one]
 
 /-- `‖Θ(a,c)‖ = ‖Θ(0, c - a)‖`, translation invariance (`baP8_BATheta_shift`, every `(σ₁, σ₂)`). -/
-theorem baTheta_norm_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a c : Zd d L) :
+theorem EMn2BA_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a c : Zd d L) :
     BATheta d L g E m t σ₁ σ₂ a c = BATheta d L g E m t σ₁ σ₂ 0 (c - a) := by
   have h := baP8_BATheta_shift (d := d) (L := L) g E m t σ₁ σ₂ a c (-a)
   simp only [add_neg_cancel, ← sub_eq_add_neg] at h
   exact h.symm
 
 /-- `B_{t,K} ≤ 2 (1-t)⁻¹` for `t < 1`, `L ≥ 1` (copy of `kellStar_bparam_le`, `Path/KellStar.lean:67`, private there). -/
-theorem baComp_bparam_le (d L : ℕ) (hL : 1 ≤ L) (g : ℝ) {u : ℝ} (hu : u < 1) (n : ℕ) :
+theorem EMn2BA_bparam_le (d L : ℕ) (hL : 1 ≤ L) (g : ℝ) {u : ℝ} (hu : u < 1) (n : ℕ) :
     Bparam d L g u n ≤ 2 * (1 - u)⁻¹ := by
   have hx : 0 < 1 - u := by linarith
   have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
@@ -504,7 +504,7 @@ theorem baComp_holds (d : ℕ) (Λ κ : ℝ) : BACompBound d Λ κ := by
     by_cases hcase : zdistD d L (a - b) ≤ 2 * zdistD d L (a - c)
     · -- `Θ` carries the decay
       have h5 := H5 L hL g hg hgΛ E m hr t ht0 ht1 σ₁ σ₂ (c - a)
-      have hB := baComp_bparam_le d L (by omega) g ht1 (zdistD d L (c - a))
+      have hB := EMn2BA_bparam_le d L (by omega) g ht1 (zdistD d L (c - a))
       have hdist : zdistD d L (c - a) = zdistD d L (a - c) := by
         rw [← neg_sub a c, zdistD_neg]
       have hx : r ≤ 2 * (zdistD d L (c - a) : ℝ) := by
@@ -519,7 +519,7 @@ theorem baComp_holds (d : ℕ) (Λ κ : ℝ) : BACompBound d Λ κ := by
           _ ≤ C₅ * (2 * (1 - t)⁻¹) * Real.exp (-(c₅ / 2) * r / ℓ) :=
               mul_le_mul (mul_le_mul_of_nonneg_left hB hC₅.le) hexp (Real.exp_pos _).le (by positivity)
           _ = 2 * C₅ * (1 - t)⁻¹ * Real.exp (-(c₅ / 2) * r / ℓ) := by ring
-      have hsh : Θ a c = Θ 0 (c - a) := baTheta_norm_shift g E m t σ₁ σ₂ a c
+      have hsh : Θ a c = Θ 0 (c - a) := EMn2BA_theta_shift g E m t σ₁ σ₂ a c
       have hmain : ‖Θ a c‖ * ‖Q c b‖ ≤ (2 * C₅ * (1 - t)⁻¹ * Real.exp (-(c₅ / 2) * r / ℓ)) * ‖Q c b‖ :=
         mul_le_mul_of_nonneg_right (by rw [hsh]; exact hΘc) hQnn
       have hsec : 0 ≤ ‖Θ a c‖ * (c₀⁻¹ ^ 2 * Real.exp (-c₀ * r)) := by positivity
@@ -588,7 +588,7 @@ theorem baComp_holds (d : ℕ) (Λ κ : ℝ) : BACompBound d Λ κ := by
 section HK
 
 /-- `ℓ_t` is nondecreasing in the coupling: `0 ≤ g₀ ≤ g` gives `ℓ_t(g₀) ≤ ℓ_t(g)` (`ellT_mono`, `Kernel/PropT.lean:58`, is in `t`). -/
-theorem baEMn2_ellT_mono_g (L : ℕ) {g₀ g : ℝ} (h : g₀ ≤ g) (t : ℝ) : ellT L g₀ t ≤ ellT L g t := by
+theorem EMn2BA_ellT_mono_g (L : ℕ) {g₀ g : ℝ} (h : g₀ ≤ g) (t : ℝ) : ellT L g₀ t ≤ ellT L g t := by
   unfold ellT
   exact min_le_min (max_le_max (div_le_div_of_nonneg_right h (Real.sqrt_nonneg _)) le_rfl) le_rfl
 
@@ -621,7 +621,7 @@ private theorem EMn2BA_arith {C c δ D k x : ℝ} (hC : 0 < C) (hx1 : 1 ≤ x)
 
 /-- **`(Kn2sol)` at the carrier**: `𝒦^{(2)}_{t,(s,-s)}(x,x') = W^{-d} (Θ M^{(s,-s)})(x,x')` at `(g₀, E_n, m_F)`
 (`baKsol_two`; needs `0 < g₀`, `BAReal` from `BAflow_real`). -/
-theorem baEMn2_K_two {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
+theorem EMn2BA_K_two {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) (hg : 0 < BAflowLam0 sz z n) {t : ℝ} (ht : t ∈ Set.Ico (0 : ℝ) 1) (s : Bool) (x x' : Zd d (sz.L n)) :
     (baFMz sz z).K n t ![s, !s] ![x, x'] =
       (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ *
@@ -631,8 +631,8 @@ theorem baEMn2_K_two {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : 
   baKsol_two d hκ hg (sz.three_le_L n) (sz.W n) (BAflow_real κ ε 𝔠 𝔡 sz z hflow n) ht ![s, !s] ![x, x']
 
 /-- **Target 4: `emn2ExpHK` at the BA reading** (`3 ≤ d`): for every `D > 0`, eventually, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤
-W^{-d} W^{-(D+d)}` once `ℓ*_{t_n}(g) ≤ |x - x'|_∞`.  Proof: `(Kn2sol)` (`baEMn2_K_two`) and BAT-C2 (`baComp_holds`, `Λ = 𝔡⁻¹`) at the
-flow coupling `g₀ ≤ g`: `ℓ_t(g₀) ≤ ℓ_t(g)` (`baEMn2_ellT_mono_g`), `|x - x'|_∞ ≤ |x - x'|_L`; the amplitude is
+W^{-d} W^{-(D+d)}` once `ℓ*_{t_n}(g) ≤ |x - x'|_∞`.  Proof: `(Kn2sol)` (`EMn2BA_K_two`) and BAT-C2 (`baComp_holds`, `Λ = 𝔡⁻¹`) at the
+flow coupling `g₀ ≤ g`: `ℓ_t(g₀) ≤ ℓ_t(g)` (`EMn2BA_ellT_mono_g`), `|x - x'|_∞ ≤ |x - x'|_L`; the amplitude is
 `(1-t_n)⁻¹ ≤ 2N ≤ 2W^{1/𝔠}` (`1 - t₀ ≥ Im z/2 ≥ N^{-1}/2`, `Bandwidth`) and `(log W)^{3/2}` beats `log W` (`EMn2BA_arith`). -/
 theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT D hD
@@ -659,7 +659,7 @@ theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
     rw [Real.sqrt_sq hA', div_le_iff₀ hc] at h2
     rw [← hK]
     linarith
-  have ht1 : t n < 1 := lt_of_le_of_lt (htT n) (baEMn2_T0_lt_one hκ sz hflow n)
+  have ht1 : t n < 1 := lt_of_le_of_lt (htT n) (EMn2BA_T0_lt_one hκ sz hflow n)
   have hx : 0 < 1 - t n := by linarith
   -- the amplitude `(1 - t_n)⁻¹ ≤ 2 W^{1/𝔠}`
   have hNpos : 0 < sz.size n := by
@@ -668,11 +668,11 @@ theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
   have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hNpos
   have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
   have hamp : (1 - t n)⁻¹ ≤ 2 * ((sz.W n : ℕ) : ℝ) ^ (1 / 𝔠) := by
-    have hz := baEMn2_zim_pos sz hflow n
+    have hz := EMn2BA_zim_pos sz hflow n
     have hNim : ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ (z n).im := (hflow.2 n).2.1
     have hNim' : ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) :=
       Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
-    have hT := baEMn2_one_sub_T0 hκ sz hflow n
+    have hT := EMn2BA_one_sub_T0 hκ sz hflow n
     have hpos : 0 < ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) := Real.rpow_pos_of_pos hN0 _
     have h2 : ((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) / 2 ≤ 1 - t n := by linarith [htT n]
     have h3 : (1 - t n)⁻¹ ≤ (((sz.size n : ℕ) : ℝ) ^ (-1 : ℝ) / 2)⁻¹ :=
@@ -688,11 +688,11 @@ theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
   obtain ⟨hg0, hgΛ⟩ := hlam
   have hr := BAflow_real κ ε 𝔠 𝔡 sz z hflow n
   have hCK := (H (sz.L n) (sz.three_le_L n) _ hg0 hgΛ _ _ hr (t n) (ht0 n) ht1 s (!s)).2.2 x x'
-  have hK2 := baEMn2_K_two hκ sz hflow n hg0 ⟨ht0 n, ht1⟩ s x x'
+  have hK2 := EMn2BA_K_two hκ sz hflow n hg0 ⟨ht0 n, ht1⟩ s x x'
   rw [hK2]
   have hlam_le : BAflowLam0 sz z n ≤ sz.lam n := by
     have h1 : Real.sqrt (BAflowT0 sz z n) ≤ 1 :=
-      Real.sqrt_le_one.mpr (baEMn2_T0_lt_one hκ sz hflow n).le
+      Real.sqrt_le_one.mpr (EMn2BA_T0_lt_one hκ sz hflow n).le
     have hlam : 0 < sz.lam n := lt_of_lt_of_le (Real.rpow_pos_of_pos hWpos _) hwo.1
     have e : BAflowLam0 sz z n = Real.sqrt (BAflowT0 sz z n) * sz.lam n := rfl
     rw [e]
@@ -700,7 +700,7 @@ theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
   -- the far condition and the exponential
   have hℓ0 : 0 < ellT (sz.L n) (BAflowLam0 sz z n) (t n) :=
     ellT_pos (by exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n))
-  have hmono := baEMn2_ellT_mono_g (sz.L n) hlam_le (t n)
+  have hmono := EMn2BA_ellT_mono_g (sz.L n) hlam_le (t n)
   have hdist : Real.log ((sz.W n : ℕ) : ℝ) ^ ((3 : ℝ) / 2) * ellT (sz.L n) (BAflowLam0 sz z n) (t n) ≤
       (zdistD d (sz.L n) (x - x') : ℝ) := by
     refine le_trans ?_ ((hfar.trans (by exact_mod_cast zdistInf_le_zdistD d (sz.L n) (x - x'))))
@@ -783,11 +783,11 @@ end Pins
 /-! ## 6. Target 6 (T6-BA): `STContractM` at `H = seqHflowBA`, `z = ztOf`
 
 `stContractM_holds d` (`Induction/Contract.lean:1069`) is for every Hermitian `H` and `Im z > 0`; the BA statement needs only
-`seqHflowBA` Hermitian (`baEMn2_seqHflowBA_herm`) and `Im ztOf = (1 - u) Im m > 0`. -/
+`seqHflowBA` Hermitian (`EMn2BA_seqHflowBA_herm`) and `Im ztOf = (1 - u) Im m > 0`. -/
 
 section Contract
 
-/-- The body of `STContractM d` at one pair `(L, W, H, z)` (`Induction/Contract.lean:1011`; the bridge `baContract_iff` is `Iff.rfl`). -/
+/-- The body of `STContractM d` at one pair `(L, W, H, z)` (`Induction/Contract.lean:1011`; the bridge `EMn2BA_contract_iff` is `Iff.rfl`). -/
 def BAContractAt (d L W : ℕ) [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) : Prop :=
     (∀ (m k : ℕ), 1 ≤ k → k + 1 ≤ m → ∀ (σ : Fin m → Bool) (a : Fin (m - 1) → Zd d L),
       ∑ x : Zd d L, ‖loopL d L W (blockMat d L W H) z ⟨List.ofFn σ, List.ofFn a ++ [x]⟩‖ ≤
@@ -805,7 +805,7 @@ def BAContractAt (d L W : ℕ) [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Id
           Contract_maxLoopM d L W H z (2 * (l - k) * p) ^ (1 / (2 * (p : ℝ))))
 
 /-- `STContractM d` is "`BAContractAt` at every Hermitian `H` and `Im z > 0`" (`Iff.rfl`). -/
-theorem baContract_iff (d : ℕ) :
+theorem EMn2BA_contract_iff (d : ℕ) :
     STContractM d ↔ ∀ (L W : ℕ) [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ),
       H.IsHermitian → 0 < z.im → BAContractAt d L W H z := Iff.rfl
 
@@ -814,7 +814,7 @@ theorem baContract_iff (d : ℕ) :
 theorem baSTContractM {d : ℕ} (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) (m : ℂ) (E : ℝ)
     (hm : 0 < m.im) (hu : u < 1) :
     BAContractAt d (sz.L n) (sz.W n) (sz.seqHflowBA lam0 n u ω) (ztOf m E u) := by
-  refine stContractM_holds d (sz.L n) (sz.W n) _ _ (baEMn2_seqHflowBA_herm sz lam0 n u ω) ?_
+  refine stContractM_holds d (sz.L n) (sz.W n) _ _ (EMn2BA_seqHflowBA_herm sz lam0 n u ω) ?_
   rw [ztOf_im]
   exact mul_pos (by linarith) hm
 
@@ -862,7 +862,7 @@ example : sz0.Admissible (1 / 6) (1 / 10) ∧ sz0.L 3 = 16 ∧ sz0.W 3 = 32768 �
     (1 / 6) sz0 zSeq flow_sz0
   obtain ⟨hH, hz, hη, hL⟩ := hR 3 (1 / 2) (by norm_num) (half_lt_t0 3).le
   refine ⟨hadm, rfl, rfl, hH, hz, hη, hL, ?_⟩
-  exact (baEMn2_SB_zero (sz0.L 3)).symm
+  exact (EMn2BA_SB_zero (sz0.L 3)).symm
 
 /-! ### Target 2: `baEMn2ExpFacts` at `sz0` -/
 
@@ -1081,9 +1081,10 @@ example (ω : sz0.SeqΩ) :
   (baSTContractM_flow (by norm_num : (0 : ℝ) < 1 / 2) (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10) sz0
     flow_sz0 3 (by norm_num) (half_lt_t0 3).le ω).1 2 1 le_rfl le_rfl ![true, false] ![0]
 
-/-- The same data through the generic `baSTContractM` (any `m` with `Im m > 0`, `u < 1`): `Im ztOf > 0`. -/
-example (ω : sz0.SeqΩ) (m : ℂ) (E : ℕ → ℝ) (hm : 0 < m.im) :
-    BAContractAt 3 (sz0.L 3) (sz0.W 3) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 3 (1 / 2) ω) (ztOf m (E 3) (1 / 2)) :=
-  baSTContractM sz0 _ 3 (1 / 2) ω m (E 3) hm (by norm_num)
+/-- The generic `baSTContractM` (any `m` with `Im m > 0`, `u < 1`) at the concrete datum `m = i`, `E = 0`, `u = 1/2`,
+`g₀ = BAflowLam0 sz0 zSeq 3`: `Im ztOf = 1/2 > 0`. -/
+example (ω : sz0.SeqΩ) :
+    BAContractAt 3 (sz0.L 3) (sz0.W 3) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 3 (1 / 2) ω) (ztOf Complex.I 0 (1 / 2)) :=
+  baSTContractM sz0 _ 3 (1 / 2) ω Complex.I 0 (by simp) (by norm_num)
 
 end RBM.BA.EMn2BAInst
