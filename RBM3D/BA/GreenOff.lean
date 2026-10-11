@@ -1219,6 +1219,154 @@ theorem GreenOff_pin_consts (hd : 2 ≤ d) {κ 𝔡 : ℝ} (hκ : 0 < κ) (h𝔡
     positivity
   exact GreenOff_pin_consts_gen hκ hΛ hc₀ hρ0 hS0 hCΘ0
 
+/-! ### Eventual and probabilistic bookkeeping -/
+
+variable (sz : Sizes d)
+
+private theorem GreenOff_W_rpow_neg_le {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {c : ℝ} (hc : 0 < c) :
+    ∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-c) ≤ ((sz.size n : ℕ) : ℝ) ^ (-(𝔠 * c)) := by
+  obtain ⟨_, _, hsz, hbw, _⟩ := hA
+  filter_upwards [hbw, hsz.eventually_gt_atTop 0] with n hn hN0
+  have hNp : 0 < ((sz.size n : ℕ) : ℝ) ^ 𝔠 := Real.rpow_pos_of_pos hN0 _
+  calc ((sz.W n : ℕ) : ℝ) ^ (-c) ≤ (((sz.size n : ℕ) : ℝ) ^ 𝔠) ^ (-c) := Real.rpow_le_rpow_of_nonpos hNp hn (by linarith)
+    _ = ((sz.size n : ℕ) : ℝ) ^ (-(𝔠 * c)) := by rw [← Real.rpow_mul hN0.le, mul_neg]
+
+/-- `√(N^{τ₀}) W^{-ε₀} ≤ ε'` eventually, for `τ₀ ≤ 𝔠 ε₀` (`W ≥ N^𝔠`, `N → ∞`). -/
+theorem GreenOff_ev_small {𝔠 𝔡 ε₀ τ₀ ε' : ℝ} (hA : sz.Admissible 𝔠 𝔡) (hε₀ : 0 < ε₀) (hτ₀ : τ₀ ≤ 𝔠 * ε₀) (hε' : 0 < ε') :
+    ∀ᶠ n in atTop, Real.sqrt (((sz.size n : ℕ) : ℝ) ^ τ₀) * ((sz.W n : ℕ) : ℝ) ^ (-ε₀) ≤ ε' := by
+  have h𝔠 : 0 < 𝔠 := hA.1
+  have hsz := hA.2.2.1
+  have hlim := (tendsto_rpow_neg_atTop (show 0 < 𝔠 * ε₀ / 2 by positivity)).comp hsz
+  filter_upwards [GreenOff_W_rpow_neg_le sz hA hε₀, hlim.eventually (ge_mem_nhds hε'), hsz.eventually_ge_atTop 1]
+    with n h1 h2 h3
+  have e1 : Real.sqrt (((sz.size n : ℕ) : ℝ) ^ τ₀) = ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) := by
+    rw [Real.sqrt_eq_rpow, ← Real.rpow_mul (by linarith)]; congr 1; ring
+  calc Real.sqrt (((sz.size n : ℕ) : ℝ) ^ τ₀) * ((sz.W n : ℕ) : ℝ) ^ (-ε₀)
+      ≤ ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) * ((sz.size n : ℕ) : ℝ) ^ (-(𝔠 * ε₀)) :=
+        mul_le_mul (le_of_eq e1) h1 (Real.rpow_nonneg (by linarith) _) (Real.rpow_nonneg (by linarith) _)
+    _ = ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2 + -(𝔠 * ε₀)) := (Real.rpow_add (by linarith) _ _).symm
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ (-(𝔠 * ε₀ / 2)) := Real.rpow_le_rpow_of_exponent_le h3 (by linarith)
+    _ ≤ ε' := h2
+
+/-- `K N^{τ₀} N^{τ₀/2} ≤ N^τ` eventually, for `τ₀ ≤ τ/2`. -/
+theorem GreenOff_ev_big {τ τ₀ : ℝ} (K : ℝ) (hsz : sz.SizeTendsto) (hτ : 0 < τ) (hτ₀ : τ₀ ≤ τ / 2) (hτ₀0 : 0 ≤ τ₀) :
+    ∀ᶠ n in atTop, K * (((sz.size n : ℕ) : ℝ) ^ τ₀ * ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2)) ≤ ((sz.size n : ℕ) : ℝ) ^ τ := by
+  have hlim := (tendsto_rpow_atTop (show 0 < τ / 4 by linarith)).comp hsz
+  filter_upwards [hlim.eventually_ge_atTop K, hsz.eventually_ge_atTop 1] with n h1 h2
+  rw [← Real.rpow_add (by linarith)]
+  calc K * ((sz.size n : ℕ) : ℝ) ^ (τ₀ + τ₀ / 2) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 4) * ((sz.size n : ℕ) : ℝ) ^ (τ₀ + τ₀ / 2) :=
+        mul_le_mul_of_nonneg_right h1 (Real.rpow_nonneg (by linarith) _)
+    _ = ((sz.size n : ℕ) : ℝ) ^ (τ / 4 + (τ₀ + τ₀ / 2)) := (Real.rpow_add (by linarith) _ _).symm
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ := Real.rpow_le_rpow_of_exponent_le h2 (by linarith)
+
+private theorem GreenOff_sqrt_inv_pow {W : ℝ} (hW : 0 < W) (d : ℕ) : Real.sqrt ((W ^ d)⁻¹) = W ^ (-(d : ℝ) / 2) := by
+  rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_neg hW.le, ← Real.rpow_mul hW.le]
+  congr 1; ring
+
+private theorem GreenOff_card_vtx (n : ℕ) : Fintype.card (Vtx d (sz.L n) (sz.W n)) = sz.size n := by
+  rw [Fintype.card_congr (splitEquiv d (sz.L n) (sz.W n)).symm, sz.card_Idx]
+
+private theorem GreenOff_card_off (n : ℕ) : Fintype.card (Green.OffPair d (sz.L n) (sz.W n)) ≤ sz.size n ^ 2 := by
+  calc Fintype.card (Green.OffPair d (sz.L n) (sz.W n))
+      ≤ Fintype.card (Vtx d (sz.L n) (sz.W n) × Vtx d (sz.L n) (sz.W n)) := Fintype.card_subtype_le _
+    _ = sz.size n ^ 2 := by rw [Fintype.card_prod, GreenOff_card_vtx, sq]
+
+private theorem GreenOff_whp {Ω : Type*} [MeasurableSpace Ω] {P : MeasureTheory.Measure Ω} {size : ℕ → ℕ} {V : ℕ → Type*}
+    [∀ n, Fintype (V n)] {m : ℕ} (hV : ∀ n, Fintype.card (V n) ≤ size n ^ m) {ξ ζ : ∀ n, V n → Ω → ℝ}
+    (h : Path.PerTimeDomAt P size ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
+    HighProbAt P size (fun n => {ω | ∀ v, ξ n v ω ≤ (size n : ℝ) ^ τ * ζ n v ω}) :=
+  StochDomAt.highProb (Path.stochDomAt_of_perTimeDomAt P size (C := (m : ℝ)) (Nat.cast_nonneg m)
+    (Eventually.of_forall fun n => by rw [Real.rpow_natCast]; exact_mod_cast hV n) h) hτ
+
+/-! ## 5. Target 3: `baGbEXPij'_holds` -/
+
+/-- **Target 3: the pin `BAGbEXPij'` for `2 ≤ d`** (`lem_GbEXP_BA` (b), `(GijGEX_BA)`, event form; paper-delta `T2403a`: the pin has no
+`d ≥ 3`).  `c = c_λ = GreenStab_clam d 𝔡⁻¹ κ` depends on `(d, κ, 𝔡)` only.  Proof: with `τ₀ = min(τ/2, 𝔠 ε₀)` the four large deviation
+events (`baLDEin_holds`) and the loop premise hold with high probability (`≤ N²` pairs, `HighProbAt.inter`); on them and on
+`Ω = {‖G_t - M‖_max ≤ W^{-ε₀}}`, for `n` large (`W ≥ N^𝔠`, `Φ_N = N^{τ₀}`: (C1), (C2) hold, `GreenOff_pin_consts`), the closure
+`GreenOff_carrier_decay` gives `|(G_t - M)_{xy}| ≤ 2 C_ℓ' N^{τ₀} 𝔗_{c_λ}` with the control `φ = N^{τ₀/2} Φ_n`, and
+`2 C_ℓ' N^{3τ₀/2} ≤ N^τ`. -/
+theorem baGbEXPij'_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPij' d := by
+  intro κ ε 𝔡 hκ hε h𝔡
+  have hd0 : 0 < d := by omega
+  have hΛ : 0 < 𝔡⁻¹ := inv_pos.2 h𝔡
+  have hγ0 := GreenStab_clam_pos d 𝔡⁻¹ κ hd0 hΛ hκ
+  refine ⟨GreenStab_clam d 𝔡⁻¹ κ, hγ0, ?_⟩
+  intro 𝔠 sz z hflow t ht0 htT ε₀ hε₀ D hD Φ Ψ hΦ hΨ1 hΨ2 hprem
+  obtain ⟨ε', Kcl, hε'0, hKcl0, hconst⟩ := GreenOff_pin_consts (d := d) hd hκ h𝔡
+  have h𝔠 : 0 < 𝔠 := hflow.1.1
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hsz' : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hsz
+  obtain ⟨hRow, hCol, hQuad, hDiag⟩ := baLDEin_holds d κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT
+  intro τ hτ D' hD'
+  obtain ⟨τ₀, hτ₀0, hτ₀τ, hτ₀c⟩ : ∃ τ₀ : ℝ, 0 < τ₀ ∧ τ₀ ≤ τ / 2 ∧ τ₀ ≤ 𝔠 * ε₀ :=
+    ⟨min (τ / 2) (𝔠 * ε₀), lt_min (by linarith) (mul_pos h𝔠 hε₀), min_le_left _ _, min_le_right _ _⟩
+  have hP1 := GreenOff_whp (m := 2) (GreenOff_card_off sz) hRow hτ₀0
+  have hP2 := GreenOff_whp (m := 2) (GreenOff_card_off sz) hCol hτ₀0
+  have hP3 := GreenOff_whp (m := 1) (fun n => by rw [pow_one, GreenOff_card_vtx sz]) hQuad hτ₀0
+  have hP4 := GreenOff_whp (m := 1) (fun n => by rw [pow_one, GreenOff_card_vtx sz]) hDiag hτ₀0
+  have hP5 := StochDomAt.highProb (show StochDomAt _ sz.size _ _ from hprem) hτ₀0
+  have hE := HighProbAt.inter hsz' hP1 (HighProbAt.inter hsz' hP2 (HighProbAt.inter hsz' hP3 (HighProbAt.inter hsz' hP4 hP5)))
+  filter_upwards [hE D' hD', BAflow_lam0_window κ ε 𝔠 𝔡 sz z hflow, GreenOff_ev_small sz hflow.1 hε₀ hτ₀c hε'0,
+    GreenOff_ev_big sz Kcl hsz hτ hτ₀τ hτ₀0.le, hΦ, hΨ1, hΨ2] with n hEn hg hsm hbg hΦn hΨ1n hΨ2n
+  refine le_trans (MeasureTheory.measure_mono ?_) hEn
+  rintro ω ⟨p, hp⟩ hωE
+  obtain ⟨h1, h2, h3, h4, h5⟩ := hωE
+  obtain ⟨⟨x, y⟩, hxy⟩ := p
+  beta_reduce at hp
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  have hP1' : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ τ₀ := Real.one_le_rpow hN1 hτ₀0.le
+  have hδ0 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀) := Real.rpow_nonneg hW0.le _
+  obtain ⟨hδκ, hC1, hC2, hCl⟩ := hconst _ _ _ hP1' hδ0 hg.1.le hg.2 hsm
+  have hΦ0 : ∀ a b, 0 ≤ Φ n a b := fun a b => (hΦn a b).1.le
+  have hΨpos : 0 < Ψ n := lt_of_lt_of_le (Real.rpow_pos_of_pos hW0 _) hΨ1n
+  have hΨw : Real.sqrt ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ≤ Ψ n := by rw [GreenOff_sqrt_inv_pow hW0]; exact hΨ1n
+  have hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ^ 2 := by
+    have := pow_le_pow_left₀ (Real.sqrt_nonneg _) (hΨw.trans hΨ2n) 2
+    rwa [Real.sq_sqrt (inv_nonneg.2 (pow_nonneg hW0.le _))] at this
+  have hs1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) := Real.one_le_rpow hN1 (by linarith)
+  have hζT := GreenOff_T_le_decayRHS (W := sz.W n) (D := D) hγ0.le hΦ0 hΨpos.le (Sizes.STblk sz n x) (Sizes.STblk sz n y)
+  have hζ0 : 0 ≤ GreenCore_decayRHS d (sz.L n) (sz.W n) (GreenStab_clam d 𝔡⁻¹ κ) D (Φ n) (Ψ n) (Sizes.STblk sz n x)
+      (Sizes.STblk sz n y) := (GreenOff_T_nonneg hΦ0 hΨpos.le _ _).trans hζT
+  by_cases hOm : ∀ x y : Idx d (sz.L n) (sz.W n), ‖(baFMz sz z).GM n (t n) ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)
+  · have hi : (baFMz sz z).indMax n (t n) (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ω = 1 := by simp [FlowFM.indMax, hOm]
+    rw [hi, one_mul] at hp
+    have hsq2 : (((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2)) ^ 2 = ((sz.size n : ℕ) : ℝ) ^ τ₀ := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul (by linarith)]; norm_num
+    have hφ : ∀ a b, ‖(baFMz sz z).L n (t n) ![false, true] ![a, b] ω‖ ≤
+        (((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) * Φ n a b) ^ 2 := fun a b => by
+      have := h5 (a, b)
+      rw [hi, one_mul] at this
+      refine this.trans (le_of_eq ?_)
+      rw [mul_pow, hsq2]
+    have key := GreenOff_carrier_decay hd hκ sz hflow n (ht0 n) (htT n) ω (P := ((sz.size n : ℕ) : ℝ) ^ τ₀)
+      (Ψ := Ψ n) (φ := fun a b => ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) * Φ n a b) hg.1 hg.2 hP1' hδκ hδ0 hwd hOm
+      (fun i j hij => h1 ⟨(i, j), hij⟩) (fun i j hij => h2 ⟨(i, j), hij⟩) h3 h4 hC1
+      (fun a b => mul_nonneg (Real.rpow_nonneg (by linarith) _) (hΦ0 a b)) hφ hΨpos hΨw hC2 x y
+    have hT := GreenOff_T_scale (d := d) (L := sz.L n) (γ := GreenStab_clam d 𝔡⁻¹ κ) (Ψ := Ψ n) hs1 hΦ0 hΨpos.le
+      (Sizes.STblk sz n x) (Sizes.STblk sz n y)
+    have hC0 : 0 ≤ 2 * GreenOff_Cl d κ (BAct_rate d 𝔡⁻¹ κ) (GreenOff_rho d 𝔡⁻¹ κ) (GreenOff_S d 𝔡⁻¹ κ)
+        (((sz.size n : ℕ) : ℝ) ^ τ₀) (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) (BAflowLam0 sz z n) (GreenStab_CTheta d 𝔡⁻¹ κ) :=
+      (mul_nonneg_iff_of_pos_right (GreenOff_T_pos (fun a b => mul_nonneg (Real.rpow_nonneg (by linarith) _) (hΦ0 a b))
+        hΨpos _ _)).1 ((norm_nonneg _).trans key)
+    refine absurd (key.trans ?_) (not_le.2 hp)
+    calc _ ≤ 2 * GreenOff_Cl d κ (BAct_rate d 𝔡⁻¹ κ) (GreenOff_rho d 𝔡⁻¹ κ) (GreenOff_S d 𝔡⁻¹ κ) (((sz.size n : ℕ) : ℝ) ^ τ₀)
+          (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) (BAflowLam0 sz z n) (GreenStab_CTheta d 𝔡⁻¹ κ) *
+          (((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) * GreenCore_decayRHS d (sz.L n) (sz.W n) (GreenStab_clam d 𝔡⁻¹ κ) D (Φ n) (Ψ n)
+            (Sizes.STblk sz n x) (Sizes.STblk sz n y)) :=
+          mul_le_mul_of_nonneg_left (hT.trans (mul_le_mul_of_nonneg_left hζT (by linarith))) hC0
+      _ ≤ (Kcl * ((sz.size n : ℕ) : ℝ) ^ τ₀) * ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2) * GreenCore_decayRHS d (sz.L n) (sz.W n)
+          (GreenStab_CTheta d 𝔡⁻¹ κ |> fun _ => GreenStab_clam d 𝔡⁻¹ κ) D (Φ n) (Ψ n) (Sizes.STblk sz n x) (Sizes.STblk sz n y) := by
+          rw [← mul_assoc]
+          exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCl (by linarith)) hζ0
+      _ = (Kcl * (((sz.size n : ℕ) : ℝ) ^ τ₀ * ((sz.size n : ℕ) : ℝ) ^ (τ₀ / 2))) * GreenCore_decayRHS d (sz.L n) (sz.W n)
+          (GreenStab_clam d 𝔡⁻¹ κ) D (Φ n) (Ψ n) (Sizes.STblk sz n x) (Sizes.STblk sz n y) := by ring
+      _ ≤ _ := mul_le_mul_of_nonneg_right hbg hζ0
+  · have hi : (baFMz sz z).indMax n (t n) (((sz.W n : ℕ) : ℝ) ^ (-ε₀)) ω = 0 := by simp [FlowFM.indMax, hOm]
+    rw [hi, zero_mul] at hp
+    exact absurd hp (not_lt.2 (mul_nonneg (Real.rpow_nonneg (by linarith) _) hζ0))
+
 end Pin
 
 end RBM.BA
