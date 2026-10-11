@@ -337,5 +337,8 @@ end Inst
 #check @RBM.Gauss.Sizes.ST_whp_grid
 #check @RBM.Path.OneStep_sum_coord
 #check @EMn2BA_SB_zero
+#check @baKsol_two
+#check @BAflow_real
+#check @BATheta_hasDerivAt
 
 end RBM.BA
