@@ -332,6 +332,242 @@ theorem baAtom_wedge (K : Matrix (Idx d L W) (Idx d L W) ℂ) (C c r : ℝ) (hc 
 
 end Atoms
 
+/-! ## 4. The pointwise bounds (twin of `AuxGraph` §5, `7_8:914-921`): `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I` -/
+
+section Pointwise
+
+variable {d L W : ℕ} [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+private theorem BAAtom_norm_list_prod (l : List ℂ) : ‖l.prod‖ = (l.map fun z => ‖z‖).prod := by
+  induction l with
+  | nil => simp
+  | cons x l ih => simp [ih]
+
+private theorem BAAtom_list_prod_le_pow (l : List ℝ) (Ψ : ℝ) (h0 : ∀ x ∈ l, 0 ≤ x) (h : ∀ x ∈ l, x ≤ Ψ) :
+    l.prod ≤ Ψ ^ l.length := by
+  induction l with
+  | nil => simp
+  | cons x l ih =>
+    simp only [List.prod_cons, List.length_cons, pow_succ]
+    have hx0 := h0 x (List.mem_cons_self ..)
+    have hx := h x (List.mem_cons_self ..)
+    have hl0 : 0 ≤ l.prod := List.prod_nonneg fun y hy => h0 y (List.mem_cons_of_mem _ hy)
+    have ih' := ih (fun y hy => h0 y (List.mem_cons_of_mem _ hy)) (fun y hy => h y (List.mem_cons_of_mem _ hy))
+    have : 0 ≤ Ψ := hx0.trans hx
+    calc x * l.prod ≤ Ψ * Ψ ^ l.length := mul_le_mul hx ih' hl0 this
+      _ = _ := by ring
+
+private theorem BAAtom_list_prod_fin {α : Type*} (l : List α) (g : α → ℝ) :
+    (l.map g).prod = ∏ j : Fin l.length, g (l.get j) := by
+  rw [← Fin.prod_ofFn]
+  congr 1
+  apply List.ext_getElem <;> simp
+
+/-- The weight of an edge of `J = waved ⊕ mdot ⊕ psi` at the labels `(x, y)` of its ends: the norm of its factor
+(`S`, `S⁺` or `S⁻` for a waved edge, `M` for an `M`-dotted edge, `g Ψ` for a `Ψ`-dotted edge). -/
+def BAAtom_fJ {ι : Type} (Γ : BAGraph E I) (D : BALData ι) : Γ.Jx → ι → ι → ℝ
+  | Sum.inl j, x, y => ‖lwWVal D.toLData (Γ.waved.get j) x y‖
+  | Sum.inr (Sum.inl _), x, y => ‖D.M x y‖
+  | Sum.inr (Sum.inr _), x, y => ‖D.gPsi x y‖
+
+private theorem BAAtom_mdot_norm {ι V : Type*} (D : BALData ι) (ℓ : V → ι) (e : BAMEdge V) :
+    ‖BAMEdge.val D ℓ e‖ = ‖D.M (ℓ e.x) (ℓ e.y)‖ := by
+  unfold BAMEdge.val
+  split_ifs <;> simp
+
+theorem BAAtom_nonneg_fJ {ι : Type} (Γ : BAGraph E I) (D : BALData ι) (j : Γ.Jx) (x y : ι) :
+    0 ≤ BAAtom_fJ Γ D j x y := by
+  rcases j with j | j | j <;> exact norm_nonneg _
+
+/-- The product of the weights of the waved, `Ψ`-dotted and `M`-dotted factors is the product over `J`. -/
+theorem BAAtom_prod_J {ι : Type} [Fintype ι] [DecidableEq ι] (Γ : BAGraph E I) (D : BALData ι) (ℓ : E ⊕ I → ι) :
+    (Γ.waved.map fun e => ‖WEdge.val D.toLData ℓ e‖).prod * (Γ.psi.map fun e => ‖BAPsiEdge.val D ℓ e‖).prod *
+        (Γ.mdot.map fun e => ‖BAMEdge.val D ℓ e‖).prod =
+      ∏ j : Γ.Jx, BAAtom_fJ Γ D j (ℓ (Γ.edgeEnds j).1) (ℓ (Γ.edgeEnds j).2) := by
+  rw [Fintype.prod_sum_type, Fintype.prod_sum_type, BAAtom_list_prod_fin, BAAtom_list_prod_fin,
+    BAAtom_list_prod_fin]
+  simp only [BAAtom_fJ, BAGraph.edgeEnds, BAAtom_mdot_norm]
+  have hw : ∏ j : Fin Γ.waved.length, ‖WEdge.val D.toLData ℓ (Γ.waved.get j)‖ =
+      ∏ j : Fin Γ.waved.length, ‖lwWVal D.toLData (Γ.waved.get j) (ℓ (Γ.waved.get j).x) (ℓ (Γ.waved.get j).y)‖ :=
+    rfl
+  have hp : ∏ j : Fin Γ.psi.length, ‖BAPsiEdge.val D ℓ (Γ.psi.get j)‖ =
+      ∏ j : Fin Γ.psi.length, ‖D.gPsi (ℓ (Γ.psi.get j).x) (ℓ (Γ.psi.get j).y)‖ := rfl
+  rw [hw, hp]
+  ring
+
+/-- A circled solid edge has the factor `(G - M)_{xy}` or its conjugate, `≤ Ψ` by the entry bound. -/
+theorem BAAtom_sedge_le {ι V : Type*} (D : BALData ι) {Ψ : ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ)
+    (ℓ : V → ι) (e : SEdge V) (hc : e.circ = true) : ‖SEdge.val D.toLData ℓ e‖ ≤ Ψ := by
+  unfold SEdge.val
+  dsimp only
+  simp only [hc, ite_true]
+  cases e.σ
+  · simp only [Bool.false_eq_true, ite_false, norm_star]
+    exact hG _ _
+  · simp only [ite_true]
+    exact hG _ _
+
+/-- **The norm of a term against its solid and its `J`-edge factors**: `|term| ≤ |coeff| ∏_{solid} |·| ∏_{J} f_j`
+(the `=`/`×`-dotted factors are `0` or `1`). -/
+theorem BAAtom_term_le0 {ι : Type} [Fintype ι] [DecidableEq ι] (Γ : BAGraph E I) (D : BALData ι) (ℓ : E ⊕ I → ι) :
+    ‖Γ.term D ℓ‖ ≤ ‖Γ.coeff‖ * (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖).prod *
+      ∏ j : Γ.Jx, BAAtom_fJ Γ D j (ℓ (Γ.edgeEnds j).1) (ℓ (Γ.edgeEnds j).2) := by
+  unfold BAGraph.term RBM.Graph.LGraph.term
+  rw [norm_mul, norm_mul, norm_mul, norm_mul, norm_mul, BAAtom_norm_list_prod, BAAtom_norm_list_prod,
+    BAAtom_norm_list_prod, BAAtom_norm_list_prod, BAAtom_norm_list_prod]
+  simp only [List.map_map]
+  have h3 : (Γ.dotted.map ((fun z : ℂ => ‖z‖) ∘ DEdge.val ℓ)).prod ≤ 1 := by
+    have := BAAtom_list_prod_le_pow (Γ.dotted.map ((fun z : ℂ => ‖z‖) ∘ DEdge.val ℓ)) 1 (by
+        intro x hx
+        obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+        exact norm_nonneg _) (by
+        intro x hx
+        obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+        simp only [Function.comp, DEdge.val]
+        split_ifs <;> simp)
+    simpa using this
+  have h0s : 0 ≤ (Γ.solid.map ((fun z : ℂ => ‖z‖) ∘ SEdge.val D.toLData ℓ)).prod :=
+    List.prod_nonneg fun x hx => by
+      obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+      exact norm_nonneg _
+  have hw' : (Γ.waved.map ((fun z : ℂ => ‖z‖) ∘ WEdge.val D.toLData ℓ)).prod =
+      (Γ.waved.map fun e => ‖WEdge.val D.toLData ℓ e‖).prod := rfl
+  have hp' : (Γ.psi.map ((fun z : ℂ => ‖z‖) ∘ BAPsiEdge.val D ℓ)).prod =
+      (Γ.psi.map fun e => ‖BAPsiEdge.val D ℓ e‖).prod := rfl
+  have hm' : (Γ.mdot.map ((fun z : ℂ => ‖z‖) ∘ BAMEdge.val D ℓ)).prod =
+      (Γ.mdot.map fun e => ‖BAMEdge.val D ℓ e‖).prod := rfl
+  have hs' : (Γ.solid.map ((fun z : ℂ => ‖z‖) ∘ SEdge.val D.toLData ℓ)).prod =
+      (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖).prod := rfl
+  rw [hw', hp', hm', hs', ← BAAtom_prod_J]
+  have hwn : 0 ≤ (Γ.waved.map fun e => ‖WEdge.val D.toLData ℓ e‖).prod :=
+    List.prod_nonneg fun x hx => by
+      obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+      exact norm_nonneg _
+  have hpn : 0 ≤ (Γ.psi.map fun e => ‖BAPsiEdge.val D ℓ e‖).prod :=
+    List.prod_nonneg fun x hx => by
+      obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+      exact norm_nonneg _
+  have hmn : 0 ≤ (Γ.mdot.map fun e => ‖BAMEdge.val D ℓ e‖).prod :=
+    List.prod_nonneg fun x hx => by
+      obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+      exact norm_nonneg _
+  have h0d : 0 ≤ (Γ.dotted.map ((fun z : ℂ => ‖z‖) ∘ DEdge.val ℓ)).prod :=
+    List.prod_nonneg fun x hx => by
+      obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+      exact norm_nonneg _
+  have hs0 := h0s
+  rw [hs'] at hs0
+  calc ‖Γ.coeff‖ * (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖).prod *
+        (Γ.waved.map fun e => ‖WEdge.val D.toLData ℓ e‖).prod *
+        (Γ.dotted.map ((fun z : ℂ => ‖z‖) ∘ DEdge.val ℓ)).prod *
+        (Γ.psi.map fun e => ‖BAPsiEdge.val D ℓ e‖).prod * (Γ.mdot.map fun e => ‖BAMEdge.val D ℓ e‖).prod
+      ≤ ‖Γ.coeff‖ * (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖).prod *
+        (Γ.waved.map fun e => ‖WEdge.val D.toLData ℓ e‖).prod * 1 *
+        (Γ.psi.map fun e => ‖BAPsiEdge.val D ℓ e‖).prod * (Γ.mdot.map fun e => ‖BAMEdge.val D ℓ e‖).prod := by
+        gcongr
+    _ = _ := by ring
+
+/-- The solid edges of a normal BA graph are each `≤ Ψ`. -/
+theorem BAAtom_solid_prod_le {ι : Type} [Fintype ι] [DecidableEq ι] (Γ : BAGraph E I) (hN : Γ.Normal)
+    (D : BALData ι) {Ψ : ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (ℓ : E ⊕ I → ι) :
+    (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖).prod ≤ Ψ ^ Γ.nS := by
+  have := BAAtom_list_prod_le_pow (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖) Ψ (by
+      intro x hx
+      obtain ⟨e, _, rfl⟩ := List.mem_map.1 hx
+      exact norm_nonneg _) (by
+      intro x hx
+      obtain ⟨e, he, rfl⟩ := List.mem_map.1 hx
+      exact BAAtom_sedge_le D hG ℓ e (hN.2 e he))
+  simpa [BAGraph.nS] using this
+
+/-- Every `J`-edge within block distance `r` puts every shadow waved edge within `r`. -/
+theorem BAAtom_shadow_conf (Γ : BAGraph E I) (ℓ : E ⊕ I → Idx d L W) (r : ℝ)
+    (hconf : ∀ j : Γ.Jx, (lwBdist d L W (ℓ (Γ.edgeEnds j).1) (ℓ (Γ.edgeEnds j).2) : ℝ) ≤ r) :
+    ∀ e ∈ Γ.shadow.waved, (lwBdist d L W (ℓ e.x) (ℓ e.y) : ℝ) ≤ r := by
+  intro e he
+  simp only [BAGraph.shadow, List.mem_append, List.mem_map] at he
+  rcases he with (he | ⟨e', he', rfl⟩) | ⟨e', he', rfl⟩
+  · obtain ⟨j, rfl⟩ := List.mem_iff_get.1 he
+    exact hconf (Sum.inl j)
+  · obtain ⟨j, rfl⟩ := List.mem_iff_get.1 he'
+    exact hconf (Sum.inr (Sum.inl j))
+  · obtain ⟨j, rfl⟩ := List.mem_iff_get.1 he'
+    exact hconf (Sum.inr (Sum.inr j))
+
+/-- **The solid edges on a confined labelling** (`7_8:914-921`, `B:424`): the solid edges inside a molecule cost `Ψ`, the solid
+edges between two molecules cost `ξ` of the blocks of the molecules (`hξ` and the confinement). -/
+theorem BAAtom_solid_prod_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W)) {Ψ R r : ℝ}
+    {ξ : Zd d L → Zd d L → ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ)
+    (hξ : ∀ (x y : Idx d L W) (a b : Zd d L), (zdistD d L ((split d L W x).1 - a) : ℝ) ≤ R →
+      (zdistD d L ((split d L W y).1 - b) : ℝ) ≤ R → ‖D.G x y - D.M x y‖ ≤ ξ a b)
+    (hr : 0 ≤ r) (hR : (Fintype.card (E ⊕ I) : ℝ) * r ≤ R)
+    (ℓe : E → Idx d L W) (ℓi : I → Idx d L W) (root : LGraph.AuxIMol Γ.shadow → I)
+    (hroot : ∀ c, Γ.shadow.molOf (Sum.inr (root c)) = c.1)
+    (hconf : ∀ e ∈ Γ.shadow.waved, (lwBdist d L W (Sum.elim ℓe ℓi e.x) (Sum.elim ℓe ℓi e.y) : ℝ) ≤ r) :
+    (Γ.solid.map fun e => ‖SEdge.val D.toLData (Sum.elim ℓe ℓi) e‖).prod ≤ Ψ ^ (Γ.nS - Γ.shadow.molSolid.length) *
+      (Γ.shadow.molSolid.map fun e => ξ
+        (LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) e.src)
+        (LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) e.dst)).prod := by
+  classical
+  set ℓ : E ⊕ I → Idx d L W := Sum.elim ℓe ℓi with hℓ
+  set Lab : Γ.shadow.Mol → Zd d L :=
+    LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) with hLab
+  set Pn : SEdge (E ⊕ I) → Bool := fun e => decide (¬ Γ.shadow.InsideMol e.src e.dst) with hPn
+  have hms : Γ.shadow.molSolid = (Γ.solid.filter Pn).map (SEdge.map Γ.shadow.molOf) := rfl
+  set X : SEdge (E ⊕ I) → ℝ := fun e => ξ (Lab (Γ.shadow.molOf e.src)) (Lab (Γ.shadow.molOf e.dst)) with hX
+  have hmsmap : (Γ.shadow.molSolid.map fun e => ξ (Lab e.src) (Lab e.dst)) = (Γ.solid.filter Pn).map X := by
+    rw [hms, List.map_map]; rfl
+  have hmslen : Γ.shadow.molSolid.length = (Γ.solid.filter Pn).length := by rw [hms, List.length_map]
+  rw [hmsmap, hmslen]
+  have hB : (Γ.solid.map fun e => ‖SEdge.val D.toLData ℓ e‖).prod ≤
+      (Γ.solid.map fun e => if Pn e = true then X e else Ψ).prod := by
+    refine auxGraph_list_prod_le _ _ _ (fun e he => norm_nonneg _) (fun e he => ?_)
+    have hc := hN.2 e he
+    by_cases hin : Γ.shadow.InsideMol e.src e.dst
+    · have : Pn e = false := by simp [hPn, hin]
+      simp only [this, Bool.false_eq_true, ite_false]
+      exact BAAtom_sedge_le D hG ℓ e hc
+    · have : Pn e = true := by simp [hPn, hin]
+      simp only [this, ite_true]
+      exact baAtom_sedge_xi D ξ R hξ ℓ (fun v => Lab (Γ.shadow.molOf v))
+        (fun v => auxGraph_lab_close Γ.shadow hN.1 ℓe ℓi root hroot hr hR hconf v) e hc
+  rw [auxGraph_prod_filter] at hB
+  have hlen : Γ.solid.length = Γ.nS := rfl
+  rw [hlen] at hB
+  rw [mul_comm]
+  exact hB
+
+/-- **The pointwise bound on a confined labelling** (`7_8:914-921`): every `J`-edge within block distance `r`:
+`|term ℓ| ≤ |coeff| Ψ^{n_S - |𝒢_ℳ|} ∏_{𝒢_ℳ} ξ ∏_J f_j`, the blocks of the internal molecules being those of the roots. -/
+theorem BAAtom_term_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W)) {Ψ R r : ℝ}
+    {ξ : Zd d L → Zd d L → ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ)
+    (hξ : ∀ (x y : Idx d L W) (a b : Zd d L), (zdistD d L ((split d L W x).1 - a) : ℝ) ≤ R →
+      (zdistD d L ((split d L W y).1 - b) : ℝ) ≤ R → ‖D.G x y - D.M x y‖ ≤ ξ a b)
+    (hr : 0 ≤ r) (hR : (Fintype.card (E ⊕ I) : ℝ) * r ≤ R)
+    (ℓe : E → Idx d L W) (ℓi : I → Idx d L W) (root : LGraph.AuxIMol Γ.shadow → I)
+    (hroot : ∀ c, Γ.shadow.molOf (Sum.inr (root c)) = c.1)
+    (hconf : ∀ j : Γ.Jx, (lwBdist d L W (Sum.elim ℓe ℓi (Γ.edgeEnds j).1) (Sum.elim ℓe ℓi (Γ.edgeEnds j).2) : ℝ) ≤ r) :
+    ‖Γ.term D (Sum.elim ℓe ℓi)‖ ≤ ‖Γ.coeff‖ * Ψ ^ (Γ.nS - Γ.shadow.molSolid.length) *
+      ((Γ.shadow.molSolid.map fun e => ξ
+          (LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) e.src)
+          (LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) e.dst)).prod *
+        ∏ j : Γ.Jx, BAAtom_fJ Γ D j (Sum.elim ℓe ℓi (Γ.edgeEnds j).1) (Sum.elim ℓe ℓi (Γ.edgeEnds j).2)) := by
+  have h1 := BAAtom_term_le0 Γ D (Sum.elim ℓe ℓi)
+  have h2 := BAAtom_solid_prod_conf Γ hN D hG hξ hr hR ℓe ℓi root hroot (BAAtom_shadow_conf Γ _ r hconf)
+  have hP : 0 ≤ ∏ j : Γ.Jx, BAAtom_fJ Γ D j (Sum.elim ℓe ℓi (Γ.edgeEnds j).1) (Sum.elim ℓe ℓi (Γ.edgeEnds j).2) :=
+    Finset.prod_nonneg fun j _ => BAAtom_nonneg_fJ _ _ _ _ _
+  calc ‖Γ.term D (Sum.elim ℓe ℓi)‖ ≤ ‖Γ.coeff‖ * (Γ.solid.map fun e => ‖SEdge.val D.toLData (Sum.elim ℓe ℓi) e‖).prod *
+        ∏ j : Γ.Jx, BAAtom_fJ Γ D j (Sum.elim ℓe ℓi (Γ.edgeEnds j).1) (Sum.elim ℓe ℓi (Γ.edgeEnds j).2) := h1
+    _ ≤ ‖Γ.coeff‖ * (Ψ ^ (Γ.nS - Γ.shadow.molSolid.length) *
+      (Γ.shadow.molSolid.map fun e => ξ
+        (LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) e.src)
+        (LGraph.auxLab Γ.shadow (fun a => (split d L W (ℓe a)).1) (fun c => (split d L W (ℓi (root c))).1) e.dst)).prod) *
+        ∏ j : Γ.Jx, BAAtom_fJ Γ D j (Sum.elim ℓe ℓi (Γ.edgeEnds j).1) (Sum.elim ℓe ℓi (Γ.edgeEnds j).2) := by
+        gcongr
+    _ = _ := by ring
+
+end Pointwise
+
 end RBM.Graph
 
 end
