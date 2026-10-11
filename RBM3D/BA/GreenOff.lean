@@ -1142,6 +1142,83 @@ theorem GreenOff_T_le_decayRHS {L W : ℕ} [NeZero L] {γ D Ψ : ℝ} {Φ : Zd d
     mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (hi _)) hΨ
   linarith
 
+/-- **The constants of the pin**: there are `ε', K` such that whenever `1 ≤ P`, `0 ≤ δ`, `0 ≤ g₀ ≤ Λ` and `√P δ ≤ ε'`, the conditions
+`δ ≤ κ/2`, (C1), (C2) hold and `2 C_ℓ' Φ_N ≤ K Φ_N`. -/
+theorem GreenOff_pin_consts_gen {κ c₀ ρ S CΘ γ Λ : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (hc₀ : 0 < c₀) (hρ0 : 0 ≤ ρ) (hS0 : 0 ≤ S)
+    (hCΘ0 : 0 ≤ CΘ) :
+    ∃ ε' Kcl : ℝ, 0 < ε' ∧ 0 ≤ Kcl ∧ ∀ P δ g₀ : ℝ, 1 ≤ P → 0 ≤ δ → 0 ≤ g₀ → g₀ ≤ Λ → Real.sqrt P * δ ≤ ε' →
+      δ ≤ κ / 2 ∧ 8 * ρ * (c₀⁻¹ * S) * GreenCore_theta d κ P δ g₀ ≤ 1 ∧
+      (1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S * GreenOff_eta d κ c₀ P δ g₀ γ (GreenOff_alpha d κ δ g₀)) ≤ 1 / 2 ∧
+      2 * GreenOff_Cl d κ c₀ ρ S P δ g₀ CΘ ≤ Kcl * P := by
+  have hρh : 0 ≤ c₀⁻¹ * S := mul_nonneg (inv_nonneg.2 hc₀.le) hS0
+  have hA : 0 ≤ c₀⁻¹ * S * c₀⁻¹ * CΘ := by positivity
+  obtain ⟨Keta, hKeta0, hKeta⟩ : ∃ Keta : ℝ, 0 ≤ Keta ∧ Keta = (2 / κ) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) +
+      Real.sqrt 2 * Real.sqrt 13 / κ * (1 + 2 * d * Λ * Real.exp γ / c₀) := ⟨_, by positivity, rfl⟩
+  obtain ⟨Kθ, hKθ0, hKθ⟩ : ∃ Kθ : ℝ, 0 ≤ Kθ ∧ Kθ = (4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 + 26 / κ ^ 2 :=
+    ⟨_, by positivity, rfl⟩
+  obtain ⟨K₁, hK₁0, hK₁⟩ : ∃ K₁ : ℝ, 0 ≤ K₁ ∧ K₁ = 8 * ρ * (c₀⁻¹ * S) * Kθ := ⟨_, by positivity, rfl⟩
+  obtain ⟨K₂, hK₂0, hK₂⟩ : ∃ K₂ : ℝ, 0 ≤ K₂ ∧ K₂ = (1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S) * Keta :=
+    ⟨_, by positivity, rfl⟩
+  obtain ⟨Kcl, hKcl0, hKcl⟩ : ∃ Kcl : ℝ, 0 ≤ Kcl ∧ Kcl = 2 * GreenOff_Cl d κ c₀ ρ S 1 (κ / 2) Λ CΘ := by
+    have h1 := GreenOff_sA_nonneg (d := d) (ρ := ρ) (S := S) (P := 1) (δ := κ / 2) (g₀ := Λ) hκ hc₀ (by positivity) hΛ.le
+    have h2 := GreenOff_sX_nonneg (ρ := ρ) (S := S) (P := 1) hκ hc₀
+    exact ⟨2 * GreenOff_Cl d κ c₀ ρ S 1 (κ / 2) Λ CΘ, by unfold GreenOff_Cl; positivity, rfl⟩
+  refine ⟨min (κ / 2) (min (1 / (2 * (K₂ + 1))) (1 / (K₁ + 1))), Kcl,
+    lt_min (by positivity) (lt_min (by positivity) (by positivity)), hKcl0, ?_⟩
+  intro P δ g₀ hP hδ0 hg0 hgΛ hu
+  have hu1 := hu.trans (min_le_left _ _)
+  have hu2 := hu.trans ((min_le_right _ _).trans (min_le_left _ _))
+  have hu3 := hu.trans ((min_le_right _ _).trans (min_le_right _ _))
+  rw [le_div_iff₀ (by positivity)] at hu2 hu3
+  have ha : 1 ≤ Real.sqrt P := Real.one_le_sqrt.2 hP
+  have hδu : δ ≤ Real.sqrt P * δ := by nlinarith
+  have hδ : δ ≤ κ / 2 := hδu.trans hu1
+  have hPδ : P * δ ^ 2 = (Real.sqrt P * δ) ^ 2 := by rw [mul_pow, Real.sq_sqrt (by linarith)]
+  have hu0 : 0 ≤ Real.sqrt P * δ := by positivity
+  refine ⟨hδ, ?_, ?_, ?_⟩
+  · have h1 := mul_le_mul_of_nonneg_left (GreenOff_theta_le (d := d) (Λ := Λ) (δ := δ) hκ hP hg0 hgΛ) (by positivity :
+      0 ≤ 8 * ρ * (c₀⁻¹ * S))
+    have hu1' : Real.sqrt P * δ ≤ 1 := by linarith [mul_nonneg hK₁0 hu0]
+    have h2 : (Real.sqrt P * δ) ^ 2 ≤ Real.sqrt P * δ := by nlinarith [mul_nonneg hu0 (sub_nonneg.2 hu1')]
+    calc 8 * ρ * (c₀⁻¹ * S) * GreenCore_theta d κ P δ g₀ ≤ 8 * ρ * (c₀⁻¹ * S) * (Kθ * (P * δ ^ 2)) := by
+          rw [hKθ]; exact h1
+      _ = K₁ * (Real.sqrt P * δ) ^ 2 := by rw [hK₁, hPδ]; ring
+      _ ≤ K₁ * (Real.sqrt P * δ) := mul_le_mul_of_nonneg_left h2 hK₁0
+      _ ≤ 1 := by linarith
+  · have h1 := GreenOff_eta_le (d := d) (γ := γ) (Λ := Λ) hκ hc₀ hP hδ0 hg0 hgΛ
+    rw [← hKeta] at h1
+    calc (1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S * GreenOff_eta d κ c₀ P δ g₀ γ (GreenOff_alpha d κ δ g₀)) ≤
+          (1 + c₀⁻¹ * S * c₀⁻¹ * CΘ) * (c₀⁻¹ * S * (Keta * (Real.sqrt P * δ))) :=
+          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left h1 hρh) (by positivity)
+      _ = K₂ * (Real.sqrt P * δ) := by rw [hK₂]; ring
+      _ ≤ 1 / 2 := by linarith
+  · have := GreenOff_Cl_le (d := d) (ρ := ρ) (S := S) hκ hc₀ hP hδ0 hδ hg0 hgΛ hρh hCΘ0
+    rw [hKcl]; linarith
+
+theorem GreenOff_pin_consts (hd : 2 ≤ d) {κ 𝔡 : ℝ} (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
+    ∃ ε' Kcl : ℝ, 0 < ε' ∧ 0 ≤ Kcl ∧ ∀ P δ g₀ : ℝ, 1 ≤ P → 0 ≤ δ → 0 ≤ g₀ → g₀ ≤ 𝔡⁻¹ → Real.sqrt P * δ ≤ ε' →
+      δ ≤ κ / 2 ∧
+      8 * GreenOff_rho d 𝔡⁻¹ κ * ((BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenOff_S d 𝔡⁻¹ κ) * GreenCore_theta d κ P δ g₀ ≤ 1 ∧
+      (1 + (BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenOff_S d 𝔡⁻¹ κ * (BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenStab_CTheta d 𝔡⁻¹ κ) *
+        ((BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenOff_S d 𝔡⁻¹ κ *
+          GreenOff_eta d κ (BAct_rate d 𝔡⁻¹ κ) P δ g₀ (GreenStab_clam d 𝔡⁻¹ κ) (GreenOff_alpha d κ δ g₀)) ≤ 1 / 2 ∧
+      2 * GreenOff_Cl d κ (BAct_rate d 𝔡⁻¹ κ) (GreenOff_rho d 𝔡⁻¹ κ) (GreenOff_S d 𝔡⁻¹ κ) P δ g₀
+        (GreenStab_CTheta d 𝔡⁻¹ κ) ≤ Kcl * P := by
+  have hd0 : 0 < d := by omega
+  have hΛ : 0 < 𝔡⁻¹ := inv_pos.2 h𝔡
+  have hc₀ := BAct_rate_pos d 𝔡⁻¹ κ hd0 hΛ hκ
+  have hμ := BAp5s_rate_pos d 𝔡⁻¹ κ hd0 hΛ hκ
+  have hC5 := BAp5s_C_pos d 𝔡⁻¹ κ hd0 hΛ hκ
+  have hex : ∀ (k : ℕ) (c : ℝ), 0 < c → 0 < expC k c := fun k c hc => by unfold expC; positivity
+  have hS0 : 0 ≤ GreenOff_S d 𝔡⁻¹ κ := (hex (d - 2) (BAct_rate d 𝔡⁻¹ κ / 2) (by positivity)).le
+  have hρ0 : 0 ≤ GreenOff_rho d 𝔡⁻¹ κ :=
+    mul_nonneg (inv_nonneg.2 hc₀.le) (hex (d - 2) (BAct_rate d 𝔡⁻¹ κ) hc₀).le
+  have hCΘ0 : 0 ≤ GreenStab_CTheta d 𝔡⁻¹ κ := by
+    unfold GreenStab_CTheta
+    have := hex (d - 2) (2 * BAp5s_rate d 𝔡⁻¹ κ / 3) (by positivity)
+    positivity
+  exact GreenOff_pin_consts_gen hκ hΛ hc₀ hρ0 hS0 hCΘ0
+
 end Pin
 
 end RBM.BA
