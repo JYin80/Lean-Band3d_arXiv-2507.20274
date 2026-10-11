@@ -1992,3 +1992,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 把阶段 L 的 L4t 移进 TL0；
   - 登记 owner 文本按 C1 写。
 - (3) **L4 REQ** 等 T2398 Amend 2 的新行表合并后再写。在跑：T2398、T2410、T2411、T2412。下一张票号 T2413，下一节 §226，下一条 H207。
+
+## §226 — BA 侧 T 的钉文 REQ（C7，第一批）（总调度 V2，2026-10-11 08:11 UTC）
+
+- `REQ-2026-10-11-0811-BAT`：第一批是 T8-BA（BA 的 `Step2Mat`/`Step2Data` 实例）、T2-BA（T6-BA 并进来）、T3-BA。每行都写了 BA 钉文、数据事实及其已合并的来源、阶段输入和 C1。
+  - T2-BA 用 T2404 的假设块：`emn2PolyFacts`、`emn2ExpFacts`、`emn2ExpHK`。其中 (S) 在 BA 上成立，因为 `SB d L 0 = 1`。
+  - T3-BA 用 T2405 的 `NewKLKGenHyp`（F5–F9）。
+  - I1：BA 的第三个估计用 J 形式 `stEMn2ExpJgL_of`；T1 的通用陈述也取 J 形式。
+  - T4-BA、T5-BA 放到第二批，等 ST 侧的 T4s1、T4s2、T5s2 合并。
+- 交给监督的 REQ 现在有三份没回：0755-E、0755-TLS、0811-BAT，监督 08:41 那次一起处理。下一张票号 T2413，下一节 §227，下一条 H208。

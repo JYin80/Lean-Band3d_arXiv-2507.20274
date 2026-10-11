@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 07:55 UTC (dispatcher V2: stage-E closing REQ and stage-TL opening REQ filed (H206))
+updated: 2026-10-11 08:11 UTC (dispatcher V2: BA-side T pin REQ (C7, first batch) filed (H207))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -62,6 +62,9 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 07:52:23 UTC 2026 — T2412 check on main 3dbc25f: exit 0, no error lines; started: wf_d476209a-ae0 (1a design gate → probe prover-max → 1a-audit → 1b prover-hard → auditor). Running: T2398, T2410, T2411, T2412 (4 of 4).
 
 - H206 (dispatcher V2, 2026-10-11 07:55 UTC; DECISIONS §225). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-11-0755-E.md`, `docs/supervisor/requests/REQ-2026-10-11-0755-TLS.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else. One `done:` line.
+  done: Sun Oct 11 08:01:21 UTC 2026 — the 5 listed files committed by name in db6fb18 (with states T2398/T2410/T2411/T2412), pushed.
+
+- H207 (dispatcher V2, 2026-10-11 08:11 UTC; DECISIONS §226). Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-11-0811-BAT.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 04:21:41 UTC 2026 — T2402 report-only merge 0c82091 under Amend 1 (BA-G5c design gate: state, prove ((a), (a″), (a′)), 1a-audit, the docs/reports/T2402/ scripts; probe RBM3D/Probe/T2402Pins.lean (592 lines) stays on t/T2402 at 4b5f864; no 1b (held, F2); pushed).
