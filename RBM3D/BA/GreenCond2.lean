@@ -1433,4 +1433,165 @@ theorem GreenCond2_avgX_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz
 
 end AvgBounds
 
+/-! ## 7. The exceptional set of `BAFAav` and the bounds off and on it
+
+`GreenCond2_Bad`: the base step `badStep` of the tower over the complement of `{‖G_t - M‖_max ≤ δ}`, together with the family averages
+`Σ_k W^{-d} 1_{k ∈ [β]} Q_k Y_k` of size `≥ lam`.  Off it (`GreenCond2_FAav_det`) `‖⟨M𝒦⟩_a‖ ≤ ρ_row ((2 + c_A + 2 C₁) δ² + 2 lam)`; on it
+(`GreenCond2_FAav_prob`) `P ≤ P(badStep) + (N + N²) W_τ^{-2p}` (Markov for the moment bound, the union over the blocks `β` and the pairs
+`β ≠ α`, `#Z_L^d ≤ N`). -/
+
+section FAav
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {t : ℝ}
+
+/-- The family average `Σ_k W^{-d} 1_{k ∈ [β]} Q_k Y^A_k` of the block `β`. -/
+def GreenCond2_SA (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (β : Zd d (sz.L n)) (ω : (sz.withLam 0).SeqΩ) : ℂ :=
+  ∑ k : Idx d (sz.L n) (sz.W n), (((if (split d (sz.L n) (sz.W n) k).1 = β then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0 : ℝ)) : ℂ) *
+    qRow (sz.withLam 0) n k (fun σ => GreenCond_ΦA sz z n k (GreenCore_Gc sz z n t σ)) ω
+
+/-- The family average `Σ_k W^{-d} 1_{k ∈ [β]} Q_k Y^X_{k,(α,o(k))}` of the block `β` against the block `α`. -/
+def GreenCond2_SX (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (β α : Zd d (sz.L n)) (ω : (sz.withLam 0).SeqΩ) : ℂ :=
+  ∑ k : Idx d (sz.L n) (sz.W n), (((if (split d (sz.L n) (sz.W n) k).1 = β then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0 : ℝ)) : ℂ) *
+    qRow (sz.withLam 0) n k (fun σ => GreenCond_ΦX sz z n α k (GreenCore_Gc sz z n t σ)) ω
+
+/-- **The exceptional set of the averaged law**: the tower base step `badStep` over the complement of `{‖G_t - M‖_max ≤ δ}`, and the
+family averages of size `≥ lam`. -/
+def GreenCond2_Bad (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ε' δ lam : ℝ) : Set (sz.withLam 0).SeqΩ :=
+  badStep (sz.withLam 0) n ε' (GreenCond_badBase sz z n t δ) ∪ (⋃ β : Zd d (sz.L n), {ω | lam ≤ ‖GreenCond2_SA sz z n t β ω‖}) ∪
+    ⋃ p : {p : Zd d (sz.L n) × Zd d (sz.L n) // p.1 ≠ p.2}, {ω | lam ≤ ‖GreenCond2_SX sz z n t p.1.1 p.1.2 ω‖}
+
+/-- **The deterministic bound of `⟨M𝒦⟩_a` off the exceptional set**: `‖⟨M𝒦⟩_a‖ ≤ ρ_row ((2 + c_A + 2 C₁) δ² + 2 lam)`. -/
+theorem GreenCond2_FAav_det {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' lam ρr : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hsqA : Real.sqrt (ε' * GreenCond_QA sz z n t) ≤ δ ^ 2)
+    (hsqX : Real.sqrt (ε' * GreenCond_QX sz z n t) ≤ δ ^ 2) (hlam : 0 ≤ lam) (hρ0 : 0 ≤ ρr)
+    (hρ : ∀ a, ∑ b, ‖BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n) a b‖ ≤ ρr)
+    (ω : (sz.withLam 0).SeqΩ) (hω : ω ∉ GreenCond2_Bad sz z n t ε' δ lam) (a : Zd d (sz.L n)) :
+    ‖GreenMinor_avgK (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n)
+        (BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n)) t (GreenCond_m sz z n) a‖ ≤
+      ρr * ((2 + GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖) * δ ^ 2 +
+        (lam + GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2) +
+        (lam + GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2)) := by
+  have hs0 := norm_nonneg (GreenCond_s sz z n)
+  have hC1 : 0 ≤ GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ := by
+    unfold GreenCond_C1
+    have := GreenCond_cA_nonneg (d := d) (κ := κ) hg0 hs0
+    have := GreenCond_cX_nonneg (d := d) hκ hg0 hs0 (s := ‖GreenCond_s sz z n‖)
+    positivity
+  simp only [GreenCond2_Bad, Set.mem_union, Set.mem_iUnion, Set.mem_setOf_eq, not_or, not_exists, not_le] at hω
+  obtain ⟨⟨hstep, hA⟩, hX⟩ := hω
+  have hbase : ω ∉ GreenCond_badBase sz z n t δ := fun h' => hstep (subset_badStep _ _ _ _ h')
+  have hG := GreenCond_good_of_notMem_badBase sz z n t δ hbase
+  have hslice : ∀ u : Idx d (sz.L n) (sz.W n), (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε' :=
+    fun u => measureReal_rowSlice_le_of_notMem_badStep (sz := sz.withLam 0) (n := n) u hstep
+  refine GreenCond2_avgK_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 (by positivity) (by positivity) ω hG hρ0 (hρ a) ?_ ?_
+  · intro b'
+    exact (GreenCond2_avgA_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' ω hG hwd hslice hsqA b').trans (add_le_add (hA b').le le_rfl)
+  · intro b' hba
+    exact (GreenCond2_avgX_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' ω hG hslice hsqX a b' hba).trans
+      (add_le_add (hX ⟨(b', a), hba⟩).le le_rfl)
+
+
+theorem GreenCond2_exists_ne {L : ℕ} (hd : 1 ≤ d) (hL : 2 ≤ L) (β : Zd d L) : ∃ α : Zd d L, α ≠ β := by
+  refine ⟨β + fun _ => 1, fun h => ?_⟩
+  have h1 := congrFun h ⟨0, hd⟩
+  simp only [Pi.add_apply, add_eq_left] at h1
+  have h2 : ((1 : ℕ) : ZMod L) = 0 := by exact_mod_cast h1
+  rw [ZMod.natCast_eq_zero_iff] at h2
+  have := Nat.le_of_dvd one_pos h2
+  omega
+
+theorem GreenCond2_card_Zd_le (sz : Sizes d) (n : ℕ) : (Fintype.card (Zd d (sz.L n)) : ℝ) ≤ (sz.size n : ℝ) := by
+  have h1 : Fintype.card (Zd d (sz.L n)) = (sz.L n) ^ d := by simp [Zd, ZMod.card]
+  rw [h1]
+  have h2 : (sz.L n) ^ d ≤ (sz.W n * sz.L n) ^ d :=
+    Nat.pow_le_pow_left (Nat.le_mul_of_pos_left _ (sz.W_pos n)) d
+  exact_mod_cast h2
+
+theorem GreenCond2_finDep {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (Φ : Matrix (Vtx d (sz.L n) (sz.W n)) (Vtx d (sz.L n) (sz.W n)) ℂ → ℂ) :
+    FinDep (sz.withLam 0) (fun ω => Φ (GreenCore_Gc sz z n t ω)) := by
+  obtain ⟨I, -, hI⟩ := GreenCond_finDepOffRows sz z n t ∅ Φ
+  refine ⟨I, fun ω ω' hω => ?_⟩
+  have e : ∀ ω : (sz.withLam 0).SeqΩ, GreenCond_Gs sz z n t ∅ ω = GreenCore_Gc sz z n t ω := fun ω => GreenCond_Gs_empty hκ sz h n ht0 ht ω
+  have h1 := hI ω ω' hω
+  simp only [e] at h1
+  exact h1
+
+theorem GreenCond2_bddMeas_famA {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (k : Idx d (sz.L n) (sz.W n)) :
+    BddMeas (sz.withLam 0) (fun σ => GreenCond_ΦA sz z n k (GreenCore_Gc sz z n t σ)) := by
+  have := GreenCond_bddMeas_A sz z n hκ h ht0 ht hg0 k ∅
+  rwa [GreenCond_famS_empty sz z n hκ h ht0 ht] at this
+
+theorem GreenCond2_bddMeas_famX {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (α : Zd d (sz.L n)) (k : Idx d (sz.L n) (sz.W n)) :
+    BddMeas (sz.withLam 0) (fun σ => GreenCond_ΦX sz z n α k (GreenCore_Gc sz z n t σ)) := by
+  have := GreenCond_bddMeas_X sz z n hκ h ht0 ht hg0 α k ∅
+  rwa [GreenCond_famS_empty sz z n hκ h ht0 ht] at this
+
+/-- **The probability of the exceptional set**: `P(Bad) ≤ P(badStep) + (N + N²) W_τ^{-2p}`, from the family gains of the pin (`GreenCond2_prob_famAvg`). -/
+theorem GreenCond2_FAav_prob {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) {δ ε' C Wτ : ℝ} {p : ℕ} (hp1 : 1 ≤ p) (hd : 1 ≤ d) (hδ0 : 0 < δ) (hδ4 : 4 * δ ≤ 1) (hC1 : 1 ≤ C)
+    (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hp : 2 * p ≤ sz.W n ^ d) (hWτ : 1 ≤ Wτ)
+    (hfam : ∀ β α : Zd d (sz.L n), β ≠ α →
+      GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (fun k σ => GreenCond_ΦA sz z n k (GreenCore_Gc sz z n t σ)) (C * δ) (4 * δ) (2 * p) (2 * p) ∧
+      GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (fun k σ => GreenCond_ΦX sz z n α k (GreenCore_Gc sz z n t σ)) (C * δ) (4 * δ) (2 * p) (2 * p)) :
+    (Sizes.seqP (sz.withLam 0)).real (GreenCond2_Bad sz z n t ε' δ (Wτ * (2 * (2 * p) * (2 ^ (2 * p - 1) * (4 * δ) * (C * δ))))) ≤
+      (Sizes.seqP (sz.withLam 0)).real (badStep (sz.withLam 0) n ε' (GreenCond_badBase sz z n t δ)) +
+        ((sz.size n : ℝ) + (sz.size n : ℝ) ^ 2) * (1 / Wτ) ^ (2 * p) := by
+  have hL2 : 2 ≤ sz.L n := by have := sz.three_le_L n; omega
+  have hρB : 0 < 4 * δ * (C * δ) := by positivity
+  have hWd : (0 : ℝ) ≤ (1 / Wτ) ^ (2 * p) := by positivity
+  have hN0 : (0 : ℝ) ≤ (sz.size n : ℝ) := Nat.cast_nonneg _
+  have hcρ : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (4 * δ) ^ 2 := hwd.trans (by nlinarith [sq_nonneg δ])
+  have hcard : (Fintype.card (Zd d (sz.L n)) : ℝ) ≤ (sz.size n : ℝ) := GreenCond2_card_Zd_le sz n
+  -- one block average
+  have hA : ∀ β : Zd d (sz.L n), (Sizes.seqP (sz.withLam 0)).real {ω | Wτ * (2 * (2 * p) * (2 ^ (2 * p - 1) * (4 * δ) * (C * δ))) ≤ ‖GreenCond2_SA sz z n t β ω‖} ≤ (1 / Wτ) ^ (2 * p) := by
+    intro β
+    obtain ⟨α, hα⟩ := GreenCond2_exists_ne hd hL2 β
+    have := GreenCond2_prob_famAvg (sz := sz.withLam 0) (n := n) (A := Iblk d (sz.L n) (sz.W n) β)
+      (Y := fun k σ => GreenCond_ΦA sz z n k (GreenCore_Gc sz z n t σ)) (fun k => ?_) (fun k => ?_) (ρ := 4 * δ) (B := C * δ) (c := (((sz.W n : ℕ) : ℝ) ^ d)⁻¹)
+      (M := 2 * p) (K := 2 * p) (p := p) (T := fun k => if (split d (sz.L n) (sz.W n) k).1 = β then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0)
+      (hfam β α hα.symm).1 le_rfl le_rfl hδ4 hcρ (uniformWeight_blockAvg2 d (sz.L n) (sz.W n) β).toBoundedWeight
+      (hp.trans (card_Iblk d (sz.L n) (sz.W n) β).ge) hp1 hWτ hρB
+    · exact this
+    · exact GreenCond2_bddMeas_famA hκ h ht0 ht hg0 k
+    · exact GreenCond2_finDep hκ h ht0 ht _
+  have hX : ∀ q : {q : Zd d (sz.L n) × Zd d (sz.L n) // q.1 ≠ q.2}, (Sizes.seqP (sz.withLam 0)).real
+      {ω | Wτ * (2 * (2 * p) * (2 ^ (2 * p - 1) * (4 * δ) * (C * δ))) ≤ ‖GreenCond2_SX sz z n t q.1.1 q.1.2 ω‖} ≤ (1 / Wτ) ^ (2 * p) := by
+    intro q
+    have := GreenCond2_prob_famAvg (sz := sz.withLam 0) (n := n) (A := Iblk d (sz.L n) (sz.W n) q.1.1)
+      (Y := fun k σ => GreenCond_ΦX sz z n q.1.2 k (GreenCore_Gc sz z n t σ)) (fun k => ?_) (fun k => ?_) (ρ := 4 * δ) (B := C * δ) (c := (((sz.W n : ℕ) : ℝ) ^ d)⁻¹)
+      (M := 2 * p) (K := 2 * p) (p := p) (T := fun k => if (split d (sz.L n) (sz.W n) k).1 = q.1.1 then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0)
+      (hfam q.1.1 q.1.2 q.2).2 le_rfl le_rfl hδ4 hcρ (uniformWeight_blockAvg2 d (sz.L n) (sz.W n) q.1.1).toBoundedWeight
+      (hp.trans (card_Iblk d (sz.L n) (sz.W n) q.1.1).ge) hp1 hWτ hρB
+    · exact this
+    · exact GreenCond2_bddMeas_famX hκ h ht0 ht hg0 _ k
+    · exact GreenCond2_finDep hκ h ht0 ht _
+  unfold GreenCond2_Bad
+  refine (measureReal_union_le _ _).trans ?_
+  refine (add_le_add (measureReal_union_le _ _) le_rfl).trans ?_
+  have hUA : (Sizes.seqP (sz.withLam 0)).real (⋃ β : Zd d (sz.L n), {ω | Wτ * (2 * (2 * p) * (2 ^ (2 * p - 1) * (4 * δ) * (C * δ))) ≤ ‖GreenCond2_SA sz z n t β ω‖}) ≤
+      (sz.size n : ℝ) * (1 / Wτ) ^ (2 * p) := by
+    refine (measureReal_iUnion_fintype_le _).trans ?_
+    refine (Finset.sum_le_sum fun β _ => hA β).trans ?_
+    rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+    exact mul_le_mul_of_nonneg_right hcard hWd
+  have hUX : (Sizes.seqP (sz.withLam 0)).real (⋃ q : {q : Zd d (sz.L n) × Zd d (sz.L n) // q.1 ≠ q.2}, {ω | Wτ * (2 * (2 * p) * (2 ^ (2 * p - 1) * (4 * δ) * (C * δ))) ≤ ‖GreenCond2_SX sz z n t q.1.1 q.1.2 ω‖}) ≤
+      (sz.size n : ℝ) ^ 2 * (1 / Wτ) ^ (2 * p) := by
+    refine (measureReal_iUnion_fintype_le _).trans ?_
+    refine (Finset.sum_le_sum fun q _ => hX q).trans ?_
+    rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+    refine mul_le_mul_of_nonneg_right ?_ hWd
+    have h1 : Fintype.card {q : Zd d (sz.L n) × Zd d (sz.L n) // q.1 ≠ q.2} ≤ Fintype.card (Zd d (sz.L n) × Zd d (sz.L n)) := Fintype.card_subtype_le _
+    rw [Fintype.card_prod] at h1
+    have h2 : (Fintype.card {q : Zd d (sz.L n) × Zd d (sz.L n) // q.1 ≠ q.2} : ℝ) ≤ (Fintype.card (Zd d (sz.L n)) : ℝ) * Fintype.card (Zd d (sz.L n)) := by
+      exact_mod_cast h1
+    calc (Fintype.card {q : Zd d (sz.L n) × Zd d (sz.L n) // q.1 ≠ q.2} : ℝ) ≤ (Fintype.card (Zd d (sz.L n)) : ℝ) * Fintype.card (Zd d (sz.L n)) := h2
+      _ ≤ (sz.size n : ℝ) * (sz.size n : ℝ) := mul_le_mul hcard hcard (Nat.cast_nonneg _) hN0
+      _ = (sz.size n : ℝ) ^ 2 := by ring
+  linarith [hUA, hUX]
+
+end FAav
+
 end RBM.BA
