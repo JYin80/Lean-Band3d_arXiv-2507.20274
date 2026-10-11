@@ -1728,4 +1728,183 @@ theorem GreenCond_norm_condRow_le' {k : Idx d (sz.L n) (sz.W n)} {F : Sizes.Seq�
 
 end CS
 
+section M5
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {t : ℝ}
+
+/-- `‖G_{xy}‖ ≤ η_t⁻¹` at every sample. -/
+theorem GreenCond_norm_Gc_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (ω : sz.SeqΩ) (x y : Vtx d (sz.L n) (sz.W n)) : ‖GreenCore_Gc sz z n t ω x y‖ ≤ |(GreenCond_zt sz z n t).im|⁻¹ := by
+  rw [← GreenCond_Gs_empty hκ sz h n ht0 ht ω, GreenCond_Gs_eq]
+  exact GreenCond_norm_GsV_le sz z n t (ba_G_data hκ sz h n ht0 ht).2.2.2.1.ne' ω _ x y
+
+theorem GreenCond_measurable_Gc {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (x y : Vtx d (sz.L n) (sz.W n)) : Measurable fun ω : sz.SeqΩ => GreenCore_Gc sz z n t ω x y := by
+  have := GreenCond_measurable_Gs sz z n t ∅ x y
+  simpa only [GreenCond_Gs_empty hκ sz h n ht0 ht] using this
+
+/-- **S3 at every sample**: `A_w = Y^A_w m / G_{ww}`. -/
+theorem GreenCond_Arow_YA {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (σ : sz.SeqΩ) (w : Vtx d (sz.L n) (sz.W n)) :
+    GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) w =
+      GreenMinor_YA (GreenCore_Gc sz z n t σ) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n) (GreenCond_s sz z n) (GreenCond_m sz z n) w *
+        GreenCond_m sz z n / GreenCore_Gc sz z n t σ w w := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  obtain ⟨hGR, hRG, hDM, hMD, hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier hκ sz h n ht0 ht σ (m := GreenCond_m sz z n) (s := GreenCond_s sz z n)
+    (zt := GreenCond_zt sz z n t) rfl rfl rfl
+  have hm0 : GreenCond_m sz z n ≠ 0 := fun h0 => by
+    have := dat.hκm; rw [h0, norm_zero] at this; linarith [dat.hκ]
+  exact GreenMinor_Arow_eq hGR hRG hMD hz hM hMd hD hm0 (hG0 w)
+
+/-- **S3 at every sample**: `𝔛_{wy} = - Y^X_{wy} m / G_{ww}` for `y ≠ w`. -/
+theorem GreenCond_Xrow_YX {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (σ : sz.SeqΩ) {w y : Vtx d (sz.L n) (sz.W n)} (hyw : y ≠ w) :
+    GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) w y =
+      -(GreenMinor_YX (GreenCore_Gc sz z n t σ) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n) (GreenCond_s sz z n) (GreenCond_m sz z n) w y *
+        GreenCond_m sz z n / GreenCore_Gc sz z n t σ w w) := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  obtain ⟨hGR, hRG, hDM, hMD, hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier hκ sz h n ht0 ht σ (m := GreenCond_m sz z n) (s := GreenCond_s sz z n)
+    (zt := GreenCond_zt sz z n t) rfl rfl rfl
+  have hm0 : GreenCond_m sz z n ≠ 0 := fun h0 => by
+    have := dat.hκm; rw [h0, norm_zero] at this; linarith [dat.hκ]
+  exact GreenMinor_Xrow_eq hGR hRG hMD hz hM hMd hD hm0 (hG0 w) hyw
+
+theorem GreenCond_measurable_Arow {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (w : Vtx d (sz.L n) (sz.W n)) :
+    Measurable fun σ : sz.SeqΩ => GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) w := by
+  have e : (fun σ : sz.SeqΩ => GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) w) =
+      fun σ => GreenMinor_YA (GreenCore_Gc sz z n t σ) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n) (GreenCond_s sz z n) (GreenCond_m sz z n) w *
+        GreenCond_m sz z n / GreenCore_Gc sz z n t σ w w := funext fun σ => GreenCond_Arow_YA hκ h ht0 ht hg0 σ w
+  rw [e]
+  exact ((GreenCond_measurable_YA (fun x y => GreenCond_measurable_Gc hκ h ht0 ht x y) _ _ _ _ _).mul_const _).div
+    (GreenCond_measurable_Gc hκ h ht0 ht w w)
+
+theorem GreenCond_measurable_Xrow {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) {w y : Vtx d (sz.L n) (sz.W n)} (hyw : y ≠ w) :
+    Measurable fun σ : sz.SeqΩ => GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) w y := by
+  have e : (fun σ : sz.SeqΩ => GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) w y) =
+      fun σ => -(GreenMinor_YX (GreenCore_Gc sz z n t σ) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n) (GreenCond_s sz z n) (GreenCond_m sz z n) w y *
+        GreenCond_m sz z n / GreenCore_Gc sz z n t σ w w) := funext fun σ => GreenCond_Xrow_YX hκ h ht0 ht hg0 σ hyw
+  rw [e]
+  exact (((GreenCond_measurable_YX (fun x y => GreenCond_measurable_Gc hκ h ht0 ht x y) _ _ _ _ _ _).mul_const _).div
+    (GreenCond_measurable_Gc hκ h ht0 ht w w)).neg
+
+
+/-- `F^A_u = A_u (G_{uu} - m)`, the remainder of (E) for `𝒜'`. -/
+def GreenCond_FA (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (u : Idx d (sz.L n) (sz.W n)) (σ : (GreenCond_sz0 sz).SeqΩ) : ℂ :=
+  GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) *
+    (GreenCore_Gc sz z n t σ (splitEquiv d (sz.L n) (sz.W n) u) (splitEquiv d (sz.L n) (sz.W n) u) - GreenCond_m sz z n)
+
+/-- `F^X_{u,α} = 𝔛_{u,(α,o(u))} (G_{uu} - m)`, the remainder of (E) for `𝔛`. -/
+def GreenCond_FX (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (u : Idx d (sz.L n) (sz.W n)) (α : Zd d (sz.L n)) (σ : (GreenCond_sz0 sz).SeqΩ) : ℂ :=
+  GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2) *
+    (GreenCore_Gc sz z n t σ (splitEquiv d (sz.L n) (sz.W n) u) (splitEquiv d (sz.L n) (sz.W n) u) - GreenCond_m sz z n)
+
+/-- The second-moment bound of `F^A` on a row slice: `(γ + 1)² · 3 (2 + 2 γ² (2dg₀)² N² + 12 γ² N⁴)`, `γ = η_t⁻¹`. -/
+def GreenCond_QA (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) : ℝ :=
+  (|(GreenCond_zt sz z n t).im|⁻¹ + 1) ^ 2 * (3 * (2 + 2 * (|(GreenCond_zt sz z n t).im|⁻¹) ^ 2 * (2 * d * BAflowLam0 sz z n) ^ 2 * (sz.size n : ℝ) ^ 2 +
+    12 * (|(GreenCond_zt sz z n t).im|⁻¹) ^ 2 * (sz.size n : ℝ) ^ 4))
+
+/-- The second-moment bound of `F^X` on a row slice: `(γ + 1)² γ² N²`. -/
+def GreenCond_QX (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) : ℝ :=
+  (|(GreenCond_zt sz z n t).im|⁻¹ + 1) ^ 2 * ((|(GreenCond_zt sz z n t).im|⁻¹) ^ 2 * (sz.size n : ℝ) ^ 2)
+
+theorem GreenCond_QA_pos (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) : 0 < GreenCond_QA sz z n t := by
+  unfold GreenCond_QA; positivity
+
+theorem GreenCond_QX_nonneg (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) : 0 ≤ GreenCond_QX sz z n t := by
+  unfold GreenCond_QX; positivity
+
+/-- A bounded measurable factor `Δ` multiplies the second moment on a row slice by at most `e²`. -/
+theorem GreenCond_moment_mul {sz' : Sizes d} {n' : ℕ} {k : Idx d (sz'.L n') (sz'.W n')} {B Δ : Sizes.SeqΩ sz' → ℂ} (hB : Measurable B) (hΔ : Measurable Δ)
+    {e : ℝ} (hΔe : ∀ σ, ‖Δ σ‖ ≤ e) (ω₀ : Sizes.SeqΩ sz') {Q₀ : ℝ}
+    (hint : Integrable (fun ω' => ‖B (rowSplit sz' n' k ω₀ ω')‖ ^ 2) (Sizes.seqP sz'))
+    (hQ : ∫ ω', ‖B (rowSplit sz' n' k ω₀ ω')‖ ^ 2 ∂(Sizes.seqP sz') ≤ Q₀) :
+    Integrable (fun ω' => ‖B (rowSplit sz' n' k ω₀ ω') * Δ (rowSplit sz' n' k ω₀ ω')‖ ^ 2) (Sizes.seqP sz') ∧
+      ∫ ω', ‖B (rowSplit sz' n' k ω₀ ω') * Δ (rowSplit sz' n' k ω₀ ω')‖ ^ 2 ∂(Sizes.seqP sz') ≤ e ^ 2 * Q₀ := by
+  have hpt : ∀ ω', ‖B (rowSplit sz' n' k ω₀ ω') * Δ (rowSplit sz' n' k ω₀ ω')‖ ^ 2 ≤ e ^ 2 * ‖B (rowSplit sz' n' k ω₀ ω')‖ ^ 2 := fun ω' => by
+    rw [norm_mul, mul_pow, mul_comm]
+    exact mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) (hΔe _) 2) (sq_nonneg _)
+  have hsm := measurable_rowSplit_right sz' n' k ω₀
+  have hmeas : Measurable fun ω' => ‖B (rowSplit sz' n' k ω₀ ω') * Δ (rowSplit sz' n' k ω₀ ω')‖ ^ 2 :=
+    (((hB.comp hsm).mul (hΔ.comp hsm)).norm).pow_const 2
+  have hI := hint.const_mul (e ^ 2)
+  refine ⟨hI.mono' hmeas.aestronglyMeasurable (Eventually.of_forall fun ω' => ?_), ?_⟩
+  · rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]; exact hpt ω'
+  · calc ∫ ω', ‖B (rowSplit sz' n' k ω₀ ω') * Δ (rowSplit sz' n' k ω₀ ω')‖ ^ 2 ∂(Sizes.seqP sz')
+        ≤ ∫ ω', e ^ 2 * ‖B (rowSplit sz' n' k ω₀ ω')‖ ^ 2 ∂(Sizes.seqP sz') := integral_mono (hI.mono' hmeas.aestronglyMeasurable
+          (Eventually.of_forall fun ω' => by rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]; exact hpt ω')) hI hpt
+      _ = e ^ 2 * ∫ ω', ‖B (rowSplit sz' n' k ω₀ ω')‖ ^ 2 ∂(Sizes.seqP sz') := integral_const_mul _ _
+      _ ≤ e ^ 2 * Q₀ := mul_le_mul_of_nonneg_left hQ (sq_nonneg _)
+
+/-- `‖G_{uu} - m‖ ≤ η_t⁻¹ + 1`. -/
+theorem GreenCond_norm_diag_sub_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ω : sz.SeqΩ) (w : Vtx d (sz.L n) (sz.W n)) :
+    ‖GreenCore_Gc sz z n t ω w w - GreenCond_m sz z n‖ ≤ |(GreenCond_zt sz z n t).im|⁻¹ + 1 :=
+  (norm_sub_le _ _).trans (add_le_add (GreenCond_norm_Gc_le hκ h ht0 ht ω w w) (GreenCond_data hκ sz h n ht0 ht hg0).hm1)
+
+theorem GreenCond_measurable_FA {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (u : Idx d (sz.L n) (sz.W n)) : Measurable (GreenCond_FA sz z n t u) :=
+  (GreenCond_measurable_Arow hκ h ht0 ht hg0 _).mul ((GreenCond_measurable_Gc hκ h ht0 ht _ _).sub measurable_const)
+
+theorem GreenCond_measurable_FX {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1) :
+    Measurable (GreenCond_FX sz z n t u α) :=
+  (GreenCond_measurable_Xrow hκ h ht0 ht hg0 (fun h' => hα (congrArg Prod.fst h'))).mul
+    ((GreenCond_measurable_Gc hκ h ht0 ht _ _).sub measurable_const)
+
+theorem GreenCond_FA_moment {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) (ω₀ : (GreenCond_sz0 sz).SeqΩ) :
+    Integrable (fun ω'' => ‖GreenCond_FA sz z n t u (rowSplit (GreenCond_sz0 sz) n u ω₀ ω'')‖ ^ 2) (Sizes.seqP (GreenCond_sz0 sz)) ∧
+    ∫ ω'', ‖GreenCond_FA sz z n t u (rowSplit (GreenCond_sz0 sz) n u ω₀ ω'')‖ ^ 2 ∂(Sizes.seqP (GreenCond_sz0 sz)) ≤ GreenCond_QA sz z n t := by
+  obtain ⟨hi, hI⟩ := GreenCond_Arow_moment sz z n t hκ h ht0 ht hg0 ht1 u ω₀
+  exact GreenCond_moment_mul (sz' := GreenCond_sz0 sz) (k := u) (GreenCond_measurable_Arow hκ h ht0 ht hg0 _)
+    ((GreenCond_measurable_Gc hκ h ht0 ht _ _).sub measurable_const) (fun σ => GreenCond_norm_diag_sub_le hκ h ht0 ht hg0 σ _) ω₀ hi hI
+
+theorem GreenCond_FX_moment {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1)
+    (ω₀ : (GreenCond_sz0 sz).SeqΩ) :
+    Integrable (fun ω'' => ‖GreenCond_FX sz z n t u α (rowSplit (GreenCond_sz0 sz) n u ω₀ ω'')‖ ^ 2) (Sizes.seqP (GreenCond_sz0 sz)) ∧
+    ∫ ω'', ‖GreenCond_FX sz z n t u α (rowSplit (GreenCond_sz0 sz) n u ω₀ ω'')‖ ^ 2 ∂(Sizes.seqP (GreenCond_sz0 sz)) ≤ GreenCond_QX sz z n t := by
+  obtain ⟨-, hi, hI⟩ := GreenCond_Xrow_cond sz z n t hκ h ht0 ht hg0 ht1 u (α, (splitEquiv d (sz.L n) (sz.W n) u).2) ω₀
+  exact GreenCond_moment_mul (sz' := GreenCond_sz0 sz) (k := u) (GreenCond_measurable_Xrow hκ h ht0 ht hg0 (fun h' => hα (congrArg Prod.fst h')))
+    ((GreenCond_measurable_Gc hκ h ht0 ht _ _).sub measurable_const) (fun σ => GreenCond_norm_diag_sub_le hκ h ht0 ht hg0 σ _) ω₀ hi hI
+
+/-- **(m5), `A_u`**: off a row slice of mass `≤ ε'` of the base bad set, `|E_u[A_u Δ_{uu}]| ≤ c_A δ² + √(ε' Q_A)`. -/
+theorem GreenCond_m5_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ)
+    (hslice : (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε') :
+    ‖condRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω‖ ≤
+      2 * (‖GreenCond_s sz z n‖ + 2 * d * BAflowLam0 sz z n) / κ ^ 2 * δ ^ 2 + Real.sqrt (ε' * GreenCond_QA sz z n t) := by
+  obtain ⟨hi, hQ⟩ := GreenCond_FA_moment hκ h ht0 ht hg0 ht1 u ω
+  refine GreenCond_norm_condRow_le' (sz := GreenCond_sz0 sz) (k := u) (GreenCond_measurable_FA hκ h ht0 ht hg0 u) (GreenCond_measurableSet_badBase sz z n t δ)
+    (by have := (GreenCond_data hκ sz h n ht0 ht hg0).hκ; have := norm_nonneg (GreenCond_s sz z n); positivity) (GreenCond_QA_pos sz z n t) hε'
+    (fun σ hσ => ?_) ω hslice hi hQ
+  exact (GreenCond_pointwise_A sz z n t hκ h ht0 ht hg0 hδ0 hδ2 σ (GreenCond_good_of_notMem_badBase sz z n t δ hσ) _).2
+
+/-- **(m5), `𝔛_{uy}`**: the same for `y = (α, o(u))`, `α ≠ [u]`. -/
+theorem GreenCond_m5_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1) (ω : (GreenCond_sz0 sz).SeqΩ)
+    (hslice : (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε') :
+    ‖condRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω‖ ≤
+      2 / κ * ((‖GreenCond_s sz z n‖ + 2 * d * BAflowLam0 sz z n) * (1 / κ + 1) + 4 * d * BAflowLam0 sz z n * δ / κ) * δ ^ 2 +
+        Real.sqrt (ε' * GreenCond_QX sz z n t) := by
+  obtain ⟨hi, hQ⟩ := GreenCond_FX_moment hκ h ht0 ht hg0 ht1 u hα ω
+  have hQ0 : 0 < GreenCond_QX sz z n t := by
+    have dat := GreenCond_data hκ sz h n ht0 ht hg0
+    have hγ : 0 < |(GreenCond_zt sz z n t).im|⁻¹ := inv_pos.2 (abs_pos.2 dat.him.ne')
+    have hN : (0 : ℝ) < (sz.size n : ℝ) := by exact_mod_cast sz.one_le_size n
+    unfold GreenCond_QX
+    set γ : ℝ := |(GreenCond_zt sz z n t).im|⁻¹
+    positivity
+  refine GreenCond_norm_condRow_le' (sz := GreenCond_sz0 sz) (k := u) (GreenCond_measurable_FX hκ h ht0 ht hg0 u hα)
+    (GreenCond_measurableSet_badBase sz z n t δ)
+    (by have := (GreenCond_data hκ sz h n ht0 ht hg0).hκ; have := norm_nonneg (GreenCond_s sz z n); positivity) hQ0 hε'
+    (fun σ hσ => ?_) ω hslice hi hQ
+  exact (GreenCond_pointwise_X sz z n t hκ h ht0 ht hg0 hδ0 hδ2 σ (GreenCond_good_of_notMem_badBase sz z n t δ hσ) _ _
+    (fun h' => hα (congrArg Prod.fst h'))).2
+
+end M5
+
 end RBM.BA
