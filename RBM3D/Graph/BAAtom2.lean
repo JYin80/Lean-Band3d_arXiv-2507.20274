@@ -5,28 +5,36 @@ Authors: Jun Yin
 -/
 import RBM3D.Graph.BAAtom
 import RBM3D.Graph.LWPins
+import RBM3D.Graph.AnpKey6
 
 /-!
 # BA-L3c1 (T2420), part 2: the tail, `(G_by_auxG_BA)`, the nested form, the G4 pin
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`B:line`), `paper/tex/7_8_light_weight.tex` (`7_8:line`):
-`(G_by_auxG_BA)` (`B:486-490`, "by repeating the argument of `GtoAG`", `7_8:907-928`), the bound of the auxiliary graph by
-`Anp` (`B:491-497`).  Part 1 is `Graph/BAAtom` (the vocabulary, `scaleatom`, the pointwise bound on a confined labelling, the
-roots of the molecular forest); this file imports it.  The BA twin of `Graph/AuxGraph` §§8-12.
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`B:line`),
+`paper/tex/7_8_light_weight.tex` (`7_8:line`): `(G_by_auxG_BA)` (`B:486-490`, "by repeating
+the argument of `GtoAG`", `7_8:907-928`), the bound of the auxiliary graph by `Anp`
+(`B:491-497`).  Part 1 is `Graph/BAAtom` (the vocabulary, `scaleatom`, the pointwise bound on a
+confined labelling, the roots of the molecular forest); this file imports it.  It is the BA
+twin of `Graph/AuxGraph` §§8-12.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAAtom_`)
 
-6. **The tail on a non-confined labelling** (twin of `AuxGraph` §8, `7_8:255-258`): the weights `f_j e^{(c/2) d_B}` of the four
-   kernels `S`, `S⁺`, `M`, `g Ψ` (`M`, `g Ψ` offset-diagonal), the pointwise tail bound, the tail sum.
-7. **G3, `(G_by_auxG_BA)`** (`B:486-490`): the main sum, `BAGtoAG`, `baGtoAG_holds` (deterministic form: `‖G - M‖ ≤ Ψ` entrywise,
-   no `hM : M = m I`, window `W^{-d} ≤ A Ψ²`).
-8. **G3 with the constants of the BA model** `baGtoAG_E` (constants of `(d, Λ, κ)` only), `BAAtom_decay_E`.
-9. **The nested form** `baAuxNested_holds` (the walks of `lem:localregular` (3)-(5) of the shadow) and **G4** `BAAnpAux`
-   (`B:491-497`, the pin of L3d1).
+6. **The tail on a non-confined labelling** (twin of `AuxGraph` §8, `7_8:255-258`): the weights
+   `f_j e^{(c/2) d_B}` of the four kernels `S`, `S⁺`, `M`, `g Ψ` (`M`, `g Ψ` offset-diagonal),
+   the pointwise tail bound `BAAtom_term_tail`, the tail sum `BAAtom_tail_sum`.
+7. **G3, `(G_by_auxG_BA)`** (`B:486-490`): the main sum `BAAtom_main_sum`, `BAGtoAG`,
+   `baGtoAG_holds` (deterministic form: `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`, window
+   `W^{-d} ≤ A Ψ²`).
+8. **G3 with the constants of the BA model** `baGtoAG_E` (constants of `(d, Λ, κ)` only),
+   `BAAtom_decay_E`.
+9. **The nested form** `baAuxNested_holds` (the walks of `lem:localregular` (3)-(5) of the
+   shadow) and **G4** `BAAnpAux` (`B:491-497`, the pin of L3d1), proved here in the band-flow form
+   by `baAnpAux_holds` from the merged `lwAnp_holds`.
 10. Compiled instances at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
 
-Paper-delta candidates (report (d)): `T2420a` the auxiliary graph at the molecule centres (retained atoms folded in; same order),
-`T2420b` the window `W^{-d} ≤ A Ψ²`, `A = g² + 1`, `T2420c` the exponent identity `ord Γ - ord Γ^aux = n_S^{within} + 2 (n_W - n_A + n_M)`.
+Paper-delta candidates (report (d)): `T2420a` the auxiliary graph at the molecule centres
+(retained atoms folded in; same order), `T2420b` the window `W^{-d} ≤ A Ψ²`, `A = g² + 1`,
+`T2420c` the exponent identity `ord Γ - ord Γ^aux = n_S^{within} + 2 (n_W - n_A + n_M)`.
 -/
 
 set_option linter.style.setOption false
@@ -644,7 +652,7 @@ theorem baAuxNested_holds : ∀ (p : ℕ) (P : BAPGraph (Fin 2)), 0 < p → (BAS
   intro p P hp hLR hxy
   have hxy' : (BAShadowPG P).g.molOf (Sum.inl ((BAShadowPG P).ext 0)) ≠
       (BAShadowPG P).g.molOf (Sum.inl ((BAShadowPG P).ext 1)) := fun h =>
-    hxy (BAAtom_mol_eq_of_mem P.g ((BAGraph.shadow_molOf_eq_iff P.g _ _).1 h)).symm
+    hxy (BAAtom_mol_eq_of_mem P.g ((BAAtom_shadow_molOf_eq_iff P.g _ _).1 h)).symm
   obtain ⟨Γa, h1, h2, h3, h4⟩ := lwAuxNested_holds p (BAShadowPG P) hp hLR hxy'
   have key : ∀ (q : ℕ) (hq : q = P.g.nM) (Γa : NGraph p q), Γa.NoGhost → Γa.IsNested → Γa.ordN = P.g.auxOrd →
       (∀ {κ : Type} [Fintype κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : P.E' → κ,
@@ -658,12 +666,14 @@ theorem baAuxNested_holds : ∀ (p : ℕ) (P : BAPGraph (Fin 2)), 0 < p → (BAS
     exact ⟨Γa, h1, h2, h3, h4⟩
   exact key _ (BAGraph.shadow_nM P.g) Γa h1 h2 h3 h4
 
-open RBM.Gauss.Sizes in
+section G4
+
+open RBM.Gauss.Sizes
+
 /-- **G4** (`B:491-497`, **the pin of L3d1**): the conclusion of `LWAnp` (`LWPins.lean:409`) for the aux graph of a BA graph, with the
 hypotheses of `LWAnp` (`STFlow`, `LWPsiAll`, `LWXi`) and `n_M ≤ p`.  The sums over the non-centre atoms are not in `auxVal`
-(centre level), so the `NGraph` is `baAuxNested_holds`'s.  The form on the BA flow carrier is fixed by L3c3's 1a.  Owner: L3d1
-(stage L); it is stated here, consumed by no theorem of this file, and `LWAnp d → BAAnpAux d` is `baAuxNested_holds` with the
-band's `LWAnp`. -/
+(centre level), so the `NGraph` is `baAuxNested_holds`'s.  Owner: L3d1 (stage L), whose own content is the form on the BA flow
+carrier (fixed by L3c3's 1a); this band-flow form is proved below by `baAnpAux_holds` from the merged `lwAnp_holds`. -/
 def BAAnpAux (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (p : ℕ) (P : BAPGraph (Fin 2)), 0 < p → P.g.nM ≤ p → (BAShadowPG P).LocReg345 p →
@@ -677,6 +687,27 @@ def BAAnpAux (d : ℕ) : Prop :=
                   (fun n ab ω => P.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = P.ext 0 then ab.1 else ab.2))
                   (fun n ab _ => ((((sz.W n : ℕ) : ℝ) ^ d) * etaT (STflowE z n) (t n))⁻¹ ^ P.g.nM *
                     Φ n (c * ((zdistInf d (sz.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ p * Φ n 0 ^ (P.g.auxOrd - p))
+
+/-- **G4 is a corollary of the merged band lemma `lwAnp_holds` (`AnpKey6.lean:952`) and the nested form**: the nested graph `Γa` of
+`baAuxNested_holds` has the value `Γ^aux` (for the symmetric `ξ` of `LWXi`) and the order `ord Γ^aux`, so the bound of `LWAnp` for
+`Γa` is the bound of `BAAnpAux`.  (The centre-level aux graph carries no sum over non-centre atoms, `B:494`.) -/
+theorem baAnpAux_holds (d : ℕ) : BAAnpAux d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡 p P hp hq hLR hxy ε₀ C₁ C₂ C₃ Cc
+  obtain ⟨Γa, h1, h2, h3, h4⟩ := baAuxNested_holds p P hp hLR hxy
+  obtain ⟨c, hc, H⟩ := lwAnp_holds d hd κ ε 𝔡 hκ hε h𝔡 p P.g.nM hq Γa h1 h2 ε₀ C₁ C₂ C₃ Cc
+  refine ⟨c, hc, fun 𝔠 sz z hz t ht0 ht1 Φ hΦ ξ hξ => ?_⟩
+  have hne : P.ext 1 ≠ P.ext 0 := fun h => hxy (by rw [h])
+  have hfun : (fun (n : ℕ) (ab : Zd d (sz.L n) × Zd d (sz.L n)) (ω : sz.SeqΩ) =>
+      P.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = P.ext 0 then ab.1 else ab.2)) =
+      (fun n ab ω => Γa.val (fun α β => ξ n α β ω) (fun _ => ab.1) (fun _ => ab.2)) := by
+    funext n ab ω
+    have := h4 (fun α β => ξ n α β ω) (fun u v => (hξ.1 n u v ω).2) (fun e => if e = P.ext 0 then ab.1 else ab.2)
+    simp only [ite_true, hne, ite_false] at this
+    exact this.symm
+  rw [hfun, ← h3]
+  exact H 𝔠 sz z hz t ht0 ht1 Φ hΦ ξ hξ
+
+end G4
 
 /-! ## 10. Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, `t = 1/2`, the flow point `P : FlowPt 4 10`)
 
@@ -747,16 +778,16 @@ example : ∃ Γa : NGraph 2 baPQ.g.nM, Γa.NoGhost ∧ Γa.IsNested ∧ Γa.ord
   exact ⟨Γa, h1, h2, h3, by decide, h4 xiInst (fun _ _ => rfl) (fun _ => (0 : Zd 3 4))⟩
 
 open RBM.Gauss.LWInst RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst RBM.Gauss.Sizes in
-/-- **Instance of G4** (`BAAnpAux 3`, the pin of L3d1, not proved here) at `baPQ`, `p = 2`, the band data of `inst_Anp`
-(`LWPins.lean:699`: `sz0`, `z0`, `flow_z0`, `tInst`, `Φ0`, `psiAll0`); the pin `h : BAAnpAux 3` and the edge variables `ξ` with
-`(eq:Gbyxi3)` (`LWXi`, the pin of stage G / L3c3) stay hypotheses, as in `inst_Anp`. -/
-example (h : BAAnpAux 3) (ξ : ∀ n, Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → sz0.SeqΩ → ℝ) (hξ : LWXi sz0 (STflowE z0) tInst Φ0 ξ) :
+/-- **Instance of G4** (`baAnpAux_holds 3`) at `baPQ`, `p = 2`, the band data of `inst_Anp` (`LWPins.lean:699`: `sz0`, `z0`, `flow_z0`,
+`tInst`, `Φ0`, `psiAll0`); only the edge variables `ξ` with `(eq:Gbyxi3)` (`LWXi`, the pin of stage G / L3c3) stay hypotheses, as in
+`inst_Anp`. -/
+example (ξ : ∀ n, Zd 3 (sz0.L n) → Zd 3 (sz0.L n) → sz0.SeqΩ → ℝ) (hξ : LWXi sz0 (STflowE z0) tInst Φ0 ξ) :
     ∃ c : ℝ, 0 < c ∧ Prec sz0 (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
       (fun n ab ω => baPQ.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = baPQ.ext 0 then ab.1 else ab.2))
       (fun n ab _ => ((((sz0.W n : ℕ) : ℝ) ^ 3) * etaT (STflowE z0 n) (tInst n))⁻¹ ^ baPQ.g.nM *
         Φ0 n (c * ((zdistInf 3 (sz0.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ 2 * Φ0 n 0 ^ (baPQ.g.auxOrd - (2 : ℕ))) := by
-  obtain ⟨c, hc, H⟩ := h le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 baPQ (by norm_num)
-    (by decide) localReg2_inst_Q_locReg345 (by decide) (1 / 20) 2 2 1 (fun _ => 1)
+  obtain ⟨c, hc, H⟩ := baAnpAux_holds 3 le_rfl (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) 2 baPQ
+    (by norm_num) (by decide) localReg2_inst_Q_locReg345 (by decide) (1 / 20) 2 2 1 (fun _ => 1)
   exact ⟨c, hc, H (1 / 6) sz0 z0 flow_z0 tInst tInst_range.1 tInst_range.2 Φ0 psiAll0 ξ hξ⟩
 
 end BAAtomInst2

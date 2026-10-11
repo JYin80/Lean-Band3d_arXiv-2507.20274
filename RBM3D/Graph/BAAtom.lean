@@ -10,22 +10,31 @@ import RBM3D.BA.GreenSchur
 /-!
 # BA-L3c1 (T2420), part 1: atoms and the auxiliary graph at BA
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (cited `B:line`) and `paper/tex/7_8_light_weight.tex`
-(`7_8:line`): `scaleatom` (`B:317-318`), `Gyiyjatom`, `Gyiyjatom2` (`B:424`, `B:432`), the auxiliary graph of a BA graph
-(`B:436-449`, `(eq:ordGaux_BAM)`, `B:486`), `(G_by_auxG_BA)` (`B:486-490`, "by repeating the argument of `GtoAG`").
-Part 2 is `Graph/BAAtom2` (it imports this file).  The BA twin of `Graph/AuxGraph` §§1-2, §3, §5-7.
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`B:line`) and
+`paper/tex/7_8_light_weight.tex` (`7_8:line`): `scaleatom` (`B:317-318`), `Gyiyjatom`,
+`Gyiyjatom2` (`B:424`, `B:432`), the auxiliary graph of a BA graph (`B:436-449`,
+`(eq:ordGaux_BAM)`, `B:486`), `(G_by_auxG_BA)` (`B:486-490`, "by repeating the argument of
+`GtoAG`").  Part 2 is `Graph/BAAtom2` (it imports this file).  This file is the BA twin of
+`Graph/AuxGraph` §§1-2, §3, §5-7; there is nothing to port from RBM1D/RBM2D.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAAtom_`)
 
-1. **Vocabulary.**  `BAGraph.shadow` (every `M`- and `Ψ`-dotted edge also a waved edge: the molecules, `n_M`, `IsExtMol`, `molSolid` are
-   those of the band graph `shadow`), `BAGraph.auxVal`, `BAGraph.auxOrd`, `BAShadowPG`.
-2. **The order comparison** `BAGraph.scalingOrder_sub_auxOrd`, `BAGraph.auxOrd_le_scalingOrder` (twin of `AuxGraph` §2).
-3. **`scaleatom`, `Gyiyjatom`, `Gyiyjatom2`** (the four `baAtom_*` statements).
-4. **The pointwise bound on a confined labelling** (twin of `AuxGraph` §5 with `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`).
-5. **The roots of the molecular forest and the sum over the children** (twin of `AuxGraph` §6-7, per-edge constants).
+1. **Vocabulary.**  `BAGraph.shadow` (every `M`- and `Ψ`-dotted edge also a waved edge: the
+   molecules, `n_M`, `IsExtMol`, `molSolid` are those of the band graph `shadow`),
+   `BAGraph.auxVal`, `BAGraph.auxOrd`, `BAShadowPG`.
+2. **The order comparison** `BAGraph.scalingOrder_sub_auxOrd`, `BAGraph.auxOrd_le_scalingOrder`
+   (twin of `AuxGraph` §2).
+3. **`scaleatom`, `Gyiyjatom`, `Gyiyjatom2`**: `baAtom_offset`, `baAtom_dist`,
+   `baAtom_sedge_xi`, `baAtom_wedge`; `BAAtom_offdiag_E` (`M`, `g₀ Ψ` offset-diagonal).
+4. **The pointwise bound on a confined labelling** `BAAtom_term_conf` (twin of `AuxGraph` §5
+   with `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`).
+5. **The roots of the molecular forest and the sum over the children** `BAAtom_exists_roots`,
+   `BAAtom_forest_roots`, `BAAtom_sum_J` (twin of `AuxGraph` §6-7 with per-edge constants).
+6. Compiled instances at `d = 3`, `L = 4`, `W = 2`.
 
-The centre-level auxiliary graph is the band's on `BAGraph.shadow`: the retained atoms `x_{i,j}` of `B:448` are folded into the
-molecule centre (paper-delta candidate `T2420a`); the orders agree (`T2420`, report (a) E2).
+The centre-level auxiliary graph is the band's on `BAGraph.shadow`: the retained atoms
+`x_{i,j}` of `B:448` are folded into the molecule centre (paper-delta candidate `T2420a`); the
+orders agree (report (a), E2).
 -/
 
 set_option linter.style.setOption false
@@ -66,7 +75,7 @@ def BAGraph.auxVal {κ : Type} [Fintype κ] (Γ : BAGraph E I) (ξ : κ → κ �
 def BAGraph.auxOrd (Γ : BAGraph E I) : ℤ := Γ.shadow.auxOrd
 
 /-- The shadow has the adjacency of `Γ`: waved, `=`-dotted, `Ψ`-dotted and `M`-dotted edges join. -/
-theorem BAGraph.shadow_adj (Γ : BAGraph E I) (u v : E ⊕ I) : Γ.shadow.adj u v = Γ.adj u v := by
+theorem BAAtom_shadow_adj (Γ : BAGraph E I) (u v : E ⊕ I) : Γ.shadow.adj u v = Γ.adj u v := by
   simp only [BAGraph.adj, LGraph.adj, BAGraph.atomAdj, BAGraph.shadow, List.any_append, List.any_map,
     Function.comp_def]
   rw [Bool.eq_iff_iff]
@@ -77,7 +86,7 @@ theorem BAGraph.shadow_adj (Γ : BAGraph E I) (u v : E ⊕ I) : Γ.shadow.adj u 
 theorem BAGraph.shadow_mol (Γ : BAGraph E I) (v : E ⊕ I) : Γ.shadow.mol v = Γ.mol v := by
   have h : Γ.shadow.step = Γ.step := by
     funext s
-    simp only [LGraph.step, BAGraph.step, BAGraph.shadow_adj]
+    simp only [LGraph.step, BAGraph.step, BAAtom_shadow_adj]
   unfold LGraph.mol BAGraph.mol
   rw [h]
 
@@ -88,12 +97,9 @@ theorem BAGraph.shadow_nM (Γ : BAGraph E I) : Γ.shadow.nM = Γ.nM := by
   rw [h]
 
 /-- Two vertices are in one molecule of the shadow iff one is in the molecule of the other. -/
-theorem BAGraph.shadow_molOf_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
+theorem BAAtom_shadow_molOf_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
     Γ.shadow.molOf u = Γ.shadow.molOf v ↔ v ∈ Γ.mol u := by
   rw [Γ.shadow.molOf_eq_iff, BAGraph.shadow_mol]
-
-/-- The shadow has the same dotted edges: no `=`-dotted edge if `Γ` is normal. -/
-theorem BAGraph.shadow_dotted (Γ : BAGraph E I) : Γ.shadow.dotted = Γ.dotted := rfl
 
 /-- The auxiliary graph has a non-negative value for non-negative edge variables. -/
 theorem BAGraph.auxVal_nonneg {κ : Type} [Fintype κ] (Γ : BAGraph E I) (ξ : κ → κ → ℝ)
@@ -120,11 +126,11 @@ theorem BAAtom_mol_eq_of_mem (Γ : BAGraph E I) {v w : E ⊕ I} (h : w ∈ Γ.mo
   · intro hx; exact (hsymm h).trans hx
 
 /-- If distinct external vertices lie in distinct molecules of `Γ`, they lie in distinct molecules of the shadow. -/
-theorem BAGraph.shadow_ext (Γ : BAGraph E I)
+theorem BAAtom_shadow_ext (Γ : BAGraph E I)
     (hext : ∀ a b : E, Γ.mol (Sum.inl a) = Γ.mol (Sum.inl b) → a = b) :
     ∀ a b : E, Γ.shadow.molOf (Sum.inl a) = Γ.shadow.molOf (Sum.inl b) → a = b := by
   intro a b h
-  rw [BAGraph.shadow_molOf_eq_iff] at h
+  rw [BAAtom_shadow_molOf_eq_iff] at h
   exact hext a b (BAAtom_mol_eq_of_mem Γ h).symm
 
 end Vocab
@@ -987,7 +993,7 @@ example : (∀ v, Gstar.shadow.mol v = Gstar.mol v) ∧ Gstar.shadow.nM = Gstar.
   have h3 : Gstar.nS = 4 ∧ Gstar.nW = 3 ∧ Gstar.nA = 3 ∧ Gstar.nM = 1 := by decide
   have h4 : Gstar.scalingOrder = 4 := by simp [BAGraph.scalingOrder, BAGraph.counters, h3.1, h3.2.1, h3.2.2.1, ord]
   have h5 : Gstar.auxOrd = 1 := by simp [BAGraph.auxOrd, LGraph.auxOrd, h1, h2, ord]
-  exact ⟨BAGraph.shadow_mol Gstar, BAGraph.shadow_nM Gstar, BAGraph.shadow_ext Gstar Gstar_ext,
+  exact ⟨BAGraph.shadow_mol Gstar, BAGraph.shadow_nM Gstar, BAAtom_shadow_ext Gstar Gstar_ext,
     Gstar.scalingOrder_sub_auxOrd, Gstar.auxOrd_le_scalingOrder Gstar_normal, h3, h1, h4, h5, by rw [h4, h5]; norm_num,
     Gstar.molSolid_length_le, Gstar.auxVal_nonneg xiInst (fun _ _ => by norm_num [xiInst]) _⟩
 
