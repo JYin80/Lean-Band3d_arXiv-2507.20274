@@ -1049,8 +1049,8 @@ def BAGraph.BAScost_trA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
     [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 p.1.dst)]
 
-/-- **The macro (a) intermediate** (T2395 K2(a); `BAGraph.BAScost_trA` has the edges of the `M`-branch `M_{αy}` of `lanlwT1`, `B:363`, the `M`-dotted
-list in another order): `Σ_{α,β} M_{xα} M_{αy} S_{αβ} Ǧ_{ββ} f` at a blue circled edge `Ǧ_{xy}`.  Local lemma in both regimes, no atom hypothesis: if `[x] = [y]`
+/-- **The macro (a) intermediate** (T2395 K2(a); `BAGraph.BAScost_trA` has the solid and waved edges of the `M`-branch `M_{αy}` of `lanlwT1`, `B:363`,
+compiled at `Γ*` in `BAScostInst`; its `M`-dotted list is `[M_{xα}, M_{αy}]`): `Σ_{α,β} M_{xα} M_{αy} S_{αβ} Ǧ_{ββ} f` at a blue circled edge `Ǧ_{xy}`.  Local lemma in both regimes, no atom hypothesis: if `[x] = [y]`
 (a within-atom edge; the macro step) the edge is a circled loop of the atomic image and the image of `tr` is the band's `MoveLoop(z = [x])`
 (`scostLL_moveLoop`, `LocalRegular6b.lean:638`, by import); if `[x] ≠ [y]` (`E1`, the extra output of `lanlw`: the band's `×`-dot forbids it) the image is
 `Loop(z = [x])` (`scostLL_loop`, `LocalRegular6b.lean:621`) with the edge `[x] → [y]` dropped (`[x]`, `[y]` are in one class at every merge of `tr`). -/
@@ -1445,6 +1445,10 @@ example : BAScostLL gs (gs.BAScost_trA ps) := BAScostLL_macroA gs ps ps_mem ⟨r
 /-- **`macroB`** at the split pair `Ǧ_{ay}`, `Ǧ_{y'a'}` with `a = 2`, `a' = 3` in one atom -/
 example : BAScostLL gc (gc.BAScost_trB pc qc) :=
   BAScostLL_macroB gc pc qc pc_mem qc_mem ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ gc_same gc_wf1 gc_wf2
+
+/-- the transfer graph of macro step (a) at `Γ*` has the solid and the waved edges of the `M`-branch of `lanlwT1` (the second term of its `G = Ǧ + M`) -/
+example : ((BAGraph.lanlwT1 gs ps).splitG[1]'(by decide)).solid = (gs.BAScost_trA ps).solid ∧
+    ((BAGraph.lanlwT1 gs ps).splitG[1]'(by decide)).waved = (gs.BAScost_trA ps).waved := ⟨rfl, rfl⟩
 
 /-- **`macroB`** at `Γ*` (the parameters of the preflight: `a = a' = 2`, `y = 1`, `y' = 0`, three distinct atoms) -/
 example : BAScostLL gs (gs.BAScost_trB ps qs) :=
