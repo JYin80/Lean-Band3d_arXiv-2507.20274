@@ -25,8 +25,8 @@ resolvent of the principal submatrix on the sites outside `S`, zero-padded.
   satisfies `GreenMinor_Tower ((H - z)⁻¹) (GreenMinor_Gs H z)` for Hermitian `H` and `Im z ≠ 0`
   (`GreenMinor_tower`), and at the BA carrier (`GreenMinor_tower_carrier`).
 
-Every target theorem has a compiled nonempty instance in the last section (`d = 3`, `L = 3`, `W = 2`;
-the BA carrier `sz0`).
+Every target theorem has a compiled nonempty instance in the last section (`d = 3`, `L = 3`,
+`W = 2`; the BA carrier `sz0`).
 -/
 
 set_option linter.style.longLine false

@@ -374,10 +374,11 @@ end BaseBounds
 
 /-! ## 3. Nonempty instances
 
-The hand-made datum of file 1 (`GreenMinorInst`: `d = 3`, `L = 3`, `W = 2`, `m = i`, `Δ = ε (E_{pq} + E_{qp})`, `ε = 1/100`) with the
-explicit tower `hGs` of `G = M + Δ` (removing `q` turns `G_{pp}` into `m - ε²/m`): S2 (`κ = 1/2`, `δ = 1/100`, `m₀ = 3`) and the base
-bounds of S3.  The BA carrier (`sz0` at `n = 0`: `L = 4`, `W = 32`; the flow `flow_sz0`, `κ = 1/2`, `t = 1/2`, every sample `ω`): the
-four identities of S3. -/
+Datum 1 (the hand-made datum of file 1, `GreenMinorInst`: `d = 3`, `L = 3`, `W = 2`, `m = i`, `Δ = ε (E_{pq} + E_{qp})`, `ε = 1/100`)
+with the explicit tower `hGs` of `G = M + Δ` (removing `q` turns `G_{pp}` into `m - ε²/m`): S2 (`κ = 1/2`, `δ = 1/100`, `m₀ = 3`) and the
+base bounds of S3.  Datum 2 (a real resolvent `G = (H - i)⁻¹`, `H = ε J_C`, below; also the datum of the S4 instance of file 3): R1, S2 and
+the base bounds of S3 with the real minors.  Datum 3 (the BA carrier: `sz0` at `n = 0`, `L = 4`, `W = 32`; the flow `flow_sz0`, `κ = 1/2`,
+`t = 1/2`, every sample `ω`): the four identities of S3. -/
 
 namespace GreenMinorInst
 
