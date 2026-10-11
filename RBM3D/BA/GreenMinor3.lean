@@ -961,7 +961,8 @@ end CarrierInst
 The datum is that of `BA/GreenMinor2.lean` (`GreenMinorInst.hH`): `H = ε J_C` on the cluster `C = {p, q, y}` (`p = (0, 0)`, `q = (0, 1)` a
 protected row of `R_{0,0}`, `y = (e_0, 0)` of offset `0` in another block), `ε = 1/100`, `z = i`, `G = (H - i)⁻¹ = i I + c J_C`, `M = i I`,
 `Δ = c J_C ≠ 0`.  The minors are the real ones (`GreenMinor_Gs`, R1): the tower is `GreenMinor_tower`, the good event is S2, and S4 is applied at
-`u = p`, `l = [q]`, `g₀ = 1/10`, `s = m = i`; `Δ_{pq}, Δ_{qy} ≠ 0`, so the removal of `q` changes `Y^X_{py}` (`Δ_q Δ_{py} = G_{pq} G_{qy}/G_{qq}`). -/
+`u = p`, `l = [q]`, `g₀ = 1/10`, `s = m = i`; `G_{pq} = G_{qy} = c ≠ 0`, so the removal of `q` changes the entries `Δ_{ab}`,
+`a, b ∈ {p, y}`, that enter `Y^X_{py}` (`Δ_q Δ_{ab} = G_{aq} G_{qb}/G_{qq}`). -/
 
 
 section RealResolvent
