@@ -1082,4 +1082,355 @@ theorem GreenCond_E_X_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz �
 
 end Decomp
 
+/-! ## 6. The offset averages: the row `ℓ¹` bound of `M^{(B)}` for every `d ≥ 1`, the Markov bound for the family average, `⟨M𝒦⟩_a`
+
+`GreenCond2_row_l1` is `baM_row_l1` (`BA/GreenStab.lean:116`, `2 ≤ d`) for every `d ≥ 1`: the decay `BAMB_decay_large` (`0 < d`) and the product
+bound `Σ_{b ∈ Z_L^d} e^{-c|a - b|₁} ≤ ((1 + e^{-c})/(1 - e^{-c}))^d` (uniform in `L`).  `GreenCond2_prob_famAvg` is Markov for the moment bound
+`GreenCond2_famAvg_moment`.  `GreenCond2_avgK_le` bounds `⟨M𝒦⟩_a` from the offset averages of `𝒜'` and `𝔛` through the exact identity
+`GreenMinor_avg_split`; `GreenCond2_avgA_le`, `GreenCond2_avgX_le` bound these averages by the family averages and `C₁ δ²` (§5). -/
+
+section RowL1
+
+/-- The one-dimensional torus sum: `Σ_{j ∈ Z_L} e^{-c|j|} ≤ (1 + e^{-c})/(1 - e^{-c})`, uniformly in `L`. -/
+theorem GreenCond2_sum_zmod_exp (L : ℕ) [NeZero L] {c : ℝ} (hc : 0 < c) :
+    ∑ j : ZMod L, Real.exp (-c * (zdist L j : ℝ)) ≤ (1 + Real.exp (-c)) / (1 - Real.exp (-c)) := by
+  set r : ℝ := Real.exp (-c) with hr
+  have hr0 : 0 < r := Real.exp_pos _
+  have hr1 : r < 1 := by
+    calc r < Real.exp 0 := Real.exp_lt_exp.2 (by linarith)
+      _ = 1 := Real.exp_zero
+  have h1r : 0 < 1 - r := by linarith
+  have hpow : ∀ v : ℕ, Real.exp (-c * (v : ℝ)) = r ^ v := fun v => by
+    rw [hr, ← Real.exp_nat_mul]; ring_nf
+  have hpt : ∀ j : ZMod L, Real.exp (-c * (zdist L j : ℝ)) ≤ r ^ j.val + r ^ (L - j.val) := by
+    intro j
+    rw [hpow]
+    unfold zdist
+    rcases le_total j.val (L - j.val) with h | h
+    · rw [min_eq_left h]; exact le_add_of_nonneg_right (pow_nonneg hr0.le _)
+    · rw [min_eq_right h]; exact le_add_of_nonneg_left (pow_nonneg hr0.le _)
+  have hinj : Function.Injective (fun j : ZMod L => j.val) := ZMod.val_injective L
+  have h1 : ∑ j : ZMod L, (r ^ j.val + r ^ (L - j.val)) ≤ ∑ v ∈ Finset.range L, (r ^ v + r ^ (L - v)) := by
+    have e : ∑ j : ZMod L, (r ^ j.val + r ^ (L - j.val)) = ∑ v ∈ Finset.univ.image (fun j : ZMod L => j.val), (r ^ v + r ^ (L - v)) :=
+      (Finset.sum_image (f := fun v : ℕ => r ^ v + r ^ (L - v)) (s := (Finset.univ : Finset (ZMod L))) (g := fun j : ZMod L => j.val)
+        (fun a _ b _ h => hinj h)).symm
+    rw [e]
+    refine Finset.sum_le_sum_of_subset_of_nonneg ?_ (fun _ _ _ => by positivity)
+    intro v hv
+    obtain ⟨j, -, rfl⟩ := Finset.mem_image.1 hv
+    exact Finset.mem_range.2 (ZMod.val_lt j)
+  have hg : ∑ v ∈ Finset.range L, r ^ v ≤ 1 / (1 - r) := by
+    rw [geom_sum_eq hr1.ne]
+    have e : (r ^ L - 1) / (r - 1) = (1 - r ^ L) / (1 - r) := by
+      rw [div_eq_div_iff (by linarith) (by linarith)]; ring
+    rw [e]
+    exact div_le_div_of_nonneg_right (by linarith [pow_nonneg hr0.le L]) h1r.le
+  have hg2 : ∑ v ∈ Finset.range L, r ^ (L - v) = r * ∑ v ∈ Finset.range L, r ^ v := by
+    have e : ∑ v ∈ Finset.range L, r ^ (L - v) = ∑ v ∈ Finset.range L, (fun w : ℕ => r ^ (w + 1)) (L - 1 - v) := by
+      refine Finset.sum_congr rfl fun v hv => ?_
+      have := Finset.mem_range.1 hv
+      simp only
+      congr 1
+      omega
+    rw [e, Finset.sum_range_reflect (fun w : ℕ => r ^ (w + 1)) L, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun v _ => by ring
+  calc ∑ j : ZMod L, Real.exp (-c * (zdist L j : ℝ)) ≤ ∑ j : ZMod L, (r ^ j.val + r ^ (L - j.val)) := Finset.sum_le_sum fun j _ => hpt j
+    _ ≤ ∑ v ∈ Finset.range L, (r ^ v + r ^ (L - v)) := h1
+    _ = ∑ v ∈ Finset.range L, r ^ v + r * ∑ v ∈ Finset.range L, r ^ v := by rw [Finset.sum_add_distrib, hg2]
+    _ ≤ 1 / (1 - r) + r * (1 / (1 - r)) := add_le_add hg (mul_le_mul_of_nonneg_left hg hr0.le)
+    _ = (1 + r) / (1 - r) := by field_simp
+
+/-- The torus sum `Σ_b e^{-c|a - b|₁} ≤ ((1 + e^{-c})/(1 - e^{-c}))^d`, for every `d`, uniformly in `L`. -/
+theorem GreenCond2_sum_exp_le (d L : ℕ) [NeZero L] {c : ℝ} (hc : 0 < c) (a : Zd d L) :
+    ∑ b : Zd d L, Real.exp (-c * (zdistD d L (a - b) : ℝ)) ≤ ((1 + Real.exp (-c)) / (1 - Real.exp (-c))) ^ d := by
+  have e1 : ∑ b : Zd d L, Real.exp (-c * (zdistD d L (a - b) : ℝ)) = ∑ x : Zd d L, Real.exp (-c * (zdistD d L x : ℝ)) :=
+    Equiv.sum_comp (Equiv.subLeft a) (fun x : Zd d L => Real.exp (-c * (zdistD d L x : ℝ)))
+  have e2 : ∀ x : Zd d L, Real.exp (-c * (zdistD d L x : ℝ)) = ∏ i, Real.exp (-c * (zdist L (x i) : ℝ)) := by
+    intro x
+    rw [← Real.exp_sum]
+    congr 1
+    unfold zdistD
+    push_cast
+    rw [Finset.mul_sum]
+  have e3 : ∑ x : Zd d L, ∏ i, Real.exp (-c * (zdist L (x i) : ℝ)) = ∏ i : Fin d, ∑ j : ZMod L, Real.exp (-c * (zdist L j : ℝ)) := by
+    rw [Finset.prod_univ_sum (fun _ : Fin d => (Finset.univ : Finset (ZMod L))) (fun _ j => Real.exp (-c * (zdist L j : ℝ)))]
+    rw [Fintype.piFinset_univ]
+  rw [e1]
+  simp only [e2]
+  rw [e3, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+  exact pow_le_pow_left₀ (Finset.sum_nonneg fun _ _ => (Real.exp_pos _).le) (GreenCond2_sum_zmod_exp L hc) d
+
+/-- **The `ℓ¹` row of `M^{(B)}` for every `d ≥ 1`** (the decay `BAMB_decay_large`, `0 < d`, and the product bound on the torus; the merged
+`baM_row_l1` is for `2 ≤ d`): `Σ_b |M_ab| ≤ c₀⁻¹ ((1 + e^{-c₀})/(1 - e^{-c₀}))^d`. -/
+theorem GreenCond2_row_l1 (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (hd : 0 < d) (Λ g κ E : ℝ) (m : ℂ) (hΛ : 0 < Λ) (hg : 0 < g)
+    (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (a : Zd d L) :
+    ∑ b, ‖BAMB d L g (E : ℂ) m a b‖ ≤
+      (BAct_rate d Λ κ)⁻¹ * ((1 + Real.exp (-BAct_rate d Λ κ)) / (1 - Real.exp (-BAct_rate d Λ κ))) ^ d := by
+  have hc := BAct_rate_pos d Λ κ hd hΛ hκ
+  calc ∑ b, ‖BAMB d L g (E : ℂ) m a b‖ ≤ ∑ b : Zd d L, (BAct_rate d Λ κ)⁻¹ * Real.exp (-BAct_rate d Λ κ * (zdistD d L (a - b) : ℝ)) :=
+        Finset.sum_le_sum fun b _ => BAMB_decay_large d L hL hd Λ g κ E m hΛ hg hgΛ hκ hr a b
+    _ = (BAct_rate d Λ κ)⁻¹ * ∑ b : Zd d L, Real.exp (-BAct_rate d Λ κ * (zdistD d L (a - b) : ℝ)) := by rw [Finset.mul_sum]
+    _ ≤ _ := mul_le_mul_of_nonneg_left (GreenCond2_sum_exp_le d L hc a) (inv_nonneg.2 hc.le)
+
+end RowL1
+
+section FamProb
+
+/-- An offset average of `c`-bounded values is `c`-bounded. -/
+theorem GreenCond2_norm_avg_le {d W : ℕ} [NeZero W] {f : Fin (W ^ d) → ℂ} {c : ℝ} (hc : ∀ o, ‖f o‖ ≤ c) : ‖GreenMinor_avg f‖ ≤ c := by
+  unfold GreenMinor_avg
+  have hW : (0 : ℝ) < ((W : ℝ) ^ d) := pow_pos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)) d
+  have hc0 : 0 ≤ c := (norm_nonneg _).trans (hc ⟨0, pow_pos (Nat.pos_of_ne_zero (NeZero.ne W)) d⟩)
+  rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (inv_nonneg.2 hW.le)]
+  calc ((W : ℝ) ^ d)⁻¹ * ‖∑ o, f o‖ ≤ ((W : ℝ) ^ d)⁻¹ * ∑ o : Fin (W ^ d), c :=
+        mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (Finset.sum_le_sum fun o _ => hc o)) (inv_nonneg.2 hW.le)
+    _ = c := by
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+        push_cast
+        field_simp
+
+
+/-- The block weight turns a sum over the fine index into the offset average of the block. -/
+theorem GreenCond2_sum_block {d L W : ℕ} [NeZero L] [NeZero W] (β : Zd d L) (f : Idx d L W → ℂ) :
+    ∑ k : Idx d L W, (((if (split d L W k).1 = β then ((W : ℝ) ^ d)⁻¹ else 0 : ℝ) : ℂ)) * f k =
+      (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o : Fin (W ^ d), f ((splitEquiv d L W).symm (β, o)) := by
+  rw [← Equiv.sum_comp (splitEquiv d L W).symm, Fintype.sum_prod_type]
+  have h : ∀ (b : Zd d L) (o : Fin (W ^ d)), (split d L W ((splitEquiv d L W).symm (b, o))).1 = b := fun b o => by
+    have := (splitEquiv d L W).apply_symm_apply (b, o)
+    exact congrArg Prod.fst this
+  simp only [h]
+  rw [Finset.sum_eq_single β]
+  · simp only [if_true, Complex.ofReal_inv, Finset.mul_sum]
+  · intro b _ hb
+    simp [hb]
+  · intro h; exact absurd (Finset.mem_univ β) h
+
+/-- A finite sum of bounded measurable functions is bounded measurable. -/
+theorem GreenCond2_bddMeas_sum {sz : Sizes d} {ι : Type*} (s : Finset ι) {f : ι → Sizes.SeqΩ sz → ℂ} (hf : ∀ i, BddMeas sz (f i)) :
+    BddMeas sz fun ω => ∑ i ∈ s, f i ω := by
+  classical
+  choose C hC using fun i => (hf i).bdd
+  exact ⟨Finset.measurable_sum _ fun i _ => (hf i).meas, ∑ i ∈ s, C i,
+    fun ω => (norm_sum_le _ _).trans (Finset.sum_le_sum fun i _ => hC i ω)⟩
+
+/-- **Markov for the family average** (`GreenCond2_famAvg_moment`): with `μ = 2 (2p) (2^{2p-1} ρ B)`,
+`P(|Σ_k T_k Q_k Y_k| ≥ W_τ μ) ≤ W_τ^{-2p}`, for `W_τ ≥ 1`, `p ≥ 1`. -/
+theorem GreenCond2_prob_famAvg {d : ℕ} {sz : Sizes d} {n : ℕ} {A : Finset (Idx d (sz.L n) (sz.W n))} {Y : Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ}
+    (hY : ∀ k, BddMeas sz (Y k)) (hYd : ∀ k, FinDep sz (Y k)) {B ρ c : ℝ} {M K p : ℕ} {T : Idx d (sz.L n) (sz.W n) → ℝ}
+    (hg : GreenMinor_famGain sz n A Y B ρ M K) (hM : 2 * p ≤ M) (hK : 2 * p ≤ K) (hρ1 : ρ ≤ 1) (hcρ : c ≤ ρ ^ 2)
+    (hw : BoundedWeight T c A) (hp : 2 * p ≤ A.card) (hp1 : 1 ≤ p) {Wτ : ℝ} (hWτ : 1 ≤ Wτ) (hρB : 0 < ρ * B) :
+    (Sizes.seqP sz).real {ω | Wτ * (2 * (2 * p) * (2 ^ (2 * p - 1) * ρ * B)) ≤ ‖∑ k, (T k : ℂ) * qRow sz n k (Y k) ω‖} ≤ (1 / Wτ) ^ (2 * p) := by
+  have hmom := GreenCond2_famAvg_moment (p := p) hY hYd hg hM hK hρ1 hcρ hw hp
+  have hS : BddMeas sz fun ω => ∑ k, (T k : ℂ) * qRow sz n k (Y k) ω :=
+    GreenCond2_bddMeas_sum _ fun k => (bddMeas_const sz (T k : ℂ)).mul ((hY k).qRow k)
+  obtain ⟨C, hC⟩ := hS.bdd
+  set S : sz.SeqΩ → ℂ := fun ω => ∑ k, (T k : ℂ) * qRow sz n k (Y k) ω with hSdef
+  have hf : Integrable (fun ω => ‖S ω‖ ^ (2 * p)) (Sizes.seqP sz) := by
+    refine Integrable.of_bound ((hS.meas.norm.pow_const _).aestronglyMeasurable) (C ^ (2 * p)) (Eventually.of_forall fun ω => ?_)
+    rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    exact pow_le_pow_left₀ (norm_nonneg _) (hC ω) _
+  set μ : ℝ := 2 * (2 * p) * (2 ^ (2 * p - 1) * ρ * B) with hμ
+  have hp0 : (0 : ℝ) < p := by exact_mod_cast hp1
+  have hbase : 0 < (2 : ℝ) ^ (2 * p - 1) * ρ * B := by rw [mul_assoc]; exact mul_pos (by positivity) hρB
+  have hμ0 : 0 < μ := by
+    rw [hμ]; exact mul_pos (by positivity) hbase
+  have hlam0 : 0 < Wτ * μ := by positivity
+  have hmark := mul_meas_ge_le_integral_of_nonneg (μ := Sizes.seqP sz) (f := fun ω => ‖S ω‖ ^ (2 * p))
+    (Eventually.of_forall fun ω => by positivity) hf ((Wτ * μ) ^ (2 * p))
+  have hsub : {ω | Wτ * μ ≤ ‖S ω‖} ⊆ {ω | (Wτ * μ) ^ (2 * p) ≤ ‖S ω‖ ^ (2 * p)} :=
+    fun ω hω => pow_le_pow_left₀ hlam0.le hω _
+  have hmono := measureReal_mono (μ := Sizes.seqP sz) hsub (measure_ne_top _ _)
+  have hF : ∫ ω, ‖S ω‖ ^ (2 * p) ∂(Sizes.seqP sz) ≤ ((2 * p : ℝ) + 1) * (2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p) := by
+    refine hmom.trans (le_of_eq ?_)
+    rw [mul_assoc (2 ^ (2 * p - 1)) ρ B]
+  have hpos : 0 < (Wτ * μ) ^ (2 * p) := by positivity
+  have h2p : ((2 * p : ℝ) + 1) ≤ (2 : ℝ) ^ (2 * p) := by
+    have := Nat.lt_two_pow_self (n := 2 * p)
+    have h' : 2 * p + 1 ≤ 2 ^ (2 * p) := this
+    exact_mod_cast h'
+  have hkey : (Sizes.seqP sz).real {ω | Wτ * μ ≤ ‖S ω‖} ≤ (1 / Wτ) ^ (2 * p) := by
+    have h1 : (Sizes.seqP sz).real {ω | Wτ * μ ≤ ‖S ω‖} ≤ ((2 * p : ℝ) + 1) * (2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p) / (Wτ * μ) ^ (2 * p) := by
+      rw [le_div_iff₀ hpos]
+      calc (Sizes.seqP sz).real {ω | Wτ * μ ≤ ‖S ω‖} * (Wτ * μ) ^ (2 * p) ≤ (Sizes.seqP sz).real {ω | (Wτ * μ) ^ (2 * p) ≤ ‖S ω‖ ^ (2 * p)} * (Wτ * μ) ^ (2 * p) :=
+            mul_le_mul_of_nonneg_right hmono hpos.le
+        _ = (Wτ * μ) ^ (2 * p) * (Sizes.seqP sz).real {ω | (Wτ * μ) ^ (2 * p) ≤ ‖S ω‖ ^ (2 * p)} := by ring
+        _ ≤ _ := hmark.trans hF
+    refine h1.trans ?_
+    rw [div_le_iff₀ hpos]
+    have e : (Wτ * μ) ^ (2 * p) = Wτ ^ (2 * p) * (2 ^ (2 * p) * (2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p)) := by
+      rw [hμ, mul_pow, mul_pow, mul_pow]
+    rw [e, one_div, inv_pow]
+    have hW2 : 0 < Wτ ^ (2 * p) := by positivity
+    have hX : 0 < (2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p) :=
+      mul_pos (by positivity) (pow_pos hbase _)
+    calc ((2 * p : ℝ) + 1) * (2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p)
+        = ((2 * p : ℝ) + 1) * ((2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p)) := by ring
+      _ ≤ 2 ^ (2 * p) * ((2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p)) := mul_le_mul_of_nonneg_right h2p hX.le
+      _ = (Wτ ^ (2 * p))⁻¹ * (Wτ ^ (2 * p) * (2 ^ (2 * p) * (2 * p : ℝ) ^ (2 * p) * ((2 : ℝ) ^ (2 * p - 1) * ρ * B) ^ (2 * p))) := by
+          field_simp
+  exact hkey
+
+end FamProb
+
+section AvgBounds
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {t : ℝ}
+
+/-- **The deterministic bound of `⟨M𝒦⟩_a` from the offset averages of `𝒜'` and `𝔛`**: with `Θ = (2 + c_A) δ² + Λ_A + Λ_X`,
+`‖⟨M𝒦⟩_a‖ ≤ ρ_row Θ`, where the first term is `≤ δ²`, the third `≤ (c_A + 1) δ²` (the pointwise bound `‖A_u‖ ≤ c_A δ`, `|t v̄| ≤ δ`),
+the second `≤ Λ_A` (`|M_{b'a}| ≤ 1`) and the fourth `≤ Λ_X` (`𝔛_{uu} = 0`). -/
+theorem GreenCond2_avgK_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ΛA ΛX ρr : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hΛA : 0 ≤ ΛA) (hΛX : 0 ≤ ΛX)
+    (ω : sz.SeqΩ) (hG : ∀ x y, ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ) (hρ0 : 0 ≤ ρr)
+    (hρ : ∑ b, ‖BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n) a b‖ ≤ ρr)
+    (hA : ∀ b' : Zd d (sz.L n), ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) =>
+      GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+        (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b')‖ ≤ ΛA)
+    (hX : ∀ b' : Zd d (sz.L n), b' ≠ a → ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) =>
+      GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (b', o) (a, o))‖ ≤ ΛX) :
+    ‖GreenMinor_avgK (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n)
+        (BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n)) t (GreenCond_m sz z n) a‖ ≤
+      ρr * ((2 + GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖) * δ ^ 2 + ΛA + ΛX) := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hcA0 := GreenCond_cA_nonneg (d := d) (κ := κ) hg0 (norm_nonneg (GreenCond_s sz z n))
+  have hMb1 : ∀ b' a' : Zd d (sz.L n), ‖BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n) b' a'‖ ≤ 1 := by
+    intro b' a'
+    have := dat.hMle (b', ⟨0, pow_pos (sz.W_pos n) d⟩) (a', ⟨0, pow_pos (sz.W_pos n) d⟩)
+    rw [dat.hM] at this
+    simpa using this
+  have hsplit := GreenMinor_avg_split (G := GreenCore_Gc sz z n t ω) (X := GreenCore_Xc sz n t ω) (D := GreenCore_Dc sz z n) (t := t)
+    (m := GreenCond_m sz z n) dat.hM a
+  rw [hsplit]
+  set Θ : ℝ := (2 + GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖) * δ ^ 2 + ΛA + ΛX with hΘ
+  have hΘ0 : 0 ≤ Θ := by rw [hΘ]; positivity
+  refine (norm_sum_le _ _).trans ?_
+  refine le_trans (Finset.sum_le_sum fun b' _ => ?_) (?_ : ∑ b', ‖BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n) a b'‖ * Θ ≤ ρr * Θ)
+  · rw [norm_mul]
+    refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg _)
+    -- the four terms
+    have hv : ‖GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b'‖ ≤ δ := by
+      unfold GreenCore_vbar
+      refine GreenCond2_norm_avg_le (f := fun o : Fin (sz.W n ^ d) => GreenCore_Gc sz z n t ω (b', o) (b', o) - GreenCore_Mc sz z n (b', o) (b', o)) (fun o => hG _ _)
+    have hΔ : ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Gc sz z n t ω (b', o) (a, o) - GreenCore_Mc sz z n (b', o) (a, o))‖ ≤ δ :=
+      GreenCond2_norm_avg_le (fun o => hG _ _)
+    have hAp : ∀ o : Fin (sz.W n ^ d), ‖GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o)‖ ≤
+        GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ :=
+      fun o => (GreenCond_pointwise_A sz z n t hκ h ht0 ht hg0 hδ0 hδ2 ω hG (b', o)).1
+    have hAp' : ∀ o : Fin (sz.W n ^ d), ‖GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+        (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b'‖ ≤ (GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ := by
+      intro o
+      refine (norm_add_le _ _).trans ?_
+      rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+      have h1 := hAp o
+      have h2 : t * ‖GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b'‖ ≤ 1 * δ :=
+        mul_le_mul ht1 hv (norm_nonneg _) zero_le_one
+      nlinarith
+    have t1 : ‖(t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b' *
+        GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Gc sz z n t ω (b', o) (a, o) - GreenCore_Mc sz z n (b', o) (a, o))‖ ≤ δ ^ 2 := by
+      rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+      calc t * ‖GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b'‖ * ‖GreenMinor_avg _‖ ≤ 1 * δ * δ :=
+            mul_le_mul (mul_le_mul ht1 hv (norm_nonneg _) zero_le_one) hΔ (norm_nonneg _) (by positivity)
+        _ = δ ^ 2 := by ring
+    have t2 : ‖BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n) b' a *
+        GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+          (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b')‖ ≤ ΛA := by
+      rw [norm_mul]
+      calc _ ≤ 1 * ΛA := mul_le_mul (hMb1 _ _) (hA b') (norm_nonneg _) zero_le_one
+        _ = ΛA := one_mul _
+    have t3 : ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) => (GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+        (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b') *
+          (GreenCore_Gc sz z n t ω (b', o) (a, o) - GreenCore_Mc sz z n (b', o) (a, o)))‖ ≤ (GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2 := by
+      refine (GreenCond2_norm_avg_le (c := (GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ * δ) fun o => ?_).trans (le_of_eq (by ring))
+      rw [norm_mul]
+      exact mul_le_mul (hAp' o) (hG _ _) (norm_nonneg _) (by positivity)
+    have t4 : ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (b', o) (a, o))‖ ≤ ΛX := by
+      by_cases hba : b' = a
+      · subst hba
+        have h0 : ∀ o : Fin (sz.W n ^ d), GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (b', o) (b', o) = 0 := by
+          intro o
+          unfold GreenCore_Xrow
+          refine Finset.sum_eq_zero fun v _ => ?_
+          rw [GreenCore_minor_right (GreenCond_G_diag_ne sz z n t hκ h ht0 ht ω _), mul_zero]
+        simp only [h0]
+        unfold GreenMinor_avg
+        simp [hΛX]
+      · exact hX b' hba
+    have e : ‖(t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b' *
+          GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Gc sz z n t ω (b', o) (a, o) - GreenCore_Mc sz z n (b', o) (a, o)) -
+        BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (GreenCond_m sz z n) b' a *
+          GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+            (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b') -
+        GreenMinor_avg (fun o : Fin (sz.W n ^ d) => (GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+          (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b') *
+            (GreenCore_Gc sz z n t ω (b', o) (a, o) - GreenCore_Mc sz z n (b', o) (a, o))) -
+        GreenMinor_avg (fun o : Fin (sz.W n ^ d) => GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (b', o) (a, o))‖ ≤ Θ := by
+      refine (norm_sub_le _ _).trans ?_
+      refine (add_le_add ((norm_sub_le _ _).trans (add_le_add ((norm_sub_le _ _).trans (add_le_add t1 t2)) t3)) t4).trans ?_
+      rw [hΘ]; nlinarith
+    exact e
+  · exact mul_le_mul_of_nonneg_right hρ hΘ0 |>.trans' (by rw [← Finset.sum_mul])
+
+/-- **The offset average of `𝒜'` against the family average of `Q_u Y^A_u`**: off the bad row slices, the difference is `≤ C₁ δ²`. -/
+theorem GreenCond2_avgA_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (ω : (GreenCond_sz0 sz).SeqΩ) (hG : ∀ x y, ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ)
+    (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (hslice : ∀ u : Idx d (sz.L n) (sz.W n), (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε')
+    (hsq : Real.sqrt (ε' * GreenCond_QA sz z n t) ≤ δ ^ 2) (b' : Zd d (sz.L n)) :
+    ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) =>
+        GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+          (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b')‖ ≤
+      ‖∑ k : Idx d (sz.L n) (sz.W n), (((if (split d (sz.L n) (sz.W n) k).1 = b' then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0 : ℝ) : ℂ)) *
+          qRow (GreenCond_sz0 sz) n k (fun σ => GreenCond_ΦA sz z n k (GreenCore_Gc sz z n t σ)) ω‖ +
+        GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+  rw [GreenCond2_sum_block b' (fun k => qRow (GreenCond_sz0 sz) n k (fun σ => GreenCond_ΦA sz z n k (GreenCore_Gc sz z n t σ)) ω)]
+  set e := splitEquiv d (sz.L n) (sz.W n) with he
+  set q : Fin (sz.W n ^ d) → ℂ := fun o => qRow (GreenCond_sz0 sz) n (e.symm (b', o))
+    (fun σ => GreenCond_ΦA sz z n (e.symm (b', o)) (GreenCore_Gc sz z n t σ)) ω with hq
+  set f : Fin (sz.W n ^ d) → ℂ := fun o => GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (b', o) +
+          (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) b' with hf
+  have hr : ‖GreenMinor_avg (fun o => f o - q o)‖ ≤ GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+    refine GreenCond2_norm_avg_le fun o => ?_
+    have := GreenCond_E_A_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' (e.symm (b', o)) ω hG hwd (hslice _) hsq
+    simpa only [he, Equiv.apply_symm_apply] using this
+  have hsub : GreenMinor_avg f = GreenMinor_avg (fun o => f o - q o) + GreenMinor_avg q := by
+    rw [GreenMinor_avg_sub]; ring
+  rw [hsub]
+  refine (norm_add_le _ _).trans ?_
+  rw [add_comm]
+  exact add_le_add le_rfl hr
+
+
+/-- **The offset average of `𝔛_{(b',o),(a,o)}` against the family average of `-Q_u Y^X_u`** (`b' ≠ a`): off the bad row slices the difference
+is `≤ C₁ δ²`. -/
+theorem GreenCond2_avgX_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (ω : (GreenCond_sz0 sz).SeqΩ) (hG : ∀ x y, ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ)
+    (hslice : ∀ u : Idx d (sz.L n) (sz.W n), (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε')
+    (hsq : Real.sqrt (ε' * GreenCond_QX sz z n t) ≤ δ ^ 2) (a b' : Zd d (sz.L n)) (hba : b' ≠ a) :
+    ‖GreenMinor_avg (fun o : Fin (sz.W n ^ d) =>
+        GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (b', o) (a, o))‖ ≤
+      ‖∑ k : Idx d (sz.L n) (sz.W n), (((if (split d (sz.L n) (sz.W n) k).1 = b' then (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ else 0 : ℝ) : ℂ)) *
+          qRow (GreenCond_sz0 sz) n k (fun σ => GreenCond_ΦX sz z n a k (GreenCore_Gc sz z n t σ)) ω‖ +
+        GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+  rw [GreenCond2_sum_block b' (fun k => qRow (GreenCond_sz0 sz) n k (fun σ => GreenCond_ΦX sz z n a k (GreenCore_Gc sz z n t σ)) ω)]
+  set e := splitEquiv d (sz.L n) (sz.W n) with he
+  set q : Fin (sz.W n ^ d) → ℂ := fun o => qRow (GreenCond_sz0 sz) n (e.symm (b', o))
+    (fun σ => GreenCond_ΦX sz z n a (e.symm (b', o)) (GreenCore_Gc sz z n t σ)) ω with hq
+  set f : Fin (sz.W n ^ d) → ℂ := fun o => GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (b', o) (a, o) with hf
+  have hr : ‖GreenMinor_avg (fun o => f o + q o)‖ ≤ GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+    refine GreenCond2_norm_avg_le fun o => ?_
+    have hα : a ≠ (e (e.symm (b', o))).1 := by rw [Equiv.apply_symm_apply]; exact hba.symm
+    have := GreenCond_E_X_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' (e.symm (b', o)) hα ω hG (hslice _) hsq
+    simpa only [he, Equiv.apply_symm_apply] using this
+  have hsub : GreenMinor_avg f = GreenMinor_avg (fun o => f o + q o) - GreenMinor_avg q := by
+    rw [← GreenMinor_avg_sub]
+    congr 1
+    funext o; ring
+  rw [hsub]
+  refine (norm_sub_le _ _).trans ?_
+  rw [add_comm]
+  exact add_le_add le_rfl hr
+
+end AvgBounds
+
 end RBM.BA
