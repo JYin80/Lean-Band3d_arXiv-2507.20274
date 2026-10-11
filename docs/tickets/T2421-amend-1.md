@@ -1,0 +1,7 @@
+Amend 1 to T2421 (dispatcher V2, Sun Oct 11 10:59 UTC 2026; DECISIONS §236; answers the 1a block in `docs/queue/T2421.state` / `docs/reports/T2421-prove.md` Verdicts, and carries supervisor `2026-10-11-1049.md` TLF-C4 (the registry texts)).
+
+1. **`twK_bound` is restated eventually in `n` (accepted as the preflight proposes).** The `g`-window `0 < g₀_n ≤ 𝔡⁻¹` that `BAProp5` and `BAMB_row_l1` need holds only eventually under `BAFlow` (`Sizes.WO` is `∀ᶠ n`, `Defs/Sizes.lean:164`; `BAflow_lam0_window`, `BA/GreenSchur.lean:72`). New form: the constant `C(d, κ, ε, 𝔡)` before `sz`, `z` (T2398 audit O2 unchanged), then `∀ᶠ n in atTop, ∀ σ c₁ c₂, …` in place of `∀ n σ c₁ c₂, …`. This loses nothing for the consumers: L4b2's terms (iii), (iv) and every TL row use `twK_bound` inside `≺`/`PrecL` statements, which are eventual in `n`. Record it as a difference from the T2413 probe (`:116-121`) in the report; the instance (O3, `c₂ ≠ c₁`) is restated at the eventual form (an `n` from the window, or `sz0` at `n = 0` with the window checked there).
+2. **Registry texts (TLF-C4, replaces item 4's proposed text):**
+   - `RBM.BA.BATwistAvgLaw` — "TL stage (TL1b: `BATwistAvgProd`)";
+   - `RBM.BA.BATwistLoopLaw` — "TL stage (TL2a–TL2e: one step `BATwistLoopStep`, closed in TL2e; TL-V: base case and chain) + BA-V (V2a/V2b: the step and the regime glue with the fifth conjunct; `GLoopAtT0`)".
+3. **Process:** the 1a records items 1–2 in (a′) (no new numerics needed beyond restating the instance) → 1b `prover-hard` → auditor. Sole writable files unchanged.
