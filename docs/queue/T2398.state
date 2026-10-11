@@ -1,4 +1,4 @@
-state: proving
-reason: started (H191, H12): workflow wf_77829196-e8e, stage 1a preflight → 1b prover-max (design + probe, report only) → auditor; branch t/T2398 from main 1a5f972; Amend 1 (H193): not injectable into the running 1b (a message to a workflow agent spawns a second writer); when 1b returns, the hub stops the workflow before its auditor and reruns the audit with Amend 1 in the auditor (and rule-(B) repairer) prompt
-updated: Sat Oct 10 23:02:05 UTC 2026
+state: held
+reason: waits for Jun's answer to the design §8 question (offset-twisted loops, T3C-Ḡ), relayed 00:31 UTC (H195); not merged; probe stays on t/T2398 at 2257f54; audit BLOCKED with sign-off (wf_6cf4a7d1-fd0)
+updated: Sun Oct 11 00:31:25 UTC 2026
 reports: docs/reports/T2398-prove.md, docs/reports/T2398-design.md, docs/reports/T2398-audit.md
