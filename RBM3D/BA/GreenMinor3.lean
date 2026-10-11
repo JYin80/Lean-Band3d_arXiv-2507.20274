@@ -53,7 +53,7 @@ section Averaging
 variable {d L W : ℕ}
 
 /-- `avg_o f = W^{-d} Σ_o f(o)`. -/
-def GreenMinor_avg (f : Fin (W ^ d) → ℂ) : ℂ := (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, f o
+def GreenMinor_avg {d W : ℕ} (f : Fin (W ^ d) → ℂ) : ℂ := (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, f o
 
 theorem GreenMinor_avg_sub (f g : Fin (W ^ d) → ℂ) :
     GreenMinor_avg (fun o => f o - g o) = GreenMinor_avg f - GreenMinor_avg g := by
@@ -73,8 +73,8 @@ theorem GreenMinor_avg_const [NeZero W] (c : ℂ) : GreenMinor_avg (fun _ : Fin 
 variable [NeZero L] [NeZero W]
 
 /-- `⟨M𝒦⟩_a = W^{-d} Σ_o Σ_{b'} M^{(B)}_{ab'} 𝒦_{(b',o),(a,o)}` (`GreenCore_K`). -/
-def GreenMinor_avgK (G M X D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (Mb : Zd d L → Zd d L → ℂ) (t : ℝ) (m : ℂ)
-    (a : Zd d L) : ℂ :=
+def GreenMinor_avgK {d L W : ℕ} [NeZero L] [NeZero W] (G M X D : Matrix (Vtx d L W) (Vtx d L W) ℂ)
+    (Mb : Zd d L → Zd d L → ℂ) (t : ℝ) (m : ℂ) (a : Zd d L) : ℂ :=
   (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o : Fin (W ^ d), ∑ b' : Zd d L, Mb a b' * GreenCore_K G M X D t m (b', o) (a, o)
 
 variable {G X D M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ} {t : ℝ} {m s z : ℂ}
