@@ -1,0 +1,4 @@
+state: audit-pass
+reason: 1a, probe 0547dc6, 1a-audit PASS, prover-hard 2caa2d7, audit RETURN (owed BAGbEXPii line deleted) → repairer dd10171 → audit PASS round 2 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 06:09:09 UTC 2026
+reports: docs/reports/T2408-prove.md, docs/reports/T2408-1a-audit.md, docs/reports/T2408-audit.md
