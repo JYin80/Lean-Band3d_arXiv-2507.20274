@@ -2,26 +2,28 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 11:01 UTC (dispatcher V2: T2423 = R1 (after T2417) and T2424 = T3-BA released (H218))
+updated: 2026-10-11 11:16 UTC (dispatcher V2: T2425 = L3a1, T2426 = L3b3′ released (H220))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-385. T2417 — `docs/tickets/T2417.md` (BA-L R0: new `Graph/BAAtomic.lean` (+ `BAAtomic2`): the atom-level vocabulary and one image map with both pin sets `BAimg` and (m0)–(m2), `BAPathLift`; supervisor 0951 L4-C2): released; starts when its check compiles and a slot is free (H12). **Priority: first among stage-L rows.** Not in the certificate lane.
 386. T2418 — `docs/tickets/T2418.md` + **Amend 1** (`docs/tickets/T2418-amend-1.md`: sign-off on the 1a-audit §5, S1 without the `|𝔼 tr|` premise, T3A crude in S1, `lwExpTerm4_L3`/untwisted §8 twins dropped; rule-(B) 1a repair) (BA-L L4a: new `Graph/BAExp14a.lean` + `BAExp14aB.lean`: S1 families, kernels `ω`, ties, fine Ward; twin of `LWExpTerm4` without §6, §9; 1a pins S1 → 1a-audit; supervisor 0951 L4-C6): released; starts when its check compiles and a slot is free (H12). Priority: after T2417. Not in the certificate lane.
 387. T2419 — `docs/tickets/T2419.md` + **Amend 1** (`docs/tickets/T2419-amend-1.md`: both charges, the red `GG` identity by conjugation; rule-(B) 1b repair) (BA-L L4d: new `Graph/BAExpandId.lean`: `baG5Graph`, `BAG5Identity`, the GG step and the expansion identity by `expandG_sum`): released; starts when its check compiles and a slot is free (H12). Priority: after T2418. Not in the certificate lane.
 388. T2420 — `docs/tickets/T2420.md` (BA-L L3c1: new `Graph/BAAtom.lean` + `BAAtom2.lean`: atoms, the auxiliary graph, `(G_by_auxG_BA)`; design gate G3, G4 with a probe, 1a-audit, 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: after T2419. Not in the certificate lane.
 389. T2421 — `docs/tickets/T2421.md` + **Amend 1** (`docs/tickets/T2421-amend-1.md`: `twK_bound` eventually in `n`; registry texts of supervisor 1049 TLF-C4) (BA-TL TL0: new `BA/TwistPins.lean`: the TL pins file verbatim from the T2413 probe, `twFold`/`twWard`/`twCirc`/`twK_bound` proved, T2398 audit O2–O4, two `owedProps` lines; supervisor 0853 TL-C2, TL-C3): released; starts when its check compiles and a slot is free (H12). **Priority: next to start (before T2420).** Not in the certificate lane.
 391. T2423 — `docs/tickets/T2423.md` (BA-L R1: new `Graph/BASim.lean` + `BASim2.lean`: the graph-level matching of a BA step with a band `LocStep` up to relabelling, `BAsim m`/`BAsim'`, Lemma E at graph level; design gate with a probe, 1a-audit, 1b `prover-max`; supervisor 0951 L4-C1): released; **starts after T2417 merges** and a slot is free (H12). Priority: after T2421 and T2419 (sign-off repairs), first among new stage-L rows. Not in the certificate lane.
 392. T2424 — `docs/tickets/T2424.md` (BA-T T3-BA: new `BA/NewKLKBA.lean`: `NewKLKGenHyp` F5–F9 at `baStep2Fam` (F7 = the BA Θ-convolution over T8b's kernel, from BAT-C2), `STNewKLKgL'` and `STK2decaygL'` at BA; supervisor 0853 BAT-F1, BAT-F2): released; starts when its check compiles and a slot is free (H12). Priority: after T2423 (if T2423 is waiting for T2417, T2424 starts first). Not in the certificate lane.
+393. T2425 — `docs/tickets/T2425.md` (BA-L L3a1: new `Graph/BASymm1.lean`: `BAGraph.twist`, `ba_twist_counters`, `BAtwistInv`, `BAtwistIntegral` proved; twin of `LWSymm` §1–§3): released; starts when its check compiles and a slot is free (H12). Priority: after T2424. Not in the certificate lane.
+394. T2426 — `docs/tickets/T2426.md` (BA-L L3b3′: new `Graph/BAScost.lean` (+ `BAScost2`): cost vocabulary at atoms, BA Lemma B, the five BA-only `ScostLL` lemmas, `BAInit`; `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: after T2425. Not in the certificate lane.
 
 ## Pre-release checks
+- `docs/tickets/checks/T2425-check.lean` (BA-L L3a1; merged names only).
+- `docs/tickets/checks/T2426-check.lean` (BA-L L3b3′; merged names only).
 - `docs/tickets/checks/T2423-check.lean` (BA-L R1; merged names only).
 - `docs/tickets/checks/T2424-check.lean` (BA-T T3-BA; merged names only).
 - `docs/tickets/checks/T2421-check.lean` (BA-TL TL0; merged names only).
-- `docs/tickets/checks/T2417-check.lean` (stage L; merged names only).
 - `docs/tickets/checks/T2418-check.lean` (stage L; merged names only).
 - `docs/tickets/checks/T2419-check.lean` (stage L; merged names only).
 - `docs/tickets/checks/T2420-check.lean` (stage L; merged names only).
@@ -94,6 +96,12 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 11:01:43 UTC 2026 — (3) T2419 rule-(B) repair under Amend 1: wf_97b90849-041 (1b prover-hard on t/T2419 at de1eb31 → auditor round 2). Running: T2417, T2419, T2420, T2421 (4 of 4); T2418 blocked (S1 def compile).
 
 - H218 (dispatcher V2, 2026-10-11 11:01 UTC; DECISIONS §237). (1) Commit by name with your next commit `docs/tickets/T2423.md`, `docs/tickets/checks/T2423-check.lean`, `docs/tickets/T2424.md`, `docs/tickets/checks/T2424-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (may share a commit with H217). (2) Compile the two checks on `main`. Start order as slots free: T2421 (resume, H217), T2419 (repair, H217), then T2423 once T2417 has merged, else T2424. One `done:` line per item.
+  done: Sun Oct 11 11:11:46 UTC 2026 — (1) the 7 listed files committed by name in 4ccca7b (with states T2417/T2419/T2421), pushed.
+  done: Sun Oct 11 11:11:46 UTC 2026 — (2) T2423, T2424 checks on main 4ccca7b: exit 0, no error lines (both). T2417 merged (1dc7516), so T2423 started in the slot it freed: wf_af3182af-6cd (1a design gate → probe prover-max → 1a-audit → 1b prover-max → auditor). Running: T2419, T2420, T2421, T2423 (4 of 4); T2424 next.
+
+- H219 (dispatcher V2, 2026-10-11 11:14 UTC; DECISIONS §238; answers the question in `docs/queue/T2418.state`, H183 (3)). (1) **Yes:** run a `prover-max` probe step on `t/T2418` that writes the S1 `def … : Prop` (and only the definitions it needs) in `RBM3D/Probe/T2418Pins.lean` (never merged, ≤ 400 lines), compiles it (`lake env lean`, exit code and the `#check` output pasted into `docs/reports/T2418-prove.md` under (a′)), as T2390 Amend 1 D1 / H194; then 1a-audit round 2 → 1b `prover-hard` → auditor. The probe stays on the branch; the 1b copies the S1 def verbatim into `Graph/BAExp14aB.lean`. In the next free slot, before T2424. (2) Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. One `done:` line per item.
+
+- H220 (dispatcher V2, 2026-10-11 11:16 UTC; DECISIONS §239). (1) Commit by name with your next commit `docs/tickets/T2425.md`, `docs/tickets/checks/T2425-check.lean`, `docs/tickets/T2426.md`, `docs/tickets/checks/T2426-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (may share a commit with H219). (2) Compile the two checks on `main`. Start order as slots free: T2418 (probe step, H219), T2424, T2425, T2426. One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 08:34:36 UTC 2026 — T2398 report-only merge 7b0a10a under Amend 2 (BA LW-14 design gate, route R1: probe Twist section with BATwistAvgLaw, twK, BATwistLoopLaw (D2), row table under R1 with the new row L4t, 10,858 central lines (D3), paper delta T2398d (D4); design (b′) 113 lines; probe RBM3D/Probe/T2398Pins.lean (498 lines, standard axioms) stays on t/T2398 at 6429bb5; audit PASS claude-opus-5-5; pushed).

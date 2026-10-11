@@ -362,3 +362,4 @@
 | T2413 | 2026-10-11 10:20 UTC (1d34da3) | prover-max | Sonnet 5.5 max | 是 | BA TL-D（只合并报告）：审核第一轮 RETURN 两项（`BAChainTL` 要 `STG0M` 前提；T.10 (d) 实例）→ 规则 (B) 修补一次 → PASS；10 行、旗标 15；探针 387 行留在 t/T2413 |
 | T2414 | 2026-10-11 10:49 UTC (6c42b16) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T T8b：设计门 1a-audit PASS，审核一次 PASS；新 `Chain/Step2Kern` 207 行 + `Step2Gen`/`NewKLKGen` 原地（净 518 / 1,400）；从载体导出块核，带状桥、BA 恒等式、`BAUN`；子阶段 T 的 BAT-F1 HOLD 解除 |
 | T2422 | 2026-10-11 10:57 UTC (6daccd4) | prover | Sonnet 5.5 | 否 | BA-G6b：新 `BA/GbEXPav` 30 行（组合）；登记去 `BAGbEXPii`、`BAGbEXPav`，`STInitialGT2gL` owner 改 BA-V；审核一次 PASS |
+| T2417 | 2026-10-11 11:07 UTC (1dc7516) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L R0：新 `Graph/BAAtomic` 985 + `BAAtomic2` 262（一个像映射，`BAimg` 与 (m0)–(m2)、`BAPathLift`）；审核一次 PASS |

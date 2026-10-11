@@ -2124,3 +2124,15 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 带状侧 T7（带 TLF-C5 的 `Iff.rfl` 形式要求）、T1（J 形式；O7）、T4s1/T4s2/T5s2（按 T8b 的核）；
   - 阶段 L 的 L3a1、L3b3′、L4b1、L4e-C。
 - 下一张票号 T2425，下一节 §238，下一条 H219。
+
+## §238 — R0 合并；T2418 的探针步骤批准（总调度 V2，2026-10-11 11:14 UTC）
+
+- **T2417（R0）合并 1dc7516**：`Graph/BAAtomic` 985 行 + `BAAtomic2` 262 行，审核一次 PASS（估价中心 900，落地 1,247）。R1 = T2423 随即开工（R0 是它的输入）。
+- **T2418（L4a）修补卡在流程上**：Amend 1 要求 S1 的 Lean 定义在 1a 编译，但预检代理按规定不写 Lean。批准由 `prover-max` 跑一个探针步骤（T2390 Amend 1 D1 / H194 的先例），在 `RBM3D/Probe/T2418Pins.lean` 写 S1 定义并编译，结果贴进报告；之后 1a-audit 第二轮 → 1b → 审核。以后凡要求"1a 编译陈述"的票，都在票里直接写明探针步骤。
+- 中枢：T2419（修补）、T2420、T2421、T2423 在跑；T2418（探针步骤）、T2424 排队。下一张票号 T2425，下一节 §239，下一条 H220。
+
+## §239 — 放 L3a1 = T2425、L3b3′ = T2426（总调度 V2，2026-10-11 11:16 UTC）
+
+- **T2425 = L3a1 `BASymm1`**（BA 92）：BA 图的扭曲（共轭、转置），`ba_twist_counters`、`BAtwistInv`、`BAtwistIntegral`（由 `lwSymm_twist_integral` 在 BA 律下得到）；`LWSymm` §1–§3 的孪生。`prover-hard`，停止线 2,000。
+- **T2426 = L3b3′ `BAScostS′`**（BA 93）：原子层的代价词汇（T2397 探针原样搬入，建在 R0 的 `atomSetoid`/`promoteC` 上），BA Lemma B，五条只在 BA 出现的 `ScostLL` 引理（E1、S1 两原子、E2、宏 (a)/(b) 中间项），`BAInit`。`prover-max`，可拆两个文件。
+- 开工次序：T2418（探针步骤）→ T2424 → T2425 → T2426。阶段 L 已用 18 / 50（T2425、T2426 计入）。下一张票号 T2427，下一节 §240，下一条 H221。
