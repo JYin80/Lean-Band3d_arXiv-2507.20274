@@ -1,0 +1,4 @@
+state: proving
+reason: started (H194, H12): workflow wf_dd44b4d1-eed, stage 1a design-gate preflight → probe (prover-max, RBM3D/Probe/T2402Pins.lean) → 1a-audit → 1b prover-max (G3a merged cbda0ab, so no held step) → auditor; a 1a-audit sign-off request stops before 1b (H183 (3)); branch t/T2402 from main 4a4327e
+updated: Sun Oct 11 01:00:00 UTC 2026
+reports: docs/reports/T2402-prove.md, docs/reports/T2402-1a-audit.md, docs/reports/T2402-audit.md

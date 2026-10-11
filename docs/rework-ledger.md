@@ -340,3 +340,6 @@
 | T2392 | 2026-10-10 22:0x UTC (5ba1ebe) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-E2 `BA/EKSum`（1929 行，停止线 2000，超 1500 拆分线，审核记作观察）：`BAEKSumDecay1/NAL/2` 证出，删三条 owed；审核一次 PASS |
 | T2394 | 2026-10-10 22:17 UTC (f136ab5) | prover | Sonnet 5.5 effort high | 否 | BA-L0：新 `Chain/LWGen`（151 行）+ `BA/LWPinsBA`（111 行），建在 `Step2Gen` 上（2149 L2）；审核一次 PASS |
 | T2396 | 2026-10-10 22:5x UTC (19fc8cf) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-K09b：新 `BA/KStep`（746 行，停止线 1300），抽象归纳步 + BA 实例，`baKpiBoundAt_holds`，D3；`KLInduct` 不动，不进合并道；审核一次 PASS |
+| T2395 | 2026-10-11 00:3x UTC (d859e60) | prover-max | Sonnet 5.5 effort max | 是 | 设计票（L3a3 门：G1 + S 检验），只出报告；审核第一轮 RETURN（D1），规则 (B) 修一次后第二轮 PASS；结论 S′（S 加修正 K1–K4），L3a1–L3b6 降到 11 行、中心 7.1k |
+| T2390 | 2026-10-11 00:51 UTC (cbda0ab) | prover-max → prover-opus | Sonnet 5.5 max → Opus 5.5 xhigh | 是 | BA-G3a：设计门第一轮 1a-audit RETURN（探针没编译、`BAGbEXPii'` 未定、局部闭合缺、实例退化）→ Amend 1 → 第二轮 PASS；1b `prover-max` 没写完（1975 行），按 §94 升级 Opus 补上 (X*)、(Ξ)；新 `BA/GreenCore` 1981 行（停止线 2000）；审核一次 PASS |
+| T2400 | 2026-10-11 00:59 UTC (4a4327e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-G3b：新 `BA/GreenStab`（442 行，停止线 1000），`baStab_of_real`（`K = 16κ⁻⁴`）、`M` 与 `Θ` 的行界；审核一次 PASS |
