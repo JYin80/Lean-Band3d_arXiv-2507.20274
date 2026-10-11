@@ -821,4 +821,265 @@ theorem baFamGain_holds (d : ℕ) : BAFamGain d := by
 
 end FamGain
 
+/-! ## 5. The remainders of (E): `𝒜'_u = Q_u Y^A - Q_u[A_u Δ_{uu}]/m + ε₂`, `𝔛_{uy} = - Q_u Y^X - Q_u[𝔛_{uy} Δ_{uu}]/m`
+
+The two identities are exact at every sample (the Gaussian conditional means `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0` and S3
+`A_u = Y^A m/G_{uu}`, `𝔛_{uy} = - Y^X m/G_{uu}`); off the bad row slice the remainders are `≤ C₁ δ²` (the pointwise bounds,
+`GreenCond_m5_A/X`, and `|ε₂| ≤ 13 δ²/(2κ)`), with `C₁ = C₁(d, κ, g₀, ‖s‖)` monotone, so uniform in `n`. -/
+
+section Decomp
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {t : ℝ}
+
+/-- **(E) for `𝒜'`, exact**: `A_u + t v̄_{[u]} = Q_u Y^A_u - Q_u[A_u Δ_{uu}]/m + ε₂`, at every sample. -/
+theorem GreenCond_E_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ) :
+    GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) +
+        (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) (splitEquiv d (sz.L n) (sz.W n) u).1 =
+      qRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦA sz z n u (GreenCore_Gc sz z n t σ)) ω
+        - (1 / GreenCond_m sz z n) * qRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω
+        + GreenCore_eps2 (GreenCore_Gc sz z n t ω) t (splitEquiv d (sz.L n) (sz.W n) u) := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hm0 : GreenCond_m sz z n ≠ 0 := fun h0 => by
+    have := dat.hκm; rw [h0, norm_zero] at this; linarith [dat.hκ]
+  have hsplit : ∀ σ : (GreenCond_sz0 sz).SeqΩ,
+      GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) =
+        GreenCond_ΦA sz z n u (GreenCore_Gc sz z n t σ) - GreenCond_FA sz z n t u σ / GreenCond_m sz z n := by
+    intro σ
+    have hA := GreenCond_Arow_YA hκ h ht0 ht hg0 σ (splitEquiv d (sz.L n) (sz.W n) u)
+    have hG0 := GreenCond_G_diag_ne sz z n t hκ h ht0 ht σ (splitEquiv d (sz.L n) (sz.W n) u)
+    unfold GreenCond_FA GreenCond_ΦA
+    rw [show split d (sz.L n) (sz.W n) u = splitEquiv d (sz.L n) (sz.W n) u from rfl]
+    rw [hA]
+    field_simp
+    ring
+  have hYi : Integrable (fun ω'' => GreenCond_ΦA sz z n u (GreenCore_Gc sz z n t (rowSplit (GreenCond_sz0 sz) n u ω ω''))) (Sizes.seqP (GreenCond_sz0 sz)) := by
+    have := (GreenCond_bddMeas_A sz z n hκ h ht0 ht hg0 u ∅).rowIntegrable u ω
+    rw [GreenCond_famS_empty sz z n hκ h ht0 ht] at this
+    exact this
+  have hFi : Integrable (fun ω'' => GreenCond_FA sz z n t u (rowSplit (GreenCond_sz0 sz) n u ω ω'')) (Sizes.seqP (GreenCond_sz0 sz)) :=
+    GreenCond_integrable_of_sq ((GreenCond_measurable_FA hκ h ht0 ht hg0 u).comp (measurable_rowSplit_right (GreenCond_sz0 sz) n u ω))
+      (GreenCond_FA_moment hκ h ht0 ht hg0 ht1 u ω).1
+  have hcA := GreenCond_condRow_Arow sz z n t hκ h ht0 ht hg0 ht1 u ω
+  have hlin : condRow (GreenCond_sz0 sz) n u (fun σ => GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t
+      (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u)) ω =
+      condRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦA sz z n u (GreenCore_Gc sz z n t σ)) ω -
+        condRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω / GreenCond_m sz z n := by
+    simp only [condRow_apply, hsplit]
+    rw [integral_sub hYi (hFi.div_const _), integral_div]
+  rw [hlin] at hcA
+  have hs := hsplit ω
+  simp only [qRow_apply]
+  linear_combination hs + hcA
+
+/-- **(E) for `𝔛`, exact**: `𝔛_{uy} = - Q_u Y^X_{uy} - Q_u[𝔛_{uy} Δ_{uu}]/m`, `y = (α, o(u))`, `α ≠ [u]`, at every sample. -/
+theorem GreenCond_E_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1)
+    (ω : (GreenCond_sz0 sz).SeqΩ) :
+    GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2) =
+      - qRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t σ)) ω
+        - (1 / GreenCond_m sz z n) * qRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hm0 : GreenCond_m sz z n ≠ 0 := fun h0 => by
+    have := dat.hκm; rw [h0, norm_zero] at this; linarith [dat.hκ]
+  have hyw : ((α, (splitEquiv d (sz.L n) (sz.W n) u).2) : Vtx d (sz.L n) (sz.W n)) ≠ splitEquiv d (sz.L n) (sz.W n) u :=
+    fun h' => hα (congrArg Prod.fst h')
+  have hsplit : ∀ σ : (GreenCond_sz0 sz).SeqΩ,
+      GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2) =
+        - GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t σ) - GreenCond_FX sz z n t u α σ / GreenCond_m sz z n := by
+    intro σ
+    have hX := GreenCond_Xrow_YX hκ h ht0 ht hg0 σ hyw
+    have hG0 := GreenCond_G_diag_ne sz z n t hκ h ht0 ht σ (splitEquiv d (sz.L n) (sz.W n) u)
+    unfold GreenCond_FX GreenCond_ΦX
+    rw [show split d (sz.L n) (sz.W n) u = splitEquiv d (sz.L n) (sz.W n) u from rfl]
+    rw [hX]
+    field_simp
+    ring
+  have hYi : Integrable (fun ω'' => GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t (rowSplit (GreenCond_sz0 sz) n u ω ω''))) (Sizes.seqP (GreenCond_sz0 sz)) := by
+    have := (GreenCond_bddMeas_X sz z n hκ h ht0 ht hg0 α u ∅).rowIntegrable u ω
+    rw [GreenCond_famS_empty sz z n hκ h ht0 ht] at this
+    exact this
+  have hFi : Integrable (fun ω'' => GreenCond_FX sz z n t u α (rowSplit (GreenCond_sz0 sz) n u ω ω'')) (Sizes.seqP (GreenCond_sz0 sz)) :=
+    GreenCond_integrable_of_sq ((GreenCond_measurable_FX hκ h ht0 ht hg0 u hα).comp (measurable_rowSplit_right (GreenCond_sz0 sz) n u ω))
+      (GreenCond_FX_moment hκ h ht0 ht hg0 ht1 u hα ω).1
+  have hc0 := (GreenCond_Xrow_cond sz z n t hκ h ht0 ht hg0 ht1 u (α, (splitEquiv d (sz.L n) (sz.W n) u).2) ω).1
+  have hlin : condRow (GreenCond_sz0 sz) n u (fun σ => GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ)
+      (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2)) ω =
+      - condRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t σ)) ω -
+        condRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω / GreenCond_m sz z n := by
+    simp only [condRow_apply, hsplit]
+    rw [integral_sub (f := fun ω' => - GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t (rowSplit (GreenCond_sz0 sz) n u ω ω')))
+      (g := fun ω' => GreenCond_FX sz z n t u α (rowSplit (GreenCond_sz0 sz) n u ω ω') / GreenCond_m sz z n) hYi.neg (hFi.div_const _),
+      integral_div, integral_neg]
+  rw [hlin] at hc0
+  have hs := hsplit ω
+  simp only [qRow_apply]
+  linear_combination hs + hc0
+
+
+/-- The constants of the two pointwise bounds. -/
+def GreenCond_cA (d : ℕ) (κ g₀ s : ℝ) : ℝ := 2 * (s + 2 * d * g₀) / κ ^ 2
+
+def GreenCond_cX (d : ℕ) (κ g₀ s : ℝ) : ℝ := 2 / κ * ((s + 2 * d * g₀) * (1 / κ + 1) + 2 * d * g₀)
+
+/-- `C₁ = (2 (c_A + c_X) + 15/2) / κ`: the constant of the two remainders of (E). -/
+def GreenCond_C1 (d : ℕ) (κ g₀ s : ℝ) : ℝ := (2 * (GreenCond_cA d κ g₀ s + GreenCond_cX d κ g₀ s) + 15 / 2) / κ
+
+theorem GreenCond_cA_nonneg {κ g₀ s : ℝ} (hg : 0 ≤ g₀) (hs : 0 ≤ s) : 0 ≤ GreenCond_cA d κ g₀ s := by
+  unfold GreenCond_cA; positivity
+
+theorem GreenCond_cX_nonneg {κ g₀ s : ℝ} (hκ : 0 < κ) (hg : 0 ≤ g₀) (hs : 0 ≤ s) : 0 ≤ GreenCond_cX d κ g₀ s := by
+  unfold GreenCond_cX; positivity
+
+/-- **`|ε₂| ≤ (13/(2κ)) δ²`** on the good event (`GreenCore_apriori`, `GreenCore_eps2_loc`; `W^{-d} ≤ δ²`). -/
+theorem GreenCond_eps2_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (σ : sz.SeqΩ)
+    (hG : ∀ x y, ‖GreenCore_Gc sz z n t σ x y - GreenCore_Mc sz z n x y‖ ≤ δ) (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (w : Vtx d (sz.L n) (sz.W n)) : ‖GreenCore_eps2 (GreenCore_Gc sz z n t σ) t w‖ ≤ 13 / (2 * κ) * δ ^ 2 := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hMuu : ∀ w : Vtx d (sz.L n) (sz.W n), GreenCore_Mc sz z n w w = GreenCond_m sz z n := fun w => by
+    rw [dat.hM w w]; simpa using dat.hMd w.1
+  have hGuu : ∀ w : Vtx d (sz.L n) (sz.W n), κ / 2 ≤ ‖GreenCore_Gc sz z n t σ w w‖ := fun w => by
+    have h1 : ‖GreenCond_m sz z n‖ - ‖GreenCore_Gc sz z n t σ w w‖ ≤ ‖GreenCore_Gc sz z n t σ w w - GreenCond_m sz z n‖ := by
+      rw [norm_sub_rev]; exact norm_sub_norm_le _ _
+    have := hG w w
+    rw [hMuu w] at this
+    linarith [dat.hκm]
+  have hG32 : ∀ u v : Vtx d (sz.L n) (sz.W n), ‖GreenCore_Gc sz z n t σ u v‖ ≤ 3 / 2 := fun u v => by
+    have h1 := hG u v
+    have h2 := dat.hMle u v
+    calc ‖GreenCore_Gc sz z n t σ u v‖ = ‖(GreenCore_Gc sz z n t σ u v - GreenCore_Mc sz z n u v) + GreenCore_Mc sz z n u v‖ := by ring_nf
+      _ ≤ ‖GreenCore_Gc sz z n t σ u v - GreenCore_Mc sz z n u v‖ + ‖GreenCore_Mc sz z n u v‖ := norm_add_le _ _
+      _ ≤ 3 / 2 := by linarith [dat.hκ1]
+  have hGoff : ∀ u v : Vtx d (sz.L n) (sz.W n), u.2 ≠ v.2 → ‖GreenCore_Gc sz z n t σ u v‖ ≤ δ := fun u v huv => by
+    have := hG u v
+    rwa [dat.hM u v, if_neg huv, sub_zero] at this
+  obtain ⟨hR, hRr⟩ := GreenCore_apriori (G := GreenCore_Gc sz z n t σ) hG32 hGoff hδ0 hwd
+  have h2 := GreenCore_eps2_loc (G := GreenCore_Gc sz z n t σ) ht0 ht1 hκ hGuu w
+  have hR0 : 0 ≤ GreenCore_R (GreenCore_Gc sz z n t σ) w.1 w := by unfold GreenCore_R; positivity
+  have hRr0 : 0 ≤ GreenCore_Rrow (GreenCore_Gc sz z n t σ) w w.1 := by unfold GreenCore_Rrow; positivity
+  refine le_of_pow_le_pow_left₀ two_ne_zero (by positivity) (h2.trans ?_)
+  calc 4 / κ ^ 2 * GreenCore_R (GreenCore_Gc sz z n t σ) w.1 w * GreenCore_Rrow (GreenCore_Gc sz z n t σ) w w.1
+      ≤ 4 / κ ^ 2 * (13 / 4 * δ ^ 2) * (13 / 4 * δ ^ 2) := by
+        gcongr
+        · exact hR _ _
+        · exact hRr _ _
+    _ = (13 / (2 * κ) * δ ^ 2) ^ 2 := by field_simp; ring
+
+/-- **The remainder of (E) for `𝒜'`**: off a bad row slice, `‖A_u + t v̄_{[u]} - Q_u Y^A_u‖ ≤ C₁ δ²`. -/
+theorem GreenCond_E_A_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ)
+    (hG : ∀ x y, ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ) (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (hslice : (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε')
+    (hsq : Real.sqrt (ε' * GreenCond_QA sz z n t) ≤ δ ^ 2) :
+    ‖GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) +
+        (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) (splitEquiv d (sz.L n) (sz.W n) u).1 -
+        qRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦA sz z n u (GreenCore_Gc sz z n t σ)) ω‖ ≤
+      GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hs0 := norm_nonneg (GreenCond_s sz z n)
+  have e := GreenCond_E_A hκ h ht0 ht hg0 ht1 u ω
+  have e' : GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) +
+        (t : ℂ) * GreenCore_vbar (GreenCore_Gc sz z n t ω) (GreenCore_Mc sz z n) (splitEquiv d (sz.L n) (sz.W n) u).1 -
+        qRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦA sz z n u (GreenCore_Gc sz z n t σ)) ω =
+      -((1 / GreenCond_m sz z n) * qRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω) +
+        GreenCore_eps2 (GreenCore_Gc sz z n t ω) t (splitEquiv d (sz.L n) (sz.W n) u) := by rw [e]; ring
+  rw [e']
+  have h1 : ‖GreenCond_FA sz z n t u ω‖ ≤ GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 :=
+    (GreenCond_pointwise_A sz z n t hκ h ht0 ht hg0 hδ0 hδ2 ω hG _).2
+  have h2 := GreenCond_m5_A hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' u ω hslice
+  have h3 := GreenCond_eps2_le hκ h ht0 ht hg0 ht1 hδ0 hδ2 ω hG hwd (splitEquiv d (sz.L n) (sz.W n) u)
+  have hq : ‖qRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω‖ ≤ (2 * GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2 := by
+    rw [qRow_apply]
+    refine (norm_sub_le _ _).trans ?_
+    have h2' : ‖condRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω‖ ≤ GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 + δ ^ 2 := by
+      refine h2.trans ?_
+      unfold GreenCond_cA
+      linarith [hsq]
+    nlinarith [h1, h2']
+  have hm : ‖1 / GreenCond_m sz z n‖ ≤ 1 / κ := by
+    rw [norm_div, norm_one]
+    exact one_div_le_one_div_of_le hκ dat.hκm
+  refine (norm_add_le _ _).trans ?_
+  rw [norm_neg, norm_mul]
+  have hq0 : 0 ≤ (2 * GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2 := by
+    have := GreenCond_cA_nonneg (d := d) (κ := κ) hg0 hs0
+    positivity
+  calc ‖1 / GreenCond_m sz z n‖ * ‖qRow (GreenCond_sz0 sz) n u (GreenCond_FA sz z n t u) ω‖ + ‖GreenCore_eps2 (GreenCore_Gc sz z n t ω) t (splitEquiv d (sz.L n) (sz.W n) u)‖
+      ≤ 1 / κ * ((2 * GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2) + 13 / (2 * κ) * δ ^ 2 :=
+        add_le_add (mul_le_mul hm hq (norm_nonneg _) (by positivity)) h3
+    _ ≤ GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+        unfold GreenCond_C1
+        have := GreenCond_cX_nonneg (d := d) hκ hg0 hs0 (s := ‖GreenCond_s sz z n‖)
+        have hδ : 0 ≤ δ ^ 2 := sq_nonneg δ
+        have e2 : 1 / κ * ((2 * GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2) + 13 / (2 * κ) * δ ^ 2 =
+            (2 * GreenCond_cA d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 15 / 2) / κ * δ ^ 2 := by
+          field_simp; ring
+        rw [e2]
+        refine mul_le_mul_of_nonneg_right ?_ hδ
+        refine div_le_div_of_nonneg_right ?_ hκ.le
+        linarith
+
+
+/-- `4 d g₀ δ/κ ≤ 2 d g₀` for `δ ≤ κ/2`: the pointwise constant of `𝔛` is at most `c_X`. -/
+theorem GreenCond_cX_ge {κ g₀ s δ : ℝ} (hκ : 0 < κ) (hg : 0 ≤ g₀) (hs : 0 ≤ s) (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) :
+    2 / κ * ((s + 2 * d * g₀) * (1 / κ + 1) + 4 * d * g₀ * δ / κ) ≤ GreenCond_cX d κ g₀ s := by
+  unfold GreenCond_cX
+  have hd : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+  have h1 : 4 * d * g₀ * δ / κ ≤ 2 * d * g₀ := by
+    rw [div_le_iff₀ hκ]
+    have : 0 ≤ (d : ℝ) * g₀ := mul_nonneg hd hg
+    nlinarith
+  gcongr
+
+/-- **The remainder of (E) for `𝔛`**: off a bad row slice, `‖𝔛_{uy} + Q_u Y^X_{uy}‖ ≤ C₁ δ²`, `y = (α, o(u))`, `α ≠ [u]`. -/
+theorem GreenCond_E_X_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+    (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
+    (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1) (ω : (GreenCond_sz0 sz).SeqΩ)
+    (hG : ∀ x y, ‖GreenCore_Gc sz z n t ω x y - GreenCore_Mc sz z n x y‖ ≤ δ)
+    (hslice : (Sizes.seqP (GreenCond_sz0 sz)).real (rowSlice (GreenCond_sz0 sz) n u (GreenCond_badBase sz z n t δ) ω) ≤ ε')
+    (hsq : Real.sqrt (ε' * GreenCond_QX sz z n t) ≤ δ ^ 2) :
+    ‖GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2) +
+        qRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t σ)) ω‖ ≤
+      GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+  have dat := GreenCond_data hκ sz h n ht0 ht hg0
+  have hs0 := norm_nonneg (GreenCond_s sz z n)
+  have e := GreenCond_E_X hκ h ht0 ht hg0 ht1 u hα ω
+  have e' : GreenCore_Xrow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2) +
+        qRow (GreenCond_sz0 sz) n u (fun σ => GreenCond_ΦX sz z n α u (GreenCore_Gc sz z n t σ)) ω =
+      -((1 / GreenCond_m sz z n) * qRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω) := by rw [e]; ring
+  rw [e', norm_neg, norm_mul]
+  have hcX := GreenCond_cX_ge (d := d) hκ hg0 hs0 hδ0 hδ2 (s := ‖GreenCond_s sz z n‖)
+  have h1 : ‖GreenCond_FX sz z n t u α ω‖ ≤ GreenCond_cX d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 :=
+    ((GreenCond_pointwise_X sz z n t hκ h ht0 ht hg0 hδ0 hδ2 ω hG _ _ (fun h' => hα (congrArg Prod.fst h'))).2).trans
+      (mul_le_mul_of_nonneg_right hcX (sq_nonneg δ))
+  have h2 := GreenCond_m5_X hκ h ht0 ht hg0 ht1 hδ0 hδ2 hε' u hα ω hslice
+  have hq : ‖qRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω‖ ≤ (2 * GreenCond_cX d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2 := by
+    rw [qRow_apply]
+    refine (norm_sub_le _ _).trans ?_
+    have h2' : ‖condRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω‖ ≤ GreenCond_cX d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 + δ ^ 2 := by
+      refine h2.trans ?_
+      have := mul_le_mul_of_nonneg_right hcX (sq_nonneg δ)
+      linarith [hsq]
+    nlinarith [h1, h2']
+  have hm : ‖1 / GreenCond_m sz z n‖ ≤ 1 / κ := by
+    rw [norm_div, norm_one]
+    exact one_div_le_one_div_of_le hκ dat.hκm
+  have hcX0 := GreenCond_cX_nonneg (d := d) hκ hg0 hs0 (s := ‖GreenCond_s sz z n‖)
+  have hcA0 := GreenCond_cA_nonneg (d := d) (κ := κ) hg0 hs0
+  calc ‖1 / GreenCond_m sz z n‖ * ‖qRow (GreenCond_sz0 sz) n u (GreenCond_FX sz z n t u α) ω‖
+      ≤ 1 / κ * ((2 * GreenCond_cX d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2) :=
+        mul_le_mul hm hq (norm_nonneg _) (by positivity)
+    _ ≤ GreenCond_C1 d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ * δ ^ 2 := by
+        unfold GreenCond_C1
+        have e2 : 1 / κ * ((2 * GreenCond_cX d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) * δ ^ 2) =
+            (2 * GreenCond_cX d κ (BAflowLam0 sz z n) ‖GreenCond_s sz z n‖ + 1) / κ * δ ^ 2 := by
+          field_simp
+        rw [e2]
+        refine mul_le_mul_of_nonneg_right ?_ (sq_nonneg δ)
+        refine div_le_div_of_nonneg_right ?_ hκ.le
+        linarith
+
+end Decomp
+
 end RBM.BA
