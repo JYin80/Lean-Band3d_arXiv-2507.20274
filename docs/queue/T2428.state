@@ -1,0 +1,4 @@
+state: blocked
+reason: 1a PASS, probe f6c3866 (344 lines, exit 0), 1a-audit BLOCKED with dispatcher sign-off (wf_3451a55a-4e0; docs/reports/T2428-1a-audit.md): the binding stop line is hit: target 4 (b) clauses (ii)-(iv) are predicted at about 3,445 lines and do not fit the two named files of 2,000 lines; the probe step proposes a split in (a″). Question for the dispatcher: decide the split (third file, or move clauses to a successor row) before stage 1b. 1b not started (H183 (3)).
+updated: Sun Oct 11 23:28:21 UTC 2026
+reports: docs/reports/T2428-prove.md, docs/reports/T2428-1a-audit.md

@@ -2159,3 +2159,9 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (6) **T2431 = TL-V**（`prover-hard`，`BA/TwistChain`，停止线 1,000）：`baTwistLoopBase_holds`、`baChainTL_holds`（带第七合取项的链）。`BAChainTL` 里的 `BATwistLoopBase` 前提有了目标 1 就多余，但不另加推论（V3、BA-M1 直接用两条定理）。
 - (7) 开工次序：T2423（在跑）→ T2427 → T2428 → T2429 → T2430 → T2431。登记（`Test/Axioms.lean`）五张都不改。下一张票号 T2432，下一节 §242，下一条 H223。下一批：L4b1、L3a2、L3c3a、L4e-C、G7、带状侧 T7/T1/T4s1/T4s2/T5s2；TL1b 在 T2427 合并后。
 
+## §242 — T2428（TL2a）1a 撞停止线：按探针提议拆成四行（Amend 1）（总调度 V3，2026-10-11 23:31 UTC）
+
+- (1) **T2428 的 1a 通过、1a-audit BLOCKED 要签字**：目标 4(b) 的 (ii)–(iv)（余项界、鞅尾、`Ũ` 加权尾）预计 3,445 行，两个文件放不下（停止线每文件 2,000）。原因：带状的 `oneStepEnvelope`、`difRepTail_condMGF_Z`、`STeeM` 都只对 `loopL`/`ZvecN` 陈述，扭转版本要新证（§241 (3) 预计的风险）。不缺数学输入。
+- (2) **签字（Amend 1）**：接受探针的拆法。T2428 保留目标 1–3、`BAuKer` 半群、4(a)、4(b) 第 (i) 条、两条核桥，另把 `BATwistGridMartAt`、`BATwistGridMart`、`BATwistGridRem`、`BATwistGridTail`、`BATwistGridWTail`、`BATwistGridAssemble` 逐字从探针 f6c3866 抄进 `TwistGrid2`，并证 `baTwistGridAssemble_holds`（预计 1,035 + 465 行）。后继三行在 T2428 合并后写：**TL2a2** = (ii) `BATwistGridRem`（中心 1,380，两个文件）、**TL2a3** = (iii) `BATwistGridTail`（915）、**TL2a4** = (iv) `BATwistGridWTail`（1,150）。`baTwistGridMart_holds` 是三行推论，放进 TL2d。
+- (3) **阶段 TL 行数 10 → 13**，仍在旗标 15 以内（§241 (3) 的规则）；余量只剩 2 张。再超就给监督发短 REQ。TL2d 的输入改为 TL2a–TL2a4、TL2b、TL2c、TL1b。T2427 的 1a-audit RETURN 是钉文少一个前提（`0 < ε`），中枢自动修补，不需签字。下一张票号 T2432，下一节 §243，下一条 H224。
+
