@@ -103,11 +103,11 @@ def promoteC (Γ : BAGraph E I) : LGraph E I where
 /-- **The one image map** (L4-C2; K1 of T2395): the atomic image of a BA graph, as a packed graph of the band over the external vertices
 `E` of `Γ`: `promoteC` first (the `=`-, `Ψ`- and `M`-dotted edges become `=`-dotted edges; every solid edge stays, circled iff it is circled in
 `Γ` and lies inside an atom; every waved edge stays; a `×`-dotted edge is put on every solid edge between two atoms; the `×`-dotted edges of
-`Γ` are dropped), then the merged `LGraph.mergeP` (T2397's order, probe 46; `BAGraph.img95` is the construction of T2395, probe 222-227, and
+`Γ` are dropped), then the merged `LGraph.mergeP` (T2397's order, probe 48; `BAGraph.img95` is the construction of T2395, probe 222-227, and
 `BAGraph.img95_equiv_gen`, `BAGraph.img95_equiv` show that it is this map up to relabelling). -/
 def BAGraph.img (Γ : BAGraph E I) : PGraph E := (promoteC Γ).mergeP
 
-/-- The atomic image of a packed BA graph (T2395 probe 228; T2397 probe 46 for `E = Fin 2`): `lvl1Comp` of the image of the graph. -/
+/-- The atomic image of a packed BA graph (T2395 probe 228; T2397 probe 48 for `E = Fin 2`): `lvl1Comp` of the image of the graph. -/
 def BAPGraph.img {E : Type} (P : BAPGraph E) : PGraph E := PGraph.lvl1Comp P.g.img P.ext P.ext_surj
 
 end Image
@@ -960,7 +960,7 @@ example : ∃ (eE : BAAtomic_G0.img95.E' ≃ BAAtomic_G0.img.E') (eI : BAAtomic_
       BAAtomic_G0.img.g = BAAtomic_G0.img95.g.relabel (Sum.map eE eI) :=
   BAAtomic_G0.img95_equiv BAAtomic_G0_normal
 
-/-- T2397's `img` (probe 46) is `BAPGraph.img` at `E = Fin 2`, by definition. -/
+/-- T2397's `img` (probe 48) is `BAPGraph.img` at `E = Fin 2`, by definition. -/
 example (Q : BAPGraph (Fin 2)) : BAPGraph.img Q = ((promoteC Q.g).mergeP).lvl1Comp Q.ext Q.ext_surj := rfl
 
 /-- (m2) read through `(eq:MolVW)` (`LocalRegular.lean:1778`): the vertices and waved edges of a molecule of the image of a normal graph. -/
