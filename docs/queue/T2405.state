@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a, 1a-audit sign-off (Amend 1, H199), (a′) repair, 1a-audit round 2 PASS, prover-hard 50818fe, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 04:24:30 UTC 2026
+state: merged 2af090d
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new Chain/NewKLKGen (816 lines, stop 900), root import added at merge; full lake build 4215 jobs; pushed
+updated: Sun Oct 11 04:24:31 UTC 2026
 reports: docs/reports/T2405-prove.md, docs/reports/T2405-1a-audit.md, docs/reports/T2405-audit.md

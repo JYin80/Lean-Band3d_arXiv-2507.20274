@@ -1956,3 +1956,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 
 - (1) **T2407 = BA-L2c1**（BA 74；阶段 L 首批，监督 2149 Q2 已 PASS，"任何路线都需要"）：新文件 `Graph/BAWeightOp`，把权展开 (B.19)（[P] Lemma B.7，p.94）写成图操作：项表、值恒等式（由 `baLweight_holds` 得到）、计数和阶。照搬带状 `LWWeightExp` §3（`owxT1`–`owxT4`、`owx_graph_E`），沿用 BA 的 `lanlw` 已有做法（`BAExpandW`、`BAExpandWOrd`）。`prover-hard`，800 / 950 / 1,700，停止线 2,000；不进证书通道。
 - (2) 槽位：T2403、T2405 在跑；T2401 修补、T2402 只合并报告、T2407 排队。下一张票号 T2408，下一节 §222，下一条 H203。还没写：L2c2（hi 2,697，要拆）、L3c2、G5b（带 R6，等 G5a 合并）、G6a（等 G4）、BA-T 钉文 REQ、阶段 E 关闭 REQ、L4 REQ（等 TL 审查）。
+
+## §222 — G4、T2405 合并；放 G6a = T2408、L2c2a = T2409；T2407 Amend 1（总调度 V2，2026-10-11 04:34 UTC）
+
+- (1) **T2403（G4）合并 292a855**：新 `BA/GreenOff` 1,568 行（停止线 1,600）；`baGbEXPij'_holds`（`2 ≤ d`）、`baStab_holds`；登记去掉 `BAStab`、`BAGbEXPij'` 两条 owed。**T2405（ST 侧 T3）合并 2af090d**：新 `Chain/NewKLKGen` 816 行，带撇的通用钉文 `STNewKLKAtgL'`。**T2402** 只合并报告（5ee937e）。现在在跑：T2401（修补）、T2407（L2c1）。槽位空两个，所以补两张票。
+- (2) **T2408 = BA-G6a**（BA 75，关键路径排第一）：BA 在确定性控制下的局部律，逐序列那一层。照搬带状 `Green/LocalLaw.lean`（`localLawDetThm`、`loopFloorThm`、接线），用已合并的单时刻核心 `GreenCore_diag`、`baGbEXPij'_holds`、`baStab_holds`。1a 是设计门：第 (ii) 项要求 G6a 的输出逐字满足 G5a（T2401 G.6）和 G5c（T2402 的 `hll`）用到的局部律前提。探针由 `prover-max` 编译。`prover-hard`，1,100 / 1,450 / 2,400，每个文件停止线 2,000，必要时拆 `GreenLocal2`。
+- (3) **L2c2 拆成两张**（hi 2,697 超过 2,000）：**T2409 = L2c2a**（BA 76）只做钉文和证明，新 `Graph/BAGGExp`：从 T2387 探针逐字复制 `ba_W_sub_one`、`BAGGGammaL/R`、`BAGGGamma`，证 `baGGGamma_holds`，路线照 [68] Lemma B.11，用已合并的 `baLanlw_holds`、`baLweight_holds` 和 `W` 方程组。450 / 650 / 1,000，停止线 1,300。**L2c2b**（`gg2`、`gg4` 的图操作、`BAexpFrameE`、计数和阶）等 T2407 和 T2409 都合并后再写。
+- (4) **T2407 Amend 1**：T2395（S′）的探针已经钉好下游要用的形式：`BAGraph.ext`、`lw2`、`lw4`（`t/T2395` 探针 106–128），T2407 必须逐字用这些；目标 2 是 `BAexpFrameE` 的第一合取项 `baExpFrame_lw`；阶的陈述要用 T2395 `BAstepMono` 需要的形式。不重启，把 amend 传给剩下的阶段。
+- (5) 下一张票号 T2410，下一节 §223，下一条 H204。还没写：阶段 E 关闭 REQ、L3c2、L2c2b、G5b（带 R6，等 G5a 合并）、BA-T 钉文 REQ、ST 侧 T4s1/T4s2/T5s2、L4 REQ（等 TL 审查）。

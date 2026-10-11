@@ -1,4 +1,4 @@
-state: merged 0c82091
+state: merged 5ee937e
 reason: report-only merge under Amend 1 (state, prove, 1a-audit, 18 scripts in docs/reports/T2402/); probe RBM3D/Probe/T2402Pins.lean stays on t/T2402 at 4b5f864; G5c stage 1b held (Amend 1 F2); pushed
-updated: Sun Oct 11 04:21:41 UTC 2026
+updated: Sun Oct 11 04:21:50 UTC 2026
 reports: docs/reports/T2402-prove.md, docs/reports/T2402-1a-audit.md
