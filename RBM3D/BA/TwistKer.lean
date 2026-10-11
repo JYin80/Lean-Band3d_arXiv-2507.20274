@@ -628,6 +628,607 @@ example : ∀ᶠ n in atTop, ∀ v : ℝ, 0 ≤ v → v ≤ 1 / 2 → ∃ a c₁
 
 end Inst
 
+/-! ## 5. The fine lattice: `E_a`, the trace sandwich, loops and the Ward identity (the deterministic core of T.2, T.4 at `n = 3`, T.5)
+
+`loopFine H z σ a` is the trace of `∏ G(σ_i) E_{a_i}` over the block-product index; here it is read on the fine lattice with `E_a = W^{-d} 1_{[a]}`
+(`TwistKer_fE`).  The identities are the entrywise computations that the private `trace_pm_formula`, `loopFine_pm_formula` (`Green/Pins.lean:377-437`) and
+`Gres_ward_left` (`Induction/Contract.lean:277`) make for the band model, here copied (stem `TwistKer_`) for `Idx d (sz.L n) (sz.W n)`. -/
+
+section Fine
+
+variable {d : ℕ} {sz : Sizes d} (n : ℕ)
+
+/-- `E_a = W^{-d} 1_{[a]}` on the fine lattice (`Eblk` read through `splitEquiv`). -/
+private def TwistKer_fE (a : Zd d (sz.L n)) :
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  Matrix.diagonal fun x => if (split d (sz.L n) (sz.W n) x).1 = a then (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ else 0
+
+private theorem TwistKer_fE_apply (a : Zd d (sz.L n)) (x y : Idx d (sz.L n) (sz.W n)) :
+    TwistKer_fE n a x y = if x = y then (if (split d (sz.L n) (sz.W n) x).1 = a then (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ else 0) else 0 := by
+  simp [TwistKer_fE, Matrix.diagonal_apply]
+
+/-- `Tr(A E_a B E_b) = W^{-2d} Σ_{i∈[b]} Σ_{j∈[a]} A_{ij} B_{ji}`. -/
+private theorem TwistKer_trace_sandwich (A B : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (a b : Zd d (sz.L n)) :
+    Matrix.trace (A * TwistKer_fE n a * B * TwistKer_fE n b) =
+      ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ i ∈ twBlk n b, ∑ j ∈ twBlk n a, A i j * B j i := by
+  set w : ℂ := (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ with hw
+  have h1 : ∀ (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (c : Zd d (sz.L n)) (i j : Idx d (sz.L n) (sz.W n)),
+      (M * TwistKer_fE n c) i j = M i j * (if (split d (sz.L n) (sz.W n) j).1 = c then w else 0) := by
+    intro M c i j
+    simp [TwistKer_fE, Matrix.mul_diagonal, hw]
+  unfold Matrix.trace
+  simp only [Matrix.diag_apply]
+  have h2 : ∀ i, (A * TwistKer_fE n a * B * TwistKer_fE n b) i i =
+      (if (split d (sz.L n) (sz.W n) i).1 = b then w else 0) * ∑ j, A i j * (if (split d (sz.L n) (sz.W n) j).1 = a then w else 0) * B j i := by
+    intro i
+    rw [h1, Matrix.mul_apply, mul_comm]
+    congr 1
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [h1]
+  simp only [h2]
+  have h3 : ∀ i : Idx d (sz.L n) (sz.W n), (if (split d (sz.L n) (sz.W n) i).1 = b then w else 0) *
+      ∑ j, A i j * (if (split d (sz.L n) (sz.W n) j).1 = a then w else 0) * B j i =
+      if (split d (sz.L n) (sz.W n) i).1 = b then w ^ 2 * ∑ j ∈ twBlk n a, A i j * B j i else 0 := by
+    intro i
+    by_cases hi : (split d (sz.L n) (sz.W n) i).1 = b
+    · simp only [hi, ite_true]
+      rw [twBlk, Finset.sum_filter, Finset.mul_sum, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      by_cases hj : (split d (sz.L n) (sz.W n) j).1 = a
+      · simp [hj]; ring
+      · simp [hj]
+    · simp [hi]
+  simp only [h3]
+  rw [← Finset.sum_filter, ← Finset.mul_sum]
+  rfl
+
+/-- `Tr(E_b M) = W^{-d} Σ_{y∈[b]} M_{yy}`. -/
+private theorem TwistKer_trace_fE_mul (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (b : Zd d (sz.L n)) :
+    Matrix.trace (TwistKer_fE n b * M) = (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ y ∈ twBlk n b, M y y := by
+  unfold Matrix.trace TwistKer_fE
+  simp only [Matrix.diag_apply, Matrix.diagonal_mul]
+  rw [twBlk, Finset.sum_filter, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  by_cases hi : (split d (sz.L n) (sz.W n) i).1 = b <;> simp [hi]
+
+/-- `Σ_a Σ_{x∈[a]} F x = Σ_x F x` (a copy of the private `TwistPins_sum_blk`). -/
+private theorem TwistKer_sum_blk {β : Type*} [AddCommMonoid β] (F : Idx d (sz.L n) (sz.W n) → β) :
+    ∑ a : Zd d (sz.L n), ∑ x ∈ twBlk n a, F x = ∑ x, F x :=
+  Finset.sum_fiberwise Finset.univ (fun x => (split d (sz.L n) (sz.W n) x).1) F
+
+/-- `G(σ)^* = G(-σ)` for Hermitian `H` (a copy of the private `Gres_conjTranspose`, `Induction/Contract.lean:225`). -/
+private theorem TwistKer_Gres_conjTranspose {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian) (z : ℂ) (σ : Bool) :
+    (Gres H z σ)ᴴ = Gres H z (!σ) := by
+  have hH' : Hᴴ = H := hH
+  cases σ with
+  | true =>
+    simp only [Gres, ↓reduceIte, Bool.not_true, Bool.false_eq_true, ← Matrix.nonsing_inv_eq_ringInverse,
+      Matrix.conjTranspose_nonsing_inv, Matrix.conjTranspose_sub, Matrix.conjTranspose_smul,
+      Matrix.conjTranspose_one, hH', Complex.star_def]
+  | false =>
+    simp only [Gres, Bool.false_eq_true, ↓reduceIte, Bool.not_false, ← Matrix.nonsing_inv_eq_ringInverse,
+      Matrix.conjTranspose_nonsing_inv, Matrix.conjTranspose_sub, Matrix.conjTranspose_smul,
+      Matrix.conjTranspose_one, hH', Complex.star_def, Complex.conj_conj]
+
+/-- **Ward's identity** `G(+) - G(-) = (z - z̄) G(+) G(-) = (z - z̄) G(-) G(+)` (a copy of the private `Gres_sub`, `Induction/Contract.lean:240`). -/
+private theorem TwistKer_Gres_sub {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) :
+    Gres H z true - Gres H z false = (z - (starRingEnd ℂ) z) • (Gres H z true * Gres H z false) ∧
+    Gres H z true - Gres H z false = (z - (starRingEnd ℂ) z) • (Gres H z false * Gres H z true) := by
+  have hA : IsUnit (H - z • (1 : Matrix ι ι ℂ)) := isUnit_sub_smul_of_isHermitian hH hz
+  have hB : IsUnit (H - (starRingEnd ℂ) z • (1 : Matrix ι ι ℂ)) :=
+    isUnit_sub_smul_of_isHermitian hH (by simpa using hz)
+  have hAd : IsUnit (H - z • (1 : Matrix ι ι ℂ)).det := (Matrix.isUnit_iff_isUnit_det _).mp hA
+  have hBd : IsUnit (H - (starRingEnd ℂ) z • (1 : Matrix ι ι ℂ)).det :=
+    (Matrix.isUnit_iff_isUnit_det _).mp hB
+  simp only [Gres, ↓reduceIte, Bool.false_eq_true, ← Matrix.nonsing_inv_eq_ringInverse]
+  set A : Matrix ι ι ℂ := H - z • (1 : Matrix ι ι ℂ) with hAdef
+  set B : Matrix ι ι ℂ := H - (starRingEnd ℂ) z • (1 : Matrix ι ι ℂ) with hBdef
+  have hBA : B - A = (z - (starRingEnd ℂ) z) • (1 : Matrix ι ι ℂ) := by
+    rw [hAdef, hBdef, sub_sub_sub_cancel_left, ← sub_smul]
+  have hAinv : A⁻¹ * A = 1 := Matrix.nonsing_inv_mul A hAd
+  have hAinv' : A * A⁻¹ = 1 := Matrix.mul_nonsing_inv A hAd
+  have hBinv : B⁻¹ * B = 1 := Matrix.nonsing_inv_mul B hBd
+  have hBinv' : B * B⁻¹ = 1 := Matrix.mul_nonsing_inv B hBd
+  constructor
+  · have : A⁻¹ * (B - A) * B⁻¹ = A⁻¹ - B⁻¹ := by
+      rw [Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc, hBinv', Matrix.mul_one,
+        hAinv, Matrix.one_mul]
+    rw [← this, hBA]
+    simp
+  · have : B⁻¹ * (B - A) * A⁻¹ = A⁻¹ - B⁻¹ := by
+      rw [Matrix.mul_sub, Matrix.sub_mul, hBinv, Matrix.one_mul, Matrix.mul_assoc, hAinv',
+        Matrix.mul_one]
+    rw [← this, hBA]
+    simp
+
+/-- `G(-σ) G(σ) = (2 i η)⁻¹ (G(+) - G(-))` (a copy of the private `Gres_ward_left`, `Induction/Contract.lean:277`). -/
+private theorem TwistKer_Gres_ward_left {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0)
+    (σ : Bool) :
+    Gres H z (!σ) * Gres H z σ = (2 * Complex.I * (z.im : ℂ))⁻¹ • (Gres H z true - Gres H z false) := by
+  have hk : (2 * Complex.I * (z.im : ℂ)) ≠ 0 := by
+    have : (z.im : ℂ) ≠ 0 := by exact_mod_cast hz
+    simp [this]
+  obtain ⟨h1, h2⟩ := TwistKer_Gres_sub hH hz
+  have hsub : z - (starRingEnd ℂ) z = 2 * Complex.I * (z.im : ℂ) := by rw [Complex.sub_conj]; push_cast; ring
+  rw [hsub] at h1 h2
+  cases σ with
+  | true =>
+    simp only [Bool.not_true]
+    rw [h2, smul_smul, inv_mul_cancel₀ hk, one_smul]
+  | false =>
+    simp only [Bool.not_false]
+    rw [h1, smul_smul, inv_mul_cancel₀ hk, one_smul]
+
+/-- `G(σ) G(-σ) = (2 i η)⁻¹ (G(+) - G(-))`. -/
+private theorem TwistKer_Gres_ward_right {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0)
+    (σ : Bool) :
+    Gres H z σ * Gres H z (!σ) = (2 * Complex.I * (z.im : ℂ))⁻¹ • (Gres H z true - Gres H z false) := by
+  have := TwistKer_Gres_ward_left hH hz (!σ)
+  simpa using this
+
+/-- `blockMat` commutes with `Gres` (a copy of the private `gres_blockMat_true`, `Green/Pins.lean:346`, for both signs). -/
+private theorem TwistKer_Gres_blockMat (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (σ : Bool) :
+    Gres (blockMat d (sz.L n) (sz.W n) H) z σ = blockMat d (sz.L n) (sz.W n) (Gres H z σ) := by
+  unfold Gres blockMat
+  set w : ℂ := if σ then z else (starRingEnd ℂ) z with hw
+  have e1 : H.submatrix (splitEquiv d (sz.L n) (sz.W n)).symm (splitEquiv d (sz.L n) (sz.W n)).symm -
+        w • (1 : Matrix (Vtx d (sz.L n) (sz.W n)) (Vtx d (sz.L n) (sz.W n)) ℂ) =
+      (H - w • (1 : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)).submatrix (splitEquiv d (sz.L n) (sz.W n)).symm
+        (splitEquiv d (sz.L n) (sz.W n)).symm := by
+    ext i j
+    simp [Matrix.submatrix_apply, Matrix.one_apply]
+  rw [e1, ← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse, Matrix.inv_submatrix_equiv]
+
+/-- `E_a` through `blockMat` is `Eblk a`. -/
+private theorem TwistKer_blockMat_fE (c : Zd d (sz.L n)) :
+    blockMat d (sz.L n) (sz.W n) (TwistKer_fE n c) = Eblk d (sz.L n) (sz.W n) c := by
+  ext x y
+  unfold blockMat Eblk TwistKer_fE
+  simp only [Matrix.submatrix_apply, Matrix.diagonal_apply]
+  by_cases hxy : x = y
+  · subst hxy
+    have : split d (sz.L n) (sz.W n) ((splitEquiv d (sz.L n) (sz.W n)).symm x) = x :=
+      (splitEquiv d (sz.L n) (sz.W n)).apply_symm_apply x
+    simp [this]
+  · have : (splitEquiv d (sz.L n) (sz.W n)).symm x ≠ (splitEquiv d (sz.L n) (sz.W n)).symm y :=
+      fun h => hxy ((splitEquiv d (sz.L n) (sz.W n)).symm.injective h)
+    simp [hxy, this]
+
+/-- **The loops of the fine lattice as traces of fine matrices**: `𝓛_{σ,a} = Tr ∏_i G(σ_i) E_{a_i}` with `E_a = W^{-d} 1_{[a]}` on `Idx`. -/
+private theorem TwistKer_loopFine_eq (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) {k : ℕ}
+    (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) :
+    loopFine d (sz.L n) (sz.W n) H z σ a =
+      Matrix.trace (List.ofFn fun i => Gres H z (σ i) * TwistKer_fE n (a i)).prod := by
+  unfold loopFine loopM
+  set Φ := Matrix.reindexAlgEquiv ℂ ℂ (splitEquiv d (sz.L n) (sz.W n)) with hΦdef
+  have hΦ : ∀ M, Φ M = blockMat d (sz.L n) (sz.W n) M := fun M => rfl
+  have hprod : (List.ofFn fun i => Gres (blockMat d (sz.L n) (sz.W n) H) z (σ i) * Eblk d (sz.L n) (sz.W n) (a i)).prod =
+      Φ (List.ofFn fun i => Gres H z (σ i) * TwistKer_fE n (a i)).prod := by
+    rw [map_list_prod, List.map_ofFn]
+    congr 1
+    refine congrArg List.ofFn (funext fun i => ?_)
+    simp only [Function.comp_apply]
+    rw [map_mul, hΦ, hΦ, TwistKer_Gres_blockMat, TwistKer_blockMat_fE]
+  rw [hprod]
+  unfold Matrix.trace
+  simp only [Matrix.diag_apply, hΦ, blockMat, Matrix.submatrix_apply]
+  exact Equiv.sum_comp (splitEquiv d (sz.L n) (sz.W n)).symm
+    (fun i => (List.ofFn fun i => Gres H z (σ i) * TwistKer_fE n (a i)).prod i i)
+
+/-- The 1-loop. -/
+private theorem TwistKer_loop1 (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (σ : Bool) (c : Zd d (sz.L n)) :
+    loopFine d (sz.L n) (sz.W n) H z ![σ] ![c] = Matrix.trace (Gres H z σ * TwistKer_fE n c) := by
+  rw [TwistKer_loopFine_eq]
+  simp [List.ofFn_succ]
+
+/-- The 3-loop. -/
+private theorem TwistKer_loop3 (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (σ₀ σ₁ σ₂ : Bool)
+    (a₀ a₁ a₂ : Zd d (sz.L n)) :
+    loopFine d (sz.L n) (sz.W n) H z ![σ₀, σ₁, σ₂] ![a₀, a₁, a₂] =
+      Matrix.trace (Gres H z σ₀ * TwistKer_fE n a₀ * Gres H z σ₁ * TwistKer_fE n a₁ * Gres H z σ₂ * TwistKer_fE n a₂) := by
+  rw [TwistKer_loopFine_eq]
+  simp [List.ofFn_succ, mul_assoc]
+
+/-- The 2-loop. -/
+private theorem TwistKer_loop2 (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (σ₀ σ₁ : Bool)
+    (a₀ a₁ : Zd d (sz.L n)) :
+    loopFine d (sz.L n) (sz.W n) H z ![σ₀, σ₁] ![a₀, a₁] =
+      Matrix.trace (Gres H z σ₀ * TwistKer_fE n a₀ * Gres H z σ₁ * TwistKer_fE n a₁) := by
+  rw [TwistKer_loopFine_eq]
+  simp [List.ofFn_succ, mul_assoc]
+
+/-- **The 2-loop in entries**: `𝓛_{(+,-),(a,b)} = W^{-2d} Σ_{i∈[b], j∈[a]} |G_{ij}|²` (Hermitian `H`; the twin of the private `loopFine_pm_formula`, `Green/Pins.lean:407`). -/
+private theorem TwistKer_loop2_pm {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) (z : ℂ)
+    (a b : Zd d (sz.L n)) :
+    loopFine d (sz.L n) (sz.W n) H z ![true, false] ![a, b] =
+      ((((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 2 * ∑ i ∈ twBlk n b, ∑ j ∈ twBlk n a, ‖Gres H z true i j‖ ^ 2 : ℝ) : ℂ) := by
+  rw [TwistKer_loop2, TwistKer_trace_sandwich]
+  have hG : Gres H z false = (Gres H z true)ᴴ := by
+    have := TwistKer_Gres_conjTranspose hH z true
+    simpa using this.symm
+  rw [hG]
+  push_cast
+  congr 1
+  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+  rw [Matrix.conjTranspose_apply, Complex.star_def, Complex.mul_conj']
+
+/-- The entry of `G` is dominated by the 2-loop: `|G_{ij}|² ≤ W^{2d} 𝓛_{(+,-),([j],[i])}`. -/
+private theorem TwistKer_entry_le_loop2 {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) (z : ℂ)
+    (i j : Idx d (sz.L n) (sz.W n)) :
+    ‖Gres H z true i j‖ ^ 2 ≤ (((sz.W n : ℕ) : ℝ) ^ d) ^ 2 *
+      ‖loopFine d (sz.L n) (sz.W n) H z ![true, false] ![(split d (sz.L n) (sz.W n) j).1, (split d (sz.L n) (sz.W n) i).1]‖ := by
+  rw [TwistKer_loop2_pm n hH z, Complex.norm_real, Real.norm_of_nonneg (by positivity)]
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  have hi : i ∈ twBlk n (split d (sz.L n) (sz.W n) i).1 := by simp [twBlk]
+  have hj : j ∈ twBlk n (split d (sz.L n) (sz.W n) j).1 := by simp [twBlk]
+  have h1 : ‖Gres H z true i j‖ ^ 2 ≤ ∑ i' ∈ twBlk n (split d (sz.L n) (sz.W n) i).1, ∑ j' ∈ twBlk n (split d (sz.L n) (sz.W n) j).1,
+      ‖Gres H z true i' j'‖ ^ 2 := by
+    refine (Finset.single_le_sum (f := fun j' => ‖Gres H z true i j'‖ ^ 2) (fun _ _ => by positivity) hj).trans ?_
+    exact Finset.single_le_sum (f := fun i' => ∑ j' ∈ twBlk n (split d (sz.L n) (sz.W n) j).1, ‖Gres H z true i' j'‖ ^ 2)
+      (fun _ _ => Finset.sum_nonneg fun _ _ => by positivity) hi
+  calc ‖Gres H z true i j‖ ^ 2 ≤ _ := h1
+    _ = (((sz.W n : ℕ) : ℝ) ^ d) ^ 2 * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ^ 2 * ∑ i' ∈ twBlk n (split d (sz.L n) (sz.W n) i).1,
+        ∑ j' ∈ twBlk n (split d (sz.L n) (sz.W n) j).1, ‖Gres H z true i' j'‖ ^ 2) := by
+        field_simp
+
+/-- `Σ_a twSq(X; c, a) = W^{-2d} Σ_{y∈[c]} (X X^*)_{yy}` (sum over the column block). -/
+private theorem TwistKer_sum_twSq_row (X : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (c : Zd d (sz.L n)) :
+    (((∑ a, twSq n X c a : ℝ)) : ℂ) = ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ y ∈ twBlk n c, (X * Xᴴ) y y := by
+  unfold twSq
+  push_cast
+  rw [← Finset.mul_sum]
+  congr 1
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun y _ => ?_
+  rw [TwistKer_sum_blk n (fun x : Idx d (sz.L n) (sz.W n) => ((‖X y x‖ : ℝ) : ℂ) ^ 2)]
+  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Complex.star_def]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [Complex.mul_conj']
+
+/-- `Σ_b twSq(X; b, c) = W^{-2d} Σ_{x∈[c]} (X^* X)_{xx}` (sum over the row block). -/
+private theorem TwistKer_sum_twSq_col (X : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (c : Zd d (sz.L n)) :
+    (((∑ b, twSq n X b c : ℝ)) : ℂ) = ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ twBlk n c, (Xᴴ * X) x x := by
+  unfold twSq
+  push_cast
+  rw [← Finset.mul_sum]
+  congr 1
+  have : ∀ b : Zd d (sz.L n), ∑ y ∈ twBlk n b, ∑ x ∈ twBlk n c, ((‖X y x‖ : ℝ) : ℂ) ^ 2 =
+      ∑ x ∈ twBlk n c, ∑ y ∈ twBlk n b, ((‖X y x‖ : ℝ) : ℂ) ^ 2 := fun b => Finset.sum_comm
+  simp only [this]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [TwistKer_sum_blk n (fun y : Idx d (sz.L n) (sz.W n) => ((‖X y x‖ : ℝ) : ℂ) ^ 2)]
+  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Complex.star_def]
+  refine Finset.sum_congr rfl fun y _ => ?_
+  rw [mul_comm, Complex.mul_conj']
+
+/-- `Σ_{y∈[c]} M_{yy} = W^d Tr(E_c M)`. -/
+private theorem TwistKer_blk_diag_sum (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (c : Zd d (sz.L n)) :
+    ∑ y ∈ twBlk n c, M y y = (((sz.W n : ℕ) : ℂ) ^ d) * Matrix.trace (TwistKer_fE n c * M) := by
+  rw [TwistKer_trace_fE_mul]
+  have hW : ((sz.W n : ℕ) : ℂ) ^ d ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.2 (sz.W_pos n).ne')
+  field_simp
+
+/-- The arithmetic of the Ward sums: `T = ‖(T : ℂ)‖`, `(T : ℂ) = W^{-2d} (2iη)⁻¹ W^d (t₁ - t₂)`, `‖t_i‖ ≤ M` give `T ≤ (W^d η)⁻¹ M`. -/
+private theorem TwistKer_ward_arith {T η M : ℝ} (hη : 0 < η) (hT : 0 ≤ T) (t₁ t₂ : ℂ) (h₁ : ‖t₁‖ ≤ M) (h₂ : ‖t₂‖ ≤ M) (W : ℝ)
+    (hW : 0 < W) (hTc : (T : ℂ) = ((W : ℂ)⁻¹) ^ 2 * ((2 * Complex.I * (η : ℂ))⁻¹ * ((W : ℂ) * (t₁ - t₂)))) :
+    T ≤ (W * η)⁻¹ * M := by
+  have h1 : T = ‖(T : ℂ)‖ := by rw [Complex.norm_real, Real.norm_of_nonneg hT]
+  rw [h1, hTc]
+  have hk : ‖(2 * Complex.I * (η : ℂ))⁻¹‖ = (2 * η)⁻¹ := by
+    rw [norm_inv, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg hη.le]
+    simp
+  rw [norm_mul, norm_mul, norm_mul, norm_pow, norm_inv, hk, Complex.norm_real, Real.norm_of_nonneg hW.le]
+  have h3 : ‖t₁ - t₂‖ ≤ 2 * M := by
+    have := norm_sub_le t₁ t₂
+    linarith
+  have hM : 0 ≤ M := (norm_nonneg _).trans h₁
+  calc W⁻¹ ^ 2 * ((2 * η)⁻¹ * (W * ‖t₁ - t₂‖)) ≤ W⁻¹ ^ 2 * ((2 * η)⁻¹ * (W * (2 * M))) := by
+        gcongr
+    _ = (W * η)⁻¹ * M := by field_simp
+
+/-- **Ward at the right end of a 1-loop**: `Σ_a 𝓛^{(2)}`-type sum `Σ_a twSq(G(σ); c, a) ≤ (W^d η)⁻¹ max |𝓛^{(1)}_{c}|`. -/
+private theorem TwistKer_ward_row1 {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ}
+    (hz : 0 < z.im) (σ : Bool) (c : Zd d (sz.L n)) {M : ℝ} (hM : ∀ τ : Bool, ‖loopFine d (sz.L n) (sz.W n) H z ![τ] ![c]‖ ≤ M) :
+    ∑ a, twSq n (Gres H z σ) c a ≤ ((((sz.W n : ℕ) : ℝ) ^ d) * z.im)⁻¹ * M := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  refine TwistKer_ward_arith hz (Finset.sum_nonneg fun a _ => ?_) (Matrix.trace (Gres H z true * TwistKer_fE n c))
+    (Matrix.trace (Gres H z false * TwistKer_fE n c)) (by simpa [TwistKer_loop1] using hM true)
+    (by simpa [TwistKer_loop1] using hM false) _ hW ?_
+  · unfold twSq; positivity
+  · rw [TwistKer_sum_twSq_row]
+    have hX : Gres H z σ * (Gres H z σ)ᴴ = (2 * Complex.I * (z.im : ℂ))⁻¹ • (Gres H z true - Gres H z false) := by
+      rw [TwistKer_Gres_conjTranspose hH z σ]; exact TwistKer_Gres_ward_right hH hz.ne' σ
+    rw [hX]
+    simp only [Matrix.smul_apply, Matrix.sub_apply, smul_eq_mul, ← Finset.mul_sum, Finset.sum_sub_distrib]
+    rw [TwistKer_blk_diag_sum, TwistKer_blk_diag_sum, Matrix.trace_mul_comm (TwistKer_fE n c), Matrix.trace_mul_comm (TwistKer_fE n c)]
+    push_cast
+    ring
+
+/-- `E_a` is Hermitian. -/
+private theorem TwistKer_fE_herm (a : Zd d (sz.L n)) : (TwistKer_fE n a)ᴴ = TwistKer_fE n a := by
+  have h : (TwistKer_fE n a).IsHermitian := Matrix.isHermitian_diagonal_iff.mpr fun x => by
+    by_cases hx : (split d (sz.L n) (sz.W n) x).1 = a <;> simp [hx, IsSelfAdjoint]
+  exact h
+
+/-- **Ward at the left end of a 1-loop**: `Σ_b twSq(G(σ); b, c) ≤ (W^d η)⁻¹ max |𝓛^{(1)}_c|`. -/
+private theorem TwistKer_ward_col1 {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ}
+    (hz : 0 < z.im) (σ : Bool) (c : Zd d (sz.L n)) {M : ℝ} (hM : ∀ τ : Bool, ‖loopFine d (sz.L n) (sz.W n) H z ![τ] ![c]‖ ≤ M) :
+    ∑ b, twSq n (Gres H z σ) b c ≤ ((((sz.W n : ℕ) : ℝ) ^ d) * z.im)⁻¹ * M := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  refine TwistKer_ward_arith hz (Finset.sum_nonneg fun a _ => ?_) (Matrix.trace (Gres H z true * TwistKer_fE n c))
+    (Matrix.trace (Gres H z false * TwistKer_fE n c)) (by simpa [TwistKer_loop1] using hM true)
+    (by simpa [TwistKer_loop1] using hM false) _ hW ?_
+  · unfold twSq; positivity
+  · rw [TwistKer_sum_twSq_col]
+    have hX : (Gres H z σ)ᴴ * Gres H z σ = (2 * Complex.I * (z.im : ℂ))⁻¹ • (Gres H z true - Gres H z false) := by
+      rw [TwistKer_Gres_conjTranspose hH z σ]; exact TwistKer_Gres_ward_left hH hz.ne' σ
+    rw [hX]
+    simp only [Matrix.smul_apply, Matrix.sub_apply, smul_eq_mul, ← Finset.mul_sum, Finset.sum_sub_distrib]
+    rw [TwistKer_blk_diag_sum, TwistKer_blk_diag_sum, Matrix.trace_mul_comm (TwistKer_fE n c), Matrix.trace_mul_comm (TwistKer_fE n c)]
+    push_cast
+    ring
+
+/-- `Σ_{y∈[c]} (P (k (D₁ - D₂)) Q)_{yy}` in terms of traces. -/
+private theorem TwistKer_ward_sum_form (P Q D₁ D₂ : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (k : ℂ) (c : Zd d (sz.L n)) :
+    ∑ y ∈ twBlk n c, (P * (k • (D₁ - D₂)) * Q) y y = (((sz.W n : ℕ) : ℂ) ^ d) *
+      (k * (Matrix.trace (TwistKer_fE n c * (P * D₁ * Q)) - Matrix.trace (TwistKer_fE n c * (P * D₂ * Q)))) := by
+  rw [TwistKer_blk_diag_sum]
+  congr 1
+  rw [Matrix.mul_smul, Matrix.smul_mul, Matrix.mul_smul, Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_sub, Matrix.trace_smul,
+    Matrix.trace_sub]
+  simp [smul_eq_mul]
+
+/-- **Ward at the vertex `a₁` of a 4-loop** (the fold at the twist of `L̃^{(3)}`, `TP` Lemma T.4, B.5): for `X = G(σ₁) E_{a₂} G(σ₂)`,
+`Σ_a twSq(X; a, c₁) = W^{-d} (2iη)⁻¹ (𝓛^{(3)}_{(σ₂,-σ₂,+),(c₁,a₂,a₂)} - 𝓛^{(3)}_{(σ₂,-σ₂,-),(c₁,a₂,a₂)}) ≤ (W^d η)⁻¹ max |𝓛^{(3)}|`. -/
+private theorem TwistKer_ward_col3 {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ}
+    (hz : 0 < z.im) (σ₁ σ₂ : Bool) (a₂ c₁ : Zd d (sz.L n)) {M : ℝ}
+    (hM : ∀ τ : Bool, ‖loopFine d (sz.L n) (sz.W n) H z ![σ₂, !σ₂, τ] ![c₁, a₂, a₂]‖ ≤ M) :
+    ∑ a, twSq n (Gres H z σ₁ * TwistKer_fE n a₂ * Gres H z σ₂) a c₁ ≤ ((((sz.W n : ℕ) : ℝ) ^ d) * z.im)⁻¹ * M := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  have ht : ∀ τ : Bool, Matrix.trace (TwistKer_fE n c₁ * (Gres H z (!σ₂) * TwistKer_fE n a₂ * Gres H z τ * (TwistKer_fE n a₂ * Gres H z σ₂))) =
+      loopFine d (sz.L n) (sz.W n) H z ![σ₂, !σ₂, τ] ![c₁, a₂, a₂] := by
+    intro τ
+    rw [TwistKer_loop3]
+    have : TwistKer_fE n c₁ * (Gres H z (!σ₂) * TwistKer_fE n a₂ * Gres H z τ * (TwistKer_fE n a₂ * Gres H z σ₂)) =
+        (TwistKer_fE n c₁ * Gres H z (!σ₂) * TwistKer_fE n a₂ * Gres H z τ * TwistKer_fE n a₂) * Gres H z σ₂ := by
+      simp only [Matrix.mul_assoc]
+    rw [this, Matrix.trace_mul_comm]
+    simp only [Matrix.mul_assoc]
+  refine TwistKer_ward_arith hz (Finset.sum_nonneg fun a _ => ?_)
+    (Matrix.trace (TwistKer_fE n c₁ * (Gres H z (!σ₂) * TwistKer_fE n a₂ * Gres H z true * (TwistKer_fE n a₂ * Gres H z σ₂))))
+    (Matrix.trace (TwistKer_fE n c₁ * (Gres H z (!σ₂) * TwistKer_fE n a₂ * Gres H z false * (TwistKer_fE n a₂ * Gres H z σ₂))))
+    (by rw [ht]; exact hM true) (by rw [ht]; exact hM false) _ hW ?_
+  · unfold twSq; positivity
+  · rw [TwistKer_sum_twSq_col]
+    have hX : (Gres H z σ₁ * TwistKer_fE n a₂ * Gres H z σ₂)ᴴ * (Gres H z σ₁ * TwistKer_fE n a₂ * Gres H z σ₂) =
+        (Gres H z (!σ₂) * TwistKer_fE n a₂) * ((2 * Complex.I * (z.im : ℂ))⁻¹ • (Gres H z true - Gres H z false)) *
+          (TwistKer_fE n a₂ * Gres H z σ₂) := by
+      rw [← TwistKer_Gres_ward_left hH hz.ne' σ₁]
+      simp only [Matrix.conjTranspose_mul, TwistKer_Gres_conjTranspose hH z, TwistKer_fE_herm, Matrix.mul_assoc]
+    rw [hX, TwistKer_ward_sum_form]
+    push_cast
+    ring
+
+/-- **Ward at the vertex `a'` of a 4-loop, second form** (the fold at the twist of `L̃^{(3)}` with the summed vertex in the middle): for `X = G(σ₁) E_a G(σ₂)`,
+`Σ_{a'} twSq(X; c₂, a') ≤ (W^d η)⁻¹ max |𝓛^{(3)}_{(-σ₁,σ₁,±),(c₂,a,a)}|`. -/
+private theorem TwistKer_ward_row3 {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ}
+    (hz : 0 < z.im) (σ₁ σ₂ : Bool) (a c₂ : Zd d (sz.L n)) {M : ℝ}
+    (hM : ∀ τ : Bool, ‖loopFine d (sz.L n) (sz.W n) H z ![!σ₁, σ₁, τ] ![c₂, a, a]‖ ≤ M) :
+    ∑ a', twSq n (Gres H z σ₁ * TwistKer_fE n a * Gres H z σ₂) c₂ a' ≤ ((((sz.W n : ℕ) : ℝ) ^ d) * z.im)⁻¹ * M := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  have ht : ∀ τ : Bool, Matrix.trace (TwistKer_fE n c₂ * (Gres H z σ₁ * TwistKer_fE n a * Gres H z τ * (TwistKer_fE n a * Gres H z (!σ₁)))) =
+      loopFine d (sz.L n) (sz.W n) H z ![!σ₁, σ₁, τ] ![c₂, a, a] := by
+    intro τ
+    rw [TwistKer_loop3]
+    have : TwistKer_fE n c₂ * (Gres H z σ₁ * TwistKer_fE n a * Gres H z τ * (TwistKer_fE n a * Gres H z (!σ₁))) =
+        (TwistKer_fE n c₂ * Gres H z σ₁ * TwistKer_fE n a * Gres H z τ * TwistKer_fE n a) * Gres H z (!σ₁) := by
+      simp only [Matrix.mul_assoc]
+    rw [this, Matrix.trace_mul_comm]
+    simp only [Matrix.mul_assoc]
+  refine TwistKer_ward_arith hz (Finset.sum_nonneg fun a _ => ?_)
+    (Matrix.trace (TwistKer_fE n c₂ * (Gres H z σ₁ * TwistKer_fE n a * Gres H z true * (TwistKer_fE n a * Gres H z (!σ₁)))))
+    (Matrix.trace (TwistKer_fE n c₂ * (Gres H z σ₁ * TwistKer_fE n a * Gres H z false * (TwistKer_fE n a * Gres H z (!σ₁)))))
+    (by rw [ht]; exact hM true) (by rw [ht]; exact hM false) _ hW ?_
+  · unfold twSq; positivity
+  · rw [TwistKer_sum_twSq_row]
+    have hX : (Gres H z σ₁ * TwistKer_fE n a * Gres H z σ₂) * (Gres H z σ₁ * TwistKer_fE n a * Gres H z σ₂)ᴴ =
+        (Gres H z σ₁ * TwistKer_fE n a) * ((2 * Complex.I * (z.im : ℂ))⁻¹ • (Gres H z true - Gres H z false)) *
+          (TwistKer_fE n a * Gres H z (!σ₁)) := by
+      rw [← TwistKer_Gres_ward_right hH hz.ne' σ₂]
+      simp only [Matrix.conjTranspose_mul, TwistKer_Gres_conjTranspose hH z, TwistKer_fE_herm, Matrix.mul_assoc]
+    rw [hX, TwistKer_ward_sum_form]
+    push_cast
+    ring
+
+/-- `(M E_a)_{ij} = W^{-d} 1_{[j]=a} M_{ij}`. -/
+private theorem TwistKer_mul_fE_apply (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (c : Zd d (sz.L n))
+    (i j : Idx d (sz.L n) (sz.W n)) :
+    (M * TwistKer_fE n c) i j = M i j * (if (split d (sz.L n) (sz.W n) j).1 = c then (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ else 0) := by
+  simp [TwistKer_fE, Matrix.mul_diagonal]
+
+/-- `(A E_a B)_{ij} = W^{-d} Σ_{y∈[a]} A_{iy} B_{yj}`. -/
+private theorem TwistKer_mul3_apply (A B : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (c : Zd d (sz.L n))
+    (i j : Idx d (sz.L n) (sz.W n)) :
+    (A * TwistKer_fE n c * B) i j = (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ y ∈ twBlk n c, A i y * B y j := by
+  rw [Matrix.mul_apply, twBlk, Finset.sum_filter, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun y _ => ?_
+  rw [TwistKer_mul_fE_apply]
+  by_cases hy : (split d (sz.L n) (sz.W n) y).1 = c
+  · simp [hy]; ring
+  · simp [hy]
+
+/-- `twChg` of the carrier's `G` is `Gres` (Hermitian `H`). -/
+private theorem TwistKer_twChg_eq {G : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian) {z : ℂ} (hG : G = Gres H z true) (σ : Bool) :
+    twChg G σ = Gres H z σ := by
+  subst hG
+  funext x y
+  cases σ
+  · have h := TwistKer_Gres_conjTranspose hH z true
+    simp only [Bool.not_true] at h
+    rw [← h]
+    simp [twChg, Matrix.conjTranspose_apply]
+  · simp [twChg]
+
+/-- **The fold of `L̃^{(3)}` at the twist and the first vertex** (`TP` T.4, (B.4) with `k = 1`): `|L̃^{(3)}_{(a₁,a₂)}|² ≤ twSq(G₁; c₂, a₁) twSq(G₂ E_{a₂} G₃; a₁, c₁)`. -/
+private theorem TwistKer_twL3_fold1 (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 3 → Bool) (a₁ a₂ c₁ c₂ : Zd d (sz.L n)) :
+    ‖twL3 C n v ω σ a₁ a₂ c₁ c₂‖ ^ 2 ≤ twSq n (Gres H z (σ 0)) c₂ a₁ * twSq n (Gres H z (σ 1) * TwistKer_fE n a₂ * Gres H z (σ 2)) a₁ c₁ := by
+  have e : twL3 C n v ω σ a₁ a₂ c₁ c₂ = twLoopX n (Gres H z (σ 0)) (Gres H z (σ 1) * TwistKer_fE n a₂ * Gres H z (σ 2)) a₁ c₁ c₂ := by
+    unfold twL3 twLoopX
+    simp only [TwistKer_twChg_eq n hH hG, TwistKer_mul3_apply]
+    have hs : ∀ x : Idx d (sz.L n) (sz.W n), ∑ y ∈ twBlk n a₂, ∑ w ∈ twBlk n c₁, Gres H z (σ 0) (twShift n c₂ w) x * Gres H z (σ 1) x y * Gres H z (σ 2) y w =
+        ∑ w ∈ twBlk n c₁, ∑ y ∈ twBlk n a₂, Gres H z (σ 0) (twShift n c₂ w) x * Gres H z (σ 1) x y * Gres H z (σ 2) y w := fun x => Finset.sum_comm
+    simp only [hs]
+    simp only [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun w _ => Finset.sum_congr rfl fun y _ => ?_
+    ring
+  rw [e]
+  have := twFold_holds sz n (Gres H z (σ 0)) (fun x w => (Gres H z (σ 1) * TwistKer_fE n a₂ * Gres H z (σ 2)) x w) a₁ c₁ c₂
+  exact this
+
+/-- **The fold of `L̃^{(3)}` at the twist and the middle vertex** (`TP` T.4, (B.4) with `k = 2`): `|L̃^{(3)}_{(a,a')}|² ≤ twSq(G₁ E_a G₂; c₂, a') twSq(G₃; a', c₁)`. -/
+private theorem TwistKer_twL3_fold2 (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 3 → Bool) (a a' c₁ c₂ : Zd d (sz.L n)) :
+    ‖twL3 C n v ω σ a a' c₁ c₂‖ ^ 2 ≤ twSq n (Gres H z (σ 0) * TwistKer_fE n a * Gres H z (σ 1)) c₂ a' * twSq n (Gres H z (σ 2)) a' c₁ := by
+  have e : twL3 C n v ω σ a a' c₁ c₂ = twLoopX n (Gres H z (σ 0) * TwistKer_fE n a * Gres H z (σ 1)) (Gres H z (σ 2)) a' c₁ c₂ := by
+    unfold twL3 twLoopX
+    simp only [TwistKer_twChg_eq n hH hG, TwistKer_mul3_apply]
+    have hs : ∀ y : Idx d (sz.L n) (sz.W n), ∑ x ∈ twBlk n a, ∑ w ∈ twBlk n c₁, Gres H z (σ 0) (twShift n c₂ w) x * Gres H z (σ 1) x y * Gres H z (σ 2) y w =
+        ∑ w ∈ twBlk n c₁, ∑ x ∈ twBlk n a, Gres H z (σ 0) (twShift n c₂ w) x * Gres H z (σ 1) x y * Gres H z (σ 2) y w := fun y => Finset.sum_comm
+    rw [Finset.sum_comm]
+    simp only [hs]
+    simp only [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun y _ => Finset.sum_congr rfl fun w _ => Finset.sum_congr rfl fun x _ => ?_
+    ring
+  rw [e]
+  exact twFold_holds sz n _ _ a' c₁ c₂
+
+/-- **T.4 at `n = 3` (the deterministic core of T.11 (ii))**: `Σ_{a'} |L̃^{(3)}_{(a',a)}| ≤ (W^d η)⁻¹ (M₁ M₃)^{1/2}` for the first term of `(D.3)`
+(fold at the twist and at `a'`, Ward at `a'` in both folded loops: `TwistKer_ward_row1`, `TwistKer_ward_col3`, Cauchy-Schwarz). -/
+private theorem TwistKer_sum_twL3_first (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (hz : 0 < z.im) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 3 → Bool) (a c₁ c₂ : Zd d (sz.L n))
+    {M₁ M₃ : ℝ} (hM₁ : ∀ τ : Bool, ∀ c : Zd d (sz.L n), ‖loopFine d (sz.L n) (sz.W n) H z ![τ] ![c]‖ ≤ M₁)
+    (hM₃ : ∀ (τ : Fin 3 → Bool) (b : Fin 3 → Zd d (sz.L n)), ‖loopFine d (sz.L n) (sz.W n) H z τ b‖ ≤ M₃) :
+    ∑ a', ‖twL3 C n v ω σ a' a c₁ c₂‖ ≤ ((((sz.W n : ℕ) : ℝ) ^ d) * z.im)⁻¹ * Real.sqrt (M₁ * M₃) := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  set P : ℝ := (((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ with hP
+  have hP0 : 0 ≤ P := by rw [hP]; positivity
+  have hM₁0 : 0 ≤ M₁ := (norm_nonneg _).trans (hM₁ true 0)
+  have hM₃0 : 0 ≤ M₃ := (norm_nonneg _).trans (hM₃ (fun _ => true) (fun _ => 0))
+  have hS₁ : ∑ a', twSq n (Gres H z (σ 0)) c₂ a' ≤ P * M₁ :=
+    TwistKer_ward_row1 n hH hz (σ 0) c₂ (fun τ => hM₁ τ c₂)
+  have hS₂ : ∑ a', twSq n (Gres H z (σ 1) * TwistKer_fE n a * Gres H z (σ 2)) a' c₁ ≤ P * M₃ :=
+    TwistKer_ward_col3 n hH hz (σ 1) (σ 2) a c₁ (fun τ => hM₃ ![σ 2, !σ 2, τ] ![c₁, a, a])
+  have hs0 : ∀ (X : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (b c : Zd d (sz.L n)), 0 ≤ twSq n X b c := fun X b c => by
+    unfold twSq; positivity
+  calc ∑ a', ‖twL3 C n v ω σ a' a c₁ c₂‖
+      ≤ ∑ a', Real.sqrt (twSq n (Gres H z (σ 0)) c₂ a') * Real.sqrt (twSq n (Gres H z (σ 1) * TwistKer_fE n a * Gres H z (σ 2)) a' c₁) := by
+        refine Finset.sum_le_sum fun a' _ => ?_
+        rw [← Real.sqrt_mul (hs0 _ _ _)]
+        exact Real.le_sqrt_of_sq_le (TwistKer_twL3_fold1 n C hH v ω hG σ a' a c₁ c₂)
+    _ ≤ Real.sqrt (∑ a', twSq n (Gres H z (σ 0)) c₂ a') * Real.sqrt (∑ a', twSq n (Gres H z (σ 1) * TwistKer_fE n a * Gres H z (σ 2)) a' c₁) :=
+        Real.sum_sqrt_mul_sqrt_le _ (fun a' => hs0 _ _ _) (fun a' => hs0 _ _ _)
+    _ ≤ Real.sqrt (P * M₁) * Real.sqrt (P * M₃) :=
+        mul_le_mul (Real.sqrt_le_sqrt hS₁) (Real.sqrt_le_sqrt hS₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    _ = P * Real.sqrt (M₁ * M₃) := by
+        rw [← Real.sqrt_mul (by positivity), show P * M₁ * (P * M₃) = P ^ 2 * (M₁ * M₃) by ring,
+          Real.sqrt_mul (sq_nonneg P), Real.sqrt_sq hP0]
+
+/-- The second term of `(D.3)`: `Σ_{a'} |L̃^{(3)}_{(a,a')}| ≤ (W^d η)⁻¹ (M₁ M₃)^{1/2}` (fold at the twist and at `a'` = the middle vertex). -/
+private theorem TwistKer_sum_twL3_second (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (hz : 0 < z.im) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true) (σ : Fin 3 → Bool) (a c₁ c₂ : Zd d (sz.L n))
+    {M₁ M₃ : ℝ} (hM₁ : ∀ τ : Bool, ∀ c : Zd d (sz.L n), ‖loopFine d (sz.L n) (sz.W n) H z ![τ] ![c]‖ ≤ M₁)
+    (hM₃ : ∀ (τ : Fin 3 → Bool) (b : Fin 3 → Zd d (sz.L n)), ‖loopFine d (sz.L n) (sz.W n) H z τ b‖ ≤ M₃) :
+    ∑ a', ‖twL3 C n v ω σ a a' c₁ c₂‖ ≤ ((((sz.W n : ℕ) : ℝ) ^ d) * z.im)⁻¹ * Real.sqrt (M₁ * M₃) := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  set P : ℝ := (((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ with hP
+  have hP0 : 0 ≤ P := by rw [hP]; positivity
+  have hM₁0 : 0 ≤ M₁ := (norm_nonneg _).trans (hM₁ true 0)
+  have hM₃0 : 0 ≤ M₃ := (norm_nonneg _).trans (hM₃ (fun _ => true) (fun _ => 0))
+  have hS₁ : ∑ a', twSq n (Gres H z (σ 0) * TwistKer_fE n a * Gres H z (σ 1)) c₂ a' ≤ P * M₃ :=
+    TwistKer_ward_row3 n hH hz (σ 0) (σ 1) a c₂ (fun τ => hM₃ ![!σ 0, σ 0, τ] ![c₂, a, a])
+  have hS₂ : ∑ a', twSq n (Gres H z (σ 2)) a' c₁ ≤ P * M₁ :=
+    TwistKer_ward_col1 n hH hz (σ 2) c₁ (fun τ => hM₁ τ c₁)
+  have hs0 : ∀ (X : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (b c : Zd d (sz.L n)), 0 ≤ twSq n X b c := fun X b c => by
+    unfold twSq; positivity
+  calc ∑ a', ‖twL3 C n v ω σ a a' c₁ c₂‖
+      ≤ ∑ a', Real.sqrt (twSq n (Gres H z (σ 0) * TwistKer_fE n a * Gres H z (σ 1)) c₂ a') * Real.sqrt (twSq n (Gres H z (σ 2)) a' c₁) := by
+        refine Finset.sum_le_sum fun a' _ => ?_
+        rw [← Real.sqrt_mul (hs0 _ _ _)]
+        exact Real.le_sqrt_of_sq_le (TwistKer_twL3_fold2 n C hH v ω hG σ a a' c₁ c₂)
+    _ ≤ Real.sqrt (∑ a', twSq n (Gres H z (σ 0) * TwistKer_fE n a * Gres H z (σ 1)) c₂ a') * Real.sqrt (∑ a', twSq n (Gres H z (σ 2)) a' c₁) :=
+        Real.sum_sqrt_mul_sqrt_le _ (fun a' => hs0 _ _ _) (fun a' => hs0 _ _ _)
+    _ ≤ Real.sqrt (P * M₃) * Real.sqrt (P * M₁) :=
+        mul_le_mul (Real.sqrt_le_sqrt hS₁) (Real.sqrt_le_sqrt hS₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    _ = P * Real.sqrt (M₁ * M₃) := by
+        rw [← Real.sqrt_mul (by positivity), show P * M₃ * (P * M₁) = P ^ 2 * (M₁ * M₃) by ring,
+          Real.sqrt_mul (sq_nonneg P), Real.sqrt_sq hP0]
+
+/-- **The deterministic bound of the source `Ẽ^{G̊}` (T.11 (ii))**: `|Ẽ^{G̊}_v(a)| ≤ 2 m η⁻¹ (M₁ M₃)^{1/2}` from `|Tr(G̊(σ)E_{a'})| ≤ m` (`m ≺ W^{-d}B`), `max|𝓛^{(1)}| ≤ M₁`,
+`max|𝓛^{(3)}| ≤ M₃` (`TwistKer_sum_twL3_first`, `TwistKer_sum_twL3_second`). -/
+theorem TwistKer_twEG_le (C : FlowFM sz) {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {z : ℂ}
+    (hH : H.IsHermitian) (hz : 0 < z.im) (v : ℝ) (ω : sz.SeqΩ) (hG : C.G n v ω = Gres H z true)
+    (hL : ∀ (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), C.L n v σ a ω = loopFine d (sz.L n) (sz.W n) H z σ a)
+    (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) {m M₁ M₃ : ℝ}
+    (htr : ∀ (τ : Bool) (a' : Zd d (sz.L n)), ‖C.L n v ![τ] ![a'] ω - (if τ then C.m n else (starRingEnd ℂ) (C.m n))‖ ≤ m)
+    (hM₁ : ∀ (τ : Bool) (c : Zd d (sz.L n)), ‖C.L n v ![τ] ![c] ω‖ ≤ M₁)
+    (hM₃ : ∀ (τ : Fin 3 → Bool) (b : Fin 3 → Zd d (sz.L n)), ‖C.L n v τ b ω‖ ≤ M₃) :
+    ‖twEG C n v ω σ a c₁ c₂‖ ≤ 2 * m * (z.im⁻¹ * Real.sqrt (M₁ * M₃)) := by
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  have hM₁' : ∀ (τ : Bool) (c : Zd d (sz.L n)), ‖loopFine d (sz.L n) (sz.W n) H z ![τ] ![c]‖ ≤ M₁ := fun τ c => by
+    rw [← hL 1]; exact hM₁ τ c
+  have hM₃' : ∀ (τ : Fin 3 → Bool) (b : Fin 3 → Zd d (sz.L n)), ‖loopFine d (sz.L n) (sz.W n) H z τ b‖ ≤ M₃ := fun τ b => by
+    rw [← hL 3]; exact hM₃ τ b
+  have hm : 0 ≤ m := (norm_nonneg _).trans (htr true 0)
+  have h1 := TwistKer_sum_twL3_first n C hH hz v ω hG ![σ 0, σ 0, σ 1] a c₁ c₂ hM₁' hM₃'
+  have h2 := TwistKer_sum_twL3_second n C hH hz v ω hG ![σ 0, σ 1, σ 1] a c₁ c₂ hM₁' hM₃'
+  unfold twEG
+  dsimp only
+  rw [norm_mul, norm_pow, Complex.norm_natCast]
+  have hsum : ‖∑ a', ((C.L n v ![σ 0] ![a'] ω - (if σ 0 then C.m n else (starRingEnd ℂ) (C.m n))) *
+        twL3 C n v ω ![σ 0, σ 0, σ 1] a' a c₁ c₂ +
+      (C.L n v ![σ 1] ![a'] ω - (if σ 1 then C.m n else (starRingEnd ℂ) (C.m n))) * twL3 C n v ω ![σ 0, σ 1, σ 1] a a' c₁ c₂)‖ ≤
+      2 * m * ((((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ * Real.sqrt (M₁ * M₃)) := by
+    refine (norm_sum_le _ _).trans ?_
+    calc ∑ a', ‖(C.L n v ![σ 0] ![a'] ω - (if σ 0 then C.m n else (starRingEnd ℂ) (C.m n))) *
+            twL3 C n v ω ![σ 0, σ 0, σ 1] a' a c₁ c₂ +
+          (C.L n v ![σ 1] ![a'] ω - (if σ 1 then C.m n else (starRingEnd ℂ) (C.m n))) * twL3 C n v ω ![σ 0, σ 1, σ 1] a a' c₁ c₂‖
+        ≤ ∑ a', (m * ‖twL3 C n v ω ![σ 0, σ 0, σ 1] a' a c₁ c₂‖ + m * ‖twL3 C n v ω ![σ 0, σ 1, σ 1] a a' c₁ c₂‖) := by
+          refine Finset.sum_le_sum fun a' _ => ?_
+          refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
+          · rw [norm_mul]; exact mul_le_mul_of_nonneg_right (htr (σ 0) a') (norm_nonneg _)
+          · rw [norm_mul]; exact mul_le_mul_of_nonneg_right (htr (σ 1) a') (norm_nonneg _)
+      _ = m * ∑ a', ‖twL3 C n v ω ![σ 0, σ 0, σ 1] a' a c₁ c₂‖ + m * ∑ a', ‖twL3 C n v ω ![σ 0, σ 1, σ 1] a a' c₁ c₂‖ := by
+          rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+      _ ≤ m * ((((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ * Real.sqrt (M₁ * M₃)) + m * ((((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ * Real.sqrt (M₁ * M₃)) :=
+          add_le_add (mul_le_mul_of_nonneg_left h1 hm) (mul_le_mul_of_nonneg_left h2 hm)
+      _ = 2 * m * ((((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ * Real.sqrt (M₁ * M₃)) := by ring
+  calc ((sz.W n : ℕ) : ℝ) ^ d * ‖∑ a', _‖ ≤ ((sz.W n : ℕ) : ℝ) ^ d * (2 * m * ((((sz.W n : ℕ) : ℝ) ^ d * z.im)⁻¹ * Real.sqrt (M₁ * M₃))) :=
+        mul_le_mul_of_nonneg_left hsum hW.le
+    _ = 2 * m * (z.im⁻¹ * Real.sqrt (M₁ * M₃)) := by
+        have hz0 : z.im ≠ 0 := hz.ne'
+        field_simp
+
+end Fine
+
 end RBM.BA
 
 end

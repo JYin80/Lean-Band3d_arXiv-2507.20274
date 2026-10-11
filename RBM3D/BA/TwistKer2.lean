@@ -505,6 +505,140 @@ theorem baTwistSrc4_holds (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ
 
 end Src4
 
+/-! ## 6. T.11 (ii): `Ẽ^{G̊} ≺ η⁻¹ (W^{-d}B)²` -/
+
+section Src2
+
+/-- `3 N^{-(D+1)} ≤ N^{-D}` for `N ≥ 3`. -/
+private theorem TwistKer2_three_mul_rpow_le (D : ℝ) :
+    ∀ᶠ N : ℕ in atTop, 3 * (N : ℝ) ^ (-(D + 1)) ≤ (N : ℝ) ^ (-D) := by
+  filter_upwards [eventually_ge_atTop 3] with N hN
+  have hN3 : (3 : ℝ) ≤ N := by exact_mod_cast hN
+  have hN0 : (0 : ℝ) < N := by linarith
+  rw [neg_add, Real.rpow_add hN0, Real.rpow_neg_one]
+  have h := Real.rpow_nonneg hN0.le (-D)
+  calc 3 * ((N : ℝ) ^ (-D) * (N : ℝ)⁻¹) = (N : ℝ) ^ (-D) * (3 / N) := by ring
+    _ ≤ (N : ℝ) ^ (-D) * 1 := by
+        gcongr; rw [div_le_one hN0]; exact hN3
+    _ = _ := mul_one _
+
+section Calculus3
+
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
+
+/-- `StochDomAt.of_subset_union` with three failure events (a copy of its proof with `3 N^{-(D+1)} ≤ N^{-D}`). -/
+private theorem TwistKer2_union3 (hsize : Tendsto size atTop atTop) {U₁ U₂ U₃ : ℕ → Type*} {ξ ζ : ∀ l, U l → Ω → ℝ}
+    {f₁ g₁ : ∀ l, U₁ l → Ω → ℝ} {f₂ g₂ : ∀ l, U₂ l → Ω → ℝ} {f₃ g₃ : ∀ l, U₃ l → Ω → ℝ}
+    (h₁ : StochDomAt P size f₁ g₁) (h₂ : StochDomAt P size f₂ g₂) (h₃ : StochDomAt P size f₃ g₃)
+    (hsub : ∀ τ > (0 : ℝ), ∃ τ' > (0 : ℝ), ∀ᶠ l : ℕ in atTop,
+      badSetAt size ξ ζ τ l ⊆ badSetAt size f₁ g₁ τ' l ∪ badSetAt size f₂ g₂ τ' l ∪ badSetAt size f₃ g₃ τ' l) :
+    StochDomAt P size ξ ζ := by
+  intro τ hτ D hD
+  obtain ⟨τ', hτ', hs⟩ := hsub τ hτ
+  filter_upwards [hs, h₁ τ' hτ' (D + 1) (by linarith), h₂ τ' hτ' (D + 1) (by linarith), h₃ τ' hτ' (D + 1) (by linarith),
+    hsize.eventually (TwistKer2_three_mul_rpow_le D)] with l h0 h1 h2 h3 h4
+  have hp : (0 : ℝ) ≤ (size l : ℝ) ^ (-(D + 1)) := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  calc P (badSetAt size ξ ζ τ l) ≤ P (badSetAt size f₁ g₁ τ' l ∪ badSetAt size f₂ g₂ τ' l ∪ badSetAt size f₃ g₃ τ' l) :=
+        measure_mono h0
+    _ ≤ P (badSetAt size f₁ g₁ τ' l) + P (badSetAt size f₂ g₂ τ' l) + P (badSetAt size f₃ g₃ τ' l) :=
+        (measure_union_le _ _).trans (add_le_add (measure_union_le _ _) le_rfl)
+    _ ≤ ENNReal.ofReal ((size l : ℝ) ^ (-(D + 1))) + ENNReal.ofReal ((size l : ℝ) ^ (-(D + 1))) +
+          ENNReal.ofReal ((size l : ℝ) ^ (-(D + 1))) := add_le_add (add_le_add h1 h2) h3
+    _ = ENNReal.ofReal (3 * (size l : ℝ) ^ (-(D + 1))) := by
+        rw [← ENNReal.ofReal_add hp hp, ← ENNReal.ofReal_add (add_nonneg hp hp) hp]; ring_nf
+    _ ≤ ENNReal.ofReal ((size l : ℝ) ^ (-D)) := ENNReal.ofReal_le_ofReal h4
+
+end Calculus3
+
+/-- The Hermitian matrix of the carrier (a copy of the private `GreenLocal_hermitian`, `BA/GreenLocal.lean:178`). -/
+private theorem TwistKer2_hermitian {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) :
+    (sz.seqHflowBA (BAflowLam0 sz z) n t ω).IsHermitian := by
+  unfold Sizes.seqHflowBA
+  refine Matrix.IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz.withLam 0) n t ω)
+  unfold Matrix.IsHermitian
+  rw [Matrix.conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
+    show star (BAflowLam0 sz z n : ℂ) = (BAflowLam0 sz z n : ℂ) from Complex.conj_ofReal _]
+
+/-- `𝒦^{(1)}_{σ,a} = m(σ)` at the carrier (`baKsol_one`). -/
+private theorem TwistKer2_K1 {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {sz : Sizes d} {z : ℕ → ℂ} (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ)
+    (hg : 0 < BAflowLam0 sz z n) {v : ℝ} (hv0 : 0 ≤ v) (hv1 : v < 1) (τ : Bool) (a : Zd d (sz.L n)) :
+    (baFMz sz z).K n v ![τ] ![a] = if τ then (baFMz sz z).m n else (starRingEnd ℂ) ((baFMz sz z).m n) :=
+  baKsol_one d hκ hg (sz.three_le_L n) (sz.W n) (BAflow_real κ ε 𝔠 𝔡 sz z hflow n) ⟨hv0, hv1⟩ ![τ] ![a]
+
+/-- The carrier at `(n, v, ω)` as a resolvent of a Hermitian matrix: `G = Gres H ζ true`, `𝓛 = loopFine H ζ`, `Im ζ = η_v`. -/
+private theorem TwistKer2_carrier {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (v : ℝ) (ω : sz.SeqΩ) :
+    (baFMz sz z).G n v ω = Gres (sz.seqHflowBA (BAflowLam0 sz z) n v ω) (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v) true ∧
+    (∀ (k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), (baFMz sz z).L n v σ a ω =
+      loopFine d (sz.L n) (sz.W n) (sz.seqHflowBA (BAflowLam0 sz z) n v ω) (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v) σ a) ∧
+    (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im = (baFMz sz z).eta n v :=
+  ⟨rfl, fun _ _ _ => rfl, ztOf_im _ _ _⟩
+
+/-- **T.11 (ii)** (`TP:145`): `|Ẽ^{G̊}_v(a)| ≤ 2 m η⁻¹ (M₁ M₃)^{1/2}` (`TwistKer_twEG_le`: fold of `L̃^{(3)}` at the twist, Ward at `a'`), `m ≺ W^{-d}B` (`STAvgUgL` and `𝒦^{(1)} = m(σ)`),
+`M₁ ≺ 1`, `M₃ ≺ (W^{-d}B)²` (`twSteps`, second conjunct at `k = 1, 3`).  No regime is used. -/
+theorem baTwistSrc2_holds (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : BATwistSrc2 d R := by
+  intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
+  intro 𝔠 sz z hflow s t hs hst htT hR hcon hsteps
+  have hsize := tendsto_size sz hflow.1.2.2.1
+  have hA := hsteps.1.2.1
+  have h1 := hsteps.2.1 1 le_rfl
+  have h3 := hsteps.2.1 3 (by norm_num)
+  unfold twSrc
+  refine TwistKer2_union3 hsize hA h1 h3 (fun τ hτ => ⟨τ / 4, by positivity, ?_⟩)
+  filter_upwards [hsize.eventually (eventually_le_rpow 2 (τ := τ / 2) (by positivity)), BAflow_lam0_window κ ε 𝔠 𝔡 sz z hflow]
+    with n h2N hlam
+  rintro ω ⟨⟨⟨v, hv⟩, σ, a, c₁, c₂⟩, hp⟩
+  by_contra hno
+  simp only [Set.mem_union, badSetAt, Set.mem_ofPred_eq, not_or, not_exists, not_lt] at hno
+  obtain ⟨⟨hnoA, hno1⟩, hno3⟩ := hno
+  have hv0 : 0 ≤ v := (hs n).trans hv.1
+  have hvT : v ≤ BAflowT0 sz z n := hv.2.trans (htT n)
+  have hu1 : v < 1 := hvT.trans_lt (EMn2BA_T0_lt_one hκ sz hflow n)
+  have hBpos : 0 < sz.Bctl n v := st_Bctl_pos sz hu1
+  obtain ⟨hη, hη1⟩ := TwistKer2_eta_pos hκ hflow n hv0 hvT
+  obtain ⟨hGc, hLc, hzc⟩ := TwistKer2_carrier sz z n v ω
+  have hH := TwistKer2_hermitian sz z n v ω
+  have hz : 0 < (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im := by rw [hzc]; exact hη
+  set δ : ℝ := ((sz.size n : ℕ) : ℝ) ^ (τ / 4) with hδ
+  have hδ0 : 0 ≤ δ := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have hδδ : δ * δ = ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
+    rw [hδ, ← Real.rpow_add (by exact_mod_cast sz.one_le_size n)]; congr 1; ring
+  have hδ2 : 2 ≤ δ * δ := by rw [hδδ]; exact h2N
+  have htr : ∀ (τ' : Bool) (a' : Zd d (sz.L n)), ‖(baFMz sz z).L n v ![τ'] ![a'] ω -
+      (if τ' then (baFMz sz z).m n else (starRingEnd ℂ) ((baFMz sz z).m n))‖ ≤ δ * sz.Bctl n v := by
+    intro τ' a'
+    have := hnoA ⟨⟨v, hv⟩, ![τ'], ![a']⟩
+    rw [TwistKer2_K1 hκ hflow n hlam.1 hv0 hu1] at this
+    simpa using this
+  have hM₁ : ∀ (τ' : Bool) (c : Zd d (sz.L n)), ‖(baFMz sz z).L n v ![τ'] ![c] ω‖ ≤ δ := by
+    intro τ' c
+    simpa using hno1 ⟨⟨v, hv⟩, ![τ'], ![c]⟩
+  have hM₃ : ∀ (τ' : Fin 3 → Bool) (b : Fin 3 → Zd d (sz.L n)), ‖(baFMz sz z).L n v τ' b ω‖ ≤ δ * sz.Bctl n v ^ 2 := by
+    intro τ' b
+    simpa using hno3 ⟨⟨v, hv⟩, τ', b⟩
+  have hEG := TwistKer_twEG_le n (baFMz sz z) hH hz v ω hGc hLc σ a c₁ c₂ htr hM₁ hM₃
+  rw [hzc] at hEG
+  have hB : Real.sqrt (δ * (δ * sz.Bctl n v ^ 2)) = δ * sz.Bctl n v := by
+    rw [show δ * (δ * sz.Bctl n v ^ 2) = (δ * sz.Bctl n v) ^ 2 by ring, Real.sqrt_sq (mul_nonneg hδ0 hBpos.le)]
+  rw [hB] at hEG
+  have hfin : ‖twEG (baFMz sz z) n v ω σ a c₁ c₂‖ ≤ ((sz.size n : ℕ) : ℝ) ^ τ *
+      (1 * (((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ (2 : ℝ))) := by
+    refine hEG.trans ?_
+    have hτ4 : ((sz.size n : ℕ) : ℝ) ^ τ = (δ * δ) * (δ * δ) := by
+      rw [hδδ, ← Real.rpow_add (by exact_mod_cast sz.one_le_size n)]; congr 1; ring
+    rw [hτ4, Real.rpow_two]
+    have hη' : 0 ≤ ((baFMz sz z).eta n v)⁻¹ := inv_nonneg.2 hη.le
+    calc 2 * (δ * sz.Bctl n v) * (((baFMz sz z).eta n v)⁻¹ * (δ * sz.Bctl n v)) = 2 * (δ * δ) * (((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ 2) := by ring
+      _ ≤ (δ * δ) * (δ * δ) * (1 * (((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ 2)) := by
+          rw [one_mul]
+          have hX : 0 ≤ ((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ 2 := by positivity
+          have hδδ0 : 0 ≤ δ * δ := mul_nonneg hδ0 hδ0
+          have h22 : 2 * (δ * δ) ≤ (δ * δ) * (δ * δ) := by nlinarith
+          exact mul_le_mul_of_nonneg_right h22 hX
+  exact absurd hp (not_lt.2 hfin)
+
+end Src2
+
 end RBM.BA
 
 end
