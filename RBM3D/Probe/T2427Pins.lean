@@ -270,3 +270,6 @@ open RBM.BA
 #check @BATwistAvgRecAt
 #check @BATwistAvgRec
 #check @T2427_TL1b
+-- the statement of `baTwistAvgRec_holds` (target 1) and the pinned text of the interface:
+#check (∀ d, BATwistAvgRec d : Prop)
+example : T2427_TL1b ↔ ∀ d, BATwistAvgRec d → BATwistAvgProd d := Iff.rfl
