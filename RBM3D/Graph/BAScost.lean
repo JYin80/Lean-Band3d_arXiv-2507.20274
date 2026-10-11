@@ -737,21 +737,21 @@ theorem BAScost_ext_promoteC_solid {k : ℕ} (Γ : BAGraph E I) (rest : List (SE
   rw [BAAtomic_promoteC_solid]
   rfl
 
-/-- **The old edges**: at a merge, the old solid edges of an extension, read at a vertex map `ψ` that agrees with a map `κ` of the
+/-- **The old edges**: at a merge, the old solid edges of an extension, read at a vertex map `ψ` that agrees with a map `kap` of the
 atom classes on the old vertices, are the old solid edges of `Γ` at the atomic image with larger circles (an old edge between two
 atoms of `Γ` that the new `M`-dotted edges join becomes a circled edge inside an atom). -/
 theorem BAScost_Up_old {k : ℕ} {W' : Type} (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
     (S : List (SEdge (E ⊕ (I ⊕ Fin k)))) (W : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k))))
-    (ψ : E ⊕ (I ⊕ Fin k) → W') (κ : (promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls → W')
-    (hψκ : ∀ v, ψ (owxEmb k v) = κ ((promoteC Γ).vmap v)) (s : Setoid W') :
+    (ψ : E ⊕ (I ⊕ Fin k) → W') (kap : (promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls → W')
+    (hψkap : ∀ v, ψ (owxEmb k v) = kap ((promoteC Γ).vmap v)) (s : Setoid W') :
     BAScost_Up s
-      (rest.map (fun e => (⟨e.σ, e.circ && Γ.sameAtom e.src e.dst, κ ((promoteC Γ).vmap e.src), κ ((promoteC Γ).vmap e.dst)⟩ :
+      (rest.map (fun e => (⟨e.σ, e.circ && Γ.sameAtom e.src e.dst, kap ((promoteC Γ).vmap e.src), kap ((promoteC Γ).vmap e.dst)⟩ :
         SEdge W')))
       (rest.map (fun e => (⟨e.σ, e.circ && (BAGraph.ext k Γ rest S W md).sameAtom (owxEmb k e.src) (owxEmb k e.dst),
         ψ (owxEmb k e.src), ψ (owxEmb k e.dst)⟩ : SEdge W'))) := by
   refine BAScost_Up_map s rest _ _ (fun e he => ⟨rfl, ?_, ?_, fun h => ?_⟩)
-  · exact hψκ e.src
-  · exact hψκ e.dst
+  · exact hψkap e.src
+  · exact hψkap e.dst
   · simp only [Bool.and_eq_true] at h ⊢
     refine ⟨h.1, ?_⟩
     rw [Γ.BAAtomic_sameAtom_iff, ← BAAtomic_atomSetoid_iff] at h
@@ -762,13 +762,13 @@ theorem BAScost_Up_old {k : ℕ} {W' : Type} (Γ : BAGraph E I) (rest : List (SE
 the atom classes of the old vertices has its kernel inside the atoms -/
 theorem BAScost_ker_ext {k : ℕ} (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
     (S : List (SEdge (E ⊕ (I ⊕ Fin k)))) (W : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k))))
-    (ρ : E ⊕ (I ⊕ Fin k) → E ⊕ I) (hρ : ∀ w, atomSetoid (BAGraph.ext k Γ rest S W md) w (owxEmb k (ρ w)))
-    (u v : E ⊕ (I ⊕ Fin k)) (h : (promoteC Γ).vmap (ρ u) = (promoteC Γ).vmap (ρ v)) :
+    (rt : E ⊕ (I ⊕ Fin k) → E ⊕ I) (hrt : ∀ w, atomSetoid (BAGraph.ext k Γ rest S W md) w (owxEmb k (rt w)))
+    (u v : E ⊕ (I ⊕ Fin k)) (h : (promoteC Γ).vmap (rt u) = (promoteC Γ).vmap (rt v)) :
     atomSetoid (BAGraph.ext k Γ rest S W md) u v := by
-  have h1 : atomSetoid Γ (ρ u) (ρ v) :=
+  have h1 : atomSetoid Γ (rt u) (rt v) :=
     (BAAtomic_atomSetoid_iff Γ _ _).2 ((BAAtomic_promoteC_vmap_eq_atom Γ _ _).1 h)
   have h2 := BAScost_atomSetoid_ext Γ rest S W md h1
-  exact (atomSetoid _).trans ((atomSetoid _).trans (hρ u) h2) ((atomSetoid _).symm (hρ v))
+  exact (atomSetoid _).trans ((atomSetoid _).trans (hrt u) h2) ((atomSetoid _).symm (hrt v))
 
 
 /-- the solid edges of the relabelled atomic image of an extension: the old edges and the new edges -/
@@ -863,7 +863,7 @@ theorem BAScostLL_S1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E
         bpM (owxEmb 2 q.1.src) (bpv 1)], atomSetoid (BAGraph.ext 2 Γ q.2 [] [bpW true (bpv 0) (bpv 1)]
       [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 p.1.src), bpM (bpv 1) (owxEmb 2 p.1.dst),
         bpM (owxEmb 2 q.1.src) (bpv 1)]) m.x m.y := fun m hm => BAScost_atomSetoid_ext_md Γ q.2 _ _ _ m hm
-  have hρ : ∀ w, atomSetoid (BAGraph.ext 2 Γ q.2 [] [bpW true (bpv 0) (bpv 1)]
+  have hrt : ∀ w, atomSetoid (BAGraph.ext 2 Γ q.2 [] [bpW true (bpv 0) (bpv 1)]
       [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 p.1.src), bpM (bpv 1) (owxEmb 2 p.1.dst),
         bpM (owxEmb 2 q.1.src) (bpv 1)]) w (owxEmb 2 (BAScost_rho2 p.1.src p.1.dst w)) := by
     intro w
@@ -878,7 +878,7 @@ theorem BAScostLL_S1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E
   · intro a
     exact BAAtomic_vmap_inl (promoteC Γ) a
   · intro u v h
-    exact BAScost_ker_ext Γ q.2 [] _ _ (BAScost_rho2 p.1.src p.1.dst) hρ u v h
+    exact BAScost_ker_ext Γ q.2 [] _ _ (BAScost_rho2 p.1.src p.1.dst) hrt u v h
   · intro s'' hadm
     have hψ : ∀ v, ((promoteC Γ).vmap ∘ BAScost_rho2 p.1.src p.1.dst) (owxEmb 2 v) = (promoteC Γ).vmap v := fun v => by
       simp [BAScost_rho2_emb]
@@ -950,11 +950,11 @@ theorem BAScost_ker_psi1 (Γ : BAGraph E I) (a : E ⊕ I) (T : BAGraph E (I ⊕ 
     (hmono : ∀ u v, atomSetoid Γ u v → atomSetoid T (owxEmb 2 u) (owxEmb 2 v))
     (u v : E ⊕ (I ⊕ Fin 2)) (h : BAScost_psi1 Γ a u = BAScost_psi1 Γ a v) : atomSetoid T u v := by
   -- retract `α` to `a`
-  let ρ : E ⊕ (I ⊕ Fin 2) → E ⊕ (I ⊕ Fin 2) := fun w =>
+  let rt : E ⊕ (I ⊕ Fin 2) → E ⊕ (I ⊕ Fin 2) := fun w =>
     match w with
     | Sum.inr (Sum.inr j) => if j = 0 then owxEmb 2 a else w
     | _ => w
-  have hρ : ∀ w, atomSetoid T w (ρ w) := by
+  have hrt : ∀ w, atomSetoid T w (rt w) := by
     intro w
     rcases w with e | i | j
     · exact (atomSetoid _).refl' _
@@ -962,7 +962,7 @@ theorem BAScost_ker_psi1 (Γ : BAGraph E I) (a : E ⊕ I) (T : BAGraph E (I ⊕ 
     · fin_cases j
       · exact hα
       · exact (atomSetoid _).refl' _
-  have hψρ : ∀ w, BAScost_psi1 Γ a (ρ w) = BAScost_psi1 Γ a w := by
+  have hψrt : ∀ w, BAScost_psi1 Γ a (rt w) = BAScost_psi1 Γ a w := by
     intro w
     rcases w with e | i | j
     · rfl
@@ -971,7 +971,7 @@ theorem BAScost_ker_psi1 (Γ : BAGraph E I) (a : E ⊕ I) (T : BAGraph E (I ⊕ 
       · show BAScost_psi1 Γ a (owxEmb 2 a) = BAScost_psi1 Γ a (bpv 0)
         rw [BAScost_psi1_emb, BAScost_psi1_alpha]
       · rfl
-  have hold : ∀ w, (∃ v₀, ρ w = owxEmb 2 v₀) ∨ ρ w = bpv 1 := by
+  have hold : ∀ w, (∃ v₀, rt w = owxEmb 2 v₀) ∨ rt w = bpv 1 := by
     intro w
     rcases w with e | i | j
     · exact Or.inl ⟨Sum.inl e, rfl⟩
@@ -979,8 +979,8 @@ theorem BAScost_ker_psi1 (Γ : BAGraph E I) (a : E ⊕ I) (T : BAGraph E (I ⊕ 
     · fin_cases j
       · exact Or.inl ⟨a, rfl⟩
       · exact Or.inr rfl
-  have h' : BAScost_psi1 Γ a (ρ u) = BAScost_psi1 Γ a (ρ v) := by rw [hψρ, hψρ]; exact h
-  refine (atomSetoid _).trans (hρ u) ((atomSetoid _).trans ?_ ((atomSetoid _).symm (hρ v)))
+  have h' : BAScost_psi1 Γ a (rt u) = BAScost_psi1 Γ a (rt v) := by rw [hψrt, hψrt]; exact h
+  refine (atomSetoid _).trans (hrt u) ((atomSetoid _).trans ?_ ((atomSetoid _).symm (hrt v)))
   rcases hold u with ⟨u₀, hu⟩ | hu <;> rcases hold v with ⟨v₀, hv⟩ | hv
   · rw [hu, hv] at h' ⊢
     rw [BAScost_psi1_emb, BAScost_psi1_emb] at h'
