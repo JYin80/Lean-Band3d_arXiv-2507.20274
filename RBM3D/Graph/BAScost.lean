@@ -85,12 +85,33 @@ def locCostGeA (far : Bool) (k : ℤ) (P : BAPGraph (Fin 2)) : Prop :=
 def locReg6InvA (p : ℕ) (Q : BAPGraph (Fin 2)) : Prop :=
   Q.g.Normal ∧ locCostGeA false (2 * (p : ℤ)) Q ∧ locCostGeA true (3 * (p : ℤ)) Q
 
-/-- Reachability along an abstract step relation (the BA twin of `Lvl1Reach`, `LWLvl1.lean:3277`; rows L3a). -/
-inductive BReach (BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop) (P0 : BAPGraph (Fin 2)) :
-    BAPGraph (Fin 2) → Prop
-  | refl : BReach BStep P0 P0
-  | step {Q R : BAPGraph (Fin 2)} {L : List (BAPGraph (Fin 2))} :
-      BReach BStep P0 Q → BStep Q L → R ∈ L → BReach BStep P0 R
+/-- Reachability along an abstract step relation (the BA twin of `Lvl1Reach`, `LWLvl1.lean:3277`; rows L3a): `BReach.refl` and
+`BReach.step` are the two constructors of the probe's inductive predicate, and `BReach.ind` its induction principle (`induction hQ with
+| refl | step hQ' hst hmem ih`).  A definition by `Relation.ReflTransGen`, not an inductive predicate: the recursive inductive `Prop` makes the
+premise scan of `#assert_rbm_axioms` fail (`BReach`, `BReach.below`, as it registers `Lvl1Reach.below`). -/
+def BReach (BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop) (P0 : BAPGraph (Fin 2)) :
+    BAPGraph (Fin 2) → Prop :=
+  Relation.ReflTransGen (fun Q R => ∃ L, BStep Q L ∧ R ∈ L) P0
+
+theorem BReach.refl {BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop} {P0 : BAPGraph (Fin 2)} :
+    BReach BStep P0 P0 := Relation.ReflTransGen.refl
+
+theorem BReach.step {BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop} {P0 Q R : BAPGraph (Fin 2)}
+    {L : List (BAPGraph (Fin 2))} (h : BReach BStep P0 Q) (hs : BStep Q L) (hm : R ∈ L) : BReach BStep P0 R :=
+  Relation.ReflTransGen.tail h ⟨L, hs, hm⟩
+
+/-- the induction principle of `BReach` (the recursor of the probe's inductive predicate) -/
+@[elab_as_elim, induction_eliminator]
+theorem BReach.ind {BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop} {P0 : BAPGraph (Fin 2)}
+    {motive : ∀ Q, BReach BStep P0 Q → Prop} (refl : motive P0 BReach.refl)
+    (step : ∀ {Q R L} (h : BReach BStep P0 Q) (hs : BStep Q L) (hm : R ∈ L), motive Q h → motive R (BReach.step h hs hm))
+    {Q : BAPGraph (Fin 2)} (h : BReach BStep P0 Q) : motive Q h := by
+  have h' : Relation.ReflTransGen (fun Q R => ∃ L, BStep Q L ∧ R ∈ L) P0 Q := h
+  induction h' with
+  | refl => exact refl
+  | tail hPQ hQR ih =>
+    obtain ⟨L, hs, hm⟩ := hQR
+    exact step hPQ hs hm (ih hPQ)
 
 /-- **Pin L3b3, initial values** (`fxyPowGraph_locCostGe`, `LocalRegular6a.lean:927`, at BA): every BA term of `G = Ǧ + M` on the
 starting graph `Γ_p` (`B:339-341`; `2^{2p}` terms, `baSplitSolid`) satisfies `Φ^all ≥ 2p` and, for atoms of `x`, `y` apart,
@@ -807,11 +828,11 @@ section ShapeS1
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`S1`** (`B:393-405`, the first sum of `GGGamma`, `BAGGOp_A1` = the first term of `gg2`): `Σ_{u,β} M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β} f`.  The
-pair `Ǧ_{xy} Ǧ_{y'x}` at the vertex `x` (two atoms `[y']`, `[x]`, `[y]` apart from each other) is contracted to a waved edge `[x] - [y]`
-with `[y]`, `[y']` merged: the image of the term is the band's `Contract(z = [x]; u = [y'], v = [y])` (`lwPrimContract`,
-`LocalRegular6a.lean:233`) with the contracted edge `u → v` dropped (`[u] = [v]`), and the local lemma is `scostLL_contract`
-(`LocalRegular6b.lean:1391`) on the atomic image. -/
+/-- **`S1`** (`B:393-405`, the first sum of `GGGamma`; `BAGGOp_A1` is the first term of `gg2`): `Σ_{u,β} M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β} f`
+at a pair `Ǧ_{xy}`, `Ǧ_{y'x}` of blue circled edges that are not atom-level loops (`[x] ≠ [y]`, `[y'] ≠ [x]`; `[y]`, `[y']` may or may not be
+equal).  The pair is contracted to a waved edge `[x] - [y]` and `[y]`, `[y']` are merged (through `β`): the atomic image of the term is the band's
+`Contract(z = [x]; u = [y'], v = [y])` (`lwPrimContract`, `LocalRegular6a.lean:233`) with the contracted edge `u → v` dropped (`[u] = [v]` at every merge of
+the term), and the local lemma is `scostLL_contract` (`LocalRegular6b.lean:1391`) on the atomic image `(promoteC Γ).merge`. -/
 theorem BAScostLL_S1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
     (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
@@ -1028,11 +1049,11 @@ def BAGraph.BAScost_trA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
     [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 p.1.dst)]
 
-/-- **`E1` and the macro (a) intermediate** (`lanlw`, term `T1` with `M_{αy}`: `[x]`, `[y]` merged, the edge `x → y` dropped, a leaf `β`
-with a circled loop; `B:359-372`): the local lemma in both regimes.  If `[x] ≠ [y]` (`E1`, the extra output of `lanlw`: the band's `×`-dot
-forbids it) the atomic image is the band's `Loop(z = [x])` (`scostLL_loop`, `LocalRegular6b.lean:621`) with the edge `[x] → [y]` dropped
-(`[x]`, `[y]` are in one class); if `[x] = [y]` (the transfer graph of a within-atom edge) the edge is a circled loop of the image and
-the atomic image is `MoveLoop(z)` (`scostLL_moveLoop`, `LocalRegular6b.lean:638`). -/
+/-- **The macro (a) intermediate** (T2395 K2(a); `BAGraph.BAScost_trA` has the edges of the `M`-branch `M_{αy}` of `lanlwT1`, `B:363`, the `M`-dotted
+list in another order): `Σ_{α,β} M_{xα} M_{αy} S_{αβ} Ǧ_{ββ} f` at a blue circled edge `Ǧ_{xy}`.  Local lemma in both regimes, no atom hypothesis: if `[x] = [y]`
+(a within-atom edge; the macro step) the edge is a circled loop of the atomic image and the image of `tr` is the band's `MoveLoop(z = [x])`
+(`scostLL_moveLoop`, `LocalRegular6b.lean:638`, by import); if `[x] ≠ [y]` (`E1`, the extra output of `lanlw`: the band's `×`-dot forbids it) the image is
+`Loop(z = [x])` (`scostLL_loop`, `LocalRegular6b.lean:621`) with the edge `[x] → [y]` dropped (`[x]`, `[y]` are in one class at every merge of `tr`). -/
 theorem BAScostLL_macroA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) : BAScostLL Γ (Γ.BAScost_trA p) := by
   classical
@@ -1113,9 +1134,9 @@ theorem BAScost_lanlwT1_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdg
     BAGraph.lanlwT1 Γ p = BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1), bpS false (bpv 0) (owxEmb 2 p.1.dst)]
       [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)] := rfl
 
-/-- **The first term of `lanlw`** (`B:363`, `BAGraph.lanlwT1`): `Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` has the local lemma in both
-regimes (`[x] ≠ [y]`: `Loop`; `[x] = [y]`: `MoveLoop`, the uncircled edge `G_{αy}` inside the atom is not kept); with Lemma B
-(`BAScostLL_splitG`) every term of `G = Ǧ + M` on it, among them the `M`-split `E1` (`BAScostLL_macroA`), has the local lemma. -/
+/-- **The first term of `lanlw`** (`B:363`, `BAGraph.lanlwT1`): `Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` has the local lemma in both regimes (`[x] ≠ [y]`:
+the image is `Loop`, the edge `G_{αy}` is the edge `x → y`; `[x] = [y]`: `MoveLoop`, the uncircled edge `G_{αy}` inside the atom is not kept).  With Lemma B
+(`BAScostLL_splitG`) every term of `G = Ǧ + M` on it, among them the `M`-split `M_{αy}` (`E1`), has the local lemma (`BAScostLL_E1`). -/
 theorem BAScostLL_lanlwT1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) : BAScostLL Γ (BAGraph.lanlwT1 Γ p) := by
   classical
@@ -1425,6 +1446,14 @@ example : BAScostLL gs (gs.BAScost_trA ps) := BAScostLL_macroA gs ps ps_mem ⟨r
 example : BAScostLL gc (gc.BAScost_trB pc qc) :=
   BAScostLL_macroB gc pc qc pc_mem qc_mem ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ gc_same gc_wf1 gc_wf2
 
+/-- **`macroB`** at `Γ*` (the parameters of the preflight: `a = a' = 2`, `y = 1`, `y' = 0`, three distinct atoms) -/
+example : BAScostLL gs (gs.BAScost_trB ps qs) :=
+  BAScostLL_macroB gs ps qs ps_mem qs_mem ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ (by decide) gs_wf1 gs_wf2
+
+/-- **`E2` by `BAScostLL_E2`**: the local lemma of the builder term `lanlwT1` carries to every term of its `G = Ǧ + M`. -/
+example : ∀ Q ∈ (BAGraph.lanlwT1 gs ps).splitG, BAScostLL gs Q := fun _ hQ =>
+  BAScostLL_E2 (BAScostLL_lanlwT1 gs ps ps_mem ⟨rfl, rfl⟩) hQ
+
 /-- **`E2`**: two parallel uncircled edges `2 → 1`; the term of `G = Ǧ + M` with the first split as an `M`-edge and the second circled merges
 the atoms `[2]`, `[1]` that the second edge joins (an extra output); Lemma B gives the local lemma. -/
 def g2 : BAGraph (Fin 2) (Fin 1) where
@@ -1440,6 +1469,20 @@ example : g2.splitG.length = 4 := by decide
 example : ∃ Q ∈ g2.splitG, BAScostLL g2 Q ∧ Q.sameAtom (Sum.inr 0) (Sum.inl 1) = true ∧
     g2.sameAtom (Sum.inr 0) (Sum.inl 1) = false ∧ Q.solid.length = 1 :=
   ⟨g2.splitG[1], List.getElem_mem _, BAScostLL_splitG g2 (List.getElem_mem _), by decide, by decide, by decide⟩
+
+/-- **`BReach`**: one step of the relation `Γ* → [Γ*]` reaches `Γ*`; every reachable graph satisfies a property that is kept by the step
+(`BReach.ind`) -/
+example : BReach (fun Q L => Q = baPG gs ∧ L = [baPG gs]) (baPG gs) (baPG gs) :=
+  BReach.step BReach.refl ⟨rfl, rfl⟩ (List.mem_singleton_self _)
+
+example (P : BAPGraph (Fin 2) → Prop) (h0 : P (baPG gs)) {Q : BAPGraph (Fin 2)}
+    (hQ : BReach (fun Q L => Q = baPG gs ∧ L = [baPG gs]) (baPG gs) Q) : P Q := by
+  induction hQ with
+  | refl => exact h0
+  | step hQ' hst hmem ih =>
+    obtain ⟨rfl, rfl⟩ := hst
+    rw [List.mem_singleton.1 hmem]
+    exact h0
 
 /-- **`BAScostLL.trans` and Lemma B**: the first term of `lanlw` at `Γ*` and its `M`-split (`[x] ≠ [y]`), composed -/
 example : ∃ Q ∈ (BAGraph.lanlwT1 gs ps).splitG, BAScostLL gs Q :=
