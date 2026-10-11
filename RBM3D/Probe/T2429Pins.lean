@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.BA.TwistPins
-import RBM3D.BA.EKNonzero
 import RBM3D.BA.Prop6Path
 import RBM3D.BA.CombesThomas
 import RBM3D.BA.GreenSchur
@@ -13,8 +12,8 @@ import RBM3D.BA.EMn2BA
 /-!
 # T2429 probe step (DECISIONS §238): the pin T.1 (iii) `BATwKDecay` and its compiled instance
 
-Probe of `docs/tickets/T2429.md`; never merged, no root import.  Section 1: `#check` of the inputs named by the
-ticket (merged `main`).  Section 2: the new public pin of T.1 (iii) (`docs/tickets/T2398-TL-proofs.md:37-38`,
+Probe of `docs/tickets/T2429.md`; never merged, no root import.  Section 1: `#check` of the four inputs named by the
+ticket, three merged twins of `BA/EMn2BA.lean`, the instance data (all on `main`).  Section 2: the new public pin of T.1 (iii) (`docs/tickets/T2398-TL-proofs.md:37-38`,
 the twisted analogue of the fast-decay property `Def_decay`, `paper/tex/3_5_Loop_Hierarchy.tex:1115-1120`; design
 `docs/reports/T2413-design.md` F6).  Section 3: its instance as an `example` at the flow datum `sz0`, `zSeq`,
 `flow_sz0`: every deterministic hypothesis is discharged and the cut-off region is nonempty for every `n`.
@@ -31,23 +30,11 @@ noncomputable section
 namespace RBM.BA
 open RBM RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Inputs (`#check`) -/
+/-! ## 1. Inputs (`#check`): the four named by the ticket, the merged twins found (`BA/EMn2BA.lean`), the instance data -/
 
-#check @twK
 #check @twK_ba
-#check @twK_bound
-#check @twK_bound_holds
-#check @twDec
-#check @BATwistSrc5
-#check @BAFlow
-#check @BAflowT0
-#check @BAflowLam0
-#check @baFMz
-#check @BAProp5
 #check @baProp5_holds
 #check @BAMB_decay_large
-#check @BAMB_row_l1
-#check @BAct_rate
 #check @BAflow_lam0_window
 #check @EMn2BA_ellT_mono_g
 #check @EMn2BA_one_sub_T0
