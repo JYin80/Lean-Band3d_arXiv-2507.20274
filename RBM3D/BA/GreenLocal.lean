@@ -537,4 +537,253 @@ theorem baGbEXPii_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPii d := by
 
 end GiiPin
 
+/-! ## 5. GL3: the local law at a deterministic control; GL4: the floor along the flow -/
+
+/-- **GL3 `greenLocal_localLaw`** (twin of `localLawDetThm`, `Green/LocalLaw.lean:658`): `(initialGT2)` (`‖G_t - M‖_max ≺ W^{-ε₀}`,
+`max 𝓛^{(2)} ≺ Ψ²`) gives `‖G_t - M‖_max ≺ Ψ`, for every `2 ≤ d` and every `Ψ ≥ 0` eventually (no window; paper-delta `T2408a`).
+Proof: the three events `{‖Δ‖_max ≤ N^ζ W^{-ε₀}}` (GL5, `ζ = 𝔠 ε₀/2`), `{𝓛_max ≤ N^τ Ψ²}` (B), and
+`{1_{Ω(ε₀/2)} ‖Δ_{xy}‖² ≤ N^τ 𝓛_max}` (GL2 at `ε₀/2`) hold with high probability; on them `N^ζ W^{-ε₀} ≤ W^{-ε₀/2}` puts `ω` in
+`Ω(ε₀/2)` and `‖Δ_{xy}‖² ≤ N^{2τ} Ψ²`. -/
+theorem greenLocal_localLaw (d : ℕ) (hd : 2 ≤ d) : GreenLocal_LocalLaw d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hinit
+  have h𝔠 : 0 < 𝔠 := hflow.1.1
+  have hsz' : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
+  have hii := baGbEXPii_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT (ε₀ / 2) (half_pos hε₀)
+  have hζ : 0 < 𝔠 * ε₀ / 2 := by positivity
+  have hΩ := (greenLocal_omega d κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ hinit.1 (𝔠 * ε₀ / 2) hζ le_rfl).2
+  refine GreenLocal_prec_of_whp fun τ hτ => ?_
+  have hB := StochDomAt.highProb hinit.2 hτ
+  have hC := StochDomAt.highProb hii hτ
+  refine (HighProbAt.inter hsz' hΩ (HighProbAt.inter hsz' hB hC)).mono ?_
+  filter_upwards [GreenLocal_ev_incl sz hflow.1 hε₀, hΨ] with n hincl hΨn
+  rintro ω ⟨h1, h2, h3⟩ ⟨x, y⟩
+  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hOm : ∀ x y : Idx d (sz.L n) (sz.W n), ‖(baFMz sz z).GM n (t n) ω x y‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) :=
+    fun x y => (h1 x y).trans hincl
+  have hi : (baFMz sz z).indMax n (t n) (((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2))) ω = 1 := by simp [FlowFM.indMax, hOm]
+  have h3' := h3 (x, y)
+  simp only [hi, one_mul] at h3'
+  have h2' := h2 ()
+  have hNτ0 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ := Real.rpow_nonneg hN0 _
+  refine GreenLocal_le_of_sq_le (mul_nonneg hNτ0 hΨn) ?_
+  calc ‖(baFMz sz z).GM n (t n) ω x y‖ ^ 2 ≤ ((sz.size n : ℕ) : ℝ) ^ τ * STmaxLoop2g (baFMz sz z) n (t n) ω := h3'
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (((sz.size n : ℕ) : ℝ) ^ τ * Ψ n ^ 2) := mul_le_mul_of_nonneg_left h2' hNτ0
+    _ = (((sz.size n : ℕ) : ℝ) ^ τ * Ψ n) ^ 2 := by ring
+
+/-- **GL4 `greenLocal_floor`** (twin of `loopFloorThm`, `Green/LocalLaw.lean:786`): under `(initialGT2)`, for every `ν > 0`, eventually
+`W^{-d} ≤ (4/κ²) N^ν Ψ²`.  Proof: the events `{‖Δ‖_max ≤ N^ζ W^{-ε₀}}` (GL5) and `{𝓛_max ≤ N^ν Ψ²}` (B) have a common sample point
+for `N ≥ 2`; there `‖Δ‖_max ≤ κ/2` and the one-sample floor GL1 gives `W^{-d} ≤ (4/κ²) 𝓛_max`. -/
+theorem greenLocal_floor (d : ℕ) (hd : 2 ≤ d) : GreenLocal_Floor d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hinit ν hν
+  have h𝔠 : 0 < 𝔠 := hflow.1.1
+  have hsz' : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
+  have hζ : 0 < 𝔠 * ε₀ / 2 := by positivity
+  obtain ⟨hsmall, hΩ⟩ := greenLocal_omega d κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ hinit.1 (𝔠 * ε₀ / 2) hζ le_rfl
+  have hB := StochDomAt.highProb hinit.2 hν
+  have hne := HighProbAt.nonempty hsz' (measure_univ) (HighProbAt.inter hsz' hΩ hB)
+  filter_upwards [hne, hsmall] with n hn hs
+  obtain ⟨ω, h1, h2⟩ := hn
+  obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier hκ sz hflow n (ht0 n) (htT n) ω
+    (m := BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (s := (BAflowEs sz z n : ℂ) + BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (zt := ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) (t n)) rfl rfl rfl
+  have hr := (ba_G_data hκ sz hflow n (ht0 n) (htT n)).2.1
+  have hκm : κ ≤ ‖BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n‖ := hr.2.trans ((le_abs_self _).trans (Complex.abs_im_le_norm _))
+  have hΩ' : ∀ u v : Vtx d (sz.L n) (sz.W n), ‖GreenCore_Gc sz z n (t n) ω u v - GreenCore_Mc sz z n u v‖ ≤ κ / 2 := fun u v =>
+    (h1 ((splitEquiv d (sz.L n) (sz.W n)).symm u) ((splitEquiv d (sz.L n) (sz.W n)).symm v)).trans hs
+  have hfl := GreenLocal_floor_sample (G := GreenCore_Gc sz z n (t n) ω) (M := GreenCore_Mc sz z n) hκ hM hMd hκm le_rfl hΩ' 0
+  have h2' := h2 ()
+  have hκ2 : 0 ≤ 4 / κ ^ 2 := by positivity
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 4 / κ ^ 2 * GreenCore_loop (GreenCore_Gc sz z n (t n) ω) 0 0 := hfl
+    _ ≤ 4 / κ ^ 2 * STmaxLoop2g (baFMz sz z) n (t n) ω :=
+        mul_le_mul_of_nonneg_left (GreenLocal_loop_le_max sz z n (t n) ω 0 0) hκ2
+    _ ≤ 4 / κ ^ 2 * (((sz.size n : ℕ) : ℝ) ^ ν * Ψ n ^ 2) := mul_le_mul_of_nonneg_left h2' hκ2
+    _ = 4 / κ ^ 2 * ((sz.size n : ℕ) : ℝ) ^ ν * Ψ n ^ 2 := by ring
+
+/-! ## 6. GL6: the averaged wiring `L^{(1)}_a - m = v̄_a`, `v̄ - t M^{(+,+)} v̄ = ⟨M𝒦⟩`, `BAStab` -/
+
+section Gav
+
+variable {d : ℕ}
+
+private theorem GreenLocal_gres_blockMat_true {L W : ℕ} [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
+    (x y : Vtx d L W) :
+    Gres (blockMat d L W H) z true x y = Gres H z true ((splitEquiv d L W).symm x) ((splitEquiv d L W).symm y) := by
+  unfold Gres blockMat
+  simp only [ite_true]
+  have e1 : H.submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ) =
+      (H - z • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)).submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm := by
+    ext i j
+    simp [Matrix.submatrix_apply, Matrix.one_apply]
+  rw [e1, ← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse, Matrix.inv_submatrix_equiv]
+  rfl
+
+/-- `𝓛^{(1)}_{t,+,a} = W^{-d} Σ_{o} G_{(a,o)(a,o)}` along the flow. -/
+private theorem GreenLocal_L1_eq (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (a : Zd d (sz.L n)) :
+    (baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => a) ω =
+      (((((sz.W n : ℝ) ^ d)⁻¹ : ℝ)) : ℂ) * ∑ o : Fin (sz.W n ^ d), GreenCore_Gc sz z n t ω (a, o) (a, o) := by
+  change loopFine d (sz.L n) (sz.W n) (sz.seqHflowBA (BAflowLam0 sz z) n t ω)
+    (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) t) (fun _ : Fin 1 => true) (fun _ => a) = _
+  unfold loopFine loopM
+  simp only [List.ofFn_succ, List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one]
+  have hGb : Gres (blockMat d (sz.L n) (sz.W n) (sz.seqHflowBA (BAflowLam0 sz z) n t ω))
+      (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) t) true = GreenCore_Gc sz z n t ω := by
+    ext x y
+    exact GreenLocal_gres_blockMat_true _ _ x y
+  rw [hGb]
+  have hE : Eblk d (sz.L n) (sz.W n) a = Matrix.diagonal fun x : Vtx d (sz.L n) (sz.W n) =>
+      if x.1 = a then (((sz.W n : ℂ)) ^ d)⁻¹ else 0 := rfl
+  rw [hE]
+  simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_diagonal]
+  rw [Fintype.sum_prod_type, Finset.sum_eq_single a]
+  · rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun o _ => ?_
+    simp only [ite_true]
+    push_cast
+    ring
+  · intro b _ hb
+    simp [hb]
+  · intro h
+    exact absurd (Finset.mem_univ a) h
+
+/-- The averaged equation of `(E3)`: `v̄_a - t Σ_b M_{ba} M_{ab} v̄_b = W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}`
+(the identity inside `GreenCore_coupled`). -/
+private theorem GreenLocal_avg_identity {L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+    {Mb : Matrix (Zd d L) (Zd d L) ℂ} {𝒦 : Vtx d L W → Vtx d L W → ℂ} {vb : Zd d L → ℂ} {t : ℝ}
+    (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0)
+    (hv : ∀ a, vb a = (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, (G (a, o) (a, o) - M (a, o) (a, o)))
+    (hE3 : ∀ x y, G x y - M x y = ∑ b', Mb x.1 b' * ((t : ℂ) * vb b' * M (b', x.2) y) + ∑ b', Mb x.1 b' * 𝒦 (b', x.2) y)
+    (a : Zd d L) :
+    vb a - (t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b = (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, ∑ b', Mb a b' * 𝒦 (b', o) (a, o) := by
+  have hM' : ∀ (b' a : Zd d L) (o : Fin (W ^ d)), M (b', o) (a, o) = Mb b' a := fun b' a o => by simp [hM]
+  have h1 : ∀ o : Fin (W ^ d), G (a, o) (a, o) - M (a, o) (a, o) = (t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b +
+      ∑ b', Mb a b' * 𝒦 (b', o) (a, o) := by
+    intro o
+    rw [hE3 (a, o) (a, o)]
+    congr 1
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun b _ => by simp only [hM']; ring
+  rw [hv a]
+  simp only [h1, Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_add]
+  have : (((W : ℝ) ^ d)⁻¹ : ℝ) * (((W ^ d : ℕ) : ℂ) * ((t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b)) =
+      (t : ℂ) * ∑ b, (Mb b a * Mb a b) * vb b := by
+    have h3 : (((W : ℝ) ^ d)⁻¹ : ℝ) * ((W ^ d : ℕ) : ℂ) = 1 := by
+      have := GreenCore_w_mul (d := d) (W := W)
+      exact_mod_cast this
+    rw [← mul_assoc, h3, one_mul]
+  rw [this]; ring
+
+/-- `BAStab` in the form of `GreenCore_coupled`. -/
+private theorem GreenLocal_stab_form {L : ℕ} [NeZero L] {g E Kθ t : ℝ} {m : ℂ} (hstab : BAStab d L g E m t Kθ)
+    (v : Zd d L → ℂ) (B : ℝ)
+    (hv : ∀ a, ‖v a - (t : ℂ) * ∑ b, (BAMB d L g (E : ℂ) m b a * BAMB d L g (E : ℂ) m a b) * v b‖ ≤ B) (a : Zd d L) :
+    ‖v a‖ ≤ Kθ * B :=
+  hstab v B (fun a' => by simpa [BAMss, BAMsigma] using hv a') a
+
+/-- **GL6 `greenLocal_gav_of_fa`** (the averaged wiring; twin of `avgBoundDetThm`, `Green/LocalLaw.lean:739`, at the BA carrier): the
+averaged law `‖W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}‖ ≺ Ψ²` of the residual of `(E3)` (the conclusion of `BAFAav`, owed by G5b) gives
+`‖L^{(1)}_a - m‖ ≺ Ψ²` uniformly in `a` (the conclusion of `BAGavLGEX`).  `L^{(1)}_a - m = v̄_a`, `v̄ - t M^{(+,+)} v̄ = ⟨M𝒦⟩`
+(`GreenCore_E3`), `‖v̄‖_max ≤ 16 κ⁻⁴ ‖⟨M𝒦⟩‖_max` (`baStab_holds`), and `16 κ⁻⁴ N^{τ/2} ≤ N^τ` eventually.  No `Ψ` hypothesis. -/
+theorem greenLocal_gav_of_fa (d : ℕ) (hd : 2 ≤ d) : GreenLocal_Gav d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT Ψ hFA
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  refine StochDomAt.of_subset hFA fun τ hτ => ⟨τ / 2, half_pos hτ, ?_⟩
+  filter_upwards [GreenLocal_ev_pow sz hsz (16 * κ⁻¹ ^ 4) (σ := τ / 2) (τ := τ) (by linarith)] with n hn
+  rintro ω ⟨a, ha⟩
+  by_contra hno
+  simp only [badSetAt, Set.mem_ofPred_eq, not_exists, not_lt] at hno
+  obtain ⟨ht1, hr, hmi, hzi, -, -⟩ := ba_G_data hκ sz hflow n (ht0 n) (htT n)
+  obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier hκ sz hflow n (ht0 n) (htT n) ω
+    (m := BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (s := (BAflowEs sz z n : ℂ) + BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (zt := ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) (t n)) rfl rfl rfl
+  have hE3 := fun x y => GreenCore_E3 hGR hRG hMR' hz hM hG0 x y
+  have hid := GreenLocal_avg_identity (vb := GreenCore_vbar (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n)) hM
+    (fun a => rfl) hE3
+  have hstab := baStab_holds d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) _ hκ hr (t n) (ht0 n) ht1.le
+  have hΨ2 : 0 ≤ Ψ n ^ 2 := sq_nonneg _
+  have hNτ2 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have hbound := GreenLocal_stab_form hstab (GreenCore_vbar (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n))
+    (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * Ψ n ^ 2) (fun a' => by rw [hid a']; exact hno a') a
+  -- `L^{(1)}_a - m = v̄_a`
+  have hMaa : ∀ o : Fin (sz.W n ^ d), GreenCore_Mc sz z n (a, o) (a, o) = BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n := fun o => by
+    simp [hM, hMd]
+  have hLm : (baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => a) ω - (baFMz sz z).m n =
+      GreenCore_vbar (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n) a := by
+    rw [GreenLocal_L1_eq]
+    unfold GreenCore_vbar
+    simp only [hMaa, Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_sub]
+    have h3 : (((sz.W n : ℝ) ^ d)⁻¹ : ℝ) * ((sz.W n ^ d : ℕ) : ℂ) = 1 := by
+      have := GreenCore_w_mul (d := d) (W := sz.W n)
+      exact_mod_cast this
+    have hm : (baFMz sz z).m n = BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n := rfl
+    rw [hm, ← mul_assoc, h3, one_mul]
+  have hve : ‖(baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => a) ω - (baFMz sz z).m n‖ ≤
+      ((sz.size n : ℕ) : ℝ) ^ τ * Ψ n ^ 2 := by
+    rw [hLm]
+    calc _ ≤ 16 * κ⁻¹ ^ 4 * (((sz.size n : ℕ) : ℝ) ^ (τ / 2) * Ψ n ^ 2) := hbound
+      _ = (16 * κ⁻¹ ^ 4 * ((sz.size n : ℕ) : ℝ) ^ (τ / 2)) * Ψ n ^ 2 := by ring
+      _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ * Ψ n ^ 2 := mul_le_mul_of_nonneg_right hn hΨ2
+  beta_reduce at ha
+  exact absurd ha (not_lt.2 hve)
+
+end Gav
+
+/-! ## 7. The bridges to G5a, G5c and the wiring lemma of G6b -/
+
+/-- **The premise of GL6 as stated by G5b** (`BAFAav`, `t/T2401` at `aec5a16`, `RBM3D/Probe/T2401Pins.lean:337-346`, after Amend 1 D1; the pin is
+not merged, so its text is copied here under the stem `GreenLocal_`): the averaged law of the residual `𝒦` of `(E3)`,
+`‖W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}‖ ≺ Ψ²`, from `BAGiiGEX` at `ε₀/2` and `(initialGT2)`, for `Ψ` in the window
+`W^{-d/2} ≤ Ψ ≤ W^{-ε₀}`.  Owed by G5b. -/
+def GreenLocal_FAav (d : ℕ) : Prop :=
+  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
+    ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t (ε₀ / 2) →
+    ∀ Ψ : ℕ → ℝ, (∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤ Ψ n) →
+      (∀ᶠ n in atTop, Ψ n ≤ ((sz.W n : ℕ) : ℝ) ^ (-ε₀)) →
+      STInitialGT2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ →
+        PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun n => Zd d (sz.L n))
+          (fun n a ω => ‖(((sz.W n : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, ∑ b',
+            BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) a b' *
+              GreenCore_K (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n) (GreenCore_Xc sz n (t n) ω)
+                (GreenCore_Dc sz z n) (t n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (b', o) (a, o)‖)
+          (fun n _ _ => Ψ n ^ 2)
+
+/-- **Bridge to G5a** (`BAFamGain`, `BAFAav`; T2401 Amend 1 D1): `BAGiiGEX` at every `0 < ε₁ ≤ ε₀`, in particular at `ε₁ = ε₀/2`, the
+premise of `GreenLocal_FAav`; the same binder prefix as `BAGbEXPii`, so `baGbEXPii_holds` discharges it literally. -/
+theorem greenLocal_gii_of_le (d : ℕ) (hd : 2 ≤ d) :
+    ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
+      ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
+        ∀ ε₀ ε₁ : ℝ, 0 < ε₁ → ε₁ ≤ ε₀ → BAGiiGEX sz z t ε₁ :=
+  fun κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT _ ε₁ hε₁ _ => baGbEXPii_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₁ hε₁
+
+/-- The three premises of `BAIBPDet` (G5c, `docs/tickets/T2402-amend-1.md` F2; `t/T2402:RBM3D/Probe/T2402Pins.lean:201`) from `(initialGT2)`:
+`hll : ‖G_t - M‖_max ≺ Ψ` (GL3, literally `GreenIBP_hll`), `N^ζ W^{-ε₀} ≤ κ/2` eventually and the high probability event
+`{‖G_t - M‖_max ≤ N^ζ W^{-ε₀}}` (GL5, `GreenIBP_Omega … δ`, `δ_n = N^ζ W^{-ε₀}`), for `0 < ζ ≤ 𝔠 ε₀/2`. -/
+def GreenLocal_IBPPrem (d : ℕ) : Prop :=
+  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
+    ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ →
+      ∀ Ψ : ℕ → ℝ, (∀ᶠ n in atTop, 0 ≤ Ψ n) → STInitialGT2gL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ →
+        ∀ ζ : ℝ, 0 < ζ → ζ ≤ 𝔠 * ε₀ / 2 →
+          PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
+            (fun n p ω => ‖(baFMz sz z).GM n (t n) ω p.1 p.2‖) (fun n _ _ => Ψ n) ∧
+          (∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ ζ * ((sz.W n : ℕ) : ℝ) ^ (-ε₀) ≤ κ / 2) ∧
+          HighProbAt (Sizes.seqP (sz.withLam 0)) sz.size
+            (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
+              ‖(baFMz sz z).GM n (t n) ω x y‖ ≤ ((sz.size n : ℕ) : ℝ) ^ ζ * ((sz.W n : ℕ) : ℝ) ^ (-ε₀)})
+
+/-- **Bridge to G5c**: GL3 and GL5 give the premises of `BAIBPDet`, for `2 ≤ d` and all data. -/
+theorem greenLocal_ibp_premises (d : ℕ) (hd : 2 ≤ d) : GreenLocal_IBPPrem d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hinit ζ hζ hζ𝔠
+  have h5 := greenLocal_omega d κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ hinit.1 ζ hζ hζ𝔠
+  exact ⟨greenLocal_localLaw d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hinit, h5.1, h5.2⟩
+
+/-- **The wiring lemma of G6b** (twin of `gbEXPV3Theorem_of_parts`, `Green/LocalLaw.lean:427`, with the FA input as a hypothesis):
+`BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`, owed by G5b), the diagonal law GL2 at `ε₀/2` (the premise of
+`GreenLocal_FAav`) and the averaged wiring GL6. -/
+theorem greenLocal_gbEXPav_of_fa (d : ℕ) (hd : 2 ≤ d) (hFA : GreenLocal_FAav d) : BAGbEXPav d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hlo hhi hinit
+  exact greenLocal_gav_of_fa d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT Ψ
+    (hFA κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀
+      (baGbEXPii_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT (ε₀ / 2) (half_pos hε₀)) Ψ hlo hhi hinit)
+
 end RBM.BA
