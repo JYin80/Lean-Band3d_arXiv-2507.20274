@@ -1369,4 +1369,162 @@ theorem baGbEXPij'_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPij' d := by
 
 end Pin
 
+/-! ## 6. Compiled nonempty instances -/
+
+namespace GreenOffInst
+
+private def W₁ : ℕ := 10 ^ 5
+private instance : NeZero W₁ := ⟨by norm_num [W₁]⟩
+private theorem W₁_ge : (10 : ℝ) ^ 12 ≤ ((W₁ : ℝ)) ^ 3 := by norm_num [W₁]
+private abbrev δ₁ : ℝ := 1 / 10 ^ 6
+private abbrev Mb₁ : Matrix (Zd 3 4) (Zd 3 4) ℂ := Complex.I • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)
+private abbrev M₁ : Matrix (Vtx 3 4 W₁) (Vtx 3 4 W₁) ℂ := fun u v => if u.2 = v.2 then Mb₁ u.1 v.1 else 0
+private abbrev Δ₁ (x y : Vtx 3 4 W₁) : ℂ := (δ₁ : ℂ) * (if x = y then 1 else if x.2 = y.2 then 1 / 2 else 0)
+private abbrev 𝔛₁ (u y : Vtx 3 4 W₁) : ℂ := ((-(δ₁ / 2) : ℝ) : ℂ) * (M₁ u y + Δ₁ u y) + Complex.I * Δ₁ u y
+private abbrev D₁ : Matrix (Vtx 3 4 W₁) (Vtx 3 4 W₁) ℂ := fun u l => if u.2 = l.2 ∧ Adj 3 4 u.1 l.1 then ((1 / 64 : ℝ) : ℂ) else 0
+private abbrev Θ₁ : Matrix (Zd 3 4) (Zd 3 4) ℂ := ((2 / 3 : ℝ) : ℂ) • (1 : Matrix (Zd 3 4) (Zd 3 4) ℂ)
+
+private theorem Mb₁_apply (a b : Zd 3 4) : Mb₁ a b = if a = b then Complex.I else 0 := by simp [Mb₁, Matrix.one_apply]
+
+private theorem hΔ₁ (u v : Vtx 3 4 W₁) : ‖Δ₁ u v‖ ≤ δ₁ := by
+  simp only [Δ₁, norm_mul, Complex.norm_real, Real.norm_of_nonneg (by norm_num : (0 : ℝ) ≤ δ₁)]
+  split_ifs <;> norm_num
+
+private theorem hM₁ (u v : Vtx 3 4 W₁) : ‖M₁ u v‖ ≤ 1 := by
+  simp only [M₁, Mb₁_apply]; split_ifs <;> simp
+
+private theorem hT₁ (a c : Zd 3 4) : 32 ≤ GreenCore_T 3 4 W₁ 1 1 64 1 (fun _ _ => (1 : ℝ)) a c := by
+  have h1 : Real.sqrt (16 * 1 * 1 * 1⁻¹ * 64) = 32 := by
+    rw [show (16 * 1 * 1 * 1⁻¹ * 64 : ℝ) = 32 ^ 2 by norm_num]; exact Real.sqrt_sq (by norm_num)
+  have h2 := Finset.single_le_sum (f := fun b : Zd 3 4 => Real.exp (-(1 / 4 : ℝ) * (zdistD 3 4 (c - b) : ℝ)) * 1)
+    (fun b _ => by positivity) (Finset.mem_univ c)
+  simp only [sub_self, zdistD_zero, Nat.cast_zero, mul_zero, Real.exp_zero, mul_one] at h2
+  unfold GreenCore_T
+  rw [h1]
+  have := mul_nonneg (Real.sqrt_nonneg (4 * (1 : ℝ)⁻¹ ^ 2 * 64 * (((W₁ : ℝ) ^ 3)⁻¹))) (Real.exp_pos (-(1 / 4 : ℝ) * (zdistD 3 4 (a - c) : ℝ))).le
+  simp only [mul_one] at h2 ⊢
+  nlinarith
+
+private theorem hX₁ (u y : Vtx 3 4 W₁) : ‖𝔛₁ u y‖ ≤ Real.sqrt (2 * 1) * ((1 + 2 / (1 / 2 * 1)) *
+    GreenCore_T 3 4 W₁ 1 1 64 1 (fun _ _ => (1 : ℝ)) u.1 y.1 + Real.sqrt 13 / (1 / 2) * δ₁ * ‖Δ₁ u y‖) := by
+  have h1 := hM₁ u y
+  have h2 := hΔ₁ u y
+  have hx1 : ‖𝔛₁ u y‖ ≤ 1 := by
+    calc ‖𝔛₁ u y‖ ≤ ‖((-(δ₁ / 2) : ℝ) : ℂ) * (M₁ u y + Δ₁ u y)‖ + ‖Complex.I * Δ₁ u y‖ := norm_add_le _ _
+      _ ≤ (δ₁ / 2) * (1 + δ₁) + δ₁ := by
+          rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_I, one_mul, Real.norm_eq_abs, abs_neg,
+            abs_of_nonneg (by norm_num)]
+          exact add_le_add (mul_le_mul_of_nonneg_left ((norm_add_le _ _).trans (add_le_add h1 h2)) (by norm_num)) h2
+      _ ≤ 1 := by norm_num
+  have hT := hT₁ u.1 y.1
+  have h5 : (1 + 2 / (1 / 2 * 1) : ℝ) = 5 := by norm_num
+  have hs : 1 ≤ Real.sqrt (2 * 1) := Real.one_le_sqrt.2 (by norm_num)
+  have hB : 0 ≤ Real.sqrt 13 / (1 / 2) * δ₁ * ‖Δ₁ u y‖ := by positivity
+  refine hx1.trans ?_
+  calc (1 : ℝ) ≤ 1 * 160 := by norm_num
+    _ ≤ _ := mul_le_mul hs (by rw [h5]; linarith) (by norm_num) (by positivity)
+
+private theorem hXi₁ (w : Vtx 3 4 W₁) : ‖(δ₁ : ℂ)‖ ≤ Real.sqrt 13 / (1 / 2) * δ₁ * (1 + Real.sqrt (2 * 1)) *
+    GreenCore_T 3 4 W₁ 1 1 64 1 (fun _ _ => (1 : ℝ)) w.1 w.1 + Real.sqrt (2 * 1) * 1 + Real.sqrt (1 * (((W₁ : ℝ) ^ 3)⁻¹)) +
+    Real.sqrt (2 * 1) * ((1 + 2 / (1 / 2 * 1)) * Real.exp (1 / 4) * (2 * ((3 : ℕ) : ℝ) * (1 / 64)) *
+      GreenCore_T 3 4 W₁ 1 1 64 1 (fun _ _ => (1 : ℝ)) w.1 w.1 + Real.sqrt 13 / (1 / 2) * δ₁ * ∑ l, ‖D₁ l w‖ * ‖Δ₁ w l‖) := by
+  have hT : 0 ≤ GreenCore_T 3 4 W₁ 1 1 64 1 (fun _ _ => (1 : ℝ)) w.1 w.1 := (by norm_num : (0 : ℝ) ≤ 32).trans (hT₁ _ _)
+  have hs : 1 ≤ Real.sqrt (2 * 1) := Real.one_le_sqrt.2 (by norm_num)
+  have h1 : ‖(δ₁ : ℂ)‖ ≤ 1 := by rw [Complex.norm_real, Real.norm_of_nonneg (by norm_num)]; norm_num
+  have hsum : 0 ≤ ∑ l, ‖D₁ l w‖ * ‖Δ₁ w l‖ := Finset.sum_nonneg fun l _ => mul_nonneg (norm_nonneg _) (norm_nonneg _)
+  have h4 : 0 ≤ Real.sqrt (1 * (((W₁ : ℝ) ^ 3)⁻¹)) := Real.sqrt_nonneg _
+  generalize GreenCore_T 3 4 W₁ 1 1 64 1 (fun _ _ => (1 : ℝ)) w.1 w.1 = T at hT ⊢
+  generalize ∑ l, ‖D₁ l w‖ * ‖Δ₁ w l‖ = sg at hsum ⊢
+  generalize Real.sqrt (1 * (((W₁ : ℝ) ^ 3)⁻¹)) = q at h4 ⊢
+  generalize Real.sqrt (2 * 1) = s at hs ⊢
+  generalize ‖(δ₁ : ℂ)‖ = nn at h1 ⊢
+  have h2 : 0 ≤ Real.sqrt 13 / (1 / 2) * δ₁ * (1 + s) * T := by positivity
+  have h3 : 0 ≤ s * ((1 + 2 / (1 / 2 * 1)) * Real.exp (1 / 4) * (2 * ((3 : ℕ) : ℝ) * (1 / 64)) * T +
+      Real.sqrt 13 / (1 / 2) * δ₁ * sg) := by positivity
+  linarith
+
+private theorem hdec₁ (a b : Zd 3 4) : ‖Mb₁ a b‖ ≤ (1 : ℝ)⁻¹ * Real.exp (-1 * (zdistD 3 4 (a - b) : ℝ)) := by
+  rw [Mb₁_apply]
+  split_ifs with h
+  · subst h; simp
+  · rw [norm_zero]; positivity
+
+private theorem hS₁ (a : Zd 3 4) : ∑ b, Real.exp (-((1 : ℝ) / 2) * (zdistD 3 4 (a - b) : ℝ)) ≤ 64 := by
+  refine (Finset.sum_le_sum fun b _ => (Real.exp_le_one_iff.2 (by nlinarith [(Nat.cast_nonneg (zdistD 3 4 (a - b)) : (0 : ℝ) ≤ _)]) :
+    Real.exp _ ≤ 1)).trans ?_
+  rw [Finset.sum_const, Finset.card_univ, card_Zd]; norm_num
+
+private theorem hvb₁ (a : Zd 3 4) : (δ₁ : ℂ) = (((W₁ : ℝ) ^ 3)⁻¹ : ℝ) * ∑ o : Fin (W₁ ^ 3), Δ₁ (a, o) (a, o) := by
+  have h3 : (((W₁ : ℝ) ^ 3)⁻¹ : ℝ) * ((W₁ ^ 3 : ℕ) : ℂ) = 1 := by exact_mod_cast GreenCore_w_mul (d := 3) (W := W₁)
+  simp only [Δ₁, ite_true, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_one]
+  rw [← mul_assoc, h3, one_mul]
+
+private theorem hE3₁ (x y : Vtx 3 4 W₁) : Δ₁ x y = ∑ b', Mb₁ x.1 b' * (((1 / 2 : ℝ) : ℂ) * (δ₁ : ℂ) * M₁ (b', x.2) y +
+    (((1 / 2 : ℝ) : ℂ) * (δ₁ : ℂ) - (δ₁ : ℂ)) * Δ₁ (b', x.2) y - (δ₁ : ℂ) * M₁ (b', x.2) y - 𝔛₁ (b', x.2) y) := by
+  simp only [Mb₁_apply, ite_mul, zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true, Prod.mk.eta]
+  unfold 𝔛₁
+  push_cast
+  linear_combination (Δ₁ x y) * Complex.I_mul_I
+
+private theorem hA₁ (w : Vtx 3 4 W₁) : ‖((1 / 2 : ℝ) : ℂ) * (δ₁ : ℂ) - (δ₁ : ℂ)‖ ≤ δ₁ := by
+  rw [show ((1 / 2 : ℝ) : ℂ) * (δ₁ : ℂ) - (δ₁ : ℂ) = ((-(δ₁ / 2) : ℝ) : ℂ) by push_cast; ring, Complex.norm_real, Real.norm_eq_abs,
+    abs_neg, abs_of_nonneg (by norm_num)]
+  norm_num
+
+private theorem hD₁ (u l : Vtx 3 4 W₁) : D₁ u l = if u.2 = l.2 ∧ Adj 3 4 u.1 l.1 then ((1 / 64 : ℝ) : ℂ) else 0 := rfl
+
+private theorem hD1₁ (w : Vtx 3 4 W₁) : ∑ l, ‖D₁ l w‖ = 2 * ((3 : ℕ) : ℝ) * (1 / 64) := by
+  simp only [← GreenCore_Dsymm hD₁ w]; exact GreenCore_Drow (W := W₁) (by norm_num) (by norm_num) hD₁ w
+
+private theorem hDadj₁ (l w : Vtx 3 4 W₁) (hDl : D₁ l w ≠ 0) : zdistD 3 4 (w.1 - l.1) = 1 := by
+  rw [hD₁] at hDl; split_ifs at hDl with hc
+  · rw [← neg_sub, zdistD_neg]; exact hc.2
+  · exact absurd rfl hDl
+
+private theorem hΘ₁ (b a : Zd 3 4) : Θ₁ b a = (if b = a then 1 else 0) + ((1 / 2 : ℝ) : ℂ) *
+    ∑ c, Θ₁ b c * (Mb₁ a c * Mb₁ c a) := by
+  simp only [Θ₁, Mb₁_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul]
+  by_cases h : b = a
+  · subst h; simp [Finset.sum_ite_eq, eq_comm]; norm_num
+  · simp [h, Finset.sum_ite_eq, eq_comm]
+
+private theorem hΘw₁ (b : Zd 3 4) : ∑ a', ‖Θ₁ b a'‖ * Real.exp (2 * (1 / 12) * (zdistD 3 4 (b - a') : ℝ)) ≤ 1 := by
+  rw [Finset.sum_eq_single b]
+  · simp [Θ₁, Matrix.one_apply]; norm_num
+  · intro a' _ h; simp [Θ₁, Matrix.one_apply, Ne.symm h]
+  · intro h; exact absurd (Finset.mem_univ b) h
+
+private theorem hC2₁ : (1 + (1 : ℝ)⁻¹ * 64 * (1 : ℝ)⁻¹ * 1) * ((1 : ℝ)⁻¹ * 64 * GreenOff_eta 3 (1 / 2) 1 1 δ₁ (1 / 64) (1 / 12) δ₁) ≤ 1 / 2 := by
+  unfold GreenOff_eta GreenOff_eX
+  have hs : Real.sqrt (2 * 1) ≤ 2 := Real.sqrt_le_iff.2 ⟨by norm_num, by norm_num⟩
+  have hq : Real.sqrt 13 ≤ 4 := Real.sqrt_le_iff.2 ⟨by norm_num, by norm_num⟩
+  have he : Real.exp (1 / 12) ≤ 3 := (Real.exp_le_exp.2 (by norm_num : (1 / 12 : ℝ) ≤ 1)).trans (Real.exp_one_lt_d9.le.trans (by norm_num))
+  have hs0 : 0 ≤ Real.sqrt (2 * 1) := Real.sqrt_nonneg _
+  have hq0 : 0 ≤ Real.sqrt 13 := Real.sqrt_nonneg _
+  have he0 := (Real.exp_pos (1 / 12)).le
+  generalize Real.sqrt (2 * 1) = s at hs hs0 ⊢
+  generalize Real.sqrt 13 = q at hq hq0 ⊢
+  generalize Real.exp (1 / 12) = e at he he0 ⊢
+  have hx : s * q ≤ 8 := by nlinarith
+  have hex : e * (s * q) ≤ 24 := by nlinarith [mul_nonneg hs0 hq0]
+  norm_num
+  nlinarith
+
+/-- **Instance of target 1** (`GreenOff_close`, abstract form): `d = 3`, `L = 4`, `W = 10⁵`, `t = 1/2`, `κ = 1/2`, `c₀ = 1`, `S = 64 = L^d`,
+`ρ = 1`, `P = 1`, `g₀ = 1/64` (`D = g₀ Ψ`, `2d g₀ = 3/32`), `M = m I` (`m = i`, `|m| = 1`), the nonzero array
+`Δ = δ (1_{x=y} + ½ 1_{x≠y, o(x)=o(y)})`, `δ = 10⁻⁶`, `𝒜' ≡ δ`, `𝔛` solving (E3), the control `φ ≡ 1`, `Ψ = 1`, `Θ = (1 + t)⁻¹ I`,
+`C_Θ̂ = 1`, `γ = 1/12`, `α = δ`: every hypothesis holds, (C2) included (`≈ 0.09 ≤ 1/2`). -/
+example : ∀ x y : Vtx 3 4 W₁, ‖Δ₁ x y‖ ≤ 2 * GreenOff_Cl 3 (1 / 2) 1 1 64 1 δ₁ (1 / 64) 1 *
+    GreenOff_T 3 4 (1 / 12) 1 (fun _ _ => (1 : ℝ)) x.1 y.1 := fun x y =>
+  GreenOff_close (Mb := Mb₁) (M := M₁) (D := D₁) (Δ := Δ₁) (𝔛 := 𝔛₁) (Ap := fun _ => (δ₁ : ℂ)) (vb := fun _ => (δ₁ : ℂ)) (Θ := Θ₁)
+    (CΘ := 1) (t := 1 / 2) (γ := 1 / 12) (Ψ := 1) (P := 1) (κ := 1 / 2) (δ := δ₁) (g₀ := 1 / 64) (c₀ := 1) (ρ := 1) (S := 64)
+    (α := δ₁) (φ := fun _ _ => (1 : ℝ)) one_pos (by norm_num) (by norm_num) (fun _ _ => zero_le_one) one_pos
+    (Real.sqrt_le_one.2 ((inv_le_one₀ (lt_of_lt_of_le (by norm_num) W₁_ge)).2 ((by norm_num : (1 : ℝ) ≤ 10 ^ 12).trans W₁_ge))) (by norm_num)
+    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hdec₁ hS₁ (fun _ _ => rfl) hvb₁ hE3₁ hX₁ hXi₁ hA₁ hD1₁
+    hDadj₁ hΘ₁ hΘw₁ hC2₁ x y
+
+example : ∃ x y : Vtx 3 4 W₁, Δ₁ x y ≠ 0 := ⟨default, default, by simp [Δ₁]⟩
+
+end GreenOffInst
+
 end RBM.BA
