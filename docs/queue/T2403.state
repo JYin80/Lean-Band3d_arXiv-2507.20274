@@ -1,4 +1,4 @@
-state: proving
-reason: resumed under Amend 1 (H199): workflow wf_bcd4d2e7-4aa, stage 1b prover-max (no new 1a; target 3 with hd : 2 ≤ d; registry per D2) → auditor; branch t/T2403 at main 561093a
-updated: Sun Oct 11 03:11:38 UTC 2026
+state: audit-pass
+reason: 1a (targets 1-2 PASS), Amend 1 (H199), prover-max b160f1c, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 04:23:23 UTC 2026
 reports: docs/reports/T2403-prove.md, docs/reports/T2403-audit.md
