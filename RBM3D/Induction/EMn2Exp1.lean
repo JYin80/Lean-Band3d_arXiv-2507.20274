@@ -803,14 +803,10 @@ theorem emn2Exp_ev_exp_pow (hd : 0 < d) (hsize : sz.SizeTendsto) {c a δ : ℝ} 
 
 end Eventually
 
-/-! ## 5b. The model facts of the third estimate over the carrier, and the premise block (T2404) -/
-
 section CarrierFacts
 
-/-- **The facts the third estimate reads from the model** (`lem: EMn2_N`, `3_5:829-888`): over the carrier
-`mk sz z` and the realization `(Hf, ζf)` of its loops, the facts of the first estimate (`emn2PolyFacts`) and, for every
-`Flow`, for `0 ≤ u ≤ T0`: (T) `T0 < 1`; (E) `η_u ≤ 1 - u`; (B) the size data `cB W^{-d} ≤ W^{-d} B_{u,0} ≤ N^{-c}`
-(`STBdata`, `ST_Bdata_holds`). -/
+/-- **The facts the third estimate reads from the model** (`3_5:829-888`): `emn2PolyFacts` and, for every `Flow` and
+`0 ≤ u ≤ T0`: (T) `T0 < 1`; (E) `η_u ≤ 1 - u`; (B) the size data `cB W^{-d} ≤ W^{-d} B_{u,0} ≤ N^{-c}` (`STBdata`). -/
 def emn2ExpFacts (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ)
     (Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
@@ -1437,8 +1433,7 @@ theorem emn2Exp_nearg (hF : emn2ExpFacts d Flow mk T0 Hf ζf) :
         (STprof sz n (t n) D (ℓ n) (a 0) (a 1)) ^ 2) := by positivity
     linarith
 
-/-- **The near case** at the band carrier: `emn2Exp_nearg` at `law = seqP`, `Flow = STFlow`,
-`mk = bandFM ∘ STflowE`, `T0 = lemT` (`emn2Exp_bandFacts`), under its old name and statement. -/
+/-- **The near case** at the band carrier (`emn2Exp_nearg`, `emn2Exp_bandFacts`), old name and statement. -/
 theorem emn2Exp_near (d : ℕ) :
     ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1492,8 +1487,7 @@ def emn2ExpS3M (n : ℕ) (E u ℓ : ℝ) (k : Fin 2) (σ : Fin 2 → Bool) (a : 
   emn2ExpS3 (sz.seqHflow n u ω) (zt E u) (emn2ExpEllStar sz n u) ℓ (emn2ExpSw k σ)
     (emn2ExpSw k a 0) (emn2ExpSw k a 1)
 
-/-- **`S̃₁`** of a realization `(H, ζ)` of the loops (`emn2ExpS1` at the cut `k` and the scale `ℓ*_u`):
-`emn2ExpS1M` is the case `H = seqHflow`, `ζ = zt`. -/
+/-- **`S̃₁`** of a realization `(H, ζ)` of the loops (cut `k`, scale `ℓ*_u`); `emn2ExpS1M` is `H = seqHflow`, `ζ = zt`. -/
 def emn2ExpS1g (n : ℕ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (ζ : ℂ)
     (u ℓ : ℝ) (k : Fin 2) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℝ :=
   emn2ExpS1 H ζ (emn2ExpEllStar sz n u) ℓ (emn2ExpSw k σ) (emn2ExpSw k a 0) (emn2ExpSw k a 1)
@@ -1726,8 +1720,7 @@ theorem emn2Exp_far12g (hF : emn2ExpFacts d Flow mk T0 Hf ζf) :
         (STprof sz n (t n) D (ℓ n) (a 0) (a 1)) ^ 2) := by positivity
     linarith
 
-/-- **`S̃₁ + S̃₂` in the far case** at the band carrier: `emn2Exp_far12g` at `law = seqP`, `Flow = STFlow`,
-`mk = bandFM ∘ STflowE`, `T0 = lemT` (`emn2Exp_bandFacts`), under its old name and statement. -/
+/-- **`S̃₁ + S̃₂` in the far case** at the band carrier (`emn2Exp_far12g`, `emn2Exp_bandFacts`), old name and statement. -/
 theorem emn2Exp_far12 (d : ℕ) :
     ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1836,9 +1829,8 @@ theorem emn2Exp_EEk_split (n : ℕ) (E u ℓ : ℝ) (k : Fin 2) (σ : Fin 2 → 
 
 
 variable {sz} in
-/-- **The three-way split of `(𝓔⊗𝓔)^{M,(2;k)}` over a carrier** (`3_5:840-845`): for the loops `C.L` realized by
-`(H, ζ)` and the kernel `C.S = S^{(B)}(g)`, pointwise `|(𝓔⊗𝓔)^{M,(2;k)}|` is at most its value on the near pairs plus
-`S̃₁ + S̃₂` and `S̃₃` on the far pairs (`emn2Exp_EEk_split` at the carrier). -/
+/-- **The three-way split of `(𝓔⊗𝓔)^{M,(2;k)}` over a carrier** (`3_5:840-845`; `emn2Exp_EEk_split`) for the loops
+`C.L` realized by `(H, ζ)` and `C.S = S^{(B)}(g)`. -/
 theorem emn2Exp_EEg_split {C : FlowFM sz} (n : ℕ) (u ℓ : ℝ) (ω : sz.SeqΩ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (ζ : ℂ) (g : ℝ)
     (hS : C.S n = SB d (sz.L n) g)
@@ -1878,9 +1870,8 @@ end Consumers
 
 section Assembly
 
-/-- **The assembly of `(eq:MG_conclusion3)` over a law** (the last step of `3_5:829-888`): if the quadratic variation
-`ξ ≤ ξ₁ + ξ₂ + ξ₃` pointwise (the near case, `S̃₁ + S̃₂`, `S̃₃`), `ξ₁, ξ₂ ≺ η⁻¹ B P²` and `ξ₃ ≺ η⁻¹ (B + J³) P²`
-with `η > 0`, `B ≥ 0`, `J ≥ 0`, then `ξ ≺ η⁻¹ (B + J³) P²`: `ξ ≺ ζ₁ + ζ₁ + ζ ≤ 3 ζ ≺ ζ`. -/
+/-- **The assembly of `(eq:MG_conclusion3)` over a law** (`3_5:829-888`): `ξ ≤ ξ₁ + ξ₂ + ξ₃`, `ξ₁, ξ₂ ≺ η⁻¹ B P²`,
+`ξ₃ ≺ η⁻¹ (B + J³) P²` (`η > 0`, `B, J ≥ 0`) give `ξ ≺ η⁻¹ (B + J³) P²`. -/
 theorem emn2Exp_assemble {d : ℕ} {sz : Sizes d} (μ : Measure sz.SeqΩ)
     (hsize : Tendsto sz.size atTop atTop) (η Bq : ℕ → ℝ)
     (P : ∀ n, (Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) → ℝ) (J : ∀ n, sz.SeqΩ → ℝ)

@@ -801,9 +801,8 @@ private lemma emn2Exp2_Jhatg_nonneg (C : FlowFM sz) (n : ℕ) (D ℓ u : ℝ) (�
       ‖C.L n u p.1 p.2 ω - C.K n u p.1 p.2‖ / STprof sz n u D ℓ (p.2 0) (p.2 1))
       (Finset.mem_univ ((fun _ => true), (fun _ => 0))))
 
-/-- **`(eq_L2-J)` over a carrier** (`3_5:871-875`): at a pair `x, x'` where the kernel is small,
-`‖𝒦^{(2)}_{(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}` (`emn2ExpHK`), the 2-loop `𝓛^{(2)}_{(s,-s),(x,x')} = (𝓛-𝒦) + 𝒦` is at
-most `(Ĵ + W^{-d}) W^{-d} 𝒯̃^ℓ_{u,D}(|x-x'|)`: the generic form of `emn2Exp2_loop2_far_le`. -/
+/-- **`(eq_L2-J)` over a carrier** (`3_5:871-875`; the generic form of `emn2Exp2_loop2_far_le`): if
+`‖𝒦^{(2)}_{(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}`, then `‖𝓛^{(2)}_{(s,-s),(x,x')}‖ ≤ (Ĵ + W^{-d}) W^{-d} 𝒯̃^ℓ_{u,D}(|x-x'|)`. -/
 theorem emn2Exp2_loop2_far_leg {C : FlowFM sz} (n : ℕ) (u D ℓ : ℝ) (ω : sz.SeqΩ) (s : Bool)
     (x x' : Zd d (sz.L n))
     (hK : ‖C.K n u ![s, !s] ![x, x']‖ ≤
@@ -928,11 +927,9 @@ private lemma emn2Exp2_star_le_dag (n : ℕ) (u : ℝ) (hLg1 : 1 ≤ Real.log ((
   exact mul_le_mul_of_nonneg_right
     (Real.rpow_le_rpow_of_exponent_le hLg1 (by norm_num)) (by linarith)
 
-/-- **The far field of the two-loop kernel** (the one input of the far sum `S̃₃` that the model supplies; the
-`(eq_L2-J)` step, `3_5:871-875`): for every `D > 0`, eventually in `n`, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}`
-once `ℓ*_{t_n} ≤ |x - x'|`, `ℓ*_u = (log W)^{3/2} ℓ_u` (`emn2ExpEllStar`).  Band: `𝒦^{(2)} = W^{-d} m₁ m₂ Θ_{u m₁ m₂}` and the
-far field of `kellStarEv` (`emn2Exp2_bandHK`); block Anderson: `(Kn2sol)` of `BAKsolve` (`BA/KSolve.lean:63-66`,
-`W^{-d} Θ M^{(σσ')}`) with the `Θ` bounds of `BAProp5` (`7_8:2002`). -/
+/-- **The far field of the two-loop kernel**, the one input of `S̃₃` that the model supplies (`3_5:871-875`): for every
+`D > 0`, eventually, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤ W^{-d} W^{-(D+d)}` once `ℓ*_{t_n} ≤ |x - x'|` (`emn2ExpEllStar`).
+Band: `emn2Exp2_bandHK`; block Anderson: `(Kn2sol)` of `BAKsolve` (`BA/KSolve.lean:63-66`) with `BAProp5` (`7_8:2002`). -/
 def emn2ExpHK (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -943,8 +940,7 @@ def emn2ExpHK (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : 
             ‖(mk sz z).K n (t n) ![s, !s] ![x, x']‖ ≤
               (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.W n : ℕ) : ℝ) ^ (-(D + (d : ℝ)))
 
-/-- **The far field `emn2ExpHK` at the band**: `𝒦^{(2)}_{(s,-s)} = W^{-d} ‖Θ_u‖` (`emn2Exp2_norm_STKloop`) and the far
-field of `kellStarEv` at `δ = 1`, `D_K = D + d` (`emn2Exp_kellStar_far`). -/
+/-- **`emn2ExpHK` at the band**: `‖𝒦^{(2)}‖ = W^{-d} ‖Θ_u‖` (`emn2Exp2_norm_STKloop`) and `kellStarEv` at `δ = 1`, `D + d`. -/
 theorem emn2Exp2_bandHK (d : ℕ) (hd : 3 ≤ d) :
     emn2ExpHK d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
       (fun sz z => RBM.BA.bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
@@ -1179,8 +1175,7 @@ theorem emn2Exp_far3g (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hH
       positivity
     linarith
 
-/-- **`S̃₃` on the far pairs** at the band carrier (the Ĵ-form `h3` of `emn2Exp_of_far3`): `emn2Exp_far3g` at the band
-(`emn2Exp_bandFacts`, `emn2Exp2_bandHK`) and `J = Ĵ`, under its old name and statement. -/
+/-- **`S̃₃` on the far pairs** at the band (`emn2Exp_far3g` at `J = Ĵ`), old name and statement. -/
 theorem emn2Exp_far3 (d : ℕ) (hd : 3 ≤ d) :
     ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
       ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1222,12 +1217,11 @@ variable {d : ℕ} (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
   {ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ}
 
-/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)` over a carrier, with a control `J ≥ Ĵ`** (`3_5:437-440`, proof
-`3_5:829-888`; the paper form `(eq:MG_conclusion3_BA)`, `7_8:1999`): for every `D > 0` and every `J ≥ 0`
-with `Ĵ^ℓ_{t,D} ≺ J`, `(𝓔⊗𝓔)^{M,(2;k)}_{t,σ,a,a} ≺ η_t^{-1} [(W^{-d} B_{t,0})^{1/2} + J³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`.
-`J ≥ W^{-d}` is not used and `J` may depend on `ω` (paper-delta candidate `T2404a`).  The near case, `S̃₁ + S̃₂` and `S̃₃`
-are `emn2Exp_nearg`, `emn2Exp_far12g`, `emn2Exp_far3g`; they are assembled by `emn2Exp_assemble`.  **`3 ≤ d` is a
-hypothesis**; the inputs of the model are `emn2ExpFacts` and the far field `emn2ExpHK` of the two-loop kernel. -/
+/-- **`lem: EMn2_N`, third estimate over a carrier, with a control `J`** (`3_5:437-440`, `3_5:829-888`; the paper form
+`(eq:MG_conclusion3_BA)`, `7_8:1999`): for every `D > 0` and `J ≥ 0` with `Ĵ^ℓ_{t,D} ≺ J`,
+`(𝓔⊗𝓔)^{M,(2;k)} ≺ η_t^{-1} [(W^{-d} B_{t,0})^{1/2} + J³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`.  `J ≥ W^{-d}` is not used and
+`J` may depend on `ω` (paper-delta candidate `T2404a`).  Assembly of `emn2Exp_nearg`, `emn2Exp_far12g`, `emn2Exp_far3g`
+by `emn2Exp_assemble`; **`3 ≤ d` is a hypothesis**; the model enters through `emn2ExpFacts` and `emn2ExpHK`. -/
 theorem stEMn2ExpJgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
     emn2ExpPrem d law Flow mk T0 (fun sz z t ℓ D =>
       ∀ J : ℕ → sz.SeqΩ → ℝ, (∀ n ω, 0 ≤ J n ω) →
@@ -1259,10 +1253,9 @@ theorem stEMn2ExpJgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (
     (emn2Exp_far3g law hd hF hHK κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
       J hJ0 hJ)
 
-/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)` over a carrier** (`3_5:437-440`, proof `3_5:829-888`): the pin
-`STEMn2ExpgL` (`Chain/Step2Gen.lean:483`, with the random control `Ĵ`) for `d ≥ 3`, from `stEMn2ExpJgL_of` at `J = Ĵ`.
-For every `D > 0` (the paper's "large `D`" is not needed: paper-delta candidate `T2118a`).  **`3 ≤ d` is a hypothesis**
-(the pin has none). -/
+/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)` over a carrier** (`3_5:437-440`): the pin `STEMn2ExpgL`
+(`Chain/Step2Gen.lean:483`, control `Ĵ`) for `d ≥ 3`, from `stEMn2ExpJgL_of` at `J = Ĵ`; every `D > 0` (paper-delta
+candidate `T2118a`).  **`3 ≤ d` is a hypothesis** (the pin has none). -/
 theorem stEMn2ExpgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (hHK : emn2ExpHK d Flow mk T0) :
     STEMn2ExpgL d law Flow mk T0 := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI ℓ hℓ hA D hD
@@ -1274,10 +1267,9 @@ theorem stEMn2ExpgL_of (hd : 3 ≤ d) (hF : emn2ExpFacts d Flow mk T0 Hf ζf) (h
 
 end Pin
 
-/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)`** (`3_5:437-440`, proof `3_5:829-888`): the pin
-`STEMn2Exp d` for `d ≥ 3`: the corollary of `stEMn2ExpgL_of` at the band carrier (`bandFM_STEMn2Exp`, `Iff.rfl`), under its
-old name and statement.  For every `D > 0` (the paper's "large `D`" is not needed: paper-delta candidate `T2118a`).
-**`3 ≤ d` is a hypothesis** (the pin has none; see the module docstring). -/
+/-- **`lem: EMn2_N`, third estimate `(eq:MG_conclusion3)`** (`3_5:437-440`): the pin `STEMn2Exp d` for `d ≥ 3`, the
+corollary of `stEMn2ExpgL_of` at the band carrier (`bandFM_STEMn2Exp`, `Iff.rfl`), under its old name and statement
+(`T2118a`; **`3 ≤ d` is a hypothesis**, see the module docstring). -/
 theorem stEMn2Exp_holds (d : ℕ) (hd : 3 ≤ d) : STEMn2Exp d :=
   (RBM.BA.bandFM_STEMn2Exp d).2
     (stEMn2ExpgL_of (fun sz => Sizes.seqP sz) hd (emn2Exp_bandFacts d) (emn2Exp2_bandHK d hd))
@@ -1459,8 +1451,9 @@ example
     (by norm_num) (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))) Ψ1_window hI
     (fun n => ellT (sz0.L n) (sz0.lam n) (tInst n)) ℓ_range_inst hA D hD
 
-/-- **`stEMn2Exp_holds`** (the pin `STEMn2Exp 3`, `(eq:MG_conclusion3)`) at the same data: for both cuts, all
-signs and labels, `‖(𝓔⊗𝓔)^{M,(2;k)}‖ ≺ η_t⁻¹ [(W^{-d} B_{t,0})^{1/2} + Ĵ³] P²`, every `D > 0`. -/
+/-- **`stEMn2ExpgL_of`** (the pin `STEMn2ExpgL 3` at the band carrier, `(eq:MG_conclusion3)`; `emn2Exp_bandFacts`,
+`emn2Exp2_bandHK` discharged) at the same data, read as the band statement: for both cuts, all signs and labels,
+`‖(𝓔⊗𝓔)^{M,(2;k)}‖ ≺ η_t⁻¹ [(W^{-d} B_{t,0})^{1/2} + Ĵ³] P²`, every `D > 0` (`stEMn2Exp_holds` is the last example). -/
 example
     (hI : STInitialGT2 sz0 (STflowE z0) tInst (1 / 20) (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))))
     (hA : ∀ D : ℝ, 0 < D →
@@ -1472,15 +1465,67 @@ example
         ((sz0.Bctl n (tInst n)) ^ (1 / 2 : ℝ) +
           (STJhat sz0 n (STflowE z0 n) D (ellT (sz0.L n) (sz0.lam n) (tInst n)) (tInst n) ω) ^ 3) *
         (STprof sz0 n (tInst n) D (ellT (sz0.L n) (sz0.lam n) (tInst n)) (p.2.2 0) (p.2.2 1)) ^ 2) :=
-  stEMn2Exp_holds 3 (by norm_num) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
+  stEMn2ExpgL_of (fun sz => Sizes.seqP sz) (by norm_num) (emn2Exp_bandFacts 3)
+    (emn2Exp2_bandHK 3 (by norm_num)) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
     (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst (fun n => by simp only [tInst]; norm_num)
     sixteenth_le_lemT (1 / 20) (by norm_num) (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)))
     Ψ1_window hI (fun n => ellT (sz0.L n) (sz0.lam n) (tInst n)) ℓ_range_inst hA D hD
+
+/-- **`stEMn2ExpJgL_of`** (the `J` form, target 5′) at the band carrier and the same data, with the nondegenerate
+control `J = Ĵ + W^{-d}` (`≥ W^{-d}` as in the paper form `(eq:MG_conclusion3_BA)`, `Ĵ ≤ J`, `J ≺ J`); every `D > 0`. -/
+example
+    (hI : RBM.BA.STInitialGT2gL (RBM.BA.bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst (1 / 20)
+      (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ))))
+    (hA : ∀ D : ℝ, 0 < D → RBM.BA.STLWassmExpgL (RBM.BA.bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst D
+      (fun n => ellT (sz0.L n) (sz0.lam n) (tInst n)))
+    (D : ℝ) (hD : 0 < D) :
+    RBM.BA.PrecL sz0 (Sizes.seqP sz0) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
+      (fun n p ω => ‖RBM.BA.STEEg (RBM.BA.bandFM sz0 (STflowE z0)) n (tInst n) p.1 p.2.1 p.2.2 ω‖)
+      (fun n p ω => ((RBM.BA.bandFM sz0 (STflowE z0)).eta n (tInst n))⁻¹ *
+        ((sz0.Bctl n (tInst n)) ^ (1 / 2 : ℝ) +
+          (RBM.BA.STJhatg (RBM.BA.bandFM sz0 (STflowE z0)) n D (ellT (sz0.L n) (sz0.lam n) (tInst n))
+            (tInst n) ω + (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹) ^ 3) *
+        (STprof sz0 n (tInst n) D (ellT (sz0.L n) (sz0.lam n) (tInst n)) (p.2.2 0) (p.2.2 1)) ^ 2) := by
+  have hJ0 : ∀ n ω, 0 ≤ RBM.BA.STJhatg (RBM.BA.bandFM sz0 (STflowE z0)) n D
+      (ellT (sz0.L n) (sz0.lam n) (tInst n)) (tInst n) ω + (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹ :=
+    fun n ω => add_nonneg (emn2Exp2_Jhatg_nonneg _ n _ _ _ _) (inv_nonneg.2 (by positivity))
+  exact stEMn2ExpJgL_of (fun sz => Sizes.seqP sz) (by norm_num) (emn2Exp_bandFacts 3)
+    (emn2Exp2_bandHK 3 (by norm_num)) (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num)
+    (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst (fun n => by simp only [tInst]; norm_num)
+    sixteenth_le_lemT (1 / 20) (by norm_num) (fun n => ((sz0.W n : ℕ) : ℝ) ^ (-(1 : ℝ)))
+    Ψ1_window hI (fun n => ellT (sz0.L n) (sz0.lam n) (tInst n)) ℓ_range_inst hA D hD
+    (fun n ω => RBM.BA.STJhatg (RBM.BA.bandFM sz0 (STflowE z0)) n D
+      (ellT (sz0.L n) (sz0.lam n) (tInst n)) (tInst n) ω + (((sz0.W n : ℕ) : ℝ) ^ 3)⁻¹) hJ0
+    (StochDomAt.of_le_left (fun n _ ω => le_add_of_nonneg_right (inv_nonneg.2 (by positivity)))
+      (StochDomAt.refl (tendsto_size sz0 sz0_tendsto) fun n _ ω => hJ0 n ω))
 
 /-- **The downstream pin fits**: `STEMn2Exp d` is discharged in `ST_step2_of_pins'` by `stEMn2Exp_holds` (the
 consumer `STStep2 d` is under `3 ≤ d →`); the five other pins stay hypotheses. -/
 example (d : ℕ) (hNew : STNewKLK d) (hLWT : STLWT d) (hMart : STGridMart d) (hOpt : STOptL2 d)
     (hClos : STLocalAvgOfL2 d) : STStep2 d :=
   fun hd3 => ST_step2_of_pins' hNew hLWT (stEMn2Exp_holds d hd3) hMart hOpt hClos hd3
+
+/-! **The block Anderson carrier** `baFMz sz0 zSeq` at the law `seqP (sz0.withLam 0)`, the setting `BAFlow`, the horizon
+`BAflowT0` and the realization `seqHflowBA`, `ztOf` (`BA/FlowPins.lean:264`, `:393`).  Statement level: `emn2PolyFacts`,
+`emn2ExpFacts`, `emn2ExpHK` stay hypotheses (no BA proof is owed here); the theorems are elaborated at
+`(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `sz0`, `zSeq`, `flow_sz0`. -/
+
+open RBM.BA (BAFlow baFMz BAflowT0 BAflowLam0 BAflowEs BAmF)
+open RBM.BA.FlowPinsInst (zSeq flow_sz0)
+
+private abbrev baHf (sz : Sizes 3) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) :
+    Matrix (Idx 3 (sz.L n) (sz.W n)) (Idx 3 (sz.L n) (sz.W n)) ℂ := sz.seqHflowBA (BAflowLam0 sz z) n u ω
+
+private abbrev baZf (sz : Sizes 3) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) : ℂ :=
+  ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) u
+
+example (hF : emn2ExpFacts 3 BAFlow baFMz BAflowT0 baHf baZf) (hHK : emn2ExpHK 3 BAFlow baFMz BAflowT0) : True := by
+  have _ := stEMn2PolygL_of (fun sz => Sizes.seqP (sz.withLam 0)) hF.1 (1 / 2) (1 / 10) (1 / 10)
+    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+  have _ := stEMn2ExpgL_of (fun sz => Sizes.seqP (sz.withLam 0)) (by norm_num) hF hHK (1 / 2) (1 / 10) (1 / 10)
+    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+  have _ := stEMn2ExpJgL_of (fun sz => Sizes.seqP (sz.withLam 0)) (by norm_num) hF hHK (1 / 2) (1 / 10) (1 / 10)
+    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+  trivial
 
 end RBM.Gauss.EMn2Exp2Inst

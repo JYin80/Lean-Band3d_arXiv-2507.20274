@@ -808,8 +808,7 @@ private theorem stochDomAt_of_subset' {Ω : Type*} [MeasurableSpace Ω] {P : Mea
 
 open RBM.BA (FlowFM STEEg STEMn2PolygL)
 
-/-- `(𝓔⊗𝓔)^{M,(2;0)}` over a carrier `C`, unfolded: `W^d Σ_{c,c'} S^{(B)}_{cc'} 𝓛^{(6)}` of the fine matrix `H`
-at `ζ` (the realization of the loops of `C`, `hL`, and of its kernel `S`, `hS`). -/
+/-- `(𝓔⊗𝓔)^{M,(2;0)}` over a carrier, unfolded: `W^d Σ_{c,c'} S^{(B)}_{cc'} 𝓛^{(6)}` of the realization `(H, ζ)`. -/
 lemma emn2Poly_EEg_zero_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (ζ : ℂ) (g : ℝ)
     (hS : C.S n = SB d (sz.L n) g)
@@ -829,11 +828,9 @@ lemma emn2Poly_EEg_one_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u 
     STEEg C n u 1 σ a ω = STEEg C n u 0 ![σ 1, σ 0] ![a 1, a 0] ω := by
   simp [STEEg]
 
-/-- **The facts the first estimate reads from the model** (`lem: EMn2_N`, `3_5:800-825`), over a carrier
-`mk sz z` and a realization `(Hf, ζf)` of its loops by fine matrices (explicit data: the band is
-`Hf = seqHflow`, `ζf = zt`; the block Anderson model is `seqHflowBA`, `ztOf`).  For every `Flow`: (A) the size
-data `Admissible`; (R) for `0 ≤ u ≤ T0`: `Hf` is Hermitian, `Im ζf = η_u > 0` and the loops of the carrier are
-the loops `loopFine` of `(Hf, ζf)`; (S) the kernel of the carrier is a block kernel `S^{(B)}(g)`. -/
+/-- **The facts the first estimate reads from the model** (`3_5:800-825`): a carrier `mk sz z` and a realization
+`(Hf, ζf)` of its loops (band: `seqHflow`, `zt`; block Anderson: `seqHflowBA`, `ztOf`).  For every `Flow`: (A) `Admissible`;
+(R) for `0 ≤ u ≤ T0`, `Hf` is Hermitian, `Im ζf = η_u > 0` and `C.L = loopFine (Hf, ζf)`; (S) `C.S = S^{(B)}(g)`. -/
 def emn2PolyFacts (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ)
     (Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
@@ -850,8 +847,7 @@ def emn2PolyFacts (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (
       (∀ n : ℕ, ∃ g : ℝ, (mk sz z).S n = SB d (sz.L n) g)
 
 /-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)` over a carrier** (`3_5:427-432`, proof `3_5:800-825`),
-**proved outright**: the pin `STEMn2PolygL` (`Chain/Step2Gen.lean:471`) at every law, flow, carrier and horizon
-that satisfies `emn2PolyFacts`.
+**proved outright**: the pin `STEMn2PolygL` (`Chain/Step2Gen.lean:471`) under `emn2PolyFacts`.
 
 The proof is deterministic on the good event of `(eq:LW_assm)` at the exponent `τ/5`: with
 `y = N^{τ/10}` every 2-loop of the pattern `(s,-s)` is at most `y² Ψ²(|x - x'|)` (the only
@@ -987,11 +983,8 @@ theorem emn2Poly_bandFacts (d : ℕ) :
     exact etaT_pos (abs_lemE_lt_two (hzim n)) (huT.trans_lt (lemT_lt_one (hzim n)))
   · exact (etaT_eq_zt_im).symm
 
-/-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)`** (`3_5:427-432`, proof `3_5:800-825`),
-**proved outright**: for every `d`, under `STFlow`, `0 ≤ t ≤ lemT z`, the class `(eq:Psi)` of `Ψ`,
-`(initialGT2)` and `(eq:LW_assm)`, each cut `k ∈ {1,2}` satisfies
-`(𝓔⊗𝓔)^{M,(2;k)}_{t,σ,a,a} ≺ η_t^{-1} Ψ_t(0) Ψ_t⁴(|a-b|)`.  The corollary of `stEMn2PolygL_of` at the band
-carrier (`bandFM_STEMn2Poly`, `Iff.rfl`), under its old name and statement. -/
+/-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)`** (`3_5:427-432`) for every `d`: the corollary of
+`stEMn2PolygL_of` at the band carrier (`bandFM_STEMn2Poly`, `Iff.rfl`), under its old name and statement. -/
 theorem stEMn2Poly_holds (d : ℕ) : STEMn2Poly d :=
   (RBM.BA.bandFM_STEMn2Poly d).2
     (stEMn2PolygL_of (fun sz => Sizes.seqP sz) (emn2Poly_bandFacts d))
@@ -1019,16 +1012,17 @@ namespace RBM.Gauss.EMn2PolyInst
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
   RBM.Gauss.Step2DefsInst RBM.Path Filter
 
-/-- **`stEMn2Poly_holds` at `d = 3`** (`(eq:MG_conclusion)`): the conclusion at the data above. -/
+/-- **`stEMn2PolygL_of` at `d = 3`** (`(eq:MG_conclusion)`): the generic theorem at the band carrier (`bandFM`,
+`seqP`, `emn2Poly_bandFacts` discharged); the conclusion, read as the band statement, at the data above. -/
 example (hI : STInitialGT2 sz0 (STflowE z0) tInst (1 / 20) (fun n => Ψ0 n 0))
     (hA : STLWassm sz0 (STflowE z0) tInst Ψ0) :
     Prec sz0 (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
       (fun n p ω => ‖STEEk sz0 n (STflowE z0 n) (tInst n) p.1 p.2.1 p.2.2 ω‖)
       (fun n p _ => (etaT (STflowE z0 n) (tInst n))⁻¹ * Ψ0 n 0 *
         (Ψ0 n (zdistInf 3 (sz0.L n) (p.2.2 0 - p.2.2 1))) ^ 4) :=
-  stEMn2Poly_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-    (by norm_num) Ψ0 Ψ0_class hI hA
+  stEMn2PolygL_of (fun sz => Sizes.seqP sz) (emn2Poly_bandFacts 3) (1 / 10) (1 / 10) (1 / 10)
+    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst
+    (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20) (by norm_num) Ψ0 Ψ0_class hI hA
 
 /-- The same data, read through the merged instance `inst_EMn2Poly`: the pin `STEMn2Poly 3` is
 now a theorem, so the instance has no hypothesis on the pin. -/
@@ -1039,19 +1033,6 @@ example (hI : STInitialGT2 sz0 (STflowE z0) tInst (1 / 20) (fun n => Ψ0 n 0))
       (fun n p _ => (etaT (STflowE z0 n) (tInst n))⁻¹ * Ψ0 n 0 *
         (Ψ0 n (zdistInf 3 (sz0.L n) (p.2.2 0 - p.2.2 1))) ^ 4) :=
   inst_EMn2Poly (stEMn2Poly_holds 3) hI hA
-
-/-- **`stEMn2PolygL_of` at the band carrier at `d = 3`** (the generic theorem, the facts `emn2Poly_bandFacts`
-discharged): the same data, the conclusion over `bandFM sz0 (STflowE z0)` at the law `seqP sz0`. -/
-example (hI : RBM.BA.STInitialGT2gL (RBM.BA.bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst (1 / 20)
-      (fun n => Ψ0 n 0))
-    (hA : RBM.BA.STLWassmgL (RBM.BA.bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst Ψ0) :
-    RBM.BA.PrecL sz0 (Sizes.seqP sz0) (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
-      (fun n p ω => ‖RBM.BA.STEEg (RBM.BA.bandFM sz0 (STflowE z0)) n (tInst n) p.1 p.2.1 p.2.2 ω‖)
-      (fun n p _ => ((RBM.BA.bandFM sz0 (STflowE z0)).eta n (tInst n))⁻¹ * Ψ0 n 0 *
-        (Ψ0 n (zdistInf 3 (sz0.L n) (p.2.2 0 - p.2.2 1))) ^ 4) :=
-  stEMn2PolygL_of (fun sz => Sizes.seqP sz) (emn2Poly_bandFacts 3) (1 / 10) (1 / 10) (1 / 10)
-    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst
-    (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20) (by norm_num) Ψ0 Ψ0_class hI hA
 
 /-- The instance matrix `H_{ij} = (i)_0 + (j)_0` on `Idx 3 3 2`. -/
 private noncomputable def emH : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ :=
