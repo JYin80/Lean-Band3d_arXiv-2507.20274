@@ -194,6 +194,9 @@ def owedProps : List Name :=
    `RBM.BA.BAGbEXPij, -- `lem_GbEXP_BA` `(GijGEX)` event form on `(G_t - M)_{xy}`, `x ≠ y`, over the BA carrier, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2, T2256a: owed; owner BA-G6)
    `RBM.BA.BAGbEXPav, -- `lem_GbEXP_BA` `(GavLGEX)` over the BA carrier under `(initialGT2)`, `7_8:1916-1946`; T2256 (supervisor 2026-10-05-2252 Q2: owed; owner BA-G6)
    `RBM.BA.STInitialGT2gL, -- `(initialGT2)` (`3_5:28-30`) over a flow carrier and a law (`Chain/Carrier.lean`): premise of the proved pins `baFamGain_holds`, `baFAav_holds` (T2411, BA-G5b: the registered `BAFamGain`, `BAFAav` lines are removed); owner BA-G6b (the BA Step 1 / `(initialGT2)` chain)
+   -- T2421 (BA-TL TL0, DECISIONS §234, §236): the twisted-loop pins of stage TL (`RBM3D/BA/TwistPins.lean`)
+   `RBM.BA.BATwistAvgLaw, -- TL1: `|Tr(G̊ P_{c₂c₁})| ≺ W^{-d} B_{τ,0}` for every ordered pair of blocks (`(B.1)`, Theorem 8.2; T2398d, T2421); owner: TL stage (TL1b: `BATwistAvgProd`)
+   `RBM.BA.BATwistLoopLaw, -- TL2: `|L̃ − K̃| ≺ (W^{-d} B_{τ,0})^{3/2}` for the twisted 2-loop, all charges and blocks (`(B.1)`, fifth conjunct of Theorem 8.2; T2398d, T2421); owner: TL stage (TL2a–TL2e: one step `BATwistLoopStep`, closed in TL2e; TL-V: base case and chain) + BA-V (V2a/V2b: the step and the regime glue with the fifth conjunct; `GLoopAtT0`)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
