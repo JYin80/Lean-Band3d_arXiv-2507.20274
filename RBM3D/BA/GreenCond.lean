@@ -31,8 +31,8 @@ set_option linter.style.setOption false
 set_option linter.flexible false
 
 noncomputable section
-open Filter Matrix Finset MeasureTheory
-open scoped Kronecker ENNReal
+open Filter Matrix Finset MeasureTheory ProbabilityTheory
+open scoped Kronecker ENNReal NNReal
 open RBM RBM.Green RBM.Gauss
 
 namespace RBM.BA
@@ -724,5 +724,359 @@ theorem GreenCond_famGain_slice {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Siz
 end Slice
 
 end Cond
+
+/-! ## 4. The Gaussian row of the carrier: coordinate moments
+
+`seqP` is a product of centred Gaussians; the row `H_{u·}` of `H_T = √T X` is a vector of centred complex Gaussians with independent
+real and imaginary parts (`Xentry_eq_rowCoord`).  The facts used by the conditional means: `E H_{uk} = 0`, `E H_{uk} conj H_{ul} = δ_{kl} T S_{uk}`,
+`E |H_{uk}|⁴ ≤ 6 T² S_{uk}²`. -/
+
+section RowGauss
+variable {d : ℕ} (sz : Sizes d)
+
+theorem GreenCond_memLp_coord (c : Sizes.SeqCoord sz) (p : ℝ≥0∞) (hp : p ≠ ⊤) :
+    MemLp (fun ω : Sizes.SeqΩ sz => ω c) p (Sizes.seqP sz) :=
+  (LinearForm.hasLaw_coord sz c).memLp (memLp_id_gaussianReal' p hp)
+
+theorem GreenCond_integral_coord (c : Sizes.SeqCoord sz) : ∫ ω, ω c ∂(Sizes.seqP sz) = 0 := by
+  have h := (LinearForm.hasLaw_coord sz c).integral_eq
+  rw [h, integral_id_gaussianReal]
+
+theorem GreenCond_integral_coord_mul {c c' : Sizes.SeqCoord sz} (h : c ≠ c') :
+    ∫ ω, ω c * ω c' ∂(Sizes.seqP sz) = 0 := by
+  have hind := (LinearForm.iIndepFun_coord sz).indepFun h
+  have := hind.integral_mul_eq_mul_integral (measurable_pi_apply c).aestronglyMeasurable (measurable_pi_apply c').aestronglyMeasurable
+  simpa [GreenCond_integral_coord] using this
+
+
+
+variable {sz}
+
+theorem GreenCond_h_eq {n : ℕ} (T : ℝ) {u k : Idx d (sz.L n) (sz.W n)} (hk : u ≠ k) (ω : Sizes.SeqΩ sz) :
+    Sizes.seqHflow sz n T ω u k = (Real.sqrt T : ℂ) * ((ω (rowCoord sz n u k true) : ℂ) +
+      (rowSign sz n u k : ℂ) * Complex.I * (ω (rowCoord sz n u k false) : ℂ)) := by
+  show (Real.sqrt T : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) u k = _
+  rw [Xentry_eq_rowCoord hk ω]
+
+theorem GreenCond_h_diag {n : ℕ} (T : ℝ) (u : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
+    Sizes.seqHflow sz n T ω u u = (Real.sqrt T : ℂ) * ((ω ⟨n, u, u, true⟩ : ℝ) : ℂ) := by
+  show (Real.sqrt T : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) u u = _
+  unfold Xentry
+  simp only [lt_self_iff_false, ↓reduceIte]
+  rfl
+
+theorem GreenCond_integrable_coordC (sz : Sizes d) (c : Sizes.SeqCoord sz) :
+    Integrable (fun ω : Sizes.SeqΩ sz => ((ω c : ℝ) : ℂ)) (Sizes.seqP sz) :=
+  (memLp_one_iff_integrable.1 (GreenCond_memLp_coord sz c 1 ENNReal.one_ne_top)).ofReal
+
+theorem GreenCond_integral_coordC (sz : Sizes d) (c : Sizes.SeqCoord sz) :
+    ∫ ω, ((ω c : ℝ) : ℂ) ∂(Sizes.seqP sz) = 0 := by
+  rw [integral_complex_ofReal, GreenCond_integral_coord]; simp
+
+/-- **Mean zero**: `E H_{uk} = 0`. -/
+theorem GreenCond_integral_h {n : ℕ} (T : ℝ) {u k : Idx d (sz.L n) (sz.W n)} (hk : u ≠ k) :
+    ∫ ω, Sizes.seqHflow sz n T ω u k ∂(Sizes.seqP sz) = 0 := by
+  simp_rw [GreenCond_h_eq T hk]
+  rw [integral_const_mul, integral_add (GreenCond_integrable_coordC sz _) ((GreenCond_integrable_coordC sz _).const_mul _),
+    integral_const_mul, GreenCond_integral_coordC, GreenCond_integral_coordC]
+  simp
+
+theorem GreenCond_integral_h_diag {n : ℕ} (T : ℝ) (u : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, Sizes.seqHflow sz n T ω u u ∂(Sizes.seqP sz) = 0 := by
+  simp_rw [GreenCond_h_diag T u]
+  rw [integral_const_mul, GreenCond_integral_coordC]; simp
+
+end RowGauss
+
+/-! ## 5. The abstract row model: moments of the polynomial `Φ = t m + h_u - Σ_{k,l} h_k c_{kl} (D_l + conj h_l)` of a Gaussian row
+
+A pure measure-theory statement (the row law is a structure `GreenCond_RowLaw`): the mean of `Φ` is `t m - Σ_k σ_k c_{kk}`, the second moment is
+`≤ 3 (‖tm‖² + S_u + 2 γ² δ_D² ν² + 12 γ² ν⁴)`; the linear form `Σ_k h_k c_k` has mean zero and second moment `≤ γ² ν²`. -/
+
+section RowModel
+variable {Ω' : Type*} [MeasurableSpace Ω'] {P : Measure Ω'} [IsProbabilityMeasure P] {κ : Type*} [DecidableEq κ]
+
+/-- The law of a Gaussian row: measurable entries with integrable fourth moments, mean zero, `E h_k conj h_l = δ_{kl} σ_k`, `E |h_k|⁴ ≤ 6 σ_k²`. -/
+structure GreenCond_RowLaw (P : Measure Ω') (s : Finset κ) (h : κ → Ω' → ℂ) (σ : κ → ℝ) : Prop where
+  meas : ∀ k ∈ s, Measurable (h k)
+  int4 : ∀ k ∈ s, Integrable (fun ω => ‖h k ω‖ ^ 4) P
+  mean : ∀ k ∈ s, ∫ ω, h k ω ∂P = 0
+  cov : ∀ k ∈ s, ∀ l ∈ s, ∫ ω, h k ω * (starRingEnd ℂ) (h l ω) ∂P = if k = l then (σ k : ℂ) else 0
+  fourth : ∀ k ∈ s, ∫ ω, ‖h k ω‖ ^ 4 ∂P ≤ 6 * σ k ^ 2
+
+variable {s : Finset κ} {h : κ → Ω' → ℂ} {σ : κ → ℝ}
+
+theorem GreenCond_RowLaw.int2 (H : GreenCond_RowLaw P s h σ) {k : κ} (hk : k ∈ s) : Integrable (fun ω => ‖h k ω‖ ^ 2) P := by
+  refine ((H.int4 k hk).add (integrable_const (1 : ℝ))).mono' ((H.meas k hk).norm.pow_const 2).aestronglyMeasurable
+    (Eventually.of_forall fun ω => ?_)
+  have h0 : 0 ≤ ‖h k ω‖ ^ 2 := by positivity
+  rw [Real.norm_eq_abs, abs_of_nonneg h0]
+  have : ‖h k ω‖ ^ 2 ≤ ‖h k ω‖ ^ 4 + 1 := by nlinarith [sq_nonneg (‖h k ω‖ ^ 2 - 1)]
+  exact this
+
+theorem GreenCond_RowLaw.int1 (H : GreenCond_RowLaw P s h σ) {k : κ} (hk : k ∈ s) : Integrable (h k) P := by
+  refine ((H.int2 hk).add (integrable_const (1 : ℝ))).mono' (H.meas k hk).aestronglyMeasurable (Eventually.of_forall fun ω => ?_)
+  have h0 : 0 ≤ ‖h k ω‖ := norm_nonneg _
+  have : ‖h k ω‖ ≤ ‖h k ω‖ ^ 2 + 1 := by nlinarith [sq_nonneg (‖h k ω‖ - 1)]
+  simpa using this
+
+theorem GreenCond_RowLaw.intCov (H : GreenCond_RowLaw P s h σ) {k l : κ} (hk : k ∈ s) (hl : l ∈ s) :
+    Integrable (fun ω => h k ω * (starRingEnd ℂ) (h l ω)) P := by
+  refine ((H.int2 hk).add (H.int2 hl)).mono' ((H.meas k hk).mul (Complex.continuous_conj.measurable.comp (H.meas l hl))).aestronglyMeasurable
+    (Eventually.of_forall fun ω => ?_)
+  simp only [Pi.add_apply, norm_mul, Complex.norm_conj]
+  nlinarith [sq_nonneg (‖h k ω‖ - ‖h l ω‖)]
+
+theorem GreenCond_RowLaw.sigma_nonneg (H : GreenCond_RowLaw P s h σ) {k : κ} (hk : k ∈ s) : 0 ≤ σ k := by
+  have := H.cov k hk k hk
+  simp only [↓reduceIte] at this
+  have h2 : ∫ ω, ‖h k ω‖ ^ 2 ∂P = σ k := by
+    have e : ∀ ω, h k ω * (starRingEnd ℂ) (h k ω) = ((‖h k ω‖ ^ 2 : ℝ) : ℂ) := fun ω => by rw [Complex.mul_conj']; push_cast; rfl
+    simp_rw [e] at this
+    rw [integral_complex_ofReal] at this
+    exact_mod_cast this
+  rw [← h2]
+  exact integral_nonneg fun ω => by positivity
+
+
+
+/-- `Φ = t m + h_u - Σ_{k,l ∈ s} h_k c_{kl} (D_l + conj h_l)`: the random re-entry `A_u` as a polynomial of the row. -/
+def GreenCond_Phi (s : Finset κ) (h : κ → Ω' → ℂ) (hu : Ω' → ℂ) (c : κ → κ → ℂ) (D : κ → ℂ) (tm : ℂ) (ω : Ω') : ℂ :=
+  tm + hu ω - ∑ k ∈ s, ∑ l ∈ s, h k ω * c k l * (D l + (starRingEnd ℂ) (h l ω))
+
+/-- `R = Σ_{k ∈ s} ‖h_k‖`. -/
+def GreenCond_R (s : Finset κ) (h : κ → Ω' → ℂ) (ω : Ω') : ℝ := ∑ k ∈ s, ‖h k ω‖
+
+theorem GreenCond_R_nonneg (s : Finset κ) (h : κ → Ω' → ℂ) (ω : Ω') : 0 ≤ GreenCond_R s h ω :=
+  Finset.sum_nonneg fun _ _ => norm_nonneg _
+
+/-- **The mean of `Φ`**: `E Φ = t m - Σ_k σ_k c_{kk}`. -/
+theorem GreenCond_integral_Phi (H : GreenCond_RowLaw P s h σ) {hu : Ω' → ℂ} (hui : Integrable hu P) (hum : ∫ ω, hu ω ∂P = 0)
+    (c : κ → κ → ℂ) (D : κ → ℂ) (tm : ℂ) :
+    ∫ ω, GreenCond_Phi s h hu c D tm ω ∂P = tm - ∑ k ∈ s, (σ k : ℂ) * c k k := by
+  have e : ∀ ω, GreenCond_Phi s h hu c D tm ω = tm + hu ω - (∑ k ∈ s, ∑ l ∈ s, (c k l * D l) * h k ω +
+      ∑ k ∈ s, ∑ l ∈ s, c k l * (h k ω * (starRingEnd ℂ) (h l ω))) := by
+    intro ω
+    unfold GreenCond_Phi
+    rw [← Finset.sum_add_distrib]
+    congr 1
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    ring
+  simp_rw [e]
+  have i1 : ∀ k ∈ s, ∀ l ∈ s, Integrable (fun ω => (c k l * D l) * h k ω) P := fun k hk l _ => (H.int1 hk).const_mul _
+  have i2 : ∀ k ∈ s, ∀ l ∈ s, Integrable (fun ω => c k l * (h k ω * (starRingEnd ℂ) (h l ω))) P :=
+    fun k hk l hl => (H.intCov hk hl).const_mul _
+  have iS1 : Integrable (fun ω => ∑ k ∈ s, ∑ l ∈ s, (c k l * D l) * h k ω) P :=
+    integrable_finsetSum _ fun k hk => integrable_finsetSum _ fun l hl => i1 k hk l hl
+  have iS2 : Integrable (fun ω => ∑ k ∈ s, ∑ l ∈ s, c k l * (h k ω * (starRingEnd ℂ) (h l ω))) P :=
+    integrable_finsetSum _ fun k hk => integrable_finsetSum _ fun l hl => i2 k hk l hl
+  have hS1 : ∫ ω, ∑ k ∈ s, ∑ l ∈ s, (c k l * D l) * h k ω ∂P = 0 := by
+    rw [integral_finsetSum _ (fun k hk => integrable_finsetSum _ fun l hl => i1 k hk l hl)]
+    refine Finset.sum_eq_zero fun k hk => ?_
+    rw [integral_finsetSum _ (fun l hl => i1 k hk l hl)]
+    refine Finset.sum_eq_zero fun l hl => ?_
+    rw [integral_const_mul, H.mean k hk]; simp
+  have hS2 : ∫ ω, ∑ k ∈ s, ∑ l ∈ s, c k l * (h k ω * (starRingEnd ℂ) (h l ω)) ∂P = ∑ k ∈ s, (σ k : ℂ) * c k k := by
+    rw [integral_finsetSum _ (fun k hk => integrable_finsetSum _ fun l hl => i2 k hk l hl)]
+    refine Finset.sum_congr rfl fun k hk => ?_
+    rw [integral_finsetSum _ (fun l hl => i2 k hk l hl)]
+    have : ∀ l ∈ s, ∫ ω, c k l * (h k ω * (starRingEnd ℂ) (h l ω)) ∂P = c k l * (if k = l then (σ k : ℂ) else 0) :=
+      fun l hl => by rw [integral_const_mul, H.cov k hk l hl]
+    rw [Finset.sum_congr rfl this]
+    simp [mul_ite, Finset.sum_ite_eq, hk, mul_comm]
+  have iT : Integrable (fun ω => tm + hu ω) P := (integrable_const tm).add hui
+  have iSS : Integrable (fun ω => (∑ k ∈ s, ∑ l ∈ s, (c k l * D l) * h k ω) +
+      ∑ k ∈ s, ∑ l ∈ s, c k l * (h k ω * (starRingEnd ℂ) (h l ω))) P := iS1.add iS2
+  rw [integral_sub iT iSS, integral_add (integrable_const tm) hui, integral_add iS1 iS2, hS1, hS2, hum]
+  simp
+
+theorem GreenCond_RowLaw.integral_sq (H : GreenCond_RowLaw P s h σ) {k : κ} (hk : k ∈ s) : ∫ ω, ‖h k ω‖ ^ 2 ∂P = σ k := by
+  have := H.cov k hk k hk
+  simp only [↓reduceIte] at this
+  have e : ∀ ω, h k ω * (starRingEnd ℂ) (h k ω) = ((‖h k ω‖ ^ 2 : ℝ) : ℂ) := fun ω => by rw [Complex.mul_conj']; push_cast; rfl
+  simp_rw [e] at this
+  rw [integral_complex_ofReal] at this
+  exact_mod_cast this
+
+/-- The pointwise polynomial bound on `Φ`. -/
+theorem GreenCond_norm_Phi_le {hu : Ω' → ℂ} {c : κ → κ → ℂ} {D : κ → ℂ} {tm : ℂ} {γ : ℝ} (hγ : 0 ≤ γ) (hc : ∀ k ∈ s, ∀ l ∈ s, ‖c k l‖ ≤ γ)
+    (ω : Ω') : ‖GreenCond_Phi s h hu c D tm ω‖ ≤
+      ‖tm‖ + ‖hu ω‖ + γ * GreenCond_R s h ω * (∑ l ∈ s, ‖D l‖ + GreenCond_R s h ω) := by
+  unfold GreenCond_Phi
+  have h1 : ‖∑ k ∈ s, ∑ l ∈ s, h k ω * c k l * (D l + (starRingEnd ℂ) (h l ω))‖ ≤
+      γ * GreenCond_R s h ω * (∑ l ∈ s, ‖D l‖ + GreenCond_R s h ω) := by
+    calc ‖∑ k ∈ s, ∑ l ∈ s, h k ω * c k l * (D l + (starRingEnd ℂ) (h l ω))‖
+        ≤ ∑ k ∈ s, ∑ l ∈ s, ‖h k ω‖ * γ * (‖D l‖ + ‖h l ω‖) := by
+          refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun k hk => (norm_sum_le _ _).trans (Finset.sum_le_sum fun l hl => ?_))
+          rw [norm_mul, norm_mul]
+          refine mul_le_mul (mul_le_mul_of_nonneg_left (hc k hk l hl) (norm_nonneg _)) ?_ (norm_nonneg _) (by positivity)
+          exact (norm_add_le _ _).trans (by rw [Complex.norm_conj])
+      _ = γ * GreenCond_R s h ω * (∑ l ∈ s, ‖D l‖ + GreenCond_R s h ω) := by
+          unfold GreenCond_R
+          rw [Finset.mul_sum, Finset.sum_mul]
+          refine Finset.sum_congr rfl fun k hk => ?_
+          rw [← Finset.mul_sum, Finset.sum_add_distrib]
+          ring
+  calc ‖tm + hu ω - ∑ k ∈ s, ∑ l ∈ s, h k ω * c k l * (D l + (starRingEnd ℂ) (h l ω))‖
+      ≤ ‖tm + hu ω‖ + ‖∑ k ∈ s, ∑ l ∈ s, h k ω * c k l * (D l + (starRingEnd ℂ) (h l ω))‖ := norm_sub_le _ _
+    _ ≤ (‖tm‖ + ‖hu ω‖) + _ := add_le_add (norm_add_le _ _) h1
+    _ = _ := by ring
+
+theorem GreenCond_R_sq_le (s : Finset κ) (h : κ → Ω' → ℂ) (ω : Ω') :
+    GreenCond_R s h ω ^ 2 ≤ (s.card : ℝ) * ∑ k ∈ s, ‖h k ω‖ ^ 2 := sq_sum_le_card_mul_sum_sq
+
+theorem GreenCond_R_pow4_le (s : Finset κ) (h : κ → Ω' → ℂ) (ω : Ω') :
+    GreenCond_R s h ω ^ 4 ≤ (s.card : ℝ) ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4 := by
+  have h1 := GreenCond_R_sq_le s h ω
+  have h2 : (∑ k ∈ s, ‖h k ω‖ ^ 2) ^ 2 ≤ (s.card : ℝ) * ∑ k ∈ s, (‖h k ω‖ ^ 2) ^ 2 := sq_sum_le_card_mul_sum_sq
+  have hν : (0 : ℝ) ≤ s.card := Nat.cast_nonneg _
+  have hR2 : 0 ≤ GreenCond_R s h ω ^ 2 := by positivity
+  calc GreenCond_R s h ω ^ 4 = (GreenCond_R s h ω ^ 2) ^ 2 := by ring
+    _ ≤ ((s.card : ℝ) * ∑ k ∈ s, ‖h k ω‖ ^ 2) ^ 2 := pow_le_pow_left₀ hR2 h1 2
+    _ = (s.card : ℝ) ^ 2 * (∑ k ∈ s, ‖h k ω‖ ^ 2) ^ 2 := by ring
+    _ ≤ (s.card : ℝ) ^ 2 * ((s.card : ℝ) * ∑ k ∈ s, (‖h k ω‖ ^ 2) ^ 2) := mul_le_mul_of_nonneg_left h2 (by positivity)
+    _ = (s.card : ℝ) ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4 := by
+        rw [← mul_assoc, ← pow_succ]
+        congr 1
+        refine Finset.sum_congr rfl fun k _ => by ring
+
+/-- `‖Φ‖² ≤ 3 (‖tm‖² + ‖hu‖² + 2γ² δ_D² ν Σ‖h_k‖² + 2 γ² ν³ Σ‖h_k‖⁴)`, `ν = #s`, `δ_D = Σ‖D_l‖`. -/
+theorem GreenCond_normSq_Phi_le {hu : Ω' → ℂ} {c : κ → κ → ℂ} {D : κ → ℂ} {tm : ℂ} {γ : ℝ} (hγ : 0 ≤ γ)
+    (hc : ∀ k ∈ s, ∀ l ∈ s, ‖c k l‖ ≤ γ) (ω : Ω') :
+    ‖GreenCond_Phi s h hu c D tm ω‖ ^ 2 ≤ 3 * (‖tm‖ ^ 2 + ‖hu ω‖ ^ 2 + 2 * γ ^ 2 * (∑ l ∈ s, ‖D l‖) ^ 2 * ((s.card : ℝ) * ∑ k ∈ s, ‖h k ω‖ ^ 2) +
+      2 * γ ^ 2 * ((s.card : ℝ) ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4)) := by
+  have hb := GreenCond_norm_Phi_le (h := h) (hu := hu) (D := D) (tm := tm) hγ hc ω
+  set R := GreenCond_R s h ω with hR
+  have hR0 : 0 ≤ R := GreenCond_R_nonneg s h ω
+  set δD := ∑ l ∈ s, ‖D l‖ with hδD
+  have hδD0 : 0 ≤ δD := Finset.sum_nonneg fun _ _ => norm_nonneg _
+  have h2 := GreenCond_R_sq_le s h ω
+  have h4 := GreenCond_R_pow4_le s h ω
+  set a := ‖tm‖ with ha
+  set b := ‖hu ω‖ with hb'
+  set c' := γ * R * (δD + R) with hc'
+  have hc0 : 0 ≤ c' := by positivity
+  have hP : 0 ≤ ‖GreenCond_Phi s h hu c D tm ω‖ := norm_nonneg _
+  have hP2 : ‖GreenCond_Phi s h hu c D tm ω‖ ^ 2 ≤ (a + b + c') ^ 2 := pow_le_pow_left₀ hP hb 2
+  have h3 : (a + b + c') ^ 2 ≤ 3 * (a ^ 2 + b ^ 2 + c' ^ 2) := by
+    nlinarith [sq_nonneg (a - b), sq_nonneg (a - c'), sq_nonneg (b - c')]
+  have hcc : c' ^ 2 ≤ 2 * γ ^ 2 * δD ^ 2 * R ^ 2 + 2 * γ ^ 2 * R ^ 4 := by
+    rw [hc']
+    nlinarith [sq_nonneg (δD - R), mul_nonneg (sq_nonneg γ) (sq_nonneg R)]
+  have hν : (0 : ℝ) ≤ s.card := Nat.cast_nonneg _
+  have e1 : 2 * γ ^ 2 * δD ^ 2 * R ^ 2 ≤ 2 * γ ^ 2 * δD ^ 2 * ((s.card : ℝ) * ∑ k ∈ s, ‖h k ω‖ ^ 2) :=
+    mul_le_mul_of_nonneg_left h2 (by positivity)
+  have e2 : 2 * γ ^ 2 * R ^ 4 ≤ 2 * γ ^ 2 * ((s.card : ℝ) ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4) :=
+    mul_le_mul_of_nonneg_left h4 (by positivity)
+  nlinarith [hP2, h3, hcc, e1, e2]
+
+theorem GreenCond_measurable_Phi (H : GreenCond_RowLaw P s h σ) {hu : Ω' → ℂ} (hum : Measurable hu) (c : κ → κ → ℂ) (D : κ → ℂ) (tm : ℂ) :
+    Measurable (GreenCond_Phi s h hu c D tm) := by
+  unfold GreenCond_Phi
+  refine (measurable_const.add hum).sub (Finset.measurable_sum _ fun k hk => Finset.measurable_sum _ fun l hl => ?_)
+  exact ((H.meas k hk).mul measurable_const).mul (measurable_const.add (Complex.continuous_conj.measurable.comp (H.meas l hl)))
+
+/-- **The second moment of `Φ`**: `Φ² ` is integrable and `E ‖Φ‖² ≤ 3 (‖tm‖² + S_u + 2 γ² δ_D² ν² + 12 γ² ν⁴)`, `σ_k ≤ 1`, `ν = #s`. -/
+theorem GreenCond_integral_normSq_Phi_le (H : GreenCond_RowLaw P s h σ) {hu : Ω' → ℂ} (hum : Measurable hu)
+    (hui2 : Integrable (fun ω => ‖hu ω‖ ^ 2) P) {Su : ℝ} (hSu : ∫ ω, ‖hu ω‖ ^ 2 ∂P ≤ Su) {c : κ → κ → ℂ} {D : κ → ℂ} {tm : ℂ} {γ : ℝ}
+    (hγ : 0 ≤ γ) (hc : ∀ k ∈ s, ∀ l ∈ s, ‖c k l‖ ≤ γ) (hσ : ∀ k ∈ s, σ k ≤ 1) :
+    Integrable (fun ω => ‖GreenCond_Phi s h hu c D tm ω‖ ^ 2) P ∧
+      ∫ ω, ‖GreenCond_Phi s h hu c D tm ω‖ ^ 2 ∂P ≤
+        3 * (‖tm‖ ^ 2 + Su + 2 * γ ^ 2 * (∑ l ∈ s, ‖D l‖) ^ 2 * (s.card : ℝ) ^ 2 + 12 * γ ^ 2 * (s.card : ℝ) ^ 4) := by
+  set ν : ℝ := (s.card : ℝ) with hν
+  have hν0 : 0 ≤ ν := Nat.cast_nonneg _
+  set δD := ∑ l ∈ s, ‖D l‖ with hδD
+  have i2 : Integrable (fun ω => ∑ k ∈ s, ‖h k ω‖ ^ 2) P := integrable_finsetSum _ fun k hk => H.int2 hk
+  have i4 : Integrable (fun ω => ∑ k ∈ s, ‖h k ω‖ ^ 4) P := integrable_finsetSum _ fun k hk => H.int4 k hk
+  set g : Ω' → ℝ := fun ω => 3 * (‖tm‖ ^ 2 + ‖hu ω‖ ^ 2 + 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, ‖h k ω‖ ^ 2) +
+      2 * γ ^ 2 * (ν ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4)) with hg
+  have ig : Integrable g P := by
+    rw [hg]
+    refine Integrable.const_mul ?_ _
+    exact (((integrable_const _).add hui2).add (i2.const_mul ν |>.const_mul _)).add ((i4.const_mul (ν ^ 3)).const_mul _)
+  have hmeas : Measurable fun ω => ‖GreenCond_Phi s h hu c D tm ω‖ ^ 2 := ((GreenCond_measurable_Phi H hum c D tm).norm).pow_const 2
+  have hdom : ∀ ω, ‖GreenCond_Phi s h hu c D tm ω‖ ^ 2 ≤ g ω := fun ω => GreenCond_normSq_Phi_le hγ hc ω
+  refine ⟨ig.mono' hmeas.aestronglyMeasurable (Eventually.of_forall fun ω => ?_), ?_⟩
+  · rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]; exact hdom ω
+  · refine (integral_mono (ig.mono' hmeas.aestronglyMeasurable (Eventually.of_forall fun ω => ?_)) ig hdom).trans ?_
+    · rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]; exact hdom ω
+    have iA : Integrable (fun ω => ‖tm‖ ^ 2 + ‖hu ω‖ ^ 2 + 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, ‖h k ω‖ ^ 2)) P :=
+      ((integrable_const _).add hui2).add (i2.const_mul ν |>.const_mul _)
+    have iB : Integrable (fun ω => 2 * γ ^ 2 * (ν ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4)) P := (i4.const_mul (ν ^ 3)).const_mul _
+    have iC : Integrable (fun ω => ‖tm‖ ^ 2 + ‖hu ω‖ ^ 2) P := (integrable_const _).add hui2
+    have iD : Integrable (fun ω => 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, ‖h k ω‖ ^ 2)) P := (i2.const_mul ν).const_mul _
+    have hI2 : ∫ ω, ∑ k ∈ s, ‖h k ω‖ ^ 2 ∂P = ∑ k ∈ s, σ k := by
+      rw [integral_finsetSum _ fun k hk => H.int2 hk]
+      exact Finset.sum_congr rfl fun k hk => H.integral_sq hk
+    have hI4 : ∫ ω, ∑ k ∈ s, ‖h k ω‖ ^ 4 ∂P ≤ 6 * ν := by
+      rw [integral_finsetSum _ fun k hk => H.int4 k hk]
+      calc ∑ k ∈ s, ∫ ω, ‖h k ω‖ ^ 4 ∂P ≤ ∑ k ∈ s, 6 * σ k ^ 2 := Finset.sum_le_sum fun k hk => H.fourth k hk
+        _ ≤ ∑ _k ∈ s, 6 * 1 := Finset.sum_le_sum fun k hk => by
+            have h0 := H.sigma_nonneg hk
+            have := hσ k hk
+            nlinarith
+        _ = 6 * ν := by simp [hν]; ring
+    have hsumσ : ∑ k ∈ s, σ k ≤ ν := by
+      calc ∑ k ∈ s, σ k ≤ ∑ _k ∈ s, (1 : ℝ) := Finset.sum_le_sum fun k hk => hσ k hk
+        _ = ν := by simp [hν]
+    have key : ∫ ω, g ω ∂P = 3 * (‖tm‖ ^ 2 + ∫ ω, ‖hu ω‖ ^ 2 ∂P + 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, σ k) +
+        2 * γ ^ 2 * (ν ^ 3 * ∫ ω, ∑ k ∈ s, ‖h k ω‖ ^ 4 ∂P)) := by
+      simp only [hg]
+      rw [integral_const_mul]
+      congr 1
+      rw [integral_add (f := fun ω => ‖tm‖ ^ 2 + ‖hu ω‖ ^ 2 + 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, ‖h k ω‖ ^ 2))
+        (g := fun ω => 2 * γ ^ 2 * (ν ^ 3 * ∑ k ∈ s, ‖h k ω‖ ^ 4)) iA iB,
+        integral_add (f := fun ω => ‖tm‖ ^ 2 + ‖hu ω‖ ^ 2) (g := fun ω => 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, ‖h k ω‖ ^ 2)) iC iD,
+        integral_add (f := fun _ => ‖tm‖ ^ 2) (g := fun ω => ‖hu ω‖ ^ 2) (integrable_const _) hui2,
+        integral_const_mul, integral_const_mul, integral_const_mul, integral_const_mul, hI2]
+      simp
+    rw [key]
+    have h4 : ν ^ 3 * ∫ ω, ∑ k ∈ s, ‖h k ω‖ ^ 4 ∂P ≤ ν ^ 3 * (6 * ν) := mul_le_mul_of_nonneg_left hI4 (by positivity)
+    have hS : ν * ∑ k ∈ s, σ k ≤ ν * ν := mul_le_mul_of_nonneg_left hsumσ hν0
+    have hγ2 : 0 ≤ γ ^ 2 := sq_nonneg γ
+    have hδ2 : 0 ≤ δD ^ 2 := sq_nonneg δD
+    have e1 : 2 * γ ^ 2 * δD ^ 2 * (ν * ∑ k ∈ s, σ k) ≤ 2 * γ ^ 2 * δD ^ 2 * (ν * ν) := mul_le_mul_of_nonneg_left hS (by positivity)
+    have e2 : 2 * γ ^ 2 * (ν ^ 3 * ∫ ω, ∑ k ∈ s, ‖h k ω‖ ^ 4 ∂P) ≤ 2 * γ ^ 2 * (ν ^ 3 * (6 * ν)) := mul_le_mul_of_nonneg_left h4 (by positivity)
+    nlinarith [e1, e2, hSu]
+
+/-- **The linear form** `Λ = Σ_{k ∈ s} h_k c_k`: mean zero, `E ‖Λ‖² ≤ γ² ν²` (`‖c_k‖ ≤ γ`, `σ_k ≤ 1`, `ν = #s`). -/
+theorem GreenCond_lin (H : GreenCond_RowLaw P s h σ) (c : κ → ℂ) {γ : ℝ} (hγ : 0 ≤ γ) (hc : ∀ k ∈ s, ‖c k‖ ≤ γ) (hσ : ∀ k ∈ s, σ k ≤ 1) :
+    Integrable (fun ω => ∑ k ∈ s, h k ω * c k) P ∧ ∫ ω, ∑ k ∈ s, h k ω * c k ∂P = 0 ∧
+      Integrable (fun ω => ‖∑ k ∈ s, h k ω * c k‖ ^ 2) P ∧
+      ∫ ω, ‖∑ k ∈ s, h k ω * c k‖ ^ 2 ∂P ≤ γ ^ 2 * (s.card : ℝ) ^ 2 := by
+  have ih : ∀ k ∈ s, Integrable (fun ω => h k ω * c k) P := fun k hk => (H.int1 hk).mul_const _
+  have hmeas : Measurable fun ω => ∑ k ∈ s, h k ω * c k := Finset.measurable_sum _ fun k hk => (H.meas k hk).mul_const _
+  set ν : ℝ := (s.card : ℝ) with hν
+  have hν0 : 0 ≤ ν := Nat.cast_nonneg _
+  have i2 : Integrable (fun ω => ∑ k ∈ s, ‖h k ω‖ ^ 2) P := integrable_finsetSum _ fun k hk => H.int2 hk
+  have hdom : ∀ ω, ‖∑ k ∈ s, h k ω * c k‖ ^ 2 ≤ ν * γ ^ 2 * ∑ k ∈ s, ‖h k ω‖ ^ 2 := by
+    intro ω
+    have h1 : ‖∑ k ∈ s, h k ω * c k‖ ≤ ∑ k ∈ s, ‖h k ω‖ * γ :=
+      (norm_sum_le _ _).trans (Finset.sum_le_sum fun k hk => by rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hc k hk) (norm_nonneg _))
+    have h2 : (∑ k ∈ s, ‖h k ω‖ * γ) ^ 2 ≤ ν * ∑ k ∈ s, (‖h k ω‖ * γ) ^ 2 := sq_sum_le_card_mul_sum_sq
+    have h3 : ∑ k ∈ s, (‖h k ω‖ * γ) ^ 2 = γ ^ 2 * ∑ k ∈ s, ‖h k ω‖ ^ 2 := by
+      rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun k _ => by ring
+    calc ‖∑ k ∈ s, h k ω * c k‖ ^ 2 ≤ (∑ k ∈ s, ‖h k ω‖ * γ) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) h1 2
+      _ ≤ ν * ∑ k ∈ s, (‖h k ω‖ * γ) ^ 2 := h2
+      _ = ν * γ ^ 2 * ∑ k ∈ s, ‖h k ω‖ ^ 2 := by rw [h3]; ring
+  have iint : Integrable (fun ω => ‖∑ k ∈ s, h k ω * c k‖ ^ 2) P :=
+    (i2.const_mul (ν * γ ^ 2)).mono' (hmeas.norm.pow_const 2).aestronglyMeasurable
+      (Eventually.of_forall fun ω => by rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]; exact hdom ω)
+  refine ⟨integrable_finsetSum _ ih, ?_, iint, ?_⟩
+  · rw [integral_finsetSum _ ih]
+    refine Finset.sum_eq_zero fun k hk => ?_
+    rw [integral_mul_const, H.mean k hk]; simp
+  · refine (integral_mono iint (i2.const_mul (ν * γ ^ 2)) hdom).trans ?_
+    rw [integral_const_mul, integral_finsetSum _ fun k hk => H.int2 hk]
+    have hsumσ : ∑ k ∈ s, ∫ ω, ‖h k ω‖ ^ 2 ∂P ≤ ν := by
+      calc ∑ k ∈ s, ∫ ω, ‖h k ω‖ ^ 2 ∂P = ∑ k ∈ s, σ k := Finset.sum_congr rfl fun k hk => H.integral_sq hk
+        _ ≤ ∑ _k ∈ s, (1 : ℝ) := Finset.sum_le_sum fun k hk => hσ k hk
+        _ = ν := by simp [hν]
+    calc ν * γ ^ 2 * ∑ k ∈ s, ∫ ω, ‖h k ω‖ ^ 2 ∂P ≤ ν * γ ^ 2 * ν := mul_le_mul_of_nonneg_left hsumσ (by positivity)
+      _ = γ ^ 2 * ν ^ 2 := by ring
+
+end RowModel
 
 end RBM.BA
