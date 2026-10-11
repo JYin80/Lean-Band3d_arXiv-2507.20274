@@ -1931,3 +1931,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - Lean：L4b2 变小（照搬 `LWExpI1K`/`I41K`）；新钉文 `BATwistAvgLaw`、`BATwistLoopLaw`；TL2 的证明是一个小阶段，中心约 6k 行，TL1 约 2–3k 行。证出来之前作为待证钉文。
   - 已问 Jun 是否按 R1 走；他回答之前，T2398 的后续（Amend 2、报告合并）和 L4 REQ 不写。
 - (7) 在跑：T2401、T2402（重跑）、T2404（规则 (B) 修补）；接下来 T2403（1b）、T2405（修补）。下一张票号 T2406，下一节 §219，下一条 H200。
+
+## §219 — BA-E3 = T2406 放行（总调度 V2，2026-10-11 03:21 UTC）
+
+- (1) **T2406 = BA-E3**（BA 73，阶段 E 最后一行）：新文件 `BA/EKNonzero`，证 `BAEKSumDecayNonzero`。照搬带状 `ekSumDecayNonzero_holds`：`i ∉ A` 用 `baEKSameRow_holds`；`i ∈ A` 用 `Proj` 与 `M^{(σσ')}` 可交换，再加 `baProp8_holds` 和径向求和。按 C4：U3s1 没合并，所以不证 `STEK*` 的 BA 形式，归 U3-BA。`prover-hard`，250 / 350 / 550，停止线 800；不在证书通道。
+- (2) **登记**：去掉 owed 行 `BAEKSumDecayNonzero`。同时按监督 0150 K1 改三行 owner 注释（`STKboundgL`、`STLmaxgL`、`STLKgL`），因为本票是那次裁决之后第一张改登记的票。
+- (3) E3 合并后写阶段 E 关闭 REQ：五条 `BAEK*` 钉文全部证完；`STEK*` 的 BA 形式归 U3-BA（O4）。
+- (4) 排队：T2405（修补）、T2406。仍在等 Jun 对 R1 的回答（T2398）。下一张票号 T2407，下一节 §220，下一条 H201。

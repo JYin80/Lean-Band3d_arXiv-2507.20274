@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 03:06 UTC (dispatcher V2: T2403 Amend 1, T2405 Amend 1 sign-off; stage K closed by supervisor 0150 (H199))
+updated: 2026-10-11 03:21 UTC (dispatcher V2: BA-E3 = T2406 released (H200))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -15,8 +15,10 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 371. T2403 — `docs/tickets/T2403.md` + **Amend 1** (`docs/tickets/T2403-amend-1.md`: target 3 with `(hd : 2 ≤ d)`; registry rule for the `BAGbEXPij'` line): 1a targets 1, 2 PASS; **stage 1b starts with Amend 1 in its prompt** in the next free slot (H199). **Priority: first.** Not in the certificate lane.
 372. T2404 — `docs/tickets/T2404.md` (BA-T T2, ST side: `EMn2Poly`, `EMn2Exp1`, `EMn2Exp2` in place over the carrier; design-gate 1a + 1a-audit): released; starts when its check compiles and a slot is free (H12). Priority: after T2403. Not in the certificate lane.
 373. T2405 — `docs/tickets/T2405.md` + **Amend 1** (`docs/tickets/T2405-amend-1.md`: primed generic pin `STNewKLKAtgL'` with premise `κ ≤ Im m`; row 2 as `κ/2 ≤ Im m`; design-gate items in (a′)): dispatcher sign-off given; **rule-(B) repair** ((a′) → 1a-audit round 2 → 1b → auditor) in the next free slot after T2403 (H199). Not in the certificate lane (layout (A)).
+374. T2406 — `docs/tickets/T2406.md` (BA-E3, new `BA/EKNonzero.lean`: `BAEKSumDecayNonzero`; registry: removes one owed line and relabels three owner comments per supervisor 0150 K1): released; starts when its check compiles and a slot is free (H12). Priority: after T2405. Not in the certificate lane.
 
 ## Pre-release checks
+- `docs/tickets/checks/T2406-check.lean` (BA-E3; merged names only).
 - `docs/tickets/checks/T2405-check.lean` (BA-T T3; merged names only).
 - `docs/tickets/checks/T2404-check.lean` (BA-T T2; merged names only).
 - `docs/tickets/checks/T2403-check.lean` (BA-G4; merged names only).
@@ -67,6 +69,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 03:00:05 UTC 2026 — T2405: 1a PASS (conditional over mk), 1a-audit RETURN with dispatcher sign-off (design-gate items (i), (iii)-(v) missing; the Im m ≥ κ/2 domain fact fails at BA inside the pin's domain); state `blocked` with the question; 1b not started (H183 (3)). Running: T2401, T2402, T2404 (3 of 4); no released ticket waiting.
 
 - H199 (dispatcher V2, 2026-10-11 03:06 UTC; DECISIONS §218; answers the questions in `docs/queue/T2403.state` and `docs/queue/T2405.state`). (1) Commit by name with your next commit `docs/tickets/T2403-amend-1.md`, `docs/tickets/T2405-amend-1.md`, `docs/tickets/T2398-analysis-fable.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. (2) **T2403:** stage 1b (`prover-max`) with Amend 1 in its prompt, in the next free slot (first in line). (3) **T2405:** the 1a-audit sign-off is given by Amend 1; run the rule-(B) repair ((a′) by preflight with Amend 1 → 1a-audit round 2 → 1b `prover-hard` → auditor) in the next free slot after T2403. One `done:` line per step.
+  done: Sun Oct 11 03:11:38 UTC 2026 — (1) the 7 listed files committed by name in 65b9089 (with states T2397/T2403/T2404/T2405), pushed.
+  done: Sun Oct 11 03:11:38 UTC 2026 — (2) T2403 stage 1b prover-max under Amend 1 started in the free slot: wf_bcd4d2e7-4aa (skip 1a; branch t/T2403 at 561093a). Running: T2401, T2402, T2403, T2404 (4 of 4).
+  done: Sun Oct 11 03:11:38 UTC 2026 — (3) T2405 state `held` until the next free slot; then (a′) by preflight with Amend 1 → 1a-audit round 2 → 1b prover-hard → auditor.
+
+- H200 (dispatcher V2, 2026-10-11 03:21 UTC; DECISIONS §219). Commit by name with your next commit `docs/tickets/T2406.md`, `docs/tickets/checks/T2406-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line); start T2406 in the next free slot after T2405 (H12). One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 17:38:33 UTC 2026 — T2389 merged b6cc9d2 (BA-G2: new BA/GreenLDE; Green/LDE, RowIndep, IBPPoly in place (978 of 1800); open issue D1: only stochDom_ldeRow/Col/Quad are literal corollaries at D = 0; root import; certificate-lane merge (H176), alone; audit PASS claude-opus-5-5; full lake build 4204 jobs; pushed). T2390 1b may start once its 1a-audit question is answered.

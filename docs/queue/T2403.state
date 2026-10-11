@@ -1,4 +1,4 @@
-state: blocked
-reason: stage 1a preflight BLOCKED (wf_17b383ba-2e6; docs/reports/T2403-prove.md Verdicts): targets 1 and 2 PASS; target 3 baGbEXPij'_holds : BAGbEXPij' d is blocked by its signature: the pin (GreenCore.lean:1644) has no 3 ≤ d (or 2 ≤ d), every merged ingredient needs 2 ≤ d (Prop5Short.lean:251, GreenStab.lean:116/147/251), d = 1 is not covered. Question for the dispatcher: state baGbEXPij'_holds with (hd : 3 ≤ d) (or 2 ≤ d) and keep/relabel the registry line, or add a primed pin 3 ≤ d → …? Stage 1b not started. Paper-delta candidates T2403a, T2403b.
-updated: Sun Oct 11 02:28:16 UTC 2026
-reports: docs/reports/T2403-prove.md
+state: proving
+reason: resumed under Amend 1 (H199): workflow wf_bcd4d2e7-4aa, stage 1b prover-max (no new 1a; target 3 with hd : 2 ≤ d; registry per D2) → auditor; branch t/T2403 at main 561093a
+updated: Sun Oct 11 03:11:38 UTC 2026
+reports: docs/reports/T2403-prove.md, docs/reports/T2403-audit.md
