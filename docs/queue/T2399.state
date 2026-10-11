@@ -1,4 +1,4 @@
-state: proving
-reason: started (H193 (3), H12): workflow wf_3c92fa8c-00c, stage 1a preflight → 1b prover-hard → auditor; branch t/T2399 from main 30abc87
-updated: Sun Oct 11 00:19:14 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-hard 84d1997, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 01:08:02 UTC 2026
 reports: docs/reports/T2399-prove.md, docs/reports/T2399-audit.md

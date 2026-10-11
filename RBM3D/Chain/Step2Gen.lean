@@ -602,6 +602,34 @@ theorem bandFM_STGijGEX : STGijGEX sz E t ε₀ ↔ STGijGEXgL (bandFM sz E) (Si
 
 end GbEXPBridge
 
+section WardBridge
+
+variable {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ)
+
+/-- *Not `Iff.rfl`* (T2399): the band `STKward` (`Induction/Step34Pins.lean:229`) reads the list-indexed `𝒦`
+(`STKI` at `⟨List.ofFn σ, List.ofFn a ++ [x]⟩`), the generic `STKwardgL` (`Chain/Carrier.lean`) the `Fin k`-indexed `C.K`; they agree by
+`Carrier_ofFn_ext`; `η` is `etaT (E n) τ = (bandFM sz E).eta n τ` by definition. -/
+theorem bandFM_STKward : STKward sz E ↔ STKwardgL (bandFM sz E) (Sizes.seqP sz) := by
+  unfold STKward STKwardgL Prec PrecL
+  have h : ∀ (τ : ℕ → ℝ) (k : ℕ), 2 ≤ k → ∀ (n : ℕ) (p : (Fin k → Bool) × (Fin (k - 1) → Zd d (sz.L n)))
+      (x : Zd d (sz.L n)),
+      STKI sz n (E n) (τ n) ⟨List.ofFn p.1, List.ofFn p.2 ++ [x]⟩ =
+        (bandFM sz E).K n (τ n) p.1 (fun i : Fin k => if h : (i : ℕ) < k - 1 then p.2 ⟨i, h⟩ else x) := by
+    intro τ k hk n p x
+    change KLK d (sz.L n) (sz.lam n) (sz.W n) (E n) (τ n) _ = KLK d (sz.L n) (sz.lam n) (sz.W n) (E n) (τ n) _
+    rw [KLloopOf, Carrier_ofFn_ext (by omega)]
+  constructor
+  · intro hh τ h0 h1 k hk
+    have := hh τ h0 h1 k hk
+    simp only [h τ k hk] at this
+    exact this
+  · intro hh τ h0 h1 k hk
+    have := hh τ h0 h1 k hk
+    simp only [← h τ k hk] at this
+    exact this
+
+end WardBridge
+
 section Grid
 
 variable {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz)

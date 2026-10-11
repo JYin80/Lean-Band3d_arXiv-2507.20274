@@ -150,6 +150,29 @@ def STKboundgL : Prop :=
       PrecL sz μ (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
         (fun n p _ => ‖C.K n (τ n) p.1 p.2‖) (fun n _ _ => (sz.Bctl n (τ n)) ^ (k - 1))
 
+/-- The loop-index lemma of `STKwardgL`: the `Fin k`-vector `(a, x)` (`a` on the first `k - 1` places, `x` on the last) as a
+list is `List.ofFn a ++ [x]` (the list-indexed `STKward`, `Induction/Step34Pins.lean:229`, reads `⟨List.ofFn σ, List.ofFn a ++ [x]⟩`). -/
+theorem Carrier_ofFn_ext {α : Type*} {k : ℕ} (hk : 1 ≤ k) (a : Fin (k - 1) → α) (x : α) :
+    List.ofFn (fun i : Fin k => if h : (i : ℕ) < k - 1 then a ⟨i, h⟩ else x) = List.ofFn a ++ [x] := by
+  refine List.ext_getElem (by simp; omega) fun i h1 h2 => ?_
+  simp only [List.getElem_ofFn, List.length_ofFn] at h1 ⊢
+  rw [List.getElem_append]
+  by_cases hi : i < k - 1
+  · simp [hi]
+  · have e : i = k - 1 := by omega
+    simp [hi, e]
+
+/-- **`(wardineq_K)`, `lem_wardineq_K`** (`3_5:1001`) over a carrier `C` and a law `μ`: the generic form of `STKward`
+(`Induction/Step34Pins.lean:229`).  For every time sequence `τ ∈ [0,1)` and `k ≥ 2`,
+`max_σ Σ_{a_k} |𝒦^{(k)}_{τ,σ,a}| ≺ (W^d η_τ)⁻¹ (W^{-d}B_{τ,0})^{k-2}`, the sum over the last label `x`, the first `k - 1` labels `p.2`;
+`η_τ` is `C.eta n (τ n)`. -/
+def STKwardgL : Prop :=
+  ∀ τ : ℕ → ℝ, (∀ n, 0 ≤ τ n) → (∀ n, τ n < 1) → ∀ k : ℕ, 2 ≤ k →
+    PrecL sz μ (U := fun n => (Fin k → Bool) × (Fin (k - 1) → Zd d (sz.L n)))
+      (fun n p _ => ∑ x : Zd d (sz.L n),
+        ‖C.K n (τ n) p.1 (fun i : Fin k => if h : (i : ℕ) < k - 1 then p.2 ⟨i, h⟩ else x)‖)
+      (fun n _ _ => (((sz.W n : ℕ) : ℝ) ^ d * C.eta n (τ n))⁻¹ * (sz.Bctl n (τ n)) ^ (k - 2))
+
 /-- `(lRB1)`, uniform in `u ∈ [s,t]` (`1_2:1321`). -/
 def STStep1LoopgL (s t : ℕ → ℝ) : Prop :=
   ∀ k : ℕ, 1 ≤ k →

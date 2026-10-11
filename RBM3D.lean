@@ -438,6 +438,7 @@ import RBM3D.BA.LWPinsBA
 import RBM3D.BA.KStep
 import RBM3D.BA.GreenCore
 import RBM3D.BA.GreenStab
+import RBM3D.BA.KBound
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
