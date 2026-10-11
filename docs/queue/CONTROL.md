@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 09:27 UTC (dispatcher V2: T2412 merged, line removed; T2415 running, T2416 queued)
+updated: 2026-10-11 09:42 UTC (dispatcher V2: T2415 merged, line removed; T2416 running)
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -12,11 +12,9 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 379. T2411 — `docs/tickets/T2411.md` (BA-G5b, new `BA/GreenCond.lean`, `GreenCond2.lean`: m5, threshold families, R6, `BAFamGain`, `BAFAav`; registry two removals): released; starts when its check compiles and a slot is free (H12). Priority: after T2410. Not in the certificate lane.
 381. T2413 — `docs/tickets/T2413.md` (BA TL-D: design of stage TL, report only; supervisor 0853 REQ-TLS, TL-C1 to TL-C4; probe `RBM3D/Probe/T2413Pins.lean` never merged): released; starts when its check compiles and a slot is free (H12). **Priority: first.** Not in the certificate lane.
 382. T2414 — `docs/tickets/T2414.md` (BA-T T8b: the generic drift kernel of Step 2, `Chain/Step2Gen` + `Chain/NewKLKGen` in place, optional new `Chain/Step2Kern`; supervisor 0853 BAT-F1 (a)–(e), BAT-F2; design-gate 1a with a `prover-max` probe step, 1a-audit, 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2413. Not in the certificate lane (reverse cone of `Chain/Step2Gen`: 76 modules, no `Graph/LWExpCert*`).
-383. T2415 — `docs/tickets/T2415.md` (BA-T T8-BA: new `BA/Step2BA.lean`, `baStep2Mat`, `baStep2Data`, BAT-C1 `Pp`/`Hpath`; supervisor 0853 REQ-BAT Q1): released; starts when its check compiles and a slot is free (H12). Priority: after T2414. Not in the certificate lane.
 384. T2416 — `docs/tickets/T2416.md` (BA-T T2-BA with T6-BA: new `BA/EMn2BA.lean`, the three fact blocks of T2404 at BA, BAT-C2 composition lemma, `STEMn2PolygL`/J form/Ĵ form at BA, `STContractM` instance; supervisor 0853 REQ-BAT Q1, Q2): released; starts when its check compiles and a slot is free (H12). Priority: after T2415. Not in the certificate lane.
 
 ## Pre-release checks
-- `docs/tickets/checks/T2415-check.lean` (BA-T T8-BA; merged names only).
 - `docs/tickets/checks/T2416-check.lean` (BA-T T2-BA; merged names only).
 - `docs/tickets/checks/T2413-check.lean` (BA TL-D; merged names only).
 - `docs/tickets/checks/T2414-check.lean` (BA-T T8b; merged names and two G1 `example`s).
@@ -56,6 +54,9 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 09:29:18 UTC 2026 — T2416 started in the slot freed by T2415 (merged 54ecfc4): wf_801eeb46-c61 (preflight → prover-hard → auditor). Running: T2411, T2413, T2414, T2416 (4 of 4); queue empty.
 
 - H211 (dispatcher V2, 2026-10-11 09:27 UTC; DECISIONS §230). Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. Nothing else. One `done:` line.
+  done: Sun Oct 11 09:31:20 UTC 2026 — the 4 listed files committed by name in 99885b3 (with states T2412/T2415/T2416), pushed.
+
+- H212 (dispatcher V2, 2026-10-11 09:42 UTC; DECISIONS §231). Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. Nothing else. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 08:34:36 UTC 2026 — T2398 report-only merge 7b0a10a under Amend 2 (BA LW-14 design gate, route R1: probe Twist section with BATwistAvgLaw, twK, BATwistLoopLaw (D2), row table under R1 with the new row L4t, 10,858 central lines (D3), paper delta T2398d (D4); design (b′) 113 lines; probe RBM3D/Probe/T2398Pins.lean (498 lines, standard axioms) stays on t/T2398 at 6429bb5; audit PASS claude-opus-5-5; pushed).

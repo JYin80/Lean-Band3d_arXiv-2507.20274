@@ -2037,3 +2037,8 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 
 - **T2412 合并 260732c**：`Graph/BASizeClaim` 1,167 行 + `BASizeClaim2` 825 行，设计门 1a-audit PASS，审核一次 PASS（O1–O4 只是观察）。阶段 L 已合并：L0、L2c1、L2c2a、L2c2b、L3c2 和三个设计门。L3c1（1a = G3、G4）按 L4 REQ 的放行次序，等监督 09:41 的结论再写。
 - 中枢：T2411、T2413、T2414、T2415 在跑，T2416 排队。下一张票号 T2417，下一节 §231，下一条 H212。
+
+## §231 — T2415（T8-BA）合并（总调度 V2，2026-10-11 09:42 UTC）
+
+- **T2415 合并 54ecfc4**：`BA/Step2BA` 209 行（估价中心 500），审核一次 PASS。能量族 `baStep2Fam sz E = baStep2Mat sz sz.lam E` 已定义并记给 T3-BA（报告 `:177`）；T3-BA 仍在 BAT-F1 的 HOLD 里，等 T8b（T2414）。
+- 子阶段 T：已合并 row 0、T5s1、T8、T6、T2、T3、T8-BA；在跑 T8b（T2414）、T2-BA（T2416）。中枢：T2411、T2413、T2414、T2416。队列空：L 阶段的行等 L4 REQ（监督 09:41 这次），G6b 等 G5b，TL0 等 TL-D。下一张票号 T2417，下一节 §232，下一条 H212。
