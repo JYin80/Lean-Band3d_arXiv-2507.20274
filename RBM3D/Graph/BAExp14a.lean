@@ -97,13 +97,24 @@ theorem BAExp14a_prec_of_bad {size : ℕ → ℕ} {U₁ U₂ : ℕ → Type*} {�
   filter_upwards [hs, h τ' hτ' D hD] with l h1 h2
   exact (measure_mono h1).trans h2
 
-/-- `ξ ≺ ζ₁` and `ζ₁ ≤ K ζ₂` give `ξ ≺ ζ₂` (`K > 0`, `ζ₂ ≥ 0`). -/
+/-- `ξ ≺ ζ₁` and (eventually) `ζ₁ ≤ K ζ₂` give `ξ ≺ ζ₂` (`K > 0`, `ζ₂ ≥ 0`). -/
 theorem BAExp14a_prec_mono {size : ℕ → ℕ} (hsize : Tendsto size atTop atTop) {U : ℕ → Type*}
     {ξ ζ₁ ζ₂ : ∀ l, U l → Ω → ℝ} {K : ℝ} (hK : 0 < K) (hζ₂ : ∀ l u ω, 0 ≤ ζ₂ l u ω)
-    (hle : ∀ l u ω, ζ₁ l u ω ≤ K * ζ₂ l u ω) (h : StochDomAt P size ξ ζ₁) : StochDomAt P size ξ ζ₂ := by
-  have h2 : StochDomAt P size ζ₁ ζ₂ :=
-    StochDomAt.of_le_left hle (StochDomAt.const_mul_left hsize hK.le hζ₂ (StochDomAt.refl hsize hζ₂))
-  exact StochDomAt.trans hsize h h2
+    (hle : ∀ᶠ l in atTop, ∀ u ω, ζ₁ l u ω ≤ K * ζ₂ l u ω) (h : StochDomAt P size ξ ζ₁) : StochDomAt P size ξ ζ₂ := by
+  refine BAExp14a_prec_of_bad h fun τ hτ => ⟨τ / 2, half_pos hτ, ?_⟩
+  filter_upwards [hle, hsize.eventually (eventually_le_rpow K (half_pos hτ))] with l hl hKN ω ⟨u, hu⟩
+  refine ⟨u, ?_⟩
+  have hpos : 0 ≤ (size l : ℝ) ^ (τ / 2) := Real.rpow_nonneg (Nat.cast_nonneg _) _
+  have h2 := hζ₂ l u ω
+  have h3 : (size l : ℝ) ^ (τ / 2) * ζ₁ l u ω ≤ (size l : ℝ) ^ τ * ζ₂ l u ω := by
+    calc (size l : ℝ) ^ (τ / 2) * ζ₁ l u ω ≤ (size l : ℝ) ^ (τ / 2) * (K * ζ₂ l u ω) :=
+          mul_le_mul_of_nonneg_left (hl u ω) hpos
+      _ ≤ (size l : ℝ) ^ (τ / 2) * ((size l : ℝ) ^ (τ / 2) * ζ₂ l u ω) := by
+          refine mul_le_mul_of_nonneg_left ?_ hpos
+          exact mul_le_mul_of_nonneg_right hKN h2
+      _ = (size l : ℝ) ^ τ * ζ₂ l u ω := by
+          rw [← mul_assoc, UnifDetDom.rpow_half_mul_rpow_half (size l) hτ]
+  exact lt_of_le_of_lt h3 hu
 
 /-- **The first moment off the failure event** (copy of `lwExpTerm_first_moment`, `Graph/LWExpTerm.lean:106`, private there). -/
 private theorem BAExp14a_first_moment [IsProbabilityMeasure P] {f : Ω → ℂ} {S : Set Ω} {c B : ℝ} (hc : 0 ≤ c)
@@ -256,8 +267,8 @@ theorem BAExp14a_Dom.of_le {f f' : ∀ n : ℕ, sz.SeqΩ → ℝ} {g : ℕ → �
   StochDomAt.of_le_left (fun n _ ω => hle n ω) h
 
 theorem BAExp14a_Dom.mono {f : ∀ n : ℕ, sz.SeqΩ → ℝ} {g g' : ℕ → ℝ} {K : ℝ} (hK : 0 < K) (hg' : ∀ n, 0 ≤ g' n)
-    (hle : ∀ n, g n ≤ K * g' n) (h : BAExp14a_Dom sz μ f g) : BAExp14a_Dom sz μ f g' :=
-  BAExp14a_prec_mono hsz hK (fun n _ _ => hg' n) (fun n _ _ => hle n) h
+    (hle : ∀ᶠ n in atTop, g n ≤ K * g' n) (h : BAExp14a_Dom sz μ f g) : BAExp14a_Dom sz μ f g' :=
+  BAExp14a_prec_mono hsz hK (fun n _ _ => hg' n) (hle.mono fun n hn _ _ => hn) h
 
 theorem BAExp14a_Dom.const_mul {f : ∀ n : ℕ, sz.SeqΩ → ℝ} {g : ℕ → ℝ} {c : ℝ} (hc : 0 ≤ c) (hg : ∀ n, 0 ≤ g n)
     (h : BAExp14a_Dom sz μ f g) : BAExp14a_Dom sz μ (fun n ω => c * f n ω) g :=
@@ -272,13 +283,13 @@ theorem BAExp14a_Dom.index {f : ∀ n : ℕ, sz.SeqΩ → ℝ} {g : ℕ → ℝ}
 `Q ≺ g`, `g ≤ K ζ`, a polynomial envelope `N^{Kenv}` and a polynomial floor `ζ ≥ N^{-Kf}` has `‖𝔼 Φ(n, v)‖ ≺ ζ`. -/
 theorem BAExp14a_prec_int [IsProbabilityMeasure μ] {V : ℕ → Type} (Φ : ∀ n : ℕ, V n → sz.SeqΩ → ℂ)
     (Q : ∀ n : ℕ, sz.SeqΩ → ℝ) (g ζ : ℕ → ℝ) {K Kenv Kf : ℝ} (hK : 0 < K) (hζ0 : ∀ n, 0 ≤ ζ n)
-    (hQ : ∀ᶠ n in atTop, ∀ v ω, ‖Φ n v ω‖ ≤ Q n ω) (hDom : BAExp14a_Dom sz μ Q g) (hg : ∀ n, g n ≤ K * ζ n)
+    (hQ : ∀ᶠ n in atTop, ∀ v ω, ‖Φ n v ω‖ ≤ Q n ω) (hDom : BAExp14a_Dom sz μ Q g) (hg : ∀ᶠ n in atTop, g n ≤ K * ζ n)
     (henv : ∀ᶠ n in atTop, ∀ v ω, ‖Φ n v ω‖ ≤ ((sz.size n : ℕ) : ℝ) ^ Kenv)
     (hfloor : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (-Kf) ≤ ζ n) :
     PrecL sz μ (U := V) (fun n v _ => ‖∫ ω, Φ n v ω ∂μ‖) (fun n _ _ => ζ n) := by
   unfold PrecL
   refine BAExp14a_prec_integral hsz Φ (fun n _ => ζ n) henv (hfloor.mono fun n h _ => h) ?_
-  refine BAExp14a_prec_mono hsz hK (fun n _ _ => hζ0 n) (fun n _ _ => hg n) ?_
+  refine BAExp14a_prec_mono hsz hK (fun n _ _ => hζ0 n) (hg.mono fun n hn _ _ => hn) ?_
   refine BAExp14a_prec_of_bad hDom fun τ hτ => ⟨τ, hτ, ?_⟩
   filter_upwards [hQ] with n hn ω hω
   obtain ⟨v, hv⟩ := hω
@@ -370,6 +381,88 @@ theorem BAExp14a_green_diag_le {H : Matrix ι ι ℂ} (hH : H.IsHermitian) {z : 
   nlinarith
 
 end FineWard
+
+/-! ## 3b. The comparison of the dominating functions with `(1 - t)⁻¹ B^{5/2}` (pure arithmetic) -/
+
+section Compare
+
+/-- The dominating function of `J_m = a² K₃ (1 + b)/η`: `(K₃ η⁻¹) (B² (1 + B^{1/2}))`. -/
+def BAExp14a_gJ (K3 ηi B : ℝ) : ℝ := (K3 * ηi) * ((B * B) * (1 + B ^ (1 / 2 : ℝ)))
+
+theorem BAExp14a_gJ_le {K3 ηi κi ω1 B : ℝ} (hB0 : 0 < B) (hB2 : B ≤ 2) (hK3 : 0 ≤ K3) (hηi : ηi ≤ κi * ω1)
+    (hηi0 : 0 ≤ ηi) (hκ0 : 0 ≤ κi) (hω1 : 1 ≤ ω1) :
+    BAExp14a_gJ K3 ηi B ≤ (3 * K3 * κi) * (ω1 * (B * B)) := by
+  unfold BAExp14a_gJ
+  have hs : B ^ (1 / 2 : ℝ) ≤ 2 := by
+    have h1 : (B ^ (1 / 2 : ℝ)) ^ 2 = B := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hB0.le]; norm_num
+    have h0 : 0 ≤ B ^ (1 / 2 : ℝ) := Real.rpow_nonneg hB0.le _
+    nlinarith
+  have hs0 : 0 ≤ B ^ (1 / 2 : ℝ) := Real.rpow_nonneg hB0.le _
+  have hBB : 0 ≤ B * B := by positivity
+  calc (K3 * ηi) * ((B * B) * (1 + B ^ (1 / 2 : ℝ))) ≤ (K3 * (κi * ω1)) * ((B * B) * 3) := by
+        gcongr; linarith
+    _ = (3 * K3 * κi) * (ω1 * (B * B)) := by ring
+
+theorem BAExp14a_rpow_arith {B : ℝ} (hB : 0 < B) :
+    B ^ (1 / 2 : ℝ) * (B * B) = B ^ (5 / 2 : ℝ) ∧ B ^ (1 / 2 : ℝ) * B = B ^ (3 / 2 : ℝ) ∧
+      B * (B ^ (1 / 2 : ℝ) * B) = B ^ (5 / 2 : ℝ) ∧ B * (B * B) = B ^ (5 / 2 : ℝ) * B ^ (1 / 2 : ℝ) := by
+  have h1 : B = B ^ (1 : ℝ) := (Real.rpow_one B).symm
+  have h2 : B * B = B ^ (2 : ℝ) := by
+    rw [show (2 : ℝ) = 1 + 1 by norm_num, Real.rpow_add hB, Real.rpow_one]
+  have h3 : B ^ (1 / 2 : ℝ) * B = B ^ (3 / 2 : ℝ) := by
+    calc B ^ (1 / 2 : ℝ) * B = B ^ (1 / 2 : ℝ) * B ^ (1 : ℝ) := by rw [Real.rpow_one]
+      _ = B ^ (3 / 2 : ℝ) := by rw [← Real.rpow_add hB]; norm_num
+  refine ⟨?_, h3, ?_, ?_⟩
+  · rw [h2, ← Real.rpow_add hB]; norm_num
+  · rw [h3]
+    calc B * B ^ (3 / 2 : ℝ) = B ^ (1 : ℝ) * B ^ (3 / 2 : ℝ) := by rw [Real.rpow_one]
+      _ = B ^ (5 / 2 : ℝ) := by rw [← Real.rpow_add hB]; norm_num
+  · rw [h2]
+    calc B * B ^ (2 : ℝ) = B ^ (1 : ℝ) * B ^ (2 : ℝ) := by rw [Real.rpow_one]
+      _ = B ^ (3 : ℝ) := by rw [← Real.rpow_add hB]; norm_num
+      _ = B ^ (5 / 2 : ℝ) * B ^ (1 / 2 : ℝ) := by rw [← Real.rpow_add hB]; norm_num
+
+/-- **The two comparisons** with `ζ = ω₁ B^{5/2}` (`ω₁ = (1 - t)⁻¹ ≥ 1`): the dominating functions of `F^Ǧ` and of `F^M`. -/
+theorem BAExp14a_cmp {B Wd c1 K3 SC ηi κi ω1 : ℝ} (hB0 : 0 < B) (hB2 : B ≤ 2) (hK3 : 0 ≤ K3) (hSC : 0 ≤ SC)
+    (hWd : Wd ≤ c1 * B) (hWd0 : 0 ≤ Wd) (hc1 : 0 ≤ c1) (hηi : ηi ≤ κi * ω1) (hηi0 : 0 ≤ ηi) (hκ0 : 0 ≤ κi)
+    (hω1 : 1 ≤ ω1) :
+    (B ^ (1 / 2 : ℝ) * BAExp14a_gJ K3 ηi B + Wd * SC * (B ^ (1 / 2 : ℝ) * B)) ≤
+      (3 * K3 * κi + c1 * SC) * (ω1 * B ^ (5 / 2 : ℝ)) ∧
+    Wd * (1 * BAExp14a_gJ K3 ηi B) ≤ (6 * c1 * K3 * κi) * (ω1 * B ^ (5 / 2 : ℝ)) := by
+  obtain ⟨r1, r2, r3, r4⟩ := BAExp14a_rpow_arith hB0
+  have hgJ := BAExp14a_gJ_le hB0 hB2 hK3 hηi hηi0 hκ0 hω1
+  have hs0 : 0 ≤ B ^ (1 / 2 : ℝ) := Real.rpow_nonneg hB0.le _
+  have hs : B ^ (1 / 2 : ℝ) ≤ 2 := by
+    have h1 : (B ^ (1 / 2 : ℝ)) ^ 2 = B := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hB0.le]; norm_num
+    nlinarith
+  have hR0 : 0 ≤ B ^ (5 / 2 : ℝ) := Real.rpow_nonneg hB0.le _
+  have hω0 : 0 ≤ ω1 := by linarith
+  have hBB : 0 ≤ B * B := by positivity
+  have hgJ0 : 0 ≤ BAExp14a_gJ K3 ηi B := by
+    unfold BAExp14a_gJ; positivity
+  refine ⟨?_, ?_⟩
+  · have e1 : B ^ (1 / 2 : ℝ) * BAExp14a_gJ K3 ηi B ≤ (3 * K3 * κi) * (ω1 * B ^ (5 / 2 : ℝ)) := by
+      calc B ^ (1 / 2 : ℝ) * BAExp14a_gJ K3 ηi B ≤ B ^ (1 / 2 : ℝ) * ((3 * K3 * κi) * (ω1 * (B * B))) :=
+            mul_le_mul_of_nonneg_left hgJ hs0
+        _ = (3 * K3 * κi) * (ω1 * (B ^ (1 / 2 : ℝ) * (B * B))) := by ring
+        _ = _ := by rw [r1]
+    have e2 : Wd * SC * (B ^ (1 / 2 : ℝ) * B) ≤ (c1 * SC) * (ω1 * B ^ (5 / 2 : ℝ)) := by
+      calc Wd * SC * (B ^ (1 / 2 : ℝ) * B) ≤ (c1 * B) * SC * (B ^ (1 / 2 : ℝ) * B) := by gcongr
+        _ = (c1 * SC) * (B * (B ^ (1 / 2 : ℝ) * B)) := by ring
+        _ = (c1 * SC) * B ^ (5 / 2 : ℝ) := by rw [r3]
+        _ ≤ (c1 * SC) * (ω1 * B ^ (5 / 2 : ℝ)) := by
+            refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+            nlinarith
+    linarith
+  · calc Wd * (1 * BAExp14a_gJ K3 ηi B) ≤ (c1 * B) * (1 * ((3 * K3 * κi) * (ω1 * (B * B)))) := by gcongr
+      _ = (3 * c1 * K3 * κi) * (ω1 * (B * (B * B))) := by ring
+      _ = (3 * c1 * K3 * κi) * (ω1 * (B ^ (5 / 2 : ℝ) * B ^ (1 / 2 : ℝ))) := by rw [r4]
+      _ ≤ (3 * c1 * K3 * κi) * (ω1 * (B ^ (5 / 2 : ℝ) * 2)) := by gcongr
+      _ = (6 * c1 * K3 * κi) * (ω1 * B ^ (5 / 2 : ℝ)) := by ring
+
+end Compare
 
 /-! ## 4. The block combinatorics of the fine lattice and the frame bounds -/
 
@@ -729,6 +822,111 @@ theorem BAExp14a_neumann {ι : Type*} [Fintype ι] [Nonempty ι] (MB : ι → ι
     rw [le_div_iff₀ (by linarith)]
     nlinarith
   exact (hc₀ c).trans h2
+
+/-- The coefficients of a frame that is linear in `X`: `κ_α = W^{-2d} Σ_{x ∈ [a], y ∈ [b]} tl(x,y) T(x,y,α)`. -/
+def BAExp14a_kap (a b : Zd d L) (tl : Idx d L W → Idx d L W → ℂ) (T : Idx d L W → Idx d L W → Idx d L W → ℂ)
+    (α : Idx d L W) : ℂ :=
+  ((((W : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, tl x y * T x y α
+
+/-- `frame(tl, J) = Σ_α X_{[α]} κ_α` for `J(x,y) = Σ_α X_{[α]} T(x,y,α)`. -/
+theorem BAExp14a_frame_lin_eq (a b : Zd d L) (tl : Idx d L W → Idx d L W → ℂ)
+    (T : Idx d L W → Idx d L W → Idx d L W → ℂ) (X : Zd d L → ℂ) :
+    BAExp14a_frame a b tl (fun x y => ∑ α, X (split d L W α).1 * T x y α) =
+      ∑ α, X (split d L W α).1 * BAExp14a_kap a b tl T α := by
+  unfold BAExp14a_frame BAExp14a_kap
+  simp only [Finset.mul_sum]
+  have h1 : ∀ f : Idx d L W → Idx d L W → Idx d L W → ℂ,
+      ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, ∑ α, f x y α = ∑ α, ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, f x y α := by
+    intro f
+    rw [Finset.sum_congr rfl fun x _ => Finset.sum_comm]
+    exact Finset.sum_comm
+  rw [h1]
+  refine Finset.sum_congr rfl fun α _ => Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => ?_
+  ring
+
+/-- `Σ_α |κ_α| ≤ W^{-d} SC` when `tl` is supported on one offset with `|tl| ≤ 1` and `Σ_α |T(x,y,α)| ≤ SC`. -/
+theorem BAExp14a_kap_l1 (a b : Zd d L) (tl : Idx d L W → Idx d L W → ℂ)
+    (T : Idx d L W → Idx d L W → Idx d L W → ℂ) {SC : ℝ} (htl : ∀ x y, ‖tl x y‖ ≤ 1)
+    (hs : ∀ x y, (split d L W x).2 ≠ (split d L W y).2 → tl x y = 0) (hT : ∀ x y, ∑ α, ‖T x y α‖ ≤ SC)
+    (hSC : 0 ≤ SC) :
+    ∑ α, ‖BAExp14a_kap a b tl T α‖ ≤ ((W : ℝ) ^ d)⁻¹ * SC := by
+  have hWd : (0 : ℝ) < (W : ℝ) ^ d := by
+    have : (0 : ℝ) < (W : ℝ) := Nat.cast_pos.2 (Nat.pos_of_ne_zero (NeZero.ne W))
+    positivity
+  have h1 : ∀ α, ‖BAExp14a_kap a b tl T α‖ ≤ (((W : ℝ) ^ d)⁻¹) ^ 2 *
+      ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, ‖tl x y‖ * ‖T x y α‖ := by
+    intro α
+    unfold BAExp14a_kap
+    rw [norm_mul, norm_pow, norm_inv, norm_pow, Complex.norm_natCast]
+    refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+    refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun x _ => (norm_sum_le _ _).trans
+      (Finset.sum_le_sum fun y _ => ?_))
+    rw [norm_mul]
+  calc ∑ α, ‖BAExp14a_kap a b tl T α‖
+      ≤ ∑ α, (((W : ℝ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, ‖tl x y‖ * ‖T x y α‖ :=
+        Finset.sum_le_sum fun α _ => h1 α
+    _ = (((W : ℝ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, ‖tl x y‖ * ∑ α, ‖T x y α‖ := by
+        rw [← Finset.mul_sum, Finset.sum_comm]
+        congr 1
+        refine Finset.sum_congr rfl fun x _ => ?_
+        rw [Finset.sum_comm]
+        exact Finset.sum_congr rfl fun y _ => (Finset.mul_sum _ _ _).symm
+    _ ≤ (((W : ℝ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b,
+          (if (split d L W x).2 = (split d L W y).2 then SC else 0) := by
+        refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun x _ => Finset.sum_le_sum fun y _ => ?_) (by positivity)
+        by_cases h : (split d L W x).2 = (split d L W y).2
+        · rw [if_pos h]
+          calc ‖tl x y‖ * ∑ α, ‖T x y α‖ ≤ 1 * SC := mul_le_mul (htl x y) (hT x y) (Finset.sum_nonneg fun _ _ => norm_nonneg _) zero_le_one
+            _ = SC := one_mul _
+        · rw [if_neg h, hs x y h, norm_zero, zero_mul]
+    _ = ((W : ℝ) ^ d)⁻¹ * SC := by
+        have h2 : ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W b, (if (split d L W x).2 = (split d L W y).2 then SC else 0) =
+            SC * (W : ℝ) ^ d := by
+          rw [← BAExp14a_pair_count (W := W) a b, Finset.mul_sum]
+          refine Finset.sum_congr rfl fun x _ => ?_
+          rw [Finset.mul_sum]
+          refine Finset.sum_congr rfl fun y _ => ?_
+          split_ifs <;> simp
+        rw [h2]
+        field_simp
+
+/-- **The polynomial envelope** (pure arithmetic): `a, b ≤ A0 ≤ 2N²`, `η⁻¹ ≤ N²`, `N ≥ 1`. -/
+theorem BAExp14a_env_arith {N η A0 a b K3 SC Wd : ℝ} (hN : 1 ≤ N) (hη : 0 < η) (hη' : η⁻¹ ≤ N ^ 2)
+    (hA0 : A0 ≤ 2 * N ^ 2) (ha0 : 0 ≤ a) (hb0 : 0 ≤ b) (ha : a ≤ A0) (hb : b ≤ A0) (hK3 : 0 ≤ K3) (hSC : 0 ≤ SC)
+    (hWd0 : 0 ≤ Wd) (hWd : Wd ≤ 1) :
+    b * (a * (a * (K3 * ((1 + b) / η)))) + Wd * (b * (a * SC)) + a * (a * (K3 * ((1 + b) / η))) + a * SC ≤
+      (36 * K3 + 6 * SC) * N ^ 10 := by
+  set u : ℝ := N ^ 2 with hu
+  have hu1 : 1 ≤ u := by rw [hu]; nlinarith
+  have hu0 : 0 ≤ u := by linarith
+  have hN10 : N ^ 10 = u ^ 5 := by rw [hu]; ring
+  rw [hN10]
+  have ha2 : a ≤ 2 * u := ha.trans hA0
+  have hb2 : b ≤ 2 * u := hb.trans hA0
+  have hq : (1 + b) / η ≤ 3 * u ^ 2 := by
+    rw [div_eq_mul_inv]
+    have h1 : 1 + b ≤ 3 * u := by linarith
+    calc (1 + b) * η⁻¹ ≤ (3 * u) * u := mul_le_mul h1 hη' (inv_nonneg.2 hη.le) (by linarith)
+      _ = 3 * u ^ 2 := by ring
+  have hq0 : 0 ≤ (1 + b) / η := by positivity
+  have hJ : a * (a * (K3 * ((1 + b) / η))) ≤ 12 * K3 * u ^ 4 := by
+    calc a * (a * (K3 * ((1 + b) / η))) ≤ (2 * u) * ((2 * u) * (K3 * (3 * u ^ 2))) := by
+          gcongr
+      _ = 12 * K3 * u ^ 4 := by ring
+  have hJ0 : 0 ≤ a * (a * (K3 * ((1 + b) / η))) := by positivity
+  have hbJ : b * (a * (a * (K3 * ((1 + b) / η)))) ≤ 24 * K3 * u ^ 5 := by
+    calc b * (a * (a * (K3 * ((1 + b) / η)))) ≤ (2 * u) * (12 * K3 * u ^ 4) := mul_le_mul hb2 hJ hJ0 (by linarith)
+      _ = 24 * K3 * u ^ 5 := by ring
+  have hW : Wd * (b * (a * SC)) ≤ 4 * SC * u ^ 2 := by
+    calc Wd * (b * (a * SC)) ≤ 1 * ((2 * u) * ((2 * u) * SC)) := by gcongr
+      _ = 4 * SC * u ^ 2 := by ring
+  have haS : a * SC ≤ 2 * SC * u := by nlinarith
+  have h4 : u ^ 4 ≤ u ^ 5 := pow_le_pow_right₀ hu1 (by norm_num)
+  have h2 : u ^ 2 ≤ u ^ 5 := pow_le_pow_right₀ hu1 (by norm_num)
+  have h1' : u ≤ u ^ 5 := by
+    have := pow_le_pow_right₀ hu1 (show 1 ≤ 5 by norm_num)
+    simpa using this
+  nlinarith [mul_nonneg hK3 (sub_nonneg.2 h4), mul_nonneg hSC (sub_nonneg.2 h2), mul_nonneg hSC (sub_nonneg.2 h1')]
 
 end Path
 

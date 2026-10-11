@@ -883,14 +883,16 @@ theorem BAExp14a_FG_path_le (hf : BAExp14a_Facts sz z n t CM S) (k : Fin 6) (hk 
 /-- `‖F^M_k‖ ≤ W^{-d} Jm` for the four pathwise families. -/
 theorem BAExp14a_FM_path_le (hf : BAExp14a_Facts sz z n t CM S) (k : Fin 6) (hk : 2 ≤ k.val) (σ : Bool)
     (a b : Zd d (sz.L n)) :
-    ‖BAExp14a_FM sz z n t ω k σ a b‖ ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (1 *
-      BAExp14a_Jm ((baFMz sz z).eta n t) CM S (BAExp14a_a sz z n t ω) (BAExp14a_b sz z n t ω)) := by
+    ‖BAExp14a_FM sz z n t ω k σ a b‖ ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ *
+      BAExp14a_Jm ((baFMz sz z).eta n t) CM S (BAExp14a_a sz z n t ω) (BAExp14a_b sz z n t ω) := by
   have hS0 : 0 ≤ S := by linarith [hf.hS]
-  refine BAExp14a_frame_le_diag a b _ _ (fun x y => BAExp14a_tailM_le hf σ x y)
+  unfold BAExp14a_FM
+  have h := BAExp14a_frame_le_diag a b _ _ (fun x y => BAExp14a_tailM_le hf σ x y)
     (fun x y => BAExp14a_J_path_le hf ω k hk x y) zero_le_one
-    (BAExp14a_Jm_nonneg hf.hη hf.hCM hS0 (BAExp14a_a_nonneg n t ω) (BAExp14a_b_nonneg n t ω)) ?_
-  intro x y hxy
-  rw [BAExp14a_tailM_supp hf σ x y hxy, zero_mul]
+    (BAExp14a_Jm_nonneg hf.hη hf.hCM hS0 (BAExp14a_a_nonneg n t ω) (BAExp14a_b_nonneg n t ω)) (by
+      intro x y hxy
+      rw [BAExp14a_tailM_supp hf σ x y hxy, zero_mul])
+  simpa only [one_mul] using h
 
 /-- `‖F^Ǧ_k‖ ≤ W^{-d} b a S CM` for the two linear families. -/
 theorem BAExp14a_FG_lin_le (hf : BAExp14a_Facts sz z n t CM S) (k : Fin 6) (hk : k.val < 2) (σ : Bool)
@@ -903,6 +905,19 @@ theorem BAExp14a_FG_lin_le (hf : BAExp14a_Facts sz z n t CM S) (k : Fin 6) (hk :
     (mul_nonneg (BAExp14a_a_nonneg n t ω) (mul_nonneg hS0 hf.hCM)) ?_
   intro x y hxy
   rw [BAExp14a_J_lin_supp hf k hk x y hxy, mul_zero]
+
+/-- `‖F^M_k‖ ≤ W^{-d} a S CM` for the two linear families (pathwise, the crude bound used for the envelope). -/
+theorem BAExp14a_FM_lin_le (hf : BAExp14a_Facts sz z n t CM S) (k : Fin 6) (hk : k.val < 2) (σ : Bool)
+    (a b : Zd d (sz.L n)) :
+    ‖BAExp14a_FM sz z n t ω k σ a b‖ ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_a sz z n t ω * (S * CM)) := by
+  have hS0 : 0 ≤ S := by linarith [hf.hS]
+  unfold BAExp14a_FM
+  have h := BAExp14a_frame_le_diag a b _ _ (fun x y => BAExp14a_tailM_le hf σ x y)
+    (fun x y => BAExp14a_J_lin_le hf k hk x y) zero_le_one
+    (mul_nonneg (BAExp14a_a_nonneg n t ω) (mul_nonneg hS0 hf.hCM)) (by
+      intro x y hxy
+      rw [BAExp14a_tailM_supp hf σ x y hxy, zero_mul])
+  simpa only [one_mul] using h
 
 end Pathwise
 
@@ -1320,7 +1335,372 @@ theorem BAExp14a_e_bound {ε₂ : ℝ} (hq : ∀ c y w, ‖BAExp14a_q sz z n t c
 
 end ExpX3
 
+section EnvBd
+
+variable {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ}
+  (hf : BAExp14a_Facts sz z n t CM S)
+include hκ hflow ht0 ht hf
+
+/-- **The polynomial envelope**: `‖F^Ǧ_k‖, ‖F^M_k‖ ≤ (36 K₃ + 6 S CM) N^{10}` for `N ≥ 1`, `η⁻¹ ≤ N²`. -/
+theorem BAExp14a_env_bd {N : ℝ} (hN : 1 ≤ N) (hηN : ((baFMz sz z).eta n t)⁻¹ ≤ N ^ 2) (ω : sz.SeqΩ)
+    (k : Fin 6) (σ : Bool) (a b : Zd d (sz.L n)) :
+    ‖BAExp14a_FG sz z n t ω k σ a b‖ ≤ (36 * (5 / 2 * S * CM + CM * CM) + 6 * (S * CM)) * N ^ 10 ∧
+      ‖BAExp14a_FM sz z n t ω k σ a b‖ ≤ (36 * (5 / 2 * S * CM + CM * CM) + 6 * (S * CM)) * N ^ 10 := by
+  have hS0 : 0 ≤ S := by linarith [hf.hS]
+  have hK3 : 0 ≤ 5 / 2 * S * CM + CM * CM := by have := hf.hCM; positivity
+  have hSC : 0 ≤ S * CM := mul_nonneg hS0 hf.hCM
+  have hη := hf.hη
+  have hA0 : ((baFMz sz z).eta n t)⁻¹ + 1 ≤ 2 * N ^ 2 := by nlinarith
+  have ha : BAExp14a_a sz z n t ω ≤ ((baFMz sz z).eta n t)⁻¹ + 1 :=
+    Finset.sup'_le _ _ fun c _ => BAExp14a_X_le hκ hflow n ht0 ht hf ω c
+  have hb : BAExp14a_b sz z n t ω ≤ ((baFMz sz z).eta n t)⁻¹ + 1 :=
+    Finset.sup'_le _ _ fun p _ => BAExp14a_GM_le hκ hflow n ht0 ht hf ω p.1 p.2
+  have ha0 := BAExp14a_a_nonneg (sz := sz) (z := z) n t ω
+  have hb0 := BAExp14a_b_nonneg (sz := sz) (z := z) n t ω
+  have hWd0 : (0 : ℝ) ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by positivity
+  have hWd1 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 1 := by
+    have : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d :=
+      one_le_pow₀ (by exact_mod_cast sz.W_pos n)
+    exact inv_le_one_of_one_le₀ this
+  have harith := BAExp14a_env_arith hN hη hηN hA0 ha0 hb0 ha hb hK3 hSC hWd0 hWd1
+  have hJ0 := BAExp14a_Jm_nonneg hη hf.hCM hS0 ha0 hb0
+  have hJ : BAExp14a_Jm ((baFMz sz z).eta n t) CM S (BAExp14a_a sz z n t ω) (BAExp14a_b sz z n t ω) =
+      BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) * ((1 + BAExp14a_b sz z n t ω) /
+        (baFMz sz z).eta n t))) := rfl
+  have hJle : BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+      ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t))) ≤ (36 * (5 / 2 * S * CM + CM * CM) + 6 * (S * CM)) * N ^ 10 := by
+    refine le_trans ?_ harith
+    have : 0 ≤ BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+      ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t)))) := by positivity
+    have h2 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (S * CM))) := by positivity
+    have h3 : 0 ≤ BAExp14a_a sz z n t ω * (S * CM) := by positivity
+    linarith
+  by_cases hk : 2 ≤ k.val
+  · refine ⟨?_, ?_⟩
+    · refine (BAExp14a_FG_path_le hf k hk σ a b).trans ?_
+      refine le_trans ?_ harith
+      have h2 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (S * CM))) := by positivity
+      have h3 : 0 ≤ BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+        ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t))) := by positivity
+      have h4 : 0 ≤ BAExp14a_a sz z n t ω * (S * CM) := by positivity
+      have : BAExp14a_b sz z n t ω * BAExp14a_Jm ((baFMz sz z).eta n t) CM S (BAExp14a_a sz z n t ω) (BAExp14a_b sz z n t ω) =
+        BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+          ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t)))) := by rw [hJ]
+      linarith
+    · refine (BAExp14a_FM_path_le hf k hk σ a b).trans ?_
+      refine le_trans ?_ hJle
+      rw [hJ]
+      calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+            ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t)))) ≤ 1 * (BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω *
+            ((5 / 2 * S * CM + CM * CM) * ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t)))) :=
+            mul_le_mul hWd1 le_rfl (by rw [← hJ]; exact hJ0) zero_le_one
+        _ = _ := one_mul _
+  · have hk' : k.val < 2 := by omega
+    refine ⟨?_, ?_⟩
+    · refine (BAExp14a_FG_lin_le hf k hk' σ a b).trans ?_
+      refine le_trans ?_ harith
+      have h3 : 0 ≤ BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+        ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t))) := by positivity
+      have h4 : 0 ≤ BAExp14a_a sz z n t ω * (S * CM) := by positivity
+      have h5 : 0 ≤ BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+        ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t)))) := by positivity
+      linarith
+    · refine (BAExp14a_FM_lin_le hf k hk' σ a b).trans ?_
+      refine le_trans ?_ harith
+      have h2 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (S * CM))) := by positivity
+      have h3 : 0 ≤ BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+        ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t))) := by positivity
+      have h5 : 0 ≤ BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (BAExp14a_a sz z n t ω * ((5 / 2 * S * CM + CM * CM) *
+        ((1 + BAExp14a_b sz z n t ω) / (baFMz sz z).eta n t)))) := by positivity
+      have h6 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_a sz z n t ω * (S * CM)) ≤ BAExp14a_a sz z n t ω * (S * CM) := by
+        calc _ ≤ 1 * (BAExp14a_a sz z n t ω * (S * CM)) := mul_le_mul hWd1 le_rfl (by positivity) zero_le_one
+          _ = _ := one_mul _
+      linarith
+
+end EnvBd
+
 end Lanlw
+
+/-! ## 9. `B ≤ 2`, `η⁻¹ ≤ N²`: the eventual scalar facts -/
+
+section BctlTwo
+
+/-- **`W^{-d} B_{u,0} ≤ 2`** once `λ² W^d ≥ 1` and `N (1 - u) ≥ 1` (a copy of `B45_STWB_le` at `K = 0`, `Induction/B45.lean:1259`,
+private there; there is no BA analogue of `st5_Bctl_le_one`, `Induction/Step5Kit.lean:362`, which takes `STFlow`). -/
+theorem BAExp14a_Bctl_le_two {d : ℕ} (sz : Sizes d) (n : ℕ) {u : ℝ} (hu : u < 1)
+    (hg : 1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) (hN : 1 ≤ ((sz.size n : ℕ) : ℝ) * (1 - u)) :
+    sz.Bctl n u ≤ 2 := by
+  have hv : 0 < 1 - u := by linarith
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  have hL0 : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.L n : ℕ) : ℝ) := by
+      have := sz.three_le_L n; exact_mod_cast (by omega : 0 < sz.L n)
+    positivity
+  have hg2 : 0 < sz.lam n ^ 2 := by
+    by_contra h
+    push Not at h
+    have : sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d ≤ 0 := mul_nonpos_of_nonpos_of_nonneg h hW0.le
+    linarith
+  have hNe : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    simp only [Sizes.size]; push_cast; ring
+  unfold Sizes.Bctl Bparam
+  rw [abs_of_pos hv]
+  have hT1 : (sz.lam n ^ 2 + (1 - u))⁻¹ * ((((0 : ℕ) : ℝ) + 1) ^ (d - 2))⁻¹ ≤ (sz.lam n ^ 2)⁻¹ := by
+    have ha : (sz.lam n ^ 2 + (1 - u))⁻¹ ≤ (sz.lam n ^ 2)⁻¹ := inv_anti₀ hg2 (by linarith)
+    simp only [Nat.cast_zero, zero_add, one_pow, inv_one, mul_one]
+    exact ha
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.lam n ^ 2 + (1 - u))⁻¹ *
+        ((((0 : ℕ) : ℝ) + 1) ^ (d - 2))⁻¹ + (((sz.L n : ℕ) : ℝ) ^ d * (1 - u))⁻¹)
+      ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ((sz.lam n ^ 2)⁻¹ + (((sz.L n : ℕ) : ℝ) ^ d * (1 - u))⁻¹) := by gcongr
+    _ = (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)⁻¹ + (((sz.size n : ℕ) : ℝ) * (1 - u))⁻¹ := by
+        rw [hNe]; field_simp
+    _ ≤ 1 + 1 := by gcongr <;> exact inv_le_one_of_one_le₀ ‹_›
+    _ = 2 := by norm_num
+
+variable {d : ℕ} {sz : Sizes d} {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
+
+/-- The eventual facts along the flow: `(1 - t)⁻¹ ≤ N`, `4 ≤ N`, `κ⁻¹ ≤ N`, `η⁻¹ ≤ N²`, `B ≤ 2`, `B ≥ 0`. -/
+theorem BAExp14a_eventual_scalars (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
+    (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) :
+    ∀ᶠ n in atTop, (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ∧ (4 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ∧
+      ((baFMz sz z).eta n (t n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ 2 ∧ sz.Bctl n (t n) ≤ 2 ∧ t n < 1 := by
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hWO := hflow.1.2.2.2.2
+  filter_upwards [BAExp14a_eventually hκ hε hflow ht, hsz.eventually (eventually_ge_atTop (1 / κ)), hWO] with n hn hnk hwo
+  obtain ⟨h1, h4, hg0, hgΛ⟩ := hn
+  obtain ⟨ht1, hr, hmi, hzi, -⟩ := ba_G_data hκ sz hflow n (ht0 n) (ht n)
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have h1t : 0 < 1 - t n := by linarith
+  refine ⟨h1, h4, ?_, ?_, ht1⟩
+  · -- η⁻¹ ≤ N²
+    rw [BAExp14a_eta_eq]
+    unfold etaOf
+    rw [mul_inv]
+    have hm : (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := by
+      refine le_trans (inv_anti₀ hκ hr.2) ?_
+      have := hnk
+      rwa [one_div] at this
+    rw [sq]
+    exact mul_le_mul h1 hm (inv_nonneg.2 hmi.le) hN0.le
+  · refine BAExp14a_Bctl_le_two sz n ht1 ?_ ?_
+    · have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+      have h2 := sz.lam_sq_mul_pow_ge n hwo.1
+      refine le_trans ?_ h2
+      exact Real.one_le_rpow hW1 (by linarith)
+    · rw [inv_le_comm₀ h1t hN0] at h1
+      rw [inv_eq_one_div, div_le_iff₀ hN0] at h1
+      linarith
+
+end BctlTwo
+
+/-! ## 10. The pathwise bounds `P_g`, `P_m` and their `≺` -/
+
+section PgPm
+
+variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (CM S : ℝ)
+
+/-- The pathwise bound of `‖F^Ǧ_k‖` (all `k`): `b J_m + W^{-d} b a S CM`. -/
+def BAExp14a_Pg (t : ℝ) (ω : sz.SeqΩ) : ℝ :=
+  BAExp14a_b sz z n t ω * BAExp14a_Jm ((baFMz sz z).eta n t) CM S (BAExp14a_a sz z n t ω) (BAExp14a_b sz z n t ω) +
+    (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (BAExp14a_b sz z n t ω * (BAExp14a_a sz z n t ω * (S * CM)))
+
+/-- The pathwise bound of `‖F^M_k‖` for the four non-linear families: `W^{-d} J_m`. -/
+def BAExp14a_Pm (t : ℝ) (ω : sz.SeqΩ) : ℝ :=
+  (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * BAExp14a_Jm ((baFMz sz z).eta n t) CM S (BAExp14a_a sz z n t ω) (BAExp14a_b sz z n t ω)
+
+variable {sz z n CM S}
+
+/-- **`P_g ≺ g_P`, `P_m ≺ g_M`** from `a ≺ B`, `b ≺ B^{1/2}`. -/
+theorem BAExp14a_Dom_Pg_Pm {μ : Measure sz.SeqΩ} (hsz : Tendsto sz.size atTop atTop) {t : ℕ → ℝ} (hη : ∀ n, 0 < (baFMz sz z).eta n (t n))
+    (hB : ∀ n, 0 ≤ sz.Bctl n (t n)) (hCM : 0 ≤ CM) (hS : 0 ≤ S)
+    (hDa : BAExp14a_Dom sz μ (fun n ω => BAExp14a_a sz z n (t n) ω) (fun n => sz.Bctl n (t n)))
+    (hDb : BAExp14a_Dom sz μ (fun n ω => BAExp14a_b sz z n (t n) ω) (fun n => (sz.Bctl n (t n)) ^ (1 / 2 : ℝ))) :
+    BAExp14a_Dom sz μ (fun n ω => BAExp14a_Pg sz z n CM S (t n) ω)
+        (fun n => (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) * BAExp14a_gJ (5 / 2 * S * CM + CM * CM) (((baFMz sz z).eta n (t n))⁻¹) (sz.Bctl n (t n)) +
+          (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (S * CM) * ((sz.Bctl n (t n)) ^ (1 / 2 : ℝ) * sz.Bctl n (t n))) ∧
+      BAExp14a_Dom sz μ (fun n ω => BAExp14a_Pm sz z n CM S (t n) ω)
+        (fun n => (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * BAExp14a_gJ (5 / 2 * S * CM + CM * CM) (((baFMz sz z).eta n (t n))⁻¹) (sz.Bctl n (t n))) := by
+  have hK3 : 0 ≤ 5 / 2 * S * CM + CM * CM := by positivity
+  have hWd : ∀ n, 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := fun n => by positivity
+  have hs : ∀ n, 0 ≤ (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := fun n => Real.rpow_nonneg (hB n) _
+  -- 1 + b ≺ 1 + B^{1/2}
+  have d1 : BAExp14a_Dom sz μ (fun n ω => 1 + BAExp14a_b sz z n (t n) ω) (fun n => 1 + (sz.Bctl n (t n)) ^ (1 / 2 : ℝ)) :=
+    BAExp14a_Dom.add hsz (BAExp14a_Dom.refl hsz (g := fun _ => (1 : ℝ)) fun _ => zero_le_one) hDb
+  have d2 : BAExp14a_Dom sz μ (fun n ω => BAExp14a_a sz z n (t n) ω * BAExp14a_a sz z n (t n) ω)
+      (fun n => sz.Bctl n (t n) * sz.Bctl n (t n)) :=
+    BAExp14a_Dom.mul hsz (fun n ω => BAExp14a_a_nonneg n (t n) ω) hB hDa hDa
+  have d3 : BAExp14a_Dom sz μ (fun n ω => BAExp14a_a sz z n (t n) ω * BAExp14a_a sz z n (t n) ω *
+      (1 + BAExp14a_b sz z n (t n) ω)) (fun n => sz.Bctl n (t n) * sz.Bctl n (t n) * (1 + (sz.Bctl n (t n)) ^ (1 / 2 : ℝ))) :=
+    BAExp14a_Dom.mul hsz (fun n ω => by have := BAExp14a_b_nonneg (sz := sz) (z := z) n (t n) ω; linarith)
+      (fun n => mul_nonneg (hB n) (hB n)) d2 d1
+  have d4 : BAExp14a_Dom sz μ (fun n ω => ((5 / 2 * S * CM + CM * CM) * ((baFMz sz z).eta n (t n))⁻¹) *
+      (BAExp14a_a sz z n (t n) ω * BAExp14a_a sz z n (t n) ω * (1 + BAExp14a_b sz z n (t n) ω)))
+      (fun n => BAExp14a_gJ (5 / 2 * S * CM + CM * CM) (((baFMz sz z).eta n (t n))⁻¹) (sz.Bctl n (t n))) :=
+    BAExp14a_Dom.mul hsz (fun n ω => mul_nonneg (mul_nonneg (BAExp14a_a_nonneg n (t n) ω) (BAExp14a_a_nonneg n (t n) ω))
+      (by have := BAExp14a_b_nonneg (sz := sz) (z := z) n (t n) ω; linarith))
+      (fun n => mul_nonneg hK3 (inv_nonneg.2 (hη n).le))
+      (BAExp14a_Dom.refl hsz (g := fun n => (5 / 2 * S * CM + CM * CM) * ((baFMz sz z).eta n (t n))⁻¹)
+        fun n => mul_nonneg hK3 (inv_nonneg.2 (hη n).le)) d3
+  have dJ : BAExp14a_Dom sz μ (fun n ω => BAExp14a_Jm ((baFMz sz z).eta n (t n)) CM S (BAExp14a_a sz z n (t n) ω)
+      (BAExp14a_b sz z n (t n) ω)) (fun n => BAExp14a_gJ (5 / 2 * S * CM + CM * CM) (((baFMz sz z).eta n (t n))⁻¹) (sz.Bctl n (t n))) := by
+    refine BAExp14a_Dom.of_le hsz (fun n ω => le_of_eq ?_) d4
+    unfold BAExp14a_Jm
+    rw [div_eq_mul_inv]
+    ring
+  have dba : BAExp14a_Dom sz μ (fun n ω => BAExp14a_b sz z n (t n) ω * BAExp14a_a sz z n (t n) ω)
+      (fun n => (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) * sz.Bctl n (t n)) :=
+    BAExp14a_Dom.mul hsz (fun n ω => BAExp14a_a_nonneg n (t n) ω) hs hDb hDa
+  have hJ0 : ∀ n ω, 0 ≤ BAExp14a_Jm ((baFMz sz z).eta n (t n)) CM S (BAExp14a_a sz z n (t n) ω) (BAExp14a_b sz z n (t n) ω) :=
+    fun n ω => BAExp14a_Jm_nonneg (hη n) hCM hS (BAExp14a_a_nonneg n (t n) ω) (BAExp14a_b_nonneg n (t n) ω)
+  refine ⟨?_, ?_⟩
+  · have e1 := BAExp14a_Dom.mul hsz hJ0 hs hDb dJ
+    have e2 := BAExp14a_Dom.mul hsz (fun n ω => mul_nonneg (BAExp14a_b_nonneg (sz := sz) (z := z) n (t n) ω)
+      (BAExp14a_a_nonneg n (t n) ω)) (fun n => mul_nonneg (hWd n) (mul_nonneg hS hCM))
+      (BAExp14a_Dom.refl hsz (g := fun n => (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (S * CM)) fun n => mul_nonneg (hWd n) (mul_nonneg hS hCM)) dba
+    refine BAExp14a_Dom.of_le hsz (fun n ω => le_of_eq ?_) (BAExp14a_Dom.add hsz e1 e2)
+    unfold BAExp14a_Pg
+    ring
+  · have e3 := BAExp14a_Dom.mul hsz hJ0 (fun n => hWd n)
+      (BAExp14a_Dom.refl hsz (g := fun n => (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) hWd) dJ
+    refine BAExp14a_Dom.of_le hsz (fun n ω => le_of_eq ?_) e3
+    unfold BAExp14a_Pm
+    rfl
+
+end PgPm
+
+/-! ## 11. The assembly of the `≺` statements -/
+
+section Assembly
+
+variable {k : ℕ} {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
+
+/-- The eventual facts at `n`, in one conjunction. -/
+theorem BAExp14a_ev (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
+    (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) {CM S : ℝ}
+    (hfacts : ∀ᶠ n in atTop, ∀ t' : ℝ, 0 ≤ t' → t' ≤ BAflowT0 sz z n → BAExp14a_Facts sz z n t' CM S) (K0 : ℝ) :
+    ∀ᶠ n in atTop, BAExp14a_Facts sz z n (t n) CM S ∧ (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ∧ (4 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ∧
+      ((baFMz sz z).eta n (t n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) ^ 2 ∧ sz.Bctl n (t n) ≤ 2 ∧ t n < 1 ∧ (0 ≤ sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹) ∧
+      K0 ≤ ((sz.size n : ℕ) : ℝ) := by
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  filter_upwards [hfacts, BAExp14a_eventual_scalars hκ hε h𝔡 hflow ht0 ht, hflow.1.2.2.2.2,
+    hsz.eventually (eventually_ge_atTop K0)] with n hF hS hWO hK0
+  have hW0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
+  exact ⟨hF (t n) (ht0 n) (ht n), hS.1, hS.2.1, hS.2.2.1, hS.2.2.2.1, hS.2.2.2.2,
+    ⟨(Real.rpow_nonneg hW0 _).trans hWO.1, hWO.2⟩, hK0⟩
+
+/-- `t < 1` along the flow. -/
+theorem BAExp14a_t_lt_one (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht : ∀ n, t n ≤ BAflowT0 sz z n) (n : ℕ) :
+    t n < 1 := lt_of_le_of_lt (ht n) (BAflow_T0_bounds hκ hflow n).2.2.2
+
+/-- `η⁻¹ ≤ κ⁻¹ (1 - t)⁻¹` (`Im m ≥ κ`). -/
+theorem BAExp14a_eta_inv_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht1 : t < 1) :
+    ((baFMz sz z).eta n t)⁻¹ ≤ κ⁻¹ * (1 - t)⁻¹ := by
+  have hr := BAflow_real κ ε 𝔠 𝔡 sz z hflow n
+  rw [BAExp14a_eta_eq]
+  unfold etaOf
+  rw [mul_inv, mul_comm]
+  exact mul_le_mul_of_nonneg_right (inv_anti₀ hκ hr.2) (inv_nonneg.2 (by linarith))
+
+/-- The floor `N^{-5/2} ≤ (1 - t)⁻¹ B^{5/2}`. -/
+theorem BAExp14a_floor (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) :
+    ((sz.size n : ℕ) : ℝ) ^ (-(5 / 2 : ℝ)) ≤ (1 - t)⁻¹ * (sz.Bctl n t) ^ (5 / 2 : ℝ) := by
+  have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have h1 := Sizes.expAvg_Bctl_ge sz n ht0 ht1
+  have h2 : ((sz.size n : ℕ) : ℝ) ^ (-(5 / 2 : ℝ)) ≤ (sz.Bctl n t) ^ (5 / 2 : ℝ) := by
+    rw [Real.rpow_neg hN.le, ← Real.inv_rpow hN.le]
+    exact Real.rpow_le_rpow (inv_nonneg.2 hN.le) h1 (by norm_num)
+  have h3 : 1 ≤ (1 - t)⁻¹ := by
+    rw [one_le_inv₀ (by linarith)]; linarith
+  have h4 : 0 ≤ (sz.Bctl n t) ^ (5 / 2 : ℝ) := Real.rpow_nonneg (STBctl_pos sz n ht1).le _
+  nlinarith
+
+/-- **`𝔼 F^Ǧ ≺ (1 - t)⁻¹ B^{5/2}`**, uniformly in `(k, σ, a, b)`: the pathwise bound `‖F^Ǧ‖ ≤ P_g ≺ g_P ≤ K ζ`, then `≺ → 𝔼`. -/
+theorem BAExp14a_FG_prec (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
+    (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) {CM S : ℝ} (hCM : 0 ≤ CM) (hS : 1 ≤ S)
+    (hfacts : ∀ᶠ n in atTop, ∀ t' : ℝ, 0 ≤ t' → t' ≤ BAflowT0 sz z n → BAExp14a_Facts sz z n t' CM S)
+    (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t) (hA : LWAvgLawgL (baFMz sz z) (BAExp14a_μ sz) t) :
+    PrecL sz (BAExp14a_μ sz) (U := fun n => Fin 6 × Bool × Zd (k + 2) (sz.L n) × Zd (k + 2) (sz.L n))
+      (fun n p _ => ‖∫ ω, BAExp14a_FG sz z n (t n) ω p.1 p.2.1 p.2.2.1 p.2.2.2 ∂(BAExp14a_μ sz)‖)
+      (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ)) := by
+  have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
+  have ht1 : ∀ n, t n < 1 := BAExp14a_t_lt_one hκ hflow ht
+  have hη : ∀ n, 0 < (baFMz sz z).eta n (t n) := fun n => BAExp14a_eta_pos hκ hflow n (ht0 n) (ht n)
+  have hB : ∀ n, 0 ≤ sz.Bctl n (t n) := fun n => (STBctl_pos sz n (ht1 n)).le
+  have hS0 : 0 ≤ S := by linarith
+  have hDa := BAExp14a_Dom_a (μ := BAExp14a_μ sz) t hflow hκ hA
+  have hDb := BAExp14a_Dom_b (μ := BAExp14a_μ sz) (κ := κ) (ε := ε) (𝔠 := 𝔠) (𝔡 := 𝔡) t ht1 hE
+  obtain ⟨hPg, -⟩ := BAExp14a_Dom_Pg_Pm hsz hη hB hCM hS0 hDa hDb
+  have hK3 : 0 ≤ 5 / 2 * S * CM + CM * CM := by positivity
+  set c1 : ℝ := (𝔡⁻¹) ^ 2 + 1 with hc1
+  have hc10 : 0 ≤ c1 := by positivity
+  have hSC : 0 ≤ S * CM := mul_nonneg hS0 hCM
+  set K : ℝ := 3 * (5 / 2 * S * CM + CM * CM) * κ⁻¹ + c1 * (S * CM) + 1 with hK
+  have hKpos : 0 < K := by
+    have : 0 ≤ 3 * (5 / 2 * S * CM + CM * CM) * κ⁻¹ := by positivity
+    have : 0 ≤ c1 * (S * CM) := by positivity
+    linarith
+  have hev := BAExp14a_ev hκ hε h𝔡 hflow ht0 ht hfacts (72 * (5 / 2 * S * CM + CM * CM) + 12 * (S * CM))
+  refine BAExp14a_prec_int (μ := BAExp14a_μ sz) hsz (V := fun n => Fin 6 × Bool × Zd (k + 2) (sz.L n) × Zd (k + 2) (sz.L n))
+    (fun n p ω => BAExp14a_FG sz z n (t n) ω p.1 p.2.1 p.2.2.1 p.2.2.2)
+    (fun n ω => BAExp14a_Pg sz z n CM S (t n) ω) _ (fun n => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ)) (K := K)
+    (Kenv := 11) (Kf := 5 / 2) hKpos (fun n => ?_) ?_ hPg ?_ ?_ ?_
+  · exact mul_nonneg (inv_nonneg.2 (by linarith [ht1 n])) (Real.rpow_nonneg (hB n) _)
+  · filter_upwards [hev] with n hn p ω
+    obtain ⟨hf, -⟩ := hn
+    obtain ⟨k0, σ, a, b⟩ := p
+    by_cases hk : 2 ≤ k0.val
+    · refine (BAExp14a_FG_path_le (ω := ω) hf k0 hk σ a b).trans ?_
+      unfold BAExp14a_Pg
+      have : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ (k + 2))⁻¹ * (BAExp14a_b sz z n (t n) ω * (BAExp14a_a sz z n (t n) ω * (S * CM))) := by
+        have := BAExp14a_a_nonneg (sz := sz) (z := z) n (t n) ω
+        have := BAExp14a_b_nonneg (sz := sz) (z := z) n (t n) ω
+        positivity
+      linarith
+    · have := BAExp14a_FG_lin_le (ω := ω) hf k0 (by omega) σ a b
+      refine this.trans ?_
+      unfold BAExp14a_Pg
+      have h0 : 0 ≤ BAExp14a_b sz z n (t n) ω * BAExp14a_Jm ((baFMz sz z).eta n (t n)) CM S (BAExp14a_a sz z n (t n) ω)
+          (BAExp14a_b sz z n (t n) ω) :=
+        mul_nonneg (BAExp14a_b_nonneg n (t n) ω) (BAExp14a_Jm_nonneg hf.hη hf.hCM hS0 (BAExp14a_a_nonneg n (t n) ω)
+          (BAExp14a_b_nonneg n (t n) ω))
+      linarith
+  · filter_upwards [hev] with n hn
+    obtain ⟨hf, h1t, h4, hηN, hB2, ht1n, ⟨hlam0, hlam⟩, hK0⟩ := hn
+    have hBpos := STBctl_pos sz n ht1n
+    have hWd := BAExp14a_Wd_le (sz := sz) n (ht0 n) ht1n
+    have hWdc : (((sz.W n : ℕ) : ℝ) ^ (k + 2))⁻¹ ≤ c1 * sz.Bctl n (t n) := by
+      refine hWd.trans (mul_le_mul_of_nonneg_right ?_ hBpos.le)
+      rw [hc1]
+      have : sz.lam n ^ 2 ≤ (𝔡⁻¹) ^ 2 := pow_le_pow_left₀ hlam0 hlam 2
+      linarith
+    have hηi := BAExp14a_eta_inv_le hκ hflow n ht1n
+    have hη0 : 0 ≤ ((baFMz sz z).eta n (t n))⁻¹ := inv_nonneg.2 (hη n).le
+    have h1t' : 1 ≤ (1 - t n)⁻¹ := by rw [one_le_inv₀ (by linarith)]; linarith [ht0 n]
+    obtain ⟨c1', -⟩ := BAExp14a_cmp (B := sz.Bctl n (t n)) (Wd := (((sz.W n : ℕ) : ℝ) ^ (k + 2))⁻¹) (c1 := c1) (K3 := 5 / 2 * S * CM + CM * CM)
+      (SC := S * CM) (ηi := ((baFMz sz z).eta n (t n))⁻¹) (κi := κ⁻¹) (ω1 := (1 - t n)⁻¹) hBpos hB2 hK3 hSC hWdc
+      (by positivity) hc10 hηi hη0 (inv_nonneg.2 hκ.le) h1t'
+    refine c1'.trans ?_
+    have hz : 0 ≤ (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ) :=
+      mul_nonneg (inv_nonneg.2 (by linarith)) (Real.rpow_nonneg hBpos.le _)
+    rw [hK]
+    nlinarith
+  · filter_upwards [hev] with n hn p ω
+    obtain ⟨hf, h1t, h4, hηN, hB2, ht1n, ⟨hlam0, hlam⟩, hK0⟩ := hn
+    obtain ⟨k0, σ, a, b⟩ := p
+    have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by linarith
+    have h := (BAExp14a_env_bd hκ hflow n (ht0 n) (ht n) hf hN1 hηN ω k0 σ a b).1
+    calc ‖BAExp14a_FG sz z n (t n) ω k0 σ a b‖ ≤ (36 * (5 / 2 * S * CM + CM * CM) + 6 * (S * CM)) * ((sz.size n : ℕ) : ℝ) ^ 10 := h
+      _ ≤ ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ 10 := by
+          have hpos : 0 ≤ 36 * (5 / 2 * S * CM + CM * CM) + 6 * (S * CM) := by positivity
+          refine mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+      _ = ((sz.size n : ℕ) : ℝ) ^ (11 : ℝ) := by
+          rw [show (11 : ℝ) = ((11 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]; ring
+  · filter_upwards [hev] with n hn
+    exact BAExp14a_floor n (ht0 n) hn.2.2.2.2.2.1
+
+end Assembly
 
 end RBM.BA
 
