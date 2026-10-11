@@ -443,6 +443,7 @@ import RBM3D.BA.EKNonzero
 import RBM3D.BA.GreenOff
 import RBM3D.Chain.NewKLKGen
 import RBM3D.Graph.BAGGExp
+import RBM3D.Graph.BAWeightOp
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
