@@ -732,9 +732,9 @@ end Band
 
 /-! ## 7. Compiled nonempty instances (`d = 3`)
 
-The band family `fun sz E => bandStep2Mat sz E` satisfies F5-F9 for every `κ, 𝔡 > 0` (section 6), so target 2 holds at the band;
+The band family `fun sz E => bandStep2Mat sz E` satisfies F5-F9 for every `κ, 𝔡 > 0` (§6), so target 2 holds at the band;
 target 1 is applied at `κ = 𝔡 = 1/10`; the band pin `STNewKLK d` is re-derived through the generic theorem, the corollary of
-section 5 (`κ' = κ/2`, domain fact `Ind.half_le_mE_im`) and `bandStep2_STNewKLK`.  The pointwise instance is the merged preflight
+§5 (`κ' = κ/2`, domain fact `Ind.half_le_mE_im`) and `bandStep2_STNewKLK`.  The pointwise instance is the merged preflight
 sequence `sz0` (`L = 4`, `W = 32`, `lam = 1/64`) at `n = 0`, `E = 0` (`m = i`), `u = 1/32`, `D = 1`, `ℓ = 2` (the indicator
 `1_{ℓ≥1}` is on), `H = 0`: `‖G_u - M‖_max = u/(1-u) = 1/31 ≤ 1/20 = δ₀`, so `G_u ≠ M`. -/
 
@@ -765,20 +765,19 @@ open RBM.Gauss.SizesInst in
 private abbrev NewKLKGen_cm0 : Step2Mat sz0 := bandStep2Mat sz0 (fun _ => 0)
 
 open RBM.Gauss.SizesInst in
+/-- The matrix `H = 0` at `sz0`, `n = 0`. -/
+private abbrev NewKLKGen_H0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ := 0
+
+open RBM.Gauss.SizesInst in
 /-- **Target 1, pointwise**: the two bounds at `sz0`, `n = 0`, `E = 0`, `u = 1/32`, `D = 1`, `ℓ = 2`, `H = 0`, all `σ`, `a`. -/
 example : ∃ C : ℝ, 0 < C ∧ ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd 3 (sz0.L 0)),
-    ‖STthetaOpg NewKLKGen_cm0 0 (1 / 32) σ (STLKMg NewKLKGen_cm0 0 (1 / 32)
-        (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) σ) a‖ ≤
-        C / (1 - 1 / 32) * STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32)
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) *
+    ‖STthetaOpg NewKLKGen_cm0 0 (1 / 32) σ (STLKMg NewKLKGen_cm0 0 (1 / 32) NewKLKGen_H0 σ) a‖ ≤
+        C / (1 - 1 / 32) * STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32) NewKLKGen_H0 *
           STprof sz0 0 (1 / 32) 1 2 (a 0) (a 1) ∧
-      ‖STELKLKMg NewKLKGen_cm0 0 (1 / 32)
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) σ a‖ ≤
-        C / (1 - 1 / 32) * (STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32)
-          (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) +
-          STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32)
-            (0 : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ) ^ 2 *
-            (if 1 ≤ (2 : ℝ) then 1 else 0)) * STprof sz0 0 (1 / 32) 1 2 (a 0) (a 1) := by
+      ‖STELKLKMg NewKLKGen_cm0 0 (1 / 32) NewKLKGen_H0 σ a‖ ≤
+        C / (1 - 1 / 32) * (STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32) NewKLKGen_H0 +
+          STJhatMg NewKLKGen_cm0 0 1 2 (1 / 32) NewKLKGen_H0 ^ 2 * (if 1 ≤ (2 : ℝ) then 1 else 0)) *
+          STprof sz0 0 (1 / 32) 1 2 (a 0) (a 1) := by
   obtain ⟨C, hC, h⟩ := stNewKLKAtgL'_of (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) _
     (newKLKGenHyp_band (d := 3) (by norm_num) (1 / 10) (1 / 10) (by norm_num) (by norm_num))
   have hlam : 0 < sz0.lam 0 := by simp [sz0]
