@@ -64,7 +64,7 @@ def baEMn2Hf (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ
 def baEMn2Zf (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) : ℂ :=
   ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) u
 
-/-- `seqHflowBA` is Hermitian (private copies: `FlowPins:925`, `Step1Trivial:103`, `ConArg:310`, `GreenLocal:178`). -/
+/-- `seqHflowBA` is Hermitian (private copies: `FlowPins:925`, `Step1Trivial:103`, `ConArg:311`, `GreenLocal:179`). -/
 theorem EMn2BA_seqHflowBA_herm (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) :
     (sz.seqHflowBA lam0 n u ω).IsHermitian := by
   unfold Sizes.seqHflowBA
@@ -151,7 +151,7 @@ theorem baEMn2PolyFacts : emn2PolyFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Z
   · exact (EMn2BA_SB_zero (sz.L n)).symm
 
 set_option maxHeartbeats 800000 in
--- the copied proof of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1048`) carries the same limit
+-- the copied proof of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1049`) carries the same limit
 /-- **Target 2** (rows (T), (E), (B)): `emn2ExpFacts` at the BA reading.
 
 (B) is the BA twin of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1049`): `Bctl` reads `sz.lam n = g` (`Defs/Sizes.lean:214`),
@@ -292,7 +292,7 @@ section Comp
 
 variable {d L : ℕ} [NeZero L]
 
-/-- `Σ_b |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Θ Q` and `Σ_b |Q(c,b)| ≤ 1` (copy of `KStep_row_of_resolvent`, `BA/KStep.lean:281`,
+/-- `Σ_b |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Θ Q` and `Σ_b |Q(c,b)| ≤ 1` (copy of `KStep_row_of_resolvent`, `BA/KStep.lean:279`,
 private there). -/
 private theorem EMn2BA_row_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] (Θ Q : Matrix G G ℂ)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hres : Θ = 1 + (t : ℂ) • (Θ * Q))
@@ -326,7 +326,7 @@ private theorem EMn2BA_row_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] 
   nlinarith
 
 /-- `Σ_a |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Q Θ` and `Σ_a |Q(a,c)| ≤ 1` (copy of `KWardIneq_col_of_resolvent`,
-`BA/KWardIneq.lean:216`, private there). -/
+`BA/KWardIneq.lean:219`, private there). -/
 private theorem EMn2BA_col_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] (Θ Q : Matrix G G ℂ)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hres : Θ = 1 + (t : ℂ) • (Q * Θ))
     (hQ : ∀ c, ∑ a, ‖Q a c‖ ≤ 1) (b : G) : ∑ a, ‖Θ a b‖ ≤ (1 - t)⁻¹ := by
@@ -427,7 +427,7 @@ theorem EMn2BA_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) 
   simp only [add_neg_cancel, ← sub_eq_add_neg] at h
   exact h.symm
 
-/-- `B_{t,K} ≤ 2 (1-t)⁻¹` for `t < 1`, `L ≥ 1` (copy of `kellStar_bparam_le`, `Path/KellStar.lean:67`, private there). -/
+/-- `B_{t,K} ≤ 2 (1-t)⁻¹` for `t < 1`, `L ≥ 1` (copy of `kellStar_bparam_le`, `Path/KellStar.lean:68`, private there). -/
 theorem EMn2BA_bparam_le (d L : ℕ) (hL : 1 ≤ L) (g : ℝ) {u : ℝ} (hu : u < 1) (n : ℕ) :
     Bparam d L g u n ≤ 2 * (1 - u)⁻¹ := by
   have hx : 0 < 1 - u := by linarith
@@ -593,7 +593,7 @@ theorem EMn2BA_ellT_mono_g (L : ℕ) {g₀ g : ℝ} (h : g₀ ≤ g) (t : ℝ) :
   exact min_le_min (max_le_max (div_le_div_of_nonneg_right h (Real.sqrt_nonneg _)) le_rfl) le_rfl
 
 /-- The closing inequality of the far field, for `x = log W ≥ 1` with `2C + k + |D| ≤ c δ √x`:
-`2C e^{x k} e^{-c δ x^{3/2}} ≤ e^{-x D}` (copy of `kellStar_arith`, `Path/KellStar.lean:94`, private there). -/
+`2C e^{x k} e^{-c δ x^{3/2}} ≤ e^{-x D}` (copy of `kellStar_arith`, `Path/KellStar.lean:89`, private there). -/
 private theorem EMn2BA_arith {C c δ D k x : ℝ} (hC : 0 < C) (hx1 : 1 ≤ x)
     (hsq : 2 * C + k + |D| ≤ c * δ * Real.sqrt x) :
     C * (2 * Real.exp (x * k)) * Real.exp (-(c * δ * x ^ ((3 : ℝ) / 2))) ≤
@@ -949,7 +949,7 @@ private theorem EMn2BAInst_far_ev : ∀ᶠ n : ℕ in atTop,
     _ = y := by field_simp
 
 /-- The far pair `a = (k,k,k)`, `b = 0`, `k = 2(n+1) = L_n / 2`: `|a - b|_∞ = k`
-(the pattern of `Path/KellStar.lean:407`, private there). -/
+(the pattern of `Path/KellStar.lean:377`, private there). -/
 private theorem EMn2BAInst_zdistInf (n : ℕ) :
     zdistInf 3 (sz0.L n) ((fun _ => (((2 * (n + 1) : ℕ) : ZMod (sz0.L n))) : Zd 3 (sz0.L n)) - 0) =
       2 * (n + 1) := by
