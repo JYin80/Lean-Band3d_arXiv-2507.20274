@@ -802,4 +802,167 @@ theorem GreenOff_decay (hd : 2 ≤ d) (hL : 3 ≤ L)
 
 end Close
 
+/-! ## 3. Target 2: the link `BAStab` -/
+
+/-- **Target 2**: `BAStab d L g E m t (16 κ⁻⁴)` at the bulk data `BAReal d L g κ E m`, `0 ≤ t ≤ 1` (the body of `BAStab` is
+`baStab_of_real`, `GreenStab.lean:46`). -/
+theorem baStab_holds (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (t : ℝ)
+    (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : BAStab d L g E m t (16 * κ⁻¹ ^ 4) :=
+  baStab_of_real d L g κ E m hκ hr t ht0 ht1
+
+/-! ## 4. The carrier: the two-loop in the entries and the closure at the flow -/
+
+section Carrier
+
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+private theorem GreenOff_gres_blockMat_true (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (x y : Vtx d L W) :
+    Gres (blockMat d L W H) z true x y =
+      Gres H z true ((splitEquiv d L W).symm x) ((splitEquiv d L W).symm y) := by
+  unfold Gres blockMat
+  simp only [ite_true]
+  have e1 : H.submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ) =
+      (H - z • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)).submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm := by
+    ext i j
+    simp [Matrix.submatrix_apply, Matrix.one_apply]
+  rw [e1, ← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse, Matrix.inv_submatrix_equiv]
+  rfl
+
+omit [NeZero L] [NeZero W] in
+private theorem GreenOff_gres_false {ι : Type*} [Fintype ι] [DecidableEq ι] (H : Matrix ι ι ℂ) (hH : H.IsHermitian)
+    (z : ℂ) : Gres H z false = (Gres H z true)ᴴ := by
+  unfold Gres
+  simp only [Bool.false_eq_true, ite_false, ite_true]
+  rw [← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse, Matrix.conjTranspose_nonsing_inv]
+  congr 1
+  rw [Matrix.conjTranspose_sub, Matrix.conjTranspose_smul, Matrix.conjTranspose_one, hH.eq]
+  rfl
+
+omit [NeZero W] in
+private theorem GreenOff_trace_pm (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a b : Zd d L) :
+    ((G * Eblk d L W a) * (Gᴴ * Eblk d L W b)).trace =
+      ((((W : ℝ) ^ d)⁻¹ ^ 2 * ∑ v : Vtx d L W, ∑ w : Vtx d L W,
+          (if v.1 = b ∧ w.1 = a then ‖G v w‖ ^ 2 else 0) : ℝ) : ℂ) := by
+  have hE : ∀ c : Zd d L, Eblk d L W c = Matrix.diagonal fun x : Vtx d L W =>
+      if x.1 = c then (((W : ℂ)) ^ d)⁻¹ else 0 := fun c => rfl
+  rw [hE a, hE b]
+  have h1 : G * Matrix.diagonal (fun x : Vtx d L W => if x.1 = a then (((W : ℂ)) ^ d)⁻¹ else 0) =
+      Matrix.of fun i j => G i j * (if j.1 = a then (((W : ℂ)) ^ d)⁻¹ else 0) := by
+    ext i j; simp [Matrix.mul_diagonal]
+  have h2 : Gᴴ * Matrix.diagonal (fun x : Vtx d L W => if x.1 = b then (((W : ℂ)) ^ d)⁻¹ else 0) =
+      Matrix.of fun i j => star (G j i) * (if j.1 = b then (((W : ℂ)) ^ d)⁻¹ else 0) := by
+    ext i j; simp [Matrix.mul_diagonal, Matrix.conjTranspose_apply]
+  rw [h1, h2]
+  simp only [Matrix.trace, Matrix.diag_apply, Matrix.mul_apply, Matrix.of_apply]
+  push_cast
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  by_cases hi : i.1 = b <;> by_cases hj : j.1 = a <;> simp [hi, hj]
+  have h := Complex.mul_conj' (G i j)
+  linear_combination (((W : ℂ) ^ d)⁻¹) ^ 2 * h
+
+private theorem GreenOff_sum_vtx_ite (F : Vtx d L W → ℝ) (b : Zd d L) :
+    ∑ v : Vtx d L W, (if v.1 = b then F v else 0) = ∑ β : Fin (W ^ d), F (b, β) := by
+  rw [Fintype.sum_prod_type, Finset.sum_eq_single b]
+  · simp
+  · intro x _ hx
+    simp [hx]
+  · intro hb
+    exact absurd (Finset.mem_univ b) hb
+
+/-- **The two-loop in the entries**: for a Hermitian `H`, `‖𝓛^{(2)}_{(-,+),(a,b)}‖ = W^{-2d} Σ_{x∈a, y∈b} |G_{xy}|²`
+(rows in block `a`, columns in `b`), `G = (H - z)⁻¹` on the block-product index (the merged proofs of this identity are
+private to `Green/Pins.lean`). -/
+theorem GreenOff_loop_eq {H : Matrix (Idx d L W) (Idx d L W) ℂ} (hH : H.IsHermitian) (z : ℂ) (a b : Zd d L) :
+    ‖loopFine d L W H z ![false, true] ![a, b]‖ =
+      GreenCore_loop (blockMat d L W (Gres H z true)) a b := by
+  have hB : (blockMat d L W H).IsHermitian := hH.submatrix _
+  have hGb : Gres (blockMat d L W H) z true = blockMat d L W (Gres H z true) := by
+    ext x y; exact GreenOff_gres_blockMat_true H z x y
+  have h1 : loopFine d L W H z ![false, true] ![a, b] =
+      ((blockMat d L W (Gres H z true) * Eblk d L W b) * ((blockMat d L W (Gres H z true))ᴴ * Eblk d L W a)).trace := by
+    unfold loopFine loopM
+    simp only [List.ofFn_succ, List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one, Matrix.cons_val_zero,
+      Matrix.cons_val_succ]
+    rw [GreenOff_gres_false _ hB z, hGb, Matrix.trace_mul_comm]
+  rw [h1, GreenOff_trace_pm, Complex.norm_real]
+  have h2 : ∀ v : Vtx d L W, (∑ w : Vtx d L W, if v.1 = a ∧ w.1 = b then
+      ‖blockMat d L W (Gres H z true) v w‖ ^ 2 else 0) =
+      if v.1 = a then ∑ w : Vtx d L W, (if w.1 = b then ‖blockMat d L W (Gres H z true) v w‖ ^ 2 else 0) else 0 :=
+    fun v => by by_cases hv : v.1 = a <;> simp [hv]
+  have hsum : (∑ v : Vtx d L W, ∑ w : Vtx d L W, if v.1 = a ∧ w.1 = b then
+      ‖blockMat d L W (Gres H z true) v w‖ ^ 2 else 0) =
+      ∑ o : Fin (W ^ d), ∑ o' : Fin (W ^ d), ‖blockMat d L W (Gres H z true) (a, o) (b, o')‖ ^ 2 := by
+    simp only [h2]
+    rw [GreenOff_sum_vtx_ite (fun v => ∑ w : Vtx d L W, (if w.1 = b then
+      ‖blockMat d L W (Gres H z true) v w‖ ^ 2 else 0)) a]
+    refine Finset.sum_congr rfl fun o _ => ?_
+    rw [GreenOff_sum_vtx_ite (fun w => ‖blockMat d L W (Gres H z true) (a, o) w‖ ^ 2) b]
+  rw [hsum, Real.norm_of_nonneg (mul_nonneg (by positivity) (Finset.sum_nonneg fun _ _ =>
+    Finset.sum_nonneg fun _ _ => by positivity))]
+  rfl
+
+end Carrier
+
+section PinDet
+
+variable {d : ℕ}
+
+/-- **The closure along the flow, one sample** (`n`, `ω`): on `Ω = {‖G_t - M‖_max ≤ δ}`, the large deviation events at the factor
+`P = Φ_N` and the loop control `‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ φ(a,b)²`:
+`|(G_t - M)_{xy}| ≤ 2 C_ℓ' Φ_N 𝔗_{c_λ}([x],[y])` with the constants of `(κ, 𝔡)` (`Λ = 𝔡⁻¹`, `GreenOff_decay`). -/
+theorem GreenOff_carrier_decay (hd : 2 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ}
+    (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (htT : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ)
+    {P δ Ψ : ℝ} {φ : Zd d (sz.L n) → Zd d (sz.L n) → ℝ}
+    (hg : 0 < BAflowLam0 sz z n) (hgΛ : BAflowLam0 sz z n ≤ 𝔡⁻¹)
+    (hP : 1 ≤ P) (hδ : δ ≤ κ / 2) (hδ0 : 0 ≤ δ) (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (hΩ : ∀ x y : Idx d (sz.L n) (sz.W n), ‖(baFMz sz z).GM n t ω x y‖ ≤ δ)
+    (hLrow : LDERow (GreenCore_Xc sz n t ω) (GreenCore_Gc sz z n t ω) (svar d (sz.L n) (sz.W n) 0) P)
+    (hLcol : LDECol (GreenCore_Xc sz n t ω) (GreenCore_Gc sz z n t ω) (svar d (sz.L n) (sz.W n) 0) P)
+    (hLquad : LDEQuad (GreenCore_Xc sz n t ω) (GreenCore_Gc sz z n t ω) (svar d (sz.L n) (sz.W n) 0) t P)
+    (hLdiag : ∀ i, ‖GreenCore_Xc sz n t ω i i‖ ^ 2 ≤ P * svar d (sz.L n) (sz.W n) 0 i i)
+    (hC1 : 8 * GreenOff_rho d 𝔡⁻¹ κ * ((BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenOff_S d 𝔡⁻¹ κ) *
+      GreenCore_theta d κ P δ (BAflowLam0 sz z n) ≤ 1)
+    (hφ0 : ∀ a b, 0 ≤ φ a b) (hφ : ∀ a b, ‖(baFMz sz z).L n t ![false, true] ![a, b] ω‖ ≤ φ a b ^ 2)
+    (hΨ : 0 < Ψ) (hΨw : Real.sqrt ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ≤ Ψ)
+    (hC2 : (1 + (BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenOff_S d 𝔡⁻¹ κ * (BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenStab_CTheta d 𝔡⁻¹ κ) *
+      ((BAct_rate d 𝔡⁻¹ κ)⁻¹ * GreenOff_S d 𝔡⁻¹ κ *
+        GreenOff_eta d κ (BAct_rate d 𝔡⁻¹ κ) P δ (BAflowLam0 sz z n) (GreenStab_clam d 𝔡⁻¹ κ)
+          (GreenOff_alpha d κ δ (BAflowLam0 sz z n))) ≤ 1 / 2)
+    (x y : Idx d (sz.L n) (sz.W n)) :
+    ‖(baFMz sz z).GM n t ω x y‖ ≤ 2 * GreenOff_Cl d κ (BAct_rate d 𝔡⁻¹ κ) (GreenOff_rho d 𝔡⁻¹ κ) (GreenOff_S d 𝔡⁻¹ κ) P δ
+      (BAflowLam0 sz z n) (GreenStab_CTheta d 𝔡⁻¹ κ) *
+      GreenOff_T d (sz.L n) (GreenStab_clam d 𝔡⁻¹ κ) Ψ φ (Sizes.STblk sz n x) (Sizes.STblk sz n y) := by
+  have hΛ : 0 < 𝔡⁻¹ := inv_pos.2 hflow.1.2.1
+  obtain ⟨ht1, hr, hmi, hzi, -, -⟩ := ba_G_data hκ sz hflow n ht0 htT
+  obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier hκ sz hflow n ht0 htT ω
+    (m := BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (s := (BAflowEs sz z n : ℂ) + BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+    (zt := ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) t) rfl rfl rfl
+  have hHerm : (sz.seqHflowBA (BAflowLam0 sz z) n t ω).IsHermitian := by
+    unfold Sizes.seqHflowBA
+    refine IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz.withLam 0) n t ω)
+    unfold IsHermitian
+    rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
+      show star (BAflowLam0 sz z n : ℂ) = (BAflowLam0 sz z n : ℂ) from Complex.conj_ofReal _]
+  have hloop : ∀ a b, GreenCore_loop (GreenCore_Gc sz z n t ω) a b ≤ φ a b ^ 2 := fun a b =>
+    le_trans (le_of_eq (GreenOff_loop_eq hHerm (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) t) a b).symm)
+      (hφ a b)
+  have hΩ' : ∀ u v : Vtx d (sz.L n) (sz.W n),
+      ‖GreenCore_Gc sz z n t ω u v - GreenCore_Mc sz z n u v‖ ≤ δ := fun u v =>
+    hΩ ((splitEquiv d (sz.L n) (sz.W n)).symm u) ((splitEquiv d (sz.L n) (sz.W n)).symm v)
+  have key := GreenOff_decay hd (sz.three_le_L n) (Λ := 𝔡⁻¹) (g₀ := BAflowLam0 sz z n) (κ := κ) (E := BAflowEs sz z n)
+    (t := t) (δ := δ) (P := P) (Ψ := Ψ) hΛ hg hgΛ hκ hr hGR hRG hMR hMR' hz hM hD ht0 ht1 hP hδ hδ0 hwd hΩ' hLrow hLcol
+    hLquad hLdiag hC1 φ hφ0 hloop hΨ hΨw hC2 (splitEquiv d (sz.L n) (sz.W n) x) (splitEquiv d (sz.L n) (sz.W n) y)
+  have e : (baFMz sz z).GM n t ω x y = GreenCore_Gc sz z n t ω (splitEquiv d (sz.L n) (sz.W n) x)
+      (splitEquiv d (sz.L n) (sz.W n) y) - GreenCore_Mc sz z n (splitEquiv d (sz.L n) (sz.W n) x)
+      (splitEquiv d (sz.L n) (sz.W n) y) := by
+    simp [FlowFM.GM, baFMz, baFM, GreenCore_Gc, GreenCore_Mc, blockMat]
+  rw [e]
+  exact key
+
+end PinDet
+
 end RBM.BA
