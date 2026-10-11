@@ -343,3 +343,4 @@
 | T2395 | 2026-10-11 00:3x UTC (d859e60) | prover-max | Sonnet 5.5 effort max | 是 | 设计票（L3a3 门：G1 + S 检验），只出报告；审核第一轮 RETURN（D1），规则 (B) 修一次后第二轮 PASS；结论 S′（S 加修正 K1–K4），L3a1–L3b6 降到 11 行、中心 7.1k |
 | T2390 | 2026-10-11 00:51 UTC (cbda0ab) | prover-max → prover-opus | Sonnet 5.5 max → Opus 5.5 xhigh | 是 | BA-G3a：设计门第一轮 1a-audit RETURN（探针没编译、`BAGbEXPii'` 未定、局部闭合缺、实例退化）→ Amend 1 → 第二轮 PASS；1b `prover-max` 没写完（1975 行），按 §94 升级 Opus 补上 (X*)、(Ξ)；新 `BA/GreenCore` 1981 行（停止线 2000）；审核一次 PASS |
 | T2400 | 2026-10-11 00:59 UTC (4a4327e) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-G3b：新 `BA/GreenStab`（442 行，停止线 1000），`baStab_of_real`（`K = 16κ⁻⁴`）、`M` 与 `Θ` 的行界；审核一次 PASS |
+| T2399 | 2026-10-11 01:08 UTC (561093a) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-K12：新 `BA/KBound`（418 行），`Chain/Carrier` +23（`STKwardgL`），`Chain/Step2Gen` +28；469 / 停止线 1300；审核一次 PASS；阶段 K 收尾 |

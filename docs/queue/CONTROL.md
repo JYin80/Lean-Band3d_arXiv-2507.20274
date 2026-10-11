@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-11 01:02 UTC (dispatcher V2: G3a, G3b merged; G4 T2403 released (H196))
+updated: 2026-10-11 01:37 UTC (dispatcher V2: ST-side T3 = T2405 released (H198))
 reason: RUN (dispatcher V2 from 2026-10-09 19:24 UTC, DECISIONS §166–§167). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -11,16 +11,18 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 365. T2398 — `docs/tickets/T2398.md` (BA LW-14 design gate: G6 + lever C, report only): design delivered (W2 no, W3 C); auditor BLOCKED on the §8 question; **the dispatcher has relayed the one question to Jun (DECISIONS §214); held until his answer** (H195). Slot freed.
 366. T2397 — `docs/tickets/T2397.md` (BA-L3b3 design gate: G2, report only; supervisor 2149 L4 (b)): released; starts when its check compiles with exit 0 and a slot is free (H12). Priority: after T2398.
-367. T2399 — `docs/tickets/T2399.md` (BA-K12, new `BA/KBound.lean`, `STKwardgL` in `Chain/Carrier.lean`; closes stage K): released; starts when its check compiles with exit 0 and a slot is free (H12). **Priority: first.** Not in the certificate lane.
 369. T2401 — `docs/tickets/T2401.md` (BA-G5a: design gate (incl. supervisor 2254 G1, two-block offset averages), then new `BA/GreenMinor*`): released; **stage 1a** starts when its check compiles and a slot is free (H12); **stage 1b only after its 1a-audit PASS and T2390 merged** (held in between, slot freed, as H182). Priority: after T2400.
 370. T2402 — `docs/tickets/T2402.md` (BA-G5c: design gate, then new `BA/GreenIBP*`; `Green/IBP` not edited): released; same pattern as T2401. Priority: after T2401.
 371. T2403 — `docs/tickets/T2403.md` (BA-G4, new `BA/GreenOff.lean`; `BAStab` link, `BAGbEXPij'`; removes two owed lines): released; starts when its check compiles and a slot is free (H12). **Priority: first** (stage-G critical path). Not in the certificate lane.
+372. T2404 — `docs/tickets/T2404.md` (BA-T T2, ST side: `EMn2Poly`, `EMn2Exp1`, `EMn2Exp2` in place over the carrier; design-gate 1a + 1a-audit): released; starts when its check compiles and a slot is free (H12). Priority: after T2403. Not in the certificate lane.
+373. T2405 — `docs/tickets/T2405.md` (BA-T T3, ST side: `lem:newKLK` over the carrier; layout (A) new `Chain/NewKLKGen.lean`, preferred; design-gate 1a + 1a-audit): released; starts when its check compiles and a slot is free (H12). Priority: after T2404. Not in the certificate lane under layout (A); under (B) it joins the lane (H176).
 
 ## Pre-release checks
+- `docs/tickets/checks/T2405-check.lean` (BA-T T3; merged names only).
+- `docs/tickets/checks/T2404-check.lean` (BA-T T2; merged names only).
 - `docs/tickets/checks/T2403-check.lean` (BA-G4; merged names only).
 - `docs/tickets/checks/T2401-check.lean` (G5a gate; merged names only).
 - `docs/tickets/checks/T2402-check.lean` (G5c gate; merged names only).
-- `docs/tickets/checks/T2399-check.lean` (BA-K12; merged names only).
 - `docs/tickets/checks/T2397-check.lean` (L3b3 gate; merged names only).
 - `docs/tickets/checks/T2398-check.lean` (LW-14 gate; merged names only).
   done: Sat Oct 10 12:43:41 UTC 2026 — `lake env lean docs/tickets/checks/T2387-check.lean` on main 61849a6: exit 0, no error lines.
@@ -50,9 +52,17 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sun Oct 11 00:35:19 UTC 2026 — T2400 started in the slot freed by T2395 (report-only merge d859e60): workflow wf_69076c09-40e (preflight → prover-hard → auditor). Running: T2390, T2397, T2399, T2400 (4 of 4); queue T2401, T2402.
 
 - H196 (dispatcher V2, 2026-10-11 01:02 UTC; DECISIONS §215). Commit by name with your next commit `docs/tickets/T2403.md`, `docs/tickets/checks/T2403-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`, `docs/queue/CONTROL-archive.md`; compile the check on `main` (H4; one `done:` line); start T2403 in the next free slot (H12; first in line). One `done:` line per step.
+  done: Sun Oct 11 01:04:59 UTC 2026 — the 7 listed files committed by name in 3acc81f (with states T2397/T2400/T2401/T2402), pushed; T2403 check on main 3acc81f: exit 0, 0 error lines. No slot free (T2397 audit rerun, T2399, T2401, T2402); T2403 first in line.
+  done: Sun Oct 11 01:04:59 UTC 2026 — T2397: 1b returned at 01:04 UTC (416232c; (6) holds on both branches, no question to Jun); workflow wf_acdaf7a7-7bc stopped before its auditor wrote anything; audit rerun with Amend 1 in the auditor and repairer prompts: wf_a0cdd644-8d3 (H193 (2) / H194).
+  done: Sun Oct 11 01:08:13 UTC 2026 — T2403 started in the slot freed by T2399 (merged 561093a): workflow wf_4c0ba540-22f (preflight → prover-max → auditor). Running: T2397 (audit rerun), T2401, T2402, T2403 (4 of 4).
+
+- H197 (dispatcher V2, 2026-10-11 01:23 UTC; DECISIONS §216). Commit by name with your next commit `docs/tickets/T2404.md`, `docs/tickets/checks/T2404-check.lean`, `docs/supervisor/requests/REQ-2026-10-11-0118-K.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`; compile the check on `main` (H4; one `done:` line); start T2404 in the next free slot (H12; after T2403). T2397: the audit RETURN gets its one rule-(B) repair as usual. One `done:` line per step.
+
+- H198 (dispatcher V2, 2026-10-11 01:37 UTC; DECISIONS §217). Commit by name with your next commit `docs/tickets/T2405.md`, `docs/tickets/checks/T2405-check.lean`, `docs/tickets/T2404.md` (one sentence added before start), `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`; compile the check on `main` (H4; one `done:` line); start T2405 in the next free slot after T2404 (H12). One `done:` line per step.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sat Oct 10 17:38:33 UTC 2026 — T2389 merged b6cc9d2 (BA-G2: new BA/GreenLDE; Green/LDE, RowIndep, IBPPoly in place (978 of 1800); open issue D1: only stochDom_ldeRow/Col/Quad are literal corollaries at D = 0; root import; certificate-lane merge (H176), alone; audit PASS claude-opus-5-5; full lake build 4204 jobs; pushed). T2390 1b may start once its 1a-audit question is answered.
 done: Sun Oct 11 00:35:05 UTC 2026 — T2395 report-only merge d859e60 (BA-L3a3 design gate: S2 decision S with correction S′ (K1-K4; S literally fails at F1-F5), G1 closed at paper level, rows 11 → 11 (16,257 → 7,110 central); probe RBM3D/Probe/T2395Pins.lean (396 lines, standard axioms) stays on t/T2395 at 4c1de4c; audit round 1 RETURN (transport pins did not compose; BAsim without instance) → one rule-(B) repair (BAstepMono, BAtwistInv, ba_lvl1StepGood_of_sim proved, instances) → audit PASS round 2 claude-opus-5-5; pushed).
 done: Sun Oct 11 00:51:01 UTC 2026 — T2390 merged cbda0ab (BA-G3a under Amend 1: new BA/GreenCore (1981 lines, stop 2000; R1-R5 incl. GreenCore_Xstar, GreenCore_Xi; 88 public declarations, standard axioms), RBM3D/Test/Axioms.lean 2 owed lines BAStab (owner BA-G3b) and BAGbEXPij' (owner BA-G4) by 3-way merge (main's E2 removals kept, audit O1), docs/reports/T2390/ inst/sz0 scripts (H192), root import; probe RBM3D/Probe/T2390Pins.lean not merged (O2), stays on t/T2390; stage 1b: prover-max ended incomplete at 1975 lines ((X*), (Ξ) of D3.3 missing), escalated once to prover-opus xhigh under rule (B)/DECISIONS §94, which delivered them (e34b6d6); audit PASS claude-opus-5-5 (observations O3-O6: zero-sample instances for Xrow_sq/Xcol_sq/Xstar, constant 26 vs 8, Φ² loss); full lake build 4210 jobs; pushed). T2401, T2402 1b may start after their 1a-audits.
 done: Sun Oct 11 00:59:42 UTC 2026 — T2400 merged 4a4327e (BA-G3b: new BA/GreenStab (442 lines, stop 1000; baStab_of_real, S3 row facts, S2 Θ weighted l1), BA/Prop6Path (baP8_BATheta_shift made public, 1 line), root import (conflict with T2390's GreenCore import resolved as union); no registry change: the `BAStab` owed line added by T2390 (owner BA-G3b) stays, Test/Axioms.lean is not a sole writable file of T2400; audit PASS claude-opus-5-5; full lake build 4211 jobs; pushed).
+done: Sun Oct 11 01:08:04 UTC 2026 — T2399 merged 561093a (BA-K12: new BA/KBound (418 lines), Chain/Carrier (+23, STKwardgL), Chain/Step2Gen (+28, bridge); 469 of stop 1300; not certificate lane; root import (conflict with GreenCore/GreenStab imports resolved as union); no registry change; audit PASS claude-opus-5-5 (O1: prove report 234 lines vs ticket 200); full lake build 4212 jobs; pushed). Stage K closed.

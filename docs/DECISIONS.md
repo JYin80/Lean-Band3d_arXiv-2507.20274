@@ -1900,3 +1900,19 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 非退化实例，避开零样本（T2390 审核 O3）。
   - 1a 是普通预检（D3.4 已审，2254）。`prover-max`，500 / 800 / 1200，停止线 1600，排第一。
 - (4) G5a（T2401）、G5c（T2402）已开工；G3a 已合并，所以没有等待的一步。在跑：T2397、T2399、T2401、T2402；排队：T2403。下一张票号 T2404，下一节 §216，下一条 H197。待写：G6a（等 G4、G5a/G5b）、E3、L2c1、L2c2、L3c2、T7、BA-T 钉文 REQ；L4 REQ（等 T2397）；阶段 K 关闭 REQ（等 K12）。
+
+## §216 — K12 合并，阶段 K 做完、关闭 REQ 已交；ST 侧 T2 = T2404 放行（总调度 V2，2026-10-11 01:23 UTC）
+
+- (1) **T2399（K12）合并 561093a**：新 `BA/KBound` 418 行，`Chain/Carrier` +23（`STKwardgL`），`Chain/Step2Gen` +28（桥 `bandFM_STKward`）；审核一次 PASS（O1 只是报告长度）。`baKBoundAt_holds`（所有 `n`）、`baKbound_holds`、`baKward_holds`、`inst_BAKbound`（`d = 3`、`sz0`，无假设）。阶段 K 的 16 张票全部合并。
+- (2) **阶段 K 关闭 REQ**：`docs/supervisor/requests/REQ-2026-10-11-0118-K.md`。按 2051 Q5 填了两张表（关闭条件五项，各有公开定理和实例；下游消费表六行，每行都有 BA 对应）。一个登记问题 Q2：`STKboundgL`（`Test/Axioms.lean:134`）现在在 BA 载体上已证，但仍是 `inst_baBootstrap'`、`inst_baBootstrap'_full` 的假设 `hK`；调度建议由 G7 顺手用 `inst_BAKbound` 消掉，owner 注释改写，行留到 BA-V。
+- (3) **T2397（L3b3 设计门）审核 RETURN**：P2 / S 分支的搬运定理靠一个钉文 `BAImgSim`，按所写的样子证不出来，且已合并的 T2395 对 BA 策略否定了它；实例因此退化，S 行的定价也没用 T2395 指定的 BA 专属形状。属于规则 (B) 的一次自动修补，不需要调度决定。L4 REQ 等修补后的审核。
+- (4) **T2404 = BA-T T2（ST 侧）**（BA 71）：`EMn2Poly`、`EMn2Exp1`、`EMn2Exp2` 原地改写，证 T8 已钉的 `STEMn2PolygL`、`STEMn2ExpgL`，其他块的输入作假设（必须在 BA 能兑现，C1）；二圈公式 `KLK_two` 换成一个不等式假设（BA 来源：`BAKsolve` 的 `(Kn2sol)` 加 G3b 的 `Θ` 界）；I1：能在 80 行内给出确定性 `J` 形式就顺带给（目标 5′），否则留给 BA-T 钉文 REQ。设计门 1a + 1a-audit，`prover-hard`，500 / 650 / 900，停止线 1000；不在证书通道（三个锥分别 16 / 8 / 7 个模块）。
+- (5) 在跑：T2397（修补）、T2401、T2402、T2403；排队：T2404。下一张票号 T2405，下一节 §217，下一条 H198。待写：BA-T 钉文 REQ（C7，第一批 T4-BA、T5-BA、T6-BA；带 I1）；ST 侧 T4s2（不在锥里）、T3、T4s1、T5s2；E3（C4：U3s1 未开，只证 `BAEKSumDecayNonzero`，`STEK*` 的 BA 形式归 U3-BA）；G6a（等 G4、G5a/b）；L2c1、L2c2、L3c2；L4 REQ（等 T2397）。
+
+## §217 — ST 侧 T3 = T2405 放行；T2398 的文章位置告诉 Jun（总调度 V2，2026-10-11 01:37 UTC）
+
+- (1) **T2405 = BA-T T3（ST 侧）**（BA 72）：`lem:newKLK` 的通用形式 `STNewKLKgL`（T8 已钉）。`NewKLK.lean` 的 A–D、F 节本来就是抽象的，带状的东西只在 B（`Θ` 尾）和 E（模型的 `𝓛 − 𝒦`，`KLK_two`、标量 `m`）。布局按监督 C5：优先 (A) 新文件 `Chain/NewKLKGen.lean`（`open private` 用 NewKLK 的抽象引理；没人 import，所以不进证书通道）；只有 (A) 比原地改 (B) 多 150 行以上才走 (B)（那样进通道）。`Step2K2` 不动：`STK2decay` 是模型自己的 `𝒦^{(2)}` 界，留给 T3-BA 在 BA 上证 `STK2decaygL`。设计门 1a + 1a-audit，`prover-hard`，350 / 500 / 750，停止线 900。
+- (2) T2404 和 T2405 要同一个输入（无下限的二圈尾界）；两张票都加了一句：谁的 1a 先出，后者照抄陈述和名字。T2404 还没开工，这句在开工前加进票里（H198 一起提交）。
+- (3) Jun（01:3x UTC）问 T2398 卡在文章哪一步。已回：`6_Step6_two_loop.tex:83`（`lem:LWterm_EXP`）；带状证明 `B_graphical_lemmas.tex` §B.1、`:50-64`（`I₄₁`、`(eq:termI41)`）；BA 只有 `:118` 一句"类比，用 `(GGGamma)` 替代 `(Oe2x)`，细节从略"；`(GGGamma)` 在 `:392-405`（[yang2024Del] Lemma B.11），第三个和式的 `Ḡ_{xy}` 导数给出 `Ǧ_{xw}M_{wγ}Ḡ_{xγ}`，`M_{wγ}` 跨块，`lem:main_ind_BA` 只管 `E_a`-圈。问题不变（R1 / R2）。
+- (4) 中枢 `HUB.alive` 停在 01:01（31 分钟）；在跑的四个工作流里，T2397 的审核工作流自己带修补步骤，其余在 1a/1b 中，可能只是在等工作流结束。下一轮再看；若到 02:00 仍无动静，告诉 Jun。
+- (5) 排队：T2404、T2405。下一张票号 T2406，下一节 §218，下一条 H199。

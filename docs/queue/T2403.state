@@ -1,0 +1,4 @@
+state: proving
+reason: started (H196, H12): workflow wf_4c0ba540-22f, stage 1a preflight → 1b prover-max → auditor; branch t/T2403 from main 561093a
+updated: Sun Oct 11 01:08:13 UTC 2026
+reports: docs/reports/T2403-prove.md, docs/reports/T2403-audit.md

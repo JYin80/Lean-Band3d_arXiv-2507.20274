@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 84d1997, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 01:08:02 UTC 2026
+state: merged 561093a
+reason: audit PASS round 1 (claude-opus-5-5); new BA/KBound (418), Chain/Carrier (+23), Chain/Step2Gen (+28), root import (union with GreenCore/GreenStab); full lake build 4212 jobs; pushed
+updated: Sun Oct 11 01:08:04 UTC 2026
 reports: docs/reports/T2399-prove.md, docs/reports/T2399-audit.md
