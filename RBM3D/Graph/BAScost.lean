@@ -9,26 +9,38 @@ import RBM3D.Graph.BAWeightOp
 import RBM3D.Graph.BAGGOp
 
 /-!
-# BA-L L3b3' `BAScostS'`: the cost vocabulary at atoms, BA Lemma B, the initial values (T2426)
+# BA-L L3b3' `BAScostS'`: the cost vocabulary at atoms, BA Lemma B, `BAInit`, five shapes (T2426)
 
-Property (6) of `lem:localregular` at the block Anderson model is one cost invariant on the atomic image of the BA graph
-(`paper/tex/B_graphical_lemmas.tex:302-313`, cited `B:line`; design `docs/reports/T2397-design.md`, gate G2).  This file
-writes the cost vocabulary at atoms (verbatim from `t/T2397:RBM3D/Probe/T2397Pins.lean:40-94, 123-136`, over R0's
-`atomSetoid`, `promoteC`), the engine of the local lemma at atoms, **BA Lemma B** (`G = Ǧ + M`: merge-and-drop, the
-circled edge by Lemma A; the `M`-splits that join two atoms joined by a kept edge are the extra outputs `E2`), `BAInit`,
-and the reduction of `BAScostLL` to the band local lemma `LGraph.ScostLL` on the atomic image.  The five BA-only shape
-lemmas and their packed forms are in `Graph/BAScost2.lean`.
+Property (6) of `lem:localregular` at the block Anderson model is one cost invariant on the atomic
+image of the BA graph (`paper/tex/B_graphical_lemmas.tex:302-313`, cited `B:line`; design
+`docs/reports/T2397-design.md`, gate G2).  This file writes the cost vocabulary at atoms (verbatim
+from `t/T2397:RBM3D/Probe/T2397Pins.lean:40-94, 123-136`, over R0's `atomSetoid`, `promoteC`),
+the engine of the local lemma at atoms, **BA Lemma B** (`G = Ǧ + M`: merge-and-drop, the circled
+edge by Lemma A; the `M`-splits that join two atoms joined by a kept edge are the extra outputs
+`E2`), `BAInit`, the reduction of `BAScostLL` to the band local lemma `LGraph.ScostLL` on the atomic
+image, and the five BA-only shape lemmas `BAScostLL Γ T`.  The packed forms `BAShapeLL sh T` are in
+`Graph/BAScost2.lean`.
 
 ## Contents (namespace `RBM.Graph`, private helpers carry the stem `BAScost_`)
 
-1. The vocabulary: `scostA`, `locStdA`, `locCostGeA`, `locReg6InvA`, `BReach`, `BAInit`, `BAFinal`, `BAStep`, `BANormal`,
-   `BAScostLL` with `BAScostLL.trans`, `BAShape`, `BTStep`, `untag`, `BAShapeLL`.
-2. The cost engine (`BAScost_Up`: the solid list `l'` is `l` with edges circled and circled in-class edges added; such a list
-   never costs less: Lemma A for a circled edge inside a class, `LGraph.scost_cons_loop_ge` `LocalRegular6a.lean:434`).
-3. **BA Lemma B** (`BAScost_splitG_le`, `BAScostLL_splitG`): every term of `G = Ǧ + M` costs at least the graph.
-4. The merge of the `=`-dotted classes is a relabelling: `BAScost_scostA_merge`; **`BAInit`** (`baInit_holds`).
-5. The reduction to the band: `BAScostLL_of_band`.
-6. The packed term lemma `baScost_locCostGeA_term` (the BA twin of `localReg6d_locCostGe_term`, `LocalRegular6d.lean:955`).
+1. The vocabulary: `scostA`, `locStdA`, `locCostGeA`, `locReg6InvA`, `BReach`, `BAInit`, `BAFinal`,
+   `BAStep`, `BANormal`, `BAScostLL` with `BAScostLL.trans`, `BAShape`, `BTStep`, `untag`,
+   `BAShapeLL`.
+2. The cost engine: `BAScost_Up` (the solid list `l'` is `l` with edges circled and circled edges
+   inside classes added) never costs less (Lemma A for a circled edge inside a class, the loop
+   hypothesis of `LGraph.scost_cons_loop_ge`, `LocalRegular6a.lean:434`, replaced by "the ends lie
+   in one class").
+3. **BA Lemma B** (`BAScost_splitG_le`, `BAScostLL_splitG`; `E2`: `BAScostLL_E2`).
+4. The merge of the `=`-dotted classes is a relabelling; **`BAInit`** (`baInit_holds`).
+5. The reduction to the band (`BAScostLL_of_band`: the band local lemmas apply on the atom quotient
+   `(promoteC Γ).merge`, where every setoid pulls back to a merge that contains the atoms) and the
+   packed term lemma `BAScost_locCostGeA_term` (the BA twin of `localReg6d_locCostGe_term`,
+   `LocalRegular6d.lean:955`).
+6. The shapes: **S1** (`BAScostLL_S1`, `scostLL_contract`), **E1** and the raw first term of `lanlw`
+   (`BAScostLL_lanlwT1`, `BAScostLL_E1`; `scostLL_loop`, `scostLL_moveLoop`), **macroA**
+   (`BAScostLL_macroA`; `scostLL_moveLoop`, `scostLL_loop`), **macroB** (`BAScostLL_macroB`;
+   `scostLL_moveSC`), **E2** (`BAScostLL_E2`).
+7. Compiled instances at the E13 witness graphs (`BAScostInst`).
 -/
 
 set_option linter.style.setOption false
@@ -38,6 +50,7 @@ set_option linter.flexible false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
+set_option linter.style.show false
 
 noncomputable section
 
@@ -1020,7 +1033,7 @@ with a circled loop; `B:359-372`): the local lemma in both regimes.  If `[x] ≠
 forbids it) the atomic image is the band's `Loop(z = [x])` (`scostLL_loop`, `LocalRegular6b.lean:621`) with the edge `[x] → [y]` dropped
 (`[x]`, `[y]` are in one class); if `[x] = [y]` (the transfer graph of a within-atom edge) the edge is a circled loop of the image and
 the atomic image is `MoveLoop(z)` (`scostLL_moveLoop`, `LocalRegular6b.lean:638`). -/
-theorem BAScostLL_trA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
+theorem BAScostLL_macroA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) : BAScostLL Γ (Γ.BAScost_trA p) := by
   classical
   unfold BAGraph.BAScost_trA
@@ -1102,7 +1115,7 @@ theorem BAScost_lanlwT1_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdg
 
 /-- **The first term of `lanlw`** (`B:363`, `BAGraph.lanlwT1`): `Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` has the local lemma in both
 regimes (`[x] ≠ [y]`: `Loop`; `[x] = [y]`: `MoveLoop`, the uncircled edge `G_{αy}` inside the atom is not kept); with Lemma B
-(`BAScostLL_splitG`) every term of `G = Ǧ + M` on it, among them the `M`-split `E1` (`BAScostLL_trA`), has the local lemma. -/
+(`BAScostLL_splitG`) every term of `G = Ǧ + M` on it, among them the `M`-split `E1` (`BAScostLL_macroA`), has the local lemma. -/
 theorem BAScostLL_lanlwT1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) : BAScostLL Γ (BAGraph.lanlwT1 Γ p) := by
   classical
@@ -1182,5 +1195,289 @@ theorem BAScostLL_lanlwT1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge
       rfl
 
 end ShapeLoop
+
+/-! ## 12. The shape `macroB`: `lanlw`, then `GGGamma` at the transferred pair -/
+
+section ShapeMoveSC
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- **The transfer graph of macro step (b)** (T2395 K2(b), `t/T2423` probe `splitOuts`, the graph `tr`): `lanlw` at `Ǧ_{ay}` (`p`), the
+derivative on the partner edge `Ǧ_{y'a'}` (`q`, `a`, `a'` in one atom), its three solid edges split so that `Ǧ_{y'β}`, `Ǧ_{βy}` are circled and
+`G_{αa'}` is the `M`-edge `M_{αa'}`: `Σ_{α,β} M_{aα} M_{αa'} S_{αβ} Ǧ_{y'β} Ǧ_{βy} f`. -/
+def BAGraph.BAScost_trB (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : BAGraph E (I ⊕ Fin 2) :=
+  BAGraph.ext 2 Γ q.2 [bpS true (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 1) (owxEmb 2 p.1.dst)]
+    [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst)]
+
+/-- **The macro (b) intermediate** (`B:393-405`, `GGGamma` at the transferred pair): at the pair `Ǧ_{ay}`, `Ǧ_{y'a'}` of one atom
+(`[a] = [a'] =: z`, the ends `[y]`, `[y']` and `z` apart) the image of the transfer graph is the band's `MoveSC(z; u = [y'], v = [y])`
+(`lwPrimMoveSC`, `LocalRegular6a.lean:209`: the edges `z → v`, `u → z` replaced by `u → β → v` with a waved edge `z - β`), and the
+local lemma is `scostLL_moveSC` (`LocalRegular6c.lean:1123`) on the atomic image.  No new primitive of the size of `Dmove` is needed. -/
+theorem BAScostLL_macroB (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
+    (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
+    (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true)
+    (hsame : Γ.sameAtom p.1.src q.1.dst = true)
+    (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
+    BAScostLL Γ (Γ.BAScost_trB p q) := by
+  classical
+  unfold BAGraph.BAScost_trB
+  have hvv : (promoteC Γ).vmap q.1.dst = (promoteC Γ).vmap p.1.src :=
+    ((BAAtomic_promoteC_vmap_eq_sameAtom Γ _ _).2 hsame).symm
+  have hu : (promoteC Γ).vmap q.1.src ≠ (promoteC Γ).vmap p.1.src := by
+    rw [← hvv]
+    exact BAScost_vmap_ne_of_sameAtom Γ hwf2
+  have hperm : (promoteC Γ).merge.solid.Perm (⟨true, false, (promoteC Γ).vmap p.1.src, (promoteC Γ).vmap p.1.dst⟩ ::
+      ⟨true, false, (promoteC Γ).vmap q.1.src, (promoteC Γ).vmap p.1.src⟩ :: q.2.map (BAScost_imgE Γ)) := by
+    rw [BAScost_img_solid]
+    have h3 : Γ.solid.Perm (p.1 :: q.1 :: q.2) :=
+      (lwSplit_perm Γ.solid p hp).trans ((lwSplit_perm p.2 q hq).cons p.1)
+    have h4 := h3.map (BAScost_imgE Γ)
+    have e1 : BAScost_imgE Γ p.1 = ⟨true, false, (promoteC Γ).vmap p.1.src, (promoteC Γ).vmap p.1.dst⟩ := by
+      simp [BAScost_imgE, hp1.1, hp1.2, hwf1]
+    have e2 : BAScost_imgE Γ q.1 = ⟨true, false, (promoteC Γ).vmap q.1.src, (promoteC Γ).vmap p.1.src⟩ := by
+      simp [BAScost_imgE, hq1.1, hq1.2, hwf2, hvv]
+    rw [List.map_cons, List.map_cons, e1, e2] at h4
+    exact h4
+  have hLL := scostLL_moveSC (promoteC Γ).merge (q.2.map (BAScost_imgE Γ)) ((promoteC Γ).vmap p.1.src)
+    ((promoteC Γ).vmap q.1.src) ((promoteC Γ).vmap p.1.dst) hu (BAScost_vmap_ne_of_sameAtom Γ hwf1) hperm
+  have hmdx : atomSetoid (BAGraph.ext 2 Γ q.2 [bpS true (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 1) (owxEmb 2 p.1.dst)]
+      [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst)])
+      (owxEmb 2 p.1.src) (bpv 0) :=
+    BAScost_atomSetoid_ext_md Γ q.2 _ _ _ (bpM (owxEmb 2 p.1.src) (bpv 0)) (by simp)
+  have hker := fun u v h => BAScost_ker_psi1 Γ p.1.src _ ((atomSetoid _).symm hmdx)
+    (fun u v h => BAScost_atomSetoid_ext Γ q.2 _ _ _ h) u v h
+  refine BAScostLL_of_band Γ _ _ hLL (BAScost_psi1 Γ p.1.src) (BAScost_psi1_surj Γ _)
+    (fun a => BAScost_psi1_inl Γ _ a) hker ?_
+  intro s'' hadm
+  refine BAScost_scost_le_of_Up _ _ s'' ?_ ?_
+  · rw [BAScost_ext_relabel_solid, BAScost_lwPrimMoveSC_solid, List.map_map]
+    refine BAScost_Up.append s'' (BAScost_Up_old (k := 2) Γ q.2 _ [bpW false (bpv 0) (bpv 1)]
+      [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst)] (BAScost_psi1 Γ p.1.src) (owxEmb 1)
+      (BAScost_psi1_emb Γ p.1.src) s'') ?_
+    refine BAScost_Up.cons s'' _ _ (BAScost_Up.cons s'' _ _ (BAScost_Up.refl s'' []) rfl ?_ ?_ (fun h => ?_)) rfl ?_ ?_
+      (fun h => ?_)
+    · simp [BAScost_psi1_beta, bpS, bpv]
+    · simp [bpS, bpv, BAScost_psi1_emb]
+    · simp at h
+    · simp [bpS, bpv, BAScost_psi1_emb]
+    · simp [BAScost_psi1_beta, bpS, bpv]
+    · simp at h
+  · rw [BAScost_ext_relabel_waved_length, BAScost_lwPrimMoveSC_waved_length, BAScost_img_waved_length]
+    rfl
+
+end ShapeMoveSC
+
+/-! ## 13. `E1` and `E2` as corollaries -/
+
+section ShapeE
+
+variable {E I I' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype I'] [DecidableEq I']
+
+/-- **`E1`** (`lanlw` `T1`, `B:363`): every term of `G = Ǧ + M` on `T1`, among them the `M`-split `M_{αy}` (`[x]`, `[y]` merged, the edge dropped;
+the extra output of `lanlw` when `[x] ≠ [y]`), has the local lemma. -/
+theorem BAScostLL_E1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
+    (hp1 : p.1.σ = true ∧ p.1.circ = true) : ∀ Q ∈ (BAGraph.lanlwT1 Γ p).splitG, BAScostLL Γ Q :=
+  fun _ hQ => (BAScostLL_lanlwT1 Γ p hp hp1).trans (BAScostLL_splitG _ hQ)
+
+/-- **`E2`** (an `M`-split of a term of an expansion that merges two atoms joined by a kept edge): BA Lemma B (`BAScostLL_splitG`, the
+circled edge inside an atom by Lemma A) carries the local lemma of a term to every term of its `G = Ǧ + M`, the extra ones included. -/
+theorem BAScostLL_E2 {Γ : BAGraph E I} {X : BAGraph E I'} (hX : BAScostLL Γ X) {Q : BAGraph E I'} (hQ : Q ∈ X.splitG) :
+    BAScostLL Γ Q :=
+  hX.trans (BAScostLL_splitG X hQ)
+
+end ShapeE
+
+
+
+
+/-! ## 13b. A crude lower bound of the cost (for the instances) -/
+
+section Crude
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+open Classical in
+/-- the internal classes of a merge are at most the internal vertices in number -/
+theorem BAScost_sIntCls_card_le (Γ : LGraph E I) (s : Setoid (E ⊕ I)) : (Γ.sIntCls s).card ≤ Fintype.card I := by
+  unfold LGraph.sIntCls
+  refine Finset.card_image_le.trans ?_
+  have : (Finset.univ.filter fun v : E ⊕ I => ∀ a : E, ¬ s (Sum.inl a) v) ⊆
+      (Finset.univ : Finset I).map ⟨Sum.inr, Sum.inr_injective⟩ := by
+    intro v hv
+    rw [Finset.mem_filter] at hv
+    rcases v with a | i
+    · exact absurd (s.refl' _) (hv.2 a)
+    · simp
+  exact (Finset.card_le_card this).trans (by simp)
+
+/-- **A crude bound**: `scostA Γ s ≥ 2 (n_W - |I|)` at every merge -/
+theorem BAScost_scostA_ge_crude (Γ : BAGraph E I) (s : Setoid (E ⊕ I)) :
+    2 * ((Γ.waved.length : ℤ) - Fintype.card I) ≤ scostA Γ s := by
+  unfold scostA LGraph.scost
+  have h1 := BAScost_sIntCls_card_le (promoteC Γ) s
+  have h2 : (0 : ℤ) ≤ (((promoteC Γ).skept s).length : ℤ) := Int.natCast_nonneg _
+  have h3 : (0 : ℤ) ≤ (((promoteC Γ).sElemCls s).card : ℤ) := Int.natCast_nonneg _
+  have h4 : (promoteC Γ).waved.length = Γ.waved.length := rfl
+  rw [h4]
+  have h5 : (((promoteC Γ).sIntCls s).card : ℤ) ≤ Fintype.card I := by exact_mod_cast h1
+  linarith
+
+/-- the crude bound as an instance of the invariant -/
+theorem BAScost_locCostGeA_crude (far : Bool) (P : BAPGraph (Fin 2)) :
+    locCostGeA far (2 * ((P.g.waved.length : ℤ) - Fintype.card P.I')) P :=
+  fun s _ _ => BAScost_scostA_ge_crude P.g s
+
+end Crude
+
+/-! ## 14. Compiled instances at the E13 witness graphs (T2397 §8, `T2426` (a) (ii)) -/
+
+namespace BAScostInst
+
+/-- `Γ* = 0 → 2 → 1`: externals `0 = inl 0`, `1 = inl 1`, one internal vertex `2 = inr 0`; blue circled edges `2 → 1`, `0 → 2`, one waved
+edge; every atom is a vertex (the witness of `S1` and of `E1` at `[x] ≠ [y]`: `x = 2`, `y = 1`, `y' = 0`). -/
+def gs : BAGraph (Fin 2) (Fin 1) where
+  solid := [⟨true, true, Sum.inr 0, Sum.inl 1⟩, ⟨true, true, Sum.inl 0, Sum.inr 0⟩]
+  waved := [⟨false, true, Sum.inl 0, Sum.inl 1⟩]
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := []
+
+/-- the edge `Ǧ_{xy}`, `x = 2`, `y = 1`, with the rest of the solid edges -/
+def ps : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) :=
+  (⟨true, true, Sum.inr 0, Sum.inl 1⟩, [⟨true, true, Sum.inl 0, Sum.inr 0⟩])
+
+/-- the edge `Ǧ_{y'x}`, `y' = 0`, `x = 2` -/
+def qs : SEdge (Fin 2 ⊕ Fin 1) × List (SEdge (Fin 2 ⊕ Fin 1)) := (⟨true, true, Sum.inl 0, Sum.inr 0⟩, [])
+
+theorem ps_mem : ps ∈ lwSplit gs.solid := by simp [ps, gs, lwSplit]
+
+theorem qs_mem : qs ∈ lwSplit ps.2 := by simp [qs, ps, lwSplit]
+
+theorem gs_wf1 : gs.sameAtom ps.1.src ps.1.dst = false := by decide
+
+theorem gs_wf2 : gs.sameAtom qs.1.src qs.1.dst = false := by decide
+
+/-- the within-atom witness (`P_B` of `T2423` (a)): externals `0, 1`, internals `2, 3, 4`; solid `2 → 3` (inside the atom `{2, 3}`),
+`0 → 2`, `1 → 4`; waved `S_{43}`; the `M`-dotted edge `{2, 3}` -/
+def gw : BAGraph (Fin 2) (Fin 3) where
+  solid := [⟨true, true, Sum.inr 0, Sum.inr 1⟩, ⟨true, true, Sum.inl 0, Sum.inr 0⟩, ⟨true, true, Sum.inl 1, Sum.inr 2⟩]
+  waved := [⟨false, true, Sum.inr 2, Sum.inr 1⟩]
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := [⟨true, Sum.inr 1, Sum.inr 0⟩]
+
+def pw : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) :=
+  (⟨true, true, Sum.inr 0, Sum.inr 1⟩, [⟨true, true, Sum.inl 0, Sum.inr 0⟩, ⟨true, true, Sum.inl 1, Sum.inr 2⟩])
+
+theorem pw_mem : pw ∈ lwSplit gw.solid := by simp [pw, gw, lwSplit]
+
+theorem gw_same : gw.sameAtom pw.1.src pw.1.dst = true := by decide
+
+/-- the split-pair witness (`P_C` of `T2423` (a)): solid `2 → 1`, `0 → 3`, `1 → 0`, the atom `{2, 3}`, waved `S_{43}` -/
+def gc : BAGraph (Fin 2) (Fin 3) where
+  solid := [⟨true, true, Sum.inr 0, Sum.inl 1⟩, ⟨true, true, Sum.inl 0, Sum.inr 1⟩, ⟨true, true, Sum.inl 1, Sum.inl 0⟩]
+  waved := [⟨false, true, Sum.inr 2, Sum.inr 1⟩]
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := [⟨true, Sum.inr 0, Sum.inr 1⟩]
+
+/-- `p = Ǧ_{ay}`, `a = 2`, `y = 1` -/
+def pc : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) :=
+  (⟨true, true, Sum.inr 0, Sum.inl 1⟩, [⟨true, true, Sum.inl 0, Sum.inr 1⟩, ⟨true, true, Sum.inl 1, Sum.inl 0⟩])
+
+/-- `q = Ǧ_{y'a'}`, `y' = 0`, `a' = 3` -/
+def qc : SEdge (Fin 2 ⊕ Fin 3) × List (SEdge (Fin 2 ⊕ Fin 3)) :=
+  (⟨true, true, Sum.inl 0, Sum.inr 1⟩, [⟨true, true, Sum.inl 1, Sum.inl 0⟩])
+
+theorem pc_mem : pc ∈ lwSplit gc.solid := by simp [pc, gc, lwSplit]
+
+theorem qc_mem : qc ∈ lwSplit pc.2 := by simp [qc, pc, lwSplit]
+
+theorem gc_same : gc.sameAtom pc.1.src qc.1.dst = true := by decide
+
+theorem gc_wf1 : gc.sameAtom pc.1.src pc.1.dst = false := by decide
+
+theorem gc_wf2 : gc.sameAtom qc.1.src qc.1.dst = false := by decide
+
+/-- **`S1`** at `Γ*` (`x = 2`, `y = 1`, `y' = 0`, three atoms): every hypothesis is discharged. -/
+example : BAScostLL gs (BAGGOp_A1 gs ps qs) :=
+  BAScostLL_S1 gs ps qs ps_mem qs_mem ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ rfl gs_wf1 gs_wf2
+
+/-- **`E1`** at `Γ*` (`[x] ≠ [y]`): the two terms of `G = Ǧ + M` on `lanlwT1` have the local lemma. -/
+example : ∀ Q ∈ (BAGraph.lanlwT1 gs ps).splitG, BAScostLL gs Q := BAScostLL_E1 gs ps ps_mem ⟨rfl, rfl⟩
+
+/-- the `M`-split of `lanlwT1` at `Γ*` is an extra output: it merges the atoms `[x]`, `[y]` that the edge `Ǧ_{xy}` of `Γ*` joins -/
+example : ∃ Q ∈ (BAGraph.lanlwT1 gs ps).splitG, Q.sameAtom (owxEmb 2 ps.1.src) (owxEmb 2 ps.1.dst) = true ∧
+    gs.sameAtom ps.1.src ps.1.dst = false := by decide
+
+/-- **the raw term** `lanlwT1` at the within-atom edge `2 → 3` (`[x] = [y]`, `MoveLoop`) -/
+example : BAScostLL gw (BAGraph.lanlwT1 gw pw) := BAScostLL_lanlwT1 gw pw pw_mem ⟨rfl, rfl⟩
+
+/-- **`macroA`** at the within-atom witness (`[x] = [y]`, `x ≠ y`: the image is `MoveLoop`) and at `Γ*` (`[x] ≠ [y]`: the image is `Loop`) -/
+example : BAScostLL gw (gw.BAScost_trA pw) := BAScostLL_macroA gw pw pw_mem ⟨rfl, rfl⟩
+
+example : BAScostLL gs (gs.BAScost_trA ps) := BAScostLL_macroA gs ps ps_mem ⟨rfl, rfl⟩
+
+/-- **`macroB`** at the split pair `Ǧ_{ay}`, `Ǧ_{y'a'}` with `a = 2`, `a' = 3` in one atom -/
+example : BAScostLL gc (gc.BAScost_trB pc qc) :=
+  BAScostLL_macroB gc pc qc pc_mem qc_mem ⟨rfl, rfl⟩ ⟨rfl, rfl⟩ gc_same gc_wf1 gc_wf2
+
+/-- **`E2`**: two parallel uncircled edges `2 → 1`; the term of `G = Ǧ + M` with the first split as an `M`-edge and the second circled merges
+the atoms `[2]`, `[1]` that the second edge joins (an extra output); Lemma B gives the local lemma. -/
+def g2 : BAGraph (Fin 2) (Fin 1) where
+  solid := [⟨true, false, Sum.inr 0, Sum.inl 1⟩, ⟨true, false, Sum.inr 0, Sum.inl 1⟩]
+  waved := [⟨false, true, Sum.inl 0, Sum.inl 1⟩]
+  dotted := []
+  coeff := 1
+  psi := []
+  mdot := []
+
+example : g2.splitG.length = 4 := by decide
+
+example : ∃ Q ∈ g2.splitG, BAScostLL g2 Q ∧ Q.sameAtom (Sum.inr 0) (Sum.inl 1) = true ∧
+    g2.sameAtom (Sum.inr 0) (Sum.inl 1) = false ∧ Q.solid.length = 1 :=
+  ⟨g2.splitG[1], List.getElem_mem _, BAScostLL_splitG g2 (List.getElem_mem _), by decide, by decide, by decide⟩
+
+/-- **`BAScostLL.trans` and Lemma B**: the first term of `lanlw` at `Γ*` and its `M`-split (`[x] ≠ [y]`), composed -/
+example : ∃ Q ∈ (BAGraph.lanlwT1 gs ps).splitG, BAScostLL gs Q :=
+  have hne : (BAGraph.lanlwT1 gs ps).splitG ≠ [] := by
+    intro h
+    have := congrArg List.length h
+    revert this
+    decide
+  let ⟨Q, hQ⟩ := List.exists_mem_of_ne_nil _ hne
+  ⟨Q, hQ, (BAScostLL_lanlwT1 gs ps ps_mem ⟨rfl, rfl⟩).trans (BAScostLL_splitG _ hQ)⟩
+
+/-- **The packed term lemma** at `P = Γ*` (`Φ ≥ 0` by the crude bound `n_W - |I| = 0`): every packed term of `G = Ǧ + M` on `lanlwT1` keeps it. -/
+example (far : Bool) : ∀ Q0 ∈ (BAGraph.lanlwT1 gs ps).partition, locCostGeA far 0 (BAScost_pack (baPG gs) Q0) :=
+  BAScost_locCostGeA_term (baPG gs) (BAGraph.lanlwT1 gs ps) far 0 (BAScostLL_lanlwT1 gs ps ps_mem ⟨rfl, rfl⟩)
+    (BAScost_locCostGeA_crude far (baPG gs))
+
+example : ((BAGraph.lanlwT1 gs ps).partition).length = 2 := by
+  rw [BAGraph.partition, List.length_map]
+  decide
+
+/-- **`BAInit 2`**: the 16 terms of `G = Ǧ + M` on `Γ_2` satisfy the invariant `Φ^all ≥ 4`, `Φ^far ≥ 6` -/
+example : BAInit 2 := baInit_holds 2
+
+example : ((BAGraph.ofLGraph (fxyPowGraph 2)).partition).length = 16 := by
+  rw [BAGraph.partition, List.length_map]
+  decide
+
+example : ∃ P ∈ (BAGraph.ofLGraph (fxyPowGraph 2)).partition, locReg6InvA 2 P ∧
+    locCostGeA false 4 P ∧ locCostGeA true 6 P := by
+  have hne : (BAGraph.ofLGraph (fxyPowGraph 2)).partition ≠ [] := by
+    intro h
+    have := congrArg List.length h
+    rw [BAGraph.partition, List.length_map] at this
+    revert this
+    decide
+  obtain ⟨P, hP⟩ := List.exists_mem_of_ne_nil _ hne
+  exact ⟨P, hP, baInit_holds 2 P hP, (baInit_holds 2 P hP).2.1, (baInit_holds 2 P hP).2.2⟩
+
+end BAScostInst
 
 end RBM.Graph
