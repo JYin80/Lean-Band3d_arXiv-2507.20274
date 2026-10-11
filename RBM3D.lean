@@ -465,6 +465,8 @@ import RBM3D.BA.NewKLKBA
 import RBM3D.Graph.BASymm1
 import RBM3D.Graph.BAAtom
 import RBM3D.Graph.BAAtom2
+import RBM3D.Graph.BAExp14a
+import RBM3D.Graph.BAExp14aB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
