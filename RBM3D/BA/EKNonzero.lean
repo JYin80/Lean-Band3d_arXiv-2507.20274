@@ -47,10 +47,10 @@ section Proj
 variable {d L : ℕ} [NeZero L]
 
 /-- the constant of the radial sum `Σ_b (|b|+1)^{-k} ≤ E L²` (`sum_radial_pow_le`) -/
-private def EKNonzero_E (k : ℕ) : ℝ :=
+def EKNonzero_E (k : ℕ) : ℝ :=
   Real.exp (Real.sqrt ((k : ℝ) + 2)) * (2 ^ (k + 2) * radC 1)
 
-private theorem EKNonzero_E_pos (k : ℕ) : 0 < EKNonzero_E k := by
+theorem EKNonzero_E_pos (k : ℕ) : 0 < EKNonzero_E k := by
   unfold EKNonzero_E
   have := radC_pos (one_pos : (0 : ℝ) < 1)
   have := Real.exp_pos (Real.sqrt ((k : ℝ) + 2))
@@ -99,7 +99,7 @@ private theorem EKNonzero_mul_projMat_apply {T : Matrix (Zd d L) (Zd d L) ℂ}
 
 /-- `Proj T = T Proj` for a translation-invariant `T` (the paper's remark that `Proj_{e^⊥}` commutes
 with `M^{(σ₁σ₂)}`; no stochasticity of `T` is used). -/
-private theorem EKNonzero_projMat_comm {T : Matrix (Zd d L) (Zd d L) ℂ}
+theorem EKNonzero_projMat_comm {T : Matrix (Zd d L) (Zd d L) ℂ}
     (hT : ∀ a b r : Zd d L, T (a + r) (b + r) = T a b) :
     projMat d L * T = T * projMat d L := by
   ext a b
@@ -107,7 +107,7 @@ private theorem EKNonzero_projMat_comm {T : Matrix (Zd d L) (Zd d L) ℂ}
 
 /-- `M^{(σ₁σ₂)}` is invariant under the diagonal shift (`BAMB_shift`, `BA/Ward.lean:53`; a copy of the
 private `baP8_BAMss_shift`, `BA/Prop6Path.lean:483`). -/
-private theorem EKNonzero_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
+theorem EKNonzero_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ (a + r) (b + r) = BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ a b := by
   have hM := BAMB_shift d L g (E : ℂ) m
   have hs : ∀ (σ : Bool) (x y : Zd d L),
@@ -120,7 +120,7 @@ private theorem EKNonzero_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (
 
 /-- **`Proj Θ = Θ̊`** (`(def_Thxi0)`) for `Θ_t^{(σ₁σ₂)}` at BA: left multiplication by `I - L^{-d} J` is the zero-mode
 removal, by the translation invariance of `Θ` (`baP8_BATheta_shift`, `BA/Prop6Path.lean:497`) alone. -/
-private theorem EKNonzero_projMat_mul_Theta (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) :
+theorem EKNonzero_projMat_mul_Theta (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) :
     projMat d L * BATheta d L g E m t σ₁ σ₂ = BATheta0 d L g E m t σ₁ σ₂ := by
   have hT : ∀ a b r : Zd d L, BATheta d L g E m t σ₁ σ₂ (a + r) (b + r) = BATheta d L g E m t σ₁ σ₂ a b :=
     fun a b r => baP8_BATheta_shift g E m t σ₁ σ₂ a b r
@@ -140,7 +140,7 @@ private theorem EKNonzero_projMat_mul_Theta (g E : ℝ) (m : ℂ) (t : ℝ) (σ�
   field_simp
 
 /-- `Θ̊` is translation invariant. -/
-private theorem EKNonzero_Theta0_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
+theorem EKNonzero_Theta0_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BATheta0 d L g E m t σ₁ σ₂ (a + r) (b + r) = BATheta0 d L g E m t σ₁ σ₂ a b := by
   simp only [BATheta0, Matrix.of_apply, baP8_BATheta_shift g E m t σ₁ σ₂ a b r]
 

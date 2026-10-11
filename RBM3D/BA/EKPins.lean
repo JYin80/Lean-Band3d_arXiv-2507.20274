@@ -148,7 +148,7 @@ variable {d L : ℕ} [NeZero L]
 
 /-- `|Q_ab| = BAK_ab` and the Ward row sums of `BAK` give `‖M^{(σ₁σ₂)}‖_{∞→∞} ≤ 1` (`(eq:WardM)`; `BAMss_norm_eq_BAK`,
 `BAK_row_sum`; the twin of the private `BAKBase_norm`, `BA/KBase.lean:151`). -/
-private theorem EKPins_norm_Q_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) (σ₁ σ₂ : Bool) :
+theorem EKPins_norm_Q_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) (σ₁ σ₂ : Bool) :
     ‖BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂‖ ≤ 1 := by
   have h : ‖BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂‖₊ ≤ 1 := by
     rw [Matrix.linfty_opNNNorm_def]
@@ -158,7 +158,7 @@ private theorem EKPins_norm_Q_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ 
   exact_mod_cast h
 
 /-- `(eq:THETAinftinf)`: `‖Θ_t‖_{∞→∞} ≤ 1/(1 - t)` from `Θ = 1 + t M Θ` and `‖M‖ ≤ 1`. -/
-private theorem EKPins_norm_Theta_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t)
+theorem EKPins_norm_Theta_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t)
     (ht1 : t < 1) (σ₁ σ₂ : Bool) : ‖BATheta d L g E m t σ₁ σ₂‖ ≤ (1 - t)⁻¹ := by
   have h := (BATheta_resolvent d L g κ E m hr t ht0 ht1 σ₁ σ₂).1
   have hQ := EKPins_norm_Q_le hr σ₁ σ₂
@@ -182,7 +182,7 @@ private theorem EKPins_norm_Theta_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g
   nlinarith
 
 /-- Each one-index factor `(1 - s M) Θ_t` has `(∞→∞)`-norm at most `(1 - s)/(1 - t)` (`(Xi_infint)` and `(eq:decompUalt)`). -/
-private theorem EKPins_norm_uKer_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (hs : 0 ≤ s)
+theorem EKPins_norm_uKer_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (hs : 0 ≤ s)
     (hst : s ≤ t) (ht : t < 1) (σ₁ σ₂ : Bool) :
     ‖BAuKer d L g E m s t σ₁ σ₂‖ ≤ (1 - s) / (1 - t) := by
   have ht0 : 0 ≤ t := hs.trans hst
