@@ -268,6 +268,22 @@ theorem BAExp14a_Dom.index {f : ∀ n : ℕ, sz.SeqΩ → ℝ} {g : ℕ → ℝ}
     PrecL sz μ (U := V) (fun n _ ω => f n ω) (fun n _ _ => g n) :=
   StochDomAt.precomp_param h (fun n (_ : V n) => ())
 
+/-- **The master lemma `≺ → 𝔼`**: a family `Φ(n, v, ω)` with an eventual pathwise bound `‖Φ‖ ≤ Q(n, ω)` by a one-index random variable
+`Q ≺ g`, `g ≤ K ζ`, a polynomial envelope `N^{Kenv}` and a polynomial floor `ζ ≥ N^{-Kf}` has `‖𝔼 Φ(n, v)‖ ≺ ζ`. -/
+theorem BAExp14a_prec_int [IsProbabilityMeasure μ] {V : ℕ → Type} (Φ : ∀ n : ℕ, V n → sz.SeqΩ → ℂ)
+    (Q : ∀ n : ℕ, sz.SeqΩ → ℝ) (g ζ : ℕ → ℝ) {K Kenv Kf : ℝ} (hK : 0 < K) (hζ0 : ∀ n, 0 ≤ ζ n)
+    (hQ : ∀ᶠ n in atTop, ∀ v ω, ‖Φ n v ω‖ ≤ Q n ω) (hDom : BAExp14a_Dom sz μ Q g) (hg : ∀ n, g n ≤ K * ζ n)
+    (henv : ∀ᶠ n in atTop, ∀ v ω, ‖Φ n v ω‖ ≤ ((sz.size n : ℕ) : ℝ) ^ Kenv)
+    (hfloor : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (-Kf) ≤ ζ n) :
+    PrecL sz μ (U := V) (fun n v _ => ‖∫ ω, Φ n v ω ∂μ‖) (fun n _ _ => ζ n) := by
+  unfold PrecL
+  refine BAExp14a_prec_integral hsz Φ (fun n _ => ζ n) henv (hfloor.mono fun n h _ => h) ?_
+  refine BAExp14a_prec_mono hsz hK (fun n _ _ => hζ0 n) (fun n _ _ => hg n) ?_
+  refine BAExp14a_prec_of_bad hDom fun τ hτ => ⟨τ, hτ, ?_⟩
+  filter_upwards [hQ] with n hn ω hω
+  obtain ⟨v, hv⟩ := hω
+  exact ⟨(), lt_of_lt_of_le hv (hn v ω)⟩
+
 end Dom
 
 /-! ## 3. The fine-level Ward identity (twin of `lwExpTerm4_ward_*`, `LWExpTerm4.lean:136-192`) -/
@@ -688,6 +704,31 @@ theorem BAExp14a_J_T3A_bd (X : Zd d L → ℂ) (Wk Mm Gm Gc : Idx d L W → Idx 
           gcongr
       _ = (5 / 2 * S * CM) * ((1 + b) / η) := by ring
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hk ha0) ha0
+
+/-- **The Neumann bound for the average**: if `e = t M⁺ e + R` with `Σ_b |M^{(B)}_{cb}|² = 1`, `0 ≤ t < 1` and `|R| ≤ r`, then
+`|e_c| ≤ r/(1 - t)` (`e_{c*} = max`: `|e| ≤ t |e| + r`). -/
+theorem BAExp14a_neumann {ι : Type*} [Fintype ι] [Nonempty ι] (MB : ι → ι → ℂ) (e R : ι → ℂ) {t r : ℝ}
+    (ht0 : 0 ≤ t) (ht1 : t < 1) (hsq : ∀ c, ∑ b, ‖MB c b‖ ^ 2 = 1)
+    (heq : ∀ c, e c = (t : ℂ) * ∑ b, (MB c b) ^ 2 * e b + R c) (hR : ∀ c, ‖R c‖ ≤ r) (c : ι) :
+    ‖e c‖ ≤ r / (1 - t) := by
+  obtain ⟨c₀, hc₀⟩ := Finite.exists_max (fun c => ‖e c‖)
+  have h1 : ‖e c₀‖ ≤ t * ‖e c₀‖ + r := by
+    calc ‖e c₀‖ = ‖(t : ℂ) * ∑ b, (MB c₀ b) ^ 2 * e b + R c₀‖ := by rw [← heq c₀]
+      _ ≤ ‖(t : ℂ) * ∑ b, (MB c₀ b) ^ 2 * e b‖ + ‖R c₀‖ := norm_add_le _ _
+      _ ≤ t * ‖e c₀‖ + r := by
+          refine add_le_add ?_ (hR c₀)
+          rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0]
+          refine mul_le_mul_of_nonneg_left ?_ ht0
+          calc ‖∑ b, (MB c₀ b) ^ 2 * e b‖ ≤ ∑ b, ‖(MB c₀ b) ^ 2 * e b‖ := norm_sum_le _ _
+            _ ≤ ∑ b, ‖MB c₀ b‖ ^ 2 * ‖e c₀‖ := by
+                refine Finset.sum_le_sum fun b _ => ?_
+                rw [norm_mul, norm_pow]
+                exact mul_le_mul_of_nonneg_left (hc₀ b) (by positivity)
+            _ = ‖e c₀‖ := by rw [← Finset.sum_mul, hsq, one_mul]
+  have h2 : ‖e c₀‖ ≤ r / (1 - t) := by
+    rw [le_div_iff₀ (by linarith)]
+    nlinarith
+  exact (hc₀ c).trans h2
 
 end Path
 

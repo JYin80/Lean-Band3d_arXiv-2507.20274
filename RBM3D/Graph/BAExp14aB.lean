@@ -956,6 +956,372 @@ theorem BAExp14a_facts_of_flow {k : ℕ} (hk : 1 ≤ k) {sz : Sizes (k + 2)} {z 
 
 end FactsFlow
 
+/-! ## 8. `𝔼 X_c`: `lanlw` with `f = 1` (`B:359-372`), then the Neumann bound -/
+
+/-- The law of the block Anderson model, `seqP (sz.withLam 0)`, read on `sz.SeqΩ` (the two sample spaces are definitionally equal,
+not reducibly). -/
+abbrev BAExp14a_μ {d : ℕ} (sz : Sizes d) : Measure sz.SeqΩ := Sizes.seqP (sz.withLam 0)
+
+instance BAExp14a_inst_prob {d : ℕ} (sz : Sizes d) : IsProbabilityMeasure (BAExp14a_μ sz) :=
+  Sizes.isProbabilityMeasure_seqP (sz.withLam 0)
+
+section Lanlw
+
+/-- `S^{(B)}(0) = I`. -/
+private theorem BAExp14a_SB_zero {d L : ℕ} [NeZero L] : SB d L (0 : ℝ) = (1 : Matrix (Zd d L) (Zd d L) ℂ) := by
+  ext a b
+  rw [SB_apply]
+  by_cases h : a = b
+  · subst h; simp [sbKernel]
+  · have : a - b ≠ 0 := sub_ne_zero.mpr h
+    simp [sbKernel, this, h]
+
+/-- `S_{αβ} = t W^{-d} 1([α] = [β])` (`BAlwS`, `S^{(B)}(0) = I`). -/
+theorem BAExp14a_S_apply {d L W : ℕ} [NeZero L] [NeZero W] (t : ℝ) (α β : Idx d L W) :
+    BAlwS d L W t α β = (t : ℂ) * (((W : ℂ) ^ d)⁻¹ * if (split d L W α).1 = (split d L W β).1 then 1 else 0) := by
+  have h : Matrix.of (BAlwS d L W t) = lwSmat d L W 0 t := by
+    ext x y
+    simp [BAlwS, lwSmat]
+  have := congrFun (congrFun h α) β
+  rw [Matrix.of_apply] at this
+  rw [this, lwSmat_eq, BAExp14a_SB_zero]
+  simp [lwLift, Matrix.one_apply]
+
+theorem BAExp14a_lwf_one {d L W : ℕ} [NeZero L] [NeZero W] {g0 E t : ℝ} {m : ℂ} (ω : Ω d L W) :
+    BAlwf d L W g0 E t m 1 ω = 1 := by
+  simp [BAlwf, LWPins_resPoly]
+
+theorem BAExp14a_lwdf_one {d L W : ℕ} [NeZero L] [NeZero W] {g0 E t : ℝ} {m : ℂ} (ω : Ω d L W) (α w : Idx d L W) :
+    BAlwdf d L W g0 E t m 1 ω α w = 0 := by
+  simp [BAlwdf, LWPins_dH, LWPins_resPoly]
+
+theorem BAExp14a_cont_lwG {d L W : ℕ} [NeZero L] [NeZero W] {g0 E t : ℝ} {m : ℂ} (hz : (ztOf m E t).im ≠ 0)
+    (x y : Idx d L W) : Continuous fun ω : Ω d L W => BAlwG d L W g0 E t m ω x y := by
+  have h : Continuous fun ω : Ω d L W => Gres (BAlwH d L W g0 t ω) (ztOf m E t) true := by
+    refine Gauss.continuous_green_of_isHermitian ?_ (fun ω => ?_) hz
+    · exact continuous_const.add (continuous_Hflow d L W t)
+    · have h1 : ((g0 : ℂ) • PsiI d L W).IsHermitian := by
+        unfold IsHermitian
+        rw [conjTranspose_smul, (PsiI_isHermitian d L W).eq, show star (g0 : ℂ) = (g0 : ℂ) from Complex.conj_ofReal _]
+      exact h1.add (Hflow_isHermitian d L W t ω)
+  exact (continuous_apply y).comp ((continuous_apply x).comp h)
+
+/-- The coordinates of the common sample space at size `n`, typed as a sample of `PF d (L n) (W n) 0`
+(`Sizes.slice (sz.withLam 0) n`). -/
+def BAExp14a_slc {d : ℕ} (sz : Sizes d) (n : ℕ) (ω : sz.SeqΩ) : Ω d (sz.L n) (sz.W n) :=
+  Sizes.slice (sz.withLam 0) n ω
+
+/-- `∫ Φ ∘ slice ∂seqP(sz.withLam 0) = ∫ Φ ∂PF d L W 0` for continuous `Φ`. -/
+theorem BAExp14a_int_slice {d : ℕ} {sz : Sizes d} (n : ℕ) (Φ : Ω d (sz.L n) (sz.W n) → ℂ) (hΦ : Continuous Φ) :
+    ∫ ω, Φ (BAExp14a_slc sz n ω) ∂(BAExp14a_μ sz) = ∫ ω', Φ ω' ∂(PF d (sz.L n) (sz.W n) 0) := by
+  have hmap := Sizes.seqP_map_slice (sz.withLam 0) n
+  change ∫ ω, Φ (Sizes.slice (sz.withLam 0) n ω) ∂(Sizes.seqP (sz.withLam 0)) = _
+  rw [← integral_map (Sizes.measurable_slice (sz.withLam 0) n).aemeasurable hΦ.aestronglyMeasurable]
+  congr 1
+
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ}
+
+/-- `Σ_β S_{αβ} Ǧ_{ββ} = t X_{[α]}`. -/
+theorem BAExp14a_sumS_GM (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (α : Idx d (sz.L n) (sz.W n)) :
+    ∑ β, BAlwS d (sz.L n) (sz.W n) t α β * (baFMz sz z).GM n t ω β β =
+      (t : ℂ) * BAExp14a_X sz z n t ω (STblk sz n α) := by
+  unfold BAExp14a_X
+  simp only [BAExp14a_S_apply]
+  have h : ∀ β : Idx d (sz.L n) (sz.W n),
+      (t : ℂ) * (((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) * (if (split d (sz.L n) (sz.W n) α).1 = (split d (sz.L n) (sz.W n) β).1 then 1 else 0)) *
+        (baFMz sz z).GM n t ω β β =
+      (t : ℂ) * ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (if β ∈ Iblk d (sz.L n) (sz.W n) (STblk sz n α) then (baFMz sz z).GM n t ω β β else 0)) := by
+    intro β
+    have hmem : β ∈ Iblk d (sz.L n) (sz.W n) (STblk sz n α) ↔ (split d (sz.L n) (sz.W n) α).1 = (split d (sz.L n) (sz.W n) β).1 := by
+      simp [Iblk, STblk, eq_comm]
+    by_cases hb : β ∈ Iblk d (sz.L n) (sz.W n) (STblk sz n α)
+    · rw [if_pos hb, if_pos (hmem.1 hb)]; ring
+    · rw [if_neg hb, if_neg (fun h' => hb (hmem.2 h'))]; ring
+  simp only [h, ← Finset.mul_sum]
+  rw [Finset.sum_ite_mem, Finset.univ_inter]
+
+/-- **`lanlw` with `f = 1`, `y = x`**, at the carrier: `𝔼 Ǧ_{xx} = 𝔼 Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αx}` (the transport of
+`baLanlw_holds` from `PF d L W 0` to the sample space of `seqP (sz.withLam 0)`). -/
+theorem BAExp14a_lanlw_diag (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (x : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, (baFMz sz z).GM n t ω x x ∂(BAExp14a_μ sz) =
+      ∫ ω, ∑ α, (baFMz sz z).M n x α * ((t : ℂ) * BAExp14a_X sz z n t ω (STblk sz n α)) * (baFMz sz z).G n t ω α x
+        ∂(BAExp14a_μ sz) := by
+  obtain ⟨ht1, hr, hmi, hzi, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  have hz : (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) t).im ≠ 0 := hzi.ne'
+  have hSelf := (BAflow_real κ ε 𝔠 𝔡 sz z hflow n).1
+  have key := baLanlw_holds d (sz.L n) (sz.W n) (sz.three_le_L n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+    (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) hSelf ht0 ht1 1 x x
+  have cG : ∀ α β : Idx d (sz.L n) (sz.W n), Continuous fun ω' : Ω d (sz.L n) (sz.W n) =>
+      BAlwG d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) ω' α β :=
+    fun α β => BAExp14a_cont_lwG hz α β
+  have cL : Continuous fun ω' : Ω d (sz.L n) (sz.W n) => BAlanlwL d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+      (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x ω' := by
+    simp only [BAlanlwL, BAlwGc, BAExp14a_lwf_one, mul_one]
+    exact (cG x x).sub continuous_const
+  have cR : Continuous fun ω' : Ω d (sz.L n) (sz.W n) => BAlanlwR d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+      (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x ω' := by
+    simp only [BAlanlwR, BAlwGc, BAExp14a_lwf_one, BAExp14a_lwdf_one, mul_one, mul_zero, Finset.sum_const_zero, sub_zero]
+    have := cG
+    fun_prop
+  have eL : ∀ ω : sz.SeqΩ, (baFMz sz z).GM n t ω x x = BAlanlwL d (sz.L n) (sz.W n) (BAflowLam0 sz z n)
+      (BAflowEs sz z n) t (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x (BAExp14a_slc sz n ω) := by
+    intro ω
+    unfold BAlanlwL
+    rw [BAExp14a_lwf_one (BAExp14a_slc sz n ω), mul_one]
+    rfl
+  have eR : ∀ ω : sz.SeqΩ, ∑ α, (baFMz sz z).M n x α * ((t : ℂ) * BAExp14a_X sz z n t ω (STblk sz n α)) *
+      (baFMz sz z).G n t ω α x = BAlanlwR d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+        (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x (BAExp14a_slc sz n ω) := by
+    intro ω
+    unfold BAlanlwR
+    simp only [BAExp14a_lwf_one (BAExp14a_slc sz n ω), BAExp14a_lwdf_one (BAExp14a_slc sz n ω),
+      mul_one, mul_zero, Finset.sum_const_zero, sub_zero]
+    refine Finset.sum_congr rfl fun α _ => ?_
+    rw [← BAExp14a_sumS_GM n t ω α]
+    simp only [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun β _ => ?_
+    show (baFMz sz z).M n x α * (BAlwS d (sz.L n) (sz.W n) t α β * (baFMz sz z).GM n t ω β β) * (baFMz sz z).G n t ω α x =
+      (baFMz sz z).M n x α * BAlwS d (sz.L n) (sz.W n) t α β * (baFMz sz z).GM n t ω β β * (baFMz sz z).G n t ω α x
+    ring
+  calc ∫ ω, (baFMz sz z).GM n t ω x x ∂(BAExp14a_μ sz)
+      = ∫ ω, BAlanlwL d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+          (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x (BAExp14a_slc sz n ω)
+          ∂(BAExp14a_μ sz) := integral_congr_ae (Eventually.of_forall eL)
+    _ = ∫ ω', BAlanlwL d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+          (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x ω' ∂(PF d (sz.L n) (sz.W n) 0) :=
+        BAExp14a_int_slice n _ cL
+    _ = ∫ ω', BAlanlwR d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+          (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x ω' ∂(PF d (sz.L n) (sz.W n) 0) := key
+    _ = ∫ ω, BAlanlwR d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t
+          (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) 1 x x (BAExp14a_slc sz n ω)
+          ∂(BAExp14a_μ sz) := (BAExp14a_int_slice n _ cR).symm
+    _ = _ := integral_congr_ae (Eventually.of_forall fun ω => (eR ω).symm)
+
+/-! ### Continuity, bounds, integrability of the basic random variables -/
+
+theorem BAExp14a_cont_G (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (x y : Idx d (sz.L n) (sz.W n)) :
+    Continuous fun ω : sz.SeqΩ => (baFMz sz z).G n t ω x y := by
+  obtain ⟨-, -, hmi, hzi, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  have h : Continuous fun ω : sz.SeqΩ => Gres (BAExpand_Hm sz n (BAflowLam0 sz z n) t ω)
+      (ztOf ((baFMz sz z).m n) (BAflowEs sz z n) t) true := by
+    refine Gauss.continuous_green_of_isHermitian ?_ (fun ω => BAExpand_Hm_isHermitian sz n _ t ω) hzi.ne'
+    exact continuous_const.add (Green.GreenDeriv_continuous_seqHflow sz n t)
+  exact (continuous_apply y).comp ((continuous_apply x).comp h)
+
+theorem BAExp14a_cont_GM (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (x y : Idx d (sz.L n) (sz.W n)) :
+    Continuous fun ω : sz.SeqΩ => (baFMz sz z).GM n t ω x y :=
+  (BAExp14a_cont_G hκ hflow n ht0 ht x y).sub continuous_const
+
+theorem BAExp14a_cont_X (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (c : Zd d (sz.L n)) :
+    Continuous fun ω : sz.SeqΩ => BAExp14a_X sz z n t ω c := by
+  have := fun x y => BAExp14a_cont_GM hκ hflow n ht0 ht x y
+  unfold BAExp14a_X
+  fun_prop
+
+/-- `|Ǧ_{xy}| ≤ η⁻¹ + 1` pathwise (`|G| ≤ η⁻¹`, `|M| ≤ 1`). -/
+theorem BAExp14a_GM_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ} (hf : BAExp14a_Facts sz z n t CM S) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
+    ‖(baFMz sz z).GM n t ω x y‖ ≤ ((baFMz sz z).eta n t)⁻¹ + 1 := by
+  unfold FlowFM.GM
+  exact (norm_sub_le _ _).trans (add_le_add (BAExp14a_G_le hκ hflow n ht0 ht ω x y) (hf.hM1 x y))
+
+/-- `|X_c| ≤ η⁻¹ + 1`. -/
+theorem BAExp14a_X_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ} (hf : BAExp14a_Facts sz z n t CM S) (ω : sz.SeqΩ) (c : Zd d (sz.L n)) :
+    ‖BAExp14a_X sz z n t ω c‖ ≤ ((baFMz sz z).eta n t)⁻¹ + 1 := by
+  unfold BAExp14a_X
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  rw [norm_mul, norm_inv, norm_pow, Complex.norm_natCast]
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖∑ v ∈ Iblk d (sz.L n) (sz.W n) c, (baFMz sz z).GM n t ω v v‖
+      ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ∑ v ∈ Iblk d (sz.L n) (sz.W n) c, (((baFMz sz z).eta n t)⁻¹ + 1) :=
+        mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (Finset.sum_le_sum fun v _ => BAExp14a_GM_le hκ hflow n ht0 ht hf ω v v))
+          (by positivity)
+    _ = ((baFMz sz z).eta n t)⁻¹ + 1 := by
+        rw [Finset.sum_const, card_Iblk, nsmul_eq_mul]
+        push_cast
+        field_simp
+
+theorem BAExp14a_integrable {f : sz.SeqΩ → ℂ} (hf : Continuous f) {C : ℝ} (hC : ∀ ω, ‖f ω‖ ≤ C) :
+    Integrable f (BAExp14a_μ sz) :=
+  Integrable.of_bound hf.aestronglyMeasurable C (Eventually.of_forall hC)
+
+section ExpX
+
+variable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ}
+  (hf : BAExp14a_Facts sz z n t CM S)
+include hκ hflow ht0 ht hf
+
+theorem BAExp14a_int_GM (x y : Idx d (sz.L n) (sz.W n)) :
+    Integrable (fun ω => (baFMz sz z).GM n t ω x y) (BAExp14a_μ sz) :=
+  BAExp14a_integrable (BAExp14a_cont_GM hκ hflow n ht0 ht x y) (fun ω => BAExp14a_GM_le hκ hflow n ht0 ht hf ω x y)
+
+theorem BAExp14a_int_X (c : Zd d (sz.L n)) :
+    Integrable (fun ω => BAExp14a_X sz z n t ω c) (BAExp14a_μ sz) :=
+  BAExp14a_integrable (BAExp14a_cont_X hκ hflow n ht0 ht c) (fun ω => BAExp14a_X_le hκ hflow n ht0 ht hf ω c)
+
+theorem BAExp14a_int_XGM (c : Zd d (sz.L n)) (y w : Idx d (sz.L n) (sz.W n)) :
+    Integrable (fun ω => BAExp14a_X sz z n t ω c * (baFMz sz z).GM n t ω y w) (BAExp14a_μ sz) := by
+  refine BAExp14a_integrable ((BAExp14a_cont_X hκ hflow n ht0 ht c).mul (BAExp14a_cont_GM hκ hflow n ht0 ht y w))
+    (C := (((baFMz sz z).eta n t)⁻¹ + 1) * (((baFMz sz z).eta n t)⁻¹ + 1)) fun ω => ?_
+  rw [norm_mul]
+  exact mul_le_mul (BAExp14a_X_le hκ hflow n ht0 ht hf ω c) (BAExp14a_GM_le hκ hflow n ht0 ht hf ω y w) (norm_nonneg _)
+    (by have := hf.hη; positivity)
+
+end ExpX
+
+/-- `e_c = 𝔼 X_c`. -/
+def BAExp14a_e (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (c : Zd d (sz.L n)) : ℂ :=
+  ∫ ω, BAExp14a_X sz z n t ω c ∂(BAExp14a_μ sz)
+
+/-- `q_{c,y,w} = 𝔼 [X_c Ǧ_{yw}]`. -/
+def BAExp14a_q (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (c : Zd d (sz.L n)) (y w : Idx d (sz.L n) (sz.W n)) : ℂ :=
+  ∫ ω, BAExp14a_X sz z n t ω c * (baFMz sz z).GM n t ω y w ∂(BAExp14a_μ sz)
+
+section ExpX2
+
+variable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ}
+  (hf : BAExp14a_Facts sz z n t CM S)
+include hκ hflow ht0 ht hf
+
+/-- `𝔼 Ǧ_{xx} = Σ_α (M_{xα} t M_{αx} e_{[α]} + M_{xα} t q_{[α],α,x})` (`lanlw`, `G = M + Ǧ`). -/
+theorem BAExp14a_EGxx (x : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, (baFMz sz z).GM n t ω x x ∂(BAExp14a_μ sz) =
+      ∑ α, (((baFMz sz z).M n x α * (t : ℂ) * (baFMz sz z).M n α x) * BAExp14a_e sz z n t (STblk sz n α) +
+        ((baFMz sz z).M n x α * (t : ℂ)) * BAExp14a_q sz z n t (STblk sz n α) α x) := by
+  rw [BAExp14a_lanlw_diag hκ hflow n ht0 ht x]
+  have hpt : ∀ ω : sz.SeqΩ, ∑ α, (baFMz sz z).M n x α * ((t : ℂ) * BAExp14a_X sz z n t ω (STblk sz n α)) *
+      (baFMz sz z).G n t ω α x = ∑ α, (((baFMz sz z).M n x α * (t : ℂ) * (baFMz sz z).M n α x) *
+        BAExp14a_X sz z n t ω (STblk sz n α) + ((baFMz sz z).M n x α * (t : ℂ)) *
+          (BAExp14a_X sz z n t ω (STblk sz n α) * (baFMz sz z).GM n t ω α x)) := by
+    intro ω
+    refine Finset.sum_congr rfl fun α _ => ?_
+    have : (baFMz sz z).G n t ω α x = (baFMz sz z).M n α x + (baFMz sz z).GM n t ω α x := by
+      unfold FlowFM.GM; ring
+    rw [this]; ring
+  simp only [hpt]
+  rw [integral_finset_sum _ fun α _ => ?_]
+  · refine Finset.sum_congr rfl fun α _ => ?_
+    rw [integral_add, integral_const_mul, integral_const_mul]
+    · rfl
+    · exact (BAExp14a_int_X hκ hflow n ht0 ht hf _).const_mul _
+    · exact (BAExp14a_int_XGM hκ hflow n ht0 ht hf _ _ _).const_mul _
+  · exact ((BAExp14a_int_X hκ hflow n ht0 ht hf _).const_mul _).add
+      ((BAExp14a_int_XGM hκ hflow n ht0 ht hf _ _ _).const_mul _)
+
+end ExpX2
+
+/-- The block matrix `M^{(B)}` at the flow data. -/
+abbrev BAExp14a_MB (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
+  BAMB d (sz.L n) (BAflowLam0 sz z n) ((BAflowEs sz z n : ℝ) : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
+
+/-- `R_c = t W^{-d} Σ_{x ∈ [c]} Σ_α M_{xα} q_{[α],α,x}`. -/
+def BAExp14a_R (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (c : Zd d (sz.L n)) : ℂ :=
+  (t : ℂ) * ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) c, ∑ α,
+    (baFMz sz z).M n x α * BAExp14a_q sz z n t (STblk sz n α) α x)
+
+/-- The fibre sum of the `M`-part: for `x ∈ [c]`, `Σ_α M_{xα} t M_{αx} e_{[α]} = t Σ_b (M^{(B)}_{cb})² e_b`. -/
+theorem BAExp14a_sumA (hmi : 0 < (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im) (t : ℝ) (e : Zd d (sz.L n) → ℂ)
+    (x : Idx d (sz.L n) (sz.W n)) :
+    ∑ α, ((baFMz sz z).M n x α * (t : ℂ) * (baFMz sz z).M n α x) * e (STblk sz n α) =
+      (t : ℂ) * ∑ b, (BAExp14a_MB sz z n (split d (sz.L n) (sz.W n) x).1 b) ^ 2 * e b := by
+  have h1 : ∀ α : Idx d (sz.L n) (sz.W n),
+      ((baFMz sz z).M n x α * (t : ℂ) * (baFMz sz z).M n α x) * e (STblk sz n α) =
+      if (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) α).2 then
+        (fun b => (t : ℂ) * ((BAExp14a_MB sz z n (split d (sz.L n) (sz.W n) x).1 b) ^ 2 * e b)) (split d (sz.L n) (sz.W n) α).1
+      else 0 := by
+    intro α
+    have hxa := BAMfine_eq sz (BAflowLam0 sz z) (BAflowEs sz z) n hmi x α
+    have hax := BAMfine_eq sz (BAflowLam0 sz z) (BAflowEs sz z) n hmi α x
+    change ((BAMfine sz (BAflowLam0 sz z) (BAflowEs sz z) n x α) * (t : ℂ) * BAMfine sz (BAflowLam0 sz z) (BAflowEs sz z) n α x) *
+      e (split d (sz.L n) (sz.W n) α).1 = _
+    rw [hxa, hax]
+    by_cases ho : (split d (sz.L n) (sz.W n) x).2 = (split d (sz.L n) (sz.W n) α).2
+    · have ho' : (split d (sz.L n) (sz.W n) α).2 = (split d (sz.L n) (sz.W n) x).2 := ho.symm
+      rw [if_pos ho, if_pos ho', if_pos ho]
+      have hs := BAMB_symm d (sz.L n) (BAflowLam0 sz z n) ((BAflowEs sz z n : ℝ) : ℂ)
+        (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (split d (sz.L n) (sz.W n) α).1 (split d (sz.L n) (sz.W n) x).1
+      rw [hs]; ring
+    · have ho' : ¬ (split d (sz.L n) (sz.W n) α).2 = (split d (sz.L n) (sz.W n) x).2 := fun e => ho e.symm
+      rw [if_neg ho, if_neg ho', if_neg ho]; simp
+  simp only [h1]
+  rw [BASizeClaim_fibre_sum x (fun b => (t : ℂ) * ((BAExp14a_MB sz z n (split d (sz.L n) (sz.W n) x).1 b) ^ 2 * e b)),
+    Finset.mul_sum]
+
+section ExpX3
+
+variable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ}
+  (hf : BAExp14a_Facts sz z n t CM S)
+include hκ hflow ht0 ht hf
+
+/-- **The equation for the averages** `e = t M⁺ e + R` (`M⁺ = M^{(B)}∘M^{(B)}`; `lanlw`, `f = 1`). -/
+theorem BAExp14a_e_eq (c : Zd d (sz.L n)) :
+    BAExp14a_e sz z n t c = (t : ℂ) * ∑ b, (BAExp14a_MB sz z n c b) ^ 2 * BAExp14a_e sz z n t b + BAExp14a_R sz z n t c := by
+  obtain ⟨-, -, hmi, -, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  have hW : (((sz.W n : ℕ) : ℂ) ^ d) ≠ 0 := pow_ne_zero _ (Nat.cast_ne_zero.mpr (sz.W_pos n).ne')
+  have hx : ∀ x ∈ Iblk d (sz.L n) (sz.W n) c, ∫ ω, (baFMz sz z).GM n t ω x x ∂(BAExp14a_μ sz) =
+      (t : ℂ) * ∑ b, (BAExp14a_MB sz z n c b) ^ 2 * BAExp14a_e sz z n t b +
+        (t : ℂ) * ∑ α, (baFMz sz z).M n x α * BAExp14a_q sz z n t (STblk sz n α) α x := by
+    intro x hx
+    have hxc : (split d (sz.L n) (sz.W n) x).1 = c := by simpa [Iblk] using hx
+    rw [BAExp14a_EGxx hκ hflow n ht0 ht hf x]
+    simp only [Finset.sum_add_distrib]
+    rw [BAExp14a_sumA hmi t (BAExp14a_e sz z n t) x, hxc]
+    congr 1
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun α _ => by ring
+  have he : BAExp14a_e sz z n t c = (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ *
+      ∑ x ∈ Iblk d (sz.L n) (sz.W n) c, ∫ ω, (baFMz sz z).GM n t ω x x ∂(BAExp14a_μ sz) := by
+    unfold BAExp14a_e BAExp14a_X
+    simp only [integral_const_mul]
+    rw [integral_finset_sum _ fun x _ => BAExp14a_int_GM hκ hflow n ht0 ht hf x x]
+  rw [he, Finset.sum_congr rfl hx, Finset.sum_add_distrib, Finset.sum_const, card_Iblk, nsmul_eq_mul, mul_add, ← mul_assoc]
+  unfold BAExp14a_R
+  push_cast
+  rw [inv_mul_cancel₀ hW, one_mul, ← Finset.mul_sum]
+  ring
+
+/-- **`‖e_c‖ ≤ CM ε₂/(1 - t)`** when `‖𝔼 [X_c Ǧ_{yw}]‖ ≤ ε₂` for all `c, y, w` (`‖R‖ ≤ CM ε₂`, the Neumann bound). -/
+theorem BAExp14a_e_bound {ε₂ : ℝ} (hq : ∀ c y w, ‖BAExp14a_q sz z n t c y w‖ ≤ ε₂) (c : Zd d (sz.L n)) :
+    ‖BAExp14a_e sz z n t c‖ ≤ CM * ε₂ / (1 - t) := by
+  have hε₂ : 0 ≤ ε₂ := (norm_nonneg _).trans (hq 0 0 0)
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
+    have : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    positivity
+  obtain ⟨-, hr, -, -, -⟩ := ba_G_data hκ sz hflow n ht0 ht
+  refine BAExp14a_neumann (BAExp14a_MB sz z n) (BAExp14a_e sz z n t) (BAExp14a_R sz z n t) hf.ht0 hf.ht1
+    (fun c => ?_) (fun c => BAExp14a_e_eq hκ hflow n ht0 ht hf c) (fun c => ?_) c
+  · exact BAMB_row_sq_real d (sz.L n) _ _ _ hr.1 c
+  · unfold BAExp14a_R
+    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht0, norm_mul, norm_inv, norm_pow,
+      Complex.norm_natCast]
+    have h1 : ‖∑ x ∈ Iblk d (sz.L n) (sz.W n) c, ∑ α, (baFMz sz z).M n x α * BAExp14a_q sz z n t (STblk sz n α) α x‖ ≤
+        ((sz.W n : ℕ) : ℝ) ^ d * (CM * ε₂) := by
+      calc _ ≤ ∑ x ∈ Iblk d (sz.L n) (sz.W n) c, ∑ α, ‖(baFMz sz z).M n x α‖ * ε₂ := by
+            refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun x _ => (norm_sum_le _ _).trans
+              (Finset.sum_le_sum fun α _ => ?_))
+            rw [norm_mul]
+            exact mul_le_mul_of_nonneg_left (hq _ _ _) (norm_nonneg _)
+        _ ≤ ∑ x ∈ Iblk d (sz.L n) (sz.W n) c, CM * ε₂ := by
+            refine Finset.sum_le_sum fun x _ => ?_
+            rw [← Finset.sum_mul]
+            exact mul_le_mul_of_nonneg_right (hf.hMr x) hε₂
+        _ = _ := by rw [Finset.sum_const, card_Iblk, nsmul_eq_mul]; push_cast; ring
+    calc t * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖∑ x ∈ Iblk d (sz.L n) (sz.W n) c, ∑ α, (baFMz sz z).M n x α *
+            BAExp14a_q sz z n t (STblk sz n α) α x‖)
+        ≤ 1 * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ d * (CM * ε₂))) :=
+          mul_le_mul hf.ht1.le (mul_le_mul_of_nonneg_left h1 (by positivity)) (by positivity) zero_le_one
+      _ = CM * ε₂ := by field_simp
+
+end ExpX3
+
+end Lanlw
+
 end RBM.BA
 
 end
