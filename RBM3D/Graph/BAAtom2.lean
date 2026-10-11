@@ -522,17 +522,6 @@ section Model
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- The entries of `Ψ = Ψ^{(B)} ⊗ I` (`PsiI`) in the block-offset form (a copy of the private `BASizeClaim_PsiI_apply`). -/
-private theorem BAAtom_PsiI_apply (x y : Idx d L W) :
-    PsiI d L W x y = if (split d L W x).2 = (split d L W y).2 then
-      (if Adj d L (split d L W x).1 (split d L W y).1 then (1 : ℂ) else 0) else 0 := by
-  simp only [PsiI, PsiV, Matrix.submatrix_apply, Matrix.kroneckerMap_apply, Matrix.one_apply, PsiB,
-    Matrix.of_apply]
-  have h1 : splitEquiv d L W x = split d L W x := rfl
-  have h2 : splitEquiv d L W y = split d L W y := rfl
-  rw [h1, h2]
-  by_cases h : (split d L W x).2 = (split d L W y).2 <;> simp [h]
-
 /-- **The decay and the offset structure of the four kernels of the BA model**: one decay `(C, c)` depending on `(d, Λ, κ)` only of
 `S`, `S⁺ = S W` (`baSpDecay`), `M` (`BAMB_decay_large`, through the fibre) and `g₀ Ψ` (nearest-neighbour entries `g₀ ≤ Λ`); `M` and
 `g₀ Ψ` vanish between different offsets (`BAMres_fine_apply`, `PsiI`). -/
