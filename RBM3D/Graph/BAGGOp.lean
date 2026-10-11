@@ -1249,14 +1249,31 @@ private theorem BAGGOp_cnt_le {V V' : Type*} [Fintype V] [DecidableEq V] [Fintyp
   exact (Finset.card_le_card hsub).trans Finset.card_image_le
 
 
+private theorem BAGGOp_A1_e3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (w' : E ⊕ (I ⊕ Fin 2)) :
+    Relation.ReflTransGen (fun a b => (BAGGOp_A1 Γ p q).atomAdj a b = true) w'
+      (owxEmb 2 (BAGGOp_rho2 p.1.src p.1.dst w')) :=
+  BAGGOp_e3 Γ _ _ _ _ _ _ ⟨bpM (owxEmb 2 p.1.src) (bpv 0), by simp [BAGGOp_A1], Or.inl ⟨rfl, rfl⟩⟩
+    ⟨bpM (bpv 1) (owxEmb 2 p.1.dst), by simp [BAGGOp_A1], Or.inr ⟨rfl, rfl⟩⟩ w'
+
+private theorem BAGGOp_A2_e3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (w' : E ⊕ (I ⊕ Fin 2)) :
+    Relation.ReflTransGen (fun a b => (BAGGOp_A2 Γ p q).atomAdj a b = true) w'
+      (owxEmb 2 (BAGGOp_rho2 p.1.src q.1.src w')) :=
+  BAGGOp_e3 Γ _ _ _ _ _ _ ⟨bpM (owxEmb 2 p.1.src) (bpv 0), by simp [BAGGOp_A2], Or.inl ⟨rfl, rfl⟩⟩
+    ⟨bpM (owxEmb 2 q.1.src) (bpv 1), by simp [BAGGOp_A2], Or.inl ⟨rfl, rfl⟩⟩ w'
+
+private theorem BAGGOp_A3_e3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (w' : E ⊕ (I ⊕ Fin 2)) :
+    Relation.ReflTransGen (fun a b => (BAGGOp_A3 Γ p q).atomAdj a b = true) w'
+      (owxEmb 2 (BAGGOp_rho2 p.1.src p.1.dst w')) :=
+  BAGGOp_e3 Γ _ _ _ _ _ _ ⟨bpM (owxEmb 2 p.1.src) (bpv 0), by simp [BAGGOp_A3], Or.inl ⟨rfl, rfl⟩⟩
+    ⟨bpM (bpv 1) (owxEmb 2 p.1.dst), by simp [BAGGOp_A3], Or.inr ⟨rfl, rfl⟩⟩ w'
+
 /-- `A2`: `u` joins the atom of `x`, `β` that of `y'`; the atoms are those of `Γ`. -/
 private theorem BAGGOp_A2_atoms (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
     (BAGGOp_A2 Γ p q).nA = Γ.nA ∧
       BAWeightOp_cnt (fun _ => true) (BAGGOp_A2 Γ p q).atom = BAWeightOp_cnt (fun _ => true) Γ.atom := by
   refine BAGGOp_pend Γ _ p.1.src q.1.src (fun u w h => Relation.ReflTransGen.single
     ((BAWeightOp_ext_atomAdj 2 Γ _ _ _ _ _ _).2 (Or.inl ⟨u, w, rfl, rfl, h⟩))) ?_
-    (BAGGOp_e3 Γ _ _ _ _ _ _ ⟨bpM (owxEmb 2 p.1.src) (bpv 0), by simp [BAGGOp_A2], Or.inl ⟨rfl, rfl⟩⟩
-      ⟨bpM (owxEmb 2 q.1.src) (bpv 1), by simp [BAGGOp_A2], Or.inl ⟨rfl, rfl⟩⟩)
+    (BAGGOp_A2_e3 Γ p q)
   intro b b' hbb'
   rcases (BAWeightOp_ext_atomAdj 2 Γ _ _ _ _ b b').1 hbb' with ⟨a, a', rfl, rfl, h⟩ | ⟨e, he, h⟩
   · right; rw [BAGGOp_rho2_emb, BAGGOp_rho2_emb]; exact h
@@ -1271,8 +1288,7 @@ private theorem BAGGOp_A3_atoms (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × Lis
       BAWeightOp_cnt (fun _ => true) (BAGGOp_A3 Γ p q).atom = BAWeightOp_cnt (fun _ => true) Γ.atom := by
   refine BAGGOp_pend Γ _ p.1.src p.1.dst (fun u w h => Relation.ReflTransGen.single
     ((BAWeightOp_ext_atomAdj 2 Γ _ _ _ _ _ _).2 (Or.inl ⟨u, w, rfl, rfl, h⟩))) ?_
-    (BAGGOp_e3 Γ _ _ _ _ _ _ ⟨bpM (owxEmb 2 p.1.src) (bpv 0), by simp [BAGGOp_A3], Or.inl ⟨rfl, rfl⟩⟩
-      ⟨bpM (bpv 1) (owxEmb 2 p.1.dst), by simp [BAGGOp_A3], Or.inr ⟨rfl, rfl⟩⟩)
+    (BAGGOp_A3_e3 Γ p q)
   intro b b' hbb'
   rcases (BAWeightOp_ext_atomAdj 2 Γ _ _ _ _ b b').1 hbb' with ⟨a, a', rfl, rfl, h⟩ | ⟨e, he, h⟩
   · right; rw [BAGGOp_rho2_emb, BAGGOp_rho2_emb]; exact h
@@ -1460,8 +1476,7 @@ private theorem BAGGOp_A1_atoms (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × Lis
     (BAWeightOp_ext_atomAdj 2 Γ _ _ _ _ _ _).2 (Or.inr ⟨bpM (bpv 1) (owxEmb 2 p.1.dst), by simp [BAGGOp_A1],
       Or.inl ⟨rfl, rfl⟩⟩)
   refine BAGGOp_pend _ _ p.1.src p.1.dst ?_ ?_
-    (BAGGOp_e3 Γ _ _ _ _ _ _ ⟨bpM (owxEmb 2 p.1.src) (bpv 0), by simp [BAGGOp_A1], Or.inl ⟨rfl, rfl⟩⟩
-      ⟨bpM (bpv 1) (owxEmb 2 p.1.dst), by simp [BAGGOp_A1], Or.inr ⟨rfl, rfl⟩⟩)
+    (BAGGOp_A1_e3 Γ p q)
   · intro u w h
     rcases (BAGGOp_addM_atomAdj Γ _ _ u w).1 h with h | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
     · exact Relation.ReflTransGen.single ((BAWeightOp_ext_atomAdj 2 Γ _ _ _ _ _ _).2 (Or.inl ⟨u, w, rfl, rfl, h⟩))
@@ -1504,6 +1519,204 @@ private theorem BAGGOp_nM_le (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) 
     (BAGraph.ext 2 Γ rest s w md).mol (owxEmb 2) (BAGGOp_rho2 x c) BAWeightOp_isRight_emb
     (fun v => by rw [BAGraph.mem_mol_iff]) h1 h3 (fun v w h => BAGGOp_mol_eq_of_mem _ h)
   exact key
+
+
+/-- `κ ∈ {0, 1}`: the internal atoms lost when the atoms of `a`, `b` are merged: none if they coincide or both contain an external
+vertex (a vertex `inl _`), else one (`BAGGOp_addM_cnt`). -/
+def BAGGOp_kappa (Γ : BAGraph E I) (a b : E ⊕ I) : ℕ :=
+  if Γ.atom a = Γ.atom b ∨ (¬ (∀ w ∈ Γ.atom a, w.isRight = true) ∧ ¬ (∀ w ∈ Γ.atom b, w.isRight = true)) then 0 else 1
+
+/-- The number of atoms with an external vertex (`BAGraph.nExt` of the T2395 probe, `:33`). -/
+def BAGGOp_nExt (Γ : BAGraph E I) : ℕ := ((Finset.univ.filter fun v : E ⊕ I => v.isLeft = true).image Γ.atom).card
+
+private theorem BAGGOp_ext_nS (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (s : List (SEdge (E ⊕ (I ⊕ Fin k))))
+    (w : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) :
+    (BAGraph.ext k Γ rest s w md).nS = rest.length + s.length := by
+  simp [BAGraph.nS, BAGraph.ext, LGraph.owxExt]
+
+private theorem BAGGOp_ext_nW (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (s : List (SEdge (E ⊕ (I ⊕ Fin k))))
+    (w : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) :
+    (BAGraph.ext k Γ rest s w md).nW = Γ.nW + w.length := by
+  simp [BAGraph.nW, BAGraph.ext, LGraph.owxExt]
+
+private theorem BAGGOp_addM_nA (Γ : BAGraph E I) (a b : E ⊕ I) :
+    (Γ.addM ⟨true, a, b⟩).nA + BAGGOp_kappa Γ a b = Γ.nA :=
+  BAGGOp_addM_cnt Γ a b (fun w => w.isRight)
+
+private theorem BAGGOp_addM_cnt_all (Γ : BAGraph E I) (a b : E ⊕ I) :
+    BAWeightOp_cnt (fun _ => true) (Γ.addM ⟨true, a, b⟩).atom + (if Γ.atom a = Γ.atom b then 0 else 1) =
+      BAWeightOp_cnt (fun _ => true) Γ.atom := by
+  have := BAGGOp_addM_cnt Γ a b (fun _ => true)
+  simpa using this
+
+private theorem BAGGOp_kappa_le (Γ : BAGraph E I) (a b : E ⊕ I) :
+    BAGGOp_kappa Γ a b ≤ if Γ.atom a = Γ.atom b then 0 else 1 := by
+  unfold BAGGOp_kappa; split_ifs <;> simp_all
+
+/-- The counters of `A1`, `A2`, `A3` (the terms with `n_A` not raised). -/
+private theorem BAGGOp_heads (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
+    (hq : q ∈ lwSplit p.2) :
+    ((BAGGOp_A1 Γ p q).nS + 2 = Γ.nS ∧ (BAGGOp_A1 Γ p q).nW = Γ.nW + 1 ∧
+      (BAGGOp_A1 Γ p q).nA + BAGGOp_kappa Γ q.1.src p.1.dst = Γ.nA ∧ (BAGGOp_A1 Γ p q).nM ≤ Γ.nM ∧
+      BAGGOp_nExt (BAGGOp_A1 Γ p q) ≤ BAGGOp_nExt Γ) ∧
+    (∀ T ∈ [BAGGOp_A2 Γ p q, BAGGOp_A3 Γ p q], T.nS + 1 = Γ.nS ∧ T.nW = Γ.nW + 1 ∧ T.nA = Γ.nA ∧ T.nM ≤ Γ.nM ∧
+      BAGGOp_nExt T = BAGGOp_nExt Γ) := by
+  have hl := lwSplit_snd_length Γ.solid p hp
+  have hl' := lwSplit_snd_length p.2 q hq
+  have hS : Γ.nS = q.2.length + 2 := by simp only [BAGraph.nS]; omega
+  refine ⟨⟨?_, ?_, ?_, BAGGOp_nM_le Γ _ _ _ _ p.1.src p.1.dst (BAGGOp_A1_e3 Γ p q), ?_⟩, ?_⟩
+  · simp [BAGGOp_A1, BAGGOp_ext_nS, hS]
+  · simp [BAGGOp_A1, BAGGOp_ext_nW]
+  · rw [(BAGGOp_A1_atoms Γ p q).1]
+    exact BAGGOp_addM_nA Γ q.1.src p.1.dst
+  · have e1 : BAGGOp_nExt (BAGGOp_A1 Γ p q) + (BAGGOp_A1 Γ p q).nA = BAWeightOp_cnt (fun _ => true) (BAGGOp_A1 Γ p q).atom :=
+      BAWeightOp_nExt_add_nA _
+    have e2 : BAGGOp_nExt Γ + Γ.nA = BAWeightOp_cnt (fun _ => true) Γ.atom := BAWeightOp_nExt_add_nA _
+    have h1 := BAGGOp_A1_atoms Γ p q
+    have h2 := BAGGOp_addM_nA Γ q.1.src p.1.dst
+    have h3 := BAGGOp_addM_cnt_all Γ q.1.src p.1.dst
+    have hk := BAGGOp_kappa_le Γ q.1.src p.1.dst
+    rw [h1.2] at e1
+    rw [h1.1] at e1
+    split_ifs at h3 hk <;> omega
+  · intro T hT
+    have hl'' : ∀ T' : BAGraph E (I ⊕ Fin 2), T'.nS = 1 + q.2.length → T'.nS + 1 = Γ.nS := fun T' h => by omega
+    have key : ∀ (T : BAGraph E (I ⊕ Fin 2)), T.nS = 1 + q.2.length → T.nW = Γ.nW + 1 → T.nA = Γ.nA →
+        BAWeightOp_cnt (fun _ => true) T.atom = BAWeightOp_cnt (fun _ => true) Γ.atom → T.nM ≤ Γ.nM →
+        T.nS + 1 = Γ.nS ∧ T.nW = Γ.nW + 1 ∧ T.nA = Γ.nA ∧ T.nM ≤ Γ.nM ∧ BAGGOp_nExt T = BAGGOp_nExt Γ := by
+      intro T h1 h2 h3 h4 h5
+      have e1 : BAGGOp_nExt T + T.nA = BAWeightOp_cnt (fun _ => true) T.atom := BAWeightOp_nExt_add_nA _
+      have e2 : BAGGOp_nExt Γ + Γ.nA = BAWeightOp_cnt (fun _ => true) Γ.atom := BAWeightOp_nExt_add_nA _
+      exact ⟨by omega, h2, h3, h5, by omega⟩
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hT
+    rcases hT with rfl | rfl
+    · exact key _ (by simp [BAGGOp_A2, BAGGOp_ext_nS]; omega) (by simp [BAGGOp_A2, BAGGOp_ext_nW])
+        (BAGGOp_A2_atoms Γ p q).1 (BAGGOp_A2_atoms Γ p q).2 (BAGGOp_nM_le Γ _ _ _ _ p.1.src q.1.src (BAGGOp_A2_e3 Γ p q))
+    · exact key _ (by simp [BAGGOp_A3, BAGGOp_ext_nS]; omega) (by simp [BAGGOp_A3, BAGGOp_ext_nW])
+        (BAGGOp_A3_atoms Γ p q).1 (BAGGOp_A3_atoms Γ p q).2 (BAGGOp_nM_le Γ _ _ _ _ p.1.src p.1.dst (BAGGOp_A3_e3 Γ p q))
+
+
+/-- The counters of `BAstepMono` at `T°` (T2395 design §3 Step 3 (a), (c); L3a4): `n_M`, `n_A - n_W` and the number of external
+atoms of `T°` do not exceed those of `Γ`. -/
+def BAGGOp_Mono {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E I)
+    (T : BAGraph E' I') : Prop :=
+  (BAWeightOp_circ T).nM ≤ Γ.nM ∧ (((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW ≤ (Γ.nA : ℤ) - Γ.nW) ∧
+    BAGGOp_nExt (BAWeightOp_circ T) ≤ BAGGOp_nExt Γ
+
+private theorem BAGGOp_gg2_tail (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
+    (Γ.gg2 p q).tail = [BAGGOp_A2 Γ p q, BAGGOp_A3 Γ p q] ++
+      ([BAGGOp_A4 Γ p q, BAGGOp_A5 Γ p q] ++ (lwSplit q.2).map (BAGGOp_AD Γ p q)) := rfl
+
+/-- **Target 4, raw counters** (`B:353`, T2395 design §3 Step 3 (a)).  `A1` (the first sum): `n_S - 2`, `n_W + 1`, `n_A - κ`
+(`κ ∈ {0, 1}`, `BAGGOp_kappa`), `n_M` not raised; `A2`, `A3` (the second sum): `n_S - 1`, `n_W + 1`, `n_A`, `n_M` not raised; `A4`,
+`A5`, `AD` (the third sum with `W = 1`) and `B1`, `B2`, `BD` (with `W - 1`): `n_S + 1`, `(n_W, n_A) + (1, 1)` resp. `(2, 2)`, `n_M`
+(exact).  For every graph `Γ`, normal or not. -/
+theorem gg_counters {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
+    (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
+    ((BAGGOp_A1 Γ p q).nS + 2 = Γ.nS ∧ (BAGGOp_A1 Γ p q).nW = Γ.nW + 1 ∧
+      (BAGGOp_A1 Γ p q).nA + BAGGOp_kappa Γ q.1.src p.1.dst = Γ.nA ∧ (BAGGOp_A1 Γ p q).nM ≤ Γ.nM) ∧
+    (∀ T ∈ [BAGGOp_A2 Γ p q, BAGGOp_A3 Γ p q], T.nS + 1 = Γ.nS ∧ T.nW = Γ.nW + 1 ∧ T.nA = Γ.nA ∧ T.nM ≤ Γ.nM) ∧
+    (∀ T ∈ [BAGGOp_A4 Γ p q, BAGGOp_A5 Γ p q] ++ (lwSplit q.2).map (BAGGOp_AD Γ p q),
+      T.counters = ⟨Γ.nS + 1, Γ.nW + 1, Γ.nA + 1, Γ.nM, 0, 0⟩) ∧
+    (∀ T ∈ Γ.gg4 p q, T.counters = ⟨Γ.nS + 1, Γ.nW + 2, Γ.nA + 2, Γ.nM, 0, 0⟩) := by
+  obtain ⟨⟨a, b, c, d, -⟩, h2⟩ := BAGGOp_heads Γ p q hp hq
+  exact ⟨⟨a, b, c, d⟩, fun T hT => (fun h => ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩) (h2 T hT),
+    fun T hT => (BAGGOp_tail2_cnt Γ p q hp hq T hT).1, fun T hT => (BAGGOp_tail4_cnt Γ p q hp hq T hT).1⟩
+
+/-- **Target 4, raw order** (`raw = ord T° - ord Γ`, T2395 design §3 Step 3): `A1` has `ord A1 = ord Γ + 2κ`, so it **keeps the
+order of `Γ` iff `κ = 0`** (the atoms of `y = p.1.dst`, `y' = q.1.src` coincide or both contain an external vertex: the case
+`baGGLhs`) and gains `2` otherwise; every other term `T` of `gg2` and `gg4` has `ord T° = ord Γ + 1`. -/
+theorem gg_raw {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
+    (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
+    (BAGGOp_A1 Γ p q).scalingOrder = Γ.scalingOrder + 2 * (BAGGOp_kappa Γ q.1.src p.1.dst : ℤ) ∧
+    (∀ T ∈ (Γ.gg2 p q).tail, (BAWeightOp_circ T).scalingOrder = Γ.scalingOrder + 1) ∧
+    (∀ T ∈ Γ.gg4 p q, (BAWeightOp_circ T).scalingOrder = Γ.scalingOrder + 1) := by
+  obtain ⟨⟨a, b, c, -, -⟩, h2⟩ := BAGGOp_heads Γ p q hp hq
+  obtain ⟨-, -, c3, c4⟩ := gg_counters Γ p q hp hq
+  refine ⟨?_, fun T hT => ?_, fun T hT => ?_⟩
+  · simp only [BAGraph.scalingOrder, BAGraph.counters, ord]
+    omega
+  · rw [BAGGOp_gg2_tail] at hT
+    unfold BAGraph.scalingOrder
+    rw [BAWeightOp_circ_counters]
+    rcases List.mem_append.1 hT with hT | hT
+    · obtain ⟨e1, e2, e3, -⟩ := h2 T hT
+      simp only [BAGraph.counters, ord]
+      omega
+    · rw [c3 T hT]
+      simp only [BAGraph.counters, ord]
+      push_cast
+      ring
+  · unfold BAGraph.scalingOrder
+    rw [BAWeightOp_circ_counters, c4 T hT]
+    simp only [BAGraph.counters, ord]
+    push_cast
+    ring
+
+/-- **Target 4, the order of the partition** (`B:354-355`, `(eq:GGraisesord)` read with `n_A`, T2398b): for a normal `Γ`,
+`ord Γ ≤ ordG T` for every term `T` of `gg2` and `gg4`: `A1` (`ord = ord Γ + 2κ`), `A2`, `A3` are normal; for the others `ord T° = ord Γ + 1`
+and a member with `j` `M`-splits has `ord = ord Γ + 1 - j + 2κ'`, `κ' ≥ 1` once `j ≥ 2` (the singleton atom `{β}` is merged). -/
+theorem gg_scalingOrderG {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
+    (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) (hN : Γ.Normal) :
+    (∀ T ∈ Γ.gg2 p q, ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) ∧
+    (∀ T ∈ Γ.gg4 p q, ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) := by
+  have hl := lwSplit_snd_length Γ.solid p hp
+  have hcirc' : ∀ e ∈ q.2, e.circ = true := fun e he =>
+    hN.2 e ((lwSplit_perm Γ.solid p hp).mem_iff.2 (List.mem_cons_of_mem _
+      ((lwSplit_perm p.2 q hq).mem_iff.2 (List.mem_cons_of_mem _ he))))
+  obtain ⟨⟨a, b, c, -, -⟩, h2⟩ := BAGGOp_heads Γ p q hp hq
+  refine ⟨fun T hT => ?_, BAGGOp_tail4_ge Γ hN p q hp hq⟩
+  rw [BAGGOp_gg2_eq] at hT
+  rcases List.mem_append.1 hT with hT | hT
+  · simp only [List.mem_cons, List.not_mem_nil, or_false] at hT
+    rcases hT with rfl | rfl | rfl | rfl | rfl
+    · have hn : (BAGGOp_A1 Γ p q).Normal := BAWeightOp_ext_normal 2 Γ hN _ _ _ _ hcirc' (by simp [BAGGOp_A1])
+      rw [BAGraph.scalingOrderG_of_normal _ hn]
+      refine WithTop.coe_le_coe.2 ?_
+      simp only [BAGraph.scalingOrder, BAGraph.counters, ord]
+      omega
+    · have hn : (BAGGOp_A2 Γ p q).Normal := BAWeightOp_ext_normal 2 Γ hN _ _ _ _ hcirc' (by simp [BAGGOp_A2, bpS])
+      rw [BAGraph.scalingOrderG_of_normal _ hn]
+      obtain ⟨e1, e2, e3, -⟩ := h2 _ (List.mem_cons_self)
+      refine WithTop.coe_le_coe.2 ?_
+      simp only [BAGraph.scalingOrder, BAGraph.counters, ord]
+      omega
+    · have hn : (BAGGOp_A3 Γ p q).Normal := BAWeightOp_ext_normal 2 Γ hN _ _ _ _ hcirc' (by simp [BAGGOp_A3, bpS])
+      rw [BAGraph.scalingOrderG_of_normal _ hn]
+      obtain ⟨e1, e2, e3, -⟩ := h2 _ (List.mem_cons_of_mem _ List.mem_cons_self)
+      refine WithTop.coe_le_coe.2 ?_
+      simp only [BAGraph.scalingOrder, BAGraph.counters, ord]
+      omega
+    · exact BAGGOp_tail2_ge Γ hN p q hp hq _ (by simp)
+    · exact BAGGOp_tail2_ge Γ hN p q hp hq _ (by simp)
+  · exact BAGGOp_tail2_ge Γ hN p q hp hq _ (List.mem_append_right _ hT)
+
+/-- **Target 4, the counters of `BAstepMono` at `T°`** for the terms of `gg2` and `gg4` (T2395 design §3 Step 3 (a), (c); L3a4). -/
+theorem gg_mono {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
+    (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
+    (∀ T ∈ Γ.gg2 p q, BAGGOp_Mono Γ T) ∧ (∀ T ∈ Γ.gg4 p q, BAGGOp_Mono Γ T) := by
+  obtain ⟨⟨a, b, c, d, e⟩, h2⟩ := BAGGOp_heads Γ p q hp hq
+  have tail : ∀ {k : ℕ} (T : BAGraph Ex (Ix ⊕ Fin k)) (n : ℕ),
+      T.counters = ⟨Γ.nS + 1, Γ.nW + n, Γ.nA + n, Γ.nM, 0, 0⟩ →
+      BAWeightOp_cnt (fun _ => true) T.atom = BAWeightOp_cnt (fun _ => true) Γ.atom + n → BAGGOp_Mono Γ T := by
+    intro k T n hc hn
+    obtain ⟨m1, m2, m3⟩ := BAWeightOp_mono_aux Γ T n hc hn
+    exact ⟨m1.le, m2.le, m3⟩
+  refine ⟨fun T hT => ?_, fun T hT => ?_⟩
+  · rw [BAGGOp_gg2_eq] at hT
+    rcases List.mem_append.1 hT with hT | hT
+    · simp only [List.mem_cons, List.not_mem_nil, or_false] at hT
+      rcases hT with rfl | rfl | rfl | rfl | rfl
+      · exact ⟨d, by change ((BAGGOp_A1 Γ p q).nA : ℤ) - (BAGGOp_A1 Γ p q).nW ≤ _; omega, e⟩
+      · obtain ⟨e1, e2, e3, e4, e5⟩ := h2 _ (List.mem_cons_self)
+        exact ⟨e4, by change ((BAGGOp_A2 Γ p q).nA : ℤ) - (BAGGOp_A2 Γ p q).nW ≤ _; omega, e5.le⟩
+      · obtain ⟨e1, e2, e3, e4, e5⟩ := h2 _ (List.mem_cons_of_mem _ List.mem_cons_self)
+        exact ⟨e4, by change ((BAGGOp_A3 Γ p q).nA : ℤ) - (BAGGOp_A3 Γ p q).nW ≤ _; omega, e5.le⟩
+      · exact tail _ 1 (BAGGOp_tail2_cnt Γ p q hp hq _ (by simp)).1 (BAGGOp_tail2_cnt Γ p q hp hq _ (by simp)).2
+      · exact tail _ 1 (BAGGOp_tail2_cnt Γ p q hp hq _ (by simp)).1 (BAGGOp_tail2_cnt Γ p q hp hq _ (by simp)).2
+    · exact tail _ 1 (BAGGOp_tail2_cnt Γ p q hp hq _ (List.mem_append_right _ hT)).1
+        (BAGGOp_tail2_cnt Γ p q hp hq _ (List.mem_append_right _ hT)).2
+  · exact tail _ 2 (BAGGOp_tail4_cnt Γ p q hp hq T hT).1 (BAGGOp_tail4_cnt Γ p q hp hq T hT).2
 
 end Order
 
