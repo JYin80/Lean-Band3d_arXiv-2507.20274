@@ -135,7 +135,7 @@ def twAvgT6 : Prop :=
 `η_t⁻¹ + 1`, resp. `N (η_t⁻¹ + 1)³` (`‖G_{xy}‖ ≤ η_t⁻¹`, `‖M_{xy}‖ ≤ 1`, `Σ_{α,β} S_{αβ} = N`); eventually in `n`, uniformly in `t`, `η_t⁻¹ + 1 ≤ N`
 (`η_t ≥ η_{T₀} = √T₀ Im z_n ≥ √(κ/(κ+1)) N^{-1+ε}`), so that all four are `≤ N^4` (`Kenv = 4` of `twAvgT6`). -/
 def twAvgReg (d : ℕ) : Prop :=
-  ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
+  ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → 0 < ε → BAFlow sz κ ε 𝔠 𝔡 z →
     (∀ (n : ℕ) (t : ℝ), 0 ≤ t → t ≤ BAflowT0 sz z n → ∀ c₁ c₂ : Zd d (sz.L n),
       Continuous (fun ω => twTr (baFMz sz z) n t ω c₁ c₂) ∧ Continuous (fun ω => twAvgS1 (baFMz sz z) n t ω c₁ c₂) ∧
       Continuous (fun ω => twAvgS2 (baFMz sz z) n t ω c₁ c₂) ∧
@@ -221,7 +221,7 @@ example (h : twAvgSPrec 3) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2))
 /-- Target 2 (iv) at the datum: the pointwise bound `‖twTr‖ ≤ η⁻¹ + 1` and the eventual envelope `η⁻¹ + 1 ≤ N` at `t = 1/2` give `‖twTr‖ ≤ N`, for all blocks `c₁, c₂`. -/
 example (h : twAvgReg 3) : ∀ᶠ n in atTop, ∀ (ω : sz0.SeqΩ) (c₁ c₂ : Zd 3 (sz0.L n)),
     ‖twTr (baFMz sz0 zSeq) n (1 / 2) ω c₁ c₂‖ ≤ ((sz0.size n : ℕ) : ℝ) := by
-  obtain ⟨-, hb, he⟩ := h (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0
+  obtain ⟨-, hb, he⟩ := h (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) (by norm_num) flow_sz0
   filter_upwards [he] with n hn ω c₁ c₂
   exact (hb n (1 / 2) (by norm_num) (half_lt_t0 n).le ω c₁ c₂).1.trans (hn (1 / 2) (by norm_num) (half_lt_t0 n).le)
 
@@ -232,7 +232,7 @@ example (hT6 : twAvgT6) (hreg : twAvgReg 3) (hA : LWAvgLawgL (baFMz sz0 zSeq) (B
       ∫ ω, ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖ * 1 ∂(BAExp14a_μ sz0) ≤
         ((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) * sz0.Bctl n (1 / 2) * ∫ ω, (1 : ℝ) ∂(BAExp14a_μ sz0) +
         ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)) * (∫ ω, (1 : ℝ) ^ 2 ∂(BAExp14a_μ sz0)) ^ ((1 : ℝ) / 2) := by
-  obtain ⟨-, hb, he⟩ := hreg (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0
+  obtain ⟨-, hb, he⟩ := hreg (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) (by norm_num) flow_sz0
   have henv : ∀ᶠ n in atTop, ∀ (c : Zd 3 (sz0.L n)) (ω : sz0.SeqΩ),
       ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ) := by
     filter_upwards [he] with n hn c ω
