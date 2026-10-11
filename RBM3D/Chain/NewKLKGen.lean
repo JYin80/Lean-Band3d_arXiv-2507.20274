@@ -30,7 +30,9 @@ Opened private names of `Induction/NewKLK.lean` (`open private`, precedent `Duha
 the tail shift/near/far lemmas, the distance lemmas, `nkl_ward_L`, `nkl_gres_blockMat_true`
 (generic proof), and `nkl_SB_support`, `nkl_theta_tail`, `nkl_SBTheta_tail`, `nkl_SBTheta_row`,
 `nkl_conv_P`, `nkl_ward_K`, `nkl_mE_zero`, `nkl_STGMM_zero` (band discharge and instances).
-Copies of `nkl_conv_two`, `nkl_bound2`, `nkl_ward_LKM`, `nkl_at` over a generic kernel.
+Copies of `nkl_conv_two` (:409), `nkl_bound2` (:840), `nkl_ward_LKM` (:759), `nkl_at` (:993),
+adapted to a generic kernel and family (RBM3D `Induction/NewKLK.lean`, last commit b06ff9b;
+no RBM1D/RBM2D text).
 -/
 
 set_option linter.style.longLine false
@@ -74,7 +76,7 @@ section Assembly
 variable {d L : ℕ} [NeZero L] {g t : ℝ}
 
 /-- **Bound 2 core, both factors near**, for a kernel `S` with `|x-y|_∞ ≤ 1` on its support and row sums `≤ 1`:
-`Σ_{x,y} 𝒯(|x-a₁|) ‖S_{xy}‖ 𝒯(|a₀-y|) ≤ C_s C_T 𝒯(|a₀-a₁|)` (copy of `nkl_conv_two`, `NewKLK.lean:552`). -/
+`Σ_{x,y} 𝒯(|x-a₁|) ‖S_{xy}‖ 𝒯(|a₀-y|) ≤ C_s C_T 𝒯(|a₀-a₁|)` (copy of `nkl_conv_two`, `NewKLK.lean:409`). -/
 private theorem NewKLKGen_conv_two {S : Matrix (Zd d L) (Zd d L) ℂ}
     (hsupp : ∀ x y, S x y ≠ 0 → zdistInf d L (x - y) ≤ 1) (hrow : ∀ x, ∑ y, ‖S x y‖ ≤ 1) {CT : ℝ}
     (hTTT : ∀ a b : Zd d L, ∑ x : Zd d L, tailT d L g t ((zdistInf d L (a - x) : ℕ) : ℝ) *
@@ -285,7 +287,7 @@ open scoped Matrix
 
 variable {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz)
 
-/-- **Ward bounds for `𝓛 - 𝒦` over the carrier** (every `σ`; copy of `nkl_ward_LKM`, `NewKLK.lean:758`): for Hermitian `H` with
+/-- **Ward bounds for `𝓛 - 𝒦` over the carrier** (every `σ`; copy of `nkl_ward_LKM`, `NewKLK.lean:759`): for Hermitian `H` with
 `‖G_u - M‖_max ≤ κ/2`, `κ ≤ Im m`, both marginals of `‖(𝓛-𝒦)^{(2)}_{u,σ,(·,·)}‖` are at most `(4 + C_K) W^{-d} (1-u)⁻¹`,
 given the marginals of `𝒦^{(2)}` (`C_K W^{-d} (1-u)⁻¹`) and the link F9 of `LM`, `GMM` to the resolvent at `ζ`. -/
 private theorem NewKLKGen_ward_LKM (n : ℕ) {u κ C_K : ℝ} (hκ : 0 < κ) (hIm : κ ≤ (Cm.m n).im) (hu1 : u < 1)
