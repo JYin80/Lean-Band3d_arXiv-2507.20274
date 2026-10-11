@@ -1,0 +1,16 @@
+L=3 W=2 N=216 t=0.9t0 draws of row u per g: 2000000   (columns: y-type | mean LHS | mean(LHS-RHS) | SE | z_Re z_Im)
+flow data g=0.015625: g0=0.013014 E=0.000013 m0=-0.000013+0.999493j |m0|=0.9995 Im m0=0.9995 t0=0.6937; t=0.6244 Im z_t=0.3754
+g=0.01562  t=0.6244 Im z_t=0.375 y=u                            |mean LHS|=0.10175  mean(LHS-RHS)=-1.73e-04-7.43e-05i  SE=2.2e-04,2.7e-04  z=-0.78,-0.28
+g=0.01562  t=0.6244 Im z_t=0.375 y in [u], y!=u                 |mean LHS|=0.00012  mean(LHS-RHS)=+1.65e-05+1.24e-04i  SE=2.2e-04,2.2e-04  z=+0.07,+0.55
+g=0.01562  t=0.6244 Im z_t=0.375 same offset, adjacent block    |mean LHS|=0.00175  mean(LHS-RHS)=+2.63e-06+4.91e-06i  SE=5.0e-06,5.1e-06  z=+0.53,+0.95
+g=0.01562  t=0.6244 Im z_t=0.375 other offset, other block      |mean LHS|=0.00067  mean(LHS-RHS)=+1.09e-05+6.83e-06i  SE=5.4e-06,5.4e-06  z=+2.01,+1.27
+flow data g=1: g0=0.599414 E=0.025609 m0=-0.025609+0.719297j |m0|=0.7198 Im m0=0.7193 t0=0.3593; t=0.3234 Im z_t=0.4867
+g=1        t=0.3234 Im z_t=0.487 y=u                            |mean LHS|=0.00333  mean(LHS-RHS)=-2.65e-06-6.48e-05i  SE=4.7e-05,1.1e-04  z=-0.06,-0.61
+g=1        t=0.3234 Im z_t=0.487 y in [u], y!=u                 |mean LHS|=0.00007  mean(LHS-RHS)=+4.96e-06+1.38e-04i  SE=7.8e-05,7.8e-05  z=+0.06,+1.77
+g=1        t=0.3234 Im z_t=0.487 same offset, adjacent block    |mean LHS|=0.00073  mean(LHS-RHS)=-4.00e-05+4.32e-06i  SE=2.4e-05,1.3e-05  z=-1.63,+0.32
+g=1        t=0.3234 Im z_t=0.487 other offset, other block      |mean LHS|=0.00015  mean(LHS-RHS)=+1.42e-05+1.63e-05i  SE=1.9e-05,1.8e-05  z=+0.76,+0.90
+flow data g=10: g0=5.560823 E=0.003324 m0=-0.003324+0.667299j |m0|=0.6673 Im m0=0.6673 t0=0.3092; t=0.2783 Im z_t=0.4816
+g=10       t=0.2783 Im z_t=0.482 y=u                            |mean LHS|=0.00309  mean(LHS-RHS)=+2.04e-05-1.99e-05i  SE=3.3e-05,8.8e-05  z=+0.62,-0.23
+g=10       t=0.2783 Im z_t=0.482 y in [u], y!=u                 |mean LHS|=0.00025  mean(LHS-RHS)=+4.10e-05+1.19e-04i  SE=6.5e-05,6.5e-05  z=+0.63,+1.83
+g=10       t=0.2783 Im z_t=0.482 same offset, adjacent block    |mean LHS|=0.00004  mean(LHS-RHS)=-7.59e-06+8.87e-07i  SE=5.4e-06,5.4e-06  z=-1.40,+0.16
+g=10       t=0.2783 Im z_t=0.482 other offset, other block      |mean LHS|=0.00016  mean(LHS-RHS)=-2.33e-06-7.18e-07i  SE=6.1e-06,7.2e-06  z=-0.38,-0.10

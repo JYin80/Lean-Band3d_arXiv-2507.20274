@@ -1,0 +1,12 @@
+Part A: d=3 L=4 W=2 (szP), g = lam = 10, t = 1/2
+  flow data: g0=4.672337 E=1.1e-15 m0=-0.000000+0.560680j |m0|=0.5607 t0=0.2183 (t=1/2 > t0: outside the flow window, irrelevant for the identity); Im z_t=0.2803 > 0; 3 <= L: True
+  hypotheses: D Hermitian residual 0.0e+00;  (D - s) M = 1 residual 5.1e-15;  M_uu = m0 residual 1.7e-15;  z = s - t m0: 0.0e+00
+  S row sum sum_k S_uk = 1.000000000000; S_uk = W^-d 1([k]=[u]) support 8 sites = W^d = 8; M_ku = 0 for k != u in [u]: max = 0.0e+00; M_uv != 0 only at the offset of u: 0.0e+00
+  identities: |Delta + M Y G|_max = 1.0e-14;  |Delta_uu + m0 (YG)_uu - R_uu| = 2.5e-16;  R_uu = 0.05329+0.01604j, Delta_uu = -0.05244+0.06969j, ||Delta||_max = 0.3271 (all non-zero)
+
+Part B: sz0, n = 0..3: kappa=1/2, t=1/2, eps0=1/10, Psi=delta=W^-1, Kenv=B=1
+  n   L    W        size       lam       t0     1/2<=t0  delta<=k/2  W^-3/2<=Psi<=W^-eps0  size^-1<=Psi^2  (1/eta+1)^2<=size  Im m0   |m0|
+  0  4   32       2097152    1.562e-02 0.6937  True      True        True              True            True          0.9995 0.9995
+  1  8   1024     549755813888 2.441e-04 0.6944  True      True        True              True            True          1.0000 1.0000
+  2  12  7776     812479653347328 2.143e-05 0.6944  True      True        True              True            True          1.0000 1.0000
+  3  16  32768    144115188075855872 3.815e-06 0.6944  True      True        True              True            True          1.0000 1.0000

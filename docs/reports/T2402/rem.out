@@ -1,0 +1,45 @@
+g=0.01562  W=2 N=216 t=0.624 kappa-proxy Im m0=0.999  W^-d=1.2500e-01  ||G-M||_max: mean over 6 rests = 1.1174; x W^(d/2) = 3.160
+    y=u                          RMS|KE| = 6.6260e-02   RMS|KE| / W^-d = 0.530   (|M_uy| = 0.999)
+    y same block                 RMS|KE| = 7.1278e-04   RMS|KE| / W^-d = 0.006   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 9.3506e-04   RMS|KE| / W^-d = 0.007   (|M_uy| = 0.013)
+    y other offset other block   RMS|KE| = 3.6460e-04   RMS|KE| / W^-d = 0.003   (|M_uy| = 0.000)
+g=0.01562  W=3 N=729 t=0.624 kappa-proxy Im m0=0.999  W^-d=3.7037e-02  ||G-M||_max: mean over 6 rests = 0.7339; x W^(d/2) = 3.814
+    y=u                          RMS|KE| = 1.1430e-02   RMS|KE| / W^-d = 0.309   (|M_uy| = 0.999)
+    y same block                 RMS|KE| = 2.5774e-04   RMS|KE| / W^-d = 0.007   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 1.4956e-04   RMS|KE| / W^-d = 0.004   (|M_uy| = 0.013)
+    y other offset other block   RMS|KE| = 5.3682e-05   RMS|KE| / W^-d = 0.001   (|M_uy| = 0.000)
+g=0.01562  W=4 N=1728 t=0.624 kappa-proxy Im m0=0.999  W^-d=1.5625e-02  ||G-M||_max: mean over 6 rests = 0.5325; x W^(d/2) = 4.260
+    y=u                          RMS|KE| = 3.2009e-03   RMS|KE| / W^-d = 0.205   (|M_uy| = 0.999)
+    y same block                 RMS|KE| = 3.2026e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 5.0176e-05   RMS|KE| / W^-d = 0.003   (|M_uy| = 0.013)
+    y other offset other block   RMS|KE| = 2.1378e-05   RMS|KE| / W^-d = 0.001   (|M_uy| = 0.000)
+g=1        W=2 N=216 t=0.323 kappa-proxy Im m0=0.719  W^-d=1.2500e-01  ||G-M||_max: mean over 6 rests = 0.3015; x W^(d/2) = 0.853
+    y=u                          RMS|KE| = 3.6521e-03   RMS|KE| / W^-d = 0.029   (|M_uy| = 0.720)
+    y same block                 RMS|KE| = 2.6927e-04   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 7.3203e-04   RMS|KE| / W^-d = 0.006   (|M_uy| = 0.134)
+    y other offset other block   RMS|KE| = 2.1320e-04   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)
+g=1        W=3 N=729 t=0.323 kappa-proxy Im m0=0.719  W^-d=3.7037e-02  ||G-M||_max: mean over 6 rests = 0.2094; x W^(d/2) = 1.088
+    y=u                          RMS|KE| = 6.1617e-04   RMS|KE| / W^-d = 0.017   (|M_uy| = 0.720)
+    y same block                 RMS|KE| = 8.7983e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 1.2439e-04   RMS|KE| / W^-d = 0.003   (|M_uy| = 0.134)
+    y other offset other block   RMS|KE| = 6.0686e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)
+g=1        W=4 N=1728 t=0.323 kappa-proxy Im m0=0.719  W^-d=1.5625e-02  ||G-M||_max: mean over 6 rests = 0.1429; x W^(d/2) = 1.143
+    y=u                          RMS|KE| = 1.6770e-04   RMS|KE| / W^-d = 0.011   (|M_uy| = 0.720)
+    y same block                 RMS|KE| = 2.3473e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 3.6289e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.134)
+    y other offset other block   RMS|KE| = 2.1172e-05   RMS|KE| / W^-d = 0.001   (|M_uy| = 0.000)
+g=10       W=2 N=216 t=0.401 kappa-proxy Im m0=0.667  W^-d=1.2500e-01  ||G-M||_max: mean over 6 rests = 0.3055; x W^(d/2) = 0.864
+    y=u                          RMS|KE| = 4.1957e-03   RMS|KE| / W^-d = 0.034   (|M_uy| = 0.667)
+    y same block                 RMS|KE| = 3.4776e-04   RMS|KE| / W^-d = 0.003   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 2.9127e-04   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.014)
+    y other offset other block   RMS|KE| = 3.2939e-04   RMS|KE| / W^-d = 0.003   (|M_uy| = 0.000)
+g=10       W=3 N=729 t=0.401 kappa-proxy Im m0=0.667  W^-d=3.7037e-02  ||G-M||_max: mean over 6 rests = 0.2100; x W^(d/2) = 1.091
+    y=u                          RMS|KE| = 7.2574e-04   RMS|KE| / W^-d = 0.020   (|M_uy| = 0.667)
+    y same block                 RMS|KE| = 1.3021e-04   RMS|KE| / W^-d = 0.004   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 8.7106e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.014)
+    y other offset other block   RMS|KE| = 1.5960e-04   RMS|KE| / W^-d = 0.004   (|M_uy| = 0.000)
+g=10       W=4 N=1728 t=0.401 kappa-proxy Im m0=0.667  W^-d=1.5625e-02  ||G-M||_max: mean over 6 rests = 0.1456; x W^(d/2) = 1.165
+    y=u                          RMS|KE| = 1.9689e-04   RMS|KE| / W^-d = 0.013   (|M_uy| = 0.667)
+    y same block                 RMS|KE| = 5.4601e-05   RMS|KE| / W^-d = 0.003   (|M_uy| = 0.000)
+    y same offset adj block      RMS|KE| = 2.8239e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.014)
+    y other offset other block   RMS|KE| = 3.2283e-05   RMS|KE| / W^-d = 0.002   (|M_uy| = 0.000)

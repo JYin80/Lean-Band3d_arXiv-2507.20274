@@ -1,0 +1,9 @@
+part 1: g  L  kappa(design)  Im m(z)  t0  g0  |m0|  Im m0  2/kappa  rho_off  sum_{b!=a}|M_ab|^2  1-|m0|^2  ||m0||<=1  kappa<=|m0|
+g=0.015625 L=64   kappa=0.5   Im m=0.8325>=kappa True  t0=0.6937 g0=0.0130<=Lam True |m0|=0.9995 Im m0=0.9995  2/kappa=4.0  rho_off=0.0833  sum|M|^2 off=0.001015 vs 1-|m0|^2=0.001015  |m0|<=1 True kappa<=|m0| True
+g=1        L=96   kappa=0.25  Im m=0.3435>=kappa True  t0=0.2862 g0=0.5350<=Lam True |m0|=0.6420 Im m0=0.6420  2/kappa=8.0  rho_off=15.2661  sum|M|^2 off=0.587849 vs 1-|m0|^2=0.587849  |m0|<=1 True kappa<=|m0| True
+g=10       L=128  kappa=0.04  Im m=0.0439>=kappa True  t0=0.0439 g0=2.0955<=Lam True |m0|=0.2095 Im m0=0.2095  2/kappa=50.0  rho_off=446.9983  sum|M|^2 off=0.956090 vs 1-|m0|^2=0.956090  |m0|<=1 True kappa<=|m0| True
+
+part 2: g  c0  S  rho  Phi  W  eps0  delta  Lm  R0  X_b  A_b  bound=rho(3/2(delta+sqrt A_b)+sqrt X_b)  bound/Psi (Psi = W^-eps0)
+g=0.015625 c0=4.16e-03 S=2.06e+13 rho=64 Phi=3.0 W=4096 eps0=1.4 delta=8.76e-06 Lm=7.68e-11  R0=2.40e+22 X_b=5.32e+24 A_b=1.62e+23  bound=1.86e+14  bound/Psi=2.13e+19  (trivial |R| <= rho*(3/2)*(3/2+...) ~ O(rho))
+g=1        c0=2.08e-03 S=3.28e+14 rho=64 Phi=3.0 W=16384 eps0=1.4 delta=1.26e-06 Lm=1.58e-12  R0=2.51e+23 X_b=2.18e+26 A_b=1.24e+28  bound=1.16e+16  bound/Psi=9.23e+21  (trivial |R| <= rho*(3/2)*(3/2+...) ~ O(rho))
+g=10       c0=2.08e-03 S=3.28e+14 rho=64 Phi=3.0 W=16384 eps0=1.4 delta=1.26e-06 Lm=1.58e-12  R0=2.51e+23 X_b=2.18e+26 A_b=8.57e+29  bound=8.98e+16  bound/Psi=7.14e+22  (trivial |R| <= rho*(3/2)*(3/2+...) ~ O(rho))

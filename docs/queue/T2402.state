@@ -1,4 +1,4 @@
-state: blocked
-reason: 1a PASS, probe 4b5f864 (exit 0), 1a-audit PASS but needs dispatcher sign-off (wf_1a8af3e6-312; docs/reports/T2402-1a-audit.md): F2 no consumer of G5c on T2401's route; D3 the new-file layout (C5) costs +419 central lines, not about 100. Observation: the probe step also wrote a section (a′) (03:17 UTC) beside its (a″). Question for the dispatcher: sign off F2 and D3 (start 1b prover-max?). 1b not started (H183 (3)).
-updated: Sun Oct 11 03:38:01 UTC 2026
+state: merged 0c82091
+reason: report-only merge under Amend 1 (state, prove, 1a-audit, 18 scripts in docs/reports/T2402/); probe RBM3D/Probe/T2402Pins.lean stays on t/T2402 at 4b5f864; G5c stage 1b held (Amend 1 F2); pushed
+updated: Sun Oct 11 04:21:41 UTC 2026
 reports: docs/reports/T2402-prove.md, docs/reports/T2402-1a-audit.md
