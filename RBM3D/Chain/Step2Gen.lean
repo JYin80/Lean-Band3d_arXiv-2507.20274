@@ -1106,23 +1106,12 @@ def STK2decaygL (d : ℕ) (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz)
 
 /-- **`STK2decaygL'`** (BAT-F2, T2414): `STK2decaygL` with the premise `|E| ≤ 2 - κ` replaced by `κ ≤ Im m` (the one-loop value of
 the family at the constant sequence `fun _ => E`), as `STNewKLKgL'` (`Chain/NewKLKGen.lean:69`).  `K` is a carrier field: no
-kernel enters. -/
+kernel enters.  The bridge to the unprimed form is `stK2decaygL_of_primed` (`Chain/NewKLKGen.lean` §5). -/
 def STK2decaygL' (d : ℕ) (mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz) : Prop :=
   3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∃ C : ℝ, 0 < C ∧
     ∀ (sz : Sizes d) (n : ℕ) (E u D : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ → κ ≤ ((mk sz (fun _ => E)).m n).im →
       0 ≤ u → u < 1 → 0 ≤ D → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
         ‖(mk sz (fun _ => E)).K n u σ a‖ ≤ C * STprof sz n u D ((sz.L n : ℕ) : ℝ) (a 0) (a 1)
-
-/-- **`STK2decaygL` from `STK2decaygL'`** (BAT-F2; the shape of `stNewKLKgL_of_primed`, `Chain/NewKLKGen.lean:644`): apply the primed
-pin at `κ' = κ/2`, given the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m` for every `κ, 𝔡 > 0`. -/
-theorem stK2decaygL_of_primed {d : ℕ} {mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz} (h : STK2decaygL' d mk)
-    (hdom : ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ →
-      |E| ≤ 2 - κ → κ / 2 ≤ ((mk sz (fun _ => E)).m n).im) :
-    STK2decaygL d mk := by
-  intro hd κ 𝔡 hκ h𝔡
-  obtain ⟨C, hC, hK⟩ := h hd (κ / 2) 𝔡 (half_pos hκ) h𝔡
-  exact ⟨C, hC, fun sz n E u D hlam hlam' hE hu0 hu1 hD σ a =>
-    hK sz n E u D hlam hlam' (hdom κ 𝔡 hκ h𝔡 sz n E hlam hlam' hE) hu0 hu1 hD σ a⟩
 
 section EnergyBridge
 
@@ -1234,5 +1223,54 @@ example (H : Matrix (Idx 3 (sz0.L 0) (sz0.W 0)) (Idx 3 (sz0.L 0) (sz0.W 0)) ℂ)
 /-- The energy-quantified pins `STNewKLKAt`, `STNewKLK`, `STK2decay` at `d = 3`, `κ = 𝔡 = 1/10`, `C = δ₀ = 1`. -/
 example := And.intro (bandStep2_STNewKLKAt 3 (1 / 10) (1 / 10) 1 1) <|
   And.intro (bandStep2_STNewKLK 3) (bandStep2_STK2decay 3)
+
+/-- The band block matrix `Bm = m(0) · 1`, `m(0) = i`, at `sz0`, `n = 0`: the band `M = m I` is `Bm ⊗ I_{W^d}`. -/
+private def Step2Gen_Bm0 : Matrix (Zd 3 (sz0.L 0)) (Zd 3 (sz0.L 0)) ℂ := Matrix.of fun a b => if a = b then mE 0 else 0
+
+/-- **(b) at one band size** (T2414): `sz0` (`L = 4`, `W = 32`, `lam = 1/64`, `N = 2097152`), `E ≡ 0` (`m = i`, `‖m(σ) m(σ')‖ = 1`),
+all four charge pairs: the `kron` hypothesis of `Step2Kern_Mss_of_kron` is discharged (`split_injective`), the two routes to
+`M^{(σσ')}` (`kron`, `band`) agree, and the kernels `thetaKer`, `uKer` (`k = 2`) and `ThetaN`, `UN` (`k = 3` loops, `σ` arbitrary) are
+the merged band kernels. -/
+example :
+    (∀ σ σ' : Bool, ‖mSigma 0 σ * mSigma 0 σ'‖ = 1 ∧
+      Step2Kern_Mss (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' = (mSigma 0 σ * mSigma 0 σ') • 1 ∧
+      Step2Kern_Mss (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' =
+        Matrix.of fun a b => Step2Kern_Bsig Step2Gen_Bm0 σ b a * Step2Kern_Bsig Step2Gen_Bm0 σ' a b) ∧
+    (∀ (σ σ' : Bool) (t : ℝ), Step2Gen_thetaKer (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' t =
+      RBM.thetaKer 3 (sz0.L 0) (sz0.lam 0) (mSigma 0 σ * mSigma 0 σ') t) ∧
+    (∀ (σ σ' : Bool) (s t : ℝ), Step2Gen_uKer (bandFM sz0 fun _ => (0 : ℝ)) 0 σ σ' s t =
+      RBM.uKer 3 (sz0.L 0) (sz0.lam 0) (mSigma 0 σ * mSigma 0 σ') s t) ∧
+    (∀ (σ : Fin 3 → Bool) (t : ℝ) (A : (Fin 3 → Zd 3 (sz0.L 0)) → ℂ),
+      Step2Gen_ThetaN (bandFM sz0 fun _ => (0 : ℝ)) 0 σ t A =
+        RBM.ThetaN 3 (sz0.L 0) (sz0.lam 0) (fun i => mSigma 0 (σ i)) t A) ∧
+    (∀ (σ : Fin 3 → Bool) (s t : ℝ) (A : (Fin 3 → Zd 3 (sz0.L 0)) → ℂ),
+      Step2Gen_UN (bandFM sz0 fun _ => (0 : ℝ)) 0 σ s t A =
+        RBM.UN 3 (sz0.L 0) (sz0.lam 0) (fun i => mSigma 0 (σ i)) s t A) := by
+  have hker : ∀ x y : Idx 3 (sz0.L 0) (sz0.W 0), (bandFM sz0 fun _ => (0 : ℝ)).M 0 x y =
+      Step2Gen_Bm0 (split 3 (sz0.L 0) (sz0.W 0) x).1 (split 3 (sz0.L 0) (sz0.W 0) y).1 *
+        (if (split 3 (sz0.L 0) (sz0.W 0) x).2 = (split 3 (sz0.L 0) (sz0.W 0) y).2 then 1 else 0) := by
+    intro x y
+    by_cases hxy : x = y
+    · subst hxy
+      simp [bandFM, Step2Gen_Bm0]
+    · by_cases h1 : (split 3 (sz0.L 0) (sz0.W 0) x).1 = (split 3 (sz0.L 0) (sz0.W 0) y).1
+      · have h2 : ¬ (split 3 (sz0.L 0) (sz0.W 0) x).2 = (split 3 (sz0.L 0) (sz0.W 0) y).2 := fun h2 =>
+          hxy (split_injective 3 (sz0.L 0) (sz0.W 0) (Prod.ext h1 h2))
+        simp [bandFM, Step2Gen_Bm0, hxy, h2]
+      · simp [bandFM, Step2Gen_Bm0, hxy, h1]
+  refine ⟨fun σ σ' => ⟨?_, Step2Kern_Mss_band sz0 _ 0 σ σ', Step2Kern_Mss_of_kron _ 0 Step2Gen_Bm0 hker σ σ'⟩,
+    fun σ σ' t => Step2Kern_thetaKer_band sz0 _ 0 σ σ' t, fun σ σ' s t => Step2Kern_uKer_band sz0 _ 0 σ σ' s t,
+    fun σ t A => Step2Kern_ThetaN_band sz0 _ 0 3 σ t A, fun σ s t A => Step2Kern_UN_band sz0 _ 0 3 σ s t A⟩
+  rw [norm_mul, norm_mSigma (by norm_num), norm_mSigma (by norm_num), mul_one]
+
+/-- The block kernel at `Bm0` is `m(σ) m(σ') I` (the `kron` route to `Step2Kern_Mss_band`, for the four charge pairs). -/
+example (σ σ' : Bool) :
+    (Matrix.of fun a b => Step2Kern_Bsig Step2Gen_Bm0 σ b a * Step2Kern_Bsig Step2Gen_Bm0 σ' a b) =
+      (mSigma 0 σ * mSigma 0 σ') • (1 : Matrix (Zd 3 (sz0.L 0)) (Zd 3 (sz0.L 0)) ℂ) := by
+  ext a b
+  by_cases h : a = b
+  · subst h
+    cases σ <;> cases σ' <;> simp [Step2Kern_Bsig, Step2Gen_Bm0, mSigma]
+  · cases σ <;> cases σ' <;> simp [Step2Kern_Bsig, Step2Gen_Bm0, mSigma, h, Matrix.one_apply, Ne.symm h]
 
 end RBM.BA.Step2GenInst

@@ -22,7 +22,9 @@ Design `docs/reports/T2379-design.md` §2 (row T3), §3; layout (A) (Amend 1 D1)
   (F5), `‖m‖ ≤ 1` (F6), the block-kernel convolution against `tailW` (F7, T2414), the marginals of
   `𝒦^{(2)}` (F8), and `LM`, `GMM` as the resolvent of `loopFine` at `ζ`, `Im ζ = (1-u) Im m` (F9).
 * **Unprimed corollaries** `stNewKLKAtgL_of_primed`, `stNewKLKgL_of_primed` (Amend 1 D1′): at
-  `κ' = κ/2` with the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m`.
+  `κ' = κ/2` with the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m`; and (T2414, BAT-F2)
+  `stK2decaygL_of_primed`, the same step for the primed `K^{(2)}` decay `STK2decaygL'`
+  (`Chain/Step2Gen.lean`).
 * **Band**: F5-F9 hold at `bandStep2Mat` (`NewKLKGen_band_hyp`), so the band pin `STNewKLK d` is
   re-derived through the generic theorem and `bandStep2_STNewKLK` (compiled `example`s, `d = 3`).
 
@@ -639,6 +641,18 @@ theorem stNewKLKgL_of_primed {mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat 
   obtain ⟨C, δ₀, hC, hδ, hAt⟩ := h hd (κ / 2) 𝔡 (half_pos hκ) h𝔡
   exact ⟨C, δ₀, hC, hδ, stNewKLKAtgL_of_primed hAt (hdom κ 𝔡 hκ h𝔡)⟩
 
+/-- **`STK2decaygL` from `STK2decaygL'`** (BAT-F2, T2414; the shape of `stNewKLKgL_of_primed`): apply the primed pin
+(`Chain/Step2Gen.lean`, next to `STK2decaygL`) at `κ' = κ/2`, given the domain fact `|E| ≤ 2 - κ → κ/2 ≤ Im m` for every
+`κ, 𝔡 > 0`. -/
+theorem stK2decaygL_of_primed {mk : ∀ sz : Sizes d, (ℕ → ℝ) → Step2Mat sz} (h : STK2decaygL' d mk)
+    (hdom : ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ →
+      |E| ≤ 2 - κ → κ / 2 ≤ ((mk sz (fun _ => E)).m n).im) :
+    STK2decaygL d mk := by
+  intro hd κ 𝔡 hκ h𝔡
+  obtain ⟨C, hC, hK⟩ := h hd (κ / 2) 𝔡 (half_pos hκ) h𝔡
+  exact ⟨C, hC, fun sz n E u D hlam hlam' hE hu0 hu1 hD σ a =>
+    hK sz n E u D hlam hlam' (hdom κ 𝔡 hκ h𝔡 sz n E hlam hlam' hE) hu0 hu1 hD σ a⟩
+
 end Main
 
 /-! ## 6. The band family: F5-F9 hold at `bandStep2Mat` -/
@@ -758,6 +772,24 @@ example : ∃ C : ℝ, 0 < C ∧ STNewKLKAtgL' 3 (1 / 10) (1 / 10) C (1 / 20) (f
 example (d : ℕ) : STNewKLK d :=
   (bandStep2_STNewKLK d).mpr (stNewKLKgL_of_primed
     (stNewKLKgL'_of _ fun hd κ 𝔡 hκ h𝔡 => newKLKGenHyp_band hd κ 𝔡 hκ h𝔡)
+    fun _ _ hκ _ _ _ _ _ _ hE => Ind.half_le_mE_im hκ.le hE)
+
+/-- **BAT-F2 at the band** (T2414): the primed pin `STK2decaygL'` at `bandStep2Mat`, from the merged band pin `STK2decay d` at
+`κ' = κ²` (`κ ≤ Im m(E) = √(4 - E²)/2` gives `E² ≤ 4 - 4κ²`, so `|E| ≤ 2 - κ²`). -/
+private theorem NewKLKGen_K2primed_band (d : ℕ) : STK2decaygL' d (fun sz E => bandStep2Mat sz E) := by
+  intro hd κ 𝔡 hκ h𝔡
+  obtain ⟨C, hC, h⟩ := (bandStep2_STK2decay d).mp (stK2decay_holds d) hd (κ ^ 2) 𝔡 (by positivity) h𝔡
+  refine ⟨C, hC, fun sz n E u D hlam hlam' hIm hu0 hu1 hD σ a => h sz n E u D hlam hlam' ?_ hu0 hu1 hD σ a⟩
+  change κ ≤ (mE E).im at hIm
+  rw [mE_im, le_div_iff₀ two_pos] at hIm
+  have h2 : (κ * 2) ^ 2 ≤ 4 - E ^ 2 := (Real.le_sqrt' (by positivity)).1 hIm
+  have hκ1 : κ ^ 2 ≤ 1 := by nlinarith [sq_nonneg E]
+  exact abs_le_of_sq_le_sq (by nlinarith [sq_nonneg (κ ^ 2)]) (by linarith)
+
+/-- **BAT-F2 at the band, instance of `stK2decaygL_of_primed`**: the band pin `STK2decay d` from the primed pin at `bandStep2Mat`
+(every deterministic hypothesis discharged; the domain fact is `Ind.half_le_mE_im`) and the merged bridge `bandStep2_STK2decay`. -/
+example (d : ℕ) : STK2decay d :=
+  (bandStep2_STK2decay d).mpr (stK2decaygL_of_primed (NewKLKGen_K2primed_band d)
     fun _ _ hκ _ _ _ _ _ _ hE => Ind.half_le_mE_im hκ.le hE)
 
 open RBM.Gauss.SizesInst in
