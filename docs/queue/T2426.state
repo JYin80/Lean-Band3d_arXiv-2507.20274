@@ -1,0 +1,4 @@
+state: audit-pass
+reason: preflight PASS, prover-max 1140fac, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Sun Oct 11 15:12:17 UTC 2026
+reports: docs/reports/T2426-prove.md, docs/reports/T2426-audit.md
