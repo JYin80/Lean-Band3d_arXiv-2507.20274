@@ -516,6 +516,178 @@ theorem baGtoAG_holds (d : ℕ) : BAGtoAG d := by
     _ = _ := Finset.sum_add_distrib
     _ ≤ _ := add_le_add hmain' htail
 
+/-! ## 8. G3 with the constants of the BA model (the form of `baClaimSize_E`) -/
+
+section Model
+
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- The entries of `Ψ = Ψ^{(B)} ⊗ I` (`PsiI`) in the block-offset form (a copy of the private `BASizeClaim_PsiI_apply`). -/
+private theorem BAAtom_PsiI_apply (x y : Idx d L W) :
+    PsiI d L W x y = if (split d L W x).2 = (split d L W y).2 then
+      (if Adj d L (split d L W x).1 (split d L W y).1 then (1 : ℂ) else 0) else 0 := by
+  simp only [PsiI, PsiV, Matrix.submatrix_apply, Matrix.kroneckerMap_apply, Matrix.one_apply, PsiB,
+    Matrix.of_apply]
+  have h1 : splitEquiv d L W x = split d L W x := rfl
+  have h2 : splitEquiv d L W y = split d L W y := rfl
+  rw [h1, h2]
+  by_cases h : (split d L W x).2 = (split d L W y).2 <;> simp [h]
+
+/-- **The decay and the offset structure of the four kernels of the BA model**: one decay `(C, c)` depending on `(d, Λ, κ)` only of
+`S`, `S⁺ = S W` (`baSpDecay`), `M` (`BAMB_decay_large`, through the fibre) and `g₀ Ψ` (nearest-neighbour entries `g₀ ≤ Λ`); `M` and
+`g₀ Ψ` vanish between different offsets (`BAMres_fine_apply`, `PsiI`). -/
+theorem BAAtom_decay_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    ∃ C c : ℝ, 0 ≤ C ∧ 0 < c ∧ ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), 0 < g0 → g0 ≤ Λ →
+      RBM.BA.BAReal d L g0 κ E m → 0 ≤ t → t < 1 →
+      (∀ x y : Idx d L W, ‖Matrix.of (BAlwS d L W t) x y‖ ≤
+        C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ)))) ∧
+      (∀ x y : Idx d L W, ‖(Matrix.of (BAlwS d L W t) * BAlwW d L W g0 E t m) x y‖ ≤
+        C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ)))) ∧
+      (∀ x y : Idx d L W, ‖BAlwM d L W g0 E m x y‖ ≤ C * Real.exp (-(c * (lwBdist d L W x y : ℝ))) ∧
+        ‖((g0 : ℂ) • PsiI d L W) x y‖ ≤ C * Real.exp (-(c * (lwBdist d L W x y : ℝ)))) ∧
+      (∀ x y : Idx d L W, (split d L W x).2 ≠ (split d L W y).2 →
+        BAlwM d L W g0 E m x y = 0 ∧ ((g0 : ℂ) • PsiI d L W) x y = 0) := by
+  obtain ⟨C₁, c₁, hC₁, hc₁, hdec⟩ := baSpDecay d hd Λ κ hΛ hκ
+  have hd0 : 0 < d := by omega
+  have hc₂ := RBM.BA.BAct_rate_pos d Λ κ hd0 hΛ hκ
+  set c₂ := RBM.BA.BAct_rate d Λ κ with hc₂def
+  set C : ℝ := max (max C₁ c₂⁻¹) (Λ * Real.exp 1) with hCdef
+  set c : ℝ := min (min c₁ c₂) 1 with hcdef
+  have hC0 : 0 ≤ C := le_max_of_le_left (le_max_of_le_left hC₁.le)
+  have hc0 : 0 < c := lt_min (lt_min hc₁ hc₂) one_pos
+  have hmono : ∀ (v w u C' c' : ℝ), 0 ≤ w → 0 ≤ u → C' ≤ C → c ≤ c' → v ≤ C' * w * Real.exp (-(c' * u)) →
+      v ≤ C * w * Real.exp (-(c * u)) := by
+    intro v w u C' c' hw hu hC hc hv
+    refine hv.trans (mul_le_mul (mul_le_mul_of_nonneg_right hC hw) (Real.exp_le_exp.2 ?_) (Real.exp_pos _).le
+      (mul_nonneg hC0 hw))
+    nlinarith
+  refine ⟨C, c, hC0, hc0, fun L W _ _ hL g0 E t m hg hgΛ hr ht0 ht1 => ?_⟩
+  have hw : ((E : ℂ) + m).im ≠ 0 := by simpa using hr.1.1.ne'
+  obtain ⟨hdS, hdSp⟩ := hdec L W hL g0 E t m hg hgΛ hr ht0 ht1
+  have hMapp : ∀ x y : Idx d L W, BAlwM d L W g0 E m x y = if (split d L W x).2 = (split d L W y).2 then
+      RBM.BA.BAMB d L g0 (E : ℂ) m (split d L W x).1 (split d L W y).1 else 0 :=
+    fun x y => RBM.BA.BAMres_fine_apply d L W g0 (E : ℂ) m hw x y
+  have hPsi : ∀ x y : Idx d L W, ((g0 : ℂ) • PsiI d L W) x y = if (split d L W x).2 = (split d L W y).2 then
+      (if Adj d L (split d L W x).1 (split d L W y).1 then (g0 : ℂ) else 0) else 0 := by
+    intro x y
+    rw [Matrix.smul_apply, smul_eq_mul, BAAtom_PsiI_apply]
+    split_ifs <;> simp
+  refine ⟨fun x y => ?_, fun x y => ?_, fun x y => ⟨?_, ?_⟩, fun x y ho => ⟨?_, ?_⟩⟩
+  · exact hmono _ _ _ C₁ c₁ (by positivity) (Nat.cast_nonneg _) (le_max_of_le_left (le_max_left _ _))
+      ((min_le_left _ _).trans (min_le_left _ _)) (hdS x y)
+  · exact hmono _ _ _ C₁ c₁ (by positivity) (Nat.cast_nonneg _) (le_max_of_le_left (le_max_left _ _))
+      ((min_le_left _ _).trans (min_le_left _ _)) (hdSp x y)
+  · rw [hMapp]
+    split_ifs with ho
+    · have := RBM.BA.BAMB_decay_large d L hL hd0 Λ g0 κ E m hΛ hg hgΛ hκ hr (split d L W x).1 (split d L W y).1
+      have h1 := hmono _ 1 (lwBdist d L W x y : ℝ) c₂⁻¹ c₂ one_pos.le (Nat.cast_nonneg _)
+        (le_max_of_le_left (le_max_right _ _)) ((min_le_left _ _).trans (min_le_right _ _))
+        (by simpa [neg_mul, lwBdist] using this)
+      simpa using h1
+    · rw [norm_zero]; positivity
+  · rw [hPsi]
+    split_ifs with ho ha
+    · have hd1 : (lwBdist d L W x y : ℝ) = 1 := by
+        simp only [lwBdist]
+        exact_mod_cast ha
+      rw [hd1, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hg, mul_one]
+      have h1 : Λ * Real.exp 1 ≤ C := le_max_right _ _
+      have h2 : 1 ≤ Real.exp (-c) * Real.exp 1 := by
+        rw [← Real.exp_add]
+        exact Real.one_le_exp (by linarith [min_le_right (min c₁ c₂) 1])
+      have h3 : g0 * Real.exp 1 ≤ Λ * Real.exp 1 := mul_le_mul_of_nonneg_right hgΛ (Real.exp_pos 1).le
+      nlinarith [Real.exp_pos (-c), Real.exp_pos 1]
+    all_goals simp only [norm_zero]; positivity
+  · rw [hMapp]; simp [ho]
+  · rw [hPsi]; simp [ho]
+
+/-- **G3 at the BA model** (constants of `(d, Λ, κ)` only; the form of `baClaimSize_E`, `BASizeClaim2.lean:566`): `D.S`, `D.Sp`,
+`D.M`, `D.gPsi` are the BA matrices, `G` is any matrix with `‖G - M‖ ≤ Ψ`: the conclusion of `baGtoAG_holds` with `(K₀, K₁, Kd)` of
+`baKBound_E` and `(C, c)` of `BAAtom_decay_E`, for every `0 < g₀ ≤ Λ`, `L ≥ 3`, `W ≥ 1`, `0 ≤ t < 1`, `BAReal d L g₀ κ E m`.  No smallness
+of `g₀`, no `M = m I`. -/
+theorem baGtoAG_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    ∃ K₀ K₁ Kd C c : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧ 0 ≤ C ∧ 0 < c ∧
+      ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), 0 < g0 → g0 ≤ Λ →
+        RBM.BA.BAReal d L g0 κ E m → 0 ≤ t → t < 1 →
+        ∀ (E' I' : Type) [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E' I'), Γ.Normal →
+          (∀ a b : E', Γ.mol (Sum.inl a) = Γ.mol (Sum.inl b) → a = b) →
+          ∀ D : BALData (Idx d L W), D.S = Matrix.of (BAlwS d L W t) →
+            D.Sp = Matrix.of (BAlwS d L W t) * BAlwW d L W g0 E t m → D.M = BAlwM d L W g0 E m →
+            D.gPsi = (g0 : ℂ) • PsiI d L W → ∀ (Ψ A r R : ℝ) (ξ : Zd d L → Zd d L → ℝ),
+            (∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) → 0 ≤ A → ((W : ℝ) ^ d)⁻¹ ≤ A * Ψ ^ 2 →
+            0 ≤ r → (Fintype.card (E' ⊕ I') : ℝ) * r ≤ R → (∀ a b, 0 ≤ ξ a b) →
+            (∀ (x y : Idx d L W) (a b : Zd d L), (zdistD d L ((split d L W x).1 - a) : ℝ) ≤ R →
+              (zdistD d L ((split d L W y).1 - b) : ℝ) ≤ R → ‖D.G x y - D.M x y‖ ≤ ξ a b) →
+            ∀ ℓe : E' → Idx d L W,
+              ‖Γ.val D ℓe‖ ≤
+                Γ.sizeConst (K₀ * A) K₁ Kd * Ψ ^ (Γ.scalingOrder - Γ.auxOrd) *
+                    (((W : ℝ) ^ d) ^ Γ.nM * Γ.auxVal ξ (fun a => (split d L W (ℓe a)).1)) +
+                  Real.exp (-(c * r / 2)) * Γ.sizeConst C (C * expC (d - 2) (c / 2)) (C * (1 + expC (d - 2) (c / 2))) *
+                    Γ.scalingSize Ψ W d L := by
+  obtain ⟨K₀, K₁, Kd, hK₀, hK₁, hKd, hK⟩ := baKBound_E d hd Λ κ hΛ hκ
+  obtain ⟨C, c, hC, hc, hdec⟩ := BAAtom_decay_E d hd Λ κ hΛ hκ
+  refine ⟨K₀, K₁, Kd, C, c, hK₀, hK₁, hKd, hC, hc,
+    fun L W _ _ hL g0 E t m hg hgΛ hr ht0 ht1 E' I' _ _ _ _ Γ hN hext D hS hSp hM hP Ψ A r R ξ hG hA hwin hr0 hRr hξ0 hξ ℓe => ?_⟩
+  obtain ⟨hS', hSp', hM', hP'⟩ := hK L W hL g0 E t m hg hgΛ hr ht0 ht1
+  obtain ⟨hdS, hdSp, hdMP, hoff⟩ := hdec L W hL g0 E t m hg hgΛ hr ht0 ht1
+  rw [← hS] at hS' hdS
+  rw [← hSp] at hSp' hdSp
+  rw [← hM] at hM' hdMP hoff
+  rw [← hP] at hP' hdMP hoff
+  exact baGtoAG_holds d hd L W Γ hN hext D Ψ A K₀ K₁ Kd C c r R ξ hG hA hwin hS' hSp' hM' hP' hC hc hdS hdSp hdMP hoff
+    hr0 hRr hξ0 hξ ℓe
+
+end Model
+
+/-! ## 9. The nested form of `Γ^aux` (target for L3c3, L3d1) and G4 (`B:491-497`, the pin of L3d1) -/
+
+/-- **The nested form of `Γ^aux`** (the BA twin of `lwAuxNested_holds`, `AuxGraph.lean:1606`): the walks of `lem:localregular` (3)-(5)
+of the shadow, the molecules `𝓜_x ≠ 𝓜_y`; an `NGraph` with `p` paths and `n_M` internal vertices, no ghost edge, of order
+`ord Γ^aux`, whose value is the value of the aux graph for every symmetric `ξ`.  The aux graph of a BA graph at the molecule
+centres is the band's on `BAGraph.shadow`, so this is `lwAuxNested_holds` on the shadow (`B:491-497`: no sum over non-centre atoms
+remains in `Γ^aux`). -/
+theorem baAuxNested_holds : ∀ (p : ℕ) (P : BAPGraph (Fin 2)), 0 < p → (BAShadowPG P).LocReg345 p →
+    P.g.mol (Sum.inl (P.ext 0)) ≠ P.g.mol (Sum.inl (P.ext 1)) →
+    ∃ Γa : NGraph p P.g.nM, Γa.NoGhost ∧ Γa.IsNested ∧ Γa.ordN = P.g.auxOrd ∧
+      ∀ {κ : Type} [Fintype κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : P.E' → κ,
+        Γa.val ξ (fun _ => be (P.ext 0)) (fun _ => be (P.ext 1)) = P.g.auxVal ξ be := by
+  intro p P hp hLR hxy
+  have hxy' : (BAShadowPG P).g.molOf (Sum.inl ((BAShadowPG P).ext 0)) ≠
+      (BAShadowPG P).g.molOf (Sum.inl ((BAShadowPG P).ext 1)) := fun h =>
+    hxy (BAAtom_mol_eq_of_mem P.g ((BAGraph.shadow_molOf_eq_iff P.g _ _).1 h)).symm
+  obtain ⟨Γa, h1, h2, h3, h4⟩ := lwAuxNested_holds p (BAShadowPG P) hp hLR hxy'
+  have key : ∀ (q : ℕ) (hq : q = P.g.nM) (Γa : NGraph p q), Γa.NoGhost → Γa.IsNested → Γa.ordN = P.g.auxOrd →
+      (∀ {κ : Type} [Fintype κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : P.E' → κ,
+        Γa.val ξ (fun _ => be (P.ext 0)) (fun _ => be (P.ext 1)) = P.g.auxVal ξ be) →
+      ∃ Γa : NGraph p P.g.nM, Γa.NoGhost ∧ Γa.IsNested ∧ Γa.ordN = P.g.auxOrd ∧
+        ∀ {κ : Type} [Fintype κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : P.E' → κ,
+          Γa.val ξ (fun _ => be (P.ext 0)) (fun _ => be (P.ext 1)) = P.g.auxVal ξ be := by
+    intro q hq
+    subst hq
+    intro Γa h1 h2 h3 h4
+    exact ⟨Γa, h1, h2, h3, h4⟩
+  exact key _ (BAGraph.shadow_nM P.g) Γa h1 h2 h3 h4
+
+open RBM.Gauss.Sizes in
+/-- **G4** (`B:491-497`, **the pin of L3d1**): the conclusion of `LWAnp` (`LWPins.lean:409`) for the aux graph of a BA graph, with the
+hypotheses of `LWAnp` (`STFlow`, `LWPsiAll`, `LWXi`) and `n_M ≤ p`.  The sums over the non-centre atoms are not in `auxVal`
+(centre level), so the `NGraph` is `baAuxNested_holds`'s.  The form on the BA flow carrier is fixed by L3c3's 1a.  Owner: L3d1
+(stage L); it is stated here, consumed by no theorem of this file, and `LWAnp d → BAAnpAux d` is `baAuxNested_holds` with the
+band's `LWAnp`. -/
+def BAAnpAux (d : ℕ) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
+    ∀ (p : ℕ) (P : BAPGraph (Fin 2)), 0 < p → P.g.nM ≤ p → (BAShadowPG P).LocReg345 p →
+      P.g.mol (Sum.inl (P.ext 0)) ≠ P.g.mol (Sum.inl (P.ext 1)) →
+      ∀ (ε₀ C₁ C₂ C₃ : ℝ) (Cc : ℝ → ℝ), ∃ c : ℝ, 0 < c ∧
+        ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
+          ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ lemT (z n)) →
+            ∀ Φ : ℕ → ℝ → ℝ, LWPsiAll sz ε₀ C₁ C₂ C₃ Cc Φ →
+              ∀ ξ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → sz.SeqΩ → ℝ, LWXi sz (STflowE z) t Φ ξ →
+                Prec sz (U := fun n => Zd d (sz.L n) × Zd d (sz.L n))
+                  (fun n ab ω => P.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = P.ext 0 then ab.1 else ab.2))
+                  (fun n ab _ => ((((sz.W n : ℕ) : ℝ) ^ d) * etaT (STflowE z n) (t n))⁻¹ ^ P.g.nM *
+                    Φ n (c * ((zdistInf d (sz.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ p * Φ n 0 ^ (P.g.auxOrd - p))
+
 end RBM.Graph
 
 end

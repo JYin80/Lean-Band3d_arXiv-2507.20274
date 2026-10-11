@@ -100,16 +100,9 @@ theorem BAGraph.auxVal_nonneg {κ : Type} [Fintype κ] (Γ : BAGraph E I) (ξ : 
     (hξ : ∀ u v, 0 ≤ ξ u v) (be : E → κ) : 0 ≤ Γ.auxVal ξ be :=
   Γ.shadow.auxVal_nonneg ξ hξ be
 
-/-- If distinct external vertices lie in distinct molecules of `Γ`, they lie in distinct molecules of the shadow. -/
-theorem BAGraph.shadow_ext (Γ : BAGraph E I)
-    (hext : ∀ a b : E, Γ.mol (Sum.inl a) = Γ.mol (Sum.inl b) → a = b) :
-    ∀ a b : E, Γ.shadow.molOf (Sum.inl a) = Γ.shadow.molOf (Sum.inl b) → a = b := by
-  intro a b h
-  rw [BAGraph.shadow_molOf_eq_iff] at h
-  refine hext a b ?_
+/-- The molecule closure is an equivalence: a vertex of the molecule of `v` has the molecule of `v`. -/
+theorem BAAtom_mol_eq_of_mem (Γ : BAGraph E I) {v w : E ⊕ I} (h : w ∈ Γ.mol v) : Γ.mol w = Γ.mol v := by
   rw [BAGraph.mem_mol_iff] at h
-  ext w
-  rw [BAGraph.mem_mol_iff, BAGraph.mem_mol_iff]
   have hs : ∀ x y, Γ.adj x y = true → Γ.adj y x = true := fun x y hxy => by
     have : Γ.adj x y = Γ.adj y x := by
       simp only [BAGraph.adj, RBM.Graph.LGraph.adj, BAGraph.atomAdj, or_comm]
@@ -120,9 +113,19 @@ theorem BAGraph.shadow_ext (Γ : BAGraph E I)
     induction hxy with
     | refl => exact Relation.ReflTransGen.refl
     | tail _ hbc ih => exact Relation.ReflTransGen.head (hs _ _ hbc) ih
+  ext w'
+  rw [BAGraph.mem_mol_iff, BAGraph.mem_mol_iff]
   constructor
-  · intro hx; exact (hsymm h).trans hx
   · intro hx; exact h.trans hx
+  · intro hx; exact (hsymm h).trans hx
+
+/-- If distinct external vertices lie in distinct molecules of `Γ`, they lie in distinct molecules of the shadow. -/
+theorem BAGraph.shadow_ext (Γ : BAGraph E I)
+    (hext : ∀ a b : E, Γ.mol (Sum.inl a) = Γ.mol (Sum.inl b) → a = b) :
+    ∀ a b : E, Γ.shadow.molOf (Sum.inl a) = Γ.shadow.molOf (Sum.inl b) → a = b := by
+  intro a b h
+  rw [BAGraph.shadow_molOf_eq_iff] at h
+  exact hext a b (BAAtom_mol_eq_of_mem Γ h).symm
 
 end Vocab
 
