@@ -171,7 +171,7 @@ theorem baM_rhohat (hd : 2 ≤ d) (hL : 3 ≤ L) (Λ g κ E : ℝ) (m : ℂ) (h�
 end Rows
 
 /-- The sum over the fine lattice of a function of the block coordinate, supported on one offset, is the sum
-over the blocks (private copy of `GreenSchur_fibre_sum`, `BA/GreenSchur.lean:151`). -/
+over the blocks (private copy of `GreenSchur_fibre_sum`, `BA/GreenSchur.lean:161`). -/
 private theorem GreenStab_fibre_sum (d L W : ℕ) [NeZero L] [NeZero W] (x : Idx d L W) (f : Zd d L → ℝ) :
     ∑ y : Idx d L W, (if (split d L W x).2 = (split d L W y).2 then f (split d L W y).1 else 0) =
       ∑ b : Zd d L, f b := by
@@ -333,10 +333,12 @@ abbrev g0I : ℝ := BAflowLam0 sz0 zSeq 0
 abbrev E0I : ℝ := BAflowEs sz0 zSeq 0
 abbrev m0I : ℂ := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0
 
+/-- `g₀ > 0` (copy of `EKPinsInst.gI_pos`, `BA/EKPins.lean:652`). -/
 private theorem g0I_pos : 0 < g0I := by
   have hT : 0 < BAflowT0 sz0 zSeq 0 := by linarith [t0_sz0 0]
   exact mul_pos (Real.sqrt_pos.mpr hT) (sz0_lam_pos 0)
 
+/-- `g₀ ≤ 1/64` (copy of `EKPinsInst.gI_le`, `BA/EKPins.lean:656`). -/
 private theorem g0I_le : g0I ≤ 1 / 64 := by
   have hm : 0 < (BAm 3 (sz0.L 0) (sz0.lam 0) (zSeq 0)).im := by
     rw [BAm_zSeq 0]; linarith [mS_im_half (sz0.L 0) (sz0.lam 0) (sz0_lam_L 0)]
