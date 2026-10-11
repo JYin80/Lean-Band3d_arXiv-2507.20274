@@ -2065,3 +2065,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - T2419 = L4d `Graph/BAExpandId`：`baG5Graph`、`BAG5Identity`、GG 一步和展开恒等式（导入 `expandG_sum`）。`prover-hard`。
   - T2420 = L3c1 `Graph/BAAtom` + `BAAtom2`：设计门 G3（`(G_by_auxG_BA)`，要写出论证）、G4（替 L3d1 钉陈述）。`prover-max`。
 - (5) 中枢：T2411、T2413、T2414、T2416 在跑；四张新票排队。阶段 L 已用 13 / 50。下一张票号 T2421，下一节 §233，下一条 H214。
+
+## §233 — T2416（T2-BA）合并；TL-D 设计写完（10 行，旗标 15），交 TL 旗标短 REQ（总调度 V2，2026-10-11 10:13 UTC）
+
+- (1) **T2416 合并 e4a1833**：`BA/EMn2BA` 1,090 行，审核一次 PASS。BAT-C2 的复合界已是公开引理（T3-BA 的 F7/F8、T8b 的核对 (c) 可用）。子阶段 T：已合并 8 张（row 0、T5s1、T8、T6、T2、T3、T8-BA、T2-BA），T8b（T2414）在跑。
+- (2) **TL-D（T2413）设计写完**（10:07，审核在跑）：10 行 = TL-D + 9 行证明（TL0、TL1a、TL1b、TL2a–TL2e、TL-V），中心 8,688；T.7–T.13 在 BA 载体上每一步都闭合，没有 STOP；F1–F6 只改陈述、前提、归属。`twK_bound` 保持 `Bctl` 形式（D3）。TL-V 是 TL 的行；带第五条的主归纳一步 `BAMainIndTL` 归 BA-V 的 V2a（D6）。
+- (3) **短 REQ `REQ-2026-10-11-1013-TLF`**（0853 TLS Q1：多于 8 行要短 REQ）：Q1 旗标 15；Q2 两条登记文本；Q3 F3（BA 的 Claim 4.5 等 T7-BA，在 T8b 之后）和 F4（`STLmaxU`/`STLKU` 的载体形式等 U3s1）作为假设。审核若 RETURN 改了行表，REQ 先修改再答。TL0 是第一行证明，等 T2413 审核 PASS 就放（不等这份 REQ）。
+- (4) 中枢：T2411、T2413、T2414、T2417 在跑；T2418、T2419、T2420 排队。下一张票号 T2421，下一节 §234，下一条 H215。

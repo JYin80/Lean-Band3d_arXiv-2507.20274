@@ -1,0 +1,4 @@
+state: proving
+reason: started (H213, H12): workflow wf_77a84c74-e0b, stage 1a preflight → 1b prover-hard → auditor; branch t/T2417 from main b51fead
+updated: Sun Oct 11 10:11:49 UTC 2026
+reports: docs/reports/T2417-prove.md, docs/reports/T2417-audit.md
