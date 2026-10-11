@@ -21,8 +21,9 @@ engine instance, copied).  The twin of the identity half of `Graph/LWExpTerm5.le
 
 1. **Vocabulary** (probe 135-153): `baG5Graph k s`, `BAG5Identity d Ls`.
 1b. **The red charge** (Amend 1): `BAExpandId_flip` (the complex-conjugate graph),
-   `BAExpandId_star_val` (`star (Γ.val) = (flip Γ).val`), `baExpFrame_gg_red` (the red `GG` identity as the
-   conjugate of `baExpFrame_gg` at the conjugate graph, lists `BAExpandId_gg2r`, `BAExpandId_gg4r`),
+   `BAExpandId_star_val` (`star (Γ.val) = (flip Γ).val`), `baExpFrame_gg_red` (the red `GG`
+   identity as the conjugate of `baExpFrame_gg` at the conjugate graph, lists `BAExpandId_gg2r`,
+   `BAExpandId_gg4r`),
    `BAExpandId_gg_identity` (either charge).
 2. **The procedure**: `BAExpandId_pcomp`, `BAExpandId_outsOf` (the packing of the partitions
    of a list of terms through the external map of the parent), `BARCand` (a `GG` candidate:
@@ -41,8 +42,9 @@ engine instance, copied).  The twin of the identity half of `Graph/LWExpTerm5.le
 7. Compiled instances (`BAExpandIdInst`, `d = 3`): a blue candidate and a red candidate.
 
 `LWG5Progress` (`LWExpTerm5:72`) is **not** claimed: it fails at BA (`baTwB_stuck`, probe 97);
-the stop rule and the leaf property are L4e-C's.  The candidate rule has both charges: a blue pair is the merged identity
-`baExpFrame_gg` (`Graph/BAGGOp.lean:785`), a red pair is its complex conjugate (`baExpFrame_gg_red`).
+the stop rule and the leaf property are L4e-C's.  The candidate rule has both charges: a blue pair
+is the merged identity `baExpFrame_gg` (`Graph/BAGGOp.lean:785`), a red pair is its complex
+conjugate (`baExpFrame_gg_red`).
 -/
 
 set_option linter.style.longLine false
