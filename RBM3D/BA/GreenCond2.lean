@@ -6,16 +6,21 @@ Authors: Jun Yin
 import RBM3D.BA.GreenCond
 
 /-!
-# The block Anderson family moment bound (R6), `BAFamGain` and `BAFAav` (BA-G5b, file 2 of 2)
+# The block Anderson family moment bound (R6), `BAFamGain` and `BAFAav`
 
-Ticket T2411.  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`), band `paper/tex/3_5_Loop_Hierarchy.tex`.
+BA-G5b, file 2 of 2.  Ticket T2411.  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`,
+`7_8:1916-1948`), band `paper/tex/3_5_Loop_Hierarchy.tex`.
 
-* §1 **R6**: the graded iteration and the moment bound for the family average `Σ_k T_k Q_k Y_k` over the rows `k ∈ A` of one block
-  (the twin of `Green/FlucIterGain.lean:566-895`, with `GreenMinor_famGain`, whose words have rows in `A`, as the interface;
-  `FlucGainUpTo'` is not a special case, T2401b).
-* §2-§4 the BA data (`η_t`, `‖s‖`, the local law `‖G_t - M‖_max ≺ Ψ`, `P(badBase) ≤ N^{-D}`), the exponent bookkeeping, `baFamGain_holds`.
-* §5-§9 the decompositions (E) of `𝒜'`, `𝔛` and their remainders, the `ℓ¹` row bound of `M^{(B)}` for every `d ≥ 1`, Markov for the family average,
-  the exceptional set of `BAFAav`, the numerics, `baFAav_holds`; §10 the nonempty instances (`d = 3`, `sz0`, `flow_sz0`, `BAGiiGEX` and `(initialGT2)` hypotheses).
+* §1 **R6**: the graded iteration and the moment bound for the family average `Σ_k T_k Q_k Y_k`
+  over the rows `k ∈ A` of one block (the twin of `Green/FlucIterGain.lean:566-895`, with
+  `GreenMinor_famGain`, whose words have rows in `A`, as the interface; `FlucGainUpTo'` is not a
+  special case, T2401b).
+* §2-§4 the BA data (`η_t`, `‖s‖`, the local law `‖G_t - M‖_max ≺ Ψ`, `P(badBase) ≤ N^{-D}`), the
+  exponent bookkeeping, `baFamGain_holds`.
+* §5-§9 the decompositions (E) of `𝒜'`, `𝔛` and their remainders, the `ℓ¹` row bound of `M^{(B)}`
+  for every `d ≥ 1`, Markov for the family average, the exceptional set of `BAFAav`, the numerics,
+  `baFAav_holds`; §10 the nonempty instances (`d = 3`, `sz0`, `flow_sz0`; `BAGiiGEX` and
+  `(initialGT2)` are hypotheses).
 -/
 
 set_option linter.style.longLine false
@@ -24,6 +29,7 @@ set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.style.setOption false
 set_option linter.flexible false
+set_option linter.unusedDecidableInType false
 
 noncomputable section
 open Filter Matrix Finset MeasureTheory
@@ -460,7 +466,7 @@ theorem GreenCond2_prob_badBase {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 
   refine ⟨((splitEquiv d (sz.L n) (sz.W n)).symm x, (splitEquiv d (sz.L n) (sz.W n)).symm y), ?_⟩
   have e : ‖(baFMz sz z).GM n (t n) ω ((splitEquiv d (sz.L n) (sz.W n)).symm x) ((splitEquiv d (sz.L n) (sz.W n)).symm y)‖ =
       ‖GreenCore_Gc sz z n (t n) ω x y - GreenCore_Mc sz z n x y‖ := rfl
-  show ((sz.size n : ℕ) : ℝ) ^ (𝔠 * τ) * Ψ n < ‖(baFMz sz z).GM n (t n) ω ((splitEquiv d (sz.L n) (sz.W n)).symm x)
+  change ((sz.size n : ℕ) : ℝ) ^ (𝔠 * τ) * Ψ n < ‖(baFMz sz z).GM n (t n) ω ((splitEquiv d (sz.L n) (sz.W n)).symm x)
     ((splitEquiv d (sz.L n) (sz.W n)).symm y)‖
   rw [e]
   exact lt_of_le_of_lt (mul_le_mul_of_nonneg_right hNW hΨn) hxy
@@ -951,7 +957,7 @@ theorem GreenCond_eps2_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz 
       _ ≤ 3 / 2 := by linarith [dat.hκ1]
   have hGoff : ∀ u v : Vtx d (sz.L n) (sz.W n), u.2 ≠ v.2 → ‖GreenCore_Gc sz z n t σ u v‖ ≤ δ := fun u v huv => by
     have := hG u v
-    rwa [dat.hM u v, if_neg huv, sub_zero] at this
+    simpa [dat.hM u v, huv] using this
   obtain ⟨hR, hRr⟩ := GreenCore_apriori (G := GreenCore_Gc sz z n t σ) hG32 hGoff hδ0 hwd
   have h2 := GreenCore_eps2_loc (G := GreenCore_Gc sz z n t σ) ht0 ht1 hκ hGuu w
   have hR0 : 0 ≤ GreenCore_R (GreenCore_Gc sz z n t σ) w.1 w := by unfold GreenCore_R; positivity
@@ -1197,7 +1203,7 @@ theorem GreenCond2_sum_block {d L W : ℕ} [NeZero L] [NeZero W] (β : Zd d L) (
     exact congrArg Prod.fst this
   simp only [h]
   rw [Finset.sum_eq_single β]
-  · simp only [if_true, Complex.ofReal_inv, Finset.mul_sum]
+  · simp only [ite_true, Complex.ofReal_inv, Finset.mul_sum]
   · intro b _ hb
     simp [hb]
   · intro h; exact absurd (Finset.mem_univ β) h
@@ -1473,7 +1479,7 @@ theorem GreenCond2_FAav_det {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow s
     have := GreenCond_cA_nonneg (d := d) (κ := κ) hg0 hs0
     have := GreenCond_cX_nonneg (d := d) hκ hg0 hs0 (s := ‖GreenCond_s sz z n‖)
     positivity
-  simp only [GreenCond2_Bad, Set.mem_union, Set.mem_iUnion, Set.mem_setOf_eq, not_or, not_exists, not_le] at hω
+  simp only [GreenCond2_Bad, Set.mem_union, Set.mem_iUnion, Set.mem_ofPred_eq, not_or, not_exists, not_le] at hω
   obtain ⟨⟨hstep, hA⟩, hX⟩ := hω
   have hbase : ω ∉ GreenCond_badBase sz z n t δ := fun h' => hstep (subset_badStep _ _ _ _ h')
   have hG := GreenCond_good_of_notMem_badBase sz z n t δ hbase

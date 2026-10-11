@@ -8,22 +8,28 @@ import RBM3D.Green.MinorDiffCond
 import RBM3D.Green.LDE
 
 /-!
-# The block Anderson minors, conditionalised: the sample-level minor tower, the gain interface off a good event
-(BA-G5b, file 1 of 2: the conditionalised families, the conditional means (m5))
+# The block Anderson minors, conditionalised: the minor tower of the carrier, the conditional means
 
-Ticket T2411 (design gate `docs/reports/T2401-prove.md` (G.5)-(G.6); G5a is `BA/GreenMinor*.lean`).  Paper:
-`paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`), band `paper/tex/3_5_Loop_Hierarchy.tex`.
+BA-G5b, file 1 of 2.  Ticket T2411 (design gate `docs/reports/T2401-prove.md` (G.5)-(G.6); G5a is
+`BA/GreenMinor*.lean`).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`),
+band `paper/tex/3_5_Loop_Hierarchy.tex`.
 
-* §1 the fine-index minor tower of the carrier `GreenCond_Gs` (the real minors of `D + X(ω)`, indexed by `Finset (Idx d L W)`,
-  read through `splitEquiv`): base, measurability, the envelope `|G^{(S)}_{xy}| ≤ η_t⁻¹`, strict independence of the rows of `S`.
-* §2 the minor families of `Y^A`, `Y^X` and the minor difference estimate on the good event (the transport of `GreenMinor_diff`
-  along `splitEquiv`).
-* §3 the conditionalised gain interface (the twin of `Green/MinorDiffCond.lean` `norm_applyOps_minorDiff_flucDiagSet_le_badFamily`,
-  `integral_prod_applyOps_minorDiff_le_on`, `minorDiffGainUpTo'_of_le_on`, for an abstract family of minors with envelope `Env`):
-  `GreenMinor_famGain` from a good event, the tower `badTower` over its complement, and the smallness `hsmall`.
-* §4-§6 the Gaussian row of the carrier: coordinate moments, the abstract row model (moments of `Φ = t m + h_u - Σ h_k c_{kl} (D_l + conj h_l)`), its instance.
-* §7 the conditional means (m5): the exact `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0`, second moments, the pointwise good-event bounds, the Cauchy-Schwarz
-  split and `GreenCond_m5_A/X`; §8 the nonempty instances of `GreenCond_famGain_slice`, `GreenCond_m5_A/X` (`d = 3`, `sz0`, `flow_sz0`).
+* §1 the fine-index minor tower of the carrier `GreenCond_Gs` (the real minors of `D + X(ω)`,
+  indexed by `Finset (Idx d L W)`, read through `splitEquiv`): base, measurability, the envelope
+  `|G^{(S)}_{xy}| ≤ η_t⁻¹`, strict independence of the rows of `S`.
+* §2 the minor families of `Y^A`, `Y^X` and the minor difference estimate on the good event (the
+  transport of `GreenMinor_diff` along `splitEquiv`).
+* §3 the conditionalised gain interface (the twin of `Green/MinorDiffCond.lean`
+  `norm_applyOps_minorDiff_flucDiagSet_le_badFamily`, `integral_prod_applyOps_minorDiff_le_on`,
+  `minorDiffGainUpTo'_of_le_on`, for an abstract family of minors with envelope `Env`):
+  `GreenMinor_famGain` from a good event, the tower `badTower` over its complement, and the
+  smallness `hsmall`.
+* §4-§6 the Gaussian row of the carrier: coordinate moments, the abstract row model (moments of
+  `Φ = t m + h_u - Σ h_k c_{kl} (D_l + conj h_l)`), its instance.
+* §7 the conditional means (m5): the exact `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0`, second
+  moments, the pointwise good-event bounds, the Cauchy-Schwarz split and `GreenCond_m5_A/X`;
+  §8 the nonempty instances of `GreenCond_famGain_slice`, `GreenCond_m5_A/X` (`d = 3`, `sz0`,
+  `flow_sz0`).
 -/
 
 set_option linter.style.longLine false
@@ -32,6 +38,7 @@ set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
 set_option linter.style.setOption false
 set_option linter.flexible false
+set_option linter.unusedDecidableInType false
 
 noncomputable section
 open Filter Matrix Finset MeasureTheory ProbabilityTheory
@@ -141,7 +148,7 @@ theorem GreenCond_finDepOffRows (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : 
     FinDepOffRows sz n S fun ω => Φ (GreenCond_Gs sz z n t S ω) := by
   refine ⟨offRowsCoords sz n S, fun c hc => forall_not_isRowCoord_of_mem_offRowsCoords hc, fun ω ω' hω => ?_⟩
   have hagree : AgreeOffRows sz n S ω ω' := fun i j b hi hj => hω _ (mem_offRowsCoords hi hj)
-  show Φ _ = Φ _
+  change Φ _ = Φ _
   rw [GreenCond_Gs, GreenCond_Gs, GreenCond_Gs_congr _ _ (GreenCond_HV_congr sz z n t S hagree)]
 
 theorem GreenCond_measurable_HV (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (x y : Vtx d (sz.L n) (sz.W n)) :
@@ -756,12 +763,12 @@ variable {sz}
 theorem GreenCond_h_eq {n : ℕ} (T : ℝ) {u k : Idx d (sz.L n) (sz.W n)} (hk : u ≠ k) (ω : Sizes.SeqΩ sz) :
     Sizes.seqHflow sz n T ω u k = (Real.sqrt T : ℂ) * ((ω (rowCoord sz n u k true) : ℂ) +
       (rowSign sz n u k : ℂ) * Complex.I * (ω (rowCoord sz n u k false) : ℂ)) := by
-  show (Real.sqrt T : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) u k = _
+  change (Real.sqrt T : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) u k = _
   rw [Xentry_eq_rowCoord hk ω]
 
 theorem GreenCond_h_diag {n : ℕ} (T : ℝ) (u : Idx d (sz.L n) (sz.W n)) (ω : Sizes.SeqΩ sz) :
     Sizes.seqHflow sz n T ω u u = (Real.sqrt T : ℂ) * ((ω ⟨n, u, u, true⟩ : ℝ) : ℂ) := by
-  show (Real.sqrt T : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) u u = _
+  change (Real.sqrt T : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice sz n ω) u u = _
   unfold Xentry
   simp only [lt_self_iff_false, ↓reduceIte]
   rfl
@@ -1267,7 +1274,7 @@ theorem GreenCond_Xc_rowSplit_off (u : Idx d (sz.L n) (sz.W n)) (ω₀ ω'' : (G
     · exact hk'' h
     · exact hl'' h
   rw [GreenCond_Xc_apply, GreenCond_Xc_apply]
-  show (Real.sqrt t : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice (GreenCond_sz0 sz) n (rowSplit (GreenCond_sz0 sz) n u ω₀ ω'')) _ _ =
+  change (Real.sqrt t : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice (GreenCond_sz0 sz) n (rowSplit (GreenCond_sz0 sz) n u ω₀ ω'')) _ _ =
     (Real.sqrt t : ℂ) * Xentry d (sz.L n) (sz.W n) (Sizes.slice (GreenCond_sz0 sz) n ω₀) _ _
   rw [Xentry_congr_of_ne (sz := GreenCond_sz0 sz) (n := n) hagree hj' hk']
 
@@ -1487,7 +1494,7 @@ theorem GreenCond_Arow_moment {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow
       _ = 2 * d * BAflowLam0 sz z n := GreenCore_Drow dat.hg0 dat.hL dat.hD _
   have htm : ‖(t : ℂ) * GreenCond_m sz z n‖ ≤ 1 := by
     rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
-    exact mul_le_one₀ ht1 (norm_nonneg _) dat.hm1
+    exact (mul_le_mul ht1 dat.hm1 (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)
   have hmain := GreenCond_integral_normSq_Phi_le (GreenCond_rowLawV sz n ht0 u) (hu := fun ω'' => GreenCore_Xc sz n t ω'' (e u) (e u))
     hmeasu hui2 hSu (c := fun k l => greenMinor (GreenCore_Gc sz z n t ω₀) (e u) k l) (D := fun l => GreenCore_Dc sz z n l (e u))
     (tm := (t : ℂ) * GreenCond_m sz z n) hγ0 hc hσ
