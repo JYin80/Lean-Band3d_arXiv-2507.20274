@@ -1,0 +1,6 @@
+L=4 W=2 N=512 t=0.5 draws of row u per g: 2000000   (columns: y-type | mean LHS | mean(LHS-RHS) | SE | z_Re z_Im)
+flow data g=10: g0=4.672337 E=0.000000 m0=-0.000000+0.560680j |m0|=0.5607 Im m0=0.5607 t0=0.2183; t=0.5000 Im z_t=0.2803
+g=10       t=0.5000 Im z_t=0.280 y=u                            |mean LHS|=0.00664  mean(LHS-RHS)=+2.78e-05-2.77e-05i  SE=5.5e-05,1.1e-04  z=+0.51,-0.25
+g=10       t=0.5000 Im z_t=0.280 y in [u], y!=u                 |mean LHS|=0.00056  mean(LHS-RHS)=+1.18e-04+6.43e-05i  SE=8.2e-05,8.2e-05  z=+1.44,+0.79
+g=10       t=0.5000 Im z_t=0.280 same offset, adjacent block    |mean LHS|=0.00028  mean(LHS-RHS)=+1.78e-06-3.31e-06i  SE=5.0e-06,3.0e-06  z=+0.35,-1.10
+g=10       t=0.5000 Im z_t=0.280 other offset, other block      |mean LHS|=0.00056  mean(LHS-RHS)=-6.28e-06-5.12e-06i  SE=2.6e-05,2.5e-05  z=-0.24,-0.21

@@ -3,6 +3,7 @@ Copyright (c) 2026 Jun Yin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
+import RBM3D.Chain.Step2Gen
 import RBM3D.Induction.ContractPt
 import RBM3D.Induction.Step2Defs
 
@@ -44,9 +45,12 @@ followed by the flip of all charges (`emn2Poly_contractPt_partner`).
   edges exchanged);
 * §7 the profile comparison `(eq:Psi)`; §8 the pin `stEMn2Poly_holds`; §9 compiled instances at
   `d = 3`.
+
+T2404: §8 proves the pin over a carrier (`stEMn2PolygL_of`, from `emn2PolyFacts`); `stEMn2Poly_holds` is its band corollary.
 -/
 
 set_option linter.style.longLine false
+set_option linter.unusedVariables false
 
 noncomputable section
 
@@ -804,30 +808,47 @@ private theorem stochDomAt_of_subset' {Ω : Type*} [MeasurableSpace Ω] {P : Mea
   filter_upwards [hs, h τ' hτ' D hD] with l h1 h2
   exact (measure_mono h1).trans h2
 
-variable {d : ℕ} (sz : Sizes d)
+open RBM.BA (FlowFM STEEg STEMn2PolygL)
 
-/-- `(𝓔⊗𝓔)^{M,(2;0)}` unfolded: `W^d Σ_{c,c'} S^{(B)}_{cc'} 𝓛^{(6)}` of the fine matrix. -/
-private lemma STEEkM_zero_eq (n : ℕ) (E u : ℝ)
-    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+/-- `(𝓔⊗𝓔)^{M,(2;0)}` over a carrier, unfolded: `W^d Σ_{c,c'} S^{(B)}_{cc'} 𝓛^{(6)}` of the realization `(H, ζ)`. -/
+lemma emn2Poly_EEg_zero_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
+    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (ζ : ℂ) (g : ℝ)
+    (hS : C.S n = SB d (sz.L n) g)
+    (hL : ∀ {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+      C.L n u σ a ω = loopFine d (sz.L n) (sz.W n) H ζ σ a)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    STEEkM sz n E u H 0 σ a = (((sz.W n : ℕ) : ℂ) ^ d) *
-      ∑ c : Zd d (sz.L n), ∑ c' : Zd d (sz.L n), SB d (sz.L n) (sz.lam n) c c' *
-        loopFine d (sz.L n) (sz.W n) H (zt E u)
+    STEEg C n u 0 σ a ω = (((sz.W n : ℕ) : ℂ) ^ d) *
+      ∑ c : Zd d (sz.L n), ∑ c' : Zd d (sz.L n), SB d (sz.L n) g c c' *
+        loopFine d (sz.L n) (sz.W n) H ζ
           ![σ 0, σ 1, σ 0, !(σ 0), !(σ 1), !(σ 0)] ![a 0, a 1, c', a 1, a 0, c] := by
-  simp [STEEkM, STLM]
+  simp [STEEg, hS, hL]
 
-/-- The cut `k = 1` is the cut `k = 0` with the two edges exchanged: `(σ₁,σ₂), (a₁,a₂)` become
-`(σ₂,σ₁), (a₂,a₁)` (`def:CALE`, `3_5:169-190`; `3_5:670-672`: "without loss of generality"). -/
-private lemma STEEkM_one_eq (n : ℕ) (E u : ℝ)
-    (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+/-- The cut `k = 1` is the cut `k = 0` with the two edges exchanged (`def:CALE`, `3_5:169-190`, `3_5:670-672`). -/
+lemma emn2Poly_EEg_one_eq {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
-    STEEkM sz n E u H 1 σ a = STEEkM sz n E u H 0 ![σ 1, σ 0] ![a 1, a 0] := by
-  simp [STEEkM, STLM]
+    STEEg C n u 1 σ a ω = STEEg C n u 0 ![σ 1, σ 0] ![a 1, a 0] ω := by
+  simp [STEEg]
 
-/-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)`** (`3_5:427-432`, proof `3_5:800-825`),
-**proved outright**: for every `d`, under `STFlow`, `0 ≤ t ≤ lemT z`, the class `(eq:Psi)` of `Ψ`,
-`(initialGT2)` and `(eq:LW_assm)`, each cut `k ∈ {1,2}` satisfies
-`(𝓔⊗𝓔)^{M,(2;k)}_{t,σ,a,a} ≺ η_t^{-1} Ψ_t(0) Ψ_t⁴(|a-b|)`.
+/-- **The facts the first estimate reads from the model** (`3_5:800-825`): a carrier `mk sz z` and a realization
+`(Hf, ζf)` of its loops (band: `seqHflow`, `zt`; block Anderson: `seqHflowBA`, `ztOf`).  For every `Flow`: (A) `Admissible`;
+(R) for `0 ≤ u ≤ T0`, `Hf` is Hermitian, `Im ζf = η_u > 0` and `C.L = loopFine (Hf, ζf)`; (S) `C.S = S^{(B)}(g)`. -/
+def emn2PolyFacts (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ)
+    (Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
+      Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ) : Prop :=
+  ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
+    ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+      sz.Admissible 𝔠 𝔡 ∧
+      (∀ (n : ℕ) (u : ℝ), 0 ≤ u → u ≤ T0 sz z n →
+        (∀ ω, (Hf sz z n u ω).IsHermitian) ∧ 0 < (ζf sz z n u).im ∧
+          (ζf sz z n u).im = (mk sz z).eta n u ∧
+          ∀ (ω : sz.SeqΩ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+            (mk sz z).L n u σ a ω = loopFine d (sz.L n) (sz.W n) (Hf sz z n u ω) (ζf sz z n u) σ a) ∧
+      (∀ n : ℕ, ∃ g : ℝ, (mk sz z).S n = SB d (sz.L n) g)
+
+/-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)` over a carrier** (`3_5:427-432`, proof `3_5:800-825`),
+**proved outright**: the pin `STEMn2PolygL` (`Chain/Step2Gen.lean:471`) under `emn2PolyFacts`.
 
 The proof is deterministic on the good event of `(eq:LW_assm)` at the exponent `τ/5`: with
 `y = N^{τ/10}` every 2-loop of the pattern `(s,-s)` is at most `y² Ψ²(|x - x'|)` (the only
@@ -835,18 +856,23 @@ stochastic input), and `emn2_ee_le` bounds the quadratic variation by
 `2 · 3^d η⁻¹ K² y⁵ Ψ(0) Ψ(|a-b|)⁴` (`y⁵ = N^{τ/2}`, so the loss is `N^{τ/2} · 2 · 3^d K² ≤ N^τ` for
 large `N`).  `STInitialGT2`, `(GijGEX)` and `(GiiGEX)` are not used (paper-delta candidate
 `T2102a`). -/
-theorem stEMn2Poly_holds (d : ℕ) : STEMn2Poly d := by
+theorem stEMn2PolygL_of {d : ℕ} (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
+    {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
+    {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
+    {Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), sz.SeqΩ →
+      Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+    {ζf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ), ℂ}
+    (hF : emn2PolyFacts d Flow mk T0 Hf ζf) : STEMn2PolygL d law Flow mk T0 := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hΨ hI hA
+  obtain ⟨hadm, hR, hS⟩ := hF κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
   obtain ⟨hΨ1, hΨmono, hΨwin, C₁, C₂, hC₁, hC₂, hratio⟩ := hΨ
   obtain ⟨c, hc, hwin⟩ := hΨwin 1
-  have hsizeT : Tendsto (fun n => ((sz.size n : ℕ) : ℝ)) atTop atTop := hflow.1.2.2.1
+  have hsizeT : Tendsto (fun n => ((sz.size n : ℕ) : ℝ)) atTop atTop := hadm.2.2.1
   -- `η_t > 0`
-  have hη : ∀ n, 0 < etaT (STflowE z n) (t n) := by
+  have hη : ∀ n, 0 < (mk sz z).eta n (t n) := by
     intro n
-    have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by
-      exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one (sz.one_le_size n)
-    have hzim : 0 < (z n).im := lt_of_lt_of_le (Real.rpow_pos_of_pos hN _) (hflow.2 n).2.1
-    exact etaT_pos (abs_lemE_lt_two hzim) ((htT n).trans_lt (lemT_lt_one hzim))
+    obtain ⟨-, h1, h2, -⟩ := hR n (t n) (ht0 n) (htT n)
+    rw [← h2]; exact h1
   set K : ℝ := max (C₁ * 3 ^ C₂) c⁻¹ with hK
   have hK0 : 0 ≤ K := by
     have : (0 : ℝ) ≤ C₁ * 3 ^ C₂ := by positivity
@@ -863,7 +889,7 @@ theorem stEMn2Poly_holds (d : ℕ) : STEMn2Poly d := by
   obtain ⟨u, hu⟩ := hω
   by_contra hno
   have hgood : ∀ u' : {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)),
-      ‖Lloop sz n (STflowE z n) (t n) u'.1.1 u'.2 ω‖ ≤
+      ‖(mk sz z).L n (t n) u'.1.1 u'.2 ω‖ ≤
         ((sz.size n : ℕ) : ℝ) ^ (τ / 5) * (Ψ n (zdistInf d (sz.L n) (u'.2 0 - u'.2 1))) ^ 2 :=
     fun u' => not_lt.mp fun h => hno ⟨u', h⟩
   have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by
@@ -883,37 +909,36 @@ theorem stEMn2Poly_holds (d : ℕ) : STEMn2Poly d := by
   have hcmp : ∀ r s : ℕ, r ≤ 2 * s + 1 → Ψ n s ≤ K * Ψ n r :=
     psi_cmp hC₁ hC₂ hc (fun r => (hΨ1 n r).1) (hΨmono n) (hratio n) hn.1
   have hL3 : 3 ≤ sz.L n := sz.three_le_L n
-  have hH : (sz.seqHflow n (t n) ω).IsHermitian := sz.seqHflow_isHermitian n (t n) ω
-  have hz' : 0 < (zt (STflowE z n) (t n)).im := by
-    rw [← etaT_eq_zt_im]; exact hη n
+  obtain ⟨hH, hz', hzeta, hLoop⟩ := hR n (t n) (ht0 n) (htT n)
+  obtain ⟨g, hg⟩ := hS n
   have h2 : ∀ (s : Bool) (x x' : Zd d (sz.L n)),
-      ‖loopFine d (sz.L n) (sz.W n) (sz.seqHflow n (t n) ω) (zt (STflowE z n) (t n))
+      ‖loopFine d (sz.L n) (sz.W n) (Hf sz z n (t n) ω) (ζf sz z n (t n))
           ![s, !s] ![x, x']‖ ≤ y ^ 2 * Ψ n (zdistInf d (sz.L n) (x - x')) ^ 2 := by
     intro s x x'
     have hne : (![s, !s] : Fin 2 → Bool) 0 ≠ (![s, !s] : Fin 2 → Bool) 1 := by
       cases s <;> simp
-    rw [hy2]
+    rw [hy2, ← hLoop ω ![s, !s] ![x, x']]
     exact hgood (⟨![s, !s], hne⟩, ![x, x'])
   -- the cut `k = 0`
   have key : ∀ (σ' : Fin 2 → Bool) (a' : Fin 2 → Zd d (sz.L n)),
-      ‖STEEkM sz n (STflowE z n) (t n) (sz.seqHflow n (t n) ω) 0 σ' a'‖ ≤
-        2 * 3 ^ d / etaT (STflowE z n) (t n) * K ^ 2 * y ^ 5 * Ψ n 0 *
+      ‖STEEg (mk sz z) n (t n) 0 σ' a' ω‖ ≤
+        2 * 3 ^ d / (mk sz z).eta n (t n) * K ^ 2 * y ^ 5 * Ψ n 0 *
           Ψ n (zdistInf d (sz.L n) (a' 0 - a' 1)) ^ 4 := by
     intro σ' a'
-    rw [STEEkM_zero_eq]
-    have := emn2_ee_le (L := sz.L n) (W := sz.W n) (sz.seqHflow n (t n) ω)
-      (zt (STflowE z n) (t n)) hL3 (sz.lam n) hH hz' σ' (a' 0) (a' 1) hy0 hΨ0 hcmp h2
-    rwa [← etaT_eq_zt_im] at this
+    rw [emn2Poly_EEg_zero_eq (mk sz z) n (t n) ω _ _ g hg (hLoop ω)]
+    have := emn2_ee_le (L := sz.L n) (W := sz.W n) (Hf sz z n (t n) ω)
+      (ζf sz z n (t n)) hL3 g (hH ω) hz' σ' (a' 0) (a' 1) hy0 hΨ0 hcmp h2
+    rwa [hzeta] at this
   -- the final comparison `2 · 3^d K² y⁵ ≤ N^τ`
-  have hfin : ∀ r : ℕ, 2 * 3 ^ d / etaT (STflowE z n) (t n) * K ^ 2 * y ^ 5 * Ψ n 0 *
-      Ψ n r ^ 4 ≤ N ^ τ * (etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4 := by
+  have hfin : ∀ r : ℕ, 2 * 3 ^ d / (mk sz z).eta n (t n) * K ^ 2 * y ^ 5 * Ψ n 0 *
+      Ψ n r ^ 4 ≤ N ^ τ * ((mk sz z).eta n (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4 := by
     intro r
     have hηpos := hη n
-    have e1 : 2 * 3 ^ d / etaT (STflowE z n) (t n) * K ^ 2 * y ^ 5 * Ψ n 0 * Ψ n r ^ 4 =
-        ((2 * 3 ^ d * K ^ 2) * y ^ 5) * ((etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4) := by
+    have e1 : 2 * 3 ^ d / (mk sz z).eta n (t n) * K ^ 2 * y ^ 5 * Ψ n 0 * Ψ n r ^ 4 =
+        ((2 * 3 ^ d * K ^ 2) * y ^ 5) * (((mk sz z).eta n (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4) := by
       field_simp
-    have e2 : N ^ τ * (etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4 =
-        (N ^ (τ / 2) * N ^ (τ / 2)) * ((etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4) := by
+    have e2 : N ^ τ * ((mk sz z).eta n (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4 =
+        (N ^ (τ / 2) * N ^ (τ / 2)) * (((mk sz z).eta n (t n))⁻¹ * Ψ n 0 * Ψ n r ^ 4) := by
       rw [hNτ]; ring
     rw [e1, e2]
     have h5 : (2 * 3 ^ d * K ^ 2) * y ^ 5 ≤ N ^ (τ / 2) * N ^ (τ / 2) := by
@@ -924,22 +949,46 @@ theorem stEMn2Poly_holds (d : ℕ) : STEMn2Poly d := by
     have := hΨ0 r
     positivity
   obtain ⟨k, σ, a⟩ := u
-  have hb : ‖STEEk sz n (STflowE z n) (t n) k σ a ω‖ ≤
-      N ^ τ * (etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 *
+  have hb : ‖STEEg (mk sz z) n (t n) k σ a ω‖ ≤
+      N ^ τ * ((mk sz z).eta n (t n))⁻¹ * Ψ n 0 *
         Ψ n (zdistInf d (sz.L n) (a 0 - a 1)) ^ 4 := by
     fin_cases k
     · exact (key σ a).trans (hfin _)
-    · have h1 : STEEk sz n (STflowE z n) (t n) 1 σ a ω =
-          STEEkM sz n (STflowE z n) (t n) (sz.seqHflow n (t n) ω) 0 ![σ 1, σ 0] ![a 1, a 0] :=
-        STEEkM_one_eq sz n (STflowE z n) (t n) (sz.seqHflow n (t n) ω) σ a
+    · have h1 : STEEg (mk sz z) n (t n) 1 σ a ω =
+          STEEg (mk sz z) n (t n) 0 ![σ 1, σ 0] ![a 1, a 0] ω :=
+        emn2Poly_EEg_one_eq (mk sz z) n (t n) ω σ a
       have h3 := key ![σ 1, σ 0] ![a 1, a 0]
       have e : zdistInf d (sz.L n) (a 1 - a 0) = zdistInf d (sz.L n) (a 0 - a 1) :=
         zdistInf_sub_comm d (sz.L n) _ _
       simp only [Matrix.cons_val_zero, Matrix.cons_val_one, e] at h3
-      change ‖STEEk sz n (STflowE z n) (t n) 1 σ a ω‖ ≤ _
+      change ‖STEEg (mk sz z) n (t n) 1 σ a ω‖ ≤ _
       rw [h1]
       exact h3.trans (hfin _)
   exact absurd hu (not_lt.mpr (by simpa [mul_assoc] using hb))
+
+/-- **The facts of the first estimate at the band**: `mk = bandFM ∘ STflowE`, `Hf = seqHflow`, `ζf = zt`
+(the loops of `bandFM` are `Lloop`, definitionally `loopFine (seqHflow) (zt)`; `η = etaT = Im zt`). -/
+theorem emn2Poly_bandFacts (d : ℕ) :
+    emn2PolyFacts d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => RBM.BA.bandFM sz (STflowE z)) (fun _ z n => lemT (z n))
+      (fun sz _ n u ω => sz.seqHflow n u ω) (fun _ z n u => zt (STflowE z n) u) := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
+  have hzim : ∀ n, 0 < (z n).im := by
+    intro n
+    have hN : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by
+      exact_mod_cast Nat.lt_of_lt_of_le Nat.zero_lt_one (sz.one_le_size n)
+    exact lt_of_lt_of_le (Real.rpow_pos_of_pos hN _) (hflow.2 n).2.1
+  refine ⟨hflow.1, fun n u _ huT => ⟨fun ω => sz.seqHflow_isHermitian n u ω, ?_, ?_,
+    fun ω k σ a => rfl⟩, fun n => ⟨sz.lam n, rfl⟩⟩
+  · rw [← etaT_eq_zt_im]
+    exact etaT_pos (abs_lemE_lt_two (hzim n)) (huT.trans_lt (lemT_lt_one (hzim n)))
+  · exact (etaT_eq_zt_im).symm
+
+/-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)`** (`3_5:427-432`) for every `d`: the corollary of
+`stEMn2PolygL_of` at the band carrier (`bandFM_STEMn2Poly`, `Iff.rfl`), under its old name and statement. -/
+theorem stEMn2Poly_holds (d : ℕ) : STEMn2Poly d :=
+  (RBM.BA.bandFM_STEMn2Poly d).2
+    (stEMn2PolygL_of (fun sz => Sizes.seqP sz) (emn2Poly_bandFacts d))
 
 end Pin
 
@@ -964,16 +1013,17 @@ namespace RBM.Gauss.EMn2PolyInst
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
   RBM.Gauss.Step2DefsInst RBM.Path Filter
 
-/-- **`stEMn2Poly_holds` at `d = 3`** (`(eq:MG_conclusion)`): the conclusion at the data above. -/
+/-- **`stEMn2PolygL_of` at `d = 3`** (`(eq:MG_conclusion)`): the generic theorem at the band carrier (`bandFM`,
+`seqP`, `emn2Poly_bandFacts` discharged); the conclusion, read as the band statement, at the data above. -/
 example (hI : STInitialGT2 sz0 (STflowE z0) tInst (1 / 20) (fun n => Ψ0 n 0))
     (hA : STLWassm sz0 (STflowE z0) tInst Ψ0) :
     Prec sz0 (U := fun n => Fin 2 × (Fin 2 → Bool) × (Fin 2 → Zd 3 (sz0.L n)))
       (fun n p ω => ‖STEEk sz0 n (STflowE z0 n) (tInst n) p.1 p.2.1 p.2.2 ω‖)
       (fun n p _ => (etaT (STflowE z0 n) (tInst n))⁻¹ * Ψ0 n 0 *
         (Ψ0 n (zdistInf 3 (sz0.L n) (p.2.2 0 - p.2.2 1))) ^ 4) :=
-  stEMn2Poly_holds 3 (1 / 10) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6)
-    sz0 z0 flow_z0 tInst (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20)
-    (by norm_num) Ψ0 Ψ0_class hI hA
+  stEMn2PolygL_of (fun sz => Sizes.seqP sz) (emn2Poly_bandFacts 3) (1 / 10) (1 / 10) (1 / 10)
+    (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 z0 flow_z0 tInst
+    (fun n => by simp only [tInst]; norm_num) sixteenth_le_lemT (1 / 20) (by norm_num) Ψ0 Ψ0_class hI hA
 
 /-- The same data, read through the merged instance `inst_EMn2Poly`: the pin `STEMn2Poly 3` is
 now a theorem, so the instance has no hypothesis on the pin. -/

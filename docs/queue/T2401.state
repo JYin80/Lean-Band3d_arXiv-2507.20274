@@ -1,0 +1,4 @@
+state: proving
+reason: rule-(B) repair under Amend 1 (H201): workflow wf_83ccc3c3-aac, (a′) by preflight → probe recompile (prover-max) → 1a-audit round 2 → 1b prover-max → auditor; branch t/T2401 at a48c0ce
+updated: Sun Oct 11 04:24:31 UTC 2026
+reports: docs/reports/T2401-prove.md, docs/reports/T2401-1a-audit.md, docs/reports/T2401-audit.md

@@ -1,0 +1,5 @@
+Amend 1 to T2402 (dispatcher V2, Sun Oct 11 04:16 UTC 2026; DECISIONS §220; answers `docs/reports/T2402-1a-audit.md` §8: F2, D3).
+
+- **F2 (consumer).** T2401's route to `BAGbEXPav` (G.5–G.6, through `BAFAav`, consumer G6b) uses no G5c row. G5c's planned consumer is G6b (T2378-design `:164`: G6b depends on G6a, G5b, G5c). It is not yet decided whether G6b's diagonal part needs the BA display of `E_u(G_uu − m)`, or whether it follows from G3a's `GreenCore_diag` plus G4. **Decision: G5c's stage 1b is held.** T2402 is closed now as a **report-only merge**: state, prove (sections (a), (a″), (a′)), 1a-audit report and the probe's scripts. The probe `RBM3D/Probe/T2402Pins.lean` stays on `t/T2402` (at 4b5f864). The G6a/G6b design decides whether the 1b is revived (as a new ticket, starting from this 1a and its compiled pins) or dropped.
+- **D3 (layout).** Moot while the 1b is held. Recorded for the revival: a new file costs +419 central lines, against one certificate-lane merge for in place (`Green/IBP`). The revival ticket chooses with the cone measured then.
+- **Process.** No 1b. Rule (A) report-only merge after this amend is committed (H201).

@@ -437,6 +437,11 @@ import RBM3D.Chain.LWGen
 import RBM3D.BA.LWPinsBA
 import RBM3D.BA.KStep
 import RBM3D.BA.GreenCore
+import RBM3D.BA.GreenStab
+import RBM3D.BA.KBound
+import RBM3D.BA.EKNonzero
+import RBM3D.BA.GreenOff
+import RBM3D.Chain.NewKLKGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -1,0 +1,20 @@
+  twin   hasDerivAt_green_Hflow_update                    139-  189   51
+  twin   tame_green_apply                                 276-  299   24
+  twin   entryCLM                                         298-  314   17
+  twin   hasDerivAt_green_apply_update                    313-  343   31
+  twin   tame_green_mul_mul_green_apply                   342-  367   26
+  twin   tame_const_mul_green_apply                       721-  735   15
+  twin   tame_const_mul_sandwich_apply                    734-  754   21
+  twin   hasDerivAt_const_mul_green_apply_update          951-  999   49
+  twin   condRow_coord_mul_Bmat_mul_green_diag            996- 1042   47
+  twin   condRow_Hflow_mul_green_diag                    1043- 1152  110
+  twin   Hflow_mul_apply_eq_sum                          1151- 1164   14
+  twin   tame_Hflow_mul_green_apply                      1164- 1181   18
+  twin   condExpDiag_eq_sum_Sblk                         1227- 1330  104
+  twin   ibpRem                                          1331- 1343   13
+  twin   ibpRem_eq_add                                   1344- 1377   34
+twin set: 574 band lines (of 1024 class-G lines of the group C row)
+reused unchanged (statements free of `green`; public): hasDerivAt_Hflow_update 120-141, sum_gvar_Bmat_sandwich_diag 671-685, sum_gvar_Bmat_sandwich_diag_mul 684-705, condRow_coord_mul 881-910, condRow_const_mul 910-917, condRow_neg_const_mul 917-923, condRow_finsetSum 923-932, condRow_zero_apply 932-940, Bmat_mul_apply_diag_of_ne 939-952, condRow_tame_add 1181-1189, condRow_tame_sub 1189-1204, IBP_sum_svarF_row 1197-1226
+  lo       in place =     86   new file (twin) =    419   difference =    333
+  central  in place =    138   new file (twin) =    557   difference =    419
+  hi       in place =    172   new file (twin) =    924   difference =    752

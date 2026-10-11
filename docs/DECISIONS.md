@@ -1888,3 +1888,79 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **转给 Jun 的问题**（00:31 UTC，一个问题，数学形式）：[yang2024Del] App. B 或 [RBSO1D] 怎么界 `𝔼[tr(ǦE_{a₁}) Ǧ_{xw}M_{wγ}Ḡ_{xγ}𝓛^{(2)}]`：(R1) 用带非对角块插入的 loop 局部律，还是 (R2) 用原子处 `ǦMǦ` 的展开恒等式？也可以指出 App. B 里的相应段落，只作阅读材料。
 - (3) 等答复期间：T2398 置 `held`，让出位置；不合并（行表有条件）。按审核的意见，L4d、L4e（C）、L4c 以及 L4a2 的归约部分只依赖 §3，可以照常推进；它们在 L4 REQ 里提。L4a、L4b 和 L4a2 的拼装部分等答复。
 - (4) T2395 第一轮审核 RETURN（D1 要修），中枢按规则 (B) 自修一次（报告 00:28 已更新）。下一张票号 T2403，下一节 §215，下一条 H196。
+
+## §215 — G3a、G3b 合并；G4 = T2403 放行（总调度 V2，2026-10-11 01:02 UTC）
+
+- (1) **T2390（G3a）合并 cbda0ab**：`BA/GreenCore` 1981 行（停止线 2000），R1–R5；登记两条 owed（`BAStab` 属主 G3b、`BAGbEXPij'` 属主 G4）。1b 的 `prover-max` 没写完（缺 D3.3 的 (X*)、(Ξ)），按 §94 升级一次到 `prover-opus` xhigh 补上；审核 PASS（观察 O3–O6：有几个实例用了零样本、常数 26 对 8、`Φ²` 的损失）。
+- (2) **T2400（G3b）合并 4a4327e**：`BA/GreenStab` 442 行，`baStab_of_real`、`ρ`/`ρ₂`/`ρ̂`、`Θ` 加权 `ℓ¹`；`baP8_BATheta_shift` 公开（一行）；审核一次 PASS。`BAStab` 的 owed 行还在（本票不能改登记文件），由 G4 去掉。
+- (3) **T2403 = BA-G4**（BA 70，阶段 G 关键路径）：
+  - 新文件 `BA/GreenOff`；D3.4 的加权闭合（比值范数 `𝒩`，`c_λ = GreenStab_clam`）；
+  - `BAStab` 的连接（由 `baStab_of_real` 得到），并去掉其 owed 行；
+  - `baGbEXPij'_holds`，去掉 owed 行；若概率层要用 G6a 的东西，就只证确定性部分，属主改成 G6a；
+  - 非退化实例，避开零样本（T2390 审核 O3）。
+  - 1a 是普通预检（D3.4 已审，2254）。`prover-max`，500 / 800 / 1200，停止线 1600，排第一。
+- (4) G5a（T2401）、G5c（T2402）已开工；G3a 已合并，所以没有等待的一步。在跑：T2397、T2399、T2401、T2402；排队：T2403。下一张票号 T2404，下一节 §216，下一条 H197。待写：G6a（等 G4、G5a/G5b）、E3、L2c1、L2c2、L3c2、T7、BA-T 钉文 REQ；L4 REQ（等 T2397）；阶段 K 关闭 REQ（等 K12）。
+
+## §216 — K12 合并，阶段 K 做完、关闭 REQ 已交；ST 侧 T2 = T2404 放行（总调度 V2，2026-10-11 01:23 UTC）
+
+- (1) **T2399（K12）合并 561093a**：新 `BA/KBound` 418 行，`Chain/Carrier` +23（`STKwardgL`），`Chain/Step2Gen` +28（桥 `bandFM_STKward`）；审核一次 PASS（O1 只是报告长度）。`baKBoundAt_holds`（所有 `n`）、`baKbound_holds`、`baKward_holds`、`inst_BAKbound`（`d = 3`、`sz0`，无假设）。阶段 K 的 16 张票全部合并。
+- (2) **阶段 K 关闭 REQ**：`docs/supervisor/requests/REQ-2026-10-11-0118-K.md`。按 2051 Q5 填了两张表（关闭条件五项，各有公开定理和实例；下游消费表六行，每行都有 BA 对应）。一个登记问题 Q2：`STKboundgL`（`Test/Axioms.lean:134`）现在在 BA 载体上已证，但仍是 `inst_baBootstrap'`、`inst_baBootstrap'_full` 的假设 `hK`；调度建议由 G7 顺手用 `inst_BAKbound` 消掉，owner 注释改写，行留到 BA-V。
+- (3) **T2397（L3b3 设计门）审核 RETURN**：P2 / S 分支的搬运定理靠一个钉文 `BAImgSim`，按所写的样子证不出来，且已合并的 T2395 对 BA 策略否定了它；实例因此退化，S 行的定价也没用 T2395 指定的 BA 专属形状。属于规则 (B) 的一次自动修补，不需要调度决定。L4 REQ 等修补后的审核。
+- (4) **T2404 = BA-T T2（ST 侧）**（BA 71）：`EMn2Poly`、`EMn2Exp1`、`EMn2Exp2` 原地改写，证 T8 已钉的 `STEMn2PolygL`、`STEMn2ExpgL`，其他块的输入作假设（必须在 BA 能兑现，C1）；二圈公式 `KLK_two` 换成一个不等式假设（BA 来源：`BAKsolve` 的 `(Kn2sol)` 加 G3b 的 `Θ` 界）；I1：能在 80 行内给出确定性 `J` 形式就顺带给（目标 5′），否则留给 BA-T 钉文 REQ。设计门 1a + 1a-audit，`prover-hard`，500 / 650 / 900，停止线 1000；不在证书通道（三个锥分别 16 / 8 / 7 个模块）。
+- (5) 在跑：T2397（修补）、T2401、T2402、T2403；排队：T2404。下一张票号 T2405，下一节 §217，下一条 H198。待写：BA-T 钉文 REQ（C7，第一批 T4-BA、T5-BA、T6-BA；带 I1）；ST 侧 T4s2（不在锥里）、T3、T4s1、T5s2；E3（C4：U3s1 未开，只证 `BAEKSumDecayNonzero`，`STEK*` 的 BA 形式归 U3-BA）；G6a（等 G4、G5a/b）；L2c1、L2c2、L3c2；L4 REQ（等 T2397）。
+
+## §217 — ST 侧 T3 = T2405 放行；T2398 的文章位置告诉 Jun（总调度 V2，2026-10-11 01:37 UTC）
+
+- (1) **T2405 = BA-T T3（ST 侧）**（BA 72）：`lem:newKLK` 的通用形式 `STNewKLKgL`（T8 已钉）。`NewKLK.lean` 的 A–D、F 节本来就是抽象的，带状的东西只在 B（`Θ` 尾）和 E（模型的 `𝓛 − 𝒦`，`KLK_two`、标量 `m`）。布局按监督 C5：优先 (A) 新文件 `Chain/NewKLKGen.lean`（`open private` 用 NewKLK 的抽象引理；没人 import，所以不进证书通道）；只有 (A) 比原地改 (B) 多 150 行以上才走 (B)（那样进通道）。`Step2K2` 不动：`STK2decay` 是模型自己的 `𝒦^{(2)}` 界，留给 T3-BA 在 BA 上证 `STK2decaygL`。设计门 1a + 1a-audit，`prover-hard`，350 / 500 / 750，停止线 900。
+- (2) T2404 和 T2405 要同一个输入（无下限的二圈尾界）；两张票都加了一句：谁的 1a 先出，后者照抄陈述和名字。T2404 还没开工，这句在开工前加进票里（H198 一起提交）。
+- (3) Jun（01:3x UTC）问 T2398 卡在文章哪一步。已回：`6_Step6_two_loop.tex:83`（`lem:LWterm_EXP`）；带状证明 `B_graphical_lemmas.tex` §B.1、`:50-64`（`I₄₁`、`(eq:termI41)`）；BA 只有 `:118` 一句"类比，用 `(GGGamma)` 替代 `(Oe2x)`，细节从略"；`(GGGamma)` 在 `:392-405`（[yang2024Del] Lemma B.11），第三个和式的 `Ḡ_{xy}` 导数给出 `Ǧ_{xw}M_{wγ}Ḡ_{xγ}`，`M_{wγ}` 跨块，`lem:main_ind_BA` 只管 `E_a`-圈。问题不变（R1 / R2）。
+- (4) 中枢 `HUB.alive` 停在 01:01（31 分钟）；在跑的四个工作流里，T2397 的审核工作流自己带修补步骤，其余在 1a/1b 中，可能只是在等工作流结束。下一轮再看；若到 02:00 仍无动静，告诉 Jun。
+- (5) 排队：T2404、T2405。下一张票号 T2406，下一节 §218，下一条 H199。
+
+## §218 — 阶段 K 关闭（监督 0150 PASS）；中枢 API 限额停 1 小时；T2397 合并；T2403、T2405 签字；T2398 的 Fable 分析（总调度 V2，2026-10-11 03:06 UTC）
+
+- (1) **监督 0150：阶段 K 关闭 PASS**。Q1 两张表通过（`KLK_ward` 对应恒等式 `KBound_baKsol_ward`，不等式 `BAKward` 对应 `stKward_of_flow`）。Q2 取 (a)，附 K1：登记改 owner 注释要改三行（`Test/Axioms.lean:133` `STLmaxgL`、`:134` `STKboundgL`、`:135` `STLKgL`；133、135 的 owner 改为 BA-V（主归纳），去掉 "BA-K4"；133 注明 BA 上 `STLmaxgL` 由 `STLKgL` 经 `BALmaxFromLK_holds` 得到）。时机：本裁决之后第一张改登记的票，最迟 G7；不为注释改正在跑的票。K2、K3 是给 BA-V 的备注，K4 改行数。
+- (2) **中枢停摆 01:1x–02:10 UTC**：API 会话限额（"resets 7:10pm America/Los_Angeles"）；T2401、T2402 按规则 (H) 重跑（02:12）。监督 01:41 那次 4 秒结束也是同一原因；01:50 又跑了一次，答了 REQ 0118-K。
+- (3) **T2397（L3b3 设计门）报告合并 a34b8d9**：审核第二轮 PASS（一次规则 (B) 修补）；探针留在 `t/T2397` 54ba7be。L4 REQ 的三个设计门（T2395、T2397、T2398）都已交付，T2398 等 Jun 对路线的确认。
+- (4) **T2403（G4）1a BLOCKED → Amend 1**：目标 3 签名，`BAGbEXPij'` 钉文里没有 `d ≥ 3`，而所有已合并的引理都要 `2 ≤ d`。决定：`baGbEXPij'_holds (d) (hd : 2 ≤ d)`，钉文不改；owed 行能去就去，去不掉就改 owner 注释，指向 G7；K1 不在本票。1b 直接开始。
+- (5) **T2405（ST 侧 T3）1a-audit RETURN + 要求签字 → Amend 1**：BA 上 `Im m ≥ κ/2` 在钉文的能量域 `|E| ≤ 2-κ` 内不成立（`L = 96`、`g = 10` 时 `0.0414`）。决定：证一个带撇的通用钉文 `STNewKLKAtgL'`，把 `|E| ≤ 2-κ` 换成载体数据 `κ ≤ Im m`（就是 `BAReal` 的形式）；不带撇的作为推论（带状经 `Ind.half_le_mE_im`，取 `κ' = κ/2`、`δ₀ = κ/4`）。第 2 行改为 `κ/2 ≤ Im m`；与 T2404 的协调作废（两边输入不同）；设计门的 (i)、(iii)–(v) 必须写进 (a′)。BA 读法归 BA-T 钉文 REQ（C7）。
+- (6) **T2398 §8 的 Fable 5.1 分析**（Jun 同意起子代理，放了 [68] = `paper/2501.08608v4.pdf`）：报告 `docs/tickets/T2398-analysis-fable.md`。
+  - 结论：确实卡住；[68] 附录 B 没有这个机制（那里靠 `λ = W^{-ξ}` 和 `d ≥ 7` 做逐项、按尺度阶估计；Lemma B.11 展开后的异色对只说"同阶"，p.90、p.93）。[P] p.89 的"analogous"背后缺一个引理（paper delta T2398d）。
+  - 补法 R1，两条扭转圈律：(TL1) `|Tr(G̊P_{c1c2})| ≺ W^{-d}B`；(TL2) `|L̃ − K̃| ≺ (W^{-d}B)^{3/2}`，`L̃ = Tr(G(σ1)E_aG(σ2)P_{c1c2})`，`K̃ = W^{-d}Σ_{a'}Θ^{(σ1σ2)}(a,a')M^{(B)}(σ1)_{c2a'}M^{(B)}(σ2)_{a'c1}`（`(−,+)` 用 `Θ^{(−,+)}` 和 `|M|²`，不是探针里的 `M∘M`）。有了这两条，(B.4) 可以逐行照搬，3/2 正好够；首层其他扭转项也一并解决。
+  - 证明路线：TL2 = 对一个扭转 2-圈重做 Step 4，交替情形要用 TL1；TL1 = Lemma 8.4(a) 的块间版涨落平均。不用 g 小。d = 1 的数值与之一致。
+  - Lean：L4b2 变小（照搬 `LWExpI1K`/`I41K`）；新钉文 `BATwistAvgLaw`、`BATwistLoopLaw`；TL2 的证明是一个小阶段，中心约 6k 行，TL1 约 2–3k 行。证出来之前作为待证钉文。
+  - 已问 Jun 是否按 R1 走；他回答之前，T2398 的后续（Amend 2、报告合并）和 L4 REQ 不写。
+- (7) 在跑：T2401、T2402（重跑）、T2404（规则 (B) 修补）；接下来 T2403（1b）、T2405（修补）。下一张票号 T2406，下一节 §219，下一条 H200。
+
+## §219 — BA-E3 = T2406 放行（总调度 V2，2026-10-11 03:21 UTC）
+
+- (1) **T2406 = BA-E3**（BA 73，阶段 E 最后一行）：新文件 `BA/EKNonzero`，证 `BAEKSumDecayNonzero`。照搬带状 `ekSumDecayNonzero_holds`：`i ∉ A` 用 `baEKSameRow_holds`；`i ∈ A` 用 `Proj` 与 `M^{(σσ')}` 可交换，再加 `baProp8_holds` 和径向求和。按 C4：U3s1 没合并，所以不证 `STEK*` 的 BA 形式，归 U3-BA。`prover-hard`，250 / 350 / 550，停止线 800；不在证书通道。
+- (2) **登记**：去掉 owed 行 `BAEKSumDecayNonzero`。同时按监督 0150 K1 改三行 owner 注释（`STKboundgL`、`STLmaxgL`、`STLKgL`），因为本票是那次裁决之后第一张改登记的票。
+- (3) E3 合并后写阶段 E 关闭 REQ：五条 `BAEK*` 钉文全部证完；`STEK*` 的 BA 形式归 U3-BA（O4）。
+- (4) 排队：T2405（修补）、T2406。仍在等 Jun 对 R1 的回答（T2398）。下一张票号 T2407，下一节 §220，下一条 H201。
+
+## §220 — Jun 选 R1；TL1、TL2 的证明交监督审；T2404、T2406 合并（阶段 E 做完）；T2401、T2402 签字（总调度 V2，2026-10-11 04:17 UTC）
+
+- (1) **Jun 的决定**（约 03:2x UTC，原话）：「同色的问题？ 可以选 R1， 先继续做BA， 同时 这个数学sub agent，必须写出TL1，TL2 给数学监督审查。」随后又说：「之后向我汇报TL1，2的进展，直到我表示收到再停止。」所以 TL1/TL2 的进展每轮向 Jun 汇报，直到他说"收到"。已回答同色问题：卡住的是异色那一项（G̊_{y′w}M_{wα}Ḡ_{y′α}，交替的 (−,+) 扭转 2-圈）；同色的扭转项（T3B 的 1-圈，(+,+) 圈）比较容易，用 TL1 就够。
+- (2) **Fable 写出了证明**：`docs/tickets/T2398-TL-proofs.md`（Lemmas T.1–T.13）。
+  - TL1（T.7）：一次高斯分部积分（迹的形式，不乘 M），再做 2p 阶矩的 bootstrap；不依赖 [59]。
+  - TL2（T.12）：`|L̃ − K̃| ≺ (W^{-d}B)^{2−δ}`，作为 Theorem 8.2 的第五条假设和结论；s = 0 时成立，指数沿归纳不损失。交替情形用外部锚点 c1 代替 sum-zero 一步；区域 (ii) 靠孪生 K-圈的 Ward 恒等式精确消去零模，再用 TL1。
+  - 作者自己标出三处没写全的地方：(α)、(β)、(γ)。
+  - 交监督：REQ-2026-10-11-0416-TL（Q1 陈述，Q2 证明，Q3 在 Lean 里作为 owed 待证钉文，Q4 paper delta）。T2398 等审查结果再写 Amend 2。
+- (3) **T2404（ST 侧 T2）合并 aa396d7**（三个文件原地改，净 450 / 1000）；**T2406（E3）合并 6f4572a**（`BA/EKNonzero` 357 行；登记去一行、改三行注释，K1 已做）。**阶段 E 三行全部合并**：五条 `BAEK*` 钉文都证完；`STEK*` 的 BA 形式归 U3-BA（C4）。下一轮写阶段 E 关闭 REQ。
+- (4) **T2401（G5a）1a-audit RETURN 并要求签字 → Amend 1**：D1–D3 按审核员列的改；D4 把 R6（族矩孪生）移到 G5b；移完后若某个文件 hi 仍超过 2,000，允许拆出第三个文件 `GreenMinor3`。按规则 (B) 修补。
+- (5) **T2402（G5c）1a-audit PASS 但要求签字 → Amend 1**：F2，T2401 通往 `BAGbEXPav` 的路线不用 G5c；G6b 的对角部分是否要用 G5c 还没定。决定：G5c 的 1b 暂停，现在只合并报告；等 G6a/G6b 的设计决定是重开（另起一张票）还是放弃。D3 暂时不用定，把 +419 行这个数记下来。
+- (6) 在跑：T2403（1b）、T2405（修补）；T2401 修补接着开工。槽位还空一个：下一轮补票（阶段 E 关闭 REQ；BA-T 钉文 REQ；ST 侧 T4s2/T5s2/T4s1 的顺序；L2c1、L2c2、L3c2；G5b，带上 R6；G6a，等 G4）。下一张票号 T2407，下一节 §221，下一条 H202。
+
+## §221 — BA-L2c1 = T2407 放行（总调度 V2，2026-10-11 04:20 UTC）
+
+- (1) **T2407 = BA-L2c1**（BA 74；阶段 L 首批，监督 2149 Q2 已 PASS，"任何路线都需要"）：新文件 `Graph/BAWeightOp`，把权展开 (B.19)（[P] Lemma B.7，p.94）写成图操作：项表、值恒等式（由 `baLweight_holds` 得到）、计数和阶。照搬带状 `LWWeightExp` §3（`owxT1`–`owxT4`、`owx_graph_E`），沿用 BA 的 `lanlw` 已有做法（`BAExpandW`、`BAExpandWOrd`）。`prover-hard`，800 / 950 / 1,700，停止线 2,000；不进证书通道。
+- (2) 槽位：T2403、T2405 在跑；T2401 修补、T2402 只合并报告、T2407 排队。下一张票号 T2408，下一节 §222，下一条 H203。还没写：L2c2（hi 2,697，要拆）、L3c2、G5b（带 R6，等 G5a 合并）、G6a（等 G4）、BA-T 钉文 REQ、阶段 E 关闭 REQ、L4 REQ（等 TL 审查）。
+
+## §222 — G4、T2405 合并；放 G6a = T2408、L2c2a = T2409；T2407 Amend 1（总调度 V2，2026-10-11 04:34 UTC）
+
+- (1) **T2403（G4）合并 292a855**：新 `BA/GreenOff` 1,568 行（停止线 1,600）；`baGbEXPij'_holds`（`2 ≤ d`）、`baStab_holds`；登记去掉 `BAStab`、`BAGbEXPij'` 两条 owed。**T2405（ST 侧 T3）合并 2af090d**：新 `Chain/NewKLKGen` 816 行，带撇的通用钉文 `STNewKLKAtgL'`。**T2402** 只合并报告（5ee937e）。现在在跑：T2401（修补）、T2407（L2c1）。槽位空两个，所以补两张票。
+- (2) **T2408 = BA-G6a**（BA 75，关键路径排第一）：BA 在确定性控制下的局部律，逐序列那一层。照搬带状 `Green/LocalLaw.lean`（`localLawDetThm`、`loopFloorThm`、接线），用已合并的单时刻核心 `GreenCore_diag`、`baGbEXPij'_holds`、`baStab_holds`。1a 是设计门：第 (ii) 项要求 G6a 的输出逐字满足 G5a（T2401 G.6）和 G5c（T2402 的 `hll`）用到的局部律前提。探针由 `prover-max` 编译。`prover-hard`，1,100 / 1,450 / 2,400，每个文件停止线 2,000，必要时拆 `GreenLocal2`。
+- (3) **L2c2 拆成两张**（hi 2,697 超过 2,000）：**T2409 = L2c2a**（BA 76）只做钉文和证明，新 `Graph/BAGGExp`：从 T2387 探针逐字复制 `ba_W_sub_one`、`BAGGGammaL/R`、`BAGGGamma`，证 `baGGGamma_holds`，路线照 [68] Lemma B.11，用已合并的 `baLanlw_holds`、`baLweight_holds` 和 `W` 方程组。450 / 650 / 1,000，停止线 1,300。**L2c2b**（`gg2`、`gg4` 的图操作、`BAexpFrameE`、计数和阶）等 T2407 和 T2409 都合并后再写。
+- (4) **T2407 Amend 1**：T2395（S′）的探针已经钉好下游要用的形式：`BAGraph.ext`、`lw2`、`lw4`（`t/T2395` 探针 106–128），T2407 必须逐字用这些；目标 2 是 `BAexpFrameE` 的第一合取项 `baExpFrame_lw`；阶的陈述要用 T2395 `BAstepMono` 需要的形式。不重启，把 amend 传给剩下的阶段。
+- (5) 下一张票号 T2410，下一节 §223，下一条 H204。还没写：阶段 E 关闭 REQ、L3c2、L2c2b、G5b（带 R6，等 G5a 合并）、BA-T 钉文 REQ、ST 侧 T4s1/T4s2/T5s2、L4 REQ（等 TL 审查）。
