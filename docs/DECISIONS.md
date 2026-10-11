@@ -2072,3 +2072,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **TL-D（T2413）设计写完**（10:07，审核在跑）：10 行 = TL-D + 9 行证明（TL0、TL1a、TL1b、TL2a–TL2e、TL-V），中心 8,688；T.7–T.13 在 BA 载体上每一步都闭合，没有 STOP；F1–F6 只改陈述、前提、归属。`twK_bound` 保持 `Bctl` 形式（D3）。TL-V 是 TL 的行；带第五条的主归纳一步 `BAMainIndTL` 归 BA-V 的 V2a（D6）。
 - (3) **短 REQ `REQ-2026-10-11-1013-TLF`**（0853 TLS Q1：多于 8 行要短 REQ）：Q1 旗标 15；Q2 两条登记文本；Q3 F3（BA 的 Claim 4.5 等 T7-BA，在 T8b 之后）和 F4（`STLmaxU`/`STLKU` 的载体形式等 U3s1）作为假设。审核若 RETURN 改了行表，REQ 先修改再答。TL0 是第一行证明，等 T2413 审核 PASS 就放（不等这份 REQ）。
 - (4) 中枢：T2411、T2413、T2414、T2417 在跑；T2418、T2419、T2420 排队。下一张票号 T2421，下一节 §234，下一条 H215。
+
+## §234 — T2411（G5b）、T2413（TL-D）合并；放 TL0 = T2421、G6b = T2422；G5c 的 1b 放弃（总调度 V2，2026-10-11 10:30 UTC）
+
+- (1) **T2411 合并 bd0efad**：`BA/GreenCond` 1,989 行 + `GreenCond2` 1,990 行，审核一次 PASS。登记里去掉 `BAFamGain`、`BAFAav`；另加了 `STInitialGT2gL`，owner 写成 BA-G6b（审核观察 2 留给总调度）。这个归属不对：它是 `BAGavLGEX`、`BAFAav` 的前提，阶段 G 不产出它，和带状的 `STInitialGT2` 一样归 Step 1 / 主归纳链。T2422 把 owner 改成 BA-V。
+- (2) **T2413（TL-D）只合并报告 1d34da3**：审核第二轮 PASS（修补一次）。行表不变，10 行、旗标 15。短 REQ 1013-TLF 已补一句"审核已过"。
+- (3) **T2421 = TL0**（BA 88；TL-C2）：新 `BA/TwistPins`，把 T2413 探针 §1–§3 的定义原样搬进来；证明 `twFold`、`twWard`、`twCirc`、`twK_bound`（`Bctl` 形式）以及 `twMB_ba`、`twK_ba`；T2398 审核的 O2–O4；`owedProps` 加两行（`BATwistLoopLaw` 的 owner 照 1013-TLF Q2 的答复）。`prover-hard`，450 / 620 / 950，停止线 2,000。下一个开工。
+- (4) **T2422 = G6b**（BA 89）：G6a 和 G5b 之后，G6b 只剩一步组合：`baGbEXPav_holds` = G6a 的接线 + G5b 的 `baFAav_holds`。登记里去掉 `BAGbEXPii`、`BAGbEXPav`，`STInitialGT2gL` 的 owner 改成 BA-V；`BAGbEXPij`（不加撇）留给 G7。`prover`，停止线 400。
+- (5) **G5c（T2402）的 1b 放弃**：T2401/T2408 的 `BAGbEXPav` 路线不用 G5c，对角律在 G6a 已闭合（T2408 O1），G5c 没有使用方。T2402 只保留已合并的报告；阶段 G 剩 G6b、G7。
+- (6) 中枢：T2414、T2417、T2418、T2419 在跑；开工次序 T2421 → T2422 → T2420。下一张票号 T2423，下一节 §235，下一条 H216。

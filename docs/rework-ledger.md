@@ -358,3 +358,5 @@
 | T2412 | 2026-10-11 09:14 UTC (260732c) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L3c2：设计门（原子进入 size 计数）1a-audit PASS，审核一次 PASS；新 `Graph/BASizeClaim` 1,167 + `BASizeClaim2` 825 = 1,992 行（估价 950 / 1,350 / 2,350）；观察 O1–O4 不改陈述 |
 | T2415 | 2026-10-11 09:29 UTC (54ecfc4) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T T8-BA：新 `BA/Step2BA` 209 / 900（`baStep2Mat`、`baStep2Data`、BAT-C1 的 `Pp`/`Hpath`、`BAStep2` 桥、能量族 `baStep2Fam`）；审核一次 PASS；远低于估价 350 / 500 / 750 |
 | T2416 | 2026-10-11 10:08 UTC (e4a1833) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-T T2-BA（并 T6-BA）：新 `BA/EMn2BA` 1,090 / 1,800（T2404 三个假设块在 BA 读法下给出，BAT-C2 混合对复合界，`STEMn2PolygL`、J/Ĵ 形式，`STContractM` 推论）；审核一次 PASS |
+| T2411 | 2026-10-11 10:24 UTC (bd0efad) | prover-max | Sonnet 5.5 max | 否 | BA-G5b：新 `BA/GreenCond` 1,989 + `GreenCond2` 1,990（m5、阈值族、R6、`baFamGain_holds`、`baFAav_holds`）；登记去 `BAFamGain`、`BAFAav`，另加了 `STInitialGT2gL`（owner 写成 BA-G6b，T2422 改）；审核一次 PASS；两个文件都贴近 2,000 停止线 |
+| T2413 | 2026-10-11 10:20 UTC (1d34da3) | prover-max | Sonnet 5.5 max | 是 | BA TL-D（只合并报告）：审核第一轮 RETURN 两项（`BAChainTL` 要 `STG0M` 前提；T.10 (d) 实例）→ 规则 (B) 修补一次 → PASS；10 行、旗标 15；探针 387 行留在 t/T2413 |
