@@ -186,34 +186,34 @@ theorem promoteC_cls_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) : (promoteC Γ).c
     | refl => exact Relation.EqvGen.refl _
     | tail _ hbc ih => exact Relation.EqvGen.trans _ _ _ ih (Relation.EqvGen.rel _ _ ((promoteC_eqRel_iff Γ _ _).2 hbc))
 
-private theorem BAAtomic_vmapC_injective (Γ : LGraph E I) : Function.Injective Γ.vmapC := by
+theorem BAAtomic_vmapC_injective (Γ : LGraph E I) : Function.Injective Γ.vmapC := by
   intro q q' h
   unfold LGraph.vmapC at h
   by_cases hq : Γ.IsExtCls q <;> by_cases hq' : Γ.IsExtCls q' <;> simp [hq, hq'] at h
   · exact h
   · exact h
 
-private theorem BAAtomic_vmap_eq_iff (Γ : LGraph E I) (u v : E ⊕ I) : Γ.vmap u = Γ.vmap v ↔ Γ.cls u = Γ.cls v :=
+theorem BAAtomic_vmap_eq_iff (Γ : LGraph E I) (u v : E ⊕ I) : Γ.vmap u = Γ.vmap v ↔ Γ.cls u = Γ.cls v :=
   ⟨fun h => BAAtomic_vmapC_injective Γ h, fun h => congrArg Γ.vmapC h⟩
 
-private theorem BAAtomic_vmap_inl (Γ : LGraph E I) (a : E) : Γ.vmap (Sum.inl a) = Sum.inl (Γ.extMap a) := by
+theorem BAAtomic_vmap_inl (Γ : LGraph E I) (a : E) : Γ.vmap (Sum.inl a) = Sum.inl (Γ.extMap a) := by
   have h : Γ.IsExtCls (Γ.cls (Sum.inl a)) := ⟨a, rfl⟩
   simp [LGraph.vmap, LGraph.vmapC, LGraph.extMap, h]
 
-private theorem BAAtomic_vmap_surjective (Γ : LGraph E I) : Function.Surjective Γ.vmap := by
+theorem BAAtomic_vmap_surjective (Γ : LGraph E I) : Function.Surjective Γ.vmap := by
   rintro (⟨q, hq⟩ | ⟨q, hq⟩)
   · obtain ⟨v, rfl⟩ := Quotient.exists_rep q
     exact ⟨v, by simp [LGraph.vmap, LGraph.vmapC, hq]⟩
   · obtain ⟨v, rfl⟩ := Quotient.exists_rep q
     exact ⟨v, by simp [LGraph.vmap, LGraph.vmapC, hq]⟩
 
-private theorem BAAtomic_vmap_isRight_iff (Γ : LGraph E I) (v : E ⊕ I) :
+theorem BAAtomic_vmap_isRight_iff (Γ : LGraph E I) (v : E ⊕ I) :
     (Γ.vmap v).isRight = true ↔ ¬ Γ.IsExtCls (Γ.cls v) := by
   unfold LGraph.vmap LGraph.vmapC
   by_cases h : Γ.IsExtCls (Γ.cls v) <;> simp [h]
 
 /-- Every internal class has an internal vertex. -/
-private theorem BAAtomic_exists_inr (Γ : LGraph E I) (q : Γ.IntCls) : ∃ b : I, Γ.cls (Sum.inr b) = q.1 := by
+theorem BAAtomic_exists_inr (Γ : LGraph E I) (q : Γ.IntCls) : ∃ b : I, Γ.cls (Sum.inr b) = q.1 := by
   obtain ⟨v, hv⟩ := Quotient.exists_rep q.1
   rcases v with a | b
   · exact absurd ⟨a, hv⟩ q.2
@@ -343,11 +343,11 @@ section Mol
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-private theorem BAAtomic_ladj_comm {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I']
+theorem BAAtomic_ladj_comm {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I']
     (Γ : LGraph E' I') (u v : E' ⊕ I') : Γ.adj u v = Γ.adj v u := by
   simp only [LGraph.adj, or_comm]
 
-private theorem BAAtomic_merge_adj_iff (Γ : BAGraph E I) (a b : (promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls) :
+theorem BAAtomic_merge_adj_iff (Γ : BAGraph E I) (a b : (promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls) :
     (promoteC Γ).merge.adj a b = true ↔ ∃ e0 ∈ Γ.waved,
       (((promoteC Γ).vmap e0.x = a ∧ (promoteC Γ).vmap e0.y = b) ∨ ((promoteC Γ).vmap e0.x = b ∧ (promoteC Γ).vmap e0.y = a)) := by
   unfold LGraph.adj
@@ -566,7 +566,7 @@ private theorem BAAtomic_merge_dotted (Γ : BAGraph E I) : (promoteC Γ).merge.d
     (Γ.solid.filter fun e => !Γ.sameAtom e.src e.dst).map fun e =>
       ⟨false, (promoteC Γ).vmap e.src, (promoteC Γ).vmap e.dst⟩ := Γ.img_dotted
 
-private theorem BAAtomic_merge_solid (Γ : BAGraph E I) : (promoteC Γ).merge.solid = Γ.solid.map (BAAtomic_fm Γ) := Γ.img_solid
+theorem BAAtomic_merge_solid (Γ : BAGraph E I) : (promoteC Γ).merge.solid = Γ.solid.map (BAAtomic_fm Γ) := Γ.img_solid
 
 /-- The atom-level loops of `Γ` are the loops of the image. -/
 theorem BAGraph.img_nLoops (Γ : BAGraph E I) : Γ.img.g.lvl1NLoops = Γ.nLoops := by
