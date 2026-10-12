@@ -2348,3 +2348,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   U 现在可以开：没有规则要求 T 先关，C8 把 T7-BA 挪进 U 正是为了让 T 先关。实际上只有 U3s1 的词汇、U6、X1a 的 tier 1 不卡在 T4s1 上。
 - (4) **Jun 顺序第 3 步**：REQ 已发，接着写 M/N 的只出报告的设计单（BA +1）。另外，带状侧的 T 行（T4s1、T7、T5s2、T1、T4s2）从 §236 起没有放出；T4s1 在每个 ST 侧 U 行的 import 闭包里，排在 M/N 设计单之后尽快写。
 - (5) ROUTES：X1 一项改为"X1 生产者提案：X1a/X1b（路线 G），BA 实例归 U4-BA（REQ U 待答）"；TL 13 行已合并 12 行。下一张票号 T2449（M/N 设计单），下一节 §262，下一条 H243。
+
+## §262 — L4d2a、L4e-C 通用一半合并；放 M/N 设计单 = T2449（只出报告）；记 1049 的 `unMLOutBA_of_pins` 问题（总调度 V3，2026-10-12 11:23 UTC）
+
+- (1) **T2445 = L4d2a 合并** b0161bc（11:08 UTC；`BA/TwistFold2` 656 + `TwistFold2B` 1,066；8 个目标，含 7 与 7′，加实例；审核 PASS）。折叠引理 `twFold2` 一族与 `≺` 行 `twFold2Prec` 现在在 `main` 上。
+- (2) **T2433 = L4e-C 通用一半合并** 695cfc7（11:22 UTC；`Graph/BAG5Leaf` 1,136 行：`BACtx`、带上下文的 GG 引理（两种电荷，`kids` 形式）、`BAselStar`、`BAG5LeafProps`、`BAG5Attached`、实例；没有 `baG5Graph` 表、没有目标 4；`BAG5Leaf2` 没建；审核 PASS 第一轮）。**L4d2b 现在可写**（0851 O4：T2433 的通用名字已上 `main`），它的 1a 走 S3A-C5。
+- (3) **T2449 = M/N 设计单（BA-DMN，只出报告）**（BA 116；`prover-max`；模板 T2379）：交付 `docs/reports/T2449-design.md`（≤ 400 行）和不合并的探针 `RBM3D/Probe/T2449Pins.lean`（≤ 400 行，留在 `t/T2449`）。报告先回答 **MN0 = BA-C5/E5**：起草时初步看，E5 照字面多半不成立。`RandomLayerB_Flow`/`_Prod` 用的是半圆律的 `etaT E t = (1-t)·Im mE(E)` 加 `|fE| ≤ 2-κ`，而 BA 的恒等式用 BA 的 `m(E,λ₀)`（`7_8:1801`），ρ-bulk 会超过 `2-κ`，`BAFlow` 里也没有 `|Re z| ≤ 2-κ`。修法可能只在 BA-C5 里：把 `RandomLayerB` 改成以 η 函数为参数的泛型副本（监督 0853 `:126`）；U、V 多半不受影响。U、V 的陈述若要改，就停下报告。之后是 MN1 终点覆盖、MN2 接口钉文、MN3 N3 的路线、MN4 重新估价（C3–C5 计入，给出含与不含两种总数）。答复起草问题：C3–C5 保留；报告上限 400 行；E5 的 `example` 形状编不过时由中枢报告，调度改检查文件。
+- (4) **记下监督 1049 的问题**：已合并的 `unMLOutBA_of_pins`（`Induction/MainIndOut.lean:144`）带一个 `STMainIndG` 前提，按监督 1049，BA 证不出它。M/N 设计单要说明 M/N 怎样绕开（换后继形状或换路线）。另外，`BAEnd_locSC`、`BAEnd_QDiff`、`BAEnd_decol`、`BAThm27` 只在 `t/T2161` 上，而且是按旧的带状律写的；设计单要给出按正确的律写的后继（建议名 `BAEnd_locSCL` 等）。
+- (5) 槽位：在跑 T2447、T2448，空出两个槽；T2449 开工，另一个槽留给下一张。下一张票号 T2450（L4d2b）、T2451（TL2e），下一节 §263，下一条 H244。其后：T4s1、L3b1、L4b2、L3d1。

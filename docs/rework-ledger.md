@@ -7,3 +7,5 @@
 | T2444 | 2026-10-12 09:50 UTC (23a4e69) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3c3b：1a → 1b 中途 API 限额中断，09:37 按规则 (H) 重跑 → 审核 PASS；新 `Graph/BAZetaExp` 591 行 |
 | T2446 | 2026-10-12 10:21 UTC (7f23e96) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3a5：1a → 1b → 审核 PASS 第一轮；新 `Graph/BALvl1C` 627 行（备用文件 `BALvl1C2` 没用上） |
 | T2441 | 2026-10-12 10:49 UTC (20917ed) | prover-max（探针步骤 prover-max） | Sonnet 5.5（prover-max） | 是 | BA-TL TL2d：探针步骤 → 1a-audit PASS → 1b 两次撞 API 限额（06:5x、09:3x），都按规则 (H) 重跑 → 审核 PASS；新 `BA/TwistStep` 1,795 + `TwistStep2` 1,564 行 |
+| T2445 | 2026-10-12 11:08 UTC (b0161bc) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4d2a：1a → 1b → 审核 PASS 第一轮；新 `BA/TwistFold2` 656 + `TwistFold2B` 1,066 行 |
+| T2433 | 2026-10-12 11:22 UTC (695cfc7) | prover-max（探针步骤 prover-max） | Sonnet 5.5（prover-max） | 否 | BA-L L4e-C：1a-audit 第一轮问第二个文件超停止线 → 监督 0554 范围 HOLD → Amend 1（只做通用一半、跑 L4S3-L1）→ L4S3-L1 未解除（H234）→ 1a-audit 第二轮 PASS（Q3-C1/C2）→ 1b 撞 API 限额，按规则 (H) 重跑 → 审核 PASS；新 `Graph/BAG5Leaf` 1,136 行 |
