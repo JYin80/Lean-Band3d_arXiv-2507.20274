@@ -2564,3 +2564,25 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 
 - (1) H257 (2)：T2473 的检查在 `main` c986735f 上 exit 1，两处错误都在 `:314-315`（`HasCondSubgaussianMGF … Cm.Pp` 要 `IsFiniteMeasure Cm.Pp`）。那是目标 6（`SubGaussFormNg`）的形状行，目标 6 已按 §276 (3) 取消；调度把这行的绑定改成 `(Cm : Step2Mat sz) [IsProbabilityMeasure Cm.Pp]`（与 `StoppedAzumaNg` 一致），注明只作读法。钉文与其他形状都不变。T2474 的检查 exit 0。T2473 本来就等 T2474 合并，不受影响。H258 让中枢重编。
 - (2) T2471 的 1b（P1b-1）在 H257 (4) 之前已开；不定义 T2474 名字的说明进它的审核提示（中枢在 1b → 审核边界交）。
+
+## §278 — 监督 2049 PASS：stage G 关闭，M/N 开（只放 C5g、N3a、N3b，旗标 15）；P1b-1、L3d2a、T7b 合并；放 C5g = T2475、N3a = T2476、N3b = T2477（总调度 V3，2026-10-12 21:31 UTC）
+
+- (1) **监督 2049：问题 1–3 都 PASS。** stage G 关闭（G/E 13 / 19.5，E 早已关闭）；M/N 为 C5g、N3a、N3b 开阶段，旗标 15；N3a、N3b 的可写文件规则接受，附 GMN-C2。条件（都不挡在跑的票）：
+  - **GMN-C1（T1-BA）**：Step 2 局部界的带撇 BA 读者（`stStep2LocalPT_of_L2decayG` 的 BA 读法）写 T1-BA 时列为有名字、有定价的目标；首选把 Green 输入取成 `STGijDecgL`（`FarEntry` 的形式，带状经 `stGijDecgL_of_gex`、BA 经 U4-BA 从 `BAGbEXPij'` 的蕴涵），一个泛型读者服务两个模型；T1-BA 的 1a 确认 `STGijDecgL` 加 `(eq:Psirelations)` 能闭合局部界论证，不行就写只给 BA 的带撇读者；超 1,950 预签拆分。
+  - **GMN-C2（N3a、N3b 原地改）**：(a) 1a 报两个锥（证书锥与 `Main/BandTerminal` 锥）；(b) 文件外有读者的公开声明陈述逐字不变（签名脚本 diff），两耦合与 C 形式起新名字，带状经 `lamV = lamQ`、`ouMatC_toC`、`UNGreenCorrAllC.toAll` 恢复，私有引理可改陈述；(c) 审核对比合并前后的 `#print axioms band_terminal` 与 `#print axioms bUniv_holds`，并跑全量构建；(d) 某个声明做不到 (b) 就只给它写带撇后继，1a 重新定价。实测八个文件的反向锥都不含证书模块、都含 `Main/BandTerminal`，所以都原地改（与 T2449 §4 定价一致）。
+  - **GMN-C3（C5g）**：`RBG_*` 从 `t/T2449` 921369b 逐字照抄；四个 BA 实例（`ba_flowG`、`ba_domG`、MLout、`ba_dom_of_bulk`）作为目标放 BA 侧的叶文件；泛型文件不 import `BA/*`；C5 以后若要改 `RBG_Prod`/`RBG_Que`，写 C5 的带撇后继，不返工 C5g。
+  - **GMN-C4：BA 的 `thetaDiff` 负责人记为 M3**（C3 的 1a 若用 `ζ = 0` 的剖面得到它，可以接过去）。写进 M/N 行表。
+  - **GMN-C5：阶段 L 到 40 张的 REQ 从基数 45 算**（43 行 + 2 张返工），实际 46–48（T2472 预签拆分 +1，L5 按孪生价 1,994 很可能 +1），并在到 49–50 之前写明哪些行可合并、哪些可等 HOLD 复核。
+  - **O6**：M/N 其余各行（M1–M3、N2、C3–C5）在 V 关闭时发一份短通知 REQ 开，届时对照 V 已合并的输出（`BAMLOutTL`、V3）复核 T2449 的探针钉文；旗标仍 15，除非行表变。
+  - BA 全程预计更新为约 **194–199** 张（1852 的 190–200 下限上移）。
+- (2) **合并**：
+  - **T2471 P1b-1** 51e233bd（21:10）：`Chain/GridRepTailGen` 795 + `GridRepTailGen2` 929；目标 1–3；审核 PASS；P1b-2（`BA/GridRepTailBA`，目标 4–7）在叠加的 `t/T2471b` 上跑。
+  - **T2470 = L3d2a** 4cc5e713（21:13）：`Graph/BAMomentGen` 1,549 + `BAMomentGenB` 847；目标 1–4（目标 4 按钉文以 `BAAnpAuxG 3` 与路径绑定为条件：L3d1 合并后的第一个消费者、T2469 合并后的第一个消费者各消一个，最迟 L6）；审核 PASS。
+  - **T2467 = T7b** 97341078（21:18）：`Chain/Step2EventsGen` 1,351 + 叶 `Chain/Step2EventsGenTw` 171；目标 8–11 与 F1–F2、F7、F9；登记 +6；`DecayGenTw` 未动；审核 PASS。**T1 现在可写**（它等的是 T7b）；U2 还等 T5s2（T2474 在跑）。
+- (3) **放 M/N 的三张票**（都 `prover-hard`，都只用已合并的输入）：
+  - **T2475 = C5g**（M/N 1 / 15；BA 145；窄设计门 D1–D2 带探针：兼容输入与 `g1Rowk_of_inputsG` 在 T2449 只有描述，1a-audit 定；`RBG_*`（目标 1–4）与四个 BA 实例（目标 9–12）现在就有约束力；泛型 `Universality/GUEPhase/RandomLayerBG` + BA 叶 `BA/RandomLayerBGBA`；520 / 720 / 1,040）。答复：BA 上兼容输入的剖面一半归 **C3**；名字 `g1Rowk_of_inputsG`；登记按前提扫描给未被推出的 `RBG_*` 加欠账行（负责人 BA-C5），改 `:172-173` 的负责人注释。
+  - **T2476 = N3a**（M/N 2 / 15；BA 146；E1 在 BA 叶 `BA/EMCTE2BA`（备用 `JakUywBA`），E2 原地改 `Jak`、`Uyw`（`JakSpectral` 预计不改）；680 / 930 / 1,280；预签拆 N3a-1 / N3a-2）。**新发现**：`Jak`、`Uyw` 的定时引理还带着带状 bulk `|E| ≤ 2 − κ`（T2449 MN3 漏了），只加两个耦合到不了 `UNKind.ba`。答复：**加一个窄设计门 D1 带探针**，1b 前编出 `hdiag` 的 bulk 窗口形式与坏事件转移假设、以及它们的 BA 消法（`BAbulk_window`、`unBadYBA_measure_le`、BA 的成对形式）和带状消法；BA 消法不成立就停在 1b 前（短 REQ）；K 形式放叶文件用 `open private`（带状文件不加 import），做不到再让 `Jak` import `PinsK` 并报锥变化。
+  - **T2477 = N3b**（M/N 3 / 15；BA 147；不设设计门；原地改 `GreenCorr`、`UnivMain`、`Step1Band`，备用新文件 `Step1BandC`；E4 = `unGreenCorrC`、`greenCorrAllC`；E3 = `step1BandC''` 等到 `unCoreC''_holds`；都对每个 `UNModelC` 成立，`baBUniv_of_rows` 原样接受）。答复：`PinsDens` 从可写文件去掉（`un_core_of_rows'` 的 C 形式放 `UnivMain`）；`GUETranslation` 不可写，翻译行的 C 形式放 `UnivMain`；`Step1BandC` 允许；带状 `step1Band`、`univMainRow` 保留原证明和陈述；非零均值实例放审核的草稿文件、贴进审核报告；三个新 import 接受，1a 报 `BandTerminal` 锥前后；三条已推出的欠账行删除（T2411 先例）。
+  - **N3a 与 N3b 一次合并一张**；后合并的那张在合并后的底上重跑 `band_terminal` / `bUniv_holds` 的公理对比与全量构建。
+- (4) 计数：BA 147；G/E 关闭；T 19 / 34.5；U 8 / 42，计划 29；L 39 / 50（计划 43 行 = 45 张，实际 46–48）；V 0 / 12；M/N 3 / 15。
+- (5) 在跑：T2469（L3b2a）、T2471（P1b-2）、T2472、T2474。排队：L3b2b（L3b2a 审核 PASS 后马上）→ **T2475 → T2476 → T2477** → T2473（等 T2474 合并）。下一张票号 T2478，下一节 §279，下一条 H260。待写：**T1**（T7b 已合并）、X1b、U5a、U5b、U2（等 T5s2）、U3s2–U3s4（等 T4s2、T5s2）、U1s2、L4b2、L3d1、L3d2b（等 T2472 1a-audit）、L5（孪生价）；阶段 L 到 40 张时的 REQ（基数 45）。

@@ -30,3 +30,5 @@
 | T2460 | 2026-10-12 19:33 UTC (ad52b370) | prover-hard | Sonnet 5.5 effort xhigh | 否 | T 生产者 P1：1a 预检 FAIL（H3 等式不成立）→ Amend 1（H3′ 不等式，目标 4 离开）→ 1b → 审核 PASS；新 `BA/GridMartBA` 747 行 |
 | T2468 | 2026-10-12 19:36 UTC (e9d820fc) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-G G7：1a → 1b → 审核 PASS 第一轮；新 `BA/Step1Prime` 1,181 行；`BAGbEXPij` 移入 supersededProps；stage G 关闭 |
 | T2465 | 2026-10-12 20:21 UTC (c986735f) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4g：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14e` 433 行；S3 链闭合 |
+| T2467 | 2026-10-12 21:18 UTC (97341078) | prover-hard | Sonnet 5.5 effort xhigh | 是 | ST T7b：Amend 1（布局，调度在开工前定）→ 1a → 1b → 审核 PASS 第一轮；新 `Chain/Step2EventsGen` 1,351 + 叶 `Step2EventsGenTw` 171 行；登记 +6 |
+| T2470 | 2026-10-12 21:13 UTC (4cc5e713) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3d2a：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAMomentGen` 1,549 + `BAMomentGenB` 847 行 |
