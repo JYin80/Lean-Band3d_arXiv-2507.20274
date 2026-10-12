@@ -28,9 +28,9 @@ identities (`lanlw_val`, `baExpFrameE_holds`), the BA partition (`BAGraph.val_eq
 
 ## Contents (namespace `RBM.Graph`; private prefix `BALvl1A_`)
 
-1. **Vocabulary** (probe, verbatim): `BALocStep`, `BAReach`; the statements `BAtwistComb`, `BAframeStepIdentity`, `BAlvl1StepIdentity`.
+1. **Vocabulary** (probe, verbatim): `BALocStep`, `BAReach` (with `BALvl1A_reach_refl`, which the axiom audit's premise scan needs); the statements `BAtwistComb`, `BAframeStepIdentity`, `BAlvl1StepIdentity`.
 2. **Packing** (pathwise, no integrability): `BALvl1A_pack` (`BAComb.val (P.outsOf Ts) D ℓe = baSum Ts D ℓ'` when `ℓe = ℓ' ∘ P.ext`),
-   `BALvl1A_pack_zero`, `BALvl1A_comb_append`.
+   `BALvl1A_pack_zero` (the non-factoring case: both sides `0`), `BALvl1A_comb_append`.
 3. **Target 3**: `baTwistComb_holds` (the twist of a list of packed graphs in expectation).
 4. **Integrability** (copies of `BAExpandId:422-467` under the stem): the value of a graph at `BAlwData` is integrable over `PF d L W 0`.
 5. **The two macro identities**: `BALvl1A_macroA` (`within`), `BALvl1A_macroB` (`ggSplit`).
@@ -62,13 +62,16 @@ section Vocab
 variable {E : Type}
 
 /-- **`BALocStep`** (the band's `LocStep`, `LWLvl1.lean:3260`): a frame step at the twisted graph, every output twisted back (L3a1, L3a2). -/
-def BALocStep (P : BAPGraph E) (outs : List (BAPGraph E)) : Prop :=
+def BALocStep {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)) : Prop :=
   ∃ (c t : Bool) (F : List (BAPGraph E)), BAFrameStep (P.twist c t) F ∧ outs = F.map (BAPGraph.twist c t)
 
 /-- reachability by the strategy below the cutoff `K` (`Lvl1Reach`, `LWLvl1.lean:3277`) -/
 inductive BAReach (K : ℤ) : BAPGraph E → BAPGraph E → Prop
   | refl (P : BAPGraph E) : BAReach K P P
   | step (P Q R : BAPGraph E) (L : List (BAPGraph E)) : BAReach K P Q → Q.g.scalingOrder < K → ¬ Q.g.LocStd → BALocStep Q L → R ∈ L → BAReach K P R
+
+/-- reflexivity of `BAReach` as a theorem (the constructor `BAReach.refl`): the axiom audit's scan of premises (`Test/Axioms.lean:391-445`) counts a theorem concluding `BAReach` as a proof of it -/
+theorem BALvl1A_reach_refl (K : ℤ) (P : BAPGraph E) : BAReach K P P := BAReach.refl P
 
 end Vocab
 
@@ -549,6 +552,124 @@ theorem baLvl1StepIdentity_holds (d : ℕ) : BAlvl1StepIdentity d := by
   have h3 := baTwistComb_holds d L W g0 Em t m c t' F ℓe
   simp only [List.map_cons, List.map_nil, BALvl1A_twist_invol, BAComb.val, List.sum_cons, List.sum_nil, add_zero] at h1
   rw [h3, h1, h2]
+
+/-! ## 8. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `flowP`; `BASelf` and `0 < t₀ < 1` are `flowP_data`) -/
+
+namespace BALvl1AInst
+
+open RBM.BA.CouplingWindowInst BASimInst BASymm1Inst
+
+/-- the frame steps of R1's five data (the constructor hypotheses of `BAFrameStep` by `decide`; as `BASim.lean:1973`, `BASim3.lean:1951-1957`) -/
+theorem hFA : BAFrameStep (baPG baPA) ggF :=
+  BAFrameStep.gg (baPG baPA) pA (List.mem_cons_self ..) qA (List.mem_cons_self ..) (by decide) (0 : Fin 3) (by decide) (by decide) (by decide) (by decide)
+theorem hFB : BAFrameStep (baPG baPB) ((baPG baPB).withinOuts pB) :=
+  BAFrameStep.within (baPG baPB) pB (List.mem_cons_self ..) (by decide)
+theorem hFC : BAFrameStep (baPG baPC) ((baPG baPC).splitOuts pC qC 0) :=
+  BAFrameStep.ggSplit (baPG baPC) pC (List.mem_cons_self ..) qC 0 rfl (by decide) (0 : Fin 3) (1 : Fin 3) (by decide) (by decide : (0 : Fin 3) ≠ 1)
+    (by decide) (by decide) (by decide) (by decide)
+theorem hFW : BAFrameStep (baPG baPW) ((baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)) :=
+  BAFrameStep.weight (baPG baPW) pW (List.mem_cons_self ..) (by decide)
+theorem hFE : BAFrameStep (baPG baPE) ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)) :=
+  BAFrameStep.edge (baPG baPE) pE (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) (by decide) (0 : Fin 1) (by decide)
+    (by decide) (by decide) (by decide) (by decide)
+
+/-- the labels of the data with one external vertex -/
+def ℓ1 : Fin 1 → Idx 3 4 2 := fun _ => ℓ0 0
+
+/-- **Target 4** at the five steps (`gg` at `P_A`, `within` at `P_B`, `ggSplit` at `P_C`, `weight` at `P_W`, `edge` at `P_E`): the expectation of the value of the graph is
+that of the sum of the values of the outputs, each step having nonempty output lists (kernel evaluation). -/
+example :
+    (∫ ω, (baPG baPA).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) = ∫ ω, BAComb.val ggF (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    (∫ ω, (baPG baPB).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val ((baPG baPB).withinOuts pB) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    (∫ ω, (baPG baPC).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val ((baPG baPC).splitOuts pC qC 0) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    (∫ ω, (baPG baPW).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ1 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val ((baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ1 ∂(PF 3 4 2 0)) ∧
+    (∫ ω, (baPG baPE).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    (0 < ggF.length ∧ 0 < ((baPG baPB).withinOuts pB).length ∧ 0 < ((baPG baPC).splitOuts pC qC 0).length ∧
+      0 < ((baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)).length ∧
+      0 < ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)).length) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, by decide +kernel, by decide +kernel, by decide +kernel, by decide +kernel, by decide +kernel⟩
+  · exact baFrameStepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ hFA ℓ0
+  · exact baFrameStepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ hFB ℓ0
+  · exact baFrameStepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ hFC ℓ0
+  · exact baFrameStepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ hFW ℓ1
+  · exact baFrameStepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ hFE ℓ0
+
+/-- **The macro identities** at `P_B` (`within`) and `P_C` (`ggSplit`, `j = 0`) directly: the hypotheses on the selected edges are discharged by `rfl`. -/
+example :
+    (∫ ω, (baPG baPB).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val ((baPG baPB).withinOuts pB) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    (∫ ω, (baPG baPC).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val ((baPG baPC).splitOuts pC qC 0) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) :=
+  ⟨BALvl1A_macroA (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 (baPG baPB) pB (List.mem_cons_self ..) rfl rfl ℓ0,
+    BALvl1A_macroB (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 (baPG baPC) pC qC (List.mem_cons_self ..) 0 rfl ⟨rfl, rfl, rfl, rfl⟩ ℓ0⟩
+
+/-- **Target 3 (`baTwistComb_holds`)** at a two-element list (`P_B`, `P_C`), the twist `(true, true)`: the expectation of the twisted list is the conjugate of that of the list. -/
+example :
+    ∫ ω, BAComb.val ([baPG baPB, baPG baPC].map (BAPGraph.twist true true)) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      (if true then (star : ℂ → ℂ) else id) (∫ ω, BAComb.val [baPG baPB, baPG baPC] (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) :=
+  baTwistComb_holds 3 4 2 g0P EP t0P m0P true true [baPG baPB, baPG baPC] ℓ0
+
+/-- **Target 2 (`BALvl1A_pack`)** at the lists of `lanlw` and of the weight step: the packed partitions of a list of terms have the value of the list (here `ext = id`). -/
+example (D : BALData (Idx 3 4 2)) :
+    BAComb.val ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)) D ℓ0 = baSum (BAGraph.lanlwTerms baPE pE) D ℓ0 ∧
+      BAComb.val ((baPG baPW).outsOf (baPW.lw2 pW)) D ℓ1 = baSum (baPW.lw2 pW) D ℓ1 :=
+  ⟨BALvl1A_pack (baPG baPE) _ D (ℓ' := ℓ0) rfl, BALvl1A_pack (baPG baPW) _ D (ℓ' := ℓ1) rfl⟩
+
+/-- a packed graph with two external vertices read through one external vertex: `ext` collapses the two labels (`P_W`'s graph) -/
+def P2 : BAPGraph (Fin 2) := ⟨Fin 1, Fin 2, fun _ => 0, fun b => ⟨0, Subsingleton.elim _ _⟩, baPW⟩
+
+/-- the labels `ℓ0` of two distinct vertices do not factor through `P2.ext` -/
+theorem ℓ0_not_factor : ¬ ∃ ℓ' : P2.E' → Idx 3 4 2, ℓ0 = ℓ' ∘ P2.ext := by
+  rintro ⟨ℓ', h⟩
+  have h01 : ℓ0 0 = ℓ0 1 := by
+    rw [h]; rfl
+  have := (splitEquiv 3 4 2).symm.injective h01
+  have h2 := congrArg (fun x : Vtx 3 4 2 => x.1 0) this
+  simp [Pi.single_apply] at h2
+  exact absurd h2 (by decide)
+
+/-- **Target 2, the non-factoring case** at `P2` and the weight lists: both sides are `0` for every datum. -/
+example (D : BALData (Idx 3 4 2)) :
+    BAComb.val (P2.outsOf (baPW.lw2 pW)) D ℓ0 = 0 ∧ P2.val D ℓ0 = 0 ∧ 0 < (P2.outsOf (baPW.lw2 pW)).length :=
+  ⟨(BALvl1A_pack_zero P2 (baPW.lw2 pW) D ℓ0_not_factor).1, (BALvl1A_pack_zero P2 (baPW.lw2 pW) D ℓ0_not_factor).2, by decide +kernel⟩
+
+/-- **Target 1 and target 5 at `P_B`** (`within`), `(c, t) = (true, true)`: the twist of `P_B` is a graph `P` with a `BALocStep` (the frame step at `P.twist true true = P_B`,
+every output twisted back); `P.g` is normal. -/
+theorem locStepB : BALocStep ((baPG baPB).twist true true) (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)) :=
+  ⟨true, true, (baPG baPB).withinOuts pB, by rw [BALvl1A_twist_invol]; exact hFB, rfl⟩
+
+/-- **Target 1 and target 5 at `P_C`** (`ggSplit`, `j = 0`), `(c, t) = (true, true)`. -/
+theorem locStepC : BALocStep ((baPG baPC).twist true true) (((baPG baPC).splitOuts pC qC 0).map (BAPGraph.twist true true)) :=
+  ⟨true, true, (baPG baPC).splitOuts pC qC 0, by rw [BALvl1A_twist_invol]; exact hFC, rfl⟩
+
+theorem normalB : ((baPG baPB).twist true true).g.Normal := (ba_twist_inv_out true true baPB).2.2.2.2.2 (by decide)
+theorem normalC : ((baPG baPC).twist true true).g.Normal := (ba_twist_inv_out true true baPC).2.2.2.2.2 (by decide)
+
+/-- **Target 5 (`baLvl1StepIdentity_holds`)** at the steps of `locStepB` and `locStepC`: the expectation of the value of the twisted graph is that of the sum of the values of
+the twisted outputs. -/
+example :
+    (∫ ω, ((baPG baPB).twist true true).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    (∫ ω, ((baPG baPC).twist true true).val (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, BAComb.val (((baPG baPC).splitOuts pC qC 0).map (BAPGraph.twist true true)) (BAlwData 3 4 2 g0P EP t0P m0P ω) ℓ0 ∂(PF 3 4 2 0)) ∧
+    0 < ((baPG baPB).withinOuts pB).length ∧ 0 < ((baPG baPC).splitOuts pC qC 0).length :=
+  ⟨baLvl1StepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ locStepB normalB ℓ0,
+    baLvl1StepIdentity_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 _ _ locStepC normalC ℓ0,
+    by decide +kernel, by decide +kernel⟩
+
+/-- **`BAReach`** at the twist `Q` of `P_B`: reflexivity, and one step of the strategy below the cutoff `K = 100` (the order of `Q` is below `K`, `Q` is not locally standard,
+`locStepB` is a `BALocStep` at `Q`, and an output of it is reached). -/
+example : BAReach 100 ((baPG baPB).twist true true) ((baPG baPB).twist true true) ∧
+    ∃ R, BAReach 100 ((baPG baPB).twist true true) R ∧ R ∈ (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)) := by
+  refine ⟨BALvl1A_reach_refl _ _, ?_⟩
+  obtain ⟨R, hR⟩ := List.exists_mem_of_length_pos (l := ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)) (by simpa using (by decide +kernel : 0 < ((baPG baPB).withinOuts pB).length))
+  exact ⟨R, BAReach.step _ _ R _ (BAReach.refl _) (by decide +kernel) (by decide +kernel) locStepB hR, hR⟩
+
+end BALvl1AInst
 
 end RBM.Graph
 
