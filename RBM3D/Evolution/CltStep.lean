@@ -78,6 +78,17 @@ def cltStep_Gamma {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ) (b : Fin (2 
     (i : Fin (2 * p)) (ω : Ω d L W) : ℂ :=
   ∏ m ∈ Finset.univ.erase i, cltStep_Xo F g E u b m ω
 
+/-- `cltStep_Xo` over an abstract evaluation `Y ω b'` (the band: `Y = cltEvalAt F E u`; the carrier: `cltEvalAtOf`). -/
+def cltStep_XoY {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (g : ℝ) (b : Fin (2 * p) → Fin k → Zd d L)
+    (m : Fin (2 * p)) (ω : Ω d L W) : ℂ :=
+  if (m : ℕ) < p then Y ω (b m) - ∫ ω', Y ω' (b m) ∂(PF d L W g)
+  else (starRingEnd ℂ) (Y ω (b m) - ∫ ω', Y ω' (b m) ∂(PF d L W g))
+
+/-- `cltStep_Gamma` over an abstract evaluation `Y`. -/
+def cltStep_GammaY {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (g : ℝ) (b : Fin (2 * p) → Fin k → Zd d L)
+    (i : Fin (2 * p)) (ω : Ω d L W) : ℂ :=
+  ∏ m ∈ Finset.univ.erase i, cltStep_XoY Y g b m ω
+
 end Defs
 
 /-! ## 2. Private helpers -/
@@ -99,79 +110,89 @@ private theorem cltStep_eval_meas (F : LocalForm d L W k K) (E u : ℝ) (b : Fin
   exact measurable_const.mul
     (Finset.measurable_prod _ fun i _ => cltStep_gEntry_meas E u u _ _ _)
 
-private theorem cltStep_Xo_meas {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ)
+private theorem cltStep_evalOf_meas (F : LocalForm d L W k K) (m : ℂ) (E u : ℝ)
+    (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ) (b : Fin k → Zd d L) :
+    Measurable fun ω : Ω d L W => cltEvalAtOf F m E u H₀ ω b := by
+  unfold cltEvalAtOf LocalForm.evalOf
+  have hH : Measurable fun ω : Ω d L W => H₀ + Hflow d L W u ω :=
+    Measurable.of_eval fun a => Measurable.of_eval fun b' => measurable_const.add (measurable_Hflow d L W u a b')
+  refine Finset.measurable_sum _ fun j _ => Finset.measurable_sum _ fun q _ => ?_
+  exact measurable_const.mul (Finset.measurable_prod _ fun i _ =>
+    (walk_measurable_Gres_apply (ztOf m E u) _ _ _).comp hH)
+
+private theorem cltStep_Xo_meas {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (hYm : ∀ b', Measurable fun ω => Y ω b') (g : ℝ)
     (b : Fin (2 * p) → Fin k → Zd d L) (m : Fin (2 * p)) :
-    Measurable (cltStep_Xo F g E u b m) := by
-  have h1 := (cltStep_eval_meas F E u (b m)).sub_const
-    (∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g))
+    Measurable (cltStep_XoY Y g b m) := by
+  have h1 := (hYm (b m)).sub_const
+    (∫ ω', Y ω' (b m) ∂(PF d L W g))
   by_cases hm : (m : ℕ) < p
-  · have h : cltStep_Xo F g E u b m =
-        fun ω => cltEvalAt F E u ω (b m) - ∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g) := by
-      funext ω; simp only [cltStep_Xo, hm, ↓reduceIte]
+  · have h : cltStep_XoY Y g b m =
+        fun ω => Y ω (b m) - ∫ ω', Y ω' (b m) ∂(PF d L W g) := by
+      funext ω; simp only [cltStep_XoY, hm, ↓reduceIte]
     rw [h]; exact h1
-  · have h : cltStep_Xo F g E u b m =
+  · have h : cltStep_XoY Y g b m =
         fun ω => (starRingEnd ℂ)
-          (cltEvalAt F E u ω (b m) - ∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g)) := by
-      funext ω; simp only [cltStep_Xo, hm, ↓reduceIte]
+          (Y ω (b m) - ∫ ω', Y ω' (b m) ∂(PF d L W g)) := by
+      funext ω; simp only [cltStep_XoY, hm, ↓reduceIte]
     rw [h]; exact Complex.continuous_conj.measurable.comp h1
 
-private theorem cltStep_Gamma_meas {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ)
+private theorem cltStep_Gamma_meas {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (hYm : ∀ b', Measurable fun ω => Y ω b') (g : ℝ)
     (b : Fin (2 * p) → Fin k → Zd d L) (i : Fin (2 * p)) :
-    Measurable (cltStep_Gamma F g E u b i) := by
-  have h : cltStep_Gamma F g E u b i = fun ω => ∏ m ∈ Finset.univ.erase i, cltStep_Xo F g E u b m ω := rfl
+    Measurable (cltStep_GammaY Y g b i) := by
+  have h : cltStep_GammaY Y g b i = fun ω => ∏ m ∈ Finset.univ.erase i, cltStep_XoY Y g b m ω := rfl
   rw [h]
-  exact Finset.measurable_prod _ fun m _ => cltStep_Xo_meas F g E u b m
+  exact Finset.measurable_prod _ fun m _ => cltStep_Xo_meas Y hYm g b m
 
 /-- The centring cancels in a difference, and conjugation is an isometry. -/
-private theorem cltStep_Xo_sub {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ)
+private theorem cltStep_Xo_sub {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (g : ℝ)
     (b : Fin (2 * p) → Fin k → Zd d L) (m : Fin (2 * p)) (ω ω' : Ω d L W) :
-    ‖cltStep_Xo F g E u b m ω - cltStep_Xo F g E u b m ω'‖ =
-      ‖cltEvalAt F E u ω (b m) - cltEvalAt F E u ω' (b m)‖ := by
+    ‖cltStep_XoY Y g b m ω - cltStep_XoY Y g b m ω'‖ =
+      ‖Y ω (b m) - Y ω' (b m)‖ := by
   by_cases hm : (m : ℕ) < p
-  · simp only [cltStep_Xo, hm, ↓reduceIte, sub_sub_sub_cancel_right]
-  · simp only [cltStep_Xo, hm, ↓reduceIte]
+  · simp only [cltStep_XoY, hm, ↓reduceIte, sub_sub_sub_cancel_right]
+  · simp only [cltStep_XoY, hm, ↓reduceIte]
     rw [← map_sub, Complex.norm_conj, sub_sub_sub_cancel_right]
 
-private theorem cltStep_Xo_le {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ)
-    (b : Fin (2 * p) → Fin k → Zd d L) {BY : ℝ} (hY : ∀ ω b', ‖cltEvalAt F E u ω b'‖ ≤ BY)
-    (m : Fin (2 * p)) (ω : Ω d L W) : ‖cltStep_Xo F g E u b m ω‖ ≤ 2 * BY := by
-  have hint : ‖∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g)‖ ≤ BY := by
+private theorem cltStep_Xo_le {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (g : ℝ)
+    (b : Fin (2 * p) → Fin k → Zd d L) {BY : ℝ} (hY : ∀ ω b', ‖Y ω b'‖ ≤ BY)
+    (m : Fin (2 * p)) (ω : Ω d L W) : ‖cltStep_XoY Y g b m ω‖ ≤ 2 * BY := by
+  have hint : ‖∫ ω', Y ω' (b m) ∂(PF d L W g)‖ ≤ BY := by
     have h := norm_integral_le_of_norm_le_const (μ := PF d L W g)
-      (f := fun ω' => cltEvalAt F E u ω' (b m)) (Filter.Eventually.of_forall fun ω' => hY ω' (b m))
+      (f := fun ω' => Y ω' (b m)) (Filter.Eventually.of_forall fun ω' => hY ω' (b m))
     simpa using h
-  have h1 : ‖cltEvalAt F E u ω (b m) - ∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g)‖ ≤ 2 * BY := by
-    have := norm_sub_le (cltEvalAt F E u ω (b m)) (∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g))
+  have h1 : ‖Y ω (b m) - ∫ ω', Y ω' (b m) ∂(PF d L W g)‖ ≤ 2 * BY := by
+    have := norm_sub_le (Y ω (b m)) (∫ ω', Y ω' (b m) ∂(PF d L W g))
     linarith [hY ω (b m)]
   by_cases hm : (m : ℕ) < p
-  · simpa only [cltStep_Xo, hm, ↓reduceIte] using h1
-  · simpa only [cltStep_Xo, hm, ↓reduceIte, Complex.norm_conj] using h1
+  · simpa only [cltStep_XoY, hm, ↓reduceIte] using h1
+  · simpa only [cltStep_XoY, hm, ↓reduceIte, Complex.norm_conj] using h1
 
-private theorem cltStep_Gamma_le {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ)
+private theorem cltStep_Gamma_le {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (g : ℝ)
     (b : Fin (2 * p) → Fin k → Zd d L) {X : ℝ} (hX1 : 1 ≤ X)
-    (hX : ∀ m ω, ‖cltStep_Xo F g E u b m ω‖ ≤ X) (i : Fin (2 * p)) (ω : Ω d L W) :
-    ‖cltStep_Gamma F g E u b i ω‖ ≤ X ^ (2 * p) := by
-  unfold cltStep_Gamma
+    (hX : ∀ m ω, ‖cltStep_XoY Y g b m ω‖ ≤ X) (i : Fin (2 * p)) (ω : Ω d L W) :
+    ‖cltStep_GammaY Y g b i ω‖ ≤ X ^ (2 * p) := by
+  unfold cltStep_GammaY
   rw [norm_prod]
-  calc ∏ m ∈ Finset.univ.erase i, ‖cltStep_Xo F g E u b m ω‖ ≤ ∏ _m ∈ Finset.univ.erase i, X :=
+  calc ∏ m ∈ Finset.univ.erase i, ‖cltStep_XoY Y g b m ω‖ ≤ ∏ _m ∈ Finset.univ.erase i, X :=
         Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _) fun m _ => hX m ω
     _ = X ^ (Finset.univ.erase i).card := Finset.prod_const X
     _ ≤ X ^ (2 * p) := pow_le_pow_right₀ hX1 (Finset.card_erase_le.trans (by simp))
 
 /-- `X_m` is centred: `∫ X_m dPF = 0`. -/
-private theorem cltStep_Xo_integral {p : ℕ} (F : LocalForm d L W k K) (g E u : ℝ) {BY : ℝ}
-    (hY : ∀ ω b', ‖cltEvalAt F E u ω b'‖ ≤ BY) (b : Fin (2 * p) → Fin k → Zd d L)
-    (m : Fin (2 * p)) : ∫ ω, cltStep_Xo F g E u b m ω ∂(PF d L W g) = 0 := by
-  have hint : Integrable (fun ω => cltEvalAt F E u ω (b m)) (PF d L W g) :=
-    Integrable.of_bound (cltStep_eval_meas F E u (b m)).aestronglyMeasurable BY
+private theorem cltStep_Xo_integral {p : ℕ} (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (hYm : ∀ b', Measurable fun ω => Y ω b') (g : ℝ) {BY : ℝ}
+    (hY : ∀ ω b', ‖Y ω b'‖ ≤ BY) (b : Fin (2 * p) → Fin k → Zd d L)
+    (m : Fin (2 * p)) : ∫ ω, cltStep_XoY Y g b m ω ∂(PF d L W g) = 0 := by
+  have hint : Integrable (fun ω => Y ω (b m)) (PF d L W g) :=
+    Integrable.of_bound (hYm (b m)).aestronglyMeasurable BY
       (Filter.Eventually.of_forall fun ω => hY ω (b m))
-  have h0 : ∫ ω, (cltEvalAt F E u ω (b m) - ∫ ω', cltEvalAt F E u ω' (b m) ∂(PF d L W g))
+  have h0 : ∫ ω, (Y ω (b m) - ∫ ω', Y ω' (b m) ∂(PF d L W g))
       ∂(PF d L W g) = 0 := by
     rw [integral_sub hint (integrable_const _), integral_const]
     simp
   by_cases hm : (m : ℕ) < p
-  · simp only [cltStep_Xo, hm, ↓reduceIte]
+  · simp only [cltStep_XoY, hm, ↓reduceIte]
     exact h0
-  · simp only [cltStep_Xo, hm, ↓reduceIte]
+  · simp only [cltStep_XoY, hm, ↓reduceIte]
     rw [integral_conj, h0]
     simp
 
@@ -308,21 +329,26 @@ is bounded by `4p X^{2p+1} Bc W^{-D'} + 4 X^{2p+1} · 4ε`.  The geometry enters
 every block `a` is far (`R/2`) from all labels of `b_i` (case A) or from all labels of every
 `b_m`, `m ≠ i` (case B). -/
 private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
-    (F : LocalForm d L W k K) (E u ρ R θ D' : ℝ) {p : ℕ} (hp : 1 ≤ p)
+    (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (hYm : ∀ b', Measurable fun ω => Y ω b')
+    (F : LocalForm d L W k K) (Good : Ω d L W → Prop) (R D' : ℝ) {p : ℕ} (hp : 1 ≤ p)
     (b : Fin (2 * p) → Fin k → Zd d L) (i : Fin (2 * p))
     (e : CoordF d L W ≃ Fin (Fintype.card (CoordF d L W))) (j : ℕ)
     (hj : j < Fintype.card (CoordF d L W))
-    (hu0 : 0 ≤ u) (hu1 : u < 1) (hz : (zt E u).im ≠ 0) (hloc : F.Local ρ)
-    (hθ : 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1) (hθR : θ ≤ R / 2 - ρ - 1)
+    (hpath : ∀ (b' : Fin k → Zd d L) (c : CoordF d L W) (ω₀ : Ω d L W) (s' : ℝ),
+      zdistInf d L ((split d L W c.1).1 - (split d L W c.2.1).1) ≤ 1 →
+      (∀ m', R / 2 ≤ (zdistInf d L ((split d L W c.1).1 - b' m') : ℝ)) → Good ω₀ →
+      |s' - ω₀ c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) →
+      ‖Y (Function.update ω₀ c s') b' - Y ω₀ b'‖ ≤
+        |s' - ω₀ c| * 4 * cltCoefSumMulti F b' * (W : ℝ) ^ (-D'))
     (hgeom : ∀ a : Zd d L, (∀ m', R / 2 ≤ (zdistInf d L (a - b i m') : ℝ)) ∨
       (∀ m, m ≠ i → ∀ m', R / 2 ≤ (zdistInf d L (a - b m m') : ℝ)))
-    {X Bc ε : ℝ} (hX1 : 1 ≤ X) (hX : ∀ m ω, ‖cltStep_Xo F g E u b m ω‖ ≤ X)
+    {X Bc ε : ℝ} (hX1 : 1 ≤ X) (hX : ∀ m ω, ‖cltStep_XoY Y g b m ω‖ ≤ X)
     (hBc0 : 0 ≤ Bc) (hBc : ∀ b', 4 * cltCoefSumMulti F b' ≤ Bc) (hε : 0 ≤ ε)
     (hE1 : ∀ c : CoordF d L W,
       PF d L W g {ω | (W : ℝ) ^ (-(1 / 2 : ℝ)) < |ω c|} ≤ ENNReal.ofReal ε)
-    (hE2 : PF d L W g {ω | ¬ cltGoodAt d L W E u θ D' ω} ≤ ENNReal.ofReal ε) :
-    ‖∫ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1
+    (hE2 : PF d L W g {ω | ¬ Good ω} ≤ ENNReal.ofReal ε) :
+    ‖∫ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g))‖ ≤
       4 * p * (X * X ^ (2 * p)) * (Bc * (W : ℝ) ^ (-D')) + 4 * (X * X ^ (2 * p)) * (4 * ε) := by
   classical
@@ -332,7 +358,8 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
   have hγ0 : 0 ≤ (W : ℝ) ^ (-D') := Real.rpow_nonneg (Nat.cast_nonneg _) _
   have hG0 : 0 ≤ Bc * (W : ℝ) ^ (-D') := mul_nonneg hBc0 hγ0
   have hv0 : 0 ≤ (W : ℝ) ^ (-(1 / 2 : ℝ)) := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have hv1 : (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 := by linarith
+  have hv1 : (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 :=
+    Real.rpow_le_one_of_one_le_of_nonpos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)) (by norm_num)
   have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast hp
   have hXQ0 : 0 ≤ X * X ^ (2 * p) := mul_nonneg hX0 hQ0
   have hg0 : 0 ≤ 4 * p * (X * X ^ (2 * p)) * (Bc * (W : ℝ) ^ (-D')) := by positivity
@@ -351,8 +378,8 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
     rw [hc] at h
     exact h
   -- the bound of the difference factor
-  have hdiff : ∀ q : Ω d L W × Ω d L W, ‖cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-      cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)‖ ≤ 2 * X := by
+  have hdiff : ∀ q : Ω d L W × Ω d L W, ‖cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+      cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)‖ ≤ 2 * X := by
     intro q
     have h1 := hX i (cltHyb d L W e j q.1 q.2)
     have h2 := hX i (cltHyb d L W e (j + 1) q.1 q.2)
@@ -367,8 +394,8 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
       have h := cltStep_ae_zero g c hg
       rw [← (measurePreserving_snd (μ := PF d L W g) (ν := PF d L W g)).map_eq] at h
       exact ae_of_ae_map measurable_snd.aemeasurable h
-    have h0 : ∫ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1
+    have h0 : ∫ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) = 0 := by
       refine integral_eq_zero_of_ae ?_
       filter_upwards [h1, h2] with q hq1 hq2
@@ -379,7 +406,7 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
     positivity
   have hadj := (cltCoord_adj d L W g c).1 hg
   -- the bad pair set
-  obtain ⟨Sb, hSb⟩ : ∃ S : Set (Ω d L W), S = {ω | ¬ cltGoodAt d L W E u θ D' ω} := ⟨_, rfl⟩
+  obtain ⟨Sb, hSb⟩ : ∃ S : Set (Ω d L W), S = {ω | ¬ Good ω} := ⟨_, rfl⟩
   have hSbP : PF d L W g Sb ≤ ENNReal.ofReal ε := by rw [hSb]; exact hE2
   obtain ⟨A1, hA1⟩ : ∃ A : Set (Ω d L W × Ω d L W),
       A = Prod.fst ⁻¹' {ω | (W : ℝ) ^ (-(1 / 2 : ℝ)) < |ω c|} := ⟨_, rfl⟩
@@ -420,7 +447,7 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
           ring_nf
   have hgoodq : ∀ q : Ω d L W × Ω d L W, q ∉ A1 ∪ A2 ∪ A3 ∪ A4 →
       |q.1 c| ≤ (W : ℝ) ^ (-(1 / 2 : ℝ)) ∧ |q.2 c| ≤ (W : ℝ) ^ (-(1 / 2 : ℝ)) ∧
-        cltGoodAt d L W E u θ D' q.1 ∧ cltGoodAt d L W E u θ D' (cltHyb d L W e j q.1 q.2) := by
+        Good q.1 ∧ Good (cltHyb d L W e j q.1 q.2) := by
     intro q hq
     rw [hA1, hA2, hA3, hA4, hSb] at hq
     simp only [Set.mem_union, Set.mem_preimage, Set.mem_ofPred_eq, not_or, not_lt, not_not] at hq
@@ -432,7 +459,7 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
       hM0 h4ε hBq (fun q => ?_) (fun q hq => ?_)
     · rw [norm_mul]
       calc _ ≤ (2 * X) * X ^ (2 * p) :=
-            mul_le_mul (hdiff q) (cltStep_Gamma_le F g E u b hX1 hX i q.1) (norm_nonneg _)
+            mul_le_mul (hdiff q) (cltStep_Gamma_le Y g b hX1 hX i q.1) (norm_nonneg _)
               (by linarith)
         _ ≤ 4 * (X * X ^ (2 * p)) := by nlinarith
     · obtain ⟨hq1, hq2, -, hq4⟩ := hgoodq q hq
@@ -441,11 +468,10 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
         have a1 := abs_le.1 hq1
         have a2 := abs_le.1 hq2
         exact abs_le.2 ⟨by linarith, by linarith⟩
-      have hpb := cltPathMulti_bound d L W k K F E u ρ R θ D' (b i) c (cltHyb d L W e j q.1 q.2)
-        (q.2 c) hu0 hu1 hz hloc hθ hadj hA hθR hq4 hs
+      have hpb := hpath (b i) c (cltHyb d L W e j q.1 q.2) (q.2 c) hadj hA hq4 hs
       have hcs := cltStep_coefSum_nonneg F (b i)
-      have hY : ‖cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)‖ ≤ 2 * (Bc * (W : ℝ) ^ (-D')) := by
+      have hY : ‖cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)‖ ≤ 2 * (Bc * (W : ℝ) ^ (-D')) := by
         rw [cltStep_Xo_sub, hTk1 q, norm_sub_rev]
         refine hpb.trans ?_
         have ha : |q.2 c - cltHyb d L W e j q.1 q.2 c| ≤ 2 := by linarith
@@ -457,7 +483,7 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
           _ ≤ (2 * Bc) * (W : ℝ) ^ (-D') := mul_le_mul_of_nonneg_right hb hγ0
           _ = 2 * (Bc * (W : ℝ) ^ (-D')) := by ring
       rw [norm_mul]
-      have hΓ := cltStep_Gamma_le F g E u b hX1 hX i q.1
+      have hΓ := cltStep_Gamma_le Y g b hX1 hX i q.1
       calc _ ≤ (2 * (Bc * (W : ℝ) ^ (-D'))) * X ^ (2 * p) :=
             mul_le_mul hY hΓ (norm_nonneg _) (by positivity)
         _ ≤ 4 * p * (X * X ^ (2 * p)) * (Bc * (W : ℝ) ^ (-D')) := by
@@ -466,9 +492,9 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
             nlinarith
   · -- Case B: the block of `c` is far from every label of every `b_m`, `m ≠ i`
     obtain ⟨H0, hH0⟩ : ∃ H : Ω d L W × Ω d L W → ℂ, H = fun q =>
-        (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) *
-          cltStep_Gamma F g E u b i (Function.update q.1 c 0) := ⟨_, rfl⟩
+        (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) *
+          cltStep_GammaY Y g b i (Function.update q.1 c 0) := ⟨_, rfl⟩
     have hanti : ∀ q, H0 (cltSwap d L W c q) = -H0 q := by
       intro q
       have h1 := cltHyb_cltSwap d L W e j hj q
@@ -482,48 +508,48 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
     have hmU : Measurable fun q : Ω d L W × Ω d L W => Function.update q.1 c (0 : ℝ) :=
       measurable_update'.comp (measurable_fst.prodMk measurable_const)
     have hmD : Measurable fun q : Ω d L W × Ω d L W =>
-        cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2) :=
-      ((cltStep_Xo_meas F g E u b i).comp hmpT.measurable).sub
-        ((cltStep_Xo_meas F g E u b i).comp hmpT1.measurable)
+        cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2) :=
+      ((cltStep_Xo_meas Y hYm g b i).comp hmpT.measurable).sub
+        ((cltStep_Xo_meas Y hYm g b i).comp hmpT1.measurable)
     have hiF : Integrable (fun q : Ω d L W × Ω d L W =>
-        (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1)
+        (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1)
         ((PF d L W g).prod (PF d L W g)) := by
       refine Integrable.of_bound
-        (hmD.mul ((cltStep_Gamma_meas F g E u b i).comp measurable_fst)).aestronglyMeasurable
+        (hmD.mul ((cltStep_Gamma_meas Y hYm g b i).comp measurable_fst)).aestronglyMeasurable
         ((2 * X) * X ^ (2 * p)) (Filter.Eventually.of_forall fun q => ?_)
       rw [norm_mul]
-      exact mul_le_mul (hdiff q) (cltStep_Gamma_le F g E u b hX1 hX i q.1) (norm_nonneg _)
+      exact mul_le_mul (hdiff q) (cltStep_Gamma_le Y g b hX1 hX i q.1) (norm_nonneg _)
         (by linarith)
     have hiF0 : Integrable H0 ((PF d L W g).prod (PF d L W g)) := by
       rw [hH0]
       refine Integrable.of_bound
-        (hmD.mul ((cltStep_Gamma_meas F g E u b i).comp hmU)).aestronglyMeasurable
+        (hmD.mul ((cltStep_Gamma_meas Y hYm g b i).comp hmU)).aestronglyMeasurable
         ((2 * X) * X ^ (2 * p)) (Filter.Eventually.of_forall fun q => ?_)
       rw [norm_mul]
-      exact mul_le_mul (hdiff q) (cltStep_Gamma_le F g E u b hX1 hX i _) (norm_nonneg _)
+      exact mul_le_mul (hdiff q) (cltStep_Gamma_le Y g b hX1 hX i _) (norm_nonneg _)
         (by linarith)
-    have hsplit : ∫ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1
+    have hsplit : ∫ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) =
-        ∫ q, ((cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1 - H0 q)
+        ∫ q, ((cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1 - H0 q)
         ∂((PF d L W g).prod (PF d L W g)) := by
       rw [integral_sub hiF hiF0, hint0, sub_zero]
     rw [hsplit]
-    have hH0q : ∀ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1 - H0 q =
-        (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) *
-          (cltStep_Gamma F g E u b i q.1 - cltStep_Gamma F g E u b i (Function.update q.1 c 0)) := by
+    have hH0q : ∀ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1 - H0 q =
+        (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) *
+          (cltStep_GammaY Y g b i q.1 - cltStep_GammaY Y g b i (Function.update q.1 c 0)) := by
       intro q; rw [hH0]; ring
     refine cltStep_norm_integral_le ((PF d L W g).prod (PF d L W g)) _ (A1 ∪ A2 ∪ A3 ∪ A4) hg0
       hM0 h4ε hBq (fun q => ?_) (fun q hq => ?_)
     · rw [hH0q, norm_mul]
-      have hΓ1 := cltStep_Gamma_le F g E u b hX1 hX i q.1
-      have hΓ2 := cltStep_Gamma_le F g E u b hX1 hX i (Function.update q.1 c 0)
-      have hΓ : ‖cltStep_Gamma F g E u b i q.1 - cltStep_Gamma F g E u b i (Function.update q.1 c 0)‖ ≤
+      have hΓ1 := cltStep_Gamma_le Y g b hX1 hX i q.1
+      have hΓ2 := cltStep_Gamma_le Y g b hX1 hX i (Function.update q.1 c 0)
+      have hΓ : ‖cltStep_GammaY Y g b i q.1 - cltStep_GammaY Y g b i (Function.update q.1 c 0)‖ ≤
           2 * X ^ (2 * p) := (norm_sub_le _ _).trans (by linarith)
       calc _ ≤ (2 * X) * (2 * X ^ (2 * p)) :=
             mul_le_mul (hdiff q) hΓ (norm_nonneg _) (by linarith)
@@ -532,12 +558,11 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
       have hs : |0 - q.1 c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) := by
         rw [zero_sub, abs_neg]; linarith
       have hm : ∀ m ∈ Finset.univ.erase i,
-          ‖cltStep_Xo F g E u b m q.1 - cltStep_Xo F g E u b m (Function.update q.1 c 0)‖ ≤
+          ‖cltStep_XoY Y g b m q.1 - cltStep_XoY Y g b m (Function.update q.1 c 0)‖ ≤
             Bc * (W : ℝ) ^ (-D') := by
         intro m hm
         have hmi : m ≠ i := Finset.ne_of_mem_erase hm
-        have hpb := cltPathMulti_bound d L W k K F E u ρ R θ D' (b m) c q.1 0 hu0 hu1 hz hloc hθ
-          hadj (hB m hmi) hθR hq3 hs
+        have hpb := hpath (b m) c q.1 0 hadj (hB m hmi) hq3 hs
         have hcs := cltStep_coefSum_nonneg F (b m)
         rw [cltStep_Xo_sub, norm_sub_rev]
         refine hpb.trans ?_
@@ -548,13 +573,13 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
             = (|0 - q.1 c| * (4 * cltCoefSumMulti F (b m))) * (W : ℝ) ^ (-D') := by ring
           _ ≤ (1 * Bc) * (W : ℝ) ^ (-D') := mul_le_mul_of_nonneg_right hb hγ0
           _ = Bc * (W : ℝ) ^ (-D') := by ring
-      have hprod := cltStep_prod_sub_le (Finset.univ.erase i) (fun m => cltStep_Xo F g E u b m q.1)
-        (fun m => cltStep_Xo F g E u b m (Function.update q.1 c 0)) hX1 hG0
+      have hprod := cltStep_prod_sub_le (Finset.univ.erase i) (fun m => cltStep_XoY Y g b m q.1)
+        (fun m => cltStep_XoY Y g b m (Function.update q.1 c 0)) hX1 hG0
         (fun m _ => hX m q.1) (fun m _ => hX m _) hm
       have hcard : (Finset.univ.erase i).card ≤ 2 * p := Finset.card_erase_le.trans (by simp)
       have hcard' : (((Finset.univ.erase i).card : ℕ) : ℝ) ≤ 2 * p := by exact_mod_cast hcard
       have hpowc : X ^ (Finset.univ.erase i).card ≤ X ^ (2 * p) := pow_le_pow_right₀ hX1 hcard
-      have hΓ : ‖cltStep_Gamma F g E u b i q.1 - cltStep_Gamma F g E u b i (Function.update q.1 c 0)‖ ≤
+      have hΓ : ‖cltStep_GammaY Y g b i q.1 - cltStep_GammaY Y g b i (Function.update q.1 c 0)‖ ≤
           2 * p * X ^ (2 * p) * (Bc * (W : ℝ) ^ (-D')) := by
         refine hprod.trans ?_
         have := mul_le_mul hcard' hpowc (pow_nonneg hX0 _) (by positivity)
@@ -570,28 +595,29 @@ private theorem cltStep_core {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ)
 /-- The finite-model core of the assembly: if every step of the telescoping has `‖·‖ ≤ η`, then
 `‖∫ ∏_m X_m dPF‖ ≤ card (CoordF) · η` (the centring of `X_i`, the product `∏ X_m = X_i Γ_i`,
 the telescope `cltTelescope`). -/
-private theorem cltStep_assembly {d L W K k : ℕ} [NeZero L] [NeZero W] (g : ℝ) {p : ℕ}
-    (F : LocalForm d L W k K) (E u : ℝ) {BY : ℝ} (hY : ∀ ω b', ‖cltEvalAt F E u ω b'‖ ≤ BY)
+private theorem cltStep_assembly {d L W k : ℕ} [NeZero L] [NeZero W] (g : ℝ) {p : ℕ}
+    (Y : Ω d L W → (Fin k → Zd d L) → ℂ) (hYm : ∀ b', Measurable fun ω => Y ω b') {BY : ℝ}
+    (hY : ∀ ω b', ‖Y ω b'‖ ≤ BY)
     (b : Fin (2 * p) → Fin k → Zd d L) (i : Fin (2 * p))
     (e : CoordF d L W ≃ Fin (Fintype.card (CoordF d L W))) {η : ℝ}
     (hstep : ∀ j : ℕ, j < Fintype.card (CoordF d L W) →
-      ‖∫ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1
+      ‖∫ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g))‖ ≤ η) :
-    ‖∫ ω, ∏ m : Fin (2 * p), cltStep_Xo F g E u b m ω ∂(PF d L W g)‖ ≤
+    ‖∫ ω, ∏ m : Fin (2 * p), cltStep_XoY Y g b m ω ∂(PF d L W g)‖ ≤
       Fintype.card (CoordF d L W) * η := by
   obtain ⟨X, hXdef⟩ : ∃ X : ℝ, X = max (2 * BY) 1 := ⟨_, rfl⟩
   have hX1 : 1 ≤ X := by rw [hXdef]; exact le_max_right _ _
-  have hX : ∀ m ω, ‖cltStep_Xo F g E u b m ω‖ ≤ X := fun m ω => by
-    rw [hXdef]; exact (cltStep_Xo_le F g E u b hY m ω).trans (le_max_left _ _)
-  have hG : ∀ ω, ‖cltStep_Gamma F g E u b i ω‖ ≤ X ^ (2 * p) := cltStep_Gamma_le F g E u b hX1 hX i
-  have hXm : Measurable (cltStep_Xo F g E u b i) := cltStep_Xo_meas F g E u b i
-  have hGm : Measurable (cltStep_Gamma F g E u b i) := cltStep_Gamma_meas F g E u b i
+  have hX : ∀ m ω, ‖cltStep_XoY Y g b m ω‖ ≤ X := fun m ω => by
+    rw [hXdef]; exact (cltStep_Xo_le Y g b hY m ω).trans (le_max_left _ _)
+  have hG : ∀ ω, ‖cltStep_GammaY Y g b i ω‖ ≤ X ^ (2 * p) := cltStep_Gamma_le Y g b hX1 hX i
+  have hXm : Measurable (cltStep_XoY Y g b i) := cltStep_Xo_meas Y hYm g b i
+  have hGm : Measurable (cltStep_GammaY Y g b i) := cltStep_Gamma_meas Y hYm g b i
   have hX0 : 0 ≤ X := by linarith
   -- integrability of the difference integrands
   have hdiffInt : ∀ f f' : Ω d L W × Ω d L W → Ω d L W, Measurable f → Measurable f' →
       Integrable (fun q : Ω d L W × Ω d L W =>
-        (cltStep_Xo F g E u b i (f q) - cltStep_Xo F g E u b i (f' q)) * cltStep_Gamma F g E u b i q.1)
+        (cltStep_XoY Y g b i (f q) - cltStep_XoY Y g b i (f' q)) * cltStep_GammaY Y g b i q.1)
         ((PF d L W g).prod (PF d L W g)) := by
     intro f f' hf hf'
     refine Integrable.of_bound (C := (X + X) * X ^ (2 * p)) ?_ ?_
@@ -605,40 +631,40 @@ private theorem cltStep_assembly {d L W K k : ℕ} [NeZero L] [NeZero W] (g : �
     fun j => (measurePreserving_cltSplit d L W g (cltHybSet d L W e j)).measurable
   have hi1 := hdiffInt Prod.fst Prod.snd measurable_fst measurable_snd
   have hi2 : Integrable (fun q : Ω d L W × Ω d L W =>
-      cltStep_Gamma F g E u b i q.1 * cltStep_Xo F g E u b i q.2) ((PF d L W g).prod (PF d L W g)) := by
+      cltStep_GammaY Y g b i q.1 * cltStep_XoY Y g b i q.2) ((PF d L W g).prod (PF d L W g)) := by
     refine Integrable.of_bound (C := X ^ (2 * p) * X) ?_ ?_
     · exact ((hGm.comp measurable_fst).mul (hXm.comp measurable_snd)).aestronglyMeasurable
     · refine Filter.Eventually.of_forall fun q => ?_
       rw [norm_mul]
       exact mul_le_mul (hG _) (hX _ _) (norm_nonneg _) (by positivity)
   -- factor `∏ X_m = X_i Γ_i`
-  have hfac : ∀ ω, ∏ m : Fin (2 * p), cltStep_Xo F g E u b m ω =
-      cltStep_Xo F g E u b i ω * cltStep_Gamma F g E u b i ω := fun ω =>
-    (Finset.mul_prod_erase Finset.univ (fun m => cltStep_Xo F g E u b m ω) (Finset.mem_univ i)).symm
+  have hfac : ∀ ω, ∏ m : Fin (2 * p), cltStep_XoY Y g b m ω =
+      cltStep_XoY Y g b i ω * cltStep_GammaY Y g b i ω := fun ω =>
+    (Finset.mul_prod_erase Finset.univ (fun m => cltStep_XoY Y g b m ω) (Finset.mem_univ i)).symm
   -- transfer to the product space
-  have h1 : ∫ ω, ∏ m : Fin (2 * p), cltStep_Xo F g E u b m ω ∂(PF d L W g) =
-      ∫ q, cltStep_Xo F g E u b i q.1 * cltStep_Gamma F g E u b i q.1
+  have h1 : ∫ ω, ∏ m : Fin (2 * p), cltStep_XoY Y g b m ω ∂(PF d L W g) =
+      ∫ q, cltStep_XoY Y g b i q.1 * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) := by
     have := integral_fun_fst (μ := PF d L W g) (ν := PF d L W g)
-      (fun ω => cltStep_Xo F g E u b i ω * cltStep_Gamma F g E u b i ω)
+      (fun ω => cltStep_XoY Y g b i ω * cltStep_GammaY Y g b i ω)
     simp only [probReal_univ, one_smul] at this
     rw [this]
     exact integral_congr_ae (Filter.Eventually.of_forall hfac)
   -- the centred term vanishes
-  have h0 : ∫ q, cltStep_Gamma F g E u b i q.1 * cltStep_Xo F g E u b i q.2
+  have h0 : ∫ q, cltStep_GammaY Y g b i q.1 * cltStep_XoY Y g b i q.2
       ∂((PF d L W g).prod (PF d L W g)) = 0 := by
-    have := integral_prod_mul (μ := PF d L W g) (ν := PF d L W g) (cltStep_Gamma F g E u b i)
-      (cltStep_Xo F g E u b i)
-    rw [this, cltStep_Xo_integral F g E u hY b i, mul_zero]
-  have h2 : ∫ q, cltStep_Xo F g E u b i q.1 * cltStep_Gamma F g E u b i q.1
+    have := integral_prod_mul (μ := PF d L W g) (ν := PF d L W g) (cltStep_GammaY Y g b i)
+      (cltStep_XoY Y g b i)
+    rw [this, cltStep_Xo_integral Y hYm g hY b i, mul_zero]
+  have h2 : ∫ q, cltStep_XoY Y g b i q.1 * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) =
-      ∫ q, (cltStep_Xo F g E u b i q.1 - cltStep_Xo F g E u b i q.2) * cltStep_Gamma F g E u b i q.1
+      ∫ q, (cltStep_XoY Y g b i q.1 - cltStep_XoY Y g b i q.2) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) := by
-    have h3 : ∫ q, cltStep_Xo F g E u b i q.1 * cltStep_Gamma F g E u b i q.1
+    have h3 : ∫ q, cltStep_XoY Y g b i q.1 * cltStep_GammaY Y g b i q.1
           ∂((PF d L W g).prod (PF d L W g)) =
-        ∫ q, (cltStep_Xo F g E u b i q.1 - cltStep_Xo F g E u b i q.2) * cltStep_Gamma F g E u b i q.1
+        ∫ q, (cltStep_XoY Y g b i q.1 - cltStep_XoY Y g b i q.2) * cltStep_GammaY Y g b i q.1
           ∂((PF d L W g).prod (PF d L W g)) +
-        ∫ q, cltStep_Gamma F g E u b i q.1 * cltStep_Xo F g E u b i q.2
+        ∫ q, cltStep_GammaY Y g b i q.1 * cltStep_XoY Y g b i q.2
           ∂((PF d L W g).prod (PF d L W g)) := by
       rw [← integral_add hi1 hi2]
       refine integral_congr_ae (Filter.Eventually.of_forall fun q => ?_)
@@ -646,20 +672,20 @@ private theorem cltStep_assembly {d L W K k : ℕ} [NeZero L] [NeZero W] (g : �
       ring
     rw [h3, h0, add_zero]
   -- telescoping
-  have h4 : ∫ q, (cltStep_Xo F g E u b i q.1 - cltStep_Xo F g E u b i q.2) * cltStep_Gamma F g E u b i q.1
+  have h4 : ∫ q, (cltStep_XoY Y g b i q.1 - cltStep_XoY Y g b i q.2) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) =
       ∑ j ∈ Finset.range (Fintype.card (CoordF d L W)),
-        ∫ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1
+        ∫ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g)) := by
     rw [← integral_finsetSum _ fun j _ => hdiffInt _ _ (hTm j) (hTm (j + 1))]
     refine integral_congr_ae (Filter.Eventually.of_forall fun q => ?_)
     simp only
-    rw [← Finset.sum_mul, ← cltTelescope d L W e (cltStep_Xo F g E u b i) q.1 q.2]
+    rw [← Finset.sum_mul, ← cltTelescope d L W e (cltStep_XoY Y g b i) q.1 q.2]
   rw [h1, h2, h4]
   calc ‖∑ j ∈ Finset.range (Fintype.card (CoordF d L W)),
-        ∫ q, (cltStep_Xo F g E u b i (cltHyb d L W e j q.1 q.2) -
-          cltStep_Xo F g E u b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_Gamma F g E u b i q.1
+        ∫ q, (cltStep_XoY Y g b i (cltHyb d L W e j q.1 q.2) -
+          cltStep_XoY Y g b i (cltHyb d L W e (j + 1) q.1 q.2)) * cltStep_GammaY Y g b i q.1
         ∂((PF d L W g).prod (PF d L W g))‖
       ≤ ∑ j ∈ Finset.range (Fintype.card (CoordF d L W)), η :=
         (norm_sum_le _ _).trans (Finset.sum_le_sum fun j hj =>
@@ -736,20 +762,33 @@ variable {d : ℕ} (sz : Sizes d)
 def cltStep_win (n : ℕ) (s : ℝ) : ℝ :=
   Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) s
 
-/-- **Item 2: one real coordinate of the telescoping** (`CltStep` of RBM2D, `CltStep.lean:579-600`,
-for the two-label forms `STcltB`).  Under `HClt` at `τ = s`, a `2`-label local form `F` that is
-`(w_n + 1)`-local (`w_n = (log W_n)^3 ℓ_s`) with coefficients `≤ N^{C'}`, for every `p ≥ 1`, `D > 0`,
-eventually in `n`, for every `b : Fin (2p) → (Fin 2 → Zd)` with all labels in the window
-`|b_m1 - b_m2|_∞ ≤ w_n` and an isolated index `i` (`10 w_n ≤ |b_i1 - b_m1|_∞`, `m ≠ i`), every
-enumeration `e` of the real coordinates and every step `j`:
-`‖∫ (X_i(T_j) - X_i(T_{j+1})) Γ_i(ω) d(P⊗P)‖ ≤ N^{-D-3}`.  The far threshold of the good event is
-`θ_n = max (3 w_n - 2) w_n` (`= 3 w_n - 2` for `w_n ≥ 1`), the locality radius `ρ = w_n + 1`, the
-separation `R = 8 w_n` (`cltStep_geom`). -/
-theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (Cd : ℝ)
-    (hH : HClt sz κ ε 𝔠 𝔡 z s s t Cd) (K : ℕ) (C' : ℝ) (hC' : 0 ≤ C')
+/-- **The step at the sequence level, abstract in the evaluation `Y n` and the good event `Good n`** (shared by the band
+`cltStep` and by the carrier form `cltStepOf`): the spectral input enters only through `hYn` (the bound of `M5`), the
+good event through `hgoodE`, `htailE` and the path bound `hP1` (`P1` at `ρ = w_n + 1`, `R = 8 w_n`). -/
+private theorem cltStep_seq {𝔠 κ' : ℝ} {g' s : ℕ → ℝ} (h𝔠 : 0 < 𝔠) (hκ' : 0 < κ') (hN : sz.SizeTendsto)
+    (hBW : sz.Bandwidth 𝔠) (K : ℕ) (C' : ℝ) (hC' : 0 ≤ C')
     (F : ∀ n, LocalForm d (sz.L n) (sz.W n) 2 K)
     (hcoef : ∀ᶠ n in atTop, ∀ b j q, ‖(F n).coef b j q‖ ≤ ((sz.size n : ℕ) : ℝ) ^ C')
-    (hloc : ∀ n, (F n).Local (cltStep_win sz n (s n) + 1))
+    (Y : ∀ n, Ω d (sz.L n) (sz.W n) → (Fin 2 → Zd d (sz.L n)) → ℂ)
+    (hYm : ∀ n b', Measurable fun ω => Y n ω b')
+    (Good : ∀ n, ℝ → ℝ → Ω d (sz.L n) (sz.W n) → Prop)
+    (hYn : ∀ᶠ n in atTop, ∀ ω b', ‖Y n ω b'‖ ≤
+      (K + 1) * ((sz.size n : ℕ) : ℝ) ^ C' * (2 * ((sz.size n : ℕ) : ℝ) ^ 3 / κ') ^ K)
+    (hgoodE : ∀ θ : ℕ → ℝ, (∀ n, cltStep_win sz n (s n) ≤ θ n) → ∀ D' : ℝ, 0 < D' → ∀ D'' : ℝ, 0 < D'' →
+      ∀ᶠ n in atTop, PF d (sz.L n) (sz.W n) (g' n) {ω | ¬ Good n (θ n) D' ω} ≤
+        ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D'')))
+    (htailE : ∀ D'' : ℝ, 0 < D'' → ∀ᶠ n in atTop, ∀ c : CoordF d (sz.L n) (sz.W n),
+      PF d (sz.L n) (sz.W n) (g' n) {ω | ((sz.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)) < |ω c|} ≤
+        ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D'')))
+    (hP1 : ∀ᶠ n in atTop, 16 * ((sz.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 → ∀ θ D' : ℝ,
+      θ ≤ (8 * cltStep_win sz n (s n)) / 2 - (cltStep_win sz n (s n) + 1) - 1 →
+      ∀ (b' : Fin 2 → Zd d (sz.L n)) (c : CoordF d (sz.L n) (sz.W n)) (ω₀ : Ω d (sz.L n) (sz.W n)) (s' : ℝ),
+        zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) c.1).1 - (split d (sz.L n) (sz.W n) c.2.1).1) ≤ 1 →
+        (∀ m', (8 * cltStep_win sz n (s n)) / 2 ≤
+          (zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) c.1).1 - b' m') : ℝ)) →
+        Good n θ D' ω₀ → |s' - ω₀ c| ≤ 2 * ((sz.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)) →
+        ‖Y n (Function.update ω₀ c s') b' - Y n ω₀ b'‖ ≤
+          |s' - ω₀ c| * 4 * cltCoefSumMulti (F n) b' * ((sz.W n : ℕ) : ℝ) ^ (-D'))
     (p : ℕ) (hp : 1 ≤ p) (D : ℝ) (hD : 0 < D) :
     ∀ᶠ n in atTop,
       ∀ (b : Fin (2 * p) → Fin 2 → Zd d (sz.L n)) (i : Fin (2 * p)),
@@ -758,19 +797,11 @@ theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (C
           10 * cltStep_win sz n (s n) ≤ ((zdistInf d (sz.L n) (b i 0 - b m 0) : ℕ) : ℝ)) →
         ∀ (e : CoordF d (sz.L n) (sz.W n) ≃ Fin (Fintype.card (CoordF d (sz.L n) (sz.W n))))
           (j : ℕ), j < Fintype.card (CoordF d (sz.L n) (sz.W n)) →
-          ‖∫ q, (cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b i
-                  (cltHyb d (sz.L n) (sz.W n) e j q.1 q.2) -
-                cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b i
-                  (cltHyb d (sz.L n) (sz.W n) e (j + 1) q.1 q.2)) *
-              cltStep_Gamma (F n) (sz.lam n) (STflowE z n) (s n) b i q.1
-            ∂((PF d (sz.L n) (sz.W n) (sz.lam n)).prod (PF d (sz.L n) (sz.W n) (sz.lam n)))‖ ≤
+          ‖∫ q, (cltStep_XoY (Y n) (g' n) b i (cltHyb d (sz.L n) (sz.W n) e j q.1 q.2) -
+                cltStep_XoY (Y n) (g' n) b i (cltHyb d (sz.L n) (sz.W n) e (j + 1) q.1 q.2)) *
+              cltStep_GammaY (Y n) (g' n) b i q.1
+            ∂((PF d (sz.L n) (sz.W n) (g' n)).prod (PF d (sz.L n) (sz.W n) (g' n)))‖ ≤
             ((sz.size n : ℕ) : ℝ) ^ (-D - 3) := by
-  have hH' := hH
-  obtain ⟨hd, hκ, hε, hflow, hs0, -, hst, htl, -⟩ := hH
-  obtain ⟨⟨h𝔠, -, hN, hBW, -⟩, hE, ht1, hRC⟩ :=
-    RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
-  have hκ' : 0 < κ / 2 := by linarith
-  have hδ : 0 < ε / 2 := by linarith
   obtain ⟨a, ha⟩ : ∃ a : ℝ, a = C' + 3 * K + 2 := ⟨_, rfl⟩
   obtain ⟨D'', hD''⟩ : ∃ x : ℝ, x = a * (2 * p + 2) + D + 4 := ⟨_, rfl⟩
   obtain ⟨D', hD'⟩ : ∃ x : ℝ, x = D'' / 𝔠 := ⟨_, rfl⟩
@@ -780,21 +811,19 @@ theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (C
     have : 0 ≤ a * (2 * p + 2) := mul_nonneg ha0.le (by positivity)
     rw [hD'']; linarith
   have hD'0 : 0 < D' := by rw [hD']; exact div_pos hD''0 h𝔠
-  have hck : 0 < cltCk (κ / 2) := cltStep_ck_pos (E := STflowE z 0) hκ' (hE 0).le
-  obtain ⟨C1, hC1⟩ : ∃ C : ℝ, C = 2 * (K + 1) * (2 / cltCk (κ / 2)) ^ K := ⟨_, rfl⟩
+  obtain ⟨C1, hC1⟩ : ∃ C : ℝ, C = 2 * (K + 1) * (2 / κ') ^ K := ⟨_, rfl⟩
   obtain ⟨C2, hC2⟩ : ∃ C : ℝ, C = 4 * (K + 1) * 2 ^ K * K * 4 ^ K := ⟨_, rfl⟩
   have hWt : Tendsto (fun n => (sz.W n : ℝ)) atTop atTop :=
     tendsto_atTop_mono' atTop hBW ((tendsto_rpow_atTop h𝔠).comp hN)
   -- the good event at `θ_n = max (3 w_n - 2) w_n`
   obtain ⟨θ, hθdef⟩ : ∃ θ : ℕ → ℝ, θ = fun n =>
       max (3 * cltStep_win sz n (s n) - 2) (cltStep_win sz n (s n)) := ⟨_, rfl⟩
-  have hgood := cltGood_whp sz κ ε 𝔠 𝔡 z s s t Cd hH' 1 θ one_pos
-    (fun n => by rw [hθdef]; simp only [one_mul]; exact le_max_right _ _) D' hD'0 D'' hD''0
-  have htail := cltCoord_tail sz (by omega) 𝔠 h𝔠 hN hBW D'' hD''0
-  filter_upwards [hN.eventually_ge_atTop (max (max C1 C2) (max (4 * p + 16) 1)), hBW, hRC, hcoef,
+  have hgood := hgoodE θ (fun n => by rw [hθdef]; exact le_max_right _ _) D' hD'0 D'' hD''0
+  have htail := htailE D'' hD''0
+  filter_upwards [hN.eventually_ge_atTop (max (max C1 C2) (max (4 * p + 16) 1)), hBW, hcoef,
     hWt.eventually_ge_atTop 3,
     ((tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp hWt).eventually_ge_atTop 16,
-    htail, hgood] with n hNn hBWn hRn hcoefn hW3 hW12 hE1 hE2
+    htail, hgood, hYn, hP1] with n hNn hBWn hcoefn hW3 hW12 hE1 hE2 hYnn hP1n
   intro b i hwin hiso e j hj
   have hW12' : 16 ≤ (sz.W n : ℝ) ^ (1 / 2 : ℝ) := hW12
   set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
@@ -804,14 +833,6 @@ theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (C
   have hNC2 : C2 ≤ N := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hNn
   have hNC3 : 4 * p + 16 ≤ N := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hNn
   have hL3 := sz.three_le_L n
-  have hu0 : 0 ≤ s n := hs0 n
-  have hu1 : s n < 1 := (hst n).trans_lt (ht1 n)
-  have hR : N ^ (-1 + ε / 2) ≤ 1 - s n := by have := hst n; linarith [hRn]
-  have hE' : |STflowE z n| ≤ 2 - κ / 2 := (hE n).le
-  have hηlow := cltEta_lower d (sz.L n) (sz.W n) (κ / 2) (ε / 2) (STflowE z n) (s n) hκ' hδ hE' hR
-  have hz : (zt (STflowE z n) (s n)).im ≠ 0 := by
-    have h0 : 0 < cltCk (κ / 2) / N := div_pos hck hN0
-    exact (lt_of_lt_of_le h0 hηlow).ne'
   have hℓ : 1 ≤ ellT (sz.L n) (sz.lam n) (s n) := one_le_ellT (by exact_mod_cast (by omega : 1 ≤ sz.L n))
   have hlogW : 1 ≤ Real.log ((sz.W n : ℕ) : ℝ) := by
     rw [Real.le_log_iff_exp_le (by linarith)]
@@ -829,24 +850,19 @@ theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (C
     simp only
     refine max_le (by linarith) (by linarith)
   -- `‖X_m‖ ≤ N^a`
-  have hNsize : ((sz.size n : ℕ) : ℝ) = ((((sz.W n * sz.L n) ^ d : ℕ)) : ℝ) := rfl
-  have hYn : ∀ (ω : Ω d (sz.L n) (sz.W n)) (b' : Fin 2 → Zd d (sz.L n)),
-      ‖cltEvalAt (F n) (STflowE z n) (s n) ω b'‖ ≤ (K + 1) * N ^ C' * (2 * N ^ 3 / cltCk (κ / 2)) ^ K :=
-    fun ω b' => cltEval_detMulti_le d (sz.L n) (sz.W n) 2 (κ / 2) (ε / 2) (STflowE z n) (s n) K (F n) C'
-      (Hflow d (sz.L n) (sz.W n) (s n) ω) b' hκ' hδ hE' hR hcoefn (Hflow_isHermitian _ _ _ _ _)
-  have hBY : 2 * ((K + 1) * N ^ C' * (2 * N ^ 3 / cltCk (κ / 2)) ^ K) ≤ N ^ a := by
-    have e1 : (2 * N ^ 3 / cltCk (κ / 2)) ^ K = (2 / cltCk (κ / 2)) ^ K * N ^ ((3 * K : ℕ) : ℝ) := by
+  have hBY : 2 * ((K + 1) * N ^ C' * (2 * N ^ 3 / κ') ^ K) ≤ N ^ a := by
+    have e1 : (2 * N ^ 3 / κ') ^ K = (2 / κ') ^ K * N ^ ((3 * K : ℕ) : ℝ) := by
       rw [Real.rpow_natCast, pow_mul, ← mul_pow]
       congr 1
       ring
-    have e2 : 2 * ((K + 1) * N ^ C' * (2 * N ^ 3 / cltCk (κ / 2)) ^ K) =
+    have e2 : 2 * ((K + 1) * N ^ C' * (2 * N ^ 3 / κ') ^ K) =
         C1 * N ^ (C' + ((3 * K : ℕ) : ℝ)) := by
       rw [e1, Real.rpow_add hN0, hC1]
       ring
     rw [e2]
     exact cltStep_absorb hN1 hNC1 (by rw [ha]; push_cast; linarith)
-  have hX : ∀ m ω, ‖cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b m ω‖ ≤ N ^ a := fun m ω =>
-    (cltStep_Xo_le (F n) (sz.lam n) (STflowE z n) (s n) b hYn m ω).trans hBY
+  have hX : ∀ m ω, ‖cltStep_XoY (Y n) (g' n) b m ω‖ ≤ N ^ a := fun m ω =>
+    (cltStep_Xo_le (Y n) (g' n) b hYnn m ω).trans hBY
   have hX1 : 1 ≤ N ^ a := Real.one_le_rpow hN1 ha0.le
   -- `4 · cltCoefSumMulti ≤ N^a`
   have hcard : (Fintype.card (Idx d (sz.L n) (sz.W n)) : ℝ) = N := by
@@ -867,8 +883,8 @@ theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (C
   have hiso' : ∀ m, m ≠ i → 10 * w ≤ ((zdistInf d (sz.L n) (b i 0 - b m 0) : ℕ) : ℝ) := hiso
   have hgeom := cltStep_geom b i hwin hiso'
   -- the step at size `n`
-  have hcore := cltStep_core (sz.lam n) (F n) (STflowE z n) (s n) (w + 1) (8 * w) (θ n) D' hp b i e j hj
-    hu0 hu1 hz (hloc n) hθ hθR (fun a => by
+  have hcore := cltStep_core (g' n) (Y n) (hYm n) (F n) (Good n (θ n) D') (8 * w) D' hp b i e j hj
+    (hP1n hθ (θ n) D' hθR) (fun a => by
       have := hgeom a
       simpa only [show (8 * w) / 2 = 4 * w by ring] using this)
     (X := N ^ a) (Bc := N ^ a) (ε := N ^ (-D'')) hX1 hX (Real.rpow_nonneg hN0.le a) hBc
@@ -911,7 +927,113 @@ theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (C
     _ = (4 * p + 16) * N ^ (-D - 4) := by rw [← hΛ]; ring
     _ ≤ N ^ (-D - 3) := cltStep_absorb hN1 hNC3 (by linarith)
 
+
+/-- **Item 2: one real coordinate of the telescoping** (`CltStep` of RBM2D, `CltStep.lean:579-600`,
+for the two-label forms `STcltB`).  Under `HClt` at `τ = s`, a `2`-label local form `F` that is
+`(w_n + 1)`-local (`w_n = (log W_n)^3 ℓ_s`) with coefficients `≤ N^{C'}`, for every `p ≥ 1`, `D > 0`,
+eventually in `n`, for every `b : Fin (2p) → (Fin 2 → Zd)` with all labels in the window
+`|b_m1 - b_m2|_∞ ≤ w_n` and an isolated index `i` (`10 w_n ≤ |b_i1 - b_m1|_∞`, `m ≠ i`), every
+enumeration `e` of the real coordinates and every step `j`:
+`‖∫ (X_i(T_j) - X_i(T_{j+1})) Γ_i(ω) d(P⊗P)‖ ≤ N^{-D-3}`.  The far threshold of the good event is
+`θ_n = max (3 w_n - 2) w_n` (`= 3 w_n - 2` for `w_n ≥ 1`), the locality radius `ρ = w_n + 1`, the
+separation `R = 8 w_n` (`cltStep_geom`). -/
+theorem cltStep (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (s t : ℕ → ℝ) (Cd : ℝ)
+    (hH : HClt sz κ ε 𝔠 𝔡 z s s t Cd) (K : ℕ) (C' : ℝ) (hC' : 0 ≤ C')
+    (F : ∀ n, LocalForm d (sz.L n) (sz.W n) 2 K)
+    (hcoef : ∀ᶠ n in atTop, ∀ b j q, ‖(F n).coef b j q‖ ≤ ((sz.size n : ℕ) : ℝ) ^ C')
+    (hloc : ∀ n, (F n).Local (cltStep_win sz n (s n) + 1))
+    (p : ℕ) (hp : 1 ≤ p) (D : ℝ) (hD : 0 < D) :
+    ∀ᶠ n in atTop,
+      ∀ (b : Fin (2 * p) → Fin 2 → Zd d (sz.L n)) (i : Fin (2 * p)),
+        (∀ m, ((zdistInf d (sz.L n) (b m 0 - b m 1) : ℕ) : ℝ) ≤ cltStep_win sz n (s n)) →
+        (∀ m, m ≠ i →
+          10 * cltStep_win sz n (s n) ≤ ((zdistInf d (sz.L n) (b i 0 - b m 0) : ℕ) : ℝ)) →
+        ∀ (e : CoordF d (sz.L n) (sz.W n) ≃ Fin (Fintype.card (CoordF d (sz.L n) (sz.W n))))
+          (j : ℕ), j < Fintype.card (CoordF d (sz.L n) (sz.W n)) →
+          ‖∫ q, (cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b i
+                  (cltHyb d (sz.L n) (sz.W n) e j q.1 q.2) -
+                cltStep_Xo (F n) (sz.lam n) (STflowE z n) (s n) b i
+                  (cltHyb d (sz.L n) (sz.W n) e (j + 1) q.1 q.2)) *
+              cltStep_Gamma (F n) (sz.lam n) (STflowE z n) (s n) b i q.1
+            ∂((PF d (sz.L n) (sz.W n) (sz.lam n)).prod (PF d (sz.L n) (sz.W n) (sz.lam n)))‖ ≤
+            ((sz.size n : ℕ) : ℝ) ^ (-D - 3) := by
+  have hH' := hH
+  obtain ⟨hd, hκ, hε, hflow, hs0, -, hst, htl, -⟩ := hH
+  obtain ⟨⟨h𝔠, -, hN, hBW, -⟩, hE, ht1, hRC⟩ :=
+    RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
+  have hκ' : 0 < κ / 2 := by linarith
+  have hδ : 0 < ε / 2 := by linarith
+  have hck : 0 < cltCk (κ / 2) := cltStep_ck_pos (E := STflowE z 0) hκ' (hE 0).le
+  have hRn : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) ≤ 1 - s n := by
+    filter_upwards [hRC] with n hn
+    have := hst n; linarith [hn]
+  refine cltStep_seq sz h𝔠 hck hN hBW K C' hC' F hcoef (fun n => cltEvalAt (F n) (STflowE z n) (s n))
+    (fun n b' => cltStep_eval_meas (F n) (STflowE z n) (s n) b')
+    (fun n θ D' ω => cltGoodAt d (sz.L n) (sz.W n) (STflowE z n) (s n) θ D' ω) ?_
+    (fun θ hθ D' hD' D'' hD'' => cltGood_whp sz κ ε 𝔠 𝔡 z s s t Cd hH' 1 θ one_pos
+      (fun n => by have := hθ n; unfold cltStep_win at this; simpa only [one_mul] using this) D' hD' D'' hD'')
+    (fun D'' hD'' => cltCoord_tail sz (by omega) 𝔠 h𝔠 hN hBW D'' hD'') ?_ p hp D hD
+  · filter_upwards [hRn, hcoef] with n hR hcoefn ω b'
+    exact cltEval_detMulti_le d (sz.L n) (sz.W n) 2 (κ / 2) (ε / 2) (STflowE z n) (s n) K (F n) C'
+      (Hflow d (sz.L n) (sz.W n) (s n) ω) b' hκ' hδ (hE n).le hR hcoefn (Hflow_isHermitian _ _ _ _ _)
+  · filter_upwards [hRn] with n hR hθ θ D' hθR b' c ω₀ s' hadj hfar hgood' hs'
+    have hηlow := cltEta_lower d (sz.L n) (sz.W n) (κ / 2) (ε / 2) (STflowE z n) (s n) hκ' hδ (hE n).le hR
+    have hz : (zt (STflowE z n) (s n)).im ≠ 0 :=
+      (lt_of_lt_of_le (div_pos hck (by exact_mod_cast sz.one_le_size n)) hηlow).ne'
+    exact cltPathMulti_bound d (sz.L n) (sz.W n) 2 K (F n) (STflowE z n) (s n) _ (8 * cltStep_win sz n (s n)) θ D'
+      b' c ω₀ s' (hs0 n) ((hst n).trans_lt (ht1 n)) hz (hloc n) hθ hadj hfar hθR hgood' hs'
+
+/-- **Item 2 over the carrier** (`cltStepOf`): the same bound under `HCltOf` at `τ = s`, for the evaluation
+`cltEvalAtOf (F n) (C.m n) (E n) (s n) (H₀ n)` at the matrix `H₀ n + H_s(ω)` and the law `PF d L W (g' n)`; `κ ≤ Im (C.m n)`,
+`κ ≤ 1` replace `cltCk (κ/2)`. -/
+theorem cltStepOf (C : RBM.BA.FlowFM sz) (μ : Measure sz.SeqΩ)
+    {H₀ : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {g' E : ℕ → ℝ}
+    {κ δ 𝔠 𝔡 Cd : ℝ} {s t : ℕ → ℝ} (hH : RBM.BA.HCltOf C μ H₀ g' E κ δ 𝔠 𝔡 Cd s t) (K : ℕ) (C' : ℝ)
+    (hC' : 0 ≤ C') (F : ∀ n, LocalForm d (sz.L n) (sz.W n) 2 K)
+    (hcoef : ∀ᶠ n in atTop, ∀ b j q, ‖(F n).coef b j q‖ ≤ ((sz.size n : ℕ) : ℝ) ^ C')
+    (hloc : ∀ n, (F n).Local (cltStep_win sz n (s n) + 1))
+    (p : ℕ) (hp : 1 ≤ p) (D : ℝ) (hD : 0 < D) :
+    ∀ᶠ n in atTop,
+      ∀ (b : Fin (2 * p) → Fin 2 → Zd d (sz.L n)) (i : Fin (2 * p)),
+        (∀ m, ((zdistInf d (sz.L n) (b m 0 - b m 1) : ℕ) : ℝ) ≤ cltStep_win sz n (s n)) →
+        (∀ m, m ≠ i →
+          10 * cltStep_win sz n (s n) ≤ ((zdistInf d (sz.L n) (b i 0 - b m 0) : ℕ) : ℝ)) →
+        ∀ (e : CoordF d (sz.L n) (sz.W n) ≃ Fin (Fintype.card (CoordF d (sz.L n) (sz.W n))))
+          (j : ℕ), j < Fintype.card (CoordF d (sz.L n) (sz.W n)) →
+          ‖∫ q, (cltStep_XoY (cltEvalAtOf (F n) (C.m n) (E n) (s n) (H₀ n)) (g' n) b i
+                  (cltHyb d (sz.L n) (sz.W n) e j q.1 q.2) -
+                cltStep_XoY (cltEvalAtOf (F n) (C.m n) (E n) (s n) (H₀ n)) (g' n) b i
+                  (cltHyb d (sz.L n) (sz.W n) e (j + 1) q.1 q.2)) *
+              cltStep_GammaY (cltEvalAtOf (F n) (C.m n) (E n) (s n) (H₀ n)) (g' n) b i q.1
+            ∂((PF d (sz.L n) (sz.W n) (g' n)).prod (PF d (sz.L n) (sz.W n) (g' n)))‖ ≤
+            ((sz.size n : ℕ) : ℝ) ^ (-D - 3) := by
+  have hH' := hH
+  obtain ⟨hd, hκ, hκ1, hδ, hadm, hκm, hs0, hst, ht1, hrange, hRep, hWard, hMf, hLoc, hDec, hGij, hK⟩ := hH
+  obtain ⟨h𝔠, -, hN, hBW, -⟩ := id hadm
+  have hHerm : ∀ n, (H₀ n).IsHermitian := hRep.2.1
+  have hR : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (-1 + δ) ≤ 1 - s n := by
+    filter_upwards [hrange] with n hn
+    have := hst n; linarith [hn]
+  refine cltStep_seq sz h𝔠 hκ hN hBW K C' hC' F hcoef (fun n => cltEvalAtOf (F n) (C.m n) (E n) (s n) (H₀ n))
+    (fun n b' => cltStep_evalOf_meas (F n) (C.m n) (E n) (s n) (H₀ n) b')
+    (fun n θ D' ω => cltGoodAtOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n) θ D' (H₀ n) ω) ?_
+    (fun θ hθ D' hD' D'' hD'' => cltGood_whpOf d κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t hH' 1 θ one_pos
+      (fun n => by have := hθ n; unfold cltStep_win at this; simpa only [one_mul] using this) D' hD' D'' hD'')
+    (fun D'' hD'' => cltCoord_tail (sz.withLam g') (by omega) 𝔠 h𝔠 hN hBW D'' hD'') ?_ p hp D hD
+  · filter_upwards [hR, hcoef] with n hRn hcoefn ω b'
+    exact cltEval_detMulti_leOf d (sz.L n) (sz.W n) 2 κ δ (C.m n) (E n) (s n) K (F n) C'
+      (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) b' hκ hδ (hκm n) hκ1 hRn hcoefn
+      ((hHerm n).add (Hflow_isHermitian _ _ _ _ _))
+  · filter_upwards [hR] with n hRn hθ θ D' hθR b' c ω₀ s' hadj hfar hgood' hs'
+    have hηlow := cltEta_lowerOf d (sz.L n) (sz.W n) κ δ (C.m n) (E n) (s n) hκ hδ (hκm n) hRn
+    have hz : (ztOf (C.m n) (E n) (s n)).im ≠ 0 :=
+      (lt_of_lt_of_le (div_pos hκ (by exact_mod_cast sz.one_le_size n)) hηlow).ne'
+    exact cltPathMulti_boundOf d (sz.L n) (sz.W n) 2 K (F n) (C.m n) (E n) (s n) (cltStep_win sz n (s n) + 1)
+      (8 * cltStep_win sz n (s n)) θ D' (H₀ n) b' c ω₀ s' (hHerm n) (hs0 n) ((hst n).trans (ht1 n)) hz (hloc n) hθ
+      hadj hfar hθR hgood' hs'
+
 end SeqStep
+
 
 /-! ## 6. The local form of `STcltB` (item 1) -/
 
@@ -925,15 +1047,15 @@ def cltStep_pairForm (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d L W × Boo
     (Idx d L W × Idx d L W × Bool) → ℂ) : LocalForm d L W k 2 where
   coef b j q := if h : (j : ℕ) = 2 then c2 b (q ⟨0, by omega⟩) (q ⟨1, by omega⟩) else 0
 
-/-- The evaluation of `cltStep_pairForm`: the double sum over the two monomial slots. -/
-theorem cltStep_pairForm_eval (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d L W × Bool) →
-    (Idx d L W × Idx d L W × Bool) → ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+/-- The evaluation of `cltStep_pairForm` at the spectral value `m`: the double sum over the two monomial slots. -/
+theorem cltStep_pairForm_evalOf (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d L W × Bool) →
+    (Idx d L W × Idx d L W × Bool) → ℂ) (m : ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
     (b : Fin k → Zd d L) :
-    (cltStep_pairForm (W := W) c2).eval E s M b =
+    (cltStep_pairForm (W := W) c2).evalOf m E s M b =
       ∑ q0 : Idx d L W × Idx d L W × Bool, ∑ q1 : Idx d L W × Idx d L W × Bool,
-        c2 b q0 q1 * (gEntry d L W E s M q0.2.2 q0.1 q0.2.1 *
-          gEntry d L W E s M q1.2.2 q1.1 q1.2.1) := by
-  unfold LocalForm.eval
+        c2 b q0 q1 * (gEntryOf d L W m E s M q0.2.2 q0.1 q0.2.1 *
+          gEntryOf d L W m E s M q1.2.2 q1.1 q1.2.1) := by
+  unfold LocalForm.evalOf
   rw [Finset.sum_eq_single (⟨2, by norm_num⟩ : Fin (2 + 1))]
   · rw [← Fintype.sum_prod_type']
     refine Fintype.sum_equiv (piFinTwoEquiv (fun _ : Fin 2 => Idx d L W × Idx d L W × Bool)) _ _ ?_
@@ -944,6 +1066,17 @@ theorem cltStep_pairForm_eval (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d L
     have : (j : ℕ) ≠ 2 := fun h => hj (Fin.ext h)
     simp [cltStep_pairForm, this]
   · intro h; exact absurd (Finset.mem_univ _) h
+
+
+/-- The evaluation of `cltStep_pairForm`: the double sum over the two monomial slots (`m = mE E` of `cltStep_pairForm_evalOf`). -/
+theorem cltStep_pairForm_eval (c2 : (Fin k → Zd d L) → (Idx d L W × Idx d L W × Bool) →
+    (Idx d L W × Idx d L W × Bool) → ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (b : Fin k → Zd d L) :
+    (cltStep_pairForm (W := W) c2).eval E s M b =
+      ∑ q0 : Idx d L W × Idx d L W × Bool, ∑ q1 : Idx d L W × Idx d L W × Bool,
+        c2 b q0 q1 * (gEntry d L W E s M q0.2.2 q0.1 q0.2.1 *
+          gEntry d L W E s M q1.2.2 q1.1 q1.2.1) :=
+  cltStep_pairForm_evalOf c2 (mE E) E s M b
 
 private theorem cltStep_gres_blockMat (H : Matrix (Idx d L W) (Idx d L W) ℂ)
     (z : ℂ) (σ : Bool) (x y : Vtx d L W) :
@@ -1032,26 +1165,26 @@ def cltStep_loopForm (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) : LocalForm d (sz
   cltStep_pairForm (cltStep_c2 sz n σ (cltStep_win sz n s)
     ((cltStep_scale sz n * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ^ 2 : ℝ) : ℂ))
 
-/-- **Item 1, evaluation.**  In the window, `cltStep_loopForm` evaluates to `scale · 𝓛^{(2)}_{σ,b}`. -/
-theorem cltStep_loopForm_eval (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (E u : ℝ)
+/-- **Item 1, evaluation** at the spectral value `m`.  In the window, `cltStep_loopForm` evaluates to `scale · 𝓛^{(2)}_{σ,b}` (`loopFine` at `ztOf m E u`). -/
+theorem cltStep_loopForm_evalOf (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (m : ℂ) (E u : ℝ)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (b : Fin 2 → Zd d (sz.L n))
     (hb : (zdistInf d (sz.L n) (b 0 - b 1) : ℝ) ≤ cltStep_win sz n s) :
-    (cltStep_loopForm sz n s σ).eval E u M b =
-      ((cltStep_scale sz n : ℝ) : ℂ) * loopFine d (sz.L n) (sz.W n) M (zt E u) σ b := by
+    (cltStep_loopForm sz n s σ).evalOf m E u M b =
+      ((cltStep_scale sz n : ℝ) : ℂ) * loopFine d (sz.L n) (sz.W n) M (ztOf m E u) σ b := by
   unfold cltStep_loopForm
-  rw [cltStep_pairForm_eval, cltStep_loopFine_two]
+  rw [cltStep_pairForm_evalOf, cltStep_loopFine_two]
   set c : ℂ := ((cltStep_scale sz n * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ^ 2 : ℝ) : ℂ) with hc
   have hc' : c = ((cltStep_scale sz n : ℝ) : ℂ) * (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ ^ 2 := by
     rw [hc]; push_cast; ring
   have step1 : ∀ q0 : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool,
       ∑ q1 : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool,
         cltStep_c2 sz n σ (cltStep_win sz n s) c b q0 q1 *
-          (gEntry d (sz.L n) (sz.W n) E u M q0.2.2 q0.1 q0.2.1 *
-            gEntry d (sz.L n) (sz.W n) E u M q1.2.2 q1.1 q1.2.1) =
+          (gEntryOf d (sz.L n) (sz.W n) m E u M q0.2.2 q0.1 q0.2.1 *
+            gEntryOf d (sz.L n) (sz.W n) m E u M q1.2.2 q1.1 q1.2.1) =
       if (split d (sz.L n) (sz.W n) q0.1).1 = b 1 ∧ (split d (sz.L n) (sz.W n) q0.2.1).1 = b 0 ∧
           q0.2.2 = σ 0 then
-        c * (gEntry d (sz.L n) (sz.W n) E u M q0.2.2 q0.1 q0.2.1 *
-          gEntry d (sz.L n) (sz.W n) E u M (σ 1) q0.2.1 q0.1) else 0 := by
+        c * (gEntryOf d (sz.L n) (sz.W n) m E u M q0.2.2 q0.1 q0.2.1 *
+          gEntryOf d (sz.L n) (sz.W n) m E u M (σ 1) q0.2.1 q0.1) else 0 := by
     intro q0
     rw [Finset.sum_eq_single (q0.2.1, q0.1, σ 1)]
     · unfold cltStep_c2
@@ -1067,14 +1200,14 @@ theorem cltStep_loopForm_eval (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (E u : �
   have step2 : ∀ y x : Idx d (sz.L n) (sz.W n),
       ∑ β : Bool, (if (split d (sz.L n) (sz.W n) y).1 = b 1 ∧ (split d (sz.L n) (sz.W n) x).1 = b 0 ∧
           β = σ 0 then
-        c * (gEntry d (sz.L n) (sz.W n) E u M β y x *
-          gEntry d (sz.L n) (sz.W n) E u M (σ 1) x y) else 0) =
+        c * (gEntryOf d (sz.L n) (sz.W n) m E u M β y x *
+          gEntryOf d (sz.L n) (sz.W n) m E u M (σ 1) x y) else 0) =
       if (split d (sz.L n) (sz.W n) y).1 = b 1 ∧ (split d (sz.L n) (sz.W n) x).1 = b 0 then
-        c * (Gres M (zt E u) (σ 0) y x * Gres M (zt E u) (σ 1) x y) else 0 := by
+        c * (Gres M (ztOf m E u) (σ 0) y x * Gres M (ztOf m E u) (σ 1) x y) else 0 := by
     intro y x
     rw [Finset.sum_eq_single (σ 0)]
     · by_cases h : (split d (sz.L n) (sz.W n) y).1 = b 1 ∧ (split d (sz.L n) (sz.W n) x).1 = b 0
-      · simp [h, gEntry]
+      · simp [h, gEntryOf]
       · simp [h]
     · intro β _ hβ
       simp [hβ]
@@ -1089,6 +1222,14 @@ theorem cltStep_loopForm_eval (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (E u : �
   · simp only [h, and_self, ↓reduceIte]
     ring
   · simp [h]
+
+/-- **Item 1, evaluation** (band).  In the window, `cltStep_loopForm` evaluates to `scale · 𝓛^{(2)}_{σ,b}` (`m = mE E`). -/
+theorem cltStep_loopForm_eval (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool) (E u : ℝ)
+    (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (b : Fin 2 → Zd d (sz.L n))
+    (hb : (zdistInf d (sz.L n) (b 0 - b 1) : ℝ) ≤ cltStep_win sz n s) :
+    (cltStep_loopForm sz n s σ).eval E u M b =
+      ((cltStep_scale sz n : ℝ) : ℂ) * loopFine d (sz.L n) (sz.W n) M (zt E u) σ b :=
+  cltStep_loopForm_evalOf sz n s σ (mE E) E u M b hb
 
 /-- **Item 1, locality.**  `cltStep_loopForm` is `(w_n + 1)`-local, `w_n = (log W)^3 ℓ_s`: a non-zero
 coefficient has `x ∈ [b₁]`, `y ∈ [b₂]` with `|b₁ - b₂|_∞ ≤ w_n`, and the sum of the distances of
@@ -1223,44 +1364,60 @@ section Iso
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- The centred factor `STcltX` of the pin is the centred factor `cltStep_Xo` of the finite model for the
-form `cltStep_loopForm` (the constant `scale · 𝒦` cancels in the centring). -/
-private theorem cltStep_STcltX_eq {p : ℕ} (n : ℕ) (E s : ℝ) (σ : Fin 2 → Bool)
+/-- The centred factor `STcltXg` of the pin (over the carrier `C`, law `seqP (sz.withLam g')`) is the centred factor
+`cltStep_XoY` of the finite model for the form `cltStep_loopForm` (the constant `scale · 𝒦` cancels in the centring);
+`C.L` is the loop of `H₀ n + H_u` (`CltRepg`).  (Generalised in place from the band form `STcltX`.) -/
+private theorem cltStep_STcltX_eq {p : ℕ} (C : RBM.BA.FlowFM sz)
+    {H₀ : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} {g' E : ℕ → ℝ}
+    (hRep : RBM.BA.CltRepg C (Sizes.seqP (sz.withLam g')) H₀ g' E) (n : ℕ) (s : ℝ) (σ : Fin 2 → Bool)
     (b : Fin (2 * p) → Fin 2 → Zd d (sz.L n))
     (hb : ∀ k, (zdistInf d (sz.L n) (b k 0 - b k 1) : ℝ) ≤ cltStep_win sz n s) {BY : ℝ}
-    (hY : ∀ ω b', ‖cltEvalAt (cltStep_loopForm sz n s σ) E s ω b'‖ ≤ BY) (k : Fin (2 * p))
-    (ω : sz.SeqΩ) :
-    STcltX sz n E s σ (b k) (decide (p ≤ (k : ℕ))) ω =
-      cltStep_Xo (cltStep_loopForm sz n s σ) (sz.lam n) E s b k (sz.slice n ω) := by
+    (hY : ∀ ω b', ‖cltEvalAtOf (cltStep_loopForm sz n s σ) (C.m n) (E n) s (H₀ n) ω b'‖ ≤ BY)
+    (k : Fin (2 * p)) (ω : sz.SeqΩ) :
+    RBM.BA.STcltXg C (Sizes.seqP (sz.withLam g')) n s σ (b k) (decide (p ≤ (k : ℕ))) ω =
+      cltStep_XoY (cltEvalAtOf (cltStep_loopForm sz n s σ) (C.m n) (E n) s (H₀ n)) (g' n) b k
+        ((sz.withLam g').slice n ω) := by
   set F := cltStep_loopForm sz n s σ with hF
-  set K : ℂ := ((cltStep_scale sz n : ℝ) : ℂ) * STKloop sz n E s σ (b k) with hK
-  have hB : ∀ ω', STcltB sz n E s σ (b k) ω' = cltEvalAt F E s (sz.slice n ω') (b k) - K :=
-    fun ω' => cltStep_loopForm_stcltB sz n E s σ (b k) (hb k) ω'
-  have hmeas : Measurable fun η : Ω d (sz.L n) (sz.W n) => cltEvalAt F E s η (b k) - K :=
-    (cltStep_eval_meas F E s (b k)).sub_const K
-  have hint : ∫ ω', STcltB sz n E s σ (b k) ω' ∂(sz.seqP) =
-      (∫ η, cltEvalAt F E s η (b k) ∂(PF d (sz.L n) (sz.W n) (sz.lam n))) - K := by
-    have h1 : ∫ ω', STcltB sz n E s σ (b k) ω' ∂(sz.seqP) =
-        ∫ ω', (fun η => cltEvalAt F E s η (b k) - K) (sz.slice n ω') ∂(sz.seqP) :=
+  set Kc : ℂ := ((cltStep_scale sz n : ℝ) : ℂ) * C.K n s σ (b k) with hK
+  have hB : ∀ ω', RBM.BA.STcltBg C n s σ (b k) ω' =
+      cltEvalAtOf F (C.m n) (E n) s (H₀ n) ((sz.withLam g').slice n ω') (b k) - Kc := by
+    intro ω'
+    have hL : C.L n s σ (b k) ω' = loopFine d (sz.L n) (sz.W n)
+        (H₀ n + Hflow d (sz.L n) (sz.W n) s ((sz.withLam g').slice n ω')) (ztOf (C.m n) (E n) s) σ (b k) :=
+      (hRep.2.2 n s ω').2 2 σ (b k)
+    unfold RBM.BA.STcltBg cltEvalAtOf
+    rw [cltStep_loopForm_evalOf sz n s σ (C.m n) (E n) s _ (b k) (hb k), hL, hK]
+    change ((cltStep_scale sz n : ℝ) : ℂ) * (_ - _) = _
+    ring
+  have hmeas : Measurable fun η : Ω d (sz.L n) (sz.W n) => cltEvalAtOf F (C.m n) (E n) s (H₀ n) η (b k) - Kc :=
+    (cltStep_evalOf_meas F (C.m n) (E n) s (H₀ n) (b k)).sub_const Kc
+  have hi : Integrable (fun η => cltEvalAtOf F (C.m n) (E n) s (H₀ n) η (b k)) (PF d (sz.L n) (sz.W n) (g' n)) :=
+    Integrable.of_bound (cltStep_evalOf_meas F (C.m n) (E n) s (H₀ n) (b k)).aestronglyMeasurable BY
+      (Filter.Eventually.of_forall fun η => hY η (b k))
+  have hint : (∫ ω' : sz.SeqΩ, RBM.BA.STcltBg C n s σ (b k) ω' ∂(Sizes.seqP (sz.withLam g'))) =
+      (∫ η, cltEvalAtOf F (C.m n) (E n) s (H₀ n) η (b k) ∂(PF d (sz.L n) (sz.W n) (g' n))) - Kc := by
+    have h1 : (∫ ω' : sz.SeqΩ, RBM.BA.STcltBg C n s σ (b k) ω' ∂(Sizes.seqP (sz.withLam g'))) =
+        ∫ ω' : sz.SeqΩ, (fun η => cltEvalAtOf F (C.m n) (E n) s (H₀ n) η (b k) - Kc)
+          ((sz.withLam g').slice n ω') ∂(Sizes.seqP (sz.withLam g')) :=
       integral_congr_ae (Filter.Eventually.of_forall fun ω' => hB ω')
-    rw [h1, cltTransfer sz n _ hmeas]
-    have hi : Integrable (fun η => cltEvalAt F E s η (b k)) (PF d (sz.L n) (sz.W n) (sz.lam n)) :=
-      Integrable.of_bound (cltStep_eval_meas F E s (b k)).aestronglyMeasurable BY
-        (Filter.Eventually.of_forall fun η => hY η (b k))
+    refine h1.trans ((cltTransfer (sz.withLam g') n _ hmeas).trans ?_)
+    change (∫ η : Ω d (sz.L n) (sz.W n), (cltEvalAtOf F (C.m n) (E n) s (H₀ n) η (b k) - Kc)
+      ∂(PF d (sz.L n) (sz.W n) (g' n))) = _
     rw [integral_sub hi (integrable_const _), integral_const]
     simp
-  have hdiff : STcltB sz n E s σ (b k) ω - ∫ ω', STcltB sz n E s σ (b k) ω' ∂(sz.seqP) =
-      cltEvalAt F E s (sz.slice n ω) (b k) -
-        ∫ η, cltEvalAt F E s η (b k) ∂(PF d (sz.L n) (sz.W n) (sz.lam n)) := by
+  have hdiff : RBM.BA.STcltBg C n s σ (b k) ω -
+        (∫ ω' : sz.SeqΩ, RBM.BA.STcltBg C n s σ (b k) ω' ∂(Sizes.seqP (sz.withLam g'))) =
+      cltEvalAtOf F (C.m n) (E n) s (H₀ n) ((sz.withLam g').slice n ω) (b k) -
+        ∫ η, cltEvalAtOf F (C.m n) (E n) s (H₀ n) η (b k) ∂(PF d (sz.L n) (sz.W n) (g' n)) := by
     rw [hint, hB]; ring
-  unfold STcltX cltStep_Xo
+  unfold RBM.BA.STcltXg cltStep_XoY
   rcases lt_or_ge (k : ℕ) p with hlt | hge
   · have h1 : ¬ p ≤ (k : ℕ) := not_le.2 hlt
     simp only [h1, decide_false, Bool.false_eq_true, ↓reduceIte, hlt]
     exact hdiff
   · have h1 : ¬ (k : ℕ) < p := not_lt.2 hge
     simp only [hge, decide_true, ↓reduceIte, h1]
-    rw [hdiff]
+    exact congrArg (starRingEnd ℂ) hdiff
 
 /-- The number of real coordinates: `card (CoordF d L W) = 2 N²`. -/
 private theorem cltStep_card_coord (n : ℕ) :
@@ -1298,27 +1455,24 @@ end Iso
 
 end RBM.Evol
 
-namespace RBM.Gauss.Sizes
+namespace RBM.BA
 
-open Filter MeasureTheory RBM RBM.Gauss RBM.Evol
+open Filter MeasureTheory RBM RBM.Gauss RBM.Gauss.Sizes RBM.Evol
 
-/-- **`(eq:bound_isolated)`** (`3_5:2245-2248`, cited from [DYYY25, (7.39)], [RBSO1D, (A.112)]): the
-pin `STCltIso d`, proved by the i.i.d.-copy route of RBM2D (`Evolution/CltStep.lean`,
-`CltDecorrelation.lean:286-376`): the centring of the isolated factor `X_i`, the coordinate telescope
-over the `2 N²` real coordinates (`cltTelescope`), and the per-step bound `cltStep` (each step
-`≤ N^{-D-3}`), generalised to the `2p` two-label factors `STcltX`.  Uses `HClt` at `τ = s`
-(`STFlow`, `STStep2Concl`), the transfer `cltTransfer` and `cltGood_whp`, `cltCoord_tail`.  The
-regime `STReg5I` and the condition `σ₁ ≠ σ₂` are not used. -/
-theorem stCltIso_holds (d : ℕ) : STCltIso d := by
-  intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
-  refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
-  intro 𝔠 sz z hflow s t hs0 hst htl _ _ _ _ _ _ _ _ hS2 _ _
-  have hH : HClt sz κ ε 𝔠 𝔡 z s s t Cd :=
-    ⟨hd, hκ, hε, hflow, hs0, fun n => le_rfl, fun n => (hst n).le, htl, hS2⟩
-  obtain ⟨⟨h𝔠, -, hN, hBW, hWO⟩, hE, ht1, hRC⟩ :=
-    RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
-  have hκ' : 0 < κ / 2 := by linarith
-  have hδ : 0 < ε / 2 := by linarith
+/-- **`(eq:bound_isolated)` over the carrier** (`3_5:2245-2248`, cited from [DYYY25, (7.39)], [RBSO1D, (A.112)]): the pin
+`STCltIsogL d` (X1-C4, case (i)), proved by the i.i.d.-copy route of RBM2D (`Evolution/CltStep.lean`,
+`CltDecorrelation.lean:286-376`): the centring of the isolated factor `X_i`, the coordinate telescope over the `2 N²` real
+coordinates (`cltTelescope`), and the per-step bound `cltStepOf` (each step `≤ N^{-D-3}`), generalised to the `2p` two-label
+factors `STcltXg`.  Uses `HCltOf` at `τ = s`, the transfer `cltTransfer` at `sz.withLam g'` (`CltRepg`) and `cltGood_whpOf`,
+`cltCoord_tail`.  The regime `STReg5I` and the condition `σ₁ ≠ σ₂` are not used. -/
+theorem stCltIsogL_holds (d : ℕ) : STCltIsogL d := by
+  intro κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t hH
+  have hH' := hH
+  obtain ⟨hd, hκ, hκ1, hδ, hadm, hκm, hs0, hst, ht1, hrange, hRep, hWard, hMf, hLoc, hDec, hGij, hK⟩ := hH
+  obtain ⟨h𝔠, h𝔡, hN, hBW, hWO⟩ := id hadm
+  have hRep' := hRep
+  obtain ⟨hμ, hHerm, hGL⟩ := hRep
+  subst hμ
   intro p hp D hD
   have key : ∀ σ : Fin 2 → Bool, ∀ᶠ n in atTop,
       ∀ b : Fin (2 * p) → (Fin 2 → Zd d (sz.L n)),
@@ -1326,13 +1480,13 @@ theorem stCltIso_holds (d : ℕ) : STCltIso d := by
           Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n)) →
         (∃ i, ∀ j, j ≠ i → 10 * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
           ((zdistInf d (sz.L n) ((b i) 0 - (b j) 0) : ℕ) : ℝ)) →
-        ‖∫ ω, ∏ k : Fin (2 * p), STcltX sz n (STflowE z n) (s n) σ (b k) (decide (p ≤ k.val)) ω
-            ∂(sz.seqP)‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) := by
+        ‖∫ ω, ∏ k : Fin (2 * p), STcltXg C (Sizes.seqP (sz.withLam g')) n (s n) σ (b k) (decide (p ≤ k.val)) ω
+            ∂(Sizes.seqP (sz.withLam g'))‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) := by
     intro σ
     have hcoef := cltStep_loopForm_coef_le_eventually sz h𝔡 hN hWO s σ
-    have hstep := cltStep sz κ ε 𝔠 𝔡 z s t Cd hH 2 2 (by norm_num)
-      (fun n => cltStep_loopForm sz n (s n) σ) hcoef (fun n => cltStep_loopForm_local sz n (s n) σ) p hp D hD
-    filter_upwards [hstep, hRC, hcoef, hN.eventually_ge_atTop 2] with n hstepn hRn hcoefn hN2
+    have hstep := cltStepOf sz C _ hH' 2 2 (by norm_num) (fun n => cltStep_loopForm sz n (s n) σ) hcoef
+      (fun n => cltStep_loopForm_local sz n (s n) σ) p hp D hD
+    filter_upwards [hstep, hrange, hcoef, hN.eventually_ge_atTop 2] with n hstepn hRn hcoefn hN2
     intro b hwin hisoEx
     obtain ⟨i, hiso⟩ := hisoEx
     set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
@@ -1345,31 +1499,34 @@ theorem stCltIso_holds (d : ℕ) : STCltIso d := by
       unfold cltStep_win
       rw [← mul_assoc]
       exact this
-    have hR : N ^ (-1 + ε / 2) ≤ 1 - s n := by have := hst n; linarith [hRn]
-    have hE' : |STflowE z n| ≤ 2 - κ / 2 := (hE n).le
+    have hR : N ^ (-1 + δ) ≤ 1 - s n := by have := hst n; linarith [hRn]
     have hY : ∀ (ω : Ω d (sz.L n) (sz.W n)) (b' : Fin 2 → Zd d (sz.L n)),
-        ‖cltEvalAt (cltStep_loopForm sz n (s n) σ) (STflowE z n) (s n) ω b'‖ ≤
-          (((2 : ℕ) : ℝ) + 1) * N ^ (2 : ℝ) * (2 * N ^ 3 / cltCk (κ / 2)) ^ 2 :=
-      fun ω b' => cltEval_detMulti_le d (sz.L n) (sz.W n) 2 (κ / 2) (ε / 2) (STflowE z n) (s n) 2
-        (cltStep_loopForm sz n (s n) σ) 2 (Hflow d (sz.L n) (sz.W n) (s n) ω) b' hκ' hδ hE' hR hcoefn
-        (Hflow_isHermitian _ _ _ _ _)
+        ‖cltEvalAtOf (cltStep_loopForm sz n (s n) σ) (C.m n) (E n) (s n) (H₀ n) ω b'‖ ≤
+          (((2 : ℕ) : ℝ) + 1) * N ^ (2 : ℝ) * (2 * N ^ 3 / κ) ^ 2 :=
+      fun ω b' => cltEval_detMulti_leOf d (sz.L n) (sz.W n) 2 κ δ (C.m n) (E n) (s n) 2
+        (cltStep_loopForm sz n (s n) σ) 2 (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) b' hκ hδ (hκm n) hκ1 hR hcoefn
+        ((hHerm n).add (Hflow_isHermitian _ _ _ _ _))
+    have hYm : ∀ b', Measurable fun ω => cltEvalAtOf (cltStep_loopForm sz n (s n) σ) (C.m n) (E n) (s n) (H₀ n) ω b' :=
+      fun b' => cltStep_evalOf_meas _ _ _ _ _ b'
     -- the transfer to the finite model
     have hprodm : Measurable fun η : Ω d (sz.L n) (sz.W n) =>
-        ∏ m : Fin (2 * p), cltStep_Xo (cltStep_loopForm sz n (s n) σ) (sz.lam n) (STflowE z n) (s n) b m η :=
-      Finset.measurable_prod _ fun m _ => cltStep_Xo_meas _ _ _ _ b m
-    have htr := cltTransfer sz n (fun η => ∏ m : Fin (2 * p),
-      cltStep_Xo (cltStep_loopForm sz n (s n) σ) (sz.lam n) (STflowE z n) (s n) b m η) hprodm
-    have hEq : ∫ ω, ∏ k : Fin (2 * p),
-          STcltX sz n (STflowE z n) (s n) σ (b k) (decide (p ≤ k.val)) ω ∂(sz.seqP) =
-        ∫ η, ∏ m : Fin (2 * p),
-          cltStep_Xo (cltStep_loopForm sz n (s n) σ) (sz.lam n) (STflowE z n) (s n) b m η
-          ∂(PF d (sz.L n) (sz.W n) (sz.lam n)) := by
-      rw [← htr]
-      refine integral_congr_ae (Filter.Eventually.of_forall fun ω => ?_)
-      exact Finset.prod_congr rfl fun k _ => cltStep_STcltX_eq sz n (STflowE z n) (s n) σ b hwin' hY k ω
-    rw [hEq]
-    have hcore := cltStep_assembly (sz.lam n) (cltStep_loopForm sz n (s n) σ) (STflowE z n) (s n) hY b i
-      (Fintype.equivFin (CoordF d (sz.L n) (sz.W n))) (η := N ^ (-D - 3))
+        ∏ m : Fin (2 * p), cltStep_XoY (cltEvalAtOf (cltStep_loopForm sz n (s n) σ) (C.m n) (E n) (s n) (H₀ n))
+          (g' n) b m η :=
+      Finset.measurable_prod _ fun m _ => cltStep_Xo_meas _ hYm _ b m
+    have htr := cltTransfer (sz.withLam g') n (fun η => ∏ m : Fin (2 * p),
+      cltStep_XoY (cltEvalAtOf (cltStep_loopForm sz n (s n) σ) (C.m n) (E n) (s n) (H₀ n)) (g' n) b m η) hprodm
+    have hEq : (∫ ω : sz.SeqΩ, ∏ k : Fin (2 * p),
+          STcltXg C (Sizes.seqP (sz.withLam g')) n (s n) σ (b k) (decide (p ≤ k.val)) ω
+            ∂(Sizes.seqP (sz.withLam g'))) =
+        ∫ η : Ω d (sz.L n) (sz.W n), ∏ m : Fin (2 * p),
+          cltStep_XoY (cltEvalAtOf (cltStep_loopForm sz n (s n) σ) (C.m n) (E n) (s n) (H₀ n)) (g' n) b m η
+          ∂(PF d (sz.L n) (sz.W n) (g' n)) := by
+      refine Eq.trans ?_ htr
+      exact integral_congr_ae (Filter.Eventually.of_forall fun ω =>
+        Finset.prod_congr rfl fun k _ => cltStep_STcltX_eq sz C hRep' n (s n) σ b hwin' hY k ω)
+    refine (congrArg (fun x : ℂ => ‖x‖) hEq).le.trans ?_
+    have hcore := cltStep_assembly (g' n) _ hYm hY b i (Fintype.equivFin (CoordF d (sz.L n) (sz.W n)))
+      (η := N ^ (-D - 3))
       (fun j hj => hstepn b i hwin' hiso' (Fintype.equivFin (CoordF d (sz.L n) (sz.W n))) j hj)
     refine hcore.trans ?_
     rw [cltStep_card_coord sz n]
@@ -1386,6 +1543,33 @@ theorem stCltIso_holds (d : ℕ) : STCltIso d := by
   have hall := Filter.eventually_all.2 key
   filter_upwards [hall] with n hn σ _ b hwin hiso
   exact hn σ b hwin hiso
+
+end RBM.BA
+
+namespace RBM.Gauss.Sizes
+
+open Filter MeasureTheory RBM RBM.Gauss RBM.Evol
+
+/-- **`(eq:bound_isolated)`** (`3_5:2245-2248`): the pin `STCltIso d`, the band case `bandFM sz (STflowE z)`, `seqP sz`,
+`H₀ = 0`, `g' = sz.lam` of `stCltIsogL_holds` (X1-C4); `HCltOf` is built from the band premises with `κ ↦ cltCk (κ/2)`,
+`δ = ε/2`, the Green input `bandFM_STGijDecgL_of_three_le` and the far field `bandFM_STKfargL`. -/
+theorem stCltIso_holds (d : ℕ) : STCltIso d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
+  intro 𝔠 sz z hflow s t hs0 hst htl _ _ _ _ _ _ _ _ hS2 _ _
+  obtain ⟨hadm, hE, ht1, hRC⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htl
+  have hκ' : 0 < κ / 2 := by linarith
+  have hcl : ∀ n, s n ≤ lemT (z n) := fun n => (hst n).le.trans (htl n)
+  have hWt : Filter.Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) Filter.atTop Filter.atTop :=
+    tendsto_atTop_mono' _ hadm.2.2.2.1 ((tendsto_rpow_atTop hadm.1).comp hadm.2.2.1)
+  exact RBM.BA.stCltIsogL_holds d (cltCk (κ / 2)) (ε / 2) 𝔠 𝔡 Cd sz (RBM.BA.bandFM sz (STflowE z)) (Sizes.seqP sz)
+    sz.lam (STflowE z) (fun _ => 0) s t
+    ⟨hd, (cltCk_facts hκ' (hE 0).le).1, (cltCk_facts hκ' (hE 0).le).2.2, half_pos hε, hadm,
+      fun n => (cltCk_facts hκ' (hE n).le).2.1, hs0, hst, ht1, hRC, RBM.BA.cltRepg_band sz _,
+      fun n x => RBM.BA.bandFM_M_le sz _ (fun n => (hE n).le.trans (by linarith)) n x,
+      RBM.BA.bandFM_STMfarg sz _ ((Real.tendsto_log_atTop.comp hWt).eventually_gt_atTop 0) _, hS2.1, hS2.2.2,
+      RBM.BA.bandFM_STGijDecgL_of_three_le hd hκ hε h𝔡 hflow hs0 hcl,
+      RBM.BA.bandFM_STKfargL hd hκ hε hflow hs0 hcl⟩
 
 end RBM.Gauss.Sizes
 
@@ -1572,6 +1756,47 @@ example (hStep2 : STStep2Concl szCL (STflowE zCL) sCL tCL 1) :=
     fun n hn => hn (cltStep_szCL_witness n).choose 0 (cltStep_szCL_witness n).choose_spec.1
       (cltStep_szCL_witness n).choose_spec.2.2
 
+/-- **Instance of `stCltIsogL_holds`** (`d = 3`): the generic pin as a statement, and applied at the band data of `Step5Inst`
+(`bandFM szCL (STflowE zCL)`, `seqP szCL`, `H₀ = 0`, `g' = lam`, `κ = 1/2`, `δ = 1/10`, `s = sCL`, `t = tCL`): `HCltOf` is
+discharged by `cltGood_hCltOf_szCL` (only the Step 2 pins `STLocalEntryUgL`, `STGdecayWgL` are hypotheses) and the conclusion is
+the isolation bound, whose premises are satisfiable with a positive window at every `n` (`cltStep_szCL_witness`). -/
+example : RBM.BA.STCltIsogL 3 := RBM.BA.stCltIsogL_holds 3
+
+example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
+    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
+    RBM.BA.STCltIsoConclgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL :=
+  RBM.BA.stCltIsogL_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL _ _ szCL.lam (STflowE zCL) (fun _ => 0) sCL tCL
+    (cltGood_hCltOf_szCL hLoc hDec)
+
+/-- **Instance of `cltStepOf`** at the band data, `p = 1`, `D = 1`, `σ = (+,-)`, the form `cltStep_loopForm` of `STcltB`,
+specialised to the label configuration `cltStep_szCL_witness n` (window `m² > 0`, `b^{(1)}` isolated), for every enumeration
+`e` of the real coordinates and every step `j`. -/
+example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
+    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :=
+  (cltStepOf szCL _ _ (cltGood_hCltOf_szCL hLoc hDec) 2 2 (by norm_num)
+    (fun n => cltStep_loopForm szCL n (sCL n) ![true, false]) (cltStep_szCL_coef ![true, false])
+    (fun n => cltStep_loopForm_local szCL n (sCL n) ![true, false]) 1 le_rfl 1 one_pos).mono
+    fun n hn => hn (cltStep_szCL_witness n).choose 0 (cltStep_szCL_witness n).choose_spec.1
+      (cltStep_szCL_witness n).choose_spec.2.2
+
+/-- **Instance of `cltStep_loopForm_evalOf`** at `(szCL, n = 0)`, the non-semicircle value `m = 1/2 + i`, `σ = (+,-)`, the labels
+of the positive window `cltStep_szCL_witness 0`, every matrix `M`. -/
+example (M : Matrix (Idx 3 (szCL.L 0) (szCL.W 0)) (Idx 3 (szCL.L 0) (szCL.W 0)) ℂ) :
+    ∃ b : Fin 2 → Zd 3 (szCL.L 0), 0 < zdistInf 3 (szCL.L 0) (b 0 - b 1) ∧
+      (cltStep_loopForm szCL 0 (sCL 0) ![true, false]).evalOf ⟨1 / 2, 1⟩ 0 (1 / 2) M b =
+        ((cltStep_scale szCL 0 : ℝ) : ℂ) * loopFine 3 (szCL.L 0) (szCL.W 0) M (ztOf ⟨1 / 2, 1⟩ 0 (1 / 2))
+          ![true, false] b := by
+  obtain ⟨b, h1, h2, -⟩ := cltStep_szCL_witness 0
+  exact ⟨b 0, h2, cltStep_loopForm_evalOf szCL 0 (sCL 0) ![true, false] ⟨1 / 2, 1⟩ 0 (1 / 2) M (b 0) (h1 0)⟩
+
+/-- **Instance of `cltStep_pairForm_evalOf`** (`c2 ≡ 1`, `d = L = 3`, `W = 1`, `m = 1/2 + i`). -/
+example (M : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) (b : Fin 1 → Zd 3 3) :
+    (cltStep_pairForm (W := 1) (fun _ _ _ => (1 : ℂ)) : LocalForm 3 3 1 1 2).evalOf ⟨1 / 2, 1⟩ 0 (1 / 2) M b =
+      ∑ q0 : Idx 3 3 1 × Idx 3 3 1 × Bool, ∑ q1 : Idx 3 3 1 × Idx 3 3 1 × Bool,
+        (fun _ _ _ => (1 : ℂ)) b q0 q1 * (gEntryOf 3 3 1 ⟨1 / 2, 1⟩ 0 (1 / 2) M q0.2.2 q0.1 q0.2.1 *
+          gEntryOf 3 3 1 ⟨1 / 2, 1⟩ 0 (1 / 2) M q1.2.2 q1.1 q1.2.1) :=
+  cltStep_pairForm_evalOf _ _ _ _ M b
+
 end RBM.Gauss.Step5Inst
 
 namespace RBM.Evol
@@ -1585,6 +1810,10 @@ namespace RBM.Evol
 #print axioms cltStep_scale_le
 #print axioms cltStep
 #print axioms RBM.Gauss.Sizes.stCltIso_holds
+#print axioms RBM.BA.stCltIsogL_holds
+#print axioms cltStepOf
+#print axioms cltStep_pairForm_evalOf
+#print axioms cltStep_loopForm_evalOf
 #print axioms RBM.Gauss.Step5Inst.cltStep_zdistInf_yCL
 #print axioms RBM.Gauss.Step5Inst.cltStep_szCL_witness
 #print axioms RBM.Gauss.Step5Inst.cltStep_szCL_coef

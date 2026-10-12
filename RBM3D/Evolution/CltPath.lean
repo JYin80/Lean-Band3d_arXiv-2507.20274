@@ -64,6 +64,16 @@ def cltEvalAt (F : LocalForm d L W k K) (E u : ℝ) (ω : Ω d L W) (b : Fin k �
 def cltYo (F : LocalForm d L W 1 K) (E u : ℝ) (ω : Ω d L W) (b : Zd d L) : ℂ :=
   cltY F E u (Hflow d L W u ω) b
 
+/-- `Y_b(ω)` at the matrix `H₀ + H_u(ω)` and the spectral value `m` (T2455; band: `H₀ = 0`, `m = mE E`). -/
+def cltEvalAtOf (F : LocalForm d L W k K) (m : ℂ) (E u : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (ω : Ω d L W) (b : Fin k → Zd d L) : ℂ :=
+  F.evalOf m E u (H₀ + Hflow d L W u ω) b
+
+/-- `Y_b(ω)` at `H₀ + H_u(ω)` and `m`, one label. -/
+def cltYoOf (F : LocalForm d L W 1 K) (m : ℂ) (E u : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (ω : Ω d L W) (b : Zd d L) : ℂ :=
+  cltYOf F m E u (H₀ + Hflow d L W u ω) b
+
 /-- The coefficient weight `Σ_{j,q} |coef(b,j,q)| · j · 4^j` of the first-order bound
 `CltDerivEvalMulti` at `g = 4`, `k` labels. -/
 def cltCoefSumMulti (F : LocalForm d L W k K) (b : Fin k → Zd d L) : ℝ :=
@@ -84,6 +94,13 @@ def cltGoodAt (d L W : ℕ) [NeZero L] [NeZero W] (E u θ D' : ℝ) (ω : Ω d L
   (∀ σ x y, ‖gEntry d L W E u (Hflow d L W u ω) σ x y‖ ≤ 2) ∧
     ∀ σ x y, θ ≤ (zdistInf d L ((split d L W x).1 - (split d L W y).1) : ℝ) →
       ‖gEntry d L W E u (Hflow d L W u ω) σ x y‖ ≤ (W : ℝ) ^ (-D')
+
+/-- The deterministic good set at `H₀ + H_u(ω)` and the spectral value `m` (T2455; band: `H₀ = 0`, `m = mE E`). -/
+def cltGoodAtOf (d L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u θ D' : ℝ)
+    (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ) (ω : Ω d L W) : Prop :=
+  (∀ σ x y, ‖gEntryOf d L W m E u (H₀ + Hflow d L W u ω) σ x y‖ ≤ 2) ∧
+    ∀ σ x y, θ ≤ (zdistInf d L ((split d L W x).1 - (split d L W y).1) : ℝ) →
+      ‖gEntryOf d L W m E u (H₀ + Hflow d L W u ω) σ x y‖ ≤ (W : ℝ) ^ (-D')
 
 /-- **Pin P1**, `k` labels (the pointwise path bound; deterministic; `clt-ibp-decay`,
 `clt-ibp-bound1` / `clt-ibp-bound3` at first order, with the perturbation bounds `clt-gij-bound`,
@@ -118,6 +135,31 @@ def CltPathBound (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
     ‖cltYo F E u (Function.update ω₀ c s) b - cltYo F E u ω₀ b‖ ≤
       |s - ω₀ c| * 4 * cltCoefSum F b * (W : ℝ) ^ (-D')
 
+/-- **P1** at `H₀ + H_u(ω)` and the spectral value `m`, `k` labels: `H₀` is a deterministic Hermitian matrix
+(the new premise); `cltCoefSumMulti` is spectrum-free. -/
+def CltPathBoundMultiOf (d L W k : ℕ) [NeZero L] [NeZero W] : Prop :=
+  ∀ (K : ℕ) (F : LocalForm d L W k K) (m : ℂ) (E u ρ R θ D' : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (b : Fin k → Zd d L) (c : CoordF d L W) (ω₀ : Ω d L W) (s : ℝ),
+    H₀.IsHermitian → 0 ≤ u → u < 1 → (ztOf m E u).im ≠ 0 → F.Local ρ → 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 →
+    zdistInf d L ((split d L W c.1).1 - (split d L W c.2.1).1) ≤ 1 →
+    (∀ m', R / 2 ≤ (zdistInf d L ((split d L W c.1).1 - b m') : ℝ)) → θ ≤ R / 2 - ρ - 1 →
+    cltGoodAtOf d L W m E u θ D' H₀ ω₀ →
+    |s - ω₀ c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) →
+    ‖cltEvalAtOf F m E u H₀ (Function.update ω₀ c s) b - cltEvalAtOf F m E u H₀ ω₀ b‖ ≤
+      |s - ω₀ c| * 4 * cltCoefSumMulti F b * (W : ℝ) ^ (-D')
+
+/-- **P1** at `H₀ + H_u(ω)` and the spectral value `m`, one label. -/
+def CltPathBoundOf (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
+  ∀ (K : ℕ) (F : LocalForm d L W 1 K) (m : ℂ) (E u ρ R θ D' : ℝ) (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (b : Zd d L) (c : CoordF d L W) (ω₀ : Ω d L W) (s : ℝ),
+    H₀.IsHermitian → 0 ≤ u → u < 1 → (ztOf m E u).im ≠ 0 → F.Local ρ → 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1 →
+    zdistInf d L ((split d L W c.1).1 - (split d L W c.2.1).1) ≤ 1 →
+    R / 2 ≤ (zdistInf d L ((split d L W c.1).1 - b) : ℝ) → θ ≤ R / 2 - ρ - 1 →
+    cltGoodAtOf d L W m E u θ D' H₀ ω₀ →
+    |s - ω₀ c| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ)) →
+    ‖cltYoOf F m E u H₀ (Function.update ω₀ c s) b - cltYoOf F m E u H₀ ω₀ b‖ ≤
+      |s - ω₀ c| * 4 * cltCoefSum F b * (W : ℝ) ^ (-D')
+
 /-! ## 2. Private helpers -/
 
 section Helpers
@@ -146,24 +188,24 @@ private theorem cltpath_coordDir {u : ℝ} (hu1 : u ≤ 1) (c : CoordF d L W) :
   · refine hc.2.1 a b fun h0 => hab ?_
     rw [Matrix.smul_apply, smul_eq_mul, h0, mul_zero]
 
-/-- The spectral parameter of the `σ`-resolvent in `gEntry`. -/
-private def cltpath_zs (E u : ℝ) (σ : Bool) : ℂ :=
-  if σ then zt E u else (starRingEnd ℂ) (zt E u)
+/-- The spectral parameter of the `σ`-resolvent in `gEntryOf`. -/
+private def cltpath_zs (m : ℂ) (E u : ℝ) (σ : Bool) : ℂ :=
+  if σ then ztOf m E u else (starRingEnd ℂ) (ztOf m E u)
 
-private theorem cltpath_zs_im {E u : ℝ} (hz : (zt E u).im ≠ 0) (σ : Bool) :
-    (cltpath_zs E u σ).im ≠ 0 := by
+private theorem cltpath_zs_im {m : ℂ} {E u : ℝ} (hz : (ztOf m E u).im ≠ 0) (σ : Bool) :
+    (cltpath_zs m E u σ).im ≠ 0 := by
   cases σ <;> simpa [cltpath_zs] using hz
 
-private theorem cltpath_gEntry (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
-    (x y : Idx d L W) : gEntry d L W E u M σ x y = green M (cltpath_zs E u σ) x y := by
-  simp only [gEntry, Gres, green, cltpath_zs, Matrix.nonsing_inv_eq_ringInverse]
+private theorem cltpath_gEntry (m : ℂ) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
+    (x y : Idx d L W) : gEntryOf d L W m E u M σ x y = green M (cltpath_zs m E u σ) x y := by
+  simp only [gEntryOf, Gres, green, cltpath_zs, Matrix.nonsing_inv_eq_ringInverse]
 
 open scoped Matrix.Norms.L2Operator in
 /-- Every entry of the `σ`-resolvent of a Hermitian matrix is at most `η⁻¹` when `η ≤ |Im z|`. -/
-private theorem cltpath_gEntry_le (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+private theorem cltpath_gEntry_le (m : ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
     (hH : M.IsHermitian) (σ : Bool) (x y : Idx d L W) {η : ℝ} (hη : 0 < η)
-    (hz : η ≤ |(zt E s).im|) : ‖gEntry d L W E s M σ x y‖ ≤ η⁻¹ :=
-  (norm_matrix_entry_le_opNorm (Gres M (zt E s) σ) x y).trans
+    (hz : η ≤ |(ztOf m E s).im|) : ‖gEntryOf d L W m E s M σ x y‖ ≤ η⁻¹ :=
+  (norm_matrix_entry_le_opNorm (Gres M (ztOf m E s) σ) x y).trans
     (norm_Gsig_le_inv_eta hH hη hz σ)
 
 private theorem cltpath_zdistInf_neg (x : Zd d L) : zdistInf d L (-x) = zdistInf d L x := by
@@ -196,34 +238,35 @@ private theorem cltpath_mvt (h : ℝ → ℂ) (R C v : ℝ)
 
 /-- One point of the path: at `t` with `|t| ≤ 2 W^{-1/2}` the local form along the line
 `M₀ + s A` has a derivative of norm at most `4 W^{-D'} cltCoefSumMulti F b`. -/
-private theorem cltpath_deriv (K : ℕ) {k : ℕ} (F : LocalForm d L W k K) (E u ρ R θ D' : ℝ)
+private theorem cltpath_deriv (K : ℕ) {k : ℕ} (F : LocalForm d L W k K) (mc : ℂ) (E u ρ R θ D' : ℝ)
+    (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ) (hH₀ : H₀.IsHermitian)
     (b : Fin k → Zd d L) (c : CoordF d L W) (ω₀ : Ω d L W) (hu1 : u < 1)
-    (hz : (zt E u).im ≠ 0) (hloc : F.Local ρ) (hθ : 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1)
+    (hz : (ztOf mc E u).im ≠ 0) (hloc : F.Local ρ) (hθ : 16 * (W : ℝ) ^ (-(1 / 2 : ℝ)) ≤ 1)
     (hadj : zdistInf d L ((split d L W c.1).1 - (split d L W c.2.1).1) ≤ 1)
     (hfar : ∀ m, R / 2 ≤ (zdistInf d L ((split d L W c.1).1 - b m) : ℝ)) (hθR : θ ≤ R / 2 - ρ - 1)
-    (hgood : cltGoodAt d L W E u θ D' ω₀)
+    (hgood : cltGoodAtOf d L W mc E u θ D' H₀ ω₀)
     (t : ℝ) (ht : |t| ≤ 2 * (W : ℝ) ^ (-(1 / 2 : ℝ))) :
-    ∃ D : ℂ, HasDerivAt (fun s : ℝ => F.eval E u (Hflow d L W u ω₀ +
+    ∃ D : ℂ, HasDerivAt (fun s : ℝ => F.evalOf mc E u (H₀ + Hflow d L W u ω₀ +
         (s : ℂ) • ((Real.sqrt u : ℂ) • coordinateMatrix d L W c)) b) D t ∧
       ‖D‖ ≤ 4 * (W : ℝ) ^ (-D') * cltCoefSumMulti F b := by
   set A : Matrix (Idx d L W) (Idx d L W) ℂ := (Real.sqrt u : ℂ) • coordinateMatrix d L W c with hA
-  set M₀ : Matrix (Idx d L W) (Idx d L W) ℂ := Hflow d L W u ω₀ with hM₀
+  set M₀ : Matrix (Idx d L W) (Idx d L W) ℂ := H₀ + Hflow d L W u ω₀ with hM₀
   set γ : ℝ := (W : ℝ) ^ (-D') with hγdef
   have hγ0 : 0 ≤ γ := Real.rpow_nonneg (Nat.cast_nonneg _) _
-  have hherm : M₀.IsHermitian := Hflow_isHermitian d L W u ω₀
+  have hherm : M₀.IsHermitian := hH₀.add (Hflow_isHermitian d L W u ω₀)
   have hdir : cltCoordDir A c.1 c.2.1 := cltpath_coordDir hu1.le c
   have h8 : 8 * |t| ≤ 1 := by linarith
-  have hzσ : ∀ σ, (cltpath_zs E u σ).im ≠ 0 := cltpath_zs_im hz
-  have hG0 : ∀ σ x y, ‖green M₀ (cltpath_zs E u σ) x y‖ ≤ 2 := fun σ x y => by
+  have hzσ : ∀ σ, (cltpath_zs mc E u σ).im ≠ 0 := cltpath_zs_im hz
+  have hG0 : ∀ σ x y, ‖green M₀ (cltpath_zs mc E u σ) x y‖ ≤ 2 := fun σ x y => by
     rw [← cltpath_gEntry]; exact hgood.1 σ x y
-  have hGt : ∀ σ x y, ‖green (M₀ + (t : ℂ) • A) (cltpath_zs E u σ) x y‖ ≤ 4 := fun σ x y => by
-    have h := cltPert_max_le (Idx d L W) M₀ A c.1 c.2.1 (cltpath_zs E u σ) t 2 hherm hdir (hzσ σ)
+  have hGt : ∀ σ x y, ‖green (M₀ + (t : ℂ) • A) (cltpath_zs mc E u σ) x y‖ ≤ 4 := fun σ x y => by
+    have h := cltPert_max_le (Idx d L W) M₀ A c.1 c.2.1 (cltpath_zs mc E u σ) t 2 hherm hdir (hzσ σ)
       (hG0 σ) (by linarith) x y
     linarith
   have hnear : ∀ (j : Fin (K + 1)) (q : Fin j → Idx d L W × Idx d L W × Bool),
       F.coef b j q ≠ 0 → ∀ (i : Fin j) (σ : Bool),
-        ‖gEntry d L W E u (M₀ + (t : ℂ) • A) σ (q i).1 c.1‖ ≤ 2 * γ ∧
-          ‖gEntry d L W E u (M₀ + (t : ℂ) • A) σ (q i).1 c.2.1‖ ≤ 2 * γ := by
+        ‖gEntryOf d L W mc E u (M₀ + (t : ℂ) • A) σ (q i).1 c.1‖ ≤ 2 * γ ∧
+          ‖gEntryOf d L W mc E u (M₀ + (t : ℂ) • A) σ (q i).1 c.2.1‖ ≤ 2 * γ := by
     intro j q hq i σ
     obtain ⟨m, hm⟩ := hloc b j q hq i
     have hm' : (zdistInf d L ((split d L W (q i).1).1 - b m) : ℝ) < ρ := by
@@ -241,26 +284,26 @@ private theorem cltpath_deriv (K : ℕ) {k : ℕ} (F : LocalForm d L W k K) (E u
     have ha := hgood.2 σ (q i).1 c.1 (hθR.trans h1)
     have hb := hgood.2 σ (q i).1 c.2.1 (hθR.trans h2)
     rw [cltpath_gEntry] at ha hb
-    have hmax : max ‖green M₀ (cltpath_zs E u σ) (q i).1 c.1‖
-        ‖green M₀ (cltpath_zs E u σ) (q i).1 c.2.1‖ ≤ γ := max_le ha hb
-    have hsub := (cltPert_sub_le (Idx d L W) M₀ A c.1 c.2.1 (cltpath_zs E u σ) t 4 hherm hdir
+    have hmax : max ‖green M₀ (cltpath_zs mc E u σ) (q i).1 c.1‖
+        ‖green M₀ (cltpath_zs mc E u σ) (q i).1 c.2.1‖ ≤ γ := max_le ha hb
+    have hsub := (cltPert_sub_le (Idx d L W) M₀ A c.1 c.2.1 (cltpath_zs mc E u σ) t 4 hherm hdir
       (hzσ σ) (hGt σ) (q i).1)
-    have key : ∀ y, ‖green (M₀ + (t : ℂ) • A) (cltpath_zs E u σ) (q i).1 y -
-        green M₀ (cltpath_zs E u σ) (q i).1 y‖ ≤ γ ∧ ‖green M₀ (cltpath_zs E u σ) (q i).1 y‖ ≤ γ →
-        ‖green (M₀ + (t : ℂ) • A) (cltpath_zs E u σ) (q i).1 y‖ ≤ 2 * γ := fun y hy => by
-      have := norm_sub_norm_le (green (M₀ + (t : ℂ) • A) (cltpath_zs E u σ) (q i).1 y)
-        (green M₀ (cltpath_zs E u σ) (q i).1 y)
+    have key : ∀ y, ‖green (M₀ + (t : ℂ) • A) (cltpath_zs mc E u σ) (q i).1 y -
+        green M₀ (cltpath_zs mc E u σ) (q i).1 y‖ ≤ γ ∧ ‖green M₀ (cltpath_zs mc E u σ) (q i).1 y‖ ≤ γ →
+        ‖green (M₀ + (t : ℂ) • A) (cltpath_zs mc E u σ) (q i).1 y‖ ≤ 2 * γ := fun y hy => by
+      have := norm_sub_norm_le (green (M₀ + (t : ℂ) • A) (cltpath_zs mc E u σ) (q i).1 y)
+        (green M₀ (cltpath_zs mc E u σ) (q i).1 y)
       linarith [hy.1, hy.2]
-    have hstep : ∀ y, ‖green (M₀ + (t : ℂ) • A) (cltpath_zs E u σ) (q i).1 y -
-        green M₀ (cltpath_zs E u σ) (q i).1 y‖ ≤ γ := fun y => by
-      calc _ ≤ 2 * |t| * 4 * max ‖green M₀ (cltpath_zs E u σ) (q i).1 c.1‖
-              ‖green M₀ (cltpath_zs E u σ) (q i).1 c.2.1‖ := (hsub y).1
+    have hstep : ∀ y, ‖green (M₀ + (t : ℂ) • A) (cltpath_zs mc E u σ) (q i).1 y -
+        green M₀ (cltpath_zs mc E u σ) (q i).1 y‖ ≤ γ := fun y => by
+      calc _ ≤ 2 * |t| * 4 * max ‖green M₀ (cltpath_zs mc E u σ) (q i).1 c.1‖
+              ‖green M₀ (cltpath_zs mc E u σ) (q i).1 c.2.1‖ := (hsub y).1
         _ ≤ 2 * |t| * 4 * γ := by gcongr
         _ ≤ γ := by nlinarith [mul_le_mul_of_nonneg_right h8 hγ0]
     refine ⟨?_, ?_⟩
     · rw [cltpath_gEntry]; exact key _ ⟨hstep _, ha⟩
     · rw [cltpath_gEntry]; exact key _ ⟨hstep _, hb⟩
-  obtain ⟨D, hD, hDb⟩ := cltDeriv_evalMulti_le d L W k K F E u M₀ A c.1 c.2.1 t 4 (2 * γ) b hherm
+  obtain ⟨D, hD, hDb⟩ := cltDeriv_evalMulti_leOf d L W k K F mc E u M₀ A c.1 c.2.1 t 4 (2 * γ) b hherm
     hdir hz (fun σ x y => by rw [cltpath_gEntry]; exact hGt σ x y) hnear
   refine ⟨D, hD, hDb.trans (le_of_eq ?_)⟩
   unfold cltCoefSumMulti
@@ -276,24 +319,45 @@ section Bound
 
 variable (d L W : ℕ) [NeZero L] [NeZero W]
 
-/-- **P1**, `k` labels (`CltPathBoundMulti`): the mean-value inequality along the segment that
-moves the coordinate `c` from `ω₀ c` to `s`. -/
-theorem cltPathMulti_bound (k : ℕ) : CltPathBoundMulti d L W k := by
-  intro K F E u ρ R θ D' b c ω₀ s hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs
-  set h : ℝ → ℂ := fun t => F.eval E u (Hflow d L W u ω₀ +
+/-- **P1**, `k` labels, at `H₀ + H_u(ω)` and the spectral value `m` (`CltPathBoundMultiOf`): the mean-value
+inequality along the segment that moves the coordinate `c` from `ω₀ c` to `s`. -/
+theorem cltPathMulti_boundOf (k : ℕ) : CltPathBoundMultiOf d L W k := by
+  intro K F m E u ρ R θ D' H₀ b c ω₀ s hH₀ hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs
+  set h : ℝ → ℂ := fun t => F.evalOf m E u (H₀ + Hflow d L W u ω₀ +
     (t : ℂ) • ((Real.sqrt u : ℂ) • coordinateMatrix d L W c)) b with hh
-  have hpath : ∀ x : ℝ, cltEvalAt F E u (Function.update ω₀ c x) b = h (x - ω₀ c) := by
+  have hpath : ∀ x : ℝ, cltEvalAtOf F m E u H₀ (Function.update ω₀ c x) b = h (x - ω₀ c) := by
     intro x
-    rw [cltEvalAt, cltpath_Hflow_update]
-  have h0 : cltEvalAt F E u ω₀ b = h 0 := by
+    rw [cltEvalAtOf, cltpath_Hflow_update, ← add_assoc]
+  have h0 : cltEvalAtOf F m E u H₀ ω₀ b = h 0 := by
     have := hpath (ω₀ c)
     rwa [Function.update_eq_self, sub_self] at this
   have hmvt := cltpath_mvt h (2 * (W : ℝ) ^ (-(1 / 2 : ℝ))) (4 * (W : ℝ) ^ (-D') * cltCoefSumMulti F b)
     (s - ω₀ c)
-    (fun t ht => cltpath_deriv K F E u ρ R θ D' b c ω₀ hu1 hz hloc hθ hadj hfar hθR hgood t ht) hs
+    (fun t ht => cltpath_deriv K F m E u ρ R θ D' H₀ hH₀ b c ω₀ hu1 hz hloc hθ hadj hfar hθR hgood t ht) hs
   rw [hpath s, h0]
   calc _ ≤ _ := hmvt
     _ = _ := by ring
+
+/-- **P1**, one label, at `H₀ + H_u(ω)` and `m`: the case `k = 1` of `cltPathMulti_boundOf`. -/
+theorem cltPath_boundOf : CltPathBoundOf d L W :=
+  fun K F m E u ρ R θ D' H₀ b c ω₀ s hH₀ hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs =>
+    cltPathMulti_boundOf d L W 1 K F m E u ρ R θ D' H₀ (fun _ => b) c ω₀ s hH₀ hu0 hu1 hz hloc hθ hadj
+      (fun _ => hfar) hθR hgood hs
+
+private theorem cltpath_evalAt_zero (d L W : ℕ) [NeZero L] [NeZero W] {k K : ℕ} (F : LocalForm d L W k K) (E u : ℝ) (ω : Ω d L W)
+    (b : Fin k → Zd d L) : cltEvalAtOf F (mE E) E u 0 ω b = cltEvalAt F E u ω b := by
+  unfold cltEvalAtOf cltEvalAt; rw [zero_add]; rfl
+
+private theorem cltpath_good_zero (d L W : ℕ) [NeZero L] [NeZero W] (E u θ D' : ℝ) (ω : Ω d L W) :
+    cltGoodAtOf d L W (mE E) E u θ D' 0 ω ↔ cltGoodAt d L W E u θ D' ω := by
+  unfold cltGoodAtOf cltGoodAt; rw [zero_add]; rfl
+
+/-- **P1**, `k` labels (`CltPathBoundMulti`): the case `H₀ = 0`, `m = mE E` of `cltPathMulti_boundOf`. -/
+theorem cltPathMulti_bound (k : ℕ) : CltPathBoundMulti d L W k :=
+  fun K F E u ρ R θ D' b c ω₀ s hu0 hu1 hz hloc hθ hadj hfar hθR hgood hs => by
+    have h := cltPathMulti_boundOf d L W k K F (mE E) E u ρ R θ D' 0 b c ω₀ s Matrix.isHermitian_zero hu0
+      hu1 hz hloc hθ hadj hfar hθR ((cltpath_good_zero d L W E u θ D' ω₀).2 hgood) hs
+    rwa [cltpath_evalAt_zero d L W, cltpath_evalAt_zero d L W] at h
 
 /-- **P1**, one label (`CltPathBound`): the case `k = 1` of `cltPathMulti_bound`. -/
 theorem cltPath_bound : CltPathBound d L W :=
@@ -332,26 +396,32 @@ private theorem cltpath_Hflow_zero (d L W : ℕ) [NeZero L] [NeZero W] (u : ℝ)
   ext i j
   simp [Hflow, Xmat, Xentry]
 
-/-- The `σ`-resolvent of the zero matrix is diagonal. -/
-private theorem cltpath_gEntry_zero {d L W : ℕ} [NeZero L] [NeZero W] (E u : ℝ)
-    (hz : (zt E u).im ≠ 0) (σ : Bool) {x y : Idx d L W} (hxy : x ≠ y) :
-    gEntry d L W E u 0 σ x y = 0 := by
-  have hz' : (if σ then zt E u else (starRingEnd ℂ) (zt E u)) ≠ 0 := by
+/-- The `σ`-resolvent of a scalar matrix `r • 1` is diagonal. -/
+private theorem cltpath_gEntry_diag {d L W : ℕ} [NeZero L] [NeZero W] (m : ℂ) (r : ℝ) (E u : ℝ)
+    (hz : (ztOf m E u).im ≠ 0) (σ : Bool) {x y : Idx d L W} (hxy : x ≠ y) :
+    gEntryOf d L W m E u ((r : ℂ) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)) σ x y = 0 := by
+  set zσ : ℂ := if σ then ztOf m E u else (starRingEnd ℂ) (ztOf m E u) with hzσ
+  have hne : (r : ℂ) - zσ ≠ 0 := by
     intro h
-    cases σ <;> simp at h <;> simp [h] at hz
-  have h1 : (0 : Matrix (Idx d L W) (Idx d L W) ℂ) - (if σ then zt E u else (starRingEnd ℂ) (zt E u)) •
-      (1 : Matrix (Idx d L W) (Idx d L W) ℂ) =
-      (-(if σ then zt E u else (starRingEnd ℂ) (zt E u))) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ) := by
-    rw [zero_sub, neg_smul]
-  have h2 : ((-(if σ then zt E u else (starRingEnd ℂ) (zt E u))) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹
-      = (-(if σ then zt E u else (starRingEnd ℂ) (zt E u)))⁻¹ • (1 : Matrix (Idx d L W) (Idx d L W) ℂ) := by
+    have := congrArg Complex.im h
+    cases σ <;> simp [hzσ] at this <;> simp_all
+  have h1 : ((r : ℂ) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ) - zσ • 1) = ((r : ℂ) - zσ) • 1 := by
+    rw [sub_smul]
+  have h2 : (((r : ℂ) - zσ) • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ =
+      ((r : ℂ) - zσ)⁻¹ • (1 : Matrix (Idx d L W) (Idx d L W) ℂ) := by
     apply Matrix.inv_eq_right_inv
-    rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, smul_smul, mul_inv_cancel₀ (neg_ne_zero.2 hz'),
-      one_smul]
-  unfold gEntry Gres
+    rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, smul_smul, mul_inv_cancel₀ hne, one_smul]
+  unfold gEntryOf Gres
   rw [← Matrix.nonsing_inv_eq_ringInverse, h1, h2]
   simp [Matrix.one_apply_ne hxy]
 
+/-- The `σ`-resolvent of the zero matrix is diagonal (`r = 0`). -/
+private theorem cltpath_gEntry_zero {d L W : ℕ} [NeZero L] [NeZero W] (E u : ℝ)
+    (hz : (zt E u).im ≠ 0) (σ : Bool) {x y : Idx d L W} (hxy : x ≠ y) :
+    gEntry d L W E u 0 σ x y = 0 := by
+  have h := cltpath_gEntry_diag (d := d) (L := L) (W := W) (mE E) 0 E u hz σ hxy
+  rw [Complex.ofReal_zero, zero_smul] at h
+  exact h
 
 private theorem cltpath_chk_z_ne : (zt 0 (1 / 2)).im ≠ 0 := by
   rw [zt_im, mE_im, show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
@@ -463,10 +533,10 @@ private theorem cpx_far : (70000 : ℝ) ≤
 private theorem cltpath_chk_good (θ D' : ℝ) (hθ : 0 < θ) :
     cltGoodAt 3 (szCL.L 0) (szCL.W 0) 0 (1 / 2) θ D' 0 := by
   refine ⟨fun σ x y => ?_, fun σ x y hxy => ?_⟩
-  · have h := cltpath_gEntry_le (d := 3) (L := szCL.L 0) (W := szCL.W 0) 0 (1 / 2)
+  · have h := cltpath_gEntry_le (d := 3) (L := szCL.L 0) (W := szCL.W 0) (mE 0) 0 (1 / 2)
       (Hflow 3 (szCL.L 0) (szCL.W 0) (1 / 2) 0) (Hflow_isHermitian _ _ _ _ _) σ x y (η := 1 / 2)
       (by norm_num)
-      (by rw [zt_im, mE_im, show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num),
+      (by show (1 / 2 : ℝ) ≤ |(zt 0 (1 / 2)).im|; rw [zt_im, mE_im, show (4 : ℝ) - 0 ^ 2 = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num),
         abs_of_pos (by norm_num)]; norm_num)
     rwa [show ((1 / 2 : ℝ))⁻¹ = 2 by norm_num] at h
   · have hne : x ≠ y := by
@@ -528,6 +598,89 @@ private theorem cltpath_chk_szCL_multi :
       unfold cpS at *
       linarith)
 
+/-! ### The generic endpoint at a non-semicircle value `m = 1/2 + i` and `H₀ = (1/3) 1` (same lattice data) -/
+
+private noncomputable def cpm : ℂ := ⟨1 / 2, 1⟩
+
+private theorem cpm_im : (ztOf cpm 0 (1 / 2)).im = 1 / 2 := by
+  rw [ztOf_im, etaOf]; simp [cpm]; norm_num
+
+private theorem cpm_ne : (ztOf cpm 0 (1 / 2)).im ≠ 0 := by rw [cpm_im]; norm_num
+
+/-- `H₀ = (1/3) 1`: Hermitian, nonzero. -/
+private noncomputable def cpH : Matrix (Idx 3 (szCL.L 0) (szCL.W 0)) (Idx 3 (szCL.L 0) (szCL.W 0)) ℂ :=
+  (((1 / 3 : ℝ)) : ℂ) • 1
+
+private theorem cpH_herm : cpH.IsHermitian := by
+  unfold cpH
+  change Matrix.conjTranspose _ = _
+  rw [Matrix.conjTranspose_smul, Matrix.conjTranspose_one, Complex.star_def, Complex.conj_ofReal]
+
+private theorem cltpath_chk_goodOf (θ D' : ℝ) (hθ : 0 < θ) :
+    cltGoodAtOf 3 (szCL.L 0) (szCL.W 0) cpm 0 (1 / 2) θ D' cpH 0 := by
+  have hsum : cpH + Hflow 3 (szCL.L 0) (szCL.W 0) (1 / 2) 0 = cpH := by
+    rw [cltpath_Hflow_zero, add_zero]
+  refine ⟨fun σ x y => ?_, fun σ x y hxy => ?_⟩
+  · have h := cltpath_gEntry_le (d := 3) (L := szCL.L 0) (W := szCL.W 0) cpm 0 (1 / 2)
+      (cpH + Hflow 3 (szCL.L 0) (szCL.W 0) (1 / 2) 0) (cpH_herm.add (Hflow_isHermitian _ _ _ _ _)) σ x y
+      (η := 1 / 2) (by norm_num) (by rw [cpm_im, abs_of_pos (by norm_num)])
+    rwa [show ((1 / 2 : ℝ))⁻¹ = 2 by norm_num] at h
+  · have hne : x ≠ y := by
+      intro h
+      subst h
+      rw [sub_self, cltpath_zdistInf_zero] at hxy
+      norm_num at hxy
+      linarith
+    rw [hsum]
+    change ‖gEntryOf 3 (szCL.L 0) (szCL.W 0) cpm 0 (1 / 2) (((1 / 3 : ℝ) : ℂ) • 1) σ x y‖ ≤ _
+    rw [cltpath_gEntry_diag cpm (1 / 3) 0 (1 / 2) cpm_ne σ hne, norm_zero]
+    exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+
+/-- **Instance of `cltPath_boundOf`** at `szCL`, `n = 0`, `d = 3`, `m = 1/2 + i` (`‖m‖ ≠ 1`), `H₀ = (1/3) 1`,
+`E = 0`, `u = 1/2`, `ω₀ = 0`, `ρ = w`, `R = 10 w`, `θ = R/2 - ρ - 1`, `D' = 1`, one label, the step `s = W^{-1/2}`. -/
+private theorem cltpath_chk_szCLOf :
+    ‖cltYoOf (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
+        cpm 0 (1 / 2) cpH (Function.update 0 cpc cpS) 0 -
+      cltYoOf (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
+        cpm 0 (1 / 2) cpH 0 0‖ ≤
+    |cpS - (0 : Ω 3 (szCL.L 0) (szCL.W 0)) cpc| * 4 *
+      cltCoefSum (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0)))
+        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) 0 * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 : ℝ)) :=
+  cltPath_boundOf 3 (szCL.L 0) (szCL.W 0) 1
+    (cltpath_chkForm 1 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
+    cpm 0 (1 / 2) cpw (10 * cpw) (10 * cpw / 2 - cpw - 1) 1 cpH 0 cpc 0 cpS cpH_herm (by norm_num)
+    (by norm_num) cpm_ne (cltpath_chk_local 1 0 (by linarith [cpw_ge])) cltpath_chk_step
+    (by simp only [cpc, sub_self, cltpath_zdistInf_zero]; norm_num)
+    (le_trans (by have := cpw_le; norm_num at this ⊢; linarith) cpx_far)
+    le_rfl (cltpath_chk_goodOf _ _ (by linarith [cpw_ge]))
+    (by
+      rw [Pi.zero_apply, sub_zero, abs_of_pos cpS_pos]
+      have := cpS_pos
+      unfold cpS at *
+      linarith)
+
+/-- The same with two labels, through `cltPathMulti_boundOf`. -/
+private theorem cltpath_chk_szCLOf_multi :
+    ‖cltEvalAtOf (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
+        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) cpm 0 (1 / 2) cpH (Function.update 0 cpc cpS) (fun _ => 0) -
+      cltEvalAtOf (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
+        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) cpm 0 (1 / 2) cpH 0 (fun _ => 0)‖ ≤
+    |cpS - (0 : Ω 3 (szCL.L 0) (szCL.W 0)) cpc| * 4 *
+      cltCoefSumMulti (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0)))
+        (0 : Idx 3 (szCL.L 0) (szCL.W 0))) (fun _ => 0) * (((szCL.W 0 : ℕ) : ℝ)) ^ (-(1 : ℝ)) :=
+  cltPathMulti_boundOf 3 (szCL.L 0) (szCL.W 0) 2 1
+    (cltpath_chkForm 2 (fun _ => (0 : Zd 3 (szCL.L 0))) (0 : Idx 3 (szCL.L 0) (szCL.W 0)))
+    cpm 0 (1 / 2) cpw (10 * cpw) (10 * cpw / 2 - cpw - 1) 1 cpH (fun _ => 0) cpc 0 cpS cpH_herm
+    (by norm_num) (by norm_num) cpm_ne (cltpath_chk_local 2 0 (by linarith [cpw_ge]))
+    cltpath_chk_step (by simp only [cpc, sub_self, cltpath_zdistInf_zero]; norm_num)
+    (fun _ => le_trans (by have := cpw_le; norm_num at this ⊢; linarith) cpx_far) le_rfl
+    (cltpath_chk_goodOf _ _ (by linarith [cpw_ge]))
+    (by
+      rw [Pi.zero_apply, sub_zero, abs_of_pos cpS_pos]
+      have := cpS_pos
+      unfold cpS at *
+      linarith)
+
 /-- Nondegeneracy of the instance: the step is positive, the coefficient weight is `≥ 4`, and the
 far threshold `θ = R/2 - ρ - 1 = 4 w - 1` of `cltFarGeomNear` is at least `c w` for `c ∈ {1, 3}`
 (`w = (log W)^3 ℓ_s`, the threshold `c (log W)^3 ℓ_s` of `STFarEntryAtLog`). -/
@@ -544,6 +697,10 @@ end Checks
 
 #print axioms cltPathMulti_bound
 #print axioms cltPath_bound
+#print axioms cltPathMulti_boundOf
+#print axioms cltPath_boundOf
+#print axioms cltpath_chk_szCLOf
+#print axioms cltpath_chk_szCLOf_multi
 #print axioms cltpath_chk_szCL
 #print axioms cltpath_chk_szCL_multi
 #print axioms cltpath_chk_nondeg

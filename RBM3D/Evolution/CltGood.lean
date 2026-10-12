@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jun Yin
 -/
 import RBM3D.Evolution.FarEntry
+import RBM3D.Chain.CltGen
 import RBM3D.Evolution.CltPath
 import Mathlib.Probability.Moments.SubGaussian
 import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
@@ -332,16 +333,14 @@ end CoordTail
 
 section Gmax
 
-/-- `STWB ≤ 2 N^{-a}` with `a = min(2𝔠𝔡, ε/2)`, eventually, uniformly in `K` and in `u ≤ t_n`:
+/-- `STWB ≤ 2 N^{-a}` with `a = min(2𝔠𝔡, δ)`, eventually, uniformly in `K` and in `u ≤ t_n` (generic in the range exponent `δ`):
 `W^{-d} B_{u,K} ≤ (ilambda² W^d)⁻¹ + (N (1-u))⁻¹`, `(ilambda² W^d)⁻¹ ≤ W^{-2𝔡} ≤ N^{-2𝔠𝔡}`
 (`(eq:WO)`, `W ≥ N^𝔠`), `(N (1-u))⁻¹ ≤ N^{-ε/2}` (`RangeCond`). -/
-private theorem cltGood_STWB_le {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
-    (hκ : 0 < κ) (hε : 0 < ε) (hflow : STFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
-    (ht : ∀ n, t n ≤ lemT (z n)) :
+private theorem cltGood_STWB_leOf {d : ℕ} (sz : Sizes d) {𝔠 𝔡 δ : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
+    (_hδ : 0 < δ) {t : ℕ → ℝ} (ht1 : ∀ n, t n < 1) (hRC : sz.RangeCond δ t) :
     ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, u ≤ t n → ∀ K : ℕ,
-      STWB sz n u K ≤ 2 * (((sz.size n : ℕ) : ℝ) ^ min (2 * 𝔠 * 𝔡) (ε / 2))⁻¹ := by
-  obtain ⟨⟨h𝔠, h𝔡, hN, hBW, hWO⟩, -, ht1, hRC⟩ :=
-    RBM.Green.v3_premises_of_stFlow sz hκ hε hflow ht
+      STWB sz n u K ≤ 2 * (((sz.size n : ℕ) : ℝ) ^ min (2 * 𝔠 * 𝔡) δ)⁻¹ := by
+  obtain ⟨h𝔠, h𝔡, hN, hBW, hWO⟩ := id hadm
   filter_upwards [hBW, hWO, hRC] with n hBn hWOn hRn u hu K
   have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
   have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
@@ -376,9 +375,9 @@ private theorem cltGood_STWB_le {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ}
       _ = (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)⁻¹ +
             (((sz.size n : ℕ) : ℝ) * (1 - u))⁻¹ := by
           rw [hNe]; field_simp
-  set a : ℝ := min (2 * 𝔠 * 𝔡) (ε / 2) with ha
+  set a : ℝ := min (2 * 𝔠 * 𝔡) δ with ha
   have ha1 : a ≤ 2 * 𝔠 * 𝔡 := min_le_left _ _
-  have ha2 : a ≤ ε / 2 := min_le_right _ _
+  have ha2 : a ≤ δ := min_le_right _ _
   have hNa : 0 < ((sz.size n : ℕ) : ℝ) ^ a := Real.rpow_pos_of_pos hNpos _
   -- first term
   have h1 : (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (((sz.size n : ℕ) : ℝ) ^ a)⁻¹ := by
@@ -394,20 +393,29 @@ private theorem cltGood_STWB_le {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ}
   -- second term
   have h2 : (((sz.size n : ℕ) : ℝ) * (1 - u))⁻¹ ≤ (((sz.size n : ℕ) : ℝ) ^ a)⁻¹ := by
     apply inv_anti₀ hNa
-    have e1 : ((sz.size n : ℕ) : ℝ) ^ a ≤ ((sz.size n : ℕ) : ℝ) ^ (ε / 2) :=
+    have e1 : ((sz.size n : ℕ) : ℝ) ^ a ≤ ((sz.size n : ℕ) : ℝ) ^ δ :=
       Real.rpow_le_rpow_of_exponent_le hN1 ha2
-    have e2 : ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) =
-        ((sz.size n : ℕ) : ℝ) ^ (ε / 2) := by
-      calc ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2)
-          = ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) := by
+    have e2 : ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + δ) =
+        ((sz.size n : ℕ) : ℝ) ^ δ := by
+      calc ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + δ)
+          = ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + δ) := by
             rw [Real.rpow_one]
-        _ = ((sz.size n : ℕ) : ℝ) ^ (1 + (-1 + ε / 2)) := (Real.rpow_add hNpos _ _).symm
+        _ = ((sz.size n : ℕ) : ℝ) ^ (1 + (-1 + δ)) := (Real.rpow_add hNpos _ _).symm
         _ = _ := by congr 1; ring
-    have e3 : ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) ≤ 1 - u := by linarith
-    calc ((sz.size n : ℕ) : ℝ) ^ a ≤ ((sz.size n : ℕ) : ℝ) ^ (ε / 2) := e1
-      _ = ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) := e2.symm
+    have e3 : ((sz.size n : ℕ) : ℝ) ^ (-1 + δ) ≤ 1 - u := by linarith
+    calc ((sz.size n : ℕ) : ℝ) ^ a ≤ ((sz.size n : ℕ) : ℝ) ^ δ := e1
+      _ = ((sz.size n : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) ^ (-1 + δ) := e2.symm
       _ ≤ ((sz.size n : ℕ) : ℝ) * (1 - u) := mul_le_mul_of_nonneg_left e3 hNpos.le
   linarith
+
+/-- The band form of `cltGood_STWB_leOf` (`δ = ε/2` of `RangeCond`). -/
+private theorem cltGood_STWB_le {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
+    (hκ : 0 < κ) (hε : 0 < ε) (hflow : STFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
+    (ht : ∀ n, t n ≤ lemT (z n)) :
+    ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, u ≤ t n → ∀ K : ℕ,
+      STWB sz n u K ≤ 2 * (((sz.size n : ℕ) : ℝ) ^ min (2 * 𝔠 * 𝔡) (ε / 2))⁻¹ := by
+  obtain ⟨hadm, -, ht1, hRC⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow ht
+  exact cltGood_STWB_leOf sz hadm (half_pos hε) ht1 hRC
 
 /-- **Item 3.**  Under `HClt`, all entries of `G_τ(±)` are `≤ 2` outside an event of probability
 `≤ N^{-D}`, eventually. -/
@@ -612,6 +620,328 @@ theorem cltGood_whp {d : ℕ} (sz : Sizes d) : CltGoodWhp sz := by
 
 end Good
 
+/-! ## 7. The carrier forms (T2455, X1-C1)
+
+The items 3-5 over `C : FlowFM sz`: the law of the entries is `PF d L W (g' n)` (`g' = sz.lam` at the band, `0` at block
+Anderson), the matrix is `H₀ n + H_u(ω)` and the spectral value is `C.m n` (`gEntryOf`, `cltGoodAtOf`).  The premise block is
+`HCltOf` (`Chain/CltGen`) at the time `τ = s`; `M` enters through the Ward row (`|M_{xy}| ≤ 1`) in place of `norm_mE`.
+Item 2 (`CltCoordTail`) holds for every coupling and is unchanged. -/
+
+section Carrier
+
+variable {d : ℕ} {sz : Sizes d} (C : RBM.BA.FlowFM sz)
+  (H₀ : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (g' E : ℕ → ℝ)
+
+/-- The conclusion event of `CltGmaxWhpOf`: all entries of `G_τ(±)` at `H₀ n + H_τ(ω)` are `≤ 2` outside an event of probability
+`≤ N^{-D}` under `PF d L W (g' n)`. -/
+def CltGmaxConclOf (τ : ℕ → ℝ) (D : ℝ) : Prop :=
+  ∀ᶠ n : ℕ in atTop,
+    PF d (sz.L n) (sz.W n) (g' n) {ω | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+        2 < ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (τ n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (τ n) ω) σ x y‖} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
+
+/-- The conclusion event of `CltFarEntryWhpOf`: entries with `c (log W)^3 ℓ_τ ≤ |[x] - [y]|_∞` are `≤ W^{-D'}` outside an event of
+probability `≤ N^{-D}`. -/
+def CltFarEntryConclOf (τ : ℕ → ℝ) (c D' D : ℝ) : Prop :=
+  ∀ᶠ n : ℕ in atTop,
+    PF d (sz.L n) (sz.W n) (g' n) {ω | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+        c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (τ n) ≤
+            ((zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) x).1 -
+              (split d (sz.L n) (sz.W n) y).1) : ℕ) : ℝ) ∧
+          ((sz.W n : ℕ) : ℝ) ^ (-D') <
+            ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (τ n)
+              (H₀ n + Hflow d (sz.L n) (sz.W n) (τ n) ω) σ x y‖} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
+
+/-- The conclusion of `CltGoodWhpOf`: `cltGoodAtOf` at the far threshold `θ n` holds outside an event of probability `≤ N^{-D}`. -/
+def CltGoodConclOf (τ θ : ℕ → ℝ) (D' D : ℝ) : Prop :=
+  ∀ᶠ n : ℕ in atTop,
+    PF d (sz.L n) (sz.W n) (g' n)
+        {ω | ¬ cltGoodAtOf d (sz.L n) (sz.W n) (C.m n) (E n) (τ n) (θ n) D' (H₀ n) ω} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
+
+end Carrier
+
+/-- **Pin E2 over the carrier** (`(Gt_bound_flow)` at the section `s`): under `HCltOf`, all entries of `G_s(±)` are `≤ 2` outside an
+event of probability `≤ N^{-D}`, eventually. -/
+def CltGmaxWhpOf (d : ℕ) : Prop :=
+  ∀ (κ δ 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (C : RBM.BA.FlowFM sz) (μ : Measure sz.SeqΩ) (g' E : ℕ → ℝ)
+    (H₀ : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (s t : ℕ → ℝ),
+    RBM.BA.HCltOf C μ H₀ g' E κ δ 𝔠 𝔡 Cd s t → ∀ D : ℝ, 0 < D → CltGmaxConclOf C H₀ g' E s D
+
+/-- **Pin E3 over the carrier** (the log-scale far decay, `STFarEntryAtLoggL`). -/
+def CltFarEntryWhpOf (d : ℕ) : Prop :=
+  ∀ (κ δ 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (C : RBM.BA.FlowFM sz) (μ : Measure sz.SeqΩ) (g' E : ℕ → ℝ)
+    (H₀ : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (s t : ℕ → ℝ),
+    RBM.BA.HCltOf C μ H₀ g' E κ δ 𝔠 𝔡 Cd s t → ∀ c : ℝ, 0 < c → ∀ D' : ℝ, 0 < D' → ∀ D : ℝ, 0 < D →
+      CltFarEntryConclOf C H₀ g' E s c D' D
+
+/-- **The consumer's form over the carrier**: `cltGoodAtOf` holds with high probability at every far threshold
+`θ n ≥ c (log W)^3 ℓ_s`. -/
+def CltGoodWhpOf (d : ℕ) : Prop :=
+  ∀ (κ δ 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (C : RBM.BA.FlowFM sz) (μ : Measure sz.SeqΩ) (g' E : ℕ → ℝ)
+    (H₀ : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (s t : ℕ → ℝ),
+    RBM.BA.HCltOf C μ H₀ g' E κ δ 𝔠 𝔡 Cd s t → ∀ (c : ℝ) (θ : ℕ → ℝ), 0 < c →
+      (∀ n, c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤ θ n) →
+      ∀ D' : ℝ, 0 < D' → ∀ D : ℝ, 0 < D → CltGoodConclOf C H₀ g' E s θ D' D
+
+section CarrierHelpers
+
+/-- The entries of the resolvent of `H₀ + H_u(ω)` are measurable in `ω`. -/
+private theorem cltGood_gEntryOf_meas {d L W : ℕ} [NeZero L] [NeZero W] (m : ℂ) (E s u : ℝ)
+    (H₀ : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool) (x y : Idx d L W) :
+    Measurable fun ω : Ω d L W => gEntryOf d L W m E s (H₀ + Hflow d L W u ω) σ x y := by
+  have hH : Measurable fun ω : Ω d L W => H₀ + Hflow d L W u ω :=
+    Measurable.of_eval fun a => Measurable.of_eval fun b =>
+      measurable_const.add (measurable_Hflow d L W u a b)
+  exact (walk_measurable_Gres_apply (ztOf m E s) σ x y).comp hH
+
+/-- `G(-)_{xy} = conj G(+)_{yx}` for a Hermitian `M`, in norm. -/
+private theorem cltGood_norm_gEntryOf_false {d L W : ℕ} [NeZero L] [NeZero W] (m : ℂ) (E s : ℝ)
+    {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) (x y : Idx d L W) :
+    ‖gEntryOf d L W m E s M false x y‖ = ‖gEntryOf d L W m E s M true y x‖ := by
+  have h := cltGood_Gres_conjTranspose hM (ztOf m E s) true
+  have h2 : gEntryOf d L W m E s M false x y = star (gEntryOf d L W m E s M true y x) := by
+    have h3 := congrFun (congrFun h x) y
+    rw [Matrix.conjTranspose_apply] at h3
+    exact h3.symm
+  rw [h2, norm_star]
+
+/-- A bound on `G(+)` at every pair gives the same bound for both charges. -/
+private theorem cltGood_exists_trueOf {d L W : ℕ} [NeZero L] [NeZero W] (m : ℂ)
+    {M : Matrix (Idx d L W) (Idx d L W) ℂ} (E s : ℝ) (hM : M.IsHermitian) {r : ℝ}
+    (h : ∃ (σ : Bool) (x y : Idx d L W), r < ‖gEntryOf d L W m E s M σ x y‖) :
+    ∃ x y : Idx d L W, r < ‖gEntryOf d L W m E s M true x y‖ := by
+  obtain ⟨σ, x, y, hr⟩ := h
+  cases σ
+  · rw [cltGood_norm_gEntryOf_false m E s hM] at hr
+    exact ⟨y, x, hr⟩
+  · exact ⟨x, y, hr⟩
+
+end CarrierHelpers
+
+/-- **Item 3 over the carrier.**  Under `HCltOf`, all entries of `G_s(±)` are `≤ 2` outside an event of probability `≤ N^{-D}`,
+eventually: `STLocalEntryUgL` at the section `s`, `|M_{xy}| ≤ 1` from the Ward row, `STWB ≤ 2 N^{-a}`. -/
+theorem cltGmax_whpOf (d : ℕ) : CltGmaxWhpOf d := by
+  intro κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t h D hD
+  obtain ⟨hd, hκ, hκ1, hδ, hadm, hκm, hs, hst, ht1, hrange, hRep, hWard, hMf, hLoc, hDec, hGij, hK⟩ := h
+  obtain ⟨hμ, hHerm, hGL⟩ := hRep
+  subst hμ
+  obtain ⟨h𝔠, h𝔡, hN, hBW, hWO⟩ := id hadm
+  have hsize : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hN
+  set a : ℝ := min (2 * 𝔠 * 𝔡) δ with ha
+  have ha0 : 0 < a := lt_min (by positivity) hδ
+  have hLocS := StochDomAt.precomp_param hLoc
+    (fun n (p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) =>
+      ((⟨s n, le_rfl, (hst n).le⟩ : RBM.Path.TimeIcc s t n), p.1, p.2))
+  have hP := hLocS (a / 2) (by linarith) D hD
+  filter_upwards [hP, cltGood_STWB_leOf sz hadm hδ ht1 hrange,
+    hsize.eventually (eventually_le_rpow 2 (show 0 < a / 2 by linarith)),
+    hsize.eventually_ge_atTop 1] with n hn hW hq hN1
+  have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  set q : ℝ := N ^ (a / 2) with hqdef
+  have hq0 : 0 < q := Real.rpow_pos_of_pos hNpos _
+  have hqq : N ^ a = q * q := by
+    rw [hqdef, ← Real.rpow_add hNpos]; congr 1; ring
+  let T : Set (Ω d (sz.L n) (sz.W n)) := ⋃ p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n),
+    {ω | q * STWB sz n (s n) (zdistInf d (sz.L n) (STblk sz n p.1 - STblk sz n p.2)) <
+      ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true p.1 p.2 - C.M n p.1 p.2‖ ^ 2}
+  have hTmeas : MeasurableSet T := by
+    refine MeasurableSet.iUnion fun p => ?_
+    exact measurableSet_lt measurable_const
+      (((cltGood_gEntryOf_meas (C.m n) (E n) (s n) (s n) (H₀ n) true p.1 p.2).sub
+        measurable_const).norm.pow_const 2)
+  have hsub : {ω : Ω d (sz.L n) (sz.W n) | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+      2 < ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+        (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) σ x y‖} ⊆ T := by
+    intro ω hω
+    obtain ⟨x, y, hxy⟩ := cltGood_exists_trueOf (C.m n) (E n) (s n)
+      ((hHerm n).add (Hflow_isHermitian d (sz.L n) (sz.W n) (s n) ω)) hω
+    refine Set.mem_iUnion.2 ⟨(x, y), ?_⟩
+    have hM1 : ‖C.M n x y‖ ≤ 1 := by
+      have h1 := Finset.single_le_sum (f := fun y' => ‖C.M n x y'‖ ^ 2) (fun _ _ => by positivity)
+        (Finset.mem_univ y)
+      have h2 := hWard n x
+      by_contra hlt
+      push Not at hlt
+      nlinarith [norm_nonneg (C.M n x y)]
+    have h1 := norm_sub_norm_le
+      (gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+        (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true x y) (C.M n x y)
+    have h2 := hW (s n) (hst n).le (zdistInf d (sz.L n) (STblk sz n x - STblk sz n y))
+    have h3 : q * STWB sz n (s n) (zdistInf d (sz.L n) (STblk sz n x - STblk sz n y)) ≤ 1 := by
+      calc q * STWB sz n (s n) (zdistInf d (sz.L n) (STblk sz n x - STblk sz n y))
+          ≤ q * (2 * (N ^ a)⁻¹) := mul_le_mul_of_nonneg_left h2 hq0.le
+        _ = 2 / q := by rw [hqq]; field_simp
+        _ ≤ 1 := by rw [div_le_one hq0]; exact hq
+    change q * STWB sz n (s n) (zdistInf d (sz.L n) (STblk sz n x - STblk sz n y)) <
+      ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true x y - C.M n x y‖ ^ 2
+    have h4 : 1 < ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true x y - C.M n x y‖ := by linarith
+    nlinarith
+  calc PF d (sz.L n) (sz.W n) (g' n) {ω | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+        2 < ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) σ x y‖}
+      ≤ PF d (sz.L n) (sz.W n) (g' n) T := measure_mono hsub
+    _ ≤ ENNReal.ofReal (N ^ (-D)) := cltGood_P_le_of_seqP (sz.withLam g') n hTmeas
+      ((measure_mono fun ω hω => by
+        obtain ⟨p, hp⟩ := Set.mem_iUnion.1 hω
+        refine ⟨p, ?_⟩
+        have e := (hGL n (s n) ω).1 p.1 p.2
+        change q * STWB sz n (s n) (zdistInf d (sz.L n) (STblk sz n p.1 - STblk sz n p.2)) <
+          ‖C.G n (s n) ω p.1 p.2 - C.M n p.1 p.2‖ ^ 2
+        rw [e]
+        exact hp).trans hn)
+
+/-- `|a - b|_∞ = |b - a|_∞`. -/
+private theorem cltGood_zdistInf_comm {d L : ℕ} [NeZero L] (a b : Zd d L) :
+    zdistInf d L (a - b) = zdistInf d L (b - a) := by
+  rw [← neg_sub b a]
+  simp only [zdistInf, Pi.neg_apply, zdist_neg]
+
+/-- **Item 4 over the carrier.**  Under `HCltOf`, for every `c > 0`, the entries of `G_s(±)` with
+`c (log W)^3 ℓ_s ≤ |[x] - [y]|_∞` are `≤ W^{-D'}` outside an event of probability `≤ N^{-D}`, eventually:
+`stFarEntryAtLoggL` at `(c, D' + 1)` and `N^𝔠 ≤ W`; the charge `-` is the transpose (`G(-) = G(+)ᴴ`). -/
+theorem cltFarEntry_whpOf (d : ℕ) : CltFarEntryWhpOf d := by
+  intro κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t h c hc D' hD' D hD
+  obtain ⟨hd, hκ, hκ1, hδ, hadm, hκm, hs, hst, ht1, hrange, hRep, hWard, hMf, hLoc, hDec, hGij, hK⟩ := h
+  have hF := RBM.BA.stFarEntryAtLoggL C μ hd hadm hδ hRep hWard hs (fun n => le_rfl) (fun n => (hst n).le)
+    ht1 hrange hLoc hDec hGij hK hMf
+  obtain ⟨hμ, hHerm, hGL⟩ := hRep
+  subst hμ
+  obtain ⟨h𝔠, h𝔡, hN, hBW, hWO⟩ := id hadm
+  have hP := hF c hc (D' + 1) (by linarith) 𝔠 h𝔠 D hD
+  filter_upwards [hP, hBW] with n hn hWn
+  have hW0 : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  let T : Set (Ω d (sz.L n) (sz.W n)) := ⋃ p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n),
+    {ω | N ^ 𝔠 * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1)) <
+      ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true p.1 p.2‖ *
+        (if c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+            ((zdistInf d (sz.L n) (STblk sz n p.1 - STblk sz n p.2) : ℕ) : ℝ) then 1 else 0)}
+  have hTmeas : MeasurableSet T := by
+    refine MeasurableSet.iUnion fun p => ?_
+    exact measurableSet_lt measurable_const
+      ((cltGood_gEntryOf_meas (C.m n) (E n) (s n) (s n) (H₀ n) true p.1 p.2).norm.mul measurable_const)
+  have hsub : {ω : Ω d (sz.L n) (sz.W n) | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+      c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+          ((zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) x).1 -
+            (split d (sz.L n) (sz.W n) y).1) : ℕ) : ℝ) ∧
+        ((sz.W n : ℕ) : ℝ) ^ (-D') <
+          ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+            (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) σ x y‖} ⊆ T := by
+    rintro ω ⟨σ, x, y, hf, hg⟩
+    have hHω : (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω).IsHermitian :=
+      (hHerm n).add (Hflow_isHermitian d (sz.L n) (sz.W n) (s n) ω)
+    have key : ∀ x y : Idx d (sz.L n) (sz.W n),
+        c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+          ((zdistInf d (sz.L n) (STblk sz n x - STblk sz n y) : ℕ) : ℝ) →
+        ((sz.W n : ℕ) : ℝ) ^ (-D') <
+          ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+            (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true x y‖ →
+        ω ∈ T := by
+      intro x y hf' hg'
+      refine Set.mem_iUnion.2 ⟨(x, y), ?_⟩
+      change N ^ 𝔠 * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1)) <
+        ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+            (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) true x y‖ *
+          (if c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+              ((zdistInf d (sz.L n) (STblk sz n x - STblk sz n y) : ℕ) : ℝ) then 1 else 0)
+      simp only [hf', ↓reduceIte, mul_one]
+      calc N ^ 𝔠 * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1))
+          ≤ ((sz.W n : ℕ) : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1)) :=
+            mul_le_mul_of_nonneg_right hWn (Real.rpow_nonneg hW0.le _)
+        _ = ((sz.W n : ℕ) : ℝ) ^ (-D') := by
+            calc ((sz.W n : ℕ) : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1))
+                = ((sz.W n : ℕ) : ℝ) ^ (1 : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1)) := by
+                  rw [Real.rpow_one]
+              _ = ((sz.W n : ℕ) : ℝ) ^ (1 + (-(D' + 1))) := (Real.rpow_add hW0 _ _).symm
+              _ = _ := by congr 1; ring
+        _ < _ := hg'
+    cases σ
+    · rw [cltGood_norm_gEntryOf_false (C.m n) (E n) (s n) hHω] at hg
+      exact key y x (by rw [cltGood_zdistInf_comm]; exact hf) hg
+    · exact key x y hf hg
+  calc PF d (sz.L n) (sz.W n) (g' n) {ω | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+        c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+            ((zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) x).1 -
+              (split d (sz.L n) (sz.W n) y).1) : ℕ) : ℝ) ∧
+          ((sz.W n : ℕ) : ℝ) ^ (-D') <
+            ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+              (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) σ x y‖}
+      ≤ PF d (sz.L n) (sz.W n) (g' n) T := measure_mono hsub
+    _ ≤ ENNReal.ofReal (N ^ (-D)) :=
+        cltGood_P_le_of_seqP (sz.withLam g') n hTmeas
+          ((measure_mono fun ω hω => by
+            obtain ⟨p, hp⟩ := Set.mem_iUnion.1 hω
+            refine ⟨p, ?_⟩
+            have e := (hGL n (s n) ω).1 p.1 p.2
+            change N ^ 𝔠 * ((sz.W n : ℕ) : ℝ) ^ (-(D' + 1)) <
+              ‖C.G n (s n) ω p.1 p.2‖ *
+                (if c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+                    ((zdistInf d (sz.L n) (STblk sz n p.1 - STblk sz n p.2) : ℕ) : ℝ) then 1 else 0)
+            rw [e]
+            exact hp).trans hn)
+
+/-- **Item 5 over the carrier.**  Under `HCltOf`, `cltGoodAtOf` holds outside an event of probability `≤ N^{-D}`, at every far
+threshold `θ n ≥ c (log W)^3 ℓ_s`: the union of the events of items 3 and 4 at `D + 1`, `2 N^{-(D+1)} ≤ N^{-D}` once `N ≥ 2`. -/
+theorem cltGood_whpOf (d : ℕ) : CltGoodWhpOf d := by
+  intro κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t h c θ hc hθ D' hD' D hD
+  have h3 := cltGmax_whpOf d κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t h (D + 1) (by linarith)
+  have h4 := cltFarEntry_whpOf d κ δ 𝔠 𝔡 Cd sz C μ g' E H₀ s t h c hc D' hD' (D + 1) (by linarith)
+  have hsize : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz h.2.2.2.2.1.2.2.1
+  unfold CltGmaxConclOf at h3
+  unfold CltFarEntryConclOf at h4
+  unfold CltGoodConclOf
+  filter_upwards [h3, h4, hsize.eventually_ge_atTop 2] with n h3n h4n hN2
+  have hN2' : (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN2
+  have hNpos : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  have hp : (0 : ℝ) ≤ N ^ (-(D + 1)) := Real.rpow_nonneg hNpos.le _
+  have h22 : 2 * N ^ (-(D + 1)) ≤ N ^ (-D) := by
+    have e : N ^ (-(D + 1)) = N ^ (-D) * N⁻¹ := by
+      rw [show -(D + 1) = -D + (-1) by ring, Real.rpow_add hNpos, Real.rpow_neg_one]
+    rw [e]
+    have hD0 : 0 ≤ N ^ (-D) := Real.rpow_nonneg hNpos.le _
+    have h2N : 2 * N⁻¹ ≤ 1 := by
+      rw [← div_eq_mul_inv, div_le_one hNpos]; exact hN2'
+    nlinarith
+  have hsub : {ω : Ω d (sz.L n) (sz.W n) |
+      ¬ cltGoodAtOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n) (θ n) D' (H₀ n) ω} ⊆
+      {ω | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+        2 < ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+          (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) σ x y‖} ∪
+      {ω | ∃ (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)),
+        c * Real.log ((sz.W n : ℕ) : ℝ) ^ 3 * ellT (sz.L n) (sz.lam n) (s n) ≤
+            ((zdistInf d (sz.L n) ((split d (sz.L n) (sz.W n) x).1 -
+              (split d (sz.L n) (sz.W n) y).1) : ℕ) : ℝ) ∧
+          ((sz.W n : ℕ) : ℝ) ^ (-D') <
+            ‖gEntryOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n)
+              (H₀ n + Hflow d (sz.L n) (sz.W n) (s n) ω) σ x y‖} := by
+    intro ω hω
+    by_contra hno
+    apply hω
+    refine ⟨fun σ x y => ?_, fun σ x y hθ' => ?_⟩
+    · by_contra hlt
+      push Not at hlt
+      exact hno (Or.inl ⟨σ, x, y, hlt⟩)
+    · by_contra hlt
+      push Not at hlt
+      exact hno (Or.inr ⟨σ, x, y, (hθ n).trans hθ', hlt⟩)
+  calc PF d (sz.L n) (sz.W n) (g' n)
+        {ω | ¬ cltGoodAtOf d (sz.L n) (sz.W n) (C.m n) (E n) (s n) (θ n) D' (H₀ n) ω}
+      ≤ PF d (sz.L n) (sz.W n) (g' n) _ := measure_mono hsub
+    _ ≤ _ := measure_union_le _ _
+    _ ≤ ENNReal.ofReal (N ^ (-(D + 1))) + ENNReal.ofReal (N ^ (-(D + 1))) := add_le_add h3n h4n
+    _ = ENNReal.ofReal (2 * N ^ (-(D + 1))) := by
+        rw [← ENNReal.ofReal_add hp hp]; ring_nf
+    _ ≤ ENNReal.ofReal (N ^ (-D)) := ENNReal.ofReal_le_ofReal h22
+
 end RBM.Evol
 
 /-! ## 7. Compiled nonempty instances
@@ -665,6 +995,72 @@ example (hStep2 : STStep2Concl szCL (STflowE zCL) sCL tCL 1) :
     (by norm_num) (fun _ => le_rfl) 5 (by norm_num) 10 (by norm_num),
    farEntry_szCL_far_nonempty⟩
 
+/-- **`HCltOf` at the band data** (`bandFM szCL (STflowE zCL)`, `μ = seqP szCL`, `H₀ = 0`, `g' = lam`, `κ = 1/2`, `δ = 1/10`,
+`𝔠 = 1/6`, `𝔡 = 1/10`, `Cd = 1`, `s = sCL`, `t = tCL`): every deterministic premise is discharged (`cltRepg_band`,
+`bandFM_M_le`, `bandFM_STMfarg`, the Green input `bandFM_STGijDecgL_of_three_le` and the far field `bandFM_STKfargL`); only the
+Step 2 pins `STLocalEntryUgL`, `STGdecayWgL` (another gate) are hypotheses. -/
+theorem cltGood_hCltOf_szCL
+    (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
+    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
+    RBM.BA.HCltOf (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) (fun _ => 0) szCL.lam (STflowE zCL)
+      (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 sCL tCL := by
+  have hL : ∀ n, 0 < (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹ ∧ (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹ < 1 := fun n => by
+    have := szCL_two_le_L n
+    exact ⟨by positivity, inv_lt_one_of_one_lt₀ (by nlinarith)⟩
+  have hz : ∀ n, 0 < (zCL n).im := fun n => by
+    have := (hL n).1; change 0 < (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹ / 2; positivity
+  have hE : ∀ n, |STflowE zCL n| ≤ 1 / 2 := fun n => (abs_lemE_le (hz n)).trans (by simp [zCL])
+  have hm : ∀ n, 1 / 2 ≤ (mE (STflowE zCL n)).im := fun n => by
+    rw [mE_im]
+    have h1 : (1 : ℝ) ≤ Real.sqrt (4 - STflowE zCL n ^ 2) := by
+      rw [← Real.sqrt_one]; exact Real.sqrt_le_sqrt (by nlinarith [abs_le.1 (hE n)])
+    linarith
+  have hcl : ∀ n, sCL n ≤ lemT (zCL n) := fun n => (szCL_hst n).le.trans (lemT_zCL n)
+  have hGij : RBM.BA.STGijDecgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL :=
+    RBM.BA.bandFM_STGijDecgL_of_three_le (by norm_num) (κ := 1 / 10) (ε := 1 / 10) (by norm_num) (by norm_num)
+      (by norm_num) flow_zCL (fun _ => le_rfl) hcl
+  have hK : RBM.BA.STKfargL (RBM.BA.bandFM szCL (STflowE zCL)) sCL :=
+    RBM.BA.bandFM_STKfargL (by norm_num) (by norm_num : (0 : ℝ) < 1 / 10) (by norm_num : (0 : ℝ) < 1 / 10)
+      flow_zCL (fun _ => le_rfl) hcl
+  refine ⟨le_rfl, by norm_num, by norm_num, by norm_num, szCL_admissible, hm, fun n => le_rfl, fun n => ?_,
+    fun n => ?_, Filter.Eventually.of_forall fun n => ?_, RBM.BA.cltRepg_band szCL _,
+    RBM.BA.bandFM_M_le szCL _ fun n => (hE n).trans (by norm_num),
+    RBM.BA.bandFM_STMfarg szCL _ (Filter.Eventually.of_forall fun n => lt_of_lt_of_le one_pos (szCL_one_le_log_W n)) _, hLoc, hDec, hGij, hK⟩
+  · change (0 : ℝ) < 1 - (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹; linarith [(hL n).2]
+  · change 1 - (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹ < 1; linarith [(hL n).1]
+  · have := (zCL_locDomain n).2.1
+    change ((szCL.size n : ℕ) : ℝ) ^ (-1 + 1 / 10 : ℝ) ≤ 1 - (1 - (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹)
+    change _ ≤ (((szCL.L n : ℕ) : ℝ) ^ 2)⁻¹ / 2 at this
+    linarith [(hL n).1]
+
+/-- **Instance of `cltGmax_whpOf`** at the band data, `D = 10`. -/
+example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
+    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
+    CltGmaxConclOf (RBM.BA.bandFM szCL (STflowE zCL)) (fun _ => 0) szCL.lam (STflowE zCL) sCL 10 :=
+  cltGmax_whpOf 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL _ _ szCL.lam (STflowE zCL) _ sCL tCL
+    (cltGood_hCltOf_szCL hLoc hDec) 10 (by norm_num)
+
+/-- **Instance of `cltFarEntry_whpOf`** at the band data, `c = 1`, `D' = 5`, `D = 10`; the far set is nonempty at every `n`. -/
+example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
+    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
+    CltFarEntryConclOf (RBM.BA.bandFM szCL (STflowE zCL)) (fun _ => 0) szCL.lam (STflowE zCL) sCL 1 5 10 ∧
+      ∀ n, farEntry_FarNonempty szCL sCL 1 n :=
+  ⟨cltFarEntry_whpOf 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL _ _ szCL.lam (STflowE zCL) _ sCL tCL
+    (cltGood_hCltOf_szCL hLoc hDec) 1 (by norm_num) 5 (by norm_num) 10 (by norm_num),
+   farEntry_szCL_far_nonempty⟩
+
+/-- **Instance of `cltGood_whpOf`** at the band data, `c = 1`, `θ_n = (log W_n)^3 ℓ_s`, `D' = 5`, `D = 10`. -/
+example (hLoc : RBM.BA.STLocalEntryUgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL)
+    (hDec : RBM.BA.STGdecayWgL (RBM.BA.bandFM szCL (STflowE zCL)) (Sizes.seqP szCL) sCL tCL 1) :
+    CltGoodConclOf (RBM.BA.bandFM szCL (STflowE zCL)) (fun _ => 0) szCL.lam (STflowE zCL) sCL
+        (fun n => 1 * Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 * ellT (szCL.L n) (szCL.lam n) (sCL n)) 5 10 ∧
+      ∀ n, farEntry_FarNonempty szCL sCL 1 n :=
+  ⟨cltGood_whpOf 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) 1 szCL _ _ szCL.lam (STflowE zCL) _ sCL tCL
+    (cltGood_hCltOf_szCL hLoc hDec) 1
+    (fun n => 1 * Real.log ((szCL.W n : ℕ) : ℝ) ^ 3 * ellT (szCL.L n) (szCL.lam n) (sCL n))
+    (by norm_num) (fun _ => le_rfl) 5 (by norm_num) 10 (by norm_num),
+   farEntry_szCL_far_nonempty⟩
+
 end RBM.Gauss.Step5Inst
 
 namespace RBM.Evol
@@ -674,6 +1070,10 @@ namespace RBM.Evol
 #print axioms cltFarEntry_whp
 #print axioms cltGood_whp
 #print axioms RBM.Gauss.Step5Inst.cltGood_hclt_szCL
+#print axioms cltGmax_whpOf
+#print axioms cltFarEntry_whpOf
+#print axioms cltGood_whpOf
+#print axioms RBM.Gauss.Step5Inst.cltGood_hCltOf_szCL
 
 end RBM.Evol
 

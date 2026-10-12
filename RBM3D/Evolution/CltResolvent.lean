@@ -61,6 +61,11 @@ the `(x, y)` entry of the `σ`-resolvent `Gres M (zt E s) σ` of `Loop/GLoopFlow
 def gEntry (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool) (x y : Idx d L W) : ℂ :=
   Gres M (zt E s) σ x y
 
+/-- `G_s(σ)_{xy}` at the spectral value `m` (T2455, X1-C1): `z_s = ztOf m E s = E + (1 - s) m`.  The band
+`gEntry` is `gEntryOf d L W (mE E)` (`zt_eq_ztOf`, `rfl`). -/
+def gEntryOf (m : ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool) (x y : Idx d L W) : ℂ :=
+  Gres M (ztOf m E s) σ x y
+
 end Vocab
 
 /-- The deterministic coefficients of the local form (`a-local-form`): a polynomial of degree
@@ -80,6 +85,12 @@ def eval (F : LocalForm d L W k K) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L 
   ∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
     F.coef b j q * ∏ i : Fin j, gEntry d L W E s M (q i).2.2 (q i).1 (q i).2.1
 
+/-- `𝒜_b` of (`a-local-form`) at the spectral value `m` (band `eval` is `evalOf (mE E)`, `rfl`). -/
+def evalOf (F : LocalForm d L W k K) (m : ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (b : Fin k → Zd d L) : ℂ :=
+  ∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
+    F.coef b j q * ∏ i : Fin j, gEntryOf d L W m E s M (q i).2.2 (q i).1 (q i).2.1
+
 /-- The locality condition of (`a-local-form`) with the radius `ρ` as a parameter: a non-zero
 coefficient has every entry `(x_i, y_i)` within `ρ` of some label `b_m` (blocks
 `[x] = (split d L W x).1`, distance `zdistInf`).  RBM2D `Induction/Defs.lean:166` (`Local τ s`,
@@ -96,6 +107,11 @@ RBM2D `Evolution/Case3Defs.lean:63`. -/
 def cltY {d L W K : ℕ} [NeZero L] [NeZero W] (F : LocalForm d L W 1 K) (E s : ℝ)
     (M : Matrix (Idx d L W) (Idx d L W) ℂ) (b : Zd d L) : ℂ :=
   F.eval E s M (fun _ => b)
+
+/-- `Y_{s,b}` (`clt-yform`) at the spectral value `m`. -/
+def cltYOf {d L W K : ℕ} [NeZero L] [NeZero W] (F : LocalForm d L W 1 K) (m : ℂ) (E s : ℝ)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (b : Zd d L) : ℂ :=
+  F.evalOf m E s M (fun _ => b)
 
 /-! ## 2. The statements -/
 
@@ -173,6 +189,35 @@ def CltDerivEval (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
       ‖D‖ ≤ 2 * ∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
         ‖F.coef (fun _ => b) j q‖ * (j : ℝ) * g ^ (j : ℕ) * φ
 
+/-- **M4** at the spectral value `m`, `k` labels (X1-C1): the premise is `(ztOf m E u).im ≠ 0`.  The band
+`CltDerivEvalMulti` is the case `m = mE E`. -/
+def CltDerivEvalMultiOf (d L W k : ℕ) [NeZero L] [NeZero W] : Prop :=
+  ∀ (K : ℕ) (F : LocalForm d L W k K) (m : ℂ) (E u : ℝ) (M A : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (a₀ b₀ : Idx d L W) (t g φ : ℝ) (b : Fin k → Zd d L),
+    M.IsHermitian → cltCoordDir A a₀ b₀ → (ztOf m E u).im ≠ 0 →
+    (∀ σ x y, ‖gEntryOf d L W m E u (M + (t : ℂ) • A) σ x y‖ ≤ g) →
+    (∀ (j : Fin (K + 1)) (q : Fin j → Idx d L W × Idx d L W × Bool),
+      F.coef b j q ≠ 0 → ∀ (i : Fin j) (σ : Bool),
+        ‖gEntryOf d L W m E u (M + (t : ℂ) • A) σ (q i).1 a₀‖ ≤ φ ∧
+          ‖gEntryOf d L W m E u (M + (t : ℂ) • A) σ (q i).1 b₀‖ ≤ φ) →
+    ∃ D : ℂ, HasDerivAt (fun s : ℝ => F.evalOf m E u (M + (s : ℂ) • A) b) D t ∧
+      ‖D‖ ≤ 2 * ∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
+        ‖F.coef b j q‖ * (j : ℝ) * g ^ (j : ℕ) * φ
+
+/-- **M4** at the spectral value `m`, one label: `CltDerivEvalMultiOf` at `k = 1`, `cltYOf`. -/
+def CltDerivEvalOf (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
+  ∀ (K : ℕ) (F : LocalForm d L W 1 K) (m : ℂ) (E u : ℝ) (M A : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (a₀ b₀ : Idx d L W) (t g φ : ℝ) (b : Zd d L),
+    M.IsHermitian → cltCoordDir A a₀ b₀ → (ztOf m E u).im ≠ 0 →
+    (∀ σ x y, ‖gEntryOf d L W m E u (M + (t : ℂ) • A) σ x y‖ ≤ g) →
+    (∀ (j : Fin (K + 1)) (q : Fin j → Idx d L W × Idx d L W × Bool),
+      F.coef (fun _ => b) j q ≠ 0 → ∀ (i : Fin j) (σ : Bool),
+        ‖gEntryOf d L W m E u (M + (t : ℂ) • A) σ (q i).1 a₀‖ ≤ φ ∧
+          ‖gEntryOf d L W m E u (M + (t : ℂ) • A) σ (q i).1 b₀‖ ≤ φ) →
+    ∃ D : ℂ, HasDerivAt (fun s : ℝ => cltYOf F m E u (M + (s : ℂ) • A) b) D t ∧
+      ‖D‖ ≤ 2 * ∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
+        ‖F.coef (fun _ => b) j q‖ * (j : ℝ) * g ^ (j : ℕ) * φ
+
 /-- `c_κ = √(κ(4-κ))/2`, the lower bound of `Im m(E)` for `|E| ≤ 2 - κ`. -/
 def cltCk (κ : ℝ) : ℝ := Real.sqrt (κ * (4 - κ)) / 2
 
@@ -183,6 +228,13 @@ def CltEtaLower (d L W : ℕ) : Prop :=
   ∀ (κ δ E u : ℝ), 0 < κ → 0 < δ → |E| ≤ 2 - κ →
     ((((W * L) ^ d : ℕ) : ℝ)) ^ (-1 + δ) ≤ 1 - u →
     cltCk κ / (((W * L) ^ d : ℕ) : ℝ) ≤ (zt E u).im
+
+/-- **E4 restated** (X1-C1; = `T2455_CltEtaLowerOf`): `κ ≤ Im m` and `N^{-1+δ} ≤ 1 - u` give `κ / N ≤ Im z_u`,
+`z_u = ztOf m E u`; no `|E| ≤ 2 - κ`, no `‖m‖ = 1`.  The band `CltEtaLower` is the case `m = mE E`, `κ ↦ cltCk κ`. -/
+def CltEtaLowerOf (d L W : ℕ) : Prop :=
+  ∀ (κ δ : ℝ) (m : ℂ) (E u : ℝ), 0 < κ → 0 < δ → κ ≤ m.im →
+    ((((W * L) ^ d : ℕ) : ℝ)) ^ (-1 + δ) ≤ 1 - u →
+    κ / (((W * L) ^ d : ℕ) : ℝ) ≤ (ztOf m E u).im
 
 /-- **Pin M5**, `k` labels (`clt-f-total-bound-2`; `clt-ibp-bound2`, `clt-ibp-bound4`), in powers
 of `N = (W L)^d`.  For every Hermitian `M`:
@@ -206,6 +258,26 @@ def CltEvalDetLe (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
     (∀ b' j q, ‖F.coef b' j q‖ ≤ ((((W * L) ^ d : ℕ) : ℝ)) ^ C') → M.IsHermitian →
     ‖cltY F E u M b‖ ≤ ((K : ℝ) + 1) * ((((W * L) ^ d : ℕ) : ℝ)) ^ C' *
       (2 * ((((W * L) ^ d : ℕ) : ℝ)) ^ 3 / cltCk κ) ^ K
+
+/-- **M5** at the spectral value `m`, `k` labels: base `2N³/κ`; the premise `κ ≤ 1` replaces `cltCk κ ≤ 1` (base `≥ 1`). -/
+def CltEvalDetLeMultiOf (d L W k : ℕ) [NeZero L] [NeZero W] : Prop :=
+  ∀ (κ δ : ℝ) (m : ℂ) (E u : ℝ) (K : ℕ) (F : LocalForm d L W k K) (C' : ℝ)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (b : Fin k → Zd d L),
+    0 < κ → 0 < δ → κ ≤ m.im → κ ≤ 1 →
+    ((((W * L) ^ d : ℕ) : ℝ)) ^ (-1 + δ) ≤ 1 - u →
+    (∀ b' j q, ‖F.coef b' j q‖ ≤ ((((W * L) ^ d : ℕ) : ℝ)) ^ C') → M.IsHermitian →
+    ‖F.evalOf m E u M b‖ ≤ ((K : ℝ) + 1) * ((((W * L) ^ d : ℕ) : ℝ)) ^ C' *
+      (2 * ((((W * L) ^ d : ℕ) : ℝ)) ^ 3 / κ) ^ K
+
+/-- **M5** at the spectral value `m`, one label: `CltEvalDetLeMultiOf` at `k = 1`, `cltYOf`. -/
+def CltEvalDetLeOf (d L W : ℕ) [NeZero L] [NeZero W] : Prop :=
+  ∀ (κ δ : ℝ) (m : ℂ) (E u : ℝ) (K : ℕ) (F : LocalForm d L W 1 K) (C' : ℝ)
+    (M : Matrix (Idx d L W) (Idx d L W) ℂ) (b : Zd d L),
+    0 < κ → 0 < δ → κ ≤ m.im → κ ≤ 1 →
+    ((((W * L) ^ d : ℕ) : ℝ)) ^ (-1 + δ) ≤ 1 - u →
+    (∀ b' j q, ‖F.coef b' j q‖ ≤ ((((W * L) ^ d : ℕ) : ℝ)) ^ C') → M.IsHermitian →
+    ‖cltYOf F m E u M b‖ ≤ ((K : ℝ) + 1) * ((((W * L) ^ d : ℕ) : ℝ)) ^ C' *
+      (2 * ((((W * L) ^ d : ℕ) : ℝ)) ^ 3 / κ) ^ K
 
 /-- **Pin G1(a)** (the dichotomy, half-separation form; no condition on `W`).  If
 `R ≤ |b_i - b_k|_∞` for all `k ≠ i`, then every block `a` has `R/2 ≤ |a - b_i|_∞` or
@@ -466,41 +538,42 @@ section EvalDeriv
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- The spectral parameter of the `σ`-resolvent in `gEntry`. -/
-private def cltres_zs (E u : ℝ) (σ : Bool) : ℂ :=
-  if σ then zt E u else (starRingEnd ℂ) (zt E u)
+/-- The spectral parameter of the `σ`-resolvent in `gEntryOf`. -/
+private def cltres_zs (m : ℂ) (E u : ℝ) (σ : Bool) : ℂ :=
+  if σ then ztOf m E u else (starRingEnd ℂ) (ztOf m E u)
 
-private theorem cltres_zs_im {E u : ℝ} (hz : (zt E u).im ≠ 0) (σ : Bool) :
-    (cltres_zs E u σ).im ≠ 0 := by
+private theorem cltres_zs_im {m : ℂ} {E u : ℝ} (hz : (ztOf m E u).im ≠ 0) (σ : Bool) :
+    (cltres_zs m E u σ).im ≠ 0 := by
   cases σ <;> simpa [cltres_zs] using hz
 
-/-- `gEntry` is the entry of `green` at the `σ`-parameter. -/
-private theorem cltres_gEntry_eq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
-    (x y : Idx d L W) : gEntry d L W E u M σ x y = green M (cltres_zs E u σ) x y := by
-  simp only [gEntry, Gres, green, cltres_zs, Matrix.nonsing_inv_eq_ringInverse]
+/-- `gEntryOf` is the entry of `green` at the `σ`-parameter. -/
+private theorem cltres_gEntry_eq (m : ℂ) (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool)
+    (x y : Idx d L W) : gEntryOf d L W m E u M σ x y = green M (cltres_zs m E u σ) x y := by
+  simp only [gEntryOf, Gres, green, cltres_zs, Matrix.nonsing_inv_eq_ringInverse]
 
-/-- **M4**, `k` labels (`clt-f-total-bound-1`, first order), the pin `CltDerivEvalMulti`. -/
-theorem cltDeriv_evalMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEvalMulti d L W k := by
-  intro K F E u M A a₀ b₀ t g φ b hM hA hz hg hφ
+/-- **M4**, `k` labels (`clt-f-total-bound-1`, first order), at the spectral value `m`: `CltDerivEvalMultiOf`.
+The band pin `CltDerivEvalMulti` is the case `m = mE E` (`cltDeriv_evalMulti_le`). -/
+theorem cltDeriv_evalMulti_leOf (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEvalMultiOf d L W k := by
+  intro K F m E u M A a₀ b₀ t g φ b hM hA hz hg hφ
   have hg0 : 0 ≤ g := (norm_nonneg _).trans (hg true 0 0)
   set Gs : Bool → Matrix (Idx d L W) (Idx d L W) ℂ := fun σ =>
-    green (M + (t : ℂ) • A) (cltres_zs E u σ) with hGs
+    green (M + (t : ℂ) • A) (cltres_zs m E u σ) with hGs
   let Dm : ∀ (j : Fin (K + 1)) (_ : Fin j → Idx d L W × Idx d L W × Bool), ℂ := fun j q =>
     F.coef b j q * ∑ i : Fin j,
       (∏ k ∈ Finset.univ.erase i,
-        gEntry d L W E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
+        gEntryOf d L W m E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
         (-(Gs (q i).2.2 * A * Gs (q i).2.2) (q i).1 (q i).2.1)
   refine ⟨∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool, Dm j q, ?_, ?_⟩
-  · unfold LocalForm.eval
+  · unfold LocalForm.evalOf
     refine HasDerivAt.fun_sum fun j _ => HasDerivAt.fun_sum fun q _ => ?_
     have hprod := HasDerivAt.fun_finsetProd (u := (Finset.univ : Finset (Fin j)))
       (f := fun (i : Fin j) (s : ℝ) =>
-        gEntry d L W E u (M + (s : ℂ) • A) (q i).2.2 (q i).1 (q i).2.1)
+        gEntryOf d L W m E u (M + (s : ℂ) • A) (q i).2.2 (q i).1 (q i).2.1)
       (f' := fun i => -(Gs (q i).2.2 * A * Gs (q i).2.2) (q i).1 (q i).2.1) (x := t)
       (fun i _ => by
         have h := cltres_hasDerivAt_entry hM hA.1 (cltres_zs_im hz (q i).2.2) t (q i).1 (q i).2.1
         refine h.congr_of_eventuallyEq (Filter.Eventually.of_forall fun s => ?_)
-        exact cltres_gEntry_eq E u _ _ _ _)
+        exact cltres_gEntry_eq m E u _ _ _ _)
     exact hprod.const_mul (F.coef b j q)
   · have hterm : ∀ (j : Fin (K + 1)) (q : Fin j → Idx d L W × Idx d L W × Bool),
         ‖Dm j q‖ ≤ 2 * (‖F.coef b j q‖ * (j : ℝ) * g ^ (j : ℕ) * φ) := by
@@ -516,24 +589,24 @@ theorem cltDeriv_evalMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEv
           rw [← pow_succ]; congr 1; omega
         have hi : ∀ i : Fin j,
             ‖(∏ k ∈ Finset.univ.erase i,
-              gEntry d L W E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
+              gEntryOf d L W m E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
               (-(Gs (q i).2.2 * A * Gs (q i).2.2) (q i).1 (q i).2.1)‖
               ≤ g ^ ((j : ℕ) - 1) * (2 * g * φ) := by
           intro i
           rw [smul_eq_mul, norm_mul, norm_neg]
           have hprod : ‖∏ k ∈ Finset.univ.erase i,
-              gEntry d L W E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1‖
+              gEntryOf d L W m E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1‖
               ≤ g ^ ((j : ℕ) - 1) := by
             rw [norm_prod]
             calc ∏ k ∈ Finset.univ.erase i,
-                  ‖gEntry d L W E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1‖
+                  ‖gEntryOf d L W m E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1‖
                 ≤ ∏ _k ∈ Finset.univ.erase i, g :=
                   Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _) fun k _ => hg _ _ _
               _ = g ^ ((j : ℕ) - 1) := by
                   rw [Finset.prod_const, Finset.card_erase_of_mem (Finset.mem_univ i),
                     Finset.card_univ, Fintype.card_fin]
           have hentry : ‖(Gs (q i).2.2 * A * Gs (q i).2.2) (q i).1 (q i).2.1‖ ≤ 2 * g * φ := by
-            have h := ((cltDeriv_entry (Idx d L W)) M A a₀ b₀ (cltres_zs E u (q i).2.2) t hM hA
+            have h := ((cltDeriv_entry (Idx d L W)) M A a₀ b₀ (cltres_zs m E u (q i).2.2) t hM hA
               (cltres_zs_im hz (q i).2.2) (q i).1 (q i).2.1).2 g
               (fun x' y' => by rw [← cltres_gEntry_eq]; exact hg (q i).2.2 x' y') |>.1
             refine h.trans ?_
@@ -545,7 +618,7 @@ theorem cltDeriv_evalMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEv
           exact mul_le_mul hprod hentry (norm_nonneg _) (by positivity)
         have hsum : ‖∑ i : Fin j,
             (∏ k ∈ Finset.univ.erase i,
-              gEntry d L W E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
+              gEntryOf d L W m E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
               (-(Gs (q i).2.2 * A * Gs (q i).2.2) (q i).1 (q i).2.1)‖
             ≤ (j : ℝ) * (g ^ ((j : ℕ) - 1) * (2 * g * φ)) := by
           refine (norm_sum_le _ _).trans ?_
@@ -553,7 +626,7 @@ theorem cltDeriv_evalMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEv
           rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
         calc ‖Dm j q‖ = ‖F.coef b j q‖ * ‖∑ i : Fin j,
               (∏ k ∈ Finset.univ.erase i,
-                gEntry d L W E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
+                gEntryOf d L W m E u (M + (t : ℂ) • A) (q k).2.2 (q k).1 (q k).2.1) •
                 (-(Gs (q i).2.2 * A * Gs (q i).2.2) (q i).1 (q i).2.1)‖ := norm_mul _ _
           _ ≤ ‖F.coef b j q‖ * ((j : ℝ) * (g ^ ((j : ℕ) - 1) * (2 * g * φ))) :=
               mul_le_mul_of_nonneg_left hsum (norm_nonneg _)
@@ -569,6 +642,17 @@ theorem cltDeriv_evalMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEv
             ‖F.coef b j q‖ * (j : ℝ) * g ^ (j : ℕ) * φ := by
           rw [Finset.mul_sum]
           exact Finset.sum_congr rfl fun j _ => by rw [Finset.mul_sum]
+
+/-- **M4**, one label, at the spectral value `m`: the case `k = 1` of `cltDeriv_evalMulti_leOf`. -/
+theorem cltDeriv_eval_leOf (d L W : ℕ) [NeZero L] [NeZero W] : CltDerivEvalOf d L W :=
+  fun K F m E u M A a₀ b₀ t g φ b =>
+    cltDeriv_evalMulti_leOf d L W 1 K F m E u M A a₀ b₀ t g φ (fun _ => b)
+
+/-- **M4**, `k` labels (`clt-f-total-bound-1`, first order), the pin `CltDerivEvalMulti`: the case `m = mE E`
+of `cltDeriv_evalMulti_leOf` (`zt_eq_ztOf`, `rfl`). -/
+theorem cltDeriv_evalMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltDerivEvalMulti d L W k :=
+  fun K F E u M A a₀ b₀ t g φ b =>
+    cltDeriv_evalMulti_leOf d L W k K F (mE E) E u M A a₀ b₀ t g φ b
 
 /-- **M4**, one label (`clt-f-total-bound-1`, first order), the pin `CltDerivEval`: the case
 `k = 1` of `cltDeriv_evalMulti_le`. -/
@@ -604,41 +688,42 @@ private theorem cltres_ck_le_one {κ : ℝ} : cltCk κ ≤ 1 := by
   rw [Real.sqrt_sq (by norm_num)] at this
   linarith
 
-/-- **E4** (the spectral-parameter lower bound behind `clt-f-total-bound-2`), the pin
-`CltEtaLower`: `c_κ / N ≤ Im z_u` for `N = (W L)^d`.  Only `N ≥ 1` is used (`N^{-1+δ} ≥ N^{-1}`);
-the case `N = 0` (`W L = 0`) is the trivial one `x / 0 = 0`. -/
-theorem cltEta_lower (d L W : ℕ) : CltEtaLower d L W := by
-  intro κ δ E u hκ hδ hE hR
-  set N : ℝ := ((((W * L) ^ d : ℕ) : ℝ)) with hN
-  have hRe : cltCk κ ≤ (mE E).im := cltres_ck_le_im hE
-  have hck : 0 < cltCk κ := cltres_ck_pos hκ hE
-  rw [zt_im]
+/-- **E4 restated** (`CltEtaLowerOf`, X1-C1): `κ / N ≤ Im z_u` for `N = (W L)^d`, `z_u = ztOf m E u`, from
+`κ ≤ Im m`.  Only `N ≥ 1` is used (`N^{-1+δ} ≥ N^{-1}`); the case `N = 0` (`W L = 0`) is the trivial one
+`x / 0 = 0`.  No `|E| ≤ 2 - κ`, no `‖m‖ = 1`. -/
+theorem cltEta_lowerOf (d L W : ℕ) : CltEtaLowerOf d L W := by
+  intro κ δ m E u hκ hδ hκm hR
+  rw [ztOf_im]
+  unfold etaOf
+  have hmim : 0 < m.im := lt_of_lt_of_le hκ hκm
+  have h1u : 0 ≤ 1 - u := (Real.rpow_nonneg (Nat.cast_nonneg _) _).trans hR
   rcases Nat.eq_zero_or_pos ((W * L) ^ d) with h0 | hpos
-  · have hN0 : N = 0 := by rw [hN, h0]; simp
-    have h1u : 0 ≤ 1 - u := by
-      have := Real.rpow_nonneg (le_refl (0 : ℝ)) (-1 + δ)
-      rw [hN0] at hR
-      linarith
-    rw [hN0, div_zero]
-    exact mul_nonneg h1u (hck.le.trans hRe)
-  · have hN1 : 1 ≤ N := by
-      rw [hN]; exact_mod_cast hpos
-    have hN0 : 0 < N := by linarith
-    have h1 : N⁻¹ ≤ 1 - u := by
-      have h2 : N ^ (-1 : ℝ) ≤ N ^ (-1 + δ) :=
-        Real.rpow_le_rpow_of_exponent_le hN1 (by linarith)
-      rw [Real.rpow_neg_one] at h2
-      linarith
-    calc cltCk κ / N = N⁻¹ * cltCk κ := by ring
-      _ ≤ (1 - u) * (mE E).im := mul_le_mul h1 hRe hck.le (by have := inv_pos.2 hN0; linarith)
+  · rw [h0, Nat.cast_zero, div_zero]; exact mul_nonneg h1u hmim.le
+  · have hN1 : (1 : ℝ) ≤ (((W * L) ^ d : ℕ) : ℝ) := by exact_mod_cast hpos
+    have h1 := Real.rpow_le_rpow_of_exponent_le hN1 (show (-1 : ℝ) ≤ -1 + δ by linarith)
+    rw [Real.rpow_neg_one] at h1
+    rw [div_eq_mul_inv]
+    nlinarith [mul_le_mul_of_nonneg_left (h1.trans hR) hκ.le, mul_le_mul_of_nonneg_left hκm h1u]
+
+/-- **The band margin** `c_κ`: for `0 < κ`, `|E| ≤ 2 - κ`, `0 < c_κ ≤ Im m(E)` and `c_κ ≤ 1`: the premises of the generic
+`CltEtaLowerOf`, `CltEvalDetLeOf` at `m = mE E`, `κ ↦ cltCk κ`. -/
+theorem cltCk_facts {κ E : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) :
+    0 < cltCk κ ∧ cltCk κ ≤ (mE E).im ∧ cltCk κ ≤ 1 :=
+  ⟨cltres_ck_pos hκ hE, cltres_ck_le_im hE, cltres_ck_le_one⟩
+
+/-- **E4** (the spectral-parameter lower bound behind `clt-f-total-bound-2`), the pin
+`CltEtaLower`: `c_κ / N ≤ Im z_u` for `N = (W L)^d`; the case `m = mE E`, `κ ↦ cltCk κ` of
+`cltEta_lowerOf`. -/
+theorem cltEta_lower (d L W : ℕ) : CltEtaLower d L W := fun κ δ E u hκ hδ hE hR =>
+  cltEta_lowerOf d L W (cltCk κ) δ (mE E) E u (cltres_ck_pos hκ hE) hδ (cltres_ck_le_im hE) hR
 
 variable {d L W k : ℕ} [NeZero L] [NeZero W]
 
 open scoped Matrix.Norms.L2Operator in
-private theorem cltres_gEntry_le (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
+private theorem cltres_gEntry_le (m : ℂ) (E s : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
     (hH : M.IsHermitian) (σ : Bool) (x y : Idx d L W) {η : ℝ} (hη : 0 < η)
-    (hz : η ≤ |(zt E s).im|) : ‖gEntry d L W E s M σ x y‖ ≤ η⁻¹ :=
-  (norm_matrix_entry_le_opNorm (Gres M (zt E s) σ) x y).trans
+    (hz : η ≤ |(ztOf m E s).im|) : ‖gEntryOf d L W m E s M σ x y‖ ≤ η⁻¹ :=
+  (norm_matrix_entry_le_opNorm (Gres M (ztOf m E s) σ) x y).trans
     (norm_Gsig_le_inv_eta hH hη hz σ)
 
 private theorem cltres_card_idx :
@@ -646,28 +731,28 @@ private theorem cltres_card_idx :
   rw [card_Idx]
 
 /-- Private re-proof of the bound of `cltY` for any Hermitian matrix, with `k` labels. -/
-private theorem cltres_eval_le {K : ℕ} (F : LocalForm d L W k K) (E s : ℝ)
+private theorem cltres_eval_le {K : ℕ} (F : LocalForm d L W k K) (m : ℂ) (E s : ℝ)
     (M : Matrix (Idx d L W) (Idx d L W) ℂ) (hH : M.IsHermitian) {η C : ℝ} (hη : 0 < η)
-    (hz : η ≤ |(zt E s).im|) (hC : ∀ b j q, ‖F.coef b j q‖ ≤ C)
+    (hz : η ≤ |(ztOf m E s).im|) (hC : ∀ b j q, ‖F.coef b j q‖ ≤ C)
     (hΘ : 1 ≤ 2 * (Fintype.card (Idx d L W) : ℝ) ^ 2 * η⁻¹) (b : Fin k → Zd d L) :
-    ‖F.eval E s M b‖ ≤ (K + 1) * C * (2 * (Fintype.card (Idx d L W) : ℝ) ^ 2 * η⁻¹) ^ K := by
+    ‖F.evalOf m E s M b‖ ≤ (K + 1) * C * (2 * (Fintype.card (Idx d L W) : ℝ) ^ 2 * η⁻¹) ^ K := by
   set N : ℝ := (Fintype.card (Idx d L W) : ℝ) with hN
   set Θ : ℝ := 2 * N ^ 2 * η⁻¹ with hΘdef
   have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC b 0 (fun i => i.elim0))
   have hterm : ∀ j : Fin (K + 1), ‖∑ q : Fin j → Idx d L W × Idx d L W × Bool,
-      F.coef b j q * ∏ i : Fin j, gEntry d L W E s M (q i).2.2 (q i).1 (q i).2.1‖
+      F.coef b j q * ∏ i : Fin j, gEntryOf d L W m E s M (q i).2.2 (q i).1 (q i).2.1‖
       ≤ C * Θ ^ (j : ℕ) := by
     intro j
     calc ‖∑ q : Fin j → Idx d L W × Idx d L W × Bool,
-          F.coef b j q * ∏ i : Fin j, gEntry d L W E s M (q i).2.2 (q i).1 (q i).2.1‖
+          F.coef b j q * ∏ i : Fin j, gEntryOf d L W m E s M (q i).2.2 (q i).1 (q i).2.1‖
         ≤ ∑ q : Fin j → Idx d L W × Idx d L W × Bool, C * (η⁻¹) ^ (j : ℕ) := by
           refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun q _ => ?_)
           rw [norm_mul, norm_prod]
           refine mul_le_mul (hC _ _ _) ?_ (Finset.prod_nonneg fun i _ => norm_nonneg _) hC0
-          calc ∏ i : Fin j, ‖gEntry d L W E s M (q i).2.2 (q i).1 (q i).2.1‖
+          calc ∏ i : Fin j, ‖gEntryOf d L W m E s M (q i).2.2 (q i).1 (q i).2.1‖
               ≤ ∏ _i : Fin j, η⁻¹ :=
                 Finset.prod_le_prod₀ (fun i _ => norm_nonneg _) fun i _ =>
-                  cltres_gEntry_le E s M hH _ _ _ hη hz
+                  cltres_gEntry_le m E s M hH _ _ _ hη hz
             _ = (η⁻¹) ^ (j : ℕ) := by simp
       _ = (Fintype.card (Fin j → Idx d L W × Idx d L W × Bool) : ℝ) * (C * (η⁻¹) ^ (j : ℕ)) := by
           rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
@@ -679,9 +764,9 @@ private theorem cltres_eval_le {K : ℕ} (F : LocalForm d L W k K) (E s : ℝ)
             push_cast
             rw [hN]; ring
           rw [hcard, hΘdef, mul_pow]; ring
-  unfold LocalForm.eval
+  unfold LocalForm.evalOf
   calc ‖∑ j : Fin (K + 1), ∑ q : Fin j → Idx d L W × Idx d L W × Bool,
-        F.coef b j q * ∏ i : Fin j, gEntry d L W E s M (q i).2.2 (q i).1 (q i).2.1‖
+        F.coef b j q * ∏ i : Fin j, gEntryOf d L W m E s M (q i).2.2 (q i).1 (q i).2.1‖
       ≤ ∑ j : Fin (K + 1), C * Θ ^ (j : ℕ) :=
         (norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => hterm j)
     _ ≤ ∑ _j : Fin (K + 1), C * Θ ^ K :=
@@ -689,30 +774,40 @@ private theorem cltres_eval_le {K : ℕ} (F : LocalForm d L W k K) (E s : ℝ)
           (pow_le_pow_right₀ hΘ (by have := j.2; omega)) hC0
     _ = (K + 1) * C * Θ ^ K := by simp; ring
 
-/-- **M5**, `k` labels (`clt-f-total-bound-2`), the pin `CltEvalDetLeMulti`, in powers of
-`N = (W L)^d`. -/
-theorem cltEval_detMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltEvalDetLeMulti d L W k := by
-  intro κ δ E u K F C' M b hκ hδ hE hR hcoef hH
+/-- **M5**, `k` labels (`clt-f-total-bound-2`), at the spectral value `m` (`CltEvalDetLeMultiOf`), in powers of
+`N = (W L)^d`: `κ ≤ Im m` and `κ ≤ 1` replace `|E| ≤ 2 - κ` and `cltCk κ ≤ 1` (the step `1 ≤ 2 N² η⁻¹`). -/
+theorem cltEval_detMulti_leOf (d L W k : ℕ) [NeZero L] [NeZero W] : CltEvalDetLeMultiOf d L W k := by
+  intro κ δ m E u K F C' M b hκ hδ hκm hκ1 hR hcoef hH
   set N : ℝ := ((((W * L) ^ d : ℕ) : ℝ)) with hN
   have hN1 : 1 ≤ N := by
     have : 0 < (W * L) ^ d := pow_pos (Nat.mul_pos (NeZero.pos W) (NeZero.pos L)) d
     rw [hN]; exact_mod_cast this
   have hN0 : 0 < N := by linarith
-  have hck := cltres_ck_pos hκ hE
-  have hck1 : cltCk κ ≤ 1 := cltres_ck_le_one
-  set η : ℝ := cltCk κ / N with hη
+  set η : ℝ := κ / N with hη
   have hη0 : 0 < η := by positivity
-  have hlow : η ≤ (zt E u).im := cltEta_lower d L W κ δ E u hκ hδ hE hR
-  have him : η ≤ |(zt E u).im| := hlow.trans (le_abs_self _)
+  have hlow : η ≤ (ztOf m E u).im := cltEta_lowerOf d L W κ δ m E u hκ hδ hκm hR
+  have him : η ≤ |(ztOf m E u).im| := hlow.trans (le_abs_self _)
   have hΘ : 1 ≤ 2 * (Fintype.card (Idx d L W) : ℝ) ^ 2 * η⁻¹ := by
     rw [cltres_card_idx, ← hN, hη, inv_div]
-    have : 1 ≤ N / cltCk κ := by rw [le_div_iff₀ hck]; linarith
+    have : 1 ≤ N / κ := by rw [le_div_iff₀ hκ]; linarith
     nlinarith [sq_nonneg N]
-  have := cltres_eval_le F E u M hH hη0 him (C := N ^ C') hcoef hΘ b
+  have := cltres_eval_le F m E u M hH hη0 him (C := N ^ C') hcoef hΘ b
   rw [cltres_card_idx, ← hN, hη, inv_div] at this
   refine this.trans (le_of_eq ?_)
   congr 2
   ring
+
+/-- **M5**, one label, at the spectral value `m`: the case `k = 1` of `cltEval_detMulti_leOf`. -/
+theorem cltEval_det_leOf (d L W : ℕ) [NeZero L] [NeZero W] : CltEvalDetLeOf d L W :=
+  fun κ δ m E u K F C' M b =>
+    cltEval_detMulti_leOf d L W 1 κ δ m E u K F C' M (fun _ => b)
+
+/-- **M5**, `k` labels (`clt-f-total-bound-2`), the pin `CltEvalDetLeMulti`, in powers of
+`N = (W L)^d`: the case `m = mE E`, `κ ↦ cltCk κ` of `cltEval_detMulti_leOf`. -/
+theorem cltEval_detMulti_le (d L W k : ℕ) [NeZero L] [NeZero W] : CltEvalDetLeMulti d L W k :=
+  fun κ δ E u K F C' M b hκ hδ hE hR hcoef hH =>
+    cltEval_detMulti_leOf d L W k (cltCk κ) δ (mE E) E u K F C' M b (cltres_ck_pos hκ hE) hδ
+      (cltres_ck_le_im hE) cltres_ck_le_one hR hcoef hH
 
 /-- **M5**, one label (`clt-f-total-bound-2`), the pin `CltEvalDetLe`: the case `k = 1` of
 `cltEval_detMulti_le`. -/
@@ -860,14 +955,14 @@ private theorem cltres_chk_dir (c : CoordF 3 3 1) :
 at most `2`. -/
 private theorem cltres_chk_g (M : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) (hM : M.IsHermitian)
     (σ : Bool) (x y : Idx 3 3 1) : ‖gEntry 3 3 1 0 (1 / 2) M σ x y‖ ≤ 2 := by
-  have h := cltres_gEntry_le (d := 3) (L := 3) (W := 1) 0 (1 / 2) M hM σ x y (η := 1 / 2)
-    (by norm_num) (by rw [cltres_chk_z_im, abs_of_pos (by norm_num)])
+  have h := cltres_gEntry_le (d := 3) (L := 3) (W := 1) (mE 0) 0 (1 / 2) M hM σ x y (η := 1 / 2)
+    (by norm_num) (by show (1 / 2 : ℝ) ≤ |(zt 0 (1 / 2)).im|; rw [cltres_chk_z_im, abs_of_pos (by norm_num)])
   rw [show ((1 / 2 : ℝ))⁻¹ = 2 by norm_num] at h
   exact h
 
 private theorem cltres_chk_gr (M : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) (hM : M.IsHermitian)
     (x y : Idx 3 3 1) : ‖green M (zt 0 (1 / 2)) x y‖ ≤ 2 := by
-  have h := cltres_chk_g M hM true x y
+  have h : ‖gEntryOf 3 3 1 (mE 0) 0 (1 / 2) M true x y‖ ≤ 2 := cltres_chk_g M hM true x y
   rw [cltres_gEntry_eq] at h
   exact h
 
@@ -1030,6 +1125,72 @@ private theorem cltres_chk_M5Multi (a₀ b₀ : Idx 3 3 1) (b₂ : Fin 2 → Zd 
     (by norm_num) (by norm_num) cltres_chk_R
     (fun b' j q => cltres_chkForm_le 2 b₂ a₀ b₀ b' j q) Matrix.isHermitian_zero
 
+/-! ### Generic endpoints at a non-semicircle value `m = 3/10 + (3/5) i` (`‖m‖² = 0.45 ≠ 1`), `κ = 1/2 ≤ Im m`,
+`E = 0`, `u = 1/2` (`Im z_u = 3/10`), `d = 3`, `L = 3`, `W = 1`, `δ = 1/2` -/
+
+private noncomputable def cltres_chkm : ℂ := ⟨3 / 10, 3 / 5⟩
+
+private theorem cltres_chkm_im : (ztOf cltres_chkm 0 (1 / 2)).im = 3 / 10 := by
+  rw [ztOf_im, etaOf]; simp [cltres_chkm]; norm_num
+
+private theorem cltres_chk_gOf (M : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) (hM : M.IsHermitian)
+    (σ : Bool) (x y : Idx 3 3 1) : ‖gEntryOf 3 3 1 cltres_chkm 0 (1 / 2) M σ x y‖ ≤ 4 := by
+  have h := cltres_gEntry_le (d := 3) (L := 3) (W := 1) cltres_chkm 0 (1 / 2) M hM σ x y (η := 1 / 4)
+    (by norm_num) (by rw [cltres_chkm_im, abs_of_pos (by norm_num)]; norm_num)
+  rw [show ((1 / 4 : ℝ))⁻¹ = 4 by norm_num] at h
+  exact h
+
+/-- E4 restated at `m` (not on the unit circle). -/
+private theorem cltres_chk_E4Of :
+    (1 / 2 : ℝ) / ((((1 * 3) ^ 3 : ℕ) : ℝ)) ≤ (ztOf cltres_chkm 0 (1 / 2)).im :=
+  cltEta_lowerOf 3 3 1 (1 / 2) (1 / 2) cltres_chkm 0 (1 / 2) (by norm_num) (by norm_num)
+    (by simp [cltres_chkm]; norm_num) cltres_chk_R
+
+/-- M4 at `m`, one label, `K = 1`, `g = φ = 4`, label `b`. -/
+private theorem cltres_chk_M4Of (c : CoordF 3 3 1) (b : Zd 3 3) :
+    ∃ D : ℂ, HasDerivAt (fun s : ℝ => cltYOf (cltres_chkForm 1 (fun _ => b) c.1 c.2.1) cltres_chkm 0 (1 / 2)
+        (0 + (s : ℂ) • coordinateMatrix 3 3 1 c) b) D (1 / 8) ∧
+      ‖D‖ ≤ 2 * ∑ j : Fin (1 + 1), ∑ q : Fin j → Idx 3 3 1 × Idx 3 3 1 × Bool,
+        ‖(cltres_chkForm 1 (fun _ => b) c.1 c.2.1).coef (fun _ => b) j q‖ * (j : ℝ) * 4 ^ (j : ℕ) * 4 :=
+  cltDeriv_eval_leOf 3 3 1 1 (cltres_chkForm 1 (fun _ => b) c.1 c.2.1) cltres_chkm 0 (1 / 2) 0
+    (coordinateMatrix 3 3 1 c) c.1 c.2.1 (1 / 8) 4 4 b Matrix.isHermitian_zero (cltres_chk_dir c)
+    (by rw [cltres_chkm_im]; norm_num) (fun σ x y => cltres_chk_gOf _ (cltres_chk_herm c) σ x y)
+    (fun _ _ _ _ σ => ⟨cltres_chk_gOf _ (cltres_chk_herm c) σ _ _, cltres_chk_gOf _ (cltres_chk_herm c) σ _ _⟩)
+
+/-- M4 at `m`, two labels. -/
+private theorem cltres_chk_M4MultiOf (c : CoordF 3 3 1) (b₂ : Fin 2 → Zd 3 3) :
+    ∃ D : ℂ, HasDerivAt (fun s : ℝ => (cltres_chkForm 2 b₂ c.1 c.2.1).evalOf cltres_chkm 0 (1 / 2)
+        (0 + (s : ℂ) • coordinateMatrix 3 3 1 c) b₂) D (1 / 8) ∧
+      ‖D‖ ≤ 2 * ∑ j : Fin (1 + 1), ∑ q : Fin j → Idx 3 3 1 × Idx 3 3 1 × Bool,
+        ‖(cltres_chkForm 2 b₂ c.1 c.2.1).coef b₂ j q‖ * (j : ℝ) * 4 ^ (j : ℕ) * 4 :=
+  cltDeriv_evalMulti_leOf 3 3 1 2 1 (cltres_chkForm 2 b₂ c.1 c.2.1) cltres_chkm 0 (1 / 2) 0
+    (coordinateMatrix 3 3 1 c) c.1 c.2.1 (1 / 8) 4 4 b₂ Matrix.isHermitian_zero (cltres_chk_dir c)
+    (by rw [cltres_chkm_im]; norm_num) (fun σ x y => cltres_chk_gOf _ (cltres_chk_herm c) σ x y)
+    (fun _ _ _ _ σ => ⟨cltres_chk_gOf _ (cltres_chk_herm c) σ _ _, cltres_chk_gOf _ (cltres_chk_herm c) σ _ _⟩)
+
+/-- M5 at `m`, one label (`κ = 1/2 ≤ Im m`, `κ ≤ 1`), `K = 1`, `C' = 0`, `M = 0`. -/
+private theorem cltres_chk_M5Of (a₀ b₀ : Idx 3 3 1) (b : Zd 3 3) :
+    ‖cltYOf (cltres_chkForm 1 (fun _ => b) a₀ b₀) cltres_chkm 0 (1 / 2)
+        (0 : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) b‖ ≤
+      (((1 : ℕ) : ℝ) + 1) * ((((1 * 3) ^ 3 : ℕ) : ℝ)) ^ (0 : ℝ) *
+        (2 * ((((1 * 3) ^ 3 : ℕ) : ℝ)) ^ 3 / (1 / 2 : ℝ)) ^ 1 :=
+  cltEval_det_leOf 3 3 1 (1 / 2) (1 / 2) cltres_chkm 0 (1 / 2) 1 (cltres_chkForm 1 (fun _ => b) a₀ b₀) 0 0 b
+    (by norm_num) (by norm_num) (by simp [cltres_chkm]; norm_num) (by norm_num) cltres_chk_R
+    (fun b' j q => cltres_chkForm_le 1 (fun _ => b) a₀ b₀ b' j q) Matrix.isHermitian_zero
+
+/-- M5 at `m`, two labels. -/
+private theorem cltres_chk_M5MultiOf (a₀ b₀ : Idx 3 3 1) (b₂ : Fin 2 → Zd 3 3) :
+    ‖(cltres_chkForm 2 b₂ a₀ b₀).evalOf cltres_chkm 0 (1 / 2) (0 : Matrix (Idx 3 3 1) (Idx 3 3 1) ℂ) b₂‖ ≤
+      (((1 : ℕ) : ℝ) + 1) * ((((1 * 3) ^ 3 : ℕ) : ℝ)) ^ (0 : ℝ) *
+        (2 * ((((1 * 3) ^ 3 : ℕ) : ℝ)) ^ 3 / (1 / 2 : ℝ)) ^ 1 :=
+  cltEval_detMulti_leOf 3 3 1 2 (1 / 2) (1 / 2) cltres_chkm 0 (1 / 2) 1 (cltres_chkForm 2 b₂ a₀ b₀) 0 0 b₂
+    (by norm_num) (by norm_num) (by simp [cltres_chkm]; norm_num) (by norm_num) cltres_chk_R
+    (fun b' j q => cltres_chkForm_le 2 b₂ a₀ b₀ b' j q) Matrix.isHermitian_zero
+
+/-- The band margin at `κ = 1`, `E = 0`: `0 < c_1 ≤ Im m(0)` and `c_1 ≤ 1`. -/
+private theorem cltres_chk_ckfacts : 0 < cltCk 1 ∧ cltCk 1 ≤ (mE 0).im ∧ cltCk 1 ≤ 1 :=
+  cltCk_facts one_pos (by norm_num)
+
 /-- G1(a) at `d = 3`, `L = 7`, `m = 2`, `b = (e₀·0, e₀·3)`, `i = 0`, `R = 3`, `a = e₀`: the first
 disjunct is false and the second holds. -/
 private theorem cltres_chk_half :
@@ -1106,6 +1267,12 @@ end Checks
 #print axioms cltDeriv_eval_le
 #print axioms cltDeriv_evalMulti_le
 #print axioms cltEta_lower
+#print axioms cltEta_lowerOf
+#print axioms cltCk_facts
+#print axioms cltDeriv_evalMulti_leOf
+#print axioms cltDeriv_eval_leOf
+#print axioms cltEval_detMulti_leOf
+#print axioms cltEval_det_leOf
 #print axioms cltEval_det_le
 #print axioms cltEval_detMulti_le
 #print axioms cltFarGeomHalf
