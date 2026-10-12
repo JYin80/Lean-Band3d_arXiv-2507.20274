@@ -584,6 +584,8 @@ private theorem BAExp14b_BM_dX (α δ γ : Idx d (sz.L n) (sz.W n)) :
 
 end Atoms
 
+end BM
+
 set_option hygiene false in
 /-- Closure of `BAExp14b_BM` under the operations of the families, with the atoms of `Atoms` (the names `hκ hflow n ht0 ht` of the context). -/
 local macro "bm_tac" : tactic =>
@@ -604,6 +606,8 @@ local macro "bm_tac" : tactic =>
 
 section IntFam
 
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
+
 variable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
 include hκ hflow ht0 ht
 
@@ -623,7 +627,6 @@ private theorem BAExp14b_BM_S3 (j : Fin 4) (σ : Bool) (a b : Zd d (sz.L n)) :
     Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one] <;> bm_tac
 
 end IntFam
-end BM
 
 /-! ## 6. The frames: every family is `W^{-2d} Σ_{x ∈ [a]} Σ_{y ∈ [b]} Σ_α ι(x, y, α)` -/
 
@@ -965,6 +968,196 @@ private theorem BAExp14b_alg (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) :
   ring
 
 end Alg
+
+/-! ## 8. The expansion identity -/
+
+section Expand
+
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
+
+/-- Linearity of the integral for `c₁ f₁ + c₂ f₂ + c₃ f₃ + f₄`. -/
+private theorem BAExp14b_int4 {f₁ f₂ f₃ f₄ : sz.SeqΩ → ℂ} (h₁ : Integrable f₁ (BAExp14a_μ sz)) (h₂ : Integrable f₂ (BAExp14a_μ sz))
+    (h₃ : Integrable f₃ (BAExp14a_μ sz)) (h₄ : Integrable f₄ (BAExp14a_μ sz)) (c₁ c₂ c₃ : ℂ) :
+    ∫ ω, (c₁ * f₁ ω + c₂ * f₂ ω + c₃ * f₃ ω + f₄ ω) ∂(BAExp14a_μ sz) =
+      c₁ * ∫ ω, f₁ ω ∂(BAExp14a_μ sz) + c₂ * ∫ ω, f₂ ω ∂(BAExp14a_μ sz) + c₃ * ∫ ω, f₃ ω ∂(BAExp14a_μ sz) +
+        ∫ ω, f₄ ω ∂(BAExp14a_μ sz) := by
+  have i1 : Integrable (fun ω => c₁ * f₁ ω) (BAExp14a_μ sz) := h₁.const_mul c₁
+  have i2 : Integrable (fun ω => c₂ * f₂ ω) (BAExp14a_μ sz) := h₂.const_mul c₂
+  have i3 : Integrable (fun ω => c₃ * f₃ ω) (BAExp14a_μ sz) := h₃.const_mul c₃
+  have i12 : Integrable (fun ω => c₁ * f₁ ω + c₂ * f₂ ω) (BAExp14a_μ sz) := i1.add i2
+  have i123 : Integrable (fun ω => c₁ * f₁ ω + c₂ * f₂ ω + c₃ * f₃ ω) (BAExp14a_μ sz) := i12.add i3
+  rw [integral_add i123 h₄, integral_add i12 i3, integral_add i1 i2, integral_const_mul, integral_const_mul,
+    integral_const_mul]
+
+/-- **The cell identity** `𝔼[G(σ)_{yx} X_{[α]} G_{xα} G_{αy}] = 𝔼[M M f + M R_lan + R_lan' M + R_gg]`: `G = Ǧ + M`, `lanlw` twice, `GGGamma`. -/
+private theorem BAExp14b_cell (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) :
+    ∫ ω, BAExp14a_tail sz z n t ω σ x y * (BAExp14a_X sz z n t ω (STblk sz n α) *
+        ((baFMz sz z).G n t ω x α * (baFMz sz z).G n t ω α y)) ∂(BAExp14a_μ sz) =
+      ∫ ω, ((baFMz sz z).M n x α * (baFMz sz z).M n α y * BAExp14b_f sz z n t ω σ x y α +
+        (baFMz sz z).M n x α * BAExp14b_Rlan sz z n t ω σ x y α α y +
+        BAExp14b_Rlan sz z n t ω σ x y α x α * (baFMz sz z).M n α y + BAExp14b_Rgg sz z n t ω σ x y α) ∂(BAExp14a_μ sz) := by
+  have iF : Integrable (fun ω : sz.SeqΩ => BAExp14b_f sz z n t ω σ x y α) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_f
+    bm_tac
+  have iF2 : Integrable (fun ω : sz.SeqΩ => (baFMz sz z).GM n t ω α y * BAExp14b_f sz z n t ω σ x y α) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_f
+    bm_tac
+  have iF3 : Integrable (fun ω : sz.SeqΩ => (baFMz sz z).GM n t ω x α * BAExp14b_f sz z n t ω σ x y α) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_f
+    bm_tac
+  have iF4 : Integrable (fun ω : sz.SeqΩ => (baFMz sz z).GM n t ω x α * (baFMz sz z).GM n t ω α y *
+      BAExp14b_f sz z n t ω σ x y α) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_f
+    bm_tac
+  have iR1 : Integrable (fun ω : sz.SeqΩ => BAExp14b_Rlan sz z n t ω σ x y α α y) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_Rlan BAExp14b_f BAExp14b_df
+    bm_tac
+  have iR2 : Integrable (fun ω : sz.SeqΩ => BAExp14b_Rlan sz z n t ω σ x y α x α) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_Rlan BAExp14b_f BAExp14b_df
+    bm_tac
+  have iR3 : Integrable (fun ω : sz.SeqΩ => BAExp14b_Rgg sz z n t ω σ x y α) (BAExp14a_μ sz) := by
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_Rgg BAExp14b_f BAExp14b_df
+    bm_tac
+  have hL : ∀ ω : sz.SeqΩ, BAExp14a_tail sz z n t ω σ x y * (BAExp14a_X sz z n t ω (STblk sz n α) *
+      ((baFMz sz z).G n t ω x α * (baFMz sz z).G n t ω α y)) =
+      ((baFMz sz z).M n x α * (baFMz sz z).M n α y) * BAExp14b_f sz z n t ω σ x y α +
+        (baFMz sz z).M n x α * ((baFMz sz z).GM n t ω α y * BAExp14b_f sz z n t ω σ x y α) +
+        (baFMz sz z).M n α y * ((baFMz sz z).GM n t ω x α * BAExp14b_f sz z n t ω σ x y α) +
+        (baFMz sz z).GM n t ω x α * (baFMz sz z).GM n t ω α y * BAExp14b_f sz z n t ω σ x y α := by
+    intro ω
+    unfold BAExp14b_f FlowFM.GM
+    ring
+  have hR : ∀ ω : sz.SeqΩ, (baFMz sz z).M n x α * (baFMz sz z).M n α y * BAExp14b_f sz z n t ω σ x y α +
+        (baFMz sz z).M n x α * BAExp14b_Rlan sz z n t ω σ x y α α y +
+        BAExp14b_Rlan sz z n t ω σ x y α x α * (baFMz sz z).M n α y + BAExp14b_Rgg sz z n t ω σ x y α =
+      ((baFMz sz z).M n x α * (baFMz sz z).M n α y) * BAExp14b_f sz z n t ω σ x y α +
+        (baFMz sz z).M n x α * BAExp14b_Rlan sz z n t ω σ x y α α y +
+        (baFMz sz z).M n α y * BAExp14b_Rlan sz z n t ω σ x y α x α + BAExp14b_Rgg sz z n t ω σ x y α := by
+    intro ω; ring
+  simp only [hL, hR]
+  rw [BAExp14b_int4 iF iF2 iF3 iF4, BAExp14b_int4 iF iR1 iR2 iR3,
+    BAExp14b_law_lanlw hκ hflow n ht0 ht σ x y α α y, BAExp14b_law_lanlw hκ hflow n ht0 ht σ x y α x α,
+    BAExp14b_law_GG hκ hflow n ht0 ht σ x y α]
+
+/-- The integral of a frame is the frame of the integrals (`W^{-2d} Σ_{x ∈ [a]} Σ_{y ∈ [b]} Σ_α`). -/
+private theorem BAExp14b_integral_fr (n : ℕ) (a b : Zd d (sz.L n))
+    (J : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ)
+    (hJ : ∀ x y α, Integrable (J x y α) (BAExp14a_μ sz)) :
+    ∫ ω, BAExp14b_fr sz n a b (fun x y α => J x y α ω) ∂(BAExp14a_μ sz) =
+      ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b, ∑ α,
+        ∫ ω, J x y α ω ∂(BAExp14a_μ sz) := by
+  unfold BAExp14b_fr
+  rw [integral_const_mul]
+  congr 1
+  rw [integral_finsetSum _ fun x _ => integrable_finsetSum _ fun y _ => integrable_finsetSum _ fun α _ => hJ x y α]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [integral_finsetSum _ fun y _ => integrable_finsetSum _ fun α _ => hJ x y α]
+  refine Finset.sum_congr rfl fun y _ => ?_
+  rw [integral_finsetSum _ fun α _ => hJ x y α]
+
+private theorem BAExp14b_fr_congr (n : ℕ) (a b : Zd d (sz.L n))
+    {J₁ J₂ : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ}
+    (h : ∀ x y α, J₁ x y α = J₂ x y α) : BAExp14b_fr sz n a b J₁ = BAExp14b_fr sz n a b J₂ := by
+  unfold BAExp14b_fr
+  simp only [h]
+
+/-- **The expansion identity at `σc = +`.** -/
+private theorem BAExp14b_expand_true (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht : t ≤ BAflowT0 sz z n) (σo : Bool) (ac ao : Zd d (sz.L n)) :
+    ∫ ω, LWcutg (baFMz sz z) n t true σo ac ao ω ∂(BAExp14a_μ sz) =
+      (∑ k : Fin 6, ∫ ω, BAExp14aS1Fam sz z n t ω k true σo ac ao ∂(BAExp14a_μ sz)) +
+        (∑ j : Fin 8, ∫ ω, BAExp14bS2Fam sz z n t ω j true σo ac ao ∂(BAExp14a_μ sz)) +
+        (∑ j : Fin 4, ∫ ω, BAExp14bS3Fam sz z n t ω j true σo ac ao ∂(BAExp14a_μ sz)) := by
+  have hSelf := (BAflow_real κ ε 𝔠 𝔡 sz z hflow n).1
+  have iL : ∀ x y α : Idx d (sz.L n) (sz.W n), Integrable (fun ω : sz.SeqΩ => BAExp14a_tail sz z n t ω σo x y *
+      (BAExp14a_X sz z n t ω (STblk sz n α) * ((baFMz sz z).G n t ω x α * (baFMz sz z).G n t ω α y))) (BAExp14a_μ sz) := by
+    intro x y α
+    refine BAExp14b_BM.integrable ?_
+    bm_tac
+  have iJ : ∀ x y α : Idx d (sz.L n) (sz.W n), Integrable (fun ω : sz.SeqΩ =>
+      ((baFMz sz z).M n x α * (baFMz sz z).M n α y * BAExp14b_f sz z n t ω σo x y α +
+        (baFMz sz z).M n x α * BAExp14b_Rlan sz z n t ω σo x y α α y +
+        BAExp14b_Rlan sz z n t ω σo x y α x α * (baFMz sz z).M n α y + BAExp14b_Rgg sz z n t ω σo x y α)) (BAExp14a_μ sz) := by
+    intro x y α
+    refine BAExp14b_BM.integrable ?_
+    unfold BAExp14b_Rlan BAExp14b_Rgg BAExp14b_f BAExp14b_df
+    bm_tac
+  have e1 : ∫ ω, LWcutg (baFMz sz z) n t true σo ac ao ω ∂(BAExp14a_μ sz) =
+      ∫ ω, BAExp14b_fr sz n ao ac (fun x y α => BAExp14a_tail sz z n t ω σo x y *
+        (BAExp14a_X sz z n t ω (STblk sz n α) * ((baFMz sz z).G n t ω x α * (baFMz sz z).G n t ω α y))) ∂(BAExp14a_μ sz) :=
+    integral_congr_ae (Eventually.of_forall fun ω => BAExp14b_cut_true n t hSelf σo ac ao ω)
+  have e2 : ∫ ω, BAExp14b_fr sz n ao ac (fun x y α => BAExp14a_tail sz z n t ω σo x y *
+        (BAExp14a_X sz z n t ω (STblk sz n α) * ((baFMz sz z).G n t ω x α * (baFMz sz z).G n t ω α y))) ∂(BAExp14a_μ sz) =
+      ∫ ω, BAExp14b_fr sz n ao ac (fun x y α =>
+        ((baFMz sz z).M n x α * (baFMz sz z).M n α y * BAExp14b_f sz z n t ω σo x y α +
+          (baFMz sz z).M n x α * BAExp14b_Rlan sz z n t ω σo x y α α y +
+          BAExp14b_Rlan sz z n t ω σo x y α x α * (baFMz sz z).M n α y + BAExp14b_Rgg sz z n t ω σo x y α)) ∂(BAExp14a_μ sz) := by
+    rw [BAExp14b_integral_fr n ao ac _ iL, BAExp14b_integral_fr n ao ac _ iJ]
+    congr 1
+    refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => Finset.sum_congr rfl fun α _ => ?_
+    exact BAExp14b_cell hκ hflow n ht0 ht σo x y α
+  have e3 : ∀ ω : sz.SeqΩ, BAExp14b_fr sz n ao ac (fun x y α =>
+        ((baFMz sz z).M n x α * (baFMz sz z).M n α y * BAExp14b_f sz z n t ω σo x y α +
+          (baFMz sz z).M n x α * BAExp14b_Rlan sz z n t ω σo x y α α y +
+          BAExp14b_Rlan sz z n t ω σo x y α x α * (baFMz sz z).M n α y + BAExp14b_Rgg sz z n t ω σo x y α)) =
+      (∑ k : Fin 6, BAExp14a_F sz z n t ω k σo ao ac) + (∑ j : Fin 8, BAExp14b_FS2 sz z n t ω j σo ao ac) +
+        (∑ j : Fin 4, BAExp14b_FS3 sz z n t ω j σo ao ac) := by
+    intro ω
+    rw [BAExp14b_families_eq_fr]
+    exact BAExp14b_fr_congr n ao ac fun x y α => BAExp14b_alg sz z n t ω σo x y α
+  have iS1 : ∀ k : Fin 6, Integrable (fun ω : sz.SeqΩ => BAExp14a_F sz z n t ω k σo ao ac) (BAExp14a_μ sz) :=
+    fun k => (BAExp14b_BM_S1 hκ hflow n ht0 ht k σo ao ac).integrable
+  have iS2 : ∀ j : Fin 8, Integrable (fun ω : sz.SeqΩ => BAExp14b_FS2 sz z n t ω j σo ao ac) (BAExp14a_μ sz) :=
+    fun j => (BAExp14b_BM_S2 hκ hflow n ht0 ht j σo ao ac).integrable
+  have iS3 : ∀ j : Fin 4, Integrable (fun ω : sz.SeqΩ => BAExp14b_FS3 sz z n t ω j σo ao ac) (BAExp14a_μ sz) :=
+    fun j => (BAExp14b_BM_S3 hκ hflow n ht0 ht j σo ao ac).integrable
+  have iA : Integrable (fun ω : sz.SeqΩ => ∑ k : Fin 6, BAExp14a_F sz z n t ω k σo ao ac) (BAExp14a_μ sz) :=
+    integrable_finsetSum _ fun k _ => iS1 k
+  have iB : Integrable (fun ω : sz.SeqΩ => ∑ j : Fin 8, BAExp14b_FS2 sz z n t ω j σo ao ac) (BAExp14a_μ sz) :=
+    integrable_finsetSum _ fun j _ => iS2 j
+  have iC : Integrable (fun ω : sz.SeqΩ => ∑ j : Fin 4, BAExp14b_FS3 sz z n t ω j σo ao ac) (BAExp14a_μ sz) :=
+    integrable_finsetSum _ fun j _ => iS3 j
+  have iAB : Integrable (fun ω : sz.SeqΩ => (∑ k : Fin 6, BAExp14a_F sz z n t ω k σo ao ac) +
+      ∑ j : Fin 8, BAExp14b_FS2 sz z n t ω j σo ao ac) (BAExp14a_μ sz) := iA.add iB
+  rw [e1, e2]
+  simp only [e3]
+  rw [integral_add iAB iC, integral_add iA iB, integral_finsetSum _ fun k _ => iS1 k,
+    integral_finsetSum _ fun j _ => iS2 j, integral_finsetSum _ fun j _ => iS3 j]
+  simp only [BAExp14aS1Fam, BAExp14bS2Fam, BAExp14bS3Fam, ite_true]
+
+end Expand
+
+/-- **The expansion identity** (target 2): `𝔼 LWcutg = Σ S1 + Σ S2 + Σ S3` at every size `n`, time `t ∈ [0, BAflowT0]` and
+labelling `(σc, σo, ac, ao)`, both charges.  `σc = +`: `G = Ǧ + M` and `BAGGGammaR`, `BAlanlwR` (twice) at `f = X_{[α]} G(σo)_{yx}`,
+`∂f = (∂X) G(σo)_{yx} + X ∂G(σo)_{yx}`, `W = W^{(0)} + W^{(1)}`; `σc = -`: the conjugation `baExp14b_cut_conj`. -/
+theorem baExp14b_expand_holds (d : ℕ) : BAExp14bExpand d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow n t ht0 ht σc σo ac ao
+  cases σc
+  · have h : ∫ ω, LWcutg (baFMz sz z) n t true (!σo) ao ac ω ∂(Sizes.seqP (sz.withLam 0)) =
+        (∑ k : Fin 6, ∫ ω, BAExp14aS1Fam sz z n t ω k true (!σo) ao ac ∂(Sizes.seqP (sz.withLam 0))) +
+          (∑ j : Fin 8, ∫ ω, BAExp14bS2Fam sz z n t ω j true (!σo) ao ac ∂(Sizes.seqP (sz.withLam 0))) +
+          (∑ j : Fin 4, ∫ ω, BAExp14bS3Fam sz z n t ω j true (!σo) ao ac ∂(Sizes.seqP (sz.withLam 0))) :=
+      BAExp14b_expand_true hκ hflow n ht0 ht (!σo) ao ac
+    have hconj : ∀ f : (sz.withLam 0).SeqΩ → ℂ, ∫ ω, star (f ω) ∂(Sizes.seqP (sz.withLam 0)) =
+        star (∫ ω, f ω ∂(Sizes.seqP (sz.withLam 0))) := fun f => by
+      simpa using integral_conj (f := f) (μ := Sizes.seqP (sz.withLam 0))
+    have e : ∫ ω, LWcutg (baFMz sz z) n t false σo ac ao ω ∂(Sizes.seqP (sz.withLam 0)) =
+        star (∫ ω, LWcutg (baFMz sz z) n t true (!σo) ao ac ω ∂(Sizes.seqP (sz.withLam 0))) := by
+      calc ∫ ω, LWcutg (baFMz sz z) n t false σo ac ao ω ∂(Sizes.seqP (sz.withLam 0))
+          = ∫ ω, star (LWcutg (baFMz sz z) n t true (!σo) ao ac ω) ∂(Sizes.seqP (sz.withLam 0)) :=
+            integral_congr_ae (Eventually.of_forall fun ω => baExp14b_cut_conj sz z n t σo ac ao ω)
+        _ = _ := hconj (fun ω => LWcutg (baFMz sz z) n t true (!σo) ao ac ω)
+    rw [e, h]
+    simp only [BAExp14aS1Fam, BAExp14bS2Fam, BAExp14bS3Fam, Bool.false_eq_true, ite_false, ite_true, star_add, star_sum, hconj]
+  · exact BAExp14b_expand_true hκ hflow n ht0 ht σo ac ao
 
 end RBM.BA
 
