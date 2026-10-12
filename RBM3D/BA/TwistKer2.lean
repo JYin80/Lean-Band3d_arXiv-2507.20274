@@ -6,7 +6,6 @@ Authors: Jun Yin
 import RBM3D.BA.TwistKer
 import RBM3D.BA.KInduct
 import RBM3D.Induction.KDecay
-import RBM3D.Induction.Contract
 
 /-!
 # BA stage TL, row TL2b (T2429), part 2: the sources of the twisted Duhamel formula
