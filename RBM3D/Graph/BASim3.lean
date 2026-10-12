@@ -1906,6 +1906,11 @@ theorem hTE : BAFrameStepT (baPG baPE) ((baPG baPE).outsT baPE.tagT1 [BAGraph.la
     (by decide) (by decide) (by decide) (by decide)
 theorem tag_exists (l : List (BAShape × BAPGraph (Fin 2))) (t : BAShape) (h : t ∈ l.map Prod.fst) : ∃ Q, (t, Q) ∈ l := by
   obtain ⟨⟨t', Q⟩, hm, rfl⟩ := List.mem_map.1 h; exact ⟨Q, hm⟩
+/-- the data are nondegenerate (kernel evaluation of `outsT`, `tagStd`, `tagT1`): `gg` at `P_A` has 31 outputs (23 `band`, 8 `e2`), `ggSplit` at `P_C` has 48 (8 `band`, 1 `e1`, 5 `e2`, 34 `macroB`) -/
+example : ((ggFT.map Prod.fst).count BAShape.band = 23 ∧ (ggFT.map Prod.fst).count BAShape.e2 = 8 ∧ ggFT.length = 31) ∧
+    ((((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.band = 8 ∧ (((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.e1 = 1 ∧
+      (((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.e2 = 5 ∧ (((baPG baPC).splitOutsT pC qC 0).map Prod.fst).count BAShape.macroB = 34 ∧
+      ((baPG baPC).splitOutsT pC qC 0).length = 48) := by decide +kernel
 /-- **`baMatch_holds` and `baExtraGood_holds` at the data**: the `gg` step at `P_A` has `band`-tagged and `e2`-tagged outputs (kernel evaluation of `outsT`, `tagStd`); the `ggSplit` step at `P_C` has `band` and `e1` outputs; every deterministic hypothesis is discharged. -/
 example (m : ℂ) :
     (∃ Q, (BAShape.band, Q) ∈ ggFT ∧ ∃ L' : List (PGraph (Fin 2)), LocStep m (baPG baPA).img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img) ∧
