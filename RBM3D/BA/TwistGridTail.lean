@@ -48,6 +48,7 @@ open private StepDecompLoop_word_jets StepDecompLoop_word_jet1 StepDecompLoop_ha
 open private QVIdentity_coord_sum QVIdentity_pair QVIdentity_svarF_cast QVIdentity_sum_swap4 from RBM3D.Path.QVIdentity
 open private StepDecompN_integrable_phi StepDecompN_measurable_AbCN from RBM3D.Induction.StepDecompN
 open private gridAsm_measurable_coord from RBM3D.Induction.GridAssemblyN
+open private StepDecompN_integrable_phi StepDecompN_measurable_AbCN from RBM3D.Induction.StepDecompN
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Matrix Matrix.Norms.L2Operator
@@ -1049,5 +1050,142 @@ theorem TwistGridTail_condMGF_Z (j : ℕ) (σ : Fin 2 → Bool) (c₁ c₂ : Zd 
     nlinarith [mul_le_mul_of_nonneg_right (hvar ω).2 hrr]
 
 end CondMGF
+
+/-! ## 7. The first-chaos and second-order parts of one step, for a generic Hermitian test family -/
+
+section StepFields
+
+variable {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
+
+private theorem TwistGridTail_measurable_pair (A : PathΩ sz → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hA : Measurable[filt sz j] A) :
+    Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => (A ω, ω (j + 1))) :=
+  (hA.mono ((filt sz).mono (Nat.le_succ j)) le_rfl).prodMk (gridAsm_measurable_coord sz le_rfl)
+
+variable {ι : Type} [Fintype ι]
+  {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
+
+/-- `Z = stepZCN` is `filt sz (j+1)`-measurable. -/
+private theorem TwistGridTail_measurable_stepZ (hΦ : ∀ a, HermTestFun sz n (Φ a)) (U : ι → ι → ℂ) (b : ι) :
+    Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => stepZCN sz s t K n j Φ U b ω) := by
+  have hAm := StepDecompN_measurable_AbCN sz s t K n j hΦ U b
+  have hp := TwistGridTail_measurable_pair sz n j _ hAm
+  have hre : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => stepZCN_re sz s t K n j Φ U b ω) := by
+    have h0' := (difRepTail_measurable_linTr_uncurry (sz := sz) n).comp hp
+    have h0 : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz =>
+        linTr n (AbCN sz s t K n j Φ U b ω) (Sizes.seqXmat sz n (ω (j + 1)))) := h0'
+    exact h0.const_mul (Real.sqrt (gridStep s t K n))
+  have hAm' : Measurable[filt sz j] (fun ω => (-Complex.I) • AbCN sz s t K n j Φ U b ω) := hAm.const_smul (-Complex.I)
+  have hp' := TwistGridTail_measurable_pair sz n j _ hAm'
+  have him : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => stepZCN_im sz s t K n j Φ U b ω) := by
+    have h0' := (difRepTail_measurable_linTr_uncurry (sz := sz) n).comp hp'
+    have h0 : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz =>
+        linTr n ((-Complex.I) • AbCN sz s t K n j Φ U b ω) (Sizes.seqXmat sz n (ω (j + 1)))) := h0'
+    exact h0.const_mul (Real.sqrt (gridStep s t K n))
+  have hre' : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => ((stepZCN_re sz s t K n j Φ U b ω : ℝ) : ℂ)) :=
+    Complex.measurable_ofReal.comp hre
+  have him' : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => ((stepZCN_im sz s t K n j Φ U b ω : ℝ) : ℂ)) :=
+    Complex.measurable_ofReal.comp him
+  unfold stepZCN
+  exact hre'.add (him'.const_mul _)
+
+/-- `Y = stepYCN` is `filt sz (j+1)`-measurable, for measurable observables. -/
+private theorem TwistGridTail_measurable_stepY (hΦ : ∀ a, HermTestFun sz n (Φ a)) (hΦm : ∀ a, Measurable (Φ a))
+    (U : ι → ι → ℂ) (b : ι) :
+    Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => stepYCN sz s t K n j Φ U b ω) := by
+  have h1 : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => ∑ a, U b a * Φ a (pathH sz s t K n (j + 1) ω)) :=
+    Finset.measurable_sum _ fun a _ => ((hΦm a).comp (pathH_measurable_filt sz s t K n (j + 1))).const_mul _
+  have h2 : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz =>
+      (pathP sz)[fun ω' => ∑ a, U b a * Φ a (pathH sz s t K n (j + 1) ω') | filt sz j] ω) :=
+    (stronglyMeasurable_condExp.measurable).mono ((filt sz).mono (Nat.le_succ j)) le_rfl
+  unfold stepYCN stepXiCN
+  exact (h1.sub h2).sub (TwistGridTail_measurable_stepZ sz s t K n j hΦ U b)
+
+/-- **The `L²` data of `Re Y`, `Im Y`** for Doob's inequality: `L²`, conditionally centred, and `∫ (Re Y)² ≤ 768 C₂² Δ² N⁸`
+(`stepDecompCN` (iii), (iv), `stepDecompCN_Y_sq`, `∫‖X_{j+1}‖⁴ ≤ 768 N⁸`). -/
+private theorem TwistGridTail_Y_fields (hΦ : ∀ a, HermTestFun sz n (Φ a)) (hΦm : ∀ a, Measurable (Φ a)) {C₂ : ℝ}
+    (hC₀ : 0 ≤ C₂)
+    (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
+      M.IsHermitian → y.IsHermitian → ‖fderiv ℝ (fderiv ℝ (Φ a)) M y y‖ ≤ C₂ * ‖y‖ ^ 2)
+    (hΔ : 0 ≤ gridStep s t K n) (U : ι → ι → ℂ) (b : ι) (hU : ∑ a, ‖U b a‖ ≤ 1) :
+    MemLp (fun ω => (stepYCN sz s t K n j Φ U b ω).re) 2 (pathP sz) ∧
+    MemLp (fun ω => (stepYCN sz s t K n j Φ U b ω).im) 2 (pathP sz) ∧
+    (pathP sz)[fun ω => (stepYCN sz s t K n j Φ U b ω).re | filt sz j] =ᵐ[pathP sz] 0 ∧
+    (pathP sz)[fun ω => (stepYCN sz s t K n j Φ U b ω).im | filt sz j] =ᵐ[pathP sz] 0 ∧
+    ∫ ω, ((stepYCN sz s t K n j Φ U b ω).re) ^ 2 ∂(pathP sz) ≤ 768 * C₂ ^ 2 * gridStep s t K n ^ 2 * (sz.size n : ℝ) ^ 8 ∧
+    ∫ ω, ((stepYCN sz s t K n j Φ U b ω).im) ^ 2 ∂(pathP sz) ≤ 768 * C₂ ^ 2 * gridStep s t K n ^ 2 * (sz.size n : ℝ) ^ 8 := by
+  have hIntRe := integrable_stepZCN_re_of_hermTestFun sz s t K n j hΦ hC₂ hΔ U b
+  have hIntIm := integrable_stepZCN_im_of_hermTestFun sz s t K n j hΦ hC₂ hΔ U b
+  obtain ⟨-, -, hbound, hmean⟩ := stepDecompCN sz s t K n j hΦ hC₂ hΔ U b hIntRe hIntIm
+  set Y : PathΩ sz → ℂ := fun ω => stepYCN sz s t K n j Φ U b ω with hYdef
+  have hYm : Measurable[filt sz (j + 1)] Y := TwistGridTail_measurable_stepY sz s t K n j hΦ hΦm U b
+  have hYae : AEStronglyMeasurable Y (pathP sz) := (hYm.mono ((filt sz).le (j + 1)) le_rfl).aestronglyMeasurable
+  set cc : ℝ := (∑ a, ‖U b a‖) * ((C₂ / 2) * gridStep s t K n) with hcc
+  set g : PathΩ sz → ℝ := fun ω => cc * ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 2 with hgdef
+  have hg2int : Integrable (fun ω => g ω ^ 2) (pathP sz) := by
+    have : (fun ω => g ω ^ 2) = fun ω => cc ^ 2 * ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 4 := by
+      funext ω; simp only [hgdef]; ring
+    rw [this]
+    exact (integrable_normPow4_incr sz n j).const_mul _
+  have hgm : AEStronglyMeasurable g (pathP sz) := by
+    have : Measurable g := by
+      have h1 : Measurable fun ω : PathΩ sz => Sizes.seqXmat sz n (ω (j + 1)) :=
+        ((continuous_Xmat d (sz.L n) (sz.W n)).measurable.comp (Sizes.measurable_slice sz n)).comp
+          (measurable_pi_apply (j + 1))
+      exact (h1.norm.pow_const 2).const_mul cc
+    exact this.aestronglyMeasurable
+  have hgL2 : MemLp g 2 (pathP sz) := (memLp_two_iff_integrable_sq hgm).2 hg2int
+  have hhL2 : MemLp (fun ω => g ω + (pathP sz)[g | filt sz j] ω) 2 (pathP sz) :=
+    hgL2.add (hgL2.condExp (m := filt sz j) (by norm_num))
+  have hYL2 : MemLp Y 2 (pathP sz) := MemLp.mono' hhL2 hYae hbound
+  have hReL2 : MemLp (fun ω => (Y ω).re) 2 (pathP sz) :=
+    hYL2.of_le (Complex.continuous_re.comp_aestronglyMeasurable hYae)
+      (Filter.Eventually.of_forall fun ω => by simpa using Complex.abs_re_le_norm (Y ω))
+  have hImL2 : MemLp (fun ω => (Y ω).im) 2 (pathP sz) :=
+    hYL2.of_le (Complex.continuous_im.comp_aestronglyMeasurable hYae)
+      (Filter.Eventually.of_forall fun ω => by simpa using Complex.abs_im_le_norm (Y ω))
+  have hYint : Integrable Y (pathP sz) := hYL2.integrable (by norm_num)
+  have hRe := (RCLike.reCLM (K := ℂ)).comp_condExp_comm (m := filt sz j) hYint
+  have hIm := (RCLike.imCLM (K := ℂ)).comp_condExp_comm (m := filt sz j) hYint
+  have hmean' : (pathP sz)[Y | filt sz j] =ᵐ[pathP sz] fun _ => (0 : ℂ) := hmean
+  have hmRe : (pathP sz)[fun ω => (Y ω).re | filt sz j] =ᵐ[pathP sz] 0 := by
+    have h1 : (fun ω => ((pathP sz)[Y | filt sz j] ω).re) =ᵐ[pathP sz]
+        (pathP sz)[fun ω => (Y ω).re | filt sz j] := hRe
+    filter_upwards [h1, hmean'] with ω h1 h2
+    rw [← h1, h2]
+    simp
+  have hmIm : (pathP sz)[fun ω => (Y ω).im | filt sz j] =ᵐ[pathP sz] 0 := by
+    have h1 : (fun ω => ((pathP sz)[Y | filt sz j] ω).im) =ᵐ[pathP sz]
+        (pathP sz)[fun ω => (Y ω).im | filt sz j] := hIm
+    filter_upwards [h1, hmean'] with ω h1 h2
+    rw [← h1, h2]
+    simp
+  have hYsq := stepDecompCN_Y_sq sz s t K n j hΦ hC₂ hΔ U b
+  have h4 := integral_normPow4_incr_le sz n j
+  have hint2 : Integrable (fun ω => ‖Y ω‖ ^ 2) (pathP sz) := hYL2.norm.integrable_sq
+  have hq : ∫ ω, ‖Y ω‖ ^ 2 ∂(pathP sz) ≤ 768 * C₂ ^ 2 * gridStep s t K n ^ 2 * (sz.size n : ℝ) ^ 8 := by
+    refine hYsq.trans ?_
+    set S := ∑ a, ‖U b a‖
+    have hS0 : 0 ≤ S := Finset.sum_nonneg fun a _ => norm_nonneg _
+    have h1 : 4 * (S * (C₂ / 2)) ^ 2 * gridStep s t K n ^ 2 ≤ 4 * (C₂ / 2) ^ 2 * gridStep s t K n ^ 2 := by
+      have : (S * (C₂ / 2)) ^ 2 ≤ (C₂ / 2) ^ 2 := by
+        have := mul_le_mul_of_nonneg_right hU (by positivity : 0 ≤ C₂ / 2)
+        nlinarith [mul_nonneg hS0 (by positivity : 0 ≤ C₂ / 2)]
+      nlinarith [sq_nonneg (gridStep s t K n)]
+    calc 4 * (S * (C₂ / 2)) ^ 2 * gridStep s t K n ^ 2 * ∫ ω, ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 4 ∂(pathP sz)
+        ≤ 4 * (C₂ / 2) ^ 2 * gridStep s t K n ^ 2 * (768 * (sz.size n : ℝ) ^ 8) :=
+          mul_le_mul h1 h4 (integral_nonneg fun ω => by positivity) (by positivity)
+      _ = 768 * C₂ ^ 2 * gridStep s t K n ^ 2 * (sz.size n : ℝ) ^ 8 := by ring
+  refine ⟨hReL2, hImL2, hmRe, hmIm, ?_, ?_⟩
+  · refine (integral_mono hReL2.integrable_sq hint2 fun ω => ?_).trans hq
+    simp only
+    have := Complex.abs_re_le_norm (Y ω)
+    nlinarith [abs_nonneg (Y ω).re, sq_abs (Y ω).re]
+  · refine (integral_mono hImL2.integrable_sq hint2 fun ω => ?_).trans hq
+    simp only
+    have := Complex.abs_im_le_norm (Y ω)
+    nlinarith [abs_nonneg (Y ω).im, sq_abs (Y ω).im]
+
+end StepFields
 
 end RBM.BA
