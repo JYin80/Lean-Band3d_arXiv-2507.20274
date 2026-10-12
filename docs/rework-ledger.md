@@ -11,3 +11,5 @@
 | T2433 | 2026-10-12 11:22 UTC (695cfc7) | prover-max（探针步骤 prover-max） | Sonnet 5.5（prover-max） | 否 | BA-L L4e-C：1a-audit 第一轮问第二个文件超停止线 → 监督 0554 范围 HOLD → Amend 1（只做通用一半、跑 L4S3-L1）→ L4S3-L1 未解除（H234）→ 1a-audit 第二轮 PASS（Q3-C1/C2）→ 1b 撞 API 限额，按规则 (H) 重跑 → 审核 PASS；新 `Graph/BAG5Leaf` 1,136 行 |
 | T2447 | 2026-10-12 11:28 UTC (00f4a10) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3b4″（O2 行）：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAShapeO2` 1,094 + `BAShapeO2B` 447 行 |
 | T2448 | 2026-10-12 11:30 UTC (79f3c1c) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3d3：1a → 1b → 审核 PASS 第一轮（观察 O1、O2，不要签字）；新 `Graph/BAEngine` 506 行；目标 3–4 带 `T2448_Binder` |
+| T2451 | 2026-10-12 12:47 UTC (4d4091e) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-TL TL2e：1a → 1b → 审核 PASS 第一轮；新 `BA/TwistLoop` 904 行；stage TL 13/13 |
+| T2453 | 2026-10-12 13:07 UTC (4fad610) | prover | Sonnet 5.5 | 是 | ST T4s1：1a → 1b → 审核 PASS 第一轮；新 `Chain/GridDuhamelGen` 683 行（新增文件） |
