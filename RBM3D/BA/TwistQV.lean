@@ -1041,4 +1041,251 @@ private lemma TwistQV_twEE_diag {n : ℕ} (C : FlowFM sz) (v : ℝ) (ω : sz.Seq
 
 end Bridge
 
+/-! ## 4. The `≺` arithmetic -/
+
+section Arith
+
+/-- **The exponent arithmetic of `T.11 (iii)`** (the table (i) of the report): from `M_k ≤ X B^{k-1}` for `k ∈ {1, 2, 4, 2q, 4p}`,
+`X ≥ 1`, `0 < B ≤ 1`:
+`2 η⁻¹ [M₁ M_{2q}^{1/q} M_{4p}^{1/(2p)} + M_{4p}^{1/(2p)} (M₂ M₄)^{1/2}] ≤ 4 X³ η⁻¹ B^{4 - 1/(2p) - 1/q}`.
+The first term has the exponent `(2q-1)/q + (4p-1)/(2p) = 4 - 1/(2p) - 1/q` exactly; the second has `2 + (4p-1)/(2p) = 4 - 1/(2p)`,
+larger by `1/q`, absorbed by `B ≤ 1`. -/
+private lemma TwistQV_arith {X B η M₁ M₂ M₄ Mq Mp : ℝ} {p q : ℕ} (hp : 1 ≤ p) (hq : 1 ≤ q) (hX : 1 ≤ X)
+    (hB0 : 0 < B) (hB1 : B ≤ 1) (hη : 0 < η)
+    (h₁ : M₁ ≤ X) (h₂ : M₂ ≤ X * B) (h₄ : M₄ ≤ X * B ^ 3)
+    (hq' : Mq ≤ X * B ^ (2 * q - 1)) (hp' : Mp ≤ X * B ^ (4 * p - 1))
+    (hM₁ : 0 ≤ M₁) (hM₂ : 0 ≤ M₂) (hM₄ : 0 ≤ M₄) (hMq : 0 ≤ Mq) (hMp : 0 ≤ Mp) :
+    2 * (η⁻¹ * (M₁ * Mq ^ ((q : ℝ)⁻¹) * Mp ^ (1 / (2 * (p : ℝ))) + Mp ^ (1 / (2 * (p : ℝ))) * √(M₂ * M₄))) ≤
+      4 * X ^ 3 * (η⁻¹ * B ^ (4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ))) := by
+  have hX0 : 0 < X := by linarith
+  have hq0 : (0 : ℝ) < q := by exact_mod_cast hq
+  have hp0 : (0 : ℝ) < p := by exact_mod_cast hp
+  have hq1 : (1 : ℝ) ≤ q := by exact_mod_cast hq
+  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast hp
+  have hpow : ∀ (M : ℝ) (m : ℕ) (r : ℝ), 0 ≤ M → M ≤ X * B ^ m → 0 ≤ r →
+      M ^ r ≤ X ^ r * B ^ ((m : ℝ) * r) := by
+    intro M m r hM hMle hr
+    calc M ^ r ≤ (X * B ^ m) ^ r := Real.rpow_le_rpow hM hMle hr
+      _ = X ^ r * (B ^ m) ^ r := Real.mul_rpow hX0.le (by positivity)
+      _ = X ^ r * B ^ ((m : ℝ) * r) := by rw [← Real.rpow_natCast, ← Real.rpow_mul hB0.le]
+  have hXr : ∀ r : ℝ, 0 ≤ r → r ≤ 1 → X ^ r ≤ X := by
+    intro r hr0 hr1
+    calc X ^ r ≤ X ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hX hr1
+      _ = X := Real.rpow_one X
+  have hqinv : (q : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hq1
+  have h2p : (0 : ℝ) < 2 * p := by positivity
+  have hpinv : 1 / (2 * (p : ℝ)) ≤ 1 := by
+    rw [div_le_one h2p]; linarith
+  -- the three powers
+  have hA : Mq ^ ((q : ℝ)⁻¹) ≤ X * B ^ (((2 * q - 1 : ℕ) : ℝ) * (q : ℝ)⁻¹) :=
+    (hpow Mq (2 * q - 1) _ hMq hq' (by positivity)).trans
+      (mul_le_mul_of_nonneg_right (hXr _ (by positivity) hqinv) (by positivity))
+  have hC : Mp ^ (1 / (2 * (p : ℝ))) ≤ X * B ^ (((4 * p - 1 : ℕ) : ℝ) * (1 / (2 * (p : ℝ)))) :=
+    (hpow Mp (4 * p - 1) _ hMp hp' (by positivity)).trans
+      (mul_le_mul_of_nonneg_right (hXr _ (by positivity) hpinv) (by positivity))
+  have hD : √(M₂ * M₄) ≤ X * B ^ 2 := by
+    calc √(M₂ * M₄) ≤ √((X * B) * (X * B ^ 3)) := Real.sqrt_le_sqrt (mul_le_mul h₂ h₄ hM₄ (by positivity))
+      _ = X * B ^ 2 := by
+          rw [show (X * B) * (X * B ^ 3) = (X * B ^ 2) ^ 2 by ring, Real.sqrt_sq (by positivity)]
+  -- exponents
+  set e : ℝ := 4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ) with he
+  have hexA : ((2 * q - 1 : ℕ) : ℝ) * (q : ℝ)⁻¹ + ((4 * p - 1 : ℕ) : ℝ) * (1 / (2 * (p : ℝ))) = e := by
+    have h1 : ((2 * q - 1 : ℕ) : ℝ) = 2 * q - 1 := by
+      rw [Nat.cast_sub (by omega)]; push_cast; ring
+    have h2 : ((4 * p - 1 : ℕ) : ℝ) = 4 * p - 1 := by
+      rw [Nat.cast_sub (by omega)]; push_cast; ring
+    rw [h1, h2, he]
+    field_simp
+    ring
+  have hexB : ((4 * p - 1 : ℕ) : ℝ) * (1 / (2 * (p : ℝ))) + 2 = 4 - 1 / (2 * (p : ℝ)) := by
+    have h2 : ((4 * p - 1 : ℕ) : ℝ) = 4 * p - 1 := by
+      rw [Nat.cast_sub (by omega)]; push_cast; ring
+    rw [h2]
+    field_simp
+    ring
+  have hBe : B ^ (4 - 1 / (2 * (p : ℝ))) ≤ B ^ e := by
+    refine Real.rpow_le_rpow_of_exponent_ge hB0 hB1 ?_
+    rw [he]
+    have : 0 ≤ 1 / (q : ℝ) := by positivity
+    linarith
+  -- the first product
+  have hP1 : M₁ * Mq ^ ((q : ℝ)⁻¹) * Mp ^ (1 / (2 * (p : ℝ))) ≤ X ^ 3 * B ^ e := by
+    calc M₁ * Mq ^ ((q : ℝ)⁻¹) * Mp ^ (1 / (2 * (p : ℝ)))
+        ≤ X * (X * B ^ (((2 * q - 1 : ℕ) : ℝ) * (q : ℝ)⁻¹)) * (X * B ^ (((4 * p - 1 : ℕ) : ℝ) * (1 / (2 * (p : ℝ))))) := by
+          gcongr
+      _ = X ^ 3 * B ^ e := by
+          rw [← hexA, Real.rpow_add hB0]; ring
+  -- the second product
+  have hP2 : Mp ^ (1 / (2 * (p : ℝ))) * √(M₂ * M₄) ≤ X ^ 3 * B ^ e := by
+    calc Mp ^ (1 / (2 * (p : ℝ))) * √(M₂ * M₄)
+        ≤ (X * B ^ (((4 * p - 1 : ℕ) : ℝ) * (1 / (2 * (p : ℝ))))) * (X * B ^ 2) :=
+          mul_le_mul hC hD (Real.sqrt_nonneg _) (by positivity)
+      _ = X ^ 2 * B ^ (4 - 1 / (2 * (p : ℝ))) := by
+          rw [← hexB, Real.rpow_add hB0]
+          have : B ^ ((2 : ℝ)) = B ^ 2 := by rw [← Real.rpow_natCast]; norm_num
+          rw [this]; ring
+      _ ≤ X ^ 3 * B ^ e := by
+          have hX2 : X ^ 2 ≤ X ^ 3 := by nlinarith [sq_nonneg X]
+          calc X ^ 2 * B ^ (4 - 1 / (2 * (p : ℝ))) ≤ X ^ 3 * B ^ (4 - 1 / (2 * (p : ℝ))) :=
+                mul_le_mul_of_nonneg_right hX2 (by positivity)
+            _ ≤ X ^ 3 * B ^ e := mul_le_mul_of_nonneg_left hBe (by positivity)
+  have hηX : 0 ≤ η⁻¹ := inv_nonneg.2 hη.le
+  calc 2 * (η⁻¹ * (M₁ * Mq ^ ((q : ℝ)⁻¹) * Mp ^ (1 / (2 * (p : ℝ))) + Mp ^ (1 / (2 * (p : ℝ))) * √(M₂ * M₄)))
+      ≤ 2 * (η⁻¹ * (X ^ 3 * B ^ e + X ^ 3 * B ^ e)) := by gcongr
+    _ = 4 * X ^ 3 * (η⁻¹ * B ^ e) := by ring
+
+end Arith
+
+/-! ## 5. `≺` from finitely many `≺`: the good-event assembly -/
+
+section Dom
+
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+/-- **`≺` from finitely many `≺`** (the pattern of `BA/GreenOff.lean:1285-1310`, `HighProbAt.inter` for `m` events): if
+`f_j ≺ g_j` for `j < m` and, for every `τ > 0`, some `τ' > 0` makes the implication
+"all `f_j ≤ N^{τ'} g_j` ⟹ `ξ ≤ N^τ ζ`" hold eventually in `l` and pointwise in `ω`, then `ξ ≺ ζ`. -/
+private theorem TwistQV_dom {P : Measure Ω} {size : ℕ → ℕ} (hsize : Tendsto size atTop atTop)
+    {U : ℕ → Type*} {ξ ζ : ∀ l, U l → Ω → ℝ} {m : ℕ} {V : Fin m → ℕ → Type*} {f g : ∀ j, ∀ l, V j l → Ω → ℝ}
+    (hin : ∀ j, StochDomAt P size (f j) (g j))
+    (hdet : ∀ τ > (0 : ℝ), ∃ τ' > (0 : ℝ), ∀ᶠ l in atTop, ∀ ω : Ω,
+      (∀ (j : Fin m) (v : V j l), f j l v ω ≤ (size l : ℝ) ^ τ' * g j l v ω) →
+        ∀ u : U l, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω) :
+    StochDomAt P size ξ ζ := by
+  intro τ hτ D hD
+  obtain ⟨τ', hτ', hd⟩ := hdet τ hτ
+  have hE : Gauss.HighProbAt P size (fun l => ⋂ j : Fin m, {ω | ∀ v : V j l, f j l v ω ≤ (size l : ℝ) ^ τ' * g j l v ω}) := by
+    refine Gauss.HighProbAt.biInter (K := fun _ => Fin m) (C := 1) zero_le_one ?_ ?_
+    · filter_upwards [hsize.eventually (eventually_ge_atTop m)] with l hl
+      simpa [Real.rpow_one] using (Nat.cast_le (α := ℝ)).2 hl
+    · intro D' hD'
+      exact Filter.eventually_all.2 fun j => (StochDomAt.highProb (hin j) hτ') D' hD'
+  filter_upwards [hE D hD, hd] with l hl hdl
+  refine le_trans (measure_mono ?_) hl
+  rintro ω ⟨u, hu⟩ hω
+  exact absurd (hdl ω (fun j v => Set.mem_iInter.1 hω j v) u) (not_le.2 hu)
+
+end Dom
+
+/-! ## 6. The bound at the BA carrier -/
+
+section BA
+
+variable {d : ℕ}
+
+/-- `M_k`: the maximal loop of length `k` of the BA flow matrix `seqHflowBA (g₀)` at `z_v` (`Contract_maxLoopM`, `Induction/Contract.lean:1003`). -/
+private def TwistQV_Mx (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (v : ℝ) (ω : sz.SeqΩ) (k : ℕ) : ℝ :=
+  Contract_maxLoopM d (sz.L n) (sz.W n) (sz.seqHflowBA (BAflowLam0 sz z) n v ω)
+    (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v) k
+
+private lemma TwistQV_Mx_nonneg (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (v : ℝ) (ω : sz.SeqΩ) (k : ℕ) :
+    0 ≤ TwistQV_Mx sz z n v ω k :=
+  TwistQV_maxLoopM_nonneg _ _ k
+
+/-- The maximal loop is bounded by a bound of all loops of that length (`(baFMz sz z).L` is `loopFine`, `FlowPins.lean:264`). -/
+private lemma TwistQV_Mx_le (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (v : ℝ) (ω : sz.SeqΩ) (k : ℕ) {X : ℝ}
+    (h : ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), ‖(baFMz sz z).L n v σ a ω‖ ≤ X) :
+    TwistQV_Mx sz z n v ω k ≤ X := by
+  unfold TwistQV_Mx Contract_maxLoopM
+  exact Finset.sup'_le _ _ fun p _ => h p.1 p.2
+
+/-- **The bound of `T.11 (iii)` at the BA carrier**: for `Im z_v > 0`,
+`Q(b) = ‖twEE b b‖ ≤ 2 η_v⁻¹ [M₁ M_{2q}^{1/q} M_{4p}^{1/(2p)} + M_{4p}^{1/(2p)} (M₂ M₄)^{1/2}]`. -/
+private theorem TwistQV_baBound (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (v : ℝ) (ω : sz.SeqΩ)
+    (hzim : 0 < (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im)
+    (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) {p q : ℕ} (hp : 1 ≤ p) (hq : 1 ≤ q) :
+    ‖twEE (baFMz sz z) n v ω σ b b c₁ c₂‖ ≤
+      2 * (((baFMz sz z).eta n v)⁻¹ * (TwistQV_Mx sz z n v ω 1 * TwistQV_Mx sz z n v ω (2 * q) ^ ((q : ℝ)⁻¹) *
+        TwistQV_Mx sz z n v ω (4 * p) ^ (1 / (2 * (p : ℝ))) +
+          TwistQV_Mx sz z n v ω (4 * p) ^ (1 / (2 * (p : ℝ))) * √(TwistQV_Mx sz z n v ω 2 * TwistQV_Mx sz z n v ω 4))) := by
+  have hH := EMn2BA_seqHflowBA_herm sz (BAflowLam0 sz z) n v ω
+  have hHb : (blockMat d (sz.L n) (sz.W n) (sz.seqHflowBA (BAflowLam0 sz z) n v ω)).IsHermitian := hH.submatrix _
+  rw [TwistQV_twEE_diag (baFMz sz z) v ω (sz.seqHflowBA (BAflowLam0 sz z) n v ω)
+    (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v) hH (fun x y => rfl) rfl σ b c₁ c₂]
+  have hcore := TwistQV_core hHb hzim (TwistQV_Mx sz z n v ω) (TwistQV_Mx_nonneg sz z n v ω)
+    (TwistQV_norm_trace_wd_le (sz.seqHflowBA (BAflowLam0 sz z) n v ω)
+      (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v)) (σ 0) (σ 1) b c₁ c₂ hp hq
+  have hη : (baFMz sz z).eta n v = (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im :=
+    (ztOf_im _ _ _).symm
+  rw [hη]
+  have hW : 0 < ((sz.W n : ℕ) : ℝ) ^ d := by have := sz.W_pos n; positivity
+  calc ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 * _ ≤ ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 * (2 * ((((sz.W n : ℕ) : ℝ) ^ d) ^ 5 *
+          (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im⁻¹ * _)) :=
+        mul_le_mul_of_nonneg_left hcore (by positivity)
+    _ = _ := by field_simp
+
+
+/-- **Conjunct 1 of `BATwistSrc3`** (`T.11 (iii)`, `Q ≺ η⁻¹ (W^{-d}B)^{4-1/(2p)-1/q}`): the loops `M_k`, `k ∈ {1, 2, 4, 2q, 4p}`, are `≺ B^{k-1}`
+(`twSteps`, second conjunct); `B ≤ 1` on `[s,t]` from `STConStInd`; `Im z_v = η_v > 0`. -/
+private theorem TwistQV_src {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
+    (s t : ℕ → ℝ) (hs : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ BAflowT0 sz z n)
+    {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) (hcon : sz.STConStInd 𝔠d s t)
+    (hL : ∀ k : ℕ, 1 ≤ k → PrecL sz (Sizes.seqP (sz.withLam 0))
+      (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖(baFMz sz z).L n (p.1 : ℝ) p.2.1 p.2.2 ω‖) (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ (k - 1)))
+    (p q : ℕ) (hp : 1 ≤ p) (hq : 1 ≤ q) :
+    twSrc (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t
+      (fun n v ω σ b c₁ c₂ => ‖twEE (baFMz sz z) n v ω σ b b c₁ c₂‖) (fun _ _ => 1)
+      (4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ)) := by
+  have hsz : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hflow.1.2.2.1
+  let kk : Fin 5 → ℕ := ![1, 2, 4, 2 * q, 4 * p]
+  have hkk : ∀ j, 1 ≤ kk j := by
+    intro j; fin_cases j <;> simp [kk] <;> omega
+  refine TwistQV_dom (P := Sizes.seqP (sz.withLam 0)) (size := sz.size) hsz (m := 5)
+    (V := fun j n => TimeIcc s t n × (Fin (kk j) → Bool) × (Fin (kk j) → Zd d (sz.L n)))
+    (f := fun j n w ω => ‖(baFMz sz z).L n (w.1 : ℝ) w.2.1 w.2.2 ω‖)
+    (g := fun j n w _ => (sz.Bctl n (w.1 : ℝ)) ^ (kk j - 1)) (fun j => hL (kk j) (hkk j)) ?_
+  intro τ hτ
+  refine ⟨τ / 6, by positivity, ?_⟩
+  filter_upwards [hcon, hsz.eventually (eventually_le_rpow 4 (half_pos hτ)),
+    hsz.eventually (eventually_ge_atTop 1)] with n hcn hN4 hN1
+  intro ω hω u
+  obtain ⟨⟨v, hv⟩, σ, b, c₁, c₂⟩ := u
+  dsimp only
+  have hN1' : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN1
+  have hX1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ (τ / 6) := Real.one_le_rpow hN1' (by positivity)
+  have hv0 : 0 ≤ v := (hs n).trans hv.1
+  have hT1 : BAflowT0 sz z n < 1 := EMn2BA_T0_lt_one hκ sz hflow n
+  have htn1 : t n < 1 := lt_of_le_of_lt (htT n) hT1
+  have hv1 : v < 1 := lt_of_le_of_lt hv.2 htn1
+  have hmF := (EMn2BA_mF_data sz hflow n).1
+  have hzim : 0 < (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im := by
+    rw [ztOf_im]; unfold etaOf; exact mul_pos (by linarith) (by linarith)
+  have hB0 : 0 < sz.Bctl n v := STBctl_pos sz n hv1
+  have hBt : sz.Bctl n (t n) < 1 := by
+    by_contra hh
+    push Not at hh
+    have h1 : (1 : ℝ) ≤ (sz.Bctl n (t n)) ^ 𝔠d := Real.one_le_rpow hh h𝔠d.le
+    linarith [hcn.1, hcn.2]
+  have hB1 : sz.Bctl n v ≤ 1 := (STBctl_mono sz n hv.2 htn1).trans hBt.le
+  have hMk : ∀ j : Fin 5, TwistQV_Mx sz z n v ω (kk j) ≤
+      ((sz.size n : ℕ) : ℝ) ^ (τ / 6) * (sz.Bctl n v) ^ (kk j - 1) := fun j =>
+    TwistQV_Mx_le sz z n v ω (kk j) (fun σ' a' => hω j ⟨⟨v, hv⟩, σ', a'⟩)
+  have hbound := TwistQV_baBound sz z n v ω hzim σ b c₁ c₂ hp hq
+  have hη : (baFMz sz z).eta n v = (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im :=
+    (ztOf_im _ _ _).symm
+  have hηpos : 0 < (baFMz sz z).eta n v := by rw [hη]; exact hzim
+  have harith := TwistQV_arith (X := ((sz.size n : ℕ) : ℝ) ^ (τ / 6)) (B := sz.Bctl n v) (η := (baFMz sz z).eta n v)
+    (M₁ := TwistQV_Mx sz z n v ω 1) (M₂ := TwistQV_Mx sz z n v ω 2) (M₄ := TwistQV_Mx sz z n v ω 4)
+    (Mq := TwistQV_Mx sz z n v ω (2 * q)) (Mp := TwistQV_Mx sz z n v ω (4 * p)) hp hq hX1 hB0 hB1 hηpos
+    (by simpa [kk] using hMk 0) (by simpa [kk] using hMk 1) (by simpa [kk] using hMk 2)
+    (by simpa [kk] using hMk 3) (by simpa [kk] using hMk 4)
+    (TwistQV_Mx_nonneg sz z n v ω 1) (TwistQV_Mx_nonneg sz z n v ω 2) (TwistQV_Mx_nonneg sz z n v ω 4)
+    (TwistQV_Mx_nonneg sz z n v ω (2 * q)) (TwistQV_Mx_nonneg sz z n v ω (4 * p))
+  have hX3 : (((sz.size n : ℕ) : ℝ) ^ (τ / 6)) ^ 3 = ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]; congr 1; push_cast; ring
+  have hNt : ((sz.size n : ℕ) : ℝ) ^ τ = ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) := by
+    rw [← Real.rpow_add (by positivity)]; congr 1; ring
+  have hpos : 0 ≤ ((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ (4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ)) := by positivity
+  calc _ ≤ 4 * (((sz.size n : ℕ) : ℝ) ^ (τ / 6)) ^ 3 *
+        (((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ (4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ))) := hbound.trans harith
+    _ = (4 * ((sz.size n : ℕ) : ℝ) ^ (τ / 2)) *
+        (((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ (4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ))) := by rw [hX3]
+    _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ *
+        (1 * (((baFMz sz z).eta n v)⁻¹ * sz.Bctl n v ^ (4 - 1 / (2 * (p : ℝ)) - 1 / (q : ℝ)))) := by
+        rw [hNt, one_mul]
+        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hN4 (by positivity)) hpos
+
+end BA
+
 end RBM.BA
