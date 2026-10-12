@@ -23,3 +23,7 @@
 | T2461 | 2026-10-12 17:24 UTC (a55ef84) | prover-hard | Sonnet 5.5 effort xhigh | 是 | T 生产者 P2：1a → 1b → 审核 PASS 第一轮；新 `BA/NetLiftBA` 838 行（含 P6 `baFlow_premises`） |
 | T2459 | 2026-10-12 17:41 UTC (e288560) | prover-max | Sonnet 5.5（prover-max） | 是 | U U5 设计门（只出报告）：设计门 → 探针 → 1a-audit → 审核 PASS 第一轮；`docs/reports/T2459-design.md` 321 行；BA 情形 (iii) 用具名输入闭合；1b 五行 U5a–U5e，中心 6,900；探针 394 行留在 `t/T2459` |
 | T2463 | 2026-10-12 18:11 UTC (01b4c521) | prover | Sonnet 5.5 | 是 | U U1s1：1a → 1b → 审核 PASS 第一轮；新 `Chain/ZeroModeGen` 878 行（新增）；条件目标 9 挪到 U1-BA |
+| T2462 | 2026-10-12 18:50 / 19:30 UTC (c9f69dba, 52f8f82a) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | U U4s1：设计门 → 探针 → 1a-audit PASS（拆 U4s1a/U4s1b）→ Amend 1（R1，调度引起的重跑，不算返工）→ 两半 1b → 审核都 PASS 第一轮；新 `Chain/Step5CasesGen` 784、`Step5KerGen` 550、`NewKLKLGen` 377 行；七条登记行 |
+| T2457 | 2026-10-12 18:55 UTC (6e7d2602) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 否 | U U3s1：设计门 → 1a-audit RETURN（D3 (b)）→ H249 签字 → 第二轮 RETURN（比较假设）→ H252 签字 → 1b 按旧文本被停 → R1 重跑（H254）→ 审核 PASS；新 `Chain/Step34Gen` 1,255 + 叶 `Step34GenTw` 99 行；两条登记行 |
+| T2466 | 2026-10-12 19:00 UTC (03109267) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4c2：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14d` 620 + `BAExp14dB` 908 行 |
+| T2464 | 2026-10-12 19:32 UTC (9e1d5f15) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4c1：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14c` 919 + `BAExp14cB` 1,153 行 |
