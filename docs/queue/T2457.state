@@ -1,0 +1,4 @@
+state: audit-pass
+reason: 1b on R1 (H254): prover-hard 676eef54, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 18:55:41 UTC 2026
+reports: docs/reports/T2457-prove.md, docs/reports/T2457-prove-b.txt, docs/reports/T2457-1a-audit.md, docs/reports/T2457-audit.md

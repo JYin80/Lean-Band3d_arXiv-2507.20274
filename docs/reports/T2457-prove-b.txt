@@ -1,0 +1,790 @@
+T2457 (b) script output, verbatim (stage 1b rerun on R1). Generated Mon Oct 12 18:44:57 UTC 2026, tree 676eef54 on branch t/T2457.
+
+$ wc -l RBM3D/Chain/Step34Gen.lean RBM3D/Chain/Step34GenTw.lean   (stop line 2000 per file)
+    1255 RBM3D/Chain/Step34Gen.lean
+      99 RBM3D/Chain/Step34GenTw.lean
+    1354 total
+
+$ lake build RBM3D.Chain.Step34Gen RBM3D.Chain.Step34GenTw RBM3D.Test.Axioms 2>&1 | tail -3
+
+Note: This linter can be disabled with `set_option linter.style.longLine false`
+Build completed successfully (4003 jobs).
+
+$ grep -nE "sorry|admit|native_decide|^axiom|open private" RBM3D/Chain/Step34Gen.lean RBM3D/Chain/Step34GenTw.lean ; echo "exit $?"
+exit 1
+
+$ lake env lean $S/r5/axioms.lean | sed ... | sort | uniq -c    (#print axioms of the       99 new public declarations of both files)
+  99 depends on axioms: [propext, Classical.choice, Quot.sound]
+$ grep -c "sorryAx" axioms.out
+0
+
+$ lake env lean $S/r5/axioms.lean   (the full list, one line per declaration)
+'RBM.BA.STLmaxUgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STLKUgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STLmaxgL_of_STLmaxUgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STLKgL_of_STLKUgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STLmaxU' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STLKU' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STmaxLg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STmaxLKg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STXiLg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STXiLKg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STsupXiLKg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STLKtensorg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STmaxL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STmaxLK' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STXiL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STXiLK' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STsupXiLK' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STLKtensor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STLIg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STKIg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STLKIg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STksimLKg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STelklkg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STavgErrg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STegtg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STeeg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.Step34Gen_LCompat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.Step34Gen_KCompat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STLI' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STKI' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STLKI' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STksimLK' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STelklk' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STavgErr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STegt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_STee' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_LCompat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_KCompat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STSEforLnConclgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STXiBootgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STNQConclgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STNQConclgL'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STIterHypgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STWardTypePgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STB45gL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_ThetaN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandStep34_UN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STSEforLnConcl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STXiBoot' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STNQConcl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STNQConcl'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STIterHyp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STWardTypeP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STB45' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STStep3RgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STStep4RgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STIngRgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STIterRgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STSEforLngL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STOeqNQgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STWardTypePPingL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STB45PingL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STStep3R' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STStep4R' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STIngR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STIterR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STSEforLn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STOeqNQ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STWardTypePPin' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STB45Pin' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKWinKgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKDecayKgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKDecaygL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKLowgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKKer' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKSumNdecaygL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKSumRes1gL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKSumRes2NALgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKSumRes2gL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKNonzerogL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STEKBandKer' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STEKWin' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STEKDecay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.bandFM_STEKLow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_band_hg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_W_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.stek_sumNdecaygL_band' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.stek_sumRes1gL_band' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.stek_sumRes2NALgL_band' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.stek_sumRes2gL_band' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.stek_nonzerogL_band' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_winK_of_cmp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_ratio_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_ratio_pow_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_ellT_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_ellT_ge' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.step34Gen_decayK_of_cmp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.STNewPQgL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.stNewPQgL_band' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+$ python3 -I extract.py RBM3D/Chain/Step34Gen.lean RBM3D/Chain/Step34GenTw.lean   (statements of every public declaration: defs whole, theorems up to :=)
+### RBM3D/Chain/Step34Gen.lean
+-- Step34Gen.lean:58
+def STLmaxUgL (s t : ℕ → ℝ) : Prop :=
+  ∀ k : ℕ, 1 ≤ k →
+    PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖C.L n (p.1 : ℝ) p.2.1 p.2.2 ω‖) (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ (k - 1))
+-- Step34Gen.lean:65
+def STLKUgL (s t : ℕ → ℝ) : Prop :=
+  ∀ k : ℕ, 1 ≤ k →
+    PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖C.L n (p.1 : ℝ) p.2.1 p.2.2 ω - C.K n (p.1 : ℝ) p.2.1 p.2.2‖) (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ k)
+-- Step34Gen.lean:71
+theorem STLmaxgL_of_STLmaxUgL {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STLmaxUgL C μ s t) : STLmaxgL C μ t := by
+-- Step34Gen.lean:77
+theorem STLKgL_of_STLKUgL {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STLKUgL C μ s t) : STLKgL C μ t := by
+-- Step34Gen.lean:88
+theorem bandFM_STLmaxU : STLmaxU sz E s t ↔ STLmaxUgL (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:89
+theorem bandFM_STLKU : STLKU sz E s t ↔ STLKUgL (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:100
+def STmaxLg (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ :=
+  Finset.univ.sup' ⟨((fun _ => true), (fun _ => (0 : Zd d (sz.L n)))), Finset.mem_univ _⟩
+    (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) => ‖C.L n v p.1 p.2 ω‖)
+-- Step34Gen.lean:105
+def STmaxLKg (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ :=
+  Finset.univ.sup' ⟨((fun _ => true), (fun _ => (0 : Zd d (sz.L n)))), Finset.mem_univ _⟩
+    (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) => ‖C.L n v p.1 p.2 ω - C.K n v p.1 p.2‖)
+-- Step34Gen.lean:110
+def STXiLg (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ := 1 + STmaxLg C n v k ω / (sz.Bctl n v) ^ (k - 1)
+-- Step34Gen.lean:113
+def STXiLKg (n : ℕ) (v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ := 1 + STmaxLKg C n v k ω / (sz.Bctl n v) ^ k
+-- Step34Gen.lean:116
+def STsupXiLKg (n : ℕ) (s u : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ := ⨆ w : Set.Icc s u, STXiLKg C n (w : ℝ) k ω
+-- Step34Gen.lean:119
+def STLKtensorg (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin (m + 1) → Bool) : (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
+  fun a => C.L n u σ a ω - C.K n u σ a
+-- Step34Gen.lean:128
+theorem bandStep34_STmaxL : STmaxL sz n (E n) v k ω = STmaxLg (bandFM sz E) n v k ω := rfl
+-- Step34Gen.lean:129
+theorem bandStep34_STmaxLK : STmaxLK sz n (E n) v k ω = STmaxLKg (bandFM sz E) n v k ω := rfl
+-- Step34Gen.lean:130
+theorem bandStep34_STXiL : STXiL sz n (E n) v k ω = STXiLg (bandFM sz E) n v k ω := rfl
+-- Step34Gen.lean:131
+theorem bandStep34_STXiLK : STXiLK sz n (E n) v k ω = STXiLKg (bandFM sz E) n v k ω := rfl
+-- Step34Gen.lean:132
+theorem bandStep34_STsupXiLK (s u : ℝ) : STsupXiLK sz n (E n) s u k ω = STsupXiLKg (bandFM sz E) n s u k ω := rfl
+-- Step34Gen.lean:133
+theorem bandStep34_STLKtensor {m : ℕ} (σ : Fin (m + 1) → Bool) :
+    STLKtensor sz n (E n) v ω σ = STLKtensorg (bandFM sz E) n v ω σ := rfl
+-- Step34Gen.lean:146
+def STLIg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ := STLIMg Cm n τ (Hf n τ ω) I
+/-- `STKI` (`Step34Pins.lean:111`): `𝒦_{τ,I}` of the carrier. -/
+def STKIg (n : ℕ) (τ : ℝ) (I : LoopIdx (Zd d (sz.L n))) : ℂ := Cm.KI n τ I
+/-- `STLKI` (`Step34Pins.lean:115`). -/
+def STLKIg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ := STLKIMg Cm n τ (Hf n τ ω) I
+/-- `STksimLK` (`Step34Pins.lean:120`). -/
+def STksimLKg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) (l : ℕ) (I : LoopIdx (Zd d (sz.L n))) : ℂ := STksimLKMg Cm n τ (Hf n τ ω) l I
+/-- `STelklk` (`Step34Pins.lean:133`). -/
+def STelklkg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ := STelklkMg Cm n τ (Hf n τ ω) I
+/-- `STavgErr` (`Step34Pins.lean:140`). -/
+def STavgErrg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) (σ : Bool) (a : Zd d (sz.L n)) : ℂ := STavgErrMg Cm n τ (Hf n τ ω) σ a
+/-- `STegt` (`Step34Pins.lean:144`). -/
+def STegtg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ := STegtMg Cm n τ (Hf n τ ω) I
+/-- `STee` (`Step34Pins.lean:159`). -/
+def STeeg (n : ℕ) (τ : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin m → Bool) (a a' : Fin m → Zd d (sz.L n)) : ℂ :=
+  STeeMg Cm n τ (Hf n τ ω) σ a a'
+-- Step34Gen.lean:164
+def Step34Gen_LCompat : Prop := ∀ (n : ℕ) (t : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ),
+  Cm.L n t σ a ω = Cm.LIM n t (Hf n t ω) (KLloopOf d (sz.L n) σ a)
+-- Step34Gen.lean:168
+def Step34Gen_KCompat : Prop := ∀ (n : ℕ) (t : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
+  Cm.K n t σ a = Cm.KI n t (KLloopOf d (sz.L n) σ a)
+-- Step34Gen.lean:177
+theorem bandStep34_STLI (I : LoopIdx (Zd d (sz.L n))) :
+    STLI sz n (E n) τ ω I = STLIg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+-- Step34Gen.lean:179
+theorem bandStep34_STKI (I : LoopIdx (Zd d (sz.L n))) : STKI sz n (E n) τ I = STKIg (bandStep2Mat sz E) n τ I := rfl
+-- Step34Gen.lean:180
+theorem bandStep34_STLKI (I : LoopIdx (Zd d (sz.L n))) :
+    STLKI sz n (E n) τ ω I = STLKIg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+-- Step34Gen.lean:182
+theorem bandStep34_STksimLK (l : ℕ) (I : LoopIdx (Zd d (sz.L n))) :
+    STksimLK sz n (E n) τ ω l I = STksimLKg (bandStep2Mat sz E) (seqHflow sz) n τ ω l I := rfl
+-- Step34Gen.lean:184
+theorem bandStep34_STelklk (I : LoopIdx (Zd d (sz.L n))) :
+    STelklk sz n (E n) τ ω I = STelklkg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+-- Step34Gen.lean:186
+theorem bandStep34_STavgErr (σ : Bool) (a : Zd d (sz.L n)) :
+    STavgErr sz n (E n) τ ω σ a = STavgErrg (bandStep2Mat sz E) (seqHflow sz) n τ ω σ a := rfl
+-- Step34Gen.lean:188
+theorem bandStep34_STegt (I : LoopIdx (Zd d (sz.L n))) :
+    STegt sz n (E n) τ ω I = STegtg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+-- Step34Gen.lean:190
+theorem bandStep34_STee {m : ℕ} (σ : Fin m → Bool) (a a' : Fin m → Zd d (sz.L n)) :
+    STee sz n (E n) τ ω σ a a' = STeeg (bandStep2Mat sz E) (seqHflow sz) n τ ω σ a a' := rfl
+-- Step34Gen.lean:194
+theorem bandStep34_LCompat : Step34Gen_LCompat (bandStep2Mat sz E) (seqHflow sz) := by
+-- Step34Gen.lean:197
+theorem bandStep34_KCompat : Step34Gen_KCompat (bandStep2Mat sz E) := fun n t k σ a => rfl
+-- Step34Gen.lean:210
+def STSEforLnConclgL (s t : ℕ → ℝ) : Prop :=
+  ∀ k : ℕ, 2 ≤ k →
+    PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖STegtg Cm Hf n (p.1 : ℝ) ω ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
+      (fun n p ω => (sz.Bctl n (p.1 : ℝ)) ^ k / Cm.eta n (p.1 : ℝ) *
+        (STXiLg Cm.toFlowFM n (p.1 : ℝ) (STn12E k).1 ω * STXiLg Cm.toFlowFM n (p.1 : ℝ) (STn12E k).2 ω) ^ (1 / 2 : ℝ)) ∧
+    (∀ l : ℕ, 3 ≤ l → l ≤ k →
+      PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+        (fun n p ω => ‖STksimLKg Cm Hf n (p.1 : ℝ) ω l ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
+        (fun n p ω => (sz.Bctl n (p.1 : ℝ)) ^ k / Cm.eta n (p.1 : ℝ) * STXiLKg Cm.toFlowFM n (p.1 : ℝ) (k - l + 2) ω)) ∧
+    PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
+      (fun n p ω => ‖STelklkg Cm Hf n (p.1 : ℝ) ω ⟨List.ofFn p.2.1, List.ofFn p.2.2⟩‖)
+      (fun n p ω => (sz.Bctl n (p.1 : ℝ)) ^ k / Cm.eta n (p.1 : ℝ) *
+        (∑ n' ∈ Finset.Icc ((k + 1) / 2 + 1) (k - 1),
+            STXiLKg Cm.toFlowFM n (p.1 : ℝ) (k + 2 - n') ω *
+              (STXiLg Cm.toFlowFM n (p.1 : ℝ) (STn12 n').1 ω * STXiLg Cm.toFlowFM n (p.1 : ℝ) (STn12 n').2 ω) ^ (1 / 2 : ℝ) +
+          (sz.Bctl n (p.1 : ℝ)) ^ (1 / 6 : ℝ) * STXiLKg Cm.toFlowFM n (p.1 : ℝ) k ω)) ∧
+    (∀ q : ℕ, 1 ≤ q →
+      PrecL sz μ (U := fun n => TimeIcc s t n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)) × (Fin k → Zd d (sz.L n)))
+        (fun n p ω => ‖STeeg Cm Hf n (p.1 : ℝ) ω p.2.1 p.2.2.1 p.2.2.2‖)
+        (fun n p ω => (sz.Bctl n (p.1 : ℝ)) ^ ((2 * k : ℝ) - 1 / (2 * (q : ℝ))) / Cm.eta n (p.1 : ℝ) *
+          (STXiLg Cm.toFlowFM n (p.1 : ℝ) (2 * k - 1) ω * STXiLg Cm.toFlowFM n (p.1 : ℝ) (4 * q) ω ^ (1 / (2 * (q : ℝ))))))
+-- Step34Gen.lean:240
+def STXiBootgL (s t : ℕ → ℝ) : Prop :=
+  ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
+    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
+    (∀ m, 1 ≤ m → STlenL n_ p m →
+      PrecL sz μ (U := STPair s t) (fun n q ω => STXiLg Cf n q.1.1 m ω) (fun n q _ => XL m n q.1.2)) →
+    (∀ m, 1 ≤ m → m + 1 ≤ n_ →
+      PrecL sz μ (U := STPair s t) (fun n q ω => STXiLKg Cf n q.1.1 m ω) (fun n q _ => XLK m n q.1.2)) →
+    PrecL sz μ (U := STPair s t) (fun n q ω => STXiLKg Cf n q.1.1 n_ ω)
+      (fun n q _ => STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2) (sz.Bctl n q.1.2) n_ p)
+-- Step34Gen.lean:251
+def STNQConclgL (s t : ℕ → ℝ) : Prop :=
+  ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
+    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
+    (∀ m, 1 ≤ m → STlenL n_ p m →
+      PrecL sz μ (U := STPair s t) (fun n q ω => STXiLg Cf n q.1.1 m ω) (fun n q _ => XL m n q.1.2)) →
+    (∀ m, 1 ≤ m → m + 1 ≤ n_ →
+      PrecL sz μ (U := STPair s t) (fun n q ω => STXiLKg Cf n q.1.1 m ω) (fun n q _ => XLK m n q.1.2)) →
+    PrecL sz μ (U := fun n => TimeIcc s t n × {σ : Fin n_ → Bool // ∃ k, σ k = σ (finRotate n_ k)} ×
+        (Fin n_ → Zd d (sz.L n)))
+      (fun n q ω => ‖Cf.L n (q.1 : ℝ) q.2.1.1 q.2.2 ω - Cf.K n (q.1 : ℝ) q.2.1.1 q.2.2‖ / (sz.Bctl n (q.1 : ℝ)) ^ n_)
+      (fun n q ω => (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * STsupXiLKg Cf n (s n) (q.1 : ℝ) n_ ω +
+        STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (q.1 : ℝ)) n_ p)
+-- Step34Gen.lean:265
+def STNQConclgL' (s t : ℕ → ℝ) : Prop :=
+  ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
+    (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
+    (∀ m, 1 ≤ m → STlenL n_ p m →
+      PrecL sz μ (U := STPair s t) (fun n q ω => STXiLg Cf n q.1.1 m ω) (fun n q _ => XL m n q.1.2)) →
+    (∀ m, 1 ≤ m → m ≤ n_ →
+      PrecL sz μ (U := STPair s t) (fun n q ω => STXiLKg Cf n q.1.1 m ω) (fun n q _ => XLK m n q.1.2)) →
+    PrecL sz μ (U := fun n => TimeIcc s t n × {σ : Fin n_ → Bool // ∃ k, σ k = σ (finRotate n_ k)} ×
+        (Fin n_ → Zd d (sz.L n)))
+      (fun n q ω => ‖Cf.L n (q.1 : ℝ) q.2.1.1 q.2.2 ω - Cf.K n (q.1 : ℝ) q.2.1.1 q.2.2‖ / (sz.Bctl n (q.1 : ℝ)) ^ n_)
+      (fun n q _ => (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * XLK n_ n (q.1 : ℝ) +
+        STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (q.1 : ℝ)) n_ p)
+-- Step34Gen.lean:279
+def STIterHypgL (s t : ℕ → ℝ) (A : ℕ → ℝ) (r l : ℕ) : Prop :=
+  PrecL sz μ (U := STPair s t) (fun n q ω => STXiLKg Cf n q.1.1 r ω)
+    (fun n q _ => STPsi (A n) (Cf.eta n (s n) / Cf.eta n q.1.2) r l)
+-- Step34Gen.lean:284
+def STWardTypePgL (s t : ℕ → ℝ) : Prop :=
+  ∀ (m : ℕ) (C c : ℝ), 1 ≤ m →
+    ∀ ϑ : (∀ n : ℕ, ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), (∀ n, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) →
+    ∀ X : ℕ → ℝ → ℝ, (∀ n u, 1 ≤ X n u) →
+      PrecL sz μ (U := fun n => TimeIcc s t n) (fun n u ω => STXiLKg Cf n (u : ℝ) m ω) (fun n u _ => X n (u : ℝ)) →
+      PrecL sz μ (U := fun n => TimeIcc s t n × {σ : Fin (m + 1) → Bool // STAlternating σ} × (Fin (m + 1) → Zd d (sz.L n)))
+        (fun n q ω => ‖STPsum (d := d) (STLKtensorg Cf n (q.1 : ℝ) ω q.2.1.1) (q.2.2 0) * ϑ n (q.1 : ℝ) q.2.2‖)
+        (fun n q _ => (sz.Bctl n (q.1 : ℝ)) ^ (m + 1) * X n (q.1 : ℝ))
+-- Step34Gen.lean:295
+def STB45gL (s t : ℕ → ℝ) : Prop :=
+  ∀ (m : ℕ) (C c : ℝ), 1 ≤ m →
+    ∀ ϑ : (∀ n : ℕ, ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), (∀ n, STMollifierProps (d := d) (sz.lam n) C c (ϑ n)) →
+    ∀ X : ℕ → ℝ → ℝ, (∀ n u, 1 ≤ X n u) →
+      PrecL sz μ (U := fun n => TimeIcc s t n) (fun n u ω => STXiLKg Cf n (u : ℝ) m ω) (fun n u _ => X n (u : ℝ)) →
+      PrecL sz μ (U := fun n => TimeIcc s t n × {σ : Fin (m + 1) → Bool // STAlternating σ} × (Fin (m + 1) → Zd d (sz.L n)))
+        (fun n q ω =>
+          ‖(STQop (d := d) (ϑ n) (q.1 : ℝ)
+              (Step2Gen_ThetaN Cf n q.2.1.1 (q.1 : ℝ) (STLKtensorg Cf n (q.1 : ℝ) ω q.2.1.1)) -
+            Step2Gen_ThetaN Cf n q.2.1.1 (q.1 : ℝ)
+              (STQop (d := d) (ϑ n) (q.1 : ℝ) (STLKtensorg Cf n (q.1 : ℝ) ω q.2.1.1))) q.2.2‖ +
+          ‖STPsum (d := d) (STLKtensorg Cf n (q.1 : ℝ) ω q.2.1.1) (q.2.2 0) * deriv (fun τ => ϑ n τ q.2.2) (q.1 : ℝ)‖)
+        (fun n q _ => (Cf.eta n (q.1 : ℝ))⁻¹ * (sz.Bctl n (q.1 : ℝ)) ^ (m + 1) * X n (q.1 : ℝ))
+-- Step34Gen.lean:317
+theorem bandStep34_ThetaN (n k : ℕ) (σ : Fin k → Bool) (τ : ℝ) (A : (Fin k → Zd d (sz.L n)) → ℂ) :
+    ThetaN d (sz.L n) (sz.lam n) (EKsgn (mE (E n)) σ) τ A = Step2Gen_ThetaN (bandFM sz E) n σ τ A :=
+-- Step34Gen.lean:322
+theorem bandStep34_UN (n k : ℕ) (σ : Fin k → Bool) (s' t' : ℝ) (A : (Fin k → Zd d (sz.L n)) → ℂ) :
+    UN d (sz.L n) (sz.lam n) (EKsgn (mE (E n)) σ) s' t' A = Step2Gen_UN (bandFM sz E) n σ s' t' A :=
+-- Step34Gen.lean:326
+theorem bandFM_STSEforLnConcl :
+    STSEforLnConcl sz E s t ↔ STSEforLnConclgL (bandStep2Mat sz E) (seqHflow sz) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:328
+theorem bandFM_STXiBoot : STXiBoot sz E s t ↔ STXiBootgL (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:329
+theorem bandFM_STNQConcl : STNQConcl sz E s t ↔ STNQConclgL (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:330
+theorem bandFM_STNQConcl' : STNQConcl' sz E s t ↔ STNQConclgL' (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:331
+theorem bandFM_STIterHyp (A : ℕ → ℝ) (r l : ℕ) :
+    STIterHyp sz E s t A r l ↔ STIterHypgL (bandFM sz E) (Sizes.seqP sz) s t A r l := Iff.rfl
+-- Step34Gen.lean:333
+theorem bandFM_STWardTypeP : STWardTypeP sz E s t ↔ STWardTypePgL (bandFM sz E) (Sizes.seqP sz) s t := Iff.rfl
+-- Step34Gen.lean:335
+theorem bandFM_STB45 : STB45 sz E s t ↔ STB45gL (bandFM sz E) (Sizes.seqP sz) s t := by
+-- Step34Gen.lean:347
+def STStep3RgL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
+    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
+      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+        ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ T0 sz z n) →
+          R sz s t → STKboundgL (mk sz z) (law sz) → STKwardgL (mk sz z) (law sz) →
+          STLKgL (mk sz z) (law sz) s → sz.STConStInd 𝔠d s t → STStep1LoopgL (mk sz z) (law sz) s t →
+          STStep2ConclgL (mk sz z) (law sz) s t Cd → STLmaxUgL (mk sz z) (law sz) s t
+-- Step34Gen.lean:359
+def STStep4RgL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
+    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
+      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+        ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ T0 sz z n) →
+          R sz s t → STKboundgL (mk sz z) (law sz) → STKwardgL (mk sz z) (law sz) →
+          STLKgL (mk sz z) (law sz) s → sz.STConStInd 𝔠d s t → STStep1LoopgL (mk sz z) (law sz) s t →
+          STStep2ConclgL (mk sz z) (law sz) s t Cd → STLmaxUgL (mk sz z) (law sz) s t →
+          STLKUgL (mk sz z) (law sz) s t
+-- Step34Gen.lean:373
+def STIngRgL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ)
+    (Concl : ∀ (sz : Sizes d) (z : ℕ → ℂ), (ℕ → ℝ) → (ℕ → ℝ) → Prop) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
+    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
+      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+        ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ T0 sz z n) →
+          R sz s t → STKboundgL (mk sz z) (law sz) → STKwardgL (mk sz z) (law sz) →
+          STLKgL (mk sz z) (law sz) s → sz.STConStInd 𝔠d s t →
+          STStep2ConclgL (mk sz z) (law sz) s t Cd → Concl sz z s t
+-- Step34Gen.lean:386
+def STIterRgL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ)
+    (Aof : ∀ sz : Sizes d, (ℕ → ℝ) → ℕ → ℝ) : Prop :=
+  3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
+    ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
+      ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), Flow sz κ ε 𝔠 𝔡 z →
+        ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ T0 sz z n) →
+          R sz s t → STKboundgL (mk sz z) (law sz) → STLKgL (mk sz z) (law sz) s → sz.STConStInd 𝔠d s t →
+          STStep1LoopgL (mk sz z) (law sz) s t → STStep2ConclgL (mk sz z) (law sz) s t Cd →
+          STXiBootgL (mk sz z) (law sz) s t →
+          ∀ n_ k : ℕ, 2 ≤ n_ → 1 ≤ k →
+            (∀ r, 2 ≤ r → r + 1 ≤ n_ → STIterHypgL (mk sz z) (law sz) s t (Aof sz s) r k) →
+            (∀ r, 2 ≤ r → r ≤ n_ + 2 → STIterHypgL (mk sz z) (law sz) s t (Aof sz s) r (k - 1)) →
+            STIterHypgL (mk sz z) (law sz) s t (Aof sz s) n_ k
+-- Step34Gen.lean:404
+def STSEforLngL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mkM : ∀ (sz : Sizes d) (z : ℕ → ℂ), Step2Mat sz)
+    (Hf : ∀ (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ), ℝ → sz.SeqΩ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  STIngRgL d R law Flow (fun sz z => (mkM sz z).toFlowFM) T0
+    (fun sz z s t => STSEforLnConclgL (mkM sz z) (Hf sz z) (law sz) s t)
+-- Step34Gen.lean:413
+def STOeqNQgL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  STIngRgL d R law Flow mk T0 (fun sz z s t => STNQConclgL (mk sz z) (law sz) s t)
+-- Step34Gen.lean:419
+def STWardTypePPingL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  STIngRgL d R law Flow mk T0 (fun sz z s t => STWardTypePgL (mk sz z) (law sz) s t)
+-- Step34Gen.lean:425
+def STB45PingL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
+    (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
+  STIngRgL d R law Flow mk T0 (fun sz z s t => STB45gL (mk sz z) (law sz) s t)
+-- Step34Gen.lean:433
+theorem bandFM_STStep3R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) :
+    STStep3R d R ↔ STStep3RgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+-- Step34Gen.lean:440
+theorem bandFM_STStep4R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) :
+    STStep4R d R ↔ STStep4RgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+-- Step34Gen.lean:447
+theorem bandFM_STIngR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (Concl : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → Prop) :
+    STIngR d R Concl ↔ STIngRgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz z s t => Concl sz (STflowE z) s t) := by
+-- Step34Gen.lean:455
+theorem bandFM_STIterR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
+    (Aof : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → ℕ → ℝ) :
+    STIterR d R Aof ↔ STIterRgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz s n => Aof sz s n) := Iff.rfl
+-- Step34Gen.lean:460
+theorem bandFM_STSEforLn (d : ℕ) :
+    STSEforLn d ↔ STSEforLngL d STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandStep2Mat sz (STflowE z)) (fun sz _ => seqHflow sz) (fun _ z n => lemT (z n)) :=
+-- Step34Gen.lean:465
+theorem bandFM_STOeqNQ (d : ℕ) :
+    STOeqNQ d ↔ STOeqNQgL d STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
+-- Step34Gen.lean:470
+theorem bandFM_STWardTypePPin (d : ℕ) :
+    STWardTypePPin d ↔ STWardTypePPingL d STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
+-- Step34Gen.lean:485
+theorem bandFM_STB45Pin (d : ℕ) :
+    STB45Pin d ↔ STB45PingL d STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
+      (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
+-- Step34Gen.lean:503
+def STEKWinKgL (sz : Sizes d) (gK : ℕ → ℝ) (s t : ℕ → ℝ) : Prop :=
+  (∀ n, 0 ≤ s n) ∧ (∀ n, s n ≤ t n) ∧ (∀ n, t n ≤ 1 - gK n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2) ∧ (∀ n, t n < 1) ∧
+    ∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ)⁻¹ ≤ (1 - t n) / (1 - s n)
+-- Step34Gen.lean:508
+def STEKDecayKgL {sz : Sizes d} (gK : ℕ → ℝ) (μ : Measure sz.SeqΩ) {m : ℕ} (s t : ℕ → ℝ)
+    (𝒜 : ∀ n, TimeIcc s t n → sz.SeqΩ → (Fin m → Zd d (sz.L n)) → ℂ) : Prop :=
+  ∀ ε D : ℝ, 0 < ε → 0 < D →
+    HighProbAt μ sz.size (fun n => {ω | ∀ v : TimeIcc s t n,
+      EKFastDecay (gK n) (v : ℝ) ((sz.W n : ℕ) : ℝ) ε D (𝒜 n v ω)})
+-- Step34Gen.lean:516
+def STEKDecaygL {sz : Sizes d} (μ : Measure sz.SeqΩ) {m : ℕ} (s t : ℕ → ℝ)
+    (𝒜 : ∀ n, TimeIcc s t n → sz.SeqΩ → (Fin m → Zd d (sz.L n)) → ℂ) : Prop :=
+  STEKDecayKgL sz.lam μ s t 𝒜
+-- Step34Gen.lean:521
+def STEKLowgL {sz : Sizes d} (μ : Measure sz.SeqΩ) (s t : ℕ → ℝ) (X : ∀ n, TimeIcc s t n → sz.SeqΩ → ℝ) : Prop :=
+  ∃ b : ℝ, HighProbAt μ sz.size (fun n => {ω | ∀ v : TimeIcc s t n, ((sz.size n : ℕ) : ℝ) ^ (-b) ≤ X n v ω})
+-- Step34Gen.lean:526
+abbrev STEKKer (d : ℕ) := ∀ sz : Sizes d, FlowFM sz → (ℕ → ℝ) → ℝ → Prop
+-- Step34Gen.lean:529
+def STEKSumNdecaygL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Ker : STEKKer d) : Prop :=
+  3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ (C : FlowFM sz) (gK : ℕ → ℝ), Ker sz C gK κ → (∀ᶠ n in atTop, 0 < gK n ∧ gK n ≤ 𝔡⁻¹) →
+    ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) → ∀ σ : Fin n_ → Bool,
+    ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ),
+    ∀ X : (∀ n, TimeIcc s t n → sz.SeqΩ → ℝ), (∀ n v ω, 0 ≤ X n v ω) →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖𝒜 n v ω‖) X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖Step2Gen_UN C n σ (v : ℝ) (t n) (𝒜 n v ω)‖)
+        (fun n v ω => ((1 - (v : ℝ)) / (1 - t n)) ^ n_ * X n v ω)
+-- Step34Gen.lean:540
+def STEKSumRes1gL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Ker : STEKKer d) : Prop :=
+  3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ (C : FlowFM sz) (gK : ℕ → ℝ), Ker sz C gK κ → (∀ᶠ n in atTop, 0 < gK n ∧ gK n ≤ 𝔡⁻¹) →
+    ∀ s t : ℕ → ℝ, STEKWinKgL sz gK s t → ∀ σ : Fin n_ → Bool,
+    ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ), STEKDecayKgL gK (law sz) s t 𝒜 →
+    ∀ X : (∀ n, TimeIcc s t n → sz.SeqΩ → ℝ), STEKLowgL (law sz) s t X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖𝒜 n v ω‖) X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖Step2Gen_UN C n σ (v : ℝ) (t n) (𝒜 n v ω)‖)
+        (fun n v ω => (ellT (sz.L n) (gK n) (t n) ^ 2 / ellT (sz.L n) (gK n) (v : ℝ) ^ 2) *
+          ((gK n ^ 2 + |1 - (v : ℝ)|) / (gK n ^ 2 + |1 - t n|)) ^ n_ * X n v ω)
+-- Step34Gen.lean:552
+def STEKSumRes2NALgL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Ker : STEKKer d) : Prop :=
+  3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ (C : FlowFM sz) (gK : ℕ → ℝ), Ker sz C gK κ → (∀ᶠ n in atTop, 0 < gK n ∧ gK n ≤ 𝔡⁻¹) →
+    ∀ s t : ℕ → ℝ, STEKWinKgL sz gK s t → ∀ σ : Fin n_ → Bool, (∃ k, σ k = σ (finRotate n_ k)) →
+    ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ), STEKDecayKgL gK (law sz) s t 𝒜 →
+    ∀ X : (∀ n, TimeIcc s t n → sz.SeqΩ → ℝ), STEKLowgL (law sz) s t X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖𝒜 n v ω‖) X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖Step2Gen_UN C n σ (v : ℝ) (t n) (𝒜 n v ω)‖)
+        (fun n v ω => ((gK n ^ 2 + |1 - (v : ℝ)|) / (gK n ^ 2 + |1 - t n|)) ^ (n_ - 1) * X n v ω)
+-- Step34Gen.lean:563
+def STEKSumRes2gL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Ker : STEKKer d) : Prop :=
+  3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ (C : FlowFM sz) (gK : ℕ → ℝ), Ker sz C gK κ → (∀ᶠ n in atTop, 0 < gK n ∧ gK n ≤ 𝔡⁻¹) →
+    ∀ s t : ℕ → ℝ, STEKWinKgL sz gK s t → ∀ σ : Fin n_ → Bool,
+    ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ), STEKDecayKgL gK (law sz) s t 𝒜 →
+    (∀ n v ω, EKSumZero (𝒜 n v ω)) → ∀ X : (∀ n, TimeIcc s t n → sz.SeqΩ → ℝ), STEKLowgL (law sz) s t X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖𝒜 n v ω‖) X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖Step2Gen_UN C n σ (v : ℝ) (t n) (𝒜 n v ω)‖)
+        (fun n v ω => ((gK n ^ 2 + |1 - (v : ℝ)|) / (gK n ^ 2 + |1 - t n|)) ^ n_ * X n v ω)
+-- Step34Gen.lean:575
+def STEKNonzerogL (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ) (Ker : STEKKer d) (Aof : ℝ → ℝ) : Prop :=
+  3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → 1 ≤ Aof κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+    ∀ (C : FlowFM sz) (gK : ℕ → ℝ), Ker sz C gK κ → (∀ᶠ n in atTop, 0 < gK n ∧ gK n ≤ 𝔡⁻¹) →
+    ∀ s t : ℕ → ℝ, (∀ n, (1 - s n) * ((sz.L n : ℕ) : ℝ) ^ 2 ≤ Aof κ * gK n ^ 2) → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) →
+    (∀ n, t n < 1) → ∀ σ : Fin n_ → Bool, ∀ A : Finset (Fin n_), (∀ i, σ i ≠ σ (finRotate n_ i) → i ∈ A) →
+    ∀ 𝒜 : (∀ n, TimeIcc s t n → sz.SeqΩ → (Fin n_ → Zd d (sz.L n)) → ℂ),
+    ∀ X : (∀ n, TimeIcc s t n → sz.SeqΩ → ℝ), (∀ n v ω, 0 ≤ X n v ω) →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n) (fun n v ω => ‖𝒜 n v ω‖) X →
+      PrecL sz (law sz) (U := fun n => TimeIcc s t n)
+        (fun n v ω => ‖zeroModeSet d (sz.L n) A (Step2Gen_UN C n σ (v : ℝ) (t n) (𝒜 n v ω))‖) X
+-- Step34Gen.lean:587
+def STEKBandKer {d : ℕ} (sz : Sizes d) (C : FlowFM sz) (gK : ℕ → ℝ) (κ : ℝ) : Prop :=
+  ∃ E : ℕ → ℝ, C = bandFM sz E ∧ gK = sz.lam ∧ ∀ n, |E n| ≤ 2 ∧ κ ≤ (mE (E n)).im
+-- Step34Gen.lean:596
+theorem bandFM_STEKWin (sz : Sizes d) (s t : ℕ → ℝ) : STEKWin sz s t ↔ STEKWinKgL sz sz.lam s t := Iff.rfl
+-- Step34Gen.lean:598
+theorem bandFM_STEKDecay (sz : Sizes d) (m : ℕ) (s t : ℕ → ℝ) (𝒜 : ∀ n, TimeIcc s t n → sz.SeqΩ → (Fin m → Zd d (sz.L n)) → ℂ) :
+    STEKDecay sz s t 𝒜 ↔ STEKDecaygL (Sizes.seqP sz) s t 𝒜 := Iff.rfl
+-- Step34Gen.lean:601
+theorem bandFM_STEKLow (sz : Sizes d) (s t : ℕ → ℝ) (X : ∀ n, TimeIcc s t n → sz.SeqΩ → ℝ) :
+    STEKLow sz s t X ↔ STEKLowgL (Sizes.seqP sz) s t X := Iff.rfl
+-- Step34Gen.lean:605
+theorem step34Gen_band_hg {sz : Sizes d} {𝔠 𝔡 : ℝ} (h : sz.Admissible 𝔠 𝔡) : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
+-- Step34Gen.lean:610
+theorem step34Gen_W_tendsto {sz : Sizes d} {𝔠 𝔡 : ℝ} (h : sz.Admissible 𝔠 𝔡) :
+    Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop := by
+-- Step34Gen.lean:617
+theorem stek_sumNdecaygL_band (d : ℕ) : STEKSumNdecaygL d (fun sz => Sizes.seqP sz) (@STEKBandKer d) := by
+-- Step34Gen.lean:623
+theorem stek_sumRes1gL_band (d : ℕ) : STEKSumRes1gL d (fun sz => Sizes.seqP sz) (@STEKBandKer d) := by
+-- Step34Gen.lean:629
+theorem stek_sumRes2NALgL_band (d : ℕ) : STEKSumRes2NALgL d (fun sz => Sizes.seqP sz) (@STEKBandKer d) := by
+-- Step34Gen.lean:636
+theorem stek_sumRes2gL_band (d : ℕ) : STEKSumRes2gL d (fun sz => Sizes.seqP sz) (@STEKBandKer d) := by
+-- Step34Gen.lean:644
+theorem stek_nonzerogL_band (d : ℕ) : STEKNonzerogL d (fun sz => Sizes.seqP sz) (@STEKBandKer d) (fun _ => 1) := by
+-- Step34Gen.lean:683
+theorem step34Gen_winK_of_cmp {sz : Sizes d} {gK : ℕ → ℝ} {A : ℝ}
+    (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2)
+    {s t : ℕ → ℝ} (hwin : STEKWinKgL sz sz.lam s t) : STEKWinKgL sz gK s t := by
+-- Step34Gen.lean:704
+theorem step34Gen_ratio_le {sz : Sizes d} {gK : ℕ → ℝ} {A : ℝ}
+    (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) (hA : 1 ≤ A)
+    (n : ℕ) {v t : ℝ} (ht : t < 1) :
+    (gK n ^ 2 + |1 - v|) / (gK n ^ 2 + |1 - t|) ≤ A * ((sz.lam n ^ 2 + |1 - v|) / (sz.lam n ^ 2 + |1 - t|)) :=
+-- Step34Gen.lean:711
+theorem step34Gen_ratio_pow_le {sz : Sizes d} {gK : ℕ → ℝ} {A : ℝ}
+    (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) (hA : 1 ≤ A)
+    (n : ℕ) {v t : ℝ} (ht : t < 1) (n_ : ℕ) :
+    ((gK n ^ 2 + |1 - v|) / (gK n ^ 2 + |1 - t|)) ^ n_ ≤ A ^ n_ * ((sz.lam n ^ 2 + |1 - v|) / (sz.lam n ^ 2 + |1 - t|)) ^ n_ := by
+-- Step34Gen.lean:779
+theorem step34Gen_ellT_le {sz : Sizes d} {gK : ℕ → ℝ} {A : ℝ}
+    (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) (n : ℕ) (u : ℝ) :
+    ellT (sz.L n) (gK n) u ≤ ellT (sz.L n) (sz.lam n) u :=
+-- Step34Gen.lean:785
+theorem step34Gen_ellT_ge {sz : Sizes d} {gK : ℕ → ℝ} {A : ℝ}
+    (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) (hA : 1 ≤ A) (n : ℕ) (u : ℝ) :
+    ellT (sz.L n) (sz.lam n) u ≤ Real.sqrt A * ellT (sz.L n) (gK n) u :=
+-- Step34Gen.lean:805
+theorem step34Gen_decayK_of_cmp {sz : Sizes d} {gK : ℕ → ℝ} {A : ℝ}
+    (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) (hA : 1 ≤ A)
+    (hW : Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop) (μ : Measure sz.SeqΩ) {m : ℕ} {s t : ℕ → ℝ}
+    {𝒜 : ∀ n, TimeIcc s t n → sz.SeqΩ → (Fin m → Zd d (sz.L n)) → ℂ} (h : STEKDecayKgL sz.lam μ s t 𝒜) :
+    STEKDecayKgL gK μ s t 𝒜 := by
+-- Step34Gen.lean:823
+def STNewPQgL (d : ℕ) (Cls : ∀ sz : Sizes d, FlowFM sz → Prop) : Prop :=
+  ∀ (m : ℕ) (σ : Fin m → Bool) (A : Finset (Fin m)),
+    ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool) (ι : ∀ α, Fin (k α) → Fin m) (A' : ∀ α, Finset (Fin (k α))),
+      (∀ α, 1 ≤ k α ∧ k α + 1 ≤ m) ∧ (∀ α, STIdiff (σ' α) ⊆ A' α) ∧
+      ∀ (sz : Sizes d) (C : FlowFM sz), Cls sz C → ∀ (n : ℕ) (τ : ℝ), 0 ≤ τ → τ < 1 → ∀ (ω : sz.SeqΩ) (a : Fin m → Zd d (sz.L n)),
+        (zeroModeSet d (sz.L n) A (fun a' => C.L n τ σ a' ω) a =
+          zeroModeSet d (sz.L n) (A ∪ STIdiff σ) (fun a' => C.L n τ σ a' ω) a +
+            ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz.size n : ℕ) : ℂ) * (C.eta n τ : ℂ)) ^ (m - k α)) *
+              zeroModeSet d (sz.L n) (A' α) (fun a' => C.L n τ (σ' α) a' ω) (a ∘ ι α)) ∧
+        (zeroModeSet d (sz.L n) A (fun a' => C.K n τ σ a') a =
+          zeroModeSet d (sz.L n) (A ∪ STIdiff σ) (fun a' => C.K n τ σ a') a +
+            ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz.size n : ℕ) : ℂ) * (C.eta n τ : ℂ)) ^ (m - k α)) *
+              zeroModeSet d (sz.L n) (A' α) (fun a' => C.K n τ (σ' α) a') (a ∘ ι α))
+-- Step34Gen.lean:838
+theorem stNewPQgL_band (d : ℕ) : STNewPQgL d (fun sz C => ∃ E : ℕ → ℝ, C = bandFM sz E ∧ ∀ n, |E n| < 2) := by
+### RBM3D/Chain/Step34GenTw.lean
+
+$ grep -n "^example" RBM3D/Chain/Step34Gen.lean RBM3D/Chain/Step34GenTw.lean | cut -c1-110   (the compiled instances; all inside the two files that build above)
+RBM3D/Chain/Step34Gen.lean:864:example (h : STLmaxUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) 
+RBM3D/Chain/Step34Gen.lean:868:example (h : STLKUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
+RBM3D/Chain/Step34Gen.lean:873:example (h : STLmaxU sz0 (STflowE z0) sInst tInst) : STLmax sz0 (STflowE z0) tI
+RBM3D/Chain/Step34Gen.lean:879:example (h : STLKU sz0 (STflowE z0) sInst tInst) : STLK sz0 (STflowE z0) tInst 
+RBM3D/Chain/Step34Gen.lean:886:example (h : STStep3RgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z =
+RBM3D/Chain/Step34Gen.lean:892:example (h : STStep4RgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z =
+RBM3D/Chain/Step34Gen.lean:899:example (h : STStep3RgL 3 STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => 
+RBM3D/Chain/Step34Gen.lean:912:example (h : STSEforLngL 3 STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z =>
+RBM3D/Chain/Step34Gen.lean:918:example (h : STOeqNQgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z =>
+RBM3D/Chain/Step34Gen.lean:924:example (h : STB45PingL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z =
+RBM3D/Chain/Step34Gen.lean:930:example (h : STWardTypePPingL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠
+RBM3D/Chain/Step34Gen.lean:936:example (h : STIterRgL 3 STRegIterI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z
+RBM3D/Chain/Step34Gen.lean:943:example (ω : sz0.SeqΩ) : STLI sz0 0 0 (1 / 2) ω ⟨[true, false], [0, 0]⟩ =
+RBM3D/Chain/Step34Gen.lean:947:example (ω : sz0.SeqΩ) : STegt sz0 0 0 (1 / 2) ω ⟨[true, false], [0, 0]⟩ =
+RBM3D/Chain/Step34Gen.lean:951:example (ω : sz0.SeqΩ) : STee sz0 0 0 (1 / 2) ω ![true, false] ![0, 0] ![0, 0] 
+RBM3D/Chain/Step34Gen.lean:955:example (ω : sz0.SeqΩ) : STmaxL sz0 0 0 (1 / 2) 2 ω = STmaxLg (bandFM sz0 (fun 
+RBM3D/Chain/Step34Gen.lean:958:example (ω : sz0.SeqΩ) : STmaxLK sz0 0 0 (1 / 2) 2 ω = STmaxLKg (bandFM sz0 (fu
+RBM3D/Chain/Step34Gen.lean:961:example (ω : sz0.SeqΩ) : STXiL sz0 0 0 (1 / 2) 2 ω = STXiLg (bandFM sz0 (fun _ 
+RBM3D/Chain/Step34Gen.lean:964:example (ω : sz0.SeqΩ) : STXiLK sz0 0 0 (1 / 2) 2 ω = STXiLKg (bandFM sz0 (fun 
+RBM3D/Chain/Step34Gen.lean:967:example (ω : sz0.SeqΩ) : STsupXiLK sz0 0 0 0 (1 / 2) 2 ω = STsupXiLKg (bandFM s
+RBM3D/Chain/Step34Gen.lean:970:example (ω : sz0.SeqΩ) : STLKtensor sz0 0 0 (1 / 2) ω (m := 2) ![true, false, t
+RBM3D/Chain/Step34Gen.lean:974:example : STKI sz0 0 0 (1 / 2) ⟨[true, false], [0, 0]⟩ = STKIg (bandStep2Mat sz
+RBM3D/Chain/Step34Gen.lean:977:example (ω : sz0.SeqΩ) : STLKI sz0 0 0 (1 / 2) ω ⟨[true, false], [0, 0]⟩ =
+RBM3D/Chain/Step34Gen.lean:981:example (ω : sz0.SeqΩ) : STksimLK sz0 0 0 (1 / 2) ω 3 ⟨[true, false, true], [0,
+RBM3D/Chain/Step34Gen.lean:985:example (ω : sz0.SeqΩ) : STelklk sz0 0 0 (1 / 2) ω ⟨[true, false, true], [0, 0,
+RBM3D/Chain/Step34Gen.lean:989:example (ω : sz0.SeqΩ) : STavgErr sz0 0 0 (1 / 2) ω true 0 = STavgErrg (bandSte
+RBM3D/Chain/Step34Gen.lean:992:example : STIngR 3 STAny (fun sz E s t => STSEforLnConcl sz E s t) ↔
+RBM3D/Chain/Step34Gen.lean:997:example : Step34Gen_LCompat (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) := b
+RBM3D/Chain/Step34Gen.lean:998:example : Step34Gen_KCompat (bandStep2Mat sz0 (fun _ => 0)) := bandStep34_KComp
+RBM3D/Chain/Step34Gen.lean:1000:example : STSEforLnConcl sz0 (fun _ => 0) sInst tInst ↔
+RBM3D/Chain/Step34Gen.lean:1004:example : STXiBoot sz0 (fun _ => 0) sInst tInst ↔ STXiBootgL (bandFM sz0 (fun 
+RBM3D/Chain/Step34Gen.lean:1007:example : STNQConcl sz0 (fun _ => 0) sInst tInst ↔ STNQConclgL (bandFM sz0 (fu
+RBM3D/Chain/Step34Gen.lean:1010:example : STNQConcl' sz0 (fun _ => 0) sInst tInst ↔ STNQConclgL' (bandFM sz0 (
+RBM3D/Chain/Step34Gen.lean:1013:example : STIterHyp sz0 (fun _ => 0) sInst tInst (fun n => ((sz0.W n : ℕ) : ℝ)
+RBM3D/Chain/Step34Gen.lean:1017:example : STWardTypeP sz0 (fun _ => 0) sInst tInst ↔ STWardTypePgL (bandFM sz0
+RBM3D/Chain/Step34Gen.lean:1021:example : STB45 sz0 (fun _ => 0) sInst tInst ↔ STB45gL (bandFM sz0 (fun _ => 0
+RBM3D/Chain/Step34Gen.lean:1024:example : ThetaN 3 (sz0.L 0) (sz0.lam 0) (EKsgn (mE ((fun _ => (0 : ℝ)) 0)) ![
+RBM3D/Chain/Step34Gen.lean:1028:example : UN 3 (sz0.L 0) (sz0.lam 0) (EKsgn (mE ((fun _ => (0 : ℝ)) 0)) ![true
+RBM3D/Chain/Step34Gen.lean:1146:example : STEKDecaygL (Sizes.seqP sz0) sInst tInst (fun n _ _ => ekDelta0 2 3 
+RBM3D/Chain/Step34Gen.lean:1147:example : STEKLowgL (Sizes.seqP sz0) sInst tInst (fun _ _ _ => (1 : ℝ)) := ste
+RBM3D/Chain/Step34Gen.lean:1150:example : STEKWin sz0 sInst tInst := (bandFM_STEKWin sz0 sInst tInst).2 step34
+RBM3D/Chain/Step34Gen.lean:1151:example : STEKDecay sz0 sInst tInst (fun n _ _ => ekDelta0 2 3 (sz0.L n)) :=
+RBM3D/Chain/Step34Gen.lean:1153:example : STEKLow sz0 sInst tInst (fun _ _ _ => (1 : ℝ)) := (bandFM_STEKLow sz
+RBM3D/Chain/Step34Gen.lean:1156:example : STEKBandKer sz0 (bandFM sz0 (fun _ => 0)) sz0.lam (1 / 10) :=
+RBM3D/Chain/Step34Gen.lean:1158:example : ∃ E : ℕ → ℝ, bandFM sz0 (fun _ => 0) = bandFM sz0 E ∧ ∀ n, |E n| < 2
+RBM3D/Chain/Step34Gen.lean:1164:example := stek_sumNdecaygL_band 3 le_rfl 2 le_rfl (1 / 10) (1 / 6) (1 / 10) (
+RBM3D/Chain/Step34Gen.lean:1169:example := stek_sumRes1gL_band 3 le_rfl 2 le_rfl (1 / 10) (1 / 6) (1 / 10) (by
+RBM3D/Chain/Step34Gen.lean:1174:example := stek_sumRes2NALgL_band 3 le_rfl 2 le_rfl (1 / 10) (1 / 6) (1 / 10) 
+RBM3D/Chain/Step34Gen.lean:1179:example := stek_sumRes2gL_band 3 le_rfl 2 le_rfl (1 / 10) (1 / 6) (1 / 10) (by
+RBM3D/Chain/Step34Gen.lean:1185:example := stek_nonzerogL_band 3 le_rfl 2 le_rfl (1 / 10) (1 / 6) (1 / 10) (by
+RBM3D/Chain/Step34Gen.lean:1193:example : STNewPQgL 3 (fun sz C => ∃ E : ℕ → ℝ, C = bandFM sz E ∧ ∀ n, |E n| <
+RBM3D/Chain/Step34Gen.lean:1196:example (ω : sz0.SeqΩ) (a : Fin 3 → Zd 3 (sz0.L 0)) :
+RBM3D/Chain/Step34Gen.lean:1225:example : STEKWinKgL sz0 sz0.lam sInst tInst := step34Gen_winK_of_cmp step34Ge
+RBM3D/Chain/Step34Gen.lean:1226:example : STEKWinKgL sz0 (fun n => sz0.lam n / 2) sInst tInst := step34Gen_win
+RBM3D/Chain/Step34Gen.lean:1228:example : (((fun n => sz0.lam n / 2) 1) ^ 2 + |1 - (0 : ℝ)|) / (((fun n => sz0
+RBM3D/Chain/Step34Gen.lean:1232:example (v : ℝ) : ((((fun n => sz0.lam n / 2) 1) ^ 2 + |1 - v|) / (((fun n => 
+RBM3D/Chain/Step34Gen.lean:1236:example : ellT (sz0.L 1) ((fun n => sz0.lam n / 2) 1) 0 ≤ ellT (sz0.L 1) (sz0.
+RBM3D/Chain/Step34Gen.lean:1237:example : ellT (sz0.L 1) (sz0.lam 1) 0 ≤ Real.sqrt 4 * ellT (sz0.L 1) ((fun n 
+RBM3D/Chain/Step34Gen.lean:1239:example : ellT ((sz0.withLam fun n => -sz0.lam n).L 1) ((fun n => -sz0.lam n /
+RBM3D/Chain/Step34Gen.lean:1242:example : ellT ((sz0.withLam fun n => -sz0.lam n).L 1) ((sz0.withLam fun n => 
+RBM3D/Chain/Step34Gen.lean:1247:example : STEKDecayKgL (fun n => sz0.lam n / 2) (Sizes.seqP sz0) sInst tInst (
+RBM3D/Chain/Step34GenTw.lean:40:example {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ 
+RBM3D/Chain/Step34GenTw.lean:44:example {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ 
+RBM3D/Chain/Step34GenTw.lean:48:example {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (s t : ℕ 
+RBM3D/Chain/Step34GenTw.lean:57:example (Cd : ℝ) (h : twSteps (bandFM sz0 (fun _ => 0)) (Sizes.seqP sz0) sInst
+RBM3D/Chain/Step34GenTw.lean:62:example (Cd : ℝ) (h2 : STStep2ConclgL (bandFM sz0 (fun _ => 0)) (Sizes.seqP sz
+RBM3D/Chain/Step34GenTw.lean:73:example : Prop := ∀ (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop
+RBM3D/Chain/Step34GenTw.lean:80:example : Prop := ∀ (d : ℕ) (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ),
+RBM3D/Chain/Step34GenTw.lean:84:example : Prop := ∀ (d : ℕ) (sz : Sizes d) (z : ℕ → ℂ),
+RBM3D/Chain/Step34GenTw.lean:89:example : Prop := STSEforLngL 3 STAny (fun sz => Sizes.seqP (sz.withLam 0)) (f
+RBM3D/Chain/Step34GenTw.lean:93:example : Prop := ∀ (d : ℕ) (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (τ : ℝ) (ω : sz
+
+$ bash clash.sh names.txt   (declaration-pattern grep of the 99 new public names on main and every other t/* branch)
+names checked:       99
+refs scanned: main + other t/* = 464 ; refs with a same-name declaration in RBM3D/*.lean (Probe excluded): 0
+
+$ grep -n '^import RBM3D.BA' RBM3D/Chain/Step34Gen.lean   (layering: must print nothing)
+exit 1 (1 = no match)
+
+$ grep -nE "mE |mE\)|zt E|etaT|mSigma|EKsgn|PropSpin|SB d|UN d|ThetaN d|seqHflow |Lloop|STKloop|KLK |Prec sz|Whp|STFlow|lemT|STflowE|2 - κ|\|E" RBM3D/Chain/Step34Gen.lean | wc -l
+      99
+$ python3 -I spectral.py RBM3D/Chain/Step34Gen.lean   (the same hits, each labelled by its enclosing declaration)
+165: [OTHER] (def Step34Gen_LCompat@164) Cm.L n t σ a ω = Cm.LIM n t (Hf n t ω) (KLloopOf d (sz.L n) σ a)
+169: [OTHER] (def Step34Gen_KCompat@168) Cm.K n t σ a = Cm.KI n t (KLloopOf d (sz.L n) σ a)
+178: [band bridge] (theorem bandStep34_STLI@177) STLI sz n (E n) τ ω I = STLIg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+181: [band bridge] (theorem bandStep34_STLKI@180) STLKI sz n (E n) τ ω I = STLKIg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+183: [band bridge] (theorem bandStep34_STksimLK@182) STksimLK sz n (E n) τ ω l I = STksimLKg (bandStep2Mat sz E) (seqHflow sz) n τ ω l I := rfl
+185: [band bridge] (theorem bandStep34_STelklk@184) STelklk sz n (E n) τ ω I = STelklkg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+187: [band bridge] (theorem bandStep34_STavgErr@186) STavgErr sz n (E n) τ ω σ a = STavgErrg (bandStep2Mat sz E) (seqHflow sz) n τ ω σ a := rfl
+189: [band bridge] (theorem bandStep34_STegt@188) STegt sz n (E n) τ ω I = STegtg (bandStep2Mat sz E) (seqHflow sz) n τ ω I := rfl
+191: [band bridge] (theorem bandStep34_STee@190) STee sz n (E n) τ ω σ a a' = STeeg (bandStep2Mat sz E) (seqHflow sz) n τ ω σ a a' := rfl
+193: [doc/comment] (theorem bandStep34_STee@190) /-- The band carrier facts (`loopM_eq_loopL`, `GLoopFlow.lean:127`; `STKloop` is `KLK ∘ KL
+194: [band bridge] (theorem bandStep34_LCompat@194) theorem bandStep34_LCompat : Step34Gen_LCompat (bandStep2Mat sz E) (seqHflow sz) := by
+208: [doc/comment] (theorem bandStep34_KCompat@197) /-- `STSEforLnConcl` (`Step34Pins.lean:363`) over `(Cm, Hf, μ)` (the four estimates of the
+278: [doc/comment] (def STNQConclgL'@265) /-- `STIterHyp` (`Step34Pins.lean:469`): `(eq:iteration_induc)` at `(r,l)` over a carrier;
+293: [doc/comment] (def STWardTypePgL@284) /-- `STB45` (`Step34Pins.lean:560`): `(y27kasdfg)` over a carrier; `ThetaN d L lam (EKsgn 
+294: [doc/comment] (def STWardTypePgL@284) (U-C4: no band `ThetaN`), `etaT (E n) u` is `Cf.eta n u`. -/
+315: [doc/comment] (def STB45gL@295) /-- `EKsgn (mE E) σ` of the band `ThetaN` is the charge vector `m(σ_i)` of `Step2Kern_Thet
+318: [band bridge] (theorem bandStep34_ThetaN@317) ThetaN d (sz.L n) (sz.lam n) (EKsgn (mE (E n)) σ) τ A = Step2Gen_ThetaN (bandFM sz E) n σ 
+323: [band bridge] (theorem bandStep34_UN@322) UN d (sz.L n) (sz.lam n) (EKsgn (mE (E n)) σ) s' t' A = Step2Gen_UN (bandFM sz E) n σ s' t
+327: [band bridge] (theorem bandFM_STSEforLnConcl@326) STSEforLnConcl sz E s t ↔ STSEforLnConclgL (bandStep2Mat sz E) (seqHflow sz) (Sizes.seqP s
+334: [doc/comment] (theorem bandFM_STWardTypeP@333) /-- Not `Iff.rfl`: the band `ThetaN d L lam (EKsgn (mE E) σ)` is `Step2Gen_ThetaN (bandFM 
+432: [doc/comment] (def STB45PingL@425) /-- The band carrier family: law `seqP`, flow `STFlow`, carrier `bandFM sz (STflowE z)`, h
+434: [band bridge] (theorem bandFM_STStep3R@433) STStep3R d R ↔ STStep3RgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε
+435: [band bridge] (theorem bandFM_STStep3R@433) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+441: [band bridge] (theorem bandFM_STStep4R@440) STStep4R d R ↔ STStep4RgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε
+442: [band bridge] (theorem bandFM_STStep4R@440) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := by
+449: [band bridge] (theorem bandFM_STIngR@447) STIngR d R Concl ↔ STIngRgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ
+450: [band bridge] (theorem bandFM_STIngR@447) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz z s t => Concl sz (S
+457: [band bridge] (theorem bandFM_STIterR@455) STIterR d R Aof ↔ STIterRgL d R (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ
+458: [band bridge] (theorem bandFM_STIterR@455) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz s n => Aof sz s n) :
+461: [band bridge] (theorem bandFM_STSEforLn@460) STSEforLn d ↔ STSEforLngL d STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz
+462: [band bridge] (theorem bandFM_STSEforLn@460) (fun sz z => bandStep2Mat sz (STflowE z)) (fun sz _ => seqHflow sz) (fun _ z n => lemT (z 
+466: [band bridge] (theorem bandFM_STOeqNQ@465) STOeqNQ d ↔ STOeqNQgL d STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ
+467: [band bridge] (theorem bandFM_STOeqNQ@465) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
+471: [band bridge] (theorem bandFM_STWardTypePPin@470) STWardTypePPin d ↔ STWardTypePPingL d STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z 
+472: [band bridge] (theorem bandFM_STWardTypePPin@470) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
+486: [band bridge] (theorem bandFM_STB45Pin@485) STB45Pin d ↔ STB45PingL d STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz
+487: [band bridge] (theorem bandFM_STB45Pin@485) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) :=
+489: [band bridge] (theorem bandFM_STB45Pin@485) (step34Gen_ingR_congr (fun sz z s t => bandFM_STB45 sz (STflowE z) s t))
+586: [doc/comment] (def STEKNonzerogL@575) /-- The band class (D3 (a)): `C = bandFM sz E`, coupling `gK = sz.lam`, `|E n| ≤ 2` and th
+588: [band instance/class] (def STEKBandKer@587) ∃ E : ℕ → ℝ, C = bandFM sz E ∧ gK = sz.lam ∧ ∀ n, |E n| ≤ 2 ∧ κ ≤ (mE (E n)).im
+621: [band instance/class] (theorem stek_sumNdecaygL_band@617) exact stek_sumNdecay_holds d hd n_ hn 𝔠 𝔡 sz hAdm s t hs hst ht (fun n => mE (E n)) (fun n
+627: [band instance/class] (theorem stek_sumRes1gL_band@623) exact stek_sumRes1_holds d hd n_ hn 𝔠 𝔡 sz hAdm s t hwin (fun n => mE (E n)) (fun n => nor
+633: [band instance/class] (theorem stek_sumRes2NALgL_band@629) exact stek_sumRes2NAL_holds d hd n_ hn κ 𝔠 𝔡 hκ sz hAdm s t hwin (fun n => mE (E n)) (fun 
+640: [band instance/class] (theorem stek_sumRes2gL_band@636) exact stek_sumRes2_holds d hd n_ hn κ 𝔠 𝔡 hκ sz hAdm s t hwin (fun n => mE (E n)) (fun n =
+648: [band instance/class] (theorem stek_nonzerogL_band@644) refine stek_nonzero_holds d hd n_ hn κ 𝔠 𝔡 hκ sz hAdm s t (fun n => ?_) hs hst ht (fun n =
+649: [band instance/class] (theorem stek_nonzerogL_band@644) (fun n => norm_mE (hE n).1) (fun n => (hE n).2) σ A hA 𝒜 X hX hdom
+822: [doc/comment] (theorem step34Gen_decayK_of_cmp@805) U1s1's, `Chain/ZeroModeGen`).  The band class is `∃ E, C = bandFM sz E ∧ ∀ n, |E n| < 2`. 
+837: [doc/comment] (def STNewPQgL@823) /-- The band instance (premise-free, from `stNewPQ_holds`, `Induction/NewPQ.lean:584`): `η
+838: [band instance/class] (theorem stNewPQgL_band@838) theorem stNewPQgL_band (d : ℕ) : STNewPQgL d (fun sz C => ∃ E : ℕ → ℝ, C = bandFM sz E ∧ ∀
+859: [private instance data (band)] (private theorem step34Gen_mE_zero_im@859) private theorem step34Gen_mE_zero_im : (1 / 10 : ℝ) ≤ (mE 0).im := by
+864: [example (band data)] (example example@864) example (h : STLmaxUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
+865: [example (band data)] (example example@864) STLmaxgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst :=
+868: [example (band data)] (example example@868) example (h : STLKUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) :
+869: [example (band data)] (example example@868) STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) tInst :=
+873: [example (band data)] (example example@873) example (h : STLmaxU sz0 (STflowE z0) sInst tInst) : STLmax sz0 (STflowE z0) tInst :=
+874: [example (band data)] (example example@873) (Iff.rfl : STLmax sz0 (STflowE z0) tInst ↔ STLmaxgL (bandFM sz0 (STflowE z0)) (Sizes.seqP 
+875: [example (band data)] (example example@873) (STLmaxgL_of_STLmaxUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun n => (sz0_hst n).le
+876: [example (band data)] (example example@873) ((bandFM_STLmaxU sz0 (STflowE z0) sInst tInst).1 h))
+879: [example (band data)] (example example@879) example (h : STLKU sz0 (STflowE z0) sInst tInst) : STLK sz0 (STflowE z0) tInst :=
+880: [example (band data)] (example example@879) (Iff.rfl : STLK sz0 (STflowE z0) tInst ↔ STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0)
+881: [example (band data)] (example example@879) (STLKgL_of_STLKUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) (fun n => (sz0_hst n).le)
+882: [example (band data)] (example example@879) ((bandFM_STLKU sz0 (STflowE z0) sInst tInst).1 h))
+886: [example (band data)] (example example@886) example (h : STStep3RgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz
+887: [example (band data)] (example example@886) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
+892: [example (band data)] (example example@892) example (h : STStep4RgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz
+893: [example (band data)] (example example@892) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
+899: [example (band data)] (example example@899) example (h : STStep3RgL 3 STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ
+900: [example (band data)] (example example@899) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
+902: [example (band data)] (example example@899) (STKboundgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) → STKwardgL (bandFM sz0 (STflowE z0
+903: [example (band data)] (example example@899) STLKgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst →
+904: [example (band data)] (example example@899) STStep1LoopgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst →
+905: [example (band data)] (example example@899) STStep2ConclgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst Cd →
+906: [example (band data)] (example example@899) STLmaxUgL (bandFM sz0 (STflowE z0)) (Sizes.seqP sz0) sInst tInst) := by
+912: [example (band data)] (example example@912) example (h : STSEforLngL 3 STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz 
+913: [example (band data)] (example example@912) (fun sz z => bandStep2Mat sz (STflowE z)) (fun sz _ => seqHflow sz) (fun _ z n => lemT (z 
+918: [example (band data)] (example example@918) example (h : STOeqNQgL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz 
+919: [example (band data)] (example example@918) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
+924: [example (band data)] (example example@924) example (h : STB45PingL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz
+925: [example (band data)] (example example@924) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
+930: [example (band data)] (example example@930) example (h : STWardTypePPingL 3 STCaseI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STF
+931: [example (band data)] (example example@930) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n))) (Cd : ℝ) (hCd : 0 < Cd) :
+936: [example (band data)] (example example@936) example (h : STIterRgL 3 STRegIterI (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow 
+937: [example (band data)] (example example@936) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) (fun sz _ n => STAI sz n)) (
+944: [example (band data)] (example example@943) STLIg (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) 0 (1 / 2) ω ⟨[true, false], [0, 0]⟩ :
+948: [example (band data)] (example example@947) STegtg (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) 0 (1 / 2) ω ⟨[true, false], [0, 0]⟩ 
+952: [example (band data)] (example example@951) STeeg (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) 0 (1 / 2) ω ![true, false] ![0, 0] ![
+978: [example (band data)] (example example@977) STLKIg (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) 0 (1 / 2) ω ⟨[true, false], [0, 0]⟩ 
+982: [example (band data)] (example example@981) STksimLKg (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) 0 (1 / 2) ω 3 ⟨[true, false, true
+986: [example (band data)] (example example@985) STelklkg (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) 0 (1 / 2) ω ⟨[true, false, true], 
+989: [example (band data)] (example example@989) example (ω : sz0.SeqΩ) : STavgErr sz0 0 0 (1 / 2) ω true 0 = STavgErrg (bandStep2Mat sz0 (
+993: [example (band data)] (example example@992) STIngRgL 3 STAny (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun 
+994: [example (band data)] (example example@992) (fun _ z n => lemT (z n)) (fun sz z s t => STSEforLnConcl sz (STflowE z) s t) :=
+997: [example (band data)] (example example@997) example : Step34Gen_LCompat (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) := bandStep34_L
+1001: [example (band data)] (example example@1000) STSEforLnConclgL (bandStep2Mat sz0 (fun _ => 0)) (seqHflow sz0) (Sizes.seqP sz0) sInst tIn
+1024: [example (band data)] (example example@1024) example : ThetaN 3 (sz0.L 0) (sz0.lam 0) (EKsgn (mE ((fun _ => (0 : ℝ)) 0)) ![true, false]
+1028: [example (band data)] (example example@1028) example : UN 3 (sz0.L 0) (sz0.lam 0) (EKsgn (mE ((fun _ => (0 : ℝ)) 0)) ![true, false]) 0 
+1155: [doc/comment] (example example@1153) /-- The band class is inhabited at `bandFM sz0 (fun _ => 0)` (`E ≡ 0`: `mE 0 = i`, `Im = 1
+1158: [example (band data)] (example example@1158) example : ∃ E : ℕ → ℝ, bandFM sz0 (fun _ => 0) = bandFM sz0 E ∧ ∀ n, |E n| < 2 := ⟨fun _ =
+1193: [example (band data)] (example example@1193) example : STNewPQgL 3 (fun sz C => ∃ E : ℕ → ℝ, C = bandFM sz E ∧ ∀ n, |E n| < 2) := stNew
+SUMMARY {'OTHER': 2, 'band bridge': 28, 'doc/comment': 12, 'band instance/class': 8, 'private instance data (band)': 1, 'example (band data)': 48}
+
+$ git diff main...t/T2457 -- RBM3D/Induction RBM3D/Chain/Carrier.lean RBM3D/Chain/Step2Gen.lean RBM3D/Chain/Step2Kern.lean | wc -l   (G1: must be 0)
+       0
+$ git diff --stat main...t/T2457
+ RBM3D/Chain/Step34Gen.lean   | 1255 ++++++++++++++++++++++++++++++++++++++++++
+ RBM3D/Chain/Step34GenTw.lean |   99 ++++
+ RBM3D/Probe/T2457Pins.lean   |  296 ++++++++++
+ RBM3D/Test/Axioms.lean       |    2 +
+ 4 files changed, 1652 insertions(+)
+
+$ lake env lean docs/tickets/checks/T2457-check.lean   (the check file compiles on the branch); exit and error lines
+exit 0
+0
+
+$ python3 mkbinding.py; lake env lean binding.lean   (scratch, not committed: check file + Iff.rfl of STLmaxUgL STLKUgL STStep3RgL STStep4RgL STEKDecaygL STEKLowgL STIngRgL against T2457_*)
+exit 0
+0
+
+$ lake env lean precheck.lean   (import RBM3D + both new modules + #assert_rbm_axioms; head and the two new registry lines)
+exit 0
+axiom audit: 13352 theorems, 4220 definitions, 0 axioms in `RBM` (compiler-generated declarations excluded).
+All within [propext,
+ Classical.choice,
+98:  RBM.BA.STLmaxUgL: 2 [no certificate]
+99:  RBM.BA.STLKUgL: 2 [no certificate]
+107:premises found by scanning: 120 (borrowed 1, owed 55, structural 45, refuted 6, superseded 13).
+108:registry: 2 borrowed + 98 owed + 122 structural + 7 refuted + 17 superseded; 126 registered premise(s) carry nothing yet: [RBM.Loop.KLPT,
