@@ -1,4 +1,4 @@
-state: audit-pass
-reason: Amend 1 1b prover-max eac746f (rerun after the API limit), audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 04:03:19 UTC 2026
+state: merged b16ad61
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new Graph/BASim (1979), BASim2 (1928), BASim3 (1962), root imports added at merge; probe stays on t/T2423 (796a2dc); full lake build 4255 jobs; pushed
+updated: Mon Oct 12 04:03:21 UTC 2026
 reports: docs/reports/T2423-prove.md, docs/reports/T2423-1a-audit.md, docs/reports/T2423-audit.md

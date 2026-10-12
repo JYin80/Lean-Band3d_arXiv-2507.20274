@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-max 1869c73, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 04:21:57 UTC 2026
+state: merged e3f59c2
+reason: audit PASS round 1 (claude-opus-5-5); new BA/TwistGridRem (1078), TwistGridRem2 (494), root imports added at merge; full lake build 4257 jobs; pushed
+updated: Mon Oct 12 04:21:59 UTC 2026
 reports: docs/reports/T2437-prove.md, docs/reports/T2437-audit.md

@@ -2194,3 +2194,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - **T2439 = TL2a4**（BA 106；TL 11 / 15；`prover-hard`；`BA/TwistGridWTail` + `TwistGridWTail2`）：`baTwistGridWTail_holds (d) : BATwistGridWTail d`（`DifREP3` 的孪生）；默认拷贝 T2438 的条件 MGF（带词干），只有 T2438 在它 1b 开始前已合并才改为导入。
   - `baTwistGridMart_holds` 不在这三张里，写进 TL2d。
 - (3) **阶段 TL 计数 11 / 15**（13 行，剩 TL2d、TL2e 两张；余量 2）。下一张票号 T2440，下一节 §247，下一条 H228。
+
+## §247 — L3a2、TL1b、R1 合并（TL1 证完）；中枢 API 限额停了 1 小时 50 分；放 L3a3 = T2440（总调度 V3，2026-10-12 04:33 UTC）
+
+- (1) **中枢停摆**：约 01:21–03:11 UTC，四个 workflow 撞 API 会话限额（"resets 8:10pm America/Los_Angeles" = 03:10 UTC），03:11 按规则 (H) 重跑，H227 同时执行（35279ca）。不计返工。
+- (2) **合并**：T2432（L3a2，8a05c54，`Graph/BASymm2` 554 行）；**T2436（TL1b，4b3bb8a，`BA/TwistAvgB` 504 行）——`baTwistAvgProd_holds` 成立，TL1 在 BA 载体上证完**（owed 行 `BATwistAvgLaw` 仍到 BA-V 才退）；**T2423（R1，b16ad61，`Graph/BASim` 1,979 + `BASim2` 1,928 + `BASim3` 1,962）**。TL 已合并 8 / 13；L 阶段已合并到 R1、L3a1、L3a2、L3b3′ 等。
+- (3) **T2440 = L3a3 `BALvl1A`**（BA 107；L 23 / 50；`prover-hard`；`Graph/BALvl1A`，必要时 `BALvl1A2`）：`BALocStep`（五种）、打包、`BAlvl1StepIdentity` 与 `baLvl1StepIdentity_holds`、`BAReach`；T2395 探针里 `outsOf`/`withinOuts`/`splitOuts`/`BAFrameStep`/`BAPGraph.twist` 已由 R1 合并（逐字相同），只抄 `BALocStep`、`BAlvl1StepIdentity`、`BAReach`。不需探针步骤。签字附注：钉文比探针强（不带 `P.g.Normal`、`BASelf`、`3 ≤ L`），1a 若发现要前提就作钉文修补报告；`BAExpandId` 的私有可积引理用 `BALvl1A_` 词干拷贝。S′ 关键路径，排在等待队列最前（L3b4′ 等它）。
+- (4) 下一张票号 T2441，下一节 §248，下一条 H229。还没写：TL2d（等 TL2a2–4）、TL2e、G7、带状侧 T 行、L3a4（等 L3a3）、L3b4′（等 L3a3）、L3c3b（等 L3c3a）。
