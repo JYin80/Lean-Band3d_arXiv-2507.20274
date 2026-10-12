@@ -2165,3 +2165,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **签字（Amend 1）**：接受探针的拆法。T2428 保留目标 1–3、`BAuKer` 半群、4(a)、4(b) 第 (i) 条、两条核桥，另把 `BATwistGridMartAt`、`BATwistGridMart`、`BATwistGridRem`、`BATwistGridTail`、`BATwistGridWTail`、`BATwistGridAssemble` 逐字从探针 f6c3866 抄进 `TwistGrid2`，并证 `baTwistGridAssemble_holds`（预计 1,035 + 465 行）。后继三行在 T2428 合并后写：**TL2a2** = (ii) `BATwistGridRem`（中心 1,380，两个文件）、**TL2a3** = (iii) `BATwistGridTail`（915）、**TL2a4** = (iv) `BATwistGridWTail`（1,150）。`baTwistGridMart_holds` 是三行推论，放进 TL2d。
 - (3) **阶段 TL 行数 10 → 13**，仍在旗标 15 以内（§241 (3) 的规则）；余量只剩 2 张。再超就给监督发短 REQ。TL2d 的输入改为 TL2a–TL2a4、TL2b、TL2c、TL1b。T2427 的 1a-audit RETURN 是钉文少一个前提（`0 < ε`），中枢自动修补，不需签字。下一张票号 T2432，下一节 §243，下一条 H224。
 
+## §243 — TL2b、TL2c 合并；放 L3a2 = T2432、L4e-C = T2433（总调度 V3，2026-10-12 00:34 UTC）
+
+- (1) **T2429（TL2b）合并 7eb7279**：新 `BA/TwistKer` 1,599 + `TwistKer2` 1,442（T.10 (a)(b)(d)、T.1 (iii) `BATwKDecay`、T.11 (i)(ii)(iv)(v)），`BA/EKPins`、`BA/EKNonzero` 只删 `private`（9 行）；审核一次 PASS。**T2430（TL2c）合并 aa2b87e**：新 `BA/TwistQV` 1,429 行（`baTwistSrc3_holds`）；审核一次 PASS。TL 已合并 4 / 13 行（TL-D、TL0、TL2b、TL2c）；在跑 TL1a（修补）、TL2a（1b）、TL-V。
+- (2) **T2432 = L3a2 `BASymm2`**（BA 99；L 19 / 50；`prover-hard`）：S′ 下只做 `LWSymm` §5 的孪生（三种展开的扭转形式）加 §6 的实例模式；§4（`OwxE`）不孪生，1a 确认。关键路径，排在 T2433 前。
+- (3) **T2433 = L4e-C `BAG5Leaf`**（BA 100；L 20 / 50；设计门 + 探针步骤，`prover-max`）：带上下文的 GG 引理（L4-C5）、闭包表、叶子性质，`BAG5Tgt/Leaf/Expand` 逐字从 T2398 探针抄入，L4g 用（L4-C7）。附带的签字：附着条款在这里证；引理的行数由 1a 估；证明路线由 1a 定，可以用可计算的桥，但不能孪生证书机器、不走证书通道；表在 Lean 树上对四种 `(k, s)` 重算；只做蓝色须先证选择器不会选红色。
+- (4) 下一张票号 T2434，下一节 §244，下一条 H225。还没写：L4b1、L3c3a、G7、带状侧 T7/T1/T4s1/T4s2/T5s2；TL1b（T2427 后）、TL2a2–4（T2428 后）、TL2d、TL2e。
+
