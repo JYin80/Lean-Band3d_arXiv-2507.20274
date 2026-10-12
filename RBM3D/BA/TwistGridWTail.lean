@@ -38,7 +38,7 @@ open scoped Matrix
 noncomputable section
 
 namespace RBM.BA
-open RBM RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
+open RBM RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph RBM.Ind
 
 /-! ## 1. The kernel `Ũ`: conjugation, row sums, transfer -/
 
@@ -853,5 +853,641 @@ theorem TwistGridWTail_hermTestFun (u : ℝ) (σ : Fin 2 → Bool) (c₁ c₂ b 
 
 end Obs
 
+
+
+/-! ### The coordinate algebra of the Gaussian increment (copy of the private `QVIdentity_cm_*`, `_gvar_*`, `_pair*`, `_sum_tri`, `_coord_sum`,
+`Path/QVIdentity.lean:430-585`, `691566a` lineage): `Σ_c gvar_c ⟨X_c, f⟩ conj ⟨X_c, f'⟩ = Σ_{kl} svar_{kl} f_{lk} conj f'_{lk}` -/
+
+section CoordAlgebra
+
+variable {d L W : ℕ} {g : ℝ} [NeZero L] [NeZero W]
+
+private theorem TwistGridWTail_cm_apply (c : CoordF d L W) (k l : Idx d L W) :
+    coordinateMatrix d L W c k l = Xentry d L W (Pi.single c 1) k l := rfl
+
+private theorem TwistGridWTail_cm_lt {i j : Idx d L W} (h : idxKey d L W i < idxKey d L W j)
+    (b : Bool) :
+    coordinateMatrix d L W (i, j, b) =
+      Matrix.single i j (if b then (1 : ℂ) else Complex.I) +
+        Matrix.single j i (if b then (1 : ℂ) else -Complex.I) := by
+  have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+  ext k l
+  simp only [TwistGridWTail_cm_apply, Xentry, Matrix.add_apply, Matrix.single_apply,
+    Pi.single_apply, Prod.mk.injEq]
+  cases b <;> split_ifs <;> (try push_cast) <;>
+    (try simp only [zero_add, add_zero, mul_zero, mul_one, sub_zero, zero_sub]) <;> grind
+
+private theorem TwistGridWTail_cm_diag_true (i : Idx d L W) :
+    coordinateMatrix d L W (i, i, true) = Matrix.single i i (1 : ℂ) := by
+  ext k l
+  simp only [TwistGridWTail_cm_apply, Xentry, Matrix.single_apply, Pi.single_apply, Prod.mk.injEq]
+  split_ifs <;> (try push_cast) <;>
+    (try simp only [zero_add, add_zero, mul_zero, mul_one, sub_zero, zero_sub]) <;> grind
+
+private theorem TwistGridWTail_cm_diag_false (i : Idx d L W) :
+    coordinateMatrix d L W (i, i, false) = 0 := by
+  ext k l
+  simp only [TwistGridWTail_cm_apply, Xentry, Matrix.zero_apply, Pi.single_apply, Prod.mk.injEq]
+  split_ifs <;> (try push_cast) <;>
+    (try simp only [zero_add, add_zero, mul_zero, mul_one, sub_zero, zero_sub]) <;> grind
+
+private theorem TwistGridWTail_cm_gt {i j : Idx d L W} (h : idxKey d L W j < idxKey d L W i)
+    (b : Bool) :
+    coordinateMatrix d L W (i, j, b) = 0 := by
+  have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+  ext k l
+  simp only [TwistGridWTail_cm_apply, Xentry, Matrix.zero_apply, Pi.single_apply, Prod.mk.injEq]
+  cases b <;> split_ifs <;> (try push_cast) <;>
+    (try simp only [zero_add, add_zero, mul_zero, mul_one, sub_zero, zero_sub]) <;> grind
+
+/-- The diagonal coordinate variance is `S_ii` (the private `fineModel_gvarF_diag` of
+`Gauss/FineModel.lean:233`, re-proved). -/
+private theorem TwistGridWTail_gvar_diag (g : ℝ) (i : Idx d L W) (b : Bool) :
+    (gvarF d L W g (i, i, b) : ℝ) = svarF d L W g i i := by
+  change (if i = i then svarF d L W g i i else svarF d L W g i i / 2) = _
+  simp
+
+/-- The off-diagonal coordinate variance is `S_ij / 2` (the private `fineModel_gvarF_offDiag` of
+`Gauss/FineModel.lean:241`, re-proved). -/
+private theorem TwistGridWTail_gvar_offDiag (g : ℝ) (i j : Idx d L W) (b : Bool) (hij : i ≠ j) :
+    (gvarF d L W g (i, j, b) : ℝ) = svarF d L W g i j / 2 := by
+  change (if i = j then svarF d L W g i j else svarF d L W g i j / 2) = _
+  simp [hij]
+
+/-- The pairing `Σ_{k,l} X_{kl} f_{lk}` (the trace `tr(X F)` with `F_{lk} = f l k`). -/
+private def TwistGridWTail_pair (X : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (f : Idx d L W → Idx d L W → ℂ) : ℂ :=
+  ∑ k, ∑ l, X k l * f l k
+
+private theorem TwistGridWTail_pair_single (i j : Idx d L W) (x : ℂ)
+    (f : Idx d L W → Idx d L W → ℂ) :
+    TwistGridWTail_pair (Matrix.single i j x) f = x * f j i := by
+  simp only [TwistGridWTail_pair, Matrix.single_apply]
+  rw [Finset.sum_eq_single i]
+  · rw [Finset.sum_eq_single j]
+    · simp
+    · intro l _ hl; simp [Ne.symm hl]
+    · simp
+  · intro k _ hk; simp [Ne.symm hk]
+  · simp
+
+private theorem TwistGridWTail_pair_add (X Y : Matrix (Idx d L W) (Idx d L W) ℂ)
+    (f : Idx d L W → Idx d L W → ℂ) :
+    TwistGridWTail_pair (X + Y) f = TwistGridWTail_pair X f + TwistGridWTail_pair Y f := by
+  simp only [TwistGridWTail_pair, Matrix.add_apply, add_mul, Finset.sum_add_distrib]
+
+private theorem TwistGridWTail_pair_zero (f : Idx d L W → Idx d L W → ℂ) :
+    TwistGridWTail_pair (0 : Matrix (Idx d L W) (Idx d L W) ℂ) f = 0 := by
+  simp [TwistGridWTail_pair]
+
+/-- Sum of an ordered-pair function over the three cases of `idxKey`. -/
+private theorem TwistGridWTail_sum_tri (T : Idx d L W → Idx d L W → ℂ) :
+    (∑ i, ∑ j, if idxKey d L W i < idxKey d L W j then T i j + T j i
+      else if i = j then T i i else 0) = ∑ i, ∑ j, T i j := by
+  have hpt : ∀ i j, (if idxKey d L W i < idxKey d L W j then T i j + T j i
+      else if i = j then T i i else 0) =
+      ((if idxKey d L W i < idxKey d L W j then T i j else 0) +
+        (if idxKey d L W i < idxKey d L W j then T j i else 0)) +
+        (if i = j then T i j else 0) := by
+    intro i j
+    rcases idxKey_lt_or_eq_or_lt d L W i j with h | h | h
+    · have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+      simp [h, hij]
+    · subst h; simp
+    · have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+      simp [not_lt.mpr h.le, hij]
+  have hswap : (∑ i, ∑ j, if idxKey d L W i < idxKey d L W j then T j i else 0) =
+      ∑ i, ∑ j, if idxKey d L W j < idxKey d L W i then T i j else 0 := Finset.sum_comm
+  calc (∑ i, ∑ j, if idxKey d L W i < idxKey d L W j then T i j + T j i
+        else if i = j then T i i else 0)
+      = (∑ i, ∑ j, if idxKey d L W i < idxKey d L W j then T i j else 0) +
+          (∑ i, ∑ j, if idxKey d L W i < idxKey d L W j then T j i else 0) +
+          ∑ i, ∑ j, (if i = j then T i j else 0) := by
+        simp only [hpt, Finset.sum_add_distrib]
+    _ = (∑ i, ∑ j, if idxKey d L W i < idxKey d L W j then T i j else 0) +
+          (∑ i, ∑ j, if idxKey d L W j < idxKey d L W i then T i j else 0) +
+          ∑ i, ∑ j, (if i = j then T i j else 0) := by rw [hswap]
+    _ = ∑ i, ∑ j, (((if idxKey d L W i < idxKey d L W j then T i j else 0) +
+          (if idxKey d L W j < idxKey d L W i then T i j else 0)) +
+          (if i = j then T i j else 0)) := by simp only [Finset.sum_add_distrib]
+    _ = ∑ i, ∑ j, T i j := by
+        refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+        rcases idxKey_lt_or_eq_or_lt d L W i j with h | h | h
+        · have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+          simp [h, hij, not_lt.mpr h.le]
+        · subst h; simp
+        · have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+          simp [h, hij, not_lt.mpr h.le]
+
+/-- **Coordinate sum of a sesquilinear pairing.**  For every pair of kernels `f, f'`,
+`Σ_c gvar_c ⟨X_c, f⟩ conj ⟨X_c, f'⟩ = Σ_{k,l} svar_{kl} f_{lk} conj f'_{lk}`. -/
+private theorem TwistGridWTail_coord_sum (g : ℝ) (f f' : Idx d L W → Idx d L W → ℂ) :
+    ∑ c : CoordF d L W, ((gvarF d L W g c : ℝ) : ℂ) *
+        (TwistGridWTail_pair (coordinateMatrix d L W c) f *
+          (starRingEnd ℂ) (TwistGridWTail_pair (coordinateMatrix d L W c) f')) =
+      ∑ k, ∑ l, (svarF d L W g k l : ℂ) * (f l k * (starRingEnd ℂ) (f' l k)) := by
+  have hc : ∀ F : CoordF d L W → ℂ,
+      ∑ c : CoordF d L W, F c =
+        ∑ i : Idx d L W, ∑ j : Idx d L W, (F (i, j, true) + F (i, j, false)) := by
+    intro F
+    rw [Fintype.sum_prod_type]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Fintype.sum_prod_type]
+    exact Finset.sum_congr rfl fun j _ => Fintype.sum_bool _
+  rw [← TwistGridWTail_sum_tri, hc]
+  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+  rcases idxKey_lt_or_eq_or_lt d L W i j with h | h | h
+  · have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+    rw [ite_eq_left h, TwistGridWTail_cm_lt h, TwistGridWTail_cm_lt h,
+      TwistGridWTail_gvar_offDiag g i j true hij,
+      TwistGridWTail_gvar_offDiag g i j false hij, svarF_comm d L W g j i]
+    simp only [TwistGridWTail_pair_add, TwistGridWTail_pair_single, ite_true, Bool.false_eq_true,
+      ite_false, map_add, map_mul, map_neg, map_one, Complex.conj_I]
+    push_cast
+    ring_nf
+    rw [Complex.I_sq]
+    ring
+  · subst h
+    rw [ite_eq_right (lt_irrefl _), ite_eq_left rfl, TwistGridWTail_cm_diag_true,
+      TwistGridWTail_cm_diag_false, TwistGridWTail_gvar_diag, TwistGridWTail_gvar_diag]
+    simp [TwistGridWTail_pair_single, TwistGridWTail_pair_zero]
+  · have hij : i ≠ j := fun he => absurd (he ▸ h) (lt_irrefl _)
+    rw [ite_eq_right (not_lt.mpr h.le), ite_eq_right hij, TwistGridWTail_cm_gt h, TwistGridWTail_cm_gt h]
+    simp [TwistGridWTail_pair_zero]
+
+end CoordAlgebra
+
+/-! ## 5. The variance of the frozen linear functional: `linTrVar (Σ_b κ_b ∇Φ_b) ≤ Re Σ κ κ̄ twEEM`
+
+Copies (stem `TwistGridWTail_`) of the private helpers of `Path/DifREP2.lean:805-917` (`difRepTail_hasDerivAt_dir`,
+`_linTr_neg_I_smul`, `_seqXmat_single`, `_linTrVar_eq`, `_sq_re_le`, `_sq_im_le`, `_linTrVar_le`, `_trace_eq`), then the identity
+`Σ_c gvar_c |Σ_{pq} f_{pq} (X_c)_{pq}|² = Σ_{kl} S_{kl} |f_{kl}|²` with `S = W^{-d}·1[[k]=[l]]` (coupling `0`). -/
+
+section QV
+
+open scoped Matrix.Norms.L2Operator
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
+
+private theorem TwistGridWTail_hasDerivAt_dir {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {Ψ : Matrix ι ι ℂ → ℂ} {M : Matrix ι ι ℂ} (X : Matrix ι ι ℂ) (hd : DifferentiableAt ℝ Ψ M) :
+    HasDerivAt (fun y : ℝ => Ψ (M + (y : ℂ) • X)) (fderiv ℝ Ψ M X) 0 := by
+  have hadd : HasDerivAt (fun t' : ℝ => M + t' • X) X 0 := by
+    simpa using ((hasDerivAt_id (0 : ℝ)).smul_const X).const_add M
+  have hp0 : HasDerivAt (fun t' : ℝ => Ψ (M + t' • X)) (fderiv ℝ Ψ M X) 0 := by
+    have h1 : HasFDerivAt Ψ (fderiv ℝ Ψ (M + (0 : ℝ) • X)) (M + (0 : ℝ) • X) := by
+      simpa using hd.hasFDerivAt
+    have h2 := HasFDerivAt.comp_hasDerivAt (0 : ℝ) h1 hadd
+    simp only [zero_smul, add_zero, Function.comp_def] at h2
+    exact h2
+  simpa only [Complex.coe_smul] using hp0
+
+private theorem TwistGridWTail_linTr_neg_I_smul (szz : Sizes d)
+    (A X : Matrix (Idx d (szz.L n) (szz.W n)) (Idx d (szz.L n) (szz.W n)) ℂ) :
+    linTr n ((-Complex.I) • A) X = (Matrix.trace (A * X)).im := by
+  unfold linTr
+  rw [Matrix.smul_mul, Matrix.trace_smul, smul_eq_mul]
+  simp only [Complex.mul_re, Complex.neg_re, Complex.neg_im, Complex.I_re, Complex.I_im]
+  ring
+
+private theorem TwistGridWTail_seqXmat_single (szz : Sizes d) (c : CoordF d (szz.L n) (szz.W n)) :
+    Sizes.seqXmat szz n (Pi.single (⟨n, c⟩ : Sizes.SeqCoord szz) 1) = coordinateMatrix d (szz.L n) (szz.W n) c := by
+  have hs : Sizes.slice szz n (Pi.single (⟨n, c⟩ : Sizes.SeqCoord szz) 1) = Pi.single c 1 := by
+    funext c'
+    change (Pi.single (⟨n, c⟩ : Sizes.SeqCoord szz) (1 : ℝ) : Sizes.SeqCoord szz → ℝ) ⟨n, c'⟩ =
+      (Pi.single c (1 : ℝ) : CoordF d (szz.L n) (szz.W n) → ℝ) c'
+    by_cases h : c' = c
+    · subst h; simp
+    · have h' : (⟨n, c'⟩ : Sizes.SeqCoord szz) ≠ ⟨n, c⟩ := fun he => h (eq_of_heq (Sigma.mk.inj he).2)
+      rw [Pi.single_eq_of_ne h', Pi.single_eq_of_ne h]
+  unfold Sizes.seqXmat coordinateMatrix
+  rw [hs]
+
+private theorem TwistGridWTail_linTrVar_eq (szz : Sizes d) (A : Matrix (Idx d (szz.L n) (szz.W n)) (Idx d (szz.L n) (szz.W n)) ℂ) :
+    linTrVar n A = ∑ c : CoordF d (szz.L n) (szz.W n), (gvarF d (szz.L n) (szz.W n) (szz.lam n) c : ℝ) *
+      (linTr n A (coordinateMatrix d (szz.L n) (szz.W n) c)) ^ 2 := by
+  classical
+  rw [← vB_self (sz := szz)]
+  unfold vB coordFinset
+  rw [Finset.sum_map]
+  refine Finset.sum_congr rfl fun c _ => ?_
+  rw [Function.Embedding.sigmaMk_apply, TwistGridWTail_seqXmat_single]
+  change (gvarF d (szz.L n) (szz.W n) (szz.lam n) c : ℝ) * _ * _ = _
+  ring
+
+private theorem TwistGridWTail_sq_re_le (z : ℂ) : z.re ^ 2 ≤ ‖z‖ ^ 2 := by
+  calc z.re ^ 2 = |z.re| ^ 2 := (sq_abs _).symm
+    _ ≤ ‖z‖ ^ 2 := pow_le_pow_left₀ (abs_nonneg _) (Complex.abs_re_le_norm z) 2
+
+private theorem TwistGridWTail_sq_im_le (z : ℂ) : z.im ^ 2 ≤ ‖z‖ ^ 2 := by
+  calc z.im ^ 2 = |z.im| ^ 2 := (sq_abs _).symm
+    _ ≤ ‖z‖ ^ 2 := pow_le_pow_left₀ (abs_nonneg _) (Complex.abs_im_le_norm z) 2
+
+private theorem TwistGridWTail_linTrVar_le (szz : Sizes d)
+    (A : Matrix (Idx d (szz.L n) (szz.W n)) (Idx d (szz.L n) (szz.W n)) ℂ) (D : CoordF d (szz.L n) (szz.W n) → ℂ)
+    (hD : ∀ c, Matrix.trace (A * coordinateMatrix d (szz.L n) (szz.W n) c) = D c) :
+    linTrVar n A ≤ ∑ c : CoordF d (szz.L n) (szz.W n), (gvarF d (szz.L n) (szz.W n) (szz.lam n) c : ℝ) * ‖D c‖ ^ 2 ∧
+    linTrVar n ((-Complex.I) • A) ≤
+      ∑ c : CoordF d (szz.L n) (szz.W n), (gvarF d (szz.L n) (szz.W n) (szz.lam n) c : ℝ) * ‖D c‖ ^ 2 := by
+  constructor
+  · rw [TwistGridWTail_linTrVar_eq]
+    refine Finset.sum_le_sum fun c _ => mul_le_mul_of_nonneg_left ?_ (gvarF d (szz.L n) (szz.W n) (szz.lam n) c).2
+    have : linTr n A (coordinateMatrix d (szz.L n) (szz.W n) c) = (D c).re := by rw [← hD c]; rfl
+    rw [this]
+    exact TwistGridWTail_sq_re_le _
+  · rw [TwistGridWTail_linTrVar_eq]
+    refine Finset.sum_le_sum fun c _ => mul_le_mul_of_nonneg_left ?_ (gvarF d (szz.L n) (szz.W n) (szz.lam n) c).2
+    rw [TwistGridWTail_linTr_neg_I_smul, hD c]
+    exact TwistGridWTail_sq_im_le _
+
+/-- The directional derivative of `Φ_b` at Hermitian `M` along Hermitian `X` is the pairing with the gradient `twDerM`. -/
+theorem TwistGridWTail_fderiv_eq (u : ℝ) (σ : Fin 2 → Bool) (c₁ c₂ b : Zd d (sz.L n)) {η : ℝ} (hη0 : 0 < η)
+    (hη : η ≤ etaOf (BAmF sz lam0 E n) u) {M X : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+    (hM : M.IsHermitian) (hX : X.IsHermitian) :
+    fderiv ℝ (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) M X =
+      ∑ p, ∑ q, twDerM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M) σ b c₁ c₂ p q * X p q := by
+  obtain ⟨φ₁, φ₂, h₀, -, -, h0⟩ := TwistGridWTail_Phi_jets sz lam0 E n u σ c₁ c₂ b hM hX hη0 hη
+  have hd : DifferentiableAt ℝ (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) M :=
+    (TwistGridWTail_Phi_contDiffAt sz lam0 E n u σ c₁ c₂ b hM hη0 hη).differentiableAt (by norm_num)
+  have h1 := TwistGridWTail_hasDerivAt_dir X hd
+  rw [← h0]
+  exact h1.unique (h₀ 0)
+
+/-- `svar` of the coupling-`0` fine model is the weight `W^{-d} S^{(B)}_{[k][l]}` of `twEEM`. -/
+theorem TwistGridWTail_svarF_zero (x y : Idx d (sz.L n) (sz.W n)) :
+    ((svarF d (sz.L n) (sz.W n) ((sz.withLam 0).lam n) x y : ℝ) : ℂ) = TwistGridWTail_wS (sz := sz) lam0 E n x y := by
+  unfold svarF TwistGridWTail_wS
+  have h0 : (sz.withLam 0).lam n = 0 := rfl
+  rw [h0]
+  by_cases h : (split d (sz.L n) (sz.W n) x).1 = (split d (sz.L n) (sz.W n) y).1
+  · simp [baFM, SBR, sbKernelR, h]
+  · simp [baFM, SBR, sbKernelR, h, sub_eq_zero]
+
+/-- **The variance identity**: `Σ_c gvar_c |Σ_{pq} f_{pq} (X_c)_{pq}|² = Re Σ_{kl} W^{-d} S_{kl} f_{kl} conj f_{kl}`. -/
+theorem TwistGridWTail_coord_sum_eq (f : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) :
+    ∑ c : CoordF d (sz.L n) (sz.W n), (gvarF d (sz.L n) (sz.W n) ((sz.withLam 0).lam n) c : ℝ) *
+      ‖∑ p, ∑ q, f p q * coordinateMatrix d (sz.L n) (sz.W n) c p q‖ ^ 2 =
+    (∑ k, ∑ l, TwistGridWTail_wS (sz := sz) lam0 E n k l * (f k l * (starRingEnd ℂ) (f k l))).re := by
+  have h := TwistGridWTail_coord_sum (d := d) (L := sz.L n) (W := sz.W n) ((sz.withLam 0).lam n)
+    (fun l k => f k l) (fun l k => f k l)
+  have hpair : ∀ c : CoordF d (sz.L n) (sz.W n), TwistGridWTail_pair (coordinateMatrix d (sz.L n) (sz.W n) c) (fun l k => f k l) =
+      ∑ p, ∑ q, f p q * coordinateMatrix d (sz.L n) (sz.W n) c p q := fun c => by
+    unfold TwistGridWTail_pair
+    exact Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => by ring
+  simp only [hpair] at h
+  have hre := congrArg Complex.re h
+  rw [Complex.re_sum] at hre
+  have hL : ∀ c : CoordF d (sz.L n) (sz.W n), (((gvarF d (sz.L n) (sz.W n) ((sz.withLam 0).lam n) c : ℝ) : ℂ) *
+      ((∑ p, ∑ q, f p q * coordinateMatrix d (sz.L n) (sz.W n) c p q) *
+        (starRingEnd ℂ) (∑ p, ∑ q, f p q * coordinateMatrix d (sz.L n) (sz.W n) c p q))).re =
+      (gvarF d (sz.L n) (sz.W n) ((sz.withLam 0).lam n) c : ℝ) *
+        ‖∑ p, ∑ q, f p q * coordinateMatrix d (sz.L n) (sz.W n) c p q‖ ^ 2 := by
+    intro c
+    rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, Complex.mul_conj, Complex.normSq_eq_norm_sq,
+      Complex.ofReal_re]
+  simp only [hL] at hre
+  rw [hre]
+  congr 1
+  refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+  rw [TwistGridWTail_svarF_zero]
+
+private theorem TwistGridWTail_sum4_swap {α β : Type*} [Fintype α] [Fintype β] (F : α → α → β → β → ℂ) :
+    ∑ a, ∑ a', ∑ k, ∑ l, F a a' k l = ∑ k, ∑ l, ∑ a, ∑ a', F a a' k l := by
+  calc ∑ a, ∑ a', ∑ k, ∑ l, F a a' k l = ∑ a, ∑ k, ∑ a', ∑ l, F a a' k l :=
+        Finset.sum_congr rfl fun a _ => Finset.sum_comm
+    _ = ∑ k, ∑ a, ∑ a', ∑ l, F a a' k l := Finset.sum_comm
+    _ = ∑ k, ∑ a, ∑ l, ∑ a', F a a' k l := Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun a _ => Finset.sum_comm
+    _ = ∑ k, ∑ l, ∑ a, ∑ a', F a a' k l := Finset.sum_congr rfl fun k _ => Finset.sum_comm
+
+/-- **The variance proxy of the frozen gradient** (`c = 1`, one slot): for the weights `κ`, `linTrVar` of `Σ_b κ_b ∇Φ_b(M)` and of
+`(-I)` times it are at most `Re Σ_{b,b'} κ_b conj(κ_{b'}) (Ẽ⊗Ẽ)_u(g₀Ψ + M)(b,b')` (twin of `difRepTail_linTrVar_le_QV`, `Path/DifREP2.lean:1007`,
+without the loop factor `k`: the two terms of (D.2) sit inside `twDerM`). -/
+theorem TwistGridWTail_linTrVar_le_QV (u : ℝ) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) {η : ℝ} (hη0 : 0 < η)
+    (hη : η ≤ etaOf (BAmF sz lam0 E n) u) (κ : Zd d (sz.L n) → ℂ)
+    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian) :
+    linTrVar (sz := sz.withLam 0) n (∑ b, κ b • gradMat (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) M) ≤
+      (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') * twEEM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M) σ b b' c₁ c₂).re ∧
+    linTrVar (sz := sz.withLam 0) n ((-Complex.I) • ∑ b, κ b • gradMat (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) M) ≤
+      (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') * twEEM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M) σ b b' c₁ c₂).re := by
+  set f : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ := fun p q =>
+    ∑ b, κ b * twDerM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M) σ b c₁ c₂ p q with hf
+  set D : CoordF d (sz.L n) (sz.W n) → ℂ := fun c => ∑ b, κ b *
+    fderiv ℝ (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) M (coordinateMatrix d (sz.L n) (sz.W n) c) with hD
+  have hDtr : ∀ c, Matrix.trace ((∑ b, κ b • gradMat (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) M) *
+      coordinateMatrix d (sz.L n) (sz.W n) c) = D c := by
+    intro c
+    rw [Matrix.sum_mul, Matrix.trace_sum]
+    refine Finset.sum_congr rfl fun b _ => ?_
+    rw [Matrix.smul_mul, Matrix.trace_smul, smul_eq_mul, ← fderiv_eq_trace_gradMat M (coordinateMatrix_isHermitian _ _ _ c)]
+  obtain ⟨h1, h2⟩ := TwistGridWTail_linTrVar_le n (sz.withLam 0) _ D hDtr
+  have hDf : ∀ c, D c = ∑ p, ∑ q, f p q * coordinateMatrix d (sz.L n) (sz.W n) c p q := by
+    intro c
+    simp only [hD, hf, TwistGridWTail_fderiv_eq sz lam0 E n u σ c₁ c₂ _ hη0 hη hM (coordinateMatrix_isHermitian _ _ _ c)]
+    simp only [Finset.mul_sum, Finset.sum_mul]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun p _ => ?_
+    rw [Finset.sum_comm]
+    exact Finset.sum_congr rfl fun q _ => Finset.sum_congr rfl fun b _ => by ring
+  have hS : ∑ c : CoordF d (sz.L n) (sz.W n), (gvarF d (sz.L n) (sz.W n) ((sz.withLam 0).lam n) c : ℝ) * ‖D c‖ ^ 2 =
+      (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') * twEEM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M) σ b b' c₁ c₂).re := by
+    simp only [hDf]
+    rw [TwistGridWTail_coord_sum_eq sz lam0 E n f]
+    congr 1
+    simp only [TwistGridWTail_twEEM_eq, Finset.mul_sum]
+    rw [TwistGridWTail_sum4_swap]
+    refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+    simp only [hf, map_sum]
+    rw [Finset.sum_mul_sum, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun b _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun b' _ => ?_
+    simp only [map_mul]
+    ring
+  exact ⟨h1.trans_eq hS, h2.trans_eq hS⟩
+
+end QV
+
+
+/-! ### The conditional exponential moment of a frozen linear functional (copies of `Path/DifREP2.lean:1051-1187`, `76b840e`) -/
+
+section Frozen
+
+variable {d : ℕ} {sz : Sizes d}
+
+private theorem TwistGridWTail_measurable_seqXmat (n : ℕ) : Measurable (Sizes.seqXmat sz n) :=
+  measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j =>
+    (measurable_Xentry d (sz.L n) (sz.W n) i j).comp (Sizes.measurable_slice sz n)
+
+private theorem TwistGridWTail_linTr_eq_sum (n : ℕ)
+    (A X : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :
+    linTr n A X = ∑ i : Idx d (sz.L n) (sz.W n), ∑ k : Idx d (sz.L n) (sz.W n),
+      (A i k * X k i).re := by
+  unfold linTr
+  rw [Matrix.trace, Complex.re_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Matrix.diag_apply, Matrix.mul_apply, Complex.re_sum]
+
+private theorem TwistGridWTail_measurable_linTr_uncurry (n : ℕ) :
+    Measurable (fun p : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ × Sizes.SeqΩ sz =>
+      linTr n p.1 (Sizes.seqXmat sz n p.2)) := by
+  have heq : (fun p : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ × Sizes.SeqΩ sz =>
+      linTr n p.1 (Sizes.seqXmat sz n p.2))
+      = fun p => ∑ i : Idx d (sz.L n) (sz.W n), ∑ k : Idx d (sz.L n) (sz.W n),
+          (p.1 i k * Sizes.seqXmat sz n p.2 k i).re :=
+    funext fun p => TwistGridWTail_linTr_eq_sum n p.1 (Sizes.seqXmat sz n p.2)
+  rw [heq]
+  refine Finset.measurable_sum _ fun i _ => Finset.measurable_sum _ fun k _ => ?_
+  have hM : Measurable
+      (fun p : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ × Sizes.SeqΩ sz => p.1 i k) :=
+    Measurable.eval_matrix (i := i) (j := k) measurable_fst
+  have hX : Measurable
+      (fun p : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ × Sizes.SeqΩ sz =>
+        Sizes.seqXmat sz n p.2 k i) :=
+    Measurable.eval_matrix (i := k) (j := i) ((TwistGridWTail_measurable_seqXmat n).comp measurable_snd)
+  exact Complex.measurable_re.comp (hM.mul hX)
+
+private theorem TwistGridWTail_measurable_linTr_seqXmat (n : ℕ)
+    (A : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :
+    Measurable (fun x : Sizes.SeqΩ sz => linTr n A (Sizes.seqXmat sz n x)) := by
+  have heq : (fun x : Sizes.SeqΩ sz => linTr n A (Sizes.seqXmat sz n x))
+      = fun x => ∑ i : Idx d (sz.L n) (sz.W n), ∑ k : Idx d (sz.L n) (sz.W n),
+          (A i k * Sizes.seqXmat sz n x k i).re :=
+    funext fun x => TwistGridWTail_linTr_eq_sum n A (Sizes.seqXmat sz n x)
+  rw [heq]
+  refine Finset.measurable_sum _ fun i _ => Finset.measurable_sum _ fun k _ => ?_
+  exact Complex.measurable_re.comp
+    (measurable_const.mul (Measurable.eval_matrix (i := k) (j := i) (TwistGridWTail_measurable_seqXmat n)))
+
+private theorem TwistGridWTail_mgf_linTr_seqXmat (n : ℕ)
+    (A : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (r : ℝ) :
+    mgf (fun x => linTr n A (Sizes.seqXmat sz n x)) (Sizes.seqP sz) r
+      = Real.exp (linTrVar n A * r ^ 2 / 2) := by
+  have hmeas : Measurable (fun x : Sizes.SeqΩ sz => linTr n A (Sizes.seqXmat sz n x)) :=
+    TwistGridWTail_measurable_linTr_seqXmat n A
+  have hlaw : HasLaw (fun x => linTr n A (Sizes.seqXmat sz n x))
+      (gaussianReal 0 (NNReal.mk (linTrVar n A) (linTrVar_nonneg n A))) (Sizes.seqP sz) :=
+    ⟨hmeas.aemeasurable, map_linTr_seqXmat n A⟩
+  rw [mgf_gaussianReal hlaw]
+  congr 1
+  push_cast [NNReal.coe_mk]
+  ring
+
+private instance TwistGridWTail_standardBorelMatrix (n : ℕ) :
+    StandardBorelSpace (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :=
+  inferInstanceAs (StandardBorelSpace (Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ))
+
+/-- **The conditional exponential moment of the frozen linear functional**, with the random
+variance: for a `filt sz j`-measurable direction `A`, a.e. `𝔼[exp (r √Δ linTr (A) X_{j+1}) | F_j]
+= exp (linTrVar (A ω) (r √Δ)² / 2)`; `condExp_freeze` and the Gaussian mgf (the first half of the
+merged `condMGF_le`, `Path/Markov.lean:572-604`). -/
+private theorem TwistGridWTail_condExp_exp {n j : ℕ}
+    {A : PathΩ sz → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
+    (hA : Measurable[filt sz j] A) (Δ r : ℝ)
+    (hInt : Integrable (fun ω : PathΩ sz => Real.exp (r * (Real.sqrt Δ *
+      linTr n (A ω) (Sizes.seqXmat sz n (ω (j + 1)))))) (pathP sz)) :
+    (pathP sz)[fun ω : PathΩ sz => Real.exp (r * (Real.sqrt Δ *
+        linTr n (A ω) (Sizes.seqXmat sz n (ω (j + 1))))) | filt sz j]
+      =ᵐ[pathP sz] fun ω => Real.exp (linTrVar n (A ω) * (r * Real.sqrt Δ) ^ 2 / 2) := by
+  set Gr : PathΩ sz → ℝ := fun ρ => Real.exp (r * (Real.sqrt Δ *
+    linTr n (A ρ) (Sizes.seqXmat sz n (ρ (j + 1))))) with hGrdef
+  set Fr : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → Sizes.SeqΩ sz → ℝ :=
+    fun y x => Real.exp (r * (Real.sqrt Δ * linTr n y (Sizes.seqXmat sz n x))) with hFrdef
+  have hFrmeas : Measurable
+      (fun p : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ × Sizes.SeqΩ sz =>
+        Fr p.1 p.2) := by
+    have h1 : Measurable
+        (fun p : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ × Sizes.SeqΩ sz =>
+          linTr n p.1 (Sizes.seqXmat sz n p.2)) := TwistGridWTail_measurable_linTr_uncurry n
+    exact Real.measurable_exp.comp ((h1.const_mul _).const_mul _)
+  have hGreq : (fun ρ : PathΩ sz => Fr (A ρ) (ρ (j + 1))) = Gr := by
+    funext ρ; rw [hFrdef, hGrdef]
+  have hfreeze := condExp_freeze j hA hFrmeas (hGreq ▸ hInt)
+  have hRHS : (fun ρ : PathΩ sz => ∫ x, Fr (A ρ) x ∂ (Sizes.seqP sz))
+      = fun ρ => Real.exp (linTrVar n (A ρ) * (r * Real.sqrt Δ) ^ 2 / 2) := by
+    funext ρ
+    have hmgf := TwistGridWTail_mgf_linTr_seqXmat n (A ρ) (r * Real.sqrt Δ)
+    rw [mgf] at hmgf
+    rw [← hmgf]
+    have hpt : ∀ x, Fr (A ρ) x
+        = Real.exp ((r * Real.sqrt Δ) * linTr n (A ρ) (Sizes.seqXmat sz n x)) := by
+      intro x; rw [hFrdef]; ring_nf
+    simp_rw [hpt]
+  rw [hRHS] at hfreeze
+  rw [hGreq] at hfreeze
+  exact hfreeze
+
+end Frozen
+
+/-! ## 6. The conditional exponential moment of the first-chaos increment `stepZCN` with a random variance proxy -/
+
+section ZGeneric
+
+open scoped Matrix.Norms.L2Operator
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- **The conditional mgf of `Re ζ` and `Im ζ`**, `ζ = stepZCN` of any label family in the Hermitian test class with the kernel `U`
+(twin of the second half of `difRepTail_condMGF_Z`, `Path/DifREP2.lean:1476-1537`; the loop-specific part is the hypotheses
+`hRe`, `hIm`, `hv` on a variance proxy `v`): if `linTrVar` of the frozen gradient direction (and of `(-I)` times it) is at most `v ω`, and
+`Δ v ≤ c0`, then both parts are exponentially integrable and have conditional mgf at most `exp (r² Δ v / 2)` given `F_j`. -/
+theorem TwistGridWTail_condMGF_generic (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type} [Fintype ι]
+    {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ} (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
+    (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ), M.IsHermitian → y.IsHermitian →
+      ‖fderiv ℝ (fderiv ℝ (Φ a)) M y y‖ ≤ C₂ * ‖y‖ ^ 2)
+    (hΔ : 0 ≤ gridStep s t K n) (U : ι → ι → ℂ) (b₀ : ι) {c0 : ℝ} (hc0 : 0 ≤ c0) (v : PathΩ sz → ℝ)
+    (hRe : ∀ ω, linTrVar n (AbCN sz s t K n j Φ U b₀ ω) ≤ v ω)
+    (hIm : ∀ ω, linTrVar n ((-Complex.I) • AbCN sz s t K n j Φ U b₀ ω) ≤ v ω)
+    (hv : ∀ ω, gridStep s t K n * v ω ≤ c0) (r : ℝ) :
+    Integrable (fun ω => Real.exp (r * stepZCN_re sz s t K n j Φ U b₀ ω)) (pathP sz) ∧
+    Integrable (fun ω => Real.exp (r * stepZCN_im sz s t K n j Φ U b₀ ω)) (pathP sz) ∧
+    (pathP sz)[fun ω => Real.exp (r * stepZCN_re sz s t K n j Φ U b₀ ω) | filt sz j] ≤ᵐ[pathP sz]
+      (fun ω => Real.exp (r ^ 2 * (gridStep s t K n * v ω) / 2)) ∧
+    (pathP sz)[fun ω => Real.exp (r * stepZCN_im sz s t K n j Φ U b₀ ω) | filt sz j] ≤ᵐ[pathP sz]
+      (fun ω => Real.exp (r ^ 2 * (gridStep s t K n * v ω) / 2)) := by
+  have hIntRe := integrable_stepZCN_re_of_hermTestFun sz s t K n j hΦ hC₂ hΔ U b₀
+  have hIntIm := integrable_stepZCN_im_of_hermTestFun sz s t K n j hΦ hC₂ hΔ U b₀
+  obtain ⟨-, hAm, -, -⟩ := stepDecompCN sz s t K n j hΦ hC₂ hΔ U b₀ hIntRe hIntIm
+  have hZ := stepDecompCN_Z_subG sz s t K n j hΦ U b₀ Set.univ MeasurableSet.univ c0 hc0
+    (fun ω _ => (mul_le_mul_of_nonneg_left (hRe ω) hΔ).trans (hv ω))
+    (fun ω _ => (mul_le_mul_of_nonneg_left (hIm ω) hΔ).trans (hv ω))
+  have hIre : Integrable (fun ω : PathΩ sz => Real.exp (r * (Real.sqrt (gridStep s t K n) *
+      linTr n (AbCN sz s t K n j Φ U b₀ ω) (Sizes.seqXmat sz n (ω (j + 1)))))) (pathP sz) := by
+    have := hZ.1.integrable_exp_mul r
+    simpa [Set.indicator_univ, stepZCN_re] using this
+  have hIim : Integrable (fun ω : PathΩ sz => Real.exp (r * (Real.sqrt (gridStep s t K n) *
+      linTr n ((-Complex.I) • AbCN sz s t K n j Φ U b₀ ω) (Sizes.seqXmat sz n (ω (j + 1)))))) (pathP sz) := by
+    have := hZ.2.integrable_exp_mul r
+    simpa [Set.indicator_univ, stepZCN_im] using this
+  have hAm' : Measurable[filt sz j] (fun ω => (-Complex.I) • AbCN sz s t K n j Φ U b₀ ω) := hAm.const_smul (-Complex.I)
+  have hce_re := TwistGridWTail_condExp_exp hAm (gridStep s t K n) r hIre
+  have hce_im := TwistGridWTail_condExp_exp hAm' (gridStep s t K n) r hIim
+  have hsq : (r * Real.sqrt (gridStep s t K n)) ^ 2 = r ^ 2 * gridStep s t K n := by
+    rw [mul_pow, Real.sq_sqrt hΔ]
+  have hrr : 0 ≤ r ^ 2 * gridStep s t K n := by positivity
+  refine ⟨hIre, hIim, ?_, ?_⟩
+  · refine hce_re.le.trans (Eventually.of_forall fun ω => ?_)
+    refine Real.exp_le_exp.2 ?_
+    rw [hsq]
+    nlinarith [mul_le_mul_of_nonneg_right (hRe ω) hrr]
+  · refine hce_im.le.trans (Eventually.of_forall fun ω => ?_)
+    refine Real.exp_le_exp.2 ?_
+    rw [hsq]
+    nlinarith [mul_le_mul_of_nonneg_right (hIm ω) hrr]
+
+end ZGeneric
+
+/-! ## 7. The second-order part: moment fields of the weighted `Y` increments
+
+Twin of `AzumaProxyN_YfieldsW` (`Induction/AzumaProxyN2.lean:1025`, loops only) for an arbitrary label family, through `stepDecompCN`: the increment
+`y = ξ − ζ` (`ξ` a.e. the `stepXiCN` of the kernel `(·, a) ↦ κ_a`, `ζ = stepZCN`) is `filt (j+1)`-measurable, has conditional mean zero and
+`E ‖y‖² ≤ 4 ((Σ|κ|) C₂/2)² Δ² · 768 N⁸` (`stepDecompCN_Y_sq`, `integral_normPow4_incr_le`). -/
+
+section YGeneric
+
+open scoped Matrix.Norms.L2Operator
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- The draw `ω l` is `filt sz k`-measurable for `l ≤ k` (copy of the private `gridAsm_measurable_coord`, `Induction/GridAssemblyN.lean:872`). -/
+private theorem TwistGridWTail_measurable_coord {k l : ℕ} (hl : l ≤ k) : Measurable[filt sz k] (fun ω : PathΩ sz => ω l) := by
+  have : (fun ω : PathΩ sz => ω l) = (fun g : Set.Iic k → Sizes.SeqΩ sz => g ⟨l, hl⟩) ∘
+      (Preorder.restrictLe (π := fun _ : ℕ => Sizes.SeqΩ sz) k) := rfl
+  rw [this]
+  exact (measurable_pi_apply (⟨l, hl⟩ : Set.Iic k)).comp (comap_measurable (Preorder.restrictLe (π := fun _ : ℕ => Sizes.SeqΩ sz) k))
+
+/-- `stepZCN` is `filt (j+1)`-measurable (`A_j` is `filt j`-measurable, `X_{j+1}` is `filt (j+1)`-measurable, `linTr` is jointly measurable). -/
+theorem TwistGridWTail_measurable_stepZCN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
+    (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b₀ : ι)
+    (hAm : Measurable[filt sz j] (fun ω => AbCN sz s t K n j Φ U b₀ ω)) :
+    Measurable[filt sz (j + 1)] (fun ω => stepZCN sz s t K n j Φ U b₀ ω) := by
+  have hA : Measurable[filt sz (j + 1)] (fun ω => AbCN sz s t K n j Φ U b₀ ω) := hAm.mono ((filt sz).mono (Nat.le_succ j)) le_rfl
+  have hX : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => ω (j + 1)) := TwistGridWTail_measurable_coord le_rfl
+  have hpair : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => (AbCN sz s t K n j Φ U b₀ ω, ω (j + 1))) := hA.prodMk hX
+  have hlin := TwistGridWTail_measurable_linTr_uncurry (sz := sz) n
+  have hre : Measurable[filt sz (j + 1)] (fun ω => stepZCN_re sz s t K n j Φ U b₀ ω) := by
+    unfold stepZCN_re
+    exact (hlin.comp hpair).const_mul _
+  have him : Measurable[filt sz (j + 1)] (fun ω => stepZCN_im sz s t K n j Φ U b₀ ω) := by
+    unfold stepZCN_im
+    have h2 : Measurable[filt sz (j + 1)] (fun ω : PathΩ sz => ((-Complex.I) • AbCN sz s t K n j Φ U b₀ ω, ω (j + 1))) :=
+      (hA.const_smul (-Complex.I)).prodMk hX
+    exact (hlin.comp h2).const_mul _
+  unfold stepZCN
+  exact (Complex.measurable_ofReal.comp hre).add (measurable_const.mul (Complex.measurable_ofReal.comp him))
+
+/-- **The moment fields of the weighted second-order increment** `y = ξ − stepZCN` (see the section header). -/
+theorem TwistGridWTail_Y_fields (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type} [Fintype ι]
+    {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ} (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
+    (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ), M.IsHermitian → y.IsHermitian →
+      ‖fderiv ℝ (fderiv ℝ (Φ a)) M y y‖ ≤ C₂ * ‖y‖ ^ 2)
+    (hΔ : 0 ≤ gridStep s t K n) (κ : ι → ℂ) (b₀ : ι) (ξ : PathΩ sz → ℂ)
+    (hξ : ξ =ᵐ[pathP sz] stepXiCN sz s t K n j Φ (fun _ a => κ a) b₀) (hξm : Measurable[filt sz (j + 1)] ξ) :
+    Measurable[filt sz (j + 1)] (fun ω => ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω) ∧
+    (pathP sz)[fun ω => (ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω).re | filt sz j] =ᵐ[pathP sz] 0 ∧
+    (pathP sz)[fun ω => (ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω).im | filt sz j] =ᵐ[pathP sz] 0 ∧
+    MemLp (fun ω => (ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω).re) 2 (pathP sz) ∧
+    MemLp (fun ω => (ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω).im) 2 (pathP sz) ∧
+    ∫ ω, (ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω).re ^ 2 ∂(pathP sz) ≤
+      4 * ((∑ a, ‖κ a‖) * (C₂ / 2)) ^ 2 * gridStep s t K n ^ 2 * (768 * ((sz.size n : ℕ) : ℝ) ^ 8) ∧
+    ∫ ω, (ξ ω - stepZCN sz s t K n j Φ (fun _ a => κ a) b₀ ω).im ^ 2 ∂(pathP sz) ≤
+      4 * ((∑ a, ‖κ a‖) * (C₂ / 2)) ^ 2 * gridStep s t K n ^ 2 * (768 * ((sz.size n : ℕ) : ℝ) ^ 8) := by
+  set U : ι → ι → ℂ := fun _ a => κ a with hU
+  have hIntRe := integrable_stepZCN_re_of_hermTestFun sz s t K n j hΦ hC₂ hΔ U b₀
+  have hIntIm := integrable_stepZCN_im_of_hermTestFun sz s t K n j hΦ hC₂ hΔ U b₀
+  obtain ⟨-, hAm, hbound, hmeanY⟩ := stepDecompCN sz s t K n j hΦ hC₂ hΔ U b₀ hIntRe hIntIm
+  have hZm := TwistGridWTail_measurable_stepZCN s t K n j Φ U b₀ hAm
+  set y : PathΩ sz → ℂ := fun ω => ξ ω - stepZCN sz s t K n j Φ U b₀ ω with hy
+  have hym : Measurable[filt sz (j + 1)] y := hξm.sub hZm
+  have hyae : y =ᵐ[pathP sz] stepYCN sz s t K n j Φ U b₀ := by
+    filter_upwards [hξ] with ω h
+    simp only [hy, stepYCN, h]
+  have hym' : Measurable y := hym.mono ((filt sz).le (j + 1)) le_rfl
+  -- `L²` membership of `stepYCN` from the pathwise domination
+  set g : PathΩ sz → ℝ := fun ω => (∑ a, ‖U b₀ a‖) * ((C₂ / 2) * gridStep s t K n) * ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 2 with hg
+  have hXmeas : Measurable fun ω : PathΩ sz => ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 2 :=
+    ((((continuous_Xmat d (sz.L n) (sz.W n)).measurable.comp (Sizes.measurable_slice sz n)).comp (measurable_pi_apply (j + 1))).norm).pow_const 2
+  have hg2 : Integrable (fun ω => (g ω) ^ 2) (pathP sz) := by
+    have : (fun ω => (g ω) ^ 2) = fun ω => (((∑ a, ‖U b₀ a‖) * ((C₂ / 2) * gridStep s t K n)) ^ 2) *
+        ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 4 := by funext ω; rw [hg]; ring
+    rw [this]
+    exact (integrable_normPow4_incr sz n j).const_mul _
+  have hgL2 : MemLp g 2 (pathP sz) := (memLp_two_iff_integrable_sq (hXmeas.const_mul _).aestronglyMeasurable).2 hg2
+  have hcL2 : MemLp ((pathP sz)[g | filt sz j]) 2 (pathP sz) := hgL2.condExp (by norm_num)
+  have hYL2 : MemLp (stepYCN sz s t K n j Φ U b₀) 2 (pathP sz) := by
+    refine (hgL2.add hcL2).mono' (hym'.aestronglyMeasurable.congr hyae) ?_
+    filter_upwards [hbound] with ω h
+    exact h
+  have hyL2 : MemLp y 2 (pathP sz) := hYL2.ae_eq hyae.symm
+  have hyint : Integrable y (pathP sz) := hyL2.integrable (by norm_num)
+  have hmean : (pathP sz)[y | filt sz j] =ᵐ[pathP sz] fun _ => (0 : ℂ) := (condExp_congr_ae hyae).trans hmeanY
+  have hq := stepDecompCN_Y_sq sz s t K n j hΦ hC₂ hΔ U b₀
+  have hB4 := integral_normPow4_incr_le sz n j
+  have hqbound : ∫ ω, ‖stepYCN sz s t K n j Φ U b₀ ω‖ ^ 2 ∂(pathP sz) ≤
+      4 * ((∑ a, ‖κ a‖) * (C₂ / 2)) ^ 2 * gridStep s t K n ^ 2 * (768 * ((sz.size n : ℕ) : ℝ) ^ 8) := by
+    refine hq.trans ?_
+    have h0 : 0 ≤ 4 * ((∑ a, ‖κ a‖) * (C₂ / 2)) ^ 2 * gridStep s t K n ^ 2 := by positivity
+    exact mul_le_mul_of_nonneg_left hB4 h0
+  have hyn : ∫ ω, ‖y ω‖ ^ 2 ∂(pathP sz) = ∫ ω, ‖stepYCN sz s t K n j Φ U b₀ ω‖ ^ 2 ∂(pathP sz) :=
+    integral_congr_ae (by filter_upwards [hyae] with ω h; rw [h])
+  have hysq : Integrable (fun ω => ‖y ω‖ ^ 2) (pathP sz) := (memLp_two_iff_integrable_sq_norm hym'.aestronglyMeasurable).1 hyL2
+  refine ⟨hym, ?_, ?_, hyL2.re, hyL2.im, ?_, ?_⟩
+  · have hc := (ContinuousLinearMap.comp_condExp_comm (m := filt sz j) hyint Complex.reCLM).symm
+    have hc' : (pathP sz)[fun ω => (y ω).re | filt sz j] =ᵐ[pathP sz] fun ω => ((pathP sz)[y | filt sz j] ω).re := by
+      simpa [Function.comp_def] using hc
+    filter_upwards [hc', hmean] with ω h1 h2
+    rw [h1, h2]; simp
+  · have hc := (ContinuousLinearMap.comp_condExp_comm (m := filt sz j) hyint Complex.imCLM).symm
+    have hc' : (pathP sz)[fun ω => (y ω).im | filt sz j] =ᵐ[pathP sz] fun ω => ((pathP sz)[y | filt sz j] ω).im := by
+      simpa [Function.comp_def] using hc
+    filter_upwards [hc', hmean] with ω h1 h2
+    rw [h1, h2]; simp
+  · refine le_trans (integral_mono_of_nonneg (Eventually.of_forall fun ω => sq_nonneg _) hysq
+      (Eventually.of_forall fun ω => TwistGridWTail_sq_re_le (y ω))) ?_
+    rw [hyn]; exact hqbound
+  · refine le_trans (integral_mono_of_nonneg (Eventually.of_forall fun ω => sq_nonneg _) hysq
+      (Eventually.of_forall fun ω => TwistGridWTail_sq_im_le (y ω))) ?_
+    rw [hyn]; exact hqbound
+
+end YGeneric
 
 end RBM.BA
