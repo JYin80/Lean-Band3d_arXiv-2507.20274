@@ -1,0 +1,4 @@
+state: audit-pass
+reason: report-only design: preflight PASS, prover-max 5c0c593, audit RETURN round 1 (Que′ not pinned; RBG_Prod r2-r4) → one rule-(B) repair → audit PASS round 2 (claude-opus-5-5); merging the report (rule A, report-only)
+updated: Mon Oct 12 13:19:51 UTC 2026
+reports: docs/reports/T2449-design.md, docs/reports/T2449-prove.md, docs/reports/T2449-audit.md
