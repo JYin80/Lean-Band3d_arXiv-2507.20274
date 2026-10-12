@@ -445,6 +445,49 @@ theorem BALvl1B_gg (P : BAPGraph E0) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.
 
 end Assembly
 
+/-! ## 5. Compiled instances (R1's data `P_W`, `P_E`, `P_A`, `P_C` of `BASimInst`; the data are nondegenerate: nonempty external and internal vertex sets, solid edges, `nExt ≥ 1`) -/
+
+namespace BALvl1BInst
+
+open BASimInst BALvl1AInst
+
+/-- the first term of `lw2` at `P_W` (a self-loop at the internal vertex `0` and an edge from the external vertex `0` to the internal vertex `1`) -/
+def tW : BAGraph (Fin 1) (Fin 2 ⊕ Fin 2) := (baPW.lw2 pW).head (by simp [BAGraph.lw2])
+
+/-- **Target 1 (`BALvl1Good`, `BALvl1GoodLit`, `ba_good_of_lit`)** at `P_W` and its first `lw2` term: the order rises from `-2` to `-1`; the decision procedures of the two predicates and the bound `nExt ≤` give
+`BALvl1Good` by `ba_good_of_lit`. -/
+example : (baPW.scalingOrder = -2 ∧ tW.scalingOrder = -1) ∧ BALvl1GoodLit baPW tW ∧ BALvl1Good baPW tW :=
+  ⟨by decide, by decide, ba_good_of_lit (by decide) (by decide)⟩
+
+/-- the term `X.d1` of macro (b) at `P_C` (two uncircled solid edges, so the `M`-split has four terms) -/
+def d1C : BAGraph (Fin 2) (Fin 3 ⊕ Fin 2) :=
+  BAGraph.ext 2 baPC qC.2 [bpS false (owxEmb 2 qC.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 qC.1.dst), bpS false (bpv 1) (owxEmb 2 pC.1.dst)]
+    [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 pC.1.src) (bpv 0)]
+
+theorem normalPC : baPC.Normal := by decide
+
+/-- **Target 3 (`BALvl1B_part_struct`)** at `P_C`, `G = baPC` and the term `d1C` (`BASim_Ext_ext`; `G` is normal; `d1C` has four `M`-split terms, all with the conclusions of target 3). -/
+example : d1C.splitG.length = 4 ∧ ∃ Δ ∈ d1C.splitG, Δ.Normal ∧ Δ.nW = (BAWeightOp_circ d1C).nW ∧ Δ.nA ≤ (BAWeightOp_circ d1C).nA ∧
+    Δ.nM ≤ (BAWeightOp_circ d1C).nM ∧ Δ.nExt ≤ (BAWeightOp_circ d1C).nExt ∧ Δ.nExt ≤ baPC.nExt := by
+  refine ⟨by decide +kernel, ?_⟩
+  obtain ⟨Δ, hΔ⟩ := List.exists_mem_of_length_pos (l := d1C.splitG) (by decide +kernel)
+  obtain ⟨hN, -, h3, h4, h5, h6, h7⟩ := BALvl1B_part_struct (baPG baPC) baPC (BASim_Ext_ext 2 baPC qC.2 _ _ _) normalPC Δ hΔ
+  exact ⟨Δ, hΔ, hN, h3, h4, h5, h6, h7⟩
+
+/-- **The cases `weight`, `edge`, `gg` of `BAstepMono`** (`BALvl1B_weight`, `BALvl1B_edge`, `BALvl1B_gg`) at `P_W`, `P_E`, `P_A`: each step has outputs, and the five conclusions hold at an output. -/
+example : (∃ Q ∈ (baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW), BALvl1B_Mono (baPG baPW) Q) ∧
+    (∃ Q ∈ (baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE), BALvl1B_Mono (baPG baPE) Q) ∧
+    (∃ Q ∈ (baPG baPA).outsOf (baPA.gg2 pA qA) ++ (baPG baPA).outsOf (baPA.gg4 pA qA), BALvl1B_Mono (baPG baPA) Q) := by
+  obtain ⟨Q, hQ⟩ := List.exists_mem_of_length_pos (by decide +kernel : 0 < ((baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)).length)
+  obtain ⟨R, hR⟩ := List.exists_mem_of_length_pos (by decide +kernel : 0 < ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)).length)
+  obtain ⟨S, hS⟩ := List.exists_mem_of_length_pos
+    (by decide +kernel : 0 < ((baPG baPA).outsOf (baPA.gg2 pA qA) ++ (baPG baPA).outsOf (baPA.gg4 pA qA)).length)
+  exact ⟨⟨Q, hQ, BALvl1B_weight (baPG baPW) (by decide) (List.mem_cons_self ..) rfl rfl Q hQ⟩,
+    ⟨R, hR, BALvl1B_edge (baPG baPE) (by decide) (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) rfl rfl R hR⟩,
+    ⟨S, hS, BALvl1B_gg (baPG baPA) (by decide) (List.mem_cons_self ..) (List.mem_cons_self ..) S hS⟩⟩
+
+end BALvl1BInst
+
 end RBM.Graph
 
 end
