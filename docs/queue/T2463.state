@@ -1,0 +1,4 @@
+state: audit-pass
+reason: preflight PASS, prover 81ca99ae (targets 1-8, 10; target 9 to U1-BA per the ticket), audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 18:11:57 UTC 2026
+reports: docs/reports/T2463-prove.md, docs/reports/T2463-audit.md
