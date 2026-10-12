@@ -138,6 +138,115 @@ theorem baTwistSum_holds (d : ℕ) : BAtwistSum d := by
   rw [baTwistIntegral_gen d L W g0 Em t m c t' (fun D => baSum A D ℓe + baSum B D ℓe)]
   cases c <;> simp [lwSymmCj]
 
+/-! ## 3. Target 3: the three frame identities at an edge, a self-loop, a pair of either colour and direction -/
+
+section Frame
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- The selected pair of `Γ` in the frame `Γ.twist c t` is `lwSymmTwistP c t p` (the twisted edge first, the twisted rest). -/
+theorem BASymm2_frame_mem (c t : Bool) (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) :
+    lwSymmTwistP c t p ∈ lwSplit (Γ.twist c t).solid := by
+  have hs : (Γ.twist c t).solid = Γ.solid.map (lwSymmTwistS c t) := lwSymmTwistG_solid c t Γ.toLGraph
+  rw [hs, lwSymm_lwSplit_twistP]
+  exact List.mem_map_of_mem hp
+
+/-- The second selected edge of a pair in the frame. -/
+theorem BASymm2_pair_mem (c t : Bool) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hq : q ∈ lwSplit p.2) :
+    lwSymmTwistP c t q ∈ lwSplit (lwSymmTwistP c t p).2 := by
+  rw [show (lwSymmTwistP c t p).2 = p.2.map (lwSymmTwistS c t) from rfl, lwSymm_lwSplit_twistP]
+  exact List.mem_map_of_mem hq
+
+private theorem BASymm2_baSum_nil {E' I' ι : Type} [Fintype I'] [DecidableEq I'] [Fintype ι] [DecidableEq ι] (D : BALData ι)
+    (ℓe : E' → ι) : baSum ([] : List (BAGraph E' I')) D ℓe = 0 := by
+  simp [baSum]
+
+end Frame
+
+section Forms
+
+variable (d L W : ℕ) [NeZero L] [NeZero W]
+
+/-- **Twisting the frame identity back**: the frame identity `E Γ'.val = E (Σ_A + Σ_B)` at `Γ' = Γ.twist c t'` gives `E Γ.val = E (Σ_{A.map twist} +
+Σ_{B.map twist})` (`baTwistIntegral_holds` and `baTwistSum_holds`: the twist is an involution of the expectations). -/
+private theorem BASymm2_back (g0 Em t : ℝ) (m : ℂ) (c t' : Bool) (hL : 3 ≤ L) (hSelf : RBM.BA.BASelf d L g0 (Em : ℂ) m) (h0 : 0 ≤ t)
+    (h1 : t < 1) {Ex Ix Iy Iz : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] [Fintype Iy] [DecidableEq Iy]
+    [Fintype Iz] [DecidableEq Iz] (Γ : BAGraph Ex Ix) (A : List (BAGraph Ex Iy)) (B : List (BAGraph Ex Iz)) (ℓe : Ex → Idx d L W)
+    (h : ∫ ω, (Γ.twist c t').val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+      ∫ ω, baSum A (BAlwData d L W g0 Em t m ω) ℓe + baSum B (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)) :
+    ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+      ∫ ω, baSum (A.map (BAGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe +
+        baSum (B.map (BAGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) := by
+  have e1 := baTwistSum_holds d L W hL g0 Em t m hSelf h0 h1 c t' A B ℓe
+  have e2 := baTwistIntegral_holds d L W hL g0 Em t m hSelf h0 h1 c t' Γ ℓe
+  rw [e1, ← h, e2]
+  cases c <;> simp
+
+/-- The one-list case of `BASymm2_back` (`B = []`). -/
+private theorem BASymm2_back1 (g0 Em t : ℝ) (m : ℂ) (c t' : Bool) (hL : 3 ≤ L) (hSelf : RBM.BA.BASelf d L g0 (Em : ℂ) m) (h0 : 0 ≤ t)
+    (h1 : t < 1) {Ex Ix Iy : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] [Fintype Iy] [DecidableEq Iy]
+    (Γ : BAGraph Ex Ix) (A : List (BAGraph Ex Iy)) (ℓe : Ex → Idx d L W)
+    (h : ∫ ω, (Γ.twist c t').val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+      ∫ ω, baSum A (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)) :
+    ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+      ∫ ω, baSum (A.map (BAGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) := by
+  have := BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ A ([] : List (BAGraph Ex Iy)) ℓe
+    (by simpa only [BASymm2_baSum_nil, add_zero] using h)
+  simpa only [List.map_nil, BASymm2_baSum_nil, add_zero] using this
+
+end Forms
+
+/-- **Target 3: the twisted forms of the three BA expansions** (twins of `lwSymm_weight_graph_E`, `lwSymm_oe1x_graph_E`, `lwSymm_oe2x_graph_E`,
+`LWSymm.lean:1590, 1639, 1690`).  The selector `(c, t')` makes the twisted selected edge blue (`c = true` iff the selected edge is red, `t' = true` iff it
+is an in-edge of its vertex, `lwSymm_selector_edge`, `lwSymm_selector_pair`); the frame is `Γ.twist c t'` at `lwSymmTwistP c t' p`; every output is twisted
+back.  (a) `lem_lweight` (`lw2`, `lw4`) at a circled self-loop; (b) `lanlw` at a circled edge; (c) `GGGamma` (`gg2`, `gg4`) at a circled pair. -/
+def BAtwistFormE (d : ℕ) : Prop :=
+  ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 →
+    ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix) (ℓe : Ex → Idx d L W)
+      (c t' : Bool),
+      -- (a) `lem_lweight` (`lw2`, `lw4`) at a circled self-loop
+      (∀ p ∈ lwSplit Γ.solid, (lwSymmTwistS c t' p.1).σ = true → p.1.circ = true → p.1.src = p.1.dst →
+        ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+          ∫ ω, baSum (((Γ.twist c t').lw2 (lwSymmTwistP c t' p)).map (BAGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe +
+            baSum (((Γ.twist c t').lw4 (lwSymmTwistP c t' p)).map (BAGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe
+              ∂(PF d L W 0)) ∧
+      -- (b) `lanlw` at a circled edge (the twisted edge is the blue out-edge of its source)
+      (∀ p ∈ lwSplit Γ.solid, (lwSymmTwistS c t' p.1).σ = true → p.1.circ = true →
+        ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+          ∫ ω, baSum ((BAGraph.lanlwTerms (Γ.twist c t') (lwSymmTwistP c t' p)).map (BAGraph.twist c t'))
+            (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)) ∧
+      -- (c) `GGGamma` (`gg2`, `gg4`) at a circled pair of one colour, an out- and an in-edge of one vertex after the twist
+      (∀ p ∈ lwSplit Γ.solid, ∀ q ∈ lwSplit p.2, (lwSymmTwistS c t' p.1).σ = true → p.1.circ = true →
+        (lwSymmTwistS c t' q.1).σ = true → q.1.circ = true → (lwSymmTwistS c t' p.1).src = (lwSymmTwistS c t' q.1).dst →
+        ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
+          ∫ ω, baSum (((Γ.twist c t').gg2 (lwSymmTwistP c t' p) (lwSymmTwistP c t' q)).map (BAGraph.twist c t'))
+              (BAlwData d L W g0 Em t m ω) ℓe +
+            baSum (((Γ.twist c t').gg4 (lwSymmTwistP c t' p) (lwSymmTwistP c t' q)).map (BAGraph.twist c t'))
+              (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0))
+
+/-- **`BAtwistFormE d` holds**, for every `d`: the merged frame identities `baExpFrame_lw`, `lanlw_val`, `baExpFrame_gg` at the frame `Γ.twist c t'`
+(their hypotheses are those of the twisted edges: `σ`, `circ` kept by `lwSymmTwistS_circ`, loops kept by `lwSymmTwistS_loop`), carried back by
+`BASymm2_back` (`baTwistIntegral_holds`, `baTwistSum_holds`).  No `LWSymm` §4 twin: the endpoint `p.1.src : Ex ⊕ Ix` is free. -/
+theorem baTwistFormE_holds (d : ℕ) : BAtwistFormE d := by
+  intro L W _ _ hL g0 Em t m hSelf h0 h1 Ex Ix _ _ _ _ Γ ℓe c t'
+  refine ⟨fun p hp hσ hc hxx => ?_, fun p hp hσ hc => ?_, fun p hp q hq hσp hcp hσq hcq hxy => ?_⟩
+  · have hc' : (lwSymmTwistP c t' p).1.circ = true := by
+      rw [show (lwSymmTwistP c t' p).1 = lwSymmTwistS c t' p.1 from rfl, lwSymmTwistS_circ]; exact hc
+    exact BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ _ ℓe
+      (baExpFrame_lw d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') ℓe (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp) hσ hc'
+        ((lwSymmTwistS_loop c t' p.1).2 hxx))
+  · have hc' : (lwSymmTwistP c t' p).1.circ = true := by
+      rw [show (lwSymmTwistP c t' p).1 = lwSymmTwistS c t' p.1 from rfl, lwSymmTwistS_circ]; exact hc
+    exact BASymm2_back1 d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ ℓe
+      (lanlw_val d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp) hσ hc' ℓe)
+  · have hcp' : (lwSymmTwistP c t' p).1.circ = true := by
+      rw [show (lwSymmTwistP c t' p).1 = lwSymmTwistS c t' p.1 from rfl, lwSymmTwistS_circ]; exact hcp
+    have hcq' : (lwSymmTwistP c t' q).1.circ = true := by
+      rw [show (lwSymmTwistP c t' q).1 = lwSymmTwistS c t' q.1 from rfl, lwSymmTwistS_circ]; exact hcq
+    exact BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ _ ℓe
+      (baExpFrame_gg d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') ℓe (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp)
+        (lwSymmTwistP c t' q) (BASymm2_pair_mem c t' p q hq) hσp hcp' hσq hcq' hxy)
+
 end RBM.Graph
 
 end
