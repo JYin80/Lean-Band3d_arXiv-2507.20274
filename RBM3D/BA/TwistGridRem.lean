@@ -1045,4 +1045,34 @@ theorem TwistGridRem_step {κ : ℝ} (hκ : 0 < κ) (hr : BAReal d (sz.L n) (lam
 
 end Step
 
+/-! ## 9. Compiled nonempty instances (`d = 3`, `sz0`: `L = 4`, `W = 32`, `lam = 1/64`; flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`, `n = 0`;
+`σ = (false, true)`, `a = 0`, `(c₁, c₂) = (0, (1,0,0))`, `u = 1/2`, `Δ = 1/24`, so `u + Δ < 1`).  Every hypothesis is discharged: `0 < Im m_F` (`BAmF_sz0_im_pos`), `‖m_F‖ ≤ 1`,
+`BAReal` (`BAflow_real`), `0 < g₀` (`gI_pos`), `M` the Hermitian flow matrix `seqHflowBA` of an arbitrary sample. -/
+
+section Inst
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.EKPinsInst
+
+/-- The twisted one-step envelope at the datum. -/
+example (ω : sz0.SeqΩ) :=
+  TwistGridRem_envelope sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (BAmF_sz0_im_pos 0)
+    (BAm_norm_le_one 3 (sz0.L 0) (BAflowLam0 sz0 zSeq 0) (((BAflowEs sz0 zSeq 0 : ℝ)) : ℂ) _ (by simp)
+      (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0).1)
+    ![false, true] 0 0 ![1, 0, 0] (u := 1 / 2) (Δ := 1 / 24) (by norm_num) (by norm_num) (by norm_num)
+    (EMn2BA_seqHflowBA_herm sz0 (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω)
+
+/-- The Taylor bound of `K̃` at the datum. -/
+example :=
+  TwistGridRem_twK_taylor sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (κ := 1 / 2) (by norm_num)
+    (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0) ![false, true] 0 0 ![1, 0, 0]
+    (u := 1 / 2) (Δ := 1 / 24) (by norm_num) (by norm_num) (by norm_num)
+
+/-- The one-step bound `‖E A_{u+Δ}(M + √Δ X) - A_u(M) - Δ Drift_u(M)‖ ≤ Z₁ Δ^{3/2} + Z₂ Δ²` at the datum. -/
+example (ω : sz0.SeqΩ) :=
+  TwistGridRem_step sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (κ := 1 / 2) (by norm_num)
+    (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0) gI_pos ![false, true] 0 0 ![1, 0, 0]
+    (u := 1 / 2) (Δ := 1 / 24) (by norm_num) (by norm_num) (by norm_num)
+    (EMn2BA_seqHflowBA_herm sz0 (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω)
+
+end Inst
+
 end RBM.BA

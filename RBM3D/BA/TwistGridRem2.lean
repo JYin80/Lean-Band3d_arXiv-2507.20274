@@ -461,6 +461,9 @@ the window `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` by `t0_sz0`; the grid `K_n = ⌈
 section Inst
 open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.EKPinsInst
 
+/-- The pin `BATwistGridRem` is inhabited for every `d`, with `C₀` fixed first (the acceptance example of the ticket). -/
+example : ∀ d : ℕ, ∃ C₀ : ℝ, 0 ≤ C₀ ∧ BATwistGridRem d C₀ := baTwistGridRem_holds
+
 /-- **`baTwistGridRem_holds 3` at the datum**: the remainder bound `‖twRem_k‖ ≤ N^{C₀} √Δ`, for all `k ≤ K_n`, eventually in `n`, all labels, almost surely, with `K_n = ⌈N_n^{CK}⌉ + 1`. -/
 example : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∃ CK : ℝ, 0 ≤ CK ∧
     ∀ᶠ n in atTop, ∀ i : (Fin 2 → Bool) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n),
