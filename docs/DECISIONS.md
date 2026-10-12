@@ -2356,3 +2356,26 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **T2449 = M/N 设计单（BA-DMN，只出报告）**（BA 116；`prover-max`；模板 T2379）：交付 `docs/reports/T2449-design.md`（≤ 400 行）和不合并的探针 `RBM3D/Probe/T2449Pins.lean`（≤ 400 行，留在 `t/T2449`）。报告先回答 **MN0 = BA-C5/E5**：起草时初步看，E5 照字面多半不成立。`RandomLayerB_Flow`/`_Prod` 用的是半圆律的 `etaT E t = (1-t)·Im mE(E)` 加 `|fE| ≤ 2-κ`，而 BA 的恒等式用 BA 的 `m(E,λ₀)`（`7_8:1801`），ρ-bulk 会超过 `2-κ`，`BAFlow` 里也没有 `|Re z| ≤ 2-κ`。修法可能只在 BA-C5 里：把 `RandomLayerB` 改成以 η 函数为参数的泛型副本（监督 0853 `:126`）；U、V 多半不受影响。U、V 的陈述若要改，就停下报告。之后是 MN1 终点覆盖、MN2 接口钉文、MN3 N3 的路线、MN4 重新估价（C3–C5 计入，给出含与不含两种总数）。答复起草问题：C3–C5 保留；报告上限 400 行；E5 的 `example` 形状编不过时由中枢报告，调度改检查文件。
 - (4) **记下监督 1049 的问题**：已合并的 `unMLOutBA_of_pins`（`Induction/MainIndOut.lean:144`）带一个 `STMainIndG` 前提，按监督 1049，BA 证不出它。M/N 设计单要说明 M/N 怎样绕开（换后继形状或换路线）。另外，`BAEnd_locSC`、`BAEnd_QDiff`、`BAEnd_decol`、`BAThm27` 只在 `t/T2161` 上，而且是按旧的带状律写的；设计单要给出按正确的律写的后继（建议名 `BAEnd_locSCL` 等）。
 - (5) 槽位：在跑 T2447、T2448，空出两个槽；T2449 开工，另一个槽留给下一张。下一张票号 T2450（L4d2b）、T2451（TL2e），下一节 §263，下一条 H244。其后：T4s1、L3b1、L4b2、L3d1。
+
+## §263 — L3b4″、L3d3 合并；放 L4d2b = T2450、TL2e = T2451；监督 1152：子阶段 U 开（23 行，旗标 34.5），X1 走路线 G（总调度 V3，2026-10-12 11:57 UTC）
+
+- (1) **T2447 = L3b4″ 合并** 00f4a10（11:28 UTC；`Graph/BAShapeO2` 1,094 + `BAShapeO2B` 447；`baShapeLL_e2_tn`、`_macroA_tn`、`_macroB_tn`、`baLocReg6_holds`、实例；审核 PASS）。**文章差异 `T2443d` 撤回**（0948）。
+- (2) **T2448 = L3d3 合并** 79f3c1c（11:30 UTC；`Graph/BAEngine` 506 行；T2447 在 1b 时还没合并，目标 3–4 带着 `T2448_Binder`；审核 PASS，观察 O1：带状消费者读不变量 (1)–(5)，即起草答复 (b) 的情形；O2 给调度，不要签字）。按 O2R-C3，第一个在 T2447 之后写的消费者行（L3d2）用 `baLocReg6_holds` 消掉绑定变量。**L3d2 写之前先定 (1)–(5) 的约定**（1152 O7）：L3b1 的票把沿 `BAReach` 的 (1)–(5) 列为目标。
+- (3) **T2450 = L4d2b `Graph/BAS3Close` + `BAS3CloseB`（+ 备用 `BAS3CloseC`）**（BA 117；L 31 / 50；`prover-max`；不设设计门；1a 走 S3A-C5，带停止规则）：三个根、根列表、`BAS3Identity`；`BAFoldLeaf`（显式 `ρ`、#17/#47 的因子、`r₁, r₂ ≤ Cρ`）；14 个卡住图两种电荷的 `baS3Fold_holds`；`BAS3Xprec`；闭包 `BAS3Close`（"`BAG5LeafProps` ∨ 折叠"）；打包形式 `BAS3Expand'`；实例。估计 2,300 / 3,400 / 5,200：先一行带三个文件，1a 的中心估计若仍超 1,575，就在文件边界拆行并发短 REQ（计划 41 → 42/43），在 1b 之前。
+- (4) **T2451 = TL2e `BA/TwistLoop`**（TL 13 / 15；BA 118；`prover-hard`，按 TL 设计行；不设设计门）：`baTwistLoopStep_of_fixed`（= `T2441_TL2e` 原文）、`baTwistLoopStep_caseI/_caseII`（T.12 在 3/2）、新钉文 `BATwKcircBound` 与 `baTwKcircBound_holds`（T.13 (ii) 加 S3，交给 L4b2）、实例。**stage TL 随本行关闭**：票里提出 C1–C6 作为关闭清单的提案，报告交 (a)–(h)，由监督在关闭 REQ 里定。
+- (5) **监督 1152：PASS，子阶段 U 的 ST 侧现在开**：23 行，旗标 34.5（U4-BA 要第三张票时 24 / 36）；U-D 指名的生产者行每行 +1.5，放在 U-C6 指定的子阶段。条件：
+  - **X1-C1**（谱域，F1）：泛型 X1 陈述里不许出现 `|E| ≤ 2 − κ`、`|E| < 2`、`mE`、`zt E`、`cltCk`、`etaT E`；谱参数用 `ztOf C.m E u` 与 `C.eta`，下界来自 `κ ≤ Im m`；带状推论恢复旧陈述；若 T2449 的 MN0 定了别的 BA 谱读法，X1 跟着改。
+  - **X1-C2**（Θ 接口）：tier 2 把 `(prop:ThfadC)`、`(prop:BD1)`、`(prop:BD2)` 和平移不变性作为抽象剖面上的假设，不用 `‖m‖ = 1`、显式 Θ 公式或 `PropSpin`；1a 给出"带状事实 → 泛型假设 → BA 生产者"表。
+  - **X1-C3**：1a 列出 X1a 的文件从 `KDecay`、`Step34Pins`、`Step5Pins`、`Green/*`、`KellStar` 读的每条事实及其 BA 生产者；泛型 `FarEntry` 的非对角 Green 输入取 `STGbEXPij` 与带撇 `BAGbEXPij'` 都能推出的形式。
+  - **X1-C4**：`STCltFargL`、`STCltIsogL`、`STExpInvgL` 由 X1a 的 1a-audit 定、放在 X1a 的文件里；U6 不陈述它们。
+  - **X1-C5**：熔断与退路如提案（f_sem > 0.30 的段改孪生；超过 1.5 × 中心才发 REQ；U4-BA 第三张票已在 PASS 内）。
+  - **U-C1**：计数 23 / 34.5。
+  - **U-C2**：U3s1 的泛型词汇放新文件（如 `Chain/Step34Gen.lean`），带 `Iff.rfl` 桥，`Step34Pins` 不动（不进证书通道）。
+  - **U-C3**：`Step3`、`Step4` §1–§2 归 U3s4；`Step4` §3 留在带状，泛型后继归 V2。
+  - **U-C4**：U6 作新文件 `Chain/Step5Gen.lean`；只用一个核 `Step2Gen_UN`，T4s1 的泛型 `Ugen` 必须就是它（定义相等或桥），不另立第三个核。
+  - **U-C5**：U5 早开设计门：1a 写出 BA 的 Step 5 情形 (iii) 的完整 d = 3 论证（文章省略了），只用带撇钉文和范围一致的事实，在 `g = 1/64, 1, 10` 处做数值检查；可以在 U6 合并前开，U6 的陈述用同类型的本地假设；论证合不上就发 REQ（届时是给 Jun 的数学问题）；U5 的 1b 等 BA 钉文 REQ。
+  - **U-C6**（U-D）：(a) 按使用而不是按 import 做逐事实普查，覆盖每个 U 行和五个未放的 ST 侧 T 行（T7、T1、T4s1、T4s2、T5s2）；(b) 每个无主层判断是模型无关可复用、BA 已覆盖（含 `BA/TwistGrid*` 对 `DifREP2` 的复用、`EMn2BA` 里的 `KellStar` 副本）还是要生产者，`KellStar` 只要一个共享的 BA 陈述 `KellStarEv`；(c) 放置规则：生产者放在最早消费它的子阶段，`DifREP`（T1 要 m = 2 的 GridMart；U4s3、`PfStep5` 要所有 m 的 `STGridRepN`，一个泛型行）和 `NetLift1–2`（T1 要 `STNetLift2`）归子阶段 T（旗标 28.5 每行 +1.5），`LemDecCalE*`、`KellStar`、`CondDom` 若要生产者归 U；(d) T1-BA 钉文等 U-D，ST 侧 T1 不等。
+  - 两个路线发现（都不 HOLD）：F1 谱域；F2 T1 的覆盖缺口（GridMart 与 `STNetLift2` 在 BA 上没有生产者）。
+  - **U 的关闭条件**（Q5）：九个 BA 侧行的目标证完、公开、有非空 `d = 3` 实例（含 U1-BA、BA 的 `STEK*` 及 `STEKDecay`/`STEKWin`/`STEKLow`、`BAKcalDecay`）；欠账行删掉、被带撇形式替代的带状钉文登记为 superseded；X1 与放在 U 的 C10 生产者合并、泛型、in-place 文件有 G1 检查；谱域：U 的陈述里不出现 `|E| ≤ 2 − κ`、`mE`、`zt E`，BA 实例用 MN0 定的读法；U5 的论证记为文章差异；对 V 与 T2449 终点钉文的形状检查通过。
+- (6) **放票顺序（1152 O1、O2）**：第一批 U-D（先放）、X1a、U3s1（新文件）、U6（新文件）；**T4s1 与 T7（ST 侧）尽快给槽位**，它们比 U 行本身卡住更多 U；然后 U4s1、U1s1 在 T4s1 后，U2 在 U3s1 与 T7 后，其余按 import 顺序；U5 设计门有槽就开。BA 侧的 U 钉文 REQ 在 T2449 报告之后。
+- (7) ROUTES：子阶段 U 开，0 / 34.5；X1 = X1a/X1b（路线 G）；`T2443d` 撤回。下一张票号 T2452 起（U-D、T4s1、T7、X1a、U3s1、U6、U5、L3b1、L4b2、L3d1、L3d2），下一节 §264，下一条 H245。
