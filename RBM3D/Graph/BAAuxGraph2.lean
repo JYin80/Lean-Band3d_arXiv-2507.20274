@@ -13,24 +13,31 @@ import RBM3D.Induction.PerTimeCalc
 import RBM3D.Induction.DecayLoopB
 
 /-!
-# BA-L L3c3a (part 1): the BA edge variables `ζ` of `(Gyiyjatom)` and `(eq:Gbyxi2_BA)` on the carrier `baFMz` (T2435)
+# BA-L L3c3a, part 1: the BA edge variables `ζ` on the carrier `baFMz` (T2435)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:415-497` (`B:line`: `(Gyiyjatom)` `B:424-426`, `(eq:Gbyxi2_BA)`
-`B:428-431`, `(G_by_auxG_BA)`); `paper/tex/7_8_light_weight.tex:870-890` (`(eq:Gbyxi)`, `(eq:xia1a2)`, `claim:xi`).  Basis: the band
-file `RBM3D/Graph/AuxGraph2.lean` (`:61-945`, sections 1-3), of which this file is the twin on the BA carrier `baFMz sz z`
-(`FlowFM`, law `seqP (sz.withLam 0)`, `BAFlow`, horizon `BAflowT0`).  The claims on `ζ` are in `RBM3D/Graph/BAAuxGraph2B.lean`.
+Paper: arXiv:2507.20274 (`B:line` is `paper/tex/B_graphical_lemmas.tex:line`): `(Gyiyjatom)`
+`B:424-426`, `(eq:Gbyxi2_BA)` `B:428-431`, `(G_by_auxG_BA)` `B:486-490`;
+`paper/tex/7_8_light_weight.tex:870-890` (`(eq:Gbyxi)`, `(eq:xia1a2)`, `claim:xi`).
+Basis: the band file `RBM3D/Graph/AuxGraph2.lean` `:61-945` (sections 1-3), of which this file is
+the twin on the BA carrier `baFMz sz z` (`FlowFM`, law `seqP (sz.withLam 0)`, `BAFlow`, horizon
+`BAflowT0`).  The claims on `ζ` are in `RBM3D/Graph/BAAuxGraph2B.lean`.
 
-* Section 1: `baZetaSq`, `baZetaVar`: the block loop-window variable `ζ([a₁],[a₂])²` with the floor `W^{-D₁}` (paper-delta candidates
-  `T2435a`: `ζ` is the block loop-window variable, not the atom-centre entry sum of `B:424`; `T2435b`: the floor `W^{-D}` of `B:425`).
-* Section 2: the deterministic facts `baZetaVar_nonneg`, `baZetaVar_symm`, the lattice helpers, the Ward part (`baZeta_ward_sum`, with
-  the private Ward lemmas for both charges, any Hermitian `H`, `Im z > 0`) in block form (`T2435d`: the paper's `Σ_α ζ² ≺ η⁻¹` is
-  fine-lattice; here `Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η)⁻¹`).
-* Section 3: the `≺` helpers (stems `BAAuxGraph2_`, shared with part 2) and the deterministic comparisons `Φ(m) ≤ K(ρ) Φ(ℓ)`,
-  `ζ² ≲ Φ(ℓ)² + W^{-D₁}`, the floor against `Φ²`.
+* Section 1: `baZetaSq`, `baZetaVar`: the block loop-window variable `ζ([a₁],[a₂])²` with the
+  floor `W^{-D₁}`.  Paper-delta candidates: `T2435a` (`ζ` is the block loop-window variable, not
+  the atom-centre entry sum of `B:424`), `T2435b` (the floor `W^{-D}` of `B:425`).
+* Section 2: `baZetaVar_nonneg`, `baZetaVar_symm`, `baZetaSq_ge_W`, the lattice helpers, and the
+  Ward part `baZeta_ward_sum` (private Ward lemmas for both charges, any Hermitian `H`,
+  `Im z > 0`) in block form: `Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η)⁻¹` (`T2435d`: the paper's
+  `Σ_α ζ² ≺ η⁻¹` is fine-lattice).
+* Section 3: the `≺` helpers (stem `BAAuxGraph2_`, shared with part 2) and the deterministic
+  comparisons `Φ(m) ≤ K(ρ) Φ(ℓ)`, `ζ² ≲ Φ(ℓ)² + W^{-D₁}`, the floor against `Φ²`.
+* Section 4: `LWXigL`, the carrier form of `LWXi`, and its bridge to `LWXi` at `bandFM`.
+* Section 5: compiled nonempty instances of targets 1 and 2.
 
-Ports (read-only sources, no RBM1D/RBM2D file: the light-weight graph layer exists only in RBM3D): the private lemmas of
-`RBM3D/Graph/AuxGraph2.lean` (`auxGraph2_*`, `:83-945`), copied under the stem `BAAuxGraph2_`, which were themselves ported from
-`RBM3D/Path/LemDecCalE.lean:109-142`, `RBM3D/Green/Pins.lean:350-400`, `RBM3D/Induction/ConArgDet.lean:141-163`.
+Ports (the light-weight graph layer exists only in RBM3D; no RBM1D/RBM2D file): the private lemmas
+of `RBM3D/Graph/AuxGraph2.lean` (`auxGraph2_*`, `:83-945`), copied under the stem `BAAuxGraph2_`,
+themselves ported from `RBM3D/Path/LemDecCalE.lean:109-142`, `RBM3D/Green/Pins.lean:350-400`,
+`RBM3D/Induction/ConArgDet.lean:141-163`.
 -/
 
 set_option linter.style.setOption false
@@ -43,6 +50,8 @@ set_option linter.style.openClassical false
 set_option linter.style.show false
 set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
+
+
 
 noncomputable section
 
@@ -436,7 +445,7 @@ section Basic2
 variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D₁ : ℝ) (n : ℕ)
 
 /-- The BA flow matrix is Hermitian (private copy of `FlowPins:925`). -/
-private theorem BAAuxGraph2_seqHflowBA_herm (lam0 : ℕ → ℝ) (u : ℝ) (ω : sz.SeqΩ) :
+theorem BAAuxGraph2_seqHflowBA_herm (lam0 : ℕ → ℝ) (u : ℝ) (ω : sz.SeqΩ) :
     (sz.seqHflowBA lam0 n u ω).IsHermitian := by
   unfold Sizes.seqHflowBA
   refine Matrix.IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz.withLam 0) n u ω)
@@ -913,6 +922,28 @@ theorem BAAuxGraph2_card_ball {d L : ℕ} [NeZero L] (c : Zd d L) {ρ : ℝ} (h�
     rw [BAAuxGraph2_zdistInf_sub_comm]
   rw [e]; exact this
 
+/-- `N^{𝔠 ε₁/2} W^{-ε₁} ≤ W^{-ε₁/2} ≤ 1` (`W ≥ N^𝔠`): the entry law at `τ = 𝔠 ε₁/2` is `≤ W^{-ε₁/2}`. -/
+theorem BAAuxGraph2_pow_small {d : ℕ} (sz : Sizes d) (n : ℕ) {𝔠 ε₁ : ℝ} (h𝔠 : 0 < 𝔠) (hε₁ : 0 < ε₁)
+    (hb : ((sz.size n : ℕ) : ℝ) ^ 𝔠 ≤ (sz.W n : ℝ)) :
+    ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₁ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₁) ≤ ((sz.W n : ℕ) : ℝ) ^ (-(ε₁ / 2)) ∧
+      ((sz.W n : ℕ) : ℝ) ^ (-(ε₁ / 2)) ≤ 1 := by
+  have hτ : 0 < 𝔠 * ε₁ / 2 := by positivity
+  have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := Nat.cast_pos.2 (sz.W_pos n)
+  have hW1 : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.one_le_cast.2 (sz.W_pos n)
+  have h2 : ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₁ / 2) ≤ ((sz.W n : ℕ) : ℝ) ^ (ε₁ / 2) := by
+    have := Sizes.size_rpow_le_W_rpow sz h𝔠 n hb (τ := 𝔠 * ε₁ / 2) hτ.le
+    have e : 𝔠 * ε₁ / 2 / 𝔠 = ε₁ / 2 := by field_simp
+    rwa [e] at this
+  refine ⟨?_, Real.rpow_le_one_of_one_le_of_nonpos hW1 (by linarith)⟩
+  calc ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε₁ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₁)
+      ≤ ((sz.W n : ℕ) : ℝ) ^ (ε₁ / 2) * ((sz.W n : ℕ) : ℝ) ^ (-ε₁) :=
+        mul_le_mul_of_nonneg_right h2 (Real.rpow_nonneg hW.le _)
+    _ = ((sz.W n : ℕ) : ℝ) ^ (-(ε₁ / 2)) := by
+        rw [← Real.rpow_add hW]; congr 1; ring
+
+theorem BAAuxGraph2_rpow_nat (X : ℝ) (hX : 0 ≤ X) (x : ℝ) (k : ℕ) : (X ^ x) ^ k = X ^ (x * k) := by
+  rw [← Real.rpow_natCast, ← Real.rpow_mul hX]
+
 /-- **`ξ([a₁],[a₂])² ≲ Φ(|a₁ - a₂|)²` from `(LW_assm)` and `(eq:Psi)`** (target 3 (c), deterministic part):
 if every `‖𝓛^{(2)}_{(s,!s),(b₁,b₂)}‖ ≤ B Φ(|b₁ - b₂|)²`, `Φ(m) ≤ K Φ(ℓ)` for `ℓ ≤ 2ρ + m` and
 `W^{-d} ≤ C₃² Φ(0)²`, then `ξ² ≤ (2 (2ρ+1)^{2d} B + C₃²) K² Φ(|a₁ - a₂|)²`. -/
@@ -1013,6 +1044,69 @@ def LWXigL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t :
 theorem LWXigL_bandFM {d : ℕ} (sz : Sizes d) (E t : ℕ → ℝ) (Φ : ℕ → ℝ → ℝ)
     (ξ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → sz.SeqΩ → ℝ) :
     LWXigL (bandFM sz E) (Sizes.seqP sz) t Φ ξ ↔ LWXi sz E t Φ ξ := Iff.rfl
+
+/-! ## 5. Compiled nonempty instances (targets 1 and 2)
+
+`d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `t ≡ 1/2 ≤ T₀`), the radius `ρ_n = log W_n`
+and the floor exponent `D₁ = 12`.  Every deterministic hypothesis is discharged; the Ward hypothesis `hA` is met by `A = Σ_{xy} ‖(G_t - M)_{xy}‖`. -/
+
+section Instances
+
+open RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
+
+private theorem BAAuxGraph2_one_le_W (n : ℕ) : (1 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := Nat.one_le_cast.2 (sz0.W_pos n)
+
+/-- The radius `ρ_n = log W_n`. -/
+private def BAAuxGraph2_ρ0 : ℕ → ℝ := fun n => Real.log ((sz0.W n : ℕ) : ℝ)
+
+private theorem BAAuxGraph2_ρ0_nonneg (n : ℕ) : 0 ≤ BAAuxGraph2_ρ0 n := Real.log_nonneg (BAAuxGraph2_one_le_W n)
+
+/-- Every entry of `G - M` is at most the sum of all entries (to discharge `hA` at a concrete bound). -/
+private theorem BAAuxGraph2_entry_le_sum (n : ℕ) (ω : sz0.SeqΩ) (x y : Idx 3 (sz0.L n) (sz0.W n)) :
+    ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x y‖ ≤ ∑ x', ∑ y', ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x' y'‖ :=
+  (Finset.single_le_sum (f := fun y' => ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x y'‖)
+    (fun _ _ => norm_nonneg _) (Finset.mem_univ y)).trans (Finset.single_le_sum
+    (f := fun x' => ∑ y', ‖(baFMz sz0 zSeq).GM n (1 / 2) ω x' y'‖)
+    (fun _ _ => Finset.sum_nonneg fun _ _ => norm_nonneg _) (Finset.mem_univ x))
+
+/-- **Instance 1** (target 1): `W^{-d} + W^{-D₁} ≤ ζ([a],[a])²` and `ζ([a],[a]) > 0` at `n = 0`, every block and sample. -/
+example (a : Zd 3 (sz0.L 0)) (ω : sz0.SeqΩ) :
+    (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ + ((sz0.W 0 : ℕ) : ℝ) ^ (-(12 : ℝ)) ≤
+        baZetaSq sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a a ω ∧
+      0 < baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a a ω := by
+  have h := baZetaSq_ge_W sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 (BAAuxGraph2_ρ0_nonneg 0) a ω
+  have hW : (0 : ℝ) < (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ := by
+    have := BAAuxGraph2_one_le_W 0
+    positivity
+  have hF : (0 : ℝ) < ((sz0.W 0 : ℕ) : ℝ) ^ (-(12 : ℝ)) :=
+    Real.rpow_pos_of_pos (by linarith [BAAuxGraph2_one_le_W 0]) _
+  exact ⟨h, Real.sqrt_pos.2 (lt_of_lt_of_le (by linarith) h)⟩
+
+/-- **Instance 1** (target 1): the first conjunct of `LWXigL` for `baZetaVar` at `n = 0`. -/
+example (a b : Zd 3 (sz0.L 0)) (ω : sz0.SeqΩ) :
+    0 ≤ baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a b ω ∧
+      baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a b ω =
+        baZetaVar sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 b a ω :=
+  ⟨baZetaVar_nonneg sz0 zSeq _ _ 12 0 a b ω, baZetaVar_symm sz0 zSeq _ _ 12 0 a b ω⟩
+
+/-- **Instance 1** (target 1, the Ward part): `baZeta_ward_sum` at `n = 0`, `A` the sum of the entries of `G_t - M`, every sample and block. -/
+example (ω : sz0.SeqΩ) (a₁ : Zd 3 (sz0.L 0)) :
+    ∑ a₂, baZetaSq sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 a₁ a₂ ω ≤
+      2 * (2 * BAAuxGraph2_ρ0 0 + 1) ^ (2 * 3) * ((((sz0.W 0 : ℕ) : ℝ) ^ 3 * (baFMz sz0 zSeq).eta 0 (1 / 2))⁻¹ *
+        (1 + ∑ x, ∑ y, ‖(baFMz sz0 zSeq).GM 0 (1 / 2) ω x y‖)) +
+      (2 * BAAuxGraph2_ρ0 0 + 1) ^ 3 * (((sz0.W 0 : ℕ) : ℝ) ^ 3)⁻¹ +
+        ((sz0.L 0 : ℕ) : ℝ) ^ 3 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(12 : ℝ)) :=
+  baZeta_ward_sum sz0 zSeq (fun _ => 1 / 2) BAAuxGraph2_ρ0 12 0 (κ := 1 / 2) (ε := 1 / 10) (𝔠 := 1 / 6) (𝔡 := 1 / 10)
+    (by norm_num) flow_sz0 (by norm_num) (half_lt_t0 0).le (BAAuxGraph2_ρ0_nonneg 0) ω
+    (fun x y => BAAuxGraph2_entry_le_sum 0 ω x y) a₁
+
+/-- **Instance 2** (target 2, the bridge): at the band carrier of `sz0` the carrier form `LWXigL` is the merged `LWXi`. -/
+example : LWXigL (bandFM sz0 (fun _ => 0)) (Sizes.seqP sz0) (fun _ => 1 / 2) (fun n _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)))
+      (fun _ _ _ _ => 1) ↔
+    LWXi sz0 (fun _ => 0) (fun _ => 1 / 2) (fun n _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ))) (fun _ _ _ _ => 1) :=
+  LWXigL_bandFM sz0 (fun _ => 0) (fun _ => 1 / 2) (fun n _ => ((sz0.W n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ))) (fun _ _ _ _ => 1)
+
+end Instances
 
 end RBM.Graph
 
