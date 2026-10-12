@@ -1,0 +1,4 @@
+state: audit-pass
+reason: report-only design: preflight PASS, prover-max 2a6ad6e (rerun with H249 (3), H250 (3)-(4)), audit PASS round 1 (claude-opus-5-5); merging the report (rule A, report-only)
+updated: Mon Oct 12 17:41:52 UTC 2026
+reports: docs/reports/T2459-design.md, docs/reports/T2459-prove.md, docs/reports/T2459-audit.md
