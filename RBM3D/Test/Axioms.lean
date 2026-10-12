@@ -215,6 +215,12 @@ def owedProps : List Name :=
    `RBM.BA.STIniTermIIgL, -- the initial terms of case (ii) over a carrier tuple (`Chain/Step5Gen.lean:246`): hypothesis of `ST_step5_caseII_of_pinsgL`; band: `STIniTermII_iff_gL` with `stIniTermII_holds`; owner U4s2 (`IniTermII`), BA: U4-BA (b) (T2462)
    `RBM.BA.STPfStep5gL, -- `lem:pf_step5` over a carrier tuple (`Chain/Step5Gen.lean:252`): hypothesis of `ST_step5_caseIII_of_pfgL`; band: `STPfStep5_iff_gL` with `stPfStep5_holds`; owner U5 (`PfStep5`), BA: U4-BA (b) (T2462)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
+   -- T2467 (BA-T T7b, DECISIONS §272): the premises of the generic Step 2 events (`RBM3D/Chain/Step2EventsGen.lean`) that no theorem concludes
+   `RBM.BA.STScaleInvgL, -- `(eq:LW_assm_exp)` at the scale family at every time section over a flow carrier (`Chain/Step2EventsGen.lean`): hypothesis of `ST_LW_sectionsg`, `ST_event_lwg`, `ST_event_mgg`; band: `bandFM_STScaleInv` (`Iff.rfl`) with the registered `STScaleInv`; owner T1 / T1-BA (T2467)
+   `RBM.BA.STDecaygL, -- `(Eq:Gdecay)` over a flow carrier (`Chain/Carrier.lean`): hypothesis of `ST_event_initg` (T2467); owed like its band form `STDecay`: owner the main induction (band) / BA-V (BA)
+   `RBM.BA.LWtermG, -- `lem:LWterm` over a carrier family (`Chain/LWGen.lean`): hypothesis of `stLWBgL_of_LWtermG` (T2467); band: `band_LWtermG` (`lwterm_holds`); BA: owner BA-L6 (`BALWterm`)
+   `RBM.BA.LWtermExpG, -- `lem: EWGn2_N` over a carrier family (`Chain/LWGen.lean`): hypothesis of `stLWTgL_of_LWtermExpG` (T2467); band: `band_LWtermExpG` (`lwtermExp_holds`); BA: owner BA-L6 (`BALWtermExp`)
+   `RBM.BA.STGoodAtg, -- the pathwise good event of one self-improving step over a flow carrier (`Chain/Step2EventsGen.lean`), as the band `STGoodAt` (the scan finds it through its field projections): `ST_good_probg` (T2467) proves `P(¬ STGoodAtg) ≤ N^{-D'}` from (E1)-(E4) and the pins, not `STGoodAtg` itself; owner T1's `ST_good_engine` (P4)
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about

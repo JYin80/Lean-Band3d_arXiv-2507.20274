@@ -1,0 +1,4 @@
+state: audit-pass
+reason: preflight PASS, prover-hard 12f4da0a (Amend 1), audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 21:18:33 UTC 2026
+reports: docs/reports/T2467-prove.md, docs/reports/T2467-audit.md
