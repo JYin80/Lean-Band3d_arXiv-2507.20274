@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a, probe e9a3986, 1a-audit PASS, prover-hard e1cdda3, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 06:34:37 UTC 2026
+state: merged c43bdf1
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAAuxGraph2 (1113), BAAuxGraph2B (1064), root imports added at merge; probe stays on t/T2435 (e9a3986); full lake build 4264 jobs; pushed
+updated: Mon Oct 12 06:34:39 UTC 2026
 reports: docs/reports/T2435-prove.md, docs/reports/T2435-1a-audit.md, docs/reports/T2435-audit.md
