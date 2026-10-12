@@ -6,29 +6,48 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExp14aB
 import RBM3D.BA.TwistPins
 
+/-!
+# BA-L L4b1 (T2434), part A: the pins S2, S3 of `lem:LWterm_EXP`, the block algebra
+
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`), `GGGamma`
+`:393-405` (D402: the first two sums carry `W - 1 = M⁺S⁺`), `lanlw` `:359-372`; design
+`docs/reports/T2398-design.md` §1, §2; family table and statements `docs/reports/T2434-prove.md`
+(i), (iv); consumer `BALWCutExpTw` (`t/T2398:RBM3D/Probe/T2398Pins.lean:434-440`); S1 is
+`BAExp14aS1` (`Graph/BAExp14aB.lean:124`, merged). Section 1 is the probe
+`RBM3D/Probe/T2434Pins.lean` of this ticket (never merged), copied verbatim.  Part B is
+`Graph/BAExp14bB.lean`.
+
+The sum behind the cut at the carrier `baFMz` (`C.S = 1`) is, for `σc = true`,
+`LWcutg = W^{-2d} Σ_{x ∈ [ao], y ∈ [ac], α} X_{[α]} G_{xα} G_{αy} G(σo)_{yx}` (`BAExp14a_L1_eq`).
+Write `f = X_{[α]} G(σo)_{yx}`, `G = Ǧ + M`: `ǦǦ` is `BAGGGammaR` at `(x, y, y') := (α, y, x)`:
+`T1`, `T2a`, `T2b`, `T3A_k`, `T3B_k`, `T3C_k`, `k ∈ {0, 1}`, `W^{(0)} = 1`, `W^{(1)} = W - 1`; `MǦ`
+is `BAlanlwR` at `(α, y)`, `ǦM` is `BAlanlwR` at `(x, α)`: `C1`, `C2` (children `Ǧ_{ββ}`) and `D1`,
+`D2` (children `∂f`); `MM` has no expansion. `∂f = (∂X) G(σo)_{yx} + X ∂G(σo)_{yx}` splits `D1`,
+`D2`, `T3C` into a `∂X` part (S3) and a `∂tail` part (S2). `S1 = {MM, T1, T3A_0, T3A_1, C1, C2}`
+(merged).  `S2 = {D1t, D2t, T2a, T2b, T3B_0, T3B_1, T3C-Ḡ_0, T3C-Ḡ_1}`,
+`S3 = {D1X, D2X, T3C-tr_0, T3C-tr_1}`.
+
+S2 is proved by row L4b2, S3 by the rows L4g/L4c1/L4d2 (Amend 1 item 3: the roots of the S3 families
+have `M`-dotted edges); this row proves neither.
+
+Contents.  §1 the pins `BAExp14bS2`, `BAExp14bS3`, `BAExp14bExpand`, `BAExp14bCutConj` and the
+fine-sum families; §2 the loops `𝓛^{(1,2,3)}` of the carrier as fine sums; §3 the coordinates
+`(block, offset)` of a fine vertex and the entries `M`, `S`, `W^{(k)}` in them; §4 the loops and the
+twisted loops `twTrP`, `twLoopX` as sums over offsets; §5 the tie sums (`BAExp14b_twTie`,
+`_twTie_ba`, probe `T2398Pins.lean:226`) and the block sums of `W^{(k)}` (`BAExp14b_Wk_blk`,
+`W - 1 = lift(ω - 1)`); §6 permutations of nested sums; §7 the **block forms of the eight S2
+families** (`BAExp14b_FD1t_block`, `_FD2t_`, `_FT2a_`, `_FT2b_`, `_FT3B_`, `_FT3CG_block`,
+dispatched by `BAExp14b_FS2_block` and `BAExp14bS2Fam_block`): pathwise identities between the fine
+sums of the families and block sums of `M^{(B)}`, `κ_k`, `X_{a₁}` and the loops `𝓛^{(2)}`,
+`𝓛^{(3)}`, `twTrP`, `twLoopX = twL2'`, which L4b2 reads; §8 compiled checks and nonempty instances
+of the block forms and of the pins.  Part B (`Graph/BAExp14bB.lean`) proves the identity.
+-/
+
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
 set_option linter.unusedVariables false
 set_option linter.unusedFintypeInType false
 set_option linter.style.setOption false
-
-/-!
-# BA-L L4b1 (T2434), part A: the pins S2, S3 of `lem:LWterm_EXP` at BA, their integrands, and the deterministic block algebra
-
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`), `GGGamma` `:393-405` (D402: the first two sums carry
-`W - 1 = M⁺S⁺`), `lanlw` `:359-372`; design `docs/reports/T2398-design.md` §1, §2; family table and statements `docs/reports/T2434-prove.md`
-(i), (iv); consumer `BALWCutExpTw` (`t/T2398:RBM3D/Probe/T2398Pins.lean:434-440`); S1 is `BAExp14aS1` (`Graph/BAExp14aB.lean:124`, merged).
-Section 1 is the probe `RBM3D/Probe/T2434Pins.lean` of this ticket (never merged), copied verbatim.  Part B is `Graph/BAExp14bB.lean`.
-
-The sum behind the cut at the carrier `baFMz` (`C.S = 1`) is, for `σc = true`,
-`LWcutg = W^{-2d} Σ_{x ∈ [ao], y ∈ [ac], α} X_{[α]} G_{xα} G_{αy} G(σo)_{yx}` (`BAExp14a_L1_eq`).  Write `f = X_{[α]} G(σo)_{yx}`, `G = Ǧ + M`:
-`ǦǦ` is `BAGGGammaR` at `(x, y, y') := (α, y, x)`: `T1`, `T2a`, `T2b`, `T3A_k`, `T3B_k`, `T3C_k`, `k ∈ {0, 1}`, `W^{(0)} = 1`, `W^{(1)} = W - 1`;
-`MǦ` is `BAlanlwR` at `(α, y)`, `ǦM` is `BAlanlwR` at `(x, α)`: `C1`, `C2` (children `Ǧ_{ββ}`) and `D1`, `D2` (children `∂f`); `MM` has no expansion.
-`∂f = (∂X) G(σo)_{yx} + X ∂G(σo)_{yx}` splits `D1`, `D2`, `T3C` into a `∂X` part (S3) and a `∂tail` part (S2).
-`S1 = {MM, T1, T3A_0, T3A_1, C1, C2}` (merged).  `S2 = {D1t, D2t, T2a, T2b, T3B_0, T3B_1, T3C-Ḡ_0, T3C-Ḡ_1}`, `S3 = {D1X, D2X, T3C-tr_0, T3C-tr_1}`.
-
-S2 is proved by row L4b2, S3 by the rows L4g/L4c1/L4d2 (Amend 1 item 3: the roots of the S3 families have `M`-dotted edges); this row proves neither.
--/
 
 open MeasureTheory Filter Matrix
 
@@ -249,7 +268,8 @@ theorem BAExp14b_loop3 (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (σ₁
         (((W : ℂ) ^ d)⁻¹) ^ 3 * (Gres H z σ₁ x x1 * Gres H z σ₂ x1 x2 * Gres H z σ₃ x2 x) else 0) else 0) else 0 := by
     intro x x1 x2
     by_cases h1 : (split d L W x1).1 = a <;> by_cases h2 : (split d L W x2).1 = b <;>
-      by_cases h3 : (split d L W x).1 = c <;> simp [h1, h2, h3] <;> ring
+      by_cases h3 : (split d L W x).1 = c <;> simp [h1, h2, h3]
+    all_goals ring
   simp only [e]
   simp only [Iblk, Finset.sum_filter, Finset.mul_sum]
   refine Finset.sum_congr rfl fun x _ => ?_
@@ -297,7 +317,8 @@ theorem BAExp14b_loop2 (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (σ₁
   · simp only [hx, ite_true]
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun y _ => ?_
-    by_cases hy : (split d L W y).1 = a <;> simp [hy, hx] <;> ring
+    by_cases hy : (split d L W y).1 = a <;> simp [hy]
+    all_goals ring
   · simp [hx]
 
 /-- `\overline{G(σ)_{ab}} = G(!σ)_{ba}` for Hermitian `H`. -/
@@ -735,6 +756,7 @@ theorem BAExp14b_FT2b_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAfl
     bf_fin
 
 set_option maxHeartbeats 1600000 in
+-- the coordinate expansion of a 7-fold sum with the Kronecker deltas of the ties (measured: fails at 400000, passes at 800000)
 /-- **`T3B^{(k)}` in block form**: `T3B^{(k)} = t W^d Σ_{a₁,c₁,c₂} κ_k(a₁,c₁) M^{(B)}_{c₁c₂} X_{a₁} · Tr(Ǧ P_{c₁c₂}) · 𝓛^{(3)}_{(+,+,σ),(c₂,b,a)}`,
 `Tr(Ǧ P_{c₁c₂}) = twTr C n t ω c₂ c₁` (`twTr_eq`): `W^{(k)}_{αw} M_{wγ} S_{γδ} Ǧ_{γw} G_{δy} G_{xδ}` (`Σ_{α ∈ [a₁]} W^{(k)}_{αw} = κ_k(a₁,[w])`). -/
 theorem BAExp14b_FT3B_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
@@ -779,6 +801,7 @@ theorem BAExp14b_FT3B_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAfl
       bf_fin
 
 set_option maxHeartbeats 1600000 in
+-- the coordinate expansion of a 7-fold sum with the Kronecker deltas of the ties (measured: fails at 400000, passes at 800000)
 /-- **`T3C-Ḡ^{(k)}` in block form**: `T3C-Ḡ^{(k)} = t W^d Σ_{a₁,c₁,c₂} κ_k(a₁,c₁) M^{(B)}_{c₁c₂} X_{a₁} · 𝓛^{(2)}_{(+,σ),(b,c₂)} · Tr(G^σ E_a Ǧ P_{c₁c₂})`
 (`W^{(k)}_{αw} M_{wγ} S_{γδ} G_{δy} Ǧ_{xw} ∂_{δγ}tail`; the circled leg is in slot 2 of `twLoopX`). -/
 theorem BAExp14b_FT3CG_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))

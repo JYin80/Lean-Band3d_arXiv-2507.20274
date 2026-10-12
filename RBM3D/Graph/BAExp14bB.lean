@@ -6,17 +6,45 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExp14b
 import RBM3D.Graph.BAGGExp
 
+/-!
+# BA-L L4b1 (T2434), part B: the law and the expansion identity `baExp14b_expand_holds`
+
+Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`), `GGGamma`
+`:393-405` (D402: the first two sums carry `W - 1 = M⁺S⁺`), `lanlw` `:359-372`; design
+`docs/reports/T2398-design.md` §1, §2; the pins S2, S3, their integrands, the conjugation pin
+`BAExp14bCutConj`, the ties and the block forms are in part A (`Graph/BAExp14b.lean`).
+
+**`baExp14b_expand_holds : ∀ d, BAExp14bExpand d`** (target 2): for `3 ≤ d`, `BAFlow`, every `n`,
+every `0 ≤ t ≤ BAflowT0` and every `(σc, σo, ac, ao)`,
+`𝔼 LWcutg = Σ_{k : Fin 6} 𝔼 S1_k + Σ_{j : Fin 8} 𝔼 S2_j + Σ_{j : Fin 4} 𝔼 S3_j` over the carrier
+`baFMz sz z` and the law `seqP (sz.withLam 0)`; no premise on the law.  Route (twin of `LWExpTerm2`
+§§6-7 and §§11-12, at the carrier):
+
+* §1 the resolvent polynomial `f = X_{[α]} G(σ)_{yx}` and its derivative `∂_{h_{βγ}} f`
+  (`BAExp14b_Pf`, `_f_eq`, `_df_eq`);
+* §2 the cut at `σc = +` as a frame `W^{-2d} Σ_{x ∈ [ao]} Σ_{y ∈ [ac]} Σ_α` (`BAExp14b_cut_true`,
+  `LWcutg` of `baFMz`, `C.S = 1`) and the conjugation
+  `LWcutg false σo ac ao = star (LWcutg true (!σo) ao ac)` (`baExp14b_cut_conj`);
+* §3 `lanlw` and `GGGamma` for `f` on the sample space of `seqP (sz.withLam 0)`: `baLanlw_holds`,
+  `baGGGamma_holds` (on `PF d L W 0`) transported by `BAExp14a_int_slice`;
+* §4-§5 continuity and boundedness (`BAExp14b_BM`), hence integrability, of the 18 integrands;
+* §6 every family is the frame of its integrand (`BAExp14b_fr`);
+* §7 the pathwise algebra `G = Ǧ + M`: `M M f + M R_lan + R_lan' M + R_gg` is the sum of the 18
+  integrands, with `R_lan`, `R_gg` the right sides of `lanlw` (twice) and `GGGamma`
+  (`BAExp14b_alg`);
+* §8 the cell identity, the frame integral and the identity, both charges;
+* §9 compiled checks and nonempty instances.
+
+S2 is proved by row L4b2 and S3 by the rows L4g / L4c1 / L4d2 (Amend 1 item 3: the roots of the S3
+families have `M`-dotted edges); this row proves neither.  Private helpers carry the stem
+`BAExp14b_`.
+-/
+
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
 set_option linter.unusedVariables false
 set_option linter.unusedFintypeInType false
 set_option linter.style.setOption false
-
-/-!
-# BA-L L4b1 (T2434), part B: the law and the expansion identity `baExp14b_expand_holds`
-
-(docstring to be completed)
--/
 
 open MeasureTheory Filter Matrix
 
@@ -24,6 +52,8 @@ noncomputable section
 
 namespace RBM.BA
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
+
+/-! ## 1. The resolvent polynomial `f` and its derivative -/
 
 section PF
 
@@ -100,6 +130,8 @@ theorem BAExp14b_df_eq (g0 E t : ℝ) (m : ℂ) (hz : (ztOf m E t).im ≠ 0) (Md
 end PF
 
 
+
+/-! ## 2. The cut at `σc = +` as a frame; the conjugation -/
 
 section Cut
 
@@ -196,6 +228,8 @@ theorem baExp14b_cut_conj (sz : Sizes d) (z : ℕ → ℂ) : BAExp14bCutConj sz 
   by_cases h : a₁ = a₂ <;> simp [h]
 
 end Cut
+
+/-! ## 3. `lanlw` and `GGGamma` for `f` at the carrier -/
 
 section Law
 
@@ -350,6 +384,8 @@ private theorem BAExp14b_law_GG (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 �
 
 end Law
 
+/-! ## 4. Continuity and boundedness of the atoms -/
+
 section BM
 
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
@@ -460,6 +496,8 @@ local macro "bm_tac" : tactic =>
     | apply BAExp14b_BM.star
     | (apply BAExp14b_BM.sum; intros; skip))
 
+/-! ## 5. Integrability of the families -/
+
 section IntFam
 
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
@@ -470,7 +508,7 @@ include hκ hflow ht0 ht
 private theorem BAExp14b_BM_S1 (k : Fin 6) (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14b_BM (fun ω : sz.SeqΩ => BAExp14a_F sz z n t ω k σ a b) := by
   fin_cases k <;> simp only [BAExp14a_F, BAExp14a_FMM, BAExp14a_FT1, BAExp14a_FT3A, BAExp14a_FC1, BAExp14a_FC2, BAExp14a_outer,
-    Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val] <;> bm_tac
+    Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one] <;> bm_tac
 
 private theorem BAExp14b_BM_S2 (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14b_BM (fun ω : sz.SeqΩ => BAExp14b_FS2 sz z n t ω j σ a b) := by
@@ -616,20 +654,20 @@ private theorem BAExp14b_F_eq_fr (k : Fin 6) (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14a_F sz z n t ω k σ a b = BAExp14b_fr sz n a b (fun x y α => BAExp14b_iS1 sz z n t ω k σ x y α) := by
   fin_cases k <;> simp only [BAExp14a_F, BAExp14a_FMM, BAExp14a_FT1, BAExp14a_FT3A, BAExp14a_FC1, BAExp14a_FC2,
     BAExp14b_iS1, BAExp14b_iMM, BAExp14b_iT1, BAExp14b_iT3A, BAExp14b_iC1, BAExp14b_iC2, BAExp14b_outer_eq_fr,
-    Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val] <;> rfl
+    Fin.zero_eta, Fin.mk_one, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one] <;> rfl
 
 private theorem BAExp14b_FS2_eq_fr (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14b_FS2 sz z n t ω j σ a b = BAExp14b_fr sz n a b (fun x y α => BAExp14b_iS2 sz z n t ω j σ x y α) := by
   fin_cases j <;> simp only [BAExp14b_FS2, BAExp14b_FD1t, BAExp14b_FD2t, BAExp14b_FT2a, BAExp14b_FT2b, BAExp14b_FT3B,
     BAExp14b_FT3CG, BAExp14b_iS2, BAExp14b_iD1t, BAExp14b_iD2t, BAExp14b_iT2a, BAExp14b_iT2b, BAExp14b_iT3B,
     BAExp14b_iT3CG, BAExp14b_outer_eq_fr, BAExp14b_outerDt_eq_fr, Fin.zero_eta, Fin.mk_one, Fin.isValue,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val] <;> rfl
+    Matrix.cons_val_zero, Matrix.cons_val_one] <;> rfl
 
 private theorem BAExp14b_FS3_eq_fr (j : Fin 4) (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14b_FS3 sz z n t ω j σ a b = BAExp14b_fr sz n a b (fun x y α => BAExp14b_iS3 sz z n t ω j σ x y α) := by
   fin_cases j <;> simp only [BAExp14b_FS3, BAExp14b_FD1X, BAExp14b_FD2X, BAExp14b_FT3CX, BAExp14b_iS3, BAExp14b_iD1X,
     BAExp14b_iD2X, BAExp14b_iT3CX, BAExp14b_outerDX_eq_fr, Fin.zero_eta, Fin.mk_one, Fin.isValue,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val] <;> rfl
+    Matrix.cons_val_zero, Matrix.cons_val_one] <;> rfl
 
 /-- **The 18 families are the frame of the sum of the 18 integrands.** -/
 private theorem BAExp14b_families_eq_fr (σ : Bool) (a b : Zd d (sz.L n)) :
@@ -719,7 +757,7 @@ private theorem BAExp14b_alg_GM (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) :
 private theorem BAExp14b_Wsplit (α w : Idx d (sz.L n) (sz.W n)) :
     BAlwW d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t ((baFMz sz z).m n) α w =
       BAExp14a_Wk sz z n t false α w + BAExp14a_Wk sz z n t true α w := by
-  simp only [BAExp14a_Wk, Bool.false_eq_true, ↓reduceIte, ite_true, Matrix.sub_apply]
+  simp only [BAExp14a_Wk, Bool.false_eq_true, ↓reduceIte, Matrix.sub_apply]
   ring
 
 private theorem BAExp14b_lin_3 {ι₁ ι₂ ι₃ : Type*} [Fintype ι₁] [Fintype ι₂] [Fintype ι₃] (U a b c : ι₁ → ι₂ → ι₃ → ℂ) :
@@ -820,7 +858,7 @@ private theorem BAExp14b_alg (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) :
         (∑ j : Fin 4, BAExp14b_iS3 sz z n t ω j σ x y α) := by
   rw [BAExp14b_alg_MM, BAExp14b_alg_MG, BAExp14b_alg_GM, BAExp14b_alg_GG]
   simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, BAExp14b_iS1, BAExp14b_iS2, BAExp14b_iS3, Matrix.cons_val_zero,
-    Matrix.cons_val_succ, Fin.isValue, Matrix.cons_val_one, Matrix.cons_val, add_zero]
+    Matrix.cons_val_succ, Fin.isValue, add_zero]
   ring
 
 end Alg
@@ -1014,6 +1052,24 @@ theorem baExp14b_expand_holds (d : ℕ) : BAExp14bExpand d := by
     rw [e, h]
     simp only [BAExp14aS1Fam, BAExp14bS2Fam, BAExp14bS3Fam, Bool.false_eq_true, ite_false, ite_true, star_add, star_sum, hconj]
   · exact BAExp14b_expand_true hκ hflow n ht0 ht σo ac ao
+
+/-! ## 9. Compiled checks and nonempty instances -/
+
+section Inst
+
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
+
+/-- **Nonempty instance of the endpoint theorem `baExp14b_expand_holds`** at `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `λ = 1/64`), `zSeq`,
+`flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t = 1/2 ≤ BAflowT0`, the distinct blocks `ac = 0`, `ao = e₀`, both charge pairs `(σc, σo)`: every
+hypothesis is discharged (the identity has no premise on the law). -/
+example (σc σo : Bool) :=
+  baExp14b_expand_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 0 (1 / 2)
+    (by norm_num) (half_lt_t0 0).le σc σo 0 (Pi.single 0 1)
+
+/-- The conjugation at the same data (any time, charge and sample). -/
+example (t : ℝ) (σo : Bool) (ω : sz0.SeqΩ) := baExp14b_cut_conj sz0 zSeq 0 t σo 0 (Pi.single 0 1) ω
+
+end Inst
 
 end RBM.BA
 
