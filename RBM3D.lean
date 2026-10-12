@@ -505,6 +505,7 @@ import RBM3D.BA.TwistFold2B
 import RBM3D.Graph.BAG5Leaf
 import RBM3D.Graph.BAShapeO2
 import RBM3D.Graph.BAShapeO2B
+import RBM3D.Graph.BAEngine
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
