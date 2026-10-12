@@ -528,6 +528,7 @@ import RBM3D.Chain.Step5KerGen
 import RBM3D.Chain.NewKLKLGen
 import RBM3D.Graph.BAExp14c
 import RBM3D.Graph.BAExp14cB
+import RBM3D.BA.GridMartBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
