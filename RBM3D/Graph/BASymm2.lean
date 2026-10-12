@@ -157,6 +157,12 @@ theorem BASymm2_pair_mem (c t : Bool) (p q : SEdge (E ⊕ I) × List (SEdge (E �
   rw [show (lwSymmTwistP c t p).2 = p.2.map (lwSymmTwistS c t) from rfl, lwSymm_lwSplit_twistP]
   exact List.mem_map_of_mem hq
 
+/-- The circle of the selected edge is kept by the twist. -/
+theorem BASymm2_frame_circ (c t : Bool) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hc : p.1.circ = true) :
+    (lwSymmTwistP c t p).1.circ = true := by
+  rw [show (lwSymmTwistP c t p).1 = lwSymmTwistS c t p.1 from rfl, lwSymmTwistS_circ]
+  exact hc
+
 private theorem BASymm2_baSum_nil {E' I' ι : Type} [Fintype I'] [DecidableEq I'] [Fintype ι] [DecidableEq ι] (D : BALData ι)
     (ℓe : E' → ι) : baSum ([] : List (BAGraph E' I')) D ℓe = 0 := by
   simp [baSum]
@@ -230,22 +236,195 @@ def BAtwistFormE (d : ℕ) : Prop :=
 theorem baTwistFormE_holds (d : ℕ) : BAtwistFormE d := by
   intro L W _ _ hL g0 Em t m hSelf h0 h1 Ex Ix _ _ _ _ Γ ℓe c t'
   refine ⟨fun p hp hσ hc hxx => ?_, fun p hp hσ hc => ?_, fun p hp q hq hσp hcp hσq hcq hxy => ?_⟩
-  · have hc' : (lwSymmTwistP c t' p).1.circ = true := by
-      rw [show (lwSymmTwistP c t' p).1 = lwSymmTwistS c t' p.1 from rfl, lwSymmTwistS_circ]; exact hc
-    exact BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ _ ℓe
-      (baExpFrame_lw d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') ℓe (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp) hσ hc'
-        ((lwSymmTwistS_loop c t' p.1).2 hxx))
-  · have hc' : (lwSymmTwistP c t' p).1.circ = true := by
-      rw [show (lwSymmTwistP c t' p).1 = lwSymmTwistS c t' p.1 from rfl, lwSymmTwistS_circ]; exact hc
-    exact BASymm2_back1 d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ ℓe
-      (lanlw_val d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp) hσ hc' ℓe)
-  · have hcp' : (lwSymmTwistP c t' p).1.circ = true := by
-      rw [show (lwSymmTwistP c t' p).1 = lwSymmTwistS c t' p.1 from rfl, lwSymmTwistS_circ]; exact hcp
-    have hcq' : (lwSymmTwistP c t' q).1.circ = true := by
-      rw [show (lwSymmTwistP c t' q).1 = lwSymmTwistS c t' q.1 from rfl, lwSymmTwistS_circ]; exact hcq
-    exact BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ _ ℓe
+  · exact BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ _ ℓe
+      (baExpFrame_lw d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') ℓe (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp) hσ
+        (BASymm2_frame_circ c t' p hc) ((lwSymmTwistS_loop c t' p.1).2 hxx))
+  · exact BASymm2_back1 d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ ℓe
+      (lanlw_val d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp) hσ
+        (BASymm2_frame_circ c t' p hc) ℓe)
+  · exact BASymm2_back d L W g0 Em t m c t' hL hSelf h0 h1 Γ _ _ ℓe
       (baExpFrame_gg d L W hL g0 Em t m hSelf h0 h1 (Γ.twist c t') ℓe (lwSymmTwistP c t' p) (BASymm2_frame_mem c t' Γ p hp)
-        (lwSymmTwistP c t' q) (BASymm2_pair_mem c t' p q hq) hσp hcp' hσq hcq' hxy)
+        (lwSymmTwistP c t' q) (BASymm2_pair_mem c t' p q hq) hσp (BASymm2_frame_circ c t' p hcp) hσq
+        (BASymm2_frame_circ c t' q hcq) hxy)
+
+/-! ## 4. Target 4: the twisted outputs keep the counters, the order and the monotonicity data -/
+
+section Out
+
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- **Target 4, the twist of an output** (twin of `lwSymmTwistG_counters`, `lwSymm_cnt5`): `T.twist c t` has the counters, `scalingOrder`, `nExt`,
+`nLoops`, `nPairs` of `T`, and is normal if `T` is (`ba_twist_counters`, `baTwistInv_holds`). -/
+theorem ba_twist_inv_out (c t : Bool) (T : BAGraph E I) :
+    (T.twist c t).counters = T.counters ∧ (T.twist c t).scalingOrder = T.scalingOrder ∧ (T.twist c t).nExt = T.nExt ∧
+      (T.twist c t).nLoops = T.nLoops ∧ (T.twist c t).nPairs = T.nPairs ∧ (T.Normal → (T.twist c t).Normal) := by
+  obtain ⟨h1, h2, h3, h4⟩ := baTwistInv_holds c t T
+  exact ⟨ba_twist_counters c t T, by unfold BAGraph.scalingOrder; rw [ba_twist_counters c t T], h2, h3, h4, h1⟩
+
+/-- The circled twisted graph: the same counters and atoms as the circled graph. -/
+private theorem BASymm2_circ_twist (c t : Bool) (T : BAGraph E I) :
+    (BAWeightOp_circ (T.twist c t)).counters = (BAWeightOp_circ T).counters ∧
+      (BAWeightOp_circ (T.twist c t)).atom = (BAWeightOp_circ T).atom := by
+  refine ⟨by rw [BAWeightOp_circ_counters, BAWeightOp_circ_counters, ba_twist_counters], ?_⟩
+  change (T.twist c t).atom = T.atom
+  exact BAGraph.BASymm1_twist_atom c t T
+
+/-- The raw order of a circled twisted output is that of the output. -/
+private theorem BASymm2_circ_twist_ord (c t : Bool) (T : BAGraph E I) :
+    (BAWeightOp_circ (T.twist c t)).scalingOrder = (BAWeightOp_circ T).scalingOrder := by
+  unfold BAGraph.scalingOrder; rw [(BASymm2_circ_twist c t T).1]
+
+/-- The monotonicity data of a circled twisted output (`lw_mono`): the same `n_M`, `n_A - n_W` and number of external atoms; the frame `Γ.twist c t` has those
+of `Γ` (`ba_twist_counters`, `BAGraph.BASymm1_twist_atom`). -/
+private theorem BASymm2_mono (c t : Bool) (Γ : BAGraph E I) {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I']
+    (T : BAGraph E' I')
+    (h : (BAWeightOp_circ T).nM = (Γ.twist c t).nM ∧ ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW =
+        ((Γ.twist c t).nA : ℤ) - (Γ.twist c t).nW ∧
+      ((Finset.univ.filter fun v : E' ⊕ I' => v.isLeft = true).image (BAWeightOp_circ T).atom).card ≤
+        ((Finset.univ.filter fun v : E ⊕ I => v.isLeft = true).image (Γ.twist c t).atom).card) :
+    (BAWeightOp_circ (T.twist c t)).nM = Γ.nM ∧ ((BAWeightOp_circ (T.twist c t)).nA : ℤ) - (BAWeightOp_circ (T.twist c t)).nW =
+        (Γ.nA : ℤ) - Γ.nW ∧
+      ((Finset.univ.filter fun v : E' ⊕ I' => v.isLeft = true).image (BAWeightOp_circ (T.twist c t)).atom).card ≤
+        ((Finset.univ.filter fun v : E ⊕ I => v.isLeft = true).image Γ.atom).card := by
+  have hc := (BASymm2_circ_twist c t T).1
+  have hΓ := ba_twist_counters c t Γ
+  rw [BAGraph.BASymm1_twist_atom] at h
+  rw [(BASymm2_circ_twist c t T).2]
+  have e1 : (BAWeightOp_circ (T.twist c t)).nM = (BAWeightOp_circ T).nM := congrArg Counters.nM hc
+  have e2 : (BAWeightOp_circ (T.twist c t)).nA = (BAWeightOp_circ T).nA := congrArg Counters.nV hc
+  have e3 : (BAWeightOp_circ (T.twist c t)).nW = (BAWeightOp_circ T).nW := congrArg Counters.nW hc
+  have g1 : (Γ.twist c t).nM = Γ.nM := congrArg Counters.nM hΓ
+  have g2 : (Γ.twist c t).nA = Γ.nA := congrArg Counters.nV hΓ
+  have g3 : (Γ.twist c t).nW = Γ.nW := congrArg Counters.nW hΓ
+  rw [e1, e2, e3]
+  rw [g1, g2, g3] at h
+  exact h
+
+end Out
+
+section OutForms
+
+variable {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix]
+
+/-- **`lanlw_ord` for the twisted outputs** (`B:361-363`): every term of the frame list `lanlwTerms (Γ.twist c t) (lwSymmTwistP c t p)`, twisted back, has raw order
+`ord Γ + 1`. -/
+theorem baTwist_lanlw_ord (c t : Bool) (Γ : BAGraph Ex Ix) (p : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hσ : (lwSymmTwistS c t p.1).σ = true) (hc : p.1.circ = true) :
+    ∀ Δ ∈ (BAGraph.lanlwTerms (Γ.twist c t) (lwSymmTwistP c t p)).map (BAGraph.twist c t), Δ.scalingOrder = Γ.scalingOrder + 1 := by
+  intro Δ hΔ
+  obtain ⟨Δ0, h0, rfl⟩ := List.mem_map.1 hΔ
+  rw [(ba_twist_inv_out c t Δ0).2.1, lanlw_ord (Γ.twist c t) _ (BASymm2_frame_mem c t Γ p hp) hσ (BASymm2_frame_circ c t p hc) Δ0 h0,
+    (ba_twist_inv_out c t Γ).2.1]
+
+/-- **`lanlw_scalingOrderG` at the frame terms, relative to `Γ`** (`B:354-372`): for a normal `Γ`, every term of the frame list has `scalingOrderG ≥ ord Γ`
+(`Γ.twist c t` is normal and has the order of `Γ`).  `scalingOrderG` of the twisted term itself is L3b4′'s bridge (module docstring). -/
+theorem baTwist_lanlw_scalingOrderG (c t : Bool) (Γ : BAGraph Ex Ix) (p : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hσ : (lwSymmTwistS c t p.1).σ = true) (hc : p.1.circ = true) (hN : Γ.Normal) :
+    ∀ Δ ∈ BAGraph.lanlwTerms (Γ.twist c t) (lwSymmTwistP c t p), ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ Δ.scalingOrderG := by
+  have := lanlw_scalingOrderG (Γ.twist c t) _ (BASymm2_frame_mem c t Γ p hp) hσ (BASymm2_frame_circ c t p hc)
+    ((ba_twist_inv_out c t Γ).2.2.2.2.2 hN)
+  rwa [(ba_twist_inv_out c t Γ).2.1] at this
+
+/-- **`lw_raw` for the twisted outputs** (`B:353`): every term of `lw2` and `lw4` of the frame, twisted back, has `ord T° = ord Γ + 1`. -/
+theorem baTwist_lw_raw (c t : Bool) (Γ : BAGraph Ex Ix) (p : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hσ : (lwSymmTwistS c t p.1).σ = true) (hc : p.1.circ = true) :
+    (∀ T ∈ ((Γ.twist c t).lw2 (lwSymmTwistP c t p)).map (BAGraph.twist c t), (BAWeightOp_circ T).scalingOrder = Γ.scalingOrder + 1) ∧
+      (∀ T ∈ ((Γ.twist c t).lw4 (lwSymmTwistP c t p)).map (BAGraph.twist c t), (BAWeightOp_circ T).scalingOrder = Γ.scalingOrder + 1) := by
+  obtain ⟨h2, h4⟩ := lw_raw (Γ.twist c t) _ (BASymm2_frame_mem c t Γ p hp) hσ (BASymm2_frame_circ c t p hc)
+  rw [(ba_twist_inv_out c t Γ).2.1] at h2 h4
+  refine ⟨fun T hT => ?_, fun T hT => ?_⟩
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    rw [BASymm2_circ_twist_ord]; exact h2 T0 h0
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    rw [BASymm2_circ_twist_ord]; exact h4 T0 h0
+
+/-- **`lw_mono` for the twisted outputs** (L3a4): `n_M`, `n_A - n_W` and the number of external atoms of `T°` for the twisted terms, relative to `Γ`. -/
+theorem baTwist_lw_mono (c t : Bool) (Γ : BAGraph Ex Ix) (p : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hσ : (lwSymmTwistS c t p.1).σ = true) (hc : p.1.circ = true) :
+    (∀ T ∈ ((Γ.twist c t).lw2 (lwSymmTwistP c t p)).map (BAGraph.twist c t), (BAWeightOp_circ T).nM = Γ.nM ∧
+        ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW = (Γ.nA : ℤ) - Γ.nW ∧
+        ((Finset.univ.filter fun v : Ex ⊕ (Ix ⊕ Fin 2) => v.isLeft = true).image (BAWeightOp_circ T).atom).card ≤
+          ((Finset.univ.filter fun v : Ex ⊕ Ix => v.isLeft = true).image Γ.atom).card) ∧
+      (∀ T ∈ ((Γ.twist c t).lw4 (lwSymmTwistP c t p)).map (BAGraph.twist c t), (BAWeightOp_circ T).nM = Γ.nM ∧
+        ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW = (Γ.nA : ℤ) - Γ.nW ∧
+        ((Finset.univ.filter fun v : Ex ⊕ (Ix ⊕ Fin 4) => v.isLeft = true).image (BAWeightOp_circ T).atom).card ≤
+          ((Finset.univ.filter fun v : Ex ⊕ Ix => v.isLeft = true).image Γ.atom).card) := by
+  obtain ⟨h2, h4⟩ := lw_mono (Γ.twist c t) _ (BASymm2_frame_mem c t Γ p hp) hσ (BASymm2_frame_circ c t p hc)
+  refine ⟨fun T hT => ?_, fun T hT => ?_⟩
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    exact BASymm2_mono c t Γ T0 (h2 T0 h0)
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    exact BASymm2_mono c t Γ T0 (h4 T0 h0)
+
+/-- **`lw_scalingOrderG` at the frame terms, relative to `Γ`** (`B:354-355`). -/
+theorem baTwist_lw_scalingOrderG (c t : Bool) (Γ : BAGraph Ex Ix) (p : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hσ : (lwSymmTwistS c t p.1).σ = true) (hc : p.1.circ = true) (hN : Γ.Normal) :
+    (∀ T ∈ (Γ.twist c t).lw2 (lwSymmTwistP c t p), ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) ∧
+      (∀ T ∈ (Γ.twist c t).lw4 (lwSymmTwistP c t p), ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) := by
+  have := lw_scalingOrderG (Γ.twist c t) _ (BASymm2_frame_mem c t Γ p hp) hσ (BASymm2_frame_circ c t p hc)
+    ((ba_twist_inv_out c t Γ).2.2.2.2.2 hN)
+  rwa [(ba_twist_inv_out c t Γ).2.1] at this
+
+/-- **`gg_raw` for the twisted outputs** (`B:393-405`): `A1` of the frame, twisted back, has `ord = ord Γ + 2κ` (`κ` at the atoms of `y = p'.1.dst`,
+`y' = q'.1.src` of the frame, which are those of `Γ`); every other term of `gg2` and every term of `gg4`, twisted back, has `ord T° = ord Γ + 1`. -/
+theorem baTwist_gg_raw (c t : Bool) (Γ : BAGraph Ex Ix) (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hq : q ∈ lwSplit p.2) :
+    ((BAGGOp_A1 (Γ.twist c t) (lwSymmTwistP c t p) (lwSymmTwistP c t q)).twist c t).scalingOrder =
+        Γ.scalingOrder + 2 * (BAGGOp_kappa Γ (lwSymmTwistP c t q).1.src (lwSymmTwistP c t p).1.dst : ℤ) ∧
+      (∀ T ∈ (((Γ.twist c t).gg2 (lwSymmTwistP c t p) (lwSymmTwistP c t q)).tail).map (BAGraph.twist c t),
+        (BAWeightOp_circ T).scalingOrder = Γ.scalingOrder + 1) ∧
+      (∀ T ∈ ((Γ.twist c t).gg4 (lwSymmTwistP c t p) (lwSymmTwistP c t q)).map (BAGraph.twist c t),
+        (BAWeightOp_circ T).scalingOrder = Γ.scalingOrder + 1) := by
+  obtain ⟨h1, h2, h4⟩ := gg_raw (Γ.twist c t) _ _ (BASymm2_frame_mem c t Γ p hp) (BASymm2_pair_mem c t p q hq)
+  have hk : BAGGOp_kappa (Γ.twist c t) (lwSymmTwistP c t q).1.src (lwSymmTwistP c t p).1.dst =
+      BAGGOp_kappa Γ (lwSymmTwistP c t q).1.src (lwSymmTwistP c t p).1.dst := by
+    simp only [BAGGOp_kappa, BAGraph.BASymm1_twist_atom]
+  rw [hk, (ba_twist_inv_out c t Γ).2.1] at h1
+  rw [(ba_twist_inv_out c t Γ).2.1] at h2 h4
+  refine ⟨by rw [(ba_twist_inv_out c t _).2.1]; exact h1, fun T hT => ?_, fun T hT => ?_⟩
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    rw [BASymm2_circ_twist_ord]; exact h2 T0 h0
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    rw [BASymm2_circ_twist_ord]; exact h4 T0 h0
+
+/-- **`gg_mono` for the twisted outputs** (L3a4), relative to `Γ`. -/
+theorem baTwist_gg_mono (c t : Bool) (Γ : BAGraph Ex Ix) (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hq : q ∈ lwSplit p.2) :
+    (∀ T ∈ ((Γ.twist c t).gg2 (lwSymmTwistP c t p) (lwSymmTwistP c t q)).map (BAGraph.twist c t), BAGGOp_Mono Γ T) ∧
+      (∀ T ∈ ((Γ.twist c t).gg4 (lwSymmTwistP c t p) (lwSymmTwistP c t q)).map (BAGraph.twist c t), BAGGOp_Mono Γ T) := by
+  obtain ⟨h2, h4⟩ := gg_mono (Γ.twist c t) _ _ (BASymm2_frame_mem c t Γ p hp) (BASymm2_pair_mem c t p q hq)
+  have key : ∀ {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (T : BAGraph E' I'),
+      BAGGOp_Mono (Γ.twist c t) T → BAGGOp_Mono Γ (T.twist c t) := fun T h => by
+    obtain ⟨m1, m2, m3⟩ := h
+    have hΓ := ba_twist_counters c t Γ
+    have g1 : (Γ.twist c t).nM = Γ.nM := congrArg Counters.nM hΓ
+    have g2 : (Γ.twist c t).nA = Γ.nA := congrArg Counters.nV hΓ
+    have g3 : (Γ.twist c t).nW = Γ.nW := congrArg Counters.nW hΓ
+    have hc := (BASymm2_circ_twist c t T).1
+    have e1 : (BAWeightOp_circ (T.twist c t)).nM = (BAWeightOp_circ T).nM := congrArg Counters.nM hc
+    have e2 : (BAWeightOp_circ (T.twist c t)).nA = (BAWeightOp_circ T).nA := congrArg Counters.nV hc
+    have e3 : (BAWeightOp_circ (T.twist c t)).nW = (BAWeightOp_circ T).nW := congrArg Counters.nW hc
+    refine ⟨by rw [e1]; omega, by rw [e2, e3]; omega, ?_⟩
+    unfold BAGGOp_nExt at m3 ⊢
+    rw [BAGraph.BASymm1_twist_atom] at m3
+    rw [(BASymm2_circ_twist c t T).2]
+    exact m3
+  refine ⟨fun T hT => ?_, fun T hT => ?_⟩
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    exact key T0 (h2 T0 h0)
+  · obtain ⟨T0, h0, rfl⟩ := List.mem_map.1 hT
+    exact key T0 (h4 T0 h0)
+
+/-- **`gg_scalingOrderG` at the frame terms, relative to `Γ`** (`B:354-355`). -/
+theorem baTwist_gg_scalingOrderG (c t : Bool) (Γ : BAGraph Ex Ix) (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid)
+    (hq : q ∈ lwSplit p.2) (hN : Γ.Normal) :
+    (∀ T ∈ (Γ.twist c t).gg2 (lwSymmTwistP c t p) (lwSymmTwistP c t q), ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) ∧
+      (∀ T ∈ (Γ.twist c t).gg4 (lwSymmTwistP c t p) (lwSymmTwistP c t q), ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) := by
+  have := gg_scalingOrderG (Γ.twist c t) _ _ (BASymm2_frame_mem c t Γ p hp) (BASymm2_pair_mem c t p q hq)
+    ((ba_twist_inv_out c t Γ).2.2.2.2.2 hN)
+  rwa [(ba_twist_inv_out c t Γ).2.1] at this
+
+end OutForms
 
 end RBM.Graph
 
