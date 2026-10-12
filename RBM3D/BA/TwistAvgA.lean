@@ -116,7 +116,8 @@ def twAvgMoment (d : ℕ) : Prop :=
 /-- **Target 2 (iv)**: for `0 ≤ t ≤ T₀` (and `0 < κ`, `0 < ε`, `BAFlow`): `twTr`, `𝒮₁`, `𝒮₂`, `𝓛^{(1)}_c - m` are continuous in `ω` (so measurable),
 `‖twTr‖^p` is integrable at `μ`, and the four are bounded by `η_t⁻¹ + 1`, resp. `N (η_t⁻¹ + 1)³` (`‖G_{xy}‖ ≤ η_t⁻¹`, `‖M_{xy}‖ ≤ 1`,
 `Σ_{α,β} S_{αβ} = N`); eventually in `n`, uniformly in `t`, `η_t⁻¹ + 1 ≤ N` (`η_t ≥ η_{T₀} = (1 - T₀) Im m₀ ≥ (κ/2) N^{-1+ε}`, so
-that `ε > 0` is needed), so that all four are `≤ N^4` (`Kenv = 4` of `twAvgT6`). -/
+that `ε > 0` is needed), so that `‖twTr‖, ‖𝓛^{(1)}_c - m‖ ≤ N` (`Kenv = 1` of `twAvgT6`) and `‖𝒮₁‖, ‖𝒮₂‖ ≤ N^4`, `‖𝒮₁‖ + ‖𝒮₂‖ ≤ N^5` for
+`N ≥ 2` (`Kenv = 5`), as used in `baTwistAvgRec_holds`. -/
 def twAvgReg (d : ℕ) : Prop :=
   ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → 0 < ε → BAFlow sz κ ε 𝔠 𝔡 z →
     (∀ (n : ℕ) (t : ℝ), 0 ≤ t → t ≤ BAflowT0 sz z n → ∀ c₁ c₂ : Zd d (sz.L n),
