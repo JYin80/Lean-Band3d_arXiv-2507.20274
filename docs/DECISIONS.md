@@ -2286,3 +2286,27 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **告诉 Jun**（0851 O2，只告知）：字面拆法丢 `(L^d/(W^dB))^{1/2}`；修正的折叠以余量 `B^{-1}` 闭合、无新输入；按它做；Jun 若反对，S3 块 HOLD 复回。
 - (6) 簿记（O6）：ROUTES 的 BA 格写 S3 HOLD 解除、stage L 计划 40；**文章差异 T2434a/b** 记 (A′)：BA 上对 `M` 分开的 4-圈，`(eq;EGxy:x=y)` 的第二步 GG 换成折叠，界成立于 `[a]×[b]` 平均形式（`I_{42}` 正是这样用，B:67-70）；随下一批文章差异写进 `paper-deltas.md`。
 - (7) 下一张票号 T2445（= L4d2a），T2446（= L3a5），下一节 §257，下一条 H237。
+
+## §257 — L3b4′ 合并；放 L4d2a = T2445、L3a5 = T2446；O2 形状要新开一行（计划 41），发短 REQ（总调度 V3，2026-10-12 09:35 UTC）
+
+- (1) **T2443 = L3b4′ 合并** 9eaf866（09:17 UTC；`Graph/BAStepS` 523 行；目标 1–8；`BALocReg6` 去掉框架正规性假设（更强）；探针 393 行留在 t/T2443；1a-audit PASS，审核 PASS）。e2/macroA/macroB 的形状输入（T2426 审核 O2）按票的 ≤ 400 行规则（估价 1,200–1,600 行）留作 `BALocReg6` 的假设，`baLocReg6_reach` 是条件形式 → 要新开一行。
+- (2) **T2445 = L4d2a `BA/TwistFold2` + `TwistFold2B`**（BA 112；L 27 / 50；`prover-max`；不设设计门）：`twLoop2X` 及迹形式、`twFold2`、`twFold2_bound`（平方形式，`β, r₁, r₂` 作上界，因子 `W^{-5d}`）、`twVec`（假设 `G − G^* = 2iη G^*G`）、`twMrow_le`/`twMblk_le`（`BAMfine` 上，只用上界）、`twB0_ge`（S3A-C2）、`twEta_ge`（S3A-C3）、`twFold2Prec`（`≺` 行，逐路径；前提 `STLocalEntrygL`、`STLmaxgL`；`ρ` 的 `r₁, r₂ ≤ Cρ`；随机因子 `X ≺ W^d·Bctl`；结论 `≺ (1−t)⁻¹Bctl^{5/2}`）及 `X ≡ 1` 的 `twFold2PrecDet`、实例。登记不动（两个前提已登记为欠）。S3A-C1 的展开是 1a 和证明的必备内容。答复起草问题：逐路径形式（消费者用 `BAExp14a_prec_integral` 取期望）；`ρ`、`X` 可依赖 `(σ, a, b)`；不带 `STLKgL`；`W^{-5d}` 在 1a 对 Fable §2.2 复核。
+- (3) **T2446 = L3a5 `Graph/BALvl1C`**（BA 113；L 28 / 50；`prover-hard`；不设设计门）：钉 `BAlvl1ExistsStep`、`BAlvl1Lemma`（探针原文）；`baLvl1ExistsStep_holds`（`lvl1_exists_step` 孪生，`¬LocStd` 的每种情形对应 `P.twist c t` 上五种 `BAFrameStep` 之一）；测度下降与 `ba_lvl1_induction`；`baLvl1Lemma_holds`；文章形式 `BAlvl1LemmaSize`（留在本行，L3b1 读它）；实例。不用 `BAsim`。
+- (4) 开工顺序：T2446（S′ 链）→ T2445。
+- (5) **O2 行**：暂名 L3b4″（`Graph/BAShapeO2`，`prover-hard`），stage L 计划 40 → 41，超过 40 → 按 0655 O3 发短 REQ（`REQ-2026-10-12-0935-O2row`）：问开不开、一行还是两行、在链上的位置。监督答复前不写。
+- (6) 下一张票号 T2447，下一节 §258，下一条 H239。
+
+## §258 — L4b1、L3c3b 合并；监督 0948：开 O2 行 L3b4″（计划 41，一行两文件）；H238 的提交被中枢的权限检查拦下（总调度 V3，2026-10-12 09:53 UTC）
+
+- (1) **T2434 = L4b1 合并** 74af906（09:36 UTC；`Graph/BAExp14b` 998 + `BAExp14bB` 1,076；S2、S3 钉文与展开恒等式；S3 的根欠 L4d2b（0851 Q3 (b)）；审核 PASS 第一轮）。审核 O2（S2 钉文以 TL1/TL2 为前提）记为文章差异候选 T2434c，不是路线缺口（TL1、TL2 已合并）。L4b2 现在可写。
+- (2) **T2444 = L3c3b 合并** 23a4e69（09:50 UTC；`Graph/BAZetaExp` 591 行；API 限额后按规则 (H) 重跑 1b；审核 PASS）。L3d2 只差 L3d3。
+- (3) **监督 0948：PASS，开 O2 行 L3b4″**（stage L 计划 40 → 41，旗标 50 不变；用量 28）：一行，两个文件在开票时定名（`Graph/BAShapeO2` 放建造引理，`BAShapeO2B` 放两条 stage-2 推论、三个 `_tn` 引理、`baLocReg6_holds`、实例），`prover-hard`，现在可开。条件：
+  - **O2R-C1**：只证 `BALocReg6` 的绑定变量本身，不重新陈述：`baShapeLL_e2_tn`、`baShapeLL_macroA_tn`、`baShapeLL_macroB_tn`，以及无假设的推论 `baLocReg6_holds`，加非退化实例。
+  - **O2R-C2**（1a 与停止规则）：(a) 列出 17 个带 `e2` 或 macroB stage 1 的建造项及各自路线；(b) 在样本图上逐个 setoid 数值检查 `BAScostLL P.g X`，含 slack 0；(c) stage 2 的输出与 `Q0 ∈ tr.partition` 的关系及构造子假设；(d) 无隐藏输入（不用 L3b1、L3b2 的不变量）。(b) 发现违反、或 (c)/(d) 不成立，就停在 1b 前写 REQ。
+  - **O2R-C3**：消费者是 L3d3、L3d2（经它们到 L3d4、L5、L6），L3b1、L3b2 不是。最好本行在 L3d3 的 1b 之前跑；否则 L3d3/L3d2 原样带着绑定变量（不新立 `Prop`、不加欠账），本行合并后的第一个消费者行消掉它，最晚 L6。
+  - **O2R-C4**（给 L3b1 的票）：`e2`、`macroA`、`macroB` 的路径输入 `BAShapePath` 写成 L3b1 或 L3b2 的目标，不留作假设；L3b1 的 1a 用 `PathInv2` 检查估价，装不下就在 1b 前发短 REQ。
+  - 拆分规则（§227）：1a 的中心估计超过 1,575 时，可以在已定的文件边界拆成两行（计划 42），不必再发 REQ。
+  - 文章差异 `T2443d`（(6) 是条件形式）在本行合并时撤回。
+- (4) **H238 第 (1) 项没做成**：中枢 09:42 的提交和推送被它自己会话的权限检查（auto-mode 分类器，"Modify Shared Resources"）拦下，10 个文件留在主工作树未提交；之后两次合并的推送正常。H239 让它随下一次提交补上；再被拦就告诉 Jun。
+- (5) 中枢今天第二次撞 API 限额（09:37–09:38 按规则 (H) 重跑 T2433、T2441、T2444），不计超时（TEAM §7）。
+- (6) 下一张票号 T2447（= L3b4″），下一节 §259，下一条 H240。其后：L3d3（输入都在 `main`）、L4b2、L3d1；L3b1 等 L3a5（T2446）、TL2e 等 TL2d（T2441）、L4d2b 等 T2433。
