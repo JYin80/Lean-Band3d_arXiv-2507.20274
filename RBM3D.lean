@@ -533,6 +533,8 @@ import RBM3D.BA.Step1Prime
 import RBM3D.Graph.BAExp14e
 import RBM3D.Chain.GridRepTailGen
 import RBM3D.Chain.GridRepTailGen2
+import RBM3D.Graph.BAMomentGen
+import RBM3D.Graph.BAMomentGenB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
