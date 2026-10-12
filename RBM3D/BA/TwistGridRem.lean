@@ -6,25 +6,30 @@ Authors: Jun Yin
 import RBM3D.BA.TwistGrid
 
 /-!
-# BA stage TL, row TL2a2 (T2437), matrix level: the twisted one-step envelope and the Taylor bound of `K̃`
+# BA stage TL, row TL2a2 (T2437), matrix level: the twisted one-step envelope
 
-Ticket `docs/tickets/T2437.md`; clause (ii) of `docs/tickets/T2428-amend-1.md` item 3; proofs
-`docs/tickets/T2398-TL-proofs.md` (D.5); paper arXiv:2507.20274.  No measure of the path occurs in this file
-(the grid walk is `RBM3D/BA/TwistGridRem2.lean`); the Gaussian law of one step is the fine model `PF d L W g`.
+Ticket `docs/tickets/T2437.md` (clause (ii) of `docs/tickets/T2428-amend-1.md` item 3); proofs
+`docs/tickets/T2398-TL-proofs.md` (D.5); paper arXiv:2507.20274.  No measure of the path occurs in
+this file (the grid walk is `RBM3D/BA/TwistGridRem2.lean`); the Gaussian law of one step is the
+fine model `PF d L W g`.
 
-The band's envelope `oneStepEnvelope` (`Path/OneStep.lean:2205`) is for `loopL` at `zt E u`; the twisted
-observable `L̃ = Tr(G₁ E_a G₂ P_{c₁c₂})` at `z_u = ztOf m_F E u` is a word `∏ R_{σᵢ} Eᵢ` whose letters are
-`E_a` and `P_{c₁c₂}` (norms `≤ 1`).  Everything below is therefore written for an arbitrary word `(l, Eᵢ)`
-(the twin of `OneStep` §2-§7 with `Eblk` replaced by a family of letters) and uses, through `open private`
-(the precedent of `BA/Step2BA.lean:35`), the private generic jets of `Path/OneStep.lean` (`OneStep_w0`,
-`OneStep_w1`, `OneStep_w2`, their norm bounds and derivative lemmas) and its counts.
+The band's envelope `oneStepEnvelope` (`Path/OneStep.lean:2205`) is for `loopL` at `zt E u`.  The
+twisted observable `L̃ = Tr(G₁ E_a G₂ P_{c₁c₂})` at `z_u = ztOf m_F E u` is a word `∏ R_{σᵢ} Eᵢ`
+whose letters are `E_a` and `P_{c₁c₂}` (norms `≤ 1`).  Everything below is therefore written for an
+arbitrary word `(l, Eᵢ)`: the twin of `OneStep` §2-§7 with `Eblk` replaced by a family of letters.
+It uses, through `open private` (the precedent of `BA/Step2BA.lean:35`), the private generic jets
+of `Path/OneStep.lean` (`OneStep_w0`, `OneStep_w1`, `OneStep_w2`, their norm bounds and derivative
+lemmas) and its counts, and the private `TwistGrid_*` lemmas of `BA/TwistGrid.lean`.
 
 * §1 the word functional `TwistGridRem_F` and its jets `TwistGridRem_J1`, `TwistGridRem_J2`;
-* §2 the Stein step, §3 the space step, §4 the time step, §5 the envelope of a word;
-* §6 the twisted word: `L̃`, `twGenM` and the envelope `TwistGridRem_envelope`;
-* §7 the Taylor bound of `K̃`.
+* §2 derivatives, continuity, linearity; §3 the Stein step; §4 the space step;
+* §5 the time step and the envelope of a word `TwistGridRem_envelope_word`;
+* §6 the twisted word: `L̃`, `twGenM`, and the envelope `TwistGridRem_envelope`;
+* §7 the Taylor bound of `K̃`, `TwistGridRem_twK_taylor` (the resolvent identity);
+* §8 the one-step bound `TwistGridRem_step` at a Hermitian matrix.
 
-Every statement is for every `d` (no `3 ≤ d`).  Every helper is `private` or prefixed `TwistGridRem_`.
+Every statement is for every `d` (no `3 ≤ d`).  Every helper is `private` or prefixed
+`TwistGridRem_`.
 -/
 
 set_option linter.style.longLine false
@@ -961,9 +966,8 @@ theorem TwistGridRem_twK_taylor {κ : ℝ} (hκ : 0 < κ) (hr : BAReal d (sz.L n
           exact (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
       _ ≤ (1 - (u + Δ))⁻¹ * 1 * (1 - (u + Δ))⁻¹ * 1 * (1 - (u + Δ))⁻¹ := by
           have hp : 0 ≤ (1 - (u + Δ))⁻¹ := inv_nonneg.2 h1u.le
+          have hΘ2 : ‖Θ‖ ≤ (1 - (u + Δ))⁻¹ := hΘn.trans hinv
           gcongr
-          exact hΘn.trans hinv
-          exact hΘn.trans hinv
       _ = ((1 - (u + Δ))⁻¹) ^ 3 := by ring
   rw [norm_smul, hc]
   calc Δ ^ 2 * ‖Θ' * Q * Θ * Q * Θ‖ ≤ Δ ^ 2 * ((1 - (u + Δ))⁻¹) ^ 3 := mul_le_mul_of_nonneg_left hY (sq_nonneg Δ)
