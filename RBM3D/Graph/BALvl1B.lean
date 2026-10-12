@@ -40,8 +40,8 @@ Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-409` (`lanlw`, `l
 1. **The measure predicates** (probe, verbatim): `BALvl1Good`, `BALvl1GoodLit`, `BAlvl1StepGood`, `BAstepMono`, `ba_good_of_lit`.
 2. **The reduction for `BAsim'`** `ba_lvl1StepGood_of_sim'` (probe 323-337 with `BAsim' m` for `BAsim m`), and `BALvl1B_lit_of_band` (probe 311 on the `baInv` equalities).
 3. **Coarsening and the partition structure** (target 3): `BALvl1B_coarse`, `BALvl1B_adj_mono`, `BALvl1B_part_struct`.
-4. **The counters at the terms**, the assembly `BALvl1B_outs_mono`, and the cases `weight`, `edge`, `gg` of `BAstepMono`.
-5. Compiled instances.
+4. **The counters at the terms**, the assembly `BALvl1B_outs_mono` (and `BALvl1B_outs_fam`, `BALvl1B_outs_ok` with `BALvl1B_TermOk`), and the cases `weight`, `edge`, `gg` of `BAstepMono`.
+5. Compiled instances (namespace `BALvl1BInst`: targets 1 and 3, the cases `weight`, `edge`, `gg`).
 
 The cases `within`, `ggSplit` (macro claims), `baStepMono_holds`, `baLvl1StepGood_holds` are in `Graph/BALvl1B2`.
 -/

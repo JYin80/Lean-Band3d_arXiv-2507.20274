@@ -24,12 +24,13 @@ Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-409`.  Design: `d
 ## Contents (namespace `RBM.Graph`; private prefix `BALvl1B_`)
 
 1. **The terms of the macro steps**: `BALvl1B_d_mono` (the terms `W.first`, `X.d1`-`X.d4` at `T°`), `BALvl1B_trB_inv` (the invariants of the transfer graph of macro (b)),
-   `BALvl1B_ord_d4` (the weak order of `X.d4`, R1 has only `BASim_d4`).
+   `BALvl1B_ord_d4` (the weak order of `X.d4`; R1 has only `BASim_d4`), `BALvl1B_inv4` (the four invariants that `BAstepMono` reads, from `BASim_inv`), `BALvl1B_within_mono`
+   (the first group of macro (a)), `BALvl1B_dterms_ok` (the four terms `d1`-`d4` of macro (b), as `BALvl1B_TermOk`).
 2. **The macro claims**: `BALvl1B_within` (macro (a), outputs of `BAPGraph.withinOuts`), `BALvl1B_ggSplit` (macro (b), outputs of `BAPGraph.splitOuts`): the first-stage terms over `P`, the second-stage terms
    (`lw2`, `lw4`, `gg2`, `gg4`) over the transfer graph, whose invariants are those of `P` (`BASim_inv_trA`, `BALvl1B_trB_inv`).
 3. **Targets 4 and 5**: `baStepMono_holds : BAstepMono` (one case per constructor of `BAFrameStep`), `baLvl1StepGood_holds : BAlvl1StepGood` (the reduction `ba_lvl1StepGood_of_sim'` at `BAimg_holds`,
-   `baSim'_holds m`, `baStepMono_holds`, `baTwistInv_holds`).
-4. Compiled instances (the five R1 data of `BALvl1AInst`).
+   `baSim'_holds 0`, `baStepMono_holds`, `baTwistInv_holds`).
+4. Compiled instances (the five R1 data of `BALvl1AInst`; namespace `BALvl1BInst`).
 -/
 
 noncomputable section
@@ -305,6 +306,13 @@ example : (∃ Q ∈ ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true),
   obtain ⟨R, hR⟩ := List.exists_mem_of_length_pos (l := ((baPG baPC).splitOuts pC qC 0).map (BAPGraph.twist true true))
     (by simpa using (by decide +kernel : 0 < ((baPG baPC).splitOuts pC qC 0).length))
   exact ⟨⟨Q, hQ, baLvl1StepGood_holds _ _ locStepB normalB Q hQ⟩, ⟨R, hR, baLvl1StepGood_holds _ _ locStepC normalC R hR⟩⟩
+
+/-- **Target 2 (`ba_lvl1StepGood_of_sim'`) at an arbitrary `m`** and the twisted macro step `locStepB` (`within`, `P_B`): the four hypotheses of the reduction are the proved theorems `BAimg_holds`,
+`baSim'_holds m`, `baStepMono_holds`, `baTwistInv_holds`; every output of the step is normal and `BALvl1Good`, and there is one. -/
+example (m : ℂ) : ∃ Q ∈ ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true), Q.g.Normal ∧ BALvl1Good ((baPG baPB).twist true true).g Q.g := by
+  obtain ⟨Q, hQ⟩ := List.exists_mem_of_length_pos (l := ((baPG baPB).withinOuts pB).map (BAPGraph.twist true true))
+    (by simpa using (by decide +kernel : 0 < ((baPG baPB).withinOuts pB).length))
+  exact ⟨Q, hQ, ba_lvl1StepGood_of_sim' m BAimg_holds (baSim'_holds m) baStepMono_holds baTwistInv_holds _ _ locStepB normalB Q hQ⟩
 
 end BALvl1BInst
 
