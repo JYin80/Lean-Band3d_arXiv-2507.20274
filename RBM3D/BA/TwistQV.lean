@@ -8,7 +8,39 @@ import RBM3D.BA.EMn2BA
 import RBM3D.Induction.Contract
 
 /-!
-# BA stage TL, row TL2c (T2430): the quadratic variation of the twisted 2-loop, `BATwistSrc3` (draft header)
+# BA stage TL, row TL2c (T2430): the quadratic variation of the twisted 2-loop, `BATwistSrc3`
+
+Ticket T2430 (dispatcher V3, DECISIONS §241).  Paper: arXiv:2507.20274, the Schatten-norm trick
+of `(4.8)` (Lemma 4.1) applied to twisted words, the Ward identity `(2.53)`, the loop bounds
+`(2.89)`.  Proofs: `docs/tickets/T2398-TL-proofs.md`, Lemma T.11 (iii) (`:140-144`) and `(B.3)`
+(`:44`); design `docs/reports/T2413-design.md` §2, §4, §7, §8.
+
+**Target.**  `baTwistSrc3_holds (d) (R) : BATwistSrc3 d R`, the pin of `BA/TwistPins.lean:265`
+in the frame `BATwFrame` (`BA/TwistPins.lean:146`), for every regime `R`: for every `p, q ≥ 1`,
+uniformly in `v ∈ [s,t]`, `σ`, `b`, `c₁`, `c₂`,
+`Q_v(b) = (Ẽ⊗Ẽ)_v(b,b) ≺ η_v⁻¹ (W^{-d}B_{v,0})^{4-1/(2p)-1/q}`, and
+`|(Ẽ⊗Ẽ)(b,b')| ≤ (Q(b)Q(b'))^{1/2}`.  The inputs are the second conjunct of `twSteps`
+(`(I3) = (2.89)`) at `k ∈ {1, 2, 4, 2q, 4p}`, the Hermitian matrix `seqHflowBA` and
+`Im z_v = η_v > 0` (`BA/EMn2BA.lean`), and `Bctl ≤ 1` on `[s,t]` (from `STConStInd`: only
+`B_t < 1` is used).  Nothing else of `twSteps` is used (not Claim 4.5, not `Cd`).
+
+**Structure.**
+* §1 tools copied from `Induction/Contract.lean` (`private` there; source lines in the headers).
+* §2 the deterministic core, in the offsets of the block-product index `Vtx d L W`
+  (`x = (a, o)`, `τ_{c₁c₂}(c₁, o) = (c₂, o)`): `C₁ = G₁E_bG₂P_{c₁c₂}G₁` and
+  `C₂ = G₂P_{c₁c₂}G₁E_bG₂` of T.11 (iii) are `TwistQV_CC1`, `TwistQV_CC2` (up to `W^{-2d}`).
+  The Schatten trick is `TwistQV_rowbound_off` (from `rowbound_of_pow`:
+  `‖ρᵀA‖² ≤ tr[(AA^*)^p]^{1/p}‖ρ‖²`) with `tr[(AA^*)^p]` a loop (`TwistQV_Tbound`).
+  The chain `C₁` (`TwistQV_chain1_row`) is the two Schatten bounds on `𝒲_{c₁c₁}` (`L^{(2q)}`)
+  and on `E_c^{1/2}G₁^*E_{c₂}G₁E_c^{1/2}` (`L^{(4p)}`), read row by row, then Ward at the
+  summed index (`TwistQV_ward_sum`, `L^{(1)}`).  The chain `C₂` (`TwistQV_chain2_row`) is one
+  Schatten bound (`L^{(4p)}`), then `(2.53)` and the doubly twisted fold `(B.3)`
+  (`TwistQV_R2`: Cauchy-Schwarz over the offset pair, `L^{(2)}`, `L^{(4)}`).
+  `TwistQV_core` collects them; all powers of `W^d` cancel.
+* §3 the bridge from the carrier: `twDer`, `twEE` in the offsets (`S = 1` at BA).
+* §4 the exponent arithmetic (`TwistQV_arith`); §5 `≺` from finitely many `≺` (`TwistQV_dom`).
+* §6 the bound at the BA carrier and conjunct 1 (`TwistQV_src`); §7 conjunct 2 (`TwistQV_cs`).
+* §8 the target `baTwistSrc3_holds`; §9 the compiled instance at `d = 3`, `sz0`.
 -/
 
 set_option linter.style.longLine false
@@ -338,16 +370,9 @@ private lemma TwistQV_norm_Ward_const {z : ℂ} (hz : 0 < z.im) :
   simp
 
 
-/-! ### 1.7 Words are loops (`Induction/Contract.lean:1029-1065`, private there) -/
+/-! ### 1.7 Words are loops (`Induction/Contract.lean:1045-1065`, private there) -/
 
 section LoopTools
-
-private lemma TwistQV_foldr_eq_wd {ι κ : Type*} [Fintype ι] [DecidableEq ι] (G : Bool → Matrix ι ι ℂ)
-    (E : κ → Matrix ι ι ℂ) (l : List (Bool × κ)) :
-    l.foldr (fun p M => G p.1 * E p.2 * M) 1 = TwistQV_wd G E l := by
-  induction l with
-  | nil => simp
-  | cons p l ih => simp [ih]
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
@@ -429,7 +454,7 @@ private lemma TwistQV_rowbound_off (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a�
 
 /-- **The Schatten trace is a loop**: `tr[((P_{a₁} G(s) P_{a₂})(P_{a₁} G(s) P_{a₂})^*)^p]` is `(W^d)^{2p}` times the
 trace of the word `(G(s) E_{a₂} G(-s) E_{a₁})^p` of length `2p` (the proof of `hTb` in `part2_matrix`,
-`Induction/Contract.lean:927-950`, for the word of length `2`). -/
+`Induction/Contract.lean:932-966`, for the word of length `2`). -/
 private lemma TwistQV_Tbound {Hb : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ} (hH : Hb.IsHermitian) (Mx : ℕ → ℝ)
     (hM : ∀ Lst : List (Bool × Zd d L), ‖(TwistQV_wd (Gres Hb z) (Eblk d L W) Lst).trace‖ ≤ Mx Lst.length)
     (s : Bool) (a₁ a₂ : Zd d L) {p : ℕ} (hp : 1 ≤ p) :
@@ -764,8 +789,10 @@ private def TwistQV_CC1 (G₁ G₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ) (b c₁
 private def TwistQV_CC2 (G₁ G₂ : Matrix (Vtx d L W) (Vtx d L W) ℂ) (b c₁ c₂ : Zd d L) (y x : Vtx d L W) : ℂ :=
   ∑ o₂ : Fin (W ^ d), ∑ o₁ : Fin (W ^ d), G₂ y (c₁, o₂) * G₁ (c₂, o₂) (b, o₁) * G₂ (b, o₁) x
 
-/-- **The first chain, one row** (`T.11 (iii)`, `C₁`: Cauchy-Schwarz with `‖𝒜_{bb}‖`, the monotonicity `P^*𝒲P ≤ ‖𝒲_{c₁c₁}‖ E_{c₂}`,
-then the Schatten bounds `L^{(2q)}`, `L^{(4p)}`): two applications of `TwistQV_rowbound_off`. -/
+/-- **The first chain, one row** (`T.11 (iii)`, `C₁`).  The paper bounds `‖𝒜_{bb}‖ ≤ ‖𝒲_{c₁c₁}‖ ‖E_c^{1/2} G₁^* E_{c₂} G₁ E_c^{1/2}‖`
+(`𝒲 = G₂^* E_b G₂`, `P^*𝒲P ≤ W^{-d}‖𝒲_{c₁c₁}‖ E_{c₂}`) and then the two Schatten norms by `L^{(2q)}` and `L^{(4p)}`; here the
+same chain is read row by row: `Σ_{x∈[y]} |C₁(y,x)|² ≤ μ₂ μ₁ Σ_o |G₁(y,(b,o))|²`, two applications of `TwistQV_rowbound_off`
+(`μ₁` for the block `[b]×[c₁]` of `G₂`, `μ₂` for the block `[c₂]×[y]` of `G₁`), the offset reindexing `τ_{c₁c₂}` being free in `Vtx`. -/
 private lemma TwistQV_chain1_row {Hb : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ} (hH : Hb.IsHermitian) (Mx : ℕ → ℝ)
     (hM : ∀ Lst : List (Bool × Zd d L), ‖(TwistQV_wd (Gres Hb z) (Eblk d L W) Lst).trace‖ ≤ Mx Lst.length)
     (s₁ s₂ : Bool) (b c₁ c₂ : Zd d L) {p q : ℕ} (hp : 1 ≤ p) (hq : 1 ≤ q) (hT₁ : 0 ≤ ((W : ℝ) ^ d) ^ (2 * q) * Mx (2 * q))
@@ -948,7 +975,7 @@ private lemma TwistQV_shift_symm (n : ℕ) (c a : Zd d (sz.L n)) (o : Fin ((sz.W
   rw [h]
 
 /-- `Gres (blockMat M) z σ` read through `splitEquiv.symm` (`Path/LemDecCalEdif.lean:444`, private there). -/
-private lemma TwistQV_Gres_blockMat (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (s : Bool) :
+private lemma TwistQV_Gres_blockMat {n : ℕ} (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (s : Bool) :
     Gres (blockMat d (sz.L n) (sz.W n) M) z s =
       (Gres M z s).submatrix (splitEquiv d (sz.L n) (sz.W n)).symm (splitEquiv d (sz.L n) (sz.W n)).symm := by
   unfold Gres
@@ -1287,5 +1314,116 @@ private theorem TwistQV_src {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hN4 (by positivity)) hpos
 
 end BA
+
+/-! ## 7. Conjunct 2: Cauchy-Schwarz for the weight `W^{-d} S_{[x][y]}` (`S = 1` at BA) -/
+
+section CS
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- Weighted Cauchy-Schwarz: for `ρ ≥ 0`, `|Σ ρ a \overline{a'}| ≤ (Σ ρ |a|²)^{1/2} (Σ ρ |a'|²)^{1/2}`. -/
+private lemma TwistQV_cs_weighted {ι : Type*} [Fintype ι] (ρ : ι → ℝ) (hρ : ∀ i, 0 ≤ ρ i) (a a' : ι → ℂ) :
+    ‖∑ i, (ρ i : ℂ) * (a i * (starRingEnd ℂ) (a' i))‖ ≤ √(∑ i, ρ i * ‖a i‖ ^ 2) * √(∑ i, ρ i * ‖a' i‖ ^ 2) := by
+  have h1 : ‖∑ i, (ρ i : ℂ) * (a i * (starRingEnd ℂ) (a' i))‖ ≤ ∑ i, (√(ρ i) * ‖a i‖) * (√(ρ i) * ‖a' i‖) := by
+    refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun i _ => le_of_eq ?_)
+    rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_conj, Real.norm_of_nonneg (hρ i)]
+    have : √(ρ i) * ‖a i‖ * (√(ρ i) * ‖a' i‖) = (√(ρ i) * √(ρ i)) * (‖a i‖ * ‖a' i‖) := by ring
+    rw [this, Real.mul_self_sqrt (hρ i)]
+  refine h1.trans ?_
+  refine (Real.sum_mul_le_sqrt_mul_sqrt _ _ _).trans_eq ?_
+  congr 2
+  · refine Finset.sum_congr rfl fun i _ => ?_
+    rw [mul_pow, Real.sq_sqrt (hρ i)]
+  · refine Finset.sum_congr rfl fun i _ => ?_
+    rw [mul_pow, Real.sq_sqrt (hρ i)]
+
+/-- The diagonal case: `Σ ρ a \overline{a}` is the real number `Σ ρ |a|²`. -/
+private lemma TwistQV_cs_diag {ι : Type*} [Fintype ι] (ρ : ι → ℝ) (hρ : ∀ i, 0 ≤ ρ i) (a : ι → ℂ) :
+    ‖∑ i, (ρ i : ℂ) * (a i * (starRingEnd ℂ) (a i))‖ = ∑ i, ρ i * ‖a i‖ ^ 2 := by
+  have h : ∑ i, (ρ i : ℂ) * (a i * (starRingEnd ℂ) (a i)) = ((∑ i, ρ i * ‖a i‖ ^ 2 : ℝ) : ℂ) := by
+    push_cast
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Complex.mul_conj']
+  rw [h, Complex.norm_real, Real.norm_of_nonneg (Finset.sum_nonneg fun i _ => mul_nonneg (hρ i) (sq_nonneg _))]
+
+/-- **Conjunct 2 of `BATwistSrc3`**: `|(Ẽ⊗Ẽ)(b,b')| ≤ (Q(b) Q(b'))^{1/2}`, deterministic, for a carrier with `S = 1` (the weight
+`W^{-d} S_{[x][y]} = W^{-d} 1([x] = [y])` is non-negative real; `BA/FlowPins.lean:327`). -/
+private theorem TwistQV_cs (C : FlowFM sz) (n : ℕ) (hS : C.S n = 1) (v : ℝ) (ω : sz.SeqΩ) (σ : Fin 2 → Bool)
+    (b b' c₁ c₂ : Zd d (sz.L n)) :
+    ‖twEE C n v ω σ b b' c₁ c₂‖ ≤ √(‖twEE C n v ω σ b b c₁ c₂‖ * ‖twEE C n v ω σ b' b' c₁ c₂‖) := by
+  have hS1 : ∀ a a' : Zd d (sz.L n), C.S n a a' = if a = a' then 1 else 0 := fun a a' => by rw [hS, Matrix.one_apply]
+  set ρ : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) → ℝ := fun p =>
+    (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (if (split d (sz.L n) (sz.W n) p.1).1 = (split d (sz.L n) (sz.W n) p.2).1 then 1 else 0) with hρd
+  have hρ : ∀ p, 0 ≤ ρ p := fun p => by
+    rw [hρd]; dsimp only; split_ifs <;> positivity
+  have hexp : ∀ b₁ b₂ : Zd d (sz.L n), twEE C n v ω σ b₁ b₂ c₁ c₂ =
+      ∑ p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n), (ρ p : ℂ) *
+        (twDer C n v ω σ b₁ c₁ c₂ p.1 p.2 * (starRingEnd ℂ) (twDer C n v ω σ b₂ c₁ c₂ p.1 p.2)) := by
+    intro b₁ b₂
+    unfold twEE
+    rw [Fintype.sum_prod_type]
+    refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => ?_
+    rw [hS1, hρd]
+    push_cast
+    split_ifs <;> simp
+  rw [hexp b b', hexp b b, hexp b' b']
+  have h1 := TwistQV_cs_weighted ρ hρ (fun p => twDer C n v ω σ b c₁ c₂ p.1 p.2) (fun p => twDer C n v ω σ b' c₁ c₂ p.1 p.2)
+  rw [TwistQV_cs_diag ρ hρ (fun p => twDer C n v ω σ b c₁ c₂ p.1 p.2),
+    TwistQV_cs_diag ρ hρ (fun p => twDer C n v ω σ b' c₁ c₂ p.1 p.2),
+    Real.sqrt_mul (Finset.sum_nonneg fun p _ => mul_nonneg (hρ p) (sq_nonneg _))]
+  exact h1
+
+end CS
+
+/-! ## 8. The target -/
+
+/-- **`BATwistSrc3` at the BA carrier, for every regime `R`** (BA-TL row TL2c, `T.11 (iii)`, `docs/tickets/T2398-TL-proofs.md:140-144`;
+paper `(4.8)`, Lemma 4.1): in the frame `BATwFrame`, uniformly in `v ∈ [s,t]`, `σ`, `b`, `c₁`, `c₂`, for every `p, q ≥ 1`,
+`Q_v(b) = (Ẽ⊗Ẽ)_v(b,b) ≺ η_v⁻¹ (W^{-d} B_{v,0})^{4-1/(2p)-1/q}`, and `|(Ẽ⊗Ẽ)(b,b')| ≤ (Q(b) Q(b'))^{1/2}`.
+The constant is `𝔠d = 1/100`; `Cd`, `R`, `STConStInd` beyond `B_t < 1` are not used.  The only input of `twSteps` used is its
+second conjunct, `‖L^{(k)}‖ ≺ B^{k-1}` for `k ∈ {1, 2, 4, 2q, 4p}` (`(I3)`, `(2.89)`). -/
+theorem baTwistSrc3_holds (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : BATwistSrc3 d R := by
+  intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
+  refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
+  intro 𝔠 sz z hflow s t hs hst htT hR hcon hsteps
+  exact ⟨fun p q hp hq => TwistQV_src hκ sz hflow s t hs htT (by norm_num) hcon hsteps.2.1 p q hp hq,
+    fun n v ω σ b b' c₁ c₂ => TwistQV_cs (baFMz sz z) n rfl v ω σ b b' c₁ c₂⟩
+
+/-! ## 9. The compiled instance (`d = 3`, `sz0`, `flow_sz0`; the pattern of `BA/TwistPins.lean:759-781`) -/
+
+section Inst
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
+local notation "μ0" => Sizes.seqP (sz0.withLam 0)
+
+/-- Every deterministic hypothesis of a `BATwFrame` statement at `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `sz0`, `s ≡ 1/2`, `t ≡ 2/3`,
+regime `STAny` (the private `TwistPins_frame_inst`, `BA/TwistPins.lean:766`, re-derived). -/
+private theorem TwistQV_frame_inst {Q : ∀ sz : Sizes 3, FlowFM sz → Measure sz.SeqΩ → (ℕ → ℝ) → (ℕ → ℝ) → Prop}
+    (h : BATwFrame 3 STAny Q) {Cd : ℝ} (hC : 0 < Cd)
+    (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd) :
+    Q sz0 (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) := by
+  obtain ⟨c, hc, -, H⟩ := h le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) Cd hC
+  exact H (1 / 6) sz0 zSeq flow_sz0 _ _ (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) trivial
+    (RBM.Ind.Step1SetupInst.s1Setup_conStInd_const (by norm_num) (by norm_num) hc) hS
+
+/-- **The instance of `baTwistSrc3_holds 3 STAny`**: at the datum `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `λ = (2(n+1))^{-6}`),
+`(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` (`t0_sz0`), `STConStInd` by `s1Setup_conStInd_const`:
+conjunct 1 at the consumer point `(p, q) = (2, 2)` (exponent `13/4`), conjunct 2 at `n = 0`, `v = 1/2`, `σ = (-,+)`,
+`b = 0 ≠ b' = (1,0,0)`, `c₁ = 0 ≠ c₂ = (1,0,0)`.  The only hypothesis left is `twSteps` (Steps 1-4 at BA, owed by other gates). -/
+example {Cd : ℝ} (hC : 0 < Cd) (hS : twSteps (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) Cd) :
+    twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3)
+      (fun n v ω σ b c₁ c₂ => ‖twEE (baFMz sz0 zSeq) n v ω σ b b c₁ c₂‖) (fun _ _ => 1) (13 / 4) ∧
+    ∀ ω : sz0.SeqΩ, ∃ b b' c₁ c₂ : Zd 3 (sz0.L 0), b ≠ b' ∧ c₁ ≠ c₂ ∧
+      ‖twEE (baFMz sz0 zSeq) 0 (1 / 2) ω ![false, true] b b' c₁ c₂‖ ≤
+        √(‖twEE (baFMz sz0 zSeq) 0 (1 / 2) ω ![false, true] b b c₁ c₂‖ *
+          ‖twEE (baFMz sz0 zSeq) 0 (1 / 2) ω ![false, true] b' b' c₁ c₂‖) := by
+  have h := TwistQV_frame_inst (baTwistSrc3_holds 3 STAny) hC hS
+  have hL : Fact (1 < sz0.L 0) := ⟨by have := sz0.three_le_L 0; omega⟩
+  refine ⟨?_, fun ω => ⟨0, ![1, 0, 0], 0, ![1, 0, 0], fun hh => by simpa using congrFun hh 0,
+    fun hh => by simpa using congrFun hh 0, h.2 0 (1 / 2) ω ![false, true] 0 ![1, 0, 0] 0 ![1, 0, 0]⟩⟩
+  have h22 := h.1 2 2 (by norm_num) (by norm_num)
+  norm_num at h22
+  exact h22
+
+end Inst
 
 end RBM.BA
