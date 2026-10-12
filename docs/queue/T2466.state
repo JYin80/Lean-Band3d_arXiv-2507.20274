@@ -1,0 +1,4 @@
+state: audit-pass
+reason: preflight PASS, prover-max cebb7791, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 19:00:35 UTC 2026
+reports: docs/reports/T2466-prove.md, docs/reports/T2466-audit.md

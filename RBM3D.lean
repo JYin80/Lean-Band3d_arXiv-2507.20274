@@ -522,6 +522,8 @@ import RBM3D.Chain.ZeroModeGen
 import RBM3D.Chain.Step5CasesGen
 import RBM3D.Chain.Step34Gen
 import RBM3D.Chain.Step34GenTw
+import RBM3D.Graph.BAExp14d
+import RBM3D.Graph.BAExp14dB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
