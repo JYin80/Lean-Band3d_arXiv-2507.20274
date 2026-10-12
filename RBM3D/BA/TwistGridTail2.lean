@@ -29,7 +29,7 @@ set_option linter.unusedVariables false
 
 open private TwistGridTail_Zv TwistGridTail_Yv TwistGridTail_aSeq TwistGridTail_martInc_ae TwistGridTail_Z_tail
   TwistGridTail_Y_tail TwistGridTail_eta_pos TwistGridTail_Hh_herm TwistGridTail_norm_twEEM from RBM3D.BA.TwistGridTail
-open private difRepTail_K_mul_step difRepTail_gridTime_le difRepTail_gridTime_nonneg difRepTail_tendsto_rpow_exp
+open private difRepTail_K_mul_step difRepTail_gridTime_le difRepTail_tendsto_rpow_exp
   from RBM3D.Path.DifREP2
 
 open MeasureTheory ProbabilityTheory Filter

@@ -14,21 +14,26 @@ import RBM3D.Induction.GridAssemblyN
 import RBM3D.Induction.AzumaProxyN2
 
 /-!
-# BA stage TL, row TL2a3 (T2438): the martingale tail of `twMart` with the quadratic variation `twEEk`
+# BA stage TL, row TL2a3 (T2438): the martingale tail of `twMart` with the QV `twEEk`
 
-Ticket `docs/tickets/T2438.md`; clause (iii) of 4 (b) of `docs/tickets/T2428-amend-1.md`; pin `BATwistGridTail`
-(`RBM3D/BA/TwistGrid2.lean:239`); route of `RBM3D/Path/DifREP2.lean` §7-§12 (`gridRepTailN_holds`, Azuma with a random
-predictable proxy, DECISIONS §7, paper-delta D90), re-proved for the twisted family `L̃_{σ,(b;c₁,c₂)}` of
-`RBM3D/BA/TwistGrid.lean` with its gradient (D.2) `twDerM`.
+Ticket `docs/tickets/T2438.md`; clause (iii) of 4 (b) of `docs/tickets/T2428-amend-1.md`; pin
+`BATwistGridTail` (`RBM3D/BA/TwistGrid2.lean:239`); route of `RBM3D/Path/DifREP2.lean` §7-§12
+(`gridRepTailN_holds`, Azuma with a random predictable proxy, DECISIONS §7, paper-delta D90),
+re-proved for the twisted family `L̃_{σ,(b;c₁,c₂)}` of `RBM3D/BA/TwistGrid.lean` with its gradient
+(D.2) `twDerM`.
 
-* `baTwistGridTail_holds d : BATwistGridTail d` for every `d` (no `3 ≤ d`).
-* `TwistGridTail_condMGF_Z`: the conditional mgf of `Re`, `Im` of `Σ_b κ_b Z_b` (general weights `κ`) with the
-  random proxy `Δ · Re Σ_{b,b'} κ_b conj κ_{b'} twEEM(b,b')` (twin of `difRepTail_condMGF_Z`).
-* the variance identity `Σ_c gvar_c |Σ_b κ_b ∂_c L̃_b|² = Re Σ_{b,b'} κ_b conj κ_{b'} twEEM(b,b')` (constant `1`).
+* `baTwistGridTail_holds d : BATwistGridTail d` for every `d` (no `3 ≤ d`); in
+  `RBM3D/BA/TwistGridTail2.lean`.
+* `TwistGridTail_condMGF_Z`: the conditional mgf of `Re`, `Im` of `Σ_b κ_b Z_b` (general weights
+  `κ`) with the random proxy `Δ · Re Σ_{b,b'} κ_b conj κ_{b'} twEEM(b,b')` (twin of
+  `difRepTail_condMGF_Z`).
+* the variance identity `Σ_c gvar_c |Σ_b κ_b ∂_c L̃_b|² = Re Σ_{b,b'} κ_b conj κ_{b'} twEEM(b,b')`
+  (constant `1`).
 
-Every helper is `private` or prefixed `TwistGridTail_`; private helpers of the merged band files (`Path/DifREP2`,
-`Path/StepDecompLoop`, `Path/QVIdentity`, `Induction/StepDecompN`, `Induction/GridAssemblyN`) are reached through
-`open private` (the pattern of `BA/Step2BA.lean:35`), not copied.
+Every helper is `private` or prefixed `TwistGridTail_`; private helpers of the merged band files
+(`Path/DifREP2`, `Path/StepDecompLoop`, `Path/QVIdentity`, `Induction/StepDecompN`,
+`Induction/GridAssemblyN`) are reached through `open private` (the pattern of
+`BA/Step2BA.lean:35`), not copied.
 -/
 
 set_option linter.style.longLine false
@@ -37,14 +42,14 @@ set_option linter.unusedVariables false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
-open private difRepTail_doob_tail difRepTail_condExp_exp difRepTail_memLp_two_of_pow4 difRepTail_trace_eq
-  difRepTail_linTrVar_le difRepTail_gridTime_nonneg difRepTail_gridTime_le difRepTail_gridTime_succ
-  difRepTail_K_mul_step difRepTail_measurable_linTr_uncurry difRepTail_standardBorelMatrix difRepTail_eventually_Z
+open private difRepTail_doob_tail difRepTail_condExp_exp difRepTail_trace_eq
+  difRepTail_linTrVar_le difRepTail_gridTime_le difRepTail_gridTime_succ
+  difRepTail_K_mul_step difRepTail_measurable_linTr_uncurry difRepTail_standardBorelMatrix
   difRepTail_gridTime_succ from RBM3D.Path.DifREP2
 open private StepDecompLoop_word_jets StepDecompLoop_word_jet1 StepDecompLoop_hasDerivAt_Gres
-  StepDecompLoop_fderiv_of_line StepDecompLoop_fderiv2_of_line StepDecompLoop_isHermitian_add_realSmul
-  StepDecompLoop_trace_hasDerivAt StepDecompLoop_trCLM StepDecompLoop_hasDerivAt_line StepDecompLoop_nmul
-  StepDecompLoop_gres_false StepDecompLoop_nadd from RBM3D.Path.StepDecompLoop
+  StepDecompLoop_fderiv2_of_line StepDecompLoop_isHermitian_add_realSmul
+  StepDecompLoop_trace_hasDerivAt StepDecompLoop_trCLM StepDecompLoop_nmul
+  StepDecompLoop_gres_false from RBM3D.Path.StepDecompLoop
 open private QVIdentity_coord_sum QVIdentity_pair QVIdentity_svarF_cast QVIdentity_sum_swap4 from RBM3D.Path.QVIdentity
 open private StepDecompN_integrable_phi StepDecompN_measurable_AbCN from RBM3D.Induction.StepDecompN
 open private gridAsm_measurable_coord from RBM3D.Induction.GridAssemblyN
