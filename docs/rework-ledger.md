@@ -17,3 +17,5 @@
 | T2452 | 2026-10-12 13:55 UTC (6bdc5a3) | prover-max（设计单） | Sonnet 5.5（prover-max） | 是 | BA-U U-D 覆盖普查（只出报告）：一次 PASS；报告 207 行，探针 371 行不合并；T 加两行生产者 P1、P2 |
 | T2458 | 2026-10-12 15:05 UTC (1debc23) | prover-hard | Sonnet 5.5 effort xhigh | 是 | U U6：1a → 1b → 审核 PASS 第一轮；新 `Chain/Step5Gen` 666 行（新增文件）；目标 11 挪到 U4s3 |
 | T2450 | 2026-10-12 15:37 UTC (ab5746d) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4d2b：1a（S3A-C5）→ 1b → 审核 PASS 第一轮；新 `Graph/BAS3Close` 1,953 + `BAS3CloseB` 837 + `BAS3CloseC` 1,661 行；S3 闭包完成 |
+| T2454 | 2026-10-12 15:56 UTC (aa38bde) | prover-hard（探针步骤 prover-max） | Sonnet 5.5 effort xhigh | 否 | ST T7 → T7a：设计门 → 1a-audit RETURN 要签字（(i)、(vi)、(vii) 缺；登记藏了 `STScaleInvgL`）→ H248 签字 → 补交 → 第二轮确认拆成 T7a/T7b（中心 1,962）→ 1b → 审核 PASS；新 `Chain/DecayGen` 657 + `DecayGenTw` 80 行；目标 8–11 归 T7b |
+| T2455 | 2026-10-12 16:53 UTC (62eed82) | prover-hard（探针步骤 prover-max） | Sonnet 5.5 effort xhigh | 否 | U X1a：设计门 → 1a-audit RETURN（`STGijDecgL` 只覆盖一种电荷；X1-C2/C3 表缺）→ 规则 (B) 修补 → 第二轮 PASS → 1b 带 UBA-C1 重跑 → 审核 PASS；原地改 6 个 `Evolution/` 文件 + 新 `Chain/CltGen` 267 行；登记加五行 |

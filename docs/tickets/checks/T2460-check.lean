@@ -152,9 +152,10 @@ noncomputable section
 namespace RBM.BA
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-- **Target 1** (content binding): the three identities at `c₁ = c₂ = a 1` (H1 observable, H2 drift, H3 quadratic variation), for
-the grid indices `k ≤ K n`, eventually in `n` along a BA flow.  Verbatim the U-D probe's `T2452_Bridge`
-(`t/T2452:RBM3D/Probe/T2452Pins.lean:229-239`); the only content that `BATwistGridMartAt` lacks for `STGridMartAtgL`. -/
+/-- **Target 1** (content binding): the three identities at `c₁ = c₂ = a 1` (H1 observable, H2 drift, H3′ quadratic variation, an inequality since Amend 1), for
+the grid indices `k ≤ K n`, eventually in `n` along a BA flow.  The U-D probe's `T2452_Bridge`
+(`t/T2452:RBM3D/Probe/T2452Pins.lean:229-239`) with its third conjunct amended (T2460 Amend 1): the equality H3 is false
+(cross terms in `twEEk`), the inequality with the slot count 2 is sharp. -/
 def T2460_Bridge (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ K : ℕ → ℕ, (∀ n, K n ≠ 0) →
@@ -163,9 +164,9 @@ def T2460_Bridge (d : ℕ) : Prop :=
             STgAg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) s t K n σ a k ω ∧
           twDriftk sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ (a 0) (a 1) (a 1) k ω =
             STgDriftg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) s t K n σ a k ω ∧
-          twEEk sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ (a 0) (a 1) (a 1) k ω =
-            STEEMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (gridTime s t K n k)
-              ((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Hpath s t K n k ω) σ a
+          ‖twEEk sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n σ (a 0) (a 1) (a 1) k ω‖ ≤
+            2 * ‖STEEMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (gridTime s t K n k)
+              ((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Hpath s t K n k ω) σ a‖
 
 /-- **Target 2** (content binding): the untwisted BA grid pin, `STGridMartgL` (`Chain/Step2Gen.lean:882`) at the BA matrix carrier
 along the flow; the conclusion of the probe's `T2452_bridge_holds` (`:308-309`) and U-D D6's `baGridMart_holds` (`:193`).  For
