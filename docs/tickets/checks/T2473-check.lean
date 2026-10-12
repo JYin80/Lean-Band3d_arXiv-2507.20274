@@ -309,8 +309,9 @@ example : Prop := ∀ {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ),
   (∀ (σ σ' : Bool) (v w : ℝ), 0 ≤ w → w < 1 → ∀ a b : Zd d (sz.L n),
     Step2Gen_uKer C n (!σ) (!σ') v w a b = starRingEnd ℂ (Step2Gen_uKer C n σ σ' v w a b))
 
--- Shape (target 6, `SubGaussFormNg`): `SubGaussFormN` (`Induction/StepDecompN.lean:206`) at the carrier law `Cm.Pp`.
-example : Prop := ∀ {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz) (j : ℕ) (τ : PathΩ sz → ℕ) (F : PathΩ sz → ℂ) (c : ℝ≥0),
+-- Shape (target 6, `SubGaussFormNg`; target 6 is dropped by the dispatcher answers, T2474 target 4 owns it; kept as a reading):
+-- `SubGaussFormN` (`Induction/StepDecompN.lean:206`) at the carrier law `Cm.Pp` (a probability measure, as `StoppedAzumaNg`).
+example : Prop := ∀ {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz) [IsProbabilityMeasure Cm.Pp] (j : ℕ) (τ : PathΩ sz → ℕ) (F : PathΩ sz → ℂ) (c : ℝ≥0),
   HasCondSubgaussianMGF (filt sz j) ((filt sz).le j) (fun ω => ({ω' | j < τ ω'}.indicator F ω).re) c Cm.Pp ∧
   HasCondSubgaussianMGF (filt sz j) ((filt sz).le j) (fun ω => ({ω' | j < τ ω'}.indicator F ω).im) c Cm.Pp
 

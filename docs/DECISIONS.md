@@ -2559,3 +2559,8 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (6) **发 `REQ-2026-10-12-2034-GcloseMN`**：A 部分 stage G 关闭（2254 Q2 五条，T2468 的合并名字；`STGijGEXgL` 的 BA 负责人 T1-BA，§272；G5c 的 1b 放弃，§234；登记 `:148`、`:150` 改为"在 `baFMz` 上已证"）；B 部分 M/N 按 (5) 部分开阶段；C 部分计数与 BA 全程预计（1852 要求随下一份开阶段 REQ 带上）。
 - (7) 计数：BA 144（T2474；含 P1b-2、L3b2b）；G/E 13 / 19.5（G 关闭）；T 19 / 34.5；U 8 / 42，计划 29；L 39 / 50，计划 43 行 = 45 张；V 0 / 12；M/N 待开（提议旗标 15）。
 - (8) 在跑：T2467、T2470、T2471、T2472；T2469 等签字后进 1b。排队：**T2469（L3b2a 1b）→ T2474 → L3b2b（叠在 L3b2a 后）→ T2473（等 T2474 合并）**。下一张票号 T2475，下一节 §277，下一条 H258。待写：X1b、U5a、U5b、U1s2、U2（等 T5s2、T7b）、U3s2–U3s4（等 T4s2、T5s2、T7b）、T1（等 T7b）、L4b2、L3d1、L3d2b（等 T2472 1a-audit）、L5（孪生价）；M/N 的 C5g、N3a、N3b（REQ 通过后）；阶段 L 到 40 张时的 REQ。
+
+## §277 — T2473 检查文件修正（总调度 V3，2026-10-12 20:46 UTC）
+
+- (1) H257 (2)：T2473 的检查在 `main` c986735f 上 exit 1，两处错误都在 `:314-315`（`HasCondSubgaussianMGF … Cm.Pp` 要 `IsFiniteMeasure Cm.Pp`）。那是目标 6（`SubGaussFormNg`）的形状行，目标 6 已按 §276 (3) 取消；调度把这行的绑定改成 `(Cm : Step2Mat sz) [IsProbabilityMeasure Cm.Pp]`（与 `StoppedAzumaNg` 一致），注明只作读法。钉文与其他形状都不变。T2474 的检查 exit 0。T2473 本来就等 T2474 合并，不受影响。H258 让中枢重编。
+- (2) T2471 的 1b（P1b-1）在 H257 (4) 之前已开；不定义 T2474 名字的说明进它的审核提示（中枢在 1b → 审核边界交）。
