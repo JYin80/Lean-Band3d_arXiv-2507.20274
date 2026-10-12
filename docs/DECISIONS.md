@@ -2201,3 +2201,9 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **合并**：T2432（L3a2，8a05c54，`Graph/BASymm2` 554 行）；**T2436（TL1b，4b3bb8a，`BA/TwistAvgB` 504 行）——`baTwistAvgProd_holds` 成立，TL1 在 BA 载体上证完**（owed 行 `BATwistAvgLaw` 仍到 BA-V 才退）；**T2423（R1，b16ad61，`Graph/BASim` 1,979 + `BASim2` 1,928 + `BASim3` 1,962）**。TL 已合并 8 / 13；L 阶段已合并到 R1、L3a1、L3a2、L3b3′ 等。
 - (3) **T2440 = L3a3 `BALvl1A`**（BA 107；L 23 / 50；`prover-hard`；`Graph/BALvl1A`，必要时 `BALvl1A2`）：`BALocStep`（五种）、打包、`BAlvl1StepIdentity` 与 `baLvl1StepIdentity_holds`、`BAReach`；T2395 探针里 `outsOf`/`withinOuts`/`splitOuts`/`BAFrameStep`/`BAPGraph.twist` 已由 R1 合并（逐字相同），只抄 `BALocStep`、`BAlvl1StepIdentity`、`BAReach`。不需探针步骤。签字附注：钉文比探针强（不带 `P.g.Normal`、`BASelf`、`3 ≤ L`），1a 若发现要前提就作钉文修补报告；`BAExpandId` 的私有可积引理用 `BALvl1A_` 词干拷贝。S′ 关键路径，排在等待队列最前（L3b4′ 等它）。
 - (4) 下一张票号 T2441，下一节 §248，下一条 H229。还没写：TL2d（等 TL2a2–4）、TL2e、G7、带状侧 T 行、L3a4（等 L3a3）、L3b4′（等 L3a3）、L3c3b（等 L3c3a）。
+
+## §248 — TL2a2 合并；T2434（L4b1）1a 卡在 S3 的根：签字放行（Amend 1），缺口记给后继行 L4d2，短 REQ（总调度 V3，2026-10-12 04:51 UTC）
+
+- (1) **T2437（TL2a2）合并 e3f59c2**：新 `BA/TwistGridRem` 1,078 + `TwistGridRem2` 494（`baTwistGridRem_holds`，C₀ = 11）；审核一次 PASS。TL 已合并 9 / 13。
+- (2) **T2434（L4b1）1a BLOCKED**：展开恒等式闭合，S2 每族都有路线；但 S3 的四族（`D1X`、`D2X`、`T3C-tr_0/1`）的根带 `M` 点边（`mdot ≠ []`），不在 L4d 的 `baG5Graph`、L4e-C 的闭包表、L4c1 的叶子界的范围内。**签字（Amend 1）**：钉文照 1a 写的保留（S3 的钉文只涉及四族，不需要根）；本行继续证恒等式 `baExp14b_expand_holds`；S2 的证明归 L4b2，S3 的证明归 L4g；三个根（`baT3CtrGraph k`、`baD1XGraph`、`baD2XGraph`）的恒等式、闭包和叶子界记给后继行，暂名 **L4d2**（在 L4e-C 之后），写 L4c1/L4g 时定。P3（`|𝔼X_c| ≺ 𝔟^{3/2}`）由 L4b2 重证。按 0243 O4 这是计划缺行，不是路线失败；仍发短 REQ `REQ-2026-10-12-0451-L4S3` 请监督确认（Q1 性质、Q2 加 L4d2 还是并入 L4c1/L4g）。不阻塞任何在跑的票。
+- (3) 下一张票号 T2441，下一节 §249，下一条 H230。

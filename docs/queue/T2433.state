@@ -1,4 +1,4 @@
 state: proving
-reason: rule (H) rerun after the API session limit: 1a PASS; the probe step died before committing; rerun wf_4e090630-aeb (probe prover-max → 1a-audit → 1b prover-max → auditor)
-updated: Mon Oct 12 03:12:10 UTC 2026
+reason: 1a PASS, probe f275032, 1a-audit RETURN (route for the concrete part undecided; file 2 would break the 2,000 stop line; no sign-off); one rule-(B) repair: wf_93181b6c-7c9, route measurement step prover-max (scratch only, (a‴)) → (a′) by preflight → 1a-audit round 2 → 1b prover-max → auditor
+updated: Mon Oct 12 04:59:11 UTC 2026
 reports: docs/reports/T2433-prove.md, docs/reports/T2433-1a-audit.md, docs/reports/T2433-audit.md

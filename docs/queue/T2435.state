@@ -1,0 +1,4 @@
+state: proving
+reason: started (H225/H227, H12): workflow wf_0d648be1-12e, 1a design gate → probe prover-max (RBM3D/Probe/T2435Pins.lean) → 1a-audit → 1b prover-hard → auditor; a 1a-audit sign-off request stops before 1b (H183 (3)); branch t/T2435 from main 0b55de5
+updated: Mon Oct 12 04:56:58 UTC 2026
+reports: docs/reports/T2435-prove.md, docs/reports/T2435-1a-audit.md, docs/reports/T2435-audit.md
