@@ -5,3 +5,4 @@
 | T2443 | 2026-10-12 09:17 UTC (9eaf866) | prover-hard（探针步骤 prover-max） | Sonnet 5.5 effort xhigh | 是 | BA-L L3b4′：1a PASS → 探针步骤中途 API 限额中断，08:12 按规则 (H) 重跑 → 1a-audit PASS（O2 形状估价 1,200–1,600 行，留作假设，新开一行）→ 1b → 审核 PASS；新 `Graph/BAStepS` 523 行；探针 393 行留在 t/T2443 |
 | T2434 | 2026-10-12 09:36 UTC (74af906) | prover-max（探针步骤 prover-max） | Sonnet 5.5（prover-max） | 否 | BA-L L4b1：S3 根缺口 → Amend 1（S3 根欠 L4d2，监督 0554 范围 HOLD）→ 恢复探针 → 1a-audit → 1b 中途 API 限额中断，08:12 按规则 (H) 重跑 → 审核 PASS 第一轮；中枢会话合并时死掉，新会话补完；新 `Graph/BAExp14b` 998 + `BAExp14bB` 1,076 行 |
 | T2444 | 2026-10-12 09:50 UTC (23a4e69) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3c3b：1a → 1b 中途 API 限额中断，09:37 按规则 (H) 重跑 → 审核 PASS；新 `Graph/BAZetaExp` 591 行 |
+| T2446 | 2026-10-12 10:21 UTC (7f23e96) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3a5：1a → 1b → 审核 PASS 第一轮；新 `Graph/BALvl1C` 627 行（备用文件 `BALvl1C2` 没用上） |
