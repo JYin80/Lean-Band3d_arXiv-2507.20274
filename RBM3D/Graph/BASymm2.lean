@@ -426,6 +426,129 @@ theorem baTwist_gg_scalingOrderG (c t : Bool) (Γ : BAGraph Ex Ix) (p q : SEdge 
 
 end OutForms
 
+/-! ## 5. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `flowP`) -/
+
+namespace BASymm2Inst
+
+open RBM.BA.CouplingWindowInst
+
+/-- The graph of the instances: external `v0 = inl 0`, `v1 = inl 1`, internal `x = inr 0`, `y = inr 1`.  Solid edges (all circled, so the graph is normal):
+the **red** circled self-loop `Ḡ̊_{v0 v0}`, the **red** circled in-edge `Ḡ̊_{v1 x}` of `x`, the **red** circled out-edge `Ḡ̊_{x v0}` of `x` and the blue circled
+`G̊_{x y}`; waved edges: the coloured `S⁺_{v0 v1}` and the black `S_{x y}`; the `×`-dotted edge `v0 v1`; the `Ψ`-dotted edge `Ψ_{v1 y}`; the `M`-dotted
+edge `M_{x y}`; the coefficient `1 + i/2`. -/
+def G1 : BAGraph (Fin 2) (Fin 2) where
+  solid := [⟨false, true, Sum.inl 0, Sum.inl 0⟩, ⟨false, true, Sum.inl 1, Sum.inr 0⟩, ⟨false, true, Sum.inr 0, Sum.inl 0⟩,
+    ⟨true, true, Sum.inr 0, Sum.inr 1⟩]
+  waved := [⟨true, true, Sum.inl 0, Sum.inl 1⟩, ⟨false, true, Sum.inr 0, Sum.inr 1⟩]
+  dotted := [⟨false, Sum.inl 0, Sum.inl 1⟩]
+  coeff := 1 + (1 / 2 : ℂ) * Complex.I
+  psi := [⟨Sum.inl 1, Sum.inr 1⟩]
+  mdot := [⟨true, Sum.inr 0, Sum.inr 1⟩]
+
+theorem G1_normal : G1.Normal := ⟨by decide, by decide⟩
+
+/-- The counters of `G1`: `n_S = 4`, `n_W = 2`, `n_A = 0` (`Ψ`- and `M`-dotted edges join `x`, `y` to the atom of `v1`), `n_M = 0`, so `ord G1 = 8`. -/
+theorem G1_counts : (G1.nS, G1.nW, G1.nA, G1.nM) = (4, 2, 0, 0) ∧ G1.scalingOrder = 8 := by decide
+
+/-- (a) the red self-loop `Ḡ̊_{v0 v0}` with the other three edges. -/
+def Pa : SEdge (Fin 2 ⊕ Fin 2) × List (SEdge (Fin 2 ⊕ Fin 2)) :=
+  (⟨false, true, Sum.inl 0, Sum.inl 0⟩, [⟨false, true, Sum.inl 1, Sum.inr 0⟩, ⟨false, true, Sum.inr 0, Sum.inl 0⟩,
+    ⟨true, true, Sum.inr 0, Sum.inr 1⟩])
+
+/-- (b), (c) the red in-edge `Ḡ̊_{v1 x}` of `x` with the other three edges. -/
+def Pb : SEdge (Fin 2 ⊕ Fin 2) × List (SEdge (Fin 2 ⊕ Fin 2)) :=
+  (⟨false, true, Sum.inl 1, Sum.inr 0⟩, [⟨false, true, Sum.inl 0, Sum.inl 0⟩, ⟨false, true, Sum.inr 0, Sum.inl 0⟩,
+    ⟨true, true, Sum.inr 0, Sum.inr 1⟩])
+
+/-- (c) the second edge of the red pair `Ḡ̊_{v1 x}`, `Ḡ̊_{x v0}`: the red out-edge of `x`. -/
+def Qc : SEdge (Fin 2 ⊕ Fin 2) × List (SEdge (Fin 2 ⊕ Fin 2)) :=
+  (⟨false, true, Sum.inr 0, Sum.inl 0⟩, [⟨false, true, Sum.inl 0, Sum.inl 0⟩, ⟨true, true, Sum.inr 0, Sum.inr 1⟩])
+
+/-- The memberships (`SEdge` has no `DecidableEq`, so `simp` unfolds `lwSplit` instead of `decide`). -/
+theorem Pa_mem : Pa ∈ lwSplit G1.solid := by simp [lwSplit, Pa, G1]
+theorem Pb_mem : Pb ∈ lwSplit G1.solid := by simp [lwSplit, Pb, G1]
+theorem Qc_mem : Qc ∈ lwSplit Pb.2 := by simp [lwSplit, Pb, Qc]
+
+/-- Two nonempty lists over different vertex types, for the instance of target 2 (`G0` of `BASymm1Inst`: five vertices; `G1`: four). -/
+def A0 : List (BAGraph (Fin 2) (Fin 3)) := [BASymm1Inst.G0, BASymm1Inst.G0.twist true false]
+def B0 : List (BAGraph (Fin 2) (Fin 2)) := [G1, G1.twist false true]
+
+/-- **Target 1** at `G1`: the twist `(true, true)` is an involution and moves `G1` (the red self-loop becomes blue). -/
+example : (G1.twist true true).twist true true = G1 ∧ G1.twist true true ≠ G1 := by
+  refine ⟨BAGraph.twist_invol true true G1, fun h => ?_⟩
+  have := congrArg (fun Γ : BAGraph (Fin 2) (Fin 2) => (Γ.solid.map SEdge.σ)) h
+  simp [G1, BAGraph.twist, lwSymmTwistG, LGraph.conj, LGraph.transpose, SEdge.conj, SEdge.transpose] at this
+
+/-- **Target 2** at two nonempty lists (`A0` of two graphs over `Fin 2`, `Fin 3`; `B0` of two graphs over `Fin 2`, `Fin 2`), the twist `(true, true)`
+(conjugate and transpose): the expectation of the twisted sums is the conjugate of that of the sums. -/
+example :
+    ∫ ω, baSum (A0.map (BAGraph.twist true true)) (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 +
+        baSum (B0.map (BAGraph.twist true true)) (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) =
+      (if true then (star : ℂ → ℂ) else id)
+        (∫ ω, baSum A0 (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 + baSum B0 (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0
+          ∂(PF 3 4 2 0)) :=
+  baTwistSum_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 true true A0 B0 BASymm1Inst.ℓ0
+
+/-- `baTwistIntegral_gen` at a nonlinear functional of the data (a product of two list sums), the twist `(false, true)`. -/
+example :
+    ∫ ω, lwSymmCj false ((fun D => baSum A0 D BASymm1Inst.ℓ0 * baSum B0 D BASymm1Inst.ℓ0)
+        (BASymm1_dataTr (BAlwData 3 4 2 g0P EP t0P m0P ω) true)) ∂(PF 3 4 2 0) =
+      lwSymmCj false (∫ ω, (fun D => baSum A0 D BASymm1Inst.ℓ0 * baSum B0 D BASymm1Inst.ℓ0) (BAlwData 3 4 2 g0P EP t0P m0P ω) ∂(PF 3 4 2 0)) :=
+  baTwistIntegral_gen 3 4 2 g0P EP t0P m0P false true (fun D => baSum A0 D BASymm1Inst.ℓ0 * baSum B0 D BASymm1Inst.ℓ0)
+
+/-- **Target 3 (a)** at the red self-loop `Pa`, `c = true` (`t'` is immaterial for a loop): `lem_lweight` at the frame `G1.twist true t'`. -/
+example (t' : Bool) :
+    ∫ ω, G1.val (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, baSum (((G1.twist true t').lw2 (lwSymmTwistP true t' Pa)).map (BAGraph.twist true t')) (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 +
+        baSum (((G1.twist true t').lw4 (lwSymmTwistP true t' Pa)).map (BAGraph.twist true t')) (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0
+          ∂(PF 3 4 2 0) :=
+  (baTwistFormE_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 G1 BASymm1Inst.ℓ0 true t').1
+    Pa Pa_mem (by cases t' <;> rfl) rfl rfl
+
+/-- **Target 3 (b)** at the red in-edge `Pb` of `x`, `(c, t') = (true, true)`: the twisted edge is the blue out-edge `G̊_{x v1}`; `lanlw` at the frame. -/
+example :
+    ∫ ω, G1.val (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, baSum ((BAGraph.lanlwTerms (G1.twist true true) (lwSymmTwistP true true Pb)).map (BAGraph.twist true true))
+        (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) :=
+  (baTwistFormE_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 G1 BASymm1Inst.ℓ0 true true).2.1
+    Pb Pb_mem rfl rfl
+
+/-- **Target 3 (c)** at the transposed red pair `Ḡ̊_{v1 x}`, `Ḡ̊_{x v0}` (`p = Pb`, `q = Qc`), `(c, t') = (true, true)`: after the twist the pair is the blue
+`G̊_{x v1}`, `G̊_{v0 x}` (an out- and an in-edge of `x`); `GGGamma` (`gg2`, `gg4`) at the frame. -/
+example :
+    ∫ ω, G1.val (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) =
+      ∫ ω, baSum (((G1.twist true true).gg2 (lwSymmTwistP true true Pb) (lwSymmTwistP true true Qc)).map (BAGraph.twist true true))
+          (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 +
+        baSum (((G1.twist true true).gg4 (lwSymmTwistP true true Pb) (lwSymmTwistP true true Qc)).map (BAGraph.twist true true))
+          (BAlwData 3 4 2 g0P EP t0P m0P ω) BASymm1Inst.ℓ0 ∂(PF 3 4 2 0) :=
+  (baTwistFormE_holds 3 4 2 (by norm_num) g0P EP t0P m0P flowP_data.2.2 flowP_data.1.le flowP_data.2.1 G1 BASymm1Inst.ℓ0 true true).2.2
+    Pb Pb_mem Qc Qc_mem rfl rfl rfl rfl rfl
+
+/-- The frame lists of the instances are nonempty: `lanlw` has `1 + |lwSplit Pb.2| = 4` terms, `lw2` has `4`, `gg2` has `5 + |lwSplit Qc.2| = 7`. -/
+example : ((BAGraph.lanlwTerms (G1.twist true true) (lwSymmTwistP true true Pb)).map (BAGraph.twist true true)).length = 4 ∧
+    (((G1.twist true true).lw2 (lwSymmTwistP true true Pa)).map (BAGraph.twist true true)).length = 4 ∧
+    (((G1.twist true true).gg2 (lwSymmTwistP true true Pb) (lwSymmTwistP true true Qc)).map (BAGraph.twist true true)).length = 7 := by
+  refine ⟨rfl, rfl, rfl⟩
+
+/-- **Target 4** at `G1`: the twisted outputs keep the counters, the order and the monotonicity data. -/
+example := ba_twist_inv_out true true G1
+example := baTwist_lanlw_ord true true G1 Pb Pb_mem rfl rfl
+example := baTwist_lanlw_scalingOrderG true true G1 Pb Pb_mem rfl rfl G1_normal
+example := baTwist_lw_raw true true G1 Pa Pa_mem rfl rfl
+example := baTwist_lw_mono true true G1 Pa Pa_mem rfl rfl
+example := baTwist_lw_scalingOrderG true true G1 Pa Pa_mem rfl rfl G1_normal
+example := baTwist_gg_raw true true G1 Pb Qc Pb_mem Qc_mem
+example := baTwist_gg_mono true true G1 Pb Qc Pb_mem Qc_mem
+example := baTwist_gg_scalingOrderG true true G1 Pb Qc Pb_mem Qc_mem G1_normal
+
+/-- The orders at the instance: `ord G1 = 8`, so every twisted term of `lanlw` has `ord = 9` (`baTwist_lanlw_ord` and `G1_counts`). -/
+example : ∀ Δ ∈ (BAGraph.lanlwTerms (G1.twist true true) (lwSymmTwistP true true Pb)).map (BAGraph.twist true true), Δ.scalingOrder = 9 := by
+  intro Δ hΔ
+  rw [baTwist_lanlw_ord true true G1 Pb Pb_mem rfl rfl Δ hΔ, G1_counts.2]
+  norm_num
+
+end BASymm2Inst
+
 end RBM.Graph
 
 end
