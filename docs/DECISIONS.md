@@ -2310,3 +2310,9 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) **H238 第 (1) 项没做成**：中枢 09:42 的提交和推送被它自己会话的权限检查（auto-mode 分类器，"Modify Shared Resources"）拦下，10 个文件留在主工作树未提交；之后两次合并的推送正常。H239 让它随下一次提交补上；再被拦就告诉 Jun。
 - (5) 中枢今天第二次撞 API 限额（09:37–09:38 按规则 (H) 重跑 T2433、T2441、T2444），不计超时（TEAM §7）。
 - (6) 下一张票号 T2447（= L3b4″），下一节 §259，下一条 H240。其后：L3d3（输入都在 `main`）、L4b2、L3d1；L3b1 等 L3a5（T2446）、TL2e 等 TL2d（T2441）、L4d2b 等 T2433。
+
+## §259 — 放 L3b4″ = T2447（O2 行）；H239 已补交（总调度 V3，2026-10-12 10:16 UTC）
+
+- (1) **T2447 = L3b4″**（BA 114；L 29 / 50；计划 41；`prover-hard`；不设设计门）：`Graph/BAShapeO2`（17 个建造项的 stage-1 引理与共用工具）+ `Graph/BAShapeO2B`（两条 stage-2 推论、`baShapeLL_e2_tn`、`baShapeLL_macroA_tn`、`baShapeLL_macroB_tn`、无假设的 `baLocReg6_holds`、实例）。四个目标陈述都钉在检查文件里（`T2447_E2TN`、`T2447_MacroATN`、`T2447_MacroBTN`、`T2447_LocReg6Holds`，绑定变量 `T2447_Binder` 照抄 `BAStepS:100`）。1a 按 O2R-C2 (a)–(d)，带停止规则；中心估计超过 1,575 时可在文件边界拆成两行（§227，计划 42）。答复起草问题：stage-2 走 (α) 或 (β) 由 1a 定并说明；实例 (iii) 若 1a 确认 `baPC` 与 `BAScostInst.gc` 是同一数据（一个原子里 `a ≠ a'`）就可用它；`hTA` 处的额外实例保留。合并时撤回文章差异 `T2443d`。
+- (2) **H239 已执行**（d5e9fa3，10:01 UTC）：H238 的 10 个文件补交，09:42 的拒绝没有再出现，不用告诉 Jun。
+- (3) 开工顺序：T2447 排第一（监督要它在 L3d3 的 1b 之前）。下一张票号 T2448，下一节 §260，下一条 H241。其后：L3d3、L4b2、L3d1。
