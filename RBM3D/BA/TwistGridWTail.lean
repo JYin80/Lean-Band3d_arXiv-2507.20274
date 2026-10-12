@@ -94,7 +94,7 @@ theorem TwistGridWTail_twU_conj {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) 
   have : twU sz lam0 E n (fun i => !σ i) v w =
       (starRingEnd ℂ).mapMatrix (twU sz lam0 E n σ v w) := by
     unfold twU BAuKer
-    show (1 - (v : ℂ) • BAMss _ _ _ (!σ 0) (!σ 1)) * BATheta _ _ _ _ _ _ (!σ 0) (!σ 1) = _
+    change (1 - (v : ℂ) • BAMss _ _ _ (!σ 0) (!σ 1)) * BATheta _ _ _ _ _ _ (!σ 0) (!σ 1) = _
     rw [hX, hΘ, map_mul]
   have := congrFun (congrFun this a) b
   simpa using this
@@ -519,7 +519,7 @@ private theorem TwistGridWTail_entry_jets {R₁ R₂ : ℝ → Matrix ι ι ℂ}
     intro R hK t i j
     refine (norm_matrix_entry_le_opNorm _ i j).trans ?_
     calc ‖R t * D * R t‖ ≤ ‖R t‖ * ‖D‖ * ‖R t‖ := (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
-      _ ≤ K * ‖D‖ * K := by gcongr; exact hK t; exact hK t
+      _ ≤ K * ‖D‖ * K := by gcongr <;> exact hK t
       _ = K ^ 2 * ‖D‖ := by ring
   have hnorm2 : ∀ (R : ℝ → Matrix ι ι ℂ), (∀ t, ‖R t‖ ≤ K) → ∀ t i j,
       ‖((R t * D * R t) * D * R t + R t * D * (R t * D * R t)) i j‖ ≤ 2 * K ^ 3 * ‖D‖ ^ 2 := by
@@ -1567,10 +1567,10 @@ theorem TwistGridWTail_xi_ae (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (
         ∑ b, κ b * (Ξ b ω - (pathP szz)[Ξ b | filt szz j] ω) :=
       Finset.sum_congr rfl fun b _ => by rw [show twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b = _ from hmart ω b, h2 b]; ring
     rw [hL]
-    show _ = (∑ a, κ a * Ξ a ω) - (pathP szz)[fun ω' => ∑ a, κ a * Ξ a ω' | filt szz j] ω
+    change _ = (∑ a, κ a * Ξ a ω) - (pathP szz)[fun ω' => ∑ a, κ a * Ξ a ω' | filt szz j] ω
     rw [h1, ← Finset.sum_sub_distrib]
     exact Finset.sum_congr rfl fun b _ => by ring
-  · show Measurable[filt szz (j + 1)] (fun ω : PathΩ szz => ∑ b, κ b * ((Ξ b ω - Kc b) - (pathP szz)[fun ω' => Ξ b ω' - Kc b | filt szz j] ω))
+  · change Measurable[filt szz (j + 1)] (fun ω : PathΩ szz => ∑ b, κ b * ((Ξ b ω - Kc b) - (pathP szz)[fun ω' => Ξ b ω' - Kc b | filt szz j] ω))
     refine Finset.measurable_sum _ fun b _ => measurable_const.mul ?_
     exact ((hΞm b).sub measurable_const).sub ((stronglyMeasurable_condExp.measurable).mono ((filt szz).mono (Nat.le_succ j)) le_rfl)
 

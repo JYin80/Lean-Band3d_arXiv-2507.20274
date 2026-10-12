@@ -736,6 +736,599 @@ theorem TwistGridWTail2_pathwise {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ 
         linarith
     _ = ρ * (Ak + N ^ (-D)) ^ (1 / 2 : ℝ) + 2 * (ρ * Real.sqrt δ) := by ring
 
+/-- The number of labels `|Z_L^d| = L^d` is at most `N` (`L^d ≤ W^d L^d = N`). -/
+theorem TwistGridWTail2_card_label_le : (Fintype.card (Zd d (sz.L n)) : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
+  have hcard : Fintype.card (Zd d (sz.L n)) = (sz.L n) ^ d := by simp [Zd, ZMod.card]
+  rw [hcard]
+  have hW : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ d := one_le_pow₀ (by exact_mod_cast sz.W_pos n)
+  have hL0 : (0 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) ^ d := by positivity
+  have hsize : ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d := by
+    have : ((sz.size n : ℕ) : ℝ) = (((sz.W n * sz.L n) ^ d : ℕ) : ℝ) := rfl
+    rw [this]; push_cast; ring
+  push_cast
+  rw [hsize]
+  nlinarith
+
 end Pathwise
+
+/-! ## 4. The tail at one size index (steps (c)-(g)) -/
+
+section Core
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
+
+/-- **The tail at one size index**: given the numerical budgets (`hshift`, `hf2`, `hf1`, `hY`, `hZ`), `η_u ≥ 1/(16 N)`, `(1 − u)⁻¹ ≤ 16 N` for `u ≤ t`, the pin's event at the label
+`(σ, a, c₁, c₂)` is contained in the union over the coarse levels `p ≤ P` and the labels `a'` of the bad events of the `Z` part (peeling, `TwistGridWTail2_Z_tail`) and of the `Y` part
+(Doob, `TwistGridWTail_Y_tail`), by `TwistGridWTail2_pathwise`. -/
+theorem TwistGridWTail2_core {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) (hm : ‖BAmF sz lam0 E n‖ ≤ 1)
+    (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) (D ε' : ℝ) (hD : 0 < D) (hε' : 0 < ε')
+    (hη : ∀ u : ℝ, u ≤ t n → 1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ etaOf (BAmF sz lam0 E n) u)
+    (hR16 : ∀ u : ℝ, u ≤ t n → (1 - u)⁻¹ ≤ 16 * ((sz.size n : ℕ) : ℝ))
+    {P : ℕ} (hP1 : 1 ≤ P) {ρ₁ : ℝ} (hPρ : 1 / (P : ℝ) ≤ ρ₁) (hKΔ : (K n : ℝ) * gridStep s t K n ≤ 1)
+    (hshift : (16 * ((sz.size n : ℕ) : ℝ)) ^ 2 * (((sz.size n : ℕ) : ℝ) * (24 * (16 * ((sz.size n : ℕ) : ℝ)) ^ 7)) * gridStep s t K n ≤
+      ((sz.size n : ℕ) : ℝ) ^ (-D) / 2)
+    (hf2 : TwistGridWTail2_c3 ((sz.size n : ℕ) : ℝ) * ρ₁ ≤ ((sz.size n : ℕ) : ℝ) ^ (-D) / 4)
+    (hf1 : (16 * ((sz.size n : ℕ) : ℝ) * ρ₁) * (((sz.size n : ℕ) : ℝ) ^ ε' / 4 * Real.sqrt (TwistGridWTail2_VQ ((sz.size n : ℕ) : ℝ) +
+        ((sz.size n : ℕ) : ℝ) ^ (-D) / 2) + ((sz.size n : ℕ) : ℝ) ^ ε' / 4 * Real.sqrt (((sz.size n : ℕ) : ℝ) ^ (-D) / 2)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε' / 4 * Real.sqrt (((sz.size n : ℕ) : ℝ) ^ (-D) / 2))
+    (hY : ((P : ℝ) + 1) * ((sz.size n : ℕ) : ℝ) * (4 * (gridStep s t K n * TwistGridWTail2_PY ((sz.size n : ℕ) : ℝ)) /
+        (((sz.size n : ℕ) : ℝ) ^ ε' / 4 * Real.sqrt (((sz.size n : ℕ) : ℝ) ^ (-D) / 2)) ^ 2) ≤ ((sz.size n : ℕ) : ℝ) ^ (-D) / 4)
+    (hZ : ((P : ℝ) + 1) * ((sz.size n : ℕ) : ℝ) * (((⌈TwistGridWTail2_VQ ((sz.size n : ℕ) : ℝ) / (((sz.size n : ℕ) : ℝ) ^ (-D) / 2)⌉₊ : ℝ) + 1) *
+        (4 * Real.exp (-(((sz.size n : ℕ) : ℝ) ^ ε' / 4) ^ 2 / (16 * (1 : ℝ))))) ≤ ((sz.size n : ℕ) : ℝ) ^ (-D) / 2)
+    (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) :
+    (pathP (sz.withLam 0)) {ω | ∃ k, k ≤ K n ∧
+      ((sz.size n : ℕ) : ℝ) ^ ε' * (∑ j ∈ Finset.range k, gridStep s t K n * ‖twEEUk sz lam0 E s t K n σ a c₁ c₂ j k ω‖ + ((sz.size n : ℕ) : ℝ) ^ (-D)) ^ (1 / 2 : ℝ) <
+        ‖(∑ j ∈ Finset.range k, twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n k) *ᵥ
+          (fun b => twMart sz lam0 E s t K n σ b c₁ c₂ (j + 1) ω - twMart sz lam0 E s t K n σ b c₁ c₂ j ω)) a‖} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)) := by
+  set szz : Sizes d := sz.withLam 0 with hszz
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hN
+  have hN1 : (1 : ℝ) ≤ N := by rw [hN]; exact_mod_cast sz.one_le_size n
+  have hN0 : 0 < N := by linarith
+  set Δ := gridStep s t K n with hΔdef
+  have hΔ : 0 ≤ Δ := ST_gridStep_nonneg s t K n hst
+  have hND : 0 < N ^ (-D) := Real.rpow_pos_of_pos hN0 _
+  set δ : ℝ := N ^ (-D) / 2 with hδdef
+  have hδ0 : 0 < δ := by positivity
+  have hNε : 1 ≤ N ^ ε' := Real.one_le_rpow hN1 hε'.le
+  set ρ : ℝ := N ^ ε' / 4 with hρdef
+  have hρ0 : 0 < ρ := by rw [hρdef]; linarith
+  have hρ : 0 ≤ ρ := hρ0.le
+  set VQ : ℝ := TwistGridWTail2_VQ N with hVQ
+  have hVQ0 : 0 ≤ VQ := by rw [hVQ]; unfold TwistGridWTail2_VQ TwistGridWTail2_Mee; positivity
+  set Lmax : ℕ := ⌈VQ / δ⌉₊ with hLmax
+  set xY : ℝ := ρ * Real.sqrt δ with hxY
+  have hxY0 : 0 < xY := mul_pos hρ0 (Real.sqrt_pos.2 hδ0)
+  set PY : ℝ := TwistGridWTail2_PY N with hPY
+  have hPY0 : 0 ≤ PY := by rw [hPY]; unfold TwistGridWTail2_PY; positivity
+  have hη0 : 0 < 1 / (16 * N) := by positivity
+  -- the coarse levels
+  have hvp0 : ∀ p : ℕ, 0 ≤ TwistGridWTail2_vc (s n) (t n) P p := fun p => hs0.trans (TwistGridWTail2_vc_ge hst P p)
+  have hvpt : ∀ p : ℕ, p ≤ P → TwistGridWTail2_vc (s n) (t n) P p ≤ t n := fun p hp => TwistGridWTail2_vc_le hst hP1 hp
+  have hvp1 : ∀ p : ℕ, p ≤ P → TwistGridWTail2_vc (s n) (t n) P p < 1 := fun p hp => (hvpt p hp).trans_lt ht1
+  have hvp16 : ∀ p : ℕ, p ≤ P → (1 - TwistGridWTail2_vc (s n) (t n) P p)⁻¹ ≤ 16 * N := fun p hp => hR16 _ (hvpt p hp)
+  have hS : ∀ p : ℕ, p ≤ P → ∀ (a' : Zd d (sz.L n)) (j : ℕ), ∑ b, ‖TwistGridWTail2_kap sz lam0 E s t K n σ (TwistGridWTail2_vc (s n) (t n) P p) a' j b‖ ≤ 16 * N :=
+    fun p hp a' j => TwistGridWTail2_kap_sum_le sz lam0 E s t K n σ hr hs0 hst (hvp1 p hp) (hvp16 p hp) (by positivity) a' j
+  -- the shift budget
+  have hesum : ∑ j ∈ Finset.range (K n), TwistGridWTail2_eSeq sz s t K n (16 * N) (1 / (16 * N)) j ≤ δ := by
+    unfold TwistGridWTail2_eSeq
+    rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul, TwistGridWTail2_inv_eta hN0]
+    have hc : 0 ≤ (16 * N) ^ 2 * (N * (24 * (16 * N) ^ 7)) := by positivity
+    calc (K n : ℝ) * (Δ * ((16 * N) ^ 2 * (N * (24 * (16 * N) ^ 7 * Δ)))) =
+        ((K n : ℝ) * Δ) * ((16 * N) ^ 2 * (N * (24 * (16 * N) ^ 7)) * Δ) := by ring
+      _ ≤ 1 * ((16 * N) ^ 2 * (N * (24 * (16 * N) ^ 7)) * Δ) := mul_le_mul_of_nonneg_right hKΔ (by positivity)
+      _ ≤ δ := by rw [one_mul]; exact hshift
+  -- the threshold sums
+  have haL : ∀ p : ℕ, p ≤ P → ∀ (a' : Zd d (sz.L n)) (ω : PathΩ szz),
+      ∑ j ∈ Finset.range (K n), TwistGridWTail2_aSeq sz lam0 E s t K n σ c₁ c₂ (TwistGridWTail2_vc (s n) (t n) P p) a' j ω ≤ 2 ^ Lmax * δ := by
+    intro p hp a' ω
+    have hterm : ∀ j ∈ Finset.range (K n), TwistGridWTail2_aSeq sz lam0 E s t K n σ c₁ c₂ (TwistGridWTail2_vc (s n) (t n) P p) a' j ω ≤ Δ * VQ := fun j hj =>
+      TwistGridWTail2_aSeq_le sz lam0 E s t K n σ hr hs0 hst hη c₁ c₂ (Finset.mem_range.1 hj).le hK (hvp1 p hp) (hvp16 p hp) a' ω
+    have hVL : VQ ≤ (Lmax : ℝ) * δ := (div_le_iff₀ hδ0).1 (Nat.le_ceil _)
+    have hL2 : (Lmax : ℝ) < 2 ^ Lmax := by exact_mod_cast Nat.lt_two_pow_self
+    calc ∑ j ∈ Finset.range (K n), TwistGridWTail2_aSeq sz lam0 E s t K n σ c₁ c₂ (TwistGridWTail2_vc (s n) (t n) P p) a' j ω
+        ≤ ∑ j ∈ Finset.range (K n), Δ * VQ := Finset.sum_le_sum hterm
+      _ = (K n : ℝ) * Δ * VQ := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
+      _ ≤ 1 * VQ := mul_le_mul_of_nonneg_right hKΔ hVQ0
+      _ = VQ := one_mul _
+      _ ≤ (Lmax : ℝ) * δ := hVL
+      _ ≤ 2 ^ Lmax * δ := mul_le_mul_of_nonneg_right hL2.le hδ0.le
+  -- the bad events
+  set EZ : ℕ → Zd d (sz.L n) → Set (PathΩ szz) := fun p a' =>
+    {ω | ∃ k, k ≤ K n ∧ ρ * (∑ j ∈ Finset.range k, TwistGridWTail2_aSeq sz lam0 E s t K n σ c₁ c₂ (TwistGridWTail2_vc (s n) (t n) P p) a' j ω + δ) ^ (1 / 2 : ℝ) <
+      ‖∑ j ∈ Finset.range k, TwistGridWTail2_zeta sz lam0 E s t K n σ c₁ c₂ (TwistGridWTail2_vc (s n) (t n) P p) a' j ω‖} with hEZ
+  set EY : ℕ → Zd d (sz.L n) → Set (PathΩ szz) := fun p a' =>
+    {ω | ∃ k, k ≤ K n ∧ xY ≤ ‖∑ j ∈ Finset.range k, TwistGridWTail2_yinc sz lam0 E s t K n σ c₁ c₂ (TwistGridWTail2_vc (s n) (t n) P p) a' j ω‖} with hEY
+  have hZbad : ∀ p : ℕ, p ≤ P → ∀ a' : Zd d (sz.L n), (pathP szz).real (EZ p a') ≤ ((Lmax : ℝ) + 1) * (4 * Real.exp (-ρ ^ 2 / (16 * (1 : ℝ)))) :=
+    fun p hp a' => TwistGridWTail2_Z_tail sz lam0 E s t K n σ hr hm hs0 hst hη0 hη c₁ c₂ (hvp0 p) (hvp1 p hp) (by positivity) a' (hS p hp a') Lmax hδ0 hρ
+      hesum (haL p hp a')
+  have hYbad : ∀ p : ℕ, p ≤ P → ∀ a' : Zd d (sz.L n), (pathP szz).real (EY p a') ≤ 4 * (Δ * PY) / xY ^ 2 := by
+    intro p hp a'
+    have h := TwistGridWTail_Y_tail sz lam0 E s t K n σ c₁ c₂ hs0 hst hη0 hη (TwistGridWTail2_kap sz lam0 E s t K n σ (TwistGridWTail2_vc (s n) (t n) P p) a')
+      (S := 16 * N) (by positivity) (hS p hp a') (P := PY) (by rw [TwistGridWTail2_inv_eta hN0, hPY]; unfold TwistGridWTail2_PY; exact le_refl _) hxY0
+    refine h.trans ?_
+    refine div_le_div_of_nonneg_right ?_ (sq_nonneg _)
+    have : (K n : ℝ) * (Δ ^ 2 * PY) = ((K n : ℝ) * Δ) * (Δ * PY) := by ring
+    rw [this]
+    have := mul_le_mul_of_nonneg_right hKΔ (mul_nonneg hΔ hPY0)
+    linarith
+  -- the pathwise inclusion
+  have hincl : {ω : PathΩ szz | ∃ k, k ≤ K n ∧
+      N ^ ε' * (∑ j ∈ Finset.range k, Δ * ‖twEEUk sz lam0 E s t K n σ a c₁ c₂ j k ω‖ + N ^ (-D)) ^ (1 / 2 : ℝ) <
+        ‖(∑ j ∈ Finset.range k, twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n k) *ᵥ
+          (fun b => twMart sz lam0 E s t K n σ b c₁ c₂ (j + 1) ω - twMart sz lam0 E s t K n σ b c₁ c₂ j ω)) a‖} ⊆
+      ⋃ p ∈ Finset.range (P + 1), ⋃ a' ∈ (Finset.univ : Finset (Zd d (sz.L n))), (EZ p a' ∪ EY p a') := by
+    intro ω hω
+    obtain ⟨k, hk, hlt⟩ := hω
+    by_contra hnot
+    have hgood : ∀ p ∈ Finset.range (P + 1), ∀ a' : Zd d (sz.L n), ω ∉ EZ p a' ∧ ω ∉ EY p a' := by
+      intro p hp a'
+      by_contra hcon
+      apply hnot
+      simp only [Set.mem_iUnion]
+      refine ⟨p, hp, a', Finset.mem_univ _, ?_⟩
+      by_cases h1 : ω ∈ EZ p a'
+      · exact Or.inl h1
+      · exact Or.inr (by_contra fun h2 => hcon ⟨h1, h2⟩)
+    obtain ⟨hpP, -, -⟩ := TwistGridWTail2_coarse s t K n hst hK hP1 hk
+    have hmem : ⌈((k : ℝ) * P) / (K n : ℝ)⌉₊ ∈ Finset.range (P + 1) := Finset.mem_range.2 (Nat.lt_succ_of_le hpP)
+    have hZg : ∀ a' : Zd d (sz.L n), ‖∑ j ∈ Finset.range k, TwistGridWTail2_zeta sz lam0 E s t K n σ c₁ c₂
+          (TwistGridWTail2_vc (s n) (t n) P ⌈((k : ℝ) * P) / (K n : ℝ)⌉₊) a' j ω‖ ≤
+        ρ * (∑ j ∈ Finset.range k, TwistGridWTail2_aSeq sz lam0 E s t K n σ c₁ c₂
+          (TwistGridWTail2_vc (s n) (t n) P ⌈((k : ℝ) * P) / (K n : ℝ)⌉₊) a' j ω + δ) ^ (1 / 2 : ℝ) := by
+      intro a'
+      by_contra hcon
+      exact (hgood _ hmem a').1 ⟨k, hk, not_le.1 hcon⟩
+    have hYg : ∀ a' : Zd d (sz.L n), ‖∑ j ∈ Finset.range k, TwistGridWTail2_yinc sz lam0 E s t K n σ c₁ c₂
+          (TwistGridWTail2_vc (s n) (t n) P ⌈((k : ℝ) * P) / (K n : ℝ)⌉₊) a' j ω‖ ≤ ρ * Real.sqrt δ := by
+      intro a'
+      by_contra hcon
+      exact (hgood _ hmem a').2 ⟨k, hk, (not_le.1 hcon).le⟩
+    have hpw := TwistGridWTail2_pathwise sz lam0 E s t K n σ hr hs0 hst ht1 hK c₁ c₂ a hη hR16 hP1 hPρ D hρ hKΔ hf2 hf1 ω hk hZg hYg
+    set Ak : ℝ := ∑ j ∈ Finset.range k, Δ * ‖twEEUk sz lam0 E s t K n σ a c₁ c₂ j k ω‖ with hAkdef
+    have hAk0 : 0 ≤ Ak := Finset.sum_nonneg fun j _ => mul_nonneg hΔ (norm_nonneg _)
+    have hT0 : 0 ≤ (Ak + N ^ (-D)) ^ (1 / 2 : ℝ) := Real.rpow_nonneg (by linarith) _
+    have hsq : Real.sqrt δ ≤ (Ak + N ^ (-D)) ^ (1 / 2 : ℝ) := by
+      rw [Real.sqrt_eq_rpow]
+      exact Real.rpow_le_rpow hδ0.le (by linarith) (by norm_num)
+    have hρ4 : N ^ ε' = 4 * ρ := by rw [hρdef]; ring
+    rw [hρ4] at hlt
+    nlinarith [mul_le_mul_of_nonneg_left hsq hρ]
+  -- the measure
+  have hcard : (Fintype.card (Zd d (sz.L n)) : ℝ) ≤ N := TwistGridWTail2_card_label_le sz n
+  have hbound : (pathP szz).real (⋃ p ∈ Finset.range (P + 1), ⋃ a' ∈ (Finset.univ : Finset (Zd d (sz.L n))), (EZ p a' ∪ EY p a')) ≤ N ^ (-D) := by
+    calc (pathP szz).real (⋃ p ∈ Finset.range (P + 1), ⋃ a' ∈ (Finset.univ : Finset (Zd d (sz.L n))), (EZ p a' ∪ EY p a'))
+        ≤ ∑ p ∈ Finset.range (P + 1), (pathP szz).real (⋃ a' ∈ (Finset.univ : Finset (Zd d (sz.L n))), (EZ p a' ∪ EY p a')) :=
+          measureReal_biUnion_finset_le _ _
+      _ ≤ ∑ p ∈ Finset.range (P + 1), ∑ a' : Zd d (sz.L n), (((Lmax : ℝ) + 1) * (4 * Real.exp (-ρ ^ 2 / (16 * (1 : ℝ)))) + 4 * (Δ * PY) / xY ^ 2) := by
+          refine Finset.sum_le_sum fun p hp => ?_
+          have hpP : p ≤ P := Nat.lt_succ_iff.1 (Finset.mem_range.1 hp)
+          refine (measureReal_biUnion_finset_le _ _).trans (Finset.sum_le_sum fun a' _ => ?_)
+          exact (measureReal_union_le _ _).trans (add_le_add (hZbad p hpP a') (hYbad p hpP a'))
+      _ = ((P : ℝ) + 1) * (Fintype.card (Zd d (sz.L n)) : ℝ) *
+          (((Lmax : ℝ) + 1) * (4 * Real.exp (-ρ ^ 2 / (16 * (1 : ℝ)))) + 4 * (Δ * PY) / xY ^ 2) := by
+          simp only [Finset.sum_const, Finset.card_range, Finset.card_univ, nsmul_eq_mul]
+          push_cast
+          ring
+      _ ≤ ((P : ℝ) + 1) * N *
+          (((Lmax : ℝ) + 1) * (4 * Real.exp (-ρ ^ 2 / (16 * (1 : ℝ)))) + 4 * (Δ * PY) / xY ^ 2) := by
+          have h0 : (0 : ℝ) ≤ ((Lmax : ℝ) + 1) * (4 * Real.exp (-ρ ^ 2 / (16 * (1 : ℝ)))) + 4 * (Δ * PY) / xY ^ 2 := by positivity
+          have hP0 : (0 : ℝ) ≤ (P : ℝ) + 1 := by positivity
+          exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hcard hP0) h0
+      _ = ((P : ℝ) + 1) * N * (((Lmax : ℝ) + 1) * (4 * Real.exp (-ρ ^ 2 / (16 * (1 : ℝ))))) + ((P : ℝ) + 1) * N * (4 * (Δ * PY) / xY ^ 2) := by ring
+      _ ≤ N ^ (-D) / 2 + N ^ (-D) / 4 := add_le_add hZ hY
+      _ ≤ N ^ (-D) := by linarith
+  calc (pathP szz) {ω | ∃ k, k ≤ K n ∧
+        N ^ ε' * (∑ j ∈ Finset.range k, Δ * ‖twEEUk sz lam0 E s t K n σ a c₁ c₂ j k ω‖ + N ^ (-D)) ^ (1 / 2 : ℝ) <
+          ‖(∑ j ∈ Finset.range k, twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n k) *ᵥ
+            (fun b => twMart sz lam0 E s t K n σ b c₁ c₂ (j + 1) ω - twMart sz lam0 E s t K n σ b c₁ c₂ j ω)) a‖}
+      ≤ (pathP szz) (⋃ p ∈ Finset.range (P + 1), ⋃ a' ∈ (Finset.univ : Finset (Zd d (sz.L n))), (EZ p a' ∪ EY p a')) := measure_mono hincl
+    _ = ENNReal.ofReal ((pathP szz).real (⋃ p ∈ Finset.range (P + 1), ⋃ a' ∈ (Finset.univ : Finset (Zd d (sz.L n))), (EZ p a' ∪ EY p a'))) := by
+        rw [ofReal_measureReal (measure_ne_top _ _)]
+    _ ≤ ENNReal.ofReal (N ^ (-D)) := ENNReal.ofReal_le_ofReal hbound
+
+end Core
+
+
+/-! ## 5. The numerical budgets (pure real arithmetic)
+
+`N ≥ 1`, `ND = N^D ≥ 1`, `N^{-D} = ND⁻¹`; the coarse grid is `P = ⌈N^{14} ND⌉` (`C' = D + 14`), the fine grid has `Δ N^{40} ND³ ≤ 1` (`CK = 3D + 40`).  The closed forms
+`V_Q = 2³⁴ N⁹`, `c₃ = 2³⁹ N¹⁰`, `P_Y = 27648 · 2⁴⁰ N¹⁸`; all deterministic budgets hold for `N ≥ 2⁷⁰`, the `Z` budget is the eventual inequality of
+`TwistGridWTail2_eventually_Z`. -/
+
+section Budgets
+
+theorem TwistGridWTail2_VQ_eq (N : ℝ) : TwistGridWTail2_VQ N = 2 ^ 34 * N ^ 9 := by
+  unfold TwistGridWTail2_VQ TwistGridWTail2_Mee; ring
+
+theorem TwistGridWTail2_c3_eq (N : ℝ) : TwistGridWTail2_c3 N = 2 ^ 39 * N ^ 10 := by
+  unfold TwistGridWTail2_c3 TwistGridWTail2_Mee; ring
+
+theorem TwistGridWTail2_PY_eq (N : ℝ) : TwistGridWTail2_PY N = 27648 * 2 ^ 40 * N ^ 18 := by
+  unfold TwistGridWTail2_PY; ring
+
+/-- **(B1) the shift budget.** -/
+theorem TwistGridWTail2_budget_shift {N ND Δ : ℝ} (hN : (2 : ℝ) ^ 70 ≤ N) (hND : 1 ≤ ND) (hΔ0 : 0 ≤ Δ) (hΔ : Δ * (N ^ 40 * ND ^ 3) ≤ 1) :
+    (16 * N) ^ 2 * (N * (24 * (16 * N) ^ 7)) * Δ ≤ ND⁻¹ / 2 := by
+  have hN1 : 1 ≤ N := le_trans (by norm_num) hN
+  have hND0 : 0 < ND := by linarith
+  have hN0 : 0 < N := by linarith
+  have h1 : (16 * N) ^ 2 * (N * (24 * (16 * N) ^ 7)) * Δ = 1649267441664 * (N ^ 10 * Δ) := by ring
+  rw [h1, le_div_iff₀ (by norm_num : (0 : ℝ) < 2), ← one_div, le_div_iff₀ hND0]
+  have h2 : 2 * 1649267441664 ≤ N ^ 30 * ND ^ 2 := by
+    have : (2 : ℝ) * 1649267441664 ≤ N := le_trans (by norm_num) hN
+    calc (2 : ℝ) * 1649267441664 ≤ N := this
+      _ ≤ N ^ 30 := le_self_pow₀ hN1 (by norm_num)
+      _ ≤ N ^ 30 * ND ^ 2 := le_mul_of_one_le_right (by positivity) (one_le_pow₀ hND)
+  calc 1649267441664 * (N ^ 10 * Δ) * 2 * ND = (2 * 1649267441664) * (N ^ 10 * ND * Δ) := by ring
+    _ ≤ (N ^ 30 * ND ^ 2) * (N ^ 10 * ND * Δ) := mul_le_mul_of_nonneg_right h2 (by positivity)
+    _ = Δ * (N ^ 40 * ND ^ 3) := by ring
+    _ ≤ 1 := hΔ
+
+/-- **(B2) the proxy-transfer budget** (`C' = D + 14`): `c₃ (N^{14} ND)⁻¹ ≤ ND⁻¹/4`. -/
+theorem TwistGridWTail2_budget_f2 {N ND : ℝ} (hN : (2 : ℝ) ^ 70 ≤ N) (hND : 1 ≤ ND) :
+    TwistGridWTail2_c3 N * (N ^ 14 * ND)⁻¹ ≤ ND⁻¹ / 4 := by
+  have hN1 : 1 ≤ N := le_trans (by norm_num) hN
+  have hN0 : 0 < N := by linarith
+  have hND0 : 0 < ND := by linarith
+  rw [TwistGridWTail2_c3_eq]
+  have hX : 0 < N ^ 14 * ND := by positivity
+  rw [← div_eq_mul_inv, div_le_iff₀ hX]
+  have h1 : ND⁻¹ / 4 * (N ^ 14 * ND) = N ^ 14 / 4 := by field_simp
+  rw [h1]
+  have h4 : (2 : ℝ) ^ 41 ≤ N ^ 4 := by
+    calc (2 : ℝ) ^ 41 ≤ 2 ^ 70 := by norm_num
+      _ ≤ N := hN
+      _ ≤ N ^ 4 := le_self_pow₀ hN1 (by norm_num)
+  have h2 : N ^ 14 = N ^ 10 * N ^ 4 := by ring
+  rw [h2]
+  have hpos : 0 < N ^ 10 := by positivity
+  nlinarith [mul_le_mul_of_nonneg_left h4 hpos.le]
+
+/-- The arithmetic of (B3): `A (√(V + δ) + √δ) ≤ √δ` from `A ≤ 1/4`, `A V ≤ δ/4`, `δ ≤ 1 ≤ V` (copy of `difRep3_f1_arith`, `Path/DifREP3.lean:1985`). -/
+theorem TwistGridWTail2_f1_arith {A V δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) (hV : 1 ≤ V) (hA0 : 0 ≤ A) (hA : A ≤ 1 / 4) (hAV : A * V ≤ δ / 4) :
+    A * (Real.sqrt (V + δ) + Real.sqrt δ) ≤ Real.sqrt δ := by
+  have h1 : δ ≤ Real.sqrt δ := by
+    rw [Real.le_sqrt hδ0.le hδ0.le]; nlinarith
+  have h2 : Real.sqrt (V + δ) ≤ V + δ := by
+    rw [Real.sqrt_le_left (by linarith)]; nlinarith
+  have h3 : 0 ≤ Real.sqrt δ := Real.sqrt_nonneg _
+  nlinarith [mul_le_mul_of_nonneg_left h2 hA0, mul_le_mul_of_nonneg_right hA hδ0.le, mul_le_mul_of_nonneg_right hA h3]
+
+/-- **(B3) the kernel-transfer budget** (`ρ` cancels, so the exponents are `ε'`-free). -/
+theorem TwistGridWTail2_budget_f1 {N ND : ℝ} (hN : (2 : ℝ) ^ 70 ≤ N) (hND : 1 ≤ ND) (ρ : ℝ) (hρ : 0 ≤ ρ) :
+    (16 * N * (N ^ 14 * ND)⁻¹) * (ρ * Real.sqrt (TwistGridWTail2_VQ N + ND⁻¹ / 2) + ρ * Real.sqrt (ND⁻¹ / 2)) ≤ ρ * Real.sqrt (ND⁻¹ / 2) := by
+  have hN1 : 1 ≤ N := le_trans (by norm_num) hN
+  have hN0 : 0 < N := by linarith
+  have hND0 : 0 < ND := by linarith
+  have hX : 0 < N ^ 14 * ND := by positivity
+  have hVQ1 : 1 ≤ TwistGridWTail2_VQ N := by
+    rw [TwistGridWTail2_VQ_eq]
+    have : (1 : ℝ) ≤ N ^ 9 := one_le_pow₀ hN1
+    nlinarith [show (1 : ℝ) ≤ 2 ^ 34 by norm_num]
+  have hA0 : 0 ≤ 16 * N * (N ^ 14 * ND)⁻¹ := by positivity
+  have hN13 : (64 : ℝ) ≤ N ^ 13 := by
+    calc (64 : ℝ) ≤ 2 ^ 70 := by norm_num
+      _ ≤ N := hN
+      _ ≤ N ^ 13 := le_self_pow₀ hN1 (by norm_num)
+  have hA : 16 * N * (N ^ 14 * ND)⁻¹ ≤ 1 / 4 := by
+    rw [← div_eq_mul_inv, div_le_iff₀ hX]
+    have : N ^ 14 = N * N ^ 13 := by ring
+    rw [this]
+    nlinarith [mul_le_mul_of_nonneg_left hN13 hN0.le, show (1 : ℝ) ≤ ND from hND, mul_nonneg hN0.le (pow_nonneg hN0.le 13)]
+  have h4 : (2 : ℝ) ^ 41 ≤ N ^ 4 := by
+    calc (2 : ℝ) ^ 41 ≤ 2 ^ 70 := by norm_num
+      _ ≤ N := hN
+      _ ≤ N ^ 4 := le_self_pow₀ hN1 (by norm_num)
+  have hAV : 16 * N * (N ^ 14 * ND)⁻¹ * TwistGridWTail2_VQ N ≤ ND⁻¹ / 2 / 4 := by
+    rw [TwistGridWTail2_VQ_eq]
+    have e : 16 * N * (N ^ 14 * ND)⁻¹ * (2 ^ 34 * N ^ 9) = (2 ^ 38 * N ^ 10) / (N ^ 14 * ND) := by field_simp; ring
+    rw [e, div_le_iff₀ hX]
+    have h1 : ND⁻¹ / 2 / 4 * (N ^ 14 * ND) = N ^ 14 / 8 := by field_simp; norm_num
+    rw [h1]
+    have h2 : N ^ 14 = N ^ 10 * N ^ 4 := by ring
+    rw [h2]
+    have hpos : 0 < N ^ 10 := by positivity
+    nlinarith [mul_le_mul_of_nonneg_left h4 hpos.le]
+  have hδ1 : ND⁻¹ / 2 ≤ 1 := by
+    have : ND⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hND
+    linarith
+  have hδ0 : 0 < ND⁻¹ / 2 := by positivity
+  have h := TwistGridWTail2_f1_arith hδ0 hδ1 hVQ1 hA0 hA hAV
+  calc (16 * N * (N ^ 14 * ND)⁻¹) * (ρ * Real.sqrt (TwistGridWTail2_VQ N + ND⁻¹ / 2) + ρ * Real.sqrt (ND⁻¹ / 2))
+      = ρ * ((16 * N * (N ^ 14 * ND)⁻¹) * (Real.sqrt (TwistGridWTail2_VQ N + ND⁻¹ / 2) + Real.sqrt (ND⁻¹ / 2))) := by ring
+    _ ≤ ρ * Real.sqrt (ND⁻¹ / 2) := mul_le_mul_of_nonneg_left h hρ
+
+/-- **(B4) the `Y` budget** (`CK = 3D + 40`): `(P+1) N 4 Δ P_Y/(ρ √δ)² ≤ ND⁻¹/4`, `ρ ≥ 1/4`, `P + 1 ≤ 3 N^{14} ND`. -/
+theorem TwistGridWTail2_budget_Y {N ND Δ Pp ρ : ℝ} (hN : (2 : ℝ) ^ 70 ≤ N) (hND : 1 ≤ ND) (hΔ0 : 0 ≤ Δ) (hΔ : Δ * (N ^ 40 * ND ^ 3) ≤ 1)
+    (hPp0 : 0 ≤ Pp) (hPp : Pp + 1 ≤ 3 * (N ^ 14 * ND)) (hρ : 1 / 4 ≤ ρ) :
+    (Pp + 1) * N * (4 * (Δ * TwistGridWTail2_PY N) / (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2) ≤ ND⁻¹ / 4 := by
+  have hN1 : 1 ≤ N := le_trans (by norm_num) hN
+  have hN0 : 0 < N := by linarith
+  have hND0 : 0 < ND := by linarith
+  have hδ0 : 0 < ND⁻¹ / 2 := by positivity
+  have hsq : (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2 = ρ ^ 2 * (ND⁻¹ / 2) := by rw [mul_pow, Real.sq_sqrt hδ0.le]
+  have hρ2 : 1 / 16 ≤ ρ ^ 2 := by nlinarith
+  have hden0 : 0 < (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2 := by
+    rw [hsq]; have : 0 < ρ := by linarith
+    positivity
+  have hden : 1 / (32 * ND) ≤ (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2 := by
+    rw [hsq]
+    calc 1 / (32 * ND) = 1 / 16 * (ND⁻¹ / 2) := by field_simp; norm_num
+      _ ≤ ρ ^ 2 * (ND⁻¹ / 2) := mul_le_mul_of_nonneg_right hρ2 hδ0.le
+  have hPY : TwistGridWTail2_PY N = 27648 * 2 ^ 40 * N ^ 18 := TwistGridWTail2_PY_eq N
+  have h1 : 4 * (Δ * TwistGridWTail2_PY N) / (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2 ≤ 128 * (Δ * TwistGridWTail2_PY N) * ND := by
+    rw [div_le_iff₀ hden0]
+    have hpy0 : 0 ≤ Δ * TwistGridWTail2_PY N := mul_nonneg hΔ0 (by rw [hPY]; positivity)
+    calc 4 * (Δ * TwistGridWTail2_PY N) = 128 * (Δ * TwistGridWTail2_PY N) * ND * (1 / (32 * ND)) := by field_simp; ring
+      _ ≤ 128 * (Δ * TwistGridWTail2_PY N) * ND * (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2 := mul_le_mul_of_nonneg_left hden (by positivity)
+  have hN0' : 0 ≤ N := hN0.le
+  calc (Pp + 1) * N * (4 * (Δ * TwistGridWTail2_PY N) / (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2)
+      ≤ (3 * (N ^ 14 * ND)) * N * (128 * (Δ * TwistGridWTail2_PY N) * ND) := by
+        have h0 : 0 ≤ 128 * (Δ * TwistGridWTail2_PY N) * ND := by rw [hPY]; positivity
+        calc (Pp + 1) * N * (4 * (Δ * TwistGridWTail2_PY N) / (ρ * Real.sqrt (ND⁻¹ / 2)) ^ 2)
+            ≤ (Pp + 1) * N * (128 * (Δ * TwistGridWTail2_PY N) * ND) := mul_le_mul_of_nonneg_left h1 (by positivity)
+          _ ≤ (3 * (N ^ 14 * ND)) * N * (128 * (Δ * TwistGridWTail2_PY N) * ND) :=
+              mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hPp hN0') h0
+    _ = 384 * (27648 * 2 ^ 40) * (Δ * (N ^ 33 * ND ^ 2)) := by rw [hPY]; ring
+    _ ≤ ND⁻¹ / 4 := by
+        rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 4), ← one_div, le_div_iff₀ hND0]
+        have h2 : 1536 * (27648 * 2 ^ 40 : ℝ) ≤ N ^ 7 := by
+          calc 1536 * (27648 * 2 ^ 40 : ℝ) ≤ 2 ^ 70 := by norm_num
+            _ ≤ N := hN
+            _ ≤ N ^ 7 := le_self_pow₀ hN1 (by norm_num)
+        calc 384 * (27648 * 2 ^ 40 : ℝ) * (Δ * (N ^ 33 * ND ^ 2)) * 4 * ND = (1536 * (27648 * 2 ^ 40 : ℝ)) * (Δ * (N ^ 33 * ND ^ 3)) := by ring
+          _ ≤ N ^ 7 * (Δ * (N ^ 33 * ND ^ 3)) := mul_le_mul_of_nonneg_right h2 (by positivity)
+          _ = Δ * (N ^ 40 * ND ^ 3) := by ring
+          _ ≤ 1 := hΔ
+
+/-- **(B5) the `Z` budget, arithmetic**: from `P + 1 ≤ 3 N^{14} ND`, `L + 1 ≤ 2 V_Q ND + 2` and `24 (2³⁵ + 2) N^{24} ND³ E ≤ 1`,
+`(P+1) N (L+1) 4 E ≤ ND⁻¹/2`. -/
+theorem TwistGridWTail2_budget_Z {N ND Ex Pp Lc : ℝ} (hN : 1 ≤ N) (hND : 1 ≤ ND) (hE0 : 0 ≤ Ex) (hPp0 : 0 ≤ Pp) (hPp : Pp + 1 ≤ 3 * (N ^ 14 * ND))
+    (hLc0 : 0 ≤ Lc) (hLc : Lc + 1 ≤ 2 * TwistGridWTail2_VQ N * ND + 2) (hZ : 24 * (2 ^ 35 + 2) * (N ^ 24 * ND ^ 3) * Ex ≤ 1) :
+    (Pp + 1) * N * ((Lc + 1) * (4 * Ex)) ≤ ND⁻¹ / 2 := by
+  have hN0 : 0 < N := by linarith
+  have hND0 : 0 < ND := by linarith
+  have hNp1 : 1 ≤ N ^ 9 * ND := one_le_mul_of_one_le_of_one_le (one_le_pow₀ hN) hND
+  have hL2 : Lc + 1 ≤ (2 ^ 35 + 2) * (N ^ 9 * ND) := by
+    refine hLc.trans ?_
+    rw [TwistGridWTail2_VQ_eq]
+    nlinarith [mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) (by positivity : (0 : ℝ) ≤ N ^ 9 * ND)]
+  have hLc1 : 0 ≤ Lc + 1 := by linarith
+  calc (Pp + 1) * N * ((Lc + 1) * (4 * Ex)) ≤ (3 * (N ^ 14 * ND)) * N * (((2 ^ 35 + 2) * (N ^ 9 * ND)) * (4 * Ex)) := by gcongr
+    _ = 12 * (2 ^ 35 + 2) * (N ^ 24 * ND ^ 2) * Ex := by ring
+    _ ≤ ND⁻¹ / 2 := by
+        rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 2), ← one_div, le_div_iff₀ hND0]
+        calc 12 * (2 ^ 35 + 2) * (N ^ 24 * ND ^ 2) * Ex * 2 * ND = 24 * (2 ^ 35 + 2) * (N ^ 24 * ND ^ 3) * Ex := by ring
+          _ ≤ 1 := hZ
+
+end Budgets
+
+/-! ## 6. The asymptotics and the tail at one size index -/
+
+section Asymptotics
+
+/-- A polynomial against a stretched exponential: `N^s e^{-b N^c} → 0` (copy of the private `difRep3_tendsto_rpow_exp`, `Path/DifREP3.lean:2179`). -/
+theorem TwistGridWTail2_tendsto_rpow_exp (s b c : ℝ) (hb : 0 < b) (hc : 0 < c) :
+    Tendsto (fun N : ℝ => N ^ s * Real.exp (-b * N ^ c)) atTop (nhds 0) := by
+  have h1 := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s / c) b hb
+  have h2 : Tendsto (fun N : ℝ => N ^ c) atTop atTop := tendsto_rpow_atTop hc
+  have h3 := h1.comp h2
+  refine h3.congr' ?_
+  filter_upwards [eventually_ge_atTop (0 : ℝ)] with N hN
+  simp only [Function.comp]
+  rw [← Real.rpow_mul hN]
+  congr 2
+  field_simp
+
+/-- **The `Z` budget holds for large `N`**: `24 (2³⁵ + 2) N^{24} (N^D)³ exp (−(N^{ε'}/4)²/16) ≤ 1` eventually (a polynomial against a stretched exponential;
+the only place `ε'` enters). -/
+theorem TwistGridWTail2_eventually_Z (D ε' : ℝ) (hD : 0 < D) (hε' : 0 < ε') :
+    ∀ᶠ N : ℝ in atTop, 1 ≤ N ∧ 24 * (2 ^ 35 + 2) * (N ^ 24 * (N ^ D) ^ 3) * Real.exp (-(N ^ ε' / 4) ^ 2 / (16 * (1 : ℝ))) ≤ 1 := by
+  set c₄ : ℝ := 24 * (2 ^ 35 + 2) with hc₄
+  have hc₄0 : 0 < c₄ := by rw [hc₄]; positivity
+  set q : ℝ := ((24 : ℕ) : ℝ) + D * 3 with hq
+  have hlim := TwistGridWTail2_tendsto_rpow_exp q (1 / 256) (2 * ε') (by positivity) (by positivity)
+  have hev := hlim.eventually (gt_mem_nhds (by positivity : (0 : ℝ) < 1 / c₄))
+  filter_upwards [hev, eventually_ge_atTop (1 : ℝ)] with N hN hN1
+  refine ⟨hN1, ?_⟩
+  have hN0 : 0 < N := by linarith
+  have h1 : N ^ 24 * (N ^ D) ^ 3 = N ^ q := by
+    rw [hq, Real.rpow_add hN0, Real.rpow_natCast, Real.rpow_mul hN0.le]
+    norm_num
+  have h2 : -(N ^ ε' / 4) ^ 2 / (16 * (1 : ℝ)) = -(1 / 256) * N ^ (2 * ε') := by
+    have : (N ^ ε') ^ 2 = N ^ (2 * ε') := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hN0.le]
+      congr 1
+      push_cast
+      ring
+    rw [div_pow, this]
+    field_simp
+    ring
+  rw [h1, h2]
+  have hlt : N ^ q * Real.exp (-(1 / 256) * N ^ (2 * ε')) < 1 / c₄ := hN
+  calc c₄ * N ^ q * Real.exp (-(1 / 256) * N ^ (2 * ε')) = c₄ * (N ^ q * Real.exp (-(1 / 256) * N ^ (2 * ε'))) := by ring
+    _ ≤ c₄ * (1 / c₄) := mul_le_mul_of_nonneg_left hlt.le hc₄0.le
+    _ = 1 := by field_simp
+
+/-- `N^{3D + 40} = N^{40} (N^D)³` (`CK = 3D + 40`). -/
+theorem TwistGridWTail2_rpow_CK {N : ℝ} (hN : 0 < N) (D : ℝ) : N ^ (3 * D + 40) = N ^ 40 * (N ^ D) ^ 3 := by
+  have h1 : (3 * D + 40) = ((40 : ℕ) : ℝ) + D * 3 := by push_cast; ring
+  rw [h1, Real.rpow_add hN, Real.rpow_natCast, Real.rpow_mul hN.le]
+  norm_num
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
+
+/-- **The tail at one size index**: given `η_u ≥ 1/(16 N)` and `(1 − u)⁻¹ ≤ 16 N` for `u ≤ t`, `K ≥ N^{3D + 40}`, `N ≥ 2⁷⁰` and the `Z` budget, the pin's event at the label
+`(σ, a, c₁, c₂)` has probability at most `N^{-D}`, with the coarse grid `P = ⌈N^{14} N^D⌉` (`C' = D + 14`). -/
+theorem TwistGridWTail2_tail_at {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) (hm : ‖BAmF sz lam0 E n‖ ≤ 1)
+    (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) (D ε' : ℝ) (hD : 0 < D) (hε' : 0 < ε')
+    (hη : ∀ u : ℝ, u ≤ t n → 1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ etaOf (BAmF sz lam0 E n) u)
+    (hR16 : ∀ u : ℝ, u ≤ t n → (1 - u)⁻¹ ≤ 16 * ((sz.size n : ℕ) : ℝ))
+    (hKN : ((sz.size n : ℕ) : ℝ) ^ (3 * D + 40) ≤ K n) (hbig : (2 : ℝ) ^ 70 ≤ ((sz.size n : ℕ) : ℝ))
+    (hZ : 24 * (2 ^ 35 + 2) * (((sz.size n : ℕ) : ℝ) ^ 24 * (((sz.size n : ℕ) : ℝ) ^ D) ^ 3) *
+        Real.exp (-(((sz.size n : ℕ) : ℝ) ^ ε' / 4) ^ 2 / (16 * (1 : ℝ))) ≤ 1)
+    (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) :
+    (pathP (sz.withLam 0)) {ω | ∃ k, k ≤ K n ∧
+      ((sz.size n : ℕ) : ℝ) ^ ε' * (∑ j ∈ Finset.range k, gridStep s t K n * ‖twEEUk sz lam0 E s t K n σ a c₁ c₂ j k ω‖ + ((sz.size n : ℕ) : ℝ) ^ (-D)) ^ (1 / 2 : ℝ) <
+        ‖(∑ j ∈ Finset.range k, twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n k) *ᵥ
+          (fun b => twMart sz lam0 E s t K n σ b c₁ c₂ (j + 1) ω - twMart sz lam0 E s t K n σ b c₁ c₂ j ω)) a‖} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)) := by
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hN
+  have hN1 : (1 : ℝ) ≤ N := by rw [hN]; exact_mod_cast sz.one_le_size n
+  have hN0 : 0 < N := by linarith
+  set Δ := gridStep s t K n with hΔdef
+  have hΔ0 : 0 ≤ Δ := ST_gridStep_nonneg s t K n hst
+  have hKΔ : (K n : ℝ) * Δ ≤ 1 := by
+    rw [hΔdef, TwistGridWTail_K_mul_step s t K n hK]; linarith [hs0, ht1]
+  set ND : ℝ := N ^ D with hNDdef
+  have hND1 : 1 ≤ ND := Real.one_le_rpow hN1 hD.le
+  have hND0 : 0 < ND := by linarith
+  have hNmD : N ^ (-D) = ND⁻¹ := Real.rpow_neg hN0.le D
+  have hΔN : Δ * (N ^ 40 * ND ^ 3) ≤ 1 := by
+    have h1 : N ^ (3 * D + 40) = N ^ 40 * ND ^ 3 := TwistGridWTail2_rpow_CK hN0 D
+    calc Δ * (N ^ 40 * ND ^ 3) = Δ * N ^ (3 * D + 40) := by rw [h1]
+      _ ≤ Δ * K n := mul_le_mul_of_nonneg_left hKN hΔ0
+      _ = (K n : ℝ) * Δ := mul_comm _ _
+      _ ≤ 1 := hKΔ
+  -- the coarse grid
+  set X : ℝ := N ^ 14 * ND with hXdef
+  have hX1 : 1 ≤ X := one_le_mul_of_one_le_of_one_le (one_le_pow₀ hN1) hND1
+  have hX0 : 0 < X := by linarith
+  set P : ℕ := ⌈X⌉₊ with hPdef
+  have hP1 : 1 ≤ P := Nat.one_le_iff_ne_zero.2 (Nat.pos_iff_ne_zero.1 (Nat.ceil_pos.2 hX0))
+  have hXP : X ≤ (P : ℝ) := Nat.le_ceil X
+  have hP3 : (P : ℝ) + 1 ≤ 3 * X := by
+    have := Nat.ceil_lt_add_one hX0.le
+    linarith
+  have hPρ : 1 / (P : ℝ) ≤ X⁻¹ := by
+    rw [← one_div]; exact one_div_le_one_div_of_le hX0 hXP
+  have hρ0 : 0 ≤ N ^ ε' / 4 := by positivity
+  have hρ14 : 1 / 4 ≤ N ^ ε' / 4 := by
+    have := Real.one_le_rpow hN1 hε'.le
+    linarith
+  refine TwistGridWTail2_core sz lam0 E s t K n hr hm hs0 hst ht1 hK D ε' hD hε' hη hR16 hP1 hPρ hKΔ ?_ ?_ ?_ ?_ ?_ σ a c₁ c₂
+  · rw [hNmD]; exact TwistGridWTail2_budget_shift hbig hND1 hΔ0 hΔN
+  · rw [hNmD]; exact TwistGridWTail2_budget_f2 hbig hND1
+  · rw [hNmD]; exact TwistGridWTail2_budget_f1 hbig hND1 _ hρ0
+  · rw [hNmD]
+    exact TwistGridWTail2_budget_Y hbig hND1 hΔ0 hΔN (Nat.cast_nonneg _) hP3 hρ14
+  · rw [hNmD]
+    have hVQ0 : 0 ≤ TwistGridWTail2_VQ N := by unfold TwistGridWTail2_VQ TwistGridWTail2_Mee; positivity
+    have hceil : ((⌈TwistGridWTail2_VQ N / (ND⁻¹ / 2)⌉₊ : ℕ) : ℝ) + 1 ≤ 2 * TwistGridWTail2_VQ N * ND + 2 := by
+      have h0 : 0 ≤ TwistGridWTail2_VQ N / (ND⁻¹ / 2) := by positivity
+      have := Nat.ceil_lt_add_one h0
+      have e : TwistGridWTail2_VQ N / (ND⁻¹ / 2) = 2 * TwistGridWTail2_VQ N * ND := by field_simp
+      linarith
+    exact TwistGridWTail2_budget_Z hN1 hND1 (Real.exp_pos _).le (Nat.cast_nonneg _) hP3 (Nat.cast_nonneg _) hceil hZ
+
+end Asymptotics
+
+/-! ## 7. The target -/
+
+/-- **Target 1, `baTwistGridWTail_holds`**: clause (iv) of 4 (b), the `Ũ`-weighted martingale tail with the weighted quadratic variation `twEEUk`, uniform in `k ≤ K`
+(`BATwistGridWTail`, `BA/TwistGrid2.lean:248`), for every `d` (no `3 ≤ d`).  The grid exponent is `CK = 3 D + 40` (the coarse time grid `P = ⌈N^{C'}⌉`, `C' = D + 14`; both depend on `D`
+only, not on `ε'`, `κ`, `ε`).  Route (twin of `gridRepWTailQN_holds`, `Path/DifREP3.lean:2343`, at one kernel slot): a coarse time grid `v_0 < … < v_P` of `[s, t]` independent of `K`; for each
+`(p, a')` the sums `Σ_{j<k} Ũ_{u_j,v_p} Z_j` (peeling `difRep2_peel`) and `Σ_{j<k} Ũ_{u_j,v_p} Y_j` (Doob, `j`-dependent weights) are martingales in `k`; the exact transfer
+`Σ_{j<k} Ũ_{u_j,u_k} ξ_{j+1} = Ũ_{v_p,u_k} W^p_k` (`BAuKer_comp`) and the kernel and proxy transfers end the proof (`TwistGridWTail2_pathwise`, `TwistGridWTail2_core`). -/
+theorem baTwistGridWTail_holds (d : ℕ) : BATwistGridWTail d := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz s t hs hst htT D hD
+  refine ⟨3 * D + 40, by positivity, ?_⟩
+  intro K hK0 hKN ε' hε'
+  have hsize : sz.SizeTendsto := hz.1.2.2.1
+  have hr := BAflow_real κ ε 𝔠 𝔡 sz z hz
+  have hm : ∀ n, ‖BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n‖ ≤ 1 := fun n =>
+    BAm_norm_le_one d (sz.L n) _ ((BAflowEs sz z n : ℝ) : ℂ) _ (by simp) (hr n).1
+  have ht1 : ∀ n, t n < 1 := fun n => (htT n).trans_lt (EMn2BA_T0_lt_one hκ sz hz n)
+  have hbig : ∀ᶠ n in atTop, (2 : ℝ) ^ 70 ≤ ((sz.size n : ℕ) : ℝ) := hsize.eventually (eventually_ge_atTop _)
+  have hZev := hsize.eventually (TwistGridWTail2_eventually_Z D ε' hD hε')
+  have hεev : ∀ᶠ n in atTop, 1 / (8 * κ) ≤ ((sz.size n : ℕ) : ℝ) ^ ε :=
+    hsize.eventually ((tendsto_rpow_atTop hε).eventually (eventually_ge_atTop (1 / (8 * κ))))
+  filter_upwards [hKN, hbig, hZev, hεev] with n hKNn hbign hZn hεn
+  intro i
+  obtain ⟨hN1, hZn⟩ := hZn
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have hη : ∀ u : ℝ, u ≤ t n → 1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ etaOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) u := by
+    intro u hu
+    have h1 : (z n).im / 2 ≤ 1 - u := (EMn2BA_one_sub_T0 hκ sz hz n).trans (by linarith [htT n])
+    have h2 : κ ≤ (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im := (EMn2BA_mF_data sz hz n).1
+    have h3 : ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) ≤ (z n).im := (hz.2 n).2.1
+    have h0 : 0 ≤ (z n).im / 2 := by linarith [EMn2BA_zim_pos sz hz n]
+    unfold etaOf
+    have h4 : (z n).im / 2 * κ ≤ (1 - u) * (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im :=
+      mul_le_mul h1 h2 hκ.le (by linarith)
+    have h5 : ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) = (((sz.size n : ℕ) : ℝ))⁻¹ * ((sz.size n : ℕ) : ℝ) ^ ε := by
+      rw [Real.rpow_add hN0, Real.rpow_neg_one]
+    have h6 : 1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ (z n).im / 2 * κ := by
+      have h7 : (((sz.size n : ℕ) : ℝ))⁻¹ * (1 / (8 * κ)) ≤ ((sz.size n : ℕ) : ℝ) ^ (-1 + ε) := by
+        rw [h5]; exact mul_le_mul_of_nonneg_left hεn (inv_nonneg.2 hN0.le)
+      have h8 : (((sz.size n : ℕ) : ℝ))⁻¹ * (1 / (8 * κ)) ≤ (z n).im := h7.trans h3
+      calc 1 / (16 * ((sz.size n : ℕ) : ℝ)) = (((sz.size n : ℕ) : ℝ))⁻¹ * (1 / (8 * κ)) / 2 * κ := by field_simp; norm_num
+        _ ≤ (z n).im / 2 * κ := by gcongr
+    exact h6.trans h4
+  have hR16 : ∀ u : ℝ, u ≤ t n → (1 - u)⁻¹ ≤ 16 * ((sz.size n : ℕ) : ℝ) := by
+    intro u hu
+    have hmim : (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im ≤ 1 := (EMn2BA_mF_data sz hz n).2
+    have h1 : (z n).im / 2 ≤ 1 - u := (EMn2BA_one_sub_T0 hκ sz hz n).trans (by linarith [htT n])
+    have h1u : 0 < 1 - u := by linarith [EMn2BA_zim_pos sz hz n]
+    have h2 : etaOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) u ≤ 1 - u := by
+      unfold etaOf
+      nlinarith
+    have h3 : 1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ 1 - u := (hη u hu).trans h2
+    calc (1 - u)⁻¹ ≤ (1 / (16 * ((sz.size n : ℕ) : ℝ)))⁻¹ := inv_anti₀ (by positivity) h3
+      _ = 16 * ((sz.size n : ℕ) : ℝ) := TwistGridWTail2_inv_eta hN0
+  exact TwistGridWTail2_tail_at sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n (hr n) (hm n) (hs n) (hst n) (ht1 n) (hK0 n) D ε' hD hε' hη hR16
+    hKNn hbign hZn i.1 i.2.1 i.2.2.1 i.2.2.2
+
+/-! ## 8. Compiled nonempty instances (`d = 3`, `sz0`: `L = 4 (n+1)`, `W = (2 (n+1))⁵`, `lam = (2 (n+1))⁻⁶`; flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`;
+the window `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` by `t0_sz0`; `D = 1`, `ε' = 1/10`, `K_n = ⌈N_n^{CK}⌉ + 1`).  Every deterministic hypothesis is discharged; the two other part pins of 4 (b)
+(`BATwistGridRem`, `BATwistGridTail`: TL2a2, TL2a3) stay hypotheses of the assembly instance. -/
+
+section Inst
+
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
+
+/-- **The target at the BA datum**: `baTwistGridWTail_holds 3` at `(sz0, zSeq, flow_sz0)`, `s ≡ 1/2`, `t ≡ 2/3`, `D = 1`, the grid `K_n = ⌈N_n^{CK}⌉ + 1` (`≠ 0`, eventually `≥ N^{CK}`) and `ε' = 1/10`:
+for some size index, every label `(σ, a, c₁, c₂)` has the pinned tail bound. -/
+example : ∃ n : ℕ, True := by
+  obtain ⟨CK, hCK, H⟩ := baTwistGridWTail_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) 1 one_pos
+  have H2 := H (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) (fun n => Nat.succ_ne_zero _)
+    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _)) (1 / 10) (by norm_num)
+  obtain ⟨n, hn⟩ := H2.exists
+  exact ⟨n, trivial⟩
+
+/-- The same instance, the conclusion kept: some size index `n` with the pinned bound at every label, at the window `[1/2, 2/3]`. -/
+example : ∃ (CK : ℝ) (n : ℕ), 0 ≤ CK ∧ ∀ i : (Fin 2 → Bool) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n) × Zd 3 (sz0.L n),
+    ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp) {ω | ∃ k, k ≤ (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n ∧
+      ((sz0.size n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * (∑ j ∈ Finset.range k, gridStep (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n *
+        ‖twEEUk sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n i.1 i.2.1 i.2.2.1 i.2.2.2 j k ω‖ +
+        ((sz0.size n : ℕ) : ℝ) ^ (-1 : ℝ)) ^ (1 / 2 : ℝ) <
+      ‖(∑ j ∈ Finset.range k, twU sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n i.1 (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n j)
+          (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n k) *ᵥ
+        (fun b => twMart sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n i.1 b i.2.2.1 i.2.2.2 (j + 1) ω -
+          twMart sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) n i.1 b i.2.2.1 i.2.2.2 j ω)) i.2.1‖} ≤
+      ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-1 : ℝ)) := by
+  obtain ⟨CK, hCK, H⟩ := baTwistGridWTail_holds 3 (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) 1 one_pos
+  have H2 := H (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) (fun n => Nat.succ_ne_zero _)
+    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _)) (1 / 10) (by norm_num)
+  obtain ⟨n, hn⟩ := H2.exists
+  exact ⟨CK, n, hCK, hn⟩
+
+/-- `baTwistGridAssemble_holds` at `d = 3`, `C₀ = 11`, with the proved clause (iv): the other two part pins are the hypotheses (TL2a2, TL2a3). -/
+example (hRem : BATwistGridRem 3 11) (hTail : BATwistGridTail 3) : BATwistGridMartAt 3 11 :=
+  baTwistGridAssemble_holds 3 11 (by norm_num) hRem hTail (baTwistGridWTail_holds 3)
+
+/-- The assembled pin applied at the BA datum `(sz0, zSeq, flow_sz0)`, `D = 1`, the grid `K_n = ⌈N_n^{CK}⌉ + 1`: the conclusion is `∃ Mart Rem, (i)-(iv)`. -/
+example (hRem : BATwistGridRem 3 11) (hTail : BATwistGridTail 3) : True := by
+  have H := baTwistGridAssemble_holds 3 11 (by norm_num) hRem hTail (baTwistGridWTail_holds 3)
+  obtain ⟨CK, hCK, H2⟩ := H (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => 2 / 3)
+    (fun _ => by norm_num) (fun _ => by norm_num) (fun n => t0_sz0 n) 1 one_pos
+  have := H2 (fun n => ⌈((sz0.size n : ℕ) : ℝ) ^ CK⌉₊ + 1) (fun n => Nat.succ_ne_zero _)
+    (Eventually.of_forall fun n => (Nat.le_ceil _).trans (by exact_mod_cast Nat.le_succ _))
+  trivial
+
+end Inst
 
 end RBM.BA
