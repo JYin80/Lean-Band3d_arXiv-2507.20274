@@ -36,6 +36,8 @@ set_option linter.unusedFintypeInType false
 open private TwistGrid_hasDerivAt_Gsig_spec TwistGrid_Pb TwistGrid_twL2M_trace TwistGrid_twK_eq TwistGrid_hasDerivAt_twK
   from RBM3D.BA.TwistGrid
 
+open private TwistPins_M_le_one from RBM3D.BA.TwistPins
+
 open private OneStep_w0 OneStep_w1 OneStep_w2 OneStep_Data OneStep_Data.mk OneStep_Diff OneStep_Diff.mk
   OneStep_norm_w0_le OneStep_norm_w1_le OneStep_norm_w2_le OneStep_norm_w1_sub_le OneStep_norm_w2_sub_le
   OneStep_hasDerivAt_w0 OneStep_hasDerivAt_w1 OneStep_hasDerivAt_trace OneStep_hasDerivAt_lineR
@@ -45,7 +47,7 @@ open private OneStep_w0 OneStep_w1 OneStep_w2 OneStep_Data OneStep_Data.mk OneSt
   OneStep_norm_Eblk_le_one from RBM3D.Path.OneStep
 
 open MeasureTheory Filter
-open scoped Matrix Matrix.Norms.L2Operator
+open scoped Matrix
 
 noncomputable section
 
@@ -55,6 +57,8 @@ open RBM RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 /-! ## 1. The word functional and its jets -/
 
 section Word
+
+open scoped Matrix.Norms.L2Operator
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] {ι : Type} (Ei : ι → Matrix (Vtx d L W) (Vtx d L W) ℂ)
   (l : List (Bool × ι))
@@ -142,6 +146,8 @@ end Word
 /-! ## 2. Derivatives along a Hermitian line and along the spectral flow, continuity, linearity -/
 
 section Calculus
+
+open scoped Matrix.Norms.L2Operator
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] {ι : Type} {Ei : ι → Matrix (Vtx d L W) (Vtx d L W) ℂ} {l : List (Bool × ι)}
 
@@ -238,6 +244,8 @@ end Calculus
 /-! ## 3. The Stein step: the derivative of `x ↦ E Φ(M + x X)` -/
 
 section Stein
+
+open scoped Matrix.Norms.L2Operator
 
 variable {d L W : ℕ} (g : ℝ) [NeZero L] [NeZero W] {ι : Type} {Ei : ι → Matrix (Vtx d L W) (Vtx d L W) ℂ}
   {l : List (Bool × ι)} {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) {z : ℂ} (hz : z.im ≠ 0)
@@ -336,6 +344,8 @@ end Stein
 /-! ## 4. The space step: `E Φ(M + τ X) - Φ(M) - τ² g(M)` -/
 
 section SpaceStep
+
+open scoped Matrix.Norms.L2Operator
 
 variable {d L W : ℕ} (g : ℝ) [NeZero L] [NeZero W] {ι : Type} (Ei : ι → Matrix (Vtx d L W) (Vtx d L W) ℂ)
   (l : List (Bool × ι))
@@ -504,6 +514,8 @@ end SpaceStep
 /-! ## 5. The time step and the envelope of a word -/
 
 section Envelope
+
+open scoped Matrix.Norms.L2Operator
 
 variable {d L W : ℕ} (g : ℝ) [NeZero L] [NeZero W] {ι : Type} {Ei : ι → Matrix (Vtx d L W) (Vtx d L W) ℂ}
   {l : List (Bool × ι)}
@@ -700,6 +712,8 @@ end Envelope
 
 section DerivDeriv
 
+open scoped Matrix.Norms.L2Operator
+
 variable {d L W : ℕ} [NeZero L] [NeZero W] {ι : Type} {Ei : ι → Matrix (Vtx d L W) (Vtx d L W) ℂ} {l : List (Bool × ι)}
 
 /-- The mixed second derivative along a coordinate line, as the second jet (`OneStep_deriv_deriv`). -/
@@ -722,6 +736,8 @@ end DerivDeriv
 /-! ## 6. The twisted word: `L̃ = Tr(G₁ E_a G₂ P_{c₁c₂})`, `twGenM`, and the envelope -/
 
 section Twisted
+
+open scoped Matrix.Norms.L2Operator
 
 variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
 
@@ -825,5 +841,204 @@ theorem TwistGridRem_envelope (hm : 0 < (BAmF sz lam0 E n).im) (hmn : ‖BAmF sz
   norm_num
 
 end Twisted
+
+/-! ## 7. The Taylor bound of `K̃` (the exact resolvent identity, no second derivative) -/
+
+section KTaylor
+
+open scoped Matrix.Norms.Operator
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
+
+/-- `Θ_{u+Δ} - Θ_u - Δ Θ_u Q Θ_u = Δ² Θ_{u+Δ} Q Θ_u Q Θ_u` (`Θ_t = (1 - tQ)⁻¹`, `Q = M^{(σ₁σ₂)}`). -/
+private theorem TwistGridRem_theta_taylor {L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {u Δ : ℝ}
+    (hu0 : 0 ≤ u) (hu1 : u + Δ < 1) (hΔ : 0 ≤ Δ) (σ₁ σ₂ : Bool) :
+    BATheta d L g E m (u + Δ) σ₁ σ₂ - BATheta d L g E m u σ₁ σ₂ - (Δ : ℂ) • (BATheta d L g E m u σ₁ σ₂ *
+        BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ * BATheta d L g E m u σ₁ σ₂) =
+      ((Δ : ℂ) ^ 2) • (BATheta d L g E m (u + Δ) σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ *
+        BATheta d L g E m u σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ * BATheta d L g E m u σ₁ σ₂) := by
+  have h1 := BATheta_resolvent d L g κ E m hr u hu0 (by linarith) σ₁ σ₂
+  have h2 := BATheta_resolvent d L g κ E m hr (u + Δ) (by linarith) hu1 σ₁ σ₂
+  set Θ := BATheta d L g E m u σ₁ σ₂
+  set Θ' := BATheta d L g E m (u + Δ) σ₁ σ₂
+  set Q := BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂
+  have hl : Θ - (u : ℂ) • (Q * Θ) = 1 := by rw [sub_eq_iff_eq_add]; exact h1.1
+  have hr' : Θ' - ((u + Δ : ℝ) : ℂ) • (Θ' * Q) = 1 := by rw [sub_eq_iff_eq_add]; exact h2.2
+  have key : Θ' - Θ = (Δ : ℂ) • (Θ' * Q * Θ) := by
+    calc Θ' - Θ = Θ' * (Θ - (u : ℂ) • (Q * Θ)) - (Θ' - ((u + Δ : ℝ) : ℂ) • (Θ' * Q)) * Θ := by
+          rw [hl, hr', mul_one, one_mul]
+      _ = (Δ : ℂ) • (Θ' * Q * Θ) := by
+          simp only [mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc, Matrix.mul_assoc]
+          push_cast
+          module
+  have key2 : Θ' - Θ - (Δ : ℂ) • (Θ * Q * Θ) = (Δ : ℂ) • ((Θ' - Θ) * Q * Θ) := by
+    simp only [sub_mul, smul_sub]
+    rw [key]
+  rw [key2, key]
+  simp only [smul_mul_assoc, smul_smul, Matrix.mul_assoc, pow_two]
+
+/-- `Z ↦ W^{-d} Σ_{a'} Z(a,a') M(σ₁)_{c₂a'} M(σ₂)_{a'c₁}`: the functional by which `K̃` is built from `Θ`. -/
+private def TwistGridRem_S (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) (Z : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) : ℂ :=
+  (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ a' : Zd d (sz.L n), Z a a' *
+    BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a' *
+    BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁
+
+private theorem TwistGridRem_S_sub (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) (Z₁ Z₂ : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) :
+    TwistGridRem_S sz lam0 E n σ a c₁ c₂ (Z₁ - Z₂) = TwistGridRem_S sz lam0 E n σ a c₁ c₂ Z₁ - TwistGridRem_S sz lam0 E n σ a c₁ c₂ Z₂ := by
+  simp only [TwistGridRem_S, Matrix.sub_apply, sub_mul, Finset.sum_sub_distrib, mul_sub]
+
+private theorem TwistGridRem_S_smul (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) (c : ℂ) (Z : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) :
+    TwistGridRem_S sz lam0 E n σ a c₁ c₂ (c • Z) = c * TwistGridRem_S sz lam0 E n σ a c₁ c₂ Z := by
+  simp only [TwistGridRem_S, Matrix.smul_apply, smul_eq_mul, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun a' _ => ?_
+  ring
+
+private theorem TwistGridRem_S_norm_le {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) (σ : Fin 2 → Bool)
+    (a c₁ c₂ : Zd d (sz.L n)) (Z : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) : ‖TwistGridRem_S sz lam0 E n σ a c₁ c₂ Z‖ ≤ ‖Z‖ := by
+  unfold TwistGridRem_S
+  have hW : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 1 := by
+    have : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    exact inv_le_one_of_one_le₀ (one_le_pow₀ this)
+  have hsum : ‖∑ a' : Zd d (sz.L n), Z a a' *
+      BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a' *
+      BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁‖ ≤ ‖Z‖ := by
+    refine (norm_sum_le _ _).trans ((Finset.sum_le_sum fun a' _ => ?_).trans (sum_norm_row_le Z a))
+    rw [norm_mul, norm_mul]
+    have h0 := TwistPins_M_le_one hr (σ 0) c₂ a'
+    have h1 := TwistPins_M_le_one hr (σ 1) a' c₁
+    calc ‖Z a a'‖ * ‖BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a'‖ *
+          ‖BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁‖ ≤ ‖Z a a'‖ * 1 * 1 :=
+          mul_le_mul (mul_le_mul_of_nonneg_left h0 (norm_nonneg _)) h1 (norm_nonneg _) (by positivity)
+      _ = ‖Z a a'‖ := by ring
+  rw [norm_mul]
+  have hn : ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹‖ ≤ 1 := by simpa using hW
+  calc ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹‖ * ‖_‖ ≤ 1 * ‖Z‖ := mul_le_mul hn hsum (norm_nonneg _) zero_le_one
+    _ = ‖Z‖ := one_mul _
+
+/-- **The Taylor bound of `K̃` in the grid step**: `‖K̃_{u+Δ} - K̃_u - Δ ∂_uK̃_u‖ ≤ (1 - u - Δ)^{-3} Δ²` for `0 ≤ u`, `0 ≤ Δ`, `u + Δ < 1`, `BAReal`
+(`Θ_{u+Δ} - Θ_u - ΔΘ_uQΘ_u = Δ²Θ_{u+Δ}QΘ_uQΘ_u`, `‖Θ_v‖ ≤ (1 - v)⁻¹`, `‖Q‖ ≤ 1`, `|M(σ)_{xy}| ≤ 1`, `W^{-d} ≤ 1`; every `d`). -/
+theorem TwistGridRem_twK_taylor {κ : ℝ} (hκ : 0 < κ) (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n))
+    (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) {u Δ : ℝ} (hu0 : 0 ≤ u) (hΔ : 0 ≤ Δ) (hu1 : u + Δ < 1) :
+    ‖twK (baFM sz lam0 E) n (u + Δ) σ a c₁ c₂ - twK (baFM sz lam0 E) n u σ a c₁ c₂ -
+        (Δ : ℂ) * deriv (fun v : ℝ => twK (baFM sz lam0 E) n v σ a c₁ c₂) u‖ ≤ ((1 - (u + Δ))⁻¹) ^ 3 * Δ ^ 2 := by
+  have hm : 0 < (BAmF sz lam0 E n).im := lt_of_lt_of_le hκ hr.2
+  have hu1' : u < 1 := by linarith
+  have hd := (TwistGrid_hasDerivAt_twK sz lam0 E n hκ hr hu0 hu1' σ a c₁ c₂).deriv
+  rw [hd, TwistGrid_twK_eq sz lam0 E n hm (u + Δ) σ a c₁ c₂, TwistGrid_twK_eq sz lam0 E n hm u σ a c₁ c₂]
+  set Θ := BATheta d (sz.L n) (lam0 n) (E n) (BAmF sz lam0 E n) u (σ 0) (σ 1) with hΘ
+  set Θ' := BATheta d (sz.L n) (lam0 n) (E n) (BAmF sz lam0 E n) (u + Δ) (σ 0) (σ 1) with hΘ'
+  set Q := BAMss d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) (σ 1) with hQ
+  have hX := TwistGridRem_theta_taylor hr hu0 hu1 hΔ (σ 0) (σ 1)
+  have e : ∀ Z : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ, TwistGridRem_S sz lam0 E n σ a c₁ c₂ Z =
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ a' : Zd d (sz.L n), Z a a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁ := fun Z => rfl
+  have hS : (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ a' : Zd d (sz.L n), Θ' a a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁ -
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ a' : Zd d (sz.L n), Θ a a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁ -
+      (Δ : ℂ) * ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ a' : Zd d (sz.L n), (Θ * Q * Θ) a a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) c₂ a' *
+        BAMsigma d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 1) a' c₁) =
+      TwistGridRem_S sz lam0 E n σ a c₁ c₂ (((Δ : ℂ) ^ 2) • (Θ' * Q * Θ * Q * Θ)) := by
+    rw [← hX, TwistGridRem_S_sub, TwistGridRem_S_sub, TwistGridRem_S_smul]
+    rfl
+  rw [hS]
+  refine (TwistGridRem_S_norm_le sz lam0 E n hr σ a c₁ c₂ _).trans ?_
+  have hc : ‖((Δ : ℂ) ^ 2)‖ = Δ ^ 2 := by
+    rw [norm_pow, Complex.norm_real, Real.norm_of_nonneg hΔ]
+  have hΘn : ‖Θ‖ ≤ (1 - u)⁻¹ := EKPins_norm_Theta_le hr hu0 hu1' (σ 0) (σ 1)
+  have hΘ'n : ‖Θ'‖ ≤ (1 - (u + Δ))⁻¹ := EKPins_norm_Theta_le hr (by linarith) hu1 (σ 0) (σ 1)
+  have hQn : ‖Q‖ ≤ 1 := EKPins_norm_Q_le hr (σ 0) (σ 1)
+  have hinv : (1 - u)⁻¹ ≤ (1 - (u + Δ))⁻¹ := inv_anti₀ (by linarith) (by linarith)
+  have h1u : 0 < 1 - (u + Δ) := by linarith
+  have hY : ‖Θ' * Q * Θ * Q * Θ‖ ≤ ((1 - (u + Δ))⁻¹) ^ 3 := by
+    calc ‖Θ' * Q * Θ * Q * Θ‖ ≤ ‖Θ'‖ * ‖Q‖ * ‖Θ‖ * ‖Q‖ * ‖Θ‖ := by
+          refine (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right ?_ (norm_nonneg _))
+          refine (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right ?_ (norm_nonneg _))
+          exact (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
+      _ ≤ (1 - (u + Δ))⁻¹ * 1 * (1 - (u + Δ))⁻¹ * 1 * (1 - (u + Δ))⁻¹ := by
+          have hp : 0 ≤ (1 - (u + Δ))⁻¹ := inv_nonneg.2 h1u.le
+          gcongr
+          exact hΘn.trans hinv
+          exact hΘn.trans hinv
+      _ = ((1 - (u + Δ))⁻¹) ^ 3 := by ring
+  rw [norm_smul, hc]
+  calc Δ ^ 2 * ‖Θ' * Q * Θ * Q * Θ‖ ≤ Δ ^ 2 * ((1 - (u + Δ))⁻¹) ^ 3 := mul_le_mul_of_nonneg_left hY (sq_nonneg Δ)
+    _ = _ := mul_comm _ _
+
+end KTaylor
+
+/-! ## 8. The one-step bound at a Hermitian matrix: `‖E A_{u+Δ}(M + √Δ X) - A_u(M) - Δ Drift_u(M)‖ ≤ Z₁ Δ^{3/2} + Z₂ Δ²` -/
+
+section Step
+
+open scoped Matrix.Norms.L2Operator
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
+
+/-- `L̃(M + τ X)` is integrable over the Gaussian law (continuous and bounded). -/
+theorem TwistGridRem_integrable_twL2M (hm : 0 < (BAmF sz lam0 E n).im) {v : ℝ} (hv : v < 1) (σ : Fin 2 → Bool)
+    (a c₁ c₂ : Zd d (sz.L n)) (g : ℝ) {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian)
+    (τ : ℝ) :
+    Integrable (fun ω : Ω d (sz.L n) (sz.W n) => twL2M sz lam0 E n v (M + (τ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂)
+      (PF d (sz.L n) (sz.W n) g) := by
+  have hz : (ztOf (BAmF sz lam0 E n) (E n) v).im ≠ 0 := by
+    rw [ztOf_im]
+    exact (TwistGridRem_eta_pos hm hv).ne'
+  have hη : 0 < |(ztOf (BAmF sz lam0 E n) (E n) v).im| := abs_pos.mpr hz
+  have hherm : ∀ ω : Ω d (sz.L n) (sz.W n), (M + (τ : ℂ) • Xmat d (sz.L n) (sz.W n) ω).IsHermitian := fun ω =>
+    OneStep_isHermitian_add_realSmul hM (Xmat_isHermitian d (sz.L n) (sz.W n) ω) τ
+  have hfun : (fun ω : Ω d (sz.L n) (sz.W n) => twL2M sz lam0 E n v (M + (τ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂) =
+      fun ω => TwistGridRem_F (TwistGridRem_letters d (sz.L n) (sz.W n) a c₁ c₂) (TwistGridRem_word σ)
+        (blockMat d (sz.L n) (sz.W n) (M + (τ : ℂ) • Xmat d (sz.L n) (sz.W n) ω)) (ztOf (BAmF sz lam0 E n) (E n) v) :=
+    funext fun ω => TwistGridRem_twL2M_eq sz lam0 E n (hherm ω) v σ a c₁ c₂
+  rw [hfun]
+  refine Integrable.of_bound ?_ _ (Filter.Eventually.of_forall fun ω =>
+    TwistGridRem_norm_F_le (TwistGridRem_letters_norm sz n a c₁ c₂) ((hherm ω).submatrix _) hη le_rfl)
+  exact (TwistGridRem_continuous_F (f := fun ω : Ω d (sz.L n) (sz.W n) => blockMat d (sz.L n) (sz.W n) (M + (τ : ℂ) • Xmat d (sz.L n) (sz.W n) ω))
+    (OneStep_continuous_blockMat.comp (continuous_const.add ((continuous_Xmat d (sz.L n) (sz.W n)).const_smul (τ : ℂ))))
+    (fun ω => (hherm ω).submatrix _) hz).aestronglyMeasurable
+
+/-- **The one-step bound** (the twisted twin of `condExp_loop_drift`'s deterministic content): for Hermitian `M`, `A_v(M) = L̃_v(M) - K̃_v`, `Drift = twDriftM`
+(`BATwistHier_holds`), `‖E A_{u+Δ}(M + √Δ X) - A_u(M) - Δ Drift_u(M)‖ ≤ 10⁴ N⁴ (1 + η⁻¹)⁶ Δ^{3/2} + (1 - u - Δ)^{-3} Δ²`, `η = (1 - u - Δ) Im m_F`. -/
+theorem TwistGridRem_step {κ : ℝ} (hκ : 0 < κ) (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) (hg : 0 < lam0 n)
+    (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) {u Δ : ℝ} (hu : 0 ≤ u) (hΔ : 0 ≤ Δ) (hu1 : u + Δ < 1)
+    {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian) :
+    ‖(∫ ω : Ω d (sz.L n) (sz.W n), (twL2M sz lam0 E n (u + Δ) (M + (Real.sqrt Δ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂ -
+          twK (baFM sz lam0 E) n (u + Δ) σ a c₁ c₂) ∂(PF d (sz.L n) (sz.W n) 0)) -
+        (twL2M sz lam0 E n u M σ a c₁ c₂ - twK (baFM sz lam0 E) n u σ a c₁ c₂) -
+        (Δ : ℂ) * twDriftM sz lam0 E n u M σ a c₁ c₂‖ ≤
+      10000 * (((sz.W n * sz.L n) ^ d : ℕ) : ℝ) ^ 4 * (1 + (etaOf (BAmF sz lam0 E n) (u + Δ))⁻¹) ^ 6 * Δ ^ ((3 : ℝ) / 2) +
+        ((1 - (u + Δ))⁻¹) ^ 3 * Δ ^ 2 := by
+  have hm : 0 < (BAmF sz lam0 E n).im := lt_of_lt_of_le hκ hr.2
+  have hmn : ‖BAmF sz lam0 E n‖ ≤ 1 := BAm_norm_le_one d (sz.L n) (lam0 n) ((E n : ℝ) : ℂ) (BAmF sz lam0 E n) (by simp) hr.1
+  have hu1' : u < 1 := by linarith
+  have hint := TwistGridRem_integrable_twL2M sz lam0 E n hm (show u + Δ < 1 from hu1) σ a c₁ c₂ 0 hM (Real.sqrt Δ)
+  have hI : (∫ ω : Ω d (sz.L n) (sz.W n), (twL2M sz lam0 E n (u + Δ) (M + (Real.sqrt Δ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂ -
+          twK (baFM sz lam0 E) n (u + Δ) σ a c₁ c₂) ∂(PF d (sz.L n) (sz.W n) 0)) =
+      (∫ ω : Ω d (sz.L n) (sz.W n), twL2M sz lam0 E n (u + Δ) (M + (Real.sqrt Δ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂
+          ∂(PF d (sz.L n) (sz.W n) 0)) - twK (baFM sz lam0 E) n (u + Δ) σ a c₁ c₂ := by
+    rw [integral_sub hint (integrable_const _)]
+    simp
+  have hH := BATwistHier_holds d sz lam0 E n κ hκ hg hr u hu hu1' M hM σ a c₁ c₂
+  have h1 := TwistGridRem_envelope sz lam0 E n hm hmn σ a c₁ c₂ hu hΔ hu1 hM
+  have h2 := TwistGridRem_twK_taylor sz lam0 E n hκ hr σ a c₁ c₂ hu hΔ hu1
+  have e : (∫ ω : Ω d (sz.L n) (sz.W n), (twL2M sz lam0 E n (u + Δ) (M + (Real.sqrt Δ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂ -
+          twK (baFM sz lam0 E) n (u + Δ) σ a c₁ c₂) ∂(PF d (sz.L n) (sz.W n) 0)) -
+        (twL2M sz lam0 E n u M σ a c₁ c₂ - twK (baFM sz lam0 E) n u σ a c₁ c₂) -
+        (Δ : ℂ) * twDriftM sz lam0 E n u M σ a c₁ c₂ =
+      ((∫ ω : Ω d (sz.L n) (sz.W n), twL2M sz lam0 E n (u + Δ) (M + (Real.sqrt Δ : ℂ) • Xmat d (sz.L n) (sz.W n) ω) σ a c₁ c₂
+          ∂(PF d (sz.L n) (sz.W n) 0)) - twL2M sz lam0 E n u M σ a c₁ c₂ - (Δ : ℂ) * twGenM sz lam0 E n u M σ a c₁ c₂) -
+      (twK (baFM sz lam0 E) n (u + Δ) σ a c₁ c₂ - twK (baFM sz lam0 E) n u σ a c₁ c₂ -
+        (Δ : ℂ) * deriv (fun v : ℝ => twK (baFM sz lam0 E) n v σ a c₁ c₂) u) := by
+    rw [hI, ← hH]
+    ring
+  rw [e]
+  exact (norm_sub_le _ _).trans (add_le_add h1 h2)
+
+end Step
 
 end RBM.BA
