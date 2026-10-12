@@ -507,6 +507,7 @@ import RBM3D.Graph.BAShapeO2
 import RBM3D.Graph.BAShapeO2B
 import RBM3D.Graph.BAEngine
 import RBM3D.BA.TwistLoop
+import RBM3D.Chain.GridDuhamelGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
