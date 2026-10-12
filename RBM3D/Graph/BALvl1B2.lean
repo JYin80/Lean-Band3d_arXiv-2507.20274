@@ -137,7 +137,133 @@ theorem BALvl1B_ord_d4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
   simp only [BAGraph.scalingOrder, BAGraph.counters, ord, hS, List.length_nil, List.length_singleton]
   omega
 
+/-- the four invariants that `BAstepMono` reads, from the equality of the invariant tuples `BASim_inv` -/
+theorem BALvl1B_inv4 {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] {T : BAGraph E I} {G : BAGraph E' I'}
+    (h : BASim_inv T = BASim_inv G) :
+    T.scalingOrder = G.scalingOrder ∧ T.nM = G.nM ∧ (T.nA : ℤ) - T.nW = (G.nA : ℤ) - G.nW ∧ T.nExt = G.nExt := by
+  simp only [BASim_inv, Prod.mk.injEq] at h
+  obtain ⟨a, b, c, -, -, -, g⟩ := h
+  exact ⟨a, b, c, g⟩
+
+/-- the terms of the first group of macro (a): `W.first` (`BALvl1B_d_mono`) and the derivative terms (`BALvl1B_lanlw_mono`) -/
+theorem BALvl1B_within_mono (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (h1 : p.1.σ = true) (h2 : p.1.circ = true) :
+    ∀ T ∈ BASim_Fwithin p Γ, (BAWeightOp_circ T).nM ≤ Γ.nM ∧ ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW ≤ (Γ.nA : ℤ) - Γ.nW := by
+  intro T hT
+  simp only [BASim_Fwithin, List.mem_cons, List.mem_map] at hT
+  rcases hT with rfl | ⟨q, hq, rfl⟩
+  · exact BALvl1B_d_mono Γ p.2 [bpS true (bpv 1) (bpv 1), bpS true (bpv 0) (owxEmb 2 p.1.dst)] [] p.1.src
+  · exact BALvl1B_lanlw_mono Γ p hp h1 h2 _ (List.mem_cons_of_mem _ (List.mem_map_of_mem hq))
+
+/-- **The four terms `X.d1`-`X.d4` of macro (b) are `BALvl1B_TermOk`** over `Γ`: `d1` by `BASim_fam_d1`; `d2`, `d3` (circled, so `ordG = ord`) by `BASim_ord_d2/d3`; `d4` by `BALvl1B_ord_d4`; the counters at `T°`
+by `BALvl1B_d_mono`. -/
+theorem BALvl1B_dterms_ok (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
+    (hsame : Γ.sameAtom p.1.src q.1.dst = true) :
+    ∀ T ∈ [BAGraph.ext 2 Γ q.2 [bpS false (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 q.1.dst), bpS false (bpv 1) (owxEmb 2 p.1.dst)]
+        [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)],
+      BAGraph.ext 2 Γ q.2 [bpS true (owxEmb 2 q.1.src) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
+        [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (bpv 1) (owxEmb 2 p.1.dst)],
+      BAGraph.ext 2 Γ q.2 [bpS true (bpv 1) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)]
+        [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (owxEmb 2 q.1.src) (bpv 1)],
+      BAGraph.ext 2 Γ q.2 [] [bpW false (bpv 0) (bpv 1)]
+        [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (owxEmb 2 q.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 p.1.dst)]], BALvl1B_TermOk Γ T := by
+  have hcirc : ∀ e ∈ q.2, e.circ = true := fun e he => BASim_hcirc hN hp e (lvl1_mem_split _ q hq e he)
+  intro T hT
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at hT
+  rcases hT with rfl | rfl | rfl | rfl
+  · have hm := BALvl1B_d_mono Γ q.2 [bpS false (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 q.1.dst), bpS false (bpv 1) (owxEmb 2 p.1.dst)] [] p.1.src
+    exact ⟨BASim_Ext_ext 2 Γ _ _ _ _, (BASim_fam_d1 Γ p q hp hq).hmono Γ hN rfl _ (List.mem_singleton_self _), hm.1, hm.2⟩
+  · have hm := BALvl1B_d_mono Γ q.2 [bpS true (owxEmb 2 q.1.src) (bpv 1)]
+      [bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (bpv 1) (owxEmb 2 p.1.dst)] p.1.src
+    have hNT := BALvl1B_ext_normal 2 Γ hN q.2 [bpS true (owxEmb 2 q.1.src) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
+      [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (bpv 1) (owxEmb 2 p.1.dst)] hcirc (by simp [bpS])
+    exact ⟨BASim_Ext_ext 2 Γ _ _ _ _, by rw [BAGraph.scalingOrderG_of_normal _ hNT]; exact WithTop.coe_le_coe.2 (BASim_ord_d2 Γ p q hp hq hsame).le, hm.1, hm.2⟩
+  · have hm := BALvl1B_d_mono Γ q.2 [bpS true (bpv 1) (owxEmb 2 p.1.dst)]
+      [bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (owxEmb 2 q.1.src) (bpv 1)] p.1.src
+    have hNT := BALvl1B_ext_normal 2 Γ hN q.2 [bpS true (bpv 1) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)]
+      [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (owxEmb 2 q.1.src) (bpv 1)] hcirc (by simp [bpS])
+    exact ⟨BASim_Ext_ext 2 Γ _ _ _ _, by rw [BAGraph.scalingOrderG_of_normal _ hNT]; exact WithTop.coe_le_coe.2 (BASim_ord_d3 Γ p q hp hq hsame).le, hm.1, hm.2⟩
+  · have hm := BALvl1B_d_mono Γ q.2 []
+      [bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (owxEmb 2 q.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 p.1.dst)] p.1.src
+    have hNT := BALvl1B_ext_normal 2 Γ hN q.2 [] [bpW false (bpv 0) (bpv 1)]
+      [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (owxEmb 2 q.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 p.1.dst)] hcirc (by simp)
+    exact ⟨BASim_Ext_ext 2 Γ _ _ _ _, by rw [BAGraph.scalingOrderG_of_normal _ hNT]; exact WithTop.coe_le_coe.2 (BALvl1B_ord_d4 Γ p q hp hq hsame), hm.1, hm.2⟩
+
 end Dterms
+
+section Macro
+
+variable {E0 : Type}
+
+/-- **Macro claim (a), `within`** (T2395 design §3 Step 3 (e)): the outputs of the first group (`W.first`, `lanlwD`: `BASim_fam_within`, `BALvl1B_within_mono`) and of the second stage at the transfer graph `tr`
+(`lw2`, `lw4` at `Ǧ_{ββ}`: `tr` is normal and has the invariants of `P`, `BASim_inv_trA`; `lw_mono` at `tr`) are normal, their order does not fall, `n_M`, `n_A - n_W`, `nExt` do not grow. -/
+theorem BALvl1B_within (P : BAPGraph E0) (hN : P.g.Normal) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
+    (h1 : p.1.σ = true) (h2 : p.1.circ = true) (hxy : P.g.sameAtom p.1.src p.1.dst = true) : ∀ Q ∈ P.withinOuts p, BALvl1B_Mono P Q := by
+  intro Q hQ
+  have hNtr : (BAGraph.BAScost_trA P.g p).Normal :=
+    BALvl1B_ext_normal 2 P.g hN _ _ _ _ (BASim_hcirc hN hp) (by simp [bpS])
+  have hinv := BALvl1B_inv4 (BASim_inv_trA P.g p hp hxy)
+  have hpp : (bpS true (bpv 1) (bpv 1), p.2.map (SEdge.map (owxEmb 2))) ∈ lwSplit (BAGraph.BAScost_trA P.g p).solid := lvl1_split_last _ _
+  obtain ⟨m2, m4⟩ := lw_mono (BAGraph.BAScost_trA P.g p) _ hpp rfl rfl
+  unfold BAPGraph.withinOuts at hQ
+  simp only [List.mem_append] at hQ
+  rcases hQ with (hQ | hQ) | hQ
+  · exact BALvl1B_outs_fam P P.g (BASim_fam_within P.g p hp h1 h2) (BASim_Fwithin p P.g) (fun T hT => hT) hN ⟨rfl, rfl, rfl, rfl⟩
+      (fun T hT => (BALvl1B_within_mono P.g p hp h1 h2 T hT).1) (fun T hT => (BALvl1B_within_mono P.g p hp h1 h2 T hT).2) Q hQ
+  · exact BALvl1B_outs_fam P (BAGraph.BAScost_trA P.g p) (BASim_fam_lw2 _ _ hpp rfl rfl) _ (fun T hT => hT) hNtr hinv
+      (fun T hT => (m2 T hT).1.le) (fun T hT => (m2 T hT).2.1.le) Q hQ
+  · exact BALvl1B_outs_fam P (BAGraph.BAScost_trA P.g p) (BASim_fam_lw4 _ _ hpp rfl rfl) _ (fun T hT => hT) hNtr hinv
+      (fun T hT => (m4 T hT).1.le) (fun T hT => (m4 T hT).2.1.le) Q hQ
+
+/-- **Macro claim (b), `ggSplit`** (T2395 design §3 Step 3 (e)): the outputs of `lanlw` (`BASim_fam_lanlw`, `BALvl1B_lanlw_mono`), of the terms `d1`-`d4` (`BALvl1B_dterms_ok`) and of the second stage at the transfer graph `tr`
+(`gg2`, `gg4` at the pair `Ǧ_{βy}`, `Ǧ_{y'β}`: `tr` is normal and has the invariants of `P`, `BALvl1B_trB_inv`; `gg_mono` at `tr`) are normal, their order does not fall, `n_M`, `n_A - n_W`, `nExt` do not grow. -/
+theorem BALvl1B_ggSplit (P : BAPGraph E0) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
+    (hq : q ∈ lwSplit p.2) (j : ℕ) (h1 : p.1.σ = true) (h2 : p.1.circ = true) (hsame : P.g.sameAtom p.1.src q.1.dst = true) :
+    ∀ Q ∈ P.splitOuts p q j, BALvl1B_Mono P Q := by
+  intro Q hQ
+  have hcirc : ∀ e ∈ q.2, e.circ = true := fun e he => BASim_hcirc hN hp e (lvl1_mem_split _ q hq e he)
+  have hNtr : (BAGraph.BAScost_trB P.g p q).Normal := BALvl1B_ext_normal 2 P.g hN _ _ _ _ hcirc (by simp [bpS])
+  have hinv := BALvl1B_trB_inv P.g p q hp hq hsame
+  have hp2 : (bpS true (bpv 1) (owxEmb 2 p.1.dst), q.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 q.1.src) (bpv 1)]) ∈
+      lwSplit (BAGraph.BAScost_trB P.g p q).solid := by
+    have := lvl1_split_last (q.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 q.1.src) (bpv 1)]) (bpS true (bpv 1) (owxEmb 2 p.1.dst))
+    rwa [List.append_assoc] at this
+  have hq2 : (bpS true (owxEmb 2 q.1.src) (bpv 1), q.2.map (SEdge.map (owxEmb 2))) ∈
+      lwSplit (q.2.map (SEdge.map (owxEmb 2)) ++ [bpS true (owxEmb 2 q.1.src) (bpv 1)]) := lvl1_split_last _ _
+  obtain ⟨m2, m4⟩ := gg_mono (BAGraph.BAScost_trB P.g p q) _ _ hp2 hq2
+  unfold BAPGraph.splitOuts at hQ
+  simp only [List.mem_append] at hQ
+  rcases hQ with ((hQ | hQ) | hQ) | hQ
+  · refine BALvl1B_outs_fam P P.g (BASim_fam_lanlw P.g p hp h1 h2) _ (fun T hT => ?_) hN ⟨rfl, rfl, rfl, rfl⟩
+      (fun T hT => (BALvl1B_lanlw_mono P.g p hp h1 h2 T (?_)).1) (fun T hT => (BALvl1B_lanlw_mono P.g p hp h1 h2 T (?_)).2) Q hQ
+    all_goals
+      simp only [List.mem_cons, List.mem_map] at hT
+      rcases hT with rfl | ⟨q', hq', rfl⟩
+      · exact List.mem_cons_self
+      · exact List.mem_cons_of_mem _ (List.mem_map_of_mem (List.mem_of_mem_eraseIdx hq'))
+  · exact BALvl1B_outs_ok P P.g _ hN ⟨rfl, rfl, rfl, rfl⟩ (BALvl1B_dterms_ok P.g hN p q hp hq hsame) Q hQ
+  · exact BALvl1B_outs_fam P (BAGraph.BAScost_trB P.g p q) (BASim_fam_gg2 _ _ _ hp2 hq2) _ (fun T hT => hT) hNtr hinv
+      (fun T hT => (m2 T hT).1) (fun T hT => (m2 T hT).2.1) Q hQ
+  · exact BALvl1B_outs_fam P (BAGraph.BAScost_trB P.g p q) (BASim_fam_gg4 _ _ _ hp2 hq2) _ (fun T hT => hT) hNtr hinv
+      (fun T hT => (m4 T hT).1) (fun T hT => (m4 T hT).2.1) Q hQ
+
+/-- **Target 4, the counter half of Lemma S** (D§3 Step 3 (a), (c), (e); T2395 probe 269-270): every output of a frame step at a normal BA graph is normal, its order does not fall, `n_M`, `n_A - n_W`
+and the number of external atoms do not grow; one case per constructor of `BAFrameStep`. -/
+theorem baStepMono_holds : BAstepMono := by
+  intro E P outs hst hN Q hQ
+  cases hst with
+  | weight p hp h => exact BALvl1B_weight P hN hp h.1 h.2.1 Q hQ
+  | within p hp h => exact BALvl1B_within P hN hp h.1 h.2.1 h.2.2.2 Q hQ
+  | edge p hp h x hx hwf hv hint hbad => exact BALvl1B_edge P hN hp h.1 h.2 Q hQ
+  | gg p hp q hq h x hx hwf hint hnb => exact BALvl1B_gg P hN hp hq Q hQ
+  | ggSplit p hp q j hj h a a' hx hne hsame hwf hint hnb =>
+    exact BALvl1B_ggSplit P hN hp (List.mem_of_getElem? hj) j h.1 h.2.1 (by rw [hx.1, hx.2]; exact hsame) Q hQ
+
+/-- **Target 5, `BAlvl1StepGood`** (the BA `lvl1_step_good`, L3a4): the reduction `ba_lvl1StepGood_of_sim'` at the image (`BAimg_holds`, R0), the simulation `baSim'_holds` (R1; `m` is free), `baStepMono_holds` and the twist
+invariance `baTwistInv_holds` (L3a1). -/
+theorem baLvl1StepGood_holds : BAlvl1StepGood :=
+  ba_lvl1StepGood_of_sim' 0 BAimg_holds (baSim'_holds 0) baStepMono_holds baTwistInv_holds
+
+end Macro
 
 end RBM.Graph
 

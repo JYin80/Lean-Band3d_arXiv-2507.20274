@@ -401,6 +401,18 @@ theorem BALvl1B_outs_fam (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableEq
     ∀ Q ∈ P.outsOf Ts, BALvl1B_Mono P Q :=
   BALvl1B_outs_mono P G Ts hG hinv (fun T hT => hFam.hExt G T (hTs T hT)) (fun T hT => hFam.hmono G hG rfl T (hTs T hT)) hM hAW
 
+/-- **the data of `BALvl1B_outs_mono` at one term `T` over `Γ`** (the term extends `Γ`, `ord Γ ≤ ordG T`, and `n_M`, `n_A - n_W` at `T°` do not grow) -/
+def BALvl1B_TermOk {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : BAGraph E I) {k : ℕ} (T : BAGraph E (I ⊕ Fin k)) : Prop :=
+  BASim_Ext Γ k T ∧ ((Γ.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG ∧ (BAWeightOp_circ T).nM ≤ Γ.nM ∧
+    ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW ≤ (Γ.nA : ℤ) - Γ.nW
+
+/-- **`BALvl1B_outs_mono` for a list of terms each of which is `BALvl1B_TermOk`** -/
+theorem BALvl1B_outs_ok (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableEq I0] (G : BAGraph P.E' I0) {k : ℕ}
+    (Ts : List (BAGraph P.E' (I0 ⊕ Fin k))) (hG : G.Normal)
+    (hinv : G.scalingOrder = P.g.scalingOrder ∧ G.nM = P.g.nM ∧ (G.nA : ℤ) - G.nW = (P.g.nA : ℤ) - P.g.nW ∧ G.nExt = P.g.nExt)
+    (hT : ∀ T ∈ Ts, BALvl1B_TermOk G T) : ∀ Q ∈ P.outsOf Ts, BALvl1B_Mono P Q :=
+  BALvl1B_outs_mono P G Ts hG hinv (fun T h => (hT T h).1) (fun T h => (hT T h).2.1) (fun T h => (hT T h).2.2.1) (fun T h => (hT T h).2.2.2)
+
 /-! ### The cases `weight`, `edge`, `gg` of `BAstepMono` -/
 
 /-- **`BAstepMono` at the weight step**: the terms of `lw2` and `lw4` (`lw_mono`, `BASim_fam_lw2`, `BASim_fam_lw4`) -/
