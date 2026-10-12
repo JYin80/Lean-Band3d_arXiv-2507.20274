@@ -32,3 +32,4 @@
 | T2465 | 2026-10-12 20:21 UTC (c986735f) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4g：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14e` 433 行；S3 链闭合 |
 | T2467 | 2026-10-12 21:18 UTC (97341078) | prover-hard | Sonnet 5.5 effort xhigh | 是 | ST T7b：Amend 1（布局，调度在开工前定）→ 1a → 1b → 审核 PASS 第一轮；新 `Chain/Step2EventsGen` 1,351 + 叶 `Step2EventsGenTw` 171 行；登记 +6 |
 | T2470 | 2026-10-12 21:13 UTC (4cc5e713) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3d2a：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAMomentGen` 1,549 + `BAMomentGenB` 847 行 |
+| T2471 | 2026-10-12 21:10 / 22:14 UTC (51e233bd, ae791953) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | T 生产者 P1b（双槽 BA 尾）：设计门 D1–D3 → 探针 → 1a-audit PASS（拆 P1b-1/P1b-2，路线 (i)）→ 两半 1b → 审核都 PASS 第一轮；新 `Chain/GridRepTailGen` 795、`GridRepTailGen2` 929、`BA/GridRepTailBA` 1,396 行 |

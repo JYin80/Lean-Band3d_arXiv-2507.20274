@@ -14,9 +14,10 @@ the conclusions `STCltIsoConclgL`, `STCltFarConclgL`, `STExpInvgL` (with `STfFar
 X1-C3 inputs `STGijDecgL`, `STKfargL`, `STMfarg`, `STThPropsg`, `STKpropsg`, the representation `CltRepg` and `CltInvg`,
 the premise block `HCltOf`, and the pins `STCltIsogL` (proved in `RBM3D/Evolution/CltStep`: `stCltIsogL_holds`) and
 `STCltFargL` (proved in X1b).  The band bridges (G1) are at the end.  Spectral reading (X1-C1): `ztOf (C.m n) (E n) u`,
-`κ ≤ (C.m n).im`; no `|E| ≤ 2 - κ`, no `‖m‖ = 1`.  Coupling (UBA-C1, DECISIONS §269 (2)): every size-level quantity here
+`κ ≤ (C.m n).im`; no `|E| ≤ 2 - κ`, no `‖m‖ = 1`.  Coupling (UBA-C1, DECISIONS §269 (2) as replaced by §273 (1)): every size-level quantity here
 reads `sz.lam`; `STThPropsg`, `STKpropsg` are stated at `sz.lam`, and a Θ-profile proved at a kernel coupling `gK`
-reaches them through the one comparison hypothesis `∀ n, gK n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2` (not a premise of any pin).
+reaches them through the one comparison hypothesis (R1) `∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2`
+(not a premise of any pin).
 -/
 set_option linter.style.longLine false
 open MeasureTheory ProbabilityTheory Filter Matrix
