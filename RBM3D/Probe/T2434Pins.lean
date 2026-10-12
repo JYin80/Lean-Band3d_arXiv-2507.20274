@@ -185,18 +185,18 @@ def BAExp14bCutConj {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) : Prop :=
 
 /-! ## Compiled checks -/
 
-#check @BAExp14b_dtail
-#check @BAExp14b_dX
-#check @BAExp14b_outerDt
-#check @BAExp14b_outerDX
-#check @BAExp14b_FS2
-#check @BAExp14b_FS3
-#check @BAExp14bS2Fam
-#check @BAExp14bS3Fam
-#check @BAExp14bS2
-#check @BAExp14bS3
-#check @BAExp14bExpand
-#check @BAExp14bCutConj
+#check BAExp14b_dtail
+#check BAExp14b_dX
+#check BAExp14b_outerDt
+#check BAExp14b_outerDX
+#check BAExp14b_FS2
+#check BAExp14b_FS3
+#check BAExp14bS2Fam
+#check BAExp14bS3Fam
+#check BAExp14bS2
+#check BAExp14bS3
+#check BAExp14bExpand
+#check BAExp14bCutConj
 #print axioms BAExp14bS2Fam
 #print axioms BAExp14bS3Fam
 #print axioms BAExp14bS2
