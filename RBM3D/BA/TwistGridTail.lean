@@ -284,7 +284,7 @@ private theorem TwistGridTail_phi_trace_herm (u : ℝ) (σ : Fin 2 → Bool) (c�
   rw [TwistGridTail_phi_eq, TwistGridTail_Gc_herm (TwistGridTail_Hh_herm sz lam0 n hM),
     TwistGridTail_Gc_herm (TwistGridTail_Hh_herm sz lam0 n hM)]
 
-/-- `(H) ` the twisted observable is in the Hermitian test class (`C²` at every Hermitian point, bounded on the
+/-- The twisted observable is in the Hermitian test class (`C²` at every Hermitian point, bounded on the
 Hermitian matrices), for `η_u = (1 - u) Im m_F > 0`. -/
 private theorem TwistGridTail_hermTestFun {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u) (σ : Fin 2 → Bool)
     (c₁ c₂ b : Zd d (sz.L n)) : HermTestFun sz n (TwistGridTail_phi sz lam0 E n u σ c₁ c₂ b) := by
@@ -913,7 +913,7 @@ private theorem TwistGridTail_hC₂ {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n
         (6 * (sz.size n : ℝ) * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 4) * ‖y‖ ^ 2 := fun b M y hM hy =>
   (TwistGridTail_second_deriv_bound sz lam0 E n hη σ c₁ c₂ b hM hy).trans (le_of_eq (by ring))
 
-/-- Test: the family at `sz.withLam 0` (same `L`, `W`). -/
+/-- The twisted family is in the Hermitian test class of the walk `sz.withLam 0` (same `L`, `W`, so the fields agree). -/
 private theorem TwistGridTail_hΦ' {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) :
     ∀ b : Zd d (sz.L n), HermTestFun (sz.withLam 0) n (TwistGridTail_phi sz lam0 E n u σ c₁ c₂ b) := fun b =>
   ⟨fun M hM => (TwistGridTail_hermTestFun sz lam0 E n hη σ c₁ c₂ b).contDiffAt M hM,
