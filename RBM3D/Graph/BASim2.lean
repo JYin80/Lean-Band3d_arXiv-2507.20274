@@ -6,9 +6,14 @@ Authors: Jun Yin
 import RBM3D.Graph.BASim
 
 /-!
-# BA-L R1 `BASim`: the matching of a BA step with a band `LocStep` at the atomic image (T2423), part 2
+# BA-L R1 `BASim` (T2423), part 2: a BA step matched with a band `LocStep` at the image
 
-Scratch skeleton (families).
+The kinds of step at the image: `weight` (`lw2`, `lw4`), `within` (macro (a), stage 1), `edge`
+(`lanlw`, the derivative terms with a loop), `gg` (`gg2`, `gg4`: the terms `A1`..`A5`, `B1`, `B2`,
+`BD` against the band's `R2`, `R3`, `R4`, with the circle-fixing partition lemma
+`BASim_partition_fix`), with `BASim_locStep_gg`, the band step at the image of a pair; and the
+generic atom lemmas (`BASim_ExtraDot`, `BASim_card_image_le`, `BASim_nExt_le`, `BASim_atom_addM`,
+`BASim_nA_addM`) used by Lemma E in part 3.
 -/
 
 set_option linter.style.setOption false
@@ -19,6 +24,7 @@ set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 open private lwExists_mem_dedupPairs lwMem_of_mem_dedupPairs from RBM3D.Graph.LWVocab
 open private BAVocab_vmap_injective BAVocab_vmap_surjective BAVocab_merge_atomAdj BAVocab_merge_dotted_eq from RBM3D.Graph.BAVocab
@@ -299,7 +305,7 @@ section Edge
 variable {E : Type}
 
 /-- `T'` is a term of `G = Ǧ + M` on `T` with the split `r`, up to the order of the `M`-dotted edges -/
-structure BASim_IsSplit {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (T : BAGraph E' I')
+private structure BASim_IsSplit {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (T : BAGraph E' I')
     (r : List (SEdge (E' ⊕ I')) × List (BAMEdge (E' ⊕ I'))) (T' : BAGraph E' I') : Prop where
   hsolid : T'.solid = r.1
   hwaved : T'.waved = T.waved
@@ -404,7 +410,7 @@ theorem BASim_baSplit_append' {V : Type*} (A B : List (SEdge V)) :
 
 /-- **The loop of a derivative term**: a term of the `M`-splits of `T` (with the uncircled edge `e` among the new edges, `s = s₀ ++ e :: s₁`) is a term of the `M`-splits of
 `T_c` (`e` circled) or of `T_m` (`e` an `M`-dotted edge) -/
-theorem BASim_split_loop {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] {k : ℕ} (Γ : BAGraph E' I')
+private theorem BASim_split_loop {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] {k : ℕ} (Γ : BAGraph E' I')
     (rest : List (SEdge (E' ⊕ I'))) (hrest : ∀ e ∈ rest, e.circ = true) (s0 : List (SEdge (E' ⊕ (I' ⊕ Fin k)))) (e : SEdge (E' ⊕ (I' ⊕ Fin k)))
     (he : e.circ = false) (s1 : List (SEdge (E' ⊕ (I' ⊕ Fin k)))) (w : List (WEdge (E' ⊕ (I' ⊕ Fin k)))) (md : List (BAMEdge (E' ⊕ (I' ⊕ Fin k))))
     {T' : BAGraph E' (I' ⊕ Fin k)} {r : List (SEdge (E' ⊕ (I' ⊕ Fin k))) × List (BAMEdge (E' ⊕ (I' ⊕ Fin k)))}
@@ -470,7 +476,7 @@ theorem BASim_locStep_edge (P : BAPGraph E) (m : ℂ) {p : SEdge (P.E' ⊕ P.I')
     rw [hv] at this
     exact Bool.noConfusion this
   refine LocStep.edge P.img (BASim_imgP P p) (BASim_imgP_mem P hp) x' ((promoteC P.g).vmap p.1.dst) hne false false ?_ ?_ ?_
-  · show BAScost_imgE P.g p.1 = ⟨true, (BAScost_imgE P.g p.1).circ, Sum.inr x', (promoteC P.g).vmap p.1.dst⟩
+  · change BAScost_imgE P.g p.1 = ⟨true, (BAScost_imgE P.g p.1).circ, Sum.inr x', (promoteC P.g).vmap p.1.dst⟩
     simp only [BAScost_imgE, h.1, hx, hx']
   · intro e he
     obtain ⟨e0, he0, rfl⟩ := List.mem_map.1 (show e ∈ P.g.solid.map (BAScost_imgE P.g) by rw [← BAScost_img_solid]; exact he)
@@ -486,7 +492,7 @@ theorem BASim_locStep_edge (P : BAPGraph E) (m : ℂ) {p : SEdge (P.E' ⊕ P.I')
       rw [← hx']
       exact BAAtomic_charge P.g _
     have hnil : (P.g.atEdges (Sum.inr x)).length ≠ 0 := fun h0 => hbad.1 (List.length_eq_zero_iff.1 h0)
-    show (promoteC P.g).merge.lvl1DegAt (Sum.inr x') ≠ 0 ∧ ((promoteC P.g).merge.lvl1DegAt (Sum.inr x') ≠ 2 ∨ (promoteC P.g).merge.lvl1ChargeAt (Sum.inr x') ≠ 0)
+    change (promoteC P.g).merge.lvl1DegAt (Sum.inr x') ≠ 0 ∧ ((promoteC P.g).merge.lvl1DegAt (Sum.inr x') ≠ 2 ∨ (promoteC P.g).merge.lvl1ChargeAt (Sum.inr x') ≠ 0)
     rw [hdeg, hch]
     exact ⟨hnil, hbad.2⟩
 
@@ -617,7 +623,7 @@ def BASim_B_P4 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
 
 /-! ### The matching of the outputs of the edge step -/
 
-theorem BASim_IsSplit.toD {P : BAPGraph E} {k : ℕ} {J' : Type} [Fintype J'] [DecidableEq J'] {emb' : (BASimX P) ⊕ (BASimY P) → (BASimX P) ⊕ J'}
+theorem BASim_split_of_isSplit {P : BAPGraph E} {k : ℕ} {J' : Type} [Fintype J'] [DecidableEq J'] {emb' : (BASimX P) ⊕ (BASimY P) → (BASimX P) ⊕ J'}
     {D : BASimData P k J' emb'} {r : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin k))) × List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin k)))}
     {T' : BAGraph P.E' (P.I' ⊕ Fin k)} (h : BASim_IsSplit D.T r T') : BASimSplit D r T' :=
   ⟨h.hsolid, h.hwaved, h.hdotted, h.hpsi, h.hmdot⟩
@@ -700,12 +706,12 @@ theorem BASim_match_Dred (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEd
     · exact hqs
   rcases BASim_split_loop P.g q.2 (BASim_rest_circ P hN hp hq) [] (BASim_dE1 q) he1 [BASim_dE2 q, BASim_dE3 p] _ _ hr hSp with
     ⟨r', hr', hS'⟩ | ⟨r', hr', hS'⟩
-  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P5 P hp hq hσ x' hx' hqs).toData hN m) m ⟨r', hr', hS'.toD⟩ hne
+  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P5 P hp hq hσ x' hx' hqs).toData hN m) m ⟨r', hr', BASim_split_of_isSplit hS'⟩ hne
     refine ⟨R, BASim_pack_mono P.img (L := (oe1xP5 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q)).partition m)
       (fun Q hQ => BASim_edgeOuts_Ds P m p x' _ hq ⟨_, ?_, hQ⟩) hR, hRE⟩
     exact (congrArg (fun l => oe1xP5 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q) ∈ l)
       (BASim_oe1xDs_red m _ x' _ _ hc1)).mpr (List.mem_cons_self ..)
-  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P3 P hp hq hσ x' hx' hqs).toData hN (m * star m)) m ⟨r', hr', hS'.toD⟩ hne
+  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P3 P hp hq hσ x' hx' hqs).toData hN (m * star m)) m ⟨r', hr', BASim_split_of_isSplit hS'⟩ hne
     refine ⟨R, BASim_pack_mono P.img (L := (oe1xP3 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q)).partition m)
       (fun Q hQ => BASim_edgeOuts_Ds P m p x' _ hq ⟨_, ?_, hQ⟩) hR, hRE⟩
     exact (congrArg (fun l => oe1xP3 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q) ∈ l)
@@ -728,12 +734,12 @@ theorem BASim_match_Dblue (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SE
   have hc2 : (BASim_imgP P q).1.σ = true ∧ (BASim_imgP P q).1.dst = Sum.inr x' := ⟨hσ, hqd⟩
   rcases BASim_split_loop P.g q.2 (BASim_rest_circ P hN hp hq) [BASim_dE1 q] (BASim_dE2 q) he2 [BASim_dE3 p] _ _ hr hSp with
     ⟨r', hr', hS'⟩ | ⟨r', hr', hS'⟩
-  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P6 P hp hq hσ x' hx' hqd).toData hN m) m ⟨r', hr', hS'.toD⟩ hne
+  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P6 P hp hq hσ x' hx' hqd).toData hN m) m ⟨r', hr', BASim_split_of_isSplit hS'⟩ hne
     refine ⟨R, BASim_pack_mono P.img (L := (oe1xP6 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q)).partition m)
       (fun Q hQ => BASim_edgeOuts_Ds P m p x' _ hq ⟨_, ?_, hQ⟩) hR, hRE⟩
     exact (congrArg (fun l => oe1xP6 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q) ∈ l)
       (BASim_oe1xDs_blue m _ x' _ _ hc1 hc2)).mpr (List.mem_cons_self ..)
-  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P4 P hp hq hσ x' hx' hqd).toData hN (m * m)) m ⟨r', hr', hS'.toD⟩ hne
+  · obtain ⟨R, hR, hRE⟩ := BASim_match' ((BASim_B_P4 P hp hq hσ x' hx' hqd).toData hN (m * m)) m ⟨r', hr', BASim_split_of_isSplit hS'⟩ hne
     refine ⟨R, BASim_pack_mono P.img (L := (oe1xP4 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q)).partition m)
       (fun Q hQ => BASim_edgeOuts_Ds P m p x' _ hq ⟨_, ?_, hQ⟩) hR, hRE⟩
     exact (congrArg (fun l => oe1xP4 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q) ∈ l)
@@ -944,17 +950,17 @@ theorem BASim_locStep_gg (P : BAPGraph E) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I')
   have hnb' := BASim_img_nb P hnb
   refine ⟨x', hxa, hxq, hy, hy', ?_, ?_⟩
   · refine LocStep.gg P.img (BASim_imgP P p) (BASim_imgP P q) (BASim_imgP_mem P hp) (BASim_imgP_mem2 P hq) x' _ _ hy false false ?_ ?_ hwf' hnb'
-    · show BAScost_imgE P.g p.1 = ⟨true, (BAScost_imgE P.g p.1).circ, Sum.inr x', (promoteC P.g).vmap p.1.dst⟩
+    · change BAScost_imgE P.g p.1 = ⟨true, (BAScost_imgE P.g p.1).circ, Sum.inr x', (promoteC P.g).vmap p.1.dst⟩
       simp only [BAScost_imgE, h.1, hxa]
-    · show BAScost_imgE P.g q.1 = ⟨true, (BAScost_imgE P.g q.1).circ, (promoteC P.g).vmap q.1.src, Sum.inr x'⟩
+    · change BAScost_imgE P.g q.1 = ⟨true, (BAScost_imgE P.g q.1).circ, (promoteC P.g).vmap q.1.src, Sum.inr x'⟩
       simp only [BAScost_imgE, h.2, hxq]
   · obtain ⟨p', hp', q', hq', h1, h2, h3⟩ := BASim_lwSplit_swap _ p hp q hq
     refine ⟨p', hp', q', hq', h1, h2, h3, ?_⟩
     refine LocStep.gg P.img (BASim_imgP P p') (BASim_imgP P q') (BASim_imgP_mem P hp') (BASim_imgP_mem2 P hq') x' _ _ hy' false true ?_ ?_ hwf' hnb'
-    · show lwSymmTwistS false true (BAScost_imgE P.g p'.1) = ⟨true, (BAScost_imgE P.g p'.1).circ, Sum.inr x', (promoteC P.g).vmap q.1.src⟩
+    · change lwSymmTwistS false true (BAScost_imgE P.g p'.1) = ⟨true, (BAScost_imgE P.g p'.1).circ, Sum.inr x', (promoteC P.g).vmap q.1.src⟩
       simp only [lwSymmTwistS, h1, BAScost_imgE, h.2, hxq, SEdge.transpose]
       rfl
-    · show lwSymmTwistS false true (BAScost_imgE P.g q'.1) = ⟨true, (BAScost_imgE P.g q'.1).circ, (promoteC P.g).vmap p.1.dst, Sum.inr x'⟩
+    · change lwSymmTwistS false true (BAScost_imgE P.g q'.1) = ⟨true, (BAScost_imgE P.g q'.1).circ, (promoteC P.g).vmap p.1.dst, Sum.inr x'⟩
       simp only [lwSymmTwistS, h2, BAScost_imgE, h.1, hxa, SEdge.transpose]
       rfl
 
@@ -1045,7 +1051,7 @@ variable {X Y : Type} [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y]
 theorem BASim_sbetween_iff (H : LGraph X Y) (s' : List (SEdge (X ⊕ Y))) (hs : List.Forall₂ BASim_loopRel s' H.solid) (u v : X ⊕ Y) :
     ({ H with solid := s' } : LGraph X Y).SBetween u v ↔ H.SBetween u v := by
   unfold LGraph.SBetween
-  show (∃ e ∈ s', _) ↔ (∃ e ∈ H.solid, _)
+  change (∃ e ∈ s', _) ↔ (∃ e ∈ H.solid, _)
   constructor
   · rintro ⟨e, he, hne, hu⟩
     obtain ⟨e0, he0, hr⟩ := (BASim_loopRel_mem hs).1 e he
@@ -1066,7 +1072,7 @@ theorem BASim_mergeSplit_fix (m : ℂ) (Δ : LGraph X Y) (s' : List (SEdge (X �
   obtain ⟨r, hr, rfl⟩ := List.mem_map.1 hg
   refine List.mem_map.2 ⟨r, ?_, rfl⟩
   refine BASim_splitLoops_mono m ?_ r hr
-  show List.Forall₂ BASim_loopRel (s'.map (SEdge.map Δ.vmap)) (Δ.solid.map (SEdge.map Δ.vmap))
+  change List.Forall₂ BASim_loopRel (s'.map (SEdge.map Δ.vmap)) (Δ.solid.map (SEdge.map Δ.vmap))
   rw [List.forall₂_map_left_iff, List.forall₂_map_right_iff]
   exact hs.imp fun a b r => BASim_loopRel_map _ r
 
@@ -1125,7 +1131,7 @@ theorem BASim_partition_owxExt_fix {X Y X' Y' : Type} [Fintype X] [DecidableEq X
     (m c : ℂ) (Γ : LGraph X Y) (emb : X ⊕ Y → X' ⊕ Y') (s : List (SEdge (X' ⊕ Y'))) (w : List (WEdge (X' ⊕ Y'))) :
     (Γ.owxExt emb c (s.map BASim_fix) w).partition m ⊆ (Γ.owxExt emb c s w).partition m := by
   refine BASim_partition_fix m (Γ.owxExt emb c s w) (Γ.owxExt emb c (s.map BASim_fix) w).solid ?_
-  show List.Forall₂ _ (Γ.solid.map (SEdge.map emb) ++ s.map BASim_fix) (Γ.solid.map (SEdge.map emb) ++ s)
+  change List.Forall₂ _ (Γ.solid.map (SEdge.map emb) ++ s.map BASim_fix) (Γ.solid.map (SEdge.map emb) ++ s)
   refine List.rel_append (List.forall₂_same.2 fun e _ => (Or.inl rfl : BASim_loopRel e e)) ?_
   rw [List.forall₂_map_left_iff]
   exact List.forall₂_same.2 fun e _ => BASim_loopRel_fix e

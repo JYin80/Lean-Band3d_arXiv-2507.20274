@@ -10,9 +10,19 @@ import RBM3D.Graph.BAWeightOp
 import RBM3D.Graph.BAExpandW
 
 /-!
-# BA-L R1 `BASim`: the matching of a BA step with a band `LocStep` at the atomic image (T2423), part 1
+# BA-L R1 `BASim` (T2423), part 1: a BA step matched with a band `LocStep` at the image
 
-Scratch skeleton.
+Amend 1 (DECISIONS §240): R1 delivers the frame level (`BAMatch` at `P.img`); the twisted
+`BAMatchTw` and its bridges go to L3b4'.
+
+Contents: the frame vocabulary (`BAFrameStep`, the tagged `BAFrameStepT`, the tags `BAShape` of
+`Graph/BAScost`); the pins `PGraph.BAEquiv`, `BAMatch`, `BAExtraGood`, `BAFrameStepT_untag`,
+`BAsim`, `BAsim'`, `PGraph.BAEquivC`, `BAPGraph.twist` and the invariants `baInv`;
+`baFrameStepT_untag_holds : BAFrameStepT_untag`; the matching engine `BASim_match` (classes of the
+atomic image of a packed term, the data of one match, the specification `BASimExt` of an
+extension); the weight step at the image; the invariants under relabelling
+(`BASim_baInv_of_equiv`, `BASim_img_baInv`); the compiled instance of `baFrameStepT_untag_holds`.
+Parts 2 and 3: `BASim2.lean`, `BASim3.lean`.
 -/
 
 set_option linter.style.setOption false
@@ -23,6 +33,7 @@ set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 set_option linter.unusedSimpArgs false
+set_option linter.unnecessarySimpa false
 
 open private lwExists_mem_dedupPairs lwMem_of_mem_dedupPairs from RBM3D.Graph.LWVocab
 open private BAVocab_vmap_injective BAVocab_vmap_surjective BAVocab_merge_atomAdj BAVocab_merge_dotted_eq from RBM3D.Graph.BAVocab
@@ -156,8 +167,10 @@ section Pins
 variable {E : Type}
 /-- a waved edge, or its reversal (`WEdge.transpose`, `LWSymm.lean:96`). -/
 def WEdge.sameRev {V : Type*} (a b : WEdge V) : Prop := a = b ∨ a.transpose = b
+theorem WEdge.sameRev_refl {V : Type*} (a : WEdge V) : a.sameRev a := Or.inl rfl
 /-- two dotted edges with the same ends, unordered. -/
 def DEdge.sameU {V : Type*} (a b : DEdge V) : Prop := a.eq = b.eq ∧ ((a.x = b.x ∧ a.y = b.y) ∨ (a.x = b.y ∧ a.y = b.x))
+theorem DEdge.sameU_refl {V : Type*} (a : DEdge V) : a.sameU a := ⟨rfl, Or.inl ⟨rfl, rfl⟩⟩
 /-- **`R` is `S` up to relabelling** of the vertices (the external vertices keep their labels `ext`): the solid edges agree up to order, the waved edges
 up to order and reversal of single edges (`LGraph.scost_perm`, `LocalRegular6a.lean:309`: `scost` sees the solid edges up to order and the number of waved edges; molecules read the symmetric `LGraph.adj`; `localReg2_cendsMS` reads `Sym2` ends), the `×`-dotted
 edges as sets of unordered pairs; the coefficient is not read (it carries the powers of `m` of the band's partition). -/
@@ -167,8 +180,8 @@ def PGraph.BAEquiv (R S : PGraph E) : Prop :=
     (∃ l, List.Perm l (R.g.relabel (Sum.map eE eI)).waved ∧ List.Forall₂ WEdge.sameRev l S.g.waved) ∧
     (∀ d ∈ (R.g.relabel (Sum.map eE eI)).dotted, ∃ d' ∈ S.g.dotted, DEdge.sameU d d') ∧
     (∀ d ∈ S.g.dotted, ∃ d' ∈ (R.g.relabel (Sum.map eE eI)).dotted, DEdge.sameU d' d)
-/-- the relation is nonempty: reflexive -/
-example (R : PGraph E) : R.BAEquiv R := by
+/-- the relation is nonempty: reflexive (the instance of the pin) -/
+theorem PGraph.BAEquiv_refl (R : PGraph E) : R.BAEquiv R := by
   have h : R.g.relabel (Sum.map (Equiv.refl R.E') (Equiv.refl R.I')) = R.g := by
     obtain ⟨s, w, d, c⟩ := R.g
     simp only [LGraph.relabel, Equiv.coe_refl, Sum.map_id_id, LGraph.mk.injEq, and_true]
@@ -224,6 +237,14 @@ def PGraph.BAEquivC (R S : PGraph E) : Prop :=
     (∃ l, List.Perm l (R.g.relabel (Sum.map eE eI)).waved ∧ List.Forall₂ WEdge.sameEnds l S.g.waved) ∧
     (∀ d ∈ (R.g.relabel (Sum.map eE eI)).dotted, ∃ d' ∈ S.g.dotted, DEdge.sameU d d') ∧
     (∀ d ∈ S.g.dotted, ∃ d' ∈ (R.g.relabel (Sum.map eE eI)).dotted, DEdge.sameU d' d)
+theorem WEdge.sameRev.sameEnds {V : Type*} {a b : WEdge V} (h : a.sameRev b) : a.sameEnds b := by
+  rcases h with rfl | rfl
+  · exact Or.inl ⟨rfl, rfl⟩
+  · exact Or.inr ⟨rfl, rfl⟩
+/-- `BAEquiv` implies `BAEquivC` (the instance of the pin: the relation is nonempty) -/
+theorem PGraph.BAEquiv.toC {R S : PGraph E} (h : R.BAEquiv S) : R.BAEquivC S := by
+  obtain ⟨eE, eI, h1, h2, ⟨l, hl, hF⟩, h4, h5⟩ := h
+  exact ⟨eE, eI, h1, h2, ⟨l, hl, hF.imp fun _ _ => WEdge.sameRev.sameEnds⟩, h4, h5⟩
 /-- the twist of a packed BA graph (L3a1; `t/T2395:RBM3D/Probe/T2395Pins.lean:157`; pinned by Amend 1, O4) -/
 def BAPGraph.twist (c t : Bool) (P : BAPGraph E) : BAPGraph E := { P with g := P.g.twist c t }
 end Pins2
@@ -371,7 +392,7 @@ theorem BASim_merge_sameAtom (T : BAGraph E I) (hT : ∀ e ∈ T.dotted, e.eq = 
     exact hrw
   · intro h
     refine Relation.ReflTransGen.lift T.toLGraph.vmap (fun a b hab => ?_) _ _ h
-    show T.merge.atomAdj (T.toLGraph.vmap a) (T.toLGraph.vmap b) = true
+    change T.merge.atomAdj (T.toLGraph.vmap a) (T.toLGraph.vmap b) = true
     rw [BAVocab_merge_atomAdj T hT]
     exact hab
 
@@ -919,7 +940,7 @@ def BASim_T' (r : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin k))) × List (BAMEdge (P.E
   BAGraph.mk (LGraph.mk r.1 D.T.waved D.T.dotted D.T.coeff) D.T.psi (r.2 ++ D.T.mdot)
 
 /-- the facts about a term `T'` of `G = Ǧ + M` that the matching reads -/
-structure BASimGood (T' : BAGraph P.E' (P.I' ⊕ Fin k)) : Prop where
+private structure BASimGood (T' : BAGraph P.E' (P.I' ⊕ Fin k)) : Prop where
   hT'0 : ∀ d ∈ T'.dotted, d.eq = false
   hle : ∀ u v, D.T.sameAtom u v = true → T'.sameAtom u v = true
   hne : P.g.extraB (owxEmb k) T' = false
@@ -927,7 +948,7 @@ structure BASimGood (T' : BAGraph P.E' (P.I' ⊕ Fin k)) : Prop where
   hmd : ∀ m' ∈ T'.mdot, D.φ m'.x = D.φ m'.y ∨ ∃ h ∈ D.H.solid, (h.src = D.φ m'.x ∧ h.dst = D.φ m'.y) ∨ (h.src = D.φ m'.y ∧ h.dst = D.φ m'.x)
 
 /-- the flags of the split `r` -/
-structure BASimFlags (r : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin k))) × List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin k)))) (fl : List Bool) : Prop where
+private structure BASimFlags (r : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin k))) × List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin k)))) (fl : List Bool) : Prop where
   hlen : fl.length = D.T.solid.length
   hcirc : ∀ p ∈ D.T.solid.zip fl, p.2 = true → p.1.circ = false
   h1 : r.1 = (D.T.solid.zip fl).filterMap (fun p => if p.2 then none else some { p.1 with circ := true })
@@ -967,7 +988,7 @@ theorem BASim_le_of_split (hS : BASimSplit D r T') (u v : P.E' ⊕ (P.I' ⊕ Fin
   · exact Or.inr ⟨e, (hS.hmdot e).2 (List.mem_append_right _ he), h2⟩
 
 /-- an `M`-split edge joins two vertices of one atom of `T'` -/
-theorem BASim_flag_sameAtom (hS : BASimSplit D r T') (F : BASimFlags D r fl) {e : SEdge (P.E' ⊕ (P.I' ⊕ Fin k))}
+private theorem BASim_flag_sameAtom (hS : BASimSplit D r T') (F : BASimFlags D r fl) {e : SEdge (P.E' ⊕ (P.I' ⊕ Fin k))}
     (hb : (e, true) ∈ D.T.solid.zip fl) : T'.sameAtom e.src e.dst = true := by
   have hm : BAMEdge.mk e.σ e.src e.dst ∈ T'.mdot := by
     rw [hS.hmdot, F.h2]
@@ -975,7 +996,7 @@ theorem BASim_flag_sameAtom (hS : BASimSplit D r T') (F : BASimFlags D r fl) {e 
   exact (BASim_sameAtom_iff _ _ _).2 (BAScost_atomSetoid_of_mdot _ _ hm)
 
 /-- **A kept edge**: an edge of `T` whose ends are not in one atom of `T'` stays (circled) in `T'` -/
-theorem BASim_kept (hS : BASimSplit D r T') (F : BASimFlags D r fl) {e : SEdge (P.E' ⊕ (P.I' ⊕ Fin k))} (he : e ∈ D.T.solid)
+private theorem BASim_kept (hS : BASimSplit D r T') (F : BASimFlags D r fl) {e : SEdge (P.E' ⊕ (P.I' ⊕ Fin k))} (he : e ∈ D.T.solid)
     (hs : T'.sameAtom e.src e.dst = false) : ({ e with circ := true } : SEdge _) ∈ r.1 := by
   obtain ⟨b, hb⟩ := BASim_mem_zip_left _ _ F.hlen e he
   cases b
@@ -986,7 +1007,7 @@ theorem BASim_kept (hS : BASimSplit D r T') (F : BASimFlags D r fl) {e : SEdge (
 
 
 /-- **Every `×`-dotted edge of the term of the partition is an edge of `T'` between two atoms** -/
-theorem BASim_dotA (G : BASimGood D T') {d0 : DEdge ((BASimX P) ⊕ J')}
+private theorem BASim_dotA (G : BASimGood D T') {d0 : DEdge ((BASimX P) ⊕ J')}
     (hd0 : d0 ∈ (BASim_Δ D T').dotted) (heq : d0.eq = false) :
     ∃ e ∈ D.T.solid, T'.sameAtom e.src e.dst = false ∧
       ((d0.x = D.φ e.src ∧ d0.y = D.φ e.dst) ∨ (d0.x = D.φ e.dst ∧ d0.y = D.φ e.src)) := by
@@ -1035,7 +1056,7 @@ theorem BASim_dotA (G : BASimGood D T') {d0 : DEdge ((BASimX P) ⊕ J')}
         exact hq ⟨u, v, hu, hv, G.hle _ _ huv⟩
 
 /-- **Every edge of `T'` between two atoms has a `×`-dotted edge in the term of the partition** -/
-theorem BASim_dotB (G : BASimGood D T') {e : SEdge (P.E' ⊕ (P.I' ⊕ Fin k))} (he : e ∈ D.T.solid)
+private theorem BASim_dotB (G : BASimGood D T') {e : SEdge (P.E' ⊕ (P.I' ⊕ Fin k))} (he : e ∈ D.T.solid)
     (hs : T'.sameAtom e.src e.dst = false) :
     ∃ d0 ∈ (BASim_Δ D T').dotted, d0.eq = false ∧
       ((d0.x = D.φ e.src ∧ d0.y = D.φ e.dst) ∨ (d0.x = D.φ e.dst ∧ d0.y = D.φ e.src)) := by
@@ -1189,7 +1210,7 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
       have hs := BASim_flag_sameAtom hS F hq''
       have hcls := (BASim_class D G.hT'0 G.hle G.hne G.hpsi G.hmd _ _).2 hs
       refine ⟨?_, ?_⟩
-      · show Δ.vmap (D.φ e.src) = Δ.vmap (D.φ e.dst)
+      · change Δ.vmap (D.φ e.src) = Δ.vmap (D.φ e.dst)
         unfold LGraph.vmap
         rw [hcls]
       · simp [SEdge.map, BASim_phiE, hce]
@@ -1197,7 +1218,7 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
       obtain ⟨u, v, hu, hv, huv⟩ := D.hX1 _ hxm
       have hcls := (BASim_class D G.hT'0 G.hle G.hne G.hpsi G.hmd u v).2 (G.hle _ _ huv)
       refine ⟨?_, ?_⟩
-      · show Δ.vmap q.1.src = Δ.vmap q.1.dst
+      · change Δ.vmap q.1.src = Δ.vmap q.1.dst
         rw [← hu, ← hv]
         unfold LGraph.vmap
         rw [hcls]
@@ -1258,15 +1279,15 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
       rcases hends with ⟨hx, hy⟩ | ⟨hx, hy⟩
       · left
         refine ⟨?_, ?_⟩
-        · show Sum.map eE eI (Δ.vmap d0.x) = _
+        · change Sum.map eE eI (Δ.vmap d0.x) = _
           rw [hx]; exact (hθ e.src).symm
-        · show Sum.map eE eI (Δ.vmap d0.y) = _
+        · change Sum.map eE eI (Δ.vmap d0.y) = _
           rw [hy]; exact (hθ e.dst).symm
       · right
         refine ⟨?_, ?_⟩
-        · show Sum.map eE eI (Δ.vmap d0.x) = _
+        · change Sum.map eE eI (Δ.vmap d0.x) = _
           rw [hx]; exact (hθ e.dst).symm
-        · show Sum.map eE eI (Δ.vmap d0.y) = _
+        · change Sum.map eE eI (Δ.vmap d0.y) = _
           rw [hy]; exact (hθ e.src).symm
   · -- `×`-dotted edges of the image are those of R
     intro d' hd'
@@ -1286,21 +1307,21 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
       have hs : (T').sameAtom p.1.src p.1.dst = false := by simpa using hne'
       obtain ⟨d0, hd0, hd0eq, hends⟩ := BASim_dotB G he hs
       refine ⟨DEdge.map (Sum.map eE eI) (DEdge.map Δ.vmap d0), ?_, ?_⟩
-      · show _ ∈ (Δ.merge.dotted).map (DEdge.map (Sum.map eE eI))
+      · change _ ∈ (Δ.merge.dotted).map (DEdge.map (Sum.map eE eI))
         exact List.mem_map.2 ⟨DEdge.map Δ.vmap d0, List.mem_map.2 ⟨d0, List.mem_filter.2 ⟨hd0, by simp [hd0eq]⟩, rfl⟩, rfl⟩
       · refine ⟨hd0eq, ?_⟩
         rcases hends with ⟨hx, hy⟩ | ⟨hx, hy⟩
         · left
           refine ⟨?_, ?_⟩
-          · show Sum.map eE eI (Δ.vmap d0.x) = _
+          · change Sum.map eE eI (Δ.vmap d0.x) = _
             rw [hx]; exact (hθ _).symm
-          · show Sum.map eE eI (Δ.vmap d0.y) = _
+          · change Sum.map eE eI (Δ.vmap d0.y) = _
             rw [hy]; exact (hθ _).symm
         · right
           refine ⟨?_, ?_⟩
-          · show Sum.map eE eI (Δ.vmap d0.x) = _
+          · change Sum.map eE eI (Δ.vmap d0.x) = _
             rw [hx]; exact (hθ _).symm
-          · show Sum.map eE eI (Δ.vmap d0.y) = _
+          · change Sum.map eE eI (Δ.vmap d0.y) = _
             rw [hy]; exact (hθ _).symm
     · simp [hb] at hpe
 
@@ -1341,13 +1362,13 @@ theorem BASim_phi_emb (P : BAPGraph E) {k : ℕ} {J' : Type} (emb' : (BASimX P) 
 theorem BASim_phi_some (P : BAPGraph E) {k : ℕ} {J' : Type} (emb' : (BASimX P) ⊕ (BASimY P) → (BASimX P) ⊕ J')
     (anchor : Fin k → Option (P.E' ⊕ P.I')) (fresh : Fin k → J') (j : Fin k) (a : P.E' ⊕ P.I') (h : anchor j = some a) :
     BASim_phi P emb' anchor fresh (bpv j) = emb' ((promoteC P.g).vmap a) := by
-  show (match anchor j with | some a => emb' ((promoteC P.g).vmap a) | none => Sum.inr (fresh j)) = _
+  change (match anchor j with | some a => emb' ((promoteC P.g).vmap a) | none => Sum.inr (fresh j)) = _
   rw [h]
 
 theorem BASim_phi_none (P : BAPGraph E) {k : ℕ} {J' : Type} (emb' : (BASimX P) ⊕ (BASimY P) → (BASimX P) ⊕ J')
     (anchor : Fin k → Option (P.E' ⊕ P.I')) (fresh : Fin k → J') (j : Fin k) (h : anchor j = none) :
     BASim_phi P emb' anchor fresh (bpv j) = Sum.inr (fresh j) := by
-  show (match anchor j with | some a => emb' ((promoteC P.g).vmap a) | none => Sum.inr (fresh j)) = _
+  change (match anchor j with | some a => emb' ((promoteC P.g).vmap a) | none => Sum.inr (fresh j)) = _
   rw [h]
 
 /-- an old solid edge is the image of its image edge: the circle stays iff the ends have the same image -/
@@ -1411,7 +1432,7 @@ theorem BASim_psi_phi (B : BASimExt P k J' emb') :
   have h : P.g.atomAdj e0.x e0.y = true := by
     simp only [BAGraph.atomAdj, Bool.or_eq_true, List.any_eq_true, decide_eq_true_eq]
     exact Or.inl (Or.inr ⟨e0, he0, Or.inl ⟨rfl, rfl⟩⟩)
-  show BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.x) = BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.y)
+  change BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.x) = BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.y)
   rw [BASim_phi_emb, BASim_phi_emb, BASim_vmap_eq_of_atomAdj P.g h]
 
 theorem BASim_mdot_phi (B : BASimExt P k J' emb') :
@@ -1422,7 +1443,7 @@ theorem BASim_mdot_phi (B : BASimExt P k J' emb') :
   have h : P.g.atomAdj e0.x e0.y = true := by
     simp only [BAGraph.atomAdj, Bool.or_eq_true, List.any_eq_true, decide_eq_true_eq]
     exact Or.inr ⟨e0, he0, Or.inl ⟨rfl, rfl⟩⟩
-  show BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.x) = BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.y)
+  change BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.x) = BASim_phi P emb' B.anchor B.fresh (owxEmb k e0.y)
   rw [BASim_phi_emb, BASim_phi_emb, BASim_vmap_eq_of_atomAdj P.g h]
 
 
@@ -1504,7 +1525,7 @@ theorem BASimExt.hHs (B : BASimExt P k J' emb') (hN : P.g.Normal) (c : ℂ) :
     exact List.map_congr_left fun e he => BASim_phiE_rest P hN emb' B.hinj B.anchor B.fresh (B.hrest e he)
   have e2 : (BAGraph.ext k P.g B.rest B.s B.w B.md).solid.map (BASim_phiE (BASim_phi P emb' B.anchor B.fresh)) =
       B.rest.map (fun e => SEdge.map emb' (BAScost_imgE P.g e)) ++ B.s.map (BASim_phiE (BASim_phi P emb' B.anchor B.fresh)) := by
-    show (B.rest.map (SEdge.map (owxEmb k)) ++ B.s).map _ = _
+    change (B.rest.map (SEdge.map (owxEmb k)) ++ B.s).map _ = _
     rw [List.map_append, e1]
   rw [e2]
   have e3 : (B.band c).solid = B.restH.map (SEdge.map emb') ++ B.sH := rfl
@@ -1524,7 +1545,7 @@ theorem BASimExt.hHs (B : BASimExt P k J' emb') (hN : P.g.Normal) (c : ℂ) :
 theorem BASimExt.hHw (B : BASimExt P k J' emb') (c : ℂ) :
     List.Forall₂ (fun h w => WEdge.sameRev h (WEdge.map (BASim_phi P emb' B.anchor B.fresh) w)) (B.band c).waved
       (BAGraph.ext k P.g B.rest B.s B.w B.md).waved := by
-  show List.Forall₂ _ (P.g.img.g.waved.map (WEdge.map emb') ++ B.wH) (P.g.waved.map (WEdge.map (owxEmb k)) ++ B.w)
+  change List.Forall₂ _ (P.g.img.g.waved.map (WEdge.map emb') ++ B.wH) (P.g.waved.map (WEdge.map (owxEmb k)) ++ B.w)
   rw [BAGraph.BAAtomic_img_waved]
   refine List.rel_append ?_ B.hw
   rw [List.map_map, List.forall₂_map_left_iff, List.forall₂_map_right_iff]
@@ -1592,7 +1613,7 @@ theorem BASim_locStep_weight (P : BAPGraph E) (m : ℂ) {p : SEdge (P.E' ⊕ P.I
   refine LocStep.weight P.img (BASim_imgP P p) (BASim_imgP_mem P hp) ((promoteC P.g).vmap p.1.src) false false ?_
   have hv : (promoteC P.g).vmap p.1.dst = (promoteC P.g).vmap p.1.src :=
     ((BAAtomic_promoteC_vmap_eq_sameAtom P.g _ _).2 h.2.2).symm
-  show BAScost_imgE P.g p.1 = _
+  change BAScost_imgE P.g p.1 = _
   simp only [BAScost_imgE, h.1, h.2.1, h.2.2, Bool.and_self, hv]
   rfl
 
@@ -1935,6 +1956,23 @@ theorem BASim_img_baInv (Q : BAPGraph E) : Q.img.baInv = Q.baInv := by
   rw [hS, hW, hV, hM, hl, hp, hE]
 
 end Linv
+
+/-! ## 9. Compiled instance of `baFrameStepT_untag_holds`: the data `P_A` of T2423 (a) (ii) (external `0, 1 = inl 0, inl 1`, internal `2, 3, 4 = inr 0, 1, 2`) -/
+namespace BASimInst
+abbrev Ed := SEdge (Fin 2 ⊕ Fin 3)
+/-- `P_A`: blue circled solid `2→1`, `0→2`, `1→0`; waved `S_{4,3}`; `M`-dot `{2,3}`; atoms `{0}, {1}, {2,3}, {4}`; the `gg` step at `p = 2→1`, `q = 0→2`. -/
+def baPA : BAGraph (Fin 2) (Fin 3) :=
+  ⟨⟨[⟨true, true, .inr 0, .inl 1⟩, ⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inl 0⟩], [⟨false, true, .inr 2, .inr 1⟩], [], 1⟩, [], [⟨true, .inr 0, .inr 1⟩]⟩
+def pA : Ed × List Ed := (⟨true, true, .inr 0, .inl 1⟩, [⟨true, true, .inl 0, .inr 0⟩, ⟨true, true, .inl 1, .inl 0⟩])
+def qA : Ed × List Ed := (⟨true, true, .inl 0, .inr 0⟩, [⟨true, true, .inl 1, .inl 0⟩])
+/-- the outputs of the `gg` step at `P_A` -/
+def ggF := (baPG baPA).outsOf (baPA.gg2 pA qA) ++ (baPG baPA).outsOf (baPA.gg4 pA qA)
+/-- `baFrameStepT_untag_holds` at the `gg` step at `P_A` (31 outputs): the untagged step holds, and so does the tagged one with the same outputs. -/
+example : BAFrameStep (baPG baPA) ggF ∧ ggF.length = 31 ∧ ∃ LT, BAFrameStepT (baPG baPA) LT ∧ ggF = LT.map Prod.snd := by
+  have hF : BAFrameStep (baPG baPA) ggF :=
+    BAFrameStep.gg (baPG baPA) pA (List.mem_cons_self ..) qA (List.mem_cons_self ..) (by decide) (0 : Fin 3) (by decide) (by decide) (by decide) (by decide)
+  exact ⟨hF, by decide +kernel, (baFrameStepT_untag_holds (baPG baPA) ggF).1 hF⟩
+end BASimInst
 
 end RBM.Graph
 
