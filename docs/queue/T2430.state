@@ -1,4 +1,4 @@
-state: proving
-reason: started (H222, H12): workflow wf_78ac7148-b14, stage 1a preflight → 1b prover-max → auditor; branch t/T2430 from main 0a8176c
-updated: Sun Oct 11 23:28:31 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-max 66632ff, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 00:27:55 UTC 2026
 reports: docs/reports/T2430-prove.md, docs/reports/T2430-audit.md
