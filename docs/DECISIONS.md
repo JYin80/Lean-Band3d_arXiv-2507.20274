@@ -2226,3 +2226,9 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **T2433 Amend 1**：只做通用一半（`BACtx`、带上下文的 GG 引理两种电荷及 `kids` 形式、`BAselStar`（需要时放宽到任意 `BACtx` 候选）、`BAG5LeafProps`、`BAG5Attached`，对任意根列表）；去掉 `baG5Graph` 的具体闭包表和目标 4（没有使用方）——这也回答了它 1a-audit 关于第二个文件超停止线的问题。L4S3-L1 由 T2433 当前的 scratch 步骤跑（或在 1a-audit 第二轮前单独一个 `prover-max` scratch 步骤），结果写进报告 (a⁗)。
 - (4) 簿记（0554 O4）：BA-V 接口清单加第 (v) 项——TP 脚注 6 的跨界情形（不在任何 TL 行，§249）；文章差异候选 T2434a 记下；ROUTES 的 BA 格更新。
 - (5) 下一张票号 T2442，下一节 §252，下一条 H233。下一批：L3a4、L3b4′（S′ 链，不在 HOLD 内）、G7、带状侧 T 行。
+
+## §252 — 放 L3a4 = T2442、L3b4′ = T2443；stage L 到 25，发短状态 REQ（总调度 V3，2026-10-12 06:18 UTC）
+
+- (1) **T2442 = L3a4 `BALvl1B`**（BA 109；L 24 / 50；`prover-max`；`Graph/BALvl1B` + `BALvl1B2`）：抄入 `BALvl1Good`、`BALvl1GoodLit`、`BAlvl1StepGood`、`BAstepMono`、`ba_good_of_lit`；R1 实际交的是 `BAsim'`（`baSim'_holds`），所以约化 `ba_lvl1StepGood_of_sim` 改用 `BAsim'` 作前提（不能用没人证的 `BAsim`，否则前提扫描会报）；分区结构、合并预算；`baStepMono_holds`、`baLvl1StepGood_holds`。不设设计门（只换前提，检查文件能编译新陈述）；1a 走不通就停，再加探针步骤。
+- (2) **T2443 = L3b4′ `BAStepS`**（BA 110；L 25 / 50；`prover-hard`，探针步骤 `prover-max`）：`BAFrameStepTN`、`BALocStepT`、`BABridge`、`locCostGeA` 的扭转不变性、逐输出 `BASimC'` 与 `baSimC'_holds`、`baStep_of_simC'`、`BAFinalS`（钉在 `BAGraph.LocStd` 上，L4-C3）、`ba_ord_ge_of_simC'`。`BAMatchTw` 默认不做（`P' := (P.twist c t).img` 加 `baMatch_holds` 就够），1a 确认；目标 3 失败时才走 `BAMatchTw`（§240）。T2426 审核 O2 的三个无主输入在 1a 估价，≤ 400 行在本行，否则加一行。
+- (3) **stage L 到 25**：按 TEAM §6 / 监督 0554 预算注，发短状态 REQ（`REQ-2026-10-12-0618-L25`）。不阻塞。下一张票号 T2444，下一节 §253，下一条 H234。

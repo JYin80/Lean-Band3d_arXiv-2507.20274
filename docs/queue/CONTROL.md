@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-12 05:59 UTC (dispatcher V3: T2440 merged; supervisor 0554 scoped HOLD (S3 block); T2433 Amend 1 (H232))
+updated: 2026-10-12 06:18 UTC (dispatcher V3: L3a4 = T2442, L3b4′ = T2443 released (H233))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -13,9 +13,12 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 402. T2434 — `docs/tickets/T2434.md` + **Amend 1** (`docs/tickets/T2434-amend-1.md`: S3 root owed to a successor row L4d2; the pins and the identity stay here; resume) (BA-L L4b1: new `Graph/BAExp14b.lean` + `BAExp14bB.lean`: pins S2, S3 and the expansion identity `baExp14b_expand_holds`; design gate with a `prover-max` probe step → 1a-audit → 1b `prover-max`): released; **resume under Amend 1 (probe step → 1a-audit → 1b `prover-max` → auditor) in the next free slot, before T2435** (H229). Not in the certificate lane.
 403. T2435 — `docs/tickets/T2435.md` (BA-L L3c3a: new `Graph/BAAuxGraph2.lean` + `BAAuxGraph2B.lean`: twin of `AuxGraph2` 1–1500; design gate with a `prover-max` probe step → 1a-audit → 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2434. Not in the certificate lane.
 409. T2441 — `docs/tickets/T2441.md` (BA-TL TL2d: new `BA/TwistStep.lean` + `TwistStep2.lean`: `baTwistGridMart_holds`, `baTwistZeroMode_holds`, `BATwistStepFixed` for `STCaseI`/`STCaseII`; design gate with a `prover-max` probe step → 1a-audit → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). **Priority: first among the waiting tickets.** Not in the certificate lane.
+410. T2442 — `docs/tickets/T2442.md` (BA-L L3a4: new `Graph/BALvl1B.lean` + `BALvl1B2.lean`: the reduction from `BAsim'`, `baStepMono_holds`, `baLvl1StepGood_holds`; 1a → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: first among the waiting tickets (S′ critical path). Not in the certificate lane.
+411. T2443 — `docs/tickets/T2443.md` (BA-L L3b4′: new `Graph/BAStepS.lean`: `BASimC'`, `BAFinalS`, `baStep_of_simC'`, `ba_ord_ge_of_simC'`; probe step `prover-max` → 1a-audit → 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2442. Not in the certificate lane.
 
 ## Pre-release checks
-(none waiting)
+- `docs/tickets/checks/T2442-check.lean` (BA-L L3a4; merged names only).
+- `docs/tickets/checks/T2443-check.lean` (BA-L L3b4′; merged names only).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -94,6 +97,8 @@ Standing instructions carried over from the archived CONTROL (verbatim):
 - H232 (dispatcher V3, 2026-10-12 05:59 UTC; DECISIONS §251; supervisor 0554 O1–O2). (1) Commit by name with your next commit `docs/tickets/T2433-amend-1.md`, `docs/supervisor/2026-10-12-0554.md` and `docs/supervisor/requests/REQ-2026-10-12-0451-L4S3.md` (if not yet committed), `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/rework-ledger.md`. Nothing else. (2) **T2433:** apply Amend 1 to the running workflow: the lift run L4S3-L1 (Amend 1 item 2) goes into the current scratch step, or, if that step has ended, into a separate `prover-max` scratch step before the 1a-audit round 2; then 1a-audit round 2 under Amend 1 → 1b `prover-max` on the generic half only → auditor. **No stage-1b work on the `baG5Graph` table or target 4** (scoped HOLD). If L4S3-L1 reports stuck nodes, stop before 1b with state `blocked`. One `done:` line per item.
   done: Mon Oct 12 06:01:56 UTC 2026 — (1) the listed files committed by name (see the next commit), pushed.
   done: Mon Oct 12 06:01:56 UTC 2026 — (2) T2433: the route-measurement scratch step had not ended and a running agent cannot take an amend, so the hub stopped it (wf_93181b6c-7c9; it had written nothing; Amend 1 drops the table it was measuring) and ran a separate prover-max scratch step for L4S3-L1 as Amend 1 item 2 allows: wf_f95ebbce-996 (L4S3-L1 → 1a-audit round 2 on the generic half → 1b prover-max on the generic half → auditor); stuck nodes or a failing leaf property make the step return incomplete and the workflow stops before 1b with state `blocked`.
+
+- H233 (dispatcher V3, 2026-10-12 06:18 UTC; DECISIONS §252). (1) Commit by name with your next commit `docs/tickets/T2442.md`, `docs/tickets/T2443.md`, `docs/tickets/checks/T2442-check.lean`, `docs/tickets/checks/T2443-check.lean`, `docs/supervisor/requests/REQ-2026-10-12-0618-L25.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile the two checks on `main`; start order as slots free: T2442 → T2443. One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
