@@ -1,0 +1,4 @@
+state: audit-pass
+reason: split Σ (H250 (2)); prover-hard e6edc23, audit RETURN round 1 (two binding instances of target 10 missing) → one rule-(B) repair → audit PASS round 2 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 17:13:20 UTC 2026
+reports: docs/reports/T2456-prove.md, docs/reports/T2456-audit.md
