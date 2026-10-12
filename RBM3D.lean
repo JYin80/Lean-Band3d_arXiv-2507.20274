@@ -543,6 +543,8 @@ import RBM3D.Graph.BALocReg2B
 import RBM3D.Graph.BAProv
 import RBM3D.Chain.StepDecompGen
 import RBM3D.Chain.HierDriftGen
+import RBM3D.Universality.GUEPhase.RandomLayerBG
+import RBM3D.BA.RandomLayerBGBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -169,8 +169,8 @@ def owedProps : List Name :=
    `RBM.Gauss.Sizes.STLocalEntry, -- local law for the entries, a hypothesis of `lem:LWterm_EXP`: first used by T2067
    `RBM.Green.FlucGainUpTo', -- gain interface of the higher-order minor expansion `(GavLGEX)` (`3_5:33`): hypothesis of the budget and moment bounds of T2096; proved by S1-22 `flucGainUpTo'_of_minorDiffGainUpTo'` (T2096, §20 rule; class proposed: owed)
    `RBM.Gauss.Sizes.PfStep5_walkConcl, -- `lem:pf_step5` grid conclusion `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for all `k ≤ K` w.h.p. (`3_5:2364-2383`): proved under the premises of `STIngR5` by `pfStep5_walk`; hypothesis of `pfStep5_PT_of_walk` (T2231, S5-11b: owed)
-   `RBM.Univ.UNOULLk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: BA-C5 (T inputs) + BA-N2 (instance); hypothesis of `ouDiagk_of_ouLLk` (proves `UNOUDiagk`) and of `UNOULLk_band`)
-   `RBM.Univ.UNG1Rowk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: BA-C5 (T inputs) + BA-N2 (instance); with `UNG2bRowk` and `UNOUProfRowk` gives `UNOURowk` by `ouRowk_of_pins`)
+   `RBM.Univ.UNOULLk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: C5g (`g1Rowk_of_inputsG`, T2475) + BA-C5 (`RBG_Prod`, LL, `RBG_Que` at `UNKind.ba`) + BA-N2 (instance); hypothesis of `ouDiagk_of_ouLLk` (proves `UNOUDiagk`) and of `UNOULLk_band`)
+   `RBM.Univ.UNG1Rowk, -- (T2282, UN-51g: owed; owner band: UN-51 (`g1Rowk_band`); BA: C5g (`g1Rowk_of_inputsG`, T2475) + BA-C5 (`RBG_Prod`, LL, `RBG_Que` at `UNKind.ba`) + BA-N2 (instance); with `UNG2bRowk` and `UNOUProfRowk` gives `UNOURowk` by `ouRowk_of_pins`)
    `RBM.Univ.UNOUProfRowk, -- (T2282, UN-51g: owed; owner BA-C3 at `UNKind.ba`; band proved: `unOUProfRowk_band`; premise of `ouRowk_of_pins`)
    `RBM.Univ.UNEMCTE2k, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
    `RBM.Univ.UNJakk, -- bulk universality pin, model-generic (T2187, UN-01b: owed; owner BA-N3 (stage M/N; supervisor 0853 C2))
