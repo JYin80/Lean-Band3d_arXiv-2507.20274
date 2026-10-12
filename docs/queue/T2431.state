@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 198fa66, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 00:43:23 UTC 2026
+state: merged edeea3d
+reason: audit PASS round 1 (claude-opus-5-5); new BA/TwistChain (297 lines, stop 1000), root import added at merge; full lake build 4246 jobs; pushed
+updated: Mon Oct 12 00:43:25 UTC 2026
 reports: docs/reports/T2431-prove.md, docs/reports/T2431-audit.md

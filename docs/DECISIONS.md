@@ -2172,3 +2172,15 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **T2433 = L4e-C `BAG5Leaf`**（BA 100；L 20 / 50；设计门 + 探针步骤，`prover-max`）：带上下文的 GG 引理（L4-C5）、闭包表、叶子性质，`BAG5Tgt/Leaf/Expand` 逐字从 T2398 探针抄入，L4g 用（L4-C7）。附带的签字：附着条款在这里证；引理的行数由 1a 估；证明路线由 1a 定，可以用可计算的桥，但不能孪生证书机器、不走证书通道；表在 Lean 树上对四种 `(k, s)` 重算；只做蓝色须先证选择器不会选红色。
 - (4) 下一张票号 T2434，下一节 §244，下一条 H225。还没写：L4b1、L3c3a、G7、带状侧 T7/T1/T4s1/T4s2/T5s2；TL1b（T2427 后）、TL2a2–4（T2428 后）、TL2d、TL2e。
 
+## §244 — TL-V 合并；放 L4b1 = T2434、L3c3a = T2435（总调度 V3，2026-10-12 01:07 UTC）
+
+- (1) **T2431（TL-V）合并 edeea3d**：新 `BA/TwistChain` 297 行（`baTwistLoopBase_holds`、`baChainTL_holds`），审核一次 PASS。TL 已合并 5 / 13（TL-D、TL0、TL2b、TL2c、TL-V）。
+- (2) **T2434 = L4b1**（BA 101；L 21 / 50；`prover-max`，`Graph/BAExp14b` + `BAExp14bB`，设计门 + 探针步骤）：钉 S2、S3，证展开恒等式 `baExp14b_expand_holds`（𝔼 cut = S1 六族 + S2 + S3，两种电荷）。S2 的证明归 L4b2（要 TL1/TL2 作前提），S3 的证明归 L4g（与 L4c1、L4e-C）——与 T2398 设计 (b′) C 一致。分族按 T2418 Amend 1。S3 的根是否是 `baG5Graph` 值的组合，是设计门的停止项。`LWExpTerm2` §§11–12 本行内由 1a 估价，其余未估价的 §§ 报给调度。
+- (3) **T2435 = L3c3a**（BA 102；L 22 / 50；设计门（T2387 标"1a: stage G"）+ 探针步骤，1b `prover-hard`，`Graph/BAAuxGraph2` + `BAAuxGraph2B`）：`AuxGraph2` 1–1500 的孪生（ζ、`LWXigL`、`BAZetaClaim`、`BAGbyZeta`、`BAEntryPsi`），ζ/ξ 与 G3 的 `hξ` 联合核对是设计门第 (i) 项；`BAAnpAuxG` 只钉不证（L3d1 证）；G7 的不带撇 `BAGbEXPij` 只作前提。L3c3b 等它合并（0951 更正）。
+- (4) 下一张票号 T2436，下一节 §245，下一条 H226。还没写：G7、带状侧 T7/T1/T4s1/T4s2/T5s2；TL1b（T2427 后）、TL2a2–4（T2428 后）、TL2d、TL2e；L3a3、L3b4′（等 R1）。
+
+## §245 — TL1a 合并；放 TL1b = T2436（总调度 V3，2026-10-12 01:09 UTC）
+
+- (1) **T2427（TL1a）合并 a24d4e9**：新 `BA/TwistAvgA` 1,085 + `TwistAvgA2` 1,228；`baTwistAvgRec_holds`（2p 阶矩递推）、`twAvgMoment/Reg/SCS/SPrec/T6_holds`；T.6 留在 TL1a（未用退路）。1a-audit 第一轮 RETURN（`twAvgReg` 缺 `0 < ε`）→ 探针修补一次 → 第二轮 PASS；审核一次 PASS。文章差异候选 T2427a（镜像形式）、T2427b、T2427c 待记。
+- (2) **T2436 = TL1b**（BA 103；TL 8 / 15；`prover-hard`，`BA/TwistAvgB`，停止线 1,500）：证接口 `T2427_TL1b`（`BATwistAvgRec → BATwistAvgProd`，按 TL1a 报告 (iv) 的方案：bootstrap、S1 分情况、逐对 Markov、对所有块对取并），再得 `baTwistAvgProd_holds`；不用 net。登记不动（`BATwistAvgLaw` 的 owed 行到 BA-V 才退）。这张票由总调度直接写（不起子代理），只读了接口和方案。排在等待队列最前。
+- (3) 下一张票号 T2437，下一节 §246，下一条 H227。

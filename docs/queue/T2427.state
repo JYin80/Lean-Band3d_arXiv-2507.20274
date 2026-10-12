@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a PASS, probe d60d13d → repair 73b3a8d, 1a-audit round 2 PASS, prover-max fdb7420, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 00:59:21 UTC 2026
+state: merged a24d4e9
+reason: audit PASS round 1 (claude-opus-5-5); new BA/TwistAvgA (1085), TwistAvgA2 (1228), root imports added at merge; probe stays on t/T2427 (73b3a8d); full lake build 4248 jobs; pushed
+updated: Mon Oct 12 00:59:22 UTC 2026
 reports: docs/reports/T2427-prove.md, docs/reports/T2427-1a-audit.md, docs/reports/T2427-audit.md
