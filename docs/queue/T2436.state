@@ -1,4 +1,4 @@
-state: proving
-reason: started (H226, H12): workflow wf_6d6b28bc-d4c, stage 1a preflight → 1b prover-hard → auditor; branch t/T2436 from main 1a559d5
-updated: Mon Oct 12 01:19:00 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-hard 9341551 (rerun after the API limit), audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 03:33:51 UTC 2026
 reports: docs/reports/T2436-prove.md, docs/reports/T2436-audit.md
