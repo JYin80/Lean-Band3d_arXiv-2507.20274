@@ -484,6 +484,7 @@ import RBM3D.Graph.BASim2
 import RBM3D.Graph.BASim3
 import RBM3D.BA.TwistGridRem
 import RBM3D.BA.TwistGridRem2
+import RBM3D.Graph.BALvl1A
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

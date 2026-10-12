@@ -256,6 +256,7 @@ def structuralProps : List Name :=
    `RBM.Graph.lvl1Split, -- how the weight split of the dotted edge partition (`dot-def`) changes a list of solid edges: a relation that describes the objects, mentioned only by the `brecOn` that Lean generates for it (T2128)
    `RBM.Graph.lvl1Split.below, -- auxiliary predicate that Lean generates for the recursive inductive `lvl1Split` (T2128)
    `RBM.Graph.Lvl1Reach.below, -- auxiliary predicate that Lean generates for the recursive inductive `Lvl1Reach` (reachability by `strat_local`, `B:135-157`) (T2128)
+  `RBM.Graph.BAReach.below, -- auxiliary predicate that Lean generates for the recursive inductive `BAReach` (BA twin of `Lvl1Reach.below`; T2440)
    `RBM.Green.AgreeOffRows,   -- two samples agree on every coordinate off the rows in the finite set `S` (the `Finset` version of `AgreeOffRow`): hypothesis of `Xentry_congr_of_not_mem`, `Hflow_submatrix_set_congr` (T2105, S1-22)
    `RBM.Path.UkerFar, -- the far-kernel condition `‖ukerMat 1 u v a b‖ ≤ W^{-D'}` beyond distance `R`: a data condition on the kernel, hypothesis of `uopLocalMax`, `uopPairLocalMax`; supplied by `kellStarEv` (T2097, ST2-25; DECISIONS §20)
    `RBM.Gauss.Sizes.STIngR5, -- the shape of every Step-5 pin: `∀ 3 ≤ d, 𝔠d` with the Step 1-4 premises implying the conclusion `Concl` in the regime `R`; S5-01 (T2138, DECISIONS §40)
