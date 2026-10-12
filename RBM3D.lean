@@ -469,6 +469,8 @@ import RBM3D.Graph.BAExp14a
 import RBM3D.Graph.BAExp14aB
 import RBM3D.Graph.BAScost
 import RBM3D.Graph.BAScost2
+import RBM3D.BA.TwistKer
+import RBM3D.BA.TwistKer2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
