@@ -6,18 +6,25 @@ Authors: Jun Yin
 import RBM3D.BA.TwistAvgA2
 
 /-!
-# BA stage TL, row TL1b (T2436): Lemma T.7, Steps 5-6 (S1, Markov at the law, union over pairs), `BATwistAvgProd`
+# BA stage TL, row TL1b (T2436): Lemma T.7, Steps 5-6, `BATwistAvgProd`
+
+The bootstrap with S1, Markov at the law, and the union over the pairs.
 
 TL1a (`BA/TwistAvgA.lean`, `BA/TwistAvgA2.lean`) proved the recursion `BATwistAvgRec`
 (`baTwistAvgRec_holds`, `TP:89`, first display of Step 5).  This file bootstraps it:
-`baTwistAvgProd_of_rec : T2427_TL1b` and `baTwistAvgProd_holds`.  Proofs `docs/tickets/T2398-TL-proofs.md`
-T.7 Steps 5-6 (`TP:88-94`); design `docs/reports/T2413-design.md` §5 (S1, no net).
+`baTwistAvgProd_of_rec : T2427_TL1b` and `baTwistAvgProd_holds`.  Proofs
+`docs/tickets/T2398-TL-proofs.md` T.7 Steps 5-6 (`TP:88-94`); design
+`docs/reports/T2413-design.md` §5 (S1, no net).
 
-Constants (for `τ, D > 0`, the datum `𝔠, 𝔡, ε`, `c = min(2𝔡𝔠, ε)/2`): `p = ⌈(D+4)/τ⌉`, `ε' = d min(c, τ/2)`,
-`D' = 2p+2`, `C' = (4p+2)K+2`.  Contents: §1 S1 (the real-algebra step, `N^{-D'} ≤ B^{2p}` from `B ≥ N⁻¹`, no
-case split on the floor); §2 `Bctl` ceiling along `BAFlow` and absorption `K W^{ε'} B ≤ 1/2`; §3 the maximum
-`X ≤ C' W^{ε'} B`; §4 Markov per pair and the exponent count; §5 the union over `L^{2d} ≤ N²` pairs and `BATwistAvgLaw`;
-§6 `baTwistAvgProd_of_rec`, `baTwistAvgProd_holds`; §7 the instance.  Helpers carry the stem `TwistAvgB_`.
+Constants (for `τ, D > 0`, the datum `𝔠, 𝔡, ε`, `c = min(2𝔡𝔠, ε)/2`):
+`p = ⌈(D+4)/τ⌉`, `ε' = d min(c, τ/2)`, `D' = 2p+2`, `C' = (4p+2)K+2`.
+
+Contents: §1 S1 (the real-algebra step; `N^{-D'} ≤ B^{2p}` from `B ≥ N⁻¹`, so no
+case split on a floor constant); §2 `Bctl` ceiling along `BAFlow` and absorption
+`K W^{ε'} B ≤ 1/2`; §3 the maximum `X ≤ C' W^{ε'} B`; §4 Markov per pair, the exponent
+count and the union bound; §5 one size `n`; §6 `TwistAvgB_law_of_recAt`,
+`baTwistAvgProd_of_rec`, `baTwistAvgProd_holds`; §7 the instances.
+Helpers carry the stem `TwistAvgB_`.
 -/
 
 set_option linter.style.longLine false
@@ -377,7 +384,7 @@ variable {d : ℕ} {sz : Sizes d}
 `ε' = d min(c, τ/2)`, `c = min(2𝔡𝔠, ε)/2`, `D' = 2p + 2`, `C' = (4p+2)K + 2`; eventually `K W^{ε'} B ≤ 1/2` (`TwistAvgB_absorb`),
 `N^{-D'} ≤ B^{2p}` (`B ≥ N⁻¹`), `C'^{2p} ≤ N²`, `N ≥ 1`; then `X ≤ C' W^{ε'} B` (S1), Markov per pair and the union over the pairs (`TwistAvgB_step`).
 No net, no `STLKgL`/`BAGbEXP*`: the premises are those of `BATwistAvgRecAt`, integrability is `twAvgReg_holds`. -/
-theorem baTwistAvgLaw_of_recAt (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) {z : ℕ → ℂ} (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
+private theorem TwistAvgB_law_of_recAt (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) {z : ℕ → ℂ} (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
     {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) {K : ℝ} (hK : 0 < K)
     (hrec : BATwistAvgRecAt (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t K) :
     BATwistAvgLaw (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t := by
@@ -438,13 +445,59 @@ theorem baTwistAvgProd_of_rec : T2427_TL1b := by
   intro d hRec hd κ ε 𝔡 hκ hε h𝔡
   obtain ⟨K, hK, H⟩ := hRec hd κ ε 𝔡 hκ hε h𝔡
   intro 𝔠 sz z hflow t ht0 htT μ hA hM
-  exact baTwistAvgLaw_of_recAt hd hκ hε hflow ht0 htT hK (H 𝔠 sz z hflow t ht0 htT hA hM)
+  exact TwistAvgB_law_of_recAt hd hκ hε hflow ht0 htT hK (H 𝔠 sz z hflow t ht0 htT hA hM)
 
 /-- **Target 2: `BATwistAvgProd` is proved** (`baTwistAvgRec_holds` and `baTwistAvgProd_of_rec`): `TL1` at the BA carrier, per `τ`, from `LWAvgLawgL` and `STLmaxgL`. -/
 theorem baTwistAvgProd_holds (d : ℕ) : BATwistAvgProd d :=
   baTwistAvgProd_of_rec d (baTwistAvgRec_holds d)
 
 end Main
+
+/-! ## 7. Instances (target 3): `d = 3`, `sz0` (`L = 4`, `W = 32` at `n = 0`), `zSeq`, `flow_sz0`, `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `t ≡ 1/2 ≤ T₀`.
+Other gates' pins (`LWAvgLawgL`, `STLmaxgL`) stay hypotheses; every deterministic hypothesis is discharged (`BAFlow`, `0 ≤ t`, `t ≤ T₀`, `3 ≤ d`, the positivity of `κ, ε, 𝔡`). -/
+
+section Inst
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
+local notation "μ0" => Sizes.seqP (sz0.withLam 0)
+
+/-- The two interfaces as compiled terms (`T2427_TL1b` is `∀ d, BATwistAvgRec d → BATwistAvgProd d`). -/
+example : T2427_TL1b := baTwistAvgProd_of_rec
+example : ∀ d, BATwistAvgProd d := baTwistAvgProd_holds
+
+/-- Target 2 at the datum: `baTwistAvgProd_holds 3` at `sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2`; `LWAvgLawgL`, `STLmaxgL` are other gates' pins. -/
+example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
+    BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) :=
+  baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM
+
+/-- Target 1 at the datum: the recursion at the constant `K` of `baTwistAvgRec_holds 3` gives the law (`LWAvgLawgL`, `STLmaxgL` are premises of the recursion). -/
+example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
+    BATwistAvgLaw (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) := by
+  obtain ⟨K, hK, H⟩ := baTwistAvgRec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+  exact TwistAvgB_law_of_recAt le_rfl (by norm_num : (0 : ℝ) < 1 / 2) (by norm_num : (0 : ℝ) < 1 / 10) flow_sz0
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hK (H (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num)
+      (fun n => (half_lt_t0 n).le) hA hM)
+
+/-- Non-vacuity of the conclusion at `τ = 1/2`, `D = 1`: for large `n` the bad event of `BATwistAvgLaw` has probability `≤ N⁻¹ < 1`, so some sample `ω` has
+`‖twTr c₁ c₂‖ ≤ N^{1/2} B` for every ordered pair of blocks (`μ0` is a probability measure; `L = 4(n+1)`, so the index set of pairs has `(4(n+1))^6` elements). -/
+example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
+    ∀ᶠ n in atTop, ∃ ω : sz0.SeqΩ, ∀ c₁ c₂ : Zd 3 (sz0.L n),
+      ‖twTr (baFMz sz0 zSeq) n (1 / 2) ω c₁ c₂‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) * sz0.Bctl n (1 / 2) := by
+  have H := baTwistAvgProd_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0
+    (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM (1 / 2) (by norm_num) 1 (by norm_num)
+  filter_upwards [H, sz0_tendsto.eventually (eventually_ge_atTop 2)] with n hn hN2
+  by_contra hcon
+  push Not at hcon
+  have h1 : μ0 Set.univ ≤ ENNReal.ofReal (((sz0.size n : ℕ) : ℝ) ^ (-1 : ℝ)) := by
+    refine le_trans (measure_mono fun ω _ => ?_) hn
+    obtain ⟨c₁, c₂, h⟩ := hcon ω
+    exact ⟨(c₁, c₂), h⟩
+  rw [measure_univ, ENNReal.one_le_ofReal, Real.rpow_neg_one] at h1
+  have hN0 : (0 : ℝ) < ((sz0.size n : ℕ) : ℝ) := by linarith
+  rw [one_le_inv₀ hN0] at h1
+  linarith
+
+end Inst
 
 end RBM.BA
 
