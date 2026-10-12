@@ -133,7 +133,7 @@ private theorem TwistGridTail_norm_Ea (b : Zd d (sz.L n)) : ‖TwistGridTail_Ea 
   refine (pi_norm_le_iff_of_nonneg (TwistGridTail_e_nonneg n)).mpr fun p => ?_
   split_ifs with h
   · simp
-  · simp [TwistGridTail_e_nonneg]
+  · simp
 
 private theorem TwistGridTail_shift_inj {c : Zd d (sz.L n)} {c₁ : Zd d (sz.L n)} {w r : Idx d (sz.L n) (sz.W n)}
     (hw : w ∈ twBlk n c₁) (hr : r ∈ twBlk n c₁) (h : twShift n c w = twShift n c r) : w = r := by
@@ -160,7 +160,7 @@ private theorem TwistGridTail_norm_Q (c₁ c₂ : Zd d (sz.L n)) : ‖TwistGridT
     by_cases hw : w ∈ twBlk n c₁
     · by_cases hwr : w = r
       · subst hwr
-        simp [hw, hce]
+        simp [hw]
       · have : ¬ (r ∈ twBlk n c₁ ∧ twShift n c₂ w = twShift n c₂ r) :=
           fun h => hwr (TwistGridTail_shift_inj n hw h.1 h.2)
         simp [hw, this, hwr]
@@ -176,7 +176,7 @@ private theorem TwistGridTail_norm_Q (c₁ c₂ : Zd d (sz.L n)) : ‖TwistGridT
     rwa [Matrix.conjTranspose_conjTranspose, Matrix.l2_opNorm_conjTranspose] at this
   rw [h2] at h1
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   nlinarith [norm_nonneg (TwistGridTail_Q n c₁ c₂), TwistGridTail_e_nonneg (sz := sz) (d := d) n]
 
 end Words
@@ -624,7 +624,7 @@ private theorem TwistGridTail_resolvent_diff {ι : Type*} [Fintype ι] [Decidabl
     rw [mul_sub, sub_mul, Matrix.mul_assoc, Matrix.mul_nonsing_inv _ hdA, Matrix.mul_one,
       Matrix.nonsing_inv_mul _ hdA', Matrix.one_mul]
   rw [key, hAA']
-  simp [Matrix.mul_smul, Matrix.smul_mul]
+  simp
 
 private theorem TwistGridTail_Gres_diff_norm {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian)
     {z z' : ℂ} (hz : z.im ≠ 0) (hz' : z'.im ≠ 0) (σ : Bool) {K : ℝ} (h : ‖Gres H z σ‖ ≤ K) (h' : ‖Gres H z' σ‖ ≤ K) :
@@ -1469,5 +1469,29 @@ private theorem TwistGridTail_Y_tail (hm : 0 < (BAmF sz lam0 E n).im) (hst : s n
 end Label
 
 
+
+/-! ## 9. Compiled nonempty instance of `TwistGridTail_condMGF_Z` (`d = 3`, `sz0`: `L = 4`, `W = 32`; flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`;
+`n = 0`, `j = 0`; the window `s ≡ 1/2`, `t ≡ 2/3`, the grid `K ≡ 4`, `Δ = 1/24`, `u_1 = 13/24 < 1`; `σ = (false, true)`, `c₁ = 0`, `c₂ = (1,0,0)`; the weights `κ = 1_{c₂}`, `r = 1`).
+Every hypothesis is discharged: `Im m_F > 0` (`BAmF_sz0_im_pos`), `u_1 < 1`, `Δ ≥ 0`. -/
+
+section CondMGFInst
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst
+
+/-- `TwistGridTail_condMGF_Z` at the instance: the first-chaos increment of the label weights `κ = 1_{(1,0,0)}` is exponentially integrable and has the
+conditional mgf bound (the four conjuncts). -/
+example : Integrable (fun ω => Real.exp (1 * (stepZCN (sz0.withLam 0) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 0
+        (TwistGridTail_phi sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (0 + 1))
+          ![false, true] 0 ![1, 0, 0]) (fun _ a => (fun a : Zd 3 (sz0.L 0) => if a = ![1, 0, 0] then (1 : ℂ) else 0) a) 0 ω).re))
+      ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp) ∧
+    Integrable (fun ω => Real.exp (1 * (stepZCN (sz0.withLam 0) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 0
+        (TwistGridTail_phi sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (gridTime (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (0 + 1))
+          ![false, true] 0 ![1, 0, 0]) (fun _ a => (fun a : Zd 3 (sz0.L 0) => if a = ![1, 0, 0] then (1 : ℂ) else 0) a) 0 ω).im))
+      ((baStep2Mat sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)).Pp) := by
+  have h := TwistGridTail_condMGF_Z sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 0
+    ![false, true] 0 ![1, 0, 0] (BAmF_sz0_im_pos 0) (by norm_num [gridTime, gridStep]) (by norm_num [gridStep])
+    (fun a : Zd 3 (sz0.L 0) => if a = ![1, 0, 0] then (1 : ℂ) else 0) 1
+  exact ⟨h.1, h.2.1⟩
+
+end CondMGFInst
 
 end RBM.BA
