@@ -473,6 +473,8 @@ import RBM3D.BA.TwistKer
 import RBM3D.BA.TwistKer2
 import RBM3D.BA.TwistQV
 import RBM3D.BA.TwistChain
+import RBM3D.BA.TwistAvgA
+import RBM3D.BA.TwistAvgA2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
