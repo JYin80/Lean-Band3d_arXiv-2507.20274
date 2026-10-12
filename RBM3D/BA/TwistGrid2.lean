@@ -316,6 +316,16 @@ example (ω : PathΩ sz0) :
 example :=
   baTwistGrid_decomp_ae sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) (fun _ => 1 / 2) (fun _ => 2 / 3) (fun _ => 4) 0 (![false, true], 0, 0, ![1, 0, 0])
 
+/-- Clause (i) is the first conjunct of `BATwistGridRem`: given the remainder bound (ii) (the successor row TL2a2, here a hypothesis) the pin follows. -/
+example (d : ℕ) (C₀ : ℝ) (h2 : ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
+    ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ K : ℕ → ℕ,
+      ∀ᶠ n in atTop, ∀ (i : (Fin 2 → Bool) × Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n)),
+        ∀ᵐ ω ∂((baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)).Pp), ∀ k, k ≤ K n →
+          ‖twRem sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n i.1 i.2.1 i.2.2.1 i.2.2.2 k ω‖ ≤ ((sz.size n : ℕ) : ℝ) ^ C₀ * Real.sqrt (gridStep s t K n)) :
+    BATwistGridRem d C₀ := by
+  intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz s t hs hst htT
+  exact ⟨0, le_rfl, fun K hK hKN => ⟨fun n i => baTwistGrid_decomp_ae sz _ _ s t K n i, h2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hz s t hs hst htT K⟩⟩
+
 /-- `baTwistGridAssemble_holds` at `d = 3`, `C₀ = 11 ≥ 0`: the three part pins are hypotheses; the conclusion is the pin `BATwistGridMartAt 3 11`. -/
 example (hRem : BATwistGridRem 3 11) (hTail : BATwistGridTail 3) (hW : BATwistGridWTail 3) : BATwistGridMartAt 3 11 :=
   baTwistGridAssemble_holds 3 11 (by norm_num) hRem hTail hW
