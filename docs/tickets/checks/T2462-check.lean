@@ -4,12 +4,15 @@ carrier in three new files `Chain/Step5CasesGen.lean`, `Chain/Step5KerGen.lean`,
 `Step5Kit`, `Step5Cases`, `Step5Kernel`, `TailtoTail`, `TailtoTailSq`, `WardII`, `NewKLKL` are not edited (outside the
 certificate lane).  One kernel (supervisor 1152 U-C4): `Step2Gen_uKer`, `Step2Gen_thetaKer`, `Step2Gen_UN` of T8b.
 Coupling (1457 UBA-C1, DECISIONS §269 (2)): size-level quantities at `sz.lam`; the kernel decay at a coupling `gK`; one
-comparison hypothesis `∀ n, gK n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2`.
+comparison hypothesis, **Amend 1** (R1, supervisor 1752 TN-C1, DECISIONS §273 (1); replaces the 1457 text and §271 (4))
+`∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2`.
 Part 1: merged names.  Part 2: the target statements as `Prop` values (prefix `T2462_`; content binding up to the name, except
 `T2462_WardIdent`, `T2462_stWardIIgL_of`, `T2462_ThDecayK`, `T2462_ThDecayK_band`, `T2462_ProfileK`: D1/D2 defaults, fixed at
 the 1a-audit), then shapes (not binding): band and BA readings.  Part 3 (G1): the public names of the seven band files, unchanged.
 Merged names only.  No proof terms, no placeholders.
 Run: lake env lean docs/tickets/checks/T2462-check.lean
+Amend 1 (dispatcher V3, Mon Oct 12 18:11 UTC 2026; DECISIONS §273 (1)): the comparison clause of `T2462_ProfileK` and the two UBA-C1
+shape lines read R1; nothing else changes.  The per-index consequence used at index `n` is the shape line after the BA reading.
 -/
 import RBM3D.Chain.Step5Gen
 import RBM3D.Chain.NewKLKGen
@@ -274,7 +277,7 @@ def T2462_ThDecayK_band : Prop :=
 def T2462_ProfileK (d : ℕ) : Prop :=
   3 ≤ d → ∀ Λ C₆ A : ℝ, 0 < Λ → 0 < C₆ → 1 ≤ A → ∃ Cp : ℝ, 0 < Cp ∧
     ∀ (sz : Sizes d) (C : FlowFM sz) (gK : ℕ → ℝ), T2462_ThDecayK C gK Λ C₆ →
-      (∀ n, gK n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) →
+      (∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) →
       ∀ (n : ℕ) (σ σ' : Bool) (W D u t : ℝ), 0 < gK n → gK n ≤ Λ → 0 < W → 0 ≤ u → u ≤ t → t < 1 →
         (sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ 1 - t ∨ 1 - u ≤ sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2) →
         ∀ a₁ a₂ : Zd d (sz.L n),
@@ -318,7 +321,7 @@ example : Prop := ∀ {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ), T2462_asse
 /-- Target 8 at `bandFM` (the semigroup law holds for `|E n| ≤ 2`, `step2Gen_USemigroup_band`). -/
 example : Prop := ∀ {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ), |E n| ≤ 2 → T2462_UNDecomp (bandFM sz E) n
 /-- Target 9 at the band coupling `gK = sz.lam`, `A = 1`. -/
-example : Prop := ∀ {d : ℕ} (sz : Sizes d), ∀ n, sz.lam n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ 1 * sz.lam n ^ 2
+example : Prop := ∀ {d : ℕ} (sz : Sizes d), ∀ n, 0 ≤ sz.lam n * sz.lam n ∧ sz.lam n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ 1 * sz.lam n ^ 2
 example : Prop := T2462_ProfileK 3
 /-- Target 10, U6's route to the same band result. -/
 example : Prop := ∀ d : ℕ, STNewKLKL d → T2462_NewKLKL_band d
@@ -342,7 +345,10 @@ example : Prop := ∀ {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ), T246
 example : Prop := ∀ {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (Λ C₆ : ℝ), T2462_ThDecayK (baFMz sz z) (BAflowLam0 sz z) Λ C₆
 /-- UBA-C1 at BA: the one comparison hypothesis with `gK = BAflowLam0 sz z` and `A = (κ+1)/κ` (from `TwistStep2_lam0_sq`). -/
 example : Prop := ∀ {d : ℕ} (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
-  ∀ n, BAflowLam0 sz z n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ (κ + 1) / κ * BAflowLam0 sz z n ^ 2
+  ∀ n, 0 ≤ BAflowLam0 sz z n * sz.lam n ∧ BAflowLam0 sz z n ^ 2 ≤ sz.lam n ^ 2 ∧
+    sz.lam n ^ 2 ≤ (κ + 1) / κ * BAflowLam0 sz z n ^ 2
+/-- R1, per index (shape, not binding): the guard `0 < gK n` gives `0 < sz.lam n` and `gK n ≤ sz.lam n`. -/
+example : Prop := ∀ g l A : ℝ, 0 ≤ g * l ∧ g ^ 2 ≤ l ^ 2 ∧ l ^ 2 ≤ A * g ^ 2 → 0 < g → 0 < l ∧ g ≤ l
 /-- Target 10 at the BA family of T3-BA (`baNewKLKGenHyp`). -/
 example : Prop := ∀ d : ℕ, T2462_stNewKLKLgL'_of d (fun sz E => baStep2Fam sz E)
 
