@@ -493,6 +493,7 @@ import RBM3D.Graph.BAAuxGraph2
 import RBM3D.Graph.BAAuxGraph2B
 import RBM3D.Graph.BALvl1B
 import RBM3D.Graph.BALvl1B2
+import RBM3D.Graph.BAStepS
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -1,4 +1,4 @@
-state: proving
-reason: rule (H) rerun after the API session limit: 1a PASS; the probe step died (uncommitted RBM3D/Probe/ kept); rerun wf_3c3687e4-933 (probe prover-max → 1a-audit → 1b prover-hard → auditor)
-updated: Mon Oct 12 08:12:14 UTC 2026
+state: audit-pass
+reason: preflight PASS, probe 6b5ad59, 1a-audit PASS, prover-hard e9528ea, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 09:17:18 UTC 2026
 reports: docs/reports/T2443-prove.md, docs/reports/T2443-1a-audit.md, docs/reports/T2443-audit.md
