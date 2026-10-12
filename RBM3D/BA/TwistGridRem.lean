@@ -43,7 +43,7 @@ open private TwistGrid_hasDerivAt_Gsig_spec TwistGrid_Pb TwistGrid_twL2M_trace T
 
 open private TwistPins_M_le_one from RBM3D.BA.TwistPins
 
-open private OneStep_w0 OneStep_w1 OneStep_w2 OneStep_Data OneStep_Data.mk OneStep_Diff OneStep_Diff.mk
+open private OneStep_w0 OneStep_w1 OneStep_w2 OneStep_Data OneStep_Diff
   OneStep_norm_w0_le OneStep_norm_w1_le OneStep_norm_w2_le OneStep_norm_w1_sub_le OneStep_norm_w2_sub_le
   OneStep_hasDerivAt_w0 OneStep_hasDerivAt_w1 OneStep_hasDerivAt_trace OneStep_hasDerivAt_lineR
   OneStep_norm_Gsig_sub_le OneStep_continuous_Gsig OneStep_Hs OneStep_Hs_eq OneStep_Hs_herm OneStep_continuous_Hs
