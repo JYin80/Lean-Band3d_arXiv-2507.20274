@@ -48,7 +48,6 @@ open private StepDecompLoop_word_jets StepDecompLoop_word_jet1 StepDecompLoop_ha
 open private QVIdentity_coord_sum QVIdentity_pair QVIdentity_svarF_cast QVIdentity_sum_swap4 from RBM3D.Path.QVIdentity
 open private StepDecompN_integrable_phi StepDecompN_measurable_AbCN from RBM3D.Induction.StepDecompN
 open private gridAsm_measurable_coord from RBM3D.Induction.GridAssemblyN
-open private StepDecompN_integrable_phi StepDecompN_measurable_AbCN from RBM3D.Induction.StepDecompN
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Matrix Matrix.Norms.L2Operator
