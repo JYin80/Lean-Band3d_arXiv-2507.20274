@@ -788,6 +788,257 @@ private lemma TwistQV_chain1_row {Hb : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : 
   refine hA.trans ?_
   refine mul_le_mul_of_nonneg_left hB (Real.rpow_nonneg hT₂ _)
 
+
+/-- **The second chain, one row** (`T.11 (iii)`, `C₂`: the outer chains `G₂ P G₁`, the middle block `(G₂ E_c G₂^*)_{bb}`
+bounded by the Schatten norm `L^{(4p)}`): one application of `TwistQV_rowbound_off`. -/
+private lemma TwistQV_chain2_row {Hb : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ} (hH : Hb.IsHermitian) (Mx : ℕ → ℝ)
+    (hM : ∀ Lst : List (Bool × Zd d L), ‖(TwistQV_wd (Gres Hb z) (Eblk d L W) Lst).trace‖ ≤ Mx Lst.length)
+    (s₁ s₂ : Bool) (b c₁ c₂ : Zd d L) {p : ℕ} (hp : 1 ≤ p)
+    (hT : 0 ≤ ((W : ℝ) ^ d) ^ (2 * (2 * p)) * Mx (2 * (2 * p))) (y : Vtx d L W) :
+    ∑ o' : Fin (W ^ d), ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o')‖ ^ 2 ≤
+      (((W : ℝ) ^ d) ^ (2 * (2 * p)) * Mx (2 * (2 * p))) ^ (((2 * p : ℕ) : ℝ)⁻¹) *
+        ∑ o₁ : Fin (W ^ d), ‖∑ o₂ : Fin (W ^ d), Gres Hb z s₂ y (c₁, o₂) * Gres Hb z s₁ (c₂, o₂) (b, o₁)‖ ^ 2 := by
+  set u : Fin (W ^ d) → ℂ := fun o₁ => ∑ o₂ : Fin (W ^ d), Gres Hb z s₂ y (c₁, o₂) * Gres Hb z s₁ (c₂, o₂) (b, o₁) with hu
+  have h1 : ∀ o' : Fin (W ^ d), TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o') =
+      ∑ o₁ : Fin (W ^ d), u o₁ * Gres Hb z s₂ (b, o₁) (y.1, o') := by
+    intro o'
+    unfold TwistQV_CC2
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun o₁ _ => ?_
+    rw [hu, Finset.sum_mul]
+  simp only [h1]
+  exact TwistQV_rowbound_off (Gres Hb z s₂) b y.1 (p := 2 * p) (by omega) hT
+    (TwistQV_Tbound hH Mx hM s₂ b y.1 (by omega)) u
+
+
+/-- `(D^{2k} M)^{1/k} = D² M^{1/k}`. -/
+private lemma TwistQV_rpow_conv {D M : ℝ} (hD : 0 ≤ D) (hM : 0 ≤ M) {k : ℕ} (hk : 1 ≤ k) :
+    (D ^ (2 * k) * M) ^ ((k : ℝ)⁻¹) = D ^ 2 * M ^ ((k : ℝ)⁻¹) := by
+  rw [Real.mul_rpow (by positivity) hM]
+  congr 1
+  rw [pow_mul D 2 k]
+  exact Real.pow_rpow_inv_natCast (by positivity) (by omega)
+
+/-- **The deterministic core of `T.11 (iii)`** (`Q ≤ 2 W^d Σ_c [tr(E_c C₁ E_c C₁^*) + tr(E_c C₂ E_c C₂^*)]`, then `C₁`, `C₂` as in
+`TwistQV_chain1_row`, `TwistQV_chain2_row`, the Ward sums `TwistQV_ward_sum`, `TwistQV_R2`): for a Hermitian `Hb` and `Im z = η > 0`,
+`Σ_y Σ_{x∈[y]} |C₁(y,x) + C₂(y,x)|² ≤ 2 (W^d)⁵ η⁻¹ [M₁ M_{2q}^{1/q} M_{4p}^{1/(2p)} + M_{4p}^{1/(2p)} (M₂ M₄)^{1/2}]`,
+`M_k` any bound of the traces of the words of length `k`. -/
+private theorem TwistQV_core {Hb : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ} (hH : Hb.IsHermitian) (hz : 0 < z.im)
+    (Mx : ℕ → ℝ) (hM0 : ∀ n, 0 ≤ Mx n)
+    (hM : ∀ Lst : List (Bool × Zd d L), ‖(TwistQV_wd (Gres Hb z) (Eblk d L W) Lst).trace‖ ≤ Mx Lst.length)
+    (s₁ s₂ : Bool) (b c₁ c₂ : Zd d L) {p q : ℕ} (hp : 1 ≤ p) (hq : 1 ≤ q) :
+    ∑ y : Vtx d L W, ∑ x : Vtx d L W,
+        (if x.1 = y.1 then ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x +
+          TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 else 0) ≤
+      2 * (((W : ℝ) ^ d) ^ 5 * (z.im)⁻¹ * (Mx 1 * Mx (2 * q) ^ ((q : ℝ)⁻¹) * Mx (4 * p) ^ (1 / (2 * (p : ℝ))) +
+        Mx (4 * p) ^ (1 / (2 * (p : ℝ))) * √(Mx 2 * Mx 4))) := by
+  set D : ℝ := (W : ℝ) ^ d with hD
+  have hD0 : 0 ≤ D := by positivity
+  have hT₁ : 0 ≤ D ^ (2 * q) * Mx (2 * q) := mul_nonneg (by positivity) (hM0 _)
+  have hT₂ : 0 ≤ D ^ (2 * (2 * p)) * Mx (2 * (2 * p)) := mul_nonneg (by positivity) (hM0 _)
+  have hμ₁ : (D ^ (2 * q) * Mx (2 * q)) ^ ((q : ℝ)⁻¹) = D ^ 2 * Mx (2 * q) ^ ((q : ℝ)⁻¹) :=
+    TwistQV_rpow_conv hD0 (hM0 _) hq
+  have hexp : (((2 * p : ℕ) : ℝ)⁻¹) = 1 / (2 * (p : ℝ)) := by push_cast; rw [one_div]
+  have hμ₂ : (D ^ (2 * (2 * p)) * Mx (2 * (2 * p))) ^ (((2 * p : ℕ) : ℝ)⁻¹) =
+      D ^ 2 * Mx (4 * p) ^ (1 / (2 * (p : ℝ))) := by
+    rw [TwistQV_rpow_conv hD0 (hM0 _) (k := 2 * p) (by omega), hexp, show 2 * (2 * p) = 4 * p by ring]
+  set μ₁ : ℝ := D ^ 2 * Mx (2 * q) ^ ((q : ℝ)⁻¹) with hμ₁d
+  set μ₂ : ℝ := D ^ 2 * Mx (4 * p) ^ (1 / (2 * (p : ℝ))) with hμ₂d
+  have hμ₁0 : 0 ≤ μ₁ := mul_nonneg (by positivity) (Real.rpow_nonneg (hM0 _) _)
+  have hμ₂0 : 0 ≤ μ₂ := mul_nonneg (by positivity) (Real.rpow_nonneg (hM0 _) _)
+  -- the pointwise splitting
+  have hsplit : ∀ y x : Vtx d L W,
+      ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x + TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 ≤
+        2 * ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 +
+          2 * ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 := by
+    intro y x
+    have h := norm_add_le (TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x)
+      (TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x)
+    nlinarith [norm_nonneg (TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x),
+      norm_nonneg (TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x),
+      norm_nonneg (TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x +
+        TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x),
+      sq_nonneg (‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ -
+        ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖)]
+  -- the sums over `x` in the block of `y`
+  have hrow : ∀ f : Vtx d L W → ℝ, ∀ y : Vtx d L W,
+      ∑ x : Vtx d L W, (if x.1 = y.1 then f x else 0) = ∑ o : Fin (W ^ d), f (y.1, o) :=
+    fun f y => TwistQV_sum_ite y.1 f
+  -- chain 1
+  have hN₁ : ∑ y : Vtx d L W, ∑ o : Fin (W ^ d), ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2 ≤
+      D ^ 5 * (z.im)⁻¹ * (Mx 1 * Mx (2 * q) ^ ((q : ℝ)⁻¹) * Mx (4 * p) ^ (1 / (2 * (p : ℝ)))) := by
+    calc ∑ y : Vtx d L W, ∑ o : Fin (W ^ d), ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2
+        ≤ ∑ y : Vtx d L W, (μ₂ * (μ₁ * ∑ o₁ : Fin (W ^ d), ‖Gres Hb z s₁ y (b, o₁)‖ ^ 2)) := by
+          refine Finset.sum_le_sum fun y _ => ?_
+          have := TwistQV_chain1_row hH Mx hM s₁ s₂ b c₁ c₂ hp hq hT₁ hT₂ y
+          rwa [hμ₁, hμ₂] at this
+      _ = μ₂ * (μ₁ * ∑ y : Vtx d L W, ∑ o₁ : Fin (W ^ d), ‖Gres Hb z s₁ y (b, o₁)‖ ^ 2) := by
+          rw [← Finset.mul_sum, ← Finset.mul_sum]
+      _ ≤ μ₂ * (μ₁ * ((z.im)⁻¹ * (D * Mx 1))) :=
+          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (TwistQV_ward_sum hH hz Mx hM s₁ b) hμ₁0) hμ₂0
+      _ = D ^ 5 * (z.im)⁻¹ * (Mx 1 * Mx (2 * q) ^ ((q : ℝ)⁻¹) * Mx (4 * p) ^ (1 / (2 * (p : ℝ)))) := by
+          rw [hμ₁d, hμ₂d]; ring
+  -- chain 2
+  have hN₂ : ∑ y : Vtx d L W, ∑ o : Fin (W ^ d), ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2 ≤
+      D ^ 5 * (z.im)⁻¹ * (Mx (4 * p) ^ (1 / (2 * (p : ℝ))) * √(Mx 2 * Mx 4)) := by
+    calc ∑ y : Vtx d L W, ∑ o : Fin (W ^ d), ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2
+        ≤ ∑ y : Vtx d L W, (μ₂ * ∑ o₁ : Fin (W ^ d),
+            ‖∑ o₂ : Fin (W ^ d), Gres Hb z s₂ y (c₁, o₂) * Gres Hb z s₁ (c₂, o₂) (b, o₁)‖ ^ 2) := by
+          refine Finset.sum_le_sum fun y _ => ?_
+          have := TwistQV_chain2_row hH Mx hM s₁ s₂ b c₁ c₂ hp hT₂ y
+          rwa [hμ₂] at this
+      _ = μ₂ * ∑ y : Vtx d L W, ∑ o₁ : Fin (W ^ d),
+            ‖∑ o₂ : Fin (W ^ d), Gres Hb z s₂ y (c₁, o₂) * Gres Hb z s₁ (c₂, o₂) (b, o₁)‖ ^ 2 := by
+          rw [← Finset.mul_sum]
+      _ ≤ μ₂ * ((z.im)⁻¹ * (D ^ 3 * √(Mx 2 * Mx 4))) :=
+          mul_le_mul_of_nonneg_left (TwistQV_R2 hH hz Mx hM0 hM s₁ s₂ b c₁ c₂) hμ₂0
+      _ = D ^ 5 * (z.im)⁻¹ * (Mx (4 * p) ^ (1 / (2 * (p : ℝ))) * √(Mx 2 * Mx 4)) := by
+          rw [hμ₂d]; ring
+  calc ∑ y : Vtx d L W, ∑ x : Vtx d L W,
+        (if x.1 = y.1 then ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x +
+          TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 else 0)
+      ≤ ∑ y : Vtx d L W, ∑ x : Vtx d L W,
+        (if x.1 = y.1 then 2 * ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 +
+          2 * ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 else 0) := by
+        refine Finset.sum_le_sum fun y _ => Finset.sum_le_sum fun x _ => ?_
+        split_ifs
+        · exact hsplit y x
+        · exact le_rfl
+    _ = ∑ y : Vtx d L W, (2 * ∑ o : Fin (W ^ d), ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2 +
+          2 * ∑ o : Fin (W ^ d), ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2) := by
+        refine Finset.sum_congr rfl fun y _ => ?_
+        rw [hrow (fun x => 2 * ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2 +
+          2 * ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y x‖ ^ 2) y]
+        rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+    _ = 2 * ∑ y : Vtx d L W, ∑ o : Fin (W ^ d), ‖TwistQV_CC1 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2 +
+          2 * ∑ y : Vtx d L W, ∑ o : Fin (W ^ d), ‖TwistQV_CC2 (Gres Hb z s₁) (Gres Hb z s₂) b c₁ c₂ y (y.1, o)‖ ^ 2 := by
+        rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
+    _ ≤ 2 * (D ^ 5 * (z.im)⁻¹ * (Mx 1 * Mx (2 * q) ^ ((q : ℝ)⁻¹) * Mx (4 * p) ^ (1 / (2 * (p : ℝ))))) +
+          2 * (D ^ 5 * (z.im)⁻¹ * (Mx (4 * p) ^ (1 / (2 * (p : ℝ))) * √(Mx 2 * Mx 4))) := by
+        gcongr
+    _ = _ := by ring
+
+
 end Core
+
+/-! ## 3. The bridge from the carrier: `twDer`, `twEE` in the offsets of `Vtx` -/
+
+section Bridge
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- The sum over the block `[b]` of the fine lattice is the sum over the offsets. -/
+private lemma TwistQV_sum_blk {β : Type*} [AddCommMonoid β] (n : ℕ) (b : Zd d (sz.L n))
+    (F : Idx d (sz.L n) (sz.W n) → β) :
+    ∑ z ∈ twBlk n b, F z = ∑ o : Fin ((sz.W n) ^ d), F ((splitEquiv d (sz.L n) (sz.W n)).symm (b, o)) := by
+  unfold twBlk
+  rw [Finset.sum_filter, ← (Equiv.sum_comp (splitEquiv d (sz.L n) (sz.W n)).symm
+    (fun x => if (split d (sz.L n) (sz.W n) x).1 = b then F x else 0))]
+  have h : ∀ u : Vtx d (sz.L n) (sz.W n), split d (sz.L n) (sz.W n) ((splitEquiv d (sz.L n) (sz.W n)).symm u) = u :=
+    fun u => (splitEquiv d (sz.L n) (sz.W n)).apply_symm_apply u
+  simp only [h]
+  exact TwistQV_sum_ite b (fun u => F ((splitEquiv d (sz.L n) (sz.W n)).symm u))
+
+/-- `τ_{c}(c', o) = (c, o)` through `splitEquiv`. -/
+private lemma TwistQV_shift_symm (n : ℕ) (c a : Zd d (sz.L n)) (o : Fin ((sz.W n) ^ d)) :
+    twShift n c ((splitEquiv d (sz.L n) (sz.W n)).symm (a, o)) = (splitEquiv d (sz.L n) (sz.W n)).symm (c, o) := by
+  unfold twShift
+  have h : split d (sz.L n) (sz.W n) ((splitEquiv d (sz.L n) (sz.W n)).symm (a, o)) = (a, o) :=
+    (splitEquiv d (sz.L n) (sz.W n)).apply_symm_apply (a, o)
+  rw [h]
+
+/-- `Gres (blockMat M) z σ` read through `splitEquiv.symm` (`Path/LemDecCalEdif.lean:444`, private there). -/
+private lemma TwistQV_Gres_blockMat (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (s : Bool) :
+    Gres (blockMat d (sz.L n) (sz.W n) M) z s =
+      (Gres M z s).submatrix (splitEquiv d (sz.L n) (sz.W n)).symm (splitEquiv d (sz.L n) (sz.W n)).symm := by
+  unfold Gres
+  generalize (if s then z else (starRingEnd ℂ) z) = w
+  have h : blockMat d (sz.L n) (sz.W n) M - w • (1 : Matrix (Vtx d (sz.L n) (sz.W n)) (Vtx d (sz.L n) (sz.W n)) ℂ) =
+      (M - w • 1).submatrix (splitEquiv d (sz.L n) (sz.W n)).symm (splitEquiv d (sz.L n) (sz.W n)).symm := by
+    simp [blockMat, Matrix.submatrix_sub, Matrix.submatrix_smul]
+  rw [h, ← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse, Matrix.inv_submatrix_equiv]
+
+
+/-- `twChg` of the carrier matrix `G = Gres Hf z true` is `Gres Hf z σ`, read through `splitEquiv` (`Hf` Hermitian). -/
+private lemma TwistQV_twChg_vtx {n : ℕ} (C : FlowFM sz) (v : ℝ) (ω : sz.SeqΩ)
+    (Hf : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (hH : Hf.IsHermitian)
+    (hG : ∀ x y, C.G n v ω x y = Gres Hf z true x y) (σ : Bool) (x' y' : Vtx d (sz.L n) (sz.W n)) :
+    twChg (C.G n v ω) σ ((splitEquiv d (sz.L n) (sz.W n)).symm x') ((splitEquiv d (sz.L n) (sz.W n)).symm y') =
+      Gres (blockMat d (sz.L n) (sz.W n) Hf) z σ x' y' := by
+  rw [TwistQV_Gres_blockMat]
+  simp only [Matrix.submatrix_apply]
+  cases σ
+  · simp only [twChg, Bool.false_eq_true, ite_false, hG]
+    have h0 : Gres Hf z false = (Gres Hf z true)ᴴ := by
+      simpa using (TwistQV_Gres_conjTranspose hH z true).symm
+    rw [h0, Matrix.conjTranspose_apply, Complex.star_def]
+  · simp [twChg, hG]
+
+/-- **`twDer` in the offsets**: `twDer x y = -(W^{-d})² (C₁(y,x) + C₂(y,x))`, `C₁, C₂ = TwistQV_CC1, TwistQV_CC2` of
+`G(σ₁) = Gres (blockMat Hf) z (σ 0)`, `G(σ₂) = Gres (blockMat Hf) z (σ 1)`. -/
+private lemma TwistQV_twDer_vtx {n : ℕ} (C : FlowFM sz) (v : ℝ) (ω : sz.SeqΩ)
+    (Hf : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (hH : Hf.IsHermitian)
+    (hG : ∀ x y, C.G n v ω x y = Gres Hf z true x y) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n))
+    (x' y' : Vtx d (sz.L n) (sz.W n)) :
+    twDer C n v ω σ b c₁ c₂ ((splitEquiv d (sz.L n) (sz.W n)).symm x') ((splitEquiv d (sz.L n) (sz.W n)).symm y') =
+      -((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 *
+        (TwistQV_CC1 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1)) b c₁ c₂ y' x' +
+          TwistQV_CC2 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1)) b c₁ c₂ y' x') := by
+  unfold twDer TwistQV_CC1 TwistQV_CC2
+  simp only [TwistQV_sum_blk, TwistQV_shift_symm, TwistQV_twChg_vtx C v ω Hf z hH hG]
+
+
+/-- The arithmetic of one term of `twEE`: `w · 1_c · (D conj D)`, `D = -w² Q`, `w = (W^d)⁻¹`. -/
+private lemma TwistQV_term (W : ℕ) (d : ℕ) (c : Prop) [Decidable c] (Q : ℂ) :
+    ((((W : ℕ) : ℂ) ^ d)⁻¹ * (if c then 1 else 0) *
+        ((-((((W : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * Q) * (starRingEnd ℂ) (-((((W : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * Q))) =
+      (((((W : ℕ) : ℝ) ^ d)⁻¹ ^ 5 * (if c then ‖Q‖ ^ 2 else 0) : ℝ) : ℂ) := by
+  by_cases hc : c
+  · simp only [hc, ite_true, mul_one]
+    rw [Complex.mul_conj']
+    rw [norm_mul, norm_neg, norm_pow, norm_inv, norm_pow, Complex.norm_natCast]
+    push_cast
+    ring
+  · simp [hc]
+
+/-- **`‖twEE b b‖` in the offsets** (`S = 1` at the carrier): `Q(b) = (W^d)⁻⁵ Σ_y Σ_{x ∈ [y]} |C₁(y,x) + C₂(y,x)|²`. -/
+private lemma TwistQV_twEE_diag {n : ℕ} (C : FlowFM sz) (v : ℝ) (ω : sz.SeqΩ)
+    (Hf : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (z : ℂ) (hH : Hf.IsHermitian)
+    (hG : ∀ x y, C.G n v ω x y = Gres Hf z true x y) (hS : C.S n = 1) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) :
+    ‖twEE C n v ω σ b b c₁ c₂‖ =
+      ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 * ∑ y : Vtx d (sz.L n) (sz.W n), ∑ x : Vtx d (sz.L n) (sz.W n),
+        (if x.1 = y.1 then ‖TwistQV_CC1 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1))
+          b c₁ c₂ y x + TwistQV_CC2 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1))
+            b c₁ c₂ y x‖ ^ 2 else 0) := by
+  have hS1 : ∀ a a' : Zd d (sz.L n), C.S n a a' = if a = a' then 1 else 0 := fun a a' => by rw [hS, Matrix.one_apply]
+  have hsplit : ∀ u : Vtx d (sz.L n) (sz.W n), split d (sz.L n) (sz.W n) ((splitEquiv d (sz.L n) (sz.W n)).symm u) = u :=
+    fun u => (splitEquiv d (sz.L n) (sz.W n)).apply_symm_apply u
+  have hconv2 : ∀ F : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ,
+      ∑ x, ∑ y, F x y = ∑ x', ∑ y', F ((splitEquiv d (sz.L n) (sz.W n)).symm x') ((splitEquiv d (sz.L n) (sz.W n)).symm y') := by
+    intro F
+    rw [← Equiv.sum_comp (splitEquiv d (sz.L n) (sz.W n)).symm]
+    exact Finset.sum_congr rfl fun x' _ => (Equiv.sum_comp (splitEquiv d (sz.L n) (sz.W n)).symm _).symm
+  have hmain : twEE C n v ω σ b b c₁ c₂ = ((((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 * ∑ x : Vtx d (sz.L n) (sz.W n),
+      ∑ y : Vtx d (sz.L n) (sz.W n),
+        (if x.1 = y.1 then ‖TwistQV_CC1 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1))
+          b c₁ c₂ y x + TwistQV_CC2 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1))
+            b c₁ c₂ y x‖ ^ 2 else 0) : ℝ) : ℂ) := by
+    unfold twEE
+    rw [hconv2]
+    simp only [hsplit, hS1, TwistQV_twDer_vtx C v ω Hf z hH hG, TwistQV_term]
+    push_cast
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun x _ => ?_
+    rw [Finset.mul_sum]
+  rw [hmain, Complex.norm_real]
+  have hR : 0 ≤ ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ^ 5 * ∑ x : Vtx d (sz.L n) (sz.W n), ∑ y : Vtx d (sz.L n) (sz.W n),
+      (if x.1 = y.1 then ‖TwistQV_CC1 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1))
+        b c₁ c₂ y x + TwistQV_CC2 (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 0)) (Gres (blockMat d (sz.L n) (sz.W n) Hf) z (σ 1))
+          b c₁ c₂ y x‖ ^ 2 else 0) := by
+    refine mul_nonneg (by positivity) (Finset.sum_nonneg fun x _ => Finset.sum_nonneg fun y _ => ?_)
+    split_ifs <;> positivity
+  rw [Real.norm_of_nonneg hR, Finset.sum_comm]
+
+end Bridge
 
 end RBM.BA
