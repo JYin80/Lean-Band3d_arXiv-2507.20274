@@ -1263,6 +1263,100 @@ private theorem TwistKer2_decB2 (hd : 3 ≤ d) (hκ : 0 < κ) (hε : 0 < ε) (h�
         have e4 := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right h3 hWm0) hb'
         linarith
 
+/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (a copy of the private `TwistPins_norm_sigma`, `BA/TwistPins.lean:517`). -/
+private theorem TwistKer2_norm_sigma {L : ℕ} [NeZero L] (g E : ℝ) (m : ℂ) (σ : Bool) (a b : Zd d L) :
+    ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ a b‖ = ‖BAMB d L g (E : ℂ) m a b‖ := by
+  cases σ
+  · simp only [BAMsigma, Bool.false_eq_true, ite_false, Matrix.conjTranspose_apply, Complex.star_def,
+      Complex.norm_conj]
+    rw [BAMB_symm d L g (E : ℂ) m b a]
+  · simp only [BAMsigma, ite_true]
+
+/-- `|M(σ)_{ab}| ≤ 1` (a copy of the private `TwistPins_M_le_one`, `BA/TwistPins.lean:526`). -/
+private theorem TwistKer2_M_le_one {L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) (σ : Bool) (x y : Zd d L) :
+    ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ x y‖ ≤ 1 := by
+  rw [TwistKer2_norm_sigma]
+  have hrow := BAMB_row_sq_real d L g E m hr.1 x
+  have hle : ‖BAMB d L g (E : ℂ) m x y‖ ^ 2 ≤ 1 := by
+    rw [← hrow]
+    exact Finset.single_le_sum (f := fun b => ‖BAMB d L g (E : ℂ) m x b‖ ^ 2) (fun b _ => by positivity)
+      (Finset.mem_univ y)
+  nlinarith [norm_nonneg (BAMB d L g (E : ℂ) m x y)]
+
+/-- **A crude deterministic bound of `K̃`, every `n`**: `|K̃| ≤ W^{-d} Σ_{a'} |Θ(a,a')| ≤ (1-v)⁻¹ ≤ η⁻¹` (`EKPins_norm_Theta_le`, `|M| ≤ 1`). -/
+private theorem TwistKer2_twK_crude (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {v : ℝ} (hv0 : 0 ≤ v) (hvT : v ≤ BAflowT0 sz z n)
+    (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) : ‖twK (baFMz sz z) n v σ a c₁ c₂‖ ≤ ((baFMz sz z).eta n v)⁻¹ := by
+  have hu1 : v < 1 := hvT.trans_lt (EMn2BA_T0_lt_one hκ sz hflow n)
+  have hr := BAflow_real κ ε 𝔠 𝔡 sz z hflow n
+  obtain ⟨hη, hη1⟩ := TwistKer2_eta_pos hκ hflow n hv0 hvT
+  have hm := EMn2BA_mF_data sz hflow n
+  rw [twK_ba z n hr.1.1 v σ a c₁ c₂, norm_mul, TwistKer2_norm_winv n]
+  have hΘ := EKPins_norm_Theta_le hr hv0 hu1 (σ 0) (σ 1)
+  have hrow := sum_norm_row_le (BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) v (σ 0) (σ 1)) a
+  have hsum : ‖∑ a', BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) v (σ 0) (σ 1) a a' *
+      BAMsigma d (sz.L n) (BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)) (σ 0) c₂ a' *
+      BAMsigma d (sz.L n) (BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)) (σ 1) a' c₁‖ ≤ (1 - v)⁻¹ := by
+    refine (norm_sum_le _ _).trans ?_
+    refine le_trans (Finset.sum_le_sum fun a' _ => ?_) (hrow.trans hΘ)
+    rw [norm_mul, norm_mul]
+    have h0 := TwistKer2_M_le_one hr (σ 0) c₂ a'
+    have h1 := TwistKer2_M_le_one hr (σ 1) a' c₁
+    calc ‖BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) v (σ 0) (σ 1) a a'‖ *
+          ‖BAMsigma d (sz.L n) (BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)) (σ 0) c₂ a'‖ *
+          ‖BAMsigma d (sz.L n) (BAMB d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)) (σ 1) a' c₁‖
+        ≤ ‖BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) v (σ 0) (σ 1) a a'‖ * 1 * 1 :=
+          mul_le_mul (mul_le_mul_of_nonneg_left h0 (norm_nonneg _)) h1 (norm_nonneg _) (by positivity)
+      _ = _ := by ring
+  have hW1 : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 1 := by
+    have : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
+    exact inv_le_one_of_one_le₀ (one_le_pow₀ this)
+  have h1v : 0 < 1 - v := by linarith
+  have hη' : (1 - v)⁻¹ ≤ ((baFMz sz z).eta n v)⁻¹ := by
+    refine inv_anti₀ hη ?_
+    rw [TwistKer2_eta_eq]
+    nlinarith [hm.2]
+  calc (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * ‖_‖ ≤ 1 * (1 - v)⁻¹ := mul_le_mul hW1 hsum (norm_nonneg _) zero_le_one
+    _ ≤ _ := by rw [one_mul]; exact hη'
+
+/-- **`‖Z‖ ≤ 2 η⁻²`, every `n`**: `Z = L̃ - K̃`, `|L̃| ≤ η⁻²` (`TwistKer_twL2_bounds`), `|K̃| ≤ η⁻¹` (`TwistKer2_twK_crude`). -/
+private theorem TwistKer2_Z_crude (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {v : ℝ} (hv0 : 0 ≤ v) (hvT : v ≤ BAflowT0 sz z n)
+    (ω : sz.SeqΩ) (σ : Fin 2 → Bool) (a c₁ c₂ : Zd d (sz.L n)) :
+    ‖twL2' (baFMz sz z) n v ω σ a c₁ c₂ - twK (baFMz sz z) n v σ a c₁ c₂‖ ≤ 2 * (((baFMz sz z).eta n v)⁻¹ * ((baFMz sz z).eta n v)⁻¹) := by
+  obtain ⟨hGc, hLc, hzc⟩ := TwistKer2_carrier sz z n v ω
+  have hH := TwistKer2_hermitian sz z n v ω
+  obtain ⟨hη, hη1⟩ := TwistKer2_eta_pos hκ hflow n hv0 hvT
+  have hz : 0 < (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v).im := by rw [hzc]; exact hη
+  have hbd : ∀ (τ : Bool) (y x : Idx d (sz.L n) (sz.W n)), ‖Gres (sz.seqHflowBA (BAflowLam0 sz z) n v ω)
+      (ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) v) τ y x‖ ≤ ((baFMz sz z).eta n v)⁻¹ := fun τ y x => by
+    have := TwistKer_entry_le hH hz τ y x
+    rwa [hzc] at this
+  have hΛ0 : 0 ≤ ((baFMz sz z).eta n v)⁻¹ := inv_nonneg.2 hη.le
+  have h1 := (TwistKer_twL2_bounds n (baFMz sz z) hH v ω hGc σ a c₁ c₂ hΛ0 hbd (X := 0) (ν := ((baFMz sz z).eta n v)⁻¹)
+    (fun τ y x _ => hbd τ y x)).1
+  have h2 := TwistKer2_twK_crude hκ hflow n hv0 hvT σ a c₁ c₂
+  have hΛ1 : 1 ≤ ((baFMz sz z).eta n v)⁻¹ := (one_le_inv₀ hη).2 hη1
+  calc _ ≤ ‖twL2' (baFMz sz z) n v ω σ a c₁ c₂‖ + ‖twK (baFMz sz z) n v σ a c₁ c₂‖ := norm_sub_le _ _
+    _ ≤ ((baFMz sz z).eta n v)⁻¹ * ((baFMz sz z).eta n v)⁻¹ + ((baFMz sz z).eta n v)⁻¹ := add_le_add h1 h2
+    _ ≤ _ := by nlinarith
+
+/-- `B_{v,0}^γ ≥ N^{-2}` for `γ ∈ [1,2]`, `0 ≤ v < 1` (`B ≥ N⁻¹`, `B^γ ≥ min (1, B²)`). -/
+private theorem TwistKer2_Bctl_rpow_ge (n : ℕ) {v γ : ℝ} (hv0 : 0 ≤ v) (hv1 : v < 1) (hγ1 : 1 ≤ γ) (hγ2 : γ ≤ 2) :
+    (((sz.size n : ℕ) : ℝ) ^ 2)⁻¹ ≤ sz.Bctl n v ^ γ := by
+  have hB := TwistKer2_Bctl_ge_inv sz n hv0 hv1
+  have hBpos : 0 < sz.Bctl n v := st_Bctl_pos sz hv1
+  have hNN : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast sz.one_le_size n
+  have hN0 : 0 < ((sz.size n : ℕ) : ℝ) := by linarith
+  have hsq : (((sz.size n : ℕ) : ℝ) ^ 2)⁻¹ ≤ sz.Bctl n v ^ 2 := by
+    have := pow_le_pow_left₀ (inv_nonneg.2 hN0.le) hB 2
+    rwa [inv_pow] at this
+  by_cases hB1 : 1 ≤ sz.Bctl n v
+  · calc (((sz.size n : ℕ) : ℝ) ^ 2)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (one_le_pow₀ hNN)
+      _ ≤ sz.Bctl n v ^ γ := Real.one_le_rpow hB1 (by linarith)
+  · push Not at hB1
+    refine hsq.trans ?_
+    have := Real.rpow_le_rpow_of_exponent_ge hBpos hB1.le hγ2
+    simpa [Real.rpow_two] using this
+
 end Items5
 
 /-- **T.11 (v)** (`TP:147`): the decay `|·| ≤ W^{-D}` for `|a - c₁| ≥ 3 W^ε ℓ_v` of `B̃₁`, `B̃₂`, `Ẽ^{G̊}`, `Z = L̃ - K̃` and `(Ẽ⊗Ẽ)(·, b')` (every second index `b'`), for every regime `R`:
@@ -1302,11 +1396,38 @@ example : twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v 
 /-- T.11 (ii): `Ẽ^{G̊} ≺ η⁻¹ (W^{-d}B)²`. -/
 example : twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twEG (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) (fun _ _ => 1) 2 :=
   TwistKer2_frame_inst (baTwistSrc2_holds 3 STAny) hC hS
-/-- T.11 (iv): `B̃₂ ≺ Ξ̃ η⁻¹ (W^{-d}B)^{γ+1/6}`. -/
-example : ∀ γ : ℝ, 1 ≤ γ → γ ≤ 2 → ∀ Ξ : ℕ → (sz0.SeqΩ) → ℝ, (∀ n ω, 1 ≤ Ξ n ω) →
-    (∀ n ω (v : ℝ) σ a c₁ c₂, 1 / 2 ≤ v → v ≤ 2 / 3 → ‖twL2' (baFMz sz0 zSeq) n v ω σ a c₁ c₂ - twK (baFMz sz0 zSeq) n v σ a c₁ c₂‖ ≤ Ξ n ω * sz0.Bctl n v ^ γ) →
-    twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB2 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) Ξ (γ + 1 / 6) :=
-  TwistKer2_frame_inst (baTwistSrc4_holds 3 STAny) hC hS
+/-- T.11 (iv) with its a priori hypothesis discharged: for every `γ ∈ [1,2]` the family `Ξ_n = 32 N_n⁴ ≥ 1` satisfies `‖Z_v‖ ≤ Ξ B^γ` for all `n`, `ω`,
+`v ∈ [1/2, 2/3]`, `σ`, `a`, `c₁`, `c₂` (`‖Z‖ ≤ 2 η⁻²`, `η⁻¹ ≤ 4N`, `B^γ ≥ N^{-2}`), and `B̃₂ ≺ Ξ η⁻¹ (W^{-d}B)^{γ+1/6}`. -/
+example (γ : ℝ) (hγ1 : 1 ≤ γ) (hγ2 : γ ≤ 2) : ∃ Ξ : ℕ → sz0.SeqΩ → ℝ, (∀ n ω, 1 ≤ Ξ n ω) ∧
+    (∀ n ω (v : ℝ) σ a c₁ c₂, 1 / 2 ≤ v → v ≤ 2 / 3 → ‖twL2' (baFMz sz0 zSeq) n v ω σ a c₁ c₂ - twK (baFMz sz0 zSeq) n v σ a c₁ c₂‖ ≤
+      Ξ n ω * sz0.Bctl n v ^ γ) ∧
+    twSrc (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB2 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) Ξ (γ + 1 / 6) := by
+  have hΞ : ∀ n (ω : sz0.SeqΩ), 1 ≤ 32 * ((sz0.size n : ℕ) : ℝ) ^ 4 := fun n ω => by
+    have : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast sz0.one_le_size n
+    nlinarith [one_le_pow₀ (n := 4) this]
+  have hZ : ∀ n (ω : sz0.SeqΩ) (v : ℝ) σ a c₁ c₂, 1 / 2 ≤ v → v ≤ 2 / 3 → ‖twL2' (baFMz sz0 zSeq) n v ω σ a c₁ c₂ - twK (baFMz sz0 zSeq) n v σ a c₁ c₂‖ ≤
+      (32 * ((sz0.size n : ℕ) : ℝ) ^ 4) * sz0.Bctl n v ^ γ := by
+    intro n ω v σ a c₁ c₂ hv1 hv2
+    have hv0 : 0 ≤ v := by linarith
+    have hvT : v ≤ BAflowT0 sz0 zSeq n := hv2.trans (t0_sz0 n)
+    have hv1' : v < 1 := by linarith
+    have h1 := TwistKer2_Z_crude (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 n hv0 hvT ω σ a c₁ c₂
+    have h2 := TwistKer2_eta_inv_le (by norm_num : (0 : ℝ) < 1 / 2) (by norm_num : (0 : ℝ) < 1 / 10) flow_sz0 n hv0 hvT
+    have h3 := TwistKer2_Bctl_rpow_ge (sz := sz0) n hv0 hv1' hγ1 hγ2
+    have hNN : (1 : ℝ) ≤ ((sz0.size n : ℕ) : ℝ) := by exact_mod_cast sz0.one_le_size n
+    have hη0 : 0 ≤ ((baFMz sz0 zSeq).eta n v)⁻¹ := by
+      have := (TwistKer2_eta_pos (by norm_num : (0 : ℝ) < 1 / 2) flow_sz0 n hv0 hvT).1
+      positivity
+    have h2' : ((baFMz sz0 zSeq).eta n v)⁻¹ ≤ 4 * ((sz0.size n : ℕ) : ℝ) := by linarith
+    calc _ ≤ 2 * (((baFMz sz0 zSeq).eta n v)⁻¹ * ((baFMz sz0 zSeq).eta n v)⁻¹) := h1
+      _ ≤ 2 * ((4 * ((sz0.size n : ℕ) : ℝ)) * (4 * ((sz0.size n : ℕ) : ℝ))) := by gcongr
+      _ = (32 * ((sz0.size n : ℕ) : ℝ) ^ 4) * (((sz0.size n : ℕ) : ℝ) ^ 2)⁻¹ := by
+          have : ((sz0.size n : ℕ) : ℝ) ^ 2 ≠ 0 := by positivity
+          field_simp
+          norm_num
+      _ ≤ (32 * ((sz0.size n : ℕ) : ℝ) ^ 4) * sz0.Bctl n v ^ γ := mul_le_mul_of_nonneg_left h3 (by positivity)
+  exact ⟨fun n _ => 32 * ((sz0.size n : ℕ) : ℝ) ^ 4, hΞ, hZ,
+    TwistKer2_frame_inst (baTwistSrc4_holds 3 STAny) hC hS γ hγ1 hγ2 _ hΞ hZ⟩
 /-- T.11 (v): the decay of the five sources beyond `3 W^ε ℓ_v`. -/
 example : twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB1 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) ∧
     twDec (sz := sz0) μ0 (fun _ => 1 / 2) (fun _ => 2 / 3) (fun n v ω σ a c₁ c₂ => ‖twB2 (baFMz sz0 zSeq) n v ω σ a c₁ c₂‖) ∧
