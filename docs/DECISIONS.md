@@ -2451,3 +2451,27 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **T2460 = P1**（子阶段 T 13 / 31.5；BA 127；`prover-hard`；不设设计门）：新文件 `BA/GridMartBA.lean`：三个恒等式 `BAGridBridge`/`baGridBridge_holds`（U-D 探针 `T2452_Bridge` 原文）、`baGridMart_holds : STGridMartgL d BAFlow (fun sz z => baStep2Mat …) BAflowT0`（对每个 d；T1 的 `STGridMartAt` 在 `Step2Iterate:1399` 从这个钉文解出，不另立目标）、条件目标 4（BA 上 m = 2 的 `STGridRepNAtgL`：表恒等式加第 4 条）、d = 3 实例、谱项 grep。**只做 m = 2**（所有读者只读 m = 2；TL 不覆盖 m > 2；所有 m 要走 P1G 路线，2.1k–4.5k 行、2–3 行）；监督的"所有 m 一个泛型行"读作：载体泛型 Prop 上的一行，用在 m = 2；下次子阶段 T 的通知 REQ 报告。**第 4 条待定**：TL 的条款 (iv) 只加权一个槽（`twU`，`TwistGrid:105`），钉文的第 4 条加权两个槽（`Step2Gen_UN`）；1a 确认推不出就在 1b 前把目标 4 去掉（调度预签），U5 那边的输入就没有生产者：等 T2459 说情形 (iii) 能不能用单槽条款，不能就新开一行 T（双槽 BA 尾）。
 - (6) **T2461 = P2**（子阶段 T 14 / 31.5；BA 128；`prover-hard`；不设设计门；估计 600 / 900 / 1,600）：新叶文件 `BA/NetLiftBA.lean`（备用 `NetLiftBA2`）：`baNetLift2_holds (d) : STNetLift2gL d (fun sz => Sizes.seqP (sz.withLam 0)) (BAFlow …) baFMz BAflowT0`、**P6 `baFlow_premises`（BA 流前提，U-D 探针 `T2452_ba_premises` 原文，在本行证、公开；T1-BA import）**、d = 3 实例、谱项 grep。BA 路线：三族各自是 `cont_core` 加 `seqP (sz.withLam 0)` 下的好事件；唯一新的 BA 估计是 `𝒦^{(2)}` 对每个电荷对的时间 Lipschitz 界；1a 可以拿 `baNetLift`（`Step1Setup:877`，T2262）作模板。
 - (7) ROUTES：stage TL 已关闭（13 / 15）；子阶段 T 旗标 31.5（P1、P2）。下一张票号 T2462，下一节 §269，下一条 H250。待写：G7、U4s1、U1s1、L4b2、L3d1、L3d2（等 L3b1）、T1、T4s2、T5s2；文章差异账本补录（TLC-3）。
+
+## §269 — 监督 1457：BA 侧 U 钉文 PASS（UBA-C1–C4）；U 的唯一耦合规则（g 对 g₀）；U6 合并；L3b1 拆分 Σ 签字；文章差异补录 D636–D691（总调度 V3，2026-10-12 15:11 UTC）
+
+- (1) **监督 1457：PASS**，九个 BA 侧行就是这张表，修正三处（耦合层、类的量词、`baFlowLam0_ge`）。发现 **F1**：从 `g` 到 `g₀` 的跨越在 U 里没有负责人（不是数学缺口，不 HOLD）。事实：BA 的核跑在 `g₀ = √t₀ g`；`BAFlow` 下每个 n 有 `t₀ ∈ [κ/(κ+1), 1)`（`TwistStep2_T0_ge`，`TwistStep2:731`），`g₀² ≤ g² ≤ ((κ+1)/κ) g₀²`（`TwistStep2_lam0_sq`，`:740`，随 TL2d 合并，公开）；情形谓词的类型是 `Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop`，看不到 `z`，所以在 BA 上只能读 `g = sz.lam`。
+- (2) **U 的唯一耦合规则（UBA-C1；T2457 (a‴)、U3s2–U3s4、U3-BA (a)/(b)、X1a 的 R2、U4-BA、U6-BA、T2459 都引本节）**：
+  - **尺寸层的量读 `g = sz.lam`**：情形谓词、`Bctl`、TL 合取项里的 `ellT`、`STAI`、泛型 Step 陈述的窗口。BA 陈述传 `sz`，不传 `sz.withLam g₀`。
+  - **核层和剖面层的事实读 `g₀`**：经 T2457 的耦合 `gK`，或经剖面假设。
+  - **泛型证明从一层跨到另一层时，只取一个比较假设**：`∀ n, gK n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2`；带状 `A = 1`，BA `A = (κ+1)/κ`（由 `TwistStep2_lam0_sq`）。
+  - **跨越表与负责人**（`A = (κ+1)/κ`；常数只依赖 κ 与 n，C1 成立）：
+    - (a) 情形 (i) 的窗口 `t ≤ 1 − g²/L²` ⇒ `t ≤ 1 − g₀²/L²`：免费（U3 的 Res1、NAL、Res2）。
+    - (b) 情形 (ii) 的阈值：`1 − s ≤ g²/L²` 推不出阶段 E 的 `1 − s ≤ g₀²/L²`，差 `(1−t₀)g²/L²`；**泛型 Nonzero 形式带参数 `A`**，阈值 `(1 − s)L² ≤ A gK²`；带状实例 `A = 1`（即已合并的阶段 E）；**BA 实例归 U3-BA (a)**，`A = (κ+1)/κ`，是 `baEKSumDecayNonzero_holds`（`EKNonzero:261-280`）的乘积步，用 `baTwKerZero_holds`（`TwistKer:256`）代替私有的 `A = 1` 因子，约 50 行（TL 的先例 `BATwKerZero`、`TwistStep2_kerC`）。
+    - (c) 比值 `r(g₀)/r(g) ≤ 1/t₀`（每个因子）→ `A^n`，被 `W^{Cε}` 吸收；(d) `ℓ(g₀,u) ≥ √t₀ ℓ(g,u)` 且 `ℓ(g₀) ≤ ℓ(g)`；(e) 衰减截断：`twSteps` 合取项 4 在 `ellT (sz.lam) · W^{τ'}`，取 `τ' = ε/2`，要 `W^{ε/2} ≥ √A`（最终成立）：**(c)–(e) 在 `Chain/Step34Gen` 里泛型地写一次**（T2457 的 1b，若在停止线内；否则作 U3s2 的第一个引理）。
+    - (f) 在 `ℓ(g₀)` 证的衰减在 `ℓ(g)` 读：免费（`ℓ(g₀) ≤ ℓ(g)`；U2-BA 的 `STKcalDecaygL`、`BAKellStarEv`、X1 的 Θ 衰减）。
+    - (g) Θ 剖面事实（`STThPropsg` 在 `sz.lam` 读 `Bparam`、`ellT`、`(g²+|1−t|)⁻¹`，`BAProp5–7` 在 `g₀`）：进 X1a 的 R2 表；BA 换算归 U4-BA (a)。
+    - (h) Step 5 核（BA 载体上 `S := 1`，核只经 `C.S`/`C.M` 看到 g）：归 T2459 的 1a 与 U6-BA 的钉文。
+  - **T2457 的 §7 取 (B)**（与 §268 (3) 一致）：`STEKDecaygL` 留在 `sz.lam`，T7、U2 不变，(e) 在比较假设下泛型地成立。§268 (3) 里"U3-BA 欠 `BAdom` 换算"按本规则改为：(e) 在 `Step34Gen` 泛型地写，BA 端只需比较假设（由 `TwistStep2_lam0_sq` 给出）。
+  - 可以接受的另一种：泛型消费者只读 `sz.lam`，由 BA 实例行做 (b)–(e)（TL 自己的放法）。本项目取上面的主规则。**不加行**：约 50 + 100–150 行进现有行，U 旗标仍 34.5。
+- (3) **UBA-C2（形状更正，写 BA 侧行时照办）**：`BAEKKer` 去掉"对每个 n `0 < lam0 n ≤ Λ`"，改用 T2457 的最终形式 `∀ᶠ n, 0 < gK n ∧ gK n ≤ 𝔡⁻¹`（`BAflow_lam0_window`，`GreenSchur:72`），类里带 `gK = lam0`；**删掉 U6-BA 的目标 `baFlowLam0_ge`**，改用已合并的 `TwistStep2_lam0_sq`、`TwistStep2_T0_ge`（import 或三行重述，不再抄私有的 `KBound_t0_ge`）；U4-BA (a) 跟 X1a 修过的 `STGijDecgL`（R1：对称的 `Φ` 或两种混合电荷），`baGbEXPij'_holds` 两种都覆盖；U3-BA (a) 加 A 形式 Nonzero 的 BA 实例。
+- (4) **UBA-C3（放行）**：每个 BA 行在它的 ST 配对合并后放；另外 U3-BA (a) 还要等本节的记录（已记）；A 形式下不需要 BA 半群（T4-BA）；G7 与阶段 L 的钉文按同类型的假设进入。**UBA-C4（U5）**：T2459 的论证在 `g₀` 读 Step 5 的核、在 `g` 读情形；C1 常数表记下 `A`；(h) 若需要的不止比较假设，就是 U-C5 的停止情形。
+- (5) **O4（1a 反复漏项）**：设计门的 1a 提示里加一张票里 stage-1a 交付项的填空表，每项一行，写行号或"n/a，因为……"；表没填满，探针步骤不算完（H250 交中枢）。
+- (6) **T2458 = U6 合并** 1debc23（15:05 UTC；`Chain/Step5Gen` 666 行，新增文件；目标 1–10、12–15 与实例；目标 11（LemDecCalE）因 T2457 未合并按票挪到 U4s3；第 462 行的 BA 形状留给 T2459（H248 (3)）；审核 PASS）。U4s1、U4s2 现在有 U6 的词汇。
+- (7) **T2456 = L3b1 的拆分 Σ 签字**（15:01，1a 预检 BLOCKED 等签字）：数值 (b) 0 违反，(c) 无新行，目标 8 成立；估价中心 2,424（含 3(c)–(e)）超过 1,575 → **批准拆分 Σ**：目标 3(c)–(e)（`e2`、`macroA`、`macroB` 的 `BAShapePath`）挪到 L3b2，L3b1 中心 1,550；L3b1 照抄绑定变量陈述约定（不新立 `Prop`），stage L 计划仍 41（L3b2 本来就在计划里）；**L3b2 的票必须把这三项列为目标**（O2R-C4）。
+- (8) **文章差异补录（TLC-3）**：`docs/paper-deltas.md` 追加 **D636–D691**（56 条，按票号；同一论文位置合并为一条），含 `T2398d` → D666、`T2421a` → D682、`T2427a` → D684、`T2441a` → D687、折叠 (A′) 一组 → D665、`T2434c` → D685、`T2418a` → D680、`T2449a–c` → D689；撤回的 T2443d、T2419a、T2390i 不编号；重复的并入旧条的注记、非陈述差异的候选列在补录段的"不编号"里。证明行未合并的候选（T2398a、T2433a、T2448b、G2/G4/G5/G6、T2454a–d、T2457a、T2459a、U5 论证）在行合并时再编号。窗口外还漏了 T2359a、T2353a–b、T2354a–c，下次补。
+- (9) ROUTES（O5）：U 5 / 34.5；T 旗标 31.5（P1、P2）；BA 计数到 128（T2461）。下一张票号 T2462，下一节 §270，下一条 H251。待写：U4s1、U1s1、G7、L4b2、L3d1、L3b2（含 3(c)–(e)）、T1、T4s2、T5s2、U3s2–U3s4、U2（等 U3s1、T7）。
