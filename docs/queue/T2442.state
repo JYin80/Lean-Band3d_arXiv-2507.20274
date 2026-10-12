@@ -1,4 +1,4 @@
-state: proving
-reason: started (H233, H12): workflow wf_499b4486-f74, stage 1a preflight → 1b prover-max → auditor; branch t/T2442 from main 4a0b23b
-updated: Mon Oct 12 06:30:21 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-max 0b280c3 (rerun after the API limit), audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 08:51:51 UTC 2026
 reports: docs/reports/T2442-prove.md, docs/reports/T2442-audit.md
