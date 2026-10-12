@@ -1,4 +1,4 @@
-state: proving
-reason: rule (H) rerun after the API session limit (resets 08:10 UTC): 1b under Amend 1 died after partial commits (203b485, uncommitted BAExp14b.lean kept); rerun wf_c925a2cb-963 (1b prover-max → auditor)
-updated: Mon Oct 12 08:12:14 UTC 2026
+state: audit-pass
+reason: 1b prover-max 6cccbdd under Amend 1, audit PASS round 1 (claude-opus-5-5); merging (rule A; resumed by a new hub session after the previous one died mid-merge)
+updated: Mon Oct 12 09:36:47 UTC 2026
 reports: docs/reports/T2434-prove.md, docs/reports/T2434-1a-audit.md, docs/reports/T2434-audit.md
