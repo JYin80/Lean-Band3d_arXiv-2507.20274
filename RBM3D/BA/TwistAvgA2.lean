@@ -12,11 +12,12 @@ Part A is `BA/TwistAvgA.lean` (the vocabulary, the pin `BATwistAvgRec`, Steps 1-
 `twAvgMoment_holds`, `twAvgReg_holds`).  Design `docs/reports/T2413-design.md` §1, §5, §7; proofs
 `docs/tickets/T2398-TL-proofs.md` T.6, T.7 (Steps 4-5, `TP:60`, `TP:80-89`).
 
-Contents: §0 the pins of this part (`twAvgSCS`, `twAvgSPrec`, `twAvgT6`); §1 the loops of the carrier
-as traces on the fine lattice and Hilbert-Schmidt sums; §2 `𝒮₁`, `𝒮₂` in offset coordinates and the
-Cauchy-Schwarz step; §3 `twAvgSCS_holds` and `twAvgSPrec_holds` (`‖𝒮₁‖ + ‖𝒮₂‖ ≺ B²` from `STLmaxgL`,
-`k = 2, 4`, and `BAMB_row_l1`); §4 Lemma T.6 at an arbitrary law (`twAvgT6_holds`); §5 Hölder and
-Lyapunov; §6 the first display of Step 5 and `baTwistAvgRec_holds`; §7 the instances.
+Contents: §0 the pins of this part (`twAvgSCS`, `twAvgSPrec`, `twAvgT6`); §1 the loops of the
+carrier as traces on the fine lattice and Hilbert-Schmidt sums; §2 `𝒮₁`, `𝒮₂` in offset
+coordinates and the Cauchy-Schwarz step; §3 `twAvgSCS_holds` and `twAvgSPrec_holds`
+(`‖𝒮₁‖ + ‖𝒮₂‖ ≺ B²` from `STLmaxgL`, `k = 2, 4`, and `BAMB_row_l1`); §4 Lemma T.6 at an
+arbitrary law (`twAvgT6_holds`); §5 Hölder and Lyapunov; §6 the first display of Step 5 and
+`baTwistAvgRec_holds`; §7 the instances.
 Private helpers carry the stem `TwistAvgA2_`.
 -/
 
@@ -731,6 +732,496 @@ theorem TwistAvgA2_lyap2 (p : ℕ) (hp : 1 ≤ p) {g : Ω → ℝ} (hg0 : ∀ ω
     exact h
 
 end Holder
+
+/-! ## 6. Step 5, first display: the bound at one `(n, t)` and the pin `baTwistAvgRec_holds` -/
+
+section Core
+variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
+
+/-- `(𝔼 Y²)^{1/2} ≤ M` for `0 ≤ Y ≤ M` on a probability space. -/
+theorem TwistAvgA2_sqrt_int_le {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ] {Y : Ω → ℝ} {M : ℝ} (hM : 0 ≤ M)
+    (hY0 : ∀ ω, 0 ≤ Y ω) (hYM : ∀ ω, Y ω ≤ M) :
+    (∫ ω, Y ω ^ 2 ∂μ) ^ ((1 : ℝ) / 2) ≤ M := by
+  have h1 : ∫ ω, Y ω ^ 2 ∂μ ≤ M ^ 2 := by
+    calc ∫ ω, Y ω ^ 2 ∂μ ≤ ∫ ω, M ^ 2 ∂μ :=
+          integral_mono_of_nonneg (Eventually.of_forall fun ω => sq_nonneg _) (integrable_const _)
+            (Eventually.of_forall fun ω => pow_le_pow_left₀ (hY0 ω) (hYM ω) 2)
+      _ = M ^ 2 := by simp
+  calc (∫ ω, Y ω ^ 2 ∂μ) ^ ((1 : ℝ) / 2) ≤ (M ^ 2) ^ ((1 : ℝ) / 2) :=
+        Real.rpow_le_rpow (integral_nonneg fun ω => sq_nonneg _) h1 (by norm_num)
+    _ = M := by rw [← Real.sqrt_eq_rpow, Real.sqrt_sq hM]
+
+theorem TwistAvgA2_int_bdd {f : sz.SeqΩ → ℝ} (hf : Continuous f) {C : ℝ} (hC : ∀ ω, |f ω| ≤ C) : Integrable f (BAExp14a_μ sz) :=
+  Integrable.of_bound hf.aestronglyMeasurable C (Eventually.of_forall fun ω => by simpa [Real.norm_eq_abs] using hC ω)
+
+
+section CoreF
+variable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
+  (p : ℕ) (hp : 1 ≤ p) {N E1 E2 : ℝ} (hN : 1 ≤ N) (hE1 : 0 ≤ E1) (hE2 : 0 ≤ E2)
+  (hNT : ∀ (ω : sz.SeqΩ) (a b : Zd d (sz.L n)), ‖twTr (baFMz sz z) n t ω a b‖ ≤ N)
+include hκ hflow ht0 ht hp hN hNT
+
+/-- The bound for the `Σ_c` term of Step 5: `‖𝔼[X_c (M_{cc₂} + T_{cc₂}) Φ]‖ ≤ E1 B X^{2p-1} (1 + X_max) + E2 (1+N) N^{2p-1}` (Lemma T.6 and Hölder). -/
+theorem TwistAvgA2_F1 (hE1 : 0 ≤ E1) (hE2 : 0 ≤ E2) (hNX : ∀ (ω : sz.SeqΩ) (c : Zd d (sz.L n)), ‖BAExp14a_X sz z n t ω c‖ ≤ N)
+    (hT6a : ∀ (c : Zd d (sz.L n)) (Y : sz.SeqΩ → ℝ), Measurable Y → (∀ ω, 0 ≤ Y ω) → Integrable (fun ω => Y ω ^ 2) (BAExp14a_μ sz) →
+      ∫ ω, ‖BAExp14a_X sz z n t ω c‖ * Y ω ∂(BAExp14a_μ sz) ≤
+        E1 * sz.Bctl n t * ∫ ω, Y ω ∂(BAExp14a_μ sz) + E2 * (∫ ω, Y ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2))
+    (c c₁ c₂ : Zd d (sz.L n)) :
+    ‖∫ ω : sz.SeqΩ, ((baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n) *
+        (twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂) * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 1) *
+          (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤
+      E1 * sz.Bctl n t * (twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) * (1 + twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n t p)) +
+        E2 * ((1 + N) * N ^ (2 * p - 1)) := by
+  have hSelf := (BAflow_real κ ε 𝔠 𝔡 sz z hflow n).1
+  have ht1 : t < 1 := (ba_G_data hκ sz hflow n ht0 ht).1
+  have hB0 : 0 ≤ sz.Bctl n t := (STBctl_pos sz n ht1).le
+  have bT := TwistAvgA_BC_twTr hκ hflow n ht0 ht
+  have hTn : ∀ a b, Continuous fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω a b‖ := fun a b => continuous_norm.comp (bT a b).1
+  have hN0 : 0 ≤ N := by linarith
+  set Yc : sz.SeqΩ → ℝ := fun ω => (1 + ‖twTr (baFMz sz z) n t ω c c₂‖) * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) with hYc
+  have hYcc : Continuous Yc := (continuous_const.add (hTn c c₂)).mul ((hTn c₁ c₂).pow _)
+  have hYc0 : ∀ ω, 0 ≤ Yc ω := fun ω => by simp only [hYc]; positivity
+  have hYcM : ∀ ω, Yc ω ≤ (1 + N) * N ^ (2 * p - 1) := fun ω => by
+    simp only [hYc]
+    exact mul_le_mul (by linarith [hNT ω c c₂]) (pow_le_pow_left₀ (norm_nonneg _) (hNT ω c₁ c₂) _) (by positivity) (by positivity)
+  have hYc2 : Integrable (fun ω => Yc ω ^ 2) (BAExp14a_μ sz) :=
+    TwistAvgA2_int_bdd (hYcc.pow 2) (C := ((1 + N) * N ^ (2 * p - 1)) ^ 2) (fun ω => by
+      rw [abs_of_nonneg (sq_nonneg _)]
+      exact pow_le_pow_left₀ (hYc0 ω) (hYcM ω) 2)
+  have hint : Integrable (fun ω => ‖BAExp14a_X sz z n t ω c‖ * Yc ω) (BAExp14a_μ sz) :=
+    TwistAvgA2_int_bdd ((continuous_norm.comp (TwistAvgA_BC_X hκ hflow n ht0 ht c).1).mul hYcc) (C := N * ((1 + N) * N ^ (2 * p - 1))) (fun ω => by
+      rw [abs_of_nonneg (mul_nonneg (norm_nonneg _) (hYc0 ω))]
+      exact mul_le_mul (hNX ω c) (hYcM ω) (hYc0 ω) hN0)
+  have hpt : ∀ ω : sz.SeqΩ, ‖((baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n) *
+        (twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂) * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 1) *
+          (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p‖ ≤ ‖BAExp14a_X sz z n t ω c‖ * Yc ω := by
+    intro ω
+    rw [norm_mul, norm_mul, norm_mul, norm_pow, norm_pow, Complex.norm_conj, ← BAExp14a_X_eq n t ω hSelf c]
+    simp only [hYc]
+    have hMB : ‖twMB (baFMz sz z) n c c₂‖ ≤ 1 := TwistAvgA_M_le_one hκ hflow n ht0 ht _ _
+    have h1 : ‖twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂‖ ≤ 1 + ‖twTr (baFMz sz z) n t ω c c₂‖ :=
+      (norm_add_le _ _).trans (add_le_add hMB le_rfl)
+    have h2 : ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (p - 1) * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ p = ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) := by
+      rw [← pow_add]; congr 1; omega
+    calc ‖BAExp14a_X sz z n t ω c‖ * ‖twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂‖ * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (p - 1) *
+          ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ p
+        = ‖BAExp14a_X sz z n t ω c‖ * ‖twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂‖ *
+          (‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (p - 1) * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ p) := by ring
+      _ ≤ ‖BAExp14a_X sz z n t ω c‖ * (1 + ‖twTr (baFMz sz z) n t ω c c₂‖) * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) := by
+          rw [h2]
+          exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h1 (norm_nonneg _)) (by positivity)
+      _ = _ := by ring
+  have hint1 : ∫ ω, Yc ω ∂(BAExp14a_μ sz) ≤ twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) * (1 + twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n t p) := by
+    have hg0 : ∀ ω : sz.SeqΩ, 0 ≤ ‖twTr (baFMz sz z) n t ω c₁ c₂‖ := fun _ => norm_nonneg _
+    have hgm := (hTn c₁ c₂).measurable
+    have e : ∀ ω, Yc ω = ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) +
+        ‖twTr (baFMz sz z) n t ω c c₂‖ * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) := fun ω => by simp only [hYc]; ring
+    have ia : Integrable (fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1)) (BAExp14a_μ sz) :=
+      TwistAvgA2_int_bdd ((hTn c₁ c₂).pow _) (C := N ^ (2 * p - 1)) (fun ω => by
+        rw [abs_of_nonneg (pow_nonneg (norm_nonneg _) _)]
+        exact pow_le_pow_left₀ (norm_nonneg _) (hNT ω c₁ c₂) _)
+    have ib : Integrable (fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω c c₂‖ * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1)) (BAExp14a_μ sz) :=
+      TwistAvgA2_int_bdd ((hTn c c₂).mul ((hTn c₁ c₂).pow _)) (C := N * N ^ (2 * p - 1)) (fun ω => by
+        rw [abs_of_nonneg (mul_nonneg (norm_nonneg _) (pow_nonneg (norm_nonneg _) _))]
+        exact mul_le_mul (hNT ω c c₂) (pow_le_pow_left₀ (norm_nonneg _) (hNT ω c₁ c₂) _) (pow_nonneg (norm_nonneg _) _) hN0)
+    simp only [e]
+    rw [integral_add ia ib]
+    have h1 := TwistAvgA2_lyap1 (BAExp14a_μ sz) p hp (g := fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω c₁ c₂‖) hg0 hgm (fun ω => hNT ω c₁ c₂)
+    have h2 := TwistAvgA2_holder_nat (BAExp14a_μ sz) p hp (f := fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω c c₂‖)
+      (g := fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω c₁ c₂‖) (fun _ => norm_nonneg _) hg0 (hTn c c₂).measurable hgm
+      (fun ω => hNT ω c c₂) (fun ω => hNT ω c₁ c₂)
+    have hXle : twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c c₂ ≤ twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n t p :=
+      Finset.le_sup' (fun q : Zd d (sz.L n) × Zd d (sz.L n) => twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p q.1 q.2) (Finset.mem_univ (c, c₂))
+    have hX0 : 0 ≤ twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) :=
+      pow_nonneg (Real.rpow_nonneg (integral_nonneg fun ω => pow_nonneg (norm_nonneg _) _) _) _
+    calc ∫ ω : sz.SeqΩ, ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) ∂(BAExp14a_μ sz) +
+          ∫ ω : sz.SeqΩ, ‖twTr (baFMz sz z) n t ω c c₂‖ * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 1) ∂(BAExp14a_μ sz)
+        ≤ twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) +
+          twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c c₂ * twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) := add_le_add h1 h2
+      _ ≤ twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) +
+          twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n t p * twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) :=
+          add_le_add le_rfl (mul_le_mul_of_nonneg_right hXle hX0)
+      _ = _ := by ring
+  have hsqrt : (∫ ω, Yc ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2) ≤ (1 + N) * N ^ (2 * p - 1) :=
+    TwistAvgA2_sqrt_int_le (BAExp14a_μ sz) (by positivity) hYc0 hYcM
+  refine (norm_integral_le_integral_norm _).trans ?_
+  refine (integral_mono_of_nonneg (Eventually.of_forall fun ω => norm_nonneg _) hint (Eventually.of_forall hpt)).trans ?_
+  refine (hT6a c Yc hYcc.measurable hYc0 hYc2).trans ?_
+  exact add_le_add (mul_le_mul_of_nonneg_left hint1 (mul_nonneg hE1 hB0)) (mul_le_mul_of_nonneg_left hsqrt hE2)
+
+
+/-- The bound for the `𝒮`-terms of Step 5: `𝔼[H |T|^{2p-2}] ≤ E1 B² X^{2p-2} + E2 N^{2p-2}` for `0 ≤ H ≤ ‖𝒮₁‖ + ‖𝒮₂‖` (Lemma T.6 and Lyapunov). -/
+theorem TwistAvgA2_G23 (hE1 : 0 ≤ E1) (hE2 : 0 ≤ E2)
+    (hT6b : ∀ (c₁ c₂ : Zd d (sz.L n)) (Y : sz.SeqΩ → ℝ), Measurable Y → (∀ ω, 0 ≤ Y ω) → Integrable (fun ω => Y ω ^ 2) (BAExp14a_μ sz) →
+      ∫ ω, (‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖) * Y ω ∂(BAExp14a_μ sz) ≤
+        E1 * sz.Bctl n t ^ 2 * ∫ ω, Y ω ∂(BAExp14a_μ sz) + E2 * (∫ ω, Y ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2))
+    (c₁ c₂ : Zd d (sz.L n)) {H : sz.SeqΩ → ℝ} (hHc : Continuous H) (hH0 : ∀ ω, 0 ≤ H ω)
+    (hHle : ∀ ω, H ω ≤ ‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖) :
+    ∫ ω, H ω * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) ∂(BAExp14a_μ sz) ≤
+      E1 * sz.Bctl n t ^ 2 * twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 2) + E2 * N ^ (2 * p - 2) := by
+  have ht1 : t < 1 := (ba_G_data hκ sz hflow n ht0 ht).1
+  have hB0 : 0 ≤ sz.Bctl n t := (STBctl_pos sz n ht1).le
+  have bT := TwistAvgA_BC_twTr hκ hflow n ht0 ht
+  have hTn : ∀ a b, Continuous fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω a b‖ := fun a b => continuous_norm.comp (bT a b).1
+  have hN0 : 0 ≤ N := by linarith
+  set Y' : sz.SeqΩ → ℝ := fun ω => ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) with hY'
+  have hY'c : Continuous Y' := (hTn c₁ c₂).pow _
+  have hY'0 : ∀ ω, 0 ≤ Y' ω := fun ω => pow_nonneg (norm_nonneg _) _
+  have hY'M : ∀ ω, Y' ω ≤ N ^ (2 * p - 2) := fun ω => pow_le_pow_left₀ (norm_nonneg _) (hNT ω c₁ c₂) _
+  have hY'2 : Integrable (fun ω => Y' ω ^ 2) (BAExp14a_μ sz) :=
+    TwistAvgA2_int_bdd (hY'c.pow 2) (C := (N ^ (2 * p - 2)) ^ 2) (fun ω => by
+      rw [abs_of_nonneg (sq_nonneg _)]
+      exact pow_le_pow_left₀ (hY'0 ω) (hY'M ω) 2)
+  obtain ⟨hS1c, C1, hC1⟩ := TwistAvgA_BC_S1 hκ hflow n ht0 ht c₁ c₂
+  obtain ⟨hS2c, C2, hC2⟩ := TwistAvgA_BC_S2 hκ hflow n ht0 ht c₁ c₂
+  have hξc : Continuous fun ω : sz.SeqΩ => ‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖ :=
+    (continuous_norm.comp hS1c).add (continuous_norm.comp hS2c)
+  have hXi : ∀ ω, ‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖ ≤ C1 + C2 := fun ω => add_le_add (hC1 ω) (hC2 ω)
+  have hint1 : Integrable (fun ω => H ω * Y' ω) (BAExp14a_μ sz) :=
+    TwistAvgA2_int_bdd (hHc.mul hY'c) (C := (C1 + C2) * N ^ (2 * p - 2)) (fun ω => by
+      rw [abs_of_nonneg (mul_nonneg (hH0 ω) (hY'0 ω))]
+      exact mul_le_mul ((hHle ω).trans (hXi ω)) (hY'M ω) (hY'0 ω) ((hH0 ω).trans ((hHle ω).trans (hXi ω))))
+  have hint2 : Integrable (fun ω => (‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖) * Y' ω) (BAExp14a_μ sz) :=
+    TwistAvgA2_int_bdd (hξc.mul hY'c) (C := (C1 + C2) * N ^ (2 * p - 2)) (fun ω => by
+      rw [abs_of_nonneg (mul_nonneg (add_nonneg (norm_nonneg _) (norm_nonneg _)) (hY'0 ω))]
+      exact mul_le_mul (hXi ω) (hY'M ω) (hY'0 ω) ((add_nonneg (norm_nonneg _) (norm_nonneg _)).trans (hXi ω)))
+  have hsqrt : (∫ ω, Y' ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2) ≤ N ^ (2 * p - 2) :=
+    TwistAvgA2_sqrt_int_le (BAExp14a_μ sz) (by positivity) hY'0 hY'M
+  have hly : ∫ ω, Y' ω ∂(BAExp14a_μ sz) ≤ twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 2) :=
+    TwistAvgA2_lyap2 (BAExp14a_μ sz) p hp (g := fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω c₁ c₂‖) (fun _ => norm_nonneg _)
+      (hTn c₁ c₂).measurable (fun ω => hNT ω c₁ c₂)
+  calc ∫ ω, H ω * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) ∂(BAExp14a_μ sz) ≤
+        ∫ ω, (‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖) * Y' ω ∂(BAExp14a_μ sz) :=
+        integral_mono hint1 hint2 (fun ω => mul_le_mul_of_nonneg_right (hHle ω) (hY'0 ω))
+    _ ≤ E1 * sz.Bctl n t ^ 2 * ∫ ω, Y' ω ∂(BAExp14a_μ sz) + E2 * (∫ ω, Y' ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2) :=
+        hT6b c₁ c₂ Y' hY'c.measurable hY'0 hY'2
+    _ ≤ _ := add_le_add (mul_le_mul_of_nonneg_left hly (mul_nonneg hE1 (sq_nonneg _))) (mul_le_mul_of_nonneg_left hsqrt hE2)
+
+
+/-- **The first display of Step 5** (`TP:89`) at one `(n, t)`: from the moment identity (`TwistAvgA_moment`), the bounds `TwistAvgA2_F1`, `TwistAvgA2_G23`, `t ≤ 1` and `Σ_c |M^{(B)}_{c₁c}| ≤ C_M`. -/
+theorem TwistAvgA2_core {CM : ℝ} (hE1 : 0 ≤ E1) (hE2 : 0 ≤ E2) (ht1' : t ≤ 1) (hCM : ∀ c₁ : Zd d (sz.L n), ∑ c, ‖twMB (baFMz sz z) n c₁ c‖ ≤ CM)
+    (hNX : ∀ (ω : sz.SeqΩ) (c : Zd d (sz.L n)), ‖BAExp14a_X sz z n t ω c‖ ≤ N)
+    (hT6a : ∀ (c : Zd d (sz.L n)) (Y : sz.SeqΩ → ℝ), Measurable Y → (∀ ω, 0 ≤ Y ω) → Integrable (fun ω => Y ω ^ 2) (BAExp14a_μ sz) →
+      ∫ ω, ‖BAExp14a_X sz z n t ω c‖ * Y ω ∂(BAExp14a_μ sz) ≤
+        E1 * sz.Bctl n t * ∫ ω, Y ω ∂(BAExp14a_μ sz) + E2 * (∫ ω, Y ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2))
+    (hT6b : ∀ (c₁ c₂ : Zd d (sz.L n)) (Y : sz.SeqΩ → ℝ), Measurable Y → (∀ ω, 0 ≤ Y ω) → Integrable (fun ω => Y ω ^ 2) (BAExp14a_μ sz) →
+      ∫ ω, (‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖) * Y ω ∂(BAExp14a_μ sz) ≤
+        E1 * sz.Bctl n t ^ 2 * ∫ ω, Y ω ∂(BAExp14a_μ sz) + E2 * (∫ ω, Y ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2))
+    (c₁ c₂ : Zd d (sz.L n)) :
+    twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p) ≤
+      CM * (E1 * sz.Bctl n t * (twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 1) * (1 + twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n t p)) +
+        E2 * ((1 + N) * N ^ (2 * p - 1))) +
+      (2 * (p : ℝ) - 1) * (E1 * sz.Bctl n t ^ 2 * twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ ^ (2 * p - 2) + E2 * N ^ (2 * p - 2)) := by
+  have ht1 : t < 1 := (ba_G_data hκ sz hflow n ht0 ht).1
+  have hB0 : 0 ≤ sz.Bctl n t := (STBctl_pos sz n ht1).le
+  have hN0 : 0 ≤ N := by linarith
+  have bT := TwistAvgA_BC_twTr hκ hflow n ht0 ht
+  have hTn : ∀ a b, Continuous fun ω : sz.SeqΩ => ‖twTr (baFMz sz z) n t ω a b‖ := fun a b => continuous_norm.comp (bT a b).1
+  set X := twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p c₁ c₂ with hXdef
+  set Xm := twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n t p with hXm
+  have hX0 : 0 ≤ X := Real.rpow_nonneg (integral_nonneg fun ω => pow_nonneg (norm_nonneg _) _) _
+  have hXm0 : 0 ≤ Xm := hX0.trans (Finset.le_sup' (fun q : Zd d (sz.L n) × Zd d (sz.L n) => twAvgX (baFMz sz z) (BAExp14a_μ sz) n t p q.1 q.2) (Finset.mem_univ (c₁, c₂)))
+  set I := ∫ ω : sz.SeqΩ, ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p) ∂(BAExp14a_μ sz) with hI
+  have hI0 : 0 ≤ I := integral_nonneg fun ω => pow_nonneg (norm_nonneg _) _
+  have hXpow : X ^ (2 * p) = I := TwistAvgA2_root_pow_self I hI0 p hp
+  rw [hXpow]
+  have hmom := TwistAvgA_moment hκ hflow n ht0 ht p hp c₁ c₂
+  have hCM0 : 0 ≤ CM := (Finset.sum_nonneg fun c _ => norm_nonneg _).trans (hCM c₁)
+  set W1 := E1 * sz.Bctl n t * (X ^ (2 * p - 1) * (1 + Xm)) + E2 * ((1 + N) * N ^ (2 * p - 1)) with hW1
+  set W2 := E1 * sz.Bctl n t ^ 2 * X ^ (2 * p - 2) + E2 * N ^ (2 * p - 2) with hW2
+  have hW1' : 0 ≤ W1 := by simp only [hW1]; positivity
+  have hW2' : 0 ≤ W2 := by simp only [hW2]; positivity
+  have hp' : (1 : ℝ) ≤ p := by exact_mod_cast hp
+  -- the three terms
+  have hA1 : ‖(t : ℂ) * ∑ c, twMB (baFMz sz z) n c₁ c * ∫ ω : sz.SeqΩ, ((baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n) *
+        (twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂) * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 1) *
+          (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ CM * W1 := by
+    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+    have h1 : ‖∑ c, twMB (baFMz sz z) n c₁ c * ∫ ω : sz.SeqΩ, ((baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n) *
+        (twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂) * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 1) *
+          (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ CM * W1 := by
+      refine (norm_sum_le _ _).trans ?_
+      calc ∑ c, ‖twMB (baFMz sz z) n c₁ c * ∫ ω : sz.SeqΩ, ((baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n) *
+            (twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂) * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 1) *
+              (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ ∑ c, ‖twMB (baFMz sz z) n c₁ c‖ * W1 := by
+            refine Finset.sum_le_sum fun c _ => ?_
+            rw [norm_mul]
+            exact mul_le_mul_of_nonneg_left (TwistAvgA2_F1 hκ hflow n ht0 ht p hp hN hNT hE1 hE2 hNX hT6a c c₁ c₂) (norm_nonneg _)
+        _ = (∑ c, ‖twMB (baFMz sz z) n c₁ c‖) * W1 := (Finset.sum_mul _ _ _).symm
+        _ ≤ CM * W1 := mul_le_mul_of_nonneg_right (hCM c₁) hW1'
+    calc t * ‖∑ c, twMB (baFMz sz z) n c₁ c * ∫ ω : sz.SeqΩ, ((baFMz sz z).L n t (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n) *
+          (twMB (baFMz sz z) n c c₂ + twTr (baFMz sz z) n t ω c c₂) * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 1) *
+            (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ 1 * (CM * W1) :=
+          mul_le_mul ht1' h1 (norm_nonneg _) zero_le_one
+      _ = CM * W1 := one_mul _
+  have bS1 := TwistAvgA_BC_S1 hκ hflow n ht0 ht c₁ c₂
+  have bS2 := TwistAvgA_BC_S2 hκ hflow n ht0 ht c₁ c₂
+  have hA2 : ‖(t : ℂ) * ((p : ℂ) - 1) * ∫ ω : sz.SeqΩ, twAvgS1 (baFMz sz z) n t ω c₁ c₂ * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 2) *
+      (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ ((p : ℝ) - 1) * W2 := by
+    rcases Nat.lt_or_ge p 2 with h1 | h2
+    · have hp1 : p = 1 := by omega
+      have : (p : ℂ) - 1 = 0 := by rw [hp1]; simp
+      rw [this]
+      have : (p : ℝ) - 1 = 0 := by rw [hp1]; simp
+      rw [this]
+      simp
+    · have hF2 : ‖∫ ω : sz.SeqΩ, twAvgS1 (baFMz sz z) n t ω c₁ c₂ * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 2) *
+          (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ W2 := by
+        refine (norm_integral_le_integral_norm _).trans ?_
+        have e : ∀ ω : sz.SeqΩ, ‖twAvgS1 (baFMz sz z) n t ω c₁ c₂ * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 2) *
+            (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p‖ = ‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖ * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) :=
+          fun ω => by
+            rw [norm_mul, norm_mul, norm_pow, norm_pow, Complex.norm_conj, mul_assoc, ← pow_add]
+            congr 2; omega
+        simp only [e]
+        exact TwistAvgA2_G23 hκ hflow n ht0 ht p hp hN hNT hE1 hE2 hT6b c₁ c₂ (H := fun ω => ‖twAvgS1 (baFMz sz z) n t ω c₁ c₂‖)
+          (continuous_norm.comp bS1.1) (fun _ => norm_nonneg _) (fun ω => le_add_of_nonneg_right (norm_nonneg _))
+      rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0]
+      have hn : ‖(p : ℂ) - 1‖ = (p : ℝ) - 1 := by
+        have : ((p : ℂ) - 1) = (((p : ℝ) - 1 : ℝ) : ℂ) := by push_cast; ring
+        rw [this, Complex.norm_real, Real.norm_of_nonneg (by linarith)]
+      rw [hn]
+      calc t * ((p : ℝ) - 1) * ‖∫ ω : sz.SeqΩ, twAvgS1 (baFMz sz z) n t ω c₁ c₂ * twTr (baFMz sz z) n t ω c₁ c₂ ^ (p - 2) *
+            (starRingEnd ℂ) (twTr (baFMz sz z) n t ω c₁ c₂) ^ p ∂(BAExp14a_μ sz)‖ ≤ 1 * ((p : ℝ) - 1) * W2 :=
+            mul_le_mul (mul_le_mul ht1' le_rfl (by linarith) zero_le_one) hF2 (norm_nonneg _) (by nlinarith)
+        _ = ((p : ℝ) - 1) * W2 := by ring
+  have hA3 : ‖(t : ℂ) * (p : ℂ) * ∫ ω : sz.SeqΩ, twAvgS2 (baFMz sz z) n t ω c₁ c₂ * ((‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) : ℝ) : ℂ)
+      ∂(BAExp14a_μ sz)‖ ≤ (p : ℝ) * W2 := by
+    have hF3 : ‖∫ ω : sz.SeqΩ, twAvgS2 (baFMz sz z) n t ω c₁ c₂ * ((‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) : ℝ) : ℂ) ∂(BAExp14a_μ sz)‖ ≤ W2 := by
+      refine (norm_integral_le_integral_norm _).trans ?_
+      have e : ∀ ω : sz.SeqΩ, ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂ * ((‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) : ℝ) : ℂ)‖ =
+          ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖ * ‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) := fun ω => by
+        rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (pow_nonneg (norm_nonneg _) _)]
+      simp only [e]
+      exact TwistAvgA2_G23 hκ hflow n ht0 ht p hp hN hNT hE1 hE2 hT6b c₁ c₂ (H := fun ω => ‖twAvgS2 (baFMz sz z) n t ω c₁ c₂‖)
+        (continuous_norm.comp bS2.1) (fun _ => norm_nonneg _) (fun ω => le_add_of_nonneg_left (norm_nonneg _))
+    rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht0, Complex.norm_natCast]
+    calc t * (p : ℝ) * ‖∫ ω : sz.SeqΩ, twAvgS2 (baFMz sz z) n t ω c₁ c₂ * ((‖twTr (baFMz sz z) n t ω c₁ c₂‖ ^ (2 * p - 2) : ℝ) : ℂ) ∂(BAExp14a_μ sz)‖ ≤
+        1 * (p : ℝ) * W2 := mul_le_mul (mul_le_mul ht1' le_rfl (by linarith) zero_le_one) hF3 (norm_nonneg _) (by nlinarith)
+      _ = (p : ℝ) * W2 := by ring
+  have hnorm : I = ‖((I : ℝ) : ℂ)‖ := by rw [Complex.norm_real, Real.norm_of_nonneg hI0]
+  calc I = ‖((I : ℝ) : ℂ)‖ := hnorm
+    _ = ‖_‖ := by rw [hmom]
+    _ ≤ _ := norm_add₃_le
+    _ ≤ CM * W1 + ((p : ℝ) - 1) * W2 + (p : ℝ) * W2 := add_le_add (add_le_add hA1 hA2) hA3
+    _ = CM * W1 + (2 * (p : ℝ) - 1) * W2 := by ring
+
+end CoreF
+end Core
+
+/-- The error terms of Step 5: `C_M N^{-D₁} (1 + N) N^{2p-1} + (2p-1) N^{-D₁} N^{2p-2} ≤ N^{-D}` for `D₁ = D + 2p + 1` and `N ≥ 2 C_M + 2p`. -/
+theorem TwistAvgA2_err (N CM D : ℝ) (p : ℕ) (hp : 1 ≤ p) (hN : 1 ≤ N) (hCM : 0 ≤ CM) (hbig : 2 * CM + 2 * p ≤ N) :
+    CM * (N ^ (-(D + 2 * p + 1)) * ((1 + N) * N ^ (2 * p - 1))) + (2 * (p : ℝ) - 1) * (N ^ (-(D + 2 * p + 1)) * N ^ (2 * p - 2)) ≤
+      N ^ (-D) := by
+  have hN0 : 0 < N := by linarith
+  set q := N ^ (-(D + 2 * (p : ℝ) + 1)) with hq
+  have hq0 : 0 ≤ q := Real.rpow_nonneg hN0.le _
+  have hqN : q * N ^ (2 * p) = N ^ (-D) / N := by
+    rw [hq, ← Real.rpow_natCast, ← Real.rpow_add hN0,
+      show -(D + 2 * (p : ℝ) + 1) + ((2 * p : ℕ) : ℝ) = -D + -1 by push_cast; ring, Real.rpow_add hN0, Real.rpow_neg_one]
+    ring
+  have h1 : (1 + N) * N ^ (2 * p - 1) ≤ 2 * N ^ (2 * p) := by
+    have e : N ^ (2 * p) = N * N ^ (2 * p - 1) := by
+      rw [← pow_succ']; congr 1; omega
+    have : (1 : ℝ) * N ^ (2 * p - 1) ≤ N * N ^ (2 * p - 1) := mul_le_mul_of_nonneg_right hN (by positivity)
+    nlinarith [pow_pos hN0 (2 * p - 1)]
+  have h2 : N ^ (2 * p - 2) ≤ N ^ (2 * p) := pow_le_pow_right₀ hN (by omega)
+  have hp' : (1 : ℝ) ≤ p := by exact_mod_cast hp
+  have hNp : 0 ≤ N ^ (2 * p) := by positivity
+  calc CM * (q * ((1 + N) * N ^ (2 * p - 1))) + (2 * (p : ℝ) - 1) * (q * N ^ (2 * p - 2))
+      ≤ CM * (q * (2 * N ^ (2 * p))) + (2 * (p : ℝ)) * (q * N ^ (2 * p)) := by
+        refine add_le_add (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left h1 hq0) hCM) ?_
+        exact mul_le_mul (by linarith) (mul_le_mul_of_nonneg_left h2 hq0) (mul_nonneg hq0 (by positivity)) (by linarith)
+    _ = (2 * CM + 2 * p) * (q * N ^ (2 * p)) := by ring
+    _ ≤ N * (q * N ^ (2 * p)) := mul_le_mul_of_nonneg_right hbig (mul_nonneg hq0 hNp)
+    _ = N ^ (-D) := by rw [hqN]; field_simp
+
+/-- **Target 1 is proved**: the `2p`-moment recursion of Lemma T.7 (`TP:89`, first display), with the constant `K = C_M + 1` fixed before `𝔠, sz, z`. -/
+theorem baTwistAvgRec_holds (d : ℕ) : BATwistAvgRec d := by
+  intro hd κ ε 𝔡 hκ hε h𝔡
+  obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
+  have hCMpos := TwistAvgA2_CM_pos (k := k) κ 𝔡 hκ h𝔡
+  set CM := (BAct_rate (k + 2) 𝔡⁻¹ κ)⁻¹ * expC k (BAct_rate (k + 2) 𝔡⁻¹ κ) with hCMdef
+  refine ⟨CM + 1, by linarith, ?_⟩
+  intro 𝔠 sz z hflow t ht0 htT μ hA hM
+  have hA' : LWAvgLawgL (baFMz sz z) (BAExp14a_μ sz) t := hA
+  have hM' : STLmaxgL (baFMz sz z) (BAExp14a_μ sz) t := hM
+  change BATwistAvgRecAt (baFMz sz z) (BAExp14a_μ sz) t (CM + 1)
+  clear hA hM
+  intro p hp ε' D hε' hD
+  have h𝔠 : 0 < 𝔠 := hflow.1.1
+  have hsz : sz.SizeTendsto := hflow.1.2.2.1
+  have hsz' : Tendsto sz.size atTop atTop := Sizes.tendsto_size sz hsz
+  have hSelf : ∀ n, BASelf (k + 2) (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n : ℂ) ((baFMz sz z).m n) := fun n => (BAflow_real κ ε 𝔠 𝔡 sz z hflow n).1
+  have hε₁0 : 0 < 𝔠 * ε' := mul_pos h𝔠 hε'
+  have hD₁0 : 0 < D + 2 * (p : ℝ) + 1 := by positivity
+  have ht1 : ∀ n, t n < 1 := fun n => (ba_G_data hκ sz hflow n (ht0 n) (htT n)).1
+  obtain ⟨hcont, hbnd, hev⟩ := twAvgReg_holds (k + 2) κ ε 𝔠 𝔡 sz z hκ hε hflow
+  have hB0 : ∀ n, 0 ≤ sz.Bctl n (t n) := fun n => (STBctl_pos sz n (ht1 n)).le
+  have hCM0 : 0 ≤ CM := hCMpos.le
+  -- the envelope of `𝓛^{(1)} - m` and of `𝒮₁, 𝒮₂`
+  have henv1 : ∀ᶠ n in atTop, ∀ (c : Zd (k + 2) (sz.L n)) (ω : sz.SeqΩ),
+      ‖(baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (1 : ℝ) := by
+    filter_upwards [hev] with n hn c ω
+    rw [Real.rpow_one]
+    exact (hbnd n (t n) (ht0 n) (htT n) ω c c).2.1.trans (hn (t n) (ht0 n) (htT n))
+  have henv2 : ∀ᶠ n in atTop, ∀ (q : Zd (k + 2) (sz.L n) × Zd (k + 2) (sz.L n)) (ω : sz.SeqΩ),
+      ‖twAvgS1 (baFMz sz z) n (t n) ω q.1 q.2‖ + ‖twAvgS2 (baFMz sz z) n (t n) ω q.1 q.2‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (5 : ℝ) := by
+    filter_upwards [hev, hsz'.eventually (eventually_ge_atTop 2)] with n hn hN2 q ω
+    have hN2' : (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by exact_mod_cast hN2
+    obtain ⟨-, -, h1, h2⟩ := hbnd n (t n) (ht0 n) (htT n) ω q.1 q.2
+    have hη := hn (t n) (ht0 n) (htT n)
+    have h3 : (((baFMz sz z).eta n (t n))⁻¹ + 1) ^ 3 ≤ ((sz.size n : ℕ) : ℝ) ^ 3 :=
+      pow_le_pow_left₀ (by have := BAExp14a_eta_pos hκ hflow n (ht0 n) (htT n); positivity) hη 3
+    rw [show ((5 : ℝ)) = ((5 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+    have hNn : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by linarith
+    nlinarith [mul_le_mul_of_nonneg_left h3 hNn, pow_pos (by linarith : (0 : ℝ) < ((sz.size n : ℕ) : ℝ)) 4]
+  have h6a := twAvgT6_holds (d := k + 2) sz (BAExp14a_μ sz) (V := fun n => Zd (k + 2) (sz.L n))
+    (fun n c ω => ‖(baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n‖) (fun n _ => sz.Bctl n (t n)) 1 hsz
+    (fun _ _ _ => norm_nonneg _) (fun n _ => hB0 n) henv1 hA' (𝔠 * ε') (D + 2 * (p : ℝ) + 1) hε₁0 hD₁0
+  have hPrec := (twAvgSPrec_holds (k + 2) hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT) hM'
+  have h6b := twAvgT6_holds (d := k + 2) sz (BAExp14a_μ sz) (V := fun n => Zd (k + 2) (sz.L n) × Zd (k + 2) (sz.L n))
+    (fun n q ω => ‖twAvgS1 (baFMz sz z) n (t n) ω q.1 q.2‖ + ‖twAvgS2 (baFMz sz z) n (t n) ω q.1 q.2‖) (fun n _ => sz.Bctl n (t n) ^ 2) 5 hsz
+    (fun _ _ _ => add_nonneg (norm_nonneg _) (norm_nonneg _)) (fun n _ => sq_nonneg _) henv2 hPrec (𝔠 * ε') (D + 2 * (p : ℝ) + 1) hε₁0 hD₁0
+  have hrow := TwistAvgA2_row_l1 κ ε 𝔠 𝔡 hκ h𝔡 sz z hflow
+  have hband := hflow.1.2.2.2.1
+  have hNbig : ∀ᶠ n in atTop, 2 * CM + 2 * (p : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := hsz.eventually (eventually_ge_atTop _)
+  filter_upwards [hev, hrow, h6a, h6b, hband, hNbig] with n hevn hrown h6an h6bn hbandn hNbign
+  intro c₁ c₂
+  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast hp
+  have hN2 : (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by linarith
+  have hNT : ∀ (ω : sz.SeqΩ) (a b : Zd (k + 2) (sz.L n)), ‖twTr (baFMz sz z) n (t n) ω a b‖ ≤ ((sz.size n : ℕ) : ℝ) := fun ω a b =>
+    (hbnd n (t n) (ht0 n) (htT n) ω a b).1.trans (hevn (t n) (ht0 n) (htT n))
+  have hNX : ∀ (ω : sz.SeqΩ) (c : Zd (k + 2) (sz.L n)), ‖BAExp14a_X sz z n (t n) ω c‖ ≤ ((sz.size n : ℕ) : ℝ) := by
+    intro ω c
+    rw [BAExp14a_X_eq n (t n) ω (hSelf n) c]
+    exact (hbnd n (t n) (ht0 n) (htT n) ω c c).2.1.trans (hevn (t n) (ht0 n) (htT n))
+  have e : ∀ (ω : sz.SeqΩ) (c : Zd (k + 2) (sz.L n)), BAExp14a_X sz z n (t n) ω c =
+      (baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz z).m n := fun ω c => BAExp14a_X_eq n (t n) ω (hSelf n) c
+  have hT6a : ∀ (c : Zd (k + 2) (sz.L n)) (Y : sz.SeqΩ → ℝ), Measurable Y → (∀ ω, 0 ≤ Y ω) → Integrable (fun ω => Y ω ^ 2) (BAExp14a_μ sz) →
+      ∫ ω, ‖BAExp14a_X sz z n (t n) ω c‖ * Y ω ∂(BAExp14a_μ sz) ≤ ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε') * sz.Bctl n (t n) * ∫ ω, Y ω ∂(BAExp14a_μ sz) +
+        ((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) * (∫ ω, Y ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2) := by
+    intro c Y hYm hY0 hY2
+    simp only [e]
+    exact h6an c Y hYm hY0 hY2
+  have hT6b : ∀ (c₁ c₂ : Zd (k + 2) (sz.L n)) (Y : sz.SeqΩ → ℝ), Measurable Y → (∀ ω, 0 ≤ Y ω) → Integrable (fun ω => Y ω ^ 2) (BAExp14a_μ sz) →
+      ∫ ω, (‖twAvgS1 (baFMz sz z) n (t n) ω c₁ c₂‖ + ‖twAvgS2 (baFMz sz z) n (t n) ω c₁ c₂‖) * Y ω ∂(BAExp14a_μ sz) ≤
+        ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε') * sz.Bctl n (t n) ^ 2 * ∫ ω, Y ω ∂(BAExp14a_μ sz) +
+          ((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) * (∫ ω, Y ω ^ 2 ∂(BAExp14a_μ sz)) ^ ((1 : ℝ) / 2) :=
+    fun c₁ c₂ Y hYm hY0 hY2 => h6bn (c₁, c₂) Y hYm hY0 hY2
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have hE1 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε') := Real.rpow_nonneg hN0.le _
+  have hE2 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) := Real.rpow_nonneg hN0.le _
+  have ht1' : t n ≤ 1 := (ht1 n).le
+  have hcore := TwistAvgA2_core hκ hflow n (ht0 n) (htT n) p hp (N := ((sz.size n : ℕ) : ℝ)) (E1 := ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε'))
+    (E2 := ((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1))) (by linarith) hNT (CM := CM) hE1 hE2 ht1' hrown hNX hT6a hT6b c₁ c₂
+  have hE1W : ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε') ≤ ((sz.W n : ℕ) : ℝ) ^ ε' := by
+    rw [Real.rpow_mul hN0.le]
+    exact Real.rpow_le_rpow (Real.rpow_nonneg hN0.le _) hbandn hε'.le
+  have herr := TwistAvgA2_err ((sz.size n : ℕ) : ℝ) CM D p hp (by linarith) hCM0 hNbign
+  have hB := hB0 n
+  have hX0 : 0 ≤ twAvgX (baFMz sz z) (BAExp14a_μ sz) n (t n) p c₁ c₂ :=
+    Real.rpow_nonneg (integral_nonneg fun ω => pow_nonneg (norm_nonneg _) _) _
+  have hXm0 : 0 ≤ twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n (t n) p := hX0.trans
+    (Finset.le_sup' (fun q : Zd (k + 2) (sz.L n) × Zd (k + 2) (sz.L n) => twAvgX (baFMz sz z) (BAExp14a_μ sz) n (t n) p q.1 q.2) (Finset.mem_univ (c₁, c₂)))
+  set a := twAvgX (baFMz sz z) (BAExp14a_μ sz) n (t n) p c₁ c₂ ^ (2 * p - 1) with ha
+  set b := twAvgX (baFMz sz z) (BAExp14a_μ sz) n (t n) p c₁ c₂ ^ (2 * p - 2) with hb
+  set xm := twAvgXmax (baFMz sz z) (BAExp14a_μ sz) n (t n) p with hxm
+  set E1 := ((sz.size n : ℕ) : ℝ) ^ (𝔠 * ε') with hE1def
+  set WE := ((sz.W n : ℕ) : ℝ) ^ ε' with hWE
+  set B := sz.Bctl n (t n) with hBdef
+  have ha0 : 0 ≤ a := pow_nonneg hX0 _
+  have hb0 : 0 ≤ b := pow_nonneg hX0 _
+  have hWE0 : 0 ≤ WE := hE1.trans hE1W
+  have t1 : CM * (E1 * B * (a * (1 + xm))) ≤ (CM + 1) * (WE * B) * (a + xm * a) := by
+    have h1 : CM * E1 ≤ (CM + 1) * WE := mul_le_mul (by linarith) hE1W hE1 (by linarith)
+    calc CM * (E1 * B * (a * (1 + xm))) = (CM * E1) * (B * (a * (1 + xm))) := by ring
+      _ ≤ ((CM + 1) * WE) * (B * (a * (1 + xm))) := mul_le_mul_of_nonneg_right h1 (by positivity)
+      _ = (CM + 1) * (WE * B) * (a + xm * a) := by ring
+  have t2 : (2 * (p : ℝ) - 1) * (E1 * B ^ 2 * b) ≤ 2 * (p : ℝ) * (CM + 1) * (WE * B ^ 2) * b := by
+    have h1 : (2 * (p : ℝ) - 1) * E1 ≤ 2 * (p : ℝ) * (CM + 1) * WE := by
+      calc (2 * (p : ℝ) - 1) * E1 ≤ (2 * (p : ℝ) * (CM + 1)) * E1 :=
+            mul_le_mul_of_nonneg_right (by nlinarith [mul_nonneg hCM0 (by linarith : (0 : ℝ) ≤ p)]) hE1
+        _ ≤ (2 * (p : ℝ) * (CM + 1)) * WE := mul_le_mul_of_nonneg_left hE1W (by positivity)
+    calc (2 * (p : ℝ) - 1) * (E1 * B ^ 2 * b) = ((2 * (p : ℝ) - 1) * E1) * (B ^ 2 * b) := by ring
+      _ ≤ (2 * (p : ℝ) * (CM + 1) * WE) * (B ^ 2 * b) := mul_le_mul_of_nonneg_right h1 (by positivity)
+      _ = 2 * (p : ℝ) * (CM + 1) * (WE * B ^ 2) * b := by ring
+  calc twAvgX (baFMz sz z) (BAExp14a_μ sz) n (t n) p c₁ c₂ ^ (2 * p) ≤
+        CM * (E1 * B * (a * (1 + xm)) + ((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) * ((1 + ((sz.size n : ℕ) : ℝ)) * ((sz.size n : ℕ) : ℝ) ^ (2 * p - 1))) +
+          (2 * (p : ℝ) - 1) * (E1 * B ^ 2 * b + ((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) * ((sz.size n : ℕ) : ℝ) ^ (2 * p - 2)) := hcore
+    _ = CM * (E1 * B * (a * (1 + xm))) + (2 * (p : ℝ) - 1) * (E1 * B ^ 2 * b) +
+        (CM * (((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) * ((1 + ((sz.size n : ℕ) : ℝ)) * ((sz.size n : ℕ) : ℝ) ^ (2 * p - 1))) +
+          (2 * (p : ℝ) - 1) * (((sz.size n : ℕ) : ℝ) ^ (-(D + 2 * (p : ℝ) + 1)) * ((sz.size n : ℕ) : ℝ) ^ (2 * p - 2))) := by ring
+    _ ≤ (CM + 1) * (WE * B) * (a + xm * a) + 2 * (p : ℝ) * (CM + 1) * (WE * B ^ 2) * b + ((sz.size n : ℕ) : ℝ) ^ (-D) :=
+        add_le_add (add_le_add t1 t2) herr
+    _ = _ := by ring
+
+/-! ## 7. Instances (target 3): `d = 3`, `sz0` (`L = 4`, `W = 32` at `n = 0`), `zSeq`, `flow_sz0`, `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, `t ≡ 1/2 ≤ T₀`.
+Other gates' pins (`LWAvgLawgL`, `STLmaxgL`) stay hypotheses; every deterministic hypothesis is discharged. -/
+
+section Inst
+open RBM.BA.FlowPinsInst RBM.Gauss.SizesInst RBM.BA.MFixedPointInst
+local notation "μ0" => Sizes.seqP (sz0.withLam 0)
+
+/-- Target 1 at the datum: `baTwistAvgRec_holds 3` gives a constant `K > 0` and the recursion at `(sz0, zSeq)`, `t ≡ 1/2`. -/
+example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
+    ∃ K : ℝ, 0 < K ∧ BATwistAvgRecAt (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2) K := by
+  obtain ⟨K, hK, H⟩ := baTwistAvgRec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+  exact ⟨K, hK, H (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM⟩
+
+/-- Target 1, non-vacuity of the conclusion: at `p = 1`, `ε' = 1/10`, `D = 1`, for every `n` of an eventual set there is a pair `c₂ ≠ c₁` of blocks
+at which the recursion holds (`atTop` on `ℕ` is `NeBot`). -/
+example (hA : LWAvgLawgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
+    ∃ K : ℝ, 0 < K ∧ ∀ᶠ n in atTop, ∃ c₁ c₂ : Zd 3 (sz0.L n), c₂ ≠ c₁ ∧
+      twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1) ≤
+        K * (((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * sz0.Bctl n (1 / 2)) * (twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1 - 1) +
+          twAvgXmax (baFMz sz0 zSeq) μ0 n (1 / 2) 1 * twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1 - 1)) +
+        2 * ((1 : ℕ) : ℝ) * K * (((sz0.W n : ℕ) : ℝ) ^ (1 / 10 : ℝ) * sz0.Bctl n (1 / 2) ^ 2) * twAvgX (baFMz sz0 zSeq) μ0 n (1 / 2) 1 c₁ c₂ ^ (2 * 1 - 2) +
+        ((sz0.size n : ℕ) : ℝ) ^ (-(1 : ℝ)) := by
+  obtain ⟨K, hK, H⟩ := baTwistAvgRec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num)
+  refine ⟨K, hK, ?_⟩
+  filter_upwards [H (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2) (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hA hM 1 le_rfl (1 / 10) 1
+    (by norm_num) (by norm_num)] with n hn
+  have : Fact (1 < sz0.L n) := ⟨by have := sz0.three_le_L n; omega⟩
+  exact ⟨0, ![1, 0, 0], fun hh => by simpa using congrFun hh 0, hn 0 ![1, 0, 0]⟩
+
+/-- Target 2 (ii), deterministic half, at `n = 0`, `t = 1/2`, any sample `ω`, `c₁ = 0`, `c₂ = (1,0,0)`. -/
+example (ω : (sz0).SeqΩ) :=
+  twAvgSCS_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) flow_sz0 0 (1 / 2) (by norm_num) (half_lt_t0 0).le ω 0 ![1, 0, 0]
+
+/-- Target 2 (ii), `≺` form, at the datum (`STLmaxgL` is another gate's pin). -/
+example (hM : STLmaxgL (baFMz sz0 zSeq) μ0 (fun _ => 1 / 2)) :
+    PrecL sz0 μ0 (U := fun n => Zd 3 (sz0.L n) × Zd 3 (sz0.L n))
+      (fun n q ω => ‖twAvgS1 (baFMz sz0 zSeq) n (1 / 2) ω q.1 q.2‖ + ‖twAvgS2 (baFMz sz0 zSeq) n (1 / 2) ω q.1 q.2‖)
+      (fun n _ _ => sz0.Bctl n (1 / 2) ^ 2) :=
+  twAvgSPrec_holds 3 le_rfl (1 / 2) (1 / 10) (1 / 10) (by norm_num) (by norm_num) (by norm_num) (1 / 6) sz0 zSeq flow_sz0 (fun _ => 1 / 2)
+    (fun _ => by norm_num) (fun n => (half_lt_t0 n).le) hM
+
+/-- Target 2 (iii) at the datum: `ξ_c = ‖𝓛¹_c - m‖ ≺ B = Bctl n (1/2)` (`LWAvgLawgL`, a pin), `ξ ≤ N` (target 2 (iv)), `R = Bctl > 0`, `Y ≡ 1`, `ε = D = 1/2`
+(the law is `BAExp14a_μ sz0 = seqP (sz0.withLam 0)`, which carries the probability-measure instance on `sz0.SeqΩ`). -/
+example (hA : LWAvgLawgL (baFMz sz0 zSeq) (BAExp14a_μ sz0) (fun _ => 1 / 2)) :
+    ∀ᶠ n in atTop, ∀ c : Zd 3 (sz0.L n),
+      ∫ ω, ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖ * 1 ∂(BAExp14a_μ sz0) ≤
+        ((sz0.size n : ℕ) : ℝ) ^ (1 / 2 : ℝ) * sz0.Bctl n (1 / 2) * ∫ ω, (1 : ℝ) ∂(BAExp14a_μ sz0) +
+        ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 2 : ℝ)) * (∫ ω, (1 : ℝ) ^ 2 ∂(BAExp14a_μ sz0)) ^ ((1 : ℝ) / 2) := by
+  obtain ⟨-, hb, he⟩ := twAvgReg_holds 3 (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq (by norm_num) (by norm_num) flow_sz0
+  have henv : ∀ᶠ n in atTop, ∀ (c : Zd 3 (sz0.L n)) (ω : sz0.SeqΩ),
+      ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖ ≤ ((sz0.size n : ℕ) : ℝ) ^ (1 : ℝ) := by
+    filter_upwards [he] with n hn c ω
+    rw [Real.rpow_one]
+    exact (hb n (1 / 2) (by norm_num) (half_lt_t0 n).le ω c c).2.1.trans (hn (1 / 2) (by norm_num) (half_lt_t0 n).le)
+  filter_upwards [twAvgT6_holds sz0 (BAExp14a_μ sz0) (V := fun n => Zd 3 (sz0.L n))
+    (fun n c ω => ‖(baFMz sz0 zSeq).L n (1 / 2) (fun _ : Fin 1 => true) (fun _ => c) ω - (baFMz sz0 zSeq).m n‖) (fun n _ => sz0.Bctl n (1 / 2)) 1
+    sz0_tendsto (fun _ _ _ => norm_nonneg _) (fun n _ => (STBctl_pos sz0 n (by norm_num)).le) henv hA (1 / 2) (1 / 2) (by norm_num) (by norm_num)] with n hn c
+  exact hn c (fun _ => 1) measurable_const (fun _ => zero_le_one) (integrable_const _)
+
+/-- The interface to TL1b (statement only): the bootstrap with S1, Markov at `μ`, the union over the pairs. -/
+def T2427_TL1b : Prop := ∀ d, BATwistAvgRec d → BATwistAvgProd d
+
+/-- The pinned text of the interface: `T2427_TL1b` unfolds to `∀ d, BATwistAvgRec d → BATwistAvgProd d` (`BA/TwistPins.lean:154`). -/
+example : T2427_TL1b ↔ ∀ d, BATwistAvgRec d → BATwistAvgProd d := Iff.rfl
+
+end Inst
 
 end RBM.BA
 
