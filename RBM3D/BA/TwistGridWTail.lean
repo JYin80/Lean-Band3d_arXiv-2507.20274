@@ -1490,4 +1490,331 @@ theorem TwistGridWTail_Y_fields (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ
 
 end YGeneric
 
+/-! ## 8. The twisted martingale increment as a `stepXiCN`: measurability and the a.e. identification -/
+
+section Mart
+
+open scoped Matrix.Norms.L2Operator
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
+
+/-- `Φ_b` is Borel measurable in the matrix (entries of the resolvent, `walk_measurable_Gres_apply`). -/
+theorem TwistGridWTail_Phi_measurable (u : ℝ) (σ : Fin 2 → Bool) (c₁ c₂ b : Zd d (sz.L n)) :
+    Measurable (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) := by
+  have hHm : Measurable (TwistGridWTail_Hm sz lam0 n) := by
+    unfold TwistGridWTail_Hm; exact measurable_const.add measurable_id
+  have hent : ∀ (σ' : Bool) (x y : Idx d (sz.L n) (sz.W n)), Measurable (fun M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
+      twChg (twGM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M)) σ' x y) := by
+    intro σ' x y
+    cases σ'
+    · simp only [twChg, twGM, Bool.false_eq_true, ite_false]
+      exact Complex.continuous_conj.measurable.comp ((walk_measurable_Gres_apply _ true y x).comp hHm)
+    · simp only [twChg, twGM, ite_true]
+      exact (walk_measurable_Gres_apply _ true x y).comp hHm
+  unfold TwistGridWTail_Phi twL2M twLoopX
+  exact measurable_const.mul (Finset.measurable_sum _ fun x _ => Finset.measurable_sum _ fun w _ => (hent _ _ _).mul (hent _ _ _))
+
+/-- The label family of step `j`: `Φ_b` at the spectral time `u_{j+1}`. -/
+def TwistGridWTail_fam (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) :
+    Zd d (sz.L n) → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ :=
+  fun b => TwistGridWTail_Phi sz lam0 E n (gridTime s t K n (j + 1)) σ c₁ c₂ b
+
+/-- The twisted martingale increment of step `j`, weighted by `κ`: `Σ_b κ_b ξ_{j+1}(b)` is a.e. `stepXiCN` of the family `TwistGridWTail_fam`
+with the kernel `(·, a) ↦ κ_a` (linearity of the conditional expectation; `K̃` cancels), and `filt (j+1)`-measurable. -/
+theorem TwistGridWTail_xi_ae (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) {η : ℝ} (hη0 : 0 < η)
+    (hη : η ≤ etaOf (BAmF sz lam0 E n) (gridTime s t K n (j + 1))) (κ : Zd d (sz.L n) → ℂ) :
+    (fun ω : PathΩ (sz.withLam 0) => ∑ b, κ b * twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b) =ᵐ[pathP (sz.withLam 0)]
+      stepXiCN (sz.withLam 0) s t K n j (TwistGridWTail_fam sz lam0 E s t K n σ c₁ c₂ j) (fun _ a => κ a) 0 ∧
+    Measurable[filt (sz.withLam 0) (j + 1)] (fun ω : PathΩ (sz.withLam 0) => ∑ b, κ b * twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b) := by
+  set szz : Sizes d := sz.withLam 0 with hszz
+  set Ξ : Zd d (sz.L n) → PathΩ szz → ℂ := fun b ω =>
+    TwistGridWTail_Phi sz lam0 E n (gridTime s t K n (j + 1)) σ c₁ c₂ b (pathH szz s t K n (j + 1) ω) with hΞ
+  set Kc : Zd d (sz.L n) → ℂ := fun b => twK (baFM sz lam0 E) n (gridTime s t K n (j + 1)) σ b c₁ c₂ with hKc
+  have hΞm : ∀ b, Measurable[filt szz (j + 1)] (Ξ b) := fun b =>
+    (TwistGridWTail_Phi_measurable sz lam0 E n _ σ c₁ c₂ b).comp (pathH_measurable_filt szz s t K n (j + 1))
+  have hΞint : ∀ b, Integrable (Ξ b) (pathP szz) := by
+    intro b
+    have hm : Measurable (Ξ b) := (hΞm b).mono ((filt szz).le (j + 1)) le_rfl
+    exact (memLp_top_of_bound hm.aestronglyMeasurable (η⁻¹ ^ 2) (Eventually.of_forall fun ω =>
+      TwistGridWTail_Phi_norm_le sz lam0 E n _ σ c₁ c₂ b (pathH_isHermitian szz s t K n (j + 1) ω) hη0 hη)).integrable le_top
+  -- pointwise: `twMartInc = (Ξ - K) - E[Ξ - K | F]`
+  have hmart : ∀ ω b, twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b =
+      (Ξ b ω - Kc b) - (pathP szz)[fun ω' => Ξ b ω' - Kc b | filt szz j] ω := fun ω b => rfl
+  have hce : ∀ b, (pathP szz)[fun ω' => Ξ b ω' - Kc b | filt szz j] =ᵐ[pathP szz] fun ω => (pathP szz)[Ξ b | filt szz j] ω - Kc b := by
+    intro b
+    have h := condExp_sub (hΞint b) (integrable_const (Kc b)) (filt szz j)
+    have hc : (pathP szz)[fun _ : PathΩ szz => Kc b | filt szz j] = fun _ => Kc b := condExp_const ((filt szz).le j) _
+    filter_upwards [h] with ω hω
+    simp only [Pi.sub_apply] at hω ⊢
+    rw [show (fun ω' => Ξ b ω' - Kc b) = Ξ b - fun _ => Kc b from rfl, hω, hc]
+  have hlin : (pathP szz)[fun ω' => ∑ a, κ a * Ξ a ω' | filt szz j] =ᵐ[pathP szz] fun ω => ∑ a, κ a * (pathP szz)[Ξ a | filt szz j] ω := by
+    have h1 := condExp_finsetSum (μ := pathP szz) (s := Finset.univ) (f := fun a ω' => κ a * Ξ a ω') (fun a _ => (hΞint a).const_mul (κ a)) (filt szz j)
+    have h2 : ∀ a, (pathP szz)[fun ω' => κ a * Ξ a ω' | filt szz j] =ᵐ[pathP szz] fun ω => κ a * (pathP szz)[Ξ a | filt szz j] ω :=
+      fun a => condExp_smul (κ a) (Ξ a) (filt szz j)
+    have h3 : ∀ᵐ ω ∂(pathP szz), ∀ a, (pathP szz)[fun ω' => κ a * Ξ a ω' | filt szz j] ω = κ a * (pathP szz)[Ξ a | filt szz j] ω :=
+      ae_all_iff.2 h2
+    filter_upwards [h1, h3] with ω hω1 hω2
+    have : (fun ω' => ∑ a, κ a * Ξ a ω') = ∑ a, fun ω' => κ a * Ξ a ω' := by funext ω'; simp [Finset.sum_apply]
+    rw [this, hω1]
+    simp only [Finset.sum_apply, hω2]
+  have hce' : ∀ᵐ ω ∂(pathP szz), ∀ b, (pathP szz)[fun ω' => Ξ b ω' - Kc b | filt szz j] ω = (pathP szz)[Ξ b | filt szz j] ω - Kc b :=
+    ae_all_iff.2 hce
+  refine ⟨?_, ?_⟩
+  · filter_upwards [hlin, hce'] with ω h1 h2
+    have hL : ∑ b, κ b * twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b =
+        ∑ b, κ b * (Ξ b ω - (pathP szz)[Ξ b | filt szz j] ω) :=
+      Finset.sum_congr rfl fun b _ => by rw [show twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b = _ from hmart ω b, h2 b]; ring
+    rw [hL]
+    show _ = (∑ a, κ a * Ξ a ω) - (pathP szz)[fun ω' => ∑ a, κ a * Ξ a ω' | filt szz j] ω
+    rw [h1, ← Finset.sum_sub_distrib]
+    exact Finset.sum_congr rfl fun b _ => by ring
+  · show Measurable[filt szz (j + 1)] (fun ω : PathΩ szz => ∑ b, κ b * ((Ξ b ω - Kc b) - (pathP szz)[fun ω' => Ξ b ω' - Kc b | filt szz j] ω))
+    refine Finset.measurable_sum _ fun b _ => measurable_const.mul ?_
+    exact ((hΞm b).sub measurable_const).sub ((stronglyMeasurable_condExp.measurable).mono ((filt szz).mono (Nat.le_succ j)) le_rfl)
+
+end Mart
+
+
+/-! ## 9. Doob's `L²` maximal tail for the second-order part (copy of the private `difRep3_doob_tail`, `Path/DifREP3.lean:857`) -/
+
+section Doob
+
+/-- **Doob's `L²` tail for martingale differences**: `F_j` is `ℱ_{j+1}`-measurable, square-integrable,
+conditionally centred, with `𝔼 F_j² ≤ q`; then `μ(∃ k ≤ K, x ≤ |Σ_{j<k} F_j|) ≤ K q / x²`. -/
+private theorem TwistGridWTail_doob_tail {Ω' : Type} {mΩ' : MeasurableSpace Ω'} (μ : Measure Ω')
+    [IsProbabilityMeasure μ] (ℱ : Filtration ℕ mΩ') (F : ℕ → Ω' → ℝ) (K : ℕ) (q x : ℝ)
+    (hF : ∀ j < K, StronglyMeasurable[ℱ (j + 1)] (F j))
+    (hL2 : ∀ j < K, MemLp (F j) 2 μ)
+    (hmean : ∀ j < K, μ[F j | ℱ j] =ᵐ[μ] 0)
+    (hq : ∀ j < K, ∫ ω, (F j ω) ^ 2 ∂μ ≤ q) (hx : 0 < x) :
+    μ.real {ω | ∃ k, k ≤ K ∧ x ≤ |∑ j ∈ Finset.range k, F j ω|} ≤ K * q / x ^ 2 := by
+  classical
+  set F' : ℕ → Ω' → ℝ := fun j ω => if j < K then F j ω else 0 with hF'
+  set M : ℕ → Ω' → ℝ := fun k ω => ∑ j ∈ Finset.range k, F' j ω with hM
+  have hF'm : ∀ j, StronglyMeasurable[ℱ (j + 1)] (F' j) := fun j => by
+    by_cases h : j < K
+    · simpa only [hF', h, ↓reduceIte] using hF j h
+    · simp only [hF', h, ↓reduceIte]
+      exact stronglyMeasurable_const
+  have hF'L2 : ∀ j, MemLp (F' j) 2 μ := fun j => by
+    by_cases h : j < K
+    · simpa only [hF', h, ↓reduceIte] using hL2 j h
+    · simp only [hF', h, ↓reduceIte]
+      exact MemLp.zero'
+  have hMad : StronglyAdapted ℱ M := fun k =>
+    Finset.stronglyMeasurable_fun_sum _ fun j hj =>
+      (hF'm j).mono (ℱ.mono (Nat.succ_le_of_lt (Finset.mem_range.1 hj)))
+  have hML2 : ∀ k, MemLp (M k) 2 μ := fun k =>
+    memLp_finsetSum _ fun j _ => hF'L2 j
+  have hMint : ∀ k, Integrable (M k) μ := fun k => (memLp_one_iff_integrable.1
+    ((hML2 k).mono_exponent (by norm_num)))
+  have hMsub : ∀ k, M (k + 1) - M k = F' k := fun k => by
+    funext ω
+    simp only [hM, Pi.sub_apply, Finset.sum_range_succ]
+    ring
+  have hmart : Martingale M ℱ μ := by
+    refine martingale_of_condExp_sub_eq_zero_nat hMad hMint fun k => ?_
+    rw [hMsub]
+    by_cases h : k < K
+    · have : F' k = F k := funext fun ω => by simp only [hF', h, ↓reduceIte]
+      rw [this]
+      exact hmean k h
+    · have : F' k = 0 := funext fun ω => by simp only [hF', h, ↓reduceIte, Pi.zero_apply]
+      rw [this]
+      exact (condExp_zero).eventuallyEq
+  have hM0 : M 0 = 0 := by funext ω; simp [hM]
+  have hdoob := doob_L2_max hmart hM0 hML2 K hx
+  have hset : {ω | ∃ k, k ≤ K ∧ x ≤ |∑ j ∈ Finset.range k, F j ω|} =
+      {ω | x ≤ (Finset.range (K + 1)).sup' Finset.nonempty_range_add_one fun k => |M k ω|} := by
+    ext ω
+    simp only [Set.mem_ofPred_eq, Finset.le_sup'_iff, Finset.mem_range, Nat.lt_succ_iff]
+    constructor
+    · rintro ⟨k, hk, hxk⟩
+      refine ⟨k, hk, ?_⟩
+      have : M k ω = ∑ j ∈ Finset.range k, F j ω :=
+        Finset.sum_congr rfl fun j hj => by
+          simp only [hF', lt_of_lt_of_le (Finset.mem_range.1 hj) hk, ↓reduceIte]
+      rw [this]; exact hxk
+    · rintro ⟨k, hk, hxk⟩
+      refine ⟨k, hk, ?_⟩
+      have : M k ω = ∑ j ∈ Finset.range k, F j ω :=
+        Finset.sum_congr rfl fun j hj => by
+          simp only [hF', lt_of_lt_of_le (Finset.mem_range.1 hj) hk, ↓reduceIte]
+      rw [← this]; exact hxk
+  rw [hset]
+  refine hdoob.trans ?_
+  gcongr
+  rw [martingale_sq_eq_sum hmart hM0 hML2 K]
+  calc ∑ k ∈ Finset.range K, ∫ ω, (M (k + 1) ω - M k ω) ^ 2 ∂μ
+      ≤ ∑ k ∈ Finset.range K, q := by
+        refine Finset.sum_le_sum fun k hk => ?_
+        have hk' : k < K := Finset.mem_range.1 hk
+        have : (fun ω => (M (k + 1) ω - M k ω) ^ 2) = fun ω => (F k ω) ^ 2 := by
+          funext ω
+          have := congrFun (hMsub k) ω
+          simp only [Pi.sub_apply, hF', hk', ↓reduceIte] at this
+          rw [this]
+        rw [this]
+        exact hq k hk'
+    _ = K * q := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+
+end Doob
+
+/-! ## 10. Grid arithmetic (copies of `Path/DifREP3.lean:726-757`, public with the stem for `TwistGridWTail2`) and the difference of two kernels -/
+
+section Grid
+
+theorem TwistGridWTail_gridTime_nonneg {s t : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (j : ℕ) :
+    0 ≤ gridTime s t K n j := by
+  have hΔ := ST_gridStep_nonneg s t K n hst
+  unfold gridTime
+  have : (0 : ℝ) ≤ (j : ℝ) := Nat.cast_nonneg _
+  nlinarith [mul_nonneg this hΔ]
+
+theorem TwistGridWTail_gridTime_le {s t : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hst : s n ≤ t n) (hK0 : K n ≠ 0) {j : ℕ} (hj : j ≤ K n) :
+    gridTime s t K n j ≤ t n := by
+  have hΔ := ST_gridStep_nonneg s t K n hst
+  have hj' : (j : ℝ) ≤ (K n : ℝ) := by exact_mod_cast hj
+  have h := mul_le_mul_of_nonneg_right hj' hΔ
+  have hlast := gridTime_last s t K n hK0
+  unfold gridTime at hlast ⊢
+  nlinarith
+
+theorem TwistGridWTail_gridTime_succ (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) :
+    gridTime s t K n (j + 1) = gridTime s t K n j + gridStep s t K n := by
+  unfold gridTime; push_cast; ring
+
+theorem TwistGridWTail_gridTime_mono {s t : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hst : s n ≤ t n) {i j : ℕ} (hij : i ≤ j) :
+    gridTime s t K n i ≤ gridTime s t K n j := by
+  have hΔ := ST_gridStep_nonneg s t K n hst
+  unfold gridTime
+  have : (i : ℝ) ≤ (j : ℝ) := Nat.cast_le.2 hij
+  nlinarith
+
+theorem TwistGridWTail_K_mul_step (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (hK : K n ≠ 0) :
+    (K n : ℝ) * gridStep s t K n = t n - s n := by
+  have hK' : (K n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hK
+  unfold gridStep
+  field_simp
+
+end Grid
+
+section KernelDiff
+
+open scoped Matrix.Norms.Operator in
+/-- `‖Ũ_{u,w₂} − Ũ_{u,w₁}‖ ≤ (w₂ − w₁)(1 − w₂)⁻¹ (1 − u)/(1 − w₁)` for `0 ≤ u ≤ w₁ ≤ w₂ < 1`: `Ũ_{u,w₂} − Ũ_{u,w₁} = (Ũ_{w₁,w₂} − 1) Ũ_{u,w₁}`
+(`BAuKer_comp`, `norm_twU_sub_one_le`, `EKPins_norm_uKer_le`). -/
+theorem TwistGridWTail_norm_twU_sub_le {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) {κ : ℝ}
+    (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) (σ : Fin 2 → Bool) {u w₁ w₂ : ℝ} (hu : 0 ≤ u) (huw : u ≤ w₁)
+    (hw : w₁ ≤ w₂) (hw2 : w₂ < 1) :
+    ‖twU sz lam0 E n σ u w₂ - twU sz lam0 E n σ u w₁‖ ≤ (w₂ - w₁) * (1 - w₂)⁻¹ * ((1 - u) / (1 - w₁)) := by
+  have hw10 : 0 ≤ w₁ := hu.trans huw
+  have hw1 : w₁ < 1 := hw.trans_lt hw2
+  have hcomp : twU sz lam0 E n σ w₁ w₂ * twU sz lam0 E n σ u w₁ = twU sz lam0 E n σ u w₂ :=
+    BAuKer_comp hr hw10 hw1 (hw10.trans hw) hw2 (σ 0) (σ 1)
+  have e : twU sz lam0 E n σ u w₂ - twU sz lam0 E n σ u w₁ = (twU sz lam0 E n σ w₁ w₂ - 1) * twU sz lam0 E n σ u w₁ := by
+    rw [sub_mul, hcomp, one_mul]
+  rw [e]
+  refine (norm_mul_le _ _).trans (mul_le_mul ?_ (EKPins_norm_uKer_le hr hu huw hw1 (σ 0) (σ 1)) (norm_nonneg _) (by positivity))
+  have h := TwistGridWTail_norm_twU_sub_one_le sz lam0 E n hr σ w₁ (hw10.trans hw) hw2
+  rwa [abs_of_nonneg (by linarith)] at h
+
+end KernelDiff
+
+/-! ## 11. The weighted `Y` tail (twin of `difRep3_Y_tail`, `Path/DifREP3.lean:959`) -/
+
+section YTail
+
+open scoped Matrix.Norms.L2Operator
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
+
+/-- The second-order increment `y_j = Σ_b κ_{j,b} ξ_{j+1}(b) − ζ_j`, with `ζ_j = stepZCN` of the family at the kernel `(·, a) ↦ κ_{j,a}`. -/
+def TwistGridWTail_yinc (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (κ : ℕ → Zd d (sz.L n) → ℂ) (j : ℕ)
+    (ω : PathΩ (sz.withLam 0)) : ℂ :=
+  (∑ b, κ j b * twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b) -
+    stepZCN (sz.withLam 0) s t K n j (TwistGridWTail_fam sz lam0 E s t K n σ c₁ c₂ j) (fun _ a => κ j a) 0 ω
+
+/-- **The `Y` part of the tail, weighted**: for deterministic `j`-dependent weights `κ_j` with `Σ_b |κ_j(b)| ≤ S`, `η ≤ η_u` for `u ≤ t`, and
+`P ≥ 768 (S · 6 η⁻⁴)² N⁸`, `μ (∃ k ≤ K, x ≤ |Σ_{j<k} y_j|) ≤ 4 K Δ² P / x²` (`TwistGridWTail_Y_fields` at every step, Doob for `Re` and `Im`). -/
+theorem TwistGridWTail_Y_tail (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) {η : ℝ} (hη0 : 0 < η)
+    (hη : ∀ u : ℝ, u ≤ t n → η ≤ etaOf (BAmF sz lam0 E n) u) (κ : ℕ → Zd d (sz.L n) → ℂ) {S : ℝ} (hS0 : 0 ≤ S)
+    (hrow : ∀ j, ∑ b, ‖κ j b‖ ≤ S) {P : ℝ} (hP : 768 * (S * (6 * η⁻¹ ^ 4)) ^ 2 * ((sz.size n : ℕ) : ℝ) ^ 8 ≤ P) {x : ℝ} (hx : 0 < x) :
+    (pathP (sz.withLam 0)).real {ω | ∃ k, k ≤ K n ∧
+        x ≤ ‖∑ j ∈ Finset.range k, TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω‖} ≤
+      4 * ((K n : ℝ) * (gridStep s t K n ^ 2 * P)) / x ^ 2 := by
+  set szz : Sizes d := sz.withLam 0 with hszz
+  have hΔ := ST_gridStep_nonneg s t K n hst
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hN
+  have hfields : ∀ j < K n,
+      Measurable[filt szz (j + 1)] (fun ω => TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω) ∧
+      (pathP szz)[fun ω => (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re | filt szz j] =ᵐ[pathP szz] 0 ∧
+      (pathP szz)[fun ω => (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im | filt szz j] =ᵐ[pathP szz] 0 ∧
+      MemLp (fun ω => (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re) 2 (pathP szz) ∧
+      MemLp (fun ω => (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im) 2 (pathP szz) ∧
+      ∫ ω, (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re ^ 2 ∂(pathP szz) ≤ gridStep s t K n ^ 2 * P ∧
+      ∫ ω, (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im ^ 2 ∂(pathP szz) ≤ gridStep s t K n ^ 2 * P := by
+    intro j hj
+    have hj' : j + 1 ≤ K n := hj
+    have hK : K n ≠ 0 := by omega
+    have hu : gridTime s t K n (j + 1) ≤ t n := TwistGridWTail_gridTime_le hst hK hj'
+    have hηj := hη _ hu
+    have hΦ : ∀ b, HermTestFun szz n (TwistGridWTail_fam sz lam0 E s t K n σ c₁ c₂ j b) := fun b =>
+      TwistGridWTail_hermTestFun sz lam0 E n _ σ c₁ c₂ b hη0 hηj
+    have hC₂ : ∀ b (M y : Matrix (Idx d (szz.L n) (szz.W n)) (Idx d (szz.L n) (szz.W n)) ℂ), M.IsHermitian → y.IsHermitian →
+        ‖fderiv ℝ (fderiv ℝ (TwistGridWTail_fam sz lam0 E s t K n σ c₁ c₂ j b)) M y y‖ ≤ (6 * η⁻¹ ^ 4) * ‖y‖ ^ 2 :=
+      fun b M y hM hy => TwistGridWTail_Phi_second sz lam0 E n _ σ c₁ c₂ b hη0 hηj hM hy
+    obtain ⟨hξae, hξm⟩ := TwistGridWTail_xi_ae sz lam0 E s t K n σ c₁ c₂ j hη0 hηj (κ j)
+    obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := TwistGridWTail_Y_fields (sz := szz) s t K n j hΦ hC₂ hΔ (κ j) 0
+      (fun ω => ∑ b, κ j b * twMartInc sz lam0 E s t K n σ c₁ c₂ j ω b) hξae hξm
+    have hq : 4 * ((∑ a, ‖κ j a‖) * (6 * η⁻¹ ^ 4 / 2)) ^ 2 * gridStep s t K n ^ 2 * (768 * N ^ 8) ≤ gridStep s t K n ^ 2 * P := by
+      have hA : ∑ a, ‖κ j a‖ ≤ S := hrow j
+      have hA0 : 0 ≤ ∑ a, ‖κ j a‖ := Finset.sum_nonneg fun _ _ => norm_nonneg _
+      have hC0 : 0 ≤ 6 * η⁻¹ ^ 4 := by positivity
+      have h0 : (∑ a, ‖κ j a‖) * (6 * η⁻¹ ^ 4) ≤ S * (6 * η⁻¹ ^ 4) := mul_le_mul_of_nonneg_right hA hC0
+      have h00 : 0 ≤ (∑ a, ‖κ j a‖) * (6 * η⁻¹ ^ 4) := mul_nonneg hA0 hC0
+      have h1' : ((∑ a, ‖κ j a‖) * (6 * η⁻¹ ^ 4)) ^ 2 ≤ (S * (6 * η⁻¹ ^ 4)) ^ 2 := pow_le_pow_left₀ h00 h0 2
+      calc 4 * ((∑ a, ‖κ j a‖) * (6 * η⁻¹ ^ 4 / 2)) ^ 2 * gridStep s t K n ^ 2 * (768 * N ^ 8)
+          = gridStep s t K n ^ 2 * (768 * ((∑ a, ‖κ j a‖) * (6 * η⁻¹ ^ 4)) ^ 2 * N ^ 8) := by ring
+        _ ≤ gridStep s t K n ^ 2 * (768 * (S * (6 * η⁻¹ ^ 4)) ^ 2 * N ^ 8) := by gcongr
+        _ ≤ gridStep s t K n ^ 2 * P := by gcongr
+    exact ⟨h1, h2, h3, h4, h5, h6.trans hq, h7.trans hq⟩
+  have hxs : 0 < x / Real.sqrt 2 := div_pos hx (Real.sqrt_pos.2 (by norm_num))
+  have hRe := TwistGridWTail_doob_tail (pathP szz) (filt szz) (fun j ω => (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re)
+    (K n) (gridStep s t K n ^ 2 * P) (x / Real.sqrt 2)
+    (fun j hj => (Complex.measurable_re.comp (hfields j hj).1).stronglyMeasurable)
+    (fun j hj => (hfields j hj).2.2.2.1) (fun j hj => (hfields j hj).2.1) (fun j hj => (hfields j hj).2.2.2.2.2.1) hxs
+  have hIm := TwistGridWTail_doob_tail (pathP szz) (filt szz) (fun j ω => (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im)
+    (K n) (gridStep s t K n ^ 2 * P) (x / Real.sqrt 2)
+    (fun j hj => (Complex.measurable_im.comp (hfields j hj).1).stronglyMeasurable)
+    (fun j hj => (hfields j hj).2.2.2.2.1) (fun j hj => (hfields j hj).2.2.1) (fun j hj => (hfields j hj).2.2.2.2.2.2) hxs
+  have hsub : {ω | ∃ k, k ≤ K n ∧ x ≤ ‖∑ j ∈ Finset.range k, TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω‖} ⊆
+      {ω | ∃ k, k ≤ K n ∧ x / Real.sqrt 2 ≤ |∑ j ∈ Finset.range k, (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re|} ∪
+      {ω | ∃ k, k ≤ K n ∧ x / Real.sqrt 2 ≤ |∑ j ∈ Finset.range k, (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im|} := by
+    intro ω hω
+    obtain ⟨k, hk, hxk⟩ := hω
+    have h1 := Complex.norm_le_sqrt_two_mul_max (∑ j ∈ Finset.range k, TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω)
+    have hs2 : (0 : ℝ) < Real.sqrt 2 := Real.sqrt_pos.2 (by norm_num)
+    have h2 : x / Real.sqrt 2 ≤ max |(∑ j ∈ Finset.range k, TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re|
+        |(∑ j ∈ Finset.range k, TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im| := by
+      rw [div_le_iff₀ hs2]
+      linarith
+    rw [Complex.re_sum, Complex.im_sum] at h2
+    rcases le_max_iff.1 h2 with h | h
+    · exact Or.inl ⟨k, hk, h⟩
+    · exact Or.inr ⟨k, hk, h⟩
+  calc (pathP szz).real {ω | ∃ k, k ≤ K n ∧ x ≤ ‖∑ j ∈ Finset.range k, TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω‖}
+      ≤ (pathP szz).real ({ω | ∃ k, k ≤ K n ∧ x / Real.sqrt 2 ≤ |∑ j ∈ Finset.range k, (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).re|} ∪
+        {ω | ∃ k, k ≤ K n ∧ x / Real.sqrt 2 ≤ |∑ j ∈ Finset.range k, (TwistGridWTail_yinc sz lam0 E s t K n σ c₁ c₂ κ j ω).im|}) :=
+        measureReal_mono hsub
+    _ ≤ _ := measureReal_union_le _ _
+    _ ≤ (K n : ℝ) * (gridStep s t K n ^ 2 * P) / (x / Real.sqrt 2) ^ 2 + (K n : ℝ) * (gridStep s t K n ^ 2 * P) / (x / Real.sqrt 2) ^ 2 :=
+        add_le_add hRe hIm
+    _ = 4 * ((K n : ℝ) * (gridStep s t K n ^ 2 * P)) / x ^ 2 := by
+        rw [div_pow, Real.sq_sqrt (by norm_num)]
+        field_simp
+        ring
+
+end YTail
+
 end RBM.BA
