@@ -280,6 +280,26 @@ theorem BAExp14b_loop1 (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (σ : 
   refine Finset.sum_congr rfl fun x _ => ?_
   by_cases h : (split d L W x).1 = c <;> simp [h, mul_comm]
 
+private theorem BAExp14b_trace_prod2 {ι : Type*} [Fintype ι] [DecidableEq ι] (P : Fin 2 → Matrix ι ι ℂ) :
+    Matrix.trace (List.ofFn P).prod = ∑ x, ∑ y, P 0 x y * P 1 y x := by
+  simp [List.ofFn_succ, Matrix.trace, Matrix.mul_apply]
+
+/-- **`𝓛^{(2)}` as a double fine sum**: `tr(G(σ₁)E_a G(σ₂)E_b) = W^{-2d} Σ_{x ∈ [b]} Σ_{y ∈ [a]} G(σ₁)_{xy} G(σ₂)_{yx}`. -/
+theorem BAExp14b_loop2 (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ) (σ₁ σ₂ : Bool) (a b : Zd d L) :
+    loopFine d L W H z ![σ₁, σ₂] ![a, b] =
+      (((W : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d L W b, ∑ y ∈ Iblk d L W a, Gres H z σ₁ x y * Gres H z σ₂ y x := by
+  rw [BAExp14b_loop_eq, BAExp14b_trace_prod2]
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.mul_diagonal, BAExp14b_dw]
+  rw [Finset.mul_sum]
+  simp only [Iblk, Finset.sum_filter]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  by_cases hx : (split d L W x).1 = b
+  · simp only [hx, ite_true]
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun y _ => ?_
+    by_cases hy : (split d L W y).1 = a <;> simp [hy, hx] <;> ring
+  · simp [hx]
+
 /-- `\overline{G(σ)_{ab}} = G(!σ)_{ba}` for Hermitian `H`. -/
 theorem BAExp14b_star_Gres {H : Matrix (Idx d L W) (Idx d L W) ℂ} (hH : H.IsHermitian) (z : ℂ) (σ : Bool) (a b : Idx d L W) :
     star (Gres H z σ a b) = Gres H z (!σ) b a := by
