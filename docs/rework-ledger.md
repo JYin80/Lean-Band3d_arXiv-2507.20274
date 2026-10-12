@@ -27,3 +27,6 @@
 | T2457 | 2026-10-12 18:55 UTC (6e7d2602) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 否 | U U3s1：设计门 → 1a-audit RETURN（D3 (b)）→ H249 签字 → 第二轮 RETURN（比较假设）→ H252 签字 → 1b 按旧文本被停 → R1 重跑（H254）→ 审核 PASS；新 `Chain/Step34Gen` 1,255 + 叶 `Step34GenTw` 99 行；两条登记行 |
 | T2466 | 2026-10-12 19:00 UTC (03109267) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4c2：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14d` 620 + `BAExp14dB` 908 行 |
 | T2464 | 2026-10-12 19:32 UTC (9e1d5f15) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4c1：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14c` 919 + `BAExp14cB` 1,153 行 |
+| T2460 | 2026-10-12 19:33 UTC (ad52b370) | prover-hard | Sonnet 5.5 effort xhigh | 否 | T 生产者 P1：1a 预检 FAIL（H3 等式不成立）→ Amend 1（H3′ 不等式，目标 4 离开）→ 1b → 审核 PASS；新 `BA/GridMartBA` 747 行 |
+| T2468 | 2026-10-12 19:36 UTC (e9d820fc) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-G G7：1a → 1b → 审核 PASS 第一轮；新 `BA/Step1Prime` 1,181 行；`BAGbEXPij` 移入 supersededProps；stage G 关闭 |
+| T2465 | 2026-10-12 20:21 UTC (c986735f) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4g：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14e` 433 行；S3 链闭合 |
