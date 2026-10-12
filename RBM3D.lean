@@ -519,6 +519,7 @@ import RBM3D.Graph.BALocReg1
 import RBM3D.Graph.BALocReg1B
 import RBM3D.BA.NetLiftBA
 import RBM3D.Chain.ZeroModeGen
+import RBM3D.Chain.Step5CasesGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
