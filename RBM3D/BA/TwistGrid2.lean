@@ -22,8 +22,8 @@ pathH`), with the matrix-level objects of `RBM3D/BA/TwistGrid.lean` evaluated at
 * **4 (a)** `BATwistDuhamel`, `BATwistDuhamel_holds` (twin of `StoppedDuhamelN`,
   `Induction/GridDuhamelN.lean:293`): pathwise, `A_{j∧τ} = Ũ_{u₀,u_{j∧τ}} A₀ + Σ_{i<j∧τ}
   Ũ_{u_{i+1},u_{j∧τ}} (P_i + ξ_{i+1})`, from the semigroup law `BAuKer_self`, `BAuKer_comp` and
-  the abstract telescope `duhamel_telescope` (`Path/Kernel.lean`); `twAk_step`, `twAk_duhamel`
-  are the one-index forms.
+  the abstract telescope `duhamel_telescope` (`Path/Kernel.lean`); `TwistGrid2_twAk_step` and
+  `TwistGrid2_twAk_duhamel` are the one-size-index forms.
 
 * **Clause (i) of 4 (b)** `baTwistGrid_decomp` (pathwise, every `ω`), `baTwistGrid_decomp_ae`
   (the shape of the first conjunct of `BATwistGridRem`): `A_k = A_0 + Δ Σ_{j<k} Drift_j + Rem_k
@@ -86,16 +86,16 @@ section Duhamel
 variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
 
 /-- The one-step identity `A_{j+1} - Ũ_{u_j,u_{j+1}} A_j = P_j + ξ_{j+1}` (the conditional expectation cancels). -/
-theorem twAk_step (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz) :
+theorem TwistGrid2_twAk_step (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz) :
     twAk sz lam0 E s t K n σ c₁ c₂ (j + 1) ω - twU sz lam0 E n σ (gridTime s t K n j) (gridTime s t K n (j + 1)) *ᵥ twAk sz lam0 E s t K n σ c₁ c₂ j ω =
       twPredInc sz lam0 E s t K n σ c₁ c₂ j ω + twMartInc sz lam0 E s t K n σ c₁ c₂ j ω := by
   funext a
   simp only [Pi.sub_apply, Pi.add_apply, twPredInc, twMartInc]
   ring
 
-/-- **The stopped grid Duhamel identity, at one size index** (twin of `stoppedDuhamelN_at`, `Induction/GridDuhamelN.lean:293`), pathwise:
+/-- **The stopped grid Duhamel identity, at one size index** (twin of `stoppedDuhamelN_at`, `Induction/GridDuhamelN.lean:310`), pathwise:
 `A_m = Ũ_{u₀,u_m} A₀ + Σ_{i<m} Ũ_{u_{i+1},u_m} (P_i + ξ_{i+1})` for `m ≤ K n`, from the semigroup law of `BAuKer`. -/
-theorem twAk_duhamel {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n))
+theorem TwistGrid2_twAk_duhamel {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n))
     (hu0 : ∀ k, k ≤ K n → 0 ≤ gridTime s t K n k) (hu1 : ∀ k, k ≤ K n → gridTime s t K n k < 1)
     (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) {m : ℕ} (hm : m ≤ K n) (ω : PathΩ sz) :
     twAk sz lam0 E s t K n σ c₁ c₂ m ω =
@@ -125,7 +125,7 @@ theorem twAk_duhamel {κ : ℝ} (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF 
   refine eq_add_of_sub_eq' (htel.trans (Finset.sum_congr rfl fun j hj => ?_))
   have hj1 : j + 1 ≤ m := Finset.mem_range.mp hj
   simp only [min_eq_left hj1, min_eq_left (Nat.le_of_succ_le hj1)]
-  rw [twAk_step]
+  rw [TwistGrid2_twAk_step]
 
 end Duhamel
 
@@ -161,7 +161,7 @@ theorem BATwistDuhamel_holds (d : ℕ) : BATwistDuhamel d := by
     have h := hmono hk
     rw [gridTime_last s t K n (hK n)] at h
     linarith [htT n]
-  exact twAk_duhamel sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n hr hu0 hu1 σ c₁ c₂ hjτ ω
+  exact TwistGrid2_twAk_duhamel sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n hr hu0 hu1 σ c₁ c₂ hjτ ω
 
 /-- **Clause (i) of 4 (b)**, pathwise: with the canonical `Mart_k = Σ_{j<k} ξ_{j+1}` and
 `Rem_k = Σ_{j<k} (𝔼[A_{j+1}|F_j] - A_j - Δ Drift_j)`, `A_k = A_0 + Δ Σ_{j<k} Drift_j + Rem_k + Mart_k` (the conditional expectation

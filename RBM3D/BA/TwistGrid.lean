@@ -37,7 +37,7 @@ decomposition) is `RBM3D/BA/TwistGrid2.lean`.
 * **Target 2, T.8** `BATwistGen`, `BATwistGen_holds` (D.1): for Hermitian `H`, `0 < Im m`, `u <
   1`, the generator of the coupling-0 walk applied to `L̃` is `W^d Σ_b L̃(b) 𝓛^{(2)}_{σ,(a,b)} +
   Ẽ^{G̊}`.  The route is the direct `n = 2` Itô computation (the twist vertex `P_{c₁c₂}` is
-  never cut), the twisted twin of `DriftAlgebra_loopGen_core` (`Path/DriftAlgebra.lean:396`) at
+  never cut), the twisted twin of `DriftAlgebra_loopGen_core` (`Path/DriftAlgebra.lean:429`) at
   the block-product index: the line Hessian of `Tr(G₁ E_a G₂ P)` (`TwistGrid_second`), the
   coordinate contraction `sum_allCoords_trace_blocks` at `S^{(B)}(0) = I` (`EMn2BA_SB_zero`),
   the spectral derivative `∂_u G(z_u) = -m(σ) G²`, and `Σ_p E_p = W^{-d}`.
@@ -217,7 +217,11 @@ theorem twU_eq_uKer (σ : Fin 2 → Bool) (v w : ℝ) :
 
 end Kern
 
-/-! conversions at the block-product index -/
+/-! ## 4. The twisted loops as traces at the block-product index (private helpers)
+
+`P_{c₁c₂} = W^{-d} Σ_o |(c₁,o)⟩⟨(c₂,o)|` on `Vtx d L W` and the reindexing of the block sums `twBlk` over `Idx` to sums over `Vtx`
+(`splitEquiv`): `twLoopX` and `twL3M` are `Tr(X₁ E_a X₂ P)`, `Tr(X₀ E_{a₁} X₁ E_{a₂} X₂ P)` for the resolvent `Gres (blockMat H)`. -/
+
 section Conv
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
@@ -414,7 +418,7 @@ private theorem TwistGrid_twL3_eq (X₀ X₁ X₂ : Matrix (Vtx d (sz.L n) (sz.W
 
 end Conv2
 
-/-! ## derivatives of the twisted word -/
+/-! ## 5. Derivatives of the twisted word `Tr(G₁ E G₂ P)` (the line Hessian and the spectral derivative) -/
 section Word
 
 open scoped Matrix.Norms.L2Operator
@@ -524,7 +528,7 @@ private theorem TwistGrid_hasDerivAt_Gsig_spec {H : Matrix ι ι ℂ}
 
 end Word
 
-/-! ## the matrix-level core of T.8 (the twisted twin of `DriftAlgebra_loopGen_core`, `Path/DriftAlgebra.lean:396`) -/
+/-! ## 6. The matrix-level core of T.8 (the twisted twin of `DriftAlgebra_loopGen_core`, `Path/DriftAlgebra.lean:429`) -/
 section Core
 
 open scoped Matrix.Norms.L2Operator
@@ -764,6 +768,9 @@ private theorem TwistGrid_LM_two (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n))
   simp [baStep2Mat, loopFine, loopM, List.ofFn_succ, Matrix.mul_assoc]
 
 end Glue
+
+/-! ## 7. Target 2, T.8 (D.1) -/
+
 /-- **Target 2, T.8 (D.1)** (twin of `loopGenNOf`, `Induction/LoopGenN.lean:567`): the generator of the coupling-0 walk applied to `L̃` is `W^d Σ_b L̃(b) 𝓛^{(2)}_{σ,(a,b)} + Ẽ^{G̊}`. -/
 def BATwistGen (d : ℕ) : Prop :=
   ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ), 0 < (BAmF sz lam0 E n).im → ∀ u : ℝ, u < 1 →
@@ -790,7 +797,7 @@ theorem BATwistGen_holds (d : ℕ) : BATwistGen d := by
   · unfold twEGM
     simp only [TwistGrid_twL2M_trace sz lam0 E n u hH, TwistGrid_LM_two, TwistGrid_LM_one, TwistGrid_twL3M_trace sz lam0 E n u hH, PropSpin]
     simp
-/-! ## T.9 (D.4) -/
+/-! ## 8. Target 3, T.9 (D.4) -/
 
 section Hier
 
@@ -886,7 +893,7 @@ theorem BATwistHier_holds (d : ℕ) : BATwistHier d := by
   simp only [hK2, Matrix.mulVec, dotProduct]
   linear_combination hsum
 
-/-! ## 4. Compiled nonempty instances (`d = 3`, `sz0`: `L = 4`, `W = 32`, `lam = 1/64`, `n = 0`, flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`;
+/-! ## 9. Compiled nonempty instances (`d = 3`, `sz0`: `L = 4`, `W = 32`, `lam = 1/64`, `n = 0`, flow `flow_sz0` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`;
 `σ = (false, true)`, `c₁ = 0`, `c₂ = (1,0,0)`).  Every deterministic hypothesis is discharged: `0 < Im m` (`BAmF_sz0_im_pos`), `u = 1/2 < 1`, `H` the Hermitian
 flow matrix `seqHflowBA` of an arbitrary sample, `BAReal` (`BAflow_real`), `0 < g₀` (`gI_pos`). -/
 
@@ -898,6 +905,17 @@ example (ω : sz0.SeqΩ) :
     twL2' (baFM sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0] =
       twL2M sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) 0 (1 / 2) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0] :=
   twL2M_eq sz0 _ _ 0 (1 / 2) ω _ _ _ _
+
+local notation "lam₀" => BAflowLam0 sz0 zSeq
+local notation "E₀" => BAflowEs sz0 zSeq
+
+-- Target 1: the other six bridges at the instance (`u = 1/2`, `H = seqHflowBA`, all `rfl`).
+example (ω : sz0.SeqΩ) := twL3M_eq sz0 lam₀ E₀ 0 (1 / 2) ω 0 0 0 ![1, 0, 0] ![false, true, true]
+example (ω : sz0.SeqΩ) := twEGM_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0]
+example (ω : sz0.SeqΩ) := twB1M_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0]
+example (ω : sz0.SeqΩ) := twB2M_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0]
+example (ω : sz0.SeqΩ) := twDerM_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 ![1, 0, 0] 0 0
+example (ω : sz0.SeqΩ) := twEEM_eq sz0 lam₀ E₀ 0 (1 / 2) ω ![false, true] 0 0 0 ![1, 0, 0]
 
 /-- Target 2 (T.8) at the instance: the generator of the coupling-0 walk applied to `L̃` at the flow matrix. -/
 example (ω : sz0.SeqΩ) :
@@ -917,7 +935,14 @@ example (ω : sz0.SeqΩ) :
     (BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 0) (1 / 2) (by norm_num) (by norm_num) _
     (EMn2BA_seqHflowBA_herm sz0 (BAflowLam0 sz0 zSeq) 0 (1 / 2) ω) ![false, true] 0 0 ![1, 0, 0]
 
-/-- `BAuKerSemigroup` at the flow datum (`hrI`), `v = 1/4`, `w = 1/2`, `u = 2/3`: `Ũ_{1/4,1/4} = 1` and `Ũ_{1/4,1/2} Ũ_{2/3,1/4} = Ũ_{2/3,1/2}`. -/
+/-- `BAuKer_self`, `BAuKer_comp` at the flow datum (`hrI`), `v = 1/4`, `w = 1/2`, `u = 2/3`. -/
+example : BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 4) false true = 1 :=
+  BAuKer_self hrI (by norm_num) (by norm_num) false true
+example : BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 2) false true * BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 4) false true =
+    BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 2) false true :=
+  BAuKer_comp hrI (by norm_num) (by norm_num) (by norm_num) (by norm_num) false true
+
+/-- `BAuKerSemigroup` at the same datum. -/
 example : BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 4) false true = 1 ∧
     BAuKer 3 (sz0.L 0) gI EI mI (1 / 4) (1 / 2) false true * BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 4) false true =
       BAuKer 3 (sz0.L 0) gI EI mI (2 / 3) (1 / 2) false true :=
