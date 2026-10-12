@@ -190,7 +190,7 @@ theorem BALvl1B_mol_eq_of_mem (G : BAGraph E I) {v w : E ⊕ I} (h : w ∈ G.mol
   · intro hx; exact h.trans hx
   · intro hx; exact (hsymm h).trans hx
 
-/-- more `M`-, `Ψ`-, `=`-dotted and waved edges: the atoms and the molecules coarsen -/
+/-- the same waved, `=`-dotted and `Ψ`-dotted edges and more `M`-dotted edges: the atom edges and the molecule edges of `G₁` are those of `G₂` (the atoms and the molecules coarsen) -/
 theorem BALvl1B_adj_mono (G₁ G₂ : BAGraph E I) (hw : G₁.waved = G₂.waved) (hd : G₁.dotted = G₂.dotted) (hp : G₁.psi = G₂.psi)
     (hm : ∀ e ∈ G₁.mdot, e ∈ G₂.mdot) :
     (∀ u v, G₁.atomAdj u v = true → G₂.atomAdj u v = true) ∧ (∀ u v, G₁.adj u v = true → G₂.adj u v = true) := by
