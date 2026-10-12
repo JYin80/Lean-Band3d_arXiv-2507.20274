@@ -5,6 +5,7 @@ Authors: Jun Yin
 -/
 import RBM3D.Universality.Step1Good
 import RBM3D.Universality.Step1Cond
+import RBM3D.Universality.PinsC2
 
 /-!
 # `RBM3D.Universality.Step1Band` (UN-13): Step 1 of `(1infyuniv)` against the GUE at energy `0`
@@ -26,6 +27,13 @@ sequence `ρ n`, whose range `[c/π, C/π]` comes from `UNDens`; `|E| ≤ 2 - κ
 `UNL32`; `GUELocal` by `UNGUELocal`; `locSC` by `UNTrLocal`, `UNNormBound`; `τU ≤ 𝔠` by
 `τU ≤ 𝔠 𝔡`.  `d` enters only through `τU ≤ 𝔠 𝔡` (via `step1Good'`) and the carrier `Idx d L W`;
 the `UNL32` premises and the GUE count involve `N`, `τ` only.
+
+Ticket T2477 (E3): the C-forms `step1Band_integral_ouPC`, `step1BandC''`, `step1Band_rowC''`
+for every centred model `M : UNModelC sz`.  The private `Step1Band_F`, `Step1Band_good`,
+`Step1Band_core`, `Step1Band_uniform` are generalised in place over a diagonal family
+`vf n ω` (band `vOU`, centred `vOUC`), the body of `step1Band` is the private
+`Step1Band_assemble`; the good event of the C-form is the merged `step1GoodC''`
+(`PinsC2.lean:1469`).
 
 Sections: 0 size facts; 1 elementary bounds on `ζ = 1 - e^{-T}`; 2 generic facts on `kPoint`
 (target 1a); 3 measurability, counting; 4 the energy shift (target 1b); 5 the diagonal argument
@@ -652,64 +660,225 @@ theorem step1Band_integral_ouP :
     (fun i => Real.exp (-(ouTStar sz τU n) / 2) * (M.herm n ω₁).eigenvalues i)
     (1 - Real.exp (-(ouTStar sz τU n))) E k O).symm
 
-/-- The conditional functional of the first block (the integrand of target 2), for a test function `O`. -/
-private def Step1Band_F {d : ℕ} (sz : Sizes d) (M : UNModel sz) (τs E₀ : ℝ) (n k : ℕ)
+/-! #### Target 3 (T2477): the conditioning of the centred flow -/
+
+/-- The eigenvalues of Hermitian matrices that are equal are equal (the Hermitian proofs differ; copy of the
+private `unPinsK_eigenvalues_congr`, `PinsK.lean:163`). -/
+private theorem Step1Band_eigenvalues_congr {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {A B : Matrix ι ι ℂ} (h : A = B) (hA : A.IsHermitian) (hB : B.IsHermitian) :
+    hA.eigenvalues = hB.eigenvalues := by
+  subst h; rfl
+
+/-- **The eigenvalues of a positive multiple**: `λ(c • A) = c • λ(A)` for `c > 0`, with the decreasing labelling of
+`Matrix.IsHermitian.eigenvalues`.  The characteristic polynomial of `c • A` is `∏ (X - c λ_i)` (spectral theorem,
+`charpoly_mul_comm`); the sorted root list of `c • A` is the sorted list of `c λ₀`, which is `c λ₀` since this is
+antitone (`List.mergeSort_of_pairwise`, as in `sort_roots_charpoly_eq_eigenvalues₀`). -/
+private theorem Step1Band_eigenvalues_smul {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {A : Matrix ι ι ℂ} (hA : A.IsHermitian) {c : ℝ} (hc : 0 < c) (hB : (c • A).IsHermitian) :
+    hB.eigenvalues = fun i => c * hA.eigenvalues i := by
+  classical
+  set hX := hA with hX_def
+  set V : Matrix ι ι ℂ := (hX.eigenvectorUnitary : Matrix ι ι ℂ) with hV_def
+  have hV : V ∈ Matrix.unitaryGroup ι ℂ := hX.eigenvectorUnitary.2
+  have h1 : V * Vᴴ = 1 := Matrix.mem_unitaryGroup_iff.mp hV
+  have h2 : Vᴴ * V = 1 := Matrix.mem_unitaryGroup_iff'.mp hV
+  set D : Matrix ι ι ℂ := Matrix.diagonal (fun i => (hX.eigenvalues i : ℂ)) with hD_def
+  have hAeq : A = V * D * Vᴴ := by
+    have hspec := hX.spectral_theorem
+    rw [Unitary.conjStarAlgAut_apply, Matrix.star_eq_conjTranspose] at hspec
+    have hDeq : Matrix.diagonal (RCLike.ofReal ∘ hX.eigenvalues) = D := by congr 1
+    rw [hDeq] at hspec
+    exact hspec
+  have hVAV : Vᴴ * A * V = D := by
+    rw [hAeq, show Vᴴ * (V * D * Vᴴ) * V = (Vᴴ * V) * D * (Vᴴ * V) by
+      simp only [Matrix.mul_assoc], h2, Matrix.one_mul, Matrix.mul_one]
+  have hconj : Vᴴ * (c • A) * V = Matrix.diagonal (fun i => ((c * hX.eigenvalues i : ℝ) : ℂ)) := by
+    rw [Matrix.mul_smul, Matrix.smul_mul, hVAV, hD_def]
+    ext i j
+    by_cases hij : i = j
+    · subst hij; simp
+    · simp [hij]
+  have hchar : (c • A).charpoly =
+      ∏ i, (Polynomial.X - Polynomial.C ((c * hX.eigenvalues i : ℝ) : ℂ)) := by
+    rw [← Matrix.charpoly_diagonal, ← hconj, Matrix.charpoly_mul_comm, ← Matrix.mul_assoc, h1,
+      Matrix.one_mul]
+  have hroots : (c • A).charpoly.roots =
+      Multiset.map (RCLike.ofReal ∘ (fun i => c * hX.eigenvalues i)) Finset.univ.val := by
+    rw [hchar, Polynomial.roots_prod _ _
+      (Finset.prod_ne_zero_iff.2 fun i _ => Polynomial.X_sub_C_ne_zero _)]
+    simp only [Polynomial.roots_X_sub_C, Multiset.bind_singleton]
+    rfl
+  have hroots₀ : (c • A).charpoly.roots =
+      Multiset.map (RCLike.ofReal ∘ (fun j => c * hX.eigenvalues₀ j)) Finset.univ.val := by
+    rw [hroots]
+    set e : Fin (Fintype.card ι) ≃ ι := Fintype.equivOfCardEq (Fintype.card_fin (Fintype.card ι)) with he
+    have hcomp : (RCLike.ofReal ∘ (fun i => c * hX.eigenvalues i) : ι → ℂ) =
+        (RCLike.ofReal ∘ (fun j => c * hX.eigenvalues₀ j)) ∘ e.symm := by
+      funext i; rfl
+    rw [hcomp, ← Multiset.map_map, Multiset.map_univ_val_equiv]
+  have hanti : Antitone (fun j => c * hX.eigenvalues₀ j) := fun a b hab =>
+    mul_le_mul_of_nonneg_left (hX.eigenvalues₀_antitone hab) hc.le
+  have hsort := hB.sort_roots_charpoly_eq_eigenvalues₀
+  rw [hroots₀] at hsort
+  simp_rw [Fin.univ_val_map, Multiset.map_coe, List.map_ofFn, Function.comp_def, RCLike.ofReal_re,
+    Multiset.coe_sort] at hsort
+  have hlist : List.ofFn hB.eigenvalues₀ = List.ofFn (fun j => c * hX.eigenvalues₀ j) := by
+    rw [← hsort]
+    apply List.mergeSort_of_pairwise
+    simp_rw [decide_eq_true_eq, ← List.sortedGE_iff_pairwise]
+    exact hanti.sortedGE_ofFn
+  have h0 := List.ofFn_injective hlist
+  funext i
+  simp only [Matrix.IsHermitian.eigenvalues, h0]
+
+/-- The auxiliary model of target 3: the law of `M`, the matrix `e^{t*_n/2} · ouInit M n t*_n` (with `t*_n =
+ouTStar sz τU n`).  Its OU matrix at the time `t*_n` is the centred flow `ouMatC M n t*_n`
+(`e^{-t*/2} e^{t*/2} = 1`), so the merged conditioning `integral_kPoint_ouMat_cond` applies to it. -/
+private def Step1Band_condModel {d : ℕ} {sz : Sizes d} (M : UNModelC sz) (τU : ℝ) : UNModel sz where
+  μ := M.μ
+  prob := M.prob
+  H := fun n ω => Real.exp (ouTStar sz τU n / 2) • ouInit M n (ouTStar sz τU n) ω
+  herm := fun n ω => (ouInit_isHermitian M n (ouTStar sz τU n) ω).smul (IsSelfAdjoint.all _)
+  meas := fun n i j => by
+    have h := M.meas n i j
+    have e : (fun ω => (Real.exp (ouTStar sz τU n / 2) • ouInit M n (ouTStar sz τU n) ω) i j) = fun ω =>
+        (Real.exp (ouTStar sz τU n / 2) : ℂ) * (M.mean n i j + (Real.exp (-(ouTStar sz τU n) / 2) : ℂ) *
+          (M.H n ω i j - M.mean n i j)) := by
+      funext ω
+      simp [ouInit]
+      ring
+    change Measurable fun ω => (Real.exp (ouTStar sz τU n / 2) • ouInit M n (ouTStar sz τU n) ω) i j
+    rw [e]
+    exact (((h.sub_const _).const_mul _).const_add _).const_mul _
+
+/-- **Target 3** `step1Band_integral_ouPC` (T2477; band original `step1Band_integral_ouP`): the `ouP`-functional of
+the centred flow at `t*` is the `M.μ`-average of the DBM functional at the diagonal `vOUC = λ(ouInit) - E`, time
+`1 - e^{-t*}`, energy `0`.  `integral_kPoint_ouMat_cond` at the auxiliary model `Step1Band_condModel`, whose OU
+matrix at `t*` is `ouMatC M n t*`, then `λ(e^{t*/2} A) = e^{t*/2} λ(A)` (`Step1Band_eigenvalues_smul`) and the
+shift (`Step1Band_integral_dbm_shift`). -/
+theorem step1Band_integral_ouPC :
+    ∀ {d : ℕ} (sz : Sizes d) (M : UNModelC sz) (n : ℕ) (τU E : ℝ) (k : ℕ) (O : (Fin k → ℝ) → ℝ), IsTestFun O →
+      ∫ ω, kPoint k O E (ouMatC_isHermitian M n (ouTStar sz τU n) ω).eigenvalues ∂(ouP M.toUNModel n) =
+        ∫ ω, (∫ y, kPoint k O 0 (dbmMat_isHermitian d (sz.L n) (sz.W n) (vOUC sz M n τU E ω)
+            (1 - Real.exp (-(ouTStar sz τU n))) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n))) ∂M.μ := by
+  intro d sz M n τU E k O hO
+  set t := ouTStar sz τU n with ht
+  have h := integral_kPoint_ouMat_cond (Step1Band_condModel M τU) n t k O hO.1.continuous hO.2 E
+  have hmat : ∀ ω, ouMat (Step1Band_condModel M τU) n t ω = ouMatC M n t ω := by
+    intro ω
+    rw [ouMatC_eq_ouInit_add]
+    unfold ouMat
+    change Real.exp (-t / 2) • (Real.exp (t / 2) • ouInit M n t ω.1) +
+      Real.sqrt (1 - Real.exp (-t)) • Xmat d (sz.L n) (sz.W n) ω.2 =
+      ouInit M n t ω.1 + Real.sqrt (1 - Real.exp (-t)) • Xmat d (sz.L n) (sz.W n) ω.2
+    rw [smul_smul, ← Real.exp_add, show -t / 2 + t / 2 = 0 by ring, Real.exp_zero, one_smul]
+  have hL : ∫ ω, kPoint k O E (ouMatC_isHermitian M n t ω).eigenvalues ∂(ouP M.toUNModel n) =
+      ∫ ω, kPoint k O E (ouMat_isHermitian (Step1Band_condModel M τU) n t ω).eigenvalues
+        ∂(ouP (Step1Band_condModel M τU) n) := by
+    refine integral_congr_ae (Eventually.of_forall fun ω => ?_)
+    simp only
+    rw [Step1Band_eigenvalues_congr (hmat ω).symm (ouMatC_isHermitian M n t ω)
+      (ouMat_isHermitian (Step1Band_condModel M τU) n t ω)]
+  rw [hL, h]
+  refine integral_congr_ae (Eventually.of_forall fun ω₁ => ?_)
+  have hsc : ((Step1Band_condModel M τU).herm n ω₁).eigenvalues =
+      fun i => Real.exp (t / 2) * (ouInit_isHermitian M n t ω₁).eigenvalues i :=
+    Step1Band_eigenvalues_smul (ouInit_isHermitian M n t ω₁) (Real.exp_pos (t / 2))
+      ((Step1Band_condModel M τU).herm n ω₁)
+  have hv : (fun i => Real.exp (-t / 2) * ((Step1Band_condModel M τU).herm n ω₁).eigenvalues i) =
+      fun i => (ouInit_isHermitian M n t ω₁).eigenvalues i := by
+    funext i
+    rw [hsc, ← mul_assoc, ← Real.exp_add, show -t / 2 + t / 2 = 0 by ring, Real.exp_zero, one_mul]
+  have hinner : ∀ v v' : Idx d (sz.L n) (sz.W n) → ℝ, v = v' →
+      ∫ y, kPoint k O E (dbmMat_isHermitian d (sz.L n) (sz.W n) v (1 - Real.exp (-t)) y).eigenvalues
+        ∂(gueP d (sz.L n) (sz.W n)) =
+      ∫ y, kPoint k O E (dbmMat_isHermitian d (sz.L n) (sz.W n) v' (1 - Real.exp (-t)) y).eigenvalues
+        ∂(gueP d (sz.L n) (sz.W n)) := fun v v' hvv => by subst hvv; rfl
+  exact (hinner _ _ hv).trans (Step1Band_integral_dbm_shift d (sz.L n) (sz.W n)
+    (fun i => (ouInit_isHermitian M n t ω₁).eigenvalues i) (1 - Real.exp (-t)) E k O).symm
+
+/-- The conditional functional of the first block (the integrand of target 2), for a test function `O`, over a
+diagonal family `vf n ω` (band: `vOU sz M · τs E`; centred, ticket T2477: `vOUC sz M · τs E`). -/
+private def Step1Band_F {d : ℕ} (sz : Sizes d)
+    (vf : ∀ n : ℕ, Sizes.SeqΩ sz → Idx d (sz.L n) (sz.W n) → ℝ) (τs : ℝ) (n k : ℕ)
     (O : (Fin k → ℝ) → ℝ) (ω : Sizes.SeqΩ sz) : ℝ :=
-  ∫ y, kPoint k O 0 (dbmMat_isHermitian d (sz.L n) (sz.W n) (vOU sz M n τs E₀ ω)
+  ∫ y, kPoint k O 0 (dbmMat_isHermitian d (sz.L n) (sz.W n) (vf n ω)
     (1 - Real.exp (-(ouTStar sz τs n))) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n))
 
-/-- The conditional functional is measurable in the first block (RBM2D `Step1Band_measurable_Hs`, `:681`;
+/-- The band diagonal `vOU` is measurable in the first block (RBM2D `Step1Band_measurable_Hs`, `:681`;
 eigenvalues of `M.H n ω` measurable from `M.meas` and `eigenvalues₀_abs_sub_le`). -/
-private theorem Step1Band_measurable_F {d : ℕ} (sz : Sizes d) (M : UNModel sz) (τs E₀ : ℝ) (n k : ℕ)
-    {O : (Fin k → ℝ) → ℝ} (hO : Continuous O) : Measurable (Step1Band_F sz M τs E₀ n k O) := by
-  set t := 1 - Real.exp (-(ouTStar sz τs n)) with ht
+private theorem Step1Band_measurable_vOU {d : ℕ} (sz : Sizes d) (M : UNModel sz) (τs E₀ : ℝ) (n : ℕ) :
+    Measurable (fun ω : Sizes.SeqΩ sz => vOU sz M n τs E₀ ω) := by
   have hHm : Measurable (M.H n) :=
     measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j => M.meas n i j
   have heig : Measurable (fun ω : Sizes.SeqΩ sz => fun i => (M.herm n ω).eigenvalues i) :=
     measurable_pi_iff.mpr fun i => Step1Band_measurable_eigenvalue hHm (M.herm n) i
-  have hv : Measurable (fun ω : Sizes.SeqΩ sz => vOU sz M n τs E₀ ω) :=
-    measurable_pi_iff.mpr fun i => (((measurable_pi_apply i).comp heig).const_mul _).sub_const _
+  exact measurable_pi_iff.mpr fun i => (((measurable_pi_apply i).comp heig).const_mul _).sub_const _
+
+/-- The centred diagonal `vOUC` (eigenvalues of `ouInit` minus `E₀`) is measurable in the first block. -/
+private theorem Step1Band_measurable_vOUC {d : ℕ} (sz : Sizes d) (M : UNModelC sz) (τs E₀ : ℝ) (n : ℕ) :
+    Measurable (fun ω : Sizes.SeqΩ sz => vOUC sz M n τs E₀ ω) := by
+  have hHm : Measurable (M.H n) :=
+    measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j => M.meas n i j
+  have hcont : Continuous (fun A : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
+      M.mean n + Real.exp (-(ouTStar sz τs n) / 2) • (A - M.mean n)) := by fun_prop
+  have hI : Measurable (fun ω : Sizes.SeqΩ sz => ouInit M n (ouTStar sz τs n) ω) :=
+    hcont.measurable.comp hHm
+  have heig : Measurable (fun ω : Sizes.SeqΩ sz => fun i =>
+      (ouInit_isHermitian M n (ouTStar sz τs n) ω).eigenvalues i) :=
+    measurable_pi_iff.mpr fun i =>
+      Step1Band_measurable_eigenvalue hI (ouInit_isHermitian M n (ouTStar sz τs n)) i
+  exact measurable_pi_iff.mpr fun i => ((measurable_pi_apply i).comp heig).sub_const _
+
+/-- The conditional functional is measurable in the first block, given a measurable diagonal family. -/
+private theorem Step1Band_measurable_F {d : ℕ} (sz : Sizes d)
+    (vf : ∀ n : ℕ, Sizes.SeqΩ sz → Idx d (sz.L n) (sz.W n) → ℝ) (τs : ℝ) (n k : ℕ)
+    {O : (Fin k → ℝ) → ℝ} (hO : Continuous O) (hv : Measurable (vf n)) :
+    Measurable (Step1Band_F sz vf τs n k O) := by
+  set t := 1 - Real.exp (-(ouTStar sz τs n)) with ht
   have hGc : Continuous (fun q : (Idx d (sz.L n) (sz.W n) → ℝ) × Matrix (Idx d (sz.L n) (sz.W n))
       (Idx d (sz.L n) (sz.W n)) ℂ => Matrix.diagonal (fun i => (q.1 i : ℂ)) + Real.sqrt t • q.2) := by
     refine Continuous.add ?_ (continuous_snd.const_smul (Real.sqrt t))
     exact Continuous.matrix_diagonal (continuous_pi fun i =>
       Complex.continuous_ofReal.comp ((continuous_apply i).comp continuous_fst))
   have hm0 : Measurable (fun p : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) =>
-      ((vOU sz M n τs E₀ p.1, Xmat d (sz.L n) (sz.W n) p.2) :
+      ((vf n p.1, Xmat d (sz.L n) (sz.W n) p.2) :
         (Idx d (sz.L n) (sz.W n) → ℝ) × Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) :=
     (hv.comp measurable_fst).prodMk ((Step1Band_measurable_Xmat d _ _).comp measurable_snd)
   have hmeq : (fun p : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) =>
-      dbmMat d (sz.L n) (sz.W n) (vOU sz M n τs E₀ p.1) t p.2) =
+      dbmMat d (sz.L n) (sz.W n) (vf n p.1) t p.2) =
       (fun q : (Idx d (sz.L n) (sz.W n) → ℝ) × Matrix (Idx d (sz.L n) (sz.W n))
       (Idx d (sz.L n) (sz.W n)) ℂ => Matrix.diagonal (fun i => (q.1 i : ℂ)) + Real.sqrt t • q.2) ∘
       (fun p : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) =>
-      ((vOU sz M n τs E₀ p.1, Xmat d (sz.L n) (sz.W n) p.2) :
+      ((vf n p.1, Xmat d (sz.L n) (sz.W n) p.2) :
         (Idx d (sz.L n) (sz.W n) → ℝ) × Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)) := by
     funext p
     simp only [Function.comp_apply, dbmMat]
   have hm : Measurable (fun p : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) =>
-      dbmMat d (sz.L n) (sz.W n) (vOU sz M n τs E₀ p.1) t p.2) := by
+      dbmMat d (sz.L n) (sz.W n) (vf n p.1) t p.2) := by
     rw [hmeq]; exact hGc.measurable.comp hm0
   have hf := measurable_kPoint_eigenvalues
     (fun p : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) =>
-      dbmMat d (sz.L n) (sz.W n) (vOU sz M n τs E₀ p.1) t p.2)
-    (fun p => dbmMat_isHermitian d (sz.L n) (sz.W n) (vOU sz M n τs E₀ p.1) t p.2)
+      dbmMat d (sz.L n) (sz.W n) (vf n p.1) t p.2)
+    (fun p => dbmMat_isHermitian d (sz.L n) (sz.W n) (vf n p.1) t p.2)
     hm k O hO 0
   exact (hf.stronglyMeasurable.integral_prod_right' (ν := gueP d (sz.L n) (sz.W n))).measurable
 
 /-! ### 8. The worst-sequence core: `UNL32` along one sequence in the good event -/
 
-/-- The good event of `step1Good'` (its complement is the bad event of `UNStep1Good'`, `PinsDens.lean:73`). -/
-private def Step1Band_good {d : ℕ} (sz : Sizes d) (M : UNModel sz) (ρ : ℕ → ℝ) (c C CV₀ τs E : ℝ)
+/-- The good event of `step1Good'` and of `step1GoodC''` (its complement is the bad event of `UNStep1Good'`,
+`PinsDens.lean:73`, resp. `UNStep1GoodC''`, `PinsC2.lean:94`), for a diagonal family `vf n ω`. -/
+private def Step1Band_good {d : ℕ} (sz : Sizes d)
+    (vf : ∀ n : ℕ, Sizes.SeqΩ sz → Idx d (sz.L n) (sz.W n) → ℝ) (ρ : ℕ → ℝ) (c C CV₀ τs : ℝ)
     (n : ℕ) : Set (Sizes.SeqΩ sz) :=
-  {ω | IsRegular32 (vOU sz M n τs E ω) (Nsz sz n ^ (-1 + τs / 4))
+  {ω | IsRegular32 (vf n ω) (Nsz sz n ^ (-1 + τs / 4))
         (Nsz sz n ^ (-(min (τs / 4) ((1 - τs) / 3)))) c C (CV₀ + 1) ∧
-      ∃ mfc : ℂ → ℂ, IsFreeConv32 (vOU sz M n τs E ω) (1 - Real.exp (-(ouTStar sz τs n))) mfc ∧
+      ∃ mfc : ℂ → ℂ, IsFreeConv32 (vf n ω) (1 - Real.exp (-(ouTStar sz τs n))) mfc ∧
         ∃ ρ' : ℝ, Tendsto (fun η : ℝ => (mfc ⟨0, η⟩).im / Real.pi) (𝓝[>] 0) (𝓝 ρ') ∧
           |ρ' - ρ n| ≤ Nsz sz n ^ (-(3 * τs / 8))}
 
 /-- **Worst-sequence core** (RBM2D `Step1Band_core`, `:747`; RBM1D `Step1BandNorm.core`): along any sequence
-`ω n` eventually in the good event, `UNL32` applies to `v n = vOU … (ω n)` at energy `0`, time
+`ω n` eventually in the good event, `UNL32` applies to `v n = vf n (ω n)` at energy `0`, time
 `1 - e^{-t*}`, with `δ = σ = min (τ_s/4) ((1-τ_s)/3)`, `q = 1/2`, `c C` of the event, `CV = CV₀ + 1`,
 `g = N^{-1+τ_s/4}`, `G = N^{-σ}`, `m = mfc_n`, `ρ = ρ'_n` (the choices of the event); the conditional functional
 at the dilation `ρ_n` is close to the GUE functional at the dilation `ρ_sc(0)`.  The density `ρ_n` enters through
@@ -717,11 +886,12 @@ its range `[a0, b0]` only; the dilation `ρ'_n → ρ_n` (rate `N^{-3τ_s/8}`) i
 `Step1Cond_scaledPairing_lipschitz` and the counts of `UNL32` (a dominating test function) and of the GUE
 (`step1Band_gue_count`). -/
 private theorem Step1Band_core (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d)
-    (hsz : Tendsto (fun n => sz.size n) atTop atTop) (M : UNModel sz) (ρ : ℕ → ℝ) {a0 b0 : ℝ}
+    (hsz : Tendsto (fun n => sz.size n) atTop atTop)
+    (vf : ∀ n : ℕ, Sizes.SeqΩ sz → Idx d (sz.L n) (sz.W n) → ℝ) (ρ : ℕ → ℝ) {a0 b0 : ℝ}
     (ha0 : 0 < a0) (hab : a0 ≤ b0) (hρ : ∀ᶠ n in atTop, a0 ≤ ρ n ∧ ρ n ≤ b0) {τs : ℝ} (h0 : 0 < τs)
-    (h1 : τs < 1) {CV₀ c C : ℝ} (hc : 0 < c) (E : ℝ) (k : ℕ) {O : (Fin k → ℝ) → ℝ} (hO : IsTestFun O)
-    (ω : ℕ → Sizes.SeqΩ sz) (hω : ∀ᶠ n in atTop, ω n ∈ Step1Band_good sz M ρ c C CV₀ τs E n) :
-    Tendsto (fun n => Step1Band_F sz M τs E n k (fun α => O (ρ n • α)) (ω n) -
+    (h1 : τs < 1) {CV₀ c C : ℝ} (hc : 0 < c) (k : ℕ) {O : (Fin k → ℝ) → ℝ} (hO : IsTestFun O)
+    (ω : ℕ → Sizes.SeqΩ sz) (hω : ∀ᶠ n in atTop, ω n ∈ Step1Band_good sz vf ρ c C CV₀ τs n) :
+    Tendsto (fun n => Step1Band_F sz vf τs n k (fun α => O (ρ n • α)) (ω n) -
       ∫ y, kPoint k (fun α => O (rhoSC 0 • α)) 0 (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues
         ∂(gueP d (sz.L n) (sz.W n))) atTop (𝓝 0) := by
   classical
@@ -733,18 +903,18 @@ private theorem Step1Band_core (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} (hd 
   have hm0 : Tendsto mr atTop (𝓝 0) := Step1Band_rpow_tendsto_zero hsz (by linarith)
   have hMr : ∀ n, 0 ≤ mr n := fun n => Real.rpow_nonneg (Step1Band_Nr_pos hd sz n).le _
   -- the free-convolution data chosen along the sequence
-  have hex : ∀ n, ∃ p : (ℂ → ℂ) × ℝ, ω n ∈ Step1Band_good sz M ρ c C CV₀ τs E n →
-      IsRegular32 (vOU sz M n τs E (ω n)) (Nsz sz n ^ (-1 + τs / 4)) (Nsz sz n ^ (-σ)) c C (CV₀ + 1) ∧
-      IsFreeConv32 (vOU sz M n τs E (ω n)) (1 - Real.exp (-(ouTStar sz τs n))) p.1 ∧
+  have hex : ∀ n, ∃ p : (ℂ → ℂ) × ℝ, ω n ∈ Step1Band_good sz vf ρ c C CV₀ τs n →
+      IsRegular32 (vf n (ω n)) (Nsz sz n ^ (-1 + τs / 4)) (Nsz sz n ^ (-σ)) c C (CV₀ + 1) ∧
+      IsFreeConv32 (vf n (ω n)) (1 - Real.exp (-(ouTStar sz τs n))) p.1 ∧
       Tendsto (fun η : ℝ => (p.1 ⟨0, η⟩).im / Real.pi) (𝓝[>] 0) (𝓝 p.2) ∧ |p.2 - ρ n| ≤ mr n := by
     intro n
-    by_cases h : ω n ∈ Step1Band_good sz M ρ c C CV₀ τs E n
+    by_cases h : ω n ∈ Step1Band_good sz vf ρ c C CV₀ τs n
     · obtain ⟨hreg, mfc, hfc, ρ', ht, hr⟩ := h
       exact ⟨(mfc, ρ'), fun _ => ⟨hreg, hfc, ht, hr⟩⟩
     · exact ⟨(fun _ => 0, 0), fun h' => absurd h' h⟩
   choose p hp using hex
   -- the data fed to `UNL32`
-  let v : ∀ n, Idx d (sz.L n) (sz.W n) → ℝ := fun n => vOU sz M n τs E (ω n)
+  let v : ∀ n, Idx d (sz.L n) (sz.W n) → ℝ := fun n => vf n (ω n)
   let tt : ℕ → ℝ := fun n => 1 - Real.exp (-(ouTStar sz τs n))
   let g : ℕ → ℝ := fun n => Nsz sz n ^ (-1 + τs / 4)
   let G : ℕ → ℝ := fun n => Nsz sz n ^ (-σ)
@@ -824,14 +994,14 @@ private theorem Step1Band_core (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} (hd 
   set Ga : ℕ → ℝ := fun n => ∫ y, kPoint k (fun β => Qa (fun j => ρ₀ * β j)) 0
     (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n)) with hGa_def
   have hbound : ∀ᶠ n in atTop,
-      ‖Step1Band_F sz M τs E n k (fun α => O (ρ n • α)) (ω n) - gue0 n‖ ≤
+      ‖Step1Band_F sz vf τs n k (fun α => O (ρ n • α)) (ω n) - gue0 n‖ ≤
         |A n - gue0 n| * (1 + K2 * mr n) + K1 * (mr n * GQ n + mr n) + K2 * (mr n * Ga n) := by
     filter_upwards [hrange, hQ'1] with n hr hQ'n
     obtain ⟨⟨hr1l, hr1u⟩, ⟨hr0l, hr0u⟩, hdist⟩ := hr
     have hMrn := hMr n
     have hmeas := Step1Band_measurable_dbm d (sz.L n) (sz.W n) (v n) (tt n)
     set Hh := dbmMat_isHermitian d (sz.L n) (sz.W n) (v n) (tt n) with hHh
-    set X0 := Step1Band_F sz M τs E n k (fun α => O (ρ n • α)) (ω n) with hX0
+    set X0 := Step1Band_F sz vf τs n k (fun α => O (ρ n • α)) (ω n) with hX0
     have hX0' : X0 = ∫ y, kPoint k (fun β => O (fun j => ρ n * β j)) 0 (Hh y).eigenvalues
         ∂(gueP d (sz.L n) (sz.W n)) := rfl
     set X1 := A n with hX1
@@ -957,18 +1127,20 @@ private theorem Step1Band_density_range {m : ℕ → ℂ → ℂ} {E : ℝ} {ρ 
 /-- **Uniformity over the good event** (RBM2D `Step1Band_uniform`, `:1025`; worst-sequence argument,
 target 1c). -/
 private theorem Step1Band_uniform (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d)
-    (hsz : Tendsto (fun n => sz.size n) atTop atTop) (M : UNModel sz) (ρ : ℕ → ℝ) {a0 b0 : ℝ}
+    (hsz : Tendsto (fun n => sz.size n) atTop atTop)
+    (vf : ∀ n : ℕ, Sizes.SeqΩ sz → Idx d (sz.L n) (sz.W n) → ℝ)
+    (μ : Measure (Sizes.SeqΩ sz)) [IsProbabilityMeasure μ] (ρ : ℕ → ℝ) {a0 b0 : ℝ}
     (ha0 : 0 < a0) (hab : a0 ≤ b0) (hρ : ∀ᶠ n in atTop, a0 ≤ ρ n ∧ ρ n ≤ b0) {τs : ℝ} (h0 : 0 < τs)
-    (h1 : τs < 1) {CV₀ c C : ℝ} (hc : 0 < c) (E : ℝ) (k : ℕ) {O : (Fin k → ℝ) → ℝ} (hO : IsTestFun O)
-    (hbad : ∀ᶠ n in atTop, M.μ (Step1Band_good sz M ρ c C CV₀ τs E n)ᶜ ≤ ENNReal.ofReal (Nsz sz n ^ (-1 : ℝ)))
+    (h1 : τs < 1) {CV₀ c C : ℝ} (hc : 0 < c) (k : ℕ) {O : (Fin k → ℝ) → ℝ} (hO : IsTestFun O)
+    (hbad : ∀ᶠ n in atTop, μ (Step1Band_good sz vf ρ c C CV₀ τs n)ᶜ ≤ ENNReal.ofReal (Nsz sz n ^ (-1 : ℝ)))
     (ε : ℝ) (hε : 0 < ε) :
-    ∀ᶠ n in atTop, ∀ ω ∈ Step1Band_good sz M ρ c C CV₀ τs E n,
-      |Step1Band_F sz M τs E n k (fun α => O (ρ n • α)) ω -
+    ∀ᶠ n in atTop, ∀ ω ∈ Step1Band_good sz vf ρ c C CV₀ τs n,
+      |Step1Band_F sz vf τs n k (fun α => O (ρ n • α)) ω -
         ∫ y, kPoint k (fun α => O (rhoSC 0 • α)) 0
           (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n))| ≤ ε := by
   classical
   -- the good event is nonempty for large `n`: its complement has measure `≤ N^{-1} < 1`
-  have hex : ∀ᶠ n in atTop, (Step1Band_good sz M ρ c C CV₀ τs E n).Nonempty := by
+  have hex : ∀ᶠ n in atTop, (Step1Band_good sz vf ρ c C CV₀ τs n).Nonempty := by
     filter_upwards [hbad] with n hn
     by_contra hne
     rw [Set.not_nonempty_iff_eq_empty] at hne
@@ -979,22 +1151,128 @@ private theorem Step1Band_uniform (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} (
     rw [hne, Set.compl_empty, measure_univ] at hn
     exact absurd hn (not_le.mpr hlt)
   let b : ∀ n : ℕ, Sizes.SeqΩ sz := fun n =>
-    if h : (Step1Band_good sz M ρ c C CV₀ τs E n).Nonempty then h.some else fun _ => 0
-  have hb1 : ∀ᶠ n in atTop, b n ∈ Step1Band_good sz M ρ c C CV₀ τs E n := by
+    if h : (Step1Band_good sz vf ρ c C CV₀ τs n).Nonempty then h.some else fun _ => 0
+  have hb1 : ∀ᶠ n in atTop, b n ∈ Step1Band_good sz vf ρ c C CV₀ τs n := by
     filter_upwards [hex] with n hn
     have hbN : b n = hn.some := by simp only [b, hn, ↓reduceDIte]
     rw [hbN]; exact hn.some_mem
   have h := step1Band_eventually_forall (α := fun _ => Sizes.SeqΩ sz)
-    (fun n ω => ω ∈ Step1Band_good sz M ρ c C CV₀ τs E n)
-    (fun n ω => |Step1Band_F sz M τs E n k (fun α => O (ρ n • α)) ω -
+    (fun n ω => ω ∈ Step1Band_good sz vf ρ c C CV₀ τs n)
+    (fun n ω => |Step1Band_F sz vf τs n k (fun α => O (ρ n • α)) ω -
       ∫ y, kPoint k (fun α => O (rhoSC 0 • α)) 0
         (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n))| ≤ ε) b hb1
     (fun f hf => by
-      have hcore := Step1Band_core hL32 hGUE hd sz hsz M ρ ha0 hab hρ h0 h1 hc E k hO f hf
+      have hcore := Step1Band_core hL32 hGUE hd sz hsz vf ρ ha0 hab hρ h0 h1 hc k hO f hf
       filter_upwards [Metric.tendsto_nhds.mp hcore ε hε] with n hn
       rw [Real.dist_eq, sub_zero] at hn
       exact hn.le)
   filter_upwards [h] with n hn ω hω using hn ω hω
+
+/-- **The Step 1 assembly, over a diagonal family** (the body of `step1Band`, generalised in place for ticket T2477):
+if the diagonal family `vf n ω` is measurable in `ω`, its regularity event (`Step1Band_good`) has complement of
+measure `≤ N^{-(k+1)}`, and the functional `Aflow n` of the flow at `t*` is the `μ`-average of the conditional
+DBM functional (`hcond`, for every test function), then `Aflow n (𝒪(ρ_n ·))` is asymptotically the GUE functional
+at energy `0` dilated by `ρ_sc(0)`.  The band `step1Band` instantiates `vf = vOU sz M · τU E`
+(`Aflow` the `ouMat` functional, `hcond = step1Band_integral_ouP`), the centred `step1BandC''`
+`vf = vOUC sz M · τU E` (`step1Band_integral_ouPC`). -/
+private theorem Step1Band_assemble (hL32 : UNL32) (hGUE : UNGUELocal) {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d)
+    (hsz : Tendsto (fun n => sz.size n) atTop atTop)
+    (vf : ∀ n : ℕ, Sizes.SeqΩ sz → Idx d (sz.L n) (sz.W n) → ℝ) (hvm : ∀ n, Measurable (vf n))
+    (μ : Measure (Sizes.SeqΩ sz)) [IsProbabilityMeasure μ] (ρ : ℕ → ℝ) {a0 b0 : ℝ}
+    (ha0 : 0 < a0) (hab : a0 ≤ b0) (hρr : ∀ᶠ n in atTop, a0 ≤ ρ n ∧ ρ n ≤ b0) {τU : ℝ} (h0 : 0 < τU)
+    (h1 : τU < 1) {CV₀ c C : ℝ} (hc : 0 < c) (k : ℕ) {O : (Fin k → ℝ) → ℝ} (hO : IsTestFun O)
+    (hgood : ∀ᶠ n in atTop, μ (Step1Band_good sz vf ρ c C CV₀ τU n)ᶜ ≤
+      ENNReal.ofReal (Nsz sz n ^ (-((k + 1 : ℕ) : ℝ))))
+    (Aflow : ℕ → ((Fin k → ℝ) → ℝ) → ℝ)
+    (hcond : ∀ (n : ℕ) (O' : (Fin k → ℝ) → ℝ), IsTestFun O' →
+      Aflow n O' = ∫ ω, Step1Band_F sz vf τU n k O' ω ∂μ) :
+    Tendsto (fun n => Aflow n (fun α => O (ρ n • α)) -
+      ∫ y, kPoint k (fun α => O (rhoSC 0 • α)) 0 (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues
+        ∂(gueP d (sz.L n) (sz.W n))) atTop (𝓝 0) := by
+  obtain ⟨BO, hBO⟩ := hO.1.continuous.bounded_above_of_compact_support hO.2
+  have hBO' : ∀ x, |O x| ≤ BO := fun x => by simpa [Real.norm_eq_abs] using hBO x
+  have hBO0 : 0 ≤ BO := (abs_nonneg _).trans (hBO' 0)
+  set K0 : ℝ := 2 * BO with hK0
+  have hK00 : 0 ≤ K0 := by positivity
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  have hunif := Step1Band_uniform hL32 hGUE hd sz hsz vf μ ρ ha0 hab hρr h0 h1 hc k hO
+    (by
+      filter_upwards [hgood] with n hn
+      refine hn.trans (ENNReal.ofReal_le_ofReal ?_)
+      exact Real.rpow_le_rpow_of_exponent_le (Step1Band_Nr_ge_one hd sz n) (by
+        have : (1 : ℝ) ≤ ((k + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.succ_pos k
+        linarith)) (ε / 2) (half_pos hε)
+  have hsmall : ∀ᶠ n in atTop, K0 / Nsz sz n < ε / 2 :=
+    (tendsto_const_nhds.div_atTop (Step1Band_Nr_tendsto hsz)).eventually
+      (gt_mem_nhds (half_pos hε))
+  filter_upwards [hunif, hgood, hsmall, hρr] with n hU hB hS hρn
+  have hNpos := Step1Band_Nr_pos hd sz n
+  have hρne : ρ n ≠ 0 := by
+    have := lt_of_lt_of_le ha0 hρn.1
+    exact this.ne'
+  have hO' : IsTestFun (fun α : Fin k → ℝ => O (ρ n • α)) := isTestFun_comp_smul hO hρne
+  set N : ℝ := Nsz sz n with hN
+  rw [Real.dist_eq, sub_zero]
+  rw [hcond n _ hO']
+  set c0 := ∫ y, kPoint k (fun α => O (rhoSC 0 • α)) 0
+    (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n)) with hc_def
+  have hFb : ∀ ω, |Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω| ≤ N ^ k * BO := fun ω => by
+    have h := step1Band_abs_integral_kPoint_le (gueP d (sz.L n) (sz.W n)) _
+      (dbmMat_isHermitian d (sz.L n) (sz.W n) (vf n ω)
+        (1 - Real.exp (-(ouTStar sz τU n)))) k (P := fun α => O (ρ n • α)) (B := BO)
+      (fun x => hBO' _) 0
+    rwa [Step1Band_card_real] at h
+  have hc : |c0| ≤ N ^ k * BO := by
+    have h := step1Band_abs_integral_kPoint_le (gueP d (sz.L n) (sz.W n)) (Xmat d (sz.L n) (sz.W n))
+      (Xmat_isHermitian d (sz.L n) (sz.W n)) k
+      (P := fun α => O (rhoSC 0 • α)) (B := BO) (fun x => hBO' _) 0
+    rwa [Step1Band_card_real] at h
+  have hFm : Measurable (Step1Band_F sz vf τU n k (fun α => O (ρ n • α))) :=
+    Step1Band_measurable_F sz vf τU n k hO'.1.continuous (hvm n)
+  have hFint : Integrable (Step1Band_F sz vf τU n k (fun α => O (ρ n • α))) μ :=
+    Integrable.of_bound hFm.aestronglyMeasurable (N ^ k * BO)
+      (Eventually.of_forall fun ω => by rw [Real.norm_eq_abs]; exact hFb ω)
+  have hsplit : ∫ ω, Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω ∂μ - c0 =
+      ∫ ω, (Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω - c0) ∂μ := by
+    rw [integral_sub hFint (integrable_const c0), integral_const, probReal_univ, one_smul]
+  change |∫ ω, Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω ∂μ - c0| < ε
+  rw [hsplit]
+  refine abs_integral_le_integral_abs.trans_lt ?_
+  set T := toMeasurable μ (Step1Band_good sz vf ρ c C CV₀ τU n)ᶜ with hT_def
+  have hTm : MeasurableSet T := measurableSet_toMeasurable _ _
+  have hsubT : (Step1Band_good sz vf ρ c C CV₀ τU n)ᶜ ⊆ T := subset_toMeasurable _ _
+  set X : ℝ := N ^ k * BO + |c0| with hX
+  have hX0 : 0 ≤ X := by positivity
+  have hpt : ∀ ω, |Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω - c0| ≤
+      ε / 2 + T.indicator (fun _ => X) ω := by
+    intro ω
+    by_cases hω : ω ∈ Step1Band_good sz vf ρ c C CV₀ τU n
+    · have h2 : 0 ≤ T.indicator (fun _ => X) ω := Set.indicator_nonneg (fun _ _ => hX0) _
+      linarith [hU ω hω]
+    · rw [Set.indicator_of_mem (hsubT hω)]
+      have := abs_sub (Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω) c0
+      linarith [hFb ω]
+  have hint : ∫ ω, |Step1Band_F sz vf τU n k (fun α => O (ρ n • α)) ω - c0| ∂μ ≤
+      ε / 2 + μ.real T * X := by
+    refine (integral_mono_of_nonneg (Eventually.of_forall fun ω => abs_nonneg _)
+      ((integrable_const _).add ((integrable_const _).indicator hTm))
+      (Eventually.of_forall hpt)).trans ?_
+    rw [integral_add (integrable_const _) ((integrable_const _).indicator hTm), integral_const,
+      integral_indicator_const _ hTm, probReal_univ, one_smul, smul_eq_mul]
+  have hTreal : μ.real T ≤ N ^ (-((k + 1 : ℕ) : ℝ)) := by
+    rw [measureReal_def, measure_toMeasurable]
+    exact ENNReal.toReal_le_of_le_ofReal (Real.rpow_nonneg hNpos.le _) hB
+  have hXle : X ≤ K0 * N ^ k := by
+    have e : K0 * N ^ k = N ^ k * BO + N ^ k * BO := by rw [hK0]; ring
+    rw [hX, e]; linarith
+  have hfinal : μ.real T * X ≤ K0 / N := by
+    rw [Real.rpow_neg hNpos.le, Real.rpow_natCast] at hTreal
+    calc μ.real T * X ≤ (N ^ (k + 1))⁻¹ * (K0 * N ^ k) :=
+          mul_le_mul hTreal hXle hX0 (by positivity)
+      _ = K0 / N := by rw [pow_succ]; field_simp
+  linarith
+
 
 /-- **Target 3a** `step1Band`: **Step 1 of `(1infyuniv)`, model-generic** (RBM2D `step1Band`, `:1072`; RBM1D
 `step1_band'`): for an abstract model with the primed density hypothesis `UNDens'`, the tracial local law
@@ -1023,98 +1301,10 @@ theorem step1Band :
   -- the good event: one call at `D = k + 1`
   obtain ⟨c, C, hc, hgood⟩ := step1Good' d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT CV₀ hCV0 hCV τU
     ((k + 1 : ℕ) : ℝ) h0 h1 hτ (by positivity)
-  have hbad : ∀ᶠ n in atTop, M.μ (Step1Band_good sz M ρ c C CV₀ τU E n)ᶜ ≤
-      ENNReal.ofReal (Nsz sz n ^ (-1 : ℝ)) := by
-    filter_upwards [hgood] with n hn
-    refine hn.trans (ENNReal.ofReal_le_ofReal ?_)
-    exact Real.rpow_le_rpow_of_exponent_le (Step1Band_Nr_ge_one hd sz n) (by
-      have : (1 : ℝ) ≤ ((k + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.succ_pos k
-      linarith)
-  obtain ⟨BO, hBO⟩ := hO.1.continuous.bounded_above_of_compact_support hO.2
-  have hBO' : ∀ x, |O x| ≤ BO := fun x => by simpa [Real.norm_eq_abs] using hBO x
-  have hBO0 : 0 ≤ BO := (abs_nonneg _).trans (hBO' 0)
-  set K0 : ℝ := 2 * BO with hK0
-  have hK00 : 0 ≤ K0 := by positivity
-  unfold UNInfty1
-  rw [Metric.tendsto_nhds]
-  intro ε hε
-  have hunif := Step1Band_uniform hL32 hGUE hd sz hsz M ρ ha0 hab hρr h0 h1 hc E k hO
-    (by
-      filter_upwards [hgood] with n hn
-      refine hn.trans (ENNReal.ofReal_le_ofReal ?_)
-      exact Real.rpow_le_rpow_of_exponent_le (Step1Band_Nr_ge_one hd sz n) (by
-        have : (1 : ℝ) ≤ ((k + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.succ_pos k
-        linarith)) (ε / 2) (half_pos hε)
-  have hsmall : ∀ᶠ n in atTop, K0 / Nsz sz n < ε / 2 :=
-    (tendsto_const_nhds.div_atTop (Step1Band_Nr_tendsto hsz)).eventually
-      (gt_mem_nhds (half_pos hε))
-  filter_upwards [hunif, hgood, hsmall, hρr] with n hU hB hS hρn
-  have hNpos := Step1Band_Nr_pos hd sz n
-  have hρne : ρ n ≠ 0 := by
-    have := lt_of_lt_of_le ha0 hρn.1
-    exact this.ne'
-  have hO' : IsTestFun (fun α : Fin k → ℝ => O (ρ n • α)) := isTestFun_comp_smul hO hρne
-  set N : ℝ := Nsz sz n with hN
-  rw [Real.dist_eq, sub_zero]
-  have hcond := step1Band_integral_ouP sz M n τU E k (fun α => O (ρ n • α)) hO'
-  rw [hcond]
-  set c0 := ∫ y, kPoint k (fun α => O (rhoSC 0 • α)) 0
-    (Xmat_isHermitian d (sz.L n) (sz.W n) y).eigenvalues ∂(gueP d (sz.L n) (sz.W n)) with hc_def
-  have hFb : ∀ ω, |Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω| ≤ N ^ k * BO := fun ω => by
-    have h := step1Band_abs_integral_kPoint_le (gueP d (sz.L n) (sz.W n)) _
-      (dbmMat_isHermitian d (sz.L n) (sz.W n) (vOU sz M n τU E ω)
-        (1 - Real.exp (-(ouTStar sz τU n)))) k (P := fun α => O (ρ n • α)) (B := BO)
-      (fun x => hBO' _) 0
-    rwa [Step1Band_card_real] at h
-  have hc : |c0| ≤ N ^ k * BO := by
-    have h := step1Band_abs_integral_kPoint_le (gueP d (sz.L n) (sz.W n)) (Xmat d (sz.L n) (sz.W n))
-      (Xmat_isHermitian d (sz.L n) (sz.W n)) k
-      (P := fun α => O (rhoSC 0 • α)) (B := BO) (fun x => hBO' _) 0
-    rwa [Step1Band_card_real] at h
-  have hFm : Measurable (Step1Band_F sz M τU E n k (fun α => O (ρ n • α))) :=
-    Step1Band_measurable_F sz M τU E n k hO'.1.continuous
-  have hFint : Integrable (Step1Band_F sz M τU E n k (fun α => O (ρ n • α))) M.μ :=
-    Integrable.of_bound hFm.aestronglyMeasurable (N ^ k * BO)
-      (Eventually.of_forall fun ω => by rw [Real.norm_eq_abs]; exact hFb ω)
-  have hsplit : ∫ ω, Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω ∂M.μ - c0 =
-      ∫ ω, (Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω - c0) ∂M.μ := by
-    rw [integral_sub hFint (integrable_const c0), integral_const, probReal_univ, one_smul]
-  change |∫ ω, Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω ∂M.μ - c0| < ε
-  rw [hsplit]
-  refine abs_integral_le_integral_abs.trans_lt ?_
-  set T := toMeasurable M.μ (Step1Band_good sz M ρ c C CV₀ τU E n)ᶜ with hT_def
-  have hTm : MeasurableSet T := measurableSet_toMeasurable _ _
-  have hsubT : (Step1Band_good sz M ρ c C CV₀ τU E n)ᶜ ⊆ T := subset_toMeasurable _ _
-  set X : ℝ := N ^ k * BO + |c0| with hX
-  have hX0 : 0 ≤ X := by positivity
-  have hpt : ∀ ω, |Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω - c0| ≤
-      ε / 2 + T.indicator (fun _ => X) ω := by
-    intro ω
-    by_cases hω : ω ∈ Step1Band_good sz M ρ c C CV₀ τU E n
-    · have h2 : 0 ≤ T.indicator (fun _ => X) ω := Set.indicator_nonneg (fun _ _ => hX0) _
-      linarith [hU ω hω]
-    · rw [Set.indicator_of_mem (hsubT hω)]
-      have := abs_sub (Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω) c0
-      linarith [hFb ω]
-  have hint : ∫ ω, |Step1Band_F sz M τU E n k (fun α => O (ρ n • α)) ω - c0| ∂M.μ ≤
-      ε / 2 + M.μ.real T * X := by
-    refine (integral_mono_of_nonneg (Eventually.of_forall fun ω => abs_nonneg _)
-      ((integrable_const _).add ((integrable_const _).indicator hTm))
-      (Eventually.of_forall hpt)).trans ?_
-    rw [integral_add (integrable_const _) ((integrable_const _).indicator hTm), integral_const,
-      integral_indicator_const _ hTm, probReal_univ, one_smul, smul_eq_mul]
-  have hTreal : M.μ.real T ≤ N ^ (-((k + 1 : ℕ) : ℝ)) := by
-    rw [measureReal_def, measure_toMeasurable]
-    exact ENNReal.toReal_le_of_le_ofReal (Real.rpow_nonneg hNpos.le _) hB
-  have hXle : X ≤ K0 * N ^ k := by
-    have e : K0 * N ^ k = N ^ k * BO + N ^ k * BO := by rw [hK0]; ring
-    rw [hX, e]; linarith
-  have hfinal : M.μ.real T * X ≤ K0 / N := by
-    rw [Real.rpow_neg hNpos.le, Real.rpow_natCast] at hTreal
-    calc M.μ.real T * X ≤ (N ^ (k + 1))⁻¹ * (K0 * N ^ k) :=
-          mul_le_mul hTreal hXle hX0 (by positivity)
-      _ = K0 / N := by rw [pow_succ]; field_simp
-  linarith
+  exact Step1Band_assemble hL32 hGUE hd sz hsz (fun n ω => vOU sz M n τU E ω)
+    (Step1Band_measurable_vOU sz M τU E) M.μ ρ ha0 hab hρr h0 h1 hc k hO hgood
+    (fun n O' => ∫ ω, kPoint k O' E (ouMat_isHermitian M n (ouTStar sz τU n) ω).eigenvalues ∂(ouP M n))
+    (fun n O' hO' => step1Band_integral_ouP sz M n τU E k O' hO')
 
 /-- **Target 3b** `step1Band_row`: the consumer shape for UN-14, `UNInfty1Row'` (`PinsDens.lean:88`) at the GUE
 energy `E' = 0` (`|0| < 2`), with `τ₁ = 𝔠𝔡`. -/
@@ -1128,6 +1318,52 @@ theorem step1Band_row :
   intro hL32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hCV k O hO
   exact ⟨𝔠 * 𝔡, mul_pos hA.1 hA.2.1, fun τU h0 hτ =>
     step1Band hL32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hCV k O hO τU h0 hτ⟩
+
+/-- **Target 4a** `step1BandC''` (T2477; band original `step1Band`): **Step 1 of `(1infyuniv)` for the centred flow**
+`μ + e^{-t/2}(H - μ) + √(1 - e^{-t}) H'`, for every centred model `M : UNModelC sz`, against the GUE at energy `0`:
+`UNInfty1C sz M ρ E 0 k O τU` (`PinsK.lean`).  The good event is the merged `step1GoodC''` (`PinsC2.lean:1469`), whose
+premises are `UNDens'`, `UNTrLocalInit'` (not `UNTrLocal`), `UNNormBound` and `UNMeanBound`; the assembly is the
+shared `Step1Band_assemble` at the diagonal `vOUC = λ(ouInit) - E` and the conditioning
+`step1Band_integral_ouPC`.  The band reading is `UNInfty1C_toC` (`PinsK.lean:237`) at `M.toC`; the band `step1Band`
+keeps its own proof (its `UNTrLocal` does not give `UNTrLocalInit'` for an arbitrary `UNModel`). -/
+theorem step1BandC'' :
+    UNL32 → UNGUELocal →
+      ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+        ∀ (M : UNModelC sz) (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ),
+          UNDens' m E ρ δ → UNTrLocalInit' sz M m E δ →
+            (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz M.toUNModel CV₀ ∧ UNMeanBound sz M CV₀) →
+              ∀ k : ℕ, ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O →
+                ∀ τU : ℝ, 0 < τU → τU ≤ 𝔠 * 𝔡 → UNInfty1C sz M ρ E 0 k O τU := by
+  intro hL32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hCV k O hO τU h0 hτ
+  obtain ⟨CV₀, hCV0, hCVn, hMean⟩ := hCV
+  have hd0 : 0 < d := by omega
+  have h1 : τU < 1 := by
+    have := un_admissible_cd_lt_half sz hd0 hA
+    linarith
+  have hsz : Tendsto (fun n => sz.size n) atTop atTop := Step1Band_size_tendsto hA.2.2.1
+  obtain ⟨cD, CD, hcD, hcC, hρr⟩ := Step1Band_density_range hD.1
+  have ha0 : 0 < cD / Real.pi := div_pos hcD Real.pi_pos
+  have hab : cD / Real.pi ≤ CD / Real.pi := div_le_div_of_nonneg_right hcC Real.pi_pos.le
+  obtain ⟨c, C, hc, hgood⟩ := step1GoodC'' d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT CV₀ hCV0 hCVn hMean τU
+    ((k + 1 : ℕ) : ℝ) h0 h1 hτ (by positivity)
+  exact Step1Band_assemble hL32 hGUE hd sz hsz (fun n ω => vOUC sz M n τU E ω)
+    (Step1Band_measurable_vOUC sz M τU E) M.μ ρ ha0 hab hρr h0 h1 hc k hO hgood
+    (fun n O' => ∫ ω, kPoint k O' E (ouMatC_isHermitian M n (ouTStar sz τU n) ω).eigenvalues
+      ∂(ouP M.toUNModel n))
+    (fun n O' hO' => step1Band_integral_ouPC sz M n τU E k O' hO')
+
+/-- **Target 4b** `step1Band_rowC''` (T2477; band original `step1Band_row`): the row shape with `τ₁ = 𝔠𝔡`. -/
+theorem step1Band_rowC'' :
+    UNL32 → UNGUELocal →
+      ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+        ∀ (M : UNModelC sz) (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ),
+          UNDens' m E ρ δ → UNTrLocalInit' sz M m E δ →
+            (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz M.toUNModel CV₀ ∧ UNMeanBound sz M CV₀) →
+              ∀ k : ℕ, ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O →
+                ∃ τ₁ : ℝ, 0 < τ₁ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₁ → UNInfty1C sz M ρ E 0 k O τU := by
+  intro hL32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hCV k O hO
+  exact ⟨𝔠 * 𝔡, mul_pos hA.1 hA.2.1, fun τU h0 hτ =>
+    step1BandC'' hL32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hCV k O hO τU h0 hτ⟩
 
 /-! ### 10. Compiled nonempty instances at `d = 3` (CLAUDE.md §4 step 2; target 4)
 
@@ -1232,6 +1468,63 @@ theorem inst_step1Band_integral_ouP :
             (1 - Real.exp (-(ouTStar sz0 (1 / 60) 0))) y).eigenvalues ∂(gueP 3 (sz0.L 0) (sz0.W 0)))
         ∂(UNModel.band sz0).μ :=
   step1Band_integral_ouP sz0 (UNModel.band sz0) 0 (1 / 60) 0 1 bump bump_testFun
+
+/-- `inst_step1Band_integral_ouPC` (target 3): at `sz0`, `n = 0`, `τ_U = 1/60`, `E = 0`, `k = 1`, `bump`, at a centred model
+with a nonzero mean (supplied by `UNKInst.inst_ouMatC_ne_ouMat`: its centred flow differs from the merged flow `ouMat` in
+an entry at the time `t*_0 > 0`; law and matrix of `UNModel.ba sz0`, mean `λ_n Ψ`). -/
+theorem inst_step1Band_integral_ouPC :
+    ∃ M : UNModelC sz0, (∀ ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 0) (sz0.W 0), ∃ i j : Idx 3 (sz0.L 0) (sz0.W 0),
+        ouMatC M 0 (ouTStar sz0 (1 / 60) 0) ω i j ≠ ouMat M.toUNModel 0 (ouTStar sz0 (1 / 60) 0) ω i j) ∧
+      ∫ ω, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
+          (ouMatC_isHermitian M 0 (ouTStar sz0 (1 / 60) 0) ω).eigenvalues ∂(ouP M.toUNModel 0) =
+        ∫ ω, (∫ y, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
+            (dbmMat_isHermitian 3 (sz0.L 0) (sz0.W 0) (vOUC sz0 M 0 (1 / 60) 0 ω)
+              (1 - Real.exp (-(ouTStar sz0 (1 / 60) 0))) y).eigenvalues ∂(gueP 3 (sz0.L 0) (sz0.W 0)))
+          ∂M.μ := by
+  have hN : (0 : ℝ) < ((sz0.size 0 : ℕ) : ℝ) := by
+    rw [sz0_values.2.2.1]; norm_num
+  obtain ⟨M, hM⟩ := UNKInst.inst_ouMatC_ne_ouMat (ouTStar sz0 (1 / 60) 0)
+    (Real.rpow_pos_of_pos hN _)
+  exact ⟨M, hM, step1Band_integral_ouPC sz0 M 0 (1 / 60) 0 1 bump bump_testFun⟩
+
+/-- `inst_step1Band_integral_ouPC_band` (target 3): the same at the band model `(UNModel.band sz0).toC` (mean `0`). -/
+theorem inst_step1Band_integral_ouPC_band :
+    ∫ ω, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
+        (ouMatC_isHermitian (UNModel.band sz0).toC 0 (ouTStar sz0 (1 / 60) 0) ω).eigenvalues
+        ∂(ouP (UNModel.band sz0) 0) =
+      ∫ ω, (∫ y, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
+          (dbmMat_isHermitian 3 (sz0.L 0) (sz0.W 0) (vOUC sz0 (UNModel.band sz0).toC 0 (1 / 60) 0 ω)
+            (1 - Real.exp (-(ouTStar sz0 (1 / 60) 0))) y).eigenvalues ∂(gueP 3 (sz0.L 0) (sz0.W 0)))
+        ∂(UNModel.band sz0).μ :=
+  step1Band_integral_ouPC sz0 (UNModel.band sz0).toC 0 (1 / 60) 0 1 bump bump_testFun
+
+/-- `inst_step1BandC''_band` (target 4a): `step1BandC''` at `sz0` (`d = 3`, `𝔠 = 1/6`, `𝔡 = 1/10`), the band model as a
+centred model, `m = msc`, `E = 0`, `ρ = ρ_sc(0)`, `δ = 1/4`, `k = 1`, `𝒪 = bump`, `τ_U = 1/60 = 𝔠𝔡`.  Discharged:
+`UNDens'` (`UNDens'.mono`, `un_dens'_msc_zero`), `UNTrLocalInit'` (`unTrLocalInit'_band_zero`), `UNMeanBound`
+(`unMeanBound_toC`); kept: `UNL32`, `UNGUELocal`, the band `UNTrLocal` at `1/2`, the norm bound. -/
+theorem inst_step1BandC''_band :
+    UNL32 → UNGUELocal → UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) →
+      (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀) →
+      UNInfty1C sz0 (UNModel.band sz0).toC (fun _ => rhoSC 0) 0 0 1 (bump : (Fin 1 → ℝ) → ℝ) (1 / 60) := by
+  intro h32 hGL hT hN
+  obtain ⟨CV₀, hCV, hN'⟩ := hN
+  exact step1BandC'' h32 hGL 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.band sz0).toC (fun _ => msc) 0
+    (fun _ => rhoSC 0) (1 / 4) (UNDens'.mono (by norm_num) (by norm_num) un_dens'_msc_zero)
+    (unTrLocalInit'_band_zero sz0 sz0_adm hT) ⟨CV₀, hCV, hN', unMeanBound_toC sz0 (UNModel.band sz0) CV₀⟩
+    1 bump bump_testFun (1 / 60) (by norm_num) (by norm_num)
+
+/-- `inst_step1Band_rowC''_band` (target 4b): `step1Band_rowC''` at the data of `inst_step1BandC''_band`. -/
+theorem inst_step1Band_rowC''_band :
+    UNL32 → UNGUELocal → UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) →
+      (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀) →
+      ∃ τ₁ : ℝ, 0 < τ₁ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₁ →
+        UNInfty1C sz0 (UNModel.band sz0).toC (fun _ => rhoSC 0) 0 0 1 (bump : (Fin 1 → ℝ) → ℝ) τU := by
+  intro h32 hGL hT hN
+  obtain ⟨CV₀, hCV, hN'⟩ := hN
+  exact step1Band_rowC'' h32 hGL 3 le_rfl (1 / 6) (1 / 10) sz0 sz0_adm (UNModel.band sz0).toC (fun _ => msc) 0
+    (fun _ => rhoSC 0) (1 / 4) (UNDens'.mono (by norm_num) (by norm_num) un_dens'_msc_zero)
+    (unTrLocalInit'_band_zero sz0 sz0_adm hT) ⟨CV₀, hCV, hN', unMeanBound_toC sz0 (UNModel.band sz0) CV₀⟩
+    1 bump bump_testFun
 
 end Step1BandInst
 

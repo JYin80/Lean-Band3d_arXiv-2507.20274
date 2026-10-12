@@ -7,6 +7,7 @@ import RBM3D.Universality.Apriori
 import RBM3D.Universality.GreenCorr
 import RBM3D.Universality.EigenMeasurable
 import RBM3D.Universality.PinsK
+import RBM3D.Universality.PinsC2
 import RBM3D.Universality.GUETranslation
 import RBM3D.Path.Walk
 import RBM3D.Universality.EMCTE2
@@ -30,6 +31,10 @@ those of the RBM2D paper `1-2:345` (`(univ-main)`), `1-2:352-356, 364-369, 381-3
 * `univMain_transfer` (target 5): the law transfer at `t = 0`, for every test function.
 * `univMainRow` (target 6): the row `UNUnivMainRow`.
 * `unCore'_holds` (target 7): the core `UNCore'` (`PinsDens.lean:99`).
+* T2477 (E3), the C-forms for every centred model `M : UNModelC sz`: `un_infty1RowC''` (the centred
+  `(1infyuniv)` row at every GUE energy, from `step1Band_rowC''` and `guetranslation`),
+  `univMain_transferC`, `univMainRowC` (the centred `(univ-main)` row), `unCoreC''_holds`
+  (the core pin `UNCoreC''`, `PinsC2.lean:106`).
 
 Port map (RBM2D line at `c9a24cf` : declaration -> here):
 * `:42-116` `UnivMain_BM*` -> same names (private, verbatim).
@@ -556,6 +561,104 @@ applied to target 6): `UNCore'` takes `UNL32`, `UNGUELocal`, `UNGreenCorrAll` an
 hypotheses; the two limits `(univ-main)` and `(1infyuniv)` have both been proved. -/
 theorem unCore'_holds : UNCore' := un_core'_of_univMainRow univMainRow
 
+/-! ### Targets 5-8 (T2477): the C-forms for every centred model -/
+
+/-- The eigenvalues of Hermitian matrices that are equal are equal (copy of the private
+`unPinsK_eigenvalues_congr`, `PinsK.lean:163`). -/
+private theorem UnivMain_eigenvalues_congr {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {A B : Matrix ι ι ℂ} (h : A = B) (hA : A.IsHermitian) (hB : B.IsHermitian) :
+    hA.eigenvalues = hB.eigenvalues := by
+  subst h; rfl
+
+/-- **Target 5** `un_infty1RowC''` (T2477; band original `un_infty1Row'_of_translation guetranslation`,
+`GUETranslation.lean:763`): the centred `(1infyuniv)` row at every GUE energy `|E'| < 2`.  `step1Band_rowC''`
+(`E' = 0`, `τ₁ = 𝔠𝔡`) plus the GUE translation `guetranslation` at `κ = (2 - |E'|)/2`, test function
+`O(ρ_sc(E') ·)` (`isTestFun_comp_smul`; `ρ_sc(E') • ((ρ_sc(0)/ρ_sc(E')) • α) = ρ_sc(0) • α`), added in `ℝ`.  The text
+of the band proof, with `UNInfty1 ↦ UNInfty1C` and `step1Band_row ↦ step1Band_rowC''`; `GUETranslation` is not
+writable, so the C-form lives here. -/
+theorem un_infty1RowC'' :
+    UNL32 → UNGUELocal →
+      ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+        ∀ (M : UNModelC sz) (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ),
+          UNDens' m E ρ δ → UNTrLocalInit' sz M m E δ →
+            (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz M.toUNModel CV₀ ∧ UNMeanBound sz M CV₀) →
+              ∀ E' : ℝ, |E'| < 2 → ∀ k : ℕ, ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O →
+                ∃ τ₁ : ℝ, 0 < τ₁ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₁ → UNInfty1C sz M ρ E E' k O τU := by
+  intro h32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hTr hCV E' hE' k O hO
+  obtain ⟨τ₁, hτ₁, hband⟩ := step1Band_rowC'' h32 hGUE d hd 𝔠 𝔡 sz hA M m E ρ δ hD hTr hCV k O hO
+  refine ⟨τ₁, hτ₁, fun τU hτU hle => ?_⟩
+  have hsz : Tendsto (fun n => sz.size n) atTop atTop := tendsto_natCast_atTop_iff.1 hA.2.2.1
+  have hρ' : 0 < rhoSC E' := rhoSC_pos hE'
+  have hO' : IsTestFun (fun α : Fin k → ℝ => O (rhoSC E' • α)) := isTestFun_comp_smul hO hρ'.ne'
+  have habs := abs_nonneg E'
+  have hgue := guetranslation h32 hGUE d hd sz hsz k ((2 - |E'|) / 2) (by linarith) E' (by linarith) _ hO'
+  have e0 : rhoSC E' * (rhoSC 0 / rhoSC E') = rhoSC 0 := by field_simp
+  have e' : ∀ α : Fin k → ℝ, O (rhoSC E' • (rhoSC 0 / rhoSC E') • α) = O (rhoSC 0 • α) := fun α => by
+    rw [smul_smul, e0]
+  have h := (hband τU hτU hle).add hgue
+  rw [add_zero] at h
+  unfold UNInfty1C
+  refine h.congr fun n => ?_
+  simp only [e']
+  ring
+
+/-- **Target 6** `univMain_transferC` (T2477; band original `univMain_transfer`): the law transfer at `t = 0` for the
+centred flow: `ouMatC M n 0 = M.H n = ouMat M.toUNModel n 0` (`ouMatC_zero`, `ouMat_zero`), so the band transfer at
+`M.toUNModel` applies, then the eigenvalues of equal Hermitian matrices agree. -/
+theorem univMain_transferC {d : ℕ} (sz : Sizes d) (M : UNModelC sz) (n k : ℕ)
+    (O : (Fin k → ℝ) → ℝ) (E : ℝ) :
+    ∫ ω, kPoint k O E (M.herm n ω).eigenvalues ∂M.μ =
+      ∫ ω, kPoint k O E (ouMatC_isHermitian M n 0 ω).eigenvalues ∂(ouP M.toUNModel n) := by
+  rw [univMain_transfer sz M.toUNModel n k O E]
+  refine integral_congr_ae (Eventually.of_forall fun ω => ?_)
+  simp only
+  rw [UnivMain_eigenvalues_congr (by rw [ouMatC_zero, ouMat_zero])
+    (ouMat_isHermitian M.toUNModel n 0 ω) (ouMatC_isHermitian M n 0 ω)]
+
+/-- **Target 7** `univMainRowC` (T2477; band original `univMainRow`): the centred `(univ-main)` row, from
+`UNClaimAllC` (at `c'`), the a priori bound (`unApriori_of_trLocal` at `M.toUNModel`, from `UNTrLocal` of the
+underlying model), `UNGreenCorrAllC` (target 2 concludes it; here a premise as in `UNCoreC''`) and the law transfer
+(target 6).  `τ₀ := min τ' (inf'_{nf ≤ k} τ₀(nf))` depends on `E, k, c', C_n` only. -/
+theorem univMainRowC :
+    UNGreenCorrAllC →
+      ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
+        ∀ (M : UNModelC sz) (m : ℕ → ℂ → ℂ) (E : ℝ) (ρ : ℕ → ℝ) (δ : ℝ),
+          UNDens m E ρ δ → UNTrLocal sz M.toUNModel m E δ → UNClaimAllC sz M E →
+            ∀ k : ℕ, ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+              ∀ O : (Fin k → ℝ) → ℝ, IsTestFun O → UNUnivMainC sz M ρ E k O τU := by
+  intro hGC d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hClaim k
+  obtain ⟨c', hc', hCl⟩ := hClaim
+  choose Cn τ0 hτ0 hCl' using hCl
+  obtain ⟨τ', hτ', hGC'⟩ := hGC d hd sz (tendsto_natCast_atTop_iff.1 hA.2.2.1) M E k c' hc' Cn
+  have hap : UNApriori sz M.toUNModel E :=
+    unApriori_of_trLocal d hd 𝔠 𝔡 sz hA M.toUNModel m E ρ δ hD hT
+  obtain ⟨a, b, ha, hρ⟩ := unDens_rho_bounds m E ρ δ hD
+  have hne : (Finset.range (k + 1)).Nonempty := ⟨0, by simp⟩
+  have hτm_pos : 0 < (Finset.range (k + 1)).inf' hne τ0 :=
+    (Finset.lt_inf'_iff hne).2 fun i _ => hτ0 i
+  refine ⟨min τ' ((Finset.range (k + 1)).inf' hne τ0), lt_min hτ' hτm_pos,
+    fun τU hτU hτUle O hO => ?_⟩
+  have h417 : ∀ nf ≤ k, UNClaim417C sz M E nf τU c' (Cn nf) := fun nf hnf =>
+    hCl' nf τU hτU (hτUle.trans ((min_le_right _ _).trans
+      (Finset.inf'_le τ0 (Finset.mem_range.2 (Nat.lt_succ_of_le hnf)))))
+  have hGCl := hGC' τU hτU (hτUle.trans (min_le_left _ _)) h417 hap O hO ρ a b ha hρ
+  refine hGCl.congr fun n => ?_
+  rw [univMain_transferC sz M n k (fun α => O (ρ n • α)) E]
+
+/-- **Target 8** `unCoreC''_holds` (T2477; pin `UNCoreC''`, `PinsC2.lean:106`; band original `unCore'_holds`): the
+two limits compose, `un_core_of_rows'` (`PinsDens.lean:220`) over the centred rows (targets 5 and 7):
+`UNUnivMainC + UNInfty1C = UNUnivDilAt sz M.toUNModel` at `τ_U := min τ₀ τ₁`.  Every centred model; at block Anderson it
+is applied at `UNModelC.ba sz`, `m = BAm`, `ρ = BArho` (`baBUniv_of_rows`, `BA/UNPins.lean:367`). -/
+theorem unCoreC''_holds : UNCoreC'' := by
+  intro h32 hGL hGC d hd 𝔠 𝔡 sz hA M m E ρ δ hD hT hTi hN hC E' hE' k _ O hO
+  obtain ⟨τ₀, hτ₀, hU⟩ := univMainRowC hGC d hd 𝔠 𝔡 sz hA M m E ρ δ hD.toUNDens hT hC k
+  obtain ⟨τ₁, hτ₁, hI⟩ := un_infty1RowC'' h32 hGL d hd 𝔠 𝔡 sz hA M m E ρ δ hD hTi hN E' hE' k O hO
+  have hpos : 0 < min τ₀ τ₁ := lt_min hτ₀ hτ₁
+  have h3 := (hU _ hpos (min_le_left _ _) O hO).add (hI _ hpos (min_le_right _ _))
+  rw [add_zero] at h3
+  refine h3.congr fun n => ?_
+  ring
+
 
 end RBM.Univ
 
@@ -669,6 +772,107 @@ theorem inst_core'_band_zero :
       (UNModel.band sz0) (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) un_dens'_msc_zero hT hN hC 0
       (by norm_num) 1 le_rfl _ UNInst.bump_testFun
 
+/-! #### Instances of the centred forms (T2477 targets 5-8; `d = 3`, `sz0`, `(𝔠, 𝔡) = (1/6, 1/10)`, `k = 1`, `bump`)
+
+The band model as a centred model `(UNModel.band sz0).toC` (mean `0`), `m = msc`, `E = 0`, `ρ = ρ_sc(0)`, `δ = 1/4`
+(`UNDens'.mono` of `un_dens'_msc_zero`) and, for the nonzero mean, the centred model supplied by
+`UNKInst.inst_ouMatC_ne_ouMat` (law and matrix of `UNModel.ba sz0`, mean `λ_n Ψ`; its centred flow differs from `ouMat`).
+Kept as hypotheses (other gates' pins): `UNL32`, `UNGUELocal`, the band `UNTrLocal` at `1/2`, the norm bound, `UNClaimAllC`;
+`UNGreenCorrAllC` is discharged by `greenCorrAllC`, `UNDens'`, `UNTrLocalInit'`, `UNMeanBound` as in
+`PinsC2Inst.inst_coreC_band''`. -/
+
+/-- (h) Target 5 at the band model, `E' = 0`. -/
+theorem inst_un_infty1RowC''_band_zero :
+    UNL32 → UNGUELocal → UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) →
+      (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀) →
+        ∃ τ₁ : ℝ, 0 < τ₁ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₁ →
+          UNInfty1C sz0 (UNModel.band sz0).toC (fun _ => rhoSC 0) 0 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) τU := by
+  intro h32 hGL hT hN
+  obtain ⟨CV₀, hCV, hN'⟩ := hN
+  exact un_infty1RowC'' h32 hGL 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm (UNModel.band sz0).toC
+    (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 4)
+    (UNDens'.mono (by norm_num) (by norm_num) un_dens'_msc_zero) (unTrLocalInit'_band_zero sz0 UNInst.sz0_adm hT)
+    ⟨CV₀, hCV, hN', unMeanBound_toC sz0 (UNModel.band sz0) CV₀⟩ 0 (by norm_num) 1 _ UNInst.bump_testFun
+
+/-- (i) Target 5 at the band model, `E' = 1`: the GUE translation is used with the dilation `ρ_sc(0)/ρ_sc(1) ≠ 1`. -/
+theorem inst_un_infty1RowC''_band_one :
+    UNL32 → UNGUELocal → UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) →
+      (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀) →
+        rhoSC 0 / rhoSC 1 ≠ 1 ∧ ∃ τ₁ : ℝ, 0 < τ₁ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₁ →
+          UNInfty1C sz0 (UNModel.band sz0).toC (fun _ => rhoSC 0) 0 1 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) τU := by
+  intro h32 hGL hT hN
+  obtain ⟨CV₀, hCV, hN'⟩ := hN
+  refine ⟨GUETranslationInst.inst_dilation_ne_one, ?_⟩
+  exact un_infty1RowC'' h32 hGL 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm (UNModel.band sz0).toC
+    (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 4)
+    (UNDens'.mono (by norm_num) (by norm_num) un_dens'_msc_zero) (unTrLocalInit'_band_zero sz0 UNInst.sz0_adm hT)
+    ⟨CV₀, hCV, hN', unMeanBound_toC sz0 (UNModel.band sz0) CV₀⟩ 1 (by norm_num) 1 _ UNInst.bump_testFun
+
+/-- (j) Target 6 at the band model as a centred model, `n = 0`, `k = 1`, `bump`, `E = 0`. -/
+theorem inst_univMain_transferC_band :
+    ∫ ω, kPoint 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) 0 ((UNModel.band sz0).toC.herm 0 ω).eigenvalues
+        ∂(UNModel.band sz0).toC.μ =
+      ∫ ω, kPoint 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) 0
+        (ouMatC_isHermitian (UNModel.band sz0).toC 0 0 ω).eigenvalues ∂(ouP (UNModel.band sz0) 0) :=
+  univMain_transferC sz0 (UNModel.band sz0).toC 0 1 _ 0
+
+/-- (k) Target 6 at a centred model with a nonzero mean, `n = 0` (the model of `UNKInst.inst_ouMatC_ne_ouMat`: its
+centred flow differs from the merged flow `ouMat` at the time `t*_0 > 0`). -/
+theorem inst_univMain_transferC_nonzero_mean :
+    ∃ M : UNModelC sz0, (∀ ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 0) (sz0.W 0), ∃ i j : Idx 3 (sz0.L 0) (sz0.W 0),
+        ouMatC M 0 (ouTStar sz0 (1 / 60) 0) ω i j ≠ ouMat M.toUNModel 0 (ouTStar sz0 (1 / 60) 0) ω i j) ∧
+      ∫ ω, kPoint 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) 0 (M.herm 0 ω).eigenvalues ∂M.μ =
+        ∫ ω, kPoint 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) 0
+          (ouMatC_isHermitian M 0 0 ω).eigenvalues ∂(ouP M.toUNModel 0) := by
+  have hN : (0 : ℝ) < ((sz0.size 0 : ℕ) : ℝ) := by
+    rw [sz0_values.2.2.1]; norm_num
+  obtain ⟨M, hM⟩ := UNKInst.inst_ouMatC_ne_ouMat (ouTStar sz0 (1 / 60) 0) (Real.rpow_pos_of_pos hN _)
+  exact ⟨M, hM, univMain_transferC sz0 M 0 1 _ 0⟩
+
+/-- (l) Target 7 at the band model: `UNGreenCorrAllC` discharged by `greenCorrAllC`, `UNDens` by `un_dens_msc_zero`;
+the band local law and `UNClaimAllC` stay hypotheses. -/
+theorem inst_univMainRowC_band_zero :
+    UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) → UNClaimAllC sz0 (UNModel.band sz0).toC 0 →
+      ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+        UNUnivMainC sz0 (UNModel.band sz0).toC (fun _ => rhoSC 0) 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) τU := by
+  intro hT hC
+  obtain ⟨τ₀, hτ₀, h⟩ := univMainRowC greenCorrAllC 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm
+    (UNModel.band sz0).toC (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) un_dens_msc_zero hT hC 1
+  exact ⟨τ₀, hτ₀, fun τU h1 h2 => h τU h1 h2 _ UNInst.bump_testFun⟩
+
+/-- (m) Target 7 at a centred model with a nonzero mean (the model of `UNKInst.inst_ouMatC_ne_ouMat`); its premises
+`UNTrLocal` and `UNClaimAllC` are pins and stay hypotheses. -/
+theorem inst_univMainRowC_nonzero_mean :
+    ∃ M : UNModelC sz0, (∀ ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 0) (sz0.W 0), ∃ i j : Idx 3 (sz0.L 0) (sz0.W 0),
+        ouMatC M 0 (ouTStar sz0 (1 / 60) 0) ω i j ≠ ouMat M.toUNModel 0 (ouTStar sz0 (1 / 60) 0) ω i j) ∧
+      (UNTrLocal sz0 M.toUNModel (fun _ => msc) 0 (1 / 2) → UNClaimAllC sz0 M 0 →
+        ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+          UNUnivMainC sz0 M (fun _ => rhoSC 0) 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) τU) := by
+  have hN : (0 : ℝ) < ((sz0.size 0 : ℕ) : ℝ) := by
+    rw [sz0_values.2.2.1]; norm_num
+  obtain ⟨M, hM⟩ := UNKInst.inst_ouMatC_ne_ouMat (ouTStar sz0 (1 / 60) 0) (Real.rpow_pos_of_pos hN _)
+  refine ⟨M, hM, fun hT hC => ?_⟩
+  obtain ⟨τ₀, hτ₀, h⟩ := univMainRowC greenCorrAllC 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm M
+    (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 2) un_dens_msc_zero hT hC 1
+  exact ⟨τ₀, hτ₀, fun τU h1 h2 => h τU h1 h2 _ UNInst.bump_testFun⟩
+
+/-- (n) Target 8 at the band model as a centred model, `m = msc`, `E = E' = 0`, `δ = 1/4`, `k = 1`, `𝒪 = bump`: the core
+pin `UNCoreC''` itself is proved (`unCoreC''_holds`); `UNGreenCorrAllC` is discharged by `greenCorrAllC`
+(`PinsC2Inst.inst_coreC_band''` takes both as hypotheses). -/
+theorem inst_unCoreC''_holds_band_zero :
+    UNL32 → UNGUELocal → UNTrLocal sz0 (UNModel.band sz0) (fun _ => msc) 0 (1 / 2) →
+      (∃ CV₀ : ℝ, 0 ≤ CV₀ ∧ UNNormBound sz0 (UNModel.band sz0) CV₀) →
+      UNClaimAllC sz0 (UNModel.band sz0).toC 0 →
+        UNUnivDilAt sz0 (UNModel.band sz0) (fun _ => rhoSC 0) 0 0 1 (UNInst.bump : (Fin 1 → ℝ) → ℝ) := by
+  intro h32 hGL hT hN hC
+  obtain ⟨CV₀, hCV, hN'⟩ := hN
+  exact unCoreC''_holds h32 hGL greenCorrAllC 3 le_rfl (1 / 6) (1 / 10) sz0 UNInst.sz0_adm
+    (UNModel.band sz0).toC (fun _ => msc) 0 (fun _ => rhoSC 0) (1 / 4)
+    (UNDens'.mono (by norm_num) (by norm_num) un_dens'_msc_zero) (UNTrLocal.mono (by norm_num) hT)
+    (unTrLocalInit'_band_zero sz0 UNInst.sz0_adm hT)
+    ⟨CV₀, hCV, hN', unMeanBound_toC sz0 (UNModel.band sz0) CV₀⟩ hC 0 (by norm_num) 1 le_rfl _
+    UNInst.bump_testFun
+
 end RBM.Univ.UnivMainInst
 
 #print axioms RBM.Univ.unClaim417C_of_rows
@@ -678,6 +882,10 @@ end RBM.Univ.UnivMainInst
 #print axioms RBM.Univ.univMain_transfer
 #print axioms RBM.Univ.univMainRow
 #print axioms RBM.Univ.unCore'_holds
+#print axioms RBM.Univ.un_infty1RowC''
+#print axioms RBM.Univ.univMain_transferC
+#print axioms RBM.Univ.univMainRowC
+#print axioms RBM.Univ.unCoreC''_holds
 #print axioms RBM.Univ.UnivMainInst.inst_nondegenerate
 #print axioms RBM.Univ.UnivMainInst.inst_univMain_band_zero
 #print axioms RBM.Univ.UnivMainInst.inst_claim417_core
@@ -686,5 +894,12 @@ end RBM.Univ.UnivMainInst
 #print axioms RBM.Univ.UnivMainInst.inst_transfer_band_zero
 #print axioms RBM.Univ.UnivMainInst.inst_unClaimRowk_band_zero
 #print axioms RBM.Univ.UnivMainInst.inst_core'_band_zero
+#print axioms RBM.Univ.UnivMainInst.inst_un_infty1RowC''_band_zero
+#print axioms RBM.Univ.UnivMainInst.inst_un_infty1RowC''_band_one
+#print axioms RBM.Univ.UnivMainInst.inst_univMain_transferC_band
+#print axioms RBM.Univ.UnivMainInst.inst_univMain_transferC_nonzero_mean
+#print axioms RBM.Univ.UnivMainInst.inst_univMainRowC_band_zero
+#print axioms RBM.Univ.UnivMainInst.inst_univMainRowC_nonzero_mean
+#print axioms RBM.Univ.UnivMainInst.inst_unCoreC''_holds_band_zero
 
 end

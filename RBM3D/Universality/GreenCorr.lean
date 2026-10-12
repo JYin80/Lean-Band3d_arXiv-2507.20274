@@ -5,6 +5,7 @@ Authors: Jun Yin
 -/
 import RBM3D.Universality.PoissonSmoothing
 import RBM3D.Universality.EigenMeasurable
+import RBM3D.Universality.PinsK
 
 /-!
 # The Green-function-to-correlation comparison, for every model and dilated test functions
@@ -20,6 +21,11 @@ at the level spacing, the `k`-point functionals of `𝐇_0` and `𝐇_{t*}` have
 * `greenCorr_step` -- the comparison at one size on a generic carrier (a probability measure and
   two measurable Hermitian families), public so that the centred-flow twin of DECISIONS §57 (1) can
   apply it without a second port.
+* `unGreenCorrC`, `greenCorrAllC` (ticket T2477, E4) -- the pins `UNGreenCorrC sz M` and
+  `UNGreenCorrAllC` (`PinsK.lean:187, 204`) for every centred model `M : UNModelC sz`; the private
+  `gcc_quantitative`, `gcc_tendsto` are generalised in place over the carrier `(P n, A n t)`
+  (`GreenCorr_Claim417`, `GreenCorr_Apriori`), so the band (`ouMat`) and the centred (`ouMatC`)
+  statements share one proof.
 
 Port of RBM2D `Universality/GreenCorr.lean` at `c9a24cf` (band model, fixed `O`, `r ≡ 1`; itself a
 port of RBM1D `c06b103:RBM1D/Flow/GreenCorrComparison.lean`).  Two changes, everything else copied:
@@ -693,22 +699,74 @@ variable {d : ℕ}
 private theorem gcc_ouTStar_nonneg (sz : Sizes d) (τU : ℝ) (n : ℕ) : 0 ≤ ouTStar sz τU n :=
   Real.rpow_nonneg (Nat.cast_nonneg _) _
 
+/-- The Claim `(417)` for an abstract flow `A n t` on the carriers `P n` (ticket T2477): `UNClaim417 sz M` is
+`GreenCorr_Claim417 sz (ouP M) (ouMat M)` and `UNClaim417C sz M` is
+`GreenCorr_Claim417 sz (ouP M.toUNModel) (ouMatC M)`, both by `Iff.rfl`. -/
+private def GreenCorr_Claim417 (sz : Sizes d)
+    (P : ∀ n, Measure (Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)))
+    (A : ∀ n, ℝ → Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) →
+      Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (E : ℝ) (nf : ℕ) (τU c' Cn : ℝ) : Prop :=
+  ∀ C₀ : ℝ, 0 < C₀ → ∀ᶠ n in atTop, ∀ z : Fin nf → ℂ, (∀ i, InWindow sz E C₀ τU n (z i)) →
+    ∀ t : ℝ, 0 ≤ t → t ≤ ouTStar sz τU n →
+      |(∫ ω, ∏ i, (stieltjesN (A n t ω) (z i)).im ∂(P n)) -
+        ∫ ω, ∏ i, (stieltjesN (A n (ouTStar sz τU n) ω) (z i)).im ∂(P n)| ≤
+        Nsz sz n ^ (-c' + Cn * τU)
+
+/-- The a priori bound at the level spacing for an abstract flow, read at `t = 0` (ticket T2477): `UNApriori sz M`
+is `GreenCorr_Apriori sz (ouP M) (ouMat M)` by `Iff.rfl`. -/
+private def GreenCorr_Apriori (sz : Sizes d)
+    (P : ∀ n, Measure (Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)))
+    (A : ∀ n, ℝ → Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) →
+      Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (E : ℝ) : Prop :=
+  ∀ p : ℕ, ∀ ε : ℝ, 0 < ε → ∀ᶠ n in atTop,
+    ∫ ω, (stieltjesN (A n 0 ω) ((E : ℂ) + ((Nsz sz n)⁻¹ : ℂ) * Complex.I)).im ^ p ∂(P n) ≤
+      Nsz sz n ^ ε
+
+/-- The centred flow is measurable in the sample for every model (`ouMatC_eq_ouMat_add` and
+`measurable_ouMat`: it differs from the merged flow by the constant `(1 - e^{-t/2}) μ`). -/
+private theorem GreenCorr_measurable_ouMatC {sz : Sizes d} (M : UNModelC sz) (n : ℕ) (t : ℝ) :
+    Measurable (ouMatC M n t) := by
+  refine measurable_pi_iff.2 fun i => measurable_pi_iff.2 fun j => ?_
+  have h1 : Measurable fun ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) => ouMat M.toUNModel n t ω i j :=
+    (measurable_pi_iff.1 (measurable_pi_iff.1 (measurable_ouMat M.toUNModel n t) i)) j
+  have h2 : (fun ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) => ouMatC M n t ω i j) = fun ω =>
+      ouMat M.toUNModel n t ω i j + ((1 - Real.exp (-t / 2)) • M.mean n) i j := by
+    funext ω
+    rw [ouMatC_eq_ouMat_add]
+    rfl
+  rw [h2]
+  exact h1.add_const _
+
+/-- The a priori bound of the merged model `M.toUNModel` is the one of the centred flow at `t = 0`
+(`ouMatC_zero`, `ouMat_zero`: both are `H`). -/
+private theorem GreenCorr_apriori_C {sz : Sizes d} (M : UNModelC sz) {E : ℝ}
+    (hap : UNApriori sz M.toUNModel E) : GreenCorr_Apriori sz (ouP M.toUNModel) (ouMatC M) E := by
+  have h : ∀ n, ouMatC M n 0 = ouMat M.toUNModel n 0 := fun n => funext fun ω => by
+    rw [ouMatC_zero, ouMat_zero]
+  intro p ε hε
+  filter_upwards [hap p ε hε] with n hn
+  simpa only [h] using hn
+
 /-- **`(417)` and the a priori bound give the quantitative comparison, uniformly over the dilations
 `r_n ∈ [a, b]`** (RBM2D `gcc_quantitative` `:641`, `r ≡ 1`; RBM1D `corrPairing_sub_le_of_claim223`,
 `:476`): `|∫ kPoint(𝒪(r_n ·); 𝐇_0) − ∫ kPoint(𝒪(r_n ·); 𝐇_{t*})| ≤ K (N^{-c'+Cτ_U} + N^{-τ_U/2})`
 eventually, with `K` independent of `n` and of the sequence `r`.  The decomposition of `𝒪` is taken
 once and rescaled: `Oj' i = Oj i (r_n ·)`, support radius `R / a`, window radius `C₀ = R / a + 1`. -/
-private theorem gcc_quantitative (sz : Sizes d) (M : UNModel sz)
+private theorem gcc_quantitative (sz : Sizes d)
+    (P : ∀ n, Measure (Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n))) [∀ n, IsProbabilityMeasure (P n)]
+    (A : ∀ n, ℝ → Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) →
+      Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hAm : ∀ n t, Measurable (A n t)) (hAh : ∀ n t ω, (A n t ω).IsHermitian)
     (hsize : Tendsto (fun n => sz.size n) atTop atTop) {E : ℝ} {k : ℕ} {O : (Fin k → ℝ) → ℝ}
     (hO : IsTestFun O) {τU c' C : ℝ} (Cn : ℕ → ℝ) (hτU : 0 < τU)
-    (hCn : ∀ nf ≤ k, Cn nf ≤ C) (h417 : ∀ nf ≤ k, UNClaim417 sz M E nf τU c' (Cn nf))
-    (hap : UNApriori sz M E) (r : ℕ → ℝ) {a b : ℝ} (ha : 0 < a)
+    (hCn : ∀ nf ≤ k, Cn nf ≤ C) (h417 : ∀ nf ≤ k, GreenCorr_Claim417 sz P A E nf τU c' (Cn nf))
+    (hap : GreenCorr_Apriori sz P A E) (r : ℕ → ℝ) {a b : ℝ} (ha : 0 < a)
     (hr : ∀ᶠ n in atTop, a ≤ r n ∧ r n ≤ b) :
     ∃ K : ℝ, ∀ᶠ n in atTop,
-      |(∫ ω, kPoint k (fun α => O (r n • α)) E (ouMat_isHermitian M n 0 ω).eigenvalues
-            ∂(ouP M n)) -
+      |(∫ ω, kPoint k (fun α => O (r n • α)) E (hAh n 0 ω).eigenvalues ∂(P n)) -
         ∫ ω, kPoint k (fun α => O (r n • α)) E
-            (ouMat_isHermitian M n (ouTStar sz τU n) ω).eigenvalues ∂(ouP M n)| ≤
+            (hAh n (ouTStar sz τU n) ω).eigenvalues ∂(P n)| ≤
         K * (Nsz sz n ^ (-c' + C * τU) + Nsz sz n ^ (-(τU / 2))) := by
   -- a support radius `R ≥ 1`
   obtain ⟨R, hR1, hR⟩ : ∃ R : ℝ, 1 ≤ R ∧ ∀ x, O x ≠ 0 → ∀ j, |x j| ≤ R := by
@@ -789,9 +847,9 @@ private theorem gcc_quantitative (sz : Sizes d) (M : UNModel sz)
           · exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hrb hε0.le) (hCs0 i)
           · exact mul_nonneg (hCs0 i) (mul_nonneg hmb0.le hε0.le)
       _ = Cs i * mb * ca ^ k * ε * ∏ j, (1 + x j ^ 2)⁻¹ := by ring
-  have hstep := greenCorr_step (ouP M n) (measurable_ouMat M n 0)
-    (measurable_ouMat M n (ouTStar sz τU n)) (ouMat_isHermitian M n 0)
-    (ouMat_isHermitian M n (ouTStar sz τU n)) (O := fun α => O (r n • α)) E Cn hτU hCn
+  have hstep := greenCorr_step (P n) (hAm n 0)
+    (hAm n (ouTStar sz τU n)) (hAh n 0)
+    (hAh n (ouTStar sz τU n)) (O := fun α => O (r n • α)) E Cn hτU hCn
     (R := R / a) (by linarith) c kk (fun i x => Oj i (r n • x)) hkk hOj' hOjR' hdec'
     (fun i => Cs i * mb * ca ^ k) hCs0' hCs' hε₀ hcardN hNr1 (by rw [hcardNat]; exact hN3)
     (fun nf hnf z hz => hN1 nf hnf z hz 0 le_rfl (gcc_ouTStar_nonneg sz τU n))
@@ -817,21 +875,24 @@ private theorem le_gccCmax {k nf : ℕ} (Cn : ℕ → ℝ) (h : nf ≤ k) : Cn n
 
 /-- **`UNGreenCorr` at the explicit threshold** `τ₀ = c' / (2 (Cmax + 1))` (RBM2D `gcc_tendsto`
 `:690`), for dilations `r_n ∈ [a, b]`. -/
-private theorem gcc_tendsto (sz : Sizes d) (M : UNModel sz)
+private theorem gcc_tendsto (sz : Sizes d)
+    (P : ∀ n, Measure (Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n))) [∀ n, IsProbabilityMeasure (P n)]
+    (A : ∀ n, ℝ → Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) →
+      Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hAm : ∀ n t, Measurable (A n t)) (hAh : ∀ n t ω, (A n t ω).IsHermitian)
     (hsize : Tendsto (fun n => sz.size n) atTop atTop)
     {E : ℝ} {k : ℕ} {c' : ℝ} (hc' : 0 < c') (Cn : ℕ → ℝ) {τU : ℝ} (hτU : 0 < τU)
     (hτU0 : τU ≤ c' / (2 * (gccCmax k Cn + 1)))
-    (h417 : ∀ nf ≤ k, UNClaim417 sz M E nf τU c' (Cn nf)) (hap : UNApriori sz M E)
+    (h417 : ∀ nf ≤ k, GreenCorr_Claim417 sz P A E nf τU c' (Cn nf)) (hap : GreenCorr_Apriori sz P A E)
     {O : (Fin k → ℝ) → ℝ} (hO : IsTestFun O) (r : ℕ → ℝ) {a b : ℝ} (ha : 0 < a)
     (hr : ∀ᶠ n in atTop, a ≤ r n ∧ r n ≤ b) :
     Tendsto (fun n =>
-      (∫ ω, kPoint k (fun α => O (r n • α)) E (ouMat_isHermitian M n 0 ω).eigenvalues
-          ∂(ouP M n)) -
+      (∫ ω, kPoint k (fun α => O (r n • α)) E (hAh n 0 ω).eigenvalues ∂(P n)) -
       (∫ ω, kPoint k (fun α => O (r n • α)) E
-          (ouMat_isHermitian M n (ouTStar sz τU n) ω).eigenvalues ∂(ouP M n)))
+          (hAh n (ouTStar sz τU n) ω).eigenvalues ∂(P n)))
       atTop (𝓝 0) := by
   have hC0 : 0 ≤ gccCmax k Cn := gccCmax_nonneg k Cn
-  obtain ⟨K, hK⟩ := gcc_quantitative sz M hsize hO Cn hτU (fun nf hnf => le_gccCmax Cn hnf)
+  obtain ⟨K, hK⟩ := gcc_quantitative sz P A hAm hAh hsize hO Cn hτU (fun nf hnf => le_gccCmax Cn hnf)
     h417 hap r ha hr
   -- `Cmax τ_U ≤ c'/2`
   have hCτ : gccCmax k Cn * τU ≤ c' / 2 := by
@@ -866,12 +927,34 @@ theorem unGreenCorr {d : ℕ} (sz : Sizes d) (hsize : Tendsto (fun n => sz.size 
   intro E k c' hc' Cn
   refine ⟨c' / (2 * (gccCmax k Cn + 1)), by have := gccCmax_nonneg k Cn; positivity, ?_⟩
   intro τU hτU hτU0 h417 hap O hO r a b ha hr
-  exact gcc_tendsto sz M hsize hc' Cn hτU hτU0 h417 hap hO r ha hr
+  exact gcc_tendsto sz (ouP M) (ouMat M) (measurable_ouMat M) (ouMat_isHermitian M) hsize hc' Cn hτU
+    hτU0 h417 hap hO r ha hr
 
 /-- **`UNGreenCorrAll`** (`Universality/Pins.lean:546`): `unGreenCorr` for every model along every
 size sequence with `size n → ∞` (`3 ≤ d` is unused). -/
 theorem greenCorrAll : UNGreenCorrAll :=
   fun _ _ sz hsize M => unGreenCorr sz hsize M
+
+/-- **The Green-function-to-correlation comparison for every centred model** (T2477 target 1; paper
+`1_2:566-581`): the pin `UNGreenCorrC sz M` (`PinsK.lean:187`) for every `M : UNModelC sz` along every
+size sequence with `size n → ∞`.  The proof is the one of `unGreenCorr` over the carrier
+`(ouP M.toUNModel n, ouMatC M n)`: measurability from `GreenCorr_measurable_ouMatC`, hermiticity
+`ouMatC_isHermitian`, the a priori bound read at `ouMatC M n 0 = M.H n` (`GreenCorr_apriori_C`);
+`τ₀ = c' / (2 (Cmax + 1))` does not depend on `E`, `O`, `r`, `a`, `b` or the model.  The band statement is
+recovered by `UNGreenCorrC_toC` (`PinsK.lean:232`). -/
+theorem unGreenCorrC {d : ℕ} (sz : Sizes d) (hsize : Tendsto (fun n => sz.size n) atTop atTop)
+    (M : UNModelC sz) : UNGreenCorrC sz M := by
+  intro E k c' hc' Cn
+  refine ⟨c' / (2 * (gccCmax k Cn + 1)), by have := gccCmax_nonneg k Cn; positivity, ?_⟩
+  intro τU hτU hτU0 h417 hap O hO r a b ha hr
+  exact gcc_tendsto sz (ouP M.toUNModel) (ouMatC M) (GreenCorr_measurable_ouMatC M)
+    (ouMatC_isHermitian M) hsize hc' Cn hτU hτU0 h417 (GreenCorr_apriori_C M hap) hO r ha hr
+
+/-- **`UNGreenCorrAllC`** (T2477 target 2; pin `PinsK.lean:204`): `unGreenCorrC` for every centred model along
+every size sequence with `size n → ∞` (`3 ≤ d` is unused).  Read at block Anderson: `greenCorrAllC 3 h3 sz hs
+(UNModelC.ba sz)`.  The band `greenCorrAll` is `greenCorrAllC.toAll` (`PinsK.lean:251`). -/
+theorem greenCorrAllC : UNGreenCorrAllC :=
+  fun _ _ sz hsize M => unGreenCorrC sz hsize M
 
 end Seq
 
@@ -978,7 +1061,8 @@ theorem instance_greenCorrAll_tauU
   have hCmax : gccCmax 1 (fun _ : ℕ => (1 : ℝ)) = 1 := by
     rw [gccCmax, Finset.sup'_const]
     norm_num
-  refine gcc_tendsto sz0 (UNModel.ba sz0) sz0_size_tendsto one_pos (fun _ => 1) (by norm_num) ?_
+  refine gcc_tendsto sz0 (ouP (UNModel.ba sz0)) (ouMat (UNModel.ba sz0)) (measurable_ouMat (UNModel.ba sz0))
+    (ouMat_isHermitian (UNModel.ba sz0)) sz0_size_tendsto one_pos (fun _ => 1) (by norm_num) ?_
     h417 hap bump_testFun (fun n : ℕ => 1 + 1 / ((n : ℝ) + 1)) (a := 1) (b := 2) one_pos
     (Eventually.of_forall fun n => ?_)
   · rw [hCmax]
@@ -989,15 +1073,165 @@ theorem instance_greenCorrAll_tauU
       rw [div_le_one hn]; linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
     linarith
 
+/-! #### Instances of the centred forms (T2477 targets 1-2; `d = 3`, `sz0`, `k = 1`, `c' = 1`, `C_n ≡ 1`, `bump`) -/
+
+private theorem GreenCorr_blk0 : blk 4 32 (0 : ZMod (32 * 4)) = 0 := by decide
+
+private theorem GreenCorr_blk32 : blk 4 32 (32 : ZMod (32 * 4)) = 1 := by decide
+
+private theorem GreenCorr_ofs_eq : ofs 4 32 (0 : ZMod (32 * 4)) = ofs 4 32 32 := by decide
+
+/-- `Ψ` has the entry `1` between the block `0` and the block `e₁` (same offset `0`) at `(L, W) = (4, 32)`
+(copy of the private `unPinsK_psiI_entry`, `PinsK.lean:699`). -/
+private theorem GreenCorr_psiI_entry :
+    PsiI 3 4 32 (0 : Idx 3 4 32) (fun k => if k = 0 then 32 else 0) = 1 := by
+  have hj : (fun k : Fin 3 => blk 4 32 (if k = 0 then (32 : ZMod (32 * 4)) else 0)) =
+      fun k => if k = 0 then 1 else 0 := by
+    funext k; by_cases h : k = 0 <;> simp [h, GreenCorr_blk32, GreenCorr_blk0]
+  have hi : (fun k : Fin 3 => blk 4 32 (0 : (ZMod (32 * 4)))) = 0 := by
+    funext k; simp [GreenCorr_blk0]
+  have ho : (fun k : Fin 3 => ofs 4 32 (if k = 0 then (32 : ZMod (32 * 4)) else 0)) =
+      fun k : Fin 3 => ofs 4 32 (0 : ZMod (32 * 4)) := by
+    funext k; by_cases h : k = 0 <;> simp [h, GreenCorr_ofs_eq]
+  have hadj : Adj 3 4 (0 : Zd 3 4) (fun k => if k = 0 then 1 else 0) := by
+    unfold Adj zdistD; decide
+  simpa [PsiI, PsiV, PsiB, splitEquiv, split, Matrix.submatrix_apply, Matrix.kroneckerMap_apply, hj, hi, ho]
+    using hadj
+
+/-- A centred model with a nonzero mean at the instance: the law and matrix of `UNModel.ba sz0` with the mean
+`λ Ψ` (field-equal to `UNModelC.ba sz0` of `BA/UNPins.lean`, which this file cannot import; copy of the private
+`unPinsK_baC`, `PinsK.lean:717`). -/
+private def GreenCorr_baC : UNModelC sz0 :=
+  { UNModel.ba sz0 with
+    mean := fun n => (sz0.lam n : ℂ) • PsiI 3 (sz0.L n) (sz0.W n)
+    mean_herm := fun n => by
+      unfold Matrix.IsHermitian
+      rw [Matrix.conjTranspose_smul, (PsiI_isHermitian 3 _ _).eq,
+        show star (sz0.lam n : ℂ) = (sz0.lam n : ℂ) from Complex.conj_ofReal _] }
+
+/-- The mean of `GreenCorr_baC` is nonzero at `n = 0`: the entry between the blocks `0` and `e₁` is `λ_0 = 1/64`. -/
+private theorem GreenCorr_baC_mean_ne : ∃ i j : Idx 3 (sz0.L 0) (sz0.W 0), GreenCorr_baC.mean 0 i j ≠ 0 := by
+  refine ⟨(0 : Idx 3 4 32), fun k => if k = 0 then 32 else 0, ?_⟩
+  have hm : GreenCorr_baC.mean 0 (0 : Idx 3 4 32) (fun k => if k = 0 then 32 else 0) =
+      ((1 / 64 : ℝ) : ℂ) := by
+    change ((sz0.lam 0 : ℝ) : ℂ) * PsiI 3 4 32 (0 : Idx 3 4 32) (fun k => if k = 0 then 32 else 0) = _
+    rw [GreenCorr_psiI_entry]
+    norm_num [sz0]
+  rw [hm]
+  norm_num
+
+/-- **Target 1 at the band model** `(UNModel.band sz0).toC` (mean `0`): `unGreenCorrC` at `E = 0`, `k = 1`,
+`c' = 1`, `C_n ≡ 1`, `bump`, the constant dilation `r ≡ ρ_sc(0)`.  `UNClaim417C` and `UNApriori` are other
+gates' pins and stay hypotheses. -/
+theorem instance_unGreenCorrC_band :
+    (bump : (Fin 1 → ℝ) → ℝ) 0 = 1 ∧ sz0.size 0 = 2097152 ∧ 0 < rhoSC 0 ∧
+    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+      (∀ nf ≤ 1, UNClaim417C sz0 (UNModel.band sz0).toC 0 nf τU 1 1) →
+      UNApriori sz0 (UNModel.band sz0) 0 →
+      Tendsto (fun n =>
+        (∫ ω, kPoint 1 (fun α => (bump : (Fin 1 → ℝ) → ℝ) (rhoSC 0 • α)) 0
+            (ouMatC_isHermitian (UNModel.band sz0).toC n 0 ω).eigenvalues
+            ∂(ouP (UNModel.band sz0) n)) -
+        (∫ ω, kPoint 1 (fun α => (bump : (Fin 1 → ℝ) → ℝ) (rhoSC 0 • α)) 0
+            (ouMatC_isHermitian (UNModel.band sz0).toC n (ouTStar sz0 τU n) ω).eigenvalues
+            ∂(ouP (UNModel.band sz0) n)))
+        atTop (𝓝 0) := by
+  have hρ : 0 < rhoSC 0 := rhoSC_pos (by norm_num)
+  refine ⟨bump_nondegenerate.1, sz0_values.2.2.1, hρ, ?_⟩
+  obtain ⟨τ₀, hτ₀, h⟩ := unGreenCorrC sz0 sz0_size_tendsto (UNModel.band sz0).toC 0 1 1 one_pos
+    (fun _ => 1)
+  exact ⟨τ₀, hτ₀, fun τU hτU hτU0 h417 hap =>
+    h τU hτU hτU0 h417 hap bump bump_testFun (fun _ => rhoSC 0) (rhoSC 0) (rhoSC 0) hρ
+      (Eventually.of_forall fun _ => ⟨le_rfl, le_rfl⟩)⟩
+
+/-- **Target 1 at a nonzero-mean model** `GreenCorr_baC` (law and matrix of `UNModel.ba sz0`, mean `λ Ψ ≠ 0`),
+the same data and the non-constant dilation `r_n = 1 + 1/(n+1) ∈ [1, 2]` (`r_0 = 2 ≠ 3/2 = r_1`). -/
+theorem instance_unGreenCorrC_baC :
+    (1 + 1 / (((0 : ℕ) : ℝ) + 1) : ℝ) ≠ 1 + 1 / (((1 : ℕ) : ℝ) + 1) ∧
+    (∃ i j : Idx 3 (sz0.L 0) (sz0.W 0), GreenCorr_baC.mean 0 i j ≠ 0) ∧
+    (bump : (Fin 1 → ℝ) → ℝ) 0 = 1 ∧ sz0.size 0 = 2097152 ∧
+    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+      (∀ nf ≤ 1, UNClaim417C sz0 GreenCorr_baC 0 nf τU 1 1) →
+      UNApriori sz0 GreenCorr_baC.toUNModel 0 →
+      Tendsto (fun n : ℕ =>
+        (∫ ω, kPoint 1 (fun α => (bump : (Fin 1 → ℝ) → ℝ) ((1 + 1 / ((n : ℝ) + 1)) • α)) 0
+            (ouMatC_isHermitian GreenCorr_baC n 0 ω).eigenvalues
+            ∂(ouP GreenCorr_baC.toUNModel n)) -
+        (∫ ω, kPoint 1 (fun α => (bump : (Fin 1 → ℝ) → ℝ) ((1 + 1 / ((n : ℝ) + 1)) • α)) 0
+            (ouMatC_isHermitian GreenCorr_baC n (ouTStar sz0 τU n) ω).eigenvalues
+            ∂(ouP GreenCorr_baC.toUNModel n)))
+        atTop (𝓝 0) := by
+  refine ⟨by norm_num, GreenCorr_baC_mean_ne, bump_nondegenerate.1, sz0_values.2.2.1, ?_⟩
+  obtain ⟨τ₀, hτ₀, h⟩ := unGreenCorrC sz0 sz0_size_tendsto GreenCorr_baC 0 1 1 one_pos (fun _ => 1)
+  refine ⟨τ₀, hτ₀, fun τU hτU hτU0 h417 hap => h τU hτU hτU0 h417 hap bump bump_testFun
+    (fun n : ℕ => 1 + 1 / ((n : ℝ) + 1)) 1 2 one_pos (Eventually.of_forall fun n => ?_)⟩
+  have hn : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+  refine ⟨by simpa using hn.le, ?_⟩
+  have : 1 / ((n : ℝ) + 1) ≤ 1 := by
+    rw [div_le_one hn]; linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
+  linarith
+
+/-- **Target 2 at the band model** `(UNModel.band sz0).toC`: `greenCorrAllC` at `d = 3`, `E = 0`, `k = 1`,
+`c' = 1`, `C_n ≡ 1`, `bump`, `r ≡ 1`. -/
+theorem instance_greenCorrAllC_band :
+    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+      (∀ nf ≤ 1, UNClaim417C sz0 (UNModel.band sz0).toC 0 nf τU 1 1) →
+      UNApriori sz0 (UNModel.band sz0) 0 →
+      Tendsto (fun n =>
+        (∫ ω, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
+            (ouMatC_isHermitian (UNModel.band sz0).toC n 0 ω).eigenvalues
+            ∂(ouP (UNModel.band sz0) n)) -
+        (∫ ω, kPoint 1 (bump : (Fin 1 → ℝ) → ℝ) 0
+            (ouMatC_isHermitian (UNModel.band sz0).toC n (ouTStar sz0 τU n) ω).eigenvalues
+            ∂(ouP (UNModel.band sz0) n)))
+        atTop (𝓝 0) := by
+  obtain ⟨τ₀, hτ₀, h⟩ := greenCorrAllC 3 le_rfl sz0 sz0_size_tendsto (UNModel.band sz0).toC 0 1 1
+    one_pos (fun _ => 1)
+  refine ⟨τ₀, hτ₀, fun τU hτU hτU0 h417 hap => ?_⟩
+  have := h τU hτU hτU0 h417 hap bump bump_testFun (fun _ => 1) 1 1 one_pos
+    (Eventually.of_forall fun _ => ⟨le_rfl, le_rfl⟩)
+  simp only [one_smul] at this
+  exact this
+
+/-- **Target 2 at the nonzero-mean model** `GreenCorr_baC` with the non-constant dilation
+`r_n = 1 + 1/(n+1)`. -/
+theorem instance_greenCorrAllC_baC :
+    ∃ τ₀ : ℝ, 0 < τ₀ ∧ ∀ τU : ℝ, 0 < τU → τU ≤ τ₀ →
+      (∀ nf ≤ 1, UNClaim417C sz0 GreenCorr_baC 0 nf τU 1 1) →
+      UNApriori sz0 GreenCorr_baC.toUNModel 0 →
+      Tendsto (fun n : ℕ =>
+        (∫ ω, kPoint 1 (fun α => (bump : (Fin 1 → ℝ) → ℝ) ((1 + 1 / ((n : ℝ) + 1)) • α)) 0
+            (ouMatC_isHermitian GreenCorr_baC n 0 ω).eigenvalues
+            ∂(ouP GreenCorr_baC.toUNModel n)) -
+        (∫ ω, kPoint 1 (fun α => (bump : (Fin 1 → ℝ) → ℝ) ((1 + 1 / ((n : ℝ) + 1)) • α)) 0
+            (ouMatC_isHermitian GreenCorr_baC n (ouTStar sz0 τU n) ω).eigenvalues
+            ∂(ouP GreenCorr_baC.toUNModel n)))
+        atTop (𝓝 0) := by
+  obtain ⟨τ₀, hτ₀, h⟩ := greenCorrAllC 3 le_rfl sz0 sz0_size_tendsto GreenCorr_baC 0 1 1 one_pos
+    (fun _ => 1)
+  refine ⟨τ₀, hτ₀, fun τU hτU hτU0 h417 hap => h τU hτU hτU0 h417 hap bump bump_testFun
+    (fun n : ℕ => 1 + 1 / ((n : ℝ) + 1)) 1 2 one_pos (Eventually.of_forall fun n => ?_)⟩
+  have hn : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+  refine ⟨by simpa using hn.le, ?_⟩
+  have : 1 / ((n : ℝ) + 1) ≤ 1 := by
+    rw [div_le_one hn]; linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
+  linarith
+
 end GreenCorrCheck
 
 #print axioms RBM.Univ.unGreenCorr
 #print axioms RBM.Univ.greenCorr_step
 #print axioms RBM.Univ.greenCorrAll
+#print axioms RBM.Univ.unGreenCorrC
+#print axioms RBM.Univ.greenCorrAllC
 #print axioms RBM.Univ.GreenCorrCheck.instance_band
 #print axioms RBM.Univ.GreenCorrCheck.instance_ba
 #print axioms RBM.Univ.GreenCorrCheck.instance_greenCorrAll
 #print axioms RBM.Univ.GreenCorrCheck.instance_greenCorrAll_tauU
+#print axioms RBM.Univ.GreenCorrCheck.instance_unGreenCorrC_band
+#print axioms RBM.Univ.GreenCorrCheck.instance_unGreenCorrC_baC
+#print axioms RBM.Univ.GreenCorrCheck.instance_greenCorrAllC_band
+#print axioms RBM.Univ.GreenCorrCheck.instance_greenCorrAllC_baC
 
 end RBM.Univ
 
