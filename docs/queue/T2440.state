@@ -1,4 +1,4 @@
-state: audit-fail
-reason: preflight PASS, prover-hard ea4dd16 (Graph/BALvl1A, 676 lines, five targets), audit BLOCKED with dispatcher sign-off (wf_f8bd8050-c6b; docs/reports/T2440-audit.md): targets 1-6 pass, but the registry pre-check (import RBM3D + #assert_rbm_axioms) fails on RBM.Graph.BAReach.below, whose fix (a registry line in RBM3D/Test/Axioms.lean) is outside this ticket's sole writable files. Question for the dispatcher: an amend adding RBM3D/Test/Axioms.lean (structural or owed line for BAReach.below) to the writable files, or another fix? Not merged.
-updated: Mon Oct 12 05:25:15 UTC 2026
+state: audit-pass
+reason: preflight PASS, prover-hard ea4dd16, audit round 1 BLOCKED (sign-off) → Amend 1 → repair 0fac439 → audit PASS round 2 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 05:43:26 UTC 2026
 reports: docs/reports/T2440-prove.md, docs/reports/T2440-audit.md
