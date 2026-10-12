@@ -1818,6 +1818,124 @@ theorem BASim_tagStd_band {E' I : Type} [Fintype E'] [DecidableEq E'] [Fintype I
 
 end ImageSteps
 
+section Linv
+variable {E : Type}
+
+theorem BASim_lvl1Loops_map {V W : Type*} [DecidableEq V] [DecidableEq W] (f : V → W) (hf : Function.Injective f) (es : List (SEdge V)) :
+    lvl1Loops (es.map (SEdge.map f)) = lvl1Loops es := by
+  unfold lvl1Loops
+  rw [List.countP_map]
+  congr 1
+  funext e
+  simp [SEdge.map, hf.eq_iff]
+
+theorem BASim_lvl1Pairs_map {V W : Type*} [DecidableEq V] [DecidableEq W] (f : V → W) (hf : Function.Injective f) (int : V → Bool) (int' : W → Bool)
+    (hint : ∀ v, int' (f v) = int v) : ∀ es : List (SEdge V), lvl1Pairs int' (es.map (SEdge.map f)) = lvl1Pairs int es
+  | [] => rfl
+  | e :: es => by
+    have hsh : ∀ e' : SEdge V, lvl1Share int' (SEdge.map f e) (SEdge.map f e') = lvl1Share int e e' := fun e' => by
+      unfold lvl1Share
+      simp [SEdge.map, hf.eq_iff, hint]
+    simp only [List.map_cons, lvl1Pairs, BASim_lvl1Pairs_map f hf int int' hint es, List.map_map, Function.comp_def, hsh]
+
+theorem BASim_any_forall₂ {α β : Type*} {R : α → β → Prop} {f : α → Bool} {g : β → Bool} (h : ∀ a b, R a b → f a = g b) :
+    ∀ {la : List α} {lb : List β}, List.Forall₂ R la lb → la.any f = lb.any g := by
+  intro la lb hr
+  induction hr with
+  | nil => rfl
+  | cons hab _ ih => simp [List.any_cons, h _ _ hab, ih]
+
+/-- two graphs with the same waved and `=`-dotted edges (up to the relations of `BAEquiv`) have the same adjacency -/
+theorem BASim_adj_equiv {X Y : Type} [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y] (A B : LGraph X Y) (l : List (WEdge (X ⊕ Y)))
+    (hl : l.Perm A.waved) (hrev : List.Forall₂ WEdge.sameRev l B.waved)
+    (hd1 : ∀ d ∈ A.dotted, ∃ d' ∈ B.dotted, DEdge.sameU d d') (hd2 : ∀ d ∈ B.dotted, ∃ d' ∈ A.dotted, DEdge.sameU d' d) (u v : X ⊕ Y) :
+    A.adj u v = B.adj u v := by
+  have hw : A.waved.any (fun e => decide ((e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u))) = B.waved.any (fun e => decide ((e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u))) := by
+    rw [← hl.any_eq]
+    refine BASim_any_forall₂ (fun a b hab => ?_) hrev
+    rcases hab with rfl | rfl
+    · rfl
+    · refine decide_eq_decide.2 ?_
+      simp only [WEdge.transpose]
+      constructor <;> rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> tauto
+  have hdt : A.dotted.any (fun e => e.eq && decide ((e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u))) = B.dotted.any (fun e => e.eq && decide ((e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u))) := by
+    have : ∀ (a b : DEdge (X ⊕ Y)), DEdge.sameU a b → ((a.eq && decide ((a.x = u ∧ a.y = v) ∨ (a.x = v ∧ a.y = u))) = (b.eq && decide ((b.x = u ∧ b.y = v) ∨ (b.x = v ∧ b.y = u)))) := by
+      rintro a b ⟨h1, h2 | h2⟩
+      · rw [h1, h2.1, h2.2]
+      · rw [h1, h2.1, h2.2]
+        congr 1
+        refine decide_eq_decide.2 ?_
+        constructor <;> rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> tauto
+    rw [Bool.eq_iff_iff]
+    simp only [List.any_eq_true]
+    constructor
+    · rintro ⟨e, he, h⟩
+      obtain ⟨e', he', hs⟩ := hd1 e he
+      exact ⟨e', he', by rw [← this _ _ hs]; exact h⟩
+    · rintro ⟨e, he, h⟩
+      obtain ⟨e', he', hs⟩ := hd2 e he
+      exact ⟨e', he', by rw [this _ _ hs]; exact h⟩
+  unfold LGraph.adj
+  rw [hw, hdt]
+
+/-- **`BAEquiv` keeps the invariants** `(ord, n_M, n_V - n_W, loops, n_S, pairs, nExt)` (what the cost and the path invariants read) -/
+theorem BASim_baInv_of_equiv {R S : PGraph E} (h : R.BAEquiv S) : R.baInv = S.baInv := by
+  classical
+  obtain ⟨eE, eI, hext, hs, ⟨l, hl, hrev⟩, hd1, hd2⟩ := h
+  have hφ : ∀ v, ((Equiv.sumCongr eE eI) v).isRight = v.isRight := by rintro (a | b) <;> rfl
+  have hc := LGraph.counters_relabel_equiv R.g (Equiv.sumCongr eE eI) hφ
+  have hrel : R.g.relabel (Sum.map eE eI) = R.g.relabel (Equiv.sumCongr eE eI) := rfl
+  rw [hrel] at hs hl hd1 hd2
+  have hinj : Function.Injective (Equiv.sumCongr eE eI) := (Equiv.sumCongr eE eI).injective
+  have hnS : R.g.nS = S.g.nS := by
+    have := hs.length_eq
+    simp only [LGraph.relabel, List.length_map] at this
+    exact this
+  have hnW : R.g.nW = S.g.nW := by
+    have h1 := hl.length_eq
+    have h2 := hrev.length_eq
+    simp only [LGraph.relabel, List.length_map] at h1
+    exact h1.symm.trans h2
+  have hnV : R.g.nV = S.g.nV := by
+    have := hc.2.2.1
+    exact this.symm
+  have hadj : ∀ u v, (R.g.relabel (Equiv.sumCongr eE eI)).adj u v = S.g.adj u v := fun u v =>
+    BASim_adj_equiv _ _ l hl hrev hd1 hd2 u v
+  have hnM : R.g.nM = S.g.nM := by
+    rw [← hc.2.2.2]
+    unfold LGraph.nM
+    have hstep : (R.g.relabel (Equiv.sumCongr eE eI)).step = S.g.step := funext fun s => by
+      unfold LGraph.step; simp only [hadj]
+    have hmol : (R.g.relabel (Equiv.sumCongr eE eI)).mol = S.g.mol := funext fun v => by
+      unfold LGraph.mol; rw [hstep]
+    rw [hmol]
+  have hLoops : R.g.lvl1NLoops = S.g.lvl1NLoops := by
+    unfold LGraph.lvl1NLoops
+    rw [← BASim_lvl1Loops_map _ hinj R.g.solid]
+    exact (List.Perm.countP_eq _ hs)
+  have hPairs : R.g.lvl1NPairs = S.g.lvl1NPairs := by
+    unfold LGraph.lvl1NPairs
+    rw [← BASim_lvl1Pairs_map _ hinj Sum.isRight Sum.isRight (fun v => by rcases v with a | b <;> rfl) R.g.solid]
+    exact lvl1Pairs_perm _ hs
+  have hE : Fintype.card R.E' = Fintype.card S.E' := Fintype.card_congr eE
+  simp only [PGraph.baInv, ord, LGraph.counters]
+  rw [hnS, hnW, hnV, hnM, hLoops, hPairs, hE]
+
+/-- **The atomic image keeps the invariants** (`BAimg`, R0) -/
+theorem BASim_img_baInv (Q : BAPGraph E) : Q.img.baInv = Q.baInv := by
+  obtain ⟨hc, hl, hp, hE, -⟩ := BAimg_holds Q.g
+  have hS := congrArg Counters.nS hc
+  have hW := congrArg Counters.nW hc
+  have hV := congrArg Counters.nV hc
+  have hM := congrArg Counters.nM hc
+  simp only [LGraph.counters, BAGraph.counters] at hS hW hV hM
+  change (ord Q.g.img.g.counters, Q.g.img.g.nM, (Q.g.img.g.nV : ℤ) - Q.g.img.g.nW, Q.g.img.g.lvl1NLoops, Q.g.img.g.nS, Q.g.img.g.lvl1NPairs,
+    Fintype.card Q.g.img.E') = (Q.g.scalingOrder, Q.g.nM, (Q.g.nA : ℤ) - Q.g.nW, Q.g.nLoops, Q.g.nS, Q.g.nPairs, Q.g.nExt)
+  simp only [ord, LGraph.counters, BAGraph.scalingOrder, BAGraph.counters]
+  rw [hS, hW, hV, hM, hl, hp, hE]
+
+end Linv
+
 end RBM.Graph
 
 end

@@ -23,6 +23,8 @@ set_option linter.unusedSimpArgs false
 open private lwExists_mem_dedupPairs lwMem_of_mem_dedupPairs from RBM3D.Graph.LWVocab
 open private BAVocab_vmap_injective BAVocab_vmap_surjective BAVocab_merge_atomAdj BAVocab_merge_dotted_eq from RBM3D.Graph.BAVocab
 open private BAAtomic_solidAt BAAtomic_charge BAAtomic_fm BAAtomic_exists_inr_vmap from RBM3D.Graph.BAAtomic
+open private BAWeightOp_nExt_add_nA BAWeightOp_atom_subset BAWeightOp_nA_le from RBM3D.Graph.BAWeightOp
+open private BAVocab_atom_eq_of_mem BAVocab_self_mem_atom from RBM3D.Graph.BAVocab
 
 noncomputable section
 
@@ -36,7 +38,6 @@ variable {E : Type}
 /-- the first term of `lw2`: `M_{xα} S_{αβ} Ǧ_{αx} Ǧ_{ββ} f` -/
 def BASim_leaf2 {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E' I') (p : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : BAGraph E' (I' ⊕ Fin 2) :=
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 0) (owxEmb 2 p.1.dst), bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)]
-
 
 /-- **`lw2.leaf` ↔ `owxT1`** (the table of T2423 (a) (i): `α ↦ x̄`, `β ↦ n0`); the edge `p.1` is a circled blue edge inside one atom (a weight, or the within-atom edge of macro (a)) -/
 def BASim_B_leaf2 (P : BAPGraph E) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
@@ -68,7 +69,6 @@ theorem BASim_match_leaf2 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdg
   unfold lvl1WeightOuts0
   simp only [List.mem_append]
   exact Or.inl (Or.inl (Or.inl hQ))
-
 
 /-! ### The terms with four new vertices (`lw4`, `GGGamma` fourth sum): `z ↦ ā`, `y2, α ↦ n0`, `β ↦ n1` -/
 
@@ -122,7 +122,6 @@ theorem BASim_match_D2 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge
   refine (congrArg (fun l => Q ∈ l) (BASim_weightOuts0_ff m P.img.g (BASim_imgP P p) ((promoteC P.g).vmap p.1.src))).mpr ?_
   simp only [List.mem_append, List.mem_flatMap]
   exact Or.inl (Or.inr ⟨BASim_imgP P q, BASim_imgP_mem2 P hq, hQ⟩)
-
 
 /-! ### `lw4` ↔ `owxT2`, `owxT4` -/
 
@@ -184,7 +183,6 @@ def BASim_B_D4 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
       refine List.Forall₂.cons (Or.inl ?_) (List.Forall₂.cons (Or.inl ?_) List.Forall₂.nil)
       · simp only [WEdge.map, bpW, BASim_w4, BASim_phi42_zero, BASim_phi42_one]
       · simp only [WEdge.map, bpW, BASim_w4, BASim_phi42_two, BASim_phi42_three])
-
 
 /-- **The matching of the terms of `lw4.leaf`** with the second term `owxT2` of the weight step -/
 theorem BASim_match_leaf4 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
@@ -976,7 +974,6 @@ theorem BASim_R2_ff {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [D
   rw [BASim_frame2Q_ff]
   rfl
 
-
 theorem BASim_R2_ft {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (m : ℂ) (Γ : LGraph E' I')
     (p q : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) (x : I') (y y' : E' ⊕ I') :
     lwSymmOe2xR2 false true m Γ p q x y y' =
@@ -987,7 +984,6 @@ theorem BASim_R2_ft {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [D
   simp only [lwSymmTwistG, lwSymmTwistS, Bool.cond_true, Bool.cond_false, LGraph.transpose, LGraph.owxExt, hS, hW, List.map_id,
     List.map_map, List.map_append, List.map_cons, List.map_nil, Function.comp_def, id_eq, lwSymm_sedge_tr_tr, lwSymm_wedge_tr_tr, List.map_id']
   rfl
-
 
 /-- `h'` is `h`, or the circled version of an uncircled loop `h` -/
 def BASim_loopRel {V : Type*} (h' h : SEdge V) : Prop :=
@@ -1042,7 +1038,6 @@ theorem BASim_loopRel_mem {V : Type*} {s' s : List (SEdge V)} (hs : List.Forall�
       · exact ⟨_, List.mem_cons_self, hr⟩
       · obtain ⟨e, h0, h⟩ := ih.2 e0 he0
         exact ⟨e, List.mem_cons_of_mem _ h0, h⟩
-
 
 section PartFix
 variable {X Y : Type} [Fintype X] [DecidableEq X] [Fintype Y] [DecidableEq Y]
@@ -1142,7 +1137,6 @@ theorem BASim_phi20_u (P : BAPGraph E) (x' : BASimY P) (a b : P.E' ⊕ P.I') :
 theorem BASim_phi20_b (P : BAPGraph E) (x' : BASimY P) (a b : P.E' ⊕ P.I') :
     BASim_phi20 P x' a b (bpv 1) = (promoteC P.g).vmap b := BASim_phi_some _ _ _ _ 1 b (BASim_anch20_one a b)
 
-
 /-- **`A3`** (`S⁺_{uβ}`, `M_{βy}`, `Ǧ_{y'β}`: `u ↦ x̄`, `β ↦ ȳ`) at the band's `R2` (nat) -/
 def BASim_B_A3 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2)
     (x' : BASimY P) (hx' : (promoteC P.g).vmap p.1.src = Sum.inr x') : BASimExt P 2 (BASimY P) id :=
@@ -1163,7 +1157,6 @@ def BASim_B_A3 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
       · simp [BASim_fix, BASim_phiE, bpS, BASim_phi20_emb, BASim_phi20_b, h]
       · simp [BASim_fix, BASim_phiE, bpS, BASim_phi20_emb, BASim_phi20_b, h])
     (List.Forall₂.cons (Or.inl (by simp [WEdge.map, bpW, BASim_phi20_u, BASim_phi20_b, hx'])) List.Forall₂.nil)
-
 
 /-- **`A2`** (`S⁺_{uβ}`, `Ǧ_{βy}`, `M_{y'β}`: `u ↦ x̄`, `β ↦ ȳ'`) at the band's `R2` at the selector `(0, 1)` -/
 def BASim_B_A2 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2)
@@ -1218,7 +1211,6 @@ def BASim_B_A1 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
       exact BASim_sameAtom_trans h1 h2)
     (by simp)
     (List.Forall₂.cons (Or.inl (by simp [WEdge.map, bpW, BASim_phi20_u, BASim_phi20_b, hx'])) List.Forall₂.nil)
-
 
 /-! ### The outputs of the pair step: membership of the partition of each form -/
 
@@ -1288,7 +1280,6 @@ theorem BASim_match_A2 {p' q' : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P
 
 end MatchR2
 
-
 /-! ### The terms with one anchored and one fresh new vertex: `A4`, `A5`, `AD` (sum 3, `W = 1`) -/
 
 /-- **`A4`** (`M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} Ǧ_{y'x}`: `α ↦ x̄`, `β ↦ n0`) at the band's `R3 = owxT1` of the frame (both selected edges uncircled) -/
@@ -1313,7 +1304,6 @@ def BASim_B_A4 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
       simp only [decide_true, Bool.and_true, Bool.false_and, decide_eq_false hne1, Bool.and_false]
       exact List.perm_append_singleton _ [_, _])
     (List.Forall₂.cons (Or.inl (by simp [WEdge.map, bpW, BASim_phi21_alpha, BASim_phi21_beta, hx', BASim_owxEmb1_inr])) List.Forall₂.nil)
-
 
 /-- **`A5`** (`M_{xα} S_{αβ} Ǧ_{αx} G_{βy} G_{y'β}`: `α ↦ x̄`, `β ↦ n0`) at the band's `R5` -/
 def BASim_B_A5 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2)
@@ -1345,7 +1335,6 @@ theorem BASim_phiE_owxDE {V W : Type} [DecidableEq W] (φ : V → W) (a w : V) (
     ((owxDE (φ a) (φ w) (SEdge.map φ e)).1 = BASim_phiE φ (owxDE a w e).1) ∧ ((owxDE (φ a) (φ w) (SEdge.map φ e)).2 = BASim_phiE φ (owxDE a w e).2) := by
   unfold owxDE
   cases h : e.σ <;> simp [BASim_phiE, SEdge.map, h]
-
 
 /-- **`AD`** (the derivative of `gg2` at the edge `r.1` of `f`: `α ↦ x̄`, `β ↦ n0`) at the band's `R7` for the edge `r̄.1` -/
 def BASim_B_AD (P : BAPGraph E) {p q r : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2)
@@ -1381,7 +1370,6 @@ def BASim_B_AD (P : BAPGraph E) {p q r : SEdge (P.E' ⊕ P.I') × List (SEdge (P
         BASim_owxEmb1_inr, decide_eq_false hne1, Bool.and_false]
       exact (List.perm_append_singleton _ [_, _, _]).symm)
     (List.Forall₂.cons (Or.inl (by simp [WEdge.map, bpW, BASim_phi21_alpha, BASim_phi21_beta, hx', BASim_owxEmb1_inr])) List.Forall₂.nil)
-
 
 /-! ### The forms of the pair step at the selector `(0, 0)` -/
 
@@ -1441,7 +1429,6 @@ theorem BASim_match_AD {r : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I')
 
 end MatchR3
 
-
 /-! ### The terms with four new vertices: `B1`, `B2`, `BD` (sum 3, `W - 1`) -/
 
 theorem BASim_phi42_emb (P : BAPGraph E) (a v : P.E' ⊕ P.I') :
@@ -1478,7 +1465,6 @@ def BASim_B_B1 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
       refine List.Forall₂.cons (Or.inl ?_) (List.Forall₂.cons (Or.inl ?_) List.Forall₂.nil)
       · simp [WEdge.map, bpW, BASim_phi42_zero, BASim_phi42_one, hx', BASim_owxEmb2_inr]
       · simp [WEdge.map, bpW, BASim_phi42_two, BASim_phi42_three])
-
 
 /-- **`B2`** at the band's `R6` -/
 def BASim_B_B2 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2)
@@ -1549,7 +1535,6 @@ def BASim_B_BD (P : BAPGraph E) {p q r : SEdge (P.E' ⊕ P.I') × List (SEdge (P
       · simp [WEdge.map, bpW, BASim_phi42_zero, BASim_phi42_one, hx', BASim_owxEmb2_inr]
       · simp [WEdge.map, bpW, BASim_phi42_two, BASim_phi42_three])
 
-
 section MatchR4
 variable (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
   (hq : q ∈ lwSplit p.2) (x' : BASimY P) (hx' : (promoteC P.g).vmap p.1.src = Sum.inr x')
@@ -1587,7 +1572,6 @@ theorem BASim_match_BD {r : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I')
     (BASim_R8_ff m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) (BASim_imgP P r))).mpr hR
 
 end MatchR4
-
 
 /-- **`BAMatch` for the step at a pair of edges** (`BAFrameStepT.gg`): every `band`-tagged output equals an output of the band step at the image (`nat`, and `swap` for `A2`) -/
 theorem BASim_matchLT_gg (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
@@ -1632,6 +1616,306 @@ theorem BASim_matchLT_gg (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEd
       exact ⟨_, hnat, R, hR, hRE⟩
 
 end GG2
+
+section ExtraGen
+variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
+
+/-- `Tt` is `T` with one more `M`-dotted edge `d` (the same underlying band graph and `Ψ`-dotted edges) -/
+def BASim_ExtraDot (T Tt : BAGraph E I) (d : BAMEdge (E ⊕ I)) : Prop :=
+  Tt.toLGraph = T.toLGraph ∧ Tt.psi = T.psi ∧ ∀ x, x ∈ Tt.mdot ↔ x ∈ T.mdot ∨ x = d
+
+/-- the terms of `G = Ǧ + M` of `Tt` are those of `T` with the same extra `M`-dotted edge -/
+theorem BASim_extraDot_split {T Tt : BAGraph E I} {d : BAMEdge (E ⊕ I)} (h : BASim_ExtraDot T Tt d) :
+    ∀ T' ∈ T.splitG, ∃ Tt' ∈ Tt.splitG, BASim_ExtraDot T' Tt' d := by
+  intro T' hT'
+  obtain ⟨⟨s, w, dd, c⟩, p, m⟩ := T
+  obtain ⟨⟨s', w', dd', c'⟩, p', m'⟩ := Tt
+  obtain ⟨h1, h2, h3⟩ := h
+  simp only [LGraph.mk.injEq] at h1
+  obtain ⟨rfl, rfl, rfl, rfl⟩ := h1
+  simp only at h2
+  subst h2
+  simp only [BAGraph.splitG, List.mem_map] at hT' ⊢
+  obtain ⟨r, hr, rfl⟩ := hT'
+  refine ⟨_, ⟨r, hr, rfl⟩, rfl, rfl, fun x => ?_⟩
+  simp only [List.mem_append]
+  have := h3 x
+  simp only at this
+  tauto
+
+private theorem BASim_rtg_sub {α : Type*} {r r' : α → α → Prop} (h : ∀ a b, r a b → Relation.ReflTransGen r' a b) {a b : α}
+    (hab : Relation.ReflTransGen r a b) : Relation.ReflTransGen r' a b := by
+  induction hab with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ hbc ih => exact ih.trans (h _ _ hbc)
+
+/-- two graphs with the same band graph and the same atoms have the same atoms and molecules, hence the same counters and `nExt` -/
+theorem BASim_atoms_congr {T₁ T₂ : BAGraph E I} (hL : T₁.toLGraph = T₂.toLGraph)
+    (h12 : ∀ u v, T₁.atomAdj u v = true → T₂.sameAtom u v = true) (h21 : ∀ u v, T₂.atomAdj u v = true → T₁.sameAtom u v = true) :
+    (∀ v, T₁.atom v = T₂.atom v) ∧ (∀ v, T₁.mol v = T₂.mol v) := by
+  have hs : ∀ (A B : BAGraph E I), (∀ u v, A.atomAdj u v = true → B.sameAtom u v = true) →
+      ∀ u v, Relation.ReflTransGen (fun a b => A.atomAdj a b = true) u v → Relation.ReflTransGen (fun a b => B.atomAdj a b = true) u v := by
+    intro A B h u v huv
+    refine BASim_rtg_sub (fun a b hab => ?_) huv
+    have := h a b hab
+    simp only [BAGraph.sameAtom, decide_eq_true_eq, BAGraph.mem_atom_iff] at this
+    exact this
+  refine ⟨fun v => Finset.ext fun w => ?_, fun v => Finset.ext fun w => ?_⟩
+  · rw [BAGraph.mem_atom_iff, BAGraph.mem_atom_iff]
+    exact ⟨hs _ _ h12 v w, hs _ _ h21 v w⟩
+  · rw [BAGraph.mem_mol_iff, BAGraph.mem_mol_iff]
+    have hm : ∀ (A B : BAGraph E I), A.toLGraph = B.toLGraph → (∀ u v, A.atomAdj u v = true → B.sameAtom u v = true) →
+        ∀ u v, Relation.ReflTransGen (fun a b => A.adj a b = true) u v → Relation.ReflTransGen (fun a b => B.adj a b = true) u v := by
+      intro A B hAB h u v huv
+      refine BASim_rtg_sub (fun a b hab => ?_) huv
+      simp only [BAGraph.adj, Bool.or_eq_true] at hab
+      rcases hab with hab | hab
+      · refine Relation.ReflTransGen.single ?_
+        simp [BAGraph.adj, ← hAB, hab]
+      · have := h a b hab
+        simp only [BAGraph.sameAtom, decide_eq_true_eq, BAGraph.mem_atom_iff] at this
+        refine Relation.ReflTransGen.mono (fun x y hxy => ?_) _ _ this
+        simp [BAGraph.adj, hxy]
+    exact ⟨hm _ _ hL h12 v w, hm _ _ hL.symm h21 v w⟩
+
+theorem BASim_counters_congr {T₁ T₂ : BAGraph E I} (hL : T₁.toLGraph = T₂.toLGraph)
+    (h12 : ∀ u v, T₁.atomAdj u v = true → T₂.sameAtom u v = true) (h21 : ∀ u v, T₂.atomAdj u v = true → T₁.sameAtom u v = true) :
+    T₁.counters = T₂.counters ∧ T₁.nExt = T₂.nExt := by
+  obtain ⟨ha, hm⟩ := BASim_atoms_congr hL h12 h21
+  have hS : T₁.nS = T₂.nS := congrArg (fun L => L.solid.length) hL
+  have hW : T₁.nW = T₂.nW := congrArg (fun L => L.waved.length) hL
+  have ha' : T₁.atom = T₂.atom := funext ha
+  have hm' : T₁.mol = T₂.mol := funext hm
+  have hA : T₁.nA = T₂.nA := by unfold BAGraph.nA; rw [ha']
+  have hM : T₁.nM = T₂.nM := by unfold BAGraph.nM; rw [hm']
+  refine ⟨?_, ?_⟩
+  · unfold BAGraph.counters; rw [hS, hW, hA, hM]
+  · unfold BAGraph.nExt; rw [ha']
+
+theorem BASim_extraDot_ext (k : ℕ) (Γ : BAGraph E I) (e : BAMEdge (E ⊕ I)) (rest : List (SEdge (E ⊕ I))) (s : List (SEdge (E ⊕ (I ⊕ Fin k))))
+    (w : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) :
+    BASim_ExtraDot (BAGraph.ext k Γ rest s w md) (BAGraph.ext k (Γ.addM e) rest s w md) (BAMEdge.map (owxEmb k) e) :=
+  ⟨rfl, rfl, fun x => by simp [BAGraph.ext, BAGraph.addM]; aesop⟩
+
+theorem BASim_extraDot_lanlwExt (Γ : BAGraph E I) (e : BAMEdge (E ⊕ I)) (rest : List (SEdge (E ⊕ I))) (c : ℂ) (s : List (SEdge (E ⊕ (I ⊕ Fin 2))))
+    (w : List (WEdge (E ⊕ (I ⊕ Fin 2)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin 2)))) :
+    BASim_ExtraDot (BAGraph.lanlwExt Γ rest c s w md) (BAGraph.lanlwExt (Γ.addM e) rest c s w md) (BAMEdge.map (owxEmb 2) e) :=
+  ⟨rfl, rfl, fun x => by simp [BAGraph.lanlwExt, BAGraph.addM]; aesop⟩
+
+/-! ### Counting atoms under a coarsening -/
+
+/-- the number of values of a coarser labelling on a finite set is at most that of a finer one, strictly if two classes of the finer are one of the coarser -/
+theorem BASim_card_image_le {V W W' : Type*} [DecidableEq W] [DecidableEq W'] (S : Finset V) (f : V → W) (g : V → W')
+    (h : ∀ u ∈ S, ∀ v ∈ S, f u = f v → g u = g v) :
+    (S.image g).card ≤ (S.image f).card ∧ ((∃ u ∈ S, ∃ v ∈ S, f u ≠ f v ∧ g u = g v) → (S.image g).card < (S.image f).card) := by
+  classical
+  rcases S.eq_empty_or_nonempty with rfl | ⟨u0, hu0⟩
+  · simp
+  set H : W → W' := fun w => if hw : ∃ x ∈ S, f x = w then g hw.choose else g u0 with hH
+  have hHf : ∀ x ∈ S, H (f x) = g x := by
+    intro x hx
+    have hw : ∃ y ∈ S, f y = f x := ⟨x, hx, rfl⟩
+    simp only [hH, hw, ↓reduceDIte]
+    exact h _ hw.choose_spec.1 x hx hw.choose_spec.2
+  have himg : S.image g = (S.image f).image H := by
+    ext z
+    simp only [Finset.mem_image]
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      exact ⟨f x, ⟨x, hx, rfl⟩, hHf x hx⟩
+    · rintro ⟨w, ⟨x, hx, rfl⟩, rfl⟩
+      exact ⟨x, hx, (hHf x hx).symm⟩
+  refine ⟨by rw [himg]; exact Finset.card_image_le, fun ⟨u, hu, v, hv, hne, heq⟩ => ?_⟩
+  rw [himg]
+  refine lt_of_le_of_ne Finset.card_image_le fun hc => ?_
+  have hinj := Finset.card_image_iff.1 hc
+  have := hinj (Finset.mem_coe.2 (Finset.mem_image_of_mem f hu)) (Finset.mem_coe.2 (Finset.mem_image_of_mem f hv))
+    (by rw [hHf u hu, hHf v hv]; exact heq)
+  exact hne this
+
+/-- an atom of `Γ` lies in an atom of a graph that contains its dotted edges -/
+theorem BASim_sameAtom_of_mem {k : ℕ} (Γ : BAGraph E I) (T' : BAGraph E (I ⊕ Fin k))
+    (hco : ∀ u v, Γ.atomAdj u v = true → T'.sameAtom (owxEmb k u) (owxEmb k v) = true) {u v : E ⊕ I} (h : v ∈ Γ.atom u) :
+    T'.sameAtom (owxEmb k u) (owxEmb k v) = true := by
+  rw [BAGraph.mem_atom_iff] at h
+  simp only [BAGraph.sameAtom, decide_eq_true_eq, BAGraph.mem_atom_iff]
+  induction h with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ hbc ih =>
+    have := hco _ _ hbc
+    simp only [BAGraph.sameAtom, decide_eq_true_eq, BAGraph.mem_atom_iff] at this
+    exact ih.trans this
+
+/-- **A coarsening of the atoms does not increase `nExt`**, and lowers it if two atoms of external vertices are joined -/
+theorem BASim_nExt_le {k : ℕ} (Γ : BAGraph E I) (T' : BAGraph E (I ⊕ Fin k))
+    (hco : ∀ u v, Γ.atomAdj u v = true → T'.sameAtom (owxEmb k u) (owxEmb k v) = true) :
+    T'.nExt ≤ Γ.nExt ∧ ((∃ u v : E, Γ.atom (Sum.inl u) ≠ Γ.atom (Sum.inl v) ∧
+      T'.sameAtom (owxEmb k (Sum.inl u)) (owxEmb k (Sum.inl v)) = true) → T'.nExt < Γ.nExt) := by
+  classical
+  set S : Finset (E ⊕ I) := Finset.univ.filter fun v => v.isLeft = true with hS
+  have himg : (Finset.univ.filter fun v : E ⊕ (I ⊕ Fin k) => v.isLeft = true).image T'.atom = S.image (fun v => T'.atom (owxEmb k v)) := by
+    ext z
+    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and, hS]
+    constructor
+    · rintro ⟨w, hw, rfl⟩
+      rcases w with a | b
+      · exact ⟨Sum.inl a, rfl, rfl⟩
+      · simp at hw
+    · rintro ⟨v, hv, rfl⟩
+      rcases v with a | b
+      · exact ⟨Sum.inl a, rfl, rfl⟩
+      · simp at hv
+  have key := BASim_card_image_le S Γ.atom (fun v => T'.atom (owxEmb k v)) (fun u _ v _ h => by
+    have hv : v ∈ Γ.atom u := by rw [h]; exact BAVocab_self_mem_atom Γ v
+    exact (BAVocab_atom_eq_of_mem T' (show owxEmb k v ∈ T'.atom (owxEmb k u) by
+      simpa [BAGraph.sameAtom] using BASim_sameAtom_of_mem Γ T' hco hv)).symm)
+  have e1 : T'.nExt = (S.image (fun v => T'.atom (owxEmb k v))).card := by unfold BAGraph.nExt; rw [himg]
+  have e2 : Γ.nExt = (S.image Γ.atom).card := rfl
+  rw [e1, e2]
+  refine ⟨key.1, fun ⟨u, v, hne, hs⟩ => key.2 ⟨Sum.inl u, by simp [hS], Sum.inl v, by simp [hS], hne, ?_⟩⟩
+  exact (BAVocab_atom_eq_of_mem T' (show owxEmb k (Sum.inl v) ∈ T'.atom (owxEmb k (Sum.inl u)) by
+      simpa [BAGraph.sameAtom] using hs)).symm
+
+theorem BASim_atomAdj_addM (Γ : BAGraph E I) (d : BAMEdge (E ⊕ I)) (a b : E ⊕ I) (h : (Γ.addM d).atomAdj a b = true) :
+    Γ.atomAdj a b = true ∨ (d.x = a ∧ d.y = b) ∨ (d.x = b ∧ d.y = a) := by
+  by_cases hd : (decide ((d.x = a ∧ d.y = b) ∨ (d.x = b ∧ d.y = a))) = true
+  · right; simpa using hd
+  · left
+    have hd' : decide ((d.x = a ∧ d.y = b) ∨ (d.x = b ∧ d.y = a)) = false := by simpa using hd
+    simp only [BAGraph.atomAdj, BAGraph.addM, List.any_cons, hd', Bool.false_or] at h ⊢
+    exact h
+
+theorem BASim_atomAdj_addM' (Γ : BAGraph E I) (d : BAMEdge (E ⊕ I)) (a b : E ⊕ I) (h : Γ.atomAdj a b = true) :
+    (Γ.addM d).atomAdj a b = true := by
+  simp only [BAGraph.atomAdj, BAGraph.addM, List.any_cons] at h ⊢
+  cases hd : decide ((d.x = a ∧ d.y = b) ∨ (d.x = b ∧ d.y = a)) <;> simp_all
+
+theorem BASim_atomAdj_addM_d (Γ : BAGraph E I) (d : BAMEdge (E ⊕ I)) : (Γ.addM d).atomAdj d.x d.y = true := by
+  simp [BAGraph.atomAdj, BAGraph.addM, List.any_cons]
+
+/-- the atoms of `Γ` with one more `M`-dotted edge joining `u` and `v`: those of `Γ`, and the union of the atoms of `u` and `v` -/
+theorem BASim_atom_addM (Γ : BAGraph E I) (u v : E ⊕ I) (d : BAMEdge (E ⊕ I)) (hd : d.x = u ∧ d.y = v) (a w : E ⊕ I) :
+    w ∈ (Γ.addM d).atom a ↔ w ∈ Γ.atom a ∨ ((w ∈ Γ.atom u ∨ w ∈ Γ.atom v) ∧ (a ∈ Γ.atom u ∨ a ∈ Γ.atom v)) := by
+  have hco : ∀ a b, b ∈ Γ.atom a → b ∈ (Γ.addM d).atom a := fun a b hab =>
+    BAWeightOp_atom_subset Γ (Γ.addM d) (fun x y h => BASim_atomAdj_addM' Γ d x y h) a hab
+  have hAS : ∀ x y, y ∈ Γ.atom x ↔ atomSetoid Γ x y := fun x y => (BAAtomic_atomSetoid_iff Γ x y).symm
+  have hAS' : ∀ x y, y ∈ (Γ.addM d).atom x ↔ atomSetoid (Γ.addM d) x y := fun x y => (BAAtomic_atomSetoid_iff _ x y).symm
+  simp only [hAS, hAS']
+  have huv : atomSetoid (Γ.addM d) u v := by
+    rw [← hAS']
+    rw [BAGraph.mem_atom_iff]
+    exact Relation.ReflTransGen.single (by rw [← hd.1, ← hd.2]; exact BASim_atomAdj_addM_d Γ d)
+  have hc : ∀ x y, atomSetoid Γ x y → atomSetoid (Γ.addM d) x y := fun x y h => by
+    rw [← hAS'] ; exact hco x y ((hAS x y).2 h)
+  have sΓ := (atomSetoid Γ)
+  constructor
+  · intro h
+    rw [← hAS', BAGraph.mem_atom_iff] at h
+    induction h with
+    | refl => exact Or.inl ((atomSetoid Γ).refl _)
+    | @tail b c _ hbc ih =>
+      rcases BASim_atomAdj_addM Γ d b c hbc with h1 | ⟨h1, h2⟩ | ⟨h1, h2⟩
+      · have h1' : atomSetoid Γ b c := by rw [← hAS, BAGraph.mem_atom_iff]; exact Relation.ReflTransGen.single h1
+        rcases ih with ih | ⟨ih1, ih2⟩
+        · exact Or.inl ((atomSetoid Γ).trans ih h1')
+        · exact Or.inr ⟨ih1.imp (fun h => (atomSetoid Γ).trans h h1') (fun h => (atomSetoid Γ).trans h h1'), ih2⟩
+      · have hb : b = u := h1.symm.trans hd.1
+        have hc' : c = v := h2.symm.trans hd.2
+        subst hb; subst hc'
+        rcases ih with ih | ⟨ih1, ih2⟩
+        · exact Or.inr ⟨Or.inr ((atomSetoid Γ).refl _), Or.inl ((atomSetoid Γ).symm ih)⟩
+        · exact Or.inr ⟨Or.inr ((atomSetoid Γ).refl _), ih2⟩
+      · have hb : b = v := h2.symm.trans hd.2
+        have hc' : c = u := h1.symm.trans hd.1
+        subst hb; subst hc'
+        rcases ih with ih | ⟨ih1, ih2⟩
+        · exact Or.inr ⟨Or.inl ((atomSetoid Γ).refl _), Or.inr ((atomSetoid Γ).symm ih)⟩
+        · exact Or.inr ⟨Or.inl ((atomSetoid Γ).refl _), ih2⟩
+  · rintro (h | ⟨h1, h2⟩)
+    · exact hc _ _ h
+    · have e2 : ∀ x, (atomSetoid Γ u x ∨ atomSetoid Γ v x) → atomSetoid (Γ.addM d) u x := fun x hx => by
+        rcases hx with h | h
+        · exact hc _ _ h
+        · exact (atomSetoid (Γ.addM d)).trans huv (hc _ _ h)
+      have ha := e2 a h2
+      have hw := e2 w h1
+      exact (atomSetoid (Γ.addM d)).trans ((atomSetoid (Γ.addM d)).symm ha) hw
+
+/-- **Joining two different atoms, at least one internal, lowers `n_A`** -/
+theorem BASim_nA_addM (Γ : BAGraph E I) (u v : E ⊕ I) (d : BAMEdge (E ⊕ I)) (hd : d.x = u ∧ d.y = v) (hne : Γ.sameAtom u v = false)
+    (hint : (∀ w ∈ Γ.atom u, w.isRight = true) ∨ (∀ w ∈ Γ.atom v, w.isRight = true)) : (Γ.addM d).nA + 1 ≤ Γ.nA := by
+  classical
+  set Γ' := Γ.addM d with hΓ'
+  have hco : ∀ a b, b ∈ Γ.atom a → b ∈ Γ'.atom a := fun a b hab =>
+    BAWeightOp_atom_subset Γ Γ' (fun x y h => BASim_atomAdj_addM' Γ d x y h) a hab
+  have hch := BASim_atom_addM Γ u v d hd
+  have hat : ∀ a b, b ∈ Γ'.atom a → Γ'.atom b = Γ'.atom a := fun a b h => BAVocab_atom_eq_of_mem Γ' h
+  have hin : ∀ a b c, b ∈ Γ'.atom a → c ∈ Γ'.atom b → c ∈ Γ'.atom a := fun a b c hab hbc => (hat a b hab) ▸ hbc
+  have huv : v ∈ Γ'.atom u := by
+    rw [hΓ', hch]; exact Or.inr ⟨Or.inr (BAVocab_self_mem_atom Γ v), Or.inl (BAVocab_self_mem_atom Γ u)⟩
+  have hne' : v ∉ Γ.atom u := by
+    intro h; simp [BAGraph.sameAtom, h] at hne
+  set S : Finset (E ⊕ I) := Finset.univ.filter fun a => ∀ w ∈ Γ'.atom a, w.isRight = true with hS
+  set S0 : Finset (E ⊕ I) := Finset.univ.filter fun a => ∀ w ∈ Γ.atom a, w.isRight = true with hS0
+  have hSS0 : S ⊆ S0 := fun a ha => by
+    simp only [hS, hS0, Finset.mem_filter, Finset.mem_univ, true_and] at ha ⊢
+    exact fun w hw => ha w (hco a w hw)
+  have key := BASim_card_image_le S Γ.atom Γ'.atom (fun x _ y _ h => by
+    have hy : y ∈ Γ.atom x := by rw [h]; exact BAVocab_self_mem_atom Γ y
+    exact (hat x y (hco x y hy)).symm)
+  have hA' : Γ'.nA = (S.image Γ'.atom).card := rfl
+  have hA : Γ.nA = (S0.image Γ.atom).card := rfl
+  have hle : (S.image Γ.atom).card ≤ (S0.image Γ.atom).card := Finset.card_le_card (Finset.image_subset_image hSS0)
+  have one : ∀ x y : E ⊕ I, ((x = u ∧ y = v) ∨ (x = v ∧ y = u)) → (∀ w ∈ Γ.atom x, w.isRight = true) →
+      ¬ (∀ w ∈ Γ.atom y, w.isRight = true) → Γ'.nA + 1 ≤ Γ.nA := by
+    intro x y hxy hx hy
+    have hyx : y ∈ Γ'.atom x := by
+      rcases hxy with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · exact huv
+      · rw [hΓ', hch]; exact Or.inr ⟨Or.inl (BAVocab_self_mem_atom Γ y), Or.inr (BAVocab_self_mem_atom Γ x)⟩
+    have hxS0 : x ∈ S0 := by simp only [hS0, Finset.mem_filter, Finset.mem_univ, true_and]; exact hx
+    have hxS : x ∉ S := by
+      intro hxS
+      simp only [hS, Finset.mem_filter, Finset.mem_univ, true_and] at hxS
+      push Not at hy
+      obtain ⟨w0, hw0, hw0'⟩ := hy
+      have := hxS w0 (hin x y w0 hyx (hco y w0 hw0))
+      simp [this] at hw0'
+    have hsub : S.image Γ.atom ⊆ (S0.image Γ.atom).erase (Γ.atom x) := by
+      intro A hA
+      obtain ⟨a, ha, rfl⟩ := Finset.mem_image.1 hA
+      refine Finset.mem_erase.2 ⟨fun heq => hxS ?_, Finset.mem_image_of_mem _ (hSS0 ha)⟩
+      have hxa : x ∈ Γ.atom a := by rw [heq]; exact BAVocab_self_mem_atom Γ x
+      simp only [hS, Finset.mem_filter, Finset.mem_univ, true_and] at ha ⊢
+      intro w hw
+      exact ha w ((hat a x (hco a x hxa)) ▸ hw)
+    have h1 := Finset.card_le_card hsub
+    have h2 := Finset.card_erase_of_mem (Finset.mem_image_of_mem Γ.atom hxS0)
+    have h3 : 0 < (S0.image Γ.atom).card := Finset.card_pos.2 ⟨_, Finset.mem_image_of_mem Γ.atom hxS0⟩
+    omega
+  by_cases hu : ∀ w ∈ Γ.atom u, w.isRight = true <;> by_cases hv : ∀ w ∈ Γ.atom v, w.isRight = true
+  · -- both internal
+    have huS : u ∈ S := by
+      simp only [hS, Finset.mem_filter, Finset.mem_univ, true_and]
+      intro w hw
+      rcases (hch u w).1 hw with hw | ⟨hw, _⟩
+      · exact hu w hw
+      · exact hw.elim (hu w) (hv w)
+    have hvS : v ∈ S := by
+      simp only [hS, Finset.mem_filter, Finset.mem_univ, true_and]
+      intro w hw
+      rcases (hch v w).1 hw with hw | ⟨hw, _⟩
+      · exact hv w hw
+      · exact hw.elim (hu w) (hv w)
+    have hlt := key.2 ⟨u, huS, v, hvS, fun h => hne' (by rw [h]; exact BAVocab_self_mem_atom Γ v), (hat u v huv).symm⟩
+    omega
+  · exact one u v (Or.inl ⟨rfl, rfl⟩) hu hv
+  · exact one v u (Or.inr ⟨rfl, rfl⟩) hv hu
+  · rcases hint with h | h
+    · exact absurd h hu
+    · exact absurd h hv
+
+end ExtraGen
 
 end RBM.Graph
 
