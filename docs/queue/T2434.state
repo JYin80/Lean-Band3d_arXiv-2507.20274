@@ -1,4 +1,4 @@
-state: blocked
-reason: stage 1a preflight BLOCKED (wf_07aebb1e-dfd; docs/reports/T2434-prove.md Verdict): the identity closes and S2 has a route per family (P3 a missing premise of the seven, re-derived by L4b2), but the root of S3 is a missing input ((i) S3 rows, (iii)); targets 2-4 do not use it. Question for the dispatcher: REQ for L4c1/L4e-C/L4g, or release 1b without S3's root recorded as owed to them? Probe and 1b not started.
-updated: Mon Oct 12 04:45:25 UTC 2026
-reports: docs/reports/T2434-prove.md
+state: proving
+reason: resumed under Amend 1 (H229): workflow wf_99897cae-ab6, probe prover-max → 1a-audit → 1b prover-max → auditor; branch t/T2434 at e3f59c2
+updated: Mon Oct 12 05:17:27 UTC 2026
+reports: docs/reports/T2434-prove.md, docs/reports/T2434-1a-audit.md, docs/reports/T2434-audit.md

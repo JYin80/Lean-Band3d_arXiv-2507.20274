@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 3ef3862, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 05:17:08 UTC 2026
+state: merged dba665d
+reason: audit PASS round 1 (claude-opus-5-5); new BA/TwistGridWTail (1822), TwistGridWTail2 (1334), root imports added at merge; full lake build 4261 jobs; pushed
+updated: Mon Oct 12 05:17:11 UTC 2026
 reports: docs/reports/T2439-prove.md, docs/reports/T2439-audit.md

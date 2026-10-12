@@ -2207,3 +2207,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (1) **T2437（TL2a2）合并 e3f59c2**：新 `BA/TwistGridRem` 1,078 + `TwistGridRem2` 494（`baTwistGridRem_holds`，C₀ = 11）；审核一次 PASS。TL 已合并 9 / 13。
 - (2) **T2434（L4b1）1a BLOCKED**：展开恒等式闭合，S2 每族都有路线；但 S3 的四族（`D1X`、`D2X`、`T3C-tr_0/1`）的根带 `M` 点边（`mdot ≠ []`），不在 L4d 的 `baG5Graph`、L4e-C 的闭包表、L4c1 的叶子界的范围内。**签字（Amend 1）**：钉文照 1a 写的保留（S3 的钉文只涉及四族，不需要根）；本行继续证恒等式 `baExp14b_expand_holds`；S2 的证明归 L4b2，S3 的证明归 L4g；三个根（`baT3CtrGraph k`、`baD1XGraph`、`baD2XGraph`）的恒等式、闭包和叶子界记给后继行，暂名 **L4d2**（在 L4e-C 之后），写 L4c1/L4g 时定。P3（`|𝔼X_c| ≺ 𝔟^{3/2}`）由 L4b2 重证。按 0243 O4 这是计划缺行，不是路线失败；仍发短 REQ `REQ-2026-10-12-0451-L4S3` 请监督确认（Q1 性质、Q2 加 L4d2 还是并入 L4c1/L4g）。不阻塞任何在跑的票。
 - (3) 下一张票号 T2441，下一节 §249，下一条 H230。
+
+## §249 — TL2a3、TL2a4 合并（网格的三个部件全证完）；放 TL2d = T2441（总调度 V3，2026-10-12 05:25 UTC）
+
+- (1) **T2438（TL2a3）合并 0b55de5**（`BA/TwistGridTail` 1,501 + `TwistGridTail2` 449）；**T2439（TL2a4）合并 dba665d**（`BA/TwistGridWTail` 1,822 + `TwistGridWTail2` 1,334）；都审核一次 PASS。TL 已合并 11 / 13，只剩 TL2d、TL2e。
+- (2) **T2441 = TL2d**（BA 108；TL 12 / 15；`prover-max`；`BA/TwistStep`（T.12″ `baTwistZeroMode_holds` 与推论 `baTwistGridMart_holds`）+ `BA/TwistStep2`（T.12′ 的分情况估计））：新钉文 `BATwistStepFixed d R`（`BATwFrame` 框架，固定 `τ`，`Ξ̃` 作前提，四种电荷一并），对 `STCaseI`、`STCaseII` 各证一次；探针步骤同时钉 `T2441_TL2e := ∀ d R, BATwistStepFixed d R → BATwistLoopStep d R`，1a 写 TL2e 的方案（net S2、逐 τ、T.12、T.13 与 S3）。三种情况都在本行：(A) σ₁ = σ₂（T.10 (c)）、(B) σ₁ ≠ σ₂ 在 `STCaseI`（外部锚点 c₁）、(C) σ₁ ≠ σ₂ 在 `STCaseII`（零模，用 T.12″、TL1、`twWard`、T.10 (d)）；跨界情形（脚注 6）不在 TL 任何一行，归 BA-V。若两个文件放不下，1a 停，加第 14 行要发短 REQ。`Ξ̃` 前提的形式（确定性水平上的 `≺`，代替路径上的上确界）由 1a 提、1a-audit 定，报告写清对 TL2e bootstrap 的影响。
+- (3) 下一张票号 T2442，下一节 §250，下一条 H231。open REQ：0451-L4S3。
+
+## §250 — T2440（L3a3）审核要签字：登记一行 `BAReach.below`（Amend 1）（总调度 V3，2026-10-12 05:26 UTC）
+
+- **T2440 审核 BLOCKED**：目标 1–6 都过；但 `import RBM3D` + `#assert_rbm_axioms` 的前提扫描把递归归纳类型 `BAReach` 自动生成的 `BAReach.below` 当成前提。修法在 `RBM3D/Test/Axioms.lean`，不在本票可写文件里。
+- **签字（Amend 1）**：选审核的 (a)——把 `Test/Axioms.lean` 加进可写文件，只加一行 `structuralProps`：`RBM.Graph.BAReach.below`（与带状孪生 `Lvl1Reach.below`、`lvl1Split.below` 同样处理，`:257-258`）。不改写成 `ReflTransGen` 定义（T2426 的做法），因为带状孪生就是这样登记的，L3a5 的钉文也针对归纳类型。规则 (B) 修补一次 → 审核第二轮。以后带递归归纳类型钉文的票，写票时就把这一行登记列进可写文件。下一张票号 T2442，下一节 §251，下一条 H232。

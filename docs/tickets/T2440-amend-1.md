@@ -1,0 +1,7 @@
+Amend 1 to T2440 (dispatcher V3, Mon Oct 12 05:26 UTC 2026; DECISIONS §250; answers `docs/queue/T2440.state` and `docs/reports/T2440-audit.md` (audit BLOCKED with dispatcher sign-off: targets 1–6 pass; the registry pre-check fails on `RBM.Graph.BAReach.below`)).
+
+**Decision: option (a) of the audit.** `RBM3D/Test/Axioms.lean` is added to the sole writable files for **one** `structuralProps` line, next to the band twin's lines (`:257-258`):
+`` `RBM.Graph.BAReach.below, -- auxiliary predicate that Lean generates for the recursive inductive `BAReach` (BA twin of `Lvl1Reach.below`; T2440) ``
+Nothing else in that file changes (the auditor's script checks the diff of `Test/Axioms.lean` is exactly this one line). `BAReach` stays the pinned recursive inductive (probe 277-279); it is not rewritten as a `ReflTransGen` definition (the T2426 route), because its band twin `Lvl1Reach` is registered the same way and the downstream L3a5 statement is pinned against the inductive.
+
+**Process:** rule-(B) repair on `t/T2440` at ea4dd16 (`prover-hard`: the one registry line; `lake build` of `RBM3D.Test.Axioms` and the full `lake build` with `#assert_rbm_axioms`) → auditor round 2. Sole writable files now: `RBM3D/Graph/BALvl1A.lean`, `RBM3D/Graph/BALvl1A2.lean` (if used), `RBM3D.lean` (import line), `RBM3D/Test/Axioms.lean` (one line). Merge: H23 (b) union rule if another branch also appends to the registry lists.
