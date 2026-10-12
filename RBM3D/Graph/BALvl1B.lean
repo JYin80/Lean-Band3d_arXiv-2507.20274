@@ -363,7 +363,8 @@ theorem BALvl1B_mem_outsOf (P : BAPGraph E0) {I' : Type} [Fintype I'] [Decidable
 `ord G ≤ ordG T`, and has at `T°` no more internal molecules and no larger `n_A - n_W` than `G`, then every output of `P.outsOf Ts` is normal, its order does not fall, `n_M`, `n_A - n_W` and `nExt` do not grow
 (target 3 `BALvl1B_part_struct` for the `M`-split and the packing). -/
 theorem BALvl1B_outs_mono (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableEq I0] (G : BAGraph P.E' I0) {k : ℕ}
-    (Ts : List (BAGraph P.E' (I0 ⊕ Fin k))) (hG : G.Normal) (hinv : BASim_inv G = BASim_inv P.g)
+    (Ts : List (BAGraph P.E' (I0 ⊕ Fin k))) (hG : G.Normal)
+    (hinv : G.scalingOrder = P.g.scalingOrder ∧ G.nM = P.g.nM ∧ (G.nA : ℤ) - G.nW = (P.g.nA : ℤ) - P.g.nW ∧ G.nExt = P.g.nExt)
     (hExt : ∀ T ∈ Ts, BASim_Ext G k T) (hord : ∀ T ∈ Ts, ((G.scalingOrder : ℤ) : WithTop ℤ) ≤ T.scalingOrderG)
     (hM : ∀ T ∈ Ts, (BAWeightOp_circ T).nM ≤ G.nM)
     (hAW : ∀ T ∈ Ts, ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW ≤ (G.nA : ℤ) - G.nW) :
@@ -371,8 +372,7 @@ theorem BALvl1B_outs_mono (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableE
   intro Q hQ
   obtain ⟨T, hT, Δ, hΔ, rfl⟩ := BALvl1B_mem_outsOf P Ts hQ
   obtain ⟨hN, hbi, hW, hA, hMo, -, hX⟩ := BALvl1B_part_struct P G (hExt T hT) hG Δ hΔ
-  simp only [BASim_inv, Prod.mk.injEq] at hinv
-  obtain ⟨i1, i2, i3, -, -, -, i7⟩ := hinv
+  obtain ⟨i1, i2, i3, i7⟩ := hinv
   simp only [BAPGraph.baInv, BASim_inv, Prod.mk.injEq] at hbi
   obtain ⟨b1, b2, b3, -, -, -, b7⟩ := hbi
   have hmem : Δ.packMerge ∈ T.partition := show Δ.packMerge ∈ T.splitG.map BAGraph.packMerge from List.mem_map_of_mem hΔ
@@ -394,7 +394,9 @@ theorem BALvl1B_outs_mono (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableE
 /-- **`BALvl1B_outs_mono` for a family of terms** (`BASim_Fam`: the terms extend the graph and have `ord ≤ ordG`) -/
 theorem BALvl1B_outs_fam (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableEq I0] (G : BAGraph P.E' I0) {k : ℕ}
     {F : BAGraph P.E' I0 → List (BAGraph P.E' (I0 ⊕ Fin k))} (hFam : BASim_Fam G k F) (Ts : List (BAGraph P.E' (I0 ⊕ Fin k))) (hTs : ∀ T ∈ Ts, T ∈ F G)
-    (hG : G.Normal) (hinv : BASim_inv G = BASim_inv P.g) (hM : ∀ T ∈ Ts, (BAWeightOp_circ T).nM ≤ G.nM)
+    (hG : G.Normal)
+    (hinv : G.scalingOrder = P.g.scalingOrder ∧ G.nM = P.g.nM ∧ (G.nA : ℤ) - G.nW = (P.g.nA : ℤ) - P.g.nW ∧ G.nExt = P.g.nExt)
+    (hM : ∀ T ∈ Ts, (BAWeightOp_circ T).nM ≤ G.nM)
     (hAW : ∀ T ∈ Ts, ((BAWeightOp_circ T).nA : ℤ) - (BAWeightOp_circ T).nW ≤ (G.nA : ℤ) - G.nW) :
     ∀ Q ∈ P.outsOf Ts, BALvl1B_Mono P Q :=
   BALvl1B_outs_mono P G Ts hG hinv (fun T hT => hFam.hExt G T (hTs T hT)) (fun T hT => hFam.hmono G hG rfl T (hTs T hT)) hM hAW
@@ -407,15 +409,15 @@ theorem BALvl1B_weight (P : BAPGraph E0) (hN : P.g.Normal) {p : SEdge (P.E' ⊕ 
   intro Q hQ
   obtain ⟨m2, m4⟩ := lw_mono P.g p hp h1 h2
   rcases List.mem_append.1 hQ with hQ | hQ
-  · exact BALvl1B_outs_fam P P.g (BASim_fam_lw2 P.g p hp h1 h2) (P.g.lw2 p) (fun T hT => hT) hN rfl (fun T hT => (m2 T hT).1.le)
+  · exact BALvl1B_outs_fam P P.g (BASim_fam_lw2 P.g p hp h1 h2) (P.g.lw2 p) (fun T hT => hT) hN ⟨rfl, rfl, rfl, rfl⟩ (fun T hT => (m2 T hT).1.le)
       (fun T hT => (m2 T hT).2.1.le) Q hQ
-  · exact BALvl1B_outs_fam P P.g (BASim_fam_lw4 P.g p hp h1 h2) (P.g.lw4 p) (fun T hT => hT) hN rfl (fun T hT => (m4 T hT).1.le)
+  · exact BALvl1B_outs_fam P P.g (BASim_fam_lw4 P.g p hp h1 h2) (P.g.lw4 p) (fun T hT => hT) hN ⟨rfl, rfl, rfl, rfl⟩ (fun T hT => (m4 T hT).1.le)
       (fun T hT => (m4 T hT).2.1.le) Q hQ
 
 /-- **`BAstepMono` at the edge step**: the terms of `lanlw` (`lanlwT1_counters`, `lanlwD_counters`, `BASim_fam_lanlw`) -/
 theorem BALvl1B_edge (P : BAPGraph E0) (hN : P.g.Normal) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
     (h1 : p.1.σ = true) (h2 : p.1.circ = true) : ∀ Q ∈ P.outsOf (BAGraph.lanlwTerms P.g p), BALvl1B_Mono P Q :=
-  BALvl1B_outs_fam P P.g (BASim_fam_lanlw P.g p hp h1 h2) (BAGraph.lanlwTerms P.g p) (fun T hT => hT) hN rfl
+  BALvl1B_outs_fam P P.g (BASim_fam_lanlw P.g p hp h1 h2) (BAGraph.lanlwTerms P.g p) (fun T hT => hT) hN ⟨rfl, rfl, rfl, rfl⟩
     (fun T hT => (BALvl1B_lanlw_mono P.g p hp h1 h2 T hT).1) (fun T hT => (BALvl1B_lanlw_mono P.g p hp h1 h2 T hT).2)
 
 /-- **`BAstepMono` at the `gg` step**: the terms of `gg2` and `gg4` (`gg_mono`, `BASim_fam_gg2`, `BASim_fam_gg4`) -/
@@ -424,9 +426,9 @@ theorem BALvl1B_gg (P : BAPGraph E0) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.
   intro Q hQ
   obtain ⟨m2, m4⟩ := gg_mono P.g p q hp hq
   rcases List.mem_append.1 hQ with hQ | hQ
-  · exact BALvl1B_outs_fam P P.g (BASim_fam_gg2 P.g p q hp hq) (P.g.gg2 p q) (fun T hT => hT) hN rfl (fun T hT => (m2 T hT).1)
+  · exact BALvl1B_outs_fam P P.g (BASim_fam_gg2 P.g p q hp hq) (P.g.gg2 p q) (fun T hT => hT) hN ⟨rfl, rfl, rfl, rfl⟩ (fun T hT => (m2 T hT).1)
       (fun T hT => (m2 T hT).2.1) Q hQ
-  · exact BALvl1B_outs_fam P P.g (BASim_fam_gg4 P.g p q hp hq) (P.g.gg4 p q) (fun T hT => hT) hN rfl (fun T hT => (m4 T hT).1)
+  · exact BALvl1B_outs_fam P P.g (BASim_fam_gg4 P.g p q hp hq) (P.g.gg4 p q) (fun T hT => hT) hN ⟨rfl, rfl, rfl, rfl⟩ (fun T hT => (m4 T hT).1)
       (fun T hT => (m4 T hT).2.1) Q hQ
 
 end Assembly
