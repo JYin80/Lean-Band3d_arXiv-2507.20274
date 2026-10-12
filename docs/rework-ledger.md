@@ -13,3 +13,4 @@
 | T2448 | 2026-10-12 11:30 UTC (79f3c1c) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3d3：1a → 1b → 审核 PASS 第一轮（观察 O1、O2，不要签字）；新 `Graph/BAEngine` 506 行；目标 3–4 带 `T2448_Binder` |
 | T2451 | 2026-10-12 12:47 UTC (4d4091e) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-TL TL2e：1a → 1b → 审核 PASS 第一轮；新 `BA/TwistLoop` 904 行；stage TL 13/13 |
 | T2453 | 2026-10-12 13:07 UTC (4fad610) | prover | Sonnet 5.5 | 是 | ST T4s1：1a → 1b → 审核 PASS 第一轮；新 `Chain/GridDuhamelGen` 683 行（新增文件） |
+| T2449 | 2026-10-12 13:19 UTC (45400a7) | prover-max（设计单） | Sonnet 5.5（prover-max） | 否 | BA-DMN M/N 设计单（只出报告）：审核第一轮 RETURN（`Que′` 没钉进探针；`RBG_Prod` 实例 r2–r4 没证）→ 规则 (B) 修补 → 第二轮 PASS；报告 158 行，探针 397 行不合并 |
