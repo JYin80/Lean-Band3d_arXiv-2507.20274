@@ -541,6 +541,7 @@ import RBM3D.Graph.BALocReg2
 import RBM3D.BA.GridRepTailBA
 import RBM3D.Graph.BALocReg2B
 import RBM3D.Graph.BAProv
+import RBM3D.Chain.StepDecompGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

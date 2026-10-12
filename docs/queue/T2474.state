@@ -1,0 +1,4 @@
+state: audit-pass
+reason: prover 662c05c2 delivered all 12 targets on t/T2474 (the 1a central 2,748 fired the pre-signed split; both files audited: PASS claude-opus-5-5, O1-O5); merging in the split order: T5s2a (StepDecompGen) first, then T5s2b (HierDriftGen)
+updated: Mon Oct 12 22:31:35 UTC 2026
+reports: docs/reports/T2474-prove.md, docs/reports/T2474-audit.md
