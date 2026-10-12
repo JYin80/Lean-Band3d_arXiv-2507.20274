@@ -1498,11 +1498,13 @@ open scoped Matrix.Norms.L2Operator
 
 variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
 
+theorem TwistGridWTail_Hm_measurable : Measurable (TwistGridWTail_Hm sz lam0 n) := by
+  unfold TwistGridWTail_Hm; exact measurable_const.add measurable_id
+
 /-- `Φ_b` is Borel measurable in the matrix (entries of the resolvent, `walk_measurable_Gres_apply`). -/
 theorem TwistGridWTail_Phi_measurable (u : ℝ) (σ : Fin 2 → Bool) (c₁ c₂ b : Zd d (sz.L n)) :
     Measurable (TwistGridWTail_Phi sz lam0 E n u σ c₁ c₂ b) := by
-  have hHm : Measurable (TwistGridWTail_Hm sz lam0 n) := by
-    unfold TwistGridWTail_Hm; exact measurable_const.add measurable_id
+  have hHm := TwistGridWTail_Hm_measurable sz lam0 n
   have hent : ∀ (σ' : Bool) (x y : Idx d (sz.L n) (sz.W n)), Measurable (fun M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
       twChg (twGM sz lam0 E n u (TwistGridWTail_Hm sz lam0 n M)) σ' x y) := by
     intro σ' x y
