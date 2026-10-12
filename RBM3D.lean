@@ -524,6 +524,8 @@ import RBM3D.Chain.Step34Gen
 import RBM3D.Chain.Step34GenTw
 import RBM3D.Graph.BAExp14d
 import RBM3D.Graph.BAExp14dB
+import RBM3D.Chain.Step5KerGen
+import RBM3D.Chain.NewKLKLGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
