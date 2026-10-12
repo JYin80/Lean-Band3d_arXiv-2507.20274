@@ -1,4 +1,4 @@
 state: proving
-reason: started (H230, H12): workflow wf_36863e00-462, preflight → probe prover-max (RBM3D/Probe/T2441Pins.lean) → 1a-audit → 1b prover-max → auditor; a 1a-audit sign-off request stops before 1b (H183 (3)); branch t/T2441 from main d11da04
-updated: Mon Oct 12 05:43:43 UTC 2026
+reason: rule (H) rerun after the API session limit: probe f459c7f and 1a-audit PASS; 1b died before committing; rerun wf_67ec44a1-7af (1b prover-max → auditor)
+updated: Mon Oct 12 08:12:14 UTC 2026
 reports: docs/reports/T2441-prove.md, docs/reports/T2441-1a-audit.md, docs/reports/T2441-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-max 0b280c3 (rerun after the API limit), audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 08:51:51 UTC 2026
+state: merged ec795c5
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BALvl1B (491), BALvl1B2 (318), root imports added at merge; full lake build 4266 jobs; pushed
+updated: Mon Oct 12 08:51:53 UTC 2026
 reports: docs/reports/T2442-prove.md, docs/reports/T2442-audit.md
