@@ -167,10 +167,10 @@ section Pins
 variable {E : Type}
 /-- a waved edge, or its reversal (`WEdge.transpose`, `LWSymm.lean:96`). -/
 def WEdge.sameRev {V : Type*} (a b : WEdge V) : Prop := a = b ∨ a.transpose = b
-theorem WEdge.sameRev_refl {V : Type*} (a : WEdge V) : a.sameRev a := Or.inl rfl
+theorem WEdge.BASim_sameRev_refl {V : Type*} (a : WEdge V) : a.sameRev a := Or.inl rfl
 /-- two dotted edges with the same ends, unordered. -/
 def DEdge.sameU {V : Type*} (a b : DEdge V) : Prop := a.eq = b.eq ∧ ((a.x = b.x ∧ a.y = b.y) ∨ (a.x = b.y ∧ a.y = b.x))
-theorem DEdge.sameU_refl {V : Type*} (a : DEdge V) : a.sameU a := ⟨rfl, Or.inl ⟨rfl, rfl⟩⟩
+theorem DEdge.BASim_sameU_refl {V : Type*} (a : DEdge V) : a.sameU a := ⟨rfl, Or.inl ⟨rfl, rfl⟩⟩
 /-- **`R` is `S` up to relabelling** of the vertices (the external vertices keep their labels `ext`): the solid edges agree up to order, the waved edges
 up to order and reversal of single edges (`LGraph.scost_perm`, `LocalRegular6a.lean:309`: `scost` sees the solid edges up to order and the number of waved edges; molecules read the symmetric `LGraph.adj`; `localReg2_cendsMS` reads `Sym2` ends), the `×`-dotted
 edges as sets of unordered pairs; the coefficient is not read (it carries the powers of `m` of the band's partition). -/
@@ -181,7 +181,7 @@ def PGraph.BAEquiv (R S : PGraph E) : Prop :=
     (∀ d ∈ (R.g.relabel (Sum.map eE eI)).dotted, ∃ d' ∈ S.g.dotted, DEdge.sameU d d') ∧
     (∀ d ∈ S.g.dotted, ∃ d' ∈ (R.g.relabel (Sum.map eE eI)).dotted, DEdge.sameU d' d)
 /-- the relation is nonempty: reflexive (the instance of the pin) -/
-theorem PGraph.BAEquiv_refl (R : PGraph E) : R.BAEquiv R := by
+theorem PGraph.BASim_BAEquiv_refl (R : PGraph E) : R.BAEquiv R := by
   have h : R.g.relabel (Sum.map (Equiv.refl R.E') (Equiv.refl R.I')) = R.g := by
     obtain ⟨s, w, d, c⟩ := R.g
     simp only [LGraph.relabel, Equiv.coe_refl, Sum.map_id_id, LGraph.mk.injEq, and_true]
@@ -227,24 +227,24 @@ end Pins
 section Pins2
 variable {E : Type}
 /-- two waved edges with the same ends, unordered (the colour and the orientation of the edge are not read). -/
-def WEdge.sameEnds {V : Type*} (a b : WEdge V) : Prop := (a.x = b.x ∧ a.y = b.y) ∨ (a.x = b.y ∧ a.y = b.x)
-/-- **`R` is `S` up to relabelling, the colours of the waved edges not read** (`BAEquiv` with `WEdge.sameEnds` in place of `WEdge.sameRev`; Amend 1, O4: pinned
+def WEdge.BASim_sameEnds {V : Type*} (a b : WEdge V) : Prop := (a.x = b.x ∧ a.y = b.y) ∨ (a.x = b.y ∧ a.y = b.x)
+/-- **`R` is `S` up to relabelling, the colours of the waved edges not read** (`BAEquiv` with `WEdge.BASim_sameEnds` in place of `WEdge.sameRev`; Amend 1, O4: pinned
 for L3b4', where the macro output `X.d4` has a waved edge `S` against the band's `S⁺`).  The consumers read `scost` (`waved.length`) and the molecules
 (`LGraph.adj`, the ends of the waved edges). -/
 def PGraph.BAEquivC (R S : PGraph E) : Prop :=
   ∃ (eE : R.E' ≃ S.E') (eI : R.I' ≃ S.I'), (∀ a, S.ext a = eE (R.ext a)) ∧
     List.Perm (R.g.relabel (Sum.map eE eI)).solid S.g.solid ∧
-    (∃ l, List.Perm l (R.g.relabel (Sum.map eE eI)).waved ∧ List.Forall₂ WEdge.sameEnds l S.g.waved) ∧
+    (∃ l, List.Perm l (R.g.relabel (Sum.map eE eI)).waved ∧ List.Forall₂ WEdge.BASim_sameEnds l S.g.waved) ∧
     (∀ d ∈ (R.g.relabel (Sum.map eE eI)).dotted, ∃ d' ∈ S.g.dotted, DEdge.sameU d d') ∧
     (∀ d ∈ S.g.dotted, ∃ d' ∈ (R.g.relabel (Sum.map eE eI)).dotted, DEdge.sameU d' d)
-theorem WEdge.sameRev.sameEnds {V : Type*} {a b : WEdge V} (h : a.sameRev b) : a.sameEnds b := by
+theorem WEdge.BASim_sameRev_sameEnds {V : Type*} {a b : WEdge V} (h : a.sameRev b) : a.BASim_sameEnds b := by
   rcases h with rfl | rfl
   · exact Or.inl ⟨rfl, rfl⟩
   · exact Or.inr ⟨rfl, rfl⟩
 /-- `BAEquiv` implies `BAEquivC` (the instance of the pin: the relation is nonempty) -/
-theorem PGraph.BAEquiv.toC {R S : PGraph E} (h : R.BAEquiv S) : R.BAEquivC S := by
+theorem PGraph.BASim_BAEquiv_toC {R S : PGraph E} (h : R.BAEquiv S) : R.BAEquivC S := by
   obtain ⟨eE, eI, h1, h2, ⟨l, hl, hF⟩, h4, h5⟩ := h
-  exact ⟨eE, eI, h1, h2, ⟨l, hl, hF.imp fun _ _ => WEdge.sameRev.sameEnds⟩, h4, h5⟩
+  exact ⟨eE, eI, h1, h2, ⟨l, hl, hF.imp fun _ _ => WEdge.BASim_sameRev_sameEnds⟩, h4, h5⟩
 /-- the twist of a packed BA graph (L3a1; `t/T2395:RBM3D/Probe/T2395Pins.lean:157`; pinned by Amend 1, O4) -/
 def BAPGraph.twist (c t : Bool) (P : BAPGraph E) : BAPGraph E := { P with g := P.g.twist c t }
 end Pins2
@@ -254,27 +254,27 @@ end Pins2
 section Untag
 variable {E : Type}
 
-theorem BAPGraph.outsT_map_snd (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
+theorem BAPGraph.BASim_outsT_map_snd (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
     (tg : BAGraph P.E' I' → BAShape) (Ts : List (BAGraph P.E' I')) :
     (P.outsT tg Ts).map Prod.snd = P.outsOf Ts := by
   simp only [BAPGraph.outsT, BAPGraph.outsOf, BAGraph.partition, List.map_flatMap, List.map_map, Function.comp_def]
 
-theorem BAPGraph.outsOf_append (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
+theorem BAPGraph.BASim_outsOf_append (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
     (A B : List (BAGraph P.E' I')) : P.outsOf (A ++ B) = P.outsOf A ++ P.outsOf B := by
   simp only [BAPGraph.outsOf, List.flatMap_append]
 
-theorem BAPGraph.outsT_append (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
+theorem BAPGraph.BASim_outsT_append (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I']
     (tg : BAGraph P.E' I' → BAShape) (A B : List (BAGraph P.E' I')) :
     P.outsT tg (A ++ B) = P.outsT tg A ++ P.outsT tg B := by
   simp only [BAPGraph.outsT, List.flatMap_append]
 
-theorem BAPGraph.withinOutsT_map_snd (P : BAPGraph E) (p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) :
+theorem BAPGraph.BASim_withinOutsT_map_snd (P : BAPGraph E) (p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) :
     (P.withinOutsT p).map Prod.snd = P.withinOuts p := by
-  simp only [BAPGraph.withinOutsT, BAPGraph.withinOuts, List.map_append, BAPGraph.outsT_map_snd]
+  simp only [BAPGraph.withinOutsT, BAPGraph.withinOuts, List.map_append, BAPGraph.BASim_outsT_map_snd]
 
-theorem BAPGraph.splitOutsT_map_snd (P : BAPGraph E) (p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) (j : ℕ) :
+theorem BAPGraph.BASim_splitOutsT_map_snd (P : BAPGraph E) (p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) (j : ℕ) :
     (P.splitOutsT p q j).map Prod.snd = P.splitOuts p q j := by
-  simp only [BAPGraph.splitOutsT, BAPGraph.splitOuts, List.map_append, BAPGraph.outsT_map_snd, BAPGraph.outsOf_append]
+  simp only [BAPGraph.splitOutsT, BAPGraph.splitOuts, List.map_append, BAPGraph.BASim_outsT_map_snd, BAPGraph.BASim_outsOf_append]
   simp only [BAPGraph.outsOf, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.append_assoc]
 
 /-- **The tagged step is the step with its outputs tagged.** -/
@@ -283,34 +283,34 @@ theorem baFrameStepT_untag_holds : BAFrameStepT_untag := by
   constructor
   · intro h
     cases h with
-    | weight p hp h' => exact ⟨_, BAFrameStepT.weight _ p hp h', by simp [List.map_append, BAPGraph.outsT_map_snd]⟩
-    | within p hp h' => exact ⟨_, BAFrameStepT.within _ p hp h', (BAPGraph.withinOutsT_map_snd _ p).symm⟩
+    | weight p hp h' => exact ⟨_, BAFrameStepT.weight _ p hp h', by simp [List.map_append, BAPGraph.BASim_outsT_map_snd]⟩
+    | within p hp h' => exact ⟨_, BAFrameStepT.within _ p hp h', (BAPGraph.BASim_withinOutsT_map_snd _ p).symm⟩
     | edge p hp h' x hx hwf hv hint hbad =>
       refine ⟨_, BAFrameStepT.edge _ p hp h' x hx hwf hv hint hbad, ?_⟩
-      simp only [List.map_append, BAPGraph.outsT_map_snd, BAGraph.lanlwTerms, BAPGraph.outsOf, List.flatMap_cons]
-      simp [BAPGraph.outsOf, BAPGraph.outsT_map_snd]
+      simp only [List.map_append, BAPGraph.BASim_outsT_map_snd, BAGraph.lanlwTerms, BAPGraph.outsOf, List.flatMap_cons]
+      simp [BAPGraph.outsOf, BAPGraph.BASim_outsT_map_snd]
     | gg p hp q hq h' x hx hwf hint hnb =>
-      exact ⟨_, BAFrameStepT.gg _ p hp q hq h' x hx hwf hint hnb, by simp [List.map_append, BAPGraph.outsT_map_snd]⟩
+      exact ⟨_, BAFrameStepT.gg _ p hp q hq h' x hx hwf hint hnb, by simp [List.map_append, BAPGraph.BASim_outsT_map_snd]⟩
     | ggSplit p hp q j hj h' a a' hx hne hsame hwf hint hnb =>
-      exact ⟨_, BAFrameStepT.ggSplit _ p hp q j hj h' a a' hx hne hsame hwf hint hnb, (BAPGraph.splitOutsT_map_snd _ p q j).symm⟩
+      exact ⟨_, BAFrameStepT.ggSplit _ p hp q j hj h' a a' hx hne hsame hwf hint hnb, (BAPGraph.BASim_splitOutsT_map_snd _ p q j).symm⟩
   · rintro ⟨LT, hT, rfl⟩
     cases hT with
     | weight p hp h' => 
       have := BAFrameStep.weight _ p hp h'
-      simpa [List.map_append, BAPGraph.outsT_map_snd] using this
+      simpa [List.map_append, BAPGraph.BASim_outsT_map_snd] using this
     | within p hp h' =>
       have := BAFrameStep.within _ p hp h'
-      rwa [← BAPGraph.withinOutsT_map_snd] at this
+      rwa [← BAPGraph.BASim_withinOutsT_map_snd] at this
     | edge p hp h' x hx hwf hv hint hbad =>
       have := BAFrameStep.edge _ p hp h' x hx hwf hv hint hbad
-      simp only [List.map_append, BAPGraph.outsT_map_snd]
+      simp only [List.map_append, BAPGraph.BASim_outsT_map_snd]
       simpa [BAGraph.lanlwTerms, BAPGraph.outsOf] using this
     | gg p hp q hq h' x hx hwf hint hnb =>
       have := BAFrameStep.gg _ p hp q hq h' x hx hwf hint hnb
-      simpa [List.map_append, BAPGraph.outsT_map_snd] using this
+      simpa [List.map_append, BAPGraph.BASim_outsT_map_snd] using this
     | ggSplit p hp q j hj h' a a' hx hne hsame hwf hint hnb =>
       have := BAFrameStep.ggSplit _ p hp q j hj h' a a' hx hne hsame hwf hint hnb
-      rwa [← BAPGraph.splitOutsT_map_snd] at this
+      rwa [← BAPGraph.BASim_splitOutsT_map_snd] at this
 
 end Untag
 
@@ -551,7 +551,7 @@ section ImgLists
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
 /-- the packed output of a term of `P` (an element of `P.outsT`): the `=`-classes merged, read through `P.ext` -/
-def BAPGraph.outOf {E : Type} (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (T' : BAGraph P.E' I') : BAPGraph E :=
+def BAPGraph.BASim_outOf {E : Type} (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (T' : BAGraph P.E' I') : BAPGraph E :=
   { E' := T'.packMerge.E', I' := T'.packMerge.I', ext := T'.packMerge.ext ∘ P.ext, ext_surj := T'.packMerge.ext_surj.comp P.ext_surj,
     g := T'.packMerge.g }
 
@@ -1153,7 +1153,7 @@ end Dots
 non-extra term `T'` of `G = Ǧ + M` on `T` has, up to relabelling, an output of the dotted edge partition of `H` (packed over the external vertices of the image of `P`). -/
 theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P.I' ⊕ Fin k)}
     (hT' : ∃ r ∈ baSplitSolid D.T.solid, BASimSplit D r T') (hne : P.g.extraB (owxEmb k) T' = false) :
-    ∃ R ∈ lvl1Pack P.img (D.H.partition m), R.BAEquiv (P.outOf T').img := by
+    ∃ R ∈ lvl1Pack P.img (D.H.partition m), R.BAEquiv (P.BASim_outOf T').img := by
   classical
   obtain ⟨r, hr, hS⟩ := hT'
   obtain ⟨fl, hlen, hcirc, h1, h2⟩ := BASim_baSplit_flags _ r hr
@@ -1232,7 +1232,7 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
     intro a
     have hb := hθ (Sum.inl (P.ext a))
     have hl : (promoteC (T').merge).vmap ((T').toLGraph.vmap (Sum.inl (P.ext a))) =
-        Sum.inl ((P.outOf (T')).img.ext a) := by
+        Sum.inl ((P.BASim_outOf (T')).img.ext a) := by
       rw [BAAtomic_vmap_inl]
       exact BAAtomic_vmap_inl _ _
     have hr : Δ.vmap (D.φ (Sum.inl (P.ext a))) = Sum.inl (((BASim_mk Δ rH).lvl1Comp P.img.ext P.img.ext_surj).ext a) := by
@@ -1243,13 +1243,13 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
   · -- solid edges
     have := BASim_solid_perm_gen D.T.solid D.X D.H.solid D.φ Δ.vmap (Sum.map eE eI) hfinj fl flH hlen hperm rH.2 hrH2
     rw [← F.h1] at this
-    have hSS : ((P.outOf T').img).g.solid = r.1.map (BASim_phiE (BASim_theta T')) := by
+    have hSS : ((P.BASim_outOf T').img).g.solid = r.1.map (BASim_phiE (BASim_theta T')) := by
       rw [← hS.hsolid]; exact BASim_img_solid T' G.hT'0
     rw [hSS, hθ']
     exact this
   · -- waved edges
     refine ⟨(((BASim_mk Δ rH).lvl1Comp P.img.ext P.img.ext_surj).g.relabel (Sum.map eE eI)).waved, List.Perm.refl _, ?_⟩
-    have hSS : ((P.outOf T').img).g.waved = D.T.waved.map (WEdge.map (BASim_theta T')) := by
+    have hSS : ((P.BASim_outOf T').img).g.waved = D.T.waved.map (WEdge.map (BASim_theta T')) := by
       rw [← hS.hwaved]; exact BASim_img_waved T'
     rw [hSS, hθ']
     change List.Forall₂ WEdge.sameRev ((D.H.waved.map (WEdge.map Δ.vmap)).map (WEdge.map (Sum.map eE eI)))
@@ -1270,7 +1270,7 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
     obtain ⟨e, he, hs, hends⟩ := BASim_dotA G hd0m hd0eq'
     have hk : ({ e with circ := true } : SEdge _) ∈ T'.solid := hS.hsolid ▸ BASim_kept hS F he hs
     refine ⟨⟨false, BASim_theta T' e.src, BASim_theta T' e.dst⟩, ?_, ?_⟩
-    · have hSS : ((P.outOf T').img).g.dotted = (T'.solid.filter fun e => !T'.sameAtom e.src e.dst).map
+    · have hSS : ((P.BASim_outOf T').img).g.dotted = (T'.solid.filter fun e => !T'.sameAtom e.src e.dst).map
           fun e => (⟨false, BASim_theta T' e.src, BASim_theta T' e.dst⟩ : DEdge _) :=
         BASim_img_dotted T' G.hT'0
       rw [hSS]
@@ -1291,7 +1291,7 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
           rw [hy]; exact (hθ e.src).symm
   · -- `×`-dotted edges of the image are those of R
     intro d' hd'
-    have hSS : ((P.outOf T').img).g.dotted = (T'.solid.filter fun e => !T'.sameAtom e.src e.dst).map
+    have hSS : ((P.BASim_outOf T').img).g.dotted = (T'.solid.filter fun e => !T'.sameAtom e.src e.dst).map
         fun e => (⟨false, BASim_theta T' e.src, BASim_theta T' e.dst⟩ : DEdge _) :=
       BASim_img_dotted T' G.hT'0
     rw [hSS] at hd'
@@ -1329,7 +1329,7 @@ theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P
 /-- **`BASim_match'` for a term of `T.splitG`** (the order of `BAGraph.splitG`) -/
 theorem BASim_match (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P.I' ⊕ Fin k)} (hT' : T' ∈ D.T.splitG)
     (hne : P.g.extraB (owxEmb k) T' = false) :
-    ∃ R ∈ lvl1Pack P.img (D.H.partition m), R.BAEquiv (P.outOf T').img := by
+    ∃ R ∈ lvl1Pack P.img (D.H.partition m), R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨r, hr, hT'eq⟩ := List.mem_map.1 hT'
   subst hT'eq
   exact BASim_match' D m ⟨r, hr, ⟨rfl, rfl, rfl, rfl, fun _ => Iff.rfl⟩⟩ hne
@@ -1824,7 +1824,7 @@ theorem BASim_weightOuts0_ff {E' I' : Type} [Fintype E'] [DecidableEq E'] [Finty
 
 theorem BASim_mem_outsT (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (tg : BAGraph P.E' I' → BAShape)
     (Ts : List (BAGraph P.E' I')) (t : BAShape) (Q : BAPGraph E) (h : (t, Q) ∈ P.outsT tg Ts) :
-    ∃ T ∈ Ts, ∃ T' ∈ T.splitG, tg T' = t ∧ P.outOf T' = Q := by
+    ∃ T ∈ Ts, ∃ T' ∈ T.splitG, tg T' = t ∧ P.BASim_outOf T' = Q := by
   unfold BAPGraph.outsT at h
   obtain ⟨T, hT, h⟩ := List.mem_flatMap.1 h
   obtain ⟨T', hT', h⟩ := List.mem_map.1 h

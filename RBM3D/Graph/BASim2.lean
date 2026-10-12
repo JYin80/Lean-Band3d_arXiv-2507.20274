@@ -67,7 +67,7 @@ def BASim_B_leaf2 (P : BAPGraph E) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.
 theorem BASim_match_leaf2 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (h : p.1.σ = true ∧ p.1.circ = true ∧ P.g.sameAtom p.1.src p.1.dst = true)
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_leaf2 P.g p).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
-    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.outOf T').img := by
+    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_leaf2 P hp h).toData hN m) m hT' hne
   refine ⟨_, BASim_locStep_weight P m hp h, R, ?_, hRE⟩
   refine BASim_pack_mono P.img (L := (lwSymmOwxT1 false false m P.img.g ((promoteC P.g).vmap p.1.src)).partition m) ?_ hR
@@ -120,7 +120,7 @@ def BASim_B_D2 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
 theorem BASim_match_D2 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2) (h : p.1.σ = true ∧ p.1.circ = true ∧ P.g.sameAtom p.1.src p.1.dst = true)
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_D2 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
-    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.outOf T').img := by
+    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_D2 P hp hq h).toData hN m) m hT' hne
   refine ⟨_, BASim_locStep_weight P m hp h, R, ?_, hRE⟩
   refine BASim_pack_mono P.img (L := (owxET3 m P.img.g ((promoteC P.g).vmap p.1.src) (BASim_imgP P q)).partition m) ?_ hR
@@ -194,7 +194,7 @@ def BASim_B_D4 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E
 theorem BASim_match_leaf4 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (h : p.1.σ = true ∧ p.1.circ = true ∧ P.g.sameAtom p.1.src p.1.dst = true)
     {T' : BAGraph P.E' (P.I' ⊕ Fin 4)} (hT' : T' ∈ (BASim_leaf4 P.g p).splitG) (hne : P.g.extraB (owxEmb 4) T' = false) :
-    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.outOf T').img := by
+    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_leaf4 P hp).toData hN (m ^ 3)) m hT' hne
   refine ⟨_, BASim_locStep_weight P m hp h, R, ?_, hRE⟩
   refine BASim_pack_mono P.img (L := (owxET2 m P.img.g (BASim_imgP P p) ((promoteC P.g).vmap p.1.src)).partition m) ?_ hR
@@ -207,7 +207,7 @@ theorem BASim_match_leaf4 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdg
 theorem BASim_match_D4 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2) (h : p.1.σ = true ∧ p.1.circ = true ∧ P.g.sameAtom p.1.src p.1.dst = true)
     {T' : BAGraph P.E' (P.I' ⊕ Fin 4)} (hT' : T' ∈ (BASim_D4 P.g p q).splitG) (hne : P.g.extraB (owxEmb 4) T' = false) :
-    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.outOf T').img := by
+    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_D4 P hp hq).toData hN (m ^ 3)) m hT' hne
   refine ⟨_, BASim_locStep_weight P m hp h, R, ?_, hRE⟩
   refine BASim_pack_mono P.img (L := (owxET4 m P.img.g ((promoteC P.g).vmap p.1.src) (BASim_imgP P q)).partition m) ?_ hR
@@ -268,7 +268,7 @@ def BASim_B_Wfirst (P : BAPGraph E) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P
 theorem BASim_match_Wfirst (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (h : p.1.σ = true ∧ p.1.circ = true ∧ P.g.sameAtom p.1.src p.1.dst = true)
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_Wfirst P.g p).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
-    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.outOf T').img := by
+    ∃ L', LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_Wfirst P hp h).toData hN m) m hT' hne
   refine ⟨_, BASim_locStep_weight P m hp h, R, ?_, hRE⟩
   refine BASim_pack_mono P.img (L := (owxET1 m P.img.g ((promoteC P.g).vmap p.1.src)).partition m) ?_ hR
@@ -649,7 +649,7 @@ theorem BASim_match_L1 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p : SEdge (
     (hp : p ∈ lwSplit P.g.solid) (hσ : p.1.σ = true) (x' : BASimY P) (hx' : (promoteC P.g).vmap p.1.src = Sum.inr x')
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_L1 P.g p).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1EdgeOuts0 m P.img.g (BASim_imgP P p) x' ((promoteC P.g).vmap p.1.dst) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_L1 P hp hσ x' hx').toData hN m) m hT' hne
   exact ⟨R, BASim_pack_mono P.img (L := (owxT1 m (lwSymmUncirc P.img.g (BASim_imgP P p)) x').partition m)
     (fun Q hQ => BASim_edgeOuts_T1 P m p x' _ hQ) hR, hRE⟩
@@ -676,7 +676,7 @@ theorem BASim_match_Dedge (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SE
     (hc2 : ¬ ((BASim_imgP P q).1.σ = true ∧ (BASim_imgP P q).1.dst = Sum.inr x'))
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_D2 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1EdgeOuts0 m P.img.g (BASim_imgP P p) x' ((promoteC P.g).vmap p.1.dst) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_Dgen P hp hq (Sum.inr x') ((promoteC P.g).vmap p.1.dst) hx'.symm rfl).toData hN m) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (oe1xD m (lwSymmUncirc P.img.g (BASim_imgP P p)) x' ((promoteC P.g).vmap p.1.dst) (BASim_imgP P q)).partition m)
     (fun Q hQ => BASim_edgeOuts_Ds P m p x' _ hq ⟨_, ?_, hQ⟩) hR, hRE⟩
@@ -693,7 +693,7 @@ theorem BASim_match_Dred (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEd
     (hσ : q.1.σ = false) (hqs : (promoteC P.g).vmap q.1.src = Sum.inr x')
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_D2 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1EdgeOuts0 m P.img.g (BASim_imgP P p) x' ((promoteC P.g).vmap p.1.dst) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨r, hr, hT'eq⟩ := List.mem_map.1 hT'
   subst hT'eq
   have he1 : (BASim_dE1 q).circ = false := by simp [BASim_dE1, owxDE, hσ, SEdge.map]
@@ -724,7 +724,7 @@ theorem BASim_match_Dblue (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SE
     (hc1 : ¬ ((BASim_imgP P q).1.σ = false ∧ (BASim_imgP P q).1.src = Sum.inr x'))
     {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BASim_D2 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1EdgeOuts0 m P.img.g (BASim_imgP P p) x' ((promoteC P.g).vmap p.1.dst) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨r, hr, hT'eq⟩ := List.mem_map.1 hT'
   subst hT'eq
   have he2 : (BASim_dE2 q).circ = false := by simp [BASim_dE2, owxDE, hσ, SEdge.map]
@@ -1251,7 +1251,7 @@ include hN hp hq hx'
 /-- **`A3` ↔ `R2`** at the selector `(0, 0)` -/
 theorem BASim_match_A3 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGOp_A3 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_A3 P hp hq x' hx').toData hN (m ^ 3)) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR2 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _).partition m)
     (BASim_ggOuts_R2 _ _ _ _ _ _ _ _ _) ?_, hRE⟩
@@ -1262,7 +1262,7 @@ theorem BASim_match_A3 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGO
 /-- **`A1` ↔ `R2`** at the selector `(0, 0)` (the `=`-dotted branch of `{ȳ', ȳ}`, with the loop dropped) -/
 theorem BASim_match_A1 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGOp_A1 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_A1 P hp hq x' hx').toData hN (m ^ 3)) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR2 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _).partition m)
     (BASim_ggOuts_R2 _ _ _ _ _ _ _ _ _) ?_, hRE⟩
@@ -1273,7 +1273,7 @@ theorem BASim_match_A1 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGO
 theorem BASim_match_A2 {p' q' : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (h3 : q'.2 = q.2) {T' : BAGraph P.E' (P.I' ⊕ Fin 2)}
     (hT' : T' ∈ (BAGGOp_A2 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p') (BASim_imgP P q') x' ((promoteC P.g).vmap q.1.src) ((promoteC P.g).vmap p.1.dst) false true),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨q'1, q'2⟩ := q'
   dsimp only at h3
   subst h3
@@ -1407,7 +1407,7 @@ include hN hp hq hx' hx2 hσ hy'
 /-- **`A4` ↔ `R3`** at the selector `(0, 0)` -/
 theorem BASim_match_A4 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGOp_A4 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_A4 P hp hq x' hx' hx2 hσ hy').toData hN m) m hT' hne
   exact ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR3 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x').partition m)
     (BASim_ggOuts_R3 _ _ _ _ _ _ _ _ _) hR, hRE⟩
@@ -1415,7 +1415,7 @@ theorem BASim_match_A4 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGO
 /-- **`A5` ↔ `R5`** at the selector `(0, 0)` -/
 theorem BASim_match_A5 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGOp_A5 P.g p q).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_A5 P hp hq x' hx').toData hN m) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR5 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _).partition m)
     (BASim_ggOuts_R5 _ _ _ _ _ _ _ _ _) ?_, hRE⟩
@@ -1426,7 +1426,7 @@ theorem BASim_match_A5 {T' : BAGraph P.E' (P.I' ⊕ Fin 2)} (hT' : T' ∈ (BAGGO
 theorem BASim_match_AD {r : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hr : r ∈ lwSplit q.2) {T' : BAGraph P.E' (P.I' ⊕ Fin 2)}
     (hT' : T' ∈ (BAGGOp_AD P.g p q r).splitG) (hne : P.g.extraB (owxEmb 2) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_AD P hp hq hr x' hx' hx2 hσ hy').toData hN m) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR7 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _ (BASim_imgP P r)).partition m)
     (BASim_ggOuts_R7 _ _ _ _ _ _ _ _ _ (BASim_imgP_mem2 P hr)) ?_, hRE⟩
@@ -1549,7 +1549,7 @@ include hN hp hq hx'
 /-- **`B1` ↔ `R4`** at the selector `(0, 0)` -/
 theorem BASim_match_B1 {T' : BAGraph P.E' (P.I' ⊕ Fin 4)} (hT' : T' ∈ (BAGGOp_B1 P.g p q).splitG) (hne : P.g.extraB (owxEmb 4) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_B1 P hp hq x' hx').toData hN (m ^ 3)) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR4 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _).partition m)
     (BASim_ggOuts_R4 _ _ _ _ _ _ _ _ _) ?_, hRE⟩
@@ -1559,7 +1559,7 @@ theorem BASim_match_B1 {T' : BAGraph P.E' (P.I' ⊕ Fin 4)} (hT' : T' ∈ (BAGGO
 /-- **`B2` ↔ `R6`** at the selector `(0, 0)` -/
 theorem BASim_match_B2 {T' : BAGraph P.E' (P.I' ⊕ Fin 4)} (hT' : T' ∈ (BAGGOp_B2 P.g p q).splitG) (hne : P.g.extraB (owxEmb 4) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_B2 P hp hq x' hx').toData hN (m ^ 3)) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR6 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _).partition m)
     (BASim_ggOuts_R6 _ _ _ _ _ _ _ _ _) ?_, hRE⟩
@@ -1570,7 +1570,7 @@ theorem BASim_match_B2 {T' : BAGraph P.E' (P.I' ⊕ Fin 4)} (hT' : T' ∈ (BAGGO
 theorem BASim_match_BD {r : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hr : r ∈ lwSplit q.2) {T' : BAGraph P.E' (P.I' ⊕ Fin 4)}
     (hT' : T' ∈ (BAGGOp_BD P.g p q r).splitG) (hne : P.g.extraB (owxEmb 4) T' = false) :
     ∃ R ∈ lvl1Pack P.img (lvl1GGOuts0 m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' ((promoteC P.g).vmap p.1.dst) ((promoteC P.g).vmap q.1.src) false false),
-      R.BAEquiv (P.outOf T').img := by
+      R.BAEquiv (P.BASim_outOf T').img := by
   obtain ⟨R, hR, hRE⟩ := BASim_match ((BASim_B_BD P hp hq hr x' hx').toData hN (m ^ 3)) m hT' hne
   refine ⟨R, BASim_pack_mono P.img (L := (lwSymmOe2xR8 false false m P.img.g (BASim_imgP P p) (BASim_imgP P q) x' _ _ (BASim_imgP P r)).partition m)
     (BASim_ggOuts_R8 _ _ _ _ _ _ _ _ _ (BASim_imgP_mem2 P hr)) ?_, hRE⟩

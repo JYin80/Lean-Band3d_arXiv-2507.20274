@@ -433,9 +433,9 @@ theorem BASim_merge_nExt (T : BAGraph E I) (hT : ∀ e ∈ T.dotted, e.eq = fals
   rw [this, ← Finset.image_image]
   exact Finset.card_image_of_injective _ (Finset.image_injective hinj)
 
-/-- the invariants of the output `P.outOf T'` of a normal term: those of `T'` (the merge of a graph without `=`-dotted edges is a relabelling) -/
+/-- the invariants of the output `P.BASim_outOf T'` of a normal term: those of `T'` (the merge of a graph without `=`-dotted edges is a relabelling) -/
 theorem BASim_outOf_inv {E0 : Type} (P : BAPGraph E0) {I' : Type} [Fintype I'] [DecidableEq I'] (T' : BAGraph P.E' I') (hN : T'.Normal) :
-    (P.outOf T').g.scalingOrder = T'.scalingOrder ∧ (P.outOf T').g.nExt = T'.nExt := by
+    (P.BASim_outOf T').g.scalingOrder = T'.scalingOrder ∧ (P.BASim_outOf T').g.nExt = T'.nExt := by
   refine ⟨?_, BASim_merge_nExt T' hN.1⟩
   have h := BAWeightOp_packMerge_counters T' hN
   change ord (T'.merge.counters) = ord (T'.counters)
@@ -1338,7 +1338,7 @@ theorem BASim_merge_atom (T : BAGraph E I) (hT : ∀ e ∈ T.dotted, e.eq = fals
 
 /-- the invariants of the packed merge of a normal term are those of the term -/
 theorem BASim_outOf_baInv {E0 : Type} (P : BAPGraph E0) {I' : Type} [Fintype I'] [DecidableEq I'] (T : BAGraph P.E' I') (hN : T.Normal) :
-    (P.outOf T).baInv = BASim_inv T := by
+    (P.BASim_outOf T).baInv = BASim_inv T := by
   have hT := hN.1
   have hinj := BAVocab_vmap_injective T.toLGraph hT
   have hc := BAWeightOp_packMerge_counters T hN
@@ -1653,7 +1653,7 @@ def BASim_Ttr (P : BAPGraph E) (g : BAGraph P.E' (P.I' ⊕ Fin 2)) : BAPGraph E 
   g := g
 
 theorem BASim_outsT_mem (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (tg : BAGraph P.E' I' → BAShape) {Ts : List (BAGraph P.E' I')}
-    {T : BAGraph P.E' I'} (hT : T ∈ Ts) {T' : BAGraph P.E' I'} (hT' : T' ∈ T.splitG) : (tg T', P.outOf T') ∈ P.outsT tg Ts := by
+    {T : BAGraph P.E' I'} (hT : T ∈ Ts) {T' : BAGraph P.E' I'} (hT' : T' ∈ T.splitG) : (tg T', P.BASim_outOf T') ∈ P.outsT tg Ts := by
   unfold BAPGraph.outsT
   exact List.mem_flatMap.2 ⟨T, hT, List.mem_map.2 ⟨T', hT', rfl⟩⟩
 
@@ -1742,7 +1742,7 @@ theorem BASim_macroB2 (m : ℂ) (P : BAPGraph E) (hN : P.g.Normal) {p q : SEdge 
 
 /-- the outputs of a list of normal terms with only circled solid edges: the packed merges of the terms themselves -/
 theorem BASim_outsT_circ (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (tg : BAGraph P.E' I' → BAShape) {Ts : List (BAGraph P.E' I')}
-    (hTs : ∀ T ∈ Ts, T.Normal) {t : BAShape} {Q : BAPGraph E} (hQ : (t, Q) ∈ P.outsT tg Ts) : ∃ T ∈ Ts, Q = P.outOf T := by
+    (hTs : ∀ T ∈ Ts, T.Normal) {t : BAShape} {Q : BAPGraph E} (hQ : (t, Q) ∈ P.outsT tg Ts) : ∃ T ∈ Ts, Q = P.BASim_outOf T := by
   obtain ⟨T, hT, T', hT', -, rfl⟩ := BASim_mem_outsT P tg Ts t Q hQ
   rw [BAWeightOp_splitG_of_circ T (hTs T hT).2, List.mem_singleton] at hT'
   exact ⟨T, hT, by rw [hT']⟩
@@ -1904,7 +1904,7 @@ theorem hTE : BAFrameStepT (baPG baPE) ((baPG baPE).outsT baPE.tagT1 [BAGraph.la
     (baPG baPE).outsT (baPE.tagStd 2) ((lwSplit pE.2).map (BAGraph.lanlwD baPE pE))) :=
   BAFrameStepT.edge (baPG baPE) pE (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) (by decide) (0 : Fin 1) (by decide)
     (by decide) (by decide) (by decide) (by decide)
-theorem tag_exists (l : List (BAShape × BAPGraph (Fin 2))) (t : BAShape) (h : t ∈ l.map Prod.fst) : ∃ Q, (t, Q) ∈ l := by
+theorem tag_exists {E : Type} (l : List (BAShape × BAPGraph E)) (t : BAShape) (h : t ∈ l.map Prod.fst) : ∃ Q, (t, Q) ∈ l := by
   obtain ⟨⟨t', Q⟩, hm, rfl⟩ := List.mem_map.1 h; exact ⟨Q, hm⟩
 /-- the data are nondegenerate (kernel evaluation of `outsT`, `tagStd`, `tagT1`): `gg` at `P_A` has 31 outputs (23 `band`, 8 `e2`), `ggSplit` at `P_C` has 48 (8 `band`, 1 `e1`, 5 `e2`, 34 `macroB`) -/
 example : ((ggFT.map Prod.fst).count BAShape.band = 23 ∧ (ggFT.map Prod.fst).count BAShape.e2 = 8 ∧ ggFT.length = 31) ∧
@@ -1923,6 +1923,21 @@ example (m : ℂ) :
   obtain ⟨R', hR'⟩ := tag_exists ((baPG baPC).splitOutsT pC qC 0) .e1 (by decide +kernel)
   exact ⟨⟨Q, hQ, baMatch_holds m _ _ hTA (by decide) Q hQ⟩, ⟨Q', hQ', baExtraGood_holds _ _ hTA (by decide) Q' (Or.inr hQ')⟩,
     ⟨R, hR, baMatch_holds m _ _ hTC (by decide) R hR⟩, ⟨R', hR', baExtraGood_holds _ _ hTC (by decide) R' (Or.inl hR')⟩⟩
+/-- `baMatch_holds` and `baExtraGood_holds` at a datum `(P, LT)` with a `band`-tagged and an `e1`- or `e2`-tagged output -/
+theorem inst_match_extra (m : ℂ) {E : Type} (P : BAPGraph E) (LT : List (BAShape × BAPGraph E)) (h : BAFrameStepT P LT) (hN : P.g.Normal)
+    (hb : BAShape.band ∈ LT.map Prod.fst) (he : BAShape.e1 ∈ LT.map Prod.fst ∨ BAShape.e2 ∈ LT.map Prod.fst) :
+    (∃ Q, (BAShape.band, Q) ∈ LT ∧ ∃ L' : List (PGraph E), LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img) ∧
+    (∃ Q, ((BAShape.e1, Q) ∈ LT ∨ (BAShape.e2, Q) ∈ LT) ∧ (P.g.scalingOrder < Q.g.scalingOrder ∨ Q.g.nExt < P.g.nExt)) := by
+  obtain ⟨Q, hQ⟩ := tag_exists LT .band hb
+  refine ⟨⟨Q, hQ, baMatch_holds m P LT h hN Q hQ⟩, ?_⟩
+  rcases he with he | he
+  · obtain ⟨Q', hQ'⟩ := tag_exists LT .e1 he; exact ⟨Q', Or.inl hQ', baExtraGood_holds P LT h hN Q' (Or.inl hQ')⟩
+  · obtain ⟨Q', hQ'⟩ := tag_exists LT .e2 he; exact ⟨Q', Or.inr hQ', baExtraGood_holds P LT h hN Q' (Or.inr hQ')⟩
+/-- **`baMatch_holds` and `baExtraGood_holds` at the other three kinds**: `within` at `P_B`, `weight` at `P_W` (`E = Fin 1`), `edge` at `P_E`; each step has a
+`band`-tagged and an extra output (kernel evaluation of `outsT`, `tagStd`, `tagT1`), and every hypothesis of `BAFrameStepT` and `Normal` is discharged. -/
+example (m : ℂ) := And.intro (inst_match_extra m _ _ hTB (by decide) (by decide +kernel) (Or.inr (by decide +kernel)))
+  (And.intro (inst_match_extra m _ _ hTW (by decide) (by decide +kernel) (Or.inr (by decide +kernel)))
+    (inst_match_extra m _ _ hTE (by decide) (by decide +kernel) (Or.inl (by decide +kernel))))
 /-- **`baSim'_holds` at the five steps** (`gg` at `P_A`, `within` at `P_B`, `ggSplit` at `P_C`, `weight` at `P_W`, `edge` at `P_E`; each has outputs): every output has the conclusion of `BAsim'`. -/
 example (m : ℂ) :
     (∃ Q ∈ ggF, BASim_Goal m (baPG baPA) Q) ∧ (∃ Q ∈ (baPG baPB).withinOuts pB, BASim_Goal m (baPG baPB) Q) ∧
