@@ -39,7 +39,8 @@ set_option linter.unusedDecidableInType false
 
 open private difRepTail_doob_tail difRepTail_condExp_exp difRepTail_memLp_two_of_pow4 difRepTail_trace_eq
   difRepTail_linTrVar_le difRepTail_gridTime_nonneg difRepTail_gridTime_le difRepTail_gridTime_succ
-  difRepTail_K_mul_step difRepTail_measurable_linTr_uncurry difRepTail_standardBorelMatrix from RBM3D.Path.DifREP2
+  difRepTail_K_mul_step difRepTail_measurable_linTr_uncurry difRepTail_standardBorelMatrix difRepTail_eventually_Z
+  from RBM3D.Path.DifREP2
 open private StepDecompLoop_word_jets StepDecompLoop_word_jet1 StepDecompLoop_hasDerivAt_Gres
   StepDecompLoop_fderiv_of_line StepDecompLoop_fderiv2_of_line StepDecompLoop_isHermitian_add_realSmul
   StepDecompLoop_trace_hasDerivAt StepDecompLoop_trCLM StepDecompLoop_hasDerivAt_line StepDecompLoop_nmul
@@ -576,5 +577,477 @@ private theorem TwistGridTail_quadVar (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.
   rwa [Complex.ofReal_re] at this
 
 end Grad
+
+/-! ## 4. Crude bounds on `Der` and `twEEM`, and the shift `u → u'` -/
+
+section Crude
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
+
+private theorem TwistGridTail_word_norm {ι : Type*} [Fintype ι] [DecidableEq ι] (A₁ C₁ A₂ C₂ A₃ : Matrix ι ι ℂ)
+    {k₁ k₂ k₃ e : ℝ} (h₁ : ‖A₁‖ ≤ k₁) (h₂ : ‖A₂‖ ≤ k₂) (h₃ : ‖A₃‖ ≤ k₃) (hc₁ : ‖C₁‖ ≤ e) (hc₂ : ‖C₂‖ ≤ e) :
+    ‖A₁ * C₁ * A₂ * C₂ * A₃‖ ≤ k₁ * e * k₂ * e * k₃ :=
+  StepDecompLoop_nmul (StepDecompLoop_nmul (StepDecompLoop_nmul (StepDecompLoop_nmul h₁ hc₁) h₂) hc₂) h₃
+
+private theorem TwistGridTail_word_sub {ι : Type*} [Fintype ι] [DecidableEq ι] (A₁ A₂ A₃ B₁ B₂ B₃ C₁ C₂ : Matrix ι ι ℂ)
+    {K e δ : ℝ} (ha₂ : ‖A₂‖ ≤ K) (ha₃ : ‖A₃‖ ≤ K) (hb₁ : ‖B₁‖ ≤ K) (hb₂ : ‖B₂‖ ≤ K)
+    (hd₁ : ‖A₁ - B₁‖ ≤ δ) (hd₂ : ‖A₂ - B₂‖ ≤ δ) (hd₃ : ‖A₃ - B₃‖ ≤ δ) (hc₁ : ‖C₁‖ ≤ e) (hc₂ : ‖C₂‖ ≤ e) :
+    ‖A₁ * C₁ * A₂ * C₂ * A₃ - B₁ * C₁ * B₂ * C₂ * B₃‖ ≤ 3 * (δ * K ^ 2 * e ^ 2) := by
+  have hid : A₁ * C₁ * A₂ * C₂ * A₃ - B₁ * C₁ * B₂ * C₂ * B₃ =
+      (A₁ - B₁) * C₁ * A₂ * C₂ * A₃ + B₁ * C₁ * (A₂ - B₂) * C₂ * A₃ + B₁ * C₁ * B₂ * C₂ * (A₃ - B₃) := by
+    noncomm_ring
+  rw [hid]
+  have w1 := TwistGridTail_word_norm (A₁ - B₁) C₁ A₂ C₂ A₃ hd₁ ha₂ ha₃ hc₁ hc₂
+  have w2 := TwistGridTail_word_norm B₁ C₁ (A₂ - B₂) C₂ A₃ hb₁ hd₂ ha₃ hc₁ hc₂
+  have w3 := TwistGridTail_word_norm B₁ C₁ B₂ C₂ (A₃ - B₃) hb₁ hb₂ hd₃ hc₁ hc₂
+  refine ((norm_add_le _ _).trans (add_le_add (norm_add_le _ _) le_rfl)).trans ?_
+  nlinarith [w1, w2, w3]
+
+/-- The resolvent identity `G(w') - G(w) = (w' - w) G(w') G(w)` for Hermitian `H` and `Im w, Im w' ≠ 0`. -/
+private theorem TwistGridTail_resolvent_diff {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ}
+    (hH : H.IsHermitian) {w w' : ℂ} (hw : w.im ≠ 0) (hw' : w'.im ≠ 0) :
+    Ring.inverse (H - w' • (1 : Matrix ι ι ℂ)) - Ring.inverse (H - w • (1 : Matrix ι ι ℂ)) =
+      (w' - w) • (Ring.inverse (H - w' • (1 : Matrix ι ι ℂ)) * Ring.inverse (H - w • (1 : Matrix ι ι ℂ))) := by
+  have hA := isUnit_sub_smul_of_isHermitian hH hw
+  have hA' := isUnit_sub_smul_of_isHermitian hH hw'
+  have hdA : IsUnit (H - w • (1 : Matrix ι ι ℂ)).det := (Matrix.isUnit_iff_isUnit_det _).mp hA
+  have hdA' : IsUnit (H - w' • (1 : Matrix ι ι ℂ)).det := (Matrix.isUnit_iff_isUnit_det _).mp hA'
+  rw [← Matrix.nonsing_inv_eq_ringInverse, ← Matrix.nonsing_inv_eq_ringInverse]
+  set A := H - w • (1 : Matrix ι ι ℂ)
+  set A' := H - w' • (1 : Matrix ι ι ℂ)
+  have hAA' : A - A' = (w' - w) • (1 : Matrix ι ι ℂ) := by
+    simp only [A, A']
+    rw [sub_smul]
+    abel
+  have key : A'⁻¹ - A⁻¹ = A'⁻¹ * (A - A') * A⁻¹ := by
+    rw [mul_sub, sub_mul, Matrix.mul_assoc, Matrix.mul_nonsing_inv _ hdA, Matrix.mul_one,
+      Matrix.nonsing_inv_mul _ hdA', Matrix.one_mul]
+  rw [key, hAA']
+  simp [Matrix.mul_smul, Matrix.smul_mul]
+
+private theorem TwistGridTail_Gres_diff_norm {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ} (hH : H.IsHermitian)
+    {z z' : ℂ} (hz : z.im ≠ 0) (hz' : z'.im ≠ 0) (σ : Bool) {K : ℝ} (h : ‖Gres H z σ‖ ≤ K) (h' : ‖Gres H z' σ‖ ≤ K) :
+    ‖Gres H z' σ - Gres H z σ‖ ≤ ‖z' - z‖ * K * K := by
+  have key : ∀ {w w' : ℂ}, w.im ≠ 0 → w'.im ≠ 0 → ‖w' - w‖ = ‖z' - z‖ →
+      ‖Ring.inverse (H - w' • (1 : Matrix ι ι ℂ))‖ ≤ K → ‖Ring.inverse (H - w • (1 : Matrix ι ι ℂ))‖ ≤ K →
+      ‖Ring.inverse (H - w' • (1 : Matrix ι ι ℂ)) - Ring.inverse (H - w • (1 : Matrix ι ι ℂ))‖ ≤ ‖z' - z‖ * K * K := by
+    intro w w' hw hw' hww' hn hn'
+    rw [TwistGridTail_resolvent_diff hH hw hw', norm_smul, hww', mul_assoc]
+    exact mul_le_mul_of_nonneg_left (StepDecompLoop_nmul hn hn') (norm_nonneg _)
+  cases σ
+  · simp only [Gres, Bool.false_eq_true, ite_false] at h h' ⊢
+    refine key (by simpa using hz) (by simpa using hz') ?_ h' h
+    rw [← map_sub, Complex.norm_conj]
+  · simp only [Gres, ite_true] at h h' ⊢
+    exact key hz hz' rfl h' h
+
+/-- `‖Der‖ ≤ 2 η⁻³` (two words of three resolvents, `‖E_b‖, ‖Q‖ ≤ W^{-d} ≤ 1`), for Hermitian `H`. -/
+private theorem TwistGridTail_Der_norm {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) :
+    ‖TwistGridTail_Der sz lam0 E n u H σ b c₁ c₂‖ ≤ 2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3 := by
+  set η := etaOf (BAmF sz lam0 E n) u with hηdef
+  have hzη : η ≤ |(ztOf (BAmF sz lam0 E n) (E n) u).im| := by rw [ztOf_im, abs_of_pos hη]
+  have hG : ∀ τ : Bool, ‖Gres H (ztOf (BAmF sz lam0 E n) (E n) u) τ‖ ≤ η⁻¹ := fun τ => norm_Gsig_le_inv_eta hH hη hzη τ
+  have he := TwistGridTail_e_nonneg (sz := sz) (d := d) n
+  have he1 := TwistGridTail_e_le_one (sz := sz) (d := d) n
+  have w1 := TwistGridTail_word_norm (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0)) (TwistGridTail_Ea n b)
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1)) (TwistGridTail_Q n c₁ c₂)
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0)) (hG _) (hG _) (hG _) (TwistGridTail_norm_Ea n b) (TwistGridTail_norm_Q n c₁ c₂)
+  have w2 := TwistGridTail_word_norm (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1)) (TwistGridTail_Q n c₁ c₂)
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0)) (TwistGridTail_Ea n b)
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1)) (hG _) (hG _) (hG _) (TwistGridTail_norm_Q n c₁ c₂) (TwistGridTail_norm_Ea n b)
+  rw [TwistGridTail_Der_eq sz lam0 E n u hH σ b c₁ c₂, norm_neg]
+  refine (norm_add_le _ _).trans ?_
+  have hK : (0 : ℝ) ≤ η⁻¹ := by positivity
+  have hee : ((sz.W n : ℝ) ^ d)⁻¹ * ((sz.W n : ℝ) ^ d)⁻¹ ≤ 1 := by nlinarith
+  have hb : η⁻¹ * ((sz.W n : ℝ) ^ d)⁻¹ * η⁻¹ * ((sz.W n : ℝ) ^ d)⁻¹ * η⁻¹ ≤ η⁻¹ ^ 3 := by
+    calc η⁻¹ * ((sz.W n : ℝ) ^ d)⁻¹ * η⁻¹ * ((sz.W n : ℝ) ^ d)⁻¹ * η⁻¹ =
+        η⁻¹ ^ 3 * (((sz.W n : ℝ) ^ d)⁻¹ * ((sz.W n : ℝ) ^ d)⁻¹) := by ring
+      _ ≤ η⁻¹ ^ 3 * 1 := mul_le_mul_of_nonneg_left hee (by positivity)
+      _ = η⁻¹ ^ 3 := mul_one _
+  linarith
+
+/-- `etaOf` is antitone in `u` (for `Im m > 0`). -/
+private theorem TwistGridTail_eta_anti {m : ℂ} (hm : 0 < m.im) {u u' : ℝ} (h : u ≤ u') :
+    etaOf m u' ≤ etaOf m u := by
+  unfold etaOf
+  nlinarith
+
+/-- **The shift of the gradient**: `‖Der_{u'} - Der_u‖ ≤ 6 (u' - u) η_{u'}⁻⁴` for `u ≤ u'`, `‖m‖ ≤ 1`. -/
+private theorem TwistGridTail_Der_shift {u u' : ℝ} (hu : u ≤ u') (hη' : 0 < etaOf (BAmF sz lam0 E n) u')
+    (hm : 0 < (BAmF sz lam0 E n).im) (hmn : ‖BAmF sz lam0 E n‖ ≤ 1)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) :
+    ‖TwistGridTail_Der sz lam0 E n u' H σ b c₁ c₂ - TwistGridTail_Der sz lam0 E n u H σ b c₁ c₂‖ ≤
+      6 * ((u' - u) * (etaOf (BAmF sz lam0 E n) u')⁻¹ ^ 4) := by
+  set η' := etaOf (BAmF sz lam0 E n) u' with hη'def
+  have hη : 0 < etaOf (BAmF sz lam0 E n) u := lt_of_lt_of_le hη' (TwistGridTail_eta_anti hm hu)
+  have hηle : η' ≤ etaOf (BAmF sz lam0 E n) u := TwistGridTail_eta_anti hm hu
+  have hz0 : (ztOf (BAmF sz lam0 E n) (E n) u).im ≠ 0 := by rw [ztOf_im]; exact hη.ne'
+  have hz0' : (ztOf (BAmF sz lam0 E n) (E n) u').im ≠ 0 := by rw [ztOf_im]; exact hη'.ne'
+  have hzη : η' ≤ |(ztOf (BAmF sz lam0 E n) (E n) u).im| := by rw [ztOf_im, abs_of_pos hη]; exact hηle
+  have hzη' : η' ≤ |(ztOf (BAmF sz lam0 E n) (E n) u').im| := by rw [ztOf_im, abs_of_pos hη']
+  have hG : ∀ τ : Bool, ‖Gres H (ztOf (BAmF sz lam0 E n) (E n) u) τ‖ ≤ η'⁻¹ := fun τ => norm_Gsig_le_inv_eta hH hη' hzη τ
+  have hG' : ∀ τ : Bool, ‖Gres H (ztOf (BAmF sz lam0 E n) (E n) u') τ‖ ≤ η'⁻¹ := fun τ => norm_Gsig_le_inv_eta hH hη' hzη' τ
+  have hzz : ‖ztOf (BAmF sz lam0 E n) (E n) u' - ztOf (BAmF sz lam0 E n) (E n) u‖ ≤ u' - u := by
+    have : ztOf (BAmF sz lam0 E n) (E n) u' - ztOf (BAmF sz lam0 E n) (E n) u = ((u - u' : ℝ) : ℂ) * BAmF sz lam0 E n := by
+      simp only [ztOf]; push_cast; ring
+    rw [this, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonpos (by linarith)]
+    calc -(u - u') * ‖BAmF sz lam0 E n‖ ≤ -(u - u') * 1 :=
+          mul_le_mul_of_nonneg_left hmn (by linarith)
+      _ = u' - u := by ring
+  have hdiff : ∀ τ : Bool, ‖Gres H (ztOf (BAmF sz lam0 E n) (E n) u') τ - Gres H (ztOf (BAmF sz lam0 E n) (E n) u) τ‖ ≤
+      (u' - u) * η'⁻¹ * η'⁻¹ := fun τ =>
+    (TwistGridTail_Gres_diff_norm hH hz0 hz0' τ (hG τ) (hG' τ)).trans
+      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hzz (by positivity)) (by positivity))
+  have he := TwistGridTail_e_nonneg (sz := sz) (d := d) n
+  have he1 := TwistGridTail_e_le_one (sz := sz) (d := d) n
+  rw [TwistGridTail_Der_eq sz lam0 E n u' hH σ b c₁ c₂, TwistGridTail_Der_eq sz lam0 E n u hH σ b c₁ c₂]
+  have w1 := TwistGridTail_word_sub (Gres H (ztOf (BAmF sz lam0 E n) (E n) u') (σ 0)) (Gres H (ztOf (BAmF sz lam0 E n) (E n) u') (σ 1))
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u') (σ 0)) (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0))
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1)) (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0))
+    (TwistGridTail_Ea n b) (TwistGridTail_Q n c₁ c₂) (hG' _) (hG' _) (hG _) (hG _) (hdiff _) (hdiff _) (hdiff _)
+    (TwistGridTail_norm_Ea n b) (TwistGridTail_norm_Q n c₁ c₂)
+  have w2 := TwistGridTail_word_sub (Gres H (ztOf (BAmF sz lam0 E n) (E n) u') (σ 1)) (Gres H (ztOf (BAmF sz lam0 E n) (E n) u') (σ 0))
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u') (σ 1)) (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1))
+    (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 0)) (Gres H (ztOf (BAmF sz lam0 E n) (E n) u) (σ 1))
+    (TwistGridTail_Q n c₁ c₂) (TwistGridTail_Ea n b) (hG' _) (hG' _) (hG _) (hG _) (hdiff _) (hdiff _) (hdiff _)
+    (TwistGridTail_norm_Q n c₁ c₂) (TwistGridTail_norm_Ea n b)
+  have hid : ∀ (P P' Q Q' : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
+      -(P' + Q') - -(P + Q) = -((P' - P) + (Q' - Q)) := fun P P' Q Q' => by abel
+  rw [hid, norm_neg]
+  refine (norm_add_le _ _).trans ?_
+  have hee : ((sz.W n : ℝ) ^ d)⁻¹ ^ 2 ≤ 1 := pow_le_one₀ he he1
+  have hK : (0 : ℝ) ≤ η'⁻¹ := by positivity
+  have hδ : (0 : ℝ) ≤ (u' - u) * η'⁻¹ * η'⁻¹ := by
+    have := sub_nonneg.2 hu
+    positivity
+  have hfin : 3 * ((u' - u) * η'⁻¹ * η'⁻¹ * η'⁻¹ ^ 2 * ((sz.W n : ℝ) ^ d)⁻¹ ^ 2) ≤ 3 * ((u' - u) * η'⁻¹ ^ 4) := by
+    have : (u' - u) * η'⁻¹ * η'⁻¹ * η'⁻¹ ^ 2 * ((sz.W n : ℝ) ^ d)⁻¹ ^ 2 ≤ (u' - u) * η'⁻¹ ^ 4 := by
+      calc (u' - u) * η'⁻¹ * η'⁻¹ * η'⁻¹ ^ 2 * ((sz.W n : ℝ) ^ d)⁻¹ ^ 2 =
+          ((u' - u) * η'⁻¹ ^ 4) * ((sz.W n : ℝ) ^ d)⁻¹ ^ 2 := by ring
+        _ ≤ ((u' - u) * η'⁻¹ ^ 4) * 1 := mul_le_mul_of_nonneg_left hee (by
+            have := sub_nonneg.2 hu
+            positivity)
+        _ = (u' - u) * η'⁻¹ ^ 4 := mul_one _
+    linarith
+  linarith [w1, w2, hfin]
+
+private theorem TwistGridTail_twDerM_norm {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) (x y : Idx d (sz.L n) (sz.W n)) :
+    ‖twDerM sz lam0 E n u H σ b c₁ c₂ x y‖ ≤ 2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3 :=
+  (norm_matrix_entry_le_opNorm (TwistGridTail_Der sz lam0 E n u H σ b c₁ c₂) y x).trans
+    (TwistGridTail_Der_norm sz lam0 E n hη hH σ b c₁ c₂)
+
+private theorem TwistGridTail_S_norm_le (p q : Zd d (sz.L n)) : ‖(baFM sz lam0 E).S n p q‖ ≤ 1 := by
+  change ‖(1 : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) p q‖ ≤ 1
+  by_cases h : p = q <;> simp [Matrix.one_apply, h]
+
+private theorem TwistGridTail_norm_e : ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹‖ ≤ 1 := by
+  have h := TwistGridTail_e_le_one (sz := sz) (d := d) n
+  simpa using h
+
+/-- **Crude bound**: `‖twEEM_{u}(H)(b,b')‖ ≤ N² (2 η_u⁻³)²` (twin of `difRep2_norm_STeeM_le_N`). -/
+private theorem TwistGridTail_norm_twEEM {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    (σ : Fin 2 → Bool) (b b' c₁ c₂ : Zd d (sz.L n)) :
+    ‖twEEM sz lam0 E n u H σ b b' c₁ c₂‖ ≤ (sz.size n : ℝ) ^ 2 * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2 := by
+  have hD := TwistGridTail_twDerM_norm sz lam0 E n hη hH σ
+  have hterm : ∀ x y : Idx d (sz.L n) (sz.W n),
+      ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (baFM sz lam0 E).S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDerM sz lam0 E n u H σ b c₁ c₂ x y * (starRingEnd ℂ) (twDerM sz lam0 E n u H σ b' c₁ c₂ x y))‖ ≤
+      (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2 := by
+    intro x y
+    rw [norm_mul, norm_mul, norm_mul, Complex.norm_conj, sq]
+    have h1 := TwistGridTail_norm_e (sz := sz) (d := d) n
+    have h2 := TwistGridTail_S_norm_le sz lam0 E n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1
+    have h3 := hD b c₁ c₂ x y
+    have h4 := hD b' c₁ c₂ x y
+    calc ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹‖ * ‖(baFM sz lam0 E).S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1‖ *
+          (‖twDerM sz lam0 E n u H σ b c₁ c₂ x y‖ * ‖twDerM sz lam0 E n u H σ b' c₁ c₂ x y‖)
+        ≤ 1 * 1 * ((2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3)) := by
+          gcongr
+      _ = _ := by ring
+  unfold twEEM
+  refine (norm_sum_le _ _).trans ?_
+  calc ∑ x, ‖∑ y, (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (baFM sz lam0 E).S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDerM sz lam0 E n u H σ b c₁ c₂ x y * (starRingEnd ℂ) (twDerM sz lam0 E n u H σ b' c₁ c₂ x y))‖
+      ≤ ∑ x : Idx d (sz.L n) (sz.W n), ∑ y : Idx d (sz.L n) (sz.W n), (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2 :=
+        Finset.sum_le_sum fun x _ => (norm_sum_le _ _).trans (Finset.sum_le_sum fun y _ => hterm x y)
+    _ = (sz.size n : ℝ) ^ 2 * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2 := by
+        simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Sizes.card_Idx]
+        ring
+
+/-- **The shift of the QV**: for `u ≤ u'`, `‖twEEM_{u'}(H)(b,b) - twEEM_u(H)(b,b)‖ ≤ N² · 24 (u' - u) η_{u'}⁻⁷`
+(twin of `difRep2_eeShiftErrN_le`; `(|D'|+|D|) |D'-D|` with `|D| ≤ 2 η⁻³`, `‖Der_{u'} - Der_u‖ ≤ 6 (u'-u) η'⁻⁴`). -/
+private theorem TwistGridTail_norm_twEEM_shift {u u' : ℝ} (hu : u ≤ u') (hη' : 0 < etaOf (BAmF sz lam0 E n) u')
+    (hm : 0 < (BAmF sz lam0 E n).im) (hmn : ‖BAmF sz lam0 E n‖ ≤ 1)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) :
+    ‖twEEM sz lam0 E n u' H σ b b c₁ c₂ - twEEM sz lam0 E n u H σ b b c₁ c₂‖ ≤
+      (sz.size n : ℝ) ^ 2 * (24 * ((u' - u) * (etaOf (BAmF sz lam0 E n) u')⁻¹ ^ 7)) := by
+  set η' := etaOf (BAmF sz lam0 E n) u' with hη'def
+  have hηle : η' ≤ etaOf (BAmF sz lam0 E n) u := TwistGridTail_eta_anti hm hu
+  have hη : 0 < etaOf (BAmF sz lam0 E n) u := lt_of_lt_of_le hη' hηle
+  have hΔ : 0 ≤ u' - u := sub_nonneg.2 hu
+  have hD' := TwistGridTail_twDerM_norm sz lam0 E n hη' hH σ b c₁ c₂
+  have hD : ∀ x y, ‖twDerM sz lam0 E n u H σ b c₁ c₂ x y‖ ≤ 2 * η'⁻¹ ^ 3 := fun x y =>
+    (TwistGridTail_twDerM_norm sz lam0 E n hη hH σ b c₁ c₂ x y).trans (by
+      gcongr)
+  have hdiff : ∀ x y, ‖twDerM sz lam0 E n u' H σ b c₁ c₂ x y - twDerM sz lam0 E n u H σ b c₁ c₂ x y‖ ≤
+      6 * ((u' - u) * η'⁻¹ ^ 4) := fun x y =>
+    (norm_matrix_entry_le_opNorm (TwistGridTail_Der sz lam0 E n u' H σ b c₁ c₂ - TwistGridTail_Der sz lam0 E n u H σ b c₁ c₂) y x).trans
+      (TwistGridTail_Der_shift sz lam0 E n hu hη' hm hmn hH σ b c₁ c₂)
+  have hterm : ∀ x y : Idx d (sz.L n) (sz.W n),
+      ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (baFM sz lam0 E).S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDerM sz lam0 E n u' H σ b c₁ c₂ x y * (starRingEnd ℂ) (twDerM sz lam0 E n u' H σ b c₁ c₂ x y)) -
+      (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * (baFM sz lam0 E).S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1 *
+        (twDerM sz lam0 E n u H σ b c₁ c₂ x y * (starRingEnd ℂ) (twDerM sz lam0 E n u H σ b c₁ c₂ x y))‖ ≤
+      24 * ((u' - u) * η'⁻¹ ^ 7) := by
+    intro x y
+    set a := twDerM sz lam0 E n u' H σ b c₁ c₂ x y with ha
+    set a0 := twDerM sz lam0 E n u H σ b c₁ c₂ x y with ha0
+    have hid : a * (starRingEnd ℂ) a - a0 * (starRingEnd ℂ) a0 = a * (starRingEnd ℂ) (a - a0) + (a - a0) * (starRingEnd ℂ) a0 := by
+      rw [map_sub]; ring
+    have h1 := TwistGridTail_norm_e (sz := sz) (d := d) n
+    have h2 := TwistGridTail_S_norm_le sz lam0 E n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1
+    rw [← mul_sub, norm_mul, norm_mul, hid]
+    have h3 : ‖a * (starRingEnd ℂ) (a - a0) + (a - a0) * (starRingEnd ℂ) a0‖ ≤ 24 * ((u' - u) * η'⁻¹ ^ 7) := by
+      refine (norm_add_le _ _).trans ?_
+      rw [norm_mul, norm_mul, Complex.norm_conj, Complex.norm_conj]
+      have hda := hdiff x y
+      have hdb := hD' x y
+      have hdc := hD x y
+      have hnn : 0 ≤ ‖a - a0‖ := norm_nonneg _
+      calc ‖a‖ * ‖a - a0‖ + ‖a - a0‖ * ‖a0‖ ≤ (2 * η'⁻¹ ^ 3) * (6 * ((u' - u) * η'⁻¹ ^ 4)) +
+            (6 * ((u' - u) * η'⁻¹ ^ 4)) * (2 * η'⁻¹ ^ 3) := by
+            gcongr
+        _ = 24 * ((u' - u) * η'⁻¹ ^ 7) := by ring
+    calc ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹‖ * ‖(baFM sz lam0 E).S n (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1‖ *
+          ‖a * (starRingEnd ℂ) (a - a0) + (a - a0) * (starRingEnd ℂ) a0‖ ≤ 1 * 1 * (24 * ((u' - u) * η'⁻¹ ^ 7)) := by
+          gcongr
+      _ = _ := by ring
+  unfold twEEM
+  rw [← Finset.sum_sub_distrib]
+  refine (norm_sum_le _ _).trans ?_
+  calc ∑ x, ‖∑ y, _ - ∑ y, _‖ ≤ ∑ x : Idx d (sz.L n) (sz.W n), ∑ y : Idx d (sz.L n) (sz.W n), 24 * ((u' - u) * η'⁻¹ ^ 7) := by
+        refine Finset.sum_le_sum fun x _ => ?_
+        rw [← Finset.sum_sub_distrib]
+        exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun y _ => hterm x y)
+    _ = (sz.size n : ℝ) ^ 2 * (24 * ((u' - u) * η'⁻¹ ^ 7)) := by
+        simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Sizes.card_Idx]
+        ring
+
+end Crude
+
+/-! ## 5. Measurability in the matrix argument -/
+
+section Meas
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
+
+private theorem TwistGridTail_measurable_twChg (u : ℝ) (τ : Bool) (x y : Idx d (sz.L n) (sz.W n)) :
+    Measurable (fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ => twChg (twGM sz lam0 E n u H) τ x y) := by
+  cases τ
+  · simp only [twChg, Bool.false_eq_true, ite_false]
+    exact Complex.continuous_conj.measurable.comp
+      (walk_measurable_Gres_apply (ztOf (BAmF sz lam0 E n) (E n) u) true y x)
+  · simp only [twChg, ite_true]
+    exact walk_measurable_Gres_apply (ztOf (BAmF sz lam0 E n) (E n) u) true x y
+
+private theorem TwistGridTail_measurable_twL2M (u : ℝ) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n)) :
+    Measurable (fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ => twL2M sz lam0 E n u H σ b c₁ c₂) := by
+  unfold twL2M twLoopX
+  refine Measurable.const_mul (Finset.measurable_sum _ fun x _ => Finset.measurable_sum _ fun w _ => ?_) _
+  exact (TwistGridTail_measurable_twChg sz lam0 E n u (σ 1) x w).mul
+    (TwistGridTail_measurable_twChg sz lam0 E n u (σ 0) (twShift n c₂ w) x)
+
+private theorem TwistGridTail_measurable_twDerM (u : ℝ) (σ : Fin 2 → Bool) (b c₁ c₂ : Zd d (sz.L n))
+    (x y : Idx d (sz.L n) (sz.W n)) :
+    Measurable (fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ => twDerM sz lam0 E n u H σ b c₁ c₂ x y) := by
+  unfold twDerM
+  simp only []
+  refine Measurable.const_mul (Measurable.add (Finset.measurable_sum _ fun z _ => Finset.measurable_sum _ fun w _ => ?_)
+    (Finset.measurable_sum _ fun w _ => Finset.measurable_sum _ fun z _ => ?_)) _
+  · exact ((TwistGridTail_measurable_twChg sz lam0 E n u (σ 0) y z).mul
+      (TwistGridTail_measurable_twChg sz lam0 E n u (σ 1) z w)).mul
+      (TwistGridTail_measurable_twChg sz lam0 E n u (σ 0) (twShift n c₂ w) x)
+  · exact ((TwistGridTail_measurable_twChg sz lam0 E n u (σ 1) y w).mul
+      (TwistGridTail_measurable_twChg sz lam0 E n u (σ 0) (twShift n c₂ w) z)).mul
+      (TwistGridTail_measurable_twChg sz lam0 E n u (σ 1) z x)
+
+private theorem TwistGridTail_measurable_twEEM (u : ℝ) (σ : Fin 2 → Bool) (b b' c₁ c₂ : Zd d (sz.L n)) :
+    Measurable (fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ => twEEM sz lam0 E n u H σ b b' c₁ c₂) := by
+  unfold twEEM
+  refine Finset.measurable_sum _ fun x _ => Finset.measurable_sum _ fun y _ => Measurable.const_mul ?_ _
+  exact (TwistGridTail_measurable_twDerM sz lam0 E n u σ b c₁ c₂ x y).mul
+    (Complex.continuous_conj.measurable.comp (TwistGridTail_measurable_twDerM sz lam0 E n u σ b' c₁ c₂ x y))
+
+private theorem TwistGridTail_measurable_phi (u : ℝ) (σ : Fin 2 → Bool) (c₁ c₂ b : Zd d (sz.L n)) :
+    Measurable (TwistGridTail_phi sz lam0 E n u σ c₁ c₂ b) := by
+  unfold TwistGridTail_phi
+  refine (TwistGridTail_measurable_twL2M sz lam0 E n u σ b c₁ c₂).comp ?_
+  exact Measurable.of_eval_matrix _ fun i j => by
+    simp only [Matrix.add_apply]
+    exact measurable_const.add (measurable_id.eval_matrix)
+
+end Meas
+
+/-! ## 6. Target (b): the conditional mgf of the first-chaos increment `Σ_b κ_b Z_b` -/
+
+section CondMGF
+
+variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
+
+private theorem TwistGridTail_eta_pos {m : ℂ} (hm : 0 < m.im) {u : ℝ} (hu : u < 1) : 0 < etaOf m u := by
+  unfold etaOf
+  exact mul_pos (by linarith) hm
+
+private theorem TwistGridTail_hC₂ {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) :
+    ∀ (b : Zd d (sz.L n)) (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
+      M.IsHermitian → y.IsHermitian →
+      ‖fderiv ℝ (fderiv ℝ (TwistGridTail_phi sz lam0 E n u σ c₁ c₂ b)) M y y‖ ≤
+        (6 * (sz.size n : ℝ) * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 4) * ‖y‖ ^ 2 := fun b M y hM hy =>
+  (TwistGridTail_second_deriv_bound sz lam0 E n hη σ c₁ c₂ b hM hy).trans (le_of_eq (by ring))
+
+/-- Test: the family at `sz.withLam 0` (same `L`, `W`). -/
+private theorem TwistGridTail_hΦ' {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) :
+    ∀ b : Zd d (sz.L n), HermTestFun (sz.withLam 0) n (TwistGridTail_phi sz lam0 E n u σ c₁ c₂ b) := fun b =>
+  ⟨fun M hM => (TwistGridTail_hermTestFun sz lam0 E n hη σ c₁ c₂ b).contDiffAt M hM,
+    (TwistGridTail_hermTestFun sz lam0 E n hη σ c₁ c₂ b).bdd₀⟩
+
+/-- `Re Σ_{b,b'} κ_b conj κ_{b'} twEEM(b,b') ≤ (Σ ‖κ‖)² N² (2 η⁻³)²` (the crude deterministic bound). -/
+private theorem TwistGridTail_re_QV_le {u : ℝ} (hη : 0 < etaOf (BAmF sz lam0 E n) u)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n)) (κ : Zd d (sz.L n) → ℂ) :
+    (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') * twEEM sz lam0 E n u H σ b b' c₁ c₂).re ≤
+      (∑ b, ‖κ b‖) ^ 2 * ((sz.size n : ℝ) ^ 2 * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2) := by
+  refine (Complex.re_le_norm _).trans ?_
+  refine (norm_sum_le _ _).trans ?_
+  calc ∑ b, ‖∑ b', κ b * (starRingEnd ℂ) (κ b') * twEEM sz lam0 E n u H σ b b' c₁ c₂‖
+      ≤ ∑ b, ∑ b', ‖κ b‖ * ‖κ b'‖ * ((sz.size n : ℝ) ^ 2 * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2) := by
+        refine Finset.sum_le_sum fun b _ => (norm_sum_le _ _).trans (Finset.sum_le_sum fun b' _ => ?_)
+        rw [norm_mul, norm_mul, Complex.norm_conj]
+        exact mul_le_mul_of_nonneg_left (TwistGridTail_norm_twEEM sz lam0 E n hη hH σ b b' c₁ c₂) (by positivity)
+    _ = (∑ b, ‖κ b‖) ^ 2 * ((sz.size n : ℝ) ^ 2 * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2) := by
+        rw [sq (∑ b, ‖κ b‖), Finset.sum_mul_sum, Finset.sum_mul]
+        refine Finset.sum_congr rfl fun b _ => ?_
+        rw [Finset.sum_mul]
+
+/-- **The conditional exponential moment of the first-chaos increment** (twin of `difRepTail_condMGF_Z`,
+`Path/DifREP2.lean:1404`): for weights `κ`, `Z = Σ_b κ_b Z_{j,b} = stepZCN` of the twisted family
+`Φ_b(M) = L̃_{u_{j+1}}(g₀ Ψ + M)` with the kernel `(·, a) ↦ κ_a`, the real and imaginary parts are exponentially
+integrable and have the conditional mgf at most `exp (r² Δ Re Σ_{b,b'} κ_b conj κ_{b'} twEEM_{u_{j+1}}(H_j)(b,b') / 2)`
+given `F_j` (variance constant `1`: `TwistGridTail_quadVar`).  Hypotheses: `Im m_F > 0`, `u_{j+1} < 1`, `Δ ≥ 0`. -/
+theorem TwistGridTail_condMGF_Z (j : ℕ) (σ : Fin 2 → Bool) (c₁ c₂ : Zd d (sz.L n))
+    (hm : 0 < (BAmF sz lam0 E n).im) (hu : gridTime s t K n (j + 1) < 1) (hΔ : 0 ≤ gridStep s t K n)
+    (κ : Zd d (sz.L n) → ℂ) (r : ℝ) :
+    Integrable (fun ω => Real.exp (r * (stepZCN (sz.withLam 0) s t K n j
+        (TwistGridTail_phi sz lam0 E n (gridTime s t K n (j + 1)) σ c₁ c₂) (fun _ a => κ a) 0 ω).re))
+      ((baStep2Mat sz lam0 E).Pp) ∧
+    Integrable (fun ω => Real.exp (r * (stepZCN (sz.withLam 0) s t K n j
+        (TwistGridTail_phi sz lam0 E n (gridTime s t K n (j + 1)) σ c₁ c₂) (fun _ a => κ a) 0 ω).im))
+      ((baStep2Mat sz lam0 E).Pp) ∧
+    ((baStep2Mat sz lam0 E).Pp)[fun ω => Real.exp (r * (stepZCN (sz.withLam 0) s t K n j
+        (TwistGridTail_phi sz lam0 E n (gridTime s t K n (j + 1)) σ c₁ c₂) (fun _ a => κ a) 0 ω).re)
+        | filt (sz.withLam 0) j] ≤ᵐ[(baStep2Mat sz lam0 E).Pp]
+      (fun ω => Real.exp (r ^ 2 * (gridStep s t K n * (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') *
+        twEEM sz lam0 E n (gridTime s t K n (j + 1)) ((baStep2Mat sz lam0 E).Hpath s t K n j ω) σ b b' c₁ c₂).re) / 2)) ∧
+    ((baStep2Mat sz lam0 E).Pp)[fun ω => Real.exp (r * (stepZCN (sz.withLam 0) s t K n j
+        (TwistGridTail_phi sz lam0 E n (gridTime s t K n (j + 1)) σ c₁ c₂) (fun _ a => κ a) 0 ω).im)
+        | filt (sz.withLam 0) j] ≤ᵐ[(baStep2Mat sz lam0 E).Pp]
+      (fun ω => Real.exp (r ^ 2 * (gridStep s t K n * (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') *
+        twEEM sz lam0 E n (gridTime s t K n (j + 1)) ((baStep2Mat sz lam0 E).Hpath s t K n j ω) σ b b' c₁ c₂).re) / 2)) := by
+  set u := gridTime s t K n (j + 1) with hudef
+  have hη : 0 < etaOf (BAmF sz lam0 E n) u := TwistGridTail_eta_pos hm hu
+  set Φ := TwistGridTail_phi sz lam0 E n u σ c₁ c₂ with hΦdef
+  have hΦ := TwistGridTail_hΦ' sz lam0 E n hη σ c₁ c₂
+  have hC₂ := TwistGridTail_hC₂ sz lam0 E n hη σ c₁ c₂
+  set U : Zd d (sz.L n) → Zd d (sz.L n) → ℂ := fun _ a => κ a with hU
+  have hIntRe := integrable_stepZCN_re_of_hermTestFun (sz.withLam 0) s t K n j hΦ hC₂ hΔ U 0
+  have hIntIm := integrable_stepZCN_im_of_hermTestFun (sz.withLam 0) s t K n j hΦ hC₂ hΔ U 0
+  obtain ⟨-, hAm, -, -⟩ := stepDecompCN (sz.withLam 0) s t K n j hΦ hC₂ hΔ U 0 hIntRe hIntIm
+  have hHpath : ∀ ω : PathΩ (sz.withLam 0), ((baStep2Mat sz lam0 E).Hpath s t K n j ω).IsHermitian := fun ω =>
+    TwistGridTail_Hh_herm sz lam0 n (pathH_isHermitian (sz.withLam 0) s t K n j ω)
+  -- the variance of the frozen gradient
+  have hvar : ∀ ω : PathΩ (sz.withLam 0),
+      linTrVar n (AbCN (sz.withLam 0) s t K n j Φ U 0 ω) ≤ (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') *
+        twEEM sz lam0 E n u ((baStep2Mat sz lam0 E).Hpath s t K n j ω) σ b b' c₁ c₂).re ∧
+      linTrVar n ((-Complex.I) • AbCN (sz.withLam 0) s t K n j Φ U 0 ω) ≤ (∑ b, ∑ b', κ b * (starRingEnd ℂ) (κ b') *
+        twEEM sz lam0 E n u ((baStep2Mat sz lam0 E).Hpath s t K n j ω) σ b b' c₁ c₂).re := by
+    intro ω
+    have hM : (pathH (sz.withLam 0) s t K n j ω).IsHermitian := pathH_isHermitian (sz.withLam 0) s t K n j ω
+    have hDeq : ∀ c : CoordF d ((sz.withLam 0).L n) ((sz.withLam 0).W n),
+        Matrix.trace (AbCN (sz.withLam 0) s t K n j Φ U 0 ω * coordinateMatrix d ((sz.withLam 0).L n) ((sz.withLam 0).W n) c) =
+        ∑ b, κ b * Matrix.trace (TwistGridTail_Der sz lam0 E n u ((baStep2Mat sz lam0 E).Hpath s t K n j ω) σ b c₁ c₂ *
+          coordinateMatrix d (sz.L n) (sz.W n) c) := by
+      intro c
+      have hX := coordinateMatrix_isHermitian d ((sz.withLam 0).L n) ((sz.withLam 0).W n) c
+      have h1 := difRepTail_trace_eq (sz.withLam 0) hΦ κ hM hX
+      have hA : AbCN (sz.withLam 0) s t K n j Φ U 0 ω = ∑ a, κ a • gradMat (Φ a) (pathH (sz.withLam 0) s t K n j ω) := rfl
+      rw [hA]
+      refine h1.trans (Finset.sum_congr rfl fun b _ => ?_)
+      exact congrArg (κ b * ·) (TwistGridTail_dirDeriv sz lam0 E n hη σ c₁ c₂ b hM hX)
+    obtain ⟨h1, h2⟩ := difRepTail_linTrVar_le (sz.withLam 0) n _ _ hDeq
+    have hq := TwistGridTail_quadVar sz lam0 E n u ((baStep2Mat sz lam0 E).Hpath s t K n j ω) σ c₁ c₂ κ
+    exact ⟨h1.trans (le_of_eq hq), h2.trans (le_of_eq hq)⟩
+  -- the deterministic bound and sub-Gaussianity
+  set S1 : ℝ := ∑ b, ‖κ b‖ with hS1
+  set Bd : ℝ := (sz.size n : ℝ) ^ 2 * (2 * (etaOf (BAmF sz lam0 E n) u)⁻¹ ^ 3) ^ 2 with hBd
+  set c0 : ℝ := gridStep s t K n * (S1 ^ 2 * Bd) with hc0def
+  have hc0 : 0 ≤ c0 := by positivity
+  have hZ := stepDecompCN_Z_subG (sz.withLam 0) s t K n j hΦ U 0 Set.univ MeasurableSet.univ c0 hc0
+    (fun ω _ => mul_le_mul_of_nonneg_left
+      ((hvar ω).1.trans (TwistGridTail_re_QV_le sz lam0 E n hη (hHpath ω) σ c₁ c₂ κ)) hΔ)
+    (fun ω _ => mul_le_mul_of_nonneg_left
+      ((hvar ω).2.trans (TwistGridTail_re_QV_le sz lam0 E n hη (hHpath ω) σ c₁ c₂ κ)) hΔ)
+  have hre_eq : ∀ ω, (stepZCN (sz.withLam 0) s t K n j Φ U 0 ω).re =
+      Real.sqrt (gridStep s t K n) * linTr n (AbCN (sz.withLam 0) s t K n j Φ U 0 ω)
+        (Sizes.seqXmat (sz.withLam 0) n (ω (j + 1))) := fun ω => by
+    simp [stepZCN, stepZCN_re, stepZCN_im]
+  have him_eq : ∀ ω, (stepZCN (sz.withLam 0) s t K n j Φ U 0 ω).im =
+      Real.sqrt (gridStep s t K n) * linTr n ((-Complex.I) • AbCN (sz.withLam 0) s t K n j Φ U 0 ω)
+        (Sizes.seqXmat (sz.withLam 0) n (ω (j + 1))) := fun ω => by
+    simp [stepZCN, stepZCN_re, stepZCN_im]
+  have hfre : (fun ω => Real.exp (r * (stepZCN (sz.withLam 0) s t K n j Φ U 0 ω).re)) =
+      fun ω => Real.exp (r * (Real.sqrt (gridStep s t K n) * linTr n (AbCN (sz.withLam 0) s t K n j Φ U 0 ω)
+        (Sizes.seqXmat (sz.withLam 0) n (ω (j + 1))))) := funext fun ω => by rw [hre_eq]
+  have hfim : (fun ω => Real.exp (r * (stepZCN (sz.withLam 0) s t K n j Φ U 0 ω).im)) =
+      fun ω => Real.exp (r * (Real.sqrt (gridStep s t K n) * linTr n ((-Complex.I) • AbCN (sz.withLam 0) s t K n j Φ U 0 ω)
+        (Sizes.seqXmat (sz.withLam 0) n (ω (j + 1))))) := funext fun ω => by rw [him_eq]
+  have hIre : Integrable (fun ω => Real.exp (r * (Real.sqrt (gridStep s t K n) *
+      linTr n (AbCN (sz.withLam 0) s t K n j Φ U 0 ω) (Sizes.seqXmat (sz.withLam 0) n (ω (j + 1)))))) (pathP (sz.withLam 0)) := by
+    have := hZ.1.integrable_exp_mul r
+    simpa [Set.indicator_univ, stepZCN_re] using this
+  have hIim : Integrable (fun ω => Real.exp (r * (Real.sqrt (gridStep s t K n) *
+      linTr n ((-Complex.I) • AbCN (sz.withLam 0) s t K n j Φ U 0 ω) (Sizes.seqXmat (sz.withLam 0) n (ω (j + 1))))))
+      (pathP (sz.withLam 0)) := by
+    have := hZ.2.integrable_exp_mul r
+    simpa [Set.indicator_univ, stepZCN_im] using this
+  have hAm' : Measurable[filt (sz.withLam 0) j] (fun ω => (-Complex.I) • AbCN (sz.withLam 0) s t K n j Φ U 0 ω) :=
+    hAm.const_smul (-Complex.I)
+  have hce_re := difRepTail_condExp_exp hAm (gridStep s t K n) r hIre
+  have hce_im := difRepTail_condExp_exp hAm' (gridStep s t K n) r hIim
+  have hsq : (r * Real.sqrt (gridStep s t K n)) ^ 2 = r ^ 2 * gridStep s t K n := by
+    rw [mul_pow, Real.sq_sqrt hΔ]
+  refine ⟨by rw [hfre]; exact hIre, by rw [hfim]; exact hIim, ?_, ?_⟩
+  · rw [hfre]
+    refine hce_re.le.trans (Filter.Eventually.of_forall fun ω => ?_)
+    simp only
+    refine Real.exp_le_exp.2 ?_
+    rw [hsq]
+    have hrr : 0 ≤ r ^ 2 * gridStep s t K n := by positivity
+    nlinarith [mul_le_mul_of_nonneg_right (hvar ω).1 hrr]
+  · rw [hfim]
+    refine hce_im.le.trans (Filter.Eventually.of_forall fun ω => ?_)
+    simp only
+    refine Real.exp_le_exp.2 ?_
+    rw [hsq]
+    have hrr : 0 ≤ r ^ 2 * gridStep s t K n := by positivity
+    nlinarith [mul_le_mul_of_nonneg_right (hvar ω).2 hrr]
+
+end CondMGF
 
 end RBM.BA
