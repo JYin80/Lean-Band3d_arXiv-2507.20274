@@ -498,6 +498,8 @@ import RBM3D.Graph.BAExp14b
 import RBM3D.Graph.BAExp14bB
 import RBM3D.Graph.BAZetaExp
 import RBM3D.Graph.BALvl1C
+import RBM3D.BA.TwistStep
+import RBM3D.BA.TwistStep2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

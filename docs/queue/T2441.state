@@ -1,4 +1,4 @@
-state: proving
-reason: rule (H) rerun after the API session limit: probe f459c7f and 1a-audit PASS; 1b died before committing; rerun wf_67ec44a1-7af (1b prover-max → auditor)
-updated: Mon Oct 12 08:12:14 UTC 2026
+state: audit-pass
+reason: probe f459c7f, 1a-audit PASS, 1b prover-max bc7ebc2 (rule (H) rerun), audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 10:49:41 UTC 2026
 reports: docs/reports/T2441-prove.md, docs/reports/T2441-1a-audit.md, docs/reports/T2441-audit.md
