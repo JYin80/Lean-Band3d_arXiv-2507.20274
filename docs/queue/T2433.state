@@ -1,4 +1,4 @@
 state: proving
-reason: 1a PASS, probe f275032, 1a-audit RETURN (route for the concrete part undecided; file 2 would break the 2,000 stop line; no sign-off); one rule-(B) repair: wf_93181b6c-7c9, route measurement step prover-max (scratch only, (a‴)) → (a′) by preflight → 1a-audit round 2 → 1b prover-max → auditor
-updated: Mon Oct 12 04:59:11 UTC 2026
+reason: Amend 1 (H232, scoped HOLD): the running route-measurement step (wf_93181b6c-7c9) was stopped at 06:0x UTC (Amend 1 drops the concrete table it measured; a running step cannot take the amend); rerun wf_f95ebbce-996: L4S3-L1 lift run (prover-max, scratch, (a⁗)) → 1a-audit round 2 (generic half) → 1b prover-max on the generic half → auditor; stuck nodes stop before 1b
+updated: Mon Oct 12 06:01:56 UTC 2026
 reports: docs/reports/T2433-prove.md, docs/reports/T2433-1a-audit.md, docs/reports/T2433-audit.md

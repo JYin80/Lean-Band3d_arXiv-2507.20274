@@ -2218,3 +2218,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 
 - **T2440 审核 BLOCKED**：目标 1–6 都过；但 `import RBM3D` + `#assert_rbm_axioms` 的前提扫描把递归归纳类型 `BAReach` 自动生成的 `BAReach.below` 当成前提。修法在 `RBM3D/Test/Axioms.lean`，不在本票可写文件里。
 - **签字（Amend 1）**：选审核的 (a)——把 `Test/Axioms.lean` 加进可写文件，只加一行 `structuralProps`：`RBM.Graph.BAReach.below`（与带状孪生 `Lvl1Reach.below`、`lvl1Split.below` 同样处理，`:257-258`）。不改写成 `ReflTransGen` 定义（T2426 的做法），因为带状孪生就是这样登记的，L3a5 的钉文也针对归纳类型。规则 (B) 修补一次 → 审核第二轮。以后带递归归纳类型钉文的票，写票时就把这一行登记列进可写文件。下一张票号 T2442，下一节 §251，下一条 H232。
+
+## §251 — L3a3 合并；监督 0554：S3 块范围 HOLD（L4S3-F1）；T2433 Amend 1（只做通用一半 + 跑 L4S3-L1）（总调度 V3，2026-10-12 05:59 UTC）
+
+- (1) **T2440（L3a3）合并 d11da04**（`Graph/BALvl1A` 676 行；`Test/Axioms.lean` 加一行 `BAReach.below`；审核第二轮 PASS）。S′ 链：L3a4、L3b4′ 现在都可以写（L3a4 等 L3a3、R0、R1、L3a1；L3b4′ 等 L3a3、R1、L3b3′，`BAMatchTw` 归它，§240）。
+- (2) **监督 0554（REQ-0451-L4S3）：RECOMMEND HOLD，范围只限 stage L 的 S3 块。** Q1 只同意一半：S3 四族和它们的恒等式（通用步骤）没问题，但带 `M` 结点的真根的闭包 `ord ≥ 5 − 2·1[x~y]` 没有证据——0951 把 320 项闭包当成 S3 的证据时没核对 `𝒢` 是不是 `T3C-tr` 的根（监督自认漏看）。HOLD 范围：T2433 证 `baG5Graph` 表和目标 4 的那部分 1b，以及 L4d2、L4c1、L4g 三张票。不在范围内：T2434、L4b2、L4a2 的约化一半、S′ 链、L3c3a/b、L3d*、阶段 TL、G7、子阶段 T 及其他。CONTROL 仍 RUN。**解除条件 L4S3-L1**：在 Lean 树上对真根跑一次闭包，0 个卡住的结点且叶子性质都成立 → 解除，不用新 REQ；有卡住的 → 短 REQ（可能要问 Jun；候选路线 T2398 §8 的 R2，或用扭转圈界）。Q2：解除后加一行 L4d2（真根、根列表与恒等式、具体闭包表、打包形式；设计门），L4c1、L4g 改接 L4d2；stage L 计划 38 → 39，旗标 50 不变。
+- (3) **T2433 Amend 1**：只做通用一半（`BACtx`、带上下文的 GG 引理两种电荷及 `kids` 形式、`BAselStar`（需要时放宽到任意 `BACtx` 候选）、`BAG5LeafProps`、`BAG5Attached`，对任意根列表）；去掉 `baG5Graph` 的具体闭包表和目标 4（没有使用方）——这也回答了它 1a-audit 关于第二个文件超停止线的问题。L4S3-L1 由 T2433 当前的 scratch 步骤跑（或在 1a-audit 第二轮前单独一个 `prover-max` scratch 步骤），结果写进报告 (a⁗)。
+- (4) 簿记（0554 O4）：BA-V 接口清单加第 (v) 项——TP 脚注 6 的跨界情形（不在任何 TL 行，§249）；文章差异候选 T2434a 记下；ROUTES 的 BA 格更新。
+- (5) 下一张票号 T2442，下一节 §252，下一条 H233。下一批：L3a4、L3b4′（S′ 链，不在 HOLD 内）、G7、带状侧 T 行。

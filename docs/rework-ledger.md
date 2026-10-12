@@ -1,2 +1,2 @@
 
-| T2439 | 2026-10-12 05:17 UTC (dba665d) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA TL2a4：新 `BA/TwistGridWTail` 1,822 + `TwistGridWTail2` 1,334（`baTwistGridWTail_holds`）；审核一次 PASS |
+| T2440 | 2026-10-12 05:43 UTC (d11da04) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L3a3：审核第一轮 BLOCKED 要签字（`BAReach.below` 登记）→ Amend 1 → 规则 (B) 修补一次 → 第二轮 PASS；新 `Graph/BALvl1A` 676 行 + `Test/Axioms.lean` 一行 |
