@@ -34,6 +34,13 @@ Differences from RBM2D (the exponent redo of the design UN-D1 = T2162):
 * `Jak_c_le_half` becomes the public `un_cd_le_half`: `𝔠 d ≤ 1` from `N^𝔠 ≤ W`, `W^d ≤ N`, and
   `𝔡 ≤ d/2` from `(eq:WO)` and `W → ∞`.
 
+T2476 (two couplings and the bulk window; public statements unchanged): the private
+`Jak_fixed_time` carries the profile coupling `lamV` (in `scirc`, `blockM`) apart from the QUE
+coupling, which no longer occurs: the bad block of `y` is the hypothesis `hbad`, and `hdiag` is
+asked on the window `|e - E| < κ/2` instead of `|e| < 2 - κ/2` (`Jak_grid_energy_lt`).  The band
+caller `unJak_of_ouClaims` supplies both from `|E| ≤ 2 - κ` and `measure_bad_le_of_queBadMat`;
+the generic kinds (block Anderson) use them from `BA/EMCTE2BA.lean`.
+
 Proof, per site `y` (no average over `y`, no moment bound, no Markov step): §1 the real
 arithmetic of the exponents; §2 the majorant integration, the union bound over the covering grids,
 `un_cd_le_half`; §3 the pointwise bound on the good event; §4 the bound at one size and one time
@@ -349,12 +356,13 @@ private theorem Jak_prod_crude_le {X τ : ℝ} (hX : 1 ≤ X) {m : ℕ} (s : Fin
     _ = 2 * X ^ ((1 + τ) * ((s.card : ℝ) + 3)) := by
         rw [mul_add, Real.rpow_add hX0]; ring
 
-/-- Grid energies stay in the local-law domain: a centre within `C` of `E`, a radius `r ≤ κ/4`
-and `C + 2η̃ < κ/4` give `|E₀ - r + 2η̃j| < 2 - κ/2` for `j ≤ ⌈r/η̃⌉₊`. -/
+/-- Grid energies stay within `κ/2` of `E` (the window form, T2476): a centre within `C` of `E`, a radius
+`r ≤ κ/4` and `C + 2η̃ < κ/4` give `|E₀ - r + 2η̃j - E| < κ/2` for `j ≤ ⌈r/η̃⌉₊`.  The bulk of the model enters only
+through the hypothesis `hdiag` of `Jak_fixed_time` on this window (band: `|E| ≤ 2 - κ`; block Anderson: `BAbulk_window`). -/
 private theorem Jak_grid_energy_lt {E E₀ κ C r ηt : ℝ} {j : ℕ} (hηt : 0 < ηt)
-    (hE : |E| ≤ 2 - κ) (hE₀ : |E₀ - E| ≤ C) (hr : 0 ≤ r) (hrκ : r ≤ κ / 4)
+    (hE₀ : |E₀ - E| ≤ C) (hr : 0 ≤ r) (hrκ : r ≤ κ / 4)
     (hC : C + 2 * ηt < κ / 4) (hj : j ∈ Finset.range (⌈r / ηt⌉₊ + 1)) :
-    |E₀ - r + 2 * ηt * j| < 2 - κ / 2 := by
+    |E₀ - r + 2 * ηt * j - E| < κ / 2 := by
   have hj' : (j : ℝ) < r / ηt + 1 := by
     have h1 := Finset.mem_range.1 hj
     have h2 : (j : ℝ) ≤ ⌈r / ηt⌉₊ := by exact_mod_cast Nat.lt_succ_iff.1 h1
@@ -364,7 +372,7 @@ private theorem Jak_grid_energy_lt {E E₀ κ C r ηt : ℝ} {j : ℕ} (hηt : 0
     have he : 2 * ηt * (r / ηt + 1) = 2 * r + 2 * ηt := by field_simp
     linarith
   have hj0 : 0 ≤ 2 * ηt * j := by positivity
-  rw [abs_le] at hE hE₀
+  rw [abs_le] at hE₀
   rw [abs_lt]
   constructor <;> linarith
 
@@ -555,35 +563,37 @@ set_option maxHeartbeats 400000 in
 /-- **Fixed-time assembly** of `(jaklsdufowe)` at one size `(L, W)`, one random matrix `Hr` on a probability
 space, and one choice of `s, w, u, y, b₁, b₂`: all eventual conditions are passed as explicit numeric
 hypotheses, and the two `𝐇_t` claims enter as the probability bounds `hdiag` (`UNOUDiag` at the grid
-energies) and `hque` (`UNOUQUE` at `τ_Q = 𝔡/30`).  The parameter `c = 2𝔠𝔡` of RBM2D `Jak_fixed_time`
-(`Jak.lean:553`, d = 2, per site `y`) is `hcdef`; `X = N = (W L)^d`.  The conclusion exponent is the pin
-exponent `c' = 𝔠𝔡/30`. -/
-private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) (lam : ℝ)
+energies, on the window `|e - E| < κ/2`: the bulk of the model is not read here) and `hbad` (the block event of
+`y` at the profile coupling `lamV`: `measure_bad_le_of_queBadMat` from `UNOUQUE` at `τ_Q = 𝔡/30` for the band, or
+`unBadYBA_measure_le` at `lamV = 0`; T2476 two couplings: the QUE coupling `sz.lam n` no longer occurs).  The
+parameter `c = 2𝔠𝔡` of RBM2D `Jak_fixed_time` (`Jak.lean:553`, d = 2, per site `y`) is `hcdef`; `X = N = (W L)^d`.
+The conclusion exponent is the pin exponent `c' = 𝔠𝔡/30`. -/
+private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) (lamV : ℝ)
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Hr : Ω → Matrix (Idx d L W) (Idx d L W) ℂ) (hH : ∀ ω, (Hr ω).IsHermitian)
     {X 𝔠 𝔡 c κ τ δ C₀ E D : ℝ} {m : ℕ}
     (hX : (((W * L) ^ d : ℕ) : ℝ) = X) (hWc : X ^ 𝔠 ≤ (W : ℝ))
     (h𝔠 : 0 < 𝔠) (h𝔡 : 0 < 𝔡) (hcdef : c = 2 * (𝔠 * 𝔡)) (hcd : 𝔠 * 𝔡 ≤ 1 / 2)
-    (hlam : (W : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ lam)
     (hκ : 0 < κ) (hκ2 : κ ≤ 2) (hτ : 0 < τ) (hδ : 0 < δ)
     (hmδ : ((m : ℝ) + 3) * δ ≤ τ) (hD : (1 + τ) * ((m : ℝ) + 3) + 3 ≤ D)
-    (hE : |E| ≤ 2 - κ) (h1 : 12 * (3 + (m : ℝ)) ≤ X) (h2 : 2 * C₀ ≤ X ^ (c / 6))
+    (h1 : 12 * (3 + (m : ℝ)) ≤ X) (h2 : 2 * C₀ ≤ X ^ (c / 6))
     (h3 : C₀ / X + 2 * X ^ (-1 + 2 * τ) < κ / 4) (h4 : X ^ (-1 + c / 6) < κ / 2)
     (h5 : 3 * ((193 + 128 / κ ^ 2) + 4 * ((2 * d + 1 : ℕ) : ℝ)) * (6 + 16 / τ + 8 / κ) ≤
       X ^ (6 * τ))
-    (hdiag : ∀ e : ℝ, |e| < 2 - κ / 2 →
+    (hdiag : ∀ e : ℝ, |e - E| < κ / 2 →
       P {ω | ∃ x : Idx d L W, X ^ δ <
         ‖Gres (Hr ω) ((e : ℂ) + ((X ^ (-1 + 2 * τ) : ℝ) : ℂ) * Complex.I) true x x‖} ≤
         ENNReal.ofReal (X ^ (-D)))
-    (hque : ∀ b : Zd d L,
-      P {ω | queBadMat d L W lam (𝔡 / 3) (𝔡 / 6) E b (Hr ω)} ≤
-        ENNReal.ofReal ((W : ℝ) ^ (-(𝔡 / 30))))
     (s : Finset (Fin m)) (w : Fin m → ℂ) (u : ℂ)
     (hw : ∀ i, |(w i).re - E| ≤ C₀ / X ∧ X ^ (-1 - τ) ≤ (w i).im ∧ (w i).im ≤ X ^ (-1 + τ))
     (hu : |u.re - E| ≤ C₀ / X ∧ X ^ (-1 - τ) ≤ u.im ∧ u.im ≤ X ^ (-1 + τ))
-    (y : Idx d L W) (b₁ b₂ : Bool) :
+    (y : Idx d L W)
+    (hbad : P {ω | ∃ α, |(hH ω).eigenvalues α - E| ≤ (((W * L) ^ d : ℕ) : ℝ)⁻¹ * (W : ℝ) ^ (𝔡 / 3) ∧
+        (W : ℝ) ^ (-(𝔡 / 6)) ≤ ‖blockM d L W lamV (hH ω) (siteBlock d L W y) α‖} ≤
+      ((2 * d + 1 : ℕ) : ℝ≥0∞) * ENNReal.ofReal ((W : ℝ) ^ (-(𝔡 / 30))))
+    (b₁ b₂ : Bool) :
     ∫ ω, (∏ j ∈ s, (stieltjesN (Hr ω) (w j)).im) *
-        ‖∑ x, (Gres (Hr ω) u b₁ * Gres (Hr ω) u b₁) x x * scirc d L W lam x y *
+        ‖∑ x, (Gres (Hr ω) u b₁ * Gres (Hr ω) u b₁) x x * scirc d L W lamV x y *
             Gres (Hr ω) u b₂ y y‖ ∂P ≤
       X ^ (1 - 𝔠 * 𝔡 / 30 + (3 * (s.card : ℝ) + 16) * τ) := by
   classical
@@ -697,7 +707,7 @@ private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
       (Cb := X ^ δ) S (⌈X⌉₊ + 1) hGS (p := ENNReal.ofReal (X ^ (-D))) (by
         intro q hq j hj
         obtain ⟨hq1, hq0, hqκ⟩ := hS q hq
-        have he := Jak_grid_energy_lt hηt0 hE hq1 hq0 hqκ (by rw [hηt]; exact h3) hj
+        have he := Jak_grid_energy_lt hηt0 hq1 hq0 hqκ (by rw [hηt]; exact h3) hj
         have := hdiag _ he
         rw [← hηt] at this
         exact this)
@@ -715,16 +725,15 @@ private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
           rw [ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal hX0D,
             ENNReal.toReal_natCast, ENNReal.toReal_natCast]
       _ ≤ ((3 + (m : ℝ)) * X) * ((2 * X) * X ^ (-D)) := by gcongr
-  -- the bad block of `y`: the event of the merged `measure_bad_le_of_queBadMat`
+  -- the bad block of `y`: the hypothesis `hbad` (the event of the merged `measure_bad_le_of_queBadMat`)
   have hW0 : (0 : ℝ) < (W : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
-  have hW1 : (1 : ℝ) ≤ (W : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.2 (NeZero.ne W)
   obtain ⟨Bs, hBsdef⟩ : ∃ Bs : Set Ω, Bs = {ω | ∃ α,
       |(hH ω).eigenvalues α - E| ≤ (((W * L) ^ d : ℕ) : ℝ)⁻¹ * (W : ℝ) ^ (𝔡 / 3) ∧
-        (W : ℝ) ^ (-(𝔡 / 6)) ≤ ‖blockM d L W lam (hH ω) (siteBlock d L W y) α‖} := ⟨_, rfl⟩
+        (W : ℝ) ^ (-(𝔡 / 6)) ≤ ‖blockM d L W lamV (hH ω) (siteBlock d L W y) α‖} := ⟨_, rfl⟩
   obtain ⟨Bm, hBmdef⟩ : ∃ Bm : Set Ω, Bm = toMeasurable P Bs := ⟨_, rfl⟩
   have hBmm : MeasurableSet Bm := by rw [hBmdef]; exact measurableSet_toMeasurable _ _
   have hBprob : P.real Bm ≤ ((2 * d + 1 : ℕ) : ℝ) * X ^ (-(𝔠 * 𝔡 / 30)) := by
-    have h := measure_bad_le_of_queBadMat P hL hW1 h𝔡 hlam y hH _ hque
+    have h := hbad
     have h' : P Bs ≤ ENNReal.ofReal (((2 * d + 1 : ℕ) : ℝ) * (W : ℝ) ^ (-(𝔡 / 30))) := by
       rw [ENNReal.ofReal_mul (Nat.cast_nonneg _), ENNReal.ofReal_natCast, hBsdef]
       exact h
@@ -771,7 +780,7 @@ private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
       _ = _ := by rw [hX]
   -- pointwise domination
   have hfg : ∀ ω, (∏ j ∈ s, (stieltjesN (Hr ω) (w j)).im) *
-      ‖∑ x, (Gres (Hr ω) u b₁ * Gres (Hr ω) u b₁) x x * scirc d L W lam x y *
+      ‖∑ x, (Gres (Hr ω) u b₁ * Gres (Hr ω) u b₁) x x * scirc d L W lamV x y *
         Gres (Hr ω) u b₂ y y‖ ≤
       Pw * (X⁻¹ * ((C₁ * X ^ (2 - c / 36 + 4 * τ + 2 * δ)) * (C₂ * X ^ (3 * τ + δ)))) +
         (Pw * (X⁻¹ * ((4 * X ^ (2 + 6 * τ + 2 * δ)) * (C₂ * X ^ (3 * τ + δ))))) *
@@ -783,7 +792,7 @@ private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
       fun A => Set.indicator_nonneg (fun _ _ => zero_le_one) ω
     by_cases hωT : ω ∈ T
     · -- crude row
-      have hc1 := jak_pointwise_crude hL lam hHω s w u hηu hηw y b₁ b₂
+      have hc1 := jak_pointwise_crude hL lamV hHω s w u hηu hηw y b₁ b₂
       have hc2 := Jak_prod_crude_le hX1 s w u hηw1 hηu1
       have hTi : T.indicator (1 : Ω → ℝ) ω = 1 := by
         simp [Set.indicator_of_mem hωT]
@@ -797,7 +806,7 @@ private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
         rw [hTdef]
         exact subset_toMeasurable _ _ hn'
       have hBad : ∀ a0, ¬ (a0 ≠ siteBlock d L W y ∨ ω ∈ Bm) → ∀ α,
-          |hHω.eigenvalues α - u.re| ≤ w' → ‖blockM d L W lam hHω a0 α‖ ≤ X ^ (-(c / 36)) := by
+          |hHω.eigenvalues α - u.re| ≤ w' → ‖blockM d L W lamV hHω a0 α‖ ≤ X ^ (-(c / 36)) := by
         intro a0 hna α hα
         push Not at hna
         obtain ⟨rfl, hnb⟩ := hna
@@ -807,11 +816,11 @@ private theorem Jak_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
         have hlt := hnb' α (hwin ω α hα)
         have hWX := un_W_neg_le (N := X) (W := (W : ℝ)) (𝔠 := 𝔠) (x := 𝔡 / 6) hX0 hW0
           (by positivity) hWc
-        calc ‖blockM d L W lam hHω (siteBlock d L W y) α‖ ≤ (W : ℝ) ^ (-(𝔡 / 6)) := hlt.le
+        calc ‖blockM d L W lamV hHω (siteBlock d L W y) α‖ ≤ (W : ℝ) ^ (-(𝔡 / 6)) := hlt.le
           _ ≤ X ^ (-(𝔠 * (𝔡 / 6))) := hWX
           _ ≤ X ^ (-(c / 36)) :=
               Real.rpow_le_rpow_of_exponent_le hX1 (by rw [hcdef]; linarith)
-      have hgood := Jak_pointwise_good_norm hL lam hHω s w u (δ := δ) (θ := X ^ (-(c / 36))) hX hX1
+      have hgood := Jak_pointwise_good_norm hL lamV hHω s w u (δ := δ) (θ := X ^ (-(c / 36))) hX hX1
         hc hc36 hτ hδ.le hκ hκ2 hηt hw'eq rfl hηu1 hηu' hηw1 hηw' hK1 hK2 hK2'
         (fun k hk => hΞ (u.re, (2 : ℝ) ^ k * ηt) (hSmem1 k hk))
         (fun k hk => hΞ (u.re, (2 : ℝ) ^ k * w') (hSmem2 k hk)) (hΞ (u.re, 0) hSmem3)
@@ -905,13 +914,18 @@ theorem unJak_of_ouClaims : ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz
     have : (0 : ℝ) ≤ nf := nf.cast_nonneg
     linarith
   have hsc : s.card ≤ nf := by simpa using Finset.card_le_univ s
+  have hew : ∀ e : ℝ, |e - E| < κ / 2 → |e| ≤ 2 - κ / 2 := fun e he => by
+    rw [abs_le] at hE ⊢
+    rw [abs_lt] at he
+    constructor <;> linarith [he.1, he.2, hE.1, hE.2]
   have hfix := Jak_fixed_time (sz.three_le_L n) (sz.lam n) (ouP (UNModel.band sz) n)
     (ouMat (UNModel.band sz) n t) (ouMat_isHermitian (UNModel.band sz) n t) (X := Nsz sz n)
     (𝔠 := 𝔠) (𝔡 := 𝔡) (c := c) (κ := κ) (τ := τU) (δ := δ) (C₀ := C₀) (E := E) (D := D)
-    (m := nf) rfl hWn h𝔠 h𝔡 hcdef hcd hWOn.1 hκ hκ2 hτ hδ hmδ (by rw [hDdef]) hE h1 h2 h3 h4 h5
-    (fun e he => hDn t ht0 htT e he.le)
-    (fun b => (hQn t ht0 htT E hE b).trans (Jak_queBound_eq _ h𝔡).le) s z (z i) (fun j => hz j)
-    (hz i) y b₁ b₂
+    (m := nf) rfl hWn h𝔠 h𝔡 hcdef hcd hκ hκ2 hτ hδ hmδ (by rw [hDdef]) h1 h2 h3 h4 h5
+    (fun e he => hDn t ht0 htT e (hew e he)) s z (z i) (fun j => hz j) (hz i) y
+    (measure_bad_le_of_queBadMat _ (sz.three_le_L n) (by exact_mod_cast sz.W_pos n) h𝔡 hWOn.1 y
+      (Hr := ouMat (UNModel.band sz) n t) (ouMat_isHermitian (UNModel.band sz) n t) _
+      (fun b => (hQn t ht0 htT E hE b).trans (Jak_queBound_eq _ h𝔡).le)) b₁ b₂
   refine hfix.trans ?_
   calc Nsz sz n ^ (1 - 𝔠 * 𝔡 / 30 + (3 * (s.card : ℝ) + 16) * τU)
       ≤ Nsz sz n ^ (1 - 𝔠 * 𝔡 / 30 + (3 * (nf : ℝ) + 16) * τU) := by

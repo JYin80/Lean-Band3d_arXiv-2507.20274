@@ -32,6 +32,12 @@ Differences from RBM2D (the exponent redo of the design UN-D1 = T2162):
 * the row `jakUywRow` takes the common `C = 3 nf + 16`, `τ₀ = min τ₁ (1/4)` of `jakRow` and `uywRow`
   (no monotonicity lemma).
 
+T2476 (two couplings and the bulk window; public statements unchanged): as in `Jak.lean`, the
+private `Uyw_fixed_time` carries the profile coupling `lamV` (in `scirc`, `blockM2`), the pair event
+of `y` is the hypothesis `hbad` and `hdiag` is asked on the window `|e - E| < κ/2`; the band caller
+supplies them from `|E| ≤ 2 - κ` and `measure_bad2_le_of_queBadMat`, the generic kinds (block
+Anderson) from `BA/EMCTE2BA.lean`.
+
 Proof, per site `y` (no average over `y`, no moment bound, no Markov step): §1 the real arithmetic of the
 exponents; §2 the majorant integration, the union bound over the covering grids; §3 the pointwise bound on
 the good event; §4 the bound at one size and one time (`f ≤ A₀ + c_B 1_B + C_r 1_T`); §5 the eventual
@@ -323,12 +329,13 @@ private theorem Uyw_prod_crude_le {X τ : ℝ} (hX : 1 ≤ X) {m : ℕ} (s : Fin
           rw [Uyw_rpow_mul hX0, Uyw_rpow_mul hX0]; congr 2; ring]
         ring
 
-/-- Grid energies stay in the local-law domain: a centre within `C` of `E`, a radius `r ≤ κ/4`
-and `C + 2η̃ < κ/4` give `|E₀ - r + 2η̃j| < 2 - κ/2` for `j ≤ ⌈r/η̃⌉₊`. -/
+/-- Grid energies stay within `κ/2` of `E` (the window form, T2476): a centre within `C` of `E`, a radius
+`r ≤ κ/4` and `C + 2η̃ < κ/4` give `|E₀ - r + 2η̃j - E| < κ/2` for `j ≤ ⌈r/η̃⌉₊`.  The bulk of the model enters only
+through the hypothesis `hdiag` of `Uyw_fixed_time` on this window (band: `|E| ≤ 2 - κ`; block Anderson: `BAbulk_window`). -/
 private theorem Uyw_grid_energy_lt {E E₀ κ C r ηt : ℝ} {j : ℕ} (hηt : 0 < ηt)
-    (hE : |E| ≤ 2 - κ) (hE₀ : |E₀ - E| ≤ C) (hr : 0 ≤ r) (hrκ : r ≤ κ / 4)
+    (hE₀ : |E₀ - E| ≤ C) (hr : 0 ≤ r) (hrκ : r ≤ κ / 4)
     (hC : C + 2 * ηt < κ / 4) (hj : j ∈ Finset.range (⌈r / ηt⌉₊ + 1)) :
-    |E₀ - r + 2 * ηt * j| < 2 - κ / 2 := by
+    |E₀ - r + 2 * ηt * j - E| < κ / 2 := by
   have hj' : (j : ℝ) < r / ηt + 1 := by
     have h1 := Finset.mem_range.1 hj
     have h2 : (j : ℝ) ≤ ⌈r / ηt⌉₊ := by exact_mod_cast Nat.lt_succ_iff.1 h1
@@ -338,7 +345,7 @@ private theorem Uyw_grid_energy_lt {E E₀ κ C r ηt : ℝ} {j : ℕ} (hηt : 0
     have he : 2 * ηt * (r / ηt + 1) = 2 * r + 2 * ηt := by field_simp
     linarith
   have hj0 : 0 ≤ 2 * ηt * j := by positivity
-  rw [abs_le] at hE hE₀
+  rw [abs_le] at hE₀
   rw [abs_lt]
   constructor <;> linarith
 
@@ -491,35 +498,38 @@ set_option maxHeartbeats 400000 in
 /-- **Fixed-time assembly** of `(uywy7723r3rf)` at one size `(L, W)`, one random matrix `Hr` on a probability
 space, and one choice of `s, w, u₁, u₂, y, b₁, b₂`: all eventual conditions are passed as explicit numeric
 hypotheses, and the two `𝐇_t` claims enter as the probability bounds `hdiag` (`UNOUDiag` at the grid
-energies) and `hque` (`UNOUQUE` at `τ_Q = 𝔡/30`).  The parameter `c = 2𝔠𝔡` of RBM2D `Uyw_fixed_time`
-(`Uyw.lean:553`, d = 2, per site `y`) is `hcdef`; `X = N = (W L)^d`.  The conclusion exponent is the pin
-exponent `c' = 𝔠𝔡/30`. -/
-private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) (lam : ℝ)
+energies, on the window `|e - E| < κ/2`: the bulk of the model is not read here) and `hbad` (the pair event of
+`y` at the profile coupling `lamV`: `measure_bad2_le_of_queBadMat` from `UNOUQUE` at `τ_Q = 𝔡/30` for the band, or the
+one-block pair bound at `lamV = 0` for block Anderson; T2476 two couplings: the QUE coupling `sz.lam n` no longer
+occurs).  The parameter `c = 2𝔠𝔡` of RBM2D `Uyw_fixed_time` (`Uyw.lean:553`, d = 2, per site `y`) is `hcdef`;
+`X = N = (W L)^d`.  The conclusion exponent is the pin exponent `c' = 𝔠𝔡/30`. -/
+private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) (lamV : ℝ)
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (Hr : Ω → Matrix (Idx d L W) (Idx d L W) ℂ) (hH : ∀ ω, (Hr ω).IsHermitian)
     {X 𝔠 𝔡 c κ τ δ C₀ E D : ℝ} {m : ℕ}
     (hX : (((W * L) ^ d : ℕ) : ℝ) = X) (hWc : X ^ 𝔠 ≤ (W : ℝ))
     (h𝔠 : 0 < 𝔠) (h𝔡 : 0 < 𝔡) (hcdef : c = 2 * (𝔠 * 𝔡)) (hcd : 𝔠 * 𝔡 ≤ 1 / 2)
-    (hlam : (W : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ lam)
     (hκ : 0 < κ) (hκ2 : κ ≤ 2) (hτ : 0 < τ) (hδ : 0 < δ)
     (hmδ : ((m : ℝ) + 3) * δ ≤ τ) (hD : (1 + τ) * ((m : ℝ) + 4) + 3 ≤ D)
-    (hE : |E| ≤ 2 - κ) (h1 : 16 * (4 + (m : ℝ)) ≤ X) (h2 : 2 * C₀ ≤ X ^ (c / 6))
+    (h1 : 16 * (4 + (m : ℝ)) ≤ X) (h2 : 2 * C₀ ≤ X ^ (c / 6))
     (h3 : C₀ / X + 2 * X ^ (-1 + 2 * τ) < κ / 4) (h4 : X ^ (-1 + c / 6) < κ / 2)
     (h5 : 2 * ((193 + 256 / κ ^ 2) + 4 * ((2 * d + 1 : ℕ) : ℝ)) ≤ X ^ (6 * τ))
-    (hdiag : ∀ e : ℝ, |e| < 2 - κ / 2 →
+    (hdiag : ∀ e : ℝ, |e - E| < κ / 2 →
       P {ω | ∃ x : Idx d L W, X ^ δ <
         ‖Gres (Hr ω) ((e : ℂ) + ((X ^ (-1 + 2 * τ) : ℝ) : ℂ) * Complex.I) true x x‖} ≤
         ENNReal.ofReal (X ^ (-D)))
-    (hque : ∀ b : Zd d L,
-      P {ω | queBadMat d L W lam (𝔡 / 3) (𝔡 / 6) E b (Hr ω)} ≤
-        ENNReal.ofReal ((W : ℝ) ^ (-(𝔡 / 30))))
     (s : Finset (Fin m)) (w : Fin m → ℂ) (u₁ u₂ : ℂ)
     (hw : ∀ i, |(w i).re - E| ≤ C₀ / X ∧ X ^ (-1 - τ) ≤ (w i).im ∧ (w i).im ≤ X ^ (-1 + τ))
     (hu₁ : |u₁.re - E| ≤ C₀ / X ∧ X ^ (-1 - τ) ≤ u₁.im ∧ u₁.im ≤ X ^ (-1 + τ))
     (hu₂ : |u₂.re - E| ≤ C₀ / X ∧ X ^ (-1 - τ) ≤ u₂.im ∧ u₂.im ≤ X ^ (-1 + τ))
-    (y : Idx d L W) (b₁ b₂ : Bool) :
+    (y : Idx d L W)
+    (hbad : P {ω | ∃ α β, |(hH ω).eigenvalues α - E| ≤ (((W * L) ^ d : ℕ) : ℝ)⁻¹ * (W : ℝ) ^ (𝔡 / 3) ∧
+        |(hH ω).eigenvalues β - E| ≤ (((W * L) ^ d : ℕ) : ℝ)⁻¹ * (W : ℝ) ^ (𝔡 / 3) ∧
+        (W : ℝ) ^ (-(𝔡 / 6)) ≤ ‖blockM2 d L W lamV (hH ω) (siteBlock d L W y) α β‖} ≤
+      ((2 * d + 1 : ℕ) : ℝ≥0∞) * ENNReal.ofReal ((W : ℝ) ^ (-(𝔡 / 30))))
+    (b₁ b₂ : Bool) :
     ∫ ω, (∏ j ∈ s, (stieltjesN (Hr ω) (w j)).im) *
-        ‖∑ x, (Gres (Hr ω) u₁ b₁ * Gres (Hr ω) u₁ b₁) x y * scirc d L W lam x y *
+        ‖∑ x, (Gres (Hr ω) u₁ b₁ * Gres (Hr ω) u₁ b₁) x y * scirc d L W lamV x y *
             (Gres (Hr ω) u₂ b₂ * Gres (Hr ω) u₂ b₂) y x‖ ∂P ≤
       X ^ (2 - 𝔠 * 𝔡 / 30 + (3 * (s.card : ℝ) + 16) * τ) := by
   classical
@@ -640,7 +650,7 @@ private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
       (Cb := X ^ δ) S (⌈X⌉₊ + 1) hGS (p := ENNReal.ofReal (X ^ (-D))) (by
         intro q hq j hj
         obtain ⟨hq1, hq0, hqκ⟩ := hS q hq
-        have he := Uyw_grid_energy_lt hηt0 hE hq1 hq0 hqκ (by rw [hηt]; exact h3) hj
+        have he := Uyw_grid_energy_lt hηt0 hq1 hq0 hqκ (by rw [hηt]; exact h3) hj
         have := hdiag _ he
         rw [← hηt] at this
         exact this)
@@ -658,17 +668,16 @@ private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
           rw [ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal hX0D,
             ENNReal.toReal_natCast, ENNReal.toReal_natCast]
       _ ≤ ((4 + (m : ℝ)) * X) * ((2 * X) * X ^ (-D)) := by gcongr
-  -- the bad block of `y`: the pair event of the merged `measure_bad2_le_of_queBadMat`
+  -- the bad block of `y`: the hypothesis `hbad` (the pair event of the merged `measure_bad2_le_of_queBadMat`)
   have hW0 : (0 : ℝ) < (W : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)
-  have hW1 : (1 : ℝ) ≤ (W : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.2 (NeZero.ne W)
   obtain ⟨Bs, hBsdef⟩ : ∃ Bs : Set Ω, Bs = {ω | ∃ α β,
       |(hH ω).eigenvalues α - E| ≤ (((W * L) ^ d : ℕ) : ℝ)⁻¹ * (W : ℝ) ^ (𝔡 / 3) ∧
         |(hH ω).eigenvalues β - E| ≤ (((W * L) ^ d : ℕ) : ℝ)⁻¹ * (W : ℝ) ^ (𝔡 / 3) ∧
-        (W : ℝ) ^ (-(𝔡 / 6)) ≤ ‖blockM2 d L W lam (hH ω) (siteBlock d L W y) α β‖} := ⟨_, rfl⟩
+        (W : ℝ) ^ (-(𝔡 / 6)) ≤ ‖blockM2 d L W lamV (hH ω) (siteBlock d L W y) α β‖} := ⟨_, rfl⟩
   obtain ⟨Bm, hBmdef⟩ : ∃ Bm : Set Ω, Bm = toMeasurable P Bs := ⟨_, rfl⟩
   have hBmm : MeasurableSet Bm := by rw [hBmdef]; exact measurableSet_toMeasurable _ _
   have hBprob : P.real Bm ≤ ((2 * d + 1 : ℕ) : ℝ) * X ^ (-(𝔠 * 𝔡 / 30)) := by
-    have h := measure_bad2_le_of_queBadMat P hL hW1 h𝔡 hlam (siteBlock d L W y) hH _ hque
+    have h := hbad
     have h' : P Bs ≤ ENNReal.ofReal (((2 * d + 1 : ℕ) : ℝ) * (W : ℝ) ^ (-(𝔡 / 30))) := by
       rw [ENNReal.ofReal_mul (Nat.cast_nonneg _), ENNReal.ofReal_natCast, hBsdef]
       exact h
@@ -710,7 +719,7 @@ private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
       _ = _ := by rw [hX]
   -- pointwise domination
   have hfg : ∀ ω, (∏ j ∈ s, (stieltjesN (Hr ω) (w j)).im) *
-      ‖∑ x, (Gres (Hr ω) u₁ b₁ * Gres (Hr ω) u₁ b₁) x y * scirc d L W lam x y *
+      ‖∑ x, (Gres (Hr ω) u₁ b₁ * Gres (Hr ω) u₁ b₁) x y * scirc d L W lamV x y *
           (Gres (Hr ω) u₂ b₂ * Gres (Hr ω) u₂ b₂) y x‖ ≤
       Pw * (X⁻¹ * (C₁ * X ^ (3 - c / 36 + 8 * τ + 2 * δ))) +
         (Pw * (X⁻¹ * (4 * X ^ (3 + 8 * τ + 2 * δ)))) * Bm.indicator 1 ω +
@@ -721,7 +730,7 @@ private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
       fun A => Set.indicator_nonneg (fun _ _ => zero_le_one) ω
     by_cases hωT : ω ∈ T
     · -- crude row
-      have hc1 := uyw_pointwise_crude hL lam hHω m s w u₁ u₂ hηu₁ hηu₂ hηw y b₁ b₂
+      have hc1 := uyw_pointwise_crude hL lamV hHω m s w u₁ u₂ hηu₁ hηu₂ hηw y b₁ b₂
       have hc2 := Uyw_prod_crude_le hX1 s w u₁ u₂ hηw1 hηu₁1 hηu₂1
       have hTi : T.indicator (1 : Ω → ℝ) ω = 1 := by
         simp [Set.indicator_of_mem hωT]
@@ -736,7 +745,7 @@ private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
         exact subset_toMeasurable _ _ hn'
       have hBad : ∀ a0, ¬ (a0 ≠ siteBlock d L W y ∨ ω ∈ Bm) → ∀ α β,
           |hHω.eigenvalues α - u₁.re| ≤ w' → |hHω.eigenvalues β - u₂.re| ≤ w' →
-          ‖blockM2 d L W lam hHω a0 α β‖ ≤ X ^ (-(c / 36)) := by
+          ‖blockM2 d L W lamV hHω a0 α β‖ ≤ X ^ (-(c / 36)) := by
         intro a0 hna α β hα hβ
         push Not at hna
         obtain ⟨rfl, hnb⟩ := hna
@@ -746,11 +755,11 @@ private theorem Uyw_fixed_time {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L
         have hlt := hnb' α β (hwin _ u₁ hure₁ hα) (hwin _ u₂ hure₂ hβ)
         have hWX := un_W_neg_le (N := X) (W := (W : ℝ)) (𝔠 := 𝔠) (x := 𝔡 / 6) hX0 hW0
           (by positivity) hWc
-        calc ‖blockM2 d L W lam hHω (siteBlock d L W y) α β‖ ≤ (W : ℝ) ^ (-(𝔡 / 6)) := hlt.le
+        calc ‖blockM2 d L W lamV hHω (siteBlock d L W y) α β‖ ≤ (W : ℝ) ^ (-(𝔡 / 6)) := hlt.le
           _ ≤ X ^ (-(𝔠 * (𝔡 / 6))) := hWX
           _ ≤ X ^ (-(c / 36)) :=
               Real.rpow_le_rpow_of_exponent_le hX1 (by rw [hcdef]; linarith)
-      have hgood := Uyw_pointwise_good_norm hL lam hHω s w u₁ u₂ (δ := δ) (θ := X ^ (-(c / 36)))
+      have hgood := Uyw_pointwise_good_norm hL lamV hHω s w u₁ u₂ (δ := δ) (θ := X ^ (-(c / 36)))
         hX hX1 hc hc1 hτ hδ.le hκ hηt hw'eq rfl hηu₁1 hηu₁' hηu₂1 hηu₂' hηw1 hηw' hK2'
         (fun k hk => hΞ (u₁.re, (2 : ℝ) ^ k * w') (hSmem1 k hk))
         (fun k hk => hΞ (u₂.re, (2 : ℝ) ^ k * w') (hSmem2 k hk)) (hΞ (u₁.re, 0) hSmem3)
@@ -843,13 +852,20 @@ theorem unUyw_of_ouClaims : ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz
     have : (0 : ℝ) ≤ nf := nf.cast_nonneg
     linarith
   have hsc : s.card ≤ nf := by simpa using Finset.card_le_univ s
+  have hew : ∀ e : ℝ, |e - E| < κ / 2 → |e| ≤ 2 - κ / 2 := fun e he => by
+    rw [abs_le] at hE ⊢
+    rw [abs_lt] at he
+    constructor <;> linarith [he.1, he.2, hE.1, hE.2]
   have hfix := Uyw_fixed_time (sz.three_le_L n) (sz.lam n) (ouP (UNModel.band sz) n)
     (ouMat (UNModel.band sz) n t) (ouMat_isHermitian (UNModel.band sz) n t) (X := Nsz sz n)
     (𝔠 := 𝔠) (𝔡 := 𝔡) (c := c) (κ := κ) (τ := τU) (δ := δ) (C₀ := C₀) (E := E) (D := D)
-    (m := nf) rfl hWn h𝔠 h𝔡 hcdef hcd hWOn.1 hκ hκ2 hτ hδ hmδ (by rw [hDdef]) hE h1 h2 h3 h4 h5
-    (fun e he => hDn t ht0 htT e he.le)
-    (fun b => (hQn t ht0 htT E hE b).trans (Uyw_queBound_eq _ h𝔡).le) s z (z i) (z j)
-    (fun k => hz k) (hz i) (hz j) y b₁ b₂
+    (m := nf) rfl hWn h𝔠 h𝔡 hcdef hcd hκ hκ2 hτ hδ hmδ (by rw [hDdef]) h1 h2 h3 h4 h5
+    (fun e he => hDn t ht0 htT e (hew e he)) s z (z i) (z j)
+    (fun k => hz k) (hz i) (hz j) y
+    (measure_bad2_le_of_queBadMat _ (sz.three_le_L n) (by exact_mod_cast sz.W_pos n) h𝔡 hWOn.1
+      (siteBlock d (sz.L n) (sz.W n) y) (Hr := ouMat (UNModel.band sz) n t)
+      (ouMat_isHermitian (UNModel.band sz) n t) _
+      (fun b => (hQn t ht0 htT E hE b).trans (Uyw_queBound_eq _ h𝔡).le)) b₁ b₂
   refine hfix.trans ?_
   calc Nsz sz n ^ (2 - 𝔠 * 𝔡 / 30 + (3 * (s.card : ℝ) + 16) * τU)
       ≤ Nsz sz n ^ (2 - 𝔠 * 𝔡 / 30 + (3 * (nf : ℝ) + 16) * τU) := by
