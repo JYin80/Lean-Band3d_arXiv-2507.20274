@@ -2329,3 +2329,22 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   代价：一张只出报告的票（BA 计数 +1，占一个槽几个小时）；排在 X1 和 U 的 REQ 之后；V 的陈述形状若再变（像 §2105），钉文跟着改。
 - (4) **执行顺序**：X1 的生产者（Step 5 的 CLT 层，`Evolution/Clt*` 等 11 个文件、13.9k 行，两份设计都没有生产者；子阶段 U 开之前要定，C9）→ 子阶段 U 的开阶段 REQ → M/N 设计单（只出报告）。M/N 的证明票等 V 关闭并过阶段闸门。
 - (5) 下一张票号 T2449，下一节 §261，下一条 H242。
+
+## §261 — TL2d 合并；X1 生产者提案（路线 G：X1a、X1b，BA 实例归 U4-BA）；发子阶段 U 的开阶段 REQ（总调度 V3，2026-10-12 11:05 UTC）
+
+- (1) **T2441 = TL2d 合并** 20917ed（10:49 UTC；`BA/TwistStep` 1,795 + `TwistStep2` 1,564，都在 2,000 停止线下；`baTwistGridMart_holds`、`baTwistZeroMode_holds`、`STCaseI`/`STCaseII` 的 `BATwistStepFixed`、实例；API 限额后按规则 (H) 重跑 1b；审核 PASS）。TL 13 行已合并 12 行，剩 TL2e（现在可写）。
+- (2) **Jun 顺序第 1 步：X1 的生产者**（§260 (4)）。X1 = `Evolution/Clt*`、`MeanFar`、`FarEntry`、`ExpInv`：11 个文件、13,899 行、115 个定理。带状侧只有一个消费者（`IniTermI:2005-2008`，U4s2），BA 侧暂时没有。数学上与模型无关：Θ 只通过传播子界进入（`CltMoments1:929-1000`），BA 的流是 `λ₀Ψ` 加 g = 0 的带状流（`Gauss/BlockAnderson:83-86`）。**提案走路线 G**（监督 1155 C9 的推荐）：在载体上原地改写成泛型，加两行 ST 侧的 U 行：
+  - **X1a**（约 0.6k 行；设计门 1a 带探针步骤；先做 tier 1 文件）；
+  - **X1b**（约 1.0k 行；在 X1a 与 U4s1 之后）；
+  - BA 实例归 U4-BA，U4-BA 可能要第三张票。
+  - 退路（C6）：某段 f_sem > 0.30 就用修订改成 BA 孪生。整套孪生要 7–9 张票、约 11k 行，所以不走。
+- (3) **Jun 顺序第 2 步：发 `REQ-2026-10-12-1104-U`**（子阶段 U 的开阶段 REQ）。行数 20 + 2（X1a、X1b）+ 1（U-D）= 23，旗标 34.5。五个问题：
+  - Q1：X1 的生产者走路线 G；
+  - Q2：开 U 的 ST 侧，第一批 U3s1 的词汇文件、U6（新增文件 `Chain/Step5Gen`）、X1a、U-D；BA 侧在 M/N 设计报告之后用一份短的钉文 REQ 开；
+  - Q3：行表更正（`Step3`/`Step4` 从 U3s1 挪到 U3s4，不改计数；U6 作为新增文件，不进证书通道；U5 在 U6 之后早开设计门）；
+  - Q4：C10 普查只做到 import 层，是下界，提案用一张只出报告的覆盖单 U-D 做逐事实普查，并为四个没有生产者的层（`Path/DifREP1–3`；`Path/LemDecCalE*` + `NetLift2` + `KellStar`；`Path/NetLift1`；`Green/CondDom`）定生产者，同时问 `DifREP`/`NetLift1` 归 T 还是 U；
+  - Q5：U 的关闭条件（含对 V 与 M/N 终点钉文的形状检查）。
+  
+  U 现在可以开：没有规则要求 T 先关，C8 把 T7-BA 挪进 U 正是为了让 T 先关。实际上只有 U3s1 的词汇、U6、X1a 的 tier 1 不卡在 T4s1 上。
+- (4) **Jun 顺序第 3 步**：REQ 已发，接着写 M/N 的只出报告的设计单（BA +1）。另外，带状侧的 T 行（T4s1、T7、T5s2、T1、T4s2）从 §236 起没有放出；T4s1 在每个 ST 侧 U 行的 import 闭包里，排在 M/N 设计单之后尽快写。
+- (5) ROUTES：X1 一项改为"X1 生产者提案：X1a/X1b（路线 G），BA 实例归 U4-BA（REQ U 待答）"；TL 13 行已合并 12 行。下一张票号 T2449（M/N 设计单），下一节 §262，下一条 H243。
