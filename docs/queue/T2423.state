@@ -1,4 +1,4 @@
-state: proving
-reason: resumed under Amend 1 (H221): main merged into t/T2423 (e1782fc); workflow wf_b437998a-f00, 1b prover-max (BASim, BASim2, BASim3) → auditor
-updated: Sun Oct 11 21:51:40 UTC 2026
+state: audit-pass
+reason: Amend 1 1b prover-max eac746f (rerun after the API limit), audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 04:03:19 UTC 2026
 reports: docs/reports/T2423-prove.md, docs/reports/T2423-1a-audit.md, docs/reports/T2423-audit.md
