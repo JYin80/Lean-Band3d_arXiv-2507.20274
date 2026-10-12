@@ -538,6 +538,7 @@ import RBM3D.Graph.BAMomentGenB
 import RBM3D.Chain.Step2EventsGen
 import RBM3D.Chain.Step2EventsGenTw
 import RBM3D.Graph.BALocReg2
+import RBM3D.BA.GridRepTailBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
