@@ -43,7 +43,7 @@ paper-delta candidate T2427a (mirror form and `twTr c₁ c₂ = T̃_{(c₂,c₁)
 Contents: §1 the vocabulary and the pins `BATwistAvgRec`, `twAvgMoment`, `twAvgReg`; §2 twist
 blocks in offset coordinates; §3 `Φ_p` and `∂_{h_{βα}}Φ_p` at the one-size level; §4 `lanlw`
 with `f = Φ_p` at the BA law; §5 bounded continuous functions; §6 `twAvgReg_holds`; §7 the twist
-algebra (Steps 2-3); §8 `twAvgMoment_holds`; §9 the instances.  Private helpers carry the stem
+algebra (Steps 2-3); §8 `twAvgMoment_holds`; §9 the instances.  Helpers carry the stem
 `TwistAvgA_`.
 -/
 

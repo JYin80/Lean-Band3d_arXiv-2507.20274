@@ -18,7 +18,7 @@ coordinates and the Cauchy-Schwarz step; §3 `twAvgSCS_holds` and `twAvgSPrec_ho
 (`‖𝒮₁‖ + ‖𝒮₂‖ ≺ B²` from `STLmaxgL`, `k = 2, 4`, and `BAMB_row_l1`); §4 Lemma T.6 at an
 arbitrary law (`twAvgT6_holds`); §5 Hölder and Lyapunov; §6 the first display of Step 5 and
 `baTwistAvgRec_holds`; §7 the instances.
-Private helpers carry the stem `TwistAvgA2_`.
+Helpers carry the stem `TwistAvgA2_`.
 -/
 
 set_option linter.style.longLine false
