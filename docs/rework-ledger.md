@@ -22,3 +22,4 @@
 | T2456 | 2026-10-12 17:13 UTC (3bb131d) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L L3b1：1a 预检 BLOCKED（中心 2,424）→ 拆分 Σ 签字（3(c)–(e) 挪 L3b2）→ 1b → 审核第一轮 RETURN（目标 10 实例两处缺）→ 规则 (B) 修补 → 第二轮 PASS；新 `Graph/BALocReg1` 884 + `BALocReg1B` 926 行 |
 | T2461 | 2026-10-12 17:24 UTC (a55ef84) | prover-hard | Sonnet 5.5 effort xhigh | 是 | T 生产者 P2：1a → 1b → 审核 PASS 第一轮；新 `BA/NetLiftBA` 838 行（含 P6 `baFlow_premises`） |
 | T2459 | 2026-10-12 17:41 UTC (e288560) | prover-max | Sonnet 5.5（prover-max） | 是 | U U5 设计门（只出报告）：设计门 → 探针 → 1a-audit → 审核 PASS 第一轮；`docs/reports/T2459-design.md` 321 行；BA 情形 (iii) 用具名输入闭合；1b 五行 U5a–U5e，中心 6,900；探针 394 行留在 `t/T2459` |
+| T2463 | 2026-10-12 18:11 UTC (01b4c521) | prover | Sonnet 5.5 | 是 | U U1s1：1a → 1b → 审核 PASS 第一轮；新 `Chain/ZeroModeGen` 878 行（新增）；条件目标 9 挪到 U1-BA |

@@ -1,7 +1,7 @@
 /-
 Release check for T2467 (dispatcher V3, Mon Oct 12 17:34 UTC 2026; DECISIONS §272).  ST T7b (sub-stage T, ST side; the split successor of
-T2454 = T7): targets 8-11 of T2454 in the new file `Chain/Step2EventsGen.lean` (no `BA/` import); the BA side appended to
-the merged leaf `Chain/DecayGenTw.lean`.  The band files `Induction/Step2Events`, `Step2Core` are not edited.
+T2454 = T7): targets 8-11 of T2454 in the new file `Chain/Step2EventsGen.lean` (no `BA/` import); the BA side in
+the new leaf `Chain/Step2EventsGenTw.lean` (Amend 1, DECISIONS §274 (3); `Chain/DecayGenTw.lean` is not edited).  The band files `Induction/Step2Events`, `Step2Core` are not edited.
 Part 1: merged names.  Part 2: the pins `T2467_*`, copied from the compiled T2454 probe
 (`t/T2454:RBM3D/Probe/T2454Pins.lean`, commit e949c71, Part 2 `:138-293`) with two changes only: the bundle `S2EvGen_Sect`
 (`:213-218`) is unbundled into explicit premises (1a-audit round 2, O2), so `STScaleInvgL` and `STStep1WeakgL` are explicit
@@ -394,7 +394,7 @@ example : Prop := ∀ (d : ℕ) (sz : Sizes d) (E : ℕ → ℝ),
   T2467_Rot3 (bandFM sz E) ∧ T2467_Grid (bandStep2Mat sz E) (Sizes.seqP sz)
 example : Prop := ∀ d : ℕ, T2467_Flow d (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun _ z n => lemT (z n))
 
-/-- F1-F2, F7, F9 at BA (shapes; proved in the leaf `Chain/DecayGenTw`, probe `:317-331`). -/
+/-- F1-F2, F7, F9 at BA (shapes; proved in the new leaf `Chain/Step2EventsGenTw`, probe `:317-331`). -/
 example : Prop := ∀ (d : ℕ) (sz : Sizes d) (l E : ℕ → ℝ),
   T2467_Rot3 (baFM sz l E) ∧ T2467_Grid (baStep2Mat sz l E) (Sizes.seqP (sz.withLam 0))
 example : Prop := ∀ d : ℕ, T2467_Flow d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) BAflowT0
