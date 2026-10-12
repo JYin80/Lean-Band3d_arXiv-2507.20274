@@ -512,6 +512,8 @@ import RBM3D.Chain.Step5Gen
 import RBM3D.Graph.BAS3Close
 import RBM3D.Graph.BAS3CloseB
 import RBM3D.Graph.BAS3CloseC
+import RBM3D.Chain.DecayGen
+import RBM3D.Chain.DecayGenTw
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

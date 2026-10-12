@@ -1,0 +1,4 @@
+state: audit-pass
+reason: T7a only (split confirmed at 1a-audit round 2, H248 (2)): (a‴) resubmission, 1a-audit round 2 PASS, prover-hard 6affbeb, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Mon Oct 12 15:56:10 UTC 2026
+reports: docs/reports/T2454-prove.md, docs/reports/T2454-1a-audit.md, docs/reports/T2454-audit.md

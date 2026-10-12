@@ -195,6 +195,10 @@ def owedProps : List Name :=
    -- T2421 (BA-TL TL0, DECISIONS §234, §236): the twisted-loop pins of stage TL (`RBM3D/BA/TwistPins.lean`)
    `RBM.BA.BATwistAvgLaw, -- TL1: `|Tr(G̊ P_{c₂c₁})| ≺ W^{-d} B_{τ,0}` for every ordered pair of blocks (`(B.1)`, Theorem 8.2; T2398d, T2421); owner: TL stage (TL1b: `BATwistAvgProd`)
    `RBM.BA.BATwistLoopLaw, -- TL2: `|L̃ − K̃| ≺ (W^{-d} B_{τ,0})^{3/2}` for the twisted 2-loop, all charges and blocks (`(B.1)`, fifth conjunct of Theorem 8.2; T2398d, T2421); owner: TL stage (TL2a–TL2e: one step `BATwistLoopStep`, closed in TL2e; TL-V: base case and chain) + BA-V (V2a/V2b: the step and the regime glue with the fifth conjunct; `GLoopAtT0`)
+   -- T2454 (BA-T T7a, DECISIONS §264): the far decay of `𝒦` over a carrier and two merged Step 2 pins that the public theorems of `RBM3D/Chain/DecayGen.lean` take as hypotheses
+   `RBM.BA.STKcalDecaygL, -- the far decay of `𝒦` over a flow carrier, without the energy (`Chain/DecayGen.lean`): hypothesis of `stDecayLoopAtgL_of`, `stDecayLoopPTgL_of_step2`, `stDecayLoopUgL_of_step2`; band reading `bandFM_STKcalDecay` (from `inst_stKcalDecay_admissible`); owner U2 (band `KDecay`) / U2-BA (`BAKcalDecay`)
+   `RBM.BA.STStep2DecayPTgL, -- `(Eq:Gdecay_w)` per time over a flow carrier (`Chain/Step2Gen.lean:542`): hypothesis of `stDecayLoopPTgL_of_step2` (T2454); owed like its band form `STStep2DecayPT`: owner T1 / T1-BA (the Step 2 iteration)
+   `RBM.BA.STGdecayWgL, -- `(Eq:Gdecay_w)` uniformly in `u ∈ [s,t]` over a flow carrier (`Chain/Step2Gen.lean:503`): hypothesis of `stDecayLoopUgL_of_step2` (T2454); owed like its band form `STGdecayW`: owner T1 / T1-BA (the Step 2 iteration)
    `RBM.Gauss.Sizes.STStep5Concl, -- uniform Step-5 conclusion `STGdecayW … 0 ∧ STDecayStrongU` (`3_5:1935`), the hypothesis of the assembly instance `inst_assembly`: S5-02 (T2143; class proposed: owed, as `STStep2Concl`, DECISIONS §40)
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
