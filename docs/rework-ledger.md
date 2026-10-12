@@ -35,3 +35,5 @@
 | T2471 | 2026-10-12 21:10 / 22:14 UTC (51e233bd, ae791953) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | T 生产者 P1b（双槽 BA 尾）：设计门 D1–D3 → 探针 → 1a-audit PASS（拆 P1b-1/P1b-2，路线 (i)）→ 两半 1b → 审核都 PASS 第一轮；新 `Chain/GridRepTailGen` 795、`GridRepTailGen2` 929、`BA/GridRepTailBA` 1,396 行 |
 | T2469 | 2026-10-12 21:50 / 22:28 UTC (a931034a, bcd86fa2) | prover-hard | Sonnet 5.5 effort xhigh | 否 | BA-L L3b2：1a 预检 BLOCKED（§227 拆分规则，中心 2,130 > 1,575）→ 调度签字拆 L3b2a/L3b2b → 两半 1b → 审核都 PASS；新 `Graph/BALocReg2` 886 + `BALocReg2B` 624 行 |
 | T2474 | 2026-10-12 22:32 UTC (e8fd7d27, eaa247c4) | prover | Sonnet 5.5 | 是 | ST T5s2：1a（预签拆 T5s2a/T5s2b）→ 1b → 审核 PASS 第一轮；新 `Chain/StepDecompGen` 1,246 + `Chain/HierDriftGen` 1,381 行 |
+| T2477 | 2026-10-12 23:13 UTC (2dcfcda5) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA M/N N3b：1a → 1b → 审核 PASS 第一轮；原地改 `GreenCorr`、`UnivMain`、`Step1Band`；`band_terminal`、`bUniv_holds` 公理不变 |
+| T2475 | 2026-10-12 23:23 UTC (35b7d6cb) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | BA M/N C5g：设计门 D1–D2 → 探针 → 1a-audit PASS → 1b → 审核 PASS 第一轮；新 `RandomLayerBG` 526 + 叶 `BA/RandomLayerBGBA` 219 行 |

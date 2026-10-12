@@ -2617,3 +2617,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **放 T2481 = U5a**（U 11 / 42；BA 153；`prover-hard`；不设设计门；`BA/Step5IIIKer` + `BA/Step5IIIKer2`；800 / 1,200 / 1,800）：`lam0 ≤ sz.lam`（流上）、`T2459_BAweighted`、`T2459_BAKernel` 及其流上读法、`T2459_Theta_far` 与新的四种电荷对 `uKer` 远场（对 `v ≤ w` 一致）、BA 的 `tailtoTailSq`（(H1)–(H3)）及其 `STeeUMg` 读法（给 U5d）、实例。答复：核的路线由 1a 选较短的（走 `baProp5_holds` 就去掉目标 2）；目标 4 (b)、5 不设探针但 1a 先做数值核对，钉文不成立就停；保护形式是 R1 的推论，可用；拆分预签，但那是 U5 的第六行，1a-audit 确认时调度发短通知 REQ；(H2) 留在 U5d。
 - (6) 计数：BA 153；T 21 / 34.5（T5s2 拆成两行）；U 11 / 42（计划 29 → 30：X1b、U2 若拆再加）；L 40 / 50（预期 47，范围 46–49）；M/N 3 / 15；V 0 / 12。
 - (7) 在跑：T2473、T2475、T2476、T2477。排队：**T2478 → T2479 → L3d4b → T2480 → T2481**。下一张票号 T2482，下一节 §281，下一条 H262。待写：L3d2b（等 L3d4b 合并；带 L40-C2）、U5b（新数学，`prover-max`）、U3s2–U3s4（等 T4s2）、U1s2、L3d1、L4b2、L4a2、L5（P1）。
+
+## §281 — N3b、C5g 合并；T2473 = T4s2 的 1a-audit RETURN → Amend 1（三行、`Im m ≤ 1` 前提、读已合并的 `LoopForm`/`Law`）；发 T 的短通知 REQ（总调度 V3，2026-10-12 23:28 UTC）
+
+- (1) **合并**：**T2477 = N3b** 2dcfcda5（23:13；原地改 `GreenCorr` +268、`UnivMain` +215、`Step1Band` +489 −115，备用 `Step1BandC` 未用；9 个目标与实例；原有公开声明不变；登记删 3 行；审核 PASS；**合并后 `#print axioms band_terminal` 与 `bUniv_holds` 都是三条标准公理，与合并前相同**；T2476 = N3a 在这个底上重做对比）。**T2475 = C5g** 35b7d6cb（23:23；泛型 `Universality/GUEPhase/RandomLayerBG` 526（不 import `BA/*`）+ 叶 `BA/RandomLayerBGBA` 219；目标 1–14 与实例；`Test/Axioms.lean` 两条负责人注释改写；1a-audit、审核都 PASS）。M/N 三行里两行已合并。
+- (2) **T2473 = T4s2 的 1a-audit RETURN，要调度签字**（23:18；1a 与探针 PASS，路线 (a)，不切 `prover-max`）。**决定（`docs/tickets/T2473-amend-1.md`）**：
+  - **S1：拆三行**：T4s2a = `GridGoodGen` + `GridEnvelopeGen`（目标 1–5，约 1,386，**1b 现在开**）；T4s2b = `GridAssemblyGen`（约 1,211）；T4s2c = `AzumaProxyGen`（约 1,432；预计超 1,800 才用备用 `AzumaProxyGen2`）；依次叠加、依次合并。第三行发短通知 REQ（不阻塞）。
+  - **S2：接受内联前提 `∀ n, (Cm.m n).im ≤ 1`**（目标 5 的包络和；带状由 `hierDriftGen_band_eta` / `|E n| ≤ 2 − κ` 消，BA 由 T4-BA 用 `BAm_norm_le_one` 消；不起名字，不进登记）。
+  - **S3：批准**目标 4 读已合并的 `StepDecompGen_LoopForm`（T2474）与 `Step2EventsGen_Law`（T2467 F9 的最后一个合取项）代替单独的游走事实与可测性兼容（都是已合并的唯一文本，X1-C4）；票内答复 (4) 在这一点上作废。
+  - BA 的初始归属仍记为 T4-BA 的欠项。
+- (3) **发 `REQ-2026-10-12-2328-T4s2`**（不阻塞）：T4s2 三行、S2、S3 的记录。计数：T 21 → 23 / 34.5（T1 再拆则 24）；BA 155。
+- (4) 在跑：T2472b（L3d4b）、T2476（N3a）、T2478（T1）、T2479（X1b）；T2473 的 T4s2a 等空位进 1b。排队：**T2473（T4s2a 1b）→ T2480 → T2481**；T4s2b、T4s2c 依次叠加。下一张票号 T2482，下一节 §282，下一条 H263。待写：L3d2b（等 L3d4b）、U5b、U3s2–U3s4（等 T4s2 三行）、U1s2、L3d1、L4b2、L4a2、L5（P1）。
