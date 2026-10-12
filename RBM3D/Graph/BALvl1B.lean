@@ -466,25 +466,23 @@ def d1C : BAGraph (Fin 2) (Fin 3 ⊕ Fin 2) :=
 
 theorem normalPC : baPC.Normal := by decide
 
-/-- **Target 3 (`BALvl1B_part_struct`)** at `P_C`, `G = baPC` and the term `d1C` (`BASim_Ext_ext`; `G` is normal; `d1C` has four `M`-split terms, all with the conclusions of target 3). -/
-example : d1C.splitG.length = 4 ∧ ∃ Δ ∈ d1C.splitG, Δ.Normal ∧ Δ.nW = (BAWeightOp_circ d1C).nW ∧ Δ.nA ≤ (BAWeightOp_circ d1C).nA ∧
-    Δ.nM ≤ (BAWeightOp_circ d1C).nM ∧ Δ.nExt ≤ (BAWeightOp_circ d1C).nExt ∧ Δ.nExt ≤ baPC.nExt := by
-  refine ⟨by decide +kernel, ?_⟩
-  obtain ⟨Δ, hΔ⟩ := List.exists_mem_of_length_pos (l := d1C.splitG) (by decide +kernel)
-  obtain ⟨hN, -, h3, h4, h5, h6, h7⟩ := BALvl1B_part_struct (baPG baPC) baPC (BASim_Ext_ext 2 baPC qC.2 _ _ _) normalPC Δ hΔ
-  exact ⟨Δ, hΔ, hN, h3, h4, h5, h6, h7⟩
+/-- **Target 3 (`BALvl1B_part_struct`)** at `P_C`, `G = baPC` and the term `d1C` (`BASim_Ext_ext`; `G` is normal; `d1C` has four `M`-split terms, and every one has the conclusions of target 3). -/
+example : d1C.splitG.length = 4 ∧ ∀ Δ ∈ d1C.splitG, Δ.Normal ∧ Δ.nW = (BAWeightOp_circ d1C).nW ∧ Δ.nA ≤ (BAWeightOp_circ d1C).nA ∧
+    Δ.nM ≤ (BAWeightOp_circ d1C).nM ∧ Δ.nExt ≤ (BAWeightOp_circ d1C).nExt ∧ Δ.nExt ≤ baPC.nExt :=
+  ⟨by decide +kernel, fun Δ hΔ => by
+    obtain ⟨hN, -, h3, h4, h5, h6, h7⟩ := BALvl1B_part_struct (baPG baPC) baPC (BASim_Ext_ext 2 baPC qC.2 _ _ _) normalPC Δ hΔ
+    exact ⟨hN, h3, h4, h5, h6, h7⟩⟩
 
-/-- **The cases `weight`, `edge`, `gg` of `BAstepMono`** (`BALvl1B_weight`, `BALvl1B_edge`, `BALvl1B_gg`) at `P_W`, `P_E`, `P_A`: each step has outputs, and the five conclusions hold at an output. -/
-example : (∃ Q ∈ (baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW), BALvl1B_Mono (baPG baPW) Q) ∧
-    (∃ Q ∈ (baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE), BALvl1B_Mono (baPG baPE) Q) ∧
-    (∃ Q ∈ (baPG baPA).outsOf (baPA.gg2 pA qA) ++ (baPG baPA).outsOf (baPA.gg4 pA qA), BALvl1B_Mono (baPG baPA) Q) := by
-  obtain ⟨Q, hQ⟩ := List.exists_mem_of_length_pos (by decide +kernel : 0 < ((baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)).length)
-  obtain ⟨R, hR⟩ := List.exists_mem_of_length_pos (by decide +kernel : 0 < ((baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)).length)
-  obtain ⟨S, hS⟩ := List.exists_mem_of_length_pos
-    (by decide +kernel : 0 < ((baPG baPA).outsOf (baPA.gg2 pA qA) ++ (baPG baPA).outsOf (baPA.gg4 pA qA)).length)
-  exact ⟨⟨Q, hQ, BALvl1B_weight (baPG baPW) (by decide) (List.mem_cons_self ..) rfl rfl Q hQ⟩,
-    ⟨R, hR, BALvl1B_edge (baPG baPE) (by decide) (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) rfl rfl R hR⟩,
-    ⟨S, hS, BALvl1B_gg (baPG baPA) (by decide) (List.mem_cons_self ..) (List.mem_cons_self ..) S hS⟩⟩
+/-- the outputs of the `weight` step at `P_W` and of the `edge` step at `P_E` (the `gg` step at `P_A` has the outputs `ggF`) -/
+def outsW : List (BAPGraph (Fin 1)) := (baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)
+def outsE : List (BAPGraph (Fin 2)) := (baPG baPE).outsOf (BAGraph.lanlwTerms baPE pE)
+
+/-- **The cases `weight`, `edge`, `gg` of `BAstepMono`** (`BALvl1B_weight`, `BALvl1B_edge`, `BALvl1B_gg`) at `P_W`, `P_E`, `P_A`: each step has outputs (kernel evaluation), and the five conclusions hold at every output. -/
+example : ((∀ Q ∈ outsW, BALvl1B_Mono (baPG baPW) Q) ∧ 0 < outsW.length) ∧ ((∀ Q ∈ outsE, BALvl1B_Mono (baPG baPE) Q) ∧ 0 < outsE.length) ∧
+    ((∀ Q ∈ ggF, BALvl1B_Mono (baPG baPA) Q) ∧ 0 < ggF.length) :=
+  ⟨⟨fun Q hQ => BALvl1B_weight (baPG baPW) (by decide) (List.mem_cons_self ..) rfl rfl Q hQ, by decide +kernel⟩,
+    ⟨fun Q hQ => BALvl1B_edge (baPG baPE) (by decide) (List.mem_cons_of_mem _ (List.mem_map.2 ⟨_, List.mem_cons_self .., rfl⟩)) rfl rfl Q hQ, by decide +kernel⟩,
+    ⟨fun Q hQ => BALvl1B_gg (baPG baPA) (by decide) (List.mem_cons_self ..) (List.mem_cons_self ..) Q hQ, by decide +kernel⟩⟩
 
 end BALvl1BInst
 
