@@ -1,4 +1,4 @@
-state: blocked
-reason: Amend 1 item 2 outcome rule (H232): the L4S3-L1 lift run (wf_f95ebbce-996, section (a⁗) of docs/reports/T2433-prove.md) is NOT LIFTED: T3C-tr_0 and T3C-tr_1 have 7 stuck nodes per tail charge (root term #2 plus 6 depth-1 kids of the ord-3 term); D1X and D2X close with every leaf property. Stopped before 1b as the amend says; the stuck graphs are in (a⁗). For the dispatcher: the short REQ of Amend 1 item 2; does 1b on the generic half proceed meanwhile?
-updated: Mon Oct 12 06:30:11 UTC 2026
+state: held
+reason: H234 answers the item-2 question (L4S3-L1 NOT LIFTED, REQ filed; HOLD stays on T3C-tr, L4d2, L4c1, L4g); resumes on the generic half in the next free slot: 1a-audit round 2 → 1b prover-max → auditor
+updated: Mon Oct 12 06:41:26 UTC 2026
 reports: docs/reports/T2433-prove.md, docs/reports/T2433-1a-audit.md

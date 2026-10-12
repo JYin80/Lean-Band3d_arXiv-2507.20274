@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-12 06:39 UTC (dispatcher V3: T2435 booked; L4S3-L1 not lifted → REQ; T2433 generic half resumes (H234))
+updated: 2026-10-12 08:05 UTC (dispatcher V3: Jun chose S3 route A; Fable (A′); REQ S3A; HOLD stays until the supervisor answers (H236))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -14,10 +14,10 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 409. T2441 — `docs/tickets/T2441.md` (BA-TL TL2d: new `BA/TwistStep.lean` + `TwistStep2.lean`: `baTwistGridMart_holds`, `baTwistZeroMode_holds`, `BATwistStepFixed` for `STCaseI`/`STCaseII`; design gate with a `prover-max` probe step → 1a-audit → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). **Priority: first among the waiting tickets.** Not in the certificate lane.
 410. T2442 — `docs/tickets/T2442.md` (BA-L L3a4: new `Graph/BALvl1B.lean` + `BALvl1B2.lean`: the reduction from `BAsim'`, `baStepMono_holds`, `baLvl1StepGood_holds`; 1a → 1b `prover-max`): released; starts when its check compiles and a slot is free (H12). Priority: first among the waiting tickets (S′ critical path). Not in the certificate lane.
 411. T2443 — `docs/tickets/T2443.md` (BA-L L3b4′: new `Graph/BAStepS.lean`: `BASimC'`, `BAFinalS`, `baStep_of_simC'`, `ba_ord_ge_of_simC'`; probe step `prover-max` → 1a-audit → 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2442. Not in the certificate lane.
+412. T2444 — `docs/tickets/T2444.md` (BA-L L3c3b: new `Graph/BAZetaExp.lean`, twin of `Graph/LWXiExp.lean` 1–787: `LWXiEgL` + `LWXiEgL_bandFM`, `BAZetaExpClaim` / `baZetaExpClaim_holds`, helpers, `d = 3` instances; no design gate; 1a → 1b `prover-hard`): released; starts when its check compiles and a slot is free (H12). Priority: after T2433 (held, first in line). Not in the certificate lane.
 
 ## Pre-release checks
-- `docs/tickets/checks/T2442-check.lean` (BA-L L3a4; merged names only).
-- `docs/tickets/checks/T2443-check.lean` (BA-L L3b4′; merged names only).
+- `docs/tickets/checks/T2444-check.lean` (BA-L L3c3b; merged names plus the Prop-valued pins `T2444_LWXiEgL`, `T2444_BAZetaExpClaim`; compiled on the device with a standalone `lean` against copied `.olean` files: confirm with `lake env lean` on `main`).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -104,6 +104,12 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Mon Oct 12 06:34:56 UTC 2026 — T2443 started in the slot freed by T2435 (merged c43bdf1): wf_d1ec0477-a8b (preflight → probe prover-max → 1a-audit → 1b prover-hard → auditor). Running: T2434, T2441, T2442, T2443 (4 of 4); queue empty (T2433 blocked).
 
 - H234 (dispatcher V3, 2026-10-12 06:39 UTC; DECISIONS §253). (1) Commit by name with your next commit `docs/supervisor/requests/REQ-2026-10-12-0639-L4S3L1.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/rework-ledger.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) T2433, answer to its Amend 1 item-2 question: L4S3-L1 is reported (NOT LIFTED; REQ above); the supervisor 0554 HOLD stays on the `T3C-tr` closure, L4d2, L4c1, L4g. T2433 resumes now: 1a-audit round 2 → 1b `prover-max` on the generic half only (Amend 1 scope: `BACtx`, the GG-with-context Lemma for both charges with the `kids` form, `BAselStar` (widened to any `BACtx` candidate if needed), `BAG5LeafProps`, `BAG5Attached`, for any root list); no `baG5Graph` table, no target 4, no closure claim for the true roots. Report (a⁗) stays as evidence. This line answers the sign-off of H183 (3) for T2433. One `done:` line per item.
+  done: Mon Oct 12 06:41:26 UTC 2026 — (1) the 6 listed files committed by name in 0ba184b (with states), pushed.
+  done: Mon Oct 12 06:41:26 UTC 2026 — (2) no slot free (T2434, T2441, T2442, T2443 running; parallel 4); T2433 `held`, first in line for the next free slot (1a-audit round 2 → 1b prover-max on the generic half → auditor).
+
+- H235 (dispatcher V3, 2026-10-12 07:10 UTC; DECISIONS §254; supervisor 0655). (1) Commit by name with your next commit `docs/tickets/T2444.md`, `docs/tickets/checks/T2444-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) T2433 (supervisor 0655 Q3, O4): pass two conditions to its 1a-audit round 2 and its 1b prompt, beside Amend 1 and H234. **Q3-C1:** no completeness statement of the form "every tree ends in `BAG5LeafProps` leaves" for any root list, generic or true; the statements must leave room for an extra leaf class or step type. **Q3-C2:** `BAselStar` ranges over `BACtx` candidates (H1–H3) only; do not widen it to V2 (H1 without "atom(v) internal") or V3 (any `BARCand`) on the strength of the L4S3-L1 run. (3) Compile `docs/tickets/checks/T2444-check.lean` on `main` with `lake env lean`; start order as slots free: T2433 (held, generic half) → T2444. One `done:` line per item.
+
+- H236 (dispatcher V3, 2026-10-12 08:05 UTC; DECISIONS §255). After H235: commit by name with your next commit `docs/claude-team/fable/2026-10-12-s3-fold-A.md`, `docs/supervisor/requests/REQ-2026-10-12-0805-S3A.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. No change to the running tickets; the S3 HOLD (L4d2, L4c1, L4g; T2433's table and target 4) stays until the supervisor answers the REQ. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
