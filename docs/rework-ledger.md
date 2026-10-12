@@ -16,3 +16,4 @@
 | T2449 | 2026-10-12 13:19 UTC (45400a7) | prover-max（设计单） | Sonnet 5.5（prover-max） | 否 | BA-DMN M/N 设计单（只出报告）：审核第一轮 RETURN（`Que′` 没钉进探针；`RBG_Prod` 实例 r2–r4 没证）→ 规则 (B) 修补 → 第二轮 PASS；报告 158 行，探针 397 行不合并 |
 | T2452 | 2026-10-12 13:55 UTC (6bdc5a3) | prover-max（设计单） | Sonnet 5.5（prover-max） | 是 | BA-U U-D 覆盖普查（只出报告）：一次 PASS；报告 207 行，探针 371 行不合并；T 加两行生产者 P1、P2 |
 | T2458 | 2026-10-12 15:05 UTC (1debc23) | prover-hard | Sonnet 5.5 effort xhigh | 是 | U U6：1a → 1b → 审核 PASS 第一轮；新 `Chain/Step5Gen` 666 行（新增文件）；目标 11 挪到 U4s3 |
+| T2450 | 2026-10-12 15:37 UTC (ab5746d) | prover-max | Sonnet 5.5（prover-max） | 是 | BA-L L4d2b：1a（S3A-C5）→ 1b → 审核 PASS 第一轮；新 `Graph/BAS3Close` 1,953 + `BAS3CloseB` 837 + `BAS3CloseC` 1,661 行；S3 闭包完成 |
