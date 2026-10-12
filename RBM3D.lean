@@ -517,6 +517,7 @@ import RBM3D.Chain.DecayGenTw
 import RBM3D.Chain.CltGen
 import RBM3D.Graph.BALocReg1
 import RBM3D.Graph.BALocReg1B
+import RBM3D.BA.NetLiftBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
