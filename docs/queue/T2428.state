@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a, probe f6c3866, 1a-audit BLOCKED → Amend 1 (split), prover-max bed7d4f, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 01:18:48 UTC 2026
+state: merged 1a559d5
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new BA/TwistGrid (963), TwistGrid2 (345), root imports added at merge; probe stays on t/T2428 (f6c3866); full lake build 4250 jobs; pushed
+updated: Mon Oct 12 01:18:50 UTC 2026
 reports: docs/reports/T2428-prove.md, docs/reports/T2428-1a-audit.md, docs/reports/T2428-audit.md

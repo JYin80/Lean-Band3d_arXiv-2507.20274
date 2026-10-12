@@ -2184,3 +2184,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (1) **T2427（TL1a）合并 a24d4e9**：新 `BA/TwistAvgA` 1,085 + `TwistAvgA2` 1,228；`baTwistAvgRec_holds`（2p 阶矩递推）、`twAvgMoment/Reg/SCS/SPrec/T6_holds`；T.6 留在 TL1a（未用退路）。1a-audit 第一轮 RETURN（`twAvgReg` 缺 `0 < ε`）→ 探针修补一次 → 第二轮 PASS；审核一次 PASS。文章差异候选 T2427a（镜像形式）、T2427b、T2427c 待记。
 - (2) **T2436 = TL1b**（BA 103；TL 8 / 15；`prover-hard`，`BA/TwistAvgB`，停止线 1,500）：证接口 `T2427_TL1b`（`BATwistAvgRec → BATwistAvgProd`，按 TL1a 报告 (iv) 的方案：bootstrap、S1 分情况、逐对 Markov、对所有块对取并），再得 `baTwistAvgProd_holds`；不用 net。登记不动（`BATwistAvgLaw` 的 owed 行到 BA-V 才退）。这张票由总调度直接写（不起子代理），只读了接口和方案。排在等待队列最前。
 - (3) 下一张票号 T2437，下一节 §246，下一条 H227。
+
+## §246 — TL2a 合并；放 TL2a2 = T2437、TL2a3 = T2438、TL2a4 = T2439（总调度 V3，2026-10-12 01:43 UTC）
+
+- (1) **T2428（TL2a）合并 1a559d5**（Amend 1 范围）：新 `BA/TwistGrid` 963 + `TwistGrid2` 345；T.8、T.9、`BATwistDuhamel`、分解第 (i) 条、两条核桥、六个部件钉文、`baTwistGridAssemble_holds`；审核一次 PASS。TL 已合并 7 / 13。
+- (2) **三张后继**（§242），都对已合并的钉文证明，不需设计门，可以并行，排在 T2434、T2435 前面：
+  - **T2437 = TL2a2**（BA 104；TL 9 / 15；`prover-max`；`BA/TwistGridRem` + `TwistGridRem2`）：`baTwistGridRem_holds (d) : ∃ C₀, 0 ≤ C₀ ∧ BATwistGridRem d C₀`——每个 `d` 各取 `C₀` 就够（`BATwistGridMart` 和组装定理都只要这个）；钉文不带 `3 ≤ d`，若用到的引理带，可加前提。扭转版的一步包络（`DifREP1` §3–§4 的孪生）。
+  - **T2438 = TL2a3**（BA 105；TL 10 / 15；`prover-hard`；`BA/TwistGridTail`，必要时 `TwistGridTail2`）：`baTwistGridTail_holds (d) : BATwistGridTail d`（`DifREP2` 的孪生；通用的 `stepDecompCN` 直接给出 Z+Y 分解）。条件 MGF 写成公开的带词干引理 `TwistGridTail_condMGF_Z`。
+  - **T2439 = TL2a4**（BA 106；TL 11 / 15；`prover-hard`；`BA/TwistGridWTail` + `TwistGridWTail2`）：`baTwistGridWTail_holds (d) : BATwistGridWTail d`（`DifREP3` 的孪生）；默认拷贝 T2438 的条件 MGF（带词干），只有 T2438 在它 1b 开始前已合并才改为导入。
+  - `baTwistGridMart_holds` 不在这三张里，写进 TL2d。
+- (3) **阶段 TL 计数 11 / 15**（13 行，剩 TL2d、TL2e 两张；余量 2）。下一张票号 T2440，下一节 §247，下一条 H228。
