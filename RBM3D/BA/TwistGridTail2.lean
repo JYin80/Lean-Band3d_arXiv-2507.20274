@@ -6,18 +6,21 @@ Authors: Jun Yin
 import RBM3D.BA.TwistGridTail
 
 /-!
-# BA stage TL, row TL2a3 (T2438), part 2: the tail at one size index, the asymptotics, `baTwistGridTail_holds` and its instance
+# BA stage TL, row TL2a3 (T2438), part 2: the tail at one size index, `baTwistGridTail_holds`
 
-Continuation of `RBM3D/BA/TwistGridTail.lean` (split file named by the ticket; import order `TwistGridTail → TwistGridTail2`).
+Continuation of `RBM3D/BA/TwistGridTail.lean` (the split file named by the ticket; import order
+`TwistGridTail → TwistGridTail2`).
 
-* `TwistGridTail2_core`: the tail of `twMart` at one size index (twin of `difRepTail_core`, `Path/DifREP2.lean:1951`):
-  `μ (∃ k ≤ K, N^{ε'} (Σ_{j<k} Δ ‖twEEk_j‖ + N^{-D})^{1/2} < ‖twMart_k‖) ≤ N^{-D}` from the three numerical budgets
-  (shift, `Y`, `Z`) and `η_{u_j} ≥ 1/(16 N)` along the grid.
-* `TwistGridTail2_eventually_Z`: the `Z` budget holds for large `N` (polynomial levels against `e^{-N^{2ε'}/64}`).
-* **`baTwistGridTail_holds d : BATwistGridTail d`** for every `d` (`CK = 2 D + 20`), and its compiled nonempty instance.
+* `TwistGridTail2_core`: the tail of `twMart` at one size index (twin of `difRepTail_core`,
+  `Path/DifREP2.lean:1951`): `μ (∃ k ≤ K, N^{ε'} (Σ_{j<k} Δ ‖twEEk_j‖ + N^{-D})^{1/2} < ‖twMart_k‖)
+  ≤ N^{-D}` from the three numerical budgets (shift, `Y`, `Z`) and `η_{u_j} ≥ 1/(16 N)` on the grid.
+* `TwistGridTail2_eventually_Z`: the `Z` budget holds for large `N` (polynomial levels against
+  `e^{-N^{2ε'}/64}`).
+* **`baTwistGridTail_holds d : BATwistGridTail d`** for every `d` (`CK = 2 D + 20`), and its
+  compiled nonempty instances.
 
-Every helper is `private` or prefixed `TwistGridTail2_`; the private helpers of `TwistGridTail.lean` and of the
-merged band files are reached through `open private`.
+Every helper is `private` or prefixed `TwistGridTail2_`; the private helpers of
+`TwistGridTail.lean` and of the merged band files are reached through `open private`.
 -/
 
 set_option linter.style.longLine false
