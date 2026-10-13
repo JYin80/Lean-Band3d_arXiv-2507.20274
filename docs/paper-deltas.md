@@ -1757,7 +1757,13 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 - 无候选：`T2464`（T2464-prove `:212`）、`T2465`（`:176`：只有 D573、T2398a）、`T2470`（`:243`）、`T2471`（P1b-1 `:266`、P1b-2 T2471b-prove `:180`：D202、D690）、`T2482` 行 b（T2482b-prove `:164`）、`T2488b`（T2488-prove `:212`「none」）、`T2493`（U5d-1 `:241`、U5d-2 T2493b-prove `:187`：T2459a–f 已覆盖）。
 
 **不编号（行未合并，待合并时编号）**：
-- `T2496e`（U4s3b，`t/T2496b` 未合并，DECISIONS §306 (6)）：网格游走与厄米游走的模型律恒等式 (5.1)（带状定理 `ST_pathP_eq_seqP`、`pathH_isHermitian`）进入泛型形；报告自注 Lean-only（未提交的 T2496b-prove `:122`）。
+- `T2496e`（U4s3b，`t/T2496b` 未合并，DECISIONS §306 (6)）：网格游走与厄米游走的模型律恒等式 (5.1)（带状定理 `ST_pathP_eq_seqP`、`pathH_isHermitian`）进入泛型形；报告自注 Lean-only（未提交的 T2496b-prove `:122`）。（2026-10-13 补：U4s3b 已合并 5e24c0bb，判定见文末「合并时判定 T2496e–f」。）
 
 **范围外、仍未编号（下次补录）**：`T2353a–c`（T2353-prove `:273-275`）、`T2354a–c`（T2354-prove `:226-228`）、`T2359a`（T2359-prove `:249`）（DECISIONS §269 (8) 名单），以及继承的带状候选 `T2329b`（T2484-prove `:276`）、`T2342a`（T2494-prove `:208`）。另：D636–D691 段把 `T2455` 记作「无候选」（本文件 `:1688`）有误，其 `T2455a–c` 已在本段处理（D698、不编号）；`T2458`（1debc230，15:05 UTC 合并，在上段窗口之前）上段漏记，本段 D700 (a)、D701 (a) 补上。（总调度 V4，2026-10-13 17:28 UTC）
+
+## 合并时判定 T2496e–f（总调度 V4，2026-10-13 18:03 UTC；DECISIONS §308）
+
+两条都不编号（报告 T2496b-prove `:178` 自注 Lean-only、不改论文陈述；审核 T2496b-audit §6「No Lean/paper statement difference」），与同票的 `T2496a`–`c` 一致：
+- D718 补注 ← `T2496e`（建议以「（2026-10-13 补：…）」附在原条后）：BA 上 Step 5 的 Duhamel 一步（`7_8:1993-1994`「仍成立」）同样要读网格游走的律恒等式 (5.1) 与厄米游走；泛型钉文 `stDuhamelIgL_of`、`stDuhamelIIgL_of`（`Induction/DuhamelI2`、`DuhamelII`）把它们作为不设守卫的载体前提 `hGrid`（`Step2EventsGen_Grid`）、`hHerm`，带状由 `Step2EventsGen_bandGrid`、`pathH_isHermitian` 消，BA 由 `Step2EventsGenTw_baGrid`、`baStep2Mat_Hpath_herm` 消（T2496 Amend 2 A10、A11）。
+- 不是论文/Lean 陈述差异：`T2496f`：引擎的 `hE` 写成 `STEtermsMidConclgL` 的本体（登记扫描用），载体 Hölder 模带 D2 的指数 `N^c`（`duhamelIIG_holder`：`N^{11+c}`，带状 `c = 1` 回到 `N^{12}`）：同 `T2496b`，Lean 内部常数。
 
