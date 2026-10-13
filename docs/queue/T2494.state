@@ -1,4 +1,4 @@
-state: audit-pass (row a merging)
-reason: row a (L5a, Graph/BATermHolds) audit PASS claude-opus-5-5
-updated: Tue Oct 13 08:13:54 UTC 2026
-reports: docs/reports/T2494-prove.md, docs/reports/T2494-audit.md
+state: audit-pass (row b merging)
+reason: row b audit PASS claude-opus-5-5
+updated: Tue Oct 13 09:24:03 UTC 2026
+reports: docs/reports/T2494-prove.md, docs/reports/T2494-audit.md, docs/reports/T2494b-prove.md, docs/reports/T2494b-audit.md
