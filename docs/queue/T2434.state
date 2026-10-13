@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1b prover-max 6cccbdd under Amend 1, audit PASS round 1 (claude-opus-5-5); merging (rule A; resumed by a new hub session after the previous one died mid-merge)
-updated: Mon Oct 12 09:36:47 UTC 2026
+state: merged 74af906
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAExp14b (998 lines) and Graph/BAExp14bB (1076); two root imports added at merge; probe RBM3D/Probe/T2434Pins.lean not merged, stays on t/T2434; full lake build 4269 jobs; pushed
+updated: Mon Oct 12 09:36:56 UTC 2026
 reports: docs/reports/T2434-prove.md, docs/reports/T2434-1a-audit.md, docs/reports/T2434-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: P1b-1 merged 51e233bd; P1b-2 (t/T2471b) prover-hard 817c5c2f, audit PASS round 1 (claude-opus-5-5); merging P1b-2 (rule A)
-updated: Mon Oct 12 22:14:28 UTC 2026
+state: merged 51e233bd (P1b-1) + ae791953 (P1b-2)
+reason: both halves merged on audit PASS (claude-opus-5-5): Chain/GridRepTailGen + GridRepTailGen2 (targets 1-3) and BA/GridRepTailBA (1396 lines, targets 4-7); probe stays on t/T2471; full lake build 4312 jobs; pushed
+updated: Mon Oct 12 22:14:30 UTC 2026
 reports: docs/reports/T2471-prove.md, docs/reports/T2471-1a-audit.md, docs/reports/T2471-audit.md, docs/reports/T2471b-prove.md, docs/reports/T2471b-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass (U5d-2 merging)
-reason: U5d-2 (BA/Step5IIIWalk2, targets 6-8) on t/T2493b stacked on t/T2493: running wf_6da7c1be-404 (prover-max 1b, skipPreflight → auditor); no REQ (H280 (2))
-updated: Tue Oct 13 09:41:33 UTC 2026
+state: merged f7470f58
+reason: U5d-1 (BA/Step5IIIWalk) f2af0245 and U5d-2 (BA/Step5IIIWalk2 1067, targets 6-8) f7470f58, each on audit PASS claude-opus-5-5; ticket complete
+updated: Tue Oct 13 09:41:35 UTC 2026
 reports: docs/reports/T2493-prove.md, docs/reports/T2493-audit.md, docs/reports/T2493b-prove.md, docs/reports/T2493b-audit.md

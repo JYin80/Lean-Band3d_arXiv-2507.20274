@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged c0a7747
 reason: stage 1b DONE (8f08c54; Amend 1: UNNormBandRow stays a hypothesis; unDensBandRow, unTrLocalBandRow proved; 313 lines of 500); auditor1 PASS claude-opus-5-5 (wf_86ee722a-547); full lake build 4183 jobs
-updated: Sat Oct 10 05:36:48 UTC 2026
+updated: Sat Oct 10 05:36:50 UTC 2026
 reports: docs/reports/T2371-prove.md, docs/reports/T2371-audit.md

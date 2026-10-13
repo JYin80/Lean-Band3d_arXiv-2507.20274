@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a PASS, probe efeab400, 1a-audit PASS, prover-hard 4d8de5b1, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 23:23:47 UTC 2026
+state: merged 35b7d6cb
+reason: audit PASS round 1 (claude-opus-5-5); new Universality/GUEPhase/RandomLayerBG (526) and BA/RandomLayerBGBA (219); targets 1-14; Test/Axioms.lean: the two owner comments at :172-173 (+2 -2); two root imports; probe stays on t/T2475; full lake build 4318 jobs; pushed
+updated: Mon Oct 12 23:23:49 UTC 2026
 reports: docs/reports/T2475-prove.md, docs/reports/T2475-1a-audit.md, docs/reports/T2475-audit.md

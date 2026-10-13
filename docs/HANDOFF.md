@@ -1,3 +1,62 @@
+# RBM3D 交接包（调度 V3 → 调度 V4；2026-10-13 12:00 UTC，由调度 V3 会话 session_01Qidfbgzdy6FV6jy1eSbZgb 写）
+
+Jun 的原话（2026-10-13 08:4x UTC）：「这批工单结束就不要发工单，整理完这批就好，我要换 hub 账号。休息到 LA 9am」；（12:0x UTC）：「赶紧整理team startup 的调度prompt 这里额度马上要到了」。
+
+新调度先读本文件，再读 `docs/claude-team/TEAM.md`（全文，§9、§10 是常规）、`CLAUDE.md`、`docs/DECISIONS.md` 的 **§255–§305**（V3 的全部决定；更早的按需查）、`docs/ROUTES.md`（BA 一格是计数总账）、`docs/queue/CONTROL.md`（H254–H284）、`docs/supervisor/` 最新几份（0658、0849 最重要）。启动提示词见 `docs/claude-team/STARTUP.md` §2（= `docs/claude-team/DISPATCHER-PROMPT.txt`）。
+
+## 0. 交接时的局面（2026-10-13 12:00 UTC）
+
+- **Jun 的指令仍有效：不放新票。** 这批只剩 **T2496 U4s3b**（`t/T2496b`）。**Jun 在 11:59 UTC 暂停了它的 1b 重跑（没有提交，停在 462b5e09），中枢循环已停。** 循环重启后照 state 文件恢复：按 Amend 1 + Amend 2 重跑 1b（prover-hard，skipPreflight）→ auditor。U4s3a 已合并 e89f5609（第一次原地转换，原地新增 1,411 行，带状读者全部照常编译）。U4s3b 合并后这批结束；CONTROL H280 (3) 让中枢写一条「batch complete」的 done 行后待命。
+- **Jun 要换中枢账号**，并说休息到洛杉矶 9:00（16:00 UTC）。新调度在 Jun 说开新票之前只做簿记（U4s3b 合并、监督回复落账），不写票、不放票。
+- **监督 Lclose 已回复（0947 PASS，§306）：** 阶段 L 在 48 / 50 关闭，`baStep2_closed` 闭合，T 的最后条件消掉。剩三件簿记：LC-1 过时文档注释（进下一张碰 `LWPinsBA`/`Step2CloseBA`/`BAGGExp` 的票）、LC-2 paper-deltas 补账（调度做，见 §5）、O4 V 接口（写 V 票时照 §306 (5)）。LC-3 的 ROUTES 已改。
+- **已写好但未放行的票（草稿，在 `docs/claude-team/drafts/`，不在 `docs/tickets/`）：** T2497 = U1s2（混合布局：`IterationsB`、`QGridB` 原地，`IterationsA`、`QGridA` 新文件；约 2,050；一行，预签拆）、T2498 = U3s3（8 原地 + 2 新文件；约 4,830；三行预签，窄设计门 D1–D4；**要等 T2497 的 QGrid 一半合并**——U3s3 读 U1s2 的定义 `aTrueQN` 等，不能当前提）。两份都已按 UP-C2 双定价、带族前提表。放行前：给答复（DECISIONS 新节）、盖日期、挪进 `docs/tickets/`、写 CONTROL 行与 H 指令编译检查文件。
+- **登记**（`RBM3D/Test/Axioms.lean`）：`BAStep5IIIEMatrix` 已删；`STDecayStronggL` 已加（owedProps，负责人 BA 主归纳 V）；`BALWterm`/`BALWtermExp` 已删（L5 证出）。
+
+## 1. 计数（宽口径；监督 0658、0849 的口径）
+
+- **BA 182**（§144 不设上限）。BA 全局预测 ≈ 219（212–227），UP-C2 下 ≈ 214。
+- **T：关闭于 27 / 34.5**（监督 0849）。
+- **U：26 / 42**（含 T2496 两行中的一行算法见 §300 (4)；U3s2 三行、U5d 两行、U2-BA 两行都已计入）。计划 ≈ 48（44–51），UP-C2 下 ≈ 44–45；**旗标 42 保留**：某次放行使预测 ≥ 49 → 放行前发短 REQ；U 已用 50 而未关闭 → 建议 HOLD（UP-C1）。
+- **L：48 / 50，关闭**（监督 0947，旗标撤销）。
+- **V：0 / 12**（预测 ≈ 13，UP-C2 下 ≈ 11；开场 REQ 用这个数，0658 O6）。**M/N：3 / 15**（其余行在 V 关闭时发短 REQ 开）。
+- P、K、TL、E、G 已关闭。
+
+## 2. 接下来的票（Jun 说开新票之后；按依赖）
+
+1. **U1s2 = T2497**（草稿已有）；之后 **U3s3 = T2498**（等 T2497 的 QGrid 一半合并）；**U3s4**（`QtNonzero*`、`QtXiRoundLift`；6 个文件都在 2,000 行以下，UP-C2 原地价约 1,520，一行；读 U3s3 的 `STOeqQtRoundPTgL''`，T2498 建议把 `STOeqQtgL'` 的证明归 U3s4）。
+2. **U5e**（U5 最后一行，BA 的目标；U5a–d 都已合并；读 `BAStep5IIIWalk` + `BAStep5IIIFromWalk`）。
+3. **U-BA 各行**：U1-BA（等 U1s2；含 `stNewPQgL_wardCls` 的 BA 读法；读 U2-BA 的 `WardCls`）、U3-BA (a)/(b)（等 U3s2–s4；(b) 是 `hQ` 在 `baStep2Mat` 上的 BA 负责人，0849 TC-2；读 `baGridDrift_envelope`）、U4-BA（等 U4s3；欠项：A9 的 `lem:newKLK` 在 ℓ = L 的载体类的 BA 消法、D2 的 BA 消法）、U6-BA。BA 行按 T2379 价 ×2 估（0658 UP-F1）。
+4. **V 阶段**：开场 REQ（≈ 13 行）；V1s1（`ExpHier` 的层级前提在 `∀ᶠ n` 下逐指标写，0658 UP-C4）、V1s2、V1s3（都按 UP-C2 双定价）、V1-BA、V2a/b、V3。
+5. 每张泛型转换票都要：**UP-C2 双定价**（原地 = T2379 模型 ×1.2，只算 2,000 行以下文件；新文件 = 普查 ×1.24 校准；取便宜的，除非 1a 指出障碍）、**族前提表**（0349 U5S-C3：守卫与否、BA 消法；需要 `BAReal`/`0 < g₀`/`0 < Im m` 的前提放在流之下；`∃ C` 不依赖冻结的 `(sz, z)`；漂移/层级逐指标 `∀ᶠ n`）、**名字级表格放 1b 开头**（0149 `:98`）。UP-C2 (d)：T2496 是第一次 B 密集原地转换，整票落地超过 3,540 行（加减挪动）就回到新文件。
+
+## 3. Jun 的口径与偏好
+
+- 汇报用中文、洛杉矶时间；仓库文件用 UTC。数学术语用英文。
+- 需要 Jun 决定的事一次只问一件；流程上的事自己定，不问 Jun；Jun 没决定的问题，相关票一律不开工。
+- 论文 Jun 自己改（Lean 做完以后）；3D_Band 是母本，`RBM3D/paper/tex` 是参考副本，**不要改论文**。
+- 不写 Lean（检查文件例外）；不做 git 写操作；RBM1D、RBM2D 只读。
+
+## 4. 写票与簿记的做法（V3 的定式）
+
+- 起草用后台子代理（general-purpose，`run_in_background`），一次 1–2 张；简报写清来源、绑定规则（R1、TN-C4、UBA-C1/C3、C1、U5S-C3、UP-C2）、文件、计数、模板，要求检查文件只用已合并模块、禁词（`by`/`rfl`/`Iff.rfl`/`theorem`/`lemma`/`sorry`/`inductive`，注释里也不许）、并核对导入闭包（T2490 曾因少导入编译失败）。
+- 定稿：在 `**Dispatcher notes (DECISIONS §N):**` 下插「Dispatcher answers」一条、`sed` 盖日期、复制到 `/mnt/user-data/outputs/rbm3d/`、`device_commit_files` 写进 `docs/tickets/` 与 `checks/`。
+- 簿记脚本 `$HOME/v3_NNN.py`（设备上；例子见 v3_298.py、v3_302.py）：DECISIONS 新节、CONTROL（删已合并行、加放行行、Pre-release checks、H 指令放在 `## Merge log` 前）、ROUTES（BA 格前缀、各阶段行）、账本、WORKLOG、HEARTBEAT-STATE。**f-string 里的 `{…}`**（`N^{-D}`、`𝒦^{(2)}`）要双写，否则会被求值。
+- 中枢在 1b 开头停下问前提（名字级核对）时：看它的提案、核带状与 BA 消法都能编译、不违 U5S-C3，就写 Amend（就地补钉文或新起一个 amend 文件）并 H 指令重跑；审核里的登记缺口用「合并时由中枢加一行」的批准指令（T2482 / H271 (3) 先例）。
+- 心跳：send_later，name「RBM3D 调度心跳」，14 分钟；先 list_triggers 去重。迟到的心跳只确认、不另排。
+
+## 5. 新调度立即要做的事
+
+1. 读 §0 列的文件；在 HEARTBEAT-STATE.md 顶部写明从此刻起你是唯一的总调度（会话号、账号）。
+2. 排好心跳（STARTUP §2 的消息，把「调度 V4」写进去）；空闲心跳从简。
+3. 查 T2496b 的状态：合并了就记账（DECISIONS 新节、账本行、ROUTES U 行写 U4s3 的落地行数与 UP-C2 (d) 结论），看 CONTROL 是否已有「batch complete」done 行；没合并就等。
+4. Lclose 已落账（§306）。做 LC-2：`docs/paper-deltas.md` 补一节阶段 L（以及 15:10 UTC 之后合并的 T、U 行），按论文位置去重，`T2494a`+`T2494c` 记一条（§306 (3)）；Jun 换完账号后，确认中枢 `docs/queue/HUB.alive` 在更新、监督任务在新账号下存在（STARTUP §3）。
+5. **Jun 说开新票之前不放票。** Jun 说开后，按 §2 的顺序，先放 T2497（草稿只需补答复与日期）。
+6. 用中文向 Jun 简短汇报理解与需要他决定的第一件事。
+
+---
+
+## 附：上一份交接包（调度 V1 → V2，2026-10-09），原文保留
+
 # RBM3D 交接包（调度 V1 → 调度 V2；2026-10-09 04:04 UTC，由调度 V1 会话 session_01RThagGKa4jNgUEWeKViyyg 写）
 
 Jun 的原话（2026-10-09 04:00 UTC 前后）：「准备交班给下一个调度，修改一下 doc/team startup 的文件，不要发新工单了，收尾现在在跑的就行。」

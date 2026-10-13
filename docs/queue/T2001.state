@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor2 PASS on all targets after one rule-(B) report-only repair; report-only merge (probe stays on t/T2001 at bd95cc9)
-updated: 2026-10-02 19:05:12 UTC
+state: merged a62eeef
+reason: audit-pass (auditor2, claude-opus-5-5) after one rule-(B) repair; report-only merge, probe RBM3D/Probe/T2001Endpoints.lean stays on t/T2001 (bd95cc9)
+updated: 2026-10-02 19:05:21 UTC
 reports: docs/reports/T2001-prove.md, docs/reports/T2001-audit.md, docs/reports/T2001-coverage.md

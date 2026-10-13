@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard d36677f, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 17:24:14 UTC 2026
+state: merged a55ef84
+reason: audit PASS round 1 (claude-opus-5-5); new BA/NetLiftBA (838 lines); root import added at merge (the branch had none); full lake build 4291 jobs; pushed
+updated: Mon Oct 12 17:24:15 UTC 2026
 reports: docs/reports/T2461-prove.md, docs/reports/T2461-audit.md

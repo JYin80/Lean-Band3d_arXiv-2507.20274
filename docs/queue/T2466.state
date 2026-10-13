@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-max cebb7791, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 19:00:35 UTC 2026
+state: merged 03109267
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAExp14d (620) and BAExp14dB (908); targets 1-8; two root imports added at merge; full lake build 4297 jobs; pushed
+updated: Mon Oct 12 19:00:37 UTC 2026
 reports: docs/reports/T2466-prove.md, docs/reports/T2466-audit.md

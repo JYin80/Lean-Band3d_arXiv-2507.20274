@@ -1,4 +1,4 @@
-state: audit-pass
-reason: U4s1a merged c9f69dba; U4s1b (t/T2462b) prover-hard 763208b4, audit PASS round 1 (claude-opus-5-5); merging U4s1b (rule A)
-updated: Mon Oct 12 19:30:15 UTC 2026
+state: merged c9f69dba (U4s1a) + 52f8f82a (U4s1b)
+reason: both halves of the confirmed split merged on audit PASS (claude-opus-5-5): Chain/Step5CasesGen (targets 1-7, 7 registry lines) and Chain/Step5KerGen (550) + Chain/NewKLKLGen (377) (targets 8-11, R1); probe stays on t/T2462; full lake build 4299 jobs; pushed. Open for the dispatcher (T2462-prove.md): with T2463 merged, the D1 alternative of T2462.md may apply.
+updated: Mon Oct 12 19:30:17 UTC 2026
 reports: docs/reports/T2462-prove.md, docs/reports/T2462-1a-audit.md, docs/reports/T2462-audit.md, docs/reports/T2462b-prove.md, docs/reports/T2462b-audit.md

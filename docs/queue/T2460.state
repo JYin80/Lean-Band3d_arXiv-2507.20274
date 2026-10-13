@@ -1,4 +1,4 @@
-state: audit-pass
-reason: Amend 1: preflight H3′ re-check PASS, prover-hard 79339380, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 19:33:26 UTC 2026
+state: merged ad52b370
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new BA/GridMartBA (747 lines); targets 1 (H3′), 2, 3, 5, 6; target 4 left the row; root import added at merge; full lake build 4302 jobs; pushed
+updated: Mon Oct 12 19:33:28 UTC 2026
 reports: docs/reports/T2460-prove.md, docs/reports/T2460-audit.md

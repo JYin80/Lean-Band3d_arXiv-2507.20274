@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor1 PASS (no sign-off); report-only merge (probe stays on t/T2016 at c961e62)
-updated: 2026-10-03 04:04:08 UTC
+state: merged c154f29
+reason: audit-pass (auditor1, claude-opus-5-5); report-only merge, probe RBM3D/Probe/T2016Pins.lean stays on t/T2016 (c961e62)
+updated: 2026-10-03 04:04:10 UTC
 reports: docs/reports/T2016-prove.md, docs/reports/T2016-audit.md

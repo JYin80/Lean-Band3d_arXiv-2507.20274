@@ -1,4 +1,4 @@
-state: audit-pass
-reason: workflow wf_add96554-5ef: preflight PASS, prover DONE, auditor1 PASS; merging under rule (A)
-updated: Tue Oct  6 11:03:45 UTC 2026
+state: merged 5b55824
+reason: audit PASS round 1 (wf_add96554-5ef); merged under rule (A), full lake build 4090 jobs, pushed
+updated: Tue Oct  6 11:03:47 UTC 2026
 reports: docs/reports/T2282-prove.md, docs/reports/T2282-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 8994389
 reason: design delivered (LD1-LD7; probe at fe433f2, 52 declarations on standard axioms); auditor1 PASS claude-opus-5-5 (wf_a0fb8d25-519); report-only merge, probe stays on t/T2387
-updated: Sat Oct 10 16:26:29 UTC 2026
+updated: Sat Oct 10 16:26:31 UTC 2026
 reports: docs/reports/T2387-prove.md, docs/reports/T2387-design.md, docs/reports/T2387-audit.md

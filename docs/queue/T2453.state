@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover e54487c, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 13:07:06 UTC 2026
+state: merged 4fad610
+reason: audit PASS round 1 (claude-opus-5-5); new Chain/GridDuhamelGen (683 lines); root import added at merge (the branch had none); full lake build 4281 jobs; pushed
+updated: Mon Oct 12 13:07:09 UTC 2026
 reports: docs/reports/T2453-prove.md, docs/reports/T2453-audit.md

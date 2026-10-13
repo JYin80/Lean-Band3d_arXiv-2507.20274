@@ -427,3 +427,6 @@
 - 2026-10-13 09:47 UTC 调度 V3 第 99 轮：U5d 完成；这批只剩 U4s3（§303）。
 - 2026-10-13 11:23 UTC 调度 V3 第 105 轮：U4s3a 合并（第一次原地转换，1,411 行，带状读者照常）；这批只剩 U4s3b（§304）。
 - 2026-10-13 11:40 UTC 调度 V3 第 106 轮：T2496 Amend 2（A10 `hGrid`、A11 `hHerm`），U4s3b 1b 重跑（§305，H284）。
+- 2026-10-13 12:00 UTC 调度 V3 交接：写 HANDOFF.md（V3 → V4）、STARTUP §2、DISPATCHER-PROMPT.txt（V4 版）；H285。V3 停写。
+- 2026-10-13 12:26 UTC 调度 V3：监督 0947 落账（阶段 L 关闭于 48 / 50，§306）；ROUTES LC-3；HANDOFF 更新（T2496b 已暂停、LC-2 交 V4）；H286（替代 H285 (1)）。V3 停写。
+- 2026-10-13 16:44 UTC — 调度 V4 接手（Cowork 会话 session_01RThagGKa4jNgUEWeKViyyg，misslose@g.ucla.edu；STARTUP §2 的 V4 提示词）：心跳 trig_01NhdTUD5f9rVyz5QHxXw8yT；监督任务 trig_01R1NVdwWjDU2P5KMhtTLr43 在本账号存在；中枢循环停（HUB.alive 11:59 UTC），T2496b held；H285/H286 未执行；Jun 说开之前不放票。

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: T7a only (split confirmed at 1a-audit round 2, H248 (2)): (a‴) resubmission, 1a-audit round 2 PASS, prover-hard 6affbeb, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 15:56:10 UTC 2026
+state: merged aa38bde
+reason: T7a only (split T7a/T7b confirmed at 1a-audit round 2 under H248 (2): central 1,962 > 1,950); new Chain/DecayGen (657) and Chain/DecayGenTw (80); registry: 3 owedProps lines in Test/Axioms.lean; targets 1-6, 12, BA instance of target 6; target 7 is U2s, targets 8-11 are T7b (Step2EventsGen); two root imports added at merge; probe stays on t/T2454; full lake build 4287 jobs; pushed
+updated: Mon Oct 12 15:56:12 UTC 2026
 reports: docs/reports/T2454-prove.md, docs/reports/T2454-1a-audit.md, docs/reports/T2454-audit.md

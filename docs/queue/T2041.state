@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor2 PASS after one rule-(B) repair (R1-R3); report-only merge (probe stays on t/T2041 at 3c58211)
-updated: 2026-10-03 10:21:15 UTC
-reports: docs/reports/T2041-prove.md, docs/reports/T2041-audit.md
+state: merged 3747ff7
+reason: audit PASS round 2 (claude-opus-5-5) after one repair; report-only merge, probe RBM3D/Probe/T2041Pins.lean stays on t/T2041 (3c58211)
+updated: 2026-10-03 10:21:28 UTC
+reports: docs/reports/T2041-prove.md, docs/reports/T2041-audit.md, docs/reports/T2041-portmap.md

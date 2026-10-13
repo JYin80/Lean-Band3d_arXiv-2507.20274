@@ -1,4 +1,4 @@
-state: audit-pass
-reason: L3d4a merged c4b39007; L3d4b (t/T2472b) prover-hard 0c7e272e, audit PASS round 1 (claude-opus-5-5); merging L3d4b (rule A)
-updated: Tue Oct 13 00:08:41 UTC 2026
+state: merged c4b39007 (L3d4a) + d1eb95ac (L3d4b)
+reason: both halves merged on audit PASS (claude-opus-5-5): Graph/BAProv (targets 1-4, 5 (a), 9) and Graph/BAProvB (1238 lines; targets 5 (b), 6-8, 10); probe stays on t/T2472; full lake build 4320 jobs; pushed
+updated: Tue Oct 13 00:08:43 UTC 2026
 reports: docs/reports/T2472-prove.md, docs/reports/T2472-1a-audit.md, docs/reports/T2472-audit.md, docs/reports/T2472b-prove.md, docs/reports/T2472b-audit.md

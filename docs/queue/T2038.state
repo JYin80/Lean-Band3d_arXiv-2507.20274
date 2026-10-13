@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor1 PASS (no sign-off); merge per CLAUDE.md §3 (A), Axioms.lean union-merged (H23 b): lake build 3737 jobs, axiom audit 1265 theorems / 0 axioms
-updated: 2026-10-03 06:29:22 UTC
+state: merged cace419
+reason: audit-pass (auditor1, claude-opus-5-5); merged Green/RowIndep.lean, Test/Axioms.lean (AgreeOffRow; union with main's EKFastDecay per H23 b) + root import; full lake build OK (3737 jobs, 0 axioms)
+updated: 2026-10-03 06:29:25 UTC
 reports: docs/reports/T2038-prove.md, docs/reports/T2038-audit.md

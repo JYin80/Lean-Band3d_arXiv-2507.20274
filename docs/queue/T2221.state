@@ -1,4 +1,4 @@
-state: audit-pass
-reason: workflow wf_c3138054-cad: preflight PASS, prover DONE, auditor1 PASS; merging under rule (A)
-updated: Mon Oct  5 23:35:24 UTC 2026
+state: merged 0f44a56
+reason: audit PASS round 1 (wf_c3138054-cad); merged under rule (A), full lake build 4030 jobs, pushed
+updated: Mon Oct  5 23:35:26 UTC 2026
 reports: docs/reports/T2221-prove.md, docs/reports/T2221-audit.md

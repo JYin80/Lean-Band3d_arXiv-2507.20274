@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor1 PASS (no sign-off); merge per CLAUDE.md §3 (A): lake build 3697 jobs, axiom audit 832 theorems / 0 axioms
-updated: 2026-10-03 02:06:59 UTC
+state: merged 9e2b00f
+reason: audit-pass (auditor1, claude-opus-5-5); merged StochDomAt.lean, DominationAt.lean, Test/Axioms.lean (2 structural entries) + root imports; full lake build OK (3697 jobs, 0 axioms)
+updated: 2026-10-03 02:07:00 UTC
 reports: docs/reports/T2012-prove.md, docs/reports/T2012-audit.md

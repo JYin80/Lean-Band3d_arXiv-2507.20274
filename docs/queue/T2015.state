@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor2 PASS after one rule-(B) repair (D1 instance, D2 paper-delta candidates T2015g/h); report-only merge (probe stays on t/T2015)
-updated: 2026-10-03 05:00:31 UTC
+state: merged 5e7de62
+reason: audit PASS round 2 (claude-opus-5-5) after one repair; report-only merge, probe RBM3D/Probe/T2015Pins.lean stays on t/T2015 (752e027)
+updated: 2026-10-03 05:00:33 UTC
 reports: docs/reports/T2015-prove.md, docs/reports/T2015-audit.md, docs/reports/T2015-portmap.md

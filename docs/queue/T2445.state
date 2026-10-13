@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, 1b prover-max 817dcbd, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 11:08:06 UTC 2026
+state: merged b0161bc
+reason: audit PASS round 1 (claude-opus-5-5); new BA/TwistFold2 (656 lines) and BA/TwistFold2B (1066); two root imports (from the branch, placed after the last import line); full lake build 4275 jobs; pushed
+updated: Mon Oct 12 11:08:08 UTC 2026
 reports: docs/reports/T2445-prove.md, docs/reports/T2445-audit.md

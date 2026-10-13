@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS (no split), prover add74cd9, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Tue Oct 13 07:39:59 UTC 2026
+state: merged 3238c365
+reason: audit PASS round 1 (claude-opus-5-5); new BA/DecayLoopBA (228 lines); targets 1-6, no split; two owner texts in Test/Axioms.lean; root import; full lake build 4361 jobs; pushed
+updated: Tue Oct 13 07:40:00 UTC 2026
 reports: docs/reports/T2495-prove.md, docs/reports/T2495-audit.md

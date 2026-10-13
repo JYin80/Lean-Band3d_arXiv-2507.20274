@@ -1,4 +1,4 @@
-state: audit-pass
-reason: X1b-1 merged 82deb62b; X1b-2 (t/T2479b) prover-hard 9bedb306, audit PASS round 1 (claude-opus-5-5); merging X1b-2 (rule A)
-updated: Tue Oct 13 00:55:43 UTC 2026
+state: merged 82deb62b (X1b-1) + 16861112 (X1b-2)
+reason: both halves merged on audit PASS (claude-opus-5-5): Evolution/CltMoments2G + MeanFarG (targets 1-4) and Evolution/CltFarG (1070 lines; targets 5-9); full lake build 4325 jobs; pushed
+updated: Tue Oct 13 00:55:44 UTC 2026
 reports: docs/reports/T2479-prove.md, docs/reports/T2479-audit.md, docs/reports/T2479b-prove.md, docs/reports/T2479b-audit.md

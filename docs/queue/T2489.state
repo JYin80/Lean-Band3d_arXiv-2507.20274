@@ -1,4 +1,4 @@
-state: audit-pass
-reason: L4b2a merged 6a1c1f8f; L4b2b (t/T2489b) prover-hard a4e272dc, audit PASS round 1 (claude-opus-5-5); merging L4b2b (rule A)
-updated: Tue Oct 13 07:13:20 UTC 2026
+state: merged 6a1c1f8f (L4b2a) + bbe91c0a (L4b2b)
+reason: both halves merged on audit PASS (claude-opus-5-5): Graph/BAExp14b2 (targets 1-3) and Graph/BAExp14b2B (1174; targets 4-7); full lake build 4356 jobs; pushed. L4b2 complete
+updated: Tue Oct 13 07:13:22 UTC 2026
 reports: docs/reports/T2489-prove.md, docs/reports/T2489-audit.md, docs/reports/T2489b-prove.md, docs/reports/T2489b-audit.md

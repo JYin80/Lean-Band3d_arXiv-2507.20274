@@ -1,4 +1,4 @@
-state: audit-pass
+state: merged 2a05b1d
 reason: Amend 1: (a′) + 1a-audit round 2 PASS; stage 1b DONE (3297200; net 1317 lines of 1500; 7 targets); auditor1 PASS claude-opus-5-5 (wf_9469c03c-5e4); merging by rule (A): Axioms.lean 3-way onto main, RBM3D.lean import re-added after the last import; full lake build 4203 jobs exit 0
-updated: Sat Oct 10 16:30:08 UTC 2026
+updated: Sat Oct 10 16:30:10 UTC 2026
 reports: docs/reports/T2386-prove.md, docs/reports/T2386-1a-audit.md, docs/reports/T2386-audit.md

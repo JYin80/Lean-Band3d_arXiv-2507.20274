@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor1 PASS with dispatcher sign-off given (H6, DECISIONS §13); report-only merge (probe stays on t/T2003 at d6e6054)
-updated: 2026-10-02 23:21:54 UTC
+state: merged 7ba7ba5
+reason: audit PASS (auditor1, claude-opus-5-5) + dispatcher sign-off (H6, DECISIONS §13); report-only merge, probe RBM3D/Probe/T2003Pins.lean stays on t/T2003 (d6e6054)
+updated: 2026-10-02 23:22:20 UTC
 reports: docs/reports/T2003-prove.md, docs/reports/T2003-audit.md

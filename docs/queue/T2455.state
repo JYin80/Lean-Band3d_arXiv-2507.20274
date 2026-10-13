@@ -1,4 +1,4 @@
-state: audit-pass
-reason: 1a-audit round 2 PASS after one rule-(B) repair; 1b prover-hard 8eb4ff2 (with the H250 (3) UBA-C1 correction (a⁗)); audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 16:53:15 UTC 2026
+state: merged 62eed82
+reason: audit PASS round 1 (claude-opus-5-5); six Evolution files in place + new Chain/CltGen (267); registry: Test/Axioms.lean union with T2454 (STGdecayWgL kept once); root import added; probes stay on t/T2455; full lake build 4288 jobs; pushed
+updated: Mon Oct 12 16:53:17 UTC 2026
 reports: docs/reports/T2455-prove.md, docs/reports/T2455-1a-audit.md, docs/reports/T2455-audit.md

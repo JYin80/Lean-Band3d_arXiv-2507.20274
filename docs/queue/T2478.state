@@ -1,4 +1,4 @@
-state: audit-pass
-reason: T1a merged 6039f7ed; T1b (t/T2478b) prover-hard 3166b5d9, audit PASS round 1 on 7-10, 12 (claude-opus-5-5) and target 11 signed off as delivered (H266 (3), DECISIONS §285 (4)); merging T1b (rule A)
-updated: Tue Oct 13 02:24:32 UTC 2026
+state: merged 6039f7ed (T1a) + 1e73b1b8 (T1b)
+reason: both halves merged: Chain/Step2IterGen + Step2IterGen2 (targets 1-6) and Chain/OptL2Gen (1423) + Step2CloseGen (921) (targets 7-12; target 11 in its signed-off four-hypothesis form, H266 (3)); Test/Axioms.lean: STOptL2gL removed (concluded by T1b), STStep1LoopgL owed, the owner texts of STAvgUgL and STStep2ConclgL rewritten (supervisor 0149 O5); full lake build 4334 jobs; pushed. T1 complete
+updated: Tue Oct 13 02:24:34 UTC 2026
 reports: docs/reports/T2478-prove.md, docs/reports/T2478-1a-audit.md, docs/reports/T2478-audit.md, docs/reports/T2478b-prove.md, docs/reports/T2478b-audit.md

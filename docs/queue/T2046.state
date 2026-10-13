@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor1 PASS (no sign-off); merge per CLAUDE.md §3 (A): lake build 3744 jobs, axiom audit 1484 theorems / 0 axioms
-updated: 2026-10-03 10:24:06 UTC
+state: merged ea63565
+reason: audit-pass (auditor1, claude-opus-5-5); merged RBM3D/Green/Stability.lean + root import; full lake build OK (3744 jobs, 0 axioms)
+updated: 2026-10-03 10:24:08 UTC
 reports: docs/reports/T2046-prove.md, docs/reports/T2046-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 272d1f0, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 11:28:52 UTC 2026
+state: merged 00f4a10
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAShapeO2 (1094 lines) and Graph/BAShapeO2B (447); two root imports (the branch lines, placed after the last import line); full lake build 4278 jobs; pushed
+updated: Mon Oct 12 11:28:54 UTC 2026
 reports: docs/reports/T2447-prove.md, docs/reports/T2447-audit.md

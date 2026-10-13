@@ -1,4 +1,4 @@
-state: audit-pass
-reason: U2a merged 650a122d; U2b (t/T2480b) prover-hard df3973e4, audit PASS round 1 (claude-opus-5-5), target 7 class signed off as delivered (H267 (2), DECISIONS §286 (2)); merging U2b (rule A)
-updated: Tue Oct 13 02:43:11 UTC 2026
+state: merged 650a122d (U2a) + 78f4cc14 (U2b)
+reason: both halves merged: Chain/KDecayGen, SEforLnGen, SEforLnGen2 (targets 1-6) and Chain/B45Gen (1244; targets 7-9 and their part of 10-11; target 7 class B45Gen_Facts signed off as delivered, H267 (2)); Test/Axioms.lean union with main (T1b owner texts kept); full lake build 4336 jobs; pushed. U2 complete
+updated: Tue Oct 13 02:43:13 UTC 2026
 reports: docs/reports/T2480-prove.md, docs/reports/T2480-audit.md, docs/reports/T2480b-prove.md, docs/reports/T2480b-audit.md

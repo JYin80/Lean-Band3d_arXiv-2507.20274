@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard a810b5d, audit PASS round 1 (claude-opus-5-5; O1, O2 for the dispatcher, no sign-off); merging (rule A)
-updated: Mon Oct 12 11:30:05 UTC 2026
+state: merged 79f3c1c
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAEngine (506 lines; targets 3-4 carry T2448_Binder since T2447 was unmerged when 1b ran); root import added at merge (the branch had none); audit observations O1, O2 for the dispatcher; full lake build 4279 jobs; pushed
+updated: Mon Oct 12 11:30:08 UTC 2026
 reports: docs/reports/T2448-prove.md, docs/reports/T2448-audit.md

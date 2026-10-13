@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor claude-opus-5-5 PASS; merging
-updated: Tue Oct  6 12:48:15 UTC 2026
+state: merged e5c3253
+reason: audit PASS (claude-opus-5-5); full lake build 4101 jobs OK; pushed
+updated: Tue Oct  6 12:48:17 UTC 2026
 reports: docs/reports/T2293-prove.md, docs/reports/T2293-audit.md

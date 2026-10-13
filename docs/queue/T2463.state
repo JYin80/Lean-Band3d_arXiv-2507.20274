@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover 81ca99ae (targets 1-8, 10; target 9 to U1-BA per the ticket), audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 18:11:57 UTC 2026
+state: merged 01b4c521
+reason: audit PASS round 1 (claude-opus-5-5); new Chain/ZeroModeGen (878 lines); targets 1-8, 10; target 9 moved to U1-BA (T2457 unmerged, ticket condition); root import added at merge (the branch had none); full lake build 4292 jobs; pushed
+updated: Mon Oct 12 18:11:59 UTC 2026
 reports: docs/reports/T2463-prove.md, docs/reports/T2463-audit.md

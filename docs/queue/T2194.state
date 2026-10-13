@@ -1,4 +1,4 @@
-state: audit-pass
-reason: workflow wf_6988d22e-6dd: prover DONE, auditor1 PASS; merging under rule (A)
-updated: Mon Oct  5 17:58:55 UTC 2026
+state: merged 9a207a1
+reason: audit PASS round 1 (wf_6988d22e-6dd); merged under rule (A), full lake build 4002 jobs, pushed
+updated: Mon Oct  5 17:58:57 UTC 2026
 reports: docs/reports/T2194-prove.md, docs/reports/T2194-audit.md

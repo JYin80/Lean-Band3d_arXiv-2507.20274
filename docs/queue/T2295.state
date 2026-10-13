@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor claude-opus-5-5 PASS (Amend 1 targets); merging
-updated: Tue Oct  6 13:45:39 UTC 2026
+state: merged ad9bb6d
+reason: audit PASS (claude-opus-5-5) on Amend 1 targets (BA-L2a1); full lake build 4104 jobs OK; pushed. Note: the H99 audit-only run also reran stage 1a (hub script defect, fixed), which rewrote section (a) of the prove report at 13:39:15 UTC (verdict PASS); the audit read that version.
+updated: Tue Oct  6 13:45:41 UTC 2026
 reports: docs/reports/T2295-prove.md, docs/reports/T2295-audit.md

@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 2b1c9956, audit PASS round 1 (claude-opus-5-5); merging (rule A; first of N3a/N3b)
-updated: Mon Oct 12 23:13:56 UTC 2026
+state: merged 2dcfcda5
+reason: audit PASS round 1 (claude-opus-5-5); in place Universality/GreenCorr, UnivMain, Step1Band (reserve Step1BandC not used); registry -3; full lake build 4316 jobs; #print axioms RBM.Endpoints.band_terminal and bUniv_holds on the merged tree: [propext, Classical.choice, Quot.sound], unchanged; pushed
+updated: Mon Oct 12 23:13:58 UTC 2026
 reports: docs/reports/T2477-prove.md, docs/reports/T2477-audit.md

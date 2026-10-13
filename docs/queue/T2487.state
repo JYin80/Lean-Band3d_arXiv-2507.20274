@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS (no split), prover-hard 3b9c210d, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Tue Oct 13 04:38:59 UTC 2026
+state: merged 268e07d4
+reason: audit PASS round 1 (claude-opus-5-5); new BA/Step2IterBA (833) and Step2CloseBA (259); 12 targets + 9b, no split; Test/Axioms.lean comment texts + two registry lines (BALWterm, BALWtermExp); two root imports; full lake build 4344 jobs; pushed
+updated: Tue Oct 13 04:39:02 UTC 2026
 reports: docs/reports/T2487-prove.md, docs/reports/T2487-audit.md

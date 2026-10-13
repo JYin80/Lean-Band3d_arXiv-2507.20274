@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard de1eb31, audit round 1 RETURN (sign-off) → Amend 1 (both charges) → repair 0de3517 → audit PASS round 2 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 12:16:02 UTC 2026
+state: merged 977d5da
+reason: audit PASS round 2 (claude-opus-5-5) after the Amend 1 repair; new Graph/BAExpandId (772 lines, stop 2000), root import added at merge; full lake build 4233 jobs; pushed
+updated: Sun Oct 11 12:16:03 UTC 2026
 reports: docs/reports/T2419-prove.md, docs/reports/T2419-audit.md

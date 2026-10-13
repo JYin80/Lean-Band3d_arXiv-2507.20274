@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-max 1140fac, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 15:12:17 UTC 2026
+state: merged 135f605
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BAScost (1530), BAScost2 (225), root imports added at merge; full lake build 4242 jobs; pushed
+updated: Sun Oct 11 15:12:19 UTC 2026
 reports: docs/reports/T2426-prove.md, docs/reports/T2426-audit.md

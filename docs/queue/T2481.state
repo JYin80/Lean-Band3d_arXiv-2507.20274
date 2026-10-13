@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS (numerical checks of targets 4 (b), 5 pass), prover-hard a778b55f, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Tue Oct 13 01:32:26 UTC 2026
+state: merged a2f86197
+reason: audit PASS round 1 (claude-opus-5-5); new BA/Step5IIIKer (709) and Step5IIIKer2 (471); target 2 dropped by route (b) (dispatcher answer (1)); two root imports; full lake build 4330 jobs; pushed
+updated: Tue Oct 13 01:32:28 UTC 2026
 reports: docs/reports/T2481-prove.md, docs/reports/T2481-audit.md

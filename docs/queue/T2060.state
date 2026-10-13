@@ -1,4 +1,4 @@
-state: audit-pass
-reason: auditor1 PASS (no sign-off); merge per CLAUDE.md §3 (A), registry line applied onto main (H23 b): lake build 3782 jobs, axiom audit 2155 theorems / 0 axioms
-updated: 2026-10-03 16:09:59 UTC
+state: merged 89f29cf
+reason: audit-pass (auditor1, claude-opus-5-5); merged Graph/LWStein.lean, Test/Axioms.lean (Tame1 structural; applied onto main per H23 b) + root import; full lake build OK (3782 jobs, 0 axioms)
+updated: 2026-10-03 16:10:01 UTC
 reports: docs/reports/T2060-prove.md, docs/reports/T2060-audit.md

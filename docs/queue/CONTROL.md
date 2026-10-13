@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-13 11:40 UTC (dispatcher V3: T2496 Amend 2 (A10, A11), U4s3b 1b rerun (H284))
+updated: 2026-10-13 12:26 UTC (dispatcher V3: supervisor 0947 booked, DECISIONS §306 (H286); hand-over to V4 stands)
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -436,6 +436,12 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Tue Oct 13 11:38:56 UTC 2026 — T2496 U4s3b blocked (wf_21b9bff0-bb8): the 1b stopped before writing Lean on two missing premises (G5 F9 grid law + measurability, G6 Hermitian walk) for targets 8, 9 and proposes A10/A11 (T2496b-prove.md:40, 118-122), with two more questions (the GridRepTailGen2 import; DuhamelI over the 2,000 stop line). Waiting for the dispatcher (T2496.state). Batch (H280 (3)): T2491, T2493, T2494 complete, T2496 U4s3a merged; U4s3b stopped, so no workflow is running now.
 
 - H284 (dispatcher V3, 2026-10-13 11:40 UTC; DECISIONS §305). (1) Commit by name with your next commit `docs/tickets/T2496-amend-2.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) **T2496: rerun the U4s3b 1b on `t/T2496b` under Amend 2** (`prover-hard`; the preflight, probe and 1a-audit stand), then the auditor. This is the current batch (H280 (3)), not a new ticket. One `done:` line per item.
+  done: Tue Oct 13 11:41:31 UTC 2026 — H284 (1) the 4 listed files committed by name in 7b1b43ea, pushed.
+  done: Tue Oct 13 11:41:31 UTC 2026 — H284 (2) T2496 U4s3b 1b rerun under Amend 2 on t/T2496b (f5d1c244): wf_b9fdfc3c-2ed (prover-hard 1b, skipPreflight → auditor). Running: T2496b (1 of 4).
+  done: Tue Oct 13 11:59:26 UTC 2026 — paused by Jun in the hub session: the T2496 U4s3b 1b (wf_b9fdfc3c-2ed) stopped before any commit (t/T2496b at 462b5e09); T2496.state = held; the hub's 10-minute loop is stopped. No workflow runs.
+
+- H285 (dispatcher V3, 2026-10-13 12:00 UTC; hand-over V3 → V4). (1) Commit by name with your next commit `docs/HANDOFF.md`, `docs/claude-team/STARTUP.md`, `docs/claude-team/DISPATCHER-PROMPT.txt`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (`docs/claude-team/drafts/` stays uncommitted). (2) H280 (3) stands: finish T2496b only, start nothing else; write the batch-complete `done:` line. Dispatcher V3 stops writing after this line; the next dispatcher is V4 (STARTUP §2).
+- H286 (dispatcher V3, 2026-10-13 12:26 UTC; supervisor 0947 booked, DECISIONS §306). (1) This replaces H285 (1), which has not been committed yet: commit by name with your next commit `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/HANDOFF.md`, `docs/claude-team/STARTUP.md`, `docs/claude-team/DISPATCHER-PROMPT.txt`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (`docs/claude-team/drafts/` stays uncommitted; the `docs/queue/T*.state` files are yours as usual). (2) T2496b stays as Jun left it (paused 11:59 UTC). When the loop restarts, resume it from its state file (U4s3b 1b under Amend 1 + Amend 2 on `t/T2496b`, prover-hard, skipPreflight, then the auditor); H280 (3) stands: start nothing else, write the batch-complete `done:` line after it merges. Dispatcher V3 stops writing after this line; the next dispatcher is V4 (STARTUP §2).
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).

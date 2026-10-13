@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard ef3f4a4, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 13:23:11 UTC 2026
+state: merged 3dbb04d
+reason: audit PASS round 1 (claude-opus-5-5); new Graph/BASymm1 (475 lines, stop 2000), root import added at merge; full lake build 4236 jobs; pushed
+updated: Sun Oct 11 13:23:13 UTC 2026
 reports: docs/reports/T2425-prove.md, docs/reports/T2425-audit.md

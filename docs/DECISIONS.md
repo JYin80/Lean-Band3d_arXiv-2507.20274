@@ -2991,3 +2991,16 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
     - `DuhamelI` 预测超过 1,800 行时，D1 和逐路径界（§5）挪到新文件 `DuhamelI2`（挪动的行不计入 UP-C2 (d)）。
   - 冻结名照 G1 不变。
 - (3) 属于这批（§299）：T2496 接着做，不算新票。UP-C2 (d)：U4s3a 原地新增 1,411 行，U4s3b 预计新增约 800，加上 A10、A11 之后仍远低于检验线 3,540。
+
+## §306 — 监督 0947：阶段 L 在 48 / 50 关闭；BA Step 2 闭合；LC-1–LC-3 落账（总调度 V3，2026-10-13 12:26 UTC）
+
+- (1) **监督 2026-10-13-0947 回复 `REQ-2026-10-13-0932-Lclose`：PASS。**
+  - 阶段 L 在 **48 / 50** 关闭，旗标 50 撤销。比 2246 的预期 47 多一张，多在 L4b2 拆行（L40-F1 列过的拆行风险）。
+  - `baStep2_closed : ∀ d, BAStep2 d`（8df84009）在 `main` 上，公理只有 `[propext, Classical.choice, Quot.sound]`；登记里不剩阶段 L 的钉文。「无条件」的意思是：`BAStep2` 是 `STStep2G` 的框架，只剩 Step 1 的五个结论作前提，由 V2a 消掉（0849 TC-F2，本来如此）。
+  - 子阶段 T 的最后一个条件（0849 O5）也由此消掉。
+- (2) **LC-1（过时的 Lean 文档注释，只改注释）：** `BA/LWPinsBA.lean:20, :44, :46, :48`（"owed: BA-L6"），`BA/Step2CloseBA.lean:201`，`Graph/BAGGExp.lean:78`（"owed: BA-L2c"）。下一张碰这三个文件的票把这几行放进可写范围（多半是第一张导入 `LWPinsBA` 的 V 票）。`BALWtermEXP` 的注释改为 "superseded by `BALWtermEXPTw` (T2490/T2494); no producer; do not read"。现在不开票（§299）。
+- (3) **LC-2（paper-deltas 账本）：** `docs/paper-deltas.md` 最后一次写入是 2026-10-12 15:10 UTC（D636–D691）。之后合并的阶段 L 行的候选还没编号：T2450、T2456、T2464、T2466、T2469、T2472、T2483、T2488、T2489、T2490、T2494，以及 §269 (8) 推迟的 `T2398a`、`T2433a`、`T2448b` 和 G2/G4/G5/G6 门候选。做法：一节补账，按论文位置去重，照 TLC-3 的样子；`T2494a` 与 `T2494c` 是同一个论文缺口（BA 的 `(eq:directG1/2)` 里的 `|M_{yx}|` 项，`B_graphical_lemmas.tex:286-288`），记一条。这是调度簿记，不是票；交给调度 V4（HANDOFF §5）。
+- (4) **LC-3（ROUTES）：** BA 格子里阶段 L 一句的开头改为「阶段 L 关闭于 48 / 50（监督 2026-10-13-0947）」，并记上：V1-BA 读 `BALWtermEXPTw` / `BALWCutExpTw`（七个前提），不读五前提的 `BALWtermEXP`（`LWPinsBA:49`，没有出处）。本节一并改完。
+- (5) **O4（V 的接口，写 V 票时照用）：** V2a 用 `baLWterm_holds`、`baLWtermExp_holds` 消掉 `baStep2Decay_holds`、`baSTLWB_of`、`baSTLWT_of` 的钉文前提，类型完全对上，不需要包装。V1-BA 读 `baLWtermEXPTw_holds`、`baLWCutExpTw_holds`，TL1、TL2 按 `u` 取（1354 TLC (b)），`LWAvgLawgL` 取自 `STAvgUgL`。
+- (6) **T2496b 的状态：** Jun 在中枢会话里于 11:59 UTC 暂停了 U4s3b 在 Amend 2 下的 1b 重跑（约 17 分钟时停下，没有提交；`t/T2496b` 停在 462b5e09）。中枢循环已停。恢复时照 state 文件：在 `t/T2496b` 上按 Amend 1 + Amend 2 重跑 U4s3b 的 1b（prover-hard，skipPreflight），然后审计。
+- (7) 计数：BA 182（O5，不变）；T 27 / 34.5（关闭）；**L 48 / 50（关闭）**；U 26 / 42；V 0 / 12；M/N 3 / 15。

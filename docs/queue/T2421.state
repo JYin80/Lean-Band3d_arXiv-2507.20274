@@ -1,4 +1,4 @@
-state: audit-pass
-reason: (a′) PASS under Amend 1, prover-hard 6e83091 (rerun after the API limit), audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Sun Oct 11 12:22:18 UTC 2026
+state: merged 631b8f4
+reason: audit PASS round 1 (claude-opus-5-5) under Amend 1; new BA/TwistPins (962 lines, stop 2000), Test/Axioms.lean owed lines BATwistAvgLaw and BATwistLoopLaw (3-way onto main, H23 b), root import; full lake build 4234 jobs; pushed
+updated: Sun Oct 11 12:22:20 UTC 2026
 reports: docs/reports/T2421-prove.md, docs/reports/T2421-audit.md

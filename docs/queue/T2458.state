@@ -1,4 +1,4 @@
-state: audit-pass
-reason: preflight PASS, prover-hard 48a7583, audit PASS round 1 (claude-opus-5-5); merging (rule A)
-updated: Mon Oct 12 15:05:25 UTC 2026
+state: merged 1debc23
+reason: audit PASS round 1 (claude-opus-5-5); new Chain/Step5Gen (666 lines); targets 1-10, 12-15; target 11 moved to U4s3 (T2457 unmerged, allowed by the ticket); root import added at merge (the branch had none); full lake build 4282 jobs; pushed
+updated: Mon Oct 12 15:05:27 UTC 2026
 reports: docs/reports/T2458-prove.md, docs/reports/T2458-audit.md
