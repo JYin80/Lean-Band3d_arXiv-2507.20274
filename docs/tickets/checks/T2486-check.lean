@@ -1,5 +1,5 @@
 /-
-Release check for T2486 (dispatcher V3, 2026-10-13 03:12 UTC; DECISIONS §287).  U U2-BA (sub-stage U, BA side): the BA twin of U2 = T2480,
+Release check for T2486 (Amend 1: target 2 (c) pin, DECISIONS §290 (2); dispatcher V3, 2026-10-13 03:12 UTC; DECISIONS §287).  U U2-BA (sub-stage U, BA side): the BA twin of U2 = T2480,
 in the new leaves `BA/KDecayBA.lean` (target 1, reserve `BA/KDecayBA2.lean`), `BA/SEforLnBA.lean` (targets 2-5) and
 `BA/B45BA.lean` (targets 6-8).  No merged file is edited (outside the certificate lane).
 Target 1 is `BAKcalDecay`, the BA proof of the far-decay segment of `Induction/KDecay.lean` (§1-§8, `:52-998`, class (t)) at
@@ -209,12 +209,14 @@ def T2486_BAOneLoop (d : ℕ) : Prop :=
       (baFMz sz z).K n u (fun _ : Fin 1 => σ) (fun _ => a) =
         if σ then (baFMz sz z).m n else (starRingEnd ℂ) ((baFMz sz z).m n)
 
-/-- **Target 2 (c)** (binding): the loop form, the two compatibility facts at the BA flow matrix (owner note (1) of the ticket). -/
+/-- **Target 2 (c)** (binding; **Amend 1**, supervisor 0349 U5S-C1): the two compatibility facts at the BA flow matrix for
+every `sz, lam0, E` (unguarded, as the merged shape `Chain/Step34GenTw.lean:84-86`; read by T5-BA's `hC`, `GridGoodGen:853`),
+and the loop form under the flow (it needs `0 < Im m`; read under the flow as `hL`, `GridGoodGen:848-849`). -/
 def T2486_BACarrierFacts (d : ℕ) : Prop :=
-  ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
-    StepDecompGen_LoopForm (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (BAflowEs sz z) ∧
-      Step34Gen_LCompat (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (sz.seqHflowBA (BAflowLam0 sz z)) ∧
-      Step34Gen_KCompat (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z))
+  (∀ (sz : Sizes d) (lam0 E : ℕ → ℝ),
+      Step34Gen_LCompat (baStep2Mat sz lam0 E) (sz.seqHflowBA lam0) ∧ Step34Gen_KCompat (baStep2Mat sz lam0 E)) ∧
+  (∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
+      StepDecompGen_LoopForm (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) (BAflowEs sz z))
 
 /-- **Target 2 (c)** (binding): the flow facts of the BA tuple (`κm = κ`; `EMn2BA_T0_lt_one`, `EMn2BA_mF_data`). -/
 def T2486_BAFlowFacts (d : ℕ) : Prop :=
