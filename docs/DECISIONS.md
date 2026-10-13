@@ -2962,3 +2962,32 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
     - 公开的泛型最终包络 `gridDriftNg_envelope_ev` 已合并（D5）。
 - (2) 这批（§299）还剩两张：T2493b（U5d-2，1b 在跑）、T2496（U4s3a 按 Amend 1 重跑 1b）。仍不放新票。
 - (3) 计数：BA 182；T 27 / 34.5（已关闭）；U 26 / 42；**L 48 / 50（全部合并，收尾 REQ 待复）**；M/N 3 / 15；V 0 / 12。
+
+## §303 — U5d 完成；这批只剩 U4s3（总调度 V3，2026-10-13 09:47 UTC）
+
+- (1) **合并**：**T2493 U5d-2** f7470f58（09:41；`BA/Step5IIIWalk2` 1,067；目标 6–8；审核 PASS）→ **U5d 完成**（U5d-1 1,799 + U5d-2 1,067 = 2,866，1a 估 3,050，比值 0.94）。登记：H278 (3) 批准的 `owedProps` 行 `RBM.BA.STDecayStronggL` 已加（它是 `baStep5III_walk_at` 的前提）；`BAStep5IIIGood` 那行不需要。`BAStep5IIIEMatrix` 那行已在 U5d-1 删掉。→ U5e（U5 的最后一行，BA 的目标）现在可写，但按 Jun 的话（§299）不写。
+- (2) 这批只剩 **T2496（U4s3）**：U4s3a 按 Amend 1 重跑 1b，之后 U4s3b。仍不放新票。
+- (3) 计数：BA 182；T 27 / 34.5（关闭）；U 26 / 42；L 48 / 50（全部合并，收尾 REQ 待复）；M/N 3 / 15；V 0 / 12。
+
+## §304 — U4s3a 合并（第一次原地转换）；这批只剩 U4s3b（总调度 V3，2026-10-13 11:23 UTC）
+
+- (1) **T2496 U4s3a** e89f5609（11:14；原地改 `Induction/LemDecCalELip`、`Induction/EtermsMid`，新增 `Induction/EtermsMid2`（1,800 规则的备用文件，由 `EtermsMid` 导入）；目标 1–5；`STEtermsMidgL` 的负责人注释已改；审核 PASS）。全量构建 4,371 个作业，**所有带状读者都照常编译**（G1 成立）。
+  - **UP-C2 (d) 校准**：U4s3a 原地新增 1,411 行，预测 921（×1.53）。整张票的检验线 3,540 还剩 2,129 留给 U4s3b。超过检验线，以后的行就回到新文件布局；最终判断在 U4s3b 合并之后。
+- (2) 这批（§299）只剩 **U4s3b**（`DuhamelI`、`DuhamelII` 原地 + 新文件 `DuhamelI2`；目标 6–10），已在 `t/T2496b` 叠加开工。仍不放新票。
+- (3) 计数不变：BA 182；T 27 / 34.5（关闭）；U 26 / 42；L 48 / 50（全部合并，收尾 REQ 待复）；M/N 3 / 15；V 0 / 12。
+
+## §305 — T2496（U4s3b）Amend 2：批准 A10、A11（网格律、厄米游走），U4s3b 的 1b 重跑（总调度 V3，2026-10-13 11:40 UTC）
+
+- (1) **U4s3b 的 1b 在写 Lean 之前停下**（11:35，1b 开头做名字级核对）：目标 8、9（以及目标 7 的分段部分）要读网格游走的两个事实，在前提行 1–11 和 A6–A9 里都找不到出处：
+  - **G5**：网格的律与矩阵层可测性。`STGridMartgL` 不带律参数；D2 的 `Hm` 是存在量词，和 `Pp` 不挂钩。
+  - **G6**：厄米游走。
+- (2) **Amend 2（`docs/tickets/T2496-amend-2.md`）**：
+  - **A10**：不设守卫的族前提 `hGrid : ∀ sz z, Step2EventsGen_Grid (mk sz z) (law sz)`。
+  - **A11**：不设守卫的族前提 `hHerm`（`Hpath` 厄米）。
+  - 两条都照已合并的 `OptL2Gen`/`Step2IterGen2` 的写法；带状和 BA 的消法都在探针 B 里编译过（BA：`Step2EventsGenTw_baGrid`、`baStep2Mat_Hpath_herm`，对每个 `sz z` 都成立，不需要流）。
+  - 另外三条：
+    - 确认 `Step2IterGen_K2` 也进目标 8、9 的前提表；
+    - 准许 `DuhamelI` 导入 `Chain/GridRepTailGen2`（在上游，不成环）；
+    - `DuhamelI` 预测超过 1,800 行时，D1 和逐路径界（§5）挪到新文件 `DuhamelI2`（挪动的行不计入 UP-C2 (d)）。
+  - 冻结名照 G1 不变。
+- (3) 属于这批（§299）：T2496 接着做，不算新票。UP-C2 (d)：U4s3a 原地新增 1,411 行，U4s3b 预计新增约 800，加上 A10、A11 之后仍远低于检验线 3,540。
