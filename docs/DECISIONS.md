@@ -2842,3 +2842,28 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
     - 名字级表格放 1b 开头。
 - (4) **开工顺序**：T2493 占下一个空位。
 - (5) 在跑：T2486b（U2-BA (b)）、T2489b（L4b2b）、T2491（U3s2 设计门）、T2492（T5-BA）。排队：T2493。下一张票号 T2494，下一节 §296，下一条 H277。待写：U4s3（可写）、U3s3、U3s4、U1s2、L5（带 L6，含 L4a2 的闭合）、U5e（U5d 之后）、T7-BA。
+
+## §296 — U2-BA 完成；放 L5（带 L6，最后一张终端票）= T2494、T7-BA = T2495（总调度 V3，2026-10-13 06:59 UTC）
+
+- (1) **合并**：**T2486 U2-BA (b)** 5fbefff2（06:30；`BA/B45BA` 399；目标 6–8；审核 PASS）→ **U2-BA 完成**（`KDecayBA` 885、`SEforLnBA` 371、`B45BA` 399）。
+  - 按监督 0349 O5（U5S-C4），四个 BA 载体事实（`LoopForm`、`LCompat`、`KCompat`、`FlowFacts`）和 UN-C3 的 BA `WardCls` 的负责人改为 U2-BA：ROUTES 与 DECISIONS 照此记；T5-BA、U3-BA (a)、U4-BA、U1-BA 都读它。
+  - T2493（U5d）已开工。
+- (2) **监督对 `REQ-2026-10-13-0545-Uplan` 还没回复**（06:41 那轮没有出文件）。它不阻塞，照常推进；回复到了再落账。本节放的两张票都不在 U 阶段。
+- (3) **放 T2494 = L5（带 L6）**（BA-L；L 47 / 50，拆则 48 = 预测；BA 176；`prover-hard`，预签可换 `prover-max`；无设计门；新增 `Graph/BATermHolds`、`BATermHoldsB`、`BALWOut`，备用 `BATermHoldsC`；1,870 / 2,240 / 3,850；预签在 A | B + C 拆）。
+  - 目标：
+    - `baLWterm_holds`；
+    - 两种区间（`1 − t ≤ λ²/L²` 与 `>`）下的 `baLWtermExp_holds`；
+    - **`baStep2_closed : ∀ d, BAStep2 d`**（BA Step 2 全闭）；
+    - L6 / T2490 的目标 5：`baLWCutExpTw_holds`、`baLWtermEXPTw_holds`；
+    - 实例；
+    - 登记去掉 `BALWterm` 等三行，并改相关负责人注释。
+  - T2387 §8 (6) 的收尾条件列为验收项 (i)–(ix)。
+  - 开工条件：A 行现在开工；B 行要等 A 行审核 PASS，而且 T2489b（L4b2b）已合并（它读 `baExp14bS2_holds`）。
+  - 合并后发阶段 L 的收尾 REQ（2246 O1）。
+- (4) **放 T2495 = T7-BA**（BA-T；T 27 / 34.5，拆则 28；BA 177；`prover`；无设计门；新增 `BA/DecayLoopBA`；140 / 215 / 360）。
+  - 内容：BA 上的均匀圈衰减 `baDecayLoopU_of`（`𝒦` 的远端衰减由 `baKcalDecay_holds` 给出）、`baFlow_sizeInv_le`（公开）、逐时刻与单时刻的读法、`twSteps` 合取项 1 和 4、L-桥，以及实例。
+  - 阶段 L 的两个钉文先作精确类型前提；1b 开始时若 T2494 已合并，无条件读法只出现在实例部分。
+  - **T 的最后一行。**
+- (5) **开工顺序**（有空位时）：**T2494 → T2495**。
+- (6) 计数：BA 177；T 27 / 34.5（T7-BA 是最后一行；预期终点 27–28）；U 22 / 42（U3s2 若拆三行则 24；重推计划 ≈ 45，REQ 待回复）；L 47 / 50（预测 48）；M/N 3 / 15；V 0 / 12。
+- (7) 在跑：T2489b（L4b2b）、T2491（U3s2 设计门）、T2492（T5-BA）、T2493（U5d）。排队：T2494 → T2495。下一张票号 T2496，下一节 §297，下一条 H278。待写（U 行等 Uplan 回复后再放）：U4s3、U3s3、U3s4、U1s2、U5e（U5d 之后）、U-BA 各行。
