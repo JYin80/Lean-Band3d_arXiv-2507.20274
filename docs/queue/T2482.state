@@ -1,0 +1,4 @@
+state: audit-pass
+reason: U5b-1 prover-max e1cfd825; audit round 1 PASS on all items except the registry pre-check, which H271 (3) resolves with an owedProps line at merge (no repairer, no round 2); merging U5b-1 (rule A)
+updated: Tue Oct 13 04:14:57 UTC 2026
+reports: docs/reports/T2482-prove.md, docs/reports/T2482-1a-audit.md, docs/reports/T2482-audit.md

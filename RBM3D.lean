@@ -565,6 +565,7 @@ import RBM3D.Graph.BAMomentExpGen
 import RBM3D.Chain.B45Gen
 import RBM3D.Chain.GridAssemblyGen
 import RBM3D.Chain.IniTermIIGen
+import RBM3D.BA.Step5IIIEdet
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
