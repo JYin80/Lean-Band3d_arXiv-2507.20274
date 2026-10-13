@@ -1,4 +1,4 @@
 state: audit-pass
-reason: X1b-1 (targets 1-4) prover-hard 03f828ee, audit PASS round 1 (claude-opus-5-5); merging X1b-1 (rule A)
-updated: Tue Oct 13 00:25:59 UTC 2026
-reports: docs/reports/T2479-prove.md, docs/reports/T2479-audit.md
+reason: X1b-1 merged 82deb62b; X1b-2 (t/T2479b) prover-hard 9bedb306, audit PASS round 1 (claude-opus-5-5); merging X1b-2 (rule A)
+updated: Tue Oct 13 00:55:43 UTC 2026
+reports: docs/reports/T2479-prove.md, docs/reports/T2479-audit.md, docs/reports/T2479b-prove.md, docs/reports/T2479b-audit.md
