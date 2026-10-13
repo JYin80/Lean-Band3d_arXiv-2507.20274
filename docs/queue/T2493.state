@@ -1,4 +1,4 @@
-state: audit-pass (U5d-1 merging)
-reason: U5d-1 (BA/Step5IIIWalk, targets 1-5 + per-time layer) audit PASS claude-opus-5-5; merging. U5d-2 (BA/Step5IIIWalk2, targets 6-8) on t/T2493b needs a short REQ before its 1b (ticket split rule)
-updated: Tue Oct 13 08:00:34 UTC 2026
-reports: docs/reports/T2493-prove.md, docs/reports/T2493-audit.md
+state: audit-pass (U5d-2 merging)
+reason: U5d-2 (BA/Step5IIIWalk2, targets 6-8) on t/T2493b stacked on t/T2493: running wf_6da7c1be-404 (prover-max 1b, skipPreflight → auditor); no REQ (H280 (2))
+updated: Tue Oct 13 09:41:33 UTC 2026
+reports: docs/reports/T2493-prove.md, docs/reports/T2493-audit.md, docs/reports/T2493b-prove.md, docs/reports/T2493b-audit.md

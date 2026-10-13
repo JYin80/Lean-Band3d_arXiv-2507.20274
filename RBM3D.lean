@@ -596,6 +596,7 @@ import RBM3D.Graph.BATermHoldsB
 import RBM3D.Graph.BALWOut
 import RBM3D.Chain.NQEndLinGen
 import RBM3D.Chain.NQEndFlowGen
+import RBM3D.BA.Step5IIIWalk2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
