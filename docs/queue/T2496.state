@@ -1,4 +1,4 @@
-state: proving (U4s3a merged e89f5609)
-reason: U4s3b 1b resumed under Amend 1 + Amend 2 on t/T2496b (prover-hard, skipPreflight → auditor), wf_d2f59162-2a4 (CONTROL H286 (2)).
-updated: Tue Oct 13 16:45:53 UTC 2026
-reports: docs/reports/T2496-prove.md, docs/reports/T2496-1a-audit.md, docs/reports/T2496-audit.md, docs/reports/T2496b-prove.md
+state: audit-pass (U4s3a merged e89f5609)
+reason: U4s3b (wf_d2f59162-2a4): 1b prover-hard 038fbef5 on t/T2496b; audit PASS round 1 (claude-opus-5-5) on targets 6-10; merging (rule A), full lake build running.
+updated: Tue Oct 13 17:51:39 UTC 2026
+reports: docs/reports/T2496-prove.md, docs/reports/T2496-1a-audit.md, docs/reports/T2496-audit.md, docs/reports/T2496b-prove.md, docs/reports/T2496b-audit.md
