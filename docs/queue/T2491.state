@@ -1,4 +1,4 @@
-state: audit-pass
-reason: U3s2a (targets 1-6) prover-hard ae93f0a2, audit PASS round 1 (claude-opus-5-5); merging U3s2a (rule A)
-updated: Tue Oct 13 07:38:30 UTC 2026
-reports: docs/reports/T2491-prove.md, docs/reports/T2491-1a-audit.md, docs/reports/T2491-audit.md
+state: audit-pass (U3s2b merging)
+reason: U3s2a (Chain/NQGood1Gen 836, NQGood2Gen 687; targets 1-6) merged on audit PASS (claude-opus-5-5). U3s2b (NQBudgetGen + NQLinGen, targets 7-10) on t/T2491b stacked on t/T2491: running wf_08d91eec-869 (prover-hard 1b, skipPreflight → auditor); U3s2c (NQEndLinGen + NQEndFlowGen, targets 11-15) after U3s2b audit PASS
+updated: Tue Oct 13 08:19:59 UTC 2026
+reports: docs/reports/T2491-prove.md, docs/reports/T2491-1a-audit.md, docs/reports/T2491-audit.md, docs/reports/T2491b-prove.md, docs/reports/T2491b-audit.md
