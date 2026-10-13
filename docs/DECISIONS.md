@@ -2688,3 +2688,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 论文差异候选 T2480c（审核 §7 的四项）合并时编号。
 - (3) 计数不变：BA 163；T 24 / 34.5（T1 完成）；U 16 / 42；L 42 / 50（预期 47）；M/N 3 / 15；V 0 / 12。
 - (4) 在跑：T2473b（T4s2b）、T2482（U5b 设计门）、T2483b（L3d2b-2）、T2484（U4s2 设计门）；T2480b 等本节签字后合并。排队：T2485（等 T2482 的 1a-audit PASS）→ T4s2c（等 T4s2b 审核 PASS）。下一张票号 T2486，下一节 §287，下一条 H268。待写不变（§285 (6)），U2-BA 加上 (2) 的 `KerSums`。
+
+## §287 — U2 完成；T2482 1a-audit PASS（U5b 拆两行 = U5 第六行，发通知 REQ；U5c 开工条件满足）；放 U2-BA = T2486、T1-BA = T2487（总调度 V3，2026-10-13 03:14 UTC）
+
+- (1) **合并与状态**：**T2480 U2b** 78f4cc14（02:43；`Chain/B45Gen`；目标 7 的类按 §286 (2) 签字）→ **U2 完成**（U2a 650a122d + U2b）。**T2482（U5b）1a-audit PASS**（03:01）：预签拆 U5b-1 / U5b-2 确认（1a 中心 2,450 = 1,262 + 1,188），束文本 `T2482_BAScalar`/`T2482_BAMatrix` 没变（1a-audit `:30-34`），不需 1b 前 REQ；U5b-1 的 1b（prover-max）在跑。→ **U5 第六行**，按 T2482.md:9 发通知 REQ；U 17 / 42，BA 164。**T2485（U5c）开工条件满足**（束文本没变，T2485 停止规则 2 不触发），占下一个空位。
+- (2) **发 `REQ-2026-10-13-0314-U5six`**（不阻塞）：U5 第六行；U2-BA、T1-BA 的重新定价与两条"一份证明"的归属。
+- (3) **放 T2486 = U2-BA**（U 18 / 42，拆则 19；BA 165；`prover-hard`；无设计门（目标 1 的槽图直径界写不出来时退回窄门 D1，预签）；新增 `BA/KDecayBA`（备用 `KDecayBA2`）、`BA/SEforLnBA`、`BA/B45BA`；1,350 / 1,950 / 3,000；预签拆 (a) 目标 1–5 / (b) 目标 6–8（叠加 `t/T2486b`），1a 定）：`BAKcalDecay`（`KDecay` §1–§8 的 BA 孪生）、UN-C3 的唯一 BA `WardCls` 证明、四个小载体事实、U2 目标 3–9 的 BA 读法。答复：(1) 四个小载体事实按"先写者"归这里，T5-BA、U3-BA (a)、U4-BA 读；(2) ε-free 的私有拷贝；(3) `KerSums` 同电荷对加 `BAMB_shift` + `BAMB_symm`（§286 (2) 的来源只覆盖混合对）；(4) `WardCls` 走 `baKcac_isKLoopS` + `baK_unique`；(5) WardIdent 桥归 U4-BA (b)；(6) 无设计门，C6 数在 1a 更新，超 2,925 或 U2 + 孪生超 5,310 就在 1a 发通知；(7) 一圈证明归 T1-BA，本行 2 (b) 是 `.1` 一行桥，1b 最后写，T2487 没合并就在这一项停；(8) 名字级表格放 1b 开头。
+- (4) **放 T2487 = T1-BA**（T 25 / 34.5，拆则 26；BA 166；`prover-hard`；无设计门；新增 `BA/Step2IterBA`（备用 `Step2IterBA2`）、`BA/Step2CloseBA`；1,000 / 1,450 / 2,350；预签拆在文件边界）：BA Step 2 `baStep2_holds : … → BAStep2`，经 T1 已合并的骨架；目标含厄米路、**唯一的 `baKsol_one` 一圈证明**、ListLink、K2、newKLK（每载体的私有拷贝，常数显式，F1）、`STBdatagL`、P3 `baScaleExists_holds`、`baSTOptL2gL_holds`、GMN-C1 的 BA 读者（输入取 `STGijDecgL`）、骨架的私有拷贝（一圈输入放到流之下，F2）、实例。答复：(1)(2) 两份私有拷贝；(3) **BA `STGijDecgL` 在这里证**（由 `baGbEXPij'_holds`），条件是 1a 定价 ≤ 100 行，那时登记负责人从 U4-BA 改成 T1-BA，U4-BA 读它；否则照草稿作精确类型输入；(4) 预签拆；(5) 每时刻读法不导出；(6) 本行拥有一圈证明，`baStep2_oneLoop` 改名要报告；(7) 无设计门；(8) T 25 / 34.5，BA 166；(9) 名字级表格放 1b 开头。
+- (5) **开工顺序**（有空位时）：**T2485 → T2487 → T2486**；T4s2c 在 T4s2b 审核 PASS 后占当时第一个空位。
+- (6) 计数：BA 166；T 25 / 34.5；U 18 / 42（U2-BA 拆则 19）；L 42 / 50（预期 47）；M/N 3 / 15；V 0 / 12。
+- (7) 在跑：T2473b（T4s2b）、T2482（U5b-1 1b）、T2483b（L3d2b-2）、T2484（U4s2 设计门）。排队：T2485 → T2487 → T2486；T4s2c。下一张票号 T2488，下一节 §288，下一条 H269。待写：U3s2–U3s4（等 T4s2 b/c）、U4s3（等 T4s2）、U1s2、L3d1（G4）、L4b2、L4a2、L5（带 L6）、T5-BA（含 T4-BA 欠项与 WalkForm）、U5d（U5a–c 之后）、U5e。
