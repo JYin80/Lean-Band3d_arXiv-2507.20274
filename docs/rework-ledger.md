@@ -39,3 +39,4 @@
 | T2475 | 2026-10-12 23:23 UTC (35b7d6cb) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | BA M/N C5g：设计门 D1–D2 → 探针 → 1a-audit PASS → 1b → 审核 PASS 第一轮；新 `RandomLayerBG` 526 + 叶 `BA/RandomLayerBGBA` 219 行 |
 | T2476 | 2026-10-12 23:51 UTC (0f3ecb6b) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | BA M/N N3a：窄设计门 D1（bulk 窗口）→ 探针 → 1a-audit PASS → 1b → 审核 PASS 第一轮；原地改 `Jak`、`Uyw` + 新叶 `BA/EMCTE2BA` 986 行；公理对比不变 |
 | T2472 | 2026-10-12 22:30 / 2026-10-13 00:08 UTC (c4b39007, d1eb95ac) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | BA-L L3d4：G5 设计门 → 探针 → 1a-audit PASS（拆 L3d4a/L3d4b）→ 两半 1b → 审核都 PASS 第一轮；新 `Graph/BAProv` 877 + `BAProvB` 1,238 行 |
+| T2479 | 2026-10-13 00:26 / 00:55 UTC (82deb62b, 16861112) | prover-hard | Sonnet 5.5 effort xhigh | 是 | U X1b（新增布局）：1a（中心 2,141，预签拆 X1b-1/X1b-2）→ 两半 1b → 审核都 PASS 第一轮；新 `Evolution/CltMoments2G` 729、`MeanFarG` 869、`CltFarG` 1,070 行 |
