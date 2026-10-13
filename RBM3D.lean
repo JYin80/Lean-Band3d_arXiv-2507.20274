@@ -585,6 +585,8 @@ import RBM3D.BA.B45BA
 import RBM3D.Graph.BAExp14b2B
 import RBM3D.BA.GridDriftBA
 import RBM3D.BA.GridGoodBA
+import RBM3D.Chain.NQGood1Gen
+import RBM3D.Chain.NQGood2Gen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
