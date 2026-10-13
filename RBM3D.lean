@@ -559,6 +559,8 @@ import RBM3D.BA.Step5IIIKer
 import RBM3D.BA.Step5IIIKer2
 import RBM3D.Chain.GridGoodGen
 import RBM3D.Chain.GridEnvelopeGen
+import RBM3D.Chain.OptL2Gen
+import RBM3D.Chain.Step2CloseGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

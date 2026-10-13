@@ -1,4 +1,4 @@
 state: audit-pass
-reason: rule-(B) repair (a′), 1a-audit round 2 PASS (split confirmed), T1a prover-hard 1f0c2b4e, audit PASS round 1 (claude-opus-5-5); merging T1a (rule A)
-updated: Tue Oct 13 00:40:56 UTC 2026
-reports: docs/reports/T2478-prove.md, docs/reports/T2478-1a-audit.md, docs/reports/T2478-audit.md
+reason: T1a merged 6039f7ed; T1b (t/T2478b) prover-hard 3166b5d9, audit PASS round 1 on 7-10, 12 (claude-opus-5-5) and target 11 signed off as delivered (H266 (3), DECISIONS §285 (4)); merging T1b (rule A)
+updated: Tue Oct 13 02:24:32 UTC 2026
+reports: docs/reports/T2478-prove.md, docs/reports/T2478-1a-audit.md, docs/reports/T2478-audit.md, docs/reports/T2478b-prove.md, docs/reports/T2478b-audit.md
