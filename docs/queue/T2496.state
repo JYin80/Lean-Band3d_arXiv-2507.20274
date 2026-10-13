@@ -1,4 +1,4 @@
-state: held (U4s3a merged e89f5609)
-reason: paused by Jun in the hub session (Tue Oct 13 11:59:26 UTC 2026): the U4s3b 1b rerun under Amend 2 (wf_b9fdfc3c-2ed) was stopped about 17 min in, before any commit (t/T2496b at 462b5e09, merge of main only; any draft is in the session scratchpad T2496b/r2). The hub loop is stopped. To resume: rerun the U4s3b 1b under Amend 1 + Amend 2 on t/T2496b (prover-hard, skipPreflight), then the auditor.
-updated: Tue Oct 13 11:59:26 UTC 2026
+state: proving (U4s3a merged e89f5609)
+reason: U4s3b 1b resumed under Amend 1 + Amend 2 on t/T2496b (prover-hard, skipPreflight → auditor), wf_d2f59162-2a4 (CONTROL H286 (2)).
+updated: Tue Oct 13 16:45:53 UTC 2026
 reports: docs/reports/T2496-prove.md, docs/reports/T2496-1a-audit.md, docs/reports/T2496-audit.md, docs/reports/T2496b-prove.md

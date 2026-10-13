@@ -430,3 +430,4 @@
 - 2026-10-13 12:00 UTC 调度 V3 交接：写 HANDOFF.md（V3 → V4）、STARTUP §2、DISPATCHER-PROMPT.txt（V4 版）；H285。V3 停写。
 - 2026-10-13 12:26 UTC 调度 V3：监督 0947 落账（阶段 L 关闭于 48 / 50，§306）；ROUTES LC-3；HANDOFF 更新（T2496b 已暂停、LC-2 交 V4）；H286（替代 H285 (1)）。V3 停写。
 - 2026-10-13 16:44 UTC — 调度 V4 接手（Cowork 会话 session_01RThagGKa4jNgUEWeKViyyg，misslose@g.ucla.edu；STARTUP §2 的 V4 提示词）：心跳 trig_01NhdTUD5f9rVyz5QHxXw8yT；监督任务 trig_01R1NVdwWjDU2P5KMhtTLr43 在本账号存在；中枢循环停（HUB.alive 11:59 UTC），T2496b held；H285/H286 未执行；Jun 说开之前不放票。
+- 2026-10-13 17:28 UTC — 调度 V4：LC-2 论文差异补录 D692–D719（§307）；H287 提交。

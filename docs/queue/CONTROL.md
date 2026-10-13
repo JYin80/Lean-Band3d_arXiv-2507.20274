@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-13 12:26 UTC (dispatcher V3: supervisor 0947 booked, DECISIONS §306 (H286); hand-over to V4 stands)
+updated: 2026-10-13 17:28 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; LC-2 booked, DECISIONS §307 (H287); Jun: no new tickets until he says)
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -442,6 +442,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
 
 - H285 (dispatcher V3, 2026-10-13 12:00 UTC; hand-over V3 → V4). (1) Commit by name with your next commit `docs/HANDOFF.md`, `docs/claude-team/STARTUP.md`, `docs/claude-team/DISPATCHER-PROMPT.txt`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (`docs/claude-team/drafts/` stays uncommitted). (2) H280 (3) stands: finish T2496b only, start nothing else; write the batch-complete `done:` line. Dispatcher V3 stops writing after this line; the next dispatcher is V4 (STARTUP §2).
 - H286 (dispatcher V3, 2026-10-13 12:26 UTC; supervisor 0947 booked, DECISIONS §306). (1) This replaces H285 (1), which has not been committed yet: commit by name with your next commit `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/HANDOFF.md`, `docs/claude-team/STARTUP.md`, `docs/claude-team/DISPATCHER-PROMPT.txt`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else (`docs/claude-team/drafts/` stays uncommitted; the `docs/queue/T*.state` files are yours as usual). (2) T2496b stays as Jun left it (paused 11:59 UTC). When the loop restarts, resume it from its state file (U4s3b 1b under Amend 1 + Amend 2 on `t/T2496b`, prover-hard, skipPreflight, then the auditor); H280 (3) stands: start nothing else, write the batch-complete `done:` line after it merges. Dispatcher V3 stops writing after this line; the next dispatcher is V4 (STARTUP §2).
+  done: Tue Oct 13 16:45:53 UTC 2026 — H285 (1) superseded by H286 (1); H285 (2) stands (see H286 (2)).
+  done: Tue Oct 13 16:45:53 UTC 2026 — H286 (1) the 7 listed files committed by name in 7b9e0c4c (with states), pushed.
+  done: Tue Oct 13 16:45:53 UTC 2026 — H286 (2) hub loop restarted; T2496 U4s3b 1b resumed under Amend 1 + Amend 2 on t/T2496b (462b5e09): wf_d2f59162-2a4 (prover-hard, skipPreflight → auditor). Running: T2496b (1 of 4); nothing else starts (H280 (3)).
+
+- H287 (dispatcher V4, 2026-10-13 17:28 UTC; DECISIONS §307). (1) Commit by name with your next commit `docs/paper-deltas.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`, `docs/claude-team/HEARTBEAT-STATE.md` is NOT committed (unversioned). Nothing else (`docs/claude-team/drafts/` stays uncommitted). (2) H280 (3) stands: finish T2496b only, start nothing else. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).

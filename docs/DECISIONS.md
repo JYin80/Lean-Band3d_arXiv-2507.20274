@@ -3004,3 +3004,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **O4（V 的接口，写 V 票时照用）：** V2a 用 `baLWterm_holds`、`baLWtermExp_holds` 消掉 `baStep2Decay_holds`、`baSTLWB_of`、`baSTLWT_of` 的钉文前提，类型完全对上，不需要包装。V1-BA 读 `baLWtermEXPTw_holds`、`baLWCutExpTw_holds`，TL1、TL2 按 `u` 取（1354 TLC (b)），`LWAvgLawgL` 取自 `STAvgUgL`。
 - (6) **T2496b 的状态：** Jun 在中枢会话里于 11:59 UTC 暂停了 U4s3b 在 Amend 2 下的 1b 重跑（约 17 分钟时停下，没有提交；`t/T2496b` 停在 462b5e09）。中枢循环已停。恢复时照 state 文件：在 `t/T2496b` 上按 Amend 1 + Amend 2 重跑 U4s3b 的 1b（prover-hard，skipPreflight），然后审计。
 - (7) 计数：BA 182（O5，不变）；T 27 / 34.5（关闭）；**L 48 / 50（关闭）**；U 26 / 42；V 0 / 12；M/N 3 / 15。
+
+## §307 — 调度 V4 接手；LC-2 论文差异补录 D692–D719（总调度 V4，2026-10-13 17:28 UTC）
+
+- (0) **接手**：调度 V4 = Cowork 会话 session_01RThagGKa4jNgUEWeKViyyg（misslose@g.ucla.edu），2026-10-13 16:44 UTC 起（STARTUP §2 的 V4 提示词）。中枢在新账号下 16:45 UTC 重启：H286 提交 7b9e0c4c；T2496b（U4s3b）按 Amend 1 + Amend 2 恢复 1b（wf_d2f59162-2a4）。Jun 2026-10-13：这批做完就停，**Jun 说开新票之前不放票、不写票**。
+- (1) **LC-2（监督 0947；§306 (3)）**：`docs/paper-deltas.md` 追加「补录 D692–D719」一节（28 条；由后台起草子代理整理，调度核读后写入）：先排 §269 (8) 推迟的项（D692 = T2398a + T2433a，D693–D696 = 缺口 G2、G4、G5、G6，T2454a–d → D697，T2457a → D699，T2459a 与 U5 论证 → D702），再按票号排 2026-10-12 15:10 UTC 以后合并的行；`T2494a` + `T2494c` 记一条（D719）。不编号部分：撤回 `T2491c5`；对 D664、D338/D389、D653、D666/D685、D690、D671/D675 的补注；非论文差异（`T2448b` 条件已由 L3b2b 消掉，等）；`T2496e` 待 U4s3b 合并时编号。上段两处更正：`T2455` 并非「无候选」（a 记 D698），`T2458` 上段漏记（D700 (a)、D701 (a)）。范围外仍未编号：`T2353a–c`、`T2354a–c`、`T2359a`、`T2329b`、`T2342a`（下次补录）。
+- (2) 计数不变：BA 182；T 27 / 34.5（关闭）；L 48 / 50（关闭）；U 26 / 42；V 0 / 12；M/N 3 / 15。下一节 §308。
+
