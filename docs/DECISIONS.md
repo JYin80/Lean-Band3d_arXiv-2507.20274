@@ -2754,3 +2754,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **开工顺序**（有空位时）：**T2482b（U5b-2）→ T2486**。U5b-2 在 U5 的关键路径上（U5d 读 `BAStep5IIIEdet` 3）；T2486 本来就要等 T2487 的一圈证明。
 - (3) 计数不变：BA 168；T 25 / 34.5；U 19 / 42；L 43 / 50（预期 47）；M/N 3 / 15；V 0 / 12。
 - (4) 在跑：T2473c（T4s2c）、T2484b（U4s2b）、T2487（T1-BA）、T2488（L3d1 设计门）。排队：U5b-2 → T2486。下一张票号 T2489，下一节 §292，下一条 H273。起草中：L4a2、L4b2（阶段 L）。待写：U5d（U5b-2 之后，或以 `T2482_BAEdet` 精确类型前提先写）、U3s2–U3s4（等 T4s2c）、U4s3（等 U4s2b、T4s2c）、T5-BA（等 T4s2c）、U1s2、L5（带 L6）、U5e。
+
+## §292 — T1-BA 合并（BA Step 2 只剩阶段 L 的两个钉文）；`STGijDecgL` 归 T1-BA；放 L4b2 = T2489、L4a2 = T2490（总调度 V3，2026-10-13 04:48 UTC）
+
+- (1) **合并**：**T2487 T1-BA** 268e07d4（04:39；`BA/Step2IterBA` 833、`BA/Step2CloseBA` 259；目标 1–12 加 9b；不拆；审核 PASS 第一轮）→ **T1-BA 完成**。`baStep2_holds : BALWterm d → BALWtermExp d → BAStep2 d`：**BA Step 2 只剩阶段 L 的两个钉文**（`BALWterm`、`BALWtermExp`，已登记，BA-L6）。唯一的一圈证明 `baStep2_oneLoop` 已合并 → T2486 的 2 (b) 可以照写（一行 `.1` 桥），不会停。U5b-2 已开工（`t/T2482b`）。
+- (2) **`STGijDecgL` 的负责人（监督 0349 O5 / U5S-C4）**：T2487 的 1a 走了情形 (3)（≤ 100 行，实际 10 行）→ **BA `STGijDecgL` 由 T1-BA 证出**（`baSTGijDecgL_holds`，`Step2CloseBA:66`，由 `baGbEXPij'_holds`），U4-BA 不再欠这一项。登记注释已由 T2487 改好（`Test/Axioms.lean:202`；`STGijGEXgL` 写「BA: not needed」）。ROUTES 的 U 行与 T 行同步写上。
+- (3) **放 T2489 = L4b2**（BA-L；L 44 / 50；BA 169；`prover-hard`，预签可换 `prover-max`；无设计门、无探针；新增 `Graph/BAExp14b2`（目标 1–3）+ `BAExp14b2B`（目标 4–7），备用 `BAExp14b2C`；1,220 / 1,550 / 2,720；预签拆在文件边界，拆则 L 45、预测 48）：证明已合并的 S2 钉文 `BAExp14bS2`（`BAExp14b:170`，L4b1 = T2434）——`lwExpI1K`/`I23K`/`I41K` 的扭转孪生，用 `(twL2', twK, twTr)`；P3 `‖𝔼X_c‖ ≺ 𝔟^{3/2}`（没有 `(1-t)⁻¹`）要经 `ω = Θ^{(+,+)}` 反解 `BAExp14a_e_eq`，仍需 `𝔼X ≺ 𝔟²` 时触发停止规则 S1。答复：TL1、TL2 照已合并 S2 文本保留（TL2 是精确类型前提，BA-V 每个 `u` 的项）；自成一行；两个文件；P3 用词干拷贝；排在 T2486 之后、T2490 之前。
+- (4) **放 T2490 = L4a2**（BA-L；L 45 / 50；BA 170；`prover-hard`；无设计门；新增 `Graph/BAExp14a2`，备用 `BAExp14a2B`；420 / 600 / 1,100（设计的 917 / 1,068 / 2,022 还含 L4a、L4b2 已覆盖的 I₁、I₄₁ 项）；预签拆在目标 2 | 3–6）：`lem:LWterm_EXP` 在 BA——`LWE → LWcut` 的约化、按类型读已合并的 S2 钉文把 S1–S3 组装成 `BALWCutExpTw`（探针 434–440 原文，绑定结论），七前提的后继 `BALWtermEXPTw` 钉在这里（L6 原样读）。答复：一行（选项 (b)）；不并 L4b2；TL1 留在绑定文本；闭合只在 1b 开始时 T2489 已合并才做，否则归最后一张终端票（L5 的最后一张，带 L6）；排在 T2489 之后。
+- (5) **开工顺序**（有空位时）：**T2486 → T2489 → T2490**。
+- (6) 计数：BA 170；T 25 / 34.5（T1-BA 完成；剩 T5-BA、T7-BA，预期终点 26–27）；U 19 / 42（U2-BA 拆则 20）；**L 45 / 50**（L40-C3 预测 47：剩 L5 带 L6 两行；任一行拆则 48）；M/N 3 / 15；V 0 / 12。
+- (7) 在跑：T2473c（T4s2c）、T2482b（U5b-2）、T2484b（U4s2b）、T2488（L3d1）。排队：T2486 → T2489 → T2490。下一张票号 T2491，下一节 §293，下一条 H274。待写：U5d（U5b-2 之后）、U3s2–U3s4、T5-BA（等 T4s2c）、U4s3（等 U4s2b、T4s2c）、U1s2、L5（带 L6，阶段 L 的最后一张）、U5e、T7-BA。
