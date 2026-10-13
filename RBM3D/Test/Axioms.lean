@@ -229,6 +229,10 @@ def owedProps : List Name :=
    -- T2480 (BA-U U2a, DECISIONS §280): the Step 2 outputs that the public theorems of `RBM3D/Chain/SEforLnGen.lean` take as hypotheses and nothing concludes
    `RBM.BA.STAvgUgL, -- `(Gt_avgbound_flow)` uniformly in `u ∈ [s,t]` over a flow carrier (`Chain/Step2Gen.lean:487`): hypothesis of `stSEforLn_part1g` (T2480); band: `STAvgU` (registered); owed like it: owner T1 / T1-BA (the Step 2 iteration)
    `RBM.BA.STStep2ConclgL, -- the three Step 2 conclusions that Steps 3-4 consume (`STLocalEntryUgL ∧ STAvgUgL ∧ STGdecayWgL`, `Chain/Step2Gen.lean:499`): hypothesis of `stSEforLnConclgL_of` (T2480); band: `STStep2Concl` (registered); owner T1 / T1-BA (the Step 2 iteration)
+   -- T2473 (BA-T T4s2a, DECISIONS §276 (3), answer (8)): the `≺` inputs that the public theorems of `RBM3D/Chain/GridGoodGen.lean` take as hypotheses and nothing concludes
+   `RBM.BA.STSEforLnConclgL, -- the four estimates of the `ℰ` terms (`lem:SEforLn`) over a carrier, flow matrix and law at one window (`Chain/Step34Gen.lean:210`): hypothesis of `gridGoodNConclg_of` (T2473); band: `stSEforLn_holds` (`SEforLn2:1287`) through `bandFM_STSEforLn`; owner U2 / U2-BA
+   `RBM.BA.STSEforLngL, -- the family form of `lem:SEforLn` over `(law, Flow, mkM, T0)` (`Chain/Step34Gen.lean:404`): hypothesis of `gridGoodNgL_of` (T2473); band: `bandFM_STSEforLn` with `stSEforLn_holds`; owner U2 / U2-BA
+   `RBM.BA.STEKDecaygL, -- `EKFastDecay` of an `ℰ`-term label function with coupling `sz.lam`, with high probability uniformly on the window, at a law (`Chain/Step34Gen.lean:516`): hypothesis of `gridGoodNConclg_of`, `gridGoodNgL_of` (T2473); band: `stEtermDecay` (`DecayLoopB:2209`) through `bandFM_STEKDecay`; owner U2 / U2-BA
    `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
 
 /-- Predicates that *define the objects under study* rather than assert a result about
@@ -297,6 +301,7 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STReg5II, -- Step 5 regime (ii); S5-01 (T2138, DECISIONS §40)
    `RBM.Gauss.Sizes.STReg5Mid, -- Step 5 window of cases (i)+(ii); S5-01 (T2138, DECISIONS §40)
    `RBM.Gauss.Sizes.STReg5III, -- Step 5 regime (iii); S5-01 (T2138, DECISIONS §40)
+   `RBM.Gauss.Sizes.STAny, -- the regime-free regime predicate `fun _ _ _ => True` (`Induction/Step34Pins.lean:272`; `ST_mainInd_iff_any`): argument of the family pins `STSEforLngL`, `GridGoodNgL` (`gridGoodNgL_of`, T2473), not a result
    `RBM.Univ.UNDens, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.IsRegular32, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
    `RBM.Univ.IsFreeConv32, -- bulk universality: condition on data (T2162 report (d) 4; T2174, UN-01)
