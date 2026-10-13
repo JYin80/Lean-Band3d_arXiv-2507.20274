@@ -1,4 +1,4 @@
 state: audit-pass
-reason: T4s2a merged 86eb22f2; T4s2b (t/T2473b) prover-hard ce109b72, audit PASS round 1 (claude-opus-5-5); merging T4s2b (rule A)
-updated: Tue Oct 13 03:14:03 UTC 2026
-reports: docs/reports/T2473-prove.md, docs/reports/T2473-1a-audit.md, docs/reports/T2473-audit.md, docs/reports/T2473b-prove.md, docs/reports/T2473b-audit.md
+reason: T4s2a 86eb22f2, T4s2b 4efcae69 merged; T4s2c (t/T2473c) prover-hard 61732d61, audit PASS round 1 (claude-opus-5-5); merging T4s2c (rule A)
+updated: Tue Oct 13 04:54:34 UTC 2026
+reports: docs/reports/T2473-prove.md, docs/reports/T2473-1a-audit.md, docs/reports/T2473-audit.md, docs/reports/T2473b-prove.md, docs/reports/T2473b-audit.md, docs/reports/T2473c-prove.md, docs/reports/T2473c-audit.md
