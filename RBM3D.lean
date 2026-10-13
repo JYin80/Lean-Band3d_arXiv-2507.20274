@@ -549,6 +549,8 @@ import RBM3D.BA.EMCTE2BA
 import RBM3D.Graph.BAProvB
 import RBM3D.Evolution.CltMoments2G
 import RBM3D.Evolution.MeanFarG
+import RBM3D.Chain.Step2IterGen
+import RBM3D.Chain.Step2IterGen2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
