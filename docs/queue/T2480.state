@@ -1,4 +1,4 @@
 state: audit-pass
-reason: U2a (split confirmed by the 1a) prover-hard 59c63b6d, audit PASS round 1 (claude-opus-5-5); merging U2a (rule A)
-updated: Tue Oct 13 01:16:20 UTC 2026
-reports: docs/reports/T2480-prove.md, docs/reports/T2480-audit.md
+reason: U2a merged 650a122d; U2b (t/T2480b) prover-hard df3973e4, audit PASS round 1 (claude-opus-5-5), target 7 class signed off as delivered (H267 (2), DECISIONS §286 (2)); merging U2b (rule A)
+updated: Tue Oct 13 02:43:11 UTC 2026
+reports: docs/reports/T2480-prove.md, docs/reports/T2480-audit.md, docs/reports/T2480b-prove.md, docs/reports/T2480b-audit.md
