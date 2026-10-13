@@ -573,6 +573,7 @@ import RBM3D.BA.Step2IterBA
 import RBM3D.BA.Step2CloseBA
 import RBM3D.Chain.AzumaProxyGen
 import RBM3D.Graph.BAAnpLift
+import RBM3D.BA.Step5IIIEdet2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
