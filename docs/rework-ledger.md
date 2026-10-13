@@ -53,3 +53,5 @@
 | T2490 | 2026-10-13 06:10 UTC (4e78c3da) | prover-hard | Sonnet 5.5 effort xhigh | 是（检查文件缺导入，调度补后重编） | BA-L L4a2：1a → 1b → 审核 PASS 第一轮；新 `Graph/BAExp14a2` 406 行；目标 5 的闭合挪到最后一张终端票 |
 | T2486 | 2026-10-13 05:54 / 06:30 UTC (7be99aae, 5fbefff2) | prover-hard | Sonnet 5.5 effort xhigh | 是（开工前 Amend 1：LCompat/KCompat 不设流前提，监督 0349 C1） | U U2-BA（BA 新文件）：1a（确认预签拆 (a)/(b)）→ (a) 1b、审核 PASS → (b) 1b、审核 PASS；新 `BA/KDecayBA` 885、`SEforLnBA` 371、`B45BA` 399 行 |
 | T2489 | 2026-10-13 06:16 / 07:13 UTC (6a1c1f8f, bbe91c0a) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-L L4b2：1a（确认拆两行）→ L4b2a 1b、审核 PASS → L4b2b 1b、审核 PASS；新 `Graph/BAExp14b2` 1,794、`BAExp14b2B` 1,174 行 |
+| T2492 | 2026-10-13 07:19 UTC (b3ead83b) | prover-hard | Sonnet 5.5 effort xhigh | 否（审核 RETURN 一次：实例多留 `hKb`/`hKw`，规则 (B) 修补） | BA-T T5-BA：1a（中心 1,758，不拆；F1：BA 漂移只在 WO 窗口之后）→ 1b → 审核 RETURN → 修补 → 第二轮 PASS；新 `BA/GridDriftBA` 757、`GridGoodBA` 1,330 行 |
+| T2495 | 2026-10-13 07:40 UTC (3238c365) | prover | Sonnet 5.5 | 是 | BA-T T7-BA：1a → 1b → 审核 PASS 第一轮；新 `BA/DecayLoopBA` 228 行；子阶段 T 的最后一行 |
