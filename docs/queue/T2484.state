@@ -1,4 +1,4 @@
 state: audit-pass
-reason: 1a PASS, probe 354ff913, 1a-audit PASS (split confirmed), U4s2a prover-hard 8162591d, audit PASS round 1 (claude-opus-5-5); merging U4s2a (rule A)
-updated: Tue Oct 13 03:42:48 UTC 2026
-reports: docs/reports/T2484-prove.md, docs/reports/T2484-1a-audit.md, docs/reports/T2484-audit.md
+reason: U4s2a merged ba7e559e; U4s2b (t/T2484b) prover-hard c61ae3b4, audit PASS round 1 (claude-opus-5-5); merging U4s2b (rule A)
+updated: Tue Oct 13 05:42:16 UTC 2026
+reports: docs/reports/T2484-prove.md, docs/reports/T2484-1a-audit.md, docs/reports/T2484-audit.md, docs/reports/T2484b-prove.md, docs/reports/T2484b-audit.md
