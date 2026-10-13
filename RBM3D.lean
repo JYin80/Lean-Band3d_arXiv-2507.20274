@@ -589,6 +589,7 @@ import RBM3D.Chain.NQGood1Gen
 import RBM3D.Chain.NQGood2Gen
 import RBM3D.BA.DecayLoopBA
 import RBM3D.BA.Step5IIIWalk
+import RBM3D.Graph.BATermHolds
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
