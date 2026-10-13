@@ -580,6 +580,7 @@ import RBM3D.Chain.IniTermIGen2
 import RBM3D.BA.KDecayBA
 import RBM3D.BA.SEforLnBA
 import RBM3D.Graph.BAExp14a2
+import RBM3D.Graph.BAExp14b2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
