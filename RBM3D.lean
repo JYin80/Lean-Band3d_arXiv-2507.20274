@@ -552,6 +552,9 @@ import RBM3D.Evolution.MeanFarG
 import RBM3D.Chain.Step2IterGen
 import RBM3D.Chain.Step2IterGen2
 import RBM3D.Evolution.CltFarG
+import RBM3D.Chain.KDecayGen
+import RBM3D.Chain.SEforLnGen
+import RBM3D.Chain.SEforLnGen2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
