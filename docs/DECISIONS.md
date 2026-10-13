@@ -2628,3 +2628,16 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - BA 的初始归属仍记为 T4-BA 的欠项。
 - (3) **发 `REQ-2026-10-12-2328-T4s2`**（不阻塞）：T4s2 三行、S2、S3 的记录。计数：T 21 → 23 / 34.5（T1 再拆则 24）；BA 155。
 - (4) 在跑：T2472b（L3d4b）、T2476（N3a）、T2478（T1）、T2479（X1b）；T2473 的 T4s2a 等空位进 1b。排队：**T2473（T4s2a 1b）→ T2480 → T2481**；T4s2b、T4s2c 依次叠加。下一张票号 T2482，下一节 §282，下一条 H263。待写：L3d2b（等 L3d4b）、U5b、U3s2–U3s4（等 T4s2 三行）、U1s2、L3d1、L4b2、L4a2、L5（P1）。
+
+## §282 — N3a 合并（M/N 已开的三行全部合并）；监督 2351 PASS（T4s2）；T4-BA 欠项归 T5-BA；放 U5b = T2482（总调度 V3，2026-10-13 00:03 UTC）
+
+- (1) **合并**：**T2476 = N3a** 0f3ecb6b（23:51；E2 原地改 `Jak`（±76）、`Uyw`（±78），公开陈述逐字不变（GMN-C2）；E1 与 BA 消法在新叶 `BA/EMCTE2BA` 986 行：`unEMCTE2RowBA_holds`、`unJakUywRowBA_holds` 等；10 个目标与实例；`Test/Axioms.lean` 五条负责人注释与 T2477 的三条删除取并；1a-audit、审核 PASS；在 N3b + N3a 合并后的底上重做对比：`#print axioms band_terminal`、`bUniv_holds` 仍是三条标准公理，不变）。**M/N 已开的 C5g、N3a、N3b 全部合并**（3 / 15）；其余行等 V 关闭（短通知 REQ，2049 O6）。
+- (2) **监督 2351：S1、S2、S3 与第 4 项都 PASS**，条件 T4S2-C1–C3：
+  - **T4S2-C1（T4-BA 欠项要有计数的负责人）**：T4s2 输出的 BA 形式（`StepDecompGen_LoopForm`/`Step2EventsGen_Law` 在 BA 上的消法、`Im m ≤ 1`、BA 初始归属等）**归 T5-BA**：T4s2c 之后写 T5-BA 时并进去，前提是 T5-BA 的 1a 中心 ≤ 1,950；否则加一行 T4-BA（T +1）。原"半群"项划掉。ROUTES 的 T 行写上负责人。
+  - **T4S2-C2**：BA 的目标 9（初始归属）写成 `∀ᶠ n`（或实例的 n）形式；主路径上没有泛型陈述把它当 `∀ n` 读（它只在实例节里用）。
+  - **T4S2-C3**：S2 与 `LoopForm` 的 BA 消法走 `ba_G_data` + `BAm_norm_le_one`（已合并的 `BAAuxGraph2_eta_le_one` 正是这条链）；不新加 `open private`。
+  - **O5**：X1b-C1 是**不阻塞**的通知 REQ（1a 中心超 3,000 时中枢在状态里报、照常继续，调度发通知），改 `T2479.state` 的措辞。
+  - 子阶段 T：23 / 34.5（T4s2 三行），预期 26–27（T1-BA 拆则 28）。
+- (3) **放 T2482 = U5b**（U 12 / 42；BA 156；**新数学，`prover-max`**；**窄设计门 E 带探针**（§238）：1a 写出 Hilbert–Schmidt 层（腿恒等式 `‖X_i‖² = 𝓛^(2)` 与换到 (+,−) 电荷型）、`lk`/`wG`/`dif` 的逐情形不等式链、对 `lossE2wG` 的损失预算表，并在 g = 1/64、1、10 重跑数值（含 BA 预解式上的 HS 与粘合比）；任何一步不成立就停在 1b 前；`BA/Step5IIIEdet` + `Step5IIIEdet2`，备用 `Step5IIIEdet3`；1,600 / 2,350 / 3,600）：Frobenius 迹界（含新的 k 重形式，需 k ≥ 2）、BA 载体上的环界与列表/粘合形式、前提包 `BAStep5IIIEScalar`/`BAStep5IIIEMatrix`（T2459 探针原文；U5c 推出矩阵部分）、`lk`、`wG`、格点和 S_θ 与 `dif`、`BAStep5IIIEdet` 及 `_holds`（U5d 读）、实例（矩阵部分在实例里仍是假设）。不读 U5a 的名字，现在就能开。UBA-C1 不触发。答复：拆分是预期情形（2,350 > 1,950），成为 U5 的第六行，1a-audit 确认时调度发不阻塞的短通知；中心超 3,600 或第三行在 1b 前发短 REQ；公开 `Prop` 只有前提包与 `BAStep5IIIEdet`；`dif` 用同一个 `lossE2wG`；O2 的组合实例归 U5c；探针证腿恒等式与电荷换型，目标 2 在 1b 证。
+- (4) 计数：BA 156；T 23 / 34.5；U 12 / 42；L 40 / 50（预期 47）；M/N 3 / 15（三行已合并）；V 0 / 12。
+- (5) 在跑：T2472b（L3d4b）、T2473（T4s2a）、T2478（T1，规则 (B) 修补后再 1a-audit）、T2479（X1b）。排队：**T2480 → T2481 → T2482**；T4s2b、T4s2c 依次叠加。下一张票号 T2483，下一节 §283，下一条 H264。待写：L3d2b（等 L3d4b）、U3s2–U3s4（等 T4s2 三行）、U1s2、L3d1、L4b2、L4a2、L5（P1）、T1-BA、T5-BA（含 T4-BA 欠项）。

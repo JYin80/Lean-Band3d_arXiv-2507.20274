@@ -37,3 +37,4 @@
 | T2474 | 2026-10-12 22:32 UTC (e8fd7d27, eaa247c4) | prover | Sonnet 5.5 | 是 | ST T5s2：1a（预签拆 T5s2a/T5s2b）→ 1b → 审核 PASS 第一轮；新 `Chain/StepDecompGen` 1,246 + `Chain/HierDriftGen` 1,381 行 |
 | T2477 | 2026-10-12 23:13 UTC (2dcfcda5) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA M/N N3b：1a → 1b → 审核 PASS 第一轮；原地改 `GreenCorr`、`UnivMain`、`Step1Band`；`band_terminal`、`bUniv_holds` 公理不变 |
 | T2475 | 2026-10-12 23:23 UTC (35b7d6cb) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | BA M/N C5g：设计门 D1–D2 → 探针 → 1a-audit PASS → 1b → 审核 PASS 第一轮；新 `RandomLayerBG` 526 + 叶 `BA/RandomLayerBGBA` 219 行 |
+| T2476 | 2026-10-12 23:51 UTC (0f3ecb6b) | prover-hard（探针步骤 prover-hard） | Sonnet 5.5 effort xhigh | 是 | BA M/N N3a：窄设计门 D1（bulk 窗口）→ 探针 → 1a-audit PASS → 1b → 审核 PASS 第一轮；原地改 `Jak`、`Uyw` + 新叶 `BA/EMCTE2BA` 986 行；公理对比不变 |
