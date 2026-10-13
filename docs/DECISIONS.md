@@ -2678,3 +2678,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) **T1b（T2478b）目标 11 签字：照交付接受**。`step2CloseGen_step2_of_pinsLW'` 带四个前提 `LWterm`、`LWtermExp`、`STEMn2Exp`、`STGridMart`，都是已合并的定理（`lwterm_holds` `Graph/LWTermHolds:682`、`stEMn2Exp_holds` `Induction/EMn2Exp2:1274`、`stGridMart_holds` `Path/DifREP2:2283`），推论不空。票上「只留 `LWtermExp`」在票自己的布局下做不到（`STEMn2Exp` 的锥含 `BA.FlowPins`，违反无 BA 闭包；带状 `ST_step2_of_pinsLW'` 本身也留着 `STEMn2Exp`），是票的措辞错，不是证明的问题；改布局（加 `Path/DifREP2` 或 `Graph/LWTermHolds` 的导入）只为一个带状推论，不值。目标 11 是带状重导，没有下游读它的前提表。**合并 T1b**：中枢按审核 O1 加两条根导入（hub §3 (A)4）；T2478e 作论文差异候选，合并时编号。→ **T1 完成**（T1a 6039f7ed + T1b）。
 - (5) 计数：BA 163；T 24 / 34.5；U 16 / 42；L 42 / 50（预期 47）；M/N 3 / 15；V 0 / 12。
 - (6) 在跑：T2480b（U2b）、T2482（U5b 设计门）、T2483（L3d2b-1，prover-max）、T2484（U4s2 设计门）。T2478b 等本节签字后合并。开工顺序（有空位时）：**T4s2b → T2485（满足开工条件时）→ T4s2c**。下一张票号 T2486，下一节 §286，下一条 H267。待写：U3s2–U3s4（等 T4s2 b/c）、U4s3（T1 已齐，等 T4s2）、U1s2、L3d1（G4）、L4b2、L4a2、L5（带 L6，L40-C1）、T5-BA（含 T4-BA 欠项与 O4 的 WalkForm）、T1-BA（含 GMN-C1 读者）、U2-BA（按 O2 定价）、U5d（U5a–c 之后）、U5e。
+
+## §286 — T1 完成、L3d2b-1 合并；U2b 目标 7 的类多两个字段：照交付接受（总调度 V3，2026-10-13 02:39 UTC）
+
+- (1) **合并**：**T2478 T1b** 1e73b1b8（02:24；`Chain/OptL2Gen` 1,423、`Chain/Step2CloseGen` 921；目标 11 按 §285 (4) 的四前提形式；登记：`STOptL2gL` 移出（T1b 证出）、`STStep1LoopgL` 记为欠项、`STAvgUgL`/`STStep2ConclgL` 的负责人注释按监督 0149 O5 改写）→ **T1 完成**（T1a 6039f7ed + T1b）。**T2483 L3d2b-1** 772b1ca1（02:36；`Graph/BAMomentExpGen` 1,147；目标 1–5 与实例 10 (iv)、(v)；prover-max（预签换档条件 (a)）；审核 PASS）；L3d2b-2（`BAMomentExpGenB`，目标 6–10）已在 `t/T2483b` 叠加开工。T4s2b 已开工（`t/T2473b`）。
+- (2) **T2480b（U2b）目标 7 签字：照交付接受**。`B45Gen_Facts` = 钉文 `T2480_B45Facts` 加两个字段 `∀ n, ((mk sz z).m n).im ≤ 1` 与 `∀ n, ZeroModeGen_KerSums (mk sz z) n`。检查文件头（`T2480-check.lean:8-9`）本来就允许「带具名带状消法」加类字段；两者的带状消法都有名字（`norm_mE` + `Complex.im_le_norm`；已合并的 `zeroModeGen_kerSums_band`，U1s1），并在 `b45Gen_facts_band` 里用上；审核核过必要性（钉文前提只给 `Im m` 的下界，推不出 `η_u⁻¹` 界；列和常数性没有来源）。目标 9 的两个钉文随之换成这个类，不另算差异。没有别的票读 `T2480_B45Facts`。**合并 U2b** → U2 完成。
+  - BA 一侧：`Im m ≤ 1` 已在 U2-BA 的清单上（`BAm_norm_le_one`）；**`ZeroModeGen_KerSums` 的 BA 消法加进 U2-BA 的清单**（`S = 1` 时化为 `Step2Kern_Mss` 的行、列和常数，可从 `BAK_row_sum`（`KKernel:124`）与 `BAMss_norm_eq_BAK`（`KKernel:102`）得到）。U2-BA 按 §285 (2) O2 定价时一并计入。
+  - 这一条同 §284 (2)：检查文件要求 1a (iii) 报告加字段，1a 推到了 1b。照 §285 (2)「1a 范围」处理，不算 1a 越权。
+  - 论文差异候选 T2480c（审核 §7 的四项）合并时编号。
+- (3) 计数不变：BA 163；T 24 / 34.5（T1 完成）；U 16 / 42；L 42 / 50（预期 47）；M/N 3 / 15；V 0 / 12。
+- (4) 在跑：T2473b（T4s2b）、T2482（U5b 设计门）、T2483b（L3d2b-2）、T2484（U4s2 设计门）；T2480b 等本节签字后合并。排队：T2485（等 T2482 的 1a-audit PASS）→ T4s2c（等 T4s2b 审核 PASS）。下一张票号 T2486，下一节 §287，下一条 H268。待写不变（§285 (6)），U2-BA 加上 (2) 的 `KerSums`。
