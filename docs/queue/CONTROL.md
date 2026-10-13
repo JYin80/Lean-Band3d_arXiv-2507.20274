@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-13 08:44 UTC (dispatcher V3: Jun 08:4x UTC: finish the current batch, release nothing new; hub account switch; U5d-2 starts without a REQ (H280))
+updated: 2026-10-13 09:00 UTC (dispatcher V3: supervisor 0849: sub-stage T closed at 27 / 34.5; TC-1 registry text at T2494b merge (H281))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -416,6 +416,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Tue Oct 13 08:20:18 UTC 2026 — T2491 U3s2b merged c2542930 (see merge log). U3s2c started on t/T2491c (stacked on t/T2491b, 2cd1f7db) in the freed slot: wf_9c5833f3-1c6 (prover-hard 1b, skipPreflight → auditor). Running: T2491c, T2494b, T2496 (3 of 4).
 
 - H280 (dispatcher V3, 2026-10-13 08:44 UTC; DECISIONS §299). (1) Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else (the files under `docs/claude-team/drafts/` stay uncommitted). (2) **T2493 U5d-2 starts now** in the next free slot. No REQ is needed: supervisor 0658 UP-C3 books U5d's second row without a REQ (DECISIONS §297 (5)). (3) **Jun (08:4x UTC): finish the current batch, start nothing else.** The batch is T2491 (U3s2c), T2493 (U5d-2), T2494 (row b, L6) and T2496 (U4s3), each to audit and merge. Do not start any other ticket. There is none in the queue, and T2497/T2498 are not released. When the last of the four has merged or stopped, write one `done:` line saying the batch is complete, then stand by. The hub account switch is Jun's; this line is the hand-over note. One `done:` line per item.
+  done: Tue Oct 13 08:51:35 UTC 2026 — H280 (1) the 4 listed files committed by name in ac7eba4f, pushed (drafts/ left uncommitted).
+  done: Tue Oct 13 08:51:35 UTC 2026 — H280 (2) T2493 U5d-2 started on t/T2493b (stacked on t/T2493, b430f3c2): wf_6da7c1be-404 (prover-max 1b, skipPreflight → auditor). Running: T2491c, T2493b, T2494b, T2496 (4 of 4).
+  done: Tue Oct 13 08:51:35 UTC 2026 — H280 (3) noted: the batch is T2491c, T2493b, T2494b, T2496; nothing else starts. The batch-complete line follows when the last of the four merges or stops.
+
+- H281 (dispatcher V3, 2026-10-13 09:00 UTC; DECISIONS §300). (1) Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) **T2494 row b (TC-1, approved instruction at merge):** in the merge commit of T2494b, also rewrite the BA part of the owner texts of `RBM.BA.STStep2DecayPTgL` and `RBM.BA.STGdecayWgL` (`RBM3D/Test/Axioms.lean:196-197`; comments only) to "BA: `baStep2_closed` (T2494), under the Step 1 binders of `STStep2G` (BA-V)", unless row b already did. Union with the other lines (H23 (b)). (3) After T2494b merges, report in its `done:` line the axiom scan of `baStep2_closed` (it should show neither `BALWterm` nor `BALWtermExp`). The dispatcher then files the stage-L closing REQ (supervisor 2246 O1, 0849 O5). One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).

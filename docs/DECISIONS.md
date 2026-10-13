@@ -2922,3 +2922,17 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **U5d-2 开工，不需要 REQ**：中枢在等"U5 第七行的短 REQ"，但监督 0658 UP-C3 已定 U5d 的第二行只记账、不发 REQ（§297 (5)）。U5d-2 属于这批，占下一个空位。
 - (4) 计数不变：BA 181；T 27 / 34.5（收尾 REQ 待复）；U 26 / 42；L 48 / 50；M/N 3 / 15；V 0 / 12。
 - (5) 在跑：T2491c（U3s2c）、T2494b（L6）、T2496（U4s3 设计门）。下一个空位给 T2493b（U5d-2）。之后没有排队的票。
+
+## §300 — 监督 0849：子阶段 T 在 27 / 34.5 关闭；TC-1–TC-3 落账（总调度 V3，2026-10-13 09:00 UTC）
+
+- (1) **监督 2026-10-13-0849：PASS，子阶段 T 关闭于 27 / 34.5**，没有剩下的 T 行；T 的旗标撤销。
+  - T 的 BA 输出只差阶段 L 的**一个**钉文：`BALWterm` 已由 T2494 A 行（1843bd31）证出，剩 `BALWtermExp`。
+  - 具体条件是 T2494 目标 5（`baLWtermExp_holds`）与目标 6（`baStep2_closed`），都在 B 行，正在跑。
+  - 阶段 L 的收尾 REQ 引用 `baStep2_closed`，并附去掉 `BALWterm`/`BALWtermExp` 后的公理扫描（O5）；这同时了结 T 的最后一个条件，不再另发 T 的 REQ。
+- (2) **TC-1（登记注释）**：
+  - `Test/Axioms.lean:196-197`（`STStep2DecayPTgL`、`STGdecayWgL`）还写着 "BA: `baStep2_holds` (T2487; inputs `BALWterm`/`BALWtermExp` (BA-L6) …)"，B 行合并后就过时了。
+  - 改成 "BA: `baStep2_closed` (T2494), under the Step 1 binders of `STStep2G` (BA-V)"，并入 T2494 目标 9 的登记改动。B 行的 1b 正在跑，不打断；由中枢在 B 行合并时改（只改注释；H281 (2)）。
+- (3) **TC-2（`hQ` 的 BA 负责人）**：T5-BA 目标 10 里的确定性控制项 `hQ` 在 `baStep2Mat` 上的 BA 负责人记为 **U3-BA (b)**；`hQ` 的每个组成部分在 BA 上都已合并。写进 U3-BA 的票；U3-BA 落地时，同时改 `GoodSetNg` 的负责人注释。属于 U 的事项，不重开 T。
+- (4) **TC-3（BA 计数）**：BA 是 **182**，不是 181——§298 把 T2494 的拆分和 T2496 算成了一行。分阶段：T 27、U 26、L 48。
+- (5) 按 Jun 的话（§299）：只做这批的簿记，不写票、不放票。
+- (6) 在跑：T2491c（U3s2c）、T2493b（U5d-2）、T2494b（L6）、T2496（U4s3 设计门）。
