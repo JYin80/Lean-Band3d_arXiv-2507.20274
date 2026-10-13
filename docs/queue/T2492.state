@@ -1,0 +1,4 @@
+state: audit-pass
+reason: preflight PASS (no split), prover-hard 27b930f0, audit RETURN round 1 (instances of 8, 9, 11 left STKboundgL, STKwardgL open) → one rule-(B) repair 9f0a3641 → audit PASS round 2 (claude-opus-5-5); merging (rule A)
+updated: Tue Oct 13 07:19:38 UTC 2026
+reports: docs/reports/T2492-prove.md, docs/reports/T2492-audit.md
