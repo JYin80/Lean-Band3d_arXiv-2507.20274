@@ -1,0 +1,4 @@
+state: audit-pass
+reason: 1a PASS, 1a-audit PASS (no split, no switch), prover-hard 63baa94a, audit PASS round 1 (claude-opus-5-5); merging (rule A)
+updated: Tue Oct 13 05:00:18 UTC 2026
+reports: docs/reports/T2488-prove.md, docs/reports/T2488-1a-audit.md, docs/reports/T2488-audit.md
