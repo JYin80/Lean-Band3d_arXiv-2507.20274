@@ -568,6 +568,7 @@ import RBM3D.Chain.IniTermIIGen
 import RBM3D.BA.Step5IIIEdet
 import RBM3D.BA.Step5IIIGood
 import RBM3D.BA.Step5IIIGood2
+import RBM3D.Graph.BAMomentExpGenB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

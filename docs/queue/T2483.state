@@ -1,4 +1,4 @@
 state: audit-pass
-reason: L3d2b-1 (pre-signed switch to prover-max, split) 77f7be5b, audit PASS round 1 (claude-opus-5-5); merging L3d2b-1 (rule A)
-updated: Tue Oct 13 02:36:45 UTC 2026
-reports: docs/reports/T2483-prove.md, docs/reports/T2483-audit.md
+reason: L3d2b-1 merged 772b1ca1; L3d2b-2 (t/T2483b) prover-max eead4288, audit PASS round 1 (claude-opus-5-5); merging L3d2b-2 (rule A)
+updated: Tue Oct 13 04:20:38 UTC 2026
+reports: docs/reports/T2483-prove.md, docs/reports/T2483-audit.md, docs/reports/T2483b-prove.md, docs/reports/T2483b-audit.md
