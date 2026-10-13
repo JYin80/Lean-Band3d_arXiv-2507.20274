@@ -1,5 +1,5 @@
 /-
-Release check for T2490 (dispatcher V3, 2026-10-13 04:47 UTC; DECISIONS §292).  BA-L L4a2 `BAExp14a2`: `lem:LWterm_EXP` at the block Anderson data,
+Release check for T2490 (import `RBM3D.BA.TwistLoop` added for `baTwistLoopStep_caseI/II`, DECISIONS §293 (2); dispatcher V3, 2026-10-13 04:47 UTC; DECISIONS §292).  BA-L L4a2 `BAExp14a2`: `lem:LWterm_EXP` at the block Anderson data,
 i.e. the reduction `LWE → LWcut` over the BA carrier (twin of `lwTermEXP_of_cut`, `Graph/LWExpTerm.lean:286`) and the assembly of S1–S3
 into the R1 cut pin `BALWCutExpTw` (twin of `lwCutExp_of_terms`, `Graph/LWExpTerm2.lean:1956`), in the new file `Graph/BAExp14a2`.
 S2 (L4b2 = T2489) is not merged: it enters as the merged pin `BAExp14bS2` (`Graph/BAExp14b.lean:170`), antecedent of exact type (UBA-C3).
@@ -27,6 +27,7 @@ import RBM3D.Graph.BAExp14bB
 import RBM3D.Graph.BAExp14c
 import RBM3D.Graph.BAExp14cB
 import RBM3D.Graph.BAExp14e
+import RBM3D.BA.TwistLoop
 
 set_option linter.style.longLine false
 

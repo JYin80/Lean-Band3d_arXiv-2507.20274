@@ -2764,3 +2764,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) **开工顺序**（有空位时）：**T2486 → T2489 → T2490**。
 - (6) 计数：BA 170；T 25 / 34.5（T1-BA 完成；剩 T5-BA、T7-BA，预期终点 26–27）；U 19 / 42（U2-BA 拆则 20）；**L 45 / 50**（L40-C3 预测 47：剩 L5 带 L6 两行；任一行拆则 48）；M/N 3 / 15；V 0 / 12。
 - (7) 在跑：T2473c（T4s2c）、T2482b（U5b-2）、T2484b（U4s2b）、T2488（L3d1）。排队：T2486 → T2489 → T2490。下一张票号 T2491，下一节 §293，下一条 H274。待写：U5d（U5b-2 之后）、U3s2–U3s4、T5-BA（等 T4s2c）、U4s3（等 U4s2b、T4s2c）、U1s2、L5（带 L6，阶段 L 的最后一张）、U5e、T7-BA。
+
+## §293 — T4s2 完成、L3d1 合并；T2490 检查补导入（总调度 V3，2026-10-13 05:04 UTC）
+
+- (1) **合并**：
+  - **T2473 T4s2c** 66b2ab97（04:54；`Chain/AzumaProxyGen` 950，目标 8–10；审核 PASS）→ **T4s2 完成**（三行：86eb22f2、4efcae69、66b2ab97）。登记：证明报告把 `GoodSetNg` 记为 `owedProps`（初始成员归 T4-BA；`hQ` 是 Step 3 的输出，U3s2–U3s3）。**调度追认 `owedProps` 这一归类**（它是好集合的成员前提，不是定义对象的谓词）。→ U3s2–U3s4、T5-BA 现在可写；U4s3 还等 U4s2b。
+  - **T2488 L3d1** 3d0b9578（05:00；`Graph/BAAnpLift` 388；目标 1–5，**含 4 (b)**——开 1b 时 L3d2b-2 已合并；不拆、没换档；审核 PASS 第一轮）→ `BAAnpAuxG`、`BALWMoment`、`BALWMomentExp` 在 BA 上闭合。
+  - T2486（U2-BA，Amend 1）与 T2489（L4b2）已开工。
+- (2) **T2490 检查补导入**：编译报 `Unknown identifier RBM.BA.baTwistLoopStep_caseI`（定义在 `BA/TwistLoop.lean:705`，检查文件没有导入它）。调度在检查文件里加了 `import RBM3D.BA.TwistLoop`，钉文不变；又用脚本核过检查里所有 75 个名字，加这一行后都能从导入链到达。中枢重新编译（H274 (2)）。
+- (3) 计数不变：BA 170；T 25 / 34.5；U 19 / 42；L 45 / 50（预测 47）；M/N 3 / 15；V 0 / 12。
+- (4) 在跑：T2482b（U5b-2）、T2484b（U4s2b）、T2486（U2-BA）、T2489（L4b2）。排队：T2490（检查编译通过后）。下一张票号 T2491，下一节 §294，下一条 H275。起草中：U3s2、T5-BA。待写：U3s3、U3s4、U4s3（等 U4s2b）、U5d（等 U5b-2）、U1s2、L5（带 L6）、U5e、T7-BA。
