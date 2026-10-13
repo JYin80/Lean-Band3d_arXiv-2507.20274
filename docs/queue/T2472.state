@@ -1,4 +1,4 @@
 state: audit-pass
-reason: L3d4a (split confirmed) prover-hard e7ada40a, audit PASS round 1 (claude-opus-5-5); merging L3d4a (rule A)
-updated: Mon Oct 12 22:30:05 UTC 2026
-reports: docs/reports/T2472-prove.md, docs/reports/T2472-1a-audit.md, docs/reports/T2472-audit.md
+reason: L3d4a merged c4b39007; L3d4b (t/T2472b) prover-hard 0c7e272e, audit PASS round 1 (claude-opus-5-5); merging L3d4b (rule A)
+updated: Tue Oct 13 00:08:41 UTC 2026
+reports: docs/reports/T2472-prove.md, docs/reports/T2472-1a-audit.md, docs/reports/T2472-audit.md, docs/reports/T2472b-prove.md, docs/reports/T2472b-audit.md

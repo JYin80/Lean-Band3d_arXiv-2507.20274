@@ -546,6 +546,7 @@ import RBM3D.Chain.HierDriftGen
 import RBM3D.Universality.GUEPhase.RandomLayerBG
 import RBM3D.BA.RandomLayerBGBA
 import RBM3D.BA.EMCTE2BA
+import RBM3D.Graph.BAProvB
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
