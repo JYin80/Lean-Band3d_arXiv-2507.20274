@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-13 03:14 UTC (dispatcher V3: U2 complete; T2482 1a-audit PASS (U5 sixth row, notice REQ; T2485 may start); U2-BA = T2486, T1-BA = T2487 released (H268))
+updated: 2026-10-13 03:30 UTC (dispatcher V3: T4s2b booked; U4s2 split confirmed; U5c 1a no split (H269))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -338,10 +338,15 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Tue Oct 13 03:14:28 UTC 2026 — T2473 T4s2b merged 4efcae69 (see merge log). T2485 started in the freed slot: wf_4dded6f5-798 (preflight → prover-hard → auditor). Running: T2482, T2483b, T2484, T2485 (4 of 4); next T2473 T4s2c (t/T2473c).
 
 - H268 (dispatcher V3, 2026-10-13 03:14 UTC; DECISIONS §287). (1) Commit by name with your next commit `docs/tickets/T2486.md`, `docs/tickets/checks/T2486-check.lean`, `docs/tickets/T2487.md`, `docs/tickets/checks/T2487-check.lean`, `docs/supervisor/requests/REQ-2026-10-13-0314-U5six.md`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile the T2486 and T2487 checks on `main` with `lake env lean` (not compiled by the dispatcher; on failure paste the error lines and do not start that ticket). (3) **T2485 may start**: T2482's 1a-audit PASSed with the bundle text unchanged (DECISIONS §287 (1)). The notice REQ `REQ-2026-10-13-0314-U5six` blocks nothing. (4) Start order as slots free: **T2485 → T2487 → T2486**; T4s2c takes the first slot free after T4s2b's audit PASS. T2486's target 2 (b) (the `.1` bridge from T2487's `baStep2_oneLoop`) is written last; if T2487 is not merged by then, T2486's 1b stops at that item (rule (B) stop) and resumes after T2487's merge. One `done:` line per item.
-  done: Tue Oct 13 03:21:23 UTC 2026 — (1) the 10 listed files committed by name (see the next commit), pushed.
+  done: Tue Oct 13 03:21:23 UTC 2026 — (1) the 10 listed files committed by name in 12555319, pushed.
   done: Tue Oct 13 03:21:23 UTC 2026 — (2) checks on main 4efcae69: T2486 exit 0 errors 0; T2487 exit 0 errors 0; no error lines.
   done: Tue Oct 13 03:21:23 UTC 2026 — (3) T2485 had already started (03:0x UTC, wf_4dded6f5-798) once T2482's 1a-audit PASSed; REQ U5six noted.
   done: Tue Oct 13 03:21:23 UTC 2026 — (4) T4s2b's audit PASSed and merged (4efcae69) before H268; its freed slot went to T2485 (H266 (4) order). No slot free now (T2482, T2483b, T2484, T2485 running); order as slots free: T4s2c, T2487, T2486 (T2486's target 2 (b) last; stops there if T2487 is not merged).
+
+- H269 (dispatcher V3, 2026-10-13 03:30 UTC; DECISIONS §288). (1) Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) **T2484 U4s2b:** before its 1b, base `t/T2484b` on a commit that contains `Chain/B45Gen` (78f4cc14): `main` after U4s2a's merge, or merge `main` into the stacked branch (1a-audit observation 1). (3) Order unchanged: T4s2c → T2487 → T2486. One `done:` line per item.
+  done: Tue Oct 13 03:31:14 UTC 2026 — (1) the 4 listed files committed by name (see the next commit), pushed.
+  done: Tue Oct 13 03:31:14 UTC 2026 — (2) T2484 U4s2b: when it starts, t/T2484b gets main (with Chain/B45Gen, 78f4cc14) merged in before its 1b; recorded in T2484's state.
+  done: Tue Oct 13 03:31:14 UTC 2026 — (3) noted.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
