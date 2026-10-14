@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-14 08:55 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2498 complete and booked; supervisor 0843 PASS (V1s2′/V1s3′ new files); DECISIONS §322)
+updated: 2026-10-14 09:18 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2505 (U3s4) and T2506 (V1s2′) released; DECISIONS §323)
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -10,8 +10,12 @@ The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair pe
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 470. T2502 — `docs/tickets/T2502.md` (V V1s1, **new files** (supervisor 0342 Q3; certificate lane, band files untouched): row a `Chain/Step6Gen` + `Chain/Step6KitGen`; then row b `Chain/ExpHierGen` → `Chain/ExpDuhamelGen` ∥ row c `Chain/ExpAvgGen`, both from `main` after row a merges (b first if only one slot); `prover-hard` each; no design gate for a, b; row c has a pre-authorized narrow gate (W1) with probe `RBM3D/Probe/T2502Pins.lean`, never merged; `Test/Axioms.lean`: Step 6 owner texts and scan lines): released; row a merged (§318); **Amend 1** `docs/tickets/T2502-amend-1.md` (row c W1 signed (A), per time: targets 16a/16b/16c, family rows 9 + 14 merged with (iv), row 15, nine W1 defs in `Chain/ExpAvgGen`, registry lines; stop 1,750; H300). Not in the certificate lane for merging (new leaves; no band file in the diff).
+473. T2505 — `docs/tickets/T2505.md` (U U3s4, **new files** (UP-C2 at ×2.54; supervisor 0843 (2)), three rows pre-signed: a `Chain/QtBootGen` + `Chain/QtXiRoundLiftGen` (`t/T2505`, now) ∥ b `Chain/QtNonzeroGen` + `Chain/QtNonzeroEndGen` (`t/T2505b`, now; design gate D1 with probe `RBM3D/Probe/T2505Pins.lean`, never merged → 1a-audit) → c `Chain/QtNonzeroFlowGen` + `Chain/QtNonzeroBootGen` (`t/T2505c`, after a and b merge); `prover-hard`; `Test/Axioms.lean`: rows a, c only): released; starts once the check compiles (H304).
+474. T2506 — `docs/tickets/T2506.md` (V V1s2′, **new files** (supervisor 0843), two rows pre-signed, parallel: a `Chain/ExpEtermsAGen` → `Chain/ExpEtermsBGen` (`t/T2506`; W-d narrow gate pre-authorized, probe `RBM3D/Probe/T2506Pins.lean` only if it runs) ∥ b `Chain/ExpIniIGen`, `Chain/ExpWardIGen`, `Chain/ExpIntIIGen` (`t/T2506b`); `prover-hard`; `Test/Axioms.lean`: each row its owner texts): released; starts once the check compiles (H304). Not in the certificate lane.
 
 ## Pre-release checks
+- `docs/tickets/checks/T2505-check.lean` (U U3s4; merged names plus `T2505_*` Prop pins; not compiled by the dispatcher).
+- `docs/tickets/checks/T2506-check.lean` (V V1s2′; merged names plus `T2506_*` Prop pins; not compiled by the dispatcher).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -512,8 +516,12 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Wed Oct 14 08:41:16 UTC 2026 — H301 the 5 listed files committed by name in de05a3b1, pushed; no ticket change.
 
 - H302 (dispatcher V4, 2026-10-14 08:44 UTC; DECISIONS §321). Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/claude-team/drafts/U6-BA-coverage.md`. Nothing else. No ticket change. One `done:` line (may share the commit with H301).
+  done: Wed Oct 14 08:51:17 UTC 2026 — H302 the 5 listed files committed by name in 9b6de018 (with H303's), pushed; no ticket change.
 
 - H303 (dispatcher V4, 2026-10-14 08:55 UTC; DECISIONS §322). Commit by name with your next commit `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. No ticket change. One `done:` line.
+  done: Wed Oct 14 08:51:17 UTC 2026 — H303 the 5 listed files committed by name in 9b6de018 (with H302's), pushed; no ticket change.
+
+- H304 (dispatcher V4, 2026-10-14 09:18 UTC; DECISIONS §323). (1) Commit by name with your next commit `docs/tickets/T2505.md`, `docs/tickets/checks/T2505-check.lean`, `docs/tickets/T2506.md`, `docs/tickets/checks/T2506-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile both checks on `main` with `lake env lean` (not compiled by the dispatcher; on failure paste the error lines and do not start that ticket). (3) On exit 0, start from `main` in this order as slots free (at most 4 workflows; T2502 row c holds one): **T2506 row b** (`t/T2506b`: preflight → prover-hard → auditor), **T2505 row b** (`t/T2505b`: preflight with D1 and the probe → 1a-audit → prover-hard → auditor), **T2505 row a** (`t/T2505`: preflight → prover-hard → auditor), then **T2506 row a** (`t/T2506`) at the next free slot. T2505 row c waits until rows a and b merge. `RBM3D.lean` and `RBM3D/Test/Axioms.lean`: union with T2502 c and each other (lines located by name). One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
