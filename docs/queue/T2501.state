@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row a1 (BA/Step5KerBA, targets 1, 3-7): wf_45a3aa4b-f18: preflight PASS, 1b prover-hard 0d98bc2b, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running; row b after a1 and a2 merge
+updated: Wed Oct 14 03:20:46 UTC 2026
+reports: docs/reports/T2501-prove.md, docs/reports/T2501-audit.md
