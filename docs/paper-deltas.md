@@ -1787,3 +1787,13 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## 合并时编号 T2501b（总调度 V4，2026-10-14 04:20 UTC；DECISIONS §314）
 
 - T2501 行 b（`BA/Step5CasesBA`，bbb1fd30）：**无新候选**（合并的泛型结果在 BA 元组上的组合；Ward 桥是 `(zYU1)` 证明的泛型陈述）。BA 上 Step 5 情形 (i)、(ii)、(iv) 对所有 d ≥ 3，(iii) 只在 d = 3（D712 (d)）；Thm 2.7 的维数范围待 Jun 定（监督 0342 V-F2）。
+
+## 合并时编号 T2498a–f（总调度 V4，2026-10-14 04:33 UTC；DECISIONS §315）
+
+- **D722** ← `T2498a`–`f`（U3s3a，原地 `Induction/QProxy`、`QDriftA/B`、`QLevelsA/B` + 新 `QProxy2`，ec57490f；都是 Lean 手段，不改论文陈述）：
+  - (a) 比较 R1 `gK² ≤ lam² ≤ A gK²` 作显式假设，由此出两个半径 `ε₁`、`ε` 与两个常数 `C4 ≤ Cv`，`A^k ≤ W^((Cv−C4) ε)`；
+  - (b) `qvFormQNg` 用 `!σ` 乘积定义，带状桥 `qProxy_qvFormQN_eq_g`；
+  - (c) 删去 `QProxy` 里七个没人读的带状声明（只为体量；旧检查 `T2194-check.lean:182, 206` 的 `#check` 随之过时，从未编译）；
+  - (d) `altB45Ng_levelM` 走冻结载体路线（在一个矩阵处读 `B45_det2g`，`Γ = κm⁻¹`）；
+  - (e) `Step5KerGen_ThDecay` 的常数 `C₆` 在带状上取 `step5KerGen_thDecay_band` 的 `Classical.choose`，行 a 逐载体在 `κ` 之前，族形式在 `κ` 之后（Amend 1，D721）；
+  - (f) D1：`(sum_res_2)`（`3_5_Loop_Hierarchy.tex:1659`）以载体类 `QProxyG_KerEK4` / `QProxyG_KerEK4Fam`（`Induction/QProxy.lean:680`、`:692`）进入泛型 Step 3 的 `Q*` 层，常数 `C4` 显式，快速衰减取在核耦合 `gK` 处。
