@@ -3346,3 +3346,20 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 后台起草子代理起草。凡是要读 `Chain/QtNonzeroGen`（T2505b）的部分，单列一行，等 T2505b 合并。
   - U3-BA (b) 等 U3s4 全部完成和 U3-BA (a)。
 - (4) 计数：BA 193；U 41 / 42；V 7 / 12；M/N 3 / 15。H307。下一节 §328，下一张票号 T2507，下一条 H308。
+
+## §328 — 放 T2507 = U3-BA (a)（一行）（总调度 V4，2026-10-14 12:44 UTC）
+
+- (1) **T2507 = U3-BA (a)**（后台起草子代理起草，调度核读定稿；`docs/tickets/T2507.md`、检查 `T2507-check.lean`）：U3 的 BA 核层，新 BA 叶 `BA/EKGenBA` ≈ 690 + `BA/KLipBA` ≈ 335。
+  - 价：自下而上 750 / 1,025 / 1,500，停止线 1,550；超 1,950 按预签在文件边界拆 a | a′。UP-F1 的 2,912 × 2 = 5,824 是 (a)+(b) 合计，记在旁边，本票约占 19 %。
+  - **覆盖核对**（照 U6-BA 的做法）：REQ-1418 的 `LCompat`/`KCompat`（`baStep34_LCompat`/`KCompat`，`SEforLnBA:122, 129`）、`STEKDecay/Low/Win` 的 BA 读法（只是词汇；E 项衰减 `baEtermDecaygL`，`gK` 处的窗口与衰减由 `step34Gen_winK_of_cmp`/`decayK_of_cmp` 给出）、`baEta_antitone`（`NQGood1Gen_eta_anti` 用在 `baStep2Mat_loopForm` 上，写一个 `example`）都已合并，**记账关闭**。
+  - 要写的：
+    - 类 `BAEKKer`（1457 UBA-C2 的形状，唯一新的公开 def）；
+    - 五个 `STEK*` 形式在 BA 上；
+    - A 形 Nonzero 引理（任意 `Aof`）；
+    - `baKloop_lip`（每个 k ≥ 2；已合并的 `baKLip_two` 不动）；
+    - T2491 D1 `NQGoodGen_KerNALFam`、T2498 D1 `QProxyG_KerEK4Fam` 的 BA 来源（合并的文档串和 T2498 族第 8 行都写着负责人是 U3-BA (a)）；
+    - V1 三个定理共用的 `hKer` 束 `baEKKer_flow`（给 V1-BA）。
+  - **七个待定问题**：(1)、(3)–(7) 照草稿定；**(2) 取另一个选项**：T2505 D1 的 BA 来源（目标 7，`BA/QtNZBA`）并进 U3-BA (b)，因为它唯一的读者就是 (b)，(b) 本来也要等 U3s4 全部完成。本票只有行 a。
+  - 登记：本票不关、不加任何行。名字写着 U3-BA 的四行（`:194`、`:195`、`:214`、`:217`）归 U3-BA (b)。
+  - 计数：U 42 / 42（旗标保留，预测 ≈ 46，< 49 不发 REQ）；BA 193（+0）。
+- (2) 开工：行 a 现在从 `main` 开工，`prover-hard`，没有设计门。中枢在跑 3 个：T2505b、T2506a、T2507。H308。下一节 §329，下一张票号 T2508，下一条 H309。
