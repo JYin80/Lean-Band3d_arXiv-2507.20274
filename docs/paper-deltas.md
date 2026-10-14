@@ -1783,3 +1783,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 
 - **D721** ← `T2501a`（U4-BA 行 a1，`BA/Step5KerBA`，4c9a9311）：BA 的单指标核 `Θ` 衰减类 `Step5KerGen_ThDecay` 在 `gK = g₀` 上的常数 `C₆` 依赖 `κ`（来源 `NewKLKBA_tail`，`BA/NewKLKBA:269`：`Q₀` 在 `(d, Λ, κ)`），所以 `baStep5KerGen_thDecay` 把 `∃ C₆` 放在 `κ` 之后（T2498 族前提第 9 行同序，T2498 Amend 1）。论文没有写出这个常数对 `κ` 的依赖；只是形状，不改结论。
 - T2501 行 a2（`BA/CltFlowBA`，db1932eb）：无新候选（R1 的损失 `A = (κ+1)/κ` 在存在常数里，不进陈述）。
+
+## 合并时编号 T2501b（总调度 V4，2026-10-14 04:20 UTC；DECISIONS §314）
+
+- T2501 行 b（`BA/Step5CasesBA`，bbb1fd30）：**无新候选**（合并的泛型结果在 BA 元组上的组合；Ward 桥是 `(zYU1)` 证明的泛型陈述）。BA 上 Step 5 情形 (i)、(ii)、(iv) 对所有 d ≥ 3，(iii) 只在 d = 3（D712 (d)）；Thm 2.7 的维数范围待 Jun 定（监督 0342 V-F2）。
