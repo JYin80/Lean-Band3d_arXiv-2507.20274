@@ -1,0 +1,4 @@
+state: auditing
+reason: T2498 row a second part U3s3a′: 1b prover-hard 39fd68bb (targets 7, 8, rest of 9); auditor1 failed twice on the API session limit (resets 07:00 UTC); rule (H) rerun of the auditor: wf_d7dacd26-ca0 resumed (1b from cache)
+updated: Wed Oct 14 07:01:48 UTC 2026
+reports: docs/reports/T2498-prove.md, docs/reports/T2498-1a-audit.md, docs/reports/T2498a2-prove.md, docs/reports/T2498a2-audit.md

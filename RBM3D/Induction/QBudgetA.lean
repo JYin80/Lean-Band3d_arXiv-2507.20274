@@ -6,6 +6,8 @@ Authors: Jun Yin
 import RBM3D.Induction.QLevelsB
 import RBM3D.Induction.QProxy
 import RBM3D.Induction.NQLin
+import RBM3D.Chain.NQBudgetGen
+import RBM3D.Chain.NQLinGen
 
 /-!
 # S3-17a (ticket T2279): the budget of the alternating endpoint at `d ≥ 3`
@@ -34,6 +36,14 @@ no `AltBudgetHyp` structure.  No probability, no `Prec`, no lift, no prime, no g
   generic drift level, the extra `he0` and the `b` part of `he1`);
 * §5 compiled nonempty instances (namespace `QBudgetAInst`) at `d = 3`, `sz0`, `n = 0`.
 
+T2498 (row U3s3a′, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`, no `BA/*` import), added beside the
+band vocabulary, which is unchanged: `altBudget_kapFarg`, `altBudget_qvFarg`, `qvBdAltQNg`, `cQVAltQNg`, `dDriftAltLinQNg`, `assembledRHSAltQNg` (§0g;
+explicit `Cv` for `qProxy4C`, `η_u = Cm.eta n u`, `stepErrNg`; band bridges `*_band` by `rfl`), the kernel weights `kappaAltQNg_*` (§1g), the term budgets
+`tbInitAltQNg`, `tbDriftAltQNg`, `tbQvAltQNg` on `tbInitNg`/`tbDriftNg`/`tbQvNg` (§2g; `LoopForm` and the inline `‖Cm.m n‖ ≤ 1` replace `|E n| < 2`),
+`dDriftAltLinQNg_le_shape` (§3g) and `budgetAltQNg` (§4g).  The two band statements read by `QEndGrid`, `dDriftAltLinQN_le_shape` and `budgetAltQN`, keep
+name and type and are corollaries at `bandStep2Mat` (§3b); the band theorems of §1-§3 that no file reads (`kappaAltQN_*`, `tbInitAltQN`, `tbDriftAltQN`,
+`tbQvAltQN`, `qvBdAltQN_eq_qvShape`) are replaced by their generic twins; the superseded quadratic level `dDriftAltQN_le_shape` stays as band text.  The instances of §5 are re-pointed to the generic theorems.
+
 Unpinned helpers are `private` or prefixed `QBudgetA_`.
 -/
 
@@ -48,7 +58,7 @@ open scoped NNReal ENNReal
 
 namespace RBM.Ind
 
-open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
+open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
 /-! ## 0. Vocabulary (the six definitions of the ticket, verbatim) -/
 
@@ -118,61 +128,189 @@ def assembledRHSAltQN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ �
         (gridStep s v K n)
         (((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1))
 
-/-! ## 1. Elementary facts and targets 1-3: the sharp kernel -/
+/-! ## 0b. Model-free private helpers -/
 
-section Kernel
+/-- `0 ≤ u_i` on the grid `0 ≤ s_n ≤ v_n` (copy of the private `nqBudget_gridTime_nonneg`, `NQBudget.lean:334`). -/
+private theorem QBudgetA_gridTime_nonneg {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hs0 : 0 ≤ s n)
+    (hsv : s n ≤ v n) (i : ℕ) : 0 ≤ gridTime s v K n i := by
+  have h := ST_gridTime_mono s v K n hsv (Nat.zero_le i)
+  rw [ST_gridTime_zero] at h
+  linarith
 
-private theorem QBudgetA_kappa_nonneg (d k : ℕ) (Λg κ' KL g W ε : ℝ) (hW : 0 ≤ W) (u : ℕ → ℝ)
-    (i m : ℕ) : 0 ≤ kappaAltQN d k Λg κ' KL g W ε u i m := by
-  unfold kappaAltQN
+/-- `u_i ≤ v_n` for `i ≤ K_n`, `K_n ≠ 0` (copy of `nqBudget_gridTime_le`, `NQBudget.lean:341`). -/
+private theorem QBudgetA_gridTime_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hsv : s n ≤ v n)
+    (hK : K n ≠ 0) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i ≤ v n :=
+  (ST_gridTime_mono s v K n hsv hi).trans_eq (gridTime_last s v K n hK)
+
+/-- `K Δ = v - s` (copy of `nqBudget_K_mul_step`, `NQBudget.lean:346`). -/
+private theorem QBudgetA_K_mul_step {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hK : K n ≠ 0) :
+    (K n : ℝ) * gridStep s v K n = v n - s n := by
+  have hK' : (K n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hK
+  unfold gridStep
+  rw [mul_div_cancel₀ _ hK']
+
+/-- The absorption step of a far part (copy of the private `nqLin_absorb`, `NQLin.lean:847`):
+`y N_p ≤ B`, `N_p⁻¹ ≤ X`, `B ≥ 0` give `y ≤ B X`. -/
+private theorem QBudgetA_absorb {y Np B X : ℝ} (hNp : 0 < Np) (hB : 0 ≤ B) (h : y * Np ≤ B)
+    (hX : Np⁻¹ ≤ X) : y ≤ B * X := by
+  have h1 : y ≤ B * Np⁻¹ := by
+    rw [← div_eq_mul_inv, le_div_iff₀ hNp]; exact h
+  exact h1.trans (mul_le_mul_of_nonneg_left hX hB)
+
+/-- `W^{2 C ε} = (W^{C ε})²` for `W ≥ 0` (the `G`-weight of `qvBdAltQN` is the square of the QV weight). -/
+private theorem QBudgetA_rpow_two_mul {W : ℝ} (hW : 0 ≤ W) (C ε : ℝ) :
+    W ^ (2 * C * ε) = (W ^ (C * ε)) ^ 2 := by
+  rw [← Real.rpow_natCast, ← Real.rpow_mul hW]
+  congr 1
+  push_cast
+  ring
+
+/-- The final bookkeeping on plain reals: the six term bounds `t₁ ≤ P₀X/6`, `t₂ ≤ P₀X/12`,
+`t₃ ≤ P₀Φd X/12 + P₀X/12`, `t₄ ≤ P₀Λ^{1/2}X/12 + P₀X/12`, `t₅, t₆ ≤ P₀X/6` give
+`Σ t ≤ P₀ (Λ^{1/2} + Φd) X` (copy of `nqLin_final`, `NQLin.lean:943`, with `Φ₁ + Φ₂ + Φ₃ ↦ Φd`). -/
+private theorem QBudgetA_final {t1 t2 t3 t4 t5 t6 P0 X Λr Φd : ℝ} (hP0 : 0 ≤ P0) (hX : 0 ≤ X)
+    (hΛr : 1 ≤ Λr) (hΦd : 0 ≤ Φd) (T1 : t1 ≤ P0 / 6 * X) (T2 : t2 ≤ P0 / 12 * X)
+    (T3 : t3 ≤ P0 / 12 * (Φd * X) + P0 / 12 * X)
+    (T4 : t4 ≤ P0 / 12 * (Λr * X) + P0 / 12 * X) (T5 : t5 ≤ P0 / 6 * X)
+    (T6 : t6 ≤ P0 / 6 * X) :
+    t1 + t2 + t3 + t4 + t5 + t6 ≤ P0 * (Λr + Φd) * X := by
+  have hPX : P0 * X ≤ P0 * (Λr * X) :=
+    mul_le_mul_of_nonneg_left (le_mul_of_one_le_left hX hΛr) hP0
+  have hΦX : 0 ≤ P0 * (Φd * X) := mul_nonneg hP0 (mul_nonneg hΦd hX)
+  have e : P0 * (Λr + Φd) * X = P0 * (Λr * X) + P0 * (Φd * X) := by ring
+  rw [e]
+  nlinarith [T1, T2, T3, T4, T5, T6, hPX, hΦX]
+
+/-! ## 0g. The vocabulary over a carrier -/
+
+section VocabG
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- The far bound of the alternating kernel weight with the explicit constant `Cv` (band `altBudget_kapFar`, `Cv = qProxy4C d k Λg κ' KL`). -/
+def altBudget_kapFarg (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) : ℝ :=
+  ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * ((1 + sz.lam n ^ 2) * ((sz.size n : ℕ) : ℝ)) ^ k
+
+/-- The far coefficient of the alternating quadratic variation with the explicit constant `Cv` (band `altBudget_qvFar`). -/
+def altBudget_qvFarg (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) : ℝ :=
+  altBudget_kapFarg sz n k Cv ε * (altBudget_kapFarg sz n k Cv ε + ((sz.W n : ℕ) : ℝ) ^ Cv) +
+    ((sz.W n : ℕ) : ℝ) ^ Cv * ((sz.W n : ℕ) : ℝ) ^ k
+
+/-- The variance majorant of the `𝒬`-process over a carrier (band `qvBdAltQN`; `η_u = Cm.eta n u`, `C₄ = Cv` explicit,
+`C_n`, `C_Q` the model-free `qProxyCn`, `qProxyCQ`). -/
+def qvBdAltQNg (Cm : Step2Mat sz) (n m : ℕ) (Cv Λg KL C c ε Γ Λ D u w : ℝ) : ℝ :=
+  (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+      ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1 + 1)) *
+    ((((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+        ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1 + 1)) *
+      (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) *
+          (Γ * (Γ * Λ) * ((sz.Bctl n u) ^ (2 * (m + 1 + 1)) / Cm.eta n u)) +
+        ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d (m + 1) Λg KL C c)) +
+      ((sz.W n : ℕ) : ℝ) ^ Cv * ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d (m + 1) Λg KL C c)) +
+    ((sz.W n : ℕ) : ℝ) ^ Cv *
+      (((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d (m + 1) Λg KL C c))
+
+/-- The sub-Gaussian proxy of the `j`-th propagated `𝒬`-increment towards `u_p` over a carrier (band `cQVAltQN`). -/
+def cQVAltQNg (Cm : Step2Mat sz) (s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Cv Λg KL C c ε : ℝ)
+    (Γ Λ : ℕ → ℝ) (D'' : ℝ) (p : ℕ) (_a : Fin (m + 1 + 1) → Zd d (sz.L n)) (j : ℕ) : ℝ≥0 :=
+  (gridStep s v K n * (((m + 1 + 1 : ℕ) : ℝ) * qvBdAltQNg Cm n m Cv Λg KL C c ε (Γ n) (Λ n) D''
+    (gridTime s v K n (j + 1)) (gridTime s v K n p))).toNNReal
+
+/-- The linear drift level of the alternating chain over a carrier (band `dDriftAltLinQN`; `dDriftLinNg` of `Chain/NQLinGen`). -/
+def dDriftAltLinQNg (Cm : Step2Mat sz) (n : ℕ) (u : ℝ) (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ) : ℝ :=
+  ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * dDriftLinNg Cm n u (m + 1 + 1) Γ Φ₁ Φ₂ Φ₃ +
+    ((sz.W n : ℕ) : ℝ) ^ (-D' + Cn) +
+    ((sz.size n : ℕ) : ℝ) ^ τN * ((Cm.eta n u)⁻¹ * sz.Bctl n u ^ (m + 2) * X)
+
+/-- The right-hand side of `AssembledNg` at the target `K n` for the alternating chain over a carrier (band `assembledRHSAltQN`). -/
+def assembledRHSAltQNg (Cm : Step2Mat sz) (s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ)
+    (Cv Λg KL C c ε : ℝ) (Γ Λ : ℕ → ℝ) (dd : ℕ → ℝ) (δ0 δD D'' D_Y τK εq X0 : ℝ)
+    (a : Fin (m + 1 + 1) → Zd d (sz.L n)) : ℝ :=
+  kappaAltQNg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) 0 (K n) * X0 +
+    epsAltQNg Cv ((sz.W n : ℕ) : ℝ) 0 (K n) * δ0 +
+    gridStep s v K n * ∑ j ∈ Finset.range (K n),
+      (kappaAltQNg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) (j + 1) (K n) *
+          dd j +
+        epsAltQNg Cv ((sz.W n : ℕ) : ℝ) (j + 1) (K n) * δD) +
+    ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
+      (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ)) +
+    ((sz.size n : ℕ) : ℝ) ^ (-D_Y) +
+    ∑ j ∈ Finset.range (K n), (1 + (1 - gridTime s v K n (K n))⁻¹) ^ (m + 1 + 1) *
+      stepErrNg Cm.toFlowFM n (m + 1 + 1) (gridTime s v K n j) (gridTime s v K n (j + 1))
+        (gridStep s v K n)
+        (((sz.size n : ℕ) : ℝ) ^ τK * (Cm.eta n (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1))
+
+end VocabG
+
+theorem altBudget_kapFarg_band (d : ℕ) (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) :
+    altBudget_kapFarg sz n k (qProxy4C d k Λg κ' KL) ε = altBudget_kapFar sz n k Λg κ' KL ε := rfl
+
+theorem altBudget_qvFarg_band (d : ℕ) (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) :
+    altBudget_qvFarg sz n k (qProxy4C d k Λg κ' KL) ε = altBudget_qvFar sz n k Λg κ' KL ε := rfl
+
+theorem qvBdAltQNg_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n m : ℕ) (Λg κ' KL C c ε Γ Λ D u w : ℝ) :
+    qvBdAltQNg (bandStep2Mat sz E) n m (qProxy4C d (m + 1 + 1) Λg κ' KL) Λg KL C c ε Γ Λ D u w =
+      qvBdAltQN sz n (E n) m Λg κ' KL C c ε Γ Λ D u w := rfl
+
+theorem cQVAltQNg_band {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Λg κ' KL C c ε : ℝ)
+    (Γ Λ : ℕ → ℝ) (D'' : ℝ) (p : ℕ) (a : Fin (m + 1 + 1) → Zd d (sz.L n)) (j : ℕ) :
+    cQVAltQNg (bandStep2Mat sz E) s v K n m (qProxy4C d (m + 1 + 1) Λg κ' KL) Λg KL C c ε Γ Λ D'' p a j =
+      cQVAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ D'' p a j := rfl
+
+theorem dDriftAltLinQNg_band {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (u : ℝ) (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ) :
+    dDriftAltLinQNg (bandStep2Mat sz E) n u m Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X =
+      dDriftAltLinQN sz n (E n) u m Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X := rfl
+
+theorem assembledRHSAltQNg_band {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Λg κ' KL C c ε : ℝ)
+    (Γ Λ : ℕ → ℝ) (dd : ℕ → ℝ) (δ0 δD D'' D_Y τK εq X0 : ℝ) (a : Fin (m + 1 + 1) → Zd d (sz.L n)) :
+    assembledRHSAltQNg (bandStep2Mat sz E) s v K n m (qProxy4C d (m + 1 + 1) Λg κ' KL) Λg KL C c ε Γ Λ dd δ0 δD D'' D_Y τK εq X0 a =
+      assembledRHSAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ dd δ0 δD D'' D_Y τK εq X0 a := rfl
+
+/-! ## 1g. The sharp kernel over a carrier -/
+
+section KernelG
+
+private theorem QBudgetA_kappag_nonneg (k : ℕ) (Cv g W ε : ℝ) (hW : 0 ≤ W) (u : ℕ → ℝ) (i m : ℕ) :
+    0 ≤ kappaAltQNg k Cv g W ε u i m := by
+  unfold kappaAltQNg
   exact mul_nonneg (Real.rpow_nonneg hW _)
     (pow_nonneg (div_nonneg (by positivity) (by positivity)) _)
 
-private theorem QBudgetA_eps_nonneg (d k : ℕ) (Λg κ' KL W : ℝ) (hW : 0 ≤ W) (i m : ℕ) :
-    0 ≤ epsAltQN d k Λg κ' KL W i m := by
-  unfold epsAltQN
+private theorem QBudgetA_epsg_nonneg (Cv W : ℝ) (hW : 0 ≤ W) (i m : ℕ) : 0 ≤ epsAltQNg Cv W i m := by
+  unfold epsAltQNg
   exact Real.rpow_nonneg hW _
 
-/-- Target 1 (sharp kernel, initial datum; analogue of `kappaNonAltN_mul_Bctl_pow_le`, `NQGood2.lean:188`). -/
-theorem kappaAltQN_mul_Bctl_pow_le :
-  ∀ {d : ℕ} (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) {W : ℝ}, 0 ≤ W →
-    ∀ (u : ℕ → ℝ) {i m : ℕ}, u i ≤ u m → u m < 1 →
-      kappaAltQN d k Λg κ' KL (sz.lam n) W ε u i m * (sz.Bctl n (u i)) ^ k ≤
-        W ^ (qProxy4C d k Λg κ' KL * ε) * (sz.Bctl n (u m)) ^ k := by
-  intro d sz n k Λg κ' KL ε W hW u i m him hm1
+/-- Target 7 (sharp kernel, initial datum; band `kappaAltQN_mul_Bctl_pow_le`; model-free in the carrier). -/
+theorem kappaAltQNg_mul_Bctl_pow_le {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) {W : ℝ} (hW : 0 ≤ W)
+    (u : ℕ → ℝ) {i m : ℕ} (him : u i ≤ u m) (hm1 : u m < 1) :
+    kappaAltQNg k Cv (sz.lam n) W ε u i m * (sz.Bctl n (u i)) ^ k ≤ W ^ (Cv * ε) * (sz.Bctl n (u m)) ^ k := by
   have hi1 : u i < 1 := him.trans_lt hm1
   have hBu : 0 < sz.Bctl n (u i) := Sizes.STBctl_pos sz n hi1
   have hr0 : 0 ≤ (sz.lam n ^ 2 + |1 - u i|) / (sz.lam n ^ 2 + |1 - u m|) :=
     div_nonneg (by positivity) (by positivity)
   have hrB := nqGood2_ratio_mul_Bctl_le sz n him hm1
-  have hWC : 0 ≤ W ^ (qProxy4C d k Λg κ' KL * ε) := Real.rpow_nonneg hW _
-  unfold kappaAltQN
+  have hWC : 0 ≤ W ^ (Cv * ε) := Real.rpow_nonneg hW _
+  unfold kappaAltQNg
   rw [mul_assoc, ← mul_pow]
   exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (mul_nonneg hr0 hBu.le) hrB k) hWC
 
-/-- Target 2 (sharp kernel, drift; analogue of `kappaNonAltN_succ_mul_Bctl_pow_le`, `NQGood2.lean:206`). -/
-theorem kappaAltQN_succ_mul_Bctl_pow_le :
-  ∀ {d : ℕ} (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) {W : ℝ}, 0 ≤ W →
-    ∀ (u : ℕ → ℝ) (j m : ℕ), u j ≤ u (j + 1) → u (j + 1) ≤ u m → u m < 1 →
-      kappaAltQN d k Λg κ' KL (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u j)) ^ k ≤
-        W ^ (qProxy4C d k Λg κ' KL * ε) * (sz.Bctl n (u m)) ^ k := by
-  intro d sz n k Λg κ' KL ε W hW u j m hjj hj1m hm1
+/-- Sharp kernel, drift (band `kappaAltQN_succ_mul_Bctl_pow_le`). -/
+theorem kappaAltQNg_succ_mul_Bctl_pow_le {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) {W : ℝ} (hW : 0 ≤ W)
+    (u : ℕ → ℝ) (j m : ℕ) (hjj : u j ≤ u (j + 1)) (hj1m : u (j + 1) ≤ u m) (hm1 : u m < 1) :
+    kappaAltQNg k Cv (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u j)) ^ k ≤ W ^ (Cv * ε) * (sz.Bctl n (u m)) ^ k := by
   have hj1 : u (j + 1) < 1 := hj1m.trans_lt hm1
   have hBle : sz.Bctl n (u j) ≤ sz.Bctl n (u (j + 1)) := Sizes.STBctl_mono sz n hjj hj1
   have hBj : 0 < sz.Bctl n (u j) := Sizes.STBctl_pos sz n (hjj.trans_lt hj1)
-  have hκ := QBudgetA_kappa_nonneg d k Λg κ' KL (sz.lam n) W ε hW u (j + 1) m
-  calc kappaAltQN d k Λg κ' KL (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u j)) ^ k
-      ≤ kappaAltQN d k Λg κ' KL (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u (j + 1))) ^ k :=
+  have hκ := QBudgetA_kappag_nonneg k Cv (sz.lam n) W ε hW u (j + 1) m
+  calc kappaAltQNg k Cv (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u j)) ^ k
+      ≤ kappaAltQNg k Cv (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u (j + 1))) ^ k :=
         mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hBj.le hBle k) hκ
-    _ ≤ W ^ (qProxy4C d k Λg κ' KL * ε) * (sz.Bctl n (u m)) ^ k :=
-        kappaAltQN_mul_Bctl_pow_le sz n k Λg κ' KL ε hW u hj1m hm1
+    _ ≤ W ^ (Cv * ε) * (sz.Bctl n (u m)) ^ k := kappaAltQNg_mul_Bctl_pow_le sz n k Cv ε hW u hj1m hm1
 
-/-- Target 3 (far bound; analogue of `nqBudget_kappa_le_kapFar`, `NQBudget.lean:163`). -/
-theorem kappaAltQN_le_kapFar :
-  ∀ {d : ℕ} (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) (u : ℕ → ℝ) {i m : ℕ},
-    0 ≤ u i → u i ≤ u m → u m < 1 → (1 - u m)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) →
-      kappaAltQN d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε u i m ≤ altBudget_kapFar sz n k Λg κ' KL ε := by
-  intro d sz n k Λg κ' KL ε u i m hu0 hium hm1 hN
+/-- Far bound (band `kappaAltQN_le_kapFar`). -/
+theorem kappaAltQNg_le_kapFar {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) (u : ℕ → ℝ) {i m : ℕ}
+    (hu0 : 0 ≤ u i) (hium : u i ≤ u m) (hm1 : u m < 1) (hN : (1 - u m)⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) :
+    kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε u i m ≤ altBudget_kapFarg sz n k Cv ε := by
   have hi1 : u i < 1 := hium.trans_lt hm1
   have hxm : 0 < 1 - u m := by linarith
   have hg : 0 ≤ sz.lam n ^ 2 := sq_nonneg _
@@ -198,93 +336,63 @@ theorem kappaAltQN_le_kapFar :
         linarith
       nlinarith [hnum, hg]
     exact h1.trans (mul_le_mul_of_nonneg_left hN (by linarith))
-  have hWC : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε) :=
+  have hWC : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) :=
     Real.rpow_nonneg (Nat.cast_nonneg _) _
-  unfold kappaAltQN altBudget_kapFar
+  unfold kappaAltQNg altBudget_kapFarg
   exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hr0 hr _) hWC
 
-end Kernel
+end KernelG
 
-/-! ## 2. Targets 4-7: the three term budgets -/
+/-! ## 2g. The three term budgets over a carrier -/
 
-section Terms
+section TermsG
 
-variable {d : ℕ} (sz : Sizes d)
+variable {d : ℕ} {sz : Sizes d}
 
-/-- `0 ≤ u_i` on the grid `0 ≤ s_n ≤ v_n` (copy of the private `nqBudget_gridTime_nonneg`, `NQBudget.lean:334`). -/
-private theorem QBudgetA_gridTime_nonneg {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hs0 : 0 ≤ s n)
-    (hsv : s n ≤ v n) (i : ℕ) : 0 ≤ gridTime s v K n i := by
-  have h := ST_gridTime_mono s v K n hsv (Nat.zero_le i)
-  rw [ST_gridTime_zero] at h
-  linarith
-
-/-- `u_i ≤ v_n` for `i ≤ K_n`, `K_n ≠ 0` (copy of `nqBudget_gridTime_le`, `NQBudget.lean:341`). -/
-private theorem QBudgetA_gridTime_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hsv : s n ≤ v n)
-    (hK : K n ≠ 0) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i ≤ v n :=
-  (ST_gridTime_mono s v K n hsv hi).trans_eq (gridTime_last s v K n hK)
-
-/-- `K Δ = v - s` (copy of `nqBudget_K_mul_step`, `NQBudget.lean:346`). -/
-private theorem QBudgetA_K_mul_step {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hK : K n ≠ 0) :
-    (K n : ℝ) * gridStep s v K n = v n - s n := by
-  have hK' : (K n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hK
-  unfold gridStep
-  rw [mul_div_cancel₀ _ hK']
-
-/-- Target 4 (the variance majorant is a `nqBudget_qvShape`; analogue of `qvBdNonAltN_eq_qvShape`,
-`NQBudget.lean:355`). -/
-theorem qvBdAltQN_eq_qvShape :
-  ∀ {d : ℕ} (sz : Sizes d) (n : ℕ) (E : ℝ) (m : ℕ) (Λg κ' KL C c ε Γ Λ D u w : ℝ),
-    qvBdAltQN sz n E m Λg κ' KL C c ε Γ Λ D u w =
+/-- The variance majorant is an `nqBudget_qvShape` (band `qvBdAltQN_eq_qvShape`). -/
+theorem qvBdAltQNg_eq_qvShape (Cm : Step2Mat sz) (n m : ℕ) (Cv Λg KL C c ε Γ Λ D u w : ℝ) :
+    qvBdAltQNg Cm n m Cv Λg KL C c ε Γ Λ D u w =
       nqBudget_qvShape (m + 1 + 1)
-        (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-          ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1 + 1))
-        (((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL)
-        (((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1))
+        (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1 + 1))
+        (((sz.W n : ℕ) : ℝ) ^ Cv) (((sz.W n : ℕ) : ℝ) ^ Cv * ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1))
         (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ * (Γ * Λ)))
-        (((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d (m + 1) Λg KL C c))
-        (sz.Bctl n u) (etaT E u) := by
-  intro d sz n E m Λg κ' KL C c ε Γ Λ D u w
-  unfold qvBdAltQN nqBudget_qvShape
+        (((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d (m + 1) Λg KL C c)) (sz.Bctl n u) (Cm.eta n u) := by
+  unfold qvBdAltQNg nqBudget_qvShape
   ring
 
-/-- Target 5 (initial term; analogue of `tbInitNonAltN`, `NQBudget.lean:368`). -/
-theorem tbInitAltQN :
-  ∀ {d : ℕ} (sz : Sizes d) {s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Λg κ' KL ε G X0 : ℝ),
-    0 ≤ s n → s n ≤ v n → v n < 1 → K n ≠ 0 → 0 ≤ G → X0 ≤ G * (sz.Bctl n (s n)) ^ k →
-      kappaAltQN d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) 0 (K n) * X0 ≤
-        ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε) * G * (sz.Bctl n (v n)) ^ k := by
-  intro d sz s v K n k Λg κ' KL ε G X0 hs0 hsv hv1 hK hG hX0
+/-- The initial term (band `tbInitAltQN`; no spectral hypothesis). -/
+theorem tbInitAltQNg (sz : Sizes d) {s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Cv ε G X0 : ℝ)
+    (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0) (hG : 0 ≤ G)
+    (hX0 : X0 ≤ G * (sz.Bctl n (s n)) ^ k) :
+    kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) 0 (K n) * X0 ≤
+      ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * G * (sz.Bctl n (v n)) ^ k := by
   have hW : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
   have huK := gridTime_last s v K n hK
   have hu0 := ST_gridTime_zero s v K n
-  have hκ0 := QBudgetA_kappa_nonneg d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε hW
-    (gridTime s v K n) 0 (K n)
-  have hker := kappaAltQN_mul_Bctl_pow_le sz n k Λg κ' KL ε hW (gridTime s v K n)
+  have hκ0 := QBudgetA_kappag_nonneg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε hW (gridTime s v K n) 0 (K n)
+  have hker := kappaAltQNg_mul_Bctl_pow_le sz n k Cv ε hW (gridTime s v K n)
     (i := 0) (m := K n) (by rw [hu0, huK]; exact hsv) (by rw [huK]; exact hv1)
   rw [hu0, huK] at hker
-  have h := tbInitN (k := k) (K := K n) (Cκ := ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε))
+  have h := tbInitNg (k := k) (K := K n) (Cκ := ((sz.W n : ℕ) : ℝ) ^ (Cv * ε))
     (G := G) (X0 := X0) (fun i => sz.Bctl n (gridTime s v K n i))
-    (kappaAltQN d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)) hκ0 hG
+    (kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)) hκ0 hG
     (by simpa only [hu0, huK] using hker) (by simpa only [hu0] using hX0)
   simpa only [huK] using h
 
-/-- Target 6 (drift term at a generic level `dd j ≤ Pa Φd B_{u_j}^k/η_{u_j} + b`; the merged generic `tbDriftN`,
-`NQBudget.lean:221`, with targets 2 and 3; analogue of `tbDriftLinN`, `NQLin.lean:876`). -/
-theorem tbDriftAltQN :
-  ∀ {d : ℕ} (sz : Sizes d) {E s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Λg κ' KL ε : ℝ)
-    (dd : ℕ → ℝ) (Pa Φd b δD : ℝ),
-    |E n| < 2 → 0 ≤ s n → s n ≤ v n → v n < 1 → K n ≠ 0 →
-    0 ≤ Pa → 0 ≤ Φd → 0 ≤ b → 0 ≤ δD →
-    (etaT (E n) (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) →
-    (∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ k / etaT (E n) (gridTime s v K n j)) + b) →
-      gridStep s v K n * ∑ j ∈ Finset.range (K n),
-        (kappaAltQN d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) (j + 1) (K n) * dd j +
-          epsAltQN d k Λg κ' KL ((sz.W n : ℕ) : ℝ) (j + 1) (K n) * δD) ≤
-        ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε) * (Pa * Φd) * (sz.Bctl n (v n)) ^ k *
-            ∑ j ∈ Finset.range (K n), gridStep s v K n / etaT (E n) (gridTime s v K n j) +
-          ((K n : ℝ) * gridStep s v K n) *
-            (altBudget_kapFar sz n k Λg κ' KL ε * b + ((sz.W n : ℕ) : ℝ) ^ qProxy4C d k Λg κ' KL * δD) := by
-  intro d sz E s v K n k Λg κ' KL ε dd Pa Φd b δD hE hs0 hsv hv1 hK hPa hΦd hb hδD hη hdd
+/-- The drift term at a generic level `dd j ≤ Pa Φd B_{u_j}^k/η_{u_j} + b` (band `tbDriftAltQN`; `LoopForm` and the inline `‖m‖ ≤ 1`
+replace `|E n| < 2`). -/
+theorem tbDriftAltQNg {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E)
+    (n k : ℕ) (Cv ε : ℝ) (dd : ℕ → ℝ) (Pa Φd b δD : ℝ) (hm : ‖Cm.m n‖ ≤ 1) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n)
+    (hv1 : v n < 1) (hK : K n ≠ 0) (hPa : 0 ≤ Pa) (hΦd : 0 ≤ Φd) (hb : 0 ≤ b) (hδD : 0 ≤ δD)
+    (hη : (Cm.eta n (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ))
+    (hdd : ∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ k / Cm.eta n (gridTime s v K n j)) + b) :
+    gridStep s v K n * ∑ j ∈ Finset.range (K n),
+      (kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) (j + 1) (K n) * dd j +
+        epsAltQNg Cv ((sz.W n : ℕ) : ℝ) (j + 1) (K n) * δD) ≤
+      ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * (Pa * Φd) * (sz.Bctl n (v n)) ^ k *
+          ∑ j ∈ Finset.range (K n), gridStep s v K n / Cm.eta n (gridTime s v K n j) +
+        ((K n : ℝ) * gridStep s v K n) *
+          (altBudget_kapFarg sz n k Cv ε * b + ((sz.W n : ℕ) : ℝ) ^ Cv * δD) := by
   have hW : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
   have hu0 : ∀ i, 0 ≤ gridTime s v K n i := fun i => QBudgetA_gridTime_nonneg hs0 hsv i
   have hu1 : ∀ i ≤ K n, gridTime s v K n i < 1 := fun i hi =>
@@ -293,65 +401,62 @@ theorem tbDriftAltQN :
   have hmono : ∀ i m, i ≤ m → gridTime s v K n i ≤ gridTime s v K n m := fun i m him =>
     ST_gridTime_mono s v K n hsv him
   have hΔ0 : 0 ≤ gridStep s v K n := ST_gridStep_nonneg s v K n hsv
-  have hN1 : (1 - v n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := nqBudget_inv_one_sub_le hE hv1 hη
-  have hsucc : ∀ j < K n, kappaAltQN d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε
+  have hN1 : (1 - v n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := NQBudgetGen_inv_one_sub_le hL hm hv1 hη
+  have hsucc : ∀ j < K n, kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε
       (gridTime s v K n) (j + 1) (K n) * (sz.Bctl n (gridTime s v K n j)) ^ k ≤
-      ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε) *
+      ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
         (sz.Bctl n (gridTime s v K n (K n))) ^ k := fun j hj =>
-    kappaAltQN_succ_mul_Bctl_pow_le sz n k Λg κ' KL ε hW (gridTime s v K n) j (K n)
+    kappaAltQNg_succ_mul_Bctl_pow_le sz n k Cv ε hW (gridTime s v K n) j (K n)
       (hmono j (j + 1) (by omega)) (hmono (j + 1) (K n) (by omega)) (hu1 _ le_rfl)
-  have h := tbDriftN (E := E n) (k := k) (K := K n) (Δ := gridStep s v K n)
-    (Cκ := ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε))
-    (Cε := ((sz.W n : ℕ) : ℝ) ^ qProxy4C d k Λg κ' KL)
-    (Cfar := altBudget_kapFar sz n k Λg κ' KL ε)
+  have h := tbDriftNg Cm n (k := k) (K := K n) (Δ := gridStep s v K n)
+    (Cκ := ((sz.W n : ℕ) : ℝ) ^ (Cv * ε))
+    (Cε := ((sz.W n : ℕ) : ℝ) ^ Cv)
+    (Cfar := altBudget_kapFarg sz n k Cv ε)
     (a := Pa * Φd) (b := b) (δmax := δD) (gridTime s v K n)
     (fun i => sz.Bctl n (gridTime s v K n i))
-    (kappaAltQN d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n))
-    (epsAltQN d k Λg κ' KL ((sz.W n : ℕ) : ℝ)) dd (fun _ => δD) hΔ0 (mul_nonneg hPa hΦd) hb
-    (fun j hj => QBudgetA_kappa_nonneg d k Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε hW _
+    (kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n))
+    (epsAltQNg Cv ((sz.W n : ℕ) : ℝ)) dd (fun _ => δD) hΔ0 (mul_nonneg hPa hΦd) hb
+    (fun j hj => QBudgetA_kappag_nonneg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε hW _
       (j + 1) (K n))
-    (fun j hj => QBudgetA_eps_nonneg d k Λg κ' KL ((sz.W n : ℕ) : ℝ) hW (j + 1) (K n))
+    (fun j hj => QBudgetA_epsg_nonneg Cv ((sz.W n : ℕ) : ℝ) hW (j + 1) (K n))
     hsucc
-    (fun j hj => kappaAltQN_le_kapFar sz n k Λg κ' KL ε (gridTime s v K n) (hu0 (j + 1))
+    (fun j hj => kappaAltQNg_le_kapFar sz n k Cv ε (gridTime s v K n) (hu0 (j + 1))
       (hmono (j + 1) (K n) (by omega)) (hu1 _ le_rfl) (by rw [huK]; exact hN1))
     (fun _ _ => le_rfl) hdd (fun _ _ => hδD) (fun _ _ => le_rfl)
-    (fun j hj => etaT_pos hE (hu1 j hj.le))
+    (fun j hj => NQGood1Gen_eta_pos hL n (hu1 j hj.le))
   rw [huK] at h
   exact h
 
-/-- `qvBdAltQN ≥ 0` for `Λ ≥ 0`, `|E| < 2`, `u < 1` (so the `toNNReal` of `cQVAltQN` is the identity). -/
-private theorem QBudgetA_qvBd_nonneg (n : ℕ) {E : ℝ} (m : ℕ) (Λg κ' KL C c ε Γ Λ D u w : ℝ)
-    (hE : |E| < 2) (hu1 : u < 1) (hΛ : 0 ≤ Λ) :
-    0 ≤ qvBdAltQN sz n E m Λg κ' KL C c ε Γ Λ D u w := by
-  have hη : 0 < etaT E u := etaT_pos hE hu1
+/-- `qvBdAltQNg ≥ 0` for `Λ ≥ 0`, `u < 1` (so the `toNNReal` of `cQVAltQNg` is the identity). -/
+private theorem QBudgetA_qvBdg_nonneg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (n m : ℕ)
+    (Cv Λg KL C c ε Γ Λ D u w : ℝ) (hu1 : u < 1) (hΛ : 0 ≤ Λ) :
+    0 ≤ qvBdAltQNg Cm n m Cv Λg KL C c ε Γ Λ D u w := by
+  have hη : 0 < Cm.eta n u := NQGood1Gen_eta_pos hL n hu1
   have hB : 0 < sz.Bctl n u := Sizes.STBctl_pos sz n hu1
   have hW0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
   have hG : 0 ≤ Γ * (Γ * Λ) := by
     have : Γ * (Γ * Λ) = Γ ^ 2 * Λ := by ring
     rw [this]; positivity
-  have hG' : 0 ≤ Γ * (Γ * Λ) * ((sz.Bctl n u) ^ (2 * (m + 1 + 1)) / etaT E u) :=
+  have hG' : 0 ≤ Γ * (Γ * Λ) * ((sz.Bctl n u) ^ (2 * (m + 1 + 1)) / Cm.eta n u) :=
     mul_nonneg hG (div_nonneg (pow_nonneg hB.le _) hη.le)
   have hr : 0 ≤ (sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|) :=
     div_nonneg (by positivity) (by positivity)
-  unfold qvBdAltQN
+  unfold qvBdAltQNg
   positivity
 
-/-- Target 7 (quadratic-variation term; the merged generic `tbQvN`, `NQBudget.lean:269`, with targets 1 and 4;
-analogue of `tbQvNonAltN`, `NQBudget.lean:458`). -/
-theorem tbQvAltQN :
-  ∀ {d : ℕ} (sz : Sizes d) {E s v : ℕ → ℝ} {K : ℕ → ℕ} (n m : ℕ) (Λg κ' KL C c ε : ℝ)
-    (Γ Λ : ℕ → ℝ) (D'' : ℝ) (a : Fin (m + 1 + 1) → Zd d (sz.L n)),
-    |E n| < 2 → 0 ≤ s n → s n ≤ v n → v n < 1 → K n ≠ 0 → 0 ≤ Λ n →
-    (etaT (E n) (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) →
-      ∑ j ∈ Finset.range (K n), (cQVAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ D'' (K n) a j : ℝ) ≤
-        ((m + 1 + 1 : ℕ) : ℝ) * (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε)) ^ 2 *
-            (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n))) *
-            ((sz.Bctl n (v n)) ^ (m + 1 + 1)) ^ 2 *
-            ∑ j ∈ Finset.range (K n), gridStep s v K n / etaT (E n) (gridTime s v K n (j + 1)) +
-          ((K n : ℝ) * gridStep s v K n) *
-            (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-              ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by
-  intro d sz E s v K n m Λg κ' KL C c ε Γ Λ D'' a hE hs0 hsv hv1 hK hΛ hη
+/-- The quadratic-variation term (band `tbQvAltQN`). -/
+theorem tbQvAltQNg {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E)
+    (n m : ℕ) (Cv Λg KL C c ε : ℝ) (Γ Λ : ℕ → ℝ) (D'' : ℝ) (a : Fin (m + 1 + 1) → Zd d (sz.L n))
+    (hm : ‖Cm.m n‖ ≤ 1) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0) (hΛ : 0 ≤ Λ n)
+    (hη : (Cm.eta n (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) :
+    ∑ j ∈ Finset.range (K n), (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ) ≤
+      ((m + 1 + 1 : ℕ) : ℝ) * (((sz.W n : ℕ) : ℝ) ^ (Cv * ε)) ^ 2 *
+          (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n))) *
+          ((sz.Bctl n (v n)) ^ (m + 1 + 1)) ^ 2 *
+          ∑ j ∈ Finset.range (K n), gridStep s v K n / Cm.eta n (gridTime s v K n (j + 1)) +
+        ((K n : ℝ) * gridStep s v K n) *
+          (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by
   have hW : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
   have hu0 : ∀ i, 0 ≤ gridTime s v K n i := fun i => QBudgetA_gridTime_nonneg hs0 hsv i
   have hu1 : ∀ i ≤ K n, gridTime s v K n i < 1 := fun i hi =>
@@ -360,62 +465,411 @@ theorem tbQvAltQN :
   have hmono : ∀ i m, i ≤ m → gridTime s v K n i ≤ gridTime s v K n m := fun i m him =>
     ST_gridTime_mono s v K n hsv him
   have hΔ0 : 0 ≤ gridStep s v K n := ST_gridStep_nonneg s v K n hsv
-  have hN1 : (1 - v n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := nqBudget_inv_one_sub_le hE hv1 hη
+  have hN1 : (1 - v n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := NQBudgetGen_inv_one_sub_le hL hm hv1 hη
   have hWd : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c) :=
     Real.rpow_nonneg hW _
-  have hWC : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL :=
+  have hWC : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ Cv :=
     Real.rpow_nonneg hW _
   have hG : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n)) := by
     have : Γ n * (Γ n * Λ n) = Γ n ^ 2 * Λ n := by ring
     rw [this]; have := Real.rpow_nonneg hW (2 * qProxyCn d (m + 1) Λg KL C c * ε); positivity
   have hcoe : ∀ j ∈ Finset.range (K n),
-      (cQVAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ D'' (K n) a j : ℝ) =
+      (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ) =
         gridStep s v K n * (((m + 1 + 1 : ℕ) : ℝ) * nqBudget_qvShape (m + 1 + 1)
-          (kappaAltQN d (m + 1 + 1) Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
+          (kappaAltQNg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
             (j + 1) (K n))
-          (((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL)
-          (((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1))
+          (((sz.W n : ℕ) : ℝ) ^ Cv)
+          (((sz.W n : ℕ) : ℝ) ^ Cv * ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1))
           (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n)))
           (((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))
-          (sz.Bctl n (gridTime s v K n (j + 1))) (etaT (E n) (gridTime s v K n (j + 1)))) := by
+          (sz.Bctl n (gridTime s v K n (j + 1))) (Cm.eta n (gridTime s v K n (j + 1)))) := by
     intro j hj
     have hjK := Finset.mem_range.1 hj
-    have hpos := QBudgetA_qvBd_nonneg sz n (E := E n) m Λg κ' KL C c ε (Γ n) (Λ n) D''
-      (gridTime s v K n (j + 1)) (gridTime s v K n (K n)) hE (hu1 (j + 1) (by omega)) hΛ
-    unfold cQVAltQN
-    rw [Real.coe_toNNReal _ (by positivity), qvBdAltQN_eq_qvShape]
+    have hpos := QBudgetA_qvBdg_nonneg Cm hL n m Cv Λg KL C c ε (Γ n) (Λ n) D''
+      (gridTime s v K n (j + 1)) (gridTime s v K n (K n)) (hu1 (j + 1) (by omega)) hΛ
+    unfold cQVAltQNg
+    rw [Real.coe_toNNReal _ (by positivity), qvBdAltQNg_eq_qvShape]
     rfl
   rw [Finset.sum_congr rfl hcoe]
-  have h := tbQvN (E := E n) (k := m + 1 + 1) (K := K n)
-    (Cκ := ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε))
-    (Cfar := altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε)
-    (Ce := ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL)
-    (Cc := ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1))
+  have h := tbQvNg Cm n (k := m + 1 + 1) (K := K n)
+    (Cκ := ((sz.W n : ℕ) : ℝ) ^ (Cv * ε))
+    (Cfar := altBudget_kapFarg sz n (m + 1 + 1) Cv ε)
+    (Ce := ((sz.W n : ℕ) : ℝ) ^ Cv)
+    (Cc := ((sz.W n : ℕ) : ℝ) ^ Cv * ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1))
     (G := ((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n)))
     (Wd := ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) (Δ := gridStep s v K n)
     (gridTime s v K n) (fun i => sz.Bctl n (gridTime s v K n i))
-    (fun j => kappaAltQN d (m + 1 + 1) Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
+    (fun j => kappaAltQNg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
       (j + 1) (K n))
     (fun j hj => (Sizes.STBctl_pos sz n (hu1 (j + 1) (by omega))).le)
-    (fun j hj => QBudgetA_kappa_nonneg d (m + 1 + 1) Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε hW _
+    (fun j hj => QBudgetA_kappag_nonneg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε hW _
       (j + 1) (K n))
-    (fun j hj => kappaAltQN_mul_Bctl_pow_le sz n (m + 1 + 1) Λg κ' KL ε hW (gridTime s v K n)
+    (fun j hj => kappaAltQNg_mul_Bctl_pow_le sz n (m + 1 + 1) Cv ε hW (gridTime s v K n)
       (hmono (j + 1) (K n) (by omega)) (hu1 _ le_rfl))
-    (fun j hj => kappaAltQN_le_kapFar sz n (m + 1 + 1) Λg κ' KL ε (gridTime s v K n) (hu0 (j + 1))
+    (fun j hj => kappaAltQNg_le_kapFar sz n (m + 1 + 1) Cv ε (gridTime s v K n) (hu0 (j + 1))
       (hmono (j + 1) (K n) (by omega)) (hu1 _ le_rfl) (by rw [huK]; exact hN1))
-    hG hWd hWC hΔ0 (fun j hj => etaT_pos hE (hu1 (j + 1) (by omega)))
+    hG hWd hWC hΔ0 (fun j hj => NQGood1Gen_eta_pos hL n (hu1 (j + 1) (by omega)))
   rw [huK] at h
-  unfold altBudget_qvFar
+  unfold altBudget_qvFarg
   exact h
 
-end Terms
+end TermsG
 
-/-! ## 3. Targets 8-9: the two drift levels in the generic shape -/
+/-! ## 3g. The linear drift level in the generic shape over a carrier -/
 
-section Levels
+section LevelsG
 
-/-- Target 8 (the linear level in the generic shape of target 6: `Pa = W^{C_nε'}Γ²k + N^{τ_N}`,
+variable {d : ℕ} {sz : Sizes d}
+
+/-- The linear level in the generic shape of `tbDriftAltQNg` (band `dDriftAltLinQN_le_shape`: `Pa = W^{C_nε'}Γ²k + N^{τ_N}`,
 `Φd = Φ₁ + Φ₂ + Φ₃ + X`, `b = W^{-D'+C_n}`). -/
+theorem dDriftAltLinQNg_le_shape {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) (u : ℝ)
+    (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ) (hu : u < 1) (h1 : 0 ≤ Φ₁) (h2 : 0 ≤ Φ₂) (h3 : 0 ≤ Φ₃) (hX : 0 ≤ X) :
+    dDriftAltLinQNg Cm n u m Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X ≤
+      (((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((m + 1 + 1 : ℕ) : ℝ) + ((sz.size n : ℕ) : ℝ) ^ τN) *
+          (Φ₁ + Φ₂ + Φ₃ + X) * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u) +
+        ((sz.W n : ℕ) : ℝ) ^ (-D' + Cn) := by
+  have hη : 0 < Cm.eta n u := NQGood1Gen_eta_pos hL n hu
+  have hB : 0 < sz.Bctl n u := Sizes.STBctl_pos sz n hu
+  have hW0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hP : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') := Real.rpow_nonneg hW0 _
+  have hNτ : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τN := Real.rpow_nonneg hN0 _
+  have hT : 0 ≤ (sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u := div_nonneg (pow_nonneg hB.le _) hη.le
+  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+  have hk : ((m + 1 + 1 : ℕ) : ℝ) = (m : ℝ) + 2 := by push_cast; ring
+  unfold dDriftAltLinQNg dDriftLinNg
+  have e : (Cm.eta n u)⁻¹ * sz.Bctl n u ^ (m + 2) * X =
+      X * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u) := by
+    rw [div_eq_mul_inv]; ring
+  rw [e]
+  have key : (((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃ ≤
+      ((m + 1 + 1 : ℕ) : ℝ) * (Φ₁ + Φ₂ + Φ₃ + X) := by
+    rw [hk]
+    nlinarith [mul_nonneg hm0 h1, mul_nonneg hm0 h2, mul_nonneg hm0 h3, mul_nonneg hm0 hX]
+  have A : ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u) *
+        ((((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃)) ≤
+      ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((m + 1 + 1 : ℕ) : ℝ) * (Φ₁ + Φ₂ + Φ₃ + X) *
+        ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u) := by
+    calc ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u) *
+          ((((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃))
+        = (((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u)) *
+          ((((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃) := by ring
+      _ ≤ (((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u)) *
+          (((m + 1 + 1 : ℕ) : ℝ) * (Φ₁ + Φ₂ + Φ₃ + X)) :=
+          mul_le_mul_of_nonneg_left key (mul_nonneg (mul_nonneg hP (mul_self_nonneg Γ)) hT)
+      _ = _ := by ring
+  have B : ((sz.size n : ℕ) : ℝ) ^ τN * (X * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ τN * (Φ₁ + Φ₂ + Φ₃ + X) * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u) := by
+    calc ((sz.size n : ℕ) : ℝ) ^ τN * (X * ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u))
+        ≤ ((sz.size n : ℕ) : ℝ) ^ τN * ((Φ₁ + Φ₂ + Φ₃ + X) *
+          ((sz.Bctl n u) ^ (m + 1 + 1) / Cm.eta n u)) :=
+          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (by linarith) hT) hNτ
+      _ = _ := by ring
+  nlinarith [A, B]
+
+end LevelsG
+
+/-! ## 4g. The budget `budgetAltQNg` -/
+
+section BudgetG
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- **The budget of the alternating endpoint over a carrier** (band `budgetAltQN`; paper `3_5:1692-1714`): at a fixed `n`, under explicit
+numerical inequalities only, `assembledRHSAltQNg ≤ N^{ε₀} (Λ^{1/2} + Φd) B_v^k`, `k = m + 2`, `C₄ = Cv` explicit,
+`C_n = qProxyCn d (m+1) Λg KL C c`, `C_Q = qProxyCQ d (m+1) Λg KL C c`; `LoopForm` and the inline `‖Cm.m n‖ ≤ 1` replace `|E n| < 2`. -/
+theorem budgetAltQNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ)
+    (Cv Λg KL C c ε : ℝ) (Γ Λ : ℕ → ℝ) (dd : ℕ → ℝ) (Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 : ℝ)
+    (a : Fin (m + 1 + 1) → Zd d (sz.L n))
+    (hε₁ : 0 ≤ ε₁) (hm : ‖Cm.m n‖ ≤ 1) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0)
+    (hη : (Cm.eta n (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ))
+    (hΔη : gridStep s v K n * (Cm.eta n (v n))⁻¹ ≤ 1)
+    (hΓ : Γ n = ((sz.size n : ℕ) : ℝ) ^ ε₁) (hΛ : 1 ≤ Λ n)
+    (hPa : 0 ≤ Pa) (hΦd : 0 ≤ Φd) (hb : 0 ≤ b) (hδ0 : 0 ≤ δ0) (hδD : 0 ≤ δD)
+    (hdd : ∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ (m + 1 + 1) /
+      Cm.eta n (gridTime s v K n j)) + b)
+    -- `hlog` (merged input, `nqBudget_merged_inputsg` conjunct 1)
+    (hlog : ∑ j ∈ Finset.range (K n), gridStep s v K n / Cm.eta n (gridTime s v K n j) ≤
+      (Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ))
+    -- `hX0` (initial level; `startLevelQNg`)
+    (hX0 : X0 ≤ ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1))
+    -- `hR` (merged input, `nqBudget_merged_inputsg` conjunct 2 at `k = m + 2`)
+    (hR : ∑ j ∈ Finset.range (K n), (1 + (1 - gridTime s v K n (K n))⁻¹) ^ (m + 1 + 1) *
+        stepErrNg Cm.toFlowFM n (m + 1 + 1) (gridTime s v K n j) (gridTime s v K n (j + 1))
+          (gridStep s v K n)
+          (((sz.size n : ℕ) : ℝ) ^ τK * (Cm.eta n (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ (-D_t))
+    -- `ha1` (initial term), `ha2` (drift, main part), `ha3` (quadratic variation, main part)
+    (ha1 : ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * ((sz.size n : ℕ) : ℝ) ^ ε₁ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6)
+    (ha2 : ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * Pa * ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12)
+    (ha3 : ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) * ((sz.size n : ℕ) : ℝ) ^ ε₁ *
+        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1))) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12)
+    -- `he0` (initial decay error), `he1` (drift, far part), `he2` (quadratic variation, far part), `he3`, `he4`
+    (he0 : ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * (((sz.W n : ℕ) : ℝ) ^ Cv * δ0) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12)
+    (he1 : ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * (altBudget_kapFarg sz n (m + 1 + 1) Cv ε * b +
+        ((sz.W n : ℕ) : ℝ) ^ Cv * δD) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12)
+    (he2 : ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) *
+        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12)
+    (he3 : ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6)
+    (he4 : ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_t) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6) :
+    assembledRHSAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ dd δ0 δD D'' D_Y τK εq X0 a ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ * (Λ n ^ ((1 : ℝ) / 2) + Φd) * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
+    have h : 1 ≤ (sz.W n * sz.L n) ^ d :=
+      Nat.one_le_pow _ _ (Nat.mul_pos (sz.W_pos n) (by have := sz.three_le_L n; omega))
+    exact_mod_cast (show 1 ≤ sz.size n from h)
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  have hNk : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) := pow_pos hN0 _
+  have hW0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
+  have hu0 : ∀ i, 0 ≤ gridTime s v K n i := fun i => QBudgetA_gridTime_nonneg hs0 hsv i
+  have hu1 : ∀ i ≤ K n, gridTime s v K n i < 1 := fun i hi =>
+    (QBudgetA_gridTime_le hsv hK hi).trans_lt hv1
+  have huK := gridTime_last s v K n hK
+  have hΔ0 : 0 ≤ gridStep s v K n := ST_gridStep_nonneg s v K n hsv
+  have hKΔ1 : (K n : ℝ) * gridStep s v K n ≤ 1 := by
+    rw [QBudgetA_K_mul_step hK]; linarith
+  have hΓ0 : 0 ≤ Γ n := by rw [hΓ]; exact Real.rpow_nonneg hN0.le _
+  have hΛ0 : 0 ≤ Λ n := by linarith
+  have hBv0 := Sizes.STBctl_pos sz n hv1
+  have hX0' : 0 ≤ (sz.Bctl n (v n)) ^ (m + 1 + 1) := pow_nonneg hBv0.le _
+  have hXN : (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1))⁻¹ ≤ (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+    rw [← inv_pow]
+    exact pow_le_pow_left₀ (inv_nonneg.2 hN0.le)
+      (ContinuityNet.cont_inv_size_le_Bctl sz n (hs0.trans hsv) hv1) _
+  have hP0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ := Real.rpow_nonneg hN0.le _
+  have hLs0 : 0 ≤ (Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) :=
+    mul_nonneg (inv_nonneg.2 (hL n).1.le) (Real.log_nonneg hN1)
+  have hWC0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ Cv :=
+    Real.rpow_nonneg hW0 _
+  have hWCε0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) :=
+    Real.rpow_nonneg hW0 _
+  have hWQ0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) :=
+    Real.rpow_nonneg hW0 _
+  have hΛr1 : 1 ≤ Λ n ^ ((1 : ℝ) / 2) := Real.one_le_rpow hΛ (by norm_num)
+  have hkap0 : 0 ≤ altBudget_kapFarg sz n (m + 1 + 1) Cv ε := by
+    unfold altBudget_kapFarg
+    have hr : 0 ≤ (1 + sz.lam n ^ 2) * ((sz.size n : ℕ) : ℝ) := by positivity
+    positivity
+  -- the far parts are absorbed once each (`he0`, `he1`)
+  have hfar0 : ((sz.W n : ℕ) : ℝ) ^ Cv * δ0 ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
+    QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he0) hXN
+  have hfar1 : altBudget_kapFarg sz n (m + 1 + 1) Cv ε * b +
+      ((sz.W n : ℕ) : ℝ) ^ Cv * δD ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
+    QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he1) hXN
+  have hfar1' : 0 ≤ altBudget_kapFarg sz n (m + 1 + 1) Cv ε * b +
+      ((sz.W n : ℕ) : ℝ) ^ Cv * δD :=
+    add_nonneg (mul_nonneg hkap0 hb) (mul_nonneg hWC0 hδD)
+  -- T1: the initial term
+  have T1 : _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
+    (tbInitAltQNg sz n (m + 1 + 1) Cv ε (((sz.size n : ℕ) : ℝ) ^ ε₁) X0 hs0 hsv hv1 hK
+      (Real.rpow_nonneg hN0.le _) hX0).trans (mul_le_mul_of_nonneg_right ha1 hX0')
+  -- T2: the initial decay error
+  have T2 : epsAltQNg Cv ((sz.W n : ℕ) : ℝ) 0 (K n) * δ0 ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+    unfold epsAltQNg
+    exact hfar0
+  -- T3: the drift term (generic level `Pa Φd B^k/η + b`)
+  have T3 : gridStep s v K n * ∑ j ∈ Finset.range (K n),
+      (kappaAltQNg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
+          (j + 1) (K n) * dd j +
+        epsAltQNg Cv ((sz.W n : ℕ) : ℝ) (j + 1) (K n) * δD) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) +
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+    have h := tbDriftAltQNg (E := E) (s := s) (v := v) (K := K) Cm hL n (m + 1 + 1) Cv ε dd Pa
+      Φd b δD hm hs0 hsv hv1 hK hPa hΦd hb hδD hη hdd
+    refine h.trans ?_
+    have m1 : ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * (Pa * Φd) *
+          (sz.Bctl n (v n)) ^ (m + 1 + 1) *
+          ∑ j ∈ Finset.range (K n), gridStep s v K n / Cm.eta n (gridTime s v K n j) ≤
+        ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * (Pa * Φd) *
+          (sz.Bctl n (v n)) ^ (m + 1 + 1) *
+          ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) :=
+      mul_le_mul_of_nonneg_left hlog (mul_nonneg (mul_nonneg hWCε0 (mul_nonneg hPa hΦd)) hX0')
+    have m3 : ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * (Pa * Φd) *
+          (sz.Bctl n (v n)) ^ (m + 1 + 1) *
+          ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) =
+        (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * Pa *
+          ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ))) *
+          (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := by ring
+    have m4 : (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) * Pa *
+          ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ))) *
+          (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) :=
+      mul_le_mul_of_nonneg_right ha2 (mul_nonneg hΦd hX0')
+    have f1 : ((K n : ℝ) * gridStep s v K n) *
+          (altBudget_kapFarg sz n (m + 1 + 1) Cv ε * b +
+            ((sz.W n : ℕ) : ℝ) ^ Cv * δD) ≤
+        altBudget_kapFarg sz n (m + 1 + 1) Cv ε * b +
+          ((sz.W n : ℕ) : ℝ) ^ Cv * δD :=
+      (mul_le_mul_of_nonneg_right hKΔ1 hfar1').trans_eq (one_mul _)
+    exact add_le_add (m1.trans (m3.le.trans m4)) (f1.trans hfar1)
+  -- T4: the quadratic-variation term
+  have T4 : ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
+      (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) +
+        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+    have h := tbQvAltQNg (E := E) (s := s) (v := v) (K := K) Cm hL n m Cv Λg KL C c ε Γ Λ D'' a hm hs0 hsv hv1 hK hΛ0 hη
+    have hSv : ∑ j ∈ Finset.range (K n),
+        gridStep s v K n / Cm.eta n (gridTime s v K n (j + 1)) ≤
+        (Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1 := by
+      have hsucc := nqBudget_sum_succ_le (K := K n)
+        (fun j => gridStep s v K n / Cm.eta n (gridTime s v K n j))
+        (div_nonneg hΔ0 (NQGood1Gen_eta_pos hL n (hu1 0 (Nat.zero_le _))).le)
+      simp only [huK] at hsucc
+      have hlast : gridStep s v K n / Cm.eta n (v n) ≤ 1 := by
+        rw [div_eq_mul_inv]; exact hΔη
+      linarith
+    have hk0 : (0 : ℝ) ≤ ((m + 1 + 1 : ℕ) : ℝ) := Nat.cast_nonneg _
+    have hWd0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c) :=
+      Real.rpow_nonneg hW0 _
+    have hqv0 : 0 ≤ altBudget_qvFarg sz n (m + 1 + 1) Cv ε := by
+      unfold altBudget_qvFarg
+      have h2 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1) := by positivity
+      positivity
+    have hQe0 : 0 ≤ ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+        ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) := by positivity
+    have hΓX : 0 ≤ Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1) := mul_nonneg hΓ0 hX0'
+    have hA0 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+        (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := mul_nonneg (mul_nonneg hWCε0 hWQ0) hΓX
+    have hZ0 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+        (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 * (((m + 1 + 1 : ℕ) : ℝ) * (
+        (Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) * Λ n) := by
+      have : 0 ≤ (Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1 := by linarith
+      positivity
+    have hsum : ∑ j ∈ Finset.range (K n),
+        (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ) ≤
+        (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 *
+          (((m + 1 + 1 : ℕ) : ℝ) * ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) * Λ n) +
+        ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) := by
+      refine h.trans ?_
+      have hc0 : 0 ≤ ((m + 1 + 1 : ℕ) : ℝ) *
+          (((sz.W n : ℕ) : ℝ) ^ (Cv * ε)) ^ 2 *
+          (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n))) *
+          ((sz.Bctl n (v n)) ^ (m + 1 + 1)) ^ 2 := by
+        have e : Γ n * (Γ n * Λ n) = Γ n ^ 2 * Λ n := by ring
+        have h2 := Real.rpow_nonneg hW0 (2 * qProxyCn d (m + 1) Λg KL C c * ε)
+        rw [e]; positivity
+      have n1 := mul_le_mul_of_nonneg_left hSv hc0
+      have n2 : ((K n : ℝ) * gridStep s v K n) *
+          (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) ≤
+          ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) :=
+        (mul_le_mul_of_nonneg_right hKΔ1 hQe0).trans_eq (one_mul _)
+      have e : ((m + 1 + 1 : ℕ) : ℝ) *
+            (((sz.W n : ℕ) : ℝ) ^ (Cv * ε)) ^ 2 *
+            (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n))) *
+            ((sz.Bctl n (v n)) ^ (m + 1 + 1)) ^ 2 *
+            ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) =
+          (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 *
+            (((m + 1 + 1 : ℕ) : ℝ) * ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) *
+              Λ n) := by
+        rw [QBudgetA_rpow_two_mul hW0]; ring
+      linarith
+    have hs1 := Real.sqrt_le_sqrt hsum
+    have hs2 : Real.sqrt ((((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 *
+          (((m + 1 + 1 : ℕ) : ℝ) * ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) * Λ n) +
+        ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) ≤
+        ((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
+          (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
+            ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n)) +
+        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by
+      refine (nqBudget_sqrt_add_le hZ0 hQe0).trans ?_
+      have hP00 : 0 ≤ ((m + 1 + 1 : ℕ) : ℝ) *
+          ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) :=
+        mul_nonneg hk0 (by linarith)
+      rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hA0, Real.sqrt_mul hP00]
+    have hsΛ : Real.sqrt (Λ n) = Λ n ^ ((1 : ℝ) / 2) := Real.sqrt_eq_rpow (Λ n)
+    have hNe : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ εq := Real.rpow_nonneg hN0.le _
+    have k1 : ((sz.size n : ℕ) : ℝ) ^ εq *
+        (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
+          (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
+            ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n))) ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := by
+      have e : ((sz.size n : ℕ) : ℝ) ^ εq *
+          (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
+            (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
+              ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n))) =
+          (((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+            ((sz.size n : ℕ) : ℝ) ^ ε₁ *
+            Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
+              ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)))) *
+          (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := by
+        rw [hsΛ, hΓ]; ring
+      rw [e]
+      exact mul_le_mul_of_nonneg_right ha3 (mul_nonneg (by linarith) hX0')
+    have k2 : ((sz.size n : ℕ) : ℝ) ^ εq *
+        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+      refine QBudgetA_absorb hNk (by positivity) ?_ hXN
+      have e : ((sz.size n : ℕ) : ℝ) ^ εq *
+          Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) *
+            ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) =
+          ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) *
+            Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+              ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) := by ring
+      rw [e]; exact he2
+    calc ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
+          (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ))
+        ≤ ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
+            (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
+              ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n)) +
+          Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) :=
+          mul_le_mul_of_nonneg_left (hs1.trans hs2) hNe
+      _ = ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (Cv * ε) *
+            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
+            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
+            (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
+              ((Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n))) +
+          ((sz.size n : ℕ) : ℝ) ^ εq *
+            Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
+              ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by ring
+      _ ≤ _ := add_le_add k1 k2
+  -- T5, T6
+  have T5 : ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
+    QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he3) hXN
+  have T6 : _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
+    hR.trans (QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he4) hXN)
+  unfold assembledRHSAltQNg
+  exact QBudgetA_final hP0 hX0' hΛr1 hΦd T1 T2 T3 T4 T5 T6
+
+end BudgetG
+
+/-! ## 3b. The band statements read by `QEndGrid` (name and type unchanged): corollaries at `bandStep2Mat` -/
+
+/-- Target 8 (`dDriftAltLinQN_le_shape`), name and type unchanged: the corollary of `dDriftAltLinQNg_le_shape` at `bandStep2Mat sz (fun _ => E)`
+(`LoopForm` from `|E| < 2`, `stepDecompGen_loopForm_band`). -/
 theorem dDriftAltLinQN_le_shape :
   ∀ {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ),
     |E| < 2 → u < 1 → 0 ≤ Φ₁ → 0 ≤ Φ₂ → 0 ≤ Φ₃ → 0 ≤ X →
@@ -424,48 +878,70 @@ theorem dDriftAltLinQN_le_shape :
             (Φ₁ + Φ₂ + Φ₃ + X) * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u) +
           ((sz.W n : ℕ) : ℝ) ^ (-D' + Cn) := by
   intro d sz n E u m Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X hE hu h1 h2 h3 hX
-  have hη : 0 < etaT E u := etaT_pos hE hu
-  have hB : 0 < sz.Bctl n u := Sizes.STBctl_pos sz n hu
-  have hW0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hN0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hP : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') := Real.rpow_nonneg hW0 _
-  have hNτ : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τN := Real.rpow_nonneg hN0 _
-  have hT : 0 ≤ (sz.Bctl n u) ^ (m + 1 + 1) / etaT E u := div_nonneg (pow_nonneg hB.le _) hη.le
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  have hk : ((m + 1 + 1 : ℕ) : ℝ) = (m : ℝ) + 2 := by push_cast; ring
-  unfold dDriftAltLinQN dDriftLinN
-  -- `m + 2` and `m + 1 + 1` are definitionally equal; `ring` identifies the two exponents
-  have e : (etaT E u)⁻¹ * sz.Bctl n u ^ (m + 2) * X =
-      X * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u) := by
-    rw [div_eq_mul_inv]; ring
-  rw [e]
-  have key : (((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃ ≤
-      ((m + 1 + 1 : ℕ) : ℝ) * (Φ₁ + Φ₂ + Φ₃ + X) := by
-    rw [hk]
-    nlinarith [mul_nonneg hm0 h1, mul_nonneg hm0 h2, mul_nonneg hm0 h3, mul_nonneg hm0 hX]
-  have A : ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u) *
-        ((((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃)) ≤
-      ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((m + 1 + 1 : ℕ) : ℝ) * (Φ₁ + Φ₂ + Φ₃ + X) *
-        ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u) := by
-    calc ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u) *
-          ((((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃))
-        = (((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u)) *
-          ((((m + 1 + 1 : ℕ) : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃) := by ring
-      _ ≤ (((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * (Γ * Γ) * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u)) *
-          (((m + 1 + 1 : ℕ) : ℝ) * (Φ₁ + Φ₂ + Φ₃ + X)) :=
-          mul_le_mul_of_nonneg_left key (mul_nonneg (mul_nonneg hP (mul_self_nonneg Γ)) hT)
-      _ = _ := by ring
-  have B : ((sz.size n : ℕ) : ℝ) ^ τN * (X * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u)) ≤
-      ((sz.size n : ℕ) : ℝ) ^ τN * (Φ₁ + Φ₂ + Φ₃ + X) * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u) := by
-    calc ((sz.size n : ℕ) : ℝ) ^ τN * (X * ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u))
-        ≤ ((sz.size n : ℕ) : ℝ) ^ τN * ((Φ₁ + Φ₂ + Φ₃ + X) *
-          ((sz.Bctl n u) ^ (m + 1 + 1) / etaT E u)) :=
-          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (by linarith) hT) hNτ
-      _ = _ := by ring
-  nlinarith [A, B]
+  exact dDriftAltLinQNg_le_shape (bandStep2Mat sz (fun _ => E))
+    (stepDecompGen_loopForm_band sz (fun _ => E) (fun _ => hE)) n u m Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X hu h1 h2 h3 hX
+
+/-- Target 7 (`budgetAltQN`), name and type unchanged: the corollary of `budgetAltQNg` at `bandStep2Mat sz (fun _ => E n)`,
+`Cv = qProxy4C d (m + 2) Λg κ' KL` (`‖mE (E n)‖ = 1` from `|E n| < 2`). -/
+theorem budgetAltQN :
+  ∀ {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Λg κ' KL C c ε : ℝ)
+    (Γ Λ : ℕ → ℝ) (dd : ℕ → ℝ) (Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 : ℝ)
+    (a : Fin (m + 1 + 1) → Zd d (sz.L n)),
+    0 ≤ ε₁ → |E n| < 2 → 0 ≤ s n → s n ≤ v n → v n < 1 → K n ≠ 0 →
+    (etaT (E n) (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) →
+    gridStep s v K n * (etaT (E n) (v n))⁻¹ ≤ 1 →
+    Γ n = ((sz.size n : ℕ) : ℝ) ^ ε₁ → 1 ≤ Λ n →
+    0 ≤ Pa → 0 ≤ Φd → 0 ≤ b → 0 ≤ δ0 → 0 ≤ δD →
+    (∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ (m + 1 + 1) /
+      etaT (E n) (gridTime s v K n j)) + b) →
+    -- `hlog` (merged input, `nqBudget_merged_inputs` conjunct 1)
+    ∑ j ∈ Finset.range (K n), gridStep s v K n / etaT (E n) (gridTime s v K n j) ≤
+      (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) →
+    -- `hX0` (initial level; S3-18a: `startLevelQN`)
+    X0 ≤ ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1) →
+    -- `hR` (merged input, `nqBudget_merged_inputs` conjunct 2 at `k = m + 2`)
+    ∑ j ∈ Finset.range (K n), (1 + (1 - gridTime s v K n (K n))⁻¹) ^ (m + 1 + 1) *
+        stepErrN d (sz.L n) (sz.W n) (E n) (m + 1 + 1) (gridTime s v K n j) (gridTime s v K n (j + 1))
+          (gridStep s v K n)
+          (((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ (-D_t) →
+    -- `ha1` (initial term)
+    ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * ((sz.size n : ℕ) : ℝ) ^ ε₁ ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 →
+    -- `ha2` (drift, main part)
+    ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * Pa *
+        ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
+    -- `ha3` (quadratic variation, main part)
+    ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
+        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) * ((sz.size n : ℕ) : ℝ) ^ ε₁ *
+        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1))) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
+    -- `he0` (initial decay error)
+    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * (((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δ0) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
+    -- `he1` (drift, far part)
+    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * (altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε * b +
+        ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δD) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
+    -- `he2` (quadratic variation, far part)
+    ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) *
+        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
+          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) ≤
+      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
+    -- `he3`, `he4`
+    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 →
+    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_t) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 →
+      assembledRHSAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ dd δ0 δD D'' D_Y τK εq X0 a ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε₀ * (Λ n ^ ((1 : ℝ) / 2) + Φd) * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
+  intro d sz E s v K n m Λg κ' KL C c ε Γ Λ dd Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 a hε₁ hE hs0
+    hsv hv1 hK hη hΔη hΓ hΛ hPa hΦd hb hδ0 hδD hdd hlog hX0 hR ha1 ha2 ha3 he0 he1 he2 he3 he4
+  exact budgetAltQNg (bandStep2Mat sz (fun _ => E n)) (stepDecompGen_loopForm_band sz (fun _ => E n) (fun _ => hE))
+    s v K n m (qProxy4C d (m + 1 + 1) Λg κ' KL) Λg KL C c ε Γ Λ dd Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 a
+    hε₁ (norm_mE hE.le).le hs0 hsv hv1 hK hη hΔη hΓ hΛ hPa hΦd hb hδ0 hδD hdd hlog hX0 hR ha1 ha2 ha3 he0 he1 he2 he3 he4
 
 /-- Target 9 (the merged quadratic level `dDriftAltQN` of S3-16b in the generic shape of target 6: `Pa` carries
-the factor `1 + ΓΦ`, see Design (c)). -/
+the factor `1 + ΓΦ`, see Design (c)); a superseded duplicate, left as band text. -/
 theorem dDriftAltQN_le_shape :
   ∀ {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (m : ℕ) (Γ Φ Cn ε' D' τN X : ℝ),
     |E| < 2 → u < 1 → 0 ≤ Γ → 0 ≤ Φ → 0 ≤ X →
@@ -529,348 +1005,6 @@ theorem dDriftAltQN_le_shape :
           mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (by linarith) hT) hNτ
       _ = _ := by ring
   nlinarith [A, B]
-
-end Levels
-
-/-! ## 4. Target 10: the budget `budgetAltQN` -/
-
-section Budget
-
-/-- The absorption step of a far part (copy of the private `nqLin_absorb`, `NQLin.lean:847`):
-`y N_p ≤ B`, `N_p⁻¹ ≤ X`, `B ≥ 0` give `y ≤ B X`. -/
-private theorem QBudgetA_absorb {y Np B X : ℝ} (hNp : 0 < Np) (hB : 0 ≤ B) (h : y * Np ≤ B)
-    (hX : Np⁻¹ ≤ X) : y ≤ B * X := by
-  have h1 : y ≤ B * Np⁻¹ := by
-    rw [← div_eq_mul_inv, le_div_iff₀ hNp]; exact h
-  exact h1.trans (mul_le_mul_of_nonneg_left hX hB)
-
-/-- `W^{2 C ε} = (W^{C ε})²` for `W ≥ 0` (the `G`-weight of `qvBdAltQN` is the square of the QV weight). -/
-private theorem QBudgetA_rpow_two_mul {W : ℝ} (hW : 0 ≤ W) (C ε : ℝ) :
-    W ^ (2 * C * ε) = (W ^ (C * ε)) ^ 2 := by
-  rw [← Real.rpow_natCast, ← Real.rpow_mul hW]
-  congr 1
-  push_cast
-  ring
-
-/-- The final bookkeeping on plain reals: the six term bounds `t₁ ≤ P₀X/6`, `t₂ ≤ P₀X/12`,
-`t₃ ≤ P₀Φd X/12 + P₀X/12`, `t₄ ≤ P₀Λ^{1/2}X/12 + P₀X/12`, `t₅, t₆ ≤ P₀X/6` give
-`Σ t ≤ P₀ (Λ^{1/2} + Φd) X` (copy of `nqLin_final`, `NQLin.lean:943`, with `Φ₁ + Φ₂ + Φ₃ ↦ Φd`). -/
-private theorem QBudgetA_final {t1 t2 t3 t4 t5 t6 P0 X Λr Φd : ℝ} (hP0 : 0 ≤ P0) (hX : 0 ≤ X)
-    (hΛr : 1 ≤ Λr) (hΦd : 0 ≤ Φd) (T1 : t1 ≤ P0 / 6 * X) (T2 : t2 ≤ P0 / 12 * X)
-    (T3 : t3 ≤ P0 / 12 * (Φd * X) + P0 / 12 * X)
-    (T4 : t4 ≤ P0 / 12 * (Λr * X) + P0 / 12 * X) (T5 : t5 ≤ P0 / 6 * X)
-    (T6 : t6 ≤ P0 / 6 * X) :
-    t1 + t2 + t3 + t4 + t5 + t6 ≤ P0 * (Λr + Φd) * X := by
-  have hPX : P0 * X ≤ P0 * (Λr * X) :=
-    mul_le_mul_of_nonneg_left (le_mul_of_one_le_left hX hΛr) hP0
-  have hΦX : 0 ≤ P0 * (Φd * X) := mul_nonneg hP0 (mul_nonneg hΦd hX)
-  have e : P0 * (Λr + Φd) * X = P0 * (Λr * X) + P0 * (Φd * X) := by ring
-  rw [e]
-  nlinarith [T1, T2, T3, T4, T5, T6, hPX, hΦX]
-
-/-- Target 10 (**the budget of the alternating endpoint**, `d ≥ 3`; analogue of `budgetNonAltLinN`, `NQLin.lean:966`):
-at a fixed `n`, under explicit numerical inequalities only (eventual forms: S3-17b),
-`assembledRHSAltQN ≤ N^{ε₀} (Λ^{1/2} + Φd) B_v^k`, `k = m + 2`, `C₄ = qProxy4C d k Λg κ' KL`,
-`C_n = qProxyCn d (m+1) Λg KL C c`, `C_Q = qProxyCQ d (m+1) Λg KL C c`. -/
-theorem budgetAltQN :
-  ∀ {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Λg κ' KL C c ε : ℝ)
-    (Γ Λ : ℕ → ℝ) (dd : ℕ → ℝ) (Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 : ℝ)
-    (a : Fin (m + 1 + 1) → Zd d (sz.L n)),
-    0 ≤ ε₁ → |E n| < 2 → 0 ≤ s n → s n ≤ v n → v n < 1 → K n ≠ 0 →
-    (etaT (E n) (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) →
-    gridStep s v K n * (etaT (E n) (v n))⁻¹ ≤ 1 →
-    Γ n = ((sz.size n : ℕ) : ℝ) ^ ε₁ → 1 ≤ Λ n →
-    0 ≤ Pa → 0 ≤ Φd → 0 ≤ b → 0 ≤ δ0 → 0 ≤ δD →
-    (∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ (m + 1 + 1) /
-      etaT (E n) (gridTime s v K n j)) + b) →
-    -- `hlog` (merged input, `nqBudget_merged_inputs` conjunct 1)
-    ∑ j ∈ Finset.range (K n), gridStep s v K n / etaT (E n) (gridTime s v K n j) ≤
-      (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) →
-    -- `hX0` (initial level; S3-18a: `startLevelQN`)
-    X0 ≤ ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1) →
-    -- `hR` (merged input, `nqBudget_merged_inputs` conjunct 2 at `k = m + 2`)
-    ∑ j ∈ Finset.range (K n), (1 + (1 - gridTime s v K n (K n))⁻¹) ^ (m + 1 + 1) *
-        stepErrN d (sz.L n) (sz.W n) (E n) (m + 1 + 1) (gridTime s v K n j) (gridTime s v K n (j + 1))
-          (gridStep s v K n)
-          (((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ (m + 1 + 1)) ≤
-      ((sz.size n : ℕ) : ℝ) ^ (-D_t) →
-    -- `ha1` (initial term)
-    ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * ((sz.size n : ℕ) : ℝ) ^ ε₁ ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 →
-    -- `ha2` (drift, main part)
-    ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * Pa *
-        ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
-    -- `ha3` (quadratic variation, main part)
-    ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) * ((sz.size n : ℕ) : ℝ) ^ ε₁ *
-        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1))) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
-    -- `he0` (initial decay error)
-    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * (((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δ0) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
-    -- `he1` (drift, far part)
-    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * (altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε * b +
-        ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δD) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
-    -- `he2` (quadratic variation, far part)
-    ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) *
-        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 →
-    -- `he3`, `he4`
-    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 →
-    ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_t) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 →
-      assembledRHSAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ dd δ0 δD D'' D_Y τK εq X0 a ≤
-        ((sz.size n : ℕ) : ℝ) ^ ε₀ * (Λ n ^ ((1 : ℝ) / 2) + Φd) * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
-  intro d sz E s v K n m Λg κ' KL C c ε Γ Λ dd Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 a hε₁ hE hs0
-    hsv hv1 hK hη hΔη hΓ hΛ hPa hΦd hb hδ0 hδD hdd hlog hX0 hR ha1 ha2 ha3 he0 he1 he2 he3 he4
-  have hN1 : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
-    have h : 1 ≤ (sz.W n * sz.L n) ^ d :=
-      Nat.one_le_pow _ _ (Nat.mul_pos (sz.W_pos n) (by have := sz.three_le_L n; omega))
-    exact_mod_cast (show 1 ≤ sz.size n from h)
-  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
-  have hNk : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) := pow_pos hN0 _
-  have hW0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hu0 : ∀ i, 0 ≤ gridTime s v K n i := fun i => QBudgetA_gridTime_nonneg hs0 hsv i
-  have hu1 : ∀ i ≤ K n, gridTime s v K n i < 1 := fun i hi =>
-    (QBudgetA_gridTime_le hsv hK hi).trans_lt hv1
-  have huK := gridTime_last s v K n hK
-  have hΔ0 : 0 ≤ gridStep s v K n := ST_gridStep_nonneg s v K n hsv
-  have hKΔ1 : (K n : ℝ) * gridStep s v K n ≤ 1 := by
-    rw [QBudgetA_K_mul_step hK]; linarith
-  have hΓ0 : 0 ≤ Γ n := by rw [hΓ]; exact Real.rpow_nonneg hN0.le _
-  have hΛ0 : 0 ≤ Λ n := by linarith
-  have hBv0 := Sizes.STBctl_pos sz n hv1
-  have hX0' : 0 ≤ (sz.Bctl n (v n)) ^ (m + 1 + 1) := pow_nonneg hBv0.le _
-  have hXN : (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1))⁻¹ ≤ (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
-    rw [← inv_pow]
-    exact pow_le_pow_left₀ (inv_nonneg.2 hN0.le)
-      (ContinuityNet.cont_inv_size_le_Bctl sz n (hs0.trans hsv) hv1) _
-  have hP0 : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ := Real.rpow_nonneg hN0.le _
-  have hLs0 : 0 ≤ (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) :=
-    mul_nonneg (inv_nonneg.2 (mE_im_pos hE).le) (Real.log_nonneg hN1)
-  have hWC0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL :=
-    Real.rpow_nonneg hW0 _
-  have hWCε0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) :=
-    Real.rpow_nonneg hW0 _
-  have hWQ0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) :=
-    Real.rpow_nonneg hW0 _
-  have hΛr1 : 1 ≤ Λ n ^ ((1 : ℝ) / 2) := Real.one_le_rpow hΛ (by norm_num)
-  have hkap0 : 0 ≤ altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε := by
-    unfold altBudget_kapFar
-    have hr : 0 ≤ (1 + sz.lam n ^ 2) * ((sz.size n : ℕ) : ℝ) := by positivity
-    positivity
-  -- the far parts are absorbed once each (`he0`, `he1`)
-  have hfar0 : ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δ0 ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
-    QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he0) hXN
-  have hfar1 : altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε * b +
-      ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δD ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
-    QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he1) hXN
-  have hfar1' : 0 ≤ altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε * b +
-      ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δD :=
-    add_nonneg (mul_nonneg hkap0 hb) (mul_nonneg hWC0 hδD)
-  -- T1: the initial term
-  have T1 : _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
-    (tbInitAltQN sz n (m + 1 + 1) Λg κ' KL ε (((sz.size n : ℕ) : ℝ) ^ ε₁) X0 hs0 hsv hv1 hK
-      (Real.rpow_nonneg hN0.le _) hX0).trans (mul_le_mul_of_nonneg_right ha1 hX0')
-  -- T2: the initial decay error
-  have T2 : epsAltQN d (m + 1 + 1) Λg κ' KL ((sz.W n : ℕ) : ℝ) 0 (K n) * δ0 ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
-    unfold epsAltQN
-    exact hfar0
-  -- T3: the drift term (generic level `Pa Φd B^k/η + b`)
-  have T3 : gridStep s v K n * ∑ j ∈ Finset.range (K n),
-      (kappaAltQN d (m + 1 + 1) Λg κ' KL (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
-          (j + 1) (K n) * dd j +
-        epsAltQN d (m + 1 + 1) Λg κ' KL ((sz.W n : ℕ) : ℝ) (j + 1) (K n) * δD) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) +
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
-    have h := tbDriftAltQN sz (E := E) (s := s) (v := v) (K := K) n (m + 1 + 1) Λg κ' KL ε dd Pa
-      Φd b δD hE hs0 hsv hv1 hK hPa hΦd hb hδD hη hdd
-    refine h.trans ?_
-    have m1 : ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * (Pa * Φd) *
-          (sz.Bctl n (v n)) ^ (m + 1 + 1) *
-          ∑ j ∈ Finset.range (K n), gridStep s v K n / etaT (E n) (gridTime s v K n j) ≤
-        ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * (Pa * Φd) *
-          (sz.Bctl n (v n)) ^ (m + 1 + 1) *
-          ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) :=
-      mul_le_mul_of_nonneg_left hlog (mul_nonneg (mul_nonneg hWCε0 (mul_nonneg hPa hΦd)) hX0')
-    have m3 : ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * (Pa * Φd) *
-          (sz.Bctl n (v n)) ^ (m + 1 + 1) *
-          ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ)) =
-        (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * Pa *
-          ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ))) *
-          (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := by ring
-    have m4 : (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) * Pa *
-          ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ))) *
-          (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) ≤
-        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Φd * (sz.Bctl n (v n)) ^ (m + 1 + 1)) :=
-      mul_le_mul_of_nonneg_right ha2 (mul_nonneg hΦd hX0')
-    have f1 : ((K n : ℝ) * gridStep s v K n) *
-          (altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε * b +
-            ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δD) ≤
-        altBudget_kapFar sz n (m + 1 + 1) Λg κ' KL ε * b +
-          ((sz.W n : ℕ) : ℝ) ^ qProxy4C d (m + 1 + 1) Λg κ' KL * δD :=
-      (mul_le_mul_of_nonneg_right hKΔ1 hfar1').trans_eq (one_mul _)
-    exact add_le_add (m1.trans (m3.le.trans m4)) (f1.trans hfar1)
-  -- T4: the quadratic-variation term
-  have T4 : ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
-      (cQVAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ D'' (K n) a j : ℝ)) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) +
-        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
-    have h := tbQvAltQN sz n m Λg κ' KL C c ε Γ Λ D'' a hE hs0 hsv hv1 hK hΛ0 hη
-    have hSv : ∑ j ∈ Finset.range (K n),
-        gridStep s v K n / etaT (E n) (gridTime s v K n (j + 1)) ≤
-        (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1 := by
-      have hsucc := nqBudget_sum_succ_le (K := K n)
-        (fun j => gridStep s v K n / etaT (E n) (gridTime s v K n j))
-        (div_nonneg hΔ0 (etaT_pos hE (hu1 0 (Nat.zero_le _))).le)
-      simp only [huK] at hsucc
-      have hlast : gridStep s v K n / etaT (E n) (v n) ≤ 1 := by
-        rw [div_eq_mul_inv]; exact hΔη
-      linarith
-    have hk0 : (0 : ℝ) ≤ ((m + 1 + 1 : ℕ) : ℝ) := Nat.cast_nonneg _
-    have hWd0 : (0 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c) :=
-      Real.rpow_nonneg hW0 _
-    have hqv0 : 0 ≤ altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε := by
-      unfold altBudget_qvFar
-      have h2 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1) := by positivity
-      positivity
-    have hQe0 : 0 ≤ ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-        ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) := by positivity
-    have hΓX : 0 ≤ Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1) := mul_nonneg hΓ0 hX0'
-    have hA0 : 0 ≤ ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-        (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := mul_nonneg (mul_nonneg hWCε0 hWQ0) hΓX
-    have hZ0 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-        ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-        (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 * (((m + 1 + 1 : ℕ) : ℝ) * (
-        (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) * Λ n) := by
-      have : 0 ≤ (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1 := by linarith
-      positivity
-    have hsum : ∑ j ∈ Finset.range (K n),
-        (cQVAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ D'' (K n) a j : ℝ) ≤
-        (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 *
-          (((m + 1 + 1 : ℕ) : ℝ) * ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) * Λ n) +
-        ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) := by
-      refine h.trans ?_
-      have hc0 : 0 ≤ ((m + 1 + 1 : ℕ) : ℝ) *
-          (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε)) ^ 2 *
-          (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n))) *
-          ((sz.Bctl n (v n)) ^ (m + 1 + 1)) ^ 2 := by
-        have e : Γ n * (Γ n * Λ n) = Γ n ^ 2 * Λ n := by ring
-        have h2 := Real.rpow_nonneg hW0 (2 * qProxyCn d (m + 1) Λg KL C c * ε)
-        rw [e]; positivity
-      have n1 := mul_le_mul_of_nonneg_left hSv hc0
-      have n2 : ((K n : ℝ) * gridStep s v K n) *
-          (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) ≤
-          ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)) :=
-        (mul_le_mul_of_nonneg_right hKΔ1 hQe0).trans_eq (one_mul _)
-      have e : ((m + 1 + 1 : ℕ) : ℝ) *
-            (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε)) ^ 2 *
-            (((sz.W n : ℕ) : ℝ) ^ (2 * qProxyCn d (m + 1) Λg KL C c * ε) * (Γ n * (Γ n * Λ n))) *
-            ((sz.Bctl n (v n)) ^ (m + 1 + 1)) ^ 2 *
-            ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) =
-          (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 *
-            (((m + 1 + 1 : ℕ) : ℝ) * ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) *
-              Λ n) := by
-        rw [QBudgetA_rpow_two_mul hW0]; ring
-      linarith
-    have hs1 := Real.sqrt_le_sqrt hsum
-    have hs2 : Real.sqrt ((((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1))) ^ 2 *
-          (((m + 1 + 1 : ℕ) : ℝ) * ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) * Λ n) +
-        ((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) ≤
-        ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
-          (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
-            ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n)) +
-        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by
-      refine (nqBudget_sqrt_add_le hZ0 hQe0).trans ?_
-      have hP00 : 0 ≤ ((m + 1 + 1 : ℕ) : ℝ) *
-          ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1) :=
-        mul_nonneg hk0 (by linarith)
-      rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hA0, Real.sqrt_mul hP00]
-    have hsΛ : Real.sqrt (Λ n) = Λ n ^ ((1 : ℝ) / 2) := Real.sqrt_eq_rpow (Λ n)
-    have hNe : (0 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ εq := Real.rpow_nonneg hN0.le _
-    have k1 : ((sz.size n : ℕ) : ℝ) ^ εq *
-        (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-          ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-          (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
-          (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
-            ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n))) ≤
-        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := by
-      have e : ((sz.size n : ℕ) : ℝ) ^ εq *
-          (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
-            (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
-              ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n))) =
-          (((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-            ((sz.size n : ℕ) : ℝ) ^ ε₁ *
-            Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
-              ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)))) *
-          (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) := by
-        rw [hsΛ, hΓ]; ring
-      rw [e]
-      exact mul_le_mul_of_nonneg_right ha3 (mul_nonneg (by linarith) hX0')
-    have k2 : ((sz.size n : ℕ) : ℝ) ^ εq *
-        Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-          ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) ≤
-        ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
-      refine QBudgetA_absorb hNk (by positivity) ?_ hXN
-      have e : ((sz.size n : ℕ) : ℝ) ^ εq *
-          Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) *
-            ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) =
-          ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) *
-            Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-              ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) := by ring
-      rw [e]; exact he2
-    calc ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
-          (cQVAltQN sz E s v K n m Λg κ' KL C c ε Γ Λ D'' (K n) a j : ℝ))
-        ≤ ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
-            (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
-              ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n)) +
-          Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-            ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c)))) :=
-          mul_le_mul_of_nonneg_left (hs1.trans hs2) hNe
-      _ = ((sz.size n : ℕ) : ℝ) ^ εq * (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
-            ((sz.W n : ℕ) : ℝ) ^ (qProxyCn d (m + 1) Λg KL C c * ε) *
-            (Γ n * (sz.Bctl n (v n)) ^ (m + 1 + 1)) *
-            (Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) *
-              ((mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) + 1)) * Real.sqrt (Λ n))) +
-          ((sz.size n : ℕ) : ℝ) ^ εq *
-            Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFar sz n (m + 1 + 1) Λg κ' KL ε *
-              ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by ring
-      _ ≤ _ := add_le_add k1 k2
-  -- T5, T6
-  have T5 : ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤
-      ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
-    QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he3) hXN
-  have T6 : _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
-    hR.trans (QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he4) hXN)
-  unfold assembledRHSAltQN
-  exact QBudgetA_final hP0 hX0' hΛr1 hΦd T1 T2 T3 T4 T5 T6
-
-end Budget
 
 /-! ## 5. Compiled nonempty instances at `d = 3`
 
@@ -1226,62 +1360,68 @@ private theorem hdd_inst (Cn : ℝ) : ∀ j < Kg 0,
     (1 / 5) 6 1 1 (Einst_abs_lt 0) (u_lt j hj.le) (by norm_num) (by norm_num) (by norm_num)
     (by norm_num)
 
-/-- **Instance of targets 1-3** (`k = 3`, `W = 32`, `(i, m) = (0, K_0)`, `u_i = 0 ≤ u_m = 1/32 < 1`). -/
-example : kappaAltQN 3 3 10 (1 / 2) 1 (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) 0
+private theorem hL0 : StepDecompGen_LoopForm (bandStep2Mat sz0 Einst) Einst :=
+  stepDecompGen_loopForm_band sz0 Einst Einst_abs_lt
+
+private theorem hm0 : ‖(bandStep2Mat sz0 Einst).m 0‖ ≤ 1 := (norm_mE (Einst_abs_lt 0).le).le
+
+/-- **Instance of the sharp kernel** (`k = 3`, `W = 32`, `(i, m) = (0, K_0)`, `u_i = 0 ≤ u_m = 1/32 < 1`; `Cv = C₄`). -/
+example : kappaAltQNg 3 C4₀ (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) 0
       (Kg 0) * (sz0.Bctl 0 (gridTime sInst vg Kg 0 0)) ^ 3 ≤
-    ((sz0.W 0 : ℕ) : ℝ) ^ (qProxy4C 3 3 10 (1 / 2) 1 * (4 / 5)) *
+    ((sz0.W 0 : ℕ) : ℝ) ^ (C4₀ * (4 / 5)) *
       (sz0.Bctl 0 (gridTime sInst vg Kg 0 (Kg 0))) ^ 3 :=
-  kappaAltQN_mul_Bctl_pow_le sz0 0 3 10 (1 / 2) 1 (4 / 5) (Nat.cast_nonneg _) (gridTime sInst vg Kg 0)
+  kappaAltQNg_mul_Bctl_pow_le sz0 0 3 C4₀ (4 / 5) (Nat.cast_nonneg _) (gridTime sInst vg Kg 0)
     (u_mono 0 (Kg 0) (Nat.zero_le _)) (u_lt _ le_rfl)
 
-example : kappaAltQN 3 3 10 (1 / 2) 1 (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) (0 + 1)
+example : kappaAltQNg 3 C4₀ (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) (0 + 1)
       (Kg 0) * (sz0.Bctl 0 (gridTime sInst vg Kg 0 0)) ^ 3 ≤
-    ((sz0.W 0 : ℕ) : ℝ) ^ (qProxy4C 3 3 10 (1 / 2) 1 * (4 / 5)) *
+    ((sz0.W 0 : ℕ) : ℝ) ^ (C4₀ * (4 / 5)) *
       (sz0.Bctl 0 (gridTime sInst vg Kg 0 (Kg 0))) ^ 3 :=
-  kappaAltQN_succ_mul_Bctl_pow_le sz0 0 3 10 (1 / 2) 1 (4 / 5) (Nat.cast_nonneg _) (gridTime sInst vg Kg 0) 0
+  kappaAltQNg_succ_mul_Bctl_pow_le sz0 0 3 C4₀ (4 / 5) (Nat.cast_nonneg _) (gridTime sInst vg Kg 0) 0
     (Kg 0) (u_mono 0 1 (by norm_num)) (u_mono 1 (Kg 0) (by simp [Kg])) (u_lt _ le_rfl)
 
-example : kappaAltQN 3 3 10 (1 / 2) 1 (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) 0
-      (Kg 0) ≤ altBudget_kapFar sz0 0 3 10 (1 / 2) 1 (4 / 5) :=
-  kappaAltQN_le_kapFar sz0 0 3 10 (1 / 2) 1 (4 / 5) (gridTime sInst vg Kg 0) (u_nonneg 0)
+example : kappaAltQNg 3 C4₀ (sz0.lam 0) ((sz0.W 0 : ℕ) : ℝ) (4 / 5) (gridTime sInst vg Kg 0) 0
+      (Kg 0) ≤ altBudget_kapFarg sz0 0 3 C4₀ (4 / 5) :=
+  kappaAltQNg_le_kapFar sz0 0 3 C4₀ (4 / 5) (gridTime sInst vg Kg 0) (u_nonneg 0)
     (u_mono 0 (Kg 0) (Nat.zero_le _)) (u_lt _ le_rfl) inv_one_sub_le
 
-/-- **Instance of target 4** (`m = 1`, `Γ = 4`, `Λ = 3`, `D = 7 + 2 C_n`, `u = 1/128`, `w = 1/32`). -/
-example : qvBdAltQN sz0 0 (1 / 2) 1 10 (1 / 2) 1 1 (1 / 2) (4 / 5) 4 3 (7 + 2 * Cn₀) (1 / 128) (1 / 32) =
+/-- **Instance of the variance majorant** (`m = 1`, `Γ = 4`, `Λ = 3`, `D = 7 + 2 C_n`, `u = 1/128`, `w = 1/32`). -/
+example : qvBdAltQNg (bandStep2Mat sz0 (fun _ => (1 / 2 : ℝ))) 0 1 C4₀ 10 1 1 (1 / 2) (4 / 5) 4 3 (7 + 2 * Cn₀)
+      (1 / 128) (1 / 32) =
     nqBudget_qvShape (1 + 1 + 1)
-      (((sz0.W 0 : ℕ) : ℝ) ^ (qProxy4C 3 (1 + 1 + 1) 10 (1 / 2) 1 * (4 / 5)) *
+      (((sz0.W 0 : ℕ) : ℝ) ^ (C4₀ * (4 / 5)) *
         ((sz0.lam 0 ^ 2 + |1 - 1 / 128|) / (sz0.lam 0 ^ 2 + |1 - 1 / 32|)) ^ (1 + 1 + 1))
-      (((sz0.W 0 : ℕ) : ℝ) ^ qProxy4C 3 (1 + 1 + 1) 10 (1 / 2) 1)
-      (((sz0.W 0 : ℕ) : ℝ) ^ qProxy4C 3 (1 + 1 + 1) 10 (1 / 2) 1 * ((sz0.W 0 : ℕ) : ℝ) ^ (1 + 1 + 1))
+      (((sz0.W 0 : ℕ) : ℝ) ^ C4₀)
+      (((sz0.W 0 : ℕ) : ℝ) ^ C4₀ * ((sz0.W 0 : ℕ) : ℝ) ^ (1 + 1 + 1))
       (((sz0.W 0 : ℕ) : ℝ) ^ (2 * qProxyCn 3 (1 + 1) 10 1 1 (1 / 2) * (4 / 5)) * (4 * (4 * 3)))
       (((sz0.W 0 : ℕ) : ℝ) ^ (-(7 + 2 * Cn₀) + qProxyCQ 3 (1 + 1) 10 1 1 (1 / 2)))
       (sz0.Bctl 0 (1 / 128)) (etaT (1 / 2) (1 / 128)) :=
-  qvBdAltQN_eq_qvShape sz0 0 (1 / 2) 1 10 (1 / 2) 1 1 (1 / 2) (4 / 5) 4 3 (7 + 2 * Cn₀) (1 / 128) (1 / 32)
+  qvBdAltQNg_eq_qvShape _ 0 1 C4₀ 10 1 1 (1 / 2) (4 / 5) 4 3 (7 + 2 * Cn₀) (1 / 128) (1 / 32)
 
-/-- **Instance of target 5** (`X0 = 4 B_s^3`, `G = 4`). -/
-example := tbInitAltQN sz0 (s := sInst) (v := vg) (K := Kg) 0 3 10 (1 / 2) 1 (4 / 5) 4
+/-- **Instance of the initial term** (`X0 = 4 B_s^3`, `G = 4`). -/
+example := tbInitAltQNg sz0 (s := sInst) (v := vg) (K := Kg) 0 3 C4₀ (4 / 5) 4
   (4 * (sz0.Bctl 0 (sInst 0)) ^ 3) s0 sv v1 K0 (by norm_num) le_rfl
 
-/-- **Instance of target 6** (the drift level `dd j = dDriftAltLinQN(u_j)` of target 8, the shape data of
-`hdd_inst`, `δ_D = 4 W^{-6}`). -/
-example := tbDriftAltQN sz0 (E := Einst) (s := sInst) (v := vg) (K := Kg) 0 3 10 (1 / 2) 1 (4 / 5)
-  (fun j => dDriftAltLinQN sz0 0 (Einst 0) (gridTime sInst vg Kg 0 j) 1 (Γ4 0) 1 12 1 Cn₀ (1 / 5) 6 1 1)
+/-- **Instance of the drift term** (the drift level `dd j = dDriftAltLinQNg(u_j)`, the shape data of `hdd_inst`, `δ_D = 4 W^{-6}`). -/
+example := tbDriftAltQNg (E := Einst) (s := sInst) (v := vg) (K := Kg) (bandStep2Mat sz0 Einst) hL0 0 3 C4₀ (4 / 5)
+  (fun j => dDriftAltLinQNg (bandStep2Mat sz0 Einst) 0 (gridTime sInst vg Kg 0 j) 1 (Γ4 0) 1 12 1 Cn₀ (1 / 5) 6 1 1)
   (((sz0.W 0 : ℕ) : ℝ) ^ (Cn₀ * (1 / 5)) * (Γ4 0 * Γ4 0) * (((1 + 1 + 1 : ℕ)) : ℝ) +
     ((sz0.size 0 : ℕ) : ℝ) ^ (1 : ℝ)) (1 + 12 + 1 + 1) (((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ) + Cn₀))
-  (4 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) (Einst_abs_lt 0) s0 sv v1 K0 (Pa_nonneg Cn₀) (by norm_num)
+  (4 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) hm0 s0 sv v1 K0 (Pa_nonneg Cn₀) (by norm_num)
   (Real.rpow_nonneg (Nat.cast_nonneg _) _) (by positivity) eta_inv_le_N (hdd_inst Cn₀)
 
-/-- **Instance of target 7** (label `aFar`, `D'' = 7 + 2 C_n`). -/
-example := tbQvAltQN sz0 (E := Einst) (s := sInst) (v := vg) (K := Kg) 0 1 10 (1 / 2) 1 1 (1 / 2) (4 / 5)
-  Γ4 Λ3 (7 + 2 * Cn₀) aFar (Einst_abs_lt 0) s0 sv v1 K0 (by norm_num [Λ3]) eta_inv_le_N
+/-- **Instance of the quadratic-variation term** (label `aFar`, `D'' = 7 + 2 C_n`). -/
+example := tbQvAltQNg (E := Einst) (s := sInst) (v := vg) (K := Kg) (bandStep2Mat sz0 Einst) hL0 0 1 C4₀ 10 1 1 (1 / 2)
+  (4 / 5) Γ4 Λ3 (7 + 2 * Cn₀) aFar hm0 s0 sv v1 K0 (by norm_num [Λ3]) eta_inv_le_N
 
-/-- **Instance of target 8** (`u = 0`, `E = 1/2`, `m = 1`, levels `(4, 1, 12, 1)`). -/
+/-- **Instance of the linear level in the generic shape** (`u = 0`, `E = 1/2`, `m = 1`, levels `(4, 1, 12, 1)`). -/
+example := dDriftAltLinQNg_le_shape (bandStep2Mat sz0 (fun _ => (1 / 2 : ℝ)))
+  (stepDecompGen_loopForm_band sz0 (fun _ => (1 / 2 : ℝ)) (fun _ => abs_half)) 0 0 1 4 1 12 1 Cn₀ (1 / 5) 6 1 1
+  (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+
+/-- **Instance of the band corollary `dDriftAltLinQN_le_shape`** (`u = 0`, `E = 1/2`, `m = 1`, levels `(4, 1, 12, 1)`). -/
 example := dDriftAltLinQN_le_shape sz0 0 (1 / 2) 0 1 4 1 12 1 Cn₀ (1 / 5) 6 1 1 abs_half (by norm_num)
   (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-
-/-- **Instance of target 9** (`u = 0`, `E = 1/2`, `m = 1`, `Γ = 4`, `Φ = 1`). -/
-example := dDriftAltQN_le_shape sz0 0 (1 / 2) 0 1 4 1 Cn₀ (1 / 5) 6 1 1 abs_half (by norm_num)
-  (by norm_num) (by norm_num) (by norm_num)
 
 /-- **Instance of target 10** (`budgetAltQN` at the data above: `d = 3`, `sz0`, `n = 0`, `m = 1`): every hypothesis
 is discharged (`hlog`, `hR` by the merged `NQBudgetInst`, `hdd` by target 8, `ha1`-`he4` for the abstract
@@ -1314,26 +1454,44 @@ theorem budgetAltQN_instance :
   rw [hexp]
   exact he2_inst _ _ C4₀_pos Cn₀_pos
 
+/-- **Instance of target 9** (`u = 0`, `E = 1/2`, `m = 1`, `Γ = 4`, `Φ = 1`). -/
+example := dDriftAltQN_le_shape sz0 0 (1 / 2) 0 1 4 1 Cn₀ (1 / 5) 6 1 1 abs_half (by norm_num)
+  (by norm_num) (by norm_num) (by norm_num)
+
+/-- **Instance of target 7** (`budgetAltQNg` at the carrier `bandStep2Mat sz0 Einst`, `Cv = C₄ = qProxy4C 3 3 10 (1/2) 1`, the data above: `d = 3`, `sz0`, `n = 0`, `m = 1`): every hypothesis
+is discharged (`hlog`, `hR` by the merged `NQBudgetInst`, `hdd` by target 8, `ha1`-`he4` for the abstract
+positive constants `C₄ = qProxy4C 3 3 10 (1/2) 1`, `C_n = qProxyCn 3 2 10 1 1 (1/2)`); nothing is left open.
+The right side is `N^{ε₀}(Λ^{1/2} + Φd) B_v^3` with `Φd = 1 + 12 + 1 + 1`. -/
+theorem budgetAltQNg_instance :
+    assembledRHSAltQNg (bandStep2Mat sz0 Einst) sInst vg Kg 0 1 C4₀ 10 1 1 (1 / 2) (4 / 5) Γ4 Λ3
+        (fun j => dDriftAltLinQNg (bandStep2Mat sz0 Einst) 0 (gridTime sInst vg Kg 0 j) 1 (Γ4 0) 1 12 1 Cn₀
+          (1 / 5) 6 1 1)
+        (4 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) (4 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ)))
+        (7 + 2 * Cn₀) 1 (1 / 21) 1 (4 * (sz0.Bctl 0 (sInst 0)) ^ 3) aFar ≤
+      ((sz0.size 0 : ℕ) : ℝ) ^ (C4₀ + Cn₀ + 12) *
+        (Λ3 0 ^ ((1 : ℝ) / 2) + (1 + 12 + 1 + 1)) * (sz0.Bctl 0 (vg 0)) ^ (1 + 1 + 1) := by
+  have hexp : -(7 + 2 * Cn₀) + qProxyCQ 3 (1 + 1) 10 1 1 (1 / 2) = -(5 : ℝ) := by
+    unfold qProxyCQ; ring
+  refine budgetAltQNg (bandStep2Mat sz0 Einst) hL0 sInst vg Kg 0 1 C4₀ 10 1 1 (1 / 2) (4 / 5) Γ4 Λ3
+    (fun j => dDriftAltLinQNg (bandStep2Mat sz0 Einst) 0 (gridTime sInst vg Kg 0 j) 1 (Γ4 0) 1 12 1 Cn₀
+      (1 / 5) 6 1 1)
+    (((sz0.W 0 : ℕ) : ℝ) ^ (Cn₀ * (1 / 5)) * (Γ4 0 * Γ4 0) * (((1 + 1 + 1 : ℕ)) : ℝ) +
+      ((sz0.size 0 : ℕ) : ℝ) ^ (1 : ℝ)) (1 + 12 + 1 + 1) (((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ) + Cn₀))
+    (4 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ))) (4 * ((sz0.W 0 : ℕ) : ℝ) ^ (-(6 : ℝ)))
+    (7 + 2 * Cn₀) 1 (-5) (1 / 21) 1 (C4₀ + Cn₀ + 12) (2 / 21) (4 * (sz0.Bctl 0 (sInst 0)) ^ 3) aFar
+    (by norm_num) hm0 s0 sv v1 K0 eta_inv_le_N
+    (by change gridStep sInst vg Kg 0 * (etaT (Einst 0) (vg 0))⁻¹ ≤ 1; rw [step0]; linarith [eta_inv_le_v])
+    (by rw [N_eps1]) (by norm_num [Λ3]) (Pa_nonneg Cn₀) (by norm_num)
+    (Real.rpow_nonneg (Nat.cast_nonneg _) _) (by positivity) (by positivity) (hdd_inst Cn₀)
+    NQBudgetInst.hlog_instance (by rw [N_eps1]) NQBudgetInst.hR_instance
+    (ha1_inst _ _ C4₀_pos Cn₀_pos) (ha2_inst _ _ C4₀_pos Cn₀_pos) (ha3_inst _ _ C4₀_pos Cn₀_pos)
+    (he0_inst _ _ C4₀_pos Cn₀_pos) (he1_inst _ _ C4₀_pos Cn₀_pos) ?_
+    (he3_inst _ _ C4₀_pos Cn₀_pos) (he4_inst _ _ C4₀_pos Cn₀_pos)
+  rw [hexp]
+  exact he2_inst _ _ C4₀_pos Cn₀_pos
+
 end QBudgetAInst
 
 end RBM.Ind
 
 end
-
-#print axioms RBM.Ind.altBudget_kapFar
-#print axioms RBM.Ind.altBudget_qvFar
-#print axioms RBM.Ind.qvBdAltQN
-#print axioms RBM.Ind.cQVAltQN
-#print axioms RBM.Ind.dDriftAltLinQN
-#print axioms RBM.Ind.assembledRHSAltQN
-#print axioms RBM.Ind.kappaAltQN_mul_Bctl_pow_le
-#print axioms RBM.Ind.kappaAltQN_succ_mul_Bctl_pow_le
-#print axioms RBM.Ind.kappaAltQN_le_kapFar
-#print axioms RBM.Ind.qvBdAltQN_eq_qvShape
-#print axioms RBM.Ind.tbInitAltQN
-#print axioms RBM.Ind.tbDriftAltQN
-#print axioms RBM.Ind.tbQvAltQN
-#print axioms RBM.Ind.dDriftAltLinQN_le_shape
-#print axioms RBM.Ind.dDriftAltQN_le_shape
-#print axioms RBM.Ind.budgetAltQN
-#print axioms RBM.Ind.QBudgetAInst.budgetAltQN_instance
