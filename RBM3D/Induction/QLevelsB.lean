@@ -30,6 +30,10 @@ probability.  `GoodSetN` membership is a hypothesis (pathwise on `{j < τ}`).
 * instances (namespace `QLevelsBInst`) at `sz0`, `d = 3`, `m = 2`, `n = 4`, `E = 0`, `u = 0`, `H = 0`.
 
 Unpinned helpers are `private` or prefixed `QLevelsB_`.
+
+T2498 (row U3s3a, in place): `goodSetNg_LKM_far`, the generic twin of `goodSetN_LKM_far` over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`); the
+other band text of this file is the superseded `GoodSetN`-level drift route and is unchanged.  Its compiled instance at `bandStep2Mat sz0 (fun _ => 0)` follows
+`goodSetN_LKM_far_instance`.
 -/
 
 set_option linter.style.longLine false
@@ -43,7 +47,7 @@ open scoped NNReal ENNReal
 
 namespace RBM.Ind
 
-open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
+open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
 /-! ## 0. Vocabulary -/
 
@@ -118,6 +122,20 @@ theorem goodSetN_LKM_far :
       loopFine d (sz.L n) (sz.W n) H (zt E u) σ' a' - STKloop sz n E u σ' a' := rfl
   rw [e]
   exact le_trans (le_add_of_nonneg_left (norm_nonneg _)) h
+
+/-- **Target 6, `goodSetNg_LKM_far`** (band `goodSetN_LKM_far`): clause (Dec) of `GoodSetNg` over a carrier in the `hF` shape of `altB45Ng_levelM`
+(window `ωf = W^{τ'}`, `Fv = W^{-D'}`); `STLKMg = LM - K`. -/
+theorem goodSetNg_LKM_far :
+    ∀ (d : ℕ) (sz : Sizes d) (Cm : Step2Mat sz) (n : ℕ) (u : ℝ) (k : ℕ) (Γ Λ Φ τ' D' : ℝ)
+      (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
+      GoodSetNg Cm n u k Γ Λ Φ τ' D' H → ∀ j : ℕ, 1 ≤ j → j ≤ 2 * k + 2 →
+        ∀ (σ' : Fin j → Bool) (a' : Fin j → Zd d (sz.L n)),
+          ellT (sz.L n) (sz.lam n) u * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ (STdiamInf a' : ℝ) →
+            ‖STLKMg Cm n u H σ' a'‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D') := by
+  intro d sz Cm n u k Γ Λ Φ τ' D' H hH j hj1 hj σ' a' hfar
+  have h := hH.2.2.1 j hj1 hj σ' a' hfar
+  exact le_trans (le_add_of_nonneg_left (norm_nonneg _)) h
+
 
 /-! ## 2. Target 3: the level of `𝒬_u(ℬ₁+ℬ₂+ℬ₃)` -/
 
@@ -496,6 +514,20 @@ theorem goodSetN_LKM_far_instance :
   ⟨window4, fun σ' a' h =>
     goodSetN_LKM_far 3 sz0 4 0 0 (3 + 1) 4 100 1 (1 / 10) 40 H0 (zero_mem_inst 4 (lam_le_one 4) _ _)
       (3 + 1) (by norm_num) (by norm_num) σ' a' h⟩
+
+/-- **Instance of `goodSetNg_LKM_far`** at `bandStep2Mat sz0 (fun _ => 0)`: the same data (`0 ∈ GoodSetNg`, `j = 4 ≤ 2k + 2`); the far window is attained by a tuple
+(not vacuous), and the level `W^{-40}` holds at every far label. -/
+theorem goodSetNg_LKM_far_instance :
+    (∃ b : Fin (3 + 1) → Zd 3 (sz0.L 4),
+      ellT (sz0.L 4) (sz0.lam 4) 0 * ((sz0.W 4 : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤ (STdiamInf b : ℝ)) ∧
+    ∀ (σ' : Fin (3 + 1) → Bool) (a' : Fin (3 + 1) → Zd 3 (sz0.L 4)),
+      ellT (sz0.L 4) (sz0.lam 4) 0 * ((sz0.W 4 : ℕ) : ℝ) ^ (1 / 10 : ℝ) ≤ (STdiamInf a' : ℝ) →
+        ‖STLKMg (bandStep2Mat sz0 (fun _ => 0)) 4 0 H0 σ' a'‖ ≤ ((sz0.W 4 : ℕ) : ℝ) ^ (-(40 : ℝ)) :=
+  ⟨window4, fun σ' a' h =>
+    goodSetNg_LKM_far 3 sz0 (bandStep2Mat sz0 (fun _ => 0)) 4 0 (3 + 1) 4 100 1 (1 / 10) 40 H0
+      ((bandStep2_GoodSetN sz0 (fun _ => 0) 4 0 (3 + 1) 4 100 1 (1 / 10) 40 H0).1 (zero_mem_inst 4 (lam_le_one 4) _ _))
+      (3 + 1) (by norm_num) (by norm_num) σ' a' h⟩
+
 
 /-- **Instance of target 3** (`qopB13N_levelM`): `d = 3`, `m = 2`, `Λ_g = 1`, `K = 2`, the explicit mollifier
 (`C = (1 + 40·9)·6^9`, `c = 1/2`), `n = 4`, `E = 0`, `u = 0`, `H = 0 ∈ GoodSetN` at `(4, 100, 1)`,

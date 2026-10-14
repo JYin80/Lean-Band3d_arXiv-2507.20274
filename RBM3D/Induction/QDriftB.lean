@@ -9,6 +9,8 @@ import RBM3D.Induction.B45
 import RBM3D.Induction.NQGood1
 import RBM3D.Induction.Step2Core
 import RBM3D.Kernel.PropT
+import RBM3D.Chain.Step5KerGen
+import RBM3D.Chain.B45Gen
 
 /-!
 # S3-15b (ticket T2263): the decay class of the alternating drift, `d ≥ 3`
@@ -31,7 +33,15 @@ of the merged `goodSetN_A0clsQN` (radius `ε'`, `δD = 4 W^{-D'}`):
 
 All statements are deterministic and level-free, per matrix or per grid time; `Γ Λ Φ` occur only
 inside `GoodSetN` memberships.  Every unpinned helper is `private` or prefixed `QDriftB_`.
+
+T2498 (row U3s3a, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`), added after the band text, which is
+unchanged: `drift13_fastDecayg`, `altB4Ng_fastDecay` (with the private `QDriftB_ThetaNg_fastDecay`: the decay of the one-index kernel from
+`Step5KerGen_ThDecay` at the kernel coupling `gK`, crossed to the size level by the comparison R1), `altB5Ng_fastDecay_moll`, `dFlowQNg_clsQNg`,
+`alt_hDclsQNg`; their compiled instances at `bandStep2Mat sz0 E0` close §8.
 -/
+
+open private qdec_growth qdec_far_dist from RBM3D.Induction.QopDecay
+open private Step5KerGen_cmp_pos Step5KerGen_tailT_cross from RBM3D.Chain.Step5KerGen
 
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
@@ -44,7 +54,7 @@ open scoped NNReal ENNReal
 
 namespace RBM.Ind
 
-open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
+open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
 /-! ## 1. Copies of the private helpers of `QDriftA` (ticket target 1) -/
 
@@ -434,6 +444,519 @@ theorem alt_hDclsQN :
     (H₃ sz n (E n) (gridTime s v Kg n j) (pathH sz s v Kg n j ω)
       (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) σ hE hlam hlamΛ hW3' hLK hu0 hu1 hKj hϑ hA)
     (H₄ sz n (E n) (gridTime s v Kg n j) (pathH sz s v Kg n j ω) σ hlam hW4' hLK hu0 hu1 hKj hA)
+
+
+/-! ## 3g.-7g. The generic twins over a carrier (T2498) -/
+
+/-! ## 3g. The `ℬ₁ + ℬ₂ + ℬ₃` block decays at a good matrix (over a carrier) -/
+
+section DriftBG
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- **`drift13_fastDecayg`** (band `drift13_fastDecay`): clause (Va) of `GoodSetNg` (`driftTensorNg_far_of_goodSetNg`) and `fastDecay_of_diamInf`. -/
+theorem drift13_fastDecayg (Cm : Step2Mat sz) (hd : 3 ≤ d) {m n : ℕ} {u Γ Λ Φ τ' ε' D' : ℝ}
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (σ : Fin (m + 1) → Bool)
+    (hdW : (d : ℝ) * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ ((sz.W n : ℕ) : ℝ) ^ ε')
+    (hH : GoodSetNg Cm n u (m + 1) Γ Λ Φ τ' D' H) :
+    EKFastDecay (sz.lam n) u ((sz.W n : ℕ) : ℝ) ε' D'
+      (fun b : Fin (m + 1) → Zd d (sz.L n) => driftTensorNg Cm n u H σ b) := by
+  have hL1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
+  exact fastDecay_of_diamInf (by omega) hL1 hdW le_rfl
+    (fun b hb => driftTensorNg_far_of_goodSetNg hH σ b hb)
+
+
+end DriftBG
+
+section ThetaG
+
+variable {d : ℕ}
+
+
+/-- `B_{u,r} ≤ 2 (1 - u)⁻¹` at a real argument (band `qdec_Bparam_le`, `QopDecay:614`). -/
+private theorem QDriftB_BparamR_le {L : ℕ} (g u : ℝ) (hL : 1 ≤ L) (hu : u < 1) {r : ℝ} (hr : 0 ≤ r) :
+    BparamR d L g u r ≤ 2 * (1 - u)⁻¹ := by
+  have h1u : 0 < 1 - u := by linarith
+  have habs : |1 - u| = 1 - u := abs_of_pos h1u
+  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast hL
+  unfold BparamR
+  rw [habs]
+  have a1 : (g ^ 2 + (1 - u))⁻¹ ≤ (1 - u)⁻¹ :=
+    inv_anti₀ h1u (by nlinarith [sq_nonneg g])
+  have a2 : ((r + 1) ^ (d - 2))⁻¹ ≤ 1 :=
+    inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith))
+  have a3 : ((L : ℝ) ^ d * (1 - u))⁻¹ ≤ (1 - u)⁻¹ :=
+    inv_anti₀ h1u (by nlinarith [one_le_pow₀ (n := d) hL1])
+  have a4 : 0 ≤ (g ^ 2 + (1 - u))⁻¹ := inv_nonneg.2 (by nlinarith [sq_nonneg g])
+  have a5 : 0 ≤ ((r + 1) ^ (d - 2))⁻¹ := inv_nonneg.2 (by positivity)
+  calc (g ^ 2 + (1 - u))⁻¹ * ((r + 1) ^ (d - 2))⁻¹ + ((L : ℝ) ^ d * (1 - u))⁻¹
+      ≤ (1 - u)⁻¹ * 1 + (1 - u)⁻¹ := by gcongr
+    _ = 2 * (1 - u)⁻¹ := by ring
+
+/-- **`Θ^{(k)}_u` over a carrier maps a decaying tensor to a decaying tensor** (band `QopDecay_ThetaN_fastDecay`, `QopDecay:762`): the class
+`Step5KerGen_ThDecay C gK Λ C₆` of the one-index kernel at the kernel coupling `gK`, the comparison R1 (`tailT^{gK} ≤ A tailT^{lam}`,
+`Step5KerGen_tailT_cross`), the row sums `C₆/(1-u)`; a `(u, ε, D)`-decaying tensor of size `≤ W^{C₀}` is mapped to a `(u, 2ε, D - (K + 1))`-decaying
+tensor at the size level `sz.lam`, for `W ≥ W₀(d, k, Λ, C₆, A, K, C₀, ε, D)`, `L^d ≤ W^K`, `(1 - u)⁻¹ ≤ W^K`. -/
+private theorem QDriftB_ThetaNg_fastDecay (d k : ℕ) (hd : 0 < d) (C₆ A K C₀ ε D : ℝ) (hC₆ : 0 ≤ C₆) (hA : 1 ≤ A) (hε : 0 < ε) :
+    ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (Λ : ℝ) (sz : Sizes d) (C : FlowFM sz) (gK : ℕ → ℝ) (n : ℕ), Step5KerGen_ThDecay C gK Λ C₆ →
+      (∀ m, 0 ≤ gK m * sz.lam m ∧ gK m ^ 2 ≤ sz.lam m ^ 2 ∧ sz.lam m ^ 2 ≤ A * gK m ^ 2) → 0 < gK n → gK n ≤ Λ →
+      ∀ W : ℝ, W₀ ≤ W → ((sz.L n : ℕ) : ℝ) ^ d ≤ W ^ K →
+      ∀ u : ℝ, 0 ≤ u → u < 1 → (1 - u)⁻¹ ≤ W ^ K → ∀ σ : Fin k → Bool,
+      ∀ 𝒜 : (Fin k → Zd d (sz.L n)) → ℂ, ‖𝒜‖ ≤ W ^ C₀ → EKFastDecay (sz.lam n) u W ε D 𝒜 →
+        EKFastDecay (sz.lam n) u W (2 * ε) (D - (K + 1)) (Step2Gen_ThetaN C n σ u 𝒜) := by
+  set Cc : ℝ := 2 * C₆ * A + 1 with hCc
+  have hCc0 : 0 < Cc := by have : 0 ≤ 2 * C₆ * A := by positivity
+                           linarith
+  obtain ⟨W₁, hW₁, hgrow⟩ := qdec_growth (C := 2 * ((k : ℝ) + 1) * Cc) (c := 1 / (d : ℝ)) (ε' := ε)
+    (p := K + C₀ + D - 1) (by positivity) (by have : (0 : ℝ) < d := by exact_mod_cast hd
+                                              positivity) hε
+  refine ⟨max W₁ (max ((2 : ℝ) ^ (1 / ε)) (2 * (k : ℝ) * (C₆ + 1))), lt_of_lt_of_le hW₁ (le_max_left _ _), ?_⟩
+  intro Λ sz C gK n hdec hcmp hg hgΛ W hW hLW u hu0 hu1 hKu σ 𝒜 hAn hAd a ⟨j, j', hjk⟩
+  have hWW₁ : W₁ ≤ W := (le_max_left _ _).trans hW
+  have hW2ε : (2 : ℝ) ^ (1 / ε) ≤ W := ((le_max_left _ _).trans (le_max_right _ _)).trans hW
+  have hWk : 2 * (k : ℝ) * (C₆ + 1) ≤ W := ((le_max_right _ _).trans (le_max_right _ _)).trans hW
+  have hW1 : 1 < W := lt_of_lt_of_le hW₁ hWW₁
+  have hW0 : 0 < W := by linarith
+  have hWε : 2 ≤ W ^ ε := by
+    calc (2 : ℝ) = ((2 : ℝ) ^ (1 / ε)) ^ ε := by
+          rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), one_div, inv_mul_cancel₀ hε.ne', Real.rpow_one]
+      _ ≤ W ^ ε := Real.rpow_le_rpow (by positivity) hW2ε hε.le
+  have hWε2 : W ^ (2 * ε) = W ^ ε * W ^ ε := by rw [two_mul, Real.rpow_add hW0]
+  have hL1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by
+    exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
+  set ℓ := ellT (sz.L n) (sz.lam n) u with hℓ
+  have hℓ1 : 1 ≤ ℓ := one_le_ellT hL1
+  have hℓ0 : 0 < ℓ := lt_of_lt_of_le zero_lt_one hℓ1
+  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
+  set x := 1 / (d : ℝ) * W ^ ε / 2 with hx
+  have hr : 2 * (W ^ ε * ℓ) ≤ W ^ (2 * ε) * ℓ := by
+    rw [hWε2]
+    nlinarith [mul_nonneg (sub_nonneg.2 hWε) (mul_nonneg (by linarith : (0 : ℝ) ≤ W ^ ε) hℓ0.le)]
+  obtain ⟨hlam0, hgl⟩ := Step5KerGen_cmp_pos (hcmp n) hg
+  have hcr : ∀ (σ₁ σ₂ : Bool) (b b' : Zd d (sz.L n)),
+      ‖Step2Gen_thetaKer C n σ₁ σ₂ u b b'‖ ≤
+        2 * C₆ * A * (1 - u)⁻¹ * Real.exp (-Real.sqrt (((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ) / ℓ)) := by
+    intro σ₁ σ₂ b b'
+    obtain ⟨hθ, -⟩ := hdec n hg hgΛ σ₁ σ₂ u hu0 hu1
+    have hcross := Step5KerGen_tailT_cross (d := d) (L := sz.L n) (t := u)
+      (r := ((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ)) hL1 hg hgl (hcmp n).2.2 hA hu1 (Nat.cast_nonneg _)
+    have hB := QDriftB_BparamR_le (d := d) (L := sz.L n) (sz.lam n) u (by have := sz.three_le_L n; omega) hu1
+      (r := ((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ)) (Nat.cast_nonneg _)
+    have hE0 : 0 ≤ Real.exp (-Real.sqrt (((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ) / ℓ)) := (Real.exp_pos _).le
+    refine (hθ b b').trans ?_
+    calc C₆ * tailT d (sz.L n) (gK n) u ((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ)
+        ≤ C₆ * (A * tailT d (sz.L n) (sz.lam n) u ((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ)) :=
+          mul_le_mul_of_nonneg_left hcross hC₆
+      _ ≤ C₆ * (A * (2 * (1 - u)⁻¹ * Real.exp (-Real.sqrt (((zdistInf d (sz.L n) (b' - b) : ℕ) : ℝ) / ℓ)))) := by
+          unfold tailT
+          gcongr
+      _ = _ := by ring
+  have hpar : ∀ i : Fin k, ‖∑ b : Zd d (sz.L n), Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b *
+      𝒜 (Function.update a i b)‖ ≤ C₆ * W ^ K * W ^ (-D) + W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x)) := by
+    intro i
+    have hconst : 0 ≤ Cc * W ^ K * W ^ C₀ * Real.exp (-x) := by positivity
+    have hpt : ∀ b : Zd d (sz.L n), ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b * 𝒜 (Function.update a i b)‖ ≤
+        ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b‖ * W ^ (-D) + Cc * W ^ K * W ^ C₀ * Real.exp (-x) := by
+      intro b
+      rw [norm_mul]
+      by_cases hnear : ∃ p q : Fin k,
+          W ^ ε * ℓ ≤ (zdistD d (sz.L n) (Function.update a i b p - Function.update a i b q) : ℝ)
+      · have h1 : ‖𝒜 (Function.update a i b)‖ ≤ W ^ (-D) := hAd _ hnear
+        have h2 := mul_le_mul_of_nonneg_left h1 (norm_nonneg (Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b))
+        linarith
+      · push Not at hnear
+        have hdist := qdec_far_dist a b i j j' hr hjk hnear
+        have hinf : (zdistD d (sz.L n) (b - a i) : ℝ) ≤ d * ((zdistInf d (sz.L n) (b - a i) : ℕ) : ℝ) := by
+          exact_mod_cast zdistD_le_mul_zdistInf d (sz.L n) (b - a i)
+        have hxs : x ≤ Real.sqrt (((zdistInf d (sz.L n) (b - a i) : ℕ) : ℝ) / ℓ) := by
+          refine Real.le_sqrt_of_sq_le ?_
+          have hrinf : W ^ (2 * ε) * ℓ / 2 / d ≤ ((zdistInf d (sz.L n) (b - a i) : ℕ) : ℝ) := by
+            rw [div_le_iff₀ hd0]
+            nlinarith
+          have h2 : W ^ (2 * ε) / 2 / d ≤ ((zdistInf d (sz.L n) (b - a i) : ℕ) : ℝ) / ℓ := by
+            rw [le_div_iff₀ hℓ0]
+            calc W ^ (2 * ε) / 2 / d * ℓ = W ^ (2 * ε) * ℓ / 2 / d := by ring
+              _ ≤ _ := hrinf
+          have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
+          have hWp : 0 ≤ W ^ ε := Real.rpow_nonneg hW0.le _
+          have e1 : x ^ 2 = (W ^ ε) ^ 2 / (4 * (d : ℝ) ^ 2) := by
+            rw [hx]; field_simp; ring
+          have e2 : W ^ (2 * ε) / 2 / d = (W ^ ε) ^ 2 / (2 * (d : ℝ)) := by
+            rw [hWε2]; field_simp
+          have e3 : (W ^ ε) ^ 2 / (4 * (d : ℝ) ^ 2) ≤ (W ^ ε) ^ 2 / (2 * (d : ℝ)) := by
+            apply div_le_div_of_nonneg_left (sq_nonneg _) (by positivity)
+            nlinarith
+          calc x ^ 2 = (W ^ ε) ^ 2 / (4 * (d : ℝ) ^ 2) := e1
+            _ ≤ (W ^ ε) ^ 2 / (2 * (d : ℝ)) := e3
+            _ = W ^ (2 * ε) / 2 / d := e2.symm
+            _ ≤ _ := h2
+        have hexp : Real.exp (-Real.sqrt (((zdistInf d (sz.L n) (b - a i) : ℕ) : ℝ) / ℓ)) ≤ Real.exp (-x) :=
+          Real.exp_le_exp.2 (neg_le_neg hxs)
+        have hKb := hcr (σ i) (σ (finRotate k i)) (a i) b
+        have hK1 : ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b‖ ≤ Cc * W ^ K * Real.exp (-x) := by
+          refine hKb.trans ?_
+          have hu' : (1 - u)⁻¹ ≤ W ^ K := hKu
+          have h2CA : 2 * C₆ * A ≤ Cc := by linarith
+          have h0 : 0 ≤ 2 * C₆ * A := by positivity
+          exact mul_le_mul (mul_le_mul h2CA hu' (inv_nonneg.2 (by linarith)) hCc0.le) hexp (Real.exp_pos _).le
+            (by positivity)
+        have hA1 : ‖𝒜 (Function.update a i b)‖ ≤ W ^ C₀ := (norm_le_pi_norm 𝒜 _).trans hAn
+        have h3 := mul_le_mul hK1 hA1 (norm_nonneg _) (by positivity)
+        have h4 : 0 ≤ ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b‖ * W ^ (-D) := by positivity
+        calc _ ≤ Cc * W ^ K * Real.exp (-x) * W ^ C₀ := h3
+          _ = Cc * W ^ K * W ^ C₀ * Real.exp (-x) := by ring
+          _ ≤ _ := by linarith
+    obtain ⟨-, hrowC⟩ := hdec n hg hgΛ (σ i) (σ (finRotate k i)) u hu0 hu1
+    calc ‖∑ b : Zd d (sz.L n), Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b * 𝒜 (Function.update a i b)‖
+        ≤ ∑ b : Zd d (sz.L n), ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b * 𝒜 (Function.update a i b)‖ :=
+          norm_sum_le _ _
+      _ ≤ ∑ b : Zd d (sz.L n), (‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b‖ * W ^ (-D) +
+            Cc * W ^ K * W ^ C₀ * Real.exp (-x)) := Finset.sum_le_sum fun b _ => hpt b
+      _ = (∑ b : Zd d (sz.L n), ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b‖) * W ^ (-D) +
+            (((sz.L n : ℕ) : ℝ) ^ d) * (Cc * W ^ K * W ^ C₀ * Real.exp (-x)) := by
+          rw [Finset.sum_add_distrib, ← Finset.sum_mul, Finset.sum_const, Finset.card_univ, card_Zd, nsmul_eq_mul]
+          push_cast; ring
+      _ ≤ C₆ * W ^ K * W ^ (-D) + W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x)) := by
+          have h1 : ∑ b : Zd d (sz.L n), ‖Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b‖ ≤ C₆ * W ^ K :=
+            hrowC (a i) |>.trans (by
+              rw [div_eq_mul_inv]
+              exact mul_le_mul_of_nonneg_left hKu hC₆)
+          gcongr
+  simp only [Step2Gen_ThetaN]
+  refine (norm_sum_le _ _).trans ?_
+  have hQ0 : 0 ≤ W ^ K * W ^ (-D) := by positivity
+  set Z := W ^ (-(D - (K + 1))) with hZ
+  have hZ0 : 0 < Z := Real.rpow_pos_of_pos hW0 _
+  have hZe : Z = W * (W ^ K * W ^ (-D)) := by
+    rw [hZ, show -(D - (K + 1)) = 1 + K + -D by ring, Real.rpow_add hW0, Real.rpow_add hW0, Real.rpow_one]
+    ring
+  have hT1 : (k : ℝ) * (C₆ * W ^ K * W ^ (-D)) ≤ Z / 2 := by
+    rw [hZe]
+    have hk0 : (0 : ℝ) ≤ k := Nat.cast_nonneg _
+    have hkc' : (k : ℝ) * C₆ ≤ (k : ℝ) * (C₆ + 1) := mul_le_mul_of_nonneg_left (by linarith) hk0
+    have hkc : (k : ℝ) * C₆ ≤ W / 2 := by linarith [hWk]
+    calc (k : ℝ) * (C₆ * W ^ K * W ^ (-D)) = ((k : ℝ) * C₆) * (W ^ K * W ^ (-D)) := by ring
+      _ ≤ (W / 2) * (W ^ K * W ^ (-D)) := mul_le_mul_of_nonneg_right hkc hQ0
+      _ = W * (W ^ K * W ^ (-D)) / 2 := by ring
+  have hpow : W ^ K * W ^ K * W ^ C₀ = W ^ (K + C₀ + D - 1) * Z := by
+    have h1 : W ^ K * W ^ K * W ^ C₀ = W ^ (K + K + C₀) := by rw [Real.rpow_add hW0, Real.rpow_add hW0]
+    have h2 : W ^ (K + C₀ + D - 1) * Z = W ^ (K + C₀ + D - 1 + -(D - (K + 1))) := by
+      rw [hZ, Real.rpow_add hW0]
+    rw [h1, h2]; congr 1; ring
+  have hg1 := hgrow W hWW₁
+  set q := Cc * W ^ (K + C₀ + D - 1) * Real.exp (-x) with hq
+  have hq0 : 0 ≤ q := by positivity
+  have hq1 : 2 * ((k : ℝ) + 1) * q ≤ 1 := by
+    calc 2 * ((k : ℝ) + 1) * q = (2 * ((k : ℝ) + 1) * Cc * W ^ (K + C₀ + D - 1)) * Real.exp (-x) := by
+          rw [hq]; ring
+      _ ≤ Real.exp x * Real.exp (-x) := mul_le_mul_of_nonneg_right hg1 (Real.exp_pos _).le
+      _ = 1 := by rw [← Real.exp_add]; simp
+  have hT2 : (k : ℝ) * (W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x))) ≤ Z / 2 := by
+    have e : W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x)) = Z * q := by
+      calc W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x)) = Cc * (W ^ K * W ^ K * W ^ C₀) * Real.exp (-x) := by ring
+        _ = Cc * (W ^ (K + C₀ + D - 1) * Z) * Real.exp (-x) := by rw [hpow]
+        _ = Z * q := by rw [hq]; ring
+    rw [e]
+    have hn1 : (k : ℝ) * q ≤ ((k : ℝ) + 1) * q := mul_le_mul_of_nonneg_right (by linarith) hq0
+    have hnq : (k : ℝ) * q ≤ 1 / 2 := by linarith only [hn1, hq1]
+    calc (k : ℝ) * (Z * q) = Z * ((k : ℝ) * q) := by ring
+      _ ≤ Z * (1 / 2) := mul_le_mul_of_nonneg_left hnq hZ0.le
+      _ = Z / 2 := by ring
+  calc ∑ i : Fin k, ‖∑ b : Zd d (sz.L n), Step2Gen_thetaKer C n (σ i) (σ (finRotate k i)) u (a i) b * 𝒜 (Function.update a i b)‖
+      ≤ ∑ _i : Fin k, (C₆ * W ^ K * W ^ (-D) + W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x))) :=
+        Finset.sum_le_sum fun i _ => hpar i
+    _ = (k : ℝ) * (C₆ * W ^ K * W ^ (-D)) + (k : ℝ) * (W ^ K * (Cc * W ^ K * W ^ C₀ * Real.exp (-x))) := by
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]; ring
+    _ ≤ Z := by linarith
+
+end ThetaG
+
+
+/-! ## 4g. `ℬ₄` decays at every radius and depth from the crude sup alone (over a carrier) -/
+
+section B4G
+
+/-- **`altB4Ng_fastDecay`** (band `altB4N_fastDecay`, `QDriftB:167`): `ℬ₄ = Θ(𝒜 - 𝒬𝒜) - (Θ𝒜 - 𝒬Θ𝒜)` decays at the size level `sz.lam` at every radius and
+depth from the crude sup of `𝒜 = (𝓛-𝒦)_{u,σ}(H)` alone.  The kernel of `Θ` is `Step2Gen_thetaKer` with the class `Step5KerGen_ThDecay Cm.toFlowFM gK Λg C₆`
+(`C₆` before the carrier), the comparison R1 (`gK² ≤ lam² ≤ A gK²`) crosses the tail to `sz.lam` (`QDriftB_ThetaNg_fastDecay`). -/
+theorem altB4Ng_fastDecay :
+    ∀ (d m : ℕ) (Λg K C c C₀ ε' D' C₆ A : ℝ), 3 ≤ d → 0 < Λg → 0 < C → 0 < c → 0 < ε' → 0 ≤ C₆ → 1 ≤ A →
+      ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (gK : ℕ → ℝ) (n : ℕ) (u : ℝ)
+        (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+        (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool),
+        Step5KerGen_ThDecay Cm.toFlowFM gK Λg C₆ →
+        (∀ m', 0 ≤ gK m' * sz.lam m' ∧ gK m' ^ 2 ≤ sz.lam m' ^ 2 ∧ sz.lam m' ^ 2 ≤ A * gK m' ^ 2) →
+        0 < gK n → gK n ≤ Λg → W₀ ≤ ((sz.W n : ℕ) : ℝ) →
+        ((sz.L n : ℕ) : ℝ) ^ d ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+        0 ≤ u → u < 1 → (1 - u)⁻¹ ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+        STMollifierProps (d := d) (sz.lam n) C c ϑ →
+        ‖fun b : Fin (m + 1) → Zd d (sz.L n) => STLKMg Cm n u H σ b‖ ≤ ((sz.W n : ℕ) : ℝ) ^ C₀ →
+        EKFastDecay (sz.lam n) u ((sz.W n : ℕ) : ℝ) ε' D' (altB4Ng Cm n u ϑ σ H) := by
+  intro d m Λg K C c C₀ ε' D' C₆ A hd hΛg hC hc hε' hC₆ hA
+  have hε2 : 0 < ε' / 2 := by positivity
+  obtain ⟨Wa, hWa, Ha⟩ := stQop_sub_fastDecay d m K C c C₀ (ε' / 2) (D' + K + 2) hC hc hε2
+  obtain ⟨Wb, hWb, Hb⟩ := stQop_sub_fastDecay d m K C c (C₀ + K + 1) ε' (D' + 1) hC hc hε'
+  obtain ⟨Wc, hWc, Hc⟩ := QDriftB_ThetaNg_fastDecay d (m + 1) (by omega) C₆ A K (C₀ + K * m + 1) (ε' / 2)
+    (D' + K + 2) hC₆ hA hε2
+  refine ⟨max (max Wa Wb) (max Wc (max (C * (((2 : ℝ) ^ d) ^ m + 1)) (max (((m : ℝ) + 1) * (C₆ + 1)) 2))),
+    lt_of_lt_of_le hWa ((le_max_left _ _).trans (le_max_left _ _)), ?_⟩
+  intro sz Cm gK n u H ϑ σ hdec hcmp hg hgΛ hW hLK hu0 hu1 hK hϑ hAn a ha
+  have hWa' : Wa ≤ ((sz.W n : ℕ) : ℝ) := ((le_max_left _ _).trans (le_max_left _ _)).trans hW
+  have hWb' : Wb ≤ ((sz.W n : ℕ) : ℝ) := ((le_max_right _ _).trans (le_max_left _ _)).trans hW
+  have hWc' : Wc ≤ ((sz.W n : ℕ) : ℝ) := ((le_max_left _ _).trans (le_max_right _ _)).trans hW
+  have hWC : C * (((2 : ℝ) ^ d) ^ m + 1) ≤ ((sz.W n : ℕ) : ℝ) :=
+    (((le_max_left _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hW
+  have hWm : ((m : ℝ) + 1) * (C₆ + 1) ≤ ((sz.W n : ℕ) : ℝ) :=
+    ((((le_max_left _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hW
+  have hW2 : (2 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) :=
+    ((((le_max_right _ _).trans (le_max_right _ _)).trans (le_max_right _ _)).trans (le_max_right _ _)).trans hW
+  set W : ℝ := ((sz.W n : ℕ) : ℝ) with hWdef
+  have hW1 : 1 < W := by linarith
+  have hW0 : 0 < W := by linarith
+  have hL3 : 3 ≤ sz.L n := sz.three_le_L n
+  have hL1 : 1 ≤ sz.L n := by omega
+  have hlam : 0 < sz.lam n := (Step5KerGen_cmp_pos (hcmp n) hg).1
+  set Aa : (Fin (m + 1) → Zd d (sz.L n)) → ℂ := fun b => STLKMg Cm n u H σ b with hAadef
+  have hAb : ∀ b, ‖Aa b‖ ≤ W ^ C₀ := fun b => (norm_le_pi_norm Aa b).trans hAn
+  have hrow : ∀ (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d (sz.L n),
+      ∑ b : Zd d (sz.L n), ‖Step2Gen_thetaKer Cm.toFlowFM n σ σ' t a b‖ ≤ C₆ / (1 - t) :=
+    fun σ σ' t ht0 ht1 a => (hdec n hg hgΛ σ σ' t ht0 ht1).2 a
+  obtain ⟨hWp1, habs⟩ := QDriftB_absorb (d := d) (m := m) (K := K) hC.le hW1 hL1 hLK hWC
+  have hAQ : ‖Aa - STQop (d := d) ϑ u Aa‖ ≤ W ^ (C₀ + K * m + 1) := by
+    refine (pi_norm_le_iff_of_nonneg (by positivity)).2 fun b => ?_
+    have e : (Aa - STQop (d := d) ϑ u Aa) b = STPsum (d := d) Aa (b 0) * ϑ u b := by simp [STQop]
+    rw [e, norm_mul]
+    have h1 := QDriftB_Psum_crude (d := d) Aa hAb (b 0)
+    have h2 := QDriftB_mollifier_norm_le hC.le hc.le hϑ hu0 hu1 b
+    have hC0 : 0 ≤ ‖STPsum (d := d) Aa (b 0)‖ := norm_nonneg _
+    have hW0C : (0 : ℝ) ≤ W ^ C₀ := by positivity
+    calc ‖STPsum (d := d) Aa (b 0)‖ * ‖ϑ u b‖
+        ≤ ((((2 : ℝ) ^ d) ^ m + (((sz.L n : ℕ) : ℝ) ^ d) ^ m) * W ^ C₀) * C :=
+          mul_le_mul h1 h2 (norm_nonneg _) (by positivity)
+      _ = W ^ C₀ * (C * (((2 : ℝ) ^ d) ^ m + (((sz.L n : ℕ) : ℝ) ^ d) ^ m)) := by ring
+      _ ≤ W ^ C₀ * (W * W ^ (K * m)) := mul_le_mul_of_nonneg_left habs hW0C
+      _ = W ^ (C₀ + K * m + 1) := by
+          rw [Real.rpow_add hW0, Real.rpow_add hW0, Real.rpow_one]; ring
+  have hΘA : ‖Step2Gen_ThetaN Cm.toFlowFM n σ u Aa‖ ≤ W ^ (C₀ + K + 1) := by
+    refine (pi_norm_le_iff_of_nonneg (by positivity)).2 fun b => ?_
+    have h := B45_norm_ThetaN_leg Cm.toFlowFM n hrow σ hu0 hu1 (A := Aa) (M := W ^ C₀) hAb b
+    have hm : (((m + 1 : ℕ) : ℝ)) * C₆ ≤ W := by
+      push_cast
+      have hm0 : (0 : ℝ) ≤ (m : ℝ) + 1 := by positivity
+      have : ((m : ℝ) + 1) * C₆ ≤ ((m : ℝ) + 1) * (C₆ + 1) := mul_le_mul_of_nonneg_left (by linarith) hm0
+      linarith
+    have hinv : (1 - u)⁻¹ ≤ W ^ K := hK
+    calc ‖Step2Gen_ThetaN Cm.toFlowFM n σ u Aa b‖ ≤ ((m + 1 : ℕ) : ℝ) * (C₆ / (1 - u)) * W ^ C₀ := h
+      _ = (((m + 1 : ℕ) : ℝ) * C₆) * (1 - u)⁻¹ * W ^ C₀ := by rw [div_eq_mul_inv]; ring
+      _ ≤ W * W ^ K * W ^ C₀ := by gcongr
+      _ = W ^ (C₀ + K + 1) := by
+          rw [Real.rpow_add hW0, Real.rpow_add hW0, Real.rpow_one]; ring
+  have hd1 : EKFastDecay (sz.lam n) u W (ε' / 2) (D' + K + 2) (Aa - STQop (d := d) ϑ u Aa) :=
+    Ha (sz.L n) hL3 (sz.lam n) hlam W hWa' hLK ϑ hϑ u hu0 hu1 Aa hAn
+  have hd2 : EKFastDecay (sz.lam n) u W (2 * (ε' / 2)) (D' + K + 2 - (K + 1))
+      (Step2Gen_ThetaN Cm.toFlowFM n σ u (Aa - STQop (d := d) ϑ u Aa)) :=
+    Hc Λg sz Cm.toFlowFM gK n hdec hcmp hg hgΛ W hWc' hLK u hu0 hu1 hK σ _ hAQ hd1
+  have hd3 : EKFastDecay (sz.lam n) u W ε' (D' + 1)
+      (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa - STQop (d := d) ϑ u (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa)) :=
+    Hb (sz.L n) hL3 (sz.lam n) hlam W hWb' hLK ϑ hϑ u hu0 hu1 _ hΘA
+  rw [show 2 * (ε' / 2) = ε' by ring, show D' + K + 2 - (K + 1) = D' + 1 by ring] at hd2
+  have b1 := hd2 a ha
+  have b2 := hd3 a ha
+  have hsub : Step2Gen_ThetaN Cm.toFlowFM n σ u (Aa - STQop (d := d) ϑ u Aa) a =
+      Step2Gen_ThetaN Cm.toFlowFM n σ u Aa a -
+        Step2Gen_ThetaN Cm.toFlowFM n σ u (STQop (d := d) ϑ u Aa) a :=
+    QopAlgebra_ThetaN_subg Cm.toFlowFM n σ u Aa (STQop (d := d) ϑ u Aa) a
+  have e : altB4Ng Cm n u ϑ σ H a =
+      Step2Gen_ThetaN Cm.toFlowFM n σ u (Aa - STQop (d := d) ϑ u Aa) a -
+        (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa -
+          STQop (d := d) ϑ u (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa)) a := by
+    rw [hsub, Pi.sub_apply]
+    unfold altB4Ng
+    ring
+  rw [e]
+  calc ‖Step2Gen_ThetaN Cm.toFlowFM n σ u (Aa - STQop (d := d) ϑ u Aa) a -
+        (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa -
+          STQop (d := d) ϑ u (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa)) a‖
+      ≤ ‖Step2Gen_ThetaN Cm.toFlowFM n σ u (Aa - STQop (d := d) ϑ u Aa) a‖ +
+        ‖(Step2Gen_ThetaN Cm.toFlowFM n σ u Aa -
+          STQop (d := d) ϑ u (Step2Gen_ThetaN Cm.toFlowFM n σ u Aa)) a‖ := norm_sub_le _ _
+    _ ≤ W ^ (-(D' + 1)) + W ^ (-(D' + 1)) := add_le_add b1 b2
+    _ ≤ W ^ (-D') := QDriftB_two_mul_rpow_le hW2
+
+end B4G
+
+/-- **Band concluder with head `Step5KerGen_ThDecay`** (preflight A3): the premise of `altB4Ng_fastDecay`, `alt_hDclsQNg` and of the row-c bundle holds at the band flow
+`bandFM sz E` (`|E n| ≤ 2`) with the constant `C₆ = C₆(d, Λ)` of `step5KerGen_thDecay_band`, at `gK = sz.lam`. -/
+theorem qDriftB_thDecay_band_concl (d : ℕ) (hd : 3 ≤ d) {Λ : ℝ} (hΛ : 0 < Λ) (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| ≤ 2) :
+    Step5KerGen_ThDecay (bandFM sz E) sz.lam Λ (Classical.choose (step5KerGen_thDecay_band d Λ hd hΛ)) :=
+  (Classical.choose_spec (step5KerGen_thDecay_band d Λ hd hΛ)).2 sz E hE
+
+/-! ## 5g. `ℬ₅` decays at every radius and depth for the explicit mollifier (over a carrier) -/
+
+section B5G
+
+/-- **`altB5Ng_fastDecay_moll`** (band `altB5N_fastDecay_moll`, `QDriftB:278`): the size level `sz.lam` only; the carrier enters through `STLKMg`. -/
+theorem altB5Ng_fastDecay_moll :
+    ∀ (d m : ℕ) (K C₀ ε' D' : ℝ), 0 < ε' →
+      ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (n : ℕ) (u : ℝ)
+        (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin (m + 1) → Bool),
+        0 < sz.lam n → W₀ ≤ ((sz.W n : ℕ) : ℝ) →
+        ((sz.L n : ℕ) : ℝ) ^ d ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+        0 ≤ u → u < 1 → (1 - u)⁻¹ ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+        ‖fun b : Fin (m + 1) → Zd d (sz.L n) => STLKMg Cm n u H σ b‖ ≤ ((sz.W n : ℕ) : ℝ) ^ C₀ →
+        EKFastDecay (sz.lam n) u ((sz.W n : ℕ) : ℝ) ε' D'
+          (altB5Ng Cm n u (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) σ H) := by
+  intro d m K C₀ ε' D' hε'
+  obtain ⟨Wd, hWd, Hd⟩ := QopDecay_deriv_fastDecay d m K (C₀ + K * m + 1) ε' D' hε'
+  refine ⟨max Wd (((2 : ℝ) ^ d) ^ m + 1), lt_of_lt_of_le hWd (le_max_left _ _), ?_⟩
+  intro sz Cm n u H σ hlam hW hLK hu0 hu1 hK hAn
+  have hWd' : Wd ≤ ((sz.W n : ℕ) : ℝ) := (le_max_left _ _).trans hW
+  have hWC : (1 : ℝ) * (((2 : ℝ) ^ d) ^ m + 1) ≤ ((sz.W n : ℕ) : ℝ) := by
+    rw [one_mul]; exact (le_max_right _ _).trans hW
+  set W : ℝ := ((sz.W n : ℕ) : ℝ) with hWdef
+  have hW1 : 1 < W := lt_of_lt_of_le hWd hWd'
+  have hW0 : 0 < W := by linarith
+  have hL3 : 3 ≤ sz.L n := sz.three_le_L n
+  obtain ⟨hWp1, habs⟩ := QDriftB_absorb (d := d) (m := m) (K := K) (C := 1) zero_le_one hW1
+    (by omega) hLK hWC
+  set Aa : (Fin (m + 1) → Zd d (sz.L n)) → ℂ := fun b => STLKMg Cm n u H σ b with hAadef
+  have hAb : ∀ b, ‖Aa b‖ ≤ W ^ C₀ := fun b => (norm_le_pi_norm Aa b).trans hAn
+  have hB : ‖fun a₁ : Zd d (sz.L n) => -STPsum (d := d) Aa a₁‖ ≤ W ^ (C₀ + K * m + 1) := by
+    refine (pi_norm_le_iff_of_nonneg (by positivity)).2 fun a₁ => ?_
+    rw [norm_neg]
+    have h1 := QDriftB_Psum_crude (d := d) Aa hAb a₁
+    have hW0C : (0 : ℝ) ≤ W ^ C₀ := by positivity
+    calc ‖STPsum (d := d) Aa a₁‖
+        ≤ (((2 : ℝ) ^ d) ^ m + (((sz.L n : ℕ) : ℝ) ^ d) ^ m) * W ^ C₀ := h1
+      _ = W ^ C₀ * (1 * (((2 : ℝ) ^ d) ^ m + (((sz.L n : ℕ) : ℝ) ^ d) ^ m)) := by ring
+      _ ≤ W ^ C₀ * (W * W ^ (K * m)) := mul_le_mul_of_nonneg_left habs hW0C
+      _ = W ^ (C₀ + K * m + 1) := by
+          rw [Real.rpow_add hW0, Real.rpow_add hW0, Real.rpow_one]; ring
+  have e : altB5Ng Cm n u (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) σ H =
+      fun a : Fin (m + 1) → Zd d (sz.L n) =>
+        (fun a₁ : Zd d (sz.L n) => -STPsum (d := d) Aa a₁) (a 0) *
+          deriv (fun τ => QopAlgebra_mollifier d (sz.L n) m (sz.lam n) τ a) u := by
+    funext a
+    exact (neg_mul _ _).symm
+  rw [e]
+  exact Hd (sz.L n) hL3 (sz.lam n) hlam W hWd' u hu0 hu1 hK _ hB
+
+end B5G
+
+
+/-! ## 6g. The drift class at a matrix, and the field `hDcls` along the walk (over a carrier) -/
+
+section ClsG
+
+/-- **`dFlowQNg_clsQNg`** (band `dFlowQN_clsQN`, `QDriftB:330`): `dFlowQNg … u … H ∈ altClsQN … ε' Dc uu i (4 W^{-D'})` whenever `ℓ_u ≤ ℓ_{uu i}`.  The kernel class
+`ZeroModeGen_KerSums` (the sum-zero of the drift) replaces `|E| ≤ 2`; the good set is `GoodSetNg`. -/
+theorem dFlowQNg_clsQNg :
+    ∀ {d : ℕ} (sz : Sizes d) (Cm : Step2Mat sz), 3 ≤ d → ∀ (m : ℕ) (K C c C₀ ε' D' : ℝ), 0 < C → 0 < c → 0 < ε' →
+      ∀ {n : ℕ} {u Γ Λ Φ τ' Dc : ℝ} {uu : ℕ → ℝ} {i : ℕ},
+      ZeroModeGen_KerSums Cm.toFlowFM n →
+      QDriftA_W0 d m K C c C₀ ε' D' ≤ ((sz.W n : ℕ) : ℝ) →
+      ((sz.L n : ℕ) : ℝ) ^ d ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+      (d : ℝ) * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ ((sz.W n : ℕ) : ℝ) ^ ε' →
+      4 * ((sz.W n : ℕ) : ℝ) ^ (-D') ≤ ((sz.W n : ℕ) : ℝ) ^ (-Dc) →
+      0 < sz.lam n → 0 ≤ u → u < 1 →
+      ellT (sz.L n) (sz.lam n) u ≤ ellT (sz.L n) (sz.lam n) (uu i) →
+      ∀ {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ},
+      GoodSetNg Cm n u (m + 1) Γ Λ Φ τ' D' H →
+      ∀ (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ), STMollifierProps (d := d) (sz.lam n) C c ϑ →
+      (∀ a : Fin (m + 1) → Zd d (sz.L n), DifferentiableAt ℝ (fun τ => ϑ τ a) u) →
+      ∀ (σ : Fin (m + 1) → Bool),
+      ‖fun b : Fin (m + 1) → Zd d (sz.L n) => driftTensorNg Cm n u H σ b‖ ≤ ((sz.W n : ℕ) : ℝ) ^ C₀ →
+      EKFastDecay (sz.lam n) u ((sz.W n : ℕ) : ℝ) ε' D' (altB4Ng Cm n u ϑ σ H) →
+      EKFastDecay (sz.lam n) u ((sz.W n : ℕ) : ℝ) ε' D' (altB5Ng Cm n u ϑ σ H) →
+      altClsQN d (sz.L n) (sz.lam n) ((sz.W n : ℕ) : ℝ) ε' Dc uu i
+        (4 * ((sz.W n : ℕ) : ℝ) ^ (-D')) (dFlowQNg Cm n u ϑ σ H) := by
+  intro d sz Cm hd m K C c C₀ ε' D' hC hc hε' n u Γ Λ Φ τ' Dc uu i hKS hW hLK hdW hDD hlam hu0 hu1 hℓ
+    H hH ϑ hϑ hdiff σ hcrude hB4 hB5
+  obtain ⟨hW₀, Hq⟩ := QDriftB_W0_spec d m K C c C₀ ε' D' hC hc hε'
+  have hW0 : 0 < ((sz.W n : ℕ) : ℝ) := by linarith
+  have hfast := drift13_fastDecayg Cm hd σ hdW hH
+  refine ⟨(dFlowQNg_sumZero Cm n hKS u ϑ σ H hϑ.1 hdiff).2.2.2.2, hDD, fun b hb => ?_⟩
+  have hb' : ellT (sz.L n) (sz.lam n) u * ((sz.W n : ℕ) : ℝ) ^ ε' ≤ (STdiamInf b : ℝ) :=
+    (mul_le_mul_of_nonneg_right hℓ (Real.rpow_nonneg hW0.le _)).trans hb
+  obtain ⟨i', j', hij⟩ := QDriftB_window_of_diamInf (by omega) b
+    (R := ((sz.W n : ℕ) : ℝ) ^ ε' * ellT (sz.L n) (sz.lam n) u) (by rw [mul_comm]; exact hb')
+  have hq := Hq (sz.L n) (sz.three_le_L n) (sz.lam n) hlam ((sz.W n : ℕ) : ℝ) hW hLK ϑ hϑ u hu0 hu1
+    (fun b => driftTensorNg Cm n u H σ b) hcrude hfast b ⟨i', j', hij⟩
+  have h4 := hB4 b ⟨i', j', hij⟩
+  have h5 := hB5 b ⟨i', j', hij⟩
+  unfold dFlowQNg
+  calc _ ≤ ‖STQop (d := d) ϑ u (fun b => driftTensorNg Cm n u H σ b) b‖ +
+        ‖altB4Ng Cm n u ϑ σ H b‖ + ‖altB5Ng Cm n u ϑ σ H b‖ := norm_add₃_le
+    _ ≤ 2 * ((sz.W n : ℕ) : ℝ) ^ (-D') + ((sz.W n : ℕ) : ℝ) ^ (-D') + ((sz.W n : ℕ) : ℝ) ^ (-D') :=
+        add_le_add (add_le_add hq h4) h5
+    _ = 4 * ((sz.W n : ℕ) : ℝ) ^ (-D') := by ring
+
+
+/-- **`alt_hDclsQNg`** (band `alt_hDclsQN`, `QDriftB:379`): the field `hDcls` of `GridAssemblyHypNg` for the alternating chain at the explicit mollifier over a carrier:
+`Cls = altClsQN … ε' Dc (gridTime s v Kg n)`, `δD = 4 W^{-D'}`, `Dr j ω = dGridQNg … j ω`, on `{j < Kg n, j < τ ω}`.  The kernel enters through
+`ZeroModeGen_KerSums` (sum-zero of the drift) and `Step5KerGen_ThDecay` at `gK` with the comparison R1 (`C₆`, `A` before the carrier). -/
+theorem alt_hDclsQNg :
+    ∀ (d m : ℕ) (Λg K C₀ ε' D' C₆ A : ℝ), 3 ≤ d → 0 < Λg → 0 < ε' → 0 ≤ C₆ → 1 ≤ A →
+      ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (gK : ℕ → ℝ) (n : ℕ) (σ : Fin (m + 1) → Bool)
+        (s v : ℕ → ℝ) (Kg : ℕ → ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' Dc : ℝ) (τ : PathΩ sz → ℕ),
+        ZeroModeGen_KerSums Cm.toFlowFM n → Step5KerGen_ThDecay Cm.toFlowFM gK Λg C₆ →
+        (∀ m', 0 ≤ gK m' * sz.lam m' ∧ gK m' ^ 2 ≤ sz.lam m' ^ 2 ∧ sz.lam m' ^ 2 ≤ A * gK m' ^ 2) →
+        0 < gK n → gK n ≤ Λg → W₀ ≤ ((sz.W n : ℕ) : ℝ) →
+        ((sz.L n : ℕ) : ℝ) ^ d ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+        0 ≤ s n → s n ≤ v n → v n < 1 → (1 - v n)⁻¹ ≤ ((sz.W n : ℕ) : ℝ) ^ K →
+        (d : ℝ) * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ ((sz.W n : ℕ) : ℝ) ^ ε' →
+        4 * ((sz.W n : ℕ) : ℝ) ^ (-D') ≤ ((sz.W n : ℕ) : ℝ) ^ (-Dc) →
+        (∀ (ω : PathΩ sz) (j : ℕ), j < τ ω → GoodSetNg Cm n (gridTime s v Kg n j) (m + 1)
+          (Γ n) (Λ n) (Φ n) τ' D' (Cm.Hpath s v Kg n j ω)) →
+        (∀ (ω : PathΩ sz) (j : ℕ), j < Kg n → j < τ ω →
+          ‖fun b : Fin (m + 1) → Zd d (sz.L n) =>
+            STLKMg Cm n (gridTime s v Kg n j) (Cm.Hpath s v Kg n j ω) σ b‖ ≤ ((sz.W n : ℕ) : ℝ) ^ C₀) →
+        (∀ (ω : PathΩ sz) (j : ℕ), j < Kg n → j < τ ω →
+          ‖fun b : Fin (m + 1) → Zd d (sz.L n) =>
+            driftTensorNg Cm n (gridTime s v Kg n j) (Cm.Hpath s v Kg n j ω) σ b‖ ≤ ((sz.W n : ℕ) : ℝ) ^ C₀) →
+        ∀ (ω : PathΩ sz) (j : ℕ), j < Kg n → j < τ ω →
+          altClsQN d (sz.L n) (sz.lam n) ((sz.W n : ℕ) : ℝ) ε' Dc (gridTime s v Kg n) (j + 1)
+            (4 * ((sz.W n : ℕ) : ℝ) ^ (-D'))
+            (dGridQNg Cm s v Kg n (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) σ j ω) := by
+  intro d m Λg K C₀ ε' D' C₆ A hd hΛg hε' hC₆ hA
+  have hCm0 : (0 : ℝ) < (1 + 40 * ((d * m : ℕ) : ℝ)) * 6 ^ (d * m) := by positivity
+  obtain ⟨W₃, hW₃, H₃⟩ := altB4Ng_fastDecay d m Λg K ((1 + 40 * ((d * m : ℕ) : ℝ)) * 6 ^ (d * m))
+    (1 / 2) C₀ ε' D' C₆ A hd hΛg hCm0 (by norm_num) hε' hC₆ hA
+  obtain ⟨W₄, hW₄, H₄⟩ := altB5Ng_fastDecay_moll d m K C₀ ε' D' hε'
+  refine ⟨max (QDriftA_W0 d m K ((1 + 40 * ((d * m : ℕ) : ℝ)) * 6 ^ (d * m)) (1 / 2) C₀ ε' D')
+    (max W₃ W₄), lt_of_lt_of_le (QDriftA_W0_gt_one d m K _ (1 / 2) C₀ ε' D' hCm0 (by norm_num) hε')
+      (le_max_left _ _), ?_⟩
+  intro sz Cm gK n σ s v Kg Γ Λ Φ τ' Dc τ hKS hdec hcmp hg hgΛ hW hLK hs0 hsv hv1 hKv hdW hDD hτG hAcr hDcr ω j hj hjτ
+  have hW0' : QDriftA_W0 d m K ((1 + 40 * ((d * m : ℕ) : ℝ)) * 6 ^ (d * m)) (1 / 2) C₀ ε' D' ≤
+      ((sz.W n : ℕ) : ℝ) := (le_max_left _ _).trans hW
+  have hW3' : W₃ ≤ ((sz.W n : ℕ) : ℝ) := ((le_max_left _ _).trans (le_max_right _ _)).trans hW
+  have hW4' : W₄ ≤ ((sz.W n : ℕ) : ℝ) := ((le_max_right _ _).trans (le_max_right _ _)).trans hW
+  have hlam : 0 < sz.lam n := (Step5KerGen_cmp_pos (hcmp n) hg).1
+  rw [dGridQNg_eq_dFlowQNg Cm s v Kg n (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) σ j ω]
+  have hKne : Kg n ≠ 0 := by omega
+  have hmem := ST_gridTime_mem s v Kg n j hsv hKne hj.le
+  have hmem1 := ST_gridTime_mem s v Kg n (j + 1) hsv hKne hj
+  have hmono := ST_gridTime_mono s v Kg n hsv (Nat.le_succ j)
+  have hu0 : 0 ≤ gridTime s v Kg n j := hs0.trans hmem.1
+  have hu1 : gridTime s v Kg n j < 1 := lt_of_le_of_lt hmem.2 hv1
+  have hℓ : ellT (sz.L n) (sz.lam n) (gridTime s v Kg n j) ≤
+      ellT (sz.L n) (sz.lam n) (gridTime s v Kg n (j + 1)) :=
+    ellT_mono hlam.le hmono (lt_of_le_of_lt hmem1.2 hv1)
+  have hKj : (1 - gridTime s v Kg n j)⁻¹ ≤ ((sz.W n : ℕ) : ℝ) ^ K :=
+    (inv_anti₀ (by linarith) (by linarith [hmem.2])).trans hKv
+  have hϑ := QopAlgebra_mollifier_props d (sz.L n) m (sz.three_le_L n) hlam
+  have hdiff := fun a => QopAlgebra_mollifier_differentiableAt d (sz.L n) m (sz.three_le_L n) hlam hu1 a
+  have hA' := hAcr ω j hj hjτ
+  exact dFlowQNg_clsQNg sz Cm hd m K _ (1 / 2) C₀ ε' D' hCm0 (by norm_num) hε' (n := n)
+    (Γ := Γ n) (Λ := Λ n) (Φ := Φ n) (τ' := τ') (Dc := Dc) (u := gridTime s v Kg n j)
+    (uu := gridTime s v Kg n) (i := j + 1) hKS hW0' hLK hdW hDD hlam hu0 hu1 hℓ (hτG ω j hjτ)
+    (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) hϑ hdiff σ (hDcr ω j hj hjτ)
+    (H₃ sz Cm gK n (gridTime s v Kg n j) (Cm.Hpath s v Kg n j ω)
+      (QopAlgebra_mollifier d (sz.L n) m (sz.lam n)) σ hdec hcmp hg hgΛ hW3' hLK hu0 hu1 hKj hϑ hA')
+    (H₄ sz Cm n (gridTime s v Kg n j) (Cm.Hpath s v Kg n j ω) σ hlam hW4' hLK hu0 hu1 hKj hA')
+
+end ClsG
 
 /-! ## 8. Compiled nonempty instances (namespace `QDriftBInst`)
 
@@ -943,6 +1466,211 @@ theorem alt_hDclsQN_instance :
       subst hj0
       rw [azumaProxy_pathH_zero_of_s_zero sz0 _ _ _ n rfl ω', ST_gridTime_zero]
       exact crude_block n hW17 σ
+
+/-! ### Generic instances (T2498, row U3s3a): the carrier `bandStep2Mat sz0 E0`, `gK = sz0.lam`, `A = 1`
+
+The data of the band instances above; `Step5KerGen_ThDecay` by `step5KerGen_thDecay_band` (`C₆(d, Λ)`), `ZeroModeGen_KerSums` by
+`zeroModeGen_kerSums_band`, `GoodSetNg` by `bandStep2_GoodSetN`. -/
+
+private theorem hcmp_inst : ∀ m' : ℕ, 0 ≤ sz0.lam m' * sz0.lam m' ∧ sz0.lam m' ^ 2 ≤ sz0.lam m' ^ 2 ∧
+    sz0.lam m' ^ 2 ≤ 1 * sz0.lam m' ^ 2 := fun _ => ⟨mul_self_nonneg _, le_rfl, by rw [one_mul]⟩
+
+private theorem zero_memg_inst (n : ℕ) (hlam1 : sz0.lam n ≤ 1) (τ' D' : ℝ) :
+    GoodSetNg (bandStep2Mat sz0 E0) n 0 (3 + 1) 4 100 1 τ' D'
+      (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) :=
+  (bandStep2_GoodSetN sz0 E0 n 0 (3 + 1) 4 100 1 τ' D' 0).1 (zero_mem_inst n hlam1 _ _)
+
+/-- **Instance of `drift13_fastDecayg`** at `bandStep2Mat sz0 E0`: `m = 3`, `u = 0`, `H = 0 ∈ GoodSetNg` (levels `(4, 100, 1)`, `τ' = 1/10`, `D' = 6`), `ε' = 1/5`, `n = 9`,
+every `σ`; the `ℓ¹` window is attained by a tuple. -/
+theorem drift13_fastDecayg_instance :
+    ∃ n : ℕ,
+      GoodSetNg (bandStep2Mat sz0 E0) n 0 (3 + 1) 4 100 1 (1 / 10) 6
+        (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) ∧
+      (∃ b : Fin (3 + 1) → Zd 3 (sz0.L n), ∃ i j,
+        ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) * ellT (sz0.L n) (sz0.lam n) 0 ≤
+          (zdistD 3 (sz0.L n) (b i - b j) : ℝ)) ∧
+      ∀ σ : Fin (3 + 1) → Bool,
+        EKFastDecay (sz0.lam n) 0 ((sz0.W n : ℕ) : ℝ) (1 / 5) 6
+          (fun b : Fin (3 + 1) → Zd 3 (sz0.L n) =>
+            driftTensorNg (bandStep2Mat sz0 E0) n 0
+              (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) σ b) := by
+  have hx10 : (10 : ℝ) ≤ 2 * (((9 : ℕ) : ℝ) + 1) := by norm_num
+  obtain ⟨hW, hWε, hlog, hLK, hdW, hW3, hW2⟩ := numeric 9 hx10
+  refine ⟨9, zero_memg_inst 9 (lam_le_one 9) _ _, window_l1 9 (W_rpow_fifth 9 hx10).le, fun σ => ?_⟩
+  exact drift13_fastDecayg (bandStep2Mat sz0 E0) (le_refl 3) (m := 3) (n := 9) (u := 0) (Γ := 4) (Λ := 100) (Φ := 1)
+    (τ' := 1 / 10) (ε' := 1 / 5) (D' := 6) σ hdW (zero_memg_inst 9 (lam_le_one 9) _ _)
+
+/-- **Instance of `altB4Ng_fastDecay`**: `d = 3`, `m = 3`, `Λ_g = 1`, `K = 2`, the explicit mollifier, `C₀ = 7`, `ε' = 1/5`, `D' = 6`, `u = 0`, `H = 0`, every `σ`, at an `n` with
+`W_n ≥ W₀`; the class `Step5KerGen_ThDecay` is `step5KerGen_thDecay_band` (`C₆(3, 1)`), the crude sup is derived. -/
+theorem altB4Ng_fastDecay_instance :
+    ∃ n : ℕ,
+      (∃ b : Fin (3 + 1) → Zd 3 (sz0.L n), ∃ i j,
+        ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) * ellT (sz0.L n) (sz0.lam n) 0 ≤
+          (zdistD 3 (sz0.L n) (b i - b j) : ℝ)) ∧
+      ∀ σ : Fin (3 + 1) → Bool,
+        EKFastDecay (sz0.lam n) 0 ((sz0.W n : ℕ) : ℝ) (1 / 5) 6
+          (altB4Ng (bandStep2Mat sz0 E0) n 0 (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) σ
+            (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ)) := by
+  obtain ⟨C₆, hC₆, hdec⟩ := step5KerGen_thDecay_band 3 1 (by norm_num) one_pos
+  obtain ⟨W₀, hW₀, H⟩ := altB4Ng_fastDecay 3 3 1 2 Cmol3 (1 / 2) 7 (1 / 5) 6 C₆ 1 (le_refl 3) one_pos
+    (by positivity) (by norm_num) (by norm_num) hC₆.le le_rfl
+  obtain ⟨n, hx, hcr⟩ := inst_data W₀
+  have hx17 : (17 : ℝ) ≤ 2 * ((n : ℝ) + 1) := (le_max_right _ _).trans hx
+  have hx10 : (10 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by linarith
+  obtain ⟨hW, hWε, hlog, hLK, hdW, hW3, hW2⟩ := numeric n hx10
+  have hW0W : W₀ ≤ ((sz0.W n : ℕ) : ℝ) := ((le_max_left _ _).trans hx).trans (x_le_W n hx17)
+  refine ⟨n, window_l1 n (W_rpow_fifth n hx10).le, fun σ => ?_⟩
+  exact H sz0 (bandStep2Mat sz0 E0) sz0.lam n 0 0 (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) σ
+    (hdec sz0 E0 (fun n' => by norm_num [E0])) hcmp_inst (lam_pos_n n) (lam_le_one n) hW0W hLK le_rfl (by norm_num)
+    (by rw [sub_zero, inv_one]; exact Real.one_le_rpow hW.le (by norm_num))
+    (QopAlgebra_mollifier_props 3 (sz0.L n) 3 (sz0.three_le_L n) (lam_pos_n n)) (hcr σ)
+
+/-- **Instance of `altB5Ng_fastDecay_moll`**: the same data. -/
+theorem altB5Ng_fastDecay_moll_instance :
+    ∃ n : ℕ,
+      (∃ b : Fin (3 + 1) → Zd 3 (sz0.L n), ∃ i j,
+        ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) * ellT (sz0.L n) (sz0.lam n) 0 ≤
+          (zdistD 3 (sz0.L n) (b i - b j) : ℝ)) ∧
+      ∀ σ : Fin (3 + 1) → Bool,
+        EKFastDecay (sz0.lam n) 0 ((sz0.W n : ℕ) : ℝ) (1 / 5) 6
+          (altB5Ng (bandStep2Mat sz0 E0) n 0 (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) σ
+            (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ)) := by
+  obtain ⟨W₀, hW₀, H⟩ := altB5Ng_fastDecay_moll 3 3 2 7 (1 / 5) 6 (by norm_num)
+  obtain ⟨n, hx, hcr⟩ := inst_data W₀
+  have hx17 : (17 : ℝ) ≤ 2 * ((n : ℝ) + 1) := (le_max_right _ _).trans hx
+  have hx10 : (10 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by linarith
+  obtain ⟨hW, hWε, hlog, hLK, hdW, hW3, hW2⟩ := numeric n hx10
+  have hW0W : W₀ ≤ ((sz0.W n : ℕ) : ℝ) := ((le_max_left _ _).trans hx).trans (x_le_W n hx17)
+  refine ⟨n, window_l1 n (W_rpow_fifth n hx10).le, fun σ => ?_⟩
+  exact H sz0 (bandStep2Mat sz0 E0) n 0 0 σ (lam_pos_n n) hW0W hLK le_rfl (by norm_num)
+    (by rw [sub_zero, inv_one]; exact Real.one_le_rpow hW.le (by norm_num)) (hcr σ)
+
+/-- **Instance of `dFlowQNg_clsQNg`**: `d = 3`, `m = 3`, `K = 2`, the explicit mollifier, `C₀ = 7`, `ε' = 1/5`, `τ' = 1/10`, `D' = 6`, `Dc = 3`, `u = 0`, `uu ≡ 0`, `i = 1`,
+`H = 0 ∈ GoodSetNg` at the levels `(4, 100, 1)`, every `σ`, at an `n` with `W_n ≥ W₀`: every hypothesis is discharged. -/
+theorem dFlowQNg_clsQNg_instance :
+    ∃ n : ℕ,
+      GoodSetNg (bandStep2Mat sz0 E0) n 0 (3 + 1) 4 100 1 (1 / 10) 6
+        (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ) ∧
+      (∃ b : Fin (3 + 1) → Zd 3 (sz0.L n), ellT (sz0.L n) (sz0.lam n) 0 *
+        ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) ≤ (STdiamInf b : ℝ)) ∧
+      ∀ σ : Fin (3 + 1) → Bool,
+        altClsQN 3 (sz0.L n) (sz0.lam n) ((sz0.W n : ℕ) : ℝ) (1 / 5) 3 (fun _ => 0) 1
+          (4 * ((sz0.W n : ℕ) : ℝ) ^ (-(6 : ℝ)))
+          (dFlowQNg (bandStep2Mat sz0 E0) n 0 (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) σ
+            (0 : Matrix (Idx 3 (sz0.L n) (sz0.W n)) (Idx 3 (sz0.L n) (sz0.W n)) ℂ)) := by
+  obtain ⟨C₆, hC₆, hdec⟩ := step5KerGen_thDecay_band 3 1 (by norm_num) one_pos
+  obtain ⟨W₃, hW₃, H₃⟩ := altB4Ng_fastDecay 3 3 1 2 Cmol3 (1 / 2) 7 (1 / 5) 6 C₆ 1 (le_refl 3) one_pos
+    (by positivity) (by norm_num) (by norm_num) hC₆.le le_rfl
+  obtain ⟨W₄, hW₄, H₄⟩ := altB5Ng_fastDecay_moll 3 3 2 7 (1 / 5) 6 (by norm_num)
+  set WQ : ℝ := QDriftA_W0 3 3 2 Cmol3 (1 / 2) 7 (1 / 5) 6 with hWQ
+  obtain ⟨n, hx, hcr⟩ := inst_data (max WQ (max W₃ W₄))
+  have hx17 : (17 : ℝ) ≤ 2 * ((n : ℝ) + 1) := (le_max_right _ _).trans hx
+  have hx10 : (10 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by linarith
+  obtain ⟨hW, hWε, hlog, hLK, hdW, hW3, hW2⟩ := numeric n hx10
+  have hxW := x_le_W n hx17
+  have hWQ' : WQ ≤ ((sz0.W n : ℕ) : ℝ) :=
+    (((le_max_left _ _).trans (le_max_left _ _)).trans hx).trans hxW
+  have hW3' : W₃ ≤ ((sz0.W n : ℕ) : ℝ) :=
+    ((((le_max_left _ _).trans (le_max_right _ _)).trans (le_max_left _ _)).trans hx).trans hxW
+  have hW4' : W₄ ≤ ((sz0.W n : ℕ) : ℝ) :=
+    ((((le_max_right _ _).trans (le_max_right _ _)).trans (le_max_left _ _)).trans hx).trans hxW
+  have hWx : ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) = 2 * ((n : ℝ) + 1) := W_rpow_fifth n hx10
+  have hW17 : (17 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := hx17.trans hxW
+  have hϑ := QopAlgebra_mollifier_props 3 (sz0.L n) 3 (sz0.three_le_L n) (lam_pos_n n)
+  have hone : (1 - (0 : ℝ))⁻¹ ≤ ((sz0.W n : ℕ) : ℝ) ^ (2 : ℝ) := by
+    rw [sub_zero, inv_one]; exact Real.one_le_rpow hW.le (by norm_num)
+  have hdec' := hdec sz0 E0 (fun n' => by norm_num [E0])
+  refine ⟨n, zero_memg_inst n (lam_le_one n) _ _, ?_, fun σ => ?_⟩
+  · obtain ⟨b, hb⟩ := window_linf n (w := ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ)) hWx.le
+    exact ⟨b, hb⟩
+  · exact dFlowQNg_clsQNg sz0 (bandStep2Mat sz0 E0) (le_refl 3) 3 2 Cmol3 (1 / 2) 7 (1 / 5) 6 (by positivity) (by norm_num)
+      (by norm_num) (n := n) (u := 0) (Γ := 4) (Λ := 100) (Φ := 1) (τ' := 1 / 10) (Dc := 3)
+      (uu := fun _ => 0) (i := 1) (zeroModeGen_kerSums_band sz0 E0 n) hWQ' hLK hdW (hDD_inst (by linarith)) (lam_pos_n n)
+      le_rfl (by norm_num) le_rfl (zero_memg_inst n (lam_le_one n) _ _)
+      (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) hϑ
+      (fun a => QopAlgebra_mollifier_differentiableAt 3 (sz0.L n) 3 (sz0.three_le_L n) (lam_pos_n n)
+        (by norm_num) a) σ (crude_block n hW17 σ)
+      (H₃ sz0 (bandStep2Mat sz0 E0) sz0.lam n 0 0 (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) σ hdec' hcmp_inst
+        (lam_pos_n n) (lam_le_one n) hW3' hLK le_rfl (by norm_num) hone hϑ (hcr σ))
+      (H₄ sz0 (bandStep2Mat sz0 E0) n 0 0 σ (lam_pos_n n) hW4' hLK le_rfl (by norm_num) hone (hcr σ))
+
+/-- **Instance of `alt_hDclsQNg`** on the walk of `bandStep2Mat sz0 E0` with `s ≡ 0`, `v ≡ 1/2`, `Kg ≡ 4` (so `H_0 = 0`, `u_0 = 0`, `u_1 = 1/8`), `τ ≡ 1`, levels `(4, 100, 1)`,
+the explicit mollifier, `C₀ = 7`, `ε' = 1/5`, `τ' = 1/10`, `D' = 6`, `Dc = 3`, `Λ_g = 1`, `K = 2`, every `σ` and every path `ω`, at `j = 0`: the drift `dGridQNg … 0 ω` is in the
+class `altClsQN … (0 + 1)` with `δD = 4 W^{-6}`; every hypothesis is discharged. -/
+theorem alt_hDclsQNg_instance :
+    ∃ n : ℕ,
+      (∃ b : Fin (3 + 1) → Zd 3 (sz0.L n), ellT (sz0.L n) (sz0.lam n)
+        (gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4) n (0 + 1)) *
+          ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) ≤ (STdiamInf b : ℝ)) ∧
+      ∀ (σ : Fin (3 + 1) → Bool) (ω : PathΩ sz0),
+        altClsQN 3 (sz0.L n) (sz0.lam n) ((sz0.W n : ℕ) : ℝ) (1 / 5) 3
+          (gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4) n) (0 + 1)
+          (4 * ((sz0.W n : ℕ) : ℝ) ^ (-(6 : ℝ)))
+          (dGridQNg (bandStep2Mat sz0 E0) (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4) n
+            (QopAlgebra_mollifier 3 (sz0.L n) 3 (sz0.lam n)) σ 0 ω) := by
+  obtain ⟨C₆, hC₆, hdec⟩ := step5KerGen_thDecay_band 3 1 (by norm_num) one_pos
+  obtain ⟨W₀, hW₀, H⟩ := alt_hDclsQNg 3 3 1 2 7 (1 / 5) 6 C₆ 1 (le_refl 3) one_pos (by norm_num) hC₆.le le_rfl
+  obtain ⟨n, hx, hcr⟩ := inst_data W₀
+  have hx17 : (17 : ℝ) ≤ 2 * ((n : ℝ) + 1) := (le_max_right _ _).trans hx
+  have hx10 : (10 : ℝ) ≤ 2 * ((n : ℝ) + 1) := by linarith
+  obtain ⟨hW, hWε, hlog, hLK, hdW, hW3, hW2⟩ := numeric n hx10
+  have hxW := x_le_W n hx17
+  have hW0W : W₀ ≤ ((sz0.W n : ℕ) : ℝ) := ((le_max_left _ _).trans hx).trans hxW
+  have hWx : ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ) = 2 * ((n : ℝ) + 1) := W_rpow_fifth n hx10
+  have hW17 : (17 : ℝ) ≤ ((sz0.W n : ℕ) : ℝ) := hx17.trans hxW
+  have hlam1 := lam_le_one n
+  have hg12 : sz0.lam n ≤ 1 / 2 := by
+    have h : sz0.lam n = ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ := (sz0_facts n).2.2
+    rw [h]
+    have h6 : (10 : ℝ) ^ 6 ≤ (2 * ((n : ℝ) + 1)) ^ 6 := pow_le_pow_left₀ (by norm_num) hx10 6
+    calc ((2 * ((n : ℝ) + 1)) ^ 6)⁻¹ ≤ ((10 : ℝ) ^ 6)⁻¹ := inv_anti₀ (by norm_num) h6
+      _ ≤ 1 / 2 := by norm_num
+  have hu1 : gridTime (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4) n (0 + 1) = 1 / 8 := by
+    simp only [gridTime, gridStep]
+    norm_num
+  refine ⟨n, ?_, fun σ ω => ?_⟩
+  · rw [hu1, ellT_eq_one (by have := sz0.three_le_L n; omega) hg12 (lam_pos_n n).le (by norm_num)
+      (by norm_num), one_mul, hWx]
+    obtain ⟨b, hb⟩ := window_linf n (w := ((sz0.W n : ℕ) : ℝ) ^ (1 / 5 : ℝ)) hWx.le
+    rw [ellT_sz0, one_mul, hWx] at hb
+    exact ⟨b, hb⟩
+  · have hp0 : ∀ ω' : PathΩ sz0, (bandStep2Mat sz0 E0).Hpath (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4) n 0 ω' = 0 :=
+      fun ω' => azumaProxy_pathH_zero_of_s_zero sz0 (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4) n rfl ω'
+    refine H sz0 (bandStep2Mat sz0 E0) sz0.lam n σ (fun _ => (0 : ℝ)) (fun _ => (1 / 2 : ℝ)) (fun _ => 4)
+      (fun _ => 4) (fun _ => 100) (fun _ => 1) (1 / 10) 3 (fun _ => 1) (zeroModeGen_kerSums_band sz0 E0 n)
+      (hdec sz0 E0 (fun n' => by norm_num [E0])) hcmp_inst (lam_pos_n n) hlam1 hW0W hLK le_rfl (by norm_num) (by norm_num)
+      (by
+        show (1 - (1 / 2 : ℝ))⁻¹ ≤ ((sz0.W n : ℕ) : ℝ) ^ (2 : ℝ)
+        have h2 : ((1 : ℝ) - 1 / 2)⁻¹ = 2 := by norm_num
+        rw [h2, Real.rpow_two]
+        nlinarith)
+      hdW (hDD_inst (by linarith)) ?_ ?_ ?_ ω 0 (by norm_num) (by norm_num)
+    · intro ω' j hj
+      have hj0 : j = 0 := by
+        have : j < 1 := hj
+        omega
+      subst hj0
+      rw [hp0 ω', ST_gridTime_zero]
+      exact zero_memg_inst n hlam1 _ _
+    · intro ω' j hj hjτ
+      have hj0 : j = 0 := by
+        have : j < 1 := hjτ
+        omega
+      subst hj0
+      rw [hp0 ω', ST_gridTime_zero]
+      exact hcr σ
+    · intro ω' j hj hjτ
+      have hj0 : j = 0 := by
+        have : j < 1 := hjτ
+        omega
+      subst hj0
+      rw [hp0 ω', ST_gridTime_zero]
+      exact crude_block n hW17 σ
+
+/-- **Instance of `qDriftB_thDecay_band_concl`** at the band flow of `sz0` (`d = 3`, `Λ = 1`, `|E0 n| ≤ 2`). -/
+theorem qDriftB_thDecay_band_concl_instance :
+    Step5KerGen_ThDecay (bandFM sz0 E0) sz0.lam 1 (Classical.choose (step5KerGen_thDecay_band 3 1 le_rfl one_pos)) :=
+  qDriftB_thDecay_band_concl 3 le_rfl one_pos sz0 E0 (fun _ => by norm_num [E0])
 
 end QDriftBInst
 

@@ -5,6 +5,7 @@ Authors: Jun Yin
 -/
 import RBM3D.Induction.QDriftB
 import RBM3D.Induction.B45
+import RBM3D.Chain.B45Gen
 
 /-!
 # S3-16a (ticket T2268): the deterministic levels of the alternating start term and of `ℬ₄ + ℬ₅` at a matrix
@@ -28,7 +29,13 @@ matrix `H`, from `H.IsHermitian` and deterministic rank-`(m+1)` levels alone.
 * instances (namespace `QLevelsAInst`) at `sz0`, `d = 3`, `m = 1`, `E = 0`, `u = 0`, `H = 0`.
 
 Unpinned helpers are `private` or prefixed `QLevelsA_`.
+
+T2498 (row U3s3a, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`), after the band text, which is unchanged:
+`altB45Ng_levelM` (the sample-level `B45_det2g` of `Chain/B45Gen` read at a Hermitian matrix through the carrier frozen at the matrix) and `startLevelQNg`;
+their compiled instances at `bandStep2Mat sz0 Ez` close §5.
 -/
+
+open private B45_norm_colsum from RBM3D.Induction.B45
 
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
@@ -41,7 +48,7 @@ open scoped NNReal ENNReal
 
 namespace RBM.Ind
 
-open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
+open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
 /-! ## 1. Ward's identity at the last index at a matrix (target 1) -/
 
@@ -409,6 +416,140 @@ theorem altB45N_levelM (d : ℕ) (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) (E u κ
 
 end Det
 
+/-! ## 2g. `B45_det2g` at a Hermitian matrix, on `altB4Ng`/`altB5Ng` (over a carrier) -/
+
+section DetG
+
+variable {d : ℕ} {sz : Sizes d}
+
+/-- The carrier frozen at a family of matrices `Hs`: `L` is the matrix-level loop `Cm.LM n t (Hs n)` and does not read the sample; `K`, `M`, `S`, `η`, `m` are
+those of `Cm`.  It carries the matrix-level statements of this section to the sample-level theorems of `Chain/B45Gen`. -/
+private def QLevelsA_frozen (Cm : Step2Mat sz) (Hs : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :
+    FlowFM sz :=
+  { Cm.toFlowFM with L := fun n t _ σ a _ => Cm.LM n t (Hs n) σ a }
+
+/-- The frozen carrier is in the Ward class (`ZeroModeGen_WardCls`): the loops of a Hermitian matrix form a Ward family
+(`zeroModeGen_loopL_wardFam`, `LoopForm`), `K` is that of `Cm`. -/
+private theorem QLevelsA_frozen_ward {Cm : Step2Mat sz} {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E)
+    (hward : ZeroModeGen_WardCls sz Cm.toFlowFM) (Hs : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
+    (hHs : ∀ n, (Hs n).IsHermitian) : ZeroModeGen_WardCls sz (QLevelsA_frozen Cm Hs) := by
+  intro n τ hτ0 hτ1 ω
+  obtain ⟨-, TK, -, hK, -, hwK⟩ := hward n τ hτ0 hτ1 ω
+  have hη : 0 < Cm.eta n τ := by
+    rw [(hL n).2.2.2 τ]; exact mul_pos (by linarith) (hL n).1
+  have hz : (ztOf (Cm.m n) (E n) τ).im ≠ 0 := by
+    rw [ztOf_im, ← (hL n).2.2.2 τ]; exact hη.ne'
+  refine ⟨loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (Hs n)) (ztOf (Cm.m n) (E n) τ), TK, fun k σ a => ?_, hK, ?_, hwK⟩
+  · show Cm.LM n τ (Hs n) σ a = _
+    rw [(hL n).2.1 τ (Hs n) k σ a]
+    exact loopM_eq_loopL d (sz.L n) (sz.W n) _ _ σ a
+  · have := zeroModeGen_loopL_wardFam (blockMat d (sz.L n) (sz.W n) (Hs n)) (ztOf (Cm.m n) (E n) τ) ((hHs n).submatrix _) hz
+    rw [ztOf_im, ← (hL n).2.2.2 τ] at this
+    exact this
+
+/-- **`altB45Ng_levelM`** (band `altB45N_levelM`, `QLevelsA:376`): `B45_det2g` at a Hermitian matrix `H` over a carrier (`(eq:Ward_typeP)`, `(y27kasdfg)`,
+`3_5:1264-1271, 1692-1706`), restated on `altB4Ng`, `altB5Ng`: if `(𝓛-𝒦)^{(m+1)}_{σ'}(H)` is at most `ν X B^{m+1}` at every label (`hY`), at most `Fv` at labels
+with `diam_∞ ≥ ℓ_u ω_f` (`hF`), `ϑ` obeys the mollifier bounds and `(2m+5) K₆ M ≤ N^τ`, `M = 3·4^{dm} Γ Λ ν²`, `Γ = κm⁻¹`, then for alternating `σ`
+`|𝒫(𝓛-𝒦)_{a₀} ϑ_a| ≤ N^τ B^{m+2} X` and `‖ℬ₄‖ + ‖ℬ₅‖ ≤ N^τ η⁻¹ B^{m+2} X`, `B = W^{-d}B_{u,0}`, `η = Cm.eta n u`.  The carrier facts are the fields of
+`B45Gen_Facts` and `DecayGen_Spec`; `LoopForm` reads `LM` at `H` as the loops of `H` (the sample-level theorem is read through the frozen carrier). -/
+theorem altB45Ng_levelM (hd : 2 ≤ d) (Cm : Step2Mat sz) {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) {u κm K₆ : ℝ}
+    (hκm : 0 < κm) (hmn : κm ≤ (Cm.m n).im) (him1 : (Cm.m n).im ≤ 1) (heta : ∀ t : ℝ, Cm.eta n t = (1 - t) * (Cm.m n).im)
+    (hward : ZeroModeGen_WardCls sz Cm.toFlowFM) (hker : ZeroModeGen_KerSums Cm.toFlowFM n) (hK₆ : 1 ≤ K₆)
+    (hrow : ∀ (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d (sz.L n),
+      ∑ b : Zd d (sz.L n), ‖Step2Gen_thetaKer Cm.toFlowFM n σ σ' t a b‖ ≤ K₆ / (1 - t))
+    (hcol : ∀ (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ b : Zd d (sz.L n),
+      ‖∑ a : Zd d (sz.L n), Step2Gen_thetaKer Cm.toFlowFM n σ σ' t a b‖ ≤ K₆ / (1 - t))
+    (hu0 : 0 ≤ u) (hu1 : u < 1) (hg : 0 < sz.lam n) (hNu : (((sz.size n : ℕ) : ℝ))⁻¹ ≤ 1 - u)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    {m : ℕ} {Γ ν X ωf Fv Λ τ : ℝ} (hΓ : Γ = κm⁻¹) (hν : 1 ≤ ν) (hX : 1 ≤ X)
+    (hωf : 1 ≤ ωf) (hωd : ωf ^ (d * m) ≤ ν) (hνN : ν ≤ ((sz.size n : ℕ) : ℝ))
+    (hFv : Fv ≤ ν * (((sz.size n : ℕ) : ℝ) ^ (2 * m + 4))⁻¹) (hFv0 : 0 ≤ Fv) (hΛ : 0 ≤ Λ)
+    (hMΛ : ((2 * (m : ℝ) + 5) * K₆) * (3 * 4 ^ (d * m) * Γ * Λ * ν ^ 2) ≤ ((sz.size n : ℕ) : ℝ) ^ τ)
+    (hY : ∀ (σ' : Fin (m + 1) → Bool) (a' : Fin (m + 1) → Zd d (sz.L n)),
+      ‖STLKMg Cm n u H σ' a'‖ ≤ ν * X * sz.Bctl n u ^ (m + 1))
+    (hF : ∀ (σ' : Fin (m + 1) → Bool) (a' : Fin (m + 1) → Zd d (sz.L n)),
+      ellT (sz.L n) (sz.lam n) u * ωf ≤ (STdiamInf a' : ℝ) → ‖STLKMg Cm n u H σ' a'‖ ≤ Fv)
+    (ϑ : ℝ → (Fin (m + 1 + 1) → Zd d (sz.L n)) → ℂ)
+    (hϑ : ∀ a : Fin (m + 1 + 1) → Zd d (sz.L n),
+      ‖ϑ u a‖ ≤ Λ * (((ellT (sz.L n) (sz.lam n) u ^ d)⁻¹) ^ (m + 1)))
+    (hϑ' : ∀ a : Fin (m + 1 + 1) → Zd d (sz.L n), ‖deriv (fun t : ℝ => ϑ t a) u‖ ≤
+      Λ * (1 - u)⁻¹ * (((ellT (sz.L n) (sz.lam n) u ^ d)⁻¹) ^ (m + 1)))
+    (σ : Fin (m + 1 + 1) → Bool) (hσ : σ (Fin.last (m + 1)) = !σ 0) (a : Fin (m + 1 + 1) → Zd d (sz.L n)) :
+    ‖STPsum (d := d) (fun b : Fin (m + 1 + 1) → Zd d (sz.L n) => STLKMg Cm n u H σ b) (a 0) * ϑ u a‖ ≤
+      ((sz.size n : ℕ) : ℝ) ^ τ * (sz.Bctl n u ^ (m + 2) * X) ∧
+    ‖altB4Ng Cm n u ϑ σ H a‖ + ‖altB5Ng Cm n u ϑ σ H a‖ ≤
+      ((sz.size n : ℕ) : ℝ) ^ τ * ((Cm.eta n u)⁻¹ * sz.Bctl n u ^ (m + 2) * X) := by
+  classical
+  obtain ⟨Hs, hHs, hHn⟩ : ∃ Hs : ∀ n' : ℕ, Matrix (Idx d (sz.L n') (sz.W n')) (Idx d (sz.L n') (sz.W n')) ℂ,
+      (∀ n', (Hs n').IsHermitian) ∧ Hs n = H := by
+    refine ⟨fun n' => if h : n' = n then (by subst h; exact H) else 0, fun n' => ?_, by simp⟩
+    by_cases h : n' = n
+    · subst h; simpa using hH
+    · simp [h]
+  have hwH := QLevelsA_frozen_ward hL hward Hs hHs
+  have hLK : ∀ {m' : ℕ} (σ' : Fin (m' + 1) → Bool) (a' : Fin (m' + 1) → Zd d (sz.L n)),
+      STLKtensorg (QLevelsA_frozen Cm Hs) n u (fun _ => 0) σ' a' = STLKMg Cm n u H σ' a' := by
+    intro m' σ' a'
+    show Cm.LM n u (Hs n) σ' a' - Cm.K n u σ' a' = _
+    rw [hHn]; rfl
+  have key := B45_det2g hd sz (QLevelsA_frozen Cm Hs) n hκm hmn him1 heta hwH hker hK₆ hrow hcol hu0 hu1 hg hNu (fun _ => 0)
+    hΓ hν hX hωf hωd hνN hFv hFv0 hΛ hMΛ (fun σ' a' => by rw [hLK]; exact hY σ' a')
+    (fun σ' a' h => by rw [hLK]; exact hF σ' a' h) ϑ hϑ hϑ' σ hσ a
+  have e : STLKtensorg (QLevelsA_frozen Cm Hs) n u (fun _ => 0) σ = fun b => STLKMg Cm n u H σ b := funext fun b => hLK σ b
+  rw [e] at key
+  obtain ⟨k1, k2⟩ := key
+  refine ⟨k1, ?_⟩
+  have e5 : altB5Ng Cm n u ϑ σ H a =
+      -(STPsum (d := d) (fun b => STLKMg Cm n u H σ b) (a 0) * deriv (fun τ => ϑ τ a) u) := rfl
+  rw [e5, norm_neg]
+  exact k2
+
+
+/-- **`startLevelQNg`** (band `startLevelQN`, `QLevelsA:421`): the deterministic `AltLevelsQ0` at a Hermitian matrix over a carrier: with the hypotheses of `altB45Ng_levelM`
+(without the derivative bound, which only `ℬ₅` uses: the constant-in-time mollifier `fun _ b => ϑ u b` has derivative `0`) and a rank-`(m+2)` level `Y` of `(𝓛-𝒦)_{u,σ}(H)`,
+`‖𝒬_u(𝓛-𝒦)_{u,σ}(H)_a‖ ≤ Y + N^τ B_u^{m+2} X`. -/
+theorem startLevelQNg (hd : 2 ≤ d) (Cm : Step2Mat sz) {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) {u κm K₆ : ℝ}
+    (hκm : 0 < κm) (hmn : κm ≤ (Cm.m n).im) (him1 : (Cm.m n).im ≤ 1) (heta : ∀ t : ℝ, Cm.eta n t = (1 - t) * (Cm.m n).im)
+    (hward : ZeroModeGen_WardCls sz Cm.toFlowFM) (hker : ZeroModeGen_KerSums Cm.toFlowFM n) (hK₆ : 1 ≤ K₆)
+    (hrow : ∀ (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ a : Zd d (sz.L n),
+      ∑ b : Zd d (sz.L n), ‖Step2Gen_thetaKer Cm.toFlowFM n σ σ' t a b‖ ≤ K₆ / (1 - t))
+    (hcol : ∀ (σ σ' : Bool) (t : ℝ), 0 ≤ t → t < 1 → ∀ b : Zd d (sz.L n),
+      ‖∑ a : Zd d (sz.L n), Step2Gen_thetaKer Cm.toFlowFM n σ σ' t a b‖ ≤ K₆ / (1 - t))
+    (hu0 : 0 ≤ u) (hu1 : u < 1) (hg : 0 < sz.lam n) (hNu : (((sz.size n : ℕ) : ℝ))⁻¹ ≤ 1 - u)
+    {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
+    {m : ℕ} {Γ ν X ωf Fv Λ τ Y : ℝ} (hΓ : Γ = κm⁻¹) (hν : 1 ≤ ν) (hX : 1 ≤ X)
+    (hωf : 1 ≤ ωf) (hωd : ωf ^ (d * m) ≤ ν) (hνN : ν ≤ ((sz.size n : ℕ) : ℝ))
+    (hFv : Fv ≤ ν * (((sz.size n : ℕ) : ℝ) ^ (2 * m + 4))⁻¹) (hFv0 : 0 ≤ Fv) (hΛ : 0 ≤ Λ)
+    (hMΛ : ((2 * (m : ℝ) + 5) * K₆) * (3 * 4 ^ (d * m) * Γ * Λ * ν ^ 2) ≤ ((sz.size n : ℕ) : ℝ) ^ τ)
+    (hY : ∀ (σ' : Fin (m + 1) → Bool) (a' : Fin (m + 1) → Zd d (sz.L n)),
+      ‖STLKMg Cm n u H σ' a'‖ ≤ ν * X * sz.Bctl n u ^ (m + 1))
+    (hF : ∀ (σ' : Fin (m + 1) → Bool) (a' : Fin (m + 1) → Zd d (sz.L n)),
+      ellT (sz.L n) (sz.lam n) u * ωf ≤ (STdiamInf a' : ℝ) → ‖STLKMg Cm n u H σ' a'‖ ≤ Fv)
+    (ϑ : ℝ → (Fin (m + 1 + 1) → Zd d (sz.L n)) → ℂ)
+    (hϑ : ∀ a : Fin (m + 1 + 1) → Zd d (sz.L n),
+      ‖ϑ u a‖ ≤ Λ * (((ellT (sz.L n) (sz.lam n) u ^ d)⁻¹) ^ (m + 1)))
+    (σ : Fin (m + 1 + 1) → Bool) (hσ : σ (Fin.last (m + 1)) = !σ 0)
+    (hYtop : ∀ b : Fin (m + 1 + 1) → Zd d (sz.L n), ‖STLKMg Cm n u H σ b‖ ≤ Y)
+    (a : Fin (m + 1 + 1) → Zd d (sz.L n)) :
+    ‖STQop (d := d) ϑ u (fun b : Fin (m + 1 + 1) → Zd d (sz.L n) => STLKMg Cm n u H σ b) a‖ ≤
+      Y + ((sz.size n : ℕ) : ℝ) ^ τ * (sz.Bctl n u ^ (m + 2) * X) := by
+  have hL1 : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
+  have hℓ : 0 < ellT (sz.L n) (sz.lam n) u := lt_of_lt_of_le zero_lt_one (one_le_ellT hL1)
+  have h1u : 0 ≤ (1 - u)⁻¹ := inv_nonneg.2 (by linarith)
+  have h := (altB45Ng_levelM hd Cm hL n hκm hmn him1 heta hward hker hK₆ hrow hcol hu0 hu1 hg hNu hH hΓ hν hX hωf hωd hνN hFv
+    hFv0 hΛ hMΛ hY hF (fun _ b => ϑ u b) hϑ (fun a' => by
+      show ‖deriv (fun _ : ℝ => ϑ u a') u‖ ≤ _
+      rw [deriv_const, norm_zero]
+      exact mul_nonneg (mul_nonneg hΛ h1u) (pow_nonneg (inv_nonneg.2 (pow_nonneg hℓ.le _)) _)) σ hσ a).1
+  have e : STQop (d := d) ϑ u (fun b : Fin (m + 1 + 1) → Zd d (sz.L n) => STLKMg Cm n u H σ b) a =
+      STLKMg Cm n u H σ a - STPsum (d := d) (fun b : Fin (m + 1 + 1) → Zd d (sz.L n) => STLKMg Cm n u H σ b) (a 0) *
+        ϑ u a := rfl
+  rw [e]
+  exact (norm_sub_le _ _).trans (add_le_add (hYtop a) h)
+
+end DetG
+
+
 /-! ## 3. Target 3: the start level of `𝒬_u(𝓛-𝒦)_{u,σ}(H)` -/
 
 section Start
@@ -679,6 +820,92 @@ theorem crudeLKM_of_level_instance (σ : Fin (1 + 1 + 1) → Bool) :
   rw [e]
   have h3 : sz0.Bctl 0 0 ^ 3 ≤ 2 ^ 3 := pow_le_pow_left₀ h0.le h2 3
   nlinarith
+
+/-! ### Generic instances (T2498, row U3s3a): the carrier `bandStep2Mat sz0 Ez`, `Ez ≡ 0`
+
+The data of the band instances above; `κm = 1/2` (`Γ = 2`, `κm ≤ Im m = 1`), `K₆ = 1`; the Ward class by `zeroModeGen_wardCls_band`, the kernel sums by
+`zeroModeGen_kerSums_band`, the rows and columns of `Step2Gen_thetaKer` as in `b45Gen_facts_band`. -/
+
+private abbrev Ez : ℕ → ℝ := fun _ => 0
+
+private theorem Ez_lt : ∀ n, |Ez n| < 2 := fun _ => by norm_num [Ez]
+
+private theorem mE_im_one : (mE 0).im = 1 := by
+  rw [mE_im]
+  have : (4 : ℝ) - 0 ^ 2 = 2 ^ 2 := by norm_num
+  rw [this, Real.sqrt_sq (by norm_num)]
+  norm_num
+
+private theorem thetaKer_rows (σ σ' : Bool) (t : ℝ) (ht0 : 0 ≤ t) (ht1 : t < 1) (a : Zd 3 (sz0.L 0)) :
+    ∑ b : Zd 3 (sz0.L 0), ‖Step2Gen_thetaKer (bandFM sz0 Ez) 0 σ σ' t a b‖ ≤ 1 / (1 - t) := by
+  have hμ : ‖mSigma 0 σ * mSigma 0 σ'‖ = 1 := by
+    rw [norm_mul, norm_mSigma (by norm_num), norm_mSigma (by norm_num), one_mul]
+  have hker := Step2Kern_thetaKer_band sz0 Ez 0 σ σ' t
+  have h1t : (1 - t)⁻¹ = 1 / (1 - t) := one_div (1 - t) ▸ rfl
+  simp only [hker]
+  rw [← h1t]
+  exact B45_row_thetaKer (sz0.lam 0) (sz0.three_le_L 0) hμ ht0 ht1 a
+
+private theorem thetaKer_cols (σ σ' : Bool) (t : ℝ) (ht0 : 0 ≤ t) (ht1 : t < 1) (b : Zd 3 (sz0.L 0)) :
+    ‖∑ a : Zd 3 (sz0.L 0), Step2Gen_thetaKer (bandFM sz0 Ez) 0 σ σ' t a b‖ ≤ 1 / (1 - t) := by
+  have hμ : ‖mSigma 0 σ * mSigma 0 σ'‖ = 1 := by
+    rw [norm_mul, norm_mSigma (by norm_num), norm_mSigma (by norm_num), one_mul]
+  have hker := Step2Kern_thetaKer_band sz0 Ez 0 σ σ' t
+  have h1t : (1 - t)⁻¹ = 1 / (1 - t) := one_div (1 - t) ▸ rfl
+  simp only [hker]
+  rw [QopAlgebra_col_sum_thetaKer (sz0.lam 0) (sz0.three_le_L 0)
+    (by rw [norm_mul, hμ, mul_one, Complex.norm_of_nonneg ht0]; exact ht1) b, ← h1t]
+  exact B45_norm_colsum hμ ht0 ht1
+
+set_option maxRecDepth 20000 in
+/-- **Instance of `altB45Ng_levelM`**: `d = 3`, `sz0`, `n = 0`, `m = 1`, `u = 0`, `κm = 1/2`, `K₆ = 1`, `H = 0`, the explicit mollifier, every alternating `σ` and every label
+`a`; the far window of `hF` is attained by a label, and every deterministic hypothesis is discharged (`hY`, `hF` from `0 ∈ GoodSetN`). -/
+theorem altB45Ng_levelM_instance (σ : Fin (1 + 1 + 1) → Bool) (hσ : σ (Fin.last (1 + 1)) = !σ 0)
+    (a : Fin (1 + 1 + 1) → Zd 3 (sz0.L 0)) :
+    (∃ b : Fin (1 + 1) → Zd 3 (sz0.L 0), ellT (sz0.L 0) (sz0.lam 0) 0 * 2 ≤ (STdiamInf b : ℝ)) ∧
+    ‖STPsum (d := 3) (fun b : Fin (1 + 1 + 1) → Zd 3 (sz0.L 0) => STLKMg (bandStep2Mat sz0 Ez) 0 0 H0 σ b) (a 0) *
+        QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0) 0 a‖ ≤
+      ((sz0.size 0 : ℕ) : ℝ) ^ (2 : ℝ) * (sz0.Bctl 0 0 ^ (1 + 2) * 1) ∧
+    ‖altB4Ng (bandStep2Mat sz0 Ez) 0 0 (QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0)) σ H0 a‖ +
+        ‖altB5Ng (bandStep2Mat sz0 Ez) 0 0 (QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0)) σ H0 a‖ ≤
+      ((sz0.size 0 : ℕ) : ℝ) ^ (2 : ℝ) * (((bandStep2Mat sz0 Ez).eta 0 0)⁻¹ * sz0.Bctl 0 0 ^ (1 + 2) * 1) := by
+  refine ⟨window0, ?_⟩
+  have hM1 : ((2 * ((1 : ℕ) : ℝ) + 5) * 1) * (3 * 4 ^ (3 * 1) * (2 : ℝ) *
+      ((1 + 40 * ((3 * 2 : ℕ) : ℝ)) * 6 ^ (3 * 2)) * (8 : ℝ) ^ 2) ≤ ((sz0.size 0 : ℕ) : ℝ) ^ (2 : ℝ) := by
+    rw [mul_one (2 * ((1 : ℕ) : ℝ) + 5)]; exact hMΛ0
+  exact altB45Ng_levelM (by norm_num) (bandStep2Mat sz0 Ez) (stepDecompGen_loopForm_band sz0 Ez Ez_lt) 0 (κm := 1 / 2) (K₆ := 1)
+    (by norm_num) (by change 1 / 2 ≤ (mE 0).im; rw [mE_im_one]; norm_num)
+    (by change (mE 0).im ≤ 1; rw [mE_im_one])
+    (fun t => by change etaT 0 t = (1 - t) * (mE 0).im; rfl)
+    (zeroModeGen_wardCls_band sz0 Ez Ez_lt) (zeroModeGen_kerSums_band sz0 Ez 0) le_rfl
+    (fun σ σ' t ht0 ht1 a => thetaKer_rows σ σ' t ht0 ht1 a) (fun σ σ' t ht0 ht1 b => thetaKer_cols σ σ' t ht0 ht1 b)
+    (by norm_num) (by norm_num) lam_pos0 hNu0 Matrix.isHermitian_zero (m := 1) (Γ := 2) (ν := 8) (X := 1) (ωf := 2)
+    (Fv := ((sz0.W 0 : ℕ) : ℝ) ^ (-(36 : ℝ))) (Λ := (1 + 40 * ((3 * 2 : ℕ) : ℝ)) * 6 ^ (3 * 2)) (τ := 2)
+    (by norm_num) (by norm_num) le_rfl (by norm_num) (by norm_num) (by rw [N0]; norm_num) hFv0' (by positivity)
+    (by positivity) hM1 hY0 hF0
+    (QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0)) moll_sup moll_deriv σ hσ a
+
+set_option maxRecDepth 20000 in
+/-- **Instance of `startLevelQNg`**: the same data, with the rank-3 level `Y = (ΓΦ - 1) B^3 = 3 B^3` read off `0 ∈ GoodSetN` (clause (G2), `j = 3`), every alternating `σ` and
+every label `a`. -/
+theorem startLevelQNg_instance (σ : Fin (1 + 1 + 1) → Bool) (hσ : σ (Fin.last (1 + 1)) = !σ 0)
+    (a : Fin (1 + 1 + 1) → Zd 3 (sz0.L 0)) :
+    ‖STQop (d := 3) (QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0)) 0
+        (fun b : Fin (1 + 1 + 1) → Zd 3 (sz0.L 0) => STLKMg (bandStep2Mat sz0 Ez) 0 0 H0 σ b) a‖ ≤
+      (4 * 1 - 1) * sz0.Bctl 0 0 ^ (1 + 1 + 1) +
+        ((sz0.size 0 : ℕ) : ℝ) ^ (2 : ℝ) * (sz0.Bctl 0 0 ^ (1 + 2) * 1) :=
+  startLevelQNg (by norm_num) (bandStep2Mat sz0 Ez) (stepDecompGen_loopForm_band sz0 Ez Ez_lt) 0 (κm := 1 / 2) (K₆ := 1)
+    (by norm_num) (by change 1 / 2 ≤ (mE 0).im; rw [mE_im_one]; norm_num)
+    (by change (mE 0).im ≤ 1; rw [mE_im_one])
+    (fun t => by change etaT 0 t = (1 - t) * (mE 0).im; rfl)
+    (zeroModeGen_wardCls_band sz0 Ez Ez_lt) (zeroModeGen_kerSums_band sz0 Ez 0) le_rfl
+    (fun σ σ' t ht0 ht1 a => thetaKer_rows σ σ' t ht0 ht1 a) (fun σ σ' t ht0 ht1 b => thetaKer_cols σ σ' t ht0 ht1 b)
+    (by norm_num) (by norm_num) lam_pos0 hNu0 Matrix.isHermitian_zero (m := 1) (Γ := 2) (ν := 8) (X := 1) (ωf := 2)
+    (Fv := ((sz0.W 0 : ℕ) : ℝ) ^ (-(36 : ℝ))) (Λ := (1 + 40 * ((3 * 2 : ℕ) : ℝ)) * 6 ^ (3 * 2)) (τ := 2)
+    (Y := (4 * 1 - 1) * sz0.Bctl 0 0 ^ (1 + 1 + 1))
+    (by norm_num) (by norm_num) le_rfl (by norm_num) (by norm_num) (by rw [N0]; norm_num) hFv0' (by positivity)
+    (by positivity) (by rw [mul_one (2 * ((1 : ℕ) : ℝ) + 5)]; exact hMΛ0) hY0 hF0
+    (QopAlgebra_mollifier 3 (sz0.L 0) 2 (sz0.lam 0)) moll_sup σ hσ (hYtop0 σ) a
 
 end QLevelsAInst
 
