@@ -3167,3 +3167,30 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 草稿十个待定问题照草稿定，其中：(1) **定义 `BAMainIndFamTL` 由 V3 发布**（连同 `BATwistLoopLaw_congr`、`baFamMember_flow`），V2a 的 1b 导入 `BA/MainIndOutBA`（改 T2503 答 (1) 的放置）；(2) 登记删五条（`STLK0`、`STG0M`、`STBaseG`、`STHorizonG`、`UNMLOutBA`），加一条 `BAMainIndFamTL`（V2b 合并时删）；(7) **M/N 形状问题**：N 已合并的读者取 `∀ d, UNMLOutBA d`，而按 §316 只有 `UNMLOutBA 3` 无条件——V3 只报告，不改 N 的文件，在 V 的关闭 REQ 里提；(9) F1（`LWPinsBA:20, 50, 52`）与 `EMn2BA_mF_data` 文档串的注释修正放进这张票。
   - 价：设计 240 / 395 / 766，本票加定义与插口后中心 ≈ 435，一行，`prover-hard`，停止线 766；REQ 读数 1,400 记旁边。
 - (5) 计数：BA 190（V3 是 T2379 计划内一行）；U 38 / 42；**V 5 / 12**（T2502 1–3，T2503 4，T2504 5）；预测 ≈ 12；M/N 3 / 15。中枢在跑：T2498 行 b、T2502 行 b、T2502 行 c（W1 门）、T2504（4 个位）。H299。下一节 §319，下一张票号 T2505，下一条 H300。
+
+## §319 — T2502 行 c 的 W1 门签字 (A)（逐时刻）；Amend 1；T2498 行 b 合并；D726、D727（总调度 V4，2026-10-14 08:12 UTC）
+
+- (1) **T2502 行 c 的 W1 门：签 (A)，逐时刻形式**（1a-audit `docs/reports/T2502c-1a-audit.md` BLOCKED，H183 (3)）。
+  - 门的结果：探针 0f0ad532 编译通过；W1 (i)′（三个合取：(a) `C.S n = SB d (L n) (g' n)`、(b) 自洽方程、(c) `M` 的块平均是 `C.m n`）和 W1 (ii)′（最终成立）作为文本 PASS，带状和 BA 都有实例。
+  - 卡点：BA 的 `M = M^{(B)} ⊗ I` 不是标量，Stein 余项是非对角的扭偏迹，票上两个钉住的前提（`LWAvgLawgL`、`STLKgL`）管不住。
+  - 选 (A)，不选 (B)，理由三条：
+    - (B) 要在泛型陈述里写 `M = m • 1`，票面 C1（`:70`）禁止；它还会让 V1-BA 在 BA 上重做一遍行 c 的 Stein 论证。
+    - (A) 的两个新前提都有具名的 BA 来源和负责人：(iii) 由 TL1 `BATwistAvgLaw` 经 `TwistPins_circ_term`（`BA/TwistPins:439`）给出，TL1 每个时刻由 V2a 的 `TwistStep2_tl1` 供；(iv) 由 `CltFlowBA_MB_decay`（`BA/CltFlowBA:221`，常数在 `(κ, 𝔡)`）求和给出。两座桥都归 **V1-BA**。
+    - 逐时刻：BA 上 TL1 只是每个时刻的前提，所以 (iii) 跟 `LWAvgLawgL u`、`STLKgL u` 并列，进每时刻的核心定理。
+  - **Amend 1**（`docs/tickets/T2502-amend-1.md`，检查 `docs/tickets/checks/T2502-amend-1-check.lean`，钉文抄探针、前缀 `T2502c_` → `T2502_`）：
+    - 目标 16 拆三：16a 核心 `stImproveCoregL_of`（族第 9 + 14 行连 (iv) → `STImproveCoregL`）；16b `stImproveExpAvergL_of`（已合并的行 a 钉文，由 16a 加新的族第 15 行 `W1iiiOfLW` 推出，只用于带状型载体）；16c `stExpAvgUgL_of_core`（`st6_expAvgU_of_ping` 的逐流变体，给 V1-BA 接 TL1）。
+    - 族表：行 c 用合并后的第 9 + 14 行，`∃ Cs CM` 放在 `(κ, ε, 𝔡)` 之后；行 b 的第 9 行不变；新第 15 行没有 BA 来源，这是设计如此。
+    - 行 c 可以在 `Chain/ExpAvgGen` 里发布九个 W1 词汇，只对这九个解除「公开 def 只在 `Step6Gen`」的停止线。
+    - 行 c 可以写 `Test/Axioms.lean` 的登记行。
+    - 行 c 中心 1,020 → 1,260，停止线 1,450 → 1,750。BA、V 的计数不变。
+  - 论文差异：**D727 ← `T2502ca`**（`6:12-21` 只覆盖标量 `M`；D725 末句以此为准）。
+- (2) **T2498 行 b（U3s3b）合并** 051e596f（07:54 UTC）：
+  - 新 `Chain/QEndGridGen` 1,168 行（票面 1,700，停止线 2,000，×0.69），目标 10 `altGridEndQNg` 带实例。
+  - 没有登记改动；审核第一轮 PASS；全量构建 4,386 个作业。
+  - 审核观察 O1–O4 照收：O1 导入 `Chain/NQEndLinGen` 不在票上的出处单里（已合并模块，`open private` 四个与模型无关的载体引理，没有抄文本），记账；O2 `lam` 修补留在内部、由 `hcmp` 推出守卫 (g)；O3、O4 是实例助手。
+  - 论文差异：**D726 ← `T2498l`–`n`**。
+  - 行 c（U3s3c，`Chain/QEndB1Gen`，目标 11–13）07:54 叠在 `t/T2498b` 上开工（wf_ec6438f4-f5c）。
+- (3) **记给 V1-BA 票**（与 §318 (1) 的 O1 `hK1`、O3 `hKer`、T2503 的 Step 6 TL 前提并列）：
+  - (a) 三座桥：(iii) ← TL1；第 9 + 14 行 ← 探针 `T2502c_ba_W1fam`（`t/T2502c` 0f0ad532 `:227-262`）；(iv) ← 公开的 `CltFlowBA_MB_decay`。
+  - (b) `Chain/Step6KitGen` 的包装（`:338`、`:722`、`:755`、`:799`）吃全局的 `hAvg : STImproveExpAvergL …`，BA 给不出（每个时刻要 TL1）。V1-BA 经 16c 和逐流变体接上；变体放在哪里（V1-BA 自己的文件，或一张小的泛型补行）由 V1-BA 的 1a 定。
+- (4) 计数：BA 190；U 38 / 42；V 5 / 12；M/N 3 / 15。中枢：T2498c、T2502b、T2504 在跑；T2502c 由 H300 放行 1b（4 个位）。H300。下一节 §320，下一张票号 T2505，下一条 H301。

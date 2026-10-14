@@ -1806,3 +1806,8 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 
 - **D724** ← `T2498g`–`k`（U3s3a′，原地 `QBudgetA/B`、`QEndA` + 新 `QEndA2`，bd5531ea；Lean 手段，不改论文陈述）：(g) 谱层级代替 `|E| ≤ 2 − κ`；(h) D2 的文本；(i) `hQ_altQNg`、`subGaussStop_altQNg` 里两个半径与 `C4 ≤ Cv`（R1 进入，`qvFormQNg_le_of_bounds` 迫使）；(j) 删去七个没人读的带状定理、两个留作推论（旧检查 `T2279-check.lean:176, 210` 随之过时，从不编译）；(k) `altYGridNg` 对 `(μ, Hf)` 陈述，不再要 `∀ n, 1 ≤ X n`。
 - **D725** ← `T2502a`（V1s1a，`Chain/Step6Gen`、`Step6KitGen`，d3351df4）：泛型的 Duhamel 文本 `STExpDuhEqgL`、`STExpDuhamelZgL`/`QgL` 对 `n` 是**最终**成立（`∀ᶠ n`），论文与带状对每个 `n`；原因是 BA 的 `KLoop`/`KTwo` 只最终成立（UP-C4，监督 0658 `:220`）。带状到泛型只单向。`H₀ ≠ 0` 的推广由论文 `6:12-21`（「与 [YY_25] 相同」）覆盖。
+
+## 合并时编号 T2498l–n；行 c 签字编号 T2502ca（总调度 V4，2026-10-14 08:12 UTC；DECISIONS §319）
+
+- **D726** ← `T2498l`–`n`（U3s3b，新 `Chain/QEndGridGen`，051e596f；Lean 手段，不改论文陈述）：(l) `altGridEndQNg` 里 `Cv ≥ C4`、`C4 < Cv ∨ A = 1`，指数取在 `Cv`（接 D724 (i)）；(m) 谱层级 `κm`、`K₆`、`C₆` 与 `hward hker hrow hcol hTh` 代替 `|E| ≤ 2 − κ`（接 D724 (g)）；(n) 带状的 `lam` 修补留在证明内部，R1 守卫 (g) 由 `hcmp` 推出（`QEndGridGen_gK_win`），陈述不变。
+- **D727** ← `T2502ca`（V1s1c 的 W1 门，调度签字 (A)；`docs/tickets/T2502-amend-1.md`）：论文 `6:12-21` 说 `lem:improve_exp_aver` 在 `lem:main_ind` 的设定下「与 [YY_25, Lemma 5.15] 证明相同」，用 `(Gt_avgbound_flow)`、`(Eq:L-KGt-flow)`（`1_2:1344`、`:1371`）；那是标量 `M` 的情形。BA 的 `M = M^{(B)} ⊗ I` 不是标量，Stein 余项里有非对角的扭偏迹 `M^{(B)}_{aq} Tr(G̊ P_{qa})`，上面两条都管不住。Lean 的办法：泛型核心 `STImproveCoregL` 在每个时刻多一个前提 W1 (iii)（`|t_{aq} − M^{(++)}_{aq}| ≺ |M^{(B)}_{aq}| W^{-d}B`），族前提多一条 W1 (iv)（`M^{(B)}` 行的 `ℓ¹` 界）；BA 上 (iii) 由 TL1 `BATwistAvgLaw`（证明 Lemma T.7）给出，(iv) 由 `M^{(B)}` 的指数衰减给出。所以 BA 的 `lem:improve_exp_aver` 要用到同一时刻的扭平均律（Step 6 在 BA 上本来就读 TL1，T2503 设计 `:143`）。带状不变。D725 末句「`H₀ ≠ 0` 的推广由 `6:12-21` 覆盖」只对标量 `M` 成立，以本条为准。
