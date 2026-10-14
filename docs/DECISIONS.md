@@ -3395,3 +3395,20 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - **U3-BA (b)** 现在可写：U3s4 全部完成，U3-BA (a) 已合并。后台起草，带上 T2505 D1 的 BA 来源（§328 (1) (2)）、登记 `:194`、`:195`、`:214`、`:217` 四行（含 T2505c O2）、Steps 3–4 在 BA 上（REQ-1418 `:51-54`）。
   - V1-BA 等 V1s3′。
 - (4) 计数：**BA 194**；U 42 / 42（预测 ≈ 46）；V 9 / 12（预测 12–13）；M/N 3 / 15。H310。下一节 §331，下一张票号 T2509，下一条 H311。
+
+## §331 — 放 T2509 = U3-BA (b)（Steps 3–4 在 BA 上，含泛型 Steps 3–4 的生产者）（总调度 V4，2026-10-14 14:06 UTC）
+
+- (1) **T2509 = U3-BA (b)**（后台起草子代理起草，调度核读定稿；`docs/tickets/T2509.md`、检查 `T2509-check.lean`）。
+  - **覆盖**：`stOeqQtgL'_of` 有 27 个前提槽、`stOeqQtNZgL'_of` 有 25 个，BA 上都已有合并的来源，只差情形 (ii) 的 D1（`QtNZGen_KerNZFam`）。D1 就是 T2507 并过来的目标（这里的目标 6 `baQtNZGen_kerNZ`），源引理 `baEKSumDecayNonzeroA_holds`（`EKGenBA:262`）已合并，**不设计门**。BA 上的迭代、`QDriftData`、G7（T2468 `baStep1_holds'`）都已合并，没有前提要先当假设进来。
+  - **发现的缺口**：`Chain/` 里没有对一般载体证 `STStep3RgL`/`STStep4RgL` 的定理。带状的 `Induction/Step3` §1–§4、`Step4` §1–§2 从没移植过：T2457 `:40` 派给 U3s4，T2505 `:36, :48` 又指向 V，两头都没开票。**本票补上**：新 `Chain/Step34RGen`（≈ 800，复用 `IterationsGen2_Fam`）加新 BA 叶 `BA/Step34BA`（≈ 500）。
+  - 价：一行，`t/T2509`，现在开工，`prover-hard`。自下而上 1,000 / 1,300 / 1,900，校准后 1,320–1,840；停止线 1,250 / 800；1a 中心超 1,950 按预签拆 a | a′（a′ 叠在 a 上）。T2379 给 (b) 的余量 1,882（中心），UP-F1 的 4,794 记在旁边。
+  - **八个待定问题照草稿定**：
+    - (1) 泛型 Steps 3–4 生产者放本票，不另开 ST 行；
+    - (2) REQ-1418 的「在 `STAny` 上」做不到（§68 (9)、§132 (3)、§133 (1)：Step 4 只能从 `STCaseI`/`STCaseII` 的自举来），改成逐区间的目标 8–9；
+    - (4) 不引入缩写 `BAStep3R`/`BAStep4R`（没有读者，同 U6-BA 的先例）；
+    - (5) T2507 的目标 7 是这里的目标 6；
+    - (6) 登记只改负责人注释 `:194`、`:195`、`:214`、`:217`（`:217` 的结尾改掉「case (ii): T2505 row c」，即 T2505c O2）；预扫描若已显示 `STXiBootgL'` 不再挂东西，就把 `:214` 删掉；
+    - (8) 族前提复用 `IterationsGen2_Fam`（BA `baIterationsGen2_fam` 已合并）。
+  - 计数：U 43 / 42（旗标保留，预测 ≈ 46，< 49 不发 REQ）；BA 194（+0；T2379 给 U3-BA 计两行）。拆则 U 44、BA 195。
+- (2) **记给 V2a 的 1b 票**（待定问题 (3)；T2503 的检查不改）：`T2503-check:282, 284` 在情形 (iii)、(i) 里按 `Rc = STCaseI` 读 Steps 3–4，而 `STCaseI` 处的 Step 3 是已被取代的 `STStep3I`。V2a 在这两处取 `R34 = R`，同带状的 `ST_mainInd_of_pins'`（`Induction/Step4:209-228`）：Step 3 读本票目标 8 在该区间上的形式，Step 4 读 `baStep4RegIII/RegI_holds`；情形 (ii)、(iv) 照旧用 `STCaseII`。价不变。
+- (3) 在跑：T2508a、T2509（H311 后）。计数：BA 194；U 43 / 42；V 9 / 12；M/N 3 / 15。H311。下一节 §332，下一张票号 T2510，下一条 H312。

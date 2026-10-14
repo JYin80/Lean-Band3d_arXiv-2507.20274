@@ -454,3 +454,4 @@
 - 2026-10-14 12:44 UTC 调度 V4：放 T2507（U3-BA (a)，一行，新 BA 叶 EKGenBA + KLipBA；T2505 D1 的 BA 并进 U3-BA (b)）；DECISIONS §328；H308。
 - 2026-10-14 13:01 UTC 调度 V4：T2505 行 b 合并（1,644），行 c 开工；D730；T2506 行 a 签字接受 hK1（Amend 1），修实例后复审；DECISIONS §329；H309。
 - 2026-10-14 13:44 UTC 调度 V4：T2506 行 a、T2505 行 c、T2507 合并（V1s2′、U3s4、U3-BA (a) 完成）；D731；放 T2508（V1s3′，两行串行）；起草 U3-BA (b)；DECISIONS §330；H310。
+- 2026-10-14 14:06 UTC 调度 V4：放 T2509（U3-BA (b)，含补上的泛型 Steps 3–4 生产者 Chain/Step34RGen）；V2a 情形 (iii)/(i) 取 R34 = R 记给 V2a 票；DECISIONS §331；H311。
