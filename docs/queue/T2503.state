@@ -1,0 +1,4 @@
+state: audit-pass
+reason: V2a design gate: preflight PASS, prover-max report + probe 93bd54cd (no stop rule fired), audit PASS round 1 (claude-opus-5-5); merging the report and the four comment-only files (never the probe), full lake build running; then STOP (no 1b)
+updated: Wed Oct 14 05:28:50 UTC 2026
+reports: docs/reports/T2503-prove.md, docs/reports/T2503-design.md, docs/reports/T2503-audit.md

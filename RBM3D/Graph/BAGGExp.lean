@@ -75,7 +75,7 @@ def BAGGGammaR (x y y' : Idx d L W) (ω : Ω d L W) : ℂ :=
 
 end GGGammaPin
 
-/-- **`GGGamma`** (corrected, D402): `𝔼[BAGGGammaL] = 𝔼[BAGGGammaR]` over `PF d L W 0` (owed: BA-L2c). -/
+/-- **`GGGamma`** (corrected, D402): `𝔼[BAGGGammaL] = 𝔼[BAGGGammaR]` over `PF d L W 0` (proved: `baGGGamma_holds`, `Graph/BAGGExp.lean:358`). -/
 def BAGGGamma (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), BASelf d L g0 (E : ℂ) m → 0 ≤ t → t < 1 →
     ∀ (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ) (x y y' : Idx d L W),

@@ -17,7 +17,7 @@ This file sits downstream of the band theorems (`lwterm_holds`, `lwtermExp_holds
 
 * `baPin P` is `P` at the block Anderson data (law `seqP (sz.withLam 0)`, setting `BAFlow`, carrier `baFMz`, horizon
   `BAflowT0`); `BAStep2 d` (`BA/FlowPins.lean:432`) is `baPin STStep2G d`.
-* The BA readings `BALWterm`, `BALWtermExp`, `BALWtermEXP` (owner: BA-L6) and `BASTLWB`, `BASTLWT` (owner: T1-BA / T7-BA) are
+* The BA readings `BALWterm`, `BALWtermExp` (proved: `baLWterm_holds`, `baLWtermExp_holds`, `Graph/BATermHolds.lean:706`, `Graph/BATermHoldsB.lean:865`), `BALWtermEXP` (superseded by `BALWtermEXPTw` (T2490/T2494); no producer; do not read) and `BASTLWB`, `BASTLWT` (owner: T1-BA / T7-BA) are
   `Prop`-valued pins with no proof here.
 * The band instances at `d = 3` are theorems (the merged band results, transported by `Iff.rfl`).
 * The nonempty instances at the end apply the BA pins at the concrete data of `sz0` (`n = 0`: `L = 4`, `W = 32`).
@@ -41,11 +41,11 @@ def baPin (P : PinFam) (d : ℕ) : Prop := P d (fun sz => Sizes.seqP (sz.withLam
 
 /-! ## 1. The BA readings (pins; no proof) -/
 
-/-- `lem:LWterm` at the block Anderson data (owed: BA-L6). -/
+/-- `lem:LWterm` at the block Anderson data (proved: `baLWterm_holds`, `Graph/BATermHolds.lean:706`). -/
 abbrev BALWterm : ℕ → Prop := baPin LWtermG
-/-- `lem: EWGn2_N` at the block Anderson data (owed: BA-L6). -/
+/-- `lem: EWGn2_N` at the block Anderson data (proved: `baLWtermExp_holds`, `Graph/BATermHoldsB.lean:865`). -/
 abbrev BALWtermExp : ℕ → Prop := baPin LWtermExpG
-/-- `lem:LWterm_EXP` at the block Anderson data (owed: BA-L6). -/
+/-- `lem:LWterm_EXP` at the block Anderson data: superseded by `BALWtermEXPTw` (T2490/T2494); no producer; do not read. -/
 abbrev BALWtermEXP : ℕ → Prop := baPin LWtermEXPG
 /-- `STLWB` at the block Anderson data (owed: T1-BA / T7-BA, through L5). -/
 abbrev BASTLWB : ℕ → Prop := baPin STLWBgL

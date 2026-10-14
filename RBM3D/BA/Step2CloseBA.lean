@@ -198,7 +198,7 @@ theorem baStep2_holds (d : ℕ) (hLW : BALWterm d) (hLWE : BALWtermExp d) : BASt
 /-! ## 5. Compiled nonempty instances of targets 8, 9, 9b, 11 (`d = 3`)
 
 Data as in `BA/Step2IterBA.lean` §6: `sz0`, `zSeq`, `flow_sz0 : BAFlow sz0 zSeq` at `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `s ≡ 1/10 < t ≡ 1/2 <
-t₀` (`half_lt_t0`).  The stage-L inputs `BALWterm 3`, `BALWtermExp 3` (BA-L6) and the Step 1, `STLKgL`, `STDecaygL`, `STConStInd`,
+t₀` (`half_lt_t0`).  The stage-L inputs `BALWterm 3`, `BALWtermExp 3` (proved: `baLWterm_holds`, `baLWtermExp_holds`; kept as hypotheses here) and the Step 1, `STLKgL`, `STDecaygL`, `STConStInd`,
 `STL2decayPTgL` binders of the pins stay hypotheses; every deterministic premise is discharged. -/
 
 section Instances

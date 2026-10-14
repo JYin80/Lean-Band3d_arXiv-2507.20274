@@ -165,7 +165,7 @@ def BATwistLoopBase (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 𝔠 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     STG0M (baFMz sz z) → BATwistLoopLaw (baFMz sz z) (Sizes.seqP (sz.withLam 0)) (fun _ => 0)
 
-/-- **TL-V, the step with the fifth hypothesis and conclusion** (`STMainIndG`, `BA/FlowPins.lean:408`, plus TL2): owner BA-V (V2a). -/
+/-- **TL-V, the step with the fifth hypothesis and conclusion** (`STMainIndG`, `BA/FlowPins.lean:408`, plus TL2): owner BA-V (V2a).  Not on the route; superseded by the family form `BAMainIndFamTL` (V2a; design T2503; supervisor 2026-10-14-0342 V-F1); do not read. -/
 def BAMainIndTL (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ BAflowT0 sz z n) →
@@ -181,7 +181,7 @@ def BAMLOutTL (d : ℕ) : Prop :=
       STLKgL C μ t ∧ STLmaxgL C μ t ∧ STDecaygL C μ t ∧ STExp2gL C μ t ∧ STLocalEntrygL C μ t ∧ BATwistLoopLaw C μ t
 
 /-- **TL-V (row TL-V)**: the chain of times (`stPosConclG_of_mainIndG`, `MainIndChain.lean:148`, and the mixing of `stMLOutG_of_mainIndG`) with the TL2 conjunct.
-`G_0 = M` at the carrier (`STG0M`, owed by BA-V `GLoopAtT0`) is a premise, in the form of `Induction/MainIndBase.lean:157`. -/
+`G_0 = M` at the carrier (`STG0M`, owed by BA-V `GLoopAtT0`) is a premise, in the form of `Induction/MainIndBase.lean:157`.  Reads the single-flow step `BAMainIndTL`; the route's chain is the family twin (V3; design T2503). -/
 def BAChainTL (d : ℕ) : Prop :=
   BAMainIndTL d STAny → STHorizonG d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => BAflowT0 sz z) →
     STBaseG d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz → BATwistLoopBase d →
