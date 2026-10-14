@@ -1823,3 +1823,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## 合并时编号 T2505ba–bc（总调度 V4，2026-10-14 13:01 UTC；DECISIONS §329）
 
 - **D730** ← `T2505ba`–`bc`（U3s4b，新 `Chain/QtNonzeroGen`、`QtNonzeroEndGen`，b610fbdb；Lean 手段，不改论文陈述）：(ba) 新的确定性核类 D1（`QtNZGen_KerNZ(Fam)`）：`≺` 的常数显式，A 形窗口 `(1 − v) L² ≤ Aof κ · gK²`，耦合取 `gK`，代替带状的 `nzUgen_holds`（`|E| < 2`、`norm_mE`）；(bb) `nzGridEndNg` 对 `lem:STOeq_Qt_nonzero` 的差别：D1 常数、`hR1`、`STCaseII`，不带 `𝔡`/`WO`/`κ`，读 `DecayGen_Spec`、`ZeroModeGen_KerSums`、`STKboundgL`；(bc) 只在 Lean 里的 `qtNZGen_bandC`。
+
+## 合并时编号 T2505ca–cc（总调度 V4，2026-10-14 13:44 UTC；DECISIONS §330；行 c 报告里的 `T2505c`–`e` 与行 a 的标签撞号，改标为 `T2505ca`–`cc`，审核 O1）
+
+- **D731** ← `T2505ca`–`cc`（U3s4c，新 `Chain/QtNonzeroFlowGen`、`QtNonzeroBootGen`，ffd134c4；Lean 手段，结论是已合并的 `STOeqQtNZgL'`，不改论文陈述）：(ca) 情形 (ii) 的提升步长 `N^{-(6n_+18+2c)}`，带因子 `2^{n_}`；(cb) `𝔠_d = min 𝔠G 𝔠L`，带钉住的 `∃ C5`、`∃ c`；(cc) 低阶项常数取 `κm⁻¹`（带状 `(√(κ/2))⁻¹`）。
