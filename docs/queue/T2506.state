@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row a (targets 1-5): repairer 6d6dde16 (defect (1)), audit round 2 PASS (claude-opus-5-5) under Amend 1 (hK1 accepted, H309); merging (rule A; registry conflict resolved by union, as audit O1 expected), full lake build running
+updated: Wed Oct 14 13:15:43 UTC 2026
+reports: docs/reports/T2506-prove.md, docs/reports/T2506-audit.md
