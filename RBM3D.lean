@@ -601,6 +601,7 @@ import RBM3D.Chain.QGridGen
 import RBM3D.Chain.QGridGen2
 import RBM3D.Chain.IterationsGen
 import RBM3D.Chain.IterationsGen2
+import RBM3D.BA.Step5IIITargets
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
