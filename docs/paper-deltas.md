@@ -1774,3 +1774,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## 合并时编号 T2499（总调度 V4，2026-10-14 02:32 UTC；DECISIONS §311）
 
 - T2499（U5e，`BA/Step5IIITargets`，086d9091）：**无新候选**。`lem:pf_step5`（`3_5:2364-2383`）与 Step 5 情形 (iii)（`3_5:2284`）在 BA 元组上经合并的泛型钉文得到；论文（`7_8:2101`）略去 BA 论证，由 D702（T2459a）覆盖，**D702 的未结注记「U5e 尚未写」到此了结**（`baPfStep5_holds`、`baStep5III_holds`）。只在 `d = 3`：照 D712 (d)。
+
+## 合并时编号 T2500（总调度 V4，2026-10-14 03:16 UTC；DECISIONS §312）
+
+- T2500（U1-BA，`BA/ZeroModeBA`，a6ec5c5c）：**无新候选**。`lem: newPQ` 与 `lem:iterations` 在 BA 上经载体类成立（不用 `|E| < 2`、`‖m‖ = 1`，`‖m‖ ≤ 1` 内联），由 D720、D563 覆盖。
