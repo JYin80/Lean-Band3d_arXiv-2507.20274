@@ -2,17 +2,17 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-13 18:03 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2496b booked, DECISIONS §308 (H288); batch complete; Jun: no new tickets until he says)
+updated: 2026-10-14 00:41 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; Jun 2026-10-14 ~00:30 UTC "go ahead": tickets resume; T2497 released, two rows, DECISIONS §309 (H290))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-464. T2496 — `docs/tickets/T2496.md` + **Amend 1** (`docs/tickets/T2496-amend-1.md`: A6-A9; H282) + **Amend 2** (`docs/tickets/T2496-amend-2.md`: A10 `hGrid`, A11 `hHerm`, `GridRepTailGen2` import, `DuhamelI2` cut; H284) (U U4s3, **in place** (supervisor 0658 UP-C2): edits `Induction/LemDecCalELip.lean`, `Induction/EtermsMid.lean` (U4s3a), `Induction/DuhamelI.lean`, `Induction/DuhamelII.lean` + new sibling `Induction/DuhamelI2.lean` (U4s3b), reserve `EtermsMid2`: the generic forms over the flow carrier with every frozen band declaration kept by name and type (G1), `STLemDecCalEConclgL`/`STLemDecCalEgL`, `stEtermsMidgL_of`, `stDuhamelIgL_of`, `stDuhamelIIgL_of`; narrow design gate D1-D4 with a `prover-hard` probe → 1a-audit → 1b `prover-hard` → auditor; pre-signed split at the file boundary (stacked `t/T2496b`)): released; next free slot once its check compiles (H279 (3)). Not in the certificate lane (cone 74 modules, no `LWExpCert*`). **Band files are edited in place**; a band edit outside the sole writable files is a RETURN.
+465. T2497 — `docs/tickets/T2497.md` (U U1s2, **two rows from the start, NEW-FILE layout** (supervisor 0658 UP-C2 with the ×1.74 sensitivity price, DECISIONS §308 (2), §309): row a U1s2a (QGrid, targets 1–9) writes new `Chain/QGridGen.lean`, `Chain/QGridGen2.lean` on `t/T2497`; row b U1s2b (Iterations, targets 10–15) writes new `Chain/IterationsGen.lean`, `Chain/IterationsGen2.lean` and the `STIterR'` owner text in `Test/Axioms.lean` on `t/T2497b`; both from `main`, not stacked, independent; each `preflight → prover → auditor`, no design gate): released; both rows start once the check compiles (H290 (3)). **No band file is writable** (`Induction/IterationsA/B`, `QGridA/B` unchanged; a band edit is a RETURN). Not in the certificate lane (reverse cone 21 modules, no `LWExpCert*`).
 
 ## Pre-release checks
-- `docs/tickets/checks/T2496-check.lean` (U U4s3; merged names plus `T2496_*` Prop pins; not compiled by the dispatcher).
+- `docs/tickets/checks/T2497-check.lean` (U U1s2; merged names plus `T2497_*` Prop pins; the R2* texts are the merged `STIterationsgL'`/`STIterationsIIgL'`; not compiled by the dispatcher).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -451,6 +451,10 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Tue Oct 13 17:54:12 UTC 2026 — H286 (2) / H287 (2) / H280 (3): T2496 U4s3b merged 5e24c0bb (see merge log). Batch complete: T2491, T2493, T2494, T2496 (U4s3a e89f5609, U4s3b 5e24c0bb) all merged. No workflow runs; nothing else starts.
 - H288 (dispatcher V4, 2026-10-13 18:03 UTC; DECISIONS §308). (1) Commit by name with your next commit: `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/rework-ledger.md`, `docs/paper-deltas.md`, `docs/queue/CONTROL.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) The batch of H280 (3) is complete (T2496b merged 5e24c0bb). Start no ticket until a later H releases one; the loop may idle. One `done:` line.
 - H289 (dispatcher V4, 2026-10-13 18:03 UTC). Commit by name with your next commit the 26 modified files under `docs/supervisor/requests/` (only their first line changed, `status: open` → `status: done → …`, written by the supervisor; `git diff --name-only docs/supervisor/requests/`). Nothing else. One `done:` line.
+  done: Tue Oct 13 18:11:26 UTC 2026 — H288 (1) the 6 listed files committed by name in 97b98ca6, pushed. (2) noted: no ticket starts until a later H releases one; the loop idles.
+  done: Tue Oct 13 18:11:26 UTC 2026 — H289 the 26 modified files under docs/supervisor/requests/ committed by name in 97b98ca6 (with H288's files), pushed.
+
+- H290 (dispatcher V4, 2026-10-14 00:41 UTC; DECISIONS §309; Jun in the dispatcher session, 2026-10-14 ~00:30 UTC: "go ahead" — new tickets resume; this lifts H288 (2)). (1) Commit by name with your next commit `docs/tickets/T2497.md`, `docs/tickets/checks/T2497-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile the T2497 check on `main` with `lake env lean` (not compiled by the dispatcher; on failure paste the error lines and do not start it). (3) On exit 0, start **both rows of T2497** in free slots, both from `main`, not stacked: row a (U1s2a, QGrid) on `t/T2497`, row b (U1s2b, Iterations) on `t/T2497b`; each `preflight → prover → auditor`. New-file layout: no band file is writable; only row b edits `RBM3D/Test/Axioms.lean`; `RBM3D.lean` import lines are a union between the rows; either merge order. One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).

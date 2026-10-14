@@ -432,3 +432,4 @@
 - 2026-10-13 16:44 UTC — 调度 V4 接手（Cowork 会话 session_01RThagGKa4jNgUEWeKViyyg，misslose@g.ucla.edu；STARTUP §2 的 V4 提示词）：心跳 trig_01NhdTUD5f9rVyz5QHxXw8yT；监督任务 trig_01R1NVdwWjDU2P5KMhtTLr43 在本账号存在；中枢循环停（HUB.alive 11:59 UTC），T2496b held；H285/H286 未执行；Jun 说开之前不放票。
 - 2026-10-13 17:28 UTC — 调度 V4：LC-2 论文差异补录 D692–D719（§307）；H287 提交。
 - 2026-10-13 18:03 UTC 调度 V4：T2496b 合并（5e24c0bb）簿记 §308（UP-C2 (d) 通过 3,086 < 3,540；U 27 / 42 更正）；这批做完，不放票；H288。
+- 2026-10-14 00:40 UTC 调度 V4：Jun「go ahead」→ 恢复放票；放 T2497（U1s2，两行，新文件布局：§308 (2) 敏感价第一次用）；DECISIONS §309；H290。
