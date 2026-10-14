@@ -1815,3 +1815,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## 合并时编号 T2498o–r（总调度 V4，2026-10-14 08:55 UTC；DECISIONS §322）
 
 - **D728** ← `T2498o`–`r`（U3s3c，新 `Chain/QEndB1Gen`，39db8072；Lean 手段，不改论文陈述）：(o) `stOeqQtRoundPTgL''_of` 的载体前提：D1 `hEK4` 代替 `qProxy4C`，`hTh`、`hB45` 代替带状的 `|E n| ≤ 2 − κ'` 与常数 `2/√κ'`（接 D722 (f)、D724 (g)、D726 (m)）；(p) 初始圈的常数 `Γ = κm⁻¹`、`K₆ = max C₆' 1`；(q) 初始事件对厄米流矩阵陈述，经厄米网格游走传过去；(r) D1 在流的 `𝔠` 引入之后取 `KL = 1/𝔠`，所以 `C4` 依赖 `𝔠`（`QProxyG_KerEK4Fam` 的族次序不变）。
+
+## 合并时编号 T2505a–d（总调度 V4，2026-10-14 12:27 UTC；DECISIONS §327）
+
+- **D729** ← `T2505a`–`d`（U3s4a，新 `Chain/QtBootGen`、`QtXiRoundLiftGen`，74b7c64b；Lean 手段，结论是 T2491 已合并的钉文 `STOeqQtgL'`，不改论文陈述）：(a) 泛型自举的粗起点只在 `LemDecCalELipG_FlowMod` 的高概率厄米事件 `G` 上成立（带状对每个样本），读 `STKboundgL`；收缩层级取 `min(2𝔡𝔠, τ)`，`τ` 是 `T0` 的范围指数（带状 `ε/2`）；(b) 网格步长 `N^{-(6n_+18+2c)}`，`c` 是钉住的 Hölder 指数；(c) 束里的概率前提带守卫；(d) 载体层的提升是私有的。
