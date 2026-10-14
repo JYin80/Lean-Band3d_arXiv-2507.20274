@@ -1771,3 +1771,6 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 
 - **D720（T2497a–b）**：U1s2a（`Chain/QGridGen`、`Chain/QGridGen2`，2ee4af8a）：`int_K-L+Q` 的 𝒬 网格层（`3_5:1300-1346`）在流载体上：(a) T2497a：目标 3–7（`QGridGen_condExp_aTrueQNg`、`gridDriftQNg_of`、`gridDriftQNg`、`stoppedDuhamelQNg`，`Chain/QGridGen.lean:621`、`:759`、`:794`）以逐指标的载体类（`StepDecompGen_LoopForm`/`WalkForm`、`HierDriftGen_Expand`/`KLoop`/`KTwo`/`UStep`/`KLink`、`Step2Gen_USemigroup`）代论文的 `|E| < 2`、`M = mI`；行内 `‖m‖ ≤ 1` 代 `‖m‖ = 1`；`S` 的行和 `≤ 1` 代 `= 1`；结论同带状；(b) T2497b：目标 8 `sum_weighted_qErrQNg_le`（`Chain/QGridGen2.lean:53`）以 `DecayGen_Spec` 与 `∀ n, Im m ≤ 1` 代 `|E n| ≤ 2 − κ`，由带状结果在 `E′_n = 2√(1 − (Im m_n)²)` 处取得（同 D705 (b) 的 T4s2 路线）。审核 T2497-audit §6「No uncovered difference」。U1s2b（`Chain/IterationsGen`、`IterationsGen2`，0bf9dc0c）无新候选，继承 D170、D171、D563（T2497b-prove `:280`、T2497b-audit §6）。
 
+## 合并时编号 T2499（总调度 V4，2026-10-14 02:32 UTC；DECISIONS §311）
+
+- T2499（U5e，`BA/Step5IIITargets`，086d9091）：**无新候选**。`lem:pf_step5`（`3_5:2364-2383`）与 Step 5 情形 (iii)（`3_5:2284`）在 BA 元组上经合并的泛型钉文得到；论文（`7_8:2101`）略去 BA 论证，由 D702（T2459a）覆盖，**D702 的未结注记「U5e 尚未写」到此了结**（`baPfStep5_holds`、`baStep5III_holds`）。只在 `d = 3`：照 D712 (d)。

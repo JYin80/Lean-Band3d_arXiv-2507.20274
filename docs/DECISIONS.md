@@ -3052,3 +3052,24 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) 预测（UP-C1）：≈ 45（44–47）：§298 的 46 记 U1s2 三行（实为两行）、U3s3 三到四行（取三行）；U5e 已在账。低于 49，不发 REQ。
 - (6) 计数：BA 185（U3s3 计划一行、定三行，+2；U5e 计划内）；T 27 / 34.5（关闭）；L 48 / 50（关闭）；**U 33 / 42**（T2498 三行 30–32，T2499 33）；V 0 / 12；M/N 3 / 15。H291。下一节 §311，下一张票号 T2500，下一条 H292。
 - (7) 下一批起草：U3s4（等 U3s3）；U-BA 各行里 **U1-BA**（U1s2 已合并，可写；含 `stNewPQgL_wardCls` 的 BA 读法，读 U2-BA 的 `WardCls`）与 **U4-BA**（U4s3 已合并，可写；欠项 A9、D2 的 BA 消法）先起草；U6-BA；V 开场 REQ（记 BA 情形 (iii) 只在 d = 3）。
+
+## §311 — T2499 合并（U5 完成，合计 7,830）；放 T2500（U1-BA，一行）与 T2501（U4-BA，三行预签 a1 ∥ a2 → b）；T2498 Amend 1（`∃ C₆` 在 `κ` 之后）（总调度 V4，2026-10-14 02:32 UTC）
+
+- (1) **T2499 合并** 086d9091（02:00 UTC）：新 `BA/Step5IIITargets` 112 行（价 60 / 100 / 160，比 1.12）；目标 1–3 带实例（d = 3）；登记删 `owedProps` 的 `RBM.BA.STPfStep5gL`、T2462 头注释加注记；根导入被分支放在中间，中枢挪到最后一行；审核第一轮 PASS（claude-opus-5-5）；全量构建 4,377 个作业。**U5 完成**：`Step5IIIKer` 709 + `Ker2` 471 + `Edet` 1,493 + `Edet2` 1,277 + `Good` 704 + `Good2` 198 + `Walk` 1,799 + `Walk2` 1,067 + `Targets` 112 = **7,830**，对 T2459 设计中心 6,900 为 ×1.13（4,650 / 6,900 / 10,600 之内）；九个文件、七行。
+  - 论文差异：无新候选；D702 的未结注记「U5e 尚未写」由本票了结（`paper-deltas.md` 文末新段）；d = 3 照 D712 (d)。
+- (2) **放 T2500 = U1-BA**（后台起草子代理起草，调度核读定稿）：新 BA 叶 `BA/ZeroModeBA`；目标 1–7：T2463 挪来的 `stNewPQgL_wardCls`、它的 BA 读法 `baSTNewPQgL`（读 U2-BA 的 `baZeroModeGen_wardCls`）、`baZeroModeSet_UN`（`BAUN` 形式）与 `baZeroModeSet_ThetaN`、`baStep2Gen_USemigroup`（`gridRepTailGen_ker_BA` 的第一合取项）、`baIterationsGen2_fam`、R2* 两个钉文 `baSTIterationsgL'_holds`、`baSTIterationsIIgL'_holds`，实例 d = 3（情形 (i) 新私有数据，`lam ≡ 2`）。
+  - 输入全部已合并（U2-BA = T2486 7be99aae / 5fbefff2；U1s2 = T2497）；不依赖 U3s3（T2498）或 U3s4：`STXiBootgL'` 只是 R2* 钉文里的绑定变量（BA 负责人 U3-BA，§310 (1)）。
+  - 无新数学、无设计门、`prover`；自下而上 200 / 320 / 480（UP-F1 读数 1,310 / 2,446 / 4,464 记在旁边：其内容已由 U2-BA、P1b-2、U1s2b 合并）；一行，停止线 640。UP-C2：目标 1–4 原地 84、敏感价 122，新叶 70 → 新文件。
+  - 登记只改 `STIterR'` 负责人注释；无 `owedProps` 可删。草稿十个待定问题照草稿定（票面「Decisions」）；WardIdent 桥归 U4-BA (b)，QGrid 目标 6、8 的 BA 归 U3-BA (b)；UP-C4 在这里空成立（U1-BA 不读漂移）。
+- (3) **放 T2501 = U4-BA**（后台起草子代理起草，调度核读定稿）：范围比 HANDOFF §2 的 A9 + D2 大——登记与 T2462 / T2484 / T2479 / T2496 票面把约 15 项的 BA 负责人记为 U4-BA (a)/(b)，全收。
+  - 行 a1 `BA/Step5KerBA`：`IniTermGen_KerFacts`（`gK = g₀`，带 R1 比较）与 `Step5KerGen_ThDecay`（`∃ C₆` 在 `κ` 之后）；**A9**（`stNewKLKLAtgL'_of` 的逐载体私有副本，F7 不读，R1 不进）；**D2**（`hFM`，T2496 探针里已编译）；**D3**（k = 2 的 `NQEndFlowGen_KLip`，在这里证，U3-BA 的一般 k 以后复用）；`baNewKLKLgL'`。
+  - 行 a2 `BA/CltFlowBA`：X1 实例 `IniTermGen_CltFlow` 及五个登记头（`STThPropsg`、`STKpropsg`、`STMfarg`、`STKfargL`、`CltInvg`/`CltRepg` → `STExpInvgL`）。
+  - 行 b `BA/Step5CasesBA`：UN-C3 Ward 桥（泛型，共轭内联）+ BA 读法，六个成分钉文，情形 (i)、(ii)、(iv)（与 U5e 的 (iii) 一起交 V2a/V2b、U6-BA）。
+  - 输入全部已合并（含 U2-BA 的四个载体事实与 `WardCls`）；不等 U3-BA、U1-BA、U6-BA。
+  - **行数与拆分**：草稿两行、行 a 中心过 1,950 才拆 a1 ∥ a2；行 a 自下而上 1,530，校准后 ≈ 1,850–1,900 正在线上，又有两个空位 → **放行时就拆**：a1 ∥ a2 都从 `main` 现在开工、互不导入，行 b 等两行都 PASS 并合并后叠放。角色 a1、a2 `prover-hard`，b `prover`；无设计门、无探针。
+  - 价：自下而上 1,350 / 2,000 / 3,000（校准 ≈ 2,300–2,480；UP-F1 读数 5,418 / 三行记在旁边）；全是新 BA 叶，无原地价、无 ×1.74；停止线 a1 1,150、a2 1,200、b 700，单文件 2,000。
+  - 登记：删十条 `owedProps`（a2 五条 X1 行，b 五条成分钉文行；a1 无），`STStep5ConclgL` 留下、改负责人注释；三个票头注释加注记。草稿十二个待定问题除 (2)、(12) 与 (3) 的停止线照上改外，照草稿定。
+- (4) **T2498 Amend 1**（`docs/tickets/T2498-amend-1.md`）：T2501 草稿查出 T2498 检查文件 `:254-258` 的形状（非约束）把 `∃ C₆` 放在 `κ` 之前，而 BA 的尾常数 `NewKLKBA_tail`（`NewKLKBA:269`）依赖 `κ`。票面族前提表第 9 行（`T2498.md:73`）本来写的是「`∃ C₆` 在 `κ` 之后」：以表为准。行 a 若已按形状写成在前，在 1a-audit 前或 1b 开头挪到 `0 < κ` 之后；只是减弱前提，目标不变。流程事，不问 Jun。
+- (5) 预测（UP-C1）：≈ 44（43–46）：§310 (5) 的 ≈ 45 记 U1-BA 两行（0658 `:56`），实为一行；U4-BA 记三行（`:58`），实为三行。低于 49，不发 REQ。
+- (6) 计数：BA 186（U4-BA 计划两张、定三行，+1；U1-BA 计划内一行）；T 27 / 34.5（关闭）；L 48 / 50（关闭）；**U 37 / 42**（T2498 30–32，T2499 33，T2500 34，T2501 35–37）；V 0 / 12；M/N 3 / 15。中枢在跑：T2498、T2500、T2501a1、T2501a2（4 个位）。H292。下一节 §312，下一张票号 T2502，下一条 H293。
+- (7) 下一批起草：U3s4（等 U3s3 = T2498）；U3-BA (a)/(b)（等 U3s3–s4）；U6-BA（读 U4-BA 行 b 与 U5e）；V 开场 REQ（记 BA 情形 (iii) 只在 d = 3；V1-BA 读 `BALWtermEXPTw` / `BALWCutExpTw`）。
