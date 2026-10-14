@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row a (targets 1-8): 1b prover-hard b6b262b5; audit round 1 RETURN (four instances kept the Duhamel hypotheses); one rule-(B) repair 5d7f96f7; audit round 2 PASS (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 14:44:24 UTC 2026
+reports: docs/reports/T2508-prove.md, docs/reports/T2508-audit.md

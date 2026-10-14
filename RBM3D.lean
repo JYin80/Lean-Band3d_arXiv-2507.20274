@@ -629,6 +629,9 @@ import RBM3D.Chain.QtNonzeroFlowGen
 import RBM3D.Chain.QtNonzeroBootGen
 import RBM3D.BA.EKGenBA
 import RBM3D.BA.KLipBA
+import RBM3D.Chain.ExpWardIIGen
+import RBM3D.Chain.ExpIntEasyGen
+import RBM3D.Chain.ExpIntIGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
