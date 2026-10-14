@@ -607,6 +607,8 @@ import RBM3D.BA.Step5KerBA
 import RBM3D.BA.CltFlowBA
 import RBM3D.BA.Step5CasesBA
 import RBM3D.Induction.QProxy2
+import RBM3D.Chain.Step6Gen
+import RBM3D.Chain.Step6KitGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

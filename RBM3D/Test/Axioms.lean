@@ -225,7 +225,21 @@ def owedProps : List Name :=
    `RBM.BA.GoodSetNg, -- the good set of the grid walk at a spectral time over a carrier (`Chain/GridGoodGen.lean:145`, `T2473_GoodSetNg`) as a premise: the initial membership `H_0 ∈ GoodSetNg` at `s n = 0` (hypothesis `h0` of `azumaProxy_pos_goodExitTauNg`, T2473 T4s2c) and the deterministic majorant on the good set (hypothesis `hQ` of `azumaProxy_subG_goodExitg`); band: the initial membership is `zero_mem_goodSetN_of_levels` (`AzumaProxyN:924`), the majorant `hQ` is the generic `hQ_nonAltNg` (T2491, `Chain/NQGood2Gen.lean`; band re-derivation `hQ_nonAltN_of_Ng`; U3s3 reads it); BA: the initial membership is `baGoodSetNg_init` (T2492, T5-BA; `∀ᶠ n`, 2351 T4S2-C2/C3)
    -- T2478 (BA-T T1b, DECISIONS §279): the Step 1 loop premise of the generic `(eq:opt_L2)` on the grid (`RBM3D/Chain/OptL2Gen.lean`) that no theorem concludes; `STOptL2gL` left this list (concluded by `stOptL2_of_pinsg`)
    `RBM.BA.STStep1LoopgL, -- `(lRB1)` (`1_2:1321`) uniform in `u ∈ [s,t]` at a law `μ` over a flow carrier: hypothesis of `stOptL2a_martingaleg` (the Step 1 premise of `stOptL2a_driftg`, `stOptL2a_gronwallg`, `stOptL2_of_pinsg` sits inside their conclusions); owed like its band form `STStep1Loop` and like `STStep1WeakgL`: the chain's Step 1 (band: S1-36; BA: BA chain, BA-S3) (T2478 T1b)
-   `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed)
+   -- T2502 (BA-V V1s1, DECISIONS §314): the generic Step-6 pins that the public theorems of `RBM3D/Chain/Step6Gen.lean`, `Step6KitGen.lean` take as hypotheses and nothing concludes; owners: the generic ingredient pins are V1s2'/V1s3' (generic, in place) and rows b, c of T2502; BA: V1-BA
+   `RBM.BA.STExp2UgL, -- `(Eq:Gtlp_exp_flow)` uniformly in `u ∈ [s,t]` over a flow carrier and a law (`Chain/Step6Gen.lean`): hypothesis of `STExp2gL_of_STExp2UgL`; band: `STExp2U` (registered; `bandFM_STExp2U`, `Iff.rfl`); generic: the conclusion of the Step-6 pins (the cores `st6_case*_coreg` conclude `STStep6ConclgL`, the same text); BA: V1-BA (`BAStep6R`)
+   `RBM.BA.STImproveExpAvergL, -- `lem:improve_exp_aver` over the carrier tuple `(law, Flow, mk, T0)` (`Chain/Step6Gen.lean`): hypothesis of `st6_expAvgU_of_ping` and the Step-6 wrappers; band: `STImproveExpAver` (registered; `STImproveExpAver_iff_gL`); generic: row c of T2502 (`stImproveExpAvergL_of`); BA: V1-BA
+   `RBM.BA.STExpLKLKHigL, -- `(eq:Exp(L-K)1)` over the tuple (`Chain/Step6Gen.lean`): hypothesis of `ST_step6_caseI/II/III_of_pinsgL`; band: `STExpLKLKHi` (registered; `STExpLKLKHi_iff_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpDriftLogL, -- `(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)` over the tuple: hypothesis of `ST_step6_caseIV_of_pinsgL`; band: `STExpDriftLo` (registered; `STExpDriftLo_iff_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpDriftDecaygL, -- `(deccA0)` of the expected drift over the tuple: hypothesis of `ST_step6_caseI_of_pinsgL`; band: `STExpDriftDecay` (registered; `STExpDriftDecay_iff_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpWardIgL, -- the Ward terms of regime (i) over the tuple: hypothesis of `ST_step6_caseI_of_pinsgL`; band: `STExpWardI` (registered; `STExpWardI_iff_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpWardIIgL, -- the Ward decomposition of regime (ii) over the tuple: hypothesis of `ST_step6_caseII_of_pinsgL`; band: `STExpWardII` (registered; `STExpWardII_iff_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpIniIgL, -- the initial term of regime (i) over the tuple: hypothesis of `ST_step6_caseI_of_pinsgL`; band: `STExpIniI` (superseded by its primed successor; `STExpIniI_iff_gL`); generic: V1s2'/V1s3' (the primed text is theirs); BA: V1-BA
+   `RBM.BA.STExpIntIgL, -- the integrated estimate of regime (i) over the tuple: hypothesis of `ST_step6_caseI_of_pinsgL`; band: `STExpIntI` (superseded by its primed successor; `STExpIntI_of_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpIntIIgL, -- the integrated estimate of regime (ii) over the tuple: hypothesis of `ST_step6_caseII_of_pinsgL`; band: `STExpIntII` (registered; `STExpIntII_of_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpIntIIIgL, -- the integrated estimate of regime (iii) over the tuple: hypothesis of `ST_step6_caseIII_of_pinsgL`; band: `STExpIntIII` (registered; `STExpIntIII_of_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.STExpIntIVgL, -- the integrated estimate of regime (iv) over the tuple: hypothesis of `ST_step6_caseIV_of_pinsgL`; band: `STExpIntIV` (registered; `STExpIntIV_of_gL`); generic: V1s2'/V1s3'; BA: V1-BA
+   `RBM.BA.LWtermEXPG, -- `lem:LWterm_EXP` over the carrier tuple (`Chain/LWGen.lean:108`): hypothesis of the Step-6 wrappers `ST_step6_caseI/II/III_of_pinsgL`; band: `band_LWtermEXPG` (`LWPinsBA:59`, `LWtermEXP_iff`); BA: not produced (V1-BA uses the cores with the seven-premise `BALWtermEXPTw`, `baLWtermEXPTw_holds`)
+   `RBM.Gauss.Sizes.STExp2U] -- `1_2:1392-1396` (`Eq:Gtlp_exp_flow`) target of Step 6: consumer `ST_mainIndR_*_of_steps` (T2245), through `STStep6R`; S6-01 (T2204, DECISIONS §67: owed); generic: `STExp2UgL` (T2502, `Chain/Step6Gen`); BA: V1-BA
 
 /-- Predicates that *define the objects under study* rather than assert a result about
 them: assuming one is saying what the data is, not borrowing a theorem.  They are listed
@@ -335,6 +349,22 @@ def structuralProps : List Name :=
    `RBM.Gauss.Sizes.STExpWardIConcl', -- conclusion of the Ward term, regime (i), positive mollifier constants (`6:104-107`, `6:121-131`; DECISIONS §73); S6-10 (T2232, DECISIONS §20: structural)
    `RBM.Gauss.Sizes.STExpIntQConcl', -- conclusion of the integrated estimate with Q, regime (i), positive mollifier constants (`6:109-132`; DECISIONS §73); S6-09a (T2239, DECISIONS §20: structural)
    `RBM.Gauss.Sizes.STSigMixed, -- the sign class `σ₁ ≠ σ₂` of the index set `STIdx2P` (`6:104`): a data predicate, a binder of the transfer theorems `expIntIQ_ini/_star_bound/_back` of S6-09b (T2257, DECISIONS §20: structural)
+   -- T2502 (BA-V V1s1, DECISIONS §314): the vocabulary and the conclusions of Step 6 over a carrier (`Chain/Step6Gen.lean`), structural as their band forms
+   `RBM.Gauss.Sizes.STSigAll, -- the sign class "all signs" of the index set `STIdx2P` (`6:94`): a data predicate, a binder of the cores `st6_caseIII_coreg`, `st6_caseIV_coreg` (T2502: structural, as `STSigMixed`)
+   `RBM.Gauss.Sizes.STSigSame, -- the sign class `σ₁ = σ₂` of the index set `STIdx2P` (`6:94`): a data predicate, a binder of the cores `st6_caseI_coreg`, `st6_caseII_coreg` (T2502: structural, as `STSigMixed`)
+   `RBM.BA.STIngR6gL, -- the shape of the Step-6 pins over the carrier tuple (`Chain/Step6Gen.lean`), as the band `STIngR6` (T2502: structural)
+   `RBM.BA.STStep6RgL, -- the Step-6 pin at one regime over the carrier tuple, as the band `STStep6R` (T2502: structural)
+   `RBM.BA.STStep6ConclgL, -- the Step-6 conclusion over a carrier, as the band `STStep6Concl`; concluded by the cores `st6_case*_coreg` (T2502: structural)
+   `RBM.BA.STStep2CoregL, -- the Step-2 conclusion restricted to sub-intervals over a carrier, as the band `STStep2Core` (T2502: structural)
+   `RBM.BA.STExpLKLKHiConclgL, -- conclusion of the (L-K)x(L-K) drift bound over a carrier (`6:58-62`), as the band `STExpLKLKHiConcl` (T2502: structural)
+   `RBM.BA.STExpDriftHiConclgL, -- conclusion of the drift bound over a carrier (`6:83-88`), as the band `STExpDriftHiConcl` (T2502: structural)
+   `RBM.BA.STExpDriftLoConclgL, -- conclusion of the regime (iv) drift bound over a carrier (`6:63-66`), as the band `STExpDriftLoConcl` (T2502: structural)
+   `RBM.BA.STExpDriftDecayConclgL, -- conclusion of the drift decay over a carrier (`3_5:1634`), as the band `STExpDriftDecayConcl` (T2502: structural)
+   `RBM.BA.STExpWardIConclgL, -- conclusion of the Ward term, regime (i), over a carrier (`6:104-107`), as the band `STExpWardIConcl` (T2502: structural)
+   `RBM.BA.STExpWardIIConclgL, -- conclusion of the Ward term, regime (ii), over a carrier (`6:137-141`), as the band `STExpWardIIConcl` (T2502: structural)
+   `RBM.BA.STExpIntConclgL, -- conclusion of the integrated estimate over a carrier (`6:94-132`), as the band `STExpIntConcl` (T2502: structural)
+   `RBM.BA.STExpIntQConclgL, -- conclusion of the integrated estimate with Q over a carrier (`6:94-132`), as the band `STExpIntQConcl` (T2502: structural)
+   `RBM.BA.STExpIniIConclgL, -- conclusion of the initial term, regime (i), over a carrier (`6:117`), as the band `STExpIniIConcl` (T2502: structural)
    `RBM.Endpoints.locBad1, -- the bad event of `(G_bound)` in `locSC` (MA-01, `Endpoints.lean:136`); `¬ locBad1` is a hypothesis of the deterministic `decol_core` (MA-03, T2225, DECISIONS §20: structural)
    `RBM.Endpoints.locBad2, -- the bad event of `(G_bound_ave)` in `locSC` (MA-01, `Endpoints.lean:140`); hypothesis of the deterministic cover lemma `locBad2_net` (MA-04, T2230, DECISIONS §20: structural)
    `RBM.Endpoints.qd1Bad, -- the bad event of `(eq:diffu1)` in `QDiff` (MA-01, `Endpoints.lean:144`); hypothesis of the deterministic cover lemma `qd1Bad_net` (MA-04, T2230, DECISIONS §20: structural)
@@ -388,6 +418,7 @@ def supersededProps : List Name :=
    `RBM.Gauss.Sizes.STStep4,    -- Step 4, any regime: S3-27 cancelled (DECISIONS §68 (9)); the regime pins `STStep4I/II` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep5,    -- Step 5, general `0 ≤ s < t < 1`: S5-29 cancelled (DECISIONS §68 (9)); the regime pins `STStep5I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
    `RBM.Gauss.Sizes.STStep6,    -- Step 6, general `0 ≤ s < t ≤ t₀`: S6-13 cancelled (DECISIONS §68 (10)); still carried by `ST_step6R_of_any`; the regime pins `STStep6I..IV` are consumed by `ST_mainIndR_*_of_steps` (T2245)
+   `RBM.BA.STStep6gL,           -- Step 6, general, over the carrier tuple (T2502, `Chain/Step6Gen.lean`): S6-13 cancelled as for the band `STStep6` (DECISIONS §68 (10)); still carried by `ST_step6R_of_anygL`; the regime pins `STStep6IgL..IVgL` are concluded by `ST_step6_case*_of_pinsgL`
    `RBM.Gauss.Sizes.STExpIniI,  -- initial term of regime (i), unprimed: successor `STExpIniI'` (proved, T2223); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
    `RBM.Gauss.Sizes.STExpIntI,  -- integrated estimate of regime (i), unprimed: successor `STExpIntI'` (S6-09b); its successor is consumed by `ST_step6_caseI_of_pins''` (T2239; DECISIONS §73 (4))
    `RBM.Gauss.Sizes.STOeqNQ',   -- superseded by `STOeqNQ''` (R2*, DECISIONS §80 (1)); definition kept (CLAUDE.md §5.3)
