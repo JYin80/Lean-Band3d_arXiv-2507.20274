@@ -1819,3 +1819,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## 合并时编号 T2505a–d（总调度 V4，2026-10-14 12:27 UTC；DECISIONS §327）
 
 - **D729** ← `T2505a`–`d`（U3s4a，新 `Chain/QtBootGen`、`QtXiRoundLiftGen`，74b7c64b；Lean 手段，结论是 T2491 已合并的钉文 `STOeqQtgL'`，不改论文陈述）：(a) 泛型自举的粗起点只在 `LemDecCalELipG_FlowMod` 的高概率厄米事件 `G` 上成立（带状对每个样本），读 `STKboundgL`；收缩层级取 `min(2𝔡𝔠, τ)`，`τ` 是 `T0` 的范围指数（带状 `ε/2`）；(b) 网格步长 `N^{-(6n_+18+2c)}`，`c` 是钉住的 Hölder 指数；(c) 束里的概率前提带守卫；(d) 载体层的提升是私有的。
+
+## 合并时编号 T2505ba–bc（总调度 V4，2026-10-14 13:01 UTC；DECISIONS §329）
+
+- **D730** ← `T2505ba`–`bc`（U3s4b，新 `Chain/QtNonzeroGen`、`QtNonzeroEndGen`，b610fbdb；Lean 手段，不改论文陈述）：(ba) 新的确定性核类 D1（`QtNZGen_KerNZ(Fam)`）：`≺` 的常数显式，A 形窗口 `(1 − v) L² ≤ Aof κ · gK²`，耦合取 `gK`，代替带状的 `nzUgen_holds`（`|E| < 2`、`norm_mE`）；(bb) `nzGridEndNg` 对 `lem:STOeq_Qt_nonzero` 的差别：D1 常数、`hR1`、`STCaseII`，不带 `𝔡`/`WO`/`κ`，读 `DecayGen_Spec`、`ZeroModeGen_KerSums`、`STKboundgL`；(bc) 只在 Lean 里的 `qtNZGen_bandC`。
