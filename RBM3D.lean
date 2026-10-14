@@ -621,6 +621,8 @@ import RBM3D.Chain.QtXiRoundLiftGen
 import RBM3D.Chain.ExpIniIGen
 import RBM3D.Chain.ExpWardIGen
 import RBM3D.Chain.ExpIntIIGen
+import RBM3D.Chain.QtNonzeroGen
+import RBM3D.Chain.QtNonzeroEndGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

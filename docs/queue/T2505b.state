@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row b (U3s4b: QtNonzeroGen, QtNonzeroEndGen; targets 6-9): gate passed (probe bf9aaf6a, 1a-audit PASS, no split), 1b prover-hard 29c0faf2 (rule (H) rerun), audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 12:41:51 UTC 2026
+reports: docs/reports/T2505b-prove.md, docs/reports/T2505b-1a-audit.md, docs/reports/T2505b-audit.md
