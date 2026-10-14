@@ -17,7 +17,7 @@ This file sits downstream of the band theorems (`lwterm_holds`, `lwtermExp_holds
 
 * `baPin P` is `P` at the block Anderson data (law `seqP (sz.withLam 0)`, setting `BAFlow`, carrier `baFMz`, horizon
   `BAflowT0`); `BAStep2 d` (`BA/FlowPins.lean:432`) is `baPin STStep2G d`.
-* The BA readings `BALWterm`, `BALWtermExp` (proved: `baLWterm_holds`, `baLWtermExp_holds`, `Graph/BATermHolds.lean:706`, `Graph/BATermHoldsB.lean:865`), `BALWtermEXP` (superseded by `BALWtermEXPTw` (T2490/T2494); no producer; do not read) and `BASTLWB`, `BASTLWT` (owner: T1-BA / T7-BA) are
+* The BA readings `BALWterm`, `BALWtermExp` (proved: `baLWterm_holds`, `baLWtermExp_holds`, `Graph/BATermHolds.lean:706`, `Graph/BATermHoldsB.lean:865`), `BALWtermEXP` (superseded by `BALWtermEXPTw` (T2490/T2494); no producer; do not read) and `BASTLWB`, `BASTLWT` (proved for `3 ≤ d`: `baSTLWB_of` / `baSTLWT_of`, `BA/DecayLoopBA.lean:135, 140`, from `baLWterm_holds` / `baLWtermExp_holds`) are
   `Prop`-valued pins with no proof here.
 * The band instances at `d = 3` are theorems (the merged band results, transported by `Iff.rfl`).
 * The nonempty instances at the end apply the BA pins at the concrete data of `sz0` (`n = 0`: `L = 4`, `W = 32`).
@@ -47,9 +47,9 @@ abbrev BALWterm : ℕ → Prop := baPin LWtermG
 abbrev BALWtermExp : ℕ → Prop := baPin LWtermExpG
 /-- `lem:LWterm_EXP` at the block Anderson data: superseded by `BALWtermEXPTw` (T2490/T2494); no producer; do not read. -/
 abbrev BALWtermEXP : ℕ → Prop := baPin LWtermEXPG
-/-- `STLWB` at the block Anderson data (owed: T1-BA / T7-BA, through L5). -/
+/-- `STLWB` at the block Anderson data (proved for `3 ≤ d`: `baSTLWB_of` / `baSTLWT_of`, `BA/DecayLoopBA.lean:135, 140`, from `baLWterm_holds` / `baLWtermExp_holds`). -/
 abbrev BASTLWB : ℕ → Prop := baPin STLWBgL
-/-- `STLWT` at the block Anderson data (owed: T1-BA / T7-BA, through L5). -/
+/-- `STLWT` at the block Anderson data (proved for `3 ≤ d`: `baSTLWB_of` / `baSTLWT_of`, `BA/DecayLoopBA.lean:135, 140`, from `baLWterm_holds` / `baLWtermExp_holds`). -/
 abbrev BASTLWT : ℕ → Prop := baPin STLWTgL
 
 /-! ## 2. The generic pins at the band carrier are the merged theorems -/

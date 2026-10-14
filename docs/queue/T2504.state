@@ -1,0 +1,4 @@
+state: audit-pass
+reason: V3: preflight PASS, 1b prover-hard 43f2230d, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 08:18:41 UTC 2026
+reports: docs/reports/T2504-prove.md, docs/reports/T2504-audit.md

@@ -121,7 +121,7 @@ theorem EMn2BA_one_sub_T0 {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) 
   rw [e, div_le_div_iff₀ (by norm_num) (by linarith)]
   nlinarith
 
-/-- `‖m_F‖ ≤ 1` and `κ ≤ Im m_F` at the flow parameters (`BAflow_real`). -/
+/-- `Im m_F ≤ 1` and `κ ≤ Im m_F` at the flow parameters (`BAflow_real`). -/
 theorem EMn2BA_mF_data {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
     κ ≤ (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im ∧
       (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im ≤ 1 := by
