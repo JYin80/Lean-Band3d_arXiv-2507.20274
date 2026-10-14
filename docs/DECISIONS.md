@@ -3301,3 +3301,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - **V1-BA**：带 §319 (3)、§320 (1) O5、§318 (1) O1/O3、T2503 的 Step 6 TL 前提；16c 是 BA 接 TL1 的口子。
   - **V1s3′**：V1L-C1、V1L-C2，消费者那一行现在可以开工。
 - (3) 计数不变：BA 193；U 41 / 42；V 7 / 12；M/N 3 / 15。中枢在跑 4 个：T2505a、T2505b、T2506a、T2506b；T2502 行 c 由 H305 合并。H305。下一节 §325，下一张票号 T2507，下一条 H306。
+
+## §325 — T2502 行 c 合并，V1s1 完成；T2505 行 b 1a-audit PASS（总调度 V4，2026-10-14 10:05 UTC）
+
+- (1) **T2502 行 c 合并** 089052ca（09:53 UTC，H305：Amend 1、Amend 2）：
+  - 新 `Chain/ExpAvgGen` 1,587 行；目标 14、15，以及 16a `stImproveCoregL_of`、16b `stImproveExpAvergL_of`、16c `stExpAvgUgL_of_core`，都带实例。
+  - 登记：`STImproveExpAvergL` 负责人注释；`owedProps` 加 `ExpAvgGen_W1fam`、`ExpAvgGen_W1iii`、`ExpAvgGen_W1iiiOfLW`。
+  - 全量构建 4,391 个作业。
+  - **T2502（V1s1）完成**：行 a d3351df4 2,150，行 b a1ce279b 1,467，行 c 089052ca 1,587，合计 5,204。对 0342 的 UP-F1 价 4,560 为 ×1.14，对自下而上 4,030 + Amend 1 加的 240 为 ×1.22。
+- (2) **T2505 行 b 的 D1 门 1a-audit PASS**（`docs/reports/T2505b-1a-audit.md:148-150`）：D1 文本定为 `T2505-check.lean:154-167`，探针编译通过，中心 1,755，按预签不拆。不需要签字，1b 照跑。
+- (3) 计数不变：BA 193；U 41 / 42；V 7 / 12；M/N 3 / 15。在跑 4 个：T2505a、T2505b、T2506a、T2506b。H306。下一节 §326，下一张票号 T2507，下一条 H307。
