@@ -605,6 +605,7 @@ import RBM3D.BA.Step5IIITargets
 import RBM3D.BA.ZeroModeBA
 import RBM3D.BA.Step5KerBA
 import RBM3D.BA.CltFlowBA
+import RBM3D.BA.Step5CasesBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
