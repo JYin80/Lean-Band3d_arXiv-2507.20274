@@ -1827,3 +1827,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## 合并时编号 T2505ca–cc（总调度 V4，2026-10-14 13:44 UTC；DECISIONS §330；行 c 报告里的 `T2505c`–`e` 与行 a 的标签撞号，改标为 `T2505ca`–`cc`，审核 O1）
 
 - **D731** ← `T2505ca`–`cc`（U3s4c，新 `Chain/QtNonzeroFlowGen`、`QtNonzeroBootGen`，ffd134c4；Lean 手段，结论是已合并的 `STOeqQtNZgL'`，不改论文陈述）：(ca) 情形 (ii) 的提升步长 `N^{-(6n_+18+2c)}`，带因子 `2^{n_}`；(cb) `𝔠_d = min 𝔠G 𝔠L`，带钉住的 `∃ C5`、`∃ c`；(cc) 低阶项常数取 `κm⁻¹`（带状 `(√(κ/2))⁻¹`）。
+
+## 合并时编号 T2508aa–ab（总调度 V4，2026-10-14 14:49 UTC；DECISIONS §332；行 a 报告的 `T2508a`、`T2508b` 与行 b 的标签撞号，改标为 `T2508aa`、`ab`）
+
+- **D732** ← `T2508aa`–`ab`（V1s3′a，新 `Chain/ExpWardIIGen`、`ExpIntEasyGen`、`ExpIntIGen`，57178a34；Lean 手段，不改论文陈述）：(aa) D725 的 Lean 内部推论：带状 `ST_step6_caseI_of_pins''`、`ST_step6I_of_LW_Int` 用泛型 `hInt : STExpIntIgL'` 重新导出（带状 `STExpIntI'` 只能从它单向得到）；(ab) 常数：ExpWardII 取 `3 κm⁻¹`（带状 `6/√(2κ)`），`gK` 处的核取 `4 (Aof κm)²`（带状 4）。

@@ -2,18 +2,19 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-14 14:06 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2509 (U3-BA (b)) released; DECISIONS §331)
+updated: 2026-10-14 14:49 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2510 (V1-BA) released; DECISIONS §332)
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-476. T2508 — `docs/tickets/T2508.md` (V V1s3′, **new files** (supervisor 0843), two rows pre-signed, serial: a `Chain/ExpWardIIGen`, `Chain/ExpIntEasyGen`, `Chain/ExpIntIGen` (`t/T2508`, now) → b `Chain/QopDecayGen` → `Chain/ExpIntIQGen` (`t/T2508b`, after row a merges); `prover-hard`; V1L-C1 binding (per-flow average); `Test/Axioms.lean`: each row its owner texts): released; starts once the check compiles (H310). Not in the certificate lane.
+476. T2508 — `docs/tickets/T2508.md` (V V1s3′, **new files** (supervisor 0843), two rows pre-signed, serial: a `Chain/ExpWardIIGen`, `Chain/ExpIntEasyGen`, `Chain/ExpIntIGen` (`t/T2508`, merged 57178a34) → b `Chain/QopDecayGen` → `Chain/ExpIntIQGen` (`t/T2508b`, running); `prover-hard`; V1L-C1 binding (per-flow average); `Test/Axioms.lean`: each row its owner texts): released; starts once the check compiles (H310). Not in the certificate lane.
 477. T2509 — `docs/tickets/T2509.md` (U U3-BA (b): new generic `Chain/Step34RGen` (the never-ported Steps 3–4 producers) + new BA leaf `BA/Step34BA`; one row `t/T2509` (pre-signed split a | a′ stacked, only if the 1a central passes 1,950); no design gate; `prover-hard`; `Test/Axioms.lean`: owner texts of `:194`, `:195`, `:214`, `:217` only): released; starts once the check compiles (H311).
+478. T2510 — `docs/tickets/T2510.md` (V V1-BA: Step 6 at the BA tuple, `BAStep6R d R` per regime; new BA leaves; two rows pre-signed, serial: a `BA/Step6BridgeBA` + `BA/Step6PinsBA` (`t/T2510`, now; reads no T2508 name) → b `BA/Step6BA` (`t/T2510b`, after T2508 row b **and** T2510 row a merge); no design gate (narrow gate for (iii) pre-authorized, ticket Decisions (9)); `prover-hard`; `Test/Axioms.lean`: owner texts only, located by name): released; row a starts once the check compiles (H312).
 
 ## Pre-release checks
-- `docs/tickets/checks/T2509-check.lean` (U U3-BA (b); merged names plus `T2509_*` Prop pins; not compiled by the dispatcher).
+- `docs/tickets/checks/T2510-check.lean` (V V1-BA; merged names plus `T2510_*` Prop pins; not compiled by the dispatcher).
 
 ## Approved instructions
 Standing instructions carried over from the archived CONTROL (verbatim):
@@ -555,6 +556,12 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Wed Oct 14 13:51:41 UTC 2026 — H310 (3) T2508 row a started from main on t/T2508: wf_c8e4827f-5e7 (preflight → prover-hard → auditor). Row b (t/T2508b) starts from main after row a merges. Running: T2508 (1 of 4).
 
 - H311 (dispatcher V4, 2026-10-14 14:06 UTC; DECISIONS §331). (1) Commit by name with your next commit `docs/tickets/T2509.md`, `docs/tickets/checks/T2509-check.lean`, `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile the T2509 check on `main` with `lake env lean` (not compiled by the dispatcher; on failure paste the error lines and do not start it). (3) On exit 0, start **T2509** (U3-BA (b), one row) from `main` on `t/T2509`: preflight → prover-hard → auditor. `RBM3D.lean` and `RBM3D/Test/Axioms.lean`: union with T2508 (lines located by name). One `done:` line per item.
+  done: Wed Oct 14 14:11:39 UTC 2026 — H311 (1) the 6 listed files committed by name in b4147edc, pushed.
+  done: Wed Oct 14 14:11:39 UTC 2026 — H311 (2) T2509 check on main b4147edc: exit 0, no error lines.
+  done: Wed Oct 14 14:11:39 UTC 2026 — H311 (3) T2509 (U3-BA (b), one row) started from main on t/T2509: wf_edc1744e-30d (preflight → prover-hard → auditor). Running: T2508, T2509 (2 of 4).
+  done: Wed Oct 14 14:46:22 UTC 2026 — H310 (3) T2508 row b started from main 57178a34 after row a merged: t/T2508b: wf_e9ed66d3-8b3 (preflight → prover-hard → auditor). Running: T2509, T2508b (2 of 4).
+
+- H312 (dispatcher V4, 2026-10-14 14:49 UTC; DECISIONS §332). (1) Commit by name with your next commit `docs/tickets/T2510.md`, `docs/tickets/checks/T2510-check.lean`, `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. (2) Compile the T2510 check on `main` with `lake env lean` (not compiled by the dispatcher; on failure paste the error lines and do not start it). (3) On exit 0, start **T2510 row a** from `main` on `t/T2510`: preflight → prover-hard → auditor. Row b (`t/T2510b`) starts from `main` after T2508 row b and T2510 row a have both merged (ticket). `RBM3D.lean` and `RBM3D/Test/Axioms.lean`: union with T2508 b and T2509 (lines located by name). One `done:` line per item.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
@@ -672,3 +679,4 @@ done: Wed Oct 14 12:43:35 UTC 2026 — T2505 row b (U3s4b) merged b610fbdb (new 
 done: Wed Oct 14 13:17:20 UTC 2026 — T2506 row a (V1s2′a) merged 4845a70f (new Chain/ExpEtermsAGen (692) and Chain/ExpEtermsBGen (1027); targets 1-5 with instances; hK1 accepted by H309 (Amend 1); one rule-(B) repair 6d6dde16 (expLK_envg instance); audit round 2 PASS claude-opus-5-5; RBM3D/Test/Axioms.lean: T2502 block header retitle (H307) and the owner texts of STExpLKLKHigL, STExpDriftLogL, STExpDriftDecaygL, conflict with T2502c's lines resolved by union (audit O1); two root imports after the last import line; full lake build 4400 jobs; pushed). T2506 complete: row b c9b3f490, row a 4845a70f. Running: T2505c, T2507.
 done: Wed Oct 14 13:32:15 UTC 2026 — T2505 row c (U3s4c) merged ffd134c4 (new Chain/QtNonzeroFlowGen (1145) and Chain/QtNonzeroBootGen (780); targets 10-15 with instances; RBM3D/Test/Axioms.lean: owner texts of STXiRound' and STXiBootgL' (3-way over main); two root imports after the last import line; audit PASS round 1 claude-opus-5-5; full lake build 4402 jobs; pushed). T2505 complete: a 74b7c64b, b b610fbdb, c ffd134c4.
 done: Wed Oct 14 13:33:46 UTC 2026 — T2507 U3-BA (a) merged c3f8b05d (new BA/EKGenBA (706) and BA/KLipBA (324); targets 1-6 and 8 with instances; no registry change; two root imports after the last import line; audit PASS round 1 claude-opus-5-5; full lake build 4404 jobs; pushed). No workflow running; nothing else released.
+done: Wed Oct 14 14:46:04 UTC 2026 — T2508 row a (V1s3′a) merged 57178a34 (new Chain/ExpWardIIGen (435), Chain/ExpIntEasyGen (482), Chain/ExpIntIGen (835); targets 1-8 with instances; RBM3D/Test/Axioms.lean: row-a registry lines (3-way over main); three root imports after the last import line; audit round 1 RETURN (Duhamel hypotheses kept in four instances), one rule-(B) repair 5d7f96f7, round 2 PASS claude-opus-5-5; full lake build 4407 jobs; pushed). Row b starts from main (H310 (3)).
