@@ -3036,3 +3036,19 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) 预测（UP-C1）：新文件两行，U 预测 ≈ 45–46，低于 49，不发 REQ。
 - (4) **T2498（U3s3）放行前要改的**（草稿在 `docs/claude-team/drafts/`）：T2497 的新文件名（目标 8 在 `Chain/QGridGen2`，不在 `QGridB` §6；T2498 导入 `Chain/QGridGen`/`QGridGen2`）；它自己的八文件原地布局也要照 §308 (2) 加 ×1.74 敏感价重算。U1s2a 合并后放。
 - (5) 计数：BA 183（U1s2 两行，计划一行，+1）；T 27 / 34.5（关闭）；L 48 / 50（关闭）；**U 29 / 42**（T2497 两行）；V 0 / 12；M/N 3 / 15。H290。下一节 §310，下一张新票号 T2499（T2498 已由草稿占用），下一条 H291。
+
+## §310 — T2497 两行合并（U1s2 完成，新文件布局落地 2,358）；放 T2498（U3s3，三行，混合布局经 ×1.74 敏感价保留）与 T2499（U5e）（总调度 V4，2026-10-14 01:35 UTC）
+
+- (1) **T2497 合并**：行 a（U1s2a，QGrid）2ee4af8a（01:14；新 `Chain/QGridGen` 970 + `Chain/QGridGen2` 154 = 1,124，预测 1,150–1,170，比 0.97；目标 1–9 带实例；不改登记）；行 b（U1s2b，Iterations）0bf9dc0c（01:17；新 `Chain/IterationsGen` 633 + `Chain/IterationsGen2` 601 = 1,234，预测 865–1,020，比 1.21（对自下而上 1,020））。两行审核都是第一轮 PASS（claude-opus-5-5），带状文件一个没动，全量构建 4,374 / 4,376 个作业。**U1s2 完成**。
+  - 校准（新文件价）：落地 2,358 / 模型价 2,040 = ×1.16（对自下而上 2,170 为 ×1.09），在 2,000 停止线与 hi 2,290 附近，正常。
+  - 行 b 登记：`STIterR'` 负责人注释照票；另加一条扫描报出的 `owedProps` 行 `RBM.BA.STXiBootgL'`（`Test/Axioms.lean:229`；票说"只为扫描报出的加"，允许；审核 O1）：它是 `iterationsB_stepg` 与合并的 `STIterRgL'` 的前提；泛型钉文 `STOeqQtgL'`、`STOeqQtNZgL'` 推出它（证明在 U3s3、U3s4），BA 归 U3-BA。**接受**；U3s3/U3s4 的票面按此记账。
+  - 审核观察（行 a O1–O4：`gridDriftQNg_of` 无独立实例、目标 5 的网格事实代 `u_{j+1} < 1`、可积性改读 `HierDriftGen_integrable_LIM`、多出的公开名都带词干；行 b O2–O3）：照收，无动作。
+- (2) **论文差异**：D720 ← `T2497a`–`b`（载体类代 `|E| < 2`、`M = mI`、`‖m‖ = 1`、行和 `= 1`；目标 8 以 `DecayGen_Spec` + `Im m ≤ 1` 代 `|E n| ≤ 2 − κ`，E′ 路线）；行 b 无新候选（继承 D170、D171、D563）。写入 `docs/paper-deltas.md` 文末新段。
+- (3) **放 T2498（U3s3）**（V3 草稿 §299 → 定稿 `docs/tickets/T2498.md`、检查 `docs/tickets/checks/T2498-check.lean`）：
+  - 布局：**混合 8 + 2 保留**（原地 `QProxy`、`QDriftA/B`、`QLevelsA/B`、`QBudgetA/B`、`QEndA` + 实例兄弟 `QProxy2`、`QEndA2`；新 `Chain/QEndGridGen`、`Chain/QEndB1Gen`）。§308 (2) 敏感价：原地 1,880 × 1.74 = 3,271，合计 6,221 < 新文件（D4 范围）7,680；逐文件原地敏感价也都低于新文件价（最近的 `QEndA` 910 / 950）。全十个原地（1,820，敏感价 3,167）要把 `QEndGrid`、`QEndB1`（都超 2,000，UP-C2 (a) 之外；`QEndB1` 尾部是 U3s4 读的）原地拆开：不取，不发 REQ。
+  - 开工条件满足：T2497 行 a 已合并（`Chain/QGridGen`、`QGridGen2` 按名字读）；U3s2c 已合并（行 c 按名字读，不抄 T2491 文本）。层次更正：`Chain/QGridGen` 导入带状 `QGridA`、`QGridGen2` 导入 `QGridB`，两者都在原地文件的上游，无环。
+  - 三行预签、叠放 a → b → c；行 a 有设计门 D1–D4 + 探针 → 1a-audit（要签字时 H183 (3)）→ 1b `prover-hard` → 审核。草稿 10 个待定问题照草稿取向定（票面「Decisions」）。
+- (4) **放 T2499（U5e）**（后台起草子代理起草，调度核读定稿 `docs/tickets/T2499.md`、检查 `docs/tickets/checks/T2499-check.lean`）：新 BA 叶文件 `BA/Step5IIITargets`，把合并的 U5d 两个文本（`baStep5IIIWalk_holds`、`baStep5IIIFromWalk_holds`）与 U4s1 的 `ST_step5_caseIII_of_pfgL` + U2-BA 的 `baStep5CasesGen_flowFacts` 组合成 BA 元组上的 `STPfStep5gL`、`STStep5IIIgL`（d = 3）；无新数学、无设计门；价 60 / 100 / 160（设计 150 / 250 / 450 早于 U5d 的 `example`）；角色定为 `prover`；登记删 `owedProps` 的 `RBM.BA.STPfStep5gL`（结论头被证出）。合并后 U5 完成。
+- (5) 预测（UP-C1）：≈ 45（44–47）：§298 的 46 记 U1s2 三行（实为两行）、U3s3 三到四行（取三行）；U5e 已在账。低于 49，不发 REQ。
+- (6) 计数：BA 185（U3s3 计划一行、定三行，+2；U5e 计划内）；T 27 / 34.5（关闭）；L 48 / 50（关闭）；**U 33 / 42**（T2498 三行 30–32，T2499 33）；V 0 / 12；M/N 3 / 15。H291。下一节 §311，下一张票号 T2500，下一条 H292。
+- (7) 下一批起草：U3s4（等 U3s3）；U-BA 各行里 **U1-BA**（U1s2 已合并，可写；含 `stNewPQgL_wardCls` 的 BA 读法，读 U2-BA 的 `WardCls`）与 **U4-BA**（U4s3 已合并，可写；欠项 A9、D2 的 BA 消法）先起草；U6-BA；V 开场 REQ（记 BA 情形 (iii) 只在 d = 3）。

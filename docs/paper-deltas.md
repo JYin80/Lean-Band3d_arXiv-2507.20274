@@ -1767,3 +1767,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 - D718 补注 ← `T2496e`（建议以「（2026-10-13 补：…）」附在原条后）：BA 上 Step 5 的 Duhamel 一步（`7_8:1993-1994`「仍成立」）同样要读网格游走的律恒等式 (5.1) 与厄米游走；泛型钉文 `stDuhamelIgL_of`、`stDuhamelIIgL_of`（`Induction/DuhamelI2`、`DuhamelII`）把它们作为不设守卫的载体前提 `hGrid`（`Step2EventsGen_Grid`）、`hHerm`，带状由 `Step2EventsGen_bandGrid`、`pathH_isHermitian` 消，BA 由 `Step2EventsGenTw_baGrid`、`baStep2Mat_Hpath_herm` 消（T2496 Amend 2 A10、A11）。
 - 不是论文/Lean 陈述差异：`T2496f`：引擎的 `hE` 写成 `STEtermsMidConclgL` 的本体（登记扫描用），载体 Hölder 模带 D2 的指数 `N^c`（`duhamelIIG_holder`：`N^{11+c}`，带状 `c = 1` 回到 `N^{12}`）：同 `T2496b`，Lean 内部常数。
 
+## 合并时编号 T2497a–b（总调度 V4，2026-10-14 01:35 UTC；DECISIONS §310）
+
+- **D720（T2497a–b）**：U1s2a（`Chain/QGridGen`、`Chain/QGridGen2`，2ee4af8a）：`int_K-L+Q` 的 𝒬 网格层（`3_5:1300-1346`）在流载体上：(a) T2497a：目标 3–7（`QGridGen_condExp_aTrueQNg`、`gridDriftQNg_of`、`gridDriftQNg`、`stoppedDuhamelQNg`，`Chain/QGridGen.lean:621`、`:759`、`:794`）以逐指标的载体类（`StepDecompGen_LoopForm`/`WalkForm`、`HierDriftGen_Expand`/`KLoop`/`KTwo`/`UStep`/`KLink`、`Step2Gen_USemigroup`）代论文的 `|E| < 2`、`M = mI`；行内 `‖m‖ ≤ 1` 代 `‖m‖ = 1`；`S` 的行和 `≤ 1` 代 `= 1`；结论同带状；(b) T2497b：目标 8 `sum_weighted_qErrQNg_le`（`Chain/QGridGen2.lean:53`）以 `DecayGen_Spec` 与 `∀ n, Im m ≤ 1` 代 `|E n| ≤ 2 − κ`，由带状结果在 `E′_n = 2√(1 − (Im m_n)²)` 处取得（同 D705 (b) 的 T4s2 路线）。审核 T2497-audit §6「No uncovered difference」。U1s2b（`Chain/IterationsGen`、`IterationsGen2`，0bf9dc0c）无新候选，继承 D170、D171、D563（T2497b-prove `:280`、T2497b-audit §6）。
+
