@@ -612,6 +612,8 @@ import RBM3D.Chain.Step6KitGen
 import RBM3D.Induction.QEndA2
 import RBM3D.Chain.QEndGridGen
 import RBM3D.BA.MainIndOutBA
+import RBM3D.Chain.ExpHierGen
+import RBM3D.Chain.ExpDuhamelGen
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row b (ExpHierGen, ExpDuhamelGen; targets 10-13): 1b prover-hard 94db77fa, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 08:25:23 UTC 2026
+reports: docs/reports/T2502b-prove.md, docs/reports/T2502b-audit.md
