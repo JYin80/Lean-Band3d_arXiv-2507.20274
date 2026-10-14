@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row c (U3s4c: QtNonzeroFlowGen, QtNonzeroBootGen; targets 10-15): 1b prover-hard 0d2b65e4, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 13:30:35 UTC 2026
+reports: docs/reports/T2505c-prove.md, docs/reports/T2505c-audit.md
