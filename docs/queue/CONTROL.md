@@ -2,14 +2,13 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-14 08:38 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2502 row b and T2504 merged and booked; REQ-0835 V1s2 layout; DECISIONS §320)
+updated: 2026-10-14 08:55 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2498 complete and booked; supervisor 0843 PASS (V1s2′/V1s3′ new files); DECISIONS §322)
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
 
 ## Released tickets (only those not yet merged)
 Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
-466. T2498 — `docs/tickets/T2498.md` (U U3s3, **mixed layout** (supervisor 0658 UP-C2; kept under the ×1.74 sensitivity price, DECISIONS §308 (2), §310): **in place** `Induction/QProxy`, `QDriftA`, `QDriftB`, `QLevelsA`, `QLevelsB`, `QBudgetA`, `QBudgetB`, `QEndA` + new instance siblings `Induction/QProxy2`, `QEndA2` (row a); new `Chain/QEndGridGen` (row b), `Chain/QEndB1Gen` (row c); band `QEndGrid`, `QEndB1` unedited; design gate D1–D4 with probe `RBM3D/Probe/T2498Pins.lean` (never merged) → 1a-audit → 1b `prover-hard` → auditor; three rows pre-signed, stacked a → b → c; the 1a-audit applied the pre-signed cut of row a: a on `t/T2498`, a′ on `t/T2498a2`, so a → a′ → b → c, DECISIONS §312 (2)): released; row a starts once the check compiles (H291 (3)). Not in the certificate lane (cone 16 modules, no `LWExpCert*`). **Amend 1** (`docs/tickets/T2498-amend-1.md`, DECISIONS §311 (4)): family row 9's `∃ C₆` comes after `κ`; the check shape `:254-258` is not binding (H292 (2)). **Band files are edited in place** in row a; a band edit outside the sole writable files is a RETURN.
 470. T2502 — `docs/tickets/T2502.md` (V V1s1, **new files** (supervisor 0342 Q3; certificate lane, band files untouched): row a `Chain/Step6Gen` + `Chain/Step6KitGen`; then row b `Chain/ExpHierGen` → `Chain/ExpDuhamelGen` ∥ row c `Chain/ExpAvgGen`, both from `main` after row a merges (b first if only one slot); `prover-hard` each; no design gate for a, b; row c has a pre-authorized narrow gate (W1) with probe `RBM3D/Probe/T2502Pins.lean`, never merged; `Test/Axioms.lean`: Step 6 owner texts and scan lines): released; row a merged (§318); **Amend 1** `docs/tickets/T2502-amend-1.md` (row c W1 signed (A), per time: targets 16a/16b/16c, family rows 9 + 14 merged with (iv), row 15, nine W1 defs in `Chain/ExpAvgGen`, registry lines; stop 1,750; H300). Not in the certificate lane for merging (new leaves; no band file in the diff).
 
 ## Pre-release checks
@@ -510,6 +509,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Wed Oct 14 08:27:52 UTC 2026 — H300 (3) T2502 row c 1b started under Amend 1 (sign-off (A), per-time form) as a rerun from the 1b (the cached 1a-audit verdict stays BLOCKED, so wf_4ab5ae0a-798 is not resumed): wf_6bb036d6-d0b (prover-hard → auditor) on t/T2502c (main merged in at 20b3e7d9); Amend 1 and its check in the 1b and auditor prompts; stop line 1,750; Axioms.lean registry lines allowed. Running: T2498c, T2502c (2 of 4).
 
 - H301 (dispatcher V4, 2026-10-14 08:38 UTC; DECISIONS §320). Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/supervisor/requests/REQ-2026-10-14-0835-V1s2layout.md`. Nothing else. No ticket change. One `done:` line.
+  done: Wed Oct 14 08:41:16 UTC 2026 — H301 the 5 listed files committed by name in de05a3b1, pushed; no ticket change.
+
+- H302 (dispatcher V4, 2026-10-14 08:44 UTC; DECISIONS §321). Commit by name with your next commit `docs/DECISIONS.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/claude-team/drafts/U6-BA-coverage.md`. Nothing else. No ticket change. One `done:` line (may share the commit with H301).
+
+- H303 (dispatcher V4, 2026-10-14 08:55 UTC; DECISIONS §322). Commit by name with your next commit `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. No ticket change. One `done:` line.
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).

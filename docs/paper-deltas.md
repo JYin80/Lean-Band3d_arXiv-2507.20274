@@ -1811,3 +1811,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 
 - **D726** ← `T2498l`–`n`（U3s3b，新 `Chain/QEndGridGen`，051e596f；Lean 手段，不改论文陈述）：(l) `altGridEndQNg` 里 `Cv ≥ C4`、`C4 < Cv ∨ A = 1`，指数取在 `Cv`（接 D724 (i)）；(m) 谱层级 `κm`、`K₆`、`C₆` 与 `hward hker hrow hcol hTh` 代替 `|E| ≤ 2 − κ`（接 D724 (g)）；(n) 带状的 `lam` 修补留在证明内部，R1 守卫 (g) 由 `hcmp` 推出（`QEndGridGen_gK_win`），陈述不变。
 - **D727** ← `T2502ca`（V1s1c 的 W1 门，调度签字 (A)；`docs/tickets/T2502-amend-1.md`）：论文 `6:12-21` 说 `lem:improve_exp_aver` 在 `lem:main_ind` 的设定下「与 [YY_25, Lemma 5.15] 证明相同」，用 `(Gt_avgbound_flow)`、`(Eq:L-KGt-flow)`（`1_2:1344`、`:1371`）；那是标量 `M` 的情形。BA 的 `M = M^{(B)} ⊗ I` 不是标量，Stein 余项里有非对角的扭偏迹 `M^{(B)}_{aq} Tr(G̊ P_{qa})`，上面两条都管不住。Lean 的办法：泛型核心 `STImproveCoregL` 在每个时刻多一个前提 W1 (iii)（`|t_{aq} − M^{(++)}_{aq}| ≺ |M^{(B)}_{aq}| W^{-d}B`），族前提多一条 W1 (iv)（`M^{(B)}` 行的 `ℓ¹` 界）；BA 上 (iii) 由 TL1 `BATwistAvgLaw`（证明 Lemma T.7）给出，(iv) 由 `M^{(B)}` 的指数衰减给出。所以 BA 的 `lem:improve_exp_aver` 要用到同一时刻的扭平均律（Step 6 在 BA 上本来就读 TL1，T2503 设计 `:143`）。带状不变。D725 末句「`H₀ ≠ 0` 的推广由 `6:12-21` 覆盖」只对标量 `M` 成立，以本条为准。
+
+## 合并时编号 T2498o–r（总调度 V4，2026-10-14 08:55 UTC；DECISIONS §322）
+
+- **D728** ← `T2498o`–`r`（U3s3c，新 `Chain/QEndB1Gen`，39db8072；Lean 手段，不改论文陈述）：(o) `stOeqQtRoundPTgL''_of` 的载体前提：D1 `hEK4` 代替 `qProxy4C`，`hTh`、`hB45` 代替带状的 `|E n| ≤ 2 − κ'` 与常数 `2/√κ'`（接 D722 (f)、D724 (g)、D726 (m)）；(p) 初始圈的常数 `Γ = κm⁻¹`、`K₆ = max C₆' 1`；(q) 初始事件对厄米流矩阵陈述，经厄米网格游走传过去；(r) D1 在流的 `𝔠` 引入之后取 `KL = 1/𝔠`，所以 `C4` 依赖 `𝔠`（`QProxyG_KerEK4Fam` 的族次序不变）。
