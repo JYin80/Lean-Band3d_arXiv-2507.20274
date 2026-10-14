@@ -3151,3 +3151,19 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - T2502 行 a 的 1b 落地 2,150 行，正好等于行 a 停止线；审核结果出来再看是否越线。
 - (3) **下一张：V3**（0342 Q2：可与 V2a 的 1b 并行，族步作假设；族步文本已由 T2503 钉住）。现在起草（后台起草子代理），放行后占 T2502 行 b、c 之外的空位。V2b（读 V2a 的陈述 = T2503 的钉文）也可提前，等 V3 起草后再定。
 - (4) 计数不变：BA 190；U 38 / 42；V 4 / 12（预测 ≈ 12）；M/N 3 / 15。H298。下一节 §318，下一张票号 T2504，下一条 H299。
+
+## §318 — T2502 行 a、T2498 行 a 第二部分合并；T2498 原地实测 ×2.54；D724、D725；T2502 行 c 的 W1 门；放 T2504（V3）（总调度 V4，2026-10-14 07:31 UTC）
+
+- (1) **T2502 行 a（V1s1a）合并** d3351df4（07:09 UTC）：新 `Chain/Step6Gen` 902 + `Chain/Step6KitGen` 1,248 = 2,150（正好等于行 a 停止线 2,150，自下而上 1,535 的 ×1.40）；目标 1–9 带实例；登记：`STExp2U` 负责人注释、新 `owedProps` 块（`STExp2UgL` … `LWtermEXPG`）与 `structuralProps` 块；审核第一轮 PASS（API 限额后重跑）；全量构建 4,384 个作业。行 b、c 07:15 从 d3351df4 开工。
+  - 审核观察：O1 四个包装的 `hK1` 对所有 `(sz, z)` 量化、没有 `Flow` 守卫——带状由 `ST_Kloop_one` 消；BA 候选 `baKsol_one`（`BA/KInduct:77`）由 V1-BA 核（记给 V1-BA 票）；O2 实例位置；O3 `hKer` 的 BA 取值（`κm = κ`、`Aof κ = (κ+1)/κ`）由 V1-BA 核；O4 登记分类（`STStep6gL` 进 `supersededProps`，与带状 `STStep6` 一致；未加撇的泛型 `STExpIniIgL`/`STExpIntIgL` 记为欠，负责人 V1s2′/V1s3′）：照收。
+  - 论文差异：**D725 ← T2502a**（泛型 Duhamel 文本 `STExpDuhEqgL`、`STExpDuhamelZgL/QgL` 对 `n` 是最终成立，论文与带状对每个 `n`；票面答 (5)、UP-C4）。
+- (2) **T2498 U3s3a′ 合并** bd5531ea（07:14 UTC）：原地改 `QBudgetA`、`QBudgetB`、`QEndA`，新 `Induction/QEndA2` 1,642；目标 7、8 与 9 的其余部分；登记 `GoodSetNg` 负责人注释；审核第一轮 PASS（API 限额后重跑）；全量构建 4,385 个作业。**T2498 行 a 完成**；行 b（U3s3b，`t/T2498b`）07:15 开工。
+  - **校准**：行 a 两部分新增 − 挪动 2,256 + 2,511 = **4,767**，对 1a 中心 2,508 为 ×1.90；对放行时的原地价 1,880 为 **×2.54**（U4s3 是 ×1.74）。T2498 的原地部分已超过放行时的敏感价 3,271。
+  - **影响 V1s2′、V1s3′ 的布局**（0342 Q3 按 ×1.74 批的原地：≈ 2,300 / 2,450 < 新文件 ≈ 3,160 / 3,440）：按 ×2.54，原地 ≈ 3,353 / 3,581，已不比新文件便宜。规则：V1s2′ 放行前两个系数都算；若按 ×2.54 原地不便宜，**先发短 REQ 问监督**（布局是 0342 批的，不自己翻）。
+  - 审核观察 O1–O6（R1 进了 `hQ_altQNg`、删了三个带状私有助手、实例取值、`alt_hkerGridQNg_instance` 在 `X = 0` 处结论平凡但前提都消了、旧检查 `T2279-check.lean:176, 210` 引了被删的带状定理（从不编译，只记账）、校准超出）：照收。
+  - 论文差异：**D724 ← T2498g–k**。
+- (3) **T2502 行 c 的 W1 门**（票面答 (7) 预授权）：1a 没找到合并的 W1 文本，并对票上的 W1 草稿提了三条意见（自洽方程草稿不能推出 `M` 的块平均等于 `C.m n`；缺 `C.S n = SB d (L n) (g' n)` 前提；非标量 `M` 时 Stein 误差 `tr(E_a M E_p G)` 由哪个前提界到 `Bctl²`）。门在跑（探针 `RBM3D/Probe/T2502Pins.lean` → 1a-audit），行 a、b 不等。
+- (4) **放 T2504 = V3**（后台起草子代理起草，调度核读定稿；0342 Q2、§317 (3)）：新 BA 叶 `BA/MainIndOutBA`；族步 `BAMainIndFamTL d STAny` 作精确类型的假设（T2503 约束文本原样），终端定理 `baMLOutTL_of_famStep`、`unMLOutBA_of_famStep`，以后 V2a/V2b 按名字接上，不改 V3。
+  - 草稿十个待定问题照草稿定，其中：(1) **定义 `BAMainIndFamTL` 由 V3 发布**（连同 `BATwistLoopLaw_congr`、`baFamMember_flow`），V2a 的 1b 导入 `BA/MainIndOutBA`（改 T2503 答 (1) 的放置）；(2) 登记删五条（`STLK0`、`STG0M`、`STBaseG`、`STHorizonG`、`UNMLOutBA`），加一条 `BAMainIndFamTL`（V2b 合并时删）；(7) **M/N 形状问题**：N 已合并的读者取 `∀ d, UNMLOutBA d`，而按 §316 只有 `UNMLOutBA 3` 无条件——V3 只报告，不改 N 的文件，在 V 的关闭 REQ 里提；(9) F1（`LWPinsBA:20, 50, 52`）与 `EMn2BA_mF_data` 文档串的注释修正放进这张票。
+  - 价：设计 240 / 395 / 766，本票加定义与插口后中心 ≈ 435，一行，`prover-hard`，停止线 766；REQ 读数 1,400 记旁边。
+- (5) 计数：BA 190（V3 是 T2379 计划内一行）；U 38 / 42；**V 5 / 12**（T2502 1–3，T2503 4，T2504 5）；预测 ≈ 12；M/N 3 / 15。中枢在跑：T2498 行 b、T2502 行 b、T2502 行 c（W1 门）、T2504（4 个位）。H299。下一节 §319，下一张票号 T2505，下一条 H300。

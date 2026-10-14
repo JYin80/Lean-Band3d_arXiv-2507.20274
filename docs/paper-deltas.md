@@ -1801,3 +1801,8 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 ## Jun 决定的范围差异（总调度 V4，2026-10-14 05:29 UTC；DECISIONS §316）
 
 - **D723**（Jun 决定 B，2026-10-14）：论文 Thm 2.7（`MR:decol_BA`，`1_2:644-645`）对所有 `d ≥ 3` 陈述块 Anderson 模型的结论；Lean 的 BA 终端只在 **`d = 3`** 证明。原因：Step 5 情形 (iii) 的 BA 论证论文略去（`7_8:2101-2102`），Lean 按监督 U-C5 写了完整的 `d = 3` 论证（U5，D712 (d)：`BA/Step5IIIGood`、`Step5IIIWalk`、`Step5IIIWalk2` 陈述在 `Sizes 3` 上，`baStep5III_holds` 是 `STStep5IIIgL 3 …`）。V 的泛型 BA 陈述对 `d ≥ 3` 带显式假设 `STStep5IIIgL d`，`d = 3` 时由 `baStep5III_holds` 消掉。论文由 Jun 在 Lean 做完后改（把 BA 的维数写成 `d = 3`，或注明 `d > 3` 的情形 (iii) 未在 Lean 里证）。带状（非 BA）的结论仍是 `∀ d, 3 ≤ d`，不受影响。
+
+## 合并时编号 T2498g–k、T2502a（总调度 V4，2026-10-14 07:31 UTC；DECISIONS §318）
+
+- **D724** ← `T2498g`–`k`（U3s3a′，原地 `QBudgetA/B`、`QEndA` + 新 `QEndA2`，bd5531ea；Lean 手段，不改论文陈述）：(g) 谱层级代替 `|E| ≤ 2 − κ`；(h) D2 的文本；(i) `hQ_altQNg`、`subGaussStop_altQNg` 里两个半径与 `C4 ≤ Cv`（R1 进入，`qvFormQNg_le_of_bounds` 迫使）；(j) 删去七个没人读的带状定理、两个留作推论（旧检查 `T2279-check.lean:176, 210` 随之过时，从不编译）；(k) `altYGridNg` 对 `(μ, Hf)` 陈述，不再要 `∀ n, 1 ≤ X n`。
+- **D725** ← `T2502a`（V1s1a，`Chain/Step6Gen`、`Step6KitGen`，d3351df4）：泛型的 Duhamel 文本 `STExpDuhEqgL`、`STExpDuhamelZgL`/`QgL` 对 `n` 是**最终**成立（`∀ᶠ n`），论文与带状对每个 `n`；原因是 BA 的 `KLoop`/`KTwo` 只最终成立（UP-C4，监督 0658 `:220`）。带状到泛型只单向。`H₀ ≠ 0` 的推广由论文 `6:12-21`（「与 [YY_25] 相同」）覆盖。
