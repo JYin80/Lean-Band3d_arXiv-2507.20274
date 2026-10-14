@@ -1,0 +1,4 @@
+state: audit-pass
+reason: wf_10fba929-05d: preflight PASS, 1b prover fc90ad3a, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 03:04:13 UTC 2026
+reports: docs/reports/T2500-prove.md, docs/reports/T2500-audit.md
