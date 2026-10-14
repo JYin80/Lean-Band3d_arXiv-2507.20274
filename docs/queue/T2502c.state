@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row c under Amend 1 + Amend 2: 1b prover-hard 7cf02a5f, audit round 1 PASS (claude-opus-5-5); hFF sign-off accepted by CONTROL H305 (Amend 2); merging (rule A), full lake build running
+updated: Wed Oct 14 09:51:22 UTC 2026
+reports: docs/reports/T2502c-prove.md, docs/reports/T2502c-1a-audit.md, docs/reports/T2502c-audit.md
