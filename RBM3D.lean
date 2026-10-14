@@ -632,6 +632,8 @@ import RBM3D.BA.KLipBA
 import RBM3D.Chain.ExpWardIIGen
 import RBM3D.Chain.ExpIntEasyGen
 import RBM3D.Chain.ExpIntIGen
+import RBM3D.Chain.Step34RGen
+import RBM3D.BA.Step34BA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
