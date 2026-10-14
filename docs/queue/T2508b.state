@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row b (targets 9-12): 1b prover-hard b173ce5f; audit round 1 RETURN (degenerate instances at szB); one rule-(B) repair c490c2e3 (instances at sz0 with nonempty decay windows); audit round 2 PASS (claude-opus-5-5); merging (rule A), full lake build running
+updated: Wed Oct 14 17:19:31 UTC 2026
+reports: docs/reports/T2508b-prove.md, docs/reports/T2508b-audit.md
