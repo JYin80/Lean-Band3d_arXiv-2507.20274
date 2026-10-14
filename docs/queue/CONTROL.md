@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-14 04:33 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; T2498 U3s3a merged and booked, a′ running; DECISIONS §315 (H296))
+updated: 2026-10-14 05:29 UTC (dispatcher V4 from 2026-10-13 16:44 UTC = Cowork session session_01RThagGKa4jNgUEWeKViyyg; Jun's scope decision B (BA Thm 2.7 at d = 3), DECISIONS §316 (H297))
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -489,6 +489,9 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Wed Oct 14 04:22:57 UTC 2026 — H295 (3) started from main: T2502 row a (V1s1a) on t/T2502: wf_44a52a4a-7b3 (preflight → prover-hard → auditor); T2503 (V2a design gate) on t/T2503: wf_91ef8ff6-f0e (preflight → prover-max report + probe → auditor; report-only merge, then STOP), as T2459's precedent run. Also T2498 row a second part U3s3a′ on t/T2498a2 (stacked on t/T2498 after the first part merged ec57490f; ticket :29): wf_d7dacd26-ca0 (1b prover-hard → auditor). Running: T2498a2, T2502, T2503 (3 of 4).
 
 - H296 (dispatcher V4, 2026-10-14 04:33 UTC; DECISIONS §315). Commit by name with your next commit `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. No ticket change. One `done:` line.
+  done: Wed Oct 14 04:41:15 UTC 2026 — H296 the 5 listed files committed by name in 22bbe858, pushed; no ticket change.
+
+- H297 (dispatcher V4, 2026-10-14 05:29 UTC; DECISIONS §316; Jun in the dispatcher session: BA Thm 2.7 at d = 3 only, paper delta D723). Commit by name with your next commit `docs/DECISIONS.md`, `docs/paper-deltas.md`, `docs/queue/CONTROL.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`. Nothing else. No ticket change: running T2498 a′, T2502, T2503 are unaffected. One `done:` line.
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
 done: Sun Oct 11 15:12:19 UTC 2026 — T2426 merged 135f605 (BA-L L3b3': new Graph/BAScost (1530) and Graph/BAScost2 (225); Lemma B, BAInit, the five shape lemmas and packed forms; BReach as a ReflTransGen definition proved equivalent to the pinned inductive (paper-delta T2426c; auditor observation O2 for L3b4' planning); two root imports added at merge (the branch had none); no registry change; audit PASS claude-opus-5-5; full lake build 4242 jobs; pushed).
