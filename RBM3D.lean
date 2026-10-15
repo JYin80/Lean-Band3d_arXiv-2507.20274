@@ -648,6 +648,7 @@ import RBM3D.BA.MALocal
 import RBM3D.BA.MATrLocalBA
 import RBM3D.BA.MAQDiff
 import RBM3D.BA.GUEKPrim
+import RBM3D.BA.MADecolQUE
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
