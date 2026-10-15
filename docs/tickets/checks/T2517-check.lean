@@ -81,7 +81,7 @@ set_option linter.unusedVariables false
 #check @RBM.BA.BAMss                               -- MFixedPoint:511
 #check @RBM.BA.BAReal                              -- MFixedPoint:432
 #check @RBM.BA.BAzztE_data                         -- MFixedPoint:297 (C5's bridge from `z` to the flow point)
-#check @RBM.BA.BAStab                              -- BA/GreenCore:1268
+-- RBM.BA.BAStab: BA/GreenCore:1268 (not in this check's import closure; read at the 1a; amended 2026-10-15, H317)
 #check @RBM.BA.baStab_of_real                      -- BA/GreenStab:46 (`K = 16 κ⁻⁴`)
 #check @RBM.BA.baM_row_l1                          -- GreenStab:116
 #check @RBM.BA.baTheta_weighted_l1                 -- GreenStab:251
@@ -120,7 +120,7 @@ def T2517_StableBA : Prop :=
         (∀ a, x a = ∑ b, BAMss d L (BAMB d L g (E : ℂ) m) true true a b *
           ((t1 : ℂ) * x b + (σ : ℂ) * ∑ c, x c) + y a) →
         ∀ a, ‖x a‖ ≤ K * B
-
+/- Targets 4, 6, 7: proposed texts, commented out (H316 (3): instance synthesis failed); the 1a states them with the instance arguments `Zd d (sz.L n)` needs (e.g. `NeZero (sz.L n)` from `sz.three_le_L`); binding after the 1a-audit.
 /-- **Target 4, Lemma 5.15 on the GUE-phase grid at BA** (twin of `gueGrid_expect_oneLoop`, `OneLoop:1308`): flow data
 `(g, E, m)` (`g` = flow-point coupling `λ₀`), `M = (gΨ - E - m)⁻¹` (`BAMB`; fine `Mres (gΨ_I) E m`), path `gueHBA`,
 `z_u = ztOf m E u`, `η_u = etaOf m u`.  Inputs: `h1` (diagonal 1-loop, band form) and **`hoff` (D1 (i))**: the `M`-weighted
@@ -202,5 +202,5 @@ def T2517_OneStepBA : Prop :=
       ‖e (k + 1) ⟨[s1, s2], [a1, a2]⟩‖ ≤
         (1 + gridStep t1 t0 K n * (2 * ((sz.size n : ℕ) : ℝ) * (ρ * Λ))) * Bk +
           eq729c ((sz.size n : ℕ) : ℝ) ρ Λ p (gridStep t1 t0 K n)
-
+-/
 end RBM.BA.T2517Check
