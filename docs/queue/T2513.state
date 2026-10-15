@@ -1,0 +1,4 @@
+state: audit-pass
+reason: MN-D3 design gate: preflight PASS, prover-max report + probe a6d9966e (no stop rule fired), audit PASS round 1 (claude-opus-5-5); report-only merge
+updated: Thu Oct 15 08:12:47 UTC 2026
+reports: docs/reports/T2513-prove.md, docs/reports/T2513-design.md, docs/reports/T2513-audit.md
