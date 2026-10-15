@@ -643,6 +643,8 @@ import RBM3D.BA.MainIndGlue
 import RBM3D.BA.MainIndFamTL
 import RBM3D.BA.MainIndRegBA
 import RBM3D.BA.MainIndTermBA
+import RBM3D.BA.MAPins
+import RBM3D.BA.MALocal
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
