@@ -1,0 +1,4 @@
+state: audit-pass
+reason: V2b (BA/MainIndGlue): 1b prover 0810e3e2, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Thu Oct 15 06:46:50 UTC 2026
+reports: docs/reports/T2512-prove.md, docs/reports/T2512-audit.md

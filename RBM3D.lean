@@ -639,6 +639,7 @@ import RBM3D.BA.Step6PinsBA
 import RBM3D.Chain.QopDecayGen
 import RBM3D.Chain.ExpIntIQGen
 import RBM3D.BA.Step6BA
+import RBM3D.BA.MainIndGlue
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
