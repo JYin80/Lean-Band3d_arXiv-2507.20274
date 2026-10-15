@@ -1,0 +1,4 @@
+state: audit-pass
+reason: M2 (BA/MAQDiff; targets 1-9): 1b prover-hard 7c80bd9a, audit PASS round 1 (claude-opus-5-5); merging (rule A), full lake build running
+updated: Thu Oct 15 09:03:20 UTC 2026
+reports: docs/reports/T2516-prove.md, docs/reports/T2516-audit.md
