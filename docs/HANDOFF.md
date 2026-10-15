@@ -1,3 +1,77 @@
+# RBM3D 交接包（调度 V4 → 调度 V5；2026-10-15 11:03 UTC，由调度 V4 会话 session_01RThagGKa4jNgUEWeKViyyg 写，账号 misslose@g.ucla.edu）
+
+Jun 的原话（2026-10-15 10:5x UTC）：「别写新单，赶紧写team startup，写好V5调度的prompt，做好接班」。
+
+新调度先读本文件，再读 `docs/claude-team/TEAM.md`（全文，§9、§10 是常规）、`CLAUDE.md`、`docs/DECISIONS.md` 的 **§306–§346**（V4 的全部决定；**§335–§346 是 M/N 阶段，必读**；更早的按需查）、`docs/ROUTES.md`（BA 一格是计数总账）、`docs/queue/CONTROL.md`（H312–H320）、`docs/supervisor/` 的 **2026-10-15-0643、0742、1044**（M/N 的约束条件都在这三份里）、`docs/claude-team/drafts/MN-plan.md`（M/N 计划表）、`docs/claude-team/drafts/C5.md`（T2519 草稿）。启动提示词见 `docs/claude-team/STARTUP.md` §2（= `docs/claude-team/DISPATCHER-PROMPT.txt`）。
+
+## 0. 交接时的局面（2026-10-15 11:03 UTC）
+
+- **Jun 的指令：不写新票、不放新票**，直到 Jun 说开。V4 照此停在交接；C5（T2519）的草稿已写好、监督已 PASS，但**没有定稿、没有放行**。
+- **在跑：只有 T2515 行 b**（C3b，`t/T2515b` f158d5f5；`BA/GUEEntry` 1,524 + `BA/GUEEntry2` 1,570；全构建 exit 0，标准公理）。**state = audit-fail，停在给调度的问题上**（`docs/queue/T2515b.state`，`docs/reports/T2515b-audit.md`、`T2515b-prove.md` 的 Repair 一节）：
+  - 审核两轮 RETURN：目标 10、11（`mix_detBA`、`mixEntry_detBA`）的「前提全部消掉的实例」只在退化点 `(a,b) = (0,0)`。
+  - 规则 (B) 的一次修复报了 OBSTRUCTION：私有证明表明，在 `0 ≤ a ≤ b`、`0 < b`、`a + b ≤ 1/2` 下，`X = 0` 的完全实例不可能（`W^{-d} ≤ δ²` 与 `GUEEntry_cs·Φ·δ² ≤ 1` 排除 `Φ ≳ W^d`）；`a > b`、`a + b > 1/2`、`X ≠ 0` 没覆盖。
+  - 中枢的问题：这两个实例里的**先验事件与 LDE 事件能否在 `0 < a + b` 时留作前提**（即接受带随机前提的实例），还是改目标 / 路线。
+  - 这是在跑的票的签字问题，不是新票；V5 的第一件事（§5 第 3 条）。
+- **今天（10-15）合并的 M/N 行**：T2513 MN-D3 报告 0deabaa8；T2514 M1 行 a 3a67e18d（`BA/MAPins` 279 + `BA/MALocal` 927）、行 b 242d669e（`BA/MATrLocalBA` 521）；T2515 C3 行 a 13b68cea（`BA/GUEKPrim` 1,241）；T2516 M2 dec8e150（`BA/MAQDiff` 1,099）；T2518 M3 9c5fc941（`BA/MADecolQUE` 532）；T2517 C4 行 a ff7bd277（`BA/GUEOneLoop` 1,395）、行 b 26561542（`BA/GUEEq729BA` 1,331）。**M 链（M1、M2、M3）完成；C4 完成。**
+- **监督 1044 PASS**（回复 `REQ-2026-10-15-1015-C5split`）：
+  - C5 可按预签 a | b | c | d 放行，备用 a′、b′、c′ 在 1a 记账；**M/N 旗标 15 → 20**；REQ 线：放行使预测 **> 20**（预签集合 {C5 a–d、a′–c′、N2 一行} 之外的任何行）先发短 REQ；HOLD 线：**用到 21 而 M/N 未关闭**。
+  - 布局 **L1**：BA 叶（十个新文件），不改带状文件；Duhamel 层原地只在 C5S-C3 下才可以。§57 (2) 对 GUE 相作废（GUE 相只经 `Generator` 带状泛型，BA 形在 `BA/GUE*BA`）。
+  - `hoff`：批准 D1 (i) 窄门 + 探针，路线 R1（网格单时高斯律下 `twTr` 的 Stein 矩界）。
+  - V 规则（不读 V 名）：保留为 C5 的默认，但不再是停止线；`BA/TwistAvg*` 里已合并的代数引理若能省行，可按名字读（票里记一笔）。R2 仍是停止（GMN-C3）。
+  - **约束条件 C5S-C1–C4**（写进 T2519 的停止规则）：C1 备用行在 1a 按该行 1a 中心记账；1a 复算的总宽口径中心 > 9,025，或某行中心 > 1,950 而备用已用完 → 1b 前短 REQ。C2 探针写出 R1 的主展开、看 `twTr` 是否出现在自己的主项里；若出现，稳定常数不依赖 `L`、`g`；需要 PB、`BAReal`、`baM_row_l1` 以外前提 → 1a 停、短 REQ。C3 原地只在省 ≥ 500 行（按 ×2.54 价）且 GMN-C2 (b)–(c)、不删 `private` 时；否则退回 L1，不发 REQ。C4 0643 的 MNO-C1–C4 与关闭条件 (i)–(vii) 照旧。
+  - O1（ROUTES / DECISIONS 记录）已在 §346 做完；O2（定稿 T2519，1a 可以开工）、O3（T2519 的 paper-delta 候选 `T2519a` 扭曲 1-loop 律、`T2519b` `M`-局部律、`T2519c` 补齐）留给 V5。
+- **登记**（`RBM3D/Test/Axioms.lean`）：今天的 M/N 行改过 `UNG1Rowk` 负责人注释、`UNOUProfRowk` 移到 structural（C3a）、`BAEnd_QUEL` 删掉与两条负责人注释（M3，欠账扫描 125 → 124）。C5 要动的行：`UNOULLk`、`UNG1Rowk`、`GUEPathBounds`（`:383` 一带）、`UNOUQUEk`，新加 structural 行 `GUEPathBoundsBA`（归行 a；`:383` 的注释归行 c，§344 (4)）。
+
+## 1. 计数（宽口径；监督 1044 的表）
+
+- **BA 199**（§144 不设上限；只记相对 T2449 / T2379 计划的增量，§310 (6)、§337 (4)）。M/N 关闭时 ≈ 202（202–205）。
+- **M/N：已用 12 / 旗标 20**（1044）。按放行顺序：1–3 = C5g T2475、N3b T2477、N3a T2476（开场前已合并）；4 T2513；5、6 T2514 a、b；7、8 T2515 a、b；9 T2516；10 T2517 a；11 T2518；12 T2517 b。**预测 17（17–20）**：C5 a–d = 第 13–16 行（备用 17–19），N2 最后一行。
+- 已关闭：P、K、TL、E、G、T、L（48 / 50）、U（43 / 42）、V（14 / 12）；UN 62 / 64（带状关闭）；LW 52（关闭）；ST 关闭。**MA 8 / 9**：只剩 MA-06b。
+- 下一个编号：DECISIONS **§347**，票 **T2519**，H **H321**，paper-delta **D733**。
+
+## 2. 接下来的票（Jun 说开新票之后；按依赖）
+
+1. **T2519 = C5**（`BA/GUEHyp` 等十个新 BA 叶；自下而上中心 6,311，宽口径 8,301；四行预签 + 三个备用）。定稿：
+   - 以 `docs/claude-team/drafts/C5.md`、`C5-check.lean` 为底；把「Dispatcher notes」换成「## Decisions (DECISIONS §344 (4)、§346 …; supervisor 1044)」，写入 OQ1–OQ7 的决定（§344 (4)）与 1044 的 Q1–Q4；停止规则加 C5S-C1–C3；去掉 DRAFT 标记、盖日期；Counts 写 C5 a–d = M/N 13–16（备用 17–19），BA 199 → 202。
+   - 检查文件：Part 3 的 `ACTIVATE AFTER` 块里，**C4 a、C4 b 已合并**（ff7bd277、26561542），这两块连同顶上注释掉的导入可以打开；**C3 b 的块保持注释**（T2515b 没合并）。打开前用 `git --no-optional-locks show main:<file>` 逐名核对；编译交中枢（H 指令里 `lake env lean`）。
+   - 开工：**1a（无证明目标）现在就可以开**（C4 a 已合并，1044 Q1）；各行从 `main` 按输入开工：a 在 C3 b 与 C4 a 之后，b 在 C4 b 之后（已满足），c 在 a、b 之后，d 最后。1a、行 a、b `prover-max`；行 c、d `prover-hard`。
+   - 校准风险写进票：近来对 1a 中心的落地比 C3a ×1.10、C3b ×1.67、C4a ×1.34、C4b ×1.39、M1 ×1.34、M2 ×1.25；C5 若取 ×1.34–1.67 ≈ 8,500–10,500。C5S-C1 的 9,025 线是对 1a 复算的宽口径中心说的。
+2. **N2**（最后一张 M/N 票；`BA/UNBUniv` + G1 `Universality/PinsKD` + G2 `Universality/GUEPhase/RandomLayerBGD` + BA 叶，MN-D3 报告 `docs/reports/T2513-design.md`、§340）：`UNNormBARow`、`UNOURowBA`、`UNL32 → BAEnd_BUnivL 3`、`BAThm27L 3`（N2 的 1a 中心连 MN-D3 实现超 1,950 时退给 MA-06b，不改计数）。关闭条件 (vi)：`BAThm27L 3`、`BAEnd_BUnivL 3` 不带 `STStep5IIIgL`、不带 `∀ d` 的 UN* 前提，唯一外部前提 `UNL32`；(vii)：`d > 3` 的形式照 §316 留作前提。读 M1、M3、C3、C5、MN-D3。计划行见 `MN-plan.md:32`。
+3. **M/N 关闭 REQ**（0643 关闭条件 (i)–(vii) 逐条对照）。
+4. **MA-06b**（`Thm27`、`final_shape`；读 `BAThm27L 3`；MA 8 → 9）。这是最后一张票；之后 Lean 一侧完成，Jun 照 `docs/paper-deltas.md` 改论文。
+
+## 3. Jun 的口径与偏好
+
+- 汇报用中文、洛杉矶时间；仓库文件用 UTC。数学术语用英文。汇报从简，先说结论。
+- 需要 Jun 决定的事一次只问一件；流程上的事自己定，不问 Jun；Jun 没决定的问题，相关票一律不开工。
+- **Thm 2.7 口径 B**：BA 终端只在 `d = 3`（§316，D723）；`d > 3` 的形式留作前提。
+- 论文 Jun 自己改（Lean 做完以后）；不要改论文。不写 Lean（检查文件例外）；不做 git 写操作；RBM1D、RBM2D 只读。
+- Jun 常问进度、行数、日均速度：Lean 总行数在 10-15 约 63.7 万（10-06 27.6 万；近 7 天日均约 3.9 万）。剩余票数按 §1、§2 估：在跑 1 + C5 4（4–7）+ N2 1 + MA-06b 1。
+
+## 4. 写票与簿记的做法（V4 的定式）
+
+- **簿记脚本**：在设备上跑 python（heredoc `<<'EOF'`），时间用 `date -u +%H:%M` 换掉字符串里的 `11:03`；**不用 f-string**（`{…}` 记号多）。替换一律 `rep1(s, a, b, tag)`：先断言旧文本恰好出现一次。改 CONTROL 先记 `m0 = os.stat(cp).st_mtime`，写前断言没变（中枢会同时追加 done 行）。已合并的放行条目从 CONTROL 的 Released 列表删掉；H 指令插在 `## Merge log` 之前；每轮在 DECISIONS 末尾加新节、WORKLOG 加一行、ROUTES 的 BA 格前缀加 `**§N：…**；`、HEARTBEAT-STATE 顶部加一条 `>` 注记。
+- **起草**：Agent 工具起 general-purpose 子代理（它同步阻塞本会话 30–40 分钟，**先排好心跳再起**），简报写清来源、绑定规则、只许写 `docs/claude-team/drafts/` 里指定的文件、检查文件只用导入闭包里的名字、不许证明与 `sorry`。
+- **定稿**：草稿 → `docs/tickets/T####.md` 与 `docs/tickets/checks/T####-check.lean`；「Dispatcher notes」换成「## Decisions (DECISIONS §N …)」；去掉草稿标记（`DRAFT`、`§3xx`、`hh:mm` 之类）；CONTROL 加放行条目、Pre-release checks 一行、H 指令（按名提交、`lake env lean` 编译检查文件、开工条件）。
+- **检查文件的坑**：名字必须在导入闭包里（T2517 曾因 `RBM.BA.BAStab` 失败）；`Zd d (sz.L n)` 上的钉文要能解出实例，`sz.withLam 0` 与 `sz` 的下标类型不同（用 `gueHBA` 那样把 `withLam` 放进定义体）；修检查文件时不挪行号：出错的行改注释、整块用 `/- … -/`（Lean 块注释可嵌套）。
+- **计数**：M/N 行按放行顺序编号；拆出来的新行在它的 1a 记账（MNO-C4）；BA 只记相对计划的增量。
+- **监督**：REQ 写进 `docs/supervisor/requests/REQ-<UTC>-<名>.md`，首行 `status: open`；监督任务每小时 :41 读工作区并回复（今天 10:15 的 REQ 10:44 回复）。监督文件不进 git。
+- **设备桥**：偶尔断开；第一次失败重试一次，再失败就如实报告。
+- **心跳**：send_later，name「RBM3D 调度心跳」，14 分钟；先 list_triggers 去重。迟到的心跳只确认、不另排。**V4 交接时已删掉自己待发的心跳**；若还看到别的会话的，删掉再排。
+
+## 5. 新调度立即要做的事
+
+1. 读 §0 列的文件；在 HEARTBEAT-STATE.md 顶部写明从此刻起你是唯一的总调度（会话号、账号）。
+2. 排好心跳（STARTUP §2 的消息，「调度 V5」）；空闲心跳从简。
+3. **回答 T2515b 的问题**（在跑的票，不算新票）：读 `T2515b-audit.md`、`T2515b-prove.md` 的 Repair 一节和 T2515 票里目标 10、11 与实例规则的原文，查以往「带随机前提的实例」的先例（DECISIONS 里搜 `instance`、`nondegenerate`、`非退化`）。若接受「先验事件与 LDE 事件在 `0 < a + b` 留作实例前提」不改任何公开陈述，就在 DECISIONS 新节签字、写 Amend，并写 H 指令让中枢从 f158d5f5 重跑审核后合并；若要改目标或路线，发短 REQ。T2515b 合并后 C5 行 a 的输入才齐。
+4. 合并落账：10:55 UTC 之后的合并行（T2515b 等）照 §4 记账。paper-delta 补账：今天 M/N 各行报告里的临时标签（T2513–T2518；T2515 的 `T2515c` 两行撞号，§345 (2) 要重编）从 D733 起编。
+5. **Jun 说开新票之前不写票、不放票。** Jun 说开后，按 §2 先定稿 T2519（1a 可以马上开）。
+6. 用中文向 Jun 简短汇报理解与需要他决定的第一件事。
+
+---
+
+## 附：上一份交接包（调度 V3 → V4，2026-10-13），原文保留
+
 # RBM3D 交接包（调度 V3 → 调度 V4；2026-10-13 12:00 UTC，由调度 V3 会话 session_01Qidfbgzdy6FV6jy1eSbZgb 写）
 
 Jun 的原话（2026-10-13 08:4x UTC）：「这批工单结束就不要发工单，整理完这批就好，我要换 hub 账号。休息到 LA 9am」；（12:0x UTC）：「赶紧整理team startup 的调度prompt 这里额度马上要到了」。
