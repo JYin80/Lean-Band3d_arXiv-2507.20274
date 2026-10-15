@@ -3492,3 +3492,19 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **T2515 = C3**（后台起草子代理起草，调度核读定稿）：先 D1（窄门 + 探针 ≤ 200，1a-audit 在 1b 之前）：(i) O9 无损 `BAProp8` 已在 `main`（`BA/FlowPins:217`，`baProp8_holds` `Prop6Path:1009`），D1 交付它在复 `z` 的用法（`BAzztE_data` 搬 `Θ`、`cT ≤ t₀`、`Θ̃` 的 BA 振荡界）；(ii) `ζ = 0` 处的 `thetaDiff`（`T2515_ThetaDiffBA`，路线 (i) + `ΘQ = Θ − 1`），1a-audit 记「交付」或「不能交付」；(iii) 剖面文本 `UNOUProfile.ba`；(iv) BA 的 GUE 相 2-loop。价：自下而上普查 2,808 中心（T2449 1,102 的 ×2.5），预签在 `GUEKPrim` | `GUEEntry` 拆；行 b 不读行 a。C3 不读 V 的输出，但照 0643 Q3/O3 在 T2511 b 合并时开工（T2511 b 短，已在跑）。登记 `:171` `UNOUProfRowk` 移到 `structuralProps`；EntryGrid（UN-43）归 C5。决定 (1)–(9) 见票。
 - (4) **M/N 计数约定**（余下全程）：按 §310 (6) 记相对 T2379/T2449 计划的增量。T2514 行 a +0（BA 196）、行 b +1（BA 197）；T2515 行 a +0（BA 197），拆则行 b +1（BA 198，1a 时记）。M/N：T2513 = 4、T2514 = 5、6、T2515 = 7（行 b 8）；预测 ≈ 12，C3 拆则 ≈ 13（< 15）。
 - (5) 在跑：T2511b、T2513；T2511 b 合并后加 T2514 行 a、T2515（D1 → 1a）（4 / 4）。H315。下一节 §338，下一张票号 T2516，下一条 H316。V 关闭 REQ 在 T2511 b 合并后发。
+
+## §338 — T2511 行 b 合并，V 的行全部合并 → V 关闭 REQ；T2514、T2515 开工；C3 在 1a 拆两行（总调度 V4，2026-10-15 07:37 UTC）
+
+- (1) **T2511 行 b 合并 c536c603**（07:22）：新 `BA/MainIndTermBA` 124（`baMainIndFamTL_three`、`baMLOutTL_three`、`unMLOutBA_three` 无条件；`baMainIndFamTL_any` 一般 `d` 在 `STStep5IIIgL d` 下）；审核第 1 轮 PASS；登记删 `:140`，六行负责人注释改名 T2511。T2511 两行合计 634 = 自下而上 501（441 + 60）的 ×1.27。**V 的 14 行全部合并**，合计 15,131 行，无新论文差异。
+- (2) **发 V 关闭 REQ** `docs/supervisor/requests/REQ-2026-10-15-0736-Vclose.md`：0342 Q1 的 (i)–(v) 逐条对上；`:134` `STKboundgL`（「BA-V 消」）问能否用 H 指令改注释指向 `baKboundMember_holds`；N 侧 `∀ d` 已由 0643 归 MN-D3。
+- (3) H315 done b2326aac：T2514 行 a（wf_669e4239-a80）与 T2515（wf_ad1bd330-26f，D1 → 探针 → 1a-audit）07:23 开工。1a：T2514 PASS（`MALocal` 中心约 830，停止线 1,300）；**T2515 拆 a | b**（中心 2,762 > 1,950；行 b 1,648 ≤ 1,950，不再拆 b′），D1 (i) 无损，`thetaDiff` 的编译结果等 1a-audit；`stable_mixBA` 是未定价的新 BA 数学（观察项）。T2513 的 1a：D2 表到 grep 为止无「用到别的维数」。
+- (4) 计数：C3 的行 b 记为 **M/N 第 8 行，BA 198**（§337 (4) 约定）；M/N 预测 ≈ 13（< 15）；V 14 / 12（待关闭）。在跑：T2513、T2514a、T2515（3 / 4）；T2514 行 b 在行 a 的 1a PASS 且 `BA/MAPins` 提交后叠上。H 未写（下次放行时一并提交 §338 与 REQ-0736）。下一节 §339，下一张票号 T2516，下一条 H316。
+
+## §339 — 监督 0742：V 在 14 / 12 关闭；VC-C1；放 T2516 = M2、T2517 = C4（总调度 V4，2026-10-15 08:01 UTC）
+
+- (1) **监督 2026-10-15-0742 PASS：子阶段 V 关闭于 14 / 12**（旗标 12 撤销；HOLD 线 15 没到）。关闭条件 (i)–(v) 逐条核过；`baMainIndFamTL_three`、`baMLOutTL_three`、`unMLOutBA_three` 无假设、标准三公理；一般 `d` 只多 `STStep5IIIgL d` 一个前提（在类型里）。三个带过去的事都归 M/N（0643 已接）。超出 +2：0843 的 V1s2′/V1s3′ 新文件重排与 1743 的 T2511 两行，都是事先报过的。
+- (2) **VC-C1**：`Test/Axioms.lean:134` `STKboundgL` 的负责人注释改为指向 `baKbound_holds`（K12）与 `baKboundMember_holds`（T2511），只改注释，由 H316 随下一次提交做，不算票、不另审核（T2482 / H271 (3) 先例）；该行留在 `owedProps`。
+- (3) T2514 行 a 的 1a PASS，`BA/MAPins` 在 `t/T2514` 112ffba2 提交，行 b 叠上开工（wf_ae4776d3-ad9）。在跑：T2513、T2514a、T2514b、T2515（4 / 4）。
+- (4) **放 T2516 = M2**（后台起草子代理起草，调度核读定稿）：`BA/MAQDiff`，逐 `d` 的 `baQDiffFixed_of_ML`、`baMANetQD`、`baEnd_QDiffL`，`d = 3` 的 `baEnd_QDiffL_three`（读 `unMLOutBA_three`）；唯一的新数学是 `BAprof` 对 `z` 的 Lipschitz 界（常数提议 `12κ'^{-2}(1+κ'^{-2})`，Ward → Neumann → 预解恒等式；预授权 ≤ 150 行探针）。自下而上 645 / 880 / 1,270，校准 845–1,126。T2514 行 a 合并后开工。M/N 第 9 行，BA 198（+0）。决定 (1)–(7) 见票。
+- (5) **放 T2517 = C4**（同上）：发现 T2449 当作泛型的两样输入在 `main` 上只有带状形式：GUE 漂移（`Drift:756/1208/1318` 用 `zt E`、`|E| < 2`）；BA 的 `M` 不是对角，一圈要一个新的路径输入 `hoff`（GUE 网格上 `M` 加权的块迹，`ExpAvgGen_W1iii` 的网格形）。两样进 D1。自下而上中心 2,035（T2449 868 的 ×2.34），预签在 `GUEOneLoop` | `GUEEq729BA` 拆（1a 时记）。**目标 8 挪给 C5**，C4 不读 C3 的名字，**有空位就开工**（C3 ∥ C4 → C5）；`hoff` 的生产者定为 C5（新范围，C5 的价风险）。M/N 第 10 行，BA 198（+0）；拆则第 11 行、BA 199、预测 ≈ 14；C5 若也拆就到 15 → C5 放行前发短 REQ。决定 (1)–(8) 见票。
+- (6) 计数：BA 198；V 14 / 12 关闭；M/N 已放 10（T2513、T2514 a/b、T2515 a/b、T2516、T2517 a），预测 ≈ 13–14。H316。下一节 §340，下一张票号 T2518，下一条 H317。
