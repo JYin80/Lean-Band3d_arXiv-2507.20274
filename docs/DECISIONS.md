@@ -3461,3 +3461,26 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 监督 O2 的选择：泛型目标 6 保持槽形式，行 a 用 T2510 的名字闭合；`BAStep6R` 只按名字读，不重述。`BAMainIndS1TL` 私有。
 - (5) **放 T2512 = V2b**（`docs/tickets/T2512.md`、检查 `T2512-check.lean`）：一行 `t/T2512`（V 第 13 行），新 `BA/MainIndGlue`，`baMainIndFamTL_of_regimes (h₃ h₁ h₂ h₄) : BAMainIndFamTL d STAny`；输入是已合并类型的假设，**现在开工**，与 T2511 行 a 并行。价按自下而上 260 / 365 / 615（校准 350–467；T2245 的模式层已公开，探针约 270 行不必移植），停止线 800；`prover`（移植）。不写终端（V2O-C1）；`:140` 留到 T2511 行 b。
 - (6) 计数：BA 195（+1，V2a 第二行）；U 43 / 42 关闭；**V 14 / 12 已放**（T2511 a = 12、T2512 = 13、T2511 b = 14），预测 14；离 HOLD 线 15 只剩一行：再拆或 V 的收尾行放行前先发短 REQ。M/N 3 / 15。H313。下一节 §335，下一张票号 T2513，下一条 H314。
+
+## §335 — H313 开工；M/N 开场 REQ 提前发；V 关闭 REQ 备好（总调度 V4，2026-10-15 06:40 UTC）
+
+- (1) H313 done 97779231：两个检查 exit 0；T2511 行 a（wf_1d110bb2-bf9）与 T2512（wf_a9c42de2-cae）06:22 并行开工。
+- (2) **后台起草子代理备好 V 关闭 REQ 与 M/N 开场**（`docs/claude-team/drafts/REQ-Vclose.md`、`REQ-MNopen.md`、`MN-plan.md`）：
+  - V 关闭各项（0342 Q1）：族链与终端在 T2511 行 b 合并后齐；登记里只有 `:134` `STKboundgL`（「BA-V 消」）不在 T2512、T2511 b 的单子里，V 关闭时用 H 指令改一条注释指向 `baKboundMember_holds`。
+  - **形状核对（1743 O3）**：M 侧逐 `d` 对得上（`BAMAFixed d := UNMLOutBA d → …` 在 `d = 3` 吃 `unMLOutBA_three`；`BAMLOutTL` 未变）。**N 侧对不上**：`baBUniv_of_rows (hML : ∀ d, UNMLOutBA d)`（`BA/UNPins:367-370`）、`UNOURowBA`（`:123`）、`UNQueBA_of_BAEnd_QUEL`（`:357`）、`UNLocAvgk`/`UNQuek`/`UNOUClaimsk`（`PinsK:398, 406, 421`）都要每个 `d`；V 只给 `∀ d, STStep5IIIgL d → …`，照现在的合并文本 `BAEnd_BUnivL 3` 带着 `d > 3` 的情形 (iii) 条件，与 §316（`d = 3` 无条件）不合。即 §318 (4) (7)、§320 (2) 记下的事。
+  - 新设计门 **MN-D3**（`d = 3` 的 UN 侧组装）：(A) 带维数过滤 `D` 的带撇后继（带状 `D = True`、BA `D = (· = 3)`），推荐，是 Jun 的 B 的落实，不另问 Jun；(B) 在 `∀ d, STStep5IIIgL d` 下陈述，要问 Jun；(C) 推广 U5，Jun 的 B 已排除。
+  - M/N 余下七行（M1、M2、M3、N2、C3、C4、C5）+ MN-D3；中心 7,077，校准 6,794–9,059（`thetaDiff` 与 MN-D3 的实现未定价）；预测 ≈ 12（11–14），旗标 15；BA 终点 ≈ 204。
+- (3) **M/N 开场 REQ 提前发**（`docs/supervisor/requests/REQ-2026-10-15-0640-MNopen.md`）：V 的最后一行（T2511 b）合并前就问，好让第一批在那时开工；Q3 问 MN-D3（设计门，不是证明票）能否现在就开。V 关闭 REQ 在 T2511 b 合并后发。
+- (4) 在跑：T2511a、T2512（2 / 4）。计数不变：BA 195；V 14 / 12；M/N 3 / 15。H 未写（下次放行时一并提交本节与 REQ）。下一节 §336，下一张票号 T2513，下一条 H314。
+
+## §336 — T2512（V2b）合并；监督 0643：M/N 开（(A)，MNO-C1–C4）；放 T2513 = MN-D3（总调度 V4，2026-10-15 06:58 UTC）
+
+- (1) **T2512 = V2b 合并 a47cf1e1**（06:48）：新 `BA/MainIndGlue` 436 = 自下而上中心 365 的 ×1.19（校准 350–467 之内）；审核第 1 轮 PASS；不写终端（V2O-C1）。T2511 行 b 现在只等行 a。
+- (2) **监督 2026-10-15-0643 PASS：M/N 开**，预测 ≈ 12（11–14），旗标 15；新线：放行使预测到 15 或以上先发短 REQ，用到 15 未关闭建议 HOLD（取代通用的 25 / 40 线）。
+  - 形状核对确认：M 侧在 `d = 3` 对得上；N 侧的 `∀ d` 与 §316 不合。
+  - **MN-D3 取 (A)**（维数过滤的带撇后继），是 Jun 的 B 的落实，**不问 Jun**；只有 MN-D3 的探针表明 (A) 做不成时 (B) 才去问 Jun。(C) 排除。监督的 grep 显示 (A) 要覆盖的面比 REQ 列的宽：`UNTrLocalBARow`、`UNTrLocalInitBARow'`（M1 行 b 的目标）、`unJakUywRowBA_holds`、`g1Rowk_of_inputsG` 与其 BA 实例、`ouRowk_of_pins`、`un_claimAll_of_rowsBA`、`baBUniv_of_rows`、两座桥、`UNPins:1027-1066` 的 `inst_*`。
+  - 关闭条件 (i)–(v) 照收，加 (vi)：`BAThm27L 3`、`BAEnd_BUnivL 3` 的最终公开形式不带 `STStep5IIIgL`、不带 `∀ d` 的 `UNMLOutBA`/`UNLocAvgBA`/`UNQueBA`，唯一外部假设 `UNL32`，关闭 REQ 逐字引两个签名；(vii)：`d > 3` 形式保持假设形，登记注释用 §316 的措辞。
+  - Q3：MN-D3 现在开；M1 行 a 与 C3（先 D1）在 T2511 行 b 合并时开。Q4：(a) M1 行 a 在 `BA/MAPins` 公开全部 MN1 钉文；(b) `BAThm27L 3` 归 N2（N2 的 1a 中心连 MN-D3 实现超 1,950 时退到 MA-06b，不改计数）；(c) `thetaDiff` 先由 C3 的 D1 在 `ζ = 0` 试，C3 的 1a-audit 拿不出陈述与路线则 M2 合并时就放 M3 的 D1。
+  - **约束 MNO-C1**：MN-D3 的后继都是新名字，不改已合并陈述；`#print axioms band_terminal`、`bUniv_holds` 前后不变；带状在 `D = True` 由一行 `Iff` 恢复。**MNO-C2**：MN-D3 报告逐条列 Q2 单子，每条「逐 `d`：机械复制」或「用到别的维数」带行号；有一条后者或实现总价超 1,950 → N2 放行前发短 REQ。**MNO-C3**：M1 行 b 的 TrLocal 行经逐 `d` 核心 `∀ d, 3 ≤ d → (d 处的 UNLocAvg) → d 处的 TrLocal` 证，已合并的 `∀ d` 文本作一行推论，所以 M1 b 不等 MN-D3；M1 的 `UNLocAvgBA` 桥、M3 的 `UNQueBA` 桥同理。**MNO-C4**：每个 1a 自下而上重新定价，新行在 1a 时就进预测，15 线规则在那时适用。
+- (3) **放 T2513 = MN-D3**（总调度直接写票，`docs/tickets/T2513.md`、检查 `T2513-check.lean`：只 `#check` 0643 Q2 单子里的已合并名字）：设计门，报告 + 探针（≤ 300，上限 400），`prover-max`；交付 D1 过滤词汇（新名字）、D2 MNO-C2 逐条表（含 grep）、D3 探针（`d = 3` 的 `BAEnd_BUnivL 3` 只带 `UNL32` 与 `d = 3` 输入）、D4 实现价与归属（进 N2 或另开泛型行）、D5 MNO-C3 的逐 `d` 核心文本、D6 关闭条件 (vi) 的两个签名。只合并报告，探针留在分支。**现在开工**，与 T2511 行 a 并行。
+- (4) 计数：BA 196（+1，MN-D3 是 T2379/T2449 计划外的门）；V 14 / 12（预测 14；V 关闭 REQ 在 T2511 b 合并后发）；**M/N 4 / 15**（预测 ≈ 12）。在跑：T2511a，H314 后加 T2513（2 / 4）。H314。下一节 §337，下一张票号 T2514，下一条 H315。
