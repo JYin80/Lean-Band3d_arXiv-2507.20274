@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row d (targets 13-17) 1b prover-max 6ae6bd6b; audit PASS round 1 (claude-opus-5-5, wf_69630801-69c); merging (rule A), full lake build running. Landed 1,853 vs line 2,386.
+updated: Fri Oct 16 18:56:53 UTC 2026
+reports: docs/reports/T2519d-prove.md, docs/reports/T2519d-audit.md

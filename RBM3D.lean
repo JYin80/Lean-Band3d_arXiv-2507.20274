@@ -662,6 +662,8 @@ import RBM3D.BA.GUEHypBBA
 import RBM3D.BA.GUEPathBoundsBA
 import RBM3D.BA.GUETwistBA
 import RBM3D.BA.GUETwistBA2
+import RBM3D.BA.GUELLBA
+import RBM3D.BA.GUEHyp
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
