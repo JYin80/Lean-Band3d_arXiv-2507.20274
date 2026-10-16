@@ -470,3 +470,4 @@
 - 2026-10-15 10:16 UTC 调度 V4：M3 合并 9c5fc941（M 链完成）；C5 起草：6,311 行、四行，预测 17 → 短 REQ-2026-10-15-1015-C5split；H319；DECISIONS §344。
 - 2026-10-15 10:45 UTC 调度 V4：C4 行 a 合并 ff7bd277（1,395，×1.34）；C3 行 b 审核 RETURN（目标 10 实例退化，中枢修复）；DECISIONS §345。
 - 2026-10-15 11:03 UTC 调度 V4：C4 完成（26561542）；监督 1044 PASS（C5、旗标 20）；T2515b audit-fail 待签字；照 Jun 的话交接：HANDOFF（V4 → V5）、STARTUP §2/§3/§5、DISPATCHER-PROMPT（V5）、H320；DECISIONS §346。V4 停。
+- 2026-10-16 09:54 UTC 调度 V5：接手（session_01TaEcrA2Z45rxfP66wcBhm7，junyin.harvard@gmail.com）；核对无新合并、中枢在线；T2515 行 b 签字（Amend 1，方案 3），H321 第 3 轮审核后合并；不写新票；DECISIONS §347。
