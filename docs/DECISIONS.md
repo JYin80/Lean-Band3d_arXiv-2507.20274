@@ -3638,3 +3638,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **开工**：1a（探针，无证明目标）在 T2519 的 1a-audit PASS 后从 `main` 开（N2 按名读 `BAKFam`、`BAPB`，`KF`、`PB` 自由，不重述 `n₀`，监督 1134 O3）；1b 在 T2519 行 d 合并后。H325。
 - (4) 计数：N2 = M/N 第 18 行（C5 = 13–17）；预测 18，旗标 20；BA +0（1a-audit 后 203）。在跑（预期）：C5 行 a、b、b′ + N2 的 1a = 4 / 4。
 - 下一节 §354，下一张票号 T2521（MA-06b），下一条 H326，下一个 paper-delta D738。
+
+## §354 — C5 的 1a-audit RETURN 只为签字：调度签 Amend 3（F1、F2、`open private`、报告行），1a-audit 记 PASS；C5 行 a、b、b′ 与 N2 的 1a 开工（H326）；C5 记账 M/N 13–17（总调度 V5，2026-10-16 13:13 UTC）
+
+- (1) **H324、H325 done 1545818f**（13:03）：两份 T2520 检查都 exit 0；T2520 的 1a 等 C5 的 1a-audit。**C5 的探针 PASS**（b992c2e7，298 行，exit 0，标准公理）。**1a-audit（13:04）RETURN、要调度签字**（它开跑时 Amend 2 还没提交）：签了全部 `T2519_*` 文本、Amend 1 第 2 条的 `example`、D1 (i)–(v)、L1、普查、拆分 a | b | b′ | c | d（b′ 启用，a′、c′ 不用）；要求 (1) C5S-C1 的裁定；(2) 记下 `T2519_HoffBA` 里超出 Amend 1 字面的 F1（`4 ≤ n0`）与 F2（`Kt = m` 前提加 `0 < g n →` 守卫）；(3) 对 `open private … from BA/TwistAvgB` 与 `TwistPins` 闭包的裁定；(4) 报告补 (iv)、(viii) 两行。
+- (2) **签字 = `docs/tickets/T2519-amend-3.md`**：(1) 已由监督 1248 裁定、落在 Amend 2 第 4 条内（9,080 ≤ 9,564 等），9,025 线现在失效；(2) F1、F2 照探针 `:79-98` 签（F1 由 `lk 4` 强制，`n0 ≥ 5` 允许但不要求，不触 Amend 1 第 4 条；F2 削弱前提）；(3) 准许按 (iii′) 的清单读 `BA/TwistAvg*` 的引理，其中私有的经 `open private` 读，不改文件、不删 `private`，传递导入 `TwistPins` 接受（1248 C5L-C3）；(4) 两行移到各行的报告；外加审核观察 1b：行 a 的 `Hyp_Kt_detDomBA` 结论形式要与探针 `:238-240` 的 `hKdet` 一致。流程事，不发 REQ。
+- (3) **H326**：提交 Amend 3 等；**C5 的 1a-audit 按 Amend 3 记为 PASS**：现在开行 a（`t/T2519`）、行 b（`t/T2519b`）、行 b′（`t/T2519b2`），b、b′ 叠在 a 的第一个提交上，都 `prover-max`；落地线照 Amend 2 第 5 条；T2520 的 1a（`prover-hard`）同时开（4 / 4）。
+- (4) **计数（1a 记账）**：C5 行 b、b′、c、d = M/N 第 14–17 行（BA 200–203）；N2 第 18 行；预测 18，旗标 20。返工：T2519 的两次 1a（第一次 FAIL、Amend 1–3）在合并时记账。
+- 下一节 §355，下一张票号 T2521，下一条 H327，下一个 paper-delta D738。
