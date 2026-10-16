@@ -52,6 +52,8 @@ claude --remote-control RBM3D执行中枢
 
 ## 3. 数学监督定时任务（由总调度创建，Jun 在确认框里批准）
 
+（2026-10-16 10:36 UTC：调度 V5 按 Jun「开启监督」在账号 junyin.harvard@gmail.com 上新建 **`trig_01BrMU6EVEAcJw5bdXZd9ptU`**（cron `41 * * * *`，要求本机 Mac Studio，连接 `/Users/junyin/Lean_proof/RBM3D`，模型 claude-opus-5-5，自动批准，推送开，提示词即下文原样；DECISIONS §348）。旧任务 `trig_01R1NVdwWjDU2P5KMhtTLr43` 在 misslose@g.ucla.edu 上，新账号停不了：它若仍在跑，请 Jun 在那个账号里暂停，免得同一个请求被处理两次。）
+
 （2026-10-15 11:03 UTC 核对：任务 `trig_01R1NVdwWjDU2P5KMhtTLr43` 仍在账号 misslose@g.ucla.edu 上运行（最近一次 10:42 UTC 成功），cron `41 * * * *`，连接 `/Users/junyin/Lean_proof/RBM3D`，自动批准，推送开。换调度不用重建；只有换账号时才按下面重建。）
 
 - 名称：RBM3D 数学监督（每小时看请求队列）
