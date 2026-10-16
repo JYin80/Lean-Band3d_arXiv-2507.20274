@@ -1840,3 +1840,12 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 - **D735** ← `T2516a`（M2，新 `BA/MAQDiff`，dec8e150）：论文 `1_2:1228` 用「标准的 `N^{-C}` 网与扰动论证（细节略）」把固定 `z` 的估计推到所有 `z`；在 BA 上扰动一步要剖面 `W^{-d}(ΘM)^{(+,σ)}(z)` 对 `z` 的 Lipschitz 界，论文没写。Lean：`baProf_lip`，`C = 12 κ'⁻²(1 + κ'⁻²)`，`κ' = (πκ)^5/2048`，对每个 `d`、`sz`、`n`。
 - **D736** ← `T2517a`–`b`（C4 行 a，新 `BA/GUEOneLoop`，ff7bd277）：(a) GUE 相网格上的 BA 版 Lemma 5.15（`6:12-21`「same as [YY_25, Lemma 5.15]」）：稳定性是 `1 − M^{(+,+)} Ŝ`、`Ŝ = t₁ 1 + σ J`，`K = 16κ⁻⁴(1+16κ⁻⁴)`，对 `L`、`g` 一致，界是网格形 `N^ε (N η_u)⁻²`，不是 `(W^{-d} B_{u,0})²`；(b) 新输入 `hoff`（带状没有，因为那里 `M = m 1`）：`|t_aq − M^{(++)}_aq| ≺ |M^{(B)}_aq| (N η_u)⁻¹`，`t_aq = W^{-d} Σ_{x∈[a], y∈[q]} M_xy G_yx`，对所有有序对；生产者 C5（T2519，链恒等式 `t_aq − Q_aq = M^B_aq twTr(q,a)`）。
 - **D737** ← `T2517c`–`d`（C4 行 b，新 `BA/GUEEq729BA`，26561542）：(c) BA 的漂移、条件一步与 (7.29) 一步递推在自由流点 `(g, E, m)`（`0 < Im m`、`‖m‖ ≤ 1`）上陈述（带状孪生是 `m = m_sc(E)`、`|E| < 2`），`m` 是 `(eq:zt)`（`1_2:716`）的流点值；(d) 载体：BA 路径的 GUE 部分是 `Pgue (sz.withLam 0)`（`S^{(B)}(0) = 1`）平移 `H_0 = g Ψ_I` 的网格游走，代替布朗运动 `(MBM)`（`1_2:685-691`）。
+
+## 合并时编号 T2519 行 a、b（C5；总调度 V5，2026-10-16 14:47 UTC；DECISIONS §360；行 b 报告的 `T2519ba2` 与行 a 的 `T2519f` 是同一件事，合为一条）
+
+- **D738** ← `T2519a`（C5 的 1a 与 (a′)，Amend 1；行 a 9e07cc2e）：GUE 相路径界取到 `n₀ = 4`（`gueGridK sz 4`，K 族的 loop 长度 `≤ 4·4`），`hoff` 的路线 R1 用 T.7 的输入集（PB 的 `lk k ≤ 4`、`localLaw`、2/4-loop 的 K 界）；论文只说 GUE 相「与 [YY_25, Theorem 2.6] 本质相同」（`1_2:566-570`）。
+- **D739** ← `T2519b`（行 a，`GUEPathBoundsBA.localLaw`、`gueDevBA`、`gueGrid_entry_boundBA`）：BA 的网格局部律对 `M = M^{(B)} ⊗ 1`（`Mres (g Ψ_I) E m`）陈述；论文的 GUE 相写 `‖G − m‖_max`。
+- **D740** ← `T2519c`（行 a；按 T2519 Amend 4 改写）：耦合窗口 `0 < g n ≤ Λ` 在整个 C5 里只要求对 `n` 最终成立（论文的「`N` 足够大」），`BAReal` 对每个 `n`；Lean 记账，不改论文。
+- **D741** ← `T2519e`（行 a，`GUEHypABA_hell_of_hell`）：BA 的零模区间是 `L^d (1 − t₁) ≤ 2 g²`（`g = √t₀ λ`），由 `RBG_Prod` 的 `L^d (1 − t₁) ≤ λ²`、`≤ 1` 推出。
+- **D742** ← `T2519f` + `T2519ba2`（行 a `gueDevBA_succ_le`，行 b affd3e77）：网格一步中 `z_u` 的跳是 `‖z_{j+1} − z_j‖ = Δ ‖m‖ ≤ Δ`（`‖m‖ ≤ 1`），带状是 `Δ`；只用不等式。
+- **D743** ← `T2519ba1` + `T2519ba3`（行 b，新 `BA/GUEDuhamelBA`、`GUEDuhamelBA2`）：GUE 相 loop 的离散 Duhamel 余项在 BA 网格路径 `g Ψ_I + H_k`、`z_t = E + (1 − t) m` 上陈述，条件 `0 < Im m`、`‖m‖ ≤ 1` 代替 `|E| ≤ 2 − κ`（论文无此陈述）；`Duhamel_step_decompBA` 不需要 `0 ≤ t1 n`（loop 的 `C²` 界只用 `u < 1`）。

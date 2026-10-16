@@ -3685,3 +3685,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 
 - H327 done 66649d46：`T2521-check.lean` exit 1，`:25` 的 `#check @RBM.BA.unMLOutBA_three` 未知——检查只导入 `Main/BandTerminal`、`BA/MAPins`，`BA/MainIndTermBA` 不在闭包里（TEAM §10.8 的老坑，调度的错）。修正：该行改为注释（行数不变；这个名字由 N2 读，MA-06b 不需要）。开工前的检查修正，不算返工。H328 重编、通过就开 1a。
 - 下一节 §360，下一张票号 T2522，下一条 H329，下一个 paper-delta D738。
+
+## §360 — C5 行 a、b 合并；行 a 审核观察 2：耦合窗口在 C5 里一律改为「最终成立」，三个 `∀ n` 输入加带撇后继，行 c 负责（T2519 Amend 4）（总调度 V5，2026-10-16 14:47 UTC）
+
+- (1) **行 a 合并** 9e07cc2e（14:29）：新 `BA/GUEProcBA` 645、`GUEHypABA` 920、`GUEEntryGridBA` 425，落地 1,990 / 线 2,927；审核第 1 轮 PASS；登记 `structuralProps` 行 `RBM.BA.GUEPathBoundsBA`；探针留在 `t/T2519`。**行 b 合并** affd3e77（14:42）：新 `BA/GUEDuhamelBA` 948、`GUEDuhamelBA2` 1,058，落地 2,006 / 线 2,245；审核第 1 轮 PASS（观察 2：端点内联 `loopMax (gueHBA …)`，与 `gueLmaxBA` 定义相等，行 c 用 `unfold`/`rfl` 接）。C5 累计 3,996 / 12,000。行 c 14:42:49 开工（wf_9ce94310-f95，`prover-hard`）；行 b′ 在跑。
+- (2) **缺口**（行 a 审核 §6 观察 2 = 证明报告 (d) 1）：C3 b 的钉文 `GUEEntryMixBA`、C4 a 的 `gueGrid_expect_oneLoopBA`、行 a 的 `gueGrid_entry_boundBA` 要求每个 `n` 都有 `0 < g n ≤ 𝔡⁻¹`（或 `Λ`）；BA 生产者处 `g n = √t₀ λ_n`，窗口只由 `(eq:WO)` 最终成立（`Sizes.lam` 无符号），`BAReal` 则对每个 `n` 成立（`RBG_Prod` 的 `BAEd` 是 `∀ n`）。所有相关结论都是对 `n` 最终的。
+- (3) **裁定（流程，调度自定）**：在源头把窗口放宽为最终成立，用带撇后继（CLAUDE.md：不改冻结签名）：`GUEEntryMixBA'`/`gueEntryMixBA'`、`gueGrid_entry_boundBA'`、`gueGrid_expect_oneLoopBA'`，前提拆成 `∀ n, BAReal` 与 `∀ᶠ n, 0 < g n ≤ c`；证明搬过去（窗口只在 `filter_upwards` 里的一个 `n` 用到：`GUEEntry2:816`、`GUEEntryGridBA:323`、`GUEOneLoop:1240`；`GUEOneLoop:1227` 的 `(hg 0)` 改用最终窗口的见证），原定理变包装，不复制证明。行 c、d 的公开陈述一律取最终窗口。弃用的两条路：沿 `Sizes.comp` 平移（要 `Pgue` 的重标号像律，仓库里没有）、对小 `n` 换数据（要任意 `L`、`κ` 下 BA 数据的存在引理，是新数学）。
+- (4) **归属与价格**：行 c 第一个提交做三处后继（行 d 从 `main` 读）；行 c 可写文件加 `BA/GUEEntry2`、`BA/GUEEntryGridBA`、`BA/GUEOneLoop`（只限这三处）；≤ 200 行 diff，算在行 c 的线 2,811 里（不加线），C5 总线 12,000 不变。停止：某个证明在最终过滤之外用窗口、需要改 > 60 行，或后继要新的 `Prop` 前提，或行 c 自己的陈述取不了最终窗口 → 写问题到 `T2519c.state`。`GUEEntryMixBA` 没有登记行，带撇的也不加。
+- (5) **返工**：Amend 4 写在行 c 开工之后（约 5 分钟），按「开工后的 Amend 算返工」记入 T2519 的返工账（合并时写行）；H329 让中枢把 Amend 4 交给在跑的行 c（不能中途加输入就停下重开行 c 的 1b，已有提交保留）。
+- (6) **paper-deltas**：行 a、b 的标签编号 D738–D743（`T2519a`、`b`、`c`（按 Amend 4 改写）、`e`、`f` + `ba2`、`ba1` + `ba3`）。
+- 下一节 §361，下一张票号 T2522，下一条 H330，下一个 paper-delta D744。
