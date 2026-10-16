@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row b′ (target 7 gueGrid_twistBA; d = 3 instance) 1b prover-max ee2e973c; audit round 1 RETURN (instance twist_sz0 vacuous at window [17/20, 9/10]); one rule-(B) repair aa49d4d3 (GUE-phase window); audit round 2 PASS (claude-opus-5-5, wf_0b79f632-ecc); merging (rule A) onto main 432301f7, full lake build running. Landed 2,977 > line 2,719 (H330 (2): row d not started).
+updated: Fri Oct 16 16:19:45 UTC 2026
+reports: docs/reports/T2519b2-prove.md, docs/reports/T2519b2-audit.md
