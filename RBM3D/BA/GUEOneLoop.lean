@@ -1186,6 +1186,89 @@ private theorem GUEOneLoop_expect_bound {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) 
 
 end Wrapper
 
+/-- **`gueGrid_expect_oneLoopBA'`** (T2519 Amend 4 item 2): `gueGrid_expect_oneLoopBA` with the coupling window `0 < g n ≤ Λ`
+eventually (`hr` stays at every `n`); the proof of `gueGrid_expect_oneLoopBA` moved here, the window is one more entry of the
+`filter_upwards` and `CM ≥ 0` is by positivity. -/
+theorem gueGrid_expect_oneLoopBA' (d : ℕ) :
+  3 ≤ d → ∀ (sz : Sizes d) (κ Λ : ℝ), 0 < κ → 0 < Λ →
+    ∀ (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ),
+    Tendsto (fun n => sz.size n) atTop atTop →
+    (∀ᶠ n in atTop, 0 < g n ∧ g n ≤ Λ) → (∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) →
+    (∀ n, 0 ≤ t1 n) → (∀ n, t1 n ≤ t0 n) → (∀ n, t0 n < 1) → (∀ n, K n ≠ 0) →
+    StochDomAt (Pgue (sz.withLam 0)) sz.size
+      (fun n (p : Fin (K n + 1) × Zd d (sz.L n)) ω =>
+        ‖loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n)
+            (gueHBA sz g t1 t0 K n p.1 ω))
+            (ztOf (m n) (E n) (gridTime t1 t0 K n p.1)) ⟨[true], [p.2]⟩ - m n‖)
+      (fun n p _ => (((sz.size n : ℕ) : ℝ) * etaOf (m n) (gridTime t1 t0 K n p.1))⁻¹) →
+    StochDomAt (Pgue (sz.withLam 0)) sz.size
+      (fun n (p : Fin (K n + 1) × Zd d (sz.L n) × Zd d (sz.L n)) ω =>
+        ‖(((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d (sz.L n) (sz.W n) p.2.1, ∑ y ∈ Iblk d (sz.L n) (sz.W n) p.2.2,
+            Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n) x y *
+              Gres (gueHBA sz g t1 t0 K n p.1 ω)
+                (ztOf (m n) (E n) (gridTime t1 t0 K n p.1)) true y x -
+          BAMss d (sz.L n) (BAMB d (sz.L n) (g n) (E n : ℂ) (m n)) true true p.2.1 p.2.2‖)
+      (fun n p _ => ‖BAMB d (sz.L n) (g n) (E n : ℂ) (m n) p.2.1 p.2.2‖ *
+        (((sz.size n : ℕ) : ℝ) * etaOf (m n) (gridTime t1 t0 K n p.1))⁻¹) →
+    ∀ ε > (0 : ℝ), ∀ᶠ n : ℕ in atTop, ∀ p : Fin (K n + 1) × Zd d (sz.L n),
+      ‖(∫ ω, loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n)
+            (gueHBA sz g t1 t0 K n p.1 ω))
+            (ztOf (m n) (E n) (gridTime t1 t0 K n p.1)) ⟨[true], [p.2]⟩ ∂(Pgue (sz.withLam 0))) - m n‖ ≤
+        ((sz.size n : ℕ) : ℝ) ^ ε * (((sz.size n : ℕ) : ℝ) * etaOf (m n) (gridTime t1 t0 K n p.1))⁻¹ ^ 2
+    := by
+  intro hd sz κ Λ hκ hΛ g E t1 t0 m K hsize hg hr ht1 ht10 ht0 hK h1 hoff ε hε
+  obtain ⟨Kst, hKst0, hKst⟩ := baOneLoop_stable κ hκ
+  set CM : ℝ := (BAct_rate d Λ κ)⁻¹ * expC (d - 2) (BAct_rate d Λ κ) with hCMdef
+  have hCM0 : 0 ≤ CM := by
+    have hc := BAct_rate_pos d Λ κ (by omega) hΛ hκ
+    rw [hCMdef]; unfold expC; positivity
+  have hsz : Tendsto (fun n => ((sz.size n : ℕ) : ℝ)) atTop atTop := tendsto_natCast_atTop_iff.mpr hsize
+  have hb1 := h1 (ε / 4) (by positivity) 7 (by norm_num)
+  have hb2 := hoff (ε / 4) (by positivity) 7 (by norm_num)
+  set C0 : ℝ := Kst * (CM + 8 * κ⁻¹) with hC0
+  have hC00 : 0 ≤ C0 := mul_nonneg hKst0.le (add_nonneg hCM0 (by positivity))
+  have habs : ∀ᶠ n : ℕ in atTop, C0 + 1 ≤ ((sz.size n : ℕ) : ℝ) ^ (ε / 2) :=
+    ((tendsto_rpow_atTop (half_pos hε)).comp hsz).eventually (eventually_ge_atTop (C0 + 1))
+  filter_upwards [hb1, hb2, habs, hsz.eventually (eventually_ge_atTop 1), hg] with n h1n h2n hn hN1r hgn
+  rintro ⟨k, a⟩
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  have hN0 : (0 : ℝ) < N := by linarith
+  have hbound := GUEOneLoop_expect_bound sz hd hκ hΛ n hgn (hr n) (ht1 n) (ht10 n) (ht0 n) K (hK n) k
+    (Nat.lt_succ_iff.1 k.isLt) hKst0.le (hKst d (sz.L n) (g n) (E n) (m n) (hr n)) (ρ := N ^ (ε / 4)) _ _ h1n h2n
+    (fun ω hω b => by
+      by_contra hc
+      exact hω ⟨(k, b), lt_of_not_ge hc⟩)
+    (fun ω hω a' q => by
+      by_contra hc
+      exact hω ⟨(k, a', q), lt_of_not_ge hc⟩) a
+  -- the constants
+  set Λ2 := (N * etaOf (m n) (gridTime t1 t0 K n k))⁻¹ ^ 2 with hΛ2
+  have hΛ20 : 0 ≤ Λ2 := by rw [hΛ2]; exact sq_nonneg _
+  set X := N ^ (ε / 2) with hX
+  have hρ : (N ^ (ε / 4)) ^ 2 = X := by
+    rw [hX, ← Real.rpow_natCast, ← Real.rpow_mul hN0.le]
+    norm_num
+    ring_nf
+  have hNε : N ^ ε = X * X := by
+    rw [hX, ← Real.rpow_add hN0]
+    ring_nf
+  have hX1 : 1 ≤ X := by linarith
+  have hk8 : 0 ≤ 8 * κ⁻¹ := by positivity
+  have key : Kst * (X * CM + 8 * κ⁻¹) ≤ X * X := by
+    have h1' : Kst * (X * CM + 8 * κ⁻¹) ≤ X * C0 := by
+      have : 8 * κ⁻¹ ≤ 8 * κ⁻¹ * X := le_mul_of_one_le_right hk8 hX1
+      calc Kst * (X * CM + 8 * κ⁻¹) ≤ Kst * (X * CM + 8 * κ⁻¹ * X) :=
+            mul_le_mul_of_nonneg_left (by linarith) hKst0.le
+        _ = X * C0 := by rw [hC0]; ring
+    calc _ ≤ X * C0 := h1'
+      _ ≤ X * X := mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+  rw [hρ] at hbound
+  calc _ ≤ Kst * ((X * CM + 8 * κ⁻¹) * Λ2) := hbound
+    _ = (Kst * (X * CM + 8 * κ⁻¹)) * Λ2 := by ring
+    _ ≤ (X * X) * Λ2 := mul_le_mul_of_nonneg_right key hΛ20
+    _ = N ^ ε * Λ2 := by rw [hNε]
+
+
 /-- **Target 4, Lemma 5.15 on the GUE-phase grid at BA** (twin of `gueGrid_expect_oneLoop`, `OneLoop:1308`; the text of
 `T2517_OneLoopBA`, signed by `docs/reports/T2517-1a-audit.md`): flow data `(g, E, m)` (`g` the flow-point coupling `λ₀`),
 `M = (gΨ - E - m)⁻¹` (`BAMB`; fine `Mres (gΨ_I) E m`), path `gueHBA`, `z_u = ztOf m E u`, `η_u = etaOf m u`.  Inputs:
@@ -1221,56 +1304,8 @@ theorem gueGrid_expect_oneLoopBA (d : ℕ) :
         ((sz.size n : ℕ) : ℝ) ^ ε * (((sz.size n : ℕ) : ℝ) * etaOf (m n) (gridTime t1 t0 K n p.1))⁻¹ ^ 2
     := by
   intro hd sz κ Λ hκ hΛ g E t1 t0 m K hsize hg hr ht1 ht10 ht0 hK h1 hoff ε hε
-  obtain ⟨Kst, hKst0, hKst⟩ := baOneLoop_stable κ hκ
-  set CM : ℝ := (BAct_rate d Λ κ)⁻¹ * expC (d - 2) (BAct_rate d Λ κ) with hCMdef
-  have hCM0 : 0 ≤ CM := by
-    have h := baM_row_l1 (by omega) (sz.three_le_L 0) Λ (g 0) κ (E 0) (m 0) hΛ (hg 0).1 (hg 0).2 hκ (hr 0) 0
-    exact (Finset.sum_nonneg fun p _ => norm_nonneg _).trans h
-  have hsz : Tendsto (fun n => ((sz.size n : ℕ) : ℝ)) atTop atTop := tendsto_natCast_atTop_iff.mpr hsize
-  have hb1 := h1 (ε / 4) (by positivity) 7 (by norm_num)
-  have hb2 := hoff (ε / 4) (by positivity) 7 (by norm_num)
-  set C0 : ℝ := Kst * (CM + 8 * κ⁻¹) with hC0
-  have hC00 : 0 ≤ C0 := mul_nonneg hKst0.le (add_nonneg hCM0 (by positivity))
-  have habs : ∀ᶠ n : ℕ in atTop, C0 + 1 ≤ ((sz.size n : ℕ) : ℝ) ^ (ε / 2) :=
-    ((tendsto_rpow_atTop (half_pos hε)).comp hsz).eventually (eventually_ge_atTop (C0 + 1))
-  filter_upwards [hb1, hb2, habs, hsz.eventually (eventually_ge_atTop 1)] with n h1n h2n hn hN1r
-  rintro ⟨k, a⟩
-  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
-  have hN0 : (0 : ℝ) < N := by linarith
-  have hbound := GUEOneLoop_expect_bound sz hd hκ hΛ n (hg n) (hr n) (ht1 n) (ht10 n) (ht0 n) K (hK n) k
-    (Nat.lt_succ_iff.1 k.isLt) hKst0.le (hKst d (sz.L n) (g n) (E n) (m n) (hr n)) (ρ := N ^ (ε / 4)) _ _ h1n h2n
-    (fun ω hω b => by
-      by_contra hc
-      exact hω ⟨(k, b), lt_of_not_ge hc⟩)
-    (fun ω hω a' q => by
-      by_contra hc
-      exact hω ⟨(k, a', q), lt_of_not_ge hc⟩) a
-  -- the constants
-  set Λ2 := (N * etaOf (m n) (gridTime t1 t0 K n k))⁻¹ ^ 2 with hΛ2
-  have hΛ20 : 0 ≤ Λ2 := by rw [hΛ2]; exact sq_nonneg _
-  set X := N ^ (ε / 2) with hX
-  have hρ : (N ^ (ε / 4)) ^ 2 = X := by
-    rw [hX, ← Real.rpow_natCast, ← Real.rpow_mul hN0.le]
-    norm_num
-    ring_nf
-  have hNε : N ^ ε = X * X := by
-    rw [hX, ← Real.rpow_add hN0]
-    ring_nf
-  have hX1 : 1 ≤ X := by linarith
-  have hk8 : 0 ≤ 8 * κ⁻¹ := by positivity
-  have key : Kst * (X * CM + 8 * κ⁻¹) ≤ X * X := by
-    have h1' : Kst * (X * CM + 8 * κ⁻¹) ≤ X * C0 := by
-      have : 8 * κ⁻¹ ≤ 8 * κ⁻¹ * X := le_mul_of_one_le_right hk8 hX1
-      calc Kst * (X * CM + 8 * κ⁻¹) ≤ Kst * (X * CM + 8 * κ⁻¹ * X) :=
-            mul_le_mul_of_nonneg_left (by linarith) hKst0.le
-        _ = X * C0 := by rw [hC0]; ring
-    calc _ ≤ X * C0 := h1'
-      _ ≤ X * X := mul_le_mul_of_nonneg_left (by linarith) (by linarith)
-  rw [hρ] at hbound
-  calc _ ≤ Kst * ((X * CM + 8 * κ⁻¹) * Λ2) := hbound
-    _ = (Kst * (X * CM + 8 * κ⁻¹)) * Λ2 := by ring
-    _ ≤ (X * X) * Λ2 := mul_le_mul_of_nonneg_right key hΛ20
-    _ = N ^ ε * Λ2 := by rw [hNε]
+  exact gueGrid_expect_oneLoopBA' d hd sz κ Λ hκ hΛ g E t1 t0 m K hsize (Filter.Eventually.of_forall hg) hr ht1 ht10 ht0 hK
+    h1 hoff ε hε
 
 
 /-! ## 6. Compiled nonempty instances (target 5)
@@ -1385,6 +1420,13 @@ two `StochDomAt` premises `h1`, `hoff` (the pins of C5) are the only open arrows
 example := gueGrid_expect_oneLoopBA 3 le_rfl sz0 (1 / 2) 1 (by norm_num) one_pos (BAflowLam0 sz0 zSeq)
   (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq))
   (fun _ => 4) (tendsto_natCast_atTop_iff.mp sz0_tendsto) GUEOneLoopInst_window
+  (fun n => BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n)
+  (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
+
+/-- **`gueGrid_expect_oneLoopBA'` at the same datum** (Amend 4 item 2): the window `0 < g_n ≤ 1` as an eventual premise. -/
+example := gueGrid_expect_oneLoopBA' 3 le_rfl sz0 (1 / 2) 1 (by norm_num) one_pos (BAflowLam0 sz0 zSeq)
+  (BAflowEs sz0 zSeq) (fun _ => 1 / 4) (fun _ => 1 / 2) (BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq))
+  (fun _ => 4) (tendsto_natCast_atTop_iff.mp sz0_tendsto) (Filter.Eventually.of_forall GUEOneLoopInst_window)
   (fun n => BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n)
   (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
 

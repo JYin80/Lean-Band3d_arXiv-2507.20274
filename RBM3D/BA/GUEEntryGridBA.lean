@@ -286,15 +286,11 @@ private theorem EntryGridBA_pointwise (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (
       mul_nonneg hs (add_nonneg (by unfold gueLmaxBA; exact RBM.Ind.loopMax_nonneg 2) (by positivity))
     exact absurd hlt (not_lt.2 h0)
 
-/-- **Lemma 4.1 (4.2)+(4.3) on the BA grid**, on the size scale, `d ≥ 3` (twin of `gueGrid_entry_bound`, `EntryGrid:518`).  On the a priori
-event `{all entries of G - M ≤ δ_n}`, `δ_n ≤ N^{-c₀}`, `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, the squared entry `|(G_k - M)_{ij}|²` of the
-grid resolvent at the grid time `u_k` is `≺ max_{a,b} |𝓛_{(+,-),(a,b)}| + W^{-d}` (`gueLmaxBA _ 2`, the 2-loop maximum), uniformly in
-`k ≤ K_n`, `i`, `j`.  Proof: per grid point `k` the bad event on `Pgue (sz.withLam 0)` has the `ouP`-probability of the bad event of the mixture
-`mixMatBA` (`map_gueHBA_eq_mixMatBA`), a subset of the event of C3 b's `gueEntryMixBA` (`a = t₁`, `b = u_k - t₁`); the union over the
-`K_n + 1` grid points costs a power of `N`; at grid time `0` (`t₁ = 0`) the path is `g Ψ_I` and the bad event is empty.  The family premise
-`hdata` is that of `GUEEntryMixBA` (`0 < g n ≤ 𝔡⁻¹` and `BAReal` at every `n`), see the module header. -/
-theorem gueGrid_entry_boundBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ} (hadm : sz.Admissible 𝔠 𝔡) (hκ : 0 < κ) (n0 : ℕ)
-    {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hdata : ∀ n, 0 < g n ∧ g n ≤ 𝔡⁻¹ ∧ BAReal d (sz.L n) (g n) κ (E n) (m n))
+/-- **`gueGrid_entry_boundBA'`** (T2519 Amend 4 item 2): `gueGrid_entry_boundBA` with the family premise split into `BAReal` at every `n`
+and the coupling window `0 < g n ≤ 𝔡⁻¹` eventually; the proof of `gueGrid_entry_boundBA` moved here, from `gueEntryMixBA'`. -/
+theorem gueGrid_entry_boundBA' (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ} (hadm : sz.Admissible 𝔠 𝔡) (hκ : 0 < κ) (n0 : ℕ)
+    {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n))
+    (hwin : ∀ᶠ n in atTop, 0 < g n ∧ g n ≤ 𝔡⁻¹)
     (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n) (ht0 : ∀ n, t0 n < 1) {δ : ℕ → ℝ} (hδ0 : ∀ n, 0 ≤ δ n)
     {c₀ : ℝ} (hc₀ : 0 < c₀) (hδ : ∀ᶠ n in atTop, δ n ≤ ((sz.size n : ℕ) : ℝ) ^ (-c₀)) :
     StochDomAt (Pgue (sz.withLam 0)) sz.size
@@ -310,7 +306,7 @@ theorem gueGrid_entry_boundBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ}
   intro τ hτ D hD
   have hd1 : 1 ≤ d := by omega
   have hD' : 0 < D + 1 + ((64 * n0 + 128 : ℕ) : ℝ) := by positivity
-  have hmix := gueEntryMixBA hd 𝔠 𝔡 sz hadm κ hκ g E m hdata (64 * n0 + 128) (gueGridK sz n0)
+  have hmix := gueEntryMixBA' hd 𝔠 𝔡 sz hadm κ hκ g E m hr hwin (64 * n0 + 128) (gueGridK sz n0)
     (EntryGrid_gridK_le sz hd1 n0) (fun n k => EntryGrid_a t1 t0 (gueGridK sz n0) n k)
     (fun n k => EntryGrid_b t1 t0 (gueGridK sz n0) n k)
     (fun n k => EntryGrid_params t1 t0 (gueGridK sz n0) n k (ht1 n) (ht10 n) (ht0 n)
@@ -320,7 +316,7 @@ theorem gueGrid_entry_boundBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ}
   have hN2 := EntryGrid_two_le_size sz hd1 n
   have hs0 : 0 ≤ ((sz.size n : ℕ) : ℝ) ^ τ := Real.rpow_nonneg (Nat.cast_nonneg _) _
   have hw : ((E n : ℂ) + m n).im ≠ 0 := by
-    have := (hdata n).2.2.1.1
+    have := (hr n).1.1
     simpa using this.ne'
   -- Step 1: the bad event is inside the union over the grid of the preimages of the matrix bad sets
   refine le_trans (measure_mono (t := ⋃ k : Fin (gueGridK sz n0 n + 1),
@@ -379,6 +375,32 @@ theorem gueGrid_entry_boundBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ}
     _ ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)) :=
         EntryGrid_union_arith _ _ _ hN2 (EntryGrid_gridK_le sz hd1 n0 n) D
 
+
+/-- **Lemma 4.1 (4.2)+(4.3) on the BA grid**, on the size scale, `d ≥ 3` (twin of `gueGrid_entry_bound`, `EntryGrid:518`).  On the a priori
+event `{all entries of G - M ≤ δ_n}`, `δ_n ≤ N^{-c₀}`, `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, the squared entry `|(G_k - M)_{ij}|²` of the
+grid resolvent at the grid time `u_k` is `≺ max_{a,b} |𝓛_{(+,-),(a,b)}| + W^{-d}` (`gueLmaxBA _ 2`, the 2-loop maximum), uniformly in
+`k ≤ K_n`, `i`, `j`.  Proof: per grid point `k` the bad event on `Pgue (sz.withLam 0)` has the `ouP`-probability of the bad event of the mixture
+`mixMatBA` (`map_gueHBA_eq_mixMatBA`), a subset of the event of C3 b's `gueEntryMixBA` (`a = t₁`, `b = u_k - t₁`); the union over the
+`K_n + 1` grid points costs a power of `N`; at grid time `0` (`t₁ = 0`) the path is `g Ψ_I` and the bad event is empty.  The family premise
+`hdata` is that of `GUEEntryMixBA` (`0 < g n ≤ 𝔡⁻¹` and `BAReal` at every `n`), see the module header. -/
+theorem gueGrid_entry_boundBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ} (hadm : sz.Admissible 𝔠 𝔡) (hκ : 0 < κ) (n0 : ℕ)
+    {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hdata : ∀ n, 0 < g n ∧ g n ≤ 𝔡⁻¹ ∧ BAReal d (sz.L n) (g n) κ (E n) (m n))
+    (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n) (ht0 : ∀ n, t0 n < 1) {δ : ℕ → ℝ} (hδ0 : ∀ n, 0 ≤ δ n)
+    {c₀ : ℝ} (hc₀ : 0 < c₀) (hδ : ∀ᶠ n in atTop, δ n ≤ ((sz.size n : ℕ) : ℝ) ^ (-c₀)) :
+    StochDomAt (Pgue (sz.withLam 0)) sz.size
+      (fun n (p : Fin (gueGridK sz n0 n + 1) × (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))) ω =>
+        {ω' : PathΩ (sz.withLam 0) | ∀ i j : Idx d (sz.L n) (sz.W n),
+            ‖(green (gueHBA sz g t1 t0 (gueGridK sz n0) n p.1 ω')
+                (ztOf (m n) (E n) (gridTime t1 t0 (gueGridK sz n0) n p.1)) -
+              Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n)) i j‖ ≤ δ n}.indicator
+          (fun ω' => ‖(green (gueHBA sz g t1 t0 (gueGridK sz n0) n p.1 ω')
+                (ztOf (m n) (E n) (gridTime t1 t0 (gueGridK sz n0) n p.1)) -
+              Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n)) p.2.1 p.2.2‖ ^ 2) ω)
+      (fun n p ω => gueLmaxBA sz g E t1 t0 m (gueGridK sz n0) n 2 p.1 ω + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) := by
+  intro τ hτ D hD
+  exact gueGrid_entry_boundBA' sz hd hadm hκ n0 (fun n => (hdata n).2.2)
+    (Filter.Eventually.of_forall fun n => ⟨(hdata n).1, (hdata n).2.1⟩) ht1 ht10 ht0 hδ0 hc₀ hδ τ hτ D hD
+
 end Main
 
 /-! ## 4. Compiled nonempty instances
@@ -417,6 +439,16 @@ example :=
     (fun _ => by norm_num) (fun _ => by norm_num) (δ := fun n => ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ)))
     (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) (c₀ := 1 / 20) (by norm_num)
     (Eventually.of_forall fun n => le_rfl)
+
+/-- `gueGrid_entry_boundBA'` at the same data (Amend 4 item 2): `BAReal` at every `n`, the window eventually. -/
+example :=
+  gueGrid_entry_boundBA' sz0 (d := 3) le_rfl (𝔠 := 1 / 6) (𝔡 := 1 / 10) (κ := 1 / 2) flow_sz0.1 (by norm_num) 2
+    (g := BAflowLam0 sz0 zSeq) (E := BAflowEs sz0 zSeq) (t1 := fun _ => 1 / 4) (t0 := fun _ => 1 / 2)
+    (m := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq)) (fun n => (GUEEntryGridBAInst_data n).2.2)
+    (Eventually.of_forall fun n => ⟨(GUEEntryGridBAInst_data n).1, (GUEEntryGridBAInst_data n).2.1⟩)
+    (fun _ => by norm_num) (fun _ => by norm_num) (fun _ => by norm_num)
+    (δ := fun n => ((sz0.size n : ℕ) : ℝ) ^ (-(1 / 20 : ℝ))) (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _)
+    (c₀ := 1 / 20) (by norm_num) (Eventually.of_forall fun n => le_rfl)
 
 end GUEEntryGridBAInst
 

@@ -755,6 +755,30 @@ def GUEEntryMixBA (d : ℕ) : Prop :=
             else 0)} ≤
       ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
 
+/-- **Pin `GUEEntryMixBA' d`** (T2519 Amend 4 item 2): the text of `GUEEntryMixBA d` with the family premise split into
+`BAReal` at every `n` and the coupling window `0 < g n ≤ 𝔡⁻¹` eventually (`StochDomAt` is eventual; the BA producers have
+`g n = √t₀ λ_n` with `0 < g n` only eventually). -/
+def GUEEntryMixBA' (d : ℕ) : Prop :=
+  ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+  ∀ (g E : ℕ → ℝ) (m : ℕ → ℂ), (∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) →
+  (∀ᶠ n in atTop, 0 < g n ∧ g n ≤ 𝔡⁻¹) →
+  ∀ n0 : ℕ, ∀ K : ℕ → ℕ, (∀ n, K n ≤ (sz.size n) ^ n0) → ∀ a b : ∀ n, Fin (K n + 1) → ℝ,
+  (∀ n k, 0 ≤ a n k ∧ 0 ≤ b n k ∧ 0 < a n k + b n k ∧ a n k + b n k < 1) →
+  ∀ (c₀ : ℝ) (δ : ℕ → ℝ), 0 < c₀ → (∀ n, 0 ≤ δ n) →
+  (∀ᶠ n in atTop, δ n ≤ ((sz.size n : ℕ) : ℝ) ^ (-c₀)) →
+  ∀ τ D : ℝ, 0 < τ → 0 < D → ∀ᶠ n in atTop,
+    ouP (UNModel.band (sz.withLam 0)) n
+      {ω | ∃ (k : Fin (K n + 1)) (i j : Idx d (sz.L n) (sz.W n)),
+        ((sz.size n : ℕ) : ℝ) ^ τ *
+            (GUEEntry_maxLoop d (sz.L n) (sz.W n) (m n) (E n) (a n k + b n k)
+                (mixMatBA sz n (g n) (a n k) (b n k) ω) + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) <
+          (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+                (mixMatBA sz n (g n) (a n k) (b n k) ω) x y ≤ δ n
+            then GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+                  (mixMatBA sz n (g n) (a n k) (b n k) ω) i j ^ 2
+            else 0)} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
+
 section Main
 variable {d : ℕ} 
 
@@ -777,13 +801,10 @@ theorem GUEEntry_sqrt_w0_le {N W 𝔠 : ℝ} {d : ℕ} (hN1 : 1 ≤ N) (hW : N ^
 
 set_option maxHeartbeats 800000 in
 -- the `n`-wise engine of the pin: smallness, the union bound and the final arithmetic in one proof
-/-- **`GUEEntryMixBA d` is proved, `d ≥ 3`** (twin of `gueEntryMix`, `EntryTailMain.lean:545`): the deterministic `mixEntry_detBA`
-outside the failure events `GUEEntry_bad`, whose probabilities are the Gaussian tails of the auxiliary carrier pulled
-back to `ouP` by `mixSample`; the per-`n` engine with `Φ = N^{τ'}`, `τ' = min (τ/4) c₁`, `c₁ = min c₀ (𝔠 d/2)`, the
-`n`-free constant `GUEEntry_C d 𝔡⁻¹ κ` absorbed by `N^{τ/2}`, the a priori bound enlarged to `δ' = max δ_n W^{-d/2}`
-(`W^{-d} ≤ N^{-𝔠 d}` from the bandwidth), the union bound over `k ≤ K_n ≤ N^{n0}` and the pairs. -/
-theorem gueEntryMixBA (hd : 3 ≤ d) : GUEEntryMixBA d := by
-  intro 𝔠 𝔡 sz hAdm κ hκ g E m hdata n0 K hK a b hab c₀ δ hc₀ hδ0 hδ τ D hτ hD
+/-- **`GUEEntryMixBA' d` is proved, `d ≥ 3`** (T2519 Amend 4 item 2): the proof of `gueEntryMixBA` (below, now a wrapper) with the
+coupling window `0 < g n ≤ 𝔡⁻¹` taken eventually, as one more entry of the `filter_upwards`; `BAReal` is used at that `n`. -/
+theorem gueEntryMixBA' (hd : 3 ≤ d) : GUEEntryMixBA' d := by
+  intro 𝔠 𝔡 sz hAdm κ hκ g E m hrdata hwin n0 K hK a b hab c₀ δ hc₀ hδ0 hδ τ D hτ hD
   obtain ⟨h𝔠, h𝔡, hsz, hbw, hWO⟩ := hAdm
   have hsz0 : Tendsto sz.size atTop atTop := tendsto_natCast_atTop_iff.mp hsz
   have hd0 : 0 < d := by omega
@@ -811,9 +832,10 @@ theorem gueEntryMixBA (hd : 3 ≤ d) : GUEEntryMixBA d := by
     hsz0.eventually (eventually_le_rpow (GUEEntry_cs d 𝔡⁻¹ κ) hc₁0),
     hsz0.eventually (eventually_le_rpow 2 hτ'0),
     hsz0.eventually (eventually_le_rpow (GUEEntry_C d 𝔡⁻¹ κ) (half_pos hτ)),
-    hsz.eventually_ge_atTop (8 * mixCq q)] with n hN1 hδn hbwn hdltn hcsn hΦ2 hCn hCq
+    hsz.eventually_ge_atTop (8 * mixCq q), hwin] with n hN1 hδn hbwn hdltn hcsn hΦ2 hCn hCq hwn
   have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
-  obtain ⟨hg, hgΛ, hr⟩ := hdata n
+  obtain ⟨hg, hgΛ⟩ := hwn
+  have hr := hrdata n
   set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
   set w₀ : ℝ := (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ with hw₀
   have hw0 : 0 ≤ w₀ := by positivity
@@ -884,6 +906,16 @@ theorem gueEntryMixBA (hd : 3 ≤ d) : GUEEntryMixBA d := by
   refine (measure_mono hsub).trans (hmain.trans (ENNReal.ofReal_le_ofReal ?_))
   have hK' : (K n : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ n0 := by exact_mod_cast hK n
   exact mixEntry_final_arith hN1 hK' hq (mixCq_pos q).le hCq
+
+/-- **`GUEEntryMixBA d` is proved, `d ≥ 3`** (twin of `gueEntryMix`, `EntryTailMain.lean:545`): the deterministic `mixEntry_detBA`
+outside the failure events `GUEEntry_bad`, whose probabilities are the Gaussian tails of the auxiliary carrier pulled
+back to `ouP` by `mixSample`; the per-`n` engine with `Φ = N^{τ'}`, `τ' = min (τ/4) c₁`, `c₁ = min c₀ (𝔠 d/2)`, the
+`n`-free constant `GUEEntry_C d 𝔡⁻¹ κ` absorbed by `N^{τ/2}`, the a priori bound enlarged to `δ' = max δ_n W^{-d/2}`
+(`W^{-d} ≤ N^{-𝔠 d}` from the bandwidth), the union bound over `k ≤ K_n ≤ N^{n0}` and the pairs. -/
+theorem gueEntryMixBA (hd : 3 ≤ d) : GUEEntryMixBA d := by
+  intro 𝔠 𝔡 sz hAdm κ hκ g E m hdata
+  exact gueEntryMixBA' hd 𝔠 𝔡 sz hAdm κ hκ g E m (fun n => (hdata n).2.2)
+    (Filter.Eventually.of_forall fun n => ⟨(hdata n).1, (hdata n).2.1⟩)
 
 end Main
 
@@ -963,6 +995,21 @@ example := gueEntryMixBA (d := 3) le_rfl (1 / 6) (1 / 10) S0 S0_adm ((fp 4 GUEEn
   (fun _ => (fp 4 GUEEntryInst_h310).m0)
   (fun n => ⟨(fp 4 GUEEntryInst_h310).g0_pos, by have := (fp 4 GUEEntryInst_h310).g0_le; norm_num; linarith,
     (fp 4 GUEEntryInst_h310).real⟩)
+  1 (fun _ => 1) (fun n => by rw [pow_one]; exact S0.one_le_size n)
+  (fun _ _ => 1 / 4) (fun _ k => ((k : ℕ) : ℝ) / 8 + 1 / 8)
+  (fun n k => by
+    have hk : ((k : ℕ) : ℝ) ≤ 1 := by exact_mod_cast Nat.lt_succ_iff.1 k.2
+    have hk0 : (0 : ℝ) ≤ ((k : ℕ) : ℝ) := Nat.cast_nonneg _
+    refine ⟨by norm_num, by positivity, by positivity, by linarith⟩)
+  1 (fun n => ((S0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) one_pos (fun n => by positivity)
+  (Filter.Eventually.of_forall fun n => le_rfl) 1 1 one_pos one_pos
+
+/-- **`gueEntryMixBA'` at the same data** (T2519 Amend 4 item 2): `BAReal` at every `n`, the window as an eventual premise. -/
+example := gueEntryMixBA' (d := 3) le_rfl (1 / 6) (1 / 10) S0 S0_adm ((fp 4 GUEEntryInst_h310).m0.im)
+  (fp_kappa_pos 4 GUEEntryInst_h310) (fun _ => (fp 4 GUEEntryInst_h310).g0) (fun _ => (fp 4 GUEEntryInst_h310).E)
+  (fun _ => (fp 4 GUEEntryInst_h310).m0) (fun _ => (fp 4 GUEEntryInst_h310).real)
+  (Filter.Eventually.of_forall fun n => ⟨(fp 4 GUEEntryInst_h310).g0_pos,
+    by have := (fp 4 GUEEntryInst_h310).g0_le; norm_num; linarith⟩)
   1 (fun _ => 1) (fun n => by rw [pow_one]; exact S0.one_le_size n)
   (fun _ _ => 1 / 4) (fun _ k => ((k : ℕ) : ℝ) / 8 + 1 / 8)
   (fun n k => by

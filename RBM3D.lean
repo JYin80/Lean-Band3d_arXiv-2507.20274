@@ -658,6 +658,8 @@ import RBM3D.BA.GUEHypABA
 import RBM3D.BA.GUEEntryGridBA
 import RBM3D.BA.GUEDuhamelBA
 import RBM3D.BA.GUEDuhamelBA2
+import RBM3D.BA.GUEHypBBA
+import RBM3D.BA.GUEPathBoundsBA
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
