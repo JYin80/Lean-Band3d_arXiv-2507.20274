@@ -3786,3 +3786,58 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - **STMT 的处理**：D403（Thm 2.7 的体内条件改成 `ρ_N(E) ≥ κ`）是 Jun 2026-10-05 已定的（§51 选 A），照改，不再问。D536、D547（Lemma 8.5 要 `Im m ≥ κ`）是它的后果。D562（Lemma 8.5(1) 改成事件形式）、D174（`lem_propTH` 6–7 的 `|r| ≲ |a|` 改成 `|r| ≤ c₀|a|`、`c₀ < 1`）、D666（Thm 8.2 要第五项 twisted-loop 估计 + 新引理 TL1）都是内部引理或命题的精确化与补缺口，主定理不变、路线不换，按 §356 由调度自己定，在对比文件里放第一档。
   - 下一步 B 阶段：按 TeX 文件把 52 处改动落到 `paper/final/tex` 副本（带占位的 D665、D666 要从 Lean 的陈述补全），云端编译。
 - 下一节 §369，下一张票号 T2524，下一条 H336，下一个 paper-delta D754。
+
+## §369 — 最终论文 B 阶段：52 处改动落进 `paper/final/tex`（草稿，106 页，零错误）；接下来独立复核与对比文件（总调度 V5，2026-10-16 21:46 UTC）
+
+- (1) 三个 Opus 子代理按文件分组改，各在自己的整树副本里：X 改 `1_2`、`3_5`、`6`、`A`，共 21 处；Y1 改 `7_8`，18 处；Y2 改 `B`，13 处。合并后云端编译：**106 页（原 97），无错误，无未定义引用**。
+  - 档位：一档（C1 + STMT）30 处，二档 13 处，三档 9 处。
+  - 编号：§2 从新的 (2.34) `eq:bulkBA` 起后移一位；§8 从新的 (8.4) `eq:TL2_BA` 起后移一位；新增 Lemma 8.6（TL1）。定理与引理编号不变，其余章节编号不变。
+- (2) **草稿已存设备**：`paper/final/tex/`、`paper/final/DubovaYangYauYin_RBM3D_Lean_version.pdf`；不发布的附件在 `paper/notes-not-published/`（分类表 `class_1..4.md`、改动日志 `edits_X/Y1/Y2.md`、latexdiff PDF）。
+- (3) **子代理自报需要作者核的地方**（对比文件里单列一节）：
+  - D469/D544/D651 的 "elementary class" 定义是重构的；
+  - D612/D692 等几处有限个情形的核对只陈述、没写出；
+  - Lemma 8.4、8.6 的涨落平均与高阶矩步骤，以及 (8.4) 的传播，是证明梗概；
+  - D382 脚注里 `M_{y,α}` 的归一化；
+  - Lemma 2.19 的常数在 BA 上依赖 `(d, κ, 𝔡)`，陈述仍写 "depending on d"。
+- (4) **下一步**：
+  - 一个独立的 Opus 复核子代理通读 diff，修记号与交叉引用的不一致（例如 Y2 用了 Y1 的记号、Lemma 2.19 的常数依赖），改动记进 `edits_review.md`；
+  - 再由一个子代理照 RBM2D `changes-old-to-final.tex` 的格式写给合作者的对比文件（三档，一二档有 before/after 表，附「请作者核对」一节），不上传 GitHub；
+  - 然后交 Jun。
+- 下一节 §370。
+
+## §370 — 最终论文定稿草稿与对比文件完成（交 Jun 与合作者）（总调度 V5，2026-10-16 22:38 UTC）
+
+- (1) **独立复核**（Opus 子代理）改了 5 处：
+  - Lemma 2.19 (5) 的常数在 BA 上也依赖 κ、𝔡；
+  - (A.49) 在新的 `|r| ≤ c₀|a|` 下的分情形；
+  - (⋆) 改为 `equation*`；
+  - B.1(ii) 与 §3.2 里与体内常数 κ 撞名的记号，改名为 ν、φ_a。
+  复核编译 106 页、零错误、无未定义引用。
+- (2) **复核发现的高级别问题：Thm 2.7 的 universality 没有按 BA 的密度 ρ_N 归一化**（原文直接引 (2.20)，ρ_N ≠ ρ_sc 时不对）。这是 Jun 2026-10-02 已定的 §11（选 A：按局部密度归一化，任意 `|E'| < 2`），也是 Lean 的 `BAEnd_BUnivL` 的形式。分类阶段漏了这一项，调度在 Thm 2.7 第三项直接补上：一个不编号的公式，不影响编号。记在 `edits_dispatcher.md`，列为一档。
+- (3) **对比文件** `changes-submission-to-final.tex/pdf`（19 页，英文，照 RBM2D `changes-old-to-final` 的格式）：
+  - 一档 31 条、二档 13 条、三档 9 条，一二档带 before/after 表；
+  - 最后一节「请作者核对」：Appendix B 里重构的 elementary class、只陈述未写出的有限情形核对、Lemma 8.4/8.6 与 (8.4) 传播的证明梗概、M_{y,α} 脚注的归一化等。
+- (4) **文件**（设备）：
+  - `paper/final/DubovaYangYauYin_RBM3D_Lean_version.pdf`（106 页）与 `paper/final/tex/`；
+  - 不发布的放 `paper/notes-not-published/`：`changes-submission-to-final.pdf`、`latexdiff-submission-to-final.pdf`、`review_concerns.md`、各组改动日志、分类表。
+- (5) 发布树里的 `paper/` 只放最终版（PDF + tex）。对比文件、latexdiff 和笔记都不上传（§355 第 5 步）。
+- 下一节 §371。
+
+## §371 — Jun：Thm 2.7（BA）要做所有 d ≥ 3（推翻 §316 的 B；D723 撤回，D754）；新阶段 BA-D；设计门 T2524；发布清理与之并行（总调度 V5，2026-10-16 23:40 UTC）
+
+- (1) **Jun 的决定**（2026-10-16 23:2x UTC，调度会话，原话）：「哦不行 我发现title是d\ge 3, 我记错了， 不好意思，你只有把d>=3 情况做出来了。」——**BA 的 Thm 2.7（`MR:decol_BA`）在 Lean 里必须对每个 d ≥ 3 成立**，与论文（标题、`1_2:644-645`）一致。§316 (1) 的 B 作废；D723 撤回（D754 记）。
+- (2) **缺口**（同监督 0342 V-F2：覆盖缺口，不是数学缺口）：一般 d 的 `baThm27L_any`（`BA/UNBUniv.lean:286`）已合并，只缺 BA 元组上的 `STStep5IIIgL d …`（情形 (iii)），其 d = 3 证明是 U5 的 9 个文件（`BA/Step5III{Edet,Edet2,Good,Good2,Ker,Ker2,Walk,Walk2,Targets}`，7,830 行，`Sizes 3`/`Zd 3` 共 116 处）。其余输入都对 d ≥ 3 成立（V 关闭条件 (iii)、M/N 关闭条件 (iii)/(vii)）。
+- (3) **新阶段 BA-D**（REQ-2026-10-16-2332-BAanyD，监督 23:41）：
+  - 预测 ≈ 5 张（4–8），旗标 10，预测到 8 发 REQ（待监督答 Q1）；
+  - **T2524 = 设计门，现在开**（prover-max；报告 + 探针，探针不合并；与 T2523 并行，U5 文件在 T2523 保留的闭包里）：逐处普查 d = 3 的用法，分 (a) 只是下标、(b) 依赖 d 的常数/指数、(c) 实质；就地推广 vs 新文件两种价；行 ≤ 1,950；最终陈述；
+  - 有 (c) 项「open」→ 先起 Fable 复核再开行；
+  - 行（1b）等 T2524 的 1a-audit 和监督答复，从 T2523 合并后的 `main` 开；
+  - 装配票：`baStep5III_holds_any`、`Thm27 := ∀ d, 3 ≤ d → BAThm27L d`、`final_shape` 只留 `UNL32`；d = 3 的定理与实例一行保留。
+- (4) **发布清理与 BA-D 并行**（流程决定，待监督 Q4 确认）：
+  - T2523 照常跑完合并；
+  - 合并后先放：除 BA-D 文件（`BA/Step5III*`、`BA/UNBUniv`、`Main/FinalShape`，以及 T2524 点名的文件）以外的注释清理票，和公开版公理审计票（`RBM3D/Test/`、`RBM3D.lean`；登记表不进公开版，见下）；
+  - BA-D 关闭后：BA-D 文件的注释票、DeadDecls 重跑（d = 3 专用的部分可能变死）、`docs/PAPER-VS-LEAN.md`、README 与发布树。
+- (5) **公开版公理审计**（流程决定）：`RBM3D/Test/Axioms.lean` 换成 RBM2D 的形式（只查三条公理 + 数量下限），删 `Test/AuditNegative.lean`。理由：证明完成后 `final_shape` 只有 `UNL32` 一条前提、只用三条标准公理；登记表（owed / structural / refuted / superseded）在公开版里会被读成「未证的假设」，注释也多是历史。BA-D 期间登记表照旧用（新行若要登记照 §20）；审计票在 BA-D 的行合并之后放，以免改登记表撞车。
+- (6) **辅助工具**（调度写，非 Lean）：`docs/claude-team/tools/texref.py`（把注释里的投稿 TeX 行号 `3_5:1234` 译成最终论文的 label 与编号）、`docs/claude-team/tools/paper-labels.tsv`（最终 PDF 的 623 个 label，取自 main.aux）。注释清理票用。
+- (7) 返工账补齐 T2497–T2518（21 行）。计数：BA-D 1 / ≈5。H336。下一节 §372，下一张票号 T2525，下一条 H337，下一条 paper-delta D755。
+

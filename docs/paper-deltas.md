@@ -1870,3 +1870,4 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 - **D751** ← `T2519db`（行 d，`gueGrid_eq729BA`）：K 子句带 `0 < g n` 守卫，不要 `hKb`（K 界由 `Hyp_Kt_detDomBA` 推出）；窗口最终成立、零模前提 `≤ 2g²`、`n₀ ≥ 4` 已由 D740、D741、D738 覆盖。
 - **D752** ← `T2519dc`（行 d，`Eq729B_derivedBA`）：在 QUE 尺度上最终给出 `t₀ ≥ 1/2`（`1 − t₀ ≤ η_Q/c`，`η_Q → 0`），把生产者的 `hell`（`λ²` 形式）换成 `2g²` 形式。
 - **D753** ← `T2519dd`（行 d，`GUELLBA_EdReal`、`GUELLBA_flowEta`）：BA 生产者的流点数据：`Ed κ′` 给出 `(√t₀ λ, BAfE, BAm …)` 处的 `BAReal`，`η_{t₀} = √t₀ Im z`（标度 `z_{t₀} = √t₀ z`、`m_{t₀} = m/√t₀`）。
+- **D754** ← 调度（DECISIONS §371，2026-10-16）：**D723 撤回**。Jun 改定 Thm 2.7（`MR:decol_BA`，`1_2:644-645`）在 Lean 里对每个 d ≥ 3 证明，与论文一致；BA-D 阶段（T2524 起）把 Step 5 情形 (iii) 在 BA 上推广到一般 d。论文不改。
