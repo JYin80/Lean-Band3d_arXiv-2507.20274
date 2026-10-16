@@ -3608,3 +3608,33 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **落实**：`docs/tickets/T2519-amend-1.md`（八条，含上面的约束与新的 D1 (i) 停止规则）；**H323**：提交、从 `main` 在 `t/T2519` 重跑 1a（preflight 写 (a′) → 探针 → 1a-audit），之后照 H322 (3) 开行 a、b。`T2519-pins.lean` 不改（只供参考，Decision (12)），改后的文本由 1a 在探针里编译、1a-audit 签。返工账本在合并时记（开工后的 amend）。
 - (3) **paper-delta 补账**（HANDOFF §5 第 4 条）：`docs/paper-deltas.md` 加一节「合并时编号 T2513–T2518」：**D733** ← `T2515a`–`c`（C3 行 a）、**D734** ← `T2515ba`–`bc`（C3 行 b，原 `T2515c`–`e` 改标；带 Amend 1 的 `X = 0` 附注）、**D735** ← `T2516a`（M2 的剖面 `z`-Lipschitz）、**D736** ← `T2517a`–`b`（C4 行 a：BA 的 Lemma 5.15、新输入 `hoff`）、**D737** ← `T2517c`–`d`（C4 行 b：自由流点陈述、网格游走载体）；T2513、T2514 a/b、T2518 无候选。
 - (4) 计数不变：M/N 13 用（1a FAIL 与 Amend 1 记 +0），预测 17，旗标 20；BA 199。在跑：T2519 的 1a（H323 后，1 / 4）。下一节 §351，下一张票号 T2520，下一条 H324，下一个 paper-delta D738。
+
+## §351 — C5 的 1a 重跑：D1 (i) PASS；`GUETwistBA` 按 T.7 重新定价 1,628，b′ 预签启用；C5S-C1 9,080 > 9,025 → 短 REQ-2026-10-16-1225-C5line（总调度 V5，2026-10-16 12:25 UTC）
+
+- (1) **H323 done 25e22c0b**（11:53）：1a 按 Amend 1 重跑（wf_30b51f27-aca）。**preflight (a′) PASS**（12:08）：D1 (i) 照 Amend 1 的输入清单闭合（`𝒮₁`、`𝒮₂` 都是 4-loop `≺ Λ³` 配 2-loop `≺ Λ`，指数余量 0）；探针步骤在跑，之后 1a-audit。
+- (2) **定价（C5H-C3）**：`GUETwistBA` 按 T.7 五步、对照 TL1 落地（2,817 行）自下而上：中心当量 1,628（lo 1,243、hi 2,112，按票的 ×1.34）或 1,499（按 TL1 自己的 ×1.46）；原价 860 [500, 1,400]。行 b 不拆是 2,404 > 1,950 → **备用 b′ 启用**（预签，Amend 1 第 5 条，不需 REQ）：b = `GUEDuhamelBA`，b′ = `GUETwistBA`。
+- (3) **C5S-C1**：宽口径总中心 = 8,312 − 860 + 1,628 = **9,080 > 9,025（超 55）**（按 ×1.46 是 8,951，不超）。照 1044 C5S-C1「1a 重跑超 9,025 → 1b 前短 REQ」，发 `docs/supervisor/requests/REQ-2026-10-16-1225-C5line.md`（12:25，赶 12:41 那轮）：Q1 行 a、b、b′ 能否在 1a-audit PASS 后开工（预测 18 ≤ 20）；Q2 1b 期间是否换一条新线（提议 1a-audit 的宽口径总中心 +10%，单行落地超 1a 中心 ×1.67 发短 REQ）。中枢按 H322/H323 (3) 在 1a-audit 报超线时会停下；监督答复后由新 H 指令放行。
+- (4) 计数（1a-audit 时记）：C5 = a、b、b′、c、d = M/N 第 13–17 行（BA 199 → 203）；N2 一行 → 预测 18（18–20），旗标 20。
+- 下一节 §352，下一张票号 T2520，下一条 H324，下一个 paper-delta D738。
+
+## §352 — 监督 1248 PASS：C5 行 a、b、b′ 在 1a-audit 后开；9,025 线在 1a-audit 时失效，换落地线 C5L-L1–L3；b′ 拆两文件；Amend 2，H324（总调度 V5，2026-10-16 12:57 UTC）
+
+- (1) **监督 2026-10-16-1248 PASS**（回 REQ-2026-10-16-1225-C5line）：
+  - Q1 是：超出的 55 行（0.6%）全部来自 `GUETwistBA`（860 → 1,628），是 1134 改正 1044 Q3 的代价，不是路线出问题；在估计本身的噪声里。按 ×1.34（保守、触线的那个读法）给 PASS。
+  - **C5L-C1**：PASS 只覆盖 1a-audit 自己的数在 (a′) 区间内的情形（总宽口径 ≤ 9,564、`GUETwistBA` ≤ 1,950、其他行 ≤ 1,950 或有备用、C5H-C2 的 `example` 编译、没有 Amend 1 第 4 条的停止）；否则 1b 前停、短 REQ。
+  - **C5L-C2（新发现）**：`GUETwistBA` 的落地预测 2,181 行 > 单文件 2,000 的约束线 → b′ 加拆分文件 `BA/GUETwistBA2`（按 T.7 的步骤边界拆，约 1,160 / 780），不加行、不改计数。
+  - **C5L-C3**：经 `BA/TwistAvgA` 传递导入 `BA.TwistPins` 接受（V、TL 都已关闭；不直接导入、不点 `TwistPins` 的名字）。
+  - Q2：**9,025 线在 1a-audit PASS 时失效**；1b 期间换成落地 `wc -l` 的线：**C5L-L1** 每行 max(1.67 × 1a 纯口径中心, 1.34 × 1a 宽口径中心)（a 2,927、b 2,245、b′ 2,719、c 2,811、d 2,386），超了该行照常审核合并，但导入它的行在答复前不开；**C5L-L2** C5 总落地超 12,000 → 下一行放行前短 REQ；**C5L-L3** 1a 式重新定价（订 a′ 或 c′）超 1.10 × 1a-audit 宽口径总中心（≈ 9,990）→ 短 REQ。
+  - O3（可选）：`GUEHypBBA`、`GUEHyp` 各给一个备用文件——采纳（`GUEHypBBA2`、`GUEHyp2`，只在主文件过 1,500 时用）。
+  - 教训（监督）：停止线的单位要和检查时量的东西一致；单文件 2,000 线要用落地预测去比，不能用普查中心。
+- (2) **落实**：`docs/tickets/T2519-amend-2.md`（八条：b′ = `GUETwistBA` + `GUETwistBA2`，分支 `t/T2519b2`，叠在行 a 第一个提交上；新增可写文件；顺序 a → b、b′ → c（a、b 合并后）→ d（c、b′ 合并后）；1b 的开工条件 C5L-C1；落地线 C5L-L1–L3；C5L-C3；计数；报告规则）。**H324**：提交，取代 H322/H323 (3) 的停止条件，1a-audit PASS（在 C5L-C1 内）后开行 a、b、b′（三个都 `prover-max`），c、d 照 Amend 2 第 3 条（`prover-hard`）；每行报告时中枢照 Amend 2 第 5 条比落地线。
+- (3) 计数：b′ 在 1a 记账 → C5 = a、b、b′、c、d = M/N 第 13–17 行（1a-audit 时 BA 199 → 203）；N2 第 18 行，预测 18（18–20），旗标 20。在跑：T2519 的 1a（探针步骤）；1a-audit PASS 后 3 个（a、b、b′）。N2 的 1a 在 C5 的 1a-audit 签了 `T2519_*` 后可提前开（T2520 定稿中）。
+- 下一节 §353，下一张票号 T2520，下一条 H325，下一个 paper-delta D738。
+
+## §353 — 放 T2520 = N2（最后一张 M/N 票）：1a 在 C5 的 1a-audit PASS 后开，1b 在 C5 行 d 合并后（总调度 V5，2026-10-16 12:58 UTC）
+
+- (1) **T2520 = N2 定稿**（`docs/tickets/T2520.md`，由 §349 (3) 的草稿定；检查 `docs/tickets/checks/T2520-check.lean`（放行门：已合并名字的 `#check`，C5 的五个名字放注释块，C5 行 a、d 合并后再打开）、提议 `T2520-pins.lean`（不卡放行））。内容：MN-D3 的实现 G1 `Universality/PinsKD`（八个维数过滤钉文 + 带状 `Iff`）、G2 `Universality/GUEPhase/RandomLayerBGD`（过滤后的泛型链）、BA 叶 `BA/UNBUniv`（`UNNormBARow`、`UNOURowBA`、过滤后的 BA 装配、与 M1/M3 逐 `d` 文本的两条一行 `Iff`、`UNL32 → BAEnd_BUnivL 3`、`UNL32 → BAThm27L 3`，即关闭条件 (vi) 的最终形式）。中心 744（743–978）。
+- (2) **答草稿的 OQ**（Decisions (8)–(12)）：OQ1 是（C5 的生产者对每个 `d` 签，N2 证合并的 `UNOURowBA` 并删欠账 `:176`；若 C5 只签 `d = 3`，走票里的 `d = 3` 分支，不算 amend）；OQ2 `_of_ML` 与 `baThm27L_any`（`STStep5IIIgL d` 下，关闭条件 (iii)）都要；OQ3 扫描确认后顺手删过期欠账 `UNEMCTE2RowBA`、`UNJakUywRowBA`（关闭条件 (ii)）；OQ4 用探针；OQ6 若退路触发，MA-06b 按 `baEnd_BUnivL_three` 写。角色 `prover-hard`。
+- (3) **开工**：1a（探针，无证明目标）在 T2519 的 1a-audit PASS 后从 `main` 开（N2 按名读 `BAKFam`、`BAPB`，`KF`、`PB` 自由，不重述 `n₀`，监督 1134 O3）；1b 在 T2519 行 d 合并后。H325。
+- (4) 计数：N2 = M/N 第 18 行（C5 = 13–17）；预测 18，旗标 20；BA +0（1a-audit 后 203）。在跑（预期）：C5 行 a、b、b′ + N2 的 1a = 4 / 4。
+- 下一节 §354，下一张票号 T2521（MA-06b），下一条 H326，下一个 paper-delta D738。

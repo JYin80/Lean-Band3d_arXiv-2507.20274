@@ -474,3 +474,6 @@
 - 2026-10-16 10:36 UTC 调度 V5：T2515 行 b 合并 fde07256，C3 完成；Jun「开新票，开启监督」：本账号新建监督任务 trig_01BrMU6EVEAcJw5bdXZd9ptU（:41，自动批准）；放 T2519 = C5（检查拆 check / pins 两份），H322；DECISIONS §348。
 - 2026-10-16 11:18 UTC 调度 V5：H322 done（两个检查 exit 0）；C5 的 1a 在 D1 (i) FAIL（`hoff` 差 `Λ^{1/4}`，修法 `n0 = 4` + K 界前提）→ 短 REQ-2026-10-16-1118-C5hoff；N2 草稿完成；DECISIONS §349。
 - 2026-10-16 11:50 UTC 调度 V5：监督 1134 PASS（`hoff` 的 R1 取 T.7 的输入集，C5H-C1–C4）；T2519 Amend 1，H323 从 1a 重跑；paper-delta D733–D737；DECISIONS §350。
+- 2026-10-16 12:25 UTC 调度 V5：C5 的 1a 重跑 preflight (a′) PASS；`GUETwistBA` 1,628、b′ 启用；C5S-C1 9,080 > 9,025 → 短 REQ-2026-10-16-1225-C5line；DECISIONS §351。
+- 2026-10-16 12:57 UTC 调度 V5：监督 1248 PASS（C5L-C1–C3、C5L-L1–L3）；T2519 Amend 2（b′ = `GUETwistBA` + `GUETwistBA2`，`t/T2519b2`；落地线），H324：1a-audit PASS 后开行 a、b、b′；DECISIONS §352。
+- 2026-10-16 12:58 UTC 调度 V5：放 T2520 = N2（检查拆 check / pins；OQ1–OQ6 答复），H325：1a 在 C5 的 1a-audit PASS 后、1b 在 C5 行 d 合并后；DECISIONS §353。
