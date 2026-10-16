@@ -3765,3 +3765,24 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
   - 然后按目录做注释清理票（并行）。
   - 同时用 Opus 子代理起草最终论文（`paper/final/`）、PAPER-VS-LEAN（中枢票）、与投稿版的对比（三档，给合作者）、发布树。
 - 下一节 §368，下一张票号 T2523，下一条 H335，下一个 paper-delta D754。
+
+## §368 — 监督 2046 PASS：**M/N 关闭**（18 / 20，BA 204），MNC-C1（一般 `d` 的 BA 形式留着）；T2522 合并，四组都留；放删除票 T2523；最终论文 A 阶段完成（总调度 V5，2026-10-16 20:56 UTC）
+
+- (1) **监督 `2026-10-16-2046` PASS**（REQ-2026-10-16-1955-MNclose）：(i)–(vii) 都满足，**M/N 关闭 18 / 旗标 20，BA 204，全部门关闭**（MA 9）。
+  - 两处更正：C1，六个 `_three` 的 `#print axioms` 只有后两个在 T2520 审核里，其余在 T2514/T2516/T2518 的报告里；C2，`grep "decision B"` 在 `Test/Axioms.lean` 里其实有五行，都已是 §316 的措辞。两处都不藏缺口。
+  - 过时的 `UNG1Rowk` owed 行可在删除票里删；`UNOULLk` 由删除票定（改为结构名）。
+  - **MNC-C1（对发布阶段有约束）**：删除票保留 G3（`baThm27L_any`、`_of_ML`、`baEnd_BUnivL_of_ML` 及它们到达的东西），否则 Lean 对 `d > 3` 什么都不说，§316 的第二个论文选项就不成立了。
+  - 教训「实例区间」可在下次交接时写进 TEAM §10。
+- (2) **T2522 合并** 97e70f09（死代码报告）：核心闭包 673 个模块、32,770 个声明，不可达 10,243 个，约 100,264 行，17 个整模块死。
+  - 四组增量都很小：G1 4 个声明 27 行；G2 10 个 53 行；G3 2 个 12 行；G4 0（已在核心里）。**全部保留**（G3 本来就是 MNC-C1 要求的）。
+  - 登记里不可达的名字：owed 11、structural 23、refuted 4。
+  - 审核观察 2：一些只给非根 `example` 用的辅助声明，和 `simp only` 里的 `GUETwistBA_Pi_apply`；`Test/InterfaceShape` 整模块死，删。
+- (3) **放 T2523**（删除票，一张，`prover-hard`；照 RBM2D T2274）：
+  - 根 = 核心 + G1–G4，工具里改成根；删 17 个死模块与全部不可达声明（脚本按行区间、自下而上）；全库的 `#print`/`#check`/`#eval`/`#guard_msgs` 与 `example` 只在 `FinalShape`、`BandTerminal` §Instances、`MAPins`、`BUnivHolds` 里保留。
+  - 登记：删掉被删的名字；删 `UNG1Rowk` 的 owed 行；`UNOULLk` 从 owed 移到 structural（§20 规则）。
+  - 验收：全量构建、公理、DeadDecls 复跑 0 不可达、检查文件 `T2523-check.lean` 编译、插入 ≤ 300 行。
+- (4) **最终论文 A 阶段**（§356；云端 `/home/claude/paperwork/`，4 个 Opus 子代理并行把 D1–D753 全部分类）：
+  - **N 693（Lean 内部，不改论文）、X 7（被取代）、E 9（三档：笔误、说明）、C2 13（二档：显然可修）、C1 24（一档：真有细节错误或缺口）、STMT 6**。
+  - **STMT 的处理**：D403（Thm 2.7 的体内条件改成 `ρ_N(E) ≥ κ`）是 Jun 2026-10-05 已定的（§51 选 A），照改，不再问。D536、D547（Lemma 8.5 要 `Im m ≥ κ`）是它的后果。D562（Lemma 8.5(1) 改成事件形式）、D174（`lem_propTH` 6–7 的 `|r| ≲ |a|` 改成 `|r| ≤ c₀|a|`、`c₀ < 1`）、D666（Thm 8.2 要第五项 twisted-loop 估计 + 新引理 TL1）都是内部引理或命题的精确化与补缺口，主定理不变、路线不换，按 §356 由调度自己定，在对比文件里放第一档。
+  - 下一步 B 阶段：按 TeX 文件把 52 处改动落到 `paper/final/tex` 副本（带占位的 D665、D666 要从 Lean 的陈述补全），云端编译。
+- 下一节 §369，下一张票号 T2524，下一条 H336，下一个 paper-delta D754。
