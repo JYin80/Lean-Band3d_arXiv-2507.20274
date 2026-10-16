@@ -3680,3 +3680,8 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **放 T2521 = MA-06b**（`docs/tickets/T2521.md`、检查 `T2521-check.lean`）：新文件 `Main/FinalShape.lean`，`Thm27 := BAThm27L 3`（论文 Thm 2.7，`d = 3`，Jun 的 B）、`Thm27_of_L32`（= N2 的 `baThm27L_three`）、**`final_shape : UNL32 → (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27`**（全项目的最终定理：带状 Thm 2.1–2.5 与 BA Thm 2.7，唯一外部前提 `UNL32`），实例沿用 `BandTerminal` 与 `BA/MAPins:213` 的数据。角色 `prover`；1a 现在开（占空出的第 4 个位），1b 在 T2520 合并后。MA 8 → 9（MA 关闭）。
 - (3) 在跑：C5 行 a、b、b′（3）+ T2521 的 1a（H327 后 4 / 4）；N2 等 C5 行 d。之后：M/N 关闭 REQ（N2 合并后发），Lean 侧完成，进入 §355–§357 的收尾。
 - 下一节 §359，下一张票号 T2522，下一条 H328，下一个 paper-delta D738。
+
+## §359 — T2521 的检查修正：`unMLOutBA_three` 的模块没进导入闭包（总调度 V5，2026-10-16 14:10 UTC）
+
+- H327 done 66649d46：`T2521-check.lean` exit 1，`:25` 的 `#check @RBM.BA.unMLOutBA_three` 未知——检查只导入 `Main/BandTerminal`、`BA/MAPins`，`BA/MainIndTermBA` 不在闭包里（TEAM §10.8 的老坑，调度的错）。修正：该行改为注释（行数不变；这个名字由 N2 读，MA-06b 不需要）。开工前的检查修正，不算返工。H328 重编、通过就开 1a。
+- 下一节 §360，下一张票号 T2522，下一条 H329，下一个 paper-delta D738。

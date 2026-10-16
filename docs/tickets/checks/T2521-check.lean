@@ -22,7 +22,7 @@ set_option linter.style.longLine false
 #check @RBM.Endpoints.BUniv           -- Endpoints:209
 #check @RBM.Univ.UNL32                -- Universality/Pins:281
 #check @RBM.BA.BAThm27L               -- BA/MAPins:126
-#check @RBM.BA.unMLOutBA_three        -- BA/MainIndTermBA:47
+-- (not imported here: `RBM.BA.unMLOutBA_three`, BA/MainIndTermBA:47; read through N2) 
 
 /-! ## Part 2: the target texts -/
 

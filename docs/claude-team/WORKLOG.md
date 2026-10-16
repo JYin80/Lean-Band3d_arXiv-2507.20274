@@ -482,3 +482,4 @@
 - 2026-10-16 13:37 UTC 调度 V5：Jun 授权最终论文由调度直接改（普通改动自己定，大问题问 Jun）；DECISIONS §356。
 - 2026-10-16 13:39 UTC 调度 V5：Jun：GitHub 单个干净提交即可，本地不必备份完整历史；强制推送由 Jun 亲手运行；DECISIONS §357。
 - 2026-10-16 13:54 UTC 调度 V5：N2 的 1a 完成（held，等 C5 行 d）；放 T2521 = MA-06b（`final_shape`），H327：1a 现在开、1b 在 N2 合并后；DECISIONS §358。
+- 2026-10-16 14:10 UTC 调度 V5：T2521 检查 exit 1（漏导入 `BA/MainIndTermBA`）→ 该行改注释，H328 重编；DECISIONS §359。
