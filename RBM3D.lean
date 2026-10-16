@@ -667,6 +667,7 @@ import RBM3D.BA.GUEHyp
 import RBM3D.Universality.PinsKD
 import RBM3D.Universality.GUEPhase.RandomLayerBGD
 import RBM3D.BA.UNBUniv
+import RBM3D.Main.FinalShape
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms
