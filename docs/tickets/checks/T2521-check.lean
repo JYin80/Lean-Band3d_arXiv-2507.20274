@@ -2,13 +2,13 @@
 Release check for T2521 (MA-06b, the final shape; dispatcher V5, 2026-10-16 13:54 UTC; DECISIONS §358).
 Part 1 (the release gate): merged names, checked with `docs/claude-team/tools/nsof.sh` on `main`.
 Part 2 (proposals over merged names): the target texts `T2521_*`.
-Part 3 (block comment): N2's `baThm27L_three` (T2520, `BA/UNBUniv`); activate after T2520 merges.
+Part 3: N2's `baThm27L_three` (T2520, `BA/UNBUniv`); activated 2026-10-16 19:55 UTC after T2520 merged (9d2b0883).
 Statements only; no proofs.
 Run: lake env lean docs/tickets/checks/T2521-check.lean
 -/
 import RBM3D.Main.BandTerminal
 import RBM3D.BA.MAPins
--- ACTIVATE AFTER T2520 MERGES: import RBM3D.BA.UNBUniv
+import RBM3D.BA.UNBUniv
 
 set_option linter.style.longLine false
 
@@ -47,7 +47,6 @@ example : RBM.Univ.UNL32 →
 
 end RBM.Endpoints.T2521Check
 
-/- ACTIVATE AFTER T2520 MERGES (check the name on `main` with `nsof.sh`):
+/-! Part 3 (activated after T2520 merged; `BA/UNBUniv:281` on `main` 9d2b0883). -/
 #check @RBM.BA.baThm27L_three
 example : RBM.Endpoints.T2521Check.T2521_Thm27OfL32 := RBM.BA.baThm27L_three
--/

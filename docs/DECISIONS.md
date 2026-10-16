@@ -3737,3 +3737,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (4) paper-deltas：行 d 的 `T2519da`–`dd` 编 D750–D753（`db` 的窗口、零模、`n₀` 部分已由 D738、D740、D741 覆盖，只编新的部分）。
 - (5) 之后：N2 合并 → 发 M/N 关闭 REQ（0643 (i)–(vii)，引 `baEnd_BUnivL_three`、`baThm27L_three` 的签名）；打开 `T2521-check.lean` Part 3 重编 → MA-06b 的 1b → Lean 侧完成 → §355–§357 收尾。
 - 下一节 §366，下一张票号 T2522，下一条 H333，下一个 paper-delta D754。
+
+## §366 — N2（T2520）合并；M/N 全部合并，发 M/N 关闭 REQ；T2521 检查 Part 3 打开；MA-06b 的 1b 在跑（总调度 V5，2026-10-16 19:56 UTC）
+
+- (1) **N2 合并** 9d2b0883（19:44）：新 `Universality/PinsKD` 188、`GUEPhase/RandomLayerBGD` 183、`BA/UNBUniv` 397；审核第 1 轮 PASS；owed 行 `UNOURowBA`、`UNEMCTE2RowBA`、`UNJakUywRowBA`、`UNNormBARow` 关闭，加五个过滤后的结构名；`baEnd_BUnivL_three`、`baThm27L_three : UNL32 → …`；`band_terminal`、`bUniv_holds` 的公理不变。审核观察 O2（两条结构行可换成 `∀ Dm` 定理）、O3（过时的 owed 行 `UNG1Rowk` 留着、主人文字已更新）——**调度裁定：都放到发布清理票里做**（删 `UNG1Rowk` owed 行；O2 可选）。
+- (2) **M/N 全部合并**：MN-D3、M1、M2、M3、C3、C4、C5（5 行）、N2 = M/N 用 18 / 旗标 20；BA 204。**发 M/N 关闭 REQ-2026-10-16-1955-MNclose**（0643 的 (i)–(vii)，逐字引 `baEnd_BUnivL_three`、`baThm27L_three` 签名；Q1：M/N 是否关闭）。监督 20:41 跑（不要提前补跑，§364 (2)）。
+- (3) **MA-06b（T2521）的 1b** 19:44 由中枢按 H327 (3) 自动开（wf_6402eb22-4f1）；检查 Part 3 是在 1b 开工后才打开的（我原计划先打开、重编再开 1b——H327 没写这一步，是我的疏忽；无害：证明者在临时副本里把打开后的检查编译过，exit 0）。`docs/tickets/checks/T2521-check.lean` Part 3 现已打开（`import RBM3D.BA.UNBUniv` + `#check` + 精确类型 `example`），H333 让中枢重编一次留记录（不是门）。1b 报告：`Main/FinalShape` 120 行，`final_shape`/`Thm27_of_L32`/`Thm27` 只依赖三条标准公理，`UNL32` 是唯一前提，无 paper-delta。
+- (4) 返工账：T2520 一行。下一步：T2521 合并 → MA 9 关闭、**Lean 侧完成** → 发布阶段（§355–§357）：DeadDecls 闭包 → 删除票 → 注释清理票 → paper/final → PAPER-VS-LEAN.md → 对比文件 → 发布树。
+- 下一节 §367，下一张票号 T2522，下一条 H334，下一个 paper-delta D754。
