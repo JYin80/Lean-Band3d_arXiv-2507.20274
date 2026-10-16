@@ -1,0 +1,4 @@
+state: audit-pass
+reason: row b (GUEEntry, GUEEntry2; targets 9-13) under Amend 1: round-3 audit PASS (claude-opus-5-5, wf_010fb04d-024) on Amend 1 item 5 (i)-(iv) at f158d5f5; merging (rule A), full lake build running.
+updated: Fri Oct 16 10:08:51 UTC 2026
+reports: docs/reports/T2515b-prove.md, docs/reports/T2515b-audit.md

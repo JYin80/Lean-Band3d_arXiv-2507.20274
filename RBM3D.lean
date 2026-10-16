@@ -651,6 +651,8 @@ import RBM3D.BA.GUEKPrim
 import RBM3D.BA.MADecolQUE
 import RBM3D.BA.GUEOneLoop
 import RBM3D.BA.GUEEq729BA
+import RBM3D.BA.GUEEntry
+import RBM3D.BA.GUEEntry2
 
 /-! Hard axiom audit of the whole library: see `RBM3D.Test.Axioms`. -/
 #assert_rbm_axioms

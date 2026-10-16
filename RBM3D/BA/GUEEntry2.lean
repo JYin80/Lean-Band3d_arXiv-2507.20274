@@ -1,0 +1,1570 @@
+/-
+Copyright (c) 2026 Jun Yin. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jun Yin
+-/
+import RBM3D.BA.GUEEntry
+
+/-!
+# The block Anderson entry layer of the GUE phase, probabilistic part (T2515, row b)
+
+BA twin of `Universality/GUEPhase/EntryTail.lean` and `EntryTailMain.lean`, on top of the
+deterministic part in `BA/GUEEntry.lean`.
+
+* `mixEntry_detBA`: the deterministic bound of `mix_detBA` stated on the fine lattice `Idx d
+  L W` through `GUEEntry_llErr` and `GUEEntry_maxLoop` (the form of the tails).
+* Target 11, `mixMatBA` (`= g Ψ + mixMat (sz.withLam 0) n a b ω`) with
+  `GUEEntry_mixMatBA_eq_Xmat`, `GUEEntry_mixMatBA_isHermitian` and
+  `GUEEntry_ouMatC_ba_eq_mixMatBA`; the Gaussian tails of the auxiliary carrier with the
+  shift (`GUEEntry_quad_tail`, `GUEEntry_row_tail`, `GUEEntry_col_tail`), the failure set
+  `GUEEntry_bad` with `GUEEntry_bad_tail`, and the union bound `GUEEntry_union`.
+* Target 12, the pin `GUEEntryMixBA d` (free flow-point families `g n`, `E n`, `m n`) and
+  its proof `gueEntryMixBA` (`3 ≤ d`).
+* Target 13, compiled nonempty instances at `d = 3` (section `GUEEntryInst` at the end of
+  the file).
+-/
+
+open private loopFine_pm_formula_vtx sum_vtx_ite from RBM3D.Green.Pins
+open private EntryTail_Gres_true from RBM3D.Universality.GUEPhase.EntryTail
+open private mixEntry_final_arith from RBM3D.Universality.GUEPhase.EntryTailMain
+
+set_option linter.style.longLine false
+set_option linter.unusedSectionVars false
+set_option linter.unusedVariables false
+set_option linter.style.setOption false
+
+noncomputable section
+namespace RBM.BA
+open RBM RBM.Gauss RBM.Green RBM.Univ
+
+section FinePart
+open Finset Matrix
+
+section Bridge
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- The BA entry error `|G_{(a,x),(b,y)}(z_u) - M^{(B)}_{ab} δ_{xy}|` at the matrix `H`
+(`z_u = E + (1 - u) m`, `M^{(B)} = (g Ψ^{(B)} - E - m)⁻¹`). -/
+def GUEEntry_llErr (d L W : ℕ) [NeZero L] [NeZero W] (g E : ℝ) (m : ℂ) (u : ℝ)
+    (H : Matrix (Idx d L W) (Idx d L W) ℂ) (i j : Idx d L W) : ℝ :=
+  ‖Gres H (ztOf m E u) true i j -
+    (if (split d L W i).2 = (split d L W j).2 then
+      BAMB d L g (E : ℂ) m (split d L W i).1 (split d L W j).1 else 0)‖
+
+/-- `max_{a,b} |𝓛_{u,(+,-),(a,b)}|` of the matrix `H` at `z_u = E + (1 - u) m`. -/
+def GUEEntry_maxLoop (d L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
+    (H : Matrix (Idx d L W) (Idx d L W) ℂ) : ℝ :=
+  Finset.univ.sup' ⟨((0 : Zd d L), (0 : Zd d L)), Finset.mem_univ _⟩
+    (fun p : Zd d L × Zd d L => ‖loopFine d L W H (ztOf m E u) ![true, false] ![p.1, p.2]‖)
+
+theorem GUEEntry_norm_loop_eq (H : Matrix (Idx d L W) (Idx d L W) ℂ) (hH : H.IsHermitian) (z : ℂ) (a b : Zd d L) :
+    ‖loopFine d L W H z ![true, false] ![a, b]‖ = GreenCore_loop (Gres (blockMat d L W H) z true) b a := by
+  rw [loopFine_pm_formula_vtx H hH z a b, Complex.norm_real, Real.norm_of_nonneg
+    (mul_nonneg (by positivity) (Finset.sum_nonneg fun y _ => Finset.sum_nonneg fun x _ => by
+      split_ifs <;> positivity))]
+  have h1 : ∀ v : Vtx d L W, (∑ w : Vtx d L W, if v.1 = b ∧ w.1 = a then
+      ‖Gres (blockMat d L W H) z true v w‖ ^ 2 else 0) =
+      if v.1 = b then ∑ w : Vtx d L W, (if w.1 = a then ‖Gres (blockMat d L W H) z true v w‖ ^ 2 else 0) else 0 :=
+    fun v => by by_cases hv : v.1 = b <;> simp [hv]
+  have hsum : (∑ v : Vtx d L W, ∑ w : Vtx d L W, if v.1 = b ∧ w.1 = a then
+      ‖Gres (blockMat d L W H) z true v w‖ ^ 2 else 0) =
+      ∑ β : Fin (W ^ d), ∑ α : Fin (W ^ d), ‖Gres (blockMat d L W H) z true (b, β) (a, α)‖ ^ 2 := by
+    simp only [h1]
+    rw [sum_vtx_ite (fun v => ∑ w : Vtx d L W, (if w.1 = a then ‖Gres (blockMat d L W H) z true v w‖ ^ 2 else 0)) b]
+    refine Finset.sum_congr rfl fun β _ => ?_
+    rw [sum_vtx_ite (fun w => ‖Gres (blockMat d L W H) z true (b, β) w‖ ^ 2) a]
+  rw [hsum]
+  unfold GreenCore_loop
+  rfl
+
+set_option maxHeartbeats 800000 in
+-- the transport of the hypotheses from the fine lattice to `Vtx` and back, in one proof
+/-- **The deterministic step on the fine lattice** (twin of `mixEntry_det`, `EntryTail.lean:859`): the four large-deviation
+inputs for `X` against the minors of `G = (g Ψ + X - z)⁻¹`, `z = E + (1 - u) m`, `u = a + b`, stated on `Idx` (the
+form of the tails), give `|(G - M)_{ij}|² ≤ C Φ² (max 𝓛 + W^{-d})` on the a priori event `‖G - M‖_max ≤ δ`. -/
+theorem mixEntry_detBA {g Λ κ E a b δ Φ : ℝ} {m : ℂ} (hd : 3 ≤ d) (hL : 3 ≤ L) (hg : 0 < g) (hgΛ : g ≤ Λ)
+    (hκ : 0 < κ) (hr : BAReal d L g κ E m) (ha : 0 ≤ a) (hb : 0 ≤ b) (hu1 : a + b < 1)
+    {X : Matrix (Idx d L W) (Idx d L W) ℂ} (hX : X.IsHermitian)
+    (hllErr : ∀ x y, GUEEntry_llErr d L W g E m (a + b) ((g : ℂ) • PsiI d L W + X) x y ≤ δ)
+    (hδ0 : 0 ≤ δ) (hδ : δ ≤ GUEEntry_dlt d Λ κ) (hwd : ((W : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hΦ : 1 ≤ Φ)
+    (hΦδ : GUEEntry_cs d Λ κ * Φ * δ ^ 2 ≤ 1)
+    (hrow : ∀ i j, i ≠ j → ldeRowLHS X (green ((g : ℂ) • PsiI d L W + X) (ztOf m E (a + b))) i j ≤
+      Φ * ldeRowRHS (Smix d L W 0 a b) (green ((g : ℂ) • PsiI d L W + X) (ztOf m E (a + b))) i j)
+    (hcol : ∀ k j, k ≠ j → ldeColLHS X (green ((g : ℂ) • PsiI d L W + X) (ztOf m E (a + b))) k j ≤
+      Φ * ldeColRHS (Smix d L W 0 a b) (green ((g : ℂ) • PsiI d L W + X) (ztOf m E (a + b))) k j)
+    (hquad : ∀ i, ldeQuadLHS X (green ((g : ℂ) • PsiI d L W + X) (ztOf m E (a + b))) (Smix d L W 0 a b) 1 i ≤
+      Φ * ldeQuadRHS (Smix d L W 0 a b) (green ((g : ℂ) • PsiI d L W + X) (ztOf m E (a + b))) i)
+    (hdiag : ∀ i, ‖X i i‖ ^ 2 ≤ Φ * Smix d L W 0 a b i i) (i j : Idx d L W) :
+    GUEEntry_llErr d L W g E m (a + b) ((g : ℂ) • PsiI d L W + X) i j ^ 2 ≤
+      GUEEntry_C d Λ κ * Φ ^ 2 * (GUEEntry_maxLoop d L W m E (a + b) ((g : ℂ) • PsiI d L W + X) +
+        ((W : ℝ) ^ d)⁻¹) := by
+  set e := splitEquiv d L W with he
+  set H : Matrix (Idx d L W) (Idx d L W) ℂ := (g : ℂ) • PsiI d L W + X with hHdef
+  set z : ℂ := ztOf m E (a + b) with hzdef
+  have hmpos : 0 < m.im := lt_of_lt_of_le hκ hr.2
+  have hu0 : 0 < 1 - (a + b) := by linarith
+  have hzim : 0 < z.im := by
+    rw [hzdef, ztOf_im]; unfold etaOf; exact mul_pos hu0 hmpos
+  have hPsi : ((g : ℂ) • PsiI d L W).IsHermitian := by
+    unfold Matrix.IsHermitian
+    rw [conjTranspose_smul, (PsiI_isHermitian d L W).eq,
+      show star (g : ℂ) = (g : ℂ) from Complex.conj_ofReal _]
+  have hHerm : H.IsHermitian := hPsi.add hX
+  have hGres : Gres H z true = green H z := EntryTail_Gres_true H z
+  set s : ℂ := (E : ℂ) + m with hs
+  have hsim : s.im ≠ 0 := by rw [hs]; simpa using hmpos.ne'
+  have hHs : IsUnit (((g : ℂ) • PsiI d L W) - s • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)) :=
+    RBM.isUnit_sub_smul_of_isHermitian hPsi hsim
+  set Mf : Matrix (Idx d L W) (Idx d L W) ℂ := Mres ((g : ℂ) • PsiI d L W) (E : ℂ) m with hMf
+  have hMfinv : Mf = Ring.inverse (((g : ℂ) • PsiI d L W) - s • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)) := rfl
+  have bm : ∀ A B : Matrix (Idx d L W) (Idx d L W) ℂ,
+      blockMat d L W (A * B) = blockMat d L W A * blockMat d L W B :=
+    fun A B => (Matrix.submatrix_mul_equiv A B e.symm e.symm e.symm).symm
+  have bm1 : blockMat d L W (1 : Matrix (Idx d L W) (Idx d L W) ℂ) = 1 := Matrix.submatrix_one_equiv e.symm
+  have bD : ∀ c : ℂ, blockMat d L W (c • PsiI d L W) = c • PsiV d L W := by
+    intro c; ext u v; simp [blockMat, PsiI]
+  have hHb : blockMat d L W (H - z • 1) = (g : ℂ) • PsiV d L W + blockMat d L W X - z • 1 := by
+    rw [hHdef, ← bD (g : ℂ)]
+    ext u v
+    simp [blockMat, Matrix.one_apply]
+  have hMb : blockMat d L W (((g : ℂ) • PsiI d L W) - s • 1) = (g : ℂ) • PsiV d L W - s • 1 := by
+    rw [← bD (g : ℂ)]
+    ext u v
+    simp [blockMat, Matrix.one_apply]
+  have hGreenInv : green H z = Ring.inverse (H - z • 1) := by
+    unfold green; exact Matrix.nonsing_inv_eq_ringInverse _
+  have hUH : IsUnit (H - z • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)) :=
+    RBM.isUnit_sub_smul_of_isHermitian hHerm hzim.ne'
+  have hGR : blockMat d L W (green H z) * ((g : ℂ) • PsiV d L W + blockMat d L W X - z • 1) = 1 := by
+    rw [← hHb, ← bm, hGreenInv, Ring.inverse_mul_cancel _ hUH, bm1]
+  have hRG : ((g : ℂ) • PsiV d L W + blockMat d L W X - z • 1) * blockMat d L W (green H z) = 1 := by
+    rw [← hHb, ← bm, hGreenInv, Ring.mul_inverse_cancel _ hUH, bm1]
+  have hMR : ((g : ℂ) • PsiV d L W - s • 1) * blockMat d L W Mf = 1 := by
+    rw [← hMb, ← bm, hMfinv, Ring.mul_inverse_cancel _ hHs, bm1]
+  have hMR' : blockMat d L W Mf * ((g : ℂ) • PsiV d L W - s • 1) = 1 := by
+    rw [← hMb, ← bm, hMfinv, Ring.inverse_mul_cancel _ hHs, bm1]
+  have hzs : z = s - ((a + b : ℝ) : ℂ) * m := by rw [hzdef, hs, ztOf]; push_cast; ring
+  have hMv : ∀ u v : Vtx d L W, blockMat d L W Mf u v =
+      if u.2 = v.2 then BAMB d L g (E : ℂ) m u.1 v.1 else 0 := by
+    intro u v
+    have h := BAMres_fine_apply d L W g (E : ℂ) m (by simpa using hmpos.ne') (e.symm u) (e.symm v)
+    have hu' : split d L W (e.symm u) = u := e.apply_symm_apply u
+    have hv' : split d L W (e.symm v) = v := e.apply_symm_apply v
+    rw [hu', hv'] at h
+    exact h
+  have hDv : ∀ u l : Vtx d L W, ((g : ℂ) • PsiV d L W) u l =
+      if u.2 = l.2 ∧ Adj d L u.1 l.1 then (g : ℂ) else 0 := by
+    intro u l
+    simp only [PsiV, PsiB, Matrix.smul_apply, Matrix.kroneckerMap_apply, Matrix.of_apply, Matrix.one_apply, smul_eq_mul]
+    split_ifs <;> simp_all
+  have hHvh : (((g : ℂ) • PsiV d L W) + blockMat d L W X).IsHermitian := by
+    have h1 : blockMat d L W H = ((g : ℂ) • PsiV d L W) + blockMat d L W X := by
+      rw [hHdef, ← bD (g : ℂ)]; ext u v; simp [blockMat]
+    rw [← h1]
+    exact hHerm.submatrix _
+  have hGg : Gres (blockMat d L W H) z true = (green H z).submatrix e.symm e.symm := by
+    unfold Gres blockMat green
+    simp only [ite_true]
+    have e1 : H.submatrix e.symm e.symm - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ) =
+        (H - z • (1 : Matrix (Idx d L W) (Idx d L W) ℂ)).submatrix e.symm e.symm := by
+      ext i j; simp [Matrix.submatrix_apply, Matrix.one_apply]
+    rw [e1, ← Matrix.nonsing_inv_eq_ringInverse, Matrix.inv_submatrix_equiv]
+  -- the inputs on `Vtx`
+  have hSmv : GUEEntry_Smv d L W a b = fun p q => Smix d L W 0 a b (e.symm p) (e.symm q) := by
+    funext p q; exact GUEEntry_Smv_eq a b p q
+  have hLrow : LDERow (blockMat d L W X) (blockMat d L W (green H z)) (GUEEntry_Smv d L W a b) Φ := by
+    intro x y hxy
+    rw [hSmv]
+    change ldeRowLHS (X.submatrix e.symm e.symm) ((green H z).submatrix e.symm e.symm) x y ≤
+      Φ * ldeRowRHS (fun p q => Smix d L W 0 a b (e.symm p) (e.symm q)) ((green H z).submatrix e.symm e.symm) x y
+    rw [mixEntry_relabel_ldeRowLHS, mixEntry_relabel_ldeRowRHS e.symm (Smix d L W 0 a b) (green H z) x y]
+    exact hrow _ _ (fun h => hxy (e.symm.injective h))
+  have hLcol : LDECol (blockMat d L W X) (blockMat d L W (green H z)) (GUEEntry_Smv d L W a b) Φ := by
+    intro x y hxy
+    rw [hSmv]
+    change ldeColLHS (X.submatrix e.symm e.symm) ((green H z).submatrix e.symm e.symm) x y ≤
+      Φ * ldeColRHS (fun p q => Smix d L W 0 a b (e.symm p) (e.symm q)) ((green H z).submatrix e.symm e.symm) x y
+    rw [mixEntry_relabel_ldeColLHS, mixEntry_relabel_ldeColRHS e.symm (Smix d L W 0 a b) (green H z) x y]
+    exact hcol _ _ (fun h => hxy (e.symm.injective h))
+  have hLquad : LDEQuad (blockMat d L W X) (blockMat d L W (green H z)) (GUEEntry_Smv d L W a b) 1 Φ := by
+    intro x
+    rw [hSmv]
+    change ldeQuadLHS (X.submatrix e.symm e.symm) ((green H z).submatrix e.symm e.symm)
+      (fun p q => Smix d L W 0 a b (e.symm p) (e.symm q)) 1 x ≤
+      Φ * ldeQuadRHS (fun p q => Smix d L W 0 a b (e.symm p) (e.symm q)) ((green H z).submatrix e.symm e.symm) x
+    rw [mixEntry_relabel_ldeQuadLHS, mixEntry_relabel_ldeQuadRHS e.symm (Smix d L W 0 a b) (green H z) x]
+    exact hquad _
+  have hLdiag : ∀ x : Vtx d L W, ‖blockMat d L W X x x‖ ^ 2 ≤ Φ * GUEEntry_Smv d L W a b x x := fun x => by
+    rw [GUEEntry_Smv_eq]; exact hdiag _
+  have hΩ : ∀ u v : Vtx d L W, ‖blockMat d L W (green H z) u v - blockMat d L W Mf u v‖ ≤ δ := by
+    intro u v
+    have h := hllErr (e.symm u) (e.symm v)
+    unfold GUEEntry_llErr at h
+    rw [hGres] at h
+    have hu' : split d L W (e.symm u) = u := e.apply_symm_apply u
+    have hv' : split d L W (e.symm v) = v := e.apply_symm_apply v
+    rw [hu', hv'] at h
+    have h2 : blockMat d L W Mf u v = if u.2 = v.2 then BAMB d L g (E : ℂ) m u.1 v.1 else 0 := hMv u v
+    rw [h2]
+    exact h
+  have hLm : ∀ a' b' : Zd d L, GreenCore_loop (blockMat d L W (green H z)) a' b' ≤
+      GUEEntry_maxLoop d L W m E (a + b) H := by
+    intro a' b'
+    have h1 := GUEEntry_norm_loop_eq H hHerm z b' a'
+    have h2 : blockMat d L W (green H z) = Gres (blockMat d L W H) z true := by rw [hGg]; rfl
+    rw [h2, ← h1]
+    exact Finset.le_sup' (fun p : Zd d L × Zd d L => ‖loopFine d L W H (ztOf m E (a + b)) ![true, false] ![p.1, p.2]‖)
+      (Finset.mem_univ (b', a'))
+  have key := mix_detBA hd hL hg hgΛ hκ hr ha hb hu1 hGR hRG hMR hMR' hzs
+    (fun u v => by rw [← hMv u v]) (fun u l => by rw [hDv]) (by convert hHvh using 1) hzim hδ0 hδ hwd hΩ hΦ hΦδ hLrow hLcol hLquad hLdiag hLm
+    (e i) (e j)
+  have hent : GUEEntry_llErr d L W g E m (a + b) H i j =
+      ‖blockMat d L W (green H z) (e i) (e j) - blockMat d L W Mf (e i) (e j)‖ := by
+    unfold GUEEntry_llErr
+    rw [hMv (e i) (e j), hGres]
+    simp only [blockMat, Matrix.submatrix_apply, he, Equiv.symm_apply_apply]
+    rfl
+  rw [hent]
+  exact key
+
+end Bridge
+
+end FinePart
+
+section ProbPart
+open MeasureTheory ProbabilityTheory Filter Matrix
+open scoped NNReal ENNReal
+
+section Tails
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- **Quadratic LDE (4.7) for `G = (A + X - z)⁻¹`** (twin of `mixEntry_quad_tail`, `EntryTail.lean:492`, with the
+deterministic Hermitian shift `A`; `gaussLaw_quad_tail` is already shift-general). -/
+theorem GUEEntry_quad_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx d L W → ℝ}
+    (hv : TagFree d L W v) (hS : MixProfOK v S) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
+    {z : ℂ} (hz : z.im ≠ 0) (i : Idx d L W) {lam : ℝ} (hlam : 0 < lam) (q : ℕ) :
+    gaussLaw d L W v {s | lam * ldeQuadRHS S (green (A + Xmat d L W s) z) i <
+        ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) S 1 i}
+      ≤ ENNReal.ofReal (hwConst q / lam ^ (q + 1)) := by
+  have h := gaussLaw_quad_tail hv hA hz i hlam q
+  have hset : {s : Ω d L W | lam * ldeQuadRHS S (green (A + Xmat d L W s) z) i <
+        ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) S 1 i}
+      = {s : Ω d L W | lam * quadVqS d L W v A z i s < ‖quadQS d L W v A z i s‖ ^ 2} := by
+    ext s
+    simp only [Set.mem_ofPred_eq]
+    have hH := hA.add (Xmat_isHermitian d L W s)
+    have hVq : ldeQuadRHS S (green (A + Xmat d L W s) z) i = quadVqS d L W v A z i s := by
+      unfold ldeQuadRHS quadVqS
+      rw [RowChaos.sum_erase_eq (i := i)]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      rw [RowChaos.sum_erase_eq (i := i)]
+      refine Finset.sum_congr rfl fun l _ => ?_
+      rw [← mixEntry_minor_eq hH hz i k l, ← hS.off i k.1 (Ne.symm k.2),
+        hS.symm l.1 i, ← hS.off i l.1 (Ne.symm l.2)]
+    have hQ : ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) S 1 i =
+        ‖quadQS d L W v A z i s‖ ^ 2 := by
+      unfold ldeQuadLHS quadQS
+      congr 2
+      rw [RowChaos.sum_erase_eq (i := i)]
+      · congr 1
+        · refine Finset.sum_congr rfl fun k _ => ?_
+          rw [RowChaos.sum_erase_eq (i := i)]
+          refine Finset.sum_congr rfl fun l _ => ?_
+          rw [← mixEntry_minor_eq hH hz i k l]
+        · rw [RowChaos.sum_erase_eq (i := i), Complex.ofReal_one, one_mul]
+          refine Finset.sum_congr rfl fun k _ => ?_
+          rw [← mixEntry_minor_eq hH hz i k k, ← hS.off i k.1 (Ne.symm k.2)]
+    rw [hVq, hQ]
+  rw [hset]
+  exact h
+
+/-- `s ↦ G^{(i)}_{kl}(A + X(s))` is continuous for `k, l ≠ i` (`continuous_green_minorS`). -/
+theorem GUEEntry_cont_minor {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian) {z : ℂ} (hz : z.im ≠ 0)
+    (i k l : Idx d L W) (hk : k ≠ i) (hl : l ≠ i) :
+    Continuous fun s : Ω d L W => greenMinor (green (A + Xmat d L W s) z) i k l := by
+  have := continuous_green_minorS (d := d) (L := L) (W := W) hA hz i ⟨k, hk⟩ ⟨l, hl⟩
+  convert this using 2 with s
+  exact (mixEntry_minor_eq (hA.add (Xmat_isHermitian d L W s)) hz i ⟨k, hk⟩ ⟨l, hl⟩).symm
+
+theorem GUEEntry_meas_row (S : Idx d L W → Idx d L W → ℝ) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
+    {z : ℂ} (hz : z.im ≠ 0) {i j : Idx d L W} (hij : i ≠ j) (Λ : ℝ) :
+    MeasurableSet {s : Ω d L W | Λ * ldeRowRHS S (green (A + Xmat d L W s) z) i j <
+      ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) i j} := by
+  refine measurableSet_lt (Continuous.measurable ?_) (Continuous.measurable ?_)
+  · unfold ldeRowRHS
+    exact continuous_const.mul (continuous_finsetSum _ fun k hk => continuous_const.mul
+      ((GUEEntry_cont_minor hA hz i k j (Finset.ne_of_mem_erase hk) (Ne.symm hij)).norm.pow 2))
+  · unfold ldeRowLHS
+    exact (continuous_finsetSum _ fun k hk => (continuous_Xmat_apply i k).mul
+      (GUEEntry_cont_minor hA hz i k j (Finset.ne_of_mem_erase hk) (Ne.symm hij))).norm.pow 2
+
+theorem GUEEntry_meas_col (S : Idx d L W → Idx d L W → ℝ) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
+    {z : ℂ} (hz : z.im ≠ 0) {k j : Idx d L W} (hkj : k ≠ j) (Λ : ℝ) :
+    MeasurableSet {s : Ω d L W | Λ * ldeColRHS S (green (A + Xmat d L W s) z) k j <
+      ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) k j} := by
+  refine measurableSet_lt (Continuous.measurable ?_) (Continuous.measurable ?_)
+  · unfold ldeColRHS
+    exact continuous_const.mul (continuous_finsetSum _ fun l hl => ((GUEEntry_cont_minor hA hz j k l hkj
+      (Finset.ne_of_mem_erase hl)).norm.pow 2).mul continuous_const)
+  · unfold ldeColLHS
+    exact (continuous_finsetSum _ fun l hl => (GUEEntry_cont_minor hA hz j k l hkj
+      (Finset.ne_of_mem_erase hl)).mul (continuous_Xmat_apply l j)).norm.pow 2
+
+/-- The minor resolvent of the shifted auxiliary matrix is `greenMinor` of the resolvent. -/
+theorem GUEEntry_auxMinorRes_eq (v : CoordF d L W → ℝ≥0) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
+    {z : ℂ} (hz : z.im ≠ 0) (i : Idx d L W) (ω : Sizes.SeqΩ (auxSizes d)) (k l : {a : Idx d L W // a ≠ i}) :
+    auxMinorRes d L W v A z i ω k l = greenMinor (green (A + auxHG d L W v ω) z) i k.1 l.1 := by
+  rw [← mixEntry_minor_eq (hA.add (auxHG_isHermitian d L W v ω)) hz i k l]
+  rfl
+
+/-- **Row LDE (4.8) for `G = (A + X - z)⁻¹`** (twin of `mixEntry_row_tail`, `EntryTail.lean:548`). -/
+theorem GUEEntry_row_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx d L W → ℝ}
+    (hv : TagFree d L W v) (hS : MixProfOK v S) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
+    {z : ℂ} (hz : z.im ≠ 0) {i j : Idx d L W} (hij : i ≠ j) {Λ : ℝ} (hΛ : 1 < Λ) (q : ℕ) :
+    gaussLaw d L W v {s | Λ * ldeRowRHS S (green (A + Xmat d L W s) z) i j <
+        ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) i j}
+      ≤ ENNReal.ofReal (hwConst q / ((Λ - 1) ^ 2) ^ (q + 1)) := by
+  obtain ⟨j', rfl⟩ : ∃ j' : {a : Idx d L W // a ≠ i}, j'.1 = j := ⟨⟨j, Ne.symm hij⟩, rfl⟩
+  set c : Sizes.SeqΩ (auxSizes d) → {a : Idx d L W // a ≠ i} → ℂ :=
+    fun ω k => auxMinorRes d L W v A z i ω k j' with hc_def
+  have hc : ∀ k, Continuous fun ω => c ω k := fun k => continuous_auxMinorRes d L W v hA hz i k j'
+  have hCb : ∀ ω k, ‖c ω k‖ ≤ |z.im|⁻¹ := fun ω k => norm_auxMinorRes_le d L W v hA hz i ω k j'
+  have hcf : ∀ ω ω', (∀ x ∈ auxOffRow d L W i, ω x = ω' x) → c ω = c ω' := by
+    intro ω ω' h
+    funext k
+    simp only [c]
+    rw [auxMinorRes_congr d L W v A z i h]
+  have hc0 : ∀ ω k, c ω k = greenMinor (green (A + auxHG d L W v ω) z) i k.1 j'.1 :=
+    fun ω k => GUEEntry_auxMinorRes_eq v hA hz i ω k j'
+  have hY : ∀ ω, ldeRowLHS (Xmat d L W (auxT d L W v ω)) (green (A + Xmat d L W (auxT d L W v ω)) z) i j'.1
+      = ‖∑ k : {a : Idx d L W // a ≠ i}, auxHG d L W v ω i k.1 * c ω k‖ ^ 2 := by
+    intro ω
+    change ldeRowLHS (auxHG d L W v ω) (green (A + auxHG d L W v ω) z) i j'.1 = _
+    unfold ldeRowLHS
+    rw [RowChaos.sum_erase_eq (i := i)]
+    congr 2
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [hc0]
+  have hR : ∀ ω, ldeRowRHS S (green (A + Xmat d L W (auxT d L W v ω)) z) i j'.1
+      = ∑ k : {a : Idx d L W // a ≠ i}, sigRow d L W v i k.1 * ‖c ω k‖ ^ 2 := by
+    intro ω
+    change ldeRowRHS S (green (A + auxHG d L W v ω) z) i j'.1 = _
+    unfold ldeRowRHS
+    rw [RowChaos.sum_erase_eq (i := i)]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [← hS.off i k.1 (Ne.symm k.2), hc0]
+  have hR0 : ∀ ω, 0 ≤ ∑ k : {a : Idx d L W // a ≠ i}, sigRow d L W v i k.1 * ‖c ω k‖ ^ 2 := by
+    intro ω
+    exact Finset.sum_nonneg fun k _ => mul_nonneg (by unfold sigRow; positivity) (sq_nonneg _)
+  have h := aux_lin_tail (auxLinChaos d L W v i c hc _ hCb hcf)
+    (fun ω => ‖∑ k : {a : Idx d L W // a ≠ i}, auxHG d L W v ω i k.1 * c ω k‖ ^ 2)
+    (fun ω => ∑ k : {a : Idx d L W // a ≠ i}, sigRow d L W v i k.1 * ‖c ω k‖ ^ 2) hR0
+    (fun ω => auxLin_chaos hv i c hc _ hCb hcf ω)
+    (fun ω => auxLin_Vq i c hc _ hCb hcf ω) hΛ q
+  have hmap : gaussLaw d L W v = (Sizes.seqP (auxSizes d)).map (auxT d L W v) :=
+    (auxT_law d L W v).symm
+  have hAm := GUEEntry_meas_row S hA hz (Ne.symm j'.2) Λ
+  rw [hmap, Measure.map_apply (auxT_measurable d L W v) hAm]
+  refine le_trans (le_of_eq ?_) h
+  congr 1
+  ext ω
+  simp only [Set.mem_preimage, Set.mem_ofPred_eq]
+  rw [hY ω, hR ω]
+
+/-- **Column LDE (4.8) for `G = (A + X - z)⁻¹`** (twin of `mixEntry_col_tail`, `EntryTail.lean:608`). -/
+theorem GUEEntry_col_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx d L W → ℝ}
+    (hv : TagFree d L W v) (hS : MixProfOK v S) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
+    {z : ℂ} (hz : z.im ≠ 0) {k j : Idx d L W} (hkj : k ≠ j) {Λ : ℝ} (hΛ : 1 < Λ) (q : ℕ) :
+    gaussLaw d L W v {s | Λ * ldeColRHS S (green (A + Xmat d L W s) z) k j <
+        ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) k j}
+      ≤ ENNReal.ofReal (hwConst q / ((Λ - 1) ^ 2) ^ (q + 1)) := by
+  obtain ⟨k', rfl⟩ : ∃ k' : {a : Idx d L W // a ≠ j}, k'.1 = k := ⟨⟨k, hkj⟩, rfl⟩
+  set c : Sizes.SeqΩ (auxSizes d) → {a : Idx d L W // a ≠ j} → ℂ :=
+    fun ω l => (starRingEnd ℂ) (auxMinorRes d L W v A z j ω k' l) with hc_def
+  have hc : ∀ l, Continuous fun ω => c ω l := fun l =>
+    Complex.continuous_conj.comp (continuous_auxMinorRes d L W v hA hz j k' l)
+  have hCb : ∀ ω l, ‖c ω l‖ ≤ |z.im|⁻¹ := fun ω l => by
+    simp only [c, Complex.norm_conj]
+    exact norm_auxMinorRes_le d L W v hA hz j ω k' l
+  have hcf : ∀ ω ω', (∀ x ∈ auxOffRow d L W j, ω x = ω' x) → c ω = c ω' := by
+    intro ω ω' h
+    funext l
+    simp only [c]
+    rw [auxMinorRes_congr d L W v A z j h]
+  have hc0 : ∀ ω l, c ω l = (starRingEnd ℂ) (greenMinor (green (A + auxHG d L W v ω) z) j k'.1 l.1) :=
+    fun ω l => congrArg (starRingEnd ℂ) (GUEEntry_auxMinorRes_eq v hA hz j ω k' l)
+  have hY : ∀ ω, ldeColLHS (Xmat d L W (auxT d L W v ω)) (green (A + Xmat d L W (auxT d L W v ω)) z) k'.1 j
+      = ‖∑ l : {a : Idx d L W // a ≠ j}, auxHG d L W v ω j l.1 * c ω l‖ ^ 2 := by
+    intro ω
+    change ldeColLHS (auxHG d L W v ω) (green (A + auxHG d L W v ω) z) k'.1 j = _
+    unfold ldeColLHS
+    rw [RowChaos.sum_erase_eq (i := j)]
+    have e : ∑ l : {a : Idx d L W // a ≠ j}, greenMinor (green (A + auxHG d L W v ω) z) j k'.1 l.1 *
+          auxHG d L W v ω l.1 j
+        = (starRingEnd ℂ) (∑ l : {a : Idx d L W // a ≠ j}, auxHG d L W v ω j l.1 * c ω l) := by
+      rw [map_sum]
+      refine Finset.sum_congr rfl fun l _ => ?_
+      have hH : (starRingEnd ℂ) (auxHG d L W v ω j l.1) = auxHG d L W v ω l.1 j :=
+        (auxHG_isHermitian d L W v ω).apply l.1 j
+      rw [hc0, map_mul, Complex.conj_conj, hH]
+      ring
+    rw [e, Complex.norm_conj]
+  have hR : ∀ ω, ldeColRHS S (green (A + Xmat d L W (auxT d L W v ω)) z) k'.1 j
+      = ∑ l : {a : Idx d L W // a ≠ j}, sigRow d L W v j l.1 * ‖c ω l‖ ^ 2 := by
+    intro ω
+    change ldeColRHS S (green (A + auxHG d L W v ω) z) k'.1 j = _
+    unfold ldeColRHS
+    rw [RowChaos.sum_erase_eq (i := j)]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    have hc' : ‖c ω l‖ = ‖greenMinor (green (A + auxHG d L W v ω) z) j k'.1 l.1‖ := by
+      rw [hc0, Complex.norm_conj]
+    rw [hc', hS.symm l.1 j, hS.off j l.1 (Ne.symm l.2)]
+    ring
+  have hR0 : ∀ ω, 0 ≤ ∑ l : {a : Idx d L W // a ≠ j}, sigRow d L W v j l.1 * ‖c ω l‖ ^ 2 := by
+    intro ω
+    exact Finset.sum_nonneg fun l _ => mul_nonneg (by unfold sigRow; positivity) (sq_nonneg _)
+  have h := aux_lin_tail (auxLinChaos d L W v j c hc _ hCb hcf)
+    (fun ω => ‖∑ l : {a : Idx d L W // a ≠ j}, auxHG d L W v ω j l.1 * c ω l‖ ^ 2)
+    (fun ω => ∑ l : {a : Idx d L W // a ≠ j}, sigRow d L W v j l.1 * ‖c ω l‖ ^ 2) hR0
+    (fun ω => auxLin_chaos hv j c hc _ hCb hcf ω)
+    (fun ω => auxLin_Vq j c hc _ hCb hcf ω) hΛ q
+  have hAm := GUEEntry_meas_col S hA hz hkj Λ
+  have hmap : gaussLaw d L W v = (Sizes.seqP (auxSizes d)).map (auxT d L W v) :=
+    (auxT_law d L W v).symm
+  rw [hmap, Measure.map_apply (auxT_measurable d L W v) hAm]
+  refine le_trans (le_of_eq ?_) h
+  congr 1
+  ext ω
+  simp only [Set.mem_preimage, Set.mem_ofPred_eq]
+  rw [hY ω, hR ω]
+
+end Tails
+
+section Mix2
+variable {d : ℕ}
+
+/-- **The BA mixture matrix** `g Ψ + √a X_block + √b X_GUE` on the carrier `ouP (UNModel.band (sz.withLam 0)) n`
+(`= ouP (UNModelC.ba sz).toUNModel n`, `UNPins.lean:467`): the band mixture of `sz.withLam 0` plus the hopping. -/
+def mixMatBA (sz : Sizes d) (n : ℕ) (g a b : ℝ) (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
+    Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
+  (g : ℂ) • PsiI d (sz.L n) (sz.W n) +
+    @id (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (mixMat (sz.withLam 0) n a b ω)
+
+theorem GUEEntry_mixMatBA_eq_Xmat (sz : Sizes d) (n : ℕ) (g a b : ℝ) (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
+    mixMatBA sz n g a b ω = (g : ℂ) • PsiI d (sz.L n) (sz.W n) +
+      Xmat d (sz.L n) (sz.W n) (mixSample (sz.withLam 0) n a b ω) := by
+  unfold mixMatBA
+  exact congrArg (fun M => (g : ℂ) • PsiI d (sz.L n) (sz.W n) + M) (mixMat_eq_Xmat_mixSample (sz.withLam 0) n a b ω)
+
+theorem GUEEntry_mixMatBA_isHermitian (sz : Sizes d) (n : ℕ) (g a b : ℝ) (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
+    (mixMatBA sz n g a b ω).IsHermitian := by
+  unfold mixMatBA
+  refine IsHermitian.add ?_ (mixMat_isHermitian (sz.withLam 0) n a b ω)
+  unfold IsHermitian
+  rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq, show star (g : ℂ) = (g : ℂ) from Complex.conj_ofReal _]
+
+/-- The centred OU marginal of the block Anderson model is the BA mixture at `(a, b) = (e^{-t}, 1 - e^{-t})`,
+`g = λ_n`. -/
+theorem GUEEntry_ouMatC_ba_eq_mixMatBA (sz : Sizes d) (n : ℕ) (t : ℝ) (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
+    ouMatC (UNModelC.ba sz) n t ω = mixMatBA sz n (sz.lam n) (Real.exp (-t)) (1 - Real.exp (-t)) ω := by
+  have h := (ouMatC_ba_eq_band_add sz n t ω).trans (ouMat_eq_mixMat (sz.withLam 0) n t ω)
+  unfold mixMatBA
+  exact sub_eq_iff_eq_add'.1 h
+
+end Mix2
+
+section Bad
+variable {d L W : ℕ} [NeZero L] [NeZero W]
+
+/-- **The union of the four large-deviation failure events** at the shift `A`, profile `S`, spectral parameter
+`z` and factor `Λ` (twin of `mixBad`, `EntryTailMain.lean:120`, one union over the pairs). -/
+def GUEEntry_bad (A : Matrix (Idx d L W) (Idx d L W) ℂ) (S : Idx d L W → Idx d L W → ℝ) (z : ℂ) (Λ : ℝ) :
+    Set (Ω d L W) :=
+  ⋃ p : Idx d L W × Idx d L W,
+    {s | (p.1 ≠ p.2 ∧ Λ * ldeRowRHS S (green (A + Xmat d L W s) z) p.1 p.2 <
+        ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2) ∨
+      (p.1 ≠ p.2 ∧ Λ * ldeColRHS S (green (A + Xmat d L W s) z) p.1 p.2 <
+        ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2) ∨
+      Λ * ldeQuadRHS S (green (A + Xmat d L W s) z) p.1 <
+        ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) S 1 p.1 ∨
+      Λ * S p.1 p.1 < ‖Xmat d L W s p.1 p.1‖ ^ 2}
+
+theorem GUEEntry_bad_tail (g : ℝ) {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hu : 0 < a + b)
+    {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) {Λ : ℝ} (hΛ : 2 ≤ Λ) (q : ℕ) :
+    gaussLaw d L W (mixVar d L W g a b) (GUEEntry_bad A (Smix d L W g a b) z Λ) ≤
+      ENNReal.ofReal (4 * (((W * L) ^ d : ℕ) : ℝ) ^ 2 * (mixCq q / Λ ^ (q + 1))) := by
+  have hv := mixVar_tagFree d L W g a b
+  have hS := mixProfOK (d := d) (L := L) (W := W) g ha hb
+  have hΛ0 : 0 < Λ := by linarith
+  have hΛ1 : 1 < Λ := by linarith
+  set ε : ℝ := mixCq q / Λ ^ (q + 1) with hε
+  have hε0 : 0 ≤ ε := by have := mixCq_pos q; positivity
+  set Nn : ℕ := (W * L) ^ d with hNn
+  have hcardI : Fintype.card (Idx d L W) = Nn := RBM.Gauss.card_Idx d L W
+  have hcardP : Fintype.card (Idx d L W × Idx d L W) = Nn * Nn := by rw [Fintype.card_prod, hcardI]
+  have hp : ∀ p : Idx d L W × Idx d L W, gaussLaw d L W (mixVar d L W g a b)
+      {s : Ω d L W | (p.1 ≠ p.2 ∧ Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+        ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2) ∨
+      (p.1 ≠ p.2 ∧ Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+        ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2) ∨
+      Λ * ldeQuadRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 <
+        ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) (Smix d L W g a b) 1 p.1 ∨
+      Λ * Smix d L W g a b p.1 p.1 < ‖Xmat d L W s p.1 p.1‖ ^ 2} ≤ ENNReal.ofReal (4 * ε) := by
+    intro p
+    have hr : gaussLaw d L W (mixVar d L W g a b) {s : Ω d L W | p.1 ≠ p.2 ∧
+        Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} ≤ ENNReal.ofReal ε := by
+      by_cases hpp : p.1 = p.2
+      · have : {s : Ω d L W | p.1 ≠ p.2 ∧ Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} = ∅ := by ext s; simp [hpp]
+        rw [this, measure_empty]; exact zero_le
+      · have : {s : Ω d L W | p.1 ≠ p.2 ∧ Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} =
+          {s | Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+            ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} := by ext s; simp [hpp]
+        rw [this]
+        exact (GUEEntry_row_tail hv hS hA hz hpp hΛ1 q).trans (ENNReal.ofReal_le_ofReal (mixEntry_tail_row_le hΛ q))
+    have hc : gaussLaw d L W (mixVar d L W g a b) {s : Ω d L W | p.1 ≠ p.2 ∧
+        Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} ≤ ENNReal.ofReal ε := by
+      by_cases hpp : p.1 = p.2
+      · have : {s : Ω d L W | p.1 ≠ p.2 ∧ Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} = ∅ := by ext s; simp [hpp]
+        rw [this, measure_empty]; exact zero_le
+      · have : {s : Ω d L W | p.1 ≠ p.2 ∧ Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} =
+          {s | Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+            ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} := by ext s; simp [hpp]
+        rw [this]
+        exact (GUEEntry_col_tail hv hS hA hz hpp hΛ1 q).trans (ENNReal.ofReal_le_ofReal (mixEntry_tail_row_le hΛ q))
+    have hq : gaussLaw d L W (mixVar d L W g a b) {s : Ω d L W | Λ * ldeQuadRHS (Smix d L W g a b)
+        (green (A + Xmat d L W s) z) p.1 < ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z)
+          (Smix d L W g a b) 1 p.1} ≤ ENNReal.ofReal ε :=
+      (GUEEntry_quad_tail hv hS hA hz p.1 hΛ0 q).trans (ENNReal.ofReal_le_ofReal (mixEntry_tail_quad_le hΛ0 q))
+    have hd' : gaussLaw d L W (mixVar d L W g a b) {s : Ω d L W | Λ * Smix d L W g a b p.1 p.1 <
+        ‖Xmat d L W s p.1 p.1‖ ^ 2} ≤ ENNReal.ofReal ε :=
+      (mixEntry_diag_tail hS p.1 (mixEntry_Smix_diag_pos d L W g ha hb hu p.1) hΛ0).trans
+        (ENNReal.ofReal_le_ofReal (by have := mixEntry_tail_diag_le hΛ0 q; rw [hε]; exact this))
+    have hsub : {s : Ω d L W | (p.1 ≠ p.2 ∧ Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+        ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2) ∨
+      (p.1 ≠ p.2 ∧ Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+        ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2) ∨
+      Λ * ldeQuadRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 <
+        ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) (Smix d L W g a b) 1 p.1 ∨
+      Λ * Smix d L W g a b p.1 p.1 < ‖Xmat d L W s p.1 p.1‖ ^ 2} ⊆
+      ({s : Ω d L W | p.1 ≠ p.2 ∧ Λ * ldeRowRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeRowLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2} ∪
+        {s : Ω d L W | p.1 ≠ p.2 ∧ Λ * ldeColRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 p.2 <
+          ldeColLHS (Xmat d L W s) (green (A + Xmat d L W s) z) p.1 p.2}) ∪
+      {s : Ω d L W | Λ * ldeQuadRHS (Smix d L W g a b) (green (A + Xmat d L W s) z) p.1 <
+        ldeQuadLHS (Xmat d L W s) (green (A + Xmat d L W s) z) (Smix d L W g a b) 1 p.1} ∪
+      {s : Ω d L W | Λ * Smix d L W g a b p.1 p.1 < ‖Xmat d L W s p.1 p.1‖ ^ 2} := by
+      intro s hs
+      rcases hs with h | h | h | h
+      · exact Or.inl (Or.inl (Or.inl h))
+      · exact Or.inl (Or.inl (Or.inr h))
+      · exact Or.inl (Or.inr h)
+      · exact Or.inr h
+    refine (measure_mono hsub).trans ?_
+    refine (measure_union_le _ _).trans ?_
+    have h3 := add_le_add ((measure_union_le _ _).trans (add_le_add ((measure_union_le _ _).trans (add_le_add hr hc)) hq)) hd'
+    refine h3.trans (le_of_eq ?_)
+    have h4 : ENNReal.ofReal ε + ENNReal.ofReal ε + ENNReal.ofReal ε + ENNReal.ofReal ε = ENNReal.ofReal (4 * ε) := by
+      rw [← ENNReal.ofReal_add hε0 hε0, ← ENNReal.ofReal_add (by positivity) hε0,
+        ← ENNReal.ofReal_add (by positivity) hε0]
+      congr 1; ring
+    exact h4
+  refine (measure_iUnion_fintype_le _ _).trans ?_
+  refine (Finset.sum_le_sum fun p _ => hp p).trans ?_
+  rw [Finset.sum_const, Finset.card_univ, hcardP, nsmul_eq_mul, ← ENNReal.ofReal_natCast,
+    ← ENNReal.ofReal_mul (Nat.cast_nonneg _)]
+  refine ENNReal.ofReal_le_ofReal (le_of_eq ?_)
+  push_cast
+  ring
+
+end Bad
+
+theorem GUEEntry_C_nonneg (d : ℕ) {Λ κ : ℝ} (hd : 0 < d) (hΛ : 0 < Λ) (hκ : 0 < κ) : 0 ≤ GUEEntry_C d Λ κ := by
+  have hc₀ := BAct_rate_pos d Λ κ hd hΛ hκ
+  unfold GUEEntry_C GUEEntry_CAb GUEEntry_CXb GUEEntry_CRb GUEEntry_CA GUEEntry_CX GUEEntry_CR GUEEntry_Kbd
+    GUEEntry_Kth GUEEntry_rho GUEEntry_Sc GUEEntry_XiC expC
+  positivity
+
+section Event
+variable {d : ℕ}
+
+theorem GUEEntry_maxLoop_nonneg (d L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
+    (H : Matrix (Idx d L W) (Idx d L W) ℂ) : 0 ≤ GUEEntry_maxLoop d L W m E u H :=
+  (norm_nonneg _).trans (Finset.le_sup' (fun p : Zd d L × Zd d L =>
+    ‖loopFine d L W H (ztOf m E u) ![true, false] ![p.1, p.2]‖) (Finset.mem_univ ((0 : Zd d L), (0 : Zd d L))))
+
+/-- **The event of the pin (one mixture, one pair) is contained in the failure events** (twin of
+`mixEntry_event_subset`, `EntryTailMain.lean:292`). -/
+theorem GUEEntry_event_subset (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {Λ κ δ Φ T g E a b : ℝ} {m : ℂ}
+    (hg : 0 < g) (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d (sz.L n) g κ E m) (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (hu1 : a + b < 1) (hδ0 : 0 ≤ δ) (hδ : δ ≤ GUEEntry_dlt d Λ κ) (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (hΦ : 1 ≤ Φ) (hΦδ : GUEEntry_cs d Λ κ * Φ * δ ^ 2 ≤ 1) (hT : GUEEntry_C d Λ κ * Φ ^ 2 ≤ T) :
+    {ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n) | ∃ i j : Idx d (sz.L n) (sz.W n),
+      T * (GUEEntry_maxLoop d (sz.L n) (sz.W n) m E (a + b) (mixMatBA sz n g a b ω) +
+          (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) <
+        (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a + b) (mixMatBA sz n g a b ω) x y ≤ δ
+          then GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a + b) (mixMatBA sz n g a b ω) i j ^ 2 else 0)}
+      ⊆ mixSample (sz.withLam 0) n a b ⁻¹'
+        GUEEntry_bad ((g : ℂ) • PsiI d (sz.L n) (sz.W n)) (Smix d (sz.L n) (sz.W n) 0 a b) (ztOf m E (a + b)) Φ := by
+  rintro ω ⟨i, j, hij⟩
+  by_contra hnot
+  rw [GUEEntry_mixMatBA_eq_Xmat] at hij
+  set s := mixSample (sz.withLam 0) n a b ω with hs
+  have hnot' : s ∉ GUEEntry_bad ((g : ℂ) • PsiI d (sz.L n) (sz.W n)) (Smix d (sz.L n) (sz.W n) 0 a b)
+      (ztOf m E (a + b)) Φ := hnot
+  have hΛ : 0 < Λ := lt_of_lt_of_le hg hgΛ
+  have hCn := GUEEntry_C_nonneg d (by omega) hΛ hκ
+  have hT0 : 0 ≤ T := le_trans (mul_nonneg hCn (sq_nonneg Φ)) hT
+  have hmL := GUEEntry_maxLoop_nonneg d (sz.L n) (sz.W n) m E (a + b)
+    ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s)
+  have hW0 : 0 ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by positivity
+  by_cases hall : ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a + b)
+      ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) x y ≤ δ
+  · simp only [hall, implies_true, ↓reduceIte] at hij
+    have hrow : ∀ i j, i ≠ j → ldeRowLHS (Xmat d (sz.L n) (sz.W n) s)
+        (green ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) (ztOf m E (a + b))) i j ≤
+        Φ * ldeRowRHS (Smix d (sz.L n) (sz.W n) 0 a b)
+          (green ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) (ztOf m E (a + b))) i j := by
+      intro i j hij'
+      by_contra h
+      exact hnot' (Set.mem_iUnion.2 ⟨(i, j), Or.inl ⟨hij', not_le.1 h⟩⟩)
+    have hcol : ∀ k j, k ≠ j → ldeColLHS (Xmat d (sz.L n) (sz.W n) s)
+        (green ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) (ztOf m E (a + b))) k j ≤
+        Φ * ldeColRHS (Smix d (sz.L n) (sz.W n) 0 a b)
+          (green ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) (ztOf m E (a + b))) k j := by
+      intro k j hkj
+      by_contra h
+      exact hnot' (Set.mem_iUnion.2 ⟨(k, j), Or.inr (Or.inl ⟨hkj, not_le.1 h⟩)⟩)
+    have hquad : ∀ i, ldeQuadLHS (Xmat d (sz.L n) (sz.W n) s)
+        (green ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) (ztOf m E (a + b)))
+        (Smix d (sz.L n) (sz.W n) 0 a b) 1 i ≤
+        Φ * ldeQuadRHS (Smix d (sz.L n) (sz.W n) 0 a b)
+          (green ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) (ztOf m E (a + b))) i := by
+      intro i
+      by_contra h
+      exact hnot' (Set.mem_iUnion.2 ⟨(i, i), Or.inr (Or.inr (Or.inl (not_le.1 h)))⟩)
+    have hdiag : ∀ i, ‖Xmat d (sz.L n) (sz.W n) s i i‖ ^ 2 ≤ Φ * Smix d (sz.L n) (sz.W n) 0 a b i i := by
+      intro i
+      by_contra h
+      exact hnot' (Set.mem_iUnion.2 ⟨(i, i), Or.inr (Or.inr (Or.inr (not_le.1 h)))⟩)
+    have hdet := mixEntry_detBA hd (sz.three_le_L n) hg hgΛ hκ hr ha hb hu1 (Xmat_isHermitian d (sz.L n) (sz.W n) s)
+      hall hδ0 hδ hwd hΦ hΦδ hrow hcol hquad hdiag i j
+    have h1 : GUEEntry_C d Λ κ * Φ ^ 2 * (GUEEntry_maxLoop d (sz.L n) (sz.W n) m E (a + b)
+        ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) ≤
+        T * (GUEEntry_maxLoop d (sz.L n) (sz.W n) m E (a + b)
+        ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) :=
+      mul_le_mul_of_nonneg_right hT (add_nonneg hmL hW0)
+    linarith
+  · simp only [hall, ↓reduceIte] at hij
+    have : 0 ≤ T * (GUEEntry_maxLoop d (sz.L n) (sz.W n) m E (a + b)
+        ((g : ℂ) • PsiI d (sz.L n) (sz.W n) + Xmat d (sz.L n) (sz.W n) s) + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) :=
+      mul_nonneg hT0 (add_nonneg hmL hW0)
+    linarith
+
+/-- **The union over the grid `k ≤ K` at one size** (twin of `mixEntry_union`, `EntryTailMain.lean:369`): the event of the
+pin has `ouP`-probability at most `(K + 1) · 4 N² · C_q / Φ^{q+1}`, `N = size n = (W L)^d`. -/
+private theorem GUEEntry_union (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {Λ κ δ Φ T g E : ℝ} {m : ℂ} (hg : 0 < g) (hgΛ : g ≤ Λ)
+    (hκ : 0 < κ) (hr : BAReal d (sz.L n) g κ E m) {K : ℕ} {a b : Fin (K + 1) → ℝ}
+    (hab : ∀ k, 0 ≤ a k ∧ 0 ≤ b k ∧ 0 < a k + b k ∧ a k + b k < 1) (hδ0 : 0 ≤ δ) (hδ : δ ≤ GUEEntry_dlt d Λ κ)
+    (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hΦ2 : 2 ≤ Φ) (hΦδ : GUEEntry_cs d Λ κ * Φ * δ ^ 2 ≤ 1)
+    (hT : GUEEntry_C d Λ κ * Φ ^ 2 ≤ T) (q : ℕ) :
+    ouP (UNModel.band (sz.withLam 0)) n {ω | ∃ (k : Fin (K + 1)) (i j : Idx d (sz.L n) (sz.W n)),
+      T * (GUEEntry_maxLoop d (sz.L n) (sz.W n) m E (a k + b k) (mixMatBA sz n g (a k) (b k) ω) +
+          (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) <
+        (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a k + b k) (mixMatBA sz n g (a k) (b k) ω) x y ≤ δ
+          then GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a k + b k) (mixMatBA sz n g (a k) (b k) ω) i j ^ 2
+          else 0)}
+      ≤ ENNReal.ofReal (((K : ℝ) + 1) * (4 * ((sz.size n : ℕ) : ℝ) ^ 2 * (mixCq q / Φ ^ (q + 1)))) := by
+  have hΦ1 : 1 ≤ Φ := by linarith
+  have hmpos : 0 < m.im := lt_of_lt_of_le hκ hr.2
+  have hPsi : ((g : ℂ) • PsiI d (sz.L n) (sz.W n)).IsHermitian := by
+    unfold IsHermitian
+    rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq, show star (g : ℂ) = (g : ℂ) from Complex.conj_ofReal _]
+  have hsub : {ω | ∃ (k : Fin (K + 1)) (i j : Idx d (sz.L n) (sz.W n)),
+      T * (GUEEntry_maxLoop d (sz.L n) (sz.W n) m E (a k + b k) (mixMatBA sz n g (a k) (b k) ω) +
+          (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) <
+        (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a k + b k) (mixMatBA sz n g (a k) (b k) ω) x y ≤ δ
+          then GUEEntry_llErr d (sz.L n) (sz.W n) g E m (a k + b k) (mixMatBA sz n g (a k) (b k) ω) i j ^ 2
+          else 0)}
+      ⊆ ⋃ k : Fin (K + 1), mixSample (sz.withLam 0) n (a k) (b k) ⁻¹'
+          GUEEntry_bad ((g : ℂ) • PsiI d (sz.L n) (sz.W n)) (Smix d (sz.L n) (sz.W n) 0 (a k) (b k))
+            (ztOf m E (a k + b k)) Φ := by
+    rintro ω ⟨k, i, j, hω⟩
+    refine Set.mem_iUnion.2 ⟨k, ?_⟩
+    obtain ⟨ha, hb, hu, hu1⟩ := hab k
+    exact GUEEntry_event_subset hd sz n hg hgΛ hκ hr ha hb hu1 hδ0 hδ hwd hΦ1 hΦδ hT ⟨i, j, hω⟩
+  refine (measure_mono hsub).trans ?_
+  refine (measure_iUnion_fintype_le _ _).trans ?_
+  have hk : ∀ k : Fin (K + 1), ouP (UNModel.band (sz.withLam 0)) n (mixSample (sz.withLam 0) n (a k) (b k) ⁻¹'
+      GUEEntry_bad ((g : ℂ) • PsiI d (sz.L n) (sz.W n)) (Smix d (sz.L n) (sz.W n) 0 (a k) (b k))
+        (ztOf m E (a k + b k)) Φ) ≤
+      ENNReal.ofReal (4 * ((sz.size n : ℕ) : ℝ) ^ 2 * (mixCq q / Φ ^ (q + 1))) := by
+    intro k
+    obtain ⟨ha, hb, hu, hu1⟩ := hab k
+    have hz : (ztOf m E (a k + b k)).im ≠ 0 := by
+      rw [ztOf_im]; unfold etaOf; exact (mul_pos (by linarith) hmpos).ne'
+    calc _ ≤ ((ouP (UNModel.band (sz.withLam 0)) n).map (mixSample (sz.withLam 0) n (a k) (b k)))
+          (GUEEntry_bad ((g : ℂ) • PsiI d (sz.L n) (sz.W n)) (Smix d (sz.L n) (sz.W n) 0 (a k) (b k))
+            (ztOf m E (a k + b k)) Φ) :=
+          Measure.le_map_apply (measurable_mixSample (sz.withLam 0) n (a k) (b k)).aemeasurable _
+      _ = gaussLaw d (sz.L n) (sz.W n) (mixVar d (sz.L n) (sz.W n) 0 (a k) (b k))
+          (GUEEntry_bad ((g : ℂ) • PsiI d (sz.L n) (sz.W n)) (Smix d (sz.L n) (sz.W n) 0 (a k) (b k))
+            (ztOf m E (a k + b k)) Φ) := by rw [mixSample_law (sz.withLam 0) n ha hb]; rfl
+      _ ≤ _ := GUEEntry_bad_tail 0 ha hb hu hPsi hz hΦ2 q
+  refine (Finset.sum_le_sum fun k _ => hk k).trans ?_
+  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+  have hB : 0 ≤ 4 * ((sz.size n : ℕ) : ℝ) ^ 2 * (mixCq q / Φ ^ (q + 1)) := by
+    have := mixCq_pos q
+    have : 0 < Φ := by linarith
+    positivity
+  rw [← ENNReal.ofReal_natCast, ← ENNReal.ofReal_mul (Nat.cast_nonneg _)]
+  refine ENNReal.ofReal_le_ofReal (le_of_eq ?_)
+  push_cast
+  ring
+
+end Event
+
+/-- **Pin `GUEEntryMixBA d`** (BA twin of `GUEEntryMix d`, `EntryTail.lean:94`): Lemma 4.1 (4.2)+(4.3) of [YY_25] at the
+block Anderson mixture `g_n Ψ + √a X_block + √b X_GUE` (profile `S_u = a S^{(B)}(0) + b N⁻¹`, `u = a + b < 1`, free
+real-axis flow data `(g_n, E_n, m_n)` with `0 < g_n ≤ 𝔡⁻¹`, `BAReal`), in the one-time-law form on
+`ouP (UNModel.band (sz.withLam 0)) n = ouP (UNModelC.ba sz).toUNModel n`: on the a priori event
+`‖G - M‖_max ≤ δ_n`, `|G_ij - M_ij|² ≺ max_{a,b} |𝓛_{(+,-),(a,b)}| + W^{-d}`, `M = M^{(B)} ⊗ I`, at the spectral
+parameter `z_u = E_n + (1 - u) m_n`.  No `∃ C`; the family premises are guarded by `BAReal` at `0 < κ`. -/
+def GUEEntryMixBA (d : ℕ) : Prop :=
+  ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
+  ∀ (g E : ℕ → ℝ) (m : ℕ → ℂ), (∀ n, 0 < g n ∧ g n ≤ 𝔡⁻¹ ∧ BAReal d (sz.L n) (g n) κ (E n) (m n)) →
+  ∀ n0 : ℕ, ∀ K : ℕ → ℕ, (∀ n, K n ≤ (sz.size n) ^ n0) → ∀ a b : ∀ n, Fin (K n + 1) → ℝ,
+  (∀ n k, 0 ≤ a n k ∧ 0 ≤ b n k ∧ 0 < a n k + b n k ∧ a n k + b n k < 1) →
+  ∀ (c₀ : ℝ) (δ : ℕ → ℝ), 0 < c₀ → (∀ n, 0 ≤ δ n) →
+  (∀ᶠ n in atTop, δ n ≤ ((sz.size n : ℕ) : ℝ) ^ (-c₀)) →
+  ∀ τ D : ℝ, 0 < τ → 0 < D → ∀ᶠ n in atTop,
+    ouP (UNModel.band (sz.withLam 0)) n
+      {ω | ∃ (k : Fin (K n + 1)) (i j : Idx d (sz.L n) (sz.W n)),
+        ((sz.size n : ℕ) : ℝ) ^ τ *
+            (GUEEntry_maxLoop d (sz.L n) (sz.W n) (m n) (E n) (a n k + b n k)
+                (mixMatBA sz n (g n) (a n k) (b n k) ω) + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹) <
+          (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+                (mixMatBA sz n (g n) (a n k) (b n k) ω) x y ≤ δ n
+            then GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+                  (mixMatBA sz n (g n) (a n k) (b n k) ω) i j ^ 2
+            else 0)} ≤
+      ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
+
+section Main
+variable {d : ℕ} 
+
+/-- `√(W^{-d}) ≤ N^{-𝔠 d / 2}` from the bandwidth `N^𝔠 ≤ W`. -/
+theorem GUEEntry_sqrt_w0_le {N W 𝔠 : ℝ} {d : ℕ} (hN1 : 1 ≤ N) (hW : N ^ 𝔠 ≤ W) (h𝔠 : 0 < 𝔠) (hd : 0 < d) :
+    Real.sqrt ((W ^ d)⁻¹) ≤ N ^ (-(𝔠 * d / 2)) := by
+  have hN0 : 0 < N := by linarith
+  have hb0 : 0 ≤ N ^ 𝔠 := Real.rpow_nonneg hN0.le _
+  have hWd : N ^ (𝔠 * d) ≤ W ^ d := by
+    rw [Real.rpow_mul hN0.le, Real.rpow_natCast]
+    exact pow_le_pow_left₀ hb0 hW d
+  rw [Real.sqrt_le_iff]
+  refine ⟨Real.rpow_nonneg hN0.le _, ?_⟩
+  have hsq : (N ^ (-(𝔠 * d / 2))) ^ 2 = (N ^ (𝔠 * d))⁻¹ := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hN0.le, ← Real.rpow_neg hN0.le]
+    congr 1; push_cast; ring
+  rw [hsq]
+  have hpos : 0 < N ^ (𝔠 * d) := Real.rpow_pos_of_pos hN0 _
+  exact inv_anti₀ hpos hWd
+
+set_option maxHeartbeats 800000 in
+-- the `n`-wise engine of the pin: smallness, the union bound and the final arithmetic in one proof
+/-- **`GUEEntryMixBA d` is proved, `d ≥ 3`** (twin of `gueEntryMix`, `EntryTailMain.lean:545`): the deterministic `mixEntry_detBA`
+outside the failure events `GUEEntry_bad`, whose probabilities are the Gaussian tails of the auxiliary carrier pulled
+back to `ouP` by `mixSample`; the per-`n` engine with `Φ = N^{τ'}`, `τ' = min (τ/4) c₁`, `c₁ = min c₀ (𝔠 d/2)`, the
+`n`-free constant `GUEEntry_C d 𝔡⁻¹ κ` absorbed by `N^{τ/2}`, the a priori bound enlarged to `δ' = max δ_n W^{-d/2}`
+(`W^{-d} ≤ N^{-𝔠 d}` from the bandwidth), the union bound over `k ≤ K_n ≤ N^{n0}` and the pairs. -/
+theorem gueEntryMixBA (hd : 3 ≤ d) : GUEEntryMixBA d := by
+  intro 𝔠 𝔡 sz hAdm κ hκ g E m hdata n0 K hK a b hab c₀ δ hc₀ hδ0 hδ τ D hτ hD
+  obtain ⟨h𝔠, h𝔡, hsz, hbw, hWO⟩ := hAdm
+  have hsz0 : Tendsto sz.size atTop atTop := tendsto_natCast_atTop_iff.mp hsz
+  have hd0 : 0 < d := by omega
+  have hΛ : 0 < 𝔡⁻¹ := inv_pos.2 h𝔡
+  set c₁ : ℝ := min c₀ (𝔠 * d / 2) with hc₁
+  have hc₁0 : 0 < c₁ := lt_min hc₀ (by positivity)
+  have hc₁c : c₁ ≤ c₀ := min_le_left _ _
+  have hc₁d : c₁ ≤ 𝔠 * d / 2 := min_le_right _ _
+  set τ' : ℝ := min (τ / 4) c₁ with hτ'
+  have hτ'0 : 0 < τ' := lt_min (by positivity) hc₁0
+  have hτ'c : τ' ≤ c₁ := min_le_right _ _
+  have hτ'τ : τ' ≤ τ / 4 := min_le_left _ _
+  obtain ⟨q, hq⟩ : ∃ q : ℕ, D + n0 + 3 ≤ τ' * (q + 1) := by
+    refine ⟨⌈(D + n0 + 3) / τ'⌉₊, ?_⟩
+    have h1 := Nat.le_ceil ((D + n0 + 3) / τ')
+    rw [div_le_iff₀ hτ'0] at h1
+    nlinarith [hτ'0]
+  have hc₀' : 0 < BAct_rate d 𝔡⁻¹ κ := BAct_rate_pos d 𝔡⁻¹ κ hd0 hΛ hκ
+  have hKbd : 0 < GUEEntry_Kbd d 𝔡⁻¹ κ := by unfold GUEEntry_Kbd GUEEntry_rho GUEEntry_Kth expC; positivity
+  have hdlt0 : 0 < GUEEntry_dlt d 𝔡⁻¹ κ := lt_min (by positivity) (by positivity)
+  have hcs0 : 0 ≤ GUEEntry_cs d 𝔡⁻¹ κ := by
+    unfold GUEEntry_cs GUEEntry_rho GUEEntry_Sc expC; positivity
+  filter_upwards [hsz.eventually_ge_atTop 1, hδ, hbw,
+    hsz0.eventually (eventually_le_rpow (GUEEntry_dlt d 𝔡⁻¹ κ)⁻¹ hc₁0),
+    hsz0.eventually (eventually_le_rpow (GUEEntry_cs d 𝔡⁻¹ κ) hc₁0),
+    hsz0.eventually (eventually_le_rpow 2 hτ'0),
+    hsz0.eventually (eventually_le_rpow (GUEEntry_C d 𝔡⁻¹ κ) (half_pos hτ)),
+    hsz.eventually_ge_atTop (8 * mixCq q)] with n hN1 hδn hbwn hdltn hcsn hΦ2 hCn hCq
+  have hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ) := by linarith
+  obtain ⟨hg, hgΛ, hr⟩ := hdata n
+  set N : ℝ := ((sz.size n : ℕ) : ℝ) with hNdef
+  set w₀ : ℝ := (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ with hw₀
+  have hw0 : 0 ≤ w₀ := by positivity
+  set δ' : ℝ := max (δ n) (Real.sqrt w₀) with hδ'
+  have hδδ' : δ n ≤ δ' := le_max_left _ _
+  have hδ'0 : 0 ≤ δ' := (hδ0 n).trans hδδ'
+  have hwd : w₀ ≤ δ' ^ 2 := by
+    have : (Real.sqrt w₀) ^ 2 = w₀ := Real.sq_sqrt hw0
+    nlinarith [pow_le_pow_left₀ (Real.sqrt_nonneg _) (le_max_right (δ n) (Real.sqrt w₀)) 2]
+  -- `δ' ≤ N^{-c₁}`
+  have hNc : N ^ (-c₁) ≤ GUEEntry_dlt d 𝔡⁻¹ κ := by
+    rw [Real.rpow_neg hN0.le]
+    calc (N ^ c₁)⁻¹ ≤ ((GUEEntry_dlt d 𝔡⁻¹ κ)⁻¹)⁻¹ := inv_anti₀ (by positivity) hdltn
+      _ = _ := inv_inv _
+  have hδn1 : δ n ≤ N ^ (-c₁) :=
+    hδn.trans (Real.rpow_le_rpow_of_exponent_le hN1 (by linarith))
+  have hsq1 : Real.sqrt w₀ ≤ N ^ (-c₁) :=
+    (GUEEntry_sqrt_w0_le hN1 hbwn h𝔠 hd0).trans (Real.rpow_le_rpow_of_exponent_le hN1 (by linarith))
+  have hδ'1 : δ' ≤ N ^ (-c₁) := max_le hδn1 hsq1
+  have hδ'dlt : δ' ≤ GUEEntry_dlt d 𝔡⁻¹ κ := hδ'1.trans hNc
+  have hΦ1 : 1 ≤ N ^ τ' := Real.one_le_rpow hN1 hτ'0.le
+  have hΦδ : GUEEntry_cs d 𝔡⁻¹ κ * N ^ τ' * δ' ^ 2 ≤ 1 := by
+    have h1 : δ' ^ 2 ≤ (N ^ (-c₁)) ^ 2 := pow_le_pow_left₀ hδ'0 hδ'1 2
+    have h2 : N ^ τ' * (N ^ (-c₁)) ^ 2 ≤ N ^ (-c₁) := by
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hN0.le, ← Real.rpow_add hN0]
+      exact Real.rpow_le_rpow_of_exponent_le hN1 (by push_cast; linarith)
+    have h3 : GUEEntry_cs d 𝔡⁻¹ κ * N ^ (-c₁) ≤ 1 := by
+      rw [Real.rpow_neg hN0.le, ← div_eq_mul_inv, div_le_one (Real.rpow_pos_of_pos hN0 _)]
+      exact hcsn
+    calc GUEEntry_cs d 𝔡⁻¹ κ * N ^ τ' * δ' ^ 2 ≤ GUEEntry_cs d 𝔡⁻¹ κ * (N ^ τ' * (N ^ (-c₁)) ^ 2) := by
+          have := mul_le_mul_of_nonneg_left h1 (mul_nonneg hcs0 (Real.rpow_nonneg hN0.le τ'))
+          linarith
+      _ ≤ GUEEntry_cs d 𝔡⁻¹ κ * N ^ (-c₁) := mul_le_mul_of_nonneg_left h2 hcs0
+      _ ≤ 1 := h3
+  have hΦsq : (N ^ τ') ^ 2 ≤ N ^ (τ / 2) := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hN0.le]
+    refine Real.rpow_le_rpow_of_exponent_le hN1 ?_
+    push_cast; nlinarith
+  have hT : GUEEntry_C d 𝔡⁻¹ κ * (N ^ τ') ^ 2 ≤ N ^ τ := by
+    calc GUEEntry_C d 𝔡⁻¹ κ * (N ^ τ') ^ 2 ≤ N ^ (τ / 2) * N ^ (τ / 2) :=
+          mul_le_mul hCn hΦsq (sq_nonneg _) (Real.rpow_nonneg hN0.le _)
+      _ = N ^ τ := by rw [← Real.rpow_add hN0]; congr 1; ring
+  have hmain := GUEEntry_union hd sz n hg hgΛ hκ hr (hab n) hδ'0 hδ'dlt hwd hΦ2 hΦδ hT q
+  -- the pin event is inside the event at the enlarged `δ'`
+  have hsub : {ω | ∃ (k : Fin (K n + 1)) (i j : Idx d (sz.L n) (sz.W n)),
+      N ^ τ * (GUEEntry_maxLoop d (sz.L n) (sz.W n) (m n) (E n) (a n k + b n k) (mixMatBA sz n (g n) (a n k) (b n k) ω) + w₀) <
+        (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+              (mixMatBA sz n (g n) (a n k) (b n k) ω) x y ≤ δ n
+          then GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+                (mixMatBA sz n (g n) (a n k) (b n k) ω) i j ^ 2 else 0)} ⊆
+      {ω | ∃ (k : Fin (K n + 1)) (i j : Idx d (sz.L n) (sz.W n)),
+      N ^ τ * (GUEEntry_maxLoop d (sz.L n) (sz.W n) (m n) (E n) (a n k + b n k) (mixMatBA sz n (g n) (a n k) (b n k) ω) + w₀) <
+        (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+              (mixMatBA sz n (g n) (a n k) (b n k) ω) x y ≤ δ'
+          then GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+                (mixMatBA sz n (g n) (a n k) (b n k) ω) i j ^ 2 else 0)} := by
+    rintro ω ⟨k, i, j, hω⟩
+    refine ⟨k, i, j, lt_of_lt_of_le hω ?_⟩
+    by_cases h1 : ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+        (mixMatBA sz n (g n) (a n k) (b n k) ω) x y ≤ δ n
+    · have h2 : ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
+          (mixMatBA sz n (g n) (a n k) (b n k) ω) x y ≤ δ' := fun x y => (h1 x y).trans hδδ'
+      simp only [h1, h2, implies_true, ↓reduceIte, le_refl]
+    · rw [ite_eq_right h1]
+      split_ifs
+      · exact sq_nonneg _
+      · exact le_rfl
+  refine (measure_mono hsub).trans (hmain.trans (ENNReal.ofReal_le_ofReal ?_))
+  have hK' : (K n : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ n0 := by exact_mod_cast hK n
+  exact mixEntry_final_arith hN1 hK' hq (mixCq_pos q).le hCq
+
+end Main
+
+end ProbPart
+
+/-! ## Compiled nonempty instances (T2515b, row b; CLAUDE.md §4 step 2), `d = 3`
+
+* `stable_mixBA`: the flow point of `(L, g) = (4, 3/10)` (`UNPinsInst.fp`, `κ = Im m₀ > 0`), `(a, b) = (1/4, 1/4)`,
+  `v ≡ 1`, `B = 33`; every hypothesis is discharged.
+* `gueEntryMixBA` (the pin `GUEEntryMixBA 3`): the class sequence `S0` (`L = 4`, `W_n = (2 (n + 1))^5`, admissible at
+  `(1/6, 1/10)`), constant flow data, `K ≡ 1`, two mixtures, `δ_n = N^{-1}`, `τ = D = 1`; every hypothesis is discharged.
+* `mixEntry_detBA` and `mix_detBA`: `sz0` at `n = 25` (`L = 104`, `W = 52^5 = 380204032`, `N = (W L)^3`), the flow point
+  `(g₁, E₁, m₁)` of `flow_sz0` with `κ = 1/2`, `Λ = 1/64`, `δ = 10⁻¹²`, `Φ = 1`; the numerical facts
+  (`BAct_rate 3 (1/64) (1/2) = 1/4`, `10⁻¹² ≤ GUEEntry_dlt`, `GUEEntry_cs · δ² ≤ 1`, `W^{-3} ≤ δ²`) are proved.
+  At `(a, b) = (1/4, 1/4)` the Hermitian matrix `X` (for `mix_detBA`: the carrier of `GreenCore_carrier`, any sample), the
+  a priori event and the four large deviation inputs stay hypotheses (the events of `GUEEntry_bad`, discharged on the
+  probability side by `gueEntryMixBA`), as in the band instance `inst_mixEntry_det`; at `(a, b) = (0, 0)` (`X = 0`,
+  `G = M`) every hypothesis is discharged.
+* `mixMatBA` and its three identities at `sz0`; `GUEEntry_bad_tail` at `Idx 3 3 2`. -/
+
+section GUEEntryInst
+open Matrix
+
+private theorem GUEEntryInst_h310 : (0 : ℝ) < 3 / 10 := by norm_num
+
+/-- Entries of `M^{(B)}` at a flow point are at most `1` (Ward identity `Σ_b |M_ab|² = 1`). -/
+private theorem GUEEntryInst_BAMB_le_one (d L : ℕ) [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m)
+    (a b : Zd d L) : ‖BAMB d L g (E : ℂ) m a b‖ ≤ 1 := by
+  have h1 := BAMB_row_sq_real d L g E m hr.1 a
+  have h2 : ‖BAMB d L g (E : ℂ) m a b‖ ^ 2 ≤ 1 := by
+    rw [← h1]
+    exact Finset.single_le_sum (f := fun b' => ‖BAMB d L g (E : ℂ) m a b'‖ ^ 2) (fun _ _ => by positivity)
+      (Finset.mem_univ b)
+  nlinarith [norm_nonneg (BAMB d L g (E : ℂ) m a b)]
+
+section StablePinInst
+open RBM.BA.UNPinsInst RBM.Univ.BAInst
+
+/-- `stable_mixBA` at the flow point `(L, g) = (4, 3/10)`, `(a, b) = (1/4, 1/4)`, `v ≡ 1`, `B = 33`. -/
+example : ∀ x : Zd 3 4, ‖(fun _ : Zd 3 4 => (1 : ℂ)) x‖ ≤
+    16 * ((fp 4 GUEEntryInst_h310).m0.im)⁻¹ ^ 4 * (1 + 16 * ((fp 4 GUEEntryInst_h310).m0.im)⁻¹ ^ 4) * 33 := by
+  have hr := (fp 4 GUEEntryInst_h310).real
+  have hM1 := GUEEntryInst_BAMB_le_one 3 4 hr
+  refine stable_mixBA 3 4 (fp_kappa_pos 4 GUEEntryInst_h310) hr (a := 1 / 4) (b := 1 / 4)
+    (by norm_num) (by norm_num) (by norm_num) (fun _ => 1) 33 ?_
+  intro x
+  have hQ : ∀ y, ‖BAMss 3 4 (BAMB 3 4 (fp 4 GUEEntryInst_h310).g0 ((fp 4 GUEEntryInst_h310).E : ℂ)
+      (fp 4 GUEEntryInst_h310).m0) true true x y‖ ≤ 1 := fun y => by
+    simp only [BAMss, BAMsigma, Matrix.of_apply, ite_true]
+    rw [norm_mul]
+    calc _ ≤ (1 : ℝ) * 1 := mul_le_mul (hM1 _ _) (hM1 _ _) (norm_nonneg _) zero_le_one
+      _ = 1 := one_mul 1
+  have hcard : (∑ z : Zd 3 4, (1 : ℂ)) = 64 := by
+    simp [Finset.sum_const, Finset.card_univ]
+  simp only [hcard]
+  have hc : ((1 / 4 : ℝ) : ℂ) * 1 + ((1 / 4 : ℝ) : ℂ) * ((((4 ^ 3 : ℕ) : ℂ))⁻¹ * 64) = (1 / 2 : ℂ) := by
+    push_cast; norm_num
+  rw [hc]
+  refine (norm_sub_le _ _).trans ?_
+  rw [norm_one]
+  have hs : ‖∑ y, BAMss 3 4 (BAMB 3 4 (fp 4 GUEEntryInst_h310).g0 ((fp 4 GUEEntryInst_h310).E : ℂ)
+      (fp 4 GUEEntryInst_h310).m0) true true x y * (1 / 2 : ℂ)‖ ≤ 32 := by
+    refine (norm_sum_le _ _).trans ?_
+    calc _ ≤ ∑ y : Zd 3 4, (1 : ℝ) * (1 / 2) :=
+          Finset.sum_le_sum fun y _ => by
+            rw [norm_mul]
+            exact mul_le_mul (hQ y) (by norm_num) (norm_nonneg _) (by norm_num)
+      _ = 32 := by simp [Finset.sum_const, Finset.card_univ]; norm_num
+  linarith
+
+/-- **`gueEntryMixBA` at `d = 3`** along the class sequence `S0` (`L = 4`, `W_n = (2 (n + 1))^5`, admissible at
+`(𝔠, 𝔡) = (1/6, 1/10)`), the flow point `(g₀, E, m₀)` of `(L, g) = (4, 3/10)` with `κ = Im m₀ > 0`, constant families
+`g n = g₀`, `E n = E`, `m n = m₀`, `K ≡ 1` with `n0 = 1`, the two mixtures `a = 1/4`, `b ∈ {1/8, 1/4}`, `c₀ = 1`,
+`δ_n = N^{-1} > 0`, `τ = D = 1`: every hypothesis is discharged. -/
+example := gueEntryMixBA (d := 3) le_rfl (1 / 6) (1 / 10) S0 S0_adm ((fp 4 GUEEntryInst_h310).m0.im)
+  (fp_kappa_pos 4 GUEEntryInst_h310) (fun _ => (fp 4 GUEEntryInst_h310).g0) (fun _ => (fp 4 GUEEntryInst_h310).E)
+  (fun _ => (fp 4 GUEEntryInst_h310).m0)
+  (fun n => ⟨(fp 4 GUEEntryInst_h310).g0_pos, by have := (fp 4 GUEEntryInst_h310).g0_le; norm_num; linarith,
+    (fp 4 GUEEntryInst_h310).real⟩)
+  1 (fun _ => 1) (fun n => by rw [pow_one]; exact S0.one_le_size n)
+  (fun _ _ => 1 / 4) (fun _ k => ((k : ℕ) : ℝ) / 8 + 1 / 8)
+  (fun n k => by
+    have hk : ((k : ℕ) : ℝ) ≤ 1 := by exact_mod_cast Nat.lt_succ_iff.1 k.2
+    have hk0 : (0 : ℝ) ≤ ((k : ℕ) : ℝ) := Nat.cast_nonneg _
+    refine ⟨by norm_num, by positivity, by positivity, by linarith⟩)
+  1 (fun n => ((S0.size n : ℕ) : ℝ) ^ (-(1 : ℝ))) one_pos (fun n => by positivity)
+  (Filter.Eventually.of_forall fun n => le_rfl) 1 1 one_pos one_pos
+
+end StablePinInst
+
+/-! ### The numerical facts at `(d, Λ, κ) = (3, 1/64, 1/2)` -/
+
+private theorem GUEEntryInst_c0 : BAct_rate 3 (1 / 64) (1 / 2) = 1 / 4 := by
+  unfold BAct_rate
+  have h : (1 / 2 : ℝ) / 2 ≤ Real.log (1 + (1 / 2) / (4 * ((3 : ℕ) : ℝ) * (1 / 64))) := by
+    have := Real.one_sub_inv_le_log_of_pos (x := 11 / 3) (by norm_num)
+    rw [show (1 : ℝ) + (1 / 2) / (4 * ((3 : ℕ) : ℝ) * (1 / 64)) = 11 / 3 by norm_num]
+    linarith [this, show (1 : ℝ) - (11 / 3)⁻¹ = 8 / 11 by norm_num]
+  rw [min_eq_right h]; norm_num
+
+private theorem GUEEntryInst_dlt : (1 : ℝ) / 10 ^ 12 ≤ GUEEntry_dlt 3 (1 / 64) (1 / 2) := by
+  unfold GUEEntry_dlt GUEEntry_Kbd GUEEntry_rho GUEEntry_Kth
+  simp only [GUEEntryInst_c0]
+  refine le_min (by norm_num) ?_
+  norm_num [expC, Nat.factorial]
+
+private theorem GUEEntryInst_cs : GUEEntry_cs 3 (1 / 64) (1 / 2) * 1 * ((1 : ℝ) / 10 ^ 12) ^ 2 ≤ 1 := by
+  unfold GUEEntry_cs GUEEntry_rho GUEEntry_Sc
+  simp only [GUEEntryInst_c0]
+  norm_num [expC, Nat.factorial]
+
+section DetData
+open RBM.Gauss.Sizes RBM.Gauss.SizesInst RBM.BA.FlowPinsInst
+
+private abbrev n₁ : ℕ := 25
+private abbrev g₁ : ℝ := BAflowLam0 sz0 zSeq n₁
+private abbrev E₁ : ℝ := BAflowEs sz0 zSeq n₁
+private abbrev m₁ : ℂ := BAmF sz0 (BAflowLam0 sz0 zSeq) (BAflowEs sz0 zSeq) n₁
+
+private theorem GUEEntryInst_real : BAReal 3 (sz0.L n₁) g₁ (1 / 2) E₁ m₁ :=
+  BAflow_real (1 / 2) (1 / 10) (1 / 6) (1 / 10) sz0 zSeq flow_sz0 n₁
+
+private theorem GUEEntryInst_g : 0 < g₁ ∧ g₁ ≤ 1 / 64 := by
+  have hT : (1 / 2 : ℝ) < BAflowT0 sz0 zSeq n₁ := half_lt_t0 n₁
+  have h1 : sz0.lam n₁ ≤ 1 / 64 := by norm_num [sz0]
+  have h2 := Real.sqrt_le_one.2 (RBM.BA.Step1FamInst.sz0_T0_lt_one n₁).le
+  have h3 := sz0_lam_pos n₁
+  rw [show g₁ = Real.sqrt (BAflowT0 sz0 zSeq n₁) * sz0.lam n₁ from rfl]
+  exact ⟨mul_pos (Real.sqrt_pos.2 (by linarith)) h3, by nlinarith [Real.sqrt_nonneg (BAflowT0 sz0 zSeq n₁)]⟩
+
+private theorem GUEEntryInst_wd : (((sz0.W n₁ : ℕ) : ℝ) ^ 3)⁻¹ ≤ ((1 : ℝ) / 10 ^ 12) ^ 2 := by
+  norm_num [sz0]
+
+private abbrev H₁ (X : Matrix (Idx 3 (sz0.L n₁) (sz0.W n₁)) (Idx 3 (sz0.L n₁) (sz0.W n₁)) ℂ) :
+    Matrix (Idx 3 (sz0.L n₁) (sz0.W n₁)) (Idx 3 (sz0.L n₁) (sz0.W n₁)) ℂ :=
+  (g₁ : ℂ) • PsiI 3 (sz0.L n₁) (sz0.W n₁) + X
+private abbrev z₁ : ℂ := ztOf m₁ E₁ (1 / 4 + 1 / 4)
+private abbrev S₁ : Idx 3 (sz0.L n₁) (sz0.W n₁) → Idx 3 (sz0.L n₁) (sz0.W n₁) → ℝ :=
+  Smix 3 (sz0.L n₁) (sz0.W n₁) 0 (1 / 4) (1 / 4)
+
+/-- **`mixEntry_detBA` at `d = 3`**: `sz0` at `n = 25` (`L = 104`, `W = 52^5`), the flow point `(g₁, E₁, m₁)` of the
+flow `flow_sz0` with `κ = 1/2`, `Λ = 1/64` (`g₁ ≤ 1/64`), `(a, b) = (1/4, 1/4)`, `δ = 10⁻¹²`, `Φ = 1`.  Every deterministic
+hypothesis (the data, `0 < g`, `g ≤ Λ`, `BAReal`, the window of `(a, b)`, `δ ≤ GUEEntry_dlt`, `W^{-d} ≤ δ²`,
+`GUEEntry_cs Φ δ² ≤ 1`) is discharged; the Hermitian matrix `X`, the a priori event and the four large deviation inputs
+(the events of `GUEEntry_bad`) stay hypotheses, as in the band instance `inst_mixEntry_det`. -/
+example {X : Matrix (Idx 3 (sz0.L n₁) (sz0.W n₁)) (Idx 3 (sz0.L n₁) (sz0.W n₁)) ℂ} (hX : X.IsHermitian)
+    (hllErr : ∀ x y, GUEEntry_llErr 3 (sz0.L n₁) (sz0.W n₁) g₁ E₁ m₁ (1 / 4 + 1 / 4) (H₁ X) x y ≤ 1 / 10 ^ 12)
+    (hrow : ∀ i j, i ≠ j → ldeRowLHS X (green (H₁ X) z₁) i j ≤ 1 * ldeRowRHS S₁ (green (H₁ X) z₁) i j)
+    (hcol : ∀ k j, k ≠ j → ldeColLHS X (green (H₁ X) z₁) k j ≤ 1 * ldeColRHS S₁ (green (H₁ X) z₁) k j)
+    (hquad : ∀ i, ldeQuadLHS X (green (H₁ X) z₁) S₁ 1 i ≤ 1 * ldeQuadRHS S₁ (green (H₁ X) z₁) i)
+    (hdiag : ∀ i, ‖X i i‖ ^ 2 ≤ 1 * S₁ i i) (i j : Idx 3 (sz0.L n₁) (sz0.W n₁)) :
+    GUEEntry_llErr 3 (sz0.L n₁) (sz0.W n₁) g₁ E₁ m₁ (1 / 4 + 1 / 4) (H₁ X) i j ^ 2 ≤
+      GUEEntry_C 3 (1 / 64) (1 / 2) * 1 ^ 2 * (GUEEntry_maxLoop 3 (sz0.L n₁) (sz0.W n₁) m₁ E₁ (1 / 4 + 1 / 4) (H₁ X) +
+        (((sz0.W n₁ : ℕ) : ℝ) ^ 3)⁻¹) :=
+  mixEntry_detBA (d := 3) (L := sz0.L n₁) (W := sz0.W n₁) (by norm_num) (sz0.three_le_L n₁) GUEEntryInst_g.1
+    GUEEntryInst_g.2 (by norm_num) GUEEntryInst_real (by norm_num) (by norm_num) (by norm_num) hX hllErr
+    (by norm_num) GUEEntryInst_dlt GUEEntryInst_wd le_rfl (by simpa using GUEEntryInst_cs) hrow hcol hquad hdiag i j
+
+/-- **`mix_detBA` at `d = 3`**, the same data at the vertex level.  The carrier of `GreenCore_carrier` supplies
+the resolvent identities, `M = M^{(B)} ⊗ I`, `D = g Ψ`, and `z = s - (a + b) m` for every sample `ω`; the Hermitian
+property, `Im z > 0` and the numerical hypotheses are discharged here; the a priori event, the four large deviation inputs and
+the loop bound `Lm` stay hypotheses. -/
+example (ω : sz0.SeqΩ) {Lm : ℝ}
+    (hΩ : ∀ u v, ‖GreenCore_Gc sz0 zSeq n₁ (1 / 4 + 1 / 4) ω u v - GreenCore_Mc sz0 zSeq n₁ u v‖ ≤ 1 / 10 ^ 12)
+    (hLrow : LDERow (GreenCore_Xc sz0 n₁ (1 / 4 + 1 / 4) ω) (GreenCore_Gc sz0 zSeq n₁ (1 / 4 + 1 / 4) ω)
+      (GUEEntry_Smv 3 (sz0.L n₁) (sz0.W n₁) (1 / 4) (1 / 4)) 1)
+    (hLcol : LDECol (GreenCore_Xc sz0 n₁ (1 / 4 + 1 / 4) ω) (GreenCore_Gc sz0 zSeq n₁ (1 / 4 + 1 / 4) ω)
+      (GUEEntry_Smv 3 (sz0.L n₁) (sz0.W n₁) (1 / 4) (1 / 4)) 1)
+    (hLquad : LDEQuad (GreenCore_Xc sz0 n₁ (1 / 4 + 1 / 4) ω) (GreenCore_Gc sz0 zSeq n₁ (1 / 4 + 1 / 4) ω)
+      (GUEEntry_Smv 3 (sz0.L n₁) (sz0.W n₁) (1 / 4) (1 / 4)) 1 1)
+    (hLdiag : ∀ i, ‖GreenCore_Xc sz0 n₁ (1 / 4 + 1 / 4) ω i i‖ ^ 2 ≤
+      1 * GUEEntry_Smv 3 (sz0.L n₁) (sz0.W n₁) (1 / 4) (1 / 4) i i)
+    (hLm : ∀ a b, GreenCore_loop (GreenCore_Gc sz0 zSeq n₁ (1 / 4 + 1 / 4) ω) a b ≤ Lm)
+    (x y : Vtx 3 (sz0.L n₁) (sz0.W n₁)) :
+    ‖GreenCore_Gc sz0 zSeq n₁ (1 / 4 + 1 / 4) ω x y - GreenCore_Mc sz0 zSeq n₁ x y‖ ^ 2 ≤
+      GUEEntry_C 3 (1 / 64) (1 / 2) * 1 ^ 2 * (Lm + (((sz0.W n₁ : ℕ) : ℝ) ^ 3)⁻¹) := by
+  have ht : (1 / 4 + 1 / 4 : ℝ) ≤ BAflowT0 sz0 zSeq n₁ :=
+    (by norm_num : (1 / 4 + 1 / 4 : ℝ) ≤ 1 / 2).trans (half_lt_t0 n₁).le
+  obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier (by norm_num : (0 : ℝ) < 1 / 2) sz0
+    flow_sz0 n₁ (t := 1 / 4 + 1 / 4) (by norm_num) ht ω (m := m₁) (s := (E₁ : ℂ) + m₁)
+    (zt := ztOf m₁ E₁ (1 / 4 + 1 / 4)) rfl rfl rfl
+  have hr := GUEEntryInst_real
+  have hzim : 0 < (ztOf m₁ E₁ (1 / 4 + 1 / 4)).im := by
+    rw [ztOf_im]; unfold etaOf
+    exact mul_pos (by norm_num) (lt_of_lt_of_le (by norm_num) hr.2)
+  have hH : (GreenCore_Dc sz0 zSeq n₁ + GreenCore_Xc sz0 n₁ (1 / 4 + 1 / 4) ω).IsHermitian := by
+    have hHerm : (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) n₁ (1 / 4 + 1 / 4) ω).IsHermitian := by
+      unfold Sizes.seqHflowBA
+      refine IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz0.withLam 0) n₁ (1 / 4 + 1 / 4) ω)
+      unfold IsHermitian
+      rw [conjTranspose_smul, (PsiI_isHermitian 3 _ _).eq,
+        show star (BAflowLam0 sz0 zSeq n₁ : ℂ) = (BAflowLam0 sz0 zSeq n₁ : ℂ) from Complex.conj_ofReal _]
+    have hb : GreenCore_Dc sz0 zSeq n₁ + GreenCore_Xc sz0 n₁ (1 / 4 + 1 / 4) ω =
+        blockMat 3 (sz0.L n₁) (sz0.W n₁) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) n₁ (1 / 4 + 1 / 4) ω) := by
+      ext u v
+      simp [blockMat, Sizes.seqHflowBA, PsiI, GreenCore_Dc, GreenCore_Xc, BAX]
+    rw [hb]
+    exact hHerm.submatrix _
+  exact mix_detBA (d := 3) (L := sz0.L n₁) (W := sz0.W n₁) (by norm_num) (sz0.three_le_L n₁) GUEEntryInst_g.1
+    GUEEntryInst_g.2 (by norm_num) hr (by norm_num) (by norm_num) (by norm_num) hGR hRG hMR hMR' hz hM hD hH hzim
+    (by norm_num) GUEEntryInst_dlt GUEEntryInst_wd hΩ le_rfl (by simpa using GUEEntryInst_cs) hLrow hLcol hLquad hLdiag
+    hLm x y
+
+/-- **`mixEntry_detBA` with every hypothesis discharged** (the boundary point `(a, b) = (0, 0)` of the mixture window):
+`X = 0`, so `G = M` exactly and the four large deviation inputs hold because the profile `Smix 0 0 = 0` vanishes; the
+geometric data and the flow data are those of the instance above (`d = 3`, `L = 104`, `W = 52^5`, `κ = 1/2`, `Λ = 1/64`). -/
+example (i j : Idx 3 (sz0.L n₁) (sz0.W n₁)) :
+    GUEEntry_llErr 3 (sz0.L n₁) (sz0.W n₁) g₁ E₁ m₁ (0 + 0) (H₁ 0) i j ^ 2 ≤
+      GUEEntry_C 3 (1 / 64) (1 / 2) * 1 ^ 2 * (GUEEntry_maxLoop 3 (sz0.L n₁) (sz0.W n₁) m₁ E₁ (0 + 0) (H₁ 0) +
+        (((sz0.W n₁ : ℕ) : ℝ) ^ 3)⁻¹) := by
+  have hr := GUEEntryInst_real
+  have hmim : (0 : ℝ) < m₁.im := lt_of_lt_of_le (by norm_num) hr.2
+  have hS : ∀ x y, Smix 3 (sz0.L n₁) (sz0.W n₁) 0 0 0 x y = 0 := fun x y => by simp [Smix]
+  have hz0 : ztOf m₁ E₁ (0 + 0) = (E₁ : ℂ) + m₁ := by simp [ztOf]
+  have hgreen : green (H₁ 0) (ztOf m₁ E₁ (0 + 0)) =
+      Mres ((g₁ : ℂ) • PsiI 3 (sz0.L n₁) (sz0.W n₁)) (E₁ : ℂ) m₁ := by
+    unfold green Mres
+    rw [hz0, Matrix.nonsing_inv_eq_ringInverse]
+    simp only [H₁, add_zero]
+  have hll : ∀ x y, GUEEntry_llErr 3 (sz0.L n₁) (sz0.W n₁) g₁ E₁ m₁ (0 + 0) (H₁ 0) x y = 0 := by
+    intro x y
+    unfold GUEEntry_llErr
+    rw [EntryTail_Gres_true, hgreen, BAMres_fine_apply 3 (sz0.L n₁) (sz0.W n₁) g₁ (E₁ : ℂ) m₁
+      (by simpa using hmim.ne') x y, sub_self, norm_zero]
+  refine mixEntry_detBA (d := 3) (L := sz0.L n₁) (W := sz0.W n₁) (a := 0) (b := 0) (by norm_num)
+    (sz0.three_le_L n₁) GUEEntryInst_g.1 GUEEntryInst_g.2 (by norm_num) hr le_rfl le_rfl (by norm_num)
+    Matrix.isHermitian_zero (fun x y => (hll x y).le.trans (by norm_num)) (by norm_num) GUEEntryInst_dlt GUEEntryInst_wd
+    le_rfl (by simpa using GUEEntryInst_cs) ?_ ?_ ?_ ?_ i j
+  · intro i j _
+    simp [ldeRowLHS, ldeRowRHS, hS]
+  · intro k j _
+    simp [ldeColLHS, ldeColRHS, hS]
+  · intro i
+    simp [ldeQuadLHS, ldeQuadRHS, hS]
+  · intro i
+    simp [hS]
+
+/-- **`mix_detBA` with every hypothesis discharged** (the point `(a, b) = (0, 0)`): the carrier at `t = 0` has `X = 0`
+for every sample, `G = M`, the profile `GUEEntry_Smv 0 0` vanishes, so the four large deviation inputs hold; the loop bound
+is `Lm = 9/4`. -/
+example (ω : sz0.SeqΩ) (x y : Vtx 3 (sz0.L n₁) (sz0.W n₁)) :
+    ‖GreenCore_Gc sz0 zSeq n₁ 0 ω x y - GreenCore_Mc sz0 zSeq n₁ x y‖ ^ 2 ≤
+      GUEEntry_C 3 (1 / 64) (1 / 2) * 1 ^ 2 * (9 / 4 + (((sz0.W n₁ : ℕ) : ℝ) ^ 3)⁻¹) := by
+  have ht : (0 : ℝ) ≤ BAflowT0 sz0 zSeq n₁ := by
+    have := half_lt_t0 n₁; linarith
+  obtain ⟨hGR, hRG, hMR, hMR', hz, hM, hMd, hD, hG0⟩ := GreenCore_carrier (by norm_num : (0 : ℝ) < 1 / 2) sz0
+    flow_sz0 n₁ (t := 0) le_rfl ht ω (m := m₁) (s := (E₁ : ℂ) + m₁)
+    (zt := ztOf m₁ E₁ 0) rfl rfl rfl
+  have hr := GUEEntryInst_real
+  have hX0 : GreenCore_Xc sz0 n₁ 0 ω = 0 := by
+    have h2 : ∀ ω' : (sz0.withLam 0).SeqΩ, (sz0.withLam 0).seqHflow n₁ 0 ω' = 0 := fun ω' => by
+      rw [Sizes.seqHflow_eq_smul]; simp
+    ext u v
+    simp only [blockMat, BAX, Matrix.of_apply, Matrix.submatrix_apply, Matrix.zero_apply]
+    exact congrFun (congrFun (h2 ω) _) _
+  have hzim : 0 < (ztOf m₁ E₁ 0).im := by
+    rw [ztOf_im]; unfold etaOf
+    exact mul_pos (by norm_num) (lt_of_lt_of_le (by norm_num) hr.2)
+  have hH : (GreenCore_Dc sz0 zSeq n₁ + GreenCore_Xc sz0 n₁ 0 ω).IsHermitian := by
+    have hHerm : (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) n₁ 0 ω).IsHermitian := by
+      unfold Sizes.seqHflowBA
+      refine IsHermitian.add ?_ (Sizes.seqHflow_isHermitian (sz0.withLam 0) n₁ 0 ω)
+      unfold IsHermitian
+      rw [conjTranspose_smul, (PsiI_isHermitian 3 _ _).eq,
+        show star (BAflowLam0 sz0 zSeq n₁ : ℂ) = (BAflowLam0 sz0 zSeq n₁ : ℂ) from Complex.conj_ofReal _]
+    have hb : GreenCore_Dc sz0 zSeq n₁ + GreenCore_Xc sz0 n₁ 0 ω =
+        blockMat 3 (sz0.L n₁) (sz0.W n₁) (sz0.seqHflowBA (BAflowLam0 sz0 zSeq) n₁ 0 ω) := by
+      ext u v
+      simp [blockMat, Sizes.seqHflowBA, PsiI, GreenCore_Dc, GreenCore_Xc, BAX]
+    rw [hb]
+    exact hHerm.submatrix _
+  have hS : ∀ u v, GUEEntry_Smv 3 (sz0.L n₁) (sz0.W n₁) 0 0 u v = 0 := fun u v => by simp [GUEEntry_Smv]
+  have hz' : ztOf m₁ E₁ 0 = (E₁ : ℂ) + m₁ := by simp [ztOf]
+  -- `G = M` since `X = 0` and `z = s`
+  have hGM : GreenCore_Gc sz0 zSeq n₁ 0 ω = GreenCore_Mc sz0 zSeq n₁ := by
+    have hGR' : GreenCore_Gc sz0 zSeq n₁ 0 ω * (GreenCore_Dc sz0 zSeq n₁ - ((E₁ : ℂ) + m₁) • 1) = 1 := by
+      have h := hGR
+      rw [hX0, hz', add_zero] at h
+      exact h
+    calc GreenCore_Gc sz0 zSeq n₁ 0 ω = GreenCore_Gc sz0 zSeq n₁ 0 ω *
+          ((GreenCore_Dc sz0 zSeq n₁ - ((E₁ : ℂ) + m₁) • 1) * GreenCore_Mc sz0 zSeq n₁) := by rw [hMR, mul_one]
+      _ = GreenCore_Mc sz0 zSeq n₁ := by rw [← mul_assoc, hGR', one_mul]
+  have hΩ : ∀ u v, ‖GreenCore_Gc sz0 zSeq n₁ 0 ω u v - GreenCore_Mc sz0 zSeq n₁ u v‖ ≤ 1 / 10 ^ 12 := fun u v => by
+    have h0 : GreenCore_Gc sz0 zSeq n₁ 0 ω u v - GreenCore_Mc sz0 zSeq n₁ u v = 0 :=
+      sub_eq_zero.2 (congrFun (congrFun hGM u) v)
+    rw [h0, norm_zero]; norm_num
+  have hM1 : ∀ a b, ‖BAMB 3 (sz0.L n₁) g₁ (E₁ : ℂ) m₁ a b‖ ≤ 1 := GUEEntryInst_BAMB_le_one 3 (sz0.L n₁) hr
+  have hG32 : ∀ u v, ‖GreenCore_Gc sz0 zSeq n₁ 0 ω u v‖ ≤ 3 / 2 := fun u v => by
+    calc ‖GreenCore_Gc sz0 zSeq n₁ 0 ω u v‖ = ‖GreenCore_Mc sz0 zSeq n₁ u v‖ :=
+          congrArg (fun A : Matrix (Vtx 3 (sz0.L n₁) (sz0.W n₁)) (Vtx 3 (sz0.L n₁) (sz0.W n₁)) ℂ => ‖A u v‖) hGM
+      _ ≤ 3 / 2 := by
+          rw [hM u v]
+          split_ifs
+          · exact (hM1 _ _).trans (by norm_num)
+          · norm_num
+  exact mix_detBA (d := 3) (L := sz0.L n₁) (W := sz0.W n₁) (a := 0) (b := 0) (by norm_num) (sz0.three_le_L n₁)
+    GUEEntryInst_g.1 GUEEntryInst_g.2 (by norm_num) hr le_rfl le_rfl (by norm_num) hGR hRG hMR hMR'
+    (by simpa using hz) hM hD hH hzim
+    (by norm_num) GUEEntryInst_dlt GUEEntryInst_wd hΩ le_rfl (by simpa using GUEEntryInst_cs)
+    (fun i j _ => by simp [ldeRowLHS, ldeRowRHS, hS, hX0])
+    (fun i j _ => by simp [ldeColLHS, ldeColRHS, hS, hX0])
+    (fun i => by simp [ldeQuadLHS, ldeQuadRHS, hS, hX0])
+    (fun i => by simp [hS, hX0])
+    (fun a b => GUEEntry_loop_le _ hG32 a b) x y
+
+/-! ### Obstruction: no fully discharged `X = 0` instance of `mixEntry_detBA` / `mix_detBA` at `0 < a + b`
+
+At `X = 0` the Ward identity for the minor `G^{(i)}` and `|G^{(i)}_{kk}| ≥ 2κ/3` (a priori event) give, in the quadratic
+large deviation input, `Im z² (2κ/3)² (1 - W^{-d}) ≤ 2 Φ W^{-d}`, i.e. `Φ ≳ W^d`; with `W^{-d} ≤ δ²` and
+`GUEEntry_cs Φ δ² ≤ 1` (`GUEEntry_cs ≥ 832 κ⁻⁴`) this is impossible.  Shown for `0 ≤ a ≤ b`, `0 < b`, `a + b ≤ 1/2`. -/
+
+private theorem GUEEntryInst_expC_ge_one (k : ℕ) {c : ℝ} (hc : 0 < c) : 1 ≤ expC k c := by
+  unfold expC
+  have h1 : (1 : ℝ) ≤ 2 ^ (k + 2) := one_le_pow₀ (by norm_num)
+  have h2 : (1 : ℝ) ≤ 2 ^ (k + 3) := one_le_pow₀ (by norm_num)
+  have h3 : (0 : ℝ) ≤ (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3) := by positivity
+  have h4 : (1 : ℝ) ≤ 2 ^ (k + 3) * (1 + (Nat.factorial (k + 3) : ℝ) / c ^ (k + 3)) :=
+    one_le_mul_of_one_le_of_one_le h2 (by linarith)
+  exact one_le_mul_of_one_le_of_one_le h1 (by linarith)
+
+/-- `GUEEntry_dlt d Λ κ ≤ κ / 4` and `832 κ⁻⁴ ≤ GUEEntry_cs d Λ κ`. -/
+private theorem GUEEntryInst_consts {d : ℕ} {Λ κ : ℝ} (hd : 0 < d) (hΛ : 0 < Λ) (hκ : 0 < κ) :
+    GUEEntry_dlt d Λ κ ≤ κ / 4 ∧ 832 / κ ^ 4 ≤ GUEEntry_cs d Λ κ := by
+  have hc₀ : 0 < BAct_rate d Λ κ := BAct_rate_pos d Λ κ hd hΛ hκ
+  have hc₀κ : BAct_rate d Λ κ ≤ κ / 2 := min_le_right _ _
+  have hinv : 2 / κ ≤ (BAct_rate d Λ κ)⁻¹ := by
+    have := inv_anti₀ hc₀ hc₀κ
+    rwa [inv_div] at this
+  have hρ : 2 / κ ≤ GUEEntry_rho d Λ κ := by
+    unfold GUEEntry_rho
+    exact hinv.trans (le_mul_of_one_le_right (by positivity) (GUEEntryInst_expC_ge_one _ hc₀))
+  have hKbd : 2 / κ ≤ GUEEntry_Kbd d Λ κ := by
+    unfold GUEEntry_Kbd
+    have : 0 ≤ GUEEntry_Kth κ := by unfold GUEEntry_Kth; positivity
+    exact hρ.trans (le_mul_of_one_le_right (by linarith [div_pos two_pos hκ]) (by linarith))
+  refine ⟨(min_le_right _ _).trans ?_, ?_⟩
+  · have h1 : 1 / (2 * GUEEntry_Kbd d Λ κ) ≤ 1 / (2 * (2 / κ)) :=
+      one_div_le_one_div_of_le (by positivity) (by linarith)
+    calc _ ≤ 1 / (2 * (2 / κ)) := h1
+      _ = κ / 4 := by field_simp; ring
+  · unfold GUEEntry_cs
+    have hS : 2 / κ ≤ (BAct_rate d Λ κ)⁻¹ * GUEEntry_Sc d Λ κ :=
+      hinv.trans (le_mul_of_one_le_right (by positivity) (GUEEntryInst_expC_ge_one _ (by positivity)))
+    have hP : 26 / κ ^ 2 ≤ (4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 + 26 / κ ^ 2 := by
+      have : 0 ≤ (4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 := by positivity
+      linarith
+    have h2κ : 0 ≤ 2 / κ := by positivity
+    calc 832 / κ ^ 4 = 8 * (2 / κ) * (2 / κ) * (26 / κ ^ 2) := by field_simp; ring
+      _ ≤ _ := by
+        have h0 : 0 ≤ 8 * GUEEntry_rho d Λ κ * ((BAct_rate d Λ κ)⁻¹ * GUEEntry_Sc d Λ κ) :=
+          mul_nonneg (by linarith) (by linarith)
+        have h0' : 0 ≤ 8 * GUEEntry_rho d Λ κ := by linarith
+        gcongr
+
+set_option maxHeartbeats 1600000 in
+-- one proof: the minor Ward identity, the two bounds on `ldeQuadRHS`/`ldeQuadLHS` and the count
+/-- **The core of the obstruction**, on any index set `ν` with a "fibre" map `p` (fibres of size `Ld`, `|ν| = Wd Ld`):
+at `X = 0`, the quadratic large deviation input at one site `i` is incompatible with the a priori event, a profile
+`b (Wd Ld)⁻¹ ≤ S ≤ 2 b Wd⁻¹`, `Wd⁻¹ ≤ δ²` and `Φ δ² ≤ κ⁴/832`. -/
+private theorem GUEEntryInst_core {ν ι : Type*} [Fintype ν] [DecidableEq ν] [DecidableEq ι] (p : ν → ι)
+    {H G : Matrix ν ν ℂ} {S : ν → ν → ℝ} {z m : ℂ} {κ b δ Φ Wd Ld : ℝ} (i : ν)
+    (hH : H.IsHermitian) (hGR : G * (H - z • (1 : Matrix ν ν ℂ)) = 1) (hκ : 0 < κ) (hκ1 : κ ≤ 1)
+    (hκm : κ ≤ ‖m‖) (hη : κ / 2 ≤ z.im) (hδκ : δ ≤ κ / 4)
+    (hGd : ∀ x, ‖G x x - m‖ ≤ δ) (hGo : ∀ x y, p x ≠ p y → ‖G x y‖ ≤ δ) (hb : 0 < b)
+    (hS0 : ∀ x y, 0 ≤ S x y) (hSmax : ∀ x y, S x y ≤ 2 * b * Wd⁻¹) (hSlow : ∀ x y, b * (Wd * Ld)⁻¹ ≤ S x y)
+    (hWd0 : 0 < Wd) (hLd0 : 0 < Ld) (hcard : (Fintype.card ν : ℝ) = Wd * Ld)
+    (hcount : ∑ k, (if p k = p i then (1 : ℝ) else 0) = Ld)
+    (hwd : Wd⁻¹ ≤ δ ^ 2) (hΦδ : Φ * δ ^ 2 ≤ κ ^ 4 / 832)
+    (hquad : ldeQuadLHS 0 G S 1 i ≤ Φ * ldeQuadRHS S G i) : False := by
+  have hηpos : 0 < z.im := by linarith
+  have hGdn : ∀ x, 3 * κ / 4 ≤ ‖G x x‖ := fun x => by
+    have h := hGd x
+    have := norm_sub_norm_le m (G x x)
+    rw [norm_sub_rev] at this
+    linarith
+  have hGii0 : G i i ≠ 0 := fun h0 => by
+    have := hGdn i
+    rw [h0, norm_zero] at this
+    linarith
+  /- the minor and its Ward identity -/
+  have hminor : minorGreen G i = green (minorMat H i) z := by
+    rw [← inv_minorMat hGR i hGii0]
+    unfold green
+    congr 1
+    ext k l
+    simp [minorMat, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, Subtype.ext_iff]
+  have hHm : (minorMat H i).IsHermitian := hH.submatrix _
+  have hwardE : ∀ k ∈ Finset.univ.erase i,
+      ∑ l ∈ Finset.univ.erase i, ‖greenMinor G i k l‖ ^ 2 = (greenMinor G i k k).im / z.im := by
+    intro k hk
+    have h := ward_row hHm (ne_of_gt hηpos) ⟨k, Finset.ne_of_mem_erase hk⟩
+    rw [← hminor] at h
+    rw [Finset.sum_subtype (Finset.univ.erase i) (p := fun a => a ≠ i)
+      (fun x => by simp) (fun l => ‖greenMinor G i k l‖ ^ 2)]
+    exact h
+  have hImGm : ∀ k ∈ Finset.univ.erase i, z.im * ‖greenMinor G i k k‖ ^ 2 ≤ (greenMinor G i k k).im := by
+    intro k hk
+    have hle : ‖greenMinor G i k k‖ ^ 2 ≤ ∑ l ∈ Finset.univ.erase i, ‖greenMinor G i k l‖ ^ 2 :=
+      Finset.single_le_sum (f := fun l => ‖greenMinor G i k l‖ ^ 2) (fun _ _ => sq_nonneg _) hk
+    rw [hwardE k hk, le_div_iff₀ hηpos] at hle
+    linarith
+  /- `A = Σ_{k ≠ i} S_{ik} Im G^{(i)}_{kk}`: `A² ≤ ldeQuadLHS`, `ldeQuadRHS ≤ 2 b Wd⁻¹ A / Im z` -/
+  set A : ℝ := ∑ k ∈ Finset.univ.erase i, S i k * (greenMinor G i k k).im with hAdef
+  have hLHS : A ^ 2 ≤ ldeQuadLHS 0 G S 1 i := by
+    unfold ldeQuadLHS
+    simp only [Matrix.zero_apply, zero_mul, mul_zero, Finset.sum_const_zero, Complex.ofReal_one, one_mul,
+      zero_sub, norm_neg]
+    have him : (∑ k ∈ Finset.univ.erase i, (S i k : ℂ) * greenMinor G i k k).im = A := by
+      rw [Complex.im_sum]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      simp
+    have h := Complex.abs_im_le_norm (∑ k ∈ Finset.univ.erase i, (S i k : ℂ) * greenMinor G i k k)
+    rw [him] at h
+    exact sq_le_sq' (neg_le_of_abs_le h) (le_of_abs_le h)
+  have hRHS0 : 0 ≤ ldeQuadRHS S G i := by
+    unfold ldeQuadRHS
+    exact Finset.sum_nonneg fun k _ => Finset.sum_nonneg fun l _ =>
+      mul_nonneg (mul_nonneg (hS0 i k) (sq_nonneg _)) (hS0 l i)
+  have hRHS : ldeQuadRHS S G i ≤ 2 * b * Wd⁻¹ * (A / z.im) := by
+    unfold ldeQuadRHS
+    calc ∑ k ∈ Finset.univ.erase i, ∑ l ∈ Finset.univ.erase i, S i k * ‖greenMinor G i k l‖ ^ 2 * S l i
+        ≤ ∑ k ∈ Finset.univ.erase i, S i k * (2 * b * Wd⁻¹) *
+            ∑ l ∈ Finset.univ.erase i, ‖greenMinor G i k l‖ ^ 2 := by
+          refine Finset.sum_le_sum fun k _ => ?_
+          rw [Finset.mul_sum]
+          refine Finset.sum_le_sum fun l _ => ?_
+          have := hSmax l i
+          have h1 : 0 ≤ S i k * ‖greenMinor G i k l‖ ^ 2 := mul_nonneg (hS0 i k) (sq_nonneg _)
+          nlinarith
+      _ = 2 * b * Wd⁻¹ * (A / z.im) := by
+          rw [hAdef, Finset.sum_div, Finset.mul_sum]
+          refine Finset.sum_congr rfl fun k hk => ?_
+          rw [hwardE k hk]
+          ring
+  /- the lower bound `A ≥ c (Wd Ld - Ld)` from the sites `k` off the fibre of `i` -/
+  have hGm : ∀ k, p k ≠ p i → 2 * κ / 3 ≤ ‖greenMinor G i k k‖ := by
+    intro k hk
+    have h1 := hGdn k
+    have h2 := hGo k i hk
+    have h3 := hGo i k (Ne.symm hk)
+    have h4 := hGdn i
+    have hq : ‖G k i * G i k / G i i‖ ≤ κ / 12 := by
+      rw [norm_div, norm_mul, div_le_iff₀ (by linarith)]
+      have hδ0 : 0 ≤ δ := (norm_nonneg _).trans h2
+      have : ‖G k i‖ * ‖G i k‖ ≤ (κ / 4) * (κ / 4) :=
+        mul_le_mul (h2.trans hδκ) (h3.trans hδκ) (norm_nonneg _) (by linarith)
+      nlinarith
+    unfold greenMinor
+    have := norm_sub_norm_le (G k k) (G k i * G i k / G i i)
+    linarith
+  set c : ℝ := b * (Wd * Ld)⁻¹ * (z.im * (2 * κ / 3) ^ 2) with hcdef
+  have hterm : ∀ k ∈ Finset.univ.erase i,
+      (if p k = p i then 0 else c) ≤ S i k * (greenMinor G i k k).im := by
+    intro k hk
+    have hIm := hImGm k hk
+    have hIm0 : 0 ≤ (greenMinor G i k k).im := le_trans (by positivity) hIm
+    split_ifs with hki
+    · exact mul_nonneg (hS0 i k) hIm0
+    · have h1 : z.im * (2 * κ / 3) ^ 2 ≤ (greenMinor G i k k).im :=
+        le_trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (hGm k hki) 2) hηpos.le) hIm
+      exact mul_le_mul (hSlow i k) h1 (by positivity) (hS0 i k)
+  have hA0 : c * (Wd * Ld - Ld) ≤ A := by
+    have hsum : ∑ k ∈ Finset.univ.erase i, (if p k = p i then 0 else c) = c * (Wd * Ld - Ld) := by
+      rw [Finset.sum_erase_eq_sub (Finset.mem_univ i)]
+      simp only [↓reduceIte, sub_zero]
+      have h1 : ∀ k : ν, (if p k = p i then 0 else c) = c - c * (if p k = p i then (1 : ℝ) else 0) :=
+        fun k => by split_ifs <;> ring
+      simp only [h1, Finset.sum_sub_distrib, ← Finset.mul_sum, hcount, Finset.sum_const, Finset.card_univ,
+        nsmul_eq_mul, hcard]
+      ring
+    rw [← hsum]
+    exact Finset.sum_le_sum hterm
+  /- the contradiction -/
+  have hδ0 : 0 ≤ δ := (norm_nonneg _).trans (hGd i)
+  have hw1 : Wd⁻¹ ≤ 1 / 16 := hwd.trans (by nlinarith)
+  have hWd16 : 16 ≤ Wd := by
+    by_contra h
+    have : (16 : ℝ)⁻¹ < Wd⁻¹ := inv_strictAnti₀ hWd0 (not_le.1 h)
+    linarith
+  have hcpos : 0 < c := by positivity
+  have hApos : 0 < A := lt_of_lt_of_le (mul_pos hcpos (by nlinarith)) hA0
+  have hΦ0 : 0 ≤ Φ := by
+    by_contra hneg
+    have h3 : Φ * ldeQuadRHS S G i ≤ 0 := mul_nonpos_of_nonpos_of_nonneg (by linarith) hRHS0
+    nlinarith [hLHS, hquad, sq_pos_of_pos hApos]
+  have hmain : A ^ 2 ≤ Φ * (2 * b * Wd⁻¹ * (A / z.im)) :=
+    (hLHS.trans hquad).trans (mul_le_mul_of_nonneg_left hRHS hΦ0)
+  have hA : A * z.im ≤ Φ * (2 * b * Wd⁻¹) := by
+    rw [show Φ * (2 * b * Wd⁻¹ * (A / z.im)) = A * (Φ * (2 * b * Wd⁻¹) / z.im) by field_simp] at hmain
+    have := le_of_mul_le_mul_left (by nlinarith : A * A ≤ A * (Φ * (2 * b * Wd⁻¹) / z.im)) hApos
+    rwa [le_div_iff₀ hηpos] at this
+  have hkey : z.im ^ 2 * (2 * κ / 3) ^ 2 * (1 - Wd⁻¹) ≤ 2 * Φ * δ ^ 2 := by
+    have h1 : c * (Wd * Ld - Ld) * z.im ≤ Φ * (2 * b * Wd⁻¹) :=
+      (mul_le_mul_of_nonneg_right hA0 hηpos.le).trans hA
+    have h2 : c * (Wd * Ld - Ld) * z.im = b * (z.im ^ 2 * (2 * κ / 3) ^ 2 * (1 - Wd⁻¹)) := by
+      rw [hcdef]; field_simp
+    rw [h2] at h1
+    have h3 : z.im ^ 2 * (2 * κ / 3) ^ 2 * (1 - Wd⁻¹) ≤ 2 * Φ * Wd⁻¹ :=
+      le_of_mul_le_mul_left (show b * (z.im ^ 2 * (2 * κ / 3) ^ 2 * (1 - Wd⁻¹)) ≤ b * (2 * Φ * Wd⁻¹) by
+        linarith) hb
+    exact h3.trans (by nlinarith)
+  have hlow : 15 / 144 * κ ^ 4 ≤ z.im ^ 2 * (2 * κ / 3) ^ 2 * (1 - Wd⁻¹) := by
+    have h1 : κ ^ 2 / 4 ≤ z.im ^ 2 := by nlinarith
+    have h2 : (15 : ℝ) / 16 ≤ 1 - Wd⁻¹ := by linarith
+    calc 15 / 144 * κ ^ 4 = κ ^ 2 / 4 * (2 * κ / 3) ^ 2 * (15 / 16) := by ring
+      _ ≤ _ := by gcongr
+  have hκ4 : 0 < κ ^ 4 := by positivity
+  nlinarith
+
+/-- `b N⁻¹ ≤ a S^{(B)}(0) + b N⁻¹ ≤ 2 b W^{-d}` for `0 ≤ a ≤ b` (`S^{(B)}(0)_{xy} ≤ W^{-d}`). -/
+private theorem GUEEntryInst_prof {d L W : ℕ} [NeZero L] [NeZero W] {a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
+    {s : ℝ} (hs0 : 0 ≤ s) (hs : s ≤ ((W : ℝ) ^ d)⁻¹) :
+    b * ((W : ℝ) ^ d * (L : ℝ) ^ d)⁻¹ ≤ a * s + b / (((W * L) ^ d : ℕ) : ℝ) ∧
+      a * s + b / (((W * L) ^ d : ℕ) : ℝ) ≤ 2 * b * ((W : ℝ) ^ d)⁻¹ := by
+  have hW : 0 < (W : ℝ) ^ d := pow_pos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)) _
+  have hL : 1 ≤ (L : ℝ) ^ d := one_le_pow₀ (by exact_mod_cast Nat.one_le_iff_ne_zero.2 (NeZero.ne L))
+  have hN : ((((W * L) ^ d : ℕ) : ℝ)) = (W : ℝ) ^ d * (L : ℝ) ^ d := by push_cast; rw [mul_pow]
+  rw [hN, div_eq_mul_inv]
+  have hb : 0 ≤ b := ha.trans hab
+  refine ⟨by nlinarith [mul_nonneg ha hs0], ?_⟩
+  have h1 : b * ((W : ℝ) ^ d * (L : ℝ) ^ d)⁻¹ ≤ b * ((W : ℝ) ^ d)⁻¹ :=
+    mul_le_mul_of_nonneg_left (inv_anti₀ hW (le_mul_of_one_le_right hW.le hL)) hb
+  have h2 : a * s ≤ b * ((W : ℝ) ^ d)⁻¹ :=
+    (mul_le_mul_of_nonneg_left hs ha).trans (mul_le_mul_of_nonneg_right hab (by positivity))
+  linarith
+
+private theorem GUEEntryInst_SBR_le {d L : ℕ} [NeZero L] (x y : Zd d L) : SBR d L 0 x y ≤ 1 := by
+  simp only [SBR, Matrix.of_apply, sbKernelR]
+  split_ifs <;> norm_num
+
+/-- **No fully discharged `X = 0` instance of `mixEntry_detBA` at `0 < a + b`** (`0 ≤ a ≤ b`, `0 < b`, `a + b ≤ 1/2`;
+any `d ≥ 3, L, W, g, Λ, κ, E, m, δ, Φ`): `hllErr`, `δ ≤ GUEEntry_dlt`, `W^{-d} ≤ δ²`, `GUEEntry_cs Φ δ² ≤ 1` and
+`hquad` at `X = 0` cannot hold together. -/
+private theorem GUEEntryInst_zero_obstr {d L W : ℕ} [NeZero L] [NeZero W] {g Λ κ E a b δ Φ : ℝ} {m : ℂ}
+    (hd : 3 ≤ d) (hg : 0 < g) (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (ha : 0 ≤ a) (hab : a ≤ b)
+    (hb : 0 < b) (hu : a + b ≤ 1 / 2)
+    (hllErr : ∀ x y, GUEEntry_llErr d L W g E m (a + b) ((g : ℂ) • PsiI d L W + 0) x y ≤ δ)
+    (hδ : δ ≤ GUEEntry_dlt d Λ κ) (hwd : ((W : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hΦδ : GUEEntry_cs d Λ κ * Φ * δ ^ 2 ≤ 1)
+    (hquad : ∀ i, ldeQuadLHS 0 (green ((g : ℂ) • PsiI d L W + 0) (ztOf m E (a + b))) (Smix d L W 0 a b) 1 i ≤
+      Φ * ldeQuadRHS (Smix d L W 0 a b) (green ((g : ℂ) • PsiI d L W + 0) (ztOf m E (a + b))) i) : False := by
+  obtain ⟨hδκ, hcs⟩ := GUEEntryInst_consts (d := d) (by omega) (hg.trans_le hgΛ) hκ
+  have hn : ‖m‖ ≤ 1 := BAm_norm_le_one d L g (E : ℂ) m (by simp) hr.1
+  have hκm : κ ≤ ‖m‖ := hr.2.trans (Complex.im_le_norm m)
+  have hη : κ / 2 ≤ (ztOf m E (a + b)).im := by
+    rw [ztOf_im]; unfold etaOf; nlinarith [hr.2]
+  have hH : ((g : ℂ) • PsiI d L W + 0).IsHermitian := by
+    have hPsi : ((g : ℂ) • PsiI d L W).IsHermitian := by
+      unfold Matrix.IsHermitian
+      rw [Matrix.conjTranspose_smul, (PsiI_isHermitian d L W).eq,
+        show star (g : ℂ) = (g : ℂ) from Complex.conj_ofReal _]
+    exact hPsi.add Matrix.isHermitian_zero
+  have hU := RBM.isUnit_sub_smul_of_isHermitian hH (ne_of_gt (by linarith : (0 : ℝ) < (ztOf m E (a + b)).im))
+  have hll : ∀ x y, ‖green ((g : ℂ) • PsiI d L W + 0) (ztOf m E (a + b)) x y -
+      (if (split d L W x).2 = (split d L W y).2 then
+        BAMB d L g (E : ℂ) m (split d L W x).1 (split d L W y).1 else 0)‖ ≤ δ := fun x y => by
+    have := hllErr x y
+    unfold GUEEntry_llErr at this
+    rwa [EntryTail_Gres_true] at this
+  have hWd0 : 0 < (W : ℝ) ^ d := pow_pos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)) _
+  have hsv : ∀ x y : Idx d L W, svarF d L W 0 x y ≤ ((W : ℝ) ^ d)⁻¹ := fun x y => by
+    unfold svarF
+    calc ((W : ℝ) ^ d)⁻¹ * _ ≤ ((W : ℝ) ^ d)⁻¹ * 1 :=
+          mul_le_mul_of_nonneg_left (GUEEntryInst_SBR_le _ _) (by positivity)
+      _ = _ := mul_one _
+  refine GUEEntryInst_core (fun k : Idx d L W => (split d L W k).2) (0 : Idx d L W) hH
+    (G := green ((g : ℂ) • PsiI d L W + 0) (ztOf m E (a + b))) (S := Smix d L W 0 a b) (m := m) (κ := κ) (b := b)
+    (Wd := (W : ℝ) ^ d) (Ld := (L : ℝ) ^ d)
+    (by unfold green; exact Matrix.nonsing_inv_mul _ ((Matrix.isUnit_iff_isUnit_det _).1 hU))
+    hκ (hκm.trans hn) hκm hη (hδ.trans hδκ) (fun x => ?_) (fun x y hxy => ?_) hb
+    (fun x y => Smix_nonneg d L W 0 ha hb.le x y)
+    (fun x y => (GUEEntryInst_prof ha hab (svarF_nonneg d L W 0 x y) (hsv x y)).2)
+    (fun x y => (GUEEntryInst_prof ha hab (svarF_nonneg d L W 0 x y) (hsv x y)).1) hWd0
+    (pow_pos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne L)) _) ?_ ?_ hwd ?_ (hquad 0)
+  · have h := hll x x
+    simp only [↓reduceIte] at h
+    rwa [BAMB_diag_eq d L g (E : ℂ) m hr.1] at h
+  · simpa only [hxy, ↓reduceIte, sub_zero] using hll x y
+  · rw [RBM.Gauss.card_Idx]; push_cast; rw [mul_pow]
+  · have h := Equiv.sum_comp (splitEquiv d L W)
+      (fun v : Vtx d L W => if v.2 = (split d L W 0).2 then (1 : ℝ) else 0)
+    have hs : ∀ k, (splitEquiv d L W) k = split d L W k := fun k => rfl
+    simp only [hs] at h
+    rw [h, Fintype.sum_prod_type]
+    simp [Finset.sum_ite_eq']
+  · have h1 : 832 / κ ^ 4 * (Φ * δ ^ 2) ≤ 1 := by
+      by_cases hΦ : 0 ≤ Φ
+      · have h2 : 832 / κ ^ 4 * (Φ * δ ^ 2) ≤ GUEEntry_cs d Λ κ * (Φ * δ ^ 2) :=
+          mul_le_mul_of_nonneg_right hcs (by positivity)
+        have h3 : GUEEntry_cs d Λ κ * (Φ * δ ^ 2) = GUEEntry_cs d Λ κ * Φ * δ ^ 2 := by ring
+        linarith
+      · have : Φ * δ ^ 2 ≤ 0 := mul_nonpos_of_nonpos_of_nonneg (by linarith) (sq_nonneg _)
+        nlinarith [show 0 < 832 / κ ^ 4 by positivity]
+    rw [div_mul_eq_mul_div, div_le_one (by positivity)] at h1
+    linarith
+
+/-- **No fully discharged `X = 0` instance of `mix_detBA` at `0 < a + b`** (`0 ≤ a ≤ b`, `0 < b`, `a + b ≤ 1/2`,
+`s = E + m`; any `d ≥ 3, L, W, g, Λ, κ, E, m, G, M, D, z, δ, Φ`): the resolvent identities, `M = M^{(B)} ⊗ I`, the
+a priori event `hΩ`, `δ ≤ GUEEntry_dlt`, `W^{-d} ≤ δ²`, `GUEEntry_cs Φ δ² ≤ 1` and `LDEQuad 0 G` cannot hold together. -/
+private theorem GUEEntryInst_zero_obstr_vtx {d L W : ℕ} [NeZero L] [NeZero W] {g Λ κ E a b δ Φ : ℝ} {m s z : ℂ}
+    {G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ}
+    (hd : 3 ≤ d) (hg : 0 < g) (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (ha : 0 ≤ a) (hab : a ≤ b)
+    (hb : 0 < b) (hu : a + b ≤ 1 / 2)
+    (hGR : G * (D + 0 - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
+    (hs : s = (E : ℂ) + m) (hz : z = s - ((a + b : ℝ) : ℂ) * m)
+    (hM : ∀ u v, M u v = if u.2 = v.2 then BAMB d L g (E : ℂ) m u.1 v.1 else 0)
+    (hH : (D + 0).IsHermitian)
+    (hδ : δ ≤ GUEEntry_dlt d Λ κ) (hwd : ((W : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
+    (hΩ : ∀ u v, ‖G u v - M u v‖ ≤ δ) (hΦδ : GUEEntry_cs d Λ κ * Φ * δ ^ 2 ≤ 1)
+    (hLquad : LDEQuad 0 G (GUEEntry_Smv d L W a b) 1 Φ) : False := by
+  obtain ⟨hδκ, hcs⟩ := GUEEntryInst_consts (d := d) (by omega) (hg.trans_le hgΛ) hκ
+  have hn : ‖m‖ ≤ 1 := BAm_norm_le_one d L g (E : ℂ) m (by simp) hr.1
+  have hκm : κ ≤ ‖m‖ := hr.2.trans (Complex.im_le_norm m)
+  have hη : κ / 2 ≤ z.im := by
+    have : z.im = (1 - (a + b)) * m.im := by rw [hz, hs]; simp; ring
+    rw [this]; nlinarith [hr.2]
+  have hWd0 : 0 < (W : ℝ) ^ d := pow_pos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne W)) _
+  have hsv : ∀ x y : Vtx d L W, svar d L W 0 x y ≤ ((W : ℝ) ^ d)⁻¹ := fun x y => by
+    unfold svar
+    calc ((W : ℝ) ^ d)⁻¹ * _ ≤ ((W : ℝ) ^ d)⁻¹ * 1 :=
+          mul_le_mul_of_nonneg_left (GUEEntryInst_SBR_le _ _) (by positivity)
+      _ = _ := mul_one _
+  have hsv0 : ∀ x y : Vtx d L W, 0 ≤ svar d L W 0 x y := fun x y => svar_nonneg d L W 0 x y
+  refine GUEEntryInst_core (fun k : Vtx d L W => k.2) ((0 : Zd d L), (0 : Fin (W ^ d))) hH hGR
+    (S := GUEEntry_Smv d L W a b) (m := m) (κ := κ) (b := b) (Wd := (W : ℝ) ^ d) (Ld := (L : ℝ) ^ d)
+    hκ (hκm.trans hn) hκm hη (hδ.trans hδκ) (fun x => ?_) (fun x y hxy => ?_) hb
+    (fun x y => ?_) (fun x y => (GUEEntryInst_prof ha hab (hsv0 x y) (hsv x y)).2)
+    (fun x y => (GUEEntryInst_prof ha hab (hsv0 x y) (hsv x y)).1) hWd0
+    (pow_pos (by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne L)) _) ?_ ?_ hwd ?_ (hLquad _)
+  · have h := hΩ x x
+    rw [hM x x] at h
+    simp only [↓reduceIte] at h
+    rwa [BAMB_diag_eq d L g (E : ℂ) m hr.1] at h
+  · have h := hΩ x y
+    rw [hM x y] at h
+    simpa only [hxy, ↓reduceIte, sub_zero] using h
+  · exact (GUEEntryInst_prof ha hab (hsv0 x y) (hsv x y)).1.trans' (by positivity)
+  · simp only [Fintype.card_prod, card_Zd, Fintype.card_fin]; push_cast; ring
+  · rw [Fintype.sum_prod_type]
+    simp [Finset.sum_ite_eq']
+  · have h1 : 832 / κ ^ 4 * (Φ * δ ^ 2) ≤ 1 := by
+      by_cases hΦ : 0 ≤ Φ
+      · have h2 : 832 / κ ^ 4 * (Φ * δ ^ 2) ≤ GUEEntry_cs d Λ κ * (Φ * δ ^ 2) :=
+          mul_le_mul_of_nonneg_right hcs (by positivity)
+        have h3 : GUEEntry_cs d Λ κ * (Φ * δ ^ 2) = GUEEntry_cs d Λ κ * Φ * δ ^ 2 := by ring
+        linarith
+      · have : Φ * δ ^ 2 ≤ 0 := mul_nonpos_of_nonpos_of_nonneg (by linarith) (sq_nonneg _)
+        nlinarith [show 0 < 832 / κ ^ 4 by positivity]
+    rw [div_mul_eq_mul_div, div_le_one (by positivity)] at h1
+    linarith
+
+/-! ### `mixMatBA` and the tails at `sz0`, `Idx 3 3 2` -/
+
+example (ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 3) (sz0.W 3)) :
+    mixMatBA sz0 3 (1 / 100) (1 / 4) (1 / 4) ω = ((1 / 100 : ℝ) : ℂ) • PsiI 3 (sz0.L 3) (sz0.W 3) +
+      @id (Matrix (Idx 3 (sz0.L 3) (sz0.W 3)) (Idx 3 (sz0.L 3) (sz0.W 3)) ℂ)
+        (mixMat (sz0.withLam 0) 3 (1 / 4) (1 / 4) ω) :=
+  rfl
+
+example (ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 3) (sz0.W 3)) :
+    mixMatBA sz0 3 (1 / 100) (1 / 4) (1 / 4) ω = ((1 / 100 : ℝ) : ℂ) • PsiI 3 (sz0.L 3) (sz0.W 3) +
+      Xmat 3 (sz0.L 3) (sz0.W 3) (mixSample (sz0.withLam 0) 3 (1 / 4) (1 / 4) ω) :=
+  GUEEntry_mixMatBA_eq_Xmat sz0 3 (1 / 100) (1 / 4) (1 / 4) ω
+
+example (ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 3) (sz0.W 3)) :
+    (mixMatBA sz0 3 (1 / 100) (1 / 4) (1 / 4) ω).IsHermitian :=
+  GUEEntry_mixMatBA_isHermitian sz0 3 (1 / 100) (1 / 4) (1 / 4) ω
+
+example (ω : Sizes.SeqΩ sz0 × Ω 3 (sz0.L 3) (sz0.W 3)) :
+    ouMatC (UNModelC.ba sz0) 3 1 ω =
+      mixMatBA sz0 3 (sz0.lam 3) (Real.exp (-1)) (1 - Real.exp (-1)) ω :=
+  GUEEntry_ouMatC_ba_eq_mixMatBA sz0 3 1 ω
+
+end DetData
+
+/-- `GUEEntry_bad_tail` at `Idx 3 3 2` (`N = 216`), `g = 1`, `(a, b) = (1/4, 1/4)`, `A = 0`, `z = i`, `Λ = 2`, `q = 1`
+(the bound exceeds `1`: the data is nondegenerate, the inequality weak). -/
+example : gaussLaw 3 3 2 (mixVar 3 3 2 1 (1 / 4) (1 / 4))
+      (GUEEntry_bad (0 : Matrix (Idx 3 3 2) (Idx 3 3 2) ℂ) (Smix 3 3 2 1 (1 / 4) (1 / 4)) Complex.I 2) ≤
+    ENNReal.ofReal (4 * (((2 * 3) ^ 3 : ℕ) : ℝ) ^ 2 * (mixCq 1 / 2 ^ (1 + 1))) :=
+  GUEEntry_bad_tail 1 (by norm_num) (by norm_num) (by norm_num) Matrix.isHermitian_zero (by simp) (by norm_num) 1
+
+end GUEEntryInst
+
+end RBM.BA
