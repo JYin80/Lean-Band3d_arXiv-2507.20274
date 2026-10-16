@@ -3745,3 +3745,23 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **MA-06b（T2521）的 1b** 19:44 由中枢按 H327 (3) 自动开（wf_6402eb22-4f1）；检查 Part 3 是在 1b 开工后才打开的（我原计划先打开、重编再开 1b——H327 没写这一步，是我的疏忽；无害：证明者在临时副本里把打开后的检查编译过，exit 0）。`docs/tickets/checks/T2521-check.lean` Part 3 现已打开（`import RBM3D.BA.UNBUniv` + `#check` + 精确类型 `example`），H333 让中枢重编一次留记录（不是门）。1b 报告：`Main/FinalShape` 120 行，`final_shape`/`Thm27_of_L32`/`Thm27` 只依赖三条标准公理，`UNL32` 是唯一前提，无 paper-delta。
 - (4) 返工账：T2520 一行。下一步：T2521 合并 → MA 9 关闭、**Lean 侧完成** → 发布阶段（§355–§357）：DeadDecls 闭包 → 删除票 → 注释清理票 → paper/final → PAPER-VS-LEAN.md → 对比文件 → 发布树。
 - 下一节 §367，下一张票号 T2522，下一条 H334，下一个 paper-delta D754。
+
+## §367 — MA-06b（T2521）合并：**Lean 侧完成**（`final_shape : UNL32 → (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27`）；MA 9 关闭；发布阶段第 1 步：T2522 = 死代码报告（总调度 V5，2026-10-16 20:13 UTC）
+
+- (1) **T2521 合并** 2242e73e（19:56）：新 `Main/FinalShape` 120 行，`Thm27 := BAThm27L 3`、`Thm27_of_L32`（= `baThm27L_three`）、**`final_shape`**，带编译实例（`UNL32` 唯一前提）；只依赖三条标准公理；根导入在合并时加上；审核第 1 轮 PASS；全量构建 4443 个任务。H333 done 1567a102（T2521 检查 Part 3 exit 0，留记录）。
+- (2) **Lean 侧完成**：带状 Thm 2.1–2.5（`band_terminal`）与 BA Thm 2.7（`d = 3`，Jun 的 B）在 `final_shape` 里，唯一外部前提 `UNL32`（LSY arXiv:1609.09011 Thm 2.2）。MA 8 → 9（MA 关闭）。M/N 关闭等监督回 REQ-2026-10-16-1955-MNclose（20:41）。
+- (3) **发布阶段**（§355–§357，照 RBM2D §244–§251）：
+  - **第 1 步 T2522**：死代码报告，只出报告，不改 `RBM3D/`。工具 `docs/claude-team/tools/DeadDecls.lean` 是从 RBM2D 拷来的，根还是 RBM2D 的，要换。
+  - **根（核心）**：`final_shape`、`Thm27`、`Thm27_of_L32`、`band_terminal`、`Main/FinalShape` 里 `example` 用到的常量、`RBM.Audit`。
+  - **另报四组（只报增量，不在这张票里定）**：
+    - G1：`BandTerminal` 的实例；
+    - G2：`BA/MAPins` 的实例；
+    - G3：BA 的一般 `d` 形式 `baThm27L_any`、`_of_ML`、`baEnd_BUnivL_of_ML`；
+    - G4：`bUniv_holds` 与 `BUnivHolds` 的实例。
+  - 报告还列出 `Test/Axioms.lean` 登记里在核心闭包外的名字（删除票要一并删）。
+  - 留哪几组，看了增量再定。保留原则：论文的结果加非退化实例；条件形式的一般 `d` 若增量小就留，并在 PAPER-VS-LEAN 里说明；增量大就删。这不改任何陈述，属于流程事，调度自己定。
+- (4) **之后**：
+  - T2522 合并后开一张删除票（跨目录互相引用，不按目录拆；RBM2D §245），删除时连同删掉 `UNG1Rowk` 的 owed 行、N2 审核 O2（可选）、逐票留下的 `#check`/`#print`/`#eval` 与多余 `example`。
+  - 然后按目录做注释清理票（并行）。
+  - 同时用 Opus 子代理起草最终论文（`paper/final/`）、PAPER-VS-LEAN（中枢票）、与投稿版的对比（三档，给合作者）、发布树。
+- 下一节 §368，下一张票号 T2523，下一条 H335，下一个 paper-delta D754。
