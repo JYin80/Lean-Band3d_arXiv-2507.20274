@@ -472,3 +472,5 @@
 - 2026-10-15 11:03 UTC 调度 V4：C4 完成（26561542）；监督 1044 PASS（C5、旗标 20）；T2515b audit-fail 待签字；照 Jun 的话交接：HANDOFF（V4 → V5）、STARTUP §2/§3/§5、DISPATCHER-PROMPT（V5）、H320；DECISIONS §346。V4 停。
 - 2026-10-16 09:54 UTC 调度 V5：接手（session_01TaEcrA2Z45rxfP66wcBhm7，junyin.harvard@gmail.com）；核对无新合并、中枢在线；T2515 行 b 签字（Amend 1，方案 3），H321 第 3 轮审核后合并；不写新票；DECISIONS §347。
 - 2026-10-16 10:36 UTC 调度 V5：T2515 行 b 合并 fde07256，C3 完成；Jun「开新票，开启监督」：本账号新建监督任务 trig_01BrMU6EVEAcJw5bdXZd9ptU（:41，自动批准）；放 T2519 = C5（检查拆 check / pins 两份），H322；DECISIONS §348。
+- 2026-10-16 11:18 UTC 调度 V5：H322 done（两个检查 exit 0）；C5 的 1a 在 D1 (i) FAIL（`hoff` 差 `Λ^{1/4}`，修法 `n0 = 4` + K 界前提）→ 短 REQ-2026-10-16-1118-C5hoff；N2 草稿完成；DECISIONS §349。
+- 2026-10-16 11:50 UTC 调度 V5：监督 1134 PASS（`hoff` 的 R1 取 T.7 的输入集，C5H-C1–C4）；T2519 Amend 1，H323 从 1a 重跑；paper-delta D733–D737；DECISIONS §350。
