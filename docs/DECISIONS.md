@@ -3646,3 +3646,37 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **H326**：提交 Amend 3 等；**C5 的 1a-audit 按 Amend 3 记为 PASS**：现在开行 a（`t/T2519`）、行 b（`t/T2519b`）、行 b′（`t/T2519b2`），b、b′ 叠在 a 的第一个提交上，都 `prover-max`；落地线照 Amend 2 第 5 条；T2520 的 1a（`prover-hard`）同时开（4 / 4）。
 - (4) **计数（1a 记账）**：C5 行 b、b′、c、d = M/N 第 14–17 行（BA 200–203）；N2 第 18 行；预测 18，旗标 20。返工：T2519 的两次 1a（第一次 FAIL、Amend 1–3）在合并时记账。
 - 下一节 §355，下一张票号 T2521，下一条 H327，下一个 paper-delta D738。
+
+## §355 — Jun：Lean 做完后的收尾与发布（照 RBM1D、RBM2D）：清理、GitHub 只留 Lean 与最终论文、与投稿版的对比文件（总调度 V5，2026-10-16 13:30 UTC）
+
+- **Jun（2026-10-16 约 06:3x PDT）**：「如果顺利结束，后面要做的事是 1. 清理不用file/code 过时文件和注释， 只保留正确lean 文件上传到github。 2。 github仓库只有lean 文件和修改过的最终版paper文件 （以及一些常规小文件）, lean文件应该和paperpdf文件match ，如果有少量不同，在readme. 里指出。 类似案例可以见rbm1d rbm2d。 3 生成一份和之前pdf文件（2507.20274-inventiones-submission）的对比文件。  我会交给合作者处理，所以不用给editor写信」
+- **对旧规则的影响**：此前的「不改论文（Jun 在 Lean 做完后自己改）」在收尾阶段由这条取代：最终版论文由调度这边照 paper-deltas 改出（RBM2D §247 的做法），Jun 与合作者审；`paper/tex` 原件不动，改在副本上。
+- **落实（M/N 关闭、MA-06b 合并、监督收尾 PASS 之后；照 RBM2D §244–§251）**：
+  1. **清理代码**：用 `docs/claude-team/tools/DeadDecls.lean` 从终点（带状与 BA 的 Thm 2.x 终端、`band_terminal`、`bUniv_holds`、`Endpoints` 里的定理及其非退化实例、`#assert_rbm_axioms`）做常量闭包，出不可达报告；一张票删全部死代码（跨目录互相引用，不按目录拆）；删逐票留下的 `#check`/`#print`/`#eval` 与多余 `example`，只留终点的非退化实例；复跑工具须 0 个不可达。
+  2. **清理注释**：按目录并行几张票，只动注释与文档串（去掉票号、DECISIONS、paper-delta 编号、角色、流程字眼，改用论文自己的标签），去注释脚本验证代码逐字不变；名字里的流程字眼零星改名由调度直接改（RBM2D §250）。
+  3. **最终论文**：Opus 子代理（不用 Fable）把 `docs/paper-deltas.md` 的条目逐条对照 TeX 分类、需改论文的改进副本，编译（云端；设备缺 `stmaryrd`），公式编号尽量不变；放 `paper/final/`（PDF + tex）。
+  4. **论文与 Lean 的少量不同**：照 RBM1D/RBM2D 的 `docs/PAPER-VS-LEAN.md` 由中枢出一份文档（每个 Lean 名字可编译核对），README 里概述并指向它。
+  5. **与投稿版的对比**（`paper/2507.20274-inventiones-submission.pdf`）：分三档（一档真有细节错误、二档显而易见可修、三档笔误与补充说明），一、二档给 before/after；**给合作者，不写给 editor 的信**；不上传 GitHub。另可附 latexdiff 的 PDF。
+  6. **发布树**：`RBM3D/`、`RBM3D.lean`、`lakefile.toml`、`lake-manifest.json`、`lean-toolchain`、`LICENSE`、`README.md`、`paper/`（最终版）、`docs/PAPER-VS-LEAN.md`、`.gitignore`、CI 工作流；不含 `docs/` 其余、`CLAUDE.md`、`.claude/`、`blueprint/`、`home_page/`、`check.sh`、`watch.sh`。旧历史怎么处理（RBM2D 是本地 bundle 备份、`main` 换成单个干净提交、强制推送由 Jun 亲手做）到那一步再问 Jun。
+- 提前可做、不碰论文与代码的准备（流程事，调度自己定）：paper-deltas 的分类清单、DeadDecls 的试跑报告（只出报告）、发布清单与 README 草稿；在 C5、N2 跑的空档里做。
+- 下一节 §356，下一张票号 T2521，下一条 H327，下一个 paper-delta D738。
+
+## §356 — Jun：最终论文由调度直接改，普通改动自己定，大问题才问 Jun（总调度 V5，2026-10-16 13:37 UTC）
+
+- **Jun（2026-10-16 约 06:4x PDT）**：「因为这次论文会让合作者再check， 所以你可以直接改，如果有大问题可以问我 普通的你自己决定就好了。」
+- **落实**（补 §355 第 3 步）：最终论文（`paper/final/`，在 `paper/tex` 的副本上改）由调度这边直接改，Opus 子代理起草、调度复核；按 paper-deltas 逐条处理，笔误、补充说明、显而易见的修复、与 Lean 一致的精确化都自己定，不问 Jun。**只有大问题问 Jun**：改动影响定理的陈述或假设（例如把论文结论收窄或加前提）、需要换证明路线、或与已签的 Jun 决定（如 §316 的 B：BA 终端只做 `d = 3`）有关的写法。一次只问一件。合作者会再核，所以对比文件（§355 第 5 步）照常给出每一处改动。
+- 时机不变：MA-06b 之后、清理票在中枢上跑的时候做（同步子代理会堵心跳）。
+- 下一节 §357。
+
+## §357 — Jun：GitHub 干净就行，本地不必留完整历史（总调度 V5，2026-10-16 13:39 UTC）
+
+- **Jun（2026-10-16 约 06:4x PDT）**：「GitHub是干净就行， 本地留不留完整历史记录意义不大。」
+- **落实**（定 §355 第 6 步的历史问题）：发布时 GitHub 的 `main` 换成**单个干净提交**（发布树，内容照 §355）；**不做本地 bundle 备份**、不另建归档分支（与 RBM2D §244 不同）；本地 `.git` 里的旧提交不专门清理，也不再推送（发布后把旧推送地址设为 `no_push`，防误推，同 RBM2D §250）。强制推送照 RBM2D：中枢的权限禁止 `git push --force`，所以发布指令做到推送前一步，推送命令由 Jun 在终端亲手运行（这是唯一一次 force push）。
+- 下一节 §358。
+
+## §358 — N2 的 1a 完成（不需 1a-audit，落地预测 887–1,106）；放 T2521 = MA-06b（最后一张证明票，`final_shape`）（总调度 V5，2026-10-16 13:54 UTC）
+
+- (1) **T2520 = N2 的 1a**（13:48，`T2520.state` = held）：preflight PASS；探针 PASS（`RBM3D/Probe/T2520Pins.lean` 196 行，exit 0，82ef67a8，不合并）；没有移动钉文、停止线，也没触发退路，所以不跑 1a-audit（票 Decisions (1)）；落地预测 887–1,106 < 1,950。1b 等 C5 行 d 合并。
+- (2) **放 T2521 = MA-06b**（`docs/tickets/T2521.md`、检查 `T2521-check.lean`）：新文件 `Main/FinalShape.lean`，`Thm27 := BAThm27L 3`（论文 Thm 2.7，`d = 3`，Jun 的 B）、`Thm27_of_L32`（= N2 的 `baThm27L_three`）、**`final_shape : UNL32 → (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27`**（全项目的最终定理：带状 Thm 2.1–2.5 与 BA Thm 2.7，唯一外部前提 `UNL32`），实例沿用 `BandTerminal` 与 `BA/MAPins:213` 的数据。角色 `prover`；1a 现在开（占空出的第 4 个位），1b 在 T2520 合并后。MA 8 → 9（MA 关闭）。
+- (3) 在跑：C5 行 a、b、b′（3）+ T2521 的 1a（H327 后 4 / 4）；N2 等 C5 行 d。之后：M/N 关闭 REQ（N2 合并后发），Lean 侧完成，进入 §355–§357 的收尾。
+- 下一节 §359，下一张票号 T2522，下一条 H328，下一个 paper-delta D738。

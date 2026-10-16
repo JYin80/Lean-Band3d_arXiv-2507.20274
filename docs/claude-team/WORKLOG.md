@@ -478,3 +478,7 @@
 - 2026-10-16 12:57 UTC 调度 V5：监督 1248 PASS（C5L-C1–C3、C5L-L1–L3）；T2519 Amend 2（b′ = `GUETwistBA` + `GUETwistBA2`，`t/T2519b2`；落地线），H324：1a-audit PASS 后开行 a、b、b′；DECISIONS §352。
 - 2026-10-16 12:58 UTC 调度 V5：放 T2520 = N2（检查拆 check / pins；OQ1–OQ6 答复），H325：1a 在 C5 的 1a-audit PASS 后、1b 在 C5 行 d 合并后；DECISIONS §353。
 - 2026-10-16 13:13 UTC 调度 V5：C5 的 1a-audit RETURN（只为签字）→ Amend 3 签字、记 PASS；H326：开 C5 行 a、b、b′ 与 N2 的 1a；M/N 13–17 记账，BA 203；DECISIONS §354。
+- 2026-10-16 13:30 UTC 调度 V5：记 Jun 的收尾与发布要求（清理、GitHub 只留 Lean 与最终论文、README 指出少量不同、与投稿版的对比给合作者）；照 RBM2D §244–§251 排步骤；DECISIONS §355。
+- 2026-10-16 13:37 UTC 调度 V5：Jun 授权最终论文由调度直接改（普通改动自己定，大问题问 Jun）；DECISIONS §356。
+- 2026-10-16 13:39 UTC 调度 V5：Jun：GitHub 单个干净提交即可，本地不必备份完整历史；强制推送由 Jun 亲手运行；DECISIONS §357。
+- 2026-10-16 13:54 UTC 调度 V5：N2 的 1a 完成（held，等 C5 行 d）；放 T2521 = MA-06b（`final_shape`），H327：1a 现在开、1b 在 N2 合并后；DECISIONS §358。
