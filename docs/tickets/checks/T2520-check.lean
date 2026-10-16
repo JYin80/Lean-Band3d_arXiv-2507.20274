@@ -2,7 +2,7 @@
 Release check for T2520 (dispatcher V5, 2026-10-16 12:58 UTC; DECISIONS §353; supervisor 2026-10-15-0643 Q1 (vi)-(vii), Q4 (b),
 MNO-C1-C4; 2026-10-15-1044 Q1; 2026-10-16-1134 O3).  M/N N2, the last M/N row (drafted by the dispatcher's helper 11:08 UTC).
 Part 1 (the release gate): merged names on `main` (checked at 43597737 with `docs/claude-team/tools/nsof.sh`; `main` has had
-docs-only commits since).  Part 2 (block comment): the five C5 (T2519) names N2 reads; activate when T2519 rows a and d have merged.
+docs-only commits since).  Part 2: the five C5 (T2519) names N2 reads (activated 2026-10-16 19:10 UTC after rows a and d merged; two imports added).
 The proposals `T2520_*` are in `docs/tickets/checks/T2520-pins.lean` (not a gate; they bind after N2's 1a).
 Statements only; no proofs.
 Run: lake env lean docs/tickets/checks/T2520-check.lean
@@ -25,6 +25,8 @@ import RBM3D.Universality.UnivMain
 import RBM3D.Universality.NormBand
 import RBM3D.Universality.GUELocalBootstrap
 import RBM3D.Universality.GUELocalSchur
+import RBM3D.BA.GUEProcBA
+import RBM3D.BA.GUEHyp
 
 set_option linter.style.longLine false
 set_option linter.unusedVariables false
@@ -191,13 +193,10 @@ set_option linter.unusedVariables false
 #check @RBM.BA.BAm                                  -- MFixedPoint:379
 #check @RBM.BA.BArho                                -- MFixedPoint:384
 
-/-! ## Part 2: C5 (T2519) names, ACTIVATE AFTER T2519 row a/d MERGES -/
+/-! ## Part 2: C5 (T2519) names (activated 2026-10-16 19:10 UTC: row a 9e07cc2e, row d bcdddd36 merged; DECISIONS §365) -/
 
-/- ACTIVATE AFTER T2519 row a/d MERGES.  Add `import RBM3D.BA.GUEProcBA` and `import RBM3D.BA.GUEHyp` at the top, confirm each name
-with `git --no-optional-locks show main:RBM3D/BA/GUEProcBA.lean` and `main:RBM3D/BA/GUEHyp.lean` (and `nsof.sh`), then uncomment.
 #check @RBM.BA.BAKFam            -- T2519 row a, BA/GUEProcBA (target 1; text `T2519_KFamBA`, `T2519-pins.lean:45`)
 #check @RBM.BA.BAPB              -- T2519 row a, BA/GUEProcBA (target 1; text `T2519_PBBA`, `T2519-pins.lean:125`)
 #check @RBM.BA.ba_prodG          -- T2519 row d, BA/GUEHyp (target 16; `T2519_ProdBA BAKFam BAPB`, `T2519-pins.lean:28`)
 #check @RBM.BA.ba_LLG            -- T2519 row d (target 16; `T2519_LLBA BAPB`, `:33`)
 #check @RBM.BA.ba_QueG           -- T2519 row d (target 16; `T2519_QueBA BAKFam BAPB`, `:38`)
--/

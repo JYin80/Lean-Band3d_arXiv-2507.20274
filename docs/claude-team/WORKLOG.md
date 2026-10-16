@@ -488,3 +488,4 @@
 - 2026-10-16 16:04 UTC 调度 V5：C5 行 c 合并 432301f7（2,387 / 2,811，含 Amend 4 后继），累计 9,262 / 12,000；审核观察 1（行 d 实例要小 `Im z`）记下待放行行 d 时交出；paper-deltas D744–D746；DECISIONS §362。
 - 2026-10-16 16:34 UTC 调度 V5：C5 行 b′ 合并 98cb433d（2,977 / 2,719，审核 RETURN 一次 + 修复），累计 9,360；REQ C5bprime 补更新段；paper-deltas D747–D749；DECISIONS §363。
 - 2026-10-16 17:08 UTC 调度 V5：监督 1652 PASS（另有一份重复的 1654 已撤回）→ T2519 Amend 5 + H331 放行行 d（prover-max）；DECISIONS §364。
+- 2026-10-16 19:12 UTC 调度 V5：C5 行 d 合并 bcdddd36（1,853 / 2,386），T2519 完成（11,213 / 12,000）；T2520 检查 Part 2 打开，H332 重编后放 N2 的 1b；paper-deltas D750–D753；返工账 T2519；DECISIONS §365。

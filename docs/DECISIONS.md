@@ -3728,3 +3728,12 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (3) **监督的计数**：BA 203（C5 行 a–d = M/N 13–17），N2 的 1b 时 204；M/N 预测 18（18–20），旗标 20；行内返工（b′ 一次 RETURN + 修复、行 c 按 Amend 4 重开）按先例 +0（T2440、T2515 行 b）；最严读法会到 20 = 旗标，仍在 REQ、HOLD 线下。
 - (4) **实例区间教训**（1652）：前提里有 `hell` 的地方，实例数据必须在 GUE 相（`Im z ≲ c λ²/L^d`）；1a 钉这类陈述时要点名实例数据并定价。同类缺陷再 RETURN 一次 = TEAM §6 的 REQ 触发（被撤回的 1654 认为算上 T2515 行 b 已经两次；预防措施相同）。以后写涉及 `hell` 的票，把实例数据写进票里。
 - 下一节 §365，下一张票号 T2522，下一条 H332，下一个 paper-delta D750。
+
+## §365 — C5（T2519）完成：行 d 合并（1,853 / 2,386），C5 共 11,213 / 12,000；打开 T2520 检查 Part 2，放 N2 的 1b（总调度 V5，2026-10-16 19:12 UTC）
+
+- (1) **行 d 合并** bcdddd36（18:58）：新 `BA/GUELLBA` 410、`GUEHyp` 1,443（备用 `GUEHyp2` 没用），落地 1,853 / 线 2,386（C5D-L1，不发 REQ），实例小计 494；生产者实例在 GUE 相（`S0`，`Im z = c′ g₀²/(2L³)`），没用 `zSeq`；审核第 1 轮 PASS。审核观察：Amend 5 的「从 `n = 13` 起」在 `S0` 上没复现，`hscale` 由 `GUEHyp_scale_ev` 最终成立，门槛写成公式 `N_n^{19/20} √fT η ≥ 1`（不是退化）；`Eq729B_perNBA` 的例子留 `hX` 开（终点 `gueGrid_eq729BA` 的实例完整）；可选的 `hKb` 没去。
+- (2) **C5 完成**：a 1,990、b 2,006、b′ 2,977、c 2,387、d 1,853 = **11,213 / 12,000**（C5D-L2）。M/N 13–17（BA 203）。返工：1a 按 Amend 1 重跑一次、1a-audit 签字 RETURN（Amend 3）、行 c 开工后 Amend 4 重开、行 b′ 审核 RETURN 一次 + 修复；监督 3 次 PASS（1134、1248、1652）。返工账写 T2519 一行（行内返工 +0，监督 1652）。
+- (3) **T2520 检查 Part 2 打开**（`docs/tickets/checks/T2520-check.lean`：加 `import RBM3D.BA.GUEProcBA`、`import RBM3D.BA.GUEHyp`，五个 `#check`：`BAKFam`、`BAPB`、`ba_prodG`、`ba_LLG`、`ba_QueG`；名字已在 `main` 上核对：`GUEProcBA:76/93`、`GUEHyp:918/924/934`，命名空间 `RBM.BA`）。H332：重编（门），exit 0 就开 N2 的 1b（`prover-hard` → `auditor`）。N2 = M/N 第 18 行，BA 204。
+- (4) paper-deltas：行 d 的 `T2519da`–`dd` 编 D750–D753（`db` 的窗口、零模、`n₀` 部分已由 D738、D740、D741 覆盖，只编新的部分）。
+- (5) 之后：N2 合并 → 发 M/N 关闭 REQ（0643 (i)–(vii)，引 `baEnd_BUnivL_three`、`baThm27L_three` 的签名）；打开 `T2521-check.lean` Part 3 重编 → MA-06b 的 1b → Lean 侧完成 → §355–§357 收尾。
+- 下一节 §366，下一张票号 T2522，下一条 H333，下一个 paper-delta D754。
