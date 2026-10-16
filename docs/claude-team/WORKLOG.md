@@ -485,3 +485,6 @@
 - 2026-10-16 14:10 UTC 调度 V5：T2521 检查 exit 1（漏导入 `BA/MainIndTermBA`）→ 该行改注释，H328 重编；DECISIONS §359。
 - 2026-10-16 14:47 UTC 调度 V5：C5 行 a（9e07cc2e，1,990 / 2,927）、行 b（affd3e77，2,006 / 2,245）合并，累计 3,996 / 12,000；行 a 审核观察 2（`∀ n` 耦合窗口）→ T2519 Amend 4：三个带撇后继，行 c 负责（行 c 已开工，算返工），H329；paper-deltas D738–D743；DECISIONS §360。
 - 2026-10-16 15:47 UTC 调度 V5：行 c 按 Amend 4 重开（H329 done 9f044e2c）；行 b′ 落地 2,879 > 线 2,719 → 短 REQ-2026-10-16-1547-C5bprime，H330：行 d 等监督；DECISIONS §361。
+- 2026-10-16 16:04 UTC 调度 V5：C5 行 c 合并 432301f7（2,387 / 2,811，含 Amend 4 后继），累计 9,262 / 12,000；审核观察 1（行 d 实例要小 `Im z`）记下待放行行 d 时交出；paper-deltas D744–D746；DECISIONS §362。
+- 2026-10-16 16:34 UTC 调度 V5：C5 行 b′ 合并 98cb433d（2,977 / 2,719，审核 RETURN 一次 + 修复），累计 9,360；REQ C5bprime 补更新段；paper-deltas D747–D749；DECISIONS §363。
+- 2026-10-16 17:08 UTC 调度 V5：监督 1652 PASS（另有一份重复的 1654 已撤回）→ T2519 Amend 5 + H331 放行行 d（prover-max）；DECISIONS §364。

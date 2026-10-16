@@ -1849,3 +1849,17 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 - **D741** ← `T2519e`（行 a，`GUEHypABA_hell_of_hell`）：BA 的零模区间是 `L^d (1 − t₁) ≤ 2 g²`（`g = √t₀ λ`），由 `RBG_Prod` 的 `L^d (1 − t₁) ≤ λ²`、`≤ 1` 推出。
 - **D742** ← `T2519f` + `T2519ba2`（行 a `gueDevBA_succ_le`，行 b affd3e77）：网格一步中 `z_u` 的跳是 `‖z_{j+1} − z_j‖ = Δ ‖m‖ ≤ Δ`（`‖m‖ ≤ 1`），带状是 `Δ`；只用不等式。
 - **D743** ← `T2519ba1` + `T2519ba3`（行 b，新 `BA/GUEDuhamelBA`、`GUEDuhamelBA2`）：GUE 相 loop 的离散 Duhamel 余项在 BA 网格路径 `g Ψ_I + H_k`、`z_t = E + (1 − t) m` 上陈述，条件 `0 < Im m`、`‖m‖ ≤ 1` 代替 `|E| ≤ 2 − κ`（论文无此陈述）；`Duhamel_step_decompBA` 不需要 `0 ≤ t1 n`（loop 的 `C²` 界只用 `u < 1`）。
+
+## 合并时编号 T2519 行 c（C5；总调度 V5，2026-10-16 16:04 UTC；DECISIONS §362）
+
+- **D744** ← `T2519ca`（行 c 432301f7，`HypB_entry_leBA`、`GreenLocal_floor_sample`）：BA 网格的 A3 常数是 `1 + 4/κ²`（入口好事件上 `W^{-d} ≤ (4/κ²) max 𝓛^{(2)}`），代替带状的 `1 + 2 lam²`；D4a 一步不需要零模前提。
+- **D745** ← `T2519cb`（行 c）：BA 网格第 0 步的输入是 `BAMO` 的第 1、2 个合取（载体 `baFM sz g E`，流点 `m = BAm d L g E`，`BASelf_unique`）；K 界用 `Hyp_Kt_detDomBA`（无 `STKbound` 前提）。
+- **D746** ← `T2519cc`（行 c）：BA 网格的零模前提以三种形式出现：`L^d(1−t₁) ≤ λ²`（`Bctl`）、`≤ 1`、`≤ 2 g²`（K 引理）。
+- `T2519cd`（耦合窗口在行 c 每个陈述里最终成立，`BAReal` 对每个 `n`）：已由 D740 覆盖，不另编号。
+
+## 合并时编号 T2519 行 b′（C5；总调度 V5，2026-10-16 16:34 UTC；DECISIONS §363；b′ 报告的 `T2519ba`–`bd` 与行 b 的 `ba1`–`ba3` 撞号，改标 `T2519bpa`–`bpd`）
+
+- **D747** ← `T2519bpa`（行 b′ 98cb433d，`gueGrid_twistBA`）：TL1 的网格形式：扭曲平均律 `|Tr(G̊_u P_{c1c2})| ≺ W^{-d} B_{u,0}`（Lemma T.7）在网格时刻 `j ≤ K n = (N+1)^{32 n₀+64}` 上对 `j` 与块对同时成立，对象是 `M` 加权的块迹 `t_{aq}` 对 `M^{(++)}_{aq}`，界 `|M^{(B)}_{aq}| (N η_u)⁻¹`；输入 PB 的 `lk`（`k = 1, 2, 4`）、`localLaw`、K 界与 `Kt = m`（T.7 的输入 (I2)、(I3)，`n ∈ {2, 4}`）；推广 D738。
+- **D748** ← `T2519bpb`（行 b′，记账）：矩阶 `p = ⌈(D + 32 n₀ + 71)/τ⌉` 带上网格并集的指数（`gueGridK`）；论文是连续时间。
+- **D749** ← `T2519bpc`（行 b′，证明结构）：`(N η_u)⁻¹ ≥ N^{-τ}` 时 Lean 用逐元 `localLaw`（`|T_{qa}| ≤ max|G − M| ≤ N^ε (N η_u)^{-1/2} ≤ N^τ (N η_u)⁻¹`）；T.7 第 5 步用窗口吸收 `C_M W^ε W^{-d} B ≤ 1/2`，这里由 `Λ_j < N^{-τ}` 提供。
+- `T2519bpd`（F1 `4 ≤ n₀`、F2 守卫 `0 < g n →`、窗口最终成立）：由 D738、D740 覆盖，不另编号。
