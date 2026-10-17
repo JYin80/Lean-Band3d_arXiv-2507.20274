@@ -306,7 +306,7 @@ private theorem BAZetaExp_core {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ 
   refine hbound.trans (add_le_add_left ?_ _)
   exact mul_le_mul_of_nonneg_right hnum (sq_nonneg _)
 
-/-! ## 4. `claim:xi` for the exp class at BA -/
+/-! ## 4. The claim (7.34) for the exp class at BA -/
 
 /-- **The claim (7.34) `eq:Gbyxi2` for the exp class at BA** ((B.22) `eq:Gbyxi2_BA`; as `lwXiExpClaim_holds` in `Graph/LWXiExp.lean`):
 under (3.31) `eq:LW_assm_exp` (`LWAssmExpgL`) and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables `baZetaVar` at a radius `ρ` with `√ρ ≤ τ log N`

@@ -507,3 +507,5 @@
 - 2026-10-17 09:41 UTC 调度 V5：T2551 合并 1a8c2c11（d = 4 例子五个合取全部用上；一条文档串修一次）；T2550 09:25 开工；在跑 T2550、T2536、T2537、T2538；H352。
 - 2026-10-17 09:57 UTC 调度 V5：T2550 合并 59931dea（PAPER-VS-LEAN 到合并后的状态）；T2539 09:50 开工；在跑注释票 T2536–T2539；H353。
 - 2026-10-17 14:05 UTC 调度 V5：T2538 合并 6921148b（第一张注释票）；按 §382 调度自己改了 4 个文件的注释（审核观察 O1、O2：三处 "Route" → "Proof outline"，`ZeroModeCalc` 两处不存在的名字 `SameSignOutside`）；O3（`Step34Pins` 的 `set_option` 位置，代码行）记入收尾票草稿；T2540 开工；H354。
+- 2026-10-17 15:36 UTC 调度 V5：T2539 合并 de214014（15:20，Graph A–B 注释，审核第 1 轮 PASS）；H354 done 2a77235e（4 个 Induction 文件 build 通过、去注释相同）；T2541 15:21 开工；在跑 T2536、T2537、T2540、T2541。按 §382 改 T2539 审核 O1（`BAZetaExp`、`BASizeClaim2`、`BAMomentGen` 的 `claim:size`/`claim:xi` 简写）、O2（`BASymm2` 文档串挪到 `open private` 之前）；H355（先 build 这 4 个模块再提交）。
+- 2026-10-17 15:37 UTC 调度 V5：T2537 审核第 1 轮 RETURN（注释里不存在的声明与模块 `Step34PinsP`；中枢走规则 (B) 修一次）。写注释票 Amend 2（名字精确比对、模块路径存在、不自造标签、"Proof outline"），交给 T2542–T2547；§383，H356。

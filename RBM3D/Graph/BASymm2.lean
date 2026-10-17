@@ -19,8 +19,6 @@ set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 set_option linter.unusedSimpArgs false
 
-open private BAWeightOp_circ_counters from RBM3D.Graph.BAWeightOp
-
 /-!
 # The twist of a BA graph is an involution; the twist integral
 
@@ -44,6 +42,8 @@ of `Γ` itself.
 `BASelf` and `0 ≤ t < 1` are not used: no `M a b = 0`, no `M a a = m`, no uncircling, no smallness
 of `g₀`.
 -/
+
+open private BAWeightOp_circ_counters from RBM3D.Graph.BAWeightOp
 
 noncomputable section
 

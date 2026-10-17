@@ -6,7 +6,7 @@ Authors: Jun Yin
 import RBM3D.Graph.BASizeClaim
 
 /-!
-# `claim:size` at BA, the model forms and the confinement tails (part 2)
+# The claim `Γ ≺ size(Γ)` at BA, the model forms and the confinement tails (part 2)
 
 Paper: the claim `Γ ≺ size(Γ)` for normal graphs (Subsection 7.1, after (7.18)
 `eq:estSpm-W`); (7.14) `scalemole`; the BA size (B.16) `eq_defsize_BA`; (B.15) `scaleatom`.
@@ -45,7 +45,7 @@ open RBM RBM.Gauss
 /-! ## The constant, the weights and the term bound -/
 
 /-- `C_Γ = ‖coeff‖ K₁^{n_A - n_M} K₀^{n_W - (n_A - n_M)} Kd^{#M-dotted + #Ψ-dotted}`: the constant of the BA
-`claim:size`, depending on the graph and on `(K₀, K₁, Kd)` (that is on `d, Λ, κ`) only. -/
+claim `Γ ≺ size(Γ)`, depending on the graph and on `(K₀, K₁, Kd)` (that is on `d, Λ, κ`) only. -/
 def BAGraph.sizeConst {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (K₀ K₁ Kd : ℝ) : ℝ :=
   ‖Γ.coeff‖ * K₁ ^ (Γ.nA - Γ.nM) * K₀ ^ (Γ.nW - (Γ.nA - Γ.nM)) * Kd ^ (Γ.mdot.length + Γ.psi.length)
@@ -285,7 +285,7 @@ private theorem BASizeClaim_prod_J (Γ : BAGraph E I) (D : BALData ι) (ℓ : E 
 
 end Sum
 
-/-! ## `claim:size`, deterministic form -/
+/-! ## The claim `Γ ≺ size(Γ)`, deterministic form -/
 
 section Claim
 

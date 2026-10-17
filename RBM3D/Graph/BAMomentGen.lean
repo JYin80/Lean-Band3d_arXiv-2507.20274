@@ -307,7 +307,7 @@ theorem BAMomentGen_L_le_W (hadm : sz.Admissible 𝔠 𝔡) {K0 : ℕ} (hK0 : 1 
 
 end Numerics
 
-/-! ## 5. The rescaled data of the slice, the constants of its kernels, `claim:size` -/
+/-! ## 5. The rescaled data of the slice, the constants of its kernels, the claim `Γ ≺ size(Γ)` -/
 
 section Data
 
