@@ -7,36 +7,36 @@ import RBM3D.Graph.LWPins
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
 /-!
-# LW-12a: `lem:Anp_key_gh`, deterministic form, base case, assembly and the `≺`-lift (T2234)
+# `lem:Anp_key_gh`: the deterministic form and the `≺`-lift
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): `lem:Anp`
-(`(eq:bddGamma_aux)` `:935`), `lem:Anp_key` (`:960`, `(eq:Gbyxi3)` `:963-966`, "easy corollary" `:1025`),
-`lem:Anp_key_gh` (`:1041`, `(adsuu22)` `:1043`), the base case `q = 0` (`:1110`).  Part a of the six
-tickets of `lem:Anp` (the induction step, cases (I)-(IV), is LW-12b-f).
+Paper: Lemma 7.22 (`lem:Anp`, (7.37) `eq:bddGamma_aux`), Lemma 7.23 (`lem:Anp_key`, (7.38)
+`eq:Gbyxi3`, and its "easy corollary" from Lemma 7.24), Lemma 7.24 (`lem:Anp_key_gh`, (7.41)
+`adsuu22`).
 
-* Section 1: the deterministic bound `AnpDetGhAt` (`(adsuu22)` with exact inequalities), `AnpDetGh`,
-  `AnpDetGhZero`, `AnpDetGhStep`.
-* Section 2: the base case `anpDetGh_zero` (`q = 0`; the walk along a path, the triangle inequality for
-  `zdistInf`, the chosen edges).
-* Section 3: the A2 replacement `NGraph.ghostify` (`7_8:1143-1148`) and its bookkeeping.
-* Section 4: the assembly `anpDetGh_of_step`.
-* Section 5: the `≺`-lift `lwAnpKeyGh_of_det`.
-* Section 6: the merged reductions `lwAnpKey_of_gh`, `lwAnp_of_key`.
-* Section 7: compiled nonempty instances at `d = 3`.
-
-No port: RBM1D and RBM2D have no light-weight graph layer.
+* Section 1: the deterministic bound `AnpDetGhAt` ((7.41) with exact inequalities) for one nested
+  graph, and `AnpDetGh` for all of them (proved as `anpDetGh_holds` in `Graph/AnpKey6.lean`).
+* Section 2: symmetry and the triangle inequality for `zdistInf`, the walk lemma `anpKey_walk`, a
+  long edge on every path with distant ends (`anpKey_long_edge`), and bookkeeping for products and
+  counts.
+* Section 3: the replacement of an ending edge by a ghost edge, `NGraph.ghostify` (see (7.43)
+  `eq:noA2`): it keeps the nested properties and the ghost condition, removes one solid edge and one
+  ghost-free path, and leaves `ord - n_ngh` unchanged.
+* Section 4: the `≺`-lift `lwAnpKeyGh_of_det`.
+* Section 5: the reductions `lwAnpKey_of_gh` (Lemma 7.23 from Lemma 7.24) and `lwAnp_of_key`
+  (Lemma 7.22 from Lemma 7.23).
+* Section 6: a one-edge nested graph.
 -/
 
 namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes Filter
 
-/-! ## 1. The deterministic `(adsuu22)` -/
+/-! ## 1. The deterministic bound (7.41) -/
 
-/-- The deterministic bound of `lem:Anp_key_gh` (`(adsuu22)`, `7_8:1043`) for one nested graph `Γ`: constants
+/-- The deterministic bound of `lem:Anp_key_gh` ((7.41) `adsuu22`) for one nested graph `Γ`: constants
 `C, c > 0` (`c ≤ 1`) depending on `Γ` and `d` only such that, for every torus `Z_L^d`, every positive `ψ`
 non-increasing on `[0, ∞)`, every `θ > 0` and every symmetric `ξ ≥ 0` with `ξ_{αβ} ≤ ψ(|α-β|)` and
-`Σ_β ξ_{αβ}² ≤ θ` (the deterministic form of `(eq:Gbyxi3)`, `7_8:963-966`, with `θ = (W^d η_t)⁻¹`),
+`Σ_β ξ_{αβ}² ≤ θ` (the deterministic form of (7.38) `eq:Gbyxi3`, with `θ = (W^d η_t)⁻¹`),
 `𝒢_{ab} ≤ C θ^q ψ(0)^{ord - n_ngh} Π_i ψ(c|a_i - b_i|)^{χ(𝔓_i)}`. -/
 def AnpDetGhAt (d : ℕ) {p q : ℕ} (Γ : NGraph p q) : Prop :=
   ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ c ≤ 1 ∧
@@ -50,19 +50,18 @@ def AnpDetGhAt (d : ℕ) {p q : ℕ} (Γ : NGraph p q) : Prop :=
             ∏ i, (if Γ.noGhostPath i = true then
               ψ (c * ((zdistInf d L (a i - b i) : ℕ) : ℝ)) else 1)
 
-/-- The deterministic `lem:Anp_key_gh` for every nested graph with the ghost condition (the `q ≤ p` of the merged
-pin is implied by property (3) of `IsNested` at `A = univ` and is not assumed). -/
+/-- The deterministic `lem:Anp_key_gh` for every nested graph with the ghost condition (the condition
+`q ≤ p` is implied by property (3) of `IsNested` at `A = univ` and is not assumed). -/
 def AnpDetGh (d : ℕ) : Prop :=
   ∀ (p q : ℕ) (Γ : NGraph p q), Γ.GhostOK → Γ.IsNested → AnpDetGhAt d Γ
 
-/-! ## 2. The base case `q = 0` (`7_8:1110`) -/
+/-! ## 2. Walks and distances -/
 
 section Lattice
 
 variable {d L : ℕ} [NeZero L]
 
-/-- Triangle inequality for `zdistInf` (coordinatewise `zdist_add_le`, then `Finset.sup`).  Ported from the
-private `farEntry_zdistInf_add_le` (`RBM3D/Evolution/FarEntry.lean:117`). -/
+/-- Triangle inequality for `zdistInf` (coordinatewise `zdist_add_le`, then `Finset.sup`). -/
 theorem anpKey_zdistInf_add_le (x y : Zd d L) :
     zdistInf d L (x + y) ≤ zdistInf d L x + zdistInf d L y := by
   unfold zdistInf
@@ -73,13 +72,11 @@ theorem anpKey_zdistInf_add_le (x y : Zd d L) :
         (Finset.le_sup (f := fun j => zdist L (x j)) (Finset.mem_univ i))
         (Finset.le_sup (f := fun j => zdist L (y j)) (Finset.mem_univ i))
 
-/-- Ported from the private `farEntry_zdistInf_neg` (`RBM3D/Evolution/FarEntry.lean:127`). -/
 theorem anpKey_zdistInf_neg (x : Zd d L) : zdistInf d L (-x) = zdistInf d L x := by
   unfold zdistInf
   exact Finset.sup_congr rfl fun i _ => by simp [zdist_neg]
 
-/-- `|x - y|_∞ = |y - x|_∞`.  Ported from the private `farEntry_zdistInf_comm`
-(`RBM3D/Evolution/FarEntry.lean:136`). -/
+/-- `|x - y|_∞ = |y - x|_∞`. -/
 theorem anpKey_zdistInf_sub_comm (x y : Zd d L) :
     zdistInf d L (x - y) = zdistInf d L (y - x) := by
   rw [← neg_sub y x, anpKey_zdistInf_neg]
@@ -196,7 +193,7 @@ private theorem anpKey_nSolid_card {p q : ℕ} (Γ : NGraph p q) :
   refine Finset.sum_congr rfl fun j _ => ?_
   cases (Γ.es[j.1]).ghost <;> simp
 
-/-! ## 3. The A2 replacement `ghostify` (`7_8:1143-1148`, `(eq:noA2)`) -/
+/-! ## 3. The replacement of an ending edge by a ghost edge (see (7.43) `eq:noA2`) -/
 
 section Ghostify
 
@@ -211,7 +208,7 @@ def NGraph.ghostifyIdx (Γ : NGraph p q) (j : Fin Γ.es.length) (i : Fin Γ.es.l
     Fin (Γ.ghostifyEs j).length :=
   Fin.cast (List.length_set).symm i
 
-/-- The A2 replacement (`7_8:1143-1148`): the edge `j` becomes a ghost edge; endpoints and paths unchanged. -/
+/-- The replacement of the edge `j` by a ghost edge; endpoints and paths unchanged. -/
 @[reducible] def NGraph.ghostify (Γ : NGraph p q) (j : Fin Γ.es.length) : NGraph p q where
   es := Γ.ghostifyEs j
   path := fun i => (Γ.path i).map fun st => (Γ.ghostifyIdx j st.1, st.2)
@@ -466,7 +463,7 @@ theorem anpKey_ghostify_nngh (hN : Γ.IsNested) {i₀ : Fin p} (hn : Γ.noGhostP
   have := Finset.card_pos.2 ⟨_, hmem⟩
   omega
 
-/-- **The A2 replacement does not change `ord - n_ngh`** (`(eq:noA2)`, `7_8:1146`): one solid edge less
+/-- **The replacement does not change `ord - n_ngh`** ((7.43) `eq:noA2`): one solid edge less
 and one ghost-free path less. -/
 theorem anpKey_ghostify_ord (hN : Γ.IsNested) {i₀ : Fin p} (hn : Γ.noGhostPath i₀ = true)
     {st₀ : Fin Γ.es.length × NV p q} (hst₀ : st₀ ∈ Γ.path i₀) :
@@ -479,9 +476,7 @@ theorem anpKey_ghostify_ord (hN : Γ.IsNested) {i₀ : Fin p} (hn : Γ.noGhostPa
 
 end Ghostify
 
-/-! ## 4. The assembly by strong induction on `q` -/
-
-/-! ## 5. The `≺`-lift (`7_8:1041-1077` read with `≺`) -/
+/-! ## 4. The `≺`-lift (Lemma 7.24 read with `≺`) -/
 
 /-- `Π_i (if S i then x f_i else 1) = x^{#S} Π_i (if S i then f_i else 1)`. -/
 private theorem anpKey_prod_ite_mul {p : ℕ} (S : Fin p → Prop) [DecidablePred S] (x : ℝ) (f : Fin p → ℝ) :
@@ -506,7 +501,7 @@ private theorem anpKey_rescale {p q : ℕ} (Γ : NGraph p q) (x C θ Φ0 : ℝ) 
   rw [this]
   ring
 
-/-- **The `≺`-lift** (`7_8:1041-1077`, "`≺` throughout"): the deterministic bound `AnpDetGh` on the event
+/-- **The `≺`-lift** of Lemma 7.24 (`lem:Anp_key_gh`, read with `≺` throughout): the deterministic bound `AnpDetGh` on the event
 `Ξ_n = {ξ ≤ N^{τ'} Φ_n(|α-β|) ∀ α β} ∩ {Σ_β ξ² ≤ N^{τ'} θ_n ∀ α}` (which holds w.h.p. by the two `≺`
 premises of `LWXi`, `Prec.whp`, `HighProbAt.inter`), with `ψ = N^{τ'} Φ_n`, `θ = N^{τ'} θ_n`,
 `θ_n = (W^d η_t)⁻¹` and `τ' = τ / (2 (q + |ord - n_ngh| + p + 1))`; the factor `C N^{τ'(q + k + n_ngh)}` is
@@ -595,7 +590,7 @@ theorem lwAnpKeyGh_of_det : ∀ d : ℕ, AnpDetGh d → LWAnpKeyGh d := by
       _ = N ^ τ := by rw [← Real.rpow_add (lt_of_lt_of_le one_pos (hN1 n))]; congr 1; ring
   exact absurd hu (not_lt.2 hfin)
 
-/-! ## 6. The merged reductions `LWAnpKeyGh → LWAnpKey → LWAnp` (`7_8:1025`, `7_8:933-939`) -/
+/-! ## 5. The reductions `LWAnpKeyGh → LWAnpKey → LWAnp` -/
 
 section Reductions
 
@@ -635,8 +630,8 @@ private theorem anpKey_stochDomAt_congr {Ω : Type*} [MeasurableSpace Ω]
   have : ζ = ζ' := funext fun l => funext fun u => funext fun ω => hζ l u ω
   exact this ▸ h
 
-/-- **`lem:Anp_key` from `lem:Anp_key_gh`** (`7_8:1025`, "an easy corollary"): no ghost edge gives `GhostOK`,
-`noGhostPath i = true` for every `i`, `n_ngh = p`. -/
+/-- **Lemma 7.23 (`lem:Anp_key`) from Lemma 7.24 (`lem:Anp_key_gh`)** (the "easy corollary"): no ghost edge gives
+`GhostOK`, `noGhostPath i = true` for every `i`, `n_ngh = p`. -/
 theorem lwAnpKey_of_gh : ∀ d : ℕ, LWAnpKeyGh d → LWAnpKey d := by
   intro d h hd κ ε 𝔡 hκ hε h𝔡 p q hqp Γ hng hnest ε₀ C₁ C₂ C₃ Cc
   obtain ⟨c, hc, H⟩ := h hd κ ε 𝔡 hκ hε h𝔡 p q hqp Γ (anpKey_ghostOK_of_noGhost hng) hnest
@@ -646,8 +641,8 @@ theorem lwAnpKey_of_gh : ∀ d : ℕ, LWAnpKeyGh d → LWAnpKey d := by
   exact anpKey_stochDomAt_congr (H 𝔠 sz z hflow t ht0 htT Φ hΦ ξ hξ) fun n ab ω => by
     simp [anpKey_noGhostPath_of_noGhost hng, anpKey_nngh_of_noGhost hng]
 
-/-- **`lem:Anp` from `lem:Anp_key`** (`7_8:987-989`): the special case `a_i ≡ [a]`, `b_i ≡ [b]`
-(the auxiliary graph of a locally standard graph is a nested graph, `7_8:956`). -/
+/-- **Lemma 7.22 (`lem:Anp`) from Lemma 7.23 (`lem:Anp_key`)**: the special case `a_i ≡ [a]`, `b_i ≡ [b]`
+(the auxiliary graph of a locally standard graph is a nested graph). -/
 theorem lwAnp_of_key : ∀ d : ℕ, LWAnpKey d → LWAnp d := by
   intro d h hd κ ε 𝔡 hκ hε h𝔡 p q hqp Γ hng hnest ε₀ C₁ C₂ C₃ Cc
   obtain ⟨c, hc, H⟩ := h hd κ ε 𝔡 hκ hε h𝔡 p q hqp Γ hng hnest ε₀ C₁ C₂ C₃ Cc
@@ -661,11 +656,11 @@ theorem lwAnp_of_key : ∀ d : ℕ, LWAnpKey d → LWAnp d := by
   exact mul_right_comm _ _ _
 
 
-/-! ## 7. Compiled nonempty instances at `d = 3` -/
+/-! ## 6. A nested graph -/
 
 section Instances
 
-/-- Instance (1): the one-edge graph `a_0 — b_0` (`p = 1`, `q = 0`, one solid edge, one path). -/
+/-- The one-edge graph `a_0 — b_0` (`p = 1`, `q = 0`, one solid edge, one path). -/
 def anpKey_oneEdge : NGraph 1 0 where
   es := [⟨false, .inl (.inl 0), .inl (.inr 0)⟩]
   path := fun _ => [(0, .inl (.inr 0))]

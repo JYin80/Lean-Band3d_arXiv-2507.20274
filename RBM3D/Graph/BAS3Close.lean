@@ -7,19 +7,23 @@ import RBM3D.Graph.BAG5Leaf
 import RBM3D.Graph.BALvl1B
 
 /-!
-# BA-L L4d2b (T2450), part A: the S3 roots, their expansion identity, the stuck catalogue
+# The roots of the `BAExp14bS3` families, their expansion identity, and its closure (part A)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-121`; design
-`docs/claude-team/fable/2026-10-12-s3-fold-A.md` §1, §4, supervisor `2026-10-12-0851.md` Q2,
-S3A-C5.
-Roots: `docs/reports/T2433-prove.md` §(a⁗) (a).  Twin of `Graph/BAExpandId.lean` §6.
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`), the graphical part from (B.5)
+`eq;I42inG` to (B.9) `eq:GGraisesord` and the closing remark.  This is the BA counterpart of
+`Graph/BAExpandId.lean` (Section 6).
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAS3Close_`)
 
-1. The roots `baS3RootM` (`MERGED = T3C-tr_0 + D1X`), `baS3Root1` (`T3C-tr_1`), `baS3RootD`
-   (`D2X`) at the
+1. The roots `baS3RootM` (`T3C-tr_0 + D1X`), `baS3Root1` (`T3C-tr_1`), `baS3RootD` (`D2X`) at the
    tail charge `s`, the root lists `BAS3expandRoot`, the identity `BAS3Identity`,
    `baS3Identity_holds`.
+2. Relabelling of BA graphs and isomorphism of packed graphs.
+3. Naturality of the `GG` step under renamings.
+4. The invariants `Even` and `Conn` and the attachment of the leaves (`BAG5Attached`).
+5. Lemma A: the kids of a `BACtx` step from a node with the invariants.
+6. The abstract closure: from the classification of the nodes to the outputs of the expansion.
+7. Concrete graphs: the trivial pack, the root terms, the classification of the kids.
 -/
 
 set_option linter.style.longLine false
@@ -48,11 +52,11 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
-/-! ## 1. The roots, the root lists, the identity (target 1) -/
+/-! ## 1. The roots, the root lists, the identity -/
 
-/-- **Root `MERGED`** (`T3C-tr_0 + D1X`, T2433-prove `:170-177`; `x = inl 0`, `y = inl 1`, `iJ = inr J`; `i0..i3 = w, γ, δ, v`):
+/-- **Root `baS3RootM`** (`T3C-tr_0 + D1X`; `x = inl 0`, `y = inl 1`, `iJ = inr J`; `i0..i3 = w, γ, δ, v`):
 `G(x,i0) G(i2,y) G(i3,i2) G(i1,i3)` and the tail `G(y,x)` (`s = true`) or `Ḡ(x,y)` (`s = false`), all uncircled; black `S(i1,i2)`,
-`S(i0,i3)` (the block identity `W^{-d} 1[v ∈ [w]] = S_{wv}/t`); `M(i0,i1)`; coefficient `1` (root value `= t ×` S3 integrand). -/
+`S(i0,i3)` (the block identity `W^{-d} 1[v ∈ [w]] = S_{wv}/t`); `M(i0,i1)`; coefficient `1` (root value `= t ×` the `BAExp14bS3` integrand). -/
 def baS3RootM (s : Bool) : BAGraph (Fin 2) (Fin 4) :=
   { solid := [SEdge.mk true false (Sum.inl 0) (Sum.inr 0), SEdge.mk true false (Sum.inr 2) (Sum.inl 1),
       SEdge.mk true false (Sum.inr 3) (Sum.inr 2), SEdge.mk true false (Sum.inr 1) (Sum.inr 3),
@@ -83,14 +87,14 @@ def baS3RootD (s : Bool) : BAGraph (Fin 2) (Fin 4) :=
     dotted := [], coeff := 1, psi := [],
     mdot := [BAMEdge.mk true (Sum.inl 0) (Sum.inr 1), BAMEdge.mk true (Sum.inr 0) (Sum.inl 1)] }
 
-/-- **The root lists** (twin of `BAexpandRoot`, `BAExpandId.lean:379`): index `0 = MERGED`, `1 = T3C-tr_1`, `2 = D2X`; the partition of
+/-- **The root lists** : index `0 = baS3RootM`, `1 = T3C-tr_1`, `2 = D2X`; the partition of
 the root, each term expanded, the exponent pairs dropped. -/
 def BAS3expandRoot (sel : BASel) (fuel : ℕ) : Fin 3 → Bool → List (BAPGraph (Fin 2))
   | 0, s => (baS3RootM s).partition.flatMap fun P => (BAexpand sel fuel P).map Prod.snd
   | 1, s => (baS3Root1 s).partition.flatMap fun P => (BAexpand sel fuel P).map Prod.snd
   | 2, s => (baS3RootD s).partition.flatMap fun P => (BAexpand sel fuel P).map Prod.snd
 
-/-- **The identity statement** (twin of `BAG5Identity`, `BAExpandId.lean:89`): for lists `Ls r s`, the expectation identity
+/-- **The identity statement** : for lists `Ls r s`, the expectation identity
 `𝔼 root = Σ_μ 𝔼 Γ_μ` at `BAlwData` over `PF d L W 0`, `BASelf`, `0 ≤ t < 1`, for the three roots. -/
 def BAS3Identity (d : ℕ) (Ls : Fin 3 → Bool → List (BAPGraph (Fin 2))) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), BASelf d L g0 (E : ℂ) m → 0 ≤ t → t < 1 →
@@ -102,7 +106,7 @@ def BAS3Identity (d : ℕ) (Ls : Fin 3 → Bool → List (BAPGraph (Fin 2))) : P
         (∫ ω, (baS3RootD s).val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0) =
           ((Ls 2 s).map fun q => ∫ ω, q.val (BAlwData d L W g0 E t m ω) ![x, y] ∂(PF d L W 0)).sum)
 
-/-- The identity for one root `R` (any internal type): `baExpandIdentity_holds` with `baG5Graph k s` replaced by `R`. -/
+/-- The identity for one root `R` (any internal type): the identity of the expansion (`expandG_sum`, the step `BARCand.kids_identity`) for one root `R`. -/
 private theorem BAS3Close_root_identity (d : ℕ) (sel : BASel) (fuel : ℕ) {I : Type} [Fintype I] [DecidableEq I]
     (R : BAGraph (Fin 2) I) (L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ)
     (hSelf : RBM.BA.BASelf d L g0 (E : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1) (x y : Idx d L W) :
@@ -125,7 +129,7 @@ private theorem BAS3Close_root_identity (d : ℕ) (sel : BASel) (fuel : ℕ) {I 
       have := (hexp P (BAGraph.partition_normal _ P ‹_›)).1
       simpa [BAexpand] using this)).symm
 
-/-- **The identity half of the S3 expansion, for every selection rule and every fuel** (target 1): the three root lists satisfy the
+/-- **The identity half of the expansion, for every selection rule and every fuel**: the three root lists satisfy the
 expectation identity.  `expandG_sum` with the invariant `Normal`, the weight `1`, and the step lemma `kids_normal` + `kids_identity`. -/
 theorem baS3Identity_holds (d : ℕ) (sel : BASel) (fuel : ℕ) : BAS3Identity d (BAS3expandRoot sel fuel) := by
   intro L W _ _ hL g0 E t m hSelf ht0 ht1 s x y
@@ -402,7 +406,7 @@ private theorem BAS3Close_merge_eq (Γ : BAGraph E I) (h : ∀ e ∈ Γ.dotted, 
 
 end Merge
 
-/-- **The packed merge of a graph without `=`-dotted edges is isomorphic to the unmerged pack** (target of the closure: the kids of a
+/-- **The packed merge of a graph without `=`-dotted edges is isomorphic to the unmerged pack** (used in the closure: the kids of a
 candidate are `pcomp P (packMerge Δ)`). -/
 private theorem BAS3Close_iso_merge (P : BAPGraph (Fin 2)) {I2 : Type} [Fintype I2] [DecidableEq I2] (Δ : BAGraph P.E' I2)
     (h : ∀ e ∈ Δ.dotted, e.eq = false) :
@@ -583,7 +587,7 @@ private theorem BAS3Close_outs_iso {P Q : BAPGraph (Fin 2)} (eE : P.E' ≃ Q.E')
     refine BAS3Close_iso_trans ?_ (BAS3Close_iso_merge Q (BAS3Close_rel φ Δ) hdΔ')
     exact ⟨eE, eI2, hext, rfl⟩
 
-/-- The graph-level conditions of `BACtx` at `v`, `y`, `y'` (H0-H3 of `BACtx`, `Graph/BAG5Leaf.lean:108`), as a predicate of the graph and three
+/-- The graph-level conditions of `BACtx` at `v`, `y`, `y'` (H0-H3 of `BACtx`, `Graph/BAG5Leaf.lean`), as a predicate of the graph and three
 vertices: decidable on concrete graphs. -/
 private def BAS3Close_CtxG {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : BAGraph E I)
     (v y y' : E ⊕ I) : Prop :=
@@ -684,7 +688,7 @@ private theorem BAS3Close_iso_cand {P Q : BAPGraph (Fin 2)} (h : BAS3Close_Iso P
 
 end Cand
 
-/-! ## 4. The invariants `Even` and `Conn` (T2433a: attachment of the leaves)
+/-! ## 4. The invariants `Even` and `Conn` (attachment of the leaves)
 
 `Even Γ`: every colouring of the vertices that is constant on atoms is crossed by an even number of solid edges (every set of atoms
 meets an even number of solid half-edges).  `Conn Γ`: every colouring that is constant along solid edges and molecule edges is constant.
@@ -1353,7 +1357,7 @@ private theorem BAS3Close_cross_eq_length {V : Type} (b : V → Bool) (l : List 
       simp only [not_not] at this
       simp [hq, this]
 
-/-- **Attachment from `Even` and `Conn`** (T2433a): an internal molecule is crossed by an even number of solid edges, and by at least one
+/-- **Attachment from `Even` and `Conn`**: an internal molecule is crossed by an even number of solid edges, and by at least one
 (connectedness), hence by at least two. -/
 private theorem BAS3Close_attached (P : BAPGraph (Fin 2)) (hE : BAS3Close_Even P.g) (hC : BAS3Close_Conn P.g) :
     BAG5Attached P := by

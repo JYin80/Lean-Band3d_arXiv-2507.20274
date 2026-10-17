@@ -11,19 +11,19 @@ import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Data.Finset.Card
 
 /-!
-# LW-12e: `lem:Anp_key_gh`, case (IV) part 1: the nested order of summation (T2264)
+# `lem:Anp_key_gh`, Case (IV), first part: the nested order of summation
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): Case (IV) `:1385`,
-the pigeonhole and properties (1)-(2) `:1388-1393`, the nested order `:1400-1402`, `(eq:degali)`
-`:1403-1406`, the spanning tree `𝕋` and its re-rooting `:1414-1451`.  Part e of the six tickets of
-`lem:Anp`.
+Paper: proof of Lemma 7.24 (`lem:Anp_key_gh`), Case (IV): the pigeonhole and properties (1)-(2)
+((7.52) `kwuyayw_case3`), the nested order (7.53) `kwuyayw_ng`, the degree count (7.54)
+`eq:degali`, and the spanning tree `𝕋` with its re-rooting and the AM-GM step (7.55)
+`kwuyayw_ng_tree`.
 
 The statements are combinatorial (no `ψ`, no `ξ`).  `anpKey5_cert`: every nested graph with one
 edge removed per path (its ghost, or a reserved long edge) has a summation certificate for its
 remaining solid edges: a nested order of summation (every internal vertex, in turn, has two
 solid edges to external or earlier vertices), or an AM-GM split `ξ_k ξ_{k'} ≤ (ξ_k² + ξ_{k'}²)/2`
-(`7_8:1428-1431`) with certificates for both branches.  The route replaces the paper's
-pigeonhole (false for nested graphs whose paths pass through external vertices) by Hall:
+with certificates for both branches.  Hall-type counting replaces the pigeonhole count of the
+paper (which needs `q = p`):
 
 * `anpKey5_cross_ge`: every set `S` of internal vertices has `≥ |S|` remaining edges leaving `S`;
 * `anpKey5_inside_ge`: if every vertex of `S` has `≤ 1` remaining edge leaving `S`, then `S`
@@ -39,9 +39,6 @@ pigeonhole (false for nested graphs whose paths pass through external vertices) 
 * Section 5: the AM-GM branch and `anpKey5_graph`.
 * Section 6: the walks of a nested graph: `anpKey5_cross_ge`, `anpKey5_inside_ge`.
 * Section 7: the target `anpKey5_cert`.
-* Section 8: compiled nonempty instances.
-
-No port: RBM1D and RBM2D have no light-weight graph layer.
 -/
 
 set_option linter.style.setOption false
@@ -78,7 +75,7 @@ def anpKey5_inside {p q : ℕ} (E : List (NV p q × NV p q)) (S : Finset (Fin q)
 def anpKey5_early {p q : ℕ} (σ : List (Fin q)) (m : ℕ) (w : NV p q) : Bool :=
   Sum.elim (fun _ : Fin p ⊕ Fin p => true) (fun i : Fin q => decide (i ∈ σ.take m)) w
 
-/-- A nested order of summation (`7_8:1400-1402`) for the solid edges `E` (endpoint pairs):
+/-- A nested order of summation ((7.53) `kwuyayw_ng`) for the solid edges `E` (endpoint pairs):
 `σ` lists every internal vertex once, and `σ[m]` has at least two edges whose other end is external
 or an earlier `σ[m']`.  The vertices are summed in the order `σ[last], …, σ[0]`: when `σ[m]` is
 summed, two of its edges go to labels still fixed (`Σ_x ξ(y₁,x) ξ(y₂,x) ≤ θ`), its other edges are
@@ -90,15 +87,15 @@ def AnpSumOrder {p q : ℕ} (E : List (NV p q × NV p q)) (σ : List (Fin q)) : 
         (decide (e.2 = Sum.inr (σ.get m)) && anpKey5_early σ m.1 e.1)
 
 /-- A summation certificate of depth `≤ n`: a nested order, or an AM-GM split
-`ξ_k ξ_{k'} ≤ (ξ_k² + ξ_{k'}²)/2` (`7_8:1428-1431`): the edge `k'` replaced by a copy of `k`, and
-`k` by a copy of `k'`, each with a certificate of depth `≤ n - 1`. -/
+`ξ_k ξ_{k'} ≤ (ξ_k² + ξ_{k'}²)/2` (proof of Lemma 7.24, after (7.55) `kwuyayw_ng_tree`): the edge `k'`
+replaced by a copy of `k`, and `k` by a copy of `k'`, each with a certificate of depth `≤ n - 1`. -/
 def AnpSumCert {p q : ℕ} : ℕ → List (NV p q × NV p q) → Prop
   | 0, E => ∃ σ : List (Fin q), AnpSumOrder E σ
   | n + 1, E => (∃ σ : List (Fin q), AnpSumOrder E σ) ∨
       ∃ k k' : Fin E.length, k ≠ k' ∧ AnpSumCert n (E.set k'.1 (E.get k)) ∧ AnpSumCert n (E.set k.1 (E.get k'))
 
 /-- The solid edges of `Γ` outside `M`, as endpoint pairs (`M`: the reserved long edges of the
-ghost-free paths in LW-12f's union bound; ghost edges are dropped in any case). -/
+ghost-free paths; ghost edges are dropped in any case). -/
 def anpKey5_rest {p q : ℕ} (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)) : List (NV p q × NV p q) :=
   (List.finRange Γ.es.length).filterMap fun k =>
     if (Γ.es.get k).ghost = true ∨ k ∈ M then none else some ((Γ.es.get k).u, (Γ.es.get k).v)
@@ -560,7 +557,7 @@ theorem anpKey5_get_set_self {α : Type*} (E : List α) (j : Fin E.length) (a : 
     (E.set j.1 a).get (j.cast (by simp)) = a := by
   simp [List.get_eq_getElem]
 
-/-- The two bounds of `AnpKey5GraphPin` at `S`. -/
+/-- The crossing bound and the inside bound at `S` (the two hypotheses of `anpKey5_graph`). -/
 def anpKey5_ok (E : List (NV p q × NV p q)) (S : Finset (Fin q)) : Prop :=
   S.card ≤ anpKey5_cross E S ∧ ((∀ v ∈ S, anpKey5_crossAt E S v ≤ 1) → S.card ≤ anpKey5_inside E S)
 
@@ -614,7 +611,7 @@ theorem anpKey5_cross_le_sum (E : List (NV p q × NV p q)) (S : Finset (Fin q)) 
     exact ⟨v, hv2, by simp [anpKey5_pend, hv1, h2]⟩
   · simp [h1, h2] at he
 
-/-- The AM-GM branch (`7_8:1428-1451`, the re-rooting): in the list with the pendant edge `k'` of `y` replaced by a
+/-- The AM-GM branch (the re-rooting of (7.55) `kwuyayw_ng_tree`): in the list with the pendant edge `k'` of `y` replaced by a
 copy of the pendant edge `k` of `x`, the vertex `x` joins the order, and the greedy extension then reaches every vertex
 of the minimal closed set `U` (a stuck part `T` of `U` has at most one edge to `U \ T`, at `y`, contradicting `hconn`
 and `hsep`). -/
@@ -817,7 +814,7 @@ theorem anpKey5_pend_untouched {R S : Finset (Fin q)} (hSR : S ⊆ R) {y : Fin q
   · refine ⟨key _ h2, ?_⟩
     rw [h1, anpKey5_inS_inr]; simpa using hy
 
-/-- The induction on the unlisted vertices (`7_8:1414-1451`): a valid prefix `σ` with the two bounds on every subset
+/-- The induction on the unlisted vertices ((7.55) `kwuyayw_ng_tree`): a valid prefix `σ` with the two bounds on every subset
 of the unlisted vertices extends to a certificate. -/
 theorem anpKey5_main : ∀ (n : ℕ) (E : List (NV p q × NV p q)), (∀ e ∈ E, e.1 ≠ e.2) →
     ∀ σ : List (Fin q), (anpKey5_comp σ).card = n → anpKey5_valid E σ →
@@ -912,9 +909,9 @@ theorem anpKey5_main : ∀ (n : ℕ) (E : List (NV p q × NV p q)), (∀ e ∈ E
     exact ⟨max m₁ m₂ + 1, Or.inr ⟨k, k', hkk, anpKey5_cert_mono_le (le_max_left _ _) hm₁,
       anpKey5_cert_mono_le (le_max_right _ _) hm₂⟩⟩
 
-/-- `AnpKey5GraphPin` (the spanning tree and its re-rooting, `7_8:1414-1451`, as a statement on multigraphs): no
-loops, the crossing bound for every `S` and the inside bound for every `S` whose vertices have at most one leaving
-edge give a certificate. -/
+/-- **The summation certificate of a multigraph** (the spanning tree and its re-rooting, (7.55)
+`kwuyayw_ng_tree`, as a statement on multigraphs): no loops, the crossing bound for every `S` and the
+inside bound for every `S` whose vertices have at most one leaving edge give a certificate. -/
 theorem anpKey5_graph : ∀ (p q : ℕ) (E : List (NV p q × NV p q)), (∀ e ∈ E, e.1 ≠ e.2) →
     (∀ S : Finset (Fin q), S.card ≤ anpKey5_cross E S) →
     (∀ S : Finset (Fin q), (∀ v ∈ S, anpKey5_crossAt E S v ≤ 1) → S.card ≤ anpKey5_inside E S) →
@@ -1231,7 +1228,7 @@ theorem anpKey5_path_bound (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)) (S 
 
 end Paths
 
-/-- `anpKey5_cross_ge` (`7_8:1388-1393`, the counting behind "B1 + B2", in Hall form): every set `S` of internal
+/-- `anpKey5_cross_ge` (the counting behind "B1 + B2" of (7.52) `kwuyayw_case3`, in Hall form): every set `S` of internal
 vertices has at least `|S|` remaining edges with exactly one end in `S` (IsNested conjunct 6 gives `|S|` paths
 visiting `S`; each crosses `∂S` at least twice with distinct edges, at most one of them removed). -/
 theorem anpKey5_cross_ge : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)), Γ.IsNested →
@@ -1249,7 +1246,7 @@ theorem anpKey5_cross_ge : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin Γ
     _ ≤ ∑ j ∈ P, ∑ k ∈ anpKey5_eidx Γ j, anpKey5_gd Γ M k * anpKey5_cr Γ S k := Finset.sum_le_sum hA
     _ ≤ ∑ k, anpKey5_gd Γ M k * anpKey5_cr Γ S k := anpKey5_sum_paths_le Γ hN P _
 
-/-- `anpKey5_inside_ge` (the formal `(eq:degali)`): if every vertex of `S` has at most one remaining edge leaving `S`,
+/-- `anpKey5_inside_ge` (the formal version of (7.54) `eq:degali`): if every vertex of `S` has at most one remaining edge leaving `S`,
 then `S` carries at least `|S|` remaining edges inside (every visiting path then crosses `∂S` exactly twice and runs
 inside `S` with remaining edges only; IsNested conjunct 5 gives two paths at each vertex). -/
 theorem anpKey5_inside_ge : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)), Γ.IsNested →
@@ -1306,11 +1303,11 @@ theorem anpKey5_inside_ge : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin �
 
 /-! ## 7. The target -/
 
-/-- Target (`7_8:1388-1451`, combinatorial): every nested graph, with one edge per path removed (its ghost, or a
-reserved edge), has a summation certificate for its remaining solid edges.  No `GhostOK` ending-edge clause, no region,
-no `NoA2`, no case hypothesis.  The paper's pigeonhole (`q = p`, `7_8:1388-1393`) is replaced by Hall
-(`anpKey5_cross_ge`) and `(eq:degali)` by `anpKey5_inside_ge`; the spanning tree and its re-rooting by
-`anpKey5_graph`. -/
+/-- Target (proof of Lemma 7.24, Case (IV); combinatorial): every nested graph, with one edge per path removed (its
+ghost, or a reserved edge), has a summation certificate for its remaining solid edges.  No `GhostOK`
+ending-edge clause, no region, no case hypothesis.  The pigeonhole count of the paper (`q = p`) is replaced
+by Hall-type counting (`anpKey5_cross_ge`) and (7.54) `eq:degali` by `anpKey5_inside_ge`; the spanning tree and its
+re-rooting by `anpKey5_graph`. -/
 theorem anpKey5_cert : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin Γ.es.length)), Γ.IsNested →
     anpKey5_perPath Γ M → ∃ n : ℕ, AnpSumCert n (anpKey5_rest Γ M) := by
   intro p q Γ M hN hM
@@ -1326,7 +1323,5 @@ theorem anpKey5_cert : ∀ (p q : ℕ) (Γ : NGraph p q) (M : Finset (Fin Γ.es.
   · simp only [h, ↓reduceIte] at hk
     obtain rfl := Option.some.inj hk
     exact hN.1 _ (List.get_mem _ k)
-
-/-! ## 8. Compiled nonempty instances -/
 
 end RBM.Graph

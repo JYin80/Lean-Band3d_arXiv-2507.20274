@@ -23,26 +23,26 @@ set_option linter.unusedSimpArgs false
 set_option linter.unusedVariables false
 
 /-!
-# BA-L L3c3b: `claim:xi` for the exp class at BA, the variables `ζ` (T2444)
+# The claim (7.34) for the exp class at BA: the variables `ζ`
 
-Paper: arXiv:2507.20274 (`7_8:line` is `paper/tex/7_8_light_weight.tex:line`, `B:line` is `paper/tex/B_graphical_lemmas.tex:line`):
-`claim:xi` (`7_8:873-890`, no proof in the paper), `(eq:xia1a2)` (`7_8:882`), the radius `(log W)^{3/2}` (`7_8:95-97`, `7_8:1653`),
-`(eq:Gbyxi2_BA)` (`B:428-431`), the exp class `(LW_assm_exp)` (`3_5:406-415`).
-Basis: the band file `RBM3D/Graph/LWXiExp.lean` `:1-787` (T2359), of which this file is the twin on the BA carrier `baFMz sz z`
-(law `seqP (sz.withLam 0)`, `BAFlow`, horizon `BAflowT0`), with the BA edge variables `ζ = baZetaVar` of L3c3a (T2435,
-`Graph/BAAuxGraph2.lean`, `BAAuxGraph2B.lean`) in place of `lwXiVar`.
+Paper: the claim stating (7.34) `eq:Gbyxi2` (Subsection 7.3: the paper indicates its proof by Ward's
+identity and the properties (3.28) `eq:Psi` of `Ψ_t`), (7.33) `eq:xia1a2`, the radius
+`(log W)^{3/2}` ((7.12) `eq:far_ab`, proof of Lemma 7.26), (B.22) `eq:Gbyxi2_BA`, the exp class
+(3.31) `eq:LW_assm_exp` (Lemma 3.11).  The band file `Graph/LWXiExp.lean` has the same statement
+on the band carrier; this file works on the BA carrier `baFMz sz z` (law `seqP (sz.withLam 0)`,
+`BAFlow`, horizon `BAflowT0`), with the BA edge variables `ζ = baZetaVar`
+(`Graph/BAAuxGraph2.lean`, `Graph/BAAuxGraph2B.lean`) in place of `lwXiVar`.
 
-* Section 1: the statements `LWXiEgL` (the carrier form of `LWXiE`), `LWXiEgL_bandFM` (`Iff.rfl`), `BAZetaExpClaim`.
-* Section 2: the deterministic facts on the class `Φ_E = lwXE_phi` (copied from `LWXiExp.lean` §3 as private lemmas: the band
-  file's are private; `lwXE_phi` and `lwTail32` are public there and are imported, not twinned).
-* Section 3: the arithmetic and the core of conjunct 2 for `ζ` (the floor `W^{-D₁}` stays additive and is absorbed into `W^{-D}`
-  of the target: the threshold on `D₁` is `max (2 D) (1/𝔠)`, not `D + d`).
+* Section 1: the statements `LWXiEgL` (the carrier form of `LWXiE`), `BAZetaExpClaim`.
+* Section 2: the deterministic facts on the class `Φ_E = lwXE_phi` (as private lemmas: the band
+  file's are private; `lwXE_phi` and `lwTail32` are public there and are imported).
+* Section 3: the arithmetic and the core of conjunct 2 for `ζ` (the floor `W^{-D₁}` stays additive
+  and is absorbed into `W^{-D}` of the target: the threshold on `D₁` is `max (2 D) (1/𝔠)`, not
+  `D + d`).
 * Section 4: `baZetaExpClaim_holds`.
-* Section 5: compiled nonempty instances at the `d = 3` data of `BA/LWPinsBA.lean` §3.
 
-Ports (merged files, text copied and adapted): `Graph/LWXiExp.lean:124-270, 374-401, 513-529, 535-558, 568-716` at the merged
-commit `eb56169` (the last commit touching `LWXiExp.lean`).  The band file's lattice, `≺` and Ward helpers (§4) are L3c3a's public `BAAuxGraph2_*` instead.  RBM1D and
-RBM2D have no light-weight graph layer.
+The band file's lattice, `≺` and Ward helpers (its Section 4) are the public `BAAuxGraph2_*` of
+`Graph/BAAuxGraph2.lean` instead.
 -/
 
 noncomputable section
@@ -55,8 +55,8 @@ open scoped Matrix
 
 /-! ## 1. The statements -/
 
-/-- **`LWXiE` over a carrier `C` and a law `μ`** (`LWXiE`, `Graph/LWXiExp.lean:57`, with `sz.Prec` replaced by `PrecL sz μ` and
-`etaT (E n) (t n)` by `C.eta n (t n)`; the check file's `T2444_LWXiEgL` up to the name): the exp-class edge variables
+/-- **`LWXiE` over a carrier `C` and a law `μ`** (`LWXiE` in `Graph/LWXiExp.lean`, with `sz.Prec` replaced by `PrecL sz μ` and
+`etaT (E n) (t n)` by `C.eta n (t n)`): the exp-class edge variables
 `ξ_{αβ} = ξ_{βα} ≥ 0`, `ξ_{αβ} ≺ 𝖳_t(|α-β|_∞ ∧ ℓ) + W^{-D}` on the pairs with `λ²/L² < 1 - t`, and `Σ_β ξ_{αβ}² ≺ (W^d η_t)⁻¹`.
 Generic over the carrier: the BA instance is `C = baFMz sz z`, `μ = seqP (sz.withLam 0)`. -/
 def LWXiEgL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t ℓ : ℕ → ℝ) (D : ℝ)
@@ -69,9 +69,8 @@ def LWXiEgL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t 
     PrecL sz μ (U := fun n => Zd d (sz.L n)) (fun n α ω => ∑ β, ξ n α β ω ^ 2)
       (fun n _ _ => ((((sz.W n : ℕ) : ℝ) ^ d) * C.eta n (t n))⁻¹)
 
-/-- **`claim:xi` for the exp class at BA** (`7_8:884-890`, `(eq:Gbyxi2_BA)` `B:428-431`; twin of `LWXiExpClaim`,
-`LWXiExp.lean:68`; the check file's `T2444_BAZetaExpClaim` up to the name): at the `baPin` data (law `seqP (sz.withLam 0)`, setting
-`BAFlow`, carrier `baFMz`, horizon `BAflowT0`), under `(LW_assm_exp)` (`LWAssmExpgL`) and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables
+/-- **The claim (7.34) `eq:Gbyxi2` for the exp class at BA** ((B.22) `eq:Gbyxi2_BA`; as `LWXiExpClaim` in `Graph/LWXiExp.lean`): at the BA data (law `seqP (sz.withLam 0)`, setting
+`BAFlow`, carrier `baFMz`, horizon `BAflowT0`), under (3.31) `eq:LW_assm_exp` (`LWAssmExpgL`) and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables
 `baZetaVar` at a radius `ρ` with `√ρ ≤ τ log N` eventually for every `τ > 0` and a floor exponent `D₁ ≥ max (2 D) (1/𝔠)` satisfy
 `LWXiEgL`. -/
 def BAZetaExpClaim (d : ℕ) : Prop :=
@@ -87,7 +86,7 @@ def BAZetaExpClaim (d : ℕ) : Prop :=
             ∀ D₁ : ℝ, max (2 * D) (1 / 𝔠) ≤ D₁ →
               LWXiEgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ℓ D (baZetaVar sz z t ρ D₁)
 
-/-! ## 2. Deterministic facts on the class `Φ_E` (copied from `LWXiExp.lean` §3; `lwXE_phi` is imported) -/
+/-! ## 2. Deterministic facts on the class `Φ_E` (as in `Graph/LWXiExp.lean` Section 3; `lwXE_phi` is imported) -/
 
 private theorem BAZetaExp_phi_pos {d L : ℕ} {W g t c D : ℝ} (hW : 0 < W) (r : ℝ) : 0 < lwXE_phi d L W g t c D r :=
   Real.sqrt_pos.2 (mul_pos (inv_pos.2 (pow_pos hW d)) (tailW_pos hW r))
@@ -96,7 +95,7 @@ private theorem BAZetaExp_phi_sq {d L : ℕ} {W g t c D : ℝ} (hW : 0 < W) (r :
     lwXE_phi d L W g t c D r ^ 2 = (W ^ d)⁻¹ * tailW d L g t c W D r :=
   Real.sq_sqrt (mul_pos (inv_pos.2 (pow_pos hW d)) (tailW_pos hW r)).le
 
-/-- **The cost of shifting the argument of `𝒯_t`** (paper-delta candidate `T2348a`): for `0 ≤ a`, `0 ≤ b ≤ ρ + a`,
+/-- **The cost of shifting the argument of `𝒯_t`**: for `0 ≤ a`, `0 ≤ b ≤ ρ + a`,
 `𝒯_t(a) ≤ (ρ+1)^{d-2} e^{√(ρ/ℓ_t)} 𝒯_t(b)` (`B_{t,a} ≤ (ρ+1)^{d-2} B_{t,b}`: the zero mode is common, `a + 1 ≥ (b+1)/(ρ+1)`;
 `√b ≤ √ρ + √a`). -/
 private theorem BAZetaExp_tailT_shift {d L : ℕ} {g t a b ρ : ℝ} (hL : 1 ≤ (L : ℝ)) (ha : 0 ≤ a) (hρ : 0 ≤ ρ)
@@ -156,8 +155,8 @@ private theorem BAZetaExp_tailW_shift {d L : ℕ} {W g t c D ρ r₁ r₂ : ℝ}
           le_mul_of_one_le_left hWD hK1
       _ ≤ _ := mul_le_mul_of_nonneg_left (le_max_right _ _) (by linarith)
 
-/-- **`Φ_E(m) ≤ K_n Φ_E(ℓ')` for `ℓ' ≤ 2ρ + m`** (the comparability that replaces `(eq:Psi)` in `auxGraph2_phi_cmp`,
-`Graph/AuxGraph2.lean:723`): `K_n = ((2ρ+1)^{d-2} e^{√(2ρ/ℓ_t)})^{1/2}`. -/
+/-- **`Φ_E(m) ≤ K_n Φ_E(ℓ')` for `ℓ' ≤ 2ρ + m`** (the comparability that replaces (3.28) `eq:Psi` in `BAAuxGraph2_phi_cmp`,
+`Graph/BAAuxGraph2.lean`): `K_n = ((2ρ+1)^{d-2} e^{√(2ρ/ℓ_t)})^{1/2}`. -/
 private theorem BAZetaExp_phi_cmp {d L : ℕ} {W g t c D ρ ℓ' m : ℝ} (hW : 0 < W) (hL : 1 ≤ (L : ℝ)) (hc : 0 ≤ c) (hρ : 0 ≤ ρ)
     (hℓ' : 0 ≤ ℓ') (hm : 0 ≤ m) (h : ℓ' ≤ 2 * ρ + m) :
     lwXE_phi d L W g t c D m ≤
@@ -237,7 +236,7 @@ private theorem BAZetaExp_window {d L : ℕ} {W g t c D 𝔡 : ℝ} (hW : 0 < W)
     _ ≤ (W ^ d)⁻¹ * ((1 + (𝔡⁻¹) ^ 2) * tailW d L g t c W D 0) := mul_le_mul_of_nonneg_left h1 hWd.le
     _ = _ := by ring
 
-/-- **A radius with `√ρ ≤ τ log N` eventually for every `τ > 0` is `N^{o(1)}`** (copy of `lwXE_rho_poly`, `LWXiExp.lean:374`): `ρ + 1 ≤ N^τ` eventually for every `τ > 0`
+/-- **A radius with `√ρ ≤ τ log N` eventually for every `τ > 0` is `N^{o(1)}`** (as `lwXE_rho_poly` in `Graph/LWXiExp.lean`): `ρ + 1 ≤ N^τ` eventually for every `τ > 0`
 (`ρ ≤ (log N)²` and `log N ≤ N^{τ/4}/(τ/4)`). -/
 private theorem BAZetaExp_rho_poly {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto) {ρ : ℕ → ℝ} (hρ0 : ∀ n, 0 ≤ ρ n)
     (hρ : ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, Real.sqrt (ρ n) ≤ τ * Real.log ((sz.size n : ℕ) : ℝ)) :
@@ -270,7 +269,7 @@ private theorem BAZetaExp_rho_poly {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTend
 
 /-! ## 3. The arithmetic and the core of conjunct 2 for `ζ` -/
 
-/-- The arithmetic of conjunct 2, in powers of `u` (twin of `lwXE_num`, `LWXiExp.lean:513`, without the window lower bound `2 ≤ u^8`:
+/-- The arithmetic of conjunct 2, in powers of `u` (as `lwXE_num` in `Graph/LWXiExp.lean`, without the window lower bound `2 ≤ u^8`:
 the floor is kept additive, so the bound is `(2 A u⁴ + S) K² ≤ 2 u⁸`). -/
 private theorem BAZetaExp_num {u A₁ K2 S : ℝ} (hu : 1 ≤ u) (hA : 2 * A₁ ≤ u ^ 2) (hC : S ≤ u ^ 4)
     (hK : K2 ≤ u ^ 2) (hA0 : 0 ≤ A₁) (hS0 : 0 ≤ S) (hK0 : 0 ≤ K2) :
@@ -286,7 +285,7 @@ private theorem BAZetaExp_num {u A₁ K2 S : ℝ} (hu : 1 ≤ u) (hA : 2 * A₁ 
   have h5 : 2 * u ^ 6 * u ^ 2 = 2 * u ^ 8 := by ring
   linarith
 
-/-- **The core of conjunct 2** (twin of `lwXE_core`, `LWXiExp.lean:535`, for `ζ` with the floor `W^{-D₁}`): with `u ≥ 1`, the loop bound
+/-- **The core of conjunct 2** (as `lwXE_core` in `Graph/LWXiExp.lean`, for `ζ` with the floor `W^{-D₁}`): with `u ≥ 1`, the loop bound
 `‖𝓛^{(2)}‖ ≤ u⁴ Φ²`, the comparability `Φ(m) ≤ K_n Φ(ℓ)` for `ℓ ≤ 2ρ + m`, the window `W^{-d} ≤ C₃² Φ(0)²` and the size conditions
 `2 (2ρ+1)^{2d} ≤ u²`, `K_n ≤ u`, `C₃² ≤ u⁴`: `ζ([a₁],[a₂])² ≤ 2 u⁸ Φ(|a₁ - a₂|)² + W^{-D₁}`. -/
 private theorem BAZetaExp_core {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D₁ : ℝ) (n : ℕ) (ω : sz.SeqΩ)
@@ -309,8 +308,8 @@ private theorem BAZetaExp_core {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ 
 
 /-! ## 4. `claim:xi` for the exp class at BA -/
 
-/-- **`claim:xi` for the exp class at BA** (`7_8:884-890`, `(eq:Gbyxi2_BA)` `B:428-431`; twin of `lwXiExpClaim_holds`, `LWXiExp.lean:568`):
-under `(LW_assm_exp)` (`LWAssmExpgL`) and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables `baZetaVar` at a radius `ρ` with `√ρ ≤ τ log N`
+/-- **The claim (7.34) `eq:Gbyxi2` for the exp class at BA** ((B.22) `eq:Gbyxi2_BA`; as `lwXiExpClaim_holds` in `Graph/LWXiExp.lean`):
+under (3.31) `eq:LW_assm_exp` (`LWAssmExpgL`) and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables `baZetaVar` at a radius `ρ` with `√ρ ≤ τ log N`
 eventually for every `τ > 0` and a floor exponent `D₁ ≥ max (2 D) (1/𝔠)` satisfy `LWXiEgL`: symmetric, non-negative,
 `ζ([a₁],[a₂]) ≺ 𝖳_t(|a₁ - a₂|_∞ ∧ ℓ) + W^{-D}` on the pairs with `λ²/L² < 1 - t`, and `Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η_t)⁻¹`
 (Ward's identity, block form).  Conjunct 2: the class `Φ_E = (W^{-d} wT^ℓ_{t,2D})^{1/2}` is the class of `LWLoopExpgL` at `2D`; the floor
@@ -491,14 +490,6 @@ theorem baZetaExpClaim_holds (d : ℕ) : BAZetaExpClaim d := by
       nlinarith
     have := mul_le_mul_of_nonneg_right hq hQ0.le
     linarith
-
-/-! ## 5. Compiled nonempty instances at `d = 3`
-
-The data of `BA/LWPinsBA.lean` §3: `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `λ_n = (2(n+1))^{-6}`; `n = 0` is `L = 4`, `W = 32`), the flow
-`flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ_n = W_n^{-1/2}`, `ℓ ≡ 0`,
-`ε₁ = 1/20`, the radius `ρ_n = log N_n` (`√ρ ≤ τ log N` eventually for every `τ > 0`: `log N ≥ τ^{-2}`), every `D > 0`, `D₁ = max (2 D) 6`
-(`1/𝔠 = 6`).  The subtype of conjunct 2 (`λ²/L² < 1/2`) is all of `n` and nonempty at every `n`.  What stays a hypothesis is another
-gate's stochastic input: `STInitialGT2gL` and `LWLoopExpgL` (`(initialGT2)`, `(LW_assm_exp)`) and the entry law `‖G_t - M‖_max ≺ W^{-ε₁}`. -/
 
 end RBM.Graph
 

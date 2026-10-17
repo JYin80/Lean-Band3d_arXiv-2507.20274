@@ -12,24 +12,20 @@ import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
 import Mathlib.Algebra.Order.Ring.Unbundled.Basic
 
 /-!
-# LW-12f: `lem:Anp_key_gh`, the deterministic form for every nested graph, and `LWAnp` (T2270)
+# `lem:Anp_key_gh`: the deterministic form for every nested graph, and `LWAnp`
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`):
-`lem:Anp_key_gh` `:1041-1077` (`(adsuu22)` `:1043`), the base-case argument `:1110` (a long edge of
-a ghost-free path), Cauchy-Schwarz on a fixed vertex `:1178`, `(kwuyayw_ng)` `:1397-1402`,
-`(kwuyayw_ng_tree)` and the sums along the spanning tree `:1414-1451`, AM-GM `:1428-1431`, end
-`:1533-1534`.  Part f (last) of the six tickets of `lem:Anp`.
+Paper: Lemma 7.24 (`lem:Anp_key_gh`, (7.41) `adsuu22`), the base-case argument (a long edge of a
+ghost-free path), Cauchy-Schwarz on a fixed vertex, (7.53) `kwuyayw_ng`, (7.55) `kwuyayw_ng_tree`
+and the sums along the spanning tree, AM-GM; Lemma 7.23 (`lem:Anp_key`) and Lemma 7.22
+(`lem:Anp`).
 
-The route is direct (DECISIONS §87 (2)): no induction on `q`, no region, no case.
+The proof is direct: no induction on `q`, no region, no case.
 
-* Section 1: the sums along a nested order (`anpKey6_order`).
-* Section 2: the sums along a certificate, by AM-GM (`anpKey6_sum`).
+* Section 1: the sums along a nested order (`anpKey6_order_step`, `anpKey6_order_gen`).
+* Section 2: the sums along a certificate, by AM-GM (`anpKey6_sum_gen`, `anpKey6_sum`).
 * Section 3: the long-edge union bound (`anpKey6_union`).
 * Section 4: the deterministic `lem:Anp_key_gh` (`anpDetGh_holds`).
-* Section 5: the merged step, case and `≺` pins, unconditional.
-* Section 6: compiled nonempty instances at `d = 3`.
-
-No port: RBM1D and RBM2D have no light-weight graph layer.
+* Section 5: `lwAnpKeyGh_holds`, `lwAnpKey_holds`, `lwAnp_holds` (no hypothesis).
 -/
 
 set_option linter.style.setOption false
@@ -44,7 +40,7 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. The sums along a nested order (`7_8:1397-1402`, `:1420-1423`) -/
+/-! ## 1. The sums along a nested order ((7.53) `kwuyayw_ng`) -/
 
 section Order
 
@@ -163,7 +159,7 @@ theorem anpKey6_A_val (ξ : ι → ι → ℝ) (hsym : ∀ α β, ξ α β = ξ 
     rw [anpKey6_lab_update σ hnd m hm a b ℓ₀ x _ h2, h1, hsym]
     simp
 
-/-- The step of the downward induction: from the prefix `m + 1` to the prefix `m` (`7_8:1420-1423`): the label
+/-- The step of the downward induction: from the prefix `m + 1` to the prefix `m` ((7.55) `kwuyayw_ng_tree`): the label
 of `σ[m]` is summed; two of its edges go to labels still fixed (`Σ_x ξ(y₁, x) ξ(y₂, x) ≤ θ`), its other edges
 inside the prefix `m + 1` are `≤ ψ(0)`, and the edges inside the prefix `m` do not see `σ[m]`. -/
 theorem anpKey6_order_step (E : List (NV p q × NV p q)) (σ : List (Fin q)) (hσ : AnpSumOrder E σ)
@@ -294,7 +290,7 @@ theorem anpKey6_order_step (E : List (NV p q × NV p q)) (σ : List (Fin q)) (h�
             ∏ i ∈ Em, anpKey6_F ξ E a b ℓ₀ i := by ring
         _ = _ := by rw [hexp, pow_succ]
 
-/-- **The sums along a nested order** (`(kwuyayw_ng)`, `7_8:1397-1402`), for a general finite label set: with
+/-- **The sums along a nested order** ((7.53) `kwuyayw_ng`), for a general finite label set: with
 `ξ ≥ 0` symmetric, `ξ ≤ ψ₀`, `Σ_β ξ_{αβ}² ≤ θ`, the sum over the internal labels of the product of the edge
 factors of `E` is at most `θ^q ψ₀^{|E| - 2q}` (an integer power). -/
 theorem anpKey6_order_gen [Nonempty ι] (E : List (NV p q × NV p q)) (σ : List (Fin q))
@@ -370,7 +366,7 @@ theorem anpKey6_order_gen [Nonempty ι] (E : List (NV p q × NV p q)) (σ : List
 
 end Order
 
-/-! ## 2. The sums along a certificate: AM-GM (`7_8:1428-1431`) -/
+/-! ## 2. The sums along a certificate: AM-GM ((7.55) `kwuyayw_ng_tree`) -/
 
 section Cert
 
@@ -425,7 +421,7 @@ theorem anpKey6_amgm (l : List ℝ) (hl : ∀ x ∈ l, 0 ≤ x) (k k' : ℕ) (hk
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι] {p q : ℕ}
 
-/-- **The sums along a certificate** (`(kwuyayw_ng_tree)`, `7_8:1414-1451`), for a general finite label set:
+/-- **The sums along a certificate** ((7.55) `kwuyayw_ng_tree`), for a general finite label set:
 induction on the depth, a nested order at the leaves, AM-GM at the nodes. -/
 theorem anpKey6_sum_gen [Nonempty ι] (n : ℕ) :
     ∀ (E : List (NV p q × NV p q)), AnpSumCert n E → ∀ (ξ : ι → ι → ℝ) (ψ0 θ : ℝ), 0 < ψ0 → 0 < θ →
@@ -467,7 +463,7 @@ theorem anpKey6_sum_gen [Nonempty ι] (n : ℕ) :
         exact Finset.sum_le_sum fun ℓ _ => pt ℓ
       linarith
 
-/-! ## 2'. The two sum pins on `Z_L^d` (`AnpKey6OrderPin`, `AnpKey6SumPin`) -/
+/-! ## 2'. The sums on `Z_L^d` -/
 
 /-- `ξ_{αβ} ≤ ψ(|α - β|) ≤ ψ(0)` for the non-increasing `ψ`. -/
 theorem anpKey6_le_psi0 {d L : ℕ} [NeZero L] (ψ : ℝ → ℝ) (hanti : AntitoneOn ψ (Set.Ici 0))
@@ -475,8 +471,8 @@ theorem anpKey6_le_psi0 {d L : ℕ} [NeZero L] (ψ : ℝ → ℝ) (hanti : Antit
     ξ α β ≤ ψ 0 :=
   (hξψ α β).trans (hanti (Set.mem_Ici.2 le_rfl) (Set.mem_Ici.2 (Nat.cast_nonneg _)) (Nat.cast_nonneg _))
 
-/-- **`anpKey6_sum`** (`AnpKey6SumPin`): the sums along a summation certificate (`(kwuyayw_ng_tree)`,
-`7_8:1414-1533`; the AM-GM split `7_8:1428-1431`). -/
+/-- **`anpKey6_sum`**: the sums along a summation certificate on `Z_L^d` ((7.55) `kwuyayw_ng_tree`, with the AM-GM
+split). -/
 theorem anpKey6_sum : ∀ (d p q n : ℕ) (E : List (NV p q × NV p q)), AnpSumCert n E →
     ∀ (L : ℕ) [NeZero L] (ψ : ℝ → ℝ) (θ : ℝ),
       AntitoneOn ψ (Set.Ici 0) → (∀ r : ℝ, 0 ≤ r → 0 < ψ r) → 0 < θ →
@@ -494,7 +490,7 @@ theorem anpKey6_sum : ∀ (d p q n : ℕ) (E : List (NV p q × NV p q)), AnpSumC
 
 end Cert
 
-/-! ## 3. The long-edge union bound (`7_8:1110`) -/
+/-! ## 3. The long-edge union bound (the base-case argument of Lemma 7.24) -/
 
 section Union
 
@@ -662,7 +658,7 @@ theorem anpKey6_w_nonneg {ι : Type*} (Γ : NGraph p q) (ξ : ι → ι → ℝ)
   · exact zero_le_one
   · exact hξ0 _ _
 
-/-- The long-edge bound at one labelling `ℓ` (`7_8:1110` on every ghost-free path, `anpKey_long_edge`): for some
+/-- The long-edge bound at one labelling `ℓ` (the long edge of every ghost-free path, `anpKey_long_edge`): for some
 choice function `f` (the chosen edge of each path), the product of the edge factors is at most the long-edge
 factors times the product over the edges outside `M_f`. -/
 theorem anpKey6_point (Γ : NGraph p q) (hN : Γ.IsNested) {d L : ℕ} [NeZero L] (ψ : ℝ → ℝ)
@@ -753,9 +749,9 @@ end UnionMain
 
 section UnionThm
 
-/-- **`anpKey6_union`** (`AnpKey6UnionPin`): the long-edge union bound (the base-case argument of `7_8:1110` on
+/-- **`anpKey6_union`**: the long-edge union bound (the base-case argument of Lemma 7.24 on
 every ghost-free path, `anpKey_long_edge`).  The family `𝓜` is the image of the choice functions (one position
-on each path), so `|𝓜| ≤ Π_j |𝔓_j|`; each `M ∈ 𝓜` reserves one solid edge on every ghost-free path (`perPath`,
+on each path), so `|𝓜| ≤ Π_j |𝔓_j|`; each `M ∈ 𝓜` reserves one solid edge on every ghost-free path (`anpKey5_perPath`,
 `|rest| + n_ngh = n_S`); every labelling is bounded by the sum over `M` of the long-edge factors times the
 product over the rest. -/
 theorem anpKey6_union : ∀ (p q : ℕ) (Γ : NGraph p q), Γ.GhostOK → Γ.IsNested →
@@ -833,11 +829,11 @@ theorem anpKey6_union : ∀ (p q : ℕ) (Γ : NGraph p q), Γ.GhostOK → Γ.IsN
 
 end UnionThm
 
-/-! ## 4. The deterministic `lem:Anp_key_gh` for every nested graph (`7_8:1041-1077`) -/
+/-! ## 4. The deterministic `lem:Anp_key_gh` for every nested graph (Lemma 7.24) -/
 
 section Det
 
-/-- **`anpDetGh_holds`** (`AnpKey6DirectPin`, T2264's interface): the deterministic `lem:Anp_key_gh`, with
+/-- **`anpDetGh_holds`**: the deterministic `lem:Anp_key_gh`, with
 `C = Π_j max 1 |𝔓_j|` and `c = 1/(1 + Σ_j |𝔓_j|)`.  One union bound over the long edges of the ghost-free paths
 (`anpKey6_union`), the certificate of the rest (`anpKey5_cert`), and the sums along it (`anpKey6_sum`); no
 induction on `q`, no region, no case. -/
@@ -884,21 +880,19 @@ theorem anpDetGh_holds : ∀ d : ℕ, AnpDetGh d := by
 
 end Det
 
-/-! ## 5. The merged step, case and `≺` pins, unconditional -/
+/-! ## 5. Lemmas 7.24, 7.23 and 7.22 for every `d` -/
 
 section Corollaries
 
-/-- **`lwAnpKeyGh_holds`** (`AnpKey6KeyGhPin`): `lem:Anp_key_gh` (`7_8:1041-1077`), unconditionally. -/
+/-- **`lwAnpKeyGh_holds`**: Lemma 7.24 (`lem:Anp_key_gh`) for every `d`, with no hypothesis. -/
 theorem lwAnpKeyGh_holds : ∀ d : ℕ, LWAnpKeyGh d := fun d => lwAnpKeyGh_of_det d (anpDetGh_holds d)
 
-/-- **`lwAnpKey_holds`** (`AnpKey6KeyPin`): `lem:Anp_key` (`7_8:960-985`), unconditionally. -/
+/-- **`lwAnpKey_holds`**: Lemma 7.23 (`lem:Anp_key`) for every `d`, with no hypothesis. -/
 theorem lwAnpKey_holds : ∀ d : ℕ, LWAnpKey d := fun d => lwAnpKey_of_gh d (lwAnpKeyGh_holds d)
 
-/-- **`lwAnp_holds`** (`AnpKey6AnpPin`): `lem:Anp` (`7_8:933-939`), unconditionally. -/
+/-- **`lwAnp_holds`**: Lemma 7.22 (`lem:Anp`) for every `d`, with no hypothesis. -/
 theorem lwAnp_holds : ∀ d : ℕ, LWAnp d := fun d => lwAnp_of_key d (lwAnpKey_holds d)
 
 end Corollaries
-
-/-! ## 6. Compiled nonempty instances at `d = 3` -/
 
 end RBM.Graph

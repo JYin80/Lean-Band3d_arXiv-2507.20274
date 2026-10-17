@@ -10,27 +10,23 @@ import RBM3D.BA.FlowPins
 import RBM3D.Gauss.BlockAnderson
 
 /-!
-# BA-L2a: the Stein layer of the block Anderson flow, `lanlw` (T2295)
+# The Stein layer of the block Anderson flow, `lanlw`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:359-372` (cited `B:line`; `lanlw`,
-`(eq:BE)`, [yang2024Del, Lemma B.9]).  The law is the block Anderson flow `H_t = g₀ Ψ + √t V` with
-`S^{(B)}(0) = I`, i.e. `PF d L W 0` (DECISIONS §57 (3)).  Design: T2161 (split P.9, row BA-L2).
+Paper: Lemma B.6 (`lanlw`), (B.18) `eq:BE` ([yang2024Del, Lemma B.9]).  The law is the block
+Anderson flow `H_t = g₀ Ψ + √t V` with `S^{(B)}(0) = I`, i.e. `PF d L W 0`.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAExpand_`)
 
-1. **Vocabulary and pin** (`BAlwH` ... `BAlanlw`), copied verbatim from
-   `docs/tickets/checks/T2295-check.lean` section 2.
+1. **Vocabulary and statement** (`BAlwH` ... `BAlanlw`).
 2. **The Stein layer of the shifted resolvent** `G = (g₀Ψ + H_u - z)⁻¹` on `Sizes.SeqΩ`: `baGm`,
    `baG`, `baG_tame1`, `dhSample_baG`, `dhSample_baG_star`, `baVar`, `baPoly`, `baPoly_tame1`,
-   `stein_baPoly`; the bridge to `PF d L W 0` through `lwWxSizes d L W 0 hL` (`baWx_baG`,
-   `baWx_baPoly`, `baWx_dh`).
+   `BAExpand_integral_defect`; the bridge to `PF d L W 0` through `lwWxSizes d L W 0 hL`
+   (`BAExpand_bridge_baPoly_eval`, `baWx_baPoly`, `BAExpand_bridge_dh_var`,
+   `BAExpand_bridge_hasDerivAt`, `baWx_dh`).
 3. **`baLanlw_holds : ∀ d, BAlanlw d`**, unconditionally (`gaussIBP` discharged), with the Stein
    defect `BAExpand_defect` and the pathwise identity `BAExpand_defect_identity`.
-4. Compiled instances (`RBM.Graph.BAExpandInst`): (I1) the vocabulary and the Stein layer at
-   `d = 3`, (I2) `baLanlw_holds` at `t = 0` and at a point with every hypothesis discharged.
 
-Not in this file (cut BA-L2a1 / BA-L2a2 of the ticket, `Over 1500 at 1b`): `lanlw` as a graph
-operation on `BAGraph` (target 3, instances (I3), (I4)).
+Not in this file: `lanlw` as a graph operation on `BAGraph`.
 -/
 
 set_option linter.style.setOption false
@@ -49,18 +45,18 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Green
 
-/-! ## 1. Vocabulary and pin (verbatim from the check file, section 2) -/
+/-! ## 1. Vocabulary and statement -/
 
 
 section LWBA
 
 variable (d L W : ℕ) [NeZero L] [NeZero W]
 
-/-- `H_t = g₀ Ψ + √t V` at a sample `ω` of `PF d L W 0` (`(MBM)`, `1_2:685`; law `S^{(B)}(0) = I`, §57 (3)). -/
+/-- `H_t = g₀ Ψ + √t V` at a sample `ω` of `PF d L W 0` ((2.36) `MBM`; law `S^{(B)}(0) = I`). -/
 def BAlwH (g0 t : ℝ) (ω : Ω d L W) : Matrix (Idx d L W) (Idx d L W) ℂ :=
   (g0 : ℂ) • PsiI d L W + Hflow d L W t ω
 
-/-- `M = (g₀ Ψ - E - m)⁻¹` on the fine lattice (`(def_G0)`, `1_2:631`). -/
+/-- `M = (g₀ Ψ - E - m)⁻¹` on the fine lattice ((2.33) `def_G0`). -/
 def BAlwM (g0 E : ℝ) (m : ℂ) : Matrix (Idx d L W) (Idx d L W) ℂ := Mres ((g0 : ℂ) • PsiI d L W) (E : ℂ) m
 
 /-- `G_{xy}` of the flow, `z_t = E + (1 - t) m`. -/
@@ -74,11 +70,11 @@ def BAlwGc (g0 E t : ℝ) (m : ℂ) (ω : Ω d L W) (x y : Idx d L W) : ℂ :=
 /-- `S_{αβ} = t W^{-d} 1([α] = [β])`: the variance of `√t V` (`S^{(B)}(0) = I`). -/
 def BAlwS (t : ℝ) (x y : Idx d L W) : ℂ := (t : ℂ) * svarF d L W 0 x y
 
-/-- `M^+_{xy} = M_{xy} M_{yx}` (`B:388`). Shared with BA-L2b/L2c. -/
+/-- `M^+_{xy} = M_{xy} M_{yx}` (Lemma B.7). Shared with the files on `lem_lweight` and `GGGamma`. -/
 def BAlwMp (g0 E : ℝ) (m : ℂ) : Matrix (Idx d L W) (Idx d L W) ℂ :=
   Matrix.of fun x y => BAlwM d L W g0 E m x y * BAlwM d L W g0 E m y x
 
-/-- `1 + M^+ S^+ = (1 - M^+ S)⁻¹` (`(eq:def-Spm)`, `7_8:110`). Shared with BA-L2b/L2c. -/
+/-- `1 + M^+ S^+ = (1 - M^+ S)⁻¹` ((7.13) `eq:def-Spm`). Shared with the files on `lem_lweight` and `GGGamma`. -/
 def BAlwW (g0 E t : ℝ) (m : ℂ) : Matrix (Idx d L W) (Idx d L W) ℂ :=
   Ring.inverse (1 - BAlwMp d L W g0 E m * Matrix.of (BAlwS d L W t))
 
@@ -98,7 +94,7 @@ section LWBAPins
 variable (d L W : ℕ) [NeZero L] [NeZero W] (g0 E t : ℝ) (m : ℂ)
   (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ)
 
-/-- Left side of `lanlw`: `Ǧ_{xy} f` (`B:359-372`, [yang2024Del, Lemma B.9]). -/
+/-- Left side of `lanlw`: `Ǧ_{xy} f` (Lemma B.6, [yang2024Del, Lemma B.9]). -/
 def BAlanlwL (x y : Idx d L W) (ω : Ω d L W) : ℂ :=
   BAlwGc d L W g0 E t m ω x y * BAlwf d L W g0 E t m P ω
 
@@ -111,9 +107,9 @@ def BAlanlwR (x y : Idx d L W) (ω : Ω d L W) : ℂ :=
 
 variable {d L W g0 E t m P}
 
-/-- **`lanlw`** (`B:359-372`, [yang2024Del, Lemma B.9]): `𝔼[BAlanlwL] = 𝔼[BAlanlwR]` for every resolvent polynomial `f`
-over the BA law `PF d L W 0`.  Needs `(self_m)` (`M_{ββ} = m`; false for an arbitrary `m`, T2161 report (b.7)).
-Registry: proved (T2295). -/
+/-- **`lanlw`** (Lemma B.6, [yang2024Del, Lemma B.9]): `𝔼[BAlanlwL] = 𝔼[BAlanlwR]` for every resolvent polynomial `f`
+over the BA law `PF d L W 0`.  Needs (2.32) `self_m` (`M_{ββ} = m`; false for an arbitrary `m`).
+Proved as `baLanlw_holds`. -/
 def BAlanlw (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (E : ℂ) m →
     0 ≤ t → t < 1 →
@@ -125,14 +121,14 @@ end LWBAPins
 
 /-! ## 2. The Stein layer of the shifted resolvent `G = (g₀ Ψ + H_u - z)⁻¹`
 
-The twins of the merged `lwGm`, `lwG`, `dhSample_lwG`, `lwG_tame1`, `lwPoly`, `lwPoly_tame1` (`Graph/LWStein.lean:469-967`),
-with `H_u` replaced by `g₀ Ψ + H_u`: the shift is a constant matrix, so every calculus step is the merged one. -/
+The counterparts of `lwGm`, `lwG`, `dhSample_lwG`, `lwG_tame1`, `lwPoly`, `lwPoly_tame1` (`Graph/LWStein.lean`),
+with `H_u` replaced by `g₀ Ψ + H_u`: the shift is a constant matrix, so every calculus step is the one of the band. -/
 
 section BAStein
 
 variable {d : ℕ} (sz : Sizes d) (n : ℕ)
 
-/-- `g₀ Ψ + H_u` at a sample of the common space: the block Anderson flow matrix at size `n` (`(MBM)`, `1_2:686`). -/
+/-- `g₀ Ψ + H_u` at a sample of the common space: the block Anderson flow matrix at size `n` ((2.36) `MBM`). -/
 def BAExpand_Hm (g0 u : ℝ) (ω : Sizes.SeqΩ sz) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   (g0 : ℂ) • PsiI d (sz.L n) (sz.W n) + sz.seqHflow n u ω
@@ -154,7 +150,7 @@ def baG (g0 : ℝ) (z : ℂ) (u : ℝ) (i j : Idx d (sz.L n) (sz.W n)) (ω : Siz
   baGm sz n g0 z u ω i j
 
 /-- The derivative of `G_{ij}` along one real coordinate: `∂_c G_{ij} = -√u (G D_c G)_{ij}`
-(the twin of `lwStein_hasDerivAt_lwG`; the shift `g₀ Ψ` is constant). -/
+(as `lwStein_hasDerivAt_lwG`; the shift `g₀ Ψ` is constant). -/
 theorem BAExpand_hasDerivAt_baG {z : ℂ} (hz : z.im ≠ 0) (g0 u : ℝ) (ω : Sizes.SeqΩ sz)
     (c : CoordF d (sz.L n) (sz.W n)) (i j : Idx d (sz.L n) (sz.W n)) :
     HasDerivAt (fun t : ℝ => baG sz n g0 z u i j (Function.update ω ⟨n, c⟩ t))
@@ -315,13 +311,13 @@ theorem baG_tame1 {z : ℂ} (hz : z.im ≠ 0) (g0 u : ℝ) (i j : Idx d (sz.L n)
 
 variable (sz n) in
 /-- **A resolvent polynomial of the block Anderson flow**: a polynomial in the entries `G_{ij}` (variable `(i, j, true)`)
-and `\bar G_{ij}` (variable `(i, j, false)`) of `G = (g₀Ψ + H_u - z)⁻¹`, evaluated at the sample (the twin of `lwVar`). -/
+and `\bar G_{ij}` (variable `(i, j, false)`) of `G = (g₀Ψ + H_u - z)⁻¹`, evaluated at the sample (as `lwVar`). -/
 def baVar (g0 : ℝ) (z : ℂ) (u : ℝ) (v : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool)
     (ω : Sizes.SeqΩ sz) : ℂ :=
   if v.2.2 then baG sz n g0 z u v.1 v.2.1 ω else star (baG sz n g0 z u v.1 v.2.1 ω)
 
 variable (sz n) in
-/-- The twin of `lwPoly`. -/
+/-- As `lwPoly`. -/
 def baPoly (g0 : ℝ) (z : ℂ) (u : ℝ)
     (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ)
     (ω : Sizes.SeqΩ sz) : ℂ :=
@@ -335,7 +331,7 @@ theorem BAExpand_baVar_tame1 {z : ℂ} (hz : z.im ≠ 0) (g0 u : ℝ)
   · simpa using (baG_tame1 (sz := sz) (n := n) hz g0 u v.1 v.2.1).conj
   · simpa using baG_tame1 (sz := sz) (n := n) hz g0 u v.1 v.2.1
 
-/-- **A resolvent polynomial of the block Anderson flow is `C¹`-tame** (the twin of `lwPoly_tame1`). -/
+/-- **A resolvent polynomial of the block Anderson flow is `C¹`-tame** (as `lwPoly_tame1`). -/
 theorem baPoly_tame1 {z : ℂ} (hz : z.im ≠ 0) (g0 u : ℝ)
     (P : MvPolynomial (Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) × Bool) ℂ) :
     Tame1 sz n (baPoly sz n g0 z u P) := by
@@ -354,8 +350,8 @@ end BATame
 
 /-! ### The bridge to the one-size law `PF d L W 0`
 
-The twins of `lwWx_lwG`, `lwWx_lwPoly_eval`, `lwWx_dh_var`, `lwWx_hasDerivAt`, `lwWx_dh` (`Graph/LWWeightExp.lean:70-271`)
-at the constant size sequence `lwWxSizes d L W 0 hL` (the coupling of the law is `0`: `S^{(B)}(0) = I`, DECISIONS §57 (3)). -/
+The counterparts of the bridge lemmas of `Graph/LWWeightExp.lean`
+at the constant size sequence `lwWxSizes d L W 0 hL` (the coupling of the law is `0`: `S^{(B)}(0) = I`). -/
 
 section BABridge
 
@@ -473,7 +469,7 @@ theorem baWx_dh {z : ℂ} (hz : z.im ≠ 0) {u : ℝ} (hu : 0 < u) (g0 : ℝ) (�
 
 end BABridge
 
-/-! ## 3. `lanlw` (`B:359-372`): the pathwise identity and the Stein identity
+/-! ## 3. `lanlw` (Lemma B.6): the pathwise identity and the Stein identity
 
 `(M1)`: `Ǧ = -M (V_t + t m) G` (`G⁻¹ - M⁻¹ = V_t + t m`, `z_t = E + (1 - t) m`); `(M2)`: Stein; `(M3)`: `Σ_β S_{αβ} = t`
 and `M_{ββ} = m`.  The identity is pathwise with the Stein defect `Z_α` of each row; `E Z_α = 0` is the Stein identity. -/
@@ -563,7 +559,7 @@ section BAIntegral
 
 variable {d : ℕ} {sz : Sizes d} {n : ℕ}
 
-/-- Closure of `Tame` under the operations of the expansion (the twin of the local macro `lw_tame`), with the
+/-- Closure of `Tame` under the operations of the expansion (as the local macro `lw_tame`), with the
 shifted resolvent entries, the entries of `H_u` and the derivatives as leaves. -/
 local macro "ba_tame" : tactic =>
   `(tactic| repeat' first
@@ -578,7 +574,7 @@ local macro "ba_tame" : tactic =>
     | apply Tame.neg
     | (apply Tame.sum; intros; skip))
 
-/-- **`E Z_α = 0`** (`lanlw`, `B:359-372`): for a resolvent polynomial `f`, `df β α = ∂_{h_{βα}} f`, the Stein defect `Z_α`
+/-- **`E Z_α = 0`** (`lanlw`, Lemma B.6): for a resolvent polynomial `f`, `df β α = ∂_{h_{βα}} f`, the Stein defect `Z_α`
 of the row `α` (`BAExpand_defect`, with `S = S^{(u)} = u · svarF`) has mean zero.  From the complex Stein identity applied to
 `G_{βy} f` and `∂_{h_{βα}} G_{βy} = -G_{ββ} G_{αy}`. -/
 theorem BAExpand_integral_defect (hG : GaussIBP sz) {z : ℂ} (hz : z.im ≠ 0) (g0 : ℝ) {u : ℝ} (hu : 0 < u)
@@ -624,7 +620,7 @@ theorem BAExpand_integral_defect (hG : GaussIBP sz) {z : ℂ} (hz : z.im ≠ 0) 
   rw [integral_sub (iA β) (iB β), integral_const_mul, stein_sample hG (hQ β) hu.le β α]
   ring
 
-/-- **`lanlw` in expectation on the sequence space** (`B:359-372`): for the shifted resolvent, a resolvent polynomial `f`,
+/-- **`lanlw` in expectation on the sequence space** (Lemma B.6): for the shifted resolvent, a resolvent polynomial `f`,
 a matrix `M` with `M_{ββ} = m` and `G - M = -M (H_u + u m) G` at every sample.  Hypotheses: `GaussIBP sz`. -/
 theorem BAExpand_integral (hG : GaussIBP sz) {z : ℂ} (hz : z.im ≠ 0) (g0 : ℝ) {u : ℝ} (hu : 0 < u)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (m : ℂ) (hMd : ∀ β, M β β = m)
@@ -720,8 +716,8 @@ theorem BAExpand_Gc_zero {d L W : ℕ} [NeZero L] [NeZero W] (g0 E : ℝ) (m : �
   unfold BAlwGc
   rw [hG, sub_self]
 
-/-- **`lanlw`** (`B:359-372`, [yang2024Del, Lemma B.9]) on the block Anderson law `PF d L W 0`, for every `d`: the pin
-`BAlanlw`.  For `0 < t < 1`: `BAExpand_integral` (hypothesis `gaussIBP`, proved) through the bridge, with `M_{ββ} = m`
+/-- **`lanlw`** (Lemma B.6, [yang2024Del, Lemma B.9]) on the block Anderson law `PF d L W 0`, for every `d`: `BAlanlw`.
+For `0 < t < 1`: `BAExpand_integral` (hypothesis `gaussIBP`, proved) through the bridge, with `M_{ββ} = m`
 (`BASelf`); for `t = 0` both sides vanish.  No condition on `g₀`, `E`. -/
 theorem baLanlw_holds (d : ℕ) : BAlanlw d := by
   intro L W _ _ hL g0 E t m hSelf ht0 ht1 P x y
@@ -762,8 +758,6 @@ theorem baLanlw_holds (d : ℕ) : BAlanlw d := by
       rfl
 
 end BAPin
-
-/-! ## 4. Compiled instances of the pin and of the Stein layer (namespace `RBM.Graph.BAExpandInst`) -/
 
 end RBM.Graph
 

@@ -9,10 +9,10 @@ import RBM3D.Graph.BAExp14bB
 import RBM3D.BA.GreenStab
 
 /-!
-# BA-L L4d2b (T2450), part C: the fold leaf class, the 14 reductions, the closure, the packed form
+# The fold leaf class and the 14 reductions (part C)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-121`; design
-`docs/claude-team/fable/2026-10-12-s3-fold-A.md` §1, §3, §4, §5.  Parts A and B are
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`), the graphical part from (B.5)
+`eq;I42inG` to (B.9) `eq:GGraisesord` and the closing remark.  Parts A and B are
 `Graph/BAS3Close.lean` and `Graph/BAS3CloseB.lean`.
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAS3Close_`)
@@ -22,10 +22,9 @@ Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-121`; design
 3. The chains `S M⁺ S⁺`, `S⁺ M⁺ S`, `S M⁺ S`, `S Ǧ Ǧ S`, `S⁺ M⁺ S M⁺ S⁺` and their block forms.
 4. The shape lemmas: the value of each of the 14 catalogue graphs as a sum over the four core
    vertices.
-5. `BAFoldLeaf`, `baFoldLeaf_congr`, the kernels of the weight `ρ` and their uniform `ℓ¹` bounds.
-6. The 14 reductions and `baS3Fold_holds`, `BAS3Xprec`, `baS3Xprec_holds`, `BAS3Close`,
-   `baS3Close_holds`, `BAS3Expand'`, `baS3Expand'_holds`.
-7. The compiled nonempty instances (namespace `BAS3CloseInst`).
+5. `BAFoldLeaf` and the kernels of the weight `ρ` with their uniform `ℓ¹` bounds.
+6. The 14 reductions of the catalogue graphs to the fold leaf class, and `BAS3Xprec`,
+   `baS3Xprec_holds`.
 -/
 
 set_option linter.style.longLine false
@@ -961,7 +960,8 @@ private theorem BAS3Close_hN_1 : ∀ (d : ℕ) (sz : Sizes d) (z : ℕ → ℂ) 
   simpa [BAS3Close_k1] using this
 
 
-/-- **Target 2.** -/
+/-- **The fold leaf class**: at the BA flow data the `[a] × [b]` average of the value of `q` is `twLoop2X(Ǧ, Ǧ, ǦE_bǦ(σ), ρ X^e)` for a weight `ρ`
+with uniform `ℓ¹` row and column bounds. -/
 def BAFoldLeaf (q : BAPGraph (Fin 2)) : Prop :=
   ∃ (σ e : Bool) (ρ : ∀ (d : ℕ) (sz : Sizes d), (ℕ → ℂ) → ∀ n : ℕ, ℝ → Zd d (sz.L n) → Zd d (sz.L n) →
       Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → Zd d (sz.L n) → ℂ),
@@ -1289,7 +1289,7 @@ private theorem BAS3Close_Xbound {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {n :
         ring
 
 
-/-- **Target 3′.** -/
+/-- **The bound `X ≺ W^d B`**: the variable `W^{-d} Σ_{u ∈ [c₂], v ∈ [c₄]} Ǧ_{uv} Ǧ_{vu}` is `≺ W^d B_{ctl}` under `STLocalEntrygL` and `STLmaxgL`. -/
 def BAS3Xprec (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
@@ -1347,10 +1347,6 @@ theorem baS3Xprec_holds : ∀ d : ℕ, BAS3Xprec d := by
 
 
 end Data
-
-/-! ## 6. Targets 3, 4, 5 -/
-
-/-! ## 7. Compiled nonempty instances (target 6) -/
 
 end RBM.Graph
 

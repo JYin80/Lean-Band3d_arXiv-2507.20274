@@ -11,33 +11,24 @@ import RBM3D.Induction.PerTimeCalc
 import RBM3D.Induction.DecayLoopB
 
 /-!
-# LW-11b: `claim:xi`, the edge variables `ξ` of `(eq:xia1a2)` and the bridge `(eq:Gbyxi)` (T2185)
+# The edge variables `ξ` of (7.33) `eq:xia1a2` and the bridge (7.32) `eq:Gbyxi`
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): `(yixi)`,
-`(eq:Gbyxi)`, `(eq:xia1a2)`, `claim:xi` (`7_8:873-890`, no proof in the paper, D101), the use in
-`GtoAG` (`7_8:914-921`) and `(eq:Gbyxi3)` (`7_8:960-966`); `lem_GbEXP` (`3_5:14-40`).  The
-deterministic half of `GtoAG` is LW-11a (`RBM3D/Graph/AuxGraph.lean`, T2170); this file is the
-random layer.
+Paper: (7.31) `yixi`, (7.32) `eq:Gbyxi`, (7.33) `eq:xia1a2`, the claim stating (7.34) `eq:Gbyxi2`
+(the paper indicates its proof by Ward's identity and the properties (3.28) `eq:Psi` of `Ψ_t`),
+the use of `ξ` in the proof of Lemma 7.21 (`GtoAG`) and in (7.38) `eq:Gbyxi3`; Lemma 3.1
+(`lem_GbEXP`).  The deterministic half of `GtoAG` is in `RBM3D/Graph/AuxGraph.lean`; this file is
+the random layer.
 
-* Section 1: the vocabulary `lwXiSq`, `lwXiVar` (`(eq:xia1a2)` squared, and its square root).
-* Section 2: the deterministic facts `lwXiVar_nonneg`, `lwXiVar_symm`, `lwXiSq_ge_W`,
-  `lwXi_gexRHS_le` (the inclusion of `(eq:Gbyxi)`), and the Ward part of `claim:xi`
-  (`lwXi_ward_sum`, with the private Ward lemmas for both charges).
+* Section 1: the vocabulary `lwXiSq`, `lwXiVar` ((7.33) squared, and its square root).
+* Section 2: the deterministic facts `lwXiVar_nonneg`, `lwXiVar_symm`, `lwXi_gexRHS_le` (the
+  inclusion in (7.32)), and the Ward part of the claim (`lwXi_ward_sum`, with the private Ward
+  lemmas for both charges).
 * Section 3: the `≺` helpers (bad-set implications, the event `Ω(t, ε₁/2)`, indicator removal) and
   the deterministic comparisons `Φ(m) ≤ K(ρ) Φ(ℓ)`, `ξ² ≲ Φ(ℓ)²`.
-* Section 4: `claim:xi` (`LWXiClaim`, `lwXiClaim_holds`).
-* Section 5: `(eq:Gbyxi)` off the diagonal (`LWGbyXi`, `lwGbyXi_holds`, `lwGbyXi_hxi`) and
-  entrywise (`LWEntryPsi`, `lwEntryPsi_holds`).
+* Section 4: the claim (7.34) (`LWXiClaim`, `lwXiClaim_holds`).
+* Section 5: (7.32) off the diagonal (`LWGbyXi`, `lwGbyXi_holds`, `lwGbyXi_hxi`) and entrywise
+  (`LWEntryPsi`, `lwEntryPsi_holds`).
 * Section 6: the radii (`LWXiRad`, `lwXiRad_holds`).
-* Section 7: compiled nonempty instances at the merged `d = 3` data.
-
-Ports (RBM1D and RBM2D have no light-weight graph layer; every port is from a merged RBM3D file
-where the declaration is `private`): the lattice helpers `auxGraph2_zdistInf_*` from
-`RBM3D/Path/LemDecCalE.lean:109-142`; `auxGraph2_trace_pm_formula` from
-`RBM3D/Green/Pins.lean:377-400`; `auxGraph2_gres_blockMat_true` from
-`RBM3D/Green/Pins.lean:350-364`;
-`auxGraph2_Gres_true`, `auxGraph2_Gres_false`, `auxGraph2_Gres_conjTranspose` from
-`RBM3D/Induction/ConArgDet.lean:141-163`.
 -/
 
 set_option linter.style.setOption false
@@ -58,12 +49,12 @@ namespace RBM.Graph
 open RBM RBM.Gauss RBM.Gauss.Sizes Filter
 open scoped Matrix
 
-/-! ## 1. The vocabulary of `(eq:xia1a2)` (target 1) -/
+/-! ## 1. The vocabulary of (7.33) `eq:xia1a2` -/
 
-/-- **`[ξ([a₁],[a₂])]²` of `(eq:xia1a2)`** (`7_8:882`) at the block radius `ρ n` (the paper: `(log W)^{1+2ε₁}`):
+/-- **`[ξ([a₁],[a₂])]²` of (7.33) `eq:xia1a2`** at the block radius `ρ n` (the paper: `(log W)^{1+2ε₁}`):
 the `(+,-)` and `(-,+)` two-loops `𝓛^{(2)}_{t,σ,(b₁,b₂)}` over the `‖·‖_∞`-ball pairs `|b₁ - a₁|, |b₂ - a₂| ≤ ρ`
 (summed over the two charges; the paper takes the maximum, at most a factor 2), plus `W^{-d} 1(|a₁ - a₂| ≤ ρ)`.  The
-charge set and the summand are those of the merged `STgexRHS` (the right side of `(GijGEX)`). -/
+charge set and the summand are those of `STgexRHS` (the right side of (3.3) `GijGEX`). -/
 def lwXiSq {d : ℕ} (sz : Sizes d) (E t ρ : ℕ → ℝ) (n : ℕ) (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) : ℝ :=
   (∑ b₁ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a₁) : ℝ) ≤ ρ n),
     ∑ b₂ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a₂) : ℝ) ≤ ρ n),
@@ -71,12 +62,12 @@ def lwXiSq {d : ℕ} (sz : Sizes d) (E t ρ : ℕ → ℝ) (n : ℕ) (a₁ a₂ 
         ‖Lloop sz n (E n) (t n) σ ![b₁, b₂] ω‖) +
     (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * (if (zdistInf d (sz.L n) (a₁ - a₂) : ℝ) ≤ ρ n then 1 else 0)
 
-/-- **The edge variables `ξ([a₁],[a₂])`** of `(eq:xia1a2)`: the square root of `lwXiSq`; the shape of the `ξ` of the merged
+/-- **The edge variables `ξ([a₁],[a₂])`** of (7.33) `eq:xia1a2`: the square root of `lwXiSq`; the shape of the `ξ` of
 `LWXi`, `LWAnp`. -/
 def lwXiVar {d : ℕ} (sz : Sizes d) (E t ρ : ℕ → ℝ) (n : ℕ) (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) : ℝ :=
   Real.sqrt (lwXiSq sz E t ρ n a₁ a₂ ω)
 
-/-! ## 2. Deterministic facts (target 2) -/
+/-! ## 2. Deterministic facts -/
 
 section Lattice
 
@@ -167,8 +158,8 @@ theorem lwXiVar_symm (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
     ring
   · rw [auxGraph2_zdistInf_sub_comm]
 
-/-- **The inclusion of `(eq:Gbyxi)`** (`7_8:878-880`): for `0 ≤ R`, `2R + 1 ≤ ρ`, and blocks `a`, `b` at
-`zdistD`-distance `≤ R` from `[x]`, `[y]`, the right side `STgexRHS` of `(GijGEX)` at `([x], [y])` is at most
+/-- **The inclusion in (7.32) `eq:Gbyxi`**: for `0 ≤ R`, `2R + 1 ≤ ρ`, and blocks `a`, `b` at
+`zdistD`-distance `≤ R` from `[x]`, `[y]`, the right side `STgexRHS` of (3.3) `GijGEX` at `([x], [y])` is at most
 `ξ(a, b)²`: `|a' - a| ≤ 1 + R ≤ ρ`, `|b' - b| ≤ ρ`, and `|a - b| ≤ 2R + 1 ≤ ρ` when `|[x] - [y]| ≤ 1`. -/
 theorem lwXi_gexRHS_le {R : ℝ} (hR : 0 ≤ R) (hρ : 2 * R + 1 ≤ ρ n)
     (x y : Idx d (sz.L n) (sz.W n)) (a b : Zd d (sz.L n)) (ω : sz.SeqΩ)
@@ -242,7 +233,7 @@ theorem lwXi_gexRHS_le {R : ℝ} (hR : 0 ≤ R) (hρ : 2 * R + 1 ≤ ρ n)
 
 end Basic
 
-/-! ### The Ward part of `claim:xi` -/
+/-! ### The Ward part of the claim (7.34) -/
 
 section Ward
 
@@ -481,9 +472,9 @@ section Basic2
 
 variable {d : ℕ} (sz : Sizes d) (E t ρ : ℕ → ℝ) (n : ℕ)
 
-/-- **The Ward part of `claim:xi`** (`7_8:884-890`): for `|E| < 2`, `t < 1`, `0 ≤ ρ`, and `A` a bound of
+/-- **The Ward part of the claim (7.34) `eq:Gbyxi2`**: for `|E| < 2`, `t < 1`, `0 ≤ ρ`, and `A` a bound of
 `‖(G_t - M)_{xy}‖` over all `x, y`,
-`Σ_{a₂} ξ([a₁],[a₂])² ≤ 2 (2ρ+1)^{2d} (W^d η)⁻¹ (1 + A) + (2ρ+1)^d W^{-d}` (`η = η_t`).  Route: two ball counts
+`Σ_{a₂} ξ([a₁],[a₂])² ≤ 2 (2ρ+1)^{2d} (W^d η)⁻¹ (1 + A) + (2ρ+1)^d W^{-d}` (`η = η_t`).  Proof: two ball counts
 (`DecayLoopB_card_ball`), Ward's identity for `𝓛^{(2)}_{(s,!s)} ≥ 0` (`W^{-2d} Σ |G_{vw}|²`), `|𝓛^{(1)}| ≤ 1 + A`. -/
 theorem lwXi_ward_sum (hE : |E n| < 2) (ht1 : t n < 1) (hρ : 0 ≤ ρ n) (ω : sz.SeqΩ) {A : ℝ}
     (hA : ∀ x y : Idx d (sz.L n) (sz.W n), ‖STGM sz n (E n) (t n) ω x y‖ ≤ A) (a₁ : Zd d (sz.L n)) :
@@ -632,7 +623,7 @@ section SizesHelpers
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `‖G_t - M‖_max ≤ W^{-ε₁/2}` holds w.h.p. under the entry law `‖G_t - M‖_max ≺ W^{-ε₁}`
-(`N^{τ} W^{-ε₁} ≤ W^{-ε₁/2}` at `τ = 𝔠 ε₁/2`, `W ≥ N^𝔠`; the event `Ω(t, ε₁/2)` of `lem_GbEXP`). -/
+(`N^{τ} W^{-ε₁} ≤ W^{-ε₁/2}` at `τ = 𝔠 ε₁/2`, `W ≥ N^𝔠`; the event `Ω(t, ε₁/2)` of Lemma 3.1 `lem_GbEXP`). -/
 private theorem auxGraph2_whp_entry (E t : ℕ → ℝ) {𝔠 ε₁ : ℝ} (h𝔠 : 0 < 𝔠) (hε₁ : 0 < ε₁)
     (hband : sz.Bandwidth 𝔠)
     (hent : Prec sz (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
@@ -680,7 +671,7 @@ private theorem auxGraph2_remove_indicator (E t A : ℕ → ℝ) (hsize : sz.Siz
     rw [e]
     exact h
 
-/-- The flow facts used by the three probabilistic targets: `|E_n| < 2`, `t_n < 1`, admissibility. -/
+/-- The flow facts used by the three probabilistic statements: `|E_n| < 2`, `t_n < 1`, admissibility. -/
 private theorem auxGraph2_flow_facts {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε)
     (h : STFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (h1 : ∀ n, t n ≤ lemT (z n)) :
     (∀ n, |STflowE z n| < 2) ∧ (∀ n, t n < 1) ∧ sz.Admissible 𝔠 𝔡 := by
@@ -700,7 +691,7 @@ private theorem auxGraph2_etaT_le_one {E t : ℝ} (hE : |E| < 2) (h0 : 0 ≤ t) 
   unfold etaT
   nlinarith
 
-/-- **`Φ(m) ≤ K(ρ) Φ(ℓ)` when `ℓ ≤ 2ρ + m`** (target 3 (c), `(eq:Psi)`): the split at `max(4ρ, 2)`. -/
+/-- **`Φ(m) ≤ K(ρ) Φ(ℓ)` when `ℓ ≤ 2ρ + m`** ((3.28) `eq:Psi`): the split at `max(4ρ, 2)`. -/
 private theorem auxGraph2_phi_cmp {Φ : ℝ → ℝ} {C₁ C₂ Cc2 ρ : ℝ} (hρ : 0 ≤ ρ)
     (hanti : AntitoneOn Φ (Set.Ici 0)) (hpos : ∀ r, 0 ≤ r → 0 < Φ r) (hC₁ : 1 < C₁) (hC₂ : 1 < C₂)
     (hCc : 0 < Cc2) (h1 : ∀ ℓ, 0 ≤ ℓ → ℓ ≤ 2 → Φ 0 ≤ Cc2 * Φ ℓ)
@@ -803,7 +794,7 @@ private theorem auxGraph2_card_ball {d L : ℕ} [NeZero L] (c : Zd d L) {ρ : �
     rw [auxGraph2_zdistInf_sub_comm]
   rw [e]; exact this
 
-/-- **`ξ([a₁],[a₂])² ≲ Φ(|a₁ - a₂|)²` from `(LW_assm)` and `(eq:Psi)`** (target 3 (c), deterministic part):
+/-- **`ξ([a₁],[a₂])² ≲ Φ(|a₁ - a₂|)²` from (3.27) `eq:LW_assm` and (3.28) `eq:Psi`** (deterministic part):
 if every `‖𝓛^{(2)}_{(s,!s),(b₁,b₂)}‖ ≤ B Φ(|b₁ - b₂|)²`, `Φ(m) ≤ K Φ(ℓ)` for `ℓ ≤ 2ρ + m` and
 `W^{-d} ≤ C₃² Φ(0)²`, then `ξ² ≤ (2 (2ρ+1)^{2d} B + C₃²) K² Φ(|a₁ - a₂|)²`. -/
 private theorem auxGraph2_xiSq_le {d : ℕ} (sz : Sizes d) (E t ρ : ℕ → ℝ) (n : ℕ) (ω : sz.SeqΩ)
@@ -906,7 +897,7 @@ private theorem auxGraph2_pow_small {d : ℕ} (sz : Sizes d) (n : ℕ) {𝔠 ε�
 private theorem auxGraph2_rpow_nat (X : ℝ) (hX : 0 ≤ X) (x : ℝ) (k : ℕ) : (X ^ x) ^ k = X ^ (x * k) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hX]
 
-/-- The arithmetic of target 3 (c), in powers of `u = N^{τ/8}`. -/
+/-- The arithmetic of the comparison `ξ² ≲ Φ²`, in powers of `u = N^{τ/8}`. -/
 private theorem auxGraph2_num {u A₁ K2 S : ℝ} (hu : 1 ≤ u) (hA : 2 * A₁ ≤ u ^ 2) (hC : S ≤ u ^ 4)
     (hK : K2 ≤ u ^ 2) (h2 : 2 ≤ u ^ 8) (hA0 : 0 ≤ A₁) (hS0 : 0 ≤ S) (hK0 : 0 ≤ K2) :
     (2 * A₁ * u ^ 4 + S) * K2 ≤ (u ^ 8) ^ 2 := by
@@ -924,10 +915,10 @@ private theorem auxGraph2_num {u A₁ K2 S : ℝ} (hu : 1 ≤ u) (hA : 2 * A₁ 
     nlinarith
   linarith
 
-/-! ## 4. `claim:xi` (target 3) -/
+/-! ## 4. The claim (7.34) `eq:Gbyxi2` -/
 
-/-- **Target 3, `claim:xi`** (`7_8:884-890`, `(eq:Gbyxi2)`): under `(LW_assm)` for a class `Φ` with `(eq:Psi)`, and
-`‖G_t - M‖_max ≺ W^{-ε₁}`, the variables `lwXiVar` at a radius `ρ = N^{o(1)}` satisfy the merged `LWXi`: symmetric,
+/-- **The claim (7.34) `eq:Gbyxi2`**: under (3.27) `eq:LW_assm` for a class `Φ` with (3.28) `eq:Psi`, and
+`‖G_t - M‖_max ≺ W^{-ε₁}`, the variables `lwXiVar` at a radius `ρ = N^{o(1)}` satisfy `LWXi`: symmetric,
 non-negative, `ξ([a₁],[a₂]) ≺ Ψ_t(|a₁ - a₂|)` and `Σ_{a₂} ξ([a₁],[a₂])² ≺ (W^d η_t)⁻¹` (Ward's identity). -/
 def LWXiClaim (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -1079,10 +1070,10 @@ theorem lwXiClaim_holds (d : ℕ) : LWXiClaim d := by
     linarith
 
 
-/-! ## 5. `(eq:Gbyxi)` off the diagonal and entrywise (targets 4 and 5) -/
+/-! ## 5. (7.32) `eq:Gbyxi` off the diagonal and entrywise -/
 
-/-- **Target 4, `(eq:Gbyxi)` off the diagonal** (`7_8:878-880`, from `(GijGEX)`): uniformly in `x ≠ y` and in the blocks
-`a`, `b` at `zdistD`-distance `≤ R` from `[x]`, `[y]` (the premise `hξ` of the merged `LWGtoAG`), `|G_{xy}| ≺ ξ(a, b)`
+/-- **(7.32) `eq:Gbyxi` off the diagonal** (from (3.3) `GijGEX`): uniformly in `x ≠ y` and in the blocks
+`a`, `b` at `zdistD`-distance `≤ R` from `[x]`, `[y]` (the premise `hξ` of `LWGtoAG`), `|G_{xy}| ≺ ξ(a, b)`
 whenever `2R + 1 ≤ ρ`. -/
 def LWGbyXi (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -1134,7 +1125,7 @@ theorem lwGbyXi_holds (d : ℕ) : LWGbyXi d := by
     _ = _ := e1.symm
     _ < _ := hsq
 
-/-- **`hξ` of the merged `LWGtoAG` from `(eq:Gbyxi)`** (the type match with LW-11a): for `c ≥ 0` and a sample `ω` with
+/-- **`hξ` of `LWGtoAG` from (7.32) `eq:Gbyxi`**: for `c ≥ 0` and a sample `ω` with
 `‖G_{xy}‖ ≤ c ξ(a, b)` on the `R`-balls, the edge variables `ξ = c · lwXiVar` are non-negative and satisfy the
 premise `hξ` of `lwGtoAG_holds` verbatim for the sample data `D = lwSampleData sz n (zt E t) t M S Sp ω`
 (`D.G = Gt` by `rfl`). -/
@@ -1153,8 +1144,8 @@ theorem lwGbyXi_hxi {d : ℕ} (sz : Sizes d) (E t ρ R : ℕ → ℝ) (n : ℕ)
         (fun a b : Zd d (sz.L n) => c * lwXiVar sz E t ρ n a b ω) a b) :=
   ⟨fun a b => mul_nonneg hc (lwXiVar_nonneg sz E t ρ n a b ω), fun x y a b hxy hx hy => h x y a b hxy hx hy⟩
 
-/-- **Target 5, `(eq:Gbyxi)` entrywise: `|(G - M)_{xy}| ≺ Ψ_t(0)`** (`7_8:880`, the `Ψ_t(0) δ_{xy}` term, from `(GiiGEX)`
-and `(LW_assm)`): the premises `|G_{xy}| ≤ Ψ`, `|G_{xx} - m| ≤ Ψ` of the merged `LWGtoAG` at `Ψ = Φ n 0`. -/
+/-- **(7.32) `eq:Gbyxi` entrywise: `|(G - M)_{xy}| ≺ Ψ_t(0)`** (the `Ψ_t(0) δ_{xy}` term, from (3.2) `GiiGEX`
+and (3.27) `eq:LW_assm`): the premises `|G_{xy}| ≤ Ψ`, `|G_{xx} - m| ≤ Ψ` of `LWGtoAG` at `Ψ = Φ n 0`. -/
 def LWEntryPsi (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1211,9 +1202,9 @@ theorem lwEntryPsi_holds (d : ℕ) : LWEntryPsi d := by
       _ = (X ^ τ * Φ n 0) ^ 2 := by ring
   linarith
 
-/-! ## 6. The radii (target 6) -/
+/-! ## 6. The radii -/
 
-/-- **Target 6, polylogarithmic radii are `N^{o(1)}`**: the radius premise of target 3 for `ρ = C (log W)^K + C'`. -/
+/-- **Polylogarithmic radii are `N^{o(1)}`**: the radius premise of the claim for `ρ = C (log W)^K + C'`. -/
 def LWXiRad : Prop :=
   ∀ {d : ℕ} (sz : Sizes d), sz.SizeTendsto → ∀ C C' K : ℝ, 0 ≤ C → 0 ≤ C' → 0 ≤ K →
     ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop,
@@ -1265,12 +1256,5 @@ theorem lwXiRad_holds : LWXiRad := by
   have := mul_le_mul_of_nonneg_left (e1.trans e2) hC
   linarith
 
-
-/-! ## 7. Compiled nonempty instances at the merged `d = 3` data
-
-`d = 3`, `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`), `z0`, `flow_z0`, `tInst ≡ 1/16`, the class `Φ0 ≡ W⁻¹` with
-`psiAll0` (`C₁ = C₂ = 2`, `C₃ = 1`, `Cc ≡ 1`, `ε₀ = 1/20`), `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `ε₁ = 1/20`,
-`R0 n = (log W_n)^{3/2}`, `ρ0 n = 2 (log W_n)^{3/2} + 1`.  What stays a hypothesis of an instance is another gate's
-stochastic input: `LWLoop2 sz0 (STflowE z0) tInst Φ0` and the entry law `‖G_t - M‖_max ≺ W^{-ε₁}`. -/
 
 end RBM.Graph

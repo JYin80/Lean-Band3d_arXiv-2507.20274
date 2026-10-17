@@ -11,49 +11,35 @@ import RBM3D.BA.Prop5Short
 import RBM3D.BA.KBase
 
 /-!
-# BA-L3c2 (T2412), part 1: the kernel edges and the molecular forest with atoms
+# The kernel edges and the molecular forest with atoms (part 1)
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (`7_8:line`) and
-`paper/tex/B_graphical_lemmas.tex` (`B:line`): `claim:size` (`7_8:264-266`), `(eq:estSpm-W)`
-(`7_8:260`), the size and order of a BA graph `(eq_defsize_BA)`, `(eq:ordG_BA)` (`B:345-353`),
-the atoms
-of `def_atom` (`B:302-304`).  The paper gives no proof of `claim:size` in either model (delta
-T2040m);
-this pair of files proves it for the block Anderson model, in a deterministic form, with
-`M`-dotted edges
-and atoms.  Part 2 is `Graph/BASizeClaim2` (it imports this file).
+Paper: the claim `Γ ≺ size(Γ)` of Subsection 7.1, after (7.18) `eq:estSpm-W`; the size and order
+of a BA graph, (B.16) `eq_defsize_BA` and (B.17) `eq:ordG_BA` (Definition B.5 `def scalingBA`);
+the atoms of Definition B.3 `def_atom`.  This pair of files proves the claim for the block
+Anderson model, in a deterministic form, with `M`-dotted edges and atoms.  Part 2 is
+`Graph/BASizeClaim2` (it imports this file).
 
-Reuse and copies (no port from RBM1D/RBM2D, nothing to port): `lwLift`, `lwLift_mul`, `lwSmat_eq`,
-`lwBdist`, `lwKBound_of_decay`, `lwForest_sum_le`, `LWKBound` of `Graph/LWSizeClaim`; the BA
-vocabulary
-of `Graph/BAVocab`; `baW_mul` of `Graph/BAExpandW`; `BAMB_row_l1`, `BAMres_fine_apply` of
-`BA/GreenSchur`, `BA/FlowPins`; `baProp5s_of_real` of `BA/Prop5Short`; `BATheta_isUnit` of
-`BA/KBase`.
-Private copies of private lemmas of those files are prefixed `BASizeClaim_`
-(`lwLift_add/sub/smul/zero`,
+Used from other files: `lwLift`, `lwLift_mul`, `lwSmat_eq`, `lwBdist`, `lwKBound_of_decay`,
+`lwForest_sum_le`, `LWKBound` of `Graph/LWSizeClaim`; the BA vocabulary of `Graph/BAVocab`;
+`baW_mul` of `Graph/BAExpandW`; `BAMB_row_l1`, `BAMres_fine_apply` of `BA/GreenSchur`,
+`BA/FlowPins`; `baProp5s_of_real` of `BA/Prop5Short`; `BATheta_isUnit` of `BA/KBase`.  Private
+copies of private lemmas of those files are prefixed `BASizeClaim_` (`lwLift_add/sub/smul/zero`,
 the computation of `lwSpOf_eq`, `KStep_theta_shift`, `BAExpandW_fibre_sum`).
 
 ## Contents (namespace `RBM.Graph`, private prefix `BASizeClaim_`)
 
-1. **T1, the kernel edges.**  `baSp_eq`: `S⁺ = S W = t · lift(Θ^{(+,+)})` with `W = (1 - M⁺S)⁻¹`
-   (`BAlwW`), the BA form of `lwSpOf_eq`.  `baSpDecay`: the BA `(eq:estSpm-W)`,
+1. **The kernel edges.**  `baSp_eq`: `S⁺ = S W = t · lift(Θ^{(+,+)})` with `W = (1 - M⁺S)⁻¹`
+   (`BAlwW`), the BA form of `lwSpOf_eq`.  `baSpDecay`: the BA form of (7.18) `eq:estSpm-W`,
    `|S_{xy}|, |S⁺_{xy}| ≤ C W^{-d} e^{-c d_B(x,y)}` with `(C, c)` depending on `(d, Λ, κ)` only,
-   for every
-   `0 < g₀ ≤ Λ`: the uniform Combes-Thomas decay of `baProp5s_of_real`, no smallness of `g₀`.
-   `baKBound_E`: the `LWKBound` constants of `S`, `S⁺`, `M`, `g₀ Ψ`.
-2. **T2, the forest.**  The edge index `BAGraph.Jx = waved ⊕ mdot ⊕ psi` and its ends
-   `BAGraph.edgeEnds`; `BAGraph.exists_forest`: one root per internal molecule, `|C| + n_M =
-   |I|`, the
-   waved tree edges number `n_A - n_M` (one *gate* waved edge per non-target atom, spanning trees
-   of the
-   dotted edges inside the atoms, ranks `ρ = rk₀ · (S + 1) + rk₁` lexicographic in the waved
-   distance and
-   the dotted depth); `BAGraph.counters_le`; `BASizeClaim_forest_sum_le`: the peeling bound with
-   per-edge
-   `(a_j, K_j)`, from the public `lwForest_sum_le` (`K'_c = 1`, `f'_c = f_{e(c)} / K_{e(c)}`).
-3. Compiled instances at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`.
-
-Paper-delta candidates are proposed in the report (`T2412a`, `T2412b`, `T2412c`).
+   for every `0 < g₀ ≤ Λ`: the uniform Combes-Thomas decay of `baProp5s_of_real`, no smallness of
+   `g₀`.  `baKBound_E`: the `LWKBound` constants of `S`, `S⁺`, `M`, `g₀ Ψ`.
+2. **The forest.**  The edge index `BAGraph.Jx = waved ⊕ mdot ⊕ psi` and its ends
+   `BAGraph.edgeEnds`; `BAGraph.exists_forest`: one root per internal molecule, `|C| + n_M = |I|`,
+   the waved tree edges number `n_A - n_M` (one *entry* waved edge per non-target atom, spanning
+   trees of the dotted edges inside the atoms, ranks `ρ = rk₀ · (S + 1) + rk₁` lexicographic in
+   the waved distance and the dotted depth); `BAGraph.counters_le`; `BASizeClaim_forest_sum_le`:
+   the peeling bound with per-edge `(a_j, K_j)`, from the public `lwForest_sum_le`
+   (`K'_c = 1`, `f'_c = f_{e(c)} / K_{e(c)}`).
 -/
 
 set_option linter.style.setOption false
@@ -156,8 +142,8 @@ private theorem BASizeClaim_MpS_eq (g0 E : ℝ) (m : ℂ) (hw : ((E : ℂ) + m).
   simp only [mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   ring
 
-/-- `(1 - t lift(Q)) (1 + lift(Θ - 1)) = 1` when `(1 - t Q) Θ = 1` (the computation of `lwSpOf_eq`,
-`LWSizeClaim.lean:165`). -/
+/-- `(1 - t lift(Q)) (1 + lift(Θ - 1)) = 1` when `(1 - t Q) Θ = 1` (the computation of `lwSpOf_eq`
+in `Graph/LWSizeClaim.lean`). -/
 private theorem BASizeClaim_lift_inv (t : ℝ) (Q Θ : Matrix (Zd d L) (Zd d L) ℂ)
     (h : (1 - (t : ℂ) • Q) * Θ = 1) :
     (1 - (t : ℂ) • lwLift d L W Q) * (1 + lwLift d L W (Θ - 1)) = 1 := by
@@ -175,8 +161,8 @@ private theorem BASizeClaim_lift_inv (t : ℝ) (Q Θ : Matrix (Zd d L) (Zd d L) 
     abel
   rw [this, hX, BASizeClaim_lift_zero, add_zero]
 
-/-- **T1 `baSp_eq`**: `S⁺ = S W = t · lift(Θ^{(+,+)})`, `W = (1 - M^+ S)⁻¹` (`BAlwW`, `baW_mul`),
-`lift = lwLift`: the BA form of `lwSpOf_eq` (`LWSizeClaim.lean:165`). -/
+/-- **`baSp_eq`**: `S⁺ = S W = t · lift(Θ^{(+,+)})`, `W = (1 - M^+ S)⁻¹` (`BAlwW`, `baW_mul`),
+`lift = lwLift`: the BA form of `lwSpOf_eq` (`Graph/LWSizeClaim.lean`). -/
 theorem baSp_eq (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g0 κ E t : ℝ) (m : ℂ)
     (hr : RBM.BA.BAReal d L g0 κ E m) (ht0 : 0 ≤ t) (ht1 : t < 1) :
     Matrix.of (BAlwS d L W t) * BAlwW d L W g0 E t m =
@@ -214,7 +200,7 @@ private theorem BASizeClaim_Msigma_shift (g : ℝ) (z m : ℂ) (σ : Bool) (x y 
   · exact RBM.BA.BAMB_shift d L g z m x y c
 
 /-- Translation invariance of `Θ`: `Θ_t^{(s,s')}(x, y) = Θ_t^{(s,s')}(0, y - x)` (a copy of the private
-`KStep_theta_shift`, `BA/KStep.lean:270`). -/
+`KStep_theta_shift`, `BA/KStep.lean`). -/
 private theorem BASizeClaim_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
     RBM.BA.BATheta d L g E m t s s' x y = RBM.BA.BATheta d L g E m t s s' 0 (y - x) := by
   set Q := RBM.BA.BAMss d L (RBM.BA.BAMB d L g (E : ℂ) m) s s' with hQ
@@ -273,7 +259,7 @@ end Kernel
 
 section Decay
 
-/-- **T1 `baSpDecay`** (BA `(eq:estSpm-W)`, the band's `lwSpOf_decay`, `LWSizeClaim.lean:327`):
+/-- **`baSpDecay`** (the BA form of (7.18) `eq:estSpm-W`, the band's `lwSpOf_decay` in `Graph/LWSizeClaim.lean`):
 `|S_{xy}|, |S⁺_{xy}| ≤ C W^{-d} e^{-c d_B(x,y)}`, `(C, c)` depending on `(d, Λ, κ)` only, for every
 `0 < g₀ ≤ Λ`, `0 ≤ t < 1`, `L ≥ 3`, `W ≥ 1` and every real-axis datum `BAReal`.  From `baSp_eq` and the
 proved `baProp5s_of_real` (`(prop:ThfadC_short)`): the uniform Combes-Thomas decay, no smallness of `g₀`. -/
@@ -404,7 +390,7 @@ private theorem BASizeClaim_Psi_row (hL : 3 ≤ L) (g0 : ℝ) (hg : 0 < g0) (x :
   push_cast
   ring
 
-/-- **T1 `baKBound_E`**: the `LWKBound` constants of `S`, `S⁺ = S W`, `M`, `g₀ Ψ`, depending on `(d, Λ, κ)` only:
+/-- **`baKBound_E`**: the `LWKBound` constants of `S`, `S⁺ = S W`, `M`, `g₀ Ψ`, depending on `(d, Λ, κ)` only:
 `S`, `S⁺` entries `≤ K₀ W^{-d}`, row and column sums `≤ K₁`; `M` and `g₀ Ψ` entries, row and column sums
 `≤ Kd = c⁻¹ expC(d-2, c) + 2 d Λ` (Combes-Thomas `c = BAct_rate`; no smallness of `g₀`). -/
 theorem baKBound_E (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
@@ -722,8 +708,7 @@ private theorem BASizeClaim_self_mem_mol (Γ : BAGraph E I) (v : E ⊕ I) : v �
   rw [BAGraph.mem_mol_iff]
 
 open Classical in
-/-- **The molecular forest with atoms** (the BA twin of `LGraph.exists_forest`,
-`LWSizeClaim.lean:725`, with `J = waved ⊕ mdot ⊕ psi`). -/
+/-- **The molecular forest with atoms** (the BA counterpart of `LGraph.exists_forest` in `Graph/LWSizeClaim.lean`, with `J = waved ⊕ mdot ⊕ psi`). -/
 theorem BAGraph.exists_forest (Γ : BAGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = false) :
     ∃ (C : Finset I) (par : I → E ⊕ I) (edge : I → Option Γ.Jx) (ρ : I → ℕ),
       C.card + Γ.nM = Fintype.card I ∧
@@ -952,8 +937,8 @@ theorem BAGraph.counters_le (Γ : BAGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq =
 end BAForest
 
 
-/-- **The peeling bound with per-edge constants** (`lwForest_sum_le`, `LWSizeClaim.lean:637`, with `(a_j, K_j)`
-for each edge; the O1 reduction). -/
+/-- **The peeling bound with per-edge constants** (`lwForest_sum_le` in `Graph/LWSizeClaim.lean`, with `(a_j, K_j)`
+for each edge). -/
 theorem BASizeClaim_forest_sum_le {ι : Type u₁} {I : Type u₂} {E : Type u₃} {J : Type u₄}
     [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] [Nonempty ι]
     (ℓe : E → ι) (u v : J → E ⊕ I) (f : J → ι → ι → ℝ) (a K : J → ℝ)
@@ -1050,10 +1035,5 @@ theorem BASizeClaim_forest_sum_le {ι : Type u₁} {I : Type u₂} {E : Type u�
         mul_le_mul_of_nonneg_right hcore hPa
     _ = _ := by ring
 
-
-/-! ## 4. Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, `t = 1/2`, the flow point `P : FlowPt 4 10`)
-
-`P.g0 ∈ (0, 10]`, a real energy `P.E` and `P.m0` with `BAReal 3 4 P.g0 (Im P.m0) P.E P.m0` (`Λ = 10`, `κ = Im P.m0 > 0`).
-Every deterministic hypothesis of each theorem is discharged at the data; nothing is left open. -/
 
 end RBM.Graph

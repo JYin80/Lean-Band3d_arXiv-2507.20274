@@ -18,22 +18,27 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3d3 (T2448): the BA engine at the start terms of `G = Ǧ + M` on `fxyPowGraph p`
+# The BA engine at the start terms of `G = Ǧ + M` on `fxyPowGraph p`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-409` (`lvl1 lemma`), `(eq:originGamma)` (`B:174-176`).  The BA twin of `Graph/LWEngine.lean`
-(`:1-937`), reduced by L3a5 (`Graph/BALvl1C`, the data-free recursion `baLvl1Lemma_holds`) and L3b4′ (`Graph/BAStepS`, (6) along `BAReach`): the band's
-`m`-tag half (`LWEngine:54-463, 612-723`) has no BA content (the coefficients `m^j m̄^{j'}` are `M`-dotted edges here, `BAExpandId:86-88`).
+Paper: Subappendix B.3 (Definition B.5 `def scalingBA`, Lemma B.6 `lanlw`, Lemma B.7
+`lem_lweight`: the `lvl1` lemma at block Anderson) and (B.11) `eq:originGamma`.  This is the BA
+counterpart of `Graph/LWEngine.lean`, reduced by the data-free recursion `baLvl1Lemma_holds`
+(`Graph/BALvl1C`) and by `Graph/BAStepS` ((6) along `BAReach`): the `m`-tag half of the band engine
+has no BA content (the coefficients `m^j m̄^{j'}` are `M`-dotted edges here, see `Graph/BAExpandId`).
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAEngine_`)
 
-1. **Black waved edges** (target 2; `LWEngine` §5, `:465-610`): `baStep_nWS`, `ba_nWS_ge`, `baStart_nWS`.
-2. **The conclusion** (target 1): `BALocRegConcl`.
-3. **The assembly** (target 3): `baEngine_assemble`.
-4. **The BA `lem:localregular`** (target 4): `ba_localregularX`.
-5. Compiled instances (`BAEngineInst`) and the producer `BAEngine_pL_locStd` of the premise `BAGraph.LocStd` for the axiom audit's scan (`baEngine_assemble` carries `LocStd` inside a hypothesis).
+1. **Black waved edges** (as `LWEngine` Section 5): `baStep_nWS`, `ba_nWS_ge`, `baStart_nWS`.
+2. **The conclusion**: `BALocRegConcl`.
+3. **The assembly**: `baEngine_assemble`.
+4. **The BA `lem:localregular`**: `ba_localregularX`.
+5. A locally standard graph `BAEngine_pL` (`BAEngine_pL_locStd`), a witness that the hypothesis
+   `BAGraph.LocStd`, which `baEngine_assemble` carries inside a hypothesis, is satisfiable.
 
-Data hypotheses only `BASelf` and `0 ≤ t < 1` (C1); no `m`-tag, no (1)-(5) (L3b1, L3b2).  The three shape inputs of T2426 audit O2 stay the first hypothesis of
-targets 3-4 until T2447 (`baLocReg6_holds`) merges (supervisor 0948 O2R-C3): verbatim from `BAStepS.lean:100`, no new `Prop`.
+The data hypotheses are only `BASelf` and `0 ≤ t < 1`; no `m`-tag, no path properties (1)-(5).  The
+first hypothesis of `baEngine_assemble` and `ba_localregularX` is the shape binder of `BALocReg6`
+(`Graph/BAStepS.lean`, the three shapes `BAShape.e2`, `macroA`, `macroB`), verbatim; it is discharged
+where the engine is used (`Graph/BAProvB.lean`).
 -/
 
 noncomputable section
@@ -45,7 +50,7 @@ namespace RBM.Graph
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
 /-! ## 1. Black waved edges: the number of waved edges with `col = false` does not fall along `BAReach`
-(`LWEngine` §5, `:465-610`, `lw_nWS_ge`)
+(as `lw_nWS_ge` in `Graph/LWEngine.lean`)
 
 Every term of a frame step is `BAGraph.ext` / `BAGraph.lanlwExt` on the (twisted) parent: its waved edges are mapped (colour kept) and new ones appended;
 `splitG` keeps `waved`, `merge` maps it, the twist maps it by `conj` / `transpose` (colour kept). -/
@@ -143,7 +148,7 @@ private theorem BAEngine_lanlwTerms_ge (Γ : BAGraph E I) (p : SEdge (E ⊕ I) �
   · exact BAEngine_lanlwT1_ge _ _
   · exact BAEngine_lanlwD_map_ge _ _ _ T hT
 
-/-- **A frame step does not lower the number of black waved edges** (the five kinds of `BAFrameStep`, `BASim:76-99`; `lwEngine_locStep_nWS` for the frame). -/
+/-- **A frame step does not lower the number of black waved edges** (the five kinds of `BAFrameStep` in `Graph/BASim.lean`; as `lwEngine_locStep_nWS` for the frame). -/
 private theorem BAEngine_frame_nWS {E : Type} {P : BAPGraph E} {F : List (BAPGraph E)} (h : BAFrameStep P F) :
     ∀ Q ∈ F, P.g.waved.countP (fun e => !e.col) ≤ Q.g.waved.countP (fun e => !e.col) := by
   cases h with
@@ -186,7 +191,7 @@ private theorem BAEngine_frame_nWS {E : Type} {P : BAPGraph E} {F : List (BAPGra
 
 end NWS
 
-/-- **Target 2: a step does not lower the number of black waved edges** (`lwEngine_locStep_nWS`, `LWEngine:560`; the twist keeps them, the frame step by `BAEngine_frame_nWS`). -/
+/-- **A step does not lower the number of black waved edges** (as `lwEngine_locStep_nWS`; the twist keeps them, the frame step by `BAEngine_frame_nWS`). -/
 theorem baStep_nWS : ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BALocStep P outs →
     ∀ Q ∈ outs, P.g.waved.countP (fun e => !e.col) ≤ Q.g.waved.countP (fun e => !e.col) := by
   rintro E P outs ⟨c, t, F, hF, rfl⟩ Q hQ
@@ -197,26 +202,26 @@ theorem baStep_nWS : ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)),
   rw [e2, ← e1]
   exact h
 
-/-- **Target 2: the number of black waved edges does not fall along `BAReach`** (`lw_nWS_ge`, `LWEngine:605`). -/
+/-- **The number of black waved edges does not fall along `BAReach`** (as `lw_nWS_ge`). -/
 theorem ba_nWS_ge : ∀ {E : Type} {K : ℤ} {P Q : BAPGraph E}, BAReach K P Q →
     P.g.waved.countP (fun e => !e.col) ≤ Q.g.waved.countP (fun e => !e.col) := by
   intro E K P Q h
   exact ba_lvl1_induction h (fun R => P.g.waved.countP (fun e => !e.col) ≤ R.g.waved.countP (fun e => !e.col)) le_rfl
     (fun A L hst hA B hB => hA.trans (baStep_nWS A L hst B hB))
 
-/-- **Target 2: every start term has `p` black waved edges** (`lwEngine_fxy_nWS`, `LWEngine:765`): `splitG` keeps the waved edges of `fxyPowGraph p`, `merge` maps them. -/
+/-- **Every start term has `p` black waved edges** (as `lwEngine_fxy_nWS`): `splitG` keeps the waved edges of `fxyPowGraph p`, `merge` maps them. -/
 theorem baStart_nWS : ∀ (p : ℕ), ∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition, P0.g.waved.countP (fun e => !e.col) = p := by
   intro p P0 hP0
   rw [BAEngine_partition_nWS _ P0 hP0]
   simp [BAGraph.ofLGraph, fxyPowGraph, List.countP_map, Function.comp_def]
 
-/-! ## 2. Target 1: the conclusion `BALocRegConcl` (`LWLocRegConcl`, `LWEngine:61-77`) -/
+/-! ## 2. The conclusion `BALocRegConcl` (as `LWLocRegConcl`) -/
 
-/-- **Target 1: the six-conjunct conclusion of the BA engine** (twin of `LWLocRegConcl`, `LWEngine:61-77`).  At the start terms
+/-- **The six-conjunct conclusion of the BA engine** (as `LWLocRegConcl`).  At the start terms
 `(BAGraph.ofLGraph (fxyPowGraph p)).partition`: (a) the outputs are locally standard at atoms with (6) in its BA form (`2p ≤ ord`, and `3p ≤ ord` at distinct
-external atoms, 0951 L4-C4 (b)); (b) the errors have scaling size `≤ W^{-D}` in the window `W^{-d/2} ≤ Ψ ≤ W^{-c}`, `L^d ≤ W^{K0}`; (c) every graph is reached from
+external atoms); (b) the errors have scaling size `≤ W^{-D}` in the window `W^{-d/2} ≤ Ψ ≤ W^{-c}`, `L^d ≤ W^{K0}`; (c) every graph is reached from
 a start term below that term's cutoff, normal, with the counters of `BAlvl1LemmaSize`; (d) the identity of expectations at `BAlwData` (`BASelf`, `0 ≤ t < 1` only).
-No `m`-tags (BA steps carry no exponent pairs); no (1)-(5) (L3b1, L3b2). -/
+No `m`-tags (BA steps carry no exponent pairs); no path properties (1)-(5). -/
 def BALocRegConcl (p : ℕ) (c : ℝ) (K0 d : ℕ) (D : ℝ) (outs errs : List (BAPGraph (Fin 2))) : Prop :=
   (∀ Q ∈ outs, Q.g.LocStd ∧ 2 * (p : ℤ) ≤ Q.scalingOrder ∧
     (¬ atomSetoid Q.g (Sum.inl (Q.ext 0)) (Sum.inl (Q.ext 1)) → 3 * (p : ℤ) ≤ Q.scalingOrder)) ∧
@@ -230,13 +235,13 @@ def BALocRegConcl (p : ℕ) (c : ℝ) (K0 d : ℕ) (D : ℝ) (outs errs : List (
       ∫ ω, (BAGraph.ofLGraph (fxyPowGraph p)).val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
         ∫ ω, BAComb.val (outs ++ errs) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)
 
-/-! ## 3. Target 3: the assembly (`lwEngine_assemble`, `LWEngine:725-762`) -/
+/-! ## 3. The assembly (as `lwEngine_assemble`) -/
 
 section Assemble
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- the value of a packed graph at `BAlwData` is integrable (copy of `BALvl1C_integrable_pval`, private there) -/
+/-- the value of a packed graph at `BAlwData` is integrable (as the private `BALvl1C_integrable_pval` of `Graph/BALvl1C.lean`) -/
 private theorem BAEngine_integrable_pval (hL : 3 ≤ L) (g0 Em t : ℝ) (m : ℂ) (hSelf : RBM.BA.BASelf d L g0 (Em : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1)
     {E : Type} (Q : BAPGraph E) (ℓe : E → Idx d L W) :
     Integrable (fun ω => Q.val (BAlwData d L W g0 Em t m ω) ℓe) (PF d L W 0) := by
@@ -251,7 +256,7 @@ private theorem BAEngine_integrable_pval (hL : 3 ≤ L) (g0 Em t : ℝ) (m : ℂ
     rw [h]
     exact integrable_zero _ _ _
 
-/-- the integral of the value of a list of packed graphs is the list sum of the integrals (copy of `BALvl1C_integral_comb`, private there) -/
+/-- the integral of the value of a list of packed graphs is the list sum of the integrals (as the private `BALvl1C_integral_comb` of `Graph/BALvl1C.lean`) -/
 private theorem BAEngine_integral_comb (hL : 3 ≤ L) (g0 Em t : ℝ) (m : ℂ) (hSelf : RBM.BA.BASelf d L g0 (Em : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1)
     {E : Type} (Ls : List (BAPGraph E)) (ℓe : E → Idx d L W) :
     ∫ ω, BAComb.val Ls (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
@@ -261,10 +266,10 @@ private theorem BAEngine_integral_comb (hL : 3 ≤ L) (g0 Em t : ℝ) (m : ℂ) 
 
 end Assemble
 
-/-- **Target 3: the assembly** (twin of `lwEngine_assemble`, `LWEngine:725`): lists `fo P0`, `fe P0` with the conclusion of `BAlvl1LemmaSize` (`BALvl1C:63-73`) at every
+/-- **The assembly** (as `lwEngine_assemble`): lists `fo P0`, `fe P0` with the conclusion of `BAlvl1LemmaSize` (`Graph/BALvl1C.lean`) at every
 start term give `BALocRegConcl` for the concatenated lists.  (a) `LocStd` and the order from the hypothesis on `fo P0`, `2p ≤ ord` and `3p ≤ ord` by
 `baLocReg6_reach` along the `BAReach` of the third conjunct; (b), (c) per start term; (d) `BAGraph.val_eq_partition` (pathwise), the integral of a list sum, the identity per start
-term, `lvl1_sum_flatMap`.  Before T2447 merges (O2R-C3) the first hypothesis is the shape binder of `BALocReg6` (`BAStepS.lean:100`), verbatim. -/
+term, `lvl1_sum_flatMap`.  The first hypothesis is the shape binder of `BALocReg6` (`Graph/BAStepS.lean`), verbatim. -/
 theorem baEngine_assemble : (∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapeLL sh BAFrameStepTN) →
   ∀ (p : ℕ) (c : ℝ) (K0 d : ℕ) (D : ℝ) (fo fe : BAPGraph (Fin 2) → List (BAPGraph (Fin 2))),
     (∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition,
@@ -308,7 +313,7 @@ theorem baEngine_assemble : (∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨
     rw [hI, List.map_append, List.sum_append] at h1
     exact h1
 
-/-! ## 4. Target 4: the BA `lem:localregular` (`lw_localregularX`, `LWEngine:771-788`) -/
+/-! ## 4. The BA `lem:localregular` (as `lw_localregularX`) -/
 
 /-- the conclusion of `BAlvl1LemmaSize` at a start term, for given lists (the specification that `lvl1_choose_list` chooses `fo`, `fe` for) -/
 private def BAEngine_Spec (c : ℝ) (K0 d : ℕ) (D : ℝ) (P0 : BAPGraph (Fin 2)) (fo fe : List (BAPGraph (Fin 2))) : Prop :=
@@ -328,10 +333,10 @@ private theorem BAEngine_lists (c : ℝ) (hc : 0 < c) (p K0 d : ℕ) (D : ℝ) :
   lvl1_choose_list (BAEngine_Spec c K0 d D) ((BAGraph.ofLGraph (fxyPowGraph p)).partition)
     (fun P0 hP0 => baLvl1LemmaSize_holds d c hc K0 D P0 (BAGraph.partition_normal _ P0 hP0))
 
-/-- **Target 4: the BA `lem:localregular`** (twin of `lw_localregularX`, `LWEngine:771`): one pair of data-free lists with `BALocRegConcl` and at least `p` black waved
-edges in every graph.  The lists per start term are those of `baLvl1LemmaSize_holds` (L3a5), chosen by `lvl1_choose_list`; then `baEngine_assemble`; the black
-waved edges by `ba_nWS_ge` along the `BAReach` of the third conjunct and `baStart_nWS`.  The band's `∀ m ≠ 0` has no BA counterpart.  Before T2447 merges (O2R-C3) the
-first hypothesis is the shape binder of `BALocReg6` (`BAStepS.lean:100`), verbatim. -/
+/-- **The BA `lem:localregular`** (as `lw_localregularX`): one pair of data-free lists with `BALocRegConcl` and at least `p` black waved
+edges in every graph.  The lists per start term are those of `baLvl1LemmaSize_holds` (`Graph/BALvl1C.lean`), chosen by `lvl1_choose_list`; then `baEngine_assemble`; the black
+waved edges by `ba_nWS_ge` along the `BAReach` of the third conjunct and `baStart_nWS`.  The band's `∀ m ≠ 0` has no BA counterpart.  The
+first hypothesis is the shape binder of `BALocReg6` (`Graph/BAStepS.lean`), verbatim. -/
 theorem ba_localregularX : (∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapeLL sh BAFrameStepTN) →
   ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ), ∃ outs errs : List (BAPGraph (Fin 2)),
     BALocRegConcl p c K0 d D outs errs ∧ ∀ Q ∈ outs ++ errs, p ≤ Q.g.waved.countP (fun e => !e.col) := by
@@ -344,7 +349,7 @@ theorem ba_localregularX : (∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ 
   rw [baStart_nWS p P0 hP0] at h
   exact h
 
-/-! ## 5. Compiled instances (CLAUDE.md §4 step 2; `d = 3`, `L = 4`, `W = 2`, the flow point of `BA/CouplingWindow.lean`, as `BALvl1CInst`) -/
+/-! ## 5. A locally standard graph -/
 
 section InstHelpers
 
@@ -387,15 +392,15 @@ private theorem BAEngine_frame_ne_nil {E : Type} {P : BAPGraph E} {F : List (BAP
     exact fun hF => BAEngine_outsOf_ne_nil P _ (List.cons_ne_nil _ _)
       (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 hF).1).1).1
 
-/-- a locally standard graph (`E = Fin 2`, `I = Fin 3`: blue `x → a`, red `y → a`, the atom `{b, c}` by an `M`-dot, five waved edges; as `BAStepS.lean:493`) -/
+/-- a locally standard graph (`E = Fin 2`, `I = Fin 3`: blue `x → a`, red `y → a`, the atom `{b, c}` by an `M`-dot, five waved edges; as in `Graph/BAStepS.lean`) -/
 def BAEngine_pL : BAGraph (Fin 2) (Fin 3) :=
   ⟨⟨[⟨true, true, .inl 0, .inr 0⟩, ⟨false, true, .inl 1, .inr 0⟩],
     [⟨false, true, .inl 0, .inr 1⟩, ⟨false, true, .inl 1, .inr 2⟩, ⟨false, true, .inr 0, .inr 1⟩, ⟨false, true, .inr 0, .inr 2⟩,
       ⟨false, true, .inl 0, .inl 1⟩], [], 1⟩, [], [⟨true, .inr 1, .inr 2⟩]⟩
 
-/-- **A locally standard graph exists** (`BAGraph.LocStd` at `BAEngine_pL`, by `decide`): the producer of the premise `BAGraph.LocStd` for the axiom audit's scan of premises
-(`Test/Axioms.lean:425`), which `baEngine_assemble` carries inside a hypothesis (the outputs `fo P0` are locally standard); the band precedent is `localReg2_inst_Q_locStd`
-(`LocalRegular2.lean:1941`). -/
+/-- **A locally standard graph exists** (`BAGraph.LocStd` at `BAEngine_pL`, by `decide`): the hypothesis `BAGraph.LocStd`, which
+`baEngine_assemble` carries inside a hypothesis (the outputs `fo P0` are locally standard), is satisfiable; the band counterpart is
+`localReg2_inst_Q_locStd` (`Graph/LocalRegular2.lean`). -/
 theorem BAEngine_pL_locStd : BAEngine_pL.LocStd := by decide
 
 end InstHelpers

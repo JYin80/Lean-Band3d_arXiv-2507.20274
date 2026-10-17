@@ -6,33 +6,27 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExpandW
 
 /-!
-# BA-L2b2: the order bookkeeping of `lanlw` as a graph operation (T2315)
+# The order bookkeeping of `lanlw` as a graph operation
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-372` (cited `B:line`; `(eq:ordG_BA)`
-at `B:353`, `lanlw` = `(eq:BE)` at `B:361-363`).  Second cut of BA-L2b (DECISIONS §129 (1)): the
-vocabulary `lanlwT1`, `lanlwD`, `lanlwTerms` is `Graph/BAExpandW` (T2303); this file is target 3(c)
-of its draft.
+Paper: Lemma B.6 (`lanlw`, (B.18) `eq:BE`); (B.17) `eq:ordG_BA` (Definition B.5 `def scalingBA`).
+The vocabulary `lanlwT1`, `lanlwD`, `lanlwTerms` is in `Graph/BAExpandW`; this file is the order
+bookkeeping of its terms.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAExpandWOrd_`)
 
 1. Generic closure lemmas (classes of a symmetric relation under a pendant extension, the count of
    internal classes) and the monotonicity of `n_A` under added `M`-dotted edges.
-2. **Targets 1, 2**: `lanlwT1_counters`, `lanlwD_counters` (raw counters
-   `⟨n_S+1, n_W+1, n_A+1, n_M, 0, 0⟩`, for every graph, normal or not) and `lanlw_ord` (`ord` goes
-   up by one).
-3. **Target 3**: `lanlw_scalingOrderG` (`ord Γ ≤ ordG Δ` for every term `Δ` of `lanlw`, `Γ` normal;
-   tight).
-4. Compiled instances (`RBM.Graph.BAExpandWOrdInst`): (I3) `lanlwT1 baGcxy`, (I4) `lanlwT1 baGcxx`,
-   the tight derivative term `T2315_D` (on `Ǧ_{y'x} Ǧ_{xy}`, `ordG = ord Γ`), and one application of
-   each of the targets at `baGcxy` and at `baGGLhs`.
+2. `lanlwT1_counters`, `lanlwD_counters` (raw counters `⟨n_S+1, n_W+1, n_A+1, n_M, 0, 0⟩`, for
+   every graph, normal or not) (`ord` goes up by one).
+3. `lanlw_scalingOrderG` (`ord Γ ≤ ordG Δ` for every term `Δ` of `lanlw`, `Γ` normal; tight).
 
 Counting the atoms and molecules of the extension (`BAExpandWOrd_ext`: `Γ` renamed by `owxEmb 2`,
 the waved edge `S_{αβ}` and the `M`-dotted edge `M_{xα}` added) is done by one generic
 classification of the classes of a relation under a pendant extension (`BAExpandWOrd_rtg_ext`,
 `BAExpandWOrd_cnt_ext`); the monotonicity of `n_A` under added `M`-dotted edges
 (`BAExpandWOrd_nA_le`, `BAExpandWOrd_nA_lt`, injections of internal atoms) gives `κ ≥ 0`, and
-`κ ≥ 1` when the singleton atom `{β}` is merged.
-The private closure lemmas of `BAVocab` are re-proved locally (DECISIONS §57 (1)).
+`κ ≥ 1` when the singleton atom `{β}` is merged.  The private closure lemmas of `BAVocab` are
+re-proved locally.
 -/
 
 set_option linter.style.setOption false
@@ -568,7 +562,7 @@ private theorem BAExpandWOrd_ext_counters (Γ : BAGraph E I) (rest : List (SEdge
 /-- Term-by-term bookkeeping of `G = Ǧ + M`: if the split of the extension `Δ` has `ms` as its new `M`-dotted
 edges (`r1` its solid edges, `|r1| + |ms| = n_S(Δ)`), then `ord ≥ ord Γ` as soon as `|ms| ≤ 1`, or `|ms| ≤ 3` and one
 of the new `M`-edges joins `β` (a singleton internal atom of `Δ`) to another vertex.  (`ord Δ_s = ord Γ + 1 - |ms| + 2κ`,
-`κ = n_A(Δ) - n_A(Δ_s) ≥ 0`, and `κ ≥ 1` in the second case; T2295-prove (a) rows 14-15.) -/
+`κ = n_A(Δ) - n_A(Δ_s) ≥ 0`, and `κ ≥ 1` in the second case.) -/
 private theorem BAExpandWOrd_core (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I)))
     (s : List (SEdge (E ⊕ (I ⊕ Fin 2)))) (x : E ⊕ I) (r1 : List (SEdge (E ⊕ (I ⊕ Fin 2))))
     (ms : List (BAMEdge (E ⊕ (I ⊕ Fin 2)))) (hS : rest.length + s.length = Γ.nS + 1)
@@ -615,7 +609,7 @@ private theorem BAExpandWOrd_core (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ 
   simp only [ord, BAGraph.counters]
   rcases hκ with h | h <;> omega
 
-/-- Splitting `G = Ǧ + M` after circled edges: only the later edges are split (the BA twin of the private
+/-- Splitting `G = Ǧ + M` after circled edges: only the later edges are split (as the private
 `BAVocab_baSplitSolid_circ`). -/
 private theorem BAExpandWOrd_split_append {V : Type*} (l t : List (SEdge V)) (hl : ∀ e ∈ l, e.circ = true) :
     baSplitSolid (l ++ t) = (baSplitSolid t).map fun r => (l ++ r.1, r.2) := by
@@ -747,9 +741,9 @@ private theorem BAExpandWOrd_D_split (q : SEdge (E ⊕ I)) (y : E ⊕ I) :
 
 end ExtGraph
 
-/-! ## 3. Targets 1 and 2: the raw counters and the raw order -/
+/-! ## 3. The raw counters and the raw order -/
 
-/-- **Target 1, term 1** (`B:361-363`; T2295-prove (a) row 8): the raw counters of term 1 of `lanlw` are
+/-- **Raw counters, term 1** (Lemma B.6): the raw counters of term 1 of `lanlw` are
 `⟨n_S + 1, n_W + 1, n_A + 1, n_M, 0, 0⟩`, for every graph (normal or not): one solid edge more, one waved edge
 `S_{αβ}`, `β` a new singleton internal atom, `α` joins the atom of `x` through `M_{xα}`, both join its molecule. -/
 theorem lanlwT1_counters :
@@ -762,7 +756,7 @@ theorem lanlwT1_counters :
   have : p.2.length + 2 = Γ.nS + 1 := by simp only [BAGraph.nS]; omega
   simp only [List.length_cons, List.length_nil, this]
 
-/-- **Target 1, derivative terms** (`B:361-363`; row 8): the raw counters of every derivative term of `lanlw`:
+/-- **Raw counters, derivative terms** (Lemma B.6): the raw counters of every derivative term of `lanlw`:
 `p.1` and `q.1` removed, the two `owxDE` edges and `G_{βy}` added. -/
 theorem lanlwD_counters :
     ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
@@ -775,10 +769,9 @@ theorem lanlwD_counters :
   have : q.2.length + 3 = Γ.nS + 1 := by simp only [BAGraph.nS]; omega
   simp only [List.length_cons, List.length_nil, this]
 
-/-! ## 4. Target 3: `lanlw_scalingOrderG` -/
+/-! ## 4. `lanlw_scalingOrderG` -/
 
-/-- **Target 3: `lanlw_scalingOrderG`** (`B:354-372`; T2295-prove (a) row 9, tight: minimum `0`, 13228 equality
-cases): for a normal `Γ`, every graph of the partition of every term of `lanlw` has `ord ≥ ord Γ`.  A member with
+/-- **`lanlw_scalingOrderG`** ((B.17) `eq:ordG_BA`; tight: the minimum `0` is attained): for a normal `Γ`, every graph of the partition of every term of `lanlw` has `ord ≥ ord Γ`.  A member with
 `j` `M`-splits has `ord - ord Γ = 1 - j + 2κ`, `κ ≥ 0` the internal atoms lost; `j ≤ 1` for term 1, and `j ≥ 2`
 for a derivative term splits an edge at `β`, merging `β`'s singleton atom (`κ ≥ 1`). -/
 theorem lanlw_scalingOrderG :
@@ -811,8 +804,6 @@ theorem lanlw_scalingOrderG :
   rw [BAExpandWOrd_packMerge_counters Δs hNs]
   exact hge
 
-
-/-! ## 5. Instances (namespace `RBM.Graph.BAExpandWOrdInst`) -/
 
 end RBM.Graph
 

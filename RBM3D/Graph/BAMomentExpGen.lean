@@ -23,31 +23,36 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedSimpArgs false
 
 /-!
-# BA-L L3d2b-1 (T2483), part A: the carrier, the pin, the weighted lemmas and the rooted G3
+# `lem:LW_moment_exp` at BA (part A): the carrier, the statement, the weighted lemmas, the rooted `GtoAG`
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): `lem:LW_moment_exp` (`7_8:78-83`), its proof (`7_8:1595-1660`, the domains
-`7_8:1603-1611`); `paper/tex/B_graphical_lemmas.tex:486-497` (G3, G4).  Twin of `Graph/LWMomentExp.lean` §1-§4 (`:28-460`) and of
-`Graph/AuxGraphRooted.lean` (`:1-569`) in a new file (namespace `RBM.BA`, private stem `BAMomentExpGen_`); additive, no merged file is edited.  The second
-half (regime (A), the weighted expansion, the far and near pins, the assembly; targets 6-10) is `Graph/BAMomentExpGenB.lean` (ticket T2483, split).
+Paper: Lemma 7.2 (`lem:LW_moment_exp`); its proof (Subsection 7.5 `subsec_pf_LW_moment_exp`, the
+domains of the far and near cases, (7.56) `eq:far_ab_K`); (B.24) `eq:ordGaux_BAM`, (B.25)
+`G_by_auxG_BA` and the end of the proof of Lemma B.7.  This is the BA counterpart of
+`Graph/LWMomentExp.lean` (Sections 1-4) and of `Graph/AuxGraphRooted.lean` (namespace `RBM.BA`,
+private stem `BAMomentExpGen_`).  The second half (regime (A), the weighted expansion, the far and
+near statements, the assembly) is `Graph/BAMomentExpGenB.lean`.
 
 ## Contents
 
-1. The carrier `LWfgD` (target 1): the `β`-sum of `f_{xy}` over a carrier restricted to the blocks `[β] ∈ Dm`; (a) the band bridge, (b) `Dm = univ`, (c)
-   additivity over disjoint domains, (d) the bridge to the data-level `fxyValD`, (e) the exact three-way split `LWfg_split`.
-2. The generic pin `LWMomentExpG` (target 2) in the `PinFam` shape, its band bridge `LWMomentExp_iff_bandPin`, the BA reading `BALWMomentExp`.
-3. `baLWMomentOfAnp_closed` (target 3): T2470's target 4 without the path binder (`baPathBinder_holds`).
-4. The weighted lemmas (target 4): (a) `BAMomentExp_valW_scale`; (b) the `L¹` form, the claim `size` and the packed claim for a real weight `|Wt| ≤ 1`; (c) the
-   weighted scale-mole tail `BAMomentExp_scalemole`; (d) the weight `BAMomentExp_wt` over `BAProvOut.π` and the roots `BAMomentExpGen_rep`.
-5. The BA rooted G3 (target 5): the atom-first forest with prescribed roots `BAMomentExpGen_exists_forest` (a copy of `BAGraph.exists_forest`,
-   `Graph/BASizeClaim.lean:727`, with `rep` in place of `choose`), the rooted `BAMomentExpGen_sum_J`, the restricted main sum `BAMomentExpGen_main_sum`, the
-   deterministic `BAMomentExpGen_G3Rooted`, the pin `BAGtoAGTRooted` and `baGtoAGTRooted_holds` (constants of `BAMomentGen_consts`).
-6. Compiled nonempty instances of targets 1-3 (`sz0`, `flow_sz0`, `zSeq`, `t ≡ 1/2`).
-7. Compiled nonempty instances of targets 4 and 5 (the flow point `g0P, EP, t0P, m0P`, a start partition term of `fxyPowGraph 2`, `Dm = {0}`).
+1. The carrier `LWfgD`: the `β`-sum of `f_{xy}` over a carrier restricted to the blocks
+   `[β] ∈ Dm`; `LWfgD_univ` (`Dm = univ`), `LWfgD_union` (additivity over disjoint domains),
+   `LWfgD_baFMz` (the bridge to the data-level `fxyValD`), `LWfg_split` (the exact three-way split).
+2. The generic statement `LWMomentExpG` in the `PinFam` shape, the BA reading `BALWMomentExp`.
+3. `baLWMomentOfAnp_closed`: `baLWMoment_of_anp` without the path binder (`baPathBinder_holds`).
+4. The weighted lemmas: `BAMomentExp_valW_scale`; the `L¹` form, the claim `size` and the packed
+   claim for a real weight `|Wt| ≤ 1`; the weighted scale-mole tail `BAMomentExp_scalemole`; the
+   weight `BAMomentExp_wt` over `BAProvOut.π` and the roots `BAMomentExpGen_rep`.
+5. The BA rooted `GtoAG`: the atom-first forest with prescribed roots
+   `BAMomentExpGen_exists_forest` (a copy of `BAGraph.exists_forest`, `Graph/BASizeClaim.lean`, with
+   `rep` in place of `choose`), the rooted `BAMomentExpGen_sum_J`, the restricted main sum
+   `BAMomentExpGen_main_sum`, the deterministic `BAMomentExpGen_G3Rooted`, the statement
+   `BAGtoAGTRooted` and `baGtoAGTRooted_holds` (constants of `BAMomentGen_consts`).
 
-**No twin of `LWAuxNestedOwnOn`.**  The merged `lwAuxNestedOwnOn_holds` (`Graph/AuxGraphRooted.lean:457`) applies at `BAShadowPG Q` (`Graph/BAAtom.lean:139`), whose graph
-is the shadow `Q.g.shadow`: its `auxValOn` is the `auxValOn Q.g.shadow` of target 5, its premise `(BAShadowPG Q).LocReg345 p` comes from `baLocRegConcl_upto5`.
-**Premise scan** (`Test/Axioms.lean`): `LWAssmExpgL` occurs only inside the statement def `LWMomentExpG`; `BAAnpAuxG` does not occur (it enters in part B, as the antecedent
-of `BALWMomentExpOfAnp`); no theorem here assumes a `Prop`-valued definition that no theorem proves.
+**No counterpart of `LWAuxNestedOwnOn`.**  `lwAuxNestedOwnOn_holds` (`Graph/AuxGraphRooted.lean`)
+applies at `BAShadowPG Q` (`Graph/BAAtom.lean`), whose graph is the shadow `Q.g.shadow`: its
+`auxValOn` is the `auxValOn Q.g.shadow` of Section 5, its premise `(BAShadowPG Q).LocReg345 p` comes
+from `baLocRegConcl_upto5`.  `LWAssmExpgL` occurs only inside the statement def `LWMomentExpG`;
+`BAAnpAuxG` does not occur (it enters in part B, as the antecedent of `BALWMomentExpOfAnp`).
 -/
 
 open MeasureTheory Filter Matrix
@@ -58,10 +63,10 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 1. The carrier `f_{xy}` with the sum over `β` restricted to a domain (target 1) -/
+/-! ## 1. The carrier `f_{xy}` with the sum over `β` restricted to a domain -/
 
-/-- **The carrier `f^{D}_{xy}`** (`7_8:1607-1611`, `f^{>ℓ}`, `f^{≤ℓ}`) over a carrier `C : FlowFM sz`: the sum over `β` restricted to the blocks `[β] ∈ Dm`
-(twin of `LWfD`, `Graph/LWProv.lean:190`, over a carrier, as `LWfg`, `Graph/BAMomentGen.lean:71`); `Dm = univ` is `LWfg`. -/
+/-- **The carrier `f^{D}_{xy}`** (`f^{>ℓ}`, `f^{≤ℓ}` of (7.56) `eq:far_ab_K`) over a carrier `C : FlowFM sz`: the sum over `β` restricted to the blocks `[β] ∈ Dm`
+(as `LWfD` in `Graph/LWProv.lean`, over a carrier, as `LWfg` in `Graph/BAMomentGen.lean`); `Dm = univ` is `LWfg`. -/
 def LWfgD {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (Dm : Finset (Zd d (sz.L n)))
     (x y : Idx d (sz.L n) (sz.W n)) : ℂ :=
   ∑ α, if α = x ∨ α = y then (0 : ℂ) else
@@ -69,12 +74,12 @@ def LWfgD {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (ω : sz.
       ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (STblk sz n α) (STblk sz n β)) * C.GM n t ω β β * C.G n t ω x α * C.G n t ω α y
     else 0
 
-/-- **Target 1 (b)**: at `Dm = univ` the domain form is the carrier `LWfg`. -/
+/-- At `Dm = univ` the domain form is the carrier `LWfg`. -/
 theorem LWfgD_univ {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
     LWfgD C n t ω Finset.univ x y = LWfg C n t ω x y := by
   simp [LWfgD, LWfg]
 
-/-- **Target 1 (c)**: the domain form is additive over disjoint domains (twin of `LWfD_union`, `Graph/LWProv.lean:196`). -/
+/-- The domain form is additive over disjoint domains (as `LWfD_union` in `Graph/LWProv.lean`). -/
 theorem LWfgD_union {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) {D₁ D₂ : Finset (Zd d (sz.L n))}
     (h : Disjoint D₁ D₂) (x y : Idx d (sz.L n) (sz.W n)) :
     LWfgD C n t ω (D₁ ∪ D₂) x y = LWfgD C n t ω D₁ x y + LWfgD C n t ω D₂ x y := by
@@ -89,7 +94,7 @@ theorem LWfgD_union {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ)
     · simp [h1, Finset.disjoint_left.1 h h1]
     · by_cases h2 : STblk sz n β ∈ D₂ <;> simp [h1, h2]
 
-/-- **Target 1 (d)** (twin of `LWfg_baFMz`, `Graph/BAMomentGen.lean:93`, to `fxyValD`, `Graph/BAProv.lean:678`): at the block Anderson carrier, `t` times the
+/-- **The bridge to the data-level `fxyValD`** (as `LWfg_baFMz` in `Graph/BAMomentGen.lean`, to `fxyValD` in `Graph/BAProv.lean`): at the block Anderson carrier, `t` times the
 domain form is the data-level `fxyValD` at `BAlwData` of the slice of the sample. -/
 theorem LWfgD_baFMz {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (Dm : Finset (Zd d (sz.L n)))
     (x y : Idx d (sz.L n) (sz.W n)) :
@@ -122,7 +127,7 @@ theorem LWfgD_baFMz {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : �
   · have hβ' : ¬ (split d (sz.L n) (sz.W n) β).1 ∈ Dm := hβ
     simp [hβ, hβ']
 
-/-- **Target 1 (e)** (twin of `LWf_split`, `Graph/LWMomentExp.lean:68`; `dom_union`, `dom_disj` imported): `f = f^{>} + f^{(a)} + f^{(b)}` exactly, `a = [x]`, `b = [y]`,
+/-- **The three-way split** (as `LWf_split` in `Graph/LWMomentExp.lean`; `dom_union`, `dom_disj` imported): `f = f^{>} + f^{(a)} + f^{(b)}` exactly, `a = [x]`, `b = [y]`,
 over a carrier. -/
 theorem LWfg_split {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t ℓ : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
     LWfg C n t ω x y =
@@ -131,11 +136,11 @@ theorem LWfg_split {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t ℓ : �
       LWfgD C n t ω (domNearB d (sz.L n) (STblk sz n x) (STblk sz n y) ℓ) x y := by
   rw [← LWfgD_union C n t ω (dom_disj _ _ ℓ).1, ← LWfgD_union C n t ω (dom_disj _ _ ℓ).2, dom_union, LWfgD_univ]
 
-/-! ## 2. The generic pin `LWMomentExpG` (target 2) -/
+/-! ## 2. The generic statement `LWMomentExpG` -/
 
-/-- **`lem:LW_moment_exp`** (`7_8:78-83`; `Graph/LWPins.lean:341`) over a carrier family, in the `PinFam` shape of `LWtermExpG` (`Chain/LWGen.lean:93`):
+/-- **`lem:LW_moment_exp`** (Lemma 7.2; `Graph/LWPins.lean`) over a carrier family, in the `PinFam` shape of `LWtermExpG` (`Chain/LWGen.lean`):
 `STFlow` becomes `Flow`, `lemT` becomes `T0`, `LWAssmExp` becomes `LWAssmExpgL (mk sz z) (law sz)`, `Prec` becomes `PrecL sz (law sz)`, `LWf` becomes the
-carrier `f_{xy}` `LWfg (mk sz z)`, `η_t` becomes `(mk sz z).eta`; the rest is verbatim. -/
+carrier `f_{xy}` `LWfg (mk sz z)`, `η_t` becomes `(mk sz z).eta`; the rest is as in `LWMomentExp`. -/
 def LWMomentExpG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
     (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
@@ -153,24 +158,23 @@ def LWMomentExpG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
                     (min ((zdistInf d (sz.L n) (STblk sz n q.1.1 - STblk sz n q.1.2) : ℕ) : ℝ) (ℓ n))) ^ p +
                   ((sz.W n : ℕ) : ℝ) ^ (-D))
 
-/-- **Target 2**: the block Anderson reading (law `seqP (sz.withLam 0)`, `BAFlow`, `baFMz`, `BAflowT0`), beside `BALWMoment` (`Graph/BAMomentGen.lean:146`)
-and `BALWtermExp` (`BA/LWPinsBA.lean:47`). -/
+/-- **The block Anderson reading** (law `seqP (sz.withLam 0)`, `BAFlow`, `baFMz`, `BAflowT0`), beside `BALWMoment` (`Graph/BAMomentGen.lean`)
+and `BALWtermExp` (`BA/LWPinsBA.lean`). -/
 abbrev BALWMomentExp : ℕ → Prop := baPin LWMomentExpG
 
-/-! ## 3. The path binder concluded (target 3) -/
+/-! ## 3. The path binder concluded -/
 
-/-- **Target 3** (supervisor 2246 L40-F2): `baLWMoment_of_anp` (`Graph/BAMomentGenB.lean:370`) without the path binder, which T2469 concludes
-(`baPathBinder_holds`, `Graph/BALocReg2B.lean:338`).  After it no public statement of stage L carries the path binder. -/
+/-- **`baLWMoment_of_anp`** (`Graph/BAMomentGenB.lean`) without the path binder, which `baPathBinder_holds` (`Graph/BALocReg2B.lean`) concludes. -/
 theorem baLWMomentOfAnp_closed : ∀ d : ℕ, BALWMomentOfAnp d := baLWMoment_of_anp baPathBinder_holds
 
-/-! ## 4. The weighted lemmas (target 4; band `Graph/LWMomentExp.lean` §3, §4) -/
+/-! ## 4. The weighted lemmas (band `Graph/LWMomentExp.lean` Sections 3, 4) -/
 
 section Weighted
 
 open private BASizeClaim_term_le BASizeClaim_sum_le BASizeClaim_size_alg BASizeClaim_sizeConst_nonneg from RBM3D.Graph.BASizeClaim2
 open private BAExp14d_term_scale from RBM3D.Graph.BAExp14d
 
-/-- **Target 4 (a)** (`T2483_ValWScale`; band `lwMomentExp_pvalW_smul`, `Graph/LWMomentExp.lean:266`; the weighted form of `BAExp14d_val_scale`, `Graph/BAExp14d.lean:111`):
+/-- **The `t`-scaling of the weighted value** (band `lwMomentExp_pvalW_smul` in `Graph/LWMomentExp.lean`; the weighted form of `BAExp14d_val_scale` in `Graph/BAExp14d.lean`):
 for every real weight, every waved factor of `BAlwData` is `t` times that of `BAExp14d_dataT`, so the weighted packed value is `t^{n_W}` times its
 value at the rescaled data (`BAReal`, `0 ≤ t < 1`; `t = 0` included). -/
 theorem BAMomentExp_valW_scale : ∀ (d L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 κ E t : ℝ) (m : ℂ), BAReal d L g0 κ E m → 0 ≤ t → t < 1 →
@@ -194,8 +198,8 @@ theorem BAMomentExp_valW_scale : ∀ (d L W : ℕ) [NeZero L] [NeZero W], 3 ≤ 
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] {ι : Type} [Fintype ι] [DecidableEq ι] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- For a real weight `|Wt| ≤ 1` the weighted value is bounded by the `L¹` sum of the terms (the first step of `lwMomentExp_valW_norm_le`,
-`Graph/LWMomentExp.lean:297-301`). -/
+/-- For a real weight `|Wt| ≤ 1` the weighted value is bounded by the `L¹` sum of the terms (the first step of `lwMomentExp_valW_norm_le`
+in `Graph/LWMomentExp.lean`). -/
 theorem BAMomentExpGen_valW_le_sum (Γ : BAGraph E I) (D : BALData ι) (Wt : (E ⊕ I → ι) → ℝ) (hWt : ∀ ℓ, |Wt ℓ| ≤ 1) (ℓe : E → ι) :
     ‖Γ.valW D Wt ℓe‖ ≤ ∑ ℓi : I → ι, ‖Γ.term D (Sum.elim ℓe ℓi)‖ := by
   unfold BAGraph.valW
@@ -203,8 +207,8 @@ theorem BAMomentExpGen_valW_le_sum (Γ : BAGraph E I) (D : BALData ι) (Wt : (E 
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
   exact mul_le_of_le_one_left (norm_nonneg _) (hWt _)
 
-/-- **Target 4 (b), the weighted `L¹` form of `claim:size`** (twin of `lwMomentExp_valW_norm_le`, `Graph/LWMomentExp.lean:289`, of `BASizeClaim_val_le`,
-`Graph/BASizeClaim2.lean:420`): `|Wt| ≤ 1` costs nothing.  No `hM : M = m I`. -/
+/-- **The weighted `L¹` form of the claim `Γ ≺ size(Γ)`** (as `lwMomentExp_valW_norm_le` in `Graph/LWMomentExp.lean`, of `BASizeClaim_val_le`
+in `Graph/BASizeClaim2.lean`): `|Wt| ≤ 1` costs nothing.  No `hM : M = m I`. -/
 theorem BAMomentExp_valW_norm_le [Nonempty ι] (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData ι) {Ψ a K₁ Kd : ℝ}
     (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (hS : LWKBound D.S a K₁) (hSp : LWKBound D.Sp a K₁)
     (hM : LWKBound D.M Kd Kd) (hP : LWKBound D.gPsi Kd Kd) (ℓe : E → ι) (Wt : (E ⊕ I → ι) → ℝ) (hWt : ∀ ℓ, |Wt ℓ| ≤ 1) :
@@ -226,9 +230,8 @@ theorem BAMomentExp_valW_norm_le [Nonempty ι] (Γ : BAGraph E I) (hN : Γ.Norma
     _ ≤ _ := mul_le_mul_of_nonneg_left (BASizeClaim_sum_le Γ hN D hS hSp hM hP ℓe)
           (mul_nonneg (norm_nonneg _) (pow_nonneg hΨ _))
 
-/-- **Target 4 (b), the weighted `claim:size` at BA** (twin of `lwMomentExp_claimSize`, `Graph/LWMomentExp.lean:322`, of `baClaimSize`,
-`Graph/BASizeClaim2.lean:473`): `|valW Γ| ≤ C_Γ size(Γ)` for `|Wt| ≤ 1`, `C_Γ = Γ.sizeConst K₀ K₁ Kd`; the constants of the BA model are those of
-`baClaimSize_E` (`Graph/BASizeClaim2.lean:566`). -/
+/-- **The weighted claim `Γ ≺ size(Γ)` at BA** (as `lwMomentExp_claimSize` in `Graph/LWMomentExp.lean`, of `baClaimSize`
+in `Graph/BASizeClaim2.lean`): `|valW Γ| ≤ C_Γ size(Γ)` for `|Wt| ≤ 1`, `C_Γ = Γ.sizeConst K₀ K₁ Kd`; the constants of the BA model are those of `baKBound_E` (`Graph/BASizeClaim.lean`). -/
 theorem BAMomentExp_claimSize (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W))
     {Ψ K₀ K₁ Kd : ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (hS : LWKBound D.S (K₀ * ((W : ℝ) ^ d)⁻¹) K₁)
     (hSp : LWKBound D.Sp (K₀ * ((W : ℝ) ^ d)⁻¹) K₁) (hM : LWKBound D.M Kd Kd) (hP : LWKBound D.gPsi Kd Kd) (ℓe : E → Idx d L W)
@@ -251,7 +254,7 @@ theorem BAMomentExp_claimSize (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (
         (((((W * L) ^ d : ℕ) : ℝ)) ^ Γ.nM * (K₀ * ((W : ℝ) ^ d)⁻¹) ^ (Γ.nW - (Γ.nA - Γ.nM))) := by ring
     _ = _ := by rw [hal]; simp only [BAGraph.counters]; ring
 
-/-- **Target 4 (b), the weighted claim for a packed output** (twin of `BAMomentGen_pval_claim`, `Graph/BAMomentGen.lean:444`, with the weight):
+/-- **The weighted claim for a packed output** (as `BAMomentGen_pval_claim` in `Graph/BAMomentGen.lean`, with the weight):
 `|Q.valW D Wt ℓe| ≤ C_Q size_Ψ(Q)` for `‖G - M‖_max ≤ Ψ` and `|Wt| ≤ 1`. -/
 theorem BAMomentExp_pvalW_claim {K₀ K₁ Kd Ψ : ℝ} (Q : BAPGraph (Fin 2)) (hQ : Q.g.Normal)
     (D : BALData (Idx d L W)) (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (hS : LWKBound D.S (K₀ * ((W : ℝ) ^ d)⁻¹) K₁)
@@ -272,10 +275,9 @@ theorem BAMomentExp_pvalW_claim {K₀ K₁ Kd Ψ : ℝ} (Q : BAPGraph (Fin 2)) (
     have hΨ : 0 ≤ Ψ := (norm_nonneg _).trans (hG (fun _ => 0) (fun _ => 0))
     positivity
 
-/-- **Target 4 (c), the weighted BA scale-mole tail** (twin of `lwMomentExp_scalemole`, `Graph/LWMomentExp.lean:344`; route of `BAMomentGen_scalemole`,
-`Graph/BAMomentGen.lean:738`, with `|Wt| ≤ 1`): if the labels of two external vertices of one molecule (`b ∈ Γ.mol a`) are at block distance
+/-- **The weighted BA scale-mole tail** ((7.14) `scalemole`; as `lwMomentExp_scalemole` in `Graph/LWMomentExp.lean`, and the proof of `BAMomentGen_scalemole` in `Graph/BAMomentGen.lean`, with `|Wt| ≤ 1`): if the labels of two external vertices of one molecule (`b ∈ Γ.mol a`) are at block distance
 `> |E ⊕ I| r`, no labelling is confined, so the tail bound applies to every term.  It covers every output with `𝓜_x = 𝓜_y`, every `x ~ y` among them
-(an atom is inside a molecule, `BALocReg1_mol_of_atom`, `Graph/BALocReg1.lean:304`; L4-C4 (b)). -/
+(an atom is inside a molecule, `BALocReg1_mol_of_atom`, `Graph/BALocReg1.lean`). -/
 theorem BAMomentExp_scalemole (hd : 3 ≤ d) (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W))
     {Ψ C c r : ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (hC : 0 ≤ C) (hc : 0 < c)
     (hSd : ∀ x y, ‖D.S x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))))
@@ -315,13 +317,12 @@ section Expand
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **Target 4 (d), the weight of the starting graph pulled back to an output `o` through its provenance map** (twin of `lwMomentExp_wt`,
-`Graph/LWMomentExp.lean:379`; no `ev`, no tags): `Π_k 1_{Dm}([ℓ(π β^{(k)})])`, the weight of `BAWExp.prod` (`Graph/BAProv.lean:166`). -/
+/-- **The weight of the starting graph pulled back to an output `o` through its provenance map** (as `lwMomentExp_wt` in `Graph/LWMomentExp.lean`; no `ev`, no tags): `Π_k 1_{Dm}([ℓ(π β^{(k)})])`, the weight of `BAWExp.prod` (`Graph/BAProv.lean`). -/
 def BAMomentExp_wt (n : ℕ) (Dm : Finset (Zd d (sz.L n))) {p : ℕ} (o : BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p)))) :
     (o.Q.E' ⊕ o.Q.I' → Idx d (sz.L n) (sz.W n)) → ℝ :=
   fun ℓ => ∏ k : Fin p, if STblk sz n (ℓ (o.π (Sum.inr (localReg_fxyBeta k)))) ∈ Dm then 1 else 0
 
-/-- **Target 4 (d)**: the weight is bounded by `1` (twin of `lwMomentExp_wt_abs`, `Graph/LWMomentExp.lean:382`). -/
+/-- **The weight is bounded by `1`** (as `lwMomentExp_wt_abs` in `Graph/LWMomentExp.lean`). -/
 theorem BAMomentExp_wt_abs (n : ℕ) (Dm : Finset (Zd d (sz.L n))) {p : ℕ} (o : BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))
     (ℓ : o.Q.E' ⊕ o.Q.I' → Idx d (sz.L n) (sz.W n)) : |BAMomentExp_wt sz n Dm o ℓ| ≤ 1 := by
   unfold BAMomentExp_wt
@@ -330,7 +331,7 @@ theorem BAMomentExp_wt_abs (n : ℕ) (Dm : Finset (Zd d (sz.L n))) {p : ℕ} (o 
   rw [abs_of_nonneg (Finset.prod_nonneg h0)]
   exact Finset.prod_le_one₀ h0 fun k _ => by split_ifs <;> norm_num
 
-/-- **Target 4 (d), the roots from the coverage** (twin of the private `lwMomentExp_rep`, `Graph/LWMomentExp.lean:1000`; `BACoverBy.rep`, `Graph/BAProv.lean:130`):
+/-- **The roots from the coverage** (as the private `lwMomentExp_rep` in `Graph/LWMomentExp.lean`; `BACoverBy.rep`, `Graph/BAProv.lean`):
 every internal molecule of the shadow of an output with `BACoverBy` contains the image `π β^{(k)}` of some initial vertex, an internal vertex carrying the
 weight, so the weight vanishes unless the block of every root is in `Dm`. -/
 theorem BAMomentExpGen_rep {p : ℕ} (o : BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))
@@ -348,14 +349,14 @@ theorem BAMomentExpGen_rep {p : ℕ} (o : BAProvOut (baPG (BAGraph.ofLGraph (fxy
 
 end Expand
 
-/-! ## 5. The BA rooted G3 (target 5)
+/-! ## 5. The BA rooted `GtoAG`
 
-The twin of `LWGtoAGRooted` (`Graph/AuxGraphRooted.lean:225`) at the rescaled kernels of `BAGtoAGT` (`Graph/BAExp14d.lean:269`).  The roots `rep` of the
-internal molecules (from `BACoverBy.rep`) are prescribed.  The band forest of `Γ.shadow` (`lwAuxRoot_exists_forest`, `Graph/AuxGraphRooted.lean:62`)
-does not give the exponent count: the shadow waved edges are the waved, the `M`-dotted and the `Ψ`-dotted edges (`Graph/BAAtom.lean:65`), so a tree
+The counterpart of `LWGtoAGRooted` (`Graph/AuxGraphRooted.lean`) at the rescaled kernels of `BAGtoAGT` (`Graph/BAExp14d.lean`).  The roots `rep` of the
+internal molecules (from `BACoverBy.rep`) are prescribed.  The band forest of `Γ.shadow` (`lwAuxRoot_exists_forest`, `Graph/AuxGraphRooted.lean`)
+does not give the exponent count: the shadow waved edges are the waved, the `M`-dotted and the `Ψ`-dotted edges (`Graph/BAAtom.lean`), so a tree
 may use a waved edge where an atom edge exists, whereas the bound `K₁^{n_A - n_M} a^{n_W - (n_A - n_M)}` needs exactly `n_A - n_M` waved tree edges.
-Hence a copy of the atom-first forest `BAGraph.exists_forest` (`Graph/BASizeClaim.lean:727-933`) with the prescribed roots, the rooted `BAAtom_sum_J`
-(`Graph/BAAtom.lean:896`) and the main sum with the indicator of the root blocks. -/
+Hence a copy of the atom-first forest `BAGraph.exists_forest` (`Graph/BASizeClaim.lean`) with the prescribed roots, the rooted `BAAtom_sum_J`
+(`Graph/BAAtom.lean`) and the main sum with the indicator of the root blocks. -/
 
 section Rooted
 
@@ -366,9 +367,9 @@ open private BASizeClaim_atomAdj_comm BASizeClaim_wAdj BASizeClaim_adj_cases BAS
 open private BAAtom_alg_prod from RBM3D.Graph.BAAtom
 
 open Classical in
-/-- **The atom-first molecular forest with prescribed roots** (`BAGraph.exists_forest`, `Graph/BASizeClaim.lean:727`, whose proof chooses the roots; here the
+/-- **The atom-first molecular forest with prescribed roots** (`BAGraph.exists_forest`, `Graph/BASizeClaim.lean`, whose proof chooses the roots; here the
 roots `rep` are given, one vertex in each internal molecule of the shadow): the children are the internal vertices outside the range of `rep`, a tree
-edge of a child is an edge of `J = waved ⊕ mdot ⊕ psi`, and exactly `n_A - n_M` of the tree edges are waved (a gate is the first vertex of an atom
+edge of a child is an edge of `J = waved ⊕ mdot ⊕ psi`, and exactly `n_A - n_M` of the tree edges are waved (the child end of a waved tree edge is the first vertex of an atom
 reached by the forest; the `n_M` atoms of the roots have none). -/
 theorem BAMomentExpGen_exists_forest (Γ : BAGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = false)
     (rep : LGraph.AuxIMol Γ.shadow → I) (hrep : ∀ c, Γ.shadow.molOf (Sum.inr (rep c)) = c.1) :
@@ -559,8 +560,8 @@ theorem BAMomentExpGen_exists_forest (Γ : BAGraph E I) (hD : ∀ e ∈ Γ.dotte
       omega
     · exact hne (Sum.inr_injective (a₁.symm.trans a₂))
 
-/-- **The sum over the internal labels with the prescribed roots as free labels, per-edge constants** (twin of `BAAtom_sum_J`, `Graph/BAAtom.lean:896`, whose
-roots are chosen; the same peeling `BAAtom_forest_roots`, `Graph/BAAtom.lean:722`, on the forest of `BAMomentExpGen_exists_forest`):
+/-- **The sum over the internal labels with the prescribed roots as free labels, per-edge constants** (as `BAAtom_sum_J` in `Graph/BAAtom.lean`, whose
+roots are chosen; the same peeling `BAAtom_forest_roots` on the forest of `BAMomentExpGen_exists_forest`):
 `Σ_{ℓ_I} Φ(ℓ ∘ rep) ∏_J f_j ≤ (Σ_x Φ x) K₁^{n_A - n_M} a^{n_W - (n_A - n_M)} Kd^{#M + #Ψ}`. -/
 theorem BAMomentExpGen_sum_J {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (Γ : BAGraph E I)
     (hD : ∀ e ∈ Γ.dotted, e.eq = false) (f : Γ.Jx → ι → ι → ℝ) {a K₁ Kd : ℝ}
@@ -617,8 +618,7 @@ theorem BAMomentExpGen_sum_J {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 open Classical in
-/-- **The main sum with the indicator of the root blocks** (twin of `BAAtom_main_sum`, `Graph/BAAtom2.lean:338`, and of `lwAuxRoot_main_sum`,
-`Graph/AuxGraphRooted.lean:136`): the sum over the labels of the internal vertices of the confined bound, multiplied by `1[every root block ∈ Dm]`, is
+/-- **The main sum with the indicator of the root blocks** (as `BAAtom_main_sum` in `Graph/BAAtom2.lean`, and `lwAuxRoot_main_sum` in `Graph/AuxGraphRooted.lean`): the sum over the labels of the internal vertices of the confined bound, multiplied by `1[every root block ∈ Dm]`, is
 `≤ (W^d)^{n_M} Γ^aux_{[ℓe]}(Dm) K₁^{n_A - n_M} a^{n_W - (n_A - n_M)} Kd^{#M + #Ψ}`, the aux graph summed over the blocks in `Dm`. -/
 theorem BAMomentExpGen_main_sum (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W)) {a K₁ Kd : ℝ}
     {ξ : Zd d L → Zd d L → ℝ} (hξ0 : ∀ a b, 0 ≤ ξ a b)
@@ -679,8 +679,7 @@ theorem BAMomentExpGen_main_sum (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData
   · simp [h]
   · simp [h]
 
-/-- **G3 for a weighted sum, deterministic form** (twin of `BAExp14d_G3`, `Graph/BAExp14d.lean:138`, and of the proof of `lwGtoAGRooted_holds`,
-`Graph/AuxGraphRooted.lean:244`): the roots `rep` are prescribed, a real weight `|Wt| ≤ 1` vanishing unless every root block lies in `Dm` multiplies the
+/-- **`GtoAG` for a weighted sum, deterministic form** (as `BAExp14d_G3` in `Graph/BAExp14d.lean`, and the proof of `lwGtoAGRooted_holds` in `Graph/AuxGraphRooted.lean`): the roots `rep` are prescribed, a real weight `|Wt| ≤ 1` vanishing unless every root block lies in `Dm` multiplies the
 terms, the restricted main sum `BAMomentExpGen_main_sum` bounds the confined part, the tail sum `BAAtom_tail_sum` the rest. -/
 theorem BAMomentExpGen_G3Rooted (d : ℕ) (hd : 3 ≤ d) (L W : ℕ) [NeZero L] [NeZero W] (Γ : BAGraph E I) (hN : Γ.Normal)
     (D : BALData (Idx d L W)) (Ψ A K₀ K₁ Kd C c r R : ℝ) (ξ : Zd d L → Zd d L → ℝ) (Dm : Finset (Zd d L))
@@ -829,9 +828,9 @@ theorem BAMomentExpGen_G3Rooted (d : ℕ) (hd : 3 ≤ d) (L W : ℕ) [NeZero L] 
 
 end Rooted
 
-/-- **Target 5, the BA rooted G3** (`T2483_GtoAGRooted`; `LWGtoAGRooted`, `Graph/AuxGraphRooted.lean:225`, at the rescaled kernels of `BAGtoAGT`,
-`Graph/BAExp14d.lean:269`; constants from `(d, Λ, κ)` only, uniformly in `0 < g₀ ≤ Λ`, `0 ≤ t < 1`): `rep c` is the root of the internal molecule `c` of
-the shadow and carries the weight (`BACoverBy.rep`, `Graph/BAProv.lean:130`); `Wt ≠ 0` only where every root block is in `Dm`; the weighted value
+/-- **The BA rooted `GtoAG`** (`LWGtoAGRooted`, `Graph/AuxGraphRooted.lean`, at the rescaled kernels of `BAGtoAGT`,
+`Graph/BAExp14d.lean`; constants from `(d, Λ, κ)` only, uniformly in `0 < g₀ ≤ Λ`, `0 ≤ t < 1`): `rep c` is the root of the internal molecule `c` of
+the shadow and carries the weight (`BACoverBy.rep`, `Graph/BAProv.lean`); `Wt ≠ 0` only where every root block is in `Dm`; the weighted value
 `BAGraph.valW` is bounded by the auxiliary graph of the shadow summed over the blocks in `Dm` (`auxValOn`).  No `hext`. -/
 def BAGtoAGTRooted (d : ℕ) : Prop :=
   3 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ →
@@ -856,8 +855,8 @@ def BAGtoAGTRooted (d : ℕ) : Prop :=
                     Real.exp (-(c * r / 2)) * Γ.sizeConst C (C * expC (d - 2) (c / 2)) (C * (1 + expC (d - 2) (c / 2))) *
                       Γ.scalingSize Ψ W d L
 
-/-- **Target 5** (`baGtoAGTRooted_holds`; twin of `lwGtoAGRooted_holds`, `Graph/AuxGraphRooted.lean:244`, and of `baGtoAGT_holds`, `Graph/BAExp14d.lean:307`):
-the constants are those of `baGtoAGT_holds` (`BAMomentGen_consts`, `Graph/BAMomentGen.lean:364`, the first half of its proof); the bound is
+/-- **`baGtoAGTRooted_holds`** (as `lwGtoAGRooted_holds` in `Graph/AuxGraphRooted.lean`, and `baGtoAGT_holds` in `Graph/BAExp14d.lean`):
+the constants are those of `baGtoAGT_holds` (`BAMomentGen_consts`, `Graph/BAMomentGen.lean`, the first half of its proof); the bound is
 `BAMomentExpGen_G3Rooted` with the atom-first forest rooted at `rep`. -/
 theorem baGtoAGTRooted_holds (d : ℕ) : BAGtoAGTRooted d := by
   intro hd Λ κ hΛ hκ
@@ -869,19 +868,6 @@ theorem baGtoAGTRooted_holds (d : ℕ) : BAGtoAGTRooted d := by
   obtain ⟨hSd, hSpd, hMPd, hoff, hS, hSp, hM, hP⟩ := H L W hL g0 E t m hg hgΛ hr ht0 ht1 D hDS hDSp hDM hDP
   exact BAMomentExpGen_G3Rooted d hd L W Γ hN D Ψ A C (C * expC (d - 2) c) Kd C c r R ξ Dm hG hA hwin hS hSp hM hP
     (by linarith) hc0 hSd hSpd hMPd hoff hr0 hRr hξ0 hξ rep hrep Wt hWt1 hWt0 ℓe
-
-/-! ## 6. Compiled nonempty instances of targets 1-3
-
-Data (`BA/LWPinsBA.lean` §3, `Graph/BAMomentGenB.lean` §4): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow `flow_sz0`
-(`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `z = zSeq`, `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ_n = Φ_n ≡ W_n^{-1/2}`.  What stays a hypothesis is another
-gate's pin: `STInitialGT2gL`, `LWLoopExpgL` (inside `LWAssmExpgL`), `LWLoop2gL`, `BAAnpAuxG 3` (L3d1) and the pin `BALWMomentExp 3` itself (part B). -/
-
-/-! ## 7. Compiled nonempty instances of targets 4 and 5 (the flow point)
-
-Data (`BA/CouplingWindow.lean` §7.2, `Graph/BAProv.lean` §7, `Graph/BASymm1.lean`): `d = 3`, `L = 4`, `W = 2` (the one-point sizes `szP`, `n = 0`), the flow point
-`(g₀, E, t₀, m₀) = (g0P, EP, t0P, m0P)` of `(L, g) = (4, 10)` (`flowP_real : BAReal 3 4 g0P (Im m_S) EP m0P`, `0 < g₀ ≤ 10 = Λ`, `0 < t₀ < 1`), the rescaled data
-`BAExp14d_dataT` of an arbitrary sample `ω`, the entry scale `Ψ = 1 + Σ_{x,y} |G_{xy} - M_{xy}|`, the labels `ℓ0` (blocks `0` and `e₀`).  The start term is the
-first term of the partition of `fxyPowGraph 2` with its coverage `BAProv_start`; the weight is `Π_k 1_{Dm}`, `Dm = {0}` (1 of the `4^3` blocks). -/
 
 end RBM.BA
 

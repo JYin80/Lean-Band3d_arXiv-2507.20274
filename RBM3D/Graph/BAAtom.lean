@@ -8,14 +8,13 @@ import RBM3D.Graph.BASizeClaim2
 import RBM3D.BA.GreenSchur
 
 /-!
-# BA-L3c1 (T2420), part 1: atoms and the auxiliary graph at BA
+# Atoms and the auxiliary graph at block Anderson (part 1)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`B:line`) and
-`paper/tex/7_8_light_weight.tex` (`7_8:line`): `scaleatom` (`B:317-318`), `Gyiyjatom`,
-`Gyiyjatom2` (`B:424`, `B:432`), the auxiliary graph of a BA graph (`B:436-449`,
-`(eq:ordGaux_BAM)`, `B:486`), `(G_by_auxG_BA)` (`B:486-490`, "by repeating the argument of
-`GtoAG`").  Part 2 is `Graph/BAAtom2` (it imports this file).  This file is the BA twin of
-`Graph/AuxGraph` §§1-2, §3, §5-7; there is nothing to port from RBM1D/RBM2D.
+Paper: Subappendix B.3, proof of Lemma B.7 (`lem_lweight`): (B.15) `scaleatom`, (B.21)
+`Gyiyjatom`, (B.23) `Gyiyjatom2`, the auxiliary graph of a BA graph with (B.24)
+`eq:ordGaux_BAM`, and (B.25) `G_by_auxG_BA` ("by repeating the argument of `GtoAG`").  The
+continuation is `Graph/BAAtom2` (it imports this file).  This file is the BA counterpart of
+`Graph/AuxGraph` (Sections 1-2, 3, 5-7).
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAAtom_`)
 
@@ -23,18 +22,16 @@ Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`B:line`) and
    molecules, `n_M`, `IsExtMol`, `molSolid` are those of the band graph `shadow`),
    `BAGraph.auxVal`, `BAGraph.auxOrd`, `BAShadowPG`.
 2. **The order comparison** `BAGraph.scalingOrder_sub_auxOrd`, `BAGraph.auxOrd_le_scalingOrder`
-   (twin of `AuxGraph` §2).
-3. **`scaleatom`, `Gyiyjatom`, `Gyiyjatom2`**: `baAtom_offset`, `baAtom_dist`,
-   `baAtom_sedge_xi`, `baAtom_wedge`; `BAAtom_offdiag_E` (`M`, `g₀ Ψ` offset-diagonal).
-4. **The pointwise bound on a confined labelling** `BAAtom_term_conf` (twin of `AuxGraph` §5
-   with `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`).
+   (as in `AuxGraph` Section 2).
+3. **`scaleatom`, `Gyiyjatom`**: `baAtom_offset`, `baAtom_sedge_xi`; `BAAtom_offdiag_E` (`M`,
+   `g₀ Ψ` offset-diagonal).
+4. **The pointwise bound on a confined labelling** `BAAtom_term_conf` (as in `AuxGraph`
+   Section 5 with `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I`).
 5. **The roots of the molecular forest and the sum over the children** `BAAtom_exists_roots`,
-   `BAAtom_forest_roots`, `BAAtom_sum_J` (twin of `AuxGraph` §6-7 with per-edge constants).
-6. Compiled instances at `d = 3`, `L = 4`, `W = 2`.
+   `BAAtom_forest_roots`, `BAAtom_sum_J` (as in `AuxGraph` Sections 6-7 with per-edge constants).
 
 The centre-level auxiliary graph is the band's on `BAGraph.shadow`: the retained atoms
-`x_{i,j}` of `B:448` are folded into the molecule centre (paper-delta candidate `T2420a`); the
-orders agree (report (a), E2).
+`x_{i,j}` of the paper's auxiliary graph are folded into the molecule centre; the orders agree.
 -/
 
 set_option linter.style.setOption false
@@ -67,7 +64,7 @@ def BAGraph.shadow (Γ : BAGraph E I) : LGraph E I where
   dotted := Γ.dotted
   coeff := Γ.coeff
 
-/-- The value of the auxiliary graph at the molecule centres (the construction of `B:436-449`, retained atoms folded in). -/
+/-- The value of the auxiliary graph at the molecule centres (the construction in the proof of Lemma B.7, retained atoms folded in). -/
 def BAGraph.auxVal {κ : Type} [Fintype κ] (Γ : BAGraph E I) (ξ : κ → κ → ℝ) (be : E → κ) : ℝ :=
   Γ.shadow.auxVal ξ be
 
@@ -130,13 +127,13 @@ end Vocab
 /-- The packed graph of the shadow (the input of the band's nested form `lwAuxNested_holds`). -/
 def BAShadowPG (P : BAPGraph (Fin 2)) : PGraph (Fin 2) := ⟨P.E', P.I', P.ext, P.ext_surj, P.g.shadow⟩
 
-/-! ## 2. The order comparison (twin of `AuxGraph` §2, `7_8:926`, `B:486`) -/
+/-! ## 2. The order comparison (as `AuxGraph` Section 2; proof of Lemma 7.21, (B.24) `eq:ordGaux_BAM`) -/
 
 section Order
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- `(eq:ordG_BA)` against the aux order: `ord Γ - ord Γ^aux = (n_S - |𝒢_ℳ|) + 2 (n_W - n_A + n_M)`. -/
+/-- (B.17) `eq:ordG_BA` against the aux order: `ord Γ - ord Γ^aux = (n_S - |𝒢_ℳ|) + 2 (n_W - n_A + n_M)`. -/
 theorem BAGraph.scalingOrder_sub_auxOrd (Γ : BAGraph E I) :
     Γ.scalingOrder - Γ.auxOrd =
       ((Γ.nS : ℤ) - (Γ.shadow.molSolid.length : ℤ)) + 2 * ((Γ.nW : ℤ) - (Γ.nA : ℤ) + (Γ.nM : ℤ)) := by
@@ -156,7 +153,7 @@ theorem BAGraph.auxOrd_le_scalingOrder (Γ : BAGraph E I) (hN : Γ.Normal) : Γ.
 
 end Order
 
-/-! ## 3. `scaleatom`, `Gyiyjatom`, `Gyiyjatom2` (`B:317-318`, `B:424`, `B:432`) -/
+/-! ## 3. `scaleatom`, `Gyiyjatom`, `Gyiyjatom2` ((B.15), (B.21), (B.23)) -/
 
 section Atoms
 
@@ -175,7 +172,7 @@ private theorem BAAtom_factors_ne_zero (Γ : BAGraph E I) (D : BALData (Idx d L 
     fun e he hz => hM (List.prod_eq_zero (List.mem_map.2 ⟨e, he, hz⟩)),
     fun e he hz => hD (List.prod_eq_zero (List.mem_map.2 ⟨e, he, hz⟩))⟩
 
-/-- **`scaleatom`, first half** (`B:317-318`): atom-mates share one offset (`M`, `g Ψ` are offset-diagonal; the `=`-dotted
+/-- **`scaleatom`, first half** ((B.15) `scaleatom`): atom-mates share one offset (`M`, `g Ψ` are offset-diagonal; the `=`-dotted
 factors force equal labels). -/
 theorem baAtom_offset (Γ : BAGraph E I) (D : BALData (Idx d L W))
     (hoff : ∀ x y, (split d L W x).2 ≠ (split d L W y).2 → D.M x y = 0 ∧ D.gPsi x y = 0)
@@ -230,7 +227,7 @@ theorem baAtom_offset (Γ : BAGraph E I) (D : BALData (Idx d L W))
   | refl => rfl
   | tail _ hbc ih => exact ih.trans (hstep _ _ hbc)
 
-/-- The entries of `Ψ = Ψ^{(B)} ⊗ I` (`PsiI`) in the block-offset form (a copy of the private `BASizeClaim_PsiI_apply`). -/
+/-- The entries of `Ψ = Ψ^{(B)} ⊗ I` (`PsiI`) in the block-offset form (as the private `BASizeClaim_PsiI_apply`). -/
 theorem BAAtom_PsiI_apply (x y : Idx d L W) :
     PsiI d L W x y = if (split d L W x).2 = (split d L W y).2 then
       (if Adj d L (split d L W x).1 (split d L W y).1 then (1 : ℂ) else 0) else 0 := by
@@ -241,7 +238,7 @@ theorem BAAtom_PsiI_apply (x y : Idx d L W) :
   rw [h1, h2]
   by_cases h : (split d L W x).2 = (split d L W y).2 <;> simp [h]
 
-/-- **`M` and `g₀ Ψ` of the BA model are offset-diagonal** (the premise of `baAtom_offset`, `BAAtom_tail_sum`, `baGtoAG_holds`):
+/-- **`M` and `g₀ Ψ` of the BA model are offset-diagonal** (the premise of `baAtom_offset` and `BAAtom_tail_sum`):
 `BAMres_fine_apply` and the form of `PsiI`. -/
 theorem BAAtom_offdiag_E (g0 E : ℝ) (m : ℂ) (hw : ((E : ℂ) + m).im ≠ 0) (x y : Idx d L W)
     (ho : (split d L W x).2 ≠ (split d L W y).2) :
@@ -252,7 +249,7 @@ theorem BAAtom_offdiag_E (g0 E : ℝ) (m : ℂ) (hw : ((E : ℂ) + m).im ≠ 0) 
   · rw [Matrix.smul_apply, BAAtom_PsiI_apply]
     simp [ho]
 
-/-- **`Gyiyjatom`** (`B:424`), deterministic: if every label is within `R` of its centre block `lab`, a circled solid edge is
+/-- **(B.21) `Gyiyjatom`**, deterministic: if every label is within `R` of its centre block `lab`, a circled solid edge is
 `≤ ξ` of the centre blocks of its ends (the `hξ`-domination on `R`-balls). -/
 theorem baAtom_sedge_xi {V : Type} (D : BALData (Idx d L W)) (ξ : Zd d L → Zd d L → ℝ) (R : ℝ)
     (hξ : ∀ (x y : Idx d L W) (a b : Zd d L), (zdistD d L ((split d L W x).1 - a) : ℝ) ≤ R →
@@ -271,7 +268,7 @@ theorem baAtom_sedge_xi {V : Type} (D : BALData (Idx d L W)) (ξ : Zd d L → Zd
 
 end Atoms
 
-/-! ## 4. The pointwise bounds (twin of `AuxGraph` §5, `7_8:914-921`): `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I` -/
+/-! ## 4. The pointwise bounds (as `AuxGraph` Section 5, proof of Lemma 7.21): `‖G - M‖ ≤ Ψ` entrywise, no `hM : M = m I` -/
 
 section Pointwise
 
@@ -433,7 +430,7 @@ theorem BAAtom_shadow_conf (Γ : BAGraph E I) (ℓ : E ⊕ I → Idx d L W) (r :
   · obtain ⟨j, rfl⟩ := List.mem_iff_get.1 he'
     exact hconf (Sum.inr (Sum.inr j))
 
-/-- **The solid edges on a confined labelling** (`7_8:914-921`, `B:424`): the solid edges inside a molecule cost `Ψ`, the solid
+/-- **The solid edges on a confined labelling** (proof of Lemma 7.21, (B.21) `Gyiyjatom`): the solid edges inside a molecule cost `Ψ`, the solid
 edges between two molecules cost `ξ` of the blocks of the molecules (`hξ` and the confinement). -/
 theorem BAAtom_solid_prod_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W)) {Ψ R r : ℝ}
     {ξ : Zd d L → Zd d L → ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ)
@@ -476,7 +473,7 @@ theorem BAAtom_solid_prod_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData 
   rw [mul_comm]
   exact hB
 
-/-- **The pointwise bound on a confined labelling** (`7_8:914-921`): every `J`-edge within block distance `r`:
+/-- **The pointwise bound on a confined labelling** (proof of Lemma 7.21): every `J`-edge within block distance `r`:
 `|term ℓ| ≤ |coeff| Ψ^{n_S - |𝒢_ℳ|} ∏_{𝒢_ℳ} ξ ∏_J f_j`, the blocks of the internal molecules being those of the roots. -/
 theorem BAAtom_term_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W)) {Ψ R r : ℝ}
     {ξ : Zd d L → Zd d L → ℝ} (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ)
@@ -507,7 +504,7 @@ theorem BAAtom_term_conf (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d
 
 end Pointwise
 
-/-! ## 5. The roots of the molecular forest, the sum over the children (twin of `AuxGraph` §6-7, per-edge constants) -/
+/-! ## 5. The roots of the molecular forest, the sum over the children (as `AuxGraph` Sections 6-7, per-edge constants) -/
 
 section Roots
 
@@ -625,8 +622,8 @@ end Roots
 
 section ForestSum
 
-/-- **The sum over the children with the roots as external labels, per-edge constants** (the BA twin of
-`auxGraph_forest_roots`, `AuxGraph.lean:551`, from `BASizeClaim_forest_sum_le` in place of `lwForest_sum_le`). -/
+/-- **The sum over the children with the roots as external labels, per-edge constants** (the BA counterpart of
+`auxGraph_forest_roots` of `Graph/AuxGraph.lean`, from `BASizeClaim_forest_sum_le` in place of `lwForest_sum_le`). -/
 theorem BAAtom_forest_roots {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] {E I Rt J : Type}
     [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype Rt] [DecidableEq Rt] [Fintype J] [DecidableEq J]
     (ℓe : E → ι) (u v : J → E ⊕ I) (f : J → ι → ι → ℝ) (a K : J → ℝ)
@@ -736,7 +733,7 @@ section SumJ
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
 /-- The algebra of the forest bound: a tree edge costs `K_j`, every other edge `a_j`; the dotted edges cost `Kd` in both
-cases, the waved edges `K₁` or `a` (a copy of the private `BASizeClaim_alg_prod`, `BASizeClaim2.lean:193`). -/
+cases, the waved edges `K₁` or `a` (as the private `BASizeClaim_alg_prod` of `Graph/BASizeClaim2.lean`). -/
 private theorem BAAtom_alg_prod {I : Type} [Fintype I] [DecidableEq I] {p q r : ℕ} (a K₁ Kd : ℝ)
     (KJ aJ : Fin p ⊕ Fin q ⊕ Fin r → ℝ) (hK1 : ∀ jw, KJ (Sum.inl jw) = K₁) (hK2 : ∀ j', KJ (Sum.inr j') = Kd)
     (ha1 : ∀ jw, aJ (Sum.inl jw) = a) (ha2 : ∀ j', aJ (Sum.inr j') = Kd)
@@ -797,8 +794,8 @@ private theorem BAAtom_alg_prod {I : Type} [Fintype I] [DecidableEq I] {p q r : 
       exact Sum.inl_injective (h6.symm.trans hc)
   rw [h4, h5]
 
-/-- **The sum over the internal labels with the roots as free labels, per-edge constants** (the BA twin of `auxGraph_main_sum`'s
-use of `auxGraph_forest_roots`; `BASizeClaim_sum_le`, `BASizeClaim2.lean:317`, with a weight `Φ` of the labels of the roots):
+/-- **The sum over the internal labels with the roots as free labels, per-edge constants** (the BA counterpart of `auxGraph_main_sum`'s
+use of `auxGraph_forest_roots`; `BASizeClaim_sum_le`, `BASizeClaim2.lean`, with a weight `Φ` of the labels of the roots):
 for weights `f_j` (waved: entries `≤ a`, row and column sums `≤ K₁`; `M`- and `Ψ`-dotted: entries, row and column sums `≤ Kd`),
 `Σ_{ℓ_I} Φ(ℓ ∘ root) ∏_J f_j ≤ (Σ_x Φ x) K₁^{n_A - n_M} a^{n_W - (n_A - n_M)} Kd^{#M + #Ψ}`. -/
 theorem BAAtom_sum_J {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (Γ : BAGraph E I)
@@ -855,15 +852,6 @@ theorem BAAtom_sum_J {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι] (Γ
   exact hmain
 
 end SumJ
-
-/-! ## 6. Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`, `t = 1/2`)
-
-The BA data are those of `BASizeClaimInst2`: `D0` (`M = BAlwM`, `S`, `S⁺ = S W`, `g₀ Ψ` at `P`, `G = M + 1/100`, so
-`|Ǧ_{xy}| = 1/100` for all `x, y`, the diagonal included), `ellInst` the labels of the two external vertices.  The graph `G*`
-(normal, every solid edge circled, no `=`-dotted edge): externals `a = inl 0`, `b = inl 1`, internals `u₁ .. u₅ = inr 0 .. inr 4`;
-solid `a → u₁`, `u₅ → b` (red), `u₃ → u₂`, `u₁ → u₄`; waved `S(a, u₃)`, `S⁺(u₂, u₄)`, `S(u₁, u₅)`; `M̄`-dotted `u₁ u₂`, `Ψ`-dotted `u₄ u₅`.
-Atoms `{a}, {b}, {u₁, u₂}, {u₃}, {u₄, u₅}`, molecules `{a, u₃}`, `{b}`, `{u₁, u₂, u₄, u₅}`; `(n_S, n_W, n_A, n_M) = (4, 3, 3, 1)`,
-`|𝒢_ℳ| = 3`, `ord Γ = 4`, `ord Γ^aux = 1`. -/
 
 end RBM.Graph
 

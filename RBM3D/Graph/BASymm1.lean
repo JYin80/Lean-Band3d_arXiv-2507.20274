@@ -18,35 +18,37 @@ set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
 /-!
-# BA-L L3a1 (T2425): the twists of a BA graph
+# The twists of a BA graph
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:286-387` (cited `B:line`: the BA graph, atoms, normal graphs).  Design:
-`docs/reports/T2395-design.md` §6 (row L3a1 `BASymm1`), probe `t/T2395:RBM3D/Probe/T2395Pins.lean:70-104, 233-238, 271-273`.  The BA twin of
-`Graph/LWSymm.lean` §1-§3 (`:79-575`): conjugation and transposition, the flip of the imaginary parts, the twists in expectation.
+Paper: Subappendix B.3 (the BA graph, atoms, normal graphs: Definitions B.3 `def_atom` and B.4
+`defn_normalBA`).  This is the BA counterpart of `Graph/LWSymm.lean` (Sections 1-3): conjugation
+and transposition, the flip of the imaginary parts, the twists in expectation.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BASymm1_`)
 
-1. **The twist** (probe 71-104, verbatim): `BAMEdge.twist`, `BAPsiEdge.twist`, `BAGraph.twist` (`lwSymmTwistG` on the underlying graph, the
-   twist of the dotted edges), `BAGraph.twist_atomAdj`, `ba_twist_counters`; and `BAGraph.BASymm1_twist_atom` (the atoms are those of the
-   untwisted graph).
-2. **`BAtwistInv`** (probe 272, verbatim) **proved**: `baTwistInv_holds`.  The twist keeps normality, `nExt`, `nLoops`, `nPairs`
-   (`BAGraph.BASymm1_nShare_ends`: `nShare` reads the ends of an edge up to order; `BAGraph.BASymm1_pairsAux_twist`).
-3. **The value of a twist** `BAGraph.BASymm1_val_twist : (Γ.twist c t).val D ℓe = (conj if c) (Γ.val (D transposed if t) ℓe)` for data with
-   real `S` and real `gPsi` (twin of `lwSymmTwistG_val`, `LWSymm.lean:274`; `BASymm1_dataTr`, `BASymm1_psiEdge_val`, `BASymm1_mEdge_val`,
+1. **The twist**: `BAMEdge.twist`, `BAPsiEdge.twist`, `BAGraph.twist` (`lwSymmTwistG` on the
+   underlying graph, the twist of the dotted edges), `BAGraph.twist_atomAdj`, `ba_twist_counters`;
+   and `BAGraph.BASymm1_twist_atom` (the atoms are those of the untwisted graph).
+2. **`BAtwistInv`**, proved as `baTwistInv_holds`.  The twist keeps normality, `nExt`, `nLoops`,
+   `nPairs` (`BAGraph.BASymm1_nShare_ends`: `nShare` reads the ends of an edge up to order;
+   `BAGraph.BASymm1_pairsAux_twist`).
+3. **The value of a twist** `BAGraph.BASymm1_val_twist : (Γ.twist c t).val D ℓe = (conj if c)
+   (Γ.val (D transposed if t) ℓe)` for data with real `S` and real `gPsi` (as `lwSymmTwistG_val`
+   in `Graph/LWSymm.lean`; `BASymm1_dataTr`, `BASymm1_psiEdge_val`, `BASymm1_mEdge_val`,
    `BASymm1_term_twist_L`, `BAGraph.BASymm1_term_twist`).
-4. **The data at the flipped sample** `BASymm1_dataTr_flip`: the transposed data is the data at `lwSymmFlipF ω` (`Ψ` symmetric, `M` symmetric
-   `baM_symm`, `S` symmetric `svarF_comm`, `S⁺ = S (1 - M⁺S)⁻¹` symmetric by the push-through identity `BASymm1_pushThrough`, which needs
+4. **The data at the flipped sample** `BASymm1_dataTr_flip`: the transposed data is the data at
+   `lwSymmFlipF ω` (`Ψ` symmetric, `M` symmetric `baM_symm`, `S` symmetric `svarF_comm`,
+   `S⁺ = S (1 - M⁺S)⁻¹` symmetric by the push-through identity `BASymm1_pushThrough`, which needs
    neither `BASelf` nor `t < 1`; `BASymm1_data_real`, `BASymm1_Sp_symm`, `BASymm1_H_flip`).
-5. **The flip** (`BASymm1_flipEquiv`): `BASymm1_flip_measurePreserving`, the one-size twin of `lwSymm_flip_measurePreserving`
-   (`LWSymm.lean:441`), for `PF d L W g`.
-6. **`BAtwistIntegral d`** (probe 234, verbatim) **proved**: `baTwistIntegral_holds`.
-7. Compiled instances (`BASymm1Inst`) at `d = 3`, `L = 4`, `W = 2` and the flow point `flowP` of `BA/CouplingWindow.lean` (`BASelf` and
-   `0 < t₀ < 1` are `flowP_data`).
+5. **The flip** (`BASymm1_flipEquiv`): `BASymm1_flip_measurePreserving`, the one-size counterpart
+   of `lwSymm_flip_measurePreserving` (`Graph/LWSymm.lean`), for `PF d L W g`.
 
-`lwSymm_twist_integral` (`LWSymm.lean:558`) is not called: it is stated for `LGraph.val`, `lwSampleData` and `Sizes.seqP`; the BA value has the
-`Ψ`- and `M`-dotted factors and the law is `PF d L W 0` (T2425 preflight (a)).  Its ingredients are reused (`lwSymm_term_conj`,
-`lwSymm_term_transpose`, `lwSymm_Xmat_flip`, `lwSymm_Gres_transpose`, `lwSymm_integral_cj`).  The proof of `baTwistIntegral_holds` uses neither
-`BASelf`, nor `0 ≤ t < 1`, nor any smallness of `g₀` (C1).
+The twist integral `baTwistIntegral_gen` is in `Graph/BASymm2.lean`.  `lwSymm_twist_integral`
+(`Graph/LWSymm.lean`) is not called: it is stated for `LGraph.val`, `lwSampleData` and
+`Sizes.seqP`; the BA value has the `Ψ`- and `M`-dotted factors and the law is `PF d L W 0`.  Its
+ingredients are reused (`lwSymm_term_conj`, `lwSymm_term_transpose`, `lwSymm_Xmat_flip`,
+`lwSymm_Gres_transpose`, `lwSymm_integral_cj`).  The proof of `baTwistIntegral_gen` uses neither
+`BASelf`, nor `0 ≤ t < 1`, nor any smallness of `g₀`.
 -/
 
 open private BAExpandW_PsiI_transpose from RBM3D.Graph.BAExpandW
@@ -57,7 +59,7 @@ open MeasureTheory ProbabilityTheory
 namespace RBM.Graph
 open RBM RBM.Gauss RBM.Green
 
-/-! ## 1. The twist of a BA graph (probe 71-104, verbatim) -/
+/-! ## 1. The twist of a BA graph -/
 
 section Twist
 
@@ -67,7 +69,7 @@ def BAMEdge.twist (c t : Bool) {V : Type*} (e : BAMEdge V) : BAMEdge V :=
   ⟨if c then !e.σ else e.σ, if t then e.y else e.x, if t then e.x else e.y⟩
 /-- twist of a `Ψ`-dotted edge (`Ψ` is real and symmetric). -/
 def BAPsiEdge.twist (t : Bool) {V : Type*} (e : BAPsiEdge V) : BAPsiEdge V := ⟨if t then e.y else e.x, if t then e.x else e.y⟩
-/-- **the twist `(c, t)` of a BA graph** (L3a1): `lwSymmTwistG` on the underlying graph and the twist of the dotted edges. -/
+/-- **the twist `(c, t)` of a BA graph**: `lwSymmTwistG` on the underlying graph and the twist of the dotted edges. -/
 def BAGraph.twist (c t : Bool) (Γ : BAGraph E I) : BAGraph E I :=
   { toLGraph := lwSymmTwistG c t Γ.toLGraph, psi := Γ.psi.map (BAPsiEdge.twist t), mdot := Γ.mdot.map (BAMEdge.twist c t) }
 theorem BAGraph.twist_atomAdj (c t : Bool) (Γ : BAGraph E I) : (Γ.twist c t).atomAdj = Γ.atomAdj := by
@@ -79,7 +81,7 @@ theorem BAGraph.twist_atomAdj (c t : Bool) (Γ : BAGraph E I) : (Γ.twist c t).a
       ((BAMEdge.twist c t e).x = v ∧ (BAMEdge.twist c t e).y = u)) = decide ((e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u)) := by
     intro e; rw [decide_eq_decide]; cases t <;> cases c <;> simp [BAMEdge.twist] <;> tauto
   simp only [BAGraph.atomAdj, BAGraph.twist, lwSymmTwistG_dotted, List.any_map, Function.comp_def, hp, hm]
-/-- **L3a1, structural half: the twist keeps the four counters** (atoms and molecules are those of the untwisted graph). -/
+/-- **Structural half: the twist keeps the four counters** (atoms and molecules are those of the untwisted graph). -/
 theorem ba_twist_counters (c t : Bool) (Γ : BAGraph E I) : (Γ.twist c t).counters = Γ.counters := by
   have h1 := BAGraph.twist_atomAdj c t Γ
   have h2 : (Γ.twist c t).adj = Γ.adj := by
@@ -166,12 +168,12 @@ theorem BAGraph.BASymm1_pairsAux_twist (c t : Bool) (Γ : BAGraph E I) (es : Lis
       rw [BAGraph.BASymm1_twist_nShare]
       exact Γ.BASymm1_nShare_ends (BASymm1_twistS_ends c t e) (BASymm1_twistS_ends c t e')
 
-/-- **L3a1, twist invariance** (probe 272, verbatim): the twist keeps normality, the external atoms, the atom-level loops and pairs
+/-- **Twist invariance**: the twist keeps normality, the external atoms, the atom-level loops and pairs
 (counters: `ba_twist_counters`). -/
 def BAtwistInv : Prop := ∀ {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (c t : Bool) (Γ : BAGraph E I),
   (Γ.Normal → (Γ.twist c t).Normal) ∧ (Γ.twist c t).nExt = Γ.nExt ∧ (Γ.twist c t).nLoops = Γ.nLoops ∧ (Γ.twist c t).nPairs = Γ.nPairs
 
-/-- **`BAtwistInv` holds** (L3a1). -/
+/-- **`BAtwistInv` holds**. -/
 theorem baTwistInv_holds : BAtwistInv := by
   intro E I _ _ _ _ c t Γ
   refine ⟨fun hN => ⟨?_, ?_⟩, ?_, ?_, ?_⟩
@@ -257,7 +259,7 @@ theorem BAGraph.BASymm1_term_twist {E I : Type} [Fintype I] [DecidableEq I] (D :
   simp only [BAGraph.term, BAGraph.twist]
   rw [BASymm1_dataTr_toLData, h1, h2, h3, map_mul, map_mul]
 
-/-- **The value of a twist**: `(Γ.twist c t).val D = (conj if c) (Γ.val (D transposed if t))` (twin of `lwSymmTwistG_val`, `LWSymm.lean:274`). -/
+/-- **The value of a twist**: `(Γ.twist c t).val D = (conj if c) (Γ.val (D transposed if t))` (as `lwSymmTwistG_val` in `Graph/LWSymm.lean`). -/
 theorem BAGraph.BASymm1_val_twist {E I : Type} [Fintype I] [DecidableEq I] (D : BALData ι)
     (hS : ∀ i j, star (D.S i j) = D.S i j) (hP : ∀ i j, star (D.gPsi i j) = D.gPsi i j) (c t : Bool) (Γ : BAGraph E I)
     (ℓe : E → ι) : (Γ.twist c t).val D ℓe = lwSymmCj c (Γ.val (BASymm1_dataTr D t) ℓe) := by
@@ -365,8 +367,8 @@ def BASymm1_flipEquiv : Ω d L W ≃ᵐ Ω d L W where
   measurable_toFun := Measurable.of_eval fun c => (measurable_pi_apply c).const_mul _
   measurable_invFun := Measurable.of_eval fun c => (measurable_pi_apply c).const_mul _
 
-/-- **`PF d L W g` is invariant under the flip of the imaginary parts** (a product of centred Gaussians; one-size twin of
-`lwSymm_flip_measurePreserving`, `LWSymm.lean:441`). -/
+/-- **`PF d L W g` is invariant under the flip of the imaginary parts** (a product of centred Gaussians; one-size counterpart of
+`lwSymm_flip_measurePreserving` in `Graph/LWSymm.lean`). -/
 theorem BASymm1_flip_measurePreserving (g : ℝ) :
     MeasurePreserving (BASymm1_flipEquiv d L W) (PF d L W g) (PF d L W g) := by
   refine ⟨(BASymm1_flipEquiv d L W).measurable, ?_⟩
@@ -391,10 +393,6 @@ theorem BASymm1_flip_measurePreserving (g : ℝ) :
   exact hmap
 
 end Flip
-
-/-! ## 6. `BAtwistIntegral` -/
-
-/-! ## 7. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `flowP`) -/
 
 end RBM.Graph
 

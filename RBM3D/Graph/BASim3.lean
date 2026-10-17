@@ -6,14 +6,15 @@ Authors: Jun Yin
 import RBM3D.Graph.BASim2
 
 /-!
-# BA-L R1 `BASim` (T2423), part 3: a BA step matched with a band `LocStep` at the image
+# A BA step matched with a band `LocStep` at the image (part 3)
 
 Stage 1 of macro (b) (`BAFrameStepT.ggSplit`) and `baMatch_holds : BAMatch m`; Lemma E at graph
 level (`baExtraGood_holds : BAExtraGood`: the families of terms, `BASim_extra_E`); the
 conservative extensions and the invariants of the transfer graphs of the macro steps
-(`BASim_Cons`, `BASim_inv_trA`, `BASim_trB_facts`); the terms `d2`, `d3`, `d4` and stage 2 of the
-macro steps (`BASim_macroA`, `BASim_macroB1`, `BASim_macroB2`); `baSim'_holds : BAsim' m`; the
-compiled instances of `baMatch_holds`, `baExtraGood_holds` and `baSim'_holds`.
+(`BASim_Cons`, `BASim_inv_trA`, `BASim_trB_facts`); the terms `d₂`, `d₃`, `d₄` and stage 2 of the
+macro steps (`BASim_macroA`, `BASim_macroB1`, `BASim_macroB2`); `baSim'_holds : BAsim' m`; and
+instance graphs `baPB` (`within`) and `baPW` (`weight`).  Paper: Lemma B.6
+(`lanlw`), Lemma B.7 (`lem_lweight`), (B.20) `GGGamma`.
 -/
 
 set_option linter.style.setOption false
@@ -142,7 +143,7 @@ def BASim_B_XLD (P : BAPGraph E) {p q q' r : SEdge (P.E' ⊕ P.I') × List (SEdg
       exact List.Perm.refl _)
     (List.Forall₂.cons (Or.inl (by simp [WEdge.map, bpW, BASim_phi21_alpha, BASim_phi21_beta, hx', BASim_owxEmb1_inr])) List.Forall₂.nil)
 
-/-- **`X.d1`** (`G_{y'β}`, `Ǧ_{αa'}`, `G_{βy}`: `α ↦ x̄`, `β ↦ n0`; `Ǧ_{αa'}` is a loop at `x̄`) at the band's `R5` -/
+/-- **`X.d₁`** (`G_{y'β}`, `Ǧ_{αa'}`, `G_{βy}`: `α ↦ x̄`, `β ↦ n0`; `Ǧ_{αa'}` is a loop at `x̄`) at the band's `R5` -/
 def BASim_B_Xd1 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2)
     (x' : BASimY P) (hx' : (promoteC P.g).vmap p.1.src = Sum.inr x') (hx2 : (promoteC P.g).vmap q.1.dst = Sum.inr x') :
     BASimExt P 2 ((BASimY P) ⊕ Fin 1) (owxEmb 1) :=
@@ -163,7 +164,7 @@ def BASim_B_Xd1 (P : BAPGraph E) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.
       exact (List.perm_append_singleton _ [_, _]))
     (List.Forall₂.cons (Or.inl (by simp [WEdge.map, bpW, BASim_phi21_alpha, BASim_phi21_beta, hx', BASim_owxEmb1_inr])) List.Forall₂.nil)
 
-/-- **`BAMatch` for the stage 1 of macro (b)** (`BAFrameStepT.ggSplit`): the band-tagged outputs of `lanlwT1`, of the derivative terms and of `X.d1` are matched with the outputs
+/-- **`BAMatch` for the stage 1 of macro (b)** (`BAFrameStepT.ggSplit`): the band-tagged outputs of `lanlwT1`, of the derivative terms and of `X.d₁` are matched with the outputs
 of the band step at the image of the pair (`R3`, `R7`, `R5`) -/
 theorem BASim_matchLT_ggSplit (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (j : ℕ) (hj : (lwSplit p.2)[j]? = some q)
@@ -328,8 +329,8 @@ theorem BASim_extraDot_atomAdj {T Tt : BAGraph E I} {d : BAMEdge (E ⊕ I)} (h :
       · exact Or.inr ⟨x, (h3 x).2 (Or.inl hx), hxy⟩
     exact BASim_sameAtom_of_adj _ this
 
-/-- **Lemma E for a family of terms** (E, the pinned `BAExtraGood` at one family): an `M`-split `T'` of a term of the family at a normal graph `Γ` that is extra for `Γ` has a higher order than `Γ`, or fewer atoms with an
-external vertex.  The proof joins the two atoms of `Γ` by an `M`-dotted edge: `Γ̃`; `T'` is then an `M`-split of the term at `Γ̃` with the same atoms; `ord Γ̃ ≤ ord T'` (the merged lemmas, `hmono`) and
+/-- **Lemma E for a family of terms** (`BAExtraGood` at one family): an `M`-split `T'` of a term of the family at a normal graph `Γ` that is extra for `Γ` has a higher order than `Γ`, or fewer atoms with an
+external vertex.  The proof joins the two atoms of `Γ` by an `M`-dotted edge: `Γ̃`; `T'` is then an `M`-split of the term at `Γ̃` with the same atoms; `ord Γ̃ ≤ ord T'` (the lemmas `hmono`) and
 `ord Γ̃ = ord Γ + 2 (n_A Γ - n_A Γ̃)`; if both atoms have an external vertex, `nExt` falls. -/
 theorem BASim_extra_E {k : ℕ} (Γ : BAGraph E I) (hN : Γ.Normal) (F : BAGraph E I → List (BAGraph E (I ⊕ Fin k)))
     (hF : ∀ (Γ' : BAGraph E I) (d : BAMEdge (E ⊕ I)), ∀ T ∈ F Γ', ∃ Tt ∈ F (Γ'.addM d), BASim_ExtraDot T Tt (BAMEdge.map (owxEmb k) d))
@@ -611,7 +612,7 @@ theorem BASim_fam_within (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge 
       exact Or.inl (by simp)
     · exact lanlw_scalingOrderG Γ' p hp' h1 h2 hN' _ (List.mem_cons_of_mem _ (List.mem_map_of_mem hq))
 
-/-- the `M`-splits of the shape `X.d1`: `G_{y'β}`, a circled edge, `G_{βy}` -/
+/-- the `M`-splits of the shape `X.d₁`: `G_{y'β}`, a circled edge, `G_{βy}` -/
 private theorem BASim_hs_d1 {V : Type} (e1 a e3 : SEdge V) (h1 : e1.circ = false) (ha : a.circ = true) (h3 : e3.circ = false) (b : V)
     (hb1 : (e1.src = b ∧ e1.dst ≠ b) ∨ (e1.dst = b ∧ e1.src ≠ b)) :
     ∀ r ∈ baSplitSolid [e1, a, e3], r.2.length ≤ 1 ∨ (r.2.length ≤ 3 ∧ ∃ m ∈ r.2, (m.x = b ∧ m.y ≠ b) ∨ (m.y = b ∧ m.x ≠ b)) := by
@@ -626,7 +627,7 @@ private theorem BASim_hs_d1 {V : Type} (e1 a e3 : SEdge V) (h1 : e1.circ = false
     refine ⟨by simp, _, List.mem_cons_self, ?_⟩
     simpa using hb1
 
-/-- the stage-1 term `X.d1` of macro (b) -/
+/-- the stage-1 term `X.d₁` of macro (b) -/
 def BASim_Fd1 (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (Γ : BAGraph E I) : List (BAGraph E (I ⊕ Fin 2)) :=
   [BAGraph.ext 2 Γ q.2 [bpS false (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 q.1.dst), bpS false (bpv 1) (owxEmb 2 p.1.dst)]
     [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)]]
@@ -935,7 +936,7 @@ theorem BASim_counters_tr2 (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (s
   rw [this]
   exact BAExpandWOrd_ext_counters Γ rest s x
 
-/-- **The invariants of the transfer graph of macro (a)** are those of `Γ` (`(M3)`): the edge `p.1` inside an atom is replaced by the loop `Ǧ_{ββ}` -/
+/-- **The invariants of the transfer graph of macro (a)** are those of `Γ`: the edge `p.1` inside an atom is replaced by the loop `Ǧ_{ββ}` -/
 theorem BASim_inv_trA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hxy : Γ.sameAtom p.1.src p.1.dst = true) : BASim_inv (BAGraph.BAScost_trA Γ p) = BASim_inv Γ := by
   have hC := BASim_cons_tr2 Γ p.2 [bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)] p.1.src p.1.dst hxy
@@ -1442,7 +1443,7 @@ theorem BASim_ord_ext (Γ : BAGraph E I) (k : ℕ) (rest : List (SEdge (E ⊕ I)
     (BAGraph.ext k Γ rest s w md).scalingOrder = ((rest.length + s.length : ℕ) : ℤ) + 2 * (((Γ.nW + w.length : ℕ) : ℤ) - (BAGraph.ext k Γ rest s w md).nA) := by
   simp [BAGraph.scalingOrder, BAGraph.counters, ord, BAGraph.nS, BAGraph.nW, BAGraph.ext, LGraph.owxExt]
 
-/-- the terms `d2`, `d3` of macro (b) (`ΔnS = -1`, `ΔnW = +1`, no new atom) have a higher order than `Γ` -/
+/-- the terms `d₂`, `d₃` of macro (b) (`ΔnS = -1`, `ΔnW = +1`, no new atom) have a higher order than `Γ` -/
 theorem BASim_ord_d23 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hsame : Γ.sameAtom p.1.src q.1.dst = true) (s : List (SEdge (E ⊕ (I ⊕ Fin 2)))) (hs : s.length = 1) (md : List (BAMEdge (E ⊕ (I ⊕ Fin 2))))
     (ρ : E ⊕ (I ⊕ Fin 2) → E ⊕ I) (hρ : ∀ a, ρ (owxEmb 2 a) = a) (hmd : ∀ e ∈ md, Γ.sameAtom (ρ e.x) (ρ e.y) = true)
@@ -1487,7 +1488,7 @@ theorem BASim_sameAtom_addM (Γ : BAGraph E I) (d : BAMEdge (E ⊕ I)) {u v : E 
 
 theorem BASim_rho2_beta (x y : E ⊕ I) : BAScost_rho2 x y (bpv 1 : E ⊕ (I ⊕ Fin 2)) = y := by simp [BAScost_rho2, bpv]
 
-/-- the term `d4` of macro (b) when `[y] ≠ [y']`: the order rises or `nExt` falls -/
+/-- the term `d₄` of macro (b) when `[y] ≠ [y']`: the order rises or `nExt` falls -/
 theorem BASim_d4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hsame : Γ.sameAtom p.1.src q.1.dst = true) (hne : Γ.sameAtom p.1.dst q.1.src = false) :
     Γ.scalingOrder < (BAGraph.ext 2 Γ q.2 [] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst),
@@ -1583,7 +1584,7 @@ theorem BASim_ord_d3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E
       · exact ⟨p.1.src, by rw [BASim_sameAtom_iff]; exact BAScost_atomSetoid_ext_md Γ q.2 _ _ _ (bpM (owxEmb 2 p.1.src) (bpv 0)) (by simp)⟩
       · exact ⟨q.1.src, by rw [BASim_sameAtom_iff]; exact BAScost_atomSetoid_ext_md Γ q.2 _ _ _ (bpM (owxEmb 2 q.1.src) (bpv 1)) (by simp)⟩
 
-/-- the term `d4` with `[y] = [y']` has the invariants of the band's `A1` (`S` against `S⁺`: the colour of a waved edge is not read) -/
+/-- the term `d₄` with `[y] = [y']` has the invariants of the band's `A1` (`S` against `S⁺`: the colour of a waved edge is not read) -/
 theorem BASim_inv_d4_A1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hsame : Γ.sameAtom p.1.src q.1.dst = true) :
     BASim_inv (BAGraph.ext 2 Γ q.2 [] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst),
       bpM (owxEmb 2 q.1.src) (bpv 1), bpM (bpv 1) (owxEmb 2 p.1.dst)]) = BASim_inv (BAGGOp_A1 Γ p q) := by
@@ -1747,7 +1748,7 @@ theorem BASim_outsT_circ (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq 
   rw [BAWeightOp_splitG_of_circ T (hTs T hT).2, List.mem_singleton] at hT'
   exact ⟨T, hT, by rw [hT']⟩
 
-/-- **The term `d4` with `[y] = [y']` is simulated by the band's gg step at `P.img`** (at `A1`) -/
+/-- **The term `d₄` with `[y] = [y']` is simulated by the band's gg step at `P.img`** (at `A1`) -/
 theorem BASim_d4_band (m : ℂ) (P : BAPGraph E) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2) (h : p.1.σ = true ∧ q.1.σ = true) (a a' : P.I')
     (hx : p.1.src = Sum.inr a ∧ q.1.dst = Sum.inr a') (hsame : P.g.sameAtom (Sum.inr a) (Sum.inr a') = true)
@@ -1782,7 +1783,7 @@ theorem BASim_d4_band (m : ℂ) (P : BAPGraph E) (hN : P.g.Normal) {p q : SEdge 
   refine ⟨_, hloc, R, hR, ?_⟩
   rw [BASim_baInv_of_equiv hRE, BASim_img_baInv, BASim_outOf_baInv P _ hNA, BASim_inv_d4_A1 P.g p q hsame0]
 
-/-- **Macro (b), the transfer-family terms `d2, d3, d4`**: the order rises (`d2`, `d3`; `d4` with `[y] ≠ [y']`: or `nExt` falls), or (`d4` with `[y] = [y']`) the term is `A1` of the band's gg step -/
+/-- **Macro (b), the transfer-family terms `d₂, d₃, d₄`**: the order rises (`d₂`, `d₃`; `d₄` with `[y] ≠ [y']`: or `nExt` falls), or (`d₄` with `[y] = [y']`) the term is `A1` of the band's gg step -/
 theorem BASim_macroB1 (m : ℂ) (P : BAPGraph E) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))}
     (hp : p ∈ lwSplit P.g.solid) (hq : q ∈ lwSplit p.2) (hσ : p.1.σ = true ∧ q.1.σ = true) (a a' : P.I')
     (hx : p.1.src = Sum.inr a ∧ q.1.dst = Sum.inr a') (hsame : P.g.sameAtom (Sum.inr a) (Sum.inr a') = true)
@@ -1826,7 +1827,7 @@ theorem BASim_tag_ok (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] 
   obtain ⟨T, hT, T', hT', rfl, -⟩ := BASim_mem_outsT P tg Ts t Q hQ
   exact htg T'
 
-/-- **`BAsim'`** (T2423 (a) T2): the simulation at a BA graph with the invariants of `P`. -/
+/-- **`BAsim'`**: the simulation at a BA graph with the invariants of `P`. -/
 theorem baSim'_holds (m : ℂ) : BAsim' m := by
   intro E P outs hst hN Q hQ
   obtain ⟨LT, hLT, rfl⟩ := (baFrameStepT_untag_holds P outs).1 hst
@@ -1873,7 +1874,7 @@ theorem baSim'_holds (m : ℂ) : BAsim' m := by
 
 end Macro
 
-/-! ## Compiled instances (T2423 (a) (ii)): the data `P_A` (`gg`, in `BASim.lean`), `P_B` (`within`), `P_C` (`ggSplit`), `P_W` (`weight`), `P_E` (`edge`) -/
+/-! ## Instance graphs: `P_B` (`within`) and `P_W` (`weight`) -/
 namespace BASimInst
 /-- `P_B` (macro (a)): solid `2→3` inside the atom `{2,3}`, `0→2`, `1→4`; the `within` step at `p = 2→3`. -/
 def baPB : BAGraph (Fin 2) (Fin 3) :=

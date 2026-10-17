@@ -20,30 +20,36 @@ set_option linter.style.show false
 set_option linter.style.openClassical false
 
 /-!
-# BA-L L3b2a (T2469), part 1: the path invariant through every builder term of the BA-only shapes `e2`, `macroA`, `macroB`
+# The path invariant through every builder term of the shapes `e2`, `macroA`, `macroB` (part 1)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:172-199` (the band proof of (1)-(5)), `:302-313` (the atomic image), `:363` (`lanlw`), `:376-387` (`lem_lweight`), `:393-405` (`GGGamma`).
-Design: `docs/reports/T2387-design.md` §6 row L3b2, `docs/tickets/T2469.md` target 1 (a) (split `BALocReg2 | BALocReg2B`, CONTROL H257 (3)).
+Paper: Subappendix B.2 (the band proof of (1)-(5), (B.11) `eq:originGamma`); Definition B.3
+(`def_atom`, the atomic image); Lemma B.6 (`lanlw`); Lemma B.7 (`lem_lweight`); (B.20) `GGGamma`.
 
-For every builder term `X` of the tagged frame step (the 17 rows of `docs/reports/T2447-prove.md:9-28` and `A1` of `gg2`), the invariant of the atomic image passes from `Γ` to `X`:
-`BALocReg1_PathAt Γ k a b → BALocReg1_PathAt X k a b`, under the hypotheses of the constructor of `BAFrameStepT` that builds `X` (the same hypotheses as the cost twins
-`BAShapeO2_*`, `Graph/BAShapeO2.lean`, whose signatures the term lemmas below follow, so that file 2 of the row consumes them in the same way).  Band originals: `LocalRegular2` §3
-(`localReg2_pathFam_owxT1`-`T4`, `oe1xOwx`, `oe1xD`, `oe2xR2`-`R8`), whose replacement lemmas `localReg2_VRepl.same` / `.deriv` (LR2:852, 882) are used at the vertex map `owxEmb n`
-of the extension `BAGraph.ext n Γ rest S W md`.
+For every builder term `X` of the tagged frame step (the weight terms, the `within` and `ggSplit`
+terms, and the `GGGamma` terms including `A1` of `gg2`), the invariant of the atomic image passes
+from `Γ` to `X`: `BALocReg1_PathAt Γ k a b → BALocReg1_PathAt X k a b`, under the hypotheses of the
+constructor of `BAFrameStepT` that builds `X` (the same hypotheses as the cost counterparts
+`BAShapeO2_*`, `Graph/BAShapeO2.lean`, whose signatures the term lemmas below follow).  Band
+originals: `Graph/LocalRegular2.lean` Section 3 (`localReg2_pathFam_owxT1`-`T4`, `oe1xOwx`,
+`oe1xD`, `oe2xR2`-`R8`), whose replacement lemmas `localReg2_VRepl.same` / `.deriv` are used at the
+vertex map `owxEmb n` of the extension `BAGraph.ext n Γ rest S W md`; below, the band's `R2`, ...,
+`owxT1`, ... are these lemmas, named by their suffixes.
 
-## Contents (namespace `RBM.Graph`; helpers carry the stem `BALocReg2_`, the instance data the namespace `BALocReg2Inst`)
+## Contents (namespace `RBM.Graph`; helpers carry the stem `BALocReg2_`)
 
-1. **Tools**: the family of `Γ` read in the molecules of an extension (`BALocReg2_pathAt_map_fam`, the first half of `BALocReg1_pathAt_map`, LR2:616 along `owxEmb n`), the coloured
-   edges of an atomic image (`BALocReg2_edgeMS_eq`), the molecular identifications by `M`-dotted and waved edges (`BALocReg2_mu_md`, `_mu_wav`), and the extension lemma
-   `BALocReg2_pathAt_ext`: the invariant passes from `Γ` to `ext n Γ rest S W md` under a replacement `localReg2_VRepl` of the selected edges of `Γ` by the new edges.
+1. **Tools**: the family of `Γ` read in the molecules of an extension (`BALocReg2_pathAt_map_fam`,
+   the first half of `BALocReg1_pathAt_map` along `owxEmb n`), the coloured edges of an atomic image
+   (`BALocReg2_edgeMS_eq`), the molecular identifications by `M`-dotted and waved edges
+   (`BALocReg2_mu_md`, `_mu_wav`), and the extension lemma `BALocReg2_pathAt_ext`: the invariant
+   passes from `Γ` to `ext n Γ rest S W md` under a replacement `localReg2_VRepl` of the selected
+   edges of `Γ` by the new edges.
 2. **The weight terms**: `lanlwD`, the heads of `lw2`, `lw4`, `within`, the tail of `lw4`.
 3. **The `GGGamma` terms**: `A1`-`A5`, `AD` of `gg2`; `B1`, `B2`, `BD` of `gg4`.
-4. **The `ggSplit` terms** `d1`-`d4`.
+4. **The `ggSplit` terms** `d₁`-`d₄`.
 5. **The term lists**: `BALocReg2_lw2`, `_lw4`, `_within`, `_gg2`, `_gg4`.
-6. **Compiled instances** (`example`s) at the R1 witnesses `P_W`, `P_B`, `P_A`, `P_C`, with every constructor hypothesis discharged; with the invariant of the parent satisfied (not assumed) at `P_C`,
-   `baPEr` (`BALocReg1Inst`: `pathInv2_C`, `pathInv2_Er`) and at `P_A`, `P_B` and a weight witness `baPL` (hand-built families moved along `BALocReg1_pathAt_map`: `BALocReg2Inst.pathInv2_A`, `_B`, `_L`).
 
-C1: combinatorial; no data.  No `inductive`, no new `Prop` def.  No port from `../RBM1D`, `../RBM2D` (the d = 3 invariants are the band's `LocalRegular2`, applied to the atomic image).
+Combinatorial; no data.  No `inductive`, no new `Prop` def.  The invariants are the band's
+(`Graph/LocalRegular2.lean`), applied to the atomic image.
 -/
 
 noncomputable section
@@ -266,7 +272,7 @@ section Weight
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
 
-/-- **`lw2` head** (`BAWeightOp:69`): `p.1` a blue loop `Ǧ_{xx}`; the extension has the loops `Ǧ_{αx}` and `Ǧ_{ββ}` in the molecule of `x` (the band's `owxT1`, LR2:1027). -/
+/-- **`lw2` head** (`Graph/BAWeightOp.lean`): `p.1` a blue loop `Ǧ_{xx}`; the extension has the loops `Ǧ_{αx}` and `Ǧ_{ββ}` in the molecule of `x` (the band's `owxT1`). -/
 theorem BALocReg2_lw2Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) :
     ∀ (k : ℕ) (a b : E), BALocReg1_PathAt Γ k a b → BALocReg1_PathAt
@@ -289,8 +295,8 @@ theorem BALocReg2_lw2Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge
     simp only [hxy]
     try abel
 
-/-- **`lanlwD`** (the derivative term of `lanlw`, the tail of `lw2`, of the `within` stage 1, of `edge`, of `ggSplit`; `BAExpandW:133`): `p.1 = Ǧ_{xy}` becomes `G_{βy}` in the molecule of `x`
-and the edge `q.1` is rerouted through the molecule of `x` (the band's `oe1xD`, LR2:1165). -/
+/-- **`lanlwD`** (the derivative term of `lanlw`, the tail of `lw2`, of the `within` stage 1, of `edge`, of `ggSplit`; `Graph/BAExpandW.lean`): `p.1 = Ǧ_{xy}` becomes `G_{βy}` in the molecule of `x`
+and the edge `q.1` is rerouted through the molecule of `x` (the band's `oe1xD`). -/
 theorem BALocReg2_lanlwD (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hq : q ∈ lwSplit p.2) :
     ∀ (k : ℕ) (a b : E), BALocReg1_PathAt Γ k a b → BALocReg1_PathAt (BAGraph.lanlwD Γ p q) k a b := by
@@ -311,7 +317,7 @@ theorem BALocReg2_lanlwD (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I
   · BALocReg2_simp0
     abel
 
-/-- **`lw4` head** (`BAWeightOp:74`): `p.1` a blue loop `Ǧ_{xx}`; the four fresh vertices `z, y, α, β = bpv 0..3` lie in the molecule of `x`, so the new edges `Ǧ_{αy}`, `Ǧ_{ββ}` are loops there (the band's `owxT2`, LR2:1052). -/
+/-- **`lw4` head** (`Graph/BAWeightOp.lean`): `p.1` a blue loop `Ǧ_{xx}`; the four fresh vertices `z, y, α, β = bpv 0..3` lie in the molecule of `x`, so the new edges `Ǧ_{αy}`, `Ǧ_{ββ}` are loops there (the band's `owxT2`). -/
 theorem BALocReg2_lw4Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) :
     ∀ (k : ℕ) (a b : E), BALocReg1_PathAt Γ k a b → BALocReg1_PathAt
@@ -332,8 +338,8 @@ theorem BALocReg2_lw4Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge
     try abel
   · BALocReg2_msnorm
 
-/-- **`lw4` tail** (`BAWeightOp:75`, the derivative terms at the solid edges `q.1` of `f`): the loop `p.1` is dropped and `q.1` is rerouted through the molecule of `x`, a loop is added
-(the band's `owxT4`, LR2:1088). -/
+/-- **`lw4` tail** (`Graph/BAWeightOp.lean`, the derivative terms at the solid edges `q.1` of `f`): the loop `p.1` is dropped and `q.1` is rerouted through the molecule of `x`, a loop is added
+(the band's `owxT4`). -/
 theorem BALocReg2_lw4Tail (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hq : q ∈ lwSplit p.2) :
     ∀ (k : ℕ) (a b : E), BALocReg1_PathAt Γ k a b → BALocReg1_PathAt
@@ -355,7 +361,7 @@ theorem BALocReg2_lw4Tail (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ 
     try abel
   · BALocReg2_msnorm
 
-/-- **`within` head** (`BASim:122`): `p.1 = Ǧ_{xy}` becomes `Ǧ_{αy}` in the molecule of `x`, and the loop `Ǧ_{ββ}` is added there (the band's `oe1xOwx`, LR2:1143). -/
+/-- **`within` head** (`Graph/BASim.lean`): `p.1 = Ǧ_{xy}` becomes `Ǧ_{αy}` in the molecule of `x`, and the loop `Ǧ_{ββ}` is added there (the band's `oe1xOwx`). -/
 theorem BALocReg2_withinHead (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hsame : Γ.sameAtom p.1.src p.1.dst = true) :
     ∀ (k : ℕ) (a b : E), BALocReg1_PathAt Γ k a b → BALocReg1_PathAt
@@ -384,8 +390,7 @@ section GG
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`gg2` head `A1`** (`BAGGOp_A1`, `Σ M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β} f`, the first sum): the atoms of `x`, `y`, `y'` merge, the pair `p`, `q` becomes two loops (`BAScostLL_S1`'s path twin;
-stage 2 of macro (b) reads every term of `tr.gg2`). -/
+/-- **`gg2` head `A1`** (`BAGGOp_A1`, `Σ M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β} f`, the first sum): the atoms of `x`, `y`, `y'` merge, the pair `p`, `q` becomes two loops (the path counterpart of `BAScostLL_S1`). -/
 theorem BALocReg2_ggA1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -404,7 +409,7 @@ theorem BALocReg2_ggA1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
     simp only [hp1.1, hq1.1, hxy]
   · BALocReg2_simp0
 
-/-- **`gg2` head `A2`** (`BAGGOp_A2`, `Σ M_{xu} M_{ux} S⁺_{uβ} Ǧ_{βy} M_{y'β} f`; the band's `R2`, LR2:1330, whose selector is the exchanged pair `BASim:196-198`; no exchange is needed here): `y'` joins the molecule of `x`, `q.1 = (y', x)` becomes a loop,
+/-- **`gg2` head `A2`** (`BAGGOp_A2`, `Σ M_{xu} M_{ux} S⁺_{uβ} Ǧ_{βy} M_{y'β} f`; the band's `R2`, whose selector is the exchanged pair of `Graph/BASim.lean`; no exchange is needed here): `y'` joins the molecule of `x`, `q.1 = (y', x)` becomes a loop,
 `p.1 = (x, y)` becomes `(β, y)`. -/
 theorem BALocReg2_ggA2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
@@ -443,7 +448,7 @@ theorem BALocReg2_ggA3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
     try abel
   · BALocReg2_msnorm
 
-/-- **`gg2` head `A4`** (`BAGGOp_A4`, `Σ M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} Ǧ_{y'x} f`; the band's `R3`, LR2:1352): `p.1 = (x, y)` becomes `(α, y)` in the molecule of `x`, `q.1` is kept, a loop is added. -/
+/-- **`gg2` head `A4`** (`BAGGOp_A4`, `Σ M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} Ǧ_{y'x} f`; the band's `R3`): `p.1 = (x, y)` becomes `(α, y)` in the molecule of `x`, `q.1` is kept, a loop is added. -/
 theorem BALocReg2_ggA4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -462,7 +467,7 @@ theorem BALocReg2_ggA4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
     try abel
   · BALocReg2_msnorm
 
-/-- **`gg2` head `A5`** (`BAGGOp_A5`, `Σ M_{xα} S_{αβ} Ǧ_{αx} G_{βy} G_{y'β} f`; the band's `R5`, LR2:1410): the edges `(x, y)`, `(y', x)` move to `(β, y)`, `(y', β)` in the molecule of `x`, a loop is added. -/
+/-- **`gg2` head `A5`** (`BAGGOp_A5`, `Σ M_{xα} S_{αβ} Ǧ_{αx} G_{βy} G_{y'β} f`; the band's `R5`): the edges `(x, y)`, `(y', x)` move to `(β, y)`, `(y', β)` in the molecule of `x`, a loop is added. -/
 theorem BALocReg2_ggA5 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -481,7 +486,7 @@ theorem BALocReg2_ggA5 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
     try abel
   · BALocReg2_msnorm
 
-/-- **`gg2` tail `AD`** (`BAGGOp_AD`, the derivative terms at the solid edges `r.1` of `f`; the band's `R7`, LR2:1481): `(x, y)` becomes `(β, y)`, `(y', x)` stays, `r.1` is rerouted through the molecule of `x`. -/
+/-- **`gg2` tail `AD`** (`BAGGOp_AD`, the derivative terms at the solid edges `r.1` of `f`; the band's `R7`): `(x, y)` becomes `(β, y)`, `(y', x)` stays, `r.1` is rerouted through the molecule of `x`. -/
 theorem BALocReg2_ggAD (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true)
@@ -501,7 +506,7 @@ theorem BALocReg2_ggAD (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I
   · BALocReg2_simp0
     abel
 
-/-- **`gg4` head `B1`** (`BAGGOp_B1`; the band's `R4`, LR2:1374): `(x, y)`, `(y', x)` move to `(2, y)`, `(y', 1)` in the molecule of `x`, a loop at `3` is added. -/
+/-- **`gg4` head `B1`** (`BAGGOp_B1`; the band's `R4`): `(x, y)`, `(y', x)` move to `(2, y)`, `(y', 1)` in the molecule of `x`, a loop at `3` is added. -/
 theorem BALocReg2_ggB1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -520,7 +525,7 @@ theorem BALocReg2_ggB1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
     try abel
   · BALocReg2_msnorm
 
-/-- **`gg4` head `B2`** (`BAGGOp_B2`; the band's `R6`, LR2:1444): `(x, y)`, `(y', x)` move to `(3, y)`, `(y', 3)` in the molecule of `x`, a loop at `(2, 1)` is added. -/
+/-- **`gg4` head `B2`** (`BAGGOp_B2`; the band's `R6`): `(x, y)`, `(y', x)` move to `(3, y)`, `(y', 3)` in the molecule of `x`, a loop at `(2, 1)` is added. -/
 theorem BALocReg2_ggB2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -539,7 +544,7 @@ theorem BALocReg2_ggB2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
     try abel
   · BALocReg2_msnorm
 
-/-- **`gg4` tail `BD`** (`BAGGOp_BD`; the band's `R8`, LR2:1510): `(x, y)`, `(y', x)` move to `(3, y)`, `(y', 1)`, `r.1` is rerouted through the molecule of `x`. -/
+/-- **`gg4` tail `BD`** (`BAGGOp_BD`; the band's `R8`): `(x, y)`, `(y', x)` move to `(3, y)`, `(y', 1)`, `r.1` is rerouted through the molecule of `x`. -/
 theorem BALocReg2_ggBD (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true)
@@ -567,7 +572,7 @@ section GGSplit
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`ggSplit` term `d1`** (`BASim:132`, `dq [G_{y'β}, Ǧ_{αa'}, G_{βy}] []`; the band's `R5` at `x := a`, LR2:1410): `[a] = [a']` (`hsame`), `(a, y)`, `(y', a')` move to `(β, y)`, `(y', β)`, a loop is added. -/
+/-- **`ggSplit` term `d₁`** (`dq [G_{y'β}, Ǧ_{αa'}, G_{βy}] []` in `Graph/BASim.lean`; the band's `R5` at `x := a`): `[a] = [a']` (`hsame`), `(a, y)`, `(y', a')` move to `(β, y)`, `(y', β)`, a loop is added. -/
 theorem BALocReg2_ggSplitD1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -590,7 +595,7 @@ theorem BALocReg2_ggSplitD1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (S
     try abel
   · BALocReg2_msnorm
 
-/-- **`ggSplit` term `d2`** (`dq [Ǧ_{y'β}] [M_{αa'}, M_{βy}]`; the band's `R2`): `y` joins the molecule of `a`, `p.1` becomes a loop, `q.1 = (y', a')` becomes `(y', β)`. -/
+/-- **`ggSplit` term `d₂`** (`dq [Ǧ_{y'β}] [M_{αa'}, M_{βy}]`; the band's `R2`): `y` joins the molecule of `a`, `p.1` becomes a loop, `q.1 = (y', a')` becomes `(y', β)`. -/
 theorem BALocReg2_ggSplitD2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -612,7 +617,7 @@ theorem BALocReg2_ggSplitD2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (S
     try abel
   · BALocReg2_msnorm
 
-/-- **`ggSplit` term `d3`** (`dq [Ǧ_{βy}] [M_{αa'}, M_{y'β}]`; the band's `R2`): `y'` joins the molecule of `a`, `q.1` becomes a loop, `p.1 = (a, y)` becomes `(β, y)`. -/
+/-- **`ggSplit` term `d₃`** (`dq [Ǧ_{βy}] [M_{αa'}, M_{y'β}]`; the band's `R2`): `y'` joins the molecule of `a`, `q.1` becomes a loop, `p.1 = (a, y)` becomes `(β, y)`. -/
 theorem BALocReg2_ggSplitD3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -634,7 +639,7 @@ theorem BALocReg2_ggSplitD3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (S
     try abel
   · BALocReg2_msnorm
 
-/-- **`ggSplit` term `d4`** (`dq [] [M_{αa'}, M_{y'β}, M_{βy}]`; the band's `R2` twice): `y`, `y'` join the molecule of `a`, `p.1` and `q.1` become loops. -/
+/-- **`ggSplit` term `d₄`** (`dq [] [M_{αa'}, M_{y'β}, M_{βy}]`; the band's `R2` twice): `y`, `y'` join the molecule of `a`, `p.1` and `q.1` become loops. -/
 theorem BALocReg2_ggSplitD4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -664,7 +669,7 @@ section Lists
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **The `weight` step, `lw2`** (`BASim:139`): the invariant passes from `Γ` to every term of `lw2` at a blue circled loop `p.1` -/
+/-- **The `weight` step, `lw2`** (`Graph/BASim.lean`): the invariant passes from `Γ` to every term of `lw2` at a blue circled loop `p.1` -/
 theorem BALocReg2_lw2 (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) :
     ∀ X ∈ Γ.lw2 p, ∀ (k : ℕ) (a b : E), BALocReg1_PathAt Γ k a b → BALocReg1_PathAt X k a b := by
@@ -684,7 +689,7 @@ theorem BALocReg2_lw4 (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) �
   · obtain ⟨q, hq, rfl⟩ := List.mem_map.1 hX
     exact BALocReg2_lw4Tail Γ hN p hp hp1 q hq
 
-/-- **The `within` step, stage 1** (`BASim:122`): the head and the terms `lanlwD` -/
+/-- **The `within` step, stage 1** (`Graph/BASim.lean`): the head and the terms `lanlwD` -/
 theorem BALocReg2_within (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hsame : Γ.sameAtom p.1.src p.1.dst = true) :
     ∀ X ∈ BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1), bpS true (bpv 0) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)]
@@ -696,7 +701,7 @@ theorem BALocReg2_within (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I
   · obtain ⟨q, hq, rfl⟩ := List.mem_map.1 hX
     exact BALocReg2_lanlwD Γ hN p hp hp1 q hq
 
-/-- **The `gg` step, `gg2`** (`BASim:149`): `A1`-`A5` and the terms `AD` -/
+/-- **The `gg` step, `gg2`** (`Graph/BASim.lean`): `A1`-`A5` and the terms `AD` -/
 theorem BALocReg2_gg2 (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -730,10 +735,6 @@ theorem BALocReg2_gg4 (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I)
     exact BALocReg2_ggBD Γ hN p q hp hq hp1 hq1 hxy hwf1 hwf2 hint r hr
 
 end Lists
-
-/-! ## 6. Nonempty instances: the term lemmas at the R1 witnesses (`BASim3:1877-1905`), every hypothesis discharged -/
-
-/-! ### The invariant at the witnesses `P_A`, `P_B` and a weight witness (hand-built families, moved along `BALocReg1_pathAt_map`) -/
 
 end RBM.Graph
 

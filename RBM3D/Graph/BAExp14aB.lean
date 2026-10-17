@@ -11,22 +11,17 @@ import RBM3D.BA.Step1Trivial
 import RBM3D.BA.GreenLDE
 
 /-!
-# BA-L L4a (T2418), part B: the pin S1 of `lem:LWterm_EXP` at BA and its proof
+# The crude families of `lem:LWterm_EXP` at BA, and their bound
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`, `B:11-14`),
-`GGGamma` `:393-405` (D402 coefficient `W - 1 = M⁺S⁺`), `lanlw` `:359-372`; design
-`docs/reports/T2398-design.md` §1, §2; consumer `BALWCutExpTw`
-(`t/T2398:RBM3D/Probe/T2398Pins.lean:434-440`).
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`): (B.1) `eq:ELW_term`, (B.20)
+`GGGamma` (the coefficient `W - 1 = M⁺S⁺`), Lemma B.6 (`lanlw`).  The consumer is `BALWCutExpTw`.
 
-`BAExp14aS1` (S1, copied verbatim from the probe `t/T2418:RBM3D/Probe/T2418Pins.lean:35-112`,
-H219) is the crude families `{MM, T1, T3A^{(0)}, T3A^{(1)}, F_C1, F_C2}` of `lem:LWterm_EXP`
-at the carrier `baFMz` and the law `seqP (sz.withLam 0)`, from the two premises
-`STLocalEntrygL`, `LWAvgLawgL` only (no premise on `𝔼 tr`; Amend 1 D1).
+`BAExp14aS1` is the statement for the crude families `{MM, T1, T3A^{(0)}, T3A^{(1)}, F_C1, F_C2}`
+of `lem:LWterm_EXP` at the carrier `baFMz` and the law `seqP (sz.withLam 0)`, from the two
+premises `STLocalEntrygL`, `LWAvgLawgL` only (no premise on `𝔼 tr`).
 `baExp14a_S1_holds : ∀ d, BAExp14aS1 d` is its proof.  The stochastic lemmas that carry
-`LWAvgLawgL` are `private` (they are not a public interface).  It does **not** cover the
-`∂Ḡ_{xy}` children of `lanlw` on `MǦ`, `ǦM` (L4b2) nor the `∂tr` children (S3), `T2a`, `T2b`,
-`T3B`, `T3C`.  Not here: §6 (`lwExpI1K_holds`), §9 (`lwExpI41K_holds`), the twisted part of
-§8 (L4b2); no `tw*` name.
+`LWAvgLawgL` are `private`.  It does **not** cover the `∂Ḡ_{xy}` children of `lanlw` on `MǦ`,
+`ǦM`, nor the `∂tr` children, `T2a`, `T2b`, `T3B`, `T3C`.  No twisted quantity occurs.
 
 Proof (`F = F^Ǧ + F^M`, `G = Ǧ + M`): `|F^Ǧ| ≺ ζ` pathwise from `a = max|X_c| ≺ B` and
 `b = max|Ǧ_{xy}| ≺ B^{1/2}` (Ward identity, Schur bound, pair count `W^{-d} ≤ (λ² + 1) B`);
@@ -53,7 +48,7 @@ section S1Fam
 variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ)
 
 /-- `X_c = tr(Ǧ E_c) = W^{-d} Σ_{v ∈ [c]} Ǧ_{vv}` (`= 𝓛^{(1)}_{+,c} - m`).  With `S_{γδ} = t W^{-d} 1([γ] = [δ])` (`BAlwS`,
-`Graph/BAExpand.lean:75`): `Σ_δ S_{γδ} Ǧ_{δδ} = t X_{[γ]}`. -/
+`Graph/BAExpand.lean`): `Σ_δ S_{γδ} Ǧ_{δδ} = t X_{[γ]}`. -/
 def BAExp14a_X (c : Zd d (sz.L n)) : ℂ :=
   (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ v ∈ Iblk d (sz.L n) (sz.W n) c, (baFMz sz z).GM n t ω v v
 
@@ -66,7 +61,7 @@ def BAExp14a_tail (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)) : ℂ :=
   if σ then (baFMz sz z).G n t ω y x else star ((baFMz sz z).G n t ω x y)
 
 /-- `W^{-2d} Σ_{x ∈ [a], y ∈ [b]} G(σ)_{yx} Σ_α X_{[α]} T(x, y, α)`: the frame of the families (`x ∈ [a]`, `y ∈ [b]`, `α` in the whole
-fine lattice; `S^{(B)} = 1` so `a₁ = a₂ = [α]`, `B:11-14`). -/
+fine lattice; `S^{(B)} = 1` so `a₁ = a₂ = [α]`, as in (B.1) `eq:ELW_term`). -/
 def BAExp14a_outer (σ : Bool) (a b : Zd d (sz.L n))
     (T : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ) : ℂ :=
   ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b,
@@ -76,12 +71,12 @@ def BAExp14a_outer (σ : Bool) (a b : Zd d (sz.L n))
 def BAExp14a_FMM (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14a_outer sz z n t ω σ a b fun x y α => (baFMz sz z).M n x α * (baFMz sz z).M n α y
 
-/-- `F_T1`: `Σ_β (W - 1)_{αβ} M_{xβ} M_{βy}` (the first sum of `GGGamma`, D402). -/
+/-- `F_T1`: `Σ_β (W - 1)_{αβ} M_{xβ} M_{βy}` (the first sum of (B.20) `GGGamma`). -/
 def BAExp14a_FT1 (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14a_outer sz z n t ω σ a b fun x y α =>
     ∑ β, BAExp14a_Wk sz z n t true α β * (baFMz sz z).M n x β * (baFMz sz z).M n β y
 
-/-- `F_T3A^{(k)}`: `Σ_{w,γ} W^{(k)}_{αw} M_{wγ} · t X_{[γ]} · G_{γy} Ǧ_{xw}` (the `Ǧ_{δδ} G_{γy} Ǧ_{xw}` term of `GGGamma`, `δ`-sum done). -/
+/-- `F_T3A^{(k)}`: `Σ_{w,γ} W^{(k)}_{αw} M_{wγ} · t X_{[γ]} · G_{γy} Ǧ_{xw}` (the `Ǧ_{δδ} G_{γy} Ǧ_{xw}` term of (B.20) `GGGamma`, `δ`-sum done). -/
 def BAExp14a_FT3A (k : Bool) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14a_outer sz z n t ω σ a b fun x y α =>
     ∑ w, ∑ γ, BAExp14a_Wk sz z n t k α w * (baFMz sz z).M n w γ * ((t : ℂ) * BAExp14a_X sz z n t ω (STblk sz n γ)) *
@@ -99,28 +94,28 @@ def BAExp14a_FC2 (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
     ∑ α', ((t : ℂ) * BAExp14a_X sz z n t ω (STblk sz n α')) * (baFMz sz z).M n x α' * (baFMz sz z).G n t ω α' α *
       (baFMz sz z).M n α y
 
-/-- The six families of S1 at the loop charge `+`, in the order `F_MM, F_T1, F_T3A^{(0)}, F_T3A^{(1)}, F_C1, F_C2`; `x ∈ [a]`, `y ∈ [b]`,
+/-- The six families of `BAExp14aS1` at the loop charge `+`, in the order `F_MM, F_T1, F_T3A^{(0)}, F_T3A^{(1)}, F_C1, F_C2`; `x ∈ [a]`, `y ∈ [b]`,
 closing edge `G(σ)_{yx}`. -/
 def BAExp14a_F (k : Fin 6) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   ![BAExp14a_FMM sz z n t ω σ a b, BAExp14a_FT1 sz z n t ω σ a b, BAExp14a_FT3A sz z n t ω false σ a b,
     BAExp14a_FT3A sz z n t ω true σ a b, BAExp14a_FC1 sz z n t ω σ a b, BAExp14a_FC2 sz z n t ω σ a b] k
 
-/-- **The integrand of S1** at the labelling of `LWcutg` (`Chain/LWGen.lean:39`): `k` the family, `σc` the charge of the loop `X` and of the two
+/-- **The integrand of `BAExp14aS1`** at the labelling of `LWcutg` (`Chain/LWGen.lean`): `k` the family, `σc` the charge of the loop `X` and of the two
 path edges, `σo` the charge of the closing edge, `ac`, `ao` the blocks of the cut.  For `σc = true` the sum behind `LWcutg C n t true σo ac ao`
-is `Σ_k F_k` over `x ∈ [ao]`, `y ∈ [ac]` (and the terms of S2, S3).  For `σc = false` the cut is the complex conjugate of the cut
-`(true, !σo, ao, ac)` (cyclicity of the trace, `S = 1`: the intended reading, to be proved by the assembly), so the red families are the
+is `Σ_k F_k` over `x ∈ [ao]`, `y ∈ [ac]` (and the terms of the other families).  For `σc = false` the cut is the complex conjugate of the cut
+`(true, !σo, ao, ac)` (cyclicity of the trace, `S = 1`: the intended reading), so the red families are the
 conjugates of the blue ones at the swapped blocks and the same tail charge flipped. -/
 def BAExp14aS1Fam (k : Fin 6) (σc σo : Bool) (ac ao : Zd d (sz.L n)) : ℂ :=
   if σc then BAExp14a_F sz z n t ω k σo ao ac else star (BAExp14a_F sz z n t ω k (!σo) ac ao)
 
 end S1Fam
 
-/-- **S1** (the crude families of `lem:LWterm_EXP` at BA; owner T2418, row L4a): for the six families `F_MM, F_T1, F_T3A^{(0)}, F_T3A^{(1)},
-F_C1, F_C2` (`BAExp14aS1Fam`), every charge pair `(σc, σo)` and every block pair `(ac, ao)`,
+/-- **`BAExp14aS1`** (the crude families of `lem:LWterm_EXP` at BA): for the six families `F_MM, F_T1, F_T3A^{(0)}, F_T3A^{(1)}`,
+`F_C1, F_C2` (`BAExp14aS1Fam`), every charge pair `(σc, σo)` and every block pair `(ac, ao)`,
 `‖𝔼 F‖ ≺ (1 - t)⁻¹ (W^{-d} B_{t,0})^{5/2}` on `U_n = {λ²/L^d ≤ 1 - t}`, over the carrier `baFMz sz z` and the law `seqP (sz.withLam 0)`,
 from the two premises `STLocalEntrygL` and `LWAvgLawgL` only (no premise on `𝔼 tr`; `STLmaxgL`, `STLKgL`, `STDecaygL`, `BATwistAvgLaw`,
 `BATwistLoopLaw` of `BALWCutExpTw` are not used).  The binders, the range of `t`, `U` and the bound are those of `BALWCutExpTw`.
-It does **not** cover the `∂Ḡ_{xy}` children of `lanlw` on `MǦ`, `ǦM` (L4b2) nor the `∂tr` children (S3). -/
+It does **not** cover the `∂Ḡ_{xy}` children of `lanlw` on `MǦ`, `ǦM` nor the `∂tr` children. -/
 def BAExp14aS1 (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → let μ := Sizes.seqP (sz.withLam 0)
@@ -132,7 +127,7 @@ def BAExp14aS1 (d : ℕ) : Prop :=
 
 section LoopOne
 
-/-- `Gres (blockMat M) = (Gres M)` read on the block index (a copy of `Gres_blockMat'`, `Main/ZTransfer.lean:253`). -/
+/-- `Gres (blockMat M) = (Gres M)` read on the block index (as `Gres_blockMat'` in `Main/ZTransfer.lean`). -/
 theorem BAExp14a_Gres_blockMat {d L W : ℕ} [NeZero L] [NeZero W] (M : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ)
     (s : Bool) :
     Gres (blockMat d L W M) z s = (Gres M z s).submatrix (splitEquiv d L W).symm (splitEquiv d L W).symm := by
@@ -626,7 +621,7 @@ theorem BAExp14a_facts_at {k : ℕ} {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ �
   · exact fun ω x => (BAExp14a_G_ward hκ hflow n ht0 ht ω x).2
 
 /-- **The deterministic facts hold along the flow** for `n` large and every `t ∈ [0, t₀]`, with constants `CM`, `S` depending on
-`(k, 𝔡, κ)` only (`Λ = 𝔡⁻¹`, `d = k + 2`); no smallness of `g` (C1, 2149 L5). -/
+`(k, 𝔡, κ)` only (`Λ = 𝔡⁻¹`, `d = k + 2`); no smallness of `g`. -/
 theorem BAExp14a_facts_of_flow {k : ℕ} (hk : 1 ≤ k) {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ)
     (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) :
     ∃ CM S : ℝ, 0 ≤ CM ∧ 1 ≤ S ∧ ∀ᶠ n in atTop, ∀ t : ℝ, 0 ≤ t → t ≤ BAflowT0 sz z n →
@@ -640,7 +635,7 @@ theorem BAExp14a_facts_of_flow {k : ℕ} (hk : 1 ≤ k) {sz : Sizes (k + 2)} {z 
 
 end FactsFlow
 
-/-! ## B5. `𝔼 X_c`: `lanlw` with `f = 1` (`B:359-372`), then the Neumann bound -/
+/-! ## B5. `𝔼 X_c`: `lanlw` with `f = 1` (Lemma B.6), then the Neumann bound -/
 
 /-- The law of the block Anderson model, `seqP (sz.withLam 0)`, read on `sz.SeqΩ` (the two sample spaces are definitionally equal,
 not reducibly). -/
@@ -1095,8 +1090,7 @@ end Lanlw
 
 section BctlTwo
 
-/-- **`W^{-d} B_{u,0} ≤ 2`** once `λ² W^d ≥ 1` and `N (1 - u) ≥ 1` (a copy of `B45_STWB_le` at `K = 0`, `Induction/B45.lean:1259`,
-private there; there is no BA analogue of `st5_Bctl_le_one`, `Induction/Step5Kit.lean:362`, which takes `STFlow`). -/
+/-- **`W^{-d} B_{u,0} ≤ 2`** once `λ² W^d ≥ 1` and `N (1 - u) ≥ 1` (`st5_Bctl_le_one` in `Induction/Step5Kit.lean` takes `STFlow` and does not apply to the BA flow). -/
 theorem BAExp14a_Bctl_le_two {d : ℕ} (sz : Sizes d) (n : ℕ) {u : ℝ} (hu : u < 1)
     (hg : 1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) (hN : 1 ≤ ((sz.size n : ℕ) : ℝ) * (1 - u)) :
     sz.Bctl n u ≤ 2 := by
@@ -1681,9 +1675,9 @@ private theorem BAExp14a_core (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (
 
 end Assembly
 
-/-! ## B9. S1 is proved -/
+/-! ## B9. `BAExp14aS1` is proved -/
 
-/-- **`BAExp14aS1 d`** (`lem:LWterm_EXP`, the crude families, at the block Anderson carrier; T2418): for every `d ≥ 3`.  The red charge
+/-- **`BAExp14aS1 d`** (`lem:LWterm_EXP`, the crude families, at the block Anderson carrier): for every `d`.  The red charge
 `σc = false` is the complex conjugate of the blue family at the swapped blocks (`BAExp14aS1Fam`); the blue families are `BAExp14a_core`
 (`F = F^Ǧ + F^M`, `lanlw` with `f = 1` for `𝔼 X_c`, the Ward identity, the Schur bound; constants in `(d, κ, 𝔡)`, no smallness of `g`). -/
 theorem baExp14a_S1_holds (d : ℕ) : BAExp14aS1 d := by
@@ -1711,8 +1705,6 @@ theorem baExp14a_S1_holds (d : ℕ) : BAExp14aS1 d := by
   · dsimp only
     simp only [ite_true]
     rfl
-
-/-! ## B10. Compiled checks and nonempty instances -/
 
 end RBM.BA
 

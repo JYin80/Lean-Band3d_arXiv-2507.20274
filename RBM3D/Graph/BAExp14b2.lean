@@ -9,16 +9,15 @@ import RBM3D.BA.KBound
 import RBM3D.BA.TwistAvgB
 
 /-!
-# BA-L L4b2a (T2489), file A: the twisted bridges, the sharp average P3, the I1K twins
+# The twisted bridges, the sharp average and the families `D1t, D2t, T2a, T2b` (file A)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`,
-`(eq:termI1)` `:37-41`), `GGGamma` `:393-405`.  Row L4b2 proves the merged pin `BAExp14bS2`
-(`Graph/BAExp14b.lean:170`).  This file (L4b2a, targets 1-3): the twisted bridges and sums,
-the sharp average `‖𝔼 X_c‖ ≺ 𝔟^{3/2}`, the families `D1t, D2t, T2a, T2b`.  File B
-(`Graph/BAExp14b2B.lean`, L4b2b) holds `T3B`, `T3C-Ḡ` and the binding conclusion.
+Paper: Subappendix B.1: (B.1) `eq:ELW_term`, (B.2) `eq:termI1`, (B.20) `GGGamma`.  The statement
+`BAExp14bS2` (`Graph/BAExp14b.lean`) is proved in two files.  This file holds the twisted bridges
+and sums, the sharp average `‖𝔼 X_c‖ ≺ 𝔟^{3/2}`, and the families `D1t, D2t, T2a, T2b`.  File B
+(`Graph/BAExp14b2B.lean`) holds `T3B`, `T3C-Ḡ` and the conclusion.
 
-Stem `BAExp14b2_`.  Helpers with a Step 1/2 or TL binder are `private` (`LWAvgLawgL` is
-not registered, ticket `T2489.md`); the pin-free helpers are public with the stem.
+Stem `BAExp14b2_`.  Helpers with a Step 1/2 or twisted-law binder are `private`; the helpers
+without such a binder are public with the stem.
 -/
 
 set_option linter.style.longLine false
@@ -36,14 +35,13 @@ noncomputable section
 namespace RBM.BA
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 1. Target 1: the twisted bridges -/
+/-! ## 1. The twisted bridges -/
 
 section Bridges
 
 variable {d : ℕ}
 
-/-- **Target 1 (a)**: `Tr(G P_{ac}) = Tr(Ǧ P_{ac}) + M^{(B)}_{ca}`, i.e. `twTrP n G a c = twTr c a + twMB c a` (`G = Ǧ + M`, `M_{(c,o),(a,o)} = M^{(B)}_{ca}`).
-Index pattern of the check shape. -/
+/-- **Bridge (a)**: `Tr(G P_{ac}) = Tr(Ǧ P_{ac}) + M^{(B)}_{ca}`, i.e. `twTrP n G a c = twTr c a + twMB c a` (`G = Ǧ + M`, `M_{(c,o),(a,o)} = M^{(B)}_{ca}`). -/
 theorem BAExp14b2_twTrP_G (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (a c : Zd d (sz.L n))
     (hm : 0 < ((baFMz sz z).m n).im) :
     twTrP n ((baFMz sz z).G n t ω) a c = twTr (baFMz sz z) n t ω c a + twMB (baFMz sz z) n c a := by
@@ -59,7 +57,7 @@ theorem BAExp14b2_twTrP_G (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (
   field_simp
   ring
 
-/-- **Target 1 (a), charge `false`**: `Tr(G^* P_{ac}) = \overline{Tr(Ǧ P_{ca}) + M^{(B)}_{ac}}` (`twChg G false = G^*`). -/
+/-- **Bridge (a), charge `false`**: `Tr(G^* P_{ac}) = \overline{Tr(Ǧ P_{ca}) + M^{(B)}_{ac}}` (`twChg G false = G^*`). -/
 theorem BAExp14b2_twTrP_G_false (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (a c : Zd d (sz.L n))
     (hm : 0 < ((baFMz sz z).m n).im) :
     twTrP n (twChg ((baFMz sz z).G n t ω) false) a c =
@@ -67,7 +65,7 @@ theorem BAExp14b2_twTrP_G_false (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : 
   rw [← BAExp14b2_twTrP_G sz z n t ω c a hm, BAExp14b_twTrP_pt, BAExp14b_twTrP_pt]
   simp only [twChg, Bool.false_eq_true, ↓reduceIte, map_mul, map_sum, map_inv₀, map_pow, Complex.conj_natCast]
 
-/-- **Target 1 (a), both charges**: `Tr(G^σ P_{ac}) = Tr(Ǧ^σ P_{ac}) + M^{(B)}(σ)_{ca}` with the fluctuation
+/-- **Bridge (a), both charges**: `Tr(G^σ P_{ac}) = Tr(Ǧ^σ P_{ac}) + M^{(B)}(σ)_{ca}` with the fluctuation
 `twTr c a` (`σ = +`) or its conjugate (`σ = −`). -/
 theorem BAExp14b2_twTrP_chg (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (σ : Bool) (a c : Zd d (sz.L n))
     (hm : 0 < ((baFMz sz z).m n).im) :
@@ -79,8 +77,8 @@ theorem BAExp14b2_twTrP_chg (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ)
   · have : twChg ((baFMz sz z).G n t ω) true = (baFMz sz z).G n t ω := funext fun x => funext fun y => by simp [twChg]
     rw [this]; exact BAExp14b2_twTrP_G sz z n t ω a c hm
 
-/-- **Target 1 (b)**: the slot-1 circle relation (twin of `twCirc_holds`, slot 2): for a block-tied `M`,
-`Tr((X₁ - M) E_a X₂ P_{c₁c₂}) = Tr(X₁ E_a X₂ P_{c₁c₂}) - W^{-d} M^{(B)}_{c₂a} Tr(X₂ P_{c₁a})`.  Index pattern of the check shape. -/
+/-- **Bridge (b)**: the slot-1 circle relation (as `twCirc_holds`, slot 2): for a block-tied `M`,
+`Tr((X₁ - M) E_a X₂ P_{c₁c₂}) = Tr(X₁ E_a X₂ P_{c₁c₂}) - W^{-d} M^{(B)}_{c₂a} Tr(X₂ P_{c₁a})`. -/
 theorem BAExp14b2_twCirc1 (sz : Sizes d) (n : ℕ) (X₁ X₂ M : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ)
     (MB : Zd d (sz.L n) → Zd d (sz.L n) → ℂ)
     (hM : ∀ w γ, M w γ = if (split d (sz.L n) (sz.W n) w).2 = (split d (sz.L n) (sz.W n) γ).2 then
@@ -116,7 +114,7 @@ theorem BAExp14b2_sup_le {V : Type} [Fintype V] [Nonempty V] {f : V → ℝ} {c 
 theorem BAExp14b2_sup_nonneg {V : Type} [Fintype V] [Nonempty V] {f : V → ℝ} (h : ∀ v, 0 ≤ f v) :
     0 ≤ BAExp14b2_sup f := (h (Classical.arbitrary V)).trans (BAExp14b2_le_sup f _)
 
-/-- **A `≺` over a finite index is a `≺` of the supremum** (as `BAExp14a_Dom_a`, `Graph/BAExp14aB.lean:270`). -/
+/-- **A `≺` over a finite index is a `≺` of the supremum** (as `BAExp14a_Dom_a` in `Graph/BAExp14aB.lean`). -/
 theorem BAExp14b2_Dom_sup {μ : Measure sz.SeqΩ} {V : ℕ → Type} [∀ n, Fintype (V n)] [∀ n, Nonempty (V n)]
     (f : ∀ n, V n → sz.SeqΩ → ℝ) (g : ℕ → ℝ) (h : PrecL sz μ (U := V) f (fun n _ _ => g n)) :
     BAExp14a_Dom sz μ (fun n ω => BAExp14b2_sup (fun v => f n v ω)) g := by
@@ -202,7 +200,7 @@ section P3
 
 variable {n : ℕ} {t CM S : ℝ}
 
-/-- `‖R_c‖ ≤ C_M ε₂` when `‖q‖ ≤ ε₂` (the remainder of `BAExp14a_e_bound`, `Graph/BAExp14aB.lean:988-1007`). -/
+/-- `‖R_c‖ ≤ C_M ε₂` when `‖q‖ ≤ ε₂` (the remainder of `BAExp14a_e_bound` in `Graph/BAExp14aB.lean`). -/
 theorem BAExp14b2_R_le (hf : BAExp14a_Facts sz z n t CM S) {ε₂ : ℝ}
     (hq : ∀ c y w, ‖BAExp14a_q sz z n t c y w‖ ≤ ε₂) (c : Zd (k + 2) (sz.L n)) : ‖BAExp14a_R sz z n t c‖ ≤ CM * ε₂ := by
   have hε₂ : 0 ≤ ε₂ := (norm_nonneg _).trans (hq 0 0 0)
@@ -254,11 +252,11 @@ theorem BAExp14b2_e_eq_om (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (
 
 end P3
 
-/-! ## 3. Target 2: P3, the sharp average `‖𝔼 X_c‖ ≺ 𝔟^{3/2}` -/
+/-! ## 3. P3, the sharp average `‖𝔼 X_c‖ ≺ 𝔟^{3/2}` -/
 
 section P3main
 
-/-- **Target 2 (P3, sharp)**: `‖𝔼 X_c‖ ≺ (W^{-d} B_{t,0})^{3/2}` with **no** `(1 - t)⁻¹`, from `STLocalEntrygL` and `LWAvgLawgL` only:
+/-- **The sharp average (P3)**: `‖𝔼 X_c‖ ≺ (W^{-d} B_{t,0})^{3/2}` with **no** `(1 - t)⁻¹`, from `STLocalEntrygL` and `LWAvgLawgL` only:
 `‖𝔼[X_c Ǧ_{yw}]‖ ≺ 𝔟^{3/2}` (`BAExp14a_q_prec`), `|R| ≤ C_M ε₂`, `e = ω R` with `Σ_b |ω_{cb}| ≤ S + 1` uniformly in `t ∈ [0, 1)`
 (not the Neumann `BAExp14a_e_bound`, which carries `(1 - t)⁻¹`).  Zero slack: `3/2 = 3/2`. -/
 private theorem BAExp14b2_P3 (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
@@ -770,7 +768,7 @@ theorem BAExp14b2_polyK {s U ω1 K : ℝ} (hs : 0 < s) (hs2 : s ≤ 2) (hU : 0 �
 
 end Arith
 
-/-! ## 7. The families `D1t, D2t, T2a, T2b` (target 3) -/
+/-! ## 7. The families `D1t, D2t, T2a, T2b` -/
 
 section Fam
 
@@ -784,7 +782,7 @@ def BAExp14b2_Th (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (σ : Boo
 def BAExp14b2_Bs (z : ℕ → ℂ) (n : ℕ) (σ : Bool) (a c : Zd (k + 2) (sz.L n)) : ℂ :=
   if σ then BAExp14b_MB sz z n c a else (starRingEnd ℂ) (BAExp14b_MB sz z n a c)
 
-/-- **Target 1 (a), both charges, split form**: `Tr(G^σ P_{ac}) = Th + Bs`. -/
+/-- **Bridge (a), both charges, split form**: `Tr(G^σ P_{ac}) = Th + Bs`. -/
 theorem BAExp14b2_Tsplit (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (σ : Bool) (a c : Zd (k + 2) (sz.L n)) (hm : 0 < ((baFMz sz z).m n).im) :
     twTrP n (twChg ((baFMz sz z).G n t ω) σ) a c = BAExp14b2_Th z n t ω σ a c + BAExp14b2_Bs z n σ a c := by
   rw [BAExp14b2_twTrP_chg sz z n t ω σ a c hm, twMB_ba z n hm]
@@ -831,8 +829,8 @@ private theorem BAExp14b2_base (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h�
 
 
 
-/-- **`D1t` (I1K twin, `lwExpI1K_holds`, `Graph/LWExpTerm4.lean:903`)**: `‖𝔼 D1t‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  Route:
-`D1t = t Σ_{a₁,c} M^{(B)}_{aa₁} M^{(B)}_{a₁c} X_{a₁} Tr(G^σ P_{ac}) 𝓛^{(2)}_{(+,σ),(b,c)}`, `Tr(G^σ P_{ac}) = T̂ + B` (target 1 (a)),
+/-- **`D1t`** (as `lwExpI1K_holds` in `Graph/LWExpTerm4.lean`): `‖𝔼 D1t‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  Proof:
+`D1t = t Σ_{a₁,c} M^{(B)}_{aa₁} M^{(B)}_{a₁c} X_{a₁} Tr(G^σ P_{ac}) 𝓛^{(2)}_{(+,σ),(b,c)}`, `Tr(G^σ P_{ac}) = T̂ + B` (bridge (a)),
 `𝓛^{(2)} = 𝒦^{(2)} + (𝓛 - 𝒦)`: the term `B 𝒦^{(2)} X` is paid with P3 (`𝔟^{3/2} · 𝔟`, zero slack), `T̂ 𝒦^{(2)} X` (`𝔟³`) and
 `(T̂ + B)(𝓛 - 𝒦) X` (`𝔟 · 𝔟²`) pathwise. -/
 private theorem BAExp14b2_D1t (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
@@ -1019,7 +1017,7 @@ private theorem BAExp14b2_tl2 (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h�
     rw [pow_one]
     nlinarith
 
-/-- **`D2t` (I1K twin)**: `‖𝔼 D2t‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  `D2t = t Σ_{a₁,c} M^{(B)}_{ac} M^{(B)}_{a₁b} X_{a₁}
+/-- **`D2t`** (as `lwExpI1K_holds`): `‖𝔼 D2t‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  `D2t = t Σ_{a₁,c} M^{(B)}_{ac} M^{(B)}_{a₁b} X_{a₁}
 Tr(G^σ P_{ac}) L̃_{(σ,+);(c;a₁,b)}` with `L̃ = K̃ + (L̃ - K̃)` (TL2, `3/2`) and `Tr(G^σ P_{ac}) = T̂ + B`: `B K̃ X` is paid with P3,
 `T̂ K̃ X` (`𝔟³`) pathwise, `(T̂ + B)(L̃ - K̃) X` with TL2 (`𝔟^{3/2}` times `𝔟`, zero slack). -/
 private theorem BAExp14b2_D2t (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
@@ -1136,8 +1134,8 @@ theorem BAExp14b2_Wd_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t 
   rw [mul_inv_cancel₀ hc.ne'] at this
   nlinarith
 
-/-- **`T2a` (I1K twin)**: `‖𝔼 T2a‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  `T2a = Σ_{a₁,c} (ω-1)_{a₁c} M^{(B)}_{ac} X_{a₁} L̃(Ǧ, G^σ; b, a, c)`; the
-slot-1 circle (target 1 (b)) gives `L̃(Ǧ, G^σ) = L̃ - W^{-d} M^{(B)}_{cb} Tr(G^σ P_{ab})`, `L̃ = K̃ + (L̃ - K̃)`: `K̃ X` is paid with P3
+/-- **`T2a`** (as `lwExpI1K_holds`): `‖𝔼 T2a‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  `T2a = Σ_{a₁,c} (ω-1)_{a₁c} M^{(B)}_{ac} X_{a₁} L̃(Ǧ, G^σ; b, a, c)`; the
+slot-1 circle (bridge (b)) gives `L̃(Ǧ, G^σ) = L̃ - W^{-d} M^{(B)}_{cb} Tr(G^σ P_{ab})`, `L̃ = K̃ + (L̃ - K̃)`: `K̃ X` is paid with P3
 (`𝔟 · 𝔟^{3/2}`), `W^{-d} B X` with P3 and `W^{-d} ≲ 𝔟` (`twB0_ge_holds`), `X (L̃ - K̃)` with TL2 (`𝔟 · 𝔟^{3/2}`), `X W^{-d} T̂` with TL1. -/
 private theorem BAExp14b2_T2a (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -1257,7 +1255,7 @@ private theorem BAExp14b2_T2a (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h�
       _ ≤ _ := BAExp14b2_polyK hs0 hs2 hSC hω zero_le_one hc1.le le_rfl le_rfl
         (by nlinarith [mul_nonneg hSC hC.le, mul_nonneg hSC hc1.le])
 
-/-- **`T2b` (I1K twin)**: `‖𝔼 T2b‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  `T2b = Σ_{a₁,c} (ω-1)_{a₁c} M^{(B)}_{cb} X_{a₁} L̃(G^σ, Ǧ; a, c, b)`; the
+/-- **`T2b`** (as `lwExpI1K_holds`): `‖𝔼 T2b‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}`, uniformly in `(σ, a, b)`.  `T2b = Σ_{a₁,c} (ω-1)_{a₁c} M^{(B)}_{cb} X_{a₁} L̃(G^σ, Ǧ; a, c, b)`; the
 slot-2 circle (`twCirc_holds`) gives `L̃(G^σ, Ǧ) = L̃ - W^{-d} M^{(B)}_{ac} Tr(G^σ P_{ab})`, then as `T2a`. -/
 private theorem BAExp14b2_T2b (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -1377,7 +1375,7 @@ private theorem BAExp14b2_T2b (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h�
       _ ≤ _ := BAExp14b2_polyK hs0 hs2 hSC hω zero_le_one hc1.le le_rfl le_rfl
         (by nlinarith [mul_nonneg hSC hC.le, mul_nonneg hSC hc1.le])
 
-/-- The block columns of `κ_k` (`κ_0 = 1`, `κ_1 = ω - 1`): `Σ_{a₁} |κ_k(a₁, c)| ≤ S` (target 1 (d), the kernel sums read by file B). -/
+/-- The block columns of `κ_k` (`κ_0 = 1`, `κ_1 = ω - 1`): `Σ_{a₁} |κ_k(a₁, c)| ≤ S` (the kernel sums read in `Graph/BAExp14b2B.lean`). -/
 theorem BAExp14b2_kap_col {n : ℕ} {t CM S : ℝ}
     (hr : BAReal (k + 2) (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
     (hf : BAExp14a_Facts sz z n t CM S) (kb : Bool) (c : Zd (k + 2) (sz.L n)) :
@@ -1390,9 +1388,9 @@ theorem BAExp14b2_kap_col {n : ℕ} {t CM S : ℝ}
       _ ≤ S := hf.hS
   · simpa [BAExp14b_kap] using BAExp14b2_om1_col hr hf c
 
-/-- **Target 3 (the I1K twins `D1t, D2t, T2a, T2b`, `j < 4`)**: for the first four families of S2, every charge and block pair,
+/-- **The families `D1t, D2t, T2a, T2b`** (`j < 4`): for the first four families of `BAExp14bS2`, every charge and block pair,
 `‖𝔼 F_j‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}` over the carrier `baFMz sz z` and the law `BAExp14a_μ sz` (the law of the block Anderson model), from `STLocalEntrygL`, `LWAvgLawgL`, `STLKgL`,
-`BATwistAvgLaw`, `BATwistLoopLaw` (`STLmaxgL`, `STDecaygL` are not read).  Private: `LWAvgLawgL` is not registered. -/
+`BATwistAvgLaw`, `BATwistLoopLaw` (`STLmaxgL`, `STDecaygL` are not read).  Private, since `LWAvgLawgL` is a hypothesis of it. -/
 private theorem BAExp14b2_I1K (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
     (hA : LWAvgLawgL (baFMz sz z) (BAExp14a_μ sz) t) (hK : STLKgL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -1412,7 +1410,7 @@ end Fam
 
 end Infra
 
-/-! ## 9. Target 1 (c), (d): the Ward sums and the kernel sums read by file B -/
+/-! ## 8. The Ward sums and the kernel sums read in `Graph/BAExp14b2B.lean` -/
 
 section Ward
 
@@ -1424,7 +1422,7 @@ theorem BAExp14b2_sum_blocks {β : Type*} [AddCommMonoid β] {n : ℕ} (F : Idx 
   simp only [BAExp14b_sum_blk]
   exact (BAExp14b_sum_idx F).symm
 
-/-- **The vertex bound** (twin of `lwExpTerm4_vertex`, `Graph/LWExpTerm4.lean:432`): `Σ_y |G_{xy}||G_{yz}| ≤ A/η` from the row and column Ward
+/-- **The vertex bound** (as `lwExpTerm4_vertex` in `Graph/LWExpTerm4.lean`): `Σ_y |G_{xy}||G_{yz}| ≤ A/η` from the row and column Ward
 identities and Cauchy-Schwarz. -/
 theorem BAExp14b2_vertex {ι : Type*} [Fintype ι] (G : ι → ι → ℂ) {η A : ℝ} (hη : 0 < η)
     (hrow : ∀ x, η * ∑ y, ‖G x y‖ ^ 2 = (G x x).im) (hcol : ∀ x, η * ∑ y, ‖G y x‖ ^ 2 = (G x x).im)
@@ -1468,7 +1466,7 @@ theorem BAExp14b2_L2_norm {n : ℕ} (t : ℝ) (ω : sz.SeqΩ) (σ : Bool) (b c :
   rw [h, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg]
   positivity
 
-/-- **Target 1 (c), the `𝓛^{(3)}` Ward sum** (twin of `lwExpTerm4_L3`, `Graph/LWExpTerm4.lean:488`): `W^d Σ_a |𝓛^{(3)}_{(+,+,σ),(a,b,c)}| ≤ η⁻¹ A Q^{1/2}`
+/-- **The `𝓛^{(3)}` Ward sum** (as `lwExpTerm4_L3` in `Graph/LWExpTerm4.lean`): `W^d Σ_a |𝓛^{(3)}_{(+,+,σ),(a,b,c)}| ≤ η⁻¹ A Q^{1/2}`
 for `A ≥ max_x |G_{xx}|` and `Q ≥ |𝓛^{(2)}_{(σ,-σ),(c,b)}|`; pathwise, at the carrier. -/
 theorem BAExp14b2_L3_ward (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {n : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (σ : Bool) (b c : Zd (k + 2) (sz.L n)) (ω : sz.SeqΩ) {A Q : ℝ} (hA : ∀ x, ‖(baFMz sz z).G n t ω x x‖ ≤ A)
@@ -1543,7 +1541,7 @@ theorem BAExp14b2_L3_ward (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {
     _ ≤ Real.sqrt Q * (A * ((baFMz sz z).eta n t)⁻¹) := mul_le_mul_of_nonneg_right hTs (by positivity)
     _ = ((baFMz sz z).eta n t)⁻¹ * A * Real.sqrt Q := by ring
 
-/-- **Target 1 (c), the twisted fold-plus-Ward sum** (fable §3.2 (F1)-(F3); `twFold_holds`, the fine Ward identities): for `A ≥ max_x |G_{xx}|` and a kernel
+/-- **The twisted fold-plus-Ward sum** (`twFold_holds`, the fine Ward identities): for `A ≥ max_x |G_{xx}|` and a kernel
 `MB` with `ℓ¹` rows and columns `≤ C_M`, `Σ_{c₁,c₂} |MB_{c₁c₂}| |L̃(G^σ, G; a, c₁, c₂)| ≤ C_M A (W^d η)⁻¹` (`|L̃|² ≤ twSq twSq`, AM-GM,
 Schur against `MB`, and `Σ_{c₂} twSq(G^σ, c₂, a) = W^{-2d} Σ_{x ∈ [a]} Σ_y |G^σ_{yx}|² = W^{-2d} Σ_{x ∈ [a]} Im G_{xx}/η`). -/
 theorem BAExp14b2_fold_ward (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {n : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
@@ -1627,7 +1625,7 @@ theorem BAExp14b2_fold_ward (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
         · exact h2.trans (mul_le_mul_of_nonneg_left hQ hCM0)
     _ = CM * A * (Wd * (baFMz sz z).eta n t)⁻¹ := by ring
 
-/-- **Target 1 (d), kernel sums** (twin of `lwExpTerm4_wsum3K`, `Graph/LWExpTerm4.lean:962`): `Σ_{a₁,c₁,c₂} |κ_{a₁c₁}| |MB_{c₁c₂}| h(c₂) ≤ S C_M Σ_{c₂} h(c₂)`
+/-- **Kernel sums** (as `lwExpTerm4_wsum3K` in `Graph/LWExpTerm4.lean`): `Σ_{a₁,c₁,c₂} |κ_{a₁c₁}| |MB_{c₁c₂}| h(c₂) ≤ S C_M Σ_{c₂} h(c₂)`
 for `h ≥ 0`, column sums of `κ` (`κ_k`, `BAExp14b2_kap_col`) `≤ S` and of `MB` `≤ C_M`. -/
 theorem BAExp14b2_wsum_c2 {ι : Type*} [Fintype ι] [Nonempty ι] (κm MB : ι → ι → ℂ) {S CM : ℝ} (hκ : ∀ c, ∑ a, ‖κm a c‖ ≤ S)
     (hMc : ∀ b, ∑ c, ‖MB c b‖ ≤ CM) (h : ι → ℝ) (h0 : ∀ c, 0 ≤ h c) :
@@ -1665,8 +1663,6 @@ theorem BAExp14b2_wsum_c1 {ι : Type*} [Fintype ι] [Nonempty ι] (κm MB : ι �
 
 end Ward
 
-
-/-! ## 8. Compiled instances (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2`) -/
 
 end RBM.BA
 

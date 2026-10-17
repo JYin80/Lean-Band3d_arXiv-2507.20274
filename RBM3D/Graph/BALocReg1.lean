@@ -19,31 +19,41 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3b1 (T2456), part 1: the coloured path invariant at the atomic image, the transfer tools, `BASimP'`, the shapes `s1`, `e1`, the step
+# The coloured path invariant at the atomic image, `BASimP'`, the shapes `s1`, `e1`, the step (part 1)
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex:786-821` (`lem:localregular` (1)-(5)), `paper/tex/B_graphical_lemmas.tex:172-199` (the band proof), `:302-313` (the atomic image),
-`:339-341` (`G = Ǧ + M`), `:363` (`lanlw`).  Design: `docs/reports/T2387-design.md` §6 row L3b1, `docs/reports/T2397-design.md:50-57, 76-80`; supervisor `2026-10-12-0948` O2R-C4,
-`2026-10-11-0951` L4-C1, L4-C4 (a), `2026-10-12-1152` O7.  Split Σ (H250 (2), dispatcher sign-off): the path inputs `BAShapePath` of `e2`, `macroA`, `macroB` are the targets of L3b2; here they are
-the shape binder `∀ sh, sh = e2 ∨ sh = macroA ∨ sh = macroB → BAShapePath sh BAFrameStepTN` of `baPathStep_holds` (file 2: `baLocReg15_holds`), verbatim, with no new `Prop`.
+Paper: Lemma 7.17 (`lem:localregular`) (1)-(5); its proof for the band (Subappendix B.2, (B.11)
+`eq:originGamma`, proof of Strategy B.1 `strat_local`); the atomic image (Definition B.3
+`def_atom`); `G = Ǧ + M` (Definition B.4 `defn_normalBA`); Lemma B.6 (`lanlw`).  The path inputs
+`BAShapePath` of `e2`, `macroA`, `macroB` enter as the shape binder
+`∀ sh, sh = e2 ∨ sh = macroA ∨ sh = macroB → BAShapePath sh BAFrameStepTN` of `baPathStep_holds`
+(continued in `baLocReg15_holds`, file 2), verbatim, with no new `Prop`.
 
-## Contents (namespace `RBM.Graph`; private helpers and the instance namespace carry the stem `BALocReg1`)
+## Contents (namespace `RBM.Graph`; private helpers carry the stem `BALocReg1`)
 
-1. **The generic transfer** `BALocReg1_pathAt_map` (the invariant `BALocReg1_PathAt Γ k a b` = `PGraph.PathInv2` of the atomic image, by `Iff.rfl`, `BALocReg1_img_pathInv2_iff`):
-   `LGraph.localReg2_pathFam_map` (LR2:616) along a vertex map `ψ` of two BA graphs that respects the atoms, is onto up to molecules and maps waved edges into molecules; the budget moves
-   up to the colour flip `c` (`localReg2_Fam.flip`, LR2:289), loops removed (`of_add_diag`, LR2:257) and loops added at a colour already present (`add_diag`, LR2:264).  Its three uses:
-   `BALocReg1_pathAt_splitG` (an `M`-split joins atoms: the solid edges turned into `M`-dotted edges become loops of the image), `BALocReg1_pathAt_merge` (the merge of `=`-dotted classes),
-   hence `BALocReg1_pathAt_partition` for any term `T` and `BALocReg1_pathInv2_pack` (the packed outputs `BAScost_pack`); `BALocReg1_pathAt_twist` (the twist flips the colours);
-   `BALocReg1_pathAt_ext` (an extension term `BAGraph.ext`, the shape of the builder terms of `BAExpandW`, `BAWeightOp`) and `BALocReg1_pathAt_lanlwT1` (term 1 of `lanlw`: the edge `Ǧ_{xy}` becomes
-   `G_{αy}` with `α` in the atom of `x`, the loop `Ǧ_{ββ}` is added at the molecule of `x`).
-2. **Target 1**: `baEquivPath_holds` (along R1's `BAEquivC`, `BASim:234`; one direction, the one the consumers read), `baPathTwist_holds` (the twist, both directions).
-3. **Targets 3 (a), (b)**: `BAShapePath` (T2397 probe 174), `baShapePath_s1_tn` (vacuous), `baShapePath_e1_tn` (the `tagT1` outputs of `lanlwT1`), `baShapePath_twist`.  The tag lemma
-   `BALocReg1_frameT_tags` is a copy of the private `BAStepS_frameT_tags` (`BAStepS.lean:296`) with its helpers (`:269-295`), under the stem.
-4. **Target 2**: `BASimP'`, `baSimP'_holds` (per output, `P' := (P.twist c t).img`, `baMatch_holds` at `P.twist c t`).
-5. **Target 4**: `BAPathStep` (probe 159), `baPathStep_of_simP'` (probe 177, per output), `baPathStep_holds` (with the shape binder).
-6. **Instances** (`BALocReg1Inst`): the `edge` witness found by the 1a (`E = Fin 2`, `I = Fin 1`, blue `i → x`, `i → y`) with a hand-built family of one walk at its image; targets 1, 2, 3 (a), (b), 4 at it;
-   target 3 (b) also at R1's `ggSplit` step `hTC` at `P_C` (`PathInv2 2` at its image: a hand-built family of two walks, moved by `BALocReg1_pathAt_map`).
+1. **The generic transfer** `BALocReg1_pathAt_map` (the invariant `BALocReg1_PathAt Γ k a b` =
+   `PGraph.PathInv2` of the atomic image, by `Iff.rfl`):
+   `LGraph.localReg2_pathFam_map` (`Graph/LocalRegular2.lean`) along a vertex map `ψ` of two BA
+   graphs that respects the atoms, is onto up to molecules and maps waved edges into molecules; the
+   budget moves up to the colour flip `c` (`localReg2_Fam.flip`), loops removed (`of_add_diag`) and
+   loops added at a colour already present (`add_diag`).  Its three uses:
+   `BALocReg1_pathAt_splitG` (an `M`-split joins atoms: the solid edges turned into `M`-dotted edges
+   become loops of the image), `BALocReg1_pathAt_merge` (the merge of `=`-dotted classes), hence
+   `BALocReg1_pathAt_partition` for any term `T` and `BALocReg1_pathInv2_pack` (the packed outputs
+   `BAScost_pack`); `BALocReg1_pathAt_twist` (the twist flips the colours); `BALocReg1_pathAt_ext`
+   (an extension term `BAGraph.ext`, the shape of the builder terms of `BAExpandW`, `BAWeightOp`)
+   and `BALocReg1_pathAt_lanlwT1` (term 1 of `lanlw`: the edge `Ǧ_{xy}` becomes `G_{αy}` with `α` in
+   the atom of `x`, the loop `Ǧ_{ββ}` is added at the molecule of `x`).
+2. `baEquivPath_holds` (along `BAEquivC` of `Graph/BASim.lean`; one direction, the one the
+   consumers read), `baPathTwist_holds` (the twist, both directions).
+3. `BAShapePath`, `baShapePath_s1_tn` (vacuous), `baShapePath_e1_tn` (the `tagT1` outputs of
+   `lanlwT1`), `baShapePath_twist`.  The tag lemma `BALocReg1_frameT_tags` is a copy of the private
+   `BAStepS_frameT_tags` (`Graph/BAStepS.lean`) with its helpers, under the stem.
+4. `BASimP'`, `baSimP'_holds` (per output, `P' := (P.twist c t).img`, `baMatch_holds` at
+   `P.twist c t`).
+5. `BAPathStep`, `baPathStep_of_simP'` (per output), `baPathStep_holds` (with the shape binder).
 
-C1: combinatorial; no data.  No `inductive`.  No port from `../RBM1D`, `../RBM2D` (the d = 3 invariants are the band's, `LocalRegular2.lean`, applied to the atomic image).
+Combinatorial; no data.  The invariants are those of the band (`Graph/LocalRegular2.lean`), applied
+to the atomic image.
 -/
 
 noncomputable section
@@ -401,7 +411,7 @@ theorem BALocReg1_pathAt_twist {E I : Type} [Fintype E] [DecidableEq E] [Fintype
 
 end Generic
 
-/-! ## 2. Target 1: the transfer tools -/
+/-! ## 2. The transfer tools -/
 
 section Tools
 
@@ -419,7 +429,7 @@ theorem BALocReg1_ends {V W : Type*} (φ : V → W) {x y u v : V} {x' y' : W}
     (x' = φ u ∧ y' = φ v) ∨ (x' = φ v ∧ y' = φ u) := by
   rcases h1 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> rcases h2 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> simp
 
-/-- **Target 1, relabelling**: the coloured path invariant passes along R1's `BAEquivC` (`LGraph.localReg2_pathFam_map`, LR2:616, along the bijection of the vertices;
+/-- **Relabelling**: the coloured path invariant passes along `BAEquivC` (`LGraph.localReg2_pathFam_map`, along the bijection of the vertices;
 the solid edges agree up to order, the waved edges and `=`-dotted edges up to their ends). -/
 theorem baEquivPath_holds (R S : PGraph (Fin 2)) (hRS : R.BAEquivC S) (k : ℕ) (h : R.PathInv2 k) : S.PathInv2 k := by
   classical
@@ -455,7 +465,7 @@ theorem baEquivPath_holds (R S : PGraph (Fin 2)) (hRS : R.BAEquivC S) (k : ℕ) 
   rw [hext, hext]
   exact key
 
-/-- **Target 1, the twist**: the image of the twist carries the coloured path invariant iff the image does (the twist is an involution). -/
+/-- **The twist**: the image of the twist carries the coloured path invariant iff the image does (the twist is an involution). -/
 theorem baPathTwist_holds (c t : Bool) (P : BAPGraph (Fin 2)) (k : ℕ) : (P.twist c t).img.PathInv2 k ↔ P.img.PathInv2 k := by
   constructor
   · intro h
@@ -465,9 +475,9 @@ theorem baPathTwist_holds (c t : Bool) (P : BAPGraph (Fin 2)) (k : ℕ) : (P.twi
 
 end Tools
 
-/-! ## 3. Target 3 (a), (b): the shapes `s1`, `e1`; the tags of a frame step
+/-! ## 3. The shapes `s1`, `e1`; the tags of a frame step
 
-The three helper lemmas of `BAStepS.lean` (`BAStepS_tagStd_ne` ... `BAStepS_frameT_tags`, private there) are copied under the stem `BALocReg1_`. -/
+The three helper lemmas of `Graph/BAStepS.lean` (`BAStepS_tagStd_ne` ... `BAStepS_frameT_tags`, private there) are copied under the stem `BALocReg1_`. -/
 
 section Shapes
 
@@ -555,11 +565,11 @@ private theorem BALocReg1_frameT_tags {P : BAPGraph (Fin 2)} {LT : List (BAShape
     · exact hconst _ (by decide) (by decide) _ y hy
 
 
-/-- **The path invariant at a BA-only shape** (T2397 probe 174, `img P` as `P.img`): the outputs of `sh` carry the invariant of the parent. -/
+/-- **The path invariant at a BA-only shape** (`img P` as `P.img`): the outputs of `sh` carry the invariant of the parent. -/
 def BAShapePath (sh : BAShape) (T : BTStep) : Prop :=
   ∀ P LT, T P LT → ∀ Q, (sh, Q) ∈ LT → ∀ k : ℕ, P.img.PathInv2 k → Q.img.PathInv2 k
 
-/-- `BAShapePath s1` is vacuous: no constructor of `BAFrameStepT` tags an output `s1` (as `baShapeLL_s1_tn`, `BAStepS:353`). -/
+/-- `BAShapePath s1` is vacuous: no constructor of `BAFrameStepT` tags an output `s1` (as `baShapeLL_s1_tn` in `Graph/BAStepS.lean`). -/
 theorem baShapePath_s1_tn : BAShapePath BAShape.s1 BAFrameStepTN := by
   rintro P LT ⟨-, hF⟩ Q hQ
   exact absurd rfl (BALocReg1_frameT_tags hF _ hQ).1
@@ -571,7 +581,7 @@ theorem baShapePath_e1_tn : BAShapePath BAShape.e1 BAFrameStepTN := by
   obtain ⟨p, hp, ⟨hp1, hp2⟩, Q0, hQ0, rfl⟩ := (BALocReg1_frameT_tags hF _ hQ).2 rfl
   exact BALocReg1_pathInv2_pack P (BAGraph.lanlwT1 P.g p) (BALocReg1_pathAt_lanlwT1 P.g p hp ⟨hp1, hp2⟩ hk) Q0 hQ0
 
-/-- the shape lemma of a frame step carries to the twisted step (as `baShapeLL_twist`, `BAStepS:232`) -/
+/-- the shape lemma of a frame step carries to the twisted step (as `baShapeLL_twist` in `Graph/BAStepS.lean`) -/
 theorem baShapePath_twist : ∀ sh : BAShape, BAShapePath sh BAFrameStepTN → BAShapePath sh BALocStepT := by
   intro sh h P LT ⟨hN, c, t, LT0, hF, hLT⟩ Q hQ k hk
   subst hLT
@@ -582,17 +592,17 @@ theorem baShapePath_twist : ∀ sh : BAShape, BAShapePath sh BAFrameStepTN → B
 
 end Shapes
 
-/-! ## 4. Target 2: `BASimP'`; target 4: the step -/
+/-! ## 4. `BASimP'` and the step -/
 
 section Step
 
-/-- **L4-C1, path half: `BASimP'`** (as `BASimC'`, `BAStepS:84`): the band step is chosen per output, `P'` per step. -/
+/-- **The path half of the simulation, `BASimP'`** (as `BASimC'` in `Graph/BAStepS.lean`): the band step is chosen per output, `P'` per step. -/
 def BASimP' (m : ℂ) (T : BTStep) : Prop :=
   ∀ P LT, T P LT → ∃ P' : PGraph (Fin 2), (∀ k : ℕ, P.img.PathInv2 k → P'.PathInv2 k) ∧
     ∀ Q : BAPGraph (Fin 2), (BAShape.band, Q) ∈ LT → ∃ L' : List (PGraph (Fin 2)), LocStep m P' L' ∧
       ∃ R ∈ L', ∀ k : ℕ, R.PathInv2 k → Q.img.PathInv2 k
 
-/-- **Target 2**: take `P' := (P.twist c t).img`; for each `band` output, `baMatch_holds` at `P.twist c t`; the invariant moves by targets 1. -/
+/-- **`baSimP'_holds`**: take `P' := (P.twist c t).img`; for each `band` output, `baMatch_holds` at `P.twist c t`; the invariant moves by `baEquivPath_holds` and `baPathTwist_holds`. -/
 theorem baSimP'_holds (m : ℂ) : BASimP' m BALocStepT := by
   rintro P LT ⟨hN, c, t, LT0, hF, rfl⟩
   have hN2 : (P.twist c t).g.Normal := (ba_twist_inv_out c t P.g).2.2.2.2.2 hN
@@ -603,11 +613,11 @@ theorem baSimP'_holds (m : ℂ) : BASimP' m BALocStepT := by
   exact ⟨L', hst, R, hR, fun k hRk => (baPathTwist_holds c t Q0 k).2
     (baEquivPath_holds R Q0.img (PGraph.BASim_BAEquiv_toC hRE) k hRk)⟩
 
-/-- **The path pin of the step** (T2397 probe 159): the invariant passes along a BA step. -/
+/-- **The path statement of the step**: the invariant passes along a BA step. -/
 def BAPathStep (BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop) : Prop :=
   ∀ P L, BStep P L → ∀ k : ℕ, P.img.PathInv2 k → ∀ Q ∈ L, Q.img.PathInv2 k
 
-/-- **The step from a simulation** (T2397 probe 177, per output): the `band` outputs by `pathInv2_locStep` (LR2:1582) at the band step of `BASimP'`, the others by the shapes. -/
+/-- **The step from a simulation** (per output): the `band` outputs by `pathInv2_locStep` (`Graph/LocalRegular2.lean`) at the band step of `BASimP'`, the others by the shapes. -/
 theorem baPathStep_of_simP' (m : ℂ) (T : BTStep) (hS : BASimP' m T) (hX : ∀ sh, sh ≠ BAShape.band → BAShapePath sh T) :
     BAPathStep (untag T) := by
   rintro P L ⟨LT, hT, rfl⟩ k hk Q hQ
@@ -619,8 +629,8 @@ theorem baPathStep_of_simP' (m : ℂ) (T : BTStep) (hS : BASimP' m T) (hX : ∀ 
     exact hRQ k (pathInv2_locStep hst (hc k hk) R hR')
   · exact hX sh hb P LT hT Q hmem k hk
 
-/-- **Target 4**: the path pin of the tagged BA step; the shapes `e2`, `macroA`, `macroB` are the hypothesis `hX` (split Σ, H250 (2): they are the targets of L3b2; `s1` and `e1`
-are proved above). -/
+/-- **The path statement of the tagged BA step**: the shapes `e2`, `macroA`, `macroB` are the hypothesis `hX`; `s1` and `e1`
+are proved above. -/
 theorem baPathStep_holds (hX : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapePath sh BAFrameStepTN) :
     BAPathStep (untag BALocStepT) := by
   refine baPathStep_of_simP' 0 BALocStepT (baSimP'_holds 0) fun sh hsh => baShapePath_twist sh ?_
@@ -633,13 +643,6 @@ theorem baPathStep_holds (hX : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA �
   | macroB => exact hX _ (Or.inr (Or.inr rfl))
 
 end Step
-
-/-! ## 5. Compiled instances (target 10)
-
-The witness is the `edge` witness found by the 1a (section (a), `baPE` replacement): `E = Fin 2`, `I = Fin 1`, the blue edges `i → x`, `i → y` at the internal vertex `i`
-(degree 2, charge `-2`: the `edge` step applies, `hbad`).  The invariant `PathInv2 1` holds at its atomic image (a hand-built family of one blue walk `x → i → y`, through
-`BAAtomic_pathFam_iff`); the R1 witness `baPE` itself has no `PathInv2` for any `k` (1a finding (1): the blue degrees at `x`, `y` are 2 and 1).
-Target 3 (b) also at R1's `ggSplit` witness `P_C` (`PathInv2 2`, section (a) row 7). -/
 
 end RBM.Graph
 

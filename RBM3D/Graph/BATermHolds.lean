@@ -14,31 +14,37 @@ import RBM3D.Graph.LWTermExpN
 import RBM3D.BA.LWPinsBA
 
 /-!
-# BA-L L5a (T2494), file A: `lem:LWterm` at BA and the regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N`
+# `lem:LWterm` at BA and the regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N` (file A)
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex:15-91` (cited `7_8:line`), `paper/tex/3_5_Loop_Hierarchy.tex:380-420`;
-`paper/tex/B_graphical_lemmas.tex:286-288` ("analogously"), `:7-121` (`(eq:ELW_term)`).  Twin of `Graph/LWTermHolds.lean` (§1-§4, `:52-721`)
-and of the regime `lwtermExpN_of_LWterm` of `Graph/LWTermExpN.lean` (`:414`), in a new file.
+Paper: Lemma 3.10 (`lem:LWterm`) and Lemma 3.11 (`lem: EWGn2_N`) through Section 7 ((7.1) `eq:EGC`
+to (7.12), Lemma 7.1 and Lemma 7.2); Subappendix B.3 ("analogously", the proof of Lemma B.7); (B.1)
+`eq:ELW_term`.  This is the BA counterpart of `Graph/LWTermHolds.lean` (Sections 1-4) and of the
+regime `lwtermExpN_of_LWterm` of `Graph/LWTermExpN.lean`.
 
 ## Contents (namespace `RBM.BA`; helpers carry the stem `BATermHolds_`)
 
-1. The algebra of `LWcutg` through `f_{xy}` (`BAExp14b_cut_true`, `baExp14b_cut_conj`): the pointwise bound of one term of `(eq:EGC)`, the
-   offset count, the averaging step and the pathwise bound `BATermHolds_LWE_le` of `LWEg` from entry bounds.  **The `M`-part**: at BA the
-   closing edge is `G_{yx} = (G - M)_{yx} + M_{yx}` with `M_{yx} = 0` unless the offsets of `x`, `y` agree (`BAMomentGen_decay`); exactly `W^d`
-   of the `W^{2d}` pairs of two blocks have equal offsets, so the `M`-part enters with the weight `W^{-d}` (`BATermHolds_card_off`).
-2. The Markov step at the BA carrier (`BATermHolds_fB`, from `baLWMoment_closed` through `LWTermHolds_prec_of_moments`), `(eq:directG1)` at BA
-   (`BATermHolds_GM_B`: `baGbyZeta_holds` at `R = 0`, `ρ = (log W)^{3/2}`, `baZetaClaim_holds`), the entry law, the averaged local law
-   (`BAMomentGen_avg_whp`), the `M`-part facts, the arithmetic, and **`baLWterm_holds : ∀ d, BALWterm d`** (target 2).
-3. The regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N` (target 3): the statement def `BALWtermExpN` and **`baLWtermExpN_holds : ∀ d, BALWtermExpN d`**,
-   from `baLWterm_holds` at the B class `LWPhiB` (`lwN_prec_mono`, `lwN_tailW_le`, `lwN_B_le_tail`, `lwN_size_rpow_neg_le`, `lwN_Wneg_le`;
+1. The algebra of `LWcutg` through `f_{xy}` (`BAExp14b_cut_true`, `baExp14b_cut_conj`): the
+   pointwise bound of one term of (7.1) `eq:EGC`, the offset count, the averaging step and the
+   pathwise bound `BATermHolds_LWE_le` of `LWEg` from entry bounds.  **The `M`-part**: at BA the
+   closing edge is `G_{yx} = (G - M)_{yx} + M_{yx}` with `M_{yx} = 0` unless the offsets of `x`, `y`
+   agree (`BAMomentGen_decay`); exactly `W^d` of the `W^{2d}` pairs of two blocks have equal
+   offsets, so the `M`-part enters with the weight `W^{-d}` (`BATermHolds_card_off`).
+2. The Markov step at the BA carrier (`BATermHolds_fB`, from `baLWMoment_closed` through
+   `LWTermHolds_prec_of_moments`), (7.2) `eq:directG1` at BA (`BATermHolds_GM_B`:
+   `baGbyZeta_holds` at `R = 0`, `ρ = (log W)^{3/2}`, `baZetaClaim_holds`), the entry law, the
+   averaged local law (`BAMomentGen_avg_whp`), the `M`-part facts, the arithmetic, and
+   **`baLWterm_holds : ∀ d, BALWterm d`**.
+3. The regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N`: the statement def `BALWtermExpN` and
+   **`baLWtermExpN_holds : ∀ d, BALWtermExpN d`**, from `baLWterm_holds` at the B class `LWPhiB`
+   (`lwN_prec_mono`, `lwN_tailW_le`, `lwN_B_le_tail`, `lwN_size_rpow_neg_le`, `lwN_Wneg_le`;
    `BAExp14d_Bctl_small` in the place of `lwN_Bctl_le`).
-4. Compiled nonempty instance of target 2 at `d = 3` (`sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2`); the regime of target 3 is empty at `t ≡ 1/2` on the merged
-   flow data (checked, §4).
 
-**Public names**: `baLWterm_holds`, `BALWtermExpN`, `baLWtermExpN_holds`; every helper is private (row b reads them by `open private`).
-**Premise scan** (`Test/Axioms.lean:471`): the public theorems have the binder `d : ℕ` only (the pin hypotheses `LWAssmgL`, `LWAssmExpgL` occur inside
-the pin `BALWterm` and the statement def `BALWtermExpN`); the private lemmas that take the hypotheses of `LWAssmgL` take them unfolded (as
-`Graph/BAMomentGen.lean` §6).  The other regime and the union are in `Graph/BATermHoldsB.lean` (row b).
+**Public names**: `baLWterm_holds`, `BALWtermExpN`, `baLWtermExpN_holds`; every helper is private
+(file B reads them by `open private`).  The public theorems have the binder `d : ℕ` only (the
+hypotheses `LWAssmgL`, `LWAssmExpgL` occur inside the statements `BALWterm` and `BALWtermExpN`);
+the private lemmas that take the hypotheses of `LWAssmgL` take them unfolded (as in
+`Graph/BAMomentGen.lean` Section 6).  The other regime and the union are in
+`Graph/BATermHoldsB.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -82,7 +88,7 @@ private theorem BATermHolds_f_eq (x y : Idx d (sz.L n) (sz.W n)) :
   · rfl
   · rw [← BAMomentGen_sumS (z := z) n t ω α, Finset.sum_mul, Finset.sum_mul]
 
-/-- The split `Σ_α X_{[α]} G_{xα} G_{αy} = f_{xy} + f̃_{xy}`, `f̃` the contribution of `α ∈ {x, y}` (`7_8:30-36`). -/
+/-- The split `Σ_α X_{[α]} G_{xα} G_{αy} = f_{xy} + f̃_{xy}`, `f̃` the contribution of `α ∈ {x, y}` ((7.4) `fxyG_sum`). -/
 private theorem BATermHolds_F_split (x y : Idx d (sz.L n) (sz.W n)) :
     ∑ α, BAExp14a_X sz z n t ω (STblk sz n α) * ((baFMz sz z).G n t ω x α * (baFMz sz z).G n t ω α y) =
       LWfg (baFMz sz z) n t ω x y + ∑ α ∈ ({x, y} : Finset (Idx d (sz.L n) (sz.W n))),
@@ -94,7 +100,7 @@ private theorem BATermHolds_F_split (x y : Idx d (sz.L n) (sz.W n)) :
   refine Finset.sum_congr rfl fun α _ => ?_
   split_ifs <;> simp [mul_assoc]
 
-/-- **The pointwise bound of one term of `(eq:EGC)`** (`7_8:15-60`): with `‖X_c‖ ≤ μ`, `‖G_{xx}‖ ≤ A`, `‖G_{xy}‖, ‖G_{yx}‖ ≤ γ` (`x ≠ y`),
+/-- **The pointwise bound of one term of (7.1) `eq:EGC`**: with `‖X_c‖ ≤ μ`, `‖G_{xx}‖ ≤ A`, `‖G_{xy}‖, ‖G_{yx}‖ ≤ γ` (`x ≠ y`),
 `A ≤ γ` if `x = y`, `‖f_{xy}‖ ≤ φ`:  `‖G(σ)_{yx} Σ_α X_{[α]} G_{xα} G_{αy}‖ ≤ γ (φ + 2 μ A γ)`. -/
 private theorem BATermHolds_pointwise (σ : Bool) (x y : Idx d (sz.L n) (sz.W n)) {A γ φ μ : ℝ}
     (hμ0 : 0 ≤ μ) (hA0 : 0 ≤ A) (hγ0 : 0 ≤ γ) (hX : ∀ c, ‖BAExp14a_X sz z n t ω c‖ ≤ μ)
@@ -165,7 +171,7 @@ private theorem BATermHolds_card_off (ao ac : Zd d (sz.L n)) :
   push_cast; rfl
 
 
-/-- **The averaging step** (`(eq:recoltermwt)`, `7_8:46-52`): if every pair `(x, y) ∈ [a_o] × [a_c]` has
+/-- **The averaging step** ((7.7) `eq:recoltermwt`): if every pair `(x, y) ∈ [a_o] × [a_c]` has
 `‖G(σ)_{yx} Σ_α X_{[α]} G_{xα} G_{αy}‖ ≤ b₀ + 1[off x = off y] b₁`, then `‖LWcutg(+, σ, a_c, a_o)‖ ≤ b₀ + W^{-d} b₁`
 (exactly `W^d` of the `W^{2d}` pairs have the same offset, `BATermHolds_card_off`). -/
 private theorem BATermHolds_cut_true_le
@@ -205,7 +211,7 @@ private theorem BATermHolds_cut_true_le
     _ = b0 + (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * b1 := by field_simp
 
 
-/-- **The pathwise bound of `LWEg`** (`(eq:recoltermwt)`, `7_8:15-60`, both charges `σ_c`) at the block Anderson carrier: from the entry
+/-- **The pathwise bound of `LWEg`** ((7.7) `eq:recoltermwt`, both charges `σ_c`) at the block Anderson carrier: from the entry
 bounds `‖G_{xx}‖ ≤ A`, `‖(G - M)_{xy}‖ ≤ γ(|[x]-[y]|)`, the off-diagonal support and decay of `M` (`M_{xy} = 0` unless the offsets agree,
 `‖M_{xy}‖ ≤ Mb(|[x]-[y]|)`, `A ≤ Mb(0)`), `‖f_{xy}‖ ≤ φ(|[x]-[y]|)` and the block averages `‖𝓛^{(1)}_b - m‖ ≤ μ`:
 `‖LWEg‖ ≤ 2 (γ(φ + 2μAγ) + W^{-d} (γ + Mb)(φ + 2μA(γ + Mb)))`, `r = |a₀ - a₁|`.  The second summand is the `M`-part of the closing edge
@@ -452,7 +458,7 @@ variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t :
       (fun n p _ => Φ n ((zdistInf d (sz.L n) (p.2.1 - p.2.2) : ℕ) : ℝ) ^ 2))
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
-/-- **The Markov step at the BA carrier** (`7_8:86-91`; twin of `LWTermHolds_fB`, `Graph/LWTermHolds.lean:630`): `f_{xy} ≺ η_t⁻¹ Φ(0) Φ(|a-b|)`
+/-- **The Markov step at the BA carrier** ((7.11) `eq:LW_moment_exp`, proof of Lemma 7.2; as `LWTermHolds_fB` in `Graph/LWTermHolds.lean`): `f_{xy} ≺ η_t⁻¹ Φ(0) Φ(|a-b|)`
 from the moment bound `baLWMoment_closed` (`p = 2 p₀`, `p₀ = ⌈(D+2)/τ₀⌉ + 1`), the integrability of `|f_{xy}|^p` (`BAMomentExp_integrable` at
 `Dm = univ`, `LWfgD_univ`), `Φ(c r) ≲ Φ(r)` (`LWPsiAll.shift`) and the union bound over the `N²` pairs (`LWTermHolds_prec_of_moments`). -/
 private theorem BATermHolds_fB :
@@ -509,8 +515,8 @@ private theorem BATermHolds_fB :
         _ = _ := by ring
 
 
-/-- **`(eq:directG1)` at BA** (`7_8:20-23`, `B:428-431`; twin of `LWTermHolds_Gij_B`): `‖(G_t - M)_{xy}‖ ≺ Φ(|[x]-[y]|)` for all `x, y`
-(`baGbyZeta_holds` at `R = 0`, `ρ = (log W)^{3/2}`, then `claim:xi` = `baZetaClaim_holds`). -/
+/-- **(7.2) `eq:directG1` at BA** ((B.22) `eq:Gbyxi2_BA`; as `LWTermHolds_Gij_B`): `‖(G_t - M)_{xy}‖ ≺ Φ(|[x]-[y]|)` for all `x, y`
+(`baGbyZeta_holds` at `R = 0`, `ρ = (log W)^{3/2}`, then the claim (7.34) `eq:Gbyxi2` = `baZetaClaim_holds`). -/
 private theorem BATermHolds_GM_B :
     PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
       (fun n q ω => ‖(baFMz sz z).GM n (t n) ω q.1 q.2‖)
@@ -570,8 +576,8 @@ private theorem BATermHolds_Mpart : ∃ C' c : ℝ, 2 ≤ C' ∧ 0 < c ∧ ∀�
   have := mul_le_mul_of_nonneg_left hle hc.le
   linarith
 
-/-- **`lem:LWterm` reduces to the moment bound** (`7_8:15-91`; twin of `lwReduceB_holds`, `Graph/LWTermHolds.lean:551`): from
-`f_{xy} ≺ η_t⁻¹ Φ(0) Φ(|a-b|)` (`BATermHolds_fB`), `(eq:directG1)` (`BATermHolds_GM_B`), `‖G_{xx}‖ ≤ 2` (`baEntryPsi_holds`), the averaged
+/-- **`lem:LWterm` reduces to the moment bound** (as `lwReduceB_holds` in `Graph/LWTermHolds.lean`): from
+`f_{xy} ≺ η_t⁻¹ Φ(0) Φ(|a-b|)` (`BATermHolds_fB`), (7.2) `eq:directG1` (`BATermHolds_GM_B`), `‖G_{xx}‖ ≤ 2` (`baEntryPsi_holds`), the averaged
 local law (`BAMomentGen_avg_whp`) and the pathwise bound `BATermHolds_LWE_le` with the `M`-part of the closing edge
 (`BAMomentGen_decay`, `M_{xy} = 0` off equal offsets, `|M_{xy}| ≤ C e^{-c|[x]-[y]|}`). -/
 private theorem BATermHolds_reduceB :
@@ -701,7 +707,7 @@ private theorem BATermHolds_reduceB :
 end BSide
 
 
-/-- **`lem:LWterm` at the block Anderson data** (`3_5:385-404`, `7_8:15-91`): `BATermHolds_reduceB` with its pin hypothesis `LWAssmgL`
+/-- **`lem:LWterm` at the block Anderson data** (Lemma 3.10; Section 7): `BATermHolds_reduceB` with its hypothesis `LWAssmgL`
 unfolded, for every `d` and no hypothesis on the model. -/
 theorem baLWterm_holds : ∀ d : ℕ, BALWterm d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 ht1 ε₀ C₁ C₂ C₃ Cc Ψ Φ hassm
@@ -709,8 +715,8 @@ theorem baLWterm_holds : ∀ d : ℕ, BALWterm d := by
 
 /-! ## 3. The regime `1 - t ≤ λ²/L²` of `lem: EWGn2_N` -/
 
-/-- **`lem: EWGn2_N` on the sizes where `1 - t ≤ λ²/L²`** (`7_8:20`; `LWtermExpN`, `Graph/LWPins.lean:462`) at the block Anderson data: the same
-conclusion as `BALWtermExp` (`BA/LWPinsBA.lean:47`) on the index set of the regime.  The statement def of target 3; the union with the other regime
+/-- **`lem: EWGn2_N` on the sizes where `1 - t ≤ λ²/L²`** (Lemma 3.11, (7.1) `eq:EGC`; `LWtermExpN`, `Graph/LWPins.lean`) at the block Anderson data: the same
+conclusion as `BALWtermExp` (`BA/LWPinsBA.lean`) on the index set of the regime.  The statement def; the union with the other regime
 is `baLWtermExp_holds`. -/
 def BALWtermExpN (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -725,18 +731,18 @@ def BALWtermExpN (d : ℕ) : Prop :=
                 ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * tailW d (sz.L n) (sz.lam n) (t n) (ℓ n)
                   ((sz.W n : ℕ) : ℝ) D ((zdistInf d (sz.L n) (p.1.2 0 - p.1.2 1) : ℕ) : ℝ)))
 
-/-- `W^{-d}` as the rpow of `LWPhiB` equals the natural-power inverse of `Bctl` (copy of the private `lwN_wneg`, `Graph/LWTermExpN.lean:383`). -/
+/-- `W^{-d}` as the rpow of `LWPhiB` equals the natural-power inverse of `Bctl` (as the private `lwN_wneg` in `Graph/LWTermExpN.lean`). -/
 private theorem BATermHolds_wneg (W : ℝ) (hW : 0 ≤ W) (d : ℕ) : W ^ (-(d : ℝ)) = (W ^ d)⁻¹ := by
   rw [Real.rpow_neg hW, Real.rpow_natCast]
 
-/-- `Φ_n(0) = Bctl^{1/2}` for the B class with `c₀ = d` (copy of the private `lwN_phi_zero`, `LWTermExpN:387`). -/
+/-- `Φ_n(0) = Bctl^{1/2}` for the B class with `c₀ = d` (as the private `lwN_phi_zero` in `Graph/LWTermExpN.lean`). -/
 private theorem BATermHolds_phi_zero {d : ℕ} (sz : Sizes d) (K : ℕ → ℕ) (t : ℕ → ℝ) (n : ℕ) :
     LWPhiB sz (d : ℝ) K t n 0 = (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) := by
   unfold LWPhiB Sizes.Bctl
   rw [BATermHolds_wneg _ (Nat.cast_nonneg _)]
   simp
 
-/-- `Φ_n(r)² = W^{-d} B_{t, r∧K}` for the B class with `c₀ = d`, `r ∈ ℕ` (copy of the private `lwN_phi_sq`, `LWTermExpN:393`). -/
+/-- `Φ_n(r)² = W^{-d} B_{t, r∧K}` for the B class with `c₀ = d`, `r ∈ ℕ` (as the private `lwN_phi_sq` in `Graph/LWTermExpN.lean`). -/
 private theorem BATermHolds_phi_sq {d : ℕ} (sz : Sizes d) (K : ℕ → ℕ) (t : ℕ → ℝ) (n r : ℕ) :
     LWPhiB sz (d : ℝ) K t n (r : ℝ) ^ 2 =
       (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * Bparam d (sz.L n) (sz.lam n) (t n) (min r (K n)) := by
@@ -751,9 +757,8 @@ private theorem BATermHolds_zdistInf_le (L : ℕ) [NeZero L] (x : Zd d L) : zdis
   unfold zdist
   exact (min_le_left _ _).trans (ZMod.val_lt _).le
 
-/-- **`lem: EWGn2_N`, second regime (`1 - t ≤ λ²/L²`), from `lem:LWterm`** (`7_8:20`, `3_5:385-415`; twin of `lwtermExpN_of_LWterm`,
-`Graph/LWTermExpN.lean:414`): `baLWterm_holds` is applied to the B class `Φ = LWPhiB sz d K t`, `K n = ⌊ℓ_n⌋ ∧ L_n`, at the window
-`ε₁ = min(ε₀, d c₀/4)` with `c₀` of `BAExp14d_Bctl_small` (`Bctl ≤ 2 N^{-c₀}`); `LWLoop2gL` for `Φ` is `(LW_assm_exp)` at `D' = 1/𝔠`
+/-- **`lem: EWGn2_N`, second regime (`1 - t ≤ λ²/L²`), from `lem:LWterm`** (Lemma 3.11; as `lwtermExpN_of_LWterm` in `Graph/LWTermExpN.lean`): `baLWterm_holds` is applied to the B class `Φ = LWPhiB sz d K t`, `K n = ⌊ℓ_n⌋ ∧ L_n`, at the window
+`ε₁ = min(ε₀, d c₀/4)` with `c₀` of `BAExp14d_Bctl_small` (`Bctl ≤ 2 N^{-c₀}`); `LWLoop2gL` for `Φ` is (3.31) `eq:LW_assm_exp` at `D' = 1/𝔠`
 (`wT ≤ B_{r∧K}`, `W^{-D'} ≤ L^{-d}`); the conclusion is compared with `tailW` on the regime with the constant `e · 2^{d-2}` (`ℓ_t = L`). -/
 theorem baLWtermExpN_holds : ∀ d : ℕ, BALWtermExpN d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ Ψ ℓ hA D hD
@@ -863,12 +868,6 @@ theorem baLWtermExpN_holds : ∀ d : ℕ, BALWtermExpN d := by
         ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ * tailW d (sz.L n) (sz.lam n) (t n) (ℓ n)
           ((sz.W n : ℕ) : ℝ) D ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ))) := by ring
 
-
-/-! ## 4. Compiled nonempty instance of target 2; the regime of target 3 at the merged flow data
-
-Data (`BA/LWPinsBA.lean` §3, `Graph/BAMomentExpGen.lean` §6): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow `flow_sz0`
-(`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `z = zSeq`, `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ_n = Φ_n ≡ W_n^{-1/2}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`),
-`(C₁, C₂, C₃, Cc) = (2, 2, 1, 1)`.  What stays a hypothesis is another gate's input: `STInitialGT2gL` and `LWLoop2gL` (inside `LWAssmgL`). -/
 
 end RBM.BA
 

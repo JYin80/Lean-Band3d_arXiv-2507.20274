@@ -7,26 +7,25 @@ import RBM3D.Graph.BAExp14cB
 import RBM3D.Graph.BAExp14dB
 
 /-!
-# BA-L L4g (T2465): the joined-graph bound, the leaf pin `BAG5LeafPrec` proved, and `BAExp14bS3`
+# The joined-graph bound, the leaf statement `BAG5LeafPrec` proved, and `BAExp14bS3`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:68-99` (`(eq;I42inG)` at `B:68`,
-`(Gammamuxy)` at `B:88`, `(eq:sizeGammamu_E)` at `B:92`), `B:345-353` (`def scalingBA`,
-`(eq_defsize_BA)`), `paper/tex/7_8_light_weight.tex:264-266` (`claim:size`).  Twin of the band
-file `Graph/LWExpTerm6.lean` §1-§4 (`:51-352`: `LwGraphPrecJoin`, `lwExpTerm6_pathwise`,
-`lwExpTerm6_arith`, `lwGraphPrecJoin_holds`) and of the one-line chain `lwExpG5'_holds`
-(`:613`).
+Paper: Subappendix B.1: (B.5) `eq;I42inG`, (B.7) `Gammamuxy`, (B.8) `eq:sizeGammamu_E`;
+Definition B.5 (`def scalingBA`) with (B.16) `eq_defsize_BA`; and the claim "`Γ ≺ size(Γ)` for any
+normal graph" after (7.18) `eq:estSpm-W` in Subsection 7.1.  This is the BA counterpart of the band
+file `Graph/LWExpTerm6.lean` (Sections 1-4: `LwGraphPrecJoin`, `lwExpTerm6_pathwise`,
+`lwExpTerm6_arith`, `lwGraphPrecJoin_holds`) and of the one-line chain `lwExpG5'_holds`.
 
 ## Contents (namespace `RBM.BA`; private helpers carry the stem `BAExp14e_`)
 
-1. The pin `BAGraphPrecJoin` (target 1; T2398 probe `Probe/T2398Pins.lean:444-452`).
-2. The kernel bounds of the rescaled data `D'_t` of L4c2 (`BAExp14d_dataT`): `S' = svarF(0)`,
+1. The statement `BAGraphPrecJoin`.
+2. The kernel bounds of the rescaled data `D'_t` (`BAExp14d_dataT`): `S' = svarF(0)`,
    `S⁺' = lift(ω_t)`, `M`, `g₀Ψ`.
 3. The pathwise bound of a normal packed graph with `n_M = 0` (`baClaimSize` at `D'_t`).
-4. `baGraphPrecJoin_holds` (target 1): entry event, arithmetic `lwExpTerm6_arith`, `≺ → 𝔼`.
-5. `baG5LeafPrec_of`, `baG5LeafPrec_holds` (target 2): the case split `n_M = 0` (target 1) /
-   `n_M = 1` (L4c2).
-6. `baExp14bS3_holds` (target 3): the producer of S3 through `baExp14bS3_of_leaf` (L4c1).
-7. Compiled nonempty instances (namespace `BAExp14eInst`).
+4. `baGraphPrecJoin_holds`: entry event, arithmetic `lwExpTerm6_arith`, `≺ → 𝔼`.
+5. `baG5LeafPrec_of`, `baG5LeafPrec_holds`: the case split `n_M = 0` (`BAGraphPrecJoin`) /
+   `n_M = 1` (`BAG5LeafPrec1`, `Graph/BAExp14dB.lean`).
+6. `baExp14bS3_holds`: the proof of `BAExp14bS3` through `baExp14bS3_of_leaf`
+   (`Graph/BAExp14cB.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -51,11 +50,10 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 1. The pin -/
+/-! ## 1. The statement -/
 
-/-- **`(Gammamuxy)` for a joined graph** (target 1; `T2465_BAGraphPrecJoin`; T2398 probe `:444-452`, design §5; band `LwGraphPrecJoin`,
-`LWExpTerm6.lean:55`): for a normal packed BA graph with `n_M = 0` (every vertex in a molecule of an external vertex),
-`‖𝔼 Γ_{xy}‖ ≺ t^{n_W} η_t⁻¹ B^{ord/2}` at every pair `(x, y)`, from the entrywise law alone.  The data are those of the leaf pin
+/-- **(B.7) `Gammamuxy` for a joined graph** (as `LwGraphPrecJoin` in `Graph/LWExpTerm6.lean`): for a normal packed BA graph with `n_M = 0` (every vertex in a molecule of an external vertex),
+`‖𝔼 Γ_{xy}‖ ≺ t^{n_W} η_t⁻¹ B^{ord/2}` at every pair `(x, y)`, from the entrywise law alone.  The data are those of the leaf statement
 `BAG5LeafPrec` (`BAExp14a_slc`, `(baFMz sz z).m n`). -/
 def BAGraphPrecJoin (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -70,10 +68,10 @@ def BAGraphPrecJoin (d : ℕ) : Prop :=
 
 section Kernels
 
-/-- **The kernel constants of `D'_t`** (the band's `lwExpTerm3_Sp_decay`, `LWExpTerm3:727`, in the rescaled frame of L4c2: `S = t S'`, `S⁺ = t S⁺'`
+/-- **The kernel constants of `D'_t`** (the band's `lwExpTerm3_Sp_decay` in `Graph/LWExpTerm3.lean`, in the rescaled frame of `Graph/BAExp14d.lean`: `S = t S'`, `S⁺ = t S⁺'`
 by `BAExp14d_val_scale`, so no `t` is carried by the constants): `S' = svarF(0)` and `S⁺' = lift(ω_t)`, `ω_t = Θ_t^{(+,+)}`, have entries
 `≤ K₀ W^{-d}` and row and column sums `≤ K₁`, `M` and `g₀ Ψ` entries, row and column sums `≤ Kd`; the constants depend on `(d, Λ, κ)` only,
-uniformly in `0 ≤ t < 1`, `L ≥ 3`, `W`, `E`, `0 < g₀ ≤ Λ`.  The decay of `ω_t` is `BASizeClaim_theta_decay` (`(prop:ThfadC_short)`). -/
+uniformly in `0 ≤ t < 1`, `L ≥ 3`, `W`, `E`, `0 < g₀ ≤ Λ`.  The decay of `ω_t` is `BASizeClaim_theta_decay` (`prop:ThfadC_short`). -/
 private theorem BAExp14e_kernels (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ K₀ K₁ Kd : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧
       ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), 0 < g0 → g0 ≤ Λ →
@@ -133,8 +131,8 @@ end Kernels
 
 section Pathwise
 
-/-- **The pathwise bound of a normal packed graph without internal molecule at `D'_t`** (`claim:size`, `7_8:264-266`, with the BA size `B:345-353`; twin of
-`lwExpTerm6_pathwise`, `LWExpTerm6.lean:76`): on the entry event `‖(G - M)_{xy}‖ ≤ Ψ`,
+/-- **The pathwise bound of a normal packed graph without internal molecule at `D'_t`** (the claim `Γ ≺ size(Γ)` of Subsection 7.1, with the BA size of Definition B.5; as
+`lwExpTerm6_pathwise` in `Graph/LWExpTerm6.lean`): on the entry event `‖(G - M)_{xy}‖ ≤ Ψ`,
 `|Γ_{xy}| ≤ C_Γ Ψ^{n_S} (W^{-d})^{n_W - n_A}` at the rescaled data, `C_Γ = Γ.sizeConst K₀ K₁ Kd` (`(L^d)^{n_M} = 1`).  No `ξ`, no `GtoAG`. -/
 private theorem BAExp14e_pathwise (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ K₀ K₁ Kd : ℝ, 0 < K₀ ∧ 0 < K₁ ∧ 0 ≤ Kd ∧
@@ -170,13 +168,13 @@ private theorem BAExp14e_pathwise (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 
 
 end Pathwise
 
-/-! ## 4. `(Gammamuxy)` for a joined graph -/
+/-! ## 4. (B.7) `Gammamuxy` for a joined graph -/
 
-/-- **Target 1, `baGraphPrecJoin_holds`** (route as `lwGraphPrecJoin_holds`, `LWExpTerm6.lean:187`, with the BA ingredients):
+/-- **`baGraphPrecJoin_holds`** (as `lwGraphPrecJoin_holds` in `Graph/LWExpTerm6.lean`, with the BA ingredients):
 `X = (t^{n_W})⁻¹ P_{xy}` (`= P_{xy}` at `D'_t` when `t^{n_W} ≠ 0`, by `BAExp14d_val_scale`; `0` otherwise); the polynomial envelope `BAExp14c_val_env` and the floor
-`BAExp14c_floor` of L4c1; on the entry event of `STLocalEntrygL` (`BAExp14d_entry_whp`) the pathwise bound `BAExp14e_pathwise` with
+`BAExp14c_floor` (`Graph/BAExp14c.lean`); on the entry event of `STLocalEntrygL` (`BAExp14d_entry_whp`) the pathwise bound `BAExp14e_pathwise` with
 `Ψ = N^{τ'} B^{1/2}`, `W^{-d} ≤ (𝔡⁻² + 1) B` (`BAExp14a_Wd_le`), and the arithmetic `lwExpTerm6_arith`; then `≺ → 𝔼`
-(`BAExp14a_prec_integral`, `BAExp14a_det_iff`).  Only `STLocalEntrygL` of the five Step 1/2 pins is used, and only it appears in the statement. -/
+(`BAExp14a_prec_integral`, `BAExp14a_det_iff`).  Only `STLocalEntrygL` of the five Step 1/2 inputs is used, and only it appears in the statement. -/
 theorem baGraphPrecJoin_holds (d : ℕ) : BAGraphPrecJoin d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT hE P hN hnM
   classical
@@ -322,12 +320,12 @@ theorem baGraphPrecJoin_holds (d : ℕ) : BAGraphPrecJoin d := by
         (sz.Bctl n (t n)) ^ ((o : ℝ) / 2))) := mul_le_mul_of_nonneg_left h1 (pow_nonneg (ht0 n) _)
     _ = _ := by ring
 
-/-! ## 5. The leaf pin of L4c1, proved -/
+/-! ## 5. The leaf statement, proved -/
 
-/-- **Target 2, the conditional form** (`baG5LeafPrec_of`, `T2465_LeafPrecOf` with `LP := BAG5LeafPrec` and `Q1 := BAG5LeafPrec1`): the joined
-bound (the `n_M = 0` half, target 1) and the `n_M = 1` bound `BAG5LeafPrec1` of L4c2 give the leaf pin `BAG5LeafPrec` of L4c1.  Route: destructure
+/-- **The conditional form** (`baG5LeafPrec_of`, with `LP := BAG5LeafPrec` and `Q1 := BAG5LeafPrec1`): the joined
+bound (the `n_M = 0` half, `BAGraphPrecJoin`) and the `n_M = 1` bound `BAG5LeafPrec1` give the leaf statement `BAG5LeafPrec`.  Proof: destructure
 `BAG5LeafProps (fun _ _ => [P])` (`Normal`, `n_M ≤ 1`, ...); `n_M = 0` goes to the joined bound (of the five Step 1/2 premises only
-`STLocalEntrygL` is used), `n_M = 1` to L4c2 (the pointwise `(Gammamuxy)` half of the 0851 Q3 disjunction for `BAG5Leaf` leaves). -/
+`STLocalEntrygL` is used), `n_M = 1` to `BAG5LeafPrec1` (the pointwise `(Gammamuxy)` half for `BAG5Leaf` leaves). -/
 theorem baG5LeafPrec_of : ∀ d : ℕ, BAGraphPrecJoin d → BAG5LeafPrec1 d → BAG5LeafPrec d := by
   intro d hJ hQ1 hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT μ hE hA hLmax hLK hDec P hLP
   obtain ⟨hN, hnM1, -, -, -⟩ := hLP true true P (List.mem_singleton_self P)
@@ -335,24 +333,15 @@ theorem baG5LeafPrec_of : ∀ d : ℕ, BAGraphPrecJoin d → BAG5LeafPrec1 d →
   · exact hJ hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT hE P hN h0
   · exact hQ1 hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT hE hA hLmax hLK hDec P hLP h1
 
-/-- **Target 2, unconditionally** (`baG5LeafPrec_holds`): the leaf pin `BAG5LeafPrec` of L4c1 for every `d`, from target 1 and `baG5LeafPrec1_holds`
-of L4c2. -/
+/-- **Unconditionally** (`baG5LeafPrec_holds`): the leaf statement `BAG5LeafPrec` for every `d`, from `baGraphPrecJoin_holds` and `baG5LeafPrec1_holds`. -/
 theorem baG5LeafPrec_holds : ∀ d : ℕ, BAG5LeafPrec d := fun d =>
   baG5LeafPrec_of d (baGraphPrecJoin_holds d) (baG5LeafPrec1_holds d)
 
-/-! ## 6. The producer of S3 -/
+/-! ## 6. The proof of `BAExp14bS3` -/
 
-/-- **Target 3, `baExp14bS3_holds`** (twin of `lwExpG5'_holds`, `LWExpTerm6.lean:613`): the merged pin `BAExp14bS3` (`Graph/BAExp14b.lean:181`, per family,
-the five premises of `LWCutExpG`, no `BATwist*`) for every `d`, by the assembly `baExp14bS3_of_leaf` of L4c1 applied to the leaf pin of target 2. -/
+/-- **`baExp14bS3_holds`** (as `lwExpG5'_holds` in `Graph/LWExpTerm6.lean`): the statement `BAExp14bS3` (`Graph/BAExp14b.lean`, per family,
+the five premises of `LWCutExpG`, no `BATwist*`) for every `d`, by the assembly `baExp14bS3_of_leaf` applied to the leaf statement `baG5LeafPrec_holds`. -/
 theorem baExp14bS3_holds : ∀ d : ℕ, BAExp14bS3 d := fun d => baExp14bS3_of_leaf d (baG5LeafPrec_holds d)
-
-/-! ## 7. Compiled nonempty instances (namespace `BAExp14eInst`)
-
-`d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), `zSeq`, `flow_sz0` (`κ = 1/2`,
-`ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/2 ≤ BAflowT0`.  The leaf is the all-`M` leaf `baAllMP` of L4e-C
-(normal, `n_M = 0`, `n_W = 2`, `n_S = 0`, `ord = 4`, `x ~ y`); the other branch of the case split is
-exercised at the `n_M = 1` leaf `leaf1P` of L4c2.  What stays a hypothesis of the examples is the five
-Step 1/2 pins `STLocalEntrygL`, `LWAvgLawgL`, `STLmaxgL`, `STLKgL`, `STDecaygL` (other gates' inputs). -/
 
 end RBM.BA
 

@@ -10,19 +10,19 @@ import RBM3D.Graph.BAWeightOp
 import RBM3D.Graph.BAExpandW
 
 /-!
-# BA-L R1 `BASim` (T2423), part 1: a BA step matched with a band `LocStep` at the image
+# A BA step matched with a band `LocStep` at the image (part 1)
 
-Amend 1 (DECISIONS §240): R1 delivers the frame level (`BAMatch` at `P.img`); the twisted
-`BAMatchTw` and its bridges go to L3b4'.
+Paper: Subappendix B.3 (the atomic image, Definition B.3 `def_atom`; Lemma B.6 `lanlw`,
+Lemma B.7 `lem_lweight`, (B.20) `GGGamma`).  This part delivers the frame level (`BAMatch` at
+`P.img`); the twist is moved into the costs elsewhere (`baCostTwist_holds`).
 
 Contents: the frame vocabulary (`BAFrameStep`, the tagged `BAFrameStepT`, the tags `BAShape` of
-`Graph/BAScost`); the pins `PGraph.BAEquiv`, `BAMatch`, `BAExtraGood`, `BAFrameStepT_untag`,
-`BAsim`, `BAsim'`, `PGraph.BAEquivC`, `BAPGraph.twist` and the invariants `baInv`;
-`baFrameStepT_untag_holds : BAFrameStepT_untag`; the matching engine `BASim_match` (classes of the
-atomic image of a packed term, the data of one match, the specification `BASimExt` of an
-extension); the weight step at the image; the invariants under relabelling
-(`BASim_baInv_of_equiv`, `BASim_img_baInv`); the compiled instance of `baFrameStepT_untag_holds`.
-Parts 2 and 3: `BASim2.lean`, `BASim3.lean`.
+`Graph/BAScost`); the statements `PGraph.BAEquiv`, `BAMatch`, `BAExtraGood`,
+`BAFrameStepT_untag`, `BAsim'`, `PGraph.BAEquivC`, `BAPGraph.twist` and the invariants
+`baInv`; `baFrameStepT_untag_holds : BAFrameStepT_untag`; the matching engine `BASim_match`
+(classes of the atomic image of a packed term, the data of one match, the specification
+`BASimExt` of an extension); the weight step at the image; the invariants under relabelling
+(`BASim_baInv_of_equiv`, `BASim_img_baInv`).  Parts 2 and 3: `BASim2.lean`, `BASim3.lean`.
 -/
 
 set_option linter.style.setOption false
@@ -44,22 +44,22 @@ namespace RBM.Graph
 
 open RBM
 
-/-! ## 1. The frame vocabulary (`t/T2423:RBM3D/Probe/T2423Pins.lean:19-139`; `BAShape`, `BTStep`, `untag` are those of `Graph/BAScost.lean`) -/
+/-! ## 1. The frame vocabulary (`BAShape`, `BTStep`, `untag` are those of `Graph/BAScost.lean`) -/
 
 section Frame
 variable {E : Type}
-/-- the outputs of a step: the BA partition of every term, packed and read through `P.ext` (T2395 probe 154). -/
+/-- the outputs of a step: the BA partition of every term, packed and read through `P.ext`. -/
 def BAPGraph.outsOf (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (Ts : List (BAGraph P.E' I')) : List (BAPGraph E) :=
   Ts.flatMap fun T => T.partition.map fun Q =>
     { E' := Q.E', I' := Q.I', ext := Q.ext ∘ P.ext, ext_surj := Q.ext_surj.comp P.ext_surj, g := Q.g }
-/-- macro step (a) (T2395 probe 160). -/
+/-- macro step (a). -/
 def BAPGraph.withinOuts (P : BAPGraph E) (p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) : List (BAPGraph E) :=
   let Γ := P.g; let e : SEdge (P.E' ⊕ (P.I' ⊕ Fin 2)) := bpS true (bpv 1) (bpv 1)
   let tr := BAGraph.ext 2 Γ p.2 [e] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 p.1.dst)]
   let pp := (e, p.2.map (SEdge.map (owxEmb 2)))
   P.outsOf (BAGraph.ext 2 Γ p.2 [e, bpS true (bpv 0) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)] ::
       (lwSplit p.2).map (BAGraph.lanlwD Γ p)) ++ P.outsOf (tr.lw2 pp) ++ P.outsOf (tr.lw4 pp)
-/-- macro step (b) (T2395 probe 168). -/
+/-- macro step (b). -/
 def BAPGraph.splitOuts (P : BAPGraph E) (p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) (j : ℕ) : List (BAPGraph E) :=
   let Γ := P.g; let y := owxEmb 2 p.1.dst; let y' := owxEmb 2 q.1.src; let a := owxEmb 2 p.1.src; let a' := owxEmb 2 q.1.dst
   let dq (s : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin 2)))) (md : List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin 2)))) : BAGraph P.E' (P.I' ⊕ Fin 2) :=
@@ -72,7 +72,7 @@ def BAPGraph.splitOuts (P : BAPGraph E) (p q : SEdge (P.E' ⊕ P.I') × List (SE
       dq [] [bpM (bpv 0) a', bpM y' (bpv 1), bpM (bpv 1) y]] ++
     P.outsOf (tr.gg2 (bpS true (bpv 1) y, R ++ [bpS true y' (bpv 1)]) (bpS true y' (bpv 1), R)) ++
     P.outsOf (tr.gg4 (bpS true (bpv 1) y, R ++ [bpS true y' (bpv 1)]) (bpS true y' (bpv 1), R))
-/-- **One step of the BA strategy in the frame** (T2395 probe 182): the five kinds, the selected edge blue and circled. -/
+/-- **One step of the BA strategy in the frame**: the five kinds, the selected edge blue and circled. -/
 inductive BAFrameStep : BAPGraph E → List (BAPGraph E) → Prop
   | weight (P : BAPGraph E) (p) (hp : p ∈ lwSplit P.g.solid) (h : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) :
       BAFrameStep P (P.outsOf (P.g.lw2 p) ++ P.outsOf (P.g.lw4 p))
@@ -121,7 +121,7 @@ def BAPGraph.withinOutsT (P : BAPGraph E) (p : SEdge (P.E' ⊕ P.I') × List (SE
   let pp := (e, p.2.map (SEdge.map (owxEmb 2)))
   P.outsT (P.g.tagStd 2) (BAGraph.ext 2 Γ p.2 [e, bpS true (bpv 0) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)] ::
       (lwSplit p.2).map (BAGraph.lanlwD Γ p)) ++ P.outsT (fun _ => .macroA) (tr.lw2 pp) ++ P.outsT (fun _ => .macroA) (tr.lw4 pp)
-/-- macro (b) with tags: `lanlw` and `d1` by extra-ness, the transfer-family terms `d2, d3, d4` and every output of stage 2 (`GGGamma` at `β`) `macroB`. -/
+/-- macro (b) with tags: `lanlw` and `d₁` by extra-ness, the transfer-family terms `d₂, d₃, d₄` and every output of stage 2 (`GGGamma` at `β`) `macroB`. -/
 def BAPGraph.splitOutsT (P : BAPGraph E) (p q : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))) (j : ℕ) : List (BAShape × BAPGraph E) :=
   let Γ := P.g; let y := owxEmb 2 p.1.dst; let y' := owxEmb 2 q.1.src; let a := owxEmb 2 p.1.src; let a' := owxEmb 2 q.1.dst
   let dq (s : List (SEdge (P.E' ⊕ (P.I' ⊕ Fin 2)))) (md : List (BAMEdge (P.E' ⊕ (P.I' ⊕ Fin 2)))) : BAGraph P.E' (P.I' ⊕ Fin 2) :=
@@ -161,18 +161,18 @@ inductive BAFrameStepT : BAPGraph E → List (BAShape × BAPGraph E) → Prop
       BAFrameStepT P (P.splitOutsT p q j)
 end Tag
 
-/-! ## 2. Relabelling and the pins of R1 (probe 140-198); `BAEquivC`, `BAPGraph.twist` (Amend 1, O4) -/
+/-! ## 2. Relabelling and the statements; `BAEquivC`, `BAPGraph.twist` -/
 
 section Pins
 variable {E : Type}
-/-- a waved edge, or its reversal (`WEdge.transpose`, `LWSymm.lean:96`). -/
+/-- a waved edge, or its reversal (`WEdge.transpose` in `Graph/LWSymm.lean`). -/
 def WEdge.sameRev {V : Type*} (a b : WEdge V) : Prop := a = b ∨ a.transpose = b
 theorem WEdge.BASim_sameRev_refl {V : Type*} (a : WEdge V) : a.sameRev a := Or.inl rfl
 /-- two dotted edges with the same ends, unordered. -/
 def DEdge.sameU {V : Type*} (a b : DEdge V) : Prop := a.eq = b.eq ∧ ((a.x = b.x ∧ a.y = b.y) ∨ (a.x = b.y ∧ a.y = b.x))
 theorem DEdge.BASim_sameU_refl {V : Type*} (a : DEdge V) : a.sameU a := ⟨rfl, Or.inl ⟨rfl, rfl⟩⟩
 /-- **`R` is `S` up to relabelling** of the vertices (the external vertices keep their labels `ext`): the solid edges agree up to order, the waved edges
-up to order and reversal of single edges (`LGraph.scost_perm`, `LocalRegular6a.lean:309`: `scost` sees the solid edges up to order and the number of waved edges; molecules read the symmetric `LGraph.adj`; `localReg2_cendsMS` reads `Sym2` ends), the `×`-dotted
+up to order and reversal of single edges (`LGraph.scost_perm`, `LocalRegular6a.lean`: `scost` sees the solid edges up to order and the number of waved edges; molecules read the symmetric `LGraph.adj`; `localReg2_cendsMS` reads `Sym2` ends), the `×`-dotted
 edges as sets of unordered pairs; the coefficient is not read (it carries the powers of `m` of the band's partition). -/
 def PGraph.BAEquiv (R S : PGraph E) : Prop :=
   ∃ (eE : R.E' ≃ S.E') (eI : R.I' ≃ S.I'), (∀ a, S.ext a = eE (R.ext a)) ∧
@@ -180,7 +180,7 @@ def PGraph.BAEquiv (R S : PGraph E) : Prop :=
     (∃ l, List.Perm l (R.g.relabel (Sum.map eE eI)).waved ∧ List.Forall₂ WEdge.sameRev l S.g.waved) ∧
     (∀ d ∈ (R.g.relabel (Sum.map eE eI)).dotted, ∃ d' ∈ S.g.dotted, DEdge.sameU d d') ∧
     (∀ d ∈ S.g.dotted, ∃ d' ∈ (R.g.relabel (Sum.map eE eI)).dotted, DEdge.sameU d' d)
-/-- the relation is nonempty: reflexive (the instance of the pin) -/
+/-- the relation is nonempty: reflexive -/
 theorem PGraph.BASim_BAEquiv_refl (R : PGraph E) : R.BAEquiv R := by
   have h : R.g.relabel (Sum.map (Equiv.refl R.E') (Equiv.refl R.I')) = R.g := by
     obtain ⟨s, w, d, c⟩ := R.g
@@ -193,25 +193,25 @@ theorem PGraph.BASim_BAEquiv_refl (R : PGraph E) : R.BAEquiv R := by
   · rw [h]
   · rwa [h] at hd
   · rw [h]; exact hd
-/-- **Item 1 (R1, L4-C1): the graph-level matching, up to relabelling.**  At a normal BA graph `P`, every `band`-tagged output `Q` of a frame step is, up to
-relabelling, an output of a band `LocStep m` at the atomic image `P.img` (R0).  The band step is chosen per output: one `nat` step serves all `band` outputs of
-`weight`, `within`, `edge`, `ggSplit`; at `gg` the mirror `A2` needs the swapped selector, so no single step serves all (T2423 (a) T1, T3).  Frame level: the twisted `BALocStep` is this at `P.twist c t`, a normal BA graph (L3a1, T2425). -/
+/-- **The graph-level matching, up to relabelling.**  At a normal BA graph `P`, every `band`-tagged output `Q` of a frame step is, up to
+relabelling, an output of a band `LocStep m` at the atomic image `P.img`.  The band step is chosen per output: one `nat` step serves all `band` outputs of
+`weight`, `within`, `edge`, `ggSplit`; at `gg` the mirror `A2` needs the swapped selector, so no single step serves all.  Frame level: the twisted `BALocStep` is this at `P.twist c t`, a normal BA graph. -/
 def BAMatch (m : ℂ) : Prop := ∀ {E : Type} (P : BAPGraph E) (LT : List (BAShape × BAPGraph E)), BAFrameStepT P LT → P.g.Normal →
   ∀ Q, (BAShape.band, Q) ∈ LT → ∃ L' : List (PGraph E), LocStep m P.img L' ∧ ∃ R ∈ L', R.BAEquiv Q.img
-/-- **Lemma E at graph level** (closes T2395 audit O1): an output that merges two atoms of `P` joined by a solid edge of `P` (tags `e1`, `e2`) has a higher
+/-- **Lemma E at graph level**: an output that merges two atoms of `P` joined by a solid edge of `P` (tags `e1`, `e2`) has a higher
 order, or fewer external atoms, than `P`. -/
 def BAExtraGood : Prop := ∀ {E : Type} (P : BAPGraph E) (LT : List (BAShape × BAPGraph E)), BAFrameStepT P LT → P.g.Normal →
   ∀ Q, (BAShape.e1, Q) ∈ LT ∨ (BAShape.e2, Q) ∈ LT → P.g.scalingOrder < Q.g.scalingOrder ∨ Q.g.nExt < P.g.nExt
 /-- the tagged step is the step with its outputs tagged. -/
 def BAFrameStepT_untag : Prop := ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)),
   BAFrameStep P outs ↔ ∃ LT, BAFrameStepT P LT ∧ outs = LT.map Prod.snd
-/-- the invariants `(ord, n_M, n_A - n_W, loops, n_S, pairs, nExt)` of a BA graph and of a packed band graph (`BAimg`, R0: `P.img` has those of `P`). -/
+/-- the invariants `(ord, n_M, n_A - n_W, loops, n_S, pairs, nExt)` of a BA graph and of a packed band graph (`BAimg`: `P.img` has those of `P`). -/
 def BAPGraph.baInv (Q : BAPGraph E) : ℤ × ℕ × ℤ × ℕ × ℕ × ℕ × ℕ :=
   (Q.g.scalingOrder, Q.g.nM, (Q.g.nA : ℤ) - Q.g.nW, Q.g.nLoops, Q.g.nS, Q.g.nPairs, Q.g.nExt)
 def PGraph.baInv (Q0 : PGraph E) : ℤ × ℕ × ℤ × ℕ × ℕ × ℕ × ℕ :=
   (ord Q0.g.counters, Q0.g.nM, (Q0.g.nV : ℤ) - Q0.g.nW, Q0.g.lvl1NLoops, Q0.g.nS, Q0.g.lvl1NPairs, Fintype.card Q0.E')
-/-- **`BAsim'`, the simulation at a BA graph with the invariants of `P`** (T2423 (a) T2): the band step is taken at the atomic image `T.img` (R0) of a normal BA
-graph `T` with the invariants of `P` (`T = P`, or the transfer graph of a macro step); `BAsim m` is the case `T = P`.  L3a4 re-proves `ba_lvl1StepGood_of_sim` with `BAimg`
+/-- **`BAsim'`, the simulation at a BA graph with the invariants of `P`**: the band step is taken at the atomic image `T.img` of a normal BA
+graph `T` with the invariants of `P` (`T = P`, or the transfer graph of a macro step); `BAsim m` is the case `T = P`.  `ba_lvl1StepGood_of_sim'` (`Graph/BALvl1B.lean`) uses `BAimg`
 at `T` (normality and counters of `T.img`) and `lvl1_step_good` at `T.img`. -/
 def BAsim' (m : ℂ) : Prop := ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BAFrameStep P outs → P.g.Normal →
   ∀ Q ∈ outs, (∃ (T : BAPGraph E) (L' : List (PGraph E)), T.g.Normal ∧ T.baInv = P.baInv ∧ LocStep m T.img L' ∧ ∃ Q0 ∈ L', Q0.baInv = Q.baInv) ∨
@@ -222,9 +222,8 @@ section Pins2
 variable {E : Type}
 /-- two waved edges with the same ends, unordered (the colour and the orientation of the edge are not read). -/
 def WEdge.BASim_sameEnds {V : Type*} (a b : WEdge V) : Prop := (a.x = b.x ∧ a.y = b.y) ∨ (a.x = b.y ∧ a.y = b.x)
-/-- **`R` is `S` up to relabelling, the colours of the waved edges not read** (`BAEquiv` with `WEdge.BASim_sameEnds` in place of `WEdge.sameRev`; Amend 1, O4: pinned
-for L3b4', where the macro output `X.d4` has a waved edge `S` against the band's `S⁺`).  The consumers read `scost` (`waved.length`) and the molecules
-(`LGraph.adj`, the ends of the waved edges). -/
+/-- **`R` is `S` up to relabelling, the colours of the waved edges not read** (`BAEquiv` with `WEdge.BASim_sameEnds` in place of `WEdge.sameRev`: the macro output `X.d₄` has a waved edge `S` against the band's `S⁺`).
+The consumers read `scost` (`waved.length`) and the molecules (`LGraph.adj`, the ends of the waved edges). -/
 def PGraph.BAEquivC (R S : PGraph E) : Prop :=
   ∃ (eE : R.E' ≃ S.E') (eI : R.I' ≃ S.I'), (∀ a, S.ext a = eE (R.ext a)) ∧
     List.Perm (R.g.relabel (Sum.map eE eI)).solid S.g.solid ∧
@@ -235,11 +234,11 @@ theorem WEdge.BASim_sameRev_sameEnds {V : Type*} {a b : WEdge V} (h : a.sameRev 
   rcases h with rfl | rfl
   · exact Or.inl ⟨rfl, rfl⟩
   · exact Or.inr ⟨rfl, rfl⟩
-/-- `BAEquiv` implies `BAEquivC` (the instance of the pin: the relation is nonempty) -/
+/-- `BAEquiv` implies `BAEquivC` -/
 theorem PGraph.BASim_BAEquiv_toC {R S : PGraph E} (h : R.BAEquiv S) : R.BAEquivC S := by
   obtain ⟨eE, eI, h1, h2, ⟨l, hl, hF⟩, h4, h5⟩ := h
   exact ⟨eE, eI, h1, h2, ⟨l, hl, hF.imp fun _ _ => WEdge.BASim_sameRev_sameEnds⟩, h4, h5⟩
-/-- the twist of a packed BA graph (L3a1; `t/T2395:RBM3D/Probe/T2395Pins.lean:157`; pinned by Amend 1, O4) -/
+/-- the twist of a packed BA graph -/
 def BAPGraph.twist (c t : Bool) (P : BAPGraph E) : BAPGraph E := { P with g := P.g.twist c t }
 end Pins2
 
@@ -305,7 +304,7 @@ section ClassBij
 variable {E₁ I₁ E₂ I₂ W : Type} [Fintype E₁] [DecidableEq E₁] [Fintype I₁] [DecidableEq I₁]
   [Fintype E₂] [DecidableEq E₂] [Fintype I₂] [DecidableEq I₂]
 
-/-- **Two merges with the same classes** (the generalisation of `lwExpSim_equivs`, `LWExpSim.lean:691`, to two arbitrary graphs read through maps `ψ₁`, `ψ₂`
+/-- **Two merges with the same classes** (the generalisation of `lwExpSim_equivs` in `Graph/LWExpSim.lean` to two arbitrary graphs read through maps `ψ₁`, `ψ₂`
 from a common vertex set `W`): if the classes of `Δ₁` at `ψ₁` and of `Δ₂` at `ψ₂` correspond (`h1`), every class is hit (`s1`, `s2`) and external classes correspond
 (`e1`), there are bijections of the external and of the internal classes through which the merge maps correspond. -/
 theorem BASim_classBij (Δ₁ : LGraph E₁ I₁) (Δ₂ : LGraph E₂ I₂) (ψ₁ : W → E₁ ⊕ I₁) (ψ₂ : W → E₂ ⊕ I₂)
@@ -517,7 +516,7 @@ def BASim_mk (Δ : LGraph E' I') (r : ℂ × List (SEdge (Δ.ExtCls ⊕ Δ.IntCl
   { E' := Δ.ExtCls, I' := Δ.IntCls, ext := Δ.extMap, ext_surj := Δ.extMap_surj,
     g := { Δ.merge with solid := r.2, coeff := r.1 * Δ.merge.coeff } }
 
-/-- **A term of the dotted edge partition from a dot choice** (the converse of `lvl1_part_struct`, `LWLvl1.lean:248`): a dot choice `c` of `Γ` with a consistent
+/-- **A term of the dotted edge partition from a dot choice** (the converse of `lvl1_part_struct` in `Graph/LWLvl1.lean`): a dot choice `c` of `Γ` with a consistent
 term `Γ.withDots c`, and a weight split `r` of its merged solid edges, give a graph of `Γ.partition m`. -/
 theorem BASim_mk_mem (m : ℂ) (Γ : LGraph E' I') (c : ℤ × List (DEdge (E' ⊕ I'))) (hc : c ∈ Γ.dotChoices)
     (hcons : (Γ.withDots c).Consistent) (r : ℂ × List (SEdge ((Γ.withDots c).ExtCls ⊕ (Γ.withDots c).IntCls)))
@@ -1130,7 +1129,7 @@ theorem BASim_solid_perm_gen {V W X' Y : Type} [DecidableEq W] [DecidableEq X'] 
 
 end Dots
 
-/-- **The matching of one output with a band output** (T2423, items 1 and 4 at the level of one term): at a BA term `T` matched with a band term `H` (the data `D`), every
+/-- **The matching of one output with a band output** (at the level of one term): at a BA term `T` matched with a band term `H` (the data `D`), every
 non-extra term `T'` of `G = Ǧ + M` on `T` has, up to relabelling, an output of the dotted edge partition of `H` (packed over the external vertices of the image of `P`). -/
 theorem BASim_match' (D : BASimData P k J' emb') (m : ℂ) {T' : BAGraph P.E' (P.I' ⊕ Fin k)}
     (hT' : ∃ r ∈ baSplitSolid D.T.solid, BASimSplit D r T') (hne : P.g.extraB (owxEmb k) T' = false) :
@@ -1923,7 +1922,7 @@ theorem BASim_baInv_of_equiv {R S : PGraph E} (h : R.BAEquiv S) : R.baInv = S.ba
   simp only [PGraph.baInv, ord, LGraph.counters]
   rw [hnS, hnW, hnV, hnM, hLoops, hPairs, hE]
 
-/-- **The atomic image keeps the invariants** (`BAimg`, R0) -/
+/-- **The atomic image keeps the invariants** (`BAimg`) -/
 theorem BASim_img_baInv (Q : BAPGraph E) : Q.img.baInv = Q.baInv := by
   obtain ⟨hc, hl, hp, hE, -⟩ := BAimg_holds Q.g
   have hS := congrArg Counters.nS hc
@@ -1938,7 +1937,7 @@ theorem BASim_img_baInv (Q : BAPGraph E) : Q.img.baInv = Q.baInv := by
 
 end Linv
 
-/-! ## 9. Compiled instance of `baFrameStepT_untag_holds`: the data `P_A` of T2423 (a) (ii) (external `0, 1 = inl 0, inl 1`, internal `2, 3, 4 = inr 0, 1, 2`) -/
+/-! ## 9. The edge type `Ed` of the instance graphs of `Graph/BASim3.lean` -/
 namespace BASimInst
 abbrev Ed := SEdge (Fin 2 ⊕ Fin 3)
 end BASimInst

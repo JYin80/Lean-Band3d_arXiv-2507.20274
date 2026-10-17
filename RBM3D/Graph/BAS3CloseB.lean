@@ -6,25 +6,22 @@ Authors: Jun Yin
 import RBM3D.Graph.BAS3Close
 
 /-!
-# BA-L L4d2b (T2450), part B: the stuck catalogue and the closure "`BAG5LeafProps` or catalogued"
-of the S3 trees
+# The stuck catalogue and the closure "`BAG5LeafProps` or catalogued" of the trees (part B)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-121`; design
-`docs/claude-team/fable/2026-10-12-s3-fold-A.md` §1, §4;
-the stuck graphs `docs/reports/T2433-prove.md` §(a⁗).  Part A is `Graph/BAS3Close.lean` (the
-roots, the identity, isomorphisms of packed
-graphs, the invariants `Even`/`Conn`, Lemma A, the abstract closure).
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`), the graphical part from (B.5)
+`eq;I42inG` to (B.9) `eq:GGraisesord` and the closing remark.  Part A is `Graph/BAS3Close.lean`
+(the roots, the identity, isomorphisms of packed graphs, the invariants `Even`/`Conn`, Lemma A,
+the abstract closure).
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAS3Close_`)
 
 1. The 14 stuck graphs `baS3Stuck k j s` (7 per root `T3C-tr_k`, both tail charges): the engine's
    output, flattened.
 2. The closure modulo the catalogue `baS3Close_mod`: every output of the three root lists at
-   `BAselStar`, fuel `2`, both charges, is a leaf
-   with the five properties of `BAG5LeafProps` or has the value of a catalogue graph.  The
-   classification of the root terms and of the kids of
-   the order-`3` terms is a kernel computation on concrete graphs; the passage to the real nodes
-   is the isomorphism of part A.
+   `BAselStar`, fuel `2`, both charges, is a leaf with the five properties of `BAG5LeafProps` or
+   has the value of a catalogue graph.  The classification of the root terms and of the kids of the
+   order-`3` terms is a kernel computation on concrete graphs; the passage to the real nodes is the
+   isomorphism of part A.
 -/
 
 set_option linter.style.longLine false
@@ -54,8 +51,8 @@ open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
 /-! ## 1. The stuck graphs
 
-The 7 stuck outputs of each tree `T3C-tr_k` (`k = 0` inside `MERGED`, `k = 1`), as produced by the merged definitions: `j = 0` the root term
-`#2`, `j = 1` the kid of the first `BACtx` candidate of the order-`3` term, `j = 2, ..., 6` the kids `#2, #17, #22, #47, #52` of the second
+The 7 stuck outputs of each tree `T3C-tr_k` (`k = 0` inside `baS3RootM`, `k = 1`), as produced by the expansion: `j = 0` the root term
+of index `2`, `j = 1` the kid of the first `BACtx` candidate of the order-`3` term, `j = 2, ..., 6` the kids of indices `2, 17, 22, 47, 52` of the second
 (`gg2` for `j ≤ 4`, `gg4` for `j = 5, 6`), at the tail charge `s` (the closing edge `Ǧ(y,x)` or `Ḡ̌(x,y)`).  `BAS3Close_cf{k}_{j}` is the
 output with its internal vertices renamed in the order of their roles (core-first): `0 = u₀` (the end of `Ǧ(x,·)`), `1 = u₁` (its
 `M`-partner), `2 = u₂` (the end of the middle edge `Ǧ(u₁, u₂)`), `3 = u₃` (the `M`-partner of `u₂`, the start of `Ǧ(u₃, y)`), then the
@@ -320,9 +317,9 @@ private theorem BAS3Close_keys_eq {E I : Type} [DecidableEq E] [DecidableEq I] {
   subst e1 e2 e3 e4 e5 hc
   rfl
 
-/-- **The catalogue of the stuck graphs** (target 3): `baS3Stuck k j s` is stuck node `j` of `T3C-tr_k` (`k = false, true`) at the tail
-charge `s`, packed over `Fin` (`ext = id`): `j = 0` the root term `#2` (the anchor, `T2450_stuck0_val`), `j = 1, ..., 6` the kids `#1, #2, #17,
-#22, #47, #52`. -/
+/-- **The catalogue of the stuck graphs**: `baS3Stuck k j s` is stuck node `j` of `T3C-tr_k` (`k = false, true`) at the tail
+charge `s`, packed over `Fin` (`ext = id`): `j = 0` the root term of index `2`, `j = 1, ..., 6` the kids of indices `1, 2, 17,
+22, 47, 52`. -/
 def baS3Stuck : Bool → Fin 7 → Bool → BAPGraph (Fin 2)
   | false, ⟨0, _⟩, s => BAS3Close_pk (BAS3Close_cf0_0 s)
   | false, ⟨1, _⟩, s => BAS3Close_pk (BAS3Close_cf0_1 s)
@@ -772,7 +769,7 @@ section Tests
 
 set_option maxRecDepth 200000
 
-/-- `MERGED` (`T3C-tr_0 + D1X`): the facts and the test of every root term, both charges (a kernel computation). -/
+/-- `baS3RootM` (`T3C-tr_0 + D1X`): the facts and the test of every root term, both charges (a kernel computation). -/
 private theorem BAS3Close_tests_M (s : Bool) :
     BAS3Close_RootFacts (baS3RootM s) ∧ ∀ Γ ∈ (baS3RootM s).splitG, BAS3Close_RootOK0 s Γ := by
   cases s <;> decide +kernel
@@ -816,7 +813,7 @@ private theorem BAS3Close_main (r : Fin 3) (s : Bool) :
     obtain ⟨hI, hc⟩ := BAS3Close_invC_of_facts hF Γ hΓ
     exact BAS3Close_rootok_sound0 s Γ (hT Γ hΓ) hI hc x hx
 
-/-- **The closure modulo the catalogue** (target 4, combinatorial half): every output of the three root lists at the selector `BAselStar`,
+/-- **The closure modulo the catalogue** (combinatorial half): every output of the three root lists at the selector `BAselStar`,
 fuel `2`, both tail charges, is a leaf with the five properties of `BAG5LeafProps` (the attachment and the target included), or has the value
 of a graph of the catalogue `baS3Stuck`. -/
 theorem baS3Close_mod : ∀ (r : Fin 3) (s : Bool), ∀ q ∈ BAS3expandRoot BAselStar 2 r s,

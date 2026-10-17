@@ -7,18 +7,16 @@ import RBM3D.Graph.LWVocab
 import Mathlib.Logic.Relation
 
 /-!
-# BA-L1: the graph vocabulary of the block Anderson model (T2287)
+# The graph vocabulary of the block Anderson model
 
-The vocabulary of `paper/tex/B_graphical_lemmas.tex:286-356` (cited `B:line`) on top of the merged
-record `LGraph` (`RBM3D/Graph/LWVocab.lean`, DECISIONS §24, representation A).  A block Anderson
-graph `BAGraph` is an `LGraph` with `Ψ`-dotted and `M`-dotted edges (`B:290-297`).  Defined here:
-its atoms (`def_atom`, `B:302-304`), molecules (`B:299`), normal graphs (`defn_normalBA`,
-`B:331-343`), the partition (`G = Ǧ + M`, then the merge of the `=`-dotted classes, `B:339-341`) and
-the scaling size and order (`def scalingBA`, `B:345-356`).
+The vocabulary of Subappendix B.3 on top of the record `LGraph` (`RBM3D/Graph/LWVocab.lean`).  A
+block Anderson graph `BAGraph` is an `LGraph` with `Ψ`-dotted and `M`-dotted edges.  Defined
+here: its atoms (Definition B.3 `def_atom`), molecules (Definition 7.5 `def_poly`, "remain the
+same"), normal graphs (Definition B.4 `defn_normalBA`), the partition (`G = Ǧ + M`, then the merge
+of the `=`-dotted classes) and the scaling size and order (Definition B.5 `def scalingBA`).
 
-The vocabulary section is copied verbatim from `docs/tickets/checks/T2287-check.lean` section 2.
-Delta candidates: T2287a ("regular dotted" is `=`-dotted: the `×`-dotted edges do not join atoms),
-T2287b (`Ψ`- and `M`-dotted edges join molecules).  No hypothesis on the data `BALData` is needed
+Reading of the definitions: "regular dotted" is `=`-dotted (the `×`-dotted edges do not join
+atoms); `Ψ`- and `M`-dotted edges join molecules.  No hypothesis on the data `BALData` is needed
 for the value identities (`G = (G - M) + M` is literal in `SEdge.val`).
 -/
 
@@ -29,28 +27,27 @@ set_option linter.flexible false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
-/-! ## 1. The vocabulary (copied verbatim from the check file, section 2) -/
+/-! ## 1. The vocabulary -/
 
 namespace RBM.Graph
 
 /-- The matrices a block Anderson graph reads: those of `LData` (`M` is the matrix
-`Mres ((g : ℂ) • PsiI d L W) z m`, not `m I`) and `gPsi`, the matrix `ilambda Ψ` of `(eq:Psi3D)`
-(`1_2:614-616`): a `Ψ`-dotted edge `x — y` is the factor `gPsi x y` (`B:293`). -/
+`Mres ((g : ℂ) • PsiI d L W) z m`, not `m I`) and `gPsi`, the matrix `ilambda Ψ` of (2.31) `eq:Psi3D`: a `Ψ`-dotted edge `x — y` is the factor `gPsi x y`. -/
 structure BALData (ι : Type*) extends RBM.Graph.LData ι where
   gPsi : Matrix ι ι ℂ
 
-/-- A `Ψ`-dotted edge (`B:293`): the factor `ilambda Ψ_{xy}`. -/
+/-- A `Ψ`-dotted edge: the factor `ilambda Ψ_{xy}`. -/
 structure BAPsiEdge (V : Type*) where
   x : V
   y : V
 
-/-- An `M`-dotted edge (`B:295`): blue (`σ = true`) `M_{xy}`, red (`σ = false`) `M̄_{xy}`. -/
+/-- An `M`-dotted edge: blue (`σ = true`) `M_{xy}`, red (`σ = false`) `M̄_{xy}`. -/
 structure BAMEdge (V : Type*) where
   σ : Bool
   x : V
   y : V
 
-/-- A **block Anderson graph** (`B:290-297`): a graph of `def_graph1` (the merged record) with
+/-- A **block Anderson graph**: a graph of Definition 7.3 `def_graph1` (the record `LGraph`) with
 `Ψ`-dotted and `M`-dotted edges. -/
 structure BAGraph (E I : Type*) extends RBM.Graph.LGraph E I where
   psi : List (BAPsiEdge (E ⊕ I))
@@ -74,7 +71,7 @@ noncomputable def BAGraph.term {ι E I : Type*} [Fintype ι] [DecidableEq ι] [F
   Γ.toLGraph.term D.toLData ℓ * (Γ.psi.map (BAPsiEdge.val D ℓ)).prod *
     (Γ.mdot.map (BAMEdge.val D ℓ)).prod
 
-/-- `ValG` (`7_8:159-164`) for block Anderson graphs: the internal labels are summed. -/
+/-- `ValG` (Definition 7.4) for block Anderson graphs: the internal labels are summed. -/
 noncomputable def BAGraph.val {ι E I : Type*} [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (D : BALData ι) (ℓe : E → ι) : ℂ :=
   ∑ ℓi : I → ι, Γ.term D (Sum.elim ℓe ℓi)
@@ -87,8 +84,8 @@ def BAGraph.ofLGraph {E I : Type*} (Γ : RBM.Graph.LGraph E I) : BAGraph E I :=
 def BAGraph.addM {E I : Type*} (Γ : BAGraph E I) (e : BAMEdge (E ⊕ I)) : BAGraph E I :=
   BAGraph.mk Γ.toLGraph Γ.psi (e :: Γ.mdot)
 
-/-- `u`, `v` are joined by a `=`-dotted, a `Ψ`-dotted or an `M`-dotted edge (`def_atom`, `B:303`; the
-`×`-dotted edges do not join atoms, delta candidate T2287a). -/
+/-- `u`, `v` are joined by a `=`-dotted, a `Ψ`-dotted or an `M`-dotted edge (Definition B.3 `def_atom`; the
+`×`-dotted edges do not join atoms). -/
 def BAGraph.atomAdj {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (u v : E ⊕ I) : Bool :=
   Γ.dotted.any (fun e => e.eq && decide ((e.x = u ∧ e.y = v) ∨ (e.x = v ∧ e.y = u))) ||
@@ -100,19 +97,19 @@ def BAGraph.atomStep {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [Deci
     (Γ : BAGraph E I) (s : Finset (E ⊕ I)) : Finset (E ⊕ I) :=
   s ∪ Finset.univ.filter (fun w => ∃ v ∈ s, Γ.atomAdj v w = true)
 
-/-- **The atom of `v`** (`def_atom`, `B:302-304`): the closure of `{v}` under the dotted edges of the
+/-- **The atom of `v`** (Definition B.3 `def_atom`): the closure of `{v}` under the dotted edges of the
 three kinds (`|E ⊕ I|` steps reach the fixed point). -/
 def BAGraph.atom {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (v : E ⊕ I) : Finset (E ⊕ I) :=
   (Γ.atomStep)^[Fintype.card (E ⊕ I)] {v}
 
-/-- `n_A`: the number of internal atoms (atoms without an external vertex; `B:304`, `B:351`). -/
+/-- `n_A`: the number of internal atoms (atoms without an external vertex; Definitions B.3 and B.5). -/
 def BAGraph.nA {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) : ℕ :=
   ((Finset.univ.filter (fun v : E ⊕ I => ∀ w ∈ Γ.atom v, w.isRight = true)).image Γ.atom).card
 
-/-- Molecules of a block Anderson graph (`def_poly`, `7_8:172`, "remain the same", `B:299`): waved
-edges and dotted edges of all three kinds (delta candidate T2287b). -/
+/-- Molecules of a block Anderson graph (Definition 7.5 `def_poly`, "remain the same"): waved
+edges and dotted edges of all three kinds. -/
 def BAGraph.adj {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (u v : E ⊕ I) : Bool :=
   Γ.toLGraph.adj u v || Γ.atomAdj u v
@@ -137,42 +134,42 @@ def BAGraph.nS {E I : Type*} (Γ : BAGraph E I) : ℕ := Γ.solid.length
 /-- `n_W`: waved edges. -/
 def BAGraph.nW {E I : Type*} (Γ : BAGraph E I) : ℕ := Γ.waved.length
 
-/-- The counters of `def scalingBA` (`B:349-353`) in the merged `Counters`: the slot `nV` holds `n_A`. -/
+/-- The counters of `def scalingBA` (Definition B.5) in the `Counters` of `Graph/LWVocab.lean`: the slot `nV` holds `n_A`. -/
 def BAGraph.counters {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) : RBM.Graph.Counters :=
   ⟨Γ.nS, Γ.nW, Γ.nA, Γ.nM, 0, 0⟩
 
-/-- `(eq:ordG_BA)` (`B:353`): `ord(Γ) = n_S + 2 (n_W - n_A)`, the merged `ord` of the counters. -/
+/-- (B.17) `eq:ordG_BA`: `ord(Γ) = n_S + 2 (n_W - n_A)`, the `ord` of the counters. -/
 def BAGraph.scalingOrder {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) : ℤ :=
   RBM.Graph.ord Γ.counters
 
-/-- `(eq_defsize_BA)` (`B:349-350`): `size(Γ) = (L^d)^{n_M} Ψ^{n_S} W^{-d (n_W - n_A)}`. -/
+/-- (B.16) `eq_defsize_BA`: `size(Γ) = (L^d)^{n_M} Ψ^{n_S} W^{-d (n_W - n_A)}`. -/
 noncomputable def BAGraph.scalingSize {E I : Type*} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (Ψ : ℝ) (W d L : ℕ) : ℝ :=
   Γ.counters.scalingSize Ψ W d L
 
-/-- **Normal** (`defn_normalBA`, `B:331-343`): (ii) no `=`-dotted edge (`Ψ`-, `M`- and `×`-dotted edges
-allowed; reading of "regular dotted", delta candidate T2287a); (iii) every solid edge carries a circle.
-(i) is not a property of a record (as `LGraph.Normal`, `LWVocab.lean:981-989`). -/
+/-- **Normal** (Definition B.4 `defn_normalBA`): (ii) no `=`-dotted edge (`Ψ`-, `M`- and `×`-dotted edges
+allowed; reading of "regular dotted"); (iii) every solid edge carries a circle.
+(i) is not a property of a record (as `LGraph.Normal` in `Graph/LWVocab.lean`). -/
 def BAGraph.Normal {E I : Type*} (Γ : BAGraph E I) : Prop :=
   (∀ e ∈ Γ.dotted, e.eq = false) ∧ (∀ e ∈ Γ.solid, e.circ = true)
 
 /-- `G_{xy} = Ǧ_{xy} + M_{xy}` (resp. `Ḡ_{xy} = \overline{Ǧ_{xy}} + M̄_{xy}`) on every solid edge without a
-circle (`B:339-340`): the list of (solid edges, new `M`-dotted edges) of the terms. -/
+circle (Definition B.4): the list of (solid edges, new `M`-dotted edges) of the terms. -/
 def baSplitSolid {V : Type*} : List (RBM.Graph.SEdge V) → List (List (RBM.Graph.SEdge V) × List (BAMEdge V))
   | [] => [([], [])]
   | e :: es => (baSplitSolid es).flatMap fun r =>
       if e.circ then [(e :: r.1, r.2)]
       else [(RBM.Graph.SEdge.mk e.σ true e.src e.dst :: r.1, r.2), (r.1, BAMEdge.mk e.σ e.src e.dst :: r.2)]
 
-/-- The terms of the `G = Ǧ + M` expansion of `Γ` (`B:339-340`). -/
+/-- The terms of the `G = Ǧ + M` expansion of `Γ` (Definition B.4). -/
 def BAGraph.splitG {E I : Type*} (Γ : BAGraph E I) : List (BAGraph E I) :=
   (baSplitSolid Γ.solid).map fun r =>
     BAGraph.mk (RBM.Graph.LGraph.mk r.1 Γ.waved Γ.dotted Γ.coeff) Γ.psi (r.2 ++ Γ.mdot)
 
 /-- A block Anderson graph with its own vertex types and the map of the external vertices (the BA
-twin of the merged `PGraph`, `LWVocab.lean:653`). -/
+counterpart of `PGraph` in `Graph/LWVocab.lean`). -/
 structure BAPGraph (E : Type) where
   E' : Type
   I' : Type
@@ -184,7 +181,7 @@ structure BAPGraph (E : Type) where
   ext_surj : Function.Surjective ext
   g : BAGraph E' I'
 
-/-- The value of a packed graph (as `PGraph.val`, `LWVocab.lean:673`). -/
+/-- The value of a packed graph (as `PGraph.val` in `Graph/LWVocab.lean`). -/
 noncomputable def BAPGraph.val {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Type} (P : BAPGraph E)
     (D : BALData ι) (ℓe : E → ι) : ℂ :=
   letI := P.instFI
@@ -207,7 +204,7 @@ noncomputable def BAComb.val {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Typ
     (D : BALData ι) (ℓe : E → ι) : ℂ :=
   (L.map fun P => P.val D ℓe).sum
 
-/-- Merging the vertices joined by `=`-dotted edges (`B:340`; the merged `LGraph.merge`, `LWVocab.lean:778`,
+/-- Merging the vertices joined by `=`-dotted edges (`LGraph.merge` in `Graph/LWVocab.lean`
 on the underlying graph; the `Ψ`- and `M`-dotted edges are carried along `vmap`). -/
 noncomputable def BAGraph.merge {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) : BAGraph Γ.toLGraph.ExtCls Γ.toLGraph.IntCls :=
@@ -222,19 +219,19 @@ noncomputable def BAGraph.packMerge {E I : Type} [Fintype E] [DecidableEq E] [Fi
   ext_surj := Γ.toLGraph.extMap_surj
   g := Γ.merge
 
-/-- **The BA partition** (`B:339-341`): the terms of `G = Ǧ + M`, each with the `=`-dotted classes merged. -/
+/-- **The BA partition**: the terms of `G = Ǧ + M`, each with the `=`-dotted classes merged. -/
 noncomputable def BAGraph.partition {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) : List (BAPGraph E) :=
   Γ.splitG.map BAGraph.packMerge
 
-/-- `ord` of a general graph (`B:354-355`): the minimum over the partition (`⊤` if empty). -/
+/-- `ord` of a general graph (Definition B.5): the minimum over the partition (`⊤` if empty). -/
 noncomputable def BAGraph.scalingOrderG {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) : WithTop ℤ :=
   (Γ.partition.map fun P => ((P.scalingOrder : ℤ) : WithTop ℤ)).foldr min ⊤
 
 attribute [instance] BAPGraph.instFE BAPGraph.instDE BAPGraph.instFI BAPGraph.instDI
 
-/-! ## 3. Value (`B:290-297`): `ofLGraph` and `addM` -/
+/-! ## 3. Value: `ofLGraph` and `addM` -/
 
 /-- A graph of `def_graph1` read as a block Anderson graph has its own value. -/
 theorem BAGraph.val_ofLGraph {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I]
@@ -242,7 +239,7 @@ theorem BAGraph.val_ofLGraph {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fint
     (BAGraph.ofLGraph Γ).val D ℓe = Γ.val D.toLData ℓe := by
   simp [BAGraph.val, BAGraph.term, BAGraph.ofLGraph, RBM.Graph.LGraph.val]
 
-/-! ## 4. Atoms and molecules (`B:299-304`): the closure is the reflexive-transitive closure -/
+/-! ## 4. Atoms and molecules: the closure is the reflexive-transitive closure -/
 
 section Closure
 
@@ -367,21 +364,21 @@ private theorem BAVocab_ladj_comm (Γ : RBM.Graph.LGraph E I) (u v : E ⊕ I) :
 private theorem BAVocab_adj_comm (Γ : BAGraph E I) (u v : E ⊕ I) : Γ.adj u v = Γ.adj v u := by
   simp only [BAGraph.adj, BAVocab_ladj_comm Γ.toLGraph u v, BAVocab_atomAdj_comm Γ u v]
 
-/-- The atom of `v` (`def_atom`, `B:302-304`) is the set of vertices reachable by `=`-, `Ψ`- and
+/-- The atom of `v` (Definition B.3 `def_atom`) is the set of vertices reachable by `=`-, `Ψ`- and
 `M`-dotted edges. -/
 theorem BAGraph.mem_atom_iff {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (v w : E ⊕ I) :
     w ∈ Γ.atom v ↔ Relation.ReflTransGen (fun a b => Γ.atomAdj a b = true) v w :=
   BAVocab_mem_iterate_iff (fun a b => Γ.atomAdj a b) (BAVocab_atomAdj_comm Γ) v w
 
-/-- The molecule of `v` (`def_poly`, `B:299`) is the set of vertices reachable by waved and dotted
+/-- The molecule of `v` (Definition 7.5 `def_poly`) is the set of vertices reachable by waved and dotted
 edges of all three kinds. -/
 theorem BAGraph.mem_mol_iff {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (v w : E ⊕ I) :
     w ∈ Γ.mol v ↔ Relation.ReflTransGen (fun a b => Γ.adj a b = true) v w :=
   BAVocab_mem_iterate_iff (fun a b => Γ.adj a b) (BAVocab_adj_comm Γ) v w
 
-/-- Atoms lie inside molecules (`B:299`). -/
+/-- Atoms lie inside molecules. -/
 theorem BAGraph.atom_subset_mol {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (v : E ⊕ I) : Γ.atom v ⊆ Γ.mol v := by
   intro w hw
@@ -441,7 +438,7 @@ theorem BAGraph.nM_le_nA {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [D
 
 end AtomMol
 
-/-! ## 5. Scaling size and the bridge to the vertex-level graphs (`B:318-320`, `B:345-353`) -/
+/-! ## 5. Scaling size and the bridge to the vertex-level graphs (Definition B.5) -/
 
 section Scaling
 
@@ -479,7 +476,7 @@ private theorem BAVocab_card_isRight : (Finset.univ.filter (fun v : E ⊕ I => v
   rw [this, Finset.card_image_of_injective _ Sum.inr_injective, Finset.card_univ]
 
 /-- Without `=`-dotted edges every atom is a vertex, and the counters of the block Anderson reading of
-a graph of `def_graph1` are its counters (`B:318-320`). -/
+a graph of Definition 7.3 `def_graph1` are its counters. -/
 theorem BAGraph.counters_ofLGraph {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
     [DecidableEq I] (Γ : RBM.Graph.LGraph E I) :
     (∀ e ∈ Γ.dotted, e.eq = false) → (BAGraph.ofLGraph Γ).counters = Γ.counters := by
@@ -510,7 +507,7 @@ theorem BAGraph.counters_ofLGraph {E I : Type} [Fintype E] [DecidableEq E] [Fint
 
 end Scaling
 
-/-! ## 6. `G = Ǧ + M` on every solid edge (`B:339-340`) -/
+/-! ## 6. `G = Ǧ + M` on every solid edge -/
 
 section Split
 
@@ -583,7 +580,7 @@ private theorem BAVocab_split_val {ι V : Type*} (D : BALData ι) (ℓ : V → �
     rw [List.map_flatMap, BAVocab_sum_flatMap, List.map_congr_left key, List.sum_map_mul_left, ih]
     simp [List.prod_cons]
 
-/-- **`G = Ǧ + M` on every solid edge without circle** (`B:339-340`): the sum of the values of the terms
+/-- **`G = Ǧ + M` on every solid edge without circle** (Definition B.4): the sum of the values of the terms
 `splitG` is the value of the graph.  No hypothesis on the data `D` is needed. -/
 theorem BAGraph.val_splitG {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (D : BALData ι) (ℓe : E → ι) :
@@ -649,7 +646,7 @@ theorem BAGraph.splitG_edges {E I : Type} (Γ : BAGraph E I) :
 
 end Split
 
-/-! ## 7. Merging the `=`-dotted classes (`B:340`): the value of the merged graph -/
+/-! ## 7. Merging the `=`-dotted classes: the value of the merged graph -/
 
 section Merge
 
@@ -850,11 +847,11 @@ private theorem BAVocab_packMerge_val (Γ : BAGraph E I) (D : BALData ι) (ℓe 
 
 end Merge
 
-/-! ## 8. The partition (`B:339-341`) -/
+/-! ## 8. The partition -/
 
 section Partition
 
-/-- **The partition preserves the value** (`B:339-341`): `G = Ǧ + M` on every solid edge, then the
+/-- **The partition preserves the value**: `G = Ǧ + M` on every solid edge, then the
 `=`-dotted classes are merged.  No hypothesis on the data `D` is needed (unlike
 `LGraph.val_eq_partition`, which needs `M = m I` on the diagonal). -/
 theorem BAGraph.val_eq_partition {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fintype E]
@@ -867,7 +864,7 @@ theorem BAGraph.val_eq_partition {ι E I : Type} [Fintype ι] [DecidableEq ι] [
       Δ.val D ℓe := fun Δ _ => BAVocab_packMerge_val Δ D ℓe
   rw [List.map_congr_left h, BAGraph.val_splitG]
 
-/-- **The terms of the partition are normal graphs** (`defn_normalBA`, `B:331-343`). -/
+/-- **The terms of the partition are normal graphs** (Definition B.4 `defn_normalBA`). -/
 theorem BAGraph.partition_normal {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
     [DecidableEq I] (Γ : BAGraph E I) : ∀ P ∈ Γ.partition, P.g.Normal := by
   intro P hP
@@ -884,7 +881,7 @@ theorem BAGraph.partition_normal {E I : Type} [Fintype E] [DecidableEq E] [Finty
 
 end Partition
 
-/-! ## 9. The partition of a normal graph is the graph (`B:331-343`, `B:354-355`) -/
+/-! ## 9. The partition of a normal graph is the graph -/
 
 section Equiv
 
@@ -1073,7 +1070,7 @@ private theorem BAVocab_baSplitSolid_circ {V : Type*} :
     have ih := BAVocab_baSplitSolid_circ es fun e' he' => h e' (List.mem_cons_of_mem _ he')
     simp [baSplitSolid, ih, h e List.mem_cons_self]
 
-/-- **The partition of a normal graph is the graph** (`B:331-343`): one term, the merge of `Γ` (a
+/-- **The partition of a normal graph is the graph**: one term, the merge of `Γ` (a
 relabeling, since `Γ` has no `=`-dotted edge), with the counters of `Γ`. -/
 theorem BAGraph.partition_of_normal {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
     [DecidableEq I] (Γ : BAGraph E I) :
@@ -1091,7 +1088,7 @@ theorem BAGraph.partition_of_normal {E I : Type} [Fintype E] [DecidableEq E] [Fi
   · exact BAVocab_merge_counters Γ hN.1
 
 /-- `k ≤ ord(Γ)` for a general graph iff `k ≤ ord(P)` for every graph `P` of the partition
-(the minimum of `B:354-355`). -/
+(the minimum of Definition B.5). -/
 theorem BAGraph.le_scalingOrderG_iff {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
     [DecidableEq I] (Γ : BAGraph E I) (k : ℤ) :
     ((k : ℤ) : WithTop ℤ) ≤ Γ.scalingOrderG ↔ ∀ P ∈ Γ.partition, k ≤ P.scalingOrder := by
@@ -1113,18 +1110,5 @@ theorem BAGraph.scalingOrderG_of_normal {E I : Type} [Fintype E] [DecidableEq E]
   simp [BAGraph.scalingOrderG, hP, BAGraph.scalingOrder, BAPGraph.scalingOrder, hc]
 
 end NormalAgree
-
-/-! ## 10. Compiled instances (the instances of the ticket and one application of every theorem) -/
-
--- (I1)
--- (I2) (D402 coefficient)
--- (I3)
--- (I4)
--- (I5)
--- (I6), order: `ord(Ǧ_{ax}) = -1`, `ord(M_{ax}) = 0`, hence `ord(G_{ax}) = -1`.
--- (I6), value: at the data `baD`, `ℓ_a = 0`: `G_{ax}` sums to `G_{00} + G_{01} = 3`, `Ǧ_{ax}` to `-8`,
--- `M_{ax}` to `11`.
-/-! One application of every public theorem at concrete data (all deterministic hypotheses
-discharged; `ι = Fin 2`, the graphs above). -/
 
 end RBM.Graph

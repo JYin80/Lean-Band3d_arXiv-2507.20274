@@ -18,19 +18,22 @@ set_option linter.style.show false
 set_option linter.unusedSimpArgs false
 
 /-!
-# BA-L L3b4'' `BAShapeO2`, part 2: the shapes `e2`, `macroA`, `macroB` of `BAFrameStepTN` and (6) along `BAReach` with no hypothesis (T2447)
+# The shapes `e2`, `macroA`, `macroB` of `BAFrameStepTN` (part 2)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`deflvl1`, `lanlw`, `lem_lweight`, `GGGamma`).  `baLocReg6_reach` (`Graph/BAStepS:413`) is (6) along `BAReach` under the binder
-`∀ sh, sh = e2 ∨ sh = macroA ∨ sh = macroB → BAShapeLL sh BAFrameStepTN`; this file proves the three shapes and the closed form `baLocReg6_holds` (no binder).
+Paper: Definition 7.14 (`deflvl1`), Lemma B.6 (`lanlw`), Lemma B.7 (`lem_lweight`), (B.20)
+`GGGamma`.  `baLocReg6_reach` (`Graph/BAStepS.lean`) is (6) along `BAReach` under the binder
+`∀ sh, sh = e2 ∨ sh = macroA ∨ sh = macroB → BAShapeLL sh BAFrameStepTN`; this file proves the
+three shapes, which discharge the binder.
 
 ## Contents (namespace `RBM.Graph`; private helpers carry the stem `BAShapeO2B_`)
 
-1. The outputs of a tagged step (`outsT`): a group of outputs whose terms satisfy the local lemma, the tags of the groups of `BAFrameStepT`.
-2. **Stage 2, route (β)**: the transfer graph `tr` (`BAScost_trA`, `BAScost_trB`) is normal, the pair of the next step is a literal member of `lwSplit tr.solid`, its fresh vertex `β` is an
-   atom of its own; `BAScostLL P.g X` is `BAScostLL_macroA` (resp. `_macroB`) composed with the term lemmas of `Graph/BAShapeO2` at `Γ := tr` (`BAShapeO2B_macroA`, `BAShapeO2B_macroB`).
-3. **Targets 1-3**: `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn`.
-4. **Target 4**: `baLocReg6_holds`.
-5. **Instances**: `within` at `P_B`, `ggSplit` at `P_C`, `gg` at `P_A`, `p = 2`.
+1. The outputs of a tagged step (`outsT`): a group of outputs whose terms satisfy the local lemma,
+   the tags of the groups of `BAFrameStepT`.
+2. **Stage 2**: the transfer graph `tr` (`BAScost_trA`, `BAScost_trB`) is normal, the pair of the
+   next step is a literal member of `lwSplit tr.solid`, its fresh vertex `β` is an atom of its own;
+   `BAScostLL P.g X` is `BAScostLL_macroA` (resp. `_macroB`) composed with the term lemmas of
+   `Graph/BAShapeO2` at `Γ := tr` (`BAShapeO2B_macroA`, `BAShapeO2B_macroB`).
+3. `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn`.
 -/
 
 noncomputable section
@@ -152,7 +155,7 @@ theorem BAShapeO2B_fresh_wf {k : ℕ} (Γ : BAGraph E I) (rest : List (SEdge (E 
     subst this
     rfl
 
-/-- **Stage 2 of macro step (a), route (β)** (`BASim:120-123`): every term of `lw2`, `lw4` at the loop `Ǧ_{ββ}` of the transfer graph `tr` satisfies the local lemma at `P.g`:
+/-- **Stage 2 of macro step (a)** (`Graph/BASim.lean`): every term of `lw2`, `lw4` at the loop `Ǧ_{ββ}` of the transfer graph `tr` satisfies the local lemma at `P.g`:
 `BAScostLL_macroA` composed with the weight lemmas of `Graph/BAShapeO2` at `Γ := tr`. -/
 theorem BAShapeO2B_macroA (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) :
@@ -168,7 +171,7 @@ theorem BAShapeO2B_macroA (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ 
   have hLL := BAScostLL_macroA Γ p hp hp1
   exact ⟨fun X hX => hLL.trans (BAShapeO2_lw2 _ hNtr _ hpp hpp1 X hX), fun X hX => hLL.trans (BAShapeO2_lw4 _ hNtr _ hpp hpp1 X hX)⟩
 
-/-- **Stage 2 of macro step (b), route (β)** (`BASim:130-136`): the same for `gg2`, `gg4` at the pair `Ǧ_{βy}`, `Ǧ_{y'β}` of the transfer graph `tr`; `β` is an atom of its own. -/
+/-- **Stage 2 of macro step (b)** (`Graph/BASim.lean`): the same for `gg2`, `gg4` at the pair `Ǧ_{βy}`, `Ǧ_{y'β}` of the transfer graph `tr`; `β` is an atom of its own. -/
 theorem BAShapeO2B_macroB (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hq : q ∈ lwSplit p.2) (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true)
     (hsame : Γ.sameAtom p.1.src q.1.dst = true) (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -206,7 +209,7 @@ theorem BAShapeO2B_macroB (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E �
 
 end Stage2
 
-/-! ## 3. Targets 1-3: the shapes `e2`, `macroA`, `macroB` of `BAFrameStepTN` -/
+/-! ## 3. The shapes `e2`, `macroA`, `macroB` of `BAFrameStepTN` -/
 
 section Shapes
 
@@ -216,8 +219,8 @@ private theorem BAShapeO2B_mem_pq {E I : Type} [Fintype E] [DecidableEq E] [Fint
   have h := BAShapeO2_perm_pq Γ p q hp hq
   exact ⟨h.symm.subset (by simp), h.symm.subset (by simp)⟩
 
-/-- **Target 1: `BAShapeLL e2 BAFrameStepTN`.**  An `e2` output of a step is a packed term of `G = Ǧ + M` on a stage-1 builder term `X` of the step with `BAScostLL P.g X`
-(the term lemmas of `Graph/BAShapeO2`; the `tagT1` groups and the constant-tag groups are never tagged `e2`); `baShapeLL_e2` (`BAScost2:96`). -/
+/-- **`BAShapeLL e2 BAFrameStepTN`.**  An `e2` output of a step is a packed term of `G = Ǧ + M` on a stage-1 builder term `X` of the step with `BAScostLL P.g X`
+(the term lemmas of `Graph/BAShapeO2`; the `tagT1` groups and the constant-tag groups are never tagged `e2`); `baShapeLL_e2` (`Graph/BAScost2.lean`). -/
 theorem baShapeLL_e2_tn : BAShapeLL BAShape.e2 BAFrameStepTN := by
   refine baShapeLL_e2 ?_
   rintro P LT ⟨hN, hF⟩ Q hQ
@@ -264,7 +267,7 @@ theorem baShapeLL_e2_tn : BAShapeLL BAShape.e2 BAFrameStepTN := by
     · exact (BAShapeO2B_group_ne _ _ _ (fun _ => by decide) hQ).elim
     · exact (BAShapeO2B_group_ne _ _ _ (fun _ => by decide) hQ).elim
 
-/-- **Target 2: `BAShapeLL macroA BAFrameStepTN`.**  Only `within` tags `macroA`, all of it at stage 2: the outputs of `lw2`, `lw4` at the loop `Ǧ_{ββ}` of the transfer graph, route (β)
+/-- **`BAShapeLL macroA BAFrameStepTN`.**  Only `within` tags `macroA`, all of it at stage 2: the outputs of `lw2`, `lw4` at the loop `Ǧ_{ββ}` of the transfer graph
 (`BAShapeO2B_macroA`: `BAScostLL_macroA` composed with the weight lemmas at `Γ := tr`), packed by `baShapeLL_of_terms`. -/
 theorem baShapeLL_macroA_tn : BAShapeLL BAShape.macroA BAFrameStepTN := by
   refine baShapeLL_of_terms ?_
@@ -298,8 +301,8 @@ theorem baShapeLL_macroA_tn : BAShapeLL BAShape.macroA BAFrameStepTN := by
     · exact (BAShapeO2B_group_ne _ _ _ (fun _ => by decide) hQ).elim
     · exact (BAShapeO2B_group_ne _ _ _ (fun _ => by decide) hQ).elim
 
-/-- **Target 3: `BAShapeLL macroB BAFrameStepTN`.**  Only `ggSplit` tags `macroB`: stage 1 is `d2`-`d4` (`BAShapeO2_ggSplitD2`-`D4`), stage 2 is `gg2`, `gg4` at the pair of the transfer graph
-(route (β), `BAShapeO2B_macroB`); both are the second disjunct of `baShapeLL_macroB` (`BAScost2:114`). -/
+/-- **`BAShapeLL macroB BAFrameStepTN`.**  Only `ggSplit` tags `macroB`: stage 1 is `d₂`-`d₄` (`BAShapeO2_ggSplitD2` to `BAShapeO2_ggSplitD4`), stage 2 is `gg2`, `gg4` at the pair of the transfer graph
+(`BAShapeO2B_macroB`); both are the second disjunct of `baShapeLL_macroB` (`Graph/BAScost2.lean`). -/
 theorem baShapeLL_macroB_tn : BAShapeLL BAShape.macroB BAFrameStepTN := by
   refine baShapeLL_macroB ?_
   rintro P LT ⟨hN, hF⟩ Q hQ
@@ -342,10 +345,6 @@ theorem baShapeLL_macroB_tn : BAShapeLL BAShape.macroB BAFrameStepTN := by
     · exact BAShapeO2B_group _ _ _ (BAShapeO2B_macroB P.g hN p q hp hq ⟨h.1, h.2.1⟩ ⟨h.2.2.1, h.2.2.2⟩ hsame' (hwf _ hpm) (hwf _ hqm)).2 hQ
 
 end Shapes
-
-/-! ## 4. Target 4: (6) along `BAReach` with no hypothesis -/
-
-/-! ## 5. Nonempty instances (target 7) -/
 
 end RBM.Graph
 

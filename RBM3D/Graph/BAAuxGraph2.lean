@@ -13,31 +13,23 @@ import RBM3D.Induction.PerTimeCalc
 import RBM3D.Induction.DecayLoopB
 
 /-!
-# BA-L L3c3a, part 1: the BA edge variables `ζ` on the carrier `baFMz` (T2435)
+# The edge variables `ζ` on the block Anderson carrier `baFMz` (part 1)
 
-Paper: arXiv:2507.20274 (`B:line` is `paper/tex/B_graphical_lemmas.tex:line`): `(Gyiyjatom)`
-`B:424-426`, `(eq:Gbyxi2_BA)` `B:428-431`, `(G_by_auxG_BA)` `B:486-490`;
-`paper/tex/7_8_light_weight.tex:870-890` (`(eq:Gbyxi)`, `(eq:xia1a2)`, `claim:xi`).
-Basis: the band file `RBM3D/Graph/AuxGraph2.lean` `:61-945` (sections 1-3), of which this file is
-the twin on the BA carrier `baFMz sz z` (`FlowFM`, law `seqP (sz.withLam 0)`, `BAFlow`, horizon
-`BAflowT0`).  The claims on `ζ` are in `RBM3D/Graph/BAAuxGraph2B.lean`.
+Paper: (B.21) `Gyiyjatom`, (B.22) `eq:Gbyxi2_BA`, (B.25) `G_by_auxG_BA`; (7.32) `eq:Gbyxi`, (7.33)
+`eq:xia1a2`, and the claim stating (7.34) `eq:Gbyxi2`.  The band counterpart is
+`RBM3D/Graph/AuxGraph2.lean` (Sections 1-3); this file works on the BA carrier `baFMz sz z`
+(`FlowFM`, law `seqP (sz.withLam 0)`, `BAFlow`, horizon `BAflowT0`).  The claims on `ζ` are in
+`RBM3D/Graph/BAAuxGraph2B.lean`.
 
 * Section 1: `baZetaSq`, `baZetaVar`: the block loop-window variable `ζ([a₁],[a₂])²` with the
-  floor `W^{-D₁}`.  Paper-delta candidates: `T2435a` (`ζ` is the block loop-window variable, not
-  the atom-centre entry sum of `B:424`), `T2435b` (the floor `W^{-D}` of `B:425`).
-* Section 2: `baZetaVar_nonneg`, `baZetaVar_symm`, `baZetaSq_ge_W`, the lattice helpers, and the
-  Ward part `baZeta_ward_sum` (private Ward lemmas for both charges, any Hermitian `H`,
-  `Im z > 0`) in block form: `Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η)⁻¹` (`T2435d`: the paper's
-  `Σ_α ζ² ≺ η⁻¹` is fine-lattice).
+  floor `W^{-D₁}`.  Here `ζ` is the block loop-window variable, not the atom-centre entry sum of
+  (B.21), and the floor `W^{-D₁}` is the `+ W^{-D}` of (B.21).
+* Section 2: `baZetaVar_nonneg`, `baZetaVar_symm`, the lattice helpers, and the Ward part
+  `baZeta_ward_sum` (private Ward lemmas for both charges, any Hermitian `H`, `Im z > 0`) in block
+  form: `Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η)⁻¹` (the paper's `Σ_α ζ² ≺ η⁻¹` is on the fine lattice).
 * Section 3: the `≺` helpers (stem `BAAuxGraph2_`, shared with part 2) and the deterministic
   comparisons `Φ(m) ≤ K(ρ) Φ(ℓ)`, `ζ² ≲ Φ(ℓ)² + W^{-D₁}`, the floor against `Φ²`.
-* Section 4: `LWXigL`, the carrier form of `LWXi`, and its bridge to `LWXi` at `bandFM`.
-* Section 5: compiled nonempty instances of targets 1 and 2.
-
-Ports (the light-weight graph layer exists only in RBM3D; no RBM1D/RBM2D file): the private lemmas
-of `RBM3D/Graph/AuxGraph2.lean` (`auxGraph2_*`, `:83-945`), copied under the stem `BAAuxGraph2_`,
-themselves ported from `RBM3D/Path/LemDecCalE.lean:109-142`, `RBM3D/Green/Pins.lean:350-400`,
-`RBM3D/Induction/ConArgDet.lean:141-163`.
+* Section 4: `LWXigL`, the carrier form of `LWXi`.
 -/
 
 set_option linter.style.setOption false
@@ -61,11 +53,11 @@ open MeasureTheory Filter
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.BA
 open scoped Matrix
 
-/-! ## 1. The vocabulary of `(Gyiyjatom)` (target 1) -/
+/-! ## 1. The vocabulary of (B.21) `Gyiyjatom` -/
 
-/-- **`ζ([a₁],[a₂])²`** (`(Gyiyjatom)`, `B:424-426`, with the block loop window of `(eq:xia1a2)`, `7_8:882`) on the carrier `baFMz sz z`
+/-- **`ζ([a₁],[a₂])²`** ((B.21) `Gyiyjatom`, with the block loop window of (7.33) `eq:xia1a2`) on the carrier `baFMz sz z`
 at the block radius `ρ n`: the `(+,-)` and `(-,+)` two-loops `𝓛^{(2)}_{t,σ,(b₁,b₂)}` over the `‖·‖_∞`-ball pairs `|b₁ - a₁|, |b₂ - a₂| ≤ ρ`
-(summed over the two charges), plus `W^{-d} 1(|a₁ - a₂| ≤ ρ)`, plus the floor `W^{-D₁}` (the `+ W^{-D}` of `B:425`). -/
+(summed over the two charges), plus `W^{-d} 1(|a₁ - a₂| ≤ ρ)`, plus the floor `W^{-D₁}` (the `+ W^{-D}` of (B.21)). -/
 def baZetaSq {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D₁ : ℝ) (n : ℕ) (a₁ a₂ : Zd d (sz.L n))
     (ω : sz.SeqΩ) : ℝ :=
   (∑ b₁ ∈ Finset.univ.filter (fun b : Zd d (sz.L n) => (zdistInf d (sz.L n) (b - a₁) : ℝ) ≤ ρ n),
@@ -80,7 +72,7 @@ def baZetaVar {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D
     (ω : sz.SeqΩ) : ℝ :=
   Real.sqrt (baZetaSq sz z t ρ D₁ n a₁ a₂ ω)
 
-/-! ## 2. Deterministic facts (target 1) -/
+/-! ## 2. Deterministic facts -/
 
 section Lattice
 
@@ -131,7 +123,7 @@ theorem BAAuxGraph2_zetaSq_nonneg (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
   have : (0 : ℝ) ≤ (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := by positivity
   split_ifs <;> positivity
 
-/-- `ζ ≥ 0` (twin of `lwXiVar_nonneg`, `AuxGraph2:135`; the first conjunct of `LWXigL`, part 1). -/
+/-- `ζ ≥ 0` (as `lwXiVar_nonneg`; the first conjunct of `LWXigL`, part 1). -/
 theorem baZetaVar_nonneg (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
     0 ≤ baZetaVar sz z t ρ D₁ n a₁ a₂ ω := Real.sqrt_nonneg _
 
@@ -161,7 +153,7 @@ theorem BAAuxGraph2_pair_sum (g : (Fin 2 → Bool) → ℝ) :
   have := congrFun h 0
   simp at this
 
-/-- **`ζ([a₁],[a₂]) = ζ([a₂],[a₁])`** (twin of `lwXiVar_symm`, `AuxGraph2:160`; the first conjunct of `LWXigL`, part 2): reindex
+/-- **`ζ([a₁],[a₂]) = ζ([a₂],[a₁])`** (as `lwXiVar_symm`; the first conjunct of `LWXigL`, part 2): reindex
 `(b₁, b₂) ↦ (b₂, b₁)`; `‖𝓛_{(s,!s),(b₂,b₁)}‖ = ‖𝓛_{(!s,s),(b₁,b₂)}‖` by cyclicity of the trace. -/
 theorem baZetaVar_symm (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
     baZetaVar sz z t ρ D₁ n a₁ a₂ ω = baZetaVar sz z t ρ D₁ n a₂ a₁ ω := by
@@ -179,7 +171,7 @@ theorem baZetaVar_symm (a₁ a₂ : Zd d (sz.L n)) (ω : sz.SeqΩ) :
 
 end Basic
 
-/-! ### The Ward part of `claim:xi` -/
+/-! ### The Ward part of the claim (7.34) -/
 
 section Ward
 
@@ -418,7 +410,7 @@ section Basic2
 
 variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D₁ : ℝ) (n : ℕ)
 
-/-- The BA flow matrix is Hermitian (private copy of `FlowPins:925`). -/
+/-- The BA flow matrix is Hermitian. -/
 theorem BAAuxGraph2_seqHflowBA_herm (lam0 : ℕ → ℝ) (u : ℝ) (ω : sz.SeqΩ) :
     (sz.seqHflowBA lam0 n u ω).IsHermitian := by
   unfold Sizes.seqHflowBA
@@ -427,9 +419,9 @@ theorem BAAuxGraph2_seqHflowBA_herm (lam0 : ℕ → ℝ) (u : ℝ) (ω : sz.Seq�
   rw [Matrix.conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
     show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _]
 
-/-- **The Ward part of `(eq:Gbyxi2_BA)`, block form** (twin of `lwXi_ward_sum`, `AuxGraph2:507`; paper-delta candidate `T2435d`): for
+/-- **The Ward part of (B.22) `eq:Gbyxi2_BA`, block form** (as `lwXi_ward_sum`): for
 `0 ≤ t ≤ T₀`, `0 ≤ ρ`, and `A` a bound of `‖(G_t - M)_{xy}‖` over all `x, y`, with `η = η_t = C.eta`,
-`Σ_{a₂} ζ([a₁],[a₂])² ≤ 2 (2ρ+1)^{2d} (W^d η)⁻¹ (1 + A) + (2ρ+1)^d W^{-d} + L^d W^{-D₁}`.  Route: two ball counts
+`Σ_{a₂} ζ([a₁],[a₂])² ≤ 2 (2ρ+1)^{2d} (W^d η)⁻¹ (1 + A) + (2ρ+1)^d W^{-d} + L^d W^{-D₁}`.  Proof: two ball counts
 (`DecayLoopB_card_ball`), Ward's identity for `𝓛^{(2)}_{(s,!s)} ≥ 0` (`W^{-2d} Σ |G_{vw}|²`), `|𝓛^{(1)}| ≤ |M_{yy}| + A ≤ 1 + A`
 (`ba_G_data`: `‖M‖_max ≤ 1`), the floor summed over `L^d` blocks. -/
 theorem baZeta_ward_sum {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (h0 : 0 ≤ t n)
@@ -594,8 +586,8 @@ section SizesHelpers
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `‖G_t - M‖_max ≤ W^{-ε₁/2}` holds w.h.p. under the entry law `‖G_t - M‖_max ≺ W^{-ε₁}` over the carrier `C` and the law `μ`
-(`N^{τ} W^{-ε₁} ≤ W^{-ε₁/2}` at `τ = 𝔠 ε₁/2`, `W ≥ N^𝔠`; the event `Ω(t, ε₁/2)` of `lem_GbEXP_BA`); twin of
-`auxGraph2_whp_entry`, `AuxGraph2:655`. -/
+(`N^{τ} W^{-ε₁} ≤ W^{-ε₁/2}` at `τ = 𝔠 ε₁/2`, `W ≥ N^𝔠`; the event `Ω(t, ε₁/2)` of `lem_GbEXP_BA`); as
+`auxGraph2_whp_entry` in `Graph/AuxGraph2.lean`. -/
 theorem BAAuxGraph2_whp_entry (μ : Measure sz.SeqΩ) (C : FlowFM sz) (t : ℕ → ℝ) {𝔠 ε₁ : ℝ} (h𝔠 : 0 < 𝔠)
     (hε₁ : 0 < ε₁) (hband : sz.Bandwidth 𝔠)
     (hent : PrecL sz μ (U := fun n => Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
@@ -667,7 +659,7 @@ theorem BAAuxGraph2_floorL_le {𝔠 D₁ : ℝ} (h𝔠 : 0 < 𝔠) (n : ℕ) (hb
     _ ≤ 1 * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ := mul_le_mul_of_nonneg_right hex (inv_nonneg.2 hWd.le)
     _ = _ := one_mul _
 
-/-- **The floor against `Φ²`** (the floor `W^{-D₁}` of `ζ²`, `B:425`, is below `Φ(ℓ)²` for every `0 ≤ ℓ ≤ L`): from `(eq:Psi)`,
+/-- **The floor against `Φ²`** (the floor `W^{-D₁}` of `ζ²`, from (B.21), is below `Φ(ℓ)²` for every `0 ≤ ℓ ≤ L`): from (3.28) `eq:Psi`,
 `W^{-d/2} ≤ C₃ Φ(0)`: `Φ(ℓ) ≥ W^{-d/2} / (K (ℓ+1)^{C₂})`, `ℓ ≤ L ≤ W^{1/(𝔠 d)}`, so `D₁ ≥ d + 2C₂/(𝔠 d) + 1` and
 `K 2^{C₂} ≤ W^{1/2}` give `W^{-D₁} ≤ Φ(ℓ)²`. -/
 theorem BAAuxGraph2_floor_le (hd : 0 < d) (n : ℕ) {C₁ C₂ C₃ Cc2 𝔠 D₁ : ℝ} (Φn : ℝ → ℝ)
@@ -772,7 +764,7 @@ theorem BAAuxGraph2_floor_le (hd : 0 < d) (n : ℕ) {C₁ C₂ C₃ Cc2 𝔠 D�
 
 end SizesHelpers
 
-/-- The arithmetic of target 3 (c), in powers of `u = N^{τ/8}` (twin of `auxGraph2_num`, `AuxGraph2:929`, with `+ 1` for the floor,
+/-- The arithmetic of the comparison `ζ² ≲ Φ²`, in powers of `u = N^{τ/8}` (as `auxGraph2_num` in `Graph/AuxGraph2.lean`, with `+ 1` for the floor,
 `W^{-D₁} ≤ Φ²`, and `3 ≤ u^8`). -/
 theorem BAAuxGraph2_num {u A₁ K2 S : ℝ} (hu : 1 ≤ u) (hA : 2 * A₁ ≤ u ^ 2) (hC : S ≤ u ^ 4)
     (hK : K2 ≤ u ^ 2) (h3 : 3 ≤ u ^ 8) (hA0 : 0 ≤ A₁) (hS0 : 0 ≤ S) (hK0 : 0 ≤ K2) :
@@ -793,7 +785,7 @@ theorem BAAuxGraph2_num {u A₁ K2 S : ℝ} (hu : 1 ≤ u) (hA : 2 * A₁ ≤ u 
   linarith
 
 
-/-- **`Φ(m) ≤ K(ρ) Φ(ℓ)` when `ℓ ≤ 2ρ + m`** (target 3 (c), `(eq:Psi)`): the split at `max(4ρ, 2)`. -/
+/-- **`Φ(m) ≤ K(ρ) Φ(ℓ)` when `ℓ ≤ 2ρ + m`** ((3.28) `eq:Psi`): the split at `max(4ρ, 2)`. -/
 theorem BAAuxGraph2_phi_cmp {Φ : ℝ → ℝ} {C₁ C₂ Cc2 ρ : ℝ} (hρ : 0 ≤ ρ)
     (hanti : AntitoneOn Φ (Set.Ici 0)) (hpos : ∀ r, 0 ≤ r → 0 < Φ r) (hC₁ : 1 < C₁) (hC₂ : 1 < C₂)
     (hCc : 0 < Cc2) (h1 : ∀ ℓ, 0 ≤ ℓ → ℓ ≤ 2 → Φ 0 ≤ Cc2 * Φ ℓ)
@@ -918,7 +910,7 @@ theorem BAAuxGraph2_pow_small {d : ℕ} (sz : Sizes d) (n : ℕ) {𝔠 ε₁ : �
 theorem BAAuxGraph2_rpow_nat (X : ℝ) (hX : 0 ≤ X) (x : ℝ) (k : ℕ) : (X ^ x) ^ k = X ^ (x * k) := by
   rw [← Real.rpow_natCast, ← Real.rpow_mul hX]
 
-/-- **`ξ([a₁],[a₂])² ≲ Φ(|a₁ - a₂|)²` from `(LW_assm)` and `(eq:Psi)`** (target 3 (c), deterministic part):
+/-- **`ξ([a₁],[a₂])² ≲ Φ(|a₁ - a₂|)²` from (3.27) `eq:LW_assm` and (3.28) `eq:Psi`** (deterministic part):
 if every `‖𝓛^{(2)}_{(s,!s),(b₁,b₂)}‖ ≤ B Φ(|b₁ - b₂|)²`, `Φ(m) ≤ K Φ(ℓ)` for `ℓ ≤ 2ρ + m` and
 `W^{-d} ≤ C₃² Φ(0)²`, then `ξ² ≤ (2 (2ρ+1)^{2d} B + C₃²) K² Φ(|a₁ - a₂|)²`. -/
 theorem BAAuxGraph2_zetaSq_le {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D₁ : ℝ) (n : ℕ) (ω : sz.SeqΩ)
@@ -999,12 +991,12 @@ theorem BAAuxGraph2_zetaSq_le {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t ρ :
         add_le_add_left (add_le_add hfirst hsecond) _
     _ = _ := by rw [hQ]; ring
 
-/-! ## 4. Target 2: the carrier form of `LWXi` -/
+/-! ## 4. The carrier form of `LWXi` -/
 
-/-- **`LWXi` over a carrier `C` and a law `μ`** (`(eq:Gbyxi3)`, `7_8:963-966`; `LWXi`, `Graph/LWPins.lean:360`, with `Prec sz` replaced by
-`PrecL sz μ` and `etaT (E n) (t n)` by `C.eta n (t n)`; the check file's `T2435_LWXigL` up to the name): the edge variables
+/-- **`LWXi` over a carrier `C` and a law `μ`** ((7.38) `eq:Gbyxi3`; `LWXi`, `Graph/LWPins.lean`, with `Prec sz` replaced by
+`PrecL sz μ` and `etaT (E n) (t n)` by `C.eta n (t n)`): the edge variables
 `ξ_{αβ} = ξ_{βα} ≥ 0`, `ξ_{αβ} ≺ Ψ_t(|α-β|)` and `Σ_β |ξ_{αβ}|² ≺ (W^d η_t)⁻¹`, uniformly in `α, β ∈ Z_L^d`.  Generic over the carrier: the
-BA instance is `C = baFMz sz z`, `μ = seqP (sz.withLam 0)`; L3d1 consumes it for `BAAnpAuxG`. -/
+BA instance is `C = baFMz sz z`, `μ = seqP (sz.withLam 0)`; it is used in `Graph/BAAnpLift.lean`. -/
 def LWXigL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t : ℕ → ℝ) (Φ : ℕ → ℝ → ℝ)
     (ξ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → sz.SeqΩ → ℝ) : Prop :=
   (∀ n α β ω, 0 ≤ ξ n α β ω ∧ ξ n α β ω = ξ n β α ω) ∧
@@ -1012,11 +1004,6 @@ def LWXigL {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (t :
       (fun n p _ => Φ n ((zdistInf d (sz.L n) (p.1 - p.2) : ℕ) : ℝ)) ∧
     PrecL sz μ (U := fun n => Zd d (sz.L n)) (fun n α ω => ∑ β, ξ n α β ω ^ 2)
       (fun n _ _ => ((((sz.W n : ℕ) : ℝ) ^ d) * C.eta n (t n))⁻¹)
-
-/-! ## 5. Compiled nonempty instances (targets 1 and 2)
-
-`d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `t ≡ 1/2 ≤ T₀`), the radius `ρ_n = log W_n`
-and the floor exponent `D₁ = 12`.  Every deterministic hypothesis is discharged; the Ward hypothesis `hA` is met by `A = Σ_{xy} ‖(G_t - M)_{xy}‖`. -/
 
 end RBM.Graph
 

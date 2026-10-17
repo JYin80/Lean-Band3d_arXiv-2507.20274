@@ -8,22 +8,16 @@ import RBM3D.Graph.LWLvl1
 import RBM3D.Graph.LocalRegular6a
 
 /-!
-# BA-L R0: the atomic image of a block Anderson graph (T2417)
+# The atomic image of a block Anderson graph
 
-Under the strategy S' (T2395 design, supervisor `2026-10-11-0951` L4-C2) every BA step is
-compared with a band `LocStep` on the atomic image of the BA graph
-(`paper/tex/B_graphical_lemmas.tex:308-313`, cited `B:line`).  This file defines the atom-level
-vocabulary (`BAGraph.sameAtom` ... `BAGraph.LocStd`, the statements of the probe
-`t/T2395:RBM3D/Probe/T2395Pins.lean:27-63`) and **one** image map `BAGraph.img` (the order of the
-probe `t/T2397:RBM3D/Probe/T2397Pins.lean:29-48`: `promoteC` recolours the edges first, then the
-merged `LGraph.mergeP` merges the atoms), and proves the pins both designs wrote against it:
-`BAimg` (T2395:230), the map properties `BAImgNormal` (m0), `BAImgCounters` (m1), `BAImgMol` (m2)
-(T2397:108-118) and, in `BAAtomic2.lean`, `BAPathLift` (T2397:355).
-
-Proved here: `BAGraph.img95_equiv_gen`, `BAGraph.img95_equiv`: the construction of
-T2395:222-227 (merge first, then rebuild the solid edges) gives the same packed graph up to a
-relabelling of the vertices (for a normal graph; for every graph up to the circles of the solid
-edges).
+Every BA step is compared with a band `LocStep` on the atomic image of the BA graph (Definition B.3
+`def_atom`).  This file defines the atom-level vocabulary (`BAGraph.sameAtom` ...
+`BAGraph.LocStd`) and **one** image map `BAGraph.img` (`promoteC` recolours the edges first, then
+`LGraph.mergeP` merges the atoms), and proves its properties: `BAimg` (the image keeps the counters,
+the atom-level loops and pairs and the number of external atoms; it is normal, and it is locally
+standard iff the graph is), the counter property `BAImgCounters`, normality (`BAGraph.img_normal`),
+and the molecules of the image (`BAGraph.img_molOf_eq_iff`); the behaviour of the image on graphs
+without `=`-dotted edges is in `BAAtomic2.lean`.
 -/
 
 set_option linter.style.setOption false
@@ -38,7 +32,7 @@ noncomputable section
 
 namespace RBM.Graph
 
-/-! ## 1. The atom-level vocabulary (T2395 probe 27-41, 56-66; statements copied verbatim) -/
+/-! ## 1. The atom-level vocabulary -/
 
 section Vocab
 
@@ -48,11 +42,11 @@ variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 def BAGraph.sameAtom (Γ : BAGraph E I) (u v : E ⊕ I) : Bool := decide (v ∈ Γ.atom u)
 /-- the atom of `v` has no external vertex. -/
 def BAGraph.intAtom (Γ : BAGraph E I) (v : E ⊕ I) : Bool := decide (∀ w ∈ Γ.atom v, w.isRight = true)
-/-- atom-level loops: solid edges (self-loops included) with both ends in one atom (`B:312` read as: they stay, T2395 D§1). -/
+/-- atom-level loops: solid edges (self-loops included) with both ends in one atom (they stay, cf. Definition B.3 `def_atom`). -/
 def BAGraph.nLoops (Γ : BAGraph E I) : ℕ := Γ.solid.countP fun e => Γ.sameAtom e.src e.dst
 /-- the number of atoms with an external vertex. -/
 def BAGraph.nExt (Γ : BAGraph E I) : ℕ := ((Finset.univ.filter fun v : E ⊕ I => v.isLeft = true).image Γ.atom).card
-/-- `lvl1Share` (`LWLvl1.lean:80`) on atoms: the common internal ends of two edges that are not atom-level loops. -/
+/-- `lvl1Share` (`Graph/LWLvl1.lean`) on atoms: the common internal ends of two edges that are not atom-level loops. -/
 def BAGraph.nShare (Γ : BAGraph E I) (e e' : SEdge (E ⊕ I)) : ℕ :=
   if Γ.sameAtom e.src e.dst = true ∨ Γ.sameAtom e'.src e'.dst = true then 0 else
     ([e.src, e.dst].map fun u => ([e'.src, e'.dst].filter fun w => Γ.sameAtom u w = true ∧ Γ.intAtom u = true).length).sum
@@ -60,12 +54,12 @@ def BAGraph.pairsAux (Γ : BAGraph E I) : List (SEdge (E ⊕ I)) → ℕ
   | [] => 0
   | e :: es => Γ.pairsAux es + (es.map (Γ.nShare e)).sum
 def BAGraph.nPairs (Γ : BAGraph E I) : ℕ := Γ.pairsAux Γ.solid
-/-- the non-loop solid edges at the atom of `v` and the charge of the atom (`LWLvl1.lean:1529-1546` on atoms). -/
+/-- the non-loop solid edges at the atom of `v` and the charge of the atom (as in `Graph/LWLvl1.lean`, on atoms). -/
 def BAGraph.atEdges (Γ : BAGraph E I) (v : E ⊕ I) : List (SEdge (E ⊕ I)) :=
   Γ.solid.filter fun e => Γ.sameAtom v e.src != Γ.sameAtom v e.dst
 def BAGraph.atCharge (Γ : BAGraph E I) (v : E ⊕ I) : ℤ :=
   ((Γ.atEdges v).map fun e => if Γ.sameAtom v e.src = true then (if e.σ then -1 else 1) else (if e.σ then 1 else -1)).sum
-/-- **locally standard at the atom level** (`deflvl1`, `7_8:367-386`, on the atomic image): normal, no solid edge inside an atom, every
+/-- **locally standard at the atom level** (Definition 7.14 `deflvl1`, on the atomic image): normal, no solid edge inside an atom, every
 internal atom has no edge or two edges of opposite colours and charge `0`. -/
 def BAGraph.LocStd (Γ : BAGraph E I) : Prop :=
   Γ.Normal ∧ (∀ e ∈ Γ.solid, Γ.sameAtom e.src e.dst = false) ∧ ∀ i : I, Γ.intAtom (Sum.inr i) = true →
@@ -89,10 +83,10 @@ section Image
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- The atoms of a BA graph (`def_atom`, `B:302-304`) as a setoid on its vertices (T2397 probe 29). -/
+/-- The atoms of a BA graph (Definition B.3 `def_atom`) as a setoid on its vertices. -/
 def atomSetoid (Γ : BAGraph E I) : Setoid (E ⊕ I) := Setoid.ker Γ.atom
 open Classical in
-/-- **The atomic image of a BA graph as a graph of the band** (`B:308-313`, with two deliberate differences, paper-delta `T2397a`): the `=`-, `Ψ`- and `M`-dotted edges are promoted to `=`-dotted edges (so that `LGraph.merge` merges the atoms); a solid edge inside an atom is kept as a circled loop (the paper discards it, `ord` counts it: `B:353`); a solid edge between two atoms loses its circle (the band's `CircIffLoop`) and gets the `×`-dotted edge; the `×`-dotted edges of the BA graph are dropped. (T2397 probe 31-39.) -/
+/-- **The atomic image of a BA graph as a graph of the band** (Definition B.3 `def_atom`, with two deliberate differences): the `=`-, `Ψ`- and `M`-dotted edges are promoted to `=`-dotted edges (so that `LGraph.merge` merges the atoms); a solid edge inside an atom is kept as a circled loop (the paper discards it, while `ord` counts it: Definition B.5 `def scalingBA`); a solid edge between two atoms loses its circle (the band's `CircIffLoop`) and gets the `×`-dotted edge; the `×`-dotted edges of the BA graph are dropped. -/
 def promoteC (Γ : BAGraph E I) : LGraph E I where
   solid := Γ.solid.map fun e => { e with circ := e.circ && decide (atomSetoid Γ e.src e.dst) }
   waved := Γ.waved
@@ -100,14 +94,13 @@ def promoteC (Γ : BAGraph E I) : LGraph E I where
     (Γ.solid.filter fun e => !decide (atomSetoid Γ e.src e.dst)).map (fun e => ⟨false, e.src, e.dst⟩)
   coeff := Γ.coeff
 
-/-- **The one image map** (L4-C2; K1 of T2395): the atomic image of a BA graph, as a packed graph of the band over the external vertices
+/-- **The one image map**: the atomic image of a BA graph, as a packed graph of the band over the external vertices
 `E` of `Γ`: `promoteC` first (the `=`-, `Ψ`- and `M`-dotted edges become `=`-dotted edges; every solid edge stays, circled iff it is circled in
 `Γ` and lies inside an atom; every waved edge stays; a `×`-dotted edge is put on every solid edge between two atoms; the `×`-dotted edges of
-`Γ` are dropped), then the merged `LGraph.mergeP` (T2397's order, probe 48; `BAGraph.img95` is the construction of T2395, probe 222-227, and
-`BAGraph.img95_equiv_gen`, `BAGraph.img95_equiv` show that it is this map up to relabelling). -/
+`Γ` are dropped), then the merged `LGraph.mergeP`. -/
 def BAGraph.img (Γ : BAGraph E I) : PGraph E := (promoteC Γ).mergeP
 
-/-- The atomic image of a packed BA graph (T2395 probe 228; T2397 probe 48 for `E = Fin 2`): `lvl1Comp` of the image of the graph. -/
+/-- The atomic image of a packed BA graph (for `E = Fin 2`): `lvl1Comp` of the image of the graph. -/
 def BAPGraph.img {E : Type} (P : BAPGraph E) : PGraph E := PGraph.lvl1Comp P.g.img P.ext P.ext_surj
 
 end Image
@@ -245,7 +238,7 @@ theorem BAAtomic_promoteC_vmap_isRight (Γ : BAGraph E I) (v : E ⊕ I) :
 
 end Key
 
-/-! ## 4. The image explicitly, (m0) -/
+/-! ## 4. The image explicitly -/
 
 section ImgDesc
 
@@ -296,9 +289,9 @@ private theorem BAAtomic_img_loop_iff (Γ : BAGraph E I) {e : SEdge (E ⊕ I)} :
     (promoteC Γ).vmap e.src = (promoteC Γ).vmap e.dst ↔ Γ.sameAtom e.src e.dst = true :=
   BAAtomic_promoteC_vmap_eq_sameAtom Γ _ _
 
-/-- **(m0), the graph form**: the atomic image of a BA-normal graph is a normal graph of the band (`LGraph.Normal`: no `=`-dotted edge;
+/-- **Normality of the image, the graph form**: the atomic image of a BA-normal graph is a normal graph of the band (`LGraph.Normal`: no `=`-dotted edge;
 `×`-dotted iff solid between distinct atoms, by `promoteC`; every loop circled) in which a solid edge is circled iff it is a loop
-(`CircIffLoop`, `LocalRegular6a.lean:162`). -/
+(`CircIffLoop`, `Graph/LocalRegular6a.lean`). -/
 theorem BAGraph.img_normal (Γ : BAGraph E I) (hN : Γ.Normal) : Γ.img.g.Normal ∧ LGraph.CircIffLoop Γ.img.g := by
   have hC : ∀ e ∈ Γ.img.g.solid, (e.src = e.dst ↔ e.circ = true) := by
     intro e he
@@ -328,7 +321,7 @@ theorem BAGraph.img_normal (Γ : BAGraph E I) (hN : Γ.Normal) : Γ.img.g.Normal
 
 end ImgDesc
 
-/-! ## 5. (m2): the molecules of the image are the molecules of the BA graph -/
+/-! ## 5. The molecules of the image are the molecules of the BA graph -/
 
 section Mol
 
@@ -374,7 +367,7 @@ private theorem BAAtomic_adj_of_atom (Γ : BAGraph E I) {u w : E ⊕ I} (h : w �
   intro a b hab
   exact (BAAtomic_ba_adj_iff Γ a b).2 (Or.inr hab)
 
-/-- **The molecules of the image are those of the BA graph** (the graph form of (m2)). -/
+/-- **The molecules of the image are those of the BA graph**. -/
 theorem BAGraph.img_molOf_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
     (promoteC Γ).merge.molOf ((promoteC Γ).vmap u) = (promoteC Γ).merge.molOf ((promoteC Γ).vmap v) ↔ v ∈ Γ.mol u := by
   rw [LGraph.molOf_eq_iff, LGraph.mem_mol_iff, Γ.mem_mol_iff, SimpleGraph.reachable_iff_reflTransGen]
@@ -416,7 +409,7 @@ theorem BAGraph.img_molOf_eq_iff (Γ : BAGraph E I) (u v : E ⊕ I) :
 
 end Mol
 
-/-! ## 6. (m1): the counters, and the number of external atoms -/
+/-! ## 6. The counters, and the number of external atoms -/
 
 section Counters
 
@@ -518,7 +511,7 @@ theorem BAGraph.BAAtomic_nM_merge (Γ : BAGraph E I) : (promoteC Γ).merge.nM = 
   · rintro ⟨v, hv, rfl⟩
     exact ⟨(promoteC Γ).vmap v, (BAAtomic_mol_int_iff Γ v).1 hv, rfl⟩
 
-/-- **Map property (m1), the graph form**: the counters of the image are the BA counters (`n_V ↔ n_A`). -/
+/-- **The counters, the graph form**: the counters of the image are the BA counters (`n_V ↔ n_A`). -/
 theorem BAGraph.img_counters (Γ : BAGraph E I) : Γ.img.g.counters = Γ.counters := by
   change (promoteC Γ).merge.counters = Γ.counters
   unfold LGraph.counters BAGraph.counters
@@ -528,7 +521,7 @@ theorem BAGraph.img_counters (Γ : BAGraph E I) : Γ.img.g.counters = Γ.counter
   · exact Γ.BAAtomic_card_intCls
   · exact Γ.BAAtomic_nM_merge
 
-/-- **Map property (m1)** (T2397 probe 115): the counters of the image are the BA counters. -/
+/-- **The counter property**: the counters of the image are the BA counters. -/
 def BAImgCounters : Prop := ∀ Q : BAPGraph (Fin 2), (BAPGraph.img Q).g.counters = Q.g.counters
 
 end Counters
@@ -677,7 +670,7 @@ theorem BAGraph.img_locStd_iff (Γ : BAGraph E I) (hN : Γ.Normal) : Γ.LocStd �
 
 end LocStdImg
 
-/-- **`BAimg`** (T2395 probe 230): the image keeps the counters, the atom-level loops and pairs, the number of external atoms; it is normal;
+/-- **`BAimg`**: the image keeps the counters, the atom-level loops and pairs, the number of external atoms; it is normal;
 it is locally standard iff `Γ` is. -/
 def BAimg : Prop := ∀ {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : BAGraph E I),
   Γ.img.g.counters = Γ.counters ∧ Γ.img.g.lvl1NLoops = Γ.nLoops ∧ Γ.img.g.lvl1NPairs = Γ.nPairs ∧ Fintype.card Γ.img.E' = Γ.nExt ∧
@@ -687,8 +680,5 @@ theorem BAimg_holds : BAimg := fun Γ =>
   ⟨Γ.img_counters, Γ.img_nLoops, Γ.img_nPairs, Γ.card_extCls, fun hN => (Γ.img_normal hN).1, fun hN => Γ.img_locStd_iff hN⟩
 
 theorem BAImgCounters_holds : BAImgCounters := fun Q => Q.g.img_counters
-/-! ## 9. The other construction (T2395 probe 222-227) is the same map -/
-
-/-! ## 10. Compiled instances: the K1 case (an `M`-edge inside an atom, one between atoms) -/
 
 end RBM.Graph

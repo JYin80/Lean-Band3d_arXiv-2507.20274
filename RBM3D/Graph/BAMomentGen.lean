@@ -17,29 +17,32 @@ import RBM3D.BA.LWPinsBA
 import RBM3D.BA.GbEXPav
 
 /-!
-# BA-L L3d2a (T2470), part A: `lem:LW_moment` at BA, the carrier, the pin and the far pairs
+# `lem:LW_moment` at BA (part A): the carrier, the statement and the far pairs
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): `(fxyG_sum)` (`7_8:31-34`), `lem:LW_moment`
-(`7_8:72-77`), `(eq:boundfxyGinf)` (`7_8:61-63`), `(eq:far_ab)` (`7_8:955-958`), proof of `lem:LW_moment` (`7_8:943-950`);
-`paper/tex/B_graphical_lemmas.tex:288, 408-416, 486-497`.  Twin of `Graph/LWMoment.lean` (`:1-1872`, the band proof) in new files.
+Paper: (7.4) `fxyG_sum`; Lemma 7.1 (`lem:LW_moment`) and its proof; (7.9) `eq:boundfxyGinf`;
+(7.12) `eq:far_ab`; Subappendix B.3 (the end of the proof of Lemma B.7).  This is the BA counterpart
+of `Graph/LWMoment.lean` (the band proof) in new files.
 
 ## Contents (namespace `RBM.BA`; helpers carry the stem `BAMomentGen_`)
 
-1. The carrier `f_{xy}` `LWfg` (target 1) with the band bridge `LWfg_bandFM` (1(a)) and the BA bridge `LWfg_baFMz` (1(b)).
-2. The generic pin `LWMomentG` (target 2), `LWMoment_iff_bandPin`, the BA reading `BALWMoment`.
-3. `ba_localregularX_holds` (target 3): `ba_localregularX` with its shape binder discharged by `baShapeLL_e2_tn`,
-   `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn` (O2R-C3).
-4. The far pairs (twin of `LWMoment` §1-§8): `≺` tools at the BA law, the model-free arithmetic, the rescaled data of the slice
-   `BAMomentGen_D` and the constants of its kernels, the floor, the three kinds of output (error, `𝓜_x = 𝓜_y` through the scale-mole
-   tail `BAMomentGen_scalemole`, `𝓜_x ≠ 𝓜_y` through `baGtoAGT_holds` and `lem:Anp`), the envelope, `≺ → 𝔼`, the continuity of graph
-   values, the expansion identity `BAMomentGen_expand`, and the assembly `BAMomentGen_prec_far`.
+1. The carrier `f_{xy}` `LWfg` with the BA bridge `LWfg_baFMz`.
+2. The generic statement `LWMomentG`, the BA reading `BALWMoment`.
+3. `ba_localregularX_holds`: `ba_localregularX` with its shape binder discharged by
+   `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn`.
+4. The far pairs (as `LWMoment` Sections 1-8): `≺` tools at the BA law, the model-free arithmetic,
+   the rescaled data of the slice `BAMomentGen_D` and the constants of its kernels, the floor, the
+   three kinds of output (error, `𝓜_x = 𝓜_y` through the scale-mole tail `BAMomentGen_scalemole`,
+   `𝓜_x ≠ 𝓜_y` through `baGtoAGT_holds` and `lem:Anp`), the envelope, `≺ → 𝔼`, the continuity of
+   graph values, the expansion identity `BAMomentGen_expand`, and the assembly
+   `BAMomentGen_prec_far`.
 
-**Premise scan** (`Test/Axioms.lean:390-445`): `LWAssmgL`, `LWLoop2gL` and `BAAnpAuxG` occur only inside definitions (`LWMomentG`,
-`BALWMomentOfAnp`).  The lemmas of this file take `LWAssmgL` unfolded (`hassm`, with `LWLoop2gL` unfolded) and `lem:Anp` instantiated at
-the data and at one graph (`hAnpQ`, `hAnpL`, with `LWXigL` unfolded); the callers (`baLWMoment_of_anp`) pass the pin's hypotheses
-(definitionally equal) and the instances of `BAAnpAuxG`.
+`LWAssmgL`, `LWLoop2gL` and `BAAnpAuxG` occur only inside definitions (`LWMomentG`,
+`BALWMomentOfAnp`).  The lemmas of this file take `LWAssmgL` unfolded (`hassm`, with `LWLoop2gL`
+unfolded) and `lem:Anp` instantiated at the data and at one graph (`hAnpQ`, `hAnpL`, with `LWXigL`
+unfolded); the callers (`baLWMoment_of_anp`) pass the hypotheses of the statement (definitionally
+equal) and the instances of `BAAnpAuxG`.
 
-The near pairs and `baLWMoment_of_anp` (target 4) are in `Graph/BAMomentGenB.lean`.
+The near pairs and `baLWMoment_of_anp` are in `Graph/BAMomentGenB.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -63,16 +66,16 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 1. The carrier `f_{xy}` (target 1) -/
+/-! ## 1. The carrier `f_{xy}` -/
 
-/-- **The carrier `f_{xy}`** of `(fxyG_sum)` (`7_8:31-34`) over a carrier `C : FlowFM sz`, `σ = +`:
+/-- **The carrier `f_{xy}`** of (7.4) `fxyG_sum` over a carrier `C : FlowFM sz`, `σ = +`:
 `Σ_{α ∉ {x, y}} Σ_β (W^{-d} S^{(B)}_{[α][β]}) Ǧ_{ββ} G_{xα} G_{αy}` with `S^{(B)} = C.S`, `Ǧ = C.GM`, `G = C.G`
-(twin of `LWf`, `Graph/LWPins.lean:199`). -/
+(as `LWf` in `Graph/LWPins.lean`). -/
 def LWfg {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) : ℂ :=
   ∑ α, if α = x ∨ α = y then (0 : ℂ) else
     ∑ β, ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * C.S n (STblk sz n α) (STblk sz n β)) * C.GM n t ω β β * C.G n t ω x α * C.G n t ω α y
 
-/-- **Target 1 (b)** (twin of `lwMoment_fxy_bridge`, `Graph/LWMoment.lean:79`): at the block Anderson carrier `S^{(B)}(0) = I`, and
+/-- **The BA bridge** (as `lwMoment_fxy_bridge` in `Graph/LWMoment.lean`): at the block Anderson carrier `S^{(B)}(0) = I`, and
 `t` times the carrier `f_{xy}` is the graph quantity `fxyVal` at the data `BAlwData` (`BAlwS = t · svarF(0)`) of the slice of the sample. -/
 theorem LWfg_baFMz {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
     (t : ℂ) * LWfg (baFMz sz z) n t ω x y =
@@ -99,11 +102,11 @@ theorem LWfg_baFMz {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ
   unfold FlowFM.GM
   ring
 
-/-! ## 2. The generic pin `LWMomentG` (target 2) -/
+/-! ## 2. The generic statement `LWMomentG` -/
 
-/-- **`lem:LW_moment`** (`7_8:72-77`; `Graph/LWPins.lean:325`) over a carrier family, in the `PinFam` shape of `LWtermG`
-(`Chain/LWGen.lean:79`): `STFlow` becomes `Flow`, `lemT` becomes `T0`, `LWAssm` becomes `LWAssmgL (mk sz z) (law sz)`, `Prec` becomes
-`PrecL sz (law sz)`, `LWf` becomes the carrier `f_{xy}` `LWfg (mk sz z)`, `η_t` becomes `(mk sz z).eta`; the rest is verbatim
+/-- **`lem:LW_moment`** (Lemma 7.1; `Graph/LWPins.lean`) over a carrier family, in the `PinFam` shape of `LWtermG`
+(`Chain/LWGen.lean`): `STFlow` becomes `Flow`, `lemT` becomes `T0`, `LWAssm` becomes `LWAssmgL (mk sz z) (law sz)`, `Prec` becomes
+`PrecL sz (law sz)`, `LWf` becomes the carrier `f_{xy}` `LWfg (mk sz z)`, `η_t` becomes `(mk sz z).eta`; the rest is as in `LWMoment`
 (`∃ c` before `𝔠`). -/
 def LWMomentG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
@@ -120,13 +123,13 @@ def LWMomentG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
                 (fun n q _ => (((mk sz z).eta n (t n))⁻¹ * Φ n 0 *
                   Φ n (c * ((zdistInf d (sz.L n) (STblk sz n q.1 - STblk sz n q.2) : ℕ) : ℝ))) ^ p)
 
-/-- **Target 2**: the block Anderson reading (law `seqP (sz.withLam 0)`, `BAFlow`, `baFMz`, `BAflowT0`), beside `BALWterm`. -/
+/-- **The block Anderson reading** (law `seqP (sz.withLam 0)`, `BAFlow`, `baFMz`, `BAflowT0`), beside `BALWterm`. -/
 abbrev BALWMoment : ℕ → Prop := baPin LWMomentG
 
-/-! ## 3. Target 3: `ba_localregularX` with its binder discharged (O2R-C3) -/
+/-! ## 3. `ba_localregularX` with its binder discharged -/
 
-/-- **Target 3** (supervisor 0948 O2R-C3): the conclusion of `ba_localregularX` (`Graph/BAEngine.lean:335`) without its shape binder,
-which is discharged by T2447's `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn` (`Graph/BAShapeO2B.lean:221, 269, 303`). -/
+/-- The conclusion of `ba_localregularX` (`Graph/BAEngine.lean`) without its shape binder,
+which is discharged by `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn` (`Graph/BAShapeO2B.lean`). -/
 theorem ba_localregularX_holds : ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ), ∃ outs errs : List (BAPGraph (Fin 2)),
     BALocRegConcl p c K0 d D outs errs ∧ ∀ Q ∈ outs ++ errs, p ≤ Q.g.waved.countP (fun e => !e.col) :=
   ba_localregularX (fun sh h => by
@@ -139,7 +142,7 @@ section Tools
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `≺` at an arbitrary law from a w.h.p. event on which the pathwise bound holds (twin of `lwMoment_prec_of_whp`). -/
+/-- `≺` at an arbitrary law from a w.h.p. event on which the pathwise bound holds (as `lwMoment_prec_of_whp`). -/
 theorem BAMomentGen_prec_of_whp {μ : Measure sz.SeqΩ} {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ}
     (h : ∀ τ : ℝ, 0 < τ → ∃ Ξ : ℕ → Set sz.SeqΩ, HighProbAt μ sz.size Ξ ∧
       ∀ᶠ n in atTop, ∀ ω ∈ Ξ n, ∀ u, ξ n u ω ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ n u ω) :
@@ -153,7 +156,7 @@ theorem BAMomentGen_prec_of_whp {μ : Measure sz.SeqΩ} {U : ℕ → Type*} {ξ 
   by_contra hΩ
   exact absurd (h2 ω (not_not.1 hΩ) u) (not_le.2 hu)
 
-/-- `ξ ≺ ζ` gives the w.h.p. event `{∀ u, ξ ≤ N^τ ζ}` (twin of `Sizes.Prec.whp`, `Defs/StochDomAt.lean:165`). -/
+/-- `ξ ≺ ζ` gives the w.h.p. event `{∀ u, ξ ≤ N^τ ζ}` (as `Sizes.Prec.whp` in `Defs/StochDomAt.lean`). -/
 theorem BAMomentGen_whp_of_prec {μ : Measure sz.SeqΩ} {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ}
     (h : PrecL sz μ ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
     HighProbAt μ sz.size (fun n => {ω | ∀ u, ξ n u ω ≤ ((sz.size n : ℕ) : ℝ) ^ τ * ζ n u ω}) := by
@@ -168,8 +171,8 @@ end Tools
 
 section Numerics
 
-/-- `size(Γ) ≤ N^{n_M + n_V} B^{n_S}` for `0 < Ψ ≤ B`, `B ≥ 1` at the level of the counters (twin of `lwMoment_scalingSize_le`,
-`Graph/LWMoment.lean:380`; the slot `n_V` of a BA graph holds `n_A`). -/
+/-- `size(Γ) ≤ N^{n_M + n_V} B^{n_S}` for `0 < Ψ ≤ B`, `B ≥ 1` at the level of the counters (as `lwMoment_scalingSize_le`
+in `Graph/LWMoment.lean`; the slot `n_V` of a BA graph holds `n_A`). -/
 theorem BAMomentGen_scalingSize_le (cs : Counters) {Ψ B : ℝ} (hΨ0 : 0 < Ψ) (hΨB : Ψ ≤ B) (hB : 1 ≤ B) (W L d : ℕ) (hW : 1 ≤ W)
     (hL : 1 ≤ L) :
     cs.scalingSize Ψ W d L ≤ (((W * L) ^ d : ℕ) : ℝ) ^ (cs.nM + cs.nV) * B ^ cs.nS := by
@@ -197,7 +200,7 @@ theorem BAMomentGen_scalingSize_le (cs : Counters) {Ψ B : ℝ} (hΨ0 : 0 < Ψ) 
     _ = _ := by ring
 
 /-- The tail `e^{-c r/2} K₂ size_{Ψ'}(Γ) ≤ N^{-b}` for `Ψ' ≤ 1`, `K₂ ≤ N`, when `e^{-c r/2} N^{n_M + n_V + 1} ≤ N^{-b}`
-(twin of `lwMoment_tail_le`, `Graph/LWMoment.lean:875`, at the counters). -/
+(as `lwMoment_tail_le` in `Graph/LWMoment.lean`, at the counters). -/
 theorem BAMomentGen_tail_le (cs : Counters) {Ψ' c r K2 b : ℝ} (W L d : ℕ) (hW : 1 ≤ W) (hL : 1 ≤ L) (hΨ0 : 0 < Ψ')
     (hΨ1 : Ψ' ≤ 1) (hK2 : K2 ≤ (((W * L) ^ d : ℕ) : ℝ)) (hK20 : 0 ≤ K2)
     (htail : Real.exp (-(c * r / 2)) * (((W * L) ^ d : ℕ) : ℝ) ^ ((cs.nM + cs.nV + 1 : ℕ) : ℝ) ≤
@@ -220,7 +223,7 @@ theorem BAMomentGen_tail_le (cs : Counters) {Ψ' c r K2 b : ℝ} (W L d : ℕ) (
 
 variable {d : ℕ} {sz : Sizes d} {𝔡 𝔠 : ℝ}
 
-/-- **The tail `e^{-c (log W)²/2}` beats every power of `N`** (`r = (log W)²` of `(eq:far_ab)`, `7_8:955-958`; twin of
+/-- **The tail `e^{-c (log W)²/2}` beats every power of `N`** (`r = (log W)²` of (7.12) `eq:far_ab`; as
 `lwMoment_tail`): `W ≥ N^𝔠` and `log W → ∞`. -/
 theorem BAMomentGen_tail (hadm : sz.Admissible 𝔠 𝔡) {c : ℝ} (hc : 0 < c) (a b : ℝ) :
     ∀ᶠ n in atTop, Real.exp (-(c * Real.log ((sz.W n : ℕ) : ℝ) ^ 2 / 2)) * ((sz.size n : ℕ) : ℝ) ^ a ≤
@@ -257,7 +260,7 @@ theorem BAMomentGen_tail (hadm : sz.Admissible 𝔠 𝔡) {c : ℝ} (hc : 0 < c)
         mul_le_mul_of_nonneg_left h5 (Real.exp_pos _).le
     _ = 1 := by rw [← Real.exp_add]; simp
 
-/-- `K' W^{-D} ≤ N^{-K_f}` for `K' ≤ N`, `D ≥ (K_f + 1)/𝔠` (`W ≥ N^𝔠`; twin of `lwMoment_Wneg_le`). -/
+/-- `K' W^{-D} ≤ N^{-K_f}` for `K' ≤ N`, `D ≥ (K_f + 1)/𝔠` (`W ≥ N^𝔠`; as `lwMoment_Wneg_le`). -/
 theorem BAMomentGen_Wneg_le (hadm : sz.Admissible 𝔠 𝔡) {Kf D : ℝ} (hKf : 0 ≤ Kf) (hD : (Kf + 1) / 𝔠 ≤ D) :
     ∀ᶠ n in atTop, ∀ K' : ℝ, K' ≤ ((sz.size n : ℕ) : ℝ) →
       K' * ((sz.W n : ℕ) : ℝ) ^ (-D) ≤ ((sz.size n : ℕ) : ℝ) ^ (-Kf) := by
@@ -285,7 +288,7 @@ theorem BAMomentGen_Wneg_le (hadm : sz.Admissible 𝔠 𝔡) {Kf D : ℝ} (hKf :
           _ = ((sz.size n : ℕ) : ℝ) ^ (1 + -(Kf + 1)) := (Real.rpow_add hN0 _ _).symm
           _ = _ := by congr 1; ring
 
-/-- `L^d ≤ W^{K0}` for `K0 ≥ 1/𝔠` (`L^d ≤ N ≤ W^{1/𝔠}`; twin of `lwMoment_L_le_W`). -/
+/-- `L^d ≤ W^{K0}` for `K0 ≥ 1/𝔠` (`L^d ≤ N ≤ W^{1/𝔠}`; as `lwMoment_L_le_W`). -/
 theorem BAMomentGen_L_le_W (hadm : sz.Admissible 𝔠 𝔡) {K0 : ℕ} (hK0 : 1 / 𝔠 ≤ K0) :
     ∀ᶠ n in atTop, ((sz.L n : ℕ) : ℝ) ^ d ≤ ((sz.W n : ℕ) : ℝ) ^ K0 := by
   obtain ⟨h𝔠, -, hsz, hband, -⟩ := hadm
@@ -308,28 +311,28 @@ end Numerics
 
 section Data
 
-/-- **The rescaled data `D₁` of the slice** (twin of `lwMoment_D`, `Graph/LWMoment.lean:208`): `BAExp14d_dataT` (`S' = svarF(0)`,
+/-- **The rescaled data `D₁` of the slice** (as `lwMoment_D` in `Graph/LWMoment.lean`): `BAExp14d_dataT` (`S' = svarF(0)`,
 `S⁺' = lift(ω_t)`; `S = t S'`, `S⁺ = t S⁺'`, `BAExp14d_val_scale`) at the flow parameters of `n` and the slice of the sample. -/
 def BAMomentGen_D {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) : BALData (Idx d (sz.L n) (sz.W n)) :=
   BAExp14d_dataT d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) t (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
     (BAExp14a_slc sz n ω)
 
-/-- `S' = svarF(0)` is `W^{-d}` on a block and `0` elsewhere (copy of the private `BAExp14d_svar0`, `Graph/BAExp14d.lean:294`). -/
+/-- `S' = svarF(0)` is `W^{-d}` on a block and `0` elsewhere (as the private `BAExp14d_svar0` in `Graph/BAExp14d.lean`). -/
 private theorem BAMomentGen_svar0 {d L W : ℕ} [NeZero L] [NeZero W] (x y : Idx d L W) :
     ((svarF d L W 0 x y : ℝ) : ℂ) = ((W : ℂ) ^ d)⁻¹ * if (split d L W x).1 = (split d L W y).1 then 1 else 0 := by
   have h := BAExp14a_S_apply (d := d) (L := L) (W := W) 1 x y
   simpa [BAlwS] using h
 
-/-- Relaxing the constants of an exponential bound (copy of the private `BAExp14d_relax`). -/
+/-- Relaxing the constants of an exponential bound (as the private `BAExp14d_relax`). -/
 private theorem BAMomentGen_relax {v w u C' c' C c : ℝ} (hw : 0 ≤ w) (hu : 0 ≤ u) (hC : C' ≤ C) (hc : c ≤ c') (hC0 : 0 ≤ C')
     (h : v ≤ C' * w * Real.exp (-(c' * u))) : v ≤ C * w * Real.exp (-(c * u)) :=
   h.trans (mul_le_mul (mul_le_mul_of_nonneg_right hC hw) (Real.exp_le_exp.2 (by nlinarith)) (Real.exp_pos _).le
     (mul_nonneg (hC0.trans hC) hw))
 
-/-- **The constants of the rescaled kernels** (the first half of the proof of `baGtoAGT_holds`, `Graph/BAExp14d.lean:307`; F4 of the
-preflight): for `d ≥ 3`, `Λ`, `κ > 0` there are constants, depending on `(d, Λ, κ)` only, such that for every `0 < g₀ ≤ Λ`, `0 ≤ t < 1`,
+/-- **The constants of the rescaled kernels** (the first half of the proof of `baGtoAGT_holds` in `Graph/BAExp14d.lean`):
+for `d ≥ 3`, `Λ`, `κ > 0` there are constants, depending on `(d, Λ, κ)` only, such that for every `0 < g₀ ≤ Λ`, `0 ≤ t < 1`,
 `BAReal d L g₀ κ E m`, the data with `S = svarF(0)`, `S⁺ = lift(ω_t)`, `M = BAlwM`, `gPsi = g₀ Ψ` have the entry decay with `(C, c)`
-(`C ≥ 1`), the off-block support of `M`, `g₀ Ψ`, and the kernel bounds of `claim:size` with `(K₀, K₁, Kd) = (C, C e^{c}-sum, Kd)`. -/
+(`C ≥ 1`), the off-block support of `M`, `g₀ Ψ`, and the kernel bounds of the claim `Γ ≺ size(Γ)` with `(K₀, K₁, Kd) = (C, C e^{c}-sum, Kd)`. -/
 theorem BAMomentGen_consts (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ C c Kd : ℝ, 1 ≤ C ∧ 0 < c ∧ 0 ≤ Kd ∧
       ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), 0 < g0 → g0 ≤ Λ → BAReal d L g0 κ E m → 0 ≤ t → t < 1 →
@@ -408,8 +411,8 @@ theorem BAMomentGen_consts (d : ℕ) (hd : 3 ≤ d) (Λ κ : ℝ) (hΛ : 0 < Λ)
   exact ⟨hSd, hSpd, hMPd, hoff', lwKBound_of_decay hd hC0 hc0 hSd, lwKBound_of_decay hd hC0 hc0 hSpd, by rw [hDM]; exact hM',
     by rw [hDP]; exact hP'⟩
 
-/-- `claim:size` for a packed graph at data with the kernel bounds of `BAMomentGen_consts` (the BA form of the pathwise estimate of
-`lwMoment_pval_claim`, `Graph/LWMoment.lean:644`): `|Q.val D ℓe| ≤ C_Q size_Ψ(Q)` for `‖G - M‖_max ≤ Ψ`. -/
+/-- The claim `Γ ≺ size(Γ)` for a packed graph at data with the kernel bounds of `BAMomentGen_consts` (the BA form of the pathwise estimate of
+`lwMoment_pval_claim` in `Graph/LWMoment.lean`): `|Q.val D ℓe| ≤ C_Q size_Ψ(Q)` for `‖G - M‖_max ≤ Ψ`. -/
 theorem BAMomentGen_pval_claim {d L W : ℕ} [NeZero L] [NeZero W] {K₀ K₁ Kd Ψ : ℝ} (Q : BAPGraph (Fin 2)) (hQ : Q.g.Normal)
     (D : BALData (Idx d L W)) (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (hS : LWKBound D.S (K₀ * ((W : ℝ) ^ d)⁻¹) K₁)
     (hSp : LWKBound D.Sp (K₀ * ((W : ℝ) ^ d)⁻¹) K₁) (hM : LWKBound D.M Kd Kd) (hP : LWKBound D.gPsi Kd Kd)
@@ -432,10 +435,9 @@ end Data
 
 /-! ## 6. The standing hypotheses, the entry scale and the events
 
-The standing hypotheses of `LWMomentG` at BA (the `baPin` data) are the eight arguments `hd hκ hε h𝔡 hflow ht0 ht1 hassm` of every
-lemma of this section (the BA twin of the band bundle `LWMomentCtx`, `Graph/LWMoment.lean:160`; no new structure).  `hassm` is
-`LWAssmgL (baFMz sz z) (seqP (sz.withLam 0)) t ε₀ Ψ Φ C₁ C₂ C₃ Cc` with `LWLoop2gL` unfolded: the premise scan
-(`Test/Axioms.lean:390-445`) sees `LWAssmgL` and `LWLoop2gL` only inside the pin `LWMomentG`; the callers pass the pin's hypothesis
+The standing hypotheses of `LWMomentG` at BA (the BA data) are the eight arguments `hd hκ hε h𝔡 hflow ht0 ht1 hassm` of every
+lemma of this section (the BA counterpart of the band bundle `LWMomentCtx` in `Graph/LWMoment.lean`; no new structure).  `hassm` is
+`LWAssmgL (baFMz sz z) (seqP (sz.withLam 0)) t ε₀ Ψ Φ C₁ C₂ C₃ Cc` with `LWLoop2gL` unfolded; the callers pass the hypothesis of the statement
 (definitionally equal). -/
 
 section Stoch
@@ -452,7 +454,7 @@ variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t :
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
 omit hd hκ hε h𝔡 hflow ht0 ht1 hassm in
-/-- The control of the pin, `c = 1`: `R = (η_t⁻¹ Φ(0) Φ(1 · |a - b|))^p` (twin of `lwMoment_R`, `Graph/LWMoment.lean:725`). -/
+/-- The dominating function of the statement, `c = 1`: `R = (η_t⁻¹ Φ(0) Φ(1 · |a - b|))^p` (as `lwMoment_R` in `Graph/LWMoment.lean`). -/
 def BAMomentGen_R (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (Φ : ℕ → ℝ → ℝ) (p n : ℕ) (x y : Idx d (sz.L n) (sz.W n)) : ℝ :=
   (((baFMz sz z).eta n (t n))⁻¹ * Φ n 0 * Φ n (1 * ((zdistInf d (sz.L n) (STblk sz n x - STblk sz n y) : ℕ) : ℝ))) ^ p
 
@@ -465,7 +467,7 @@ theorem BAMomentGen_eta_facts (n : ℕ) :
     (ba_G_data hκ sz hflow n (ht0 n) (ht1 n)).1⟩
 
 /-- The scale `Ψ' = max(1, C₃) N^{τ₁} Φ(0)` of the entry bounds on the good event satisfies the window `W^{-d/2} ≤ Ψ'` and
-`Ψ' ≤ W^{-ε₀/2}` for `τ₁ ≤ 𝔠 ε₀/4` (twin of `lwMoment_Psi_facts`, `Graph/LWMoment.lean:731`). -/
+`Ψ' ≤ W^{-ε₀/2}` for `τ₁ ≤ 𝔠 ε₀/4` (as `lwMoment_Psi_facts` in `Graph/LWMoment.lean`). -/
 theorem BAMomentGen_Psi_facts {τ₁ : ℝ} (hτ₁ : 0 ≤ τ₁) (hτ₁' : τ₁ ≤ 𝔠 * ε₀ / 4) :
     ∀ᶠ n in atTop, 0 < Φ n 0 ∧ ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2) ≤
         max 1 C₃ * ((sz.size n : ℕ) : ℝ) ^ τ₁ * Φ n 0 ∧
@@ -504,7 +506,7 @@ theorem BAMomentGen_Psi_facts {τ₁ : ℝ} (hτ₁ : 0 ≤ τ₁) (hτ₁' : τ
       _ = ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) := by
           rw [← Real.rpow_add hW0, ← Real.rpow_add hW0]; congr 1; ring
 
-/-- The event `‖G_t - M‖_max ≤ N^{τ₁} Φ(0)` holds w.h.p. (`(eq:Gbyxi)` entrywise, `baEntryPsi_holds`; twin of
+/-- The event `‖G_t - M‖_max ≤ N^{τ₁} Φ(0)` holds w.h.p. ((7.32) `eq:Gbyxi` entrywise, `baEntryPsi_holds`; as
 `lwMoment_entry_whp`). -/
 theorem BAMomentGen_entry_whp {τ₁ : ℝ} (hτ₁ : 0 < τ₁) :
     HighProbAt (Sizes.seqP (sz.withLam 0)) sz.size (fun n => {ω | ∀ u : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n),
@@ -512,7 +514,7 @@ theorem BAMomentGen_entry_whp {τ₁ : ℝ} (hτ₁ : 0 < τ₁) :
   BAMomentGen_whp_of_prec sz (baEntryPsi_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 ht1 ε₀ C₁ C₂ C₃ Cc Φ
     (BAMomentGen_psiAll hd hκ hε h𝔡 hflow ht0 ht1 hassm) hassm.2.2.2.2.2 ε₀ hassm.1 hassm.2.2.1.1) hτ₁
 
-/-- **The polynomial floor of the control** (row 11 of the preflight; twin of `lwMoment_floor`, `Graph/LWMoment.lean:514`):
+/-- **The polynomial floor of the dominating function** (as `lwMoment_floor` in `Graph/LWMoment.lean`):
 `R ≥ N^{-p(2+C₂)}` for `R = (η⁻¹ Φ(0) Φ(|a-b|))^p`, from `W^{-d/2} ≤ C₃ Φ(0)`, `Φ(0) ≤ Cc(2) C₁ max(1,r)^{C₂} Φ(r)`, `η ≤ 1`. -/
 theorem BAMomentGen_floor (p : ℕ) :
     ∀ᶠ n in atTop, ∀ x y : Idx d (sz.L n) (sz.W n),
@@ -614,7 +616,7 @@ variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t :
       (fun n p _ => Φ n ((zdistInf d (sz.L n) (p.2.1 - p.2.2) : ℕ) : ℝ) ^ 2))
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
-/-- **The decay and the kernel bounds of the rescaled data along the flow** (twin of `lwMoment_decay`, `Graph/LWMoment.lean:343`):
+/-- **The decay and the kernel bounds of the rescaled data along the flow** (as `lwMoment_decay` in `Graph/LWMoment.lean`):
 constants `(C, c, Kd)` depending on `(d, 𝔡, κ)` only, and for large `n` the facts of `BAMomentGen_consts` at the data of every
 sample (the flow has `0 < g₀ ≤ 𝔡⁻¹` eventually, `BAflow_lam0_window`; `BAReal` and `t < 1` from `ba_G_data`). -/
 theorem BAMomentGen_decay : ∃ C c Kd : ℝ, 1 ≤ C ∧ 0 < c ∧ 0 ≤ Kd ∧ ∀ᶠ n in atTop, ∀ ω : sz.SeqΩ,
@@ -637,7 +639,7 @@ theorem BAMomentGen_decay : ∃ C c Kd : ℝ, 1 ≤ C ∧ 0 < c ∧ 0 ≤ Kd ∧
     (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) hn.1 hn.2 hr (ht0 n) ht1' (BAMomentGen_D sz z n (t n) ω) rfl rfl rfl rfl
 
 /-- **errs** (and any output with a `W^{-D}` size bound): the size bound at the entry scale `Ψ'` gives `≤ N^{-K_f} ≤ R`
-(twin of `lwMoment_prec_err`, `Graph/LWMoment.lean:827`). -/
+(as `lwMoment_prec_err` in `Graph/LWMoment.lean`). -/
 theorem BAMomentGen_prec_err (p : ℕ) {K0 : ℕ} {D : ℝ} (hK0 : 1 / 𝔠 ≤ K0) (hD : ((p : ℝ) * (2 + C₂) + 1) / 𝔠 ≤ D)
     {V : ℕ → Type} (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) {Q : BAPGraph (Fin 2)}
     (hQ : Q.g.Normal)
@@ -690,7 +692,7 @@ theorem BAMomentGen_prec_err (p : ℕ) {K0 : ℕ} {D : ℝ} (hK0 : 1 / 𝔠 ≤ 
 
 end Outputs
 
-/-! ## 8. The scale-mole tail: two external vertices in one molecule (`(eq:far_ab)`, `7_8:955-958`) -/
+/-! ## 8. The scale-mole tail: two external vertices in one molecule ((7.12) `eq:far_ab`) -/
 
 section Scalemole
 
@@ -700,7 +702,7 @@ variable {d L W : ℕ} [NeZero L] [NeZero W] {E I : Type} [Fintype E] [Decidable
 theorem BAMomentGen_mem_mol_self (Γ : BAGraph E I) (v : E ⊕ I) : v ∈ Γ.mol v :=
   (BAGraph.mem_mol_iff Γ v v).2 Relation.ReflTransGen.refl
 
-/-- **The BA scale-mole tail** (twin of `lwScalemole_holds`, `Graph/AuxGraph.lean:1130`; L4-C4 (b)): if the labels of two external
+/-- **The BA scale-mole tail** (as `lwScalemole_holds` in `Graph/AuxGraph.lean`): if the labels of two external
 vertices of one molecule are at block distance `> |E ⊕ I| r`, no labelling is confined (`BAAtom_shadow_conf` and
 `auxGraph_mol_dist` on the shadow, whose molecules are those of `Γ`), so the tail bound `BAAtom_term_tail` applies to every term and
 `BAAtom_tail_sum` sums it.  This covers every `x ~ y` (an atom is inside a molecule, `BALocReg1_mol_of_atom`). -/
@@ -766,8 +768,8 @@ variable (hd : 3 ≤ d) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow 
       (fun n p _ => Φ n ((zdistInf d (sz.L n) (p.2.1 - p.2.2) : ℕ) : ℝ) ^ 2))
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
-/-- **Outputs with `𝓜_x = 𝓜_y` at far pairs** (`(eq:far_ab)`, `7_8:955-958`; twin of `lwMoment_prec_scale`,
-`Graph/LWMoment.lean:925`): the value is at most the tail `e^{-c r/2} C' size(Γ)` with `r = (log W)²`, which is `≤ N^{-K_f} ≤ R`. -/
+/-- **Outputs with `𝓜_x = 𝓜_y` at far pairs** ((7.12) `eq:far_ab`; as `lwMoment_prec_scale` in `Graph/LWMoment.lean`):
+the value is at most the tail `e^{-c r/2} C' size(Γ)` with `r = (log W)²`, which is `≤ N^{-K_f} ≤ R`. -/
 theorem BAMomentGen_prec_scale (p : ℕ) {V : ℕ → Type} (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     {Q : BAPGraph (Fin 2)} (hQ : Q.g.Normal) (hmol : Q.g.mol (Sum.inl (Q.ext 0)) = Q.g.mol (Sum.inl (Q.ext 1))) {K : ℕ}
     (hK : Fintype.card (Q.E' ⊕ Q.I') ≤ K)
@@ -841,7 +843,7 @@ theorem BAMomentGen_prec_scale (p : ℕ) {V : ℕ → Type} (pr : ∀ n, V n →
     exact Real.rpow_nonneg hN0.le _
 
 omit hd hκ hε h𝔡 hflow ht0 ht1 hassm in
-/-- The scaling of the auxiliary value in the edge variables (copy of the band `lwMoment_auxVal_smul`, whose statement is for an
+/-- The scaling of the auxiliary value in the edge variables (as the band `lwMoment_auxVal_smul`, whose statement is for an
 `LGraph`; here at the shadow, which is `BAGraph.auxVal`). -/
 theorem BAMomentGen_auxVal_smul {κ' : Type} [Fintype κ'] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
     [DecidableEq I] (Γ : BAGraph E I) (ξ : κ' → κ' → ℝ) (s : ℝ) (be : E → κ') :
@@ -865,10 +867,10 @@ theorem BAMomentGen_be_eq {d L W : ℕ} [NeZero L] [NeZero W] (Q : BAPGraph (Fin
   · have hne : Q.ext 1 ≠ Q.ext 0 := fun h => hxy (by rw [h])
     simp [e1, hne]
 
-/-- **Outputs with `𝓜_x ≠ 𝓜_y`** (`7_8:907-950`; twin of `lwMoment_prec_anp`, `Graph/LWMoment.lean:1034`): G3 at the rescaled
-kernels (`baGtoAGT_holds`, no `hext`) against the edge variables `N^{τ₁} ζ`, `ζ = baZetaVar` at the radius `ρ = (2K+1)(log W)²` (F1 of
-the preflight: `baGbyZeta_holds` needs `ρ - 2R ≥ K' log W`), the claim `LWXigL` (`baZetaClaim_holds`), `(eq:Gbyxi2_BA)`
-(`baGbyZeta_holds`) and `lem:Anp` at the BA carrier (`hAnpQ`, the pin `BAAnpAuxG` instantiated at `Q` and at the data); `n_M ≤ p`, `ord ≥ 2p`, `Φ(c r) ≲ Φ(r)` (`(eq:Psi)`);
+/-- **Outputs with `𝓜_x ≠ 𝓜_y`** (Lemmas 7.21 and 7.22; as `lwMoment_prec_anp` in `Graph/LWMoment.lean`): `GtoAG` at the rescaled
+kernels (`baGtoAGT_holds`, no `hext`) against the edge variables `N^{τ₁} ζ`, `ζ = baZetaVar` at the radius `ρ = (2K+1)(log W)²` (`baGbyZeta_holds` needs `ρ - 2R ≥ K' log W`),
+the claim `LWXigL` (`baZetaClaim_holds`), (B.22) `eq:Gbyxi2_BA`
+(`baGbyZeta_holds`) and `lem:Anp` at the BA carrier (`hAnpQ`, `BAAnpAuxG` instantiated at `Q` and at the data); `n_M ≤ p`, `ord ≥ 2p`, `Φ(c r) ≲ Φ(r)` ((3.28) `eq:Psi`);
 the tail is `≤ N^{-K_f} ≤ R`. -/
 theorem BAMomentGen_prec_anp {p : ℕ} (hp : 0 < p) {V : ℕ → Type}
     (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) {Q : BAPGraph (Fin 2)}
@@ -1091,8 +1093,8 @@ variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t :
       (fun n p _ => Φ n ((zdistInf d (sz.L n) (p.2.1 - p.2.2) : ℕ) : ℝ) ^ 2))
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
-/-- **The polynomial envelope** `‖Q.val D₁‖ ≤ N^{K}`, every sample, with `K` depending on the graph only (twin of `lwMoment_env`,
-`Graph/LWMoment.lean:673`; `‖G - M‖ ≤ η⁻¹ + 1 ≤ 2 η⁻¹ ≤ 2 N²`). -/
+/-- **The polynomial envelope** `‖Q.val D₁‖ ≤ N^{K}`, every sample, with `K` depending on the graph only (as `lwMoment_env`
+in `Graph/LWMoment.lean`; `‖G - M‖ ≤ η⁻¹ + 1 ≤ 2 η⁻¹ ≤ 2 N²`). -/
 theorem BAMomentGen_env (Q : BAPGraph (Fin 2)) (hQ : Q.g.Normal) :
     ∃ Kenv : ℝ, ∀ᶠ n in atTop, ∀ (x y : Idx d (sz.L n) (sz.W n)) (ω : sz.SeqΩ),
       ‖Q.val (BAMomentGen_D sz z n (t n) ω) ![x, y]‖ ≤ ((sz.size n : ℕ) : ℝ) ^ Kenv := by
@@ -1139,8 +1141,8 @@ theorem BAMomentGen_env (Q : BAPGraph (Fin 2)) (hQ : Q.g.Normal) :
     _ = N ^ ((Q.g.nM + Q.g.nA + 3 * Q.g.nS + 1 : ℕ) : ℝ) := by
         rw [Real.rpow_natCast, ← pow_mul]; ring
 
-/-- From `≺` of `‖Q.val D₁‖` to `≺` of `‖𝔼 Q.val D₁‖` (`BAExp14a_prec_integral`: polynomial envelope and floor; twin of
-`lwMoment_prec_int`, `Graph/LWMoment.lean:1252`). -/
+/-- From `≺` of `‖Q.val D₁‖` to `≺` of `‖𝔼 Q.val D₁‖` (`BAExp14a_prec_integral`: polynomial envelope and floor; as
+`lwMoment_prec_int` in `Graph/LWMoment.lean`). -/
 theorem BAMomentGen_prec_int (p : ℕ) {V : ℕ → Type} (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     {Q : BAPGraph (Fin 2)} (hQ : Q.g.Normal)
     (hprec : PrecL sz (Sizes.seqP (sz.withLam 0)) (U := V)
@@ -1248,9 +1250,9 @@ variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t :
   (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n ≤ BAflowT0 sz z n)
 include hκ hflow ht0 ht1
 
-/-- **The expansion identity** (`7_8:943-945`; twin of `lwMoment_expand`, `Graph/LWMoment.lean:258`): from the engine lists, at a sample size
+/-- **The expansion identity** (the expansion in the proof of Lemma 7.22; as `lwMoment_expand` in `Graph/LWMoment.lean`): from the engine lists, at a sample size
 with `0 < t < 1`, `𝔼 |f_{xy}|^p ≤ Σ_Q ‖𝔼 Q.val D₁‖` (`BALocRegConcl` (d) for the start graph at the data `BAlwData` over the model law,
-transported to the sample space through the slice; target 1 (b); the homogeneity `BAExp14d_val_scale`: `Q.val (BAlwData) = t^{n_W} Q.val D₁`,
+transported to the sample space through the slice; `LWfg_baFMz`; the homogeneity `BAExp14d_val_scale`: `Q.val (BAlwData) = t^{n_W} Q.val D₁`,
 `n_W ≥ p` by the lists' `n_{W,black} ≥ p`, `t < 1`).  The integrability of the summands is a hypothesis (proved for large `n` from the
 envelope). -/
 theorem BAMomentGen_expand {p : ℕ} (hp : Even p) (n : ℕ) {c : ℝ} {K0 : ℕ} {D : ℝ} {outs errs : List (BAPGraph (Fin 2))}
@@ -1351,12 +1353,12 @@ section FarAssembly
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t : ℕ → ℝ} {ε₀ C₁ C₂ C₃ : ℝ} {Cc : ℝ → ℝ} {Ψ : ℕ → ℝ}
   {Φ : ℕ → ℝ → ℝ}
 
-/-- The far pairs `(x, y)`: block distance `> K (log W)²` (twin of `LWMomFar`, `Graph/LWMoment.lean:1233`). -/
+/-- The far pairs `(x, y)`: block distance `> K (log W)²` (as `LWMomFar` in `Graph/LWMoment.lean`). -/
 def BAMomentGen_Far (sz : Sizes d) (K : ℕ) (n : ℕ) : Type :=
   {q : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) //
     (K : ℝ) * Real.log ((sz.W n : ℕ) : ℝ) ^ 2 < (lwBdist d (sz.L n) (sz.W n) q.1 q.2 : ℝ)}
 
-/-- At `t = 0` the carrier `f_{xy}` vanishes (`Ǧ = 0`: `G - M = -M (√t V + t m) G`; twin of `lwMoment_LWf_zero`). -/
+/-- At `t = 0` the carrier `f_{xy}` vanishes (`Ǧ = 0`: `G - M = -M (√t V + t m) G`; as `lwMoment_LWf_zero`). -/
 theorem BAMomentGen_LWfg_zero (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ)
     (h1 : (0 : ℝ) ≤ BAflowT0 sz z n) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
     LWfg (baFMz sz z) n 0 ω x y = 0 := by
@@ -1401,8 +1403,8 @@ variable {p : ℕ}
           Φ n (cG * ((zdistInf d (sz.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ p * Φ n 0 ^ (Q.g.auxOrd - (p : ℤ)))
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm hAnpL
 
-/-- Every graph `Q` of the engine lists has `‖𝔼 Q.val D₁‖ ≺ R` at the far pairs (twin of `lwMoment_prec_far_r`,
-`Graph/LWMoment.lean:1266`).  `h15` is the contract (1)-(5) at the outputs: `n_M ≤ p` and (3)-(5) on the shadow (`BALocReg15`);
+/-- Every graph `Q` of the engine lists has `‖𝔼 Q.val D₁‖ ≺ R` at the far pairs (as `lwMoment_prec_far_r`
+in `Graph/LWMoment.lean`).  `h15` is the contract (1)-(5) at the outputs: `n_M ≤ p` and (3)-(5) on the shadow (`BALocReg15`);
 (6) `2p ≤ ord` is read from the conjunct (a) of `BALocRegConcl`. -/
 theorem BAMomentGen_prec_far_r (hp0 : 0 < p) {K0 : ℕ} {D : ℝ} (hK0 : 1 / 𝔠 ≤ K0)
     (hD : ((p : ℝ) * (2 + C₂) + 1) / 𝔠 ≤ D) {outs errs : List (BAPGraph (Fin 2))}
@@ -1429,10 +1431,10 @@ theorem BAMomentGen_prec_far_r (hp0 : 0 < p) {K0 : ℕ} {D : ℝ} (hK0 : 1 / �
     · exact BAMomentGen_prec_err hd hκ hε h𝔡 hflow ht0 ht1 hassm p hK0 hD (V := BAMomentGen_Far sz K) (fun n v => v.1) hQ (hc2 Q h)
   exact BAMomentGen_prec_int hd hκ hε h𝔡 hflow ht0 ht1 hassm p (V := BAMomentGen_Far sz K) (fun n v => v.1) hQ key
 
-/-- **The far pairs** (`7_8:943-950`; twin of `lwMoment_prec_far`, `Graph/LWMoment.lean:1303`): from the engine lists
+/-- **The far pairs** (proof of Lemma 7.1; as `lwMoment_prec_far` in `Graph/LWMoment.lean`): from the engine lists
 (`ba_localregularX_holds`), `𝔼 |f_{xy}|^p ≺ R` for the pairs at block distance `> K (log W)²`, `K ≥` the number of vertices of
 every graph of the lists.  The `n`-th expansion is at the flow data of `n`; the outputs with `𝓜_x ≠ 𝓜_y` use `lem:Anp` at BA (`hAnpL`),
-those with `𝓜_x = 𝓜_y` use `(eq:far_ab)`, the errors use the size bound. -/
+those with `𝓜_x = 𝓜_y` use (7.12) `eq:far_ab`, the errors use the size bound. -/
 theorem BAMomentGen_prec_far (hp : Even p) (hp0 : 0 < p) {K0 : ℕ} {D : ℝ} (hK0 : 1 / 𝔠 ≤ K0)
     (hD : ((p : ℝ) * (2 + C₂) + 1) / 𝔠 ≤ D) {outs errs : List (BAPGraph (Fin 2))}
     (hc : BALocRegConcl p (ε₀ / 2) K0 d D outs errs)
@@ -1483,11 +1485,6 @@ theorem BAMomentGen_prec_far (hp : Even p) (hp0 : 0 < p) {K0 : ℕ} {D : ℝ} (h
       (fun _ => rfl) (fun _ => rfl) (fun _ => rfl) (fun _ => rfl) Q ![v.1.1, v.1.2]
 
 end FarAssembly
-
-/-! ## 14. Compiled nonempty instances of targets 1-3
-
-Data (`BA/LWPinsBA.lean` §3): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`), the flow `flow_sz0`, `z = zSeq`, `t ≡ 1/2`.  The instance of
-target 4 is in `Graph/BAMomentGenB.lean` §4. -/
 
 end RBM.BA
 

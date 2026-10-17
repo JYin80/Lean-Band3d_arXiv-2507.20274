@@ -13,26 +13,21 @@ import RBM3D.BA.Step1Boot
 import RBM3D.BA.Prop5Short
 
 /-!
-# BA-L L3c3a, part 2: `claim:xi`, `(eq:Gbyxi2_BA)` and the bridge to G3, G4 (T2435)
+# The claim (7.34) and (B.22) `eq:Gbyxi2_BA` at block Anderson (part 2)
 
-Paper: arXiv:2507.20274 (`B:line` is `paper/tex/B_graphical_lemmas.tex:line`): `(Gyiyjatom)`
-`B:424-426`, `(eq:Gbyxi2_BA)` `B:428-431`, `(G_by_auxG_BA)` `B:486-490`, G4 `B:491-497`;
-`paper/tex/7_8_light_weight.tex:870-890` (`(eq:Gbyxi)`, `(eq:xia1a2)`, `claim:xi`) and `:1916-1946`
+Paper: (B.21) `Gyiyjatom`, (B.22) `eq:Gbyxi2_BA`, (B.25) `G_by_auxG_BA` and the end of the proof of
+Lemma B.7; (7.32) `eq:Gbyxi`, (7.33) `eq:xia1a2`, the claim stating (7.34) `eq:Gbyxi2`; Lemma 8.4
 (`lem_GbEXP_BA`).  Part 1 is `RBM3D/Graph/BAAuxGraph2.lean` (`ζ`, `LWXigL`, the Ward sum, the
-helpers); the basis is `RBM3D/Graph/AuxGraph2.lean` `:946-1500`.
+helpers); the band counterpart is `RBM3D/Graph/AuxGraph2.lean`.
 
-* Section 4: `claim:xi` at BA (`BAZetaClaim`, `baZetaClaim_holds`: `LWXigL (baFMz sz z)
-  (seqP (sz.withLam 0)) t Φ ζ`), twin of `LWXiClaim`.
-* Section 5: `(eq:Gbyxi2_BA)` for all `x, y` (`BAGbyZeta`, `baGbyZeta_holds`, `baGbyZeta_hxi`)
-  by the sample-wise route: the deterministic core `GreenOff_carrier_decay`
-  (`BA/GreenOff.lean:916`, all `x, y`, `x = y` included) at `φ = ‖𝓛_{(-,+)}‖^{1/2}`,
-  `Ψ = W^{-d/2}`, then the kernel `𝔗_γ` against `ζ` (Cauchy-Schwarz inside the `ρ`-window, the
-  tail outside).  No unprimed `BAGbEXPij`, no loop premise (paper-delta candidate `T2435c`).
-  Also the entrywise `BAEntryPsi`, `baEntryPsi_holds` (via `baGbEXPii_holds`), twin of
-  `LWEntryPsi`.
-* Section 6: G4 on the BA carrier `BAAnpAuxG` (a pin; owner L3d1).
-* Section 7: compiled nonempty instances at the `d = 3` data of `BA/LWPinsBA.lean` §3 (`sz0`,
-  `flow_sz0`, `t ≡ 1/2`, `ε₀ = 1/10`).
+* Section 4: the claim (7.34) at BA (`BAZetaClaim`, `baZetaClaim_holds`: `LWXigL (baFMz sz z)
+  (seqP (sz.withLam 0)) t Φ ζ`), as `LWXiClaim`.
+* Section 5: (B.22) for all `x, y` (`BAGbyZeta`, `baGbyZeta_holds`), sample-wise: the deterministic
+  core `GreenOff_carrier_decay` (`BA/GreenOff.lean`, all `x, y`, `x = y` included) at
+  `φ = ‖𝓛_{(-,+)}‖^{1/2}`, `Ψ = W^{-d/2}`, then the kernel `𝔗_γ` against `ζ` (Cauchy-Schwarz inside
+  the `ρ`-window, the tail outside).  No loop hypothesis.  Also the
+  entrywise `BAEntryPsi`, `baEntryPsi_holds` (via `baGbEXPii_holds`), as `LWEntryPsi`.
+* Section 6: the statement `BAAnpAuxG` (the auxiliary graph bound at the BA carrier).
 
 The floor exponent `D₁` of `ζ²` satisfies `D₁ ≥ max (d + 2 C₂/(𝔠 d) + 1) (1/𝔠)` in `BAZetaClaim`:
 the first for `W^{-D₁} ≤ Φ(ℓ)²` on `ℓ ≤ L`, the second for the floor of the Ward sum.
@@ -59,13 +54,13 @@ open MeasureTheory Filter
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.BA
 open scoped Matrix
 
-/-! ## 4. `claim:xi` at BA (target 3) -/
+/-! ## 4. The claim (7.34) at BA -/
 
-/-- **Target 3, `claim:xi` at BA** (`7_8:884-890`, `(eq:Gbyxi2_BA)` `B:428-431`; twin of `LWXiClaim`, `AuxGraph2:951`): at the `baPin` data
-(law `seqP (sz.withLam 0)`, setting `BAFlow`, carrier `baFMz`, horizon `BAflowT0`), under `(LW_assm)` for a class `Φ` with `(eq:Psi)`
+/-- **The claim (7.34) `eq:Gbyxi2` at BA** ((B.22) `eq:Gbyxi2_BA`; as `LWXiClaim`): at the BA data
+(law `seqP (sz.withLam 0)`, setting `BAFlow`, carrier `baFMz`, horizon `BAflowT0`), under (3.27) `eq:LW_assm` for a class `Φ` with (3.28) `eq:Psi`
 and `‖G_t - M‖_max ≺ W^{-ε₁}`, the variables `baZetaVar` at a radius `ρ = N^{o(1)}` and a floor exponent
 `D₁ ≥ max (d + 2 C₂/(𝔠 d) + 1) (1/𝔠)` satisfy `LWXigL`: symmetric, non-negative, `ζ([a₁],[a₂]) ≺ Ψ_t(|a₁ - a₂|)` and
-`Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η_t)⁻¹` (Ward's identity, block form `T2435d`). -/
+`Σ_{a₂} ζ([a₁],[a₂])² ≺ (W^d η_t)⁻¹` (Ward's identity, block form). -/
 def BAZetaClaim (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -230,7 +225,7 @@ theorem baZetaClaim_holds (d : ℕ) : BAZetaClaim d := by
     have := mul_le_mul_of_nonneg_right hq hQ0.le
     linarith
 
-/-! ## 5. `(eq:Gbyxi2_BA)` and the entrywise bound (targets 4 and 5) -/
+/-! ## 5. (B.22) `eq:Gbyxi2_BA` and the entrywise bound -/
 
 section Kernel
 
@@ -248,7 +243,7 @@ private theorem BAAuxGraph2B_sum_exp_le (hd : 2 ≤ d) {c : ℝ} (hc : 0 < c) (A
 private theorem BAAuxGraph2B_expC_nonneg (k : ℕ) {c : ℝ} (hc : 0 < c) : 0 ≤ expC k c := by
   unfold expC; positivity
 
-/-- **The kernel `𝔗_γ(φ, Ψ)` against `ζ`** (the lattice part of `(eq:Gbyxi2_BA)`; paper-delta candidate `T2435c`).  `φ ∈ [0, 2]`, `Ψ ∈ [0, 1]`, blocks `A`, `C` within `zdistD`-distance `R`
+/-- **The kernel `𝔗_γ(φ, Ψ)` against `ζ`** (the lattice part of (B.22) `eq:Gbyxi2_BA`).  `φ ∈ [0, 2]`, `Ψ ∈ [0, 1]`, blocks `A`, `C` within `zdistD`-distance `R`
 of `a`, `b`, `s ≤ ρ - 2R`:
 `𝔗_γ(A, C) ≤ (S + 1) Z + 2 F`, `S = expC (d-2) (γ/2)`, where `Z² ≥ Σ_{|a'-a|, |b'-b| ≤ ρ} φ²` (Cauchy-Schwarz inside the window),
 `Z ≥ Ψ` when `|a - b| ≤ ρ`, and the tails `4 S² e^{-γ s/2} ≤ F`, `Ψ e^{-γ s} ≤ F` (outside the window). -/
@@ -475,7 +470,7 @@ theorem BAAuxGraph2B_loop_le (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ
         push_cast
         field_simp
 
-/-- `W^{-d} ≤ (W^{-ε'})²` for `2 ε' ≤ d`, `W ≥ 1` (private copy of `GreenLocal:wd_le`). -/
+/-- `W^{-d} ≤ (W^{-ε'})²` for `2 ε' ≤ d`, `W ≥ 1`. -/
 theorem BAAuxGraph2B_wd_le {W ε' : ℝ} (hW : 1 ≤ W) (hε' : ε' ≤ (d : ℝ) / 2) : (W ^ d)⁻¹ ≤ (W ^ (-ε')) ^ 2 := by
   have hW0 : 0 < W := by linarith
   rw [← Real.rpow_natCast, ← Real.rpow_neg hW0.le, ← Real.rpow_natCast, ← Real.rpow_mul hW0.le]
@@ -505,7 +500,7 @@ theorem BAAuxGraph2B_floor_zeta (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ →
     linarith
   rw [h1]; exact h2.trans h3
 
-/-- **The lattice step of `(eq:Gbyxi2_BA)`** (sample form): if `‖(G_t - M)_{xy}‖ ≤ C_ℓ 𝔗_γ(φ, Ψ)([x], [y])` for all `x, y` at
+/-- **The lattice step of (B.22) `eq:Gbyxi2_BA`** (sample form): if `‖(G_t - M)_{xy}‖ ≤ C_ℓ 𝔗_γ(φ, Ψ)([x], [y])` for all `x, y` at
 `φ = ‖𝓛_{(-,+)}‖^{1/2}`, `Ψ = W^{-d/2}`, and `‖G‖_max ≤ 2`, then `‖(G_t - M)_{xy}‖ ≤ C_ℓ ((S + 1) ζ(a, b) + 2F)` for `x`, `y` within
 `R` of `a`, `b`, with `S = expC (d-2) (γ/2)` and the tails `4 S² e^{-γ s/2} ≤ F`, `W^{-d/2} e^{-γ s} ≤ F`, `s ≤ ρ - 2R`. -/
 theorem BAAuxGraph2B_zeta_bound (hd : 2 ≤ d) (sz : Sizes d) (z : ℕ → ℂ) (t ρ : ℕ → ℝ) (D₁ : ℝ) (n : ℕ) (ω : sz.SeqΩ)
@@ -580,9 +575,9 @@ abbrev BAGbyZetaU {d : ℕ} (sz : Sizes d) (R : ℕ → ℝ) (n : ℕ) : Type :=
     (zdistD d (sz.L n) ((split d (sz.L n) (sz.W n) q.1.1).1 - q.2.1) : ℝ) ≤ R n ∧
     (zdistD d (sz.L n) ((split d (sz.L n) (sz.W n) q.1.2).1 - q.2.2) : ℝ) ≤ R n}
 
-/-- **Target 4, `(eq:Gbyxi2_BA)` (a)** (`B:428-431`; twin of `LWGbyXi`, `AuxGraph2:1106`): `‖(G_t - M)_{xy}‖ ≺ ζ(a, b)` for all `x, y`
+/-- **(B.22) `eq:Gbyxi2_BA` (a)** (as `LWGbyXi`): `‖(G_t - M)_{xy}‖ ≺ ζ(a, b)` for all `x, y`
 (`x = y` included) and the blocks `a`, `b` at `zdistD`-distance `≤ R` from `[x]`, `[y]` (`R ≥ 0`, `ρ - 2R ≥ K log W` eventually for every `K`);
-no `LWPsiAll`, no `LWLoop2gL`, no unprimed `BAGbEXPij`.  The floor exponent `D₁` is arbitrary. -/
+no `LWPsiAll`, no `LWLoop2gL`.  The floor exponent `D₁` is arbitrary. -/
 def BAGbyZeta (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -610,7 +605,7 @@ private theorem BAAuxGraph2B_card_off (n : ℕ) :
       ≤ Fintype.card (Vtx d (sz.L n) (sz.W n) × Vtx d (sz.L n) (sz.W n)) := Fintype.card_subtype_le _
     _ = sz.size n ^ 2 := by rw [Fintype.card_prod, BAAuxGraph2B_card_vtx, sq]
 
-/-- A per-time domination over a polynomially small parameter set gives a high probability event (private copy of `GreenOff_whp`). -/
+/-- A per-time domination over a polynomially small parameter set gives a high probability event (as `GreenOff_whp`). -/
 private theorem BAAuxGraph2B_whp {Ω : Type*} [MeasurableSpace Ω] {P : MeasureTheory.Measure Ω} {size : ℕ → ℕ}
     {V : ℕ → Type*} [∀ n, Fintype (V n)] {m : ℕ} (hV : ∀ n, Fintype.card (V n) ≤ size n ^ m)
     {ξ ζ : ∀ n, V n → Ω → ℝ} (h : Path.PerTimeDomAt P size ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
@@ -763,7 +758,7 @@ theorem baGbyZeta_holds (d : ℕ) : BAGbyZeta d := by
   exact absurd hq (not_lt.2 step)
 
 /-- **Removing the indicator of `Ω(t, A)`** (`indMax`) from a domination `1(Ω) ξ ≺ ζ` over a carrier `C` and a law `μ` when `‖G_t - M‖_max ≤ A`
-holds w.h.p. (twin of `auxGraph2_remove_indicator`, `AuxGraph2:681`). -/
+holds w.h.p. (as `auxGraph2_remove_indicator` in `Graph/AuxGraph2.lean`). -/
 private theorem BAAuxGraph2B_remove_indicator {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) (C : FlowFM sz) (t A : ℕ → ℝ)
     (hsize : sz.SizeTendsto) {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ}
     (hΩ : HighProbAt μ sz.size (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n), ‖C.GM n (t n) ω x y‖ ≤ A n}))
@@ -781,8 +776,8 @@ private theorem BAAuxGraph2B_remove_indicator {d : ℕ} (sz : Sizes d) (μ : Mea
     rw [e]
     exact h
 
-/-- **Target 5, `(eq:Gbyxi)` entrywise** (`B:428-431`, the `Ψ_t(0) δ_{xy}` term; twin of `LWEntryPsi`, `AuxGraph2:1177`): `‖G_t - M‖_max ≺ Ψ_t(0)`
-at all pairs (G3's `‖D.G - D.M‖ ≤ Ψ`), from `(GiiGEX)` (`baGbEXPii_holds`) and `(LW_assm)`. -/
+/-- **(7.32) `eq:Gbyxi` entrywise** (the `Ψ_t(0) δ_{xy}` term, as in (B.22); as `LWEntryPsi`): `‖G_t - M‖_max ≺ Ψ_t(0)`
+at all pairs (the entry bound `‖D.G - D.M‖ ≤ Ψ` of the auxiliary-graph bound), from (3.2) `GiiGEX` (`baGbEXPii_holds`) and (3.27) `eq:LW_assm`. -/
 def BAEntryPsi (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -837,12 +832,13 @@ theorem baEntryPsi_holds (d : ℕ) : BAEntryPsi d := by
       _ = (X ^ τ * Φ n 0) ^ 2 := by ring
   linarith
 
-/-! ## 6. Target 6: G4 on the BA carrier (a pin; owner L3d1) -/
+/-! ## 6. The auxiliary graph bound at the BA carrier -/
 
-/-- **G4 on the BA carrier** (`B:491-497`, **the pin of L3d1**): `BAAnpAux` (`BAAtom2:677`) with the BA data (`BAFlow`, `BAflowT0`, carrier
-`baFMz`, law `seqP (sz.withLam 0)`, `PrecL`) and the carrier form `LWXigL` of `LWXi` (`η = C.eta`).  Pin only: `lwAnp_holds` is stated for
-`Prec sz`, `STFlow`, `etaT`, and the `AnpKey*` chain has no law argument, so the statement at `μ`, `C.eta` needs the chain restated over the
-carrier (L3d1). -/
+/-- **The auxiliary graph bound at the BA carrier** (end of the proof of Lemma B.7): the nested-graph bound of Lemma 7.22
+(`lem:Anp`) for the auxiliary graph, with the BA data (`BAFlow`, `BAflowT0`, carrier
+`baFMz`, law `seqP (sz.withLam 0)`, `PrecL`) and the carrier form `LWXigL` of `LWXi` (`η = C.eta`).  `lwAnp_holds` is stated for
+`Prec sz`, `STFlow`, `etaT`, and the `AnpKey*` chain has no law argument, so the statement at `μ`, `C.eta` is proved separately
+(`baAnpAuxG_holds` in `Graph/BAAnpLift.lean`). -/
 def BAAnpAuxG (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (p : ℕ) (P : BAPGraph (Fin 2)), 0 < p → P.g.nM ≤ p → (BAShadowPG P).LocReg345 p →
@@ -857,13 +853,6 @@ def BAAnpAuxG (d : ℕ) : Prop :=
                   (fun n ab ω => P.g.auxVal (fun α β => ξ n α β ω) (fun e => if e = P.ext 0 then ab.1 else ab.2))
                   (fun n ab _ => ((((sz.W n : ℕ) : ℝ) ^ d) * (baFMz sz z).eta n (t n))⁻¹ ^ P.g.nM *
                     Φ n (c * ((zdistInf d (sz.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ p * Φ n 0 ^ (P.g.auxOrd - p))
-
-/-! ## 7. Compiled nonempty instances at the `d = 3` data of `BA/LWPinsBA.lean` §3
-
-`d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`), the flow `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `t ≡ 1/2 ≤ T₀`), the class
-`Φ0 ≡ W^{-1/2}` (`LWPsiAll` with `ε₀ = 1/10`, `C₁ = C₂ = 2`, `C₃ = 1`, `Cc ≡ 1`), `ε₁ = 1/20`, `D₁ = 12 = max (d + 2 C₂/(𝔠 d) + 1) (1/𝔠)`,
-`R = (log W)^{21/20}`, `ρ = 2R + (log W)^{3/2}`.  What stays a hypothesis is another gate's input: `LWLoop2gL` and the entry law
-`‖G_t - M‖_max ≺ W^{-1/20}`, and the pin `BAAnpAuxG 3` (owner L3d1). -/
 
 end RBM.Graph
 

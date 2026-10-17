@@ -6,30 +6,27 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExpandWOrd
 
 /-!
-# BA-L2c1: the weight expansion `lem_lweight` (B.19) as a graph operation (T2407)
+# The weight expansion `lem_lweight` (B.19) as a graph operation
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:376-387` (cited `B:line`;
-`lem_lweight` = `(eq:LW)`, [yang2024Del, Lemma B.10]).  The identity of the polynomial `f` is
-`baLweight_holds` (`Graph/BAExpandW.lean`); this file is its graph form at a self-loop `Ǧ_{xx}`.
-Under Amend 1 the term lists are those of the T2395 probe
-(`t/T2395:RBM3D/Probe/T2395Pins.lean` at `4c1de4c`), copied verbatim.
+Paper: Lemma B.7 (`lem_lweight`), (B.19) `eq:LW` ([yang2024Del, Lemma B.10]).  The identity of the
+polynomial `f` is `baLweight_holds` (`Graph/BAExpandW.lean`); this file is its graph form at a
+self-loop `Ǧ_{xx}`.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAWeightOp_`)
 
-1. **Target 1**: `BAGraph.ext`, `bpv`, `bpS`, `bpM`, `bpW`, `BAGraph.lw2`, `BAGraph.lw4` (probe
-   lines 105-126), `baSum` (probe lines 239-241).
-2. **Target 2** (`baExpFrame_lw`, the first conjunct of `BAexpFrameE`):
+1. **The term lists**: `BAGraph.ext`, `bpv`, `bpS`, `bpM`, `bpW`, `BAGraph.lw2`, `BAGraph.lw4`,
+   `baSum`.
+2. **The value identity** (`baExpFrame_lw`, the first conjunct of `BAexpFrameE`):
    `𝔼 Γ.val = 𝔼 (baSum (Γ.lw2 p) + baSum (Γ.lw4 p))` at `BAlwData` over `PF d L W 0`, for a circled
    blue self-loop `p.1`.  It follows from `baLweight_holds` and `W = 1 + M⁺ (S W)` (`baW_mul`,
    `BAWeightOp_W_sub_one`), pathwise on the sequence space (`BAWeightOp_pathwise`,
    `BAWeightOp_core`) and transported by `lwWx_integral`.
-3. **Target 3** (`T°` is `T` with every solid edge circled, `BAWeightOp_circ`): the raw counters of
-   the terms (`lw_counters`: `n_W + 1`, `n_A + 1` for `lw2`, `n_W + 2`, `n_A + 2` for `lw4`, `n_M`
-   fixed), the raw order `ord T° = ord Γ + 1` (`lw_raw`), the counters of `BAstepMono` at `T°`
-   (`lw_mono`: `n_M`, `n_A - n_W`, the number of external atoms), and `lw_scalingOrderG`
+3. **Counters and order** (`T°` is `T` with every solid edge circled, `BAWeightOp_circ`): the raw
+   counters of the terms (`lw_counters`: `n_W + 1`, `n_A + 1` for `lw2`, `n_W + 2`, `n_A + 2` for
+   `lw4`, `n_M` fixed), the raw order `ord T° = ord Γ + 1` (`lw_raw`), the counters of `BAstepMono`
+   at `T°` (`lw_mono`: `n_M`, `n_A - n_W`, the number of external atoms), and `lw_scalingOrderG`
    (`ord Γ ≤ ordG T`, `Γ` normal).  The `Fin 4` bookkeeping re-proves locally the closure lemmas
    that are private in `Graph/BAExpandWOrd`.
-4. Compiled instances (`RBM.Graph.BAWeightOpInst`) at `baGcxx` and `baGwx`.
 -/
 
 set_option linter.style.setOption false
@@ -48,11 +45,11 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Green
 
-/-! ## 1. Target 1: the term lists (verbatim from the T2395 probe) -/
+/-! ## 1. The term lists -/
 
 section Ops
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-/-- the generic extension by `k` new vertices `inr (inr i)` (the shape of the merged `lanlwExt`, `BAExpandW.lean:114`, for any `k`). -/
+/-- the generic extension by `k` new vertices `inr (inr i)` (the shape of `lanlwExt` in `Graph/BAExpandW.lean`, for any `k`). -/
 def BAGraph.ext (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (s : List (SEdge (E ⊕ (I ⊕ Fin k))))
     (w : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k)))) : BAGraph E (I ⊕ Fin k) :=
   BAGraph.mk (({ Γ.toLGraph with solid := rest } : LGraph E I).owxExt (owxEmb k) 1 s w)
@@ -63,8 +60,8 @@ def bpS {V : Type} (c : Bool) (a b : V) : SEdge V := ⟨true, c, a, b⟩
 def bpM {V : Type} (a b : V) : BAMEdge V := ⟨true, a, b⟩
 /-- a waved edge: `S⁺` (`col = true`) or `S` -/
 def bpW {V : Type} (col : Bool) (a b : V) : WEdge V := ⟨col, true, a, b⟩
-/-- **`lem_lweight`** at the self-loop `p = Ǧ_{xx}` (`B:376-387`, L2c1): the `y = x` part is `lw2` (`M_{xα} S_{αβ} Ǧ_{αx} Ǧ_{ββ}` and the derivative
-terms, which are those of the merged `lanlwD` since `p.1.dst = p.1.src`), the `(M⁺S⁺)_{xy}` part is `lw4` (`z, y, α, β = bpv 0..3`). -/
+/-- **`lem_lweight`** at the self-loop `p = Ǧ_{xx}` (Lemma B.7): the `y = x` part is `lw2` (`M_{xα} S_{αβ} Ǧ_{αx} Ǧ_{ββ}` and the derivative
+terms, which are those of `lanlwD` in `Graph/BAExpandW.lean` since `p.1.dst = p.1.src`), the `(M⁺S⁺)_{xy}` part is `lw4` (`z, y, α, β = bpv 0..3`). -/
 def BAGraph.lw2 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : List (BAGraph E (I ⊕ Fin 2)) :=
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 0) (owxEmb 2 p.1.dst), bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
     [bpM (owxEmb 2 p.1.src) (bpv 0)] :: (lwSplit p.2).map (BAGraph.lanlwD Γ p)
@@ -370,13 +367,13 @@ private theorem BAWeightOp_pathwise (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × L
 
 end Pathwise
 
-/-! ## 3. Target 2: the value identity -/
+/-! ## 3. The value identity -/
 
 section Core
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- Closure of `Tame` under the operations of the expansion (copy of the local macro `baw_tame` of `Graph/BAExpandW.lean`). -/
+/-- Closure of `Tame` under the operations of the expansion (as the local macro `baw_tame` of `Graph/BAExpandW.lean`). -/
 local macro "bwo_tame" : tactic =>
   `(tactic| repeat' first
     | exact Tame.const _
@@ -411,7 +408,7 @@ private theorem BAWeightOp_rename_edgePoly0 (hL : 3 ≤ L) (M : Matrix (Idx d L 
   cases hσ : e.σ <;> simp [lwWxVar]
 
 
-/-- **One labelling of the old vertices** (the BA twin of `BAExpandW_term_integral` for `lem_lweight`): for the circled
+/-- **One labelling of the old vertices** (as `BAExpandW_term_integral` for `lem_lweight`): for the circled
 blue self-loop `p.1 = Ǧ_{xx}`, `𝔼 Γ.term` at the labelling `(ℓe, ℓi)` is the expectation of the sum, over the labels of
 the new vertices, of the terms of `lw2` and `lw4` (`BAWeightOp_R`), on the sequence space.  From `baLweight_holds`
 through `lwWx_integral`; the pathwise identity is `BAWeightOp_pathwise`. -/
@@ -673,8 +670,7 @@ private theorem BAWeightOp_val_seq (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ) (hSel
   exact Finset.sum_congr rfl fun ℓi _ => (hcore ℓi).2
 
 
-/-- **Target 2: `lem_lweight` (B.19) as a graph operation** (`B:376-387`; the first conjunct of `BAexpFrameE`, probe
-`t/T2395:RBM3D/Probe/T2395Pins.lean:244-251`): for a circled blue self-loop `p.1 = Ǧ_{xx}` of `Γ`
+/-- **`lem_lweight` (B.19) as a graph operation** (the first conjunct of `BAexpFrameE`): for a circled blue self-loop `p.1 = Ǧ_{xx}` of `Γ`
 (`p ∈ lwSplit Γ.solid`), `𝔼 Γ.val = 𝔼 (Σ_{Δ ∈ lw2} Δ.val + Σ_{Δ ∈ lw4} Δ.val)` at the model data `BAlwData` over
 `PF d L W 0`.  For `0 < t < 1`: `baLweight_holds` (the identity of `𝔼 Ǧ_{xx} f`) with `W = 1 + M⁺ (S W)`
 (`BAWeightOp_W_sub_one`), on the sequence space and transported by `lwWx_integral`; for `t = 0` both sides vanish
@@ -723,7 +719,7 @@ theorem baExpFrame_lw (d : ℕ) : ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L
 
 end Final
 
-/-! ## 4. Target 3: counters and order -/
+/-! ## 4. Counters and order -/
 
 /-! ### 4.1 Generic closure lemmas (local copies of the private lemmas of `Graph/BAExpandWOrd`, with the pendant part
 split into an attached part `P` and unattached classes) -/
@@ -1354,7 +1350,7 @@ end Ext4
 
 section Order
 
-/-- Splitting `G = Ǧ + M` after circled edges: only the later edges are split (the BA twin of the private
+/-- Splitting `G = Ǧ + M` after circled edges: only the later edges are split (the BA counterpart of the private
 `BAVocab_baSplitSolid_circ`). -/
 private theorem BAWeightOp_split_append {V : Type*} (l t : List (SEdge V)) (hl : ∀ e ∈ l, e.circ = true) :
     baSplitSolid (l ++ t) = (baSplitSolid t).map fun r => (l ++ r.1, r.2) := by
@@ -1639,9 +1635,9 @@ private theorem BAWeightOp_ext2_cnt (Γ : BAGraph E I) (rest : List (SEdge (E �
 end Ext2
 
 
-/-! ### 4.7 Target 3: the raw counters, the raw order, the counters of `BAstepMono`, and `lw_scalingOrderG` -/
+/-! ### 4.7 The raw counters, the raw order, the counters of `BAstepMono`, and `lw_scalingOrderG` -/
 
-/-- `T°` (T2395 design §3 Step 3): `T` with every solid edge circled. -/
+/-- `T°`: `T` with every solid edge circled. -/
 def BAWeightOp_circ {E I : Type} (T : BAGraph E I) : BAGraph E I :=
   { T with solid := T.solid.map fun e => { e with circ := true } }
 
@@ -1674,7 +1670,7 @@ private theorem BAWeightOp_ext_normal (k : ℕ) (Γ : BAGraph E I) (hN : Γ.Norm
       exact hrest e0 he0
     · exact hs e he
 
-/-- **Target 3, raw counters** (`B:353`; the band's `owxT1_counters`, `owxT2_counters`, with `n_W + 1` or `n_W + 2` and
+/-- **Raw counters** (Definition B.5 `def scalingBA`; the band's `owxT1_counters`, with `n_W + 1` or `n_W + 2` and
 `n_A + 1` or `n_A + 2`, `n_M` fixed): every term of `lw2` has the raw counters `⟨n_S + 1, n_W + 1, n_A + 1, n_M, 0, 0⟩`, every
 term of `lw4` has `⟨n_S + 1, n_W + 2, n_A + 2, n_M, 0, 0⟩`; for every graph, normal or not. -/
 theorem lw_counters :
@@ -1703,7 +1699,7 @@ theorem lw_counters :
       have : q.2.length + 3 = Γ.nS + 1 := by simp only [BAGraph.nS]; omega
       simp only [List.length_cons, List.length_nil, this]
 
-/-- **Target 3, raw order** (`raw = ord T° - ord P`, T2395 design §3 Step 3; (B.17)): every term `T` of `lw2` and `lw4` has
+/-- **Raw order** (`raw = ord T° - ord P`; (B.17) `eq:ordG_BA`): every term `T` of `lw2` and `lw4` has
 `ord T° = ord Γ + 1`. -/
 theorem lw_raw :
     ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
@@ -1725,7 +1721,7 @@ theorem lw_raw :
     ring
 
 
-/-- **Target 3, the order of the partition** (`B:354-355`, `(eq:ordG_BA)`): for a normal `Γ`, `ord Γ ≤ ordG T` for every term `T` of
+/-- **The order of the partition** ((B.17) `eq:ordG_BA`): for a normal `Γ`, `ord Γ ≤ ordG T` for every term `T` of
 `lw2` and `lw4` (the leaves are normal with `ord = ord Γ + 1`; the derivative term of `lw2` is `lanlw_scalingOrderG`; for the one of
 `lw4`, `j` `M`-splits give `ord - ord Γ = 1 - j + 2κ`, `κ ≥ 1` once `j ≥ 2`, the singleton atom `{β}` being merged). -/
 theorem lw_scalingOrderG :
@@ -1809,8 +1805,8 @@ private theorem BAWeightOp_mono_aux (Γ : BAGraph E I) {k : ℕ} (T : BAGraph E 
   · change ((Finset.univ.filter fun v : E ⊕ (I ⊕ Fin k) => v.isLeft = true).image T.atom).card ≤ _
     omega
 
-/-- **Target 3, the counters of `BAstepMono` at `T°`** (T2395 design §3 Step 3 (a), (c); L3a4): `n_M`, `n_A - n_W` are those of `Γ`
-and the number of external atoms (the atoms with an external vertex, `nExt` of the T2395 probe, `:33`) does not grow (it is
+/-- **The counters of `BAstepMono` at `T°`**: `n_M`, `n_A - n_W` are those of `Γ`
+and the number of external atoms (the atoms with an external vertex, `BAGraph.nExt`) does not grow (it is
 equal: the new vertices join the atom of `x` or form internal atoms). -/
 theorem lw_mono :
     ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
@@ -1831,12 +1827,6 @@ theorem lw_mono :
 
 end Targets
 
-
-/-! ## 5. Compiled instances (namespace `RBM.Graph.BAWeightOpInst`)
-
-The weight `Ǧ_{xx}` of `baGcxx` (`BAExpandW.lean:980`, the circled diagonal of `BAExpandWOrdInst`, `x = inr 0` internal) and
-`baGwx = Ǧ_{xx} Ǧ_{ex}` (`e = inl 0` external), at `d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2`
-(`BASelf` is `BAExpandInst.baSelf_zero`): every hypothesis is discharged. -/
 
 end RBM.Graph
 

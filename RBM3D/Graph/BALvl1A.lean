@@ -18,30 +18,36 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3a3 (T2440): the BA local step, packing and the step identity
+# The BA local step, packing and the step identity
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-409` (`lanlw`, `lem_lweight`, `GGGamma`, `lvl1 lemma`).  Design:
-`docs/reports/T2395-design.md` §6 (row L3a3 `BALvl1A`), probe `t/T2395:RBM3D/Probe/T2395Pins.lean:150-209, 252-257, 274-279`.  The BA twin of
-`Graph/LWLvl1.lean` §9-§11 (`:3077-3613`).  A BA step `BALocStep` runs one of R1's five frame steps `BAFrameStep` at `P.twist c t` and twists
-every output back (probe 207); one step is an identity of expectations at the BA law (`BAlvl1StepIdentity`, probe 254), from the merged frame
-identities (`lanlw_val`, `baExpFrameE_holds`), the BA partition (`BAGraph.val_eq_partition`) and the twist transport of L3a2 (`baTwistIntegral_gen`).
+Paper: Subappendix B.3: Lemma B.6 (`lanlw`), Lemma B.7 (`lem_lweight`), (B.20) `GGGamma`, and the
+`lvl1` lemma at block Anderson.  This is the BA counterpart of `Graph/LWLvl1.lean` (Sections
+9-11).  A BA step `BALocStep` runs one of the five frame steps `BAFrameStep` at `P.twist c t` and
+twists every output back; one step is an identity of expectations at the BA law
+(`BAlvl1StepIdentity`), from the frame identities (`lanlw_val`, `baExpFrameE_holds`), the BA
+partition (`BAGraph.val_eq_partition`) and the twist transport of `Graph/BASymm2.lean`
+(`baTwistIntegral_gen`).
 
 ## Contents (namespace `RBM.Graph`; private prefix `BALvl1A_`)
 
-1. **Vocabulary** (probe, verbatim): `BALocStep`, `BAReach` (with `BALvl1A_reach_refl`, which the axiom audit's premise scan needs); the statements `BAtwistComb`, `BAframeStepIdentity`, `BAlvl1StepIdentity`.
-2. **Packing** (pathwise, no integrability): `BALvl1A_pack` (`BAComb.val (P.outsOf Ts) D ℓe = baSum Ts D ℓ'` when `ℓe = ℓ' ∘ P.ext`),
-   `BALvl1A_pack_zero` (the non-factoring case: both sides `0`), `BALvl1A_comb_append`.
-3. **Target 3**: `baTwistComb_holds` (the twist of a list of packed graphs in expectation).
-4. **Integrability** (copies of `BAExpandId:422-467` under the stem): the value of a graph at `BAlwData` is integrable over `PF d L W 0`.
+1. **Vocabulary**: `BALocStep`, `BAReach` (with `BALvl1A_reach_refl`); the statements
+   `BAtwistComb`, `BAframeStepIdentity`, `BAlvl1StepIdentity`.
+2. **Packing** (pathwise, no integrability): `BALvl1A_pack` (`BAComb.val (P.outsOf Ts) D ℓe =
+   baSum Ts D ℓ'` when `ℓe = ℓ' ∘ P.ext`), `BALvl1A_pack_zero` (the non-factoring case: both sides
+   `0`), `BALvl1A_comb_append`.
+3. `baTwistComb_holds` (the twist of a list of packed graphs in expectation).
+4. **Integrability** (as in `Graph/BAExpandId.lean`, under the stem): the value of a graph at
+   `BAlwData` is integrable over `PF d L W 0`.
 5. **The two macro identities**: `BALvl1A_macroA` (`within`), `BALvl1A_macroB` (`ggSplit`).
-6. **Target 4**: `baFrameStepIdentity_holds` (the five kinds of `BAFrameStep`).
-7. **Target 5**: `baLvl1StepIdentity_holds`.
-8. Compiled instances (`BALvl1AInst`, `d = 3`, `L = 4`, `W = 2`, `flowP_data`).
+6. `baFrameStepIdentity_holds` (the five kinds of `BAFrameStep`).
+7. `baLvl1StepIdentity_holds`.
+8. Nonempty instances (frame steps at `P_B`, `P_W`; a `BALocStep` at `P_B`).
 
-`BASelf` and `0 ≤ t < 1` are the only hypotheses on the data (C1): no `M a a = m`, no `M a b = 0` (T2395 F5), no smallness of `g₀`.  Not here:
-`BAMatchTw` and its bridges (L3b4'), `BAstepMono`, `BAlvl1StepGood` (L3a4), the existence of a step, the measure and `BAlvl1Lemma` (L3a5); the twins of the
-band's `×`-dot zeros (`lvl1_val_zero_of_xself`, `lvl1_oe1xT1_zero`, `lvl1_oe2xR1_zero`, `lvl1_weight0/edge0/gg0_identity`, `LWLvl1:3373-3589`), which need
-`hM`, `hM0` (false at BA).
+`BASelf` and `0 ≤ t < 1` are the only hypotheses on the data: no `M a a = m`, no `M a b = 0`, no
+smallness of `g₀`.  Not in this file: `BAstepMono`,
+`BAlvl1StepGood`, the existence of a step, the measure and `BAlvl1Lemma`; the counterparts of the
+band's `×`-dot zeros (`lvl1_val_zero_of_xself`, `lvl1_oe1xT1_zero`, `lvl1_oe2xR1_zero`,
+`lvl1_weight0/edge0/gg0_identity` in `Graph/LWLvl1.lean`), which need `hM`, `hM0` (false at BA).
 -/
 
 open private BAWeightOp_val_tame from RBM3D.Graph.BAWeightOp
@@ -55,46 +61,46 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
-/-! ## 1. Vocabulary (the probe, verbatim) -/
+/-! ## 1. Vocabulary -/
 
 section Vocab
 
 variable {E : Type}
 
-/-- **`BALocStep`** (the band's `LocStep`, `LWLvl1.lean:3260`): a frame step at the twisted graph, every output twisted back (L3a1, L3a2). -/
+/-- **`BALocStep`** (the band's `LocStep` in `Graph/LWLvl1.lean`): a frame step at the twisted graph, every output twisted back. -/
 def BALocStep {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)) : Prop :=
   ∃ (c t : Bool) (F : List (BAPGraph E)), BAFrameStep (P.twist c t) F ∧ outs = F.map (BAPGraph.twist c t)
 
-/-- reachability by the strategy below the cutoff `K` (`Lvl1Reach`, `LWLvl1.lean:3277`) -/
+/-- reachability by the strategy below the cutoff `K` (as `Lvl1Reach` in `Graph/LWLvl1.lean`) -/
 inductive BAReach (K : ℤ) : BAPGraph E → BAPGraph E → Prop
   | refl (P : BAPGraph E) : BAReach K P P
   | step (P Q R : BAPGraph E) (L : List (BAPGraph E)) : BAReach K P Q → Q.g.scalingOrder < K → ¬ Q.g.LocStd → BALocStep Q L → R ∈ L → BAReach K P R
 
-/-- reflexivity of `BAReach` as a theorem (the constructor `BAReach.refl`): the axiom audit's scan of premises (`Test/Axioms.lean:391-445`) counts a theorem concluding `BAReach` as a proof of it -/
+/-- reflexivity of `BAReach` as a theorem (the constructor `BAReach.refl`) -/
 theorem BALvl1A_reach_refl (K : ℤ) (P : BAPGraph E) : BAReach K P P := BAReach.refl P
 
 end Vocab
 
-/-- **Target 3 (`BAtwistComb d`)**: the twist of a list of packed graphs in expectation at the BA law (no `BASelf`, no integrability). -/
+/-- **`BAtwistComb d`**: the twist of a list of packed graphs in expectation at the BA law (no `BASelf`, no integrability). -/
 def BAtwistComb (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W] (g0 Em t : ℝ) (m : ℂ) {E : Type} (c t' : Bool) (Ls : List (BAPGraph E)) (ℓe : E → Idx d L W),
     ∫ ω, BAComb.val (Ls.map (BAPGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
       (if c then (star : ℂ → ℂ) else id) (∫ ω, BAComb.val Ls (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0))
 
-/-- **Target 4 (`BAframeStepIdentity d`)**: one frame step (five kinds) is an identity of expectations at the BA law; no normality. -/
+/-- **`BAframeStepIdentity d`**: one frame step (five kinds) is an identity of expectations at the BA law; no normality. -/
 def BAframeStepIdentity (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 →
     ∀ {E : Type} (P : BAPGraph E) (F : List (BAPGraph E)), BAFrameStep P F → ∀ ℓe : E → Idx d L W,
       ∫ ω, P.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) = ∫ ω, BAComb.val F (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)
 
-/-- **Target 5 (`BAlvl1StepIdentity d`)**: one step is an identity of expectations at the BA law (the BA `lvl1_step_identity`, `LWLvl1.lean:3590`; probe 254-257).
+/-- **`BAlvl1StepIdentity d`**: one step is an identity of expectations at the BA law (the BA `lvl1_step_identity` of `Graph/LWLvl1.lean`).
 The band's hypotheses `M a a = m`, `M a b = 0` fail at BA. -/
 def BAlvl1StepIdentity (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 →
     ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BALocStep P outs → P.g.Normal → ∀ ℓe : E → Idx d L W,
       ∫ ω, P.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) = ∫ ω, BAComb.val outs (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)
 
-/-! ## 2. Packing (pathwise; `LWLvl1:3095-3133, 3252, 3439-3450`, `BAExpandId:489-512`) -/
+/-! ## 2. Packing (pathwise; as in `Graph/LWLvl1.lean` and `Graph/BAExpandId.lean`) -/
 
 section Pack
 
@@ -158,8 +164,8 @@ private theorem BALvl1A_sum_flatMap {α β : Type*} [AddCommMonoid β] (a : List
   | nil => simp
   | cons x a ih => simp [List.flatMap_cons, List.sum_append, ih]
 
-/-- **Packing (target 2)**: the value of the packed partitions of a list of terms `Ts` at labels `ℓe = ℓ' ∘ P.ext` is the value of the list at `ℓ'`
-(`lvl1_pack_identity`, `LWLvl1:3450`, pathwise; from `BAGraph.val_eq_partition`, no data hypothesis, no integrability). -/
+/-- **Packing**: the value of the packed partitions of a list of terms `Ts` at labels `ℓe = ℓ' ∘ P.ext` is the value of the list at `ℓ'`
+(as `lvl1_pack_identity` in `Graph/LWLvl1.lean`, pathwise; from `BAGraph.val_eq_partition`, no data hypothesis, no integrability). -/
 theorem BALvl1A_pack (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq I'] (Ts : List (BAGraph P.E' I')) (D : BALData ι) {ℓe : E → ι}
     {ℓ' : P.E' → ι} (hℓ : ℓe = ℓ' ∘ P.ext) : BAComb.val (P.outsOf Ts) D ℓe = baSum Ts D ℓ' := by
   rw [BALvl1A_outsOf_eq]
@@ -188,7 +194,7 @@ theorem BALvl1A_pack_zero (P : BAPGraph E) {I' : Type} [Fintype I'] [DecidableEq
 
 end Pack
 
-/-! ## 3. Target 3: the twist of a list of packed graphs -/
+/-! ## 3. The twist of a list of packed graphs -/
 
 section Twist
 
@@ -216,8 +222,8 @@ theorem BALvl1A_comb_twist (D : BALData ι) (hS : ∀ i j, star (D.S i j) = D.S 
 
 end Twist
 
-/-- **`BAtwistComb d` holds**, for every `d` (target 3): pathwise `BALvl1A_comb_twist` at the real BA data (`BASymm1_data_real`), then `baTwistIntegral_gen`
-(`BASymm2:104`) at the functional `F D = BAComb.val Ls D ℓe`.  No `BASelf`, no integrability. -/
+/-- **`BAtwistComb d` holds**, for every `d`: pathwise `BALvl1A_comb_twist` at the real BA data (`BASymm1_data_real`), then `baTwistIntegral_gen`
+(`Graph/BASymm2.lean`) at the functional `F D = BAComb.val Ls D ℓe`.  No `BASelf`, no integrability. -/
 theorem baTwistComb_holds (d : ℕ) : BAtwistComb d := by
   intro L W _ _ g0 Em t m E c t' Ls ℓe
   have h1 : ∀ ω, BAComb.val (Ls.map (BAPGraph.twist c t')) (BAlwData d L W g0 Em t m ω) ℓe =
@@ -227,7 +233,7 @@ theorem baTwistComb_holds (d : ℕ) : BAtwistComb d := by
   rw [baTwistIntegral_gen d L W g0 Em t m c t' (fun D => BAComb.val Ls D ℓe)]
   cases c <;> simp [lwSymmCj]
 
-/-! ## 4. Integrability (copies of `BAExpandId:422-467` under the stem) -/
+/-! ## 4. Integrability (as in `Graph/BAExpandId.lean`, under the stem) -/
 
 section Integrable
 
@@ -501,9 +507,9 @@ end MacroB
 
 end Macro
 
-/-! ## 6. Target 4: one frame step is an identity of expectations -/
+/-! ## 6. One frame step is an identity of expectations -/
 
-/-- **`BAframeStepIdentity d` holds**, for every `d` (target 4), one case per constructor of `BAFrameStep`: `weight` (`baExpFrameE_holds`.1), `edge` (`lanlw_val`), `gg`
+/-- **`BAframeStepIdentity d` holds**, for every `d`, one case per constructor of `BAFrameStep`: `weight` (`baExpFrameE_holds`.1), `edge` (`lanlw_val`), `gg`
 (`baExpFrameE_holds`.2), each with the packing `BALvl1A_pack`; `within` (`BALvl1A_macroA`); `ggSplit` (`BALvl1A_macroB`).  `BASelf` and `0 ≤ t < 1` only; no
 normality of `P`, no `M a a = m`, no `M a b = 0`. -/
 theorem baFrameStepIdentity_holds (d : ℕ) : BAframeStepIdentity d := by
@@ -534,16 +540,16 @@ theorem baFrameStepIdentity_holds (d : ℕ) : BAframeStepIdentity d := by
   | ggSplit p hp q j hj h a a' hx hne hsame hwf hint hnb =>
     exact fun ℓe => BALvl1A_macroB hL g0 Em t m hSelf ht0 ht1 P p q hp j hj h ℓe
 
-/-! ## 7. Target 5: one step is an identity of expectations -/
+/-! ## 7. One step is an identity of expectations -/
 
 /-- the twist of a packed graph is an involution -/
 theorem BALvl1A_twist_invol {E : Type} (c t : Bool) (P : BAPGraph E) : (P.twist c t).twist c t = P := by
   cases P
   simp only [BAPGraph.twist, BAGraph.twist_invol]
 
-/-- **`BAlvl1StepIdentity d` holds**, for every `d` (target 5; twin of `lvl1_step_identity`, `LWLvl1:3590`, without `hM`, `hM0`): `E P = E (P.twist c t).twist` is the
-conjugate of `E (P.twist c t)` (target 3 at `[P.twist c t]` and the involution), which is the conjugate of `E Σ F` (target 4 at `P.twist c t`), which is
-`E Σ (F.map twist)` (target 3 at `F`).  `P.g.Normal` is not used. -/
+/-- **`BAlvl1StepIdentity d` holds**, for every `d` (as `lvl1_step_identity` in `Graph/LWLvl1.lean`, without `hM`, `hM0`): `E P = E (P.twist c t).twist` is the
+conjugate of `E (P.twist c t)` (`baTwistComb_holds` at `[P.twist c t]` and the involution), which is the conjugate of `E Σ F` (`baFrameStepIdentity_holds` at `P.twist c t`), which is
+`E Σ (F.map twist)` (`baTwistComb_holds` at `F`).  `P.g.Normal` is not used. -/
 theorem baLvl1StepIdentity_holds (d : ℕ) : BAlvl1StepIdentity d := by
   intro L W _ _ hL g0 Em t m hSelf ht0 ht1 E P outs hst hN ℓe
   obtain ⟨c, t', F, hF, rfl⟩ := hst
@@ -553,7 +559,7 @@ theorem baLvl1StepIdentity_holds (d : ℕ) : BAlvl1StepIdentity d := by
   simp only [List.map_cons, List.map_nil, BALvl1A_twist_invol, BAComb.val, List.sum_cons, List.sum_nil, add_zero] at h1
   rw [h3, h1, h2]
 
-/-! ## 8. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `flowP`; `BASelf` and `0 < t₀ < 1` are `flowP_data`) -/
+/-! ## 8. Nonempty instances: frame steps at `P_B` (`within`) and `P_W` (`weight`) of `Graph/BASim3.lean`, and a `BALocStep` at `P_B` -/
 
 namespace BALvl1AInst
 
@@ -563,7 +569,7 @@ theorem hFB : BAFrameStep (baPG baPB) ((baPG baPB).withinOuts pB) :=
   BAFrameStep.within (baPG baPB) pB (List.mem_cons_self ..) (by decide)
 theorem hFW : BAFrameStep (baPG baPW) ((baPG baPW).outsOf (baPW.lw2 pW) ++ (baPG baPW).outsOf (baPW.lw4 pW)) :=
   BAFrameStep.weight (baPG baPW) pW (List.mem_cons_self ..) (by decide)
-/-- **Target 1 and target 5 at `P_B`** (`within`), `(c, t) = (true, true)`: the twist of `P_B` is a graph `P` with a `BALocStep` (the frame step at `P.twist true true = P_B`,
+/-- **A `BALocStep` at `P_B`** (`within`), `(c, t) = (true, true)`: the twist of `P_B` is a graph `P` with a `BALocStep` (the frame step at `P.twist true true = P_B`,
 every output twisted back); `P.g` is normal. -/
 theorem locStepB : BALocStep ((baPG baPB).twist true true) (((baPG baPB).withinOuts pB).map (BAPGraph.twist true true)) :=
   ⟨true, true, (baPG baPB).withinOuts pB, by rw [BALvl1A_twist_invol]; exact hFB, rfl⟩

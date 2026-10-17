@@ -7,11 +7,11 @@ import RBM3D.Graph.BAExp14d
 import RBM3D.Graph.BAAuxGraph2B
 
 /-!
-# BA-L L4c2 (T2466), part B: smallness of `B`, entry law, pathwise bound, `n_M = 1` leaf bound
+# Smallness of `B`, entry law, pathwise bound, `n_M = 1` leaf bound (part B)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-110` (`(Gammamuxy)`, `B:84-90`),
-`B:428-431` (`(eq:Gbyxi2_BA)`).  Twin of the band file `Graph/LWExpTerm3.lean` `:829-1227` and
-`:1426-1661`; part A is `Graph/BAExp14d.lean`.
+Paper: Subappendix B.1: (B.7) `Gammamuxy`; (B.22) `eq:Gbyxi2_BA`.  This is the BA counterpart of
+the band file `Graph/LWExpTerm3.lean` (the arithmetic and `LwGraphPrec1`); part A is
+`Graph/BAExp14d.lean`.
 
 ## Contents (namespace `RBM.BA`; private helpers carry the stem `BAExp14d_`)
 
@@ -19,8 +19,8 @@ Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-110` (`(Gammamuxy)
    `baExp14dEntry_holds`.
 5. **Arithmetic, pathwise bound, envelope, scalar facts, the pathwise `≺`** (private).
 6. **The `n_M = 1` leaf bound** `BAG5LeafPrec1`, `baG5LeafPrec1_holds`: the `n_M = 1` half of the
-   leaf pin `BAG5LeafPrec` of L4c1 (`T2464`); the `n_M = 0` half is `BAGraphPrecJoin` (L4g).
-7. **Compiled instances** of targets 3-5 (`BAExp14d_pw`) and 4, 6 (namespace `BAExp14dInst`, as in part A).
+   leaf statement `BAG5LeafPrec` (`Graph/BAExp14c.lean`); the `n_M = 0` half is `BAGraphPrecJoin`
+   (`Graph/BAExp14e.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -45,7 +45,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
 section EntryLaw
 
-/-- `W^{-d} B_{u,0} ≤ (λ² W^d)⁻¹ + (N (1 - u))⁻¹` (the unfolding of `BAExp14a_Bctl_le_two`, `BAExp14aB:1103`). -/
+/-- `W^{-d} B_{u,0} ≤ (λ² W^d)⁻¹ + (N (1 - u))⁻¹` (the unfolding of `BAExp14a_Bctl_le_two` in `Graph/BAExp14aB.lean`). -/
 private theorem BAExp14d_Bctl_le {d : ℕ} (sz : Sizes d) (n : ℕ) {u : ℝ} (hu : u < 1) (hg : 0 < sz.lam n) :
     sz.Bctl n u ≤ (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)⁻¹ + (((sz.size n : ℕ) : ℝ) * (1 - u))⁻¹ := by
   have hv : 0 < 1 - u := by linarith
@@ -66,8 +66,7 @@ private theorem BAExp14d_Bctl_le {d : ℕ} (sz : Sizes d) (n : ℕ) {u : ℝ} (h
     _ = (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)⁻¹ + (((sz.size n : ℕ) : ℝ) * (1 - u))⁻¹ := by
         rw [hNe]; field_simp
 
-/-- **Target 4, the smallness of `B`** (`T2466_Bctl_small`; the BA form of the `scaleFacts_R1` input of `lwExpTerm3_hent`, `LWExpTerm3:874`,
-which has no BA twin on `main`): `W^{-d} B_{t,0} ≤ (λ² W^d)⁻¹ + (N (1 - t))⁻¹ ≤ W^{-2𝔡} + 2 N^{-ε} ≤ 2 N^{-c₀}`,
+/-- **The smallness of `B`** (the BA form of the `scaleFacts_R1` input of `lwExpTerm3_hent` in `Graph/LWExpTerm3.lean`): `W^{-d} B_{t,0} ≤ (λ² W^d)⁻¹ + (N (1 - t))⁻¹ ≤ W^{-2𝔡} + 2 N^{-ε} ≤ 2 N^{-c₀}`,
 `c₀ = min (2 𝔠 𝔡, ε) / 2` (`lam_sq_mul_pow_ge`, `BAExp14a_one_sub_t`, `W ≥ N^𝔠`). -/
 theorem BAExp14d_Bctl_small (d : ℕ) : 3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ),
     BAFlow sz κ ε 𝔠 𝔡 z → ∃ c₀ : ℝ, 0 < c₀ ∧ ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
@@ -128,7 +127,7 @@ theorem BAExp14d_Bctl_small (d : ℕ) : 3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ
     _ = 3 * N ^ (-c₀) * N ^ (-c₀) := by rw [hsq]; ring
     _ ≤ 2 * N ^ (-c₀) := by nlinarith
 
-/-- **Target 4, the entry law** (`T2466_entry`; twin of `lwExpTerm3_hent`, `LWExpTerm3:872`): `‖G_t - M‖_max ≺ W^{-ε₁}` (the premise of
+/-- **The entry law** (as `lwExpTerm3_hent` in `Graph/LWExpTerm3.lean`): `‖G_t - M‖_max ≺ W^{-ε₁}` (the premise of
 `baGbyZeta_holds`) from `STLocalEntrygL` alone. -/
 def BAExp14dEntry (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -201,7 +200,7 @@ theorem baExp14dEntry_holds (d : ℕ) : BAExp14dEntry d := by
 
 end EntryLaw
 
-/-! ## 5. Arithmetic (twin of `lwExpTerm3_Q_le`, `_size_le`, `_arith`, `LWExpTerm3:1058-1225`) -/
+/-! ## 5. Arithmetic (as `lwExpTerm3_Q_le`, `_size_le`, `_arith` in `Graph/LWExpTerm3.lean`) -/
 
 section Arith
 
@@ -256,7 +255,7 @@ private theorem BAExp14d_size_le0 (c : Counters) (d L W : ℕ) (hW : 0 < W) {N �
   exact mul_le_mul (mul_le_mul_of_nonneg_right h1 (by positivity)) h3 hpos3
     (mul_nonneg ((pow_nonneg ((by positivity : (0 : ℝ) ≤ (L : ℝ) ^ d).trans hLN) _)) (by positivity))
 
-/-- **The arithmetic of the pathwise bound** (`F ≤ N^τ η⁻¹ B^{ord/2} + N^{-D}`): twin of `lwExpTerm3_arith` with the prefactor 4 of
+/-- **The arithmetic of the pathwise bound** (`F ≤ N^τ η⁻¹ B^{ord/2} + N^{-D}`): as `lwExpTerm3_arith` with the prefactor 4 of
 `BAExp14d_Q_le` and the floor `L^d W^{-D₁}` of the Ward sum. -/
 private theorem BAExp14d_arith (c : Counters) (hnM : c.nM = 1) (d L W : ℕ) (hW : 0 < W)
     {N B η ρ r Ψ cc K₁ K₂ τ τ' D c₁ D₁ : ℝ}
@@ -355,7 +354,7 @@ end Arith
 
 section Pathwise
 
-/-- A packed value at a labelling that factors through `ext` (the BA twin of `PGraph.val_of_factor`, `LWVocab:678`). -/
+/-- A packed value at a labelling that factors through `ext` (the BA counterpart of `PGraph.val_of_factor` in `Graph/LWVocab.lean`). -/
 private theorem BAExp14d_val_of_factor {ι : Type*} [Fintype ι] [DecidableEq ι] (P : BAPGraph (Fin 2)) (D : BALData ι)
     {ℓe : Fin 2 → ι} {ℓ' : P.E' → ι} (h : ℓe = ℓ' ∘ P.ext) : P.val D ℓe = P.g.val D ℓ' := by
   classical
@@ -365,14 +364,14 @@ private theorem BAExp14d_val_of_factor {ι : Type*} [Fintype ι] [DecidableEq ι
   apply P.ext_surj.injective_comp_right
   exact hex.choose_spec.symm.trans h
 
-/-- A packed value at a labelling that does not factor through `ext` is `0` (twin of `PGraph.val_of_not`). -/
+/-- A packed value at a labelling that does not factor through `ext` is `0` (as `PGraph.val_of_not`). -/
 private theorem BAExp14d_val_of_not {ι : Type*} [Fintype ι] [DecidableEq ι] (P : BAPGraph (Fin 2)) (D : BALData ι)
     {ℓe : Fin 2 → ι} (h : ¬ ∃ ℓ' : P.E' → ι, ℓe = ℓ' ∘ P.ext) : P.val D ℓe = 0 := by
   classical
   simp only [BAPGraph.val, h, ↓reduceDIte]
 
-/-- **Pathwise bound of one packed value** (`(Gammamuxy)`, `B:84-90`; twin of `lwExpTerm3_pathwise`, `LWExpTerm3:954`) at any data `D`
-that satisfies the bound of G3 (`hG3`, the conclusion of `BAGtoAGT` at `P.g`, `D`): `‖P_{ℓ}‖ ≤ C_Γ Ψ^{ord} W^d cc² S2 + (tail)` when
+/-- **Pathwise bound of one packed value** ((B.7) `Gammamuxy`; as `lwExpTerm3_pathwise` in `Graph/LWExpTerm3.lean`) at any data `D`
+that satisfies the bound of `GtoAG` (`hG3`, the conclusion of `BAGtoAGT` at `P.g`, `D`): `‖P_{ℓ}‖ ≤ C_Γ Ψ^{ord} W^d cc² S2 + (tail)` when
 `‖G - M‖ ≤ Ψ` and `‖G - M‖ ≤ cc ξ₀` on the `R`-balls, with the row and column sums of `ξ₀²` bounded by `S2`. -/
 private theorem BAExp14d_pw {d L W : ℕ} [NeZero L] [NeZero W] (P : BAPGraph (Fin 2)) (hN : P.g.Normal) (hnM : P.g.nM = 1)
     (hatt : BAG5Attached P) (D : BALData (Idx d L W)) {Ψ cc S2 R r A K₀ K₁ Kd C c : ℝ} (ξ0 : Zd d L → Zd d L → ℝ)
@@ -429,8 +428,8 @@ private def BAExp14d_X {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → �
   P.val (BAExp14d_dataT d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) (t n) ((baFMz sz z).m n)
     (BAExp14a_slc sz n ω)) ![v.1, v.2]
 
-/-- **The entry event** `‖G_t - M‖_max ≤ N^{τ'} B^{1/2}` holds w.h.p. under `STLocalEntrygL` (twin of `lwExpTerm3_entry_whp`,
-`LWExpTerm3:846`; `STWB ≤ B`). -/
+/-- **The entry event** `‖G_t - M‖_max ≤ N^{τ'} B^{1/2}` holds w.h.p. under `STLocalEntrygL` (as `lwExpTerm3_entry_whp` in `Graph/LWExpTerm3.lean`;
+`STWB ≤ B`). -/
 private theorem BAExp14d_entry_whp {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {t : ℕ → ℝ} (ht1 : ∀ n, t n < 1)
     (hLE : STLocalEntrygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t) {τ' : ℝ} (hτ' : 0 < τ') :
     HighProbAt (Sizes.seqP (sz.withLam 0)) sz.size (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
@@ -453,7 +452,7 @@ private theorem BAExp14d_entry_whp {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {t
     rw [mul_pow, Real.sq_sqrt hB0, ← e1]; exact h2
   exact le_of_sq_le_sq h3 (mul_nonneg (Real.rpow_nonneg hN0.le _) (Real.sqrt_nonneg _))
 
-/-- **The envelope**: `‖X‖ ≤ N^{Kenv}` for all samples (G3 and `BAExp14d_pw` at `Ψ = N² + 1`, `ξ ≡ 1`, `cc = Ψ`, `r = R = 0`;
+/-- **The envelope**: `‖X‖ ≤ N^{Kenv}` for all samples (`GtoAG` and `BAExp14d_pw` at `Ψ = N² + 1`, `ξ ≡ 1`, `cc = Ψ`, `r = R = 0`;
 `‖G‖ ≤ η⁻¹ ≤ N²`, `‖M‖ ≤ 1`). -/
 private theorem BAExp14d_env {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
     (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n)
@@ -561,7 +560,7 @@ end Random
 
 section Scalars
 
-/-- `B ≤ 1` eventually (from `BAExp14d_Bctl_small`; there is no BA twin of `st5_Bctl_le_one`, `BAExp14aB:1102`). -/
+/-- `B ≤ 1` eventually (from `BAExp14d_Bctl_small`; `st5_Bctl_le_one` in `Induction/Step5Kit.lean` takes `STFlow` and does not apply to the BA flow). -/
 private theorem BAExp14d_B_le_one {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
     (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) :
     ∀ᶠ n in atTop, sz.Bctl n (t n) ≤ 1 := by
@@ -577,7 +576,7 @@ private theorem BAExp14d_B_le_one {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {z : �
   have : (2 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) ^ c₀ := hN2
   linarith
 
-/-- **The floor** `N^{-|o|/2} ≤ η⁻¹ B^{o/2}` eventually (copy of the use of `lwExpTerm3_floor`, `LWExpTerm3:1499-1505`; `η ≤ 1` is
+/-- **The floor** `N^{-|o|/2} ≤ η⁻¹ B^{o/2}` eventually (as the use of `lwExpTerm3_floor` in `Graph/LWExpTerm3.lean`; `η ≤ 1` is
 `BAAuxGraph2_eta_le_one`, `B ≤ 1` eventually, `N⁻¹ ≤ B` is `expAvg_Bctl_ge`). -/
 private theorem BAExp14d_floor {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
     (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n)
@@ -589,8 +588,7 @@ private theorem BAExp14d_floor {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {z : ℕ 
   exact lwExpTerm3_floor hN1 (STBctl_pos sz n ht1) hBn (expAvg_Bctl_ge sz n (ht0 n) ht1)
     (BAExp14a_eta_pos hκ hflow n (ht0 n) (htT n)) (BAAuxGraph2_eta_le_one sz z hκ hflow n (ht0 n) (htT n)) o
 
-/-- The separation `ρ - 2R = (log W)^{3/2} ≥ K log W` eventually (the pattern of `BAAuxGraph2B_sep`, `BAAuxGraph2B:938`, for a general
-`W ≥ N^𝔠`). -/
+/-- The separation `ρ - 2R = (log W)^{3/2} ≥ K log W` eventually (for a general `W ≥ N^𝔠`). -/
 private theorem BAExp14d_sepW {d : ℕ} {sz : Sizes d} {𝔠 : ℝ} (h𝔠 : 0 < 𝔠) (hsz : sz.SizeTendsto) (hbw : sz.Bandwidth 𝔠) (K : ℝ) :
     ∀ᶠ n in atTop, K * Real.log ((sz.W n : ℕ) : ℝ) ≤ Real.log ((sz.W n : ℕ) : ℝ) ^ ((3 : ℝ) / 2) := by
   have hW : Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop :=
@@ -609,7 +607,7 @@ private theorem BAExp14d_sepW {d : ℕ} {sz : Sizes d} {𝔠 : ℝ} (h𝔠 : 0 <
         mul_le_mul_of_nonneg_right (Real.abs_le_sqrt h1) (by linarith)
     _ = _ := mul_comm _ _
 
-/-- The tail `e^{-c r/2} ≤ N^{-D'}` for `r = (log W)^{3/2}` eventually (`lwTail_log32` and `W ≥ N^𝔠`; `LWExpTerm3:1544-1561`). -/
+/-- The tail `e^{-c r/2} ≤ N^{-D'}` for `r = (log W)^{3/2}` eventually (`lwTail_log32` and `W ≥ N^𝔠`). -/
 private theorem BAExp14d_tail {d : ℕ} {sz : Sizes d} {𝔠 c : ℝ} (h𝔠 : 0 < 𝔠) (hc : 0 < c) (hsz : sz.SizeTendsto)
     (hbw : sz.Bandwidth 𝔠) (D' : ℝ) (hD' : 0 ≤ D') :
     ∀ᶠ n in atTop, Real.exp (-(c * Real.log ((sz.W n : ℕ) : ℝ) ^ ((3 : ℝ) / 2) / 2)) ≤ ((sz.size n : ℕ) : ℝ) ^ (-D') := by
@@ -652,13 +650,13 @@ private theorem BAExp14d_floorW {𝔠 : ℝ} (h𝔠 : 0 < 𝔠) (d W L : ℕ) {N
 
 end Scalars
 
-/-! ## 5e. The pathwise `≺` of `X` against `η⁻¹ B^{ord/2}` (twin of `LWExpTerm3:1506-1629`) -/
+/-! ## 5e. The pathwise `≺` of `X` against `η⁻¹ B^{ord/2}` (as in `Graph/LWExpTerm3.lean`) -/
 
 section Prec
 
 /-- **`‖X‖ ≺ η⁻¹ B^{ord/2}`** for `X = P_{xy}` at the rescaled data: on the intersection of the entry event (`STLocalEntrygL`) and the `ζ` event
-(`baGbyZeta_holds`, `(eq:Gbyxi2_BA)`), `BAExp14d_pw` with `Ψ = N^{τ'} B^{1/2}`, `cc = N^{τ'}`, `ξ₀ = ζ`, the Ward sum `baZeta_ward_sum`, then the
-arithmetic `BAExp14d_arith`; the floor of the control is `BAExp14d_floor`. -/
+(`baGbyZeta_holds`, (B.22) `eq:Gbyxi2_BA`), `BAExp14d_pw` with `Ψ = N^{τ'} B^{1/2}`, `cc = N^{τ'}`, `ξ₀ = ζ`, the Ward sum `baZeta_ward_sum`, then the
+arithmetic `BAExp14d_arith`; the floor of the dominating function is `BAExp14d_floor`. -/
 private theorem BAExp14d_prec {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
     (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n)
     (hE : STLocalEntrygL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t)
@@ -797,10 +795,10 @@ end Prec
 
 /-! ## 6. The `n_M = 1` leaf bound -/
 
-/-- **Target 6, the `n_M = 1` leaf bound** (`T2466_BAG5LeafPrec1`, `T2465_Q1Need` up to the name; twin of `LwGraphPrec1`, `LWExpTerm3:1430`):
+/-- **The `n_M = 1` leaf bound** (as `LwGraphPrec1` in `Graph/LWExpTerm3.lean`):
 for every `P` with the leaf properties of `BAG5LeafProps` and `n_M = 1` and every pair `(x, y)`, `‖𝔼 P_{xy}‖ ≺ t^{n_W} η_t⁻¹ B^{ord(P)/2}` at
-`BAlwData` over the carrier law, under the five premises of `BAExp14bS3` (of which only `STLocalEntrygL` is used).  It is the leaf pin
-`BAG5LeafPrec` of L4c1 (`T2464`) with the extra hypothesis `P.g.nM = 1`; no distinct-molecule hypothesis on `P`. -/
+`BAlwData` over the carrier law, under the five premises of `BAExp14bS3` (of which only `STLocalEntrygL` is used).  It is the leaf statement
+`BAG5LeafPrec` (`Graph/BAExp14c.lean`) with the extra hypothesis `P.g.nM = 1`; no distinct-molecule hypothesis on `P`. -/
 def BAG5LeafPrec1 (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → let μ := Sizes.seqP (sz.withLam 0)
@@ -812,7 +810,7 @@ def BAG5LeafPrec1 (d : ℕ) : Prop :=
             ((baFMz sz z).m n) (BAExp14a_slc sz n ω)) ![p.1, p.2] ∂μ‖)
           (fun n _ _ => (t n) ^ P.g.nW * ((baFMz sz z).eta n (t n))⁻¹ * (sz.Bctl n (t n)) ^ ((P.scalingOrder : ℝ) / 2))
 
-/-- **The `n_M = 1` leaf bound**, route as `lwGraphPrec1` (`LWExpTerm3:1442-1661`): `𝔼 P(BAlwData) = t^{n_W} 𝔼 X`
+/-- **The `n_M = 1` leaf bound**, as `lwGraphPrec1` in `Graph/LWExpTerm3.lean`: `𝔼 P(BAlwData) = t^{n_W} 𝔼 X`
 (`BAExp14d_val_scale`, `t = 0` included), `‖X‖ ≺ η⁻¹ B^{ord/2}` (`BAExp14d_prec`), then `≺ → 𝔼` (`BAExp14a_prec_integral`, with the
 polynomial envelope `BAExp14d_env` and the floor `BAExp14d_floor`) and `BAExp14a_det_iff`. -/
 theorem baG5LeafPrec1_holds (d : ℕ) : BAG5LeafPrec1 d := by
@@ -845,10 +843,5 @@ theorem baG5LeafPrec1_holds (d : ℕ) : BAG5LeafPrec1 d := by
       ≤ (t n) ^ P.g.nW * (((sz.size n : ℕ) : ℝ) ^ τ * (((baFMz sz z).eta n (t n))⁻¹ *
         (sz.Bctl n (t n)) ^ ((P.scalingOrder : ℝ) / 2))) := mul_le_mul_of_nonneg_left h1 (pow_nonneg (ht0 n) _)
     _ = _ := by ring
-
-/-! ## 7. Compiled nonempty instances of targets 4 and 6
-
-Same data as in part A (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `n = 0`, `t ≡ 1/2`); the instance leaf `leaf1` of target 6 is defined in
-part A.  What stays a hypothesis of the leaf instance is the five Step 1/2 pins (other gates' inputs). -/
 
 end RBM.BA

@@ -7,33 +7,30 @@ import RBM3D.Graph.BAWeightOp
 import RBM3D.Graph.BAGGExp
 
 /-!
-# BA-L2c2b: the GG expansion `(B.20)` as a graph operation and the frame identity (T2410)
+# The GG expansion (B.20) as a graph operation and the frame identity
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:393-405` (cited `B:line`; `GGGamma`,
-[yang2024Del, Lemma B.11]) with the corrected coefficient `(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the
-first two sums (paper delta D402, `ba_W_sub_one`).  `baGGGamma_holds` (`Graph/BAGGExp.lean:358`)
-is the identity of expectations; this file is its graph form.  The term lists are those of the
-T2395 probe (`t/T2395:RBM3D/Probe/T2395Pins.lean:129-148` at `4c1de4c`), copied verbatim.
+Paper: (B.20) `GGGamma` (Lemma B.11 of [yang2024Del]) with the coefficient
+`(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the first two sums.  `baGGGamma_holds` (`Graph/BAGGExp.lean`)
+is the identity of expectations; this file is its graph form.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAGGOp_`)
 
-1. **Target 1**: `BAGraph.gg2`, `BAGraph.gg4` (with the merged `BAGraph.ext`, `bpv`, `bpS`, `bpM`,
+1. **The term lists**: `BAGraph.gg2`, `BAGraph.gg4` (with `BAGraph.ext`, `bpv`, `bpS`, `bpM`,
    `bpW`, `baSum` of `Graph/BAWeightOp.lean`) and the named terms `BAGGOp_A1 … A5, AD, B1, B2, BD`.
-2. **Target 2** (`baExpFrame_gg`, the second conjunct of `BAexpFrameE`): `𝔼 Γ.val = 𝔼 (baSum gg2 +
-   baSum gg4)` at `BAlwData` over `PF d L W 0`, for circled blue `p ∈ lwSplit Γ.solid`,
-   `q ∈ lwSplit p.2`, `p.1.src = q.1.dst`.  It follows from `baGGGamma_holds`, pathwise on the
-   sequence space (`BAGGOp_pathwise`, `BAGGOp_core`) as `baExpFrame_lw` follows from
-   `baLweight_holds`, and `t = 0` is trivial (`Ǧ = 0`, `S = S⁺ = 0`).
-3. **Target 3**: `BAexpFrameE` (probe `:244-251`) and `baExpFrameE_holds : ∀ d, BAexpFrameE d`.
-4. **Target 4** (section 5, the counters of `BAstepMono`): `gg_counters`, `gg_raw`,
-   `gg_scalingOrderG`, `gg_mono`; the table at the head of section 5 says which terms keep the
+2. **The value identity** (`baExpFrame_gg`, the second conjunct of `BAexpFrameE`):
+   `𝔼 Γ.val = 𝔼 (baSum gg2 + baSum gg4)` at `BAlwData` over `PF d L W 0`, for circled blue
+   `p ∈ lwSplit Γ.solid`, `q ∈ lwSplit p.2`, `p.1.src = q.1.dst`.  It follows from
+   `baGGGamma_holds`, pathwise on the sequence space (`BAGGOp_pathwise`, `BAGGOp_core`) as
+   `baExpFrame_lw` follows from `baLweight_holds`, and `t = 0` is trivial
+   (`Ǧ = 0`, `S = S⁺ = 0`).
+3. **The frame identity** `BAexpFrameE` and `baExpFrameE_holds : ∀ d, BAexpFrameE d`.
+4. **Counters and order** (Section 5, the counters of `BAstepMono`): `gg_counters`, `gg_raw`,
+   `gg_scalingOrderG`, `gg_mono`; the table at the head of Section 5 says which terms keep the
    order (`A1` with `κ = 0`) and which gain.
-5. Compiled instances (`RBM.Graph.BAGGOpInst`): `baGGLhs` (`BAVocab`), `baGG3` (derivative terms),
-   `baGG4` (`A1` gains `2`).
 
 The private declarations of `Graph/BAWeightOp.lean` and `Graph/BAExpandWOrd.lean` that the order
 bookkeeping reuses (`BAWeightOp_ext4_ge`, `BAExpandWOrd_ext_ge`, the closure lemmas, ...) are
-reached with `open private` (Batteries; precedent `Induction/DuhamelII.lean:42`), not copied.
+reached with `open private` (Batteries; as in `Induction/DuhamelII.lean`), not copied.
 -/
 
 set_option linter.style.setOption false
@@ -64,11 +61,11 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Green RBM.BA
 
-/-! ## 1. Target 1: the term lists (verbatim from the T2395 probe) -/
+/-! ## 1. The term lists -/
 
 section Ops
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-/-- **`GGGamma`** with the D402 coefficient (`B:393-405`, probe `t/T2387` 328-339, L2c2) at `p = Ǧ_{xy}`, `q = Ǧ_{y'x}` (`q ∈ lwSplit p.2`): `gg2` is the
+/-- **`GGGamma`** ((B.20), with the coefficient `W - 1 = M⁺S⁺`) at `p = Ǧ_{xy}`, `q = Ǧ_{y'x}` (`q ∈ lwSplit p.2`): `gg2` is the
 first two sums (`M⁺S⁺ = W - 1`, `u, β = bpv 0, 1`) and the third sum with `W = 1` (`α, β = bpv 0, 1`), `gg4` the third sum with `W - 1` (`u, w, α, β = bpv 0..3`). -/
 def BAGraph.gg2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : List (BAGraph E (I ⊕ Fin 2)) :=
   let x := owxEmb 2 p.1.src; let y := owxEmb 2 p.1.dst; let y' := owxEmb 2 q.1.src
@@ -402,7 +399,7 @@ private def BAGGOp_R (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E
   ∑ α, ∑ β, ((Γ.gg2 p q).map fun T => T.term D (owxLab2 ℓe ℓi α β)).sum +
     ∑ z, ∑ y, ∑ α, ∑ β, ((Γ.gg4 p q).map fun T => T.term D (BAWeightOp_lab4 ℓe ℓi z y α β)).sum
 
-/-- **The pathwise form of `GGGamma`**: the terms of `gg2` and `gg4` sum to `K` times the right side of `(B.20)` (D402 coefficient)
+/-- **The pathwise form of `GGGamma`**: the terms of `gg2` and `gg4` sum to `K` times the right side of (B.20) (coefficient `W - 1 = M⁺S⁺`)
 with `f` and `∂f` read off the edges of `q.2`. -/
 private theorem BAGGOp_pathwise (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (D : BALData ι)
     (Wm : Matrix ι ι ℂ) (hW : ∀ a b, Wm a b = (if a = b then 1 else 0) + ∑ z, D.M a z * D.M z a * D.Sp z b)
@@ -494,13 +491,13 @@ end Pathwise
 
 end TermForms
 
-/-! ## 3. Target 2: the value identity -/
+/-! ## 3. The value identity -/
 
 section Core
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- Closure of `Tame` under the operations of the expansion (copy of the local macro `bwo_tame` of `Graph/BAWeightOp.lean`). -/
+/-- Closure of `Tame` under the operations of the expansion (as the local macro `bwo_tame` of `Graph/BAWeightOp.lean`). -/
 local macro "bgo_tame" : tactic =>
   `(tactic| repeat' first
     | exact Tame.const _
@@ -514,7 +511,7 @@ local macro "bgo_tame" : tactic =>
     | apply Tame.neg
     | (apply Tame.sum; intros; skip))
 
-/-- **One labelling of the old vertices** (the BA twin of `BAWeightOp_core` for `GGGamma`): for the circled blue edges
+/-- **One labelling of the old vertices** (as `BAWeightOp_core`, for `GGGamma`): for the circled blue edges
 `p.1 = Ǧ_{xy}`, `q.1 = Ǧ_{y'x}` (`p.1.src = q.1.dst`), `𝔼 Γ.term` at the labelling `(ℓe, ℓi)` is the expectation of the sum, over
 the labels of the new vertices, of the terms of `gg2` and `gg4` (`BAGGOp_R`), on the sequence space.  From `baGGGamma_holds`
 through `lwWx_integral`; the pathwise identity is `BAGGOp_pathwise`. -/
@@ -777,8 +774,7 @@ private theorem BAGGOp_val_seq (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ) (hSelf : 
   rw [hL1, integral_finsetSum _ fun ℓi _ => (hcore ℓi).1]
   exact Finset.sum_congr rfl fun ℓi _ => (hcore ℓi).2
 
-/-- **Target 2: `GGGamma` (B.20, D402) as a graph operation** (`B:393-405`; the second conjunct of `BAexpFrameE`, probe
-`t/T2395:RBM3D/Probe/T2395Pins.lean:244-251`): for circled blue `p ∈ lwSplit Γ.solid`, `q ∈ lwSplit p.2` with `p.1.src = q.1.dst`
+/-- **`GGGamma` (B.20) as a graph operation** (the second conjunct of `BAexpFrameE`): for circled blue `p ∈ lwSplit Γ.solid`, `q ∈ lwSplit p.2` with `p.1.src = q.1.dst`
 (`p.1 = Ǧ_{xy}`, `q.1 = Ǧ_{y'x}`), `𝔼 Γ.val = 𝔼 (Σ_{Δ ∈ gg2} Δ.val + Σ_{Δ ∈ gg4} Δ.val)` at the model data `BAlwData` over
 `PF d L W 0`.  For `0 < t < 1`: `baGGGamma_holds` with `W = 1 + M⁺ (S W)` (`BAWeightOp_W_sub_one`), on the sequence space and
 transported by `lwWx_integral`; for `t = 0` both sides vanish (`Ǧ = 0`, `S = S⁺ = 0`). -/
@@ -831,10 +827,10 @@ theorem baExpFrame_gg (d : ℕ) : ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L
 
 end Final
 
-/-! ## 4. Target 3: `BAexpFrameE` and `baExpFrameE_holds` -/
+/-! ## 4. `BAexpFrameE` and `baExpFrameE_holds` -/
 
-/-- L2c1, L2c2 consumed by L3a: the frame identities of `lem_lweight` at a self-loop (`lw2`, `lw4`) and of `GGGamma` at a pair (`gg2`, `gg4`),
-as `lanlw_val` (`BAExpandW.lean:908`) for `lanlw`.  Verbatim from the T2395 probe (`t/T2395:RBM3D/Probe/T2395Pins.lean:244-251`). -/
+/-- The frame identities of `lem_lweight` at a self-loop (`lw2`, `lw4`) and of `GGGamma` at a pair (`gg2`, `gg4`),
+as `lanlw_val` (`Graph/BAExpandW.lean`) for `lanlw`. -/
 def BAexpFrameE (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 →
     ∀ {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix) (ℓe : Ex → Idx d L W),
@@ -844,12 +840,12 @@ def BAexpFrameE (d : ℕ) : Prop :=
         ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
           ∫ ω, baSum (Γ.gg2 p q) (BAlwData d L W g0 Em t m ω) ℓe + baSum (Γ.gg4 p q) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0))
 
-/-- **Target 3: the frame identity**, for every `d`: `baExpFrame_lw` (the self-loop) and `baExpFrame_gg` (the pair). -/
+/-- **The frame identity**, for every `d`: `baExpFrame_lw` (the self-loop) and `baExpFrame_gg` (the pair). -/
 theorem baExpFrameE_holds (d : ℕ) : BAexpFrameE d := fun L W _ _ hL g0 Em t m hS h0 h1 _ _ _ _ _ _ Γ ℓe =>
   ⟨fun p hp hσ hc hxx => baExpFrame_lw d L W hL g0 Em t m hS h0 h1 Γ ℓe p hp hσ hc hxx,
     fun p hp q hq hσp hcp hσq hcq hxy => baExpFrame_gg d L W hL g0 Em t m hS h0 h1 Γ ℓe p hp q hq hσp hcp hσq hcq hxy⟩
 
-/-! ## 5. Target 4: counters and order of the terms
+/-! ## 5. Counters and order of the terms
 
 `T°` is `T` with every solid edge circled (`BAWeightOp_circ`); `raw = ord T° - ord Γ`.  The terms of `gg2`, `gg4` are:
 
@@ -1533,7 +1529,7 @@ vertex (a vertex `inl _`), else one (`BAGGOp_addM_cnt`). -/
 def BAGGOp_kappa (Γ : BAGraph E I) (a b : E ⊕ I) : ℕ :=
   if Γ.atom a = Γ.atom b ∨ (¬ (∀ w ∈ Γ.atom a, w.isRight = true) ∧ ¬ (∀ w ∈ Γ.atom b, w.isRight = true)) then 0 else 1
 
-/-- The number of atoms with an external vertex (`BAGraph.nExt` of the T2395 probe, `:33`). -/
+/-- The number of atoms with an external vertex. -/
 def BAGGOp_nExt (Γ : BAGraph E I) : ℕ := ((Finset.univ.filter fun v : E ⊕ I => v.isLeft = true).image Γ.atom).card
 
 private theorem BAGGOp_ext_nS (k : ℕ) (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (s : List (SEdge (E ⊕ (I ⊕ Fin k))))
@@ -1603,7 +1599,7 @@ private theorem BAGGOp_heads (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (
         (BAGGOp_A3_atoms Γ p q).1 (BAGGOp_A3_atoms Γ p q).2 (BAGGOp_nM_le Γ _ _ _ _ p.1.src p.1.dst (BAGGOp_A3_e3 Γ p q))
 
 
-/-- The counters of `BAstepMono` at `T°` (T2395 design §3 Step 3 (a), (c); L3a4): `n_M`, `n_A - n_W` and the number of external
+/-- The counters of `BAstepMono` at `T°`: `n_M`, `n_A - n_W` and the number of external
 atoms of `T°` do not exceed those of `Γ`. -/
 def BAGGOp_Mono {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E I)
     (T : BAGraph E' I') : Prop :=
@@ -1614,7 +1610,7 @@ private theorem BAGGOp_gg2_tail (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × Lis
     (Γ.gg2 p q).tail = [BAGGOp_A2 Γ p q, BAGGOp_A3 Γ p q] ++
       ([BAGGOp_A4 Γ p q, BAGGOp_A5 Γ p q] ++ (lwSplit q.2).map (BAGGOp_AD Γ p q)) := rfl
 
-/-- **Target 4, raw counters** (`B:353`, T2395 design §3 Step 3 (a)).  `A1` (the first sum): `n_S - 2`, `n_W + 1`, `n_A - κ`
+/-- **Raw counters** (Definition B.5 `def scalingBA`).  `A1` (the first sum): `n_S - 2`, `n_W + 1`, `n_A - κ`
 (`κ ∈ {0, 1}`, `BAGGOp_kappa`), `n_M` not raised; `A2`, `A3` (the second sum): `n_S - 1`, `n_W + 1`, `n_A`, `n_M` not raised; `A4`,
 `A5`, `AD` (the third sum with `W = 1`) and `B1`, `B2`, `BD` (with `W - 1`): `n_S + 1`, `(n_W, n_A) + (1, 1)` resp. `(2, 2)`, `n_M`
 (exact).  For every graph `Γ`, normal or not. -/
@@ -1630,9 +1626,8 @@ theorem gg_counters {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [D
   exact ⟨⟨a, b, c, d⟩, fun T hT => (fun h => ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩) (h2 T hT),
     fun T hT => (BAGGOp_tail2_cnt Γ p q hp hq T hT).1, fun T hT => (BAGGOp_tail4_cnt Γ p q hp hq T hT).1⟩
 
-/-- **Target 4, raw order** (`raw = ord T° - ord Γ`, T2395 design §3 Step 3): `A1` has `ord A1 = ord Γ + 2κ`, so it **keeps the
-order of `Γ` iff `κ = 0`** (the atoms of `y = p.1.dst`, `y' = q.1.src` coincide or both contain an external vertex: the case
-`baGGLhs`) and gains `2` otherwise; every other term `T` of `gg2` and `gg4` has `ord T° = ord Γ + 1`. -/
+/-- **Raw order** (`raw = ord T° - ord Γ`): `A1` has `ord A1 = ord Γ + 2κ`, so it **keeps the
+order of `Γ` iff `κ = 0`** (the atoms of `y = p.1.dst`, `y' = q.1.src` coincide or both contain an external vertex: the case of the first term of `gg2`) and gains `2` otherwise; every other term `T` of `gg2` and `gg4` has `ord T° = ord Γ + 1`. -/
 theorem gg_raw {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
     (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
     (BAGGOp_A1 Γ p q).scalingOrder = Γ.scalingOrder + 2 * (BAGGOp_kappa Γ q.1.src p.1.dst : ℤ) ∧
@@ -1660,7 +1655,7 @@ theorem gg_raw {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [Decida
     push_cast
     ring
 
-/-- **Target 4, the order of the partition** (`B:354-355`, `(eq:GGraisesord)` read with `n_A`, T2398b): for a normal `Γ`,
+/-- **The order of the partition** ((B.17) `eq:ordG_BA`, (B.9) `eq:GGraisesord` read with `n_A`): for a normal `Γ`,
 `ord Γ ≤ ordG T` for every term `T` of `gg2` and `gg4`: `A1` (`ord = ord Γ + 2κ`), `A2`, `A3` are normal; for the others `ord T° = ord Γ + 1`
 and a member with `j` `M`-splits has `ord = ord Γ + 1 - j + 2κ'`, `κ' ≥ 1` once `j ≥ 2` (the singleton atom `{β}` is merged). -/
 theorem gg_scalingOrderG {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
@@ -1698,7 +1693,7 @@ theorem gg_scalingOrderG {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype I
     · exact BAGGOp_tail2_ge Γ hN p q hp hq _ (by simp)
   · exact BAGGOp_tail2_ge Γ hN p q hp hq _ (List.mem_append_right _ hT)
 
-/-- **Target 4, the counters of `BAstepMono` at `T°`** for the terms of `gg2` and `gg4` (T2395 design §3 Step 3 (a), (c); L3a4). -/
+/-- **The counters of `BAstepMono` at `T°`** for the terms of `gg2` and `gg4`. -/
 theorem gg_mono {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
     (p q : SEdge (Ex ⊕ Ix) × List (SEdge (Ex ⊕ Ix))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
     (∀ T ∈ Γ.gg2 p q, BAGGOp_Mono Γ T) ∧ (∀ T ∈ Γ.gg4 p q, BAGGOp_Mono Γ T) := by
@@ -1726,13 +1721,6 @@ theorem gg_mono {Ex Ix : Type} [Fintype Ex] [DecidableEq Ex] [Fintype Ix] [Decid
   · exact tail _ 2 (BAGGOp_tail4_cnt Γ p q hp hq T hT).1 (BAGGOp_tail4_cnt Γ p q hp hq T hT).2
 
 end Order
-
-/-! ## 6. Compiled instances (namespace `RBM.Graph.BAGGOpInst`)
-
-`Γ = baGGLhs` (`BAVocab.lean:1181`, `Ǧ_{y'x} Ǧ_{xy}`; `y', y = inl 0, inl 1` external, `x = inr 0` internal), `p = (Ǧ_{xy}, [Ǧ_{y'x}])`,
-`q = (Ǧ_{y'x}, [])`: `gg2` has five terms and `gg4` two (no derivative terms, `q.2 = []`); `baGG3` has one more circled edge
-`Ǧ_{yy'}`, so `gg2` has six terms and `gg4` three (`AD`, `BD` present); `baGG4` has `y, y'` internal and distinct (`κ = 1`).  At `d = 3`,
-`L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2` (`BASelf` is `BAExpandInst.baSelf_zero`) every hypothesis is discharged. -/
 
 end RBM.Graph
 

@@ -7,20 +7,20 @@ import RBM3D.Graph.BAS3CloseC
 import RBM3D.Graph.BAAtom
 
 /-!
-# BA-L L4c1 (T2464), part A: the S3-side analytic bound, sub-root, bridge, kit, `t`-class
+# The `BAExp14bS3` side: the analytic bound, the sub-root, the bridge, the kit, the `t`-class (A)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-121`; design
-`docs/reports/T2398-design.md` §5, §7, supervisor `2026-10-12-0851.md` Q3 (the disjunction),
-`2026-10-12-0554.md` Q2.  Twin of `Graph/LWExpTerm3.lean` `:1-383` (§1-§2), `:1229-1425` (§3, kit),
-`:1662-2174` (§4).  Parts B, C are `Graph/BAExp14cB.lean`, `BAExp14cC.lean` (C is not used).
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`), the graphical part from (B.5)
+`eq;I42inG` to (B.9) `eq:GGraisesord` and the closing remark.  This is the BA counterpart of
+`Graph/LWExpTerm3.lean` (Sections 1-2, the kit of Section 3, and Section 4).  Part B is
+`Graph/BAExp14cB.lean`.
 
 ## Contents (namespace `RBM.BA`; private prefix `BAExp14c_`)
 
-1. The sub-root `baS3RootT0` (`T3C-tr_0` of `MERGED`), its partition, list and identity (target 1).
-2. The bridge `BAS3Bridge`, `baS3Bridge_holds` (target 2).
-3. The `≺ → 𝔼` kit of a BA graph value (target 3).
-4. The `t`-carrying fold class `BAFoldLeafT`, `BAS3CloseT` (target 4).
-5. The statement defs of targets 5 and 6 (`BAG5LeafPrec`, `BAS3LeafAvg`, `BAExp14bS3OfLeaf`).
+1. The sub-root `baS3RootT0` (`T3C-tr_0` of `baS3RootM`), its partition, list and identity.
+2. The bridge `BAS3Bridge`, `baS3Bridge_holds`.
+3. The `≺ → 𝔼` kit of a BA graph value.
+4. The `t`-carrying fold class `BAFoldLeafT`, `BAS3CloseT`.
+5. The statement defs `BAG5LeafPrec`, `BAS3LeafAvg`, `BAExp14bS3OfLeaf`.
 -/
 
 set_option linter.style.longLine false
@@ -50,11 +50,11 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 1. The sub-root of `T3C-tr_0` (target 1) -/
+/-! ## 1. The sub-root of `T3C-tr_0` -/
 
-/-- **The sub-root `T3C-tr_0`** (T2433-prove `:171`): the data of `baS3RootM` with the first solid edge `G(x, i0)` circled,
+/-- **The sub-root `T3C-tr_0`**: the data of `baS3RootM` with the first solid edge `G(x, i0)` circled,
 `Ǧ(x,i0) G(i2,y) G(i3,i2) G(i1,i3)` and the tail `G(y,x)` (`s = true`) or `Ḡ(x,y)` (`s = false`); black `S(i1,i2)`, `S(i0,i3)`;
-`M(i0,i1)`; coefficient `1`.  `MERGED = T3C-tr_0 + D1X` at the level of values. -/
+`M(i0,i1)`; coefficient `1`.  `baS3RootM = T3C-tr_0 + D1X` at the level of values. -/
 def baS3RootT0 (s : Bool) : BAGraph (Fin 2) (Fin 4) :=
   { solid := [SEdge.mk true true (Sum.inl 0) (Sum.inr 0), SEdge.mk true false (Sum.inr 2) (Sum.inl 1),
       SEdge.mk true false (Sum.inr 3) (Sum.inr 2), SEdge.mk true false (Sum.inr 1) (Sum.inr 3),
@@ -72,7 +72,7 @@ private theorem BAExp14c_split_circ {V : Type*} (e : SEdge V) (es : List (SEdge 
   simp only [baSplitSolid, List.mem_flatMap, he, Bool.false_eq_true, ↓reduceIte, List.mem_cons, List.mem_singleton]
   exact ⟨r0, hr0, Or.inl rfl⟩
 
-/-- **Target 1, inclusion of the partitions** (`T2464_rootT0_sub`): every term of the sub-root's partition is a term of `MERGED`'s
+/-- **Inclusion of the partitions**: every term of the sub-root's partition is a term of that of `baS3RootM`
 (the circled child of `G(x,i0)` in the first step of `baSplitSolid`). -/
 theorem baS3RootT0_sub : ∀ s : Bool, ∀ P ∈ (baS3RootT0 s).partition, P ∈ (baS3RootM s).partition := by
   intro s P hP
@@ -81,15 +81,15 @@ theorem baS3RootT0_sub : ∀ s : Bool, ∀ P ∈ (baS3RootT0 s).partition, P ∈
   obtain ⟨Γ, ⟨r, hr, rfl⟩, rfl⟩ := hP
   exact ⟨_, ⟨r, BAExp14c_split_circ (SEdge.mk true false (Sum.inl 0) (Sum.inr 0)) _ rfl r hr, rfl⟩, rfl⟩
 
-/-- **Target 1, inclusion of the expanded lists** (`T2464_rootT0_list`): every output of the expansion of the sub-root is an output of
-the list of `MERGED` (index `0` of `BAS3expandRoot`), so the closure of L4d2b classifies it. -/
+/-- **Inclusion of the expanded lists**: every output of the expansion of the sub-root is an output of
+the list of `baS3RootM` (index `0` of `BAS3expandRoot`), so the closure of the expansion lists classifies it. -/
 theorem baS3RootT0_list : ∀ (sel : BASel) (fuel : ℕ) (s : Bool),
     ∀ q ∈ (baS3RootT0 s).partition.flatMap (fun P => (BAexpand sel fuel P).map Prod.snd), q ∈ BAS3expandRoot sel fuel 0 s := by
   intro sel fuel s q hq
   obtain ⟨P, hP, hq⟩ := List.mem_flatMap.1 hq
   exact List.mem_flatMap.2 ⟨P, baS3RootT0_sub s P hP, hq⟩
 
-/-- **Target 1, the identity of the sub-root** (`T2464_rootT0_identity`; twin of `BAS3Identity` for one root): `𝔼 root = Σ_μ 𝔼 Γ_μ`
+/-- **The identity of the sub-root** (as `BAS3Identity` for one root): `𝔼 root = Σ_μ 𝔼 Γ_μ`
 at `BAlwData` over `PF d L W 0`, `BASelf`, `0 ≤ t < 1`, every selector and fuel. -/
 theorem baS3RootT0_identity (d : ℕ) : ∀ (sel : BASel) (fuel : ℕ) (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ),
     BASelf d L g0 (E : ℂ) m → 0 ≤ t → t < 1 → ∀ (s : Bool) (x y : Idx d L W),
@@ -99,7 +99,7 @@ theorem baS3RootT0_identity (d : ℕ) : ∀ (sel : BASel) (fuel : ℕ) (L W : �
   intro sel fuel L W _ _ hL g0 E t m hSelf ht0 ht1 s x y
   exact BAS3Close_root_identity d sel fuel (baS3RootT0 s) L W hL g0 E t m hSelf ht0 ht1 x y
 
-/-! ## 2. The bridge: the S3 families are `t⁻¹ ×` the block average of the root values (target 2)
+/-! ## 2. The bridge: the `BAExp14bS3` families are `t⁻¹ ×` the block average of the root values
 
 Root value `= Σ` over the internal labels of the product of the edge factors (`sum_pi_fin_succ`); the black edge `S(i0, i3)` of a root is the
 block identity `S_{wv} = t W^{-d} 1[v ∈ [w]]`, which turns the `v`-sum into the block sum `Σ_{v ∈ [w]}` inside `∂X_{[α]}`
@@ -379,7 +379,7 @@ private theorem BAExp14c_frame (ω : sz.SeqΩ) (σ : Bool) (a b : Zd d (sz.L n))
 
 end Pointwise
 
-/-- **The bridge** (target 2, `T2464_BAS3Bridge`). -/
+/-- **The bridge**. -/
 def BAS3Bridge (d : ℕ) : Prop :=
   ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ (n : ℕ) (t : ℝ), 0 ≤ t → t ≤ BAflowT0 sz z n → ∀ (ω : sz.SeqΩ) (σ : Bool) (a b : Zd d (sz.L n)),
@@ -429,14 +429,14 @@ theorem baS3Bridge_holds : ∀ d : ℕ, BAS3Bridge d := by
   ring
 
 
-/-! ## 3. The `≺ → 𝔼` kit of a BA graph value (target 3; the cut of band §3, `LWExpTerm3:1229-1425`)
+/-! ## 3. The `≺ → 𝔼` kit of a BA graph value (the cut of the band, `Graph/LWExpTerm3.lean` Section 3)
 
 At `t = 0` a graph with a waved edge vanishes (`BAlwS 0 = 0`, `S⁺ = S W`); for `t > 0` the value has the polynomial envelope
 `t^{n_W} N^K` (`|G| ≤ η⁻¹ ≤ 2 κ⁻¹ N^{1-ε}`, `|M| ≤ 1`, `S = t svarF`, `S⁺ = S W` with `W - 1` of bounded `ℓ¹` norm, `|g₀ Ψ| ≤ 𝔡⁻¹`,
-`N^{|I'|}` labellings); the floor is `N⁻¹ ≤ B` (`expAvg_Bctl_ge`).  The producers of the leaf pin (L4c2, L4g) read these. -/
+`N^{|I'|}` labellings); the floor is `N⁻¹ ≤ B` (`expAvg_Bctl_ge`). -/
 
 
-/-- **Target 3, values at `t = 0`**. -/
+/-- **Values at `t = 0`**. -/
 theorem BAExp14c_val_zero : ∀ (d : ℕ) (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (ω : sz.SeqΩ) (P : BAPGraph (Fin 2)), P.g.nW ≠ 0 →
     ∀ ℓ : Fin 2 → Idx d (sz.L n) (sz.W n),
       P.val (BAlwData d (sz.L n) (sz.W n) (BAflowLam0 sz z n) (BAflowEs sz z n) 0 ((baFMz sz z).m n)
@@ -479,7 +479,7 @@ private theorem BAExp14c_list_prod_le {α : Type*} (l : List α) (f : α → ℂ
       _ = _ := by ring
 
 /-- The envelope of a graph value: every solid edge `≤ Bd`, every waved edge `≤ t Bd`, every `Ψ`- and `M`-dotted edge `≤ Bd`, every
-dotted edge `≤ 1`, `|ι|^{n_V}` labellings (twin of `lwExpTerm3_val_norm_le`, `LWExpTerm3:1279`). -/
+dotted edge `≤ 1`, `|ι|^{n_V}` labellings (as `lwExpTerm3_val_norm_le` in `Graph/LWExpTerm3.lean`). -/
 private theorem BAExp14c_val_norm_le {ι E I : Type} [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I]
     (Γ : BAGraph E I) (D : BALData ι) {Bd t : ℝ} (hBd : 1 ≤ Bd) (ht : 0 ≤ t)
     (hG : ∀ x y, ‖D.G x y‖ + ‖D.M x y‖ ≤ Bd) (hM : ∀ x y, ‖D.M x y‖ ≤ Bd) (hS : ∀ x y, ‖D.S x y‖ ≤ t * Bd)
@@ -660,8 +660,7 @@ private theorem BAExp14c_entries (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 �
 
 end Carrier
 
-/-- **Target 3, the envelope** (`T2464_val_env`; twin of `lwExpTerm3_val_norm_le`, `lwExpTerm3_X_norm_le`, `lwExpTerm3_poly`,
-`LWExpTerm3:1279, 1374, 1417`): for every packed BA graph a polynomial envelope `t^{n_W} N^K`, eventually in `n`, uniformly in
+/-- **The envelope** (as `lwExpTerm3_val_norm_le`, `lwExpTerm3_X_norm_le`, `lwExpTerm3_poly` in `Graph/LWExpTerm3.lean`): for every packed BA graph a polynomial envelope `t^{n_W} N^K`, eventually in `n`, uniformly in
 `0 ≤ t ≤ T₀`, the sample and the labels. -/
 theorem BAExp14c_val_env : ∀ (d : ℕ), 3 ≤ d → ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ P : BAPGraph (Fin 2), ∃ K : ℝ, ∀ᶠ n in atTop, ∀ t : ℝ, 0 ≤ t → t ≤ BAflowT0 sz z n →
@@ -708,7 +707,7 @@ theorem BAExp14c_val_env : ∀ (d : ℕ), 3 ≤ d → ∀ (κ ε 𝔠 𝔡 : ℝ
         gcongr
     _ = _ := by ring
 
-/-- **Target 3, `η ≤ 1`** (twin of `lwExpTerm3_etaT_le_one`, `LWExpTerm3:1363`): `η_t = (1 - t) Im m ≤ 1` (`‖m‖ ≤ 1`). -/
+/-- **`η ≤ 1`** (as `lwExpTerm3_etaT_le_one`): `η_t = (1 - t) Im m ≤ 1` (`‖m‖ ≤ 1`). -/
 theorem BAExp14c_eta_le_one {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) : (baFMz sz z).eta n t ≤ 1 := by
   obtain ⟨ht1, hr, hmi, -⟩ := ba_G_data hκ sz hflow n ht0 ht
@@ -720,7 +719,7 @@ theorem BAExp14c_eta_le_one {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε �
   have h3 : 0 ≤ 1 - t := by linarith
   nlinarith [mul_le_mul h2 h1 hmi.le zero_le_one]
 
-/-- **Target 3, the floor** (twin of `lwExpTerm3_floor`, `LWExpTerm3:1333`; from `expAvg_Bctl_ge`): for `N ≥ 2` and `W^{-d} B_{t,0} ≤ 2`,
+/-- **The floor** (as `lwExpTerm3_floor`; from `expAvg_Bctl_ge`): for `N ≥ 2` and `W^{-d} B_{t,0} ≤ 2`,
 `N^{-|o|/2} ≤ η⁻¹ B^{o/2}` for every integer `o` (the BA form has `B ≤ 2`, not `B ≤ 1`). -/
 theorem BAExp14c_floor {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) (hN : 2 ≤ ((sz.size n : ℕ) : ℝ)) (hB : sz.Bctl n t ≤ 2)
@@ -760,13 +759,13 @@ theorem BAExp14c_floor {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔠 �
     _ ≤ _ := mul_le_mul_of_nonneg_right hη' hBo
 
 
-/-! ## 4. The `t`-carrying fold class (target 4)
+/-! ## 4. The `t`-carrying fold class
 
-The S3 integrand is `t⁻¹ ×` the root average (target 2), and `BAFoldLeaf` hides the `t^p`, `p ≥ 2`, of its weight (`ρ = BAS3Close_rho (2 + qq)
-= t · BAS3Close_rho (1 + qq)`, `BAS3CloseC:780-784`).  `BAFoldLeafT` keeps one factor `t` outside the weight, whose `ℓ¹` bounds are those of
-`BAS3Close_rho (1 + qq)`; all 14 catalogue graphs belong to it (the kernel facts are those of L4d2b, through `open private`). -/
+The `BAExp14bS3` integrand is `t⁻¹ ×` the root average (Section 2), and `BAFoldLeaf` hides the `t^p`, `p ≥ 2`, of its weight (`ρ = BAS3Close_rho (2 + qq)
+= t · BAS3Close_rho (1 + qq)`, `Graph/BAS3CloseC.lean`).  `BAFoldLeafT` keeps one factor `t` outside the weight, whose `ℓ¹` bounds are those of
+`BAS3Close_rho (1 + qq)`; all 14 catalogue graphs belong to it (the kernel facts are those of the closure files, through `open private`). -/
 
-/-- **The fold class with the factor `t`** (target 4, `T2464_BAFoldLeafT`): `BAFoldLeaf` (`BAS3CloseC:965`) with the weight `t · ρ` in clause (i)
+/-- **The fold class with the factor `t`**: `BAFoldLeaf` (`Graph/BAS3CloseC.lean`) with the weight `t · ρ` in clause (i)
 and the uniform `ℓ¹` bounds on `ρ` in clause (ii). -/
 def BAFoldLeafT (q : BAPGraph (Fin 2)) : Prop :=
   ∃ (σ e : Bool) (ρ : ∀ (d : ℕ) (sz : Sizes d), (ℕ → ℂ) → ∀ n : ℕ, ℝ → Zd d (sz.L n) → Zd d (sz.L n) →
@@ -787,7 +786,7 @@ def BAFoldLeafT (q : BAPGraph (Fin 2)) : Prop :=
         ∀ a b : Zd d (sz.L n), (∀ c₁, ∑ c₂, ∑ c₃, ∑ c₄, ‖ρ d sz z n t a b c₁ c₂ c₃ c₄‖ ≤ Cρ) ∧
           (∀ c₄, ∑ c₁, ∑ c₂, ∑ c₃, ‖ρ d sz z n t a b c₁ c₂ c₃ c₄‖ ≤ Cρ))
 
-/-- **Target 4, transfer** (`T2464_foldTCongr`): the class depends on `q` only through its value. -/
+/-- **Transfer**: the class depends on `q` only through its value. -/
 theorem baFoldLeafT_congr : ∀ q q' : BAPGraph (Fin 2),
     (∀ {ι : Type} [Fintype ι] [DecidableEq ι] (D : BALData ι) (ℓ : Fin 2 → ι), q.val D ℓ = q'.val D ℓ) →
       BAFoldLeafT q → BAFoldLeafT q' := by
@@ -797,7 +796,7 @@ theorem baFoldLeafT_congr : ∀ q q' : BAPGraph (Fin 2),
   rw [← h1 d κ ε 𝔠 𝔡 sz z hf n t ht0 ht ω a b]
   simp only [h]
 
-/-- The generic reduction of L4d2b (`BAS3Close_fold_gen`) with one factor `t` kept outside the weight: the weight `BAS3Close_rho (2 + qq)`
+/-- The generic reduction of the closure (`BAS3Close_fold_gen_i` in `Graph/BAS3CloseC.lean`) with one factor `t` kept outside the weight: the weight `BAS3Close_rho (2 + qq)`
 is `t · BAS3Close_rho (1 + qq)`. -/
 private theorem BAExp14c_foldT_gen (q : BAPGraph (Fin 2)) (σ e : Bool) (qq : ℕ) (Zk Nk : BAS3Close_Kern)
     (hq : BAS3Close_Hq q σ e qq Zk Nk) (hbd : BAS3Close_Bd (1 + qq) Zk Nk) : BAFoldLeafT q := by
@@ -808,8 +807,8 @@ private theorem BAExp14c_foldT_gen (q : BAPGraph (Fin 2)) (σ e : Bool) (qq : �
   simp only [BAS3Close_rho]
   ring
 
-/-- **Target 4, the catalogue** (`T2464_foldT_cat`): the 14 stuck graphs, both roots `T3C-tr_k`, both tail charges, belong to `BAFoldLeafT`
-(the weights of L4d2b have a spare factor `t`: `p = 2 + qq ≥ 2`). -/
+/-- **The catalogue**: the 14 stuck graphs, both roots `T3C-tr_k`, both tail charges, belong to `BAFoldLeafT`
+(the weights of the closure have a spare factor `t`: `p = 2 + qq ≥ 2`). -/
 theorem baS3FoldT_holds : ∀ (k : Bool) (j : Fin 7) (s : Bool), BAFoldLeafT (baS3Stuck k j s) := by
   intro k j s
   obtain ⟨j, hj⟩ := j
@@ -843,7 +842,7 @@ theorem baS3FoldT_holds : ∀ (k : Bool) (j : Fin 7) (s : Bool), BAFoldLeafT (ba
   · exact BAExp14c_foldT_gen _ s false 1 BAS3Close_kKK BAS3Close_kB (BAS3Close_hq16 s)
       (BAS3Close_Bd_of _ _ _ BAS3Close_hZ_KK BAS3Close_hN_B)
 
-/-- **Target 4, the closure with the `t`-carrying class** (`T2464_BAS3CloseT`): every output of the three lists at `BAselStar`, fuel `2`,
+/-- **The closure with the `t`-carrying class**: every output of the three lists at `BAselStar`, fuel `2`,
 both tail charges, is a `BAG5LeafProps` leaf or a `BAFoldLeafT` leaf. -/
 def BAS3CloseT : Prop :=
   ∀ (r : Fin 3) (s : Bool), ∀ q ∈ BAS3expandRoot BAselStar 2 r s, BAG5LeafProps (fun _ _ => [q]) ∨ BAFoldLeafT q
@@ -854,13 +853,12 @@ theorem baS3CloseT_holds : BAS3CloseT := by
   · exact Or.inl h
   · exact Or.inr (baFoldLeafT_congr (baS3Stuck k j s) q (fun D ℓ => (hj D ℓ).symm) (baS3FoldT_holds k j s))
 
-/-! ## 5. The statement defs of targets 5 and 6 (proved in `Graph/BAExp14cB.lean`)
+/-! ## 5. The statement defs (proved in `Graph/BAExp14cB.lean`)
 
-The leaf pin `BAG5LeafPrec` occurs only as the antecedent of `BAS3LeafAvg` and `BAExp14bS3OfLeaf` (as `LwExpG5'OfExpand` carries `LWG5Expand`);
-its producers are L4c2 (the `GtoAG` half) and L4g (the joined half). -/
+The leaf statement `BAG5LeafPrec` occurs only as the antecedent of `BAS3LeafAvg` and `BAExp14bS3OfLeaf`;
+no public result takes it as a hypothesis binder. -/
 
-/-- **Target 5 (a), the leaf pin** (`T2464_BAG5LeafPrec`; statement only, owed to L4c2 and L4g; twin of `LwGraphPrec1`, `LWExpTerm3:1430`, and of
-the probe's `BAGraphPrecJoin`): for every `P` with the leaf properties of `BAG5LeafProps` and every pair `(x, y)`,
+/-- **The leaf statement** (as `LwGraphPrec1` in `Graph/LWExpTerm3.lean`): for every `P` with the leaf properties of `BAG5LeafProps` and every pair `(x, y)`,
 `‖𝔼 P_{xy}‖ ≺ t^{n_W} η_t⁻¹ Bctl^{ord(P)/2}` at `BAlwData` over the carrier law, under the five premises of `BAExp14bS3`. -/
 def BAG5LeafPrec (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -873,10 +871,10 @@ def BAG5LeafPrec (d : ℕ) : Prop :=
             ((baFMz sz z).m n) (BAExp14a_slc sz n ω)) ![p.1, p.2] ∂μ‖)
           (fun n _ _ => (t n) ^ P.g.nW * ((baFMz sz z).eta n (t n))⁻¹ * (sz.Bctl n (t n)) ^ ((P.scalingOrder : ℝ) / 2))
 
-/-- **Target 5 (b)** (`BAS3LeafAvg`, `T2464_BAS3LeafAvg`; supervisor 0851 Q3 `:146-149`, binding): given the leaf pin and the five premises, every
+/-- **`BAS3LeafAvg`**: given the leaf statement and the five premises, every
 `q` that is a `BAG5LeafProps` leaf or a `BAFoldLeafT` leaf has `‖𝔼 W^{-2d} Σ_{x∈[a], y∈[b]} q_{xy}‖ ≺ t (1 - t)⁻¹ Bctl^{5/2}`, uniformly in the
-block pair `(a, b)`.  A `BAG5LeafProps` leaf goes through `GtoAG`/`(Gammamuxy)` pointwise (the pin, per pair) and is then averaged, with the
-`x ~ y` support; a fold leaf goes through L4d2a directly, in averaged form (`twFold2PrecDet`, or `twFold2Prec` with `baS3Xprec_holds`; `𝔼`
+block pair `(a, b)`.  A `BAG5LeafProps` leaf goes through `GtoAG` / (B.7) `Gammamuxy` pointwise (the leaf statement, per pair) and is then averaged, with the
+`x ~ y` support; a fold leaf goes through the fold bound directly, in averaged form (`twFold2Prec` with `baS3Xprec_holds`; `𝔼`
 through `BAExp14a_prec_integral`; the factor `t` restored afterwards). -/
 def BAS3LeafAvg (d : ℕ) : Prop :=
   BAG5LeafPrec d →
@@ -891,8 +889,7 @@ def BAS3LeafAvg (d : ℕ) : Prop :=
                 (BAExp14a_slc sz n ω)) ![x, y]) ∂μ‖)
           (fun n _ _ => t n * ((1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ)))
 
-/-- **Target 6** (`BAExp14bS3OfLeaf`, `T2464_S3OfLeaf`; 0554 Q2 "the assembly"; band `LwExpG5'OfExpand`, `LWExpTerm3:2029`): the leaf pin gives the
-merged S3 pin `BAExp14bS3` (`BAExp14b:181`, per family, five premises), unchanged. -/
+/-- **`BAExp14bS3OfLeaf`** (the assembly): the leaf statement gives `BAExp14bS3` (per family, five premises), unchanged. -/
 def BAExp14bS3OfLeaf (d : ℕ) : Prop := BAG5LeafPrec d → BAExp14bS3 d
 
 end RBM.BA

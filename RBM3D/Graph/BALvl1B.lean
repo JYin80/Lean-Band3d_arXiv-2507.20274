@@ -29,21 +29,25 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3a4 (T2442), part 1: the BA measure predicates, the partition structure and the counter half of Lemma S
+# The BA measure predicates, the partition structure and the counter half of the step lemma (part 1)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-409` (`lanlw`, `lem_lweight`, `GGGamma`, `lvl1 lemma`).  Design: `docs/reports/T2395-design.md` §6
-(row L3a4), §3 Step 3; probe `t/T2395:RBM3D/Probe/T2395Pins.lean:44-55, 259-272, 289-337`.  The BA twin of `Graph/LWLvl1.lean` §1 (`:64-997`) and of `lvl1_step_good`
-(`:3290`), with the band's `×`-dot partition counters replaced by R1's simulation `BAsim'` (`Graph/BASim3`, `baSim'_holds`).
+Paper: Subappendix B.3: Lemma B.6 (`lanlw`), Lemma B.7 (`lem_lweight`), (B.20) `GGGamma`, and the
+`lvl1` lemma at block Anderson.  This is the BA counterpart of `Graph/LWLvl1.lean` (Section 1) and
+of `lvl1_step_good`, with the band's `×`-dot partition counters replaced by the simulation `BAsim'`
+(`Graph/BASim3.lean`, `baSim'_holds`).
 
-## Contents (namespace `RBM.Graph`; private prefix `BALvl1B_`, `RBM.Graph.BALvl1B_*` public helpers used by `Graph/BALvl1B2`)
+## Contents (namespace `RBM.Graph`; private prefix `BALvl1B_`; the public helpers `RBM.Graph.BALvl1B_*` are used by `Graph/BALvl1B2`)
 
-1. **The measure predicates** (probe, verbatim): `BALvl1Good`, `BALvl1GoodLit`, `BAlvl1StepGood`, `BAstepMono`, `ba_good_of_lit`.
-2. **The reduction for `BAsim'`** `ba_lvl1StepGood_of_sim'` (probe 323-337 with `BAsim' m` for `BAsim m`), and `BALvl1B_lit_of_band` (probe 311 on the `baInv` equalities).
-3. **Coarsening and the partition structure** (target 3): `BALvl1B_coarse`, `BALvl1B_adj_mono`, `BALvl1B_part_struct`.
-4. **The counters at the terms**, the assembly `BALvl1B_outs_mono` (and `BALvl1B_outs_fam`, `BALvl1B_outs_ok` with `BALvl1B_TermOk`), and the cases `weight`, `edge`, `gg` of `BAstepMono`.
-5. Compiled instances (namespace `BALvl1BInst`: targets 1 and 3, the cases `weight`, `edge`, `gg`).
+1. **The measure predicates**: `BALvl1Good`, `BALvl1GoodLit`, `BAlvl1StepGood`, `BAstepMono`,
+   `ba_good_of_lit`.
+2. **The reduction for `BAsim'`** `ba_lvl1StepGood_of_sim'`, and `BALvl1B_lit_of_band`.
+3. **Coarsening and the partition structure**: `BALvl1B_coarse`, `BALvl1B_adj_mono`,
+   `BALvl1B_part_struct`.
+4. **The counters at the terms**, the assembly `BALvl1B_outs_mono` (and `BALvl1B_outs_fam`,
+   `BALvl1B_outs_ok` with `BALvl1B_TermOk`), and the cases `weight`, `edge`, `gg` of `BAstepMono`.
 
-The cases `within`, `ggSplit` (macro claims), `baStepMono_holds`, `baLvl1StepGood_holds` are in `Graph/BALvl1B2`.
+The cases `within`, `ggSplit` (macro claims), `baStepMono_holds`, `baLvl1StepGood_holds` are in
+`Graph/BALvl1B2`.
 -/
 
 noncomputable section
@@ -52,13 +56,13 @@ namespace RBM.Graph
 
 open RBM
 
-/-! ## 1. The measure predicates (the probe, verbatim) -/
+/-! ## 1. The measure predicates -/
 
 section Measure
 
 variable {E₁ I₁ E₂ I₂ : Type} [Fintype E₁] [DecidableEq E₁] [Fintype I₁] [DecidableEq I₁] [Fintype E₂] [DecidableEq E₂] [Fintype I₂] [DecidableEq I₂]
 
-/-- **`Lvl1Good` of the band on atoms, with `#external atoms` after `ord`** (D§2, correction K3): the order does not fall, `n_M` and
+/-- **`Lvl1Good` of the band on atoms, with `#external atoms` after `ord`**: the order does not fall, `n_M` and
 `n_A - n_W` do not grow, the external atoms do not multiply, and either the order rises or it stays and `(nExt, loops, n_S, pairs)` falls. -/
 def BALvl1Good (Γ : BAGraph E₁ I₁) (Q : BAGraph E₂ I₂) : Prop :=
   Γ.scalingOrder ≤ Q.scalingOrder ∧ Q.nM ≤ Γ.nM ∧ ((Q.nA : ℤ) - Q.nW ≤ (Γ.nA : ℤ) - Γ.nW) ∧ Q.nExt ≤ Γ.nExt ∧
@@ -66,13 +70,13 @@ def BALvl1Good (Γ : BAGraph E₁ I₁) (Q : BAGraph E₂ I₂) : Prop :=
       (Q.nExt < Γ.nExt ∨ (Q.nExt = Γ.nExt ∧ (Q.nLoops < Γ.nLoops ∨ (Q.nLoops = Γ.nLoops ∧
         (Q.nS < Γ.nS ∨ (Q.nS = Γ.nS ∧ Q.nPairs < Γ.nPairs))))))))
 
-/-- the band-literal measure `(loops, n_S, pairs)` of `Lvl1Good` (`LWLvl1.lean:989-992`) read on atoms, without `nExt`. -/
+/-- the band-literal measure `(loops, n_S, pairs)` of `Lvl1Good` (`Graph/LWLvl1.lean`) read on atoms, without `nExt`. -/
 def BALvl1GoodLit (Γ : BAGraph E₁ I₁) (Q : BAGraph E₂ I₂) : Prop :=
   Γ.scalingOrder ≤ Q.scalingOrder ∧ Q.nM ≤ Γ.nM ∧ ((Q.nA : ℤ) - Q.nW ≤ (Γ.nA : ℤ) - Γ.nW) ∧
     (Γ.scalingOrder < Q.scalingOrder ∨ (Q.scalingOrder = Γ.scalingOrder ∧
       (Q.nLoops < Γ.nLoops ∨ (Q.nLoops = Γ.nLoops ∧ (Q.nS < Γ.nS ∨ (Q.nS = Γ.nS ∧ Q.nPairs < Γ.nPairs))))))
 
-/-- the transport lemma (D§2): the band-literal measure and `nExt ≤` give `BALvl1Good`. -/
+/-- the transport lemma: the band-literal measure and `nExt ≤` give `BALvl1Good`. -/
 theorem ba_good_of_lit {Γ : BAGraph E₁ I₁} {Q : BAGraph E₂ I₂} (h : BALvl1GoodLit Γ Q) (hx : Q.nExt ≤ Γ.nExt) : BALvl1Good Γ Q := by
   obtain ⟨h1, h2, h3, h4⟩ := h
   refine ⟨h1, h2, h3, hx, ?_⟩
@@ -84,16 +88,16 @@ theorem ba_good_of_lit {Γ : BAGraph E₁ I₁} {Q : BAGraph E₂ I₂} (h : BAL
 
 end Measure
 
-/-- L3a4: every output of a step is normal and good (the BA `lvl1_step_good`, `LWLvl1.lean:3290`). -/
+/-- every output of a step is normal and good (the BA `lvl1_step_good` of `Graph/LWLvl1.lean`). -/
 def BAlvl1StepGood : Prop := ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BALocStep P outs → P.g.Normal →
   ∀ Q ∈ outs, Q.g.Normal ∧ BALvl1Good P.g Q.g
 
-/-- **L3a4, the counter half of Lemma S** (D§3 Step 3 (a), (c)): every output of a frame step at a normal graph is normal, its order does
+/-- **The counter half of the step lemma**: every output of a frame step at a normal graph is normal, its order does
 not fall, `n_M`, `n_A - n_W` and the number of external atoms do not grow. -/
 def BAstepMono : Prop := ∀ {E : Type} (P : BAPGraph E) (outs : List (BAPGraph E)), BAFrameStep P outs → P.g.Normal → ∀ Q ∈ outs, Q.g.Normal ∧
   P.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.nM ≤ P.g.nM ∧ ((Q.g.nA : ℤ) - Q.g.nW ≤ (P.g.nA : ℤ) - P.g.nW) ∧ Q.g.nExt ≤ P.g.nExt
 
-/-! ## 2. The reduction for `BAsim'` (probe 301-337) -/
+/-! ## 2. The reduction for `BAsim'` -/
 
 section Reduction
 
@@ -112,7 +116,7 @@ private theorem BALvl1B_good_congr {Γ : BAGraph E₁ I₁} {Q : BAGraph E₂ I�
   simp only [BAGraph.counters, a1, a2, a3, a4, b1, b2, b3, b4, he, he', hl, hl', hp, hp'] at h ⊢; exact h
 
 /-- **The band's `Lvl1Good` at a packed band graph with the invariants of `P`, for an output with the invariants of `Q`, is `BALvl1GoodLit P Q`**
-(probe 311, restated on the invariant tuples `PGraph.baInv`, `BAPGraph.baInv` of R1: the tuples read the order, `n_M`, `n_A - n_W`, loops, `n_S`, pairs, `nExt`). -/
+(stated on the invariant tuples `PGraph.baInv`, `BAPGraph.baInv`: the tuples read the order, `n_M`, `n_A - n_W`, loops, `n_S`, pairs, `nExt`). -/
 theorem BALvl1B_lit_of_band {E : Type} {P Q : BAPGraph E} {G Q0 : PGraph E} (hG : G.baInv = P.baInv) (hQ : Q0.baInv = Q.baInv)
     (h : Lvl1Good G.g Q0.g) : BALvl1GoodLit P.g Q.g := by
   simp only [PGraph.baInv, BAPGraph.baInv, Prod.mk.injEq] at hG hQ
@@ -124,9 +128,9 @@ theorem BALvl1B_lit_of_band {E : Type} {P Q : BAPGraph E} {G Q0 : PGraph E} (hG 
 
 end Reduction
 
-/-- **The reduction of S′ for R1's `BAsim'`** (D§2; probe 323-337 with `BAsim' m` in place of `BAsim m`): the BA `lvl1_step_good` (L3a4) from the image (R0), the simulation (R1,
-`BAsim'`, `baSim'_holds`), the counter half of Lemma S (`BAstepMono`, `baStepMono_holds` in `Graph/BALvl1B2`), the twist invariance (L3a1) and the band's `lvl1_step_good`
-(`LWLvl1.lean:3290`) at the atomic image `T.img` of the BA graph `T` that `BAsim'` provides. -/
+/-- **The reduction for `BAsim'`**: the BA `lvl1_step_good` from the image (`BAimg`), the simulation (`BAsim'`, `baSim'_holds`),
+the counter half of the step lemma (`BAstepMono`, `baStepMono_holds` in `Graph/BALvl1B2`), the twist invariance (`BAtwistInv`) and the band's `lvl1_step_good`
+(`Graph/LWLvl1.lean`) at the atomic image `T.img` of the BA graph `T` that `BAsim'` provides. -/
 theorem ba_lvl1StepGood_of_sim' : ∀ m : ℂ, BAimg → BAsim' m → BAstepMono → BAtwistInv → BAlvl1StepGood := by
   intro m hi hs hm ht E P outs hst hP Q hQ
   obtain ⟨c, t, F, hF, rfl⟩ := hst
@@ -144,7 +148,7 @@ theorem ba_lvl1StepGood_of_sim' : ∀ m : ℂ, BAimg → BAsim' m → BAstepMono
   obtain ⟨-, e, l, p⟩ := ht c t P.g; obtain ⟨-, e', l', p'⟩ := ht c t Q'.g
   exact ⟨(ht c t Q'.g).1 hN, BALvl1B_good_congr ⟨(ba_twist_counters c t P.g).symm, e.symm, l.symm, p.symm⟩ ⟨ba_twist_counters c t Q'.g, e', l', p'⟩ hg⟩
 
-/-! ## 3. Coarsening and the partition structure (target 3; twin of `LWLvl1` §1 `lvl1_nM_le`, `lvl1_part_nM`, `:531-602`) -/
+/-! ## 3. Coarsening and the partition structure (as `lvl1_nM_le`, `lvl1_part_nM` in `Graph/LWLvl1.lean`) -/
 
 section Coarse
 
@@ -206,7 +210,7 @@ theorem BALvl1B_adj_mono (G₁ G₂ : BAGraph E I) (hw : G₁.waved = G₂.waved
     rwa [← this]
   · exact Or.inr (hA u v h)
 
-/-- **Coarsening** (twin of `lvl1_nM_le`, `LWLvl1:531`; the injection of `BAWeightOp_nA_le`): if every atom edge and every molecule edge of `G₁` is one of `G₂`, then `G₂` has no more internal atoms,
+/-- **Coarsening** (as `lvl1_nM_le`; the injection of `BAWeightOp_nA_le`): if every atom edge and every molecule edge of `G₁` is one of `G₂`, then `G₂` has no more internal atoms,
 no more internal molecules and no more atoms with an external vertex. -/
 theorem BALvl1B_coarse (G₁ G₂ : BAGraph E I) (hA : ∀ u v, G₁.atomAdj u v = true → G₂.atomAdj u v = true)
     (hM : ∀ u v, G₁.adj u v = true → G₂.adj u v = true) : G₂.nA ≤ G₁.nA ∧ G₂.nM ≤ G₁.nM ∧ G₂.nExt ≤ G₁.nExt := by
@@ -241,7 +245,7 @@ section PartStruct
 
 variable {E0 : Type}
 
-/-- **Target 3, the partition structure and the merge budget** (`T2395` design §3 Step 3 (a); twin of `lvl1_part_nM`, `LWLvl1:602`): for a term `T` that extends a normal graph `G` (`BASim_Ext`) and a term `Δ` of its
+/-- **The partition structure and the merge budget** (as `lvl1_part_nM`): for a term `T` that extends a normal graph `G` (`BASim_Ext`) and a term `Δ` of its
 `M`-split, `Δ` is normal, the packed output of `Δ` has the invariants of `Δ` (`BASim_outOf_baInv`), and against `T°` (every solid edge circled) the number of waved edges is equal and the numbers of internal atoms,
 internal molecules and atoms with an external vertex are not larger (an `M`-split only joins atoms and molecules); `Δ` has no more atoms with an external vertex than `G`. -/
 theorem BALvl1B_part_struct (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableEq I0] (G : BAGraph P.E' I0) {k : ℕ}
@@ -264,13 +268,13 @@ section Terms
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- `T°` has the counters of `T` (copy of the private `BAWeightOp_circ_counters`) -/
+/-- `T°` has the counters of `T` (as the private `BAWeightOp_circ_counters`) -/
 theorem BALvl1B_circ_counters (T : BAGraph E I) : (BAWeightOp_circ T).counters = T.counters := by
   have hS : (BAWeightOp_circ T).nS = T.nS := by simp [BAGraph.nS, BAWeightOp_circ]
   simp only [BAGraph.counters, hS]
   rfl
 
-/-- a generic extension of a normal graph with circled new solid edges is normal (copy of the private `BAWeightOp_ext_normal`) -/
+/-- a generic extension of a normal graph with circled new solid edges is normal (as the private `BAWeightOp_ext_normal`) -/
 theorem BALvl1B_ext_normal (k : ℕ) (Γ : BAGraph E I) (hN : Γ.Normal) (rest : List (SEdge (E ⊕ I)))
     (s : List (SEdge (E ⊕ (I ⊕ Fin k)))) (w : List (WEdge (E ⊕ (I ⊕ Fin k)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin k))))
     (hrest : ∀ e ∈ rest, e.circ = true) (hs : ∀ e ∈ s, e.circ = true) : (BAGraph.ext k Γ rest s w md).Normal := by
@@ -356,9 +360,9 @@ theorem BALvl1B_mem_outsOf (P : BAPGraph E0) {I' : Type} [Fintype I'] [Decidable
   obtain ⟨Δ, hΔ, rfl⟩ := List.mem_map.1 (show Q' ∈ T.splitG.map BAGraph.packMerge from hQ')
   exact ⟨T, hT, Δ, hΔ, rfl⟩
 
-/-- **The assembly of `BAstepMono` for one list of terms `Ts` over a base graph `G` with the invariants of `P`** (T2395 design §3 Step 3 (a)): if every term extends the normal graph `G`, has
+/-- **The assembly of `BAstepMono` for one list of terms `Ts` over a base graph `G` with the invariants of `P`**: if every term extends the normal graph `G`, has
 `ord G ≤ ordG T`, and has at `T°` no more internal molecules and no larger `n_A - n_W` than `G`, then every output of `P.outsOf Ts` is normal, its order does not fall, `n_M`, `n_A - n_W` and `nExt` do not grow
-(target 3 `BALvl1B_part_struct` for the `M`-split and the packing). -/
+(`BALvl1B_part_struct` for the `M`-split and the packing). -/
 theorem BALvl1B_outs_mono (P : BAPGraph E0) {I0 : Type} [Fintype I0] [DecidableEq I0] (G : BAGraph P.E' I0) {k : ℕ}
     (Ts : List (BAGraph P.E' (I0 ⊕ Fin k))) (hG : G.Normal)
     (hinv : G.scalingOrder = P.g.scalingOrder ∧ G.nM = P.g.nM ∧ (G.nA : ℤ) - G.nW = (P.g.nA : ℤ) - P.g.nW ∧ G.nExt = P.g.nExt)
@@ -441,8 +445,6 @@ theorem BALvl1B_gg (P : BAPGraph E0) (hN : P.g.Normal) {p q : SEdge (P.E' ⊕ P.
       (fun T hT => (m4 T hT).2.1) Q hQ
 
 end Assembly
-
-/-! ## 5. Compiled instances (R1's data `P_W`, `P_E`, `P_A`, `P_C` of `BASimInst`; the data are nondegenerate: nonempty external and internal vertex sets, solid edges, `nExt ≥ 1`) -/
 
 end RBM.Graph
 

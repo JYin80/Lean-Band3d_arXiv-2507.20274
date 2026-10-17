@@ -9,24 +9,22 @@ import RBM3D.Graph.BAG5Leaf
 import RBM3D.Graph.LWExpTerm3
 
 /-!
-# BA-L L4c2 (T2466), part A: the `t`-scaling, G3 without `hext`, the `q ≤ 1` bound
+# The `t`-scaling, `GtoAG` at the rescaled kernels without `hext`, and the `q ≤ 1` bound (part A)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-110` (`(eq;I42inG)`,
-`(Gammamuxy)`: `GtoAG` and Cauchy-Schwarz, `B:84-90`), `B:428` (`(eq:Gbyxi2_BA)`), `B:486-490`
-(`(G_by_auxG_BA)`).  Twin of the band file `Graph/LWExpTerm3.lean` §3 `:384-1228` (`AuxBound`,
-`SpDecay`, `Pathwise`, `PrecPieces`, `Arith`, `Arith2`, `Arith3`) and `:1426-1661`
-(`LwGraphPrec1`, `lwGraphPrec1`).  Part B is `Graph/BAExp14dB.lean`.
+Paper: Subappendix B.1: (B.5) `eq;I42inG`, (B.7) `Gammamuxy` (`GtoAG` and Cauchy-Schwarz); (B.22)
+`eq:Gbyxi2_BA`; (B.25) `G_by_auxG_BA`.  This is the BA counterpart of the band file
+`Graph/LWExpTerm3.lean` (Section 3: `AuxBound`, `SpDecay`, `Pathwise`, `PrecPieces`, `Arith`,
+`Arith2`, `Arith3`, and `LwGraphPrec1`, `lwGraphPrec1`).  Part B is `Graph/BAExp14dB.lean`.
 
 ## Contents (namespace `RBM.BA`; private helpers carry the stem `BAExp14d_`)
 
 1. **The rescaled data** `BAExp14d_dataT` (`S' = S/t`, `S⁺' = lift(ω_t)`,
    `ω_t = Θ_t^{(+,+)}`) and the exact `t`-scaling `BAExp14d_val_scale` (every waved factor of
    `BAlwData` is `t` times that of `BAExp14d_dataT`, `baSp_eq`).
-2. **G3 at the rescaled kernels without `hext`** `BAGtoAGT`, `baGtoAGT_holds`: a copy of
-   `baGtoAG_holds` (`Graph/BAAtom2.lean:418`, whose proof never uses `hext`), with the kernel
+2. **`GtoAG` at the rescaled kernels without `hext`** `BAGtoAGT`, `baGtoAGT_holds`: the hypothesis
+   `hext` (distinct external vertices in distinct molecules) is not needed, with the kernel
    constants of `S'` and `lift(ω_t)` uniform in `0 ≤ t < 1`.
-3. **The deterministic `q ≤ 1` bound** `BAExp14d_det` (private; twin of `lwExpTerm3_det`).
-4. **Compiled instances** of targets 1, 2, 3 (namespace `BAExp14dInst`; the instance leaf `leaf1` has `n_M = 1`).
+3. **The deterministic `q ≤ 1` bound** `BAExp14d_det` (private; as `lwExpTerm3_det`).
 
 The band proofs (private lemmas `lwExpTerm3_auxVal_zero`, `_one`) are reused by `open private`.
 -/
@@ -56,7 +54,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 section Scale
 
 /-- The rescaled data `D'_t` (`S' = svarF(0)`, `S = t S'` by `BAlwS`; `S⁺' = lift(ω_t)`, `S⁺ = S W = t lift(ω_t)` by `baSp_eq`,
-`BASizeClaim:180`): `G`, `M`, `g₀Ψ` are those of `BAlwData`. -/
+`Graph/BASizeClaim.lean`): `G`, `M`, `g₀Ψ` are those of `BAlwData`. -/
 def BAExp14d_dataT (d L W : ℕ) [NeZero L] [NeZero W] (g0 E t : ℝ) (m : ℂ) (ω : Ω d L W) : BALData (Idx d L W) :=
   { G := Matrix.of fun x y => BAlwG d L W g0 E t m ω x y,
     M := BAlwM d L W g0 E m,
@@ -95,7 +93,7 @@ private theorem BAExp14d_term_scale {ι E I : Type} [Fintype ι] [DecidableEq ι
   unfold BAGraph.nW
   ring
 
-/-- **Target 1, the `t`-scaling** (`T2466_val_scale`; the BA form of the `t`-carrying constants of the band,
+/-- **The `t`-scaling** (the BA form of the `t`-carrying constants of the band,
 `lwExpTerm3_Sp_decay`, `lwExpTerm3_sizeConst_smul`): every waved factor of `BAlwData` at `t` is `t` times that of `BAExp14d_dataT`, so a
 packed graph value is `t^{n_W}` times its value at `BAExp14d_dataT`, for all `0 ≤ t < 1` (`t = 0` included). -/
 theorem BAExp14d_val_scale : ∀ (d L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 κ E t : ℝ) (m : ℂ), BAReal d L g0 κ E m →
@@ -117,14 +115,14 @@ theorem BAExp14d_val_scale : ∀ (d L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L �
 
 end Scale
 
-/-! ## 2. G3 at the rescaled kernels, without `hext` -/
+/-! ## 2. `GtoAG` at the rescaled kernels, without `hext` -/
 
 section G3
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- A copy of `baGtoAG_holds` (`Graph/BAAtom2.lean:418-526`) without the hypothesis `hext` (distinct external vertices in distinct
-molecules), which that proof never uses (`BAAtom2:416`): the same statement as `BAGtoAG d`, hypotheses as binders. -/
+/-- The deterministic `GtoAG` at the BA data (the BA counterpart of `lwGtoAG_holds`, Lemma 7.21) without the hypothesis `hext` (distinct external vertices in distinct
+molecules), which its proof never uses: the same statement as `BAGtoAG d`, hypotheses as binders. -/
 private theorem BAExp14d_G3 (d : ℕ) (hd : 3 ≤ d) (L W : ℕ) [NeZero L] [NeZero W] (Γ : BAGraph E I) (hN : Γ.Normal)
     (D : BALData (Idx d L W)) (Ψ A K₀ K₁ Kd C c r R : ℝ) (ξ : Zd d L → Zd d L → ℝ)
     (hG : ∀ x y, ‖D.G x y - D.M x y‖ ≤ Ψ) (hA : 0 ≤ A) (hwin : ((W : ℝ) ^ d)⁻¹ ≤ A * Ψ ^ 2)
@@ -253,7 +251,7 @@ private theorem BAExp14d_G3 (d : ℕ) (hd : 3 ≤ d) (L W : ℕ) [NeZero L] [NeZ
 
 end G3
 
-/-- **Target 2, G3 at the rescaled kernels without `hext`** (`T2466_BAGtoAGT`): the form of `baGtoAG_E` (`BAAtom2:606`) with
+/-- **`GtoAG` at the rescaled kernels without `hext`**: the BA form of Lemma 7.21 with
 `D.S = S'`, `D.S⁺ = lift(ω_t)` and no `hext` (distinct external vertices in distinct molecules).  The constants depend on
 `(d, Λ, κ)` only, uniformly in `0 ≤ t < 1`; at these kernels no `t` is lost, `BAExp14d_val_scale` restores `t^{n_W}`. -/
 def BAGtoAGT (d : ℕ) : Prop :=
@@ -368,14 +366,14 @@ theorem baGtoAGT_holds (d : ℕ) : BAGtoAGT d := by
     (lwKBound_of_decay hd hC0 hc0 hSd) (lwKBound_of_decay hd hC0 hc0 hSpd) hM'' hP'' hC0 hc0 hSd hSpd hMPd hoff' hr0 hRr
     hξ0 hξ ℓe
 
-/-! ## 3. The deterministic `q ≤ 1` bound (twin of `lwExpTerm3_det`, `LWExpTerm3.lean:596-669`) -/
+/-! ## 3. The deterministic `q ≤ 1` bound (as `lwExpTerm3_det` in `Graph/LWExpTerm3.lean`) -/
 
 section Det
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
 open Classical in
-/-- **`(Gammamuxy)` deterministic form, `q ≤ 1`** (`B:84-90`): from the bound of G3 at every non-negative `ξ` dominating `‖G - M‖`
+/-- **(B.7) `Gammamuxy`, deterministic form, `q ≤ 1`**: from the bound of `GtoAG` at every non-negative `ξ` dominating `‖G - M‖`
 (`hG3`, the conclusion of `BAGtoAGT` with `K = C_Γ(K₀ A, K₁, Kd)` and the tail `T`), with `ξ = min (cc ξ₀, Ψ)`, the auxiliary graph
 is `≤ Ψ^{auxOrd}` (`q = 0`) or `≤ Ψ^{auxOrd} · cc² · S2` (`q = 1`, Cauchy-Schwarz on the two attached edges, band
 `lwExpTerm3_auxVal_one` on the shadow).  No `hext`, no `M = m I`. -/
@@ -459,11 +457,5 @@ private theorem BAExp14d_GM_le {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε
   calc ‖(baFMz sz z).G n t ω x y - (baFMz sz z).M n x y‖
       ≤ ‖(baFMz sz z).G n t ω x y‖ + ‖(baFMz sz z).M n x y‖ := norm_sub_le _ _
     _ ≤ ((baFMz sz z).eta n t)⁻¹ + 1 := add_le_add h1 h2
-
-/-! ## 4. Compiled nonempty instances of targets 1 and 2
-
-`d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), `zSeq`, `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`),
-`t ≡ 1/2 ≤ BAflowT0`.  The instance leaf `leaf1` has one external molecule `{e₀, e₁}` (tied by an `M`-dotted edge), one internal molecule
-`{i₀, i₁, i₂, i₃}`, `n_M = 1`, `n_W = 2`, `n_S = 3`, `n_A = 2`, `ord = 3`, two attached solid edges: it needs the `hext`-free copy of G3. -/
 
 end RBM.BA

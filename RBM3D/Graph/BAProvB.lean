@@ -17,6 +17,17 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
+/-!
+# The BA provenance engine, part 2: the engine with provenance
+
+Weighted expansions of the frame steps (Lemma B.6 `lanlw`, Lemma B.7 `lem_lweight`, (B.20)
+`GGGamma` at BA) with the maps of vertices of the outputs (the provenance), the twist, the step
+lemma with positions `BAProvStepPos`, the recursion with provenance `BAProv_aux` (by strong
+induction on the measure `BALvl1Mu`), and the BA `lem:localregular` with provenance
+(`ba_localregularXP_ne`, `BAEngineProv`, `ba_localregularXP`).  This is the BA counterpart of
+`Graph/LWProv.lean`; part 1 is `Graph/BAProv.lean`.
+-/
+
 open private BAWeightOp_core BAWeightOp_sd from RBM3D.Graph.BAWeightOp
 open private BAGGOp_core from RBM3D.Graph.BAGGOp
 open private BAExpandW_integrable_PF from RBM3D.Graph.BAExpandW
@@ -59,7 +70,7 @@ section Ext
 
 variable {E I : Type} [Fintype I] [DecidableEq I] {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-/-- the weighted value of a graph with two new vertices, the weight read through `owxEmb 2` (weighted `BAWeightOp_val2`; `lwProv_EW_ext2`, `LWProv:866`) -/
+/-- the weighted value of a graph with two new vertices, the weight read through `owxEmb 2` (the weighted `BAWeightOp_val2`; as `lwProv_EW_ext2` in `Graph/LWProv.lean`) -/
 theorem BAProv_valW_ext2 (T : BAGraph E (I ⊕ Fin 2)) (D : BALData ι) (Wt : (E ⊕ I → ι) → ℝ) (ℓe : E → ι) :
     T.valW D (fun ℓ => Wt (ℓ ∘ owxEmb 2)) ℓe =
       ∑ ℓi : I → ι, ((Wt (Sum.elim ℓe ℓi) : ℝ) : ℂ) * ∑ α, ∑ β, T.term D (owxLab2 ℓe ℓi α β) := by
@@ -128,7 +139,7 @@ theorem BAProv_valW_zero {E I : Type} [Fintype I] [DecidableEq I] {ι : Type*} [
     (Wt : (E ⊕ I → ι) → ℝ) (ℓe : E → ι) (h : ∀ ℓ, T.term D ℓ = 0) : T.valW D Wt ℓe = 0 :=
   Finset.sum_eq_zero fun ℓi _ => by rw [h]; simp
 
-/-- **the weighted identity of a step** (weighted `baExpFrame_lw` / `baExpFrame_gg` / `lanlw_val`; `lwProv_weight_EW`, `LWProv:850`): if `E Γ.term(ℓ)` is, at every labelling `ℓ = (ℓe, ℓi)` of the old
+/-- **the weighted identity of a step** (the weighted `baExpFrame_lw` / `baExpFrame_gg` / `lanlw_val`; as `lwProv_weight_EW` in `Graph/LWProv.lean`): if `E Γ.term(ℓ)` is, at every labelling `ℓ = (ℓe, ℓi)` of the old
 vertices, `E` of the sum over the labels of the new vertices of the terms of the two lists (`hcore`, on the sequence space), and every term vanishes at `t = 0` (`hzero`), then for every real weight
 `E Γ.valW = Σ_T E T.valW`, the weight read through `owxEmb 2` resp. `owxEmb 4` -/
 private theorem BAProv_step_W (hL : 3 ≤ L) (g0 Em t : ℝ) (m : ℂ) (hSelf : RBM.BA.BASelf d L g0 (Em : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -423,7 +434,7 @@ theorem BAProv_macroA_W (hL : 3 ≤ L) (g0 Em t : ℝ) (m : ℂ) (hSelf : RBM.BA
 def BAProv_trB (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : BAGraph E (I ⊕ Fin 2) :=
   BALvl1A_dq Γ p q [bpS true (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 1) (owxEmb 2 p.1.dst)] [bpM (bpv 0) (owxEmb 2 q.1.dst)]
 
-/-- the four other graphs of the split of the derivative term (`d1`-`d4` of `BAPGraph.splitOuts`) -/
+/-- the four other graphs of the split of the derivative term (`d₁`-`d₄` of `BAPGraph.splitOuts`) -/
 def BAProv_Q4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : List (BAGraph E (I ⊕ Fin 2)) :=
   [BALvl1A_dq Γ p q [bpS false (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 0) (owxEmb 2 q.1.dst), bpS false (bpv 1) (owxEmb 2 p.1.dst)] [],
    BALvl1A_dq Γ p q [bpS true (owxEmb 2 q.1.src) (bpv 1)] [bpM (bpv 0) (owxEmb 2 q.1.dst), bpM (bpv 1) (owxEmb 2 p.1.dst)],
@@ -726,7 +737,7 @@ theorem BAProv_ggSplit_posW (d : ℕ) (P : BAPGraph (Fin 2)) (hD : ∀ e ∈ P.g
       simp_rw [BAPGraph.valW_of_not P _ _ hf]
       simp
 
-/-- **one frame step with positions** (target 4 with the weighted expansion, for all five kinds) -/
+/-- **one frame step with positions** (the weighted expansion, for all five kinds) -/
 theorem BAProv_frameStep_posW (d : ℕ) (P : BAPGraph (Fin 2)) (hD : ∀ e ∈ P.g.dotted, e.eq = false) {F : List (BAPGraph (Fin 2))}
     (h : BAFrameStep P F) : BAProvPosW d P F := by
   cases h with
@@ -738,13 +749,13 @@ theorem BAProv_frameStep_posW (d : ℕ) (P : BAPGraph (Fin 2)) (hD : ∀ e ∈ P
 
 end Prov
 
-/-! ## 5. The twist and the step lemma with positions (target 6) -/
+/-! ## 5. The twist and the step lemma with positions -/
 
 section Twist
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- **the weighted value of a twist** (weighted `BALvl1A_pval_twist`; pathwise `BASymm1_term_twist`): the conjugate (if `c`) of the weighted value at the transposed (if `t`) data -/
+/-- **the weighted value of a twist** (the weighted `BALvl1A_pval_twist`; pathwise `BASymm1_term_twist`): the conjugate (if `c`) of the weighted value at the transposed (if `t`) data -/
 theorem BAProv_twist_valW {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Type} (Q : BAPGraph E) (D : BALData ι) (hS : ∀ i j, star (D.S i j) = D.S i j)
     (hP : ∀ i j, star (D.gPsi i j) = D.gPsi i j) (c t : Bool) (Wt : (Q.E' ⊕ Q.I' → ι) → ℝ) (ℓe : E → ι) :
     (Q.twist c t).valW D Wt ℓe = lwSymmCj c (Q.valW (BASymm1_dataTr D t) Wt ℓe) := by
@@ -758,7 +769,7 @@ theorem BAProv_twist_valW {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Type} 
     cases c <;> simp [lwSymmCj]
   · rw [BAPGraph.valW_of_not (Q.twist c t) D Wt h, BAPGraph.valW_of_not Q _ Wt h, map_zero]
 
-/-- the twist in expectation, with a weight (weighted `baTwistComb_holds`; `baTwistIntegral_gen`) -/
+/-- the twist in expectation, with a weight (the weighted `baTwistComb_holds`; `baTwistIntegral_gen`) -/
 theorem BAProv_twist_EW (g0 Em t : ℝ) (m : ℂ) {E : Type} (Q : BAPGraph E) (c t' : Bool) (Wt : (Q.E' ⊕ Q.I' → Idx d L W) → ℝ) (ℓe : E → Idx d L W) :
     ∫ ω, (Q.twist c t').valW (BAlwData d L W g0 Em t m ω) Wt ℓe ∂(PF d L W 0) =
       lwSymmCj c (∫ ω, Q.valW (BAlwData d L W g0 Em t m ω) Wt ℓe ∂(PF d L W 0)) := by
@@ -787,7 +798,7 @@ theorem BAProv_twist_posW (d : ℕ) (c t : Bool) {P : BAPGraph (Fin 2)} {F : Lis
   obtain ⟨v, hv, hvw⟩ := h2 (o₀.Q.g.shadow.molOf w) fun ⟨a, ha⟩ => hc' ⟨a, (BAProv_twist_mol_iff c t _ _ _).2 ha⟩
   exact ⟨v, fun ⟨a, ha⟩ => hv ⟨a, (BAProv_twist_mol_iff c t _ _ _).1 ha⟩, (BAProv_twist_mol_iff c t _ _ _).2 hvw⟩
 
-/-- **the step lemma with positions** (target 6; the content of `lwProv_LocStepXProvPos`, `LWProv:1791`, without tags): the outputs of a `BALocStep` of a normal graph come with maps that are
+/-- **the step lemma with positions** (as in `Graph/LWProv.lean`, without tags): the outputs of a `BALocStep` of a normal graph come with maps that are
 `ExtOK` and `Molecular`, and the weighted expansion `BAWExp` -/
 def BAProvStepPos (d : ℕ) : Prop :=
   ∀ (P : BAPGraph (Fin 2)) (L : List (BAPGraph (Fin 2))), BALocStep P L → P.g.Normal →
@@ -802,13 +813,13 @@ theorem baProv_stepPos (d : ℕ) : BAProvStepPos d := by
 
 end Twist
 
-/-! ## 6. The recursion with provenance (target 7) -/
+/-! ## 6. The recursion with provenance -/
 
 section Rec
 
 variable {d : ℕ}
 
-/-- the body of `BAlvl1Lemma` (`BALvl1C:53-61`) at `E = Fin 2`: the lists `outs`, `errs` of graphs -/
+/-- the body of `BAlvl1Lemma` (`Graph/BALvl1C.lean`) at `E = Fin 2`: the lists `outs`, `errs` of graphs -/
 def BAProv_Lvl1Body (d : ℕ) (K : ℤ) (P : BAPGraph (Fin 2)) (outs errs : List (BAPGraph (Fin 2))) : Prop :=
   (∀ Q ∈ outs, Q.g.LocStd ∧ P.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.scalingOrder < K) ∧ (∀ Q ∈ errs, K ≤ Q.g.scalingOrder) ∧
     (∀ Q ∈ outs ++ errs, BAReach K P Q ∧ Q.g.Normal ∧ P.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.nM ≤ P.g.nM ∧
@@ -821,7 +832,7 @@ theorem BAProv_id_good (Γ : BAPGraph (Fin 2)) : (⟨Γ, id⟩ : BAProvOut Γ).E
   refine ⟨fun i => rfl, fun v w h => h, fun c hc => ?_⟩
   induction c using SimpleGraph.ConnectedComponent.ind with | h w => exact ⟨w, hc, rfl⟩
 
-/-- **composition of weighted expansions, with positions** (`lwProv_WExp_comp_pos`, `LWProv:1531`): the outputs of `ps` expand into `c₁ o ++ c₂ o`, listed as the composites of all `c₁` and then all `c₂` -/
+/-- **composition of weighted expansions, with positions** (as `lwProv_WExp_comp_pos` in `Graph/LWProv.lean`): the outputs of `ps` expand into `c₁ o ++ c₂ o`, listed as the composites of all `c₁` and then all `c₂` -/
 theorem BAProv_comp_pos {P : BAPGraph (Fin 2)} {ps : List (BAProvOut P)} (h : BAWExp d P ps) (c₁ c₂ : ∀ o : BAProvOut P, List (BAProvOut o.Q))
     (h' : ∀ o ∈ ps, BAWExp d o.Q (c₁ o ++ c₂ o)) :
     BAWExp d P (ps.flatMap (fun o => (c₁ o).map o.comp) ++ ps.flatMap (fun o => (c₂ o).map o.comp)) := by
@@ -843,7 +854,7 @@ theorem BAWExp.val_identity {P : BAPGraph (Fin 2)} {ps : List (BAProvOut P)} (h 
   rw [BAEngine_integral_comb hL g0 Em t m hS ht0 ht1 _ ℓe, h1, List.map_map]
   rfl
 
-/-- **the recursion with provenance, with the non-emptiness of the lists** (`lwProv_exists`, `LWProv:1560`, without tags; `BALvl1C_aux`, `BALvl1C:482`, with maps): by strong induction on the measure `BALvl1Mu` -/
+/-- **the recursion with provenance, with the non-emptiness of the lists** (as `lwProv_exists` in `Graph/LWProv.lean`, without tags; `BALvl1C_aux` in `Graph/BALvl1C.lean`, with maps): by strong induction on the measure `BALvl1Mu` -/
 theorem BAProv_aux (d : ℕ) (K : ℤ) (Γ : BAPGraph (Fin 2)) (hN : Γ.g.Normal) :
     ∃ oP eP : List (BAProvOut Γ), (∀ o ∈ oP ++ eP, o.ExtOK ∧ o.Molecular) ∧ (∀ o ∈ oP, o.Q.g.LocStd ∧ o.Q.g.scalingOrder < K) ∧
       (∀ o ∈ eP, K ≤ o.Q.g.scalingOrder) ∧ (∀ o ∈ oP ++ eP, BAReach K Γ o.Q) ∧ oP ++ eP ≠ [] ∧ BAWExp d Γ (oP ++ eP) := by
@@ -936,7 +947,7 @@ theorem BAProv_exists_ne (d : ℕ) (K : ℤ) (Γ : BAPGraph (Fin 2)) (hN : Γ.g.
 
 end Rec
 
-/-! ## 7. The engine with provenance (target 8) -/
+/-! ## 7. The engine with provenance -/
 
 section Engine
 
@@ -970,7 +981,7 @@ theorem BAProv_startOuts_mem (p : ℕ) (o : BAProvOut (baPG (BAGraph.ofLGraph (f
   obtain ⟨T, hT, rfl⟩ := List.mem_map.1 ho
   exact ⟨T, hT, rfl⟩
 
-/-- every start output is `ExtOK`, `Molecular`, and the images of the `β^{(k)}` cover its internal shadow molecules (the explicit form of `BAProv_start`) -/
+/-- every start output is `ExtOK`, `Molecular`, and the images of the `β^{(k)}` cover its internal shadow molecules (the explicit form of the start-output statement) -/
 theorem BAProv_startOuts_good (p : ℕ) : ∀ o ∈ BAProv_startOuts p, o.ExtOK ∧ o.Molecular ∧
     BACoverBy (P := o.Q) fun k : Fin p => o.π (Sum.inr (localReg_fxyBeta k)) := by
   intro o ho
@@ -1001,7 +1012,7 @@ theorem BAProv_startOuts_good (p : ℕ) : ∀ o ∈ BAProv_startOuts p, o.ExtOK 
         (localReg_fxy_mem_waved _).2 ⟨i, rfl⟩, by simp⟩)
     · exact SimpleGraph.Reachable.refl _
 
-/-- the conclusion of `BAlvl1LemmaSize` at a start term from the body at the cutoff `K = lvl1Cutoff` (as `baLvl1LemmaSize_holds`, `BALvl1C:545`) -/
+/-- the conclusion of `BAlvl1LemmaSize` at a start term from the body at the cutoff `K = lvl1Cutoff` (as `baLvl1LemmaSize_holds` in `Graph/BALvl1C.lean`) -/
 private theorem BAProv_Lvl1Body_spec (c : ℝ) (hc : 0 < c) (K0 d : ℕ) (D : ℝ) (P : BAPGraph (Fin 2)) (outs errs : List (BAPGraph (Fin 2)))
     (h : BAProv_Lvl1Body d (lvl1Cutoff c K0 d D P.g.counters : ℤ) P outs errs) : BAEngine_Spec c K0 d D P outs errs := by
   obtain ⟨hout, herr, hall, hid⟩ := h
@@ -1010,7 +1021,7 @@ private theorem BAProv_Lvl1Body_spec (c : ℝ) (hc : 0 < c) (K0 d : ℕ) (D : �
   obtain ⟨-, -, -, hM, hV⟩ := hall Q (List.mem_append_right _ hQ)
   exact lvl1_size_le c hc K0 d D P.g.counters W L Ψ hW hL hLW hlow hup Q.g.counters (herr Q hQ) hM hV
 
-/-- **the BA `lem:localregular` with provenance, with non-empty lists** (twin of `lw_localregularXP`, `LWProv:1680`, without tags and `∀ m`): per start term the recursion of target 7 at
+/-- **the BA `lem:localregular` with provenance, with non-empty lists** (as `lw_localregularXP` in `Graph/LWProv.lean`, without tags and `∀ m`): per start term the recursion with provenance at
 `lvl1Cutoff c K0 d D P0.g.counters`, composed with the start maps; the assembly `baEngine_assemble` with the binder discharged by `baShapeLL_e2_tn`, `baShapeLL_macroA_tn`, `baShapeLL_macroB_tn` -/
 theorem ba_localregularXP_ne (p : ℕ) (c : ℝ) (hc : 0 < c) (K0 d : ℕ) (D : ℝ) :
     ∃ outs errs : List (BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p)))), outs ++ errs ≠ [] ∧
@@ -1082,7 +1093,7 @@ theorem ba_localregularXP_ne (p : ℕ) (c : ℝ) (hc : 0 < c) (K0 d : ℕ) (D : 
     rw [baStart_nWS p P0 hP0] at h
     exact h
 
-/-- **the BA `lem:localregular` with provenance** (target 8 (a); twin of `lw_localregularXP`, `LWProv:1680`) -/
+/-- **the BA `lem:localregular` with provenance** (as `lw_localregularXP` in `Graph/LWProv.lean`) -/
 def BAEngineProv : Prop :=
   ∀ (p : ℕ) (c : ℝ), 0 < c → ∀ (K0 d : ℕ) (D : ℝ), ∃ outs errs : List (BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p)))),
     (∀ o ∈ outs ++ errs, o.ExtOK ∧ BACoverBy (P := o.Q) fun k : Fin p => o.π (Sum.inr (localReg_fxyBeta k))) ∧
@@ -1096,8 +1107,6 @@ theorem ba_localregularXP : BAEngineProv := by
   exact ⟨outs, errs, h⟩
 
 end Engine
-
-/-! ## 8. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `(g0P, EP, t0P, m0P)`: `BASelf` and `0 < t₀ < 1` are `flowP_data`; labels `ℓ0`) -/
 
 end RBM.Graph
 end

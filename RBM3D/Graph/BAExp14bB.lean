@@ -7,37 +7,36 @@ import RBM3D.Graph.BAExp14b
 import RBM3D.Graph.BAGGExp
 
 /-!
-# BA-L L4b1 (T2434), part B: the law and the expansion identity `baExp14b_expand_holds`
+# The expansion identity `baExp14b_expand_holds` for the families of `lem:LWterm_EXP` at BA (part B)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`), `GGGamma`
-`:393-405` (D402: the first two sums carry `W - 1 = M⁺S⁺`), `lanlw` `:359-372`; design
-`docs/reports/T2398-design.md` §1, §2; the pins S2, S3, their integrands, the conjugation pin
-`BAExp14bCutConj`, the ties and the block forms are in part A (`Graph/BAExp14b.lean`).
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`): (B.1) `eq:ELW_term`, (B.20)
+`GGGamma` (the first two sums carry `W - 1 = M⁺S⁺`), Lemma B.6 (`lanlw`).  The statements
+`BAExp14bS2`, `BAExp14bS3`, their integrands, the conjugation statement `BAExp14bCutConj`, the ties
+and the block forms are in part A (`Graph/BAExp14b.lean`).
 
-**`baExp14b_expand_holds : ∀ d, BAExp14bExpand d`** (target 2): for `3 ≤ d`, `BAFlow`, every `n`,
-every `0 ≤ t ≤ BAflowT0` and every `(σc, σo, ac, ao)`,
-`𝔼 LWcutg = Σ_{k : Fin 6} 𝔼 S1_k + Σ_{j : Fin 8} 𝔼 S2_j + Σ_{j : Fin 4} 𝔼 S3_j` over the carrier
-`baFMz sz z` and the law `seqP (sz.withLam 0)`; no premise on the law.  Route (twin of `LWExpTerm2`
-§§6-7 and §§11-12, at the carrier):
+**`baExp14b_expand_holds : ∀ d, BAExp14bExpand d`**: for `3 ≤ d`, `BAFlow`, every `n`, every
+`0 ≤ t ≤ BAflowT0` and every `(σc, σo, ac, ao)`, `𝔼 LWcutg` is the sum of the expectations of
+the six
+`BAExp14aS1` families, the eight `BAExp14bS2` families and the four `BAExp14bS3` families, over the
+carrier `baFMz sz z` and the law `seqP (sz.withLam 0)`; no premise on the law.  The proof runs as
+`LWExpTerm2` Sections 6-7 and 11-12, at the carrier:
 
-* §1 the resolvent polynomial `f = X_{[α]} G(σ)_{yx}` and its derivative `∂_{h_{βγ}} f`
+* Section 1: the resolvent polynomial `f = X_{[α]} G(σ)_{yx}` and its derivative `∂_{h_{βγ}} f`
   (`BAExp14b_Pf`, `_f_eq`, `_df_eq`);
-* §2 the cut at `σc = +` as a frame `W^{-2d} Σ_{x ∈ [ao]} Σ_{y ∈ [ac]} Σ_α` (`BAExp14b_cut_true`,
-  `LWcutg` of `baFMz`, `C.S = 1`) and the conjugation
+* Section 2: the cut at `σc = +` as a frame `W^{-2d} Σ_{x ∈ [ao]} Σ_{y ∈ [ac]} Σ_α`
+  (`BAExp14b_cut_true`, `LWcutg` of `baFMz`, `C.S = 1`) and the conjugation
   `LWcutg false σo ac ao = star (LWcutg true (!σo) ao ac)` (`baExp14b_cut_conj`);
-* §3 `lanlw` and `GGGamma` for `f` on the sample space of `seqP (sz.withLam 0)`: `baLanlw_holds`,
-  `baGGGamma_holds` (on `PF d L W 0`) transported by `BAExp14a_int_slice`;
-* §4-§5 continuity and boundedness (`BAExp14b_BM`), hence integrability, of the 18 integrands;
-* §6 every family is the frame of its integrand (`BAExp14b_fr`);
-* §7 the pathwise algebra `G = Ǧ + M`: `M M f + M R_lan + R_lan' M + R_gg` is the sum of the 18
-  integrands, with `R_lan`, `R_gg` the right sides of `lanlw` (twice) and `GGGamma`
+* Section 3: `lanlw` and `GGGamma` for `f` on the sample space of `seqP (sz.withLam 0)`:
+  `baLanlw_holds`, `baGGGamma_holds` (on `PF d L W 0`) transported by `BAExp14a_int_slice`;
+* Sections 4-5: continuity and boundedness (`BAExp14b_BM`), hence integrability, of the 18
+  integrands;
+* Section 6: every family is the frame of its integrand (`BAExp14b_fr`);
+* Section 7: the pathwise algebra `G = Ǧ + M`: `M M f + M R_lan + R_lan' M + R_gg` is the sum of
+  the 18 integrands, with `R_lan`, `R_gg` the right sides of `lanlw` (twice) and `GGGamma`
   (`BAExp14b_alg`);
-* §8 the cell identity, the frame integral and the identity, both charges;
-* §9 compiled checks and nonempty instances.
+* Section 8: the cell identity, the frame integral and the identity, both charges.
 
-S2 is proved by row L4b2 and S3 by the rows L4g / L4c1 / L4d2 (Amend 1 item 3: the roots of the S3
-families have `M`-dotted edges); this row proves neither.  Private helpers carry the stem
-`BAExp14b_`.
+Private helpers carry the stem `BAExp14b_`.
 -/
 
 set_option linter.style.longLine false
@@ -251,7 +250,7 @@ private def BAExp14b_Rlan (σ : Bool) (x y α a b : Idx d (sz.L n) (sz.W n)) : �
     ∑ α', ∑ β, (baFMz sz z).M n a α' * BAlwS d (sz.L n) (sz.W n) t α' β * (baFMz sz z).G n t ω β b *
       BAExp14b_df sz z n t ω σ x y α β α'
 
-/-- The right side of `GGGamma` (`BAGGGammaR`, D402) for `Ǧ_{xα} Ǧ_{αy} f` at `(α, y, x)`. -/
+/-- The right side of `GGGamma` (`BAGGGammaR`) for `Ǧ_{xα} Ǧ_{αy} f` at `(α, y, x)`. -/
 private def BAExp14b_Rgg (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) : ℂ :=
   (∑ β, BAExp14a_Wk sz z n t true α β * (baFMz sz z).M n β y * (baFMz sz z).M n x β * BAExp14b_f sz z n t ω σ x y α +
     ∑ β, BAExp14a_Wk sz z n t true α β * ((baFMz sz z).GM n t ω β y * (baFMz sz z).M n x β +
@@ -629,18 +628,18 @@ private def BAExp14b_iT3CX (k : Bool) (σ : Bool) (x y α : Idx d (sz.L n) (sz.W
     -(BAExp14a_Wk sz z n t k α w * (baFMz sz z).M n w γ * BAlwS d (sz.L n) (sz.W n) t γ δ * (baFMz sz z).G n t ω δ y *
       (baFMz sz z).GM n t ω x w * BAExp14b_dX sz z n t ω α δ γ)
 
-/-- The six S1 integrands, in the order of `BAExp14a_F`. -/
+/-- The six `BAExp14aS1` integrands, in the order of `BAExp14a_F`. -/
 private def BAExp14b_iS1 (k : Fin 6) (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) : ℂ :=
   ![BAExp14b_iMM sz z n t ω σ x y α, BAExp14b_iT1 sz z n t ω σ x y α, BAExp14b_iT3A sz z n t ω false σ x y α,
     BAExp14b_iT3A sz z n t ω true σ x y α, BAExp14b_iC1 sz z n t ω σ x y α, BAExp14b_iC2 sz z n t ω σ x y α] k
 
-/-- The eight S2 integrands, in the order of `BAExp14b_FS2`. -/
+/-- The eight `BAExp14bS2` integrands, in the order of `BAExp14b_FS2`. -/
 private def BAExp14b_iS2 (j : Fin 8) (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) : ℂ :=
   ![BAExp14b_iD1t sz z n t ω σ x y α, BAExp14b_iD2t sz z n t ω σ x y α, BAExp14b_iT2a sz z n t ω σ x y α,
     BAExp14b_iT2b sz z n t ω σ x y α, BAExp14b_iT3B sz z n t ω false σ x y α, BAExp14b_iT3B sz z n t ω true σ x y α,
     BAExp14b_iT3CG sz z n t ω false σ x y α, BAExp14b_iT3CG sz z n t ω true σ x y α] j
 
-/-- The four S3 integrands, in the order of `BAExp14b_FS3`. -/
+/-- The four `BAExp14bS3` integrands, in the order of `BAExp14b_FS3`. -/
 private def BAExp14b_iS3 (j : Fin 4) (σ : Bool) (x y α : Idx d (sz.L n) (sz.W n)) : ℂ :=
   ![BAExp14b_iD1X sz z n t ω σ x y α, BAExp14b_iD2X sz z n t ω σ x y α, BAExp14b_iT3CX sz z n t ω false σ x y α,
     BAExp14b_iT3CX sz z n t ω true σ x y α] j
@@ -1024,7 +1023,7 @@ private theorem BAExp14b_expand_true (hκ : 0 < κ) (hflow : BAFlow sz κ ε �
 
 end Expand
 
-/-- **The expansion identity** (target 2): `𝔼 LWcutg = Σ S1 + Σ S2 + Σ S3` at every size `n`, time `t ∈ [0, BAflowT0]` and
+/-- **The expansion identity**: `𝔼 LWcutg` is the sum of the `BAExp14aS1`, `BAExp14bS2` and `BAExp14bS3` families at every size `n`, time `t ∈ [0, BAflowT0]` and
 labelling `(σc, σo, ac, ao)`, both charges.  `σc = +`: `G = Ǧ + M` and `BAGGGammaR`, `BAlanlwR` (twice) at `f = X_{[α]} G(σo)_{yx}`,
 `∂f = (∂X) G(σo)_{yx} + X ∂G(σo)_{yx}`, `W = W^{(0)} + W^{(1)}`; `σc = -`: the conjugation `baExp14b_cut_conj`. -/
 theorem baExp14b_expand_holds (d : ℕ) : BAExp14bExpand d := by
@@ -1047,8 +1046,6 @@ theorem baExp14b_expand_holds (d : ℕ) : BAExp14bExpand d := by
     rw [e, h]
     simp only [BAExp14aS1Fam, BAExp14bS2Fam, BAExp14bS3Fam, Bool.false_eq_true, ite_false, ite_true, star_add, star_sum, hconj]
   · exact BAExp14b_expand_true hκ hflow n ht0 ht σo ac ao
-
-/-! ## 9. Compiled checks and nonempty instances -/
 
 end RBM.BA
 

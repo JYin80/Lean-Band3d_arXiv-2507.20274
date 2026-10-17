@@ -7,11 +7,15 @@ import RBM3D.Graph.AuxGraph
 import RBM3D.Graph.LWMomExpFar
 import RBM3D.Graph.LWProv
 /-!
-# LW-13b R3 (G): `GtoAG` for a weighted sum, rooted at chosen representatives (T2364)
-Paper `7_8:857-958` (`GtoAG`; the centre of an internal molecule is any of its vertices, `7_8:860`; the weight sits on the initial `β^{(k)}`, `T2289d`).  `lwGtoAG_holds` (`Graph/AuxGraph.lean:1018`) sums over all
-internal labels with `choose`n roots (`:476`); here the roots `rep` are a hypothesis, a real weight `|Wt| ≤ 1` vanishing unless every root block lies in `Dm` multiplies the terms, and `Γ^aux` is summed over the blocks in `Dm` (`auxValOn`).
-Sections: 1 `auxValOn`; 2 rooted forest; 3 main sum with the indicator; 4 `LWGtoAGRooted`; 5 `LWAuxNestedOwnOn`; 6 instances.
-Ports (merged RBM3D, text copied and adapted): `Graph/AuxGraph.lean:436-452, 459-537, 901-968, 1018-1127, 1526-1593, 1606-1640`, `Graph/LWMomExpFar.lean:96-103, 391-418`; statements = probe `t/T2348:RBM3D/Probe/T2348Pins.lean:189-224`.
+# `GtoAG` for a weighted sum, rooted at chosen representatives
+
+Paper: proof of Lemma 7.21 (`GtoAG`); the centre of an internal molecule is any of its vertices.
+`lwGtoAG_holds` (`Graph/AuxGraph.lean`) sums over all internal labels with chosen roots; here the
+roots `rep` are a hypothesis, a real weight `|Wt| ≤ 1` vanishing unless every root block lies in
+`Dm` multiplies the terms, and `Γ^aux` is summed over the blocks in `Dm` (`auxValOn`).
+
+Sections: 1 `auxValOn`; 2 the rooted forest; 3 the main sum with the indicator; 4
+`LWGtoAGRooted`; 5 `LWAuxNestedOwnOn`.
 -/
 set_option linter.style.setOption false set_option linter.style.longLine false set_option linter.unusedSectionVars false set_option linter.flexible false set_option linter.unusedFintypeInType false set_option linter.unusedDecidableInType false
 set_option linter.style.openClassical false set_option linter.style.show false set_option linter.unusedSimpArgs false set_option linter.unusedVariables false set_option linter.deprecated false
@@ -20,15 +24,15 @@ namespace RBM.Graph
 open RBM RBM.Gauss
 /-! ## 1. `auxValOn` -/
 open Classical in
-/-- `Γ^aux` summed over the blocks of the internal molecules in `Dm` only (`LGraph.auxVal`, `AuxGraph.lean:79`, restricted) -/
+/-- `Γ^aux` summed over the blocks of the internal molecules in `Dm` only (`LGraph.auxVal` restricted). -/
 def auxValOn {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] {κ : Type} [Fintype κ]
     (Γ : LGraph E I) (ξ : κ → κ → ℝ) (be : E → κ) (Dm : Finset κ) : ℝ :=
   haveI : Fintype (LGraph.AuxIMol Γ) := Fintype.ofFinite _
   ∑ b ∈ Fintype.piFinset (fun _ : LGraph.AuxIMol Γ => Dm),
     (Γ.molSolid.map fun e => ξ (LGraph.auxLab Γ be b e.src) (LGraph.auxLab Γ be b e.dst)).prod
-/-! ## 2. The rooted molecular forest (`7_8:922-925`, root given) -/
+/-! ## 2. The rooted molecular forest (proof of Lemma 7.21, root given) -/
 section Forest
-/-- a rank function toward a target set (`auxGraph_exists_rank`, `AuxGraph.lean:436`, private there, copied) -/
+/-- A rank function toward a target set (as `auxGraph_exists_rank` of `Graph/AuxGraph.lean`, which is private there). -/
 private theorem lwAuxRoot_exists_rank {V : Type*} (G : SimpleGraph V) (T : V → Prop)
     (hT : ∀ v, ∃ t, T t ∧ G.Reachable v t) :
     ∃ rk : V → ℕ, ∀ v, ¬ T v → ∃ w, G.Adj v w ∧ rk w < rk v := by
@@ -47,7 +51,7 @@ private theorem lwAuxRoot_exists_rank {V : Type*} (G : SimpleGraph V) (T : V →
     change Nat.find (hex w) < Nat.find (hex v)
     omega
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
-/-- **the molecular forest with prescribed roots** (`auxGraph_exists_forest`, `AuxGraph.lean:459`, for any choice `rep` of one vertex per internal molecule; only `molOf (inr (rep c)) = c` is used) -/
+/-- **The molecular forest with prescribed roots** (`auxGraph_exists_forest` of `Graph/AuxGraph.lean`, for any choice `rep` of one vertex per internal molecule; only `molOf (inr (rep c)) = c` is used). -/
 theorem lwAuxRoot_exists_forest (Γ : LGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = false)
     (rep : LGraph.AuxIMol Γ → I) (hrep : ∀ c, Γ.molOf (Sum.inr (rep c)) = c.1) :
     ∃ (par : I → E ⊕ I) (edge : {i : I // i ∉ Set.range rep} → Fin Γ.waved.length) (ρ : I → ℕ),
@@ -121,7 +125,7 @@ end Forest
 section MainSum
 variable {d L W : ℕ} [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 open Classical in
-/-- **the main sum with the indicator** (`auxGraph_main_sum`, `AuxGraph.lean:901`, with `Φ` multiplied by `1[every root block ∈ Dm]`) -/
+/-- **The main sum with the indicator** (`auxGraph_main_sum` of `Graph/AuxGraph.lean`, with `Φ` multiplied by `1[every root block ∈ Dm]`). -/
 theorem lwAuxRoot_main_sum (hd : 3 ≤ d) (Γ : LGraph E I) (D : LData (Idx d L W)) {C c : ℝ} {ξ : Zd d L → Zd d L → ℝ}
     (hξ0 : ∀ a b, 0 ≤ ξ a b) (hC : 0 ≤ C) (hc : 0 < c)
     (hS : ∀ x y, ‖D.S x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))))
@@ -209,8 +213,8 @@ theorem lwAuxRoot_main_sum (hd : 3 ≤ d) (Γ : LGraph E I) (D : LData (Idx d L 
         · simp only [h, if_false, zero_mul]
     _ ≤ _ := hmain
 end MainSum
-/-! ## 4. `GtoAG` for a weighted sum, rooted at the provenance vertices -/
-/-- **`GtoAG` for a weighted sum** (`LWGtoAG`, `AuxGraph.lean:979-998`, same hypotheses): `rep c` is the root of the molecule `c` and carries the weight (`T2289d`); `Wt ≠ 0` only where every root block is in `Dm` -/
+/-! ## 4. `GtoAG` for a weighted sum, rooted at the representatives -/
+/-- **`GtoAG` for a weighted sum** (`LWGtoAG` of `Graph/AuxGraph.lean`, same hypotheses): `rep c` is the root of the molecule `c` and carries the weight; `Wt ≠ 0` only where every root block is in `Dm`. -/
 def LWGtoAGRooted (d : ℕ) : Prop :=
   3 ≤ d → ∀ (L W : ℕ) [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : LGraph E I), Γ.Normal → (∀ a b : E, Γ.molOf (Sum.inl a) = Γ.molOf (Sum.inl b) → a = b) →
@@ -229,7 +233,7 @@ def LWGtoAGRooted (d : ℕ) : Prop :=
             Γ.sizeConst C (C * expC (d - 2) c) * Ψ ^ (Γ.scalingOrder - LGraph.auxOrd Γ) *
                 (((W : ℝ) ^ d) ^ Γ.nM * auxValOn Γ ξ (fun a => (split d L W (ℓe a)).1) Dm) +
               Real.exp (-(c * r / 2)) * Γ.sizeConst C (C * expC (d - 2) (c / 2)) * Γ.scalingSize Ψ W d L
-/-- **`GtoAG` for a weighted sum rooted at `rep`** (twin of `lwGtoAG_holds`, `AuxGraph.lean:1018-1127`: `|Wt| ≤ 1`, the restricted main sum, the merged tail sum) -/
+/-- **`GtoAG` for a weighted sum rooted at `rep`** (as `lwGtoAG_holds`: `|Wt| ≤ 1`, the restricted main sum, the tail sum). -/
 theorem lwGtoAGRooted_holds (d : ℕ) : LWGtoAGRooted d := by
   intro hd L W _ _ E I _ _ _ _ Γ hN hext rep hrep D m Ψ C c r R ξ Dm hM hG hGd hC hc hS hSp hwin hr hRr hξ0 hξ
     Wt hWt1 hWt0 ℓe
@@ -365,7 +369,7 @@ theorem lwGtoAGRooted_holds (d : ℕ) : LWGtoAGRooted d := by
 section Nested
 open Classical
 variable {Q : PGraph (Fin 2)} {p : ℕ}
-/-- **the restricted value of the nested graph** (`auxGraph_val_eq`, `AuxGraph.lean:1526`, over the internal labels in `Dm`) -/
+/-- **The restricted value of the nested graph** (`auxGraph_val_eq` of `Graph/AuxGraph.lean`, over the internal labels in `Dm`). -/
 theorem lwAuxRoot_val_eq_on (hxy : Q.g.molOf (Sum.inl (Q.ext 0)) ≠ Q.g.molOf (Sum.inl (Q.ext 1)))
     (Dt : auxGraph_Data Q p) (hM : (∑ i, localReg_stepEdges (Dt.W i)) + (↑(Dt.rest.map fun st => s(st.1, st.2)) : Multiset (Sym2 Q.g.Mol)) = Q.g.localReg_molEdgeMS)
     {κ : Type} [Fintype κ] [DecidableEq κ] (ξ : κ → κ → ℝ) (hsymm : ∀ u v, ξ u v = ξ v u) (be : Q.E' → κ) (Dm : Finset κ) :
@@ -434,7 +438,7 @@ theorem lwAuxRoot_val_eq_on (hxy : Q.g.molOf (Sum.inl (Q.ext 0)) ≠ Q.g.molOf (
   rw [← h3, ← hM, Multiset.map_add, Multiset.prod_add, auxGraph_prod_map_sum, ← h2, ← h1]
 end Nested
 open Classical in
-/-- `LWAuxNestedOwn` (`LWMomExpFar.lean:96`) with the restricted sum (the bridge to `valOn` with `piFinset Dm`) -/
+/-- The nested form of `Γ^aux` with `ownExt` (as in `Graph/LWMomExpFar.lean`) with the restricted sum (the bridge to `valOn` with `piFinset Dm`). -/
 def LWAuxNestedOwnOn : Prop :=
   ∀ (p : ℕ) (Q : PGraph (Fin 2)), 0 < p → Q.LocReg345 p →
     Q.g.molOf (Sum.inl (Q.ext 0)) ≠ Q.g.molOf (Sum.inl (Q.ext 1)) →
@@ -442,7 +446,7 @@ def LWAuxNestedOwnOn : Prop :=
       ∀ {κ : Type} [Fintype κ] [DecidableEq κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : Q.E' → κ,
         ∀ Dm : Finset κ, Γa.valOn ξ (fun _ => be (Q.ext 0)) (fun _ => be (Q.ext 1))
           (Fintype.piFinset fun _ : Fin Q.g.nM => Dm) = auxValOn Q.g ξ be Dm
-/-- **The nested form of `Γ^aux` with `ownExt`, restricted** (the proof of `lwMomExpFar_auxOwn`, `LWMomExpFar.lean:391-418`, with `lwAuxRoot_val_eq_on`). -/
+/-- **The nested form of `Γ^aux` with `ownExt`, restricted** (as in `Graph/LWMomExpFar.lean`, with `lwAuxRoot_val_eq_on`). -/
 theorem lwAuxNestedOwnOn_holds : LWAuxNestedOwnOn := by
   classical
   rintro p Q hp ⟨W, h3, h4, h5⟩ hxy
@@ -478,8 +482,5 @@ theorem lwAuxNestedOwnOn_holds : LWAuxNestedOwnOn := by
   exact ⟨auxGraph_ngraph Dt, auxGraph_noGhost Dt, auxGraph_isNested hxy Dt h3.1 hnd hndr h4 h5,
     lwMomExpFar_auxGraph_ownExt Dt, auxGraph_ordN Dt hcover,
     fun ξ hsymm be Dm => lwAuxRoot_val_eq_on hxy Dt hcover ξ hsymm be Dm⟩
-/-! ## 6. Compiled nonempty instances at `d = 3`
-The merged data of `AuxGraph.lean` (`Instances`, `Instances3`, `Instances5`): `d = 3`, `L = 4`, `W = 2`, `auxGraph_instD` (`G = m(0) I + (1/2) J`, `Ψ = 1/2`), `figGraph`
-(`|E ⊕ I| = 8 = R`, `n_M = 2`, `|𝒢_ℳ| = 6`), `localReg2_inst_Q` (`p = 2`, `n_M = 1`, `|𝒢_ℳ| = 4`).  The block set is `Dm = {0, e₀} ⊂ Z_4^3` (2 of 64 points). -/
 end RBM.Graph
 end

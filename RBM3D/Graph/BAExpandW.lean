@@ -7,35 +7,28 @@ import RBM3D.Graph.BAExpand
 import Mathlib.LinearAlgebra.Matrix.Gershgorin
 
 /-!
-# BA-L2b1: the weight expansion `lem_lweight` and `lanlw` as a graph operation (T2303)
+# The weight expansion `lem_lweight` and `lanlw` as a graph operation
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:359-387` (cited `B:line`; `lanlw` =
-`(eq:BE)`, [yang2024Del, Lemma B.9]; `lem_lweight` = `(eq:LW)`, [yang2024Del, Lemma B.10]).  The
-law is the block Anderson flow `H_t = g₀ Ψ + √t V` with `S^{(B)}(0) = I`, i.e. `PF d L W 0`
-(DECISIONS §57 (3)).  Design: T2161 (split P.9, row BA-L2); BA-L2b is cut in two by DECISIONS
-§129 (1): this file is BA-L2b1.
+Paper: Lemma B.6 (`lanlw`, (B.18) `eq:BE`, [yang2024Del, Lemma B.9]) and Lemma B.7 (`lem_lweight`,
+(B.19) `eq:LW`, [yang2024Del, Lemma B.10]).  The law is the block Anderson flow
+`H_t = g₀ Ψ + √t V` with `S^{(B)}(0) = I`, i.e. `PF d L W 0`.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAExpandW_`)
 
-1. **The pin and the vocabulary**, copied verbatim from `docs/tickets/checks/T2303-check.lean`
-   sections 2 and 3: `BAlweightL`, `BAlweightR`, `BAlweight`; `BAlwData`, `BAGraph.lanlwExt`,
-   `BAGraph.lanlwT1`, `BAGraph.lanlwD`, `BAGraph.lanlwTerms`.
-2. **Target 1** (the weight expansion): `baM_symm`, `baM_row_sq` (the fine Ward row
+1. **The statements and the vocabulary**: `BAlweightL`, `BAlweightR`, `BAlweight`; `BAlwData`,
+   `BAGraph.lanlwExt`, `BAGraph.lanlwT1`, `BAGraph.lanlwD`, `BAGraph.lanlwTerms`.
+2. **The weight expansion**: `baM_symm`, `baM_row_sq` (the fine Ward row
    `Σ_α |M_{xα}|² = 1`), `baW_isUnit` (Gershgorin for the non-diagonal `M^+S`), `baW_mul`
    (`W (1 - M^+S) = 1`), and **`baLweight_holds : ∀ d, BAlweight d`**, unconditionally (`gaussIBP`
    discharged): `lanlw` at `(y, y)` (`baLanlw_holds`) gives the linear system `v = (M^+S) v + r` for
    `v_y = 𝔼 Ǧ_{yy} f`, solved by `W = (1 - M^+S)⁻¹`.
-3. **Target 3(b)**: `lanlw_val`, the identity of expectations of values
+3. **`lanlw_val`**, the identity of expectations of values
    `𝔼 Γ.val = 𝔼 Σ_{Δ ∈ lanlwTerms Γ p} Δ.val` at the model data `BAlwData`, from `BAExpand_integral`
-   at every labelling on `Sizes.seqP` (`BAExpandW_lanlw_val_seq`, the BA twin of `owx_graph_E`),
-   transported to `PF d L W 0` by `lwWx_integral`.
-4. Compiled instances (`RBM.Graph.BAExpandWInst`): (I5) `baLweight_holds` at `t = 0` and at a
-   point with every hypothesis discharged, (I6) `baW_isUnit` and the Ward row at `d = 3`, `L = 3`,
-   `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2`; `lanlw_val` on `baGcxy` and `baGcxx`.
+   at every labelling on `Sizes.seqP` (`BAExpandW_lanlw_val_seq`), transported to `PF d L W 0` by
+   `lwWx_integral`.
 
-Not in this file: the raw counters and the `scalingOrderG` claim of the terms of `lanlw` (target
-3(c), instances (I3), (I4)) are T2315 (`Graph/BAExpandWOrd`); the `lem_lweight` graph operation
-(DECISIONS §129 (2)).
+Not in this file: the raw counters and the `scalingOrderG` claim of the terms of `lanlw`
+(`Graph/BAExpandWOrd`); the `lem_lweight` graph operation (`Graph/BAWeightOp`).
 -/
 
 set_option linter.style.setOption false
@@ -54,19 +47,19 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Green
 
-/-! ## 1. The pin and the vocabulary (copied verbatim from the check file, sections 2 and 3) -/
+/-! ## 1. The statements and the vocabulary -/
 
 section LWBAPinsW
 
 variable (d L W : ℕ) [NeZero L] [NeZero W] (g0 E t : ℝ) (m : ℂ)
   (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ)
 
-/-- Left side of `lem_lweight`: `Ǧ_{xx} f` (`B:376-387`, [yang2024Del, Lemma B.10]). -/
+/-- Left side of `lem_lweight`: `Ǧ_{xx} f` (Lemma B.7, [yang2024Del, Lemma B.10]). -/
 noncomputable def BAlweightL (x : Idx d L W) (ω : Ω d L W) : ℂ :=
   BAlwGc d L W g0 E t m ω x x * BAlwf d L W g0 E t m P ω
 
 /-- Right side of `lem_lweight` before `𝔼`: `Σ_y (1 + M^+S^+)_{xy} (Σ_{α,β} M_{yα} S_{αβ} Ǧ_{αy} Ǧ_{ββ} f -
-Σ_{α,β} M_{yα} S_{αβ} G_{βy} ∂_{h_{βα}} f)`, with `1 + M^+S^+ = (1 - M^+S)⁻¹ = BAlwW` (`B:380-385`). -/
+Σ_{α,β} M_{yα} S_{αβ} G_{βy} ∂_{h_{βα}} f)`, with `1 + M^+S^+ = (1 - M^+S)⁻¹ = BAlwW` ((B.19) `eq:LW`). -/
 noncomputable def BAlweightR (x : Idx d L W) (ω : Ω d L W) : ℂ :=
   ∑ y, BAlwW d L W g0 E t m x y *
     (∑ α, ∑ β, BAlwM d L W g0 E m y α * BAlwS d L W t α β * BAlwGc d L W g0 E t m ω α y *
@@ -76,9 +69,9 @@ noncomputable def BAlweightR (x : Idx d L W) (ω : Ω d L W) : ℂ :=
 
 variable {d L W g0 E t m P}
 
-/-- **`lem_lweight`** (`B:376-387`, [yang2024Del, Lemma B.10]): `𝔼[BAlweightL] = 𝔼[BAlweightR]` for every resolvent
-polynomial `f` over the BA law `PF d L W 0`.  Needs `(self_m)` (through `lanlw`) and `IsUnit (1 - M^+S)` (from
-`BASelf`, `t < 1`: the rows of `M^+S` have absolute sum `≤ t`).  Registry: proved (T2303). -/
+/-- **`lem_lweight`** (Lemma B.7, [yang2024Del, Lemma B.10]): `𝔼[BAlweightL] = 𝔼[BAlweightR]` for every resolvent
+polynomial `f` over the BA law `PF d L W 0`.  Needs (2.32) `self_m` (through `lanlw`) and `IsUnit (1 - M^+S)` (from
+`BASelf`, `t < 1`: the rows of `M^+S` have absolute sum `≤ t`).  Proved as `baLweight_holds`. -/
 def BAlweight (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (E : ℂ) m →
     0 ≤ t → t < 1 →
@@ -87,13 +80,13 @@ def BAlweight (d : ℕ) : Prop :=
 
 end LWBAPinsW
 
-/-! ## 3. `lanlw` as a graph operation: vocabulary (copied verbatim) -/
+/-! ## 3. `lanlw` as a graph operation: vocabulary -/
 
 section ModelData
 
 variable (d L W : ℕ) [NeZero L] [NeZero W]
 
-/-- The graph data of the BA flow at the sample `ω` (T2287 Consumers): `G` the flow resolvent, `M = BAlwM`,
+/-- The graph data of the BA flow at the sample `ω`: `G` the flow resolvent, `M = BAlwM`,
 `S = t·svarF d L W 0`, `S⁺ = S (1 - M^+S)⁻¹`, `gPsi = g₀ Ψ`. -/
 noncomputable def BAlwData (g0 E t : ℝ) (m : ℂ) (ω : Ω d L W) : BALData (Idx d L W) where
   G := Matrix.of fun x y => BAlwG d L W g0 E t m ω x y
@@ -117,7 +110,7 @@ def BAGraph.lanlwExt (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (c : ℂ
   BAGraph.mk (({ Γ.toLGraph with solid := rest } : LGraph E I).owxExt (owxEmb 2) c s w)
     (Γ.psi.map (BAPsiEdge.map (owxEmb 2))) (md ++ Γ.mdot.map (BAMEdge.map (owxEmb 2)))
 
-/-- **Term 1 of `lanlw`** (`B:363`) for `p ∈ lwSplit Γ.solid` with `p.1 = Ǧ_{xy}` (blue, circled; `x = p.1.src`,
+/-- **Term 1 of `lanlw`** (Lemma B.6) for `p ∈ lwSplit Γ.solid` with `p.1 = Ǧ_{xy}` (blue, circled; `x = p.1.src`,
 `y = p.1.dst`): `Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f`; `coeff = coeff Γ`. -/
 def BAGraph.lanlwT1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : BAGraph E (I ⊕ Fin 2) :=
   BAGraph.lanlwExt Γ p.2 1
@@ -126,10 +119,10 @@ def BAGraph.lanlwT1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E �
     [⟨false, true, Sum.inr (Sum.inr 0), Sum.inr (Sum.inr 1)⟩]
     [⟨true, owxEmb 2 p.1.src, Sum.inr (Sum.inr 0)⟩]
 
-/-- **The derivative term of `lanlw` for the solid edge `q.1` of `f`** (`q ∈ lwSplit p.2`, `B:363`):
+/-- **The derivative term of `lanlw` for the solid edge `q.1` of `f`** (`q ∈ lwSplit p.2`, Lemma B.6):
 `-Σ_{α,β} M_{xα} S_{αβ} G_{βy} ∂_{h_{βα}}` applied to `q.1`, i.e. `q.1` replaced by the two edges of `owxDE β α`
 (`G_{ab} ↦ G_{aβ} G_{αb}`, `Ḡ_{ab} ↦ Ḡ_{aα} Ḡ_{βb}`); **`coeff = + coeff Γ`** (the `-` of `lanlw` cancels the `-` of
-`∂G = -GG`; T2295-prove (a) row 10). -/
+`∂G = -GG`). -/
 def BAGraph.lanlwD (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
     (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : BAGraph E (I ⊕ Fin 2) :=
   BAGraph.lanlwExt Γ q.2 1
@@ -147,14 +140,14 @@ def BAGraph.lanlwTerms (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E
 
 end LanlwGraph
 
-/-! ## 4. Target 1: the weight expansion -/
+/-! ## 4. The weight expansion -/
 
 section BAWeightProof
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- The fibre sum: a function of the block coordinate supported on one offset sums to the sum over the blocks
-(the pattern of `BA/GreenSchur.lean`, `GreenSchur_fibre_sum`, private there). -/
+(as in `BA/GreenSchur.lean`). -/
 private theorem BAExpandW_fibre_sum (d L W : ℕ) [NeZero L] [NeZero W] (x : Idx d L W) (f : Zd d L → ℝ) :
     ∑ y : Idx d L W, (if (split d L W x).2 = (split d L W y).2 then f (split d L W y).1 else 0) =
       ∑ b : Zd d L, f b := by
@@ -194,7 +187,7 @@ theorem baM_symm (g0 E : ℝ) (m : ℂ) (x α : Idx d L W) :
       Matrix.transpose_one]
   exact (congrFun (congrFun hT x) α).symm
 
-/-- **The fine Ward row** (`(eq:WardM)`, `7_8:1869`): `Σ_α |M_{xα}|² = 1` (target 1b). -/
+/-- **The fine Ward row** ((8.5) `eq:WardM`): `Σ_α |M_{xα}|² = 1`. -/
 theorem baM_row_sq (d L W : ℕ) [NeZero L] [NeZero W] (g0 E : ℝ) (m : ℂ) (h : RBM.BA.BASelf d L g0 (E : ℂ) m)
     (x : Idx d L W) : ∑ α, ‖BAlwM d L W g0 E m x α‖ ^ 2 = 1 := by
   have hw : ((E : ℂ) + m).im ≠ 0 := by simpa using h.1.ne'
@@ -242,7 +235,7 @@ private theorem BAExpandW_isUnit_of_row {ι : Type*} [Fintype ι] [DecidableEq �
   rw [hsum]
   linarith [h k]
 
-/-- **`1 - M^+S` is invertible** (target 1b; Gershgorin: the rows of `M^+S` have absolute sum `≤ t Σ_α |M_{xα}|² = t`,
+/-- **`1 - M^+S` is invertible** (Gershgorin: the rows of `M^+S` have absolute sum `≤ t Σ_α |M_{xα}|² = t`,
 from `M_{αx} = M_{xα}`, `S ≥ 0` with rows `t`, and the fine Ward row). -/
 theorem baW_isUnit (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ)
     (hSelf : RBM.BA.BASelf d L g0 (E : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1) :
@@ -276,7 +269,7 @@ section BAWeightHolds
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- Closure of `Tame` under the operations of the expansion (copy of the local macro `ba_tame` of
+/-- Closure of `Tame` under the operations of the expansion (as the local macro `ba_tame` of
 `Graph/BAExpand.lean`, which is not exported). -/
 local macro "baw_tame" : tactic =>
   `(tactic| repeat' first
@@ -348,8 +341,8 @@ private theorem BAExpandW_pathwise (g0 E t : ℝ) (m : ℂ) (P : MvPolynomial (B
 
 
 
-/-- **`lem_lweight`** (`B:376-387`, [yang2024Del, Lemma B.10]) on the block Anderson law `PF d L W 0`, for every `d`: the
-pin `BAlweight`.  For `0 < t < 1`: `lanlw` at `(y, y)` (`baLanlw_holds`) gives `v = (M^+S) v + r` for the vector
+/-- **`lem_lweight`** (Lemma B.7, [yang2024Del, Lemma B.10]) on the block Anderson law `PF d L W 0`, for every `d`:
+`BAlweight`.  For `0 < t < 1`: `lanlw` at `(y, y)` (`baLanlw_holds`) gives `v = (M^+S) v + r` for the vector
 `v_y = 𝔼 Ǧ_{yy} f` and `r_y = 𝔼[bracket]`, so `v = W r` by `W (1 - M^+S) = 1`; for `t = 0` both sides vanish. -/
 theorem baLweight_holds (d : ℕ) : BAlweight d := by
   intro L W _ _ hL g0 E t m hSelf ht0 ht1 P x
@@ -440,9 +433,8 @@ end BAWeightHolds
 
 /-! ## 5. `lanlw` as a graph operation: the value identity (`lanlw_val`)
 
-The BA twin of the graph-derivative value layer of `Graph/LWStein.lean:1412-1583` (`lwSampleData`, `lwK`,
-`lwStein_term_eq`, `lwStein_dh_sedge_val`) for the shifted resolvent `baG`, and of `owx_term_integral`/`owx_graph_E`
-(`Graph/LWWeightExp.lean:1060-1369`) for the two families of terms of `lanlw` (`BAGraph.lanlwT1`, `BAGraph.lanlwD`).
+The BA counterpart of the graph-derivative value layer of `Graph/LWStein.lean` (`lwSampleData`, `lwK`,
+`lwStein_term_eq`, `lwStein_dh_sedge_val`) for the shifted resolvent `baG`, and of the graph operation of `Graph/LWWeightExp.lean` for the two families of terms of `lanlw` (`BAGraph.lanlwT1`, `BAGraph.lanlwD`).
 The identity is proved on the sequence space `Sizes.seqP` from `BAExpand_integral` at every labelling, then
 transported to `PF d L W 0` by `lwWx_integral`. -/
 
@@ -797,7 +789,7 @@ variable {d : ℕ} {sz : Sizes d} {n : ℕ} {E I : Type} [Fintype I] [DecidableE
 variable {g0 : ℝ} {z : ℂ} {u : ℝ} {M Sp gPsi : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
 
 /-- The expectation of the value of a graph with two new internal vertices is the sum, over the labels of the old
-internal vertices and of the new ones, of the expectations of its terms (the BA twin of `owx_integral_val2`). -/
+internal vertices and of the new ones, of the expectations of its terms (the BA counterpart of `owx_integral_val2`). -/
 theorem BAExpandW_integral_val2 (hG : GaussIBP sz) (hz : z.im ≠ 0)
     (S : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (T : BAGraph E (I ⊕ Fin 2))
     (ℓe : E → Idx d (sz.L n) (sz.W n)) :
@@ -818,7 +810,7 @@ theorem BAExpandW_integral_val2 (hG : GaussIBP sz) (hz : z.im ≠ 0)
   refine Finset.sum_congr rfl fun α _ => ?_
   exact integral_finsetSum _ fun β _ => hint _
 
-/-- **`lanlw` as a graph operation: the identity of expectations of values on the sequence space** (`B:359-372`).
+/-- **`lanlw` as a graph operation: the identity of expectations of values on the sequence space** (Lemma B.6).
 For a graph `Γ` with the blue circled edge `p.1 = Ǧ_{xy}` (`p ∈ lwSplit Γ.solid`, `Γ.val = 𝔼[Ǧ_{xy} f]` with the
 monomial `f`): `𝔼 Γ.val = 𝔼 (lanlwT1 Γ p).val + Σ_q 𝔼 (lanlwD Γ p q).val`, `q` running over `lwSplit p.2`. -/
 theorem BAExpandW_lanlw_val_seq (hG : GaussIBP sz) (hz : z.im ≠ 0) (hu : 0 < u) (m : ℂ)
@@ -900,11 +892,11 @@ private theorem BAExpandW_lanlwTerm_zero {E I : Type} [Fintype I] [DecidableEq I
     rw [BAGraph.lanlwD, BAExpandW_lanlwExt_term]
     simp [hw]
 
-/-- **`lanlw` as a graph operation** (`B:359-372`, [yang2024Del, Lemma B.9]; target 3(b)): for a block Anderson graph
+/-- **`lanlw` as a graph operation** (Lemma B.6, [yang2024Del, Lemma B.9]): for a block Anderson graph
 `Γ` and an edge `p.1 = Ǧ_{xy}` of `Γ` (`p ∈ lwSplit Γ.solid`, blue, circled), the expectation of the value of `Γ` at
 the model data `BAlwData` is that of the sum of the values of the graphs of `lanlwTerms Γ p`.  For `0 < t < 1`:
 `BAExpandW_lanlw_val_seq` (from `BAExpand_integral` at every labelling) through the bridge; for `t = 0` both sides
-vanish (`Ǧ = 0`, `S = 0`).  The order bookkeeping of the terms (`lanlw_ord`, `lanlw_scalingOrderG`) is T2315's. -/
+vanish (`Ǧ = 0`, `S = 0`).  The order bookkeeping of the terms (`lanlwT1_counters`, `lanlwD_counters`, `lanlw_scalingOrderG`) is in `Graph/BAExpandWOrd.lean`. -/
 theorem lanlw_val (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ)
     (hSelf : RBM.BA.BASelf d L g0 (E : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1)
     {Ex Ix : Type} [Fintype Ix] [DecidableEq Ix] (Γ : BAGraph Ex Ix)
@@ -961,11 +953,6 @@ theorem lanlw_val (d L W : ℕ) [NeZero L] [NeZero W] (hL : 3 ≤ L) (g0 E t : �
     exact (lwWx_integral hL hF1 fun ω' => rfl).trans (key.trans (lwWx_integral hL hF2 fun ω' => rfl).symm)
 
 end BALanlwPF
-
-/-! ## 6. Instance graphs and compiled instances (namespace `RBM.Graph.BAExpandWInst`)
-
-The graphs `baGcxy`, `baGcxx` are copied from `docs/tickets/checks/T2303-check.lean` section 4 (instances (I3), (I4) of
-T2295; their counters are T2315's). -/
 
 end RBM.Graph
 

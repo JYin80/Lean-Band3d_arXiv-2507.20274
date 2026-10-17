@@ -9,42 +9,36 @@ import RBM3D.Graph.BAExpandW
 import RBM3D.BA.MFixedPoint
 
 /-!
-# BA-L L4d (T2419): the BA identity half of `lem:LWterm_EXP`
+# The BA identity half of `lem:LWterm_EXP`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:393-405` (`GGGamma`, D402
-coefficient `W - 1 = M⁺S⁺`); design `docs/reports/T2398-design.md` §4 (the identity in
-expectation), probe `t/T2398:RBM3D/Probe/T2398Pins.lean:135-153, 490-494` (statements and
-engine instance, copied).  The twin of the identity half of `Graph/LWExpTerm5.lean`
-(`lwExpandIdentity_holds`, `:594`) without its leaf-side parts.
+Paper: (B.20) `GGGamma` (with the coefficient `W - 1 = M⁺S⁺`), Subappendix B.1.  This is the
+BA counterpart of the identity half of `Graph/LWExpTerm5.lean` (`lwExpandIdentity_holds`) without
+its leaf-side parts.
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAExpandId_`)
 
-1. **Vocabulary** (probe 135-153): `baG5Graph k s`, `BAG5Identity d Ls`.
-1b. **The red charge** (Amend 1): `BAExpandId_flip` (the complex-conjugate graph),
-   `BAExpandId_star_val` (`star (Γ.val) = (flip Γ).val`), `baExpFrame_gg_red` (the red `GG`
-   identity as the conjugate of `baExpFrame_gg` at the conjugate graph, lists `BAExpandId_gg2r`,
-   `BAExpandId_gg4r`),
+1. **The red charge**: `BAExpandId_flip` (the complex-conjugate graph), `BAExpandId_star_val`
+   (`star (Γ.val) = (flip Γ).val`), `baExpFrame_gg_red` (the red `GG` identity as the conjugate of
+   `baExpFrame_gg` at the conjugate graph, lists `BAExpandId_gg2r`, `BAExpandId_gg4r`),
    `BAExpandId_gg_identity` (either charge).
 2. **The procedure**: `BAExpandId_pcomp`, `BAExpandId_outsOf` (the packing of the partitions
    of a list of terms through the external map of the parent), `BARCand` (a `GG` candidate:
    a charge `σ`, a vertex `v` and two circled solid edges `p = Ǧ_{vy}`, `q = Ǧ_{y'v}` of the
    charge `σ` of the same graph), `BARCand.kids` (the partitions of `gg2 ++ gg4`, the conjugate
    lists for `σ = false`, every exponent pair `(0, 0)`), `BASel`, `BAstep`, `BAexpand`
-   (= `expandG` of `LWExpTerm5`), `BAexpandRoot`, `BAselClassical`.
+   (= `expandG` of `LWExpTerm5`).
 3. **Normality** of the children: `BARCand.kids_normal` (`BAGraph.partition_normal`).
 4. **Integrability and packing**: every graph value is integrable over `PF d L W 0`, the
    partition and the packed graph read through `P.ext`.
 5. **The step**: `BARCand.kids_identity` (`BAExpandId_gg_identity` + `BAGraph.val_eq_partition` +
    packing), for both charges.
-6. **The expansion**: `baExpandIdentity_holds`: `BAG5Identity d (BAexpandRoot sel fuel)` for
-   every selector and fuel, from `expandG_sum` of `LWExpTerm5` (imported) with the weight
+6. `BAExpandId_flat_sum`: the sum over a flattened list of outputs, the ingredient of the
+   expansion identity from `expandG_sum` of `LWExpTerm5` (imported) with the weight
    `w = fun _ => 1`.
-7. Compiled instances (`BAExpandIdInst`, `d = 3`): a blue candidate and a red candidate.
 
-`LWG5Progress` (`LWExpTerm5:72`) is **not** claimed: it fails at BA (`baTwB_stuck`, probe 97);
-the stop rule and the leaf property are L4e-C's.  The candidate rule has both charges: a blue pair
-is the merged identity `baExpFrame_gg` (`Graph/BAGGOp.lean:785`), a red pair is its complex
-conjugate (`baExpFrame_gg_red`).
+The candidate rule has
+both charges: a blue pair is the identity `baExpFrame_gg` (`Graph/BAGGOp.lean`), a red pair is its
+complex conjugate (`baExpFrame_gg_red`).
 -/
 
 set_option linter.style.longLine false
@@ -67,16 +61,16 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
-/-! ## 1. Vocabulary (the probe, lines 135-153) -/
+/-! ## 1. Vocabulary -/
 
-/-! ## 1b. The red charge: complex conjugation (Amend 1)
+/-! ## 1b. The red charge: complex conjugation
 
 A red solid edge is the complex conjugate of the blue one at the same data and the same endpoints
 (`SEdge.val`: `Ḡ_{xy} = star G_{xy}`), an `M`-dotted edge likewise (`BAMEdge.val`), a coloured waved edge `S^-_{xy} = star S^+_{yx}`
 (`WEdge.val`) is the conjugate of `S^+_{yx}`, so conjugation swaps its endpoints, a black waved edge `S_{xy}` is real
 (`BAlwS = t · svarF`), and a `Ψ`-dotted edge `g₀ Ψ_{xy}` goes to `g₀ Ψ_{yx}` (`Ψ` Hermitian).  `BAExpandId_flip Γ` is the graph
 whose value is the complex conjugate (`BAExpandId_star_val`), so the red `GG` identity is the conjugate of the blue one for the
-conjugate graph, with the conjugated output lists: no input beyond `baExpFrame_gg` (`Graph/BAGGOp.lean:788`) is used and no
+conjugate graph, with the conjugated output lists: no input beyond `baExpFrame_gg` (`Graph/BAGGOp.lean`) is used and no
 invariance of the law under `H ↦ H̄` (the identity in expectation is conjugated directly, `integral_conj`). -/
 
 section Conj
@@ -224,7 +218,7 @@ section Red
 variable {E I : Type}
 
 /-- The red `gg2` list at a red pair `p = Ḡ_{xy}`, `q = Ḡ_{y'x}`: the conjugate of the blue list `gg2` of the conjugate graph at
-the conjugate pair (`Graph/BAGGOp.lean`, T2410). -/
+the conjugate pair (`Graph/BAGGOp.lean`). -/
 def BAExpandId_gg2r (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
     List (BAGraph E (I ⊕ Fin 2)) :=
   ((BAExpandId_flip Γ).gg2 (BAExpandId_flipP p) (BAExpandId_flipP q)).map BAExpandId_flip
@@ -236,9 +230,9 @@ def BAExpandId_gg4r (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E 
 
 end Red
 
-/-- **The red-charge `GG` identity** (`GGGamma`, `B:393-405`, D402, for a pair `p = Ḡ_{xy}`, `q = Ḡ_{y'x}` of red circled solid
+/-- **The red-charge `GG` identity** ((B.20) `GGGamma` with the coefficient `W - 1 = M⁺S⁺`, for a pair `p = Ḡ_{xy}`, `q = Ḡ_{y'x}` of red circled solid
 edges): `𝔼 Γ.val = 𝔼 (Σ_{Δ ∈ gg2r} Δ.val + Σ_{Δ ∈ gg4r} Δ.val)` at the model data `BAlwData` over `PF d L W 0`, with the
-conjugated lists `BAExpandId_gg2r`, `BAExpandId_gg4r`.  It is the complex conjugate of `baExpFrame_gg` (`Graph/BAGGOp.lean:788`) at the
+conjugated lists `BAExpandId_gg2r`, `BAExpandId_gg4r`.  It is the complex conjugate of `baExpFrame_gg` (`Graph/BAGGOp.lean`) at the
 conjugate graph `BAExpandId_flip Γ` (`BAExpandId_star_val`, `integral_conj`); the hypotheses are those of `baExpFrame_gg` with
 `σ = false`. -/
 theorem baExpFrame_gg_red (d : ℕ) : ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ),
@@ -281,7 +275,7 @@ section Dispatch
 
 variable {E I : Type}
 
-/-- The `gg2` list of the charge `σ` of the pair: the merged blue list for `σ = true`, the conjugate list for `σ = false`. -/
+/-- The `gg2` list of the charge `σ` of the pair: the blue list for `σ = true`, the conjugate list for `σ = false`. -/
 def BAExpandId_ggL2 (σ : Bool) (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) :
     List (BAGraph E (I ⊕ Fin 2)) :=
   if σ then Γ.gg2 p q else BAExpandId_gg2r Γ p q
@@ -309,19 +303,18 @@ theorem BAExpandId_gg_identity (d : ℕ) : ∀ (L W : ℕ) [NeZero L] [NeZero W]
 
 /-! ## 2. The procedure -/
 
-/-- A packed graph read through the external map of its parent (the twin of `pcomp`, `LWExpTerm5.lean:120`). -/
+/-- A packed graph read through the external map of its parent (as `pcomp` in `Graph/LWExpTerm5.lean`). -/
 def BAExpandId_pcomp (P : BAPGraph (Fin 2)) (Q : BAPGraph P.E') : BAPGraph (Fin 2) :=
   { E' := Q.E', I' := Q.I', ext := Q.ext ∘ P.ext, ext_surj := Q.ext_surj.comp P.ext_surj, g := Q.g }
 
-/-- The outputs of a step: the BA partition of every term, packed and read through `P.ext` (twin of `BAPGraph.outsOf`,
-`t/T2395:RBM3D/Probe/T2395Pins.lean:154`), every exponent pair `(0, 0)` (`expandG`'s carrier). -/
+/-- The outputs of a step: the BA partition of every term, packed and read through `P.ext` (as `BAPGraph.outsOf` in `Graph/BASim.lean`), every exponent pair `(0, 0)` (`expandG`'s carrier). -/
 def BAExpandId_outsOf (P : BAPGraph (Fin 2)) {I' : Type} [Fintype I'] [DecidableEq I'] (Ts : List (BAGraph P.E' I')) :
     List ((ℕ × ℕ) × BAPGraph (Fin 2)) :=
   Ts.flatMap fun T => T.partition.map fun Q => ((0, 0), BAExpandId_pcomp P Q)
 
 /-- **A `GG` candidate** of a packed graph, as data: a charge `σ`, a vertex `v` and two solid edges of the same graph,
 `p.1 = Ǧ_{vy}` and `q.1 = Ǧ_{y'v}`, both circled and of the charge `σ` (`σ = true`: blue, `baExpFrame_gg`,
-`Graph/BAGGOp.lean:785`; `σ = false`: red, `baExpFrame_gg_red`; `p ∈ lwSplit P.g.solid`, `q ∈ lwSplit p.2`). -/
+`Graph/BAGGOp.lean`; `σ = false`: red, `baExpFrame_gg_red`; `p ∈ lwSplit P.g.solid`, `q ∈ lwSplit p.2`). -/
 structure BARCand (P : BAPGraph (Fin 2)) where
   σ : Bool
   v : P.E' ⊕ P.I'
@@ -337,7 +330,7 @@ structure BARCand (P : BAPGraph (Fin 2)) where
   hqv : q.1.dst = v
 
 /-- The children of a packed graph at a candidate: the partitions of the terms of `gg2` and `gg4` of the charge of the pair
-(`GGGamma`, `B:393-405`, D402; the conjugate lists for a red pair), packed through `P.ext`; every exponent pair is `(0, 0)`. -/
+((B.20) `GGGamma`; the conjugate lists for a red pair), packed through `P.ext`; every exponent pair is `(0, 0)`. -/
 def BARCand.kids {P : BAPGraph (Fin 2)} (c : BARCand P) : List ((ℕ × ℕ) × BAPGraph (Fin 2)) :=
   BAExpandId_outsOf P (BAExpandId_ggL2 c.σ P.g c.p c.q) ++ BAExpandId_outsOf P (BAExpandId_ggL4 c.σ P.g c.p c.q)
 
@@ -348,13 +341,13 @@ abbrev BASel := (P : BAPGraph (Fin 2)) → Option (BARCand P)
 def BAstep (sel : BASel) (P : BAPGraph (Fin 2)) : Option (List ((ℕ × ℕ) × BAPGraph (Fin 2))) :=
   (sel P).map BARCand.kids
 
-/-- The expansion procedure with fuel: `expandG` (`LWExpTerm5.lean:189`, any carrier) along `BAstep`. -/
+/-- The expansion procedure with fuel: `expandG` (`Graph/LWExpTerm5.lean`, any carrier) along `BAstep`. -/
 def BAexpand (sel : BASel) (fuel : ℕ) (P : BAPGraph (Fin 2)) : List ((ℕ × ℕ) × BAPGraph (Fin 2)) :=
   expandG (BAstep sel) fuel P
 
 /-! ## 3. Normality of the children -/
 
-/-- Every child of a candidate is a normal graph (`BAGraph.partition_normal`, `BAVocab.lean:930`; `pcomp` keeps `g`). -/
+/-- Every child of a candidate is a normal graph (`BAGraph.partition_normal`, `Graph/BAVocab.lean`; `pcomp` keeps `g`). -/
 theorem BARCand.kids_normal {P : BAPGraph (Fin 2)} (c : BARCand P) : ∀ r ∈ c.kids, r.2.g.Normal := by
   have h : ∀ {I' : Type} [Fintype I'] [DecidableEq I'] (Ts : List (BAGraph P.E' I')),
       ∀ r ∈ BAExpandId_outsOf P Ts, r.2.g.Normal := by
@@ -485,7 +478,7 @@ private theorem BAExpandId_integral_outsOf (hL : 3 ≤ L) (g0 E t : ℝ) (m : �
 
 /-! ## 5. The step -/
 
-/-- **One step of the expansion is an identity in expectation** (`GGGamma` at a candidate of either charge, `B:393-405`, D402): for
+/-- **One step of the expansion is an identity in expectation** ((B.20) `GGGamma` at a candidate of either charge): for
 a packed graph `P` and a candidate `c`, `𝔼 P.val = Σ_{kids} 𝔼 child.val` at the data `BAlwData` over `PF d L W 0` and the
 external labels `![x, y]`.  `baExpFrame_gg` (blue) or `baExpFrame_gg_red` (red) for the graph `P.g`, then `val_eq_partition` on
 every term of the lists; no term is dropped by value.  Hypotheses: `BASelf`, `0 ≤ t < 1` only (no smallness of `g₀`, no scalar `m`, no normality of `P`). -/
@@ -527,7 +520,7 @@ theorem BARCand.kids_identity (hL : 3 ≤ L) (g0 E t : ℝ) (m : ℂ) (hSelf : R
 /-! ## 6. The expansion and its identity -/
 
 /-- The weighted sum over `l.flatMap (g ·)` (outputs only) is the sum over `l`, if `Φ` is the sum over `g` at every member of
-`l` (the weight is `1`; twin of `lwExpTerm5_flat_sum`, `LWExpTerm5.lean:215`). -/
+`l` (the weight is `1`; as `lwExpTerm5_flat_sum` in `Graph/LWExpTerm5.lean`). -/
 private theorem BAExpandId_flat_sum {X : Type*} (Φ : X → ℂ) (l : List X) (g : X → List ((ℕ × ℕ) × X))
     (hg : ∀ r ∈ l, Φ r = ((g r).map fun t => Φ t.2).sum) :
     ((l.flatMap fun r => (g r).map Prod.snd).map Φ).sum = (l.map Φ).sum := by
@@ -537,13 +530,6 @@ private theorem BAExpandId_flat_sum {X : Type*} (Φ : X → ℂ) (l : List X) (g
   rfl
 
 end Identity
-
-/-! ## 7. Compiled instances (namespace `RBM.Graph.BAExpandIdInst`)
-
-`d = 3`, `L = 3`, `W = 1`, `g₀ = 0`, `E = 0`, `m = i`, `t = 1/2` (`BASelf` is `BAExpandInst.baSelf_zero`, `BAExpand.lean:865`); `Idx 3 3 1`
-has `27` points.  The packed graph is the shape of `baG5Graph true true` with every solid edge circled (a normal term of its
-partition): `5` solid edges, `2` waved edges, `3` internal vertices, `E' = Fin 2`, `I' = Fin 3`, `ext = id`.  The candidate is at
-`v = inr 0`: `p = Ǧ_{inr0 inr1}`, `q = Ǧ_{inl0 inr0}`. -/
 
 end RBM.Graph
 

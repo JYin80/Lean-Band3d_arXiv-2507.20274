@@ -6,19 +6,17 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExp14c
 
 /-!
-# BA-L L4c1 (T2464), part B: the `x ~ y` support, the averaged leaf bound, the assembly of S3
+# The `BAExp14bS3` side (part B): the `x ~ y` support, the averaged leaf bound, the assembly
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-121`; supervisor
-`2026-10-12-0851.md` Q3 (the disjunction), design `docs/reports/T2398-design.md` §5, §7.
-Twin of `Graph/LWExpTerm3.lean` `:1749-1858` (§4 count), `:1859-1955`, `:2029-2174` (assembly).
-Part A is `Graph/BAExp14c.lean`.
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`), the graphical part from (B.5)
+`eq;I42inG` to (B.9) `eq:GGraisesord` and the closing remark.  This is the BA counterpart of
+`Graph/LWExpTerm3.lean` (Section 4 and the assembly).  Part A is `Graph/BAExp14c.lean`.
 
 ## Contents (namespace `RBM.BA`; private prefix `BAExp14c_`)
 
 5. The `x ~ y` support `BAExp14c_xy_support`; integrals over the carrier law; the average of the
-   expectations; `baS3LeafAvg_holds` (the disjunction of 0851 Q3).
+   expectations; `baS3LeafAvg_holds`.
 6. The conditional assembly `baExp14bS3_of_leaf : BAG5LeafPrec d → BAExp14bS3 d`.
-7. The compiled nonempty instances (namespace `BAExp14cInst`).
 -/
 
 set_option linter.style.longLine false
@@ -47,9 +45,9 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.Graph
 
-/-! ## 5. The `x ~ y` support (target 5) -/
+/-! ## 5. The `x ~ y` support -/
 
-/-- **The `x ~ y` support** (`T2464_xy_support`; the BA form of the `x = y` case of `lwExpTerm3_val_ext_ne`, `LWExpTerm3:1797`): if the external
+/-- **The `x ~ y` support** (the BA form of the `x = y` case of `lwExpTerm3_val_ext_ne` in `Graph/LWExpTerm3.lean`): if the external
 vertices lie in one atom, the value at `BAlwData` vanishes at labels of different offsets (`baAtom_offset`, `BAAtom_offdiag_E`), so only `W^d` of the
 `W^{2d}` pairs of `[a]×[b]` contribute. -/
 theorem BAExp14c_xy_support : ∀ (d : ℕ) (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -184,7 +182,7 @@ theorem BAExp14c_avg_le_tied {d : ℕ} {sz : Sizes d} {n : ℕ} (a b : Zd d (sz.
 
 end Integrals
 
-/-! ### The `BAG5LeafProps` branch of `BAS3LeafAvg`: the pin per pair, then the average
+/-! ### The `BAG5LeafProps` branch of `BAS3LeafAvg`: the leaf statement per pair, then the average
 
 `t^{n_W} ≤ t` (`n_W ≥ 2`), `η⁻¹ ≤ κ⁻¹ (1 - t)⁻¹` (`twEta_ge_holds`); apart atoms (`ord ≥ 5`): `B^{ord/2} ≤ 2^{(ord-5)/2} B^{5/2}`; tied atoms
 (`ord ≥ 3`): the entries vanish at different offsets (`BAExp14c_xy_support`), so `W^{-d}` of the average survives, `W^{-d} ≤ (𝔡⁻² + 1) B`
@@ -342,10 +340,9 @@ private theorem BAExp14c_leafAvg_G5 {d : ℕ} (hd : 3 ≤ d) {κ ε 𝔡 𝔠 : 
 
 end G5Branch
 
-/-! ### The fold branch of `BAS3LeafAvg`: L4d2a directly, in averaged form
+/-! ### The fold branch of `BAS3LeafAvg`: the twisted fold bounds directly, in averaged form
 
-Clause (i) of `BAFoldLeafT` writes the average of `q` as `t · twLoop2X(Ǧ, Ǧ, ǦE_bǦ(σ), ρ X^e)`.  `twFold2PrecDet_holds` (`e = false`) or
-`twFold2Prec_holds` with `baS3Xprec_holds` (`e = true`) bounds the `twLoop2X` pathwise by `(1 - t)⁻¹ B^{5/2}`; `BAExp14a_prec_integral` takes `𝔼`
+Clause (i) of `BAFoldLeafT` writes the average of `q` as `t · twLoop2X(Ǧ, Ǧ, ǦE_bǦ(σ), ρ X^e)`.  `twFold2Prec_holds` bounds the `twLoop2X` pathwise by `(1 - t)⁻¹ B^{5/2}` (the random factor is `≺ W^d Bctl` by `baS3Xprec_holds`, or the constant `1`); `BAExp14a_prec_integral` takes `𝔼`
 (crude envelope of `twLoop2X`, floor `BAExp14a_floor`), and the factor `t` is restored deterministically. -/
 
 section FoldBranch
@@ -535,7 +532,7 @@ private theorem BAExp14c_leafAvg_fold {d : ℕ} (hd : 3 ≤ d) {κ ε 𝔡 𝔠 
         (∀ c₄, ∑ c₁, ∑ c₂, ∑ c₃, ‖ρ d sz z n (t n) p.2.1 p.2.2 c₁ c₂ c₃ c₄‖ ≤ Cρ) := by
     filter_upwards [hC] with n hn p
     exact hn (t n) (ht0 n) (htT n) p.2.1 p.2.2
-  -- the random factor of the nodes #17, #47 is `≺ W^d Bctl` (`baS3Xprec_holds`), the constant `1` too (`TwistFold2_one_prec`)
+  -- the random factor of the nodes is `≺ W^d Bctl` (`baS3Xprec_holds`), the constant `1` too (`TwistFold2_one_prec`)
   have hXprec : PrecL sz (Sizes.seqP (sz.withLam 0))
       (U := fun n => (Bool × Zd d (sz.L n) × Zd d (sz.L n)) × Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n) × Zd d (sz.L n))
       (fun n q' ω => ‖(if e then (((sz.W n : ℕ) : ℂ) ^ d)⁻¹ * ∑ u ∈ twBlk n q'.2.2.1, ∑ v ∈ twBlk n q'.2.2.2.2,
@@ -563,7 +560,7 @@ private theorem BAExp14c_leafAvg_fold {d : ℕ} (hd : 3 ≤ d) {κ ε 𝔡 𝔠 
       (fun n v ω => ‖Yf n v ω‖) (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ)) :=
     StochDomAt.precomp_param hY (fun n (v : Zd d (sz.L n) × Zd d (sz.L n)) =>
       ((σ, v.1, v.2) : Bool × Zd d (sz.L n) × Zd d (sz.L n)))
-  -- the polynomial envelope of `Y` and the floor of the control (the first moment off the failure event)
+  -- the polynomial envelope of `Y` and the floor of the dominating function (the first moment off the failure event)
   set c : ℝ := |1 - ε| + 1 with hc
   have henv : ∀ᶠ n in atTop, ∀ (v : Zd d (sz.L n) × Zd d (sz.L n)) (ω : sz.SeqΩ),
       ‖Yf n v ω‖ ≤ ((sz.size n : ℕ) : ℝ) ^ (2 + 8 * c) := by
@@ -637,8 +634,8 @@ private theorem BAExp14c_leafAvg_fold {d : ℕ} (hd : 3 ≤ d) {κ ε 𝔡 𝔠 
 
 end FoldBranch
 
-/-- **Target 5 (b)** (`T2464_BAS3LeafAvg`): the averaged leaf bound under the disjunction of 0851 Q3.  A `BAG5LeafProps` leaf goes through the per-pair pin
-and is then averaged (with the `x ~ y` count); a fold leaf goes through L4d2a directly, in averaged form. -/
+/-- **`BAS3LeafAvg`**: the averaged leaf bound.  A `BAG5LeafProps` leaf goes through the per-pair leaf statement
+and is then averaged (with the `x ~ y` count); a fold leaf goes through the twisted fold bound directly, in averaged form. -/
 theorem baS3LeafAvg_holds : ∀ d : ℕ, BAS3LeafAvg d := by
   intro d hpin hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hf t ht0 htT μ hE hLW hmax hLK hDec q hq
   rcases hq with hq | hq
@@ -646,7 +643,7 @@ theorem baS3LeafAvg_holds : ∀ d : ℕ, BAS3LeafAvg d := by
       (hpin hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hf t ht0 htT hE hLW hmax hLK hDec q hq)
   · exact BAExp14c_leafAvg_fold hd hκ hε h𝔡 hf ht0 htT hE hmax q hq
 
-/-! ## 6. The conditional assembly of S3 (target 6) -/
+/-! ## 6. The conditional assembly of `BAExp14bS3` -/
 
 section Assembly
 
@@ -778,8 +775,8 @@ private theorem BAExp14c_Ebound {T M R' : ℝ} (hT : 0 < T) (E : ℂ) (L1 L2 : L
       _ = T * (((L1.length + L2.length : ℕ) : ℝ) * M * R') := by ring
   exact le_of_mul_le_mul_left this hT
 
-/-- **The expectations of the four S3 families against the lists** (the bridge, `baS3Bridge_holds`, pathwise; the identities over `PF`, carried to the carrier
-law): `T 𝔼 F_j` is the sum of `𝔼 avg q` over the list of the root (`D1X`: `MERGED` minus the sub-root `T3C-tr_0`). -/
+/-- **The expectations of the four `BAExp14bS3` families against the lists** (the bridge, `baS3Bridge_holds`, pathwise; the identities over `PF`, carried to the carrier
+law): `T 𝔼 F_j` is the sum of `𝔼 avg q` over the list of the root (`D1X`: `baS3RootM` minus the sub-root `T3C-tr_0`). -/
 private theorem BAExp14c_fam_E (hf : BAFlow sz κ ε 𝔠 𝔡 z) {n : ℕ} {T : ℝ} (hT0 : 0 ≤ T) (hT : T ≤ BAflowT0 sz z n)
     (σ : Bool) (a b : Zd d (sz.L n)) :
     ((T : ℂ) * ∫ ω, BAExp14b_FT3CX sz z n T ω false σ a b ∂(BAExp14a_μ sz) =
@@ -825,9 +822,9 @@ private theorem BAExp14c_fam_E (hf : BAFlow sz κ ε 𝔠 𝔡 z) {n : ℕ} {T :
 
 end Assembly
 
-/-- **Target 6, the conditional assembly** (`T2464_S3OfLeaf`; band `lwExpG5'_of_expand`, `LWExpTerm3:2031`): the leaf pin gives the merged S3 pin
-`BAExp14bS3`.  For `t > 0` the family is `t⁻¹ ×` the root average (target 2); its expectation is the sum over the list of the root (target 1 for `T3C-tr_0`,
-`baS3Identity_holds` for the others), every term of the lists is a `BAG5LeafProps` leaf or a `BAFoldLeafT` leaf (target 4), and target 5 bounds each by
+/-- **The conditional assembly**: the leaf statement gives `BAExp14bS3`.
+For `t > 0` the family is `t⁻¹ ×` the root average (the bridge); its expectation is the sum over the list of the root (the sub-root identity for `T3C-tr_0`,
+`baS3Identity_holds` for the others), every term of the lists is a `BAG5LeafProps` leaf or a `BAFoldLeafT` leaf, and `BAS3LeafAvg` bounds each by
 `t (1 - t)⁻¹ B^{5/2}`; the lists have lengths independent of `n`.  For `t = 0` every family carries `BAlwS 0 = 0`. -/
 theorem baExp14bS3_of_leaf : ∀ d : ℕ, BAExp14bS3OfLeaf d := by
   intro d hpin hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hf t ht0 htT μ hE hLW hmax hLK hDec
@@ -926,21 +923,6 @@ theorem baExp14bS3_of_leaf : ∀ d : ℕ, BAExp14bS3OfLeaf d := by
   · simp only [BAExp14bS3Fam, hσc, Bool.false_eq_true, ↓reduceIte, Complex.star_def, integral_conj, RCLike.norm_conj]
     exact key j (!σo) ac ao
 
-
-/-! ## 7. Compiled nonempty instances (namespace `BAExp14cInst`; `d = 3`, `sz0`, `zSeq`, `flow_sz0`, `n = 0`, `t = 1/2`, `half_lt_t0`)
-
-The leaf pin `BAG5LeafPrec` and the five Step 1/2 pins (other gates') stay hypotheses of the examples of targets 5, 6; every deterministic
-hypothesis is discharged at the data. -/
-
-/-! ### Target 1 -/
-
-/-! ### Target 2 -/
-
-/-! ### Target 3 -/
-
-/-! ### Target 4 -/
-
-/-! ### Targets 5, 6 -/
 
 end RBM.BA
 

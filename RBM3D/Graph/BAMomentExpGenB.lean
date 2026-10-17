@@ -19,30 +19,36 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedSimpArgs false
 
 /-!
-# BA-L L3d2b-2 (T2483), part B: regime (A), the weighted expansion, the far and near pins and `lem:LW_moment_exp` at BA
+# `lem:LW_moment_exp` at BA (part B): regime (A), the weighted expansion, the far and near bounds, the assembly
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): `lem:LW_moment_exp` (`7_8:78-83`), its proof (`7_8:1595-1660`: the case distinction
-`7_8:1602-1611`, the far pin `7_8:1620-1643`, the near pins `7_8:1648-1660`); `paper/tex/B_graphical_lemmas.tex:486-497` (G3, G4).  Twin of `Graph/LWMomentExpA.lean`
-(`:1-460`) and of `Graph/LWMomentExp.lean` §4-§12 (`:375-1509`) in a new file (namespace `RBM.BA`, private stem `BAMomentExpGenB_`); additive, no merged file is edited.
-Part A (targets 1-5) is `Graph/BAMomentExpGen.lean` (merged).
+Paper: Lemma 7.2 (`lem:LW_moment_exp`); its proof (Subsection 7.5 `subsec_pf_LW_moment_exp`: the
+case distinction (7.56) `eq:far_ab_K`, the far bound (7.57) `eq:LW_moment_exp_far` of Lemma 7.25,
+the near bounds (7.58) `eq:LW_moment_exp_near` of Lemma 7.26); (B.24) `eq:ordGaux_BAM`, (B.25)
+`G_by_auxG_BA` and the end of the proof of Lemma B.7.  This is the BA counterpart of
+`Graph/LWMomentExpA.lean` and of `Graph/LWMomentExp.lean` (Sections 4-12), in namespace `RBM.BA`
+with private stem `BAMomentExpGenB_`.  Part A is `Graph/BAMomentExpGen.lean`.
 
 ## Contents
 
-1. The context: `LWAssmgL` for the B class `Φ_B = LWPhiB` from `LWAssmExpgL` (twin of `lwMomentExp_assm`, `lwMEA_assm`), at the BA data.
-2. Regime (A) (target 6): the statement `BAMomExpNoExp`, its wrapper `BAMomExpNoExpOfMoment` and `baMomExpNoExp_of_moment` from `BALWMoment` (twin of `lwMomExpNoExp_holds`).
-3. The weighted expansion (target 7): continuity and integrability of the values, `BAMomentExp_expand`, `t = 0`.
-4. The outputs of the engine with provenance (target 8): the control `R`, errors, `𝓜_x = 𝓜_y` (the weighted scale-mole tail), `𝓜_x ≠ 𝓜_y` (the BA rooted G3, the nested
-   form at the shadow, the model-free pins), the polynomial envelope.
-5. The three pins (target 8): `BAMomentExpOn`, `BAMomentExp_pin_gen`, the far and near pins for every `K > 0`.
-6. The assembly (target 9): `BAMomentExpOfParts`, `baMomentExp_of_parts`, `BALWMomentExpOfAnp`, `baLWMomentExp_of_anp`.
-7. Compiled nonempty instances of targets 6-9 (instance (i) of target 10) and of the index sets; instances (ii), (iii) of target 10 are in part A.
+1. The context: `LWAssmgL` for the B class `Φ_B = LWPhiB` from `LWAssmExpgL` (as `lwMomentExp_assm`,
+   `lwMEA_assm`), at the BA data.
+2. Regime (A): the statement `BAMomExpNoExp`, its wrapper `BAMomExpNoExpOfMoment` and
+   `baMomExpNoExp_of_moment` from `BALWMoment` (as `lwMomExpNoExp_holds`).
+3. The weighted expansion: continuity and integrability of the values, `BAMomentExp_expand`,
+   `t = 0`.
+4. The outputs of the engine with provenance: the dominating function `R`, errors, `𝓜_x = 𝓜_y` (the weighted
+   scale-mole tail), `𝓜_x ≠ 𝓜_y` (the BA rooted `GtoAG`, the nested form at the shadow, the
+   model-free bounds), the polynomial envelope.
+5. The three bounds: `BAMomentExpOn`, `BAMomentExp_pin_gen`, the far and near bounds for every
+   `K > 0`.
+6. The assembly: `BAMomentExpOfParts`, `baMomentExp_of_parts`, `BALWMomentExpOfAnp`,
+   `baLWMomentExp_of_anp`.
 
-Ports (merged RBM3D files, text copied and adapted): `Graph/LWMomentExpA.lean:127-406`, `Graph/LWMomentExp.lean:118-1432`, `Graph/BAMomentGen.lean:1127-1374`, `Graph/BAMomentGenB.lean:370-427`;
-RBM1D and RBM2D have no light-weight graph layer.
-
-**Premise scan** (`Test/Axioms.lean`): `BAAnpAuxG` occurs only inside the statement def `BALWMomentExpOfAnp`, `BALWMoment` only inside the statement def
-`BAMomExpNoExpOfMoment` (the pinned shape `∀ d, BALWMoment d → ∀ K, 0 < K → BAMomExpNoExp d K` as a theorem hypothesis would put the unproved `BALWMoment` into the scan: the
-wrapper is definitionally that statement); `LWAssmExpgL`, `LWAssmgL` occur only in private helpers and inside statement defs.
+`BAAnpAuxG` occurs only inside the statement def `BALWMomentExpOfAnp`, `BALWMoment` only inside the
+statement def `BAMomExpNoExpOfMoment` (the shape `∀ d, BALWMoment d → ∀ K, 0 < K → BAMomExpNoExp d K`
+as a theorem hypothesis would make `BALWMoment` a hypothesis of a theorem: the
+wrapper is definitionally that statement); `LWAssmExpgL`, `LWAssmgL` occur only in private helpers
+and inside statement defs.
 -/
 
 open private lwMEA_prec_mono lwMEA_phiB_sq_le lwMEA_loss lwMEA_phi_zero lwMEA_phi_sq lwMEA_zdistInf_le lwMEA_wneg
@@ -64,10 +70,10 @@ section Context
 
 variable {d : ℕ}
 
-/-- **`LWAssmgL` for the B class** (twin of `lwMomentExp_assm`, `Graph/LWMomentExp.lean:482`, and of `lwMEA_assm`, `Graph/LWMomentExpA.lean:127`; the band input `lwN_Bctl_le` is
-`BAExp14d_Bctl_small`, `Graph/BAExp14dB.lean:74`, with the factor `2`, absorbed by the quarter of the exponent): from `LWAssmExpgL` the class `Φ_B = LWPhiB sz d K t`,
+/-- **`LWAssmgL` for the B class** (as `lwMomentExp_assm` in `Graph/LWMomentExp.lean` and `lwMEA_assm` in `Graph/LWMomentExpA.lean`; the band input `lwN_Bctl_le` is
+`BAExp14d_Bctl_small`, `Graph/BAExp14dB.lean`, with the factor `2`, absorbed by the quarter of the exponent): from `LWAssmExpgL` the class `Φ_B = LWPhiB sz d K t`,
 `K n = ⌊ℓ n⌋ ∧ L n`, `c₀ = d`, satisfies `LWAssmgL` at the window `ε₁ = min (ε₀, d c₀/4)` with the constants `(2^d, d, (1 + 𝔡⁻²)^{1/2}, C ↦ ((C+1)^{d-2})^{1/2})`;
-`LWLoop2gL` for `Φ_B` is `(LW_assm_exp)` at `D' = 1/𝔠`. -/
+`LWLoop2gL` for `Φ_B` is (3.31) `eq:LW_assm_exp` at `D' = 1/𝔠`. -/
 private theorem BAMomentExpGenB_assm (hd : 3 ≤ d) {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) {sz : Sizes d} {z : ℕ → ℂ}
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n ≤ BAflowT0 sz z n) {ε₀ : ℝ} {Ψ ℓ : ℕ → ℝ}
     (hA : LWAssmExpgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ ℓ) :
@@ -139,10 +145,10 @@ private theorem BAMomentExpGenB_assm (hd : 3 ≤ d) {κ ε 𝔡 𝔠 : ℝ} (hκ
 
 end Context
 
-/-! ## 2. Regime (A) (target 6) -/
+/-! ## 2. Regime (A) -/
 
-/-- **(A), `lem:LW_moment_exp` in the regime `regA d K` at BA** (the target `LWMomentExpG` at the `baPin` data on the pairs of `regA`, for every `K > 0`; twin of `LWMomExpNoExpF`,
-`Graph/LWMomentExpA.lean:56`, with the carrier `LWfg (baFMz sz z)`; `regA` is imported, model-free in `sz`). -/
+/-- **(A), `lem:LW_moment_exp` in the regime `regA d K` at BA** (the statement `LWMomentExpG` at the BA data on the pairs of `regA`, for every `K > 0`; as `LWMomExpNoExpF`
+in `Graph/LWMomentExpA.lean`, with the carrier `LWfg (baFMz sz z)`; `regA` is imported, model-free in `sz`). -/
 def BAMomExpNoExp (d : ℕ) (K : ℝ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (p : ℕ), 2 ∣ p → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) →
@@ -154,12 +160,11 @@ def BAMomExpNoExp (d : ℕ) (K : ℝ) : Prop :=
             sfT d (sz.L n) ((sz.W n : ℕ) : ℝ) (sz.lam n) (t n)
               (min ((zdistInf d (sz.L n) (STblk sz n q.1.1 - STblk sz n q.1.2) : ℕ) : ℝ) (ℓ n))) ^ p + ((sz.W n : ℕ) : ℝ) ^ (-D))
 
-/-- **Target 6, the statement def**: `lem:LW_moment` at the block Anderson data (`BALWMoment`) gives (A) for every `K > 0` (`∀ d, BALWMoment d → ∀ K, 0 < K → BAMomExpNoExp d K`; the
-unfolding is the pinned shape; as `BALWMomentOfAnp`, `Graph/BAMomentGenB.lean:362`, the unproved pin occurs only inside a statement def, so that the premise scan of `Test/Axioms.lean`
-does not see it as a hypothesis of a theorem). -/
+/-- **The statement def**: `lem:LW_moment` at the block Anderson data (`BALWMoment`) gives (A) for every `K > 0` (`∀ d, BALWMoment d → ∀ K, 0 < K → BAMomExpNoExp d K`; as `BALWMomentOfAnp`
+in `Graph/BAMomentGenB.lean`, the hypothesis occurs only inside a statement def, not as a hypothesis of a theorem). -/
 def BAMomExpNoExpOfMoment (d : ℕ) : Prop := BALWMoment d → ∀ K : ℝ, 0 < K → BAMomExpNoExp d K
 
-/-- **Target 6** (`lwMomExpNoExp_holds`, `Graph/LWMomentExpA.lean:334`; `7_8:1602-1611`): from `lem:LW_moment` at BA (`BALWMoment`) for the B class at the window `ε₁` of
+/-- **(A) from `lem:LW_moment` at BA** (as `lwMomExpNoExp_holds` in `Graph/LWMomentExpA.lean`; case (7.56) `eq:far_ab_K`): from `lem:LW_moment` at BA (`BALWMoment`) for the B class at the window `ε₁` of
 `BAMomentExpGenB_assm`, `𝔼 |f|^p ≺ (η⁻¹ Φ_B(0) Φ_B(c |a-b|))^p`; on `regA`, `Φ_B(c r)² ≤ C_c e^{√(K (log W)^{3/2})} 𝖳_t(r ∧ ℓ)²` (`lwMEA_phiB_sq_le`) and the loss
 `(C_c e^{√(K (log W)^{3/2})})^{q'} ≤ N^σ` for every `σ` (`lwMEA_loss`); `Φ_B(0) = B_{ctl}^{1/2}` (`lwMEA_phi_zero`). -/
 theorem baMomExpNoExp_of_moment : ∀ d : ℕ, BAMomExpNoExpOfMoment d := by
@@ -234,14 +239,14 @@ theorem baMomExpNoExp_of_moment : ∀ d : ℕ, BAMomExpNoExpOfMoment d := by
     _ ≤ ((sz.size n : ℕ) : ℝ) ^ σ * ((x * sfT d (sz.L n) W (sz.lam n) (t n) m) ^ (2 * q') + W ^ (-D)) :=
         mul_le_mul_of_nonneg_left (le_add_of_nonneg_right hWD) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
 
-/-! ## 3. The weighted expansion (target 7) -/
+/-! ## 3. The weighted expansion -/
 
 section Expand
 
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ}
 
-/-- The weighted value of a packed graph is continuous in the sample when only `G` varies (the weight is a constant of the sample; twin of `BAMomentGen_cont_val`,
-`Graph/BAMomentGen.lean:1221`). -/
+/-- The weighted value of a packed graph is continuous in the sample when only `G` varies (the weight is a constant of the sample; as `BAMomentGen_cont_val`
+in `Graph/BAMomentGen.lean`). -/
 private theorem BAMomentExpGenB_cont_valW {ι : Type} [Fintype ι] [DecidableEq ι] {Ω' : Type*} [TopologicalSpace Ω']
     (D : Ω' → BALData ι) (D0 : BALData ι)
     (hG : ∀ x y, Continuous fun ω => (D ω).G x y) (hS : ∀ ω, (D ω).S = D0.S) (hSp : ∀ ω, (D ω).Sp = D0.Sp)
@@ -258,8 +263,8 @@ private theorem BAMomentExpGenB_cont_valW {ι : Type} [Fintype ι] [DecidableEq 
   · have : (fun ω => Q.valW (D ω) Wt ℓe) = fun _ => 0 := funext fun ω => BAPGraph.valW_of_not Q (D ω) Wt hf
     rw [this]; exact continuous_const
 
-/-- `|f^D|^p` is integrable (bounded by `η⁻¹`-powers, continuous): the pointwise step of the three-way split needs it (twin of `lwMomentExp_integrable`,
-`Graph/LWMomentExp.lean:118`). -/
+/-- `|f^D|^p` is integrable (bounded by `η⁻¹`-powers, continuous): the pointwise step of the three-way split needs it (as `lwMomentExp_integrable`
+in `Graph/LWMomentExp.lean`). -/
 theorem BAMomentExp_integrable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) (p : ℕ)
     (Dm : Finset (Zd d (sz.L n))) (x y : Idx d (sz.L n) (sz.W n)) :
     Integrable (fun ω => ‖LWfgD (baFMz sz z) n t ω Dm x y‖ ^ p) (BAExp14a_μ sz) := by
@@ -315,7 +320,7 @@ theorem BAMomentExp_integrable (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡
   rw [Real.norm_of_nonneg (by positivity)]
   exact pow_le_pow_left₀ (norm_nonneg _) (hb ω) p
 
-/-- `t = 0`: `f^D = 0` (twin of `lwMomentExp_LWfD_zero`, `Graph/LWMomentExp.lean:1289`, and of `BAMomentGen_LWfg_zero`, `Graph/BAMomentGen.lean:1391`: `Ǧ = 0`). -/
+/-- `t = 0`: `f^D = 0` (as `lwMomentExp_LWfD_zero` in `Graph/LWMomentExp.lean` and `BAMomentGen_LWfg_zero` in `Graph/BAMomentGen.lean`: `Ǧ = 0`). -/
 theorem BAMomentExp_LWfgD_zero (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) (h1 : (0 : ℝ) ≤ BAflowT0 sz z n)
     (Dm : Finset (Zd d (sz.L n))) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) : LWfgD (baFMz sz z) n 0 ω Dm x y = 0 := by
   obtain ⟨-, -, -, -, hGM, -⟩ := ba_G_data hκ sz hflow n (le_refl 0) h1
@@ -341,9 +346,8 @@ theorem BAMomentExp_LWfgD_zero (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡
 variable {t : ℕ → ℝ} (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : ∀ n, 0 ≤ t n) (ht1 : ∀ n, t n ≤ BAflowT0 sz z n)
 include hκ hflow ht0 ht1
 
-/-- **Target 7, the weighted expansion** (`7_8:943-945` with the weight of `7_8:1607-1611`; twin of `lwMomentExp_expand`, `Graph/LWMomentExp.lean:390`, of `BAMomentGen_expand`,
-`Graph/BAMomentGen.lean:1287`): from the engine lists with provenance (`BAWExp`, `ba_localregularXP`), at a sample size with `0 < t < 1`,
-`𝔼 |f^{Dm}_{xy}|^p ≤ Σ_o ‖𝔼 𝒱_o^{π_o^*𝟙_{Dm}}‖` (`BAWExp.prod`, the bridge `baProv_bridge` and target 1 (d) on the left, the homogeneity target 4 (a) on the right, the slice transport
+/-- **The weighted expansion** (the expansion in the proof of Lemma 7.22 with the weight of (7.56) `eq:far_ab_K`; as `lwMomentExp_expand` in `Graph/LWMomentExp.lean` and `BAMomentGen_expand` in `Graph/BAMomentGen.lean`): from the engine lists with provenance (`BAWExp`, `ba_localregularXP`), at a sample size with `0 < t < 1`,
+`𝔼 |f^{Dm}_{xy}|^p ≤ Σ_o ‖𝔼 𝒱_o^{π_o^*𝟙_{Dm}}‖` (`BAWExp.prod`, the bridge `baProv_bridge` and `LWfgD_baFMz` on the left, the homogeneity `BAMomentExp_valW_scale` on the right, the slice transport
 `BAExp14a_int_slice` of continuous integrands).  No integrability hypothesis: the identity is a sum of integrals. -/
 theorem BAMomentExp_expand {p : ℕ} (hp : Even p) (n : ℕ) {outs : List (BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))}
     (hW : ∀ o ∈ outs, p ≤ o.Q.g.waved.countP (fun e => !e.col))
@@ -428,13 +432,13 @@ theorem BAMomentExp_expand {p : ℕ} (hp : Even p) (n : ℕ) {outs : List (BAPro
 
 end Expand
 
-/-! ## 4. The outputs of the engine with provenance: the control, errors, `𝓜_x = 𝓜_y`, the envelope -/
+/-! ## 4. The outputs of the engine with provenance: the dominating function, errors, `𝓜_x = 𝓜_y`, the envelope -/
 
 section Outputs
 
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t : ℕ → ℝ} {ε₀ ε₁ : ℝ} {Ψ ℓ : ℕ → ℝ}
 
-/-- the right side of `LWMomentExpG` at BA (twin of `lwMomentExp_R`, `Graph/LWMomentExp.lean:807`, with `η_t = (baFMz sz z).eta`) -/
+/-- the right side of `LWMomentExpG` at BA (as `lwMomentExp_R` in `Graph/LWMomentExp.lean`, with `η_t = (baFMz sz z).eta`) -/
 private def BAMomentExpGenB_R (sz : Sizes d) (z : ℕ → ℂ) (t ℓ : ℕ → ℝ) (p : ℕ) (D : ℝ) (n : ℕ) (x y : Idx d (sz.L n) (sz.W n)) : ℝ :=
   (((baFMz sz z).eta n (t n))⁻¹ * (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) * sfT d (sz.L n) ((sz.W n : ℕ) : ℝ) (sz.lam n) (t n)
     (min ((zdistInf d (sz.L n) (STblk sz n x - STblk sz n y) : ℕ) : ℝ) (ℓ n))) ^ p + ((sz.W n : ℕ) : ℝ) ^ (-D)
@@ -447,7 +451,7 @@ private theorem BAMomentExpGenB_R_ge (n : ℕ) (p : ℕ) (D : ℝ) (x y : Idx d 
     (min ((zdistInf d (sz.L n) (STblk sz n x - STblk sz n y) : ℕ) : ℝ) (ℓ n))
   exact le_add_of_nonneg_left (pow_nonneg (by positivity) _)
 
-/-- `η_t ≤ 1 - t` at the BA carrier (`η_t = (1 - t) Im m`, `‖m‖ ≤ 1`; the BA form of `lwMomentExp_eta_le`, `Graph/LWMomentExp.lean:1017`). -/
+/-- `η_t ≤ 1 - t` at the BA carrier (`η_t = (1 - t) Im m`, `‖m‖ ≤ 1`; the BA form of `lwMomentExp_eta_le` in `Graph/LWMomentExp.lean`). -/
 private theorem BAMomentExpGenB_eta_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {s : ℝ} (hs0 : 0 ≤ s) (hs : s ≤ BAflowT0 sz z n) :
     (baFMz sz z).eta n s ≤ 1 - s := by
   obtain ⟨hs1, hr, hmi, -⟩ := ba_G_data hκ sz hflow n hs0 hs
@@ -464,7 +468,7 @@ variable (hd : 3 ≤ d) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow 
     ((2 : ℝ) ^ d) (d : ℝ) (Real.sqrt (1 + (𝔡⁻¹) ^ 2)) (fun C => Real.sqrt ((C + 1) ^ (d - 2))))
 include hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
-/-- **errors** (twin of `lwMomentExp_prec_err`, `Graph/LWMomentExp.lean:901`): the weighted size bound at the entry scale `Ψ'` gives `N^{-D} ≤ W^{-D} ≤ R`. -/
+/-- **errors** (as `lwMomentExp_prec_err` in `Graph/LWMomentExp.lean`): the weighted size bound at the entry scale `Ψ'` gives `N^{-D} ≤ W^{-D} ≤ R`. -/
 private theorem BAMomentExpGenB_prec_err (p : ℕ) {K0 : ℕ} {D Deng : ℝ} (hD0 : 0 < D) (hK0 : 1 / 𝔠 ≤ K0) (hDe : (D + 1) / 𝔠 ≤ Deng)
     {V : ℕ → Type} (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     (dom : ∀ (L : ℕ) [NeZero L], Zd d L → Zd d L → ℝ → Finset (Zd d L)) (o : BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))
@@ -514,9 +518,8 @@ private theorem BAMomentExpGenB_prec_err (p : ℕ) {K0 : ℕ} {D Deng : ℝ} (hD
     _ ≤ _ := hRg
     _ ≤ _ := le_mul_of_one_le_left hR0 hNτ
 
-/-- **outputs with `𝓜_x = 𝓜_y` at far pairs** (twin of `lwMomentExp_prec_scale`, `Graph/LWMomentExp.lean:943`, on the route of `BAMomentGen_prec_scale`,
-`Graph/BAMomentGen.lean:802`; radius `r = Krad (log W)^{3/2}`, `lwTail32`): the weighted scale-mole tail `BAMomentExp_scalemole` covers every output with
-`inr (ext 1) ∈ mol (inr (ext 0))`, every `x ~ y` among them (L4-C4 (b)). -/
+/-- **outputs with `𝓜_x = 𝓜_y` at far pairs** (as `lwMomentExp_prec_scale` in `Graph/LWMomentExp.lean`, along `BAMomentGen_prec_scale` in `Graph/BAMomentGen.lean`; radius `r = Krad (log W)^{3/2}`, `lwTail32`): the weighted scale-mole tail `BAMomentExp_scalemole` covers every output with
+`inr (ext 1) ∈ mol (inr (ext 0))`, every `x ~ y` among them. -/
 private theorem BAMomentExpGenB_prec_scale (p : ℕ) {D Krad : ℝ} (hD0 : 0 < D) (hKr : 0 < Krad)
     {V : ℕ → Type} (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     (dom : ∀ (L : ℕ) [NeZero L], Zd d L → Zd d L → ℝ → Finset (Zd d L)) (o : BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))
@@ -581,8 +584,7 @@ private theorem BAMomentExpGenB_prec_scale (p : ℕ) {D Krad : ℝ} (hD0 : 0 < D
       htail).trans ((lwMomentExp_floor_le (by omega) n hD0.le).trans hRg))
   · rw [BAPGraph.valW_of_not o.Q _ _ hf, norm_zero]; exact hR0
 
-/-- **The polynomial envelope** `‖𝔼-integrand‖ ≤ N^{K}`, every sample and every weight `|Wt| ≤ 1`, with `K` depending on the graph only (twin of `lwMomentExp_env`,
-`Graph/LWMomentExp.lean:861`, and of `BAMomentGen_env`, `Graph/BAMomentGen.lean:1127`). -/
+/-- **The polynomial envelope** `‖𝔼-integrand‖ ≤ N^{K}`, every sample and every weight `|Wt| ≤ 1`, with `K` depending on the graph only (as `lwMomentExp_env` in `Graph/LWMomentExp.lean` and `BAMomentGen_env` in `Graph/BAMomentGen.lean`). -/
 private theorem BAMomentExpGenB_env (Q : BAPGraph (Fin 2)) (hQ : Q.g.Normal) :
     ∃ Kenv : ℝ, ∀ᶠ n in atTop, ∀ (x y : Idx d (sz.L n) (sz.W n)) (ω : sz.SeqΩ)
       (Wt : (Q.E' ⊕ Q.I' → Idx d (sz.L n) (sz.W n)) → ℝ), (∀ ℓ, |Wt ℓ| ≤ 1) →
@@ -632,11 +634,11 @@ private theorem BAMomentExpGenB_env (Q : BAPGraph (Fin 2)) (hQ : Q.g.Normal) :
         rw [Real.rpow_natCast, ← pow_mul]; ring
 
 set_option maxHeartbeats 3200000 in
--- The twin `lwMomentExp_prec_anp` (`Graph/LWMomentExp.lean:1029`) carries the same heartbeat limit.
-/-- **the outputs with `𝓜_x ≠ 𝓜_y`** (twin of `lwMomentExp_prec_anp`, `Graph/LWMomentExp.lean:1030`, on the route of `BAMomentGen_prec_anp`, `Graph/BAMomentGen.lean:904`):
-the BA rooted G3 `baGtoAGTRooted_holds` (target 5) against the edge variables `N^{τ₁} ζ`, `ζ = baZetaVar` at the radius `ρ = (2K+1)(log W)^{3/2}`, `R = K (log W)^{3/2}`,
-`r = (K/Kc)(log W)^{3/2}` (`baZetaExpClaim_holds`, `baGbyZeta_holds`), the nested form of `Γ^aux` at the shadow (`lwAuxNestedOwnOn_holds` at `BAShadowPG`, no twin), the
-floor `W^{-D'}` of `ζ ≺ 𝖳 + W^{-D'}` and the model-free pin `hPin`. -/
+-- `lwMomentExp_prec_anp` (`Graph/LWMomentExp.lean`) carries the same heartbeat limit.
+/-- **the outputs with `𝓜_x ≠ 𝓜_y`** (as `lwMomentExp_prec_anp` in `Graph/LWMomentExp.lean`, along `BAMomentGen_prec_anp` in `Graph/BAMomentGen.lean`):
+the BA rooted `GtoAG` `baGtoAGTRooted_holds` against the edge variables `N^{τ₁} ζ`, `ζ = baZetaVar` at the radius `ρ = (2K+1)(log W)^{3/2}`, `R = K (log W)^{3/2}`,
+`r = (K/Kc)(log W)^{3/2}` (`baZetaExpClaim_holds`, `baGbyZeta_holds`), the nested form of `Γ^aux` at the shadow (`lwAuxNestedOwnOn_holds` at `BAShadowPG`), the
+floor `W^{-D'}` of `ζ ≺ 𝖳 + W^{-D'}` and the model-free bound `hPin`. -/
 private theorem BAMomentExpGenB_prec_anp
     (hAss : LWAssmExpgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) t ε₀ Ψ ℓ)
     {p : ℕ} (hp : 0 < p) {K Kc D : ℝ} (hK : 0 < K) (hKc : 0 < Kc) (hD0 : 0 < D)
@@ -819,7 +821,7 @@ private theorem BAMomentExpGenB_prec_anp
     (BAMomentExp_wt sz n Dmv o) (BAMomentExp_wt_abs sz n Dmv o) hWt0 ℓ'
   have htl := BAMomentGen_tail_le o.Q.g.counters (sz.W n) (sz.L n) d (sz.W_pos n) (by have := sz.three_le_L n; omega) hΨ0 hΨ1 hNc hK20
     (by rw [mul_assoc] at htail; exact htail)
-  -- the auxiliary graph: `Γ^aux_{Dm}(X ξ) = X^{2 nE} Γa.valOn ζ`, floor, pin
+  -- the auxiliary graph: `Γ^aux_{Dm}(X ξ) = X^{2 nE} Γa.valOn ζ`, floor, hypothesis `hPin`
   set aa := STblk sz n (pr n v).1 with haa
   set bb := STblk sz n (pr n v).2 with hbb
   set ζ : Zd d (sz.L n) → Zd d (sz.L n) → ℝ := fun a b => ξ a b / X with hζ
@@ -942,8 +944,8 @@ private theorem BAMomentExpGenB_prec_anp
       (X ^ A * Kbig + 2) * BAMomentExpGenB_R sz z t ℓ p D n (pr n v).1 (pr n v).2 := by nlinarith only [hND]
   exact hgt.trans ((add_le_add hmain htl).trans hfin2)
 
-/-- From `≺` of `‖𝒱_o‖` to `≺` of `‖𝔼 𝒱_o‖` (`BAExp14a_prec_integral`: polynomial envelope `BAMomentExpGenB_env` and the floor `R ≥ N^{-D}`; twin of `lwExpTerm_prec_integral` as used in
-`lwMomentExp_pin_gen`, and of `BAMomentGen_prec_int`, `Graph/BAMomentGen.lean:1175`). -/
+/-- From `≺` of `‖𝒱_o‖` to `≺` of `‖𝔼 𝒱_o‖` (`BAExp14a_prec_integral`: polynomial envelope `BAMomentExpGenB_env` and the floor `R ≥ N^{-D}`; as `lwExpTerm_prec_integral` used in
+`lwMomentExp_pin_gen`, and `BAMomentGen_prec_int` in `Graph/BAMomentGen.lean`). -/
 private theorem BAMomentExpGenB_prec_int (p : ℕ) {D : ℝ} (hD : 0 < D) {V : ℕ → Type}
     (pr : ∀ n, V n → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     (dom : ∀ (L : ℕ) [NeZero L], Zd d L → Zd d L → ℝ → Finset (Zd d L)) (o : BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))
@@ -971,10 +973,10 @@ omit hd hκ hε h𝔡 hflow ht0 ht1 hassm
 
 end Outputs
 
-/-! ## 5. The three pins from the engine with provenance (target 8) -/
+/-! ## 5. The far and near bounds from the engine with provenance -/
 
-/-- **`lem:LW_moment_exp` at BA for the domain form** (the target `LWMomentExpG` at the `baPin` data for `f^{dom}` on the pairs/lengths in `reg`; twin of `LWMomentExpOn`,
-`Graph/LWMomentExp.lean:86`; `dom ≡ univ`, `reg ≡ True` is `LWMomentExpG`): `E |f^{dom}_{xy}|^p ≺ (η⁻¹ B_{ctl}^{1/2} 𝖳_t(|a-b|∧ℓ))^p + W^{-D}` on `λ²/L² < 1 - t` and `reg`. -/
+/-- **`lem:LW_moment_exp` at BA for the domain form** (the statement `LWMomentExpG` at the BA data for `f^{dom}` on the pairs/lengths in `reg`; as `LWMomentExpOn`
+in `Graph/LWMomentExp.lean`; `dom ≡ univ`, `reg ≡ True` is `LWMomentExpG`): `E |f^{dom}_{xy}|^p ≺ (η⁻¹ B_{ctl}^{1/2} 𝖳_t(|a-b|∧ℓ))^p + W^{-D}` on `λ²/L² < 1 - t` and `reg`. -/
 def BAMomentExpOn (d : ℕ) (dom : ∀ (L : ℕ) [NeZero L], Zd d L → Zd d L → ℝ → Finset (Zd d L))
     (reg : ∀ (sz : Sizes d) (n : ℕ), ℝ → ℝ → Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) → Prop) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (p : ℕ), 2 ∣ p → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -988,16 +990,16 @@ def BAMomentExpOn (d : ℕ) (dom : ∀ (L : ℕ) [NeZero L], Zd d L → Zd d L �
             sfT d (sz.L n) ((sz.W n : ℕ) : ℝ) (sz.lam n) (t n)
               (min ((zdistInf d (sz.L n) (STblk sz n q.1.1 - STblk sz n q.1.2) : ℕ) : ℝ) (ℓ n))) ^ p + ((sz.W n : ℕ) : ℝ) ^ (-D))
 
-/-- **far pin** (`lem:LW_moment_exp_far`; engine with provenance, rooted `GtoAG`, `lwMomExpFar_and`) in `¬ regA` (twin of `LWMomExpFarPin`, `Graph/LWMomentExp.lean:99`) -/
+/-- **far bound** (Lemma 7.25 `lem:LW_moment_exp_far`; engine with provenance, rooted `GtoAG`, `lwMomExpFar_and`) in `¬ regA` (as `LWMomExpFarPin` in `Graph/LWMomentExp.lean`) -/
 def BAMomExpFarPin (d : ℕ) (K : ℝ) : Prop :=
   BAMomentExpOn d (fun L _ a b ℓ => domFar d L a b ℓ) fun sz n t ℓ q => ¬ regA d K sz n t ℓ q
 
-/-- **near pins** (`lem:LW_moment_exp_near`, split by the centre; `AnpNearInfAt`) in `¬ regA` (twin of `LWMomExpNearPin`, `Graph/LWMomentExp.lean:102`) -/
+/-- **near bounds** (Lemma 7.26 `lem:LW_moment_exp_near`, split by the centre; `AnpNearInfAt`) in `¬ regA` (as `LWMomExpNearPin` in `Graph/LWMomentExp.lean`) -/
 def BAMomExpNearPin (d : ℕ) (K : ℝ) : Prop :=
   BAMomentExpOn d (fun L _ a _ ℓ => domNearA d L a ℓ) (fun sz n t ℓ q => ¬ regA d K sz n t ℓ q) ∧
     BAMomentExpOn d (fun L _ a b ℓ => domNearB d L a b ℓ) fun sz n t ℓ q => ¬ regA d K sz n t ℓ q
 
-/-- **a pin from its normalized deterministic bound** (twin of `lwMomentExp_pin_gen`, `Graph/LWMomentExp.lean:1302`; `7_8:1620-1660`): the engine with provenance
+/-- **a bound from its normalized deterministic form** (as `lwMomentExp_pin_gen` in `Graph/LWMomentExp.lean`; (7.57), (7.58)): the engine with provenance
 `ba_localregularXP`, the weighted expansion, the three kinds of outputs (errors, `𝓜_x = 𝓜_y`, `𝓜_x ≠ 𝓜_y`), the upgrade `≺ → 𝔼`, the sum over the list; every `K > 0`. -/
 theorem BAMomentExp_pin_gen {d : ℕ} {K : ℝ} (hK : 0 < K) (dom : ∀ (L : ℕ) [NeZero L], Zd d L → Zd d L → ℝ → Finset (Zd d L))
     (hPin : 3 ≤ d → ∀ {p q : ℕ}, 0 < p → ∀ Γ : NGraph p q, Γ.NoGhost → Γ.IsNested → lwMomExpFar_ownExt Γ → lwMomentExp_PinN d Γ dom) :
@@ -1112,14 +1114,14 @@ theorem BAMomentExp_pin_gen {d : ℕ} {K : ℝ} (hK : 0 < K) (dom : ∀ (L : ℕ
   · have htp : 0 < t n := lt_of_le_of_ne (ht0 n) (Ne.symm ht0')
     exact le_trans (BAMomentExp_expand hκ hflow ht0 ht1 hpe n (outs := outs ++ errs) (fun o ho => hwaved o ho) hX _ v.1.1 v.1.2 htp) (hn v)
 
-/-- **the far pin** (`lem:LW_moment_exp_far`, `7_8:1620-1643`) for every `K > 0`: `AnpFarAndAt` (`lwMomExpFar_and`) with the domain `domFar` (twin of `lwMomentExp_farPin_holds`,
-`Graph/LWMomentExp.lean:1422`; the model-free normalized pin `lwMomentExp_pinN_far`) -/
+/-- **the far bound** (Lemma 7.25, (7.57) `eq:LW_moment_exp_far`) for every `K > 0`: `AnpFarAndAt` (`lwMomExpFar_and`) with the domain `domFar` (as `lwMomentExp_farPin_holds`
+in `Graph/LWMomentExp.lean`; the model-free normalized bound `lwMomentExp_pinN_far`) -/
 theorem baMomExpFarPin_holds (d : ℕ) {K : ℝ} (hK : 0 < K) : BAMomExpFarPin d K :=
   BAMomentExp_pin_gen hK (fun L _ a b ℓ => domFar d L a b ℓ)
     (fun hd p q hp Γ hNG hN hO => lwMomentExp_pinN_far hd hp (lwMomExpFar_and d p q Γ hNG hN hO))
 
-/-- **the near pins** (`lem:LW_moment_exp_near`, `7_8:1648-1660`) for every `K > 0`: `AnpNearInfAt` (`lwMomExp_nearInf`) with the centres `a` and `b` (twin of
-`lwMomentExp_nearPin_holds`, `Graph/LWMomentExp.lean:1426`) -/
+/-- **the near bounds** (Lemma 7.26, (7.58) `eq:LW_moment_exp_near`) for every `K > 0`: `AnpNearInfAt` (`lwMomExp_nearInf`) with the centres `a` and `b` (as
+`lwMomentExp_nearPin_holds` in `Graph/LWMomentExp.lean`) -/
 theorem baMomExpNearPin_holds (d : ℕ) {K : ℝ} (hK : 0 < K) : BAMomExpNearPin d K :=
   ⟨BAMomentExp_pin_gen hK (fun L _ a _ ℓ => domNearA d L a ℓ)
       (fun hd p q hp Γ hNG hN hO => lwMomentExp_pinN_near (lwMomExp_nearInf d hd p q Γ hNG hN) _ (fun L _ a _ => a)
@@ -1128,7 +1130,7 @@ theorem baMomExpNearPin_holds (d : ℕ) {K : ℝ} (hK : 0 < K) : BAMomExpNearPin
       (fun hd p q hp Γ hNG hN hO => lwMomentExp_pinN_near (lwMomExp_nearInf d hd p q Γ hNG hN) _ (fun L _ _ b => b)
         (fun L _ a b ℓ α hα => (Finset.mem_filter.1 hα).2.2))⟩
 
-/-! ## 6. The assembly and the target (target 9) -/
+/-! ## 6. The assembly -/
 
 /-- A deterministic `≺` at the block Anderson law is the pointwise bound for large `n` (`BAExp14a_det_iff` at `PrecL`). -/
 private theorem BAMomentExpGenB_det {d : ℕ} (sz : Sizes d) (hsz : sz.SizeTendsto) {V : ℕ → Type} (F G : ∀ n, V n → ℝ) :
@@ -1136,12 +1138,12 @@ private theorem BAMomentExpGenB_det {d : ℕ} (sz : Sizes d) (hsz : sz.SizeTends
       ∀ τ : ℝ, 0 < τ → ∀ᶠ n in atTop, ∀ v, F n v ≤ ((sz.size n : ℕ) : ℝ) ^ τ * G n v :=
   BAExp14a_det_iff (P := BAExp14a_μ sz) (Sizes.tendsto_size sz hsz) F G
 
-/-- **the assembly** (twin of `LWMomentExpOfParts`, `Graph/LWMomentExp.lean:106`): (A) in the regime `regA K` (`BAMomExpNoExp`), the far pin and both near pins give the target
-`BALWMomentExp d` (`LWMomentExpG` at the `baPin` data). -/
+/-- **the assembly** (as `LWMomentExpOfParts` in `Graph/LWMomentExp.lean`): (A) in the regime `regA K` (`BAMomExpNoExp`), the far bound and both near bounds give
+`BALWMomentExp d` (`LWMomentExpG` at the BA data). -/
 def BAMomentExpOfParts (d : ℕ) : Prop :=
   ∀ K : ℝ, 0 < K → BAMomExpNoExp d K → BAMomExpFarPin d K → BAMomExpNearPin d K → BALWMomentExp d
 
-/-- **`baMomentExp_of_parts`** (`7_8:1595-1611`; twin of `lwMomentExp_of_parts`, `Graph/LWMomentExp.lean:179`): (A) on `regA K`; on `¬ regA K` the exact split
+/-- **`baMomentExp_of_parts`** (proof of Lemma 7.2, Subsection 7.5; as `lwMomentExp_of_parts` in `Graph/LWMomentExp.lean`): (A) on `regA K`; on `¬ regA K` the exact split
 `f = f^> + f^(a) + f^(b)` (`LWfg_split`) with `E|f|^p ≤ 3^{p-1} Σ E|f^•|^p` (`norm_add3_pow_le`, `BAMomentExp_integrable`). -/
 theorem baMomentExp_of_parts (d : ℕ) : BAMomentExpOfParts d := by
   intro K hK hA hF hN hd κ ε 𝔡 hκ hε h𝔡 p hp2 𝔠 sz z hflow t ht0 htT ε₀ Ψ ℓ hAss D hD
@@ -1197,22 +1199,16 @@ theorem baMomentExp_of_parts (d : ℕ) : BAMomentExpOfParts d := by
             congr 1
             rw [integral_add (f := fun a => f1 a + f2 a) (g := f3) (i1.add i2) i3, integral_add i1 i2]
 
-/-- **Target 9, the statement def** (`T2483_MomentExpOfAnp`): `lem:LW_moment_exp` at BA from G4 on the BA carrier (`BAAnpAuxG`, `Graph/BAAuxGraph2B.lean:865`, L3d1's pin), which
-enters only through regime (A) (`BALWMoment`, target 3).  `BAAnpAuxG` occurs only here (and in instances). -/
+/-- **The statement def**: `lem:LW_moment_exp` at BA from the auxiliary graph bound on the BA carrier (`BAAnpAuxG`, `Graph/BAAuxGraph2B.lean`), which
+enters only through regime (A) (`BALWMoment`).  `BAAnpAuxG` occurs only here (and in instances). -/
 def BALWMomentExpOfAnp (d : ℕ) : Prop := BAAnpAuxG d → BALWMomentExp d
 
-/-- **Target 9** (`T2483_MomentExp`; `lem:LW_moment_exp` at BA, `7_8:78-83`; twin of `lwMomentExp_holds`, `Graph/LWMomentExp.lean:1436`; `K = 1`): no path binder
-(`baLWMomentOfAnp_closed`, target 3); the far and near pins are proved for every `K > 0` from the engine with provenance and the model-free NGraph pins; `BAAnpAuxG`
-(L3d1) enters only through (A). -/
+/-- **`lem:LW_moment_exp` at BA** (Lemma 7.2; as `lwMomentExp_holds` in `Graph/LWMomentExp.lean`; `K = 1`): no path binder
+(`baLWMomentOfAnp_closed`); the far and near bounds are proved for every `K > 0` from the engine with provenance and the model-free NGraph bounds; `BAAnpAuxG`
+enters only through (A). -/
 theorem baLWMomentExp_of_anp : ∀ d : ℕ, BALWMomentExpOfAnp d := fun d hAnp =>
   baMomentExp_of_parts d 1 one_pos (baMomExpNoExp_of_moment d (baLWMomentOfAnp_closed d hAnp) 1 one_pos)
     (baMomExpFarPin_holds d one_pos) (baMomExpNearPin_holds d one_pos)
-
-/-! ## 7. Compiled nonempty instances of targets 6-9 (target 10 (i)-(iii))
-
-Data (`BA/LWPinsBA.lean` §3, `BA/FlowPins.lean` §Inst, `Graph/LWPins.lean` §8): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow `flow_sz0`
-(`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `z = zSeq`, `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), `ε₀ = 1/20`, `Ψ_n = W_n^{-1}` (`Ψ0`, `window0`), `ℓ_n = ℓ_t` (`ℓT`: `1 ≤ ℓ_n ≤ (log W)^{10} ℓ_t`),
-`p = 2`.  What stays a hypothesis is another gate's pin: `STInitialGT2gL`, `LWLoopExpgL` (inside `LWAssmExpgL`) and `BAAnpAuxG 3` (L3d1). -/
 
 end RBM.BA
 

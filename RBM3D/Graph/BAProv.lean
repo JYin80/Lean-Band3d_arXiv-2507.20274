@@ -19,22 +19,24 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3d4a (T2472): the BA provenance engine, part 1 (`Graph/BAProv`)
+# The BA provenance engine, part 1
 
-Paper: `7_8_light_weight.tex:78-83, 1600-1660` (`lem:LW_moment_exp`, the domains `D_{>ℓ}`, `D_{≤ℓ}`), `B_graphical_lemmas.tex:415-418, 522-524`.  The BA twin of
-`Graph/LWProv.lean` §1-§4 (`:38-818`), namespace `RBM.Graph`, private stem `BAProv_`; additive (no merged file is edited).
+Paper: Lemma 7.2 (`lem:LW_moment_exp`) and its proof (Subsection 7.5, the domains `D_{>ℓ}`,
+`D_{≤ℓ}`); Subappendix B.3 (the proof of Lemma B.7).  This is the BA counterpart of
+`Graph/LWProv.lean` (Sections 1-4), namespace `RBM.Graph`, private stem `BAProv_`.
 
 ## Contents
 
-1. Weighted values (target 1): `BAGraph.valW`, `BAPGraph.valW`, `_one`, `_of_factor`, `_of_not`.
-2. Provenance outputs (target 2): `BAProvOut`, `ExtOK`, `Molecular`, `comp`, `BACoverBy`.
-3. The weighted expansion `BAWExp` at `BAlwData` (target 3): `.refl`, `.comp`, `.prod`.
-4. Molecular maps (target 4): the extension lemma on the shadow, the five frame kinds, the twist, `splitG`, `merge`, `outsOf`, the start terms.
-5. The weighted partition (target 5 (a)).
-6. The domain form of `f_xy` and the bridge (target 9).
-7. Compiled instances of the endpoint results.
+1. Weighted values: `BAGraph.valW`, `BAPGraph.valW`, `_one`, `_of_factor`, `_of_not`.
+2. Provenance outputs: `BAProvOut`, `ExtOK`, `Molecular`, `comp`, `BACoverBy`.
+3. The weighted expansion `BAWExp` at `BAlwData`: `.refl`, `.comp`, `.prod`.
+4. Molecular maps: the extension lemma on the shadow, the five frame kinds, the twist, `splitG`,
+   `merge`, `outsOf`, the start terms.
+5. The weighted partition.
+6. The domain form of `f_xy` and the bridge.
 
-Shadow molecules (DECISIONS §275 (5)): a molecule of a BA graph is a connected component of `BAGraph.shadow` (waved, `=`-, `Ψ`- and `M`-dotted edges join, `BAAtom:63`).
+Shadow molecules: a molecule of a BA graph is a connected component of `BAGraph.shadow` (waved,
+`=`-, `Ψ`- and `M`-dotted edges join, `Graph/BAAtom.lean`).
 -/
 
 open private BAVocab_merge_adj BAVocab_vmap_surjective BAVocab_term_merge BAVocab_term_zero BAVocab_good_eq_of_cls BAVocab_exists_inr_of_int
@@ -46,14 +48,14 @@ open MeasureTheory RBM RBM.Gauss RBM.BA
 
 namespace RBM.Graph
 
-/-! ## 1. Weighted values (target 1) -/
+/-! ## 1. Weighted values -/
 
-/-- the value of a BA graph with a **real weight on the labellings of all its vertices** (`valW`, `LWProv:45`; the weight `1` is `BAGraph.val`) -/
+/-- the value of a BA graph with a **real weight on the labellings of all its vertices** (as `valW` in `Graph/LWProv.lean`; the weight `1` is `BAGraph.val`) -/
 def BAGraph.valW {ι E I : Type*} [Fintype ι] [DecidableEq ι] [Fintype I] [DecidableEq I] (Γ : BAGraph E I) (D : BALData ι)
     (Wt : (E ⊕ I → ι) → ℝ) (ℓe : E → ι) : ℂ :=
   ∑ ℓi : I → ι, ((Wt (Sum.elim ℓe ℓi) : ℝ) : ℂ) * Γ.term D (Sum.elim ℓe ℓi)
 
-/-- the weighted value of a packed BA graph (`pvalW`, `LWProv:50`; the packing literal of `BAPGraph.val`, `BAVocab:188`) -/
+/-- the weighted value of a packed BA graph (as `pvalW` in `Graph/LWProv.lean`; the packing literal of `BAPGraph.val`, `Graph/BAVocab.lean`) -/
 def BAPGraph.valW {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Type} (P : BAPGraph E) (D : BALData ι) (Wt : (P.E' ⊕ P.I' → ι) → ℝ)
     (ℓe : E → ι) : ℂ :=
   letI := P.instFI
@@ -83,9 +85,9 @@ theorem BAPGraph.valW_of_not {ι : Type*} [Fintype ι] [DecidableEq ι] {E : Typ
   classical
   simp only [BAPGraph.valW, h, ↓reduceDIte]
 
-/-! ## 2. Provenance outputs (target 2) -/
+/-! ## 2. Provenance outputs -/
 
-/-- an output `Q` of a step from `P`, with its **provenance map** `π` (old vertex ↦ vertex of the output); no tags (`ProvOutX` has no BA twin) -/
+/-- an output `Q` of a step from `P`, with its **provenance map** `π` (old vertex ↦ vertex of the output); no tags (`ProvOutX` has no BA counterpart) -/
 structure BAProvOut (P : BAPGraph (Fin 2)) where
   Q : BAPGraph (Fin 2)
   π : P.E' ⊕ P.I' → Q.E' ⊕ Q.I'
@@ -118,7 +120,7 @@ theorem BAProvOut.ExtOK.comp {P : BAPGraph (Fin 2)} {o : BAProvOut P} {o' : BAPr
 def BACoverBy {P : BAPGraph (Fin 2)} {κ : Type} (β : κ → P.E' ⊕ P.I') : Prop :=
   ∀ c : LGraph.AuxIMol P.g.shadow, ∃ k, P.g.shadow.molOf (β k) = c.1
 
-/-- **molecule coverage propagates** (`T2289d`, `T2289-prove.md:96`; `CoverBy.comp`, `LWProv:137`): the images of the initial `β^{(k)}` cover the internal molecules of every output -/
+/-- **molecule coverage propagates** (as `CoverBy.comp` in `Graph/LWProv.lean`): the images of the initial `β^{(k)}` cover the internal molecules of every output -/
 theorem BACoverBy.comp {P : BAPGraph (Fin 2)} {κ : Type} {β : κ → P.E' ⊕ P.I'} (h : BACoverBy β) {o : BAProvOut P} (ho : o.Molecular) :
     BACoverBy (P := o.Q) (fun k => o.π (β k)) := by
   rintro ⟨c, hc⟩
@@ -126,7 +128,7 @@ theorem BACoverBy.comp {P : BAPGraph (Fin 2)} {κ : Type} {β : κ → P.E' ⊕ 
   obtain ⟨k, hk⟩ := h ⟨_, hv⟩
   exact ⟨k, (ho.1 _ _ hk).trans hvc⟩
 
-/-- the roots L3d2b reads from the coverage (`lwMomentExp_rep`, `LWMomentExp:1000`): a vertex of the family `β` in every internal molecule -/
+/-- the roots read from the coverage (as `lwMomentExp_rep` in `Graph/LWMomentExp.lean`): a vertex of the family `β` in every internal molecule -/
 theorem BACoverBy.rep {P : BAPGraph (Fin 2)} {κ : Type} {β : κ → P.E' ⊕ P.I'} (h : BACoverBy β) :
     ∃ (rep : LGraph.AuxIMol P.g.shadow → P.I') (k : LGraph.AuxIMol P.g.shadow → κ), ∀ c, β (k c) = Sum.inr (rep c) ∧ P.g.shadow.molOf (Sum.inr (rep c)) = c.1 := by
   have hex : ∀ c : LGraph.AuxIMol P.g.shadow, ∃ (i : P.I') (k : κ), β k = Sum.inr i ∧ P.g.shadow.molOf (Sum.inr i) = c.1 := by
@@ -138,10 +140,10 @@ theorem BACoverBy.rep {P : BAPGraph (Fin 2)} {κ : Type} {β : κ → P.E' ⊕ P
   choose rep k hk hrep using hex
   exact ⟨rep, k, fun c => ⟨hk c, hrep c⟩⟩
 
-/-! ## 3. The weighted expansion (target 3) -/
+/-! ## 3. The weighted expansion -/
 
 /-- **weighted expansion** at the BA data `BAlwData` and the flow law `PF d L W 0`: for every real weight `Wt` on the labellings of the vertices of `P`, the expectation of the weighted
-value of `P` is the sum over the outputs of the expectations of their weighted values, the weight read through `π`.  Data hypotheses `3 ≤ L`, `BASelf d L g0 Em m`, `0 ≤ t < 1` only (C1). -/
+value of `P` is the sum over the outputs of the expectations of their weighted values, the weight read through `π`.  Data hypotheses `3 ≤ L`, `BASelf d L g0 Em m`, `0 ≤ t < 1` only. -/
 def BAWExp (d : ℕ) (P : BAPGraph (Fin 2)) (outs : List (BAProvOut P)) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 →
     ∀ (Wt : (P.E' ⊕ P.I' → Idx d L W) → ℝ) (ℓe : Fin 2 → Idx d L W),
@@ -152,7 +154,7 @@ def BAWExp (d : ℕ) (P : BAPGraph (Fin 2)) (outs : List (BAProvOut P)) : Prop :
 theorem BAWExp.refl (d : ℕ) (P : BAPGraph (Fin 2)) : BAWExp d P [⟨P, id⟩] := by
   intro L W _ _ _ g0 Em t m _ _ _ Wt ℓe; simp
 
-/-- **the weighted identity of the ticket** (`WExp.prod`, `LWProv:119`): `Wt = Π_k w_k(ℓ β^{(k)})` gives `E[Π_k f^{w_k}] = Σ_r E[Σ_{ℓ_i} Π_k w_k(ℓ(π_r β^{(k)})) term_r]` -/
+/-- **the weighted identity** (as `WExp.prod` in `Graph/LWProv.lean`): `Wt = Π_k w_k(ℓ β^{(k)})` gives `E[Π_k f^{w_k}] = Σ_r E[Σ_{ℓ_i} Π_k w_k(ℓ(π_r β^{(k)})) term_r]` -/
 theorem BAWExp.prod {d p : ℕ} {outs : List (BAProvOut (baPG (BAGraph.ofLGraph (fxyPowGraph p))))}
     (h : BAWExp d (baPG (BAGraph.ofLGraph (fxyPowGraph p))) outs) {L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) {g0 Em t : ℝ} {m : ℂ}
     (hS : RBM.BA.BASelf d L g0 (Em : ℂ) m) (ht0 : 0 ≤ t) (ht1 : t < 1) (w : Fin p → Idx d L W → ℝ) (ℓe : Fin 2 → Idx d L W) :
@@ -162,12 +164,12 @@ theorem BAWExp.prod {d p : ℕ} {outs : List (BAProvOut (baPG (BAGraph.ofLGraph 
         (fun ℓ => ∏ k, w k (ℓ (o.π (Sum.inr (localReg_fxyBeta k))))) ℓe ∂(PF d L W 0)).sum :=
   h L W hL g0 Em t m hS ht0 ht1 _ ℓe
 
-/-! ## 4. Molecular maps (target 4) -/
+/-! ## 4. Molecular maps -/
 
 section Mol
 variable {E I E' I' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I']
 
-/-- a map that keeps `BAGraph.adj` sends shadow-reachable vertices to shadow-reachable vertices (`lwProv_reach_map`, `LWProv:293`, on the shadows) -/
+/-- a map that keeps `BAGraph.adj` sends shadow-reachable vertices to shadow-reachable vertices (as `lwProv_reach_map` in `Graph/LWProv.lean`, on the shadows) -/
 theorem BAProv_reach_map (Γ : BAGraph E I) (Γ' : BAGraph E' I') (f : E ⊕ I → E' ⊕ I')
     (hadj : ∀ u v, Γ.adj u v = true → Γ'.adj (f u) (f v) = true) {u v : E ⊕ I} (h : Γ.shadow.molGraph.Reachable u v) :
     Γ'.shadow.molGraph.Reachable (f u) (f v) :=
@@ -179,12 +181,12 @@ theorem BAProv_adj_reach (T : BAGraph E I) {u v : E ⊕ I} (h : T.adj u v = true
   · subst huv; exact SimpleGraph.Reachable.refl _
   · exact SimpleGraph.Adj.reachable ((owx_molGraph_adj T.shadow u v).2 ⟨huv, by rw [BAAtom_shadow_adj]; exact h⟩)
 
-/-- the merge map `vmap` of a graph without `=`-dotted edges keeps shadow reachability (`splitG`/`merge`/`packMerge` of target 4) -/
+/-- the merge map `vmap` of a graph without `=`-dotted edges keeps shadow reachability (`splitG`/`merge`/`packMerge`) -/
 theorem BAProv_merge_reach (T : BAGraph E I) (hT : ∀ e ∈ T.dotted, e.eq = false) {u v : E ⊕ I} (h : T.shadow.molGraph.Reachable u v) :
     T.merge.shadow.molGraph.Reachable (T.toLGraph.vmap u) (T.toLGraph.vmap v) :=
   BAProv_reach_map T T.merge _ (fun u v huv => by rw [BAVocab_merge_adj T hT]; exact huv) h
 
-/-- **coverage at a term** (the start, target 4 / G5-a (iv)): if every vertex outside the molecules of the external vertices is shadow-joined to some `β k`,
+/-- **coverage at a term** (the start): if every vertex outside the molecules of the external vertices is shadow-joined to some `β k`,
 the `β k` cover the internal molecules of the merged term (`vmap` is onto and keeps reachability) -/
 theorem BAProv_cover_term {κ : Type} (T : BAGraph (Fin 2) I) (hT : ∀ e ∈ T.dotted, e.eq = false) (β : κ → Fin 2 ⊕ I)
     (h : ∀ w, (∀ a, ¬ T.shadow.molGraph.Reachable w (Sum.inl a)) → ∃ k, T.shadow.molGraph.Reachable w (β k)) :
@@ -240,7 +242,7 @@ theorem BAProv_lanlwExt_eq (Γ : BAGraph E I) (rest : List (SEdge (E ⊕ I))) (s
     (md : List (BAMEdge (E ⊕ (I ⊕ Fin 2)))) : BAGraph.lanlwExt Γ rest 1 s w md = BAGraph.ext 2 Γ rest s w md := rfl
 
 /-- **an extension by two new vertices is a molecular extension** if the new vertex `0` is `M`-joined to the image of an old vertex `x` and `1` is waved-joined to `0`
-(the shape of `lw2`, `lanlw`, `gg2`, `dq`; G5-a (ii)) -/
+(the shape of `lw2`, `lanlw`, `gg2`, `dq`) -/
 theorem BAProv_Ext_ext2 (Γ : BAGraph E I) (hΓ : ∀ e ∈ Γ.dotted, e.eq = false) (rest : List (SEdge (E ⊕ I))) (s : List (SEdge (E ⊕ (I ⊕ Fin 2))))
     (w : List (WEdge (E ⊕ (I ⊕ Fin 2)))) (md : List (BAMEdge (E ⊕ (I ⊕ Fin 2)))) (x : E ⊕ I)
     (h0 : bpM (owxEmb 2 x) (bpv 0) ∈ md ∨ bpM (bpv 0) (owxEmb 2 x) ∈ md) (h1 : bpW true (bpv 0) (bpv 1) ∈ w ∨ bpW false (bpv 0) (bpv 1) ∈ w) :
@@ -367,7 +369,7 @@ variable (P : BAPGraph (Fin 2)) {I' : Type} [Fintype I'] [DecidableEq I']
 def BAProvOut.ofTerm (emb : P.E' ⊕ P.I' → P.E' ⊕ I') (T' : BAGraph P.E' I') : BAProvOut P :=
   ⟨BALvl1A_pcomp P T'.packMerge, fun v => T'.toLGraph.vmap (emb v)⟩
 
-/-- **a molecular extension gives a `ExtOK` and `Molecular` output** (`lwProv_blk_mol`, `LWProv:427`): the merged, repacked term with the map `vmap ∘ emb` -/
+/-- **a molecular extension gives a `ExtOK` and `Molecular` output** (as `lwProv_blk_mol` in `Graph/LWProv.lean`): the merged, repacked term with the map `vmap ∘ emb` -/
 theorem BAProv_ofTerm_good (emb : P.E' ⊕ P.I' → P.E' ⊕ I') (T' : BAGraph P.E' I') (h : BAProv_Ext P.g emb T') :
     (BAProvOut.ofTerm P emb T').ExtOK ∧ (BAProvOut.ofTerm P emb T').Molecular := by
   obtain ⟨hT, hK, hE, hJ⟩ := h
@@ -412,13 +414,13 @@ theorem BAProv_twist_mol_iff (c t : Bool) (Γ : BAGraph E I) (u v : E ⊕ I) :
 
 end Mol
 
-/-! ## 5. The weighted partition (target 5 (a)) -/
+/-! ## 5. The weighted partition -/
 
 section MergeW
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-/-- **`G = Ǧ + M` at one labelling** (`B:339-340`; `BAGraph.val_splitG` before the sum over the internal labels): the terms of `splitG` add up to the term -/
+/-- **`G = Ǧ + M` at one labelling** (Definition B.4 `defn_normalBA`; `BAGraph.val_splitG` before the sum over the internal labels): the terms of `splitG` add up to the term -/
 theorem BAProv_term_splitG (Γ : BAGraph E I) (D : BALData ι) (ℓ : E ⊕ I → ι) :
     (Γ.splitG.map fun Δ => Δ.term D ℓ).sum = Γ.term D ℓ := by
   have hterm : ∀ r : List (SEdge (E ⊕ I)) × List (BAMEdge (E ⊕ I)),
@@ -450,7 +452,7 @@ theorem BAProv_valW_splitG (Γ : BAGraph E I) (D : BALData ι) (Wt : (E ⊕ I �
     _ = _ := Finset.sum_congr rfl fun ℓi _ => by
         rw [List.sum_map_mul_left, BAProv_term_splitG]
 
-/-- **the weighted value is preserved by merging** (`lwProv_valW_merge`, `LWProv:621`; `BAVocab_val_eq_merge_val` with a weight on all the vertices) -/
+/-- **the weighted value is preserved by merging** (as `lwProv_valW_merge` in `Graph/LWProv.lean`; `BAVocab_val_eq_merge_val` with a weight on all the vertices) -/
 theorem BAProv_valW_merge (Γ : BAGraph E I) (D : BALData ι) (Wt : (E ⊕ I → ι) → ℝ) (ℓ' : Γ.toLGraph.ExtCls → ι) :
     Γ.valW D Wt (ℓ' ∘ Γ.toLGraph.extMap) = Γ.merge.valW D (fun ℓ => Wt (ℓ ∘ Γ.toLGraph.vmap)) ℓ' := by
   classical
@@ -526,7 +528,7 @@ theorem BAProv_valW_packMerge (Γ : BAGraph E I) (D : BALData ι) (Wt : (E ⊕ I
     have := BAVocab_good_eq_of_cls hgood (u := Sum.inl (Classical.choose (Γ.toLGraph.extMap a).2)) (v := Sum.inl a) hc
     simpa using this.symm
 
-/-- **the weighted partition** (target 5 (a); `lwProv_valW_partX`, `LWProv:809`; no tags, no data hypothesis): `valW Γ Wt = Σ_{Δ ∈ splitG} valW (Δ.packMerge) (Wt ∘ vmap_Δ)`, per labelling -/
+/-- **the weighted partition** (as `lwProv_valW_partX` in `Graph/LWProv.lean`; no tags, no data hypothesis): `valW Γ Wt = Σ_{Δ ∈ splitG} valW (Δ.packMerge) (Wt ∘ vmap_Δ)`, per labelling -/
 theorem BAGraph.valW_partition (Γ : BAGraph E I) (D : BALData ι) (Wt : (E ⊕ I → ι) → ℝ) (ℓe : E → ι) :
     Γ.valW D Wt ℓe = (Γ.splitG.map fun Δ => Δ.packMerge.valW D (fun ℓ => Wt (ℓ ∘ Δ.toLGraph.vmap)) ℓe).sum := by
   rw [← BAProv_valW_splitG]
@@ -534,19 +536,19 @@ theorem BAGraph.valW_partition (Γ : BAGraph E I) (D : BALData ι) (Wt : (E ⊕ 
 
 end MergeW
 
-/-! ## 6. The domain form of `f_xy` and the bridge (target 9) -/
+/-! ## 6. The domain form of `f_xy` and the bridge -/
 
-/-- `f_{xy}` with the sum over `β` restricted to the blocks in `Dm` (`f^{>ℓ}`, `f^{≤ℓ}`, `7_8:1607-1611`; twin of `LWfD`, `LWProv:190`, at the data level); `Dm = univ` is `fxyVal` -/
+/-- `f_{xy}` with the sum over `β` restricted to the blocks in `Dm` (`f^{>ℓ}`, `f^{≤ℓ}` of (7.56) `eq:far_ab_K`; as `LWfD` in `Graph/LWProv.lean`, at the data level); `Dm = univ` is `fxyVal` -/
 def fxyValD {d L W : ℕ} [NeZero L] [NeZero W] (D : LData (Idx d L W)) (Dm : Finset (Zd d L)) (x y : Idx d L W) : ℂ :=
   ∑ α, if α = x ∨ α = y then (0 : ℂ) else ∑ β, if (split d L W β).1 ∈ Dm then D.S α β * (D.G β β - D.M β β) * D.G x α * D.G α y else 0
 
-/-- `z^k \bar z^k = ‖z‖^(2k)` (a copy of the band's `lwMoment_pow_conj`, `LWMoment:252`) -/
+/-- `z^k \bar z^k = ‖z‖^(2k)` (as the band's `lwMoment_pow_conj` in `Graph/LWMoment.lean`) -/
 private theorem BAProv_pow_conj (z : ℂ) (k : ℕ) : z ^ k * star z ^ k = ((‖z‖ ^ (2 * k) : ℝ) : ℂ) := by
   rw [← mul_pow, Complex.star_def, Complex.mul_conj', pow_mul]
   push_cast; ring
 
-/-- **target 9 (c), the weighted `|f|^p` bridge** (`lwProv_bridge`, `LWProv:233`; pointwise in the sample): at the BA data `BAlwData` (`S = t · svarF` real) and `p` even, the weighted value of the BA
-start graph with the weight `Π_k 1_{Dm}([β^{(k)}])` is `‖fxyValD‖^p`; at `Dm = univ` it is the pointwise identity under `ba_fxyPow_integral_eq` (`BALocReg1B:294`).  No data hypothesis. -/
+/-- **the weighted `|f|^p` bridge** (as `lwProv_bridge` in `Graph/LWProv.lean`; pointwise in the sample): at the BA data `BAlwData` (`S = t · svarF` real) and `p` even, the weighted value of the BA
+start graph with the weight `Π_k 1_{Dm}([β^{(k)}])` is `‖fxyValD‖^p`; at `Dm = univ` it is the pointwise identity under `ba_fxyPow_integral_eq` (`Graph/BALocReg1B.lean`).  No data hypothesis. -/
 theorem baProv_bridge (d L W : ℕ) [NeZero L] [NeZero W] (g0 Em t : ℝ) (m : ℂ) (ω : Ω d L W) (p : ℕ) (hp : Even p) (Dm : Finset (Zd d L)) (ℓe : Fin 2 → Idx d L W) :
     (BAGraph.ofLGraph (fxyPowGraph p)).valW (BAlwData d L W g0 Em t m ω)
         (fun ℓ => ∏ k : Fin p, if (split d L W (ℓ (Sum.inr (localReg_fxyBeta k)))).1 ∈ Dm then (1 : ℝ) else 0) ℓe =
@@ -598,8 +600,6 @@ theorem baProv_bridge (d L W : ℕ) [NeZero L] [NeZero W] (g0 Em t : ℝ) (m : �
   have hk2 : p / 2 = k := by omega
   have hk3 : 2 * k = p := by omega
   rw [hk2, BAProv_pow_conj, hk3]
-
-/-! ## 7. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point `flowP`: `BASelf` and `0 < t₀ < 1` are `flowP_data`) -/
 
 end RBM.Graph
 

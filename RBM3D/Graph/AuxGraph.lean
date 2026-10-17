@@ -7,33 +7,31 @@ import RBM3D.Graph.LocalRegular2
 import RBM3D.Graph.LWSizeClaim
 
 /-!
-# LW-11a: `GtoAG`, the deterministic part (T2170)
+# `GtoAG`, the deterministic part
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): `def: BM2`,
-`def_auxgraph`, `(eq:ordGaux)`, `GtoAG` and its proof (`7_8:857-958`), and `(scalemole)`
-(`7_8:171-193`).  No port from RBM1D/RBM2D (they have no light-weight graph layer).
+Paper: Definition 7.18 (`def: BM2`), Definition 7.20 (`def_auxgraph`), (7.35) `eq:ordGaux`,
+Lemma 7.21 (`GtoAG`) and its proof, and (7.14) `scalemole`.
 
 ## Contents (namespace `RBM.Graph`; helpers carry the prefix `auxGraph_`)
 
-1. **Vocabulary** (target 1): `LGraph.AuxIMol`, `LGraph.auxLab`, `LGraph.auxVal`, `LGraph.auxOrd`,
+1. **Vocabulary**: `LGraph.AuxIMol`, `LGraph.auxLab`, `LGraph.auxVal`, `LGraph.auxOrd`,
    `LGraph.auxVal_nonneg`, `auxGraph_auxLab_ext`.
-2. **The order comparison** (target 2, `7_8:926`): `LGraph.scalingOrder_sub_auxOrd`,
+2. **The order comparison** (proof of Lemma 7.21): `LGraph.scalingOrder_sub_auxOrd`,
    `LGraph.molSolid_length_le`, `LGraph.auxOrd_le_scalingOrder`.
-3. **`GtoAG`, deterministic form** (target 3): `LWGtoAG`, `lwGtoAG_holds`.  Steps (a)-(g) of
-   `7_8:914-928`: confinement (`auxGraph_mol_dist`, `auxGraph_lab_close`), the molecular forest with
+3. **`GtoAG`, deterministic form**: `LWGtoAG`, `lwGtoAG_holds`.  The steps of the proof of
+   Lemma 7.21: confinement (`auxGraph_mol_dist`, `auxGraph_lab_close`), the molecular forest with
    its roots (`auxGraph_exists_forest`), the pointwise bound on a confined labelling
    (`auxGraph_term_conf`), the sum over the children with the roots as external labels
-   (`auxGraph_forest_roots`, a use of the merged `lwForest_sum_le`) and over the root blocks
+   (`auxGraph_forest_roots`, an application of `lwForest_sum_le`) and over the root blocks
    (`auxGraph_sum_blocks`), the powers of `Ψ` from the window, the tail on a non-confined
-   labelling (`auxGraph_term_tail`, `auxGraph_tail_sum`, a use of the merged
-   `LGraph.waved_sum_le` on the weighted kernels).
-4. **`scalemole` for two external vertices in one molecule** (target 4): `LWScalemole`,
+   labelling (`auxGraph_term_tail`, `auxGraph_tail_sum`, an application of
+   `LGraph.waved_sum_le` to the weighted kernels).
+4. **`scalemole` for two external vertices in one molecule**: `LWScalemole`,
    `lwScalemole_holds`.
-5. **The nested form of `Γ^aux`** (target 5): `LWAuxNested`, `lwAuxNested_holds`: the walks of
-   `lem:localregular` (3)-(5) moved into an `NGraph` (`auxGraph_ngraph`).
-6. Compiled instances (the last sections), at `d = 3`, `L = 4`, `W = 2`.
+5. **The nested form of `Γ^aux`**: `LWAuxNested`, `lwAuxNested_holds`: the walks of
+   Lemma 7.17 (`lem:localregular`) (3)-(5) moved into an `NGraph` (`auxGraph_ngraph`).
 
-`hext` of `LWGtoAG` is not used by the proof (T2170 report, paper-delta candidate `T2170f`).
+The hypothesis `hext` of `LWGtoAG` is not used by the proof.
 -/
 
 set_option linter.style.setOption false
@@ -54,25 +52,25 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss
 
-/-! ## 1. The vocabulary of the auxiliary graph (target 1) -/
+/-! ## 1. The vocabulary of the auxiliary graph -/
 
 section Vocab
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **The internal molecules** (`def_poly`, `7_8:172`): the vertices `[α_i]`, `i ∈ ⟦q⟧`, of the auxiliary graph
-(`def_auxgraph`, `7_8:896`); `q = n_M` (`LGraph.nM_eq_card`). -/
+/-- **The internal molecules** (Definition 7.5 `def_poly`): the vertices `[α_i]`, `i ∈ ⟦q⟧`, of the auxiliary graph
+(Definition 7.20 `def_auxgraph`); `q = n_M` (`LGraph.nM_eq_card`). -/
 abbrev LGraph.AuxIMol (Γ : LGraph E I) : Type := {c : Γ.Mol // ¬ Γ.IsExtMol c}
 
 open Classical in
-/-- **The block of a molecule in the auxiliary graph** (`def: BM2`, `def_auxgraph`, `7_8:863-869`, `7_8:896`): for an
+/-- **The block of a molecule in the auxiliary graph** (Definitions 7.18 `def: BM2` and 7.20 `def_auxgraph`): for an
 external molecule `c`, `be a` at the chosen external vertex `a` with `molOf (inl a) = c` (the convention `α_x ≡ x`,
 `α_y ≡ y`); for an internal molecule, the block `b c` of its centre. -/
 def LGraph.auxLab {κ : Type} (Γ : LGraph E I) (be : E → κ) (b : LGraph.AuxIMol Γ → κ) (c : Γ.Mol) : κ :=
   if h : Γ.IsExtMol c then be (Classical.choose h) else b ⟨c, h⟩
 
 open Classical in
-/-- **The value of the auxiliary graph** (`def_auxgraph`, `7_8:894-903`): every solid edge between
+/-- **The value of the auxiliary graph** (Definition 7.20 `def_auxgraph`): every solid edge between
 different molecules (`molSolid`, the molecular graph `𝒢_ℳ` of `def_poly`) is an edge `ξ([α_i], [α_j])` between the blocks
 of its two molecules; the blocks of the internal molecules are summed over `κ` (`κ = Zd d L` for `def: BM2`), the
 external ones are `be`. -/
@@ -81,7 +79,7 @@ def LGraph.auxVal {κ : Type} [Fintype κ] (Γ : LGraph E I) (ξ : κ → κ →
   ∑ b : LGraph.AuxIMol Γ → κ,
     (Γ.molSolid.map fun e => ξ (LGraph.auxLab Γ be b e.src) (LGraph.auxLab Γ be b e.dst)).prod
 
-/-- **`(eq:ordGaux)`** (`7_8:902`): `ord(𝒢^aux) = #solid edges - 2 #internal vertices`, the merged `ord` with
+/-- **(7.35) `eq:ordGaux`**: `ord(𝒢^aux) = #solid edges - 2 #internal vertices`, the order `ord` with
 `n_W = 0`, `n_V = n_M` (the form of `NGraph.ordN`). -/
 def LGraph.auxOrd (Γ : LGraph E I) : ℤ := ord ⟨Γ.molSolid.length, 0, Γ.nM, 0, 0, 0⟩
 
@@ -107,13 +105,13 @@ theorem auxGraph_auxLab_ext {κ : Type} (Γ : LGraph E I)
 
 end Vocab
 
-/-! ## 2. The order comparison (target 2, `7_8:926`) -/
+/-! ## 2. The order comparison (proof of Lemma 7.21) -/
 
 section Order
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`(eq:ordG)` against `(eq:ordGaux)`**: `ord(Γ) - ord(Γ^aux) = (n_S - |𝒢_ℳ|) + 2 (n_W - n_V + n_M)`. -/
+/-- **(7.19) `eq:ordG` against (7.35) `eq:ordGaux`**: `ord(Γ) - ord(Γ^aux) = (n_S - |𝒢_ℳ|) + 2 (n_W - n_V + n_M)`. -/
 theorem LGraph.scalingOrder_sub_auxOrd (Γ : LGraph E I) :
     Γ.scalingOrder - Γ.auxOrd =
       ((Γ.nS : ℤ) - (Γ.molSolid.length : ℤ)) + 2 * ((Γ.nW : ℤ) - (Γ.nV : ℤ) + (Γ.nM : ℤ)) := by
@@ -126,7 +124,7 @@ theorem LGraph.molSolid_length_le (Γ : LGraph E I) : Γ.molSolid.length ≤ Γ.
   rw [List.length_map]
   exact List.length_filter_le _ _
 
-/-- `ord(Γ^aux) ≤ ord(Γ)` for a normal graph (`(eq:MolVW)` summed over the molecules: `n_V - n_M ≤ n_W`). -/
+/-- `ord(Γ^aux) ≤ ord(Γ)` for a normal graph ((7.28) `eq:MolVW` summed over the molecules: `n_V - n_M ≤ n_W`). -/
 theorem LGraph.auxOrd_le_scalingOrder (Γ : LGraph E I) (hN : Γ.Normal) : Γ.auxOrd ≤ Γ.scalingOrder := by
   have h1 := Γ.scalingOrder_sub_auxOrd
   have h2 := Γ.molSolid_length_le
@@ -135,7 +133,7 @@ theorem LGraph.auxOrd_le_scalingOrder (Γ : LGraph E I) (hN : Γ.Normal) : Γ.au
 
 end Order
 
-/-! ## 3. Confinement (`(yixi)`, `7_8:874-877`): the molecules are connected by waved edges -/
+/-! ## 3. Confinement ((7.31) `yixi`): the molecules are connected by waved edges -/
 
 section Confine
 
@@ -239,7 +237,7 @@ theorem auxGraph_prod_filter {α : Type*} (l : List α) (P : α → Bool) (Ψ : 
 
 end Lists
 
-/-! ## 5. The pointwise bound on a confined labelling (`7_8:914-921`) -/
+/-! ## 5. The pointwise bound on a confined labelling (proof of Lemma 7.21) -/
 
 section Pointwise
 
@@ -298,7 +296,7 @@ theorem auxGraph_sedge_xi {ι V : Type*} [DecidableEq ι] (D : LData ι) {m : �
   split_ifs <;> simp [this]
 
 /-- Every vertex has its label within `R` (block distance) of the block of its molecule in the auxiliary graph
-(`(yixi)` and the confinement). -/
+((7.31) `yixi` and the confinement). -/
 theorem auxGraph_lab_close (Γ : LGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = false)
     (ℓe : E → Idx d L W) (ℓi : I → Idx d L W) (root : LGraph.AuxIMol Γ → I)
     (hroot : ∀ c, Γ.molOf (Sum.inr (root c)) = c.1) {r R : ℝ} (hr : 0 ≤ r)
@@ -319,7 +317,7 @@ theorem auxGraph_lab_close (Γ : LGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq = f
     have := auxGraph_mol_dist Γ hD (Sum.elim ℓe ℓi) hr hconf h0.symm
     exact this.trans hR
 
-/-- **The pointwise bound on a confined labelling** (`7_8:914-921`): the solid edges inside a molecule cost `Ψ`, the solid edges between two
+/-- **The pointwise bound on a confined labelling**: the solid edges inside a molecule cost `Ψ`, the solid edges between two
 molecules cost `ξ` of the blocks of the molecules (`hξ` and the confinement), the dotted edges `≤ 1`:
 `|term ℓ| ≤ |coeff| Ψ^{n_S - |𝒢_ℳ|} ∏_{𝒢_ℳ} ξ ∏_{waved} |w_e(ℓ)|`, the blocks of the internal molecules being those of the roots. -/
 theorem auxGraph_term_conf (Γ : LGraph E I) (hN : Γ.Normal) (D : LData (Idx d L W)) {m : ℂ} {Ψ R r : ℝ}
@@ -428,11 +426,11 @@ theorem auxGraph_term_conf (Γ : LGraph E I) (hN : Γ.Normal) (D : LData (Idx d 
 
 end Pointwise
 
-/-! ## 6. The molecular forest with its roots (`7_8:922-925`; the proof of `LGraph.exists_forest` with the root map) -/
+/-! ## 6. The molecular forest with its roots (proof of Lemma 7.21; the proof of `LGraph.exists_forest` with the root map) -/
 
 section Forest
 
-/-- A rank function toward a target set (`lwExists_rank` of `Graph/LWSizeClaim`, copied). -/
+/-- A rank function toward a target set (as `lwExists_rank` of `Graph/LWSizeClaim`). -/
 private theorem auxGraph_exists_rank {V : Type*} (G : SimpleGraph V) (T : V → Prop)
     (hT : ∀ v, ∃ t, T t ∧ G.Reachable v t) :
     ∃ rk : V → ℕ, ∀ v, ¬ T v → ∃ w, G.Adj v w ∧ rk w < rk v := by
@@ -538,13 +536,13 @@ theorem auxGraph_exists_forest (Γ : LGraph E I) (hD : ∀ e ∈ Γ.dotted, e.eq
 
 end Forest
 
-/-! ## 7. The sum over the children for fixed roots, and the sum over the root blocks (`7_8:922-925`) -/
+/-! ## 7. The sum over the children for fixed roots, and the sum over the root blocks (proof of Lemma 7.21) -/
 
 section ForestSum
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι] [Nonempty ι]
 
-/-- **The sum over the children with the roots as external labels** (`7_8:922-925`): for a forest whose children are all internal vertices outside
+/-- **The sum over the children with the roots as external labels**: for a forest whose children are all internal vertices outside
 the range of the injective root map `root : Rt → I`, and any non-negative weight `Φ` of the root labels,
 `Σ_ℓ Φ(ℓ ∘ root) ∏_j f_j ≤ (Σ_ρ Φ ρ) · K^{|I| - |Rt|} a^{|J| - (|I| - |Rt|)}`
 (the peeling bound `lwForest_sum_le` with the roots moved to the external vertices). -/
@@ -675,13 +673,13 @@ theorem auxGraph_sum_blocks {Rt : Type} [Fintype Rt] [DecidableEq Rt] (g : (Rt �
 
 end Blocks
 
-/-! ## 8. The tail on a non-confined labelling (`(yixi)`, `scalemole`, `7_8:190-193`) -/
+/-! ## 8. The tail on a non-confined labelling ((7.31) `yixi`, (7.14) `scalemole`) -/
 
 section Tail
 
 variable {d L W : ℕ} [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- The data with `S`, `S^±` multiplied by `e^{(c/2) d_B(x,y)}` (`7_8:255-258`, the weighted kernels of the tail). -/
+/-- The data with `S`, `S^±` multiplied by `e^{(c/2) d_B(x,y)}` (the weighted kernels of the tail, cf. (7.18) `eq:estSpm-W`). -/
 def auxGraph_wdata (D : LData (Idx d L W)) (c : ℝ) : LData (Idx d L W) where
   G := D.G
   M := D.M
@@ -793,8 +791,8 @@ private theorem auxGraph_size_alg (W d L nM nV nW : ℕ) (hW : (W : ℝ) ≠ 0) 
   field_simp
   rw [pow_mul (W : ℝ) d t]
 
-/-- **The tail sum** (`7_8:255-258`): the weighted sum over all labellings of the internal vertices is `≤ e^{-cr/2} C'_Γ size(Γ)`
-(the merged peeling bound `LGraph.waved_sum_le` on the data with the weighted kernels). -/
+/-- **The tail sum**: the weighted sum over all labellings of the internal vertices is `≤ e^{-cr/2} C'_Γ size(Γ)`
+(the peeling bound `LGraph.waved_sum_le` on the data with the weighted kernels). -/
 theorem auxGraph_tail_sum (hd : 3 ≤ d) (Γ : LGraph E I) (hN : Γ.Normal) (D : LData (Idx d L W)) {m : ℂ} {Ψ C c r : ℝ}
     (hGd : ∀ x, ‖D.G x x - m‖ ≤ Ψ) (hC : 0 ≤ C) (hc : 0 < c)
     (hS : ∀ x y, ‖D.S x y‖ ≤ C * ((W : ℝ) ^ d)⁻¹ * Real.exp (-(c * (lwBdist d L W x y : ℝ))))
@@ -856,7 +854,7 @@ theorem auxGraph_tail_sum (hd : 3 ≤ d) (Γ : LGraph E I) (hN : Γ.Normal) (D :
 
 end Tail
 
-/-! ## 9. The main term: the sum over the labellings of the internal vertices (`7_8:922-926`) -/
+/-! ## 9. The main term: the sum over the labellings of the internal vertices (proof of Lemma 7.21) -/
 
 section MainSum
 
@@ -896,7 +894,7 @@ theorem auxGraph_wval_bound {ι : Type} [Fintype ι] {D : LData ι} {a K₁ : �
   · have hc' : e.col = false := by simpa using hc
     simp only [hc', Bool.false_eq_true, ite_false]; exact hS
 
-/-- **The main sum** (`7_8:922-926`): the sum over the labels of the internal vertices of the confined bound is
+/-- **The main sum**: the sum over the labels of the internal vertices of the confined bound is
 `≤ |coeff| Ψ^{n_S - |𝒢_ℳ|} (W^d)^{n_M} Γ^aux_{[ℓe]} K₁^{n_V - n_M} (C W^{-d})^{n_W - (n_V - n_M)}`. -/
 theorem auxGraph_main_sum (hd : 3 ≤ d) (Γ : LGraph E I) (D : LData (Idx d L W)) {C c : ℝ} {ξ : Zd d L → Zd d L → ℝ}
     (hξ0 : ∀ a b, 0 ≤ ξ a b) (hC : 0 ≤ C) (hc : 0 < c)
@@ -969,12 +967,12 @@ theorem auxGraph_main_sum (hd : 3 ≤ d) (Γ : LGraph E I) (D : LData (Idx d L W
 
 end MainSum
 
-/-! ## 10. `GtoAG` and the `scalemole` tail (targets 3 and 4) -/
+/-! ## 10. `GtoAG` and the `scalemole` tail -/
 
-/-- **Target 3, `GtoAG`** (`7_8:907-928`, `(G_by_auxG)`), deterministic form: for a normal graph whose distinct external
+/-- **`GtoAG`** (Lemma 7.21, (7.36) `G_by_auxG`), deterministic form: for a normal graph whose distinct external
 vertices lie in distinct molecules, data with `M = m I`, entries `|G_{xy}| ≤ Ψ` (`x ≠ y`), `|G_{xx} - m| ≤ Ψ`, the decay
-`(eq:estSpm-W)` of `S`, `S^±`, the window `W^{-d/2} ≤ Ψ`, and edge variables `ξ ≥ 0` on the blocks that dominate the
-off-diagonal entries on the block balls of radius `R ≥ |E ⊕ I| r` (`(yixi)`, `(eq:Gbyxi)`):
+(7.18) `eq:estSpm-W` of `S`, `S^±`, the window `W^{-d/2} ≤ Ψ`, and edge variables `ξ ≥ 0` on the blocks that dominate the
+off-diagonal entries on the block balls of radius `R ≥ |E ⊕ I| r` ((7.31) `yixi`, (7.32) `eq:Gbyxi`):
 `|Γ| ≤ C_Γ Ψ^{ord(Γ) - ord(Γ^aux)} (W^d)^{n_M} Γ^aux_{[ℓe]} + e^{-cr/2} C'_Γ size(Γ)`. -/
 def LWGtoAG (d : ℕ) : Prop :=
   3 ≤ d → ∀ (L W : ℕ) [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
@@ -997,9 +995,9 @@ def LWGtoAG (d : ℕ) : Prop :=
               (((W : ℝ) ^ d) ^ Γ.nM * LGraph.auxVal Γ ξ (fun a => (split d L W (ℓe a)).1)) +
             Real.exp (-(c * r / 2)) * Γ.sizeConst C (C * expC (d - 2) (c / 2)) * Γ.scalingSize Ψ W d L
 
-/-- **Target 4, `scalemole` for two external vertices in one molecule** (`7_8:190-193`, deterministic): if `a`, `b` lie
+/-- **`scalemole` for two external vertices in one molecule** ((7.14) `scalemole`, deterministic): if `a`, `b` lie
 in one molecule and their labels are at block distance `> |E ⊕ I| r`, the value is at most the tail
-`e^{-cr/2} C'_Γ size(Γ)` (the outputs with `𝓜_x = 𝓜_y` under `(eq:far_ab)`, `7_8:96`). -/
+`e^{-cr/2} C'_Γ size(Γ)` (the outputs with `𝓜_x = 𝓜_y` under (7.12) `eq:far_ab`). -/
 def LWScalemole (d : ℕ) : Prop :=
   3 ≤ d → ∀ (L W : ℕ) [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
     (Γ : LGraph E I), Γ.Normal →
@@ -1014,7 +1012,7 @@ def LWScalemole (d : ℕ) : Prop :=
         (Fintype.card (E ⊕ I) : ℝ) * r < (lwBdist d L W (ℓe a) (ℓe b) : ℝ) →
         ‖Γ.val D ℓe‖ ≤ Real.exp (-(c * r / 2)) * Γ.sizeConst C (C * expC (d - 2) (c / 2)) * Γ.scalingSize Ψ W d L
 
-/-- **`GtoAG`, deterministic form** (target 3). -/
+/-- **`GtoAG`, deterministic form** (Lemma 7.21). -/
 theorem lwGtoAG_holds (d : ℕ) : LWGtoAG d := by
   intro hd L W _ _ E I _ _ _ _ Γ hN hext D m Ψ C c r R ξ hM hG hGd hC hc hS hSp hwin hr hRr hξ0 hξ ℓe
   classical
@@ -1126,7 +1124,7 @@ theorem lwGtoAG_holds (d : ℕ) : LWGtoAG d := by
     _ = _ := Finset.sum_add_distrib
     _ ≤ _ := add_le_add hmain' htail
 
-/-- **Target 4 (`scalemole`, two external vertices in one molecule)**: no labelling is confined, so the tail bound alone applies. -/
+/-- **`scalemole` for two external vertices in one molecule**: no labelling is confined, so the tail bound alone applies. -/
 theorem lwScalemole_holds (d : ℕ) : LWScalemole d := by
   intro hd L W _ _ E I _ _ _ _ Γ hN D m Ψ C c r hM hG hGd hC hc hS hSp hr ℓe a b hab hfar
   classical
@@ -1149,7 +1147,7 @@ theorem lwScalemole_holds (d : ℕ) : LWScalemole d := by
     _ ≤ _ := Finset.sum_le_sum fun ℓi _ => hpt ℓi
     _ ≤ _ := htail
 
-/-! ## 11. The nested form of `Γ^aux` (target 5, `7_8:953-958`)
+/-! ## 11. The nested form of `Γ^aux` (proof of Lemma 7.22, `lem:Anp`)
 
 The walks `W i` of `lem:localregular` (3)-(5) are moved into an `NGraph`: the molecule `𝓜_x` becomes `a_i`, `𝓜_y` becomes `b_i` (on the
 walk `i`), an internal molecule becomes the internal vertex `inr (e.symm c)`.  The edges are the steps of the walks, then the molecular edges
@@ -1590,10 +1588,10 @@ theorem auxGraph_val_eq (hxy : Q.g.molOf (Sum.inl (Q.ext 0)) ≠ Q.g.molOf (Sum.
 
 end Nested6
 
-/-- **Target 5, the nested form of `Γ^aux`** (`7_8:953-958`; the input of `LWAnp`): for a packed graph with the walks of
-`lem:localregular` (3)-(5) and `𝓜_x ≠ 𝓜_y` (`(eq:far_ab)`, `7_8:792`), a nested graph with `p` paths and `q = n_M`
+/-- **The nested form of `Γ^aux`** (the input of `LWAnp`): for a packed graph with the walks of
+`lem:localregular` (3)-(5) and `𝓜_x ≠ 𝓜_y` ((7.12) `eq:far_ab`), a nested graph with `p` paths and `q = n_M`
 internal vertices, without ghost edges, of order `ord(Γ^aux)`, whose value at `a_i = [x]`, `b_i = [y]` is the value of
-the auxiliary graph for every symmetric `ξ` (`7_8:898`). -/
+the auxiliary graph for every symmetric `ξ` (Definition 7.20). -/
 def LWAuxNested : Prop :=
   ∀ (p : ℕ) (Q : PGraph (Fin 2)), 0 < p → Q.LocReg345 p →
     Q.g.molOf (Sum.inl (Q.ext 0)) ≠ Q.g.molOf (Sum.inl (Q.ext 1)) →
@@ -1601,7 +1599,7 @@ def LWAuxNested : Prop :=
       ∀ {κ : Type} [Fintype κ] (ξ : κ → κ → ℝ), (∀ u v, ξ u v = ξ v u) → ∀ be : Q.E' → κ,
         Γa.val ξ (fun _ => be (Q.ext 0)) (fun _ => be (Q.ext 1)) = LGraph.auxVal Q.g ξ be
 
-/-- **The nested form of `Γ^aux`** (target 5): the walks of `lem:localregular` (3)-(5), the molecule `𝓜_x` read as `a_i`, `𝓜_y` as `b_i`, the
+/-- **The nested form of `Γ^aux`**: the walks of `lem:localregular` (3)-(5), the molecule `𝓜_x` read as `a_i`, `𝓜_y` as `b_i`, the
 internal molecules as the internal vertices, and the molecular edges used by no walk attached to `a_0`, `b_0`. -/
 theorem lwAuxNested_holds : LWAuxNested := by
   classical
@@ -1637,8 +1635,6 @@ theorem lwAuxNested_holds : LWAuxNested := by
     rwa [Sym2.mk_isDiag_iff] at this
   exact ⟨auxGraph_ngraph Dt, auxGraph_noGhost Dt, auxGraph_isNested hxy Dt h3.1 hnd hndr h4 h5,
     auxGraph_ordN Dt hcover, fun ξ hsymm be => auxGraph_val_eq hxy Dt hcover ξ hsymm be⟩
-
-/-! ## 12. Compiled instances at `d = 3`, `L = 4`, `W = 2`, `g = t = 1/2`, `E = 0` -/
 
 end RBM.Graph
 

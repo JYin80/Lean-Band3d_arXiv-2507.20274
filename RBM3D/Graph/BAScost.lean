@@ -9,38 +9,37 @@ import RBM3D.Graph.BAWeightOp
 import RBM3D.Graph.BAGGOp
 
 /-!
-# BA-L L3b3' `BAScostS'`: the cost vocabulary at atoms, BA Lemma B, `BAInit`, five shapes (T2426)
+# The cost vocabulary at atoms, BA Lemma B, `BAInit`, five shapes
 
-Property (6) of `lem:localregular` at the block Anderson model is one cost invariant on the atomic
-image of the BA graph (`paper/tex/B_graphical_lemmas.tex:302-313`, cited `B:line`; design
-`docs/reports/T2397-design.md`, gate G2).  This file writes the cost vocabulary at atoms (verbatim
-from `t/T2397:RBM3D/Probe/T2397Pins.lean:40-94, 123-136`, over R0's `atomSetoid`, `promoteC`),
-the engine of the local lemma at atoms, **BA Lemma B** (`G = Ǧ + M`: merge-and-drop, the circled
-edge by Lemma A; the `M`-splits that join two atoms joined by a kept edge are the extra outputs
-`E2`), `BAInit`, the reduction of `BAScostLL` to the band local lemma `LGraph.ScostLL` on the atomic
+Property (6) of Lemma 7.17 (`lem:localregular`) at the block Anderson model is one cost invariant
+on the atomic image of the BA graph (Definition B.3 `def_atom`).  This file writes the cost
+vocabulary at atoms (over `atomSetoid`, `promoteC`), the engine of the local lemma at atoms,
+**BA Lemma B** (`G = Ǧ + M`, Definition B.4 `defn_normalBA`: merge-and-drop, the circled edge by
+Lemma A; the `M`-splits that join two atoms joined by a kept edge are the extra outputs `E2`),
+`BAInit`, the reduction of `BAScostLL` to the band local lemma `LGraph.ScostLL` on the atomic
 image, and the five BA-only shape lemmas `BAScostLL Γ T`.  The packed forms `BAShapeLL sh T` are in
 `Graph/BAScost2.lean`.
 
 ## Contents (namespace `RBM.Graph`, private helpers carry the stem `BAScost_`)
 
-1. The vocabulary: `scostA`, `locStdA`, `locCostGeA`, `locReg6InvA`, `BReach`, `BAInit`, `BAFinal`,
+1. The vocabulary: `scostA`, `locCostGeA`, `locReg6InvA`, `BReach`, `BAInit`,
    `BAStep`, `BANormal`, `BAScostLL` with `BAScostLL.trans`, `BAShape`, `BTStep`, `untag`,
    `BAShapeLL`.
 2. The cost engine: `BAScost_Up` (the solid list `l'` is `l` with edges circled and circled edges
    inside classes added) never costs less (Lemma A for a circled edge inside a class, the loop
-   hypothesis of `LGraph.scost_cons_loop_ge`, `LocalRegular6a.lean:434`, replaced by "the ends lie
-   in one class").
-3. **BA Lemma B** (`BAScost_splitG_le`, `BAScostLL_splitG`; `E2`: `BAScostLL_E2`).
+   hypothesis of `LGraph.scost_cons_loop_ge`, `Graph/LocalRegular6a.lean`, replaced by "the ends
+   lie in one class").
+3. **BA Lemma B** (`BAScost_splitG_le`, `BAScostLL_splitG`; the extra outputs `E2` are included in
+   `BAScostLL_splitG`).
 4. The merge of the `=`-dotted classes is a relabelling; **`BAInit`** (`baInit_holds`).
 5. The reduction to the band (`BAScostLL_of_band`: the band local lemmas apply on the atom quotient
    `(promoteC Γ).merge`, where every setoid pulls back to a merge that contains the atoms) and the
-   packed term lemma `BAScost_locCostGeA_term` (the BA twin of `localReg6d_locCostGe_term`,
-   `LocalRegular6d.lean:955`).
+   packed term lemma `BAScost_locCostGeA_term` (the BA counterpart of `localReg6d_locCostGe_term`,
+   `Graph/LocalRegular6d.lean`).
 6. The shapes: **S1** (`BAScostLL_S1`, `scostLL_contract`), **E1** and the raw first term of `lanlw`
-   (`BAScostLL_lanlwT1`, `BAScostLL_E1`; `scostLL_loop`, `scostLL_moveLoop`), **macroA**
+   (`BAScostLL_lanlwT1`; `scostLL_loop`, `scostLL_moveLoop`), **macroA**
    (`BAScostLL_macroA`; `scostLL_moveLoop`, `scostLL_loop`), **macroB** (`BAScostLL_macroB`;
-   `scostLL_moveSC`), **E2** (`BAScostLL_E2`).
-7. Compiled instances at the E13 witness graphs (`BAScostInst`).
+   `scostLL_moveSC`), **E2** (the extra outputs of `BAScostLL_splitG`).
 -/
 
 set_option linter.style.setOption false
@@ -56,33 +55,32 @@ noncomputable section
 
 namespace RBM.Graph
 
-/-! ## 1. The cost vocabulary at atoms (verbatim from the T2397 probe) -/
+/-! ## 1. The cost vocabulary at atoms -/
 
 section Vocab
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **The cost of a merge at atoms** (`B:302-313`): the band cost `LGraph.scost` (`LocalRegular6a.lean:157`) of the atomic image
+/-- **The cost of a merge at atoms** (Definition B.3 `def_atom`): the band cost `LGraph.scost` (`Graph/LocalRegular6a.lean`) of the atomic image
 `promoteC Γ` at a merge `s` of the vertices that contains the atoms.  An edge is kept iff it is circled (inside an atom) or joins
 two classes of `s`. -/
 def scostA (Γ : BAGraph E I) (s : Setoid (E ⊕ I)) : ℤ := (promoteC Γ).scost s
 
 end Vocab
 
-/-- `PGraph.LocCostGe` (`LocalRegular6a.lean:177`) at BA: every merge of the vertices that contains the atoms (and, if `far`, keeps
+/-- `PGraph.LocCostGe` (`Graph/LocalRegular6a.lean`) at BA: every merge of the vertices that contains the atoms (and, if `far`, keeps
 the atoms of `x = P.ext 0` and `y = P.ext 1` apart) costs at least `k`. -/
 def locCostGeA (far : Bool) (k : ℤ) (P : BAPGraph (Fin 2)) : Prop :=
   ∀ s : Setoid (P.E' ⊕ P.I'), atomSetoid P.g ≤ s →
     (far = true → ¬ s (Sum.inl (P.ext 0)) (Sum.inl (P.ext 1))) → k ≤ scostA P.g s
 
-/-- `PGraph.LocReg6Inv` (`LocalRegular6a.lean:182`) at BA. -/
+/-- `PGraph.LocReg6Inv` (`Graph/LocalRegular6a.lean`) at BA. -/
 def locReg6InvA (p : ℕ) (Q : BAPGraph (Fin 2)) : Prop :=
   Q.g.Normal ∧ locCostGeA false (2 * (p : ℤ)) Q ∧ locCostGeA true (3 * (p : ℤ)) Q
 
-/-- Reachability along an abstract step relation (the BA twin of `Lvl1Reach`, `LWLvl1.lean:3277`; rows L3a): `BReach.refl` and
-`BReach.step` are the two constructors of the probe's inductive predicate, and `BReach.ind` its induction principle (`induction hQ with
-| refl | step hQ' hst hmem ih`).  A definition by `Relation.ReflTransGen`, not an inductive predicate: the recursive inductive `Prop` makes the
-premise scan of `#assert_rbm_axioms` fail (`BReach`, `BReach.below`, as it registers `Lvl1Reach.below`). -/
+/-- Reachability along an abstract step relation (the BA counterpart of `Lvl1Reach` in `Graph/LWLvl1.lean`): `BReach.refl` and
+`BReach.step` are the two constructors of an inductive predicate, and `BReach.ind` its induction principle (`induction hQ with
+| refl | step hQ' hst hmem ih`).  A definition by `Relation.ReflTransGen`, not an inductive predicate. -/
 def BReach (BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop) (P0 : BAPGraph (Fin 2)) :
     BAPGraph (Fin 2) → Prop :=
   Relation.ReflTransGen (fun Q R => ∃ L, BStep Q L ∧ R ∈ L) P0
@@ -94,7 +92,7 @@ theorem BReach.step {BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Pr
     {L : List (BAPGraph (Fin 2))} (h : BReach BStep P0 Q) (hs : BStep Q L) (hm : R ∈ L) : BReach BStep P0 R :=
   Relation.ReflTransGen.tail h ⟨L, hs, hm⟩
 
-/-- the induction principle of `BReach` (the recursor of the probe's inductive predicate) -/
+/-- the induction principle of `BReach` -/
 @[elab_as_elim, induction_eliminator]
 theorem BReach.ind {BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop} {P0 : BAPGraph (Fin 2)}
     {motive : ∀ Q, BReach BStep P0 Q → Prop} (refl : motive P0 BReach.refl)
@@ -107,23 +105,23 @@ theorem BReach.ind {BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Pro
     obtain ⟨L, hs, hm⟩ := hQR
     exact step hPQ hs hm (ih hPQ)
 
-/-- **Pin L3b3, initial values** (`fxyPowGraph_locCostGe`, `LocalRegular6a.lean:927`, at BA): every BA term of `G = Ǧ + M` on the
-starting graph `Γ_p` (`B:339-341`; `2^{2p}` terms, `baSplitSolid`) satisfies `Φ^all ≥ 2p` and, for atoms of `x`, `y` apart,
+/-- **Initial values** (`fxyPowGraph_locCostGe` in `Graph/LocalRegular6a.lean`, at BA): every BA term of `G = Ǧ + M` on the
+starting graph `Γ_p` (Definition B.4; `2^{2p}` terms, `baSplitSolid`) satisfies `Φ^all ≥ 2p` and, for atoms of `x`, `y` apart,
 `Φ^far ≥ 3p`. -/
 def BAInit (p : ℕ) : Prop :=
   ∀ P ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition, locReg6InvA p P
 
-/-- **Pin L3b4-L3b6, the step lemma** (`locCostGe_locStep`, `LocalRegular6d.lean:1077`, at BA): `Φ(Q) ≥ Φ(P)` for every output `Q`
+/-- **The step lemma** (`locCostGe_locStep` in `Graph/LocalRegular6d.lean`, at BA): `Φ(Q) ≥ Φ(P)` for every output `Q`
 of a BA step (`lanlw`, `lweight`, `GGGamma` followed by `G = Ǧ + M`), for `Φ^all` and `Φ^far`. -/
 def BAStep (BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop) : Prop :=
   ∀ (P : BAPGraph (Fin 2)) (L : List (BAPGraph (Fin 2))), BStep P L → ∀ (far : Bool) (k : ℤ),
     locCostGeA far k P → ∀ Q ∈ L, locCostGeA far k Q
 
-/-- The outputs of a BA step are BA-normal (`lvl1_step_good`, `LWLvl1.lean:3290`, first conjunct). -/
+/-- The outputs of a BA step are BA-normal (`lvl1_step_good` in `Graph/LWLvl1.lean`, first conjunct). -/
 def BANormal (BStep : BAPGraph (Fin 2) → List (BAPGraph (Fin 2)) → Prop) : Prop :=
   ∀ P L, BStep P L → ∀ Q ∈ L, Q.g.Normal
 
-/-- **Pin L3b4-L3b5, the local lemma at BA** (`LGraph.ScostLL`, `LocalRegular6a.lean:168`): every merge `s` of a term `T`
+/-- **The local lemma at BA** (`LGraph.ScostLL` in `Graph/LocalRegular6a.lean`): every merge `s` of a term `T`
 (containing the atoms of `T`) is matched by a merge `s₀` of `Γ` (containing the atoms of `Γ`) that keeps apart every pair of
 external vertices that `s` keeps apart, at no higher cost. -/
 def BAScostLL {E I I' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype I'] [DecidableEq I']
@@ -131,7 +129,7 @@ def BAScostLL {E I I' : Type} [Fintype E] [DecidableEq E] [Fintype I] [Decidable
   ∀ s : Setoid (E ⊕ I'), atomSetoid T ≤ s → ∃ s₀ : Setoid (E ⊕ I), atomSetoid Γ ≤ s₀ ∧
     (∀ a b : E, ¬ s (Sum.inl a) (Sum.inl b) → ¬ s₀ (Sum.inl a) (Sum.inl b)) ∧ scostA Γ s₀ ≤ scostA T s
 
-/-- The local lemma composes (`LGraph.ScostLL.trans`, `LocalRegular6b.lean:92`). -/
+/-- The local lemma composes (`LGraph.ScostLL.trans` in `Graph/LocalRegular6b.lean`). -/
 theorem BAScostLL.trans {E I I' I'' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype I']
     [DecidableEq I'] [Fintype I''] [DecidableEq I''] {Γ : BAGraph E I} {T : BAGraph E I'} {U : BAGraph E I''}
     (h1 : BAScostLL Γ T) (h2 : BAScostLL T U) : BAScostLL Γ U := by
@@ -140,11 +138,11 @@ theorem BAScostLL.trans {E I I' I'' : Type} [Fintype E] [DecidableEq E] [Fintype
   obtain ⟨s₀, hs₀, hsep₀, hc₀⟩ := h1 s₁ hs₁
   exact ⟨s₀, hs₀, fun a b h => hsep₀ a b (hsep₁ a b h), hc₀.trans hc₁⟩
 
-/-- The output classes of a step of T2395's strategy `BALocStep` (lever S', `t/T2395` probe 207: K1-K4, at atoms): `band` =
+/-- The output classes of a step of the strategy `BALocStep` (at atoms): `band` =
 matched, up to relabelling, with an output of a band `LocStep`; the BA-only shapes `s1` (first sum of `GGGamma`, `y`, `y'` in two
 atoms), `e1` (`M_{αy}` of `lanlw` joining `[x]`, `[y]`), `e2` (an `M`-split joining two atoms joined by a parent solid edge),
-`macroA`, `macroB` (the outputs of the macro steps K2(a), K2(b) that are not `band`; new lemma at their transfer intermediates).
-(`deriving DecidableEq`: the case `sh = band` of `baStep_of_simC`.) -/
+`macroA`, `macroB` (the outputs of the macro steps that are not `band`; a lemma at their transfer intermediates).
+(`deriving DecidableEq`: the case `sh = band` of `baStep_of_simC'`.) -/
 inductive BAShape | band | s1 | e1 | e2 | macroA | macroB
   deriving DecidableEq
 
@@ -154,7 +152,7 @@ abbrev BTStep : Type 1 := BAPGraph (Fin 2) → List (BAShape × BAPGraph (Fin 2)
 def untag (T : BTStep) (P : BAPGraph (Fin 2)) (L : List (BAPGraph (Fin 2))) : Prop :=
   ∃ LT, T P LT ∧ L = LT.map Prod.snd
 
-/-- **Pin L3b3' (S'): the `ScostLL` lemma of a BA-only shape**, in packed form (as `localReg6d_locCostGe_term`, 6d:955, packs
+/-- **The `ScostLL` lemma of a BA-only shape**, in packed form (as `localReg6d_locCostGe_term` in `Graph/LocalRegular6d.lean` packs
 `LGraph.ScostLL`). -/
 def BAShapeLL (sh : BAShape) (T : BTStep) : Prop :=
   ∀ P LT, T P LT → ∀ Q, (sh, Q) ∈ LT → ∀ far k, locCostGeA far k P → locCostGeA far k Q
@@ -202,7 +200,7 @@ theorem BAScost_scost_congr (Λ Λ' : LGraph E I) (s : Setoid (E ⊕ I))
   rfl
 
 open Classical in
-/-- **Lemma A for a circled edge inside a class** (`LGraph.scost_cons_loop_ge`, `LocalRegular6a.lean:434`, whose proof reads only
+/-- **Lemma A for a circled edge inside a class** (`LGraph.scost_cons_loop_ge` in `Graph/LocalRegular6a.lean`, whose proof reads only
 that the two ends of the added edge lie in one class): adding a circled edge whose ends are merged never lowers the cost. -/
 theorem BAScost_cons_inclass_ge (Γ : LGraph E I) (e : SEdge (E ⊕ I)) (hc : e.circ = true) (s : Setoid (E ⊕ I))
     (he : s e.src e.dst) :
@@ -409,7 +407,7 @@ theorem BAScost_atomSetoid_le_split (T : BAGraph E I) (r : List (SEdge (E ⊕ I)
   tauto
 
 
-/-- **The split of the solid edges** (`baSplitSolid`, `B:339-340`): the circled copies and the dropped edges of a term of
+/-- **The split of the solid edges** (`baSplitSolid`, Definition B.4 `defn_normalBA`): the circled copies and the dropped edges of a term of
 `G = Ǧ + M`, read through any edge maps `fT`, `fQ` that circle at least as much for `Q` as for `T`. -/
 theorem BAScost_split_Up {V : Type} (s : Setoid V) (fT fQ : SEdge V → SEdge V)
     (hT : ∀ e, (fT e).σ = e.σ ∧ (fT e).src = e.src ∧ (fT e).dst = e.dst)
@@ -444,7 +442,7 @@ theorem BAScost_split_Up {V : Type} (s : Setoid V) (fT fQ : SEdge V → SEdge V)
         rw [(hT e).2.1, (hT e).2.2]
         exact hm ⟨e.σ, e.src, e.dst⟩ List.mem_cons_self
 
-/-- **BA Lemma B, pointwise** (`B:339-341`; the band: `LGraph.scost_partition_ge`, `LocalRegular6a.lean:503`): every term `Q` of
+/-- **BA Lemma B, pointwise** (Definition B.4; the band: `LGraph.scost_partition_ge` in `Graph/LocalRegular6a.lean`): every term `Q` of
 `G = Ǧ + M` on `T` costs at least `T` at every merge `s` that contains the atoms of `Q`.  A split joins two atoms of `T`, and
 if the two are joined by a kept edge of `T` the edge becomes a circled edge inside a class (the outputs `E2`): Lemma A. -/
 theorem BAScost_splitG_le (T : BAGraph E I) {Q : BAGraph E I} (hQ : Q ∈ T.splitG) (s : Setoid (E ⊕ I))
@@ -467,7 +465,7 @@ theorem BAScost_splitG_le (T : BAGraph E I) {Q : BAGraph E I} (hQ : Q ∈ T.spli
   rw [Q.BAAtomic_sameAtom_iff]
   exact (BAAtomic_atomSetoid_iff Q _ _).1 (hle ((BAAtomic_atomSetoid_iff T _ _).2 he.2))
 
-/-- **BA Lemma B** (`G = Ǧ + M`, `B:339-341`; includes the extra outputs `E2`: an `M`-split joining two atoms joined by a kept edge):
+/-- **BA Lemma B** (`G = Ǧ + M`, Definition B.4; includes the extra outputs `E2`: an `M`-split joining two atoms joined by a kept edge):
 `BAScostLL T Q` for every term `Q` of the expansion, with `s₀ = s`. -/
 theorem BAScostLL_splitG (T : BAGraph E I) {Q : BAGraph E I} (hQ : Q ∈ T.splitG) : BAScostLL T Q := by
   intro s hs
@@ -517,7 +515,7 @@ theorem BAScost_atomSetoid_merge (Q : BAGraph E I) {u v : E ⊕ I} (h : atomSeto
       · exact Or.inl ⟨by simp [BAMEdge.map, h1], by simp [BAMEdge.map, h2]⟩
       · exact Or.inr ⟨by simp [BAMEdge.map, h1], by simp [BAMEdge.map, h2]⟩
 
-/-- **The merge of the `=`-dotted classes never costs less than the graph at the pulled-back merge** (`B:340`): the relabelled atomic
+/-- **The merge of the `=`-dotted classes never costs less than the graph at the pulled-back merge**: the relabelled atomic
 image has the same edges as the atomic image of the merged graph, with circles at least as large. -/
 theorem BAScost_scostA_le_merge (Q : BAGraph E I) (s : Setoid (Q.toLGraph.ExtCls ⊕ Q.toLGraph.IntCls)) :
     scostA Q (Setoid.comap Q.toLGraph.vmap s) ≤ scostA Q.merge s := by
@@ -561,7 +559,7 @@ theorem BAScost_scost_le_scostA_ofLGraph (Γ : LGraph E I) (hC : LGraph.CircIffL
     show (e.circ && (BAGraph.ofLGraph Γ).sameAtom e.src e.dst) = true
     rw [h', Bool.true_and, (BAGraph.ofLGraph Γ).BAAtomic_sameAtom_iff, ← BAAtomic_atomSetoid_iff, hl]
 
-/-- **`BAInit`, the initial values** (`fxyPowGraph_locCostGe`, `LocalRegular6a.lean:927`, at BA): every BA term of `G = Ǧ + M` on
+/-- **`BAInit`, the initial values** (`fxyPowGraph_locCostGe` in `Graph/LocalRegular6a.lean`, at BA): every BA term of `G = Ǧ + M` on
 the starting graph `Γ_p` satisfies the invariant of (6): Lemma B (`BAScost_splitG_le`), the merge of the `=`-dotted classes
 (`BAScost_scostA_le_merge`), and the band bound. -/
 theorem baInit_holds (p : ℕ) : BAInit p := by
@@ -594,7 +592,7 @@ section Reduction
 
 variable {E I I' : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype I'] [DecidableEq I']
 
-/-- **The reduction to the band** (`LGraph.ScostLL`, `LocalRegular6a.lean:168`): the band local lemmas quantify over all setoids and
+/-- **The reduction to the band** (`LGraph.ScostLL` in `Graph/LocalRegular6a.lean`): the band local lemmas quantify over all setoids and
 return an arbitrary `s₀`, so they apply to the atom quotient `(promoteC Γ).merge` (the atomic image `Γ.img.g`), where every setoid
 pulls back to a merge that contains the atoms.  A map `ψ` of the vertices of `T` onto those of a band graph `Λ` over the image of `Γ`
 (external vertices to the images of the external vertices, `ker ψ` inside the atoms of `T`) transports the merges of `T`, and
@@ -646,7 +644,7 @@ theorem BAScostLL_of_band (Γ : BAGraph E I) (T : BAGraph E I') {J : Type} [Fint
 
 end Reduction
 
-/-! ## 6. The packed term lemma (the BA twin of `localReg6d_locCostGe_term`) -/
+/-! ## 6. The packed term lemma (the BA counterpart of `localReg6d_locCostGe_term`) -/
 
 section Pack
 
@@ -659,8 +657,8 @@ def BAScost_pack (P : BAPGraph (Fin 2)) (Q0 : BAPGraph P.E') : BAPGraph (Fin 2) 
   ext_surj := Q0.ext_surj.comp P.ext_surj
   g := Q0.g
 
-/-- **The step from a term to the packed outputs of its partition** (the BA twin of `localReg6d_locCostGe_term`,
-`LocalRegular6d.lean:955`: Lemma B and the local lemma): if `BAScostLL P.g T` and `P` satisfies the bound, every term of the
+/-- **The step from a term to the packed outputs of its partition** (the BA counterpart of `localReg6d_locCostGe_term` in
+`Graph/LocalRegular6d.lean`: Lemma B and the local lemma): if `BAScostLL P.g T` and `P` satisfies the bound, every term of the
 partition of `T` does. -/
 theorem BAScost_locCostGeA_term (P : BAPGraph (Fin 2)) {I'' : Type} [Fintype I''] [DecidableEq I''] (T : BAGraph P.E' I'')
     (far : Bool) (k : ℤ) (hLL : BAScostLL P.g T) (hk : locCostGeA far k P) :
@@ -813,11 +811,11 @@ section ShapeS1
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`S1`** (`B:393-405`, the first sum of `GGGamma`; `BAGGOp_A1` is the first term of `gg2`): `Σ_{u,β} M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β} f`
+/-- **`S1`** ((B.20) `GGGamma`, the first sum; `BAGGOp_A1` is the first term of `gg2`): `Σ_{u,β} M_{xu} M_{ux} S⁺_{uβ} M_{βy} M_{y'β} f`
 at a pair `Ǧ_{xy}`, `Ǧ_{y'x}` of blue circled edges that are not atom-level loops (`[x] ≠ [y]`, `[y'] ≠ [x]`; `[y]`, `[y']` may or may not be
 equal).  The pair is contracted to a waved edge `[x] - [y]` and `[y]`, `[y']` are merged (through `β`): the atomic image of the term is the band's
-`Contract(z = [x]; u = [y'], v = [y])` (`lwPrimContract`, `LocalRegular6a.lean:233`) with the contracted edge `u → v` dropped (`[u] = [v]` at every merge of
-the term), and the local lemma is `scostLL_contract` (`LocalRegular6b.lean:1391`) on the atomic image `(promoteC Γ).merge`. -/
+`Contract(z = [x]; u = [y'], v = [y])` (`lwPrimContract` in `Graph/LocalRegular6a.lean`) with the contracted edge `u → v` dropped (`[u] = [v]` at every merge of
+the term), and the local lemma is `scostLL_contract` (`Graph/LocalRegular6b.lean`) on the atomic image `(promoteC Γ).merge`. -/
 theorem BAScostLL_S1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
     (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
@@ -1028,17 +1026,16 @@ section ShapeLoop
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **The transfer graph of macro step (a)** (T2395 K2(a), `t/T2423` probe `withinOuts`): the `M`-split of the first term `T1` of `lanlw`
+/-- **The transfer graph of macro step (a)**: the `M`-split of the first term `T1` of `lanlw`
 (`BAGraph.lanlwT1`, `M_{αy}`) at the blue circled edge `Ǧ_{xy}`: `Σ_{α,β} M_{xα} M_{αy} S_{αβ} Ǧ_{ββ} f`. -/
 def BAGraph.BAScost_trA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : BAGraph E (I ⊕ Fin 2) :=
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
     [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 p.1.dst)]
 
-/-- **The macro (a) intermediate** (T2395 K2(a); `BAGraph.BAScost_trA` has the solid and waved edges of the `M`-branch `M_{αy}` of `lanlwT1`, `B:363`,
-compiled at `Γ*` in `BAScostInst`; its `M`-dotted list is `[M_{xα}, M_{αy}]`): `Σ_{α,β} M_{xα} M_{αy} S_{αβ} Ǧ_{ββ} f` at a blue circled edge `Ǧ_{xy}`.  Local lemma in both regimes, no atom hypothesis: if `[x] = [y]`
+/-- **The macro (a) intermediate** (`BAGraph.BAScost_trA` has the solid and waved edges of the `M`-branch `M_{αy}` of `lanlwT1`, Lemma B.6; its `M`-dotted list is `[M_{xα}, M_{αy}]`): `Σ_{α,β} M_{xα} M_{αy} S_{αβ} Ǧ_{ββ} f` at a blue circled edge `Ǧ_{xy}`.  Local lemma in both regimes, no atom hypothesis: if `[x] = [y]`
 (a within-atom edge; the macro step) the edge is a circled loop of the atomic image and the image of `tr` is the band's `MoveLoop(z = [x])`
-(`scostLL_moveLoop`, `LocalRegular6b.lean:638`, by import); if `[x] ≠ [y]` (`E1`, the extra output of `lanlw`: the band's `×`-dot forbids it) the image is
-`Loop(z = [x])` (`scostLL_loop`, `LocalRegular6b.lean:621`) with the edge `[x] → [y]` dropped (`[x]`, `[y]` are in one class at every merge of `tr`). -/
+(`scostLL_moveLoop` in `Graph/LocalRegular6b.lean`); if `[x] ≠ [y]` (`E1`, the extra output of `lanlw`: the band's `×`-dot forbids it) the image is
+`Loop(z = [x])` (`scostLL_loop` in `Graph/LocalRegular6b.lean`) with the edge `[x] → [y]` dropped (`[x]`, `[y]` are in one class at every merge of `tr`). -/
 theorem BAScostLL_macroA (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) : BAScostLL Γ (Γ.BAScost_trA p) := by
   classical
@@ -1119,9 +1116,9 @@ theorem BAScost_lanlwT1_eq (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdg
     BAGraph.lanlwT1 Γ p = BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1), bpS false (bpv 0) (owxEmb 2 p.1.dst)]
       [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)] := rfl
 
-/-- **The first term of `lanlw`** (`B:363`, `BAGraph.lanlwT1`): `Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` has the local lemma in both regimes (`[x] ≠ [y]`:
+/-- **The first term of `lanlw`** (Lemma B.6, `BAGraph.lanlwT1`): `Σ_{α,β} M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` has the local lemma in both regimes (`[x] ≠ [y]`:
 the image is `Loop`, the edge `G_{αy}` is the edge `x → y`; `[x] = [y]`: `MoveLoop`, the uncircled edge `G_{αy}` inside the atom is not kept).  With Lemma B
-(`BAScostLL_splitG`) every term of `G = Ǧ + M` on it, among them the `M`-split `M_{αy}` (`E1`), has the local lemma (`BAScostLL_E1`). -/
+(`BAScostLL_splitG`) every term of `G = Ǧ + M` on it, among them the `M`-split `M_{αy}` (`E1`), has the local lemma. -/
 theorem BAScostLL_lanlwT1 (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) : BAScostLL Γ (BAGraph.lanlwT1 Γ p) := by
   classical
@@ -1208,17 +1205,17 @@ section ShapeMoveSC
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **The transfer graph of macro step (b)** (T2395 K2(b), `t/T2423` probe `splitOuts`, the graph `tr`): `lanlw` at `Ǧ_{ay}` (`p`), the
+/-- **The transfer graph of macro step (b)** (the graph `tr`): `lanlw` at `Ǧ_{ay}` (`p`), the
 derivative on the partner edge `Ǧ_{y'a'}` (`q`, `a`, `a'` in one atom), its three solid edges split so that `Ǧ_{y'β}`, `Ǧ_{βy}` are circled and
 `G_{αa'}` is the `M`-edge `M_{αa'}`: `Σ_{α,β} M_{aα} M_{αa'} S_{αβ} Ǧ_{y'β} Ǧ_{βy} f`. -/
 def BAGraph.BAScost_trB (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) : BAGraph E (I ⊕ Fin 2) :=
   BAGraph.ext 2 Γ q.2 [bpS true (owxEmb 2 q.1.src) (bpv 1), bpS true (bpv 1) (owxEmb 2 p.1.dst)]
     [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0), bpM (bpv 0) (owxEmb 2 q.1.dst)]
 
-/-- **The macro (b) intermediate** (`B:393-405`, `GGGamma` at the transferred pair): at the pair `Ǧ_{ay}`, `Ǧ_{y'a'}` of one atom
+/-- **The macro (b) intermediate** ((B.20) `GGGamma` at the transferred pair): at the pair `Ǧ_{ay}`, `Ǧ_{y'a'}` of one atom
 (`[a] = [a'] =: z`, the ends `[y]`, `[y']` and `z` apart) the image of the transfer graph is the band's `MoveSC(z; u = [y'], v = [y])`
-(`lwPrimMoveSC`, `LocalRegular6a.lean:209`: the edges `z → v`, `u → z` replaced by `u → β → v` with a waved edge `z - β`), and the
-local lemma is `scostLL_moveSC` (`LocalRegular6c.lean:1123`) on the atomic image.  No new primitive of the size of `Dmove` is needed. -/
+(`lwPrimMoveSC` in `Graph/LocalRegular6a.lean`: the edges `z → v`, `u → z` replaced by `u → β → v` with a waved edge `z - β`), and the
+local lemma is `scostLL_moveSC` (`Graph/LocalRegular6c.lean`) on the atomic image.  No new primitive of the size of `Dmove` is needed. -/
 theorem BAScostLL_macroB (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I)))
     (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true)
@@ -1274,9 +1271,5 @@ theorem BAScostLL_macroB (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdg
 end ShapeMoveSC
 
 /-! ## 13. `E1` and `E2` as corollaries -/
-
-/-! ## 13b. A crude lower bound of the cost (for the instances) -/
-
-/-! ## 14. Compiled instances at the E13 witness graphs (T2397 §8, `T2426` (a) (ii)) -/
 
 end RBM.Graph

@@ -6,14 +6,15 @@ Authors: Jun Yin
 import RBM3D.Graph.BASim
 
 /-!
-# BA-L R1 `BASim` (T2423), part 2: a BA step matched with a band `LocStep` at the image
+# A BA step matched with a band `LocStep` at the image (part 2)
 
 The kinds of step at the image: `weight` (`lw2`, `lw4`), `within` (macro (a), stage 1), `edge`
 (`lanlw`, the derivative terms with a loop), `gg` (`gg2`, `gg4`: the terms `A1`..`A5`, `B1`, `B2`,
 `BD` against the band's `R2`, `R3`, `R4`, with the circle-fixing partition lemma
 `BASim_partition_fix`), with `BASim_locStep_gg`, the band step at the image of a pair; and the
 generic atom lemmas (`BASim_ExtraDot`, `BASim_card_image_le`, `BASim_nExt_le`, `BASim_atom_addM`,
-`BASim_nA_addM`) used by Lemma E in part 3.
+`BASim_nA_addM`) used by Lemma E in part 3.  Paper: Lemma B.6 (`lanlw`), Lemma B.7
+(`lem_lweight`), (B.20) `GGGamma`.
 -/
 
 set_option linter.style.setOption false
@@ -45,7 +46,7 @@ variable {E : Type}
 def BASim_leaf2 {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E' I') (p : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : BAGraph E' (I' ⊕ Fin 2) :=
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 0) (owxEmb 2 p.1.dst), bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)]
 
-/-- **`lw2.leaf` ↔ `owxT1`** (the table of T2423 (a) (i): `α ↦ x̄`, `β ↦ n0`); the edge `p.1` is a circled blue edge inside one atom (a weight, or the within-atom edge of macro (a)) -/
+/-- **`lw2.leaf` ↔ `owxT1`** (`α ↦ x̄`, `β ↦ n0`); the edge `p.1` is a circled blue edge inside one atom (a weight, or the within-atom edge of macro (a)) -/
 def BASim_B_leaf2 (P : BAPGraph E) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' ⊕ P.I'))} (hp : p ∈ lwSplit P.g.solid)
     (h : p.1.σ = true ∧ p.1.circ = true ∧ P.g.sameAtom p.1.src p.1.dst = true) : BASimExt P 2 ((BASimY P) ⊕ Fin 1) (owxEmb 1) :=
   BASim_mk21 P p.1.src p.2 [bpS true (bpv 0) (owxEmb 2 p.1.dst), bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
@@ -131,7 +132,7 @@ theorem BASim_match_D2 (P : BAPGraph E) (hN : P.g.Normal) (m : ℂ) {p q : SEdge
 
 /-! ### `lw4` ↔ `owxT2`, `owxT4` -/
 
-/-- the new edges of the terms of `lw4`: the waved edges and the `M`-dotted edges (`B:376-387`, `BAWeightOp.lean:71-76`) -/
+/-- the new edges of the terms of `lw4`: the waved edges and the `M`-dotted edges (Lemma B.7 `lem_lweight`, `Graph/BAWeightOp.lean`) -/
 def BASim_w4 {V : Type} (z y α β : V) : List (WEdge V) := [bpW true z y, bpW false α β]
 def BASim_md4 {V : Type} (x z y α : V) : List (BAMEdge V) := [bpM x z, bpM z x, bpM y α]
 
@@ -492,7 +493,7 @@ theorem BASim_locStep_edge (P : BAPGraph E) (m : ℂ) {p : SEdge (P.E' ⊕ P.I')
 
 theorem BASim_owxEmb1_inr {E' I' : Type} (x : I') : (owxEmb 1 (Sum.inr x) : E' ⊕ (I' ⊕ Fin 1)) = Sum.inr (Sum.inl x) := rfl
 
-/-- the first term of `lanlw` (`B:363`): `M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` -/
+/-- the first term of `lanlw` (Lemma B.6): `M_{xα} S_{αβ} Ǧ_{ββ} G_{αy} f` -/
 def BASim_L1 {E' I' : Type} [Fintype E'] [DecidableEq E'] [Fintype I'] [DecidableEq I'] (Γ : BAGraph E' I')
     (p : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : BAGraph E' (I' ⊕ Fin 2) :=
   BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1), bpS false (bpv 0) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)] [bpM (owxEmb 2 p.1.src) (bpv 0)]
@@ -517,7 +518,7 @@ def BASim_B_L1 (P : BAPGraph E) {p : SEdge (P.E' ⊕ P.I') × List (SEdge (P.E' 
 
 /-! ### The derivative terms with a loop at `x`: `oe1xP5`, `oe1xP3` (red out-edge of `x`), `oe1xP6`, `oe1xP4` (blue in-edge of `x`) -/
 
-/-- the new solid edges of a derivative term of `lanlw` (`B:363`): the two edges of `owxDE β α` and `G_{βy}` -/
+/-- the new solid edges of a derivative term of `lanlw` (Lemma B.6): the two edges of `owxDE β α` and `G_{βy}` -/
 def BASim_dE1 {E' I' : Type} (q : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : SEdge (E' ⊕ (I' ⊕ Fin 2)) :=
   (owxDE (bpv 1) (bpv 0) (SEdge.map (owxEmb 2) q.1)).1
 def BASim_dE2 {E' I' : Type} (q : SEdge (E' ⊕ I') × List (SEdge (E' ⊕ I'))) : SEdge (E' ⊕ (I' ⊕ Fin 2)) :=

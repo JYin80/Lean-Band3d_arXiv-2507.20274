@@ -6,31 +6,25 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExpandId
 
 /-!
-# BA-L L4e-C (T2433): the GG-with-context Lemma and the leaf pins at BA (generic half)
+# The GG-with-context Lemma and the leaf conditions at BA (generic half)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:66-110` (`(eq;I42inG)` at 68,
-`(eq:sizeGammamu_E)` at 92, `(eq:GGraisesord)` at 99, the cases at 102-108) and `:393-405`
-(`GGGamma`).  Design `docs/reports/T2398-design.md` §3; probe
-`t/T2398:RBM3D/Probe/T2398Pins.lean:158-166` (the pins `BAG5Tgt`, `BAG5Leaf`, `BAG5Expand`,
-copied verbatim).  This is the generic half of the row (Amend 1 of T2433, DECISIONS §251, H234,
-H235): no theorem about `baG5Graph` is proved, and no statement that a tree of the procedure ends
-in leaves, for any root list.
+Paper: Subappendix B.1: (B.5) `eq;I42inG`, (B.8) `eq:sizeGammamu_E`, (B.9) `eq:GGraisesord` and the
+case analysis after it, and (B.20) `GGGamma`.  This is the generic half: no statement that a tree
+of the procedure ends in leaves, for any root list, is proved here.
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAG5Leaf_`)
 
-1. **The pins**: `BAG5Tgt`, `BAG5Leaf`, `BAG5Expand` (verbatim from the probe), `BAG5Attached`
-   (twin of `LWAttached`, `LWExpTerm3.lean:66`, over `BAGraph.mol`), `BAG5LeafProps` (twin of
-   `LWG5LeafProps`, `LWExpSound.lean:43`, without the joined alternative).  Predicates only;
-   none is claimed of a list.
-2. **`BACtx`** (H1-H3 of the design §3.3, paper delta T2398b) on a `GG` candidate `BARCand`, and
-   the two forms of the Lemma as `Prop`s (`BAG5CtxLemma`, `BAG5CtxKids`).
-3. **The Lemma** (`(eq:GGraisesord)` with context, both charges): `baG5CtxLemma_holds` (every term
-   of `BAExpandId_ggL2/4 c.σ` has `ordG ≥ ord P + 1` under `BACtx c`) and its form at the
+1. **The predicates**: `BAG5Tgt`, `BAG5Leaf`, `BAG5Attached` (as `LWAttached` in
+   `Graph/LWExpTerm3.lean`, over `BAGraph.mol`), `BAG5LeafProps` (as `LWG5LeafProps` in
+   `Graph/LWExpSound.lean`, without the joined alternative).  Predicates only; none is claimed of a
+   list.
+2. **`BACtx`** (H0-H3) on a `GG` candidate `BARCand`, and the two forms of the Lemma as `Prop`s
+   (`BAG5CtxLemma`, `BAG5CtxKids`).
+3. **The Lemma** ((B.9) `eq:GGraisesord` with context, both charges): `baG5CtxLemma_holds` (every
+   term of `BAExpandId_ggL2/4 c.σ` has `ordG ≥ ord P + 1` under `BACtx c`) and its form at the
    children, `baG5CtxKids_holds` (`∀ r ∈ c.kids, ord P + 1 ≤ ord r.2`).
 4. **The selector** `BAselStar`: a leaf stops, otherwise a blue candidate with `BACtx` and
    nothing else (`baselStar_spec`, `baselStar_eq_none_iff`).
-5. Compiled instances (`BAG5LeafInst`): the Lemma at the merged blue and red candidates of
-   `Graph/BAExpandId.lean`, the all-`M` leaf of the probe, the selector at a non-leaf.
 
 ## The proof of the Lemma
 
@@ -74,9 +68,9 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
-/-! ## 1. The pins (probe `t/T2398:RBM3D/Probe/T2398Pins.lean:158-166`, bodies verbatim) -/
+/-! ## 1. The predicates -/
 
-/-- **The corrected target of `(eq:sizeGammamu_E)` at BA** (`B:92`, paper delta T2398a): `ord ≥ 5` if `x`, `y` lie in different
+/-- **The corrected target of (B.8) `eq:sizeGammamu_E` at BA**: `ord ≥ 5` if `x`, `y` lie in different
 atoms, `ord ≥ 3` if they lie in one.  (The pointwise target `4·1[x = y] + 5·1[x ≠ y]` is false at BA: the all-`M` graph has `ord 4`
 and `x ~ y`.) -/
 def BAG5Tgt (P : BAPGraph (Fin 2)) : Prop :=
@@ -85,14 +79,14 @@ def BAG5Tgt (P : BAPGraph (Fin 2)) : Prop :=
 /-- **The leaf properties**: the corrected target, `n_M ≤ 1`, `n_W ≥ 2`. -/
 def BAG5Leaf (P : BAPGraph (Fin 2)) : Prop := BAG5Tgt P ∧ P.g.nM ≤ 1 ∧ 2 ≤ P.g.nW
 
-/-- **Attachment** (twin of `LWAttached`, `LWExpTerm3.lean:66`, over `BAGraph.mol`): every internal molecule is joined to other
-molecules by at least two solid edges (`B:428`, `(eq:Gbyxi2_BA)`). -/
+/-- **Attachment** (as `LWAttached` in `Graph/LWExpTerm3.lean`, over `BAGraph.mol`): every internal molecule is joined to other
+molecules by at least two solid edges ((B.22) `eq:Gbyxi2_BA`). -/
 def BAG5Attached (P : BAPGraph (Fin 2)) : Prop :=
   ∀ v : P.I', (∀ w ∈ P.g.mol (Sum.inr v), w.isRight = true) →
     2 ≤ (P.g.solid.filter fun e => decide (P.g.mol e.src ≠ P.g.mol e.dst ∧
       (P.g.mol e.src = P.g.mol (Sum.inr v) ∨ P.g.mol e.dst = P.g.mol (Sum.inr v)))).length
 
-/-- **The leaf properties of a list of terms** (twin of `LWG5LeafProps`, `LWExpSound.lean:43`, same order of the conjuncts: `Normal`,
+/-- **The leaf properties of a list of terms** (as `LWG5LeafProps` in `Graph/LWExpSound.lean`, same order of the conjuncts: `Normal`,
 `n_M ≤ 1`, `2 ≤ n_W`, attachment, target; the joined alternative of the band is dropped).  A predicate; no list is claimed to satisfy it. -/
 def BAG5LeafProps (Ls : Bool → Bool → List (BAPGraph (Fin 2))) : Prop :=
   ∀ k s, ∀ q ∈ Ls k s, q.g.Normal ∧ q.g.nM ≤ 1 ∧ 2 ≤ q.g.nW ∧ BAG5Attached q ∧ BAG5Tgt q
@@ -101,22 +95,22 @@ def BAG5LeafProps (Ls : Bool → Bool → List (BAPGraph (Fin 2))) : Prop :=
 
 /-- **H0-H3 on a candidate** `c = (σ, v, p = Ǧ_{vy}, q = Ǧ_{y'v})` of `P` (`y = p.1.dst`, `y' = q.1.src`): `P.g` normal; (H1) `atom v`
 is internal and exactly two solid edges (`p.1`, `q.1`) meet it; (H2) `atom v`, `atom y'`, `atom y` are pairwise distinct; (H3) `atom y'`
-or `atom y` is internal.  Then `κ = BAGGOp_kappa P.g y' y = 1` (`Graph/BAGGOp.lean:1533`). -/
+or `atom y` is internal.  Then `κ = BAGGOp_kappa P.g y' y = 1` (`Graph/BAGGOp.lean`). -/
 def BACtx {P : BAPGraph (Fin 2)} (c : BARCand P) : Prop :=
   P.g.Normal ∧ (∀ w ∈ P.g.atom c.v, w.isRight = true) ∧
     (P.g.solid.filter fun e => decide (e.src ∈ P.g.atom c.v ∨ e.dst ∈ P.g.atom c.v)).length = 2 ∧
     P.g.atom c.v ≠ P.g.atom c.p.1.dst ∧ P.g.atom c.v ≠ P.g.atom c.q.1.src ∧ P.g.atom c.q.1.src ≠ P.g.atom c.p.1.dst ∧
     ((∀ w ∈ P.g.atom c.q.1.src, w.isRight = true) ∨ (∀ w ∈ P.g.atom c.p.1.dst, w.isRight = true))
 
-/-- **The Lemma, graph level, both charges** (`(eq:GGraisesord)`, `B:99`, with the hypotheses H1-H3; paper delta T2398b): every term of
-the `gg2` and `gg4` lists of the charge of `c` (`BAExpandId_ggL2/4`: the merged blue lists, the conjugate lists for `σ = false`) has
+/-- **The Lemma, graph level, both charges** ((B.9) `eq:GGraisesord`, with the hypotheses H1-H3): every term of
+the `gg2` and `gg4` lists of the charge of `c` (`BAExpandId_ggL2/4`: the blue lists, the conjugate lists for `σ = false`) has
 `ord ≥ ord P + 1` (`scalingOrderG` is the minimum over the `G = Ǧ + M` partition). -/
 def BAG5CtxLemma : Prop :=
   ∀ (P : BAPGraph (Fin 2)) (c : BARCand P), BACtx c →
     (∀ T ∈ BAExpandId_ggL2 c.σ P.g c.p c.q, ((P.scalingOrder + 1 : ℤ) : WithTop ℤ) ≤ T.scalingOrderG) ∧
     (∀ T ∈ BAExpandId_ggL4 c.σ P.g c.p c.q, ((P.scalingOrder + 1 : ℤ) : WithTop ℤ) ≤ T.scalingOrderG)
 
-/-- **The Lemma at the children** (`BARCand.kids`, `Graph/BAExpandId.lean:364`): every packed child of a candidate with `BACtx` has
+/-- **The Lemma at the children** (`BARCand.kids` in `Graph/BAExpandId.lean`): every packed child of a candidate with `BACtx` has
 `ord ≥ ord P + 1`. -/
 def BAG5CtxKids : Prop :=
   ∀ (P : BAPGraph (Fin 2)) (c : BARCand P), BACtx c → ∀ r ∈ c.kids, P.scalingOrder + 1 ≤ r.2.scalingOrder
@@ -808,7 +802,7 @@ private theorem BAG5Leaf_blue (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (
 
 end Blue
 
-/-! ## 6. The red charge: complex conjugation (`Graph/BAExpandId.lean`, `BAExpandId_flip`) -/
+/-! ## 6. The red charge: complex conjugation (`BAExpandId_flip` in `Graph/BAExpandId.lean`) -/
 
 section Red
 
@@ -917,9 +911,9 @@ private theorem BAG5Leaf_ordG {E I : Type} [Fintype E] [DecidableEq E] [Fintype 
     (T : BAGraph E I) (h : BAG5Leaf_SplitGe k T) : ((k : ℤ) : WithTop ℤ) ≤ T.scalingOrderG :=
   BAGGOp_ordG_of_split T k h
 
-/-- **The GG-with-context Lemma** (`(eq:GGraisesord)`, `B:99`, with H1-H3; paper delta T2398b), for both charges: at a candidate `c` of a packed
+/-- **The GG-with-context Lemma** ((B.9) `eq:GGraisesord`, with H1-H3), for both charges: at a candidate `c` of a packed
 graph `P` with `BACtx c`, every term of the `gg2` and `gg4` lists of the charge of `c` has `ordG ≥ ord P + 1`.  Hypotheses: `BACtx c` only; no
-smallness, no scalar data.  The context is needed: without H3 the conclusion is false (`BAG5LeafInst.baG5Ctx_H3_needed`: the first sum keeps
+smallness, no scalar data.  The context is needed: without H3 the conclusion is false (the first sum keeps
 the order when `y`, `y'` are both external). -/
 theorem baG5CtxLemma_holds : BAG5CtxLemma := by
   intro P c hc
@@ -958,7 +952,7 @@ theorem baG5CtxKids_holds : BAG5CtxKids := by
 /-! ## 8. The selector -/
 
 /-- **The selection rule `S*`**: stop at a leaf; otherwise a blue candidate with `BACtx` (classical choice), and nothing else; `none` if there
-is no such candidate.  Candidates outside `BACtx` are never selected (H234, H235 Q3-C2); that a tree ends in leaves is not claimed. -/
+is no such candidate.  Candidates outside `BACtx` are never selected; that a tree ends in leaves is not claimed. -/
 def BAselStar : BASel := fun P =>
   open Classical in
   if BAG5Leaf P then none else if h : ∃ c : BARCand P, c.σ = true ∧ BACtx c then some h.choose else none
@@ -977,7 +971,7 @@ theorem baselStar_spec (P : BAPGraph (Fin 2)) (c : BARCand P) (h : BAselStar P =
     · simp [hl, hex] at h
 
 /-- **When the selector returns `none`** (and hence, by contraposition, when it selects): at a leaf, or when there is no blue `BACtx` candidate.
-(An `Iff` without a `Prop`-valued hypothesis, so that the premise scan of `#assert_rbm_axioms` does not see `BAG5Leaf` as assumed.) -/
+(An `Iff` with no `Prop`-valued hypothesis: `BAG5Leaf` does not occur as an assumption.) -/
 theorem baselStar_eq_none_iff (P : BAPGraph (Fin 2)) :
     BAselStar P = none ↔ BAG5Leaf P ∨ ¬ ∃ c : BARCand P, c.σ = true ∧ BACtx c := by
   classical
@@ -987,13 +981,5 @@ theorem baselStar_eq_none_iff (P : BAPGraph (Fin 2)) :
   · by_cases hex : ∃ c : BARCand P, c.σ = true ∧ BACtx c
     · simp [hl, hex]
     · simp [hl, hex]
-
-/-! ## 9. Compiled instances (namespace `RBM.Graph.BAG5LeafInst`)
-
-The merged parents of `Graph/BAExpandId.lean` (`BAExpandIdInst.instP`, ord `3`, 5 solid edges, 3 internal vertices, `E' = Fin 2`; its conjugate
-`instPRed`) with their blue and red candidates `instCand`, `instCandRed` at `v = inr 0`, `p = Ǧ_{inr0 inr1}`, `q = Ǧ_{inl0 inr0}`: `BACtx` holds
-there (H1: `atom v = {inr 0}` is internal and exactly `p.1`, `q.1` meet it; H2: the three atoms are distinct singletons; H3: `y = inr 1` is
-internal), so the Lemma and its form at the children apply; the `63` children of each have `ord ≥ 4`.  The Lemma has no analytic hypothesis, so
-no limit check applies. -/
 
 end RBM.Graph

@@ -12,24 +12,16 @@ import RBM3D.BA.GreenLDE
 import RBM3D.BA.LWPinsBA
 
 /-!
-# BA-L L4a (T2418), part A: the generic machinery of the crude families S1 at BA
+# The generic machinery of the crude bound for the six families of `lem:LWterm_EXP` at BA
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`, `B:11-14`),
-`GGGamma` (`B:393-405`), `lanlw` (`B:359-372`); design `docs/reports/T2398-design.md` §1, §2.
-This file is the model-free and deterministic half of the twin of `Graph/LWExpTerm4.lean`
-§§2-5 (`:129-826`): the `≺` toolbox at an arbitrary law (`≺ → 𝔼` first moment, finite
-unions, one-index calculus), the fine-level Ward identity (twin of `lwExpTerm4_ward_*`,
-`:136-192`), the block combinatorics of the fine lattice and the pathwise bounds of the sums
-`J` of the six families, the comparison arithmetic, and the deterministic BA data (`M`,
-`ω = Θ^{(+,+)}`, `W - 1 = lift(ω - 1)`, `B ≤ 2`).  The pin `BAExp14aS1` and its proof are in
-`Graph/BAExp14aB.lean`.
-
-Reuse (copies, private there): `lwExpTerm4_ward_*` (`LWExpTerm4.lean:136-192`),
-`lwExpTerm_first_moment`, `lwExpTerm_prec_integral` (`LWExpTerm.lean:106-143`, at `sz.seqP`
-only), `st6_prec_det_iff` (`Induction/Step6Kit.lean:81`, at `seqP` only), `KInduct_theta_l1`,
-`KInduct_theta_shift` (`BA/KInduct.lean`), `B45_STWB_le` (`Induction/B45.lean:1259`).
-Not used: §6, §9 and the twisted part of §8 of the band file (L4b2), `lwExpTerm4_kerSum`,
-`kward`, `L3` (Amend 1 decisions 2, 3).  No `tw*` name, no `BATwistAvgLaw`/`BATwistLoopLaw`.
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`): (B.1) `eq:ELW_term`, (B.20)
+`GGGamma`, Lemma B.6 (`lanlw`).  This file is the model-free and deterministic half of the BA
+counterpart of `Graph/LWExpTerm4.lean` (Sections 2-5): the `≺` toolbox at an arbitrary law
+(`≺ → 𝔼` first moment, finite unions, one-index calculus), the fine-level Ward identity (as
+`lwExpTerm4_ward_*`), the block combinatorics of the fine lattice and the pathwise bounds of the
+sums `J` of the six families, the comparison arithmetic, and the deterministic BA data (`M`,
+`ω = Θ^{(+,+)}`, `W - 1 = lift(ω - 1)`, `B ≤ 2`).  The statement `BAExp14aS1` and its proof are in
+`Graph/BAExp14aB.lean`.  No twisted quantity (`BATwistAvgLaw`, `BATwistLoopLaw`) occurs.
 
 All private helpers carry the stem `BAExp14a_`.
 -/
@@ -53,7 +45,7 @@ section Toolbox
 
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
 
-/-- **A deterministic `≺` is the pointwise bound for large `n`** (`st6_prec_det_iff`, `Induction/Step6Kit.lean:81`, at an
+/-- **A deterministic `≺` is the pointwise bound for large `n`** (as `st6_prec_det_iff` in `Induction/Step6Kit.lean`, at an
 arbitrary probability law). -/
 theorem BAExp14a_det_iff [IsProbabilityMeasure P] {size : ℕ → ℕ} (hsize : Tendsto size atTop atTop)
     {V : ℕ → Type*} (F G : ∀ n, V n → ℝ) :
@@ -105,7 +97,7 @@ theorem BAExp14a_prec_of_bad {size : ℕ → ℕ} {U₁ U₂ : ℕ → Type*} {�
   filter_upwards [hs, h τ' hτ' D hD] with l h1 h2
   exact (measure_mono h1).trans h2
 
-/-- A pointwise smaller family is dominated by the same control (the inequality only for large `l`). -/
+/-- A pointwise smaller family is dominated by the same bound (the inequality only for large `l`). -/
 theorem BAExp14a_prec_of_le_ev {size : ℕ → ℕ} {U : ℕ → Type*} {ξ ξ₁ ζ : ∀ l, U l → Ω → ℝ}
     (hle : ∀ᶠ l in atTop, ∀ u ω, ξ l u ω ≤ ξ₁ l u ω) (h : StochDomAt P size ξ₁ ζ) : StochDomAt P size ξ ζ :=
   BAExp14a_prec_of_bad h fun τ hτ => ⟨τ, hτ, by
@@ -131,7 +123,7 @@ theorem BAExp14a_prec_mono {size : ℕ → ℕ} (hsize : Tendsto size atTop atTo
           rw [← mul_assoc, UnifDetDom.rpow_half_mul_rpow_half (size l) hτ]
   exact lt_of_le_of_lt h3 hu
 
-/-- **The first moment off the failure event** (copy of `lwExpTerm_first_moment`, `Graph/LWExpTerm.lean:106`, private there). -/
+/-- **The first moment off the failure event** (as `lwExpTerm_first_moment` in `Graph/LWExpTerm.lean`). -/
 private theorem BAExp14a_first_moment [IsProbabilityMeasure P] {f : Ω → ℂ} {S : Set Ω} {c B : ℝ} (hc : 0 ≤ c)
     (hB : ∀ ω, ‖f ω‖ ≤ B) (hin : ∀ ω, ω ∉ S → ‖f ω‖ ≤ c) : ∫ ω, ‖f ω‖ ∂P ≤ c + B * (P S).toReal := by
   classical
@@ -158,7 +150,7 @@ private theorem BAExp14a_first_moment [IsProbabilityMeasure P] {f : Ω → ℂ} 
           integral_const_mul, integral_indicator_const _ hmeas]
         simp [measureReal_def, hPS]
 
-/-- **`≺ → 𝔼`** at an arbitrary probability law (the twin of `lwExpTerm_prec_integral`, `Graph/LWExpTerm.lean:143`): from the `≺` of
+/-- **`≺ → 𝔼`** at an arbitrary probability law (as `lwExpTerm_prec_integral` in `Graph/LWExpTerm.lean`): from the `≺` of
 `‖X_v‖` against a deterministic `R`, a polynomial envelope `N^{Kenv}` and a polynomial floor `R ≥ N^{-Kf}`: `‖𝔼 X_v‖ ≺ R`. -/
 theorem BAExp14a_prec_integral [IsProbabilityMeasure P] {size : ℕ → ℕ} (hsize : Tendsto size atTop atTop)
     {V : ℕ → Type*} (X : ∀ n, V n → Ω → ℂ) (R : ∀ n, V n → ℝ) {Kenv Kf : ℝ}
@@ -312,7 +304,7 @@ theorem BAExp14a_prec_int [IsProbabilityMeasure μ] {V : ℕ → Type} (Φ : ∀
 
 end Dom
 
-/-! ## A3. The fine-level Ward identity (twin of `lwExpTerm4_ward_*`, `LWExpTerm4.lean:136-192`) -/
+/-! ## A3. The fine-level Ward identity (as `lwExpTerm4_ward_*` in `Graph/LWExpTerm4.lean`) -/
 
 section FineWard
 
@@ -943,7 +935,7 @@ end Path
 /-! ## A6. The deterministic BA data: `M`, `Θ^{(+,+)} = ω`, `W - 1`
 
 `M_{xy} = 1(x, y same offset) M^{(B)}_{[x][y]}` (`BAMres_fine_apply`), `ω = Θ^{(+,+)} = (1 - t M^{(B)}∘M^{(B)})⁻¹`
-(`BATheta d L g E m t true true`), `(W - 1)_{αβ} = W^{-d}(ω - 1)_{[α][β]}` (design `T2398-design.md` §1.3, D402). -/
+(`BATheta d L g E m t true true`), `(W - 1)_{αβ} = W^{-d}(ω - 1)_{[α][β]}`. -/
 
 section Deterministic
 
@@ -953,7 +945,7 @@ private theorem BAExp14a_Msigma_shift {d L : ℕ} [NeZero L] (g : ℝ) (z m : �
   · simp only [BAMsigma, Bool.false_eq_true, ite_false, Matrix.conjTranspose_apply, BAMB_shift]
   · exact BAMB_shift d L g z m x y c
 
-/-- Translation invariance of `Θ`: `Θ(x, y) = Θ(0, y - x)` (a copy of `KInduct_theta_shift`, `BA/KInduct.lean`, private there). -/
+/-- Translation invariance of `Θ`: `Θ(x, y) = Θ(0, y - x)` (as `KInduct_theta_shift` in `BA/KInduct.lean`). -/
 private theorem BAExp14a_theta_shift {d L : ℕ} [NeZero L] (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
     BATheta d L g E m t s s' x y = BATheta d L g E m t s s' 0 (y - x) := by
   set Q := BAMss d L (BAMB d L g (E : ℂ) m) s s' with hQ
@@ -974,8 +966,8 @@ private theorem BAExp14a_theta_shift {d L : ℕ} [NeZero L] (g E : ℝ) (m : ℂ
   simp only [e, Equiv.coe_addRight, add_neg_cancel, ← sub_eq_add_neg] at h3
   exact h3
 
-/-- **The `ℓ¹` rows of `ω = Θ^{(+,+)}`, uniform in `t ∈ [0,1)`** (`baProp5s_holds`; the twin of the private `KInduct_theta_l1`,
-`BA/KInduct.lean:203`): `Σ_b |ω_{xb}| ≤ S`, `S = C_s (1 + Λ² expC k c_s)` depends on `(k, Λ, κ)` only. -/
+/-- **The `ℓ¹` rows of `ω = Θ^{(+,+)}`, uniform in `t ∈ [0,1)`** (`baProp5s_holds`; as the private `KInduct_theta_l1` in `BA/KInduct.lean`):
+`Σ_b |ω_{xb}| ≤ S`, `S = C_s (1 + Λ² expC k c_s)` depends on `(k, Λ, κ)` only. -/
 theorem BAExp14a_theta_l1 {k : ℕ} (hk : 1 ≤ k) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ S : ℝ, 0 < S ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       haveI : NeZero L := ⟨by omega⟩
@@ -1069,7 +1061,7 @@ theorem BAExp14a_M_col_eq {d L W : ℕ} [NeZero L] [NeZero W] (g0 E : ℝ) (m : 
     ∑ x, ‖BAlwM d L W g0 E m x y‖ = ∑ x, ‖BAlwM d L W g0 E m y x‖ :=
   Finset.sum_congr rfl fun x _ => by rw [baM_symm g0 E m x y]
 
-/-- `lift` commutes with scalars (a copy of the private `BASizeClaim_lift_smul`). -/
+/-- `lift` commutes with scalars (as the private `BASizeClaim_lift_smul`). -/
 private theorem BAExp14a_lift_smul {d L W : ℕ} [NeZero L] [NeZero W] (c : ℂ) (A : Matrix (Zd d L) (Zd d L) ℂ) :
     lwLift d L W (c • A) = c • lwLift d L W A := by
   ext x y; simp [lwLift]; ring
@@ -1102,7 +1094,7 @@ theorem BAExp14a_Mp_lift {d L W : ℕ} [NeZero L] [NeZero W] {g0 E : ℝ} {m : �
   simp only [h2, ← Finset.mul_sum]
   rw [h]
 
-/-- **`W - 1 = lift(ω - 1)`** (`(W - 1)_{αβ} = W^{-d} (ω - 1)_{[α][β]}`, D402, design `T2398-design.md` §1.3), `ω = Θ^{(+,+)}`: from
+/-- **`W - 1 = lift(ω - 1)`** (`(W - 1)_{αβ} = W^{-d} (ω - 1)_{[α][β]}`), `ω = Θ^{(+,+)}`: from
 `W = 1 + M⁺ (S W)` (`baW_mul`) and `S W = t · lift(ω)` (`baSp_eq`). -/
 theorem BAExp14a_W_sub_one {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) {g0 κ E t : ℝ} {m : ℂ}
     (hr : BAReal d L g0 κ E m) (ht0 : 0 ≤ t) (ht1 : t < 1) :

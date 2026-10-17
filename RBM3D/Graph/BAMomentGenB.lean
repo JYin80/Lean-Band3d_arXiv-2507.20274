@@ -6,22 +6,21 @@ Authors: Jun Yin
 import RBM3D.Graph.BAMomentGen
 
 /-!
-# BA-L L3d2a (T2470), part B: the near pairs and `lem:LW_moment` at BA (target 4)
+# The near pairs and `lem:LW_moment` at BA (part B)
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): the max bound `(eq:boundfxyGinf)` (`7_8:61-66`),
-`lem:LW_moment` (`7_8:72-77`), proof (`7_8:943-950`).  Twin of `Graph/LWMoment.lean` §9-§10 (`:1345-1814`); part A is
-`Graph/BAMomentGen.lean`.
+Paper: the max bound (7.9) `eq:boundfxyGinf`, Lemma 7.1 (`lem:LW_moment`) and its proof.  This is
+the BA counterpart of `Graph/LWMoment.lean` (Sections 9-10); part A is `Graph/BAMomentGen.lean`.
 
 ## Contents (namespace `RBM.BA`; private helpers carry the stem `BAMomentGen_`)
 
-1. The near pairs, deterministic part: the max bound `|f_{xy}| ≤ (A/η) max_c |𝓛^{(1)}_c - m|` at the BA carrier (`X_c = 𝓛^{(1)}_c - m`,
-   `BAExp14a_X_eq`; Ward and Cauchy-Schwarz, `lwMoment_CS`).
-2. The near pairs, stochastic part: `(GavLGEX)` at `Ψ'` (`baGbEXPav_holds`), `|f_{xy}|^p ≤ (2/η N^{τ₁} Ψ'²)^p`, `≺ → 𝔼`.
-3. **Target 4**: the statement def `BALWMomentOfAnp` and `baLWMoment_of_anp`, the BA `lem:LW_moment` from `lem:Anp` at the BA carrier
-   (`BAAnpAuxG`, only as the antecedent of the statement def) and the path binder of `baLocReg15_holds` (T2469 is not merged at the
-   start of this ticket).
-4. **Target 5**: compiled instances (the instance of target 4; the strengthened instance of target 3).
-5. Non-vacuity of the engine lists at `p = 2` (`BAMomentGen_lists_nonempty`: preflight F5).
+1. The near pairs, deterministic part: the max bound `|f_{xy}| ≤ (A/η) max_c |𝓛^{(1)}_c - m|` at
+   the BA carrier (`X_c = 𝓛^{(1)}_c - m`, `BAExp14a_X_eq`; Ward and Cauchy-Schwarz,
+   `lwMoment_CS`).
+2. The near pairs, stochastic part: (3.4) `GavLGEX` at `Ψ'` (`baGbEXPav_holds`),
+   `|f_{xy}|^p ≤ (2/η N^{τ₁} Ψ'²)^p`, `≺ → 𝔼`.
+3. The statement def `BALWMomentOfAnp` and `baLWMoment_of_anp`, the BA `lem:LW_moment` from
+   `lem:Anp` at the BA carrier (`BAAnpAuxG`, only as the antecedent of the statement def) and the
+   path binder of `baLocReg15_holds`.
 -/
 
 set_option linter.style.longLine false
@@ -71,7 +70,7 @@ theorem BAMomentGen_sumS (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (α : Idx d (sz.L n
   simp only [h, ← Finset.mul_sum]
   rw [Finset.sum_ite_mem, Finset.univ_inter]
 
-/-- **The max bound, pathwise** (`(eq:boundfxyGinf)`, `7_8:61-66`; twin of `lwMoment_f_le`, `Graph/LWMoment.lean:1492`):
+/-- **The max bound, pathwise** ((7.9) `eq:boundfxyGinf`; as `lwMoment_f_le` in `Graph/LWMoment.lean`):
 `‖f_{xy}‖ ≤ (A/η) μ` when `‖G_{aa}‖ ≤ A` and `‖𝓛^{(1)}_{+,b} - m‖ ≤ μ` for every block `b` (`X_b = 𝓛^{(1)}_b - m`, `BAExp14a_X_eq`; Ward
 and Cauchy-Schwarz for the resolvent of `g₀ Ψ + H_t`, `lwMoment_CS`, `BAExp14a_G_green`). -/
 theorem BAMomentGen_f_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t)
@@ -124,12 +123,12 @@ section NearStoch
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {κ ε 𝔡 𝔠 : ℝ} {t : ℕ → ℝ} {ε₀ C₁ C₂ C₃ : ℝ} {Cc : ℝ → ℝ} {Ψ : ℕ → ℝ}
   {Φ : ℕ → ℝ → ℝ}
 
-/-- The near pairs: block distance `≤ K (log W)²` (twin of `LWMomNear`, `Graph/LWMoment.lean:1546`). -/
+/-- The near pairs: block distance `≤ K (log W)²` (as `LWMomNear` in `Graph/LWMoment.lean`). -/
 def BAMomentGen_Near (sz : Sizes d) (K : ℕ) (n : ℕ) : Type :=
   {q : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n) //
     (lwBdist d (sz.L n) (sz.W n) q.1 q.2 : ℝ) ≤ (K : ℝ) * Real.log ((sz.W n : ℕ) : ℝ) ^ 2}
 
-/-- The entry scale for the near pairs `Ψ' = max(Φ(0), W^{-d/2})` (`7_8:62-66`; twin of `lwMoment_Psi'`). -/
+/-- The entry scale for the near pairs `Ψ' = max(Φ(0), W^{-d/2})` (as `lwMoment_Psi'`). -/
 def BAMomentGen_Psi' (sz : Sizes d) (Φ : ℕ → ℝ → ℝ) (n : ℕ) : ℝ :=
   max (Φ n 0) (((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2))
 
@@ -174,7 +173,7 @@ theorem BAMomentGen_Psi'_facts :
       _ ≤ max 1 C₃ * Φ n 0 := mul_le_mul_of_nonneg_right (le_max_left _ _) h0.1.le
   · exact hwin.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) h0.1.le)
 
-/-- `STmaxLoop2g ≺ Ψ'²` from `LWLoop2gL` (`Φ(r) ≤ Φ(0) ≤ Ψ'`; twin of `lwMoment_maxLoop2_prec`). -/
+/-- `STmaxLoop2g ≺ Ψ'²` from `LWLoop2gL` (`Φ(r) ≤ Φ(0) ≤ Ψ'`; as `lwMoment_maxLoop2_prec`). -/
 theorem BAMomentGen_maxLoop2_prec :
     PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun _ => Unit)
       (fun n _ ω => STmaxLoop2g (baFMz sz z) n (t n) ω) (fun n _ _ => BAMomentGen_Psi' sz Φ n ^ 2) := by
@@ -194,7 +193,7 @@ theorem BAMomentGen_maxLoop2_prec :
   have e2 : Φ n 0 ≤ BAMomentGen_Psi' sz Φ n := le_max_left _ _
   exact pow_le_pow_left₀ (hpos _ hr).1.le (e1.trans e2) 2
 
-/-- `max_a |𝓛^{(1)}_{+,a} - m| ≤ N^{τ₁} Ψ'²` w.h.p. (`(GavLGEX)` at `Ψ'`, `baGbEXPav_holds`; twin of `lwMoment_avg_whp`). -/
+/-- `max_a |𝓛^{(1)}_{+,a} - m| ≤ N^{τ₁} Ψ'²` w.h.p. ((3.4) `GavLGEX` at `Ψ'`, `baGbEXPav_holds`; as `lwMoment_avg_whp`). -/
 theorem BAMomentGen_avg_whp {τ₁ : ℝ} (hτ₁ : 0 < τ₁) :
     HighProbAt (Sizes.seqP (sz.withLam 0)) sz.size (fun n => {ω | ∀ a : Zd d (sz.L n),
       ‖(baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => a) ω - (baFMz sz z).m n‖ ≤
@@ -206,7 +205,7 @@ theorem BAMomentGen_avg_whp {τ₁ : ℝ} (hτ₁ : 0 < τ₁) :
     ⟨hassm.2.2.1.1, BAMomentGen_maxLoop2_prec hd hκ hε h𝔡 hflow ht0 ht1 hassm⟩
   exact BAMomentGen_whp_of_prec sz h hτ₁
 
-/-- **The near pairs, in probability** (`7_8:61-66`, the max bound; twin of `lwMoment_prec_near_pre`, `Graph/LWMoment.lean:1652`): for the pairs
+/-- **The near pairs, in probability** ((7.9) `eq:boundfxyGinf`, the max bound; as `lwMoment_prec_near_pre` in `Graph/LWMoment.lean`): for the pairs
 with block distance `≤ K (log W)²`, `|f_{xy}|^p ≤ (2/η · N^{τ₁} Ψ'²)^p` on the good event, and `Ψ'² ≤ polylog · Φ(0) Φ(|a-b|)`. -/
 theorem BAMomentGen_prec_near_pre {p : ℕ} (hp0 : 0 < p) (K : ℕ) :
     PrecL sz (Sizes.seqP (sz.withLam 0)) (U := BAMomentGen_Near sz K)
@@ -331,7 +330,7 @@ theorem BAMomentGen_LWfg_env (p : ℕ) :
   calc ‖LWfg (baFMz sz z) n (t n) ω x y‖ ^ p ≤ (N ^ 7) ^ p := pow_le_pow_left₀ (norm_nonneg _) h0 p
     _ = N ^ ((7 * p : ℕ) : ℝ) := by rw [Real.rpow_natCast, ← pow_mul]
 
-/-- **The near pairs** (`7_8:61-66`; twin of `lwMoment_prec_near`, `Graph/LWMoment.lean:1759`): `𝔼 |f_{xy}|^p ≺ R` for the pairs at block
+/-- **The near pairs** ((7.9) `eq:boundfxyGinf`; as `lwMoment_prec_near` in `Graph/LWMoment.lean`): `𝔼 |f_{xy}|^p ≺ R` for the pairs at block
 distance `≤ K (log W)²`, from the max bound and `≺ → 𝔼` (`BAExp14a_prec_integral`; envelope `BAMomentGen_LWfg_env`, floor `BAMomentGen_floor`). -/
 theorem BAMomentGen_prec_near {p : ℕ} (hp0 : 0 < p) (K : ℕ) :
     PrecL sz (Sizes.seqP (sz.withLam 0)) (U := BAMomentGen_Near sz K)
@@ -355,18 +354,18 @@ theorem BAMomentGen_prec_near {p : ℕ} (hp0 : 0 < p) (K : ℕ) :
 
 end NearStoch
 
-/-! ## 3. Target 4: `lem:LW_moment` at BA from `lem:Anp` at the BA carrier -/
+/-! ## 3. `lem:LW_moment` at BA from `lem:Anp` at the BA carrier -/
 
-/-- **Target 4, the statement def**: `lem:LW_moment` at the block Anderson data (`BALWMoment`) from `lem:Anp` at the BA carrier
-(`BAAnpAuxG`, `Graph/BAAuxGraph2B.lean:865`, the pin of L3d1).  `BAAnpAuxG` occurs only here, as the antecedent of a statement def. -/
+/-- **The statement def**: `lem:LW_moment` at the block Anderson data (`BALWMoment`) from `lem:Anp` at the BA carrier
+(`BAAnpAuxG`, `Graph/BAAuxGraph2B.lean`).  `BAAnpAuxG` occurs only here, as the antecedent of a statement def. -/
 def BALWMomentOfAnp (d : ℕ) : Prop := BAAnpAuxG d → BALWMoment d
 
-/-- **Target 4** (`lem:LW_moment` at BA, `7_8:72-77`; twin of `lwMoment_holds`, `Graph/LWMoment.lean:1785`; `c = 1`): the first hypothesis is
-the path binder of `baLocReg15_holds` (`Graph/BALocReg1B.lean:264`), verbatim; it is concluded by T2469 (L3b2, not merged at the start of this
-ticket, DECISIONS §269 (7), O2R-C3 pattern).  The pairs at block distance `> K (log W)²` are bounded through the engine lists
+/-- **`lem:LW_moment` at BA** (Lemma 7.1; as `lwMoment_holds` in `Graph/LWMoment.lean`; `c = 1`): the first hypothesis is
+the path binder of `baLocReg15_holds` (`Graph/BALocReg1B.lean`), verbatim; it is concluded by `baPathBinder_holds` (`Graph/BALocReg2B.lean`).
+The pairs at block distance `> K (log W)²` are bounded through the engine lists
 (`ba_localregularX_holds`: `GtoAG` at the rescaled kernels + `lem:Anp` for the outputs with `𝓜_x ≠ 𝓜_y`, the scale-mole tail for those
 with `𝓜_x = 𝓜_y`, the size bound for the errors; the contract (1)-(5) along `BAReach` from the path binder), the others by the max bound
-`(eq:boundfxyGinf)`; both upgraded from `≺` to `𝔼` by `BAExp14a_prec_integral`. -/
+(7.9) `eq:boundfxyGinf`; both upgraded from `≺` to `𝔼` by `BAExp14a_prec_integral`. -/
 theorem baLWMoment_of_anp
     (hb : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapePath sh BAFrameStepTN) :
     ∀ d : ℕ, BALWMomentOfAnp d := by
@@ -425,19 +424,6 @@ theorem baLWMoment_of_anp
     by_cases hq : (K : ℝ) * Real.log ((sz.W n : ℕ) : ℝ) ^ 2 < (lwBdist d (sz.L n) (sz.W n) q.1 q.2 : ℝ)
     · exact h1 ⟨q, hq⟩
     · exact h2 ⟨q, le_of_not_gt hq⟩
-
-/-! ## 4. Compiled nonempty instances (target 5)
-
-Data (`BA/LWPinsBA.lean` §3, `Graph/BAAuxGraph2B.lean` §7): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow
-`flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `z = zSeq`, `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ_n = Φ_n ≡ W_n^{-1/2}`,
-`C₁ = C₂ = 2`, `C₃ = 1`, `Cc ≡ 1`.  The hypotheses left are the pins of other gates: `BAAnpAuxG 3` (L3d1), the path binder (T2469),
-`STInitialGT2gL` and `LWLoop2gL` (inside `LWAssmgL`). -/
-
-/-! ## 5. Non-vacuity of the engine lists at `p = 2` (preflight F5)
-
-`BALocRegConcl` (d) forces `outs ++ errs ≠ []`: with empty lists it gives `𝔼 |f_{xx}|² = 0` at the datum `d = 3`, `L = 3`, `W = 2`, `g₀ = 0`, `E = 0`,
-`t = 1/4`, `m = i`; but at the point `ω₀ = 2 P_σ` of the sample space (`σ` pairs the sites of each block, `Fin.rev` on the offset) the resolvent is
-`G = a + b P_σ` and `f_{xx}(ω₀) = t (a - i) b² ≠ 0`, `f_{xx}` is continuous, and every neighbourhood of `ω₀` has positive probability under `PF`. -/
 
 end RBM.BA
 

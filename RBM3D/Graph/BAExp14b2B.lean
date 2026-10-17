@@ -6,15 +6,16 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExp14b2
 
 /-!
-# BA-L L4b2b (T2489), file B: the families `T3B`, `T3C-Ḡ` and the binding conclusion `baExp14bS2_holds`
+# The families `T3B`, `T3C-Ḡ` and the conclusion `baExp14bS2_holds` (file B)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`, `(eq:termI2)` `:43-49`,
-`(eq:termI41)` `:57-70`), `GGGamma` `:393-405`.  File A (`Graph/BAExp14b2.lean`, merged) holds the twisted bridges, the sharp average
-P3, the families `D1t, D2t, T2a, T2b` and the Ward sums; this file (L4b2b, targets 4-7) holds `T3B^{(k)}` (target 4),
-`T3C-Ḡ^{(k)}` (target 5), the binding conclusion `baExp14bS2_holds : ∀ d, BAExp14bS2 d` (target 6) and the instances (target 7).
+Paper: Subappendix B.1: (B.1) `eq:ELW_term`, (B.3) `eq:termI2`, (B.4) `eq:termI41`, (B.20)
+`GGGamma`.  File A (`Graph/BAExp14b2.lean`) holds the twisted bridges, the sharp average P3, the
+families `D1t, D2t, T2a, T2b` and the Ward sums; this file holds `T3B^{(k)}`, `T3C-Ḡ^{(k)}` and the
+conclusion `baExp14bS2_holds : ∀ d, BAExp14bS2 d`.
 
-Stem `BAExp14b2B_`.  Helpers with a Step 1/2 or TL binder are `private` (`LWAvgLawgL` is not registered, ticket `T2489.md`); the
-pin-free helpers are public with the stem.  The private theorems of file A are reached by `open private`.
+Stem `BAExp14b2B_`.  Helpers with a Step 1/2 or twisted-law binder are `private`; the helpers
+without such a binder are public with the stem.  The private theorems of file A are reached by
+`open private`.
 -/
 
 set_option linter.style.longLine false
@@ -155,7 +156,7 @@ theorem BAExp14b2B_core (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t 
 
 end Core
 
-/-! ## 3. Target 4: the family `T3B^{(k)}` (I23K twin, `lwExpI23K_holds`, `Graph/LWExpTerm4.lean:1316`) -/
+/-! ## 3. The family `T3B^{(k)}` (as `lwExpI23K_holds` in `Graph/LWExpTerm4.lean`) -/
 
 section T3B
 
@@ -199,7 +200,7 @@ theorem BAExp14b2B_diag_le {n : ℕ} {t : ℝ} {CM S : ℝ} (hf : BAExp14a_Facts
   rw [h]
   exact (norm_add_le _ _).trans (by linarith [BAExp14a_le_b (sz := sz) (z := z) n t ω x x, hf.hM1 x x])
 
-/-- **The pathwise bound of `T3B^{(k)}`** (twin of `lwExpTerm4_R23_le`, `Graph/LWExpTerm4.lean:1195`): `‖T3B‖ ≤ S C_M a τ̂ η⁻¹ A √Q`, from the block form,
+/-- **The pathwise bound of `T3B^{(k)}`** (as `lwExpTerm4_R23_le` in `Graph/LWExpTerm4.lean`): `‖T3B‖ ≤ S C_M a τ̂ η⁻¹ A √Q`, from the block form,
 TL1 variable `τ̂ ≥ |twTr|`, `a ≥ |X|`, `A ≥ |G_{xx}|`, `Q ≥ |𝓛^{(2)}_{(σ,-σ),(a,b)}|`, the kernel sums `BAExp14b2_wsum_c2` and the `𝓛^{(3)}` Ward sum. -/
 theorem BAExp14b2B_T3B_le (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {n : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) {CM S : ℝ}
     (hf : BAExp14a_Facts sz z n t CM S) (kb σ : Bool) (a b : Zd (k + 2) (sz.L n)) (ω : sz.SeqΩ) {aa τ A Q : ℝ}
@@ -252,9 +253,9 @@ section T3Bmain
 
 variable {k : ℕ} {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
 
-/-- **Target 4 (the I23K twin `T3B^{(k)}`, `j = 4, 5`)**: for the family `T3B^{(kb)}` of S2, every charge and block pair,
+/-- **The family `T3B^{(k)}`** (`j = 4, 5`; as `lwExpI23K_holds`): for the family `T3B^{(kb)}` of `BAExp14bS2`, every charge and block pair,
 `‖𝔼 T3B‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}` over the carrier `baFMz sz z` and the law `BAExp14a_μ sz`, from `STLocalEntrygL`, `LWAvgLawgL`, `STLmaxgL` and
-`BATwistAvgLaw` (zero slack in TL1: `a τ̂ η⁻¹ A √Q ≺ 𝔟 · 𝔟 · η⁻¹ · 1 · 𝔟^{1/2}`).  Pathwise, no P3.  Private: `LWAvgLawgL` is not registered. -/
+`BATwistAvgLaw` (zero slack in TL1: `a τ̂ η⁻¹ A √Q ≺ 𝔟 · 𝔟 · η⁻¹ · 1 · 𝔟^{1/2}`).  Pathwise, no P3.  Private, since `LWAvgLawgL` is a hypothesis of it. -/
 private theorem BAExp14b2B_T3B (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
     (hA : LWAvgLawgL (baFMz sz z) (BAExp14a_μ sz) t) (hLm : STLmaxgL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -365,7 +366,7 @@ private theorem BAExp14b2B_T3B (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h�
 
 end T3Bmain
 
-/-! ## 4. Target 5: the family `T3C-Ḡ^{(k)}` (I41K twin, `lwExpI41K_holds`, `Graph/LWExpTerm4.lean:1618`) -/
+/-! ## 4. The family `T3C-Ḡ^{(k)}` (as `lwExpI41K_holds` in `Graph/LWExpTerm4.lean`) -/
 
 section T3CG
 
@@ -403,7 +404,7 @@ def BAExp14b2B_Rr (sz : Sizes (k + 2)) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω
   (t : ℂ) * (((sz.W n : ℕ) : ℂ) ^ (k + 2)) * ∑ a₁, ∑ c₁, ∑ c₂, BAExp14b_kap sz z n t kb a₁ c₁ * BAExp14b_MB sz z n c₁ c₂ *
     BAExp14a_X sz z n t ω a₁ * BAExp14b2B_Yr sz z n t ω σ a b c₁ c₂
 
-/-- **The decomposition of `T3C-Ḡ^{(k)}`**: after the block form, the slot-2 circle (`twCirc_holds`) and `Tr(G^σ P) = T̂ + B` (target 1 (a)),
+/-- **The decomposition of `T3C-Ḡ^{(k)}`**: after the block form, the slot-2 circle (`twCirc_holds`) and `Tr(G^σ P) = T̂ + B` (bridge (a) of file A),
 `T3C-Ḡ = Σ_{a₁} D_{a₁} X_{a₁} + R` with the deterministic weights `D` and the pathwise remainder `R`. -/
 theorem BAExp14b2B_I41_eq {n : ℕ} (hr : BAReal (k + 2) (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (kb σ : Bool) (a b : Zd (k + 2) (sz.L n)) (ω : sz.SeqΩ) :
@@ -806,12 +807,12 @@ section T3CGmain
 
 variable {k : ℕ} {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
 
-/-- **Target 5 (the I41K twin `T3C-Ḡ^{(k)}`, `j = 6, 7`)**: for the family `T3C-Ḡ^{(kb)}` of S2, every charge and block pair,
+/-- **The family `T3C-Ḡ^{(k)}`** (`j = 6, 7`; as `lwExpI41K_holds`): for the family `T3C-Ḡ^{(kb)}` of `BAExp14bS2`, every charge and block pair,
 `‖𝔼 T3C-Ḡ‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}` over the carrier `baFMz sz z` and the law `BAExp14a_μ sz`, from `STLocalEntrygL`, `LWAvgLawgL`, `STLKgL`, `BATwistAvgLaw`,
 `BATwistLoopLaw` (`STLmaxgL`, `STDecaygL` are not read).  The slot-2 circle (`twCirc_holds`) splits the family into `Σ_{a₁} D_{a₁} X_{a₁} + R`
 (`BAExp14b2B_I41_eq`); `D` carries (iii) `𝔼X · K̃ · 𝒦` and the deterministic part of (iv), paid with the sharp P3 (`BAExp14b2B_core`, zero slack);
-`R` carries (i) `X · L̃ · (𝓛 - 𝒦)` (fold + Ward), (ii) `X · (L̃ - K̃) · 𝒦` (TL2, `baKward_holds`, zero slack) and the TL1 part of (iv).  Private:
-`LWAvgLawgL` is not registered. -/
+`R` carries (i) `X · L̃ · (𝓛 - 𝒦)` (fold + Ward), (ii) `X · (L̃ - K̃) · 𝒦` (TL2, `baKward_holds`, zero slack) and the TL1 part of (iv).  Private,
+since `LWAvgLawgL` is a hypothesis of it. -/
 private theorem BAExp14b2B_T3CG (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
     (hA : LWAvgLawgL (baFMz sz z) (BAExp14a_μ sz) t) (hK : STLKgL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -1017,13 +1018,13 @@ private theorem BAExp14b2B_T3CG (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h�
 
 end T3CGmain
 
-/-! ## 5. Targets 4-5 as the families `j = 4..7`, and target 6: the binding conclusion -/
+/-! ## 5. The families `j = 4..7` and the conclusion `baExp14bS2_holds` -/
 
 section Assembly
 
 variable {k : ℕ} {sz : Sizes (k + 2)} {z : ℕ → ℂ} {κ ε 𝔠 𝔡 : ℝ}
 
-/-- **The eight families**: `‖𝔼 F_j‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}` uniformly in `(j, σ, a, b)`, from the seven premises of S2 (`STDecaygL` is not read). -/
+/-- **The eight families**: `‖𝔼 F_j‖ ≺ (1 - t)⁻¹ 𝔟^{5/2}` uniformly in `(j, σ, a, b)`, from the seven premises of `BAExp14bS2` (`STDecaygL` is not read). -/
 private theorem BAExp14b2B_core8 (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ}
     (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) (hE : STLocalEntrygL (baFMz sz z) (BAExp14a_μ sz) t)
     (hA : LWAvgLawgL (baFMz sz z) (BAExp14a_μ sz) t) (hLm : STLmaxgL (baFMz sz z) (BAExp14a_μ sz) t)
@@ -1050,10 +1051,10 @@ private theorem BAExp14b2B_core8 (hk : 1 ≤ k) (hκ : 0 < κ) (hε : 0 < ε) (h
 
 end Assembly
 
-/-- **Target 6, the binding conclusion** (`lem:LWterm_EXP` at BA, the twisted families; L4b2): `BAExp14bS2 d` for every `d`.  For the eight families
+/-- **The conclusion** (`lem:LWterm_EXP` at BA, the twisted families): `BAExp14bS2 d` for every `d`.  For the eight families
 `D1t, D2t, T2a, T2b, T3B^{(k)}, T3C-Ḡ^{(k)}` (`BAExp14bS2Fam`), every charge pair and every block pair, `‖𝔼 F‖ ≺ (1 - t)⁻¹ (W^{-d} B_{t,0})^{5/2}`
 on `U_n = {λ²/L^d ≤ 1 - t}`, over the carrier `baFMz sz z` and the law `seqP (sz.withLam 0)`, from the seven premises of `BALWCutExpTw` (the five
-Step 1/2 pins, `BATwistAvgLaw`, `BATwistLoopLaw`), as pinned.  The red charge is the conjugate of the blue family at the swapped blocks and the
+Step 1/2 inputs, `BATwistAvgLaw`, `BATwistLoopLaw`).  The red charge is the conjugate of the blue family at the swapped blocks and the
 flipped tail charge (`BAExp14bS2Fam`); the blue families are `BAExp14b2B_core8` (file A for `D1t, D2t, T2a, T2b`, this file for the rest). -/
 theorem baExp14bS2_holds (d : ℕ) : BAExp14bS2 d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 ht μ hE hA hLm hK hDec hT1 hT2
@@ -1079,8 +1080,6 @@ theorem baExp14bS2_holds (d : ℕ) : BAExp14bS2 d := by
   · dsimp only
     simp only [ite_true]
     rfl
-
-/-! ## 6. Compiled instances (`d = 3`, `sz0`, `zSeq`, `flow_sz0`, `t ≡ 1/2`; target 7) -/
 
 end RBM.BA
 

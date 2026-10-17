@@ -23,42 +23,45 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3b1 (T2456), part 2: the start, the start bound, the shadow bridge, the contract (1)-(5), the value identity
+# The start, the start bound, the shadow bridge, the contract (1)-(5), the value identity (part 2)
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex:786-821` (`lem:localregular`), `:790` (`(eq:local_Gs)`), `paper/tex/B_graphical_lemmas.tex:172-199`, `:201` (the starting graph),
-`:302-313`, `:339-341`.  Design: `docs/reports/T2387-design.md` §6 row L3b1, `docs/reports/T2397-design.md:55, 79, 110`; DECISIONS §260 (1); supervisor `2026-10-12-1152` O7.
-Part 1 is `Graph/BALocReg1.lean`.  Split Σ (H250 (2)): the contract takes the shape binder of L3b2 as its hypothesis.
+Paper: Lemma 7.17 (`lem:localregular`), (7.27) `eq:local_Gs`; Subappendix B.2 (the starting
+graph); Definition B.3 (`def_atom`); Definition B.4 (`defn_normalBA`).  Part 1 is
+`Graph/BALocReg1.lean`.  The contract takes the shape binder of `baPathStep_holds` as its
+hypothesis.
 
-## Contents (namespace `RBM.Graph`; private helpers and the instance names carry the stem `BALocReg1`)
+## Contents (namespace `RBM.Graph`; private helpers carry the stem `BALocReg1`)
 
-1. **Target 5**: `BAPathInit` (probe 155), `baPathInit_holds` (the band start family `localReg2_fxyPowGraph_pathFam`, transferred to the atomic image by `BAAtomic_pathFam_iff`, then the partition).
-2. **Target 6**: `baStart_nM_le` (`P0.g.nM ≤ p` at every start term; owed here by DECISIONS §260 (1)).
-3. **Target 8**: `baShadow_locReg345` (the image carries (3)-(5) iff the shadow does: the molecules correspond by `BALocReg1_molMap`, the molecular edges agree;
-   `BALocReg1_locReg345_of_equiv` transfers the walks along a bijection of the molecules).  No normality is needed.
-4. **Target 7**: `BALocReg15` and `baLocReg15_holds` (with the shape binder): `Q.img.PathInv2 p`, `Q.g.nM ≤ p`, `LocReg2` on the image, and at `Q.g.LocStd` the predicates (1) on the image,
-   (3)-(5) on the image and on the shadow.  `BReach.ind` (`BAScost:105`) over `baReach_bReach` (`BAStepS:403`), with targets 4, 5, 6 and `baLvl1StepGood_holds` (`BALvl1B2:264`).
-5. **Target 9**: `ba_fxyPow_integral_eq` (the value of the BA reading of the start graph is `|f_{xy}|^p`).
-6. **Instances**: targets 5-7 at `p = 2` from a start term, and after one weight step at its blue circled loop (`BALocReg1B_start_step`); the `LocStd` branch of target 7
-   (with target 8) at a locally standard graph with one internal molecule reached by two weight steps (`BALocReg1B_reach_locStd`: the packed outputs live over quotient
-   types, and the renaming lemmas `BALocReg1B_mapG` … carry `LocStd`, `n_M` to concrete twins that the kernel evaluates); target 8 also at the lift of the band graph
-   `localReg2_inst_Q`; target 9 at `d = 3`, `L = 4`, `W = 2`.
+1. `BAPathInit`, `baPathInit_holds` (the band start family `localReg2_fxyPowGraph_pathFam`,
+   transferred to the atomic image by `BAAtomic_pathFam_iff`, then the partition).
+2. `baStart_nM_le` (`P0.g.nM ≤ p` at every start term).
+3. `baShadow_locReg345` (the image carries (3)-(5) iff the shadow does: the molecules correspond
+   by `BALocReg1_molMap`, the molecular edges agree; `BALocReg1_locReg345_of_equiv` transfers the
+   walks along a bijection of the molecules).  No normality is needed.
+4. `BALocReg15` and `baLocReg15_holds` (with the shape binder): `Q.img.PathInv2 p`, `Q.g.nM ≤ p`,
+   `LocReg2` on the image, and at `Q.g.LocStd` the predicates (1) on the image, (3)-(5) on the
+   image and on the shadow.  `BReach.ind` (`Graph/BAScost.lean`) over `baReach_bReach`
+   (`Graph/BAStepS.lean`), with `baPathStep_holds`, `baPathInit_holds`, `baStart_nM_le` and
+   `baLvl1StepGood_holds` (`Graph/BALvl1B2.lean`).
+5. `ba_fxyPow_integral_eq` (the value of the BA reading of the start graph is `|f_{xy}|^p`).
 
-Not here: (6) (merged), `BAShapePath` of `e2`, `macroA`, `macroB` (L3b2), the composed statement with `BALocRegConcl` (L3b2, or L3d2).
+Not here: (6) (in `Graph/BAStepS.lean`), `BAShapePath` of `e2`, `macroA`, `macroB`, and the
+composed statement with `BALocRegConcl` (`Graph/BAEngine.lean`).
 -/
 
 noncomputable section
 
 namespace RBM.Graph
 
-/-! ## 5. Target 5: the path invariant at the image of every start term -/
+/-! ## 5. The path invariant at the image of every start term -/
 
 section Init
 
-/-- **The path pin of the start** (T2397 probe 155): the invariant at the image of every term of the partition of the start graph. -/
+/-- **The path statement of the start**: the invariant at the image of every term of the partition of the start graph. -/
 def BAPathInit (p : ℕ) : Prop :=
   ∀ P ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition, P.img.PathInv2 p
 
-/-- **Target 5**: the band start graph has the family (`localReg2_fxyPowGraph_pathFam`), the BA reading has the same on its atomic image (`BAAtomic_pathFam_iff`, no `=`-dotted
+/-- **`baPathInit_holds`**: the band start graph has the family (`localReg2_fxyPowGraph_pathFam`), the BA reading has the same on its atomic image (`BAAtomic_pathFam_iff`, no `=`-dotted
 edge), and the partition (`M`-split, merge) keeps it (`BALocReg1_pathAt_partition`). -/
 theorem baPathInit_holds (p : ℕ) : BAPathInit p := by
   intro P hP
@@ -70,11 +73,11 @@ theorem baPathInit_holds (p : ℕ) : BAPathInit p := by
 
 end Init
 
-/-! ## 6. Target 6: the start bound `n_M ≤ p` -/
+/-! ## 6. The start bound `n_M ≤ p` -/
 
 section Start
 
-/-- **Target 6** (DECISIONS §260 (1)): every start term has `n_M ≤ p`.  The band start graph has `n_M = p` (`fxyPowGraph_nM`), the BA reading has its counters
+/-- **The start bound**: every start term has `n_M ≤ p`.  The band start graph has `n_M = p` (`fxyPowGraph_nM`), the BA reading has its counters
 (`BAGraph.counters_ofLGraph`), an `M`-split only joins molecules (`BALvl1B_adj_mono`, `BALvl1B_coarse`), and the merge of a normal term keeps `n_M`
 (`BASim_outOf_baInv`). -/
 theorem baStart_nM_le (p : ℕ) : ∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition, P0.g.nM ≤ p := by
@@ -96,7 +99,7 @@ theorem baStart_nM_le (p : ℕ) : ∀ P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).
 
 end Start
 
-/-! ## 8. Target 8: the shadow bridge -/
+/-! ## 7. The shadow bridge -/
 
 section Shadow
 
@@ -211,7 +214,7 @@ theorem BALocReg1_img_edge (Γ : BAGraph E I) :
 end ShadowMol
 
 open Classical in
-/-- **Target 8, the shadow bridge**: (3)-(5) on the atomic image give (3)-(5) on the shadow (`BAShadowPG`, the form the merged BA consumers read, `BAAtom:139`).  The molecules of the image
+/-- **The shadow bridge**: (3)-(5) on the atomic image give (3)-(5) on the shadow (`BAShadowPG`, the form the BA consumers read, `Graph/BAAtom.lean`).  The molecules of the image
 are those of the BA graph (`BAGraph.img_molOf_eq_iff`), as are those of the shadow (`BAGraph.shadow_mol`); the solid edges are the same, read between the molecules.  No normality is needed. -/
 theorem baShadow_locReg345 (Q : BAPGraph (Fin 2)) (p : ℕ) (h : PGraph.LocReg345 Q.img p) : (BAShadowPG Q).LocReg345 p := by
   have hbij := BALocReg1_molMap_bijective Q.g
@@ -244,23 +247,23 @@ theorem baShadow_locReg345 (Q : BAPGraph (Fin 2)) (p : ℕ) (h : PGraph.LocReg34
 
 end Shadow
 
-/-! ## 7. Target 7: the contract (1)-(5) along `BAReach` -/
+/-! ## 8. The contract (1)-(5) along `BAReach` -/
 
 section Contract
 
-/-- **The contract (1)-(5)** (supervisor 1152 O7; band `lw_localregular_upto5`, LR2:1857): for every start term `P0` and every `Q` reached from it, the coloured path invariant
-at the image; (2) `n_M ≤ p` and the band predicate `LocReg2` on the image (`n_V ≤ n_W + 1` counts atoms: delta candidate `T2397c`); at `LocStd`: (1) on the image, (3)-(5) on the image and on
-the shadow (the form read by `baAuxNested_holds`, `BAAnpAux`, `BAAnpAuxG`). -/
+/-- **The contract (1)-(5)** : for every start term `P0` and every `Q` reached from it, the coloured path invariant
+at the image; (2) `n_M ≤ p` and the band predicate `LocReg2` on the image (`n_V ≤ n_W + 1` counts atoms); at `LocStd`: (1) on the image, (3)-(5) on the image and on
+the shadow (the form read by `baAuxNested_holds` and `BAAnpAuxG`). -/
 def BALocReg15 : Prop :=
   ∀ (p : ℕ) (P0 : BAPGraph (Fin 2)), P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition →
     ∀ (K : ℤ) (Q : BAPGraph (Fin 2)), BAReach K P0 Q →
       Q.img.PathInv2 p ∧ Q.g.nM ≤ p ∧ PGraph.LocReg2 Q.img p ∧
         (Q.g.LocStd → PGraph.LocReg1 Q.img ∧ PGraph.LocReg345 Q.img p ∧ (BAShadowPG Q).LocReg345 p)
 
-/-- **Target 7**: (1)-(5) at every graph reached from a start term.  The invariant along `BReach` of the tagged step is `baPathStep_holds` (target 4) from `baPathInit_holds` (target 5);
-`n_M ≤ p` is `baLvl1StepGood_holds` from `baStart_nM_le` (target 6); `LocReg2` is `BAGraph.BAAtomic_nM_merge` and `LGraph.molNV_le_molNW_add_one`; at `LocStd` the image is locally standard
-(`BAGraph.img_locStd_iff`), `PGraph.PathInv2.locReg345` gives (3)-(5), and `baShadow_locReg345` (target 8) the shadow.  The hypothesis is the shape binder of split Σ (H250 (2)): the shapes
-`e2`, `macroA`, `macroB` are the targets of L3b2; the shapes `s1`, `e1` are proved in `BALocReg1.lean`. -/
+/-- **(1)-(5) at every graph reached from a start term.**  The invariant along `BReach` of the tagged step is `baPathStep_holds` from `baPathInit_holds`;
+`n_M ≤ p` is `baLvl1StepGood_holds` from `baStart_nM_le`; `LocReg2` is `BAGraph.BAAtomic_nM_merge` and `LGraph.molNV_le_molNW_add_one`; at `LocStd` the image is locally standard
+(`BAGraph.img_locStd_iff`), `PGraph.PathInv2.locReg345` gives (3)-(5), and `baShadow_locReg345` the shadow.  The hypothesis is the shape binder: the shapes
+`e2`, `macroA`, `macroB` are not proved here; the shapes `s1`, `e1` are proved in `BALocReg1.lean`. -/
 theorem baLocReg15_holds (hX : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapePath sh BAFrameStepTN) :
     BALocReg15 := by
   intro p P0 hP0 K Q hQ
@@ -283,13 +286,13 @@ theorem baLocReg15_holds (hX : ∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA �
 
 end Contract
 
-/-! ## 9. Target 9: the value of the start graph is `|f_{xy}|^p` -/
+/-! ## 9. The value of the start graph is `|f_{xy}|^p` -/
 
 section Value
 
 open MeasureTheory RBM.Gauss
 
-/-- **Target 9** (twin of `lw_fxyPow_integral_eq`, `LocalRegular:2036`; owed here by T2446): at the BA data `BAlwData` (`S = t · svarF` real) and `p` even, the value of the BA reading of the
+/-- **The value of the start graph**: at the BA data `BAlwData` (`S = t · svarF` real) and `p` even, the value of the BA reading of the
 start graph is `f_{xy}^{p/2} \overline{f_{xy}}^{p/2} = |f_{xy}|^p` pointwise (`BAGraph.val_ofLGraph`, `fxyPowGraph_val_eq`), so the expectations agree. -/
 theorem ba_fxyPow_integral_eq (d L W : ℕ) [NeZero L] [NeZero W] (g0 Em t : ℝ) (m : ℂ) (p : ℕ) (hp : Even p) (ℓe : Fin 2 → Idx d L W) :
     ∫ ω, (BAGraph.ofLGraph (fxyPowGraph p)).val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
@@ -308,11 +311,6 @@ theorem ba_fxyPow_integral_eq (d L W : ℕ) [NeZero L] [NeZero W] (g0 Em t : ℝ
   rwa [← hℓ] at this
 
 end Value
-
-/-! ## 10. Compiled instances (target 10)
-
-Targets 5, 6, 7 at `p = 2` from a start term (the shape binder of split Σ stays a hypothesis of the contract: the shapes `e2`, `macroA`, `macroB` are L3b2's targets); the `LocStd`
-branch of target 7 at a graph reached by two steps; target 8 also at a hand-built locally standard graph; target 9 at concrete data. -/
 
 end RBM.Graph
 

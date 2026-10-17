@@ -23,24 +23,32 @@ set_option linter.style.show false
 set_option linter.unusedSimpArgs false
 
 /-!
-# BA-L L3b4'' `BAShapeO2`, part 1: the stage-1 builder lemmas `BAScostLL Γ X` (T2447)
+# The stage-1 builder lemmas `BAScostLL Γ X` (part 1)
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`lanlw`, `lem_lweight`, `GGGamma`).  The builder terms of the tagged frame step that carry
-`e2` or `macroB` at stage 1 (T2443 `docs/reports/T2443-prove.md:38`) each satisfy the local lemma `BAScostLL Γ X` at a general normal BA graph,
-under the hypotheses of their constructor (`weight`, `within`, `edge`, `gg`, `ggSplit` of `BAFrameStepT`, `BASim:138-161`).  Every proof is the
-reduction `BAScostLL_of_band` (`BAScost:617`) to a band local lemma on the atomic image `(promoteC Γ).merge`, as `BAScostLL_S1`, `BAScostLL_lanlwT1`,
-`BAScostLL_macroA`, `BAScostLL_macroB` (`BAScost`).
+Paper: Lemma B.6 (`lanlw`), Lemma B.7 (`lem_lweight`), (B.20) `GGGamma`.  The builder terms of the
+tagged frame step that carry `e2` or `macroB` at stage 1 each satisfy the local lemma
+`BAScostLL Γ X` at a general normal BA graph, under the hypotheses of their constructor (`weight`,
+`within`, `edge`, `gg`, `ggSplit` of `BAFrameStepT`, `Graph/BASim.lean`).  Every proof is the
+reduction `BAScostLL_of_band` (`Graph/BAScost.lean`) to a band local lemma on the atomic image
+`(promoteC Γ).merge`, as `BAScostLL_S1`, `BAScostLL_lanlwT1`, `BAScostLL_macroA`,
+`BAScostLL_macroB` (`Graph/BAScost.lean`).
 
 ## Contents (namespace `RBM.Graph`; helpers carry the stem `BAShapeO2_`)
 
-1. Tools: the comparison of solid lists `BAShapeO2_Up_of_forall2`, the driver `BAShapeO2_driver` (the vertex map `ψ`, the band term `Λ` and the solid-list comparison) with its three
-   instances `BAShapeO2_driver1` (`ψ = BAScost_psi1`), `BAShapeO2_driver2` (the four-vertex map `BAShapeO2_psi2`, its kernel `BAShapeO2_ker_psi2`) and `BAShapeO2_driver0`
+1. Tools: the comparison of solid lists `BAShapeO2_Up_of_forall2`, the driver `BAShapeO2_driver`
+   (the vertex map `ψ`, the band term `Λ` and the solid-list comparison) with its three instances
+   `BAShapeO2_driver1` (`ψ = BAScost_psi1`), `BAShapeO2_driver2` (the four-vertex map
+   `BAShapeO2_psi2`, its kernel `BAShapeO2_ker_psi2`) and `BAShapeO2_driver0`
    (`ψ = vmap ∘ BAScost_rho2`, no fresh band vertex).
-2. The weight terms: `lanlwD` (`Dmove`), the `lw2` head and the `within` head (`Loop`), the `lw4` head (`T2`) and tail (`T4`).
-3. The `GGGamma` terms: `gg2` heads `A2`, `A3` (`Contract`), `A4` (`Loop`), `A5` (`R5`) and tail `AD` (`R7`), `gg4` heads `B1` (`R4`), `B2` (`R6`) and tail `BD` (`R8`).
-4. The `ggSplit` terms `d1` (`R5`), `d2`-`d4` (`Contract`).
+2. The weight terms: `lanlwD` (`Dmove`), the `lw2` head and the `within` head (`Loop`), the `lw4`
+   head (`T2`) and tail (`T4`).
+3. The `GGGamma` terms: `gg2` heads `A2`, `A3` (`Contract`), `A4` (`Loop`), `A5` (`R5`) and tail
+   `AD` (`R7`), `gg4` heads `B1` (`R4`), `B2` (`R6`) and tail `BD` (`R8`).
+4. The `ggSplit` terms `d₁` (`R5`), `d₂`-`d₄` (`Contract`).
 5. The term lists `BAShapeO2_lw2`, `_lw4`, `_within`, `_gg2`, `_gg4` (with `A1` = `BAScostLL_S1`).
-6. Compiled instances at the R1 witnesses `baPW`, `baPB`, `baPE`, `baPA`, `baPC` (`BASim3:1877-1905`).
+
+(`Dmove`, `Loop`, `MoveSC`, `T2`, `T4`, `R4`-`R8` name the band lemmas of
+`Graph/LocalRegular6c.lean`, `Graph/LocalRegular6d.lean` that the proofs apply.)
 -/
 
 noncomputable section
@@ -307,8 +315,8 @@ section Weight
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`lanlwD`** (the derivative term of `lanlw`, the tail of `lw2`, of the `within` stage 1, of `edge`, of `ggSplit`; `BAExpandW:133`): the band's `Dmove` (`scostLL_dmove`,
-`LocalRegular6c:1431`) at `z = [x]`, `v = [y]`, with `cp = ([x] = [y])`; the vertex map is `BAScost_psi1` at `x`. -/
+/-- **`lanlwD`** (the derivative term of `lanlw`, the tail of `lw2`, of the `within` stage 1, of `edge`, of `ggSplit`; `RBM3D/Graph/BAExpandW.lean`): the band's `Dmove` (`scostLL_dmove`,
+`RBM3D/Graph/LocalRegular6c.lean`) at `z = [x]`, `v = [y]`, with `cp = ([x] = [y])`; the vertex map is `BAScost_psi1` at `x`. -/
 theorem BAShapeO2_lanlwD (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hq : q ∈ lwSplit p.2) :
     BAScostLL Γ (BAGraph.lanlwD Γ p q) := by
@@ -348,7 +356,7 @@ theorem BAShapeO2_sameAtom_of_atomSetoid {E' I' : Type} [Fintype E'] [DecidableE
     (h : atomSetoid T u v) : T.sameAtom u v = true :=
   (T.BAAtomic_sameAtom_iff u v).2 ((BAAtomic_atomSetoid_iff T u v).1 h)
 
-/-- **The head loop** (`lw2` head with `p.1` a loop, `within` head with `[x] = [y]`; `BAWeightOp:69`, `BASim:122`): the image of `p.1` is the circled loop at `[x]`, the band's `Loop([x])`
+/-- **The head loop** (`lw2` head with `p.1` a loop, `within` head with `[x] = [y]`; `RBM3D/Graph/BAWeightOp.lean`, `RBM3D/Graph/BASim.lean`): the image of `p.1` is the circled loop at `[x]`, the band's `Loop([x])`
 (`scostLL_loop`, `localReg6d_ll_T1`); the extension has the loop `Ǧ_{αy}` at `[x]` (circled in the atomic image) and `Ǧ_{ββ}` at the fresh vertex.  `hsame` replaces `src = dst`. -/
 theorem BAShapeO2_withinHead (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hsame : Γ.sameAtom p.1.src p.1.dst = true) :
@@ -387,7 +395,7 @@ theorem BAShapeO2_withinHead (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SE
     · exact BAShapeO2_sameAtom_of_atomSetoid _ hxy
   · simp [lwPrimLoop, LGraph.owxExt, BAScost_img_waved_length]
 
-/-- **`lw2` head** (`BAWeightOp:69`; the solid edges of the `within` head in the other order): `p.1` a blue circled loop, so `[x] = [y]` and the term is the band's `Loop([x])` again. -/
+/-- **`lw2` head** (`RBM3D/Graph/BAWeightOp.lean`; the solid edges of the `within` head in the other order): `p.1` a blue circled loop, so `[x] = [y]` and the term is the band's `Loop([x])` again. -/
 theorem BAShapeO2_lw2Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) :
     BAScostLL Γ (BAGraph.ext 2 Γ p.2 [bpS true (bpv 0) (owxEmb 2 p.1.dst), bpS true (bpv 1) (bpv 1)] [bpW false (bpv 0) (bpv 1)]
@@ -425,8 +433,8 @@ theorem BAShapeO2_lw2Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge
     · simp [bpS, BAScost_sameAtom_self]
   · simp [lwPrimLoop, LGraph.owxExt, BAScost_img_waved_length]
 
-/-- **`lw4` head** (`BAWeightOp:74`): `p.1` a blue circled loop; the atoms of the term are `{x, u}`, `{w, α}`, `{β}`, and the image is the band's `T2` = `MoveLoop([x])` then `Loop(α)`
-(`localReg6d_ll_T2`, `LocalRegular6d:270`); the vertex map is `BAShapeO2_psi2` at `x`. -/
+/-- **`lw4` head** (`RBM3D/Graph/BAWeightOp.lean`): `p.1` a blue circled loop; the atoms of the term are `{x, u}`, `{w, α}`, `{β}`, and the image is the band's `T2` = `MoveLoop([x])` then `Loop(α)`
+(`localReg6d_ll_T2`, `RBM3D/Graph/LocalRegular6d.lean`); the vertex map is `BAShapeO2_psi2` at `x`. -/
 theorem BAShapeO2_lw4Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) :
     BAScostLL Γ (BAGraph.ext 4 Γ p.2 [bpS true (bpv 2) (bpv 1), bpS true (bpv 3) (bpv 3)]
@@ -465,7 +473,7 @@ theorem BAShapeO2_lw4Head (Γ : BAGraph E I) (p : SEdge (E ⊕ I) × List (SEdge
     · simp [bpS, BAScost_sameAtom_self]
   · simp [owxET2, LGraph.owxExt, BAScost_img_waved_length]
 
-/-- **`lw4` tail** (`BAWeightOp:75`, the derivative terms at the solid edges `q.1` of `f`): the band's `T4` = `MoveLoop([x])` then `Dmove(α; q)` (`localReg6d_ll_T4`, `:315`). -/
+/-- **`lw4` tail** (`RBM3D/Graph/BAWeightOp.lean`, the derivative terms at the solid edges `q.1` of `f`): the band's `T4` = `MoveLoop([x])` then `Dmove(α; q)` (`localReg6d_ll_T4`, `:315`). -/
 theorem BAShapeO2_lw4Tail (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) (q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hq : q ∈ lwSplit p.2) :
     BAScostLL Γ (BAGraph.ext 4 Γ q.2 [(owxDE (bpv 3) (bpv 2) (SEdge.map (owxEmb 4) q.1)).1, (owxDE (bpv 3) (bpv 2) (SEdge.map (owxEmb 4) q.1)).2,
@@ -514,7 +522,7 @@ variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 theorem BAShapeO2_perm_pq (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2) :
     Γ.solid.Perm (p.1 :: q.1 :: q.2) := (lwSplit_perm Γ.solid p hp).trans ((lwSplit_perm p.2 q hq).cons p.1)
 
-/-- the band side of the `Contract` terms (`A2`, `A3`, `d2`, `d3`, `d4`): the atomic image of the pair `p`, `q` with `[q.dst] = [p.src]` is `[x] → [y]`, `[y'] → [x]`, and `scostLL_contract` applies -/
+/-- the band side of the `Contract` terms (`A2`, `A3`, `d₂`, `d₃`, `d₄`): the atomic image of the pair `p`, `q` with `[q.dst] = [p.src]` is `[x] → [y]`, `[y'] → [x]`, and `scostLL_contract` applies -/
 theorem BAShapeO2_contractLL (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hvq : (promoteC Γ).vmap q.1.dst = (promoteC Γ).vmap p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -621,7 +629,7 @@ theorem BAShapeO2_ggA4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge 
   · simp [lwPrimLoop, LGraph.owxExt, BAScost_img_waved_length]
 
 /-- **`gg2` head `A5`** (`BAGGOp_A5`, `Σ M_{xα} S_{αβ} Ǧ_{αx} G_{βy} G_{y'β} f`): `[x]` is an internal vertex of the atomic image (`hint`), and the term is the band's `R5` = `MoveSC([x]; [y'], [y])`
-then `AddLoop([x])` (`localReg6d_ll_R5`, `LocalRegular6d:361`). -/
+then `AddLoop([x])` (`localReg6d_ll_R5`, `RBM3D/Graph/LocalRegular6d.lean`). -/
 theorem BAShapeO2_ggA5 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -668,7 +676,7 @@ theorem BAShapeO2_perm_pqr (Γ : BAGraph E I) (p q r : SEdge (E ⊕ I) × List (
     (hr : r ∈ lwSplit q.2) : Γ.solid.Perm (p.1 :: q.1 :: r.1 :: r.2) :=
   (BAShapeO2_perm_pq Γ p q hp hq).trans (((lwSplit_perm q.2 r hr).cons q.1).cons p.1)
 
-/-- **`gg2` tail `AD`** (`BAGGOp_AD`, the derivative terms at the solid edges `r.1` of `f`): the band's `R7` = `Dmove([x]; [x] → [y], r)` (`localReg6d_ll_R7`, `LocalRegular6d:374`). -/
+/-- **`gg2` tail `AD`** (`BAGGOp_AD`, the derivative terms at the solid edges `r.1` of `f`): the band's `R7` = `Dmove([x]; [x] → [y], r)` (`localReg6d_ll_R7`, `RBM3D/Graph/LocalRegular6d.lean`). -/
 theorem BAShapeO2_ggAD (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true)
@@ -712,7 +720,7 @@ theorem BAShapeO2_ggAD (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I
       simp [owxDE, SEdge.map, BAScost_imgE, hσ, BAScost_psi1_emb, hα, hx2, BAScost_psi1_beta, bpS, bpv]
   · simp [oe2xR7, LGraph.owxExt, BAScost_img_waved_length]
 
-/-- **`gg4` head `B1`** (`BAGGOp_B1`): the atoms are `{x, u}`, `{w, α}`, `{β}`; the band's `R4` = `MoveSC([x]; [y'], [y])` then `Loop(β)` (`localReg6d_ll_R4`, `LocalRegular6d:388`). -/
+/-- **`gg4` head `B1`** (`BAGGOp_B1`): the atoms are `{x, u}`, `{w, α}`, `{β}`; the band's `R4` = `MoveSC([x]; [y'], [y])` then `Loop(β)` (`localReg6d_ll_R4`, `RBM3D/Graph/LocalRegular6d.lean`). -/
 theorem BAShapeO2_ggB1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -858,7 +866,7 @@ section GGSplit
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **`ggSplit` term `d1`** (`BASim:132`, `dq [G_{y'β}, Ǧ_{αa'}, G_{βy}] []`): `[a] = [a']` is internal (`hint`), and the term is the band's `R5` at `x := [a]` (`localReg6d_ll_R5`). -/
+/-- **`ggSplit` term `d₁`** (`RBM3D/Graph/BASim.lean`, `dq [G_{y'β}, Ǧ_{αa'}, G_{βy}] []`): `[a] = [a']` is internal (`hint`), and the term is the band's `R5` at `x := [a]` (`localReg6d_ll_R5`). -/
 theorem BAShapeO2_ggSplitD1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -905,11 +913,11 @@ theorem BAShapeO2_ggSplitD1 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (S
     · simp at h
   · simp [oe2xR5, LGraph.owxExt, BAScost_img_waved_length]
 
-/-- the data of the `Contract` terms `d2`, `d3`, `d4` -/
+/-- the data of the `Contract` terms `d₂`, `d₃`, `d₄` -/
 private theorem BAShapeO2_ggSplit_vq (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hsame : Γ.sameAtom p.1.src q.1.dst = true) :
     (promoteC Γ).vmap q.1.dst = (promoteC Γ).vmap p.1.src := ((BAAtomic_promoteC_vmap_eq_sameAtom Γ _ _).2 hsame).symm
 
-/-- **`ggSplit` term `d2`** (`dq [Ǧ_{y'β}] [M_{αa'}, M_{βy}]`): `Contract([a]; [y'], [y])` (`scostLL_contract`), `α ↦ [a]`, `β ↦ [y]`. -/
+/-- **`ggSplit` term `d₂`** (`dq [Ǧ_{y'β}] [M_{αa'}, M_{βy}]`): `Contract([a]; [y'], [y])` (`scostLL_contract`), `α ↦ [a]`, `β ↦ [y]`. -/
 theorem BAShapeO2_ggSplitD2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -931,7 +939,7 @@ theorem BAShapeO2_ggSplitD2 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (S
     simp [BAShapeO2_rho2_zero, BAShapeO2_rho2_one, BAScost_rho2_emb, bpS]
   · simp [lwPrimContract, BAScost_img_waved_length]
 
-/-- **`ggSplit` term `d3`** (`dq [Ǧ_{βy}] [M_{αa'}, M_{y'β}]`): the same `Contract`, `α ↦ [a]`, `β ↦ [y']`. -/
+/-- **`ggSplit` term `d₃`** (`dq [Ǧ_{βy}] [M_{αa'}, M_{y'β}]`): the same `Contract`, `α ↦ [a]`, `β ↦ [y']`. -/
 theorem BAShapeO2_ggSplitD3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -953,7 +961,7 @@ theorem BAShapeO2_ggSplitD3 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (S
     simp [BAShapeO2_rho2_zero, BAShapeO2_rho2_one, BAScost_rho2_emb, bpS]
   · simp [lwPrimContract, BAScost_img_waved_length]
 
-/-- **`ggSplit` term `d4`** (`dq [] [M_{αa'}, M_{y'β}, M_{βy}]`): the same `Contract` with the contracted edge `[y'] → [y]` dropped (`[y'] = [y]` at every merge of the term), as `BAScostLL_S1`. -/
+/-- **`ggSplit` term `d₄`** (`dq [] [M_{αa'}, M_{y'β}, M_{βy}]`): the same `Contract` with the contracted edge `[y'] → [y]` dropped (`[y'] = [y]` at every merge of the term), as `BAScostLL_S1`. -/
 theorem BAShapeO2_ggSplitD4 (Γ : BAGraph E I) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hsame : Γ.sameAtom p.1.src q.1.dst = true)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) :
@@ -986,7 +994,7 @@ section Lists
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- **The `weight` step, `lw2`** (`BASim:139`): every term of `lw2` at a blue circled loop `p.1` has the local lemma -/
+/-- **The `weight` step, `lw2`** (`RBM3D/Graph/BASim.lean`): every term of `lw2` at a blue circled loop `p.1` has the local lemma -/
 theorem BAShapeO2_lw2 (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true ∧ p.1.src = p.1.dst) : ∀ X ∈ Γ.lw2 p, BAScostLL Γ X := by
   intro X hX
@@ -1004,7 +1012,7 @@ theorem BAShapeO2_lw4 (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) �
   · obtain ⟨q, hq, rfl⟩ := List.mem_map.1 hX
     exact BAShapeO2_lw4Tail Γ hN p hp hp1 q hq
 
-/-- **The `within` step, stage 1** (`BASim:122`): the head and the terms `lanlwD` -/
+/-- **The `within` step, stage 1** (`RBM3D/Graph/BASim.lean`): the head and the terms `lanlwD` -/
 theorem BAShapeO2_within (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hsame : Γ.sameAtom p.1.src p.1.dst = true) :
     ∀ X ∈ BAGraph.ext 2 Γ p.2 [bpS true (bpv 1) (bpv 1), bpS true (bpv 0) (owxEmb 2 p.1.dst)] [bpW false (bpv 0) (bpv 1)]
@@ -1015,7 +1023,7 @@ theorem BAShapeO2_within (Γ : BAGraph E I) (hN : Γ.Normal) (p : SEdge (E ⊕ I
   · obtain ⟨q, hq, rfl⟩ := List.mem_map.1 hX
     exact BAShapeO2_lanlwD Γ hN p hp hp1 q hq
 
-/-- **The `gg` step, `gg2`** (`BASim:149`): `A1` is `BAScostLL_S1` -/
+/-- **The `gg` step, `gg2`** (`RBM3D/Graph/BASim.lean`): `A1` is `BAScostLL_S1` -/
 theorem BAShapeO2_gg2 (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I) × List (SEdge (E ⊕ I))) (hp : p ∈ lwSplit Γ.solid) (hq : q ∈ lwSplit p.2)
     (hp1 : p.1.σ = true ∧ p.1.circ = true) (hq1 : q.1.σ = true ∧ q.1.circ = true) (hxy : q.1.dst = p.1.src)
     (hwf1 : Γ.sameAtom p.1.src p.1.dst = false) (hwf2 : Γ.sameAtom q.1.src q.1.dst = false) (hint : Γ.intAtom p.1.src = true) :
@@ -1049,8 +1057,6 @@ theorem BAShapeO2_gg4 (Γ : BAGraph E I) (hN : Γ.Normal) (p q : SEdge (E ⊕ I)
     exact BAShapeO2_ggBD Γ hN p q hp hq hp1 hq1 hxy hwf1 hwf2 hint r hr
 
 end Lists
-
-/-! ## 6. Nonempty instances: the term lemmas at the R1 witnesses (`BASim3:1877-1905`), every hypothesis discharged -/
 
 end RBM.Graph
 

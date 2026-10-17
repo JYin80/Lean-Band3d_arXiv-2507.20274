@@ -22,36 +22,37 @@ set_option linter.unusedDecidableInType false
 set_option linter.unusedSimpArgs false
 
 /-!
-# BA-L L3d1 (T2488): G4 on the BA carrier, `lem:Anp` at the block Anderson law
+# `lem:Anp` at the block Anderson law: the auxiliary graph bound
 
-Paper: arXiv:2507.20274 (`B:line` is `paper/tex/B_graphical_lemmas.tex:line`, `7_8:line` is `paper/tex/7_8_light_weight.tex:line`):
-G4 `B:491-497` (`:494` "summation over non-centre vertices", `:496` Cauchy-Schwarz with `(eq:Gbyxi2_BA)` `:428-429`), the aux graph
-`B:420-465`, `(G_by_auxG_BA)` `B:486-490`; `lem:Anp` `7_8:933-939` (proof `:953-1077`), `lem:Anp_key` `7_8:960-985`, its corollary
-`7_8:1025`, `lem:Anp_key_gh` `7_8:1041-1077` ("`≺` throughout").  Twin of `Graph/AnpKey.lean` §5-§6 (`:658-836`) and of
-`baAnpAux_holds` (`Graph/BAAtom2.lean:694-708`) in a new file (namespaces `RBM.Graph` and `RBM.BA`, private stem `BAAnpLift_`);
-additive, no merged file is edited.
+Paper: Lemma B.7 (`lem_lweight`), the end of its proof: the auxiliary graph (B.24)
+`eq:ordGaux_BAM`, (B.25) `G_by_auxG_BA`, "summation over non-centre vertices", and the
+Cauchy-Schwarz step with (B.22) `eq:Gbyxi2_BA`; Lemma 7.22 (`lem:Anp`), Lemma 7.23
+(`lem:Anp_key`) with its corollary from Lemma 7.24 (`lem:Anp_key_gh`, "`≺` throughout").  The
+statements and proofs run parallel to `Graph/AnpKey.lean` (Sections 4 and 5), in namespaces
+`RBM.Graph` and `RBM.BA` (private stem `BAAnpLift_`).
 
 ## Contents
 
-1. Target 1: `BAAnpKeyGhG` (the statement of `LWAnpKeyGh`, `Graph/LWPins.lean:389`, at the BA law `seqP (sz.withLam 0)`, carrier `baFMz`,
-   horizon `BAflowT0`) and `baAnpKeyGhG_holds`: the `≺`-lift of the deterministic `anpDetGh_holds` (`AnpKey6.lean:862`, model-free).
-   The lift reads the data only through `η > 0` (`BAExp14a_eta_pos`) and `size → ∞` (`BAFlow`).
-2. Target 2: `BAAnpG` (the statement of `LWAnp`, `LWPins.lean:409`) and `baAnpG_holds` (`lwAnpKey_of_gh`, `lwAnp_of_key` in one step).
-3. Target 3: `baAnpAuxG_holds : ∀ d, BAAnpAuxG d` (the merged pin, `Graph/BAAuxGraph2B.lean:865`), by the nested form `baAuxNested_holds`
-   (`BAAtom2.lean:647`) and target 2, as `baAnpAux_holds` (`BAAtom2.lean:694`).
-4. Target 4: the closures `baLWMoment_closed`, `baLWMomentExp_closed` (namespace `RBM.BA`).
-5. Target 5: compiled nonempty instances at the `d = 3` data of `BA/LWPinsBA.lean` §3.
+1. `BAAnpKeyGhG` (the statement of `LWAnpKeyGh`, `Graph/LWPins.lean`, at the BA law
+   `seqP (sz.withLam 0)`, carrier `baFMz`, horizon `BAflowT0`) and `baAnpKeyGhG_holds`: the `≺`-lift
+   of the deterministic `anpDetGh_holds` (`Graph/AnpKey6.lean`, model-free).  The lift reads the data
+   only through `η > 0` (`BAExp14a_eta_pos`) and `size → ∞` (`BAFlow`).
+2. `BAAnpG` (the statement of `LWAnp`) and `baAnpG_holds` (`lwAnpKey_of_gh`, `lwAnp_of_key` in one
+   step).
+3. `baAnpAuxG_holds : ∀ d, BAAnpAuxG d` (`BAAnpAuxG` is stated in `Graph/BAAuxGraph2B.lean`), by the
+   nested form `baAuxNested_holds` (`Graph/BAAtom2.lean`) and `baAnpG_holds`.
+4. The closures `baLWMoment_closed`, `baLWMomentExp_closed` (namespace `RBM.BA`).
 
-**G4 (the argument).**  At the molecule centres the BA aux graph is the band aux graph of `Γ.shadow` (`BAGraph.auxVal`, `auxOrd`,
-`BAAtom.lean:71, 75`), so its nested form is the band's (`baAuxNested_holds`).  The "summation over non-centre vertices" of `B:494` is not a G4
-step: the atoms of `𝓜_i` lie in the `R`-ball of the root, every solid edge at an atom is `≤ ξ([α_i], ·)` there (G3's premise `hξ`,
-`BAAtom2.lean:403-406`), and `baGbyZeta_hxi` supplies `ξ = c · baZetaVar`.  The Cauchy-Schwarz of `B:496` is the Ward sum
-`Σ_β ξ² ≺ (W^d η_t)⁻¹` of `LWXigL` (`BAZetaClaim`), which is the hypothesis `Σ_β ξ² ≤ θ` of the model-free `anpDetGh_holds`;
-`(W^d)^{n_M} (W^d η_t)^{-n_M} = η_t^{-n_M}` is the paper's `η_t⁻¹` per molecule.  `lem:Anp_key_gh` then holds at the BA law, carrier and horizon
-with `η_t = (1 - t) Im m₀ > 0` (`BAExp14a_eta_pos`); only the law, `η` and the flow predicate differ from the band.
-
-**Premise scan** (`Test/Axioms.lean`): `LWXigL`, `LWPsiAll`, `BAAnpAuxG` occur only inside statement defs, as the conclusion of a theorem or in
-`private` helpers; every public theorem here is `∀ d : ℕ, P d`.
+**The argument.**  At the molecule centres the BA auxiliary graph is the band auxiliary graph of
+`Γ.shadow` (`BAGraph.auxVal`, `auxOrd`, `Graph/BAAtom.lean`), so its nested form is the band's
+(`baAuxNested_holds`).  The "summation over non-centre vertices" of the paper is not a separate step:
+the atoms of `𝓜_i` lie in the `R`-ball of the root, every solid edge at an atom is `≤ ξ([α_i], ·)`
+there (the premise `hξ` of `baAtom_sedge_xi` in `Graph/BAAtom.lean`), and `baGbyZeta_holds`
+(`Graph/BAAuxGraph2B.lean`) supplies `ξ = c · baZetaVar`.  The Cauchy-Schwarz step is the Ward sum `Σ_β ξ² ≺ (W^d η_t)⁻¹` of
+`LWXigL` (`BAZetaClaim`), which is the hypothesis `Σ_β ξ² ≤ θ` of the model-free `anpDetGh_holds`;
+`(W^d)^{n_M} (W^d η_t)^{-n_M} = η_t^{-n_M}` is the factor `η_t⁻¹` per molecule of the paper.
+`lem:Anp_key_gh` then holds at the BA law, carrier and horizon with `η_t = (1 - t) Im m₀ > 0`
+(`BAExp14a_eta_pos`); only the law, `η` and the flow predicate differ from the band.
 -/
 
 open MeasureTheory Filter
@@ -64,11 +65,11 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.BA
 
 open private anpKey_rescale anpKey_stochDomAt_congr from RBM3D.Graph.AnpKey
 
-/-! ## 1. Target 1: the carrier lift of `lem:Anp_key_gh` -/
+/-! ## 1. The carrier lift of `lem:Anp_key_gh` -/
 
-/-- **`lem:Anp_key_gh` at the BA carrier** (`7_8:1041-1077`; `LWAnpKeyGh`, `Graph/LWPins.lean:389`, with `STFlow → BAFlow`, `lemT → BAflowT0`,
+/-- **`lem:Anp_key_gh` at the BA carrier** (Lemma 7.24; `LWAnpKeyGh`, `Graph/LWPins.lean`, with `STFlow → BAFlow`, `lemT → BAflowT0`,
 `Prec sz → PrecL sz (seqP (sz.withLam 0))`, `LWXi sz (STflowE z) → LWXigL (baFMz sz z) (seqP (sz.withLam 0))`, `etaT (STflowE z n) → (baFMz sz z).eta n`):
-a nested graph with the ghost condition and edge variables `ξ` satisfying `(eq:Gbyxi3)` has
+a nested graph with the ghost condition and edge variables `ξ` satisfying (7.38) `eq:Gbyxi3` has
 `𝒢_{ab} ≺ (W^d η_t)^{-q} Ψ_t^{ord(𝒢) - n_ngh} Π_i [Ψ_t(c|a_i - b_i|)]^{1(𝔓_i has no ghost edge)}`. -/
 def BAAnpKeyGhG (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -86,7 +87,7 @@ def BAAnpKeyGhG (d : ℕ) : Prop :=
                     ∏ i, (if Γ.noGhostPath i = true then
                       Φ n (c * ((zdistInf d (sz.L n) (ab.1 i - ab.2 i) : ℕ) : ℝ)) else 1))
 
-/-- **The `≺`-lift over any law and carrier** (`7_8:1041-1077` read with `≺`; the twin of `lwAnpKeyGh_of_det`, `AnpKey.lean:689-770`): from the
+/-- **The `≺`-lift over any law and carrier** (Lemma 7.24 read with `≺`; parallel to `lwAnpKeyGh_of_det` in `Graph/AnpKey.lean`): from the
 deterministic bound `AnpDetGhAt d Γ` and `η > 0` at every `n`, `size → ∞`.  The good event is
 `Ξ_n = {ξ ≤ N^{τ'} Φ_n(|α-β|) ∀ α β} ∩ {Σ_β ξ² ≤ N^{τ'} θ_n ∀ α}` (the two `≺` premises of `LWXigL`, `BAMomentGen_whp_of_prec`,
 `HighProbAt.inter`), `ψ = N^{τ'} Φ_n`, `θ = N^{τ'} θ_n`, `θ_n = (W^d η_t)⁻¹`, `τ' = τ / (2 (q + |ord - n_ngh| + p + 1))`; the factor
@@ -177,7 +178,7 @@ private theorem BAAnpLift_core {d p q : ℕ} {Γ : NGraph p q} (hdet : AnpDetGhA
       _ = N ^ τ := by rw [← Real.rpow_add (lt_of_lt_of_le one_pos (hN1 n))]; congr 1; ring
   exact absurd hu (not_lt.2 hfin)
 
-/-- **Target 1** (`lem:Anp_key_gh` at the BA carrier, every `d`; twin of `lwAnpKeyGh_of_det`, `AnpKey.lean:689`, at `anpDetGh_holds`): `η > 0` from
+/-- **`lem:Anp_key_gh` at the BA carrier, every `d`** (parallel to `lwAnpKeyGh_of_det` at `anpDetGh_holds`): `η > 0` from
 `BAExp14a_eta_pos` in place of `etaT_pos`, `size → ∞` from `BAFlow`, the good event from `BAMomentGen_whp_of_prec` and `HighProbAt.inter`. -/
 theorem baAnpKeyGhG_holds : ∀ d : ℕ, BAAnpKeyGhG d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 p q hqp Γ hG hN ε₀ C₁ C₂ C₃ Cc
@@ -186,9 +187,9 @@ theorem baAnpKeyGhG_holds : ∀ d : ℕ, BAAnpKeyGhG d := by
   exact H sz _ (baFMz sz z) hflow.1.2.2.1 t (fun n => BAExp14a_eta_pos hκ hflow n (ht0 n) (htT n))
     ε₀ C₁ C₂ C₃ Cc Φ hΦ ξ hξ
 
-/-! ## 2. Target 2: `lem:Anp` at the BA carrier -/
+/-! ## 2. `lem:Anp` at the BA carrier -/
 
-/-- **`lem:Anp` at the BA carrier** (`7_8:933-939`, `(eq:bddGamma_aux)`; `LWAnp`, `Graph/LWPins.lean:409`, under the substitution of `BAAnpKeyGhG`): a nested
+/-- **`lem:Anp` at the BA carrier** (Lemma 7.22, (7.37) `eq:bddGamma_aux`; `LWAnp`, `Graph/LWPins.lean`, under the substitution of `BAAnpKeyGhG`): a nested
 graph without ghost edge, all `a_i = [a]`, `b_i = [b]`: `Γ_{[a][b]} ≺ (W^d η_t)^{-q} [Ψ_t(c|[a]-[b]|)]^p Ψ_t^{ord(Γ) - p}`. -/
 def BAAnpG (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -205,8 +206,8 @@ def BAAnpG (d : ℕ) : Prop :=
                     Φ n (c * ((zdistInf d (sz.L n) (ab.1 - ab.2) : ℕ) : ℝ)) ^ p *
                     Φ n 0 ^ (Γ.ordN - p))
 
-/-- **Target 2** (twins of `lwAnpKey_of_gh`, `lwAnp_of_key`, `AnpKey.lean:814, 825`, in one step): no ghost edge gives `GhostOK`, `noGhostPath i = true` for every `i`,
-`n_ngh = p` (`anpKey_ghostOK_of_noGhost`, `anpKey_noGhostPath_of_noGhost`, `anpKey_nngh_of_noGhost`, `AnpKey.lean:782-799`), and the special case
+/-- **`lem:Anp` at the BA carrier from `BAAnpKeyGhG`** (parallel to `lwAnpKey_of_gh`, `lwAnp_of_key` in `Graph/AnpKey.lean`, in one step): no ghost edge gives `GhostOK`, `noGhostPath i = true` for every `i`,
+`n_ngh = p` (`anpKey_ghostOK_of_noGhost`, `anpKey_noGhostPath_of_noGhost`, `anpKey_nngh_of_noGhost`), and the special case
 `a_i ≡ [a]`, `b_i ≡ [b]` is a restriction of the parameter family (`StochDomAt.precomp_param`). -/
 theorem baAnpG_holds : ∀ d : ℕ, BAAnpG d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 p q hqp Γ hng hnest ε₀ C₁ C₂ C₃ Cc
@@ -221,10 +222,10 @@ theorem baAnpG_holds : ∀ d : ℕ, BAAnpG d := by
     Finset.card_univ, Fintype.card_fin]
   exact mul_right_comm _ _ _
 
-/-! ## 3. Target 3: G4, the binding conclusion -/
+/-! ## 3. The auxiliary graph bound at the BA carrier -/
 
-/-- **Target 3, G4 on the BA carrier** (`B:491-497`; the merged pin `BAAnpAuxG`, `Graph/BAAuxGraph2B.lean:865`, unchanged; twin of `baAnpAux_holds`, `BAAtom2.lean:694-708`):
-`baAuxNested_holds` gives the nested graph `Γa` of the aux graph (no ghost edge, `ordN = auxOrd`, value `auxVal` for symmetric `ξ`, `q = n_M ≤ p`), target 2 is
+/-- **The auxiliary graph bound at the BA carrier** (end of the proof of Lemma B.7; `BAAnpAuxG` is stated in `Graph/BAAuxGraph2B.lean`):
+`baAuxNested_holds` gives the nested graph `Γa` of the aux graph (no ghost edge, `ordN = auxOrd`, value `auxVal` for symmetric `ξ`, `q = n_M ≤ p`), `baAnpG_holds` is
 applied at `Γa`, and the value and the order are transported (symmetry from the first conjunct of `LWXigL`). -/
 theorem baAnpAuxG_holds : ∀ d : ℕ, BAAnpAuxG d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 p P hp hq hLR hxy ε₀ C₁ C₂ C₃ Cc
@@ -244,26 +245,19 @@ theorem baAnpAuxG_holds : ∀ d : ℕ, BAAnpAuxG d := by
 
 end RBM.Graph
 
-/-! ## 4. Target 4: the closures -/
+/-! ## 4. The closures -/
 
 namespace RBM.BA
 
 open RBM.Graph
 
-/-- **Target 4 (a), `lem:LW_moment` at BA with no antecedent left** (supervisor 2246 L40-F2): `baLWMomentOfAnp_closed` (`Graph/BAMomentExpGen.lean:189`, the path binder
-concluded by T2469) applied to G4 (`baAnpAuxG_holds`).  After it, no public statement of stage L carries `BAAnpAuxG`. -/
+/-- **`lem:LW_moment` at BA with no antecedent**: `baLWMomentOfAnp_closed` (`Graph/BAMomentExpGen.lean`, the path binder
+concluded here) applied to the auxiliary graph bound `baAnpAuxG_holds`. -/
 theorem baLWMoment_closed : ∀ d : ℕ, BALWMoment d := fun d => baLWMomentOfAnp_closed d (baAnpAuxG_holds d)
 
-/-- **Target 4 (b), `lem:LW_moment_exp` at BA with no antecedent** (`7_8:78-83`): `baLWMomentExp_of_anp` (`Graph/BAMomentExpGenB.lean:1207`) applied to G4. -/
+/-- **`lem:LW_moment_exp` at BA with no antecedent** (Lemma 7.2): `baLWMomentExp_of_anp` (`Graph/BAMomentExpGenB.lean`) applied to the auxiliary graph bound `baAnpAuxG_holds`. -/
 theorem baLWMomentExp_closed : ∀ d : ℕ, BALWMomentExp d := fun d => baLWMomentExp_of_anp d (baAnpAuxG_holds d)
 
 end RBM.BA
-
-/-! ## 5. Compiled nonempty instances of targets 1-4
-
-Data (`BA/LWPinsBA.lean` §3, `Graph/BAAuxGraph2B.lean` §7): `d = 3`, `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2097152`), the flow `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`,
-`𝔠 = 1/6`), `z = zSeq`, `t ≡ 1/2 ≤ BAflowT0` (`half_lt_t0`), the class `Φ0 ≡ W^{-1/2}` (`LWPsiAll` with `ε₀ = 1/10`, `C₁ = C₂ = 2`, `C₃ = 1`, `Cc ≡ 1`),
-`ε₁ = 1/20`, `D₁ = 12`, `ρ = 2R + (log W)^{3/2}` (the private data of `BAAuxGraph2B` §7, by `open private`).  What stays a hypothesis is another gate's input:
-`LWLoop2gL`, the entry law `‖G_t - M‖_max ≺ W^{-1/20}`, `STInitialGT2gL`, `LWLoopExpgL`; no hypothesis for targets 1-4. -/
 
 end

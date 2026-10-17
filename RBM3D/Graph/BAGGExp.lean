@@ -6,27 +6,23 @@ Authors: Jun Yin
 import RBM3D.Graph.BAExpandW
 
 /-!
-# BA-L2c2a: the GG expansion `(B.20)` with the D402 coefficient (T2409)
+# The GG expansion (B.20) with the coefficient `W - 1 = M⁺S⁺`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:393-405` (cited `B:line`;
-`GGGamma`, [yang2024Del, Lemma B.11]), with the corrected coefficient
-`(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the first two sums (paper delta D402; the printed `(B.20)`
-has `S⁺_{xβ}` there and fails numerically).  The law is the block Anderson flow
-`H_t = g₀ Ψ + √t V` with `S^{(B)}(0) = I`, i.e. `PF d L W 0` (DECISIONS §57 (3)).
+Paper: (B.20) `GGGamma` (Lemma B.11 of [yang2024Del]), with the coefficient
+`(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the first two sums.  The law is the block Anderson flow
+`H_t = g₀ Ψ + √t V` with `S^{(B)}(0) = I`, i.e. `PF d L W 0`.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BAGGExp_`)
 
-1. **The pin**, copied verbatim from the T2387 probe
-   (`t/T2387:RBM3D/Probe/T2387Pins.lean:287-349`, at fe433f2): `ba_W_sub_one` (D402:
-   `W - 1 = M⁺ S⁺` with `S⁺ = S W`), `BAGGGammaL`, `BAGGGammaR`, `BAGGGamma`.
-2. **`baGGGamma_holds : ∀ d, BAGGGamma d`**, unconditionally (`gaussIBP` discharged).  Route
-   of [yang2024Del, Lemma B.11]: the basic expansion `baLanlw_holds` at `x` applied to
+1. **The statement**: `BAGGGammaL`, `BAGGGammaR`, `BAGGGamma` (with `W - 1 = M⁺ S⁺`,
+   `S⁺ = S W`).
+2. **`baGGGamma_holds : ∀ d, BAGGGamma d`**, unconditionally (`gaussIBP` discharged).  The proof of
+   [yang2024Del, Lemma B.11]: the basic expansion `baLanlw_holds` at `x` applied to
    `Ǧ_{y'x} f` (`BAGGExp_df_mul`: the product rule for the two `HasDerivAt`'s), the pathwise
    split `G = Ǧ + M`, the linear system `v_x = Σ_β (M⁺S)_{xβ} v_β + r_x` for
    `v_x = 𝔼[Ǧ_{y'x} Ǧ_{xy} f]`, solved by `W = (1 - M⁺S)⁻¹` (`baW_mul`): `v = W r`, and
-   `W (M⁺S) = W - 1` is where D402 enters.  Only `BASelf`, `baM_row_sq`, `baM_symm` and the
-   Gershgorin bound `baW_isUnit` are used (C1, L5): no smallness of `g` or of `‖M - m₀ I‖`.
-3. Compiled instances (`RBM.Graph.BAGGExpInst`).
+   `W (M⁺S) = W - 1` gives the coefficient.  Only `BASelf`, `baM_row_sq`, `baM_symm` and the
+   Gershgorin bound `baW_isUnit` are used: no smallness of `g` or of `‖M - m₀ I‖`.
 -/
 
 set_option linter.style.setOption false
@@ -45,16 +41,16 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Green RBM.BA
 
-/-! ## 1. The pin (copied verbatim from the T2387 probe) -/
+/-! ## 1. The statement -/
 
 section GGGammaPin
 variable (d L W : ℕ) [NeZero L] [NeZero W] (g0 E t : ℝ) (m : ℂ) (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ)
 
-/-- Left side of `GGGamma` (`B:393-405`): `Ǧ_{y'x} Ǧ_{xy} f` (the stage-L2c pin of `t/T2161:RBM3D/Probe/T2161Pins.lean:1408-1450`). -/
+/-- Left side of `GGGamma` ((B.20)): `Ǧ_{y'x} Ǧ_{xy} f`. -/
 def BAGGGammaL (x y y' : Idx d L W) (ω : Ω d L W) : ℂ :=
   BAlwGc d L W g0 E t m ω y' x * BAlwGc d L W g0 E t m ω x y * BAlwf d L W g0 E t m P ω
 
-/-- Right side with the corrected coefficient `(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` (D402, `ba_W_sub_one`) in the first two sums. -/
+/-- Right side with the coefficient `(W - 1)_{xβ} = (M⁺S⁺)_{xβ}` in the first two sums. -/
 def BAGGGammaR (x y y' : Idx d L W) (ω : Ω d L W) : ℂ :=
   (∑ β, (BAlwW d L W g0 E t m - 1) x β * BAlwM d L W g0 E m β y * BAlwM d L W g0 E m y' β * BAlwf d L W g0 E t m P ω +
     ∑ β, (BAlwW d L W g0 E t m - 1) x β * (BAlwGc d L W g0 E t m ω β y * BAlwM d L W g0 E m y' β +
@@ -66,7 +62,7 @@ def BAGGGammaR (x y y' : Idx d L W) (ω : Ω d L W) : ℂ :=
 
 end GGGammaPin
 
-/-- **`GGGamma`** (corrected, D402): `𝔼[BAGGGammaL] = 𝔼[BAGGGammaR]` over `PF d L W 0` (proved: `baGGGamma_holds`, `Graph/BAGGExp.lean:358`). -/
+/-- **`GGGamma`** (with the coefficient `W - 1 = M⁺S⁺`): `𝔼[BAGGGammaL] = 𝔼[BAGGGammaR]` over `PF d L W 0` (proved: `baGGGamma_holds`). -/
 def BAGGGamma (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 E t : ℝ) (m : ℂ), BASelf d L g0 (E : ℂ) m → 0 ≤ t → t < 1 →
     ∀ (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ) (x y y' : Idx d L W),
@@ -82,7 +78,7 @@ section BAGGExpTL
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- A tame function of the sequence space, read through the slice at size `0`, is integrable for `PF d L W 0`
-(copy of the private `BAExpandW_integrable_PF`). -/
+(as the private `BAExpandW_integrable_PF`). -/
 private theorem BAGGExp_integrable_PF (hL : 3 ≤ L) {F : Sizes.SeqΩ (lwWxSizes d L W 0 hL) → ℂ}
     {G : Ω d L W → ℂ} (hF : Tame (lwWxSizes d L W 0 hL) F)
     (h : ∀ ω', G (Sizes.slice (lwWxSizes d L W 0 hL) 0 ω') = F ω') : Integrable G (PF d L W 0) := by
@@ -287,7 +283,7 @@ private theorem BAGGExp_R_eq (g0 E t : ℝ) (m : ℂ) (P : MvPolynomial (Bool ×
   rw [h12]
   exact congrArg _ (Finset.sum_congr rfl fun w _ => h3 w)
 
-/-- **The pathwise identity of the basic expansion at `Ǧ_{y'x} f`** (`B:359-372`, then `G = Ǧ + M`):
+/-- **The pathwise identity of the basic expansion at `Ǧ_{y'x} f`** (Lemma B.6 `lanlw`, then `G = Ǧ + M`):
 `BAlanlwR (Ǧ_{y'x} f) = Σ_β (M⁺S)_{xβ} Ǧ_{y'β} Ǧ_{βy} f + Σ_β (M⁺S)_{xβ} ζ_β + B_x`. -/
 private theorem BAGGExp_pathwise (hL : 3 ≤ L) {t : ℝ} (ht : 0 < t) (g0 E : ℝ) (m : ℂ)
     (hz : (ztOf m E t).im ≠ 0) (P : MvPolynomial (Bool × Idx d L W × Idx d L W) ℂ)
@@ -323,7 +319,7 @@ private theorem BAGGExp_pathwise (hL : 3 ≤ L) {t : ℝ} (ht : 0 < t) (g0 E : �
 
 end BAGGExpAlg
 
-/-! ## 5. Target 2: `(B.20)` with the D402 coefficient -/
+/-! ## 5. (B.20) with the coefficient `W - 1 = M⁺S⁺` -/
 
 section BAGGExpHolds
 
@@ -342,10 +338,10 @@ local macro "bagg_tl" : tactic =>
     | apply BAGGExp_TL.sub
     | (apply BAGGExp_TL.sum; intros; skip))
 
-/-- **`GGGamma`** (`B:393-405`, [yang2024Del, Lemma B.11], corrected: D402) on the block Anderson law `PF d L W 0`, for
-every `d`: the pin `BAGGGamma`.  For `0 < t < 1`: `lanlw` at `x` applied to `Ǧ_{y'x} f` (`baLanlw_holds`,
+/-- **`GGGamma`** ((B.20), [yang2024Del, Lemma B.11], with the coefficient `W - 1 = M⁺S⁺`) on the block Anderson law `PF d L W 0`, for
+every `d`: `BAGGGamma`.  For `0 < t < 1`: `lanlw` at `x` applied to `Ǧ_{y'x} f` (`baLanlw_holds`,
 `BAGGExp_pathwise`) gives `v = (M⁺S) v + r` for `v_x = 𝔼[Ǧ_{y'x} Ǧ_{xy} f]`, so `v = W r` by `W (1 - M⁺S) = 1`
-(`baW_mul`), and `W (M⁺S) = W - 1` is the D402 coefficient; for `t = 0` both sides vanish. -/
+(`baW_mul`), and `W (M⁺S) = W - 1` is the coefficient `W - 1 = M⁺S⁺`; for `t = 0` both sides vanish. -/
 theorem baGGGamma_holds (d : ℕ) : BAGGGamma d := by
   intro L W _ _ hL g0 E t m hSelf ht0 ht1 P x y y'
   have hm : 0 < m.im := hSelf.1
@@ -455,13 +451,6 @@ theorem baGGGamma_holds (d : ℕ) : BAGGGamma d := by
     simp only [hr, mul_add, Finset.sum_add_distrib, h4]
 
 end BAGGExpHolds
-
-/-! ## 6. Compiled instances (namespace `RBM.Graph.BAGGExpInst`)
-
-`d = 3`, `L = 3`, `g₀ = 0`, `E = 0`, `m = i` (`BAExpandInst.baSelf_zero`: `M^{(B)} = i I`, `m = L^{-d} tr M^{(B)}`),
-`t = 1/2`; three distinct sites `x = 0`, `y = e₀`, `y' = e₁`.  Every hypothesis of `baGGGamma_holds` is discharged
-(`gaussIBP` is proved inside it).  The check that the printed `(B.20)` fails and the corrected one holds numerically
-is a script, not Lean (the prove report). -/
 
 end RBM.Graph
 

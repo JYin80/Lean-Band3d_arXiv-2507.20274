@@ -6,41 +6,25 @@ Authors: Jun Yin
 import RBM3D.Graph.BASizeClaim
 
 /-!
-# BA-L3c2 (T2412), part 2: `claim:size` at BA, the model forms and the confinement tails
+# `claim:size` at BA, the model forms and the confinement tails (part 2)
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (`7_8:line`),
-`paper/tex/B_graphical_lemmas.tex` (`B:line`): `claim:size` (`7_8:264-266`: `Γ ≺ size(Γ)` for
-normal
-graphs), `scalemole` (`7_8:255-258`), the BA size `(eq_defsize_BA)` (`B:349-350`), (B.15)
-(`B:302-304`).  Part 1 is `Graph/BASizeClaim` (the kernel edges and the atomic forest); this file
-imports it.  The paper gives no proof of `claim:size` (delta T2040m).
+Paper: the claim `Γ ≺ size(Γ)` for normal graphs (Subsection 7.1, after (7.18)
+`eq:estSpm-W`); (7.14) `scalemole`; the BA size (B.16) `eq_defsize_BA`; (B.15) `scaleatom`.
+Part 1 is `Graph/BASizeClaim` (the kernel edges and the atomic forest); this file imports it.
 
 ## Contents (namespace `RBM.Graph`, private prefix `BASizeClaim_`)
 
 1. `BAGraph.sizeConst` (`C_Γ = ‖coeff‖ K₁^{n_A - n_M} K₀^{n_W - (n_A - n_M)} Kd^{#M + #Ψ}`), the
-   term
-   bound (`BASizeClaim_term_le`: every solid edge of a normal BA graph is circled, so it is `≤ Ψ`
-   by
-   `‖G - M‖ ≤ Ψ`; the `×`-dotted factors are `≤ 1`), the sum over the internal labels
+   term bound (`BASizeClaim_term_le`: every solid edge of a normal BA graph is circled, so it is
+   `≤ Ψ` by `‖G - M‖ ≤ Ψ`; the `×`-dotted factors are `≤ 1`), the sum over the internal labels
    (`BASizeClaim_sum_le`: the peeling bound with the atomic forest and per-edge constants: a tree
-   `M`- or
-   `Ψ`-dotted edge costs `Kd` through its row or column sum, a non-tree one costs `Kd` through
-   its entry,
-   a tree waved edge `K₁`, a non-tree waved edge `K₀ W^{-d}`, a root `N`).
-2. **`baClaimSize`**: the BA `claim:size`, deterministic form, with the hypotheses BA has (no
-   `hM : M = m I`, which is false at BA for every `g₀ ≠ 0`); **`baClaimSizeG`**: the general
-   graph,
-   through `BAGraph.val_eq_partition`.
-3. **`baClaimSize_E`**, **`baClaimSizeG_E`**: the model forms with `(K₀, K₁, Kd)` depending on
-   `(d, Λ, κ)` only; **`baSpTail_E`**, **`baMTail_E`**, **`baTail_log`**: the confinement tails
-   (the
-   radius `(log W)^p`, `p > 1`).
-4. Compiled instances at `d = 3`, `L = 4`, `W = 2`, the flow point `P : FlowPt 4 10`, `baLWT1`,
-   `baGGT1`.
+   `M`- or `Ψ`-dotted edge costs `Kd` through its row or column sum, a non-tree one costs `Kd`
+   through its entry, a tree waved edge `K₁`, a non-tree waved edge `K₀ W^{-d}`, a root `N`).
+2. **`baClaimSize`**: the BA claim `Γ ≺ size(Γ)`, deterministic form, with the hypotheses BA has
+   (no `hM : M = m I`, which is false at BA for every `g₀ ≠ 0`).
 
 No smallness of `g₀` and no `(Cλ)^{|a-b|}` decay is used: the uniform decay rate enters only
-through
-the constants `K₀`, `K₁`, `Kd` (`BAct_rate`, `BAp5s_rate`).
+through the constants `K₀`, `K₁`, `Kd` (`BAct_rate`, `BAp5s_rate`).
 -/
 
 set_option linter.style.setOption false
@@ -253,8 +237,8 @@ private theorem BASizeClaim_alg_prod {I : Type} [Fintype I] [DecidableEq I] {p q
 variable {ι : Type} {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype ι]
   [DecidableEq ι]
 
-/-- The three bounds on `S`, `S⁺` give the three bounds on every waved-edge weight (a copy of the private
-`lwWVal_bound`, `LWSizeClaim.lean:837`). -/
+/-- The three bounds on `S`, `S⁺` give the three bounds on every waved-edge weight (as the private
+`lwWVal_bound` in `Graph/LWSizeClaim.lean`). -/
 private theorem BASizeClaim_wval_bound {D : LData ι} {a K₁ : ℝ} (hS : LWKBound D.S a K₁)
     (hSp : LWKBound D.Sp a K₁) (e : WEdge (E ⊕ I)) :
     (∀ x y, ‖lwWVal D e x y‖ ≤ a) ∧ (∀ x, ∑ y, ‖lwWVal D e x y‖ ≤ K₁) ∧
@@ -414,7 +398,7 @@ section Val
 variable {ι : Type} {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] [Fintype ι]
   [DecidableEq ι]
 
-/-- **The `L¹`-form of the BA `claim:size`**: `|Γ.val| ≤ |coeff| Ψ^{n_S} N^{n_M} K₁^{n_A - n_M}
+/-- **The `L¹`-form of the BA claim `Γ ≺ size(Γ)`**: `|Γ.val| ≤ |coeff| Ψ^{n_S} N^{n_M} K₁^{n_A - n_M}
 a^{n_W - (n_A - n_M)} Kd^{#M + #Ψ}` for a normal BA graph, `‖G - M‖ ≤ Ψ` entrywise, and weights `S`, `S⁺`
 (entries `≤ a`, row and column sums `≤ K₁`), `M`, `g₀ Ψ` (entries, row and column sums `≤ Kd`).  No `hM : M = m I`. -/
 private theorem BASizeClaim_val_le (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData ι) {Ψ a K₁ Kd : ℝ}
@@ -442,7 +426,7 @@ private theorem BASizeClaim_val_le (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALD
           (mul_nonneg (norm_nonneg _) (pow_nonneg hΨ _))
 
 /-- The size identity `N^{n_M} (K₀ W^{-d})^{n_W-(n_A-n_M)} = K₀^{n_W-(n_A-n_M)} (L^d)^{n_M} W^{-d(n_W-n_A)}`
-(`N = (W L)^d`; a copy of the private `lwSize_alg`, `LWSizeClaim.lean:1082`, with `n_A` in place of `n_V`). -/
+(`N = (W L)^d`; as the private `lwSize_alg` in `Graph/LWSizeClaim.lean`, with `n_A` in place of `n_V`). -/
 private theorem BASizeClaim_size_alg (W d L nM nV nW : ℕ) (hW : (W : ℝ) ≠ 0) (h1 : nM ≤ nV)
     (h2 : nV - nM ≤ nW) (K₀ : ℝ) :
     ((((W * L) ^ d : ℕ) : ℝ)) ^ nM * (K₀ * ((W : ℝ) ^ d)⁻¹) ^ (nW - (nV - nM)) =
@@ -465,7 +449,7 @@ section ClaimIdx
 variable {d L W : ℕ} [NeZero L] [NeZero W] {E I : Type} [Fintype E] [DecidableEq E] [Fintype I]
   [DecidableEq I]
 
-/-- **`claim:size` at BA** (`7_8:264-266`, `B:345-350`), deterministic form.  For a normal BA graph `Γ`, data `D` on
+/-- **The claim `Γ ≺ size(Γ)` at BA** (Definition B.5 `def scalingBA`), deterministic form.  For a normal BA graph `Γ`, data `D` on
 the fine lattice `Z_{WL}^d` with the entry bound `‖G - M‖ ≤ Ψ` (the hypothesis BA has in place of `M = m I`), and
 weights `S`, `S⁺` with entries `≤ K₀ W^{-d}` and row and column sums `≤ K₁`, `M` and `g₀ Ψ` with entries, row and column
 sums `≤ Kd`: `|Γ.val| ≤ C_Γ · size(Γ)`, `C_Γ = Γ.sizeConst K₀ K₁ Kd`, for every `Ψ` and every external labelling.
@@ -494,14 +478,5 @@ theorem baClaimSize (Γ : BAGraph E I) (hN : Γ.Normal) (D : BALData (Idx d L W)
     _ = _ := by rw [hal]; simp only [BAGraph.counters]; ring
 
 end ClaimIdx
-
-/-! ## `claim:size` for the matrices of the BA model, and the confinement tails -/
-
-/-! ## Compiled nonempty instances (`d = 3`, `L = 4`, `W = 2`, `t = 1/2`, the flow point `P : FlowPt 4 10`)
-
-`P.g0 ∈ (0, 10]`, a real energy `P.E` and `P.m0` with `BAReal 3 4 P.g0 (Im P.m0) P.E P.m0` (`Λ = 10`, `κ = Im P.m0 > 0`);
-`G = M + (1/100) J`, so `|Ǧ_{xy}| = 1/100` for all `x, y`, the diagonal included.  The graphs of `BAVocabInst`: `baLWT1`
-(normal, `(n_S, n_W, n_A, n_M) = (2, 1, 2, 1)`, no external vertex) and `baGGT1` (normal, `(0, 1, 1, 0)`, two external
-vertices with the same offset in different blocks).  Every deterministic hypothesis of every theorem is discharged. -/
 
 end RBM.Graph

@@ -7,40 +7,37 @@ import RBM3D.Graph.BAExp14aB
 import RBM3D.BA.TwistPins
 
 /-!
-# BA-L L4b1 (T2434), part A: the pins S2, S3 of `lem:LWterm_EXP`, the block algebra
+# The twisted and graph families of `lem:LWterm_EXP` at BA (part A): statements, block algebra
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:7-121` (`(eq:ELW_term)`), `GGGamma`
-`:393-405` (D402: the first two sums carry `W - 1 = M⁺S⁺`), `lanlw` `:359-372`; design
-`docs/reports/T2398-design.md` §1, §2; family table and statements `docs/reports/T2434-prove.md`
-(i), (iv); consumer `BALWCutExpTw` (`t/T2398:RBM3D/Probe/T2398Pins.lean:434-440`); S1 is
-`BAExp14aS1` (`Graph/BAExp14aB.lean:124`, merged). Section 1 is the probe
-`RBM3D/Probe/T2434Pins.lean` of this ticket (never merged), copied verbatim.  Part B is
+Paper: Subappendix B.1, proof of Lemma 6.2 (`lem:LWterm_EXP`): (B.1) `eq:ELW_term`, (B.20)
+`GGGamma` (the first two sums carry `W - 1 = M⁺S⁺`), Lemma B.6 (`lanlw`).  The consumer is
+`BALWCutExpTw`; the crude families `BAExp14aS1` are in `Graph/BAExp14aB.lean`.  Part B is
 `Graph/BAExp14bB.lean`.
 
 The sum behind the cut at the carrier `baFMz` (`C.S = 1`) is, for `σc = true`,
 `LWcutg = W^{-2d} Σ_{x ∈ [ao], y ∈ [ac], α} X_{[α]} G_{xα} G_{αy} G(σo)_{yx}` (`BAExp14a_L1_eq`).
 Write `f = X_{[α]} G(σo)_{yx}`, `G = Ǧ + M`: `ǦǦ` is `BAGGGammaR` at `(x, y, y') := (α, y, x)`:
 `T1`, `T2a`, `T2b`, `T3A_k`, `T3B_k`, `T3C_k`, `k ∈ {0, 1}`, `W^{(0)} = 1`, `W^{(1)} = W - 1`; `MǦ`
-is `BAlanlwR` at `(α, y)`, `ǦM` is `BAlanlwR` at `(x, α)`: `C1`, `C2` (children `Ǧ_{ββ}`) and `D1`,
-`D2` (children `∂f`); `MM` has no expansion. `∂f = (∂X) G(σo)_{yx} + X ∂G(σo)_{yx}` splits `D1`,
-`D2`, `T3C` into a `∂X` part (S3) and a `∂tail` part (S2). `S1 = {MM, T1, T3A_0, T3A_1, C1, C2}`
-(merged).  `S2 = {D1t, D2t, T2a, T2b, T3B_0, T3B_1, T3C-Ḡ_0, T3C-Ḡ_1}`,
-`S3 = {D1X, D2X, T3C-tr_0, T3C-tr_1}`.
+is `BAlanlwR` at `(α, y)`, `ǦM` is `BAlanlwR` at `(x, α)`: `C1`, `C2` (children `Ǧ_{ββ}`) and `D₁`,
+`D₂` (children `∂f`); `MM` has no expansion. `∂f = (∂X) G(σo)_{yx} + X ∂G(σo)_{yx}` splits `D₁`,
+`D₂`, `T3C` into a `∂X` part (`BAExp14bS3`) and a `∂tail` part (`BAExp14bS2`).  The three groups of
+families are `BAExp14aS1 = {MM, T1, T3A_0, T3A_1, C1, C2}`,
+`BAExp14bS2 = {D1t, D2t, T2a, T2b, T3B_0, T3B_1, T3C-Ḡ_0, T3C-Ḡ_1}`,
+`BAExp14bS3 = {D1X, D2X, T3C-tr_0, T3C-tr_1}`.
 
-S2 is proved by row L4b2, S3 by the rows L4g/L4c1/L4d2 (Amend 1 item 3: the roots of the S3 families
-have `M`-dotted edges); this row proves neither.
+This file states `BAExp14bS2` and `BAExp14bS3` (they are proved in `baExp14bS2_holds` and
+`baExp14bS3_holds`) and does not prove either.
 
-Contents.  §1 the pins `BAExp14bS2`, `BAExp14bS3`, `BAExp14bExpand`, `BAExp14bCutConj` and the
-fine-sum families; §2 the loops `𝓛^{(1,2,3)}` of the carrier as fine sums; §3 the coordinates
-`(block, offset)` of a fine vertex and the entries `M`, `S`, `W^{(k)}` in them; §4 the loops and the
-twisted loops `twTrP`, `twLoopX` as sums over offsets; §5 the tie sums (`BAExp14b_twTie`,
-`_twTie_ba`, probe `T2398Pins.lean:226`) and the block sums of `W^{(k)}` (`BAExp14b_Wk_blk`,
-`W - 1 = lift(ω - 1)`); §6 permutations of nested sums; §7 the **block forms of the eight S2
-families** (`BAExp14b_FD1t_block`, `_FD2t_`, `_FT2a_`, `_FT2b_`, `_FT3B_`, `_FT3CG_block`,
-dispatched by `BAExp14b_FS2_block` and `BAExp14bS2Fam_block`): pathwise identities between the fine
-sums of the families and block sums of `M^{(B)}`, `κ_k`, `X_{a₁}` and the loops `𝓛^{(2)}`,
-`𝓛^{(3)}`, `twTrP`, `twLoopX = twL2'`, which L4b2 reads; §8 compiled checks and nonempty instances
-of the block forms and of the pins.  Part B (`Graph/BAExp14bB.lean`) proves the identity.
+Contents.  Section 1: the statements `BAExp14bS2`, `BAExp14bS3`, `BAExp14bExpand`,
+`BAExp14bCutConj` and the fine-sum families; Section 2: the loops `𝓛^{(1,2,3)}` of the carrier as
+fine sums; Section 3: the coordinates `(block, offset)` of a fine vertex and the entries `M`, `S`,
+`W^{(k)}` in them; Section 4: the loops and the twisted loops `twTrP`, `twLoopX` as sums over
+offsets; Section 5: permutations of nested sums; Section 6: the **block forms of
+the eight `BAExp14bS2` families** (`BAExp14b_FD1t_block`, `_FD2t_`, `_FT2a_`, `_FT2b_`, `_FT3B_`,
+`_FT3CG_block`, dispatched by `BAExp14b_FS2_block`): pathwise
+identities between the fine sums of the families and block sums of `M^{(B)}`, `κ_k`, `X_{a₁}` and
+the loops `𝓛^{(2)}`, `𝓛^{(3)}`, `twTrP`, `twLoopX = twL2'`.  Part B (`Graph/BAExp14bB.lean`)
+proves the identity.
 -/
 
 set_option linter.style.longLine false
@@ -60,7 +57,7 @@ section S2S3Fam
 variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ)
 
 /-- `∂_{h_{δγ}}` of the closing edge `G(σ)_{yx}`: `-G_{yδ} G_{γx}` for `σ = true`, `-\overline{G_{xγ} G_{δy}}` for `σ = false`
-(`BAExpand_dh_of_partial`, `BAExpand_dh_star_of_partial`, `Graph/BAExpand.lean:193, 217`). -/
+(`BAExpand_dh_of_partial`, `BAExpand_dh_star_of_partial` in `Graph/BAExpand.lean`). -/
 def BAExp14b_dtail (σ : Bool) (x y δ γ : Idx d (sz.L n) (sz.W n)) : ℂ :=
   if σ then -((baFMz sz z).G n t ω y δ * (baFMz sz z).G n t ω γ x)
   else -star ((baFMz sz z).G n t ω x γ * (baFMz sz z).G n t ω δ y)
@@ -84,7 +81,7 @@ def BAExp14b_outerDX (σ : Bool) (a b : Zd d (sz.L n))
   ((((sz.W n : ℕ) : ℂ) ^ d)⁻¹) ^ 2 * ∑ x ∈ Iblk d (sz.L n) (sz.W n) a, ∑ y ∈ Iblk d (sz.L n) (sz.W n) b,
     BAExp14a_tail sz z n t ω σ x y * ∑ α, T x y α
 
-/-! ### S2: the eight twisted families (`x ∈ [a]`, `y ∈ [b]`, closing edge `G(σ)_{yx}`, loop charge `+`) -/
+/-! ### The eight twisted families of `BAExp14bS2` (`x ∈ [a]`, `y ∈ [b]`, closing edge `G(σ)_{yx}`, loop charge `+`) -/
 
 /-- `D1t`: `-Σ_{α', β} M_{xα} M_{αα'} S_{α'β} G_{βy} X_{[α]} ∂_{h_{βα'}} G(σ)_{yx}` (`lanlw` on `M_{xα} Ǧ_{αy}`, the `∂tail` child). -/
 def BAExp14b_FD1t (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
@@ -98,7 +95,7 @@ def BAExp14b_FD2t (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
     -((baFMz sz z).M n x α' * BAlwS d (sz.L n) (sz.W n) t α' β * (baFMz sz z).G n t ω β α * (baFMz sz z).M n α y *
       BAExp14b_dtail sz z n t ω σ x y β α')
 
-/-- `T2a`: `Σ_β (W - 1)_{αβ} Ǧ_{βy} M_{xβ}` (second sum of `GGGamma`, D402). -/
+/-- `T2a`: `Σ_β (W - 1)_{αβ} Ǧ_{βy} M_{xβ}` (second sum of (B.20) `GGGamma`). -/
 def BAExp14b_FT2a (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14a_outer sz z n t ω σ a b fun x y α =>
     ∑ β, BAExp14a_Wk sz z n t true α β * (baFMz sz z).GM n t ω β y * (baFMz sz z).M n x β
@@ -108,25 +105,25 @@ def BAExp14b_FT2b (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14a_outer sz z n t ω σ a b fun x y α =>
     ∑ β, BAExp14a_Wk sz z n t true α β * (baFMz sz z).M n β y * (baFMz sz z).GM n t ω x β
 
-/-- `T3B^{(k)}`: `Σ_{w, γ, δ} W^{(k)}_{αw} M_{wγ} S_{γδ} Ǧ_{γw} G_{δy} G_{xδ}` (the `Ǧ_{γw} G_{δy} G_{xδ}` term of `GGGamma`). -/
+/-- `T3B^{(k)}`: `Σ_{w, γ, δ} W^{(k)}_{αw} M_{wγ} S_{γδ} Ǧ_{γw} G_{δy} G_{xδ}` (the `Ǧ_{γw} G_{δy} G_{xδ}` term of (B.20) `GGGamma`). -/
 def BAExp14b_FT3B (k : Bool) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14a_outer sz z n t ω σ a b fun x y α => ∑ w, ∑ γ, ∑ δ,
     BAExp14a_Wk sz z n t k α w * (baFMz sz z).M n w γ * BAlwS d (sz.L n) (sz.W n) t γ δ * (baFMz sz z).GM n t ω γ w *
       (baFMz sz z).G n t ω δ y * (baFMz sz z).G n t ω x δ
 
-/-- `T3C-Ḡ^{(k)}`: `-Σ_{w, γ, δ} W^{(k)}_{αw} M_{wγ} S_{γδ} G_{δy} Ǧ_{xw} X_{[α]} ∂_{h_{δγ}} G(σ)_{yx}` (the `∂f` term of `GGGamma`, tail part). -/
+/-- `T3C-Ḡ^{(k)}`: `-Σ_{w, γ, δ} W^{(k)}_{αw} M_{wγ} S_{γδ} G_{δy} Ǧ_{xw} X_{[α]} ∂_{h_{δγ}} G(σ)_{yx}` (the `∂f` term of (B.20) `GGGamma`, tail part). -/
 def BAExp14b_FT3CG (k : Bool) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14b_outerDt sz z n t ω a b fun x y α => ∑ w, ∑ γ, ∑ δ,
     -(BAExp14a_Wk sz z n t k α w * (baFMz sz z).M n w γ * BAlwS d (sz.L n) (sz.W n) t γ δ * (baFMz sz z).G n t ω δ y *
       (baFMz sz z).GM n t ω x w * BAExp14b_dtail sz z n t ω σ x y δ γ)
 
-/-- The eight families of S2 at the loop charge `+`, in the order `D1t, D2t, T2a, T2b, T3B^{(0)}, T3B^{(1)}, T3C-Ḡ^{(0)}, T3C-Ḡ^{(1)}`. -/
+/-- The eight families of `BAExp14bS2` at the loop charge `+`, in the order `D1t, D2t, T2a, T2b, T3B^{(0)}, T3B^{(1)}, T3C-Ḡ^{(0)}, T3C-Ḡ^{(1)}`. -/
 def BAExp14b_FS2 (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   ![BAExp14b_FD1t sz z n t ω σ a b, BAExp14b_FD2t sz z n t ω σ a b, BAExp14b_FT2a sz z n t ω σ a b, BAExp14b_FT2b sz z n t ω σ a b,
     BAExp14b_FT3B sz z n t ω false σ a b, BAExp14b_FT3B sz z n t ω true σ a b, BAExp14b_FT3CG sz z n t ω false σ a b,
     BAExp14b_FT3CG sz z n t ω true σ a b] j
 
-/-! ### S3: the four graph families (the `∂X_{[α]}` parts) -/
+/-! ### The four graph families of `BAExp14bS3` (the `∂X_{[α]}` parts) -/
 
 /-- `D1X`: `-Σ_{α', β} M_{xα} M_{αα'} S_{α'β} G_{βy} (∂_{h_{βα'}} X_{[α]}) G(σ)_{yx}` (`lanlw` on `M_{xα} Ǧ_{αy}`, the `∂X` child). -/
 def BAExp14b_FD1X (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
@@ -140,32 +137,32 @@ def BAExp14b_FD2X (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
     -((baFMz sz z).M n x α' * BAlwS d (sz.L n) (sz.W n) t α' β * (baFMz sz z).G n t ω β α * (baFMz sz z).M n α y *
       BAExp14b_dX sz z n t ω α β α')
 
-/-- `T3C-tr^{(k)}`: `-Σ_{w, γ, δ} W^{(k)}_{αw} M_{wγ} S_{γδ} G_{δy} Ǧ_{xw} (∂_{h_{δγ}} X_{[α]}) G(σ)_{yx}` (the `∂f` term of `GGGamma`, loop part). -/
+/-- `T3C-tr^{(k)}`: `-Σ_{w, γ, δ} W^{(k)}_{αw} M_{wγ} S_{γδ} G_{δy} Ǧ_{xw} (∂_{h_{δγ}} X_{[α]}) G(σ)_{yx}` (the `∂f` term of (B.20) `GGGamma`, loop part). -/
 def BAExp14b_FT3CX (k : Bool) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   BAExp14b_outerDX sz z n t ω σ a b fun x y α => ∑ w, ∑ γ, ∑ δ,
     -(BAExp14a_Wk sz z n t k α w * (baFMz sz z).M n w γ * BAlwS d (sz.L n) (sz.W n) t γ δ * (baFMz sz z).G n t ω δ y *
       (baFMz sz z).GM n t ω x w * BAExp14b_dX sz z n t ω α δ γ)
 
-/-- The four families of S3 at the loop charge `+`, in the order `D1X, D2X, T3C-tr^{(0)}, T3C-tr^{(1)}`. -/
+/-- The four families of `BAExp14bS3` at the loop charge `+`, in the order `D1X, D2X, T3C-tr^{(0)}, T3C-tr^{(1)}`. -/
 def BAExp14b_FS3 (j : Fin 4) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   ![BAExp14b_FD1X sz z n t ω σ a b, BAExp14b_FD2X sz z n t ω σ a b, BAExp14b_FT3CX sz z n t ω false σ a b,
     BAExp14b_FT3CX sz z n t ω true σ a b] j
 
-/-- **The integrand of S2** at the labelling of `LWcutg`, the `σc` convention of `BAExp14aS1Fam`: for `σc = true` the family `j` over
+/-- **The integrand of `BAExp14bS2`** at the labelling of `LWcutg`, the `σc` convention of `BAExp14aS1Fam`: for `σc = true` the family `j` over
 `x ∈ [ao]`, `y ∈ [ac]`, closing edge `G(σo)_{yx}`; for `σc = false` the complex conjugate of the blue family at the swapped blocks and the
 flipped tail charge (the conjugation `BAExp14bCutConj`). -/
 def BAExp14bS2Fam (j : Fin 8) (σc σo : Bool) (ac ao : Zd d (sz.L n)) : ℂ :=
   if σc then BAExp14b_FS2 sz z n t ω j σo ao ac else star (BAExp14b_FS2 sz z n t ω j (!σo) ac ao)
 
-/-- **The integrand of S3** (as `BAExp14bS2Fam`). -/
+/-- **The integrand of `BAExp14bS3`** (as `BAExp14bS2Fam`). -/
 def BAExp14bS3Fam (j : Fin 4) (σc σo : Bool) (ac ao : Zd d (sz.L n)) : ℂ :=
   if σc then BAExp14b_FS3 sz z n t ω j σo ao ac else star (BAExp14b_FS3 sz z n t ω j (!σo) ac ao)
 
 end S2S3Fam
 
-/-- **S2** (the twisted families of `lem:LWterm_EXP` at BA; owner row L4b2): for the eight families `D1t, D2t, T2a, T2b, T3B^{(k)}, T3C-Ḡ^{(k)}`
+/-- **`BAExp14bS2`** (the twisted families of `lem:LWterm_EXP` at BA): for the eight families `D1t, D2t, T2a, T2b, T3B^{(k)}, T3C-Ḡ^{(k)}`
 (`BAExp14bS2Fam`), every charge pair and every block pair, `‖𝔼 F‖ ≺ (1 - t)⁻¹ (W^{-d} B_{t,0})^{5/2}` on `U_n = {λ²/L^d ≤ 1 - t}`, over the carrier
-`baFMz sz z` and the law `seqP (sz.withLam 0)`, from the seven premises of `BALWCutExpTw` (the five Step 1/2 pins, `BATwistAvgLaw` (TL1),
+`baFMz sz z` and the law `seqP (sz.withLam 0)`, from the seven premises of `BALWCutExpTw` (the five Step 1/2 inputs, `BATwistAvgLaw` (TL1),
 `BATwistLoopLaw` (TL2)).  Binders, range of `t`, `U` and bound as `BAExp14aS1`. -/
 def BAExp14bS2 (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -175,9 +172,8 @@ def BAExp14bS2 (d : ℕ) : Prop :=
       PrecL sz μ (U := fun n => {_p : Fin 8 × (Bool × Bool) × (Zd d (sz.L n) × Zd d (sz.L n)) // sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ 1 - t n})
         (fun n p _ => ‖∫ ω, BAExp14bS2Fam sz z n (t n) ω p.1.1 p.1.2.1.1 p.1.2.1.2 p.1.2.2.1 p.1.2.2.2 ∂μ‖) (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ))
 
-/-- **S3** (the graph families, the `∂X` parts; owner rows L4g, L4c1): for the four families `D1X, D2X, T3C-tr^{(k)}` (`BAExp14bS3Fam`), the same
-bound, from the five premises of `LWCutExpG` (the Step 1/2 pins; no `BATwist*`).  The roots of these families are not `baG5Graph` (`mdot ≠ []`,
-`docs/reports/T2434-prove.md` (iii)): their identity, closure and leaf bound are owed to a successor row (Amend 1 item 3). -/
+/-- **`BAExp14bS3`** (the graph families, the `∂X` parts): for the four families `D1X, D2X, T3C-tr^{(k)}` (`BAExp14bS3Fam`), the same
+bound, from the five premises of `LWCutExpG` (the Step 1/2 inputs; no `BATwist*`).  The roots of these families have `M`-dotted edges (`mdot ≠ []`). -/
 def BAExp14bS3 (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → let μ := Sizes.seqP (sz.withLam 0)
@@ -186,8 +182,8 @@ def BAExp14bS3 (d : ℕ) : Prop :=
       PrecL sz μ (U := fun n => {_p : Fin 4 × (Bool × Bool) × (Zd d (sz.L n) × Zd d (sz.L n)) // sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ 1 - t n})
         (fun n p _ => ‖∫ ω, BAExp14bS3Fam sz z n (t n) ω p.1.1 p.1.2.1.1 p.1.2.1.2 p.1.2.2.1 p.1.2.2.2 ∂μ‖) (fun n _ _ => (1 - t n)⁻¹ * (sz.Bctl n (t n)) ^ (5 / 2 : ℝ))
 
-/-- **The expansion identity** (target 2 of the row; no premise on the law beyond `BAFlow`): the cut in expectation is the sum of the six S1
-families (`BAExp14aS1Fam`), the eight S2 families and the four S3 families, at every size `n`, time `t ∈ [0, BAflowT0]` and labelling
+/-- **The expansion identity** (no premise on the law beyond `BAFlow`): the cut in expectation is the sum of the six `BAExp14aS1`
+families (`BAExp14aS1Fam`), the eight `BAExp14bS2` families and the four `BAExp14bS3` families, at every size `n`, time `t ∈ [0, BAflowT0]` and labelling
 `(σc, σo, ac, ao)`, both charges (the red charge through `BAExp14bCutConj`).  Quantified as `baExp14a_S1_holds`. -/
 def BAExp14bExpand (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -198,7 +194,7 @@ def BAExp14bExpand (d : ℕ) : Prop :=
         (∑ j : Fin 4, ∫ ω, BAExp14bS3Fam sz z n t ω j σc σo ac ao ∂(Sizes.seqP (sz.withLam 0)))
 
 /-- **The conjugation** the identity uses for `σc = false`, pathwise (`Gres false = G^*`, `Eblk` real, `C.S = 1`, `star (C.m)`; band
-`lwExpTerm2_cut_conj`; `docs/reports/T2418-prove.md` (d) O4). -/
+counterpart `lwExpTerm2_cut_conj`). -/
 def BAExp14bCutConj {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) : Prop :=
   ∀ (n : ℕ) (t : ℝ) (σo : Bool) (ac ao : Zd d (sz.L n)) (ω : sz.SeqΩ),
     LWcutg (baFMz sz z) n t false σo ac ao ω = star (LWcutg (baFMz sz z) n t true (!σo) ao ac ω)
@@ -431,7 +427,7 @@ abbrev BAExp14b_MB : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
 abbrev BAExp14b_om : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
   BATheta d (sz.L n) (BAflowLam0 sz z n) (BAflowEs sz z n) ((baFMz sz z).m n) t true true
 
-/-- The block kernel of `W^{(k)}`: `κ_0 = 1`, `κ_1 = ω - 1` (`Σ_{α ∈ [a₁]} W^{(k)}_{αw} = κ_k(a₁, [w])`, `BAExp14b_Wk_blk`). -/
+/-- The block kernel of `W^{(k)}`: `κ_0 = 1`, `κ_1 = ω - 1` (`Σ_{α ∈ [a₁]} W^{(k)}_{αw} = κ_k(a₁, [w])`). -/
 def BAExp14b_kap (k : Bool) : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ :=
   if k then BAExp14b_om sz z n t - 1 else 1
 
@@ -460,7 +456,7 @@ theorem BAExp14b_Wk_pt_false (c c' : Zd d (sz.L n)) (o o' : Fin (sz.W n ^ d)) :
   simp only [BAExp14a_Wk, Bool.false_eq_true, ↓reduceIte, Matrix.one_apply, BAExp14b_pt_inj]
   by_cases h : c = c' <;> by_cases h' : o = o' <;> simp [h, h']
 
-/-- **`W^{(1)} = W - 1 = lift(ω - 1)` at two fine vertices** (`BAExp14a_W_sub_one`, D402): `(W - 1)_{(c,o),(c',o')} = W^{-d} (ω - 1)_{cc'}`. -/
+/-- **`W^{(1)} = W - 1 = lift(ω - 1)` at two fine vertices** (`BAExp14a_W_sub_one`): `(W - 1)_{(c,o),(c',o')} = W^{-d} (ω - 1)_{cc'}`. -/
 theorem BAExp14b_Wk_pt_true {κ : ℝ} (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
     (ht0 : 0 ≤ t) (ht1 : t < 1) (c c' : Zd d (sz.L n)) (o o' : Fin (sz.W n ^ d)) :
     BAExp14a_Wk sz z n t true (BAExp14b_pt c o) (BAExp14b_pt c' o') =
@@ -542,9 +538,7 @@ theorem BAExp14b_twLoopX_pt (X₁ X₂ : Idx d (sz.L n) (sz.W n) → Idx d (sz.L
 
 end TwistCoord
 
-/-! ## 5. The tie sums and the block sums of `W^{(k)}` -/
-
-/-! ## 6. Permutations of nested sums (helpers) -/
+/-! ## 5. Permutations of nested sums (helpers) -/
 
 section Reorder
 
@@ -578,13 +572,13 @@ private theorem BAExp14b_mf4 {ι₁ ι₂ ι₃ ι₄ : Type*} [Fintype ι₁] [
 
 end Reorder
 
-/-! ## 7. The block forms of the eight S2 families (target 3)
+/-! ## 6. The block forms of the eight `BAExp14bS2` families
 
 Pathwise identities (no probability, no premise): the fine sum of each family of `BAExp14b_FS2` is a sum over blocks `a₁, c, c₁, c₂` of
 `M^{(B)}`, `κ_k`, `X_{a₁}` and the loops `𝓛^{(2)}`, `𝓛^{(3)}` of the carrier, the twisted one-loop `twTrP`, the twisted two-loop `twLoopX`
 (`= twL2'` with `G^σ = twChg G σ`; one slot carries `Ǧ = GM`).  With `x ∈ [a]`, `y ∈ [b]`, closing edge `G(σ)_{yx}`, `X_c = tr(Ǧ E_c)`.
-L4b2 reads them through `BAExp14b_FS2_block`.  Proof of each: coordinates `(block, offset)` (§3), the Kronecker deltas of `M`, `S`, `W^{(k)}`,
-a permutation of the nested sums (§6), `field_simp`. -/
+They are collected in `BAExp14b_FS2_block`.  Proof of each: coordinates `(block, offset)` (Section 3), the Kronecker deltas of `M`, `S`, `W^{(k)}`,
+a permutation of the nested sums (Section 5), `field_simp`. -/
 
 section Blocks
 
@@ -625,7 +619,7 @@ theorem BAExp14b_FD1t_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAfl
     ring
 
 /-- **`D2t` in block form**: `D2t = t Σ_{a₁,c} M^{(B)}_{ac} M^{(B)}_{a₁b} X_{a₁} · Tr(G^σ P_{ac}) · L̃_{(σ,+),(c; a₁, b)}`, `L̃ = twL2'`
-(`BAExp14b_twLoopX_twL2'`; `lanlw` on `Ǧ_{xα} M_{αy}`, the `∂tail` child; both loops uncircled). -/
+(`lanlw` on `Ǧ_{xα} M_{αy}`, the `∂tail` child; both loops uncircled). -/
 theorem BAExp14b_FD2t_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
     (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14b_FD2t sz z n t ω σ a b =
@@ -690,7 +684,7 @@ theorem BAExp14b_FT2b_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAfl
     bf_fin
 
 set_option maxHeartbeats 1600000 in
--- the coordinate expansion of a 7-fold sum with the Kronecker deltas of the ties (measured: fails at 400000, passes at 800000)
+-- the coordinate expansion of a 7-fold sum with the Kronecker deltas of the ties (needs the raised heartbeat limit)
 /-- **`T3B^{(k)}` in block form**: `T3B^{(k)} = t W^d Σ_{a₁,c₁,c₂} κ_k(a₁,c₁) M^{(B)}_{c₁c₂} X_{a₁} · Tr(Ǧ P_{c₁c₂}) · 𝓛^{(3)}_{(+,+,σ),(c₂,b,a)}`,
 `Tr(Ǧ P_{c₁c₂}) = twTr C n t ω c₂ c₁` (`twTr_eq`): `W^{(k)}_{αw} M_{wγ} S_{γδ} Ǧ_{γw} G_{δy} G_{xδ}` (`Σ_{α ∈ [a₁]} W^{(k)}_{αw} = κ_k(a₁,[w])`). -/
 theorem BAExp14b_FT3B_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
@@ -735,7 +729,7 @@ theorem BAExp14b_FT3B_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAfl
       bf_fin
 
 set_option maxHeartbeats 1600000 in
--- the coordinate expansion of a 7-fold sum with the Kronecker deltas of the ties (measured: fails at 400000, passes at 800000)
+-- the coordinate expansion of a 7-fold sum with the Kronecker deltas of the ties (needs the raised heartbeat limit)
 /-- **`T3C-Ḡ^{(k)}` in block form**: `T3C-Ḡ^{(k)} = t W^d Σ_{a₁,c₁,c₂} κ_k(a₁,c₁) M^{(B)}_{c₁c₂} X_{a₁} · 𝓛^{(2)}_{(+,σ),(b,c₂)} · Tr(G^σ E_a Ǧ P_{c₁c₂})`
 (`W^{(k)}_{αw} M_{wγ} S_{γδ} G_{δy} Ǧ_{xw} ∂_{δγ}tail`; the circled leg is in slot 2 of `twLoopX`). -/
 theorem BAExp14b_FT3CG_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
@@ -785,7 +779,7 @@ section Dispatch
 
 variable {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ)
 
-/-- **The block forms of the eight S2 families**, in the order of `BAExp14b_FS2` (`D1t, D2t, T2a, T2b, T3B^{(0)}, T3B^{(1)}, T3C-Ḡ^{(0)}, T3C-Ḡ^{(1)}`),
+/-- **The block forms of the eight `BAExp14bS2` families**, in the order of `BAExp14b_FS2` (`D1t, D2t, T2a, T2b, T3B^{(0)}, T3B^{(1)}, T3C-Ḡ^{(0)}, T3C-Ḡ^{(1)}`),
 `x ∈ [a]`, `y ∈ [b]`, closing edge `G(σ)_{yx}`; `G^σ = twChg G σ`, `Ǧ = GM`, `X_c = tr(Ǧ E_c)`, `MB = M^{(B)}`, `κ_0 = 1`, `κ_1 = ω - 1`. -/
 def BAExp14b_BS2 (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
   ![(t : ℂ) * ∑ a₁, ∑ c, BAExp14b_MB sz z n a a₁ * BAExp14b_MB sz z n a₁ c * BAExp14a_X sz z n t ω a₁ *
@@ -809,7 +803,7 @@ def BAExp14b_BS2 (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n)) : ℂ :=
 
 variable {sz z n t ω} {κ : ℝ}
 
-/-- **The eight block forms** (target 3): `FS2 = BS2` for every family, charge and block pair, from the six lemmas above. -/
+/-- **The eight block forms**: `FS2 = BS2` for every family, charge and block pair, from the six lemmas above. -/
 theorem BAExp14b_FS2_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n) ((baFMz sz z).m n))
     (ht0 : 0 ≤ t) (ht1 : t < 1) (j : Fin 8) (σ : Bool) (a b : Zd d (sz.L n)) :
     BAExp14b_FS2 sz z n t ω j σ a b = BAExp14b_BS2 sz z n t ω j σ a b := by
@@ -824,8 +818,6 @@ theorem BAExp14b_FS2_block (hr : BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflo
   · exact BAExp14b_FT3CG_block hr ht0 ht1 true σ a b
 
 end Dispatch
-
-/-! ## 8. Compiled checks and nonempty instances of the block forms and of the pins -/
 
 end RBM.BA
 

@@ -30,71 +30,76 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3b4' (T2443): property (6) at BA under S': the tagged step, `BASimC'`, `BABridge`, `BAFinalS`, the assembly
+# Property (6) at BA: the tagged step, `BASimC'`, `BABridge`, `BAFinalS`, the assembly
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex` (`lanlw`, `lem_lweight`, `GGGamma`, the BA step `deflvl1`); design `docs/reports/T2397-design.md`
-(G2) §2 `:41-47` (m3)-(m5), §4 row L3b4'; supervisor `2026-10-11-0951` L4-C1, L4-C2, L4-C3.  The step lemma of `BAStep` comes from the band step
-`locCostGe_locStep` (6d:1077) at the `band` outputs, through a simulation up to relabelling (`BASimC'`), and from the shape lemmas of L3b3' at the other
-outputs; the final step reads atom-level `LocStd`.
+Paper: Lemma B.6 (`lanlw`), Lemma B.7 (`lem_lweight`), (B.20) `GGGamma`, the BA step (Definition
+7.14 `deflvl1`); property (6) of Lemma 7.17 (`lem:localregular`).  The step lemma of `BAStep` comes
+from the band step `locCostGe_locStep` (`Graph/LocalRegular6d.lean`) at the `band` outputs,
+through a simulation up to relabelling (`BASimC'`), and from the shape lemmas of
+`Graph/BAScost.lean` at the other outputs; the final step reads atom-level `LocStd`.
 
 ## Contents (namespace `RBM.Graph`; private prefix `BAStepS_`)
 
-1. **The pins**: `BAFrameStepTN`, `BALocStepT` (tagged steps, `def`s over the non-recursive `BAFrameStepT`), `BABridge`, `BAEquivCost`, `BACostTwist`, `BASimC'`,
-   `BAFinalS`, `BALocReg6`.
-2. **Target 1**: `baUntag_locStepT` (`untag BALocStepT P L ↔ P.g.Normal ∧ BALocStep P L`), `baNormal_locStepT` (no frame-normality hypothesis: every output of a
-   `BAFrameStepT` constructor is an element of a partition, `BAGraph.partition_normal`), the premise provers `baUntag_locStepT_intro`, `baInit_locReg6InvA`.
-3. **Targets 2-3**: `baBridge_holds` (m3), `baEquivCost_holds`, `baCostTwist_holds`, `baShapeLL_twist`.
-4. **Target 4**: `baSimC'_holds` (`P' := (P.twist c t).img`, `baMatch_holds` per `band` output).
-5. **Target 5**: `baStep_of_simC'`; the shapes `s1` (vacuous) and `e1` (`baShapeLL_e1`) of `BAFrameStepTN`: `baShapeLL_s1_tn`, `baShapeLL_e1_tn`.
-6. **Target 6**: `baFinalS_holds` (through `P.img`).
-7. **Target 7**: `ba_ord_ge_of_simC'` along `BReach`, `baReach_bReach`, the closed form `baLocReg6_reach` along `BAReach`.
-8. **Instances** (target 8): the twists `(true, true)` of `baPG baPB` (`within`) and `baPG baPC` (`ggSplit`, `j = 0`), a `LocStd` graph, `p = 2`.
+1. **The statements**: `BAFrameStepTN`, `BALocStepT` (tagged steps, `def`s over the non-recursive
+   `BAFrameStepT`), `BABridge`, `BAEquivCost`, `BACostTwist`, `BASimC'`, `BAFinalS`, `BALocReg6`.
+2. `baUntag_locStepT` (`untag BALocStepT P L ↔ P.g.Normal ∧ BALocStep P L`), `baNormal_locStepT`
+   (no frame-normality hypothesis: every output of a `BAFrameStepT` constructor is an element of a
+   partition, `BAGraph.partition_normal`), the lemmas `baUntag_locStepT_intro`,
+   `baInit_locReg6InvA`.
+3. `baBridge_holds`, `baEquivCost_holds`, `baCostTwist_holds`, `baShapeLL_twist`.
+4. `baSimC'_holds` (`P' := (P.twist c t).img`, `baMatch_holds` per `band` output).
+5. `baStep_of_simC'`; the shapes `s1` (vacuous) and `e1` (`baShapeLL_e1`) of `BAFrameStepTN`:
+   `baShapeLL_s1_tn`, `baShapeLL_e1_tn`.
+6. `baFinalS_holds` (through `P.img`).
+7. `ba_ord_ge_of_simC'` along `BReach`, `baReach_bReach`, the closed form `baLocReg6_reach` along
+   `BAReach`.
 
-C1: combinatorial; no data; `m` occurs only as the label of `LocStep`.  `BAMatchTw` and its three bridges are not used (1a (i): `P' := (P.twist c t).img`, the twist
-moves into the costs, `baCostTwist_holds`).  The shapes `e2`, `macroA`, `macroB` of `BAFrameStepTN` (T2426 audit O2) are hypotheses of `BALocReg6`.
+Combinatorial; no data; `m` occurs only as the label of `LocStep`.  The
+twist is not matched step by step: `P' := (P.twist c t).img`, and the twist moves into the costs
+(`baCostTwist_holds`).  The shapes `e2`, `macroA`, `macroB` of `BAFrameStepTN` are hypotheses of
+`BALocReg6`; they are proved in `Graph/BAShapeO2B.lean`.
 -/
 
 noncomputable section
 
 namespace RBM.Graph
 
-/-! ## 1. The pins -/
+/-! ## 1. The statements -/
 
-/-- **The tagged frame step with normality** (`T2443_FrameT`): a normal `P` and a `BAFrameStepT` at `P`. -/
+/-- **The tagged frame step with normality**: a normal `P` and a `BAFrameStepT` at `P`. -/
 def BAFrameStepTN : BTStep := fun P LT => P.g.Normal ∧ BAFrameStepT P LT
 
-/-- **The tagged BA step** (`T2443_LocStepT`): at a normal `P`, a `BAFrameStepT` at `P.twist c t`, every output twisted back, the tags kept. -/
+/-- **The tagged BA step**: at a normal `P`, a `BAFrameStepT` at `P.twist c t`, every output twisted back, the tags kept. -/
 def BALocStepT : BTStep := fun P LT =>
   P.g.Normal ∧ ∃ (c t : Bool) (LT0 : List (BAShape × BAPGraph (Fin 2))),
     BAFrameStepT (P.twist c t) LT0 ∧ LT = LT0.map (fun x => (x.1, BAPGraph.twist c t x.2))
 
-/-- **(m3) `BABridge`** (`T2443_Bridge`): the cost at atoms of `P` is the band cost of the atomic image `P.img`. -/
+/-- **`BABridge`**: the cost at atoms of `P` is the band cost of the atomic image `P.img`. -/
 def BABridge : Prop :=
   ∀ (P : BAPGraph (Fin 2)) (far : Bool) (k : ℤ), locCostGeA far k P ↔ PGraph.LocCostGe far k P.img
 
-/-- the cost transfers along `BAEquivC` (`T2443_EquivCost`) -/
+/-- the cost transfers along `BAEquivC` -/
 def BAEquivCost : Prop :=
   ∀ (R S : PGraph (Fin 2)), R.BAEquivC S → ∀ (far : Bool) (k : ℤ), (R.LocCostGe far k ↔ S.LocCostGe far k)
 
-/-- the twist leaves the cost at atoms invariant (`T2443_CostTwist`) -/
+/-- the twist leaves the cost at atoms invariant -/
 def BACostTwist : Prop :=
   ∀ (c t : Bool) (P : BAPGraph (Fin 2)) (far : Bool) (k : ℤ), locCostGeA far k (P.twist c t) ↔ locCostGeA far k P
 
-/-- **L4-C1: `BASimC'`** (`T2443_SimC`, `T2423-prove.md:240-242`): the band step is chosen per output, `P'` per step. -/
+/-- **`BASimC'`**: the band step is chosen per output, `P'` per step. -/
 def BASimC' (m : ℂ) (T : BTStep) : Prop :=
   ∀ P LT, T P LT → ∃ P' : PGraph (Fin 2), P'.g.Normal ∧ LGraph.CircIffLoop P'.g ∧
     (∀ far k, locCostGeA far k P → P'.LocCostGe far k) ∧
       ∀ Q, (BAShape.band, Q) ∈ LT → ∃ L' : List (PGraph (Fin 2)), LocStep m P' L' ∧ ∃ R ∈ L',
         ∀ far k, R.LocCostGe far k → locCostGeA far k Q
 
-/-- **L4-C3: `BAFinalS`** (`T2443_Final`): the merged `BAFinal` (`BAScost:126`) with atom-level `P.g.LocStd` in place of `locStdA P.g`. -/
+/-- **`BAFinalS`**: the final step: at a graph `P` of `R` with atom-level `P.g.LocStd`, (6) holds (the order bounds the cost, for `Φ^all` and, for atoms of `x`, `y` apart, `Φ^far`). -/
 def BAFinalS (R : BAPGraph (Fin 2) → Prop) : Prop :=
   ∀ (P : BAPGraph (Fin 2)) (k : ℤ), R P → P.g.LocStd →
     (locCostGeA false k P → k ≤ P.scalingOrder) ∧
       (¬ atomSetoid P.g (Sum.inl (P.ext 0)) (Sum.inl (P.ext 1)) → locCostGeA true k P → k ≤ P.scalingOrder)
 
-/-- **The closed form** (`T2443_LocReg6`, without the frame-normality hypothesis of the check file: `baNormal_locStepT` is unconditional): (6) at every graph
-that `BAReach` reaches from a start term.  The hypotheses are the shape inputs of T2426 audit O2 (`e2`, `macroA`, `macroB`); a special-case caveat, as they are not proved here. -/
+/-- **The closed form**: (6) at every graph that `BAReach` reaches from a start term (without the frame-normality hypothesis: `baNormal_locStepT` is unconditional).  The hypotheses are the shape inputs (`e2`, `macroA`, `macroB`); they are proved in `Graph/BAShapeO2B.lean`. -/
 def BALocReg6 : Prop :=
   ∀ (p : ℕ) (P0 : BAPGraph (Fin 2)), P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition →
     (∀ sh, sh = BAShape.e2 ∨ sh = BAShape.macroA ∨ sh = BAShape.macroB → BAShapeLL sh BAFrameStepTN) →
@@ -102,7 +107,7 @@ def BALocReg6 : Prop :=
       locReg6InvA p Q ∧ (Q.g.LocStd → 2 * (p : ℤ) ≤ Q.scalingOrder ∧
         (¬ atomSetoid Q.g (Sum.inl (Q.ext 0)) (Sum.inl (Q.ext 1)) → 3 * (p : ℤ) ≤ Q.scalingOrder))
 
-/-! ## 2. Target 1: `untag`, normality (no frame-normality hypothesis is needed) -/
+/-! ## 2. `untag`, normality (no frame-normality hypothesis is needed) -/
 
 theorem baUntag_locStepT : ∀ (P : BAPGraph (Fin 2)) (L : List (BAPGraph (Fin 2))),
     untag BALocStepT P L ↔ P.g.Normal ∧ BALocStep P L := by
@@ -133,15 +138,15 @@ theorem baNormal_locStepT : BANormal (untag BALocStepT) := by
   obtain ⟨rfl, rfl⟩ := Prod.mk.inj he
   exact (ba_twist_inv_out c t Q1.g).2.2.2.2.2 (BAStepS_frameT_normal hF _ hmem1)
 
-/-- the premise prover of `untag`: an `untag` introduction at `BALocStepT` -/
+/-- an `untag` introduction at `BALocStepT` (supplies the premise of `untag`) -/
 theorem baUntag_locStepT_intro {P : BAPGraph (Fin 2)} {L : List (BAPGraph (Fin 2))} (hN : P.g.Normal) (h : BALocStep P L) :
     untag BALocStepT P L := (baUntag_locStepT P L).2 ⟨hN, h⟩
 
-/-- the premise prover of `locReg6InvA`: at the start terms (`baInit_holds`) -/
+/-- `locReg6InvA` at the start terms (`baInit_holds`) -/
 theorem baInit_locReg6InvA {p : ℕ} {P0 : BAPGraph (Fin 2)} (h : P0 ∈ (BAGraph.ofLGraph (fxyPowGraph p)).partition) : locReg6InvA p P0 :=
   baInit_holds p P0 h
 
-/-! ## 3. Targets 2-3: the bridge, the relabelling and the twist leave the cost invariant -/
+/-! ## 3. The bridge, the relabelling and the twist leave the cost invariant -/
 
 private theorem BAStepS_scost_img {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I] (Γ : BAGraph E I)
     (s' : Setoid ((promoteC Γ).ExtCls ⊕ (promoteC Γ).IntCls)) :
@@ -155,7 +160,7 @@ private theorem BAStepS_vmap_atom {E I : Type} [Fintype E] [DecidableEq E] [Fint
     (promoteC Γ).vmap u = (promoteC Γ).vmap v ↔ atomSetoid Γ u v :=
   (BAAtomic_promoteC_vmap_eq_atom Γ u v).trans (BAAtomic_atomSetoid_iff Γ u v).symm
 
-/-- **(m3) `baBridge_holds`**: the classes of `promoteC` are the atoms (`BAAtomic` §3); `LGraph.scost_relabel` (6a:401) along the class map `vmap`; the far clause through
+/-- **`baBridge_holds`**: the classes of `promoteC` are the atoms (`Graph/BAAtomic.lean`); `LGraph.scost_relabel` (`Graph/LocalRegular6a.lean`) along the class map `vmap`; the far clause through
 `vmap (inl a) = inl (extMap a)`. -/
 theorem baBridge_holds : BABridge := by
   intro P far k
@@ -182,7 +187,7 @@ theorem baBridge_holds : BABridge := by
     rw [BAAtomic_vmap_inl, BAAtomic_vmap_inl]
     exact hxy
 
-/-- the transfer along R1's relation `BAEquivC`: `scost_relabel` along `Sum.map eE eI`, then `LGraph.scost_perm` (6a:309) -/
+/-- the transfer along the relation `BAEquivC`: `scost_relabel` along `Sum.map eE eI`, then `LGraph.scost_perm` (`Graph/LocalRegular6a.lean`) -/
 theorem baEquivCost_holds : BAEquivCost := by
   rintro R S ⟨eE, eI, hext, hsol, ⟨l, hl, hF⟩, -, -⟩ far k
   have hW : (R.g.relabel (Sum.map eE eI)).waved.length = S.g.waved.length := hl.length_eq.symm.trans hF.length_eq
@@ -221,7 +226,7 @@ private theorem BAStepS_scostA_twist {E I : Type} [Fintype E] [DecidableEq E] [F
   rw [← LGraph.scost_twist c t (promoteC Γ) s]
   exact localReg6a_scost_congr _ _ s (by simp only [LGraph.skept, hsol]) hw
 
-/-- **Target 3**: the twist leaves `locCostGeA` invariant (`LGraph.scost_twist` 6d:172, `BAGraph.BASymm1_twist_atom` `BASymm1:101`) -/
+/-- **The twist leaves `locCostGeA` invariant** (`LGraph.scost_twist` in `Graph/LocalRegular6d.lean`, `BAGraph.BASymm1_twist_atom` in `Graph/BASymm1.lean`) -/
 theorem baCostTwist_holds : BACostTwist := by
   intro c t P far k
   have hat : atomSetoid (P.g.twist c t) = atomSetoid P.g := by simp only [atomSetoid, BAGraph.BASymm1_twist_atom]
@@ -237,10 +242,10 @@ theorem baShapeLL_twist : ∀ sh : BAShape, BAShapeLL sh BAFrameStepTN → BASha
   exact (baCostTwist_holds c t Q0 far k).2 (h (P.twist c t) LT0 ⟨(ba_twist_inv_out c t P.g).2.2.2.2.2 hN, hF⟩ Q0 hmem far k
     ((baCostTwist_holds c t P far k).2 hk))
 
-/-! ## 4. Target 4: `BASimC'` at the tagged step, `P' := (P.twist c t).img` -/
+/-! ## 4. `BASimC'` at the tagged step, `P' := (P.twist c t).img` -/
 
-/-- **L4-C1**: take `P' := (P.twist c t).img` (normal and `CircIffLoop`: `ba_twist_inv_out`, `BAGraph.img_normal`); for each `band` output, `baMatch_holds` at `P.twist c t`;
-the costs move by targets 2-3. -/
+/-- Take `P' := (P.twist c t).img` (normal and `CircIffLoop`: `ba_twist_inv_out`, `BAGraph.img_normal`); for each `band` output, `baMatch_holds` at `P.twist c t`;
+the costs move by `baEquivCost_holds` and `baCostTwist_holds`. -/
 theorem baSimC'_holds (m : ℂ) : BASimC' m BALocStepT := by
   rintro P LT ⟨hN, c, t, LT0, hF, rfl⟩
   have hN2 : (P.twist c t).g.Normal := (ba_twist_inv_out c t P.g).2.2.2.2.2 hN
@@ -252,9 +257,9 @@ theorem baSimC'_holds (m : ℂ) : BASimC' m BALocStepT := by
   exact ⟨L', hst, R, hR, fun far k hRk => (baCostTwist_holds c t Q0 far k).2 ((baBridge_holds Q0 far k).2
     ((baEquivCost_holds R Q0.img (PGraph.BASim_BAEquiv_toC hRE) far k).1 hRk))⟩
 
-/-! ## 5. Target 5: the step from the simulation (T2397 probe 137, per output), and the closed shapes `s1`, `e1` -/
+/-! ## 5. The step from the simulation (per output), and the closed shapes `s1`, `e1` -/
 
-/-- **The step lemma from a simulation**: the `band` outputs by `locCostGe_locStep` (6d:1077) at the band step of `BASimC'`, the others by the shape lemmas. -/
+/-- **The step lemma from a simulation**: the `band` outputs by `locCostGe_locStep` (`Graph/LocalRegular6d.lean`) at the band step of `BASimC'`, the others by the shape lemmas. -/
 theorem baStep_of_simC' : ∀ (m : ℂ) (T : BTStep), BASimC' m T → (∀ sh, sh ≠ BAShape.band → BAShapeLL sh T) → BAStep (untag T) := by
   intro m T hS hX
   rintro P L ⟨LT, hT, rfl⟩ far k hk Q hQ
@@ -354,17 +359,17 @@ theorem baShapeLL_s1_tn : BAShapeLL BAShape.s1 BAFrameStepTN := by
   rintro P LT ⟨-, hF⟩ Q hQ
   exact absurd rfl (BAStepS_frameT_tags hF _ hQ).1
 
-/-- **`BAShapeLL e1 BAFrameStepTN`** follows from `baShapeLL_e1` (`BAScost2:82`): the `e1` outputs of `edge` and `ggSplit` are the `tagT1` outputs of `lanlwT1`, packed by `outsT`. -/
+/-- **`BAShapeLL e1 BAFrameStepTN`** follows from `baShapeLL_e1` (`Graph/BAScost2.lean`): the `e1` outputs of `edge` and `ggSplit` are the `tagT1` outputs of `lanlwT1`, packed by `outsT`. -/
 theorem baShapeLL_e1_tn : BAShapeLL BAShape.e1 BAFrameStepTN := by
   refine baShapeLL_e1 ?_
   rintro P LT ⟨-, hF⟩ Q hQ
   exact (BAStepS_frameT_tags hF _ hQ).2 rfl
 
-/-! ## 6. Target 6: `BAFinalS` at `LocStd`, through `P.img` -/
+/-! ## 6. `BAFinalS` at `LocStd`, through `P.img` -/
 
-/-- **L4-C3**: at `P.g.LocStd` the atomic image `P.img` is locally standard (`BAGraph.img_locStd_iff`, `BAAtomic:661`) with the same `scalingOrder`
-(`BAImgCounters_holds`, `:710`); the cost transfers by `baBridge_holds`; `locReg6_of_locCostGe` and `locReg6far_of_locCostGe` (6a:645, 653) close; the far clause needs
-the new fact that distinct external atoms give distinct externals of `P.img` (`hext`, from `BAAtomic_vmap_inl`). -/
+/-- At `P.g.LocStd` the atomic image `P.img` is locally standard (`BAGraph.img_locStd_iff`, `Graph/BAAtomic.lean`) with the same `scalingOrder`
+(`BAImgCounters_holds`); the cost transfers by `baBridge_holds`; `locReg6_of_locCostGe` and `locReg6far_of_locCostGe` (`Graph/LocalRegular6a.lean`) close; the far clause needs
+the fact that distinct external atoms give distinct externals of `P.img` (`hext`, from `BAAtomic_vmap_inl`). -/
 theorem baFinalS_holds (R : BAPGraph (Fin 2) → Prop) : BAFinalS R := by
   intro P k _ hL
   have hstd : P.img.LocStd := (P.g.img_locStd_iff hL.1).1 hL
@@ -383,9 +388,9 @@ theorem baFinalS_holds (R : BAPGraph (Fin 2) → Prop) : BAFinalS R := by
   · rw [← hord]; exact locReg6_of_locCostGe hstd ((baBridge_holds P false k).1 hk)
   · rw [← hord]; exact locReg6far_of_locCostGe hstd (hext hx) ((baBridge_holds P true k).1 hk)
 
-/-! ## 7. Target 7: the assembly along `BReach`, and the closed form along `BAReach` -/
+/-! ## 7. The assembly along `BReach`, and the closed form along `BAReach` -/
 
-/-- **The assembly** (probe 95 + 148): (6) along `BReach` of the untagged step, from the step lemma `baStep_of_simC'`, normality, and `BAFinalS` at the reachable graphs. -/
+/-- **The assembly**: (6) along `BReach` of the untagged step, from the step lemma `baStep_of_simC'`, normality, and `BAFinalS` at the reachable graphs. -/
 theorem ba_ord_ge_of_simC' : ∀ (m : ℂ) (p : ℕ) (T : BTStep) (P0 : BAPGraph (Fin 2)), locReg6InvA p P0 → BANormal (untag T) → BASimC' m T →
     (∀ sh, sh ≠ BAShape.band → BAShapeLL sh T) → BAFinalS (BReach (untag T) P0) → ∀ Q, BReach (untag T) P0 Q →
       locReg6InvA p Q ∧ (Q.g.LocStd → 2 * (p : ℤ) ≤ Q.scalingOrder ∧
@@ -409,7 +414,7 @@ theorem baReach_bReach {K : ℤ} {P0 Q : BAPGraph (Fin 2)} (h0 : P0.g.Normal) (h
     exact ⟨baNormal_locStepT Q' L hst R hR, BReach.step ih.2 hst hR⟩
 
 /-- **The closed form**: (6) at every `Q` with `BAReach K P0 Q` from a start term `P0`.  The shapes `s1` and `e1` are closed here (`baShapeLL_s1_tn`, `baShapeLL_e1_tn`);
-`e2`, `macroA`, `macroB` stay hypotheses (T2426 audit O2: priced above the row's 400-line limit, 1a (iv); a special-case caveat, `BALocReg6` is conditional on them). -/
+`e2`, `macroA`, `macroB` stay hypotheses (`BALocReg6` is conditional on them; they are proved in `Graph/BAShapeO2B.lean`). -/
 theorem baLocReg6_reach : BALocReg6 := by
   intro p P0 hP0 hX K Q hQ
   have hX' : ∀ sh, sh ≠ BAShape.band → BAShapeLL sh BALocStepT := by
@@ -424,8 +429,6 @@ theorem baLocReg6_reach : BALocReg6 := by
     | macroB => exact hX _ (Or.inr (Or.inr rfl))
   exact ba_ord_ge_of_simC' 0 p BALocStepT P0 (baInit_locReg6InvA hP0) baNormal_locStepT (baSimC'_holds 0) hX' (baFinalS_holds _) Q
     (baReach_bReach (BAGraph.partition_normal _ P0 hP0) hQ).2
-
-/-! ## 8. Nonempty instances (target 8): the twists `(true, true)` of `P_B` (`within`) and `P_C` (`ggSplit`, `j = 0`), and a `LocStd` graph -/
 
 end RBM.Graph
 

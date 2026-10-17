@@ -7,14 +7,14 @@ import RBM3D.Graph.BAAtomic
 import RBM3D.Graph.LocalRegular2
 
 /-!
-# BA-L R0, part 2: the band lift and the path pin `BAPathLift` (T2417)
+# The merge of a graph without `=`-dotted edges: every atom is a vertex
 
-Second file of the row R0 (`RBM3D/Graph/BAAtomic.lean` is the first): the BA-normal lift `liftC` of
-a packed band graph (every solid edge circled, no `Ψ`- or `M`-dotted edge; T2397 probe 219-246) and
-the map property `BAPathLift` (T2397 probe 355): at the lift of a normal band graph the coloured
-path invariant `PGraph.PathInv2` (`LocalRegular2.lean:1577`) of the atomic image is that of the
-graph.  It is `LGraph.localReg2_pathFam_map` (`LocalRegular2.lean:616`) along `vmap`, in both
-directions: without `=`-dotted edges every atom is a vertex, so `vmap` is a bijection.
+Second file on the atomic image (`RBM3D/Graph/BAAtomic.lean` is the first).  Without
+`=`-dotted edges every atom is a vertex, so `vmap` is a bijection (`BAAtomic_atom_ofL`,
+`BAAtomic_vmap_injective_ofL`, `BAAtomic_vmapEquiv`); the adjacency of the molecules is then a
+waved edge, the coloured ends of the merge are the images of those of the graph, and the coloured
+path invariant `PGraph.PathInv2` (`Graph/LocalRegular2.lean`) is carried along `vmap` in both
+directions (`BAAtomic_pathFam_iff`, from `LGraph.localReg2_pathFam_map`).
 -/
 
 set_option linter.style.setOption false
@@ -29,15 +29,13 @@ noncomputable section
 
 namespace RBM.Graph
 
-/-! ## 1. The band lift (T2397 probe 219-246; statements copied) -/
-
-/-! ## 2. Without `=`-dotted edges every atom is a vertex -/
+/-! ## 1. Without `=`-dotted edges every atom is a vertex -/
 
 section OfL
 
 variable {E I : Type} [Fintype E] [DecidableEq E] [Fintype I] [DecidableEq I]
 
-/-- Without `=`-dotted edges every atom is a vertex (`BAVocab.lean`, private `BAVocab_atom_ofL`; copied from T2397 probe 195). -/
+/-- Without `=`-dotted edges every atom is a vertex (as the private `BAVocab_atom_ofL` in `Graph/BAVocab.lean`). -/
 theorem BAAtomic_atom_ofL (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = false) (v : E ⊕ I) :
     (BAGraph.ofLGraph Γ).atom v = {v} := by
   have hadj : ∀ u w, (BAGraph.ofLGraph Γ).atomAdj u w = false := by
@@ -156,9 +154,5 @@ theorem BAAtomic_pathFam_iff (Γ : LGraph E I) (h : ∀ e ∈ Γ.dotted, e.eq = 
     exact key
 
 end OfL
-
-/-! ## 3. `BAPathLift` -/
-
-/-! ## 4. Compiled instances at the band lift of a concrete normal band graph -/
 
 end RBM.Graph

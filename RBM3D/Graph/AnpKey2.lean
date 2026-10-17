@@ -9,28 +9,22 @@ import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Algebra.BigOperators.Fin
 
 /-!
-# LW-12b: `lem:Anp_key_gh`, the setup of the induction step (T2242)
+# `lem:Anp_key_gh`: walks and edge products for the induction step
 
-Paper: arXiv:2507.20274, `paper/tex/7_8_light_weight.tex` (cited `7_8:line`): the regions `𝐃_π`
-(`:1113`) and `(kwuyayw)` (`:1118-1121`), the ending-edge types A1/A2/B1/B2 (`:1123-1141`), the A2
-replacement and `(eq:noA2)` (`:1143-1148`), vertex fixing (`:1158-1172`, `:1209-1237`), the case
-statements (I)-(IV) (`:1152`, `:1205`, `:1245`, `:1385`).  Part b of the six tickets of `lem:Anp`.
+Paper: proof of Lemma 7.24 (`lem:Anp_key_gh`), induction step: the value of a graph with the
+internal labels restricted to a set (the left side of (7.42) `kwuyayw`), the replacement of an
+ending edge by a ghost edge, and the paths `𝔓_j` of the graph followed step by step.
 
-Conventions fixed here for LW-12c-f: `π i j = true` iff `α_i` is strictly closer to `b_j` than to
-`a_j`; an ending edge has a side bit `s` (`false`: first step of the path, at `a_j`; `true`: last
-step, at `b_j`); type A1 iff the path has no ghost edge and `π i j = s` (the vertex lies on the side
-of its own end).
+Conventions: `π i j = true` iff `α_i` is strictly closer to `b_j` than to `a_j`; an ending edge has
+a side bit `s` (`false`: first step of the path, at `a_j`; `true`: last step, at `b_j`).
 
-* Section 1: the vocabulary (`valOn`, the regions, `EndAt`, `IsA1`-`IsB2`, `NoA2`, `degS`, the
-  pins `AnpDetGhRegAt`, `AnpIH`, `AnpDetGhRegStep`, `AnpCaseI`, `AnpCaseIII`, `AnpDetGhCase*`).
-* Section 2: `anpDetGh_of_reg` (the `2^{pq}` regions cover).
-* Section 3: the half-distance fact and the ending-edge types.
-* Section 4: the A2 replacement on a region, `anpDetGhReg_of_noA2`.
-* Section 5: vertex fixing, `anpKey2_fix`.
-* Section 6: the step from the regions and the case split.
-* Section 7: compiled nonempty instances.
-
-No port: RBM1D and RBM2D have no light-weight graph layer.
+* `NGraph.valOn`: the value of `Γ` with the internal labels summed over a set `S`.
+* `anpKey2_stepOK`, `anpKey2_chain`: walks along the edges of a graph, with the lemmas
+  `anpKey2_foldl_iff`, `anpKey2_walkOK_iff`, `anpKey2_chain_visit`.
+* `anpKey2_ep`, `anpKey2_ep_nonneg`, `anpKey2_ep_ghostify`: the product of the edge factors at a
+  labelling; replacing an edge by a ghost edge turns one solid factor into `1`.
+* `anpKey2_chain_new`: a walk of `Γ` is carried to a walk of a second graph `Γ'` through an edge
+  map and a relabelling of the vertices.
 -/
 
 set_option linter.style.setOption false
@@ -43,14 +37,14 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Vocabulary (`7_8:1111-1141`) -/
+/-! ## 1. The value with the internal labels restricted to a set -/
 
 namespace NGraph
 
 variable {p q : ℕ}
 
-/-- The value of `Γ` with the internal labels restricted to `S` (the LHS of `(kwuyayw)`, `7_8:1119`);
-`Γ.val ξ a b` is the case `S = univ`. -/
+/-- The value of `Γ` with the internal labels restricted to `S` (the left side of (7.42)
+`kwuyayw`); `Γ.val ξ a b` is the case `S = univ`. -/
 def valOn (Γ : NGraph p q) {ι : Type*} (ξ : ι → ι → ℝ) (a b : Fin p → ι)
     (S : Finset (Fin q → ι)) : ℝ :=
   ∑ ℓ ∈ S, (Γ.es.map fun e =>
@@ -58,11 +52,7 @@ def valOn (Γ : NGraph p q) {ι : Type*} (ξ : ι → ι → ℝ) (a b : Fin p �
 
 end NGraph
 
-/-! ## 2. The regions cover (`7_8:1116-1118`) -/
-
-/-! ## 3. The half-distance fact and the ending-edge types (`7_8:1126-1141`) -/
-
-/-! ## 4. The A2 replacement on a region (`7_8:1143-1148`) -/
+/-! ## 2. Walks in a graph and the product of the edge factors -/
 
 section Chain
 
@@ -182,24 +172,14 @@ theorem anpKey2_ep_ghostify {ι : Type*} (Γ : NGraph p q) (ξ : ι → ι → �
 
 end A2
 
-/-! ## 5. Vertex fixing (`7_8:1158-1172`, `:1209-1237`)
+/-! ## 3. Carrying a walk through a relabelling
 
-The path `𝔓_j` is cut after each step that arrives at `α_{i₀}`: `K_j` arrivals give `K_j + 1` segments `(j, r)`,
-`r ≤ K_j`, enumerated by `finSigmaFinEquiv` (`p' = Σ_j (K_j + 1)`).  The segment `(j, r)` starts at `a_j` (`r = 0`)
-or at `α_{i₀}`, and ends at `b_j` (`r = K_j`) or at `α_{i₀}`.  The edges of the fixed graph are the edges of `Γ`,
-relabelled: `a_j`, `b_j` go to the start of the first / the end of the last segment of `𝔓_j`, `α_i` to its place
-among the remaining vertices (`i ≠ i₀`), and `α_{i₀}` to the start (resp. end) of the segment of which the edge is
-the first (resp. last) step, else to the end of a fixed segment `s₀` that ends at `α_{i₀}`. -/
+A walk of `Γ` along steps `T` is carried to a walk of `Γ'`: each step `(k, v)` goes to `(em k, vs v)`,
+where `em` maps the edges of `Γ` to edges of `Γ'` and `rel k` relabels the vertices at the edge `k`. -/
 
 section Fix
 
 variable {p q : ℕ} (Γ : NGraph p (q + 1)) (i₀ : Fin (q + 1))
-
-/-! basic facts on the segments -/
-
-/-! the image of `α_{i₀}` on an edge -/
-
-/-! the relabelling of vertices -/
 
 theorem anpKey2_chain_new {p q p' q' : ℕ} (Γ : NGraph p q) (Γ' : NGraph p' q')
     (em : Fin Γ.es.length → Fin Γ'.es.length) (rel : Fin Γ.es.length → NV p q → NV p' q')
@@ -247,14 +227,6 @@ theorem anpKey2_chain_new {p q p' q' : ℕ} (Γ : NGraph p q) (Γ' : NGraph p' q
           rw [List.dropLast_cons_of_ne_nil (by simp)]
           exact List.mem_cons_self
 
-/-! the value -/
-
-/-! steps, ghost-free paths, ending edges, `n_S` -/
-
 end Fix
-
-/-! ## 6. The step from the regions and the case split -/
-
-/-! ## 7. Compiled nonempty instances at `d = 3` -/
 
 end RBM.Graph

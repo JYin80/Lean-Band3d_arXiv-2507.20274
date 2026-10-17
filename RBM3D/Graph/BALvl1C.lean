@@ -17,23 +17,24 @@ set_option linter.unusedVariables false
 set_option linter.unnecessarySimpa false
 
 /-!
-# BA-L L3a5 (T2446): a step exists, the measure, the induction along `BAReach`, the BA `lvl1 lemma`
+# A step exists, the measure, the induction along `BAReach`, the BA `lvl1 lemma`
 
-Paper: arXiv:2507.20274, `paper/tex/B_graphical_lemmas.tex:353-409` (`lvl1 lemma`, `B:407-409`).  Design: `docs/reports/T2395-design.md` §6 (row L3a5
-`BALvl1C`), §3 Steps 2, 4-6; probe `t/T2395:RBM3D/Probe/T2395Pins.lean:274-288`.  The BA twin of `Graph/LWLvl1.lean` §12-§14 (`:3614-3963`) and of
-`lvl1_lemma_size` (`:4047-4071`).
+Paper: Subappendix B.3, the `lvl1` lemma at block Anderson (after (B.20) `GGGamma`).  This is the
+BA counterpart of `Graph/LWLvl1.lean` (Sections 12-14).
 
 ## Contents (namespace `RBM.Graph`; private prefix `BALvl1C_`)
 
-1. **Vocabulary** (probe, verbatim): `BAlvl1ExistsStep`, `BAlvl1Lemma`; and the paper form `BAlvl1LemmaSize`.
-2. **Measure and induction** (target 3): `BALvl1Mu`, `BALvl1Lt`, `baLvl1Lt_wf`, `ba_lvl1_mu_lt`, `BAReach.trans`, `ba_lvl1_induction`.
-3. **The twist transport** (new): `atEdges`, `atCharge` and the hypotheses of the five frame steps read at `P.twist c t`.
-4. **Target 2** `baLvl1ExistsStep_holds`: the case table (weight, within, edge, gg, ggSplit).
-5. **Target 4** `baLvl1Lemma_holds`: strong induction on the measure; the identity of expectations by `baLvl1StepIdentity_holds` and integrability.
-6. **Target 5** `baLvl1LemmaSize_holds`: the paper form at the cutoff `lvl1Cutoff`.
-7. Compiled instances (`BALvl1CInst`).
+1. **Vocabulary**: `BAlvl1ExistsStep`, `BAlvl1Lemma`; and the paper form `BAlvl1LemmaSize`.
+2. **Measure and induction**: `BALvl1Mu`, `BALvl1Lt`, `baLvl1Lt_wf`, `ba_lvl1_mu_lt`,
+   `BAReach.trans`, `ba_lvl1_induction`.
+3. **The twist transport**: `atEdges`, `atCharge` and the hypotheses of the five frame steps read
+   at `P.twist c t`.
+4. `baLvl1ExistsStep_holds`: the case table (weight, within, edge, gg, ggSplit).
+5. `baLvl1Lemma_holds`: strong induction on the measure; the identity of expectations by
+   `baLvl1StepIdentity_holds` and integrability.
+6. `baLvl1LemmaSize_holds`: the paper form at the cutoff `lvl1Cutoff`.
 
-`BASelf` and `0 ≤ t < 1` are the only hypotheses on the data (C1).  No new `inductive`, no hypothesis beyond the pins.
+`BASelf` and `0 ≤ t < 1` are the only hypotheses on the data.  No new `inductive`.
 -/
 
 noncomputable section
@@ -44,12 +45,12 @@ namespace RBM.Graph
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Green RBM.BA
 
-/-! ## 1. Vocabulary (the probe, verbatim, and the paper form) -/
+/-! ## 1. Vocabulary and the paper form -/
 
-/-- L3a5: a normal graph that is not locally standard (at the atom level) has a step (`lvl1_exists_step`, `LWLvl1.lean:3655`). -/
+/-- a normal graph that is not locally standard (at the atom level) has a step (as `lvl1_exists_step` in `Graph/LWLvl1.lean`). -/
 def BAlvl1ExistsStep : Prop := ∀ {E : Type} (P : BAPGraph E), P.g.Normal → ¬ P.g.LocStd → ∃ outs, BALocStep P outs
 
-/-- **L3a5: the BA `lvl1 lemma`** (`B:407-409`; `lvl1_lemma`, `LWLvl1.lean:3907`): the lists `outs`, `errs` do not depend on the data. -/
+/-- **The BA `lvl1 lemma`**: the lists `outs`, `errs` do not depend on the data. -/
 def BAlvl1Lemma (d : ℕ) : Prop :=
   ∀ {E : Type} (K : ℤ) (P : BAPGraph E), P.g.Normal → ∃ outs errs : List (BAPGraph E),
     (∀ Q ∈ outs, Q.g.LocStd ∧ P.g.scalingOrder ≤ Q.g.scalingOrder ∧ Q.g.scalingOrder < K) ∧ (∀ Q ∈ errs, K ≤ Q.g.scalingOrder) ∧
@@ -58,7 +59,7 @@ def BAlvl1Lemma (d : ℕ) : Prop :=
     ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 → ∀ ℓe : E → Idx d L W,
       ∫ ω, P.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) = ∫ ω, BAComb.val (outs ++ errs) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)
 
-/-- **The BA `lvl1 lemma` in the paper's form** (`lvl1_lemma_size`, `LWLvl1.lean:4047`; design §3 Step 5): at the cutoff
+/-- **The BA `lvl1 lemma` in the paper's form**: at the cutoff
 `K = lvl1Cutoff c K0 d D P.g.counters` the errors have scaling size `≤ W^{-D}` in the window `W^{-d/2} ≤ Ψ ≤ W^{-c}`, `L^d ≤ W^{K0}`. -/
 def BAlvl1LemmaSize (d : ℕ) : Prop :=
   ∀ {E : Type} (c : ℝ), 0 < c → ∀ (K0 : ℕ) (D : ℝ) (P : BAPGraph E), P.g.Normal → ∃ outs errs : List (BAPGraph E),
@@ -70,19 +71,19 @@ def BAlvl1LemmaSize (d : ℕ) : Prop :=
     ∀ (L W : ℕ) [NeZero L] [NeZero W], 3 ≤ L → ∀ (g0 Em t : ℝ) (m : ℂ), RBM.BA.BASelf d L g0 (Em : ℂ) m → 0 ≤ t → t < 1 → ∀ ℓe : E → Idx d L W,
       ∫ ω, P.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) = ∫ ω, BAComb.val (outs ++ errs) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)
 
-/-! ## 2. Measure and induction (target 3; twin of `LWLvl1` §13, `:3755-3809`) -/
+/-! ## 2. Measure and induction (as `Graph/LWLvl1.lean` Section 13) -/
 
 section Induction
 
 variable {E : Type}
 
-/-- **Target 3** (`Lvl1Reach.trans`, `LWLvl1:3755`): reachability by the strategy below the cutoff is transitive. -/
+/-- **Transitivity** (as `Lvl1Reach.trans`): reachability by the strategy below the cutoff is transitive. -/
 theorem BAReach.trans {K : ℤ} {P Q R : BAPGraph E} (h1 : BAReach K P Q) (h2 : BAReach K Q R) : BAReach K P R := by
   induction h2 with
   | refl => exact h1
   | step Q1 R1 L _ hlt hn hst hmem ih => exact BAReach.step P Q1 R1 L ih hlt hn hst hmem
 
-/-- **The induction principle of the strategy** (`lvl1_induction`, `LWLvl1:3763`): a predicate that holds at `P` and passes from the input of every
+/-- **The induction principle of the strategy** (as `lvl1_induction`): a predicate that holds at `P` and passes from the input of every
 `BALocStep` to each of its outputs holds at every graph reached from `P`. -/
 theorem ba_lvl1_induction {K : ℤ} {P Q : BAPGraph E} (h : BAReach K P Q) (Pred : BAPGraph E → Prop) (h0 : Pred P)
     (hstep : ∀ (A : BAPGraph E) (L : List (BAPGraph E)), BALocStep A L → Pred A → ∀ B ∈ L, Pred B) : Pred Q := by
@@ -90,7 +91,7 @@ theorem ba_lvl1_induction {K : ℤ} {P Q : BAPGraph E} (h : BAReach K P Q) (Pred
   | refl => exact h0
   | step Q1 R1 L _ _ _ hst hmem ih => exact hstep Q1 L hst ih R1 hmem
 
-/-- **The termination measure of the BA `lvl1 lemma`** (K3): the order deficit `(K - ord)⁺`, the number of external atoms, the atom-level loops, the number
+/-- **The termination measure of the BA `lvl1 lemma`**: the order deficit `(K - ord)⁺`, the number of external atoms, the atom-level loops, the number
 of solid edges, and the atom-level pairs, compared lexicographically (the band's `Lvl1Mu` has no `nExt`). -/
 def BALvl1Mu (K : ℤ) (P : BAPGraph E) : ℕ × ℕ × ℕ × ℕ × ℕ :=
   ((K - P.g.scalingOrder).toNat, P.g.nExt, P.g.nLoops, P.g.nS, P.g.nPairs)
@@ -103,7 +104,7 @@ theorem baLvl1Lt_wf : WellFounded BALvl1Lt :=
   (wellFounded_lt (α := ℕ)).prod_lex ((wellFounded_lt (α := ℕ)).prod_lex ((wellFounded_lt (α := ℕ)).prod_lex
     ((wellFounded_lt (α := ℕ)).prod_lex (wellFounded_lt (α := ℕ)))))
 
-/-- **The measure falls along a good step** (below the cutoff; `lvl1_mu_lt`, `LWLvl1:3795`). -/
+/-- **The measure falls along a good step** (below the cutoff; as `lvl1_mu_lt`). -/
 theorem ba_lvl1_mu_lt {K : ℤ} {Γ Q : BAPGraph E} (hK : Γ.g.scalingOrder < K) (hg : BALvl1Good Γ.g Q.g) :
     BALvl1Lt (BALvl1Mu K Q) (BALvl1Mu K Γ) := by
   obtain ⟨-, -, -, -, h⟩ := hg
@@ -127,7 +128,7 @@ theorem ba_lvl1_mu_lt {K : ℤ} {Γ Q : BAPGraph E} (hK : Γ.g.scalingOrder < K)
 
 end Induction
 
-/-! ## 3. The twist transport (new): `atEdges`, `atCharge` and the hypotheses of the frame steps at `P.twist c t` -/
+/-! ## 3. The twist transport: `atEdges`, `atCharge` and the hypotheses of the frame steps at `P.twist c t` -/
 
 section Transport
 
@@ -256,7 +257,7 @@ theorem BALvl1C_end_in_atom {G : BAGraph E I} {v : E ⊕ I} (hv : G.intAtom v = 
 
 end Transport
 
-/-! ## 4. Target 2: a step exists at every normal graph that is not locally standard (`lvl1_exists_step`, `LWLvl1:3655`) -/
+/-! ## 4. A step exists at every normal graph that is not locally standard (as `lvl1_exists_step`) -/
 
 section Exists
 
@@ -424,7 +425,7 @@ private theorem BALvl1C_exists_pair {E : Type} (P : BAPGraph E) (hN : P.g.Normal
     exact ⟨_, c, t, _, BAFrameStep.ggSplit (P.twist c t) (lwSymmTwistP c t p) hp' (lwSymmTwistP c t q) j hj'
       ⟨h1σ, hcirc.1, h2σ, hcirc.2⟩ a a' ⟨h1s, h2d⟩ hax hsame hwf' hint hnb', rfl⟩
 
-/-- **Target 2: `baLvl1ExistsStep_holds`** (twin of `lvl1_exists_step`, `LWLvl1:3655`; design §3 Step 2): a normal packed BA graph that is not locally standard
+/-- **`baLvl1ExistsStep_holds`** (as `lvl1_exists_step`): a normal packed BA graph that is not locally standard
 admits a step of the strategy: a weight (a self-loop), a `within` step (a solid edge inside an atom), an `edge` step (an internal atom with an edge and
 a bad shape), or a `gg`/`ggSplit` step (an internal atom with two solid edges of one colour, one out and one in, charge `0`). -/
 theorem baLvl1ExistsStep_holds : BAlvl1ExistsStep := by
@@ -441,7 +442,7 @@ theorem baLvl1ExistsStep_holds : BAlvl1ExistsStep := by
 
 end Exists
 
-/-! ## 5. Target 4: the BA `lvl1 lemma` (`lvl1_exists_aux`, `lvl1_lemma`, `LWLvl1:3837-3938`) -/
+/-! ## 5. The BA `lvl1 lemma` -/
 
 section Lemma
 
@@ -478,7 +479,7 @@ private def BALvl1C_Ident (d : ℕ) {E : Type} (Γ : BAPGraph E) (outs errs : Li
     ∀ ℓe : E → Idx d L W, ∫ ω, Γ.val (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0) =
       ∫ ω, BAComb.val (outs ++ errs) (BAlwData d L W g0 Em t m ω) ℓe ∂(PF d L W 0)
 
-/-- **the existence of the lists, by strong induction on the measure** (`lvl1_exists_aux`, `LWLvl1:3837`) -/
+/-- **the existence of the lists, by strong induction on the measure** -/
 private theorem BALvl1C_aux (d : ℕ) {E : Type} (K : ℤ) (Γ : BAPGraph E) (hN : Γ.g.Normal) :
     ∃ outs errs : List (BAPGraph E), (∀ Q ∈ outs, Q.g.LocStd ∧ Q.g.scalingOrder < K) ∧ (∀ Q ∈ errs, K ≤ Q.g.scalingOrder) ∧
       (∀ Q ∈ outs ++ errs, BAReach K Γ Q) ∧ BALvl1C_Ident d Γ outs errs := by
@@ -525,10 +526,10 @@ private theorem BALvl1C_aux (d : ℕ) {E : Type} (K : ℤ) (Γ : BAPGraph E) (hN
       rw [hI, List.map_append, List.sum_append] at h1
       exact h1
 
-/-- **Target 4: `baLvl1Lemma_holds`** (the BA `lvl1 lemma`, twin of `lvl1_lemma`, `LWLvl1:3907`; design §3 Steps 4, 6): every normal packed BA graph `Γ` and every cutoff `K`
-give finite lists `outs`, `errs`, independent of the data, with the pinned conclusions; the invariants (normal, `ord`, `n_M`, `n_A - n_W`) are carried along `BAReach` by
+/-- **`baLvl1Lemma_holds`** (the BA `lvl1 lemma`): every normal packed BA graph `Γ` and every cutoff `K`
+give finite lists `outs`, `errs`, independent of the data, with the stated conclusions; the invariants (normal, `ord`, `n_M`, `n_A - n_W`) are carried along `BAReach` by
 `ba_lvl1_induction` and `baLvl1StepGood_holds`; the identity of expectations is `baLvl1StepIdentity_holds` at each step and integrability of the values
-(`BALvl1A_integrable_val`).  The only data hypotheses are `BASelf` and `0 ≤ t < 1` (C1). -/
+(`BALvl1A_integrable_val`).  The only data hypotheses are `BASelf` and `0 ≤ t < 1`. -/
 theorem baLvl1Lemma_holds (d : ℕ) : BAlvl1Lemma d := by
   intro E K Γ hN
   obtain ⟨outs, errs, hout, herr, hreach, hid⟩ := BALvl1C_aux d K Γ hN
@@ -546,9 +547,9 @@ theorem baLvl1Lemma_holds (d : ℕ) : BAlvl1Lemma d := by
   intro L W _ _ hL g0 Em t m hSelf ht0 ht1 ℓe
   exact hid L W hL g0 Em t m hSelf ht0 ht1 ℓe
 
-/-! ## 6. Target 5: the paper form (`lvl1_lemma_size`, `LWLvl1:4047`) -/
+/-! ## 6. The paper form -/
 
-/-- **Target 5: `baLvl1LemmaSize_holds`** (twin of `lvl1_lemma_size`, `LWLvl1:4047-4071`; design §3 Step 5): `baLvl1Lemma_holds` at the cutoff
+/-- **`baLvl1LemmaSize_holds`**: `baLvl1Lemma_holds` at the cutoff
 `K = lvl1Cutoff c K0 d D P.g.counters` and the generic `lvl1_size_le` on the counters (`BAGraph.counters`: the slot `nV` is `n_A`): the errors have scaling size
 `≤ W^{-D}` in the window `W^{-d/2} ≤ Ψ ≤ W^{-c}`, `L^d ≤ W^{K0}`. -/
 theorem baLvl1LemmaSize_holds (d : ℕ) : BAlvl1LemmaSize d := by
@@ -558,8 +559,6 @@ theorem baLvl1LemmaSize_holds (d : ℕ) : BAlvl1LemmaSize d := by
   intro Q hQ W L Ψ hW hL hLW hlow hup
   obtain ⟨-, -, -, hM, hV⟩ := hall Q (List.mem_append_right _ hQ)
   exact lvl1_size_le c hc K0 d D P.g.counters W L Ψ hW hL hLW hlow hup Q.g.counters (herr Q hQ) hM hV
-
-/-! ## 7. Compiled instances (`d = 3`, `L = 4`, `W = 2`, the flow point of `BA/CouplingWindow.lean`; `BASelf` and `0 < t₀ < 1` are `flowP_data`) -/
 
 end RBM.Graph
 
