@@ -92,3 +92,4 @@
 | T2534 | 2026-10-17 08:27 UTC (4b68c4cc) | prover | Sonnet 5.5 | 是 | BA-D 的 R2（装配，关 BA-D）：`Thm27 := ∀ d, 3 ≤ d → BAThm27L d`、`baThm27L_all`、d = 4 实例（体内非空，Amend 1 选项 1，`L = 4`、`λ = g₀`），+151 −33；审核第 1 轮 PASS，约 12 分钟 |
 | T2548 | 2026-10-17 09:00 UTC (ba53553a) | prover | Sonnet 5.5 | 是 | 发布：公开版公理审计（`Test/Axioms.lean` 换成 RBM2D 形式，24,150 个 `RBM` 声明只用三条标准公理；删 `Test/AuditNegative.lean`），−612 行；审核第 1 轮 PASS |
 | T2549 | 2026-10-17 09:19 UTC (a92d38ad) | prover-hard | Sonnet 5.5 effort xhigh | 是（审核第 1 轮按开工后才给的 Amend 1 BDC-C2 RETURN，规则 (B) 改注释一次 94109171，H349 (2) 定为不算返工） | 发布第 3 步：BA-D 7 个文件的注释（+312 −344，去注释后 7/7 相同）；Theorem 2.7 的范围句、BDC-C1/C2；第 2 轮 PASS |
+| T2551 | 2026-10-17 09:25 UTC (1a8c2c11) | prover | Sonnet 5.5 | 否（审核第 1 轮 RETURN：一条文档串 → 规则 (B) 修一次 3b9ebf4a；第 2 轮 PASS） | 发布：d = 4 例子加 BUniv 合取，`(final_shape h32).2 4` 五个合取全部用上；只改 `Main/FinalShape` |
