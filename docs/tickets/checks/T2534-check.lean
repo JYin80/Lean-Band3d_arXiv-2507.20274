@@ -3,7 +3,7 @@ Release check for T2534 (dispatcher V5, 2026-10-17 01:25 UTC; DECISIONS §372 (2
 and `baStep5III_holds_any` at exact type before its 1b.
 Statements only: Prop-valued `example`s whose term is a name; no proofs.
 Run: lake env lean docs/tickets/checks/T2534-check.lean
-Part 1 compiles on `main` after T2533 (R1) merges. Part 2 is commented out; the dispatcher activates it at this ticket's merge.
+Part 1 compiles on `main` after T2533 (R1) merges. Part 2 was activated by the dispatcher at the merge 4b68c4cc (2026-10-17 08:45 UTC).
 -/
 import RBM3D
 
@@ -28,7 +28,7 @@ example : ∀ d : ℕ, 3 ≤ d →
 example : RBM.Univ.UNL32 → RBM.BA.BAThm27L 3 := RBM.BA.baThm27L_three
 #check @RBM.BA.baThm27L_any
 
--- Part 2 (activated at merge):
--- example : RBM.Endpoints.T2534Check.FinalShapeNew := RBM.Endpoints.final_shape
--- example : RBM.Univ.UNL32 → RBM.Endpoints.T2534Check.Thm27New := RBM.Endpoints.Thm27_of_L32
--- example : RBM.Univ.UNL32 → ∀ d : ℕ, 3 ≤ d → RBM.BA.BAThm27L d := RBM.BA.baThm27L_all
+-- Part 2 (activated at the merge 4b68c4cc):
+example : RBM.Endpoints.T2534Check.FinalShapeNew := RBM.Endpoints.final_shape
+example : RBM.Univ.UNL32 → RBM.Endpoints.T2534Check.Thm27New := RBM.Endpoints.Thm27_of_L32
+example : RBM.Univ.UNL32 → ∀ d : ℕ, 3 ≤ d → RBM.BA.BAThm27L d := RBM.BA.baThm27L_all

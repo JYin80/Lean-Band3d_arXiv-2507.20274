@@ -1800,7 +1800,7 @@ G5c 的 1b 已放弃（DECISIONS §234），没有合并的 Lean 陈述：
 
 ## Jun 决定的范围差异（总调度 V4，2026-10-14 05:29 UTC；DECISIONS §316）
 
-- **D723**（Jun 决定 B，2026-10-14）：论文 Thm 2.7（`MR:decol_BA`，`1_2:644-645`）对所有 `d ≥ 3` 陈述块 Anderson 模型的结论；Lean 的 BA 终端只在 **`d = 3`** 证明。原因：Step 5 情形 (iii) 的 BA 论证论文略去（`7_8:2101-2102`），Lean 按监督 U-C5 写了完整的 `d = 3` 论证（U5，D712 (d)：`BA/Step5IIIGood`、`Step5IIIWalk`、`Step5IIIWalk2` 陈述在 `Sizes 3` 上，`baStep5III_holds` 是 `STStep5IIIgL 3 …`）。V 的泛型 BA 陈述对 `d ≥ 3` 带显式假设 `STStep5IIIgL d`，`d = 3` 时由 `baStep5III_holds` 消掉。论文由 Jun 在 Lean 做完后改（把 BA 的维数写成 `d = 3`，或注明 `d > 3` 的情形 (iii) 未在 Lean 里证）。带状（非 BA）的结论仍是 `∀ d, 3 ≤ d`，不受影响。
+- **D723**（**已撤回（D754）**；Jun 决定 B，2026-10-14）：论文 Thm 2.7（`MR:decol_BA`，`1_2:644-645`）对所有 `d ≥ 3` 陈述块 Anderson 模型的结论；Lean 的 BA 终端只在 **`d = 3`** 证明。原因：Step 5 情形 (iii) 的 BA 论证论文略去（`7_8:2101-2102`），Lean 按监督 U-C5 写了完整的 `d = 3` 论证（U5，D712 (d)：`BA/Step5IIIGood`、`Step5IIIWalk`、`Step5IIIWalk2` 陈述在 `Sizes 3` 上，`baStep5III_holds` 是 `STStep5IIIgL 3 …`）。V 的泛型 BA 陈述对 `d ≥ 3` 带显式假设 `STStep5IIIgL d`，`d = 3` 时由 `baStep5III_holds` 消掉。论文由 Jun 在 Lean 做完后改（把 BA 的维数写成 `d = 3`，或注明 `d > 3` 的情形 (iii) 未在 Lean 里证）。带状（非 BA）的结论仍是 `∀ d, 3 ≤ d`，不受影响。
 
 ## 合并时编号 T2498g–k、T2502a（总调度 V4，2026-10-14 07:31 UTC；DECISIONS §318）
 

@@ -3906,3 +3906,13 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) **磁盘**：H346 (4) 的门槛 20 GiB，中枢量得 19 GiB，一张注释票都没开，并问怎么腾地方：`../RBM3D-wt/` 有 1,224 个工作树，多数是已合并或已停的票。**调度的决定（流程）**：`git worktree prune`；不是在跑的票的工作树，若其 HEAD 已在 `main` 里（已合并的票及其审核工作树）或是某个本地分支的头，用 `git worktree remove`（不加 `--force`）删掉；有未提交改动的、HEAD 不在任何分支上的留着并计数。删的只是检出与编译产物，提交都在分支上。H347 (3)。
 - (3) **并行（替换 H346 (2)）**：T2533 已合并，不必再给 T2534 留位；T2534 在跑，其余位按清单顺序开注释票，每开一张前剩余 ≥ 20 GiB，并以第一张注释票工作树的编译产物大小估计后面的。H347 (4)。
 - (4) 下一节 §379，下一张票号 T2548，下一条 H348。
+
+## §379 — T2534 合并：Theorem 2.7 对所有 d ≥ 3 证完，BA-D 关闭 REQ；放公开版审计 T2548、BA-D 注释票 T2549、PAPER-VS-LEAN 复核 T2550；注释票 Amend 1（总调度 V5，2026-10-17 08:45 UTC）
+
+- (1) **T2534 合并 4b68c4cc**（08:27 UTC）：审核第 1 轮 PASS；`BA/UNBUniv`（`baThm27L_all`；`baThm27L_three` 为其 d = 3 一行）与 `Main/FinalShape`（`Thm27 := ∀ d, 3 ≤ d → BAThm27L d`，`Thm27_of_L32 := baThm27L_all`，`final_shape` 原文不变），+151 −33。`final_shape`、`Thm27_of_L32`、`baThm27L_all`、`baThm27L_three` 只用三条标准公理。**Theorem 2.7 现在对每个 d ≥ 3 证完，与论文一致；唯一假设 `UNL32`。** BA-D 用 3 张（T2524、T2533、T2534）。返工：是。
+- (2) **d = 4 实例**：`L = 4`、`λ = g₀` 常数、体内非空已证（`FinalShape_bulk4`）、`Admissible (1/8) (1/10)` 已证，110 行；与 T2524 设计的 `L = 4(n+1)`、`λ = (2(n+1))^{-6}` 不同（λ 趋于 0 时固定 κ 的体内为空）。调度认为在 (vii) 之内（是实例不是陈述），交监督确认。
+- (3) 检查 T2534 Part 2 启用；`paper-deltas.md` D723 标「已撤回（D754）」（关闭条件 (v)）。**关闭 REQ**：`docs/supervisor/requests/REQ-2026-10-17-0845-BADclose.md`（(i)–(ix) 逐条，Q1 关闭、Q2 审计票现在放）。
+- (4) **(v) 的余项**：T2534 审核观察 3（`baThm27L_three`、`baThm27L_any` 的文档串仍引 D723）与观察 2（`UNBUniv` §5 标题说有实例而实际在 `FinalShape`）→ BA-D 注释票 **T2549**（7 个文件，第 6 条专讲 Theorem 2.7 的范围）；其他文件里「`d > 3` 不在范围内（决定 B，§316）」之类的说法（`BA/MADecolQUE:45`、`BA/MALocal:50`、`BA/MAQDiff:56`、`BA/MainIndTermBA:20`、`BA/MainIndRegBA:16` 等）→ 注释票 T2536–T2547 的共用 **Amend 1**（`docs/tickets/T2536-T2547-amend-1.md`）。
+- (5) **放行**：**T2548** 公开版公理审计（`Test/Axioms.lean` 换成 RBM2D 的形式，删 `Test/AuditNegative.lean`；监督 2346 更正 C1：装配票合并后），prover；**T2549** BA-D 注释票，prover-hard；**T2550** PAPER-VS-LEAN 复核（名字、Theorem 2.7 的范围、d = 4 一句、审计段、(2.52) 页码 p. 15、可选 `Ring.inverse` 一句；等 T2548 合并），prover。优先级 T2548、T2549、T2550，然后 T2536–T2547；磁盘规则照 H347 (4)。H348。
+- (6) **发布路径**：PAPER-VS-LEAN 在本仓库写 `paper/final/…`；`publish/make_publish.sh` 在公开树里把它改写成 `paper/…`、`paper/tex/…` 并检查不留 `paper/final`。
+- (7) (viii) 收尾 DeadDecls 重跑的根要含 `baThm27L_all`、`Thm27_of_L32`、`final_shape` 与 d = 3 推论 `baStep5III_holds`、`baThm27L_three`（留在发布版里）。下一节 §380，下一张票号 T2551，下一条 H349。
