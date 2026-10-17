@@ -3910,9 +3910,17 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 ## §379 — T2534 合并：Theorem 2.7 对所有 d ≥ 3 证完，BA-D 关闭 REQ；放公开版审计 T2548、BA-D 注释票 T2549、PAPER-VS-LEAN 复核 T2550；注释票 Amend 1（总调度 V5，2026-10-17 08:45 UTC）
 
 - (1) **T2534 合并 4b68c4cc**（08:27 UTC）：审核第 1 轮 PASS；`BA/UNBUniv`（`baThm27L_all`；`baThm27L_three` 为其 d = 3 一行）与 `Main/FinalShape`（`Thm27 := ∀ d, 3 ≤ d → BAThm27L d`，`Thm27_of_L32 := baThm27L_all`，`final_shape` 原文不变），+151 −33。`final_shape`、`Thm27_of_L32`、`baThm27L_all`、`baThm27L_three` 只用三条标准公理。**Theorem 2.7 现在对每个 d ≥ 3 证完，与论文一致；唯一假设 `UNL32`。** BA-D 用 3 张（T2524、T2533、T2534）。返工：是。
-- (2) **d = 4 实例**：`L = 4`、`λ = g₀` 常数、体内非空已证（`FinalShape_bulk4`）、`Admissible (1/8) (1/10)` 已证，110 行；与 T2524 设计的 `L = 4(n+1)`、`λ = (2(n+1))^{-6}` 不同（λ 趋于 0 时固定 κ 的体内为空）。调度认为在 (vii) 之内（是实例不是陈述），交监督确认。
+- (2) **d = 4 实例**：`L = 4`、`λ = g₀` 常数、体内非空已证（`FinalShape_bulk4`）、`Admissible (1/8) (1/10)` 已证，110 行；与 T2524 设计的 `L = 4(n+1)`、`λ = (2(n+1))^{-6}` 不同（λ 趋于 0 时固定 κ 的体内为空）。调度认为在 (vii) 之内（是实例不是陈述），交监督确认。**更正（监督 0846 BDC-C1）**：上面「λ 趋于 0 时固定 κ 的体内为空」不对——`BArho g 0 → 1/π`，κ < 1/π 时能量 0 附近终将在体内；设计的毛病是 κ = 1/2 > sup BArho（对任何 λ 都空）。取常数 λ 的真实理由是成本：非空体内的见证在固定耦合下构造，常数列直接是终将成立的见证，趋于 0 的 λ 要 m 对 λ 的连续性。公开文字不得写错误的理由。
 - (3) 检查 T2534 Part 2 启用；`paper-deltas.md` D723 标「已撤回（D754）」（关闭条件 (v)）。**关闭 REQ**：`docs/supervisor/requests/REQ-2026-10-17-0845-BADclose.md`（(i)–(ix) 逐条，Q1 关闭、Q2 审计票现在放）。
 - (4) **(v) 的余项**：T2534 审核观察 3（`baThm27L_three`、`baThm27L_any` 的文档串仍引 D723）与观察 2（`UNBUniv` §5 标题说有实例而实际在 `FinalShape`）→ BA-D 注释票 **T2549**（7 个文件，第 6 条专讲 Theorem 2.7 的范围）；其他文件里「`d > 3` 不在范围内（决定 B，§316）」之类的说法（`BA/MADecolQUE:45`、`BA/MALocal:50`、`BA/MAQDiff:56`、`BA/MainIndTermBA:20`、`BA/MainIndRegBA:16` 等）→ 注释票 T2536–T2547 的共用 **Amend 1**（`docs/tickets/T2536-T2547-amend-1.md`）。
 - (5) **放行**：**T2548** 公开版公理审计（`Test/Axioms.lean` 换成 RBM2D 的形式，删 `Test/AuditNegative.lean`；监督 2346 更正 C1：装配票合并后），prover；**T2549** BA-D 注释票，prover-hard；**T2550** PAPER-VS-LEAN 复核（名字、Theorem 2.7 的范围、d = 4 一句、审计段、(2.52) 页码 p. 15、可选 `Ring.inverse` 一句；等 T2548 合并），prover。优先级 T2548、T2549、T2550，然后 T2536–T2547；磁盘规则照 H347 (4)。H348。
 - (6) **发布路径**：PAPER-VS-LEAN 在本仓库写 `paper/final/…`；`publish/make_publish.sh` 在公开树里把它改写成 `paper/…`、`paper/tex/…` 并检查不留 `paper/final`。
 - (7) (viii) 收尾 DeadDecls 重跑的根要含 `baThm27L_all`、`Thm27_of_L32`、`final_shape` 与 d = 3 推论 `baStep5III_holds`、`baThm27L_three`（留在发布版里）。下一节 §380，下一张票号 T2551，下一条 H349。
+
+## §380 — 监督 0846 PASS：BA-D 关闭（3 / 3，BA 207），全部 gate 关闭，Lean 端完成；BDC-C1、BDC-C2；T2549、T2550 Amend 1；T2551 加 d = 4 的第五个合取（总调度 V5，2026-10-17 09:00 UTC）
+
+- (1) **监督 2026-10-17-0846 PASS**：Q1 BA-D 在 (i)–(ix) 下关闭，用 3 张（开时预测 ≈ 5），旗标 10 未到；BA 207；(vii) 的数据偏差在 (vii) 之内（确认）；(v) 的余项分派完整（10 个文件：T2542 六个 BA 文件、T2544 两个、T2549 `UNBUniv`、T2548 `Test/Axioms`）。Q2 T2548 现在放：无异议。**全部 gate 关闭，Lean 端完成**：`final_shape : UNL32 → (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27`，`Thm27 := ∀ d, 3 ≤ d → BAThm27L d`，三条标准公理。剩下只有发布工作，不改任何陈述。MNC-C1 失效。ROUTES 的 BA-D 行记关闭。
+- (2) **BDC-C1**（约束）：公开文字（T2550、T2549 在 `Main/FinalShape` 的文档串）不得说「λ 趋于 0 时固定 κ 的体内为空」；若给理由，用 §379 (2) 更正行里的理由。
+- (3) **BDC-C2**（约束）：BUniv 合取在 d = 4 的前提全部已由例子给出或与 d 无关（`BAEnd_BUnivL d` 对 d 一致）；`FinalShape.lean:24-25`、`:123-124`、`:209-211` 说 BUniv 读 d = 3 数据的句子要改。→ **T2549 Amend 1**（在跑：到审核边界把 Amend 1 交审核，必要时规则 (B) 修一次，不算返工；若已审核通过合并，就由 T2551 处理这三处）、**T2550 Amend 1**（开工即带；开工条件加「T2551 合并后」）。
+- (4) **O4（可选）采纳**：**T2551**（prover，小代码票，T2549 合并后）在 d = 4 例子里加第五个合取（BUniv）的应用，并改这三处注释为「五个合取都用上」。这样 d = 4 实例对五个合取都非空。只动 `Main/FinalShape.lean`，≤ 30 行，完整编译。
+- (5) (viii) 在 DeadDecls 收尾重跑前仍有约束；那一步的 REQ（或发布收尾 REQ）要列出根。H349。下一节 §381，下一张票号 T2552，下一条 H350。
