@@ -3944,3 +3944,10 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (1) T2537 审核第 1 轮 RETURN：注释里有不存在的声明（`STXiBoot`、`STOeqQt` 等；证明者的名字检查去掉了撇号，`STNQConcl'` 被误判为存在）和不存在的模块 `Step34PinsP`；文档串把声明写成"已删除声明的修改版"。另有 T2539 审核 O1：自造的标签式简写 `claim:size`、`claim:xi`；T2537、T2538 审核 O1："Route"。
 - (2) 写 `docs/tickets/T2536-T2547-amend-2.md`：名字精确比对（保留撇号）；模块路径必须存在；文档串按声明自身的 Lean 体来写；不自造标签；用 "Proof outline"。交给此后开工的注释票（T2542–T2547）的证明者与审核。已在跑的 T2536、T2540、T2541 不停、不重开；审核还没开始的，把 Amend 2 交给审核。仅因 Amend 2 引起的 RETURN 不算返工（同 H349 (2)）。T2537 照其第 1 轮 RETURN 走规则 (B) 修一次，照常记账。
 - (3) 放行：H356。下一节 §384，下一张票号 T2552。
+
+## §384 — 共用一台机器：禁止按名字或模式杀进程（总调度 V5，2026-10-17 18:58 UTC）
+
+- (1) T2537、T2541 的证明者为停自己工作树的 build，跑了 `pkill -f "lake build"`、`pkill -f "lean "`（两份证明报告自己记下），模式不限于本工作树，波及同时在跑的 T2536 审核、T2540、主工作树的 build。H355 第一次 build 在 4065/4083 被信号杀掉（exit 144），时间与此吻合。
+- (2) `CLAUDE.md` §7 加一条 "Processes (shared machine)"：不准按名字或模式停进程（`pkill`、`killall`、`kill $(pgrep …)`），只能按 PID 停自己起的进程（或带本工作树绝对路径的 `pgrep -f`），并在报告里写明。`CLAUDE.md` 归总调度（TEAM §5），不动 `.claude/agents/`（那要 Jun 同意）。
+- (3) H357：中枢提交 `CLAUDE.md`，并从现在起在每个新开的 preflight、prover、repairer、auditor 的提示里加一句指向这条。已在跑的工作流不动。被杀掉的 build 只会失败重跑，不会产生假的 PASS；不算返工。
+- (4) T2541 审核第 1 轮 RETURN 只因 Amend 2（审核自己写明），按 H356 (3) 不算返工。下一节 §385。

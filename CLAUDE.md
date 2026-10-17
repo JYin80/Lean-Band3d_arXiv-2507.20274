@@ -157,6 +157,10 @@ The final chat reply of any subagent is one line: ticket, verdict, report path.
 - **Git.**
   - Stage files only by name. Never `git add -A`, `git add .`, `git reset --hard`, `git clean`, or `rm -rf`.
   - Commit identity: `Jun Yin <321276894+JYin80@users.noreply.github.com>`, from the local `.git/config`. Do not override it.
+- **Processes (shared machine).** Several worktrees and the hub's main worktree build at the same time on this Mac.
+  - Never stop processes by name or pattern: no `pkill`, no `killall`, no `kill $(pgrep …)` with a pattern such as `lake build` or `lean`.
+  - Stop only a process you started, by its PID (`$!`, or a `pgrep -f` pattern that contains your own worktree's absolute path), and say so in your report.
+  - Reason: on 2026-10-17 two provers' `pkill -f "lake build"` stopped other tickets' builds and a hub build (DECISIONS §384).
 - **Blueprint and CI.**
   - Blueprint nodes (`\lean{}`, `\leanok`) are updated only by blueprint-sync tickets.
   - CI publishes only on push.
