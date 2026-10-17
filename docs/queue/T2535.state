@@ -1,0 +1,4 @@
+state: audit-pass
+reason: 1b prover-hard a84e21da (docs/PAPER-VS-LEAN.md, 695 lines); audit PASS round 1 (claude-opus-5-5, wf_cb54673a-33a); merging (rule A, report-only file).
+updated: Sat Oct 17 02:25:01 UTC 2026
+reports: docs/reports/T2535-prove.md, docs/reports/T2535-audit.md
