@@ -3891,3 +3891,11 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (5) 观察 O1（`baThm27L_any` 失去唯一的编译实例）：不处理；T2534 的 `baThm27L_all` 在 d = 3、d = 4 的实例会用到它。
 - (6) 收尾重跑（BA-D 与公开版审计之后）要做：删 `scanProvers` 及其 110 个声明；修工具 `inductUnit?` 不比模块的毛病（T2523 报告 (d) 2，两个漏报）；`restoredRoots` 复核。H345。下一节 §377，下一条 H346。
 
+## §377 — T2523 合并；T2533 开工；发布清理第 3 步（注释）一开始就拆成 12 张并行票 T2536–T2547（总调度 V5，2026-10-17 08:15 UTC）
+
+- (1) **T2523 合并 970b8b54**（07:56 UTC）：修复 89856dac（审核 D1 第 1–3 项）后第 2 轮审核 PASS（`docs/reports/T2523-audit.md`）；17 个整模块死文件 `git rm`，633 个文件删去没人用的声明与检查杂物，`RBM3D/` 下 +484 −149,231；完整编译 4426 个作业。合并后 `RBM3D/` 655 个文件、约 51.2 万行；树与 89856dac 的 `RBM3D/` 相同。返工：否（第 1 轮 RETURN，D1 修一次）。T2533（BA-D 的 R1）07:57 开工（wf_de230fb1-cb1，H341 (2)）。
+- (2) **注释清理 = 发布清理第 3 步，按 §373 一开始就分工**：12 张互不相交的票，按目录、大目录再按文件名首字母切，权重（注释行 + 3×流程词命中 + 3×TeX 行号）每张 6.4k–10.9k：T2536–T2538 `Induction/`（A–I、K–Q、S–Z），T2539–T2540 `Graph/`（A–B、C–Z），T2541–T2542 `BA/`（A–K、L–Z），T2543 `Chain/`，T2544 `Universality/`，T2545 `Green/ Defs/ Hierarchy/ Kernel/ Analysis/ Basic.lean`，T2546 `Evolution/ Loop/ Gauss/`，T2547 `Path/ Propagator/ Main/ Endpoints.lean`。每张票的文件清单在 `docs/tickets/T####-files.txt`（共 646 个文件）；票与清单由 `docs/claude-team/release-tickets/gen_comment_tickets.py` 按 `scopes.json` 生成。规则同 RBM2D T2275–T2278：不留流程词、论文引用用最终论文的 label/编号（`texref.py` 翻译投稿 TeX 的行号）、只动注释（去注释后逐字相同）。
+- (3) **不在这 12 张里**：BA-D 的 7 个文件（`BA/Step5III{Good,Good2,Walk,Walk2,Targets}`、`BA/UNBUniv`、`Main/FinalShape`）——T2534 合并后单开一张注释票，并顺带扫全库注释里「Theorem 2.7 只对 d = 3」的旧说法；`RBM3D/Test/` 与 `RBM3D.lean`——归公开版公理审计票（T2534 合并后，BAD-C5）。
+- (4) **并行**：T2533、T2534 没合并时注释票同时最多跑 2 张，留一个位给 T2534（T2533 一合并它就开）；T2534 合并后注释票补满到 `parallel`。磁盘剩余 < 20 GiB 时不再开新的注释票并报告。H346。
+- (5) 返工账：补 T2522、T2524 两行（之前漏记），T2523 行补全。近 10 张返工率 3/10（T2515、T2519、T2523）。
+- (6) 之后的顺序：T2533 → T2534（关 BA-D，发关闭 REQ）→ 公开版审计票、BA-D 注释票、PAPER-VS-LEAN 复核票（待定名字、d = 4 一句、(2.52) 页码、路径）→ 注释票全部合并后 DeadDecls 收尾重跑（§376 (6)）→ README 库地图 → `make_publish.sh`（Jun 手动推送）。下一节 §378，下一张票号 T2548，下一条 H347。
