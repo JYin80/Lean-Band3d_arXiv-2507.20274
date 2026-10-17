@@ -1,0 +1,8 @@
+Amend 1 to T2534 (dispatcher V5, 2026-10-17 02:35 UTC; DECISIONS §375; T2535 audit Observation 2, `docs/reports/T2535-audit.md:142-145`; T2535 prove report (d) 3)
+
+**Delivery.** T2534 has not started; this amend is part of the ticket from its start. It changes only the `d = 4` instance (closing (vii)).
+
+**The `d = 4` instance must not run over an empty bulk.** `BAm` is a solution of (2.32) or `0` and `‖BAm‖ ≤ 1` (`BAm_norm_le_one`), so `BArho ≤ 1/π < 1/2`: with `κ = 1/2` (the design's `T2524_sz4` example, probe :394-407) the bulk `BAbulk κ` is empty and the four BA conjuncts hold vacuously. That is the instance-regime defect of TEAM §10 (an instance that satisfies the statement only because a set is empty).
+1. Apply the four BA conjuncts of `Thm27 4` (decol, locSC, QUE, QDiff) the way the `d = 3` instance does (`Main/FinalShape.lean` §BAInstances: `κ_* = clsκ 4`, an energy `E_*` with a proof that it lies in the bulk, `S0_bulk`; `BA/MATrLocalBA.lean:468-507`, `BA/MADecolQUE.lean:421, 461`): data at `d = 4` with a **proof that the bulk is nonempty at the chosen `κ`**, eventually in `n`. Reuse the `d = 3` construction if it is generic in `d` (check `clsκ`, `fp`, `S0_bulk`, `BAbulk_window` for a hidden `3`); otherwise build the `d = 4` witness.
+2. Budget: the whole `d = 4` instance ≤ about 150 lines. If the nonempty bulk at `d = 4` needs more, give `Sizes 4` data with `Admissible (1/8) (1/10)` proved and **do not** apply the BA conjuncts (supervisor 2346 (vii) fallback); say so in the docstring and in the report. No instance with an empty bulk is merged.
+3. Report: which option you took, the line count, and (for option 1) the bulk witness at `d = 4` with file:line.
