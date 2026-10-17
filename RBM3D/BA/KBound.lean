@@ -12,22 +12,19 @@ import RBM3D.Chain.Step2Gen
 import RBM3D.Loop.KLFinal
 
 /-!
-# BA-K12: the stage-K outputs (ticket T2399)
+# The bounds `ML:Kbound` and `lem_wardineq_K` at block Anderson
 
-Dispatcher V2, DECISIONS §212; design `docs/reports/T2360-design.md:133` (row K12); probe
-`t/T2360:RBM3D/Probe/T2360Pins.lean:40-130` (`BAKbound`, `BAKbound_of_uniform`, `precL_of_loss`, `bparam_comp`, `t0_ge`).
+Paper: Lemma 2.16 (`ML:Kbound`) with (2.58) `eq:bcal_k`, and Lemma 4.2 (`lem_wardineq_K`) with (4.9) `wardineq_K`.
 
-1. **`baKBoundAt_holds`**: `BAKBoundAt d n Λ κ` for every `n ≥ 1` (`3 ≤ d`, `0 < Λ`, `0 < κ`).  `n = 1, 2, 3` are K10's
-   `baKBoundAt_one/two/three` (`BA/KInduct.lean`); `n ≥ 4` is the layer decomposition `BAKsol = W^{-d(n-1)} Σ_π BAKpi`
-   (`baK_eq_sum_Kpi`, `BA/KMolecule.lean:133`) and `baKpiBoundAt_holds` (`BA/KStep.lean:597`): the BA twin of
-   `KLInduct_BoundAt_of_Kpi` (`Loop/KLInduct.lean:1154`).
-2. **`BAKbound d`** and **`BAKward d`**, the flow-level pins `STKboundgL`, `STKwardgL` (`Chain/Carrier.lean`) at the carrier `baFMz sz z` and
+1. **`baKBoundAt_holds`**: `BAKBoundAt d n Λ κ` for every `n ≥ 1` (`3 ≤ d`, `0 < Λ`, `0 < κ`).  `n = 1, 2, 3` are
+   `baKBoundAt_one`, `baKBoundAt_two`, `baKBoundAt_three` (`BA/KInduct.lean`); `n ≥ 4` is the layer decomposition `BAKsol = W^{-d(n-1)} Σ_π BAKpi`
+   (`baK_eq_sum_Kpi`, `BA/KMolecule.lean`; (A.39) `eq_K-Kpi`) and `baKpiBoundAt_holds` (`BA/KStep.lean`): the BA analogue of
+   `KLInduct_BoundAt_of_Kpi` (`Loop/KLInduct.lean`).
+2. **`BAKbound d`** and **`BAKward d`**, the flow-level statements `STKboundgL`, `STKwardgL` (`Chain/Carrier.lean`) at the carrier `baFMz sz z` and
    the law `seqP (sz.withLam 0)`, along every `BAFlow`.  Both are consequences of a uniform deterministic bound in real time
-   `t ∈ [0,1)` at `BAReal` data (`BAKBoundAt`, resp. `BAWardIneqAt`, `BA/KWardIneq.lean:93`): the data of the carrier are `BAReal` for every `n`
+   `t ∈ [0,1)` at `BAReal` data (`BAKBoundAt`, resp. `BAWardIneqAt`, `BA/KWardIneq.lean`): the data of the carrier are `BAReal` for every `n`
    (`BAflow_real`), eventually `0 < g₀_n ≤ 𝔡⁻¹` (`BAflow_lam0_window`), `B_{t,0}(g₀) ≤ ((κ+1)/κ) B_{t,0}(g)` (`g₀² = t₀ g²`,
    `t₀ ≥ κ/(κ+1)`), and the loss `C L^s` is a `≺` (`L^s ≤ N^{s/d}`, `N → ∞`).  `baKbound_holds`, `baKward_holds` are the unconditional theorems.
-3. `KBound_baKsol_ward`: the Ward identity on `BAKsol` (`baK_ward` at `BAKsol_isKLoopS`).
-4. The nonempty instances (section 3): `inst_BAKbound`, `BAKward` at `d = 3`, `baKBoundAt_holds` and `KBound_baKsol_ward` at the flow point of `(d, L) = (3, 4)`.
 -/
 
 set_option linter.style.longLine false
@@ -45,7 +42,7 @@ open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes
 
 section Bound
 
-/-- **`(eq:bcal_k)` for `n ≥ 3`, from the layers** (the BA twin of `KLInduct_BoundAt_of_Kpi`, `Loop/KLInduct.lean:1154`): `(eq_K-Kpi)`
+/-- **(2.58) `eq:bcal_k` for `n ≥ 3`, from the layers** (the BA analogue of `KLInduct_BoundAt_of_Kpi`, `Loop/KLInduct.lean`): (A.39) `eq_K-Kpi`
 (`baK_eq_sum_Kpi`) gives the prefactor `W^{-d(n-1)} = ((W^d)⁻¹)^{n-1}`, the same for every layer `π`, times the sum over the
 `2^{|diagonals n|}` layers, each `≤ C L^τ B^{n-1}` (`baKpiBoundAt_holds`); the count is absorbed in the constant, the loss `L^τ` is not split. -/
 private theorem KBound_of_Kpi (d n : ℕ) [NeZero n] {Λ κ : ℝ} (hd : 3 ≤ d) (hn : 3 ≤ n) (hΛ : 0 < Λ) (hκ : 0 < κ) :
@@ -79,9 +76,9 @@ private theorem KBound_of_Kpi (d n : ℕ) [NeZero n] {Λ κ : ℝ} (hd : 3 ≤ d
     _ = 2 ^ (diagonals n).card * C * (L : ℝ) ^ τ * (((W : ℝ) ^ d)⁻¹ * Bparam d L g t 0) ^ (n - 1) := by
         rw [mul_pow]; ring
 
-/-- **`ML:Kbound`, `(eq:bcal_k)`, is proved at BA for every `n ≥ 1`**: `|𝒦^{(n)}_{t,σ,a}| ≤ C L^τ (W^{-d} B_{t,0})^{n-1}`, uniformly in
+/-- **Lemma 2.16 (`ML:Kbound`), (2.58) `eq:bcal_k`, is proved at BA for every `n ≥ 1`**: `|𝒦^{(n)}_{t,σ,a}| ≤ C L^τ (W^{-d} B_{t,0})^{n-1}`, uniformly in
 `L ≥ 3`, `W ≥ 1`, `g ∈ (0, Λ]`, the real-axis data `BAReal d L g κ E m` and `t ∈ [0,1)`, with `C` depending on `(d, n, Λ, κ, τ)` only.
-`n = 1, 2, 3` by `baKBoundAt_one/two/three` (`BA/KInduct.lean:270, 291, 425`), `n ≥ 4` by the layers (`KBound_of_Kpi`; no hypothesis of another gate). -/
+`n = 1, 2, 3` by `baKBoundAt_one`, `baKBoundAt_two`, `baKBoundAt_three` (`BA/KInduct.lean`), `n ≥ 4` by the layers (`KBound_of_Kpi`). -/
 theorem baKBoundAt_holds (d : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∀ n : ℕ, 1 ≤ n → BAKBoundAt d n Λ κ := by
   intro n hn
@@ -94,12 +91,12 @@ theorem baKBoundAt_holds (d : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hΛ : 0 < Λ) (
 
 end Bound
 
-/-! ## 2. The reduction from the uniform bounds to the flow-level pins -/
+/-! ## 2. The reduction from the uniform bounds to the flow-level statements -/
 
 section Reduction
 
 /-- A loss `C L^s` is a `≺` at the scale `N`, under any law (the failure event is eventually empty): the law-free form of the private
-`KLFinal_prec_of_loss` (`Loop/KLFinal.lean:212`; probe `precL_of_loss`). -/
+`KLFinal_prec_of_loss` (`Loop/KLFinal.lean`). -/
 private theorem KBound_precL_of_loss {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) (hd : 0 < d) (hN : sz.SizeTendsto)
     {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ} (hζ : ∀ n u ω, 0 ≤ ζ n u ω)
     (H : ∀ s : ℝ, 0 < s → ∃ C : ℝ, 0 < C ∧ ∀ᶠ n in atTop, ∀ u ω,
@@ -124,7 +121,7 @@ private theorem KBound_precL_of_loss {d : ℕ} (sz : Sizes d) (μ : Measure sz.S
     _ = ((sz.size n : ℕ) : ℝ) ^ τ * ζ n u ω := by
         rw [← Real.rpow_add' hNn (by linarith), add_halves]
 
-/-- `B_{t,0}` at the flow coupling `g₀` against the coupling `g` of the pin: `g² ≤ c g₀²`, `1 ≤ c`, `t < 1` give `B(g₀) ≤ c B(g)`. -/
+/-- `B_{t,0}` at the flow coupling `g₀` against the coupling `g`: `g² ≤ c g₀²`, `1 ≤ c`, `t < 1` give `B(g₀) ≤ c B(g)`. -/
 private theorem KBound_bparam_comp (d L : ℕ) {g g₀ t c : ℝ} (ht : t < 1) (hc : 1 ≤ c) (h : g ^ 2 ≤ c * g₀ ^ 2) :
     Bparam d L g₀ t 0 ≤ c * Bparam d L g t 0 := by
   have h1 : 0 < |1 - t| := abs_pos.2 (by linarith)
@@ -147,7 +144,7 @@ private theorem KBound_t0_ge {z m : ℂ} {κ : ℝ} (hκ : 0 < κ) (hm : κ ≤ 
   rw [div_le_div_iff₀ (by linarith) (by linarith)]
   nlinarith
 
-/-- `Im z_n > 0` on the chain domain (a copy of the private `GreenSchur_zim_pos`, `BA/GreenSchur.lean:49`). -/
+/-- `Im z_n > 0` on the chain domain (as the private `GreenSchur_zim_pos`, `BA/GreenSchur.lean`). -/
 private theorem KBound_zim_pos {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ}
     (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) : 0 < (z n).im := by
   have h1 := (h.2 n).2.1
@@ -190,26 +187,26 @@ private theorem KBound_eta_nonneg {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes 
   change 0 ≤ (1 - t) * (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n).im
   exact mul_nonneg (by linarith) this.le
 
-/-- **The stage-K pin `BAKbound`** (`ML:Kbound` for `BA`, `1_2:1056`; probe `T2360Pins.lean:49-52`): along a flow,
+/-- **The statement `BAKbound`** (Lemma 2.16 `ML:Kbound` for `BA`, (2.58) `eq:bcal_k`): along a flow,
 `max |𝒦^{(k)}_{τ,σ,a}| ≺ (W^{-d} B_{τ,0})^{k-1}` for every time sequence `τ ∈ [0,1)`, under the block Anderson law
-`seqP (sz.withLam 0)` (the generic `STKboundgL` at the carrier `baFMz`, `3 ≤ d` as in `STMainIndG`, `BA/FlowPins.lean:408`). -/
+`seqP (sz.withLam 0)` (the generic `STKboundgL` at the carrier `baFMz`, `3 ≤ d` as in `STMainIndG`, `BA/FlowPins.lean`). -/
 def BAKbound (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
       STKboundgL (baFMz sz z) (Sizes.seqP (sz.withLam 0))
 
-/-- **The stage-K pin `BAKward`** (`lem_wardineq_K`, `(wardineq_K)`, `3_5:1001`, at BA): along a flow, for every time sequence `τ ∈ [0,1)`
+/-- **The statement `BAKward`** (Lemma 4.2 `lem_wardineq_K`, (4.9) `wardineq_K`, at BA): along a flow, for every time sequence `τ ∈ [0,1)`
 and `k ≥ 2`, `max_σ Σ_{a_k} |𝒦^{(k)}_{τ,σ,a}| ≺ (W^d η_τ)⁻¹ (W^{-d} B_{τ,0})^{k-2}`, `η_τ = (1 - τ) Im m_F` (the generic `STKwardgL` at the carrier
-`baFMz`).  Not to be confused with the identity `baK_ward` of K02 (`BA/KWard.lean:305`), the Ward identity of `BAKsol`. -/
+`baFMz`).  Not to be confused with the identity `baK_ward` (`BA/KWard.lean`), the Ward identity of `BAKsol`. -/
 def BAKward (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
       STKwardgL (baFMz sz z) (Sizes.seqP (sz.withLam 0))
 
-/-- **The reduction (K2).**  The uniform deterministic bounds `BAKBoundAt` (real `t ∈ [0,1)`, `BAReal` data) give the stage-K pin along every
+/-- **The reduction.**  The uniform deterministic bounds `BAKBoundAt` (real `t ∈ [0,1)`, `BAReal` data) give `BAKbound` along every
 flow: the data of the carrier `baFMz sz z` are `BAReal` for every `n` (`BAflow_real`), the coupling is `g₀ ≤ 𝔡⁻¹` eventually
-(`BAflow_lam0_window`), and `B(g₀) ≤ ((κ+1)/κ) B(g)` (`KBound_B_le`), so the constant of the pin is `C ((κ+1)/κ)^{k-1}`; no complex `t`,
-no horizon (`BAflowT0` is not used).  `3 ≤ d` enters `U` because `baKBoundAt_two/three` need it (the probe's `U` had none). -/
+(`BAflow_lam0_window`), and `B(g₀) ≤ ((κ+1)/κ) B(g)` (`KBound_B_le`), so the constant is `C ((κ+1)/κ)^{k-1}`; no complex `t`,
+no horizon (`BAflowT0` is not used).  `3 ≤ d` enters the uniform bound because `baKBoundAt_two`, `baKBoundAt_three` need it. -/
 theorem BAKbound_of_uniform (d : ℕ)
     (U : 3 ≤ d → ∀ (Λ κ : ℝ) (n : ℕ), 0 < Λ → 0 < κ → 1 ≤ n → BAKBoundAt d n Λ κ) : BAKbound d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow τ hτ0 hτ1 k hk
@@ -241,13 +238,13 @@ theorem BAKbound_of_uniform (d : ℕ)
     _ = C * ((κ + 1) / κ) ^ (k - 1) * ((sz.L n : ℕ) : ℝ) ^ s * sz.Bctl n (τ n) ^ (k - 1) := by
         rw [mul_pow]; ring
 
-/-- **`ML:Kbound` at BA is proved**: `BAKbound d`, for every `d` (the `3 ≤ d` is a hypothesis of the pin), no hypothesis of another gate. -/
+/-- **Lemma 2.16 (`ML:Kbound`) at BA is proved**: `BAKbound d`, for every `d` (the `3 ≤ d` is a hypothesis of the statement). -/
 theorem baKbound_holds (d : ℕ) : BAKbound d :=
   BAKbound_of_uniform d fun hd _ _ n hΛ hκ hn => baKBoundAt_holds d hd hΛ hκ n hn
 
-/-- **The Ward reduction.**  The uniform bounds `BAWardIneqAt` (`BA/KWardIneq.lean:93`, real `t ∈ [0,1)`, `BAReal` data) give the pin
+/-- **The Ward reduction.**  The uniform bounds `BAWardIneqAt` (`BA/KWardIneq.lean`, real `t ∈ [0,1)`, `BAReal` data) give
 `STKwardgL` along every flow, by the same reduction as `BAKbound_of_uniform`; `η` is `etaOf (BAmF ..) t = (1 - t) Im m_F`, the same factor
-`((1 - t) m.im)` on both sides (no `c` on `η`), so the constant of the pin is `C ((κ+1)/κ)^{k-2}`.  The last label is `x`, and the loop is
+`((1 - t) m.im)` on both sides (no `c` on `η`), so the constant is `C ((κ+1)/κ)^{k-2}`.  The last label is `x`, and the loop is
 `KLloopOf d L σ (a, x) = ⟨List.ofFn σ, List.ofFn a ++ [x]⟩` (`Carrier_ofFn_ext`). -/
 private theorem KBound_BAKward_of_uniform (d : ℕ)
     (U : 3 ≤ d → ∀ (Λ κ : ℝ) (n : ℕ), 0 < Λ → 0 < κ → 2 ≤ n → BAWardIneqAt d n Λ κ) : BAKward d := by
@@ -297,8 +294,8 @@ private theorem KBound_BAKward_of_uniform (d : ℕ)
         ((((sz.W n : ℕ) : ℝ) ^ d * (baFMz sz z).eta n (τ n))⁻¹ * sz.Bctl n (τ n) ^ (k - 2)) := by
         rw [mul_pow]; ring
 
-/-- **`lem_wardineq_K` at BA is proved**: `BAKward d`, for every `d`, no hypothesis of another gate.  The premises `KWardIneq_IndAt d k Λ κ`
-(`3 ≤ k ≤ n`) of K11's `baWardIneq_holds` are discharged by `KWardIneq_IndAt_of_abs` of K09b's `KStep_baIndStepAbs_holds`. -/
+/-- **Lemma 4.2 (`lem_wardineq_K`) at BA is proved**: `BAKward d`, for every `d`.  The premises `KWardIneq_IndAt d k Λ κ`
+(`3 ≤ k ≤ n`) of `baWardIneq_holds` are discharged by `KWardIneq_IndAt_of_abs` applied to `KStep_baIndStepAbs_holds`. -/
 theorem baKward_holds (d : ℕ) : BAKward d :=
   KBound_BAKward_of_uniform d fun hd _ _ n hΛ hκ hn =>
     baWardIneq_holds d n hd hn hΛ hκ
@@ -306,12 +303,5 @@ theorem baKward_holds (d : ℕ) : BAKward d :=
 
 end Reduction
 
-/-! ## 3. Compiled nonempty instances
-
-Flow data: `d = 3`, `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2097152`),
-`zSeq`, `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`, proved).  The pins
-`inst_BAKbound` and the `BAKward` examples are the theorems `baKbound_holds`, `baKward_holds` at this data: no hypothesis is left, since the uniform
-bounds `U` are the proved `baKBoundAt_holds`, `baWardIneq_holds`.  Deterministic datum: the flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`;
-`P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`, `0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `W = 2` (`W^d = 8`), `t = 1/2`, `τ = 1`, distinct labels of `Z_4^3`. -/
 
 end RBM.BA

@@ -10,14 +10,11 @@ import RBM3D.BA.KMolecule
 import RBM3D.Loop.KLMolecule
 
 /-!
-# Stage K, row K08a: Ward bound for sums of `𝒦` and the signed sum-zero of `BASig`
+# Ward bound for sums of `𝒦` and the signed sum-zero of `BASig`
 
-Ticket T2385 (design BA-DK, `docs/reports/T2360-design.md` §3 (c), §5; supervisor
-`2026-10-09-2051.md` K-b, `2026-10-10-1155.md` C1; statements fixed by
-`docs/reports/T2385-prove.md` section (a+) (iv), audited in `docs/reports/T2385-1a-audit.md`).
-Paper: `(eq:Sigma-empty-sum-zero)` (`A_deterministic_estimates.tex:728-734`), which the TeX only
-cites; here it is proved from `(WI_calK)` (`baK_ward`), the cut factorisation
-`(eq:molecule-Kpi)` (`baSigmaPi_cut`) and translation invariance.
+Paper: (A.48) `eq:Sigma-empty-sum-zero`, which the TeX only
+cites; here it is proved from (2.57) `WI_calK` (`baK_ward`), the cut factorisation
+(A.40) `eq:molecule-Kpi` (`baSigmaPi_cut`) and translation invariance.
 
 1. `baSigmaPi_slice`: the slice sums `Σ_{δ_r = x} Σ^{(π)}(δ)` do not depend on `(r, x)`
    (translation invariance).
@@ -29,11 +26,10 @@ cites; here it is proved from `(WI_calK)` (`baK_ward`), the cut factorisation
 4. `baSigmaPi_total_le`: `|Σ_δ Σ^{(π)}(δ)| ≤ C L^d (1-t)` at alternating `σ`, every layer `π`
    (induction on `n`; the cut recursion `(1-t) L^d 𝒮(σ,π) = t 𝒮(σ_in,∅) 𝒮(σ_out,π')`).
 5. `baSig_signed_sum_unif`, `baSig_signed_sum`: the first bound clause of `SigSumZeroAbs`
-   (`Loop/KLIndStepA.lean:1036`) at `BASig`, uniformly in `(L, g ≤ Λ, E, m, t < 1)`: constants
-   depend on `(d, n, Λ, κ)` only (C1).
-6. Compiled instances at the flow point `P` of `(d, L) = (3, 4)`, `n = 4` and `n = 6`.
+   (`Loop/KLIndStepA.lean`) at `BASig`, uniformly in `(L, g ≤ Λ, E, m, t < 1)`: constants
+   depend on `(d, n, Λ, κ)` only.
 
-Public: the declarations above; every other helper is `private` with the stem `KSumZeroA_`.
+The names of the private helpers begin with KSumZeroA_.
 -/
 
 set_option linter.style.longLine false
@@ -49,7 +45,7 @@ section Slice
 
 variable {d L n : ℕ} [NeZero L] [NeZero n]
 
-/-- **A1 (the twin of `SumZero_sum_slice`)**: for a translation invariant `M`, `L^d Σ_{δ_r = x} Σ^{(π)}(δ) = Σ_δ Σ^{(π)}(δ)`
+/-- **The slice sums** (the analogue of `SumZero_sum_slice`): for a translation invariant `M`, `L^d Σ_{δ_r = x} Σ^{(π)}(δ) = Σ_δ Σ^{(π)}(δ)`
 for every root `r`, label `x` and layer `π`: translating by `y - x` maps the slice `δ_r = x` onto the slice `δ_r = y`
 (`baSigmaPi_shift`), and `|Z_L^d| = L^d`. -/
 theorem baSigmaPi_slice (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
@@ -124,8 +120,8 @@ private theorem KSumZeroA_theta_col {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g 
 
 variable {n : ℕ} [NeZero n]
 
-/-- **A2 (the layer identity)**: for alternating `σ` (`n ≥ 3`) every leaf edge of every tree has distinct charges, so
-`Σ_a Θ^{(σ_v,σ_{v+1})}(a_v, δ_v) = (1-t)⁻¹`: `(1-t)^n Σ_a K^{(π)}(σ,a) = Σ_δ Σ^{(π)}(δ)`, and with `(eq_K-Kpi)`
+/-- **The layer identity**: for alternating `σ` (`n ≥ 3`) every leaf edge of every tree has distinct charges, so
+`Σ_a Θ^{(σ_v,σ_{v+1})}(a_v, δ_v) = (1-t)⁻¹`: `(1-t)^n Σ_a K^{(π)}(σ,a) = Σ_δ Σ^{(π)}(δ)`, and with (A.39) `eq_K-Kpi`
 (`baK_eq_sum_Kpi`) `(W^d)^{n-1} (1-t)^n Σ_a 𝒦^{(n)}_{t,σ,a} = Σ_{π ⊆ Z_n^{off}} Σ_δ Σ^{(π)}(δ)`.  `1 ≤ W` is needed:
 at `W = 0` Lean's `0⁻¹ = 0` makes the left side `0`. -/
 theorem baK_sumAll_eq_layers {κ g E : ℝ} {m : ℂ} (hκ : 0 < κ) (hg : 0 < g) (hL : 3 ≤ L) (W : ℕ) (hW : 1 ≤ W)
@@ -176,7 +172,7 @@ theorem baK_sumAll_eq_layers {κ g E : ℝ} {m : ℂ} (hκ : 0 < κ) (hg : 0 < g
 
 end Layers
 
-/-! ## 3. The Ward bound for sums of `𝒦` (T1) -/
+/-! ## 3. The Ward bound for sums of `𝒦` -/
 
 section Ward
 
@@ -316,7 +312,7 @@ private theorem KSumZeroA_sum_exp {d n : ℕ} [NeZero n] (hd : 3 ≤ d) {c : ℝ
         simp
 
 /-- **The pure bound for sums, `n = 2`**: `|Σ_{a_0,a_1} 𝒦^{(2)}_{(s,s),a}| ≤ Σ_{a_0,a_1} |𝒦^{(2)}_{(s,s),a}| ≤ W^{-d} L^d B expC(d-2, r)`:
-`(Kn2sol)` (`baKsol_two`), the entry bound `|Θ^{(s,s)}_{xz}| ≤ B e^{-r|x-z|}` (`baPure_edge`), the row sums `Σ_y |M^{(s,s)}_{zy}| = Σ_y K_{zy} = 1`
+(2.71) `Kn2sol` (`baKsol_two`), the entry bound `|Θ^{(s,s)}_{xz}| ≤ B e^{-r|x-z|}` (`baPure_edge`), the row sums `Σ_y |M^{(s,s)}_{zy}| = Σ_y K_{zy} = 1`
 and `Σ_z e^{-r|x-z|} ≤ expC(d-2, r)`. -/
 private theorem KSumZeroA_pure_two {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) {L : ℕ} [NeZero L]
     (hL : 3 ≤ L) (W : ℕ) {g : ℝ} (hg : 0 < g) (hgΛ : g ≤ Λ) {E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ}
@@ -382,7 +378,7 @@ private theorem KSumZeroA_pure_two {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ :
         push_cast
         ring
 
-/-- **The pure bound for sums, `n ≥ 3`**: `lem_pureloop` (`baPure_loop`) and `Σ_a e^{-c max_{i,j} |a_i - a_j|} ≤ L^d S^{n-1}`. -/
+/-- **The pure bound for sums, `n ≥ 3`**: Lemma A.7 (`lem_pureloop`, `baPure_loop`) and `Σ_a e^{-c max_{i,j} |a_i - a_j|} ≤ L^d S^{n-1}`. -/
 private theorem KSumZeroA_pure_three {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ)
     (hκ : 0 < κ) :
     ∃ B : ℝ, 0 < B ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (W : ℕ) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
@@ -528,9 +524,9 @@ private theorem KSumZeroA_ward_aux {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ :
 
 end Ward
 
-/-- **T1: the Ward bound for sums of `𝒦`** (`(WI_calK)`, `baK_ward`, summed over the labels): for every charge vector `σ`
+/-- **The Ward bound for sums of `𝒦`** ((2.57) `WI_calK`, `baK_ward`, summed over the labels): for every charge vector `σ`
 and `n ≥ 1`, `|Σ_{a ∈ Z_L^{dn}} 𝒦^{(n)}_{t,σ,a}| ≤ B L^d (W^d η_t)^{-(n-1)}`, `η_t = (1-t) Im m`.  `B` depends on `(d, n, Λ, κ)`
-only, uniformly in `L ≥ 3`, `W ≥ 1`, `g ∈ (0, Λ]`, the real-axis data and `t ∈ [0, 1)` (supervisor 1155 C1). -/
+only, uniformly in `L ≥ 3`, `W ≥ 1`, `g ∈ (0, Λ]`, the real-axis data and `t ∈ [0, 1)`. -/
 theorem baK_sumAll_le {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 1 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ B : ℝ, 0 < B ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (W : ℕ), 1 ≤ W → ∀ g : ℝ, 0 < g → g ≤ Λ →
       ∀ (E : ℝ) (m : ℂ), BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ σ : Fin n → Bool,
@@ -539,7 +535,7 @@ theorem baK_sumAll_le {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 1 ≤ n) {Λ �
   obtain ⟨k, rfl⟩ : ∃ k, n = k + 1 := ⟨n - 1, by omega⟩
   exact KSumZeroA_ward_aux hd hΛ hκ k
 
-/-! ## 4. The cut recursion (A4) -/
+/-! ## 4. The cut recursion -/
 
 section Split
 
@@ -850,7 +846,7 @@ private theorem KSumZeroA_sigmaOut_alt (σ : Fin (n + 1) → Bool) (halt : ∀ j
 
 end Alt
 
-/-! ## 6. The induction (A5) -/
+/-! ## 6. The induction -/
 
 section Induction
 
@@ -932,9 +928,9 @@ private theorem KSumZeroA_card_layers (n : ℕ) : ((diagonals n).powerset.card :
   rw [Finset.card_powerset]
   exact_mod_cast Nat.pow_le_pow_right (by norm_num) h1
 
-/-- **The strong induction on the length** (A5): `|𝒮(σ,π)| ≤ C L^d (1-t)` for every alternating `σ` of length `3 ≤ n ≤ N` and every
+/-- **The strong induction on the length**: `|𝒮(σ,π)| ≤ C L^d (1-t)` for every alternating `σ` of length `3 ≤ n ≤ N` and every
 layer `π`, `C = C(d, N, Λ, κ)`.  Step `N + 1`: a layer `π ≠ ∅` is the cut recursion (`KSumZeroA_offdiag`, `C'²`); the layer `π = ∅`
-is `(1-t)^n Σ_a 𝒦` (A2 at `W = 1`) minus the other layers, and `(1-t)^n |Σ_a 𝒦| ≤ B κ^{-(n-1)} L^d (1-t)` (A3, `η_t ≥ (1-t) κ`). -/
+is `(1-t)^n Σ_a 𝒦` (the layer identity at `W = 1`) minus the other layers, and `(1-t)^n |Σ_a 𝒦| ≤ B κ^{-(n-1)} L^d (1-t)` (`baK_sumAll_le`, `η_t ≥ (1-t) κ`). -/
 private theorem KSumZeroA_total_aux {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∀ N : ℕ, ∃ C : ℝ, 0 < C ∧ ∀ (n : ℕ) [NeZero n], 3 ≤ n → n ≤ N → ∀ (L : ℕ) [NeZero L], 3 ≤ L →
       ∀ g : ℝ, 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ), BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 →
@@ -1036,9 +1032,9 @@ private theorem KSumZeroA_total_aux {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ 
           _ = Cn * (L : ℝ) ^ d * (1 - t) := by rw [hCn]; ring
       · exact hfin _ ((hoff π hπ).trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hC2 hL0) h1t.le))
 
-/-- **The signed sum-zero, in the total form** (`(eq:Sigma-empty-sum-zero)`, `A:728-734`): for `σ` cyclically alternating,
+/-- **The signed sum-zero, in the total form** ((A.48) `eq:Sigma-empty-sum-zero`): for `σ` cyclically alternating,
 `3 ≤ n`, and **every layer `π`**, `|Σ_δ Σ^{(π)}(δ)| ≤ C L^d (1-t)`, with `C = C(d, n, Λ, κ)` uniform in `L ≥ 3`, `g ∈ (0, Λ]`, the
-real-axis data and `t ∈ [0, 1)` (no smallness of `g`: supervisor 1155 C1). -/
+real-axis data and `t ∈ [0, 1)` (no smallness of `g`). -/
 theorem baSigmaPi_total_le {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ g : ℝ, 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ σ : Fin n → Bool, (∀ j, σ j ≠ σ (j + 1)) →
@@ -1052,9 +1048,9 @@ end Induction
 
 /-! ## 7. The signed sum-zero of `BASig` -/
 
-/-- **The signed sum-zero, uniform form** (the first bound clause of `SigSumZeroAbs`, `Loop/KLIndStepA.lean:1036`, at `BASig`):
+/-- **The signed sum-zero, uniform form** (the first bound clause of `SigSumZeroAbs`, `Loop/KLIndStepA.lean`, at `BASig`):
 for `σ` cyclically alternating, `3 ≤ n`, every root `r` and label `x`, `|Σ_{δ_r = x} Σ^{(∅)}(δ)| ≤ C (1-t)`.  The slice sum is
-`𝒮(σ,∅)/L^d` (`baSigmaPi_slice`), and `baSigmaPi_total_le`.  `C = C(d, n, Λ, κ)`: no smallness of `g` (1155 C1). -/
+`𝒮(σ,∅)/L^d` (`baSigmaPi_slice`), and `baSigmaPi_total_le`.  `C = C(d, n, Λ, κ)`: no smallness of `g`. -/
 theorem baSig_signed_sum_unif {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ g : ℝ, 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ σ : Fin n → Bool, (∀ j, σ j ≠ σ (j + 1)) →
@@ -1075,7 +1071,7 @@ theorem baSig_signed_sum_unif {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ 
 /-- **The signed sum-zero of `BASig`, family form** (the first bound clause of `SigSumZeroAbs` at `BASig d n L g E m t`): over a
 family `ι` of data `3 ≤ L i`, `0 < g i ≤ Λ`, `BAReal d (L i) (g i) κ (E i) (m i)`, `0 ≤ t i < 1`, one constant `C = C(d, n, Λ, κ)` with
 `|Σ_{δ_r = x} Σ^{(∅)}(δ)| ≤ C (1 - t i)` at every alternating `σ`, root `r`, label `x`.  The strict `t i < 1` and `3 ≤ n` are the ranges
-of the consumers (`KLIndStepB.lean:297, 362`) and of the band instance `sigSumZeroAbs_band`; `SigSumZeroAbs` itself is untouched. -/
+of the consumers (`KLIndStepB.lean`) and of the band instance `sigSumZeroAbs_band`. -/
 theorem baSig_signed_sum {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ)
     (L : ι → ℕ) [∀ i, NeZero (L i)] (g E : ι → ℝ) (m : ι → ℂ) (t : ι → ℝ) (hL : ∀ i, 3 ≤ L i) (hg : ∀ i, 0 < g i)
     (hgΛ : ∀ i, g i ≤ Λ) (hr : ∀ i, BAReal d (L i) (g i) κ (E i) (m i)) (ht0 : ∀ i, 0 ≤ t i) (ht1 : ∀ i, t i < 1) :
@@ -1085,12 +1081,5 @@ theorem baSig_signed_sum {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn :
   exact ⟨C, hC, fun i σ halt r x =>
     h (L i) (hL i) (g i) (hg i) (hgΛ i) (E i) (m i) (hr i) (t i) (ht0 i) (ht1 i) σ halt r x⟩
 
-/-! ## 8. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`,
-`0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `n = 4` (and `n = 6`), `σ = KLsigAlt n = (+,-,+,-,…)` (cyclically alternating), `t = 1/2`
-and `t = 999/1000` (near `1`), `W = 1` and `W = 2`.  `TSP 4` has three trees and `KLTSPlong 4 σ ∅ = TSP 4` (two examples below);
-at `n = 6` the long layer `π = {(0,3)}` is nonempty.  Every deterministic hypothesis of every theorem is discharged at this datum;
-no hypothesis of another gate remains (no pin enters: `BAKsolve` is the merged `baKsolve`). -/
 
 end RBM.BA

@@ -11,29 +11,24 @@ import RBM3D.Induction.Step2Defs
 import RBM3D.Loop.KLTree
 
 /-!
-# The block Anderson chain pins over a law (BA-C1a = BA-D1b + the closure of D472)
+# The block Anderson propagator statements, flow and loops over a law
 
-Ticket T2197 (with Amend 1, Amend 2).  Sections:
+Sections:
 
-1. the fine-lattice `M` of `(def_G0)` is `M^{(B)} ⊗ I_{W^d}`, and the two normalised traces
-   agree (D472: `BASelf` is the paper's `(self_m)`, `1_2:626-633`);
-2. the propagator pins `BAProp5 … BAProp5to8`, stated only (T2161 probe
-   `RBM3D/Probe/T2161Pins.lean` on `t/T2161` at 82e72b3, section 4, `:661-736`);
-3. the flow `H_t = g₀ Ψ + √t V` and its loops (probe section 5, `:744-811`);
-4. the flow carrier `FlowFM` over a law `μ` (probe section 6, `:819-1008`, with the law parameter of
-   `RBM3D/Probe/T2173Pins.lean` on `t/T2173` at a543154, `:1932-2055`), and the band bridges;
-5. the flow data, `STMainIndG`, `lem_ConArg_BA` as `BAConArg'` (probe section 7,
-   `:1016-1191`), with the law `Sizes.seqP (sz.withLam 0)`;
-6. extra target (a): `(self_m)` has no solution beyond `2 + 2d|g|` (`baSelf_none_of_gt`);
-7. `BAConArg'_premise_diag`;
-8. extra target (b): the unrepaired `BAConArg` is refuted under data beyond the support
-   (`not_BAConArg_of_data`);
-9. compiled nonempty instances in `RBM.BA.FlowPinsInst`.
+1. the fine-lattice `M` of (2.33) `def_G0` is `M^{(B)} ⊗ I_{W^d}`, and the two normalised traces
+   agree (`BASelf` is the paper's (2.32) `self_m`);
+2. the propagator statements `BAProp5 … BAProp5to8` (properties 5-8 of Lemma 2.19 `lem_propTH` at the block Anderson model),
+   stated only;
+3. the flow `H_t = g₀ Ψ + √t V` and its loops;
+4. the flow carrier `baFM` over a law `μ`;
+5. the flow data, `STMainIndG`, the vector part `BAConArgVec` of Lemma 8.5 (`lem_ConArg_BA`),
+   with the law `Sizes.seqP (sz.withLam 0)`;
+6. `(self_m)` has no solution beyond `2 + 2d|g|` (`baSelf_none_of_gt`);
+7. `BAConArg'_premise_diag`: the premise `κ ≤ Im m(E_n, g_s)` of Lemma 8.5 on the diagonal `s = t`;
+8. explicit data at `d = 3` in `RBM.BA.FlowPinsInst`.
 
-Not in this file (Amend 1, Amend 2): `BAMainInd`, `BAStep1`, `BAGbEXP`, `BAGbEXPpre`,
-`BAGbEXPconcl`.
-Paper: `paper/tex/1_2_Intro_model_result.tex` (`1_2:line`),
-`paper/tex/7_8_light_weight.tex` (`7_8:line`).
+Not in this file: the statements of the main induction, of Step 1 and of `GbEXP` at block Anderson.
+Paper: Section 2 (the model, Lemma 2.19) and Section 8 (the block Anderson extension).
 -/
 
 set_option linter.style.longLine false
@@ -50,7 +45,7 @@ namespace RBM.BA
 
 open RBM RBM.Gauss
 
-/-! ## 1. Target 1 (D472): the fine-lattice `M` and `(self_m)` with `N⁻¹ tr` -/
+/-! ## 1. The fine-lattice `M` and `(self_m)` with `N⁻¹ tr` -/
 
 section Fine
 
@@ -62,7 +57,7 @@ private theorem FlowPins_psiI_eq (d L W : ℕ) [NeZero L] [NeZero W] (g : ℝ) :
   rw [smul_kronecker]
   rfl
 
-/-- Target 1a: `(def_G0)` (`1_2:631-633`), `M = M^{(B)} ⊗ I_{W^d}` on the fine lattice (through the merged
+/-- (2.33) `def_G0`: `M = M^{(B)} ⊗ I_{W^d}` on the fine lattice (through the
 bridge `splitEquiv`, as `PsiI` is built from `PsiV`). -/
 theorem BAMres_fine_kron (d L W : ℕ) [NeZero L] [NeZero W] :
     ∀ (g : ℝ) (z m : ℂ), (z + m).im ≠ 0 →
@@ -93,7 +88,7 @@ theorem BAMres_fine_kron (d L W : ℕ) [NeZero L] [NeZero W] :
   rw [hdecomp, hBAMB, ← Matrix.nonsing_inv_eq_ringInverse]
   exact Matrix.inv_eq_right_inv hprod
 
-/-- Target 1b: the entrywise form, `M_{xy} = 1(x, y same offset) M^{(B)}_{[x][y]}`. -/
+/-- The entrywise form, `M_{xy} = 1(x, y same offset) M^{(B)}_{[x][y]}`. -/
 theorem BAMres_fine_apply (d L W : ℕ) [NeZero L] [NeZero W] :
     ∀ (g : ℝ) (z m : ℂ), (z + m).im ≠ 0 → ∀ x y : Idx d L W,
       Mres ((g : ℂ) • PsiI d L W) z m x y =
@@ -109,21 +104,20 @@ theorem BAMres_fine_apply (d L W : ℕ) [NeZero L] [NeZero W] :
 end Fine
 
 
-/-! ## 2. Target 2: the propagator pins of the block Anderson model: `lem_propTH` properties 5-8 for `Θ^{(σ₁,σ₂)}_t`
+/-! ## 2. The propagator statements of the block Anderson model: properties 5-8 of Lemma 2.19 (`lem_propTH`) for `Θ^{(σ₁,σ₂)}_t`
 
-`1_2:1124-1167`, proof `A:1-70`; the BA remark `1_2:1150`: "constants may also depend on `λ⁻¹` when
+Lemma 2.19, proved in Subappendix A.1 (`sec:pf_propTH`); the block Anderson remark after (2.67): "constants may also depend on `λ⁻¹` when
 `1 ≤ λ ≤ 𝔡⁻¹`".  The statements are those of `RBM3D/Propagator/Pins.lean` (`Prop5Decay`, `Prop5Short`,
 `Prop6Diff1`, `Prop7Diff2`, `Prop8ZeroMode`: shape `PropThetaQ`), with the data `(g, E, m)` of the bulk
 (`BAReal`) in place of `‖m‖ = 1`: constants `(d, Λ, κ)` (`(d, Λ, κ, c)` for 6, 7) fixed before `L, g, E, m`,
 `g ∈ (0, Λ]`, `3 ≤ L`, `t ∈ [0, 1)`, both charge pairs, no loss (`≺` of 6-8 is no loss), `|r| ≤ c |a|`,
-`0 < c < 1` (T2003b).  Registry class: owed (PT-BA tickets; the band pins are proved, the BA kernel
-`M^{(+,-)}` is a general doubly stochastic kernel and needs its own route, report (b.6)). -/
+`0 < c < 1`.  The block Anderson kernel `M^{(+,-)}` is a general doubly stochastic kernel. -/
 
 section PTPins
 
 variable (d : ℕ)
 
-/-- **Property 5** `(prop:ThfadC)`: `|Θ_t(0,a)| ≤ C B_{t,|a|} e^{-c|a|/ℓ_t}`. -/
+/-- **Property 5**, (2.66) `prop:ThfadC`: `|Θ_t(0,a)| ≤ C B_{t,|a|} e^{-c|a|/ℓ_t}`. -/
 def BAProp5 (Λ κ : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ →
     ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧
@@ -133,8 +127,8 @@ def BAProp5 (Λ κ : ℝ) : Prop :=
           ‖BATheta d L g E m t σ₁ σ₂ 0 a‖
             ≤ C * Bparam d L g t (zdistD d L a) * Real.exp (-c * (zdistD d L a : ℝ) / ellT L g t)
 
-/-- **Property 5, short form** `(prop:ThfadC_short)`, `σ₁ = σ₂`: `|Θ_t(0,a)| ≤ C_κ(1_{a=0} + g² e^{-c_κ|a|})`;
-the BA proof is the Taylor expansion `(eq:expMLn)` with `(eq:off_diagM)` (`BAoffDiag`). -/
+/-- **Property 5, short form**, (2.67) `prop:ThfadC_short`, `σ₁ = σ₂`: `|Θ_t(0,a)| ≤ C_κ(1_{a=0} + g² e^{-c_κ|a|})`;
+the block Anderson proof is the Taylor expansion (A.3) `eq:expMLn` with (A.4) `eq:off_diagM`. -/
 def BAProp5s (Λ κ : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ →
     ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧
@@ -144,7 +138,7 @@ def BAProp5s (Λ κ : ℝ) : Prop :=
           ‖BATheta d L g E m t σ σ 0 a‖
             ≤ C * ((if a = 0 then (1 : ℝ) else 0) + g ^ 2 * Real.exp (-c * (zdistD d L a : ℝ)))
 
-/-- **Property 6** `(prop:BD1)`: `|Θ_t(0,a+r) - Θ_t(0,a)| ≤ C (g²+|1-t|)⁻¹ |r| (|a|+1)^{-(d-1)}`, `|r| ≤ c|a|`. -/
+/-- **Property 6**, (2.68) `prop:BD1`: `|Θ_t(0,a+r) - Θ_t(0,a)| ≤ C (g²+|1-t|)⁻¹ |r| (|a|+1)^{-(d-1)}`, `|r| ≤ c|a|`. -/
 def BAProp6 (Λ κ c : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ → 0 < c → c < 1 →
     ∃ C : ℝ, 0 < C ∧
@@ -155,7 +149,7 @@ def BAProp6 (Λ κ c : ℝ) : Prop :=
           ‖BATheta d L g E m t σ₁ σ₂ 0 (a + r) - BATheta d L g E m t σ₁ σ₂ 0 a‖
             ≤ C * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L r : ℝ) * (((zdistD d L a : ℝ) + 1) ^ (d - 1))⁻¹
 
-/-- **Property 7** `(prop:BD2)`: `|Θ_t(0,a+r) + Θ_t(0,a-r) - 2Θ_t(0,a)| ≤ C (g²+|1-t|)⁻¹ |r|² (|a|+1)^{-d}`. -/
+/-- **Property 7**, (2.69) `prop:BD2`: `|Θ_t(0,a+r) + Θ_t(0,a-r) - 2Θ_t(0,a)| ≤ C (g²+|1-t|)⁻¹ |r|² (|a|+1)^{-d}`. -/
 def BAProp7 (Λ κ c : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ → 0 < c → c < 1 →
     ∃ C : ℝ, 0 < C ∧
@@ -167,7 +161,7 @@ def BAProp7 (Λ κ c : ℝ) : Prop :=
               - 2 * BATheta d L g E m t σ₁ σ₂ 0 a‖
             ≤ C * (g ^ 2 + |1 - t|)⁻¹ * (zdistD d L r : ℝ) ^ 2 * (((zdistD d L a : ℝ) + 1) ^ d)⁻¹
 
-/-- **Property 8** `(prop:ThfadC0)`: `|Θ̊_t(0,a)| ≤ C (g²+|1-t|)⁻¹ (|a|+1)^{-(d-2)}`. -/
+/-- **Property 8**, (2.70) `prop:ThfadC0`: `|Θ̊_t(0,a)| ≤ C (g²+|1-t|)⁻¹ (|a|+1)^{-(d-2)}`. -/
 def BAProp8 (Λ κ : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ →
     ∃ C : ℝ, 0 < C ∧
@@ -176,7 +170,7 @@ def BAProp8 (Λ κ : ℝ) : Prop :=
         BAReal d L g κ E m → ∀ t : ℝ, 0 ≤ t → t < 1 → ∀ σ₁ σ₂ : Bool, ∀ a : Zd d L,
           ‖BATheta0 d L g E m t σ₁ σ₂ 0 a‖ ≤ C * (g ^ 2 + |1 - t|)⁻¹ * (((zdistD d L a : ℝ) + 1) ^ (d - 2))⁻¹
 
-/-- The bundle: properties 5-8 of `lem_propTH` for the block Anderson model at one `(d, Λ, κ, c)`. -/
+/-- The bundle: properties 5-8 of Lemma 2.19 (`lem_propTH`) for the block Anderson model at one `(d, Λ, κ, c)`. -/
 structure BAProp5to8 (Λ κ c : ℝ) : Prop where
   decay : BAProp5 d Λ κ
   short : BAProp5s d Λ κ
@@ -192,11 +186,11 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 3. Target 3: the flow of the block Anderson model along a size sequence, and the loops `𝓛`, `𝒦`
+/-! ## 3. The flow of the block Anderson model along a size sequence, and the loops `𝓛`, `𝒦`
 
-`H_t = g₀ Ψ + √t V` (`(MBM)`, `1_2:685`; merged `Sizes.seqHflowBA`, T2013) with `V` the model of `sz.withLam 0`
-(`S^{(B)}(0) = I`); `z_t(E, g₀) = E + (1-t) m(E, g₀)` (`(eq:zt)`, `1_2:716`).  The flow parameters `(E, g₀)` are
-arguments: `lem_ConArg_BA` (`7_8:1956`) compares two couplings `g`, `g_s = g √(s/t)` at the same `E`. -/
+`H_t = g₀ Ψ + √t V` ((2.36) `MBM`; `Sizes.seqHflowBA`) with `V` the model of `sz.withLam 0`
+(`S^{(B)}(0) = I`); `z_t(E, g₀) = E + (1-t) m(E, g₀)` ((2.37) `eq:zt`).  The flow parameters `(E, g₀)` are
+arguments: Lemma 8.5 (`lem_ConArg_BA`) compares two couplings `g`, `g_s = g √(s/t)` at the same `E`. -/
 
 section Flow
 
@@ -205,16 +199,16 @@ variable {d : ℕ} (sz : Sizes d)
 /-- `m(E_n, g₀_n)`: the real-axis solution of `(self_m)` at the flow parameters. -/
 def BAmF (lam0 E : ℕ → ℝ) (n : ℕ) : ℂ := BAm d (sz.L n) (lam0 n) (E n : ℂ)
 
-/-- `M(E, g₀)` on the fine lattice, `M = M^{(B)} ⊗ I_{W^d}` (`(def_G0)`, `1_2:631`); time independent. -/
+/-- `M(E, g₀)` on the fine lattice, `M = M^{(B)} ⊗ I_{W^d}` ((2.33) `def_G0`); time independent. -/
 def BAMfine (lam0 E : ℕ → ℝ) (n : ℕ) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Mres ((lam0 n : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (BAmF sz lam0 E n)
 
-/-- `G_t(z_t)` entries of the block Anderson flow (`def_flow`, `(self_Gt)`, `1_2:725`). -/
+/-- `G_t(z_t)` entries of the block Anderson flow (Definition 2.8 `def_flow`, (2.39) `self_Gt`). -/
 def BAGt (lam0 E : ℕ → ℝ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Gres (sz.seqHflowBA lam0 n t ω) (ztOf (BAmF sz lam0 E n) (E n) t) true
 
-/-- **`𝓛^{(k)}_{t,σ,a}`** of the block Anderson flow (`(Eq:defGLoop)`, `1_2:824`). -/
+/-- **`𝓛^{(k)}_{t,σ,a}`** of the block Anderson flow ((2.44) `Eq:defGLoop`). -/
 def BALloop (lam0 E : ℕ → ℝ) (n : ℕ) (t : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n))
     (ω : sz.SeqΩ) : ℂ :=
   loopFine d (sz.L n) (sz.W n) (sz.seqHflowBA lam0 n t ω) (ztOf (BAmF sz lam0 E n) (E n) t) σ a
@@ -225,15 +219,15 @@ section KLoops
 
 variable (d L W : ℕ) [NeZero L]
 
-/-- The block Anderson `M`-loop initial data `𝓜^{(k)}_{σ,a} = tr ∏_i (M(σ_i) E_{a_i}) = W^{-(k-1)d} ∏_i M(σ_i)_{a_{i-1} a_i}` (cyclic, `a_{-1} = a_{k-1}`: `σ_i` sits on the edge `(a_{i-1}, a_i)`; `(eq:KMloop)` `1_2:1003`,
-`A:571`, merged `loopM`); `M = M^{(B)} ⊗ I_{W^d}`; the band case is `M(σ) = m(σ) I` (merged `MLoop`). -/
+/-- The block Anderson `M`-loop initial data `𝓜^{(k)}_{σ,a} = tr ∏_i (M(σ_i) E_{a_i}) = W^{-(k-1)d} ∏_i M(σ_i)_{a_{i-1} a_i}` (cyclic, `a_{-1} = a_{k-1}`: `σ_i` sits on the edge `(a_{i-1}, a_i)`; (2.53) `eq:KMloop`,
+(A.35) `eq:Mloop_defgen`, `loopM`); `M = M^{(B)} ⊗ I_{W^d}`; the band case is `M(σ) = m(σ) I` (`MLoop`). -/
 def BAMLoop (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (I : LoopIdx (Zd d L)) : ℂ :=
   (((W : ℂ) ^ d)⁻¹) ^ (I.length - 1) *
     ((I.σ.zip ((I.a.rotate (I.length - 1)).zip I.a)).map fun p => M p.1 p.2.1 p.2.2).prod
 
 /-- **The `𝒦`-loops of the block Anderson model**: the solution of the convolution tree equations with the
-kernel `S^{(B)}(0) = I` and the initial data `𝓜` (`Def_Ktza` for `BA`, `1_2:1051`; the merged kernel-generic
-`IsKLoopS`, `RBM3D/Loop/KLTree.lean:828`); `0` if there is none (pin `BAKexists`). -/
+kernel `S^{(B)}(0) = I` and the initial data `𝓜` (Definition 2.14 `Def_Ktza` for the block Anderson model, with (2.57) `WI_calK`; the kernel-generic
+`IsKLoopS` of `RBM3D/Loop/KLTree.lean`); `0` if there is none. -/
 def BAKsol (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (m : Bool → ℂ) : ℝ → LoopIdx (Zd d L) → ℂ :=
   haveI := Classical.propDecidable
     (∃ K : ℝ → LoopIdx (Zd d L) → ℂ, IsKLoopS d L W (1 : Matrix (Zd d L) (Zd d L) ℂ) m (BAMLoop d L W M)
@@ -263,7 +257,9 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 4. Target 4 (moved, T2382, T2386): `PrecL`, `FlowFM`, `FlowFM.GM`, the generic predicates and the band carrier
+/-! ## 4. The block Anderson carrier
+
+`PrecL`, `FlowFM`, `FlowFM.GM`, the generic predicates and the band carrier
 `bandFM` are in `RBM3D/Chain/Carrier.lean`; `STJhatg` and `STLWassmExpgL` (they use `STprof` of `Induction/Step2Defs`) are in
 `RBM3D/Chain/Step2Gen.lean`. -/
 
@@ -285,27 +281,26 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 5. Target 5: `lem:main_ind_BA` and the steps that change (flow data, `lem_ConArg_BA`)
+/-! ## 5. Theorem 8.2 (`lem:main_ind_BA`) and the steps that change (flow data, Lemma 8.5 `lem_ConArg_BA`)
 
-The flow data along a sequence of spectral parameters `z` (`(eq:t0E0_BA)`, `7_8:1798`): `t₀`, `E`, `g₀ = √t₀ g`.
-The setting `BAFlow` replaces `STFlow`: admissible sizes (`(Main_DEL_COND)`, `(eq:WO)`) and `z_n` in the chain
-domain `BAdom` (`Im m(z_n, g_n) ≥ κ`, `N^{-1+ε} ≤ Im z_n ≤ 1`); there is no `|Re z| ≤ 2 - κ` (`7_8:1797` is a typo,
-T2001g) and no `e_λ`. -/
+The flow data along a sequence of spectral parameters `z` ((8.1) `eq:t0E0_BA`): `t₀`, `E`, `g₀ = √t₀ g`.
+The setting `BAFlow` replaces `STFlow`: admissible sizes (`(Main_DEL_COND)`, (2.10) `eq:WO`) and `z_n` in the chain
+domain `BAdom` (`Im m(z_n, g_n) ≥ κ`, `N^{-1+ε} ≤ Im z_n ≤ 1`); there is no condition `|Re z| ≤ 2 - κ` and no `e_λ`. -/
 
 section FlowData
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `t₀_n` of `(eq:t0E0_BA)`. -/
+/-- `t₀_n` of (8.1) `eq:t0E0_BA`. -/
 def BAflowT0 (z : ℕ → ℂ) (n : ℕ) : ℝ := BAt0 (z n) (BAm d (sz.L n) (sz.lam n) (z n))
 
-/-- `E_n` of `(eq:t0E0_BA)`. -/
+/-- `E_n` of (8.1) `eq:t0E0_BA`. -/
 def BAflowEs (z : ℕ → ℂ) (n : ℕ) : ℝ := BAflowE (z n) (BAm d (sz.L n) (sz.lam n) (z n))
 
-/-- `g₀_n = √t₀_n g_n` of `(eq:t0E0_BA)`. -/
+/-- `g₀_n = √t₀_n g_n` of (8.1) `eq:t0E0_BA`. -/
 def BAflowLam0 (z : ℕ → ℂ) (n : ℕ) : ℝ := Real.sqrt (BAflowT0 sz z n) * sz.lam n
 
-/-- The setting of `MR:decol_BA`, `lem:main_ind_BA`, `zztE_BA` along a sequence (replaces `STFlow`). -/
+/-- The setting of `MR:decol_BA`, Theorem 8.2 (`lem:main_ind_BA`) and Lemma 8.1 (`zztE_BA`) along a sequence (replaces `STFlow`). -/
 def BAFlow (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) : Prop :=
   sz.Admissible 𝔠 𝔡 ∧ ∀ n, BAdom d (sz.L n) (sz.size n) (sz.lam n) κ ε (z n)
 
@@ -315,15 +310,13 @@ def baFMz (z : ℕ → ℂ) : FlowFM sz := baFM sz (BAflowLam0 sz z) (BAflowEs s
 end FlowData
 
 
-/-! The law of every block Anderson statement of this section is `Sizes.seqP (sz.withLam 0)` (L3, §57 (3)).
-`BAMainInd`, `BAStep1` (T2161 `:1071`, `:1170`) are not pinned here (Amend 1: BA-D3 redesigns Step 1 and the
-induction), nor are `BAGbEXP`, `BAGbEXPpre`, `BAGbEXPconcl` (Amend 2, line 3). -/
+/-! The law of every block Anderson statement of this section is `Sizes.seqP (sz.withLam 0)`. -/
 
 section MainInd
 
-/-- **`lem:main_ind`, one statement for every model** (`1_2:1256-1330`; `7_8:1825`): the pin `STMainInd` with the
-law of the sample space `law`, the setting `Flow`, the carrier `mk` and the flow horizon `T0` as parameters (L2:
-every predicate inside is stated at `law sz`).  Constants first (`κ, ε, 𝔡`, then `𝔠_d ∈ (0, 10^{-2}]`, then `𝔠`,
+/-- **Theorem 2.24 (`lem:main_ind`) and Theorem 8.2 (`lem:main_ind_BA`), one statement for every model**: the statement `STMainInd` with the
+law of the sample space `law`, the setting `Flow`, the carrier `mk` and the flow horizon `T0` as parameters (every predicate inside is
+stated at `law sz`).  Constants first (`κ, ε, 𝔡`, then `𝔠_d ∈ (0, 10^{-2}]`, then `𝔠`,
 the sizes and `z`). -/
 def STMainIndG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
@@ -341,14 +334,14 @@ def STMainIndG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
             STExp2gL (mk sz z) (law sz) t ∧ STLocalEntrygL (mk sz z) (law sz) t ∧
             STDecayStronggL (mk sz z) (law sz) t
 
-/-- *Proved (`Iff.rfl`).* The merged band pin `STMainInd` is `STMainIndG` at the band law `seqP sz`, the band
+/-- *Proved (`Iff.rfl`).* The band statement `STMainInd` is `STMainIndG` at the band law `seqP sz`, the band
 setting, carrier and horizon. -/
 theorem STMainInd_iff (d : ℕ) :
     STMainInd d ↔ STMainIndG d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
       (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
 
 /-- **The block Anderson reading of Step 2** (`STStep2G` at the law `seqP (sz.withLam 0)`, the setting `BAFlow`, the carrier
-`baFMz` and the horizon `BAflowT0`; T2386, probe `t/T2379:95-96`).  A pin: its BA instance and data facts are the BA row T8-BA. -/
+`baFMz` and the horizon `BAflowT0`). -/
 def BAStep2 (d : ℕ) : Prop :=
   STStep2G d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0
 
@@ -356,14 +349,14 @@ end MainInd
 
 section ConArg
 
-/-- `Im G_{vv}` for unit vectors `v` of `ℂ^N` (`7_8:1976`): `v^* G v`. -/
+/-- `Im G_{vv}` for unit vectors `v` of `ℂ^N` ((8.12) `eq:ImGs`): `v^* G v`. -/
 def BAvecEntry {ι : Type*} [Fintype ι] (A : Matrix ι ι ℂ) (v w : ι → ℂ) : ℂ := star v ⬝ᵥ (A *ᵥ w)
 
-/-- The scale-`s` coupling of `lem_ConArg_BA`: `g_s = g₀ √(s/t)`. -/
+/-- The scale-`s` coupling of Lemma 8.5 (`lem_ConArg_BA`): `g_s = g₀ √(s/t)`. -/
 def BAlamS {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) : ℕ → ℝ :=
   fun n => Real.sqrt (s n / t n) * BAflowLam0 sz z n
 
-/-- `lem_ConArg_BA` (2), `(eq:ImGs)`, `(eq:ImGt)` (`7_8:1976-1979`): the vector bounds, for deterministic unit vectors,
+/-- Lemma 8.5 (`lem_ConArg_BA`) (2), (8.12) `eq:ImGs`, (8.13) `eq:ImGt`: the vector bounds, for deterministic unit vectors,
 w.h.p. under the block Anderson law `seqP (sz.withLam 0)` (`Whp sz Ξ` is `HighProbAt (seqP sz) sz.size Ξ`). -/
 def BAConArgVec {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) : Prop :=
   ∀ v w : ∀ n, Idx d (sz.L n) (sz.W n) → ℂ,
@@ -386,7 +379,7 @@ namespace RBM.BA
 
 open RBM RBM.Gauss
 
-/-! ## 6. Extra target (a): no solution of `(self_m)` beyond the support (Amend 1, supervisor `2026-10-05-1806` §1.6)
+/-! ## 6. No solution of `(self_m)` beyond the support
 
 The spectrum of `g Ψ^{(B)}` lies in `[-2d|g|, 2d|g|]`, and `(self_m)` forces `|m| ≤ 1` at real `z`; so for
 `|E| > 2 + 2d|g|` it has no solution, `BAm = 0` (dite default) and `ρ_N = 0`. -/
@@ -503,8 +496,8 @@ private theorem FlowPins_eig_le (d L : ℕ) [NeZero L] (j : Zd d L) :
   simpa using this
 
 
-/-- **Extra target (a)** (supervisor `2026-10-05-1806` §1.1): for real `g, E` with `|E| > 2 + 2d|g|`, `(self_m)` at
-`(g, E)` has no solution.  Route: with `w_i = gλ_i - E - m` (`λ_i` the eigenvalues of `Ψ^{(B)}`, `|λ_i| ≤ 2d`,
+/-- **No solution beyond the support**: for real `g, E` with `|E| > 2 + 2d|g|`, `(self_m)` at
+`(g, E)` has no solution.  Proof outline: with `w_i = gλ_i - E - m` (`λ_i` the eigenvalues of `Ψ^{(B)}`, `|λ_i| ≤ 2d`,
 `BAMB_trace_eq_sum`) the imaginary part of `(self_m)` gives `L^{-d} Σ |w_i|^{-2} = 1`; Cauchy-Schwarz gives
 `|m| ≤ 1`, so `|Re m| ≤ 1`; for `|E| > 2 + 2d|g|`, `|Re w_i| > 1` for every `i`, so `L^{-d} Σ |w_i|^{-2} < 1`. -/
 theorem baSelf_none_of_gt (d L : ℕ) [NeZero L] (g E : ℝ) (hE : 2 + 2 * d * |g| < |E|) :
@@ -621,13 +614,13 @@ namespace RBM.BA
 
 open RBM RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 7. `BAConArg'_premise_diag`: the added premise of `BAConArg'` on the diagonal `s = t`
+/-! ## 7. `BAConArg'_premise_diag`: the premise `κ ≤ Im m(E_n, g_s)` of Lemma 8.5 on the diagonal `s = t`
 
 On the diagonal `s ≡ t` the coupling is `g_s = g₀` (`BAlamS`), and `BAmF` at the flow parameters is
 `m(z_n, g_n)/√t₀_n` (`BAzztE_data`, `BAm_real_eq_of_self`), whose imaginary part is at least `Im m(z_n, g_n) ≥ κ`
 (`√t₀ < 1`, `BAt0_lt_one`). -/
 
-/-- `m(E_n, g₀_n) = m(z_n, g_n)/√t₀_n` when `Im z_n > 0` (`(eq:zztE_BA)`, `7_8:1796-1801`). -/
+/-- `m(E_n, g₀_n) = m(z_n, g_n)/√t₀_n` when `Im z_n > 0` ((8.2) `eq:zztE_BA`). -/
 private theorem FlowPins_BAmF_flow {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (hz : 0 < (z n).im) :
     BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n =
       BAm d (sz.L n) (sz.lam n) (z n) / (Real.sqrt (BAflowT0 sz z n) : ℂ) := by
@@ -650,8 +643,8 @@ private theorem FlowPins_zim_pos {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ
     exact_mod_cast Nat.pos_of_ne_zero (by have := sz.one_le_size n; omega)
   linarith
 
-/-- **`BAConArg'_premise_diag`** (Amend 2, line 1): for any `z` with `BAFlow` and any `t > 0`, the added premise of
-`BAConArg'` holds at `s = t`: `κ ≤ Im m(E_n, g_s)`, `g_s = g₀`. -/
+/-- **`BAConArg'_premise_diag`**: for any `z` with `BAFlow` and any `t > 0`, the premise of
+Lemma 8.5 holds at `s = t`: `κ ≤ Im m(E_n, g_s)`, `g_s = g₀`. -/
 theorem BAConArg'_premise_diag {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
     (h : BAFlow sz κ ε 𝔠 𝔡 z) (t : ℕ → ℝ) (ht : ∀ n, 0 < t n) :
     ∀ n, κ ≤ (BAmF sz (BAlamS sz z t t) (BAflowEs sz z) n).im := by
@@ -673,35 +666,19 @@ theorem BAConArg'_premise_diag {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} 
 end RBM.BA
 
 
-/-! ## 8. Extra target (b): the unrepaired `BAConArg` is refuted under data beyond the support (Amend 2, line 2)
-
-`BAConArg` (T2161 `:1160-1166`, after L1-L4) is **not** a pin of this ticket (Amend 1: `BAConArg'` replaces it); it is
-defined here, `private`, only as the object of `not_BAConArg_of_data`, and no theorem takes it as a hypothesis (so it
-is not registered).  Data with `2 + 2d|g_s| < |E_n|`: `m(E_n, g_s) = 0` (target (a)), so `η_s = 0` and the `k = 2` bound of
-`BAConArgLoop` is `0`, while `𝓛^{(2)}_{t,(+,-),(a,a)} = Σ_{x,y ∈ [a]} W^{-2d} |G_{xy}|² > 0` surely (`Im z_t > 0`). -/
-
 namespace RBM.BA.FlowPinsInst
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA RBM.BA.MFixedPointInst RBM.Gauss.SizesInst RBM.Gauss.InductionDefsInst
 
-/-! ## 9. Compiled nonempty instances at `d = 3`
+/-! ## 8. Explicit data at `d = 3`
 
-(`P := RBM.BA.MFixedPointInst.P`, the flow point of `(L, g) = (4, 10)`.)  Every deterministic hypothesis is
-discharged at concrete data (`N = 512` for target 1, `L = 4`, `g = 10`); the pins themselves (another ticket's
-theorems) and the stochastic premises stay hypotheses. -/
+(`P := RBM.BA.MFixedPointInst.P`, the flow point of `(L, g) = (4, 10)`.)  The data below are explicit:
+the flow data along the sequence `sz0` and the diagonal premise at `sz0`. -/
 
-/-! ### Target 1 at `(d, L, W) = (3, 4, 2)` (`N = 512`, 8 points per block) -/
-
-/-! ### Target 2: properties 5-8 of `Θ_BA` at the datum, `t = 1/2`, nondegenerate displacements
-
-`a = (2,0,0)` and `r = (1,0,0)` in `Z_4^3` (`|a| = 2`, `|r| = 1 ≤ c|a|` for `c = 1/2`): the window of `(prop:BD1)`,
-`(prop:BD2)` is not collapsed. -/
-
-/-! ### Target 3, 4, 5 along `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `g_n = (2(n+1))^{-6}`), `z_n = z_S(L_n, g_n)`
+/-! ### The flow datum along `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `g_n = (2(n+1))^{-6}`), `z_n = z_S(L_n, g_n)`
 
 `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`.  The chain domain holds at every `n` (`Im m(z_n) ≥ 1/2`,
-`11/30 ≤ Im z_n ≤ 7/10`), `t₀_n = Im m/Im w ≥ 2/3`.  Probe section 13.4 (`:2095-2199`) without the hypothesis
-`BAmExists 3` (discharged by `baMExists_holds 3`). -/
+`11/30 ≤ Im z_n ≤ 7/10`), `t₀_n = Im m/Im w ≥ 2/3`, with `BAmExists 3` discharged by `baMExists_holds 3`. -/
 
 private theorem FlowPins_wI_im : wI.im = 6 / 5 := rfl
 
@@ -731,8 +708,7 @@ theorem sz0_lam_L (n : ℕ) : (sz0.lam n) ^ 2 * (((sz0.L n) ^ 3 : ℕ) : ℝ) �
   have h2 : (((n : ℝ) + 1)⁻¹) ^ 9 ≤ 1 := pow_le_one₀ (by positivity) (inv_le_one_of_one_le₀ hk)
   nlinarith
 
-/-- `Im m_S ≥ 4/5` (so `≥ 1/2`) when `g² L³ ≤ 1/64` (`BASelf_subord`: `Im m_S ≥ (6/5)/(36/25 + g² L³)`; the probe
-had `1/2`). -/
+/-- `Im m_S ≥ 4/5` (so `≥ 1/2`) when `g² L³ ≤ 1/64` (`BASelf_subord`: `Im m_S ≥ (6/5)/(36/25 + g² L³)`). -/
 theorem mS_im_half (L : ℕ) [NeZero L] (g : ℝ) (h : g ^ 2 * (L ^ 3 : ℕ) ≤ 1 / 64) : 4 / 5 ≤ (mS L g).im := by
   refine le_trans ?_ (FlowPins_mS_im_lower L g)
   rw [FlowPins_wI_im, wI_norm, le_div_iff₀ (by positivity)]
@@ -811,25 +787,15 @@ theorem flow_sz0 : BAFlow sz0 (1 / 2) (1 / 10) (1 / 6) (1 / 10) zSeq := by
   · have := zSeq_im_le n
     linarith
 
-/-! ### `BAConArg'` at `s ≡ t ≡ 1/2`, `κ = 1/2`, `ε₁ = 1/2` (Amend 2, line 1)
+/-! ### The diagonal premise at `s ≡ t ≡ 1/2`, `κ = 1/2`
 
-The added premise `κ ≤ Im m(E_n, g_s)` is discharged by `BAConArg'_premise_diag`; the pin `BAConArg' 3` and the
-loop bound `(eq:loopbound_s)` at `s` (a stochastic premise, owed by BA-S1 and BA-K4) stay hypotheses. -/
+The premise `κ ≤ Im m(E_n, g_s)` of Lemma 8.5 is discharged by `BAConArg'_premise_diag`. -/
 
-/-! ### `BAMfine` along the flow of `sz0` is the Kronecker matrix of target 1a -/
 
 /-- `BAConArg'_premise_diag` at `sz0`, `s ≡ t ≡ 1/2`, `κ = 1/2`: `Im m(E_n, g_s) ≥ 1/2` for every `n`. -/
 theorem inst_premise_diag :
     ∀ n, (1 / 2 : ℝ) ≤ (BAmF sz0 (BAlamS sz0 zSeq (fun _ => 1 / 2) (fun _ => 1 / 2)) (BAflowEs sz0 zSeq) n).im :=
   BAConArg'_premise_diag sz0 flow_sz0 (fun _ => 1 / 2) (fun n => by norm_num)
-
-/-! ### Extra target (a): no solution of `(self_m)` beyond `2 + 2d|g|` (`d = 3`, `L = 4`)
-
-`g = 1`, `E = 9 > 2 + 6 = 8`; and `g = -1`, `E = -9` (negative couplings and energies are covered). -/
-
-/-! ### The band bridges at `sz0` (`Iff.rfl` / `rfl`) and the carrier predicates at the block Anderson law -/
-
-/-! ### T2173a, compiled: `sz.seqP` is not the block Anderson law -/
 
 end RBM.BA.FlowPinsInst
 

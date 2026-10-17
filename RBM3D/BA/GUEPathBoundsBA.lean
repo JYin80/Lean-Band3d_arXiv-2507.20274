@@ -8,28 +8,26 @@ import RBM3D.BA.GUEDuhamelBA2
 import RBM3D.Universality.GUEPhase.PathBounds
 
 /-!
-# BA-C5 row c, part 2: the output of the §7.2 random layer on the BA grid
+# The output of the random layer of [YY_25, §7.2] on the BA grid
 
-Ticket T2519 (row c, targets 11-12; DECISIONS §344 (4), §346, §348; Amends 1-4).  New BA leaf: no
-merged file is edited.
-Band twin: `Universality/GUEPhase/PathBounds.lean` (`PathBounds_init_loops:188`,
-`PathBounds_init_local:247`,
-`gueBds_h745E:330`, `gueBds_h746:433`, `gueGrid_pathBounds:550`).  Paper: the GUE phase of Thm 2.4
-(`paper/tex/1_2_Intro_model_result.tex:566-570`, "essentially identical to [YY_25, Theorem 2.6]"),
+Band counterpart: `Universality/GUEPhase/PathBounds.lean` (`PathBounds_init_loops`,
+`PathBounds_init_local`,
+`gueBds_h745E`, `gueBds_h746`, `gueGrid_pathBounds`).  Paper: the GUE phase of Theorem 2.4
+(`Thm: B_Univ`; "essentially identical to [YY_25, Theorem 2.6]"),
 `d ≥ 3`, block Anderson
-`S^{(B)}(0) = 1`.
+`S^{(B)}(0) = 1`.  The equation numbers (7.28), (7.45), (7.46) below are those of [YY_25, §7.2].
 
 Under the hypotheses of `gueGrid_pathBoundsBA` the BA grid path `gueHBA` (`g Ψ_I + H_k`) satisfies
 `GUEPathBoundsBA`
-(`BA/GUEProcBA`) on the grid `gueGridK sz 4` with `n₀ = 4` (Amend 1 item 1 (a)): (7.28) at every
+(`BA/GUEProcBA`) on the grid `gueGridK sz 4` with `n₀ = 4`: (7.28) at every
 grid time `k ≤ K n` for
 `1 ≤ l ≤ 4` against the primitive family `Kt`, and `‖G̃ - M‖_max ≺ (N η_u)^{-1/2}` against the
 deterministic
 `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, `η_u = (1 - u) Im m`, on the size scale `N = (W L)^d`.
 
-What changes from the band (UBA-C1: statements at the flow datum `(g, E, m)`; the data are
+What changes from the band (statements at the flow datum `(g, E, m)`; the data are
 real-axis solutions, `BAReal`
-at every `n`, and the coupling window `0 < g n ≤ 𝔡⁻¹` is eventual, Amend 4 item 3):
+at every `n`, and the coupling window `0 < g n ≤ 𝔡⁻¹` is eventual):
 
 * the step-`0` inputs `hLK : STLKgL (baFM sz g E) (seqP (sz.withLam 0)) t₁`,
   `hLoc : STLocalEntrygL …` are on the BA carrier at the
@@ -37,26 +35,25 @@ at every `n`, and the coupling window `0 < g n ≤ 𝔡⁻¹` is eventual, Amend
   path at step `0` is the BA flow
   matrix `seqHflowBA g n t₁ (ω 0)`, and `m = BAm d L g E` by the uniqueness of the real-axis
   solution (`BASelf_unique`);
-* the K-bound is the conclusion of `Hyp_Kt_detDomBA` (row a; `BAKFam` clauses, guarded by
+* the K-bound is the conclusion of `Hyp_Kt_detDomBA` (`BAKFam` clauses, guarded by
   `0 < g n`), no `STKbound`;
-* the entry bound is `gueGrid_entry_boundBA'` (Amend 4: the eventual window), the Duhamel remainder
-  `gueGrid_loop_duhamelBA`
-  (row b), the pathwise assembly `HypB_*BA`, `Bounds_pathBA` (`BA/GUEHypBBA`);
-* the A3 constant of the band, `1 + 2 lam²`, is `A = 1 + 4/κ²` (`GUEHypBBA`), a number: no
+* the entry bound is `gueGrid_entry_boundBA'` (the eventual window), the Duhamel remainder
+  `gueGrid_loop_duhamelBA`,
+  the pathwise assembly `HypB_entry_leBA`, `HypB_eG_745BA`, `HypB_eG_746BA`, `HypB_fixedBA`, `Bounds_pathBA` (`BA/GUEHypBBA`);
+* the constant of the band, `1 + 2 lam²`, is `A = 1 + 4/κ²` (`GUEHypBBA`), a number: no
   `hellN`-type hypothesis on `g`;
-* the K-lemmas of row a need `L^d (1 - t₁) ≤ 2 g²` (`hellg`); at `g = √t₀ lam` it follows from
+* the K-lemmas of `BA/GUEHypABA` need `L^d (1 - t₁) ≤ 2 g²` (`hellg`); at `g = √t₀ lam` it follows from
   `hell`, `hell1`
   (`GUEHypABA_hell_of_hell`).
 
 The band privates without a band token (`PathBounds_map_eval0`, `PathBounds_step0_le`,
 `PathBounds_gueH_zero`,
-`PathBounds_Gres_true`, `PathBounds_Bctl_nonneg`, `PathBounds_STWB_le`) are read by `open private`.
+`PathBounds_Gres_true`, `PathBounds_Bctl_nonneg`, `PathBounds_STWB_le`) are used through `open private`.
 
 * §1 `GUEPathBoundsBA_init_loops`, `GUEPathBoundsBA_init_local` (the step-`0` laws), the conversion
   `Bctl ≤ 2 (N η)⁻¹`;
 * §2 `gueBds_h745EBA`, `gueBds_h746BA` (the inputs `h745`, `h746` of `eq727GEAt`, `eq728GAt`);
-* §3 `gueGrid_pathBoundsBA` (target 11);
-* §4 compiled nonempty instances at `d = 3` (target 12).
+* §3 `gueGrid_pathBoundsBA`.
 -/
 
 set_option linter.style.longLine false
@@ -91,7 +88,7 @@ private theorem GUEPathBoundsBA_gueHBA_zero (g t1 t0 : ℕ → ℝ) (K : ℕ →
   rfl
 
 /-- The conversion `W^{-d} B_{t,0} ≤ 2 (N η_t)⁻¹` under the zero-mode condition `L^d (1 - t) ≤ lam²` (`hell`), at
-`η_t = (1 - t) Im m` with `0 < Im m ≤ 1` (twin of `PathBounds_Bctl_le`, `PathBounds:97`). -/
+`η_t = (1 - t) Im m` with `0 < Im m ≤ 1` (the analogue of `PathBounds_Bctl_le`). -/
 private theorem GUEPathBoundsBA_Bctl_le (n : ℕ) {m : ℂ} (hm : 0 < m.im) (hm1 : ‖m‖ ≤ 1) {t : ℝ} (ht : t < 1)
     (hell : ((sz.L n : ℕ) : ℝ) ^ d * (1 - t) ≤ sz.lam n ^ 2) :
     sz.Bctl n t ≤ 2 * (((sz.size n : ℕ) : ℝ) * etaOf m t)⁻¹ := by
@@ -132,7 +129,7 @@ private theorem GUEPathBoundsBA_Bctl_le (n : ℕ) {m : ℂ} (hm : 0 < m.im) (hm1
     _ = 2 * (((sz.size n : ℕ) : ℝ) * (1 - t))⁻¹ := hid
     _ ≤ 2 * (((sz.size n : ℕ) : ℝ) * etaOf m t)⁻¹ := by linarith
 
-/-- **The loops at step `0`** (twin of `PathBounds_init_loops`, `PathBounds:188`): the step-`0` input `‖L_0 - K̃_{t₁}‖ ≺ (N η_{t₁})^{-k}`
+/-- **The loops at step `0`** (the analogue of `PathBounds_init_loops`): the step-`0` input `‖L_0 - K̃_{t₁}‖ ≺ (N η_{t₁})^{-k}`
 on `Pgue (sz.withLam 0)`, from `STLKgL` of the BA carrier at `(g, E)` at `t₁` transferred through the coordinate marginal, with
 `K̃_{t₁} = BAKsol` (`hKinit`, guarded by `0 < g n`) and `W^{-d} B_{t₁,0} ≤ 2 (N η_{t₁})⁻¹` (`hell`). -/
 private theorem GUEPathBoundsBA_init_loops {κ : ℝ} {g E t1 : ℕ → ℝ} {m : ℕ → ℂ} (t0 : ℕ → ℝ) (K : ℕ → ℕ)
@@ -194,7 +191,7 @@ private theorem GUEPathBoundsBA_init_loops {κ : ℝ} {g E t1 : ℕ → ℝ} {m 
   rw [GUEPathBoundsBA_gueHBA_zero, hgt, hKinit n hgn, ← loopM_eq_loopL] at hx
   exact lt_of_le_of_lt hkey hx
 
-/-- **The local law at step `0`** (twin of `PathBounds_init_local`, `PathBounds:247`): `STLocalEntrygL` of the BA carrier at `t₁`
+/-- **The local law at step `0`** (the analogue of `PathBounds_init_local`): `STLocalEntrygL` of the BA carrier at `t₁`
 transferred to `Pgue (sz.withLam 0)` through the coordinate marginal: `‖(G - M)_{xy}‖² ≺ STWB ≤ Bctl ≤ 2 (N η_{t₁})⁻¹` (`hell`), so
 `‖(G - M)_{xy}‖ ≺ (N η_{t₁})^{-1/2}`, `M = Mres (g Ψ_I) E m`; the factor `2` is absorbed in `N^τ`. -/
 private theorem GUEPathBoundsBA_init_local {κ : ℝ} {g E t1 : ℕ → ℝ} {m : ℕ → ℂ} (t0 : ℕ → ℝ) (K : ℕ → ℕ)
@@ -270,11 +267,11 @@ open RBM.Ind.PerTimeCalc
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **(7.45)G at even lengths `2 ≤ l ≤ 2n₀`** for the stopped, interpolated BA processes (twin of `gueBds_h745E`, `PathBounds:330`): the
+/-- **(7.45)G at even lengths `2 ≤ l ≤ 2n₀`** for the stopped, interpolated BA processes (the analogue of `gueBds_h745E`): the
 `h745` of `eq727GEAt` (with `n₀' = 2 n₀`), over the whole interval `[t₁, t₀]`, on `Pgue (sz.withLam 0)` and the size scale.  The
-step-`0` input is `STLKgL` of the BA carrier at `(g, E)` at `t₁`; the K-bound is `Hyp_Kt_detDomBA` (row a), the D4a input
-`gueGrid_entry_boundBA'` (Amend 4: the coupling window is eventual, `BAReal` at every `n`), the Duhamel remainder
-`gueGrid_loop_duhamelBA` (row b).  The A3 constant is `A = 1 + 4/κ²`. -/
+step-`0` input is `STLKgL` of the BA carrier at `(g, E)` at `t₁`; the K-bound is `Hyp_Kt_detDomBA`, the entry-bound input
+`gueGrid_entry_boundBA'` (the coupling window is eventual, `BAReal` at every `n`), the Duhamel remainder
+`gueGrid_loop_duhamelBA`.  The constant is `A = 1 + 4/κ²`. -/
 theorem gueBds_h745EBA (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
     (hκ : 0 < κ) (hτU : 0 < τU) (n0 : ℕ) (_hn0 : 2 ≤ n0) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ}
     (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) (hlam : ∀ᶠ n in atTop, 0 < g n ∧ g n ≤ 𝔡⁻¹)
@@ -376,9 +373,9 @@ theorem gueBds_h745EBA (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admiss
           (fun k i' j' => hω3 (k, (i', j'))) hi q) x)
     ht
 
-/-- **(7.46)G at lengths `1 ≤ l ≤ n₀`** for the stopped, interpolated BA processes (twin of `gueBds_h746`, `PathBounds:433`): the `h746`
+/-- **(7.46)G at lengths `1 ≤ l ≤ n₀`** for the stopped, interpolated BA processes (the analogue of `gueBds_h746`): the `h746`
 of `eq728GAt`, over the whole interval `[t₁, t₀]`.  The step-`0` input is `STLKgL` at `t₁`; the entry bound is not needed; `K̃ = m_σ`
-at length `1` is `Hyp_Kt_oneBA` (row a). -/
+at length `1` is `Hyp_Kt_oneBA`. -/
 theorem gueBds_h746BA (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
     (hκ : 0 < κ) (hτU : 0 < τU) (n0 : ℕ) (hn0 : 2 ≤ n0) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ}
     (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) (hlam : ∀ᶠ n in atTop, 0 < g n ∧ g n ≤ 𝔡⁻¹)
@@ -482,7 +479,7 @@ open RBM.Ind.PerTimeCalc
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- The proof of `gueGrid_pathBoundsBA` at a general `n₀ ≥ 2` (the public theorem is the case `n₀ = 4`, Amend 1 item 1 (a)): the two
+/-- The proof of `gueGrid_pathBoundsBA` at a general `n₀ ≥ 2` (the public theorem is the case `n₀ = 4`): the two
 bootstraps `eq727GEAt` (at `2 n₀`, `gueBds_h745EBA`) and `eq728GAt` (`gueBds_h746BA`); the other random inputs (the entry bound
 `gueGrid_entry_boundBA'` at `δ = gueDelta sz τU`, `c₀ = τU/4`, the step-`0` local law, the increment truncation
 `gue_highProb_incr_le`); the pathwise unfreezing `Bounds_pathBA` on their intersection (`τ₁ = min(τ, τU)/16`);
@@ -571,7 +568,7 @@ private theorem GUEPathBoundsBA_main (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (ha
     (perTimeCalc_highProbAt_mono (highProbAt_univ _ _)
       (Eventually.of_forall fun n ω _ l _ => gueDprocBA_continuousOn sz g E t1 t0 m _ _ Kt n l ω))
     (gueBds_h746BA sz hd hadm hκ hτU n0 hn0 hr hlam ht1 ht10 ht0 h730 hscale hell hellg Kt hKinit hK hLK)
-  /- The other random inputs: D4a with `δ = N^{-τU/4}`, the step-`0` local law, truncation. -/
+  /- The other random inputs: the entry bound with `δ = N^{-τU/4}`, the step-`0` local law, truncation. -/
   have hD4 := gueGrid_entry_boundBA' sz hd hadm hκ n0 hr hlam ht1 ht10 ht0 (δ := gueDelta sz τU)
     (fun n => Real.rpow_nonneg (Nat.cast_nonneg _) _) (c₀ := τU / 4) (by positivity)
     (Eventually.of_forall fun n => le_of_eq rfl)
@@ -605,14 +602,14 @@ private theorem GUEPathBoundsBA_main (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (ha
       hsmallN h4N ω hA hBω hC hD hFω
   exact pathBounds_of_forall_highProbAtBA sz g E t1 t0 m n0 Kt hmain
 
-/-- **Target 11, `gueGrid_pathBoundsBA`: the output of the §7.2 random layer on the BA grid** (twin of `gueGrid_pathBounds`,
-`PathBounds:550`, at `n₀ = 4`, Amend 1 item 1 (a)): under the hypotheses of the theorem the BA grid path `gueHBA` (`g Ψ_I + H_k`)
+/-- **`gueGrid_pathBoundsBA`: the output of the random layer of [YY_25, §7.2] on the BA grid** (the analogue of `gueGrid_pathBounds`,
+at `n₀ = 4`): under the hypotheses of the theorem the BA grid path `gueHBA` (`g Ψ_I + H_k`)
 satisfies `GUEPathBoundsBA` on the grid `gueGridK sz 4`: (7.28) at every grid time `k ≤ K n` for `1 ≤ l ≤ 4` against the primitive
 family `Kt`, and `‖G̃ - M‖_max ≺ (N η_u)^{-1/2}` against `M = Mres (g Ψ_I) E m`, `η_u = (1 - u) Im m`.  Flow datum `(g, E, m)`:
-`BAReal` at every `n`, the window `0 < g n ≤ 𝔡⁻¹` eventually (Amend 4 item 3).  The step-`0` inputs `hLK`, `hLoc` are the first two
+`BAReal` at every `n`, the window `0 < g n ≤ 𝔡⁻¹` eventually.  The step-`0` inputs `hLK`, `hLoc` are the first two
 conjuncts of `BAMO` (`STLKgL`, `STLocalEntrygL` on the BA carrier at `(g, E)`); the K-family is `BAKFam`'s clauses (`hKinit`, `hK`,
 guarded by `0 < g n`); `hell`, `hell1` are the zero-mode premises of `RBG_Prod` and `hellg : L^d (1 - t₁) ≤ 2 g²` the form the
-K-lemmas of row a take (`GUEHypABA_hell_of_hell` at `g = √t₀ lam`). -/
+K-lemmas of `BA/GUEHypABA` take (`GUEHypABA_hell_of_hell` at `g = √t₀ lam`). -/
 theorem gueGrid_pathBoundsBA (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.Admissible 𝔠 𝔡)
     (hκ : 0 < κ) (hτU : 0 < τU) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ}
     (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) (hlam : ∀ᶠ n in atTop, 0 < g n ∧ g n ≤ 𝔡⁻¹)
@@ -637,14 +634,6 @@ theorem gueGrid_pathBoundsBA (hd : 3 ≤ d) {𝔠 𝔡 κ τU : ℝ} (hadm : sz.
 
 end PathBoundsBAMain
 
-/-! ## 4. Compiled nonempty instances (target 12), `d = 3`
-
-`sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_n = 2^21 (n + 1)^18`, admissible at `(𝔠, 𝔡) = (1/6, 1/10)`) and its BA flow datum
-`(g, E, m) = (BAflowLam0, BAflowEs, BAmF)` (`BAReal` at `κ = 1/2` for every `n`, `0 < g ≤ 10` eventually), the window of the instances of
-`BA/GUEHypABA`: `1 - t₀ = x_n = λ_n² / (4 L_n³)`, `t₀ - t₁ = x_n / (2 N_n)`, `τ_U = 1/20`, `n₀ = 4`; the K-family is that of `gueK_existsBA`
-(`GUEHypABA`).  Every deterministic hypothesis is discharged: `hr`, `hlam`, `ht*`, `h730`, `hscale` (eventual: `N_n η_{t₀} ≥ (n+1)^3 ≥ N_n^{1/20}`
-from `n ≥ 1`), `hell`, `hell1`, `hellg`, `hKinit`, `hK`.  The step-`0` inputs `hLK`, `hLoc` (the first two conjuncts of `BAMO`, the pin `UNMLOutBA`
-of V3) stay hypotheses of the examples. -/
 
 end RBM.BA
 

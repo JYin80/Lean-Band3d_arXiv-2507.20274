@@ -11,21 +11,18 @@ import RBM3D.Defs.RadialSum
 import RBM3D.Analysis.Resolvent
 
 /-!
-# The Schur structure of the block Anderson resolvent with the deterministic hopping (BA-G1)
+# The Schur structure of the block Anderson resolvent with the deterministic hopping
 
-Ticket T2296.  Paper: `paper/tex/7_8_light_weight.tex` (`7_8:line`), `paper/tex/1_2_Intro_model_result.tex`
-(`1_2:line`).  Deterministic part of the block Anderson `G`-chain (`7_8:1916-1950`, `7_8:2041-2069`): no
+Paper: Section 8 (the block Anderson extension) and Section 2.  Deterministic part of the block Anderson `G`-chain
+(proof of Lemma 8.4 `lem_GbEXP_BA` and of Lemma 8.5 `lem_ConArg_BA`): no
 probability, no a.s. block support, no large-deviation estimate.
 
-* Section 1 (targets 1, 2): the chain domain `BAdom` gives the real-axis bulk data at the flow parameters
-  (`zztE_BA`, `7_8:1796`), every `n`; `(eq:WO)` gives `0 < g₀ ≤ 𝔡⁻¹` eventually.
-* Section 2 (targets 3-7): `M = M^{(B)} ⊗ I_{W^d}` entrywise (`(def_G0)`, `1_2:631`), `‖M‖_max ≤ 1`, the
-  exponential decay `(Mbound_AO2)` (`7_8:1902`) and the `ℓ¹` rows, uniform in `L, W`.
-* Section 3 (target 8): `G_t - M = -M (√t V + t m) G_t = -G_t (√t V + t m) M` (`H_t = g₀ Ψ + √t V`,
-  `z_t = E + (1 - t) m`, `1_2:685`, `:716`).
-* Section 4 (targets 9-11): `Ψ` has no in-block entries; the Schur formulas `(4.7)`, `(4.8)` for
-  `H = D + X` with `D` off-block and `X` in-block, split into the random / mixed / deterministic parts.
-* Section 5: compiled nonempty instances in `RBM.BA.GreenSchurInst`.
+* Section 1: the chain domain `BAdom` gives the real-axis bulk data at the flow parameters
+  (Lemma 8.1 `zztE_BA`), every `n`; (2.10) `eq:WO` gives `0 < g₀ ≤ 𝔡⁻¹` eventually.
+* Section 2: `M = M^{(B)} ⊗ I_{W^d}` entrywise ((2.33) `def_G0`), `‖M‖_max ≤ 1`, the
+  `ℓ¹` rows, uniform in `L, W`.
+* Section 3: `G_t - M = -M (√t V + t m) G_t = -G_t (√t V + t m) M` (`H_t = g₀ Ψ + √t V`,
+  `z_t = E + (1 - t) m`, (2.36) `MBM`, (2.37) `eq:zt`).
 -/
 
 set_option linter.style.longLine false
@@ -43,7 +40,7 @@ namespace RBM.BA
 
 open RBM RBM.Gauss
 
-/-! ## 1. Targets 1, 2: the flow data on the chain domain -/
+/-! ## 1. The flow data on the chain domain -/
 
 /-- `Im z_n > 0` on the chain domain (`N^{-1+ε} ≤ Im z_n`, `N ≥ 1`). -/
 private theorem GreenSchur_zim_pos {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ}
@@ -54,7 +51,7 @@ private theorem GreenSchur_zim_pos {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes
     exact_mod_cast Nat.pos_of_ne_zero (by have := sz.one_le_size n; omega)
   linarith
 
-/-- **Target 1** (`zztE_BA`, `7_8:1796`): the chain domain gives real-axis bulk data at the flow parameters,
+/-- **The real-axis datum** (Lemma 8.1 `zztE_BA`): the chain domain gives real-axis bulk data at the flow parameters,
 for every `n`; `m` is `BAmF`, the real-axis value at `(g₀_n, E_n)`. -/
 theorem BAflow_real {d : ℕ} (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) :
     BAReal d (sz.L n) (BAflowLam0 sz z n) κ (BAflowEs sz z n)
@@ -68,7 +65,7 @@ theorem BAflow_real {d : ℕ} (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ �
   rw [e']
   exact hr
 
-/-- **Target 2** (`(eq:WO)`, `1_2:363`, at the flow coupling): eventually `0 < g₀_n ≤ 𝔡⁻¹`. -/
+/-- **The coupling window** ((2.10) `eq:WO`, at the flow coupling): eventually `0 < g₀_n ≤ 𝔡⁻¹`. -/
 theorem BAflow_lam0_window {d : ℕ} (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (h : BAFlow sz κ ε 𝔠 𝔡 z) :
     ∀ᶠ n in atTop, 0 < BAflowLam0 sz z n ∧ BAflowLam0 sz z n ≤ 𝔡⁻¹ := by
   filter_upwards [h.1.2.2.2.2] with n hn
@@ -87,9 +84,9 @@ theorem BAflow_lam0_window {d : ℕ} (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z :
   refine ⟨mul_pos hs0 hlam, ?_⟩
   nlinarith
 
-/-! ## 2. Targets 3-7: `M = M^{(B)} ⊗ I_{W^d}` and its bounds -/
+/-! ## 2. `M = M^{(B)} ⊗ I_{W^d}` and its bounds -/
 
-/-- **Target 3** (`(def_G0)`, `1_2:631`): `M_{xy} = 1(x, y same offset) M^{(B)}_{[x][y]}`. -/
+/-- **The Kronecker form** ((2.33) `def_G0`): `M_{xy} = 1(x, y same offset) M^{(B)}_{[x][y]}`. -/
 theorem BAMfine_eq {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (hm : 0 < (BAmF sz lam0 E n).im)
     (x y : Idx d (sz.L n) (sz.W n)) :
     BAMfine sz lam0 E n x y =
@@ -101,7 +98,7 @@ theorem BAMfine_eq {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (hm
     simpa using hm.ne'
   exact BAMres_fine_apply d (sz.L n) (sz.W n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n) hw x y
 
-/-- **Target 4** (`‖M‖_max ≤ 1`): the Ward row identity at the real axis, `∑_b |M^{(B)}_{ab}|² = 1`. -/
+/-- **`‖M‖_max ≤ 1`**: the Ward row identity at the real axis, `∑_b |M^{(B)}_{ab}|² = 1`. -/
 theorem BAMfine_norm_le_one {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ)
     (h : BASelf d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n))
     (x y : Idx d (sz.L n) (sz.W n)) : ‖BAMfine sz lam0 E n x y‖ ≤ 1 := by
@@ -119,7 +116,7 @@ theorem BAMfine_norm_le_one {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n :
         (split d (sz.L n) (sz.W n) x).1 (split d (sz.L n) (sz.W n) y).1)]
   · simp
 
-/-- **Target 6** (`ℓ¹` row of `M^{(B)}`, uniform in `L`; `d = k + 2`): `∑_b |M^{(B)}_{ab}| ≤ c⁻¹ expC k c`,
+/-- **The `ℓ¹` row of `M^{(B)}`**, uniform in `L`; `d = k + 2`: `∑_b |M^{(B)}_{ab}| ≤ c⁻¹ expC k c`,
 `c = BAct_rate (k + 2) Λ κ`. -/
 theorem BAMB_row_l1 (k L : ℕ) [NeZero L] (hL : 3 ≤ L) (Λ g κ E : ℝ) (m : ℂ) (hΛ : 0 < Λ) (hg : 0 < g)
     (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal (k + 2) L g κ E m) (a : Zd (k + 2) L) :
@@ -141,9 +138,9 @@ theorem BAMB_row_l1 (k L : ℕ) [NeZero L] (hL : 3 ≤ L) (Λ g κ E : ℝ) (m :
     _ ≤ (BAct_rate (k + 2) Λ κ)⁻¹ * expC k (BAct_rate (k + 2) Λ κ) :=
         mul_le_mul_of_nonneg_left (sum_radial_exp_decay_le k hc) (inv_nonneg.mpr hc.le)
 
-/-! ## 3. Target 8: the resolvent identity with the deterministic hopping -/
+/-! ## 3. The resolvent identity with the deterministic hopping -/
 
-/-- New vocabulary: `√t V + t m`, so that `G_t⁻¹ - M⁻¹ = BAflowPert` (`H_t = g₀ Ψ + √t V`,
+/-- The perturbation `√t V + t m`, so that `G_t⁻¹ - M⁻¹ = BAflowPert` (`H_t = g₀ Ψ + √t V`,
 `z_t = E + (1 - t) m`, `M = (g₀ Ψ - E - m)⁻¹`). -/
 noncomputable def BAflowPert {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
@@ -166,7 +163,7 @@ private theorem GreenSchur_Psi_herm {d : ℕ} (sz : Sizes d) (lam0 : ℕ → ℝ
   rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
     show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _]
 
-/-- **Target 8** (`G_t - M = -M (√t V + t m) G_t = -G_t (√t V + t m) M`; `t < 1`, `Im m > 0`): the resolvent
+/-- **The resolvent identity** (`G_t - M = -M (√t V + t m) G_t = -G_t (√t V + t m) M`; `t < 1`, `Im m > 0`): the resolvent
 identity of the block Anderson flow with the deterministic hopping, both orders. -/
 theorem BAGt_sub_BAMfine {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) (ht : t < 1)
     (hm : 0 < (BAmF sz lam0 E n).im) :
@@ -211,16 +208,5 @@ theorem BAGt_sub_BAMfine {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : �
   · rw [e1, neg_sub]
   · rw [e2, neg_sub]
 
-/-! ## 4. Targets 9-11: `Ψ` off-block, and the Schur formulas `(4.7)`, `(4.8)` for `H = D + X` -/
-
-/-! ## 5. Compiled nonempty instances (`d = 3`, `L = 4`)
-
-* Targets 3-9: the one-point flow data of the merged `CouplingWindow.lean` (`szP`: `L ≡ 4`, `W ≡ 2`,
-  `lam ≡ 10`; the flow point `(g₀, E, m₀) = (g0P, EP, m0P)` of `z_S(4, 10)`, `BAReal 3 4 g0P (Im m_S) EP m0P`).
-* Targets 10, 11: `ι = β = Fin 2`, `b = id`, `X = 0`, `D = [[0, 1], [1, 0]]`, `z = i`.
-* Targets 1, 2: a `BAFlow` instance at a growing sequence (`L ≡ 4`, `W_n = n + 1`, `lam ≡ 1/100`,
-  `z ≡ w - m_w`, `w = 11 i / 10`, `κ = 9/10`, `ε = 1/2`, `𝔠 = 1/9`, `𝔡 = 1/2`), built from `BASelf_subord`. -/
-
-/-! ### The chain domain `BAFlow` at a growing sequence (targets 1, 2) -/
 
 end RBM.BA

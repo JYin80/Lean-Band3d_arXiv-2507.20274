@@ -9,28 +9,24 @@ import RBM3D.BA.KMolecule
 import RBM3D.Loop.KLIndStepA
 
 /-!
-# Stage K, row K08b: the absolute weighted clause of the BA molecule weight and `SigSumZeroAbs`
+# The absolute weighted clause of the BA molecule weight and `SigSumZeroAbs`
 
-Ticket T2391 (design BA-DK, `docs/reports/T2360-design.md` §3 (c), §5 row K08b).  The argument was
-written and audited in the design gate of T2385 (`docs/reports/T2385-prove.md` (a+), "Absolute
-weighted clause (K08b)").  Paper: `(eq:Sigma-empty-sum-zero)` and `(eq:molecule-decay)`
-(`A_deterministic_estimates.tex:691-734`).  The BA twin of the band `Loop/KLIndStepA.lean` §5
-(`KLIndStepA_nc_pointwise`, `KLsumZero_weighted`, `sigSumZeroAbs_band`).
+Paper: (A.48) `eq:Sigma-empty-sum-zero` and (A.44) `eq:molecule-decay`.  The BA analogue of the band
+`Loop/KLIndStepA.lean` (`KLIndStepA_nc_pointwise`, `KLsumZero_weighted`, `sigSumZeroAbs_band`).
 
-1. `KSumZeroB_unequal_edge` (B1): for a labelling `β` of the slots of a cactus whose leaf labels
+1. `KSumZeroB_unequal_edge`: for a labelling `β` of the slots of a cactus whose leaf labels
    are not constant, either a chord has `β (In J) ≠ β (Out J)` or a node has two `M`-edges with
    unequal ends.
-2. `baSig_nc_pointwise` (B2): `|Σ^{(∅)}(σ, δ)| ≤ G g² e^{-c max_{i,j} |δ_i - δ_j|}` for every `σ`
+2. `baSig_nc_pointwise`: `|Σ^{(∅)}(σ, δ)| ≤ G g² e^{-c max_{i,j} |δ_i - δ_j|}` for every `σ`
    and every non-constant `δ`, uniformly in the family `(L, g ≤ Λ, E, m, t ≤ 1)`.
-3. `baSig_weighted` (B3): for every `Q` and every alternating `σ`, on every slice `δ_r = x`,
+3. `baSig_weighted`: for every `Q` and every alternating `σ`, on every slice `δ_r = x`,
    `Σ |Σ^{(∅)}(δ)| (max |δ_i - δ_j| + 1)^Q ≤ C (g² + (1 - t))` (the proof of `KLsumZero_weighted`,
-   with B2 for `KLIndStepA_nc_pointwise` and the signed clause `baSig_signed_sum` of K08a).
-4. `baSig_sumZeroAbs` (B4): the K-b predicate `SigSumZeroAbs d n L g t (BASig d n L g E m t)`,
+   with `baSig_nc_pointwise` for `KLIndStepA_nc_pointwise` and the signed clause `baSig_signed_sum`).
+4. `baSig_sumZeroAbs`: the predicate `SigSumZeroAbs d n L g t (BASig d n L g E m t)`,
    under `3 ≤ n`, `t i < 1` (the ranges of `sigSumZeroAbs_band` and of its consumers;
-   `SigSumZeroAbs` itself, which is false at `n = 2`, is untouched).
-5. Compiled nonempty instances at the flow point `P` of `(d, L) = (3, 4)`, `n = 4`.
+   `SigSumZeroAbs` itself, which is false at `n = 2`, is not changed).
 
-Public: the declarations above; every other helper is `private` with the stem `KSumZeroB_`.
+The names of the private helpers begin with KSumZeroB_.
 -/
 
 set_option linter.style.longLine false
@@ -40,7 +36,7 @@ namespace RBM.BA
 open RBM RBM.Loop
 open scoped Matrix
 
-/-! ## 1. B1: an unequal edge in every cactus labelling that is not constant on the leaves -/
+/-! ## 1. An unequal edge in every cactus labelling that is not constant on the leaves -/
 
 section Cycle
 
@@ -80,7 +76,7 @@ section Combinatorics
 
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
-/-- **B1.**  A labelling `β` of the slots of the cactus of `F` (`KLIsTSP F`, `2 ≤ n`) whose leaf labels `β (leaf v)` are not
+/-- **An unequal edge.**  A labelling `β` of the slots of the cactus of `F` (`KLIsTSP F`, `2 ≤ n`) whose leaf labels `β (leaf v)` are not
 all equal has either a chord `J` with `β (In J) ≠ β (Out J)`, or a node with two distinct `M`-edges `s — next s` with unequal
 ends.  If every chord and every node cycle (`BAnextSlot_orbit`) had equal ends then every edge would, the total length is
 `0` and `baSlot_path_le` makes `β` constant.  An unequal `M`-edge is never alone in its node: a cycle closes. -/
@@ -147,7 +143,7 @@ private theorem KSumZeroB_prod_gain {Eg : Type*} [Fintype Eg] (f h : Eg → ℝ)
             (mul_nonneg (hh e) hg)
       _ = (h e * (h e' * ∏ x ∈ (Finset.univ.erase e).erase e', h x)) * g ^ 2 := by ring
 
-/-- `∏_e B e^{-r z_e} = B^{|E|} e^{-r Σ z_e}` (a copy of the private `KPure_prod_const_exp`, `BA/KPure.lean:399`). -/
+/-- `∏_e B e^{-r z_e} = B^{|E|} e^{-r Σ z_e}` (as the private `KPure_prod_const_exp`, `BA/KPure.lean`). -/
 private theorem KSumZeroB_prod_exp {Eg : Type*} [Fintype Eg] (z : Eg → ℕ) (B r : ℝ) :
     ∏ e, (B * Real.exp (-(r * (z e : ℝ)))) =
       B ^ Fintype.card Eg * Real.exp (-(r * ((∑ e, z e : ℕ) : ℝ))) := by
@@ -168,7 +164,7 @@ private theorem KSumZeroB_card_edges (F : Finset (Fin n × Fin n)) :
 /-- **The product of the edge entries with the gain `g²`**: let every edge entry of the cactus of `F` be at most
 `B e^{-r |x-y|}` (`hM`, `hΘ`; the chords are short, `hsame`), an off-diagonal `M`-entry at most `B g e^{-r |x-y|}`
 (`hMo`) and an off-diagonal short chord at most `B g² e^{-r |x-y|}` (`hΘo`).  At every labelling `β` of the slots
-whose leaf labels are not constant (B1: an unequal chord or two unequal `M`-edges),
+whose leaf labels are not constant (an unequal chord or two unequal `M`-edges, `KSumZeroB_unequal_edge`),
 `∏_e |E_e(β src, β tgt)| ≤ B^{n+3n²} g² e^{-r T(β)}`, `T(β)` the total edge length. -/
 private theorem KSumZeroB_prod_le {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
     (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (hsame : ∀ e ∈ F, σ e.1 = σ e.2)
@@ -230,14 +226,14 @@ private theorem KSumZeroB_prod_le {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F)
 
 end Prod
 
-/-! ## 3. B2: the pointwise bound with the gain `g²` for a non-constant `δ` -/
+/-! ## 3. The pointwise bound with the gain `g²` for a non-constant `δ` -/
 
 section Pointwise
 
 variable {d : ℕ} {Λ κ : ℝ} {L : ℕ} [NeZero L] {g : ℝ} {E : ℝ} {m : ℂ}
 
-/-- `Θ^{(s,s')}` is invariant under the translation `x ↦ x + c` when every `M(σ)` is (a copy of the private
-`KPure_theta_shift`, `BA/KPure.lean:71`). -/
+/-- `Θ^{(s,s')}` is invariant under the translation `x ↦ x + c` when every `M(σ)` is (as the private
+`KPure_theta_shift`, `BA/KPure.lean`). -/
 private theorem KSumZeroB_theta_shift (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (hM : ∀ (σ : Bool) (x y c : Zd d L), M σ (x + c) (y + c) = M σ x y) (t : ℝ) (s s' : Bool) (x y c : Zd d L) :
     BAThetaOf M t s s' (x + c) (y + c) = BAThetaOf M t s s' x y := by
@@ -257,7 +253,7 @@ private theorem KSumZeroB_theta_shift (M : Bool → Matrix (Zd d L) (Zd d L) ℂ
   rw [Matrix.submatrix_apply] at h3
   exact h3.symm
 
-/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (a copy of the private `KInduct_norm_sigma`, `BA/KInduct.lean:156`). -/
+/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (as the private `KInduct_norm_sigma`, `BA/KInduct.lean`). -/
 private theorem KSumZeroB_norm_sigma (g E : ℝ) (m : ℂ) (σ : Bool) (a b : Zd d L) :
     ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ a b‖ = ‖BAMB d L g (E : ℂ) m a b‖ := by
   cases σ
@@ -267,7 +263,7 @@ private theorem KSumZeroB_norm_sigma (g E : ℝ) (m : ℂ) (σ : Bool) (a b : Zd
   · simp only [BAMsigma, ite_true]
 
 /-- **An off-diagonal short chord carries `g²`**: `|t Θ_t^{(s,s)}(x,y)| ≤ B g² e^{-r |x-y|}` for `x ≠ y`, `0 ≤ t ≤ 1`
-(`(prop:ThfadC_short)`, `baProp5s_of_real`, with no `1_{a=0}` term; `B = baPureB`, `r = baPureRate`, `r ≤ c_s`,
+((2.67) `prop:ThfadC_short`, `baProp5s_of_real`, with no `1_{a=0}` term; `B = baPureB`, `r = baPureRate`, `r ≤ c_s`,
 `C₅ ≤ B`). -/
 private theorem KSumZeroB_chord_off (hd : 3 ≤ d) (hΛ : 0 < Λ) (hκ : 0 < κ) (hL : 3 ≤ L) (hg : 0 < g)
     (hgΛ : g ≤ Λ) (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (s : Bool) {x y : Zd d L}
@@ -335,7 +331,7 @@ section Tree
 
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
-/-- **The tree bound with the gain `g²`** (the twin of `baSigmaTree_bound_maxDist` for a non-constant `δ`): under the
+/-- **The tree bound with the gain `g²`** (the analogue of `baSigmaTree_bound_maxDist` for a non-constant `δ`): under the
 entry bounds of `KSumZeroB_prod_le`, `|Σ_F(δ)| ≤ g² B^{n+3n²} S₀^{N₀} e^{-(r/4) max_{i,j} |δ_i - δ_j|}`
 (`baSigmaTree_bound` in its `hprod` form, `hprod` from `KSumZeroB_prod_le` at every labelling consistent with `δ`). -/
 private theorem KSumZeroB_tree_bound (hd : 2 ≤ d) {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
@@ -369,11 +365,11 @@ private theorem KSumZeroB_tree_bound (hd : 2 ≤ d) {F : Finset (Fin n × Fin n)
 
 end Tree
 
-/-- **B2 (`baSig_nc_pointwise`): the pointwise `g²` gain of the molecule weight for a non-constant `δ`** (the BA twin of
-`KLIndStepA_nc_pointwise`, `Loop/KLIndStepA.lean:892`): for every charge vector `σ` and every `δ` that is not
+/-- **`baSig_nc_pointwise`: the pointwise `g²` gain of the molecule weight for a non-constant `δ`** (the BA analogue of
+`KLIndStepA_nc_pointwise`, `Loop/KLIndStepA.lean`): for every charge vector `σ` and every `δ` that is not
 constant, `|Σ^{(∅)}(σ, δ)| ≤ G g² e^{-c max_{i,j} |δ_i - δ_j|}`, uniformly in the family `ι` of `(L, g, E, m, t)`:
 `3 ≤ L i`, `0 < g i ≤ Λ`, `BAReal d (L i) (g i) κ (E i) (m i)`, `0 ≤ t i ≤ 1`.  `G, c` depend on `(d, n, Λ, κ)` only.
-Every edge of a layer-`∅` tree is at most `B e^{-r |x-y|}` (`baPure_edge`), and B1 gives a chord, or two `M`-edges,
+Every edge of a layer-`∅` tree is at most `B e^{-r |x-y|}` (`baPure_edge`), and `KSumZeroB_unequal_edge` gives a chord, or two `M`-edges,
 at which the entries are off-diagonal and carry `g²` (`baProp5s_of_real`) or `g · g` (`BAK_off_le`). -/
 theorem baSig_nc_pointwise {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 2 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ)
     (hκ : 0 < κ) (L : ι → ℕ) [∀ i, NeZero (L i)] (g E : ι → ℝ) (m : ι → ℂ) (t : ι → ℝ) (hL : ∀ i, 3 ≤ L i)
@@ -450,17 +446,17 @@ theorem baSig_nc_pointwise {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn
   calc ‖BASig d n L g E m t i σ δ‖ ≤ _ := h
     _ = _ := by ring
 
-/-! ## 4. The slice arithmetic of the weighted estimate (B3)
+/-! ## 4. The slice arithmetic of the weighted estimate
 
-The proof of the band `KLsumZero_weighted` (`Loop/KLIndStepA.lean:941`), in two steps: the slice arithmetic for an
+The proof of the band `KLsumZero_weighted` (`Loop/KLIndStepA.lean`), in two steps: the slice arithmetic for an
 abstract weight `Sg` (a signed sum-zero bound and a pointwise `g²` bound for the non-constant `δ`), then its
-instance at `Sg = BASig`, with the signed clause `baSig_signed_sum` of K08a and B2 in place of
+instance at `Sg = BASig`, with the signed clause `baSig_signed_sum` and `baSig_nc_pointwise` in place of
 `KLIndStepA_sumZero_signed` and `KLIndStepA_nc_pointwise`.  The band helpers are `private` there, so they are
 proved again here. -/
 
 section Weighted
 
-/-- `(x + 1)^m ≤ 2^m (x^m + 1)` (a copy of the private `KLIndStepA_pow_le`, `Loop/KLIndStepA.lean:516`). -/
+/-- `(x + 1)^m ≤ 2^m (x^m + 1)` (as the private `KLIndStepA_pow_le`, `Loop/KLIndStepA.lean`). -/
 private theorem KSumZeroB_pow_le (m : ℕ) {x : ℝ} (hx : 0 ≤ x) : (x + 1) ^ m ≤ 2 ^ m * (x ^ m + 1) := by
   have h1 : x + 1 ≤ 2 * max x 1 := by
     rcases le_total x 1 with h | h
@@ -474,8 +470,8 @@ private theorem KSumZeroB_pow_le (m : ℕ) {x : ℝ} (hx : 0 ≤ x) : (x + 1) ^ 
     _ = 2 ^ m * (max x 1) ^ m := mul_pow _ _ _
     _ ≤ 2 ^ m * (x ^ m + 1) := mul_le_mul_of_nonneg_left h2 (by positivity)
 
-/-- `(M+1)^Q e^{-cM} ≤ C_Q e^{-(c/2) M}`, `C_Q = 2^Q (1 + Q!/(c/2)^Q)` (a copy of the private `KLIndStepA_poly_exp`,
-`Loop/KLIndStepA.lean:859`). -/
+/-- `(M+1)^Q e^{-cM} ≤ C_Q e^{-(c/2) M}`, `C_Q = 2^Q (1 + Q!/(c/2)^Q)` (as the private `KLIndStepA_poly_exp`,
+`Loop/KLIndStepA.lean`). -/
 private theorem KSumZeroB_poly_exp (Q : ℕ) {c : ℝ} (hc : 0 < c) {M : ℝ} (hM : 0 ≤ M) :
     (M + 1) ^ Q * Real.exp (-(c * M))
       ≤ (2 ^ Q * (1 + (Nat.factorial Q : ℝ) / (c / 2) ^ Q)) * Real.exp (-(c / 2 * M)) := by
@@ -496,8 +492,8 @@ private theorem KSumZeroB_poly_exp (Q : ℕ) {c : ℝ} (hc : 0 < c) {M : ℝ} (h
 
 variable {k n : ℕ} [NeZero n] {L : ℕ} [NeZero L]
 
-/-- `Σ_{δ_r = x} e^{-c max|δ_i - δ_j|} ≤ expC(c/n)^{n-1}` for every root `r` (a copy of the private
-`KLIndStepA_sum_exp_root`, `Loop/KLIndStepA.lean:881`: the merged `KLMolecule_sum_exp_maxDist` at root `0` and
+/-- `Σ_{δ_r = x} e^{-c max|δ_i - δ_j|} ≤ expC(c/n)^{n-1}` for every root `r` (as the private
+`KLIndStepA_sum_exp_root`, `Loop/KLIndStepA.lean`: `KLMolecule_sum_exp_maxDist` at root `0` and
 `KLIndStepA_sum_slice_root`). -/
 private theorem KSumZeroB_sum_exp_root {c : ℝ} (hc : 0 < c) (r : Fin n) (x : Zd (k + 2) L) :
     ∑ δ ∈ Finset.univ.filter (fun δ : Fin n → Zd (k + 2) L => δ r = x),
@@ -510,7 +506,7 @@ private theorem KSumZeroB_sum_exp_root {c : ℝ} (hc : 0 < c) (r : Fin n) (x : Z
 /-- **The slice arithmetic of the weighted estimate** (the second half of `KLsumZero_weighted`): from a signed bound on
 the slice `δ_r = x`, `|Σ_S Sg| ≤ C₁ τ`, and the pointwise bound `|Sg δ| ≤ G γ e^{-c max|δ_i - δ_j|}` for every
 non-constant `δ`, one gets `Σ_S |Sg δ| (max|δ_i - δ_j| + 1)^Q ≤ (C₁ + 2R + 1)(γ + τ)`, `R = G C_Q expC(c/(2n))^{n-1}`:
-the constant `δ ≡ x` is read off from the signed sum, the other terms are `≤ γ R` (B2, `KSumZeroB_poly_exp`,
+the constant `δ ≡ x` is read off from the signed sum, the other terms are `≤ γ R` (`baSig_nc_pointwise`, `KSumZeroB_poly_exp`,
 `KSumZeroB_sum_exp_root`). -/
 private theorem KSumZeroB_weighted_of (Sg : (Fin n → Zd (k + 2) L) → ℂ) {γ τ C₁ G c : ℝ}
     (hγ : 0 ≤ γ) (hτ : 0 < τ) (hC₁ : 0 ≤ C₁) (hG : 0 ≤ G) (hc : 0 < c)
@@ -574,13 +570,13 @@ private theorem KSumZeroB_weighted_of (Sg : (Fin n → Zd (k + 2) L) → ℂ) {�
 
 end Weighted
 
-/-! ## 5. B3 and B4: the weighted clause and the K-b predicate -/
+/-! ## 5. The weighted clause and the predicate `SigSumZeroAbs` -/
 
-/-- **B3 (`baSig_weighted`): the weighted absolute sum-zero estimate on every slice**, for every `Q`: for `σ` cyclically
+/-- **`baSig_weighted`: the weighted absolute sum-zero estimate on every slice**, for every `Q`: for `σ` cyclically
 alternating, every root `r` and label `x`, `Σ_{δ_r = x} |Σ^{(∅)}(σ, δ)| (max_{i,j} |δ_i - δ_j| + 1)^Q ≤ C (g² + (1 - t))`,
-`C = C(d, n, Λ, κ, Q)`.  The BA twin of `KLsumZero_weighted` (`Loop/KLIndStepA.lean:941`), at the family data of
+`C = C(d, n, Λ, κ, Q)`.  The BA analogue of `KLsumZero_weighted` (`Loop/KLIndStepA.lean`), at the family data of
 `baSig_signed_sum` (`3 ≤ L i`, `0 < g i ≤ Λ`, `BAReal`, `0 ≤ t i < 1`); the unweighted absolute sum of `baSig_decay`
-does not give the weighted one uniformly in `g, 1 - t`, the pointwise `g²` factor of a non-constant `δ` (B2) does. -/
+does not give the weighted one uniformly in `g, 1 - t`, the pointwise `g²` factor of a non-constant `δ` does. -/
 theorem baSig_weighted {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ)
     (L : ι → ℕ) [∀ i, NeZero (L i)] (g E : ι → ℝ) (m : ι → ℂ) (t : ι → ℝ) (hL : ∀ i, 3 ≤ L i) (hg : ∀ i, 0 < g i)
     (hgΛ : ∀ i, g i ≤ Λ) (hr : ∀ i, BAReal d (L i) (g i) κ (E i) (m i)) (ht0 : ∀ i, 0 ≤ t i) (ht1 : ∀ i, t i < 1)
@@ -601,12 +597,12 @@ theorem baSig_weighted {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3
   exact KSumZeroB_weighted_of (fun δ => BASig (k + 2) n L g E m t i σ δ) (sq_nonneg _) (by linarith [ht1 i]) hC₁.le
     hG.le hc (fun δ hδ => hnc i σ δ hδ) Q r x (hsig i σ hσ r x)
 
-/-- **B4 (`baSig_sumZeroAbs`): the K-b predicate at the BA molecule weight.**  `SigSumZeroAbs d n L g t (BASig d n L g E m t)`
-(`Loop/KLIndStepA.lean:1036`) for the family data of `baSig_signed_sum`, `3 ≤ n`, `t i < 1`.  The reflection and the
+/-- **`baSig_sumZeroAbs`: the predicate `SigSumZeroAbs` at the BA molecule weight.**  `SigSumZeroAbs d n L g t (BASig d n L g E m t)`
+(`Loop/KLIndStepA.lean`) for the family data of `baSig_signed_sum`, `3 ≤ n`, `t i < 1`.  The reflection and the
 translation clauses are `baSig_transl`; the bound clause, for every `Q`, is the signed estimate `baSig_signed_sum`
 (`O(1 - t)`) and the weighted one `baSig_weighted` (`O(g² + 1 - t)`) with the larger of the two constants.
-`SigSumZeroAbs` has no range for `n` or `t` and is false at `n = 2` (`T2385b`); it is not edited, the ranges are
-those of `sigSumZeroAbs_band` and of its consumers (`KLIndStepB.lean:299, 364`). -/
+`SigSumZeroAbs` has no range for `n` or `t` and is false at `n = 2`; it is not changed, the ranges are
+those of `sigSumZeroAbs_band` and of its consumers (`KLIndStepB.lean`). -/
 theorem baSig_sumZeroAbs {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ)
     (hκ : 0 < κ) (L : ι → ℕ) [∀ i, NeZero (L i)] (g E : ι → ℝ) (m : ι → ℂ) (t : ι → ℝ) (hL : ∀ i, 3 ≤ L i)
     (hg : ∀ i, 0 < g i) (hgΛ : ∀ i, g i ≤ Λ) (hr : ∀ i, BAReal d (L i) (g i) κ (E i) (m i))
@@ -622,11 +618,5 @@ theorem baSig_sumZeroAbs {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn :
   · exact (hw i σ halt r x).trans
       (mul_le_mul_of_nonneg_right (le_max_right _ _) (by nlinarith [ht1 i, sq_nonneg (g i)]))
 
-/-! ## 6. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`,
-`0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `n = 4`, `σ = KLsigAlt 4 = (+,-,+,-)` (cyclically alternating), `t = 1/2`
-and `t = 999/1000` (near `1`), the family `ι = Unit`.  The label vector `δ₀ = (0, 0, 0, e₁)` is not constant.  Every
-deterministic hypothesis of every theorem is discharged at this datum; no hypothesis of another gate remains. -/
 
 end RBM.BA

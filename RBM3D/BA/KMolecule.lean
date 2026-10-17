@@ -9,34 +9,30 @@ import RBM3D.Loop.KLSumZeroWard
 import RBM3D.Loop.KLIndStepB
 
 /-!
-# Stage K, row K06: the BA molecule layer `K^{(π)}`, `Σ^{(π)}`, `(eq_K-Kpi)`, the factorisation
+# The BA molecule layer `K^{(π)}`, `Σ^{(π)}`, (A.39) `eq_K-Kpi`, the factorisation
 
-Ticket T2376 (design BA-DK, `docs/reports/T2360-design.md` §4 row K06; supervisor
-`docs/supervisor/2026-10-09-2051.md` K-a…K-e and `2026-10-10-0350.md` C2; Amend 1 of DECISIONS
-§190: the cut machinery is in `BA/KCactusCut.lean`).  Paper: `(eq:defKpi)`, `(eq_K-Kpi)`,
-`(eq:molecule-Kpi)` (`A_deterministic_estimates.tex:600-640`).  The BA twin of the band layer
-`Loop/KLTree.lean` §4-§5 and of the factorisation at an innermost long edge
-`Loop/KLSumZeroWard.lean` §1-§3, over the cactus `BAGamma` (K04) and the BA solution `BAKsol`
-(K05b: `baTreeRep`).
+Paper: (A.38) `eq:defKpi`, (A.39) `eq_K-Kpi`,
+(A.40) `eq:molecule-Kpi`.  The BA analogue of the band layer
+`Loop/KLTree.lean` and of the factorisation at an innermost long edge
+`Loop/KLSumZeroWard.lean`, over the cactus `BAGamma` and the BA solution `BAKsol`
+(`baTreeRep`); the cut machinery is in `BA/KCactusCut.lean`.
 
 1. `BAKpi`, `BASigmaTree`, `BASigmaPi`, `BASig`: `K^{(π)}` is the sum of the cactus values over the
    trees whose long chords are `π`; the self-energy `Σ^{(π)}` is the same sum with every leaf edge
    `Θ^{(σ_v,σ_{v+1})}(a_v, ·)` replaced by the indicator of `δ_v` at its slot.  Neither carries
-   `∏ m(σ_i)` nor a power of `W` (as `BATreeRep`).
-2. `baK_eq_sum_Kpi` (`(eq_K-Kpi)`) from `baTreeRep`; `baKpi_eq_sum_SigmaPi`, the first stage of
-   `(eq:molecule-Kpi)`.
+   `∏ m(σ_i)` nor a power of `W` (as in Lemma A.6, `tree-representation_BA`).
+2. `baK_eq_sum_Kpi` ((A.39) `eq_K-Kpi`) from `baTreeRep`; `baKpi_eq_sum_SigmaPi`, the first step of
+   (A.40) `eq:molecule-Kpi`.
 3. `baSigmaPi_shift`, `baSigmaPi_reflect`, `baSig_transl`: the first two conjuncts of
    `SigSumZeroAbs` (a reflection and a translation of `δ`) at the molecule weight `BASig`.
-4. `baSigmaPi_cut`: the factorisation at an innermost long edge (`(eq:molecule-Kpi)` by induction
+4. `baSigmaPi_cut`: the factorisation at an innermost long edge ((A.40) `eq:molecule-Kpi` by induction
    on `π`): `Σ^{(π)}` is the outer self-energy glued through the chord `tΘ^{(σ_i,σ_j)}` to the inner
    self-energy `Σ^{(∅)}`; `Flong_eq_iff_cut`, `KLsum_cut` and `baCactus_cut`.  No `W`, no
    hypothesis on `M` or `t`; the chord is oriented `u` (inner end) to `w` (outer end), and the
    reversed inner leaf `Θ^{(σ_j,σ_i)} = (Θ^{(σ_i,σ_j)})ᵀ` is `1ᵀ = 1` at the self-energy level
-   (C2: no symmetry of `M` is used).
-5. Compiled instances at the flow point `P` of `(d, L) = (3, 4)`, `n = 4`.
+   (no symmetry of `M` is used).
 
-Public: the definitions and theorems above; every other helper is `private` with the stem
-`KMolecule_`.
+The names of the private helpers begin with KMolecule_.
 -/
 
 set_option linter.style.longLine false
@@ -48,8 +44,8 @@ open scoped Matrix
 
 /-! ## 1. The definitions -/
 
-/-- **`K^{(π)}`** (`(eq:defKpi)`): the sum of the cactus values over the trees whose long chords are
-exactly `π`.  The BA `Γ` carries no `∏ m(σ_i)` (as `BATreeRep`). -/
+/-- **`K^{(π)}`** ((A.38) `eq:defKpi`): the sum of the cactus values over the trees whose long chords are
+exactly `π`.  The BA `Γ` carries no `∏ m(σ_i)` (as in Lemma A.6, `tree-representation_BA`). -/
 noncomputable def BAKpi (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ)
     (σ : Fin n → Bool) (a : Fin n → Zd d L) (π : Finset (Fin n × Fin n)) : ℂ :=
   ∑ F ∈ KLTSPlong n σ π, BAGamma d L n M t F σ a
@@ -62,7 +58,7 @@ noncomputable def BASigmaTree (d L : ℕ) [NeZero L] {n : ℕ} [NeZero n] (M : B
   KLgval d L (Nd := BAslot F) (Lf := Fin n) δ (fun _ => 1) (BAslotLeaf F)
     (BACactusValEdgeW M t F σ) (BACactusValSrc F) (BACactusValTgt F)
 
-/-- **`Σ^{(π)}`**, the BA self-energy (first stage of `(eq:molecule-Kpi)`): `BASigmaTree` summed over the
+/-- **`Σ^{(π)}`**, the BA self-energy (first step of (A.40) `eq:molecule-Kpi`): `BASigmaTree` summed over the
 trees whose long chords are exactly `π`. -/
 noncomputable def BASigmaPi (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (t : ℝ) (σ : Fin n → Bool) (π : Finset (Fin n × Fin n)) (δ : Fin n → Zd d L) : ℂ :=
@@ -70,20 +66,20 @@ noncomputable def BASigmaPi (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Ma
 
 /-- **The molecule weight as an interface family**: `Σ^{(∅)}` at the BA data `M(σ) = BAMsigma (BAMB ..)`,
 indexed by `i : ι` so that it has the type `Sig : ∀ i, (Fin n → Bool) → (Fin n → Zd d (L i)) → ℂ` of
-`SigSumZeroAbs` (`Loop/KLIndStepA.lean:1036`) and `IndStepAbs` (`Loop/KLIndStepB.lean:77`). -/
+`SigSumZeroAbs` (`Loop/KLIndStepA.lean`) and `IndStepAbs` (`Loop/KLIndStepB.lean`). -/
 noncomputable def BASig {ι : Type} (d n : ℕ) [NeZero n] (L : ι → ℕ) [∀ i, NeZero (L i)]
     (g E : ι → ℝ) (m : ι → ℂ) (t : ι → ℝ) (i : ι) (σ : Fin n → Bool) (δ : Fin n → Zd d (L i)) : ℂ :=
   BASigmaPi d (L i) n (BAMsigma d (L i) (BAMB d (L i) (g i) ((E i : ℝ) : ℂ) (m i))) (t i) σ ∅ δ
 
-/-! ## 2. The first stage and `(eq_K-Kpi)` -/
+/-! ## 2. The first step and (A.39) `eq_K-Kpi` -/
 
 section FirstStage
 
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
 /-- Re-attaching the leaf edges to the self-energy gives back the tree value: the generic value with
-leaf weights `Lw` is `Σ_δ (value with leaf weights 1 at δ) ∏_ℓ Lw_ℓ(a_ℓ, δ_ℓ)` (the twin of
-`KLtreeValW_eq_sum_selfW`, `Loop/KLTree.lean:403`). -/
+leaf weights `Lw` is `Σ_δ (value with leaf weights 1 at δ) ∏_ℓ Lw_ℓ(a_ℓ, δ_ℓ)` (the analogue of
+`KLtreeValW_eq_sum_selfW`, `Loop/KLTree.lean`). -/
 private theorem KMolecule_gval_eq_sum {Nd Lf Ed : Type*} [Fintype Nd] [DecidableEq Nd] [Fintype Lf]
     [DecidableEq Lf] [Fintype Ed] (a : Lf → Zd d L) (Lw : Lf → Matrix (Zd d L) (Zd d L) ℂ) (p : Lf → Nd)
     (E : Ed → Matrix (Zd d L) (Zd d L) ℂ) (c q : Ed → Nd) :
@@ -106,7 +102,7 @@ private theorem KMolecule_gval_eq_sum {Nd Lf Ed : Type*} [Fintype Nd] [Decidable
   refine Finset.prod_congr rfl fun ℓ _ => ?_
   simp [Matrix.one_apply]
 
-/-- **The first stage of `(eq:molecule-Kpi)`**: `K^{(π)}(t,σ,a) = Σ_δ Σ^{(π)}(t,σ,δ) ∏_v Θ^{(σ_v,σ_{v+1})}(a_v, δ_v)`. -/
+/-- **The first step of (A.40) `eq:molecule-Kpi`**: `K^{(π)}(t,σ,a) = Σ_δ Σ^{(π)}(t,σ,δ) ∏_v Θ^{(σ_v,σ_{v+1})}(a_v, δ_v)`. -/
 theorem baKpi_eq_sum_SigmaPi (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool)
     (a : Fin n → Zd d L) (π : Finset (Fin n × Fin n)) :
     BAKpi d L n M t σ a π = ∑ δ : Fin n → Zd d L, BASigmaPi d L n M t σ π δ *
@@ -118,8 +114,8 @@ theorem baKpi_eq_sum_SigmaPi (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : �
     (BACactusValSrc F) (BACactusValTgt F)
 
 omit [NeZero n] in
-/-- The layers `KLTSPlong n σ π`, `π ⊆ diagonals n`, partition `TSP n` (a copy of the private
-`KLsum_TSPlong`, `Loop/KLTree.lean:381`). -/
+/-- The layers `KLTSPlong n σ π`, `π ⊆ diagonals n`, partition `TSP n` (as the private
+`KLsum_TSPlong`, `Loop/KLTree.lean`). -/
 private theorem KMolecule_sum_TSPlong {M : Type*} [AddCommMonoid M] (σ : Fin n → Bool)
     (f : Finset (Fin n × Fin n) → M) :
     ∑ π ∈ (diagonals n).powerset, ∑ F ∈ KLTSPlong n σ π, f F = ∑ F ∈ TSP n, f F := by
@@ -128,7 +124,7 @@ private theorem KMolecule_sum_TSPlong {M : Type*} [AddCommMonoid M] (σ : Fin n 
   have hF' := (Finset.mem_filter.1 hF).1
   exact (Finset.filter_subset _ _).trans (Finset.mem_powerset.1 hF')
 
-/-- **`(eq_K-Kpi)`**: `𝒦^{(n)}_{t,σ,a} = W^{-d(n-1)} Σ_{π ⊂ Z_n^{off}} K^{(π)}(t,σ,a)`, `n ≥ 3`, for the block
+/-- **(A.39) `eq_K-Kpi`**: `𝒦^{(n)}_{t,σ,a} = W^{-d(n-1)} Σ_{π ⊂ Z_n^{off}} K^{(π)}(t,σ,a)`, `n ≥ 3`, for the block
 Anderson solution `BAKsol` (`baTreeRep` at `Λ = g`, and the fibres of `F ↦ F_long(F, σ)`). -/
 theorem baK_eq_sum_Kpi (d : ℕ) {κ g : ℝ} (hκ : 0 < κ) (hg : 0 < g) {L : ℕ} [NeZero L] (hL : 3 ≤ L) (W : ℕ)
     {E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht : t ∈ Set.Ico (0 : ℝ) 1) {n : ℕ} [NeZero n]
@@ -230,7 +226,7 @@ theorem baSigmaPi_reflect (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
 
 end Clauses
 
-/-- `M(σ)` of the block Anderson model is symmetric (`BAMB_symm`, `BA/Ward.lean:83`; `M(-) = M^*`). -/
+/-- `M(σ)` of the block Anderson model is symmetric (`BAMB_symm`, `BA/Ward.lean`; `M(-) = M^*`). -/
 private theorem KMolecule_BAMsigma_symm (d L : ℕ) [NeZero L] (g : ℝ) (z m : ℂ) (σ : Bool) (x y : Zd d L) :
     BAMsigma d L (BAMB d L g z m) σ x y = BAMsigma d L (BAMB d L g z m) σ y x := by
   cases σ
@@ -239,7 +235,7 @@ private theorem KMolecule_BAMsigma_symm (d L : ℕ) [NeZero L] (g : ℝ) (z m : 
 
 /-- **The two translation clauses of `SigSumZeroAbs`** (the first two conjuncts, at alternating `σ`) for the molecule
 weight `BASig`: the reflection `Σ(c - δ) = Σ(δ)` and the translation `Σ(δ + c) = Σ(δ)`.  `BAMsigma_shift`
-(`BA/KSolve.lean:558`) and `BAMB_symm` (`BA/Ward.lean:83`) give the hypotheses of `baSigmaPi_shift`,
+(`BA/KSolve.lean`) and `BAMB_symm` (`BA/Ward.lean`) give the hypotheses of `baSigmaPi_shift`,
 `baSigmaPi_reflect`, which hold for every `σ` and every `π` (the alternation is not used). -/
 theorem baSig_transl {ι : Type} (d n : ℕ) [NeZero n] (L : ι → ℕ) [∀ i, NeZero (L i)] (g E : ι → ℝ)
     (m : ι → ℂ) (t : ι → ℝ) :
@@ -258,7 +254,7 @@ section Cut
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] {J : Fin n × Fin n}
 
 /-- **The cut of the self-energy of one tree at its chord `J`**: the generic cut `baCactus_cut` at the leaf weights
-`1`, `P = Q = 1` (`1ᵀ = 1`: the reversed inner leaf of the cut carries no weight at the `Σ` level, C2) and the
+`1`, `P = Q = 1` (`1ᵀ = 1`: the reversed inner leaf of the cut carries no weight at the `Σ` level) and the
 chord weight `S = tΘ^{(σ_i,σ_j)}` (the chord `J` of the tree `F` already carries `S`), with the inner end `u` first. -/
 private theorem KMolecule_tree_cut {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F)
     (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (δ : Fin n → Zd d L) :
@@ -304,8 +300,8 @@ private theorem KMolecule_sum4 {α β : Type*} [Fintype α] [Fintype β] {γ : T
         refine Finset.sum_congr rfl fun u _ => Finset.sum_congr rfl fun w _ => ?_
         rw [Finset.sum_mul, Finset.sum_mul_sum, Finset.sum_comm]
 
-/-- **The factorisation of the self-energy at an innermost long edge** (`(eq:molecule-Kpi)` by induction on `π`; the BA
-twin of the molecule factorisation `Qlayer_cut`, `Loop/KLSumZeroWard.lean:293`).  Let `π = F_long(F₀, σ)` and let
+/-- **The factorisation of the self-energy at an innermost long edge** ((A.40) `eq:molecule-Kpi` by induction on `π`; the BA
+analogue of the molecule factorisation `Qlayer_cut`, `Loop/KLSumZeroWard.lean`).  Let `π = F_long(F₀, σ)` and let
 `J = (i, j) ∈ π` be innermost.  Then `Σ^{(π)}(σ)` is the outer self-energy `Σ^{(π∖J)'}(σ_out)` on the outside polygon,
 glued through the long edge `tΘ^{(σ_i,σ_j)}` (inner end `u`, outer end `w`) to the inner self-energy `Σ^{(∅)}(σ_in)` on the
 inside polygon.  No `W`, no hypothesis on `M` or `t`.  The layer bijection is `Flong_eq_iff_cut` and `KLsum_cut`, the
@@ -366,12 +362,5 @@ theorem baSigmaPi_cut (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
 
 end Cut
 
-/-! ## 5. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 P.m0.im P.E P.m0`,
-`0 < P.g0`), `W = 2` (`W^d = 8`), `κ = Im m₀ > 0`, `t = 1/2`, `n = 4` (`TSP 4 = {∅, {(0,2)}, {(1,3)}}`), the charges
-`σ = (+,+,-,+)` (`σ_0 ≠ σ_2`: the chord `(0,2)` is long), four distinct labels.  The cut is at `J = (0,2)` of the tree
-`{(0,2)}`, `π = {(0,2)}`: an inner and an outer triangle, `π' = ∅`.  Every deterministic hypothesis is discharged; the only
-hypothesis of an `example` is the bound clause of `SigSumZeroAbs`, which is K07/K08's pin. -/
 
 end RBM.BA

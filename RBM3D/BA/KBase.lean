@@ -8,19 +8,16 @@ import RBM3D.BA.KKernel
 import RBM3D.Propagator.Deriv
 
 /-!
-# Stage K, row K00: the repaired `M`-loop carrier and the `Θ_BA` calculus
+# The `M`-loop carrier `BAMLoop` and the `Θ_BA` calculus
 
-Ticket T2362 (design BA-DK, `docs/reports/T2360-design.md` §3 F1, §4 row K00).
-
-1. `BAMLoop` (`BA/FlowPins.lean:272-276`) now pairs the charge `σ_i` with the edge
-   `(a_{i-1}, a_i)` (cyclic), as `(eq:KMloop)` (`1_2:1003`), the tree rule `A:571`, `loopM`
-   (`Loop/GLoopFlow.lean:92`) and `cutGlueL/R` (`Loop/TreeRep.lean:75-82`).  Here: its index form
-   `BAMLoop_apply`, the agreement with the old pairing for `n ≤ 2` and symmetric `M(σ)`
-   (`BAMLoop_le_two`), the witness `BAMLoop_witness` and the trace form `BAMLoop_trace`.
+1. `BAMLoop` (`BA/FlowPins.lean`) pairs the charge `σ_i` with the edge
+   `(a_{i-1}, a_i)` (cyclic), as (2.53) `eq:KMloop`, the tree rule (A.35) `eq:Mloop_defgen`, `loopM`
+   (`Loop/GLoopFlow.lean`) and `cutGlueL`, `cutGlueR` (`Loop/TreeRep.lean`).  Here: its index form
+   `BAMLoop_apply` and the trace form `BAMLoop_trace`.
 2. The `Θ_BA` calculus at real `t ∈ [0,1)` and every charge pair `(σ₁, σ₂)`: invertibility of
    `1 - t M^{(σ₁σ₂)}`, the resolvent identities, `∂_tΘ = ΘMΘ` (entrywise), the swap
-   `Θ^{(σ₁σ₂)} = Θ^{(σ₂σ₁)}`, `Θ^{(-,-)} = conj Θ^{(+,+)}`, symmetry, and the row sums of
-   `Θ^{(+,-)}`.  The twin of `Propagator/{Basic,Deriv}.lean` with `Q = M^{(σ₁σ₂)}` in place of
+   `Θ^{(σ₁σ₂)} = Θ^{(σ₂σ₁)}`, symmetry, and the row sums of
+   `Θ^{(+,-)}`.  The analogue of `Propagator/{Basic,Deriv}.lean` with `Q = M^{(σ₁σ₂)}` in place of
    `μ S^{(B)}`; the only input is `‖Q‖_{∞→∞} ≤ 1` from `|Q_ab| = BAK_ab` and the Ward row sums of
    `BAK` (`KKernel.lean`).
 -/
@@ -40,14 +37,14 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Gauss
 
-/-! ## 1. The repaired carrier `BAMLoop` -/
+/-! ## 1. The carrier `BAMLoop` -/
 
 section Loop
 
 variable (d L W : ℕ) [NeZero L]
 
 omit [NeZero L] in
-/-- **Index form of `BAMLoop`** (`(eq:KMloop)`, `1_2:1003`).  Convention: for a loop index `I` with
+/-- **Index form of `BAMLoop`** ((2.53) `eq:KMloop`).  Convention: for a loop index `I` with
 `I.σ.length = I.a.length = n ≥ 1`, `σ_i = I.σ.getD i false` and `a_i = I.a.getD i 0` (`0 ≤ i < n`), and the
 cyclic predecessor is `a_{i-1} = I.a.getD ((i + (n - 1)) % n) 0`, so that `a_{-1} = a_{n-1}`:
 `BAMLoop = W^{-(n-1)d} ∏_{i<n} M(σ_i)_{a_{i-1} a_i}`. -/
@@ -78,7 +75,7 @@ end Loop
 
 /-! ## 2. The `Θ_BA` calculus at real `t ∈ [0,1)` -/
 
-/-! ### 2a. Generic `Q` with `‖Q‖_{∞→∞} ≤ 1` (the twin of `Propagator/{Basic,Deriv}.lean`) -/
+/-! ### 2a. Generic `Q` with `‖Q‖_{∞→∞} ≤ 1` (the analogue of `Propagator/{Basic,Deriv}.lean`) -/
 
 section Generic
 
@@ -164,7 +161,7 @@ private theorem BAKBase_sub (hQ : ‖Q‖ ≤ 1) {s t : ℝ} (hs : |s| < 1) (ht 
     _ = PropThetaQ Q s * (((s - t : ℝ) : ℂ) • Q) * PropThetaQ Q t := by rw [hd]
     _ = ((s - t : ℝ) : ℂ) • (PropThetaQ Q s * Q * PropThetaQ Q t) := by simp
 
-/-- `∂_t (Θ_t)_{ab} = (Θ_t Q Θ_t)_{ab}` (entrywise; twin of `hasDerivAt_Theta_mul_apply`). -/
+/-- `∂_t (Θ_t)_{ab} = (Θ_t Q Θ_t)_{ab}` (entrywise; the analogue of `hasDerivAt_Theta_mul_apply`). -/
 private theorem BAKBase_hasDerivAt (hQ : ‖Q‖ ≤ 1) {t : ℝ} (ht : |t| < 1) (a b : Zd d L) :
     HasDerivAt (fun s : ℝ => PropThetaQ Q s a b)
       ((PropThetaQ Q t * Q * PropThetaQ Q t) a b) t := by
@@ -192,7 +189,7 @@ private theorem BAKBase_hasDerivAt (hQ : ‖Q‖ ≤ 1) {t : ℝ} (ht : |t| < 1)
     (hM.mul tendsto_const_nhds).mul tendsto_const_nhds
   exact ((continuous_matrix_entry d L a b).continuousAt.tendsto).comp hmul
 
-/-- The row sums of `Θ` when `Q 1 = 1`: `Σ_b Θ_{ab} = (1 - t)⁻¹` (twin of `sum_Theta_row`). -/
+/-- The row sums of `Θ` when `Q 1 = 1`: `Σ_b Θ_{ab} = (1 - t)⁻¹` (the analogue of `sum_Theta_row`). -/
 private theorem BAKBase_row_sum (hQ : ‖Q‖ ≤ 1) {t : ℝ} (ht : |t| < 1)
     (h1 : Q *ᵥ (1 : Zd d L → ℂ) = 1) (a : Zd d L) :
     ∑ b : Zd d L, PropThetaQ Q t a b = (1 - (t : ℂ))⁻¹ := by
@@ -246,7 +243,7 @@ theorem BATheta_isUnit (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (t : 
     IsUnit (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) :=
   BAKBase_isUnit (BAKBase_norm d L g κ E m hr σ₁ σ₂) (BAKBase_abs t ht0 ht1)
 
-/-- **The resolvent identities** `Θ = 1 + t M Θ = 1 + t Θ M` (`(def_Thxi)`, `1_2:1073-1076`). -/
+/-- **The resolvent identities** `Θ = 1 + t M Θ = 1 + t Θ M` ((2.60) `def_Thxi`). -/
 theorem BATheta_resolvent (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (t : ℝ) (ht0 : 0 ≤ t)
     (ht1 : t < 1) (σ₁ σ₂ : Bool) :
     BATheta d L g E m t σ₁ σ₂ = 1 + (t : ℂ) •
@@ -256,8 +253,8 @@ theorem BATheta_resolvent (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (t
   ⟨BAKBase_resolvent_left (BAKBase_norm d L g κ E m hr σ₁ σ₂) (BAKBase_abs t ht0 ht1),
     BAKBase_resolvent_right (BAKBase_norm d L g κ E m hr σ₁ σ₂) (BAKBase_abs t ht0 ht1)⟩
 
-/-- **`∂_tΘ = ΘMΘ`**, entrywise, at every `0 ≤ t < 1` (twin of `hasDerivAt_Theta_mul_apply`,
-`Propagator/Deriv.lean:108`, with `μ S^{(B)}` replaced by `M^{(σ₁σ₂)}`). -/
+/-- **`∂_tΘ = ΘMΘ`**, entrywise, at every `0 ≤ t < 1` (the analogue of `hasDerivAt_Theta_mul_apply`,
+`Propagator/Deriv.lean`, with `μ S^{(B)}` replaced by `M^{(σ₁σ₂)}`). -/
 theorem BATheta_hasDerivAt (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t)
     (ht1 : t < 1) (σ₁ σ₂ : Bool) (a b : Zd d L) :
     HasDerivAt (fun s : ℝ => BATheta d L g E m s σ₁ σ₂ a b)
@@ -265,8 +262,8 @@ theorem BATheta_hasDerivAt (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) {
         BATheta d L g E m t σ₁ σ₂) a b) t :=
   BAKBase_hasDerivAt (BAKBase_norm d L g κ E m hr σ₁ σ₂) (BAKBase_abs t ht0 ht1) a b
 
-/-- `M^{(σ₁σ₂)} = M^{(σ₂σ₁)}` for the symmetric `M^{(B)}`, hence `Θ^{(σ₁σ₂)} = Θ^{(σ₂σ₁)}` (`T2360c`; probe
-`t/T2360:RBM3D/Probe/T2360Pins.lean:387`).  No hypothesis on the data and no restriction on `t`. -/
+/-- `M^{(σ₁σ₂)} = M^{(σ₂σ₁)}` for the symmetric `M^{(B)}`, hence `Θ^{(σ₁σ₂)} = Θ^{(σ₂σ₁)}`.
+No hypothesis on the data and no restriction on `t`. -/
 theorem BATheta_swap {d L : ℕ} [NeZero L] (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) :
     BATheta d L g E m t σ₁ σ₂ = BATheta d L g E m t σ₂ σ₁ := by
   have h : ∀ x y, BAMB d L g (E : ℂ) m x y = BAMB d L g (E : ℂ) m y x :=
@@ -286,8 +283,8 @@ theorem BATheta_isSymm (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (t : 
     simp only [Matrix.transpose_apply, BAMss, Matrix.of_apply]
     rw [BAKBase_Msigma_symm d L g E m σ₁ a b, BAKBase_Msigma_symm d L g E m σ₂ b a, mul_comm])
 
-/-- **Row sums of `Θ^{(+,-)}`**: `Σ_b Θ^{(+,-)}_{t,ab} = (1-t)⁻¹` (twin of `sum_Theta_row`,
-`Propagator/Basic.lean:203`; `M^{(+,-)} = BAK` by `BATheta_pm_eq`, `BA/KKernel.lean:107`, with unit row sums). -/
+/-- **Row sums of `Θ^{(+,-)}`**: `Σ_b Θ^{(+,-)}_{t,ab} = (1-t)⁻¹` (the analogue of `sum_Theta_row`,
+`Propagator/Basic.lean`; `M^{(+,-)} = BAK` by `BATheta_pm_eq`, `BA/KKernel.lean`, with unit row sums). -/
 theorem BATheta_row_sum_pm (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (t : ℝ) (ht0 : 0 ≤ t)
     (ht1 : t < 1) (a : Zd d L) :
     ∑ b, BATheta d L g E m t true false a b = (1 - (t : ℂ))⁻¹ := by
@@ -300,7 +297,7 @@ theorem BATheta_row_sum_pm (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (
 
 end BACalculus
 
-/-! ## 3. The trace form of `(eq:KMloop)` (`1_2:1003`) -/
+/-! ## 3. The trace form of (2.53) `eq:KMloop` -/
 
 /-- The chain index `b_0 = x`, `b_{i+1} = a_i` (`a_{-1} = x`). -/
 private def BAKBase_b {ι : Type*} (x : ι) (a : ℕ → ι) : ℕ → ι
@@ -325,7 +322,7 @@ private theorem BAKBase_chain {ι : Type*} [Fintype ι] [DecidableEq ι] (c : �
     · simp only [BAKBase_b, h, ite_true]; ring
     · simp [BAKBase_b, h]
 
-/-- `E_a = (W^{-d} 1_{[a]}) ⊗ I_{W^d}` (`(Eq:defGLoop)`, `1_2:824`). -/
+/-- `E_a = (W^{-d} 1_{[a]}) ⊗ I_{W^d}` ((2.44) `Eq:defGLoop`). -/
 private theorem BAKBase_Eblk (d L W : ℕ) [NeZero L] (a : Zd d L) :
     Eblk d L W a = (diagonal (fun z : Zd d L => if z = a then ((W : ℂ) ^ d)⁻¹ else 0)) ⊗ₖ
       (1 : Matrix (Fin (W ^ d)) (Fin (W ^ d)) ℂ) := by
@@ -339,8 +336,8 @@ private def BAKBase_kron (d L W : ℕ) [NeZero L] : Matrix (Zd d L) (Zd d L) ℂ
   map_one' := Matrix.one_kronecker_one
   map_mul' A B := by rw [← Matrix.mul_kronecker_mul, mul_one]
 
-/-- **The trace form of `(eq:KMloop)`** (`1_2:1003`): `𝓜^{(n)}_{σ,a} = tr ∏_i (M(σ_i) ⊗ I_{W^d}) E_{a_i}`, in the
-`List.ofFn` order of `loopM` (`Loop/GLoopFlow.lean:92`), for `n ≥ 1`, `W ≥ 1` (`STLKgL` at `τ = 0`). -/
+/-- **The trace form of (2.53) `eq:KMloop`**: `𝓜^{(n)}_{σ,a} = tr ∏_i (M(σ_i) ⊗ I_{W^d}) E_{a_i}`, in the
+`List.ofFn` order of `loopM` (`Loop/GLoopFlow.lean`), for `n ≥ 1`, `W ≥ 1` (`STLKgL` at `τ = 0`). -/
 theorem BAMLoop_trace (d L W : ℕ) [NeZero L] [NeZero W] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) {n : ℕ} (hn : 1 ≤ n)
     (σ : Fin n → Bool) (a : Fin n → Zd d L) :
     BAMLoop d L W M (loopOf σ a) =
@@ -397,12 +394,5 @@ theorem BAMLoop_trace (d L W : ℕ) [NeZero L] [NeZero W] (M : Bool → Matrix (
   push_cast
   field_simp
 
-/-! ## 4. Compiled nonempty instances
-
-Loop part: the witness data of `BAMLoop_witness` (`d = 1`, `L = 3`, `W = 1` resp. `W = 2`; `M(+) = N`,
-`M(-) = N'` symmetric `3 × 3` with distinct entries, the loop `(+,+,-)` of length `3`).  Calculus part: the
-merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`, `P.real : BAReal 3 4 P.g0 (Im m₀) P.E m₀`,
-the data of `KKernelInst`), `t = 1/2`, all four charge pairs where the statement quantifies over them.  No
-hypothesis other than `BAReal` (discharged by `P.real`) and `0 ≤ t < 1` is needed. -/
 
 end RBM.BA

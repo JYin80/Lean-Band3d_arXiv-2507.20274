@@ -10,20 +10,18 @@ import RBM3D.Loop.KLSumZeroWard
 /-!
 # The cut of the cactus at a chord, for arbitrary leaf weights
 
-Ticket T2376 (BA-K06, Amend 1, DECISIONS §190).  K05b (`BA/KTreeRep.lean`, T2374, ab54184) cuts
+`BA/KTreeRep.lean` cuts
 the cactus value `Γ_M(F)` of a tree `F ∋ J` at the chord `J = (i, j)` into the values of the outer
 polygon `KLFOut F J` and the inner polygon `KLFIn F J`, but all its helpers are `private`.  This
-file holds the copy of that machinery (inside/outside slots, transport of the cyclic successor,
-the cut equivalences and labels), with the stem `KTreeRep_` replaced by `KCactusCut_` and the
-charges of the two polygons the merged `sigmaIn`, `sigmaOut` (`Loop/KLSumZeroWard.lean:70, 75`);
-the `Lists` section of K05b (`cutGlueL/R`) is not copied.  The cut theorem is generalised from
-the leaf weights `Θ` and the chord weight `Θ·Θ` of K05b to arbitrary leaf weights `Lw` and an
-arbitrary chord weight `P S Q`.
+file contains that machinery (inside/outside slots, transport of the cyclic next-slot map,
+the cut equivalences and labels), with the prefix KCactusCut_, and the
+charges of the two polygons `sigmaIn`, `sigmaOut` (`Loop/KLSumZeroWard.lean`).  The cut theorem is stated for
+arbitrary leaf weights `Lw` and an
+arbitrary chord weight `P S Q` (in `BA/KTreeRep.lean` the leaf weights are `Θ` and the chord weight is `Θ·Θ`).
 
 Public: `BAinVinv`, `BAoutVinv`, `BAdeltaIn`, `BAdeltaOut` (the vertex maps and the data of the
-two polygons), `baCactus_cut` (the generic cut) and `baCactus_leafW_in/out` (for `Lw = Θ` the
-polygons carry their own leaf weights).  Every other helper is `private` with the stem
-`KCactusCut_`.
+two polygons), `baCactus_cut` (the generic cut) and `baCactus_leafW_in`, `baCactus_leafW_out` (for `Lw = Θ` the
+polygons carry their own leaf weights).  The names of the other helpers begin with KCactusCut_ and are `private`.
 -/
 
 set_option linter.style.longLine false
@@ -101,14 +99,14 @@ private theorem KCactusCut_glueV_val (hJ : J.1.val + 2 ≤ J.2.val) : (KLglueV J
 
 end Maps
 
-/-! ## 2. Transport of the cyclic successor along an order-preserving relabelling of the slots -/
+/-! ## 2. Transport of the cyclic next-slot map along an order-preserving relabelling of the slots -/
 
 section Transport
 
 variable {n n' : ℕ} [NeZero n] [NeZero n'] {F : Finset (Fin n × Fin n)} {F' : Finset (Fin n' × Fin n')}
 
-/-- **The cyclic successor commutes with a relabelling of the slots** `φ : BAslot F' → BAslot F` that preserves "same node"
-and the order of the starts inside a node, and whose image is closed under "same node": the successor is characterised
+/-- **The cyclic next-slot map commutes with a relabelling of the slots** `φ : BAslot F' → BAslot F` that preserves "same node"
+and the order of the starts inside a node, and whose image is closed under "same node": the next-slot map is characterised
 by the nodes and the starts alone (`BAnextSlot_eq_of_above`, `BAnextSlot_eq_of_wrap`). -/
 private theorem KCactusCut_next_map (hF : KLIsTSP F) (hn : 2 ≤ n) (φ : BAslot F' → BAslot F)
     (hnode : ∀ s t, BAslotNode F (φ s) = BAslotNode F (φ t) ↔ BAslotNode F' s = BAslotNode F' t)
@@ -373,7 +371,7 @@ private theorem KCactusCut_φ_closed (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈
     · refine ⟨Sum.inr (Sum.inr ((KCactusCut_eIn hF J) ⟨J', hx', h2⟩)), ?_⟩
       simp only [KCactusCut_φ, Equiv.symm_apply_apply]
 
-/-- **`φ` commutes with the cyclic successor**: the cycle of a node of the inner polygon is the cycle of the corresponding
+/-- **`φ` commutes with the cyclic next-slot map**: the cycle of a node of the inner polygon is the cycle of the corresponding
 node of `F`. -/
 private theorem KCactusCut_φ_next (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F) (s : BAslot (KLFIn F J)) :
     KCactusCut_φ hF hJ (BAnextSlot (KLFIn F J) s) = BAnextSlot F (KCactusCut_φ hF hJ s) := by
@@ -687,7 +685,7 @@ private theorem KCactusCut_ψ_closed (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈
     refine ⟨Sum.inr (Sum.inr ((KCactusCut_eOut hF hn hJ) ⟨J', hx'⟩)), ?_⟩
     simp only [KCactusCut_ψ, Equiv.symm_apply_apply]
 
-/-- **`ψ` commutes with the cyclic successor.** -/
+/-- **`ψ` commutes with the cyclic next-slot map.** -/
 private theorem KCactusCut_ψ_next (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F) (s : BAslot (KLFOut F J)) :
     KCactusCut_ψ hF hn hJ (BAnextSlot (KLFOut F J) s) = BAnextSlot F (KCactusCut_ψ hF hn hJ s) := by
   have hJw := KLdiag_width hF hJ
@@ -1040,7 +1038,7 @@ private theorem KCactusCut_chord_out (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈
   rw [e1, e2]
   exact ⟨KCactusCut_σOut_outV hJw σ hE.1, KCactusCut_σOut_outV hJw σ hE.2.1⟩
 
-/-- `BAdeltaIn` is `u` at the new leaf and `f` at the leaves of the arc (through the leaf bijection `eLin`). -/
+/-- `BAdeltaIn` is `u` at the new leaf and `f` at the leaves of the arc (through the leaf bijection `KCactusCut_eLin`). -/
 private theorem KCactusCut_delta_in {α : Type*} (hJ : J.1.val + 2 ≤ J.2.val) (f : Fin n → α) (x : α)
     (o : Option (KLLIn J)) : BAdeltaIn J f x (KCactusCut_eLin J hJ o) = o.elim x (fun v => f v.1) := by
   rcases o with _ | v
@@ -1056,7 +1054,7 @@ private theorem KCactusCut_delta_in {α : Type*} (hJ : J.1.val + 2 ≤ J.2.val) 
     rw [Function.update_of_ne (by intro h; have := congrArg Fin.val h; simp at this; omega),
       KCactusCut_inVinv_inV v.2.1 (le_of_lt v.2.2)]
 
-/-- `BAdeltaOut` is `x` at the glue leaf and `f` at the leaves off the arc (through the leaf bijection `eLout`). -/
+/-- `BAdeltaOut` is `x` at the glue leaf and `f` at the leaves off the arc (through the leaf bijection `KCactusCut_eLout`). -/
 private theorem KCactusCut_delta_out {α : Type*} (hJ : J.1.val + 2 ≤ J.2.val) (f : Fin n → α) (x : α)
     (o : Option (KLLOut J)) : BAdeltaOut J f x (KCactusCut_eLout J hJ o) = o.elim x (fun v => f v.1) := by
   have hv : ∀ v : KLLOut J, v.1.val ≤ J.1.val ∨ J.2.val ≤ v.1.val := fun v => by
@@ -1104,7 +1102,7 @@ variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] {F : Finset (Fin n × Fin n
 
 set_option synthInstance.maxSize 512 in
 /-- **The cut of the cactus of `F ∋ J` at the chord `J`, for arbitrary leaf weights `Lw` and an arbitrary chord weight `P S Q`**
-(the generalisation of K05b's `KTreeRep_cut`, which is `Lw = Θ`, `P = Q = Θ`, `S = 1`): the tree value with the weight `P S Q`
+(the generalisation of `KTreeRep_cut`, which is `Lw = Θ`, `P = Q = Θ`, `S = 1`): the tree value with the weight `P S Q`
 at the chord is `Σ_{u,w} (inner polygon, labels `BAdeltaIn J a u`, leaf weights `BAdeltaIn J Lw Pᵀ`) `S_{uw}` (outer polygon,
 labels `BAdeltaOut J a w`, leaf weights `BAdeltaOut J Lw Q`).  The charges of the polygons are `sigmaIn σ J`, `sigmaOut σ J`.
 `KLgval_split` after the relabelling `BAslot F_out ⊕ BAslot F_in ≃ BAslot F` of the slots, which preserves the cycles. -/
@@ -1251,10 +1249,5 @@ theorem baCactus_leafW_out (hJ : J.1.val + 2 ≤ J.2.val) (M : Bool → Matrix (
 
 end LeafW
 
-/-! ## 9. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`), `t = 1/2`, `n = 4`
-(`TSP 4 = {∅, {(0,2)}, {(1,3)}}`: the cut at `J = (0,2)` of the tree `{(0,2)}` has an inner and an outer triangle),
-the charges `σ = (+,+,-,+)`, four distinct labels.  `baCactus_cut` has no hypothesis on `M`, `t`, the leaf weights or `P S Q`. -/
 
 end RBM.BA

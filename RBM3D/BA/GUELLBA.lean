@@ -9,36 +9,33 @@ import RBM3D.BA.RandomLayerBGBA
 import RBM3D.Universality.GUEPhase.LLTransfer
 
 /-!
-# BA-C5 row d: the `OULL` transfer of the §7.2 random layer at block Anderson (UN-50a at BA)
+# The `UNOULLk` transfer of the random layer of [YY_25, §7.2] at block Anderson
 
-Ticket T2519 (row d, target 13; DECISIONS §344, §346, §364; Amends 1-5; texts signed by
-`docs/reports/T2519-1a-audit.md`).  New BA leaf: no merged file is edited.  Band twin:
-`Universality/GUEPhase/LLTransfer.lean` (`oull_of_pathBounds:443`, `LLTransfer_main:322`).  Paper:
-arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex:566-581` (the GUE phase, "essentially
-identical to [YY_25, Theorem 2.6]"), §7.2, (7.26)-(7.29), (7.47).
+Band counterpart: `Universality/GUEPhase/LLTransfer.lean` (`oull_of_pathBounds`, `LLTransfer_main`).  Paper:
+the GUE phase of Theorem 2.4 (`Thm: B_Univ`; "essentially identical to [YY_25, Theorem 2.6]"); the equation
+numbers (7.26)-(7.29), (7.47) and the lemma number 2.8 below are those of [YY_25, §7.2].
 
 * §1 the flow data of the BA producers at one point `z` with `0 < Im z`: `GUELLBA_flow_data` (the
   real-axis solution at the flow coupling is `m(z)/√t₀`, `z_{t₀} = √t₀ z`; `BAzztE_data`,
-  `BASelf_unique`), `GUELLBA_EdReal` (text `T2519_EdRealBA`: the margin datum `BAEd κ'` is
-  `BAReal` at the flow point), `GUELLBA_flowEta` (text `T2519_FlowEtaBA`: `η_{t₀} = √t₀ Im z`).
-  Read by `BA/GUEHyp`.
+  `BASelf_unique`), `GUELLBA_EdReal` (the margin datum `BAEd κ'` is
+  `BAReal` at the flow point), `GUELLBA_flowEta` (`η_{t₀} = √t₀ Im z`).
+  Used by `BA/GUEHyp`.
 * §2 the real-analysis steps of the band proof with the constants of `ba_flowG` (`t₀ ≥ cT`, so
   `√t₀ ≥ √cT =: c₁` replaces `1/4 ≤ √t₀`: `GUELLBA_scale_bound`, `GUELLBA_envelope`,
   `GUELLBA_bad_term`), the pointwise scaling `G(H, z) = r G(r H, r z)`, and the one-time law at
   the last grid step: `√t₀ 𝐇_t` is `mixMatBA (√t₀ λ) t₁ (t₀ - t₁)` with `t₁ = e^{-t} t₀`
   (`GUEEntry_ouMatC_ba_eq_mixMatBA`), whose law under the BA carrier `ouP (UNModelC.ba sz)` is
-  that of `gueHBA … K` under `Pgue (sz.withLam 0)` (`map_gueHBA_eq_mixMatBA`, `ouP_ba_eq_band`).
+  that of `gueHBA … K` under `Pgue (sz.withLam 0)` (`map_gueHBA_eq_mixMatBA`).
 * §3 `oull_of_pathBoundsBA`: the moment bound `E ‖G(𝐇_t, z)_{xx}‖^{2p} ≤ N^δ` for the centred OU
   flow of the block Anderson model at `z = E + i N^{-1+2τ_U}` from `BAPB` (the `localLaw` field at
   the last grid step, cutoff `τ' = τ_U/2`, failure rate `D = 2p + 1`): off the bad event `|G_{xx}|
   ≤ |M_{xx}| + 1 ≤ 2` (`M_{xx} = m`, `‖m‖ ≤ 1`), on it `|G_{xx}| ≤ (Im z_{t₀})⁻¹ ≤ c₁⁻¹ N`.
-* §4 the compiled nonempty instance at the class sequence `S0`.
 
 Departures from the band statement: the energies are in the ρ-bulk `BAbulk κ` instead of `|E| ≤ 2
 - κ`; the Lemma 2.8 facts are those of `ba_flowG` (`κ'`, `cT`) instead of `lemma28_quant`; the
 conclusion is the body of `UNOULLk (UNKind.ba d)` (`RandomLayerB_LLAt`) with the centred flow
-`ouMatC`. Helpers the ticket does not pin are `private` or carry the prefix `GUELLBA_`; the
-private helpers of `LLTransfer` are read by `open private`.
+`ouMatC`. Helpers are `private` or carry the prefix GUELLBA_; the
+private helpers of `LLTransfer` are used through `open private`.
 -/
 
 set_option linter.style.longLine false
@@ -57,7 +54,7 @@ open scoped NNReal ENNReal
 
 /-! ## 1. The flow data of the BA producers at one point -/
 
-/-- The flow data of `(eq:t0E0_BA)` at one point `z` with `0 < Im z`: the real-axis solution at the flow coupling `√t₀ λ` and the
+/-- The flow data of (8.1) `eq:t0E0_BA` at one point `z` with `0 < Im z`: the real-axis solution at the flow coupling `√t₀ λ` and the
 energy `E' = BAfE` is `m(z)/√t₀`, and `z_{t₀} = √t₀ z` (`BAzztE_data`, `BASelf_unique`). -/
 theorem GUELLBA_flow_data (d : ℕ) (sz : Sizes d) (n : ℕ) {z : ℂ} (hz : 0 < z.im) :
     BAm d (sz.L n) (Real.sqrt (BAfT d sz n z) * sz.lam n) (BAfE d sz n z : ℂ) =
@@ -70,7 +67,7 @@ theorem GUELLBA_flow_data (d : ℕ) (sz : Sizes d) (n : ℕ) {z : ℂ} (hz : 0 <
     BASelf_unique d (sz.L n) _ _ _ _ (by simp) (BAm_spec ⟨_, hself⟩) hself
   exact ⟨hm, by rw [hm]; exact hzt⟩
 
-/-- **The margin datum gives the real-axis datum** (text `T2519_EdRealBA`, coverage row 13): `BAEd κ'` at `z` is `BAReal` at the flow
+/-- **The margin datum gives the real-axis datum**: `BAEd κ'` at `z` is `BAReal` at the flow
 point `(√t₀ λ, BAfE, BAm …)` (`BASelf_unique`). -/
 theorem GUELLBA_EdReal :
     ∀ (d : ℕ) (κ' : ℝ) (sz : Sizes d) (n : ℕ) (z : ℂ), BAEd d κ' sz n z →
@@ -82,7 +79,7 @@ theorem GUELLBA_EdReal :
   rw [h]
   exact hm₀
 
-/-- **The scale of the RBG texts is the flow scale** (text `T2519_FlowEtaBA`, coverage row 13): `η_{t₀} = √t₀ Im z` at the flow point
+/-- **The scale of the random-layer statements is the flow scale**: `η_{t₀} = √t₀ Im z` at the flow point
 (`BAt0_mul`). -/
 theorem GUELLBA_flowEta :
     ∀ (d : ℕ) (sz : Sizes d) (n : ℕ) (z : ℂ), 0 < z.im →
@@ -223,10 +220,10 @@ private theorem GUELLBA_Mres_diag {d L W : ℕ} [NeZero L] [NeZero W] {g E : ℝ
   simp only [↓reduceIte]
   exact BAMB_diag_eq d L g (E : ℂ) m hm _
 
-/-! ## 3. The moment estimate: the `OULL` transfer at block Anderson -/
+/-! ## 3. The moment estimate: the `UNOULLk` transfer at block Anderson -/
 
-/-- **`oull_of_pathBoundsBA`: the moment bound of `UNOULLk (UNKind.ba d)` for the centred OU flow from `BAPB`** (twin of
-`oull_of_pathBounds`, `LLTransfer:443`).  For a sequence of energies in the ρ-bulk `BAbulk κ`, times `t_n ≥ 0` and
+/-- **`oull_of_pathBoundsBA`: the moment bound of `UNOULLk (UNKind.ba d)` for the centred OU flow from `BAPB`** (the analogue of
+`oull_of_pathBounds`).  For a sequence of energies in the ρ-bulk `BAbulk κ`, times `t_n ≥ 0` and
 `z_n = E_n + i η_n`, `η_n = ouEtaLL sz τU n = N^{-1+2τ_U}`, `0 < τ_U < 1/2`: if the BA path bounds `BAPB` hold at the Lemma 2.8 data of
 `ba_flowG` (`E' = BAfE z_n`, `t₀ = BAfT z_n`, `t₁ = (1 - ζ(t_n)) t₀`, the grid `gueGridK sz 4`, the flow coupling `g = √t₀ λ`), then for every
 `δ > 0` and `p`, eventually in `n` and for every `x`, `E ‖G(𝐇_{t_n}, z_n)_{xx}‖^{2p} ≤ N^δ` under the BA carrier `ouP (UNModelC.ba sz)`,
@@ -353,13 +350,6 @@ theorem oull_of_pathBoundsBA {d : ℕ} (sz : Sizes d) {κ τU : ℝ} (hκ : 0 < 
     _ = _ := one_mul _
     _ ≤ S ^ δ := hCn
 
-/-! ## 4. Compiled nonempty instance of `oull_of_pathBoundsBA`
-
-`d = 3`, the class sequence `S0 = clsS 4 _ (3/10)` (`BA/UNPins.lean:884`: `L = 4`, `W_n = (2(n+1))^5`, constant coupling `λ = (fp 4 _).g0`, admissible at
-`(𝔠, 𝔡) = (1/6, 1/10)`), `κ = clsκ 4 _ > 0`, `E ≡ E_* = (fp 4 _).E` in the ρ-bulk at every `n` (`cls_bulk`), `τ_U = 1/100 < 1/2`,
-`t_n = ouTStar S0 τ_U n = N^{-1+τ_U} > 0` (so `ζ(t_n) > 0` and the window `t₁ = (1 - ζ(t_n)) t₀ < t₀` is not collapsed), `δ = 1/10`.  Every
-deterministic hypothesis is discharged; `BAPB` at the Lemma 2.8 data is the output of the §7.2 random layer (`ba_prodG` of `BA/GUEHyp` from the pin
-`UNMLOutBA`, V3's), another gate's pin: it stays a hypothesis of the example. -/
 
 end RBM.BA
 

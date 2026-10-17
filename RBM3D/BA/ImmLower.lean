@@ -10,30 +10,25 @@ import Mathlib.Algebra.Order.Chebyshev
 import Mathlib.Analysis.Complex.Norm
 
 /-!
-# BA-D7 (T2291): the lower bound on `Im m(E + iη)`, `η ∈ (0, 1]`, in the bulk
+# The lower bound on `Im m(E + iη)`, `η ∈ (0, 1]`, in the bulk
 
-Proves the merged pin `RBM.BA.BAImmLower` (`RBM3D/BA/MFixedPoint.lean`, "Owed: BA-D7")
-unconditionally, for every `d`, `Λ`, `κ`, with `c = κ⁵/64`.
-Paper: `paper/tex/7_8_light_weight.tex:1908` (`lem:propM`: "The bound `Im m ≳ 1` is a consequence
-of [LeeSchSteYau2015, Lemma 3.5]"), `7_8:1864-1869` (`(eq:WardM)`), `1_2:624` (`ρ_N`).
-The route is algebraic (finite sums over `Zd d L`, no spectral bound, no dimension): with
+The lower bound `Im m ≥ c` off the real axis, with `c = κ⁵/64`, unconditionally, for every `d`, `Λ`, `κ`.
+Paper: Lemma 8.3 (`lem:propM`: "The bound `Im m ≳ 1` is a consequence
+of [LeeSchSteYau2015, Lemma 3.5]"), (8.5) `eq:WardM`, and the bulk condition `ρ_N(E) ≥ κ` of Section 2 (the density `ρ_N`
+of the free convolution).
+The proof is algebraic (finite sums over `Zd d L`, no spectral bound, no dimension): with
 `v_i = BAspec d L g i`, `a_i = (v_i - (z + m))⁻¹`, `⟨f⟩ = N⁻¹ Σ_i f_i`, `N = L^d`:
 
-* (M0) `Im a_i = Im (z + m) |a_i|²`, so `Im m = (Im z + Im m) ⟨|a|²⟩` (the averaged Ward identity
+* `Im a_i = Im (z + m) |a_i|²`, so `Im m = (Im z + Im m) ⟨|a|²⟩` (the averaged Ward identity
   in spectral form) and `⟨|a|²⟩ ≤ 1`.
-* (M1) two solutions `(z, m)`, `(z', m')`: `a_i - b_i = a_i b_i ((z + m) - (z' + m'))`, so
+* two solutions `(z, m)`, `(z', m')`: `a_i - b_i = a_i b_i ((z + m) - (z' + m'))`, so
   `(m - m')(1 - T) = (z - z') T`, `T = ⟨a b⟩`.
-* (M2) `‖T‖ ≤ 1` (AM-GM) and `Re (1 - T) ≥ (Im m² + Im m'²)/2` (`⟨Re a²⟩ ≤ 1 - Im m²` by
-  Jensen): target 1 `BASelf_sub_le`.
-* (M3) target 2 `BAm_im_ge_half` (`0 < η ≤ κ³/4`), (M4) target 3 `BAm_im_ge_mul`
-  (`η κ²/(η + 3)²`, every `η > 0`), (M5) target 4 `BAm_im_lower` (`c = κ⁵/64`), target 5
-  `baImmLower_holds` (the pin), target 6 `BAm_im_lower_of_bulk` (the `ρ`-form).
+* `‖T‖ ≤ 1` (AM-GM) and `Re (1 - T) ≥ (Im m² + Im m'²)/2` (`⟨Re a²⟩ ≤ 1 - Im m²` by
+  Jensen): `BASelf_sub_le`.
+* `BAm_im_ge_half` (`0 < η ≤ κ³/4`), `BAm_im_ge_mul`
+  (`η κ²/(η + 3)²`, every `η > 0`), `BAm_im_lower` (`c = κ⁵/64`), `BAm_im_lower_of_bulk` (the `ρ`-form).
 
-Premises of the pin that the proof does not use (kept in the pin, not in the theorems):
-`3 ≤ d`, `0 < Λ`, `0 < g`, `g ≤ Λ`; `3 ≤ L` only through `NeZero L`.
-Answers supervisor 1102 O9 (b) (DECISIONS §95 (4)): the lower bound `Im m ≥ c` off the real axis
-from `ρ_N ≥ κ`.  Consumers: BA-G1, BA-C2 (`BA/MReg`: target 1 is the modulus of `m` off the real
-axis), BA-C3 (target 6), the T2161 glue skeletons (`baImmLower_holds`).  Nothing is registered.
+The hypotheses `3 ≤ d`, `0 < Λ`, `0 < g`, `g ≤ Λ` and `3 ≤ L` (through `NeZero L`) are not used by the proofs.
 -/
 
 set_option linter.style.longLine false
@@ -95,7 +90,7 @@ private theorem ImmLower_re_sq_avg (N : ℝ) (hN : (Fintype.card ι : ℝ) = N) 
   rw [hre, mul_sub]
   linarith
 
-/-- (M2) The two-point bounds: `‖T‖ ≤ 1` and `Re (1 - T) ≥ (Im m² + Im m'²)/2`, `T = ⟨a b⟩`. -/
+/-- The two-point bounds: `‖T‖ ≤ 1` and `Re (1 - T) ≥ (Im m² + Im m'²)/2`, `T = ⟨a b⟩`. -/
 private theorem ImmLower_two_point (N : ℝ) (hN : (Fintype.card ι : ℝ) = N) (hNpos : 0 < N) (a b : ι → ℂ) (m m' : ℂ)
     (ha : ∀ i, 0 < (a i).im) (hb : ∀ i, 0 < (b i).im)
     (hma : m.im = N⁻¹ * ∑ i, (a i).im) (hmb : m'.im = N⁻¹ * ∑ i, (b i).im)
@@ -131,7 +126,7 @@ private theorem ImmLower_two_point (N : ℝ) (hN : (Fintype.card ι : ℝ) = N) 
     rw [hre]
     linarith
 
-/-- `‖w⁻¹‖ κ/(κ + δ) ≤ ‖w'⁻¹‖` when `κ ≤ ‖w‖`, `‖w' - w‖ ≤ δ`, `w' ≠ 0` (M4, pointwise). -/
+/-- `‖w⁻¹‖ κ/(κ + δ) ≤ ‖w'⁻¹‖` when `κ ≤ ‖w‖`, `‖w' - w‖ ≤ δ`, `w' ≠ 0` (pointwise). -/
 private theorem ImmLower_b_ge (w w' : ℂ) (κ δ : ℝ) (hκ : 0 < κ) (hδ : 0 ≤ δ) (hw : κ ≤ ‖w‖) (hw' : w' ≠ 0)
     (hww : ‖w' - w‖ ≤ δ) : ‖w⁻¹‖ * (κ / (κ + δ)) ≤ ‖w'⁻¹‖ := by
   have hwpos : 0 < ‖w‖ := lt_of_lt_of_le hκ hw
@@ -203,7 +198,7 @@ private theorem ImmLower_im_avg {g : ℝ} {z m : ℂ} (hz : 0 ≤ z.im) (h : BAS
   rw [Complex.im_ofReal_mul, Complex.im_sum] at him
   exact him
 
-/-- (M0) The averaged Ward identity in spectral form: `(Im z + Im m) ⟨|a|²⟩ = Im m`. -/
+/-- The averaged Ward identity in spectral form: `(Im z + Im m) ⟨|a|²⟩ = Im m`. -/
 private theorem ImmLower_ward {g : ℝ} {z m : ℂ} (hz : 0 ≤ z.im) (h : BASelf d L g z m) :
     (z.im + m.im) * (((L ^ d : ℕ) : ℝ)⁻¹ * ∑ i, ‖ImmLower_a d L g z m i‖ ^ 2) = m.im := by
   have h1 := ImmLower_im_avg hz h
@@ -239,12 +234,12 @@ private theorem ImmLower_A_eq_real {g : ℝ} {z m : ℂ} (hz : z.im = 0) (h : BA
 
 end Spectral
 
-/-! ## 3. Target 1: the two-point stability estimate -/
+/-! ## 3. The two-point stability estimate -/
 
-/-- **Target 1 (M1-M2)**: for solutions `m`, `m'` of `(self_m)` at `z`, `z'` with `Im z, Im z' ≥ 0`,
+/-- **The two-point stability estimate**: for solutions `m`, `m'` of `(self_m)` at `z`, `z'` with `Im z, Im z' ≥ 0`,
 `(Im m² + Im m'²) ‖m - m'‖ ≤ 2 ‖z - z'‖` (no dimension, no `L`, no `g` condition).  At `z = z'` real this is the stability gap
 `BAgapReal` with constant 2 instead of 1; off the real axis it is the modulus of `m` (Lipschitz in `Re z`, uniformly in `Im z ≥ 0`
-once `Im m ≥ κ`).  Paper: `7_8:1908` (the input for BA-C2). -/
+once `Im m ≥ κ`).  Paper: proof of Lemma 8.3 (`lem:propM`). -/
 theorem BASelf_sub_le (d L : ℕ) [NeZero L] (g : ℝ) (z z' m m' : ℂ) (hz : 0 ≤ z.im) (hz' : 0 ≤ z'.im)
     (h : BASelf d L g z m) (h' : BASelf d L g z' m') :
     (m.im ^ 2 + m'.im ^ 2) * ‖m - m'‖ ≤ 2 * ‖z - z'‖ := by
@@ -257,7 +252,7 @@ theorem BASelf_sub_le (d L : ℕ) [NeZero L] (g : ℝ) (z z' m m' : ℂ) (hz : 0
     (ImmLower_a_im_pos hz h) (ImmLower_a_im_pos hz' h') (ImmLower_im_avg hz h) (ImmLower_im_avg hz' h')
     (ImmLower_A_le hz h) (ImmLower_A_le hz' h')
   set T : ℂ := ((N⁻¹ : ℝ) : ℂ) * ∑ i, ImmLower_a d L g z m i * ImmLower_a d L g z' m' i with hT
-  -- (M1)
+  -- the difference of two solutions
   have hpt : ∀ i, ImmLower_a d L g z m i - ImmLower_a d L g z' m' i =
       ImmLower_a d L g z m i * ImmLower_a d L g z' m' i * ((z + m) - (z' + m')) := by
     intro i
@@ -288,13 +283,13 @@ theorem BASelf_sub_le (d L : ℕ) [NeZero L] (g : ℝ) (z z' m m' : ℂ) (hz : 0
   have h6 := mul_le_mul_of_nonneg_left hT1 hZ
   nlinarith [h5, h6, hnorm]
 
-/-! ## 4. Targets 2-6 -/
+/-! ## 4. The lower bounds -/
 
 /-- `‖(η : ℂ) * I‖ = η` for `η > 0`. -/
 private theorem ImmLower_norm_eta (η : ℝ) (hη : 0 < η) : ‖(η : ℂ) * Complex.I‖ = η := by
   rw [norm_mul, Complex.norm_I, mul_one, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hη]
 
-/-- **Target 2 (M3)**: for `0 < η ≤ κ³/4` the bulk value at most halves: `κ/2 ≤ Im m(E + iη)`. -/
+/-- **The bulk value at most halves**: for `0 < η ≤ κ³/4` the bulk value at most halves: `κ/2 ≤ Im m(E + iη)`. -/
 theorem BAm_im_ge_half (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < κ) (h : BAReal d L g κ E m)
     (η : ℝ) (hη : 0 < η) (hη' : η ≤ κ ^ 3 / 4) :
     κ / 2 ≤ (BAm d L g ((E : ℂ) + (η : ℂ) * Complex.I)).im := by
@@ -319,7 +314,7 @@ theorem BAm_im_ge_half (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 
   rw [Complex.sub_im] at h5
   linarith
 
-/-- **Target 3 (M4)**: every `η > 0`, `Im m(E + iη) ≥ η κ²/(η + 3)²` (from `⟨|v - E - m|⁻²⟩ = 1`). -/
+/-- **The lower bound `η κ²/(η + 3)²`**: every `η > 0`, `Im m(E + iη) ≥ η κ²/(η + 3)²` (from `⟨|v - E - m|⁻²⟩ = 1`). -/
 theorem BAm_im_ge_mul (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < κ) (h : BAReal d L g κ E m)
     (η : ℝ) (hη : 0 < η) :
     η * κ ^ 2 / (η + 3) ^ 2 ≤ (BAm d L g ((E : ℂ) + (η : ℂ) * Complex.I)).im := by
@@ -383,7 +378,7 @@ theorem BAm_im_ge_mul (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 <
     _ ≤ η * B := mul_le_mul_of_nonneg_left (hkd2.trans hBge) hη.le
     _ ≤ m'.im := hfin
 
-/-- **Target 4 (M5)**: the pin's conclusion at fixed `(L, g, E, m)`, with `c = κ⁵/64`. -/
+/-- **The lower bound `κ⁵/64`** at fixed `(L, g, E, m)`, with `c = κ⁵/64`. -/
 theorem BAm_im_lower (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < κ) (h : BAReal d L g κ E m)
     (η : ℝ) (hη : 0 < η) (hη1 : η ≤ 1) :
     κ ^ 5 / 64 ≤ (BAm d L g ((E : ℂ) + (η : ℂ) * Complex.I)).im := by
@@ -405,7 +400,7 @@ theorem BAm_im_lower (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < 
       nlinarith
     linarith
 
-/-- **Target 6 (M6)**: the `ρ`-form (`BAbulk`, DECISIONS §51; supervisor 1102 O9 (b)): `ρ_N(E) ≥ κ` gives
+/-- **The `ρ`-form** (`BAbulk`): `ρ_N(E) ≥ κ` gives
 `Im m(E + iη) ≥ (πκ)⁵/64` for `η ∈ (0, 1]`. -/
 theorem BAm_im_lower_of_bulk (d L : ℕ) [NeZero L] (g κ E : ℝ) (hκ : 0 < κ) (hb : BAbulk d L g κ E)
     (η : ℝ) (hη : 0 < η) (hη1 : η ≤ 1) :
@@ -413,6 +408,5 @@ theorem BAm_im_lower_of_bulk (d L : ℕ) [NeZero L] (g κ E : ℝ) (hκ : 0 < κ
   obtain ⟨m, hm, hmκ⟩ := (BAbulk_iff_exists d L g κ E hκ).mp hb
   exact BAm_im_lower d L g (Real.pi * κ) E m (by positivity) ⟨hm, hmκ⟩ η hη hη1
 
-/-! ## 5. Compiled nonempty instances (`d = 3`, `L = 4`, the merged flow point of `(L, g) = (4, 10)`; no hypothesis left open) -/
 
 end RBM.BA

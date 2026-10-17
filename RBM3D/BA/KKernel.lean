@@ -6,19 +6,19 @@ Authors: Jun Yin
 import RBM3D.BA.Prop5Short
 
 /-!
-# The kernel `K = M^{(+,-)}` of the block Anderson model (BA-P2)
+# The kernel `K = M^{(+,-)}` of the block Anderson model
 
-Ticket T2317.  `K_ab = |M^{(B)}_{ab}|²` as the real matrix `BAK d L g E m`
-(`(eq:Msig)` `1_2:1070-1071`, `A:18-19`, `A:59`).  Proved unconditionally from the merged D3/D4/P1
-lemmas (`Ward.lean`, `CombesThomas.lean`, `Prop5Short.lean`): symmetry and translation invariance,
-the bridge to `BAMss`/`BATheta`, double stochasticity (`(eq:WardM)`, `7_8:1869`), laziness
+`K_ab = |M^{(B)}_{ab}|²` as the real matrix `BAK d L g E m`
+((2.59) `eq:Msig`, Subappendix A.1 `sec:pf_propTH`).  Proved unconditionally from
+`Ward.lean`, `CombesThomas.lean`, `Prop5Short.lean`: symmetry and translation invariance,
+the bridge to `BAMss`/`BATheta`, double stochasticity ((8.5) `eq:WardM`), laziness
 `K_aa = |m|²`, the Markov facts for the powers `K^n`, the exponential tails (squares of
-`(Mbound_AO)`, `(Mbound_AO2)` and `BAMB_sq_off_le`), the exponential moment `Σ_b K_ab e^{μ|a-b|}`
-uniformly in `L`, the neighbour lower bound `(Mbound_AO)` (small `g`) and, for every `g > 0`, the
+(8.6) `Mbound_AO`, (8.7) `Mbound_AO2` and `BAMB_sq_off_le`), the exponential moment `Σ_b K_ab e^{μ|a-b|}`
+uniformly in `L`, the neighbour lower bound (8.6) `Mbound_AO` (small `g`) and, for every `g > 0`, the
 neighbour-sum identity `Σ_{b∼a} M_ab = (1 + (E+m)m)/g` with the lower bound
 `Σ_{b∼a} K_ab ≥ (κ(1-|m|²))²/(8dg²)`.
 
-No law, no flow time except in the bridge `BATheta_pm_eq`; constants `C, c, A, S` are the merged
+No law, no flow time except in the bridge `BATheta_pm_eq`; constants `C, c, A, S` are
 `BAct_C`, `BAct_rate`, `BAp5s_A`, `BAp5s_S` (functions of `(d, Λ, κ)` only).
 -/
 
@@ -43,7 +43,7 @@ section Kernel
 variable (d L : ℕ) [NeZero L]
 
 /-- The kernel `K = M^{(+,-)}` of the block Anderson model as a real matrix: `K_ab = |M^{(B)}_ab|²`
-(`M^{(+,-)}_{ab} = M_{ba} conj(M_{ab})`, `(eq:Msig)` `1_2:1070-1071`; `M` symmetric), at the real-axis
+(`M^{(+,-)}_{ab} = M_{ba} conj(M_{ab})`, (2.59) `eq:Msig`; `M` symmetric), at the real-axis
 data `(g, E, m)` of `BATheta`. -/
 noncomputable def BAK (g E : ℝ) (m : ℂ) : Matrix (Zd d L) (Zd d L) ℝ :=
   Matrix.of fun a b => ‖BAMB d L g (E : ℂ) m a b‖ ^ 2
@@ -339,6 +339,5 @@ theorem BAK_adj_sum_ge (hL : 3 ≤ L) (hd : 0 < d) (g κ E : ℝ) (m : ℂ) (hg 
 
 end Neighbour2
 
-/-! ## 6. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`) -/
 
 end RBM.BA

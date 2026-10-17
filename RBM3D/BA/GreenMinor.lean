@@ -6,27 +6,22 @@ Authors: Jun Yin
 import RBM3D.BA.GreenCore
 
 /-!
-# The block Anderson minors: vocabulary, the structural fact, the tower (BA-G5a, file 1 of 3)
+# The block Anderson minors: vocabulary, the offset fact, the tower
 
-Ticket T2401 (design gate `docs/reports/T2401-prove.md`, sections (a), (a′), (G); stage 1b under
-Amend 1).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`), band
-`paper/tex/3_5_Loop_Hierarchy.tex`.  Everything is deterministic, for one sample.  Sites are
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`).  Everything is deterministic, for one
+sample.  Sites are
 `u = (a, o)` of `Vtx d L W` (block `a`, offset `o`), `M = M^{(B)} ⊗ I` (`hM`), `G^{(S)}` the
 resolvent of the principal submatrix on the sites outside `S`, zero-padded.
 
 * `GreenMinor_T`, `GreenMinor_R`, `GreenMinor_Tower`, `GreenMinor_good`, `GreenMinor_YA`,
-  `GreenMinor_YX`: the vocabulary of G.8 (`T_{β,o} = Y_o ∪ [β]`, the protected rows
-  `R_{β,o} = [β] ∖ {(β, o)}`, the tower of minors `(4.9)`, the protected good event, the
+  `GreenMinor_YX`: the vocabulary (`T_{β,o} = Y_o ∪ [β]`, the protected rows
+  `R_{β,o} = [β] ∖ {(β, o)}`, the tower of minors, the protected good event, the
   polynomial families `Y^A`, `Y^X`).
-* S1 and the structural fact (ii): `o(x) ≠ o(y) ⇒ M_{xy} = 0` (`GreenMinor_cross`), the removal
-  bounds `|G^{(w)}_{xy} - G_{xy}| ≤ (2/κ) |G_{xw}| |G_{wy}|` (`GreenMinor_removal`, one-sided and
-  cross-offset forms), `GreenMinor_offset_ne` (the offset fact used by the recursion of S2).
-* R1: the tower for the real minors.  `GreenMinor_Gs H z S = (H^{(S)} - z)⁻¹`, zero-padded,
+* The offset fact: `o(x) ≠ o(y) ⇒ M_{xy} = 0` (`GreenMinor_cross`) and `GreenMinor_offset_ne`
+  (the offset fact used by the recursion of the minor differences).
+* The tower for the real minors.  `GreenMinor_Gs H z S = (H^{(S)} - z)⁻¹`, zero-padded,
   satisfies `GreenMinor_Tower ((H - z)⁻¹) (GreenMinor_Gs H z)` for Hermitian `H` and `Im z ≠ 0`
   (`GreenMinor_tower`), and at the BA carrier (`GreenMinor_tower_carrier`).
-
-Every target theorem has a compiled nonempty instance in the last section (`d = 3`, `L = 3`,
-`W = 2`; the BA carrier `sz0`).
 -/
 
 set_option linter.style.longLine false
@@ -54,7 +49,7 @@ def GreenMinor_T (β : Zd d L) (o : Fin (W ^ d)) : Set (Vtx d L W) := {x | x.2 =
 /-- `R_{β,o} = [β] ∖ {(β, o)}`: the protected rows (block `β`, offset `≠ o`). -/
 def GreenMinor_R (β : Zd d L) (o : Fin (W ^ d)) : Set (Vtx d L W) := {x | x.1 = β ∧ x.2 ≠ o}
 
-/-- The tower of minors: `Gs S = G^{(S)}` (rows and columns of `S` removed and zero-padded), `Gs ∅ = G`, one step is `(4.9)`. -/
+/-- The tower of minors: `Gs S = G^{(S)}` (rows and columns of `S` removed and zero-padded), `Gs ∅ = G`, one step is the minor identity. -/
 structure GreenMinor_Tower (G : Matrix (Vtx d L W) (Vtx d L W) ℂ)
     (Gs : Finset (Vtx d L W) → Matrix (Vtx d L W) (Vtx d L W) ℂ) : Prop where
   base : Gs ∅ = G
@@ -67,11 +62,11 @@ def GreenMinor_good (Gs : Finset (Vtx d L W) → Matrix (Vtx d L W) (Vtx d L W) 
   ∀ S : Finset (Vtx d L W), ↑S ⊆ GreenMinor_R β o → S.card ≤ m₀ → ∀ x y, x ∈ GreenMinor_T β o → y ∈ GreenMinor_T β o →
     x ∉ S → y ∉ S → ‖Gs S x y - M x y‖ ≤ 2 * δ ∧ κ / 2 ≤ ‖Gs S x x‖
 
-/-- `Y^A_u = (s Δ_{uu} - Σ_l D_{ul} Δ_{lu}) / m` (G.8, S3). -/
+/-- `Y^A_u = (s Δ_{uu} - Σ_l D_{ul} Δ_{lu}) / m`. -/
 def GreenMinor_YA (G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (s m : ℂ) (u : Vtx d L W) : ℂ :=
   (s * (G u u - M u u) - ∑ l, D u l * (G l u - M l u)) / m
 
-/-- `Y^X_{uy}` (G.8, S3). -/
+/-- `Y^X_{uy}`. -/
 def GreenMinor_YX (G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (s m : ℂ) (u y : Vtx d L W) : ℂ :=
   M u y * (s * (G u u - M u u) - ∑ l, D u l * (G l u - M l u)) / m
     + (∑ l, D u l * (G l y - M l y) - s * (G u y - M u y))
@@ -79,15 +74,15 @@ def GreenMinor_YX (G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (s m : ℂ) (u y 
 
 end Setting
 
-/-! ## 1. S1 and the structural fact (ii) -/
+/-! ## 1. The offset fact -/
 
-/-- (ii): `o(x) ≠ o(y) ⇒ M_{xy} = 0` (Kronecker form, `BAMfine_eq`, `GreenSchur.lean:93`); hence `G_{xy} = Δ_{xy}`. -/
+/-- `o(x) ≠ o(y) ⇒ M_{xy} = 0` (Kronecker form, `BAMfine_eq`, `GreenSchur.lean`); hence `G_{xy} = Δ_{xy}`. -/
 theorem GreenMinor_cross {d L W : ℕ} [NeZero L] [NeZero W] {M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     {Mb : Zd d L → Zd d L → ℂ} (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) {x y : Vtx d L W}
     (h : x.2 ≠ y.2) : M x y = 0 := by
   rw [hM]; simp [h]
 
-/-- (ii) in the `T`/`R` form used by the recursion of S2: for `w ∈ R_{β,o}` and `x ∈ T_{β,o}`, `x ≠ w`, the offsets differ
+/-- The offset fact in the `T`/`R` form used by the recursion of the minor differences: for `w ∈ R_{β,o}` and `x ∈ T_{β,o}`, `x ≠ w`, the offsets differ
 (`x` of offset `o`: `o(w) ≠ o`; `x` in block `β`: same block, different site). -/
 theorem GreenMinor_offset_ne {d L W : ℕ} [NeZero L] [NeZero W] {β : Zd d L} {o : Fin (W ^ d)} {w x : Vtx d L W}
     (hw : w ∈ GreenMinor_R β o) (hx : x ∈ GreenMinor_T β o) (hxw : x ≠ w) : x.2 ≠ w.2 := by
@@ -97,12 +92,12 @@ theorem GreenMinor_offset_ne {d L W : ℕ} [NeZero L] [NeZero W] {β : Zd d L} {
   · exact hw2 (h.symm.trans hx)
   · exact hxw (Prod.ext (hx.trans hw1.symm) h)
 
-/-! ## 2. R1: the tower for the real minors
+/-! ## 2. The tower for the real minors
 
 `GreenMinor_Gs H z S` is the resolvent `(H^{(S)} - z)⁻¹` of the principal submatrix of `H` on the sites outside `S`,
-zero-padded (the twin of `Green.greenSetMat` for an arbitrary matrix: the band's version is tied to the band Hamiltonian).
+zero-padded (the analogue of `Green.greenSetMat` for an arbitrary matrix: the band's version is tied to the band Hamiltonian).
 For Hermitian `H` and `Im z ≠ 0` every principal submatrix of `H - z` is invertible with nonvanishing diagonal resolvent
-(`green_diag_ne_zero`), so `(4.9)` passes from `S` to `insert κ S` (`GreenMinor_Gs_insert`): this is the `GreenMinor_Tower`. -/
+(`green_diag_ne_zero`), so the minor identity passes from `S` to `insert κ S` (`GreenMinor_Gs_insert`): this is the `GreenMinor_Tower`. -/
 
 section Tower
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -155,7 +150,7 @@ def GreenMinor_insertEquiv {S : Finset ι} {κ : ι} (hκ : κ ∉ S) :
   left_inv _ := Subtype.ext (Subtype.ext rfl)
   right_inv _ := Subtype.ext rfl
 
-/-- `(4.9)` between `G^{(S)}` and `G^{(insert κ S)}` at the entries that survive. -/
+/-- The minor identity between `G^{(S)}` and `G^{(insert κ S)}` at the entries that survive. -/
 theorem GreenMinor_Gs_insert_apply (hH : H.IsHermitian) (hz : z.im ≠ 0) {S : Finset ι} {κ : ι} (hκ : κ ∉ S)
     {x y : ι} (hx : x ∉ insert κ S) (hy : y ∉ insert κ S) :
     GreenMinor_Gs H z (insert κ S) x y = greenMinor (GreenMinor_Gs H z S) κ x y := by
@@ -204,7 +199,7 @@ theorem GreenMinor_Gs_insert_apply (hH : H.IsHermitian) (hz : z.im ≠ 0) {S : F
     GreenMinor_Gs_apply H z hκ hyS, GreenMinor_Gs_apply H z hκ hκ]
   exact key.symm
 
-/-- `(4.9)` between consecutive iterated minors, at every entry (the padding makes the removed rows consistent). -/
+/-- The minor identity between consecutive iterated minors, at every entry (the padding makes the removed rows consistent). -/
 theorem GreenMinor_Gs_insert (hH : H.IsHermitian) (hz : z.im ≠ 0) {S : Finset ι} {κ : ι} (hκ : κ ∉ S) (x y : ι) :
     GreenMinor_Gs H z (insert κ S) x y = greenMinor (GreenMinor_Gs H z S) κ x y := by
   have hκκ : GreenMinor_Gs H z S κ κ ≠ 0 := by
@@ -232,7 +227,7 @@ end Tower
 section TowerVtx
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- **R1**: for Hermitian `H` and `Im z ≠ 0` the principal-submatrix resolvents form a tower over `G = (H - z)⁻¹`. -/
+/-- For Hermitian `H` and `Im z ≠ 0` the principal-submatrix resolvents form a tower over `G = (H - z)⁻¹`. -/
 theorem GreenMinor_tower {H : Matrix (Vtx d L W) (Vtx d L W) ℂ} (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) :
     GreenMinor_Tower (green H z) (GreenMinor_Gs H z) where
   base := GreenMinor_Gs_empty H z
@@ -259,8 +254,8 @@ theorem GreenMinor_carrier_herm (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : 
   rw [h]
   exact hH.submatrix _
 
-/-- **R1 at the BA carrier**: the real minors of `G_t = (D + X - z_t)⁻¹` (`D = g₀ Ψ`, `X` the Gaussian part, `z_t = E + (1 - t) m`)
-form a tower, for every sample `ω` and `0 ≤ t ≤ T₀` (the structural input is `GreenCore_carrier`; `Im z_t > 0` is `ba_G_data`). -/
+/-- **The tower at the BA carrier**: the real minors of `G_t = (D + X - z_t)⁻¹` (`D = g₀ Ψ`, `X` the Gaussian part, `z_t = E + (1 - t) m`)
+form a tower, for every sample `ω` and `0 ≤ t ≤ T₀` (the input is `GreenCore_carrier`; `Im z_t > 0` is `ba_G_data`). -/
 theorem GreenMinor_tower_carrier {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ) :
     GreenMinor_Tower (GreenCore_Gc sz z n t ω)
@@ -281,16 +276,4 @@ theorem GreenMinor_tower_carrier {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Si
 
 end Carrier
 
-/-! ## 3. Nonempty instances (`d = 3`, `L = 3`, `W = 2`: the hand-made datum; `sz0` at `n = 0`: the BA carrier)
-
-The hand-made datum `GreenMinorInst` is one block `0` with the two sites `p = (0, 0)`, `q = (0, 1)` of different offsets,
-`m = i`, `M = m I` (zero inter-block coupling), `Δ = ε (E_{pq} + E_{qp})` with `ε = 1/100`, so `G = M + Δ ≠ M`; `H := Δ` is a
-Hermitian matrix with a nonzero off-diagonal entry, whose principal-submatrix resolvents form the tower of R1. -/
-
--- S1: the removal bound at `w = q`, `x = y = p` (`G^{(q)}_{pp} - G_{pp} = -ε²/m`)
--- (ii): `M_{pq} = 0` (offsets `0 ≠ 1`)
--- S1: the one-sided and the cross-offset forms at `w = q`, `x = y = p`, `δ = 1/100 = ‖Δ‖_max`
--- (ii) in the `T`/`R` form: `q ∈ R_{0,0}`; `p` (offset 0) and `(0, 2)` (block 0) in `T_{0,0}`
--- R1: the principal-submatrix resolvents of the Hermitian `H = Δ` at `z = i` form a tower over `(Δ - i)⁻¹`
--- R1 at the BA carrier: `d = 3`, `sz0` at `n = 0` (`L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`), `t = 1/2 ≤ T₀`, every sample `ω`
 end RBM.BA

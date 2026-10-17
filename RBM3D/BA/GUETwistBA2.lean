@@ -7,13 +7,11 @@ import RBM3D.BA.GUETwistBA
 import RBM3D.BA.TwistAvgB
 
 /-!
-# BA-C5 row b′, part 2: the twisted 1-loop law `gueGrid_twistBA` at block Anderson
+# The twisted 1-loop law `gueGrid_twistBA` at block Anderson
 
-Ticket T2519 (row b′, target 7; Amend 1 item 5, Amend 2 items 1-3, Amend 3 items 2-3).  Steps 4-5
-of Lemma T.7 (TL1, `docs/tickets/T2398-TL-proofs.md:64-78`; its input Lemma 8.3 is `lem:propM`,
-`paper/tex/7_8_light_weight.tex:1846-1910`) on the grid times of `gueHBA`, after Steps 1-3 of
-`BA/GUETwistBA` (the moment identity, the Hilbert-Schmidt bounds of the derivative terms, the PB
-interface):
+The remaining steps of the proof of Lemma 8.6 (`lem:TL1_BA`, the twisted averaged law; its input is Lemma 8.3
+`lem:propM`) on the grid times of `gueHBA`, after the moment identity, the Hilbert-Schmidt bounds of the derivative terms
+and the interface to the path bounds of `BA/GUETwistBA`:
 
 * §1 the abstract recursion `GUETwistBA_moment_bound` and its tail form
   `GUETwistBA_moment_tail` (bootstrap `TwistAvgB_S1`: the real recursion
@@ -23,13 +21,10 @@ interface):
   `P(s < |T_{qa}|) ≤ (C' ρ² Λ_j / s)^{2p}`;
 * §3 `GUETwistBA_step`: one size `n`, the union over the grid times and the pairs of blocks,
   the trivial regime `Λ_j ≥ N^{-τ}` from the entrywise local law;
-  §4 **`gueGrid_twistBA`** (text `T2519_HoffBA`, probe `t/T2519` b992c2e7);
-  §5 the compiled nonempty instance at `d = 3`, `sz0`, the BA flow datum of `sz0` (PB and the
-  K-bound stay hypotheses).
+  §4 **`gueGrid_twistBA`**.
 
 The private statements `TwistAvgB_S1`, `TwistAvgB_markov`, `TwistAvgB_expo`, `TwistAvgB_union`
-are read by `open private` (Amend 3 item 3); no `BA/TwistAvg*` file is edited.  Helpers carry the
-stem `GUETwistBA_`.
+are used through `open private`.  The names of the helpers begin with GUETwistBA_.
 -/
 
 set_option linter.style.longLine false
@@ -93,7 +88,7 @@ theorem GUETwistBA_norm_P_le (p : ℕ) (hp : 1 ≤ p) (Mb : ι → ι → ℂ) (
     _ ≤ _ := by linarith
 
 
-/-- **The moment recursion at the maximiser** (Step 4 of Lemma T.7, abstract form): from the identity `hid` and the pathwise bounds off
+/-- **The moment recursion at the maximiser** (abstract form): from the identity `hid` and the pathwise bounds off
 the exceptional set `Tex`, `X = max_{q,a} (𝔼 |T_{qa}|^{2p})^{1/2p}` satisfies
 `X^{2p} ≤ C_M ρΛ (X^{2p-1} + X · X^{2p-1}) + (2p-1) A X^{2p-2} + (C_M + 2p)(E+1)^{2p+1} δ`. -/
 theorem GUETwistBA_moment_bound {Ω' : Type*} [MeasurableSpace Ω'] (μ : Measure Ω') [IsProbabilityMeasure μ] [Nonempty ι]
@@ -305,7 +300,7 @@ theorem GUETwistBA_moment_bound {Ω' : Type*} [MeasurableSpace Ω'] (μ : Measur
   linarith [hchain, hFgle, hδ']
 
 
-/-- **The tail bound of the twisted trace** (Steps 4-5 of Lemma T.7, abstract form): the recursion of `GUETwistBA_moment_bound`, the real
+/-- **The tail bound of the twisted trace** (abstract form): the recursion of `GUETwistBA_moment_bound`, the real
 bootstrap `TwistAvgB_S1`, and Markov: for `K w B` with `K w B ≤ 1/2`, `C_M ρΛ ≤ K w B`, `A ≤ K w B²`, `e ≤ B^{2p}`,
 `μ{s < |T_{qa}|} ≤ (C' w B / s)^{2p}`, `C' = (4p+2) K + 2`. -/
 theorem GUETwistBA_moment_tail {Ω' : Type*} [MeasurableSpace Ω'] (μ : Measure Ω') [IsProbabilityMeasure μ] [Nonempty ι]
@@ -356,8 +351,8 @@ open scoped Matrix.Norms.L2Operator
 variable {d : ℕ}
 
 set_option maxHeartbeats 1600000 in
--- the per-time core (Steps 1-5 of T.7 at one grid time) needs more than the default 200000 heartbeats
-/-- **One grid time** (Steps 1-5 of Lemma T.7 at `(n, j)`): the one-time law of `gueHBA … j` is `law v` (`v_c = t₁ gvar_c + c₀ w_c`), the
+-- the per-time core (the proof of Lemma 8.6 at one grid time) needs more than the default 200000 heartbeats
+/-- **One grid time** (the proof of Lemma 8.6 at `(n, j)`): the one-time law of `gueHBA … j` is `law v` (`v_c = t₁ gvar_c + c₀ w_c`), the
 moment identity `GUETwistBA_momentId`, the envelope, the good-event bounds off the exceptional set `B`, and the tail lemma give
 `μ{s < |T_{qa}|} ≤ (C' ρ² Λ_j / s)^{2p}` for every pair of blocks.  `ρ = N^ε`; the numeric conditions `K ρ² Λ_j ≤ 1/2`,
 `(C_M + 2p)(E+1)^{2p+1} δ ≤ Λ_j^{2p}` are hypotheses (discharged eventually in `n` in the theorem). -/
@@ -731,7 +726,7 @@ open scoped Matrix.Norms.L2Operator
 
 variable {d : ℕ}
 
-/-- **One size `n`** (Steps 4-5 of T.7, the union): off the exceptional set `B`, the bad event of `StochDomAt` at `(τ, D)` is contained in the
+/-- **One size `n`** (the union): off the exceptional set `B`, the bad event of `StochDomAt` at `(τ, D)` is contained in the
 union over the grid times `j ≤ K n` and the pairs of blocks of `{N^τ Λ_j < |T_{qa}|}` (identity `t_{aq} - M^{(++)}_{aq} = M^{(B)}_{aq} T_{qa}`),
 each contained in the trivial regime (`Λ_j ≥ N^{-τ}`, the entrywise local law, `GUETwistBA_Tm_le_entries`) or bounded by `GUETwistBA_time`
 (`ε = τ/4`, `ρ² = N^{τ/2}`, `TwistAvgB_expo`); the numeric conditions `hNa`, `hNC`, `hNe`, `hpτ`, `hfin` are discharged eventually in `n`. -/
@@ -915,13 +910,12 @@ theorem GUETwistBA_hNe {N c D : ℝ} {p : ℕ} (hN : 1 ≤ N) (hc : c ≤ N) (hD
   calc c * (N ^ (D + 2))⁻¹ ≤ N ^ (D + 2) * (N ^ (D + 2))⁻¹ := mul_le_mul_of_nonneg_right (hc.trans h2) (inv_nonneg.2 h3.le)
     _ = 1 := mul_inv_cancel₀ h3.ne'
 
-/-- **Target 7, `gueGrid_twistBA`** (text `T2519_HoffBA` of the probe `t/T2519` b992c2e7:`RBM3D/Probe/T2519Pins.lean:79-98`, with
-`GUEPathBoundsBA` in place of `T2519_PathBoundsBA`): the twisted 1-loop law on the GUE-phase grid at block Anderson (the `hoff` premise
-of `gueGrid_expect_oneLoopBA` at `K = gueGridK sz n0`, `n0 ≥ 4`).  For `d ≥ 3` and the grid `gueHBA` at the grid times, given PB
+/-- **`gueGrid_twistBA`**: the twisted 1-loop law on the GUE-phase grid at block Anderson (the `hoff` premise
+of `gueGrid_expect_oneLoopBA'` at `K = gueGridK sz n0`, `n0 ≥ 4`).  For `d ≥ 3` and the grid `gueHBA` at the grid times, given the path bounds
 (`GUEPathBoundsBA`: loops of length `≤ n0`, `localLaw`) against a primitive family `Kt` with `Kt = m` on 1-loops and the K-bound,
 `|⟨M G⟩_{aa'}-block twisted trace - M^{(++)}_{aa'}| ≺ |M^{(B)}_{aa'}| (N η_u)⁻¹` simultaneously in the grid times `u` and the pairs of blocks.
-The proof is Lemma T.7 (`docs/tickets/T2398-TL-proofs.md:64-78`) at the one-time law of the grid: `GUETwistBA_momentId` (Steps 1-2),
-`GUETwistBA_RB1`/`_RB2` (Step 3), `GUETwistBA_good` (the PB interface), `GUETwistBA_time` (Steps 4-5: recursion, bootstrap, Markov),
+The proof is that of Lemma 8.6 (`lem:TL1_BA`) at the one-time law of the grid: `GUETwistBA_momentId` (the moment identity),
+`GUETwistBA_RB1`, `GUETwistBA_RB2` (the derivative terms), `GUETwistBA_good` (the interface to the path bounds), `GUETwistBA_time` (recursion, bootstrap, Markov),
 `GUETwistBA_step` (the union and the trivial regime). -/
 theorem gueGrid_twistBA (d : ℕ) : 3 ≤ d → ∀ (sz : Sizes d) (κ Λ : ℝ), 0 < κ → 0 < Λ →
     ∀ (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (n0 : ℕ) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ),
@@ -975,15 +969,6 @@ theorem gueGrid_twistBA (d : ℕ) : 3 ≤ d → ∀ (sz : Sizes d) (κ Λ : ℝ)
 
 end Main
 
-/-! ## 5. Compiled nonempty instance (target 7) of `gueGrid_twistBA`
-
-Namespace `RBM.BA.GUETwistBAInst`.  Data: `d = 3`, `sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`, `Defs/Sizes.lean`), the BA flow
-datum `(g_n, E_n, m_n)` of `sz0` at every `n` (`BAReal` at `κ = 1/2`, `0 < g_n ≤ 10` eventually: `BAflow_lam0_window`), the GUE-phase
-window `1 - t₀ = x_n = λ_n² / (4 L_n³)`, `t₀ - t₁ = x_n / (2 N_n)` (row a's window, `GUEHypABA` §3), `n₀ = 4` (the grid `gueGridK sz0 4`),
-`Kt` the BA primitive family of `gueK_existsBA` (chosen per `n`, loops of length `≤ 4 * 4`).  Every deterministic hypothesis is discharged,
-including `Kt = m` on the 1-loops (`GUETwistBA_Kt_one`); PB (`GUEPathBoundsBA`, the output of the §7.2 random layer, another gate) and the
-K-bound stay as hypotheses of the instance.  The K-bound is the conclusion of `Hyp_Kt_detDomBA` (row a, `τ_U = 1/20`, `n₀ = 4`, cut from
-`≤ 2 * 4` to `≤ 4`); its deterministic premises `h730` and `hell` are checked at this data (`GUETwistBAInst_h730`, `GUETwistBAInst_hell`). -/
 
 end RBM.BA
 

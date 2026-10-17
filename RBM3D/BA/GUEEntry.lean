@@ -12,21 +12,21 @@ import RBM3D.BA.CombesThomas
 import RBM3D.BA.MFixedPoint
 
 /-!
-# The block Anderson entry layer of the GUE phase, deterministic part (T2515, row b)
+# The block Anderson entry layer of the GUE phase, deterministic part
 
-BA twin of the band file `Universality/GUEPhase/EntryDet.lean` (`stable_mix`, `mix_det`).
+The block Anderson version of the band file `Universality/GUEPhase/EntryDet.lean` (`stable_mix`, `mix_det`).
 The matrix is the mixture `H = g Ψ + X` with `X = Xmat (mixSample (sz.withLam 0) n a b ω)`
 (the block-diagonal GUE blocks at coupling `0` plus the flat GUE), the spectral parameter is
 `z_u = E + (1 - u) m`, `u = a + b < 1`, and the reference matrix is `M = M^{(B)} ⊗ I`,
 `M^{(B)} = BAMB d L g E m`, at a real-axis flow point `(g, E, m)` (`BAReal d L g κ E m`).
 The variance profile of the mixture is `S_u = a S^{(B)}(0) + b / N` (`GUEEntry_Smv`).
 
-* Target 9, `stable_mixBA`: the stability of `1 - M^{(+,+)} S̃` at a flow point, from
+* `stable_mixBA`: the stability of `1 - M^{(+,+)} S̃` at a flow point, from
   `baStab_of_real` and `BAoffDiag_scalar`, with the constant `16 κ⁻⁴ (1 + 16 κ⁻⁴)`.
-* Target 10, `mix_detBA`: on the a priori event `‖G - M‖_max ≤ δ` and the four large
+* `mix_detBA`: on the a priori event `‖G - M‖_max ≤ δ` and the four large
   deviation inputs (`LDERow`, `LDECol`, `LDEQuad`, the diagonal bound) with the profile
   `S_u`, `|G_xy - M_xy|² ≤ C Φ² (max 𝓛 + W^{-d})` with `C = GUEEntry_C d Λ κ`. The
-  deterministic core `GUEEntry_core` is the twin of `GreenCore_diag` (`BA/GreenCore.lean`),
+  deterministic core `GUEEntry_core` is the analogue of `GreenCore_diag` (`BA/GreenCore.lean`),
   with the flat part kept as an additive slack `Ξ = ΞC Φ L` (the Ward identity `Σ_k |G_ky|²
   ≤ (3/2) / Im z` and the `J`-part bound).
 -/
@@ -386,7 +386,7 @@ structure GUEEntry_WardData (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (κ Y : ℝ
   hYc : ∀ y, ∑ k, ‖G k y‖ ^ 2 ≤ Y
   hYr : ∀ x, ∑ l, ‖G x l‖ ^ 2 ≤ Y
 
-/-- `∑_{k≠u} |G^{(u)}_{ky}|² ≤ (2 + 18 κ⁻²) Y` (Ward column bound and `(4.9)`). -/
+/-- `∑_{k≠u} |G^{(u)}_{ky}|² ≤ (2 + 18 κ⁻²) Y` (Ward column bound and the minor identity). -/
 theorem GUEEntry_minor_col (hw : GUEEntry_WardData G κ Y) (u y : Vtx d L W) :
     ∑ k ∈ univ.erase u, ‖greenMinor G u k y‖ ^ 2 ≤ (2 + 18 / κ ^ 2) * Y := by
   have hY0 : 0 ≤ Y := (Finset.sum_nonneg fun _ _ => by positivity).trans (hw.hYc y)
@@ -410,7 +410,7 @@ theorem GUEEntry_minor_col (hw : GUEEntry_WardData G κ Y) (u y : Vtx d L W) :
         linarith
     _ = (2 + 18 / κ ^ 2) * Y := by field_simp; ring
 
-/-- `∑_{l≠u} |G^{(u)}_{xl}|² ≤ (2 + 18 κ⁻²) Y` (Ward row bound and `(4.9)`). -/
+/-- `∑_{l≠u} |G^{(u)}_{xl}|² ≤ (2 + 18 κ⁻²) Y` (Ward row bound and the minor identity). -/
 theorem GUEEntry_minor_row (hw : GUEEntry_WardData G κ Y) (u x : Vtx d L W) :
     ∑ l ∈ univ.erase u, ‖greenMinor G u x l‖ ^ 2 ≤ (2 + 18 / κ ^ 2) * Y := by
   have hY0 : 0 ≤ Y := (Finset.sum_nonneg fun _ _ => by positivity).trans (hw.hYc x)
@@ -690,8 +690,8 @@ theorem GUEEntry_wardData_of {H G : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ
     rw [← e] at *
     exact div_le_div_of_nonneg_right this hz.le
 
-/-- **The `J`-part lemma** (Ward over one block row): `Y/N = (3/2)/(N η) ≤ 3 κ⁻¹ max 𝓛` (RBM `inv_N_le_maxLoopPM`,
-`EntryDet.lean:354`, at the block Anderson `M`). -/
+/-- **The `J`-part lemma** (Ward over one block row): `Y/N = (3/2)/(N η) ≤ 3 κ⁻¹ max 𝓛` (the block Anderson version of
+`inv_N_le_maxLoopPM`, at the block Anderson `M`). -/
 theorem GUEEntry_J {H G M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z m : ℂ} {δ Lm : ℝ}
     (hH : H.IsHermitian) (hz : 0 < z.im) (hGR : G * (H - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
     (hMxx : ∀ x, M x x = m) (hκ : 0 < κ) (hmim : κ ≤ m.im) (hδ : δ ≤ κ / 2)
@@ -867,7 +867,7 @@ theorem GUEEntry_e3_norm (hw : GUEEntry_WardData G κ Y) (hb : 0 ≤ b) (hb1 : b
         gcongr
     _ = (2 / κ) * (Y / (((W * L) ^ d : ℕ) : ℝ)) := by field_simp
 
-/-- **The mixture twin of `GreenCore_coupled`**: `Δ = M 𝒮 M + M 𝒦` with the self-energy `𝒮 = a v̄ + b w̄`, the
+/-- **The mixture analogue of `GreenCore_coupled`**: `Δ = M 𝒮 M + M 𝒦` with the self-energy `𝒮 = a v̄ + b w̄`, the
 stability being `stable_mixBA`; `‖Δ‖_max ≤ ρ (1 + ρ₂ K_θ) ‖𝒦‖_max`. -/
 theorem GUEEntry_coupled {Δ 𝒦 : Vtx d L W → Vtx d L W → ℂ} {vb : Zd d L → ℂ} {wb : ℂ} {Kθ ρ ρ₂ K𝒦 : ℝ}
     (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a + b ≤ 1)
@@ -988,7 +988,7 @@ def GUEEntry_Ab (d : ℕ) (κ Φ δ c₀ ρ Sc g₀ w₀ Lm Lm' Ξ E3b : ℝ) : 
     (Φ * (2 * Lm + (8 / κ ^ 2) * GUEEntry_R0 c₀ ρ Sc Φ w₀ Lm' * (13 / 4 * δ ^ 2)) + Ξ) + E3b + Φ * w₀ +
     (2 * d * g₀) ^ 2 * GUEEntry_Xb κ Φ c₀ ρ Sc w₀ Lm' Ξ)
 
-/-- **The deterministic core at the mixture** (twin of `GreenCore_diag`): from the large-deviation inputs in the
+/-- **The deterministic core at the mixture** (the analogue of `GreenCore_diag`): from the large-deviation inputs in the
 block form with the flat slack `Ξ`, the stability of `1 - M^{(+,+)} S̃`, and `‖G - M‖_max ≤ δ`. -/
 private theorem GUEEntry_core {s z : ℂ} {g₀ κ δ c₀ ρ Sc Φ Ξ Lm Kθ ρ₂ E3b : ℝ}
     (hS : GUEEntry_Setup d L W G X M D Mb m s z (a + b) g₀ κ δ c₀ ρ Sc)
@@ -1288,7 +1288,8 @@ def GUEEntry_C (d : ℕ) (Λ κ : ℝ) : ℝ :=
   8 * GUEEntry_Kbd d Λ κ ^ 2 * (9 / 4 * GUEEntry_CAb d Λ κ + GUEEntry_CXb d Λ κ)
 /-- The smallness threshold of the a priori bound `δ`. -/
 def GUEEntry_dlt (d : ℕ) (Λ κ : ℝ) : ℝ := min (κ / 2) (1 / (2 * GUEEntry_Kbd d Λ κ))
-/-- The smallness constant of `Φ δ²` (condition (C1)). -/
+/-- The smallness constant of `Φ δ²`: the condition `GUEEntry_cs · Φ δ² ≤ 1` implies the smallness condition
+`8 ρ c₀⁻¹ S ϑ ≤ 1` of the `GreenCore` lemmas. -/
 def GUEEntry_cs (d : ℕ) (Λ κ : ℝ) : ℝ :=
   8 * GUEEntry_rho d Λ κ * ((BAct_rate d Λ κ)⁻¹ * GUEEntry_Sc d Λ κ) *
     ((4 / κ ^ 2) * (2 * d * Λ + (1 + 2 * d * Λ) / κ) ^ 2 + 26 / κ ^ 2)
@@ -1369,7 +1370,7 @@ theorem GUEEntry_Smv_diag_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hu : a +
 
 set_option maxHeartbeats 1600000 in
 -- the assembly of the core, the stability and the constant chain in one proof
-/-- **The deterministic bridge at the mixture profile** (twin of `mix_det`, `EntryDet.lean:719`; BA-C3): on `Ω`
+/-- **The deterministic bridge at the mixture profile** (the analogue of `mix_det`): on `Ω`
 (`‖G - M‖_max ≤ δ`, `M = M^{(B)} ⊗ I`, `G = (g Ψ + X - z)⁻¹`, `z = z_u^{(E)}`, `u = a + b`), given the four
 large-deviation inputs at the profile `S_u = a S^{(B)}(0) + b N⁻¹` with the factor `Φ` and the loop bound `Lm`,
 `|G_{xy} - M_{xy}|² ≤ C Φ² (Lm + W^{-d})`, `C = C(d, Λ, κ)`, `L`-free. -/

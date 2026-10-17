@@ -6,12 +6,11 @@ Authors: Jun Yin
 import RBM3D.BA.Ward
 
 /-!
-# The Combes-Thomas item of `lem:propM` for the block Anderson model (BA-D4)
+# The Combes-Thomas item of `lem:propM` for the block Anderson model
 
-Ticket T2290.  Paper `7_8_light_weight.tex:1847-1912` (`lem:propM`, item (3), `(Mbound_AO)` `:1891`,
-`(Mbound_AO2)` `:1902`).  The bounds on `M^{(B)} = (g Ψ^{(B)} - E - m)⁻¹` and the merged pin
-`BAPropM` (`RBM3D/BA/MFixedPoint.lean`, all items) from `baPropM12_holds` (`Ward.lean`),
-unconditionally.
+Lemma 8.3 (`lem:propM`), item (3): the decay bounds (8.6) `Mbound_AO` and (8.7) `Mbound_AO2` on
+`M^{(B)} = (g Ψ^{(B)} - E - m)⁻¹`, and the statement `BAPropM` (`RBM3D/BA/MFixedPoint.lean`, all items), from
+`baPropM12_holds` (`Ward.lean`), unconditionally.
 
 The one analytic estimate is `BAMB_ct_core`: for `Im w ≥ κ`, `w = z + m`, and a weight
 `e^{ν |x - b|}` with `2 d g (e^ν - 1) ≤ κ/2`, the column `M_{· b}` obeys
@@ -38,10 +37,10 @@ open RBM RBM.Gauss
 
 /-! ## 1. The constants -/
 
-/-- The constant `C` of `(Mbound_AO)` (`7_8:1888-1891`; "depending only on `d` and `κ`"): `C = 16 d² / κ³`. -/
+/-- The constant `C` of `(Mbound_AO)` ("depending only on `d` and `κ`"): `C = 16 d² / κ³`. -/
 def BAct_C (d : ℕ) (κ : ℝ) : ℝ := 16 * (d : ℝ) ^ 2 / κ ^ 3
 
-/-- The rate `c` of `(Mbound_AO2)` (`7_8:1902`): `c = min (log (1 + κ/(4dΛ))) (κ/2)`. -/
+/-- The rate `c` of `(Mbound_AO2)`: `c = min (log (1 + κ/(4dΛ))) (κ/2)`. -/
 def BAct_rate (d : ℕ) (Λ κ : ℝ) : ℝ := min (Real.log (1 + κ / (4 * (d : ℝ) * Λ))) (κ / 2)
 
 theorem BAct_C_pos (d : ℕ) (κ : ℝ) (hd : 0 < d) (hκ : 0 < κ) : 0 < BAct_C d κ := by
@@ -284,7 +283,7 @@ private theorem CT_core_abs (hL : 3 ≤ L) (g κ ν : ℝ) (w : ℂ) (hg : 0 ≤
   exact hva
 
 /-- **The Combes-Thomas estimate** for `M = (g Ψ^{(B)} - w)⁻¹`, `w = z + m`, `Im w ≥ κ`, weight `e^{ν |x - b|}`
-(`7_8:1911`, `[Aizenman_book, Thm 10.5]`): `|M_ab| ≤ (2/κ) e^{-ν |a - b|}` when `2 d g (e^ν - 1) ≤ κ/2`. -/
+(`[Aizenman_book, Thm 10.5]`): `|M_ab| ≤ (2/κ) e^{-ν |a - b|}` when `2 d g (e^ν - 1) ≤ κ/2`. -/
 theorem BAMB_ct_core (hL : 3 ≤ L) (g κ ν : ℝ) (z m : ℂ) (hg : 0 ≤ g) (hκ : 0 < κ)
     (hw : κ ≤ (z + m).im) (hν : 0 ≤ ν) (hgap : 2 * (d : ℝ) * g * (Real.exp ν - 1) ≤ κ / 2)
     (a b : Zd d L) :
@@ -554,9 +553,9 @@ theorem BAPropM3_of_real (hL : 3 ≤ L) (hd : 0 < d) (Λ g κ E : ℝ) (m : ℂ)
 
 end Bounds
 
-/-! ## 5. The pin `BAPropM` -/
+/-! ## 5. The statement `BAPropM` -/
 
-/-- **`BAPropM` is proved** (`lem:propM`, `7_8:1847-1912`), all items, with `C = 16 d² / κ³`,
+/-- **`BAPropM` is proved** (Lemma 8.3 `lem:propM`), all items, with `C = 16 d² / κ³`,
 `c = min (log (1 + κ/(4dΛ))) (κ/2)`.  Items (1)(2) are `baPropM12_holds` (`Ward.lean`), item (3) is
 `BAPropM3_of_real`. -/
 theorem baPropM_holds (d : ℕ) (Λ κ : ℝ) : BAPropM d Λ κ := by
@@ -569,15 +568,6 @@ theorem baPropM_holds (d : ℕ) (Λ κ : ℝ) : BAPropM d Λ κ := by
   obtain ⟨h1, h2, h3, h4⟩ := baPropM12_holds d L hL g hg E m hr.1
   obtain ⟨h5, h6⟩ := BAPropM3_of_real d L hL hd0 Λ g κ E m hΛ hg hgΛ hκ hr
   exact ⟨h1, h2, h3, h4, h5, h6⟩
-
-
-
-/-! ## 6. Compiled nonempty instances (`d = 3`, `L = 4`, `card (Zd 3 4) = 64`)
-
-The data are those of `MFixedPointInst` (T2189): the complex point `(z_S, m_S)` with `z_S + m_S = w_I = 6i/5`
-(`Im w = κ = 6/5`) and the real-axis flow point `P` of `(L, g) = (4, 10)` (`BAReal 3 4 g₀ (Im m₀) E m₀`).
-No hypothesis is left open except the data condition `g₀ < (2C)⁻¹` of the small branch (small-branch
-statements are instantiated as implications: no merged real-axis datum has a provable `g₀ < κ³/288`). -/
 
 end RBM.BA
 

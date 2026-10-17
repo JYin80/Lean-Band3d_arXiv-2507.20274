@@ -10,26 +10,23 @@ import RBM3D.Green.LDE
 /-!
 # The block Anderson minors, conditionalised: the minor tower of the carrier, the conditional means
 
-BA-G5b, file 1 of 2.  Ticket T2411 (design gate `docs/reports/T2401-prove.md` (G.5)-(G.6); G5a is
-`BA/GreenMinor*.lean`).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`),
-band `paper/tex/3_5_Loop_Hierarchy.tex`.
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`).  The minors of the block
+Anderson matrix are in `BA/GreenMinor.lean`, `BA/GreenMinor2.lean` and `BA/GreenMinor3.lean`.
 
 * §1 the fine-index minor tower of the carrier `GreenCond_Gs` (the real minors of `D + X(ω)`,
   indexed by `Finset (Idx d L W)`, read through `splitEquiv`): base, measurability, the envelope
   `|G^{(S)}_{xy}| ≤ η_t⁻¹`, strict independence of the rows of `S`.
 * §2 the minor families of `Y^A`, `Y^X` and the minor difference estimate on the good event (the
   transport of `GreenMinor_diff` along `splitEquiv`).
-* §3 the conditionalised gain interface (the twin of `Green/MinorDiffCond.lean`
+* §3 the conditionalised gain interface (the analogue of `Green/MinorDiffCond.lean`:
   `norm_applyOps_minorDiff_flucDiagSet_le_badFamily`, `integral_prod_applyOps_minorDiff_le_on`,
   `minorDiffGainUpTo'_of_le_on`, for an abstract family of minors with envelope `Env`):
   `GreenMinor_famGain` from a good event, the tower `badTower` over its complement, and the
   smallness `hsmall`.
 * §4-§6 the Gaussian row of the carrier: coordinate moments, the abstract row model (moments of
   `Φ = t m + h_u - Σ h_k c_{kl} (D_l + conj h_l)`), its instance.
-* §7 the conditional means (m5): the exact `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0`, second
-  moments, the pointwise good-event bounds, the Cauchy-Schwarz split and `GreenCond_m5_A/X`;
-  §8 the nonempty instances of `GreenCond_famGain_slice`, `GreenCond_m5_A/X` (`d = 3`, `sz0`,
-  `flow_sz0`).
+* §7 the conditional means: the exact `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0`, second
+  moments, the pointwise good-event bounds, the Cauchy-Schwarz split and `GreenCond_m5_A`, `GreenCond_m5_X`.
 -/
 
 set_option linter.style.longLine false
@@ -206,7 +203,7 @@ abbrev GreenCond_s (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) : ℂ := (BAflowEs
 abbrev GreenCond_zt (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) : ℂ :=
   ztOf (GreenCond_m sz z n) (BAflowEs sz z n) t
 
-/-- **The structural facts of the carrier at `(n, t)`**, from `BAFlow` and `0 ≤ t ≤ T₀` only: `κ ≤ ‖m‖ ≤ 1`, `κ ≤ 1`, `L ≥ 3`, `g₀ ≥ 0`,
+/-- **The basic facts of the carrier at `(n, t)`**, from `BAFlow` and `0 ≤ t ≤ T₀` only: `κ ≤ ‖m‖ ≤ 1`, `κ ≤ 1`, `L ≥ 3`, `g₀ ≥ 0`,
 `‖M‖_max ≤ 1`, `M = M^{(B)} ⊗ I`, `D = g₀ Ψ`, `Im z_t > 0`, `‖s‖ (‖m‖) ≤ 1 + 2 d g₀`. -/
 structure GreenCond_Data (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t κ : ℝ) : Prop where
   hκ : 0 < κ
@@ -276,7 +273,7 @@ theorem GreenCond_a_mono (hκ : 0 < κ) (hκ1 : κ ≤ 1) : Monotone (GreenMinor
   rw [GreenMinor_a_succ]
   nlinarith
 
-/-- `c_Y(r)` is monotone in `r`, `g₀` and `‖s‖`: the constants of the pins are bounded by those at `(M, Λ, sbd)`. -/
+/-- `c_Y(r)` is monotone in `r`, `g₀` and `‖s‖`: the constants are bounded by those at `(M, Λ, sbd)`. -/
 theorem GreenCond_cY_mono {d : ℕ} (hκ : 0 < κ) (hκ1 : κ ≤ 1) {g₀ g₀' s s' : ℝ} {r r' : ℕ} (hg : 0 ≤ g₀) (hgg : g₀ ≤ g₀')
     (hs : 0 ≤ s) (hss : s ≤ s') (hr : r ≤ r') : GreenMinor_cY d κ g₀ s r ≤ GreenMinor_cY d κ g₀' s' r' := by
   unfold GreenMinor_cY
@@ -448,10 +445,10 @@ end MinorDiff
 
 /-! ## 3. The conditionalised gain interface
 
-The twin of `Green/MinorDiffCond.lean` (`norm_applyOps_minorDiff_flucDiagSet_le_badFamily`, `integral_prod_applyOps_minorDiff_le_on`,
+The analogue of `Green/MinorDiffCond.lean` (`norm_applyOps_minorDiff_flucDiagSet_le_badFamily`, `integral_prod_applyOps_minorDiff_le_on`,
 `minorDiffGainUpTo'_of_le_on`) for an abstract family of minors `Yq k S` (the `S`-minor version of the slot `k`) with a uniform envelope
 `Env`: the constants `condEnv`, `condCost` of the band, with `η_t⁻¹ + 1` replaced by `Env`.  `badStep`, `badTower`, `BadFamily`,
-`meas_badTower_le`, `norm_applyOps_le_badFamily`, `integral_prod_norm_le_of_bounds_on` are the band's, used as they are. -/
+`meas_badTower_le`, `norm_applyOps_le_badFamily`, `integral_prod_norm_le_of_bounds_on` are those of the band. -/
 
 section Cond
 variable {d : ℕ} {sz : Sizes d} {n : ℕ}
@@ -508,8 +505,8 @@ theorem GreenCond_norm_word_le {Yq : Idx d (sz.L n) (sz.W n) → Finset (Idx d (
 /-- **The conditionalised gain interface from a good event.**  Let `Yq k S` be the `S`-minor version of the slot `k ∈ A` (bounded measurable,
 strictly independent of the rows of `S`, envelope `Env`), `Bad` a `BadFamily` of threshold `ε`, and assume the sharp minor-difference bound
 `‖Δ_{qList L} Y_k‖ ≤ c_M Ψ^{numQ L + 1}` off `Bad 0` for the words `L` of the interface (rows distinct, `≠ k`, in `A`, `|L| ≤ M`).  Then
-`famGain(B, 2Ψ, M, K)` holds with `B = 2 (2 c_M Ψ + condCost)`, provided `hB1` (`B₀ ≤ 1`) and `hsmall` (the tower is small at the two budgets).
-(The twin of `minorDiffGainUpTo'_of_le_on` for a family of minors.) -/
+`GreenMinor_famGain` at `(B, 2Ψ, M, K)` holds with `B = 2 (2 c_M Ψ + condCost)`, provided `hB1` (`B₀ ≤ 1`) and `hsmall` (the tower is small at the two budgets).
+(The analogue of `minorDiffGainUpTo'_of_le_on` for a family of minors.) -/
 theorem GreenCond_famGain_of_good {A : Finset (Idx d (sz.L n) (sz.W n))}
     {Yq : Idx d (sz.L n) (sz.W n) → Finset (Idx d (sz.L n) (sz.W n)) → sz.SeqΩ → ℂ} {Env cM Ψ ε : ℝ} {M K : ℕ}
     {Bad : ℕ → Set sz.SeqΩ} (hY : ∀ k S, BddMeas sz (Yq k S)) (hind : ∀ k S, FinDepOffRows sz n S (Yq k S))
@@ -652,7 +649,7 @@ theorem GreenCond_good_of_notMem_badBase (sz : Sizes d) (z : ℕ → ℂ) (n : �
 
 /-- **The BA gain interface at one slice**: with `Bad = badTower` over the hull of the complement of `{‖G_t - M‖_max ≤ δ}` (row-section
 threshold `ε'`), `Ψ = 2δ` (`4δ ≤ κ`, `8Mδ ≤ κ`, `2δ ≤ 1`), `c_M ≥ c_Y(M)`, the envelope `Env ≥ GreenCond_Env`, and the two numerical conditions
-`hB1`, `hsmall`, the families `Y^A` and `Y^X_{·, (α, o)}` on the block `β ≠ α` satisfy `famGain(B, 4δ, M, K)`, `B = 2 (4 c_M δ + condCost)`. -/
+`hB1`, `hsmall`, the families `Y^A` and `Y^X_{·, (α, o)}` on the block `β ≠ α` satisfy `GreenMinor_famGain` at `(B, 4δ, M, K)`, `B = 2 (4 c_M δ + condCost)`. -/
 theorem GreenCond_famGain_slice {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z) (t : ℕ → ℝ) (n : ℕ)
     (ht0 : 0 ≤ t n) (ht : t n ≤ BAflowT0 sz z n) (hg0 : 0 ≤ BAflowLam0 sz z n) {δ ε' Env cM : ℝ} {M K : ℕ}
     (hδ0 : 0 < δ) (hδ4 : 4 * δ ≤ κ) (hMδ : 8 * (M : ℝ) * δ ≤ κ) (hδ2 : 2 * δ ≤ 1) (hε' : 0 ≤ ε')
@@ -1210,10 +1207,10 @@ theorem GreenCond_diag_law {T : ℝ} (hT : 0 ≤ T) (u : Idx d (sz.L n) (sz.W n)
 
 end RowLawInst
 
-/-! ## 7. The conditional means (m5): the carrier row, the pointwise good-event bounds, the Cauchy-Schwarz split
+/-! ## 7. The conditional means: the carrier row, the pointwise good-event bounds, the Cauchy-Schwarz split
 
 The row `u` of `X(rowSplit ω₀ ω'')` is the row of `ω''` and the rest of `X`, and the minors `G^{(S)}` for `u ∈ S`, are those of `ω₀`
-(`GreenCond_Xc_rowSplit_row/off`, `GreenCond_Gs_agree`).  The Gaussian row calculus of §4-§6 then gives the exact conditional means
+(`GreenCond_Xc_rowSplit_row`, `GreenCond_Gs_agree`).  The Gaussian row calculus of §4-§6 then gives the exact conditional means
 `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0` and second moments polynomial in `N`; off the base bad set the two remainders are `O(δ²)`
 pointwise; the split of `E_u` into the good part and the bad row slice is Cauchy-Schwarz (`GreenCond_norm_condRow_le'`). -/
 
@@ -1262,7 +1259,7 @@ theorem GreenCond_agreeOffRows_rowSplit (u : Idx d (sz.L n) (sz.W n)) (ω₀ ω'
   · exact hk (Finset.mem_singleton.2 h)
   · exact hl (Finset.mem_singleton.2 h)
 
-/-- The singleton minor of the carrier tower is the `(4.9)` minor `greenMinor G u`. -/
+/-- The singleton minor of the carrier tower is the minor `greenMinor G u`. -/
 theorem GreenCond_Gs_singleton {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ) (k l : Vtx d (sz.L n) (sz.W n)) :
     GreenCond_Gs sz z n t {u} ω k l = greenMinor (GreenCore_Gc sz z n t ω) (splitEquiv d (sz.L n) (sz.W n) u) k l := by
@@ -1383,7 +1380,7 @@ theorem GreenCond_integrable_of_sq {Ω' : Type*} [MeasurableSpace Ω'] {P : Meas
   simpa using this
 
 /-- **The conditional mean of `A_u`**: `E_u A_u = - t v̄_{[u]} + ε₂` (the exact Gaussian identity `E_u Q^{XX}_u = t Σ_k S_{uk} G^{(u)}_{kk}`,
-`E_u X_{uu} = E_u Q^{XD}_u = 0`, and (E2)). -/
+`E_u X_{uu} = E_u Q^{XD}_u = 0`, and the Schur complement identity). -/
 theorem GreenCond_condRow_Arow {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) (ω₀ : (GreenCond_sz0 sz).SeqΩ) :
     condRow (GreenCond_sz0 sz) n u (fun ω => GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t
@@ -1615,7 +1612,7 @@ end CarrierRow
 section CS
 variable {d : ℕ} {sz : Sizes d} {n : ℕ}
 
-/-- **The Cauchy-Schwarz split of a conditional mean off a bad set** (the unbounded twin of `norm_condRow_le_split`): if `‖F‖ ≤ c` off a measurable `S`
+/-- **The Cauchy-Schwarz split of a conditional mean off a bad set** (the unbounded analogue of `norm_condRow_le_split`): if `‖F‖ ≤ c` off a measurable `S`
 and the row integral of `‖F‖²` is `≤ Q`, then for every `lam > 0`: `‖E_k F(ω)‖ ≤ c + (lam Q + P(row slice of S at ω)/lam)/2`. -/
 theorem GreenCond_norm_condRow_le {k : Idx d (sz.L n) (sz.W n)} {F : Sizes.SeqΩ sz → ℂ} (hF : Measurable F) {S : Set (Sizes.SeqΩ sz)}
     (hS : MeasurableSet S) {c Q lam : ℝ} (hc : 0 ≤ c) (hlam : 0 < lam) (hgood : ∀ σ, σ ∉ S → ‖F σ‖ ≤ c) (ω : Sizes.SeqΩ sz)
@@ -1706,7 +1703,7 @@ theorem GreenCond_measurable_Gc {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFl
   have := GreenCond_measurable_Gs sz z n t ∅ x y
   simpa only [GreenCond_Gs_empty hκ sz h n ht0 ht] using this
 
-/-- **S3 at every sample**: `A_w = Y^A_w m / G_{ww}`. -/
+/-- **`A_w` at every sample**: `A_w = Y^A_w m / G_{ww}`. -/
 theorem GreenCond_Arow_YA {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (σ : sz.SeqΩ) (w : Vtx d (sz.L n) (sz.W n)) :
     GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) w =
@@ -1719,7 +1716,7 @@ theorem GreenCond_Arow_YA {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz 
     have := dat.hκm; rw [h0, norm_zero] at this; linarith [dat.hκ]
   exact GreenMinor_Arow_eq hGR hRG hMD hz hM hMd hD hm0 (hG0 w)
 
-/-- **S3 at every sample**: `𝔛_{wy} = - Y^X_{wy} m / G_{ww}` for `y ≠ w`. -/
+/-- **`𝔛_{wy}` at every sample**: `𝔛_{wy} = - Y^X_{wy} m / G_{ww}` for `y ≠ w`. -/
 theorem GreenCond_Xrow_YX {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (σ : sz.SeqΩ) {w y : Vtx d (sz.L n) (sz.W n)} (hyw : y ≠ w) :
     GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) w y =
@@ -1752,12 +1749,12 @@ theorem GreenCond_measurable_Xrow {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BA
   exact (((GreenCond_measurable_YX (fun x y => GreenCond_measurable_Gc hκ h ht0 ht x y) _ _ _ _ _ _).mul_const _).div
     (GreenCond_measurable_Gc hκ h ht0 ht w w)).neg
 
-/-- `F^A_u = A_u (G_{uu} - m)`, the remainder of (E) for `𝒜'`. -/
+/-- `F^A_u = A_u (G_{uu} - m)`, the remainder of the Schur complement identity for `𝒜'`. -/
 def GreenCond_FA (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (u : Idx d (sz.L n) (sz.W n)) (σ : (GreenCond_sz0 sz).SeqΩ) : ℂ :=
   GreenCore_Arow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) *
     (GreenCore_Gc sz z n t σ (splitEquiv d (sz.L n) (sz.W n) u) (splitEquiv d (sz.L n) (sz.W n) u) - GreenCond_m sz z n)
 
-/-- `F^X_{u,α} = 𝔛_{u,(α,o(u))} (G_{uu} - m)`, the remainder of (E) for `𝔛`. -/
+/-- `F^X_{u,α} = 𝔛_{u,(α,o(u))} (G_{uu} - m)`, the remainder of the Schur complement identity for `𝔛`. -/
 def GreenCond_FX (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t : ℝ) (u : Idx d (sz.L n) (sz.W n)) (α : Zd d (sz.L n)) (σ : (GreenCond_sz0 sz).SeqΩ) : ℂ :=
   GreenCore_Xrow (GreenCore_Gc sz z n t σ) (GreenCore_Xc sz n t σ) (splitEquiv d (sz.L n) (sz.W n) u) (α, (splitEquiv d (sz.L n) (sz.W n) u).2) *
     (GreenCore_Gc sz z n t σ (splitEquiv d (sz.L n) (sz.W n) u) (splitEquiv d (sz.L n) (sz.W n) u) - GreenCond_m sz z n)
@@ -1829,7 +1826,7 @@ theorem GreenCond_FX_moment {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow s
   exact GreenCond_moment_mul (sz' := GreenCond_sz0 sz) (k := u) (GreenCond_measurable_Xrow hκ h ht0 ht hg0 (fun h' => hα (congrArg Prod.fst h')))
     ((GreenCond_measurable_Gc hκ h ht0 ht _ _).sub measurable_const) (fun σ => GreenCond_norm_diag_sub_le hκ h ht0 ht hg0 σ _) ω₀ hi hI
 
-/-- **(m5), `A_u`**: off a row slice of mass `≤ ε'` of the base bad set, `|E_u[A_u Δ_{uu}]| ≤ c_A δ² + √(ε' Q_A)`. -/
+/-- **The conditional mean of `A_u Δ_{uu}`**: off a row slice of mass `≤ ε'` of the base bad set, `|E_u[A_u Δ_{uu}]| ≤ c_A δ² + √(ε' Q_A)`. -/
 theorem GreenCond_m5_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
     (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ)
@@ -1842,7 +1839,7 @@ theorem GreenCond_m5_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ 
     (fun σ hσ => ?_) ω hslice hi hQ
   exact (GreenCond_pointwise_A sz z n t hκ h ht0 ht hg0 hδ0 hδ2 σ (GreenCond_good_of_notMem_badBase sz z n t δ hσ) _).2
 
-/-- **(m5), `𝔛_{uy}`**: the same for `y = (α, o(u))`, `α ≠ [u]`. -/
+/-- **The conditional mean of `𝔛_{uy} Δ_{uu}`**: the same for `y = (α, o(u))`, `α ≠ [u]`. -/
 theorem GreenCond_m5_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
     (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1) (ω : (GreenCond_sz0 sz).SeqΩ)
@@ -1877,11 +1874,4 @@ theorem GreenCond_hwd {W Ψn w : ℝ} {d : ℕ} (hW : 1 ≤ W) (hw : 1 ≤ w) (h
   rw [← e]
   exact pow_le_pow_left₀ h0 (hΨ.trans (le_mul_of_one_le_left (h0.trans hΨ) hw)) 2
 
-/-! ## 8. Nonempty instances of `GreenCond_famGain_slice` (at `t = 0`), `GreenCond_m5_A`, `GreenCond_m5_X` (at `t = 1/2`) -/
-
--- (m5) at `d = 3`, `sz0` at `n = 0` (`L = 4`, `W = 32`), the flow `flow_sz0` (`κ = 1/2`), `t = 1/2 ≤ T₀`, `δ = 1/10 ≤ κ/2`, `ε' = 1`, the sample `ω`; the row
--- slice has mass `≤ 1`
--- (m5) for `𝔛_{uy}`, `y = (α, o(u))` with `α = (1,1,1) ≠ [u] = 0`
--- the slice theorem at `t = 0` (I2 of (a)): `G_0 = M`, so `badBase` is null and `hsmall` holds (the conclusion is for the vanishing families `Y^A`, `Y^X`);
--- `M = K = 2`, blocks `0 ≠ (1,1,1)`, `Env`, `c_M` the closed forms `max 1 (·)`, `δ = 1/(64 c_M)`, `ε' = δ²/(192 Env)` (conditioning cost `1/32`): no hypothesis left
 end RBM.BA

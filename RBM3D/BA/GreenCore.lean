@@ -10,15 +10,19 @@ import RBM3D.BA.Step1
 import RBM3D.BA.Step1Fam
 
 /-!
-# The block Anderson entrywise layer with the deterministic part (BA-G3a)
+# The block Anderson entrywise layer with the deterministic part
 
-Ticket T2390 (design gate `docs/reports/T2390-prove.md` (a), (a′), (G), stage 1b).  Paper:
-`paper/tex/7_8_light_weight.tex` (`7_8:line`, `lem_GbEXP_BA` `:1916-1946`), band
-`paper/tex/3_5_Loop_Hierarchy.tex`.  Everything here is deterministic, for one sample: the large
-deviation inputs of `BALDEin` (T2389) enter as the per-sample events `LDERow`, `LDECol`, `LDEQuad`,
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`).  Everything here is
+deterministic, for one sample: the large
+deviation inputs enter as the per-sample events `LDERow`, `LDECol`, `LDEQuad`,
 the diagonal bound, and `Ω = {‖G - M‖_max ≤ δ}`.  Sites are `u = (a, o)` of `Vtx d L W`
 (block `a`, offset `o`), `M = M^{(B)} ⊗ I`, `D = g₀ Ψ`, `H = D + X`, `G = (H - z)⁻¹`,
 `Δ = G - M`, `w₀ = W^{-d}`.
+
+Labels of the identities and bounds below: (E0) `G - M = -(G (X + t m)) M`; (E1), (E1′) the row and column Schur
+complement identities; (E2) `t m - Q^{XX}_w = -t v̄_{[w]} + ε_2 - ε_1`; (E3) `Δ = M 𝒮[Δ] M + M 𝒦`; (L1) the bounds of `𝔛`
+by the large deviation inputs; (A\*) the a priori bound of the random re-entry; (R\*) the bound of the block averages `R`; (X\*)
+the bound of `𝔛`; (Ξ) the bound of the re-entry `𝒜'`.
 -/
 
 set_option linter.style.longLine false
@@ -78,7 +82,7 @@ private theorem GreenCore_row_schur {R G : Matrix ι ι ℂ} (hRG : R * G = 1) {
   field_simp
   ring
 
-/-- **(E1)** (`7_8:1930` display, row form): for `G (H - z) = 1`, `G_{uu} ≠ 0` and any matrix `X`,
+/-- **(E1)** (row form): for `G (H - z) = 1`, `G_{uu} ≠ 0` and any matrix `X`,
 `Σ_v X_{uv} G_{vy} = (X_{uu} - Q_u) G_{uy} + 𝔛_{uy}`, `Q_u = Σ_{k,l≠u} X_{uk} G^{(u)}_{kl} H_{lu}`,
 `𝔛_{uy} = Σ_{v≠u} X_{uv} G^{(u)}_{vy}`. -/
 theorem GreenCore_E1 {H X G : Matrix ι ι ℂ} {z : ℂ} (hGM : G * (H - z • (1 : Matrix ι ι ℂ)) = 1)
@@ -315,7 +319,7 @@ theorem GreenCore_rhoe (dd : B → B → ℝ) (hsymm : ∀ a b, dd a b = dd b a)
     _ ≤ c₀⁻¹ * S := mul_le_mul_of_nonneg_left (hS c) (inv_nonneg.2 hc₀.le)
 
 /-- **(R*)**, the closure of the two-sided inequality in the weight `e^{-ν dd}`, `ν = c₀/2`
-(`docs/reports/T2390-prove.md` (a′) D3.2): from `r_c ≤ 2 w₀ |M_{ac}|² + 8ρΦ Σ_{b''} |M_{b''c}| φ_{b''}² +
+from `r_c ≤ 2 w₀ |M_{ac}|² + 8ρΦ Σ_{b''} |M_{b''c}| φ_{b''}² +
 4ρϑ Σ_{b'} |M_{b'c}| r_{b'}` and `8ρρeϑ ≤ 1`, `r_c ≤ 4 c₀⁻² S w₀ e^{-ν dd(a,c)} + 16 ρ Φ c₀⁻¹ S Σ_{b''} e^{-ν dd(c,b'')} φ_{b''}²`. -/
 theorem GreenCore_Rstar [Nonempty B] (dd : B → B → ℝ) (hd0 : ∀ a, dd a a = 0) (hnn : ∀ a b, 0 ≤ dd a b)
     (hsymm : ∀ a b, dd a b = dd b a) (htri : ∀ a b c, dd a c ≤ dd a b + dd b c)
@@ -370,7 +374,7 @@ def GreenCore_R (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a : Zd d L) (y : Vtx d
 def GreenCore_Rrow (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (x : Vtx d L W) (b : Zd d L) : ℝ :=
   ((W : ℝ) ^ d)⁻¹ * ∑ o : Fin (W ^ d), ‖G x (b, o)‖ ^ 2
 
-/-- `𝓛^{(2)}_{(-,+),(a,b)} = W^{-2d} Σ_{x∈a, y∈b} |G_{xy}|²` for a Hermitian `H`, `G = (H - z)⁻¹` (`1_2:78`). -/
+/-- `𝓛^{(2)}_{(-,+),(a,b)} = W^{-2d} Σ_{x∈a, y∈b} |G_{xy}|²` for a Hermitian `H`, `G = (H - z)⁻¹` ((1.4) `eq:nGloops`). -/
 def GreenCore_loop (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a b : Zd d L) : ℝ :=
   (((W : ℝ) ^ d)⁻¹) ^ 2 * ∑ o : Fin (W ^ d), ∑ o' : Fin (W ^ d), ‖G (a, o) (b, o')‖ ^ 2
 
@@ -378,11 +382,11 @@ def GreenCore_loop (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a b : Zd d L) : ℝ
 def GreenCore_vbar (G M : Matrix (Vtx d L W) (Vtx d L W) ℂ) (a : Zd d L) : ℂ :=
   (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o : Fin (W ^ d), (G (a, o) (a, o) - M (a, o) (a, o))
 
-/-- `𝔛_{uy} = Σ_{v≠u} X_{uv} G^{(u)}_{vy}` (the row sum of `(4.8)`). -/
+/-- `𝔛_{uy} = Σ_{v≠u} X_{uv} G^{(u)}_{vy}` (the row sum of the Schur complement identity). -/
 def GreenCore_Xrow (G X : Matrix (Vtx d L W) (Vtx d L W) ℂ) (u y : Vtx d L W) : ℂ :=
   ∑ v ∈ univ.erase u, X u v * greenMinor G u v y
 
-/-- `𝔛'_{xw} = Σ_{k≠w} G^{(w)}_{xk} X_{kw}` (the column sum of `(4.8)`). -/
+/-- `𝔛'_{xw} = Σ_{k≠w} G^{(w)}_{xk} X_{kw}` (the column sum of the Schur complement identity). -/
 def GreenCore_Xcol (G X : Matrix (Vtx d L W) (Vtx d L W) ℂ) (x w : Vtx d L W) : ℂ :=
   ∑ k ∈ univ.erase w, greenMinor G w x k * X k w
 
@@ -396,7 +400,7 @@ def GreenCore_Acol (G X D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (t : ℝ) (m : �
 
 variable {G X : Matrix (Vtx d L W) (Vtx d L W) ℂ} {κ Φ : ℝ}
 
-/-- **(4.9) with the diagonal bound**: `|G^{(w)}_{vy}|² ≤ 2|G_{vy}|² + 8κ⁻² |G_{vw}|² |G_{wy}|²` when `|G_{ww}| ≥ κ/2`. -/
+/-- **The minor identity with the diagonal bound**: `|G^{(w)}_{vy}|² ≤ 2|G_{vy}|² + 8κ⁻² |G_{vw}|² |G_{wy}|²` when `|G_{ww}| ≥ κ/2`. -/
 theorem GreenCore_m1 {ι : Type*} {G : Matrix ι ι ℂ} (hκ : 0 < κ) {w : ι}
     (hw : κ / 2 ≤ ‖G w w‖) (v y : ι) :
     ‖greenMinor G w v y‖ ^ 2 ≤ 2 * ‖G v y‖ ^ 2 + (8 / κ ^ 2) * (‖G v w‖ ^ 2 * ‖G w y‖ ^ 2) := by
@@ -445,7 +449,7 @@ theorem GreenCore_blockMinorCol (hκ : 0 < κ) {w : Vtx d L W} (hw : κ / 2 ≤ 
     _ = _ := by
         rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum]; ring
 
-/-- **(L1), row form** (`ldeRow` + (4.9)): `|𝔛_{uy}|² ≤ Φ (2 R_{[u],y} + 8κ⁻² |G_{uy}|² R_{[u],u})`,
+/-- **(L1), row form** (the row large deviation bound and the minor identity): `|𝔛_{uy}|² ≤ Φ (2 R_{[u],y} + 8κ⁻² |G_{uy}|² R_{[u],u})`,
 `𝔛_{uy} = Σ_{v≠u} X_{uv} G^{(u)}_{vy}`. -/
 theorem GreenCore_Xrow_sq (hκ : 0 < κ) (hΦ : 0 ≤ Φ) (hGuu : ∀ u, κ / 2 ≤ ‖G u u‖)
     (hLrow : LDERow X G (svar d L W 0) Φ) (u y : Vtx d L W) :
@@ -463,7 +467,7 @@ theorem GreenCore_Xrow_sq (hκ : 0 < κ) (hΦ : 0 ≤ Φ) (hGuu : ∀ u, κ / 2 
     rw [GreenCore_ldeRowRHS hu] at h1
     exact h1.trans (mul_le_mul_of_nonneg_left (GreenCore_blockMinorRow hκ (hGuu u) y) hΦ)
 
-/-- **(L1), column form** (`ldeCol` + (4.9)): `|𝔛'_{xw}|² ≤ Φ (2 R^{row}_{x,[w]} + 8κ⁻² |G_{xw}|² R^{row}_{w,[w]})`,
+/-- **(L1), column form** (the column large deviation bound and the minor identity): `|𝔛'_{xw}|² ≤ Φ (2 R^{row}_{x,[w]} + 8κ⁻² |G_{xw}|² R^{row}_{w,[w]})`,
 `𝔛'_{xw} = Σ_{k≠w} G^{(w)}_{xk} X_{kw}`. -/
 theorem GreenCore_Xcol_sq (hκ : 0 < κ) (hΦ : 0 ≤ Φ) (hGuu : ∀ u, κ / 2 ≤ ‖G u u‖)
     (hLcol : LDECol X G (svar d L W 0) Φ) (x w : Vtx d L W) :
@@ -559,7 +563,7 @@ def GreenCore_eps2 (G : Matrix (Vtx d L W) (Vtx d L W) ℂ) (t : ℝ) (w : Vtx d
 def GreenCore_Qxd (G X D : Matrix (Vtx d L W) (Vtx d L W) ℂ) (u : Vtx d L W) : ℂ :=
   ∑ k ∈ univ.erase u, ∑ l ∈ univ.erase u, X u k * greenMinor G u k l * D l u
 
-/-- `|ε_1|² ≤ Φ (2 𝓛_{[w],[w]} + 8κ⁻² R_{[w],w} R^{row}_{w,[w]})` (`hLquad` + (4.9)). -/
+/-- `|ε_1|² ≤ Φ (2 𝓛_{[w],[w]} + 8κ⁻² R_{[w],w} R^{row}_{w,[w]})` (`hLquad` and the minor identity). -/
 theorem GreenCore_eps1_loc {t : ℝ} (hκ : 0 < κ) (hΦ : 0 ≤ Φ) (hGuu : ∀ u, κ / 2 ≤ ‖G u u‖)
     (hLquad : LDEQuad X G (svar d L W 0) t Φ) (w : Vtx d L W) :
     ‖GreenCore_eps1 G X t w‖ ^ 2 ≤
@@ -791,7 +795,7 @@ theorem GreenCore_Delta_col {t : ℝ} {s z : ℂ} (hGR : G * (D + X - z • (1 :
   refine Finset.sum_congr rfl fun b' _ => ?_
   rw [GreenCore_GYcol hRG hG0 x (b', y.2)]; ring
 
-/-- **(A\*)**, the a priori bound on the random re-entry (`(a′)` D3.1, shorter route): `A'_w G_{ww} = (G (X + t m))_{ww}` and
+/-- **(A\*)**, the a priori bound on the random re-entry: `A'_w G_{ww} = (G (X + t m))_{ww}` and
 `G (X + t m) = -Δ (D - s)`, so `|A'_w| ≤ (2/κ)(2 d g₀ + (1 + 2 d g₀)/κ) δ`; `|s| |m| ≤ 2 d g₀ + 1` from `(D - s) M = 1`. -/
 theorem GreenCore_Acol_sq {t g₀ : ℝ} {s z : ℂ} (hL : 3 ≤ L) (hg : 0 ≤ g₀) (hκ : 0 < κ)
     (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
@@ -897,7 +901,7 @@ theorem GreenCore_dsum {ι κ' : Type*} [Fintype ι] [Fintype κ'] (f : ι → �
   · rw [Finset.sum_comm]
     exact Finset.sum_congr rfl fun j _ => Finset.sum_congr rfl fun i _ => by ring
 
-/-- **(R1)**, the two-sided inequality (`(a′)` D3.2): for `Δ_{xy} = -Σ_{b'} M_{b'c} (A'_{w} G_{xw} + 𝔛'_{xw})`,
+/-- **The two-sided inequality**: for `Δ_{xy} = -Σ_{b'} M_{b'c} (A'_{w} G_{xw} + 𝔛'_{xw})`,
 `R_{a,(c,o)} ≤ 2 W^{-d}|M_{ac}|² + 8ρΦ Σ_{b'} |M_{b'c}| 𝓛_{a,b'} + 4ρϑ Σ_{b'} |M_{b'c}| R_{a,(b',o)}`,
 `ϑ = α² + 26 κ⁻² Φ δ²`. -/
 theorem GreenCore_twoSided {t ρ α2 : ℝ} (hρ0 : 0 ≤ ρ) (hκ : 0 < κ) (hΦ0 : 0 ≤ Φ) (hα : 0 ≤ α2)
@@ -965,9 +969,9 @@ theorem GreenCore_dist : (∀ a : Zd d L, ((zdistD d L (a - a) : ℕ) : ℝ) = 0
 def GreenCore_theta (d : ℕ) (κ Φ δ g₀ : ℝ) : ℝ :=
   (4 / κ ^ 2) * (2 * d * g₀ + (1 + 2 * d * g₀) / κ) ^ 2 * δ ^ 2 + 26 / κ ^ 2 * Φ * δ ^ 2
 
-/-- **(R\*)**, `G3a` row R3: on `Ω ∩ LDE`, for every block `a`, column `y = (c, o)` and loop control `φ`
+/-- **(R\*)**: on `Ω ∩ LDE`, for every block `a`, column `y = (c, o)` and loop bound `φ`
 (`𝓛^{(2)}_{(-,+),(a,b)} ≤ φ(a,b)²`), `R_{a,(c,o)} ≤ 4 c₀⁻² S W^{-d} e^{-(c₀/2)|a-c|} +
-16 ρ Φ c₀⁻¹ S Σ_{b''} e^{-(c₀/2)|c-b''|} φ(a,b'')²` (`(a′)` D3.2), under `8 ρ c₀⁻¹ S ϑ ≤ 1` (`GreenCore_theta`).
+16 ρ Φ c₀⁻¹ S Σ_{b''} e^{-(c₀/2)|c-b''|} φ(a,b'')²`, under `8 ρ c₀⁻¹ S ϑ ≤ 1` (`GreenCore_theta`).
 Only the uniform facts are used: Kronecker `M`, `|M_{ab}| ≤ c₀⁻¹ e^{-c₀|a-b|}`, `ℓ¹` rows (`ρ`, `S`), `κ ≤ |m|`. -/
 theorem GreenCore_Rbound (hL : 3 ≤ L) {t g₀ c₀ ρ S : ℝ} {s z : ℂ}
     (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
@@ -1018,7 +1022,7 @@ variable {d L W : ℕ} [NeZero L] [NeZero W] {G X M D : Matrix (Vtx d L W) (Vtx 
   {Mb : Matrix (Zd d L) (Zd d L) ℂ} {m : ℂ} {κ Φ δ : ℝ} {c₀ ρ S : ℝ} {φ : Zd d L → Zd d L → ℝ}
 
 /-- `T(a, c) = (4 c₀⁻² S W^{-d})^{1/2} e^{-(c₀/4)|a-c|} + (16 ρ Φ c₀⁻¹ S)^{1/2} Σ_b e^{-(c₀/4)|c-b|} φ(a, b)`: the square root of the
-right side of (R*) (`GreenCore_Rsq`), the kernel of (X*) and (Ξ) (`(a′)` D3.3, rate `ν/2 = c₀/4`). -/
+right side of (R*) (`GreenCore_Rsq`), the kernel of (X*) and (Ξ) (rate `ν/2 = c₀/4`). -/
 def GreenCore_T (d L W : ℕ) [NeZero L] (c₀ ρ S Φ : ℝ) (φ : Zd d L → Zd d L → ℝ) (a c : Zd d L) : ℝ :=
   Real.sqrt (4 * c₀⁻¹ ^ 2 * S * ((W : ℝ) ^ d)⁻¹) * Real.exp (-(c₀ / 4) * (zdistD d L (a - c) : ℝ)) +
     Real.sqrt (16 * ρ * Φ * c₀⁻¹ * S) * ∑ b, Real.exp (-(c₀ / 4) * (zdistD d L (c - b) : ℝ)) * φ a b
@@ -1061,7 +1065,7 @@ theorem GreenCore_Tshift (hc₀ : 0 ≤ c₀) (hφ0 : ∀ a b, 0 ≤ φ a b) (a 
     rw [← mul_assoc, ← Real.exp_add]
     exact mul_le_mul_of_nonneg_right (Real.exp_le_exp.2 (by nlinarith [dt a c b])) (hφ0 a b)
 
-/-- **(X\*)**, `G3a` row R3 (`(a′)` D3.3, (L1) + (R*)): on `Ω ∩ LDE`, for loop control `φ ≥ 0`, `𝓛^{(2)}_{(a,b)} ≤ φ(a,b)²`:
+/-- **(X\*)** ((L1) and (R*)): on `Ω ∩ LDE`, for loop bound `φ ≥ 0`, `𝓛^{(2)}_{(a,b)} ≤ φ(a,b)²`:
 `|𝔛_{uy}| ≤ (2Φ)^{1/2} ((1 + 2/(κ c₀)) T([u], [y]) + 13^{1/2} κ⁻¹ δ |Δ_{uy}|)`, `T = GreenCore_T`. -/
 theorem GreenCore_Xstar (hL : 3 ≤ L) {t g₀ : ℝ} {s z : ℂ} (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
     (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1) (hMR : (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * M = 1)
@@ -1124,7 +1128,7 @@ theorem GreenCore_Xstar (hL : 3 ≤ L) {t g₀ : ℝ} {s z : ℂ} (hGR : G * (D 
     show (1 + 2 / (κ * c₀)) * T + Real.sqrt 13 / κ * δ * Δn = T + 2 / κ * (c₀⁻¹ * T + Real.sqrt 13 / 2 * δ * Δn) by field_simp; ring]
   nlinarith [mul_le_mul_of_nonneg_left (hRT u.1 y) hΦ0, mul_le_mul_of_nonneg_left h1 hΦ0, mul_nonneg hΦ0 h3]
 
-/-- **(Ξ)**, `G3a` row R3 (`(a′)` D3.3): on `Ω ∩ LDE`, the random re-entry `𝒜'_w = A_w + t v̄_{[w]} = ε_2 - ε_1 + X_{ww} - Q^{XD}_w`
+/-- **(Ξ)**: on `Ω ∩ LDE`, the random re-entry `𝒜'_w = A_w + t v̄_{[w]} = ε_2 - ε_1 + X_{ww} - Q^{XD}_w`
 satisfies, with `b' = [w]`, `T = T(b', b')`: `|𝒜'_w| ≤ 13^{1/2} κ⁻¹ δ (1 + (2Φ)^{1/2}) T + (2Φ)^{1/2} φ(b', b') + (Φ W^{-d})^{1/2} +
 (2Φ)^{1/2} ((1 + 2/(κ c₀)) e^{c₀/4} 2 d g₀ T + 13^{1/2} κ⁻¹ δ Σ_l |D_{lw}| |Δ_{wl}|)`. -/
 theorem GreenCore_Xi (hL : 3 ≤ L) {t g₀ : ℝ} {s z : ℂ} (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
@@ -1261,10 +1265,10 @@ theorem GreenCore_E3 {t : ℝ} {s z : ℂ} (hGR : G * (D + X - z • (1 : Matrix
   unfold GreenCore_K
   ring
 
-/-- **The stability of the coupled system**, the block Anderson twin of `Stable S ξ K` (`Green/EntryCore.lean:911`):
+/-- **The stability of the coupled system**, the block Anderson analogue of `Stable S ξ K` (`Green/EntryCore.lean`):
 `‖(1 - t M^{(+,+)})⁻¹‖_{max→max} ≤ K` at the real-axis data `(g, E, m)` of `M^{(B)} = (g Ψ^{(B)} - E - m)⁻¹`,
-`M^{(+,+)}_{ab} = M^{(B)}_{ba} M^{(B)}_{ab}` (`BAMss`, `BA/MFixedPoint.lean:511`); stated without forming the inverse.
-`K = 16 κ⁻⁴` at `BAReal` data is G3b's theorem. -/
+`M^{(+,+)}_{ab} = M^{(B)}_{ba} M^{(B)}_{ab}` (`BAMss`, `BA/MFixedPoint.lean`); stated without forming the inverse.
+`K = 16 κ⁻⁴` at `BAReal` data is `baStab_of_real`. -/
 def BAStab (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (t K : ℝ) : Prop :=
   ∀ (v : Zd d L → ℂ) (B : ℝ),
     (∀ a, ‖v a - (t : ℂ) * ∑ b, BAMss d L (BAMB d L g (E : ℂ) m) true true a b * v b‖ ≤ B) →
@@ -1354,10 +1358,10 @@ def GreenCore_Ab (d : ℕ) (κ Φ δ c₀ ρ S g₀ w₀ Lm : ℝ) : ℝ :=
     Φ * (2 * Lm + (8 / κ ^ 2) * GreenCore_R0 c₀ ρ S Φ w₀ Lm * (13 / 4 * δ ^ 2)) + Φ * w₀ +
     (2 * d * g₀) ^ 2 * GreenCore_Xb κ Φ c₀ ρ S w₀ Lm)
 
-/-- **The diagonal law**, `G3a` row R4 (the BA reading of `(4.3)`): on `Ω ∩ LDE`, with `L = max_{a,b} 𝓛^{(2)}_{(-,+),(a,b)}`
+/-- **The diagonal law** (the block Anderson reading of the entrywise local law): on `Ω ∩ LDE`, with `L = max_{a,b} 𝓛^{(2)}_{(-,+),(a,b)}`
 and `K_BA = ρ (1 + ρ₂ K_Θ)`, `K_BA δ ≤ 1/2`: `‖G - M‖²_max ≤ 8 K_BA² ((9/4) A_b + X_b)`, which is `≲ K_BA² Φ² (L + W^{-d})`
 (`GreenCore_Ab`, `GreenCore_Xb`: polynomial in `L` and `W^{-d}`).  The stability of the coupled system enters only as
-`BAStab` (G3b); the proof: (R*) in sup form, `|𝔛|` (`Xrow_sq`), `|A_u + t v̄| = |ε_2 - ε_1 + X_{uu} - Q^{XD}_u|` (E2), (E3), `coupled`. -/
+`BAStab`; the proof: (R*) in sup form, `|𝔛|` (`GreenCore_Xrow_sq`), `|A_u + t v̄| = |ε_2 - ε_1 + X_{uu} - Q^{XD}_u|` (E2), (E3), `GreenCore_coupled`. -/
 theorem GreenCore_diag (hL : 3 ≤ L) {t g₀ c₀ ρ S E Kθ ρ₂ Lm : ℝ} {s z : ℂ}
     (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
     (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
@@ -1526,7 +1530,7 @@ abbrev GreenCore_Mc (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) : Matrix (Vtx d (
 abbrev GreenCore_Dc (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) : Matrix (Vtx d (sz.L n) (sz.W n)) (Vtx d (sz.L n) (sz.W n)) ℂ :=
   ((BAflowLam0 sz z n : ℝ) : ℂ) • PsiV d (sz.L n) (sz.W n)
 
-/-- **The carrier satisfies the structural hypotheses of the entry layer**, for every `ω` and `0 ≤ t ≤ T₀`: the resolvent identities
+/-- **The carrier satisfies the hypotheses of the entry layer**, for every `ω` and `0 ≤ t ≤ T₀`: the resolvent identities
 `G (D + X - z_t) = 1 = (D + X - z_t) G`, `(D - s) M = 1 = M (D - s)` with `s = E + m`, `z_t = s - t m`; `M = M^{(B)} ⊗ I`
 (`M_{uv} = 1_{o(u)=o(v)} M^{(B)}_{[u][v]}`); `D = g₀ Ψ` (`Ψ_{uv} = 1_{o(u)=o(v)} 1_{[u]∼[v]}`); `G_{uu} ≠ 0`. -/
 theorem GreenCore_carrier {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
@@ -1611,7 +1615,7 @@ end Carrier
 
 section Pins
 
-/-- The loop premise `(eq:def_Psit)` (`7_8:1924`), event form: `1_Ω 𝓛^{(2)}_{t,(-,+),(a,b)} ≺ Φ_t(a,b)²` uniformly in `(a,b)`,
+/-- The loop premise (8.8) `eq:def_Psit`, event form: `1_Ω 𝓛^{(2)}_{t,(-,+),(a,b)} ≺ Φ_t(a,b)²` uniformly in `(a,b)`,
 `Ω = {‖G_t - M‖_max ≤ W^{-ε₀}}`, over the BA carrier `baFMz sz z` and the law `seqP (sz.withLam 0)`. -/
 def GreenCore_loopPrem {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (ε₀ : ℝ)
     (Φ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → ℝ) : Prop :=
@@ -1620,14 +1624,14 @@ def GreenCore_loopPrem {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → �
       ‖(baFMz sz z).L n (t n) ![false, true] ![p.1, p.2] ω‖)
     (fun n p _ => Φ n p.1 p.2 ^ 2)
 
-/-- The right side of `(GijGEX_BA)` (`7_8:1942-1944`): `Σ_{a',b'} Φ(a',b') e^{-c(|a'-a| + |b'-b|)} + Ψ e^{-c|a-b|} + W^{-D}`
-(`|·|` the periodic `L^∞` norm `zdistInf`, `1_2:274`). -/
+/-- The right side of (8.10) `GijGEX_BA`: `Σ_{a',b'} Φ(a',b') e^{-c(|a'-a| + |b'-b|)} + Ψ e^{-c|a-b|} + W^{-D}`
+(`|·|` the periodic `L^∞` norm `zdistInf`). -/
 def GreenCore_decayRHS (d L W : ℕ) [NeZero L] (c D : ℝ) (Φ : Zd d L → Zd d L → ℝ) (Ψ : ℝ) (a b : Zd d L) : ℝ :=
   (∑ a' : Zd d L, ∑ b' : Zd d L, Φ a' b' *
       Real.exp (-c * ((zdistInf d L (a' - a) : ℝ) + (zdistInf d L (b' - b) : ℝ)))) +
     Ψ * Real.exp (-c * (zdistInf d L (a - b) : ℝ)) + (W : ℝ) ^ (-D)
 
-/-- The conclusion of `(GijGEX_BA)`, event form: `1_Ω |(G_t - M)_{xy}| ≺ decayRHS ([x], [y])`, uniformly in `x ≠ y`. -/
+/-- The conclusion of (8.10) `GijGEX_BA`, event form: `1_Ω |(G_t - M)_{xy}| ≺ GreenCore_decayRHS d L W c D Φ_t Ψ_t ([x], [y])`, uniformly in `x ≠ y`. -/
 def GreenCore_decayConcl {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (ε₀ D c : ℝ)
     (Φ : ∀ n, Zd d (sz.L n) → Zd d (sz.L n) → ℝ) (Ψ : ℕ → ℝ) : Prop :=
   PrecL sz (Sizes.seqP (sz.withLam 0))
@@ -1636,11 +1640,10 @@ def GreenCore_decayConcl {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ →
       ‖(baFMz sz z).GM n (t n) ω p.1.1 p.1.2‖)
     (fun n p _ => GreenCore_decayRHS d (sz.L n) (sz.W n) c D (Φ n) (Ψ n) (Sizes.STblk sz n p.1.1) (Sizes.STblk sz n p.1.2))
 
-/-- **`lem_GbEXP_BA` (b), `(GijGEX_BA)`, in the paper's shape, event form** (`7_8:1916-1946`; supervisor `2026-10-10-1155` C3;
-paper-deltas T2390a, e, f): `c = c_λ` after `(κ, ε, 𝔡)` and before the sizes; for deterministic `0 < Φ_t(a,b) ≤ W^{-ε₀}` and
+/-- **Lemma 8.4 (`lem_GbEXP_BA`) (b), (8.10) `GijGEX_BA`, in the paper's shape, event form**: `c = c_λ` after `(κ, ε, 𝔡)` and before the sizes; for deterministic `0 < Φ_t(a,b) ≤ W^{-ε₀}` and
 `W^{-d/2} ≤ Ψ_t ≤ W^{-ε₀}`: `1_Ω 𝓛^{(2)} ≺ Φ_t²` implies `1_Ω |(G_t - M)_{xy}| ≺ Σ Φ_t e^{-c(…)} + Ψ_t e^{-c|a-b|} + W^{-D}`
-for all `x ≠ y`.  Registry class: owed (the deterministic core is G4, consumed by G6a / G6b; its local inputs are
-`GreenCore_Rbound`, `GreenCore_Xrow_sq`, `GreenCore_Acol_sq`). -/
+for all `x ≠ y`.  The local inputs of its proof are
+`GreenCore_Rbound`, `GreenCore_Xrow_sq`, `GreenCore_Acol_sq`. -/
 def BAGbEXPij' (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∃ c : ℝ, 0 < c ∧
@@ -1655,27 +1658,4 @@ def BAGbEXPij' (d : ℕ) : Prop :=
 
 end Pins
 
-/-! ## Nonempty instances of the targets (`d = 3`, `sz0` at `n = 3`: `L = 16`, `W = 32768`; the flow `flow_sz0`, `κ = 1/2`)
-
-(i) R1 (identities) holds for every sample `ω` at `t = 1/2`: the carrier theorem `GreenCore_carrier` discharges the resolvent
-identities from `BAFlow`.  (ii) R2-R4 (inequalities): the zero sample `ω₀` (`X = 0`) at `t₁ = 10⁻¹¹ > 0`, so `Δ = G - M ≠ 0`
-(`iΔ`), with `Φ = 1`, `δ = 2·10⁻⁷ ≥ ‖Δ‖_max`, `W^{-d} ≤ δ²`, `ρ = S = 4096 = L^d`, `ρ₂ = 1`, `K_Θ = 256`, `K_BA δ ≈ 0.21 ≤ 1/2`,
-`(C1) ≈ 0.24 ≤ 1`; every hypothesis is discharged, including the stability `BAStab` (Neumann series at `t₁ ≤ 1/2`). -/
-
--- the kernel facts of `M^{(B)}`: `|m| ∈ [1/2, 1]`, entries `≤ 1` (Ward), the decay at the rate `c₀`, and `Σ_b |M_{ab}||M_{bc}| ≤ 1`
--- the zero sample: `X = 0`
--- the carrier at `(t, ω)`: the resolvent identities, `M = M^{(B)} ⊗ I`, `D = g₀ Ψ`, `G_{uu} ≠ 0`
--- the three large deviation bounds and the diagonal bound hold at `X = 0` when `t² #n ≤ Φ`
--- at `X = 0`: `G - M = -t m G M`, so `‖G - M‖_max ≤ t ‖G‖_max · #blocks`
--- `GreenCore_crude` at the zero sample
--- `𝓛^{(2)}_{(a,b)} ≤ B²` when `|G_{xy}| ≤ B`
--- the stability of `1 - t P` for `t ≤ 1/2` and `ℓ¹` rows of `P` at most `1` (Neumann series): `‖v‖_∞ ≤ 2 B`
--- the stability `BAStab` at the data `(g₀, E₀, m₀)`, `t₁`, `K_Θ = 256`
--- the residual `𝒦` at the zero sample: `K = t v̄ Δ - (t m + t v̄) G` (`A = t m`, `𝔛 = 0`), so `‖K‖ ≤ t δ² + (t + t δ) B`
--- the zero sample is not degenerate: `G ≠ M` (else `(t m) M = 0`, `M = 0`, `1 = M (D - s) = 0`)
--- R1: the identities (E1), (E1′), (E0), (E2), (E0)+(E1), (E0)+(E1′), (E3) at `t = 1/2`, for every sample `ω`
--- R2: the local large deviation bounds at the zero sample (`κ = 1/2`, `Φ = 1`, `δ = 2·10⁻⁷`)
--- R3: the two-sided inequality, and its closure (R*) (`GreenCore_Rstar`, `GreenCore_closure` inside)
--- R3: (X*) and (Ξ), the local bounds on `𝔛` and on the re-entry `𝒜'` (`φ ≡ 3`)
--- R4: the diagonal law (with `BAStab` discharged), and the coupled bound `‖Δ‖ ≤ ρ (1 + ρ₂ K_Θ) ‖𝒦‖`, `ρ (1 + ρ₂ K_Θ) = 4096 · 257`
 end RBM.BA

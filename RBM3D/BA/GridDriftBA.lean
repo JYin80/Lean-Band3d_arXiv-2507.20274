@@ -15,22 +15,20 @@ import RBM3D.BA.EMn2BA
 import RBM3D.BA.SEforLnBA
 
 /-!
-# The block Anderson discharges of T5s2's carrier classes (BA-T row T5-BA (a), ticket T2492)
+# The block Anderson instances of the carrier classes of the step-2 drift
 
 The BA instances of the classes of `Chain/StepDecompGen.lean` and `Chain/HierDriftGen.lean` at
-`baStep2Mat sz lam0 E` (`BA/Step2BA.lean:68`), and their readings along the flow.  No merged file is edited.
+`baStep2Mat sz lam0 E` (`BA/Step2BA.lean`), and their readings along the flow.
 
-* §1 targets 1-2: the walk `baStep2Mat_walkForm`, `Im m ≤ 1`, the variance law, the probability law, `KLink`, `KLoop`.
-* §2 target 3: `KTwo`.
-* §3 target 4: `UStep`.
-* §4 target 5: `Expand`.
-* §5 target 6: the classes along the flow `baHierDrift_classes`, the eventual drift reading `baGridDrift_ev`,
-  the quadratic variation `baQVPropagated`.
-* §6 compiled nonempty instances at `d = 3`, `sz0`, `zSeq`, `flow_sz0`.
+* §1 the walk `baStep2Mat_walkForm`, `Im m ≤ 1`, the variance law, the probability law, `HierDriftGen_KLink`, `HierDriftGen_KLoop`.
+* §2 `HierDriftGen_KTwo`.
+* §3 `HierDriftGen_UStep`.
+* §4 `HierDriftGen_Expand`.
+* §5 the classes along the flow `baHierDrift_classes`.
 
-Finding F1 (ticket): `KLoop` and `KTwo` at BA need `0 < BAflowLam0 sz z n`, which holds only eventually
-(`BAflow_lam0_window`); `Expand`, `KLink`, `UStep`, `WalkForm` hold at every `n`.
-Every helper is `private` or prefixed `GridDriftBA_`.
+`HierDriftGen_KLoop` and `HierDriftGen_KTwo` at BA need `0 < BAflowLam0 sz z n`, which holds only eventually
+(`BAflow_lam0_window`); `HierDriftGen_Expand`, `HierDriftGen_KLink`, `HierDriftGen_UStep`, `StepDecompGen_WalkForm` hold at every `n`.
+Every helper is `private` or prefixed GridDriftBA_.
 -/
 
 set_option linter.style.longLine false
@@ -59,14 +57,14 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Targets 1-2: the walk, the small facts, the link and `KLoop` -/
+/-! ## 1. The walk, the small facts, the link and `HierDriftGen_KLoop` -/
 
 section Small
 
 variable {d : ℕ}
 
-/-- **Target 1 (a), `baStep2Mat_walkForm`** (supervisor 0149 O4): the walk class of T5s2 at the BA carrier, for every `lam0, E`:
-walk coupling `0`, shift `lam0 n • Ψ`.  `Pp` and `Hpath` are definitional (`BA/Step2BA.lean:68, 70`); `Ψ` is Hermitian
+/-- **`baStep2Mat_walkForm`**: the walk class `StepDecompGen_WalkForm` at the BA carrier, for every `lam0, E`:
+walk coupling `0`, shift `lam0 n • Ψ`.  `Pp` and `Hpath` are definitional (`BA/Step2BA.lean`); `Ψ` is Hermitian
 (`PsiI_isHermitian`, real scalar). -/
 theorem baStep2Mat_walkForm (sz : Sizes d) (lam0 E : ℕ → ℝ) :
     StepDecompGen_WalkForm (baStep2Mat sz lam0 E) 0 (fun n => ((lam0 n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) :=
@@ -76,27 +74,27 @@ theorem baStep2Mat_walkForm (sz : Sizes d) (lam0 E : ℕ → ℝ) :
       show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _],
    rfl, fun _ _ _ _ _ _ => rfl⟩
 
-/-- **Target 1 (c), `baStep2Mat_S`**: the variance law of the BA walk, `S = SB d L 0` (`EMn2BA_SB_zero`). -/
+/-- **`baStep2Mat_S`**: the variance law of the BA walk, `S = SB d L 0` (`EMn2BA_SB_zero`). -/
 theorem baStep2Mat_S (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) : (baStep2Mat sz lam0 E).S n = SB d (sz.L n) 0 :=
   (EMn2BA_SB_zero (sz.L n)).symm
 
-/-- **Target 1 (c), `baStep2Mat_S_rowSum`**: the row sums of the BA kernel are `1`. -/
+/-- **`baStep2Mat_S_rowSum`**: the row sums of the BA kernel are `1`. -/
 theorem baStep2Mat_S_rowSum (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (a : Zd d (sz.L n)) :
     ∑ b : Zd d (sz.L n), ‖(baStep2Mat sz lam0 E).S n a b‖ ≤ 1 := by
   have h : (baStep2Mat sz lam0 E).S n = 1 := rfl
   rw [h]
   simp [Matrix.one_apply, apply_ite (fun x : ℂ => ‖x‖)]
 
-/-- **Target 1 (c), `baStep2Mat_isProb`**: the law of the BA walk is a probability measure
+/-- **`baStep2Mat_isProb`**: the law of the BA walk is a probability measure
 (`isProbabilityMeasure_pathP (sz.withLam 0)`). -/
 instance baStep2Mat_isProb (sz : Sizes d) (lam0 E : ℕ → ℝ) : IsProbabilityMeasure (baStep2Mat sz lam0 E).Pp :=
   isProbabilityMeasure_pathP (sz.withLam 0)
 
-/-- **Target 2, `baHierDrift_kLink`**: `KLink` at the BA carrier, every `lam0, E` (`baStep2Mat_KI`, definitional). -/
+/-- **`baHierDrift_kLink`**: `HierDriftGen_KLink` at the BA carrier, every `lam0, E` (definitional). -/
 theorem baHierDrift_kLink (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) : HierDriftGen_KLink (baStep2Mat sz lam0 E) n :=
   fun _ _ _ _ _ => rfl
 
-/-- **Target 2, `baHierDrift_kLoop`**: `KLoop` at one index with `0 < lam0 n` and `BAReal`
+/-- **`baHierDrift_kLoop`**: `HierDriftGen_KLoop` at one index with `0 < lam0 n` and `BAReal`
 (`BAKsol_isKLoopS (baKsolve d)` at `Λ = g = lam0 n`; `S = 1`, `M0 = BAMLoop`). -/
 theorem baHierDrift_kLoop (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : ℝ) (hκ : 0 < κ) (hg : 0 < lam0 n)
     (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) : HierDriftGen_KLoop (baStep2Mat sz lam0 E) n :=
@@ -104,13 +102,13 @@ theorem baHierDrift_kLoop (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : 
 
 end Small
 
-/-! ## 2. Target 3: `KTwo` at BA (class (t); the `l = 2` coupling is `Θ^{(k)}`) -/
+/-! ## 2. `HierDriftGen_KTwo` at BA (the `l = 2` coupling is `Θ^{(k)}`) -/
 
 section Two
 
 variable {d L : ℕ} [NeZero L] (W : ℕ)
 
-/-- Only the wrap-around cut `(k,l) = (1,n)` has a left chain of length 2 (the kernel-`S` form of `HierAlgebra:408`). -/
+/-- Only the wrap-around cut `(k,l) = (1,n)` has a left chain of length 2 (the kernel-`S` form of the `HierAlgebra` statement). -/
 private theorem GridDriftBA_primBilLenS_two (S : Matrix (Zd d L) (Zd d L) ℂ) (K D : LoopIdx (Zd d L) → ℂ)
     (I : LoopIdx (Zd d L)) (hn : 2 ≤ I.length) :
     HierDriftGen_primBilLenS d L W S 2 K D I
@@ -136,7 +134,7 @@ private theorem GridDriftBA_primBilLenS_two (S : Matrix (Zd d L) (Zd d L) ℂ) (
     refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun b _ => ?_
     rw [ite_eq_right (by rw [hlenL k l a hk.1 hl.1 hl.2]; omega)]
 
-/-- Only the adjacent cuts `(k, k+1)` have a right chain of length 2 (the kernel-`S` form of `HierAlgebra:434`). -/
+/-- Only the adjacent cuts `(k, k+1)` have a right chain of length 2 (the kernel-`S` form of the `HierAlgebra` statement). -/
 private theorem GridDriftBA_primBilLenRS_two (S : Matrix (Zd d L) (Zd d L) ℂ) (F G : LoopIdx (Zd d L) → ℂ)
     (I : LoopIdx (Zd d L)) (hn : 2 ≤ I.length) :
     HierDriftGen_primBilLenRS d L W S 2 F G I
@@ -244,13 +242,13 @@ private theorem GridDriftBA_coupling_two [NeZero W] (T : Bool → Bool → Matri
 
 end Two
 
-/-! ### `KTwo` at one index -/
+/-! ### `HierDriftGen_KTwo` at one index -/
 
 section KTwoBA
 
 variable {d : ℕ}
 
-/-- **Target 3, `baHierDrift_kTwo`** (the class-(t) twin, C6): `KTwo` at the BA carrier at one index with `0 < lam0 n` and
+/-- **`baHierDrift_kTwo`**: `HierDriftGen_KTwo` at the BA carrier at one index with `0 < lam0 n` and
 `BAReal`.  `baKsol_two` is `K^{(2)}_{s₁ s₂}(x, y) = W^{-d} (Θ_u M^{s₁ s₂})(x, y)` and `Step2Kern_thetaKer_BA` reads the right side
 as the derived kernel `thetaKer` of the carrier; the rotation `BAKsol_rotate` supplies the symmetry
 `thetaKer s₁ s₂ x y = thetaKer s₂ s₁ y x` that the wrap-around cut of the loop needs. -/
@@ -325,7 +323,7 @@ theorem baHierDrift_kTwo (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : �
 
 end KTwoBA
 
-/-! ## 3. Target 4: `UStep` at BA -/
+/-! ## 3. `HierDriftGen_UStep` at BA -/
 
 section UStepBA
 
@@ -377,8 +375,8 @@ private theorem GridDriftBA_uKer_second {L : ℕ} [NeZero L] {g κ E : ℝ} {m :
         simp only [mul_assoc]
 
 open scoped Matrix.Norms.Operator in
-/-- **Target 4, `baHierDrift_uStep`**: `UStep` at the BA carrier at every index under `BAReal` and `0 < κ` (no `0 < lam0 n`).
-Field 1 (K3) is `TwistGridWTail_norm_twU_sub_one_le` through `twU_eq_uKer`, as row sums; field 2 (order 2) is
+/-- **`baHierDrift_uStep`**: `HierDriftGen_UStep` at the BA carrier at every index under `BAReal` and `0 < κ` (no `0 < lam0 n`).
+Field 1 is `TwistGridWTail_norm_twU_sub_one_le` through `twU_eq_uKer`, as row sums; field 2 (order 2) is
 `GridDriftBA_uKer_second` with `‖M‖ ≤ 1` (`EKPins_norm_Q_le`) and `‖Θ_t‖ ≤ (1 - t)⁻¹` (`EKPins_norm_Theta_le`). -/
 theorem baHierDrift_uStep (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : ℝ) (hκ : 0 < κ)
     (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) : HierDriftGen_UStep (baFM sz lam0 E) n := by
@@ -425,7 +423,7 @@ theorem baHierDrift_uStep (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : 
 
 end UStepBA
 
-/-! ## 4. Target 5: `Expand` at BA -/
+/-! ## 4. `HierDriftGen_Expand` at BA -/
 
 section ExpandBA
 
@@ -433,12 +431,12 @@ open scoped Matrix.Norms.L2Operator
 
 variable {d : ℕ}
 
-/-- A private copy of the (private) `StandardBorelSpace` instance of `Path/LoopStep.lean:189` (as `TwistGridRem2:130`). -/
+/-- A private version of the (private) `StandardBorelSpace` instance of `Path/LoopStep.lean` (as in `TwistGridRem2`). -/
 private instance GridDriftBA_sbs (sz : Sizes d) (n : ℕ) :
     StandardBorelSpace (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :=
   inferInstanceAs (StandardBorelSpace (Idx d (sz.L n) (sz.W n) → Idx d (sz.L n) (sz.W n) → ℂ))
 
-/-- **The freeze of the BA walk step at coupling `0`** (pattern `TwistGridRem2_condExp_step`, `BA/TwistGridRem2.lean:168`, for an arbitrary
+/-- **The freezing of the BA walk step at coupling `0`** (the pattern of `TwistGridRem2_condExp_step`, `BA/TwistGridRem2.lean`, for an arbitrary
 bounded continuous observable `Φ`): the conditional mean of `Φ (H_{j+1})` given `F_j` is the Gaussian integral over the one-step law of
 the coupling `0` (`PF d L W 0`) of `Φ (H_j + √Δ X)`.  `filt sz j` and `filt (sz.withLam 0) j` are the same σ-algebra (`PathΩ` and `SeqΩ`
 depend on `(L, W)` only). -/
@@ -506,8 +504,8 @@ private theorem GridDriftBA_condExp_step (sz : Sizes d) (lam0 E : ℕ → ℝ) (
         rw [Sizes.seqP_map_slice]
         rfl
 
-/-- **The generator in the jets of a loop word** (T5s1's `genMatOf`, `Induction/LoopGenN.lean:554`; the loop analogue of
-`TwistGridRem_twGenM_eq`, `BA/TwistGridRem.lean:792`): for Hermitian `M`, `u < 1`, `0 < Im m`,
+/-- **The generator in the jets of a loop word** (`genMatOf`, `Induction/LoopGenN.lean`; the loop analogue of
+`TwistGridRem_twGenM_eq`, `BA/TwistGridRem.lean`): for Hermitian `M`, `u < 1`, `0 < Im m`,
 `genMatOf g m E u M I = g_z(M) + J1_z(M; Dsp)` for the word `(σ_i, a_i)` with letters `Eblk`. -/
 private theorem GridDriftBA_genMatOf_eq {L W : ℕ} [NeZero L] [NeZero W] (g : ℝ) {m : ℂ} (hm : 0 < m.im) (E : ℝ) {u : ℝ}
     (hu1 : u < 1) {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) (I : LoopIdx (Zd d L)) :
@@ -526,7 +524,7 @@ private theorem GridDriftBA_genMatOf_eq {L W : ℕ} [NeZero L] [NeZero W] (g : �
     exact TwistGridRem_deriv_deriv (Ei := Eblk d L W) (l := I.σ.zip I.a) hM (coordinateMatrix_isHermitian d L W c) hz
   · exact (TwistGridRem_hasDerivAt_spec0 (Ei := Eblk d L W) (l := I.σ.zip I.a) hHb hm E hu1).deriv
 
-/-- **The generator as the pair term plus `𝓔^{G̃}`** (the `hpair` step of `hierarchyNg_of`, `Chain/HierDriftGen.lean:446-451`, at the BA
+/-- **The generator as the pair term plus `𝓔^{G̃}`** (the `hpair` step of the hierarchy statement of `Chain/HierDriftGen.lean`, at the BA
 carrier: `loopGenNOf` at `g = 0`, `S = 1 = SB d L 0`; `LIM`, `m` are definitional, so no `LoopForm` is read). -/
 private theorem GridDriftBA_genMatOf_pair (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (hm : 0 < (BAmF sz lam0 E n).im) {u : ℝ}
     (hu1 : u < 1) {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian)
@@ -543,8 +541,8 @@ private theorem GridDriftBA_genMatOf_pair (sz : Sizes d) (lam0 E : ℕ → ℝ) 
   simp only [treeEqRhsS, STegtMg, STavgErrMg, STmsigg, STLIMg, hS, PropSpin]
   rfl
 
-/-- **Target 5, `baHierDrift_expand`**: `Expand` at the BA carrier at one index under `BAReal` and `0 < κ` (no `0 < lam0 n`; every
-`s, t, K`).  The freeze of the walk step at coupling `0` (`GridDriftBA_condExp_step`), the word envelope `TwistGridRem_envelope_word`
+/-- **`baHierDrift_expand`**: `HierDriftGen_Expand` at the BA carrier at one index under `BAReal` and `0 < κ` (no `0 < lam0 n`; every
+`s, t, K`).  The freezing of the walk step at coupling `0` (`GridDriftBA_condExp_step`), the word envelope `TwistGridRem_envelope_word`
 for the loop word with letters `Eblk` (`‖Eblk‖ ≤ 1`, `0 < Im m`, `‖m‖ ≤ 1`), and the identification
 `TwistGridRem_g 0 + J1 = genMatOf 0 m E u = treeEqRhsS S (𝓛) + 𝓔^{G̃}`. -/
 theorem baHierDrift_expand (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : ℝ) (hκ : 0 < κ)
@@ -605,13 +603,13 @@ theorem baHierDrift_expand (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ :
 
 end ExpandBA
 
-/-! ## 5. Target 6: the classes along the flow and the readings -/
+/-! ## 5. The classes along the flow and the readings -/
 
 section Flow
 
 variable {d : ℕ}
 
-/-- **Targets 2-4 at one index** (`T2492_KClasses`): `KLoop`, `KTwo`, `UStep` at the BA carrier at an index with `0 < lam0 n` and
+/-- **The classes at one index**: `HierDriftGen_KLoop`, `HierDriftGen_KTwo`, `HierDriftGen_UStep` at the BA carrier at an index with `0 < lam0 n` and
 `BAReal`. -/
 theorem baHierDrift_kClasses (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ : ℝ) (hκ : 0 < κ) (hg : 0 < lam0 n)
     (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) :
@@ -619,8 +617,8 @@ theorem baHierDrift_kClasses (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (κ
       HierDriftGen_UStep (baFM sz lam0 E) n :=
   ⟨baHierDrift_kLoop sz lam0 E n κ hκ hg hr, baHierDrift_kTwo sz lam0 E n κ hκ hg hr, baHierDrift_uStep sz lam0 E n κ hκ hr⟩
 
-/-- **Target 6, `baHierDrift_classes`** (finding F1): along the BA flow, `Expand`, `KLink` and the row sums at every index, and
-`KLoop`, `KTwo`, `UStep` eventually (the window `0 < BAflowLam0 sz z n`, `BAflow_lam0_window`; `UStep` holds at every index
+/-- **`baHierDrift_classes`**: along the BA flow, `HierDriftGen_Expand`, `HierDriftGen_KLink` and the row sums at every index, and
+`HierDriftGen_KLoop`, `HierDriftGen_KTwo`, `HierDriftGen_UStep` eventually (the window `0 < BAflowLam0 sz z n`, `BAflow_lam0_window`; `HierDriftGen_UStep` holds at every index
 by `baHierDrift_uStep`, the eventual form is the one the drift reading takes). -/
 theorem baHierDrift_classes (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ) (hκ : 0 < κ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) :
     (∀ (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ),
@@ -640,12 +638,6 @@ theorem baHierDrift_classes (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → 
 
 end Flow
 
-/-! ## 6. Compiled nonempty instances (targets 1-6)
-
-`d = 3`, the preflight sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`), the spectral parameters `zSeq` with
-`flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`), the grid `(s, t, K) = (0, 1/32, 4)`.  Every deterministic
-premise is discharged: `0 < κ`, the flow, `0 < BAflowLam0 sz0 zSeq n` (every `n` along `sz0`, `baStep2Fam_lam_pos_le`), `BAReal`
-(`BAflow_real`), the BA `LoopForm` (T2486's `baStep2Mat_loopForm`); no input stays a hypothesis. -/
 
 end RBM.BA
 

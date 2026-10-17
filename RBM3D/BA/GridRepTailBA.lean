@@ -14,21 +14,20 @@ import RBM3D.BA.GreenSchur
 import RBM3D.BA.EMn2BA
 
 /-!
-# The two-slot BA tail and the full TN-C2 pin (BA-T row P1b-2, ticket T2471)
+# The two-slot BA tail and the full loop-length-2 grid statement
 
-Paper: arXiv:2507.20274, `lem:DIfREP`, `(alu9_STime)` (`3_5:218-245`); at BA "remain valid" (`7_8:1994-2016`).
-The BA leaf of the split of ticket `T2471` (pre-signed split H255 (4); P1b-1 = `Chain/GridRepTailGen`, `GridRepTailGen2`,
-merged).  Targets 4-7:
+Paper: Lemma 3.6 (`lem:DIfREP`), (3.18) `alu9_STime`; at BA Section 8 ("remain valid").  The generic parts are
+`Chain/GridRepTailGen`, `GridRepTailGen2`.
 
 * §1 the kernel and window classes at BA; §2 the `Q`-layer of the two-slot gradient `Q₁ = G₀ E_{b₀} G₁ E_{b₁} G₀`,
   `Q₂ = G₁ E_{b₁} G₀ E_{b₀} G₁` (entries, crude bound, shift in `u`); §3 the cross-label quadratic variation (`STeeMg` of two
   different labels, the `Φ₂` form) and `linTrVar ≤ 2 Re Σ κ κ̄ STeeMg`; §4 the `Z`/`Y` increments and the BA discharge of
-  `GridRepTailGen_Inc`; §5 `gridRepTailGen_hyp_BA` and target 4 `baGridWTail2_holds`.
-* §6 target 5: the three list identities at `baStep2Mat`; §7 target 6: the assembly `baGridRepNAt2_of_bridge` (clause 1 by
-  the residual at every `n`, UN-C5) and `baGridRepNAt2_holds`; §8 target 7: instances at `d = 3`.
+  `GridRepTailGen_Inc`; §5 `gridRepTailGen_hyp_BA` and `baGridWTail2_holds`.
+* §6 the three list identities at `baStep2Mat`; §7 the assembly `baGridRepNAt2_of_bridge` (clause 1 by
+  the residual at every `n`) and `baGridRepNAt2_holds`.
 
-Every statement is for every `d`.  Every helper is `private` or carries the stem `GridRepTailBA_`.
-Merged files are not edited: the private helpers of `BA/GridMartBA`, `BA/TwistKer`, `BA/TwistGridWTail` are reached by `open private`.
+Every statement is for every `d`.  The names of the private helpers begin with GridRepTailBA_.
+The private helpers of `BA/GridMartBA`, `BA/TwistKer`, `BA/TwistGridWTail` are used through `open private`.
 -/
 
 set_option linter.style.longLine false
@@ -55,8 +54,8 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
 /-! ## 1. The kernel class `GridRepTailGen_Ker`, the spectral height and the window at BA -/
 
-/-- BA discharge of `GridRepTailGen_Ker` (K1 `BAuKerSemigroup_holds` through `Step2Kern_uKer_BA`; K2-K4 TL's `twU` lemmas through
-`twU_eq_uKer` at `![σ, σ']`); the hypotheses are `BAReal` at `n` (`BAflow_real`) and `0 < κ`. -/
+/-- BA discharge of `GridRepTailGen_Ker` (the semigroup property `BAuKerSemigroup_holds` through `Step2Kern_uKer_BA`; the other fields from the `twU` lemmas of
+the twisted layer through `twU_eq_uKer` at `![σ, σ']`); the hypotheses are `BAReal` at `n` (`BAflow_real`) and `0 < κ`. -/
 theorem gridRepTailGen_ker_BA {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) {κ : ℝ} (hκ : 0 < κ)
     (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) :
     GridRepTailGen_Ker (baStep2Mat sz lam0 E).toFlowFM n := by
@@ -86,7 +85,7 @@ theorem gridRepTailGen_ker_BA {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n
     simp only [hu]
     exact h
 
-/-- The spectral height at BA along the flow: `η_u ≥ 1/(16 N)` for `u ≤ t_n ≤ t₀` (TL's derivation `TwistGridWTail2:1251-1276`);
+/-- The spectral height at BA along the flow: `η_u ≥ 1/(16 N)` for `u ≤ t_n ≤ t₀` (as in `TwistGridWTail2`);
 the only size condition is `N^ε ≥ 1/(8κ)`. -/
 theorem gridRepTailBA_eta {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (hz : BAFlow sz κ ε 𝔠 𝔡 z)
     (t : ℕ → ℝ) (n : ℕ) (htT : t n ≤ BAflowT0 sz z n) (hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ))
@@ -103,7 +102,7 @@ theorem gridRepTailBA_eta {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz :
   unfold etaOf
   exact h6.trans (mul_le_mul (h1 u hu) (EMn2BA_mF_data sz hz n).1 hκ.le (by linarith [EMn2BA_zim_pos sz hz n, h1 u hu]))
 
-/-- BA discharge of `GridRepTailGen_Window` (TL's `hη`, `hR16`): `t_n < 1` and `(1 - u)⁻¹ ≤ 16 N` for `u ≤ t_n`. -/
+/-- BA discharge of `GridRepTailGen_Window` (`hη`, `hR16` of the twisted layer): `t_n < 1` and `(1 - u)⁻¹ ≤ 16 N` for `u ≤ t_n`. -/
 theorem gridRepTailGen_window_BA {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (hz : BAFlow sz κ ε 𝔠 𝔡 z)
     (t : ℕ → ℝ) (n : ℕ) (htT : t n ≤ BAflowT0 sz z n) (hN0 : (0 : ℝ) < ((sz.size n : ℕ) : ℝ))
     (hεn : 1 / (8 * κ) ≤ ((sz.size n : ℕ) : ℝ) ^ ε) :
@@ -319,7 +318,7 @@ theorem gridRepTailBA_wS_symm (x y : Idx d (sz.L n) (sz.W n)) :
   · have h' : ¬ (split d (sz.L n) (sz.W n) y).1 = (split d (sz.L n) (sz.W n) x).1 := fun h2 => h h2.symm
     simp [h, h']
 
-/-- `LM` at `baStep2Mat` is `LIM` of the list (the probe's `F1`, `loopM_eq_loopL`). -/
+/-- `LM` at `baStep2Mat` is `LIM` of the list (`loopM_eq_loopL`). -/
 theorem gridRepTailBA_LIM_KLloopOf (u : ℝ) (H : GridRepTailBA_Mat sz n) {k : ℕ} (σ : Fin k → Bool)
     (a : Fin k → Zd d (sz.L n)) :
     (baStep2Mat sz lam0 E).LIM n u H (KLloopOf d (sz.L n) σ a) = (baStep2Mat sz lam0 E).LM n u H σ a := by
@@ -375,7 +374,7 @@ theorem gridRepTailBA_sum_blocks (F : Idx d (sz.L n) (sz.W n) → Idx d (sz.L n)
   · have : ¬ (split d (sz.L n) (sz.W n) j).1 = (split d (sz.L n) (sz.W n) i).1 := fun h => hij h.symm
     simp [hij, this]
 
-/-- `W^d Σ_c Tr(R E_c R'^* E_c) = Φ₂(R, R')` (the sesquilinear form of `GridMartBA`'s private `sum_trace`). -/
+/-- `W^d Σ_c Tr(R E_c R'^* E_c) = Φ₂(R, R')` (the sesquilinear form of the private `GridMartBA_sum_trace`). -/
 theorem gridRepTailBA_sum_trace2 (R R' : GridRepTailBA_Mat sz n) :
     (((sz.W n : ℕ) : ℂ) ^ d) * ∑ c, Matrix.trace (R * TwistKer_fE n c * R'ᴴ * TwistKer_fE n c) =
       GridRepTailBA_Phi2 sz lam0 E n R R' := by
@@ -396,7 +395,7 @@ theorem gridRepTailBA_sum_trace2 (R R' : GridRepTailBA_Mat sz n) :
   split_ifs <;> simp
 
 /-- **`STeeMg` at `baStep2Mat` for two different labels** (Hermitian `H`): `Φ₂(Q₁^b, Q₁^{b'}) + Φ₂(Q₂^b, Q₂^{b'})`; the cross-label
-form of `GridMartBA`'s private `STEEk` (`b = b'`). -/
+form of the private `GridMartBA_STEEk` (`b = b'`). -/
 theorem gridRepTailBA_STeeMg_eq (u : ℝ) {H : GridRepTailBA_Mat sz n} (hH : H.IsHermitian) (σ : Fin 2 → Bool)
     (b b' : Fin 2 → Zd d (sz.L n)) :
     STeeMg (baStep2Mat sz lam0 E) n u H σ b b' =
@@ -515,9 +514,9 @@ theorem gridRepTailBA_Phi_eq (u : ℝ) (σ : Fin 2 → Bool) (b : Fin 2 → Zd d
   rw [hb] at h
   exact h
 
-/-- **The cross-label variance of the frozen gradient**: for the weights `κ`, `linTrVar` of `Σ_b κ_b ∇Φ_b(M)` and of `(-I)` times it
+/-- **The cross-label variance of the gradient at a fixed matrix**: for the weights `κ`, `linTrVar` of `Σ_b κ_b ∇Φ_b(M)` and of `(-I)` times it
 are at most `2 Re Σ_{b,b'} κ_b conj(κ_{b'}) STeeMg_u(g₀Ψ + M)(b, b')` (the two slots `Q₁ + Q₂` of the gradient; Cauchy-Schwarz over the
-two cuts, `|Q₁ + Q₂|² ≤ 2|Q₁|² + 2|Q₂|²`, the factor `2 = m`; equality fails, as in the band's `QVPropagated`). -/
+two cuts, `|Q₁ + Q₂|² ≤ 2|Q₁|² + 2|Q₂|²`, the factor `2 = m`; equality fails, as in the band case). -/
 theorem gridRepTailBA_linTrVar_le_QV (u : ℝ) (σ : Fin 2 → Bool) {η : ℝ} (hη0 : 0 < η)
     (hη : η ≤ etaOf (BAmF sz lam0 E n) u) (κ : (Fin 2 → Zd d (sz.L n)) → ℂ) {M : GridRepTailBA_Mat sz n}
     (hM : M.IsHermitian) :
@@ -642,8 +641,8 @@ theorem gridRepTailBA_sum_Z (σ : Fin 2 → Bool) (j : ℕ) (ω : PathΩ sz) (κ
       stepZCN (sz.withLam 0) s t K n j (GridRepTailBA_fam sz lam0 E s t K n σ j) (fun _ a => κ a) (fun _ => 0) ω :=
   (gridRepTailBA_stepZCN_sum (sz.withLam 0) s t K n j (GridRepTailBA_fam sz lam0 E s t K n σ j) κ (fun _ => 0) ω).symm
 
-/-- The label observables are Hermitian test functions, with the second-derivative constant `6 η⁻⁴` (TL's `TwistGridWTail_hermTestFun`,
-`_Phi_second` at `c₁ = c₂ = b₁`). -/
+/-- The label observables are Hermitian test functions, with the second-derivative constant `6 η⁻⁴` (the lemmas `TwistGridWTail_hermTestFun`
+and `TwistGridWTail_Phi_second` of the twisted layer at `c₁ = c₂ = b₁`). -/
 theorem gridRepTailBA_hermTestFun (u : ℝ) (σ : Fin 2 → Bool) {η : ℝ} (hη0 : 0 < η) (hη : η ≤ etaOf (BAmF sz lam0 E n) u)
     (b : Fin 2 → Zd d (sz.L n)) :
     HermTestFun (sz.withLam 0) n (GridRepTailBA_Phi sz lam0 E n u σ b) :=
@@ -693,7 +692,7 @@ theorem gridRepTailBA_measurable_STeeMg (u : ℝ) (σ : Fin 2 → Bool) (b b' : 
   exact (walk_measurable_loopL d (sz.L n) (sz.W n) (ztOf (BAmF sz lam0 E n) (E n) u) _).comp
     (walk_measurable_blockMat d (sz.L n) (sz.W n))
 
-/-- **The martingale increment as a `stepXiCN`** (twin of `TwistGridWTail_xi_ae`, `TwistGridWTail.lean:1526`): `Σ_b κ_b ξ_{j+1}(b)` is a.e.
+/-- **The martingale increment as a `stepXiCN`** (the analogue of `TwistGridWTail_xi_ae`): `Σ_b κ_b ξ_{j+1}(b)` is a.e.
 `stepXiCN` of the family `GridRepTailBA_fam` with the kernel `(·, a) ↦ κ_a` (linearity of the conditional expectation; the deterministic `𝒦`
 cancels), and `filt (j+1)`-measurable. -/
 theorem gridRepTailBA_xi_ae (σ : Fin 2 → Bool) (j : ℕ) {η : ℝ} (hη0 : 0 < η)
@@ -870,8 +869,8 @@ theorem gridRepTailBA_yfields (hs0 : 0 ≤ s n) (hst : s n ≤ t n)
   have hc := gridRepTailBA_Yconst_le (∑ b, ‖κ b‖) (gridStep s t K n) N hS0 hN1
   exact ⟨h1, h2, h3, h4, h5, h6.trans hc, h7.trans hc⟩
 
-/-- **The BA discharge of `GridRepTailGen_Inc`**: `Z = GridRepTailBA_Z`, `Y = martIncNg − Z`; Q1 `gridRepTailBA_STeeMg_norm_le` at
-`η = 1/(16 N)`; Q2 `gridRepTailBA_STeeMg_sub_le` with `|z_{u'} − z_u| = (u' − u) |m| ≤ u' − u`.  Hypotheses: `|m_F| ≤ 1`, `s ≤ t` and
+/-- **The BA discharge of `GridRepTailGen_Inc`**: `Z = GridRepTailBA_Z`, `Y = martIncNg − Z`; the crude bound `gridRepTailBA_STeeMg_norm_le` at
+`η = 1/(16 N)`; the shift bound `gridRepTailBA_STeeMg_sub_le` with `|z_{u'} − z_u| = (u' − u) |m| ≤ u' − u`.  Hypotheses: `|m_F| ≤ 1`, `s ≤ t` and
 `η_u ≥ 1/(16 N)` for `u ≤ t_n` (the window, `gridRepTailBA_eta`). -/
 theorem gridRepTailGen_inc_BA (hm : ‖BAmF sz lam0 E n‖ ≤ 1) (hs0 : 0 ≤ s n) (hst : s n ≤ t n)
     (hη : ∀ u : ℝ, u ≤ t n → 1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ etaOf (BAmF sz lam0 E n) u) :
@@ -910,9 +909,9 @@ theorem gridRepTailGen_inc_BA (hm : ‖BAmF sz lam0 E n‖ ≤ 1) (hs0 : 0 ≤ s
 
 end Inc
 
-/-! ## 5. Target 4: `gridRepTailGen_hyp_BA` and `baGridWTail2_holds` -/
+/-! ## 5. `gridRepTailGen_hyp_BA` and `baGridWTail2_holds` -/
 
-/-- **`GridRepTailGen_Hyp` at BA** (non-vacuity of the classes, the BA discharge of target 4): along every `BAFlow` datum, `SizeTendsto`
+/-- **`GridRepTailGen_Hyp` at BA** (non-vacuity of the classes): along every `BAFlow` datum, `SizeTendsto`
 from the flow, and for the `n` with `N_n^ε ≥ 1/(8κ)` (eventually): `Ker` (`BAflow_real`), the window and, for every grid `K`, `Inc`. -/
 theorem gridRepTailGen_hyp_BA (d : ℕ) :
     GridRepTailGen_Hyp d BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 := by
@@ -929,28 +928,28 @@ theorem gridRepTailGen_hyp_BA (d : ℕ) :
   exact ⟨gridRepTailGen_ker_BA sz _ _ n hκ hr, gridRepTailGen_window_BA hκ sz hz t n (htT n) hN0 hn,
     fun K _ => gridRepTailGen_inc_BA sz _ _ s t K n hmn (hs n) (hst n) (gridRepTailBA_eta hκ sz hz t n (htT n) hN0 hn)⟩
 
-/-- **Target 4, `baGridWTail2_holds`**: clause 4 of `STGridRepNAtgL d 2` at the BA carrier along `BAFlow` (the `Ũ`-weighted two-slot tail
+/-- **`baGridWTail2_holds`**: clause 4 of `STGridRepNAtgL d 2` at the BA carrier along `BAFlow` (the `Ũ`-weighted two-slot tail
 `STGridWTail2gL`), for every `d`; `CK = 3 D + 40`. -/
 theorem baGridWTail2_holds (d : ℕ) :
     STGridWTail2gL d BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 :=
   stGridWTail2gL_of (gridRepTailGen_hyp_BA d)
 
-/-! ## 6. Target 5: the loop-length-2 list identities at `baStep2Mat`
+/-! ## 6. The loop-length-2 list identities at `baStep2Mat`
 
-The twins of `STgA_eq_STgAN`, `STgDrift_eq_STgDriftN`, `STEEM_eq_STeeM` (`Induction/Step2Iterate.lean:1602, 1709, 1698`), generic over a carrier
-whose `LM` is `LIM ∘ KLloopOf` (F1) and whose `K` is `KI ∘ KLloopOf` (F2); both hold by definition at `baStep2Mat` (`gridRepTailBA_LIM_KLloopOf`,
-`baStep2Mat_KI`).  Ported from the probe `t/T2471:RBM3D/Probe/T2471Pins.lean:232-340` (RBM3D's own file, commit `3044b47e`). -/
+The analogues of `STgA_eq_STgAN`, `STgDrift_eq_STgDriftN`, `STEEM_eq_STeeM` (`Induction/Step2Iterate.lean`), generic over a carrier
+whose `LM` is `LIM ∘ KLloopOf` (`GridRepTailBA_F1`) and whose `K` is `KI ∘ KLloopOf` (`GridRepTailBA_F2`); both hold by definition at `baStep2Mat`
+(`gridRepTailBA_LIM_KLloopOf`). -/
 
 section ListIds
 
 variable {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz)
 
-/-- **F1**: `LM = LIM ∘ KLloopOf`. -/
+/-- `LM = LIM ∘ KLloopOf`. -/
 def GridRepTailBA_F1 : Prop :=
   ∀ (n : ℕ) (u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) {k : ℕ}
     (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)), Cm.LM n u H σ a = Cm.LIM n u H (KLloopOf d (sz.L n) σ a)
 
-/-- **F2**: `K = KI ∘ KLloopOf`. -/
+/-- `K = KI ∘ KLloopOf`. -/
 def GridRepTailBA_F2 : Prop :=
   ∀ (n : ℕ) (u : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
     Cm.toFlowFM.K n u σ a = Cm.KI n u (KLloopOf d (sz.L n) σ a)
@@ -975,13 +974,13 @@ theorem gridRepTailBA_STavgMg_eq (h1 : GridRepTailBA_F1 Cm) (n : ℕ) (u : ℝ)
     simp [KLloopOf, List.ofFn_succ]
   rw [this]
 
-/-- **(5a)** `STgAg = STgANg`. -/
+/-- `STgAg = STgANg`. -/
 theorem gridRepTailBA_STgAg_eq (h1 : GridRepTailBA_F1 Cm) (h2 : GridRepTailBA_F2 Cm) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
     STgAg Cm s t K n σ a k ω = STgANg Cm s t K n σ a k ω :=
   gridRepTailBA_STLKMg_eq Cm h1 h2 _ _ _ σ a
 
-/-- **(5b)** `STgDriftg = STgDriftNg` at `m = 2` (`Icc 3 2 = ∅`; `KLloopOf_cutL/R/cutGlue1/2`; `STthetaOpg` is `Step2Gen_ThetaN` at `m = 2`). -/
+/-- `STgDriftg = STgDriftNg` at `m = 2` (`Icc 3 2 = ∅`; `KLloopOf_cutL`, `KLloopOf_cutR`, `KLloopOf_cutGlue1`, `KLloopOf_cutGlue2`; `STthetaOpg` is `Step2Gen_ThetaN` at `m = 2`). -/
 theorem gridRepTailBA_STgDriftg_eq (h1 : GridRepTailBA_F1 Cm) (h2 : GridRepTailBA_F2 Cm) (s t : ℕ → ℝ) (K : ℕ → ℕ)
     (n : ℕ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
     STgDriftg Cm s t K n σ a k ω = STgDriftNg Cm s t K n σ a k ω := by
@@ -1014,7 +1013,7 @@ theorem gridRepTailBA_STgDriftg_eq (h1 : GridRepTailBA_F1 Cm) (h2 : GridRepTailB
       gridRepTailBA_LM_eq Cm h1]
     rfl
 
-/-- **(5c)** `STEEMg = STeeMg σ a a` at `m = 2`. -/
+/-- `STEEMg = STeeMg σ a a` at `m = 2`. -/
 theorem gridRepTailBA_STEEMg_eq (h1 : GridRepTailBA_F1 Cm) (n : ℕ) (u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STEEMg Cm n u H σ a = STeeMg Cm n u H σ a a := by
@@ -1026,45 +1025,45 @@ theorem gridRepTailBA_STEEMg_eq (h1 : GridRepTailBA_F1 Cm) (n : ℕ) (u : ℝ)
 
 end ListIds
 
-/-- F1 holds at `baStep2Mat` (`loopM_eq_loopL`). -/
+/-- `GridRepTailBA_F1` holds at `baStep2Mat` (`loopM_eq_loopL`). -/
 theorem gridRepTailBA_F1_ba {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) : GridRepTailBA_F1 (baStep2Mat sz lam0 E) := by
   intro n u H k σ a
   exact (gridRepTailBA_LIM_KLloopOf sz lam0 E n u H σ a).symm
 
-/-- F2 holds at `baStep2Mat` (`baFM.K = BAKloop = KI ∘ KLloopOf`, `baStep2Mat_KI`). -/
+/-- `GridRepTailBA_F2` holds at `baStep2Mat` (`baFM.K = BAKloop = KI ∘ KLloopOf`). -/
 theorem gridRepTailBA_F2_ba {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) : GridRepTailBA_F2 (baStep2Mat sz lam0 E) :=
   fun n u k σ a => rfl
 
-/-- **Target 5 (5a) at `baStep2Mat`**, every `d`, `sz`, `lam0`, `E`: `STgAg = STgANg`. -/
+/-- **`STgAg = STgANg` at `baStep2Mat`**, every `d`, `sz`, `lam0`, `E`. -/
 theorem baStep2_STgAg_eq {d : ℕ} (sz : Sizes d) (lam0 E s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
     STgAg (baStep2Mat sz lam0 E) s t K n σ a k ω = STgANg (baStep2Mat sz lam0 E) s t K n σ a k ω :=
   gridRepTailBA_STgAg_eq _ (gridRepTailBA_F1_ba sz lam0 E) (gridRepTailBA_F2_ba sz lam0 E) s t K n σ a k ω
 
-/-- **Target 5 (5b) at `baStep2Mat`**: `STgDriftg = STgDriftNg`. -/
+/-- **`STgDriftg = STgDriftNg` at `baStep2Mat`**. -/
 theorem baStep2_STgDriftg_eq {d : ℕ} (sz : Sizes d) (lam0 E s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
     STgDriftg (baStep2Mat sz lam0 E) s t K n σ a k ω = STgDriftNg (baStep2Mat sz lam0 E) s t K n σ a k ω :=
   gridRepTailBA_STgDriftg_eq _ (gridRepTailBA_F1_ba sz lam0 E) (gridRepTailBA_F2_ba sz lam0 E) s t K n σ a k ω
 
-/-- **Target 5 (5c) at `baStep2Mat`**: `STEEMg = STeeMg σ a a`. -/
+/-- **`STEEMg = STeeMg σ a a` at `baStep2Mat`**. -/
 theorem baStep2_STEEMg_eq {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
     STEEMg (baStep2Mat sz lam0 E) n u H σ a = STeeMg (baStep2Mat sz lam0 E) n u H σ a a :=
   gridRepTailBA_STEEMg_eq _ (gridRepTailBA_F1_ba sz lam0 E) n u H σ a
 
-/-! ## 7. Target 6: the assembly `baGridRepNAt2_of_bridge` and `baGridRepNAt2_holds`
+/-! ## 7. The assembly `baGridRepNAt2_of_bridge` and `baGridRepNAt2_holds`
 
-Clause 1 holds at every `n` for `Mart_k = Σ_{j<k} ξ_{j+1}` and `Rem_k` the residual `A_k − A_0 − Δ Σ Drift − Mart_k` (UN-C5, CONTROL H256 (3):
-the `baTwistGrid_decomp` pattern, `BA/TwistGrid2.lean:166-176`).  Eventually in `n` (the bridge `H1`, `H2` along the grid, `H3′`): `Mart = twMart`,
-`Rem = twRem` at `(σ, a 0, a 1, a 1)`, so clauses 2 and 3 are TL's `baTwistGridRem_holds` and `baTwistGridTail_holds` (the latter at `ε'/2`,
+Clause 1 holds at every `n` for `Mart_k = Σ_{j<k} ξ_{j+1}` and `Rem_k` the residual `A_k − A_0 − Δ Σ Drift − Mart_k` (the
+`baTwistGrid_decomp` pattern, `BA/TwistGrid2.lean`).  Eventually in `n` (the three identities (H1), (H2), (H3′) of `BAGridBridge` along the grid): `Mart = twMart`,
+`Rem = twRem` at `(σ, a 0, a 1, a 1)`, so clauses 2 and 3 are `baTwistGridRem_holds` and `baTwistGridTail_holds` (the latter at `ε'/2`,
 `‖twEEk‖ ≤ 2 ‖STeeMg σ a a‖`, `N^{ε'/2} ≥ 2`), clause 4 is `baGridWTail2_holds`; `CK` is the maximum of the three. -/
 
 section Assembly
 
 variable {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
 
-/-- The canonical martingale `Mart_k = Σ_{j<k} ξ_{j+1}` (`martIncNg`, `Chain/GridDuhamelGen.lean:198`) at the label `i = (σ, a)`. -/
+/-- The canonical martingale `Mart_k = Σ_{j<k} ξ_{j+1}` (`martIncNg`, `Chain/GridDuhamelGen.lean`) at the label `i = (σ, a)`. -/
 def GridRepTailBA_Mart (i : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) (k : ℕ) (ω : PathΩ sz) : ℂ :=
   ∑ j ∈ Finset.range k, martIncNg (baStep2Mat sz lam0 E) s t K n j i.1 ω i.2
 
@@ -1074,7 +1073,7 @@ def GridRepTailBA_Rem (i : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) (k : �
     ((gridStep s t K n : ℝ) : ℂ) * ∑ j ∈ Finset.range k, STgDriftNg (baStep2Mat sz lam0 E) s t K n i.1 i.2 j ω -
       GridRepTailBA_Mart sz lam0 E s t K n i k ω
 
-/-- Under `H1` at `j + 1` (as functions of `ω'`): `martIncNg` is TL's `twMartInc` at `(σ, a 1, a 1)(a 0)`. -/
+/-- Under (H1) at `j + 1` (as functions of `ω'`): `martIncNg` is the twisted `twMartInc` at `(σ, a 1, a 1)(a 0)`. -/
 theorem gridRepTailBA_inc_eq (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz)
     (hA : ∀ ω', twAk sz lam0 E s t K n σ (a 1) (a 1) (j + 1) ω' (a 0) =
       STgAg (baStep2Mat sz lam0 E) s t K n σ a (j + 1) ω') :
@@ -1085,7 +1084,7 @@ theorem gridRepTailBA_inc_eq (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n))
   rw [hf, hA ω]
   rfl
 
-/-- `Σ_{j<k} martIncNg = twMart` at `(σ, a 0, a 1, a 1)` under `H1` for `j + 1 ≤ k`. -/
+/-- `Σ_{j<k} martIncNg = twMart` at `(σ, a 0, a 1, a 1)` under (H1) for `j + 1 ≤ k`. -/
 theorem gridRepTailBA_mart_eq (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz)
     (hA : ∀ j, j + 1 ≤ k → ∀ ω', twAk sz lam0 E s t K n σ (a 1) (a 1) (j + 1) ω' (a 0) =
       STgAg (baStep2Mat sz lam0 E) s t K n σ a (j + 1) ω') :
@@ -1093,7 +1092,7 @@ theorem gridRepTailBA_mart_eq (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)
   unfold twMart GridRepTailBA_Mart
   exact Finset.sum_congr rfl fun j hj => gridRepTailBA_inc_eq sz lam0 E s t K n σ a j ω (hA j (Finset.mem_range.1 hj))
 
-/-- The residual is TL's `twRem` at `(σ, a 0, a 1, a 1)` under `H1` (`j ≤ k`), `H2` (`j < k`) and the identities (5a), (5b). -/
+/-- The residual is the twisted `twRem` at `(σ, a 0, a 1, a 1)` under (H1) (`j ≤ k`), (H2) (`j < k`) and the identities `STgAg = STgANg`, `STgDriftg = STgDriftNg`. -/
 theorem gridRepTailBA_rem_eq (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz)
     (hA : ∀ j, j ≤ k → ∀ ω', twAk sz lam0 E s t K n σ (a 1) (a 1) j ω' (a 0) = STgAg (baStep2Mat sz lam0 E) s t K n σ a j ω')
     (hD : ∀ j, j < k → twDriftk sz lam0 E s t K n σ (a 0) (a 1) (a 1) j ω = STgDriftg (baStep2Mat sz lam0 E) s t K n σ a j ω) :
@@ -1110,7 +1109,7 @@ theorem gridRepTailBA_rem_eq (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n))
   rw [hs]
   linear_combination hdec
 
-/-- The `H3′` shift of clause 3: `A (T + Y)^{1/2} ≤ A² (X + Y)^{1/2}` for `T ≤ 2 X`, `A ≥ 2`. -/
+/-- The (H3′) shift of clause 3: `A (T + Y)^{1/2} ≤ A² (X + Y)^{1/2}` for `T ≤ 2 X`, `A ≥ 2`. -/
 theorem gridRepTailBA_shift_ineq {T X Y A : ℝ} (hY : 0 ≤ Y) (hT0 : 0 ≤ T) (hT : T ≤ 2 * X) (hA : 2 ≤ A) :
     A * (T + Y) ^ (1 / 2 : ℝ) ≤ (A * A) * (X + Y) ^ (1 / 2 : ℝ) := by
   have hX : 0 ≤ X := by linarith
@@ -1128,9 +1127,9 @@ theorem gridRepTailBA_shift_ineq {T X Y A : ℝ} (hY : 0 ≤ Y) (hT0 : 0 ≤ T) 
         refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (h3.trans hA) h4) (by linarith)
     _ = (A * A) * (X + Y) ^ (1 / 2 : ℝ) := by ring
 
-/-- **Target 6 (a), `baGridRepNAt2_of_bridge`** (TN-C2, `T2459_P1` at `d = 3`, for every `d`): the bridge `T2471_Bridge` (T2460's target 1 with
-the conjunct `H3′`, a hypothesis of exact type, inline) and TL's explicit parts `baTwistGridRem_holds`, `baTwistGridTail_holds` give the full
-loop-length-2 grid pin `STGridRepNAtgL d 2` at the BA carrier along `BAFlow`, with the canonical `Mart`, `Rem` (UN-C5), clause 4 being
+/-- **`baGridRepNAt2_of_bridge`** (for every `d`): the bridge (`BAGridBridge` with the conjunct (H3′), a hypothesis of exact type, inline) and the explicit parts
+`baTwistGridRem_holds`, `baTwistGridTail_holds` of the twisted layer give the full
+loop-length-2 grid statement `STGridRepNAtgL d 2` at the BA carrier along `BAFlow`, with the canonical `Mart`, `Rem`, clause 4 being
 `baGridWTail2_holds`; `CK` is the maximum of the three constants. -/
 theorem baGridRepNAt2_of_bridge (d : ℕ)
     (hB :
@@ -1171,7 +1170,7 @@ theorem baGridRepNAt2_of_bridge (d : ℕ)
   · -- clause 1: the residual identity at every `n`
     intro n i
     exact Eventually.of_forall fun ω k _ => by unfold GridRepTailBA_Rem; ring
-  · -- clause 2: `Rem = twRem` (H1, H2, (5a), (5b)); TL's remainder bound
+  · -- clause 2: `Rem = twRem` ((H1), (H2) and the two list identities); the remainder bound of the twisted layer
     filter_upwards [hbr, hrem] with n hb hrn
     intro i
     filter_upwards [hrn (i.1, i.2 0, i.2 1, i.2 1)] with ω hω k hk
@@ -1180,7 +1179,7 @@ theorem baGridRepNAt2_of_bridge (d : ℕ)
       (fun j hj ω' => (hb i.1 i.2 j (hj.trans hk) ω').1)
       (fun j hj => (hb i.1 i.2 j (hj.le.trans hk) ω).2.1)
     exact e ▸ h
-  · -- clause 3: `Mart = twMart`, `‖twEEk‖ ≤ 2 ‖STeeMg σ a a‖` (H3′), TL's tail at `ε'/2`
+  · -- clause 3: `Mart = twMart`, `‖twEEk‖ ≤ 2 ‖STeeMg σ a a‖` (H3′), the tail of the twisted layer at `ε'/2`
     intro ε' hε'
     have hA2 := ((tendsto_rpow_atTop (half_pos hε')).comp hsize).eventually_ge_atTop 2
     filter_upwards [ht K hK0 hKt (ε' / 2) (half_pos hε'), hbr, hA2] with n htn hb hAn
@@ -1216,11 +1215,11 @@ theorem baGridRepNAt2_of_bridge (d : ℕ)
         ‖twMart sz (BAflowLam0 sz z) (BAflowEs sz z) s t K n i.1 (i.2 0) (i.2 1) (i.2 1) k ω‖ := by
       rw [← hmart]
     exact lt_of_le_of_lt hineq (hmart' ▸ hlt)
-  · -- clause 4: target 4
+  · -- clause 4: `baGridWTail2_holds`
     exact hw K hK0 hKw
 
-/-- **Target 6 (b), `baGridRepNAt2_holds`** (TN-C2 verbatim, `T2459_P1` at `d = 3`, for every `d`): the full loop-length-2 grid pin at the BA
-carrier along `BAFlow`, from T2460's merged `baGridBridge_holds` (its type is the inline hypothesis of 6 (a), `BAGridBridge d`). -/
+/-- **`baGridRepNAt2_holds`** (for every `d`): the full loop-length-2 grid statement at the BA
+carrier along `BAFlow`, from `baGridBridge_holds` (its type is the inline hypothesis of `baGridRepNAt2_of_bridge`, `BAGridBridge d`). -/
 theorem baGridRepNAt2_holds (d : ℕ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧
       STGridRepNAtgL d 2 C₀ BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 :=
@@ -1230,12 +1229,5 @@ end Assembly
 
 end RBM.BA
 
-/-! ## 8. Target 7: compiled nonempty instances at `d = 3`
-
-The size data are the merged admissible sequence `sz0` (`d = 3`, `L_n = 4 (n+1)`, `W_n = (2 (n+1))^5`, `N_0 = 2097152`), the BA flow `zSeq` with
-`flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq`, the times `s ≡ 1/10 < t ≡ 1/2 ≤ BAflowT0 sz0 zSeq n` (`half_lt_t0`), `D = 1`, `ε' = 1/10`.  The classes
-`Ker`, `Window`, `Inc`, `Hyp` hold at the BA carrier; target 4 gives `CK`, the grid `K_n = ⌈N_n^{CK}⌉ + 1` and the weighted tail bound `≤ N^{-1}`;
-target 6 gives the four clauses of the full loop-length-2 pin (with the bridge `baGridBridge_holds`); target 5 is applied at concrete labels.
-Every deterministic hypothesis is discharged; no hypothesis stays open. -/
 
 end

@@ -11,17 +11,14 @@ import RBM3D.Loop.PureLoop
 import RBM3D.Loop.KLIndStepA
 
 /-!
-# Stage K, row K07: the decay of the BA molecule weight `(eq:molecule-decay)` and pure BA loops
+# The decay of the BA molecule weight (A.44) `eq:molecule-decay` and pure BA loops
 
-Ticket T2380 (design BA-DK, `docs/reports/T2360-design.md` §3 (b), §4 row K07).  The statements
-are those of `docs/reports/T2380-prove.md` section (a), audited in `docs/reports/T2380-1a-audit.md`.
-Paper: `(eq:molecule-decay)`, `lem_pureloop`, `(res_pureKes)`
-(`A_deterministic_estimates.tex:640-700`).
-The BA twin of `Loop/PureLoop.lean` and `Loop/KLMolecule.lean` §2-§5 (star to cactus: one label per
+Paper: (A.44) `eq:molecule-decay`, Lemma A.7 (`lem_pureloop`), (A.41) `res_pureKes`.
+The BA analogue of `Loop/PureLoop.lean` and `Loop/KLMolecule.lean` (star to cactus: one label per
 slot, not per node).
 
 1. `baPureB`, `baPureRate`, `baPure_edge`: every edge of a BA molecule, i.e. an `M(σ)`-entry
-   (`Mbound_AO`, `Mbound_AO2`) and a short chord `tΘ^{(s,s)}` (`(prop:ThfadC_short)`), is at most
+   ((8.6) `Mbound_AO`, (8.7) `Mbound_AO2`) and a short chord `tΘ^{(s,s)}` ((2.67) `prop:ThfadC_short`), is at most
    `B e^{-r |x-y|}`.
 2. `baSlot_path_le`: the slot graph of a cactus (chords and `M`-edges) is connected, so two slots
    are at distance at most the total length of the edges.  An abstract spanning-tree argument (a
@@ -31,13 +28,12 @@ slot, not per node).
    (`KLnodePar`).
 3. `baSigmaTree_bound` (the core, with a product hypothesis `hprod`), its entrywise corollaries,
    and `baSigmaPi_empty_bound`: `|Σ^{(∅)}(δ)| ≤ C e^{-(r/4) max_{i,j} |δ_i - δ_j|}`.
-4. `baSig_decay`: `(eq:molecule-decay)` as `SigDecayAbs d n L (BASig ..)`, every `σ`, uniformly in
+4. `baSig_decay`: (A.44) `eq:molecule-decay` as `SigDecayAbs d n L (BASig ..)`, every `σ`, uniformly in
    the family.
 5. `baK_pure_eq`, `baPure_loop`: the pure loop `σ = (σ₀, …, σ₀)`: `𝒦^{(n)} = W^{-d(n-1)} K^{(∅)}`,
    and `|𝒦^{(n)}| ≤ C W^{-d(n-1)} e^{-c max_{i,j} |a_i - a_j|}`.
-6. Compiled instances at the flow point `P` of `(d, L) = (3, 4)`, `n = 3, 4`.
 
-Every helper that is not pinned is `private` and carries the stem `KPure_`.
+The names of the private helpers begin with KPure_.
 -/
 
 set_option linter.style.longLine false
@@ -66,8 +62,8 @@ private theorem KPure_zdistD_tri (x y z : Zd d L) :
   rwa [sub_add_sub_cancel] at this
 
 /-- `Θ^{(s,s')}` is invariant under the translation `x ↦ x + c` when every `M(σ)` is (the conjugation of
-`Ring.inverse` by a permutation matrix, `Matrix.inv_submatrix_equiv`; no invertibility; a copy of the private
-`KMolecule_theta_perm`, `BA/KMolecule.lean:166`, at `e = Equiv.addRight c`). -/
+`Ring.inverse` by a permutation matrix, `Matrix.inv_submatrix_equiv`; no invertibility; as the private
+`KMolecule_theta_perm`, `BA/KMolecule.lean`, at `e = Equiv.addRight c`). -/
 private theorem KPure_theta_shift (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (hM : ∀ (σ : Bool) (x y c : Zd d L), M σ (x + c) (y + c) = M σ x y) (t : ℝ) (s s' : Bool) (x y c : Zd d L) :
     BAThetaOf M t s s' (x + c) (y + c) = BAThetaOf M t s s' x y := by
@@ -101,7 +97,7 @@ end Helpers
 /-! ## 1. The constants and the edge bounds -/
 
 /-- **The prefactor `B`** of the edge bounds: `B = max (max 1 c₀⁻¹) (C₅ (1 + Λ²))`, with `c₀ = BAct_rate d Λ κ`
-(`Mbound_AO2`) and `C₅ = BAp5s_C d Λ κ` (`(prop:ThfadC_short)`); `B ≥ 1` (`baPureB_one_le`). -/
+((8.7) `Mbound_AO2`) and `C₅ = BAp5s_C d Λ κ` ((2.67) `prop:ThfadC_short`); `B ≥ 1` (`baPureB_one_le`). -/
 noncomputable def baPureB (d : ℕ) (Λ κ : ℝ) : ℝ :=
   max (max 1 (BAct_rate d Λ κ)⁻¹) (BAp5s_C d Λ κ * (1 + Λ ^ 2))
 
@@ -122,7 +118,7 @@ section Edges
 
 variable {d : ℕ} {Λ κ : ℝ} {L : ℕ} [NeZero L] {g : ℝ} {E : ℝ} {m : ℂ}
 
-/-- The entries of `M^{(B)} = BAMB`: `|M_{xy}| ≤ B e^{-r |x-y|}` (`Mbound_AO` when `g < (2C)⁻¹`, `Mbound_AO2`
+/-- The entries of `M^{(B)} = BAMB`: `|M_{xy}| ≤ B e^{-r |x-y|}` ((8.6) `Mbound_AO` when `g < (2C)⁻¹`, (8.7) `Mbound_AO2`
 otherwise). -/
 private theorem KPure_MB_entry (hd : 0 < d) (hΛ : 0 < Λ) (hκ : 0 < κ) (hL : 3 ≤ L) (hg : 0 < g) (hgΛ : g ≤ Λ)
     (hr : BAReal d L g κ E m) (x y : Zd d L) :
@@ -154,7 +150,7 @@ private theorem KPure_MB_entry (hd : 0 < d) (hΛ : 0 < Λ) (hκ : 0 < κ) (hL : 
         refine mul_le_mul hBc (Real.exp_le_exp.2 ?_) (Real.exp_pos _).le (by linarith)
         nlinarith
 
-/-- The short propagator `Θ^{(s,s)}` at an arbitrary pair `(x, y)`: translation `x ↦ 0` and `(prop:ThfadC_short)`
+/-- The short propagator `Θ^{(s,s)}` at an arbitrary pair `(x, y)`: translation `x ↦ 0` and (2.67) `prop:ThfadC_short`
 (`baProp5s_of_real`), `1_{a=0} ≤ e^{-c_s |a|}`, `g² ≤ Λ²`. -/
 private theorem KPure_theta_entry (hd : 2 ≤ d) (hΛ : 0 < Λ) (hκ : 0 < κ) (hL : 3 ≤ L) (hg : 0 < g) (hgΛ : g ≤ Λ)
     (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (s : Bool) (x y : Zd d L) :
@@ -198,7 +194,7 @@ private theorem KPure_theta_entry (hd : 2 ≤ d) (hΛ : 0 < Λ) (hκ : 0 < κ) (
     _ ≤ baPureB d Λ κ * Real.exp (-(baPureRate d Λ κ * z)) :=
       mul_le_mul_of_nonneg_right hBC (Real.exp_pos _).le
 
-/-- **The edge-kernel bounds at the BA data** (`Mbound_AO`, `Mbound_AO2`, `(prop:ThfadC_short)`): every edge of a BA
+/-- **The edge-kernel bounds at the BA data** ((8.6) `Mbound_AO`, (8.7) `Mbound_AO2`, (2.67) `prop:ThfadC_short`): every edge of a BA
 molecule is `≤ B e^{-r |x-y|}`, with `B = baPureB d Λ κ ≥ 1`, `r = baPureRate d Λ κ > 0`, depending on `(d, Λ, κ)` only.
 (a) the entries of `M(σ) = BAMsigma (BAMB ..)`, both charges (`M(-) = Mᴴ`); (b) the short propagator `Θ^{(s,s)}_{xy}`;
 (c) the short chord `t Θ^{(s,s)}_{xy}`, `0 ≤ t ≤ 1`. -/
@@ -228,7 +224,7 @@ end Edges
 /-! ## 2. The slot graph is connected: the spanning-tree path bound
 
 The band bounds the distance of two nodes by the total length of the internal edges along the laminar path
-(`KLMolecule_path_le`, `Loop/KLMolecule.lean:161`).  The slot graph of a cactus has the chords and the `M`-edges
+(`KLMolecule_path_le`, `Loop/KLMolecule.lean`).  The slot graph of a cactus has the chords and the `M`-edges
 (one cycle per node) as edges, a multigraph.  The abstract fact used is: if every subset of the vertices closed under the
 edges is trivial, then the distance (in any pseudo-metric `ρ`) of two vertices of a labelling is at most the sum of the
 lengths of all edges.  The proof grows a tree from the base vertex, one new vertex and one new edge at a time. -/
@@ -313,7 +309,7 @@ section SlotGraph
 variable {n : ℕ} [NeZero n]
 
 /-- One step up the tree: the parent `KLnodePar F x` of a non-root node `x` is a node of smaller depth, and `x ∈ F`
-(a trimmed copy of the private `KLMolecule_anc_step`, `Loop/KLMolecule.lean:86`). -/
+(a trimmed version of the private `KLMolecule_anc_step`, `Loop/KLMolecule.lean`). -/
 private theorem KPure_anc_step {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n) {x : Fin n × Fin n}
     (hx : x ∈ KLnodes F) (hxw : x ≠ KLwholeP n) :
     KLnodePar F x ∈ KLnodes F ∧ x ∈ F ∧
@@ -373,7 +369,7 @@ private theorem KPure_slot_conn {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (
 
 /-- **The path bound in the slot graph**: any two slots `s, t` of the cactus of `F` (`KLIsTSP F`, `2 ≤ n`) have labels
 at distance at most the total length `T(β)` of the edges (chords `In J — Out J` and `M`-edges `s — next s`).  Stronger
-than the two forms of the design (`|β s - β r₀| ≤ T`, and `|β s - β t| ≤ 2T`): every pair, factor one. -/
+than the two weaker forms (`|β s - β r₀| ≤ T`, and `|β s - β t| ≤ 2T`): every pair, factor one. -/
 theorem baSlot_path_le {d L : ℕ} [NeZero L] {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
     (β : BAslot F → Zd d L) (s t : BAslot F) :
     zdistD d L (β s - β t) ≤
@@ -386,7 +382,7 @@ end SlotGraph
 
 /-! ## 3. The tree bound
 
-The twin of `KLMolecule_tree_bound` (`Loop/KLMolecule.lean:209`) with one label per slot.  For a labelling `b` of the
+The analogue of `KLMolecule_tree_bound` (`Loop/KLMolecule.lean`) with one label per slot.  For a labelling `b` of the
 slots consistent with `δ` (`b (leaf v) = δ v`) the product of the edge entries is `≤ Γ e^{-r T(b)}`, `T(b)` the total
 edge length, and the path bound gives `T(b) ≥ |δ_i - δ_j|` and `T(b) ≥ |δ_i - b s|`; the factor `e^{-(r/4)T}` pays for
 the decay in `|δ_i - δ_j|`, the factor `e^{-(r/4)T}` for the sum over the `N ≤ n + 2n²` slot labels. -/
@@ -410,7 +406,7 @@ private theorem KPure_card_le (F : Finset (Fin n × Fin n)) : F.card ≤ n * n :
 /-- **The tree bound** (core): if the product of the edge entries at every labelling `β` of the slots consistent with
 `δ` (`β (leaf v) = δ v`) is at most `Γ e^{-r T(β)}`, `T(β) = Σ_e |β (src e) - β (tgt e)|`, then the self-energy of the
 tree `F` satisfies `|Σ_F(δ)| ≤ Γ S₀^{N₀} e^{-(r/4) |δ_i - δ_j|}`, `N₀ = n + 2n²` (the largest number of slots),
-`S₀ = expC (d-2) (r / (4 N₀))`.  The twin of `KLMolecule_tree_bound`, `Loop/KLMolecule.lean:209`. -/
+`S₀ = expC (d-2) (r / (4 N₀))`.  The analogue of `KLMolecule_tree_bound`, `Loop/KLMolecule.lean`. -/
 theorem baSigmaTree_bound (hd : 2 ≤ d) {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
     (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (δ : Fin n → Zd d L) {r Γ : ℝ}
     (hr : 0 < r) (hΓ : 0 ≤ Γ)
@@ -546,7 +542,7 @@ theorem baSigmaTree_bound_of_entries (hd : 2 ≤ d) {F : Finset (Fin n × Fin n)
   baSigmaTree_bound hd hF hn M t σ δ hr (pow_nonneg (by linarith) _)
     (fun β _ => KPure_hprod_of_entries M t σ hB hE β) i j
 
-/-- **The tree bound in the form of the ticket**: `|Σ_F(δ)| ≤ B^{#edges} S₀^{N₀} e^{-(r/4) max_{i,j} |δ_i - δ_j|}`
+/-- **The tree bound in the form of the maximal distance**: `|Σ_F(δ)| ≤ B^{#edges} S₀^{N₀} e^{-(r/4) max_{i,j} |δ_i - δ_j|}`
 (`#edges ≤ n + 3n²`), the pair `(i, j)` of `baSigmaTree_bound_of_entries` realising `KLmaxDist`. -/
 theorem baSigmaTree_bound_maxDist (hd : 2 ≤ d) {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n)
     (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (δ : Fin n → Zd d L) {B r : ℝ}
@@ -577,13 +573,13 @@ private theorem KPure_edge_entries {F : Finset (Fin n × Fin n)} (M : Bool → M
 
 end TreeBound
 
-/-! ## 4. The molecule bound and `(eq:molecule-decay)` -/
+/-! ## 4. The molecule bound and (A.44) `eq:molecule-decay` -/
 
 section Molecule
 
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
-/-- **The molecule bound** `(eq:molecule-decay)` for one charge vector: in the layer `π = ∅` every chord of every tree is
+/-- **The molecule bound** (A.44) `eq:molecule-decay` for one charge vector: in the layer `π = ∅` every chord of every tree is
 a short edge (`KLMolecule_same_charge`), so the entry bounds (a) of `M(σ)` and (c) of the short chord `tΘ^{(s,s)}` give
 `|Σ^{(∅)}(δ)| ≤ |TSP n| B^{n+3n²} S₀^{N₀} e^{-(r/4) max_{i,j} |δ_i - δ_j|}`, for every `σ`. -/
 theorem baSigmaPi_empty_bound (hd : 2 ≤ d) (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ)
@@ -625,8 +621,8 @@ theorem baSigmaPi_empty_bound (hd : 2 ≤ d) (hn : 2 ≤ n) (M : Bool → Matrix
 
 end Molecule
 
-/-- **`(eq:molecule-decay)` for `BASig`** (`A:691`): `|Σ^{(∅)}(t,σ,δ)| ≤ C e^{-c max_{i,j} |δ_i - δ_j|}` for **every**
-charge vector `σ`, in the form `SigDecayAbs d n L (BASig ..)` consumed by `indStepAbs_of` (`Loop/KLIndStepB.lean:879`),
+/-- **(A.44) `eq:molecule-decay` for `BASig`**: `|Σ^{(∅)}(t,σ,δ)| ≤ C e^{-c max_{i,j} |δ_i - δ_j|}` for **every**
+charge vector `σ`, in the form `SigDecayAbs d n L (BASig ..)` consumed by `indStepAbs_of` (`Loop/KLIndStepB.lean`),
 uniformly in the family `ι` of `(L, g, E, m, t)`: `3 ≤ L i`, `0 < g i ≤ Λ`, `BAReal d (L i) (g i) κ (E i) (m i)`,
 `0 ≤ t i ≤ 1`.  `C = |TSP n| B^{n+3n²} S₀^{N₀}`, `c = r/4` depend on `(d, n, Λ, κ)` only. -/
 theorem baSig_decay {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ)
@@ -656,15 +652,15 @@ theorem baSig_decay {ι : Type} {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 �
 
 /-! ## 5. Pure loops
 
-`lem_pureloop` (`A:643-654`): for a constant charge vector `σ = (σ₀, …, σ₀)` every tree of `TSP n` has no long chord,
-so `𝒦^{(n)} = W^{-d(n-1)} K^{(∅)}`; `K^{(∅)}(a) = Σ_δ Σ^{(∅)}(δ) ∏_v Θ^{(σ₀,σ₀)}(a_v, δ_v)` (first stage), the molecule
+Lemma A.7 (`lem_pureloop`): for a constant charge vector `σ = (σ₀, …, σ₀)` every tree of `TSP n` has no long chord,
+so `𝒦^{(n)} = W^{-d(n-1)} K^{(∅)}`; `K^{(∅)}(a) = Σ_δ Σ^{(∅)}(δ) ∏_v Θ^{(σ₀,σ₀)}(a_v, δ_v)` (first step), the molecule
 decays in `max |δ_i - δ_j|` (`baSigmaPi_empty_bound`) and the leaves `Θ^{(σ₀,σ₀)}(a_v, ·)` decay in `|a_v - δ_v|`
 (`baPure_edge` (b)); the convolution `max |a_i - a_j| ≤ max |δ_i - δ_j| + 2 Σ_v |a_v - δ_v|` and `Σ_x e^{-(r/2)|y-x|} ≤ expC`
 finish. -/
 
 section Pure
 
-/-- **The pure loop reduces to `K^{(∅)}`** (`(eq_K-Kpi)` for a constant charge vector, `A:643-654`): with `σ = (σ₀,…,σ₀)`
+/-- **The pure loop reduces to `K^{(∅)}`** ((A.39) `eq_K-Kpi` for a constant charge vector): with `σ = (σ₀,…,σ₀)`
 no tree has a long chord (`KLFlong F σ = ∅`), so only `π = ∅` survives in `baK_eq_sum_Kpi`, and
 `𝒦^{(n)} = W^{-d(n-1)} Σ_δ Σ^{(∅)}(δ) ∏_v Θ^{(σ₀,σ₀)}(a_v, δ_v)` (`baKpi_eq_sum_SigmaPi`). -/
 theorem baK_pure_eq (d : ℕ) {κ g : ℝ} (hκ : 0 < κ) (hg : 0 < g) {L : ℕ} [NeZero L] (hL : 3 ≤ L) (W : ℕ) {E : ℝ}
@@ -725,7 +721,7 @@ private theorem KPure_maxDist_le (a δ : Fin n → Zd d L) :
       (zdistD d L (a j - δ j) : ℝ) := by exact_mod_cast h5
   linarith [hs i, hs j]
 
-/-- **The first-stage bound for the pure loop**: `|Σ_δ Σ^{(∅)}(δ) ∏_v Θ^{(σ₀,σ₀)}(a_v, δ_v)| ≤ C_Σ (B S')^n e^{-(r/4) max|a_i - a_j|}`,
+/-- **The first-step bound for the pure loop**: `|Σ_δ Σ^{(∅)}(δ) ∏_v Θ^{(σ₀,σ₀)}(a_v, δ_v)| ≤ C_Σ (B S')^n e^{-(r/4) max|a_i - a_j|}`,
 `S' = expC (d-2) (r/2)`. -/
 private theorem KPure_K_bound (hd : 2 ≤ d) (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ₀ : Bool)
     {B r : ℝ} (hB : 1 ≤ B) (hr : 0 < r)
@@ -805,11 +801,11 @@ private theorem KPure_K_bound (hd : 2 ≤ d) (hn : 2 ≤ n) (M : Bool → Matrix
 
 end Pure
 
-/-- **Pure loops** (`lem_pureloop`, `(res_pureKes)`, `A:643-654`): for a constant charge vector `σ = (σ₀, …, σ₀)`,
+/-- **Pure loops** (Lemma A.7 `lem_pureloop`, (A.41) `res_pureKes`): for a constant charge vector `σ = (σ₀, …, σ₀)`,
 `|𝒦^{(n)}_{t,σ,a}| ≤ C W^{-d(n-1)} e^{-c max_{i,j} |a_i - a_j|}`, with `C, c > 0` depending on `(d, n, Λ, κ)` only,
 uniformly in `L ≥ 3`, `W`, `g ∈ (0, Λ]`, the real-axis data `BAReal d L g κ E m` and `t ∈ [0, 1)`.  `c = r/4`,
 `C = C_Σ (B S')^n` (`C_Σ = |TSP n| B^{n+3n²} S₀^{N₀}`, `S' = expC (d-2) (r/2)`); the quantifier order is that of the
-pin `BAKBoundAt` (`t/T2360:RBM3D/Probe/T2360Pins.lean:38`), and no hypothesis `1 ≤ W` is needed. -/
+statement `BAKBoundAt`, and no hypothesis `1 ≤ W` is needed. -/
 theorem baPure_loop {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (W : ℕ) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       haveI : NeZero L := ⟨by omega⟩
@@ -841,12 +837,5 @@ theorem baPure_loop {d n : ℕ} [NeZero n] (hd : 3 ≤ d) (hn : 3 ≤ n) {Λ κ 
         mul_le_mul_of_nonneg_left h (by positivity)
     _ = _ := by ring_nf
 
-/-! ## 6. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 P.m0.im P.E P.m0`,
-`0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `t = 1/2`, `W = 2`, `n = 3, 4`, distinct labels (`δ3`, `δ4`: points
-`(k, 0, 0)` of `Z_4^3`), charges `σ` with a short chord.  Every deterministic hypothesis is discharged; no hypothesis is
-left open (no pin of another gate enters).  `F = {(0,2)}` (`TSP_four`) is the tree with one chord: two nodes, six slots,
-seven edges. -/
 
 end RBM.BA

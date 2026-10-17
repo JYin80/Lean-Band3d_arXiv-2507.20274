@@ -6,18 +6,17 @@ Authors: Jun Yin
 import RBM3D.BA.GUEDuhamelBA
 
 /-!
-# BA-C5 row b (reserve file): the Duhamel tail of the loops on the BA grid, the main theorem
+# The Duhamel tail of the loops on the block Anderson grid: the main theorem
 
-Ticket T2519 (row b; Amend 2 item 2: the reserve file is used because the row passes 1,500
-lines).  Continuation of `BA/GUEDuhamelBA`: the telescope of the pathwise one-step decomposition,
+Continuation of `BA/GUEDuhamelBA`: the telescope of the pathwise one-step decomposition,
 the pathwise bound on the good event, the four good events holding with high probability, and the
-main theorem **`gueGrid_loop_duhamelBA`** (target 6), the twin of `gueGrid_loop_duhamel`
-(`DuhamelC:1485`) on the BA grid path `gueHBA` along `ztOf (m n) (E n)`.  Band twin:
-`DuhamelC.lean` (T2351); its generic privates (the elementary eventual inequalities, the exponent
-bounds, the label count) are read by `open private … from` (no third copies).  The private
+main theorem **`gueGrid_loop_duhamelBA`**, the block Anderson version of `gueGrid_loop_duhamel`
+(`DuhamelC.lean`) on the grid path `gueHBA` along `ztOf (m n) (E n)`.  The generic privates of
+`DuhamelC.lean` (the elementary eventual inequalities, the exponent
+bounds, the label count) are used through `open private … from`.  The private
 development (§6-§8) is generic in the model `sz` and the Hermitian shift `A n` of the path; the
 public statement (§9) is at `sz.withLam 0`, `A n = g Ψ_I` (`gueHBA`), and takes the a.s. remainder
-bound from `Duhamel_drift_remainder_aeBA`.  §10: the compiled nonempty instance.
+bound from `Duhamel_drift_remainder_aeBA`.
 -/
 
 set_option linter.style.longLine false
@@ -45,8 +44,8 @@ open scoped NNReal ENNReal Matrix.Norms.L2Operator
 
 /-! ## 6. The pathwise assembly on the good event (private, generic in the Hermitian shift) -/
 
-/-- The envelope constant of the one-step expansion along `ztOf μ` (`envConst`, `Path/OneStep:78`, with `etaOf μ` for
-`etaT E`): the constant of `condExp_loop_drift_gueBA` (C4 b). -/
+/-- The envelope constant of the one-step expansion along `ztOf μ` (`envConst`, with `etaOf μ` for
+`etaT E`): the constant of `condExp_loop_drift_gueBA`. -/
 private def GUEDuhamelBA_env (d L W : ℕ) (μ : ℂ) (k : ℕ) (v : ℝ) : ℝ :=
   16 * ((k : ℝ) + 3) ^ 4 * (((W * L) ^ d : ℕ) : ℝ) ^ 4 * (1 + (etaOf μ v)⁻¹) ^ (k + 4)
 
@@ -415,7 +414,7 @@ private theorem GUEDuhamelBA_pathwise (hA : ∀ n, (A n).IsHermitian) (hμ : 0 <
     refine (Finset.sum_le_sum hB).trans ?_
     rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
     exact mul_le_mul_of_nonneg_right hkK hEBt0
-  -- the D3 remainder sum
+  -- the sum of the one-step remainders `r_j`
   set ERt : ℝ := 16 * ((I.length : ℝ) + 3) ^ 4 * N ^ 4 * (1 + N) ^ (I.length + 4)
       * gridStep t1 t0 K n ^ ((3 : ℝ) / 2) with hERt
   have hr' : ∀ j ∈ Finset.range k, ‖GUEDuhamelBA_gr sz A t1 t0 K n e μ I j ω‖ ≤ ERt := by
@@ -722,7 +721,7 @@ section Main
 
 variable {d : ℕ} (sz : Sizes d) (A : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
 
-/-- **The discrete Duhamel remainder of the GUE-phase loops**, the proof of for a grid length `K`
+/-- **The discrete Duhamel remainder of the GUE-phase loops**, for a grid length `K`
 with `K n = (N+1)^{32n₀+64}`
 (`K = gueGridK sz n₀`; a variable so that nothing unfolds the power). -/
 private theorem GUEDuhamelBA_main {τU : ℝ} (hτU : 0 < τU) (n0 : ℕ) (K : ℕ → ℕ)
@@ -903,7 +902,7 @@ private theorem GUEDuhamelBA_main {τU : ℝ} (hτU : 0 < τU) (n0 : ℕ) (K : �
   have hT3 : DuhamelC_epsY n0 (sz.size n) ≤ (((sz.size n : ℕ) : ℝ) ^ m)⁻¹ / 5 := hE3
   have hT4 := hE4 Δ (K n : ℝ) hΔ0 hK0 hKΔ
   have hT5 := hE5 Δ (K n : ℝ) hΔ0 hK0 hKΔ hΔa
-  -- the prefactor and the control
+  -- the prefactor and the bound
   have hT6 : 8 * (m : ℝ) * (2 * ((sz.size n : ℕ) : ℝ) ^ (τ / 4)) * sq * M
       ≤ ((sz.size n : ℕ) : ℝ) ^ τ * (sq * M) := by
     have h := mul_le_mul_of_nonneg_right htau (mul_nonneg hsq0 hM0)
@@ -936,17 +935,17 @@ private theorem GUEDuhamelBA_main {τU : ℝ} (hτU : 0 < τU) (n0 : ℕ) (K : �
 
 end Main
 
-/-! ## 9. Target 6, public: `gueGrid_loop_duhamelBA` -/
+/-! ## 9. The public statement `gueGrid_loop_duhamelBA` -/
 
 section Public
 
-/-- **Target 6, `gueGrid_loop_duhamelBA`: the discrete Duhamel remainder of the loops on the BA grid** (twin of
-`gueGrid_loop_duhamel`, `DuhamelC:1485`).  For loops of length `1 ≤ ℓ ≤ 2 n₀`, uniformly in the grid step
+/-- **`gueGrid_loop_duhamelBA`: the discrete Duhamel remainder of the loops on the BA grid** (the block Anderson version of
+`gueGrid_loop_duhamel`).  For loops of length `1 ≤ ℓ ≤ 2 n₀`, uniformly in the grid step
 `k ≤ K = gueGridK sz n₀ n` and the loop `(σ, a)`, along the BA grid path `gueHBA` (`g Ψ_I + H_k`) at the flow
 `ztOf (m n) (E n)`:
 `‖L_k - L_0 - Δ Σ_{j<k} 𝓖_GUE(u_j, H_j)‖ ≺ √(u_k - t₁) · max_{j<k} √(N⁻¹ η_{u_j}^{-2} L^{(2ℓ)}_j) + (N η_{u_k})^{-ℓ}`,
 `N = sz.size n = (W L)^d`, `L^{(2ℓ)}_j = RBM.Ind.loopMax … (blockMat (gueHBA … j ω)) (ztOf (m n) (E n) u_j) (2ℓ)`: the
-band `gueLmax` (`Proc:93`) is by definition this expression at the band path `gueH` and flow `zt`, and it is written inline
+band `gueLmax` is by definition this expression at the band path `gueH` and flow `zt`, and it is written inline
 here.  Unstopped, unconditional; the band hypothesis `|E n| ≤ 2 - κ` is replaced by `0 < Im m n` and `‖m n‖ ≤ 1` (for
 block Anderson `m = m(E, ilambda₀)`, `BAReal`, `BAm_norm_le_one`), `hscale` is `(N η_{t₀})⁻¹ ≤ N^{-τ_U}` at `η = etaOf (m n)`.
 `1 ≤ ℓ` is not used (as in the band). -/
@@ -986,12 +985,5 @@ end Public
 
 end RBM.BA
 
-/-! ## 10. Compiled nonempty instance (target 8) of `gueGrid_loop_duhamelBA`
-
-Namespace `RBM.BA.GUEDuhamelBAInst` (data of `BA/GUEDuhamelBA` §6).  Data: `d = 3`, `sz0` (`L_n = 4 (n+1)`, `W_n = (2 (n+1))^5`,
-`N_n = 2^21 (n+1)^18`), the BA flow datum of `sz0` at every `n` (`0 < Im m_n`, `‖m_n‖ ≤ 1` by `BAReal` at `κ = 1/2`), `t₁ = 17/20`,
-`t₀ = 9/10`, `τ_U = 1/2`, `n₀ = 1`, loops of length `ℓ = 2 ≤ 2 n₀`, the grid `K = gueGridK sz0 1`.  `hsize` is the merged
-`MarkovInst.sz0_size_tendsto_nat`; `hscale` is discharged (`η_{t₀} = Im m_n / 10 ≥ 1/20`, `(N/20)⁻¹ ≤ N^{-1/2}` iff `N ≥ 400`,
-eventually).  Every hypothesis of the target is discharged; there is no external hypothesis. -/
 
 end

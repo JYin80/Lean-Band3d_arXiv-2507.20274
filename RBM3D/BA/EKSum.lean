@@ -7,25 +7,24 @@ import RBM3D.BA.EKPins
 import RBM3D.Evolution.SumDecay
 
 /-!
-# Stage E of the block Anderson model (BA-E2): `(sum_res_1)`, `(sum_res_2_NAL)`, `(sum_res_2)`
+# The evolution-kernel sums at the block Anderson model: `(sum_res_2_NAL)` and `(sum_res_2)`
 
-Ticket T2392.  Paper: `A_deterministic_estimates.tex:111-198` (`(eq:decomp_U2)`,
-`(sum_res_deriv_red)`, `(sum_res_2_red)`, `(eq:latticesum_d3)`), `3_5_Loop_Hierarchy.tex:1630-1665`;
-design `docs/reports/T2378-design.md` §3.  Band blueprints: `Evolution/SumDecay.lean:253-518`,
-`Evolution/SumDecayZero.lean:44-1520` (every `ekSZ_*` there is private, so the generic parts are
-copied here).
+Paper: Subappendix A.2 (`ks`): (A.8) `eq:decomp_U2`, (A.13) `sum_res_deriv_red`, (A.14) `sum_res_2_red`,
+(A.19) `eq:latticesum_d3`; Lemma 4.16 (`lem:sum_decay`) with (4.54) `sum_res_2_NAL`,
+(4.55) `sumAzero`, (4.56) `sum_res_2`.  The generic parts of the argument are those of the band-model files
+`Evolution/SumDecay.lean` and `Evolution/SumDecayZero.lean` (whose helpers are private), written out here
+for the block Anderson kernels.
 
-1. `baEKSumDecay1_holds`, `baEKSumDecayNAL_holds`: the anchored window/tail split of
+1. `baEKSumDecayNAL_holds`: the anchored window/tail split of
    `ek_core_bound` with the one-index kernel `BAuKer = 1 + BAXi` (`BAuKer_eq_one_add_Xi`), the ball
    sums `baEKXiBall_holds`, the row sums `‖BAuKer‖_{∞→∞} ≤ (1-s)/(1-t)` and, at a same-sign anchor,
    `baEKSameRow_holds`.  No smallness of `g` or of `‖M - m₀ I‖`, no `‖m‖ = 1`: only `BAReal`.
-2. `baEKSumDecay2_holds`: the abstract combinatorics (Part I, copied from the band), the lattice
+2. `baEKSumDecay2_holds`: the abstract combinatorics (Part I, as in the band proof), the lattice
    estimates with the first difference of `Ξ` from `baProp6_holds` through
-   `Ξ = ((t-s)/t)(Θ_t - 1)` (no nearest-neighbour `S^{(B)}`), the constants (Part III, copied), the
-   pin.
-3. Compiled nonempty instances at `d = 3`, the flow datum `n = 0` of `sz0` (`EKPinsInst`).
+   `Ξ = ((t-s)/t)(Θ_t - 1)` (no nearest-neighbour `S^{(B)}`), the constants (Part III, as in the band proof),
+   and the statement of (4.56).
 
-Private helpers carry the stem `EKSum_`.
+The names of the private helpers begin with EKSum_.
 -/
 
 set_option linter.style.longLine false
@@ -39,7 +38,7 @@ open RBM
 
 namespace RBM.BA
 
-/-! ## 1. The row bounds of the one-index kernel (copies of the private `EKPins_norm_*`, `EKPins.lean:149-208`) -/
+/-! ## 1. The row bounds of the one-index kernel -/
 
 section Norms
 
@@ -116,7 +115,7 @@ private theorem EKSum_norm_uKer_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g �
 
 end Norms
 
-/-! ## 2. The anchored bound for `U^{(n)}` at BA (twin of `ek_UN_anchor_bound`, `SumDecay.lean:253`) -/
+/-! ## 2. The anchored bound for `U^{(n)}` at BA (the analogue of `ek_UN_anchor_bound`) -/
 
 section Anchored
 
@@ -189,13 +188,13 @@ private theorem EKSum_UN_anchor_bound {d L n : ℕ} [NeZero L] {g κ E : ℝ} {m
 
 end Anchored
 
-/-! ## 3. The pins `(sum_res_1)` and `(sum_res_2_NAL)` -/
+/-! ## 3. The statement `(sum_res_2_NAL)` -/
 
 section Pins12
 
 open scoped Matrix.Norms.Operator
 
-/-- **`(sum_res_2_NAL)` of `lem:sum_decay` at BA** (`A:154-158`), every `n ≥ 2`, `d ≥ 3`.  The anchor is an index `k` with
+/-- **(4.54) `sum_res_2_NAL` of Lemma 4.16 (`lem:sum_decay`) at BA** (used in (A.13) `sum_res_deriv_red`), every `n ≥ 2`, `d ≥ 3`.  The anchor is an index `k` with
 `σ_k = σ_{k+1}`, whose one-index row sum is bounded by `C_s` of `baEKSameRow_holds` instead of `P`.  The constant is
 `C = m'' + 2n - 2` with `m''` least with `C_s (1 + C_X)^{n-1} < 4^{m''}`. -/
 theorem baEKSumDecayNAL_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumDecayNAL d n Λ κ := by
@@ -296,13 +295,13 @@ theorem baEKSumDecayNAL_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumDecayNAL d n Λ
 
 end Pins12
 
-/-! ## 4. Part I: the combinatorics over an arbitrary finite type (copy of `Evolution/SumDecayZero.lean:44-601`, `ekSZ_` renamed `EKSum_`; the band helpers are private) -/
+/-! ## 4. Part I: the combinatorics over an arbitrary finite type (as in `Evolution/SumDecayZero.lean`) -/
 
 section Core
 
 variable {X : Type*} [Fintype X] [DecidableEq X] {n : ℕ}
 
-/-- the one-index kernel row `u_i(a_i, ·) = δ_{a_i ·} + Ξ_i(a_i, ·)` of `(eq:decompUalt)`. -/
+/-- the one-index kernel row `u_i(a_i, ·) = δ_{a_i ·} + Ξ_i(a_i, ·)` of (A.6) `eq:decompUalt`. -/
 private noncomputable def EKSum_U (Ξ : Fin n → X → X → ℂ) (a : Fin n → X) (i : Fin n) (y : X) : ℂ :=
   (if a i = y then 1 else 0) + Ξ i (a i) y
 
@@ -487,7 +486,7 @@ private theorem EKSum_tail_bound (i₀ : Fin n) (Ξ : Fin n → X → X → ℂ)
     exact (EKSum_u_sum_le Ξ a i Finset.univ).trans (by linarith [hrow i (a i)])
   · simpa [hK] using hw
 
-/-- **The leading term**: the window part of a function of `b_{i₀}` alone is, by `(sumAzero)`,
+/-- **The leading term**: the window part of a function of `b_{i₀}` alone is, by (4.55) `sumAzero`,
 minus the off-window part, which is at most `δ` per point (the paper's `W^{-D+n}`, here with the
 count `|X|^{n-1}` of the complement). -/
 private theorem EKSum_fempty_bound (i₀ : Fin n) (A : (Fin n → X) → ℂ) (Win : X → Finset X)
@@ -682,7 +681,7 @@ private theorem EKSum_fB_bound (i₀ : Fin n) (Ξ : Fin n → X → X → ℂ) (
     _ = M * (Snon ^ (n - 2) * Ψ) := by ring
 
 
-/-- **The abstract core of `(sumAzero) ⟹ (sum_res_2)`.**  Over any finite type `X`, with the one-index
+/-- **The abstract core of (4.55) `sumAzero` ⟹ (4.56) `sum_res_2`.**  Over any finite type `X`, with the one-index
 rows `u_i = δ + Ξ_i`, the product of `n` rows against a sum-zero tensor `A` (zero sum over all indices
 but `i₀`, fast decay `δ` off the window `Win`) is bounded by the five terms below: the part of the
 sum with `δ_{a_{i₀} b_{i₀}}` or `b_{i₀}` near an `a_i`, the off-window tail, the leading term killed by
@@ -855,7 +854,7 @@ private theorem EKSum_core (i₀ : Fin n) (Ξ : Fin n → X → X → ℂ) (a : 
 
 end Core
 
-/-! ## 5. Part II: the lattice estimates (`Evolution/SumDecayZero.lean:603-820` copied; the first difference of `Ξ` is new) -/
+/-! ## 5. Part II: the lattice estimates (the first difference of `Ξ` is specific to the block Anderson kernel) -/
 
 section Concrete
 
@@ -911,7 +910,7 @@ private theorem EKSum_card_win (x : Zd d L) {R : ℝ} (hR : 0 ≤ R) :
         exact Nat.floor_le hR
 
 
-/-- `M^{(σ₁σ₂)}` is invariant under the diagonal shift (copy of the private `EKPins_Mss_shift`, `EKPins.lean:276`). -/
+/-- `M^{(σ₁σ₂)}` is invariant under the diagonal shift. -/
 private theorem EKSum_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ (a + r) (b + r) = BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ a b := by
   have hM := BAMB_shift d L g (E : ℂ) m
@@ -923,7 +922,7 @@ private theorem EKSum_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b 
     · simp only [BAMsigma, ite_true, hM]
   simp only [BAMss, Matrix.of_apply, hs]
 
-/-- `Θ_t(a + r, b + r) = Θ_t(a, b)` (copy of the private `EKPins_Theta_shift`, `EKPins.lean:289`). -/
+/-- `Θ_t(a + r, b + r) = Θ_t(a, b)`. -/
 private theorem EKSum_Theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BATheta d L g E m t σ₁ σ₂ (a + r) (b + r) = BATheta d L g E m t σ₁ σ₂ a b := by
   have hA : (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂).submatrix
@@ -948,7 +947,7 @@ private theorem EKSum_Theta_apply (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ :
   have h := EKSum_Theta_shift g E m t σ₁ σ₂ 0 (b - a) a
   simpa using h
 
-/-- For `t > 0`: `Ξ = ((t - s)/t) (Θ_t - 1)` (copy of the private `EKPins_Xi_eq`, `EKPins.lean:314`). -/
+/-- For `t > 0`: `Ξ = ((t - s)/t) (Θ_t - 1)`. -/
 private theorem EKSum_Xi_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (ht0 : 0 < t) (ht1 : t < 1)
     (σ₁ σ₂ : Bool) :
     BAXi d L g E m s t σ₁ σ₂ = (((t - s) / t : ℝ) : ℂ) • (BATheta d L g E m t σ₁ σ₂ - 1) := by
@@ -962,10 +961,10 @@ private theorem EKSum_Xi_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) 
   push_cast
   field_simp
 
-/-- **The first difference of `Ξ` from `(prop:BD1)` at BA** (`(eq:Xibb)`, second bound; `A:179-182`): for `|y - b|` at most
+/-- **The first difference of `Ξ` from (2.68) `prop:BD1` at BA** ((A.17) `eq:Xibb`, second bound): for `|y - b|` at most
 `(|a - b| - 1)/2`, `|Ξ_{ay} - Ξ_{ab}| ≤ (1-s) C₆ (g²+|1-t|)⁻¹ |y - b| |a - b|^{-(d-1)}`.  For `t > 0`,
 `Ξ = ((t-s)/t)(Θ_t - 1)` with `(t-s)/t ≤ 1-s`, and the unit `1` does not see `a ≠ y, a ≠ b`; `h6` is `baProp6_holds` at
-`c = 1/2` for the charge pair, `Θ_t(a, y) = Θ_t(0, y - a)`.  (Not the band's `S^{(B)}` route: BA has no
+`c = 1/2` for the charge pair, `Θ_t(a, y) = Θ_t(0, y - a)`.  (The band-model argument through `S^{(B)}` does not apply: BA has no
 nearest-neighbour support.) -/
 private theorem EKSum_dXi_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (hs : 0 ≤ s)
     (hst : s ≤ t) (ht : t < 1) {C6 : ℝ} (hC6 : 0 ≤ C6) (σ₁ σ₂ : Bool)
@@ -1073,7 +1072,7 @@ private theorem EKSum_ar_psi {k : ℕ} {R Rn κX r ρ CD C6 lat lg : ℝ} (hR : 
         mul_le_mul_of_nonneg_left hκsq (by positivity)
     _ = 3 ^ (k + 3) * C6 * CD * lat * lg * ρ ^ 4 * r ^ 2 := by ring
 
-/-- **`(eq:latticesum_d3)` over the far set** `{x : R₂ < |a₁ - x|, R₂ < |a₂ - x|}`, `R₂ ≥ 1`, with the
+/-- **(A.19) `eq:latticesum_d3` over the far set** `{x : R₂ < |a₁ - x|, R₂ < |a₂ - x|}`, `R₂ ≥ 1`, with the
 cutoff `⌊R₂⌋`. -/
 private theorem EKSum_lattice (k : ℕ) (hL : 3 ≤ L) {c ℓ : ℝ} (hc : 0 < c) (hℓ : 0 < ℓ) {R₂ : ℝ}
     (hR₂ : 1 ≤ R₂) (a₁ a₂ : Zd (k + 3) L) :
@@ -1108,8 +1107,8 @@ private theorem EKSum_lattice (k : ℕ) (hL : 3 ≤ L) {c ℓ : ℝ} (hc : 0 < c
   refine Finset.sum_congr rfl fun x _ => ?_
   rw [neg_div]
 
-/-- **The deterministic bound of `(sumAzero) ⟹ (sum_res_2)`, constants explicit** (the BA twin of the band `ekSZ_concrete`,
-`SumDecayZero.lean:816-1157`, abstract in `Ξ`).  Inputs: the ball sums and the decay of `Ξ` (`hball`, `hdec`), the first
+/-- **The deterministic bound of (4.55) `sumAzero` ⟹ (4.56) `sum_res_2`, constants explicit** (the block Anderson analogue of
+the band-model estimate in `Evolution/SumDecayZero.lean`, abstract in `Ξ`).  Inputs: the ball sums and the decay of `Ξ` (`hball`, `hdec`), the first
 difference of `Ξ` (`hdΞ`) and the row norm (`hrowΞ`); the output is the sum of the five terms of `EKSum_core` with `M = ‖A‖`,
 `δ = W^{-D}`, `Q = (t-s)/(1-t)`, `Sξ = C_B ρ² r`, `Rn = n C_B ρ⁴ r`, `Snon = 3^d (C_D + C₆) ρ² r`,
 `Ψ = 3^d C₆ C_D C_lat log L ρ⁴ r²`, `ρ = W^ε`. -/
@@ -1188,7 +1187,7 @@ private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {
   have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
   have hlat0 : 0 ≤ latC k := (latC_pos k).le
   have hΨ0 : 0 ≤ Ψ := by rw [hΨdef]; positivity
-  -- `(deccA0)`, `(sumAzero)`
+  -- (4.52) `deccA0`, (4.55) `sumAzero`
   have htail : ∀ b : Fin n → Zd (k + 3) L, ¬ (∀ i, i ≠ i₀ → b i ∈ Win (b i₀)) → ‖A b‖ ≤ W ^ (-D) := by
     intro b hb
     push Not at hb
@@ -1202,7 +1201,7 @@ private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {
     intro i x
     rw [hQ]
     exact hrowΞ i x
-  -- the window sums of `Ξ` (pin 5, ball sums)
+  -- the window sums of `Ξ` (ball sums)
   have hwin : ∀ i, i ≠ i₀ → ∀ x, ∑ y ∈ Win x, ‖Ξ i (a i) y‖ ≤ Sξ := by
     intro i _ x
     rw [hSξ, hr]
@@ -1253,7 +1252,7 @@ private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {
       rw [← hay, show x - a i = -(a i - x) by abel, zdistD_neg]
     rw [h2] at hy'
     linarith
-  -- pointwise decay of `Ξ` (pin 5)
+  -- pointwise decay of `Ξ`
   have hEpt : ∀ i x, ‖Ξ i (a i) x‖ ≤ CD * κX
       * (((zdistD (k + 3) L (a i - x) : ℝ) + 1) ^ (k + 1))⁻¹
       * Real.exp (-(c * (zdistD (k + 3) L (a i - x) : ℝ)) / ellT L g t) := by
@@ -1277,7 +1276,7 @@ private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {
           refine mul_le_mul (mul_le_mul_of_nonneg_left hpow h0) (hexp1 i x) (Real.exp_pos _).le ?_
           positivity
       _ = CD * κX * (R ^ (k + 1))⁻¹ := mul_one _
-  -- the first difference (pin 6)
+  -- the first difference of `Ξ`
   have hDpt : ∀ i, ∀ x, far x → ∀ y ∈ Win x, ‖Ξ i (a i) y - Ξ i (a i) x‖
       ≤ C6 * κX * R * (((zdistD (k + 3) L (a i - x) : ℝ) ^ (k + 2))⁻¹) := by
     intro i x hfx y hy
@@ -1429,12 +1428,12 @@ private theorem EKSum_concrete (k : ℕ) (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) {
   rw [card_Zd, Nat.cast_pow]
 end Concrete
 
-/-! ## 6. Part III: the constants (copy of `Evolution/SumDecayZero.lean:1161-1397`) -/
+/-! ## 6. Part III: the constants (as in `Evolution/SumDecayZero.lean`) -/
 
 section Arith
 
-/-- the `‖A‖`-coefficient: constants and powers of `ρ = W^ε` and `r` (the pin's `W^{Cε} r^n`);
-`lg` is the `log L` of `(eq:latticesum_d3)`, absorbed by `ρ ≥ log L`. -/
+/-- the `‖A‖`-coefficient: constants and powers of `ρ = W^ε` and `r` (the statement's `W^{Cε} r^n`);
+`lg` is the `log L` of (A.19) `eq:latticesum_d3`, absorbed by `ρ ≥ log L`. -/
 private theorem EKSum_arith_M {n : ℕ} (hn : 2 ≤ n) {CB a₁ a₂ lg ρ r : ℝ} (hCB : 0 ≤ CB) (ha₁ : 0 ≤ a₁)
     (ha₂ : 0 ≤ a₂) (hρ : 4 ≤ ρ) (hr : 1 ≤ r) (hlg : lg ≤ ρ) :
     (1 + n * (CB * (ρ ^ 2) ^ 2 * r)) * (1 + CB * ρ ^ 2 * r) ^ (n - 1)
@@ -1575,7 +1574,7 @@ private theorem EKSum_rpow_combine {W K : ℝ} (hW : 0 < W) (a b : ℕ) :
     W ^ a * (W ^ K) ^ b = W ^ ((a : ℝ) + K * (b : ℝ)) := by
   rw [← Real.rpow_natCast, ← Real.rpow_natCast, ← Real.rpow_mul hW.le, ← Real.rpow_add hW]
 
-/-- the final arithmetic of the pin: the two coefficients of `(‖A‖, W^{-D})` against the pin's
+/-- the final arithmetic: the two coefficients of `(‖A‖, W^{-D})` against
 `W^{Cε} r^n ‖A‖ + W^{-D+C}`, `C = (m₁ + 2n + 2) + (m₂ + n + 4 + K(n-1))`. -/
 private theorem EKSum_final_arith {n : ℕ} (hn : 2 ≤ n)
     {CB a₁ a₂ K W ε D ρ r Q lg Lk A' : ℝ} {m₁ m₂ : ℕ}
@@ -1667,16 +1666,16 @@ private theorem EKSum_final_arith {n : ℕ} (hn : 2 ≤ n)
 
 end Arith
 
-/-! ## 7. Part IV: the pin -/
+/-! ## 7. Part IV: the statement of (4.56) -/
 
 section Pin2
 
 open scoped Matrix.Norms.Operator
 
-/-- **`(sumAzero) ⟹ (sum_res_2)` of `lem:sum_decay` at BA** (`A:159-198`), every `n ≥ 2`, `d ≥ 3`, uniform in `g ∈ (0, Λ]`.  The
-route is the paper's `(sum_res_2_red)`: `b₁` is split into `S_near` and `S_far`; on `S_far` the product `∏_i Ξ_i(a_i, b_i)` is
-expanded around `b₁`, the leading term dies by `(sumAzero)`, the other terms carry the first differences of `Ξ`
-(`baProp6_holds` at `c = 1/2`, through `Ξ = ((t-s)/t)(Θ_t - 1)`) and the lattice sum `(eq:latticesum_d3)`.  The constant is
+/-- **(4.55) `sumAzero` ⟹ (4.56) `sum_res_2` of Lemma 4.16 (`lem:sum_decay`) at BA**, every `n ≥ 2`, `d ≥ 3`, uniform in `g ∈ (0, Λ]`.  The
+proof follows the paper's (A.14) `sum_res_2_red`: `b₁` is split into `S_near` and `S_far`; on `S_far` the product `∏_i Ξ_i(a_i, b_i)` is
+expanded around `b₁`, the leading term dies by `sumAzero`, the other terms carry the first differences of `Ξ`
+(`baProp6_holds` at `c = 1/2`, through `Ξ = ((t-s)/t)(Θ_t - 1)`) and the lattice sum (A.19) `eq:latticesum_d3`.  The constant is
 `C = (m₁ + 2n + 2) + (m₂ + n + 4 + K(n-1))`, `m₁` with `Q₁ < 4^{m₁}`, `Q₁ = (1 + n C_B)(1 + C_B)^{n-1} + 2^{n-1} a₁^{n-2} a₂`,
 `a₁ = 3^d (C_D + C₆)`, `a₂ = 3^d C₆ C_D C_lat` (`C_B`, `C_D`: `baEKXiBall_holds`, `baEKXiDecay_holds`; `C₆`: `baProp6_holds`;
 `C_lat = latC (d-3)`), `m₂` with `3 + n C_B < 4^{m₂}`; it depends on `(d, n, Λ, κ, K)` only. -/
@@ -1801,14 +1800,6 @@ theorem baEKSumDecay2_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumDecay2 d n Λ κ 
     _ ≤ _ := EKSum_final_arith hn hCB.le ha₁ ha₂ hK hW1' hε0 hρdef hρ4' hρW' hr1 hrP hQ0 hPW
         hlog' hm₁ hm₂ hLK (by positivity) hWD (norm_nonneg _)
 end Pin2
-
-/-! ## 8. Compiled nonempty instances (`d = 3`, the flow datum `n = 0` of `sz0`)
-
-The instances `EKPinsInst.inst_BAEKSumDecay*` of E1 (`EKPins.lean:737-850`) take the owed pin as a hypothesis; here the
-hypothesis is the theorem.  Data: `L = 4`, `g₀ = √t₀ λ ≤ 1/64`, `κ = 1/2`, `BAReal` by `EKPinsInst.hrI` (`BAflow_real`), `Λ = 1`,
-`n = 2`, `σ = (+,-)` (`(+,+)` for the non-alternating pin), `s = 0`, `t = 1/2 ≤ 1 - g₀²/L²`, `W = 16`, `ε = 1/2` (`W^ε = 4`),
-`D = 2`, `K = 2` (`L³ = 64 ≤ 16² = W^K`, `log 4 ≤ 4`), `A = δ_0` (`(deccA0)` holds), and for the sum-zero pin
-`A = δ_0 ⊗ (δ_0 - δ_e)`, `e = (1,0,0)` (`(sumAzero)` and `(deccA0)` hold).  No hypothesis is left open. -/
 
 end RBM.BA
 

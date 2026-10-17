@@ -9,19 +9,20 @@ import RBM3D.BA.GreenLDE
 import RBM3D.BA.KBase
 
 /-!
-# The off-diagonal decay `(GijGEX_BA)` of the block Anderson resolvent (BA-G4)
+# The off-diagonal decay `(GijGEX_BA)` of the block Anderson resolvent
 
-Ticket T2403 (with Amend 1).  Design gate `docs/reports/T2390-prove.md` (G) G.4, (a′) D3.2-D3.4.
-Paper: `paper/tex/7_8_light_weight.tex` (`7_8:line`), `lem_GbEXP_BA` `:1916-1946`.
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), (8.10) `GijGEX_BA`.
 
 * §1: the target kernel `𝔗_γ(a,c) = Σ φ(a',b') e^{-γ(|a'-a|+|b'-c|)} + Ψ e^{-γ|a-c|}`: shift,
   comparison with `GreenCore_T`, convolution against `M^{(B)}`.
-* §2 (**target 1**) `GreenOff_close`: the deterministic weighted closure in the ratio norm
-  (D3.4: `Δ = L1 + L2 + L3 + Q`, `v̄ = Θ_t u`, the sources (X*), (Ξ), kernel preservation,
-  the weighted `ℓ¹` bound of `Θ`, absorption (C2)); `GreenOff_decay`: its form at the BA data.
-* §3 (**target 2**) `baStab_holds`.  §4: the two-loop identity, the closure along the flow
-  (`GreenOff_carrier_decay`).  §5 (**target 3**) `baGbEXPij'_holds`.
-  §6: compiled nonempty instances.
+* §2 `GreenOff_close`: the deterministic weighted closure in the ratio norm
+  (`Δ = L1 + L2 + L3 + Q`, `v̄ = Θ_t u`, the sources (X*), (Ξ), kernel preservation,
+  the weighted `ℓ¹` bound of `Θ`, the absorption condition); `GreenOff_decay`: its form at the BA data.
+* §3 `baStab_holds`.  §4: the two-loop identity, the closure along the flow
+  (`GreenOff_carrier_decay`).  §5 `baGbEXPij'_holds`.
+
+The smallness conditions are the closure condition `8 ρ c₀⁻¹ S ϑ ≤ 1` (see `GreenCore_theta`) and the absorption condition
+`(1 + ρ̂ c₀⁻¹ C_Θ̂) ρ̂ η ≤ 1/2`.
 -/
 
 set_option linter.style.longLine false
@@ -44,7 +45,7 @@ section Kernel
 
 variable {d L : ℕ} [NeZero L]
 
-/-- **The target kernel** `𝔗_γ(a,c) = Σ_{a',b'} φ(a',b') e^{-γ(|a'-a| + |b'-c|)} + Ψ e^{-γ|a-c|}` (`7_8:1942-1944` without the
+/-- **The target kernel** `𝔗_γ(a,c) = Σ_{a',b'} φ(a',b') e^{-γ(|a'-a| + |b'-c|)} + Ψ e^{-γ|a-c|}` (the right side of (8.10) `GijGEX_BA` without the
 `W^{-D}` term, with the block distance `zdistD ≥ zdistInf`). -/
 def GreenOff_T (d L : ℕ) [NeZero L] (γ Ψ : ℝ) (φ : Zd d L → Zd d L → ℝ) (a c : Zd d L) : ℝ :=
   (∑ a' : Zd d L, ∑ b' : Zd d L,
@@ -257,7 +258,7 @@ theorem GreenOff_convB (hc₀ : 0 < c₀) (hγ0 : 0 ≤ γ) (hγ : γ ≤ c₀ /
 
 end Kernel
 
-/-! ## 2. Target 1: the deterministic weighted closure -/
+/-! ## 2. The deterministic weighted closure -/
 
 section Close
 
@@ -369,7 +370,7 @@ theorem GreenOff_Ap_bd (hc₀ : 0 < c₀) (hS0 : 0 ≤ S) (hγ0 : 0 ≤ γ) (hγ
 
 /-- **The remainder `R = Δ - L3` is bounded linearly in `N`**: if `|Δ| ≤ N 𝔗` then
 `|Δ_{xy} - Σ_{b'} M_{[x]b'} t v̄_{b'} M_{(b',o_x) y}| ≤ (S₀ + η₀ N) 𝔗([x],[y])`, `S₀ = ρ̂ (s_A/c₀ + s_X)`, `η₀ = ρ̂ η`
-(`L1 + L2 + Q` of D3.4: the sources `s_A`, `s_X`, and the absorbed terms `α`, `e_X`, `2 d g₀ e^γ e_X/c₀`). -/
+(`L1 + L2 + Q`: the sources `s_A`, `s_X`, and the absorbed terms `α`, `e_X`, `2 d g₀ e^γ e_X/c₀`). -/
 theorem GreenOff_R_bd (hc₀ : 0 < c₀) (hS0 : 0 ≤ S) (hγ0 : 0 ≤ γ) (hγ : γ ≤ c₀ / 4) (hφ : ∀ a b, 0 ≤ φ a b)
     (hΨ : 0 < Ψ) (hΨw : Real.sqrt (((W : ℝ) ^ d)⁻¹) ≤ Ψ) (hP : 0 ≤ P) (hκ : 0 < κ) (hδ0 : 0 ≤ δ) (hg : 0 ≤ g₀)
     (hdec : ∀ a b, ‖Mb a b‖ ≤ c₀⁻¹ * Real.exp (-c₀ * (zdistD d L (a - b) : ℝ)))
@@ -569,13 +570,13 @@ theorem GreenOff_theta_step {Θ : Matrix (Zd d L) (Zd d L) ℂ} {CΘ K : ℝ}
         add_le_add (hR x y) hL3
     _ = _ := by ring
 
-/-- **Target 1: the deterministic weighted closure (D3.4)**, abstract form.  Data: the block kernel `M^{(B)} = Mb` with
+/-- **The deterministic weighted closure**, abstract form.  Data: the block kernel `M^{(B)} = Mb` with
 `|Mb_{ab}| ≤ c₀⁻¹ e^{-c₀|a-b|}` and `max_a Σ_b e^{-(c₀/2)|a-b|} ≤ S` (so `ρ̂ = c₀⁻¹ S`), `M = Mb ⊗ I`; the array `Δ = G - M`, the sources
 `𝔛` (`GreenCore_Xrow`) and `𝒜' = A + t v̄` (`GreenCore_Arow + t GreenCore_vbar`), the block averages `v̄_a = W^{-d} Σ_{k∈a} Δ_{kk}`; the
 equation (E3) in the form `Δ_{xy} = Σ_{b'} M_{[x]b'} [t v̄_{b'} M_{wy} + (t v̄_{b'} - 𝒜'_w) Δ_{wy} - 𝒜'_w M_{wy} - 𝔛_{wy}]`, `w = (b', o_x)`;
 the pointwise bounds (X*) `hX`, (Ξ) `hXi` (the conclusions of `GreenCore_Xstar`, `GreenCore_Xi`) and (A*) `hA` (`|A_w| ≤ α`);
 the propagator `Θ = (1 - t M^{(+,+)})⁻¹` through `Θ = 1 + t Θ M^{(+,+)}` and its weighted `ℓ¹` bound with the constant `C_Θ̂` (`baTheta_weighted_l1`);
-the loop control `φ ≥ 0` and `Ψ ≥ W^{-d/2}`, `Ψ > 0`; and absorption (C2) `(1 + ρ̂ c₀⁻¹ C_Θ̂) ρ̂ η ≤ 1/2`.  Conclusion: `|Δ_{xy}| ≤ 2 C_ℓ' Φ_N 𝔗_γ([x],[y])`
+the loop bound `φ ≥ 0` and `Ψ ≥ W^{-d/2}`, `Ψ > 0`; and the absorption condition `(1 + ρ̂ c₀⁻¹ C_Θ̂) ρ̂ η ≤ 1/2`.  Conclusion: `|Δ_{xy}| ≤ 2 C_ℓ' Φ_N 𝔗_γ([x],[y])`
 for all `x, y` (the diagonal included: it feeds `v̄`). -/
 theorem GreenOff_close {Θ : Matrix (Zd d L) (Zd d L) ℂ} {CΘ : ℝ}
     (hc₀ : 0 < c₀) (hγ0 : 0 ≤ γ) (hγ : γ ≤ c₀ / 4) (hφ : ∀ a b, 0 ≤ φ a b)
@@ -711,9 +712,9 @@ def GreenOff_S (d : ℕ) (Λ κ : ℝ) : ℝ := expC (d - 2) (BAct_rate d Λ κ 
 def GreenOff_rho (d : ℕ) (Λ κ : ℝ) : ℝ := (BAct_rate d Λ κ)⁻¹ * expC (d - 2) (BAct_rate d Λ κ)
 
 /-- **The closure at the BA carrier** (the deterministic core of `(GijGEX_BA)`): for one sample, on `Ω = {‖G - M‖_max ≤ δ}` and the four
-large deviation events (`LDERow`, `LDECol`, `LDEQuad`, the diagonal) with the factor `P = Φ_N`, and the loop control
+large deviation events (`LDERow`, `LDECol`, `LDEQuad`, the diagonal) with the factor `P = Φ_N`, and the loop bound
 `GreenCore_loop G a b ≤ φ(a,b)²`: `|(G - M)_{xy}| ≤ 2 C_ℓ' Φ_N 𝔗_{c_λ}([x],[y])`, with `c₀ = BAct_rate d Λ κ`, `c_λ = GreenStab_clam d Λ κ`,
-`C_Θ̂ = GreenStab_CTheta d Λ κ`, `ρ`, `S` as above, under (C1) and (C2).  The sources are `GreenCore_Xstar`, `GreenCore_Xi`, `GreenOff_Arow_bd`,
+`C_Θ̂ = GreenStab_CTheta d Λ κ`, `ρ`, `S` as above, under the closure and absorption conditions (see the module docstring).  The sources are `GreenCore_Xstar`, `GreenCore_Xi`, `GreenOff_Arow_bd`,
 the stability is `Θ = BATheta … t true true` with `baTheta_weighted_l1`; `GreenOff_close` closes. -/
 theorem GreenOff_decay (hd : 2 ≤ d) (hL : 3 ≤ L)
     {Λ g₀ κ E t δ P Ψ : ℝ} {m s z : ℂ} {G X M D : Matrix (Vtx d L W) (Vtx d L W) ℂ}
@@ -802,10 +803,10 @@ theorem GreenOff_decay (hd : 2 ≤ d) (hL : 3 ≤ L)
 
 end Close
 
-/-! ## 3. Target 2: the link `BAStab` -/
+/-! ## 3. The link `BAStab` -/
 
-/-- **Target 2**: `BAStab d L g E m t (16 κ⁻⁴)` at the bulk data `BAReal d L g κ E m`, `0 ≤ t ≤ 1` (the body of `BAStab` is
-`baStab_of_real`, `GreenStab.lean:46`). -/
+/-- **`BAStab d L g E m t (16 κ⁻⁴)`** at the bulk data `BAReal d L g κ E m`, `0 ≤ t ≤ 1` (the body of `BAStab` is
+`baStab_of_real`, `GreenStab.lean`). -/
 theorem baStab_holds (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (t : ℝ)
     (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : BAStab d L g E m t (16 * κ⁻¹ ^ 4) :=
   baStab_of_real d L g κ E m hκ hr t ht0 ht1
@@ -873,8 +874,8 @@ private theorem GreenOff_sum_vtx_ite (F : Vtx d L W → ℝ) (b : Zd d L) :
     exact absurd (Finset.mem_univ b) hb
 
 /-- **The two-loop in the entries**: for a Hermitian `H`, `‖𝓛^{(2)}_{(-,+),(a,b)}‖ = W^{-2d} Σ_{x∈a, y∈b} |G_{xy}|²`
-(rows in block `a`, columns in `b`), `G = (H - z)⁻¹` on the block-product index (the merged proofs of this identity are
-private to `Green/Pins.lean`). -/
+(rows in block `a`, columns in `b`), `G = (H - z)⁻¹` on the block-product index (the proofs of this identity in
+`Green/Pins.lean` are private). -/
 theorem GreenOff_loop_eq {H : Matrix (Idx d L W) (Idx d L W) ℂ} (hH : H.IsHermitian) (z : ℂ) (a b : Zd d L) :
     ‖loopFine d L W H z ![false, true] ![a, b]‖ =
       GreenCore_loop (blockMat d L W (Gres H z true)) a b := by
@@ -911,7 +912,7 @@ section PinDet
 variable {d : ℕ}
 
 /-- **The closure along the flow, one sample** (`n`, `ω`): on `Ω = {‖G_t - M‖_max ≤ δ}`, the large deviation events at the factor
-`P = Φ_N` and the loop control `‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ φ(a,b)²`:
+`P = Φ_N` and the loop bound `‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ φ(a,b)²`:
 `|(G_t - M)_{xy}| ≤ 2 C_ℓ' Φ_N 𝔗_{c_λ}([x],[y])` with the constants of `(κ, 𝔡)` (`Λ = 𝔡⁻¹`, `GreenOff_decay`). -/
 theorem GreenOff_carrier_decay (hd : 2 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ}
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (htT : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ)
@@ -1142,8 +1143,8 @@ theorem GreenOff_T_le_decayRHS {L W : ℕ} [NeZero L] {γ D Ψ : ℝ} {Φ : Zd d
     mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (hi _)) hΨ
   linarith
 
-/-- **The constants of the pin**: there are `ε', K` such that whenever `1 ≤ P`, `0 ≤ δ`, `0 ≤ g₀ ≤ Λ` and `√P δ ≤ ε'`, the conditions
-`δ ≤ κ/2`, (C1), (C2) hold and `2 C_ℓ' Φ_N ≤ K Φ_N`. -/
+/-- **The constants of `baGbEXPij'_holds`**: there are `ε', K` such that whenever `1 ≤ P`, `0 ≤ δ`, `0 ≤ g₀ ≤ Λ` and `√P δ ≤ ε'`, the conditions
+`δ ≤ κ/2`, the closure and absorption conditions hold and `2 C_ℓ' Φ_N ≤ K Φ_N`. -/
 theorem GreenOff_pin_consts_gen {κ c₀ ρ S CΘ γ Λ : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (hc₀ : 0 < c₀) (hρ0 : 0 ≤ ρ) (hS0 : 0 ≤ S)
     (hCΘ0 : 0 ≤ CΘ) :
     ∃ ε' Kcl : ℝ, 0 < ε' ∧ 0 ≤ Kcl ∧ ∀ P δ g₀ : ℝ, 1 ≤ P → 0 ≤ δ → 0 ≤ g₀ → g₀ ≤ Λ → Real.sqrt P * δ ≤ ε' →
@@ -1278,13 +1279,13 @@ private theorem GreenOff_whp {Ω : Type*} [MeasurableSpace Ω] {P : MeasureTheor
   StochDomAt.highProb (Path.stochDomAt_of_perTimeDomAt P size (C := (m : ℝ)) (Nat.cast_nonneg m)
     (Eventually.of_forall fun n => by rw [Real.rpow_natCast]; exact_mod_cast hV n) h) hτ
 
-/-! ## 5. Target 3: `baGbEXPij'_holds` -/
+/-! ## 5. The statement `BAGbEXPij'` -/
 
-/-- **Target 3: the pin `BAGbEXPij'` for `2 ≤ d`** (`lem_GbEXP_BA` (b), `(GijGEX_BA)`, event form; paper-delta `T2403a`: the pin has no
+/-- **The statement `BAGbEXPij'` for `2 ≤ d`** (Lemma 8.4 `lem_GbEXP_BA` (b), (8.10) `GijGEX_BA`, event form; the statement has no
 `d ≥ 3`).  `c = c_λ = GreenStab_clam d 𝔡⁻¹ κ` depends on `(d, κ, 𝔡)` only.  Proof: with `τ₀ = min(τ/2, 𝔠 ε₀)` the four large deviation
 events (`baLDEin_holds`) and the loop premise hold with high probability (`≤ N²` pairs, `HighProbAt.inter`); on them and on
-`Ω = {‖G_t - M‖_max ≤ W^{-ε₀}}`, for `n` large (`W ≥ N^𝔠`, `Φ_N = N^{τ₀}`: (C1), (C2) hold, `GreenOff_pin_consts`), the closure
-`GreenOff_carrier_decay` gives `|(G_t - M)_{xy}| ≤ 2 C_ℓ' N^{τ₀} 𝔗_{c_λ}` with the control `φ = N^{τ₀/2} Φ_n`, and
+`Ω = {‖G_t - M‖_max ≤ W^{-ε₀}}`, for `n` large (`W ≥ N^𝔠`, `Φ_N = N^{τ₀}`: the closure and absorption conditions hold, `GreenOff_pin_consts`), the closure
+`GreenOff_carrier_decay` gives `|(G_t - M)_{xy}| ≤ 2 C_ℓ' N^{τ₀} 𝔗_{c_λ}` with the bound `φ = N^{τ₀/2} Φ_n`, and
 `2 C_ℓ' N^{3τ₀/2} ≤ N^τ`. -/
 theorem baGbEXPij'_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPij' d := by
   intro κ ε 𝔡 hκ hε h𝔡
@@ -1369,6 +1370,5 @@ theorem baGbEXPij'_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPij' d := by
 
 end Pin
 
-/-! ## 6. Compiled nonempty instances -/
 
 end RBM.BA

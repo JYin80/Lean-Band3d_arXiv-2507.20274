@@ -6,15 +6,15 @@ Authors: Jun Yin
 import RBM3D.BA.KKernel
 
 /-!
-# The Fourier symbol of the propagator kernel `K = |M^{(B)}|²` (BA-P3)
+# The Fourier symbol of the propagator kernel `K = |M^{(B)}|²`
 
-Ticket T2324.  Deterministic layer of the block Anderson model, uniform in `L` and in `g ∈ (0, Λ]`
-(paper-delta D614: for `g ≥ (2C)⁻¹` the paper has no lower bound `(Mbound_AO)`, `7_8:1891`).
+Deterministic layer of the block Anderson model, uniform in `L` and in `g ∈ (0, Λ]`
+(for `g ≥ (2C)⁻¹` the paper has no lower bound as in (8.6) `Mbound_AO`).
 
-Cut P3a: the variance lower bound `1 - |m|² ≥ 2dg²/R⁴` (averaged Ward identity and `tr Ψ = 0`,
+Part 1: the variance lower bound `1 - |m|² ≥ 2dg²/R⁴` (averaged Ward identity and `tr Ψ = 0`,
 `tr Ψ² = 2dN`), the coordinate-permutation invariance of `M^{(B)}`, the equal weights of the `2d`
 neighbours of `0` and the per-direction bound `K_{0,±e_i} ≥ c g²`.
-Cut P3b: the symbol `K̂(θ_k) = Σ_a K_{0a} cos(θ_k · a)`, its gap, laziness and the second moment.
+Part 2: the symbol `K̂(θ_k) = Σ_a K_{0a} cos(θ_k · a)`, and its gap.
 -/
 
 set_option linter.style.longLine false
@@ -31,7 +31,7 @@ namespace RBM.BA
 
 open RBM RBM.Gauss
 
-/-! ## 1. The variance lower bound (target 1) -/
+/-! ## 1. The variance lower bound -/
 
 section Variance
 
@@ -106,7 +106,7 @@ private theorem KSymbol_sum_eig_sq (hL : 3 ≤ L) :
   exact_mod_cast this
 
 /-- The eigenvalues of `Ψ^{(B)}` lie in `[-2d, 2d]` (maximal row sum; a re-proof of the private
-`FlowPins_eig_le`, `FlowPins.lean:735`, with `card_adj`). -/
+`FlowPins_eig_le`, `FlowPins.lean`, with `card_adj`). -/
 private theorem KSymbol_eig_le (hL : 3 ≤ L) (j : Zd d L) :
     |(PsiB_isHermitian d L).eigenvalues j| ≤ 2 * d := by
   classical
@@ -179,7 +179,7 @@ private theorem KSymbol_double_norm_sq {ι : Type*} [Fintype ι] (f : ι → ℂ
   rw [KSymbol_double_sq (fun i => (f i).re), KSymbol_double_sq (fun i => (f i).im)]
   ring
 
-/-- **Target 1** (P3a), the variance lower bound (supervisor 0344 Q2; paper-delta D614):
+/-- **The variance lower bound**:
 `1 - |m|² = Var(f) = ½ N⁻² Σ_{ij} |f_i - f_j|² ≥ R⁻⁴ Var(v) = 2dg²/R⁴`,
 `f_i = (v_i - E - m)⁻¹`, `v = BAspec d L g`, `R = 2dg + |E + m|`. -/
 theorem BAvar_lower : ∀ (d L : ℕ) [NeZero L], 3 ≤ L → 0 < d → ∀ (g κ E : ℝ) (m : ℂ), 0 < g → 0 < κ → BAReal d L g κ E m →
@@ -294,7 +294,7 @@ theorem BAvar_lower : ∀ (d L : ℕ) [NeZero L], 3 ≤ L → 0 < d → ∀ (g �
 
 end Variance
 
-/-! ## 2. Coordinate permutations (target 2) and the equal weights of the neighbours (target 3) -/
+/-! ## 2. Coordinate permutations and the equal weights of the neighbours -/
 
 section Perm
 
@@ -321,7 +321,7 @@ private theorem KSymbol_BAMB_eq (g : ℝ) (z m : ℂ) :
   unfold BAMB Mres
   rw [Matrix.nonsing_inv_eq_ringInverse]
 
-/-- **Target 2** (P3a): `M^{(B)}` is invariant under coordinate permutations of `Z_L^d`
+/-- **Coordinate permutations**: `M^{(B)}` is invariant under coordinate permutations of `Z_L^d`
 (a coordinate permutation is an automorphism of the torus adjacency). -/
 theorem BAMB_perm : ∀ (d L : ℕ) [NeZero L] (σ : Equiv.Perm (Fin d)) (g : ℝ) (z m : ℂ) (a b : Zd d L),
     BAMB d L g z m (fun j => a (σ j)) (fun j => b (σ j)) = BAMB d L g z m a b := by
@@ -388,7 +388,7 @@ private theorem KSymbol_filter_adj_zero (hL : 3 ≤ L) [NeZero L] :
   ext b
   simp only [Finset.mem_filter, Finset.mem_univ, true_and, Adj, zero_sub, zdistD_neg]
 
-/-- **Target 3** (P3a): every neighbour of `0` carries the same weight. -/
+/-- **Equal weights**: every neighbour of `0` carries the same weight. -/
 theorem BAK_dir_eq : ∀ (d L : ℕ) [NeZero L], 3 ≤ L → 0 < d → ∀ (g E : ℝ) (m : ℂ) (i : Fin d) (s : Bool),
     BAK d L g E m 0 (unitVec d L (i, s)) =
       (2 * (d : ℝ))⁻¹ * ∑ b ∈ Finset.univ.filter (fun b : Zd d L => Adj d L 0 b), BAK d L g E m 0 b := by
@@ -405,7 +405,7 @@ theorem BAK_dir_eq : ∀ (d L : ℕ) [NeZero L], 3 ≤ L → 0 < d → ∀ (g E 
 
 end Perm
 
-/-! ## 3. The per-direction bound (target 4) -/
+/-! ## 3. The per-direction bound -/
 
 section Direction
 
@@ -425,8 +425,8 @@ private theorem KSymbol_R_le (d L : ℕ) [NeZero L] (Λ g E : ℝ) (m : ℂ) (hg
   have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
   nlinarith [mul_le_mul_of_nonneg_left hgΛ hd0]
 
-/-- The explicit constant of target 4: `c = κ²/(4(4dΛ + 3)⁸)`:
-`K_{0,±e_i} ≥ c g²` (`BAK_adj_sum_ge`, target 1, target 3). -/
+/-- The explicit constant of the per-direction bound: `c = κ²/(4(4dΛ + 3)⁸)`:
+`K_{0,±e_i} ≥ c g²` (`BAK_adj_sum_ge`, `BAvar_lower`, `BAK_dir_eq`). -/
 private theorem KSymbol_dir_ge_explicit (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (hd : 0 < d) (Λ g κ E : ℝ)
     (m : ℂ) (hg : 0 < g) (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (i : Fin d) (s : Bool) :
     κ ^ 2 / (4 * (4 * (d : ℝ) * Λ + 3) ^ 8) * g ^ 2 ≤ BAK d L g E m 0 (unitVec d L (i, s)) := by
@@ -457,7 +457,7 @@ private theorem KSymbol_dir_ge_explicit (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (h
 
 end Direction
 
-/-! ## 4. The symbol of `K` on the dual torus (targets 5-7) -/
+/-! ## 4. The symbol of `K` on the dual torus -/
 
 section Defs
 
@@ -526,7 +526,7 @@ private theorem KSymbol_sin_sum (g E : ℝ) (m : ℂ) (k : Zd d L) :
   simp only [Equiv.neg_apply, BAK_zero_neg, KSymbol_sin_neg, mul_neg, Finset.sum_neg_distrib] at h
   linarith
 
-/-- **Target 5** (P3b): `BAKhat` is the Fourier transform of the row `K_{0,·}` (the sine part vanishes). -/
+/-- **`BAKhat` is the Fourier transform of the row `K_{0,·}`** (the sine part vanishes). -/
 theorem BAKhat_eq : ∀ (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (k : Zd d L),
     (∑ a : Zd d L, (BAK d L g E m 0 a : ℂ) *
       Complex.exp (2 * Real.pi * Complex.I / L * ∑ j, ((k j).val : ℂ) * ((a j).val : ℂ))) =
@@ -552,7 +552,7 @@ theorem BAKhat_eq : ∀ (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (k : Zd d L
 
 end Symbol
 
-/-! ## 5. The gap (target 6) -/
+/-! ## 5. The gap -/
 
 section Gap
 
@@ -605,8 +605,8 @@ private theorem KSymbol_cos_unitVec {L : ℕ} [NeZero L] (d : ℕ) (hL : 3 ≤ L
   · rw [hneg, KSymbol_cos_neg, htrue]
   · rw [htrue]
 
-/-- **Target 6** (P3b): the spectral gap `1 - K̂(θ) ≥ c g² |θ|²`, uniformly in `L` and `g ∈ (0, Λ]`
-(`c = 4κ²/(π² · 4(4dΛ + 3)⁸)`; paper-delta D614). -/
+/-- **The spectral gap** `1 - K̂(θ) ≥ c g² |θ|²`, uniformly in `L` and `g ∈ (0, Λ]`
+(`c = 4κ²/(π² · 4(4dΛ + 3)⁸)`). -/
 theorem BAK_gap : ∀ d : ℕ, 0 < d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ c : ℝ, 0 < c ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
       ∀ k : Zd d L, c * g ^ 2 * BAthetaSq d L k ≤ 1 - BAKhat d L g E m k := by
@@ -659,8 +659,5 @@ theorem BAK_gap : ∀ d : ℕ, 0 < d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → 
 
 end Gap
 
-/-! ## 6. The second moment (target 8) -/
-
-/-! ## 7. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, data `P` of `KKernelInst`) -/
 
 end RBM.BA

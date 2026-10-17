@@ -8,31 +8,25 @@ import RBM3D.BA.GUEOneLoop
 import RBM3D.Universality.GUEPhase.Proc
 
 /-!
-# BA-C5 row a: the process layer of the §7.2 random layer on the GUE-phase grid at block Anderson
+# The process layer of the random layer of [YY_25, §7.2] on the GUE-phase grid at block Anderson
 
-Ticket T2519 (row a; DECISIONS §344, §346, §348; Amends 1-3; design gate D1 signed by
-`docs/reports/T2519-1a-audit.md`).  New BA leaf: no merged file is edited.  Band twins:
-`Universality/GUEPhase/Grid.lean` (`GUEPathBounds:89`), `RandomLayerB.lean` (`RandomLayerB_KFam:63`,
-`RandomLayerB_PBband:346`).  Paper: the GUE phase of Thm 2.4
-(`paper/tex/1_2_Intro_model_result.tex:566-570`, "essentially identical to [YY_25, Theorem 2.6]"),
+Band counterparts: `Universality/GUEPhase/Grid.lean` (`GUEPathBounds`), `RandomLayerB.lean` (`RandomLayerB_KFam`,
+`RandomLayerB_PBband`), `Proc.lean`.  Paper: the GUE phase of Theorem 2.4
+(`Thm: B_Univ`; "essentially identical to [YY_25, Theorem 2.6]"),
 `d ≥ 3`, block Anderson `S^{(B)}(0) = 1`.
 
-* §1 (target 1, first commit; read by rows b, b′, c, d and N2) `GUEPathBoundsBA`, `BAKFam`, `BAPB`:
-  the texts `T2519_PathBoundsBA`, `T2519_KFamBA`, `T2519_PBBA` of the 1a-audit (probe `t/T2519`
-  b992c2e7, with Amend 1 item 1: `n₀ = 4`, `gueGridK sz 4`, loop lengths `≤ 4 * 4`) under their
-  final names.  They are `def … : Prop`; the local law of `GUEPathBoundsBA` is against
-  `Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, not `m • 1`; no twist field (`hoff` is target 7,
-  `gueGrid_twistBA`, row b′).
-* §2 (target 2) the BA process layer, twin of `Proc.lean:83-122, 396-469`: `gueDevBA`,
+* §1 `GUEPathBoundsBA`, `BAKFam`, `BAPB` (`n₀ = 4`, `gueGridK sz 4`, loop lengths `≤ 4 * 4`).
+  They are `def … : Prop`; the local law of `GUEPathBoundsBA` is against
+  `Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, not `m • 1`; no twist field (`hoff` is handled by
+  `gueGrid_twistBA`).
+* §2 the BA process layer, the analogue of `Proc.lean`: `gueDevBA`,
   `gueStopBA`, `gueLmaxBA`, `gueDmaxBA`, `gueLprocBA`, `gueDprocBA` (the loop length is `l`, the
-  flow datum is `(g, E, m)`) and the structural facts `gueLprocBA_nonneg`, …, `gueDprocBA_time`.
-* §3 `norm_egtNGUEOf_le` (twin of `Proc:596`, the generic `egtNGUEOf`); §4 `gueDevBA_succ_le`
-  (twin of `Proc:771`, `0 < Im m` and `‖m‖ ≤ 1` replace `|E| < 2`).
-* The private band helpers are read by `open private … from RBM3D.Universality.GUEPhase.Proc`;
-  `gueTent`, `gueInterp`, `gueDelta`, `gueKbar`, `gueKproc` carry no band token and are read by
+  flow datum is `(g, E, m)`) and the facts `gueLprocBA_nonneg`, …, `gueDprocBA_time`.
+* §3 `norm_egtNGUEOf_le` (the analogue of the band `norm_egtNGUE_le`, for the generic `egtNGUEOf`); §4 `gueDevBA_succ_le`
+  (the analogue of the band `gueDev_succ_le`; `0 < Im m` and `‖m‖ ≤ 1` replace `|E| < 2`).
+* The private band helpers are used through `open private … from RBM3D.Universality.GUEPhase.Proc`;
+  `gueTent`, `gueInterp`, `gueDelta`, `gueKbar`, `gueKproc` carry no band token and are used by
   name.
-* Instances: §1 `BAKFam` is nonempty at the BA flow datum of `sz0`; §2-§4 apply every fact at that
-  datum.
 -/
 
 set_option linter.style.longLine false
@@ -48,10 +42,10 @@ namespace RBM.BA
 
 open MeasureTheory Filter Matrix RBM RBM.Gauss RBM.Path RBM.Loop RBM.Univ RBM.Univ.GUEPhase
 
-/-! ## 1. Target 1: the vocabulary -/
+/-! ## 1. The vocabulary -/
 
-/-- **Target 1, `GUEPathBoundsBA`** (twin of `GUEPathBounds`, `Grid:89`; text `T2519_PathBoundsBA`): the output of the §7.2
-random layer on the BA grid `gueHBA` at the grid times `k ≤ K n`: (7.28) for loops of length `1 ≤ k ≤ n₀` against a
+/-- **`GUEPathBoundsBA`** (the analogue of `GUEPathBounds`): the output of the random layer of [YY_25, §7.2]
+on the BA grid `gueHBA` at the grid times `k ≤ K n`: (7.28) of [YY_25] for loops of length `1 ≤ k ≤ n₀` against a
 primitive family `Kt` (first conjunct `lk`), and `‖G̃ - M‖_max ≺ (N η_u)^{-1/2}` against the deterministic
 `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1` (second conjunct `localLaw`).  The path is `gueHBA`, the flow `ztOf (m n) (E n)`, the scale
 `N etaOf (m n) u`.  No twist field. -/
@@ -69,7 +63,7 @@ def GUEPathBoundsBA {d : ℕ} (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ 
         Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n) p.2.1 p.2.2‖)
     (fun n p _ => (((sz.size n : ℕ) : ℝ) * etaOf (m n) (gridTime t1 t0 K n p.1))⁻¹ ^ ((1 : ℝ) / 2))
 
-/-- **Target 1, `BAKFam`** (twin of `RandomLayerB_KFam`, `RandomLayerB:63`; text `T2519_KFamBA`): at the flow point
+/-- **`BAKFam`** (the analogue of `RandomLayerB_KFam`): at the flow point
 `g = √t₀ λ`, `m = BAm d L g E'` (the real-axis solution), start `BAKsol` at `t₁`, the ODE `primRhsGUE` on `[t₁, t₀]`
 (loops of length `≤ 4 * 4`, `n₀ = 4`), 2-loops `kTwoGUEBA`.  Every clause is guarded by `0 < g` (`gueK_existsBA` needs
 it; `Sizes.lam` has no sign). -/
@@ -88,40 +82,40 @@ def BAKFam (d : ℕ) (sz : Sizes d) (E' t1 t0 : ℕ → ℝ) (Kt : ∀ n, ℝ �
         kTwoGUEBA d (sz.L n) (sz.W n) (Real.sqrt (t0 n) * sz.lam n) (E' n)
           (BAm d (sz.L n) (Real.sqrt (t0 n) * sz.lam n) (E' n : ℂ)) (t1 n) s σ₁ σ₂ a b)
 
-/-- **Target 1, `BAPB`** (twin of `RandomLayerB_PBband`, `RandomLayerB:346`; text `T2519_PBBA`): `GUEPathBoundsBA` at the flow
-point of the RBG texts, `g = √t₀ λ`, `m = BAm d L g E'`, grid `gueGridK sz 4`, `n₀ = 4` (Amend 1 item 1 (a)). -/
+/-- **`BAPB`** (the analogue of `RandomLayerB_PBband`): `GUEPathBoundsBA` at the flow
+point of the random-layer statements, `g = √t₀ λ`, `m = BAm d L g E'`, grid `gueGridK sz 4`, `n₀ = 4`. -/
 def BAPB (d : ℕ) (sz : Sizes d) (E' t1 t0 : ℕ → ℝ) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) : Prop :=
   GUEPathBoundsBA sz (fun n => Real.sqrt (t0 n) * sz.lam n) E' t1 t0
     (fun n => BAm d (sz.L n) (Real.sqrt (t0 n) * sz.lam n) (E' n : ℂ)) (gueGridK sz 4) 4 Kt
 
-/-! ## 2. Target 2: the process layer on the BA grid
+/-! ## 2. The process layer on the BA grid
 
-The twins of the band process layer (`Universality/GUEPhase/Proc.lean:83-122, 396-469`) at the BA grid path `gueHBA`
+The analogues of the band process layer (`Universality/GUEPhase/Proc.lean`) at the BA grid path `gueHBA`
 (`g Ψ_I + H_k`), the flow `ztOf (m n) (E n)` and the deterministic centre `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1` of the
-local law.  The flow datum is `(g, E, m)` with `E`, `g` real and `m` complex (the BA twin of the band `E ↦ mE E`); the loop
+local law.  The flow datum is `(g, E, m)` with `E`, `g` real and `m` complex (the BA analogue of the band `E ↦ mE E`); the loop
 length is `l`.  `gueTent`, `gueInterp`, `gueDelta`, `gueKbar`, `gueKproc` carry no band token and are read by name. -/
 
 section Proc
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `max_{i,j} |(G_k - M)_{ij}|` at the grid step `k`, `M = Mres (g Ψ_I) E m` (twin of `gueDev`, `Proc:83`; the band centre `mE E • 1`
-is the case `H₀ = 0` of `Mres`, cf. `Mres_zero_msc`, `Loop/GLoopFlow:219`). -/
+/-- `max_{i,j} |(G_k - M)_{ij}|` at the grid step `k`, `M = Mres (g Ψ_I) E m` (the analogue of `gueDev`; the band centre `mE E • 1`
+is the case `H₀ = 0` of `Mres`). -/
 def gueDevBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ (sz.withLam 0)) : ℝ :=
   ⨆ ij : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n),
     ‖(green (gueHBA sz g t1 t0 K n k ω) (ztOf (m n) (E n) (gridTime t1 t0 K n k)) -
         Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n)) ij.1 ij.2‖
 
-/-- The freezing index: the first grid step with `gueDevBA ≥ δ_n` (else `K n`) (twin of `gueStop`, `Proc:89`). -/
+/-- The freezing index: the first grid step with `gueDevBA ≥ δ_n` (else `K n`) (the analogue of `gueStop`). -/
 def gueStopBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ) (n : ℕ) (ω : PathΩ (sz.withLam 0)) : ℕ :=
   firstHit (fun k ω' => gueDevBA sz g E t1 t0 m K n k ω') (δ n) (K n) ω
 
-/-- `L^{(l)}_k = max_{σ,a} |L_{σ,a}|` at the grid step `k` (twin of `gueLmax`, `Proc:93`). -/
+/-- `L^{(l)}_k = max_{σ,a} |L_{σ,a}|` at the grid step `k` (the analogue of `gueLmax`). -/
 def gueLmaxBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n l k : ℕ) (ω : PathΩ (sz.withLam 0)) : ℝ :=
   RBM.Ind.loopMax d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueHBA sz g t1 t0 K n k ω))
     (ztOf (m n) (E n) (gridTime t1 t0 K n k)) l
 
-/-- `D^{(l)}_k = max_x |L_x - K̃_x|` at the grid step `k` (twin of `gueDmax`, `Proc:98`). -/
+/-- `D^{(l)}_k = max_x |L_x - K̃_x|` at the grid step `k` (the analogue of `gueDmax`). -/
 def gueDmaxBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ)
     (n l k : ℕ) (ω : PathΩ (sz.withLam 0)) : ℝ :=
   ⨆ x : (Fin l → Bool) × (Fin l → Zd d (sz.L n)),
@@ -129,18 +123,18 @@ def gueDmaxBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (Kt 
         (ztOf (m n) (E n) (gridTime t1 t0 K n k)) (loopOf x.1 x.2) -
       Kt n (gridTime t1 t0 K n k) (loopOf x.1 x.2)‖
 
-/-- The stopped, interpolated `Lm` fed to `eq727GEAt`/`eq728GAt` (twin of `gueLproc`, `Proc:112`). -/
+/-- The stopped, interpolated `Lm` fed to `eq727GEAt`, `eq728GAt` (the analogue of `gueLproc`). -/
 def gueLprocBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ) (n l : ℕ) (t : ℝ)
     (ω : PathΩ (sz.withLam 0)) : ℝ :=
   gueInterp t1 t0 K n (fun k => gueLmaxBA sz g E t1 t0 m K n l (min k (gueStopBA sz g E t1 t0 m K δ n ω)) ω) t
 
-/-- The stopped, interpolated `Dm` fed to `eq727GEAt`/`eq728GAt` (twin of `gueDproc`, `Proc:116`). -/
+/-- The stopped, interpolated `Dm` fed to `eq727GEAt`, `eq728GAt` (the analogue of `gueDproc`). -/
 def gueDprocBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ)
     (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (n l : ℕ) (t : ℝ) (ω : PathΩ (sz.withLam 0)) : ℝ :=
   gueInterp t1 t0 K n
     (fun k => gueDmaxBA sz g E t1 t0 m K Kt n l (min k (gueStopBA sz g E t1 t0 m K δ n ω)) ω) t
 
-/-! ### Structural facts of the stopped processes -/
+/-! ### Elementary facts of the stopped processes -/
 
 section ProcFacts
 
@@ -281,7 +275,7 @@ theorem gueDprocBA_le (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (n l
     (fun k => GUEProcBA_gueDmax_le_gueLmax_add_gueKbar sz Kt n l (min k (gueStopBA sz g E t1 t0 m K δ n ω)) k
       (min_le_left _ _) ω) t
 
-/-- `hodd` for the stopped processes: (6.4) at the grid, Cauchy-Schwarz for the tent weights. -/
+/-- `hodd` for the stopped processes: the odd-length bound at the grid, Cauchy-Schwarz for the tent weights. -/
 theorem gueLprocBA_odd (n j : ℕ) (hj : 1 ≤ j) (t : ℝ) (ω : PathΩ (sz.withLam 0)) :
     gueLprocBA sz g E t1 t0 m K δ n (2 * j + 1) t ω ≤
       Real.sqrt (gueLprocBA sz g E t1 t0 m K δ n (2 * j) t ω * gueLprocBA sz g E t1 t0 m K δ n (2 * j + 2) t ω) := by
@@ -316,16 +310,16 @@ theorem gueDprocBA_time (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (n
 
 end Proc
 
-/-! ## 3. Target 2: the bound on `𝓔^{(G̃)}` for `SBgue`
+/-! ## 3. The bound on `𝓔^{(G̃)}` for `SBgue`
 
-`egtNGUEOf` (`Generator:79`, class P) is the generic `𝓔^{(G̃)}`: `(tr (G(σ) E_a) - m(σ))` replaces the band `avgErr`
-(`Generator_avgErr`, `Generator:1090`: the two agree at `m = mE E`). -/
+`egtNGUEOf` (`Generator`) is the generic `𝓔^{(G̃)}`: `(tr (G(σ) E_a) - m(σ))` replaces the band `avgErr`
+(`Generator_avgErr`: the two agree at `m = mE E`). -/
 
 section EgtBound
 
 variable {d : ℕ}
 
-/-- **`𝓔^{(G̃)}` of the GUE profile** (twin of `norm_egtNGUE_le`, `Proc:596`; `SBgue = L^{-d}`): `|𝓔̃_GUE(I)| ≤ n · (W L)^d · ε · B`
+/-- **`𝓔^{(G̃)}` of the GUE profile** (the analogue of `norm_egtNGUE_le`; `SBgue = L^{-d}`): `|𝓔̃_GUE(I)| ≤ n · (W L)^d · ε · B`
 for `|tr (G(σ) E_a) - m(σ)| ≤ ε` and `|𝓛_{cut_k^{(b)}}| ≤ B`.  The prefactor is `W^d`, `SBgue = L^{-d}` and the label sums over
 `Zd d L` have `L^d` terms each, so that `W^d · (L^d · L^d) · L^{-d} = (W L)^d`.  No `|E| < 2`, no `m = mE E`. -/
 theorem norm_egtNGUEOf_le (L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
@@ -395,7 +389,7 @@ theorem norm_egtNGUEOf_le (L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ
 
 end EgtBound
 
-/-! ## 4. Target 2: the one-step change of the entry deviation -/
+/-! ## 4. The one-step change of the entry deviation -/
 
 section DevStep
 
@@ -403,7 +397,7 @@ open scoped Matrix.Norms.L2Operator
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **One-step change of the entry deviation** (twin of `gueDev_succ_le`, `Proc:771`): the resolvent identity
+/-- **One-step change of the entry deviation** (the analogue of `gueDev_succ_le`): the resolvent identity
 `G' - G = G' ((H - H') + (z' - z)) G`, `H' - H = √(Δ/N) X_{k+1}` (`gueHBA_succ`), `|z' - z| = Δ |m| ≤ Δ`, and `η_u ≥ η_{t₀}` at the grid
 times.  The jump of the centre `M = Mres (g Ψ_I) E m` is zero (`M` does not move with the grid), so the statement is the band one
 with `etaT (E n) ↦ etaOf (m n)`; `0 < Im m` and `|m| ≤ 1` (`BAm_norm_le_one`) replace `|E| < 2`. -/
@@ -512,18 +506,6 @@ theorem gueDevBA_succ_le (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ �
 
 end DevStep
 
-/-! ## Compiled nonempty instances (target 5, §1)
-
-`d = 3`, `sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`, `Defs/Sizes.lean`) and the BA flow datum of `sz0` at every
-`n`: `t₀ = BAflowT0 sz0 zSeq` (so `g = √t₀ λ = BAflowLam0`), `E' = BAflowEs`, `m = BAm … = BAmF` (`BAReal` at `κ = 1/2`
-for every `n`, `BAflow_real`), `t₁ = t₀ / 2`.  The window is nondegenerate (`0 < t₁ < t₀ < 1`, `0 < g`). -/
-
-/-! ### Targets 2: the process layer at the BA flow datum of `sz0`
-
-`g = BAflowLam0`, `E = BAflowEs`, `m = BAmF` (`BAReal` at `κ = 1/2` for every `n`), the grid `t₁ = 1/4`, `t₀ = 1/2`, `K = 4`, the
-a priori threshold `δ_n = 1`.  Every hypothesis is discharged. -/
-
--- `hLDK`, `hDLK`, `hodd`, the grid values and the continuity at the flow datum.
 end RBM.BA
 
 end

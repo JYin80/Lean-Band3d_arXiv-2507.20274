@@ -17,27 +17,26 @@ import RBM3D.BA.EMn2BA
 import RBM3D.BA.SEforLnBA
 
 /-!
-# U3-BA (a), file 1: the BA kernel layer (ticket T2507, row a)
+# The block Anderson kernel layer of the evolution-kernel sum estimates
 
-Paper: arXiv:2507.20274, `lem:sum_Ndecay`, `lem:sum_decay`, `lem:sum_decay_nonzero` (`3_5:1615-1666`) read at the block Anderson
-model (`7_8:2099-2100`: Steps 3-6 extend verbatim).  New leaf: no merged file is edited.  The check is
-`docs/tickets/checks/T2507-check.lean` (pins `T2507_*`).
+Paper: arXiv:2507.20274, Lemma 4.15 (`lem:sum_Ndecay`), Lemma 4.16 (`lem:sum_decay`) and Lemma 4.17 (`lem:sum_decay_nonzero`)
+of Subsection 4.4, read at the block Anderson model (the proof of Steps 3-6 of Theorem 8.2, `lem:main_ind_BA`: the
+proofs extend verbatim).  A leaf file.
 
 BA tuple `(fun sz => Sizes.seqP (sz.withLam 0), BAFlow, baFMz, BAflowT0)`; `gK = BAflowLam0`; `Aof κ = (κ+1)/κ`.
 
-* 1. `BAEKKer` (= `T2507_EKKer`; the only new public `def`): the model class of the kernel pins, `STEKKer d`-typed.
-* 2. `baEKKer_flow` (= `T2507_KerFlowBA`): the `hKer` bundle (`κm = κ`, the class, the window and R1) of `ST_step6_caseII_of_pinsgL`,
+* 1. `BAEKKer` (the only public `def`): the model class of the kernel hypotheses, `STEKKer d`-typed.
+* 2. `baEKKer_flow`: the `hKer` bundle (`κm = κ`, the class, the window and the comparison of `g₀` with `λ`) of
   `stExpIniIgL'_of`, `stExpIntIIgL_of` at the BA family.
-* 3. the five forms `baEKSum{Ndecay,Res1,Res2NAL,Res2}gL_holds`, `baEKNonzerogL_holds` at `@BAEKKer d`: the class is unpacked,
-  `Step2Kern_UN_BA` turns `Step2Gen_UN` into stage E's `BAUN`, the stage-E pin is applied at `g = gK n`, and the `≺` lift is the
-  private core `EKGenBA_core`, the twin of the private band-typed `prec_core` (`Evolution/Prec.lean:130`) at a law `μ` and a
-  kernel coupling `gK`; `prec_L_pow_le`, `prec_log_le` (`Prec.lean:73, 86`) are copied as `EKGenBA_L_pow_le`, `EKGenBA_log_le`.
-* 4. `baEKSumDecayNonzeroA_holds` (= `T2507_EKNonzeroA`): `BAEKSumDecayNonzero` with the threshold `(1 - s) L² ≤ A g²`, every `A > 0`.
-* 5. `baNQGoodGen_kerNAL`, `baQProxyG_kerEK4` (= `T2507_KerNALBA`, `T2507_KerEK4BA`): the deterministic kernel classes D1 of
-  T2491 and T2498 at the BA family.
-* 6. compiled nonempty instances at `d = 3` (`sz0`, `zSeq`, `flow_sz0`).
+* 3. the forms `baEKSumNdecaygL_holds`, `baEKSumRes2NALgL_holds`, `baEKSumRes2gL_holds`, `baEKNonzerogL_holds` at `@BAEKKer d`: the class is unpacked,
+  `Step2Kern_UN_BA` turns `Step2Gen_UN` into `BAUN`, the corresponding estimate for `BAUN` is applied at `g = gK n`, and the
+  `≺` lift is the private core `EKGenBA_core`, the analogue of the private band-typed `prec_core` (`Evolution/Prec.lean`) at a law
+  `μ` and a kernel coupling `gK`; `prec_L_pow_le`, `prec_log_le` are re-proved as `EKGenBA_L_pow_le`, `EKGenBA_log_le`.
+* 4. `baEKSumDecayNonzeroA_holds`: the form of `lem:sum_decay_nonzero` with the threshold `(1 - s) L² ≤ A g²`, every `A > 0`.
+* 5. `baNQGoodGen_kerNAL`, `baQProxyG_kerEK4`: the deterministic kernel classes at the BA family.
 
-R1 (UBA-C1) is stated once, in target 2, and used in no proof here.  Private helpers carry the stem `EKGenBA_`.
+The comparison of `g₀` with `λ` is stated once, in `baEKKer_flow`, and used in no proof here.  The names of the private helpers
+begin with EKGenBA_.
 -/
 
 set_option linter.style.longLine false
@@ -53,16 +52,16 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Targets 1 and 2: the class `BAEKKer` and the flow bundle -/
+/-! ## 1. The class `BAEKKer` and the flow bundle -/
 
-/-- **Target 1, `BAEKKer`** (= `T2507_EKKer`; UBA-C2): the carrier `C` is the BA carrier at the coupling `gK` with the real energies `E`
-and bulk data `BAReal` at every `n` (bulk parameter `κ`); the kernel `Step2Gen_UN C` is then stage E's `BAUN` (`Step2Kern_UN_BA`).  There is
+/-- **`BAEKKer`**: the carrier `C` is the BA carrier at the coupling `gK` with the real energies `E`
+and bulk data `BAReal` at every `n` (bulk parameter `κ`); the kernel `Step2Gen_UN C` is then `BAUN` (`Step2Kern_UN_BA`).  There is
 no window field: the window is the forms' own `∀ᶠ n, 0 < gK n ∧ gK n ≤ 𝔡⁻¹`.  It has the type `STEKKer d` when read as `@BAEKKer d`. -/
 def BAEKKer {d : ℕ} (sz : Sizes d) (C : FlowFM sz) (gK : ℕ → ℝ) (κ : ℝ) : Prop :=
   ∃ E : ℕ → ℝ, C = baFM sz gK E ∧ ∀ n, BAReal d (sz.L n) (gK n) κ (E n) (BAmF sz gK E n)
 
-/-- **Target 2, `baEKKer_flow`** (= `T2507_KerFlowBA`): the `hKer` bundle at the BA family with `κm = κ`: `κ ≤ Im m` at every `n`
-(`EMn2BA_mF_data`), the class at the flow carrier (`BAflow_real`), the window (`BAflow_lam0_window`), and the comparison R1
+/-- **`baEKKer_flow`**: the `hKer` bundle at the BA family with `κm = κ`: `κ ≤ Im m` at every `n`
+(`EMn2BA_mF_data`), the class at the flow carrier (`BAflow_real`), the window (`BAflow_lam0_window`), and the comparison
 `g₀² ≤ λ²`, `λ² ≤ ((κ+1)/κ) g₀²` (`TwistStep2_lam0_sq`) with `0 ≤ g₀ λ`. -/
 theorem baEKKer_flow (d : ℕ) : ∀ κ : ℝ, 0 < κ → ∃ κm : ℝ, 0 < κm ∧ ∀ (sz : Sizes d) (ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     (∀ n, κm ≤ ((baFMz sz z).m n).im) ∧ BAEKKer sz (baFMz sz z) (BAflowLam0 sz z) κm ∧
@@ -81,11 +80,11 @@ theorem baEKKer_flow (d : ℕ) : ∀ κ : ℝ, 0 < κ → ∃ κm : ℝ, 0 < κm
 
 /-! ## 2. The `≺` lift: the private band helpers of `Evolution/Prec.lean` at a law `μ` and a kernel coupling `gK`
 
-Copies (text of `Prec.lean:42-130`, `Sizes`-only, no band object): `EKGenBA_W_rpow_ge` (`prec_W_rpow_ge`), `EKGenBA_one_lt_W`
+Copies (text of the private helpers of `Prec.lean`, `Sizes`-only, no band object): `EKGenBA_W_rpow_ge` (`prec_W_rpow_ge`), `EKGenBA_one_lt_W`
 (`prec_one_lt_W`), `EKGenBA_L_pow_le` (`prec_L_pow_le`), `EKGenBA_log_le` (`prec_log_le`), `EKGenBA_window` (`prec_window`),
-`EKGenBA_ratio_ge_one` (`prec_ratio_ge_one`); `EKGenBA_core` is `prec_core` (`Prec.lean:130`) with `Prec sz` read as `PrecL sz μ`,
+`EKGenBA_ratio_ge_one` (`prec_ratio_ge_one`); `EKGenBA_core` is `prec_core` with `Prec sz` read as `PrecL sz μ`,
 `STEKDecay` as `STEKDecayKgL gK μ`, `STEKLow` as `STEKLowgL μ`, `Prec.whp` as `StochDomAt.highProb`, and `EKFastDecay (sz.lam n)` as
-`EKFastDecay (gK n)`; no measure-theoretic hypothesis beyond the merged `StochDomAt` calculus (all lemmas are stated for any measure). -/
+`EKFastDecay (gK n)`; no measure-theoretic hypothesis beyond the `StochDomAt` calculus (all lemmas are stated for any measure). -/
 
 section Lift
 
@@ -158,7 +157,7 @@ private theorem EKGenBA_ratio_ge_one {g v t : ℝ} (hvt : v ≤ t) (ht : t < 1) 
     rw [abs_of_pos h1, abs_of_pos (by linarith : 0 < 1 - v)]; linarith
   linarith
 
-/-- **The shared absorption step** (`prec_core`, `Prec.lean:130`) at a law `μ` and a kernel coupling `gK`: a pin of the shape
+/-- **The shared absorption step** (`prec_core`) at a law `μ` and a kernel coupling `gK`: an estimate of the shape
 `f ≤ W^{Cε} ρ ‖𝒜‖ + W^{-D₀+C}` (for `EKFastDecay (gK n)` data) with `ρ ≥ 1` gives `f ≺ ρ X` from `‖𝒜‖ ≺ X`, `X ≥ N^{-b}` w.h.p.
 and the decay hypothesis w.h.p.; `ε = min(1/2, τ d/(4C))`, `D₀ = C + 1 + D/𝔠`. -/
 private theorem EKGenBA_core {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) (hd0 : 0 < d) {𝔠 : ℝ} (h𝔠 : 0 < 𝔠)
@@ -246,14 +245,14 @@ private theorem EKGenBA_core {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) (h
 
 end Lift
 
-/-! ## 3. Target 4: the A-form of `lem:sum_decay_nonzero` at BA -/
+/-! ## 3. The A-form of `lem:sum_decay_nonzero` at BA -/
 
 section NonzeroA
 
 open scoped Matrix.Norms.Operator
 
-/-- **Target 4, `baEKSumDecayNonzeroA_holds`** (= `T2507_EKNonzeroA`): `BAEKSumDecayNonzero` (`EKPins:134`) with the threshold `1 - g²/L² ≤ s`
-replaced by `(1 - s) L² ≤ A g²`, every `A > 0`.  The product step of `baEKSumDecayNonzero_holds` (`EKNonzero:261-300`): a same-sign index
+/-- **`baEKSumDecayNonzeroA_holds`**: the form of `lem:sum_decay_nonzero` at BA with the threshold `1 - g²/L² ≤ s`
+replaced by `(1 - s) L² ≤ A g²`, every `A > 0`.  The product step is that of the proof of `lem:sum_decay_nonzero` at BA (`BA/EKNonzero`): a same-sign index
 carries `baEKSameRow_holds`, an index of `A` carries `baTwKerZero_holds` (`BATwKerZero` takes any `A > 0`); the constant is `Ci ^ n`,
 `Ci = max Cs Cz`, depending on `(d, n, Λ, κ, A)` only. -/
 theorem baEKSumDecayNonzeroA_holds (d n : ℕ) (Λ κ : ℝ) :
@@ -299,7 +298,7 @@ theorem baEKSumDecayNonzeroA_holds (d n : ℕ) (Λ κ : ℝ) :
 
 end NonzeroA
 
-/-! ## 4. Target 3: the five forms at `@BAEKKer d`, law `seqP (sz.withLam 0)` -/
+/-! ## 4. The five forms at `@BAEKKer d`, law `seqP (sz.withLam 0)` -/
 
 section Forms
 
@@ -309,8 +308,8 @@ private theorem EKGenBA_hIm {d L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hκ
   rw [Complex.add_im, Complex.ofReal_im, zero_add]
   exact (hκ.trans_le hr.2).ne'
 
-/-- **Target 3 (a), `baEKSumNdecaygL_holds`** (= `T2507_SumNdecayBA`) from `baEKSumNdecay_holds` (`EKPins:218`); the band text is
-`stek_sumNdecay_holds` (`Prec.lean:215`), no core needed. -/
+/-- **`baEKSumNdecaygL_holds`** from `baEKSumNdecay_holds`; the band version is
+`stek_sumNdecay_holds`, so no core is needed. -/
 theorem baEKSumNdecaygL_holds (d : ℕ) : STEKSumNdecaygL d (fun sz => Sizes.seqP (sz.withLam 0)) (@BAEKKer d) := by
   intro hd n_ hn κ 𝔠 𝔡 hκ sz hAdm C gK ⟨E, hC, hE⟩ hg s t hs hst ht σ 𝒜 X hX hdom
   subst hC
@@ -333,7 +332,7 @@ theorem baEKSumNdecaygL_holds (d : ℕ) : STEKSumNdecaygL d (fun sz => Sizes.seq
   exact baEKSumNdecay_holds d n_ 𝔡⁻¹ κ hd hn (sz.L n) (sz.three_le_L n) (gK n) hn'.1 hn'.2 (E n) _ (hE n) σ
     (v : ℝ) (t n) (hs n |>.trans (v.2).1) (v.2).2 (ht n) (𝒜 n v ω)
 
-/-- **Target 3 (c), `baEKSumRes2NALgL_holds`** (= `T2507_SumRes2NALBA`) from `baEKSumDecayNAL_holds` (`EKSum:290`); the ratio is at `(n_ - 1)`. -/
+/-- **`baEKSumRes2NALgL_holds`** from `baEKSumDecayNAL_holds`; the ratio is at `(n_ - 1)`. -/
 theorem baEKSumRes2NALgL_holds (d : ℕ) : STEKSumRes2NALgL d (fun sz => Sizes.seqP (sz.withLam 0)) (@BAEKKer d) := by
   intro hd n_ hn κ 𝔠 𝔡 hκ sz hAdm C gK ⟨E, hC, hE⟩ hg s t hwin σ hσ 𝒜 hdec X hlow hdom
   subst hC
@@ -355,7 +354,7 @@ theorem baEKSumRes2NALgL_holds (d : ℕ) : STEKSumRes2NALgL d (fun sz => Sizes.s
       hW1 hε0 hε1 hD₀ h4 (v : ℝ) (t n) ((hs n).trans (v.2).1) (v.2).2 (ht n)
       (EKGenBA_window (v.2).1 (v.2).2 (ht1 n) hWn) (E n) _ (hE n) σ hσ (𝒜 n v ω) hdecay
 
-/-- **Target 3 (d), `baEKSumRes2gL_holds`** (= `T2507_SumRes2BA`) from `baEKSumDecay2_holds` (`EKSum:1772`), `K = 1/𝔠`: `L^d ≤ W^K`
+/-- **`baEKSumRes2gL_holds`** from `baEKSumDecay2_holds`, `K = 1/𝔠`: `L^d ≤ W^K`
 from `W ≥ N^𝔠` and `log L ≤ W^ε` from it (eventually, `W → ∞`). -/
 theorem baEKSumRes2gL_holds (d : ℕ) : STEKSumRes2gL d (fun sz => Sizes.seqP (sz.withLam 0)) (@BAEKKer d) := by
   intro hd n_ hn κ 𝔠 𝔡 hκ sz hAdm C gK ⟨E, hC, hE⟩ hg s t hwin σ 𝒜 hdec hzero X hlow hdom
@@ -385,8 +384,8 @@ theorem baEKSumRes2gL_holds (d : ℕ) : STEKSumRes2gL d (fun sz => Sizes.seqP (s
       (EKGenBA_window (v.2).1 (v.2).2 (ht1 n) hWn) (E n) _ (hE n)
       σ (𝒜 n v ω) hdecay (hzero n v ω)).trans (le_of_eq (by ring))
 
-/-- **Target 3 (e), `baEKNonzerogL_holds`** (= `T2507_NonzeroBA`), for every `Aof` (the A-form): from target 4 at `A = Aof κ ≥ 1`; the
-threshold `(1 - v) L² ≤ (1 - s) L² ≤ Aof κ · gK²` passes to every `v ∈ [s, t]`, and the constant `C` of the pin is absorbed by
+/-- **`baEKNonzerogL_holds`**, for every `Aof` (the A-form): from `baEKSumDecayNonzeroA_holds` at `A = Aof κ ≥ 1`; the
+threshold `(1 - v) L² ≤ (1 - s) L² ≤ Aof κ · gK²` passes to every `v ∈ [s, t]`, and the constant `C` is absorbed by
 `StochDomAt.const_mul_left`. -/
 theorem baEKNonzerogL_holds (d : ℕ) (Aof : ℝ → ℝ) :
     STEKNonzerogL d (fun sz => Sizes.seqP (sz.withLam 0)) (@BAEKKer d) Aof := by
@@ -411,11 +410,11 @@ theorem baEKNonzerogL_holds (d : ℕ) (Aof : ℝ → ℝ) :
 
 end Forms
 
-/-! ## 5. Target 5: the deterministic kernel classes D1 of T2491 and T2498 at the BA family -/
+/-! ## 5. The deterministic kernel classes at the BA family -/
 
 section D1
 
-/-- **Target 5 (a), `baNQGoodGen_kerNAL`** (= `T2507_KerNALBA`): `NQGoodGen_KerNALFam` at the BA family, `Ck` from
+/-- **`baNQGoodGen_kerNAL`**: `NQGoodGen_KerNALFam` at the BA family, `Ck` from
 `baEKSumDecayNAL_holds d k 𝔡⁻¹ κ`; the class is read at every `n` with `0 < g₀ n ≤ 𝔡⁻¹` (`BAflow_lam0_window`, eventually). -/
 theorem baNQGoodGen_kerNAL (d : ℕ) :
     NQGoodGen_KerNALFam d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => baFMz sz z) (fun sz z => BAflowLam0 sz z) := by
@@ -430,7 +429,7 @@ theorem baNQGoodGen_kerNAL (d : ℕ) :
   exact hpin (sz.L n) (sz.three_le_L n) (BAflowLam0 sz z n) hn.1 hn.2 ((sz.W n : ℕ) : ℝ) ε' D hW hε0 hε1 hD hWε s t hs hst ht hWt
     (BAflowEs sz z n) _ hr σ hσ A hA
 
-/-- **Target 5 (b), `baQProxyG_kerEK4`** (= `T2507_KerEK4BA`): `QProxyG_KerEK4Fam` at the BA family, `C4` from
+/-- **`baQProxyG_kerEK4`**: `QProxyG_KerEK4Fam` at the BA family, `C4` from
 `baEKSumDecay2_holds d k 𝔡⁻¹ κ … KL`. -/
 theorem baQProxyG_kerEK4 (d : ℕ) :
     RBM.Ind.QProxyG_KerEK4Fam d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => baFMz sz z) (fun sz z => BAflowLam0 sz z) := by
@@ -446,16 +445,6 @@ theorem baQProxyG_kerEK4 (d : ℕ) :
     (BAflowEs sz z n) _ hr σ A hA hsum
 
 end D1
-
-/-! ## 6. Compiled nonempty instances at `d = 3`
-
-Data: `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`, `N ≥ 2^21`), `zSeq`, `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq`
-(`BA/FlowPins.lean:1214`), `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `gK = BAflowLam0 sz0 zSeq`, `n_ = 2` (forms) and `k = 3` (targets 5), `Aof κ = (κ+1)/κ = 3`.
-The tensor family is the point mass `δ₀` (and `δ₀ ⊗ (δ₀ - δ_e)` for the sum-zero form), the control is `X ≡ 1`; the `PrecL` inputs are discharged
-(deterministic domination at the BA law `seqP (sz0.withLam 0)`), the window is `(s, t) = (0, 1/16)` (`step34Gen_win_sz0`, moved from `sz0.lam` to `gK` by
-`step34Gen_winK_of_cmp` and R1) and, for form (e), `s = 1 - lam²/L²`, `t = (1 + s)/2` (so `(1 - s) L² = lam² ≤ 3 g₀²`).  The band helpers of
-`Chain/Step34Gen.lean` that the instances reuse (`step34Gen_win_sz0`, `step34Gen_Az` and its three facts, `step34Gen_norm_delta0_le`) are private there and
-are read by `open private`; nothing is edited. -/
 
 end RBM.BA
 

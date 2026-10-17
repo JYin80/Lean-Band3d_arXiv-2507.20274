@@ -6,21 +6,19 @@ Authors: Jun Yin
 import RBM3D.BA.GreenCond
 
 /-!
-# The block Anderson family moment bound (R6), `BAFamGain` and `BAFAav`
+# The block Anderson family moment bound, `BAFamGain` and `BAFAav`
 
-BA-G5b, file 2 of 2.  Ticket T2411.  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`,
-`7_8:1916-1948`), band `paper/tex/3_5_Loop_Hierarchy.tex`.
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`).
 
-* §1 **R6**: the graded iteration and the moment bound for the family average `Σ_k T_k Q_k Y_k`
-  over the rows `k ∈ A` of one block (the twin of `Green/FlucIterGain.lean:566-895`, with
+* §1 the graded iteration and the moment bound for the family average `Σ_k T_k Q_k Y_k`
+  over the rows `k ∈ A` of one block (the analogue of `Green/FlucIterGain.lean`, with
   `GreenMinor_famGain`, whose words have rows in `A`, as the interface; `FlucGainUpTo'` is not a
-  special case, T2401b).
+  special case).
 * §2-§4 the BA data (`η_t`, `‖s‖`, the local law `‖G_t - M‖_max ≺ Ψ`, `P(badBase) ≤ N^{-D}`), the
   exponent bookkeeping, `baFamGain_holds`.
-* §5-§9 the decompositions (E) of `𝒜'`, `𝔛` and their remainders, the `ℓ¹` row bound of `M^{(B)}`
+* §5-§9 the decompositions of `𝒜'`, `𝔛` and their remainders, the `ℓ¹` row bound of `M^{(B)}`
   for every `d ≥ 1`, Markov for the family average, the exceptional set of `BAFAav`, the numerics,
-  `baFAav_holds`; §10 the nonempty instances (`d = 3`, `sz0`, `flow_sz0`; `BAGiiGEX` and
-  `(initialGT2)` are hypotheses).
+  `baFAav_holds`.
 -/
 
 set_option linter.style.longLine false
@@ -38,7 +36,7 @@ open RBM RBM.Green RBM.Gauss
 
 namespace RBM.BA
 
-/-! ## 1. R6: the graded iteration and the family moment bound -/
+/-! ## 1. The graded iteration and the family moment bound -/
 
 section R6
 variable {d : ℕ} {sz : Sizes d} {n : ℕ}
@@ -46,8 +44,8 @@ variable {d : ℕ} {sz : Sizes d} {n : ℕ}
 section Graded
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-/-- **The iteration, with the gain assumed only for words whose rows are rows of the slots** (the twin of
-`norm_integral_prod_applyOps_le_graded`, `Green/FlucIterGain.lean:566`, whose `hgain` is asked for *all* admissible words): the base case
+/-- **The iteration, with the gain assumed only for words whose rows are rows of the slots** (the analogue of
+`norm_integral_prod_applyOps_le_graded`, whose `hgain` is asked for *all* admissible words): the base case
 of the induction applies `hgain` to words with `OpsOkOut`, whose rows are all of the form `k j`. -/
 theorem GreenCond2_graded {k : ι → Idx d (sz.L n) (sz.W n)} {X : ι → sz.SeqΩ → ℂ} (hX : ∀ i, BddMeas sz (X i))
     (hXd : ∀ i, FinDep sz (X i)) {B ρ : ℝ} (hB : 0 ≤ B) (hρ : 0 ≤ ρ)
@@ -235,8 +233,8 @@ theorem GreenCond2_epsHom_budget {A : Finset (Idx d (sz.L n) (sz.W n))} {Y : Idx
   rw [hcard] at h
   simpa only [hq] using h
 
-/-- **The moment bound for the family average** (the twin of `integral_norm_flucAvg_pow_le_iter_budget`, `Green/FlucIterGain.lean:823`): for a
-bounded weight `T` (`0 ≤ T ≤ c ≤ ρ²` on `A` with `2p ≤ #A`, `Σ T ≤ 1`), `ρ ≤ 1`, and the family gain interface `famGain(B, ρ, M, K)` of
+/-- **The moment bound for the family average** (the analogue of `integral_norm_flucAvg_pow_le_iter_budget`): for a
+bounded weight `T` (`0 ≤ T ≤ c ≤ ρ²` on `A` with `2p ≤ #A`, `Σ T ≤ 1`), `ρ ≤ 1`, and the family gain interface `GreenMinor_famGain` at `(B, ρ, M, K)` of
 `Y` on `A` (`M, K ≥ 2p`),
 `E|Σ_k T_k Q_k Y_k|^{2p} ≤ (2p+1)(2p)^{2p} (2^{2p-1} ρ B)^{2p}`. -/
 theorem GreenCond2_famAvg_moment {A : Finset (Idx d (sz.L n) (sz.W n))} {Y : Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ}
@@ -410,8 +408,8 @@ private theorem GreenCond2_ev_incl (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Adm
         mul_le_mul_of_nonneg_right h1 (Real.rpow_nonneg hW0.le _)
     _ = ((sz.W n : ℕ) : ℝ) ^ (-(ε₀ / 2)) := by rw [← Real.rpow_add hW0]; congr 1; ring
 
-/-- **The local law at a deterministic control, for the BA carrier** (the argument of `greenLocal_localLaw`, `BA/GreenLocal.lean`, with
-`BAGiiGEX` at `ε₀/2` a hypothesis, as in the pins `BAFamGain`, `BAFAav`, and no guard on `d`): `(initialGT2)` gives `‖G_t - M‖_max ≺ Ψ`. -/
+/-- **The local law at a deterministic control, for the BA carrier** (the argument of `BA/GreenLocal.lean`, with
+`BAGiiGEX` at `ε₀/2` a hypothesis, as in the statements `BAFamGain`, `BAFAav`, and no guard on `d`): `(initialGT2)` gives `‖G_t - M‖_max ≺ Ψ`. -/
 theorem GreenCond2_localLaw {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d) {z : ℕ → ℂ}
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) {ε₀ : ℝ} (hε₀ : 0 < ε₀)
     (hii : BAGiiGEX sz z t (ε₀ / 2)) {Ψ : ℕ → ℝ} (hΨ : ∀ᶠ n in atTop, 0 ≤ Ψ n)
@@ -689,7 +687,7 @@ theorem GreenCond2_Env_aux {κ g₀ Λ s sbd N Einv cE CE : ℝ} (hκ : 0 < κ) 
     _ = (cE * (2 / κ + 1) ^ 2) * N ^ 2 := by ring
     _ ≤ CE * N ^ 2 := by rw [hCE]; nlinarith [sq_nonneg N]
 
-/-- **`BAFamGain d`, proved** (the owed pin of the G5b row; consumer: `baFAav_holds`).  Fix the data of the pin, `p` and `τ`.  The constants
+/-- **`BAFamGain d`, proved** (used by `baFAav_holds`).  Fix the data of the statement, `p` and `τ`.  The constants
 `c_M = 1 + c_Y(M)` (at `Λ = 𝔡⁻¹`, `sbd = (1 + 2dΛ)/κ ≥ ‖s‖`) and `C = 8 c_M + 4` depend on `(d, κ, 𝔡, p)` only; for `n` large the slice
 theorem `GreenCond_famGain_slice` applies with `δ = W^τ Ψ_n`, the tower threshold `ε' = N^{-c₁}`, `c₁ = d(M+1) + 3`, the envelope
 `Env = C_E N²` (`η_t⁻¹ ≤ (2/κ) N`), and `P(S_n) ≤ N^{-D'}` (`GreenCond2_prob_badBase`, `D'` a large integer). -/
@@ -827,16 +825,16 @@ theorem baFamGain_holds (d : ℕ) : BAFamGain d := by
 
 end FamGain
 
-/-! ## 5. The remainders of (E): `𝒜'_u = Q_u Y^A - Q_u[A_u Δ_{uu}]/m + ε₂`, `𝔛_{uy} = - Q_u Y^X - Q_u[𝔛_{uy} Δ_{uu}]/m`
+/-! ## 5. The remainders of the Schur complement decompositions: `𝒜'_u = Q_u Y^A - Q_u[A_u Δ_{uu}]/m + ε₂`, `𝔛_{uy} = - Q_u Y^X - Q_u[𝔛_{uy} Δ_{uu}]/m`
 
-The two identities are exact at every sample (the Gaussian conditional means `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0` and S3
+The two identities are exact at every sample (the Gaussian conditional means `E_u A_u = - t v̄ + ε₂`, `E_u 𝔛_{uy} = 0` and
 `A_u = Y^A m/G_{uu}`, `𝔛_{uy} = - Y^X m/G_{uu}`); off the bad row slice the remainders are `≤ C₁ δ²` (the pointwise bounds,
-`GreenCond_m5_A/X`, and `|ε₂| ≤ 13 δ²/(2κ)`), with `C₁ = C₁(d, κ, g₀, ‖s‖)` monotone, so uniform in `n`. -/
+`GreenCond_m5_A`, `GreenCond_m5_X`, and `|ε₂| ≤ 13 δ²/(2κ)`), with `C₁ = C₁(d, κ, g₀, ‖s‖)` monotone, so uniform in `n`. -/
 
 section Decomp
 variable {d : ℕ} {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {t : ℝ}
 
-/-- **(E) for `𝒜'`, exact**: `A_u + t v̄_{[u]} = Q_u Y^A_u - Q_u[A_u Δ_{uu}]/m + ε₂`, at every sample. -/
+/-- **The decomposition of `𝒜'`, exact**: `A_u + t v̄_{[u]} = Q_u Y^A_u - Q_u[A_u Δ_{uu}]/m + ε₂`, at every sample. -/
 theorem GreenCond_E_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ) :
     GreenCore_Arow (GreenCore_Gc sz z n t ω) (GreenCore_Xc sz n t ω) (GreenCore_Dc sz z n) t (GreenCond_m sz z n) (splitEquiv d (sz.L n) (sz.W n) u) +
@@ -877,7 +875,7 @@ theorem GreenCond_E_A {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ �
   simp only [qRow_apply]
   linear_combination hs + hcA
 
-/-- **(E) for `𝔛`, exact**: `𝔛_{uy} = - Q_u Y^X_{uy} - Q_u[𝔛_{uy} Δ_{uu}]/m`, `y = (α, o(u))`, `α ≠ [u]`, at every sample. -/
+/-- **The decomposition of `𝔛`, exact**: `𝔛_{uy} = - Q_u Y^X_{uy} - Q_u[𝔛_{uy} Δ_{uu}]/m`, `y = (α, o(u))`, `α ≠ [u]`, at every sample. -/
 theorem GreenCond_E_X {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1)
     (ω : (GreenCond_sz0 sz).SeqΩ) :
@@ -926,7 +924,7 @@ def GreenCond_cA (d : ℕ) (κ g₀ s : ℝ) : ℝ := 2 * (s + 2 * d * g₀) / �
 
 def GreenCond_cX (d : ℕ) (κ g₀ s : ℝ) : ℝ := 2 / κ * ((s + 2 * d * g₀) * (1 / κ + 1) + 2 * d * g₀)
 
-/-- `C₁ = (2 (c_A + c_X) + 15/2) / κ`: the constant of the two remainders of (E). -/
+/-- `C₁ = (2 (c_A + c_X) + 15/2) / κ`: the constant of the two remainders. -/
 def GreenCond_C1 (d : ℕ) (κ g₀ s : ℝ) : ℝ := (2 * (GreenCond_cA d κ g₀ s + GreenCond_cX d κ g₀ s) + 15 / 2) / κ
 
 theorem GreenCond_cA_nonneg {κ g₀ s : ℝ} (hg : 0 ≤ g₀) (hs : 0 ≤ s) : 0 ≤ GreenCond_cA d κ g₀ s := by
@@ -970,7 +968,7 @@ theorem GreenCond_eps2_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz 
         · exact hRr _ _
     _ = (13 / (2 * κ) * δ ^ 2) ^ 2 := by field_simp; ring
 
-/-- **The remainder of (E) for `𝒜'`**: off a bad row slice, `‖A_u + t v̄_{[u]} - Q_u Y^A_u‖ ≤ C₁ δ²`. -/
+/-- **The remainder of the decomposition of `𝒜'`**: off a bad row slice, `‖A_u + t v̄_{[u]} - Q_u Y^A_u‖ ≤ C₁ δ²`. -/
 theorem GreenCond_E_A_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
     (u : Idx d (sz.L n) (sz.W n)) (ω : (GreenCond_sz0 sz).SeqΩ)
@@ -1036,7 +1034,7 @@ theorem GreenCond_cX_ge {κ g₀ s δ : ℝ} (hκ : 0 < κ) (hg : 0 ≤ g₀) (h
     nlinarith
   gcongr
 
-/-- **The remainder of (E) for `𝔛`**: off a bad row slice, `‖𝔛_{uy} + Q_u Y^X_{uy}‖ ≤ C₁ δ²`, `y = (α, o(u))`, `α ≠ [u]`. -/
+/-- **The remainder of the decomposition of `𝔛`**: off a bad row slice, `‖𝔛_{uy} + Q_u Y^X_{uy}‖ ≤ C₁ δ²`, `y = (α, o(u))`, `α ≠ [u]`. -/
 theorem GreenCond_E_X_le {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) (ht1 : t ≤ 1) {δ ε' : ℝ} (hδ0 : 0 ≤ δ) (hδ2 : δ ≤ κ / 2) (hε' : 0 < ε')
     (u : Idx d (sz.L n) (sz.W n)) {α : Zd d (sz.L n)} (hα : α ≠ (splitEquiv d (sz.L n) (sz.W n) u).1) (ω : (GreenCond_sz0 sz).SeqΩ)
@@ -1088,7 +1086,7 @@ end Decomp
 
 /-! ## 6. The offset averages: the row `ℓ¹` bound of `M^{(B)}` for every `d ≥ 1`, the Markov bound for the family average, `⟨M𝒦⟩_a`
 
-`GreenCond2_row_l1` is `baM_row_l1` (`BA/GreenStab.lean:116`, `2 ≤ d`) for every `d ≥ 1`: the decay `BAMB_decay_large` (`0 < d`) and the product
+`GreenCond2_row_l1` is `baM_row_l1` (`BA/GreenStab.lean`, `2 ≤ d`) for every `d ≥ 1`: the decay `BAMB_decay_large` (`0 < d`) and the product
 bound `Σ_{b ∈ Z_L^d} e^{-c|a - b|₁} ≤ ((1 + e^{-c})/(1 - e^{-c}))^d` (uniform in `L`).  `GreenCond2_prob_famAvg` is Markov for the moment bound
 `GreenCond2_famAvg_moment`.  `GreenCond2_avgK_le` bounds `⟨M𝒦⟩_a` from the offset averages of `𝒜'` and `𝔛` through the exact identity
 `GreenMinor_avg_split`; `GreenCond2_avgA_le`, `GreenCond2_avgX_le` bound these averages by the family averages and `C₁ δ²` (§5). -/
@@ -1164,7 +1162,7 @@ theorem GreenCond2_sum_exp_le (d L : ℕ) [NeZero L] {c : ℝ} (hc : 0 < c) (a :
   rw [e3, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
   exact pow_le_pow_left₀ (Finset.sum_nonneg fun _ _ => (Real.exp_pos _).le) (GreenCond2_sum_zmod_exp L hc) d
 
-/-- **The `ℓ¹` row of `M^{(B)}` for every `d ≥ 1`** (the decay `BAMB_decay_large`, `0 < d`, and the product bound on the torus; the merged
+/-- **The `ℓ¹` row of `M^{(B)}` for every `d ≥ 1`** (the decay `BAMB_decay_large`, `0 < d`, and the product bound on the torus; 
 `baM_row_l1` is for `2 ≤ d`): `Σ_b |M_ab| ≤ c₀⁻¹ ((1 + e^{-c₀})/(1 - e^{-c₀}))^d`. -/
 theorem GreenCond2_row_l1 (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (hd : 0 < d) (Λ g κ E : ℝ) (m : ℂ) (hΛ : 0 < Λ) (hg : 0 < g)
     (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d L g κ E m) (a : Zd d L) :
@@ -1530,7 +1528,7 @@ theorem GreenCond2_bddMeas_famX {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFl
   have := GreenCond_bddMeas_X sz z n hκ h ht0 ht hg0 α k ∅
   rwa [GreenCond_famS_empty sz z n hκ h ht0 ht] at this
 
-/-- **The probability of the exceptional set**: `P(Bad) ≤ P(badStep) + (N + N²) W_τ^{-2p}`, from the family gains of the pin (`GreenCond2_prob_famAvg`). -/
+/-- **The probability of the exceptional set**: `P(Bad) ≤ P(badStep) + (N + N²) W_τ^{-2p}`, from the family gains of `BAFamGain` (`GreenCond2_prob_famAvg`). -/
 theorem GreenCond2_FAav_prob {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (h : BAFlow sz κ ε 𝔠 𝔡 z) (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n)
     (hg0 : 0 ≤ BAflowLam0 sz z n) {δ ε' C Wτ : ℝ} {p : ℕ} (hp1 : 1 ≤ p) (hd : 1 ≤ d) (hδ0 : 0 < δ) (hδ4 : 4 * δ ≤ 1) (hC1 : 1 ≤ C)
     (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2) (hp : 2 * p ≤ sz.W n ^ d) (hWτ : 1 ≤ Wτ)
@@ -1722,10 +1720,10 @@ end FAarith
 
 /-! ## 9. `BAFAav`, proved -/
 
-/-- **`BAFAav d`, proved** (the owed pin of the G5b row; consumer BA-G6b), for every `d` (the `ℓ¹` row bound of `M^{(B)}` is `GreenCond2_row_l1`,
+/-- **`BAFAav d`, proved**, for every `d` (the `ℓ¹` row bound of `M^{(B)}` is `GreenCond2_row_l1`,
 `d ≥ 1`).  Fix `τ' , D`; `τ = min (τ'/6) (ε₀/2)`, `p` with `2 p 𝔠 τ ≥ D + 3`; `δ = W^τ Ψ_n`, `C ≥ 1` from `baFamGain_holds`.  Off the exceptional set
 `GreenCond2_Bad` (the tower step at the threshold `ε' = N^{-(2d+9)}` over `{‖G_t - M‖_max ≤ δ}`, and the family averages `≥ lam = W^τ · 2 (2p) 2^{2p-1} ρ B`)
-the exact identity `GreenMinor_avg_split`, the decompositions (E) and the bounds of §5-§6 give `‖⟨M𝒦⟩_a‖ ≤ K₀ W^{3τ} Ψ_n² ≤ N^{τ'} Ψ_n²` (`K₀` depends on
+the exact identity `GreenMinor_avg_split`, the decompositions of §5 and the bounds of §5-§6 give `‖⟨M𝒦⟩_a‖ ≤ K₀ W^{3τ} Ψ_n² ≤ N^{τ'} Ψ_n²` (`K₀` depends on
 `(d, κ, 𝔡, p, C)` only); the probability is `≤ N^{-D}` (`P(badBase) ≤ N^{-(D + 2d + 12)}` from `BAGiiGEX` at `ε₀/2` and `(initialGT2)`, Markov, `W ≥ N^𝔠`). -/
 theorem baFAav_holds (d : ℕ) : BAFAav d := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ hii Ψ hΨlo hΨhi hinit
@@ -1930,10 +1928,4 @@ theorem baFAav_holds (d : ℕ) : BAFAav d := by
         (ofReal_measureReal (measure_ne_top _ _)).symm
     _ ≤ ENNReal.ofReal (N ^ (-D)) := ENNReal.ofReal_le_ofReal hBad
 
-/-! ## 10. Nonempty instances of `baFamGain_holds`, `baFAav_holds`, `GreenCond2_famAvg_moment` -/
-
--- `baFamGain_holds` at `d = 3`, `sz0`, `zSeq`, `flow_sz0` (`κ = 1/2`, `ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `t ≡ 1/2`, `ε₀ = 1/10`, `Ψ = W^{-1}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`),
--- `τ = 1/20`, `p = 1`: `BAGiiGEX` (G6's owed `BAGbEXPii`) and `(initialGT2)` stay hypotheses
--- `baFAav_holds` at the same data: the averaged law `|⟨M𝒦⟩_a| ≺ Ψ²`
--- R6 (`GreenCond2_famAvg_moment`) for the BA family `Y^A` of the block `0` at a large `n` of the same data (`p = 1`; the gain interface is `baFamGain_holds`)
 end RBM.BA

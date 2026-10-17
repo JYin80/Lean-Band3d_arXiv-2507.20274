@@ -9,24 +9,22 @@ import RBM3D.Loop.KLTree
 import RBM3D.Loop.Partition
 
 /-!
-# Stage K, row K04: the cactus of a crossing-free diagonal set and its value `Γ_M(F)`
+# The cactus of a crossing-free diagonal set and its value `Γ_M(F)`
 
-Ticket T2367 (design BA-DK, `docs/reports/T2360-design.md` §3 (a), §4 row K04, §5; paper deltas
-D633, D634).  The band tree sum puts one label on each tree node (`KLtreeValW`,
-`Loop/KLTree.lean:114`).  In the block Anderson tree sum every node is an `M`-cycle, i.e. a
-polygon with one label per *slot* (`A:552-598`, `tree-representation_BA`,
-`(M-graph-value-unsummed2)`).
+The band tree sum puts one label on each tree node (`KLtreeValW`,
+`Loop/KLTree.lean`).  In the block Anderson tree sum every node is an `M`-cycle, i.e. a
+polygon with one label per *slot* (Definition A.5 `M-graph-value-definition`, Lemma A.6 `tree-representation_BA`,
+(A.36) `M-graph-value-unsummed2`).
 
-1. The edge kernel from `M`: `BAMssOf`, `BAThetaOf` (`(eq:Msig)`, `(def_Thxi)` at `S^{(B)} = I`).
+1. The edge kernel from `M`: `BAMssOf`, `BAThetaOf` ((2.59) `eq:Msig`, (2.60) `def_Thxi` at `S^{(B)} = I`).
 2. The slots `BAslot F = Fin n ⊕ ↥F ⊕ ↥F` of `F` with `KLIsTSP F`: one per pair (node, edge).
 3. The cyclic order of the slots of a node by the first vertex `BAslotStart` of the vertex range
-   of the edge; its successor `BAnextSlot` (a permutation preserving `BAslotNode`, one cycle per
+   of the edge; its next-slot map `BAnextSlot` (a permutation preserving `BAslotNode`, one cycle per
    node) and the charge `BAMcharge` of the `M`-edge `s → BAnextSlot s`.
-4. The value `BACactusVal`, an instance of the merged generic tree value `KLgval`
-   (`Loop/KLCut.lean:58`) with the slots as nodes, and `BAGamma`, the `Γ` of the pin `BATreeRep`.
-5. API: transport (`BACactusVal_congr`), the value at `F = ∅` and at `n = 3` (`(Kn3sol)`),
-   orientation invariance for symmetric `M`, the `t = 0` identity with `BAMLoop`,
-   compiled instances.
+4. The value `BACactusVal`, an instance of the generic tree value `KLgval`
+   (`Loop/KLCut.lean`) with the slots as nodes, and `BAGamma`, the `Γ` of Lemma A.6.
+5. API: transport (`BACactusVal_congr`), the value at `F = ∅` and at `n = 3` ((2.72) `Kn3sol`),
+   orientation invariance for symmetric `M`, the `t = 0` identity with `BAMLoop`.
 
 Hypotheses of the API lemmas: `KLIsTSP F` and `2 ≤ n` (implied by `3 ≤ n`) only.
 -/
@@ -46,13 +44,13 @@ section Edge
 
 variable {d L : ℕ}
 
-/-- `M^{(σ₁,σ₂)}_{ab} = M(σ₁)_{ba} M(σ₂)_{ab}` for a general charge-indexed `M` (`(eq:Msig)`, `1_2:1070-1071`). -/
+/-- `M^{(σ₁,σ₂)}_{ab} = M(σ₁)_{ba} M(σ₂)_{ab}` for a general charge-indexed `M` ((2.59) `eq:Msig`). -/
 def BAMssOf (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (σ₁ σ₂ : Bool) : Matrix (Zd d L) (Zd d L) ℂ :=
   Matrix.of fun a b => M σ₁ b a * M σ₂ a b
 
 variable [NeZero L]
 
-/-- `Θ_t^{(σ₁,σ₂)} = (1 - t M^{(σ₁,σ₂)})⁻¹` (`(def_Thxi)` at `S^{(B)} = I`, `1_2:1073-1076`) for a general
+/-- `Θ_t^{(σ₁,σ₂)} = (1 - t M^{(σ₁,σ₂)})⁻¹` ((2.60) `def_Thxi` at `S^{(B)} = I`) for a general
 charge-indexed `M`. -/
 def BAThetaOf (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ₁ σ₂ : Bool) :
     Matrix (Zd d L) (Zd d L) ℂ :=
@@ -66,7 +64,7 @@ section Slots
 
 variable {n : ℕ}
 
-/-- The **slots** of the cactus of `F` (design §3 (a), §5): one per pair (node, incident edge) of the tree of `F`.
+/-- The **slots** of the cactus of `F`: one per pair (node, incident edge) of the tree of `F`.
 `Sum.inl v`: the leaf `v`, a slot in the node `KLleafPar F v`.  `Sum.inr (Sum.inl J)`: the chord `J ∈ F` seen from
 its parent node `KLnodePar F J`.  `Sum.inr (Sum.inr J)`: the chord `J ∈ F` seen from the node `J` itself.
 `n + 2 |F|` slots (`BAslot_card`). -/
@@ -89,7 +87,7 @@ theorem BAslot_card (F : Finset (Fin n × Fin n)) : Fintype.card (BAslot F) = n 
 
 /-- The first vertex `x` of the vertex range of the edge of the slot: the leaf `v` has the range `[v, v]`; the child
 side of the chord `J = (i, j)` has the range of the arc `[i, j)`, so `x = i`; its parent side has the complementary
-range `[j, i)` (cyclic), so `x = j`.  The charge of an `M`-edge is `σ_x` (D633). -/
+range `[j, i)` (cyclic), so `x = j`.  The charge of an `M`-edge is `σ_x`. -/
 def BAslotStart (F : Finset (Fin n × Fin n)) : BAslot F → Fin n
   | Sum.inl v => v
   | Sum.inr (Sum.inl J) => J.1.1
@@ -178,13 +176,13 @@ theorem BAslot_start_inj {s t : BAslot F} (hnode : BAslotNode F s = BAslotNode F
 
 end Starts
 
-/-! ## 4. The cyclic successor inside a node, `BAnextSlot`, and the charge `BAMcharge` -/
+/-! ## 4. The cyclic next element inside a node, `BAnextSlot`, and the charge `BAMcharge` -/
 
 section Succ
 
 variable {α β : Type*} [Finite α]
 
-/-- `u` is the cyclic successor of `s` for the keys `key` inside the fibre of `node`: the element of the fibre of `s`
+/-- `u` is the cyclic next element of `s` for the keys `key` inside the fibre of `node`: the element of the fibre of `s`
 with the next larger key, or, if `s` has the largest key, the element with the smallest key. -/
 private def BAKCactus_IsSucc (node : α → β) (key : α → ℕ) (s u : α) : Prop :=
   node u = node s ∧
@@ -208,7 +206,7 @@ private theorem BAKCactus_isSucc_exists (node : α → β) (key : α → ℕ) (s
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hu hmin
     exact ⟨u, hu, Or.inr ⟨h, hmin⟩⟩
 
-/-- The cyclic successor, a total function (a choice; it is determined when the keys are injective on each fibre,
+/-- The cyclic next element, a total function (a choice; it is determined when the keys are injective on each fibre,
 `BAKCactus_IsSucc_eq`). -/
 private def BAKCactus_succ (node : α → β) (key : α → ℕ) (s : α) : α :=
   Classical.choose (BAKCactus_isSucc_exists node key s)
@@ -251,7 +249,7 @@ private theorem BAKCactus_succ_reach_up (hinj : ∀ x y, node x = node y → key
         exact ⟨k + 1, by rw [Function.iterate_succ_apply]; exact hk⟩
       · exact absurd (hmax1 t hnode.symm) (not_le.mpr hlt)
 
-/-- **One cycle per fibre**: any two elements of a fibre are in the same orbit of the successor. -/
+/-- **One cycle per fibre**: any two elements of a fibre are in the same orbit of the next-element map. -/
 private theorem BAKCactus_succ_reach (hinj : ∀ x y, node x = node y → key x = key y → x = y) {s t : α}
     (hnode : node s = node t) : ∃ k, (BAKCactus_succ node key)^[k] s = t := by
   classical
@@ -278,21 +276,21 @@ section NextSlot
 
 variable {n : ℕ} [NeZero n]
 
-/-- **`BAnextSlot F s`: the successor of the slot `s` in the cyclic order of its node** (design §3 (a)): the slot of the
+/-- **`BAnextSlot F s`: the next slot after `s` in the cyclic order of its node**: the slot of the
 same node whose edge has the next larger first vertex `BAslotStart`, or, for the slot with the largest start, the slot
 with the smallest start.  A total function (a choice, determined by the characterisation lemmas
 `BAnextSlot_eq_of_above`, `BAnextSlot_eq_of_wrap` when `KLIsTSP F`, `2 ≤ n`).  The paper's "counterclockwise order" of
-`m-loop-tsp` item 1 is this order (`T2367a`). -/
+Definition A.4 (`m-loop-tsp`) item 1 is this order. -/
 def BAnextSlot (F : Finset (Fin n × Fin n)) (s : BAslot F) : BAslot F :=
   BAKCactus_succ (BAslotNode F) (fun x => (BAslotStart F x).val) s
 
-/-- The successor stays in the node (no hypothesis). -/
+/-- The next slot stays in the node (no hypothesis). -/
 theorem BAslotNode_nextSlot (F : Finset (Fin n × Fin n)) (s : BAslot F) :
     BAslotNode F (BAnextSlot F s) = BAslotNode F s :=
   (BAKCactus_succ_spec (BAslotNode F) (fun x => (BAslotStart F x).val) s).1
 
 /-- The defining property of `BAnextSlot` (no hypothesis): in the node of `s`, either `s` has a larger slot and the
-successor is the next larger one, or `s` is the largest and the successor is the smallest. -/
+next slot is the one with the next larger start, or `s` is the largest and the next slot is the smallest. -/
 theorem BAnextSlot_spec (F : Finset (Fin n × Fin n)) (s : BAslot F) :
     (BAslotStart F s < BAslotStart F (BAnextSlot F s) ∧
         ∀ x, BAslotNode F x = BAslotNode F s → BAslotStart F s < BAslotStart F x →
@@ -342,10 +340,10 @@ section Charge
 
 variable {n : ℕ} [NeZero n]
 
-/-- **`BAMcharge F σ s`: the charge of the `M`-edge from the slot `s` to `BAnextSlot F s`** (D633, design §3 (a),
-`A:571`).  The `M`-edge between consecutive edges of a node lies in the region `R_x` of the boundary edge
+/-- **`BAMcharge F σ s`: the charge of the `M`-edge from the slot `s` to `BAnextSlot F s`** ((A.35) `eq:Mloop_defgen`).
+The `M`-edge between consecutive edges of a node lies in the region `R_x` of the boundary edge
 `(a_{x-1}, a_x)` ending at the first vertex `x` of the next edge's vertex range, so its charge is `σ_x`,
-`x = BAslotStart F (BAnextSlot F s)`.  The convention is K00's (`BAMLoop_apply`): `σ_i` sits on `(a_{i-1}, a_i)`. -/
+`x = BAslotStart F (BAnextSlot F s)`.  The convention is that of `BAMLoop_apply`: `σ_i` sits on `(a_{i-1}, a_i)`. -/
 def BAMcharge (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) (s : BAslot F) : Bool :=
   σ (BAslotStart F (BAnextSlot F s))
 
@@ -360,15 +358,15 @@ section Value
 
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
-/-- Leaf weights of the cactus: the leaf `v` carries `Θ_t^{(σ_v, σ_{v+1})}` (`(f-external2)`, `A:556`: an external
-edge between the regions `R_v`, `R_{v+1}`; `(Kn3sol)`, `1_2:1176`), from the label `a v` to its slot. -/
+/-- Leaf weights of the cactus: the leaf `v` carries `Θ_t^{(σ_v, σ_{v+1})}` ((A.33) `f-external2`: an external
+edge between the regions `R_v`, `R_{v+1}`; (2.72) `Kn3sol`), from the label `a v` to its slot. -/
 def BACactusValLeafW (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) :
     Fin n → Matrix (Zd d L) (Zd d L) ℂ :=
   fun v => BAThetaOf M t (σ v) (σ (v + 1))
 
 /-- The edge weights of the cactus, over the edge type `↥F ⊕ BAslot F` (chords `⊕` `M`-edges): the chord `J = (i, j)`
-carries `t Θ_t^{(σ_i, σ_j)}` (`(f-internal2)` at `S^{(B)} = I`, `A:561`, D633); the `M`-edge from the slot `s`
-carries `M(BAMcharge F σ s)` (`(eq:Mloop_defgen)`, `A:567`). -/
+carries `t Θ_t^{(σ_i, σ_j)}` ((A.34) `f-internal2` at `S^{(B)} = I`); the `M`-edge from the slot `s`
+carries `M(BAMcharge F σ s)` ((A.35) `eq:Mloop_defgen`). -/
 def BACactusValEdgeW (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (F : Finset (Fin n × Fin n))
     (σ : Fin n → Bool) : ↥F ⊕ BAslot F → Matrix (Zd d L) (Zd d L) ℂ :=
   Sum.elim (fun J => (t : ℂ) • BAThetaOf M t (σ J.1.1) (σ J.1.2)) (fun s => M (BAMcharge F σ s))
@@ -384,11 +382,11 @@ def BACactusValTgt (F : Finset (Fin n × Fin n)) : ↥F ⊕ BAslot F → BAslot 
 
 variable (d L)
 
-/-- **`BACactusVal d L M t F σ a`: the value `Γ_M(F)` of the `M`-graph of `F`** (`(M-graph-value-unsummed2)`,
-`A:583`): `∑_b ∏_v Θ^{(σ_v,σ_{v+1})}(a_v, b(leaf v)) ∏_{J=(i,j)∈F} (tΘ^{(σ_i,σ_j)})(b(in J), b(out J))
+/-- **`BACactusVal d L M t F σ a`: the value `Γ_M(F)` of the `M`-graph of `F`** ((A.36) `M-graph-value-unsummed2`):
+`∑_b ∏_v Θ^{(σ_v,σ_{v+1})}(a_v, b(leaf v)) ∏_{J=(i,j)∈F} (tΘ^{(σ_i,σ_j)})(b(in J), b(out J))
 ∏_s M(charge s)(b s, b(next s))`, the generic tree value `KLgval` with the slots as nodes, the leaves `Fin n`
-and the edges chords `⊕` `M`-edges.  The factor `W^{-d(n-1)}` of `tree-representation_BA` is not in `Γ`:
-`W^{(k_i-1)d} 𝓜^{(k_i)} = ∏ M` (`(eq:Mloop_defgen)`, `BAMLoop_apply`). -/
+and the edges chords `⊕` `M`-edges.  The factor `W^{-d(n-1)}` of Lemma A.6 (`tree-representation_BA`) is not in `Γ`:
+`W^{(k_i-1)d} 𝓜^{(k_i)} = ∏ M` ((A.35) `eq:Mloop_defgen`, `BAMLoop_apply`). -/
 def BACactusVal (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool)
     (a : Fin n → Zd d L) : ℂ :=
   KLgval d L (Nd := BAslot F) (Lf := Fin n) a (BACactusValLeafW M t σ) (BAslotLeaf F)
@@ -396,9 +394,9 @@ def BACactusVal (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (F : Finse
 
 end Value
 
-/-- **`BAGamma d L n M t F σ a`: the `Γ` of the pin `BATreeRep`** (`tree-representation_BA`, `A:592-598`, here `n ≥ 3`,
-D634): `BACactusVal`, by the same formula for every `F` (junk-valued off `TSP n`, `T2367a`; `BATreeRep` sums it over
-`TSP n` only, where `KLIsTSP F` holds, `KLisTSP_of_mem_TSP`).  Its type is `BAGammaType d` of the check file: a
+/-- **`BAGamma d L n M t F σ a`: the `Γ` of Lemma A.6** (`tree-representation_BA`, here `n ≥ 3`):
+`BACactusVal`, by the same formula for every `F` (junk-valued off `TSP n`; the tree sum runs over
+`TSP n` only, where `KLIsTSP F` holds, `KLisTSP_of_mem_TSP`).  It is a
 function of the sizes, `M(σ)`, `t`, `F`, `σ`, `a` only. -/
 def BAGamma (d L n : ℕ) [NeZero L] [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ)
     (F : Finset (Fin n × Fin n)) (σ : Fin n → Bool) (a : Fin n → Zd d L) : ℂ :=
@@ -412,7 +410,7 @@ variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
 /-- **Transport** (`KLgval_congr`): `BACactusVal` is the generic value of the cactus structure
 (`BAslotLeaf`, `BACactusValEdgeW`, `BACactusValSrc`, `BACactusValTgt`), hence it is unchanged by any relabelling
-of the slots and of the edges that carries this structure along.  Used in K05 to compare the cactus with the glued
+of the slots and of the edges that carries this structure along.  Used to compare the cactus with the glued
 inside and outside cacti of a cut at a chord. -/
 theorem BACactusVal_congr (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (F : Finset (Fin n × Fin n))
     (σ : Fin n → Bool) (a : Fin n → Zd d L) {Nd' Ed' : Type*} [Fintype Nd'] [DecidableEq Nd'] [Fintype Ed']
@@ -444,7 +442,7 @@ private theorem BAKCactus_val_add_one (hn : 2 ≤ n) (v : Fin n) : (v + 1).val =
   rw [Fin.val_add, Fin.val_one', Nat.mod_eq_of_lt (by omega : 1 < n)]
 
 /-- **The cycle at `F = ∅`**: the tree is the star, there is one node (the root) and its slots are the `n` leaves
-in the order `0, 1, …, n-1`: the successor of the leaf `v` is the leaf `v + 1` (cyclically, `n - 1 ↦ 0`). -/
+in the order `0, 1, …, n-1`: the next element after the leaf `v` is the leaf `v + 1` (cyclically, `n - 1 ↦ 0`). -/
 theorem BAnextSlot_empty (hn : 2 ≤ n) (v : Fin n) :
     BAnextSlot (∅ : Finset (Fin n × Fin n)) (BAslotLeaf ∅ v) = BAslotLeaf ∅ (v + 1) := by
   have hF := BAKCactus_isTSP_empty (n := n)
@@ -478,7 +476,7 @@ theorem BAMcharge_empty (hn : 2 ≤ n) (σ : Fin n → Bool) (v : Fin n) :
     BAMcharge (∅ : Finset (Fin n × Fin n)) σ (BAslotLeaf ∅ v) = σ (v + 1) := by
   simp only [BAMcharge_def, BAnextSlot_empty hn, BAslotStart_leaf]
 
-/-- **The value at `F = ∅`** (the star, one node: the root; closed form, target 5 (b)):
+/-- **The value at `F = ∅`** (the star, one node: the root; closed form):
 `Γ_M(∅) = ∑_b ∏_v Θ^{(σ_v,σ_{v+1})}(a_v, b_v) ∏_v M(σ_{v+1})_{b_v b_{v+1}}`, `b : Fin n → Zd d L` the labels of the
 `n` leaf slots, `M(σ_{v+1})` the `M`-edge from the leaf `v` to the leaf `v + 1`.  Hypothesis: `2 ≤ n`. -/
 theorem BACactusVal_empty (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool)
@@ -527,10 +525,10 @@ private theorem BAKCactus_sum_fin_three {X : Type*} [Fintype X] (f : (Fin 3 → 
   rw [Fintype.sum_unique]
   rfl
 
-/-- **`n = 3`: the one-tree formula `(Kn3sol)`** (`1_2:1176`, D634; target 5 (b)).  `TSP 3 = {∅}`, one node with the
+/-- **`n = 3`: the one-tree formula (2.72) `Kn3sol`**.  `TSP 3 = {∅}`, one node with the
 three leaf slots in the order `0, 1, 2`:
 `Γ_M(∅) = ∑_{b₀,b₁,b₂} Θ^{(σ₀,σ₁)}(a₀,b₀) Θ^{(σ₁,σ₂)}(a₁,b₁) Θ^{(σ₂,σ₀)}(a₂,b₂) · M(σ₀)_{b₂b₀} M(σ₁)_{b₀b₁} M(σ₂)_{b₁b₂}`;
-the last factor is `W^{2d} 𝓜^{(3)}_{σ,b} = ∏_i M(σ_i)_{b_{i-1}b_i}` of `(eq:KMloop)` (0-indexed). -/
+the last factor is `W^{2d} 𝓜^{(3)}_{σ,b} = ∏_i M(σ_i)_{b_{i-1}b_i}` of (2.53) `eq:KMloop` (0-indexed). -/
 theorem BACactusVal_three (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin 3 → Bool)
     (a : Fin 3 → Zd d L) :
     BACactusVal d L M t (∅ : Finset (Fin 3 × Fin 3)) σ a =
@@ -563,7 +561,7 @@ theorem BACactusVal_zero_of_nonempty (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
   refine mul_eq_zero_of_right _ (Finset.prod_eq_zero (Finset.mem_univ (Sum.inl ⟨J, hJ⟩)) ?_)
   simp [BACactusValEdgeW]
 
-/-- **The value at `F = ∅` and `t = 0`** is the `M`-loop `∏_v M(σ_{v+1})_{a_v a_{v+1}}` of `(eq:KMloop)`. -/
+/-- **The value at `F = ∅` and `t = 0`** is the `M`-loop `∏_v M(σ_{v+1})_{a_v a_{v+1}}` of (2.53) `eq:KMloop`. -/
 theorem BACactusVal_empty_zero (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (σ : Fin n → Bool)
     (a : Fin n → Zd d L) :
     BACactusVal d L M 0 (∅ : Finset (Fin n × Fin n)) σ a = ∏ v, M (σ (v + 1)) (a v) (a (v + 1)) := by
@@ -578,8 +576,8 @@ theorem BACactusVal_empty_zero (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd 
     exact absurd (Finset.mem_univ a) h
 
 /-- **`t = 0`: the tree sum is the `M`-loop.**  `∑_{F ∈ TSP n} Γ_M(F)|_{t=0} = ∏_v M(σ_{v+1})_{a_v a_{v+1}}`
-(only `F = ∅` survives): the initial condition `𝒦_0 = 𝓜` of `tree-representation_BA`, with the charge convention of
-K00 (`BAMLoop_apply`: `σ_i` on `(a_{i-1}, a_i)`). -/
+(only `F = ∅` survives): the initial condition `𝒦_0 = 𝓜` of Lemma A.6 (`tree-representation_BA`), with the charge convention of
+`BAMLoop_apply` (`σ_i` on `(a_{i-1}, a_i)`). -/
 theorem BACactusVal_sum_zero (hn : 2 ≤ n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (σ : Fin n → Bool)
     (a : Fin n → Zd d L) :
     ∑ F ∈ TSP n, BACactusVal d L M 0 F σ a = ∏ v, M (σ (v + 1)) (a v) (a (v + 1)) := by
@@ -601,9 +599,9 @@ private theorem BAKCactus_getD_ofFn {α : Type*} (f : Fin n → α) (x : α) (i 
     (List.ofFn f).getD i x = f ⟨i, hi⟩ := by
   simp [List.getD_eq_getElem?_getD, hi]
 
-/-- **`t = 0` against the K00 carrier**: `W^{-d(n-1)} ∑_{F ∈ TSP n} Γ_M(F)|_{t=0} = BAMLoop(σ, a)`, i.e. the charge
-convention of the cactus (`BAMcharge`) is that of `BAMLoop_apply` (`σ_i` on `(a_{i-1}, a_i)`), checked in Lean for
-every `n ≥ 2`.  This is `BATreeRep` at `t = 0` (`𝒦_0 = 𝓜`, `(eq:initial_K)`). -/
+/-- **`t = 0` against the carrier `BAMLoop`**: `W^{-d(n-1)} ∑_{F ∈ TSP n} Γ_M(F)|_{t=0} = BAMLoop(σ, a)`, i.e. the charge
+convention of the cactus (`BAMcharge`) is that of `BAMLoop_apply` (`σ_i` on `(a_{i-1}, a_i)`), for
+every `n ≥ 2`.  This is Lemma A.6 at `t = 0` (`𝒦_0 = 𝓜`, (2.52) `eq:initial_K`). -/
 theorem BACactusVal_sum_zero_BAMLoop (hn : 2 ≤ n) (W : ℕ) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (σ : Fin n → Bool) (a : Fin n → Zd d L) :
     (((W : ℂ) ^ d)⁻¹) ^ (n - 1) * ∑ F ∈ TSP n, BACactusVal d L M 0 F σ a =
@@ -630,26 +628,5 @@ theorem BACactusVal_sum_zero_BAMLoop (hn : 2 ≤ n) (W : ℕ) (M : Bool → Matr
 
 end MLoop
 
-/-! ## 7. Compiled nonempty instances
-
-Datum of the loop part: `d = 1`, `L = 3` and `M = BAMLoop_witM` of K00 (`BA/KBase.lean:102`: symmetric `3 × 3`
-matrices with distinct entries; `W = 1`), the sign vectors `σ = (+,+,-)` at `n = 3` and `σ = (+,+,-,+)` at `n = 4`, the
-labels `a = (0,1,2)` resp. `(0,1,2,1)`; `n = 4` has the three trees `∅`, `{(0,2)}`, `{(1,3)}` (`TSP_four`).  At
-`t = 0` the chords carry `0 · Θ`, so only `F = ∅` survives and the tree sum is the `M`-loop, `BAMLoop`.  Datum of the
-symmetry part: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`), `t = 1/2`. -/
-
-/-! ### The slots and cycles of `F = {(0,2)}`, `n = 4` (two nodes, six slots; paper figure `A:552-583`) -/
-
-/-! ### The slots and cycles of `F = {(1,3)}`, `n = 4` (the diagonal in the middle of the root cycle) -/
-
-/-! ### The API lemmas at the data -/
-
-/-! ### A chord tree with `t ≠ 0` and a nonzero value: the directed datum
-
-`M(σ)_{xy} = 1(y = x + 1)` on `Z_3` (the directed 3-cycle, not symmetric): `M^{(σ₁σ₂)} = 0`, so `Θ_t^{(σ₁σ₂)} = 1` for
-every `t` and the value of `F = {(0,2)}` at `n = 4` counts the labels `b` of the six slots with `b(leaf v) = a_v`, the
-chord `b(in J) = b(out J)` (weight `t`) and every `M`-edge `s → BAnextSlot s` going from `x` to `x + 1`.  For
-`a = (0,1,0,1)` the root cycle `out → leaf 2 → leaf 3 → out` reads `b_out → 0 → 1 → b_out`, the node cycle
-`leaf 0 → leaf 1 → in → leaf 0` reads `0 → 1 → b_in → 0`: the only solution is `b_out = b_in = 2`, so the value is `t`. -/
 
 end RBM.BA

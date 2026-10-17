@@ -8,17 +8,16 @@ import RBM3D.Universality.GUEPhase.DuhamelC
 import RBM3D.Chain.StepDecompGen
 
 /-!
-# BA-C5 row b: the loop Duhamel tail of the GUE phase on the block Anderson grid
+# The loop Duhamel tail of the GUE phase on the block Anderson grid
 
-Ticket T2519 (row b; DECISIONS §344, §346, §348; Amends 1-3).  New BA leaf: no merged file is
-edited.  Band twins (RBM3D, `Universality/GUEPhase`): `DuhamelA2.lean:1008`
-(`Duhamel_drift_remainder_ae`), `DuhamelB.lean` (the processes, the Azuma tails,
-`Duhamel_bddC2C_Phi`, `Duhamel_step_decomp:739`, `Duhamel_grid_facts`), `DuhamelC.lean:1485`
-(`gueGrid_loop_duhamel`, in `BA/GUEDuhamelBA2`).  Paper: the GUE phase of Thm 2.4 is "essentially
-identical to [YY_25, Theorem 2.6]" (`paper/tex/1_2_Intro_model_result.tex:566-570`), `d ≥ 3`, block
-Anderson `S^{(B)}(0) = 1`.
+The drift remainder of one grid step of the GUE phase at the block Anderson carrier, `Duhamel_drift_remainder_aeBA`, used by
+`gueGrid_loop_duhamelBA` in `BA/GUEDuhamelBA2`.  The band counterparts are in `Universality/GUEPhase`:
+`Duhamel_drift_remainder_ae` (`DuhamelA2.lean`), the processes, the Azuma tails, `Duhamel_bddC2C_Phi`,
+`Duhamel_step_decomp`, `Duhamel_grid_facts` (`DuhamelB.lean`), `gueGrid_loop_duhamel` (`DuhamelC.lean`).
+Paper: the GUE phase of Theorem 2.4 (`Thm: B_Univ`) is "essentially identical to [YY_25, Theorem 2.6]" (proof of
+Theorem 2.4), `d ≥ 3`, block Anderson `S^{(B)}(0) = 1`.
 
-The grid path is `gueHBA sz g t1 t0 K n k ω = g Ψ_I + H_k` (C4 a, `BA/GUEOneLoop:58`), `H_k` the
+The grid path is `gueHBA sz g t1 t0 K n k ω = g Ψ_I + H_k` (see `BA/GUEOneLoop`), `H_k` the
 band path of the model `sz.withLam 0`; the flow is `ztOf m E u = E + (1 - u) m`,
 `etaOf m u = (1 - u) Im m`, and the generator is `genMatGUEOf` (the band `zt`, `etaT`, `mE` are the
 case `m = mE E`).  The band hypothesis `|E| < 2` becomes `0 < Im m` and `‖m‖ ≤ 1` (block Anderson:
@@ -26,21 +25,17 @@ case `m = mE E`).  The band hypothesis `|E| < 2` becomes `0 < Im m` and `‖m‖
 
 * §1-§4 (private): the development at a generic model `sz` and a Hermitian shift `A n` of the path,
   which is `A n + gueH sz …`: the observable and the processes of the step `j → j+1`
-  (`GUEDuhamelBA_gPhi`, `_gVp`, `_gZinc`, `_gZst`, `_gYst`, `_gr`), Azuma for the stopped linear
+  (`GUEDuhamelBA_gPhi`, `GUEDuhamelBA_gVp`, `GUEDuhamelBA_gZinc`, `GUEDuhamelBA_gZst`, `GUEDuhamelBA_gYst`,
+  `GUEDuhamelBA_gr`), Azuma for the stopped linear
   part and for the recentred truncated remainder, the `C²` class of the loop observable
-  (`hermTestFunLoopNOf`, `Chain/StepDecompGen:101`), the pathwise decomposition of one step, the
+  (`hermTestFunLoopNOf`, `Chain/StepDecompGen`), the pathwise decomposition of one step, the
   grid facts (`‖z_{j+1} - z_j‖ ≤ Δ ‖m‖`: the band has `= Δ`, as `‖mE E‖ = 1`).  The generic band
   lemmas (`DuhamelA2`: truncation, Taylor layer; `Duhamel_Vp_le`, `Duhamel_qv_le_crude`,
-  `Duhamel_exists_level`; the conditional sub-Gaussian lemmas of `Markov`) are read by name, the
-  band privates by `open private … from` (no third copies).
-* §5 (target 6, public) the BA-form processes `GUEDuhamelBA_Phi`, `_Zinc`, `_Yst`, `_r`, `_Vp`,
-  `_Zst` (twins of `DuhamelPhi`, `DuhamelZinc`, `DuhamelYst`, `Duhamelr`, `DuhamelVp`, `DuhamelZst`;
-  the specialisations `sz := sz.withLam 0`, `A n := g Ψ_I` of the private ones, by `rfl`),
-  `Duhamel_step_decompBA`, `Duhamel_azuma_ZBA`, `Duhamel_azuma_YBA` (the Azuma tails) and
-  `Duhamel_drift_remainder_aeBA` (reads `condExp_loop_drift_gueBA`, C4 b, through the freezing
+  `Duhamel_exists_level`; the conditional sub-Gaussian lemmas of `Markov`) are used by name, the
+  band private ones through `open private … from`.
+* §5: the Hermitian increment `GUEDuhamelBA_hflow` and the public theorem
+  `Duhamel_drift_remainder_aeBA` (it uses `condExp_loop_drift_gueBA` through the freezing
   lemma).
-* §6 (target 8) compiled nonempty instances of §5 (`RBM.BA.GUEDuhamelBAInst`); the instance of the
-  main theorem of `BA/GUEDuhamelBA2` is in that file.
 -/
 
 set_option linter.style.longLine false
@@ -271,7 +266,7 @@ private theorem GUEDuhamelBA_condSubG_Zst {lam : ℝ} (hlam : 0 ≤ lam)
       funext fun ω => (GUEDuhamelBA_Zst_re_im lam j ω).2
     rw [heq]; exact h2
 
-/-- **Azuma at one dyadic level** (`Duhamel_azuma_Z`, `DuhamelB:341`): the linear part stopped at
+/-- **Azuma at one dyadic level** (`Duhamel_azuma_Z`): the linear part stopped at
 `firstHit (GUEDuhamelBA_gVp …) lam (K n)` has the complex Azuma tail with proxy `lam` per step. -/
 private theorem GUEDuhamelBA_azuma_Z {lam : ℝ} (hlam : 0 < lam) (hv : 0 ≤ Duhamelv sz t1 t0 K n) (k : ℕ)
     {ε : ℝ} (hε : 0 ≤ ε) :
@@ -390,7 +385,7 @@ private theorem GUEDuhamelBA_stronglyAdapted_Yst :
     · exact stronglyMeasurable_const
     · exact (Complex.measurable_im.comp (key j)).stronglyMeasurable
 
-/-- **Azuma for `Ỹ`** (`Duhamel_azuma_Y`, `DuhamelB:620`): the recentred, truncated remainders `T - ∫ T` have the
+/-- **Azuma for `Ỹ`** (`Duhamel_azuma_Y`): the recentred, truncated remainders `T - ∫ T` have the
 complex Azuma tail with proxy `4 b²` per step, `b` a bound of `DuhamelT` at Hermitian base points. -/
 private theorem GUEDuhamelBA_azuma_Y (hA : ∀ n, (A n).IsHermitian) {b : ℝ} (hb0 : 0 ≤ b)
     (hb : ∀ j < K n, ∀ M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ,
@@ -451,8 +446,8 @@ section Decomp
 variable {d : ℕ} {sz : Sizes d} {A : ∀ n, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
   {t1 t0 : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {e : ℝ} {μ : ℂ} {I : LoopIdx (Zd d (sz.L n))}
 
-/-- **The loop observable before the horizon is `C²` with explicit constants** (`Duhamel_bddC2C_Phi`,
-`DuhamelB:687`; `hermTestFunLoopNOf`, `Chain/StepDecompGen:101`, at `ztOf μ e` and `0 < Im μ`). -/
+/-- **The loop observable before the horizon is `C²` with explicit constants** (`Duhamel_bddC2C_Phi`;
+`hermTestFunLoopNOf`, `Chain/StepDecompGen`, at `ztOf μ e` and `0 < Im μ`). -/
 private theorem GUEDuhamelBA_bddC2C_Phi (hμ : 0 < μ.im) (hwf : I.WF) (hst : t1 n ≤ t0 n) (ht0 : t0 n < 1)
     {j : ℕ} (hj : j < K n) :
     (ztOf μ e (gridTime t1 t0 K n (j + 1))).im ≠ 0 ∧
@@ -482,7 +477,7 @@ private theorem GUEDuhamelBA_bddC2C_Phi (hμ : 0 < μ.im) (hwf : I.WF) (hst : t1
   rw [DuhamelB_loopOf_eq I hwf] at h1
   exact ⟨hz, h1.1, h1.2⟩
 
-/-- **One step, pathwise**, on the truncation set of the new increment (`Duhamel_step_decomp`, `DuhamelB:739`):
+/-- **One step, pathwise**, on the truncation set of the new increment (`Duhamel_step_decomp`):
 `𝓛_{u_{j+1}}(H_{j+1}) - 𝓛_{u_j}(H_j) - Δ · gen = Z + Ỹ - B + r`. -/
 private theorem GUEDuhamelBA_step_decomp (hA : ∀ n, (A n).IsHermitian) (hμ : 0 < μ.im) (hwf : I.WF)
     (hst : t1 n ≤ t0 n) (ht0 : t0 n < 1) {j : ℕ} (hj : j < K n) (ω : PathΩ sz)
@@ -527,7 +522,7 @@ private theorem GUEDuhamelBA_step_decomp (hA : ∀ n, (A n).IsHermitian) (hμ : 
   rw [hL1, hY, hZ, hr, hint, hRdef, hT]
   ring
 
-/-- **The grid facts** (`Duhamel_grid_facts`, `DuhamelB:976`) along `ztOf μ e`: `Δ ≥ 0`, `K Δ ≤ 1`, `x⁻¹ ≤ Im z_j ≤ 1`
+/-- **The grid facts** (`Duhamel_grid_facts`) along `ztOf μ e`: `Δ ≥ 0`, `K Δ ≤ 1`, `x⁻¹ ≤ Im z_j ≤ 1`
 for `j ≤ K`, `‖z_{j+1} - z_j‖ ≤ Δ` (`= Δ ‖μ‖`; the band has equality, `‖mE E‖ = 1`), `Im z_{j+1} ≤ Im z_j ≤
 Im z_{j+1} + Δ` and `u_k - t₁ = k Δ`. -/
 private theorem GUEDuhamelBA_grid_facts (hμ : 0 < μ.im) (hμ1 : ‖μ‖ ≤ 1)
@@ -590,10 +585,10 @@ private theorem GUEDuhamelBA_grid_facts (hμ : 0 < μ.im) (hμ1 : ‖μ‖ ≤ 1
 
 end Decomp
 
-/-! ## 5. Target 6, public: the BA processes of one step, the pathwise decomposition, the drift remainder
+/-! ## 5. The public statement: the drift remainder
 
-The processes below are the BA twins of `DuhamelPhi`, `DuhamelZinc`, `DuhamelYst`, `Duhamelr` (`DuhamelB:173, 186, 536,
-726`) on the BA grid path `gueHBA` along `ztOf m E`; they are the `rfl`-specialisations of the private generic
+The processes of the band development `DuhamelPhi`, `DuhamelZinc`, `DuhamelYst`, `Duhamelr` on the BA grid path `gueHBA`
+along `ztOf m E` are the `rfl`-specialisations of the private generic
 development above to `sz := sz.withLam 0`, `A n := g Ψ_I`. -/
 
 section BAForm
@@ -617,10 +612,10 @@ abbrev GUEDuhamelBA_hflow (sz : Sizes d) (n : ℕ) (v : ℝ) (y : Sizes.SeqΩ (s
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Sizes.seqHflow (sz.withLam 0) n v y
 
-/-- **Target 6, `Duhamel_drift_remainder_aeBA`: the drift remainder** (twin of `Duhamel_drift_remainder_ae`,
-`DuhamelA2:1008`): the conditional mean of the next loop (the integral over one unit GUE increment
+/-- **`Duhamel_drift_remainder_aeBA`: the drift remainder** (the block Anderson version of `Duhamel_drift_remainder_ae`):
+the conditional mean of the next loop (the integral over one unit GUE increment
 `seqHflow (Δ/N) y`, `y ~ gueUnit`) minus the loop and its drift `Δ · genMatGUEOf` is bounded, almost surely, by the
-envelope of `condExp_loop_drift_gueBA` (C4 b), `16 (ℓ+3)⁴ N⁴ (1 + η_{u_{k+1}}⁻¹)^{ℓ+4} Δ^{3/2}`. -/
+envelope of `condExp_loop_drift_gueBA`, `16 (ℓ+3)⁴ N⁴ (1 + η_{u_{k+1}}⁻¹)^{ℓ+4} Δ^{3/2}`. -/
 theorem Duhamel_drift_remainder_aeBA (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (E : ℝ) (m : ℂ)
     (hm : 0 < m.im) (hm1 : ‖m‖ ≤ 1) {I : LoopIdx (Zd d (sz.L n))} (hwf : I.WF)
     (ht1 : 0 ≤ t1 n) (hst : t1 n ≤ t0 n) (ht0 : t0 n < 1) (hk : k < K n) :
@@ -710,12 +705,5 @@ end BAForm
 
 end RBM.BA
 
-/-! ## 6. Compiled nonempty instances (target 8) of the public theorems of this file
-
-Namespace `RBM.BA.GUEDuhamelBAInst`.  Data: `d = 3`, `sz0` (`L_0 = 4`, `W_0 = 32`, `N_0 = 2097152`, `Defs/Sizes.lean`), the BA flow
-datum `(g_n, E_n, m_n)` of `sz0` at every `n` (`BAReal` at `κ = 1/2`: `0 < Im m_n`, `‖m_n‖ ≤ 1`), `t₁ = 17/20`, `t₀ = 9/10`,
-`K = 131072` (`Δ = 1/(20 · 131072) > 0`), size index `n = 0`, grid step `k = 0`, the 2-loop `(+,-; 0, 1)` (`0 ≠ 1` in `Z_4^3`),
-the zero path `ω = 0`, which lies in the truncation set (`DuhamelA2Inst.zero_mem_good`); every deterministic hypothesis is
-discharged. -/
 
 end

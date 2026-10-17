@@ -9,34 +9,34 @@ import RBM3D.BA.UNPins
 import RBM3D.BA.MReg
 
 /-!
-# `RBM3D.BA.EMCTE2BA` (T2476, BA stage M/N row N3a)
+# The block Anderson weighted `(EMCTE2)` estimate and the bad-event bounds
 
-The block Anderson producers of the merged pins `UNEMCTE2RowBA` and `UNJakUywRowBA`
-(`BA/UNPins.lean:128, 132`), the hypotheses `rE`, `rJ` of `baBUniv_of_rows` (`:367`).
+The block Anderson producer `unEMCTE2RowBA_holds` of the statement `UNEMCTE2RowBA` (`BA/UNPins.lean`), and the
+three kind hypotheses `UNBulkWindowk`, `UNBadBoundk`, `UNBad2Boundk` with their block Anderson instances, which feed the
+model-generic forms `unJak_of_ouClaimsk`, `unUyw_of_ouClaimsk` (used by `jakUywRowkD` in `BA/UNBUniv.lean`).
 
-Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex` (cited `1_2:line`): `(EMCTE2)`
-("argue as in Step 3 of [YY_25]", RBM2D `1-2:364-376`) and `(jaklsdufowe)`, `(uywy7723r3rf)`
-(`1_2:566-581`, "(2.22), (2.23) of [DYYY25]") for the block Anderson model `H = V + ilambda Ψ`
-(`1_2:611-616`).
+Paper: Theorem 2.4 (`Thm: B_Univ`) for the block Anderson model `H = V + iλ Ψ` ((2.30) `eq:H_blocka`).  Its proof is the
+Green's function comparison of [DYYY25, Theorem 2.6]: the weighted estimate `(EMCTE2)` is obtained "as in Step 3" of the
+proof of [YY_25, Theorem 2.6], and `(jaklsdufowe)`, `(uywy7723r3rf)` are the equations (2.22), (2.23) of [DYYY25].
 
-* **E1** (`(EMCTE2)`): the centred block Anderson flow is `λ_n Ψ` plus the band OU flow of
-  `sz.withLam 0` (`ouMatC_ba_eq_band_add`, same carrier `ouP_ba_eq_band`; profile
+* **(i) `(EMCTE2)`**: the centred block Anderson flow is `λ_n Ψ` plus the band OU flow of
+  `sz.withLam 0` (`ouMatC_ba_eq_band_add`, on the same probability space; profile
   `S^{(B)}(0) = I`, `lamV = 0`).  So the generator identity holds for the shifted test function
   `Φ(A + ·)` (`EMCTE2BA_testFunH_translate`, `EMCTE2BA_wirtSecond_translate`);
-  `eq225_intervalShift` is `eq225_interval` (`EMCTE2.lean:455`) for it, `unEMCTE2k_ba` is
-  `unEMCTE2_of_sizeTendsto` (`EMCTE2.lean:597`) read through the translation, and
-  `unEMCTE2RowBA_holds` is the pin `UNEMCTE2RowBA`.
-* **E2** (`(jaklsdufowe)`, `(uywy7723r3rf)`): `unJak_of_ouClaimsk`, `unUyw_of_ouClaimsk`,
-  `jakUywRowk` are the model-generic forms of `unJak_of_ouClaims`, `unUyw_of_ouClaims`,
-  `jakUywRow` (`Jak.lean`, `Uyw.lean`: the private fixed-time lemmas carry the profile coupling
+  `eq225_intervalShift` is `eq225_interval` for it, `unEMCTE2k_ba` is
+  `unEMCTE2_of_sizeTendsto` read through the translation, and
+  `unEMCTE2RowBA_holds` is the statement `UNEMCTE2RowBA`.
+* **(ii) `(jaklsdufowe)`, `(uywy7723r3rf)`**: `unJak_of_ouClaimsk`, `unUyw_of_ouClaimsk`
+  are the model-generic forms of `unJak_of_ouClaims`, `unUyw_of_ouClaims`
+  (`Jak.lean`, `Uyw.lean`: the private fixed-time lemmas carry the profile coupling
   `lamV` and the bulk window, and are reached by `open private`), under the three kind
   hypotheses `UNBulkWindowk`, `UNBadBoundk`, `UNBad2Boundk`.  At the band kind they are
   `measure_bad_le_of_queBadMat`, `measure_bad2_le_of_queBadMat`; at block Anderson they are
-  `BAbulk_window`, `unBadYBA_measure_le` and the new one-block pair bound
-  `EMCTE2BA_bad2_subset`; `unJakUywRowBA_holds` is the pin `UNJakUywRowBA`.
+  `BAbulk_window`, `unBadYBA_measure_le` and the one-block pair bound
+  `EMCTE2BA_bad2_subset` (`UNBulkWindowk_ba`, `UNBadBoundk_ba`, `UNBad2Boundk_ba`).
 
 Helpers of `EMCTE2.lean` reached by `open private` (all generic in the matrix family):
-`EMCTE2_hsum`, `EMCTE2_hsum_nonneg`, `EMCTE2_hsum_bdd`, `EMCTE2_integrable_hsum`,
+`EMCTE2_hsum`, `EMCTE2_hsum_nonneg`, `EMCTE2_integrable_hsum`,
 `EMCTE2_integrable_L1t_term`, `EMCTE2_integrable_L2t_term`, `EMCTE2_sum_integral_swap`.
 -/
 
@@ -60,13 +60,13 @@ namespace RBM.Univ
 
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.BA
 
-/-! ## 1. E1: the translation of test functions -/
+/-! ## 1. The translation of test functions -/
 
 section Translate
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- **Target 1, test functions**: a Hermitian translate of a `TestFunH` is a `TestFunH`. -/
+/-- **Test functions**: a Hermitian translate of a `TestFunH` is a `TestFunH`. -/
 theorem EMCTE2BA_testFunH_translate {Φ : Matrix (Idx d L W) (Idx d L W) ℂ → ℂ} (hΦ : TestFunH d L W Φ)
     {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian) : TestFunH d L W (fun K => Φ (A + K)) := by
   obtain ⟨h1, ⟨C0, h2⟩, ⟨C1, h3⟩, ⟨C2, h4⟩⟩ := hΦ
@@ -76,7 +76,7 @@ theorem EMCTE2BA_testFunH_translate {Φ : Matrix (Idx d L W) (Idx d L W) ℂ →
   · rw [hfd]; exact h3 _ (hA.add hM)
   · rw [funext hfd, fderiv_comp_add_left (𝕜 := ℝ) (f := fderiv ℝ Φ) (x := M) A]; exact h4 _ (hA.add hM)
 
-/-- **Target 1, second derivative**: `wirtSecond` of a translate is `wirtSecond` at the translated point. -/
+/-- **Second derivative**: `wirtSecond` of a translate is `wirtSecond` at the translated point. -/
 theorem EMCTE2BA_wirtSecond_translate (Φ : Matrix (Idx d L W) (Idx d L W) ℂ → ℂ)
     (A M : Matrix (Idx d L W) (Idx d L W) ℂ) (a b : Idx d L W) :
     wirtSecond d L W (fun K => Φ (A + K)) M a b = wirtSecond d L W Φ (A + M) a b := by
@@ -95,11 +95,11 @@ theorem EMCTE2BA_measurable_shift {Ω' : Type*} [MeasurableSpace Ω'] (A : Matri
 
 end Translate
 
-/-! ## 2. E1: `eq225_interval` for the shifted functional -/
+/-! ## 2. `eq225_interval` for the shifted functional -/
 
-/-- **Target 2 (E1 core)**: `eq225_interval` (`EMCTE2.lean:455`) for the shifted functional `Φ(A + ·)`, `A` a deterministic
+/-- **`eq225_interval` for the shifted functional** `Φ(A + ·)`, `A` a deterministic
 Hermitian matrix, on the band carrier of any `sz`; the kernels `L1t`, `L2t` are read at `A + ouMat`.  At `A = 0` it is
-`eq225_interval` (`eq225_intervalShift_zero`). -/
+`eq225_interval`. -/
 theorem eq225_intervalShift (d : ℕ) (sz : Sizes d) (n nf : ℕ) (z : Fin nf → ℂ)
     (hz : ∀ i : Fin nf, 0 < (z i).im)
     (A : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (hA : A.IsHermitian)
@@ -245,11 +245,11 @@ theorem eq225_intervalShift (d : ℕ) (sz : Sizes d) (n nf : ℕ) (z : Fin nf �
     _ ≤ (1 / 2 * Bd) * |T - t| := hmain
     _ = (1 / 2) * (T - t) * Bd := by rw [abs_of_nonneg (sub_nonneg.2 htT)]; ring
 
-/-! ## 3. E1: the pin `UNEMCTE2k` at the block Anderson kind -/
+/-! ## 3. `UNEMCTE2k` at the block Anderson kind -/
 
-/-- **Target 3 (E1 at a size sequence)**: the weighted `(EMCTE2)` of the block Anderson kind at every size sequence with
-`N → ∞` and `τU ≤ Cn τU` (copy of `unEMCTE2_of_sizeTendsto`, `EMCTE2.lean:597`).  The centred flow is `λ_n Ψ` plus the
-band flow of `sz.withLam 0` (`ouMatC_ba_eq_band_add`), the carrier is the same (`ouP_ba_eq_band`), the profile coupling
+/-- **The weighted `(EMCTE2)` at a size sequence**: the block Anderson kind at every size sequence with
+`N → ∞` and `τU ≤ Cn τU` (the argument of `unEMCTE2_of_sizeTendsto`).  The centred flow is `λ_n Ψ` plus the
+band flow of `sz.withLam 0` (`ouMatC_ba_eq_band_add`), the probability space is the same, the profile coupling
 is `lamV = 0 = (sz.withLam 0).lam n`; then `eq225_intervalShift` at `A = λ_n Ψ` (Hermitian: `mean_herm`).  `E` is not used. -/
 theorem unEMCTE2k_ba (d : ℕ) (sz : Sizes d) (hd : sz.SizeTendsto) (E : ℝ) (nf : ℕ) (τU Cn : ℝ)
     (hτ : τU ≤ Cn * τU) : UNEMCTE2k (UNKind.ba d) sz E nf τU Cn := by
@@ -365,19 +365,19 @@ theorem unEMCTE2k_ba (d : ℕ) (sz : Sizes d) (hd : sz.SizeTendsto) (E : ℝ) (n
     _ = ((sz.size n : ℕ) : ℝ) ^ ε * ouTStar sz τU n * B := by ring
     _ ≤ _ := h4
 
-/-! ## 4. E2: the kind hypotheses and the model-generic forms of `Jak` and `Uyw` -/
+/-! ## 4. The kind hypotheses and the model-generic forms of `Jak` and `Uyw` -/
 
 /-- **Kind hypothesis (bulk window)**: the bulk of a kind is open, uniformly in `n`: for every `κ > 0` there are `κ' > 0` and
-`r > 0` with `bulk κ E n`, `|e - E| ≤ r` ⟹ `bulk κ' e n`.  Band: `κ' = r = κ/2` (`UNBulkWindowk_band`).  Block Anderson:
-`κ' = κ/2`, `r = (π κ)³/8` (`BAbulk_window`, `BA/MReg.lean:122`; `UNBulkWindowk_ba`). -/
+`r > 0` with `bulk κ E n`, `|e - E| ≤ r` ⟹ `bulk κ' e n`.  Band: `κ' = r = κ/2`.  Block Anderson:
+`κ' = κ/2`, `r = (π κ)³/8` (`BAbulk_window`; `UNBulkWindowk_ba`). -/
 def UNBulkWindowk (K : ∀ d, UNKind d) : Prop :=
   ∀ (d : ℕ) (sz : Sizes d) (κ : ℝ), 0 < κ → ∃ κ' r : ℝ, 0 < κ' ∧ 0 < r ∧
     ∀ (n : ℕ) (E e : ℝ), (K d).bulk sz κ E n → |e - E| ≤ r → (K d).bulk sz κ' e n
 
 /-- **Kind hypothesis (bad-event transfer, `Jak`)**: QUE at the coupling `sz.lam n` with bound `p` at every block gives the
-`blockM` event at the profile coupling `(K d).lamV sz n` probability `≤ (2d + 1) p`.  Band: `measure_bad_le_of_queBadMat`
-(`JakSpectral.lean:559`; `UNBadBoundk_band`).  Block Anderson: `unBadY_of_blockM` and `unBadYBA_measure_le`
-(`BA/UNPins.lean:738`; `UNBadBoundk_ba`). -/
+`blockM` event at the profile coupling `(K d).lamV sz n` probability `≤ (2d + 1) p`.  Band: `measure_bad_le_of_queBadMat`.
+Block Anderson: `unBadY_of_blockM` and `unBadYBA_measure_le`
+(`UNBadBoundk_ba`). -/
 def UNBadBoundk (K : ∀ d, UNKind d) : Prop :=
   ∀ (d : ℕ) (sz : Sizes d) (n : ℕ) (t 𝔡 E : ℝ) (y : Idx d (sz.L n) (sz.W n)) (p : ℝ≥0∞),
     3 ≤ d → 0 < 𝔡 → (sz.W n : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ sz.lam n →
@@ -391,8 +391,8 @@ def UNBadBoundk (K : ∀ d, UNKind d) : Prop :=
                 (siteBlock d (sz.L n) (sz.W n) y) α‖} ≤
       ((2 * d + 1 : ℕ) : ℝ≥0∞) * p
 
-/-- **Kind hypothesis (bad-event transfer, `Uyw`)**: the pair form (`blockM2`).  Band: `measure_bad2_le_of_queBadMat`
-(`UywKernel.lean:1061`; `UNBad2Boundk_band`).  Block Anderson: the one-block pair bound at `lamV = 0`
+/-- **Kind hypothesis (bad-event transfer, `Uyw`)**: the pair form (`blockM2`).  Band: `measure_bad2_le_of_queBadMat`.
+Block Anderson: the one-block pair bound at `lamV = 0`
 (`EMCTE2BA_bad2_subset`; `UNBad2Boundk_ba`). -/
 def UNBad2Boundk (K : ∀ d, UNKind d) : Prop :=
   ∀ (d : ℕ) (sz : Sizes d) (n : ℕ) (t 𝔡 E : ℝ) (a0 : Zd d (sz.L n)) (p : ℝ≥0∞),
@@ -449,7 +449,7 @@ theorem EMCTE2BA_hbad2_of_K (K : ∀ d, UNKind d) (hbb : UNBad2Boundk K) {d : �
   have hq := Uyw_queBound_eq (sz.W n) h𝔡
   exact hbb d sz n t 𝔡 E (siteBlock d (sz.L n) (sz.W n) y) _ hd h𝔡 hw.1 (fun b => hq ▸ hn t ht0 htT E hE b)
 
-/-- **Target 6 (`Jak`, model-generic)**: `unJak_of_ouClaims` (`Jak.lean:854`) over a kind `K`: the profile coupling
+/-- **`Jak`, model-generic**: `unJak_of_ouClaims` over a kind `K`: the profile coupling
 `(K d).lamV` in `scirc`, `blockM`, the bulk window `UNBulkWindowk` for `hdiag` at `κ_eff = min κ (min 2 (2r))`, the bad-event
 transfer `UNBadBoundk`.  `C = 3 nf + 16`, `c' = 𝔠𝔡/30` as in the band. -/
 theorem unJak_of_ouClaimsk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : UNBadBoundk K) :
@@ -527,7 +527,7 @@ theorem unJak_of_ouClaimsk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : 
         exact Real.one_le_rpow hX1 hε.le
 
 
-/-- **Target 6 (`Uyw`, model-generic)**: `unUyw_of_ouClaims` (`Uyw.lean:793`) over a kind `K`; the pair-event transfer is
+/-- **`Uyw`, model-generic**: `unUyw_of_ouClaims` over a kind `K`; the pair-event transfer is
 `UNBad2Boundk`.  `C = 3 nf + 16`, `c' = 𝔠𝔡/30` as in the band. -/
 theorem unUyw_of_ouClaimsk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : UNBad2Boundk K) :
     ∀ d : ℕ, 3 ≤ d → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 → ∀ κ : ℝ, 0 < κ →
@@ -603,23 +603,22 @@ theorem unUyw_of_ouClaimsk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : 
         exact Real.one_le_rpow hX1 hε.le
 
 
-/-! ## 5. The row `UNEMCTE2RowBA` and the band instances of the kind hypotheses -/
+/-! ## 5. The statement `UNEMCTE2RowBA` -/
 
-/-- **Target 4 (E1, the binding pin)**: the weighted `(EMCTE2)` of the block Anderson kind, `UNEMCTE2Rowk` at `UNKind.ba`:
-`Cn = 1`, `τ₀ = 1`; the size hypothesis is the third conjunct of `Admissible`; the bulk premise is not used, as in
-`unEMCTE2Rowk_band` (`EMCTE2.lean:690`). -/
+/-- **The weighted `(EMCTE2)` of the block Anderson kind**, `UNEMCTE2Rowk` at `UNKind.ba`:
+`Cn = 1`, `τ₀ = 1`; the size hypothesis is the third conjunct of `Admissible`; the bulk premise is not used. -/
 theorem unEMCTE2RowBA_holds : UNEMCTE2RowBA := by
   intro d _ 𝔠 𝔡 sz hA κ _ E _ nf
   exact ⟨1, 1, one_pos, fun τU _ _ => unEMCTE2k_ba d sz hA.2.2.1 E nf τU 1 (one_mul τU).ge⟩
 
-/-! ## 6. E2 at block Anderson: the bulk window, the one-block bad events, `unJakUywRowBA_holds` -/
+/-! ## 6. The bulk window and the one-block bad events at block Anderson -/
 
-/-- **Target 7**: the bulk window of block Anderson, `κ' = κ/2`, `r = (π κ)³/8` (`BAbulk_window`, `BA/MReg.lean:122`). -/
+/-- **The bulk window of block Anderson**, `κ' = κ/2`, `r = (π κ)³/8` (`BAbulk_window`). -/
 theorem UNBulkWindowk_ba : UNBulkWindowk (fun d => UNKind.ba d) := fun d sz κ hκ =>
   ⟨κ / 2, (Real.pi * κ) ^ 3 / 8, by positivity, by positivity,
     fun n E e hE he => BAbulk_window d (sz.L n) (sz.lam n) κ E e hκ hE he⟩
 
-/-- **Target 8**: the `Jak` bad block of block Anderson is a one-block event (`unBadYBA_measure_le`, `BA/UNPins.lean:738`,
+/-- **The `Jak` bad block of block Anderson is a one-block event** (`unBadYBA_measure_le`,
 no factor `2d + 1`), contained in `UNBadY` at any coupling (`unBadY_of_blockM`); then `p ≤ (2d + 1) p`. -/
 theorem UNBadBoundk_ba : UNBadBoundk (fun d => UNKind.ba d) := by
   intro d sz n t 𝔡 E y p _ h𝔡 hlam hp
@@ -630,10 +629,10 @@ theorem UNBadBoundk_ba : UNBadBoundk (fun d => UNKind.ba d) := by
     exact unBadY_of_blockM (sz.three_le_L n) (ouMatC_isHermitian _ n t ω) y α h1 h2
   · exact le_mul_of_one_le_left' (by exact_mod_cast Nat.succ_le_succ (Nat.zero_le _))
 
-/-- **Target 9 (the one-block pair lemma)**: at the profile coupling `lamV = 0`, `blockM2 0 … a0 α β` is the block quantity
+/-- **The one-block pair lemma**: at the profile coupling `lamV = 0`, `blockM2 0 … a0 α β` is the block quantity
 of `a0` itself (`SBR_zero_ne`, `sum_SBR_row`), so a pair bad event at `a0` is a `queBadMat` failure at `a0` (`un_window_sub`;
-the eigenvectors are the orthonormal eigenbasis of `M`).  No merged form exists: `UywKernel_bad2_subset` is private and
-single-coupling. -/
+the eigenvectors are the orthonormal eigenbasis of `M`).  (The lemma `UywKernel_bad2_subset` is private and
+single-coupling.) -/
 theorem EMCTE2BA_bad2_subset {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) {lamQ 𝔡 E : ℝ} (hW : 1 ≤ (W : ℝ))
     (h𝔡 : 0 < 𝔡) (hlam : (W : ℝ) ^ (-(d : ℝ) / 2 + 𝔡) ≤ lamQ) (a0 : Zd d L)
     {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) (α β : Idx d L W)
@@ -685,7 +684,7 @@ theorem EMCTE2BA_bad2_subset {d L W : ℕ} [NeZero L] [NeZero W] (hL : 3 ≤ L) 
     _ = _ := by rw [← mul_assoc, h3, one_mul]
 
 
-/-- **Target 9**: the `Uyw` pair event of block Anderson is a one-block event at `a0`; then `p ≤ (2d + 1) p`. -/
+/-- **The `Uyw` pair event of block Anderson is a one-block event** at `a0`; then `p ≤ (2d + 1) p`. -/
 theorem UNBad2Boundk_ba : UNBad2Boundk (fun d => UNKind.ba d) := by
   intro d sz n t 𝔡 E a0 p _ h𝔡 hlam hp
   refine le_trans (measure_mono ?_) ((hp a0).trans ?_)
@@ -694,18 +693,6 @@ theorem UNBad2Boundk_ba : UNBad2Boundk (fun d => UNKind.ba d) := by
       (ouMatC_isHermitian _ n t ω) α β hα hβ hθ
   · exact le_mul_of_one_le_left' (by exact_mod_cast Nat.succ_le_succ (Nat.zero_le _))
 
-/-! ## 7. Compiled nonempty instances (CLAUDE.md §4 step 2; `d = 3`)
-
-* `inst_translate`, `inst_wirtSecond_translate` (target 1): the translate of the `∏ Im m(z)` test function by `A_0 = λ_0 Ψ` at
-  `sz0`, `n = 0`, `z = ![I]`; `inst_eq225_intervalShift` (target 2) at the same data, `t = 0`, `T = 1`, the kernel hypothesis
-  discharged by the uniform bound of the kernel sum (`EMCTE2_hsum_bdd`, as `inst_eq225_interval`, `EMCTE2.lean:710`).
-* `inst_unEMCTE2k_ba_sz0` (target 3) at `sz0`, `nf = 2`, `τU = 1/2`; `inst_unEMCTE2Rowk_ba` (target 4) at the class sequence
-  `S0` (`S0_adm`, `S0_bulk`), `κ_*`, `E_*`, `nf = 1`: `UNEMCTE2k (UNKind.ba 3) S0 E_* 1 τ₀ Cn` with no hypothesis left.
-* `inst_unJak_k_band`, `inst_unUyw_k_band`, `inst_jakUywRowk_band` (targets 5, 6) at `UNKind.band 3`, `sz0`, `κ = 1/2`,
-  `E = 1`, `nf = 2`; this reproduces `JakInst.inst_unJak`, `UywInst.inst_unUyw`.  `UNOUQUEk`, `UNOUDiagk` stay hypotheses.
-* `inst_unJak_k_ba`, `inst_unUyw_k_ba`, `inst_bad_ba` (targets 7-9) and `inst_unJakUywRowBA` (target 10) at `S0`, `nf = 2`;
-  `UNLocAvgBA` and `rO hML hLoc hQ` are hypotheses (as `BAInst.inst_UNJakUywRowBA`).
-* `inst_univ_ba_rows`: the consumer `baBUniv_of_rows` with `rE`, `rJ` discharged. -/
 
 end RBM.Univ
 

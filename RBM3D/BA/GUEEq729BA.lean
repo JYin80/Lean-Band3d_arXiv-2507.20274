@@ -7,46 +7,37 @@ import RBM3D.BA.GUEOneLoop
 import RBM3D.Universality.GUEPhase.Eq729A
 
 /-!
-# BA-C4 row b: the GUE drift and the (7.29) recursion on the block Anderson grid (`BA/GUEEq729BA`)
+# The GUE drift and the eq729 recursion on the block Anderson grid
 
-Ticket T2517 (row b; DECISIONS §339, §340; design gate D1 signed by
-`docs/reports/T2517-1a-audit.md`).  New BA leaf: no merged file is edited.  Stacked on row a
-(`BA/GUEOneLoop`, first commit `db2015e4`): `gueHBA` is the BA grid path `g Ψ_I + H_k`, with
-`H_k` of the model `sz.withLam 0` (`S^{(B)}(0) = 1`).  Band twins (RBM3D, read from
-`Universality/GUEPhase`): `Drift.lean` (`oneStepEnvelopeGUE:756`, `condExp_loop_step_gue:1208`,
-`condExp_loop_drift_gue:1318`, T2343) and `Eq729A.lean` (`eq729_eG2:80`, `eq729_duhamel:378`,
-`eq729_one_step:731`, T2350).  No RBM1D or RBM2D text is copied.  Paper: arXiv:2507.20274,
-`paper/tex/1_2_Intro_model_result.tex`: the matrix Brownian motion `(MBM)` (`:685`, `H_0 =
-ilambda Ψ` for block Anderson), the spectral parameter flow (`:716`) and `η_t` (`:720`).
+`gueHBA` is the BA grid path `g Ψ_I + H_k` (see `BA/GUEOneLoop`), with
+`H_k` of the model `sz.withLam 0` (`S^{(B)}(0) = 1`).  Band counterparts (read from
+`Universality/GUEPhase`): `Drift.lean` (`oneStepEnvelopeGUE`, `condExp_loop_step_gue`,
+`condExp_loop_drift_gue`) and `Eq729A.lean` (`eq729_eG2`, `eq729_duhamel`,
+`eq729_one_step`).  Paper: the matrix Brownian motion (2.36) `MBM` (`H_0 =
+ilambda Ψ` for block Anderson), the spectral parameter flow (2.37) `eq:zt` and `η_t` (2.38) `eta`.
 
 Every statement is at the flow datum `(g, E, m)` (profile level): `m` is free with `0 < Im m`
 and `‖m‖ ≤ 1` (for block Anderson `m = m(E, ilambda₀)`, `BAReal`); the flow is `ztOf m E`,
 `etaOf m`, and the band hypothesis on `E` is replaced by these two.  The band flow is the case
 `m = m_sc(E)`.
 
-* §1-§2 (target 6) `oneStepEnvelopeGUEOf`: the one-step expansion with its envelope for one GUE
+* §1-§2 `oneStepEnvelopeGUEOf`: the one-step expansion with its envelope for one GUE
   increment along `ztOf m E`.  The space step is the band `Drift_space_step` (generic in the
   spectral parameter); the time step is redone along `ztOf m E` (`GUEEq729BA_time_step`, `d_u
   ztOf m E u = -m`).
-* §3 (target 6) `condExp_loop_step_gueBA`, `condExp_loop_drift_gueBA` (= `T2517_DriftBA`): the
+* §3 `condExp_loop_step_gueBA`, `condExp_loop_drift_gueBA`: the
   freezing lemma for `A + H_k` (`A = g Ψ_I`), and the conditional drift bounded by the envelope.
-* §4-§5 (target 7) `eq729FBA`, `eq729eBA` (the `let` bodies of `T2517_OneStepBA`), `eq729_eG2BA`
-  (`mSigOf`), `eq729_duhamelBA`, `eq729_one_stepBA` (= `T2517_OneStepBA`; consumer: C5's twin of
-  `gueGrid_eq729`, `Eq729B:622`).
-* §6 (target 9) compiled nonempty instances (`RBM.BA.GUEEq729BAInst`): `d = 3`, `sz0` (`L_0 =
-  4`, `W_0 = 32`, `N = 2097152`), the flow datum of `sz0` (`hr0I`), `t₁ = 17/20`, `t₀ = 9/10`,
-  `K = 131072`; `oneStepEnvelopeGUEOf_check` is at `L = W = 2`, `m = 1/5 + 9/10 i`,
-  `M = 1`.
+* §4-§5 `eq729FBA`, `eq729eBA`, `eq729_eG2BA`
+  (`mSigOf`), `eq729_duhamelBA`, `eq729_one_stepBA` (used by the block Anderson version of
+  `gueGrid_eq729`).
 
-## Reuse instead of copy (DECISIONS §153 (1))
+## Reuse of the band pieces
 
-The private pieces of `Drift`, `Eq729A`, `Generator` and `OneStep` are read by `open private …
+The private pieces of `Drift`, `Eq729A`, `Generator` and `OneStep` are used through `open private …
 from` (the space step, the closure of the envelope constant, the Taylor lemma, the freezing
 lemma, the bounded-measurable calculus `Eq729A_BM`, the quadratic and pair bounds, the
-derivatives of words of resolvent factors): no third copy, no merged file changed.  Target 8
-(`baEq729_Kdisc`) moved to C5 (DECISIONS §339 (1)): this file imports no C3 name, and
-`eq729_Kdisc` is read by name (it is generic in the primitive `Kf`).  Every helper not pinned by
-the ticket is `private` with the stem `GUEEq729BA_`.
+derivatives of words of resolvent factors).  The discrete recursion `eq729_Kdisc` is used by name (it is
+generic in the primitive `Kf`).  Every helper is `private` with the prefix GUEEq729BA_.
 -/
 
 set_option linter.style.longLine false
@@ -108,7 +99,7 @@ private theorem GUEEq729BA_hasDerivAt_spec1 {H : Matrix (Vtx d L W) (Vtx d L W) 
 
 end Jets
 
-/-! ## 2. The time step and the envelope (target 6) -/
+/-! ## 2. The time step and the envelope -/
 
 section TimeStep
 
@@ -132,7 +123,7 @@ private theorem GUEEq729BA_eta_le {m : ℂ} (hm : 0 < m.im) {u t : ℝ} (hut : u
   exact mul_le_mul_of_nonneg_right (by linarith) hm.le
 
 /-- **The time step** along `ztOf m E`: Taylor expansion of `v ↦ f_v(A)` at fixed `A` (the band `Drift_time_step`,
-`Drift:655`, redone for the generic flow; the spectral direction is `GUEEq729BA_Dsp`, `d_u ztOf m E u = -m`). -/
+redone for the generic flow; the spectral direction is `GUEEq729BA_Dsp`, `d_u ztOf m E u = -m`). -/
 private theorem GUEEq729BA_time_step {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
     {m : ℂ} (hm : 0 < m.im) (hm1 : ‖m‖ ≤ 1) {E u Δ : ℝ} (hΔ : 0 ≤ Δ) (hu1 : u + Δ < 1)
     {I : Loop.LoopIdx (Zd d L)} (hwf : I.WF) :
@@ -163,8 +154,8 @@ end TimeStep
 
 section Assembly
 
-/-- **Target 6: the one-step expansion with its envelope for one GUE increment along the generic flow `ztOf m E`**
-(twin of `oneStepEnvelopeGUE`, `Drift:756`, with the generator `genMatGUEOf`, the hypothesis `0 < Im m ∧ ‖m‖ ≤ 1` in
+/-- **The one-step expansion with its envelope for one GUE increment along the generic flow `ztOf m E`**
+(the analogue of `oneStepEnvelopeGUE`, with the generator `genMatGUEOf`, the hypothesis `0 < Im m ∧ ‖m‖ ≤ 1` in
 place of the band one on `E`, and the envelope constant written out with `etaOf m`): for Hermitian `M`,
 `0 ≤ u`, `0 ≤ Δ`, `u + Δ < 1`, a well-formed loop of length `ℓ` and `X ~ gueP d L W`,
 `‖E Φ_{u+Δ}(M + √Δ X) - Φ_u(M) - Δ · genMatGUEOf‖ ≤ 16 (ℓ+3)⁴ N⁴ (1 + η_{u+Δ}⁻¹)^{ℓ+4} Δ^{3/2}`, `N = (W L)^d`. -/
@@ -334,7 +325,7 @@ theorem oneStepEnvelopeGUEOf :
 
 end Assembly
 
-/-! ## 3. The conditional step and the conditional drift on the BA grid path (target 6) -/
+/-! ## 3. The conditional step and the conditional drift on the BA grid path -/
 
 section LoopStepBA
 
@@ -348,7 +339,7 @@ private theorem GUEEq729BA_measurable_shift_filt (t1 t0 : ℕ → ℝ) (K : ℕ 
     @measurable_pi_iff _ _ _ (filt sz k) _ _ |>.mpr fun j =>
       ((gueH_adapted sz t1 t0 K n k i j).measurable).const_add (A i j)
 
-/-- **The one-step conditional expectation at a Hermitian shift `A`** (`condExp_loop_step_gue`, `Drift:1208`, for
+/-- **The one-step conditional expectation at a Hermitian shift `A`** (`condExp_loop_step_gue`, for
 the path `A + H_k`): the freezing lemma applied to `A + H_{k+1} = (A + H_k) + √Δ X_{k+1}`. -/
 private theorem GUEEq729BA_condExp_step (t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) {z : ℂ} (hz : z.im ≠ 0)
     (A : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (hA : A.IsHermitian)
@@ -461,8 +452,7 @@ private theorem GUEEq729BA_shift_isHermitian {d : ℕ} (sz : Sizes d) (g : ℕ �
   rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
     show star ((g n : ℝ) : ℂ) = ((g n : ℝ) : ℂ) from Complex.conj_ofReal _]
 
-/-- **Target 6, the one-step conditional expectation of the BA grid path** (`condExp_loop_step_gue`,
-`Drift:1208`): given `filt (sz.withLam 0) k`, the observable at the next grid time is the integral over one
+/-- **The one-step conditional expectation of the BA grid path** (`condExp_loop_step_gue`): given `filt (sz.withLam 0) k`, the observable at the next grid time is the integral over one
 GUE increment `√Δ X`, `X ~ gueP`, added to `gueHBA … k ω`, at the flow value `ztOf m E`. -/
 theorem condExp_loop_step_gueBA {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (E : ℝ) (m : ℂ) (hm : 0 < m.im) {I : Loop.LoopIdx (Zd d (sz.L n))} (hwf : I.WF)
@@ -481,10 +471,10 @@ theorem condExp_loop_step_gueBA {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ)
     (((g n : ℝ) : ℂ) • PsiI d ((sz.withLam 0).L n) ((sz.withLam 0).W n))
     (GUEEq729BA_shift_isHermitian sz g n) hwf
 
-/-- **Target 6, D1 (ii): the conditional drift at `ztOf` on the BA grid path** (twin of `condExp_loop_drift_gue`,
-`Drift:1318`, with `0 < Im m`, `‖m‖ ≤ 1` and the envelope constant written out with `etaOf`): the one-step envelope
+/-- **The conditional drift at `ztOf` on the BA grid path** (the analogue of `condExp_loop_drift_gue`,
+with `0 < Im m`, `‖m‖ ≤ 1` and the envelope constant written out with `etaOf`): the one-step envelope
 `oneStepEnvelopeGUEOf` applied pointwise at `M = gueHBA … k ω` (Hermitian).  The hypotheses `K n ≠ 0`,
-`k < K n` are not used by the proof (as in the source). -/
+`k < K n` are not used by the proof (as in the band). -/
 theorem condExp_loop_drift_gueBA :
     ∀ {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (E : ℝ) (m : ℂ), 0 < m.im → ‖m‖ ≤ 1 →
     ∀ {I : LoopIdx (Zd d (sz.L n))}, I.WF → 0 ≤ t1 n → t1 n ≤ t0 n → K n ≠ 0 → k < K n →
@@ -520,21 +510,20 @@ theorem condExp_loop_drift_gueBA :
 
 end LoopStepBA
 
-/-! ## 4. The loops of the BA grid path, the 2-loop algebra and Duhamel in expectation (target 7) -/
+/-! ## 4. The loops of the BA grid path, the 2-loop algebra and Duhamel in expectation -/
 
 section Eq729BA
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **Target 7**: the loop `L_{u_k}` of the BA grid path at grid step `k` (twin of `eq729F`, `Eq729A:275`, along
-`ztOf (m n) (E n)` on `gueHBA`); the `let` body `F` of `T2517_OneStepBA`. -/
+/-- The loop `L_{u_k}` of the BA grid path at grid step `k` (the analogue of `eq729F`, along
+`ztOf (m n) (E n)` on `gueHBA`). -/
 def eq729FBA (g t1 t0 E : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ (sz.withLam 0))
     (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueHBA sz g t1 t0 K n k ω))
     (ztOf (m n) (E n) (gridTime t1 t0 K n k)) I
 
-/-- **Target 7**: `e_k(I) = E L_{u_k}(I) - K̃_{u_k}(I)` at the BA grid path (twin of `eq729e`, `Eq729A:717`); the `let`
-body `e` of `T2517_OneStepBA`. -/
+/-- `e_k(I) = E L_{u_k}(I) - K̃_{u_k}(I)` at the BA grid path (the analogue of `eq729e`). -/
 def eq729eBA (g t1 t0 E : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ)
     (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (n k : ℕ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   (∫ ω, eq729FBA sz g t1 t0 E m K n k ω I ∂(Pgue (sz.withLam 0))) - Kt n (gridTime t1 t0 K n k) I
@@ -546,7 +535,7 @@ private theorem GUEEq729BA_measurable_gueHBA (g t1 t0 : ℕ → ℝ) (K : ℕ �
     (((g n : ℝ) : ℂ) • PsiI d ((sz.withLam 0).L n) ((sz.withLam 0).W n))).mono
     ((filt (sz.withLam 0)).le k) le_rfl
 
-/-- The loop at step `k` is a.e. strongly measurable (`Eq729A_loop_aesm`, `Eq729A:326`). -/
+/-- The loop at step `k` is a.e. strongly measurable (`Eq729A_loop_aesm`). -/
 private theorem GUEEq729BA_loop_aesm (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (z : ℂ)
     (I : LoopIdx (Zd d (sz.L n))) :
     AEStronglyMeasurable
@@ -556,7 +545,7 @@ private theorem GUEEq729BA_loop_aesm (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (
     ((walk_measurable_blockMat d (sz.L n) (sz.W n)).comp
       (GUEEq729BA_measurable_gueHBA sz g t1 t0 K n k))).aestronglyMeasurable
 
-/-- The crude bound on a well-formed loop of any length (`Eq729A_loop_bound_crude`, `Eq729A:337`). -/
+/-- The crude bound on a well-formed loop of any length (`Eq729A_loop_bound_crude`). -/
 private theorem GUEEq729BA_loop_bound_crude {g t1 t0 : ℕ → ℝ} {K : ℕ → ℕ} {n k : ℕ} {z : ℂ}
     (hz : z.im ≠ 0) {I : LoopIdx (Zd d (sz.L n))} (hwf : I.WF) (ω : PathΩ (sz.withLam 0)) :
     ‖loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueHBA sz g t1 t0 K n k ω)) z I‖ ≤
@@ -564,7 +553,7 @@ private theorem GUEEq729BA_loop_bound_crude {g t1 t0 : ℕ → ℝ} {K : ℕ →
   norm_gloop_le_crude d (sz.L n) (sz.W n) ((gueHBA_isHermitian sz g t1 t0 K n k ω).submatrix _)
     (abs_pos.2 hz) le_rfl I hwf
 
-/-- `‖𝓛_I‖ ≤ |Im z|^{-ℓ}` for a loop of length `ℓ ≥ 1` (`Eq729A_loop_bound`, `Eq729A:345`). -/
+/-- `‖𝓛_I‖ ≤ |Im z|^{-ℓ}` for a loop of length `ℓ ≥ 1` (`Eq729A_loop_bound`). -/
 private theorem GUEEq729BA_loop_bound {g t1 t0 : ℕ → ℝ} {K : ℕ → ℕ} {n k : ℕ} {z : ℂ}
     (hz : z.im ≠ 0) {I : LoopIdx (Zd d (sz.L n))} (hwf : I.WF) (hn : 1 ≤ I.a.length)
     (ω : PathΩ (sz.withLam 0)) :
@@ -583,7 +572,7 @@ private theorem GUEEq729BA_loop_bound {g t1 t0 : ℕ → ℝ} {K : ℕ → ℕ} 
         mul_le_mul_of_nonneg_left (pow_le_one₀ hW0 hW) (by positivity)
     _ = _ := mul_one _
 
-/-- The loop at step `k` is bounded and measurable (any well-formed loop) (`Eq729A_loop_BM`, `Eq729A:364`). -/
+/-- The loop at step `k` is bounded and measurable (any well-formed loop) (`Eq729A_loop_BM`). -/
 private theorem GUEEq729BA_loop_BM {g t1 t0 : ℕ → ℝ} {K : ℕ → ℕ} {n k : ℕ} {z : ℂ} (hz : z.im ≠ 0)
     {I : LoopIdx (Zd d (sz.L n))} (hwf : I.WF) :
     Eq729A_BM (Pgue (sz.withLam 0)) (fun ω : PathΩ (sz.withLam 0) =>
@@ -594,7 +583,7 @@ end Eq729BA
 
 section Eq729BA2
 
-/-- **Target 7: the `𝓔^{(G̃)}` term on a 2-loop**, written with 1-loops and 3-loops (twin of `eq729_eG2`, `Eq729A:80`,
+/-- **The `𝓔^{(G̃)}` term on a 2-loop**, written with 1-loops and 3-loops (the analogue of `eq729_eG2`,
 for `egtNGUEOf`: the Green sign value is `mSigOf m`, the flow `ztOf m E`). -/
 theorem eq729_eG2BA (d L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
     (M : Matrix (Idx d L W) (Idx d L W) ℂ) (s1 s2 : Bool) (a1 a2 : Zd d L) :
@@ -622,7 +611,7 @@ theorem eq729_eG2BA (d L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
   refine congrArg _ (Finset.sum_congr rfl fun a _ => ?_)
   rw [← Finset.sum_add_distrib]
 
-/-- The generator on a 2-loop (`loopGenGUEOf` at `k = 2`, in list form; `Eq729A_genMat_two`, `Eq729A:654`). -/
+/-- The generator on a 2-loop (`loopGenGUEOf` at `k = 2`, in list form; `Eq729A_genMat_two`). -/
 private theorem GUEEq729BA_genMat_two (d L W : ℕ) [NeZero L] [NeZero W] {m : ℂ} (hm : 0 < m.im) {E u : ℝ}
     (hu1 : u < 1) {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) (s1 s2 : Bool)
     (a1 a2 : Zd d L) :
@@ -637,7 +626,7 @@ section Eq729BA3
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **Target 7, Duhamel in expectation** (twin of `eq729_duhamel`, `Eq729A:378`; `condExp_loop_drift_gueBA` integrated): the
+/-- **Duhamel in expectation** (the analogue of `eq729_duhamel`; `condExp_loop_drift_gueBA` integrated): the
 martingale part has mean `0`; the loops are deterministically bounded, so every term is integrable. -/
 theorem eq729_duhamelBA {g t1 t0 : ℕ → ℝ} (K : ℕ → ℕ) {E : ℕ → ℝ} {m : ℕ → ℂ} {n : ℕ}
     (hm : 0 < (m n).im) (hm1 : ‖m n‖ ≤ 1) (ht1 : 0 ≤ t1 n) (ht10 : t1 n ≤ t0 n) (ht0 : t0 n < 1) {k : ℕ}
@@ -682,7 +671,7 @@ theorem eq729_duhamelBA {g t1 t0 : ℕ → ℝ} (K : ℕ → ℕ) {E : ℕ → �
   refine (le_of_eq ?_).trans hbound
   exact congrArg norm hid.symm
 
-/-- The `𝓔^{(G̃)}` part of the drift of a 2-loop is bounded and measurable (`Eq729A_BM_eG`, `Eq729A:666`). -/
+/-- The `𝓔^{(G̃)}` part of the drift of a 2-loop is bounded and measurable (`Eq729A_BM_eG`). -/
 private theorem GUEEq729BA_BM_eG {g t1 t0 : ℕ → ℝ} {E : ℕ → ℝ} {m : ℕ → ℂ} (K : ℕ → ℕ) {n k : ℕ}
     (hz : (ztOf (m n) (E n) (gridTime t1 t0 K n k)).im ≠ 0) (s1 s2 : Bool) (a1 a2 : Zd d (sz.L n)) :
     Eq729A_BM (Pgue (sz.withLam 0)) (fun ω => egtNGUEOf d (sz.L n) (sz.W n) (m n) (E n)
@@ -698,7 +687,7 @@ private theorem GUEEq729BA_BM_eG {g t1 t0 : ℕ → ℝ} {E : ℕ → ℝ} {m : 
     (Eq729A_BM.mul (Eq729A_BM.mul (Eq729A_BM.sub (hFBM ⟨[s2], [a]⟩ rfl) (Eq729A_BM_const _))
       (Eq729A_BM_const _)) (hFBM ⟨[s1, s2, s2], [a1, b, a2]⟩ rfl))
 
-/-- The `primRhsGUE` part of the drift of a 2-loop is bounded and measurable (`Eq729A_BM_prim`, `Eq729A:681`). -/
+/-- The `primRhsGUE` part of the drift of a 2-loop is bounded and measurable (`Eq729A_BM_prim`). -/
 private theorem GUEEq729BA_BM_prim {g t1 t0 : ℕ → ℝ} {E : ℕ → ℝ} {m : ℕ → ℂ} (K : ℕ → ℕ) {n k : ℕ}
     (hz : (ztOf (m n) (E n) (gridTime t1 t0 K n k)).im ≠ 0) (s1 s2 : Bool) (a1 a2 : Zd d (sz.L n)) :
     Eq729A_BM (Pgue (sz.withLam 0)) (fun ω => primRhsGUE d (sz.L n) (sz.W n)
@@ -713,17 +702,17 @@ private theorem GUEEq729BA_BM_prim {g t1 t0 : ℕ → ℝ} {E : ℕ → ℝ} {m 
 
 end Eq729BA3
 
-/-! ## 5. One step of the recursion for `e_k` (target 7) -/
+/-! ## 5. One step of the recursion for `e_k` -/
 
 section Eq729BA4
 
-/-- **Target 7: one step of the recursion for `e_k = E L_{u_k} - K̃_{u_k}` on 2-loops at the BA grid path** (twin of
-`eq729_one_step`, `Eq729A:731`, by the substitution table of D1 (iii): the flow `ztOf (m n) (E n)`, `etaOf`, the
+/-- **One step of the recursion for `e_k = E L_{u_k} - K̃_{u_k}` on 2-loops at the BA grid path** (the analogue of
+`eq729_one_step`: the flow `ztOf (m n) (E n)`, `etaOf`, the
 value `m n`, the sign value `mSigOf`, the hypothesis `0 < Im (m n)`, `‖m n‖ ≤ 1`, the path `gueHBA sz g`, the
-carrier `PathΩ (sz.withLam 0)`).  The `let` bodies `F`, `e` of the signed text are written out; they are
+carrier `PathΩ (sz.withLam 0)`).  The `let` bodies `F`, `e` of the statement are written out; they are
 `eq729FBA`, `eq729eBA` (`rfl`); `N = sz.size n = (W L)^d`.  The hypotheses
-`hX`, `hB`, `hg1`–`hg3`, `hBk` are the stochastic inputs of the second half (row a's `gueGrid_expect_oneLoopBA` and
-C5's twin of `gueGrid_eq729`, `Eq729B:622`); `Kt` stays a parameter. -/
+`hX`, `hB`, `hg1`–`hg3`, `hBk` are the stochastic inputs of the second half (the one-loop expectation along the grid and the
+block Anderson version of `gueGrid_eq729`); `Kt` stays a parameter. -/
 theorem eq729_one_stepBA :
     ∀ {d : ℕ} (sz : Sizes d) (g t1 t0 E : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n : ℕ)
       (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ),
@@ -836,9 +825,9 @@ theorem eq729_one_stepBA :
   have hdrift_int : Integrable (fun ω => genMatGUEOf d (sz.L n) (sz.W n) (m n) (E n) u
       (gueHBA sz g t1 t0 K n k ω) J) (Pgue (sz.withLam 0)) := by
     simp_rw [hdrift_eq]; exact Eq729A_BM.integrable (Eq729A_BM.add hBMprim hBMeG)
-  -- (R1) Duhamel in expectation
+  -- Duhamel in expectation
   have hR1 := eq729_duhamelBA sz K hm hm1 ht1 ht10 ht0 hk (J := J) rfl hdrift_int
-  -- (R2) the primitive side
+  -- the primitive side
   have hR2 := eq729_Kdisc (d := d) (L := sz.L n) (W := sz.W n) (Kt n) hu hu' hΔ0 hρΛ hMΔ hK2b hKd
     s1 s2 a1 a2
   have htime : gridTime t1 t0 K n (k + 1) = u + Δ := Eq729A_time_succ t1 t0 K n k
@@ -1086,10 +1075,5 @@ end Eq729BA4
 
 end RBM.BA
 
-/-! ## 6. Compiled nonempty instances (target 9) -/
-
-/-! Data: `d = 3`, `sz0` (`L_0 = 4`, `W_0 = 32`, `N = 2097152`), size index `n = 0`, the flow datum
-`(g₀, E₀, m₀)` of `sz0` (`BAReal` at `κ = 1/2` by `hr0I`), `t₁ = 17/20`, `t₀ = 9/10`, `K = 131072` (`N Δ = 4/5`),
-step `k = 0`, the primitive family `Eq729AInst_Kt` (`c' = N c²`, `c(t₁) = 10⁻⁶`). -/
 
 end

@@ -12,21 +12,20 @@ import RBM3D.BA.EMn2BA
 import RBM3D.BA.GreenSchur
 
 /-!
-# U3-BA (a), file 2: the time modulus of `𝒦` at the BA family, every `k ≥ 2` (ticket T2507, row a)
+# The time modulus of `𝒦` at the BA family, every `k ≥ 2`
 
-Paper: arXiv:2507.20274, `ML:Kbound` (`(eq:bcal_k)`, proved at BA by stage K: `baKBoundAt_holds`, `BA/KBound.lean:85`) and the convolution tree equation
-`(pro_dyncalK)` at `S = 1` (`BAKsol_isKLoopS`, `BA/KSolve.lean:606`, from `baKsolve`, `BA/KTreeRep.lean:1699`).  New leaf: no merged file is edited.  The check is
-`docs/tickets/checks/T2507-check.lean` (pin `T2507_KLipBA`).
+Paper: Lemma 2.16 (`ML:Kbound`) with (2.58) `eq:bcal_k`, proved at BA by `baKBoundAt_holds` (`BA/KBound.lean`), and the convolution tree equation
+(2.50) `pro_dyncalK` at `S = 1` (`BAKsol_isKLoopS`, `BA/KSolve.lean`, from `baKsolve`, `BA/KTreeRep.lean`).
 
-* `baKloop_lip` (= `T2507_KLipBA`; T2491 D2, family row 15 of T2505): `NQEndFlowGen_KLipFam` at the BA tuple
+* `baKloop_lip`: `NQEndFlowGen_KLipFam` at the BA tuple
   `(BAFlow, baFMz, BAflowT0)`, every `k ≥ 2`: `‖𝒦^{(k)}_u - 𝒦^{(k)}_{u'}‖ ≤ N^{2k+2} |u - u'|` on `[0, t_n]`, `t_n ≤ t₀_n`, eventually.  It is the
-  twin of `stKloop_lip` (`Induction/NQEndFlowLift.lean:581`, 250 lines): `∂_u 𝒦 = treeEqRhsS` on `[0,1)` (`BAKsol_isKLoopS`), the cut loops have lengths in
+  analogue of `stKloop_lip` (`Induction/NQEndFlowLift.lean`): `∂_u 𝒦 = treeEqRhsS` on `[0,1)` (`BAKsol_isKLoopS`), the cut loops have lengths in
   `[2, k]` and `baKBoundAt_holds` (`τ = 1`, `Λ = 𝔡⁻¹`, constants depending on `(d, m, κ, 𝔡)` only) bounds them, the tree bound uses `|S_{ab}| ≤ 1` for
   `S = 1`, `(1 - u)⁻¹ ≤ 2N` for `u ≤ t₀` (`EMn2BA_one_sub_T0`), and the mean value theorem on `[0, t_n]`; `N^{2k+2}` absorbs `k² Cm² 4^k N^{k+3}` eventually
-  (`2k + 2 > k + 3`).  `baKLip_two` (`BA/Step5KerBA.lean:476`, `k = 2` only) is not edited.
+  (`2k + 2 > k + 3`).  `baKLip_two` (`BA/Step5KerBA.lean`) is the case `k = 2` only.
 
-Private helpers carry the stem `KLipBA_`; the band privates (`nqLift_loopOf_eq`, `nqLift_treeEq_bound`, `nqLift_Bctl_le`, `NQEndFlowLift.lean:457-562`) are
-copied at `S = 1` and the BA control.
+The names of the private helpers begin with KLipBA_; the band privates (`nqLift_loopOf_eq`, `nqLift_treeEq_bound`, `nqLift_Bctl_le`, in `NQEndFlowLift.lean`) are
+re-proved at `S = 1` and the BA data.
 -/
 
 set_option linter.style.longLine false
@@ -42,11 +41,11 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Private helpers (copies of the band privates at `S = 1`) -/
+/-! ## 1. Private helpers (the band privates at `S = 1`) -/
 
 section Helpers
 
-/-- A loop index of length `m` is `KLloopOf σ a` (`nqLift_loopOf_eq`, `NQEndFlowLift.lean:457`). -/
+/-- A loop index of length `m` is `KLloopOf σ a` (`nqLift_loopOf_eq`, `NQEndFlowLift.lean`). -/
 private theorem KLipBA_loopOf_eq {d L : ℕ} (J : LoopIdx (Zd d L)) (hJ : J.WF) {m : ℕ} (hm : J.length = m) :
     ∃ (σ : Fin m → Bool) (a : Fin m → Zd d L), J = KLloopOf d L σ a := by
   obtain ⟨σl, al⟩ := J
@@ -61,7 +60,7 @@ private theorem KLipBA_loopOf_eq {d L : ℕ} (J : LoopIdx (Zd d L)) (hJ : J.WF) 
     exact (List.ofFn_get al).symm
 
 /-- **The crude bound of `𝒦^{(m)}`** (`ML:Kbound`, `τ = 1`) as a statement about loop indices, with the constant uniform over `0 < g ≤ Λ` and the real-axis
-data `BAReal d L g κ E mm`: `baKBoundAt_holds` and `KLipBA_loopOf_eq` (`nqLift_KLK_bound`, `NQEndFlowLift.lean:472`, at BA). -/
+data `BAReal d L g κ E mm`: `baKBoundAt_holds` and `KLipBA_loopOf_eq` (`nqLift_KLK_bound`, `NQEndFlowLift.lean`, at BA). -/
 private theorem KLipBA_bound {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) (m : ℕ) :
     ∃ C : ℝ, 0 < C ∧ (1 ≤ m → ∀ (L : ℕ) (hL : 3 ≤ L) (W : ℕ), 1 ≤ W → ∀ g : ℝ, 0 < g → g ≤ Λ → ∀ (E : ℝ) (mm : ℂ),
       haveI : NeZero L := ⟨by omega⟩
@@ -78,7 +77,7 @@ private theorem KLipBA_bound {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < �
 
 /-- **The tree-equation right side at `S = 1` is bounded by the product bound of its cut loops**: if every loop `J` of length `2 ≤ |J| ≤ n` has
 `‖K J‖ ≤ C X^{|J|-1}`, then `‖treeEqRhsS 1 K I‖ ≤ W^d n² L^{2d} C² X^n` for `|I| = n` (the two cut loops of `(k, l)` have lengths `k + n - l + 1`,
-`l - k + 1 ∈ [2, n]` with `(k + n - l) + (l - k) = n`; `|1_{ab}| ≤ 1`).  (`nqLift_treeEq_bound`, `NQEndFlowLift.lean:487`, with `SB` read as `1`.) -/
+`l - k + 1 ∈ [2, n]` with `(k + n - l) + (l - k) = n`; `|1_{ab}| ≤ 1`).  (`nqLift_treeEq_bound`, `NQEndFlowLift.lean`, with `SB` read as `1`.) -/
 private theorem KLipBA_treeEq_bound {d L W : ℕ} [NeZero L] {K : LoopIdx (Zd d L) → ℂ} {I : LoopIdx (Zd d L)} {n : ℕ}
     (hI : I.WF) (hn : I.length = n) {X C : ℝ} (hC : 0 ≤ C) (hX : 0 ≤ X)
     (hK : ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length → J.length ≤ n → ‖K J‖ ≤ C * X ^ (J.length - 1)) :
@@ -143,7 +142,7 @@ private theorem KLipBA_treeEq_bound {d L W : ℕ} [NeZero L] {K : LoopIdx (Zd d 
         simp
     _ = (n : ℝ) * n * ((L : ℝ) ^ d * (L : ℝ) ^ d) * (C ^ 2 * X ^ n) := by ring
 
-/-- `0 ≤ W^{-d} B_{r,0}(g) ≤ 2 M` for `r < 1` with `(1 - r)⁻¹ ≤ M` (`W^{-d} B_{r,0} ≤ W^{-d} 2 (1 - r)⁻¹`; `nqLift_Bctl_le`, `NQEndFlowLift.lean:553`, at the
+/-- `0 ≤ W^{-d} B_{r,0}(g) ≤ 2 M` for `r < 1` with `(1 - r)⁻¹ ≤ M` (`W^{-d} B_{r,0} ≤ W^{-d} 2 (1 - r)⁻¹`; `nqLift_Bctl_le`, `NQEndFlowLift.lean`, at the
 coupling `g` of the BA datum). -/
 private theorem KLipBA_X_le {d L W : ℕ} (hL : 1 ≤ L) (hW : 1 ≤ W) (g : ℝ) {r : ℝ} (hr : r < 1) {M : ℝ} (hM : (1 - r)⁻¹ ≤ M) :
     (((W : ℝ) ^ d)⁻¹ * Bparam d L g r 0) ≤ 2 * M := by
@@ -163,8 +162,8 @@ private theorem KLipBA_X_le {d L W : ℕ} (hL : 1 ≤ L) (hW : 1 ≤ W) (g : ℝ
       ≤ 1 * (2 * M) := mul_le_mul hWi hsum hnn zero_le_one
     _ = 2 * M := one_mul _
 
-/-- `(1 - u)⁻¹ ≤ 2 N` for `u ≤ t₀_n`: `1 - u ≥ 1 - t₀ ≥ Im z_n / 2 ≥ N^{-1+ε} / 2` (`EMn2BA_one_sub_T0`), `N^{1-ε} ≤ N` (a copy of the private
-`Step5KerBA_one_sub_inv`, `BA/Step5KerBA.lean:416`). -/
+/-- `(1 - u)⁻¹ ≤ 2 N` for `u ≤ t₀_n`: `1 - u ≥ 1 - t₀ ≥ Im z_n / 2 ≥ N^{-1+ε} / 2` (`EMn2BA_one_sub_T0`), `N^{1-ε} ≤ N` (as the private
+`Step5KerBA_one_sub_inv`, `BA/Step5KerBA.lean`). -/
 private theorem KLipBA_one_sub_inv {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) {sz : Sizes d} {z : ℕ → ℂ}
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {u : ℝ} (hu : u ≤ BAflowT0 sz z n) :
     (1 - u)⁻¹ ≤ 2 * ((sz.size n : ℕ) : ℝ) := by
@@ -181,7 +180,7 @@ private theorem KLipBA_one_sub_inv {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < 
     _ = _ := by rw [Real.rpow_one]
 
 /-- **The mean value step**: `∂_u K = treeEqRhsS S (K u) I` on `[0, 1)` and `‖treeEqRhsS S (K r) I‖ ≤ B` on `[0, T]`, `T < 1`, give
-`‖K u I - K u' I‖ ≤ B |u - u'|` on `[0, T]` (the last step of `stKloop_lip`, `NQEndFlowLift.lean:675-690`). -/
+`‖K u I - K u' I‖ ≤ B |u - u'|` on `[0, T]` (the last step of `stKloop_lip`, `NQEndFlowLift.lean`). -/
 private theorem KLipBA_mvt {d L W : ℕ} [NeZero L] {S : Matrix (Zd d L) (Zd d L) ℂ} {K : ℝ → LoopIdx (Zd d L) → ℂ} {T B : ℝ}
     (hT : T < 1) {I : LoopIdx (Zd d L)} (hI : I.WF) (h2 : 2 ≤ I.length)
     (hder : ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ J : LoopIdx (Zd d L), J.WF → 2 ≤ J.length →
@@ -199,9 +198,9 @@ private theorem KLipBA_mvt {d L W : ℕ} [NeZero L] {S : Matrix (Zd d L) (Zd d L
 
 end Helpers
 
-/-! ## 2. Target 6: `baKloop_lip` -/
+/-! ## 2. `baKloop_lip` -/
 
-/-- **Target 6, `baKloop_lip`** (= `T2507_KLipBA`; T2491 D2, family row 15 of T2505): `NQEndFlowGen_KLipFam` at the BA tuple `(BAFlow, baFMz, BAflowT0)`, every `k ≥ 2`.
+/-- **`baKloop_lip`**: `NQEndFlowGen_KLipFam` at the BA tuple `(BAFlow, baFMz, BAflowT0)`, every `k ≥ 2`.
 `κ` and `𝔡` are fixed before `n` (the constants `Cf m` of `baKBoundAt_holds` at `(d, m, 𝔡⁻¹, κ)` do not depend on `n`); the window `0 < g₀_n ≤ 𝔡⁻¹` is
 `BAflow_lam0_window` (eventually); `∂_u 𝒦 = treeEqRhsS` on `[0, 1)` is `BAKsol_isKLoopS (baKsolve d)`; `(1 - u)⁻¹ ≤ 2N` for `u ≤ t_n ≤ t₀_n`
 (`KLipBA_one_sub_inv`).  The chain `‖treeEqRhsS‖ ≤ k² Cm² 4^k N^{k+3} ≤ N^{k+4} ≤ N^{2k+2}` holds for `N ≥ max 1 (k² Cm² 4^k)` and `k ≥ 2`. -/
@@ -299,9 +298,6 @@ theorem baKloop_lip (d : ℕ) : NQEndFlowGen_KLipFam d (fun sz κ ε 𝔠 𝔡 z
   rw [hKf] at hgoal
   exact hgoal
 
-/-! ## 3. Compiled nonempty instance at `d = 3`
-
-`sz0`, `zSeq`, `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`), `k = 3`, `t ≡ 1/2 ≤ t₀_n` (`half_lt_t0`, `t₀ ≥ 2/3`). -/
 
 end RBM.BA
 

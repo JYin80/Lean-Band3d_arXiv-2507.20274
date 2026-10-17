@@ -15,11 +15,11 @@ import RBM3D.BA.EMn2BA
 import RBM3D.Induction.KDecay
 
 /-!
-# Ticket T2486, target 1: the far decay of the block Anderson `𝒦` (`BAKcalDecay`)
+# The far decay of the block Anderson `𝒦` (`BAKcalDecay`)
 
-The BA twin of `Induction/KDecay.lean` §1-§8 (`STKcalDecay`, `stKcalDecay_holds`): the merged generic premise
-`STKcalDecaygL` (`Chain/DecayGen.lean:83`) at the BA carrier `baFMz sz z`, along every BA flow
-(paper `(eq:bcal_k)`, `1_2:1056`; `tree-representation_BA` `A:592-598`; `lem_pureloop` `A:643-660`; `lem:propM` `7_8:1847`).
+The BA analogue of `Induction/KDecay.lean` (`STKcalDecay`, `stKcalDecay_holds`): the generic statement
+`STKcalDecaygL` (`Chain/DecayGen.lean`) at the BA carrier `baFMz sz z`, along every BA flow
+(paper: (2.58) `eq:bcal_k`; Lemma A.6 `tree-representation_BA`; Lemma A.7 `lem_pureloop`; Lemma 8.3 `lem:propM`).
 
 * §1 walks in the graph of a weighted tree value (`KLgval`) and the distance bound `|a_i - a_j| ≤ k S`; the generic bound
   `‖KLgval‖ ≤ (L^d)^{#nodes} B^{n + #edges} exp(-κ' maxDist/(R+1))` when any two labels are joined by a walk of at most `R` steps.
@@ -27,10 +27,10 @@ The BA twin of `Induction/KDecay.lean` §1-§8 (`STKcalDecay`, `stKcalDecay_hold
   (`BAnextSlot_orbit`, the chord slots, the tree of `F`); a walk bound `R_n` uniform in `F ∈ TSP n` (finitely many trees).
 * §3 `Γ_M(F)`: the cactus value is bounded by `(L^d)^{n+2n²} B^{2n+3n²} e^{-κ' maxDist/(R+1)}`.
 * §4 the edge bounds at the BA datum from `baProp5to8_holds` (`Θ`) and `baPropM_holds` (`M^{(B)}`): `C₁ W^{2Q} e^{-(c/ℓ_u)|x-y|}`.
-* §5 `𝒦` for `k = 2` (`(Kn2sol)`, the convolution `Θ M^{(σσ')}`) and `k ≥ 3` (`baTreeRep`); §6 the far-region estimate at fixed `(L, W)`.
-* §7 `BAKcalDecay` and `baKcalDecay_holds` (the absorption into `W^{-D}`); §8 the compiled nonempty instances at `d = 3`.
+* §5 `𝒦` for `k = 2` ((2.71) `Kn2sol`, the convolution `Θ M^{(σσ')}`) and `k ≥ 3` (`baTreeRep`); §6 the far-region estimate at fixed `(L, W)`.
+* §7 `BAKcalDecay` and `baKcalDecay_holds` (the absorption into `W^{-D}`).
 
-Private helpers of `Induction/KDecay.lean` are reached by `open private`; no merged file is edited.
+Private helpers of `Induction/KDecay.lean` are used through `open private`.
 -/
 
 set_option linter.style.longLine false
@@ -328,7 +328,7 @@ private theorem KDecayBA_Msigma_norm {L : ℕ} [NeZero L] (g : ℝ) (z m : ℂ) 
     rw [BAMB_symm]
   · simp [BAMsigma]
 
-/-- `‖M^{(B)}_{xy}‖ ≤ B_M e^{-c_M |x-y|}` in both regimes of `lem:propM` (`7_8:1847`). -/
+/-- `‖M^{(B)}_{xy}‖ ≤ B_M e^{-c_M |x-y|}` in both regimes of Lemma 8.3 (`lem:propM`). -/
 private theorem KDecayBA_M_const (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ BM : ℝ, 1 ≤ BM ∧ ∃ cM : ℝ, 0 < cM ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ g : ℝ, 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       BAReal d L g κ E m → ∀ x y : Zd d L,
@@ -451,7 +451,7 @@ private theorem KDecayBA_edge_const (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) 
 
 end EdgeBounds
 
-/-! ## 5. `𝒦` in the far region: `k = 2` (`(Kn2sol)`) and `k ≥ 3` (`baTreeRep`) -/
+/-! ## 5. `𝒦` in the far region: `k = 2` ((2.71) `Kn2sol`) and `k ≥ 3` (`baTreeRep`) -/
 
 section Kfar
 
@@ -508,7 +508,7 @@ private theorem KDecayBA_two_bound {L : ℕ} [NeZero L] {g E u B κ' : ℝ} {m :
     _ = _ := by
         rw [sum_const, card_univ, nsmul_eq_mul, hcard]; ring
 
-/-- **`𝒦` for every `k ≥ 2`** at a BA flow point: `(Kn2sol)` for `k = 2`, `baTreeRep` for `k ≥ 3`; the one shape
+/-- **`𝒦` for every `k ≥ 2`** at a BA flow point: (2.71) `Kn2sol` for `k = 2`, `baTreeRep` for `k ≥ 3`; the one shape
 `2^{k²} (L^d)^{k+2k²} B^{2k+3k²} e^{-κ' maxDist a/(R+1)}`, with `R` depending on `k` only. -/
 private theorem KDecayBA_Kn_far {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) (k : ℕ) (hk : 2 ≤ k) :
     ∃ R : ℕ, ∀ (L W : ℕ) [NeZero L], 3 ≤ L → 1 ≤ W → ∀ (g E u B κ' : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
@@ -679,12 +679,12 @@ private theorem KDecayBA_far_const (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (
 
 end Pointwise
 
-/-! ## 7. Target 1: `BAKcalDecay` -/
+/-! ## 7. `BAKcalDecay` -/
 
-/-- **Target 1, `BAKcalDecay`** (`T2486_BAKcalDecay`; REQ-1418-UBA `:39`; paper `(eq:bcal_k)`, `1_2:1056`): the far decay of the
+/-- **`BAKcalDecay`** (paper (2.58) `eq:bcal_k`): the far decay of the
 BA `𝒦` along every BA flow, the BA reading of `STKcalDecaygL`, in the `hKcal` shape of `gridGoodNgL_of`.  The size level
 (the cutoff `ℓ_u(sz.lam) W^τ`) and the kernel level (`g₀ = BAflowLam0`) meet only in `ℓ(g₀) ≤ ℓ(g)` where `0 < g₀`
-(`baStep5III_lam0_le_lam`, 1457 F1 (f)). -/
+(`baStep5III_lam0_le_lam`). -/
 def BAKcalDecay (d : ℕ) : Prop :=
   3 ≤ d → ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z → STKcalDecaygL (baFMz sz z)
 
@@ -701,7 +701,7 @@ theorem baKcalDecay_holds (d : ℕ) : BAKcalDecay d := by
   have hW₀0 : 0 ≤ W₀ := Real.rpow_nonneg (inv_nonneg.2 hs0.le) _
   have hk1 : k = 1 ∨ 2 ≤ k := by omega
   rcases hk1 with rfl | hk2
-  · -- `k = 1`: `maxDist = 0`, the premise fails
+  · -- `k = 1`: `KLmaxDist = 0`, the premise fails
     filter_upwards [Filter.Eventually.of_forall fun _ => trivial] with n _
     intro u hu0 hu1 σ a hfar
     exfalso
@@ -808,12 +808,6 @@ theorem baKcalDecay_holds (d : ℕ) : BAKcalDecay d := by
           rw [Real.rpow_add hN0]; ring
       _ ≤ 1 := hn
 
-/-! ## 8. Compiled nonempty instance of target 1
-
-`d = 3`, the preflight sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`, `N = (WL)^3`), the spectral
-parameters `zSeq` with `flow_sz0` (`BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq`, `FlowPins:1214`): every deterministic
-premise is discharged.  The far set of `STKcalDecaygL` is nonempty for `k = 3`, `τ = 1/20`, `u = 0` (`ℓ_0 = 1`):
-the labels `a = (0, (h,h,h), 0)`, `h = L/2`, have `maxDist ≥ 3h ≥ W^{τ}` at every `n`. -/
 
 end RBM.BA
 

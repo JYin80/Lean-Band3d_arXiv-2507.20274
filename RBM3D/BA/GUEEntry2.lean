@@ -6,22 +6,19 @@ Authors: Jun Yin
 import RBM3D.BA.GUEEntry
 
 /-!
-# The block Anderson entry layer of the GUE phase, probabilistic part (T2515, row b)
+# The block Anderson entry layer of the GUE phase, probabilistic part
 
-BA twin of `Universality/GUEPhase/EntryTail.lean` and `EntryTailMain.lean`, on top of the
+The block Anderson version of `Universality/GUEPhase/EntryTail.lean` and `EntryTailMain.lean`, on top of the
 deterministic part in `BA/GUEEntry.lean`.
 
 * `mixEntry_detBA`: the deterministic bound of `mix_detBA` stated on the fine lattice `Idx d
   L W` through `GUEEntry_llErr` and `GUEEntry_maxLoop` (the form of the tails).
-* Target 11, `mixMatBA` (`= g Ψ + mixMat (sz.withLam 0) n a b ω`) with
-  `GUEEntry_mixMatBA_eq_Xmat`, `GUEEntry_mixMatBA_isHermitian` and
-  `GUEEntry_ouMatC_ba_eq_mixMatBA`; the Gaussian tails of the auxiliary carrier with the
+* `mixMatBA` (`= g Ψ + mixMat (sz.withLam 0) n a b ω`) with
+  `GUEEntry_mixMatBA_eq_Xmat` and `GUEEntry_ouMatC_ba_eq_mixMatBA`; the Gaussian tails of the auxiliary carrier with the
   shift (`GUEEntry_quad_tail`, `GUEEntry_row_tail`, `GUEEntry_col_tail`), the failure set
   `GUEEntry_bad` with `GUEEntry_bad_tail`, and the union bound `GUEEntry_union`.
-* Target 12, the pin `GUEEntryMixBA d` (free flow-point families `g n`, `E n`, `m n`) and
-  its proof `gueEntryMixBA` (`3 ≤ d`).
-* Target 13, compiled nonempty instances at `d = 3` (section `GUEEntryInst` at the end of
-  the file).
+* The statements `GUEEntryMixBA d` and `GUEEntryMixBA' d` (free flow-point families `g n`, `E n`, `m n`) and
+  the proof `gueEntryMixBA'` of the latter (`3 ≤ d`).
 -/
 
 open private loopFine_pm_formula_vtx sum_vtx_ite from RBM3D.Green.Pins
@@ -79,7 +76,7 @@ theorem GUEEntry_norm_loop_eq (H : Matrix (Idx d L W) (Idx d L W) ℂ) (hH : H.I
 
 set_option maxHeartbeats 800000 in
 -- the transport of the hypotheses from the fine lattice to `Vtx` and back, in one proof
-/-- **The deterministic step on the fine lattice** (twin of `mixEntry_det`, `EntryTail.lean:859`): the four large-deviation
+/-- **The deterministic step on the fine lattice** (the analogue of `mixEntry_det`): the four large-deviation
 inputs for `X` against the minors of `G = (g Ψ + X - z)⁻¹`, `z = E + (1 - u) m`, `u = a + b`, stated on `Idx` (the
 form of the tails), give `|(G - M)_{ij}|² ≤ C Φ² (max 𝓛 + W^{-d})` on the a priori event `‖G - M‖_max ≤ δ`. -/
 theorem mixEntry_detBA {g Λ κ E a b δ Φ : ℝ} {m : ℂ} (hd : 3 ≤ d) (hL : 3 ≤ L) (hg : 0 < g) (hgΛ : g ≤ Λ)
@@ -238,7 +235,7 @@ open scoped NNReal ENNReal
 section Tails
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- **Quadratic LDE (4.7) for `G = (A + X - z)⁻¹`** (twin of `mixEntry_quad_tail`, `EntryTail.lean:492`, with the
+/-- **Quadratic large deviation estimate for `G = (A + X - z)⁻¹`** (the analogue of `mixEntry_quad_tail`, with the
 deterministic Hermitian shift `A`; `gaussLaw_quad_tail` is already shift-general). -/
 theorem GUEEntry_quad_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx d L W → ℝ}
     (hv : TagFree d L W v) (hS : MixProfOK v S) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
@@ -317,7 +314,7 @@ theorem GUEEntry_auxMinorRes_eq (v : CoordF d L W → ℝ≥0) {A : Matrix (Idx 
   rw [← mixEntry_minor_eq (hA.add (auxHG_isHermitian d L W v ω)) hz i k l]
   rfl
 
-/-- **Row LDE (4.8) for `G = (A + X - z)⁻¹`** (twin of `mixEntry_row_tail`, `EntryTail.lean:548`). -/
+/-- **Row large deviation estimate for `G = (A + X - z)⁻¹`** (the analogue of `mixEntry_row_tail`). -/
 theorem GUEEntry_row_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx d L W → ℝ}
     (hv : TagFree d L W v) (hS : MixProfOK v S) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
     {z : ℂ} (hz : z.im ≠ 0) {i j : Idx d L W} (hij : i ≠ j) {Λ : ℝ} (hΛ : 1 < Λ) (q : ℕ) :
@@ -371,7 +368,7 @@ theorem GUEEntry_row_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx 
   simp only [Set.mem_preimage, Set.mem_ofPred_eq]
   rw [hY ω, hR ω]
 
-/-- **Column LDE (4.8) for `G = (A + X - z)⁻¹`** (twin of `mixEntry_col_tail`, `EntryTail.lean:608`). -/
+/-- **Column large deviation estimate for `G = (A + X - z)⁻¹`** (the analogue of `mixEntry_col_tail`). -/
 theorem GUEEntry_col_tail {v : CoordF d L W → ℝ≥0} {S : Idx d L W → Idx d L W → ℝ}
     (hv : TagFree d L W v) (hS : MixProfOK v S) {A : Matrix (Idx d L W) (Idx d L W) ℂ} (hA : A.IsHermitian)
     {z : ℂ} (hz : z.im ≠ 0) {k j : Idx d L W} (hkj : k ≠ j) {Λ : ℝ} (hΛ : 1 < Λ) (q : ℕ) :
@@ -444,7 +441,7 @@ section Mix2
 variable {d : ℕ}
 
 /-- **The BA mixture matrix** `g Ψ + √a X_block + √b X_GUE` on the carrier `ouP (UNModel.band (sz.withLam 0)) n`
-(`= ouP (UNModelC.ba sz).toUNModel n`, `UNPins.lean:467`): the band mixture of `sz.withLam 0` plus the hopping. -/
+(`= ouP (UNModelC.ba sz).toUNModel n`): the band mixture of `sz.withLam 0` plus the hopping. -/
 def mixMatBA (sz : Sizes d) (n : ℕ) (g a b : ℝ) (ω : Sizes.SeqΩ sz × Ω d (sz.L n) (sz.W n)) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   (g : ℂ) • PsiI d (sz.L n) (sz.W n) +
@@ -470,7 +467,7 @@ section Bad
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- **The union of the four large-deviation failure events** at the shift `A`, profile `S`, spectral parameter
-`z` and factor `Λ` (twin of `mixBad`, `EntryTailMain.lean:120`, one union over the pairs). -/
+`z` and factor `Λ` (the analogue of `mixBad`, one union over the pairs). -/
 def GUEEntry_bad (A : Matrix (Idx d L W) (Idx d L W) ℂ) (S : Idx d L W → Idx d L W → ℝ) (z : ℂ) (Λ : ℝ) :
     Set (Ω d L W) :=
   ⋃ p : Idx d L W × Idx d L W,
@@ -591,8 +588,8 @@ theorem GUEEntry_maxLoop_nonneg (d L W : ℕ) [NeZero L] [NeZero W] (m : ℂ) (E
   (norm_nonneg _).trans (Finset.le_sup' (fun p : Zd d L × Zd d L =>
     ‖loopFine d L W H (ztOf m E u) ![true, false] ![p.1, p.2]‖) (Finset.mem_univ ((0 : Zd d L), (0 : Zd d L))))
 
-/-- **The event of the pin (one mixture, one pair) is contained in the failure events** (twin of
-`mixEntry_event_subset`, `EntryTailMain.lean:292`). -/
+/-- **The event of the statement (one mixture, one pair) is contained in the failure events** (the analogue of
+`mixEntry_event_subset`). -/
 theorem GUEEntry_event_subset (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {Λ κ δ Φ T g E a b : ℝ} {m : ℂ}
     (hg : 0 < g) (hgΛ : g ≤ Λ) (hκ : 0 < κ) (hr : BAReal d (sz.L n) g κ E m) (ha : 0 ≤ a) (hb : 0 ≤ b)
     (hu1 : a + b < 1) (hδ0 : 0 ≤ δ) (hδ : δ ≤ GUEEntry_dlt d Λ κ) (hwd : (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ δ ^ 2)
@@ -659,8 +656,8 @@ theorem GUEEntry_event_subset (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {Λ κ δ 
       mul_nonneg hT0 (add_nonneg hmL hW0)
     linarith
 
-/-- **The union over the grid `k ≤ K` at one size** (twin of `mixEntry_union`, `EntryTailMain.lean:369`): the event of the
-pin has `ouP`-probability at most `(K + 1) · 4 N² · C_q / Φ^{q+1}`, `N = size n = (W L)^d`. -/
+/-- **The union over the grid `k ≤ K` at one size** (the analogue of `mixEntry_union`): the event of the
+statement has `ouP`-probability at most `(K + 1) · 4 N² · C_q / Φ^{q+1}`, `N = size n = (W L)^d`. -/
 private theorem GUEEntry_union (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {Λ κ δ Φ T g E : ℝ} {m : ℂ} (hg : 0 < g) (hgΛ : g ≤ Λ)
     (hκ : 0 < κ) (hr : BAReal d (sz.L n) g κ E m) {K : ℕ} {a b : Fin (K + 1) → ℝ}
     (hab : ∀ k, 0 ≤ a k ∧ 0 ≤ b k ∧ 0 < a k + b k ∧ a k + b k < 1) (hδ0 : 0 ≤ δ) (hδ : δ ≤ GUEEntry_dlt d Λ κ)
@@ -722,7 +719,7 @@ private theorem GUEEntry_union (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {Λ κ δ
 
 end Event
 
-/-- **Pin `GUEEntryMixBA d`** (BA twin of `GUEEntryMix d`, `EntryTail.lean:94`): Lemma 4.1 (4.2)+(4.3) of [YY_25] at the
+/-- **The statement `GUEEntryMixBA d`** (the block Anderson version of `GUEEntryMix d`): Lemma 4.1 (4.2)+(4.3) of [YY_25] at the
 block Anderson mixture `g_n Ψ + √a X_block + √b X_GUE` (profile `S_u = a S^{(B)}(0) + b N⁻¹`, `u = a + b < 1`, free
 real-axis flow data `(g_n, E_n, m_n)` with `0 < g_n ≤ 𝔡⁻¹`, `BAReal`), in the one-time-law form on
 `ouP (UNModel.band (sz.withLam 0)) n = ouP (UNModelC.ba sz).toUNModel n`: on the a priori event
@@ -748,7 +745,7 @@ def GUEEntryMixBA (d : ℕ) : Prop :=
             else 0)} ≤
       ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D))
 
-/-- **Pin `GUEEntryMixBA' d`** (T2519 Amend 4 item 2): the text of `GUEEntryMixBA d` with the family premise split into
+/-- **The statement `GUEEntryMixBA' d`**: the text of `GUEEntryMixBA d` with the family premise split into
 `BAReal` at every `n` and the coupling window `0 < g n ≤ 𝔡⁻¹` eventually (`StochDomAt` is eventual; the BA producers have
 `g n = √t₀ λ_n` with `0 < g n` only eventually). -/
 def GUEEntryMixBA' (d : ℕ) : Prop :=
@@ -793,9 +790,12 @@ theorem GUEEntry_sqrt_w0_le {N W 𝔠 : ℝ} {d : ℕ} (hN1 : 1 ≤ N) (hW : N ^
   exact inv_anti₀ hpos hWd
 
 set_option maxHeartbeats 800000 in
--- the `n`-wise engine of the pin: smallness, the union bound and the final arithmetic in one proof
-/-- **`GUEEntryMixBA' d` is proved, `d ≥ 3`** (T2519 Amend 4 item 2): the proof of `gueEntryMixBA` (below, now a wrapper) with the
-coupling window `0 < g n ≤ 𝔡⁻¹` taken eventually, as one more entry of the `filter_upwards`; `BAReal` is used at that `n`. -/
+-- the `n`-wise engine of the statement: smallness, the union bound and the final arithmetic in one proof
+/-- **`GUEEntryMixBA' d` is proved, `d ≥ 3`**.  For eventually every `n` (one `filter_upwards`, whose
+entries include `δ n ≤ N^{-c₀}`, the bandwidth `N^𝔠 ≤ W` and the coupling window `0 < g n ≤ 𝔡⁻¹`), the
+threshold is enlarged to `δ' = max (δ n) √(W^{-d}) ≤ N^{-c₁}`, `c₁ = min c₀ (𝔠 d / 2)`; the event of the
+statement lies in the event at `δ'`, whose probability the union bound `GUEEntry_union` (with `BAReal` at
+that `n`) bounds; `mixEntry_final_arith` turns that bound into `N^{-D}`. -/
 theorem gueEntryMixBA' (hd : 3 ≤ d) : GUEEntryMixBA' d := by
   intro 𝔠 𝔡 sz hAdm κ hκ g E m hrdata hwin n0 K hK a b hab c₀ δ hc₀ hδ0 hδ τ D hτ hD
   obtain ⟨h𝔠, h𝔡, hsz, hbw, hWO⟩ := hAdm
@@ -872,7 +872,7 @@ theorem gueEntryMixBA' (hd : 3 ≤ d) : GUEEntryMixBA' d := by
           mul_le_mul hCn hΦsq (sq_nonneg _) (Real.rpow_nonneg hN0.le _)
       _ = N ^ τ := by rw [← Real.rpow_add hN0]; congr 1; ring
   have hmain := GUEEntry_union hd sz n hg hgΛ hκ hr (hab n) hδ'0 hδ'dlt hwd hΦ2 hΦδ hT q
-  -- the pin event is inside the event at the enlarged `δ'`
+  -- the event of the statement is inside the event at the enlarged `δ'`
   have hsub : {ω | ∃ (k : Fin (K n + 1)) (i j : Idx d (sz.L n) (sz.W n)),
       N ^ τ * (GUEEntry_maxLoop d (sz.L n) (sz.W n) (m n) (E n) (a n k + b n k) (mixMatBA sz n (g n) (a n k) (b n k) ω) + w₀) <
         (if ∀ x y, GUEEntry_llErr d (sz.L n) (sz.W n) (g n) (E n) (m n) (a n k + b n k)
@@ -904,31 +904,7 @@ end Main
 
 end ProbPart
 
-/-! ## Compiled nonempty instances (T2515b, row b; CLAUDE.md §4 step 2), `d = 3`
-
-* `stable_mixBA`: the flow point of `(L, g) = (4, 3/10)` (`UNPinsInst.fp`, `κ = Im m₀ > 0`), `(a, b) = (1/4, 1/4)`,
-  `v ≡ 1`, `B = 33`; every hypothesis is discharged.
-* `gueEntryMixBA` (the pin `GUEEntryMixBA 3`): the class sequence `S0` (`L = 4`, `W_n = (2 (n + 1))^5`, admissible at
-  `(1/6, 1/10)`), constant flow data, `K ≡ 1`, two mixtures, `δ_n = N^{-1}`, `τ = D = 1`; every hypothesis is discharged.
-* `mixEntry_detBA` and `mix_detBA`: `sz0` at `n = 25` (`L = 104`, `W = 52^5 = 380204032`, `N = (W L)^3`), the flow point
-  `(g₁, E₁, m₁)` of `flow_sz0` with `κ = 1/2`, `Λ = 1/64`, `δ = 10⁻¹²`, `Φ = 1`; the numerical facts
-  (`BAct_rate 3 (1/64) (1/2) = 1/4`, `10⁻¹² ≤ GUEEntry_dlt`, `GUEEntry_cs · δ² ≤ 1`, `W^{-3} ≤ δ²`) are proved.
-  At `(a, b) = (1/4, 1/4)` the Hermitian matrix `X` (for `mix_detBA`: the carrier of `GreenCore_carrier`, any sample), the
-  a priori event and the four large deviation inputs stay hypotheses (the events of `GUEEntry_bad`, discharged on the
-  probability side by `gueEntryMixBA`), as in the band instance `inst_mixEntry_det`; at `(a, b) = (0, 0)` (`X = 0`,
-  `G = M`) every hypothesis is discharged.
-* `mixMatBA` and its three identities at `sz0`; `GUEEntry_bad_tail` at `Idx 3 3 2`. -/
-
-/-! ### The numerical facts at `(d, Λ, κ) = (3, 1/64, 1/2)` -/
-
-/-! ### Obstruction: no fully discharged `X = 0` instance of `mixEntry_detBA` / `mix_detBA` at `0 < a + b`
-
-At `X = 0` the Ward identity for the minor `G^{(i)}` and `|G^{(i)}_{kk}| ≥ 2κ/3` (a priori event) give, in the quadratic
-large deviation input, `Im z² (2κ/3)² (1 - W^{-d}) ≤ 2 Φ W^{-d}`, i.e. `Φ ≳ W^d`; with `W^{-d} ≤ δ²` and
-`GUEEntry_cs Φ δ² ≤ 1` (`GUEEntry_cs ≥ 832 κ⁻⁴`) this is impossible.  Shown for `0 ≤ a ≤ b`, `0 < b`, `a + b ≤ 1/2`. -/
-
 set_option maxHeartbeats 1600000 in
--- one proof: the minor Ward identity, the two bounds on `ldeQuadRHS`/`ldeQuadLHS` and the count
-/-! ### `mixMatBA` and the tails at `sz0`, `Idx 3 3 2` -/
+/-! End of the probabilistic part of the entry layer. -/
 
 end RBM.BA

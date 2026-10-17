@@ -11,26 +11,23 @@ import RBM3D.BA.EMn2BA
 import RBM3D.Chain.ExpAvgGen
 
 /-!
-# BA-C4 row a: Lemma 5.15 on the GUE-phase grid at block Anderson (`BA/GUEOneLoop`)
+# The expected one-loop bound on the GUE-phase grid at block Anderson
 
-Ticket T2517 (row a; DECISIONS §339, §340; design gate D1 signed by
-`docs/reports/T2517-1a-audit.md`).  New BA leaf: no merged file is edited.  Band twin:
-`Universality/GUEPhase/OneLoop.lean` (`gueGrid_expect_oneLoop:1308`, T2353); chain twin:
-`Chain/ExpAvgGen.lean` (`lem:improve_exp_aver` at a matrix `M`, T2502 c).  Paper: arXiv:2507.20274
-`paper/tex/6_Step6_two_loop.tex:12-21` ("the same as [YY_25, Lemma 5.15]").  Private pieces of
-`OneLoop` and `ExpAvgGen` are read by `open private`; helpers not pinned by the ticket are
-`private` with the stem `GUEOneLoop_`.
+Band counterpart: `Universality/GUEPhase/OneLoop.lean` (`gueGrid_expect_oneLoop`); chain counterpart:
+`Chain/ExpAvgGen.lean` (Lemma 6.1 `lem:improve_exp_aver` at a matrix `M`).  Paper: Lemma 6.1
+(`lem:improve_exp_aver`), whose proof is that of [YY_25, Lemma 5.15].  Private pieces of
+`OneLoop` and `ExpAvgGen` are used through `open private`; the names of the private helpers
+begin with GUEOneLoop_.
 
-* §1 (target 1) `gueHBA`, the BA grid path `g Ψ_I + H_k` (`H_k` of the model `sz.withLam 0`,
+* §1 `gueHBA`, the BA grid path `g Ψ_I + H_k` (`H_k` of the model `sz.withLam 0`,
   `S^{(B)}(0) = 1`), `gueHBA_isHermitian`, `gueHBA_succ`, `ol_gueHBA_eq`.
-* §2 (target 2) `baOneLoop_gap` (`κ⁴/16 ≤ |1 - u r_a|`, `r_a = Σ_b M_{ab}²`), `baOneLoop_stable`
+* §2 `baOneLoop_gap` (`κ⁴/16 ≤ |1 - u r_a|`, `r_a = Σ_b M_{ab}²`), `baOneLoop_stable`
   (stability of `1 - M^{(+,+)} Ŝ`, `Ŝ = t₁ 1 + σ J`, `K = 16 κ⁻⁴ (1 + 16 κ⁻⁴)`).
-* §3 (target 3) the mixed-law Stein layer and `GUEOneLoop_blockId`:
+* §3 the mixed-law Stein layer and `GUEOneLoop_blockId`:
   `𝔼 g_a - m = Σ_{p,q} Ŝ_{pq} 𝔼[t_{ap} (g_q - m)]`, `t_{ap} = W^d tr(G E_a M E_p)`.
 * §4-§5 the core (`R_a` against the pathwise inputs and the envelopes), the bound at one grid time,
-  **`gueGrid_expect_oneLoopBA`** (target 4): `h1` and `hoff` (`|t_{aq} - M^{(+,+)}_{aq}| ≺
+  **`gueGrid_expect_oneLoopBA'`**: `h1` and `hoff` (`|t_{aq} - M^{(+,+)}_{aq}| ≺
   |M_{aq}| (N η_u)⁻¹`) give `|𝔼 g_a - m| ≤ N^ε (N η_u)⁻²` (bad event at `D = 7`).
-* §6 (target 5) compiled nonempty instances at `d = 3`, `sz0` and the BA flow datum of `sz0`.
 -/
 
 set_option linter.style.longLine false
@@ -50,9 +47,9 @@ namespace RBM.BA
 open MeasureTheory Filter Matrix RBM RBM.Gauss RBM.Path RBM.Loop RBM.Univ RBM.Univ.GUEPhase
 open scoped NNReal ENNReal
 
-/-! ## 1. Target 1: the BA grid path -/
+/-! ## 1. The BA grid path -/
 
-/-- **Target 1, the BA grid path `g Ψ_I + H_k`** (`H_k` of the model `sz.withLam 0`, `S^{(B)}(0) = 1`):
+/-- **The BA grid path `g Ψ_I + H_k`** (`H_k` of the model `sz.withLam 0`, `S^{(B)}(0) = 1`):
 `PsiI` is read at `sz.withLam 0` (the sizes of `sz` and `sz.withLam 0` agree by `rfl`), so that
 the sum has one matrix type; it is `rfl`-equal to the reading `g • PsiI d (sz.L n) (sz.W n) + gueH …`. -/
 def gueHBA {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ (sz.withLam 0)) :
@@ -80,7 +77,7 @@ theorem gueHBA_succ {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ �
   simp only [← add_assoc] at h
   exact h
 
-/-- **The one-time law of the BA grid path** (`ol_gueH_eq`, `OneLoop:125`, at `sz.withLam 0`): `H_k` is `Xmat` of
+/-- **The one-time law of the BA grid path** (`ol_gueH_eq` at `sz.withLam 0`): `H_k` is `Xmat` of
 the size-`n` slice of `√t₁ ω₀ + √(Δ/N) Σ_{i ≤ k} ω_i`, shifted by `g Ψ_I`. -/
 theorem ol_gueHBA_eq {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ (sz.withLam 0)) :
     gueHBA sz g t1 t0 K n k ω
@@ -93,12 +90,12 @@ theorem ol_gueHBA_eq {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ �
   rw [ol_gueH_eq (sz.withLam 0) t1 t0 K n k ω]
   rfl
 
-/-! ## 2. Target 2: the zero-mode gap and the block stability of `1 - M^{(+,+)} Ŝ`
+/-! ## 2. The zero-mode gap and the block stability of `1 - M^{(+,+)} Ŝ`
 
 `Ŝ = t₁ 1 + σ J` (`S^{(B)}(0) = 1`), `u = t₁ + L^d σ`; `Q = M^{(+,+)}`, `Q_{ab} = M_{ba} M_{ab}`. -/
 
 /-- **The zero-mode gap** (replaces the band `gapK κ ≤ |1 - u m²|`, `OneLoop_gapK_le_norm`): at real-axis data
-every row sum `r_a = Σ_b M_{ab}²` of `Q` satisfies `κ⁴/16 ≤ |1 - u r_a|` for `0 ≤ u ≤ 1`.  Route: `Q_{aa} = m²`
+every row sum `r_a = Σ_b M_{ab}²` of `Q` satisfies `κ⁴/16 ≤ |1 - u r_a|` for `0 ≤ u ≤ 1`.  Proof outline: `Q_{aa} = m²`
 (`BAMss_ss_diag`), `Σ_{b ≠ a} |Q_{ab}| = 1 - |m|²` (`BAMss_row_offdiag_sum`) and
 `ε ≤ |1 - u m²|`, `1 - |m|² ≤ (1 - ε)|1 - u m²|` (`BAoffDiag_scalar`, `ε = κ²/4`, `t = u`):
 `|1 - u r_a| ≥ ε |1 - u m²| ≥ ε²`. -/
@@ -138,9 +135,9 @@ theorem baOneLoop_gap :
 
 open private EKNonzero_row_sum EKNonzero_col_sum from RBM3D.BA.EKNonzero
 
-/-- **Target 2, block stability of `1 - M^{(+,+)} Ŝ`** (twin of the private `OneLoop_stable`, `OneLoop:857`),
+/-- **Block stability of `1 - M^{(+,+)} Ŝ`** (the analogue of the private `OneLoop_stable`),
 `Ŝ = t₁ 1 + σ J` (`S^{(B)}(0) = 1`), `u = t₁ + L^d σ ≤ 1`: the constant `K = 16 κ⁻⁴ (1 + 16 κ⁻⁴)` depends on `κ`
-only (uniform in `d`, `L`, `g`, `E`, `m`, `t₁`, `σ`).  Route: the sum `S = Σ x` through `baOneLoop_gap`
+only (uniform in `d`, `L`, `g`, `E`, `m`, `t₁`, `σ`).  Proof outline: the sum `S = Σ x` through `baOneLoop_gap`
 (the row sums of `Q` equal the column sums and are constant, `EKNonzero_Mss_shift`): `(1 - u r) S = Σ y`;
 then `x - t₁ Q x = y + σ r S` by `baStab_of_real` at `t = t₁`. -/
 theorem baOneLoop_stable :
@@ -237,13 +234,13 @@ theorem baOneLoop_stable :
   calc ‖x a‖ ≤ 16 * κ⁻¹ ^ 4 * ((1 + 16 * κ⁻¹ ^ 4) * B) := this
     _ = _ := by ring
 
-/-! ## 3. Target 3: the BA block identity (D1 (i))
+/-! ## 3. The BA block identity
 
 The Stein identity for the product Gaussian `GaussianProduct.law v` of the step-`k` coordinate variances
 `v_c = t₁ gvar_c + c₀ w_c` (`w_c = 1` on the diagonal, `1/2` off it), at `H₀ + H`, `H₀ ≠ 0`, for a trace
-`tr(P X G Q)`: the mixed-law twin of `ExpAvgGen_stein_trace` (`ExpAvgGen:348`, law `PF g`, `H = √u X`);
-`Ŝ_{pq} = t₁ S^{(B)}_{pq} + σ`, `σ = c₀ W^d`.  Then `x_a = Σ_{p,q} Ŝ_{pq} 𝔼[t_{ap} (g_q - m)]`, the twin of
-`ExpAvgGen_selfcons_fixed` (`:470`) on the block-product index, `t_{ap} = W^d tr(G E_a M E_p)`. -/
+`tr(P X G Q)`: the mixed-law analogue of `ExpAvgGen_stein_trace` (law `PF g`, `H = √u X`);
+`Ŝ_{pq} = t₁ S^{(B)}_{pq} + σ`, `σ = c₀ W^d`.  Then `x_a = Σ_{p,q} Ŝ_{pq} 𝔼[t_{ap} (g_q - m)]`, the analogue of
+`ExpAvgGen_selfcons_fixed` on the block-product index, `t_{ap} = W^d tr(G E_a M E_p)`. -/
 
 section Stein
 
@@ -252,7 +249,7 @@ open scoped Matrix.Norms.L2Operator
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- One-coordinate Stein identity for `tr(P B_c G Q)`, `G = (H₀ + H - z)⁻¹`, under the product Gaussian `law v`
-(`ExpAvgGen_stein_coord`, `ExpAvgGen:237`, at flow time `1` with the law `law v`). -/
+(`ExpAvgGen_stein_coord`, at flow time `1` with the law `law v`). -/
 private theorem GUEOneLoop_stein_coord (v : CoordF d L W → ℝ≥0) {H₀b : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH : H₀b.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) (P Q : Matrix (Vtx d L W) (Vtx d L W) ℂ) (c : CoordF d L W) :
     ∫ ω : Ω d L W, ω c • Matrix.trace (P * coordinateBlock d L W c * Gres (H₀b + HflowBlock d L W 1 ω) z true * Q)
@@ -296,7 +293,7 @@ private theorem GUEOneLoop_stein_coord (v : CoordF d L W → ℝ≥0) {H₀b : M
   exact GaussianProduct.stein v c f f' hgc hg'c hderiv hgb hg'b
 
 /-- Integrability of the integrands of the Stein identity for a continuous `G` with `‖G‖ ≤ r`, under `law v`
-(`ExpAvgGen_stein_int`, `ExpAvgGen:303`, with the law `law v`). -/
+(`ExpAvgGen_stein_int`, with the law `law v`). -/
 private theorem GUEOneLoop_stein_int (v : CoordF d L W → ℝ≥0) (r : ℝ) {G : Ω d L W → Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hGc : Continuous G) (hGn : ∀ ω, ‖G ω‖ ≤ r) (P Q : Matrix (Vtx d L W) (Vtx d L W) ℂ) :
     (∀ c : CoordF d L W, Integrable (fun ω : Ω d L W => ω c • Matrix.trace (P * coordinateBlock d L W c * G ω * Q))
@@ -372,8 +369,8 @@ private theorem GUEOneLoop_alg {ι : Type*} [Fintype ι] (t1 c0 Wd : ℂ) (a b :
 
 /-- **Pointwise contraction under the mixed variances** `v_c = t₁ gvar_c + c₀ w_c`:
 `Σ_c v_c tr(P B_c (-(G B_c G)) Q) = -W^d Σ_{p,q} Ŝ_{pq} tr(G Q P E_p) tr(G E_q)`, `Ŝ = t₁ S^{(B)} + σ`, `σ = c₀ W^d`
-(the `t₁` part is `sum_coordinateBlock_trace_pair`, the `c₀` part is `OneLoop_sum_gue_block`; twin of
-`ExpAvgGen_contract`, `ExpAvgGen:275`, and of `OneLoop_contraction`, `OneLoop:484`, for general `P`, `Q`). -/
+(the `t₁` part is `sum_coordinateBlock_trace_pair`, the `c₀` part is `OneLoop_sum_gue_block`; the analogue of
+`ExpAvgGen_contract` and of `OneLoop_contraction`, for general `P`, `Q`). -/
 private theorem GUEOneLoop_contract (g : ℝ) {t1 c0 σ : ℝ} (hσ : σ = c0 * (W : ℝ) ^ d) (v : CoordF d L W → ℝ≥0)
     (hv : ∀ c : CoordF d L W, (v c : ℝ) =
       t1 * (gvarF d L W g c : ℝ) + c0 * (if c.1 = c.2.1 then 1 else 1 / 2))
@@ -420,7 +417,7 @@ private theorem GUEOneLoop_contract (g : ℝ) {t1 c0 σ : ℝ} (hσ : σ = c0 * 
   push_cast
   linear_combination h
 
-/-- **The Stein identity at `H₀ + H`** under `law v` (twin of `ExpAvgGen_stein_trace`, `ExpAvgGen:348`):
+/-- **The Stein identity at `H₀ + H`** under `law v` (the analogue of `ExpAvgGen_stein_trace`):
 `𝔼 tr(P X G Q) = -W^d Σ_{p,q} Ŝ_{pq} 𝔼[tr(G Q P E_p) tr(G E_q)]`, `G = (H₀ + X - z)⁻¹`. -/
 private theorem GUEOneLoop_stein_trace (g : ℝ) {t1 c0 σ : ℝ} (hσ : σ = c0 * (W : ℝ) ^ d) (v : CoordF d L W → ℝ≥0)
     (hv : ∀ c : CoordF d L W, (v c : ℝ) =
@@ -463,11 +460,11 @@ private theorem GUEOneLoop_stein_trace (g : ℝ) {t1 c0 σ : ℝ} (hσ : σ = c0
   rw [integral_finsetSum _ (fun q _ => hF p q)]
   exact Finset.sum_congr rfl fun q _ => by rw [integral_const_mul]
 
-/-- **The BA block identity** (target 3; D1 (i)): for `(H₀ - (z + u m)) M = 1`, the block average `tr(M E_a) = m`,
+/-- **The BA block identity**: for `(H₀ - (z + u m)) M = 1`, the block average `tr(M E_a) = m`,
 the row sums `u = t₁ + L^d σ` of `Ŝ = t₁ S^{(B)} + σ`, and `G = (H₀ + X - z)⁻¹` with `X ~ law v`, writing
 `g_q = tr(G E_q)` and `t_{ap} = W^d tr(G E_a M E_p) = W^{-d} Σ_{x∈[a], y∈[p]} M_{xy} G_{yx}`:
-`𝔼 g_a - m = Σ_{p,q} Ŝ_{pq} 𝔼[t_{ap} (g_q - m)]` (twin of `ExpAvgGen_selfcons_fixed`, `ExpAvgGen:470`,
-on the block-product index; band `OneLoop_selfcons`, `OneLoop:700`, is `M = m`). -/
+`𝔼 g_a - m = Σ_{p,q} Ŝ_{pq} 𝔼[t_{ap} (g_q - m)]` (the analogue of `ExpAvgGen_selfcons_fixed`,
+on the block-product index; band `OneLoop_selfcons` is `M = m`). -/
 theorem GUEOneLoop_blockId (hL : 3 ≤ L) {t1 c0 σ u : ℝ} (hσ : σ = c0 * (W : ℝ) ^ d)
     (hu : t1 + (L : ℝ) ^ d * σ = u) (v : CoordF d L W → ℝ≥0)
     (hv : ∀ c : CoordF d L W, (v c : ℝ) =
@@ -623,7 +620,7 @@ private def GUEOneLoop_Tt (d L W : ℕ) [NeZero L] [NeZero W] (H₀b Mb : Matrix
     (a p : Zd d L) (ω : Ω d L W) : ℂ :=
   ((W : ℂ) ^ d) * Matrix.trace (Gres (H₀b + HflowBlock d L W 1 ω) z true * Eblk d L W a * Mb * Eblk d L W p)
 
-/-- **D1 (i), the pathwise step** (compiled at the 1a, `probe_R_good`): `|τ_p| ≤ ρ w_p Λ₁` (`hoff`, `w = |M^{(B)}_{a·}|`)
+/-- **The pathwise step**: `|τ_p| ≤ ρ w_p Λ₁` (`hoff`, `w = |M^{(B)}_{a·}|`)
 and `|γ_q| ≤ ρ Λ₂` (`h1`) give `|Σ_{p,q} Ŝ_{pq} τ_p γ_q| ≤ ρ² (t₁ + L^d σ) (Σ_p w_p) Λ₁ Λ₂`, `Ŝ_{pq} = t₁ δ_{pq} + σ`. -/
 private theorem GUEOneLoop_R_good {t1 σ ρ Λ₁ Λ₂ : ℝ} (ht1 : 0 ≤ t1) (hσ : 0 ≤ σ) (w : Zd d L → ℝ)
     (τ γ : Zd d L → ℂ) (hτ : ∀ p, ‖τ p‖ ≤ ρ * w p * Λ₁) (hγ : ∀ q, ‖γ q‖ ≤ ρ * Λ₂) :
@@ -656,10 +653,10 @@ private theorem GUEOneLoop_cont_Tt {H₀b : Matrix (Vtx d L W) (Vtx d L W) ℂ} 
   continuous_const.mul ((continuous_matrixTrace d L W).comp
     (((hGc.mul continuous_const).mul continuous_const).mul continuous_const))
 
-/-- **The core of the bound at one grid time** (twin of `OneLoop_expect_core`, `OneLoop:953`): given a measurable
+/-- **The core of the bound at one grid time** (the analogue of `OneLoop_expect_core`): given a measurable
 exceptional set `T`, `μ.real T ≤ δ`, off which `|g_q - m| ≤ ρ Λ_u` and `|t_{ap} - Q_{ap}| ≤ ρ w_{ap} Λ_u` (row `ℓ¹` sums
 of `w` at most `C_M`), the envelopes `E_Φ`, `E_τ` on the bad event with `δ L^d u E_τ E_Φ ≤ c_b`, and the stability
-`hstab` of `1 - Q Ŝ` (constant `K_st`, target 2): `|𝔼 g_a - m| ≤ K_st (ρ² u C_M Λ_u² + c_b)`, `g_a = tr(G E_a)`.  `Q = Qd` is `M^{(+,+)}`,
+`hstab` of `1 - Q Ŝ` (constant `K_st`): `|𝔼 g_a - m| ≤ K_st (ρ² u C_M Λ_u² + c_b)`, `g_a = tr(G E_a)`.  `Q = Qd` is `M^{(+,+)}`,
 `Mb` the block matrix of `M`; the profile is `Ŝ = t₁ 1 + σ J` (`S^{(B)}(0) = 1`, `EMn2BA_SB_zero`). -/
 private theorem GUEOneLoop_expect_core (hL : 3 ≤ L) {t1 c0 σ u : ℝ} (ht1 : 0 ≤ t1) (hc0 : 0 ≤ c0)
     (hσ : σ = c0 * (W : ℝ) ^ d) (hu : t1 + (L : ℝ) ^ d * σ = u) (v : CoordF d L W → ℝ≥0)
@@ -840,7 +837,7 @@ private theorem GUEOneLoop_expect_core (hL : 3 ≤ L) {t1 c0 σ u : ℝ} (ht1 : 
 
 end Core
 
-/-! ## 5. The bound at one grid time and Lemma 5.15 on the GUE-phase grid at BA (target 4) -/
+/-! ## 5. The bound at one grid time and Lemma 5.15 of [YY_25] on the GUE-phase grid at BA -/
 
 section Wrapper
 
@@ -890,10 +887,10 @@ private theorem GUEOneLoop_Mdata {d L W : ℕ} [NeZero L] [NeZero W] {g E κ : �
     push_cast
     field_simp
 
-/-- **The bound at one grid time** (twin of `OneLoop_expect_bound`, `OneLoop:1125`): for sets `B1`, `B2` of
+/-- **The bound at one grid time** (the analogue of `OneLoop_expect_bound`): for sets `B1`, `B2` of
 probability `≤ N^{-7}` each, off `B1` the diagonal 1-loops are `≤ ρ Λ_u` (`h1`), off `B2` the `M`-weighted block
 traces are within `ρ |M^{(B)}_{aq}| Λ_u` of `M^{(+,+)}_{aq}` (`hoff`), `Λ_u = (N η_u)⁻¹`; with the stability
-constant `K_st` of target 2: `|𝔼 g_a - m| ≤ K_st (ρ² C_M + 8 κ⁻¹) Λ_u²`, `C_M = c₀⁻¹ S_{c₀}` (`baM_row_l1`).
+constant `K_st`: `|𝔼 g_a - m| ≤ K_st (ρ² C_M + 8 κ⁻¹) Λ_u²`, `C_M = c₀⁻¹ S_{c₀}` (`baM_row_l1`).
 (`D = 7`: the envelopes of `g_q - m` and of `t_{ap} - M^{(+,+)}_{ap}` are `L^d η⁻¹`, `L^d κ⁻¹ η⁻¹`, `‖M‖ ≤ κ⁻¹`.) -/
 private theorem GUEOneLoop_expect_bound {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) {Λ κ : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ)
     (n : ℕ) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hg : 0 < g n ∧ g n ≤ Λ)
@@ -1186,8 +1183,8 @@ private theorem GUEOneLoop_expect_bound {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) 
 
 end Wrapper
 
-/-- **`gueGrid_expect_oneLoopBA'`** (T2519 Amend 4 item 2): `gueGrid_expect_oneLoopBA` with the coupling window `0 < g n ≤ Λ`
-eventually (`hr` stays at every `n`); the proof of `gueGrid_expect_oneLoopBA` moved here, the window is one more entry of the
+/-- **`gueGrid_expect_oneLoopBA'`**: Lemma 5.15 of [YY_25] on the GUE-phase grid at BA, with the coupling window `0 < g n ≤ Λ`
+eventually (`hr` stays at every `n`); the window is one more entry of the
 `filter_upwards` and `CM ≥ 0` is by positivity. -/
 theorem gueGrid_expect_oneLoopBA' (d : ℕ) :
   3 ≤ d → ∀ (sz : Sizes d) (κ Λ : ℝ), 0 < κ → 0 < Λ →
@@ -1269,12 +1266,6 @@ theorem gueGrid_expect_oneLoopBA' (d : ℕ) :
     _ = N ^ ε * Λ2 := by rw [hNε]
 
 
-/-! ## 6. Compiled nonempty instances (target 5)
-
-`d = 3`, `sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`, `Defs/Sizes.lean`), the BA flow datum
-of `sz0` at every `n` (`g_n = BAflowLam0`, `E_n = BAflowEs`, `m_n = BAmF`; `BAReal` at `κ = 1/2` for every `n` by
-`BAflow_real`, `GreenStab:352` is `n = 0`), the grid `t₁ = 1/4`, `t₀ = 1/2`, `K = 4`.  Only `h1` and `hoff` of the main
-instance stay premises (the pins of C5); every deterministic hypothesis is discharged. -/
 
 end RBM.BA
 

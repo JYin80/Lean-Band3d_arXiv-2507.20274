@@ -10,38 +10,34 @@ import RBM3D.Loop.KLTree
 import RBM3D.Loop.TreeRep
 
 /-!
-# Stage K, row K05a: the derivative of the cactus value and its leaf part
+# The derivative of the cactus value and its leaf part
 
-Ticket T2370 (design BA-DK, `docs/reports/T2360-design.md` §3 (a), §4 row K05a; supervisor
-`docs/supervisor/2026-10-10-0350.md` C1-C3).  The cactus value `Γ_M(F) = BAGamma` of K04
-(`BA/KCactus.lean`) is an instance of the generic tree value `KLgval`
-(`Loop/KLCut.lean:58`): a finite sum of finite products.  Here:
+The cactus value `Γ_M(F) = BAGamma` (`BA/KCactus.lean`) is an instance of the generic tree value `KLgval`
+(`Loop/KLCut.lean`): a finite sum of finite products.  Here:
 
-1. The four pins `BASplicedFam`, `BAGammaDerivRHS`, `BAGammaDerivStmt`, `BALeafPairsStmt`.
-2. **`baGamma_hasDerivAt`** (target 2): `∂_t Γ_F` is the sum of the leaf terms and the chord terms
+1. The four statements `BASplicedFam`, `BAGammaDerivRHS`, `BAGammaDerivStmt`, `BALeafPairsStmt`.
+2. **`baGamma_hasDerivAt`**: `∂_t Γ_F` is the sum of the leaf terms and the chord terms
    of `BAGammaDerivRHS`.  Product rule on `KLgval` (`BAKTreeDeriv_gval_hasDerivAt`, the `KLgval`
-   form of the merged `KLhasDerivAt_treeValW`, `Loop/KLCut.lean:178`); a leaf weight
+   form of `KLhasDerivAt_treeValW`, `Loop/KLCut.lean`); a leaf weight
    `Θ^{(σ_v,σ_{v+1})}` has derivative `ΘMΘ` (`BATheta_hasDerivAt`) and
    `(ΘMΘ)(a_v, ·) = Σ_b (ΘM)(a_v, b) Θ(b, ·)` (`BAKTreeDeriv_gval_leaf_mul`, the `KLgval` form of
-   `treeValW_leaf_mul`, `Loop/KLTreeDeriv.lean:168`); a chord weight `tΘ` has derivative
+   `treeValW_leaf_mul`, `Loop/KLTreeDeriv.lean`); a chord weight `tΘ` has derivative
    `Θ + tΘMΘ = Θ·Θ` (`BATheta_resolvent`); an `M`-edge weight is constant, so the term with that
    weight replaced by `0` vanishes.
-3. **`baLeafPairs`** (target 3): the leaf part of `W^{-d(n-1)} Σ_F ∂_tΓ_F` is the sum of the `n`
+3. **`baLeafPairs`**: the leaf part of `W^{-d(n-1)} Σ_F ∂_tΓ_F` is the sum of the `n`
    leaf pairs of `treeEqRhsS` at `S = 1`, for every family with `BASplicedFam`: the pair
-   `(v+1, v+2)` for the leaf `v ≤ n-2` (its 2-piece is `(Kn2sol)`, the closed form of
-   `BASplicedFam`, never `BAGamma` at `n = 2`: supervisor 0350 C1) and the wrap pair `(1, n)` for
-   the leaf `v = n-1`, whose 2-piece is read from the other end (C2): `Θ^{(σ',σ)} M^{(σ'σ)}`
+   `(v+1, v+2)` for the leaf `v ≤ n-2` (its 2-piece is (2.71) `Kn2sol`, the closed form of
+   `BASplicedFam`, never `BAGamma` at `n = 2`) and the wrap pair `(1, n)` for
+   the leaf `v = n-1`, whose 2-piece is read from the other end: `Θ^{(σ',σ)} M^{(σ'σ)}`
    is the transpose of `Θ^{(σσ')} M^{(σσ')}` (`BAKTreeDeriv_P_swap`; `M^{(σ'σ)} = (M^{(σσ')})ᵀ`
    from the definition of `BAMss`, `ΘM = MΘ` from the resolvent identities).  The list facts
-   `KLloopOf_cutGlue*` are public.  No hypothesis `0 < W` is needed: at `W^d = 0` both sides
-   vanish (`n - 1 ≥ 2`).
-4. **`BAKcac`**, `BAKcac_spliced`: the spliced family of supervisor 0350 C1 (length 1: `PropSpin m`;
-   length 2: the closed form `(Kn2sol)`; length `≥ 3`: `W^{-d(n-1)} Σ_{F ∈ TSP n} BAGamma`;
-   `0` on loops with `σ.length ≠ a.length`), with `BASplicedFam`.  K05b proves `IsKLoopS` for it.
+   `KLloopOf_cutGlueL_leaf`, `KLloopOf_cutGlueR_leaf`, `KLloopOf_cutGlueL_wrap`, `KLloopOf_cutGlueR_wrap` are public.
+   No hypothesis `0 < W` is needed: at `W^d = 0` both sides vanish (`n - 1 ≥ 2`).
+4. **`BAKcac`**, `BAKcac_spliced`: the spliced family (length 1: `PropSpin m`;
+   length 2: the closed form (2.71) `Kn2sol`; length `≥ 3`: `W^{-d(n-1)} Σ_{F ∈ TSP n} BAGamma`;
+   `0` on loops with `σ.length ≠ a.length`), with `BASplicedFam`.  `BA/KTreeRep.lean` proves `IsKLoopS` for it.
 
-Public: the four pins, `baGamma_hasDerivAt`, `baLeafPairs`, `BAKcac`, `BAKcac_spliced`, the four
-`KLloopOf_cutGlue*` facts and the instances (section 7).  Every other helper is `private` with the
-stem `BAKTreeDeriv_`.
+The names of the private helpers begin with BAKTreeDeriv_.
 -/
 
 set_option linter.style.longLine false
@@ -51,10 +47,10 @@ namespace RBM.BA
 open RBM RBM.Loop
 open scoped Matrix
 
-/-! ## 0. The pins (copied verbatim from Part 1 of `docs/tickets/checks/T2370-check.lean`) -/
+/-! ## 0. The statements -/
 
-/-- **`BASplicedFam`** (supervisor 0350 C1): the K05b witness family. Length 1: `PropSpin m`. Length 2: the closed form
-`(Kn2sol)` (`1_2:1175`; the 2-loop is not a cactus). Length `n ≥ 3`: the cactus sum `W^{-d(n-1)} ∑_{F ∈ TSP n} BAGamma`. -/
+/-- **`BASplicedFam`**: the witness family. Length 1: `PropSpin m`. Length 2: the closed form
+(2.71) `Kn2sol` (the 2-loop is not a cactus). Length `n ≥ 3`: the cactus sum `W^{-d(n-1)} ∑_{F ∈ TSP n} BAGamma`. -/
 def BASplicedFam (d L W : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (K : ℝ → LoopIdx (Zd d L) → ℂ) : Prop :=
   (∀ (t : ℝ) (s : Bool) (a : Zd d L), K t ⟨[s], [a]⟩ = PropSpin m s) ∧
   (∀ (t : ℝ) (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L),
@@ -78,16 +74,16 @@ noncomputable def BAGammaDerivRHS (d L n : ℕ) [NeZero L] [NeZero n] (g E : ℝ
         (BATheta d L g E m t (σ J.1.1) (σ J.1.2) * BATheta d L g E m t (σ J.1.1) (σ J.1.2)))
       (BACactusValSrc F) (BACactusValTgt F)
 
-/-- **`BAGammaDerivStmt`** (target 2): the derivative of every cactus value at the BA data, `0 ≤ t < 1`. -/
+/-- **`BAGammaDerivStmt`**: the derivative of every cactus value at the BA data, `0 ≤ t < 1`. -/
 def BAGammaDerivStmt (d : ℕ) : Prop :=
   ∀ (L : ℕ) [NeZero L] (n : ℕ) [NeZero n] (g κ E : ℝ) (m : ℂ), 3 ≤ n → BAReal d L g κ E m →
     ∀ (F : Finset (Fin n × Fin n)), KLIsTSP F → ∀ (σ : Fin n → Bool) (a : Fin n → Zd d L) (t : ℝ), 0 ≤ t → t < 1 →
       HasDerivAt (fun s : ℝ => BAGamma d L n (BAMsigma d L (BAMB d L g (E : ℂ) m)) s F σ a)
         (BAGammaDerivRHS d L n g E m t F σ a) t
 
-/-- **`BALeafPairsStmt`** (target 3; supervisor 0350 Q1 table, C1, C2): for every family with `BASplicedFam`, the leaf part of
+/-- **`BALeafPairsStmt`**: for every family with `BASplicedFam`, the leaf part of
 `W^{-d(n-1)} Σ_F ∂_tΓ_F` equals the `n` leaf pairs of `treeEqRhsS` at `S = 1`: the pair `(v+1, v+2)` for `v ≤ n-2` and the
-wrap pair `(1, n)` for `v = n-1` (whose 2-piece is reversed; C2). -/
+wrap pair `(1, n)` for `v = n-1` (whose 2-piece is reversed). -/
 def BALeafPairsStmt (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ), BAReal d L g κ E m →
     ∀ K : ℝ → LoopIdx (Zd d L) → ℂ, BASplicedFam d L W g E m K →
@@ -135,7 +131,7 @@ private theorem BAKTreeDeriv_Theta_comm (g κ E : ℝ) (m : ℂ) (hr : BAReal d 
       add_left_cancel (h2.symm.trans h1)
     exact smul_right_injective _ ht h3
 
-/-- **The wrap pair** (supervisor 0350 C2): `(Θ^{(σ',σ)} M^{(σ'σ)})(x, y) = (Θ^{(σσ')} M^{(σσ')})(y, x)`.
+/-- **The wrap pair**: `(Θ^{(σ',σ)} M^{(σ'σ)})(x, y) = (Θ^{(σσ')} M^{(σσ')})(y, x)`.
 Hypotheses: `BAReal`, `0 ≤ t < 1`; the symmetry of `M(σ)` is not used. -/
 private theorem BAKTreeDeriv_P_swap (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t)
     (ht1 : t < 1) (s s' : Bool) (x y : Zd d L) :
@@ -154,7 +150,7 @@ variable {d L : ℕ} [NeZero L] {Nd Lf Ed : Type*} [Fintype Nd] [DecidableEq Nd]
   [Fintype Ed] [DecidableEq Ed]
 
 /-- **The product rule for `KLgval`**: the derivative of the value of a weighted tree has one term per leaf weight and one
-per edge weight (the `KLgval` form of `KLhasDerivAt_treeValW`, `Loop/KLCut.lean:178`). -/
+per edge weight (the `KLgval` form of `KLhasDerivAt_treeValW`, `Loop/KLCut.lean`). -/
 private theorem BAKTreeDeriv_gval_hasDerivAt (a : Lf → Zd d L) (p : Lf → Nd) (c q : Ed → Nd)
     {M : ℝ → Lf → Matrix (Zd d L) (Zd d L) ℂ} {Ew : ℝ → Ed → Matrix (Zd d L) (Zd d L) ℂ}
     {M' : Lf → Matrix (Zd d L) (Zd d L) ℂ} {Ew' : Ed → Matrix (Zd d L) (Zd d L) ℂ} {t : ℝ}
@@ -183,7 +179,7 @@ private theorem BAKTreeDeriv_gval_hasDerivAt (a : Lf → Zd d L) (p : Lf → Nd)
     ring
 
 omit [DecidableEq Ed] in
-/-- **Linearity in one leaf weight** (the `KLgval` form of `treeValW_leaf_mul`, `Loop/KLTreeDeriv.lean:168`): the leaf `v`
+/-- **Linearity in one leaf weight** (the `KLgval` form of `treeValW_leaf_mul`, `Loop/KLTreeDeriv.lean`): the leaf `v`
 with weight `A B` gives `∑_z A_{a_v z}` times the tree with the leaf relabelled `z` and weight `B`. -/
 private theorem BAKTreeDeriv_gval_leaf_mul (a : Lf → Zd d L) (M : Lf → Matrix (Zd d L) (Zd d L) ℂ)
     (p : Lf → Nd) (Ew : Ed → Matrix (Zd d L) (Zd d L) ℂ) (c q : Ed → Nd) (v : Lf)
@@ -213,7 +209,7 @@ private theorem BAKTreeDeriv_gval_zero_edge (a : Lf → Zd d L) (M : Lf → Matr
 
 end Generic
 
-/-! ## 3. Target 2: `baGamma_hasDerivAt` -/
+/-! ## 3. `baGamma_hasDerivAt` -/
 
 section Deriv
 
@@ -242,10 +238,10 @@ private theorem BAKTreeDeriv_hasDerivAt_chord (g κ E : ℝ) (m : ℂ) (hr : BAR
   rw [BAKTreeDeriv_ThetaSq g κ E m hr ht0 ht1 σ₁ σ₂]
   simp [Matrix.add_apply, Matrix.smul_apply]
 
-/-- **Target 2** (`BAGammaDerivStmt`): `∂_t Γ_F` for `F` crossing-free at `0 ≤ t < 1`, the BA data `BAReal`.  The proof
+/-- **`baGamma_hasDerivAt`** (`BAGammaDerivStmt`): `∂_t Γ_F` for `F` crossing-free at `0 ≤ t < 1`, the BA data `BAReal`.  The proof
 is the product rule on the cactus `KLgval`: a leaf weight `Θ^{(σ_v,σ_{v+1})}` has derivative `ΘMΘ`, rewritten as
 `∑_b (ΘM)(a_v, b) Γ_F(a_v ← b)`; a chord weight `tΘ` has derivative `Θ·Θ`; an `M`-edge weight is constant.
-Hypotheses beyond the pin: none (`KLIsTSP F` and `3 ≤ n` are not used). -/
+Hypotheses beyond the statement: none (`KLIsTSP F` and `3 ≤ n` are not used). -/
 theorem baGamma_hasDerivAt (d : ℕ) : BAGammaDerivStmt d := by
   intro L _ n _ g κ E m hn hr F hF σ a t ht0 ht1
   have hE : ∀ (e : ↥F ⊕ BAslot F) (i j : Zd d L),
@@ -373,8 +369,8 @@ section Kcac
 
 variable (d L W : ℕ) [NeZero L] (g E : ℝ) (m : ℂ)
 
-/-- **`BAKcac`**, the spliced family of supervisor 0350 C1 (`BASplicedFam`): on a loop with `σ.length = a.length`, length 1
-is `PropSpin m`, length 2 the closed form `(Kn2sol)`, length `n ≥ 3` the cactus sum `W^{-d(n-1)} ∑_{F ∈ TSP n} BAGamma` over
+/-- **`BAKcac`**, the spliced family (`BASplicedFam`): on a loop with `σ.length = a.length`, length 1
+is `PropSpin m`, length 2 the closed form (2.71) `Kn2sol`, length `n ≥ 3` the cactus sum `W^{-d(n-1)} ∑_{F ∈ TSP n} BAGamma` over
 the `Fin n` view of the lists (`getD`; at `I = KLloopOf σ a` the view is `(σ, a)`, `BAKcac_spliced`); `0` otherwise. -/
 noncomputable def BAKcac (t : ℝ) (I : LoopIdx (Zd d L)) : ℂ :=
   if I.σ.length = I.a.length then
@@ -407,7 +403,7 @@ private theorem BAKTreeDeriv_Kcac_eq (t : ℝ) {n : ℕ} [NeZero n] (hn : 3 ≤ 
   have h2 : I.a.length ≠ 2 := by omega
   simp only [BAKcac, hwf, h1, h2, ↓reduceIte, hn, ↓reduceDIte]
 
-/-- **`BAKcac_spliced`** (target 4): `BAKcac` satisfies the three clauses of the pin `BASplicedFam`. -/
+/-- **`BAKcac_spliced`**: `BAKcac` satisfies the three clauses of `BASplicedFam`. -/
 theorem BAKcac_spliced : BASplicedFam d L W g E m (BAKcac d L W g E m) := by
   refine ⟨fun t s a => ?_, fun t σ₁ σ₂ a₁ a₂ => ?_, fun t n _ hn σ a => ?_⟩
   · simp [BAKcac]
@@ -417,7 +413,7 @@ theorem BAKcac_spliced : BASplicedFam d L W g E m (BAKcac d L W g E m) := by
 
 end Kcac
 
-/-! ## 6. Target 3: `baLeafPairs` -/
+/-! ## 6. `baLeafPairs` -/
 
 section Leaf
 
@@ -454,11 +450,11 @@ private theorem BAKTreeDeriv_pair_alg' {ι : Type*} (S : Finset ι) (w : ℂ) {n
   congr 1
   exact Finset.sum_congr rfl fun x _ => mul_comm _ _
 
-/-- **Target 3** (`BALeafPairsStmt`): the leaf part of `W^{-d(n-1)} ∑_F ∂_tΓ_F` is the sum of the `n` leaf pairs of
+/-- **`baLeafPairs`** (`BALeafPairsStmt`): the leaf part of `W^{-d(n-1)} ∑_F ∂_tΓ_F` is the sum of the `n` leaf pairs of
 `treeEqRhsS` at `S = 1`, for every family `K` with `BASplicedFam`.  Leaf `v ≤ n-2`: the pair `(v+1, v+2)`, `cutGlueL` is
 the `n`-loop with `a_v ← x` (clause 3), `cutGlueR` the 2-loop `⟨[σ_v,σ_{v+1}],[a_v,x]⟩` (clause 2, the closed form).  Leaf
 `v = n-1`: the wrap pair `(1, n)`, `cutGlueL` is the 2-loop `⟨[σ_0,σ_{n-1}],[x,a_{n-1}]⟩` read from the other end, closed by
-`BAKTreeDeriv_P_swap` (C2), `cutGlueR` the `n`-loop with `a_{n-1} ← x`.  No hypothesis `0 < W`: at `W^d = 0` both sides
+`BAKTreeDeriv_P_swap`, `cutGlueR` the `n`-loop with `a_{n-1} ← x`.  No hypothesis `0 < W`: at `W^d = 0` both sides
 are `0`. -/
 theorem baLeafPairs (d : ℕ) : BALeafPairsStmt d := by
   intro L W _ g κ E m hr K hK n _ hn σ a t ht0 ht1
@@ -513,15 +509,5 @@ theorem baLeafPairs (d : ℕ) : BALeafPairsStmt d := by
 
 end Leaf
 
-/-! ## 7. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 P.m0.im P.E P.m0`,
-the real-axis data of `(self_m)` on the `4³ = 64` blocks), `t = 1/2`, `W = 2`, the charges `σ = (+,+,-)` at `n = 3` and
-`σ = (+,+,-,+)` at `n = 4`, the labels three resp. four distinct blocks.  `n = 3` has the one tree `∅`; `n = 4` has the three
-trees `∅`, `{(0,2)}`, `{(1,3)}` (`TSP_four`), so there the chord term of `BAGammaDerivRHS` is present (`F = {(0,2)}`) and the
-cactus sum of `BAKcac` has three terms.  The hypotheses are discharged: `BAReal` by `P.real`, `KLIsTSP F` by a direct proof
-resp. `KLisTSP_of_mem_TSP`, `BASplicedFam` by `BAKcac_spliced`, `0 ≤ 1/2 < 1`, `3 ≤ n`. -/
-
-/-! ### The list identities of target 3 at `n = 4` (`d = 1`, `L = 3`, `σ = (+,-,+,+)`, `a = (0,1,2,0)`, `x = 1`), by `decide` -/
 
 end RBM.BA

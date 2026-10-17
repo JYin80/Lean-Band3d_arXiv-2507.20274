@@ -8,20 +8,16 @@ import RBM3D.BA.MFixedPoint
 import Mathlib.Topology.MetricSpace.Contracting
 
 /-!
-# BA-D8 (T2205 portmap): the deterministic coupling window of the block Anderson flow
+# The deterministic coupling window of the block Anderson flow
 
-Port of the compiled T2205 probe (`RBM3D/Probe/T2205Pins.lean` at `96e4087`, sections 2, 2.1-2.3, 3.2 and the
-one-point instances 7.2).  Namespace `RBM.BA`; the one-point instances are in `RBM.BA.CouplingWindowInst`.
-Paper: `paper/tex/7_8_light_weight.tex` (`7_8:1796-1808`, `zztE_BA`).
+Namespace `RBM.BA`.  Paper: Lemma 8.1 (`zztE_BA`).
 
 * the stability gap `BAgapReal`: `Re (1 - L^{-d} tr M^2) ≥ 2 (Im m)^2` (spectral form `BAMB_trace_sq_eq_sum`);
-* the inverse of `zztE_BA`, `BAzztE_inv` (`BAzztE_inv_core`, `BAzztE_inv_holds`);
-* the window `BAmWindow` with `c₁ = min(1/2, κ⁹/(64 d Λ))` and `C = 2d/κ⁴` (one Newton-Kantorovich step `BAwindow_step`, its
-  iteration `BAwindow_iter`, `BAwindow_floor`); these constants are not in the paper (D537 = T2205c);
-* the window premise `BAWinBulk` (written out with the merged `BAt0`, `BAm`, `BAflowE`, because `BAflowT0`, `BAflowEs`, `BAflowLam0`
-  are T2197's names) and `BAWinBulk_of_dom` (the chain domain `BAdom κ` gives the window in the `κ/2`-bulk; D538).
-
-Consumers: BA-S3, BA-V2a/b, BA-V3, BA-M1.  Nothing is registered.
+* the core `BAzztE_inv_core` of the inverse of `zztE_BA`;
+* the window `BAmWindow` with `c₁ = min(1/2, κ⁹/(64 d Λ))` and `C = 2d/κ⁴` (one Newton-Kantorovich step `BAwindow_step`);
+  these constants are not stated in the paper;
+* the window statement `BAWinBulk` (written out with `BAt0`, `BAm`, `BAflowE`) and `BAWinBulk_of_dom` (the chain domain
+  `BAdom κ` gives the window in the `κ/2`-bulk).
 -/
 
 set_option linter.style.longLine false
@@ -38,11 +34,11 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes RBM.BA
 
-/-! ## 2. The deterministic pins of the coupling window (target 2)
+/-! ## 1. The deterministic statements of the coupling window
 
-`BAgapReal`, `BAmWindow`, `BAzztE_inv` are the check-file texts (`docs/tickets/checks/T2205-check.lean` section 2) verbatim.
-Proved here: `BAgapReal` (from `BAMB_trace_eq_sum`-style spectral form of `M²` and the imaginary part of `(self_m)`),
-`BAzztE_inv` (algebra), and `BAWinBulk_of_dom` from `BAmWindow` (section 3).  `BAmWindow` itself: section 2.4. -/
+`BAgapReal` and `BAmWindow` are the statements of the stability gap and of the window.
+Proved here: `BAgapReal_holds` (from the spectral form of `M²` and the imaginary part of `(self_m)`),
+`BAzztE_inv_core` (algebra), `BAmWindow_holds` (section 1.3), and `BAWinBulk_of_dom` from `BAmWindow` (section 2). -/
 
 section DetPins
 
@@ -51,7 +47,7 @@ variable (d : ℕ)
 /-- **The stability gap on the real axis.**  For a real-axis solution `m` of `(self_m)` at `(g, E)`:
 `Re (1 - L^{-d} tr (M^{(B)})²) ≥ 2 (Im m)²`.  (With `w_i = g λ_i - E - m`: `⟨|w|^{-2}⟩ = 1` by `BAward_avg`,
 `Re (1 - ⟨w^{-2}⟩) = 2 (Im m)² ⟨|w|^{-4}⟩ ≥ 2 (Im m)²` by Cauchy-Schwarz.)  Not in `MFixedPoint`; proved below
-(`BAgapReal_holds`; BA-D8 ports the proof). -/
+(`BAgapReal_holds`). -/
 def BAgapReal : Prop :=
   ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → ∀ (E : ℝ) (m : ℂ),
     haveI : NeZero L := ⟨Nat.pos_iff_ne_zero.mp (Nat.lt_of_lt_of_le (Nat.zero_lt_succ 2) hL)⟩
@@ -59,7 +55,7 @@ def BAgapReal : Prop :=
       2 * m.im ^ 2 ≤
         (1 - (((L ^ d : ℕ) : ℂ))⁻¹ * (BAMB d L g (E : ℂ) m * BAMB d L g (E : ℂ) m).trace).re
 
-/-- **`m(E, ·)` on the coupling window** (supervisor 1806 §1.5 (b)).  For `g ≤ Λ` and `E` in the κ-bulk at `g`
+/-- **`m(E, ·)` on the coupling window.**  For `g ≤ Λ` and `E` in the κ-bulk at `g`
 (`BAReal`), every `g' ∈ [√(1 - c₁) g, g]` has a real-axis solution `m(E, g')` with `Im m(E, g') ≥ κ/2`, and
 `|m(E, g') - m(E, g)| ≤ C (g - g')`; `c₁ ∈ (0, 1/2]` and `C` depend on `(d, Λ, κ)` only
 (`∂_g m = -L^{-d} tr (M²Ψ) / (1 - L^{-d} tr M²)`, `|L^{-d} tr (M²Ψ)| ≤ 2d`, gap `BAgapReal`). -/
@@ -73,10 +69,10 @@ def BAmWindow (Λ κ : ℝ) : Prop :=
 
 end DetPins
 
-/-! ### 2.1 `BAgapReal` (proved) -/
+/-! ### 1.1 `BAgapReal` -/
 
-/-- Spectral decomposition of `(g Ψ - w)⁻¹` for a Hermitian `Ψ` (copy of the private `MFixedPoint_inv_spectral`,
-`RBM3D/BA/MFixedPoint.lean:614`; kept private: `MFixedPoint.lean` is not changed, DECISIONS §57 (1)). -/
+/-- Spectral decomposition of `(g Ψ - w)⁻¹` for a Hermitian `Ψ` (as the private `MFixedPoint_inv_spectral`
+of `RBM3D/BA/MFixedPoint.lean`). -/
 private theorem T2205_inv_spectral {n : Type*} [Fintype n] [DecidableEq n]
     {Ψ : Matrix n n ℂ} (hΨ : Ψ.IsHermitian) (g : ℝ) {w : ℂ}
     (hw : ∀ l, ((g * hΨ.eigenvalues l : ℝ) : ℂ) ≠ w) :
@@ -116,7 +112,7 @@ private theorem T2205_inv_spectral {n : Type*} [Fintype n] [DecidableEq n]
         rw [hUU, mul_one, diagonal_mul_diagonal, hd, diagonal_one]
     _ = 1 := by rw [mul_one, hUU']
 
-/-- **Spectral form of `M²`** (the public version BA-D8 needs): `tr (M^{(B)})² = Σ_i (v_i - z - m)⁻²`. -/
+/-- **Spectral form of `M²`** (the public version): `tr (M^{(B)})² = Σ_i (v_i - z - m)⁻²`. -/
 theorem BAMB_trace_sq_eq_sum (d L : ℕ) [NeZero L] : ∀ (g : ℝ) (z m : ℂ), (z + m).im ≠ 0 →
     (BAMB d L g z m * BAMB d L g z m).trace = ∑ i, (((BAspec d L g i : ℂ) - (z + m))⁻¹) ^ 2 := by
   intro g z m hzm
@@ -143,7 +139,7 @@ theorem BAMB_trace_sq_eq_sum (d L : ℕ) [NeZero L] : ∀ (g : ℝ) (z m : ℂ),
         rw [sq]
         rfl
 
-/-- **`BAgapReal`, proved**: the stability gap on the real axis.  With `v_i = (g λ_i - E - m)⁻¹`, `ρ_i = |v_i|²`:
+/-- **`BAgapReal_holds`**: the stability gap on the real axis.  With `v_i = (g λ_i - E - m)⁻¹`, `ρ_i = |v_i|²`:
 `Im v_i = (Im m) ρ_i`, `Re v_i² = ρ_i - 2 (Im m)² ρ_i²`, `L^{-d} Σ ρ_i = 1` (the imaginary part of `(self_m)`), so
 `Re (1 - L^{-d} tr M²) = 2 (Im m)² L^{-d} Σ ρ_i² ≥ 2 (Im m)²` (`Σ (ρ_i - 1)² ≥ 0`). -/
 theorem BAgapReal_holds (d : ℕ) : BAgapReal d := by
@@ -223,9 +219,9 @@ theorem BAgapReal_holds (d : ℕ) : BAgapReal d := by
   nlinarith [sq_nonneg m.im]
 
 
-/-! ### 2.2 `BAzztE_inv` (proved) -/
+/-! ### 1.2 `BAzztE_inv_core` -/
 
-/-- **`BAzztE_inv`, proved** (the core: neither `3 ≤ L` nor `0 < g` is used). -/
+/-- **`BAzztE_inv_core`** (neither `3 ≤ L` nor `0 < g` is used). -/
 theorem BAzztE_inv_core (d L : ℕ) [NeZero L] (g τ E : ℝ) (m₀ : ℂ) (hτ0 : 0 < τ) (hτ1 : τ < 1)
     (hself : BASelf d L (Real.sqrt τ * g) (E : ℂ) m₀) :
     BAm d L g (ztOf m₀ E τ / (Real.sqrt τ : ℂ)) = (Real.sqrt τ : ℂ) * m₀ ∧
@@ -289,9 +285,9 @@ theorem BAzztE_inv_core (d L : ℕ) [NeZero L] (g τ E : ℝ) (m₀ : ℂ) (hτ0
   have hs2 : s ^ 2 = τ := by rw [sq]; exact hss
   linear_combination (-(E + (1 - τ) * m₀.re)) * hs2
 
-/-! ### 2.3 `BAmWindow` (proved): a one-step Newton-Kantorovich contraction at the coupling `g` of the solution
+/-! ### 1.3 `BAmWindow`: a one-step Newton-Kantorovich contraction at the coupling `g` of the solution
 
-The route of the dispatcher's F-d without the implicit function theorem: at `(g, E, m)` with `Im m = b ≥ κ`, the map
+The argument avoids the implicit function theorem: at `(g, E, m)` with `Im m = b ≥ κ`, the map
 `T(μ) = μ - F_{g'}(μ)/A`, `F_{g'}(μ) = μ - L^{-d} Σ_i (g' λ_i - E - μ)⁻¹`, `A = 1 - L^{-d} Σ_i (g λ_i - E - m)⁻²` (so `Re A ≥ 2 b²`:
 `BAgapReal`), contracts the closed ball `B(m, r)`, `r = 2 d (g - g') / κ⁴`, into itself when `g - g' ≤ κ⁹/(64 d)`; its fixed point is
 `m(E, g')` (`BASelf_unique`), `Im ≥ b - r ≥ κ/2`, `|m(E,g') - m| ≤ r`.  Constants `c₁ = min(1/2, κ⁹/(64 d Λ))`, `C = 2d/κ⁴`. -/
@@ -665,7 +661,7 @@ theorem BAwindow_step (d L : ℕ) [NeZero L] (hL : 3 ≤ L) (hd : 1 ≤ d) {g g'
   linarith
 
 
-/-- **`BAmWindow`, proved** (the coupling window; `c₁ = min(1/2, κ⁹/(64 d Λ))`, `C = 2d/κ⁴`): `BAwindow_step` at every `g' ∈ [√(1 - c₁) g, g]`
+/-- **`BAmWindow_holds`** (the coupling window; `c₁ = min(1/2, κ⁹/(64 d Λ))`, `C = 2d/κ⁴`): `BAwindow_step` at every `g' ∈ [√(1 - c₁) g, g]`
 (`g - g' ≤ (1 - √(1 - c₁)) g ≤ c₁ Λ ≤ κ⁹/(64 d)`), and the fixed point is `BAm d L g' E` by `BAm_real_eq_of_self`. -/
 theorem BAmWindow_holds (d : ℕ) (Λ κ : ℝ) : BAmWindow d Λ κ := by
   intro hd hΛ hκ
@@ -704,7 +700,7 @@ section Family
 
 variable {d : ℕ}
 
-/-- The window `[√(1 - c₁) g₀, g₀]` lies in the κ-bulk at the energy `E` (structural premise of the family pins). -/
+/-- The window `[√(1 - c₁) g₀, g₀]` lies in the κ-bulk at the energy `E`. -/
 def BAWinBulk (sz : Sizes d) (z : ℕ → ℂ) (c₁ κ : ℝ) : Prop :=
   ∀ (n : ℕ) (g' : ℝ),
     Real.sqrt (1 - c₁) * (Real.sqrt (BAt0 (z n) (BAm d (sz.L n) (sz.lam n) (z n))) * sz.lam n) ≤ g' →
@@ -719,9 +715,9 @@ def BAWinBulk_of_dom_stmt (d : ℕ) : Prop :=
       ∀ (ε : ℝ) (sz : Sizes d) (z : ℕ → ℂ), (∀ n, 0 < sz.lam n ∧ sz.lam n ≤ Λ) →
         (∀ n, BAdom d (sz.L n) (sz.size n) (sz.lam n) κ ε (z n)) → BAWinBulk sz z c₁ (κ / 2)
 
-/-! ### 3.2 `BAWinBulk_of_dom` (proved from `BAmWindow`) -/
+/-! ## 2. The window in the bulk: `BAWinBulk_of_dom` (from `BAmWindow`) -/
 
-/-- *Proved from `BAmWindow`.* The chain domain `BAdom κ` gives the window in the `κ/2`-bulk: `BAdom_real` (merged) puts
+/-- From `BAmWindow`: the chain domain `BAdom κ` gives the window in the `κ/2`-bulk: `BAdom_real` puts
 `(g₀, E, m₀)` in `BAReal d L g₀ κ`, and `BAmWindow` (hypothesis `hw`, discharged by `BAmWindow_holds` in `BAWinBulk_of_dom_holds`) moves `g₀` down to `g'`. -/
 theorem BAWinBulk_of_dom (d : ℕ) (hw : ∀ Λ κ : ℝ, BAmWindow d Λ κ) : BAWinBulk_of_dom_stmt d := by
   intro hd κ Λ hκ hΛ
@@ -745,8 +741,6 @@ theorem BAWinBulk_of_dom (d : ℕ) (hw : ∀ Λ κ : ℝ, BAmWindow d Λ κ) : B
 theorem BAWinBulk_of_dom_holds (d : ℕ) : BAWinBulk_of_dom_stmt d := BAWinBulk_of_dom d (BAmWindow_holds d)
 
 end Family
-
-/-! ### 7.2 The one-point sequence `(L, g) = (4, 10)` (interior gaps; the construction of the flow point of T2189) -/
 
 end RBM.BA
 

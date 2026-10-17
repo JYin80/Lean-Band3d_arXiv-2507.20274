@@ -11,23 +11,20 @@ import RBM3D.BA.KBase
 import RBM3D.BA.Ward
 
 /-!
-# Ticket T2486, targets 6-8: `(eq:Ward_typeP)` and `(y27kasdfg)` at the block Anderson carrier (U2-BA, part (b))
+# The Ward-type sums at the block Anderson carrier: `(eq:Ward_typeP)` and `(y27kasdfg)`
 
-The BA readings of the merged generic results of `Chain/B45Gen.lean` (U2b) at the BA tuple
-`(law, Flow, mk, T0) = (seqP ∘ withLam 0, BAFlow, baFMz, BAflowT0)`.  No merged file is edited.
+The block Anderson readings of the generic results of `Chain/B45Gen.lean` (Eq. (4.30) `eq:Ward_typeP` and Eq. (4.59)
+`y27kasdfg`) at the BA tuple `(law, Flow, mk, T0) = (seqP ∘ withLam 0, BAFlow, baFMz, BAflowT0)`.
 
-* **Target 6** `baZeroModeGen_kerSums`: `ZeroModeGen_KerSums (baFMz sz z) n` at every size index.  `S = 1`, so `Step2Kern_Mss * S` is
+* `baZeroModeGen_kerSums`: `ZeroModeGen_KerSums (baFMz sz z) n` at every size index.  `S = 1`, so `Step2Kern_Mss * S` is
   `BAMss` of `M^{(B)} = BAMB` (`Step2Kern_Mss_BA`), a translation invariant (`BAMB_shift`) and symmetric (`BAMB_symm`) matrix for all four
-  charge pairs; such a matrix has equal constant row and column sums.  `baB45Gen_facts`: `B45Gen_Facts` at the BA family with `C₆ = 1`:
-  the Ward class (`baZeroModeGen_wardCls`), the Ward pair (`DecayGenTw_baWardPair`), `Im m ≤ 1`, `KerSums`, and the row and column sums of
-  `thetaKer = Θ_BA M^{(σσ')}` (`Step2Kern_thetaKer_BA`): with `Q = M^{(σσ')}`, `|Q_ab| = BAK_ab` has unit row sums, so `‖Q‖_{∞→∞} ≤ 1`,
+  charge pairs; such a matrix has equal constant row and column sums.
+* `baB45Gen_facts`: `B45Gen_Facts` at the BA family with `C₆ = 1`: the Ward class (`baZeroModeGen_wardCls`), the Ward pair
+  (`DecayGenTw_baWardPair`), `Im m ≤ 1`, `KerSums`, and the row and column sums of `thetaKer = Θ_BA M^{(σσ')}`
+  (`Step2Kern_thetaKer_BA`): with `Q = M^{(σσ')}`, `|Q_ab| = BAK_ab` has unit row sums, so `‖Q‖_{∞→∞} ≤ 1`,
   `Y = ΘQ` solves `Y = Q + t Q Y` (`BATheta_resolvent`) and `‖Y‖ ≤ (1-t)⁻¹`; the column sums are `c (1 - t c)⁻¹` with `|c| ≤ 1`.
-  Every step reads `BAReal` only (no `0 < g₀`).
-* **Target 7** `baWardTypePgL_of`, `baB45gL_of`: `stWardTypePgL_of`, `stB45gL_of` at `baFMz`, with targets 1 and 6 and the Ward class.
-  Only `STGdecayWgL` (T1-BA), the times and `N⁻¹ ≤ 1 - t_n` (eventually) stay hypotheses.
-* **Target 8** `BAWardTypePPin`, `BAB45Pin` and `baWardTypePPin_holds`, `baB45Pin_holds` (every regime `R`): unconditional.  The generic
-  pins `stWardTypePPingL_of`, `stB45PingL_of` take `STKcalDecaygL` along the flow, which `baKcalDecay_holds` gives for `3 ≤ d`; for `d < 3`
-  the setting `STIngRgL` has the premise `3 ≤ d` itself, so the pin is vacuous there.
+
+Every step reads `BAReal` only (no `0 < g₀`).
 -/
 
 set_option linter.style.longLine false
@@ -41,7 +38,7 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Target 6: the kernel sums -/
+/-! ## 1. The kernel sums -/
 
 section KerSums
 
@@ -95,7 +92,7 @@ private theorem B45BA_X_eq (sz : Sizes d) (lam0 E : ℕ → ℝ) (κ : ℝ) (hκ
   change _ * (1 : Matrix (Zd d (sz.L n)) (Zd d (sz.L n)) ℂ) = _
   rw [mul_one]
 
-/-- **Target 6, `KerSums` at the BA carrier of one size index**: constant, equal row and column sums of `M^{(σσ')}`, all four charge pairs. -/
+/-- **`KerSums` at the BA carrier of one size index**: constant, equal row and column sums of `M^{(σσ')}`, all four charge pairs. -/
 private theorem B45BA_kerSums_at (sz : Sizes d) (lam0 E : ℕ → ℝ) (κ : ℝ) (hκ : 0 < κ) (n : ℕ)
     (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) : ZeroModeGen_KerSums (baFM sz lam0 E) n := by
   intro σ σ'
@@ -103,10 +100,10 @@ private theorem B45BA_kerSums_at (sz : Sizes d) (lam0 E : ℕ → ℝ) (κ : ℝ
   exact B45BA_sums_of_shift_symm _ (fun a b r => B45BA_Mss_shift _ _ _ _ σ σ' a b r)
     (fun a b => B45BA_Mss_symm _ _ _ _ σ σ' a b)
 
-/-- **Target 6, `baZeroModeGen_kerSums`** (`T2486_BAKerSums`; DECISIONS §286 (2)): `ZeroModeGen_KerSums (baFMz sz z) n` at every size
+/-- **`baZeroModeGen_kerSums`**: `ZeroModeGen_KerSums (baFMz sz z) n` at every size
 index, along every BA flow.  `S = 1`; `Step2Kern_Mss * S = BAMss` (`Step2Kern_Mss_BA`) is translation invariant and symmetric for the four
 charge pairs (`BAMB_shift`, `BAMB_symm`), hence has equal constant row and column sums.  The mixed pairs are `BAK` with sums `1`
-(`BAMss_pm_eq`, `BAK_row_sum`); this route covers the equal pairs by the same two lemmas. -/
+(`BAMss_pm_eq`, `BAK_row_sum`); the same two lemmas cover the equal pairs. -/
 theorem baZeroModeGen_kerSums (d : ℕ) :
     ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), 0 < κ → BAFlow sz κ ε 𝔠 𝔡 z →
       ∀ n : ℕ, ZeroModeGen_KerSums (baFMz sz z) n :=
@@ -115,7 +112,7 @@ theorem baZeroModeGen_kerSums (d : ℕ) :
 
 end KerSums
 
-/-! ## 2. Target 6: the row and column sums of `thetaKer` -/
+/-! ## 2. The row and column sums of `thetaKer` -/
 
 section ThetaSums
 
@@ -195,12 +192,12 @@ private theorem B45BA_col_thetaKer (sz : Sizes d) (lam0 E : ℕ → ℝ) (κ : �
 
 end ThetaSums
 
-/-! ## 3. Target 6: `B45Gen_Facts` at the BA family -/
+/-! ## 3. `B45Gen_Facts` at the BA family -/
 
 section Facts
 
-/-- **Target 6, `baB45Gen_facts`** (`T2486_BAB45Facts`; `C₆ = 1`): `B45Gen_Facts` at the BA family `(BAFlow, baFMz)`, every `d`.  The Ward class is
-`baZeroModeGen_wardCls` (target 2 (a)), the Ward pair `DecayGenTw_baWardPair`, `Im m ≤ 1` is `EMn2BA_mF_data`, `KerSums` is
+/-- **`baB45Gen_facts`** (`C₆ = 1`): `B45Gen_Facts` at the BA family `(BAFlow, baFMz)`, every `d`.  The Ward class is
+`baZeroModeGen_wardCls`, the Ward pair `DecayGenTw_baWardPair`, `Im m ≤ 1` is `EMn2BA_mF_data`, `KerSums` is
 `baZeroModeGen_kerSums`, and the sums of `thetaKer = Θ_BA M^{(σσ')}` are `B45BA_row_thetaKer`, `B45BA_col_thetaKer`. -/
 theorem baB45Gen_facts (d : ℕ) :
     B45Gen_Facts d (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) (fun sz z => baFMz sz z) := by
@@ -214,17 +211,6 @@ theorem baB45Gen_facts (d : ℕ) :
   · exact B45BA_col_thetaKer sz (BAflowLam0 sz z) (BAflowEs sz z) κ hκ n (BAflow_real κ ε 𝔠 𝔡 sz z hflow n) σ σ' ht0 ht1 b
 
 end Facts
-
-/-! ## 4. Target 7: `(eq:Ward_typeP)` and `(y27kasdfg)` per carrier -/
-
-/-! ## 5. Target 8: the two ingredient pins at the BA tuple -/
-
-/-! ## 6. Compiled nonempty instances (targets 6-8)
-
-`d = 3`, the preflight sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`), the spectral parameters `zSeq` with
-`flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` (`BA/FlowPins.lean:1214`), the windows `s ≡ 1/2 < t ≡ 2/3 ≤ BAflowT0` (`t0_sz0`,
-`BA/FlowPins.lean:1227`), `C_d = 1`.  Every deterministic premise is discharged; the inputs that stay hypotheses are other gates' pins:
-the Step 2 conclusions `STStep2ConclgL` / the decay `STGdecayWgL` (T1-BA) and `STLKgL` (the stage-L pin, consumed by the generic pins). -/
 
 end RBM.BA
 

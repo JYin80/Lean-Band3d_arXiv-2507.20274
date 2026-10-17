@@ -10,28 +10,25 @@ import RBM3D.Induction.ConArgDet
 import RBM3D.Induction.Split
 
 /-!
-# BA-S1: `lem_ConArg_BA` (`7_8:1956-1987`) in the event form `BAConArg''`
+# `lem_ConArg_BA` (Lemma 8.5) in the event form `BAConArg''`
 
-Ticket T2237 with Amend 1 (supervisor `2026-10-06-0255` §1.1-§1.3, DECISIONS §81).  Port of the
-band proof `RBM3D/Induction/ConArg.lean` (`conArg`, `stConArg_holds`, commit `8a8cfeb`) onto the
-block Anderson carrier.
+The block Anderson version of the continuity argument: the proof follows the band proof
+`RBM3D/Induction/ConArg.lean` (`conArg`) on the block Anderson carrier.
 
 * section 0: the event indicator `FlowFM.omegaC` of a carrier, the conjunct `BAConArgLoop''`, the
-  successor pin `BAConArg''` of `BAConArg'` (`FlowPins.lean:630`), and the hypothesis bundle
-  `BAConArgHyp`;
+  statement `BAConArg''` of Lemma 8.5 in the event form, and the hypothesis bundle `BAConArgHyp`;
 * section 1: the scalar layer (`|m| ≤ 1`, the bulk energy bound, the arithmetic of the shifted
   parameter `z̃ = √(t/s) z_s`);
 * section 2: the same-`ω` scaling `H_t(g₀) = √(t/s) H_s(g_s)` and the resolvent scaling;
 * section 3: the spectral layer (η-monotonicity and the Poisson-kernel comparison of
   `Im v^* G v`, the off-diagonal bound);
-* section 4: the recursion of the band proof (copied, generic in the measure), the BA scalar data
+* section 4: the recursion of the band proof (generic in the measure), the BA scalar data
   and the loop bookkeeping;
-* section 5: conjunct 1 (`baConArgLoop''_holds`); section 6: conjunct 2 (`baConArgVec_holds`) and
-  `BAimTrace_compare`; section 7: `baConArg''_holds`; section 8: compiled nonempty instances.
+* section 5: conjunct 1 (`baConArgLoop''_holds`); section 6: conjunct 2 (`baConArgVec_holds`);
+  section 7: `baConArg''_holds`; section 8: `BAConArgHyp` at explicit data.
 
-Paper: `paper/tex/7_8_light_weight.tex` (`7_8:line`), `lem_ConArg_BA` `:1956-1981`, its proof
-(exactly Lemma 7.1 of [RBSO1D]) `:1983-1985`.  Band source:
-`paper/tex/3_5_Loop_Hierarchy.tex:42-62`.
+Paper: Lemma 8.5 (`lem_ConArg_BA`) with (8.11)-(8.13); its proof is exactly the proof of Lemma 7.1 of [RBSO1D].  The
+band source is Lemma 3.2 (`lem_ConArg`).
 -/
 
 set_option linter.style.longLine false
@@ -50,23 +47,23 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
 /-! ## 0. The event form of `lem_ConArg_BA` -/
 
-/-- The indicator of `Ω_t = {‖G_t‖_max ≤ C₀}` over a flow carrier (the band's `STomegaC`, `Induction/Defs.lean:87`, is
+/-- The indicator of `Ω_t = {‖G_t‖_max ≤ C₀}` over a flow carrier (the band's `STomegaC` is
 the case `bandFM`). -/
 def FlowFM.omegaC {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (n : ℕ) (t C₀ : ℝ) (ω : sz.SeqΩ) : ℝ :=
   if ∀ x y : Idx d (sz.L n) (sz.W n), ‖C.G n t ω x y‖ ≤ C₀ then 1 else 0
 
-/-- `lem_ConArg_BA` (1) in the event form (T2237a): `1(Ω_t) max |𝓛^{(k)}_{t,σ,a}(z_t, g₀)| ≺
+/-- `lem_ConArg_BA` (1) in the event form: `1(Ω_t) max |𝓛^{(k)}_{t,σ,a}(z_t, g₀)| ≺
 ((η_s/η_t) W^{-d}B_{s,0})^{k-1}`, `Ω_t = {‖G_t‖_max ≤ C₀}`, under the block Anderson law `seqP (sz.withLam 0)`;
-the band's `STConArg` shape (`Induction/Defs.lean:334-345`), no factor `max_a tr(Im G_t E_a)`. -/
+the shape of the band statement `ConArgPin`. -/
 def BAConArgLoop'' {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (k : ℕ) (C₀ : ℝ) : Prop :=
   PrecL sz (Sizes.seqP (sz.withLam 0)) (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
     (fun n p ω => (baFMz sz z).omegaC n (t n) C₀ ω * ‖(baFMz sz z).L n (t n) p.1 p.2 ω‖)
     (fun n _ _ => ((etaOf (BAmF sz (BAlamS sz z s t) (BAflowEs sz z) n) (s n) /
           (baFMz sz z).eta n (t n)) * sz.Bctl n (s n)) ^ (k - 1))
 
-/-- **`lem_ConArg_BA`, event form** (`7_8:1956-1987`; supervisor `2026-10-06-0255` §1.2; DECISIONS §81): the
-hypotheses of `BAConArg'` (`FlowPins.lean:630-636`) verbatim; then, for every threshold `C₀ > 0`, `BAConArgLoop''`
-for every `k ≥ 2` and the vector part `BAConArgVec`.  Registry class: proved here (`baConArg''_holds`). -/
+/-- **`lem_ConArg_BA`, event form** (Lemma 8.5): the hypotheses of the lemma (a `BAFlow` datum, `ε₁ ≤ s ≤ t < 1`,
+`κ ≤ Im m` at the coupling `g_s`, and the loop bound at `s`); then, for every threshold `C₀ > 0`, `BAConArgLoop''`
+for every `k ≥ 2` and the vector part `BAConArgVec`.  It is proved in `baConArg''_holds`. -/
 def BAConArg'' (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 ε₁ : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → 0 < ε₁ →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -75,7 +72,7 @@ def BAConArg'' (d : ℕ) : Prop :=
         STLmaxgL (baFM sz (BAlamS sz z s t) (BAflowEs sz z)) (Sizes.seqP (sz.withLam 0)) s →
         ∀ C₀ : ℝ, 0 < C₀ → (∀ k : ℕ, 2 ≤ k → BAConArgLoop'' sz z s t k C₀) ∧ BAConArgVec sz z s t
 
-/-- The hypotheses of `BAConArg''`, as one conjunction (`FlowPins.lean:630-636`, verbatim; not a pin). -/
+/-- The hypotheses of `BAConArg''`, as one conjunction. -/
 def BAConArgHyp {d : ℕ} (κ ε 𝔡 ε₁ 𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) : Prop :=
   0 < κ ∧ 0 < ε ∧ 0 < 𝔡 ∧ 0 < ε₁ ∧ BAFlow sz κ ε 𝔠 𝔡 z ∧ (∀ n, ε₁ ≤ s n) ∧ (∀ n, s n ≤ t n) ∧
     (∀ n, t n < 1) ∧ (∀ n, κ ≤ (BAmF sz (BAlamS sz z s t) (BAflowEs sz z) n).im) ∧
@@ -83,8 +80,8 @@ def BAConArgHyp {d : ℕ} (κ ε 𝔡 ε₁ 𝔠 : ℝ) (sz : Sizes d) (z : ℕ 
 
 /-! ## 1. The scalar layer -/
 
-/-- **`|m| ≤ 1`** for every solution of `(self_m)` with `Im z ≥ 0` (`BAward_avg` and Cauchy-Schwarz,
-supervisor `2026-10-05-1806` §1.1): `|m|² ≤ L^{-d} Σ_a |M_{aa}|² ≤ L^{-d} Σ_{a,b} |M_{ba}|² = Im m / (Im m + Im z) ≤ 1`. -/
+/-- **`|m| ≤ 1`** for every solution of `(self_m)` with `Im z ≥ 0` (`BAward_avg` and Cauchy-Schwarz):
+`|m|² ≤ L^{-d} Σ_a |M_{aa}|² ≤ L^{-d} Σ_{a,b} |M_{ba}|² = Im m / (Im m + Im z) ≤ 1`. -/
 theorem BAself_norm_le_one :
     ∀ (d L : ℕ) [NeZero L] (g : ℝ) (z m : ℂ), 0 ≤ z.im → BASelf d L g z m → ‖m‖ ≤ 1 := by
   intro d L _ g z m hz hm
@@ -141,7 +138,7 @@ theorem BAenergy_le :
   rw [BAm_eq_zero_of_gt d L g E hlt] at h
   simp at h
 
-/-- **The shifted spectral parameter** (BA form of `ztTilde_arith`, `ConArgDet.lean:850`):
+/-- **The shifted spectral parameter** (BA form of `ztTilde_arith`):
 `z̃ = √(t/s) z_s(E, g_s)`; constants depend on `(c, κ, Λ)` only.  The fourth conjunct replaces the band's
 `η_t ≤ η_s` (false in general for BA: the couplings differ). -/
 theorem BAztTilde_arith :
@@ -239,7 +236,7 @@ theorem BAztTilde_arith :
 
 /-! ## 2. The same-`ω` scaling `H_t(g₀) = √(t/s) H_s(g_s)` and the resolvent scaling -/
 
-/-- **Same-`ω` scaling** (supervisor `2026-10-05-1806` §1.4): `H_t(g₀) = √(t/s) · H_s(g_s)` for `g_s = √(s/t) g₀`
+/-- **Same-`ω` scaling**: `H_t(g₀) = √(t/s) · H_s(g_s)` for `g_s = √(s/t) g₀`
 (`BAlamS`), with the same `ω` (`seqHflowBA`: `g₀Ψ + √u X(ω)`; `seqHflow_eq_smul`). -/
 theorem BAhflow_scale (d : ℕ) :
     ∀ (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (n : ℕ) (ω : sz.SeqΩ), 0 < s n → 0 < t n →
@@ -264,8 +261,8 @@ theorem BAhflow_scale (d : ℕ) :
     rw [← mul_assoc, h1', one_mul]
   · exact h2'.symm
 
-/-- `(c • A)⁻¹ = c⁻¹ • A⁻¹` for a nonzero scalar (no invertibility assumption on `A`).  Copy of the private
-`conArg_inv_smul` (`Induction/ConArg.lean:386`, `8a8cfeb`). -/
+/-- `(c • A)⁻¹ = c⁻¹ • A⁻¹` for a nonzero scalar (no invertibility assumption on `A`).  As the private
+`conArg_inv_smul` of `Induction/ConArg.lean`. -/
 private theorem ConArg_inv_smul {n : Type*} [Fintype n] [DecidableEq n] {c : ℂ} (hc : c ≠ 0)
     (A : Matrix n n ℂ) : (c • A)⁻¹ = c⁻¹ • A⁻¹ := by
   by_cases h : IsUnit A.det
@@ -278,7 +275,7 @@ private theorem ConArg_inv_smul {n : Type*} [Fintype n] [DecidableEq n] {c : ℂ
     rw [Matrix.nonsing_inv_apply_not_isUnit _ h2, Matrix.nonsing_inv_apply_not_isUnit _ h,
       smul_zero]
 
-/-- `G(cH, cz) = c⁻¹ G(H, z)`; copy of the private `conArg_green_smul_mul` (`Induction/ConArg.lean:400`). -/
+/-- `G(cH, cz) = c⁻¹ G(H, z)`; as the private `conArg_green_smul_mul` of `Induction/ConArg.lean`. -/
 private theorem ConArg_green_smul_mul {n : Type*} [Fintype n] [DecidableEq n] {c : ℂ} (hc : c ≠ 0)
     (H : Matrix n n ℂ) (z : ℂ) : green (c • H) (c * z) = c⁻¹ • green H z := by
   have hsub : c • H - (c * z) • (1 : Matrix n n ℂ) = c • (H - z • (1 : Matrix n n ℂ)) := by
@@ -287,7 +284,7 @@ private theorem ConArg_green_smul_mul {n : Type*} [Fintype n] [DecidableEq n] {c
   rw [hsub, ConArg_inv_smul hc]
 
 /-- **Resolvent scaling**: `(rH - rw)^{-1} = r^{-1}(H - w)^{-1}` for real `r ≠ 0`, both charges (the BA form
-of the band's private `conArg_Gres_smul_mul`, `Induction/ConArg.lean:409`). -/
+of the band's private `conArg_Gres_smul_mul`). -/
 theorem BAGres_smul :
     ∀ (ι : Type) [Fintype ι] [DecidableEq ι] (H : Matrix ι ι ℂ) (w : ℂ) (σ : Bool) (r : ℝ), r ≠ 0 →
       Gres ((r : ℂ) • H) ((r : ℂ) * w) σ = ((r : ℂ))⁻¹ • Gres H w σ := by
@@ -301,7 +298,7 @@ theorem BAGres_smul :
     rw [map_mul, Complex.conj_ofReal]
     exact ConArg_green_smul_mul hrC H _
 
-/-- `H_u(g)` of the block Anderson flow is Hermitian (no merged lemma: `PsiI_isHermitian`,
+/-- `H_u(g)` of the block Anderson flow is Hermitian (from `PsiI_isHermitian` and
 `seqHflow_isHermitian`). -/
 private theorem ConArg_seqHflowBA_isHermitian {d : ℕ} (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ)
     (ω : sz.SeqΩ) : (sz.seqHflowBA lam0 n u ω).IsHermitian := by
@@ -311,8 +308,8 @@ private theorem ConArg_seqHflowBA_isHermitian {d : ℕ} (sz : Sizes d) (lam0 : �
   rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
     show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _]
 
-/-- The word of a list of `(σ, a)` pairs scales by `c⁻¹` per factor; copy of the private
-`conArg_foldr_smul_mul` (`Induction/ConArg.lean:422`). -/
+/-- The word of a list of `(σ, a)` pairs scales by `c⁻¹` per factor; as the private
+`conArg_foldr_smul_mul` of `Induction/ConArg.lean`. -/
 private theorem ConArg_foldr_smul_mul {d L W : ℕ} [NeZero L] {r : ℝ} (hr : (r : ℂ) ≠ 0)
     (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ) (l : List (Bool × Zd d L)) :
     l.foldr (fun p M => Gres ((r : ℂ) • H) ((r : ℂ) * z) p.1 * Eblk d L W p.2 * M) 1
@@ -324,7 +321,7 @@ private theorem ConArg_foldr_smul_mul {d L W : ℕ} [NeZero L] {r : ℝ} (hr : (
     rw [ih, BAGres_smul _ H z p.1 r (by exact_mod_cast hr), smul_mul_assoc, smul_mul_assoc, mul_smul_comm,
       smul_smul, pow_succ']
 
-/-- `L(cH, cz) = c⁻ⁿ L(H, z)`; copy of the private `conArg_loopL_smul_mul` (`Induction/ConArg.lean:435`). -/
+/-- `L(cH, cz) = c⁻ⁿ L(H, z)`; as the private `conArg_loopL_smul_mul` of `Induction/ConArg.lean`. -/
 private theorem ConArg_loopL_smul_mul {d L W : ℕ} [NeZero L] {r : ℝ} (hr : (r : ℂ) ≠ 0)
     (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ) (I : Loop.LoopIdx (Zd d L)) :
     loopL d L W ((r : ℂ) • H) ((r : ℂ) * z) I
@@ -332,10 +329,10 @@ private theorem ConArg_loopL_smul_mul {d L W : ℕ} [NeZero L] {r : ℝ} (hr : (
   unfold loopL
   rw [ConArg_foldr_smul_mul hr, Matrix.trace_smul, smul_eq_mul]
 
-/-- **(6.1) pointwise, as a bound on `loopMax`, BA form**: for `0 < s ≤ t`, every loop of
+/-- **Pointwise, as a bound on `loopMax`, BA form**: for `0 < s ≤ t`, every loop of
 `(H_t(g₀), z̃)`, `z̃ = √(t/s) z_s`, is `(s/t)^{k/2}` times the loop of `(H_s(g_s), z_s)` at the same sample point
-(`BAhflow_scale`), hence `max|L̃^{(k)}| ≤ max|L_s^{(k)}|`.  Port of the private `conArg_loopMax_tilde_le`
-(`Induction/ConArg.lean:448`). -/
+(`BAhflow_scale`), hence `max|L̃^{(k)}| ≤ max|L_s^{(k)}|`.  BA form of the private `conArg_loopMax_tilde_le`
+of `Induction/ConArg.lean`. -/
 private theorem ConArg_loopMax_tilde_le {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (n : ℕ)
     (h₁ : 0 < s n) (h₁₂ : s n ≤ t n) (ω : sz.SeqΩ) (zs : ℂ) (k : ℕ) :
     Ind.loopMax d (sz.L n) (sz.W n)
@@ -371,7 +368,7 @@ private theorem ConArg_loopMax_tilde_le {d : ℕ} (sz : Sizes d) (z : ℕ → �
 
 For a Hermitian `H` with eigenvalues `λ_l` and `c = U^* v` (`U` the eigenvector unitary),
 `v^* G(x+iy) v = Σ_l |c_l|² / (λ_l - x - iy)`, so `Im v^* G v = y Σ_l |c_l|² / ((λ_l-x)²+y²)`.  The private
-`ConArg_inv_spectral` is the copy of `MFixedPoint_inv_spectral` (`MFixedPoint.lean:614`) at `g = 1`. -/
+`ConArg_inv_spectral` is `MFixedPoint_inv_spectral` (`BA/MFixedPoint.lean`) at `g = 1`. -/
 
 private theorem ConArg_inv_spectral {n : Type*} [Fintype n] [DecidableEq n] {H : Matrix n n ℂ}
     (hH : H.IsHermitian) {w : ℂ} (hw : ∀ l, (hH.eigenvalues l : ℂ) ≠ w) :
@@ -495,7 +492,7 @@ theorem BAimG_eta_mono :
     exact div_le_div_of_nonneg_left (sq_nonneg _) (hpos l y hy)
       (by nlinarith [pow_le_pow_left₀ hy.le hyy' 2])
 
-/-- **Poisson-kernel comparison** (1806 §1.4): `Im G_vv(x+iy) ≤ (2 + 2C²) Im G_vv(x'+iy)` for `|x - x'| ≤ C y`. -/
+/-- **Poisson-kernel comparison**: `Im G_vv(x+iy) ≤ (2 + 2C²) Im G_vv(x'+iy)` for `|x - x'| ≤ C y`. -/
 theorem BAimG_poisson :
     ∀ (ι : Type) [Fintype ι] [DecidableEq ι] (H : Matrix ι ι ℂ) (v : ι → ℂ) (x x' y C : ℝ),
       H.IsHermitian → 0 < y → 0 ≤ C → |x - x'| ≤ C * y →
@@ -545,7 +542,7 @@ private theorem ConArg_imG_div {ι : Type*} [Fintype ι] [DecidableEq ι] {H : M
   rw [ConArg_normsq_e, div_eq_mul_one_div]
 
 /-- **The off-diagonal comparison** (resolvent identity `G(a) - G(b) = (a - b) G(a) G(b)` and Cauchy-Schwarz, in
-the eigenbasis; [RBSO1D] L7.1 (2)): for `Im a, Im b > 0`,
+the eigenbasis; [RBSO1D, Lemma 7.1 (2)]): for `Im a, Im b > 0`,
 `|v^*G(a)w - v^*G(b)w| ≤ |a - b| (Im G(a)_vv / Im a)^{1/2} (Im G(b)_ww / Im b)^{1/2}`. -/
 private theorem ConArg_offdiag {ι : Type*} [Fintype ι] [DecidableEq ι] {H : Matrix ι ι ℂ}
     (hH : H.IsHermitian) (v w : ι → ℂ) {a b : ℂ} (ha : 0 < a.im) (hb : 0 < b.im) :
@@ -664,19 +661,16 @@ private theorem ConArg_diag_both {ι : Type} [Fintype ι] [DecidableEq ι] {H : 
       _ ≤ (2 + 2 * D ^ 2) * ((E₁ + E₂) * g a.re a.im) := mul_le_mul_of_nonneg_left key.2 hK
       _ = (E₁ + E₂) * ((2 + 2 * D ^ 2) * g a.re a.im) := by ring
 
-/-! ## 4. The recursion of §6 under `PerTimeDomAt` (copied from the band file) and the loop bookkeeping
+/-! ## 4. The recursion of the continuity argument under `PerTimeDomAt` (as in the band file) and the loop bookkeeping
 
-Copied, with the prefix `ConArg_`, from the private helpers of `RBM3D/Induction/ConArg.lean` at `8a8cfeb`: the
-recursion `ConArg_continuity_recursion` (`:65-376`, generic in the measure `P`; port of RBM1D
-`StochDom.continuity_recursion`, `ContinuityAssembly.lean:697`), the base case (`:485-554`), the parameter count
-(`:576-591`) and `a₁⁻¹ ≤ size` (`:621-645`). -/
+The private helpers of `RBM3D/Induction/ConArg.lean` are re-proved here with the prefix ConArg_: the
+recursion `ConArg_continuity_recursion` (generic in the measure `P`), the base case, the parameter count and `a₁⁻¹ ≤ size`. -/
 
 section Recursion
 
 open RBM.Ind.PerTimeCalc.PerTime
 
-/-- `(x^{pj-1})^{1/p} ≤ x^j M^{1/p}` for `x > 0`, `x⁻¹ ≤ M`: the loss `M_{t₁}^{1/p}` of (6.10).
-Port of RBM1D `rpow_pow_mul_sub_one_le` (`ContinuityAssembly.lean:646`). -/
+/-- `(x^{pj-1})^{1/p} ≤ x^j M^{1/p}` for `x > 0`, `x⁻¹ ≤ M`: the loss `M_{t₁}^{1/p}` of the recursion. -/
 private theorem ConArg_rpow_pow_mul_sub_one_le {x M : ℝ} (hx : 0 < x) (hM : x⁻¹ ≤ M) {p j : ℕ}
     (hp : 1 ≤ p) (hj : 1 ≤ j) :
     (x ^ (p * j - 1)) ^ (1 / (p : ℝ)) ≤ x ^ j * M ^ (1 / (p : ℝ)) := by
@@ -693,8 +687,7 @@ private theorem ConArg_rpow_pow_mul_sub_one_le {x M : ℝ} (hx : 0 < x) (hM : x�
 
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
 
-/-- Multiplying both sides of `≺` by a deterministic non-negative factor.  Port of RBM1D
-`StochDom.det_mul_of` (`ContinuityAssembly.lean:663`). -/
+/-- Multiplying both sides of `≺` by a deterministic non-negative factor. -/
 private theorem ConArg_det_mul (hsize : Tendsto size atTop atTop) {f : ℕ → ℝ}
     (hf : ∀ N, 0 ≤ f N) {ξ ζ : ∀ N, U N → Ω → ℝ} (hξ : ∀ N u ω, 0 ≤ ξ N u ω)
     (h : PerTimeDomAt P size ξ ζ) :
@@ -708,8 +701,7 @@ private theorem ConArg_of_le_left {ξ ξ' ζ : ∀ N, U N → Ω → ℝ}
     PerTimeDomAt P size ξ ζ :=
   stochDom_of_le_left_eventually (Eventually.of_forall hle) h
 
-/-- **Odd loops from even ones** ((6.4) under `≺`).  Port of RBM1D `StochDom.odd_of_even`
-(`ContinuityAssembly.lean:670`). -/
+/-- **Odd loops from even ones** (under `≺`). -/
 private theorem ConArg_odd_of_even (hsize : Tendsto size atTop atTop)
     {Y : ℕ → ∀ N, U N → Ω → ℝ} {a : ℕ → ℝ} (ha : ∀ N, 0 ≤ a N)
     (hY0 : ∀ n N u ω, 0 ≤ Y n N u ω) {l : ℕ} (hl : 1 ≤ l)
@@ -727,10 +719,9 @@ private theorem ConArg_odd_of_even (hsize : Tendsto size atTop atTop)
   refine ConArg_of_le_left (fun N u ω => Real.le_sqrt_of_sq_le (hodd N u ω)) ?_
   simpa only [e] using hs
 
-/-- **The induction of §6, abstractly, per time.**  Port of RBM1D
-`StochDom.continuity_recursion` (`ContinuityAssembly.lean:697`) with `N ↦ size N`:
-for deterministic `0 < a₁ ≤ a`, `K ≥ 0`, `K a₁ ≤ C a`, `a₁⁻¹ ≤ size`, and families `Y_n, T_n ≥ 0`
-with `T_n ≺ a₁^{n-1}`, `Y_1 ≤ B`, (6.4) and (6.11), one has `Y_n ≺ a^{n-1}` for every `n ≥ 1`. -/
+/-- **The induction of the continuity argument, abstractly, per time.**
+For deterministic `0 < a₁ ≤ a`, `K ≥ 0`, `K a₁ ≤ C a`, `a₁⁻¹ ≤ size`, and families `Y_n, T_n ≥ 0`
+with `T_n ≺ a₁^{n-1}`, `Y_1 ≤ B`, the bound for odd loops and the loop recursion, one has `Y_n ≺ a^{n-1}` for every `n ≥ 1`. -/
 private theorem ConArg_continuity_recursion (hsize : Tendsto size atTop atTop)
     {Y T : ℕ → ∀ N, U N → Ω → ℝ} {a a1 K : ℕ → ℝ} {C B : ℝ}
     (hY0 : ∀ n N u ω, 0 ≤ Y n N u ω) (hT0 : ∀ n N u ω, 0 ≤ T n N u ω)
@@ -783,7 +774,7 @@ private theorem ConArg_continuity_recursion (hsize : Tendsto size atTop atTop)
     have hev : ∀ᶠ N : ℕ in atTop, 1 ≤ (size N : ℝ) ^ r ∧ (a1 N)⁻¹ ≤ (size N : ℝ) := by
       filter_upwards [hN, hsize.eventually (eventually_ge_atTop 1)] with N hN1 hN2
       exact ⟨Real.one_le_rpow (by exact_mod_cast hN2) hr0.le, hN1⟩
-    -- (R1): the `G̃` loop of length `2m`
+    -- the `G̃` loop of length `2m`
     have hR1 : PerTimeDomAt P size (T (2 * (k + 1)))
         (fun N _ _ => A N * (size N : ℝ) ^ r) := by
       refine mono_right_eventually (hT (2 * (k + 1)) (by omega)) ?_
@@ -812,7 +803,7 @@ private theorem ConArg_continuity_recursion (hsize : Tendsto size atTop atTop)
             mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (hK N)
               (pow_nonneg (ha1 N).le _)) (hNr N)
         _ = C * a1 N ^ (j - 1) * a N * (size N : ℝ) ^ r := by ring
-    -- (R2): the terms `l < m - 1`
+    -- the terms `l < m - 1`
     have hR2 : PerTimeDomAt P size (fun N u ω => ∑ l ∈ Finset.range k,
           K N * (Y (2 * l + 1) N u ω * T (p * (2 * (k + 1 - l) - 1)) N u ω ^ r))
         (fun N _ _ => ∑ l ∈ Finset.range k, C * A N * (size N : ℝ) ^ r) := by
@@ -837,14 +828,14 @@ private theorem ConArg_continuity_recursion (hsize : Tendsto size atTop atTop)
               simp only [hA]
               rw [show 2 * k + 1 = 2 * l + 2 * (k - l) + 1 by omega, pow_succ, pow_add]
               ring
-    -- (R3): the term `l = m - 1`
+    -- the term `l = m - 1`
     have hR3 : PerTimeDomAt P size (fun N u ω => K N * (Y (2 * k + 1) N u ω * T p N u ω ^ r))
         (fun N u ω => B * C * A N * (size N : ℝ) ^ r
           + C * (size N : ℝ) ^ r * Real.sqrt (A N * Y (2 * (k + 1)) N u ω)) := by
       have hT1 := hTr 1 le_rfl
       simp only [mul_one, Nat.sub_self, pow_zero] at hT1
       rcases Nat.eq_zero_or_pos k with rfl | hk0
-      · -- `m = 1`: the base case (5.6)
+      · -- `m = 1`: the base case
         have h1 := ConArg_det_mul (f := fun _ => B) hsize (fun _ => hB)
           (fun N u ω => mul_nonneg (hK0 N) (Real.rpow_nonneg (hT0 p N u ω) r)) hT1
         refine mono_right_eventually (ConArg_of_le_left (fun N u ω => ?_) h1) ?_
@@ -859,7 +850,7 @@ private theorem ConArg_continuity_recursion (hsize : Tendsto size atTop atTop)
           have h2 : 0 ≤ C * a N * (size N : ℝ) ^ r :=
             mul_nonneg (mul_nonneg hC (ha0 N).le) (hNr N)
           linarith
-      · -- `m > 1`: (6.4) and the induction hypothesis for the `(2m-2)`-loops
+      · -- `m > 1`: the odd-from-even bound and the induction hypothesis for the `(2m-2)`-loops
         have hIH := sqrt_of (hY0 _) (fun N _ _ => pow_nonneg (ha0 N).le _)
           (ih k (by omega) hk0)
         have h1 := perTimeCalc_mul hsize (fun N u ω => Real.sqrt_nonneg _)
@@ -893,7 +884,7 @@ private theorem ConArg_continuity_recursion (hsize : Tendsto size atTop atTop)
           have : 0 ≤ B * C * A N * (size N : ℝ) ^ r :=
             mul_nonneg (mul_nonneg (mul_nonneg hB hC) (hA0 N)) (hNr N)
           nlinarith [this]
-    -- (6.13): assemble
+    -- assemble
     have hsum : ∀ N u ω, Y (2 * (k + 1)) N u ω ≤ ((k : ℝ) + 2) * ((T (2 * (k + 1)) N u ω
         + ∑ l ∈ Finset.range k,
           K N * (Y (2 * l + 1) N u ω * T (p * (2 * (k + 1 - l) - 1)) N u ω ^ r))
@@ -989,8 +980,7 @@ section BaseCase
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
 /-- `|⟨M E_b⟩| ≤ K` if every diagonal entry of `M` has modulus `≤ K` (`E_b = diag(bw b)` has total
-weight `1`, `sum_bw`).  RBM2D `ConArg.lean:505` (`ConArg_norm_trace_mul_Eblk_le_of_diag`); RBM1D
-`norm_trace_mul_Eblk_le_of_diag` (`ContinuityAssembly.lean:956`). -/
+weight `1`, `sum_bw`). -/
 private theorem ConArg_norm_trace_mul_Eblk_le_of_diag
     (M : Matrix (Vtx d L W) (Vtx d L W) ℂ) (b : Zd d L) {K : ℝ}
     (hM : ∀ p, ‖M p p‖ ≤ K) : ‖trace (M * Eblk d L W b)‖ ≤ K := by
@@ -1004,7 +994,7 @@ private theorem ConArg_norm_trace_mul_Eblk_le_of_diag
     _ = K := by rw [← Finset.mul_sum, Ind.sum_bw, mul_one]
 
 omit [NeZero W] in
-/-- `G(-) = G(+)ᴴ` for Hermitian `H` (copy of the private `gres_false` of `Green/Pins.lean:367`). -/
+/-- `G(-) = G(+)ᴴ` for Hermitian `H` (as the private `gres_false` of `Green/Pins.lean`). -/
 private theorem ConArg_Gres_false {H : Matrix (Vtx d L W) (Vtx d L W) ℂ} (hH : H.IsHermitian)
     (z : ℂ) : Gres H z false = (Gres H z true)ᴴ := by
   unfold Gres
@@ -1015,9 +1005,7 @@ private theorem ConArg_Gres_false {H : Matrix (Vtx d L W) (Vtx d L W) ℂ} (hH :
   rw [Matrix.conjTranspose_sub, Matrix.conjTranspose_smul, Matrix.conjTranspose_one, hH.eq]
   rfl
 
-/-- **The base case (5.6)**: `|G_{ii}| ≤ K` for all `i` gives `max|L^{(1)}| ≤ K`.  RBM2D
-`ConArg.lean:517` (`ConArg_loopMax_one_le`); RBM1D `loopMax_one_le`
-(`ContinuityAssembly.lean:969`). -/
+/-- **The base case**: `|G_{ii}| ≤ K` for all `i` gives `max|L^{(1)}| ≤ K`. -/
 private theorem ConArg_loopMax_one_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ} {z : ℂ}
     (hH : H.IsHermitian) {K : ℝ} (hK : ∀ i, ‖Gres H z true i i‖ ≤ K) :
     Ind.loopMax d L W H z 1 ≤ K := by
@@ -1035,8 +1023,8 @@ private theorem ConArg_loopMax_one_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ} {
   · exact hK p
 
 /-- The diagonal of the block-indexed Green function is the diagonal of the fine one: `blockMat` is
-a relabelling by the equivalence `splitEquiv` (copy of the private `gres_blockMat_true` of
-`Green/Pins.lean:350`). -/
+a relabelling by the equivalence `splitEquiv` (as the private `gres_blockMat_true` of
+`Green/Pins.lean`). -/
 private theorem ConArg_gres_blockMat_true (H : Matrix (Idx d L W) (Idx d L W) ℂ)
     (z : ℂ) (x y : Vtx d L W) :
     Gres (blockMat d L W H) z true x y =
@@ -1104,8 +1092,8 @@ private theorem ConArg_Bctl_inv_le {d : ℕ} (sz : Sizes d) (n : ℕ) {s : ℝ} 
 imaginary part is positive; both have modulus `≤ 1` (`BAself_norm_le_one`); the energies `E_n` are bounded by
 `Λ := 2 + 2d (𝔡⁻¹ + Σ_{i<n₀} |g_i|)` for all `n` (`BAenergy_le`, `(eq:WO)` from `n₀` on). -/
 
-/-- `Im z_n > 0` on the chain domain (`N^{-1+ε} ≤ Im z_n`); copy of the private `FlowPins_zim_pos`
-(`FlowPins.lean:934`). -/
+/-- `Im z_n > 0` on the chain domain (`N^{-1+ε} ≤ Im z_n`); as the private `FlowPins_zim_pos`
+of `FlowPins.lean`. -/
 private theorem ConArg_zim_pos {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) : 0 < (z n).im := by
   have h1 := (h.2 n).2.1
@@ -1184,10 +1172,10 @@ private theorem ConArg_energy_bound {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (sz : Size
   calc |BAflowEs sz z n| ≤ 2 + 2 * d * |BAlamS sz z s t n| := hen
     _ ≤ 2 + 2 * d * L₀ := by nlinarith [hlam n, hgs]
 
-/-! ## 5. Conjunct 1: `baConArgLoop''_holds` (the port of `conArg`, `Induction/ConArg.lean:673-789`) -/
+/-! ## 5. Conjunct 1: `baConArgLoop''_holds` (the BA form of `conArg` of `Induction/ConArg.lean`) -/
 
 /-- `‖𝓛^{(k)}_{t,σ,a}‖` of the BA carrier is the norm of the list-based loop `loopL` of the block matrix
-(`conArg_norm_Lloop_eq`, `Induction/ConArg.lean:559`). -/
+(`conArg_norm_Lloop_eq`). -/
 private theorem ConArg_norm_L_eq {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (t : ℝ) {k : ℕ}
     (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ) :
     ‖(baFM sz lam0 E).L n t σ a ω‖ =
@@ -1208,7 +1196,7 @@ private theorem ConArg_norm_L_le_loopMax {d : ℕ} (sz : Sizes d) (lam0 E : ℕ 
 
 /-- A bound `≺` for all loops of length `k` (parameter `(σ, a)`, union inside `μ`) gives the per-time bound for
 their maximum `loopMax` (the event `{max > size^τ ζ}` is inside the union event).  The BA form of the private
-`conArg_loopMax_perTime` (`Induction/ConArg.lean:597`), without the cardinality step. -/
+`conArg_loopMax_perTime`, without the cardinality step. -/
 private theorem ConArg_loopMax_perTime {d : ℕ} (sz : Sizes d) (μ : Measure sz.SeqΩ) (lam0 E : ℕ → ℝ)
     (s : ℕ → ℝ) {k : ℕ}
     (h : PrecL sz μ (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
@@ -1229,8 +1217,8 @@ private theorem ConArg_loopMax_perTime {d : ℕ} (sz : Sizes d) (μ : Measure sz
   rw [ConArg_norm_L_eq]
   exact hx
 
-/-- **Conjunct 1 of `BAConArg''`** (`(res_lo_bo_eta_BA)`, `7_8:1965`, in the event form): the port of the band proof
-`conArg` (`Induction/ConArg.lean:673`) with `a₁ = Bctl_s`, `a = a₁ η_s/η_t`, `a' = M a`, `M = max(1, C)`
+/-- **Conjunct 1 of `BAConArg''`** ((8.11) `res_lo_bo_eta_BA`, in the event form): the BA form of the band proof
+`conArg` of `Induction/ConArg.lean` with `a₁ = Bctl_s`, `a = a₁ η_s/η_t`, `a' = M a`, `M = max(1, C)`
 (`C = C(ε₁, κ, Λ)` of `BAztTilde_arith`), `K = |z_t - z̃|²/(Im z_t Im z̃) ≤ C η_s/η_t`, `Y_j = 1_{Ω_t} max|𝓛_t^{(j)}(g₀)|`,
 `T_j = max|𝓛̃^{(j)}|` at the shifted parameter `z̃ = √(t/s) z_s`, whose loops are `(s/t)^{j/2} ≤ 1` times those of
 `(H_s(g_s), z_s)` (`BAhflow_scale`, `BAGres_smul`), so `T_j ≺ a₁^{j-1}` by `STLmaxgL` at `(g_s, s)`. -/
@@ -1494,7 +1482,7 @@ private theorem ConArg_r_bounds {c s t : ℝ} (hc : 0 < c) (hcs : c ≤ s) (hst 
     nlinarith
   nlinarith
 
-/-- **The scaling setup at one `(n, ω)`** (shared by conjunct 2 and `BAimTrace_compare`): with `r = √(t/s)` and
+/-- **The scaling setup at one `(n, ω)`** (used by conjunct 2): with `r = √(t/s)` and
 `a = r⁻¹ z_t`, `G_t(z_t; H_t(g₀)) = r⁻¹ G(a; H_s(g_s))` (`BAhflow_scale`, `BAGres_smul`), `η_t = r Im a`, and
 `|a - z_s|² ≤ C_a Im z_s²` (from `|z_t - z̃|² ≤ C_a η_s²`, `r ≥ 1`). -/
 private theorem ConArg_setup {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (n : ℕ) (ω : sz.SeqΩ)
@@ -1629,7 +1617,7 @@ private theorem ConArg_eta_data {d : ℕ} {κ ε 𝔠 𝔡 ε₁ : ℝ} (sz : Si
   · exact mul_pos (by linarith [ht n]) hm0self.1
   · exact mul_pos (by linarith [hs1 n]) (lt_of_lt_of_le hκ (hκm n))
 
-/-- **Conjunct 2 of `BAConArg''`** (`(eq:ImGs)` ⇒ `(eq:ImGt)`, `7_8:1976-1979`), deterministic on the event of the
+/-- **Conjunct 2 of `BAConArg''`** ((8.12) `eq:ImGs` ⇒ (8.13) `eq:ImGt`), deterministic on the event of the
 premise: `G_t(z_t; H_t(g₀)) = √(s/t) G(a; H_s(g_s))`, `a = √(s/t) z_t` (`ConArg_vec_at`); the event of the premise
 is contained in the event of the conclusion with `C₁ = A₁ + K₀ C_a + Z + 1`, so `HighProbAt.mono` applies. -/
 theorem baConArgVec_holds (d : ℕ) :
@@ -1662,9 +1650,9 @@ theorem baConArgVec_holds (d : ℕ) :
 
 /-! ## 7. `lem_ConArg_BA` in the event form -/
 
-/-- **`lem_ConArg_BA` (`7_8:1956-1987`), event form, for every `d`** (target 1 of T2237 with Amend 1): conjunct 1
-`baConArgLoop''_holds` and conjunct 2 `baConArgVec_holds`.  The merged pin `BAConArg'` (the `Φ_t` form) is not proved:
-it needs a lower bound on `Φ_s` that the premises do not give (T2237a). -/
+/-- **`lem_ConArg_BA` (Lemma 8.5), event form, for every `d`**: conjunct 1
+`baConArgLoop''_holds` and conjunct 2 `baConArgVec_holds`.  The `Φ_t` form of the statement is not proved here:
+it needs a lower bound on `Φ_s` that the premises do not give. -/
 theorem baConArg''_holds (d : ℕ) : BAConArg'' d := by
   intro κ ε 𝔡 ε₁ hκ hε h𝔡 hε₁ 𝔠 sz z hflow s t hs hst ht hκm hL C₀ hC₀
   have hyp : BAConArgHyp κ ε 𝔡 ε₁ 𝔠 sz z s t := ⟨hκ, hε, h𝔡, hε₁, hflow, hs, hst, ht, hκm, hL⟩
@@ -1673,14 +1661,14 @@ theorem baConArg''_holds (d : ℕ) : BAConArg'' d := by
 
 end RBM.BA
 
-/-! ## 8. Compiled nonempty instances (`RBM.BA.ConArgInst`)
+/-! ## 8. The hypothesis bundle at explicit data (`RBM.BA.ConArgInst`)
 
-The size data are the merged preflight sequence `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `g_n = (2(n+1))^{-6}`;
+The size data are the sequence `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `g_n = (2(n+1))^{-6}`;
 `n = 0`: `L = 4`, `W = 32`, `g = 1/64`, `N = 2097152`), the spectral parameters `zSeq` (`z_S(L_n, g_n)`,
 `11/30 ≤ Im z_n ≤ 7/10`, `BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq` is `flow_sz0`), `κ = ε₁ = 1/2`,
 `ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `s ≡ t ≡ 1/2` (so `κ ≤ Im m(E, g_s)` is `inst_premise_diag`); every deterministic hypothesis
-is discharged.  What stays a hypothesis of an instance is the loop bound `(eq:loopbound_s)` at `s`
-(`STLmaxgL` at the carrier of `g_s`: the BA chain, owed).  The `s < t` instances are BA-S3's (`sz0` has `t₀ ≥ 2/3`). -/
+is discharged.  The loop bound (3.6) `eq:loopbound_s` at `s` (`STLmaxgL` at the carrier of `g_s`) remains a hypothesis of
+`inst_BAConArgHyp`.  Since `sz0` has `t₀ ≥ 2/3`, data with `s < t` are not taken here. -/
 
 namespace RBM.BA.ConArgInst
 

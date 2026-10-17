@@ -16,18 +16,12 @@ import RBM3D.BA.Ward
 import RBM3D.BA.KBase
 
 /-!
-# The block Anderson readings of T4s2's outputs (BA-T row T5-BA (b), ticket T2492)
+# The initial loops of the block Anderson flow
 
-The BA instances of the pin `GridGoodNgL`, of the envelope of the grid drift, of the Azuma proxies and of the initial membership of
-`GoodSetNg` (supervisor 2351 T4S2-C1).  No merged file is edited.
-
-* §1 target 8: `baGridGood_of` (the four T2486 (a) facts as hypotheses of exact type) and the closure `baGridGood_holds`.
-* §2 target 9: the envelope `baGridDrift_envelope` (a private copy of `gridDriftNg_envelope` taking the drift eventually, F1).
-* §3 target 10: the Azuma and `Y` readings.
-* §4 target 7: the initial membership `baGoodSetNg_init`.
-* §5 compiled nonempty instances at `d = 3`, `sz0`, `zSeq`, `flow_sz0`.
-
-Every helper is `private` or prefixed `GridGoodBA_`.
+At `s n = 0` the grid state is `H_0 = g₀ Ψ`, `z_0 = E + m`, so the Green factors are `M(σ) ⊗ I_{W^d}` and the loops
+are the initial loops `𝓛_0 = BAMLoop`.  This file proves `G_0 = M` at the BA datum, `𝓛_0 = BAMLoop` on the loops of length
+`j ≥ 1`, and that `BAMLoop` of a one-loop is `m(σ)`; they are used (through `open private`) in `BA/MainIndOutBA.lean`.
+The names of the private helpers begin with GridGoodBA_.
 -/
 
 set_option linter.style.longLine false
@@ -47,29 +41,11 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Target 8: `GridGoodNgL` at BA -/
-
-/-! ## 2. Target 9: the envelope with the eventual drift (finding F1) -/
-
-/-! ## 3. Target 10: the Azuma and `Y` readings at BA -/
-
-/-! ## 4. Target 7: the initial membership `baGoodSetNg_init`
-
-At `s n = 0` the grid state is `H_0 = g₀ Ψ` (`azumaProxy_Hpath_zerog`) and `u_0 = 0`, `z_0 = E + m`, so `G_0 = M = M^{(B)} ⊗ I` and the
-loops are the initial loops: `𝓛_0 = BAMLoop = 𝒦_0` on every well-formed loop (`BAMLoop_trace`, the initial clause of `BAKsol_isKLoopS`,
-`M_aa = m`).  Every clause of `GoodSetNg` that carries `𝓛 - 𝒦` has the value `0`.  The clauses that carry `𝓛` alone are bounded
-entrywise: `‖M^{(σ)}_{xy}‖ ≤ 1` (Ward) and `‖M^{(σ)}_{xy}‖ ≤ c⁻¹ e^{-c|x-y|}` (Combes-Thomas), the `ee` clause once through
-`Σ_b ‖M_{xb}‖ ‖M_{yb}‖ ≤ 1` (Cauchy-Schwarz and Ward). -/
-
 section Init
 
 variable {d : ℕ}
 
-/-! ### 4.1 Lists and products -/
-
-/-! ### 4.2 The entries of `M^{(σ)}` and the bounds on `BAMLoop` -/
-
-/-! ### 4.3 The initial loops: `𝓛_0 = BAMLoop = 𝒦_0` -/
+/-! ### The initial loops: `𝓛_0 = BAMLoop = 𝒦_0` -/
 
 section InitLoops
 
@@ -141,21 +117,7 @@ private theorem GridGoodBA_BAMLoop_one_loop {L : ℕ} [NeZero L] {W : ℕ} {g : 
 
 end InitLoops
 
-/-! ### 4.4 The pair form `𝓔⊗𝓔` at the initial state -/
-
-/-! ### 4.5 The clauses with `𝓛 - 𝒦`: value `0` -/
-
-/-! ### 4.6 `H_0 = g₀ Ψ` is good at one index -/
-
-/-! ### 4.7 The eventual threshold and the theorem -/
-
 end Init
-
-/-! ## 5. Compiled nonempty instances (targets 7-10)
-
-`d = 3`, the preflight sequence `sz0`, the spectral parameters `zSeq` with `flow_sz0 : BAFlow sz0 (1/2) (1/10) (1/6) (1/10) zSeq`, the grid
-`(s, t, K) = (0, 1/32, 4)`.  Every deterministic premise is discharged; `STKboundgL` and `STKwardgL` by the merged `inst_BAKbound` and `baKward_holds`.  What
-stays a hypothesis of an example is another gate's pin: `STLKgL`, `STStep2ConclgL` (T1-BA) and `hQ` of target 10 (U3s2-U3s3). -/
 
 end RBM.BA
 

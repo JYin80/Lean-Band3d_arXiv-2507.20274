@@ -10,42 +10,37 @@ import RBM3D.BA.GUETwistBA2
 import RBM3D.Universality.GUEPhase.Eq729B
 
 /-!
-# BA-C5 row d: (7.29), the (7.47) step and the BA producers of the §7.2 random layer
+# The (7.29) recursion, the (7.47) step and the block Anderson producers of the random layer
 
-Ticket T2519 (row d, targets 14-17; DECISIONS §344, §346, §364; Amends 1-5; the texts
-`T2519_ProdBA`, `T2519_LLBA`, `T2519_QueBA`, `T2519_KFamBA`, `T2519_PBBA`, `T2519_EdRealBA`,
-`T2519_FlowEtaBA`, `T2519_KdiscBA`, `T2519_HoffBA` signed by `docs/reports/T2519-1a-audit.md`,
-Amend 3).  New BA leaf: no merged file is edited.  Band twin: `Universality/GUEPhase/Eq729B.lean`
-(`Eq729B_perN:140`, `gueGrid_eq729:622`, `Eq729B_eq747_of_eq729:1077`, `Eq729B_derived:1125`,
-`Eq729B_eq747_of_inputs:1221`) and `RandomLayerB.lean` (`RandomLayerB_prod_band:400`,
-`_LL_band:427`, `_Que_band:439`).  Paper: the GUE phase of Thm 2.4
-(`paper/tex/1_2_Intro_model_result.tex:566-570`, "essentially identical to [YY_25, Theorem 2.6]"),
-(7.26)-(7.29) and the (7.47) step of [YY_25] §7.2.
+Band counterpart: `Universality/GUEPhase/Eq729B.lean` (`Eq729B_perN`, `gueGrid_eq729`,
+`Eq729B_eq747_of_eq729`, `Eq729B_derived`, `Eq729B_eq747_of_inputs`) and `RandomLayerB.lean`
+(`RandomLayerB_prod_band`, `RandomLayerB_LL_band`, `RandomLayerB_Que_band`).  Paper: the GUE phase of Theorem 2.4
+(`Thm: B_Univ`; "essentially identical to [YY_25, Theorem 2.6]").  The equation numbers (7.26)-(7.29), (7.47)
+and the lemma numbers 2.8, 5.15 below are those of [YY_25, §7.2] and [YY_25].
 
 * §1 the vocabulary `Eq729BA_eqErr`, `Eq729BA_Concl`: (7.29) at `t₀` in the loss form `N^δ ((N
   η_{t₀})^{-3} + I₀(t₁))`, the 2-loop primitive being `kTwoGUEBA`.
-* §2 `Eq729B_perNBA`: the recursion of `eq729_one_stepBA` (C4 b) closed by a discrete Grönwall.
+* §2 `Eq729B_perNBA`: the recursion of `eq729_one_stepBA` closed by a discrete Grönwall.
 * §3-§4 `gueGrid_eq729BA`: (7.29) at `t₀` on the BA grid: the one-loop law is
-  `gueGrid_expect_oneLoopBA'` (C4 a, Amend 4) with the twisted 1-loop law `gueGrid_twistBA` (row
-  b′) as `hoff`, the K-bounds are `Hyp_Kt_detDomBA`, `Hyp_Kt_oneBA` (row a), the failure events
-  are the three `lk` fields of `GUEPathBoundsBA` (row a), the initial term is `STExp2gL` (the
+  `gueGrid_expect_oneLoopBA'` with the twisted 1-loop law `gueGrid_twistBA` as `hoff`, the K-bounds are
+  `Hyp_Kt_detDomBA`, `Hyp_Kt_oneBA`, the failure events
+  are the three `lk` fields of `GUEPathBoundsBA`, the initial term is `STExp2gL` (the
   third conjunct of `BAMO`).
-* §5-§8 the (7.47) step: the flow datum `Eq729BA_{t0,g,E,t1,m}` of `z`, `GUEHyp_flowQ` (the facts
+* §5-§8 the (7.47) step: the flow datum of `z` (`Eq729BA_t0`, `Eq729BA_g`, `Eq729BA_E`, `Eq729BA_t1`, `Eq729BA_m`),
+  `GUEHyp_flowQ` (the facts
   of `ba_flowG` at the QUE scale, `t₀ ≥ 1/2` eventually), `Eq729B_derivedBA`, the law (7.26) at
   the last grid step (`GUEHyp_law726`), the symmetry of the BA profile, `Eq729B_eq747_of_eq729BA`
-  (the bridges `kTwoGUEBA_bridge_pm/pp`), `Eq729B_eq747_of_inputsBA`.
+  (the bridges `kTwoGUEBA_bridge_pm`, `kTwoGUEBA_bridge_pp`), `Eq729B_eq747_of_inputsBA`.
 * §9 the producers: `ba_prodG`, `ba_LLG` (from `oull_of_pathBoundsBA`, `BA/GUELLBA`), `ba_QueG` at
-  the exact types of `T2519_ProdBA BAKFam BAPB`, `T2519_LLBA BAPB`, `T2519_QueBA BAKFam BAPB`.
-* Instances (§10 onwards): every endpoint theorem at `d = 3`, the class sequence `S0` of
-  `BA/UNPins`.
+  the types `RBG_Prod`, `RandomLayerB_LL`, `RBG_Que` of the block Anderson kind.
 
 Departures from the band statements: the flow datum is `(g, E, m)` with `BAReal` at every `n` and
-the coupling window `0 < g n ≤ Λ` eventually (Amend 4); the loop primitive is `kTwoGUEBA`, the
-local-law centre is `M^{(B)} ⊗ 1`; `n₀ ≥ 4` (Amend 1); the Lemma 2.8 facts are `ba_flowG`'s (`cT ≤
+the coupling window `0 < g n ≤ Λ` eventually; the loop primitive is `kTwoGUEBA`, the
+local-law centre is `M^{(B)} ⊗ 1`; `n₀ ≥ 4`; the Lemma 2.8 facts of [YY_25] are `ba_flowG`'s (`cT ≤
 t₀`, `1 - t₀ ≤ Im z/c`) instead of `1/16 ≤ t₀`, which holds eventually at the QUE scale (`t₀ ≥
-1/2`); `hell` is in the form `L^d (1 - t₁) ≤ 2 g²` of the K lemmas of row a.  Helpers the ticket
-does not pin are `private` or carry the prefix `GUEHyp_`; the generic real-variable lemmas of
-`Eq729B` are read by name, its private helpers by `open private`.
+1/2`); `hell` is in the form `L^d (1 - t₁) ≤ 2 g²` of the K lemmas of `BA/GUEHypABA`.  Helpers
+are `private` or carry the prefix GUEHyp_; the generic real-variable lemmas of
+`Eq729B` are used by name, its private helpers by `open private`.
 -/
 
 set_option linter.style.longLine false
@@ -70,22 +65,22 @@ variable {d : ℕ}
 
 /-! ## 1. The vocabulary of (7.29) at block Anderson -/
 
-/-- `‖𝔼 𝓛_{t₀,(+,σ₂),(a,b)} - 𝒦̃_{t₀,(+,σ₂),(a,b)}‖` at the last grid step of the BA grid path (twin of `Eq729B_eqErr`; `𝒦̃` is the 2-loop
+/-- `‖𝔼 𝓛_{t₀,(+,σ₂),(a,b)} - 𝒦̃_{t₀,(+,σ₂),(a,b)}‖` at the last grid step of the BA grid path (the analogue of `Eq729B_eqErr`; `𝒦̃` is the 2-loop
 primitive `kTwoGUEBA` at the flow datum `(g, E, m)`). -/
 def Eq729BA_eqErr (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n : ℕ) (σ₂ : Bool) (a b : Zd d (sz.L n)) : ℝ :=
   ‖(∫ ω, loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueHBA sz g t1 t0 K n (K n) ω))
         (ztOf (m n) (E n) (t0 n)) ⟨[true, σ₂], [a, b]⟩ ∂(Pgue (sz.withLam 0))) -
     kTwoGUEBA d (sz.L n) (sz.W n) (g n) (E n) (m n) (t1 n) (t0 n) true σ₂ a b‖
 
-/-- (7.29) at `t₀` at block Anderson, loss form `N^δ ((N η_{t₀})^{-3} + I₀(t₁))` (twin of `Eq729B_Concl`; `I₀` is `Eq729B_initTerm`). -/
+/-- (7.29) at `t₀` at block Anderson, loss form `N^δ ((N η_{t₀})^{-3} + I₀(t₁))` (the analogue of `Eq729B_Concl`; `I₀` is `Eq729B_initTerm`). -/
 def Eq729BA_Concl (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) : Prop :=
   ∀ δ > (0 : ℝ), ∀ᶠ n in atTop, ∀ (σ₂ : Bool) (a b : Zd d (sz.L n)),
     Eq729BA_eqErr sz g E t1 t0 m K n σ₂ a b ≤
       Nsz sz n ^ δ * ((Nsz sz n * etaOf (m n) (t0 n))⁻¹ ^ 3 + Eq729B_initTerm sz n (t1 n))
 
-/-! ## 2. The recursion closed by a discrete Grönwall (target 14, `Eq729B_perNBA`) -/
+/-! ## 2. The recursion closed by a discrete Grönwall (`Eq729B_perNBA`) -/
 
-/-- **The recursion closed by a discrete Grönwall at one size parameter** (twin of `Eq729B_perN`, `Eq729B:140`, with `eq729_one_stepBA`):
+/-- **The recursion closed by a discrete Grönwall at one size parameter** (the analogue of `Eq729B_perN`, with `eq729_one_stepBA`):
 at the last grid step, `‖e_K‖ ≤ exp((t₀ - t₁)·2NρΛ) (B₀ + K c)`, `N = sz.size n`, `B₀` a bound of the initial error `e₀`; the flow datum is
 `(g, E, m)` with `0 < Im m`, `‖m‖ ≤ 1`. -/
 theorem Eq729B_perNBA (sz : Sizes d) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (K : ℕ → ℕ) {n : ℕ}
@@ -158,7 +153,7 @@ theorem Eq729B_perNBA (sz : Sizes d) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ}
 
 /-! ## 3. Inputs at the size parameter `n` (the generic helpers of `Eq729B` are read by name) -/
 
-/-- **A deterministic `≺` is a deterministic bound** (twin of `det_of_prec`, `Endpoints:443`, at an arbitrary probability law): the left side of
+/-- **A deterministic `≺` is a deterministic bound** (the analogue of `det_of_prec`, at an arbitrary probability law): the left side of
 `STExp2gL` does not depend on `ω`, so `P(univ) = 1 > N^{-1}` and for `N > 1` the bad set is empty. -/
 private theorem GUEHyp_det_of_prec (sz : Sizes d) (μ : Measure sz.SeqΩ) [IsProbabilityMeasure μ] (hsz : sz.SizeTendsto)
     {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ → ℝ} (hξ : ∀ n u ω ω', ξ n u ω = ξ n u ω')
@@ -180,7 +175,7 @@ private theorem GUEHyp_det_of_prec (sz : Sizes d) (μ : Measure sz.SeqΩ) [IsPro
     exact inv_lt_one_of_one_lt₀ hN1
   exact absurd hn (not_le.mpr hlt1)
 
-/-- **The only transfer between carriers at step `0`** (twin of `Eq729B_transfer`, `Eq729B:569`): the grid path at step `0` is the BA flow matrix at
+/-- **The only transfer between carriers at step `0`** (the analogue of `Eq729B_transfer`): the grid path at step `0` is the BA flow matrix at
 `t₁` (`GUEPathBoundsBA_gueHBA_zero`) and the step-`0` marginal of `Pgue (sz.withLam 0)` is `seqP (sz.withLam 0)`. -/
 private theorem GUEHyp_transfer (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (z : ℂ) (I : LoopIdx (Zd d (sz.L n))) :
     ∫ ω, loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueHBA sz g t1 t0 K n 0 ω)) z I ∂(Pgue (sz.withLam 0)) =
@@ -197,7 +192,7 @@ private theorem GUEHyp_transfer (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ 
   simp_rw [GUEPathBoundsBA_gueHBA_zero sz g t1 t0 K n]
   rw [← PathBounds_map_eval0 (sz.withLam 0), integral_map (measurable_pi_apply (0 : ℕ)).aemeasurable (hc.comp hHf).aestronglyMeasurable]
 
-/-- The failure event of `hP.1 l` at level `τ`, size index `n` (twin of the private `Eq729B_Bad`, `Eq729B:594`). -/
+/-- The failure event of `hP.1 l` at level `τ`, size index `n` (the analogue of the private `Eq729B_Bad`). -/
 private def GUEHyp_Bad (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (n0 l : ℕ)
     (τ : ℝ) (n : ℕ) : Set (PathΩ (sz.withLam 0)) :=
   {ω | ∃ p : Fin (gueGridK sz n0 n + 1) × (Fin l → Bool) × (Fin l → Zd d (sz.L n)),
@@ -216,14 +211,14 @@ private theorem GUEHyp_not_bad {sz : Sizes d} {g E t1 t0 : ℕ → ℝ} {m : ℕ
   by_contra h
   exact hω ⟨(⟨k, Nat.lt_succ_of_le hk⟩, σ, a), lt_of_not_ge h⟩
 
-/-! ## 4. (7.29) at `t₀` on the BA grid (target 14, `gueGrid_eq729BA`) -/
+/-! ## 4. (7.29) at `t₀` on the BA grid (`gueGrid_eq729BA`) -/
 
-/-- **(7.29) at `t₀` on the GUE-phase grid at block Anderson** ([YY_25] §7.2; twin of `gueGrid_eq729`, `Eq729B:622`), `σ = (+, σ₂)`, in the loss form
+/-- **(7.29) at `t₀` on the GUE-phase grid at block Anderson** ([YY_25] §7.2; the analogue of `gueGrid_eq729`), `σ = (+, σ₂)`, in the loss form
 `N^δ ((N η_{t₀})^{-3} + I₀(t₁))` (`Eq729BA_Concl`; `I₀` the right side of `STExp2gL`, `Eq729B_initTerm`).  The flow datum is `(g, E, m)` with `BAReal`
-at every `n` and the coupling window `0 < g n ≤ Λ` eventually (Amend 4 item 3); `h730`, `hscale` are in `etaOf (m n) t₀` (`T2519_FlowEtaBA`), `hell` is the
-zero-mode premise in the form `L^d (1 - t₁) ≤ 2 g²` of the K lemmas of row a; the primitive family `Kt` is that of `BAKFam` (`hKinit`, `hK`, `hK2`, guarded by
-`0 < g n`); `hB` is the initial term (the third conjunct of `BAMO`), `hP` the path bounds at `n₀ ≥ 4` (row c).  The one-loop law is
-`gueGrid_expect_oneLoopBA'` with the twisted 1-loop law `gueGrid_twistBA` (row b′) as `hoff`; the K-bounds are `Hyp_Kt_detDomBA`, `Hyp_Kt_oneBA` (row a). -/
+at every `n` and the coupling window `0 < g n ≤ Λ` eventually; `h730`, `hscale` are in `etaOf (m n) t₀`, `hell` is the
+zero-mode premise in the form `L^d (1 - t₁) ≤ 2 g²` of the K lemmas of `BA/GUEHypABA`; the primitive family `Kt` is that of `BAKFam` (`hKinit`, `hK`, `hK2`, guarded by
+`0 < g n`); `hB` is the initial term (the third conjunct of `BAMO`), `hP` the path bounds at `n₀ ≥ 4`.  The one-loop law is
+`gueGrid_expect_oneLoopBA'` with the twisted 1-loop law `gueGrid_twistBA` as `hoff`; the K-bounds are `Hyp_Kt_detDomBA`, `Hyp_Kt_oneBA`. -/
 theorem gueGrid_eq729BA (hd : 3 ≤ d) (sz : Sizes d) {κ τU Λ : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (hτU : 0 < τU) (n0 : ℕ) (hn0 : 4 ≤ n0)
     {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hsize : Tendsto sz.size atTop atTop)
     (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) (hlam : ∀ᶠ n in atTop, 0 < g n ∧ g n ≤ Λ)
@@ -258,7 +253,7 @@ theorem gueGrid_eq729BA (hd : 3 ≤ d) (sz : Sizes d) {κ τU Λ : ℝ} (hκ : 0
   have hKbd := Hyp_Kt_detDomBA hd sz hκ hΛ hτU n0 hr hlam ht1 ht10 ht0 hsize h730 hell Kt hKinit hK
   have hoff := gueGrid_twistBA d hd sz κ Λ hκ hΛ g E t1 t0 m n0 Kt hsize hn0 hlam hr ht1 ht10 ht0 hKone
     (fun ε hε => (hKbd ε hε).mono fun n hn s hs I hI h2 h4 => hn s hs I hI h2 (by omega)) hP
-  -- the 1-loop input of Lemma 5.15, from `hP.1 1` (the `+` 1-loops, `K̃ = m`)
+  -- the 1-loop input of Lemma 5.15 of [YY_25], from `hP.1 1` (the `+` 1-loops, `K̃ = m`)
   have h1 : StochDomAt (Pgue (sz.withLam 0)) sz.size
       (fun n (p : Fin (gueGridK sz n0 n + 1) × Zd d (sz.L n)) ω =>
         ‖loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (gueHBA sz g t1 t0 (gueGridK sz n0) n p.1 ω))
@@ -340,7 +335,7 @@ theorem gueGrid_eq729BA (hd : 3 ≤ d) (sz : Sizes d) {κ τU Λ : ℝ} (hκ : 0
       HasDerivWithinAt (fun s => Kt n s ⟨[s1, s2], [x, y]⟩)
         (primRhsGUE d (sz.L n) (sz.W n) (Kt n s) ⟨[s1, s2], [x, y]⟩) (Set.Icc (t1 n) (t0 n)) s := fun s hs s1 s2 x y =>
     hK n hlamn.1 s hs _ rfl (by simp [LoopIdx.length]) (by simp [LoopIdx.length]; omega)
-  -- Lemma 5.15 at the grid times
+  -- Lemma 5.15 of [YY_25] at the grid times
   have hX' : ∀ k < gueGridK sz n0 n, ∀ a,
       ‖(∫ ω, eq729FBA sz g t1 t0 E m (gueGridK sz n0) n k ω ⟨[true], [a]⟩ ∂(Pgue (sz.withLam 0))) - m n‖ ≤ ρ * Lm ^ 2 := by
     intro k hk a
@@ -465,7 +460,7 @@ theorem gueGrid_eq729BA (hd : 3 ≤ d) (sz : Sizes d) {κ τU Λ : ℝ} (hκ : 0
 
 /-! ## 5. The flow datum of (7.47) at block Anderson and its scale facts -/
 
-/-- `t₀ = BAfT z_n` of the flow of `z` (Lemma 2.8 at BA, `(eq:t0E0_BA)`). -/
+/-- `t₀ = BAfT z_n` of the flow of `z` (Lemma 2.8 of [YY_25] at BA, (8.1) `eq:t0E0_BA`). -/
 abbrev Eq729BA_t0 (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) : ℝ := BAfT d sz n (z n)
 
 /-- The flow coupling `g = √t₀ λ`. -/
@@ -515,7 +510,7 @@ private theorem GUEHyp_etaQ_small (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admi
         gcongr
       _ = ε := by field_simp
 
-/-- The Lemma 2.8 facts of `ba_flowG` along the QUE point `z_n = E_n + i η_Q` (eventually): `0 < η_Q ≤ 1`, `η_Q ≤ c/2`,
+/-- The Lemma 2.8 facts (of [YY_25]) of `ba_flowG` along the QUE point `z_n = E_n + i η_Q` (eventually): `0 < η_Q ≤ 1`, `η_Q ≤ c/2`,
 `c_T ≤ t₀ < 1`, `1 - t₀ ≤ η_Q/c`, `1/2 ≤ t₀`, `η_Q ≤ 2 (1 - t₀)`. -/
 private theorem GUEHyp_flowQ (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ : ℝ} (hκ : 0 < κ) {E : ℕ → ℝ}
     (hE : ∀ n, BAbulk d (sz.L n) (sz.lam n) κ (E n)) {z : ℕ → ℂ} (hz : ∀ᶠ n in atTop, z n = Eq729B_zQ sz 𝔡 E n) :
@@ -551,11 +546,11 @@ private theorem GUEHyp_flowQ (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissibl
   rw [← hzim]
   nlinarith [hmul, hmim, hz1, hzpos, hm]
 
-/-! ## 6. The three asymptotic hypotheses at the QUE scale (target 14, `Eq729B_derivedBA`) -/
+/-! ## 6. The three asymptotic hypotheses at the QUE scale (`Eq729B_derivedBA`) -/
 
-/-- **The three asymptotic hypotheses of `gueGrid_eq729BA` at the flow datum of `z_n = E_n + i η_Q`** (twin of `Eq729B_derived`, `Eq729B:1125`):
+/-- **The three asymptotic hypotheses of `gueGrid_eq729BA` at the flow datum of `z_n = E_n + i η_Q`** (the analogue of `Eq729B_derived`):
 `h730`, `hscale`, and `hell` in the form `L^d (1 - t₁) ≤ 2 g²`, eventually, from `Admissible 𝔠 𝔡`, `τ_U ≤ ouTauMax 𝔠 𝔡`, `0 ≤ t_n ≤ N^{-1+τ_U}`, at the
-QUE scale `η_Q = W^{-𝔡/3} λ W^{d/2}/N`; the Lemma 2.8 facts are those of `ba_flowG` (`c`, `c_T`, with `1 - t₀ ≤ η_Q/c`, so `t₀ ≥ 1/2` eventually and the
+QUE scale `η_Q = W^{-𝔡/3} λ W^{d/2}/N`; the Lemma 2.8 facts (of [YY_25]) are those of `ba_flowG` (`c`, `c_T`, with `1 - t₀ ≤ η_Q/c`, so `t₀ ≥ 1/2` eventually and the
 band chain applies); `1/2 ≤ t₀` is also returned.  The thresholds are `W`-only (`W → ∞`): `4 ≤ W^{𝔡/2}`, `2/c ≤ W^{4𝔡/3}`, `2 ≤ W^{23𝔡/12}`. -/
 theorem Eq729B_derivedBA (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ τU : ℝ} (hκ : 0 < κ) (hτU : 0 < τU)
     (hτUm : τU ≤ ouTauMax 𝔠 𝔡) {E t : ℕ → ℝ} (hE : ∀ n, BAbulk d (sz.L n) (sz.lam n) κ (E n))
@@ -630,7 +625,7 @@ theorem Eq729B_derivedBA (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible �
       nlinarith [sq_nonneg (sz.lam n)]
   exact ⟨hall.mono fun n h => h.1, hall.mono fun n h => h.2.1, hall.mono fun n h => h.2.2.1, hall.mono fun n h => h.2.2.2⟩
 
-/-! ## 7. The (7.47) step (target 14, `Eq729B_eq747_of_eq729BA`) -/
+/-! ## 7. The (7.47) step (`Eq729B_eq747_of_eq729BA`) -/
 
 /-- `Ring.inverse (1 - Q S) * Q` is symmetric for symmetric `Q`, `S` (the push-through identity `Q (1 - S Q)⁻¹ = (1 - Q S)⁻¹ Q`; trivial when `1 - Q S`
 is not a unit). -/
@@ -686,7 +681,7 @@ private theorem GUEHyp_prof_symm (sz : Sizes d) (n : ℕ) (ζ : ℝ) (z : ℂ) (
     simpa [Matrix.transpose_apply] using congrFun (congrFun h a) b
   exact ⟨by unfold UNOUProfile.ba; simp only; rw [key false], by unfold UNOUProfile.ba; simp only; rw [key true]⟩
 
-/-- **The law (7.26) in expectation at block Anderson** (twin of `Eq729B_law726`, `Eq729B:935`): at the last grid step,
+/-- **The law (7.26) in expectation at block Anderson** (the analogue of `Eq729B_law726`): at the last grid step,
 `𝔼 [avg2 G_xy G^σ_yx](z) = t₀ 𝔼 𝓛_{t₀,(+,σ),(b,a)}` for the centred OU flow `𝐇_t = λΨ + e^{-t/2} V + √(1-e^{-t}) X` under the BA carrier and the BA grid
 path `gueHBA` at the flow datum of `z` (`t₁ = (1 - ζ(t)) t₀`, `g = √t₀ λ`): the homogeneity of `loopL` (`z_{t₀} = √t₀ z`, `GUELLBA_flow_data`) and the
 one-time law at the last step (`GUELLBA_integral_transfer`). -/
@@ -728,7 +723,7 @@ private theorem GUEHyp_law726 (sz : Sizes d) {t : ℕ → ℝ} {z : ℕ → ℂ}
   rw [← mul_assoc, ← hss]
   field_simp
 
-/-- **(7.47) at one size index** (twin of `Eq729B_core747`, `Eq729B:998`): from the loss-form (7.29) at the labels `(b, a)` and the main term
+/-- **(7.47) at one size index** (the analogue of `Eq729B_core747`): from the loss-form (7.29) at the labels `(b, a)` and the main term
 `prof = t₀ K̃_{t₀}`, `‖𝔼 [avg2 G_xy G^σ_yx] - prof‖ ≤ qdBoundExp` (`t₀ ≥ 1/2` replaces `1/16 ≤ t₀`). -/
 private theorem Eq729B_core747BA (sz : Sizes d) (hd : 3 ≤ d) (𝔡 : ℝ) {τ δ : ℝ} {t : ℕ → ℝ} {z : ℕ → ℂ} {K : ℕ → ℕ} (n : ℕ)
     (σ : Bool) (a b : Zd d (sz.L n)) (ht : 0 ≤ t n) (hK : K n ≠ 0)
@@ -782,10 +777,10 @@ private theorem Eq729B_core747BA (sz : Sizes d) (hd : 3 ≤ d) (𝔡 : ℝ) {τ 
     _ ≤ ((sz.W n : ℕ) : ℝ) ^ τ * (calB sz n (ouEtaQ sz 𝔡 n) 0 ^ 2 *
         ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + calB sz n (ouEtaQ sz 𝔡 n) 0)) := hass
 
-/-- **(7.47) from (7.29) and (7.26) at block Anderson** (twin of `Eq729B_eq747_of_eq729`, `Eq729B:1077`).  Let `z_n = E_n + i η_Q`,
-`η_Q = W^{-𝔡/3} λ W^{d/2}/N`, `(t₀, E', g, m)` the BA flow datum of `z_n` (`Eq729BA_*`, Lemma 2.8 at BA: `ba_flowG`), `t₁ = (1 - ζ(t_n)) t₀`.  If (7.29)
+/-- **(7.47) from (7.29) and (7.26) at block Anderson** (the analogue of `Eq729B_eq747_of_eq729`).  Let `z_n = E_n + i η_Q`,
+`η_Q = W^{-𝔡/3} λ W^{d/2}/N`, `(t₀, E', g, m)` the BA flow datum of `z_n` (`Eq729BA_t0`, `Eq729BA_E`, `Eq729BA_g`, `Eq729BA_m`; Lemma 2.8 of [YY_25] at BA: `ba_flowG`), `t₁ = (1 - ζ(t_n)) t₀`.  If (7.29)
 holds at `t₀` on the BA grid in the loss form `N^δ ((N η_{t₀})^{-3} + I₀(t₁))` (`Eq729BA_Concl`), the one-time law (7.26) at the last grid step and
-`t₀ K̃_{t₀} = P` (`kTwoGUEBA_bridge_pm/pp`; the profile `P = UNOUProfile.ba` is symmetric) give the body of `UNOUEq747k` at the BA kind
+`t₀ K̃_{t₀} = P` (`kTwoGUEBA_bridge_pm`, `kTwoGUEBA_bridge_pp`; the profile `P = UNOUProfile.ba` is symmetric) give the body of `UNOUEq747k` at the BA kind
 (`RandomLayerB_QueAt (UNKind.ba d) (UNOUProfile.ba d)`): `W ≥ N^𝔠` turns the loss `N^{𝔠τ/2}` into `W^τ`, `t₀ (N η_{t₀})^{-3} ≤ 4 (N η_Q)^{-3}`,
 `𝓑(t₁) ≤ 2 𝓑_{η_Q,0}` (`Eq729B_assembly_747`; `t₀ ≥ 1/2` eventually since `1 - t₀ ≤ η_Q/c` and `η_Q → 0`). -/
 theorem Eq729B_eq747_of_eq729BA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ : ℝ} (hκ : 0 < κ)
@@ -825,13 +820,13 @@ theorem Eq729B_eq747_of_eq729BA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 : ℝ} 
     rw [hmeq]
     exact hbr
 
-/-! ## 8. (7.47) from the inputs of `gueGrid_eq729BA` (target 14, `Eq729B_eq747_of_inputsBA`) -/
+/-! ## 8. (7.47) from the inputs of `gueGrid_eq729BA` (`Eq729B_eq747_of_inputsBA`) -/
 
-/-- **(7.47) from the inputs of `gueGrid_eq729BA`** (twin of `Eq729B_eq747_of_inputs`, `Eq729B:1221`): at the flow datum of `z_n = E_n + i η_Q`,
+/-- **(7.47) from the inputs of `gueGrid_eq729BA`** (the analogue of `Eq729B_eq747_of_inputs`): at the flow datum of `z_n = E_n + i η_Q`,
 `0 ≤ t_n ≤ N^{-1+τ_U}`, `τ_U ≤ ouTauMax 𝔠 𝔡`, `W ≥ N^𝔠`: `h730`, `hscale`, `hell` of `gueGrid_eq729BA` are derived (`Eq729B_derivedBA`), `Tendsto size` and
 the window `0 < g ≤ 𝔡⁻¹` (`(eq:WO)`, `t₀ < 1`, `t₀ ≥ 1/2`) too; `gueGrid_eq729BA` followed by `Eq729B_eq747_of_eq729BA` is the body of `UNOUEq747k` at the BA kind.
 The remaining inputs are those of `gueGrid_eq729BA`: the primitive family `Kt` (`hKinit`, `hK`, `hK2`, the clauses of `BAKFam`), `hB` (the third conjunct of `BAMO`) and `hP`
-(`BAPB`, (7.28) on the grid); `hgood` (`Ed κ'`, `0 ≤ t₁ ≤ t₀ < 1` at every `n`) replaces RBM2D's `Eq729B_pw`. -/
+(`BAPB`, (7.28) on the grid); `hgood` (`Ed κ'`, `0 ≤ t₁ ≤ t₀ < 1` at every `n`) takes the place of the pointwise hypothesis of the band statement. -/
 theorem Eq729B_eq747_of_inputsBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {κ κ' τU : ℝ}
     (hκ : 0 < κ) (hκ' : 0 < κ') (hτU : 0 < τU) (hτUm : τU ≤ ouTauMax 𝔠 𝔡) (n0 : ℕ) (hn0 : 4 ≤ n0) {E t : ℕ → ℝ}
     (hE : ∀ n, BAbulk d (sz.L n) (sz.lam n) κ (E n)) (ht : ∀ n, 0 ≤ t n ∧ t n ≤ ouTStar sz τU n)
@@ -869,7 +864,7 @@ theorem Eq729B_eq747_of_inputsBA (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 : ℝ}
     (gueGrid_eq729BA hd sz hκ' (inv_pos.2 hA.2.1) hτU n0 hn0 (Sizes.tendsto_size sz hA.2.2.1) hr hlam
       (fun n => (hgood n).2.1) (fun n => (hgood n).2.2.1) (fun n => (hgood n).2.2.2) h730 hscale hell Kt hKinit hK hK2 hB hP) τ hτ
 
-/-! ## 9. The three producers at `UNKind.ba` (target 16: `ba_prodG`, `ba_LLG`, `ba_QueG`) -/
+/-! ## 9. The three producers at `UNKind.ba` (`ba_prodG`, `ba_LLG`, `ba_QueG`) -/
 
 /-- `0 < t₀ < 1` forces `0 < Im m` and `0 < Im z` (`t₀ = Im m/(Im m + Im z)`, `Im m ≥ 0`, with `Im m = 0` only for the junk value `m = 0`). -/
 private theorem GUEHyp_flow_pos (sz : Sizes d) (n : ℕ) (w : ℂ) (h0 : 0 < BAfT d sz n w) (h1 : BAfT d sz n w < 1) :
@@ -914,21 +909,21 @@ private theorem GUEHyp_KFam_exists (sz : Sizes d) {κ' : ℝ} (hκ' : 0 < κ') {
   exact ⟨Kt, fun n hn => (hKt n hn).1, fun n hn s hs I hI h1 h2 => (hKt n hn).2.1 s hs I hI h1 h2,
     fun n hn s hs σ₁ σ₂ a b => (hKt n hn).2.2 s hs σ₁ σ₂ a b⟩
 
-/-- **`ba_LLG`, target 16b**: `RandomLayerB_LL` at the BA kind from `BAPB` (`oull_of_pathBoundsBA`; text `T2519_LLBA BAPB`). -/
+/-- **`ba_LLG`**: `RandomLayerB_LL` at the BA kind from `BAPB` (`oull_of_pathBoundsBA`). -/
 theorem ba_LLG : ∀ d : ℕ, 3 ≤ d → RandomLayerB_LL (UNKind.ba d) (BAfE d) (BAfT d) (BAPB d) := by
   intro d _ 𝔠 𝔡 κ τU sz hA hκ hτU hτU1 E t hE ht Kt hP δ hδ p
   exact oull_of_pathBoundsBA sz hκ hτU hτU1 (Sizes.tendsto_size sz hA.2.2.1) (fun n => hE n) ht Kt hP δ hδ p
 
-/-- **`ba_QueG`, target 16c**: `RBG_Que` at the BA kind with the BA profile `UNOUProfile.ba` (`Eq729B_eq747_of_inputsBA` at `n₀ = 4`; text
-`T2519_QueBA BAKFam BAPB`): the clauses of `BAKFam` are `hKinit`, `hK`, `hK2`, `hB` is the third conjunct of `BAMO`, `hP` is `BAPB`. -/
+/-- **`ba_QueG`**: `RBG_Que` at the BA kind with the BA profile `UNOUProfile.ba` (`Eq729B_eq747_of_inputsBA` at `n₀ = 4`):
+the clauses of `BAKFam` are `hKinit`, `hK`, `hK2`, `hB` is the third conjunct of `BAMO`, `hP` is `BAPB`. -/
 theorem ba_QueG : ∀ d : ℕ, 3 ≤ d →
     RBG_Que (UNKind.ba d) (UNOUProfile.ba d) (BAEd d) (BAfE d) (BAfT d) (BAMO d) (BAKFam d) (BAPB d) := by
   intro d hd 𝔠 𝔡 κ κ' τU sz hA hκ hκ' hτU hτUm E t hE ht z hz hgood Kt hKF hMO hPB τ hτ
   exact Eq729B_eq747_of_inputsBA sz hd hA hκ hκ' hτU hτUm 4 le_rfl hE ht hz hgood Kt hKF.1 hKF.2.1 hKF.2.2 hMO.2.2 hPB τ hτ
 
-/-- **`ba_prodG`, target 16a**: `RBG_Prod` at the BA vocabulary of C5g (`BAEd`, `BAfE`, `BAfT`, `BAMO`) with the primitive family `BAKFam` and the path bounds
-`BAPB` (text `T2519_ProdBA BAKFam BAPB`; twin of `RandomLayerB_prod_band`, `RandomLayerB:400`): `Kt` is the family of `gueK_existsBA` (`GUEHyp_KFam_exists`),
-`PB` is `gueGrid_pathBoundsBA` at `n₀ = 4` (row c) at the flow datum `(g, E, m) = (√t₀ λ, BAfE, BAm …)` (`GUELLBA_EdReal`: `BAEd κ'` is `BAReal`; `GUELLBA_flowEta`: the
+/-- **`ba_prodG`**: `RBG_Prod` at the BA vocabulary (`BAEd`, `BAfE`, `BAfT`, `BAMO`) with the primitive family `BAKFam` and the path bounds
+`BAPB` (the analogue of `RandomLayerB_prod_band`): `Kt` is the family of `gueK_existsBA` (`GUEHyp_KFam_exists`),
+`PB` is `gueGrid_pathBoundsBA` at `n₀ = 4` at the flow datum `(g, E, m) = (√t₀ λ, BAfE, BAm …)` (`GUELLBA_EdReal`: `BAEd κ'` is `BAReal`; `GUELLBA_flowEta`: the
 scale `√t₀ Im z` of `h730`, `hscale` is `η_{t₀}`); `hell1` forces `t₀ ≥ t₁ ≥ 26/27`, so `t₀ > 0`, `Im z > 0` and `0 < g ≤ 𝔡⁻¹` eventually; `hell` in the
 form `L^d (1 - t₁) ≤ 2 g²` is `GUEHypABA_hell_of_hell`; `hLK`, `hLoc` are the first two conjuncts of `BAMO`. -/
 theorem ba_prodG : ∀ d : ℕ, 3 ≤ d → RBG_Prod (BAEd d) (BAfE d) (BAfT d) (BAMO d) (BAKFam d) (BAPB d) := by
@@ -973,30 +968,6 @@ theorem ba_prodG : ∀ d : ℕ, 3 ≤ d → RBG_Prod (BAEd d) (BAfE d) (BAfT d) 
     (E := fun n => BAfE d sz n (z n)) (t0 := fun n => BAfT d sz n (z n)) hr hlam ht1 ht10 ht0 h730' hscale' hell hell1 hellg Kt
     hKF.1 hKF.2.1 hMO.1 hMO.2.1
 
-/-! ## 10. One grid step of the BA primitive 2-loop (target 15, `baEq729_Kdisc`) -/
-
-/-! ## 11. Compiled nonempty instances (CLAUDE.md §4 step 2)
-
-`RBM.BA.GUEHypInst`.  `d = 3`.  `baEq729_Kdisc`: the merged flow point `P` (`BA/MFixedPoint`: `(L, g) = (4, 10)`, `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`), `W = 2`
-(`N = (W L)^d = 512`), `t₁ = 0`, `t₀ = 1/2`, `u = 1/4`, `Δ = 1/1024` (`N Δ = 1/2`), `b₂ = 1`; `hKb` is `GUEHyp_kTwo_le` (`‖K̃‖ ≤ 2 W^{-d} = 1/4`). -/
-
-/-! ## 12. Instances at the class sequence `S0` (`BA/UNPins`)
-
-`S0 = clsS 4 _ (3/10)`: `L = 4`, `W_n = (2 (n+1))^5`, the constant coupling `λ = g₀ := (fp 4 _).g₀ ∈ (0, 3/10]`, admissible at `(𝔠, 𝔡) = (1/6, 1/10)`, the energy `E_* := (fp 4 _).E`
-in the ρ-bulk at `κ_* = clsκ 4 _` for every `n` (`cls_bulk`).  `ba_flowG` at `κ_*` gives `(κ', c, c_T)` (`c` is clamped to `≤ 1`: `1 - t₀ ≤ Im z / c ≤ Im z / min (c, 1)`);
-the Lemma 2.8 facts hold at every `z = E_* + i y`, `0 < y ≤ 1`.  Amend 5 item 4 (C5D-C2): the producer instance sits in the GUE phase, `Im z_n = η := c g₀² / (2 L³)` (`L = 4`),
-`t₁ := t₀ - N^{-τ_D} √t₀ η`, `τ_D = 1/20`, never at `zSeq`. -/
-
-/-! The QUE point at `S0`: `E ≡ E_*`, `t_n = ouTStar S0 τ_U n = N^{-1+τ_U} > 0`, `τ_U = ouTauMax (1/6) (1/10) = 1/720`, `z_n = E_* + i min (η_Q(n), 1)`
-(`η_Q = W^{-𝔡/3} λ W^{d/2}/N`, `𝔡 = 1/10`; `0 < η_Q ≤ 1` eventually, so `z_n = E_* + i η_Q` eventually, and `0 < Im z_n ≤ 1` at every `n`). -/
-
-/-! The window of the instance of `gueGrid_eq729BA`: the flow datum is the merged flow point `(g₀, E_*, m₀) = (fp 4 _).{g0, E, m0}` (`BAReal` at `κ = Im m₀`, constant in `n`), the GUE-phase
-window `1 - t₀ = x`, `t₀ - t₁ = x / (2 N_n)`, `x = g₀² / 128` (so `L³ (1 - t₁) ≤ 128 x = g₀²`), `τ_U = 1/20`, `n₀ = 4`. -/
-
-/-! ## 13. `Eq729B_perNBA` at the flow datum of `sz0` (the data of the instance of `eq729_one_stepBA`, `BA/GUEEq729BA` §6)
-
-`n = 0`, `t₁ = 17/20`, `t₀ = 9/10`, `K = 131072` (`N Δ = 4/5`), `ρ = 1`, `Λ = (N η(t₀))⁻¹`, `B₀ = 200`, the family `Eq729AInst_Kt`; `B = univ`, `p = 1` (`hB`, `hg1`-`hg3` hold
-trivially), the one-loop input `hX` (row a's `gueGrid_expect_oneLoopBA'`) stays a hypothesis. -/
 
 end RBM.BA
 

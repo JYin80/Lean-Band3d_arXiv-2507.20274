@@ -8,25 +8,22 @@ import RBM3D.BA.EMn2BA
 import RBM3D.BA.KInduct
 
 /-!
-# BA sub-stage T, producer P1 (T2460): the untwisted BA grid pin from the twisted one
+# The untwisted BA grid martingale statement from the twisted one
 
-Ticket `docs/tickets/T2460.md` with Amend 1 (`docs/tickets/T2460-amend-1.md`); check file
-`docs/tickets/checks/T2460-check.lean`; probe `t/T2452:RBM3D/Probe/T2452Pins.lean:224-345`
-(commit 20d5f15); paper arXiv:2507.20274, `Sol_CalL`, `lem:DIfREP` (`3_5:134, 218`), at BA
-`7_8:1994-2016`.
+Paper: Lemma 3.4 (`Sol_CalL`) and Lemma 3.6 (`lem:DIfREP`), at block Anderson Section 8 (the twisted loops,
+Lemma 8.6 `lem:TL1_BA`, (8.4) `eq:TL2_BA`).
 
-* **Target 1** `BAGridBridge`, `baGridBridge_holds`: the three identities at `c₁ = c₂ = a 1`
+* `BAGridBridge`, `baGridBridge_holds`: the three identities at `c₁ = c₂ = a 1`
   along the grid, eventually along a BA flow: (H1) the observable `Z̃ = L̃ - K̃` is
   `(𝓛-𝒦)^{(2)}` (`STgAg`), (H2) the twisted drift is `STgDriftg`, (H3′) `‖Ẽ⊗Ẽ‖ ≤ 2 ‖STEEMg‖`
-  (an inequality since Amend 1: the twisted gradient `∂L̃ = -(Q₁ + Q₂)` has two slots, `STEEMg`
+  (an inequality: the twisted gradient `∂L̃ = -(Q₁ + Q₂)` has two slots, `STEEMg`
   is the sum of the two diagonal 6-loops).
-* **Target 2** `baGridMart_holds`: `STGridMartgL` at `baStep2Mat` along `BAFlow`, from TL's
-  `baTwistGridMart_holds` and target 1 (the glue `GridMartBA_bridge` is private: it takes the
-  unproved Prop `BATwistGridMartAt` as a hypothesis).  Clause (iii) of the pin lies inside
-  clause (iii) of TL at `ε'/2`, eventually in `n` (`N^{ε'/2} ≥ 2`).
+* `baGridMart_holds`: `STGridMartgL` at `baStep2Mat` along `BAFlow`, from
+  `baTwistGridMart_holds` and `baGridBridge_holds` (the glue `GridMartBA_bridge` is private: it takes the
+  statement `BATwistGridMartAt` as a hypothesis).  Clause (iii) of the statement lies inside
+  clause (iii) of the twisted one at `ε'/2`, eventually in `n` (`N^{ε'/2} ≥ 2`).
 
-Every statement is for every `d` (no `3 ≤ d`).  Every helper is `private` or carries the stem
-`GridMartBA_`.
+Every statement is for every `d` (no `3 ≤ d`).  The names of the private helpers begin with GridMartBA_.
 -/
 
 set_option linter.style.longLine false
@@ -48,9 +45,9 @@ noncomputable section
 namespace RBM.BA
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. The statement of target 1 (`T2460_Bridge`, Amend 1) -/
+/-! ## 1. The three identities -/
 
-/-- **Target 1** (the three identities at `c₁ = c₂ = a 1`; content = `T2460_Bridge` of the check file): along the grid
+/-- **`BAGridBridge`** (the three identities at `c₁ = c₂ = a 1`): along the grid
 `k ≤ K n`, eventually in `n` along a BA flow, (H1) `twAk = STgAg`, (H2) `twDriftk = STgDriftg`, (H3′) `‖twEEk‖ ≤ 2 ‖STEEMg‖`. -/
 def BAGridBridge (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -113,7 +110,7 @@ private theorem GridMartBA_twL3M_diag (u : ℝ) {H : Matrix (Idx d (sz.L n) (sz.
   rw [TwistGrid_twL3M_trace sz lam0 E n u hH σ a₁ a₂ c c, GridMartBA_LM_three sz lam0 E n u H σ a₁ a₂ c,
     GridMartBA_Pb_diag]
 
-/-- `twMB` is `M^{(B)}` at the BA carrier (`BAMfine_eq`; the copy of the probe's `T2452_twMB`). -/
+/-- `twMB` is `M^{(B)}` at the BA carrier (`BAMfine_eq`). -/
 private theorem GridMartBA_twMB (hm : 0 < (BAmF sz lam0 E n).im) :
     twMB (baFM sz lam0 E) n = BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n) := by
   ext a b
@@ -149,7 +146,7 @@ private theorem GridMartBA_K_two {κ : ℝ} (hκ : 0 < κ) (hg : 0 < lam0 n)
         BAMss d (sz.L n) (BAMB d (sz.L n) (lam0 n) (E n : ℂ) (BAmF sz lam0 E n)) (σ 0) (σ 1)) (a 0) (a 1) :=
   baKsol_two d hκ hg (sz.three_le_L n) (sz.W n) hr hu σ a
 
-/-- **H1, the `K`-part**: `K̃_{σ,(a₀;a₁,a₁)} = 𝒦^{(2)}_{σ,a}` (the copy of the probe's `T2452_K_eq`). -/
+/-- **H1, the `K`-part**: `K̃_{σ,(a₀;a₁,a₁)} = 𝒦^{(2)}_{σ,a}`. -/
 private theorem GridMartBA_K_eq {κ : ℝ} (hκ : 0 < κ) (hg : 0 < lam0 n)
     (hr : BAReal d (sz.L n) (lam0 n) κ (E n) (BAmF sz lam0 E n)) {u : ℝ} (hu : u ∈ Set.Ico (0 : ℝ) 1)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
@@ -172,13 +169,13 @@ private theorem GridMartBA_H1 {κ : ℝ} (hκ : 0 < κ) (hg : 0 < lam0 n)
 
 /-! ## 3. H2: the drift -/
 
-/-- `M^{(σ'σ)} = (M^{(σσ')})ᵀ` for every `M` (commutativity of `ℂ`; the copy of the private `BAKTreeDeriv_Mss_swap`). -/
+/-- `M^{(σ'σ)} = (M^{(σσ')})ᵀ` for every `M` (commutativity of `ℂ`; as the private `BAKTreeDeriv_Mss_swap`). -/
 private theorem GridMartBA_Mss_swap {L : ℕ} (B : Matrix (Zd d L) (Zd d L) ℂ) (s s' : Bool) :
     BAMss d L B s' s = (BAMss d L B s s')ᵀ := by
   ext a b
   simp only [BAMss, Matrix.of_apply, Matrix.transpose_apply, mul_comm]
 
-/-- `Θ^{(σ'σ)} = (Θ^{(σσ')})ᵀ` (the copy of the private `BAKTreeDeriv_Theta_swap`: `Ring.inverse` commutes with `ᵀ`). -/
+/-- `Θ^{(σ'σ)} = (Θ^{(σσ')})ᵀ` (as the private `BAKTreeDeriv_Theta_swap`: `Ring.inverse` commutes with `ᵀ`). -/
 private theorem GridMartBA_Theta_swap {L : ℕ} [NeZero L] (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool) :
     BATheta d L g E m t s' s = (BATheta d L g E m t s s')ᵀ := by
   unfold BATheta PropThetaQ
@@ -530,9 +527,9 @@ private theorem GridMartBA_H3 (u : ℝ) {H : Matrix (Idx d (sz.L n) (sz.W n)) (I
 
 end QV
 
-/-! ## 5. Target 1: `baGridBridge_holds` -/
+/-! ## 5. `baGridBridge_holds` -/
 
-/-- **Target 1** (`T2460_Bridge`, Amend 1): the three identities at `c₁ = c₂ = a 1` along the grid, eventually along a BA flow, for
+/-- **The three identities**: at `c₁ = c₂ = a 1` along the grid, eventually along a BA flow, for
 every `d`.  The finitely many `n` with `BAflowLam0 sz z n ≤ 0` are absorbed by "eventually" (`BAflow_lam0_window`); `BAReal` holds for
 every `n` (`BAflow_real`); the grid walk `H_{u_k}` is Hermitian at every `k`, `ω`. -/
 theorem baGridBridge_holds (d : ℕ) : BAGridBridge d := by
@@ -557,10 +554,10 @@ theorem baGridBridge_holds (d : ℕ) : BAGridBridge d := by
   · exact GridMartBA_H2 sz (BAflowLam0 sz z) (BAflowEs sz z) n hκ hg hr hu hH σ a
   · exact GridMartBA_H3 sz (BAflowLam0 sz z) (BAflowEs sz z) n _ hH σ a
 
-/-! ## 6. Target 2: the untwisted BA grid pin -/
+/-! ## 6. The untwisted BA grid statement -/
 
-/-- The tail comparison of clause (iii): if `St ≤ 2 Sp` and `2 ≤ N^{ε'/2}` then the event of the pin at `ε'` (the sum `Sp` of the
-untwisted QV) lies inside the event of TL at `ε'/2` (the sum `St` of the twisted QV):
+/-- The tail comparison of clause (iii): if `St ≤ 2 Sp` and `2 ≤ N^{ε'/2}` then the event of the untwisted statement at `ε'` (the sum `Sp` of the
+untwisted QV) lies inside the event of the twisted one at `ε'/2` (the sum `St` of the twisted QV):
 `N^{ε'/2} (St + B)^{1/2} ≤ N^{ε'/2} √2 (Sp + B)^{1/2} ≤ N^{ε'} (Sp + B)^{1/2}`. -/
 private theorem GridMartBA_tail_mono {N Sp St B M ε' : ℝ} (hN0 : 0 < N) (hN : 2 ≤ N ^ (ε' / 2)) (hSp : 0 ≤ Sp) (hSt : 0 ≤ St)
     (hSS : St ≤ 2 * Sp) (hB : 0 ≤ B) (h : N ^ ε' * (Sp + B) ^ (1 / 2 : ℝ) < M) :
@@ -584,10 +581,10 @@ private theorem GridMartBA_tail_mono {N Sp St B M ε' : ℝ} (hN0 : 0 < N) (hN :
         ring
     _ < M := h
 
-/-- **The glue** (private: it takes the unproved Prop `BATwistGridMartAt` as a hypothesis): the three identities and the twisted grid pin at
-`C₀` give the untwisted pin at `C₀`.  `Mart`, `Rem` are TL's where the identities hold (`Pn n`, eventually) and the canonical untwisted ones
-elsewhere (the decomposition holds for every `n`: the conditional expectation cancels).  Clause (iii): the event of the pin at `ε'` lies in
-TL's event at `ε'/2` (`GridMartBA_tail_mono`, H3′, `N^{ε'/2} ≥ 2` eventually). -/
+/-- **The glue** (private: it takes the statement `BATwistGridMartAt` as a hypothesis): the three identities and the twisted grid statement at
+`C₀` give the untwisted one at `C₀`.  `Mart`, `Rem` are those of the twisted statement where the identities hold (`Pn n`, eventually) and the canonical untwisted ones
+elsewhere (the decomposition holds for every `n`: the conditional expectation cancels).  Clause (iii): the event of the untwisted statement at `ε'` lies in
+the twisted event at `ε'/2` (`GridMartBA_tail_mono`, H3′, `N^{ε'/2} ≥ 2` eventually). -/
 private theorem GridMartBA_bridge {d : ℕ} (C₀ : ℝ) (hB : BAGridBridge d) (hT : BATwistGridMartAt d C₀) :
     STGridMartAtgL d C₀ BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow s t hs hst htT D hD
@@ -665,19 +662,16 @@ private theorem GridMartBA_bridge {d : ℕ} (C₀ : ℝ) (hB : BAGridBridge d) (
           mul_le_mul_of_nonneg_left h3 (hΔ n)
       _ = 2 * (gridStep s t K n * ‖STEEMg Cm n (gridTime s t K n j) (Cm.Hpath s t K n j ω) i.1 i.2‖) := by ring
 
-/-! ## 7. Target 2: `baGridMart_holds` -/
+/-! ## 7. `baGridMart_holds` -/
 
-/-- **Target 2** (`T2460_GridMart`): the untwisted BA grid pin `STGridMartgL` at `baStep2Mat` along `BAFlow`, for every `d`: TL's
-`baTwistGridMart_holds` and the three identities `baGridBridge_holds`.  The pin is the case `m = 2` of the carrier-generic Props of
-`Chain/Step2Gen`; the reading of `STGridMartAtgL` (T1: `∃ C₀`) is `GridMartBA_bridge`. -/
+/-- **The untwisted BA grid statement** `STGridMartgL` at `baStep2Mat` along `BAFlow`, for every `d`: from `baTwistGridMart_holds` and the three
+identities `baGridBridge_holds`.  The statement is the case `m = 2` of the carrier-generic statements of
+`Chain/Step2Gen`; the reading of `STGridMartAtgL` (`∃ C₀`) is `GridMartBA_bridge`. -/
 theorem baGridMart_holds (d : ℕ) :
     STGridMartgL d BAFlow (fun sz z => baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) BAflowT0 := by
   obtain ⟨C₀, hC₀, hAt⟩ := baTwistGridMart_holds d
   exact ⟨C₀, hC₀, GridMartBA_bridge C₀ (baGridBridge_holds d) hAt⟩
 
-/-! ## 8. Compiled nonempty instances (`d = 3`, `sz0`: `n = 0` has `L = 4`, `W = 32`, `λ = 1/64`; flow `flow_sz0` at
-`(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `z = zSeq`; `s ≡ 1/10`, `t ≡ 1/2 < BAflowT0` by `half_lt_t0`; `D = 1`;
-`K n = ⌈N_n^{CK}⌉₊ + 1`).  Every deterministic hypothesis is discharged; the hypotheses of the pins are the data, none is assumed. -/
 
 end RBM.BA
 

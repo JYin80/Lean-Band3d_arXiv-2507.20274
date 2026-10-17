@@ -18,28 +18,24 @@ import RBM3D.BA.TwistStep2
 import RBM3D.BA.CombesThomas
 
 /-!
-# The X1 instance `IniTermGen_CltFlow` at the block Anderson tuple (T2501, row a2, U4-BA)
+# The class `IniTermGen_CltFlow` at the block Anderson tuple
 
-The BA producers of the five registry heads `STThPropsg`, `STKpropsg`, `STMfarg`, `STKfargL`,
+The block Anderson proofs of the five inputs `STThPropsg`, `STKpropsg`, `STMfarg`, `STKfargL`,
 `CltInvg` over the carrier `baFMz sz z` along every `BAFlow`, and the class `IniTermGen_CltFlow`
-(`Chain/CltFarUGen.lean:62`) at `(fun sz => seqP (sz.withLam 0), BAFlow, baFMz, BAflowT0)`
-(target 2 = `T2501_CltFlowBA`).  New leaf file: nothing merged is edited.
+(`Chain/CltFarUGen.lean`) at `(fun sz => seqP (sz.withLam 0), BAFlow, baFMz, BAflowT0)`
+(`baIniTermGen_cltFlow`).
 
-Coupling (UBA-C1, DECISIONS §269 (2), §273 (1)): the propagator `STThg (baFMz sz z)` is `BATheta`
+Coupling: the propagator `STThg (baFMz sz z)` is `BATheta`
 at the kernel coupling `g₀ = BAflowLam0`; every estimate of `STThPropsg`, `STKpropsg` is stated at
-`sz.lam`.  The one comparison is R1 (`TwistStep2_lam0_sq`): `g₀² ≤ g²` and `g² ≤ A g₀²` with
+`sz.lam`.  The one comparison is `TwistStep2_lam0_sq`: `g₀² ≤ g²` and `g² ≤ A g₀²` with
 `A = (κ+1)/κ`, used as `(g₀²+x)⁻¹ ≤ A (g²+x)⁻¹`, `Bparam(g₀) ≤ A Bparam(g)` and
 `ℓ_t(g₀) ≤ ℓ_t(g)` (`EMn2BA_ellT_mono_g`).  Constants depend on `(d, κ, 𝔡)` only.
 
-Paper: arXiv:2507.20274, `lem_propTH` properties 5-7 (`1_2:1124-1167`, BA remark `1_2:1150`),
-`lem:propM` (`7_8:1847-1912`), `(Kn2sol)` (`1_2:1175`),
-`lem;CLT` hypotheses (`3_5:2173-2176`).
+Paper: arXiv:2507.20274, Lemma 2.19 (`lem_propTH`) properties 5-7 (with the block Anderson remark after (2.67)
+`prop:ThfadC_short`), Lemma 8.3 (`lem:propM`), (2.71) `Kn2sol`, and the hypotheses of Lemma 5.1 (`lem;CLT`).
 
-Ports (copies, adapted): `Chain/CltFarUGen.lean:83-108` (`iniTermGen_cltFlow_band`, the shape of
-the class proof); `Evolution/MeanFarG.lean:735-812` (`meanFarG_chk_Th`, `meanFarG_chk_K`, the shape
-of the producers of `STThPropsg`, `STKpropsg`); `BA/SEforLnBA.lean:51-57`
-(`SEforLnBA_Ksol_isKLoopS`, private there); `BA/TwistStep2.lean:1353-1448`
-(`TwistStep2_flowII`, the regime datum of the instances).
+The argument follows the band formalization: the class proof is that of `Chain/CltFarUGen.lean`, and the producers
+of `STThPropsg`, `STKpropsg` follow `Evolution/MeanFarG.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -79,7 +75,7 @@ private theorem CltFlowBA_STThg {κ ε 𝔠 𝔡 : ℝ} {sz : Sizes d} {z : ℕ 
   have := Step2Kern_Mss_BA sz (BAflowLam0 sz z) (BAflowEs sz z) n (CltFlowBA_Im_ne hκ hflow n) σ σ'
   rw [show baFMz sz z = baFM sz (BAflowLam0 sz z) (BAflowEs sz z) from rfl, this]
 
-/-- R1 at one index: `0 < g₀` gives `0 < g`, `g₀ ≤ g`, and `g² ≤ A g₀²`, `A = (κ+1)/κ` (`TwistStep2_lam0_sq`). -/
+/-- The comparison of `g₀` with `g` at one index: `0 < g₀` gives `0 < g`, `g₀ ≤ g`, and `g² ≤ A g₀²`, `A = (κ+1)/κ` (`TwistStep2_lam0_sq`). -/
 private theorem CltFlowBA_cmp {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {sz : Sizes d} {z : ℕ → ℂ}
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) (hg0 : 0 < BAflowLam0 sz z n) :
     0 < sz.lam n ∧ BAflowLam0 sz z n ≤ sz.lam n ∧ sz.lam n ^ 2 ≤ (κ + 1) / κ * BAflowLam0 sz z n ^ 2 := by
@@ -127,10 +123,10 @@ section ThProps
 
 variable {d : ℕ}
 
-/-- **`STThPropsg` along every BA flow** (registry head, `Chain/CltGen.lean:127`; X1-C2; crossing (g), R1's second conjunct only).
+/-- **`STThPropsg` along every BA flow** (the second conjunct of `TwistStep2_lam0_sq` only).
 `Θ = STThg (baFMz sz z) = BATheta` at the kernel coupling `g₀` (`Step2Kern_Mss_BA`); shift `baP8_BATheta_shift`, symmetry
 `BATheta_isSymm`, decay and the two differences from `baProp5to8_holds d 𝔡⁻¹ κ (1/2)` (`Λ = 𝔡⁻¹`, window `0 < g₀ ≤ 𝔡⁻¹` eventually,
-`BAflow_lam0_window`), each converted from `g₀` to `sz.lam` through `g² ≤ A g₀²`, `A = (κ+1)/κ` (R1), `ℓ_t(g₀) ≤ ℓ_t(g)`.
+`BAflow_lam0_window`), each converted from `g₀` to `sz.lam` through `g² ≤ A g₀²`, `A = (κ+1)/κ`, `ℓ_t(g₀) ≤ ℓ_t(g)`.
 Constants `(A C₅, c₅, A C₆, A C₇)` depend on `(d, κ, 𝔡)` only. -/
 theorem baSTThPropsg_holds (d : ℕ) (hd : 3 ≤ d) : ∀ κ ε 𝔠 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ),
     BAFlow sz κ ε 𝔠 𝔡 z → STThPropsg (baFMz sz z) := by
@@ -215,7 +211,7 @@ private theorem CltFlowBA_Mfine_row (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : �
   simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   exact BAMB_row_sq_real d (sz.L n) (lam0 n) (E n) (BAmF sz lam0 E n) h _
 
-/-- One decay profile for both branches of `lem:propM` (3) (`baPropM_holds`, `CombesThomas:562`; the paper's `7_8:1847-1912`):
+/-- One decay profile for both branches of Lemma 8.3 `lem:propM` (3) (`baPropM_holds`):
 `‖M^{(B)}_{ab}‖ ≤ K e^{-c_M |a-b|}`, `K = max (c⁻¹, 1)`, `c_M = min (c, log 2)`; constants in `(d, κ, 𝔡)` only.  Small branch
 `g₀ < (2C)⁻¹`: `(C g₀)^{|a-b|} ≤ 2^{-|a-b|}`; large branch: `c⁻¹ e^{-c|a-b|}`. -/
 private theorem CltFlowBA_MB_decay (hd : 3 ≤ d) {κ 𝔡 : ℝ} (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
@@ -253,9 +249,9 @@ private theorem CltFlowBA_MB_decay (hd : 3 ≤ d) {κ 𝔡 : ℝ} (hκ : 0 < κ)
       nlinarith [min_le_left c (Real.log 2)]
     exact mul_le_mul (le_max_left _ _) h4 (Real.exp_pos _).le hK0.le
 
-/-- **`STMfarg` along every BA flow** (registry head, `Chain/CltGen.lean:121`; input (e)): `M = M^{(B)} ⊗ I` has entries
+/-- **`STMfarg` along every BA flow**: `M = M^{(B)} ⊗ I` has entries
 `≤ W^{-D}` between blocks at distance `≥ c (log W)³ ℓ_τ ≥ c (log W)³` (`ℓ_τ ≥ 1`), from the decay profile of `M^{(B)}` at `g₀`
-(`CltFlowBA_MB_decay`) and `log W → ∞` (`W ≥ N^𝔠`).  Needs `|blk x - blk y|_∞ ≤ |blk x - blk y|_L` only; no `R1`. -/
+(`CltFlowBA_MB_decay`) and `log W → ∞` (`W ≥ N^𝔠`).  Needs `|blk x - blk y|_∞ ≤ |blk x - blk y|_L` only; no comparison of `g₀` with `g` is needed. -/
 theorem baSTMfarg_holds (d : ℕ) (hd : 3 ≤ d) : ∀ κ ε 𝔠 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ),
     BAFlow sz κ ε 𝔠 𝔡 z → ∀ τ : ℕ → ℝ, STMfarg (baFMz sz z) τ := by
   intro κ ε 𝔠 𝔡 hκ h𝔡 sz z hflow τ c₀ D hc₀ hD
@@ -305,13 +301,13 @@ section Rep
 
 variable {d : ℕ}
 
-/-- **`STKfargL` along every BA flow** (registry head, `Chain/CltGen.lean:115`): the merged `baEMn2ExpHK` (`EMn2BA:637`, from `(Kn2sol)`
-and BAT-C2) is the premise `emn2ExpHK` whose conclusion is `STKfargL` verbatim (`emn2ExpEllStar` unfolds). -/
+/-- **`STKfargL` along every BA flow**: `baEMn2ExpHK` (`BA/EMn2BA`, from (2.71) `Kn2sol`)
+is the premise `emn2ExpHK` whose conclusion is `STKfargL` verbatim (`emn2ExpEllStar` unfolds). -/
 theorem baSTKfargL_holds (d : ℕ) (hd : 3 ≤ d) : ∀ κ ε 𝔠 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ),
     BAFlow sz κ ε 𝔠 𝔡 z → ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → STKfargL (baFMz sz z) t :=
   fun κ ε 𝔠 𝔡 hκ hε h𝔡 sz z hflow t ht0 htT => baEMn2ExpHK hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT
 
-/-- **`CltRepg` at the BA tuple** (`H₀ = g₀ Ψ`, `g' = 0`, `E = BAflowEs`; `Chain/CltGen.lean:84`): `baFMz` represents `seqHflowBA g₀` of the law
+/-- **`CltRepg` at the BA tuple** (`H₀ = g₀ Ψ`, `g' = 0`, `E = BAflowEs`): `baFMz` represents `seqHflowBA g₀` of the law
 `seqP (sz.withLam 0)` at `ztOf m_F E u`; `H₀` is Hermitian since `g₀` is real and `Ψ` is.  Every other clause is definitional. -/
 theorem baCltRepg_holds {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) :
     CltRepg (baFMz sz z) (Sizes.seqP (sz.withLam 0))
@@ -335,7 +331,7 @@ private theorem CltFlowBA_PsiB_inv (L : ℕ) [NeZero L] (T : Zd d L ≃ Zd d L)
   · simp [h, hA.2 h]
   · simp [h, mt hA.1 h]
 
-/-- **`CltInvg` at the BA tuple** (input (h), registry head `Chain/CltGen.lean:147`): `H₀ = g₀ Ψ` is invariant under the lift to the fine
+/-- **`CltInvg` at the BA tuple**: `H₀ = g₀ Ψ` is invariant under the lift to the fine
 lattice of the block translations and of the reflection, because `Ψ = Ψ^{(B)} ⊗ I` and `Adj` depends on `|a - b|_L` only. -/
 theorem baCltInvg_holds {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) :
     CltInvg (sz := sz) (fun n => ((BAflowLam0 sz z n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) := by
@@ -357,8 +353,8 @@ section Kprops
 
 variable {d : ℕ}
 
-/-- `BAKsol` solves `IsKLoopS` at every size index from `BAReal` alone (no `0 < g`): `baKcac_isKLoopS` is the witness (copy of the private
-`SEforLnBA_Ksol_isKLoopS`, `BA/SEforLnBA.lean:51`).  This is the source of the `∀ n` clauses at indices with `g₀ n ≤ 0`. -/
+/-- `BAKsol` solves `IsKLoopS` at every size index from `BAReal` alone (no `0 < g`): `baKcac_isKLoopS` is the witness (as the private
+`SEforLnBA_Ksol_isKLoopS` in `BA/SEforLnBA`).  This is the source of the `∀ n` clauses at indices with `g₀ n ≤ 0`. -/
 private theorem CltFlowBA_Ksol_isKLoopS {L W : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) :
     IsKLoopS d L W (1 : Matrix (Zd d L) (Zd d L) ℂ) (PropSpin m)
       (BAMLoop d L W (BAMsigma d L (BAMB d L g (E : ℂ) m))) (Set.Ico (0 : ℝ) 1)
@@ -368,7 +364,7 @@ private theorem CltFlowBA_Ksol_isKLoopS {L W : ℕ} [NeZero L] {g κ E : ℝ} {m
   simp only [BAKsol, hex, ↓reduceDIte]
   exact hex.choose_spec
 
-/-- `(Kn2sol)` for `BAKsol` at every `g` (`BAReal` only): `baKsol_two` (`KInduct:88`) without `0 < g`; `baK_unique` against the spliced
+/-- `(Kn2sol)` for `BAKsol` at every `g` (`BAReal` only): `baKsol_two` (`BA/KInduct`) without `0 < g`; `baK_unique` against the spliced
 family `BAKcac` (`BAKcac_spliced` clause 2). -/
 private theorem CltFlowBA_K_two {L W : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ}
     (ht : t ∈ Set.Ico (0 : ℝ) 1) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d L) :
@@ -401,7 +397,7 @@ private theorem CltFlowBA_Mss_neg (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a 
     BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ (-a) (-b) = BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ a b := by
   simp only [BAMss, Matrix.of_apply, CltFlowBA_Msig_neg]
 
-/-- `Θ_t(-a, -b) = Θ_t(a, b)`, every `(σ₁, σ₂)`, unconditional (the pattern of `baP8_BATheta_shift`, `Prop6Path:497`, with `Equiv.neg`). -/
+/-- `Θ_t(-a, -b) = Θ_t(a, b)`, every `(σ₁, σ₂)`, unconditional (as `baP8_BATheta_shift`, with `Equiv.neg`). -/
 private theorem CltFlowBA_Theta_neg (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b : Zd d L) :
     BATheta d L g E m t σ₁ σ₂ (-a) (-b) = BATheta d L g E m t σ₁ σ₂ a b := by
   have hA : (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂).submatrix (Equiv.neg _) (Equiv.neg _)
@@ -448,7 +444,7 @@ section KpropsMain
 
 variable {d : ℕ}
 
-/-- **`STKpropsg` along every BA flow** (registry head, `Chain/CltGen.lean:140`; crossing (g)).  Invariance, for every `n` and `t ∈ [0,1)`
+/-- **`STKpropsg` along every BA flow**.  Invariance, for every `n` and `t ∈ [0,1)`
 (`BAReal` only, so also at indices with `g₀ n ≤ 0`): translation by `baK_translate` with `baKcac_isKLoopS` (`BAKsol` solves `IsKLoopS`
 through the witness), reflection from `(Kn2sol)` (`CltFlowBA_K_two`) with `Θ(-a,-b) = Θ(a,b)` and `M^{(σσ')}(-a,-b) = M^{(σσ')}(a,b)`.
 Size: `‖𝒦^{(2)}_s‖ = W^{-d} |(Θ M^{(σσ')})(a,b)| ≤ W^{-d} sup|Θ| ≤ c₁/(g² W^d)` with `c₁ = A C₅ (1 + 2^{d-1})`, `sup|Θ| ≤ c₁/g²`
@@ -533,7 +529,7 @@ theorem baSTKpropsg_holds (d : ℕ) (hd : 3 ≤ d) : ∀ κ ε 𝔠 𝔡 : ℝ, 
 
 end KpropsMain
 
-/-! ## 6. Target 2: the class `IniTermGen_CltFlow` at the BA tuple -/
+/-! ## 6. The class `IniTermGen_CltFlow` at the BA tuple -/
 
 section Class
 
@@ -557,12 +553,12 @@ private theorem CltFlowBA_one_sub_T0 {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε
   have hp : 0 < ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) := Real.rpow_pos_of_pos hN0 _
   nlinarith [mul_le_mul_of_nonneg_left hn hp.le]
 
-/-- **Target 2, `baIniTermGen_cltFlow`** (`T2501_CltFlowBA`; the X1 instance, C9): the class `IniTermGen_CltFlow` (`Chain/CltFarUGen.lean:62`)
+/-- **`baIniTermGen_cltFlow`**: the class `IniTermGen_CltFlow`
 at `(fun sz => seqP (sz.withLam 0), BAFlow, baFMz, BAflowT0)`, every `d` (the class carries its own `3 ≤ d`).  `κ' = min κ 1`, `δ = ε/2`
 before `(𝔠, sz, z)`; along a flow: `H₀ = g₀ Ψ`, `g' = 0`, `E = BAflowEs`; `κ' ≤ Im m_F` (`EMn2BA_mF_data`); `N^{-1+δ} ≤ 1 - T₀`;
 `CltRepg` (`baCltRepg_holds`); the Ward row `Σ_y |M_xy|² = 1` (`CltFlowBA_Mfine_row`); `STThPropsg`; `STExpInvgL` through
-`stExpInvgL_of_rep` (`baCltRepg_holds`, `baCltInvg_holds`); and, per `(s, t)` under `STReg5I`: `STMfarg`, `STGijDecgL` (merged
-`baSTGijDecgL_holds`), `STKfargL`, `STKpropsg`.  Band twin `iniTermGen_cltFlow_band`. -/
+`stExpInvgL_of_rep` (`baCltRepg_holds`, `baCltInvg_holds`); and, per `(s, t)` under `STReg5I`: `STMfarg`, `STGijDecgL`
+(`baSTGijDecgL_holds`), `STKfargL`, `STKpropsg`. -/
 theorem baIniTermGen_cltFlow (d : ℕ) : IniTermGen_CltFlow d (fun sz => Sizes.seqP (sz.withLam 0))
     (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0 := by
   intro hd κ ε 𝔡 hκ hε h𝔡
@@ -581,15 +577,5 @@ theorem baIniTermGen_cltFlow (d : ℕ) : IniTermGen_CltFlow d (fun sz => Sizes.s
       baSTKpropsg_holds d hd κ ε 𝔠 𝔡 hκ h𝔡 sz z hflow s t hs0 hst htl hreg⟩
 
 end Class
-
-/-! ## 7. Compiled nonempty instances (`d = 3`)
-
-(A) The merged datum `(sz0, zSeq, flow_sz0)` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`; `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`):
-the `t`-free fields of target 2 and the four producers that need no regime.  The regime window of case (i) is empty along `zSeq`
-(`Im z_n ≥ 11/30`, so `1 - T₀ ≥ 11/36 > lam² `, while `STReg5I` needs `1 - s ≤ lam²`, `s < t ≤ T₀`).
-(B) So the `∀ (s, t)` block of target 2 and `STKpropsg` are applied at a second datum with a nonempty window: `L ≡ 4`, `W_n = n + 25`,
-`lam ≡ 1`, `w = (5003/5000) i`, `z ≡ w - m_w` (the pattern of `TwistStep2_flowII`, `BA/TwistStep2.lean:1353`, `BASelf_subord`),
-`(κ, ε, 𝔠, 𝔡) = (1/70, 1/2, 1/9, 1/10)`, regime `s ≡ 0 < t ≡ 1/100 ≤ κ/(κ+1) ≤ T₀`: `lam²/L² = 1/16 ≤ 99/100`, `1 - s = 1 ≤ lam²`.
-The data of (B) are private. -/
 
 end RBM.BA

@@ -14,28 +14,24 @@ import RBM3D.BA.GreenSchur
 import RBM3D.BA.Ward
 
 /-!
-# `lem:EMn2_N` at block Anderson (BA-T row T2-BA with T6-BA, ticket T2416)
+# Lemma 3.13 (`lem: EMn2_N`) at block Anderson
 
-Supervisor `docs/supervisor/2026-10-11-0853.md` REQ-BAT (Q1, Q2, BAT-C2); design
-`docs/reports/T2379-design.md` §2 (row T2); T2404 (`Induction/EMn2Poly.lean:835`,
-`EMn2Exp1.lean:811`, `EMn2Exp2.lean:934, 1226, 1260`).  Paper: `7_8:1994-2002`
-(`(eq:MG_conclusion3_BA)`, `(Kn2sol)`, `BAProp5`).
+Paper: Lemma 3.13 (`lem: EMn2_N`) for the block Anderson model: (8.14) `eq:MG_conclusion3_BA`, (2.71) `Kn2sol`, `BAProp5`.
 
-T2404 proved the three estimates of `lem:EMn2_N` over any carrier under the fact blocks
-`emn2PolyFacts`, `emn2ExpFacts`, `emn2ExpHK`.  This file discharges the blocks at the BA reading
-`Flow := BAFlow`, `mk := baFMz`, `T0 := BAflowT0`, `Hf := baEMn2Hf` (`seqHflowBA` at `BAflowLam0`),
-`ζf := baEMn2Zf` (`ztOf` at the real-axis `m_F`), and states the BA pins.
+The three estimates of Lemma 3.13 hold over any carrier under the fact blocks
+`emn2PolyFacts`, `emn2ExpFacts`, `emn2ExpHK` (`Induction/EMn2Poly.lean`, `EMn2Exp1.lean`, `EMn2Exp2.lean`).  This file
+discharges the blocks at the BA reading `Flow := BAFlow`, `mk := baFMz`, `T0 := BAflowT0`, `Hf := baEMn2Hf` (`seqHflowBA` at
+`BAflowLam0`), `ζf := baEMn2Zf` (`ztOf` at the real-axis `m_F`), and states the estimates at that reading.
 
 * `baEMn2PolyFacts`, `baEMn2ExpFacts`: the clauses (A), (R), (S), (T), (E), (B) from `BAFlow`
   alone (constants in `(d, κ, 𝔡)`).
-* `baComp_*`, `baComp_holds` (BAT-C2): the composition `Θ_BA M^{(σσ')}` has row and column sums
+* `baComp_Q_row`, `baComp_Q_col`, `baComp_row_le`, `baComp_col_le`, `baComp_holds` (`BACompBound`): the composition `Θ_BA M^{(σσ')}` has row and column sums
   `≤ (1-t)⁻¹` and decays beyond `ℓ_t(g)`, for every charge pair.
-* `baEMn2ExpHK`: `(HK)` from `(Kn2sol)` (`baKsol_two`) and BAT-C2.
-* `baSTEMn2Poly`, `baSTEMn2ExpJ`, `baSTEMn2Exp`: the pins at the BA reading; the three stage-L
-  premises stay premises of the pins.
-* `baSTContractM`, `baSTContractM_flow`: `STContractM` at `H = seqHflowBA`, `z = ztOf` (T6-BA).
+* `baEMn2ExpHK`: `(HK)` from `(Kn2sol)` (`baKsol_two`) and `baComp_holds`.
+* `baSTEMn2Poly`, `baSTEMn2Exp`: the estimates at the BA reading; the Green function hypotheses `STInitialGT2gL`,
+  `STLWassmgL`, `STLWassmExpgL` are hypotheses of the statements `STEMn2PolygL`, `STEMn2ExpgL`.
 
-No scalar `m`, no smallness of `g`, no `‖M - m₀ I‖` small.  Nothing imports this file.
+No scalar `m`, no smallness of `g`, no `‖M - m₀ I‖` small.
 -/
 
 set_option linter.style.longLine false
@@ -55,16 +51,16 @@ section Reading
 
 variable {d : ℕ}
 
-/-- The matrix `Hf` of the BA reading: `seqHflowBA` at the flow coupling `g₀ = BAflowLam0` (`Gauss/BlockAnderson.lean:83`). -/
+/-- The matrix `Hf` of the BA reading: `seqHflowBA` at the flow coupling `g₀ = BAflowLam0`. -/
 def baEMn2Hf (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   sz.seqHflowBA (BAflowLam0 sz z) n u ω
 
-/-- The spectral parameter `ζf` of the BA reading: `z_u = E_n + (1 - u) m_F` (`Loop/GLoopFlow.lean:55`). -/
+/-- The spectral parameter `ζf` of the BA reading: `z_u = E_n + (1 - u) m_F`. -/
 def baEMn2Zf (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (u : ℝ) : ℂ :=
   ztOf (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAflowEs sz z n) u
 
-/-- `seqHflowBA` is Hermitian (private copies: `FlowPins:925`, `Step1Trivial:103`, `ConArg:311`, `GreenLocal:179`). -/
+/-- `seqHflowBA` is Hermitian. -/
 theorem EMn2BA_seqHflowBA_herm (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) :
     (sz.seqHflowBA lam0 n u ω).IsHermitian := by
   unfold Sizes.seqHflowBA
@@ -73,7 +69,7 @@ theorem EMn2BA_seqHflowBA_herm (sz : Sizes d) (lam0 : ℕ → ℝ) (n : ℕ) (u 
   rw [conjTranspose_smul, (PsiI_isHermitian d _ _).eq,
     show star (lam0 n : ℂ) = (lam0 n : ℂ) from Complex.conj_ofReal _]
 
-/-- `S^{(B)}(0) = 1`: `sbKernel d L 0 = δ₀` (`Defs/Block.lean:38-44`). -/
+/-- `S^{(B)}(0) = 1`: `sbKernel d L 0 = δ₀`. -/
 theorem EMn2BA_SB_zero (L : ℕ) [NeZero L] : SB d L 0 = 1 := by
   ext a b
   simp only [SB_apply, sbKernel, Matrix.one_apply, sub_eq_zero]
@@ -131,13 +127,13 @@ theorem EMn2BA_mF_data {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} 
 
 end Reading
 
-/-! ## 2. Targets 1, 2: the fact blocks -/
+/-! ## 2. The fact blocks -/
 
 section Facts
 
 variable (d : ℕ)
 
-/-- **Target 1** (rows (A), (R), (S)): `emn2PolyFacts` at the BA reading. -/
+/-- **Clauses (A), (R), (S)**: `emn2PolyFacts` at the BA reading. -/
 theorem baEMn2PolyFacts : emn2PolyFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Zf := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow
   refine ⟨hflow.1, fun n u hu0 huT => ?_, fun n => ⟨0, ?_⟩⟩
@@ -151,10 +147,10 @@ theorem baEMn2PolyFacts : emn2PolyFacts d BAFlow baFMz BAflowT0 baEMn2Hf baEMn2Z
   · exact (EMn2BA_SB_zero (sz.L n)).symm
 
 set_option maxHeartbeats 800000 in
--- the copied proof of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1049`) carries the same limit
-/-- **Target 2** (rows (T), (E), (B)): `emn2ExpFacts` at the BA reading.
+-- the proof follows that of `ST_Bdata_holds` and needs the same heartbeat limit
+/-- **Clauses (T), (E), (B)**: `emn2ExpFacts` at the BA reading.
 
-(B) is the BA twin of `ST_Bdata_holds` (`Induction/Step2Iterate.lean:1049`): `Bctl` reads `sz.lam n = g` (`Defs/Sizes.lean:214`),
+(B) is the block Anderson analogue of `ST_Bdata_holds`: `Bctl` reads `sz.lam n = g`,
 `cB = (𝔡⁻² + 1)⁻¹`, `c = min (2𝔡𝔠) ε / 2`; the upper bound is `(g² W^d)⁻¹ + (N(1-u))⁻¹ ≤ N^{-2𝔡𝔠} + 2N^{-ε}`
 with `1 - u ≥ 1 - t₀ ≥ Im z_n / 2 ≥ N^{-1+ε}/2` (`EMn2BA_one_sub_T0`). -/
 theorem baEMn2ExpFacts :
@@ -281,19 +277,18 @@ theorem baEMn2ExpFacts :
 
 end Facts
 
-/-! ## 3. BAT-C2: the composition `Θ_BA M^{(σσ')}` for every charge pair
+/-! ## 3. The composition `Θ_BA M^{(σσ')}` for every charge pair
 
 `𝒦^{(2)}_{t,(σ,σ')} = W^{-d} (Θ^{(σσ')}_t M^{(σσ')})` (`(Kn2sol)`, `BAKsolve`).  Its marginals are `≤ (1-t)⁻¹` and it decays
 beyond `ℓ_t(g)`: the sources are `baProp5_holds` (all `σ₁ σ₂`, rate `ellT L g t`), `BAK_row_sum`/`BAK_col_sum`
-(`|M^{(σσ')}_{ab}| = BAK_{ab}`, `BAMss_norm_eq_BAK`) and `BAMB_decay_large`.  `baTheta_weighted_l1` (`BA/GreenStab.lean:251`) covers
-only `σ₁ = σ₂`; `BAMfine_decay` is the fine-lattice form (not needed: `𝒦` lives on the coarse lattice).  Constants `(d, Λ, κ)`. -/
+(`|M^{(σσ')}_{ab}| = BAK_{ab}`, `BAMss_norm_eq_BAK`) and `BAMB_decay_large`.  `baTheta_weighted_l1` covers
+only `σ₁ = σ₂`.  Constants `(d, Λ, κ)`. -/
 
 section Comp
 
 variable {d L : ℕ} [NeZero L]
 
-/-- `Σ_b |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Θ Q` and `Σ_b |Q(c,b)| ≤ 1` (copy of `KStep_row_of_resolvent`, `BA/KStep.lean:279`,
-private there). -/
+/-- `Σ_b |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Θ Q` and `Σ_b |Q(c,b)| ≤ 1`. -/
 private theorem EMn2BA_row_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] (Θ Q : Matrix G G ℂ)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hres : Θ = 1 + (t : ℂ) • (Θ * Q))
     (hQ : ∀ c, ∑ b, ‖Q c b‖ ≤ 1) (a : G) : ∑ b, ‖Θ a b‖ ≤ (1 - t)⁻¹ := by
@@ -325,8 +320,7 @@ private theorem EMn2BA_row_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] 
   rw [← one_div, le_div_iff₀ h1t]
   nlinarith
 
-/-- `Σ_a |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Q Θ` and `Σ_a |Q(a,c)| ≤ 1` (copy of `KWardIneq_col_of_resolvent`,
-`BA/KWardIneq.lean:219`, private there). -/
+/-- `Σ_a |Θ(a,b)| ≤ (1-t)⁻¹` from `Θ = 1 + t Q Θ` and `Σ_a |Q(a,c)| ≤ 1`. -/
 private theorem EMn2BA_col_of_resolvent {G : Type*} [Fintype G] [DecidableEq G] (Θ Q : Matrix G G ℂ)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hres : Θ = 1 + (t : ℂ) • (Q * Θ))
     (hQ : ∀ c, ∑ a, ‖Q a c‖ ≤ 1) (b : G) : ∑ a, ‖Θ a b‖ ≤ (1 - t)⁻¹ := by
@@ -382,7 +376,7 @@ theorem baTheta_col_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : 
   EMn2BA_col_of_resolvent _ _ ht0 ht1 (BATheta_resolvent d L g κ E m hr t ht0 ht1 σ₁ σ₂).1
     (fun c => (baComp_Q_col hr σ₁ σ₂ c).le) b
 
-/-- **BAT-C2, rows**: `Σ_b |(Θ M^{(σ₁σ₂)})(a,b)| ≤ (1-t)⁻¹`. -/
+/-- **Rows of the composition**: `Σ_b |(Θ M^{(σ₁σ₂)})(a,b)| ≤ (1-t)⁻¹`. -/
 theorem baComp_row_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (σ₁ σ₂ : Bool) (a : Zd d L) :
     ∑ b, ‖(BATheta d L g E m t σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) a b‖ ≤ (1 - t)⁻¹ := by
@@ -399,7 +393,7 @@ theorem baComp_row_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : �
         simp only [baComp_Q_row hr, mul_one]
     _ ≤ (1 - t)⁻¹ := baTheta_row_le hr ht0 ht1 σ₁ σ₂ a
 
-/-- **BAT-C2, columns**: `Σ_a |(Θ M^{(σ₁σ₂)})(a,b)| ≤ (1-t)⁻¹`. -/
+/-- **Columns of the composition**: `Σ_a |(Θ M^{(σ₁σ₂)})(a,b)| ≤ (1-t)⁻¹`. -/
 theorem baComp_col_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (σ₁ σ₂ : Bool) (b : Zd d L) :
     ∑ a, ‖(BATheta d L g E m t σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) a b‖ ≤ (1 - t)⁻¹ := by
@@ -427,7 +421,7 @@ theorem EMn2BA_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) 
   simp only [add_neg_cancel, ← sub_eq_add_neg] at h
   exact h.symm
 
-/-- `B_{t,K} ≤ 2 (1-t)⁻¹` for `t < 1`, `L ≥ 1` (copy of `kellStar_bparam_le`, `Path/KellStar.lean:68`, private there). -/
+/-- `B_{t,K} ≤ 2 (1-t)⁻¹` for `t < 1`, `L ≥ 1`. -/
 theorem EMn2BA_bparam_le (d L : ℕ) (hL : 1 ≤ L) (g : ℝ) {u : ℝ} (hu : u < 1) (n : ℕ) :
     Bparam d L g u n ≤ 2 * (1 - u)⁻¹ := by
   have hx : 0 < 1 - u := by linarith
@@ -449,7 +443,7 @@ theorem EMn2BA_bparam_le (d L : ℕ) (hL : 1 ≤ L) (g : ℝ) {u : ℝ} (hu : u 
 
 end Comp
 
-/-- **BAT-C2** (pin shape, as `BAProp5`): for `3 ≤ d`, `Λ, κ > 0` there are `C, c > 0` (depending on `(d, Λ, κ)` only), fixed before
+/-- **The composition bound** (statement shape as `BAProp5`): for `3 ≤ d`, `Λ, κ > 0` there are `C, c > 0` (depending on `(d, Λ, κ)` only), fixed before
 `L, g, E, m`, such that for `0 < g ≤ Λ`, `L ≥ 3`, the real-axis datum `BAReal d L g κ E m`, `0 ≤ t < 1` and **every** pair
 `σ₁ σ₂ ∈ {±}` (the mixed pair `(+,-)` included): the marginals of `Θ^{(σ₁σ₂)}_t M^{(σ₁σ₂)}` are `≤ (1-t)⁻¹`, and
 `|(Θ M)(a,b)| ≤ C (1-t)⁻¹ exp(-c |a - b|_L / ℓ_t(g))` (`ellT L g t`, the rate of `BAProp5`).  No `L^d` volume factor, no smallness
@@ -465,7 +459,7 @@ def BACompBound (d : ℕ) (Λ κ : ℝ) : Prop :=
           ∀ a b : Zd d L, ‖(BATheta d L g E m t σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) a b‖ ≤
             C * (1 - t)⁻¹ * Real.exp (-c * (zdistD d L (a - b) : ℝ) / ellT L g t)
 
-/-- **BAT-C2 holds** (all constants in `(d, Λ, κ)`): `C = 2 C₅ + c₀⁻²`, `c = min (c₅ / 2) c₀` with `(C₅, c₅)` from `baProp5_holds` and
+/-- **`BACompBound` holds** (all constants in `(d, Λ, κ)`): `C = 2 C₅ + c₀⁻²`, `c = min (c₅ / 2) c₀` with `(C₅, c₅)` from `baProp5_holds` and
 `c₀ = BAct_rate d Λ κ`.  Proof: `Σ_c |Θ(a,c)| |Q(c,b)|`, `|a - b| ≤ |a - c| + |c - b|`; the case `|a - c| ≥ |a - b|/2` uses `BAProp5` for
 `Θ` and `Σ_c |Q(c,b)| = 1`; the case `|c - b| ≥ |a - b|/2` uses `|Q_{cb}| = |M^{(B)}_{cb}|²` and `(Mbound_AO2)` (`BAMB_decay_large`),
 `ℓ_t ≥ 1`, and `Σ_c |Θ(a,c)| ≤ (1-t)⁻¹`. -/
@@ -583,17 +577,17 @@ theorem baComp_holds (d : ℕ) (Λ κ : ℝ) : BACompBound d Λ κ := by
         gcongr
     _ = (2 * C₅ + c₀⁻¹ ^ 2) * (1 - t)⁻¹ * Real.exp (-(min (c₅ / 2) c₀) * r / ℓ) := by ring
 
-/-! ## 4. Target 4: `emn2ExpHK` at the BA reading -/
+/-! ## 4. `emn2ExpHK` at the BA reading -/
 
 section HK
 
-/-- `ℓ_t` is nondecreasing in the coupling: `0 ≤ g₀ ≤ g` gives `ℓ_t(g₀) ≤ ℓ_t(g)` (`ellT_mono`, `Kernel/PropT.lean:58`, is in `t`). -/
+/-- `ℓ_t` is nondecreasing in the coupling: `0 ≤ g₀ ≤ g` gives `ℓ_t(g₀) ≤ ℓ_t(g)` (`ellT_mono` is monotonicity in `t`). -/
 theorem EMn2BA_ellT_mono_g (L : ℕ) {g₀ g : ℝ} (h : g₀ ≤ g) (t : ℝ) : ellT L g₀ t ≤ ellT L g t := by
   unfold ellT
   exact min_le_min (max_le_max (div_le_div_of_nonneg_right h (Real.sqrt_nonneg _)) le_rfl) le_rfl
 
 /-- The closing inequality of the far field, for `x = log W ≥ 1` with `2C + k + |D| ≤ c δ √x`:
-`2C e^{x k} e^{-c δ x^{3/2}} ≤ e^{-x D}` (copy of `kellStar_arith`, `Path/KellStar.lean:89`, private there). -/
+`2C e^{x k} e^{-c δ x^{3/2}} ≤ e^{-x D}`. -/
 private theorem EMn2BA_arith {C c δ D k x : ℝ} (hC : 0 < C) (hx1 : 1 ≤ x)
     (hsq : 2 * C + k + |D| ≤ c * δ * Real.sqrt x) :
     C * (2 * Real.exp (x * k)) * Real.exp (-(c * δ * x ^ ((3 : ℝ) / 2))) ≤
@@ -630,8 +624,8 @@ theorem EMn2BA_K_two {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : 
             (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)) s (!s)) x x' :=
   baKsol_two d hκ hg (sz.three_le_L n) (sz.W n) (BAflow_real κ ε 𝔠 𝔡 sz z hflow n) ht ![s, !s] ![x, x']
 
-/-- **Target 4: `emn2ExpHK` at the BA reading** (`3 ≤ d`): for every `D > 0`, eventually, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤
-W^{-d} W^{-(D+d)}` once `ℓ*_{t_n}(g) ≤ |x - x'|_∞`.  Proof: `(Kn2sol)` (`EMn2BA_K_two`) and BAT-C2 (`baComp_holds`, `Λ = 𝔡⁻¹`) at the
+/-- **`emn2ExpHK` at the BA reading** (`3 ≤ d`): for every `D > 0`, eventually, `‖𝒦^{(2)}_{t_n,(s,-s),(x,x')}‖ ≤
+W^{-d} W^{-(D+d)}` once `ℓ*_{t_n}(g) ≤ |x - x'|_∞`.  Proof: `(Kn2sol)` (`EMn2BA_K_two`) and `baComp_holds` (`Λ = 𝔡⁻¹`) at the
 flow coupling `g₀ ≤ g`: `ℓ_t(g₀) ≤ ℓ_t(g)` (`EMn2BA_ellT_mono_g`), `|x - x'|_∞ ≤ |x - x'|_L`; the amplitude is
 `(1-t_n)⁻¹ ≤ 2N ≤ 2W^{1/𝔠}` (`1 - t₀ ≥ Im z/2 ≥ N^{-1}/2`, `Bandwidth`) and `(log W)^{3/2}` beats `log W` (`EMn2BA_arith`). -/
 theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
@@ -684,7 +678,7 @@ theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
       rwa [Real.rpow_one] at this
     rw [h4] at h3
     linarith
-  -- BAT-C2 at `g₀`
+  -- the composition bound at `g₀`
   obtain ⟨hg0, hgΛ⟩ := hlam
   have hr := BAflow_real κ ε 𝔠 𝔡 sz z hflow n
   have hCK := (H (sz.L n) (sz.three_le_L n) _ hg0 hgΛ _ _ hr (t n) (ht0 n) ht1 s (!s)).2.2 x x'
@@ -736,56 +730,29 @@ theorem baEMn2ExpHK (hd : 3 ≤ d) : emn2ExpHK d BAFlow baFMz BAflowT0 := by
 
 end HK
 
-/-! ## 5. Target 5: the BA pins of `lem:EMn2_N`
+/-! ## 5. The estimates of Lemma 3.13 at the BA reading
 
-The law is `Sizes.seqP (sz.withLam 0)` (`S^{(B)}(0) = I`, `FlowPins:396`), the setting `BAFlow`, the carrier `baFMz`, the horizon
-`BAflowT0`.  The three stage-L premises `STInitialGT2gL`, `STLWassmgL`, `STLWassmExpgL` stay premises of the pins (owed by stage L /
-BA-V), not facts here.  The "second estimate" of `lem:EMn2_N` (`3_5:437-440`) is `(eq:MG_conclusion3)`: the `J` form and the `Ĵ`
-form below; `(eq:MG_conclusion2)` is the special case of the first estimate at `Ψ = (W^{-c₀} B_{t,|a-b|∧K})^{1/2}` and has no Lean form
+The law is `Sizes.seqP (sz.withLam 0)` (`S^{(B)}(0) = I`), the setting `BAFlow`, the carrier `baFMz`, the horizon
+`BAflowT0`.  The three Green function hypotheses `STInitialGT2gL`, `STLWassmgL`, `STLWassmExpgL` remain hypotheses of the statements.
+The "second estimate" of Lemma 3.13 is (3.35) `eq:MG_conclusion3`: the `J` form and the `Ĵ`
+form below; (3.34) `eq:MG_conclusion2` is the special case of the first estimate at `Ψ = (W^{-c₀} B_{t,|a-b|∧K})^{1/2}` and has no Lean form
 in `RBM3D/`. -/
 
 section Pins
 
 variable (d : ℕ)
 
-/-- **The BA pin of the first estimate** `(eq:MG_conclusion)` (`3_5:427-432`): `STEMn2PolygL` at the BA reading, by `stEMn2PolygL_of`.
-All `d` (the pin has no `3 ≤ d`); constants in `(d, κ, 𝔡)`. -/
+/-- **The first estimate** (3.33) `eq:MG_conclusion` at the BA reading: `STEMn2PolygL`, by `stEMn2PolygL_of`.
+All `d` (no `3 ≤ d` is assumed); constants in `(d, κ, 𝔡)`. -/
 theorem baSTEMn2Poly :
     STEMn2PolygL d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0 :=
   stEMn2PolygL_of _ (baEMn2PolyFacts d)
 
-/-- **The BA `Ĵ` form** (`3 ≤ d`): `STEMn2ExpgL` at the BA reading, `stEMn2ExpgL_of` (the `J = Ĵ` corollary, every `D > 0`). -/
+/-- **The `Ĵ` form** (`3 ≤ d`): `STEMn2ExpgL` at the BA reading, `stEMn2ExpgL_of` (the `J = Ĵ` corollary, every `D > 0`). -/
 theorem baSTEMn2Exp (hd : 3 ≤ d) :
     STEMn2ExpgL d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0 :=
   stEMn2ExpgL_of _ hd (baEMn2ExpFacts d) (baEMn2ExpHK hd)
 
 end Pins
 
-/-! ## 6. Target 6 (T6-BA): `STContractM` at `H = seqHflowBA`, `z = ztOf`
-
-`stContractM_holds d` (`Induction/Contract.lean:1069`) is for every Hermitian `H` and `Im z > 0`; the BA statement needs only
-`seqHflowBA` Hermitian (`EMn2BA_seqHflowBA_herm`) and `Im ztOf = (1 - u) Im m > 0`. -/
-
 end RBM.BA
-
-/-! ## 7. Compiled nonempty instances at `d = 3`
-
-**Data of the fact blocks and the pins** (`BA/FlowPins.lean:1181, 1214`): `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `g_n = (2(n+1))^{-6}`),
-`zSeq` (`z_n = z_S(L_n, g_n)`, `Im z_n ∈ [11/30, 7/10]`), `(κ, ε, 𝔡, 𝔠) = (1/2, 1/10, 1/10, 1/6)`, the proved `flow_sz0 : BAFlow …`
-(`BAdom`: `Im m ≥ 4/5`; `t₀_n ≥ 2/3`, `t0_sz0`), times `t ≡ 1/2 ≤ t₀` (`half_lt_t0`).  The fact blocks are theorems; (HK) is a theorem;
-the stochastic premises `STInitialGT2gL`, `STLWassmgL`, `STLWassmExpgL` (stage L / BA-V) stay hypotheses of the examples.
-
-**Data of BAT-C2** (`MFixedPointInst.P`, `L = 4`, `Λ = 10`): the flow point of `(L, g) = (4, 10)` with `g₀ = √t₀ g` (not small),
-`BAReal 3 4 g₀ (Im m₀) E m₀`; `t = 1/2`, the mixed and the equal pair, `a = 0`, `b = (2,0,0)` (`|b| = 2`). -/
-
-/-! ### Target 1: `baEMn2PolyFacts` at `sz0` -/
-
-/-! ### Target 2: `baEMn2ExpFacts` at `sz0` -/
-
-/-! ### Target 3 (BAT-C2) at the flow point `P` of `(L, g) = (4, 10)` -/
-
-/-! ### Target 4: `baEMn2ExpHK` at `sz0` -/
-
-/-! ### Target 5: the BA pins at `sz0` (`t ≡ 1/2`, `ε₀ = 1/20`, `Ψ_n = W_n^{-1}`, `D` arbitrary) -/
-
-/-! ### Target 6 (T6-BA): the contraction inequality at the BA matrix of `sz0` -/

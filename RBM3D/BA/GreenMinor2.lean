@@ -6,24 +6,21 @@ Authors: Jun Yin
 import RBM3D.BA.GreenMinor
 
 /-!
-# The block Anderson minors: the protected good event, the polynomial families (BA-G5a, 2 of 3)
+# The block Anderson minors: the protected good event, the polynomial families
 
-Ticket T2401 (design gate `docs/reports/T2401-prove.md`, sections (a), (a′), (G); stage 1b under
-Amend 1).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`).  Everything
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`).  Everything
 is deterministic, for one sample.
 
-* R2 (S2): the protected good event from `‖G - M‖_max ≤ δ` (`GreenMinor_good_of_event`): for
+* The protected good event from `‖G - M‖_max ≤ δ` (`GreenMinor_good_of_event`): for
   `S ⊆ R_{β,o}`, `|S| ≤ m₀`, `x, y ∈ T_{β,o} ∖ S`, `|G^{(S)}_{xy} - M_{xy}| ≤ 2δ` and
   `|G^{(S)}_{xx}| ≥ κ/2`.  Only the rows of the block `β` of offset `≠ o` are removed, so each
   removal is between two different offsets: `M_{xκ} = M_{κy} = 0` (`GreenMinor_offset_ne`,
   `GreenMinor_cross`) and one step costs `δ_j²/(|m| - δ_j)`.
-* R3 (S3): the polynomial families `Y^A`, `Y^X` and the entry forms of the random re-entry
+* The polynomial families `Y^A`, `Y^X` and the entry forms of the random re-entry
   `A_u = Y^A_u m / G_{uu}`, `𝔛_{uy} = -Y^X_{uy} m / G_{uu}`, the splits
   `A_u = Y^A_u - A_u (G_{uu} - m)/m`, and the base bounds `‖Y^A_u‖ ≤ (‖s‖ + 2 d g₀) δ'/κ`,
   `‖Y^X_{uy}‖ ≤ ((‖s‖ + 2 d g₀)(1/κ + 1) + 4 d g₀ δ'/κ) δ'` (uniform in the coupling: `g₀` enters
   only through `Σ_l ‖D_{ul}‖ = 2 d g₀`).
-
-Every target theorem has a compiled nonempty instance in the last section.
 -/
 
 set_option linter.style.longLine false
@@ -40,7 +37,7 @@ open RBM RBM.Green RBM.Gauss
 
 namespace RBM.BA
 
-/-! ## 1. R2 (S2): the protected good event from `‖G - M‖_max ≤ δ` -/
+/-! ## 1. The protected good event from `‖G - M‖_max ≤ δ` -/
 
 section GoodEvent
 variable {d L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ} {m : ℂ}
@@ -50,7 +47,7 @@ variable {d L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L 
 theorem GreenMinor_R_subset_T (β : Zd d L) (o : Fin (W ^ d)) {x : Vtx d L W} (hx : x ∈ GreenMinor_R β o) :
     x ∈ GreenMinor_T β o := Or.inr hx.1
 
-/-- The recursion of `(4.9)` on the protected levels: `|G^{(S)}_{xy} - M_{xy}| ≤ δ + 8 |S| δ²/κ`, `|S| ≤ m₀`. -/
+/-- The recursion of the minor identity on the protected levels: `|G^{(S)}_{xy} - M_{xy}| ≤ δ + 8 |S| δ²/κ`, `|S| ≤ m₀`. -/
 theorem GreenMinor_good_aux (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hMd : ∀ a, Mb a a = m)
     (hκ : 0 < κ) (hm : κ ≤ ‖m‖) (hδ0 : 0 ≤ δ) (hMδ : 8 * (m₀ : ℝ) * δ ≤ κ) (hδ4 : 4 * δ ≤ κ)
     (hT : GreenMinor_Tower G Gs) (hG : ∀ x y, ‖G x y - M x y‖ ≤ δ) (β : Zd d L) (o : Fin (W ^ d)) :
@@ -128,9 +125,9 @@ theorem GreenMinor_good_aux (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 
         _ ≤ δj + 8 * δ ^ 2 / κ := add_le_add h0 hfrac
         _ = δ + 8 * ((j + 1 : ℕ) : ℝ) * δ ^ 2 / κ := by rw [hδj]; push_cast; ring
 
-/-- **S2** (`GreenMinor_good_of_event`): from the event `‖G - M‖_max ≤ δ` with `4δ ≤ κ ≤ |m|`, `8 m₀ δ ≤ κ`, the tower of minors
+/-- **The protected good event**: from the event `‖G - M‖_max ≤ δ` with `4δ ≤ κ ≤ |m|`, `8 m₀ δ ≤ κ`, the tower of minors
 satisfies the protected good event `GreenMinor_good`: for `S ⊆ R_{β,o}`, `|S| ≤ m₀`, `x, y ∈ T_{β,o} ∖ S`,
-`|G^{(S)}_{xy} - M_{xy}| ≤ 2δ` and `|G^{(S)}_{xx}| ≥ κ/2` (the twin of `minorGoodLe_of_goodEvent` with `|m| = 1` replaced by `|m| ≥ κ`). -/
+`|G^{(S)}_{xy} - M_{xy}| ≤ 2δ` and `|G^{(S)}_{xx}| ≥ κ/2` (the analogue of `minorGoodLe_of_goodEvent` with `|m| = 1` replaced by `|m| ≥ κ`). -/
 theorem GreenMinor_good_of_event (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hMd : ∀ a, Mb a a = m)
     (hκ : 0 < κ) (hm : κ ≤ ‖m‖) (hδ0 : 0 ≤ δ) (hδ4 : 4 * δ ≤ κ) (hMδ : 8 * (m₀ : ℝ) * δ ≤ κ)
     (hT : GreenMinor_Tower G Gs) (hG : ∀ x y, ‖G x y - M x y‖ ≤ δ) (β : Zd d L) (o : Fin (W ^ d)) :
@@ -155,7 +152,7 @@ theorem GreenMinor_good_of_event (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1
 
 end GoodEvent
 
-/-! ## 2. R3 (S3): the entry forms of the random re-entry, the splits and the base bounds -/
+/-! ## 2. The entry forms of the random re-entry, the splits and the base bounds -/
 
 section Families
 variable {d L W : ℕ} [NeZero L] [NeZero W] {G X D M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ}
@@ -201,7 +198,7 @@ section Entries
 variable {d L W : ℕ} [NeZero L] [NeZero W] {G X D M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ}
   {t g₀ : ℝ} {m s z : ℂ}
 
-/-- **S3** (`GreenMinor_Arow_eq`): `A_u = Y^A_u m / G_{uu}`, i.e. `A_u G_{uu} = s Δ_{uu} - Σ_l D_{ul} Δ_{lu}` (with `m ≠ 0`:
+/-- **The entry form of `A_u`**: `A_u = Y^A_u m / G_{uu}`, i.e. `A_u G_{uu} = s Δ_{uu} - Σ_l D_{ul} Δ_{lu}` (with `m ≠ 0`:
 the identity is false at `m = 0` for the Lean value `x/0 = 0`). -/
 theorem GreenMinor_Arow_eq (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
     (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
@@ -222,7 +219,7 @@ theorem GreenMinor_Arow_eq (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vt
   rw [eq_div_iff hG0, hYAm, hsplit, hA, hMuu]
   linear_combination (-1 : ℂ) * hDM
 
-/-- **S3** (`GreenMinor_Xrow_eq`): `𝔛_{uy} = -Y^X_{uy} m / G_{uu}` for `y ≠ u`. -/
+/-- **The entry form of `𝔛`**: `𝔛_{uy} = -Y^X_{uy} m / G_{uu}` for `y ≠ u`. -/
 theorem GreenMinor_Xrow_eq (hGR : G * (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1)
     (hRG : (D + X - z • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) * G = 1)
     (hMR : M * (D - s • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ)) = 1) (hz : z = s - (t : ℂ) * m)
@@ -273,7 +270,7 @@ theorem GreenMinor_sum_le (hL : 3 ≤ L) (hg : 0 ≤ g₀)
         rw [norm_mul]; exact mul_le_mul_of_nonneg_left (hΔ l y) (norm_nonneg _)
     _ = 2 * d * g₀ * δ' := by rw [← Finset.sum_mul, GreenCore_Drow hg hL hD u]
 
-/-- **S3** (`GreenMinor_YA_le`): `‖Y^A_u‖ ≤ (‖s‖ + 2 d g₀) δ' / κ`. -/
+/-- **The base bound of `Y^A`**: `‖Y^A_u‖ ≤ (‖s‖ + 2 d g₀) δ' / κ`. -/
 theorem GreenMinor_YA_le (hL : 3 ≤ L) (hg : 0 ≤ g₀)
     (hD : ∀ u l, D u l = if u.2 = l.2 ∧ Adj d L u.1 l.1 then (g₀ : ℂ) else 0)
     (hΔ : ∀ a b, ‖G a b - M a b‖ ≤ δ') (hκ : 0 < κ) (hm : κ ≤ ‖m‖) (u : Vtx d L W) :
@@ -291,7 +288,7 @@ theorem GreenMinor_YA_le (hL : 3 ≤ L) (hg : 0 ≤ g₀)
     _ ≤ (‖s‖ * δ' + 2 * d * g₀ * δ') / κ := div_le_div_of_nonneg_left hnn hκ hm
     _ = (‖s‖ + 2 * d * g₀) / κ * δ' := by ring
 
-/-- **S3** (`GreenMinor_YX_le`): `‖Y^X_{uy}‖ ≤ ((‖s‖ + 2 d g₀)(1/κ + 1) + 4 d g₀ δ'/κ) δ'` when `‖M_{uy}‖ ≤ 1`. -/
+/-- **The base bound of `Y^X`**: `‖Y^X_{uy}‖ ≤ ((‖s‖ + 2 d g₀)(1/κ + 1) + 4 d g₀ δ'/κ) δ'` when `‖M_{uy}‖ ≤ 1`. -/
 theorem GreenMinor_YX_le (hL : 3 ≤ L) (hg : 0 ≤ g₀)
     (hD : ∀ u l, D u l = if u.2 = l.2 ∧ Adj d L u.1 l.1 then (g₀ : ℂ) else 0)
     (hΔ : ∀ a b, ‖G a b - M a b‖ ≤ δ') (hκ : 0 < κ) (hm : κ ≤ ‖m‖) (u y : Vtx d L W) (hMuy : ‖M u y‖ ≤ 1) :
@@ -346,24 +343,4 @@ theorem GreenMinor_YX_le (hL : 3 ≤ L) (hg : 0 ≤ g₀)
 
 end BaseBounds
 
-/-! ## 3. Nonempty instances
-
-Datum 1 (the hand-made datum of file 1, `GreenMinorInst`: `d = 3`, `L = 3`, `W = 2`, `m = i`, `Δ = ε (E_{pq} + E_{qp})`, `ε = 1/100`)
-with the explicit tower `hGs` of `G = M + Δ` (removing `q` turns `G_{pp}` into `m - ε²/m`): S2 (`κ = 1/2`, `δ = 1/100`, `m₀ = 3`) and the
-base bounds of S3.  Datum 2 (a real resolvent `G = (H - i)⁻¹`, `H = ε J_C`, below; also the datum of the S4 instance of file 3): R1, S2 and
-the base bounds of S3 with the real minors.  Datum 3 (the BA carrier: `sz0` at `n = 0`, `L = 4`, `W = 32`; the flow `flow_sz0`, `κ = 1/2`,
-`t = 1/2`, every sample `ω`): the four identities of S3. -/
-
-/-! ### The real resolvent: `H = ε J_C`, `z = i`
-
-`H = ε J_C` with `J_C = 1_C 1_Cᵀ` on the cluster `C = {p, q, y}` (`p = (0, 0)`, `q = (0, 1)` a protected row of `R_{0,0}`, `y = (e_0, 0)` of
-offset `0` in another block), `ε = 1/100`.  By Sherman-Morrison `G = (H - i)⁻¹ = i I + c J_C`, `c = ε/(1 + 3 i ε)`, so `M = i I` (the resolvent of `0`),
-`Δ = c J_C ≠ 0` and `‖Δ‖_max = |c| ≤ ε`.  Here the minors are the real ones (`GreenMinor_Gs`, R1). -/
-
--- R1, S2 and the base bounds of S3 on the real resolvent `G = (H - i)⁻¹`: the principal-submatrix resolvents of `H` form the tower
--- (`GreenMinor_tower`), the good event holds at `κ = 1/2`, `δ = 1/100`, `m₀ = 3` (S2), `Δ_{py} = c ≠ 0`, and the bounds of S3 hold at `d = 3`,
--- `g₀ = 1/10`, `s = m = i`, `δ' = 1/100` (`Y^A_p` and `Y^X_{py}` involve `Δ_{pp} = c`, `D_{py} Δ_{yp} = g₀ c`, `Δ_{py} = c`: nonzero)
--- S2 at the hand datum: the tower `hGs` of `hG`, the event `‖Δ‖_max ≤ δ = 1/100`, `κ = 1/2 ≤ ‖m‖ = 1`, `4δ ≤ κ`, `8 m₀ δ = 24/100 ≤ κ`
--- S3: the base bounds at the datum (`d = 3`, `g₀ = 1/10`, `κ = 1/2`, `δ' = 1/100`)
--- S3: the four identities at the carrier; the structural hypotheses come from `GreenCore_carrier`, `m ≠ 0` from `BAflow_real`
 end RBM.BA

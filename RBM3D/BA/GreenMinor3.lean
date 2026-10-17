@@ -8,29 +8,24 @@ import RBM3D.Green.FlucIterGain
 import RBM3D.Green.MinorDiff
 
 /-!
-# The block Anderson minors: graded differences, averaging identity, owed pins (BA-G5a, 3 of 3)
+# The block Anderson minors: graded differences, the averaging identity, the family statements
 
-Ticket T2401 (design gate `docs/reports/T2401-prove.md`, sections (a), (a′), (G); stage 1b under
-Amend 1).  Paper: `paper/tex/7_8_light_weight.tex` (`lem_GbEXP_BA`, `7_8:1916-1948`).  Everything
-is deterministic, for one sample, except the registry definitions of section 3.
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`).  Everything
+is deterministic, for one sample, except the statements `BAFamGain`, `BAFAav` of section 3.
 
-* R4 (S4): the graded bound on protected rows.  For `u = (β, o)`, `y` of offset `o` in another
+* The graded bound on protected rows.  For `u = (β, o)`, `y` of offset `o` in another
   block, and distinct rows `κ_1, …, κ_r ∈ R_{β,o}`:
   `‖Δ_{κ_1} ⋯ Δ_{κ_r} Y^X_{uy}‖, ‖Δ_{κ_1} ⋯ Δ_{κ_r} Y^A_u‖ ≤ c_Y(r) (2δ)^{r+1}`
   (`GreenMinor_diff`), with `c_Y(r) = (‖s‖ + 2 d g₀)(1/κ + 1) a_r + (4 d g₀/κ) 2^r a_r²`,
-  `a_0 = 2/κ`, `a_{r+1} = 16^r a_r⁵`.  It is the twin of `Green.diffBd_atom`
-  (`MinorDiff.lean:570`) for the centred entries of the protected levels; the sum rule
-  (`GreenMinor_DiffBd_add`, `_smul`, `_sum`) is new.  The hypothesis `κ ≤ 1` is the one fact of BA
-  the displayed pin of G.8 lacked (`BAm_norm_le_one`, `BA/Ward.lean:136`; paper-delta candidate
-  `T2401d`): `a_0 = 2/κ ≥ 1`.
-* S6: the exact averaging identity `v̄_a - t Σ_b M^{(B)}_{ab} M^{(B)}_{ba} v̄_b = ⟨M𝒦⟩_a` and its
-  split into the offset averages of `Δ`, `𝒜' = A + t v̄` and `𝔛` (`GreenMinor_avgK_eq`,
+  `a_0 = 2/κ`, `a_{r+1} = 16^r a_r⁵`.  It is the analogue of `Green.diffBd_atom`
+  (`MinorDiff.lean`) for the centred entries of the protected levels; the sum rule
+  (`GreenMinor_DiffBd_add`, `GreenMinor_DiffBd_smul`, `GreenMinor_DiffBd_sum`) is specific to this file.  The hypothesis `κ ≤ 1` is needed
+  because `a_0 = 2/κ ≥ 1` (at block Anderson `κ ≤ ‖m‖ ≤ 1`, `BAm_norm_le_one`, `BA/Ward.lean`).
+* The exact averaging identity `v̄_a - t Σ_b M^{(B)}_{ab} M^{(B)}_{ba} v̄_b = ⟨M𝒦⟩_a` and its
+  split into the offset averages of `Δ`, `𝒜' = A + t v̄` and `𝔛` (`GreenMinor_avgK`,
   `GreenMinor_avg_split`).
-* The registry definitions: the gain interface `GreenMinor_famGain`, the carrier families
-  `GreenMinor_famA`, `GreenMinor_famX`, and the owed pins `BAFamGain`, `BAFAav` (owner BA-G5b,
-  consumer BA-G6b).
-
-Every target theorem has a compiled nonempty instance (sections 4 and 5).
+* The statements: the gain interface `GreenMinor_famGain`, the carrier families
+  `GreenMinor_famA`, `GreenMinor_famX`, and the statements `BAFamGain`, `BAFAav` (proved in `BA/GreenCond2.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -47,12 +42,12 @@ open RBM RBM.Green RBM.Gauss RBM.Gauss.Sizes
 
 namespace RBM.BA
 
-/-! ## 1. S6: the exact averaging identity for `⟨M𝒦⟩_a` -/
+/-! ## 1. The exact averaging identity for `⟨M𝒦⟩_a` -/
 
 section Averaging
 variable {d L W : ℕ}
 
-/-- `avg_o f = W^{-d} Σ_o f(o)`. -/
+/-- `GreenMinor_avg f = W^{-d} Σ_o f(o)`. -/
 def GreenMinor_avg {d W : ℕ} (f : Fin (W ^ d) → ℂ) : ℂ := (((W : ℝ) ^ d)⁻¹ : ℝ) * ∑ o, f o
 
 theorem GreenMinor_avg_sub (f g : Fin (W ^ d) → ℂ) :
@@ -72,7 +67,7 @@ def GreenMinor_avgK {d L W : ℕ} [NeZero L] [NeZero W] (G M X D : Matrix (Vtx d
 
 variable {G X D M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ} {t : ℝ} {m s z : ℂ}
 
-/-- **S6, second half** (only `hM`; the sum is over all `b'`, `𝔛_{uu} = 0` is not used):
+/-- **The split of `⟨M𝒦⟩_a`** (only `hM`; the sum is over all `b'`, `𝔛_{uu} = 0` is not used):
 `⟨M𝒦⟩_a = Σ_{b'} M^{(B)}_{ab'} [t v̄_{b'} avg_o Δ - M^{(B)}_{b'a} avg_o 𝒜' - avg_o (𝒜' Δ) - avg_o 𝔛]`, `𝒜'_u = A_u + t v̄_{[u]}`. -/
 theorem GreenMinor_avg_split (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (a : Zd d L) :
     GreenMinor_avgK G M X D Mb t m a =
@@ -109,12 +104,12 @@ theorem GreenMinor_avg_split (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1
 
 end Averaging
 
-/-! ## 2. R4 (S4): the graded bound on protected rows
+/-! ## 2. The graded bound on protected rows
 
 The calculus of `Green/MinorDiff.lean` (`deltaFam`, `iterDeltaFam`, `DiffBd` with the product rule `DiffBd.mul`, `.delta`, `.shift`,
 `.congr`) is generic in the index type.  Here the index type is the type `R_{β,o}` of the protected rows, so that every level
 `S : Finset R_{β,o}` is protected and the good event `GreenMinor_good` covers it.  Added: linearity of `iterDeltaFam` and the sum
-rule for `DiffBd` (`DiffBd` had only `.neg`, `.mul`, `.delta`, `.shift`). -/
+rule for `DiffBd` (the band calculus has only `.neg`, `.mul`, `.delta`, `.shift`). -/
 
 section Calculus
 variable {α : Type*} [DecidableEq α]
@@ -176,7 +171,7 @@ end Calculus
 
 section Constants
 
-/-- `a_0 = 2/κ`, `a_{r+1} = 16^r a_r^5` (T2401c: `a_0 = 2/κ` replaces the band's `2` in `atomC`, `MinorDiff.lean:529`). -/
+/-- `a_0 = 2/κ`, `a_{r+1} = 16^r a_r^5` (`a_0 = 2/κ` replaces the band's `2` in `atomC`, `MinorDiff.lean`). -/
 def GreenMinor_a (κ : ℝ) : ℕ → ℝ
   | 0 => 2 / κ
   | r + 1 => 16 ^ r * GreenMinor_a κ r ^ 5
@@ -229,7 +224,7 @@ def GreenMinor_gI (a : Vtx d L W) (U : Finset (Vtx d L W)) : ℂ :=
 
 variable {Gs M}
 
-/-- **`(4.9)` for a centred entry atom**: `Δ_κ Δ^{(·)}_{ab} = G_{aκ} G_{κb} (G_{κκ})⁻¹`, both factors being centred entries
+/-- **The minor identity for a centred entry atom**: `Δ_κ Δ^{(·)}_{ab} = G_{aκ} G_{κb} (G_{κκ})⁻¹`, both factors being centred entries
 because `M_{aκ} = M_{κb} = 0`; valid at every level, with the zero padding. -/
 theorem GreenMinor_gE_delta {G : Matrix (Vtx d L W) (Vtx d L W) ℂ} (hT : GreenMinor_Tower G Gs) {a b κ : Vtx d L W}
     (U : Finset (Vtx d L W)) (hak : a ≠ κ) (hbk : b ≠ κ) (hMa : M a κ = 0) (hMb : M κ b = 0) :
@@ -250,7 +245,7 @@ theorem GreenMinor_gE_delta {G : Matrix (Vtx d L W) (Vtx d L W) ℂ} (hT : Green
   rw [hT.step U κ hκU a b, greenMinor]
   ring
 
-/-- **The reciprocal rule for the inverse diagonal atom** (the twin of `Green.deltaFam_gInvFam_apply`): with the diagonal entries
+/-- **The reciprocal rule for the inverse diagonal atom** (the analogue of `Green.deltaFam_gInvFam_apply`): with the diagonal entries
 nonzero at the two levels, `Δ_κ (G_{aa})⁻¹ = -(G_{aκ} G_{κa} (G_{κκ})⁻¹ (G_{aa})⁻¹ (G^{(κ)}_{aa})⁻¹)`. -/
 theorem GreenMinor_gI_delta {G : Matrix (Vtx d L W) (Vtx d L W) ℂ} (hT : GreenMinor_Tower G Gs) {a κ : Vtx d L W}
     (U : Finset (Vtx d L W)) (hak : a ≠ κ) (hMa : M a κ = 0) (hMb : M κ a = 0)
@@ -417,11 +412,11 @@ theorem GreenMinor_iFam_le (hκ : 0 < κ) (hgood : GreenMinor_good Gs M κ δ m�
     calc ‖Gs (GreenMinor_lev (S ∪ T)) a a‖⁻¹ ≤ (κ / 2)⁻¹ := inv_anti₀ h0 h1
       _ = 2 / κ := by field_simp
 
-/-- **The `r`-fold difference estimate for the two kinds of atom, proved together** (the twin of `Green.diffBd_atom`,
-`MinorDiff.lean:570`): for `m ≤ r` protected rows `k_1, …, k_m` distinct from each other and from every row the atom mentions
+/-- **The `r`-fold difference estimate for the two kinds of atom, proved together** (the analogue of `Green.diffBd_atom`):
+for `m ≤ r` protected rows `k_1, …, k_m` distinct from each other and from every row the atom mentions
 (`I`), with `c = a_r` and `Ψ = 2δ`,
 `‖Δ_{k_1} ⋯ Δ_{k_m} Δ^{(·)}_{ab}‖ ≤ c Ψ^{m+1}` and `‖Δ_{k_1} ⋯ Δ_{k_m} (G^{(·)}_{aa})⁻¹‖ ≤ c Ψ^{m}`.
-Each difference gains a power of `Ψ`: `(4.9)` (`GreenMinor_eFam_delta`, three atoms) and the reciprocal rule
+Each difference gains a power of `Ψ`: the minor identity (`GreenMinor_eFam_delta`, three atoms) and the reciprocal rule
 (`GreenMinor_iFam_delta`, five atoms), both products of cross-offset entries, combined by `DiffBd.mul`. -/
 theorem GreenMinor_diffBd_atom (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hκ : 0 < κ) (hκ1 : κ ≤ 1)
     (hδ0 : 0 ≤ δ) (h2δ : 2 * δ ≤ 1) (hT : GreenMinor_Tower G Gs) (hgood : GreenMinor_good Gs M κ δ m₀ β o) :
@@ -564,7 +559,7 @@ section Models
 variable {α : Type*} [DecidableEq α]
 
 /-- The polynomial `Y^X_{uy}` in the centred entries (as a family): the linear terms and the quadratic terms, bounded by
-`DiffBd.add`, `.smul`, `.mul` (orders `1` and `1 + 1`, lowered by `Ψ ≤ 1`).  `Euu, Euy` are the entries `Δ_{uu}, Δ_{uy}`,
+`GreenMinor_DiffBd_add`, `GreenMinor_DiffBd_smul`, `DiffBd.mul` (orders `1` and `1 + 1`, lowered by `Ψ ≤ 1`).  `Euu, Euy` are the entries `Δ_{uu}, Δ_{uy}`,
 `Sq = Σ_l D_{ul} Δ_{lu}`, `Sp = Σ_l D_{ul} Δ_{ly}` with `‖D_{u·}‖_1 = K`. -/
 theorem GreenMinor_DiffBd_modelX {Ψ : ℝ} (hΨ0 : 0 ≤ Ψ) (hΨ1 : Ψ ≤ 1) {I : Finset α} {M : ℕ} (r : ℕ) {a K κ : ℝ} {s m Muy : ℂ}
     (hκ : 0 < κ) (hm : κ ≤ ‖m‖) (hMuy : ‖Muy‖ ≤ 1) (ha : 0 ≤ a) (hK : 0 ≤ K) {Euu Euy Sq Sp : Finset α → ℂ}
@@ -646,11 +641,11 @@ theorem GreenMinor_iter_lev {β : Zd d L} {o : Fin (W ^ d)} (Y : Finset (Vtx d L
         simp [deltaFam_apply, GreenMinor_lev_insert]
       rw [List.pmap_cons, iterDeltaFam_cons, iterDeltaFam_cons, ih (deltaFam k Y) hl' S, hF]
 
-/-- **S4** (`GreenMinor_diff`): the graded bound on protected rows.  For `u = (β, o)`, `y` of offset `o` in another block, and distinct
+/-- **The graded bound on protected rows.**  For `u = (β, o)`, `y` of offset `o` in another block, and distinct
 rows `k_1, …, k_r ∈ R_{β,o}` (`r ≤ m₀`), on the protected good event,
 `‖Δ_{k_1} ⋯ Δ_{k_r} Y^X_{uy}‖, ‖Δ_{k_1} ⋯ Δ_{k_r} Y^A_u‖ ≤ c_Y(r) (2δ)^{r+1}`,
-`c_Y(r) = (‖s‖ + 2 d g₀)(1/κ + 1) a_r + (4 d g₀/κ) 2^r a_r²`.  The hypothesis `κ ≤ 1` is the one the displayed pin of G.8 lacked
-(`a_0 = 2/κ ≥ 1`; BA: `κ ≤ ‖m‖ ≤ 1`, `BA/Ward.lean:136`; paper-delta candidate `T2401d`).  The constants depend on `(d, κ, g₀, ‖s‖, r)`
+`c_Y(r) = (‖s‖ + 2 d g₀)(1/κ + 1) a_r + (4 d g₀/κ) 2^r a_r²`.  The hypothesis `κ ≤ 1` is needed
+(`a_0 = 2/κ ≥ 1`; BA: `κ ≤ ‖m‖ ≤ 1`, `BA/Ward.lean`).  The constants depend on `(d, κ, g₀, ‖s‖, r)`
 only: no smallness of `g₀`, no `L`, no `W`. -/
 theorem GreenMinor_diff {G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d L → Zd d L → ℂ}
     {Gs : Finset (Vtx d L W) → Matrix (Vtx d L W) (Vtx d L W) ℂ} {s m : ℂ} {κ δ g₀ : ℝ} {m₀ : ℕ}
@@ -761,17 +756,16 @@ theorem GreenMinor_diff {G M D : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Zd d 
 
 end Diff
 
-/-! ## 3. The registry definitions: the gain interface and the owed pins `BAFamGain`, `BAFAav`
+/-! ## 3. The gain interface and the statements `BAFamGain`, `BAFAav`
 
-The family gain interface `GreenMinor_famGain` (the twin of `FlucGainUpTo'`, `Green/FlucIterGain.lean:727`, for the family
-`k ↦ Q_k Y_k`, words restricted to rows of the block `A`) is only a definition here; its moment bound (the graded iteration, R6 of
-the design gate) is BA-G5b's (Amend 1 D4).  `BAFamGain` and `BAFAav` are owed pins (registry: owner BA-G5b, consumer BA-G6b); neither
-is used as a hypothesis of a theorem of this file. -/
+The family gain interface `GreenMinor_famGain` (the analogue of `FlucGainUpTo'`, `Green/FlucIterGain.lean`, for the family
+`k ↦ Q_k Y_k`, words restricted to rows of the block `A`) is only a definition here; its moment bound (the graded iteration)
+is in `BA/GreenCond2.lean`, where `BAFamGain` and `BAFAav` are proved. -/
 
 section Registry
 
-/-- (G.8 S5) the gain interface `famGain(B, ρ, M, K)` of the family `Y`, for words whose rows are distinct, `≠ k_i` and in `A`:
-`E ∏_i ‖applyOps (L_i) (qRow (k_i) (Y_{k_i}))‖ ≤ B^{#ι} ρ^{Σ numQ}` (the twin of `FlucGainUpTo'` with `qRow (k i) (Y (k i))` for
+/-- The gain interface `GreenMinor_famGain` at `(B, ρ, M, K)` of the family `Y`, for words whose rows are distinct, `≠ k_i` and in `A`:
+`E ∏_i ‖applyOps (L_i) (qRow (k_i) (Y_{k_i}))‖ ≤ B^{#ι} ρ^{Σ numQ}` (the analogue of `FlucGainUpTo'` with `qRow (k i) (Y (k i))` for
 `flucDiag`). -/
 def GreenMinor_famGain {d : ℕ} (sz : Sizes d) (n : ℕ) (A : Finset (Idx d (sz.L n) (sz.W n)))
     (Y : Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ) (B ρ : ℝ) (M K : ℕ) : Prop :=
@@ -782,7 +776,7 @@ def GreenMinor_famGain {d : ℕ} (sz : Sizes d) (n : ℕ) (A : Finset (Idx d (sz
     ∫ ω, ∏ i, ‖applyOps sz n (L i) (qRow sz n (k i) (Y (k i))) ω‖ ∂(Sizes.seqP sz) ≤
       B ^ Fintype.card ι * ρ ^ ∑ i, numQ (L i)
 
-/-- The carrier family `Y^A` on the fine index at `(n, t_n)`: `k ↦ (ω ↦ Y^A_{split k})`, with `Y^A` of S3 at `G = G_{t_n}(ω)`, `M`,
+/-- The carrier family `Y^A` on the fine index at `(n, t_n)`: `k ↦ (ω ↦ Y^A_{split k})`, with `Y^A` of `GreenMinor_YA` at `G = G_{t_n}(ω)`, `M`,
 `D = g₀ Ψ`, `m = BAmF`, `s = E_n + m` (the carriers of `GreenCore_Gc`, `GreenCore_Mc`, `GreenCore_Dc`). -/
 def GreenMinor_famA {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (n : ℕ) : Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ :=
   fun k ω => GreenMinor_YA (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n)
@@ -790,17 +784,17 @@ def GreenMinor_famA {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ)
     (split d (sz.L n) (sz.W n) k)
 
 /-- The carrier family `Y^X_{x,(α, o(x))}` of the pair of blocks `(β, α)` on the fine index at `(n, t_n)`: `k ↦ (ω ↦ Y^X_{u,(α, o(u))})`,
-`u = split k` (the family of G.5 "Moment bound": the slot `x` of block `β` against the site of block `α` with the same offset). -/
+`u = split k` (the slot `x` of block `β` against the site of block `α` with the same offset). -/
 def GreenMinor_famX {d : ℕ} (sz : Sizes d) (z : ℕ → ℂ) (t : ℕ → ℝ) (n : ℕ) (α : Zd d (sz.L n)) :
     Idx d (sz.L n) (sz.W n) → sz.SeqΩ → ℂ :=
   fun k ω => GreenMinor_YX (GreenCore_Gc sz z n (t n) ω) (GreenCore_Mc sz z n) (GreenCore_Dc sz z n)
     ((BAflowEs sz z n : ℂ) + BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n)
     (split d (sz.L n) (sz.W n) k) (α, (split d (sz.L n) (sz.W n) k).2)
 
-/-- **`BAFamGain`** (registry owed line, owner BA-G5b, consumer: the proof of `BAFAav`).  The family gain interface `famGain(B, ρ, M, K)`
-(`GreenMinor_famGain`) at the carrier, for `Y^A` and `Y^X_{·,(α,o(·))}` on `A = [β]`, `β ≠ α`: `ρ = 4 δ_n`, `B = C δ_n`,
+/-- **`BAFamGain`** (used in the proof of `BAFAav`).  The family gain interface `GreenMinor_famGain` at `(B, ρ, M, K)`
+at the carrier, for `Y^A` and `Y^X_{·,(α,o(·))}` on `A = [β]`, `β ≠ α`: `ρ = 4 δ_n`, `B = C δ_n`,
 `δ_n = W^τ Ψ_n`, `M = K = 2p`, eventually in `n`.  Event and window hypotheses as in `BAFAav` (`BAGiiGEX` at `ε₀/2`, the window of `Ψ`,
-`(initialGT2)`), `0 < τ ≤ ε₀/2`; `C ≥ 0` depends on the data and on `p`, not on `n`, `β`, `α`; no `∃ c` before the flow. -/
+(3.4) `initialGT2`), `0 < τ ≤ ε₀/2`; `C ≥ 0` depends on the data and on `p`, not on `n`, `β`, `α`; no `∃ c` before the flow. -/
 def BAFamGain (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t (ε₀ / 2) →
@@ -814,11 +808,11 @@ def BAFamGain (d : ℕ) : Prop :=
           GreenMinor_famGain (sz.withLam 0) n (Iblk d (sz.L n) (sz.W n) β) (GreenMinor_famX sz z t n α)
             (C * (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) (4 * (((sz.W n : ℕ) : ℝ) ^ τ * Ψ n)) (2 * p) (2 * p)
 
-/-- **`BAFAav`** (registry owed line, owner BA-G5b, consumer BA-G6b; paper-delta candidate `T2401a`): the averaged law of the offset
-average of `𝒦`: `|W^{-d} Σ_o Σ_{b'} M^{(B)}_{ab'} 𝒦_{(b',o),(a,o)}| ≺ Ψ²`, uniformly in `a`, from `BAGiiGEX` and `(initialGT2)`
+/-- **`BAFAav`**: the averaged law of the offset
+average of `𝒦`: `|W^{-d} Σ_o Σ_{b'} M^{(B)}_{ab'} 𝒦_{(b',o),(a,o)}| ≺ Ψ²`, uniformly in `a`, from `BAGiiGEX` and (3.4) `initialGT2`
 (`STInitialGT2gL`); no `∃ c` before the flow.  The entrywise law is taken at the smaller exponent `ε₀/2` (`BAGiiGEX sz z t (ε₀ / 2)`),
-because `‖Δ‖_max ≺ W^{-ε₀}` does not give `P(Ω(ε₀)ᶜ) ≤ N^{-D}`, whereas `Ω(ε₀/2) ⊇ {‖Δ‖_max ≤ N^{𝔠ε₀/2} W^{-ε₀}}`; G6's owed
-`BAGbEXPii` is `∀ ε₀ > 0`, so it supplies the hypothesis at every `ε₀`. -/
+because `‖Δ‖_max ≺ W^{-ε₀}` does not give `P(Ω(ε₀)ᶜ) ≤ N^{-D}`, whereas `Ω(ε₀/2) ⊇ {‖Δ‖_max ≤ N^{𝔠ε₀/2} W^{-ε₀}}`; the
+statement `BAGbEXPii` is `∀ ε₀ > 0`, so it supplies the hypothesis at every `ε₀`. -/
 def BAFAav (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t (ε₀ / 2) →
@@ -834,26 +828,4 @@ def BAFAav (d : ℕ) : Prop :=
 
 end Registry
 
-/-! ## 4. Nonempty instances
-
-S6 at the BA carrier (`d = 3`, `sz0` at `n = 0`: `L = 4`, `W = 32`; the flow `flow_sz0`, `κ = 1/2`, `t = 1/2 ≤ T₀`, every sample `ω`);
-`BAFAav` and `BAFamGain` (owed pins) at the same flow with `ε₀ = 1/10`, `Ψ = W^{-1}` (window `W^{-3/2} ≤ Ψ ≤ W^{-1/10}`),
-`τ = 1/20`, `p = 1`: the pin, `BAGiiGEX` (G6's) and `STInitialGT2gL` (the premise) stay hypotheses.  S4 on a real resolvent: see the last
-section. -/
-
--- S6: the averaging identities at the carrier
--- the owed pins: the premise `BAGiiGEX` at `ε₀/2` is an instance of G6's owed `BAGbEXPii` (`∀ ε₀ > 0`, `BA/Step1Boot.lean:108`)
--- `BAFAav` at `ε₀ = 1/10`; the entrywise law is the hypothesis `hii` at `ε₀/2 = 1/20`
--- `BAFamGain` at the same data, `τ = 1/20`, `p = 1` (`M = K = 2`): `∃ C ≥ 0` and, eventually in `n`, the two `famGain` statements for every `β ≠ α`
-/-! ## 5. S4 on a real resolvent (`d = 3`, `L = 3`, `W = 2`)
-
-The datum is that of `BA/GreenMinor2.lean` (`GreenMinorInst.hH`): `H = ε J_C` on the cluster `C = {p, q, y}` (`p = (0, 0)`, `q = (0, 1)` a
-protected row of `R_{0,0}`, `y = (e_0, 0)` of offset `0` in another block), `ε = 1/100`, `z = i`, `G = (H - i)⁻¹ = i I + c J_C`, `M = i I`,
-`Δ = c J_C ≠ 0`.  The minors are the real ones (`GreenMinor_Gs`, R1): the tower is `GreenMinor_tower`, the good event is S2, and S4 is applied at
-`u = p`, `l = [q]`, `g₀ = 1/10`, `s = m = i`; `G_{pq} = G_{qy} = c ≠ 0`, so the removal of `q` changes the entries `Δ_{ab}`,
-`a, b ∈ {p, y}`, that enter `Y^X_{py}` (`Δ_q Δ_{ab} = G_{aq} G_{qb}/G_{qq}`). -/
-
-
--- S4 at `u = p`, `l = [q]` on the real resolvent `G = (H - i)⁻¹`: the tower (R1), the good event (S2; `κ = 1/2`, `δ = 1/100`, `m₀ = 3`) and the
--- two bounds; `Δ_{py} ≠ 0`
 end RBM.BA

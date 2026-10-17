@@ -8,30 +8,27 @@ import RBM3D.BA.GUEEntry2
 import RBM3D.Universality.GUEPhase.EntryGrid
 
 /-!
-# BA-C5 row a: the grid form of Lemma 4.1 at block Anderson (UN-43 at BA)
+# The grid form of Lemma 4.1 of [YY_25] at block Anderson
 
-Ticket T2519 (row a, target 4; DECISIONS §344 (4), §346, T2515 Decision (5)).  New BA leaf: no
-merged file is edited.  Band twin: `Universality/GUEPhase/EntryGrid.lean`
-(`map_gueH_eq_mixMat:118`, `gueGrid_entry_bound:518`).  Paper: the GUE phase of Thm 2.4
-(`paper/tex/1_2_Intro_model_result.tex:566-570`, "essentially identical to [YY_25, Theorem 2.6]");
-Lemma 4.1 (4.2)+(4.3) of [YY_25] at block Anderson is C3 b's `gueEntryMixBA`
-(`BA/GUEEntry2.lean`, pin `GUEEntryMixBA`).
+Band counterpart: `Universality/GUEPhase/EntryGrid.lean` (`map_gueH_eq_mixMat`, `gueGrid_entry_bound`).  Paper: the GUE
+phase of Theorem 2.4 (`Thm: B_Univ`; the proof is "essentially identical to [YY_25, Theorem 2.6]");
+Lemma 4.1 (4.2)+(4.3) of [YY_25] at block Anderson is `gueEntryMixBA'`
+(`BA/GUEEntry2.lean`, statement `GUEEntryMixBA'`).
 
-* `map_gueHBA_eq_mixMatBA` (text `T2519_MapMixBA` of the 1a-audit): under `Pgue (sz.withLam 0)`
-  the BA grid path at step `k` has the law of C3 b's mixture `mixMatBA`
+* `map_gueHBA_eq_mixMatBA`: under `Pgue (sz.withLam 0)`
+  the BA grid path at step `k` has the law of the mixture `mixMatBA`
   (`g Ψ_I + √t₁ X_block + √(u_k - t₁) X_GUE`) under the BA carrier law
   `ouP (UNModel.band (sz.withLam 0)) n`: the band theorem at `sz.withLam 0`, translated by the
   deterministic `g Ψ_I`.
-* `gueGrid_entry_boundBA`: Lemma 4.1 (4.2)+(4.3) on the BA grid, from `gueEntryMixBA` after the
+* `gueGrid_entry_boundBA'`: Lemma 4.1 (4.2)+(4.3) on the BA grid, from `gueEntryMixBA'` after the
   transfer of the one-time law.  On the a priori event `{‖G - M‖_max ≤ δ_n}`,
   `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`, the squared entry `|(G_k - M)_{ij}|²` is
-  `≺ gueLmaxBA 2 + W^{-d}`.  The family premise is the one of `GUEEntryMixBA`
-  (`∀ n, 0 < g n ≤ 𝔡⁻¹`, `BAReal`): the window is needed at every `n` by C3 b's text, so a
-  consumer with an eventual window pads it first.
+  `≺ gueLmaxBA 2 + W^{-d}`.  The family premise is `BAReal` at every `n` and the coupling window
+  `0 < g n ≤ 𝔡⁻¹` eventually.
 
 The helpers of `EntryGrid` that carry no band token (the grid times, the size and union
-arithmetic, `EntryGrid_a/b`, `EntryGrid_params`, `EntryGrid_gueH_zero`, the measurability of the
-inverse) are read by `open private`; the bad set in matrix space and its facts are re-derived for
+arithmetic, `EntryGrid_a`, `EntryGrid_b`, `EntryGrid_params`, `EntryGrid_gueH_zero`, the measurability of the
+inverse) are used through `open private`; the bad set in matrix space and its facts are derived anew for
 `GUEEntry_llErr`, `GUEEntry_maxLoop`.
 -/
 
@@ -51,8 +48,8 @@ open scoped NNReal ENNReal
 
 /-! ## 1. The one-time law of the BA grid path at step `k` -/
 
-/-- **T2: the law of the BA grid path at step `k` is the law of the BA mixture** `g Ψ_I + √t₁ X_block + √(u_k - t₁) X_GUE` under
-`ouP (UNModel.band (sz.withLam 0)) n` (text `T2519_MapMixBA`; twin of `map_gueH_eq_mixMat`, `EntryGrid:118`): the band theorem at
+/-- **The law of the BA grid path at step `k` is the law of the BA mixture** `g Ψ_I + √t₁ X_block + √(u_k - t₁) X_GUE` under
+`ouP (UNModel.band (sz.withLam 0)) n` (the analogue of `map_gueH_eq_mixMat`): the band theorem at
 `sz.withLam 0` (`gueHBA = g Ψ_I + gueH`, `mixMatBA = g Ψ_I + mixMat`) pushed through the translation by `g Ψ_I`. -/
 theorem map_gueHBA_eq_mixMatBA {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (ht1 : 0 ≤ t1 n) (ht10 : t1 n ≤ t0 n) :
@@ -81,8 +78,8 @@ theorem map_gueHBA_eq_mixMatBA {d : ℕ} (sz : Sizes d) (g t1 t0 : ℕ → ℝ) 
 
 /-! ## 2. The bad set in matrix space and its facts
 
-At the BA datum the entry error is C3 b's `GUEEntry_llErr` (`‖Gres H z_u true - M^{(B)} ⊗ 1‖` entrywise) and the 2-loop maximum is
-`GUEEntry_maxLoop` (the `(+,-)` 2-loops of `H`), twins of `llErrMat` and `maxLoopPM`. -/
+At the BA datum the entry error is `GUEEntry_llErr` (`‖Gres H z_u true - M^{(B)} ⊗ 1‖` entrywise) and the 2-loop maximum is
+`GUEEntry_maxLoop` (the `(+,-)` 2-loops of `H`), the analogues of `llErrMat` and `maxLoopPM`. -/
 
 section MatrixSpace
 
@@ -196,7 +193,7 @@ private theorem EntryGridBA_zero_not_mem_badMat (g E : ℝ) (m : ℂ) (hw : ((E 
 
 end MatrixSpace
 
-/-! ## 3. Lemma 4.1 on the BA grid -/
+/-! ## 3. Lemma 4.1 of [YY_25] on the BA grid -/
 
 section Main
 
@@ -213,7 +210,7 @@ private theorem EntryGridBA_measurable_mixMatBA (sz : Sizes d) (n : ℕ) (g a b 
       (g : ℂ) • PsiI d (sz.L n) (sz.W n) + M := (continuous_const.add continuous_id).measurable
   exact hshm.comp (measurable_mixMat (sz.withLam 0) n a b)
 
-/-- The preimage form of T2 at BA: for a measurable set `B` of matrices, `Pgue` of the event `{gueHBA_k ∈ B}` is the
+/-- The preimage form of `map_gueHBA_eq_mixMatBA`: for a measurable set `B` of matrices, `Pgue` of the event `{gueHBA_k ∈ B}` is the
 `ouP`-probability of `{mixMatBA ∈ B}`. -/
 private theorem EntryGridBA_pgue_preimage (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (ht1 : 0 ≤ t1 n)
     (ht10 : t1 n ≤ t0 n) {B : Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)}
@@ -238,8 +235,8 @@ private theorem EntryGridBA_gueHBA_zero (sz : Sizes d) (g t1 t0 : ℕ → ℝ) (
   rw [h, add_zero]
   rfl
 
-/-- The pointwise step of `gueGrid_entry_boundBA` (twin of `EntryGrid_pointwise`): if `ω` is in the bad event of the entry `(i, j)`
-at grid step `k`, then `gueHBA_k ω` lies in the bad set of matrix space (`GUEEntry_maxLoop ≤ gueLmaxBA 2`,
+/-- The pointwise step of `gueGrid_entry_boundBA'` (the analogue of `EntryGrid_pointwise`): if `ω` is in the bad event of the entry `(i, j)`
+at grid step `k`, then `gueHBA k ω` lies in the bad set of matrix space (`GUEEntry_maxLoop ≤ gueLmaxBA 2`,
 `‖(green M z - M^{(B)} ⊗ 1)_{ij}‖ = GUEEntry_llErr`). -/
 private theorem EntryGridBA_pointwise (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ) (n k : ℕ)
     (hw : ((E n : ℂ) + m n).im ≠ 0) (ω : PathΩ (sz.withLam 0)) (i j : Idx d (sz.L n) (sz.W n)) (s : ℝ) (hs : 0 ≤ s)
@@ -286,8 +283,8 @@ private theorem EntryGridBA_pointwise (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (
       mul_nonneg hs (add_nonneg (by unfold gueLmaxBA; exact RBM.Ind.loopMax_nonneg 2) (by positivity))
     exact absurd hlt (not_lt.2 h0)
 
-/-- **`gueGrid_entry_boundBA'`** (T2519 Amend 4 item 2): `gueGrid_entry_boundBA` with the family premise split into `BAReal` at every `n`
-and the coupling window `0 < g n ≤ 𝔡⁻¹` eventually; the proof of `gueGrid_entry_boundBA` moved here, from `gueEntryMixBA'`. -/
+/-- **`gueGrid_entry_boundBA'`**: Lemma 4.1 (4.2)+(4.3) of [YY_25] on the BA grid, with the family premise split into `BAReal` at every `n`
+and the coupling window `0 < g n ≤ 𝔡⁻¹` eventually; it is obtained from `gueEntryMixBA'`. -/
 theorem gueGrid_entry_boundBA' (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ} (hadm : sz.Admissible 𝔠 𝔡) (hκ : 0 < κ) (n0 : ℕ)
     {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n))
     (hwin : ∀ᶠ n in atTop, 0 < g n ∧ g n ≤ 𝔡⁻¹)
@@ -325,7 +322,7 @@ theorem gueGrid_entry_boundBA' (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ
   · rintro ω ⟨⟨k, i, j⟩, hlt⟩
     exact Set.mem_iUnion.2
       ⟨k, EntryGridBA_pointwise sz g E t1 t0 m (gueGridK sz n0) δ n k hw ω i j _ hs0 hlt⟩
-  -- Step 2: each grid point costs at most the `ouP`-probability of the event of `gueEntryMixBA`
+  -- Step 2: each grid point costs at most the `ouP`-probability of the event of `GUEEntryMixBA'`
   have hk : ∀ k : Fin (gueGridK sz n0 n + 1),
       Pgue (sz.withLam 0) (gueHBA sz g t1 t0 (gueGridK sz n0) n k ⁻¹' EntryGridBA_badMat d (sz.L n) (sz.W n)
         (g n) (E n) (m n) (gridTime t1 t0 (gueGridK sz n0) n k) (δ n) (((sz.size n : ℕ) : ℝ) ^ τ))
@@ -378,11 +375,6 @@ theorem gueGrid_entry_boundBA' (sz : Sizes d) (hd : 3 ≤ d) {𝔠 𝔡 κ : ℝ
 
 end Main
 
-/-! ## 4. Compiled nonempty instances
-
-`d = 3`, `sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`, admissible at `(𝔠, 𝔡) = (1/6, 1/10)`), the BA flow datum of `sz0`
-at every `n` (`g = BAflowLam0`, `E = BAflowEs`, `m = BAmF`; `BAReal` at `κ = 1/2`, `0 < g ≤ 1 ≤ 𝔡⁻¹`), the grid `t₁ = 1/4`, `t₀ = 1/2`,
-`K = gueGridK sz0 2`, the a priori threshold `δ_n = N^{-1/20}`, `c₀ = 1/20`.  Every hypothesis is discharged. -/
 
 end RBM.BA
 

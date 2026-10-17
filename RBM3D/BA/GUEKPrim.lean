@@ -14,42 +14,40 @@ import RBM3D.Universality.GUEPhase.KPrim
 import RBM3D.Universality.OUInterfaceK
 
 /-!
-# BA-C3 row a: the BA OU profile, row differences, the BA `thetaDiff`, the BA GUE-phase 2-loop
+# The BA OU profile, row differences, the BA `thetaDiff`, the BA GUE-phase 2-loop
 
-Ticket T2515 (row a; DECISIONS §337; design gate D1 signed by `docs/reports/T2515-1a-audit.md`).
-New BA leaf: no merged file is edited.  The band twins are `Universality/ZeroModeProfile.lean`
-(`ThetaTilde_eq:281`, `norm_ThetaTilde_sub_le:367`, `profTilde_rowDiff:469`) and
-`Universality/GUEPhase/KPrim.lean` (`kTwoGUE:68`, `hasDerivAt_kTwoGUE:150`,
-`lemT_mul_kTwoGUE_pm_eq_profPMTilde:275`, `KPrim_exists_upto:523`, `gueK_exists:749`); the private
+The band counterparts are `Universality/ZeroModeProfile.lean`
+(`ThetaTilde_eq`, `norm_ThetaTilde_sub_le`, `profTilde_rowDiff`) and
+`Universality/GUEPhase/KPrim.lean` (`kTwoGUE`, `hasDerivAt_kTwoGUE`,
+`lemT_mul_kTwoGUE_pm_eq_profPMTilde`, `KPrim_exists_upto`, `gueK_exists`); the private
 ODE machinery of `KPrim` (8 private lemmas) and private lemmas of `ZeroModeProfile` (2) and
-`EKNonzero` (3) are read by `open private`.
+`EKNonzero` (3) are used through `open private`.  The equation numbers (7.25), (7.33) below are those of [YY_25, §7.2].
 
-Nothing here reads a V output (`BAMLOutTL`, `BAMainIndFamTL`, `UNMLOutBA`, `BA/MainInd*`,
-`BA/TwistPins`, `BA/Step6*`).  Property 8 enters through the merged lossless `baProp8_holds`
-(`BA/Prop6Path.lean:1009`, `BAProp8`: no `W^τ`, no `≺`) at the flow point
+No statement of the main induction is used here (`BAMLOutTL`, `BAMainIndFamTL`, `UNMLOutBA`).
+Property 8 of Lemma 2.19 (`lem_propTH`) enters through the lossless `baProp8_holds`
+(`BA/Prop6Path.lean`, `BAProp8`: no `W^τ`, no `≺`) at the flow point
 `(λ₀, E, m₀) = (√t₀ λ, BAflowE, m/√t₀)` of `BAzztE_data`.  The BA matrix
 `Q = M^{(+,σ)}(z) = t₀ Q₀` has constant row and column sums `r = t₀ r₀`, `|r₀| ≤ 1` (Ward), so
 `Θ̃_ζ Q` differs from `Θ_{1-ζ} Q` by a constant matrix.
 
-* §1 `UNOUProfile.ba d` and `UNOUProfile.ba_spec` (target 1): `pm`, `pp` are
+* §1 `UNOUProfile.ba d` and `UNOUProfile.ba_spec`: `pm`, `pp` are
   `W^{-d} (Θ̃_ζ M^{(+,σ)})_{ab}`, `Θ̃_ζ = (1 - M^{(+,σ)}(z) S̃_ζ)⁻¹`,
   `S̃_ζ = SBtilde d L 0 ζ = (1-ζ) 1 + (ζ/L^d) J` (`SB d L 0 = 1`).
 * §2 `baThetaTransfer` (`Θ_s` at `z` is `BATheta` at the flow point, time `s t₀`) and `baT0Cmp`
-  (`cT ≤ t₀`) (target 2).
+  (`cT ≤ t₀`).
 * §3 the zero mode: Sherman-Morrison for a matrix with constant row and column sums
   (`GUEKPrim_SM`), `baThetaTilde_eq` (`Θ̃_ζ = Θ_{(1-ζ)t₀} + β J` at real data).
 * §4 the lossless oscillation (`GUEKPrim_osc_core`), the row differences of `Θ_s Q` for all
   `s ∈ [0,1]` (`GUEKPrim_rowdiff`: `s ≥ 1/2` through `s Θ_s Q = Θ_s - 1`; `s < 1/2` through
   `‖Θ_s‖_{∞→∞} ≤ 2`).
-* §5 `baThetaTilde_osc` (target 3), `baThetaDiff`, `baOUProfRowk_holds`, `baProfComp`,
-  `UNOUProfile.ba_zero` (targets 4-6).
+* §5 `baThetaDiff`, `baOUProfRowk_holds`, `baProfComp`.
 * §6 `kTwoGUEBA`, `kTwoGUELoopBA`, `kTwoGUEBA_self`, `kTwoGUEBA_eq_ThetaTilde`,
   `hasDerivAt_kTwoGUELoopBA` ((7.33) at `n = 2`; the row and column sums of `Θ_{t₁} Q₀` are
   `r₀ (1 - t₁ r₀)⁻¹`), §7 `gueK_existsBA` (the induction of `KPrim_exists_upto` over a start
-  family `K0` and a 2-loop family `K2`), §8 the bridges `kTwoGUEBA_bridge`, `_pm`, `_pp`
-  (target 7); §9 compiled nonempty instances (target 8).
+  family `K0` and a 2-loop family `K2`), §8 the bridges `kTwoGUEBA_bridge`, `kTwoGUEBA_bridge_pm`,
+  `kTwoGUEBA_bridge_pp`.
 
-Helpers that are not pinned by the ticket are `private` with the stem `GUEKPrim_`.
+The names of the private helpers begin with GUEKPrim_.
 -/
 
 set_option linter.style.longLine false
@@ -65,13 +63,13 @@ open private EKNonzero_row_sum EKNonzero_col_sum EKNonzero_norm_Q_le from RBM3D.
 
 noncomputable section
 
-/-! ## 1. The BA OU profile (target 1) -/
+/-! ## 1. The BA OU profile -/
 
 namespace RBM.Univ
 
 open RBM RBM.Gauss RBM.BA
 
-/-- **The BA OU profile** (D1 (iii)): `pm sz n ζ z a b = W^{-d} (Θ̃_ζ M^{(+,-)})_{ab}` and
+/-- **The BA OU profile**: `pm sz n ζ z a b = W^{-d} (Θ̃_ζ M^{(+,-)})_{ab}` and
 `pp sz n ζ z a b = W^{-d} (Θ̃_ζ M^{(+,+)})_{ab}`, `Θ̃_ζ = (1 - M^{(+,σ)} S̃_ζ)⁻¹`, `S̃_ζ = SBtilde d L 0 ζ`,
 `M = BAMB d L λ z (BAm d L λ z)`, `λ = sz.lam n`; it reads `sz` at the index only. -/
 def UNOUProfile.ba (d : ℕ) : UNOUProfile (UNKind.ba d) where
@@ -86,7 +84,7 @@ def UNOUProfile.ba (d : ℕ) : UNOUProfile (UNKind.ba d) where
       BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) z (BAm d (sz.L n) (sz.lam n) z)) true true) a b /
         ((sz.W n : ℕ) : ℂ) ^ d
 
-/-- **Target 1**: the profile text of D1 (iii) (`T2515_ProfSpec d (UNOUProfile.ba d)`), by `rfl`. -/
+/-- **The defining formulas of the profile** `pm`, `pp` of `UNOUProfile.ba d`, by `rfl`. -/
 theorem UNOUProfile.ba_spec (d : ℕ) :
     ∀ (sz : Sizes d) (n : ℕ) (ζ : ℝ) (z : ℂ) (a b : Zd d (sz.L n)),
       (let Q := BAMss d (sz.L n) (BAMB d (sz.L n) (sz.lam n) z (BAm d (sz.L n) (sz.lam n) z)) true false;
@@ -103,7 +101,7 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Gauss RBM.Univ RBM.Univ.GUEPhase
 
-/-! ## 2. The transfer to the flow point and the comparison `cT ≤ t₀` (target 2) -/
+/-! ## 2. The transfer to the flow point and the comparison `cT ≤ t₀` -/
 
 /-- `M^{(σ₁,σ₂)}(z) = t₀ M^{(σ₁,σ₂)}(λ₀, E, m₀)` (`BAzztE_data` conj. 5; `BAMss` of a real multiple is its square). -/
 private theorem GUEKPrim_Mss_flow {d L : ℕ} [NeZero L] (lam : ℝ) {z : ℂ} (hz : 0 < z.im) (σ₁ σ₂ : Bool) :
@@ -117,7 +115,7 @@ private theorem GUEKPrim_Mss_flow {d L : ℕ} [NeZero L] (lam : ℝ) {z : ℂ} (
     cases σ₁ <;> cases σ₂ <;> simp [BAMss, BAMsigma, Matrix.conjTranspose_apply] <;> ring
   rw [← hMB, hs, Real.sq_sqrt ht0.le]
 
-/-- **Target 2 (transfer, O9 core)**: at `Im z > 0`, `Θ_s` at `z` is `BATheta` at the flow point
+/-- **The transfer**: at `Im z > 0`, `Θ_s` at `z` is `BATheta` at the flow point
 `(λ₀, E, m₀) = (√t₀ λ, BAflowE z m, m/√t₀)` at time `s t₀` (`BAzztE_data` conj. 5; `BAMss` of a real multiple). -/
 theorem baThetaTransfer :
     ∀ (d L : ℕ) [NeZero L] (lam : ℝ) (z : ℂ), 0 < z.im → ∀ (s : ℝ) (σ₁ σ₂ : Bool),
@@ -130,7 +128,7 @@ theorem baThetaTransfer :
   push_cast
   rfl
 
-/-- **Target 2 (UBA-C1 comparison)**: `cT = κ'/(κ'+1) ≤ t₀`, `κ' = (πκ)^5/2048` (the `cT` of `ba_flowG`), i.e.
+/-- **The comparison** `cT = κ'/(κ'+1) ≤ t₀`, `κ' = (πκ)^5/2048` (the `cT` of `ba_flowG`), i.e.
 `cT λ² ≤ λ₀² ≤ λ²`. -/
 theorem baT0Cmp :
     ∀ κ : ℝ, 0 < κ → ∃ cT : ℝ, 0 < cT ∧ ∀ (d L : ℕ) [NeZero L] (lam : ℝ) (z : ℂ),
@@ -213,8 +211,8 @@ private theorem GUEKPrim_ThJ {Q : Matrix (Zd d L) (Zd d L) ℂ} {r : ℂ} {s : �
       _ = (1 - (s : ℂ) * r)⁻¹ • ((Jmat d L * (1 - (s : ℂ) • Q)) * PropThetaQ Q s) := by rw [hJA]
       _ = (1 - (s : ℂ) * r)⁻¹ • Jmat d L := by rw [mul_assoc, hAΘ, mul_one]
 
-/-- **Sherman-Morrison with the constant row and column sums `r` of `Q`** (twin of `ThetaTilde_eq`,
-`ZeroModeProfile.lean:281`, with `ξ S^{(B)}` replaced by `Q`, `S^{(B)}(0) = 1`): for `s = 1 - ζ`,
+/-- **Sherman-Morrison with the constant row and column sums `r` of `Q`** (the analogue of `ThetaTilde_eq`,
+with `ξ S^{(B)}` replaced by `Q`, `S^{(B)}(0) = 1`): for `s = 1 - ζ`,
 `(1 - Q S̃_ζ)⁻¹ = Θ_s + ζ r/(L^d (1 - r)(1 - s r)) J`. -/
 private theorem GUEKPrim_SM {Q : Matrix (Zd d L) (Zd d L) ℂ} {r : ℂ} (hQJ : Q * Jmat d L = r • Jmat d L)
     (hJQ : Jmat d L * Q = r • Jmat d L) {ζ : ℝ} (hU : IsUnit (1 - ((1 - ζ : ℝ) : ℂ) • Q)) (h1r : 1 - r ≠ 0)
@@ -290,7 +288,7 @@ private theorem GUEKPrim_tr_norm {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ 
         mul_le_mul_of_nonneg_left (GUEKPrim_r0_norm hr σ₁ σ₂) ht0
     _ < 1 := by linarith
 
-/-- **The BA zero-mode identity** (twin of `ThetaTilde_eq`): for the real data `(g, E, m)`, `t₀ ∈ [0,1)` and
+/-- **The BA zero-mode identity** (the analogue of `ThetaTilde_eq`): for the real data `(g, E, m)`, `t₀ ∈ [0,1)` and
 `ζ ∈ [0,1]`, `Θ̃_ζ = (1 - t₀ Q₀ S̃_ζ)⁻¹ = Θ_{(1-ζ) t₀}(Q₀) + β J`, `Q₀ = M^{(σ₁σ₂)}`, `r₀ = ∑_c Q₀_{0c}`,
 `β = gueShift d L r₀ ((1-ζ) t₀) t₀ = ζ t₀ r₀ / (L^d (1 - t₀ r₀)(1 - (1-ζ) t₀ r₀))`. -/
 theorem baThetaTilde_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t0 : ℝ} (ht0 : 0 ≤ t0) (ht1 : t0 < 1)
@@ -341,7 +339,7 @@ theorem baThetaTilde_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t0 
 
 end Generic
 
-/-! ## 4. The profile at complex `z`: structure, the lossless oscillation (O9), row differences -/
+/-! ## 4. The profile at complex `z`: structure, the lossless oscillation, row differences -/
 
 section Profile
 
@@ -409,7 +407,7 @@ private theorem GUEKPrim_diff (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Boo
     _ ≤ B + B := add_le_add (hB _) (hB _)
     _ = 2 * B := by ring
 
-/-- **The lossless oscillation of `Θ_s` at the flow point (O9)**, every `s ∈ [0,1]`: `C = 2 C₈ / cT`, `C₈ = C₈(d, 𝔡⁻¹, κ')`
+/-- **The lossless oscillation of `Θ_s` at the flow point**, every `s ∈ [0,1]`: `C = 2 C₈ / cT`, `C₈ = C₈(d, 𝔡⁻¹, κ')`
 of `baProp8_holds` at `κ' = (πκ)^5/2048`, `(g₀² + |1 - s t₀|)⁻¹ ≤ (cT λ²)⁻¹`; no `W^τ`, no `≺`. -/
 private theorem GUEKPrim_osc_core (d : ℕ) (hd : 3 ≤ d) (𝔡 κ : ℝ) (h𝔡 : 0 < 𝔡) (hκ : 0 < κ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ lam : ℝ, 0 < lam → lam ≤ 𝔡⁻¹ →
@@ -531,10 +529,10 @@ private theorem GUEKPrim_prof_diff (lam : ℝ) {z : ℂ} (hz : 0 < z.im) (σ : B
 
 end Profile
 
-/-! ## 5. Targets 3-6 -/
+/-! ## 5. The row differences of the profile -/
 
-/-- **Target 6 (the BA `thetaDiff` at `ζ = 0`, Q4 (c))**, in the consumer form of `queRowDiff`
-(`Main/QUEFromQDiff.lean:244`) on the end profile `(Θ M)^{(+,σ)}/W^d` (`= BAprof sz n z true σ`, T2449 probe `:164`):
+/-- **The BA `thetaDiff` at `ζ = 0`**, in the consumer form of `queRowDiff`
+(`Main/QUEFromQDiff.lean`) on the end profile `(Θ M)^{(+,σ)}/W^d` (`= BAprof sz n z true σ`):
 lossless, `C = C(d, 𝔡, κ)` (`GUEKPrim_rowdiff` at `s = 1`: property 8 at the flow point), no `W^τ`. -/
 theorem baThetaDiff :
     ∀ d : ℕ, 3 ≤ d → ∀ 𝔡 κ : ℝ, 0 < 𝔡 → 0 < κ → ∃ C : ℝ, 0 < C ∧
@@ -554,8 +552,8 @@ theorem baThetaDiff :
   exact div_le_div_of_nonneg_right (H (sz.L n) (sz.three_le_L n) (sz.lam n) hl hl1 z hz hz1 hb σ 1 zero_le_one le_rfl
     a b b') hW.le
 
-/-- **Target 4**: `UNOUProfRowk` (`OUInterfaceK:56`, read by name, merged text at exact type) at the BA profile:
-lossless (O9), `C = C(d, 𝔡, κ)` before `sz`, uniformly in `ζ ∈ [0,1]` (consumer: N2, `ouRowk_of_pins`, premise `hprof`).
+/-- **`UNOUProfRowk` at the BA profile**:
+lossless, `C = C(d, 𝔡, κ)` before `sz`, uniformly in `ζ ∈ [0,1]` (the premise `hprof` of the OU row statements).
 The proof is `GUEKPrim_prof_diff` (the zero mode `β J Q` is constant) and `GUEKPrim_rowdiff` with `s = 1 - ζ`. -/
 theorem baOUProfRowk_holds : ∀ d : ℕ, 3 ≤ d → UNOUProfRowk (UNKind.ba d) (UNOUProfile.ba d) := by
   intro d hd 𝔡 κ h𝔡 hκ
@@ -574,15 +572,14 @@ theorem baOUProfRowk_holds : ∀ d : ℕ, 3 ≤ d → UNOUProfRowk (UNKind.ba d)
       (H (sz.L n) (sz.three_le_L n) (sz.lam n) hl hl1 z hz hz1 hb σ (1 - ζ) (by linarith) (by linarith) a b b') hW.le
   exact ⟨key false, key true⟩
 
-/-- **Target 5**: the profile half of `RBG_Comp` at BA: `RBG_ProfComp (UNKind.ba d) (UNOUProfile.ba d)` (`rfl`: the
-profile reads `sz.L n`, `sz.lam n`, `sz.W n` at the index only; as `RandomLayerBG_profComp_band`).  Consumer: N2
-(`RandomLayerBGBA_comp d (baProfComp d)` → `g1Rowk_of_inputsG`). -/
+/-- **The profile half of `RBG_Comp` at BA**: `RBG_ProfComp (UNKind.ba d) (UNOUProfile.ba d)` (`rfl`: the
+profile reads `sz.L n`, `sz.lam n`, `sz.W n` at the index only; as in the band case). -/
 theorem baProfComp (d : ℕ) : RBG_ProfComp (UNKind.ba d) (UNOUProfile.ba d) :=
   fun _ _ _ _ _ _ _ => ⟨rfl, rfl⟩
 
-/-! ## 6. The BA GUE-phase 2-loop primitive (target 7) -/
+/-! ## 6. The BA GUE-phase 2-loop primitive -/
 
-/-- **The 2-loop primitive of the GUE phase at BA** (twin of `kTwoGUE`, `KPrim.lean:68`, at the flow point `(g, E, m)`):
+/-- **The 2-loop primitive of the GUE phase at BA** (the analogue of `kTwoGUE`, at the flow point `(g, E, m)`):
 `K_{t,σ,(a,b)} = W^{-d} ((Θ_{t₁}(Q₀) + β_r(t) J) Q₀)_{ab}`, `Q₀ = M^{(σ₁,σ₂)}`, `r = ∑_c Q₀_{0c}` (the row sum),
 `β_r = gueShift d L r t₁ t`.  At `t = t₁` this is the 2-loop `W^{-d} Θ_{t₁} M^{(σσ')}` of `baKsolve`
 (`kTwoGUEBA_self`); it solves (7.33) at `n = 2` (`hasDerivAt_kTwoGUELoopBA`) and is `W^{-d} Θ̃_ζ Q₀` at `t₀` for
@@ -591,14 +588,14 @@ def kTwoGUEBA (d L : ℕ) [NeZero L] (W : ℕ) (g E : ℝ) (m : ℂ) (t1 t : ℝ
   let Q₀ := BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂
   ((W : ℂ) ^ d)⁻¹ * ((BATheta d L g E m t1 σ₁ σ₂ + gueShift d L (∑ c, Q₀ 0 c) t1 t • Jmat d L) * Q₀) a b
 
-/-- `kTwoGUEBA` on loop indices (`0` off the 2-loops; band twin `kTwoGUELoop`, `KPrim.lean:75`). -/
+/-- `kTwoGUEBA` on loop indices (`0` off the 2-loops; band counterpart `kTwoGUELoop`). -/
 def kTwoGUELoopBA (d L : ℕ) [NeZero L] (W : ℕ) (g E : ℝ) (m : ℂ) (t1 t : ℝ) (I : LoopIdx (Zd d L)) : ℂ :=
   match I.σ, I.a with
   | [σ₁, σ₂], [a₁, a₂] => kTwoGUEBA d L W g E m t1 t σ₁ σ₂ a₁ a₂
   | _, _ => 0
 
 /-- At `t = t₁` the BA GUE-phase 2-loop primitive is the 2-loop `W^{-d} (Θ_{t₁} M^{(σσ')})_{ab}` of `baKsolve`
-(`BAKsolve`, `BA/KSolve.lean:58`): `K` is continuous across the switch of the flow at `t₁`. -/
+(`BAKsolve`, `BA/KSolve.lean`): `K` is continuous across the switch of the flow at `t₁`. -/
 theorem kTwoGUEBA_self (d L : ℕ) [NeZero L] (W : ℕ) (g E : ℝ) (m : ℂ) (t1 : ℝ) (σ₁ σ₂ : Bool) (a b : Zd d L) :
     kTwoGUEBA d L W g E m t1 t1 σ₁ σ₂ a b =
       ((W : ℂ) ^ d)⁻¹ * (BATheta d L g E m t1 σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) a b := by
@@ -611,7 +608,7 @@ open scoped Matrix.Norms.Operator
 variable {d L : ℕ} [NeZero L]
 
 /-- **(7.25) and the zero mode at BA**: at `t₀`, with `t₁ = (1 - ζ) t₀`, the 2-loop primitive of the GUE phase is
-`W^{-d} (Θ̃_ζ Q₀)_{ab}`, `Θ̃_ζ = (1 - t₀ Q₀ S̃_ζ)⁻¹` (`baThetaTilde_eq`; twin of `kTwoGUE_eq_ThetaTilde`). -/
+`W^{-d} (Θ̃_ζ Q₀)_{ab}`, `Θ̃_ζ = (1 - t₀ Q₀ S̃_ζ)⁻¹` (`baThetaTilde_eq`; the analogue of `kTwoGUE_eq_ThetaTilde`). -/
 theorem kTwoGUEBA_eq_ThetaTilde (d L W : ℕ) [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m)
     {t0 ζ : ℝ} (ht0 : 0 ≤ t0) (ht1 : t0 < 1) (h0 : 0 ≤ ζ) (h1 : ζ ≤ 1) (σ₁ σ₂ : Bool) (a b : Zd d L) :
     kTwoGUEBA d L W g E m ((1 - ζ) * t0) t0 σ₁ σ₂ a b =
@@ -635,7 +632,7 @@ private theorem GUEKPrim_kTwo_eq (W : ℕ) (g E : ℝ) (m : ℂ) (t1 t : ℝ) (�
 
 /-- **The derivative of the closed form, abstract data**: `Q₀` with `Q₀ J = J Q₀ = μ J`, `Θ` with
 `Θ J = J Θ = (1 - t₁ μ)⁻¹ J`; `K_s(a,b) = W^{-d} ((Θ Q₀)_{ab} + μ β_μ(s))`, `β_μ = gueShift d L μ t₁`.  Row and
-column sums of `Θ Q₀` are `μ (1 - t₁ μ)⁻¹`; the scalar identity is the merged `kTwoGUE_deriv_identity`. -/
+column sums of `Θ Q₀` are `μ (1 - t₁ μ)⁻¹`; the scalar identity is `kTwoGUE_deriv_identity`. -/
 private theorem GUEKPrim_deriv_abs (d L W : ℕ) [NeZero L] [NeZero W] (Q₀ Θ : Matrix (Zd d L) (Zd d L) ℂ) (μ : ℂ)
     {t1 t : ℝ} (hQJ : Q₀ * Jmat d L = μ • Jmat d L) (hJQ : Jmat d L * Q₀ = μ • Jmat d L)
     (hΘJ : Θ * Jmat d L = (1 - (t1 : ℂ) * μ)⁻¹ • Jmat d L) (hJΘ : Jmat d L * Θ = (1 - (t1 : ℂ) * μ)⁻¹ • Jmat d L)
@@ -697,7 +694,7 @@ private theorem GUEKPrim_deriv_abs (d L W : ℕ) [NeZero L] [NeZero W] (Q₀ Θ 
 
 /-- **(7.33) at `n = 2`**: the closed form `kTwoGUEBA` solves the primitive equation of the GUE phase,
 `d/dt K_{t,σ,(a₁,a₂)} = W^d ∑_{a,b} K_{t,σ,(a₁,a)} (S^{(B)}_{GUE})_{ab} K_{t,σ,(b,a₂)}`, for `0 ≤ t₁ ≤ t < 1` at real
-data (twin of `hasDerivAt_kTwoGUE`, `KPrim.lean:150`: row and column sums of `Θ_{t₁} Q₀` are `μ (1 - t₁ μ)⁻¹`). -/
+data (the analogue of `hasDerivAt_kTwoGUE`: row and column sums of `Θ_{t₁} Q₀` are `μ (1 - t₁ μ)⁻¹`). -/
 private theorem GUEKPrim_hasDerivAt_kTwo (d L W : ℕ) [NeZero L] [NeZero W] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m)
     {t1 t : ℝ} (ht1 : 0 ≤ t1) (ht1t : t1 ≤ t) (ht : t < 1) (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L) :
     HasDerivAt (fun s => kTwoGUEBA d L W g E m t1 s σ₁ σ₂ a₁ a₂)
@@ -727,8 +724,8 @@ private theorem GUEKPrim_hasDerivAt_kTwo (d L W : ℕ) [NeZero L] [NeZero W] {g 
   exact key
 
 /-- (7.33) at `n = 2` in cut-and-glue form: `kTwoGUEBA`, as a function of the loop index, satisfies
-`d/dt K_{t,I} = primRhsGUE (K_t) I` for every 2-loop `I`, `0 ≤ t₁ ≤ t < 1`, real data `BAReal d L g κ E m` (twin of
-`hasDerivAt_kTwoGUELoop`, `KPrim.lean:209`; `T2515_KDerivBA` of the probe). -/
+`d/dt K_{t,I} = primRhsGUE (K_t) I` for every 2-loop `I`, `0 ≤ t₁ ≤ t < 1`, real data `BAReal d L g κ E m` (the analogue of
+`hasDerivAt_kTwoGUELoop`). -/
 theorem hasDerivAt_kTwoGUELoopBA (d : ℕ) :
     ∀ (L : ℕ) [NeZero L] (W : ℕ) [NeZero W] (g κ E : ℝ) (m : ℂ), BAReal d L g κ E m → ∀ t1 t : ℝ, 0 ≤ t1 → t1 ≤ t →
       t < 1 → ∀ (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L),
@@ -748,10 +745,10 @@ open private KPrim_ode_global KPrim_eq_two KPrim_primRhsGUE_congr KPrim_primRhsG
   KPrim_two_le_length_cutGlueL KPrim_two_le_length_cutGlueR KPrim_length_cutGlueL_le KPrim_length_cutGlueR_le from
   RBM3D.Universality.GUEPhase.KPrim
 
-/-- Existence of the BA GUE-phase primitive loops up to length `n ≥ 2` by induction on `n` (twin of
-`KPrim_exists_upto`, `KPrim.lean:523`, with the start `KLgen (mSigma E) t₁` replaced by a family `K0` and the
-closed-form 2-loops `kTwoGUELoop` by a family `K2` of solutions of (7.33) at `n = 2`).  The induction step is the
-merged one: for `n ≥ 2` the loops of length `n + 1` solve an ODE on the finite-dimensional space of functions on the
+/-- Existence of the BA GUE-phase primitive loops up to length `n ≥ 2` by induction on `n` (the analogue of
+`KPrim_exists_upto`, with the start `KLgen (mSigma E) t₁` replaced by a family `K0` and the
+closed-form 2-loops `kTwoGUELoop` by a family `K2` of solutions of (7.33) at `n = 2`).  The induction step is that
+of the band: for `n ≥ 2` the loops of length `n + 1` solve an ODE on the finite-dimensional space of functions on the
 slice `{WF, length = n + 1}`, affine in the unknowns with coefficients from the shorter loops (Lipschitz). -/
 private theorem GUEKPrim_exists_upto (d L W : ℕ) [NeZero L] [NeZero W] (K0 : LoopIdx (Zd d L) → ℂ)
     (K2 : ℝ → LoopIdx (Zd d L) → ℂ) {t1 t0 : ℝ} (ht10 : t1 ≤ t0)
@@ -967,7 +964,7 @@ private theorem GUEKPrim_exists_upto (d L W : ℕ) [NeZero L] [NeZero W] (K0 : L
 
 /-- **(7.33)**: the BA GUE-phase primitive loops exist on `[t₁, t₀]` for every length `≤ n₀`, start from the BA `𝒦`-loops
 `BAKsol` (the family of `baKsolve`, `(Kn2sol)`: `W^{-d} Θ_{t₁} M^{(σσ')}` at the 2-loops) at `t₁`, and their `2`-loops are
-`kTwoGUEBA` (twin of `gueK_exists`, `KPrim.lean:749`).  `t₁ ≤ t₀ < 1`, real data `BAReal d L g κ E m`, `0 < g`, `0 < κ`. -/
+`kTwoGUEBA` (the analogue of `gueK_exists`).  `t₁ ≤ t₀ < 1`, real data `BAReal d L g κ E m`, `0 < g`, `0 < κ`. -/
 theorem gueK_existsBA (d L : ℕ) [NeZero L] (W : ℕ) [NeZero W] (hL : 3 ≤ L) {g κ E : ℝ} {m : ℂ} (hg : 0 < g)
     (hκ : 0 < κ) (hr : BAReal d L g κ E m) {t1 t0 : ℝ} (ht1 : 0 ≤ t1) (ht10 : t1 ≤ t0) (ht0 : t0 < 1) (n0 : ℕ) :
     ∃ Kt : ℝ → LoopIdx (Zd d L) → ℂ,
@@ -1019,11 +1016,11 @@ theorem gueK_existsBA (d L : ℕ) [NeZero L] (W : ℕ) [NeZero W] (hL : 3 ≤ L)
 
 end Loops
 
-/-! ## 8. The bridges to the OU profile (target 7) -/
+/-! ## 8. The bridges to the OU profile -/
 
 /-- **Bridge to the BA OU profile**: `t₀ K^{(σ₁σ₂)}` of the GUE phase at the flow point `(√t₀ λ, E, m/√t₀)` of `z` and
-`t₁ = (1 - ζ) t₀` is the profile `W^{-d} (Θ̃_ζ M^{(+,σ)})_{ab}` of the text of D1 (iii): `pm` for `σ = -`, `pp` for
-`σ = +` (twin of `lemT_mul_kTwoGUE_pm_eq_profPMTilde`, `KPrim.lean:275`; `T2515_KBridgeBA` at `0 ≤ ζ ≤ 1`). -/
+`t₁ = (1 - ζ) t₀` is the profile `W^{-d} (Θ̃_ζ M^{(+,σ)})_{ab}`: `pm` for `σ = -`, `pp` for
+`σ = +` (the analogue of `lemT_mul_kTwoGUE_pm_eq_profPMTilde`, at `0 ≤ ζ ≤ 1`). -/
 theorem kTwoGUEBA_bridge (d : ℕ) :
     ∀ P : UNOUProfile (UNKind.ba d),
       (∀ (sz : Sizes d) (n : ℕ) (ζ : ℝ) (z : ℂ) (a b : Zd d (sz.L n)),
@@ -1073,13 +1070,6 @@ theorem kTwoGUEBA_bridge_pp {d : ℕ} (sz : Sizes d) (n : ℕ) {ζ : ℝ} (hζ0 
       (UNOUProfile.ba d).pp sz n ζ z a b :=
   (kTwoGUEBA_bridge d (UNOUProfile.ba d) (UNOUProfile.ba_spec d) sz n ζ ⟨hζ0, hζ1⟩ z hz a b).2
 
-/-! ## 9. Compiled nonempty instances (target 8)
-
-`d = 3`.  Profile-level data: `S0 = clsS 4 (g = 3/10)` (`BA/UNPins.lean:884`: `L = 4`, `W₀ = 32`, `λ = (fp 4 _).g0 ∈ (0, 3/10]`),
-`n = 0`, `κ_* = Im m₀/π` (`clsκ`), `E_*` in the bulk (`cls_bulk`), `z = E_* + i/2` (`0 < Im z ≤ 1`), `𝔡 = 1/10`,
-`ζ ∈ {0, 1/2, 1}`.  Flow-point data: the merged `MFixedPointInst.P` (`(L, g) = (4, 10)`, `P.real : BAReal 3 4 P.g0 (Im m₀)
-P.E P.m₀`) and `fp 4 _` (`S0`).  Every deterministic hypothesis is discharged; `UNG1Rowk` and `UNG2bRowk` (N2's, C5's inputs)
-stay hypotheses of the `ouRowk_of_pins` example only. -/
 
 end RBM.BA
 

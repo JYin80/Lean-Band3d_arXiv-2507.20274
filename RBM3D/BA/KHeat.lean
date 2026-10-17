@@ -8,21 +8,20 @@ import RBM3D.Propagator.HeatProduct
 import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 
 /-!
-# The Poisson semigroup and the heat kernel of `K = |M^{(B)}|²` (BA-P4a)
+# The Poisson semigroup and the heat kernel of `K = |M^{(B)}|²`
 
-Ticket T2331 (BA stage P, row P4a; supervisor 2026-10-08-1048 C1, C2).
 `P_s = e^{-s} Σ_n sⁿ/n! Kⁿ` (`BAP`) and the heat kernel in diffusive time
-`kBA τ = P_{τ/g²}(0, ·)`.  Targets: the Laplace identity
+`kBA τ = P_{τ/g²}(0, ·)`.  Contents: the Laplace identity
 `Θ^{(+,-)}_t(0,a) = ∫₀^∞ e^{-(1-t)u} kBA(t g² u, a) du`, the semigroup and translation invariance,
 the basic properties, the Fourier form on the torus, the torus on-diagonal bound and regime (ii)
-`τ ≥ L²` (twin of `Heat.kProd_gap`, `HeatProduct.lean:626`).
+`τ ≥ L²` (the analogue of `Heat.kProd_gap`, `HeatProduct.lean`).
 
-Private lemmas of this project that are re-proved here (the originals are `private`): the
-orthogonality of the exponentials (`hp_sum_exp_orth`, `HeatProduct.lean:858`), `sum_geom_zdist`
-(`HeatTorus1D.lean:354`), `mul_exp_neg_le_one` (`HeatTorus1D.lean:299`) and `KSymbol_cos_zdist`
-(`KSymbol.lean:610`).  Nothing is ported from `../RBM1D` or `../RBM2D`.  The semigroup law uses
+Some private lemmas of this project are re-proved here (the originals are `private`): the
+orthogonality of the exponentials (`hp_sum_exp_orth`, `HeatProduct.lean`), `sum_geom_zdist`
+(`HeatTorus1D.lean`), `mul_exp_neg_le_one` (`HeatTorus1D.lean`) and `KSymbol_cos_zdist`
+(`KSymbol.lean`).  The semigroup law uses
 `Matrix.exp_add_of_commute` (extra import `Mathlib.Analysis.Normed.Algebra.MatrixExponential`); the
-1D torus inputs are the merged `Heat.hkT_le`, `Heat.hkT_gap`, `Heat.hkT_mass`.
+1D torus inputs are `Heat.hkT_le`, `Heat.hkT_gap`, `Heat.hkT_mass`.
 -/
 
 set_option linter.style.longLine false
@@ -46,7 +45,7 @@ section Defs
 
 variable (d L : ℕ) [NeZero L]
 
-/-- The Poisson semigroup of `K` (supervisor 1048 C2): `P_s = e^{-s} Σ_n sⁿ/n! Kⁿ`, entrywise. -/
+/-- The Poisson semigroup of `K`: `P_s = e^{-s} Σ_n sⁿ/n! Kⁿ`, entrywise. -/
 def BAP (g E : ℝ) (m : ℂ) (s : ℝ) (a b : Zd d L) : ℝ :=
   Real.exp (-s) * ∑' n : ℕ, s ^ n / (n.factorial : ℝ) * (BAK d L g E m ^ n) a b
 
@@ -227,8 +226,8 @@ private theorem KHeat_chi_re (k a : Zd d L) : (KHeat_chi d L k a).re = Real.cos 
 private theorem KHeat_chi_norm (k a : Zd d L) : ‖KHeat_chi d L k a‖ = 1 := by
   rw [KHeat_chi_eq_exp, Complex.norm_exp_ofReal_mul_I]
 
-/-- Orthogonality in `ℤ_L`: `Σ_x ψ(x u) = L [u = 0]` (port of `hp_sum_exp_orth`,
-`HeatProduct.lean:858`, in the `AddChar` form). -/
+/-- Orthogonality in `ℤ_L`: `Σ_x ψ(x u) = L [u = 0]` (as `hp_sum_exp_orth`,
+`HeatProduct.lean`, in the `AddChar` form). -/
 private theorem KHeat_sum_char (u : ZMod L) :
     ∑ x : ZMod L, ZMod.stdAddChar (x * u) = if u = 0 then (L : ℂ) else 0 := by
   rw [AddChar.sum_mulShift _ (ZMod.isPrimitive_stdAddChar L), ZMod.card]
@@ -349,7 +348,7 @@ private theorem KHeat_pow_fourier (n : ℕ) (a : Zd d L) :
 
 end Fourier
 
-/-! ## 4. Targets: the Fourier form and the basic properties -/
+/-! ## 4. The Fourier form and the basic properties -/
 
 /-- **Fourier form** on the torus (finite sums; `θ_k = 2π k / L`, symbol `BAKhat`). -/
 theorem kBA_fourier : ∀ (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ), 0 < g → ∀ (τ : ℝ) (a : Zd d L),
@@ -535,7 +534,7 @@ private theorem KHeat_gamma (n : ℕ) :
 
 end Laplace
 
-/-- **Laplace identity** (twin of `Theta_eq_laplace_prod`; `Θ = Σ tⁿ Kⁿ = ∫₀^∞ e^{-(1-t)u} P_{tu} du`, diffusive time
+/-- **Laplace identity** (the analogue of `Theta_eq_laplace_prod`; `Θ = Σ tⁿ Kⁿ = ∫₀^∞ e^{-(1-t)u} P_{tu} du`, diffusive time
 `τ = t g² u`). -/
 theorem BATheta_eq_laplace_kBA : ∀ (d L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ) (t : ℝ), 0 < g → BASelf d L g (E : ℂ) m →
     0 ≤ t → t < 1 → ∀ a : Zd d L,
@@ -588,7 +587,7 @@ theorem BATheta_eq_laplace_kBA : ∀ (d L : ℕ) [NeZero L], 3 ≤ L → ∀ (g 
   refine setIntegral_congr_fun measurableSet_Ioi (fun u _ => ?_)
   exact (hpt u).symm
 
-/-! ## 6. The torus sums (twin of `HeatTorus1D.lean`: the 1D lattice sums) -/
+/-! ## 6. The torus sums (the analogue of `HeatTorus1D.lean`: the 1D lattice sums) -/
 
 section Torus
 
@@ -637,7 +636,7 @@ private theorem KHeat_sum_geom_zdist {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
         Finset.sum_add_distrib
     _ ≤ 2 * (r / (1 - r)) := by linarith
 
-/-- `t e^{-t} ≤ 1` for `t ≥ 0` (port of `mul_exp_neg_le_one`, `HeatTorus1D.lean:299`). -/
+/-- `t e^{-t} ≤ 1` for `t ≥ 0` (as `mul_exp_neg_le_one`, `HeatTorus1D.lean`). -/
 private theorem KHeat_mul_exp_neg_le_one (t : ℝ) : t * Real.exp (-t) ≤ 1 := by
   have h : t < Real.exp t := by linarith [Real.add_one_le_exp t]
   rw [Real.exp_neg, ← div_eq_mul_inv, div_le_one (Real.exp_pos t)]
@@ -959,7 +958,7 @@ private theorem KHeat_master {c : ℝ} (hc : 0 < c) {τ : ℝ} (hτ : (L : ℝ) 
 
 end Gap
 
-/-! ## 8. Targets: regime (ii) `τ ≥ L²` -/
+/-! ## 8. Regime (ii) `τ ≥ L²` -/
 
 section GapTarget
 
@@ -984,8 +983,7 @@ private theorem KHeat_fin {LL X e P A C : ℝ} (hLL : 0 ≤ LL) (hX : 0 ≤ X) (
 private theorem KHeat_thetaSq_nonneg {d L : ℕ} (k : Zd d L) : 0 ≤ BAthetaSq d L k :=
   Finset.sum_nonneg fun _ _ => sq_nonneg _
 
-/-- **Regime (ii) `τ ≥ L²`** (twin of `kProd_gap`, `HeatProduct.lean:626`, verbatim with `kProd d L τ ↦ kBA d L g E m τ`;
-supervisor 1048 C1 (ii), O1). -/
+/-- **Regime (ii) `τ ≥ L²`** (the analogue of `kProd_gap`, `HeatProduct.lean`, with `kProd d L τ` replaced by `kBA d L g E m τ`). -/
 theorem kBA_gap : ∀ d : ℕ, 0 < d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
       ∀ τ : ℝ, (L : ℝ) ^ 2 ≤ τ → ∀ (a : Zd d L) (i j : Fin d),
@@ -1139,13 +1137,13 @@ theorem kBA_gap : ∀ d : ℕ, 0 < d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → 
 
 end GapTarget
 
-/-! ## 9. Target: the torus on-diagonal bound -/
+/-! ## 9. The torus on-diagonal bound -/
 
 section Diag
 
 variable {L : ℕ} [NeZero L]
 
-/-- `cos(2π u.val/L) = cos(2π |u|_L/L)` (port of `KSymbol_cos_zdist`, private in `KSymbol.lean:610`). -/
+/-- `cos(2π u.val/L) = cos(2π |u|_L/L)` (as `KSymbol_cos_zdist`, private in `KSymbol.lean`). -/
 private theorem KHeat_cos_zdist (u : ZMod L) :
     Real.cos (2 * Real.pi * (u.val : ℝ) / L) = Real.cos (2 * Real.pi * (zdist L u : ℝ) / L) := by
   have hv : u.val < L := ZMod.val_lt u
@@ -1308,7 +1306,6 @@ theorem kBA_diag_le : ∀ d : ℕ, 0 < d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ 
 
 end DiagTarget
 
-/-! ## 10. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, flow point `P`) -/
 
 end RBM.BA
 

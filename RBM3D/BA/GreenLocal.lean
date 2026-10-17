@@ -9,27 +9,24 @@ import RBM3D.BA.GreenStab
 import RBM3D.BA.Step1Boot
 
 /-!
-# The block Anderson local law at a deterministic control, per-sequence layer (BA-G6a)
+# The block Anderson local law at a deterministic control, per-sequence layer
 
-Ticket T2408 (design gate `docs/reports/T2408-prove.md` (a), (G); the pins GL1-GL6 of (G)(v) and
-their probe `RBM3D/Probe/T2408Pins.lean`, which is not merged).  Paper:
-`paper/tex/7_8_light_weight.tex` (`7_8:line`, `lem_GbEXP_BA` `:1916-1946`), band
-`paper/tex/3_5_Loop_Hierarchy.tex`.  The band route of `Green/LocalLaw.lean` (`AsGMcSeq` +
-`LoopDetSeq` → `LocalLawDetSeq` → floor → averaged law) read at the block Anderson carrier
-`baFMz sz z` and the law `seqP (sz.withLam 0)`; the per-time deterministic cores are the merged
-`GreenCore_diag` (G3a), `baStab_holds` (G3b); `baGbEXPij'_holds` (G4) is not used here.
+Paper: Lemma 8.4 (`lem_GbEXP_BA`), the block Anderson version of Lemma 3.1 (`lem_GbEXP`), with (3.2) `GiiGEX`, (3.4) `initialGT2`,
+(3.5) `GavLGEX`.  The band proof of `Green/LocalLaw.lean` (`AsGMcSeq` +
+`LoopDetSeq` → `LocalLawDetSeq` → floor → averaged law) is read at the block Anderson carrier
+`baFMz sz z` and the law `seqP (sz.withLam 0)`; the per-time deterministic cores are
+`GreenCore_diag` and `baStab_holds`; `baGbEXPij'_holds` is not used here.
 
-* **GL1** `GreenLocal_floor_sample`: one sample, `‖G - M‖_max ≤ κ/2` gives
+* `GreenLocal_floor_sample`: one sample, `‖G - M‖_max ≤ κ/2` gives
   `W^{-d} ≤ (4/κ²) 𝓛^{(2)}_{(-,+),(a,a)}`.
-* **GL2** `baGbEXPii_holds`: the pin `BAGbEXPii d` for `2 ≤ d` (`(GiiGEX)`, event form).
-* **GL3** `greenLocal_localLaw`: `(initialGT2)` gives `‖G_t - M‖_max ≺ Ψ`.
-* **GL4** `greenLocal_floor`: `(initialGT2)` gives `W^{-d} ≤ (4/κ²) N^ν Ψ²` eventually.
-* **GL5** `greenLocal_omega`: `‖G_t - M‖_max ≺ W^{-ε₀}` gives the event
+* `baGbEXPii_holds`: the statement `BAGbEXPii d` for `2 ≤ d` ((3.2) `GiiGEX`, event form).
+* `GreenLocal_Floor`: (3.4) `initialGT2` gives `W^{-d} ≤ (4/κ²) N^ν Ψ²` eventually.
+* `GreenLocal_omega`: `‖G_t - M‖_max ≺ W^{-ε₀}` gives the event
   `{‖G_t - M‖_max ≤ N^ζ W^{-ε₀}}` with high probability.
-* **GL6** `greenLocal_gav_of_fa`: the averaged law of `𝒦` gives `‖L^{(1)}_a - m‖ ≺ Ψ²`
+* `GreenLocal_Gav`, `greenLocal_gav_of_fa`: the averaged law of `𝒦` gives `‖L^{(1)}_a - m‖ ≺ Ψ²`
   (`BAGavLGEX`).
-* The bridges to G5a (`greenLocal_gii_of_le`), G5c (`greenLocal_ibp_premises`) and the wiring
-  lemma of G6b (`greenLocal_gbEXPav_of_fa`).
+* `GreenLocal_FAav`, `GreenLocal_Wiring`, `greenLocal_gbEXPav_of_fa`: the wiring lemma
+  for `BAGbEXPav`.
 
 Every constant depends on `(d, κ, 𝔡)` only (`κ` uniform in `L`); no `g ≤ W^{-ε}`, no smallness
 of `‖M - m₀ I‖`.
@@ -48,9 +45,9 @@ open RBM RBM.Green RBM.Gauss RBM.Gauss.Sizes
 
 namespace RBM.BA
 
-/-! ## 0. Vocabulary: the pins GL3-GL6 as `Prop`s -/
+/-! ## 0. Vocabulary: the statements `GreenLocal_Floor`, `GreenLocal_omega`, `GreenLocal_Gav` as `Prop`s -/
 
-/-- **GL4 `GreenLocal_Floor`**: the BA floor along the flow (the band `LoopFloorThm`, `Green/LocalLaw.lean:207`,
+/-- **`GreenLocal_Floor`**: the BA floor along the flow (the band `LoopFloorThm`, `Green/LocalLaw.lean`,
 `4 N^ε Ψ²` replaced by `(4/κ²) N^ν Ψ²`; `ν` is the exponent of `N`, `ε` is that of `BAFlow`). -/
 def GreenLocal_Floor (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -61,7 +58,7 @@ def GreenLocal_Floor (d : ℕ) : Prop :=
             ∀ ν : ℝ, 0 < ν → ∀ᶠ n in atTop,
               (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ 4 / κ ^ 2 * ((sz.size n : ℕ) : ℝ) ^ ν * Ψ n ^ 2
 
-/-- **GL5 `GreenLocal_omega`**: from (A) of `(initialGT2)` (`‖G_t - M‖_max ≺ W^{-ε₀}`) the event
+/-- **`GreenLocal_omega`**: from (3.4) `initialGT2` (`‖G_t - M‖_max ≺ W^{-ε₀}`) the event
 `{‖G_t - M‖_max ≤ N^ζ W^{-ε₀}}` has high probability, and `N^ζ W^{-ε₀} ≤ κ/2` eventually, for `0 < ζ ≤ 𝔠 ε₀ / 2`
 (`W ≥ N^𝔠`).  No guard on `d`. -/
 def GreenLocal_omega (d : ℕ) : Prop :=
@@ -77,8 +74,8 @@ def GreenLocal_omega (d : ℕ) : Prop :=
               (fun n => {ω | ∀ x y : Idx d (sz.L n) (sz.W n),
                 ‖(baFMz sz z).GM n (t n) ω x y‖ ≤ ((sz.size n : ℕ) : ℝ) ^ ζ * ((sz.W n : ℕ) : ℝ) ^ (-ε₀)})
 
-/-- **GL6 `GreenLocal_Gav`** (the averaged wiring): the averaged law of the residual `𝒦` (the conclusion of `BAFAav`,
-owed by G5b) gives `‖L^{(1)}_a - m‖ ≺ Ψ²` uniformly in `a` (the conclusion of `BAGavLGEX`, `BA/Step1Boot.lean:97-103`):
+/-- **`GreenLocal_Gav`** (the averaged wiring): the averaged law of the residual `𝒦` (the conclusion of `BAFAav`)
+gives `‖L^{(1)}_a - m‖ ≺ Ψ²` uniformly in `a` (the conclusion of `BAGavLGEX`, `BA/Step1Boot.lean`):
 `L^{(1)}_a - m = v̄_a`, `v̄ - t M^{(+,+)} v̄ = ⟨M𝒦⟩` (`GreenCore_E3`), `‖v̄‖_max ≤ 16 κ⁻⁴ ‖⟨M𝒦⟩‖_max` (`baStab_holds`). -/
 def GreenLocal_Gav (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -94,14 +91,14 @@ def GreenLocal_Gav (d : ℕ) : Prop :=
           (fun n a ω => ‖(baFMz sz z).L n (t n) (fun _ : Fin 1 => true) (fun _ => a) ω - (baFMz sz z).m n‖)
           (fun n _ _ => Ψ n ^ 2)
 
-/-! ## 1. GL1: the floor at one sample -/
+/-! ## 1. The floor at one sample -/
 
 section Floor
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- **GL1 `GreenLocal_floor_sample`** (one sample, deterministic; the BA twin of `inv_Wd_le_maxLoopPM`,
-`Green/EntryDom.lean:386`): `|M_{uu}| = |m| ≥ κ` and `‖G - M‖_max ≤ δ ≤ κ/2` give `|G_{uu}| ≥ κ/2`, so
+/-- **`GreenLocal_floor_sample`** (one sample, deterministic; the BA analogue of `inv_Wd_le_maxLoopPM`,
+`Green/EntryDom.lean`): `|M_{uu}| = |m| ≥ κ` and `‖G - M‖_max ≤ δ ≤ κ/2` give `|G_{uu}| ≥ κ/2`, so
 `𝓛^{(2)}_{(-,+),(a,a)} ≥ W^{-d} κ²/4`. -/
 theorem GreenLocal_floor_sample {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ} {Mb : Matrix (Zd d L) (Zd d L) ℂ} {m : ℂ}
     {κ δ : ℝ} (hκ : 0 < κ) (hM : ∀ u v, M u v = if u.2 = v.2 then Mb u.1 v.1 else 0) (hMd : ∀ a, Mb a a = m)
@@ -177,12 +174,10 @@ private theorem GreenLocal_ev_pow {d : ℕ} (sz : Sizes d) (hsz : sz.SizeTendsto
 
 end Helpers
 
-/-! ## 3. GL5: the event `{‖G_t - M‖_max ≤ N^ζ W^{-ε₀}}` -/
-
-/-! ## 4. GL2: the diagonal law `BAGbEXPii`
+/-! ## 3. The diagonal law `BAGbEXPii`
 
 The constant of the diagonal law: `8 K_BA² (9/4 A_b + X_b) ≤ C_gii Φ² 𝓛_max` under `Φ ≥ 1`, `δ ≤ κ/2`, `g₀ ≤ Λ` and the floor
-`W^{-d} ≤ (4/κ²) 𝓛_max` (GL1).  `C_gii` is a function of `(d, κ, c₀, ρ, S, Λ)`, hence of `(d, κ, 𝔡)` only. -/
+`W^{-d} ≤ (4/κ²) 𝓛_max` (`GreenLocal_floor_sample`).  `C_gii` is a function of `(d, κ, c₀, ρ, S, Λ)`, hence of `(d, κ, 𝔡)` only. -/
 
 section Constants
 
@@ -293,7 +288,7 @@ private def GreenLocal_C2 (d : ℕ) (κ 𝔡 : ℝ) : ℝ :=
   8 * GreenLocal_KBA d κ 𝔡 ^ 2 * GreenLocal_Cgl d κ (BAct_rate d 𝔡⁻¹ κ) (GreenOff_rho d 𝔡⁻¹ κ) (GreenOff_S d 𝔡⁻¹ κ) 𝔡⁻¹
 
 /-- **The diagonal law, one sample**: on `Ω = {‖G_t - M‖_max ≤ δ}`, `δ ≤ κ/2`, the four large deviation events at the factor
-`P ≥ 1`, (C1) and `K_BA δ ≤ 1/2`: `|(G_t - M)_{xy}|² ≤ C₂ P² 𝓛_max` (`GreenCore_diag` with the floor GL1). -/
+`P ≥ 1`, the smallness condition `8 ρ c₀⁻¹ S ϑ ≤ 1` of `GreenCore_Rbound` and `K_BA δ ≤ 1/2`: `|(G_t - M)_{xy}|² ≤ C₂ P² 𝓛_max` (`GreenCore_diag` with the floor `GreenLocal_floor_sample`). -/
 private theorem GreenLocal_gii_sample (hd : 2 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ}
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (htT : t ≤ BAflowT0 sz z n) (ω : sz.SeqΩ)
     {P δ : ℝ} (hg : 0 < BAflowLam0 sz z n) (hgΛ : BAflowLam0 sz z n ≤ 𝔡⁻¹)
@@ -406,10 +401,10 @@ private theorem GreenLocal_wd_le {W ε' : ℝ} (hW : 1 ≤ W) (hε' : ε' ≤ (d
   rw [← Real.rpow_natCast, ← Real.rpow_neg hW0.le, ← Real.rpow_natCast, ← Real.rpow_mul hW0.le]
   exact Real.rpow_le_rpow_of_exponent_le hW (by push_cast; linarith)
 
-/-- **GL2 `baGbEXPii_holds`**: the pin `BAGbEXPii` (`lem_GbEXP_BA`, `(GiiGEX)`, event form, `7_8:1916-1946`) for `2 ≤ d` (the guard of
-`baGbEXPij'_holds`, `BA/GreenOff.lean:1289`; paper-delta `T2408b`).  Proof: with `ε' = min(ε₀, d/2)`, `τ₀ = min(τ/4, 𝔠 ε')` and
+/-- **`baGbEXPii_holds`**: the statement `BAGbEXPii` (Lemma 8.4 `lem_GbEXP_BA`, (3.2) `GiiGEX`, event form) for `2 ≤ d` (the guard of
+`baGbEXPij'_holds`, `BA/GreenOff.lean`).  Proof: with `ε' = min(ε₀, d/2)`, `τ₀ = min(τ/4, 𝔠 ε')` and
 `Φ = N^{τ₀}` the four large deviation events (`baLDEin_holds`) hold with high probability; on them and on
-`Ω(ε₀) ⊆ Ω(ε')`, for `n` large (`W ≥ N^𝔠`; `GreenOff_pin_consts`: `δ = W^{-ε'} ≤ κ/2`, (C1), `K_BA δ ≤ 1/2`), the one-sample law
+`Ω(ε₀) ⊆ Ω(ε')`, for `n` large (`W ≥ N^𝔠`; `GreenOff_pin_consts`: `δ = W^{-ε'} ≤ κ/2`, the smallness condition, `K_BA δ ≤ 1/2`), the one-sample law
 `GreenLocal_gii_sample` gives `|(G_t - M)_{xy}|² ≤ C₂ N^{2τ₀} 𝓛_max ≤ N^τ 𝓛_max`, `C₂ = C₂(d, κ, 𝔡)`. -/
 theorem baGbEXPii_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPii d := by
   intro κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀
@@ -483,9 +478,7 @@ theorem baGbEXPii_holds (d : ℕ) (hd : 2 ≤ d) : BAGbEXPii d := by
 
 end GiiPin
 
-/-! ## 5. GL3: the local law at a deterministic control; GL4: the floor along the flow -/
-
-/-! ## 6. GL6: the averaged wiring `L^{(1)}_a - m = v̄_a`, `v̄ - t M^{(+,+)} v̄ = ⟨M𝒦⟩`, `BAStab` -/
+/-! ## 4. The averaged wiring `L^{(1)}_a - m = v̄_a`, `v̄ - t M^{(+,+)} v̄ = ⟨M𝒦⟩`, `BAStab` -/
 
 section Gav
 
@@ -531,7 +524,7 @@ private theorem GreenLocal_L1_eq (sz : Sizes d) (z : ℕ → ℂ) (n : ℕ) (t :
   · intro h
     exact absurd (Finset.mem_univ a) h
 
-/-- The averaged equation of `(E3)`: `v̄_a - t Σ_b M_{ba} M_{ab} v̄_b = W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}`
+/-- The averaged equation of the coupled identity (E3): `v̄_a - t Σ_b M_{ba} M_{ab} v̄_b = W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}`
 (the identity inside `GreenCore_coupled`). -/
 private theorem GreenLocal_avg_identity {L W : ℕ} [NeZero L] [NeZero W] {G M : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     {Mb : Matrix (Zd d L) (Zd d L) ℂ} {𝒦 : Vtx d L W → Vtx d L W → ℂ} {vb : Zd d L → ℂ} {t : ℝ}
@@ -565,8 +558,8 @@ private theorem GreenLocal_stab_form {L : ℕ} [NeZero L] {g E Kθ t : ℝ} {m :
     ‖v a‖ ≤ Kθ * B :=
   hstab v B (fun a' => by simpa [BAMss, BAMsigma] using hv a') a
 
-/-- **GL6 `greenLocal_gav_of_fa`** (the averaged wiring; twin of `avgBoundDetThm`, `Green/LocalLaw.lean:739`, at the BA carrier): the
-averaged law `‖W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}‖ ≺ Ψ²` of the residual of `(E3)` (the conclusion of `BAFAav`, owed by G5b) gives
+/-- **`greenLocal_gav_of_fa`** (the averaged wiring; the analogue of `avgBoundDetThm`, `Green/LocalLaw.lean`, at the BA carrier): the
+averaged law `‖W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}‖ ≺ Ψ²` of the residual of (E3) (the conclusion of `BAFAav`) gives
 `‖L^{(1)}_a - m‖ ≺ Ψ²` uniformly in `a` (the conclusion of `BAGavLGEX`).  `L^{(1)}_a - m = v̄_a`, `v̄ - t M^{(+,+)} v̄ = ⟨M𝒦⟩`
 (`GreenCore_E3`), `‖v̄‖_max ≤ 16 κ⁻⁴ ‖⟨M𝒦⟩‖_max` (`baStab_holds`), and `16 κ⁻⁴ N^{τ/2} ≤ N^τ` eventually.  No `Ψ` hypothesis. -/
 theorem greenLocal_gav_of_fa (d : ℕ) (hd : 2 ≤ d) : GreenLocal_Gav d := by
@@ -614,12 +607,11 @@ theorem greenLocal_gav_of_fa (d : ℕ) (hd : 2 ≤ d) : GreenLocal_Gav d := by
 
 end Gav
 
-/-! ## 7. The bridges to G5a, G5c and the wiring lemma of G6b -/
+/-! ## 5. The wiring lemma for `BAGbEXPav` -/
 
-/-- **The premise of GL6 as stated by G5b** (`BAFAav`, `t/T2401` at `aec5a16`, `RBM3D/Probe/T2401Pins.lean:337-346`, after Amend 1 D1; the pin is
-not merged, so its text is copied here under the stem `GreenLocal_`): the averaged law of the residual `𝒦` of `(E3)`,
-`‖W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}‖ ≺ Ψ²`, from `BAGiiGEX` at `ε₀/2` and `(initialGT2)`, for `Ψ` in the window
-`W^{-d/2} ≤ Ψ ≤ W^{-ε₀}`.  Owed by G5b. -/
+/-- **The premise of `greenLocal_gav_of_fa`** (the statement `BAFAav`): the averaged law of the residual `𝒦` of (E3),
+`‖W^{-d} Σ_o Σ_{b'} M_{ab'} 𝒦_{(b',o)(a,o)}‖ ≺ Ψ²`, from `BAGiiGEX` at `ε₀/2` and (3.4) `initialGT2`, for `Ψ` in the window
+`W^{-d/2} ≤ Ψ ≤ W^{-ε₀}`. -/
 def GreenLocal_FAav (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ t : ℕ → ℝ, (∀ n, 0 ≤ t n) → (∀ n, t n ≤ BAflowT0 sz z n) → ∀ ε₀ : ℝ, 0 < ε₀ → BAGiiGEX sz z t (ε₀ / 2) →
@@ -633,26 +625,18 @@ def GreenLocal_FAav (d : ℕ) : Prop :=
                 (GreenCore_Dc sz z n) (t n) (BAmF sz (BAflowLam0 sz z) (BAflowEs sz z) n) (b', o) (a, o)‖)
           (fun n _ _ => Ψ n ^ 2)
 
-/-- The wiring of G6b: `BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`, owed by G5b).  The premise is inside the
-`Prop` (as in `BAGbEXPij'`), so no theorem of this file takes an unproved named premise as a hypothesis. -/
+/-- The wiring: `BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`).  The premise is inside the
+`Prop` (as in `BAGbEXPij'`). -/
 def GreenLocal_Wiring (d : ℕ) : Prop := GreenLocal_FAav d → BAGbEXPav d
 
-/-- **The wiring lemma of G6b** (twin of `gbEXPV3Theorem_of_parts`, `Green/LocalLaw.lean:427`, with the FA input as a hypothesis):
-`BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`, owed by G5b), the diagonal law GL2 at `ε₀/2` (the premise of
-`GreenLocal_FAav`) and the averaged wiring GL6. -/
+/-- **The wiring lemma** (the analogue of `gbEXPV3Theorem_of_parts`, `Green/LocalLaw.lean`, with the averaged-law input as a hypothesis):
+`BAGbEXPav d` from the averaged law of the residual (`GreenLocal_FAav`), the diagonal law `baGbEXPii_holds` at `ε₀/2` (the premise of
+`GreenLocal_FAav`) and the averaged wiring `greenLocal_gav_of_fa`. -/
 theorem greenLocal_gbEXPav_of_fa (d : ℕ) (hd : 2 ≤ d) : GreenLocal_Wiring d := by
   intro hFA κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hlo hhi hinit
   exact greenLocal_gav_of_fa d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT Ψ
     (hFA κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀
       (baGbEXPii_holds d hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT (ε₀ / 2) (half_pos hε₀)) Ψ hlo hhi hinit)
 
-/-! ## 8. Compiled nonempty instances
-
-The data: `d = 3`, `sz0` at `n = 0` (`L = 4`, `W = 32`, `N = 2097152`, `λ = 1/64`), the flow `flow_sz0` (`κ = 1/2`, `ε = 1/10`,
-`𝔠 = 1/6`, `𝔡 = 1/10`), `t ≡ 1/2 ≤ T₀` (`half_lt_t0`), `ε₀ = 1/10`, `Ψ = W^{-1}` (`W^{-3/2} ≤ Ψ ≤ W^{-1/10}`), `ζ = 1/120 = 𝔠 ε₀ / 2`.
-In the examples at `t ≡ 1/2`, `STInitialGT2gL` (the induction's output) and `GreenLocal_FAav` (owed by G5b) stay hypotheses; at
-`t ≡ 0` (`G_0 = M`, `X = 0`, `𝒦 = 0`) `(initialGT2)` is proved and every hypothesis of GL1, GL3, GL4, GL5, GL6 is discharged. -/
-
-/-! ### `t ≡ 0`: `G_0 = M`, `X = 0` (`(initialGT2)` is proved, `𝒦 = 0`); every hypothesis of GL1, GL3-GL6 is discharged at `sz0` -/
 
 end RBM.BA

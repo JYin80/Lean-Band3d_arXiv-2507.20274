@@ -10,12 +10,12 @@ import RBM3D.Green.LDE
 import RBM3D.Green.IBPPoly
 
 /-!
-# The large deviation inputs of the block Anderson resolvent (BA-G2)
+# The large deviation inputs of the block Anderson resolvent
 
-Ticket T2389.  Paper: `paper/tex/7_8_light_weight.tex` (`7_8:line`), `paper/tex/1_2_Intro_model_result.tex`.
+Paper: Section 2 (the block Anderson model), Section 8 and Lemma 4.1 of [YY_25].
 The block Anderson flow is `H_t = D + X_t` with `D = g₀ Ψ` deterministic and Hermitian and `X_t` the Gaussian
-part, the model of `sz.withLam 0` (`Gauss/BlockAnderson.lean:83`).  The band large deviation inputs of the
-`(4.2)`, `(4.3)` layer (`Green/EntryDom.lean:874-886, 997-1021`) are proved in the files `Green/LDE`,
+part, the model of `sz.withLam 0` (`Gauss/BlockAnderson.lean`).  The band large deviation inputs of the
+(4.2), (4.3) layer of [YY_25, Lemma 4.1] (`Green/EntryDom.lean`) are proved in the files `Green/LDE`,
 `Green/RowIndep`, `Green/IBPPoly` for a deterministic Hermitian shift `D` (the band is `D = 0`); here they are
 instantiated at the block Anderson carrier.
 
@@ -24,13 +24,12 @@ instantiated at the block Anderson carrier.
 * `BAX`, **`BALDEin`**, **`baLDEin_holds`**: the four large deviation inputs `hLrow`, `hLcol`, `hLquad`, `hLdiag`
   at the carrier, in the band text, with the profile `S^{(B)}(0) = I` (`svar d L W 0`) and the law
   `Sizes.seqP (sz.withLam 0)`.
-* `GreenLDE_BAX_ae_block_support`: almost surely `X` vanishes between different blocks (zero variance, `gaussianReal_zero_var`).
-* An instance at `d = 3`, `sz0`, `flow_sz0`, `t ≡ 1/2`.
 
 No smallness of `g` and of `‖M - m₀ I‖` is used: the proof reads only `D + X` Hermitian, `Im z_t > 0` and
 the independent Gaussian rows of `X`.  The row coefficients are the minors of `D + X`, which read only the
-off-row coordinates of `X`, so the almost sure block support of `X` is not needed for these four inputs
-(`BA/GreenSchur.lean:18`: not merged).
+off-row coordinates of `X`, so the almost sure block support of `X` (the variance profile of `sz.withLam 0`
+is `S^{(B)}(0) = I`, so `Var X_{xy} = 0` between different blocks, (2.29) `bandcwV`) is not needed for these four inputs;
+it is needed by the Schur split of the BA rows (`BA/GreenSchur.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -42,7 +41,7 @@ open RBM RBM.Gauss RBM.Gauss.Sizes
 namespace RBM.BA
 
 /-- `G_t` of the carrier is the resolvent of `D + X`, `D = g₀ Ψ` deterministic and `X` the Gaussian part of
-`sz.withLam 0` (`Sizes.seqHflowBA`, `Gauss/BlockAnderson.lean:83`). -/
+`sz.withLam 0` (`Sizes.seqHflowBA`, `Gauss/BlockAnderson.lean`). -/
 theorem BAGt_eq_green {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) :
     BAGt sz lam0 E n t ω = RBM.green ((lam0 n : ℂ) • PsiI d (sz.L n) (sz.W n) +
       Matrix.of fun i j : Idx d (sz.L n) (sz.W n) => seqHflow (sz.withLam 0) n t ω i j) (ztOf (BAmF sz lam0 E n) (E n) t) := by
@@ -50,7 +49,7 @@ theorem BAGt_eq_green {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) 
   simp only [RBM.green, Gres, ↓reduceIte, Matrix.nonsing_inv_eq_ringInverse]
   rfl
 
-/-- The BA data facts used by the G rows, from `BAFlow` and `0 ≤ t ≤ T₀` only: `t < 1`, `BAReal` at `(g₀, E, m₀)`,
+/-- The BA data facts used by the rows, from `BAFlow` and `0 ≤ t ≤ T₀` only: `t < 1`, `BAReal` at `(g₀, E, m₀)`,
 `Im m₀ > 0`, `η_t > 0`, the resolvent identity `G - M = -M(√t V + t m)G`, `‖M‖_max ≤ 1`. -/
 theorem ba_G_data {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     (n : ℕ) {t : ℝ} (ht0 : 0 ≤ t) (ht : t ≤ BAflowT0 sz z n) :
@@ -73,13 +72,13 @@ theorem ba_G_data {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d
   unfold etaOf
   exact mul_pos (by linarith) hmi
 
-/-- The Gaussian part `X = V` of the carrier (the model of `sz.withLam 0`, `Gauss/BlockAnderson.lean:83`), on the fine lattice. -/
+/-- The Gaussian part `X = V` of the carrier (the model of `sz.withLam 0`, `Gauss/BlockAnderson.lean`), on the fine lattice. -/
 def BAX {d : ℕ} (sz : Sizes d) (n : ℕ) (t : ℝ) (ω : sz.SeqΩ) :
     Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   Matrix.of fun i j : Idx d (sz.L n) (sz.W n) => seqHflow (sz.withLam 0) n t ω i j
 
-/-- **The G2 target: the four large deviation inputs at the BA carrier.**  The hypotheses `hLrow, hLcol, hLquad, hLdiag` of
-the band `(4.2)`, `(4.3)` layer (`Green/EntryDom.lean:874-886, 997-1021`, vocabulary `Green/EntryCore.lean:514-553`, class R):
+/-- **The four large deviation inputs at the BA carrier.**  The hypotheses `hLrow, hLcol, hLquad, hLdiag` of
+the band (4.2), (4.3) layer of [YY_25] (`Green/EntryDom.lean`, vocabulary `Green/EntryCore.lean`):
 the random row `X` against the minors of the BA resolvent `G_t = (g₀ Ψ + X - z_t)⁻¹`, profile `S^{(B)}(0) = I`. -/
 def BALDEin (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z →
@@ -104,8 +103,8 @@ def BALDEin (d : ℕ) : Prop :=
         (fun n i ω => ‖blockMat d (sz.L n) (sz.W n) (BAX sz n (t n) ω) i i‖ ^ 2)
         (fun n i _ => svar d (sz.L n) (sz.W n) 0 i i)
 
-/-- The fourth input `hLdiag` of `BALDEin` is the merged band theorem `stochDom_normSq_Hflow_diag` at
-`sz.withLam 0` (class R: `X` is the band model of `sz.withLam 0`): no new proof. -/
+/-- The fourth input `hLdiag` of `BALDEin` is the band theorem `stochDom_normSq_Hflow_diag` at
+`sz.withLam 0` (`X` is the band model of `sz.withLam 0`). -/
 theorem BALDEin_diag {d : ℕ} {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (sz : Sizes d) {z : ℕ → ℂ} (h : BAFlow sz κ ε 𝔠 𝔡 z)
     {t : ℕ → ℝ} (ht0 : ∀ n, 0 ≤ t n) (ht : ∀ n, t n ≤ BAflowT0 sz z n) :
     Path.PerTimeDomAt (Sizes.seqP (sz.withLam 0)) sz.size (U := fun n => Vtx d (sz.L n) (sz.W n))
@@ -118,13 +117,6 @@ private theorem GreenLDE_shift_isHermitian {d : ℕ} (sz : Sizes d) (lam0 : ℕ 
     ((lam0 n : ℂ) • PsiI d (sz.L n) (sz.W n)).IsHermitian :=
   (PsiI_isHermitian d (sz.L n) (sz.W n)).smul (by simp [IsSelfAdjoint])
 
-/-! ### Almost sure block support of `X`
-
-The variance profile of `sz.withLam 0` is `S^{(B)}(0) = I`: `Var X_{xy} = 0` unless `x` and `y` lie in the same block
-(`(bandcwV)`, `1_2:606`), so such an entry is a Gaussian of variance `0`, hence `0` almost surely
-(`gaussianReal_zero_var`: `gaussianReal μ 0 = Measure.dirac μ`).  The four inputs of `BALDEin` do not use this
-(their coefficients are the minors of `D + X` and the profile `svar d L W 0` carries the support); the support is
-needed by the Schur split of the BA rows (`BA/GreenSchur.lean:18`). -/
 
 /-- `PerTimeDomAt` only depends on the values of the two families. -/
 private theorem GreenLDE_perTime_congr {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ}
@@ -135,7 +127,7 @@ private theorem GreenLDE_perTime_congr {Ω : Type*} [MeasurableSpace Ω] {P : Me
   filter_upwards [h τ hτ K hK] with n hn u
   simpa only [hξ, hζ] using hn u
 
-/-- **`BALDEin d`, proved** (the pin of the G2 row): the four large deviation inputs at the block Anderson carrier.
+/-- **`BALDEin d`, proved**: the four large deviation inputs at the block Anderson carrier.
 Rows and columns: the generic row and column inputs `LDE_stochDom_ldeRow_shift`, `LDE_stochDom_ldeCol_shift`
 (`Green/LDE.lean`) at `sz.withLam 0`, `D = g₀ Ψ`, `z = z_t`; the quadratic form: `IBPPoly_stochDom_ldeQuad_shift`
 (`Green/IBPPoly.lean`); the diagonal: `BALDEin_diag`. -/
@@ -161,7 +153,5 @@ theorem baLDEin_holds (d : ℕ) : BALDEin d := by
   · exact GreenLDE_perTime_congr (fun n u ω => by rw [hG n ω]; rfl) (fun n u ω => by rw [hG n ω]; rfl)
       (Green.IBPPoly_stochDom_ldeQuad_shift (sz.withLam 0) hsz
         (fun n => (BAflowLam0 sz z n : ℂ) • PsiI d (sz.L n) (sz.W n)) hD hz ht0 ht1)
-
-/-! ### A nonempty instance -/
 
 end RBM.BA

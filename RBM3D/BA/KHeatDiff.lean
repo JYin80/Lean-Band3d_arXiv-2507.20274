@@ -7,23 +7,21 @@ import RBM3D.BA.KHeatTail
 import Mathlib.Algebra.Group.ForwardDiff
 
 /-!
-# Unit differences of the heat kernel `kBA`: polynomial decay in regime (i) (BA-P4c)
+# Unit differences of the heat kernel `kBA`: polynomial decay in regime (i)
 
-Ticket T2336 (BA stage P, row P4c; supervisor 2026-10-08-1048 C4, O2).  Targets: `kBA_diff1_le`, `kBA_diff2_le`
-(`τ ≤ L²`, `M = ⌊d/2⌋ + 1`, `max τ 1` in the decay factor) and the public symbol regularity `BAKhat_diff_le`.
+Contents: `kBA_diff1_le`, `kBA_diff2_le`
+(`τ ≤ L²`, `M = ⌊d/2⌋ + 1`, `max τ 1` in the decay factor).
 
-Route.  `1 ≤ τ ≤ L²`: by the torus Fourier form `kBA_fourier`, `Δ_j^R` of the summand `A(k) Π_u (χ_k(e_{i_u}) - 1)`,
+Proof outline.  `1 ≤ τ ≤ L²`: by the torus Fourier form `kBA_fourier`, `Δ_j^R` of the summand `A(k) Π_u (χ_k(e_{i_u}) - 1)`,
 `A = e^{-(τ/g²)(1 - K̂)}`, is bounded by the *geometric calculus* of §1 (bounds `‖Δ^i φ(l)‖ ≤ B ρ^i` are stable under
 products by induction on the order, under powers, and under `exp` by `n^i ≤ i! e^n`; no Faà di Bruno formula).  The
-symbol has `|Δ_j^i K̂| ≤ C g² L^{-i}` and `|Δ_j K̂| ≤ C g² L^{-1} (|θ_k| + L^{-1})` (`BAKhat_diff_le`, from the moments
+symbol has `|Δ_j^i K̂| ≤ C g² L^{-i}` and `|Δ_j K̂| ≤ C g² L^{-1} (|θ_k| + L^{-1})` (from the moments
 `Σ_a K_{0a} |a|^q ≤ C g²`, `BAK_exp_moment_le`), so each difference gains `√τ/L` (§5).  Summation by parts of order
 `2M` in the direction of the largest coordinate of `a` (§6) gives `τ^{-(d+n)/2} (τ/|a|²)^M`; no summation by parts gives
-`τ^{-(d+n)/2}` for `|a|² ≤ τ` (§7).  `0 < τ ≤ 1`: the merged tail bound `kBA_le` (`BA/KHeatTail`, T2335) and
+`τ^{-(d+n)/2}` for `|a|² ≤ τ` (§7).  `0 < τ ≤ 1`: the tail bound `kBA_le` (`BA/KHeatTail`) and
 `e^{-c r} ≤ C (1 + r²)^{-M}` (§8).  Imports beyond `BA/KHeat`: `BA/KHeatTail`, `Mathlib.Algebra.Group.ForwardDiff`.
-Ports of private lemmas of merged RBM3D files (nothing from `../RBM1D`, `../RBM2D`): `KHeat.lean` `KHeat_chi` `:180`,
-`KHeat_chi_eq` `:186`, `KHeat_char_sub_one` `:812`, `KHeat_mu_le` `:728`, `KHeat_theta_sq_le` `:713`, `KHeat_cos_zdist`
-`:1149`, `KHeat_prod_sum` `:681`, `KHeat_gauss_le_hkT` `:1164`; `KHeatTail.lean:50` (`zdist_natCast`);
-`KSymbol.lean:700` (`BAK_second_moment`, for all moments).
+Several private lemmas of `KHeat.lean` (`KHeat_chi`, `KHeat_chi_eq`, `KHeat_char_sub_one`, `KHeat_mu_le`, `KHeat_theta_sq_le`,
+`KHeat_cos_zdist`, `KHeat_prod_sum`, `KHeat_gauss_le_hkT`), of `KHeatTail.lean` (`KHeatTail_zdist_natCast`) and the second moment bound of `KSymbol.lean` (here for all moments) are re-proved below.
 -/
 
 
@@ -182,8 +180,8 @@ section Char
 
 variable {d L : ℕ} [NeZero L]
 
-/-- The additive character `χ_k(a) = exp(2πi/L Σ_j k_j a_j)` of `ℤ_L^d` (port of the private `KHeat_chi`,
-`KHeat.lean:180`). -/
+/-- The additive character `χ_k(a) = exp(2πi/L Σ_j k_j a_j)` of `ℤ_L^d` (as the private `KHeat_chi`,
+`KHeat.lean`). -/
 private def KHeatDiff_chi (k a : Zd d L) : ℂ := ZMod.stdAddChar (∑ j, k j * a j)
 
 private theorem KHeatDiff_chi_eq (k a : Zd d L) :
@@ -256,7 +254,7 @@ private theorem KHeatDiff_std_vma (y : ZMod L) :
     ZMod.stdAddChar y = Complex.exp (Complex.I * ((2 * Real.pi * (y.valMinAbs : ℝ) / L : ℝ) : ℂ)) := by
   rw [← KHeatDiff_std_exp, ZMod.coe_valMinAbs]
 
-/-- `|e^{2πi y/L} - 1| ≤ 2π |y|_L / L` (port of `KHeat_char_sub_one`, `KHeat.lean:812`). -/
+/-- `|e^{2πi y/L} - 1| ≤ 2π |y|_L / L` (as `KHeat_char_sub_one`). -/
 private theorem KHeatDiff_char_sub_one (y : ZMod L) :
     ‖ZMod.stdAddChar y - 1‖ ≤ 2 * Real.pi * (zdist L y : ℝ) / L := by
   rw [KHeatDiff_std_vma]
@@ -296,7 +294,7 @@ section Lattice
 
 variable {d L : ℕ} [NeZero L]
 
-/-- Port of `KHeatTail_zdist_natCast` (`KHeatTail.lean:50`). -/
+/-- As `KHeatTail_zdist_natCast`. -/
 private theorem KHeatDiff_zdist_natCast (k : ℕ) : zdist L (k : ZMod L) ≤ k := by
   unfold zdist
   rw [ZMod.val_natCast]
@@ -344,7 +342,7 @@ end Lattice
 
 section Moment
 
-/-- All moments of the kernel (twin of `BAK_second_moment`, `KSymbol.lean:700`, with `r^q ≤ q! μ^{-q} e^{μ r}`):
+/-- All moments of the kernel (the analogue of the second moment bound of `KSymbol.lean`, with `r^q ≤ q! μ^{-q} e^{μ r}`):
 `Σ_a K_{0a} |a|^q ≤ C g²` for `1 ≤ q ≤ N`, uniformly in `L` and `g ∈ (0, Λ]`. -/
 private theorem KHeatDiff_moment : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∀ N : ℕ, ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
@@ -690,7 +688,7 @@ section Perk
 
 variable {d L : ℕ} [NeZero L]
 
-/-- Port of `KHeat_mu_le` (`KHeat.lean:728`): the gap gives the Gaussian bound of the symbol. -/
+/-- As `KHeat_mu_le`: the gap gives the Gaussian bound of the symbol. -/
 private theorem KHeatDiff_mu_le {c g τ Θ K : ℝ} (hg : 0 < g) (hτ : 0 ≤ τ)
     (h : c * g ^ 2 * Θ ≤ 1 - K) :
     Real.exp (-(τ / g ^ 2) * (1 - K)) ≤ Real.exp (-(c * τ) * Θ) := by
@@ -976,7 +974,7 @@ variable {d L : ℕ} [NeZero L]
 private theorem KHeatDiff_thetaSq_nonneg (k : Zd d L) : 0 ≤ BAthetaSq d L k :=
   Finset.sum_nonneg fun _ _ => sq_nonneg _
 
-/-- Port of `KHeat_theta_sq_le` (`KHeat.lean:713`). -/
+/-- As `KHeat_theta_sq_le`. -/
 private theorem KHeatDiff_theta_sq_le (k : Zd d L) (j : Fin d) :
     (2 * Real.pi * (zdist L (k j) : ℝ) / L) ^ 2 ≤ BAthetaSq d L k := by
   unfold BAthetaSq
@@ -1165,7 +1163,7 @@ private theorem KHeatDiff_sbp (j : Fin d) (a : Zd d L) (F : Zd d L → ℂ) (R :
   | zero => simp
   | succ R ih => rw [Function.iterate_succ_apply', key, ih, pow_succ]; ring
 
-/-- Port of `KHeat_cos_zdist` (`KHeat.lean:1149`). -/
+/-- As `KHeat_cos_zdist`. -/
 private theorem KHeatDiff_cos_zdist (u : ZMod L) :
     Real.cos (2 * Real.pi * (u.val : ℝ) / L) = Real.cos (2 * Real.pi * (zdist L u : ℝ) / L) := by
   have hv : u.val < L := ZMod.val_lt u
@@ -1179,7 +1177,7 @@ private theorem KHeatDiff_cos_zdist (u : ZMod L) :
       field_simp
     rw [h2, Real.cos_two_pi_sub]
 
-/-- Port of `KHeat_prod_sum` (`KHeat.lean:681`): the Gaussian sum on the dual torus factorises. -/
+/-- As `KHeat_prod_sum`: the Gaussian sum on the dual torus factorises. -/
 private theorem KHeatDiff_prod_sum (v : ℝ) :
     ∑ k : Zd d L, Real.exp (-v * BAthetaSq d L k)
       = (∑ x : ZMod L, Real.exp (-v * (2 * Real.pi * (zdist L x : ℝ) / L) ^ 2)) ^ d := by
@@ -1193,7 +1191,7 @@ private theorem KHeatDiff_prod_sum (v : ℝ) :
     Real.exp (-v * (2 * Real.pi * (zdist L x : ℝ) / L) ^ 2))]
   simp [Finset.prod_const]
 
-/-- Port of `KHeat_gauss_le_hkT` (`KHeat.lean:1164`). -/
+/-- As `KHeat_gauss_le_hkT`. -/
 private theorem KHeatDiff_gauss_le_hkT {w : ℝ} (hw : 0 ≤ w) :
     (L : ℝ)⁻¹ * ∑ x : ZMod L, Real.exp (-w * (2 * Real.pi * (zdist L x : ℝ) / L) ^ 2)
       ≤ Heat.hkT L w 0 := by
@@ -1492,7 +1490,7 @@ private theorem KHeatDiff_B : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ �
 
 end RegB
 
-/-! ## 9. Targets: the unit differences of `kBA` in regime (i) -/
+/-! ## 9. The unit differences of `kBA` in regime (i) -/
 
 section Targets
 
@@ -1551,7 +1549,7 @@ private theorem KHeatDiff_diff2 (g E : ℝ) (m : ℂ) (hg : 0 < g) (τ : ℝ) (a
   rw [e, abs_mul, abs_of_pos hLL]
   exact mul_le_mul_of_nonneg_left (Complex.abs_re_le_norm _) hLL.le
 
-/-- The two regimes `τ ≤ 1` and `1 ≤ τ ≤ L²` assembled into the pinned shape. -/
+/-- The two regimes `τ ≤ 1` and `1 ≤ τ ≤ L²` assembled into the final shape. -/
 private theorem KHeatDiff_comb {X CA CB e : ℝ} (d n : ℕ) {τ D : ℝ} (hτ : 0 < τ) (hX : 0 ≤ X)
     (he : e = -((d : ℝ) + n) / 2) (hCA : 0 ≤ CA)
     (hA : 1 ≤ τ → X ≤ CA * ((Real.sqrt τ)⁻¹) ^ (d + n) * ((1 + D ^ 2 / τ) ^ (d / 2 + 1))⁻¹)
@@ -1568,8 +1566,7 @@ private theorem KHeatDiff_comb {X CA CB e : ℝ} (d n : ℕ) {τ D : ℝ} (hτ :
       max_eq_left h1, e1, Real.rpow_neg (by positivity), Real.rpow_natCast]
     exact (hA h1).trans (by gcongr; exact le_max_left _ _)
 
-/-- **Unit first differences, regime (i)** (target of T2336, statement of `T2336_kBA_diff1_le` in
-`docs/tickets/checks/T2336-check.lean`): polynomial decay of order `M = ⌊d/2⌋ + 1`, `max τ 1` in the decay factor. -/
+/-- **Unit first differences, regime (i)**: polynomial decay of order `M = ⌊d/2⌋ + 1`, `max τ 1` in the decay factor. -/
 theorem kBA_diff1_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
       ∀ τ : ℝ, 0 < τ → τ ≤ (L : ℝ) ^ 2 → ∀ (a : Zd d L) (j : Fin d),
@@ -1595,7 +1592,7 @@ theorem kBA_diff1_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < 
     calc _ * _ ≤ (kBA d L g E m τ (a + Pi.single j 1) + kBA d L g E m τ (a + 0)) * _ := by gcongr
       _ ≤ 2 * CB := by rw [add_mul]; linarith
 
-/-- **Unit second differences, regime (i)** (target of T2336, `T2336_kBA_diff2_le`): same decay factor, `τ^{-(d+2)/2}`. -/
+/-- **Unit second differences, regime (i)**: same decay factor, `τ^{-(d+2)/2}`. -/
 theorem kBA_diff2_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
       ∀ τ : ℝ, 0 < τ → τ ≤ (L : ℝ) ^ 2 → ∀ (a : Zd d L) (i j : Fin d),
@@ -1635,9 +1632,6 @@ theorem kBA_diff2_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < 
 
 end Targets
 
-/-! ## 10. The regularity of the symbol (public) -/
-
-/-! ## 11. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, flow point `P`) -/
 
 end RBM.BA
 

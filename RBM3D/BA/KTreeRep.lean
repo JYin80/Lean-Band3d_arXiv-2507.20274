@@ -8,29 +8,27 @@ import RBM3D.BA.KSolve
 import RBM3D.BA.KCactus
 
 /-!
-# Stage K, row K05b: the chord part, `IsKLoopS` for the spliced family, `BAKsolve`, `BATreeRep`
+# The chord part, `IsKLoopS` for the spliced family, `BAKsolve`, `BATreeRep`
 
-Ticket T2374 (design BA-DK, `docs/reports/T2360-design.md` §3, §4 row K05b; supervisor
-`docs/supervisor/2026-10-10-0350.md` C1-C4).  K05a (`BA/KTreeDeriv.lean`) proved the derivative of
+`BA/KTreeDeriv.lean` proved the derivative of
 the cactus value and the leaf part `baLeafPairs`.  Here:
 
-1. The pins `BATreeRep` (verbatim) and `BAChordPairsStmt`.
-2. **`baChordPairs`** (target 2): the chord part of `W^{-d(n-1)} Σ_F ∂_tΓ_F` is the sum over the
+1. The statements `BATreeRep` and `BAChordPairsStmt`.
+2. **`baChordPairs`**: the chord part of `W^{-d(n-1)} Σ_F ∂_tΓ_F` is the sum over the
    diagonals `J = (i, j)` of the `(i+1, j+1)` summands of `treeEqRhsS` at `S = 1`.  For one tree
    `F ∋ J` the chord-`J` term (the cactus with the weight `tΘ` of the chord `J` replaced by `Θ·Θ`)
    is `Σ_x Γ_{F_out}(σ_out, a_out^x) Γ_{F_in}(σ_in, a_in^x)` (`KTreeRep_cut`): the generic
    splitting `KLgval_split` after the relabelling `BAslot F_out ⊕ BAslot F_in ≃ BAslot F` of the
-   slots, which commutes with the cyclic successor `BAnextSlot` (`KTreeRep_next_map`).  The reversed
+   slots, which commutes with the cyclic next-slot map `BAnextSlot` (`KTreeRep_next_map`).  The reversed
    inner leaf `Θ^{(σ_j,σ_i)} = (Θ^{(σ_i,σ_j)})ᵀ` needs no symmetry of `M`.  The sum over `F ∋ J` is
-   `KLsum_cut` (`Loop/KLCut.lean:1297`).
-3. **`baKcac_isKLoopS`** (target 3): the spliced family `BAKcac` of K05a solves `IsKLoopS` on
+   `KLsum_cut` (`Loop/KLCut.lean`).
+3. **`baKcac_isKLoopS`**: the spliced family `BAKcac` solves `IsKLoopS` on
    `[0,1)`: the derivative is `baGamma_hasDerivAt` + `baLeafPairs` + `baChordPairs` against the pair
    partition of `treeEqRhsS` (`n` leaf pairs and `n(n-3)/2` diagonal pairs); the length-2 equation
-   is the closed form `(Kn2sol)`.
-4. **`baKsolve`** (target 4), **`baTreeRep`** (target 5, through `baK_unique`).
+   is the closed form (2.71) `Kn2sol`.
+4. **`baKsolve`**, **`baTreeRep`** (through `baK_unique`).
 
-Public: the pins, `baChordPairs`, `baKcac_isKLoopS`, `baKsolve`, `baTreeRep`; every other helper is
-`private` with the stem `KTreeRep_`.
+The names of the private helpers begin with KTreeRep_.
 -/
 
 set_option linter.style.longLine false
@@ -40,11 +38,11 @@ namespace RBM.BA
 open RBM RBM.Loop
 open scoped Matrix
 
-/-! ## 0. The pins -/
+/-! ## 0. The statements -/
 
-/-- `tree-representation_BA` (`A:592-598`, [RBSO1D L4.16], stated there for `n ≥ 4`; `n = 3` is `(Kn3sol)`, `1_2:1176`, the
+/-- Lemma A.6 (`tree-representation_BA`, [RBSO1D, Lemma 4.16], stated there for `n ≥ 4`; `n = 3` is (2.72) `Kn3sol`, the
 same formula with one tree): `𝒦^{(n)} = W^{-d(n-1)} ∑_{F ∈ TSP(n)} Γ_M(F)`, `n ≥ 3`, with `Γ` the `M`-graph value
-(`A:380-583`; rules and numerical check in `T2360-design.md` §3). -/
+(Definition A.4 `m-loop-tsp` and Definition A.5 `M-graph-value-definition`). -/
 def BATreeRep (d : ℕ)
     (Γ : ∀ (L n : ℕ) [NeZero L] [NeZero n], (Bool → Matrix (Zd d L) (Zd d L) ℂ) → ℝ →
       Finset (Fin n × Fin n) → (Fin n → Bool) → (Fin n → Zd d L) → ℂ) : Prop :=
@@ -55,7 +53,7 @@ def BATreeRep (d : ℕ)
         = (((W : ℂ) ^ d)⁻¹) ^ (n - 1) *
             ∑ F ∈ TSP n, Γ L n (BAMsigma d L (BAMB d L g (E : ℂ) m)) t F σ a
 
-/-- **`BAChordPairsStmt`** (target 2; supervisor 0350 Q1 table, C1, C2): for every family with `BASplicedFam`, the chord part of
+/-- **`BAChordPairsStmt`**: for every family with `BASplicedFam`, the chord part of
 `W^{-d(n-1)} Σ_F ∂_tΓ_F` equals the `(i+1, j+1)` summands of `treeEqRhsS` at `S = 1` over the diagonals `J = (i, j)`.
 (`BAReal` and `0 ≤ t < 1` are not used by the proof; they are kept to match `BALeafPairsStmt`.) -/
 def BAChordPairsStmt (d : ℕ) : Prop :=
@@ -259,14 +257,14 @@ private theorem KTreeRep_cutGlueL_eq (J : Fin n × Fin n) (hJ : J.1.val + 2 ≤ 
 
 end Lists
 
-/-! ## 2. Transport of the cyclic successor along an order-preserving relabelling of the slots -/
+/-! ## 2. Transport of the cyclic next-slot map along an order-preserving relabelling of the slots -/
 
 section Transport
 
 variable {n n' : ℕ} [NeZero n] [NeZero n'] {F : Finset (Fin n × Fin n)} {F' : Finset (Fin n' × Fin n')}
 
-/-- **The cyclic successor commutes with a relabelling of the slots** `φ : BAslot F' → BAslot F` that preserves "same node"
-and the order of the starts inside a node, and whose image is closed under "same node": the successor is characterised
+/-- **The cyclic next-slot map commutes with a relabelling of the slots** `φ : BAslot F' → BAslot F` that preserves "same node"
+and the order of the starts inside a node, and whose image is closed under "same node": the next-slot map is characterised
 by the nodes and the starts alone (`BAnextSlot_eq_of_above`, `BAnextSlot_eq_of_wrap`). -/
 private theorem KTreeRep_next_map (hF : KLIsTSP F) (hn : 2 ≤ n) (φ : BAslot F' → BAslot F)
     (hnode : ∀ s t, BAslotNode F (φ s) = BAslotNode F (φ t) ↔ BAslotNode F' s = BAslotNode F' t)
@@ -531,7 +529,7 @@ private theorem KTreeRep_φ_closed (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F
     · refine ⟨Sum.inr (Sum.inr ((KTreeRep_eIn hF J) ⟨J', hx', h2⟩)), ?_⟩
       simp only [KTreeRep_φ, Equiv.symm_apply_apply]
 
-/-- **`φ` commutes with the cyclic successor**: the cycle of a node of the inner polygon is the cycle of the corresponding
+/-- **`φ` commutes with the cyclic next-slot map**: the cycle of a node of the inner polygon is the cycle of the corresponding
 node of `F`. -/
 private theorem KTreeRep_φ_next (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F) (s : BAslot (KLFIn F J)) :
     KTreeRep_φ hF hJ (BAnextSlot (KLFIn F J) s) = BAnextSlot F (KTreeRep_φ hF hJ s) := by
@@ -845,7 +843,7 @@ private theorem KTreeRep_ψ_closed (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F
     refine ⟨Sum.inr (Sum.inr ((KTreeRep_eOut hF hn hJ) ⟨J', hx'⟩)), ?_⟩
     simp only [KTreeRep_ψ, Equiv.symm_apply_apply]
 
-/-- **`ψ` commutes with the cyclic successor.** -/
+/-- **`ψ` commutes with the cyclic next-slot map.** -/
 private theorem KTreeRep_ψ_next (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F) (s : BAslot (KLFOut F J)) :
     KTreeRep_ψ hF hn hJ (BAnextSlot (KLFOut F J) s) = BAnextSlot F (KTreeRep_ψ hF hn hJ s) := by
   have hJw := KLdiag_width hF hJ
@@ -1276,7 +1274,7 @@ section CutThm
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] {F : Finset (Fin n × Fin n)} {J : Fin n × Fin n}
 
 set_option synthInstance.maxSize 512 in
-/-- **The chord-`J` term of one tree** (the new mathematics of K05b): the cactus of `F ∋ J` with the weight `tΘ` of the
+/-- **The chord-`J` term of one tree**: the cactus of `F ∋ J` with the weight `tΘ` of the
 chord `J` replaced by `Θ·Θ` (`Θ = Θ^{(σ_i,σ_j)}`) is `Σ_x Γ_{F_out}(σ_out, a_out^x) Γ_{F_in}(σ_in, a_in^x)`: the splitting
 `KLgval_split` at the chord, after the relabelling `BAslot F_out ⊕ BAslot F_in ≃ BAslot F` of the slots, which preserves
 the cycles (`KTreeRep_ψ_next`, `KTreeRep_φ_next`); the new leaf of the inner polygon is `Θ^{(σ_j,σ_i)} = Θᵀ`, no symmetry
@@ -1367,7 +1365,7 @@ private theorem KTreeRep_cut (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F)
 
 end CutThm
 
-/-! ## 6. Target 2: `baChordPairs` -/
+/-! ## 6. `baChordPairs` -/
 
 section ChordPairs
 
@@ -1389,7 +1387,7 @@ private theorem KTreeRep_sum_swap {d L : ℕ} [NeZero L] {α β : Type*} (S : Fi
     _ = _ := Finset.sum_congr rfl fun x _ => (Finset.sum_mul_sum _ _ _ _).symm
 
 set_option synthInstance.maxSize 512 in
-/-- **Target 2** (`BAChordPairsStmt`): the chord part of `W^{-d(n-1)} Σ_F ∂_tΓ_F` is the sum over the diagonals `J = (i, j)` of
+/-- **`baChordPairs`** (`BAChordPairsStmt`): the chord part of `W^{-d(n-1)} Σ_F ∂_tΓ_F` is the sum over the diagonals `J = (i, j)` of
 the `(i+1, j+1)` summands of `treeEqRhsS` at `S = 1`, for every family `K` with `BASplicedFam`.  Per tree `F ∋ J` the
 chord-`J` term is `KTreeRep_cut`; the sum over `F ∋ J` is the cut bijection `KLsum_cut`, the factor `W^d W^{-d(p-1)} W^{-d(q-1)}`
 with `p + q = n + 2` closes the `W` powers (`p, q ≥ 3`: clause 3 of `BASplicedFam` for both pieces). -/
@@ -1448,11 +1446,11 @@ theorem baChordPairs (d : ℕ) : BAChordPairsStmt d := by
 
 end ChordPairs
 
-/-! ## 7. Target 3: `baKcac_isKLoopS` -/
+/-! ## 7. `baKcac_isKLoopS` -/
 
 section IsKLoop
 
-/-- **The pair partition of `treeEqRhsS`** (supervisor 0350 "Counting"): the pairs `1 ≤ k < l ≤ n` are the `n` leaf pairs
+/-- **The pair partition of `treeEqRhsS`**: the pairs `1 ≤ k < l ≤ n` are the `n` leaf pairs
 (`(v+1, v+2)` for `v ≤ n-2`, the wrap pair `(1, n)` for `v = n-1`) and the `n(n-3)/2` diagonal pairs `(i+1, j+1)`, `n ≥ 3`. -/
 private theorem KTreeRep_pairs {n : ℕ} [NeZero n] (hn : 3 ≤ n) (G : ℕ → ℕ → ℂ) :
     ∑ k ∈ Finset.Icc 1 n, ∑ l ∈ Finset.Ioc k n, G k l =
@@ -1558,7 +1556,7 @@ private theorem KTreeRep_sum_one (f h : Zd d L → ℂ) :
   refine Finset.sum_congr rfl fun a _ => ?_
   simp [Matrix.one_apply]
 
-/-- `treeEqRhsS` at `S = 1`, `n = 2`: the only cut is `(1,2)` (copy of `BAKSolve_rhs_two`, `BA/KSolve.lean:175`). -/
+/-- `treeEqRhsS` at `S = 1`, `n = 2`: the only cut is `(1,2)`. -/
 private theorem KTreeRep_rhs_two (K : LoopIdx (Zd d L) → ℂ) (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L) :
     treeEqRhsS d L W 1 K ⟨[σ₁, σ₂], [a₁, a₂]⟩ =
       ((W : ℂ) ^ d) * ∑ a : Zd d L, K ⟨[σ₁, σ₂], [a, a₂]⟩ * K ⟨[σ₁, σ₂], [a₁, a]⟩ := by
@@ -1577,8 +1575,8 @@ private theorem KTreeRep_rhs_two (K : LoopIdx (Zd d L) → ℂ) (σ₁ σ₂ : B
   simp only [hL, hR]
   rw [KTreeRep_sum_one (fun a => K ⟨[σ₁, σ₂], [a, a₂]⟩) (fun b => K ⟨[σ₁, σ₂], [a₁, b]⟩)]
 
-/-- **The `2`-loop equation** for the closed form `(Kn2sol)` of `BAKcac`: `∂_t(W^{-d} ΘM) = W^{-d} ΘMΘM =
-W^d (W^{-d} ΘM)(W^{-d} ΘM)` (copy of `BAKSolve_two_hasDerivAt`, `BA/KSolve.lean:359`). -/
+/-- **The `2`-loop equation** for the closed form (2.71) `Kn2sol` of `BAKcac`: `∂_t(W^{-d} ΘM) = W^{-d} ΘMΘM =
+W^d (W^{-d} ΘM)(W^{-d} ΘM)`. -/
 private theorem KTreeRep_two_hasDerivAt (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L) :
     HasDerivAt (fun s => BAKcac d L W g E m s ⟨[σ₁, σ₂], [a₁, a₂]⟩)
@@ -1608,7 +1606,7 @@ private theorem KTreeRep_two_hasDerivAt (hr : BAReal d L g κ E m) {t : ℝ} (ht
   linear_combination (-((BATheta d L g E m t σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) a₁ a *
     (BATheta d L g E m t σ₁ σ₂ * BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) a a₂)) * h
 
-/-- At `t = 0`, `Θ = 1` and `BAKcac` is the `M`-loop at the length `2` (copy of `BAKSolve_zero`, `BA/KSolve.lean:459`). -/
+/-- At `t = 0`, `Θ = 1` and `BAKcac` is the `M`-loop at the length `2`. -/
 private theorem KTreeRep_zero_two (σ₁ σ₂ : Bool) (a₁ a₂ : Zd d L) :
     BAKcac d L W g E m 0 ⟨[σ₁, σ₂], [a₁, a₂]⟩ =
       BAMLoop d L W (BAMsigma d L (BAMB d L g (E : ℂ) m)) ⟨[σ₁, σ₂], [a₁, a₂]⟩ := by
@@ -1668,8 +1666,8 @@ private theorem KTreeRep_deriv_ge3 (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0
 end IsKLoop3
 
 set_option synthInstance.maxSize 512 in
-/-- **Target 3** (`baKcac_isKLoopS`): under `BAReal`, the spliced family `BAKcac` of K05a solves `IsKLoopS` on `[0,1)` for the
-block Anderson data (`S = 1`, initial data `BAMLoop`).  (a) the derivative: `n = 2` the closed form `(Kn2sol)`, `n ≥ 3` the
+/-- **`baKcac_isKLoopS`**: under `BAReal`, the spliced family `BAKcac` solves `IsKLoopS` on `[0,1)` for the
+block Anderson data (`S = 1`, initial data `BAMLoop`).  (a) the derivative: `n = 2` the closed form (2.71) `Kn2sol`, `n ≥ 3` the
 leaf pairs and the chord pairs; (b) `t = 0`: `BACactusVal_sum_zero_BAMLoop`, resp. `Θ_0 = 1`; (c) length `1`. -/
 theorem baKcac_isKLoopS {d L W : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) :
     IsKLoopS d L W (1 : Matrix (Zd d L) (Zd d L) ℂ) (PropSpin m)
@@ -1692,10 +1690,10 @@ theorem baKcac_isKLoopS {d L W : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : 
       rw [hspl.2.2 0 n hn σ a]
       exact BACactusVal_sum_zero_BAMLoop (by omega) W _ σ a
 
-/-! ## 8. Targets 4 and 5: `baKsolve`, `baTreeRep` -/
+/-! ## 8. `baKsolve`, `baTreeRep` -/
 
-/-- **Target 4** (`baKsolve`): the pin `BAKsolve` (K03, `BA/KSolve.lean:58`) is proved by the spliced family `BAKcac`; the
-`(Kn2sol)` clause is `BAKcac_spliced` clause 2. -/
+/-- **`baKsolve`**: the statement `BAKsolve` (`BA/KSolve.lean`) is proved by the spliced family `BAKcac`; the
+`Kn2sol` clause is `BAKcac_spliced` clause 2. -/
 theorem baKsolve : ∀ d, BAKsolve d := by
   intro d Λ κ hΛ hκ L hL W g hg hgΛ E m
   have : NeZero L := ⟨by omega⟩
@@ -1703,7 +1701,7 @@ theorem baKsolve : ∀ d, BAKsolve d := by
   exact ⟨BAKcac d L W g E m, baKcac_isKLoopS hr, fun t _ σ a₁ a₂ =>
     (BAKcac_spliced (d := d) (L := L) (W := W) (g := g) (E := E) (m := m)).2.1 t σ.1 σ.2 a₁ a₂⟩
 
-/-- **Target 5** (`baTreeRep`, the pin `BATreeRep` for `Γ = BAGamma`, `3 ≤ n`): `baKsolve` makes `BAKsol` a solution of
+/-- **`baTreeRep`** (the statement `BATreeRep` for `Γ = BAGamma`, `3 ≤ n`): `baKsolve` makes `BAKsol` a solution of
 `IsKLoopS` (`BAKsol_isKLoopS`); `baK_unique` against `baKcac_isKLoopS` gives `BAKsol = BAKcac` on `[0,1)` for loops of length
 `≥ 2`; clause 3 of `BAKcac_spliced` is the tree sum. -/
 theorem baTreeRep (d : ℕ) : BATreeRep d (@BAGamma d) := by
@@ -1716,11 +1714,5 @@ theorem baTreeRep (d : ℕ) : BATreeRep d (@BAGamma d) := by
   rw [heq]
   exact (BAKcac_spliced (d := d) (L := L) (W := W) (g := g) (E := E) (m := m)).2.2 t n hn σ a
 
-/-! ## 9. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 P.m0.im P.E P.m0`,
-`0 < P.g0 ≤ 10`), `W = 2` (`W^d = 8`), `Λ = 10`, `κ = Im m₀ > 0`, `t = 1/2`, `n = 4` (`TSP 4 = {∅, {(0,2)}, {(1,3)}}`: the two
-diagonals `(0,2)`, `(1,3)`, each in one tree; the cut at `J = (0,2)` has an inner and an outer triangle), the charges
-`σ = (+,+,-,+)`, four distinct labels.  Every deterministic hypothesis is discharged; nothing is assumed. -/
 
 end RBM.BA

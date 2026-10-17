@@ -9,9 +9,9 @@ import RBM3D.BA.Ward
 import RBM3D.BA.KKernel
 
 /-!
-# Stage K, row K02 (BA instance): Ward's identity `lem_WI_K` for the block Anderson `K`-loops
+# Ward's identity `lem_WI_K` for the block Anderson `K`-loops
 
-Ticket T2369 (design BA-DK, `docs/reports/T2360-design.md` §3 (d), §4 row K02).  `baK_ward` is
+`baK_ward` is
 `wardS_holds` (`RBM3D/Loop/KLWard.lean`) at the block Anderson data `S = 1`, `m = PropSpin m`,
 `M = BAMLoop d L W (BAMsigma d L M^{(B)})`.  The inputs, one by one:
 
@@ -20,16 +20,16 @@ Ticket T2369 (design BA-DK, `docs/reports/T2360-design.md` §3 (d), §4 row K02)
 * the flip of `BAMLoop` (`BAKWard_BAMLoop_flip`): `M(-) = (M^{(B)})^*` and `M^{(B)}` is symmetric
   (`BAMB_symm`);
 * the rotation of `BAMLoop` (`BAKWard_BAMLoop_rot`): the cyclic product of `BAMLoop` (`σ_i` on the
-  edge `(a_{i-1}, a_i)`); private, the public `BAMLoop_rot` is K03's;
+  edge `(a_{i-1}, a_i)`); private, the public `BAMLoop_rot` is in `BA/KSolve.lean`;
 * the `M`-loop identity at `t = 0` (`BAKWard_zero`): `∑_x 𝓜^{(n+1)}_{(+,μ,-),(a,x)}` carries `x` on
   two factors, `M(-)_{a_{n-1} x} M(+)_{x a_0}`, and the entrywise resolvent identity
   `M - M^* = 2 i Im m · M^* M` (`BAKWard_resolvent`, `Im (E + m) = Im m > 0`) closes it;
   `BAMB_ward_row` is only the diagonal entry of this identity and is not used;
-* the level-`2` identity: the `(Kn2sol)` clause, `BAMss_pm_eq`, `BAK_row_sum`,
+* the level-`2` identity: the (2.71) `Kn2sol` clause, `BAMss_pm_eq`, `BAK_row_sum`,
   `BATheta_row_sum_pm`.
 
 `BAKward` itself (`BAKsol` under `BAKsolve`) is not proved here: it is `baK_ward` composed with the
-existence of the family (K03, assembled at K12).
+existence of the family (`BA/KSolve.lean`, `BA/KTreeRep.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -267,7 +267,7 @@ private theorem BAKWard_zero (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m)
 
 /-! ## 5. The level-`2` identity -/
 
-/-- The level-`2` identity from the `(Kn2sol)` clause. -/
+/-- The level-`2` identity from the (2.71) `Kn2sol` clause. -/
 private theorem BAKWard_two (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m)
     {K : ℝ → LoopIdx (Zd d L) → ℂ}
     (hn2 : ∀ t ∈ Set.Ico (0 : ℝ) 1, ∀ (σ : Bool × Bool) (a₁ a₂ : Zd d L),
@@ -295,13 +295,13 @@ private theorem BAKWard_two (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m)
 
 /-! ## 6. `baK_ward` -/
 
-/-- **`lem_WI_K` for the block Anderson `K`-loops** (`1_2:1034-1046`, `(WI_calK)`; band: `KLK_ward`).  Every family `K`
+/-- **Lemma 2.15 (`lem_WI_K`) for the block Anderson `K`-loops** ((2.57) `WI_calK`; band: `KLK_ward`).  Every family `K`
 of `K`-loops on `[0,1)` over the kernel `S^{(B)}(0) = I` with the initial data `BAMLoop` (the `𝓜`-loops of `M^{(B)}`)
-and `m(σ) = PropSpin m` which satisfies the level-`2` clause `(Kn2sol)` of `BAKsolve`
+and `m(σ) = PropSpin m` which satisfies the level-`2` clause (2.71) `Kn2sol` of `BAKsolve`
 (`K^{(2)}_{t,(σ₁,σ₂),(a₁,a₂)} = W^{-d} (Θ^{(σ₁σ₂)}_t M^{(σ₁σ₂)})_{a₁a₂}`) satisfies, for `σ = (s, μ, -s)`,
 `∑_{a_n} K^{(n)}_{t,σ,a} = (2 i W^d η_t)⁻¹ (K^{(n-1)}_{t,(+,μ),â} - K^{(n-1)}_{t,(-,μ),â})`, `η_t = (1 - t) Im m`.
-This is `wardS_holds` at `S = 1`, `m(+) = m`; no hypothesis beyond `BAReal`, `1 ≤ W`, `IsKLoopS` and `(Kn2sol)`.
-`BAKward` (on `BAKsol`) is `baK_ward` composed with the existence of the family (K03, assembled at K12). -/
+This is `wardS_holds` at `S = 1`, `m(+) = m`; no hypothesis beyond `BAReal`, `1 ≤ W`, `IsKLoopS` and `Kn2sol`.
+`BAKward` (on `BAKsol`) is `baK_ward` composed with the existence of the family (`BA/KSolve.lean`, `BA/KTreeRep.lean`). -/
 theorem baK_ward (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (hL : 3 ≤ L) (hW : 1 ≤ W)
     {K : ℝ → LoopIdx (Zd d L) → ℂ}
     (hK : IsKLoopS d L W (1 : Matrix (Zd d L) (Zd d L) ℂ) (PropSpin m)
@@ -324,12 +324,5 @@ theorem baK_ward (g κ E : ℝ) (m : ℂ) (hr : BAReal d L g κ E m) (hL : 3 ≤
 
 end KWard
 
-/-! ## 7. Compiled instances: the merged flow point `P` of `(d, L) = (3, 4)`, `W = 2`
-
-`P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀` (`BA/MFixedPoint.lean:893`), `g₀ ≈ 4.67`, `M^{(B)} ≠ m I`.  The identity of the
-initial data at `t = 0` (`BAKWard_zero`), the flip and the rotation of `BAMLoop` are checked unconditionally at loops of
-length `3`-`4` with distinct labels.  `baK_ward` is applied at `t = 1/2`, `(s, μ, a) = (+, [-], (0, e₁))` (`n = 3`); the family
-`K` and its level-`2` clause `(Kn2sol)` are hypotheses of the example: they are the existence statement `BAKsolve`
-(T2368, not merged), every other hypothesis (`BAReal`, `3 ≤ L`, `1 ≤ W`, `t ∈ [0,1)`, the loop) is discharged. -/
 
 end RBM.BA

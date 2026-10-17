@@ -10,27 +10,24 @@ import RBM3D.BA.GreenSchur
 import RBM3D.Evolution.Pins
 
 /-!
-# Stage E of the block Anderson model (BA-E1)
+# Evolution kernel estimates at the block Anderson model
 
-The evolution kernel, the five stage-E pins, `lem:sum_Ndecay` and the `Ξ` bounds at BA.
+The evolution kernel, the statements of `lem:sum_Ndecay` and `lem:sum_decay`, and the `Ξ` bounds at BA.
 
-Ticket T2388.  Paper: `A_deterministic_estimates.tex:85-160` (`(eq:decompUalt)`, `(Xi_infint)`,
-`(eq:decayXi)`), `3_5_Loop_Hierarchy.tex:1600-1680`; design `docs/reports/T2378-design.md` §2-§3,
-probe `t/T2378:RBM3D/Probe/T2378Pins.lean:180-370`.
+Paper: Subappendix A.2 (`ks`: `(eq:decompUalt)`, `(Xi_infint)`, `(eq:decayXi)`), Subsection 4.4 (`ks-statements`).
 
-1. Vocabulary: `BAuKer` (`(1 - s M^{(σ₁σ₂)}) Θ_t^{(σ₁σ₂)}`, `3_5:116`), `BAUN` (`(def_Ustz)`),
+1. Vocabulary: `BAuKer` (`(1 - s M^{(σ₁σ₂)}) Θ_t^{(σ₁σ₂)}`, (3.12) `def_Ustz`), `BAUN` (`(def_Ustz)`),
    `BAXi` (`Ξ = (t - s) M Θ_t`), and the identities `BAuKer_eq_one_add` (`(eq:decompUalt)`) and
    `BAuKer_convex`.
-2. The five stage-E pins `BAEKSumNdecay`, `BAEKSumDecay1`, `BAEKSumDecayNAL`, `BAEKSumDecay2`,
-   `BAEKSumDecayNonzero`: the shape of `Evolution/Pins.lean:64-140` with `BAReal d L g κ E m` in
+2. The four kernel-sum statements `BAEKSumNdecay`, `BAEKSumDecay1`, `BAEKSumDecayNAL`, `BAEKSumDecay2`: the shape of
+   the corresponding statements of `Evolution/Pins.lean` with `BAReal d L g κ E m` in
    place of `‖m‖ = 1` and no propagator antecedent (`baProp5to8_holds`).
 3. `baEKSumNdecay_holds`: `‖Ξ‖_{∞→∞} ≤ (t - s)/(1 - t)` from the Ward row sums
    (`BAMss_norm_eq_BAK`, `BAK_row_sum`), then the product over the `n` factors.
-4. The BA `Ξ` pins `BAEKXiDecay`, `BAEKXiBall`, `BAEKSameRow` and their proofs, from
+4. The BA `Ξ` statements `BAEKXiDecay`, `BAEKXiBall`, `BAEKSameRow` and their proofs, from
    `BAuKer_convex`, `baProp5_holds` and `baProp5s_holds` (no `Mbound_AO`).
-5. Compiled nonempty instances at `d = 3`, the flow datum `n = 0` of `sz0`.
 
-Private helpers carry the stem `EKPins_`.
+The names of the private helpers begin with EKPins_.
 -/
 
 set_option linter.style.longLine false
@@ -45,7 +42,7 @@ namespace RBM.BA
 
 /-! ## 1. Vocabulary -/
 
-/-- The one-index kernel `(1 - s M^{(σ₁σ₂)}) Θ_t^{(σ₁σ₂)}` (`3_5:116`). -/
+/-- The one-index kernel `(1 - s M^{(σ₁σ₂)}) Θ_t^{(σ₁σ₂)}` ((3.12) `def_Ustz`). -/
 def BAuKer (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (s t : ℝ) (σ₁ σ₂ : Bool) : Matrix (Zd d L) (Zd d L) ℂ :=
   (1 - (s : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂) * BATheta d L g E m t σ₁ σ₂
 
@@ -54,11 +51,11 @@ def BAUN (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) {n : ℕ} (σ : Fin n → 
     (A : (Fin n → Zd d L) → ℂ) : (Fin n → Zd d L) → ℂ :=
   fun a => ∑ b : Fin n → Zd d L, (∏ i, BAuKer d L g E m s t (σ i) (σ (finRotate n i)) (a i) (b i)) * A b
 
-/-- `Ξ = (t - s) M^{(σ₁σ₂)} Θ_t^{(σ₁σ₂)}` of `(eq:decompUalt)` (`A:98`). -/
+/-- `Ξ = (t - s) M^{(σ₁σ₂)} Θ_t^{(σ₁σ₂)}` of `(eq:decompUalt)`. -/
 def BAXi (d L : ℕ) [NeZero L] (g E : ℝ) (m : ℂ) (s t : ℝ) (σ₁ σ₂ : Bool) : Matrix (Zd d L) (Zd d L) ℂ :=
   ((t : ℂ) - s) • (BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ * BATheta d L g E m t σ₁ σ₂)
 
-/-- `(eq:decompUalt)` for the block Anderson kernel, `Ξ = (t - s) M Θ_t` (`A:98-100`): from `Θ = 1 + t M Θ`. -/
+/-- `(eq:decompUalt)` for the block Anderson kernel, `Ξ = (t - s) M Θ_t`: from `Θ = 1 + t M Θ`. -/
 theorem BAuKer_eq_one_add {d L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {s t : ℝ} (ht0 : 0 ≤ t)
     (ht1 : t < 1) (σ₁ σ₂ : Bool) :
     BAuKer d L g E m s t σ₁ σ₂ = 1 + ((t : ℂ) - s) • (BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ *
@@ -90,16 +87,16 @@ theorem BAuKer_convex {d L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ} (hr : BARe
   rw [BAuKer_eq_one_add hr ht0.le ht1, hX]
   match_scalars <;> field_simp <;> ring
 
-/-! ## 2. The five stage-E pins (shape of `Evolution/Pins.lean:64-140`, `BAReal d L g κ E m` for `‖m‖ = 1`) -/
+/-! ## 2. The four kernel-sum statements (shape of `Evolution/Pins.lean`, `BAReal d L g κ E m` for `‖m‖ = 1`) -/
 
-/-- `lem:sum_Ndecay` (`3_5:1620`): `‖U^{(n)}_{s,t,σ} ∘ 𝒜‖_∞ ≤ ((1-s)/(1-t))^n ‖𝒜‖_∞`; the proof is Ward row sums
-(`BAK_row_sum`) and `|M^{(σσ')}_{ab}| = BAK_{ab}` (`BAMss_norm_eq_BAK`, `BA/KKernel.lean:102`). -/
+/-- `lem:sum_Ndecay` (Lemma 4.15): `‖U^{(n)}_{s,t,σ} ∘ 𝒜‖_∞ ≤ ((1-s)/(1-t))^n ‖𝒜‖_∞`; the proof is Ward row sums
+(`BAK_row_sum`) and `|M^{(σσ')}_{ab}| = BAK_{ab}` (`BAMss_norm_eq_BAK`). -/
 def BAEKSumNdecay (d n : ℕ) (Λ κ : ℝ) : Prop :=
   3 ≤ d → 2 ≤ n → ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ), haveI : NeZero L := ⟨by omega⟩
     BAReal d L g κ E m → ∀ σ : Fin n → Bool, ∀ s t : ℝ, 0 ≤ s → s ≤ t → t < 1 → ∀ A : (Fin n → Zd d L) → ℂ,
       ‖BAUN d L g E m σ s t A‖ ≤ ((1 - s) / (1 - t)) ^ n * ‖A‖
 
-/-- `(sum_res_1)`, any `σ` (`3_5:1639`). -/
+/-- (4.53) `sum_res_1`, any `σ`. -/
 def BAEKSumDecay1 (d n : ℕ) (Λ κ : ℝ) : Prop :=
   3 ≤ d → 2 ≤ n → 0 < Λ → 0 < κ → ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ W ε D : ℝ, 1 < W → 0 < ε → ε < 1 → 1 < D → 4 ≤ W ^ ε →
@@ -109,7 +106,7 @@ def BAEKSumDecay1 (d n : ℕ) (Λ κ : ℝ) : Prop :=
           ‖BAUN d L g E m σ s t A‖ ≤ W ^ (C * ε) * (ellT L g t ^ 2 / ellT L g s ^ 2) *
             ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) ^ n * ‖A‖ + W ^ (-D + C)
 
-/-- `(sum_res_2_NAL)`: non-alternating `σ` (`3_5:1649`). -/
+/-- (4.54) `sum_res_2_NAL`: non-alternating `σ`. -/
 def BAEKSumDecayNAL (d n : ℕ) (Λ κ : ℝ) : Prop :=
   3 ≤ d → 2 ≤ n → 0 < Λ → 0 < κ → ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ W ε D : ℝ, 1 < W → 0 < ε → ε < 1 → 1 < D → 4 ≤ W ^ ε →
@@ -119,8 +116,8 @@ def BAEKSumDecayNAL (d n : ℕ) (Λ κ : ℝ) : Prop :=
           EKFastDecay g s W ε D A → ‖BAUN d L g E m σ s t A‖ ≤
             W ^ (C * ε) * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|)) ^ (n - 1) * ‖A‖ + W ^ (-D + C)
 
-/-- `(sumAzero) ⟹ (sum_res_2)` (`3_5:1659`); `log L ≤ W^ε` is the `d = 3` absorption of `(eq:latticesum_d3)`
-(`A:194-198`), `L^d ≤ W^K` is `(Main_DEL_COND)`. -/
+/-- (4.55) `sumAzero` ⟹ (4.56) `sum_res_2`; `log L ≤ W^ε` is the `d = 3` absorption of (A.19) `eq:latticesum_d3`,
+`L^d ≤ W^K` is (2.9) `Main_DEL_COND`. -/
 def BAEKSumDecay2 (d n : ℕ) (Λ κ : ℝ) : Prop :=
   3 ≤ d → 2 ≤ n → 0 < Λ → 0 < κ → ∀ K : ℝ, 0 < K → ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ W ε D : ℝ, 1 < W → 0 < ε → ε < 1 → 1 < D → 4 ≤ W ^ ε →
@@ -139,7 +136,7 @@ open scoped Matrix.Norms.Operator
 variable {d L : ℕ} [NeZero L]
 
 /-- `|Q_ab| = BAK_ab` and the Ward row sums of `BAK` give `‖M^{(σ₁σ₂)}‖_{∞→∞} ≤ 1` (`(eq:WardM)`; `BAMss_norm_eq_BAK`,
-`BAK_row_sum`; the twin of the private `BAKBase_norm`, `BA/KBase.lean:151`). -/
+`BAK_row_sum`; as the private `BAKBase_norm`). -/
 theorem EKPins_norm_Q_le {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) (σ₁ σ₂ : Bool) :
     ‖BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂‖ ≤ 1 := by
   have h : ‖BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂‖₊ ≤ 1 := by
@@ -205,7 +202,7 @@ section NdecayThm
 
 open scoped Matrix.Norms.Operator
 
-/-- **`lem:sum_Ndecay` for the block Anderson model** (`A:95-110`): `(Xi_infint)`, the bound `(1 - s)/(1 - t)` of each
+/-- **`lem:sum_Ndecay` for the block Anderson model**: `(Xi_infint)`, the bound `(1 - s)/(1 - t)` of each
 one-index factor, and the product over the `n` indices (`norm_tensorKer_le`, `BAUN` is a tensor kernel). -/
 theorem baEKSumNdecay_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumNdecay d n Λ κ := by
   intro _ _ L hL g hg hgΛ E m hr σ s t hs hst ht A
@@ -221,13 +218,13 @@ theorem baEKSumNdecay_holds (d n : ℕ) (Λ κ : ℝ) : BAEKSumNdecay d n Λ κ 
 
 end NdecayThm
 
-/-! ## 4. The BA `Ξ` pins (`(eq:decayXi)`, ball sums, `(eq:samecolor)`; band forms `Evolution/XiPins.lean:281-357`) -/
+/-! ## 4. The BA `Ξ` statements (`(eq:decayXi)`, ball sums, `(eq:samecolor)`; band forms in `Evolution/XiPins.lean`) -/
 
 section XiPins
 
 open scoped Matrix.Norms.Operator
 
-/-- `(eq:decayXi)` (`A:115-118`) for `Ξ = (t - s) M^{(σ₁σ₂)} Θ_t^{(σ₁σ₂)}`, uniform in `g ∈ (0, Λ]` and in the bulk
+/-- `(eq:decayXi)` for `Ξ = (t - s) M^{(σ₁σ₂)} Θ_t^{(σ₁σ₂)}`, uniform in `g ∈ (0, Λ]` and in the bulk
 data `BAReal d L g κ E m`, every charge pair (`BAReal` in place of `‖μ‖ = 1`). -/
 def BAEKXiDecay (d : ℕ) (Λ κ : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ → ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
@@ -248,7 +245,7 @@ def BAEKXiBall (d : ℕ) (Λ κ : ℝ) : Prop :=
             ∑ b ∈ D, ‖BAXi d L g E m s t σ₁ σ₂ a b‖
               ≤ C * Λ' ^ 2 * ((g ^ 2 + |1 - s|) / (g ^ 2 + |1 - t|))
 
-/-- `(eq:samecolor)` (`A:209`): at a same-sign index the one-index factor `(1 - s M^{(σσ)}) Θ_t^{(σσ)}` is bounded in the
+/-- (A.20) `eq:samecolor`: at a same-sign index the one-index factor `(1 - s M^{(σσ)}) Θ_t^{(σσ)}` is bounded in the
 `∞ → ∞` norm, uniformly in `L, g ≤ Λ, s, t`; bulk `κ ≤ Im m` inside `BAReal`. -/
 def BAEKSameRow (d : ℕ) (Λ κ : ℝ) : Prop :=
   3 ≤ d → 0 < Λ → 0 < κ → ∃ C : ℝ, 0 < C ∧
@@ -264,7 +261,7 @@ open scoped Matrix.Norms.Operator
 
 variable {d L : ℕ} [NeZero L]
 
-/-- `M^{(σ₁σ₂)}` is invariant under the diagonal shift (`BAMB_shift`, `BA/Ward.lean:53`; `M(-) = M^*`). -/
+/-- `M^{(σ₁σ₂)}` is invariant under the diagonal shift (`BAMB_shift`; `M(-) = M^*`). -/
 private theorem EKPins_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ (a + r) (b + r) = BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂ a b := by
   have hM := BAMB_shift d L g (E : ℂ) m
@@ -276,8 +273,8 @@ private theorem EKPins_Mss_shift (g E : ℝ) (m : ℂ) (σ₁ σ₂ : Bool) (a b
     · simp only [BAMsigma, ite_true, hM]
   simp only [BAMss, Matrix.of_apply, hs]
 
-/-- `Θ_t(a + r, b + r) = Θ_t(a, b)`, every `(σ₁, σ₂)` (the pattern of `BAMB_shift`; a copy of the private
-`baP8_BATheta_shift`, `BA/Prop6Path.lean:495`). -/
+/-- `Θ_t(a + r, b + r) = Θ_t(a, b)`, every `(σ₁, σ₂)` (the pattern of `BAMB_shift`; as the private
+`baP8_BATheta_shift` of `BA/Prop6Path.lean`). -/
 private theorem EKPins_Theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (σ₁ σ₂ : Bool) (a b r : Zd d L) :
     BATheta d L g E m t σ₁ σ₂ (a + r) (b + r) = BATheta d L g E m t σ₁ σ₂ a b := by
   have hA : (1 - (t : ℂ) • BAMss d L (BAMB d L g (E : ℂ) m) σ₁ σ₂).submatrix
@@ -317,7 +314,7 @@ private theorem EKPins_Xi_eq {g κ E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m)
   field_simp
 
 omit [NeZero L] in
-/-- The zero mode is absorbed in the decay profile (`zeroMode_le_of_ge_mul`, `Kernel/PropT.lean:89`,
+/-- The zero mode is absorbed in the decay profile (`zeroMode_le_of_ge_mul`,
 `m = k + 2`): for `‖θ‖ ≤ C_d B_{t,|x|} e^{-c|x|/ℓ_t}` and `1 - t ≥ g²/L²`,
 `‖θ‖ ≤ C_d (1 + 2 (2(k+2))^k) (g²+|1-t|)⁻¹ (|x|+1)^{-k} e^{-c|x|/ℓ_t}`. -/
 private theorem EKPins_theta_absorb {k : ℕ} {g t Cd cd : ℝ} (hL : 3 ≤ L) (ht : t < 1)
@@ -438,8 +435,8 @@ private theorem EKPins_Xi_entry_le {k : ℕ} {g κ E Λ Cd cd : ℝ} {m : ℂ} (
       _ = (Cd * CB + Λ ^ 2 + 1) * (1 - s) * A * ((R + 1) ^ k)⁻¹ * Real.exp (-(cd * R) / ellT L g t) := by
           rw [hPw]; ring
 
-/-- The ball-sum step of `lem:sum_decay`, generic in the entries `X b` (the twin of `ek_sum_ball_norm_XiKer_le`,
-`Evolution/XiPins.lean:176`: only the pointwise bound on `‖Ξ_{ab}‖` is read): `Σ_{b ∈ D} ‖X b‖ ≤ 4 C₀ ballC Λ'² (ĝ²+|1-s|)/(ĝ²+|1-t|)`
+/-- The ball-sum step of `lem:sum_decay`, generic in the entries `X b` (the analogue of `ek_sum_ball_norm_XiKer_le` of
+`Evolution/XiPins.lean`: only the pointwise bound on `‖Ξ_{ab}‖` is read): `Σ_{b ∈ D} ‖X b‖ ≤ 4 C₀ ballC Λ'² (ĝ²+|1-s|)/(ĝ²+|1-t|)`
 for `D` in the ball of radius `R ≤ Λ' ℓ_s` around `ctr`. -/
 private theorem EKPins_sum_ball_le {k : ℕ} {g : ℝ} (hL : 3 ≤ L) (hg : 0 < g) {C₀ c : ℝ} (hC₀ : 0 < C₀)
     (hc : 0 < c) {s t : ℝ} (hs : 0 ≤ s) (hst : s ≤ t) (ht : t < 1) (a ctr : Zd (k + 2) L)
@@ -532,7 +529,7 @@ section XiThms
 
 open scoped Matrix.Norms.Operator
 
-/-- **`(eq:decayXi)` at BA** (`A:115-118`), from `BAuKer_convex` (`Ξ_{ab} = ((t-s)/t) Θ_{t,ab}`, `a ≠ b`) and `baProp5_holds`;
+/-- **`(eq:decayXi)` at BA**, from `BAuKer_convex` (`Ξ_{ab} = ((t-s)/t) Θ_{t,ab}`, `a ≠ b`) and `baProp5_holds`;
 no `Mbound_AO`, no smallness of `g` or of `‖M - m₀ I‖`. -/
 theorem baEKXiDecay_holds (d : ℕ) (Λ κ : ℝ) : BAEKXiDecay d Λ κ := by
   intro hd hΛ hκ
@@ -544,7 +541,7 @@ theorem baEKXiDecay_holds (d : ℕ) (Λ κ : ℝ) : BAEKXiDecay d Λ κ := by
   exact EKPins_Xi_entry_le (L := L) (k := k) hL hg hgΛ hCd hr
     (fun t ht0 ht1 σ₁ σ₂ x => hbd L hL g hg hgΛ E m hr t ht0 ht1 σ₁ σ₂ x) hs hst ht hgt σ₁ σ₂ a b
 
-/-- **Ball sums of `Ξ` at BA** (`A:131-149`, third step of `(sum_res_deriv_red)`): from `baEKXiDecay_holds`. -/
+/-- **Ball sums of `Ξ` at BA** (third step of `(sum_res_deriv_red)`): from `baEKXiDecay_holds`. -/
 theorem baEKXiBall_holds (d : ℕ) (Λ κ : ℝ) : BAEKXiBall d Λ κ := by
   intro hd hΛ hκ
   obtain ⟨C₀, c, hC₀, hc, hdec⟩ := baEKXiDecay_holds d Λ κ hd hΛ hκ
@@ -555,7 +552,7 @@ theorem baEKXiBall_holds (d : ℕ) (Λ κ : ℝ) : BAEKXiBall d Λ κ := by
   exact EKPins_sum_ball_le (L := L) hL hg hC₀ hc hs hst ht a ctr _
     (fun b => hdec L hL g hg hgΛ E m hr s t hs hst ht hgt σ₁ σ₂ a b) hΛ' hR hRℓ D hD
 
-/-- **`(eq:samecolor)` at BA** (`A:209`): `‖(1 - s M^{(σσ)}) Θ_t^{(σσ)}‖_{∞→∞} ≤ 1 + ‖Θ_t^{(σσ)}‖`, `‖Θ‖ ≤ Σ_b |Θ(0,b)|`
+/-- **`(eq:samecolor)` at BA**: `‖(1 - s M^{(σσ)}) Θ_t^{(σσ)}‖_{∞→∞} ≤ 1 + ‖Θ_t^{(σσ)}‖`, `‖Θ‖ ≤ Σ_b |Θ(0,b)|`
 (translation invariance), `baProp5s_holds`, `Σ_b e^{-c|b|} ≤ expC`; `M^{(σσ)}` is the matrix `Q` with `‖Q‖_{∞→∞} ≤ 1`. -/
 theorem baEKSameRow_holds (d : ℕ) (Λ κ : ℝ) : BAEKSameRow d Λ κ := by
   intro hd hΛ hκ
@@ -619,16 +616,6 @@ theorem baEKSameRow_holds (d : ℕ) (Λ κ : ℝ) : BAEKSameRow d Λ κ := by
         linarith
 
 end XiThms
-
-/-! ## 5. Compiled nonempty instances (`d = 3`, the flow datum `n = 0` of `sz0`)
-
-`L = 4`, `g₀ = √t₀ λ ≤ λ = 1/64`, `κ = 1/2`, `BAReal` by `BAflow_real` (`BA/GreenSchur.lean:59`) at the merged flow
-`flow_sz0` (`BA/FlowPins.lean:1235`), `Λ = 1`, `n = 2`, `σ = (+,-)` (`(+,+)` for the non-alternating and same-sign
-rows), `s = 0`, `t = 1/2 ≤ 1 - g₀²/L²`, `W = 16`, `ε = 1/2` (`W^ε = 4`), `D = 2`, `A = δ_0` (`(deccA0)` holds).  The four
-open pins stay hypotheses of their instances; every deterministic hypothesis is discharged. -/
-
-/-! ### An instance of `BAEKSumDecay2` (`(sumAzero)`): `𝒜 = δ_0 ⊗ (δ_0 - δ_e)`, `e = (1,0,0)` -/
-
 end RBM.BA
 
 end

@@ -9,36 +9,33 @@ import RBM3D.Universality.GUEPhase.ProcK
 import RBM3D.Universality.GUEPhase.HypA
 
 /-!
-# BA-C5 row a: the deterministic `K̃` and the grid bound on the GUE-phase grid at block Anderson
+# The deterministic `K̃` and the grid bound on the GUE-phase grid at block Anderson
 
-Ticket T2519 (row a, target 3; DECISIONS §344, §346, §348; Amends 1-3).  New BA leaf: no merged
-file is edited.  Band twins: `Universality/GUEPhase/ProcK.lean` (`gueKproc_detDom:553`) and
-`HypA.lean` (`Hyp_Kt_detDom:690`, `Hyp_Kt_one:712`, `Hyp_grid:981`).  Paper: the GUE phase of
-Thm 2.4 (`paper/tex/1_2_Intro_model_result.tex:566-570`, "essentially identical to [YY_25,
-Theorem 2.6]").
+Band counterparts: `Universality/GUEPhase/ProcK.lean` (`gueKproc_detDom`) and
+`HypA.lean` (`Hyp_Kt_detDom`, `Hyp_Kt_one`, `Hyp_grid`).  Paper: the GUE phase of
+Theorem 2.4 (`Thm: B_Univ`; "essentially identical to [YY_25, Theorem 2.6]"); the bootstrap (7.36) is that of [YY_25].
 
-What changes from the band (UBA-C1: statements at the flow datum `(g, E, m)`, `g = λ₀`):
+What changes from the band (statements at the flow datum `(g, E, m)`, `g = λ₀`):
 
 * the scale `gueScale sz E n t = N etaT (E n) t` becomes `N etaOf (m n) t`;
-* the pin `hKb : sz.STKbound E` is not a premise at BA: the deterministic bound
-  `baKBoundAt_holds` (`BA/KBound:85`, `|𝒦^{(k)}| ≤ C L^τ (W^{-d} B_{t,0}(g))^{k-1}` for `BAReal`
+* the hypothesis `hKb : sz.STKbound E` is not a premise at BA: the deterministic bound
+  `baKBoundAt_holds` (`BA/KBound`, `|𝒦^{(k)}| ≤ C L^τ (W^{-d} B_{t,0}(g))^{k-1}` for `BAReal`
   data with `0 < g ≤ Λ`) gives `K̃` at `t₁` (`hKinit` is the start `BAKsol`), so the window
   `0 < g ≤ Λ` is only needed eventually;
-* the zero-mode condition is `L^d (1 - t₁) ≤ 2 g²` (the RBG text has `L^d (1 - t₁) ≤ λ²` and
+* the zero-mode condition is `L^d (1 - t₁) ≤ 2 g²` (the random-layer statement has `L^d (1 - t₁) ≤ λ²` and
   `g² = t₀ λ²` with `t₀ ≥ t₁ ≥ 26/27` from `L^d (1 - t₁) ≤ 1`, `L ≥ 3`, `d ≥ 3`:
   `GUEHypABA_hell_of_hell`);
 * `|E| ≤ 2 - κ` becomes `BAReal d L g κ E m` (`0 < Im m`, `‖m‖ ≤ 1`);
 * the clauses `hKinit`, `hK` are those of `BAKFam` (guarded by `0 < g n`);
 * `hscale` of `gueKproc_detDom` is unused there and dropped.
 
-The band privates of `ProcK`, `HypA` that carry no band token are read by `open private`.
+The band privates of `ProcK`, `HypA` that carry no band token are used through `open private`.
 
 * §1 `Hyp_Kt_detDomBA` (the pointwise bound, conclusion `hKdet`), `gueKproc_detDomBA` (the
   interpolated grid maximum), `Hyp_Kt_oneBA` (`K̃ = m_σ` on 1-loops), `GUEHypABA_hell_of_hell`
-  (the zero-mode premise from the RBG ones); private: `HypABA_Bparam_le`, `HypABA_initial`,
+  (the zero-mode premise from the random-layer ones); private: `HypABA_Bparam_le`, `HypABA_initial`,
   `HypABA_hbase`.
 * §2 `Hyp_gridBA` (the pathwise grid bound at `k ≤ σ`; the split of the drift is `loopGenGUEOf`).
-* §3 compiled nonempty instances at `d = 3`, `sz0` and its BA flow datum.
 -/
 
 set_option linter.style.longLine false
@@ -63,7 +60,7 @@ section KBound
 
 /-- **The conversion** `W^{-d} B_{t,0}(g) ≤ 3 (N η_t)⁻¹` under the zero-mode condition `L^d (1 - t) ≤ 2 g²`
 (`(g² + x)⁻¹ ≤ 2 (L^d x)⁻¹`, so `W^{-d} B ≤ 3 W^{-d} (L^d x)⁻¹ = 3 (N x)⁻¹ ≤ 3 (N x Im m)⁻¹`, `Im m ≤ ‖m‖ ≤ 1`);
-twin of `ProcK_Bctl_le`/`Hyp_Bctl_le` at the coupling `g` of the flow datum. -/
+the analogue of `ProcK_Bctl_le`, `Hyp_Bctl_le` at the coupling `g` of the flow datum. -/
 private theorem HypABA_Bparam_le (d L W : ℕ) [NeZero L] [NeZero W] {g t : ℝ} {m : ℂ} (hm : 0 < m.im)
     (hm1 : ‖m‖ ≤ 1) (ht : t < 1) (hell : (L : ℝ) ^ d * (1 - t) ≤ 2 * g ^ 2) :
     (((W : ℕ) : ℝ) ^ d)⁻¹ * Bparam d L g t 0 ≤ 3 * ((((W * L) ^ d : ℕ) : ℝ) * etaOf m t)⁻¹ := by
@@ -99,7 +96,7 @@ private theorem HypABA_Bparam_le (d L W : ℕ) [NeZero L] [NeZero W] {g t : ℝ}
 /-- The initial data of `K̃` at `t₁`: `‖K̃_{t₁, I}‖ ≤ N^{τ'} (N η_{t₁})^{-|I|+1}` for loops of length in `[2, 2 n₀]`, from
 `baKBoundAt_holds` at `τ = τ'/4` (the constants `C_ℓ`, `ℓ ∈ [2, 2 n₀]`, are summed), the start `hKinit` (the clause of `BAKFam`),
 the conversion `HypABA_Bparam_le` (`hell`), `L^{τ'/4} ≤ N^{τ'/4}`, and `N → ∞` (`hsz`) for the thresholds; the window `0 < g ≤ Λ` is
-used only eventually (twin of `ProcK_initial`/`Hyp_initial`, from the pin `STKbound` at the band). -/
+used only eventually (the analogue of `ProcK_initial`, `Hyp_initial`, which start from `STKbound` at the band). -/
 private theorem HypABA_initial {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (n0 : ℕ)
     {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n))
     (hlam : ∀ᶠ n : ℕ in atTop, 0 < g n ∧ g n ≤ Λ) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n)
@@ -187,7 +184,7 @@ private theorem HypABA_initial {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ : 
 
 /-- (7.36) on the size scale at BA: for every `τ > 0`, eventually in `n`, `‖K̃_{t,I}‖ ≤ N^τ (N η_t)^{-|I|+1}` on `[t₁, t₀]` for loops of
 length in `[2, 2 n₀]`, `η_t = etaOf (m n) t`.  The scale-free `eq736` is applied at each `n` with `A = N^{τ'}`, `ε = N^{-τ_U}`;
-the index-scale thresholds and `HypABA_initial` are transferred along `sz.size` (twin of `ProcK_hbase`/`Hyp_hbase`). -/
+the index-scale thresholds and `HypABA_initial` are transferred along `sz.size` (the analogue of `ProcK_hbase`, `Hyp_hbase`). -/
 private theorem HypABA_hbase {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ τU : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (hτU : 0 < τU)
     (n0 : ℕ) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n))
     (hlam : ∀ᶠ n : ℕ in atTop, 0 < g n ∧ g n ≤ Λ) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n)
@@ -259,10 +256,9 @@ private theorem HypABA_hbase {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ τU 
     gcongr
   linarith
 
-/-- **The bound (7.36) at every `t ∈ [t₁, t₀]`, deterministic, at BA** (twin of `Hyp_Kt_detDom`, `HypA:690`): `‖K̃_t(J)‖ ≺ (N η_t)^{-|J|+1}`,
+/-- **The bound (7.36) at every `t ∈ [t₁, t₀]`, deterministic, at BA** (the analogue of `Hyp_Kt_detDom`): `‖K̃_t(J)‖ ≺ (N η_t)^{-|J|+1}`,
 uniformly in `t ∈ [t₁, t₀]` and the well-formed loops `2 ≤ |J| ≤ 2 n₀`, in the explicit size-scale form (`N = sz.size n`,
-`η_t = etaOf (m n) t`; at `n₀ = 4` the conclusion is `hKdet` of the signed chain, probe `t/T2519` b992c2e7, `RBM3D/Probe/T2519Pins.lean:238-240`,
-Amend 3 item 5, with `2 * n₀ = 2 * 4`).  The pin
+`η_t = etaOf (m n) t`; at `n₀ = 4` the conclusion is `hKdet`, with `2 * n₀ = 2 * 4`).  The hypothesis
 `hKb` of the band is replaced by `baKBoundAt_holds` (`BAReal` data, window `0 < g ≤ Λ` eventually); `hK` is the clause of `BAKFam` for
 `1 ≤ |I| ≤ 4 n₀`, guarded by `0 < g n`. -/
 theorem Hyp_Kt_detDomBA {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ τU : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (hτU : 0 < τU)
@@ -284,9 +280,9 @@ theorem Hyp_Kt_detDomBA {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ τU : ℝ
   fun _ hτ => HypABA_hbase hd sz hκ hΛ hτU n0 hr hlam ht1 ht10 ht0 hsz h730 hell Kt hKinit
     (fun n hg t ht I hI h2 hlen => hK n hg t ht I hI (by omega) (by omega)) hτ
 
-/-- **`hK` for `gueKproc` at BA** (twin of `gueKproc_detDom`, `ProcK:553`): `K̃ ≺ Λ^{l-1}` on the grid, interpolated, in the explicit
+/-- **`hK` for `gueKproc` at BA** (the analogue of `gueKproc_detDom`): `K̃ ≺ Λ^{l-1}` on the grid, interpolated, in the explicit
 size-scale form `∀ ε > 0, ∀ᶠ n, … ≤ (sz.size n)^ε · (N η_t)^{-(l-1)}`, `η_t = etaOf (m n) t`.  The initial data at `t₁` come from
-`baKBoundAt_holds` (not the band pin), the bootstrap `eq736` is applied at each `n`, and `Tendsto sz.size atTop atTop` turns `∀ᶠ N`
+`baKBoundAt_holds` (not the band hypothesis), the bootstrap `eq736` is applied at each `n`, and `Tendsto sz.size atTop atTop` turns `∀ᶠ N`
 into `∀ᶠ n`.  The band hypothesis `hscale` is unused there and is not carried. -/
 theorem gueKproc_detDomBA {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ τU : ℝ} (hκ : 0 < κ) (hΛ : 0 < Λ) (hτU : 0 < τU)
     (n0 : ℕ) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n))
@@ -448,9 +444,9 @@ theorem gueKproc_detDomBA {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {κ Λ τU : �
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hpow2N (Real.rpow_nonneg hN0.le _)) htinv_nn'
 
-/-- At length `1`, `K̃_t = m_σ` on `[t₁, t₀]` (twin of `Hyp_Kt_one`, `HypA:712`; the primitive equation has zero right side): from
+/-- At length `1`, `K̃_t = m_σ` on `[t₁, t₀]` (the analogue of `Hyp_Kt_one`; the primitive equation has zero right side): from
 `hKinit` (the start `BAKsol`, whose 1-loops are `PropSpin m`, `baKsol_one`) and `hK` at length `1`.  Both clauses are guarded by
-`0 < g n`; this is the `Kt = m` premise of `T2519_HoffBA` (the guard `0 < g n →` is the signed one). -/
+`0 < g n`; this is the `Kt = m` premise of the twisted 1-loop law. -/
 theorem Hyp_Kt_oneBA {d : ℕ} (sz : Sizes d) {κ : ℝ} (hκ : 0 < κ) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (n0 : ℕ)
     (hn0 : 1 ≤ n0) (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ)
     (hr : ∀ n, BAReal d (sz.L n) (g n) κ (E n) (m n)) (ht1 : ∀ n, 0 ≤ t1 n) (ht10 : ∀ n, t1 n ≤ t0 n)
@@ -479,7 +475,7 @@ theorem Hyp_Kt_oneBA {d : ℕ} (sz : Sizes d) {κ : ℝ} (hκ : 0 < κ) {g E t1 
 
 /-- **From the RBG zero-mode premises to the one of the K lemmas** (`g = √t₀ λ`; `d ≥ 3`, `L ≥ 3`): `L^d (1 - t₁) ≤ λ²`,
 `L^d (1 - t₁) ≤ 1` (`hell`, `hell1` of `RBG_Prod`) and `t₁ ≤ t₀` give `L^d (1 - t₁) ≤ 2 g²`, since `L^d ≥ 27` forces
-`t₀ ≥ t₁ ≥ 26/27`, so `λ² ≤ (27/26) g²`.  A helper for the producers of rows c, d (the premise `hell` of `Hyp_Kt_detDomBA`). -/
+`t₀ ≥ t₁ ≥ 26/27`, so `λ² ≤ (27/26) g²`.  A helper for the producers of the random layer (the premise `hell` of `Hyp_Kt_detDomBA`). -/
 theorem GUEHypABA_hell_of_hell {d L : ℕ} (hd : 3 ≤ d) (hL : 3 ≤ L) {t1 t0 lam : ℝ} (ht10 : t1 ≤ t0)
     (hell : (L : ℝ) ^ d * (1 - t1) ≤ lam ^ 2) (hell1 : (L : ℝ) ^ d * (1 - t1) ≤ 1) :
     (L : ℝ) ^ d * (1 - t1) ≤ 2 * (Real.sqrt t0 * lam) ^ 2 := by
@@ -502,10 +498,10 @@ end KBound
 
 section HypGrid
 
-/-- **The grid bound at `k ≤ σ`** (pathwise; twin of `Hyp_grid`, `HypA:981`): the discrete Duhamel formula with the initial term, the
+/-- **The grid bound at `k ≤ σ`** (pathwise; the analogue of `Hyp_grid`): the discrete Duhamel formula with the initial term, the
 martingale remainder (`hM`, `hq`), the drift (`hF`, `heG`) and the `K̃` discretization (`hdisc`), for every `t` that dominates all earlier
 grid times.  The drift of `hM` is `genMatGUEOf` (the generic generator at the flow datum), split at each grid time by `loopGenGUEOf`
-(`Generator:1168`, every loop length, no `3 ≤ L`, no `|E| < 2`) into `primRhsGUE (𝓛) + egtNGUEOf`; `0 < Im m` replaces `|E| < 2`. -/
+(`Generator`, every loop length, no `3 ≤ L`, no `|E| < 2`) into `primRhsGUE (𝓛) + egtNGUEOf`; `0 < Im m` replaces `|E| < 2`. -/
 theorem Hyp_gridBA {d : ℕ} (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ)
     (Kt : ∀ n, ℝ → LoopIdx (Zd d (sz.L n)) → ℂ) (n l : ℕ) (ω : PathΩ (sz.withLam 0))
     (g1 g3 g4 : ℝ → ℝ) {c Cf Ce err Λ0 : ℝ}
@@ -641,21 +637,6 @@ theorem Hyp_gridBA {d : ℕ} (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ �
 
 end HypGrid
 
-/-! ## 3. Compiled nonempty instances
-
-`d = 3`, `sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`) and its BA flow datum `(g, E, m) = (BAflowLam0, BAflowEs,
-BAmF)` (`BAReal` at `κ = 1/2` for every `n`, `0 < g ≤ 10` eventually).  The window: `1 - t₀ = x_n = λ_n² / (4 L_n³)`,
-`t₀ - t₁ = x_n / (2 N_n)` (so `L³ (1 - t₁) ≤ λ²/2 ≤ 2 g²` since `t₀ ≥ 1/4` along the flow, and `t₀ - t₁ ≤ N^{-1/20} η_{t₀}` since
-`Im m ≥ 1/2`); `τ_U = 1/20`, `n₀ = 4` (the `n₀` of the amended texts).  The primitive family is that of `gueK_existsBA` (chosen per `n`, guarded by `0 < g n`).  Every
-hypothesis is discharged; for `Hyp_gridBA` the constants `c`, `C_f`, `C_e`, `err`, `g₄` are finite sums of the left sides (as in the band
-instance `HypAInst`), for every path `ω`, threshold `δ` and primitive family `Kt`. -/
-
-/-! ### `Hyp_gridBA` at the instance, every hypothesis discharged
-
-`n = 0`, `l = 2`, the grid `K = 4`, `t = t₀`, every path `ω`, every threshold `δ`, every primitive family `Kt` (the theorem holds for any).
-The constants of the theorem are chosen as finite sums of the left sides (`k, j ≤ 4`, the labels `x ∈ (Fin 2 → Bool) × (Fin 2 → Zd 3 4)`):
-`c = S₀ + Σ_k Σ_x AM_k(x)/sc_k`, `Λ₀ = 1`, `C_f`, `C_e`, `g₄ ≡ Σ_j Q_j`, `err` the maximal discretization error, `g₁ = g₃ ≡ 1`
-(the band instance `HypAInst` does the same). -/
 
 end RBM.BA
 

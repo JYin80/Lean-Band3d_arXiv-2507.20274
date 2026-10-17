@@ -10,19 +10,15 @@ import RBM3D.Universality.GUEPhase.HypB
 import RBM3D.Universality.GUEPhase.BoundsA
 
 /-!
-# BA-C5 row c, part 1: the pathwise assembly and the unfreezing on the BA grid
+# The pathwise assembly and the unfreezing on the BA grid
 
-Ticket T2519 (row c, targets 9, 10; DECISIONS §344 (4), §346, §348; Amends 1-4).  New BA leaf: no
-merged file is edited.
-Band twins: `Universality/GUEPhase/HypB.lean` (`HypB_entry_le:131`, `HypB_eG_745:260`,
-`HypB_eG_746:320`, `HypB_fixed:783`, the
-grid facts `:985-1069`) and `BoundsA.lean` (`Bounds_path:503`,
-`BoundsACheck.pathBounds_of_forall_highProbAt:751`).  Paper: the GUE
-phase of Thm 2.4 (`paper/tex/1_2_Intro_model_result.tex:566-570`, "essentially identical to [YY_25,
-Theorem 2.6]"), `d ≥ 3`, block
-Anderson `S^{(B)}(0) = 1`.
+Band counterparts: `Universality/GUEPhase/HypB.lean` (`HypB_entry_le`, `HypB_eG_745`,
+`HypB_eG_746`, `HypB_fixed`, the grid facts) and `BoundsA.lean` (`Bounds_path`,
+`BoundsACheck.pathBounds_of_forall_highProbAt`).  Paper: the GUE
+phase of Theorem 2.4 (`Thm: B_Univ`; "essentially identical to [YY_25, Theorem 2.6]"), `d ≥ 3`, block
+Anderson `S^{(B)}(0) = 1`.  The equation numbers (7.26)-(7.28), (7.45), (7.46) below are those of [YY_25, §7.2].
 
-What changes from the band (UBA-C1: statements at the flow datum `(g, E, m)`, `g = λ₀`; path
+What changes from the band (statements at the flow datum `(g, E, m)`, `g = λ₀`; path
 `gueHBA`, flow `ztOf (m n) (E n)`,
 scale `N etaOf (m n) u`; the local law is against `M = Mres (g Ψ_I) E m = M^{(B)} ⊗ 1`):
 
@@ -31,36 +27,34 @@ scale `N etaOf (m n) u`; the local law is against `M = Mres (g Ψ_I) E m = M^{(B
   `Mres (g Ψ_I) E m`, `etaOf m`; the processes are the BA ones of `BA/GUEProcBA`;
 * `|E n| < 2` becomes `0 < Im m n`, `‖m n‖ ≤ 1` (for the BA flow datum, `BAReal`,
   `BAm_norm_le_one`);
-* the A3 step (the Ward lower bound of the band `gue_inv_W_le_loopMax`) is
-  `GreenLocal_floor_sample` (`BA/GreenLocal:118`, the BA
-  twin of `inv_Wd_le_maxLoopPM`): `W^{-d} ≤ (4/κ²) L₂` on the entry good event
+* the lower-bound step (the Ward lower bound of the band `gue_inv_W_le_loopMax`) is
+  `GreenLocal_floor_sample` (`BA/GreenLocal`, the BA
+  analogue of `inv_Wd_le_maxLoopPM`): `W^{-d} ≤ (4/κ²) L₂` on the entry good event
   `‖G - M‖_max ≤ δ ≤ κ/2`, `M_xx = m`
-  (`BAMB_diag_eq`), `|m| ≥ κ`; so the A3 constant of the band, `1 + 2 lam²`, is `A = 1 + 4/κ²` (a
+  (`BAMB_diag_eq`), `|m| ≥ κ`; so the constant of the band, `1 + 2 lam²`, is `A = 1 + 4/κ²` (a
   number, not a function of `lam`)
-  and the band hypothesis `hellN` of `HypB_entry_le` is not needed (paper-delta candidate
-  `T2519ca`);
+  and the band hypothesis `hellN` of `HypB_entry_le` is not needed;
 * the diagonal of `G - M` is `G_xx - m` (`M_xx = m`), so the `E^{(G)}` weight `⟨(G - m) E_a⟩` is a
   block average of the diagonal of
   `G - M` (`HypBBA_eps_le_dev`);
-* the length-`1` primitive `K̃ = m_σ` is the premise `hK1` (it is `Hyp_Kt_oneBA`, row a), in place
+* the length-`1` primitive `K̃ = m_σ` is the premise `hK1` (it is `Hyp_Kt_oneBA`), in place
   of `hKinit`, `hK` of the band
-  `HypB_eG_746`; the K-bound is the conclusion of `Hyp_Kt_detDomBA` (row a).
+  `HypB_eG_746`; the K-bound is the conclusion of `Hyp_Kt_detDomBA`.
 
 The band privates without a band token (`HypB_size_pos`, `HypB_bil`, ...; `Bounds_unfreeze`,
-`Bounds_jump`, ...) are read by
+`Bounds_jump`, ...) are used through
 `open private`; `HypB_q_745`, `HypB_ev_grid`, `HypB_highProb_range` carry no band token and are
-read by name.
+used by name.
 
-* §1 `HypBBA_inv_W_le_loopMax`, `HypBBA_eps_le_dev` (the BA A3 and the block average of the
-  diagonal), `HypB_entry_leBA` (D4a at the
-  stopped grid times with A3), `HypB_eG_745BA`, `HypB_eG_746BA` (the two `E^{(G)}` drift lines);
+* §1 `HypBBA_inv_W_le_loopMax`, `HypBBA_eps_le_dev` (the BA lower-bound step and the block average of the
+  diagonal), `HypB_entry_leBA` (the entry bound at the
+  stopped grid times), `HypB_eG_745BA`, `HypB_eG_746BA` (the two `E^{(G)}` drift lines);
 * §2 the grid facts `HypBBA_ev_delta`, `HypBBA_step_le`, `HypBBA_Kt_le_one`, `HypBBA_Lproc_grid`,
   `HypBBA_Dproc_grid`,
   `HypBBA_sqrt_cont`;
 * §3 the pathwise bound at one length `HypBBA_path` (private); §4 the exponent bookkeeping
   `HypB_fixedBA`;
-* §5 the unfreezing: `Bounds_pathBA` and `pathBounds_of_forall_highProbAtBA` (target 10);
-* §6 compiled nonempty instances at `d = 3` (target 12).
+* §5 the unfreezing: `Bounds_pathBA` and `pathBounds_of_forall_highProbAtBA`.
 -/
 
 set_option linter.style.longLine false
@@ -108,7 +102,7 @@ private theorem HypBBA_Mres_blockMat {g E : ℝ} {m : ℂ} (hm : 0 < m.im) (u v 
   rw [hu', hv'] at h
   exact h
 
-/-- **The BA A3 step** (twin of `gue_inv_W_le_loopMax`, `Proc:539`, through `GreenLocal_floor_sample`): on the entry good event
+/-- **The BA lower-bound step** (the analogue of `gue_inv_W_le_loopMax`, through `GreenLocal_floor_sample`): on the entry good event
 `‖G - M‖_max ≤ δ ≤ κ/2`, `M = Mres (g Ψ_I) E m`, `|m| ≥ κ` (`BAReal`), `W^{-d} ≤ (4/κ²) max 𝓛^{(2)}`. -/
 theorem HypBBA_inv_W_le_loopMax {g E : ℝ} {m : ℂ} {κ δ : ℝ} (hκ : 0 < κ) (hr : BAReal d L g κ E m) (u : ℝ)
     {H : Matrix (Idx d L W) (Idx d L W) ℂ} (hH : H.IsHermitian) (hδ : δ ≤ κ / 2)
@@ -133,7 +127,7 @@ theorem HypBBA_inv_W_le_loopMax {g E : ℝ} {m : ℂ} {κ δ : ℝ} (hκ : 0 < �
   exact (Finset.le_sup' (fun p : Zd d L × Zd d L => ‖loopFine d L W H (ztOf m E u) ![true, false] ![p.1, p.2]‖)
     (Finset.mem_univ ((0 : Zd d L), (0 : Zd d L)))).trans (EntryGridBA_maxLoop_le m E u H)
 
-/-- **`ε ≤ ‖G - M‖_max`** at BA (twin of `Hyp_eps_le_dev`, `HypA:353`): the weight `⟨G(σ) E_a⟩ - m_σ` of the `E^{(G)}` drift is a block
+/-- **`ε ≤ ‖G - M‖_max`** at BA (the analogue of `Hyp_eps_le_dev`): the weight `⟨G(σ) E_a⟩ - m_σ` of the `E^{(G)}` drift is a block
 average of the diagonal of `G - M` (`M_xx = m`, `BAMB_diag_eq`; for `σ = -`, of its complex conjugate). -/
 theorem HypBBA_eps_le_dev {g E : ℝ} {m : ℂ} (hr : BASelf d L g (E : ℂ) m) (u : ℝ)
     {H : Matrix (Idx d L W) (Idx d L W) ℂ} (hH : H.IsHermitian) {c : ℝ}
@@ -177,8 +171,8 @@ section HypBBALines
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **D4a at the stopped grid times, with A3, at BA** (twin of `HypB_entry_le`, `HypB:131`): on the D4a event (at level `c`, the
-hypothesis `hD4`), for `j < σ*` every diagonal entry of `G_j - M` is at most `√(A c L₂)`, `A = 1 + 4/κ²` (the A3 step is
+/-- **The entry bound at the stopped grid times, at BA** (the analogue of `HypB_entry_le`): on the entry event (at level `c`, the
+hypothesis `hD4`), for `j < σ*` every diagonal entry of `G_j - M` is at most `√(A c L₂)`, `A = 1 + 4/κ²` (the lower-bound step is
 `HypBBA_inv_W_le_loopMax`; the band constant is `1 + 2 lam²`).  The threshold `δ_n = N^{-τ_U/4}` is `≤ κ/2` (`hδN`). -/
 theorem HypB_entry_leBA {κ : ℝ} (hκ : 0 < κ) (n0 : ℕ) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} {τU : ℝ}
     (n : ℕ) (hr : BAReal d (sz.L n) (g n) κ (E n) (m n)) (hδN : gueDelta sz τU n ≤ κ / 2)
@@ -253,8 +247,8 @@ private theorem HypBBA_le_Dmax (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : 
   simp only [hx] at h
   exact h
 
-/-- **The drift line for (7.45)G at BA** (even `2l`; twin of `HypB_eG_745`, `HypB:260`): `|𝓔̃| ≤ 2l A c N L₂ L_{2l}`, `A = 1 + 4/κ²`, from
-`ε ≤ √(A c L₂)` (D4a + A3, the conclusion of `HypB_entry_leBA`, on the diagonal of `G - M`) and R6a `L_{2l+1} ≤ √L₂ L_{2l}`. -/
+/-- **The drift line for (7.45)G at BA** (even `2l`; the analogue of `HypB_eG_745`): `|𝓔̃| ≤ 2l A c N L₂ L_{2l}`, `A = 1 + 4/κ²`, from
+`ε ≤ √(A c L₂)` (the conclusion of `HypB_entry_leBA`, on the diagonal of `G - M`) and the loop inequality `L_{2l+1} ≤ √L₂ L_{2l}`. -/
 theorem HypB_eG_745BA {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (K : ℕ → ℕ) (n j : ℕ) (hr : BASelf d (sz.L n) (g n) (E n : ℂ) (m n))
     (ω : PathΩ (sz.withLam 0)) {c A : ℝ} (hc : 1 ≤ c) (hA : 1 ≤ A) {l : ℕ} (hl : 1 ≤ l)
     (hdiag : ∀ q : Idx d (sz.L n) (sz.W n),
@@ -301,7 +295,7 @@ theorem HypB_eG_745BA {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (K : ℕ → �
     _ ≤ ((2 * l : ℕ) : ℝ) * ((sz.size n : ℕ) : ℝ) * (A * c * (L2 * Ln)) := by gcongr
     _ = _ := by ring
 
-/-- **The drift line for (7.46)G at BA** (twin of `HypB_eG_746`, `HypB:320`): `|𝓔̃| ≤ l N D₁ L_{l+1}`, from `ε ≤ D^{(1)}` (`K̃ = m_σ` at
+/-- **The drift line for (7.46)G at BA** (the analogue of `HypB_eG_746`): `|𝓔̃| ≤ l N D₁ L_{l+1}`, from `ε ≤ D^{(1)}` (`K̃ = m_σ` at
 length `1`, the premise `hK1`, which is `Hyp_Kt_oneBA`). -/
 theorem HypB_eG_746BA {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (K : ℕ → ℕ)
     (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ) (n j l : ℕ) (ω : PathΩ (sz.withLam 0))
@@ -344,7 +338,7 @@ section HypBBAFacts
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `N η_u > 0` at `η_u = (1 - u) Im m`, `u ≤ t₀ < 1` (twin of `HypB_scale_pos`, `HypB:558`). -/
+/-- `N η_u > 0` at `η_u = (1 - u) Im m`, `u ≤ t₀ < 1` (the analogue of `HypB_scale_pos`). -/
 private theorem HypBBA_scale_pos {t0 : ℕ → ℝ} {m : ℕ → ℂ} {n : ℕ} (hm : 0 < (m n).im) (ht0 : t0 n < 1) {u : ℝ}
     (hu : u ≤ t0 n) : 0 < ((sz.size n : ℕ) : ℝ) * etaOf (m n) u := by
   unfold etaOf
@@ -354,7 +348,7 @@ private theorem HypBBA_scale_pos {t0 : ℕ → ℝ} {m : ℕ → ℂ} {n : ℕ} 
 theorem HypBBA_im_le_one {m : ℂ} (hm1 : ‖m‖ ≤ 1) : m.im ≤ 1 :=
   (le_abs_self _).trans ((Complex.abs_im_le_norm m).trans hm1)
 
-/-- `δ_n = N^{-τ_U/4} ≤ κ/2` eventually (twin of `HypB_ev_delta`, `HypB:427`; at BA the margin `Im m ≥ κ` is `BAReal`). -/
+/-- `δ_n = N^{-τ_U/4} ≤ κ/2` eventually (the analogue of `HypB_ev_delta`; at BA the margin `Im m ≥ κ` is `BAReal`). -/
 theorem HypBBA_ev_delta {κ τU : ℝ} (hκ : 0 < κ) (hτU : 0 < τU) (hsz : Tendsto sz.size atTop atTop) :
     ∀ᶠ n : ℕ in atTop, gueDelta sz τU n ≤ κ / 2 := by
   filter_upwards [hsz.eventually (eventually_le_rpow (κ / 2)⁻¹ (by positivity : 0 < τU / 4)),
@@ -366,7 +360,7 @@ theorem HypBBA_ev_delta {κ τU : ℝ} (hκ : 0 < κ) (hτU : 0 < τU) (hsz : Te
   rw [inv_le_comm₀ hpos (by positivity)]
   exact hN
 
-/-- Step-size input: `Δ ≤ t₀ - t₁ ≤ N^{-τ_U} η_{t₀} ≤ 1 - t₀` (twin of `HypB_step_le`, `HypB:985`). -/
+/-- Step-size input: `Δ ≤ t₀ - t₁ ≤ N^{-τ_U} η_{t₀} ≤ 1 - t₀` (the analogue of `HypB_step_le`). -/
 theorem HypBBA_step_le {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} {τU : ℝ} (n0 n : ℕ) (hm : 0 < (m n).im) (hm1 : ‖m n‖ ≤ 1)
     (ht10 : t1 n ≤ t0 n) (ht0 : t0 n < 1)
     (h730 : t0 n - t1 n ≤ ((sz.size n : ℕ) : ℝ) ^ (-τU) * etaOf (m n) (t0 n)) (hτU : 0 < τU) :
@@ -389,7 +383,7 @@ theorem HypBBA_step_le {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} {τU : ℝ} (n0 n
     _ ≤ 1 - t0 n := by rw [one_mul]; exact hη1
 
 /-- `‖K̃_t(J)‖ ≤ 1` on `[t₁, t₀]` for `2 ≤ |J| ≤ 2n₀`, from the bound at `τ_U/2` (the conclusion of `Hyp_Kt_detDomBA`) and
-`(N η_t)^{-1} ≤ N^{-τ_U}` (twin of `HypB_Kt_le_one`, `HypB:1012`). -/
+`(N η_t)^{-1} ≤ N^{-τ_U}` (the analogue of `HypB_Kt_le_one`). -/
 theorem HypBBA_Kt_le_one {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} {τU : ℝ} (hτU : 0 < τU) (n0 n : ℕ)
     (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ) (hm : 0 < (m n).im) (ht0 : t0 n < 1)
     (hK1 : ∀ t ∈ Set.Icc (t1 n) (t0 n), ∀ J : RBM.Loop.LoopIdx (Zd d (sz.L n)), J.WF → 2 ≤ J.length →
@@ -426,7 +420,7 @@ theorem HypBBA_Kt_le_one {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} {τU : ℝ} (h�
         mul_le_mul_of_nonneg_left hpow (Real.rpow_nonneg hN0.le _)
     _ ≤ 1 := hcomb
 
-/-- Grid values of the stopped process `L^{(l)}` before the stopping index (twin of `HypB_Lproc_grid`, `HypB:1051`). -/
+/-- Grid values of the stopped process `L^{(l)}` before the stopping index (the analogue of `HypB_Lproc_grid`). -/
 theorem HypBBA_Lproc_grid (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ) (n l j : ℕ)
     (ω : PathΩ (sz.withLam 0)) (ht10 : t1 n ≤ t0 n) (hj : j < gueStopBA sz g E t1 t0 m K δ n ω) :
     gueLprocBA sz g E t1 t0 m K δ n l (gridTime t1 t0 K n j) ω =
@@ -436,7 +430,7 @@ theorem HypBBA_Lproc_grid (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ �
   rw [gueLprocBA_time sz g E t1 t0 m K δ n l j ht10 (by omega) ω, min_eq_left hj.le]
   rfl
 
-/-- Grid values of the stopped process `D^{(l)}` before the stopping index (twin of `HypB_Dproc_grid`, `HypB:1061`). -/
+/-- Grid values of the stopped process `D^{(l)}` before the stopping index (the analogue of `HypB_Dproc_grid`). -/
 theorem HypBBA_Dproc_grid (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ)
     (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ) (n l j : ℕ)
     (ω : PathΩ (sz.withLam 0)) (ht10 : t1 n ≤ t0 n) (hj : j < gueStopBA sz g E t1 t0 m K δ n ω) :
@@ -444,7 +438,7 @@ theorem HypBBA_Dproc_grid (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ �
   have hσK : gueStopBA sz g E t1 t0 m K δ n ω ≤ K n := firstHit_le _ _ _ ω
   rw [gueDprocBA_time sz g E t1 t0 m K δ Kt n l j ht10 (by omega) ω, min_eq_left hj.le]
 
-/-- Continuity of `u ↦ √(N⁻¹ η_u⁻²)` on `[t₁, t₀]` (twin of `HypB_sqrt_cont`, `HypB:1069`). -/
+/-- Continuity of `u ↦ √(N⁻¹ η_u⁻²)` on `[t₁, t₀]` (the analogue of `HypB_sqrt_cont`). -/
 theorem HypBBA_sqrt_cont {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (n : ℕ) (hm : 0 < (m n).im) (ht0 : t0 n < 1) :
     ContinuousOn (fun u => Real.sqrt ((((sz.size n : ℕ) : ℝ))⁻¹ * (etaOf (m n) u)⁻¹ ^ 2))
       (Set.Icc (t1 n) (t0 n)) := by
@@ -463,7 +457,7 @@ section HypBBAPath
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **The pathwise bound at one length `l`** (twin of `HypB_path`, `HypB:566`): on the good event, the
+/-- **The pathwise bound at one length `l`** (the analogue of `HypB_path`): on the good event, the
 stopped interpolated `D_l(t)` is bounded by a constant times the right side
 `N(t-t₁) sup g₁ + (Nη_t)^{-l} + N(t-t₁) sup g₃ + √(t-t₁) sup g₄`, for all `t ∈ [t₁, t₀]`. -/
 private theorem HypBBA_path (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (δ : ℕ → ℝ)
@@ -674,7 +668,7 @@ section HypBBAFixed
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **One length, one size index, one sample point** (twin of `HypB_fixed`, `HypB:783`; the A3 constant `A` is a parameter, `A = 1 + 4/κ²` at BA): the eventual deterministic facts and the
+/-- **One length, one size index, one sample point** (the analogue of `HypB_fixed`; the constant `A` is a parameter, `A = 1 + 4/κ²` at BA): the eventual deterministic facts and the
 good event at level `N^{τ/2}` give `D_l(t) ≤ N^τ · rhs(t)` for every `t ∈ [t₁, t₀]` (the bounds on
 `K̃` and on the discretization error, the step-size conditions and the final absorption).
 `N = sz.size n = (W L)^d`; since `1 ≤ sz.size n`, no hypotheses `1 ≤ N` or `W L ≤ N` are needed. -/
@@ -861,18 +855,18 @@ theorem HypB_fixedBA {τ : ℝ} (hτ : 0 < τ) (n0 : ℕ) {g E t1 t0 : ℕ → �
     _ = N ^ τ * R := by rw [hNτ]
 end HypBBAFixed
 
-/-! ## 5. The pathwise unfreezing (twin of `BoundsA.lean`)
+/-! ## 5. The pathwise unfreezing (the analogue of `BoundsA.lean`)
 
 The band privates of `BoundsA` that carry no band token (`Bounds_unfreeze`, `Bounds_jump`, `Bounds_rpow_key`, ..., the grid
-times) are read by `open private`; the entry bound, the deviation processes and the scale lemmas `(T3)`, the jump step are
-re-derived below at the flow `ztOf (m n) (E n)`, `η_u = (1 - u) Im m`, `M = Mres (g Ψ_I) E m`. -/
+times) are used through `open private`; the entry bound, the deviation processes, the scale lemma and the jump step are
+derived anew below at the flow `ztOf (m n) (E n)`, `η_u = (1 - u) Im m`, `M = Mres (g Ψ_I) E m`. -/
 
 section BoundsBA
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- The conclusion of `Bounds_pathBA` at `(n, ω, τ)`: the two fields of `GUEPathBoundsBA` unfolded (twin of
-`BoundsACheck.Concl`, `BoundsA:466`). -/
+/-- The conclusion of `Bounds_pathBA` at `(n, ω, τ)`: the two fields of `GUEPathBoundsBA` unfolded (the analogue of
+`BoundsACheck.Concl`). -/
 abbrev BoundsBA_Concl {d : ℕ} (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (n0 : ℕ)
     (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ) (τ : ℝ) (n : ℕ) (ω : PathΩ (sz.withLam 0)) : Prop :=
   (∀ l : ℕ, 1 ≤ l → l ≤ n0 → ∀ (k : Fin (gueGridK sz n0 n + 1)) (σ : Fin l → Bool) (a : Fin l → Zd d (sz.L n)),
@@ -888,7 +882,7 @@ abbrev BoundsBA_Concl {d : ℕ} (sz : Sizes d) (g E t1 t0 : ℕ → ℝ) (m : �
         ((sz.size n : ℕ) : ℝ) ^ τ *
           (((sz.size n : ℕ) : ℝ) * etaOf (m n) (gridTime t1 t0 (gueGridK sz n0) n k))⁻¹ ^ ((1 : ℝ) / 2))
 
-/-- An entry of `G_k - M` is at most `gueDevBA` (twin of `Bounds_entry_le_dev`, `BoundsA:295`). -/
+/-- An entry of `G_k - M` is at most `gueDevBA` (the analogue of `Bounds_entry_le_dev`). -/
 private theorem BoundsBA_entry_le_dev (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ (sz.withLam 0))
     (a b : Idx d (sz.L n) (sz.W n)) :
     ‖(green (gueHBA sz g t1 t0 K n k ω) (ztOf (m n) (E n) (gridTime t1 t0 K n k)) -
@@ -900,7 +894,7 @@ private theorem BoundsBA_entry_le_dev (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ
         Mres (((g n : ℝ) : ℂ) • PsiI d (sz.L n) (sz.W n)) (E n : ℂ) (m n)) ij.1 ij.2‖)
     (Set.finite_range _).bddAbove (a, b)
 
-/-- `gueDevBA` is at most any nonnegative entrywise bound (twin of `Bounds_dev_le`, `BoundsA:307`). -/
+/-- `gueDevBA` is at most any nonnegative entrywise bound (the analogue of `Bounds_dev_le`). -/
 private theorem BoundsBA_dev_le (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ (sz.withLam 0))
     {c : ℝ} (hc : 0 ≤ c)
     (h : ∀ a b : Idx d (sz.L n) (sz.W n),
@@ -910,7 +904,7 @@ private theorem BoundsBA_dev_le (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K :
   unfold gueDevBA
   exact Real.iSup_le (fun ij => h ij.1 ij.2) hc
 
-/-- A loop deviation is at most `gueDmaxBA` (twin of `Bounds_le_dmax`, `BoundsA:317`). -/
+/-- A loop deviation is at most `gueDmaxBA` (the analogue of `Bounds_le_dmax`). -/
 private theorem BoundsBA_le_dmax (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K : ℕ → ℕ)
     (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ) (n l k : ℕ) (ω : PathΩ (sz.withLam 0))
     (σ : Fin l → Bool) (a : Fin l → Zd d (sz.L n)) :
@@ -924,8 +918,8 @@ private theorem BoundsBA_le_dmax (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (K 
       Kt n (gridTime t1 t0 K n k) (loopOf y.1 y.2)‖)
     (Set.finite_range _).bddAbove (σ, a)
 
-/-- **(T3)** `(W^d)⁻¹ ≤ (N η_u)⁻¹` on `[t₁, t₀]`, `N = sz.size n = W^d L^d`, `η_u = (1 - u) Im m`, `Im m ≤ ‖m‖ ≤ 1`:
-`L^d η_u ≤ L^d (1 - t₁) ≤ 1` (twin of `Bounds_T3`, `BoundsA:347`). -/
+/-- **The scale inequality** `(W^d)⁻¹ ≤ (N η_u)⁻¹` on `[t₁, t₀]`, `N = sz.size n = W^d L^d`, `η_u = (1 - u) Im m`, `Im m ≤ ‖m‖ ≤ 1`:
+`L^d η_u ≤ L^d (1 - t₁) ≤ 1` (the analogue of `Bounds_T3`). -/
 private theorem BoundsBA_T3 {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (n : ℕ) (hm : 0 < (m n).im) (hm1 : ‖m n‖ ≤ 1) (ht0 : t0 n < 1)
     (hellN : ((sz.L n : ℕ) : ℝ) ^ d * (1 - t1 n) ≤ 1) {u : ℝ} (hu : u ∈ Set.Icc (t1 n) (t0 n)) :
     (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (((sz.size n : ℕ) : ℝ) * etaOf (m n) u)⁻¹ := by
@@ -957,7 +951,7 @@ private theorem BoundsBA_T3 {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (n : ℕ) (h
   exact inv_anti₀ (mul_pos hSpos hηpos) hSη
 
 /-- **The jump step**: the increment term of `gueDevBA_succ_le` is at most `δ_n / 2` on the
-truncation event (twin of `Bounds_jump_le`, `BoundsA:380`). -/
+truncation event (the analogue of `Bounds_jump_le`). -/
 private theorem BoundsBA_jump_le {τU : ℝ} (n0 : ℕ) {t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} (n : ℕ)
     (hτU : 0 < τU) (hm : 0 < (m n).im) (hm1 : ‖m n‖ ≤ 1) (ht1 : 0 ≤ t1 n) (ht10 : t1 n ≤ t0 n) (ht0 : t0 n < 1)
     (hscN : ∀ t ∈ Set.Icc (t1 n) (t0 n),
@@ -1022,11 +1016,11 @@ private theorem BoundsBA_jump_le {τU : ℝ} (n0 : ℕ) {t1 t0 : ℕ → ℝ} {m
       ‖Sizes.seqXmat sz n (ω (j + 1)) i i'‖ :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => norm_nonneg _
   exact Bounds_jump hN1 hN1' le_rfl (inv_nonneg.2 hη0.le) heS hΔ0 hΔ hSg0 hSg hδ1
-/-- **Unfreezing and conclusion, pathwise at a fixed `n` and `ω`, at BA** (twin of `Bounds_path`, `BoundsA:503`): on the good events
+/-- **Unfreezing and conclusion, pathwise at a fixed `n` and `ω`, at BA** (the analogue of `Bounds_path`): on the good events
 the a-priori threshold `gueDelta sz τU` is never reached on the grid, the freezing index never acts, and the bootstrap outputs
 give (7.28) and the local law against `M = Mres (g Ψ_I) E m` at every grid time.  Hypotheses (pathwise at the one `n` and the one
 `ω`, `N = sz.size n`, `Λ_u = (N η_u)⁻¹`, `η_u = (1 - u) Im m`): `hA`, `hB` the outputs of `eq727GEAt` (at `2 n₀`) and `eq728GAt`
-for `gueLprocBA`, `gueDprocBA` at the threshold `N^{τ₁}`; `hC` the entry bound (the pathwise form of the conclusion of `gueGrid_entry_boundBA'` at `δ = gueDelta sz τU`, threshold `N^{τ₁}`, control `gueLmaxBA … 2 + (W^d)⁻¹`); `hD` the step-`0` local law at `t₁`;
+for `gueLprocBA`, `gueDprocBA` at the threshold `N^{τ₁}`; `hC` the entry bound (the pathwise form of the conclusion of `gueGrid_entry_boundBA'` at `δ = gueDelta sz τU`, threshold `N^{τ₁}`, bound `gueLmaxBA … 2 + (W^d)⁻¹`); `hD` the step-`0` local law at `t₁`;
 `hF` the increment truncation; `hellN : L^d (1 - t₁) ≤ 1` gives `(W^d)⁻¹ ≤ Λ_u` on `[t₁, t₀]` (`Im m ≤ ‖m‖ ≤ 1`).  The band
 hypothesis `|E n| < 2` is `0 < Im m n`, `‖m n‖ ≤ 1`.  Conclusion: the two fields of `GUEPathBoundsBA` unfolded at `n`, `ω`, `N^τ`. -/
 theorem Bounds_pathBA {τU : ℝ} (n0 : ℕ) (hn0 : 2 ≤ n0) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ}
@@ -1193,8 +1187,8 @@ theorem Bounds_pathBA {τU : ℝ} (n0 : ℕ) (hn0 : 2 ≤ n0) {g E t1 t0 : ℕ �
     exact Bounds_final (norm_nonneg _) hΛ hp0 hP hx2
 
 /-- **The interface fit**: if for every `τ > 0` the conclusion of `Bounds_pathBA` holds with high probability (on the size scale),
-then `GUEPathBoundsBA` holds, by `stochDomAt_of_forall_highProbAt` applied to the two fields (twin of
-`BoundsACheck.pathBounds_of_forall_highProbAt`, `BoundsA:751`). -/
+then `GUEPathBoundsBA` holds, by `stochDomAt_of_forall_highProbAt` applied to the two fields (the analogue of
+`BoundsACheck.pathBounds_of_forall_highProbAt`). -/
 theorem pathBounds_of_forall_highProbAtBA (g E t1 t0 : ℕ → ℝ) (m : ℕ → ℂ) (n0 : ℕ)
     (Kt : ∀ n, ℝ → RBM.Loop.LoopIdx (Zd d (sz.L n)) → ℂ)
     (hmain : ∀ τ : ℝ, 0 < τ → HighProbAt (Pgue (sz.withLam 0)) sz.size
@@ -1209,14 +1203,6 @@ theorem pathBounds_of_forall_highProbAtBA (g E t1 t0 : ℕ → ℝ) (m : ℕ →
 
 end BoundsBA
 
-/-! ## 6. Compiled nonempty instances (target 12), `d = 3`
-
-`sz0` (`L_n = 4 (n + 1)`, `W_n = (2 (n + 1))^5`, `N_0 = 2^21`) at `n = 0` (`L = 4`, `W = 32`) and the BA flow datum
-`(g, E, m) = (BAflowLam0, BAflowEs, BAmF)` of `sz0` (`BAReal` at `κ = 1/2` for every `n`; `0 < Im m`, `‖m‖ ≤ 1`).  Window
-`t₀ = 199/200`, `t₁ = t₀ - 10⁻⁶`, `τ_U = 1/2`, `n₀ = 4`, `A = 1 + 4/κ² = 17`.  Every deterministic hypothesis (`hm`, `hm1`,
-`ht*`, `h730`, `hscN`, `hellN`, `hsmallN`, `h4N`, the grid conditions, `hbig`, the K-family premises) is discharged; the pathwise
-hypotheses (the events of the bootstraps, of the entry bound and of the step-`0` laws: outputs of other lemmas of the chain, one `ω`
-at a time) stay hypotheses of the examples; the K-family is `K̃ ≡ 0` (`primRhsGUE_zero`) where the lemma does not read `K̃_{t₁}`. -/
 
 end RBM.BA
 

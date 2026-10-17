@@ -8,72 +8,66 @@ import RBM3D.BA.KMolecule
 import RBM3D.BA.KPure
 
 /-!
-# Stage K, row K11: Ward's inequality for the block Anderson `𝒦`-loops, `lem_wardineq_K`
+# Ward's inequality for the block Anderson `𝒦`-loops, Lemma 4.2 `lem_wardineq_K`
 
-Ticket T2384 (design BA-DK, `docs/reports/T2360-design.md` §4 row K11, §5; supervisor
-`docs/supervisor/2026-10-10-0350.md` C2, C4 and `2026-10-10-1155.md` C1).  The statements are
-those of `docs/reports/T2384-prove.md` section (a), audited in `docs/reports/T2384-1a-audit.md`.
-Paper: `lem_wardineq_K` (`3_5_Loop_Hierarchy.tex:1001-1012`), proof
-`A_deterministic_estimates.tex:809-827`; `d ≥ 3`.  The BA twin of `Loop/KLWardIneq.lean` (T2122),
-over the cactus objects `BAKpi`, `BASigmaPi` (K06, `BA/KMolecule.lean`), the cut `baKpi_cut` (K10,
-`BA/KInduct.lean`) and the solution `BAKsol`.  The paper's proof uses no Ward identity: `baK_ward`
-(K02) does not enter; `n = 2` is `baKsol_two` and the row sums `Σ_x |M^{(s,s')}_{zx}| = 1`.
+Paper: Lemma 4.2 (`lem_wardineq_K`) with (4.9) `wardineq_K`, whose proof is in Subappendix A.5; `d ≥ 3`.  The BA analogue of
+`Loop/KLWardIneq.lean`, over the cactus objects `BAKpi`, `BASigmaPi` (`BA/KMolecule.lean`), the cut `baKpi_cut`
+(`BA/KInduct.lean`) and the solution `BAKsol`.  The paper's proof uses no Ward identity: `baK_ward`
+does not enter; `n = 2` is `baKsol_two` and the row sums `Σ_x |M^{(s,s')}_{zx}| = 1`.
 
 1. The statements: `BAWardIneqAt` (the BA `KLwardIneqAt`), the layer form `BAWardKpiAt` (the BA
-   `KLWardIneq_KpiAt`), the premise `KWardIneq_IndAt` (`(eq:ind-step-bound)`, `IndStepAbs` at
-   `BASig`) and `KWardIneq_MolAt` (`(eq:molecule-decay)`, `SigDecayAbs` at `BASig`), and the
-   family `KWardIneq_Data` of the data of the real-axis pins.
+   `KLWardIneq_KpiAt`), the premise `KWardIneq_IndAt` ((A.45) `eq:ind-step-bound`, `IndStepAbs` at
+   `BASig`) and `KWardIneq_MolAt` ((A.44) `eq:molecule-decay`, `SigDecayAbs` at `BASig`), and the
+   family `KWardIneq_Data` of the data of the real-axis statements.
 2. Scalars and `ℓ¹` bounds: `η_t = (1 - t) Im m ≤ 1 - t`, `(1 - t)⁻¹ ≤ η_t⁻¹`; for every charge
-   pair the rows and columns of `Θ^{(s,s')}_t` have `ℓ¹` norm `≤ (1-t)⁻¹` (`(eq:THETAinftinf)`;
-   the resolvent identity of K00 and `Σ_b |M^{(s,s')}_{cb}| = Σ_b K_{cb} = 1`, no Neumann series
-   and no `|Θ^{(σσ')}| ≤ Θ^{(+,-)}`); the sup bound and the `ℓ¹` bound of a short leaf (copies of
-   `KInduct_theta_sup/_l1`, properties 5, 5').
-3. `baWardMol_holds` (K07's `baSig_decay` at the family `KWardIneq_Data`) and
-   `KWardIneq_IndAt_of_abs` (`IndStepAbs ⊢ KWardIneq_IndAt`: the bridge K12 uses from
+   pair the rows and columns of `Θ^{(s,s')}_t` have `ℓ¹` norm `≤ (1-t)⁻¹` ((2.65) `eq:THETAinftinf`;
+   the resolvent identity and `Σ_b |M^{(s,s')}_{cb}| = Σ_b K_{cb} = 1`, no Neumann series
+   and no `|Θ^{(σσ')}| ≤ Θ^{(+,-)}`); the sup bound and the `ℓ¹` bound of a short leaf (as
+   `KInduct_theta_sup`, `KInduct_theta_l1`, properties 5, 5').
+3. `baWardMol_holds` (`baSig_decay` at the family `KWardIneq_Data`) and
+   `KWardIneq_IndAt_of_abs` (`IndStepAbs ⊢ KWardIneq_IndAt`: the bridge from
    `indStepAbs_of`).
 4. The layer `π = ∅` with the last label summed (`baWardKpi_empty_bound`): `K^{(∅)}(a[x]) = Σ_b
-   Θ(x, b) X_b` (`baKpi_empty_slice`), a long last leaf by `(eq:ind-step-bound)` and the column
-   sums of `Θ`, a short last leaf (not covered by the paper's displayed line `A:816-818`) by
+   Θ(x, b) X_b` (`baKpi_empty_slice`), a long last leaf by (A.45) `eq:ind-step-bound` and the column
+   sums of `Θ`, a short last leaf (not covered by the paper's displayed line in Subappendix A.5) by
    property 5' and the absolute bound `KWardIneq_abs_sum_le`.
-5. The cut `baKpi_cut` keeps the summed last label in the outer polygon: the label twins
+5. The cut `baKpi_cut` keeps the summed last label in the outer polygon: the label analogues
    `KWardIneq_aIn_update`, `KWardIneq_aOut_update`.
 6. The induction step `baWardKpi_step`, the induction `baWardKpi_holds`, `n = 2`
-   (`baWardIneq_two`), the assembly over the layers `baWardIneq_of_Kpi` (`(eq_K-Kpi)`,
+   (`baWardIneq_two`), the assembly over the layers `baWardIneq_of_Kpi` ((A.39) `eq_K-Kpi`,
    `baK_eq_sum_Kpi`) and `baWardIneq_holds`.
-7. Compiled nonempty instances at the flow point `P` of `(d, L) = (3, 4)`.
 
 **The induction.**  Notation: `n = m + 1` polygon vertices, the summed label is the label of the
 last vertex `v = Fin.last m`, `a[x] = Function.update a v x`, `K^{(π)} = BAKpi`, `B = Bparam d L g
 t 0`, `η = (1 - t) Im m`.  Strong induction on `m ≥ 2` for `P(m) := ∑_x |K^{(π)}(σ, a[x])| ≤ C L^τ
 η⁻¹ B^{n-2}`. At `n`, given `P(m'')` for `2 ≤ m'' < m`: (L) `π = ∅`, `σ_v ≠ σ_{v+1}`:
 `K^{(∅)}(a[x]) = ∑_b Θ(x, b) X_b`, the column sums of `Θ` are `≤ (1-t)⁻¹ ≤ η⁻¹`, and `∑_b |X_b| ≺
-B^{n-2}` is `(eq:ind-step-bound)` at `k = n`.  (S) `π = ∅`, `σ_v = σ_{v+1}`: `∑_x |Θ^{(s,s)}(x,
+B^{n-2}` is (A.45) `eq:ind-step-bound` at `k = n`.  (S) `π = ∅`, `σ_v = σ_{v+1}`: `∑_x |Θ^{(s,s)}(x,
 b)| ≤ S`, `|Σ^{(∅)}(δ)| ≤ C_m e^{-c_m max|δ_i - δ_j|}`, the leaves other than `v` and `0` are `≤
 C_d B`, the leaf at `0` is summed (`≤ (1-t)⁻¹`): `∑_x |K^{(∅)}| ≤ S C_m (C_d B)^{n-2} expC^{n-1}
 (1-t)⁻¹`, no loss. (C) `π ≠ ∅`: `K^{(π)} = 0` if no tree has the long edges `π`; otherwise cut at
 an innermost long edge `J = (i, j)` (`baKpi_cut`): one glue sum `t ∑_u A(u) K^{(π')}(σ_out,
 a_out(u))` (the chord `tΘ` is the glue leaf of the outer polygon: no `S^{(B)}`, no `Θ - 1 = ξ_J
 SΘ`), `A(u)` does not depend on `x` (`j ≤ n - 1`), so `∑_x |K^{(π)}| ≤ |t| (∑_u |A(u)|) sup_u ∑_x
-|K^{(π')}(a_out(u)[x])|`, `∑_u |A| ≺ B^{k-2}` (`(eq:ind-step-bound)` at `k = j - i + 1 ∈ [3,
+|K^{(π')}(a_out(u)[x])|`, `∑_u |A| ≺ B^{k-2}` ((A.45) `eq:ind-step-bound` at `k = j - i + 1 ∈ [3,
 n-1]`, loss `L^{τ/2}`) and `sup ∑_x |K^{(π')}| ≺ η⁻¹ B^{n''-2}` (`P(m'')` at `τ/2`, `n'' = n - (j
 - i) + 1 ∈ [3, n-1]`): `(k-2) + (n''-2) = n - 2`, `L^{τ/2} L^{τ/2} = L^τ`, `η⁻¹` once. Then
-`(wardineq_K)`: `n = 2` is `baKsol_two`; `n ≥ 3` is `(eq_K-Kpi)` (`baK_eq_sum_Kpi`): `W^{-d(n-1)}`
+(4.9) `wardineq_K`: `n = 2` is `baKsol_two`; `n ≥ 3` is (A.39) `eq_K-Kpi` (`baK_eq_sum_Kpi`): `W^{-d(n-1)}`
 times the sum over the `2^{|diagonals n|}` layers. The constants depend on `(d, n, Λ, κ, τ)` only
 (never on `L, W, g, E, m, t`): no smallness of `g`.
 
 **Differences from the paper and from the band.**  (i) As `Loop/KLWardIneq.lean`, the induction is
 on the number of polygon vertices for the standard `K^{(π)}`, not on molecules. (ii) The case (S)
-is proved here (as in the band).  (iii) `(eq:K-pi-bound_partial)` is for `n ≥ 3`; `n = 2` is
+is proved here (as in the band).  (iii) (A.51) `eq:K-pi-bound_partial` is for `n ≥ 3`; `n = 2` is
 `baWardIneq_two`.  (iv) The loss is `L^τ`, `τ > 0` arbitrary. (v) The BA chord is `tΘ` (no
 `S^{(B)}`): one glue sum, no `∑_w |S^{(B)}_{uw}| = 1`.  (vi) `lem_wardineq_K` is conditional on
-`(eq:ind-step-bound)` (`KWardIneq_IndAt`: K09b/K12's pin), as in the paper, where it is an input.
+(A.45) `eq:ind-step-bound` (`KWardIneq_IndAt`), as in the paper, where it is an input.
 
-Public: the declarations above; every other helper is `private` with the stem `KWardIneq_`.
-Copied, because private in merged files: `KInduct_theta_perm`, `_shift`, `_sup`, `_l1`,
-`KInduct_one_le_rpow` (`BA/KInduct.lean:128, 147, 188, 203, 265`), `KLWardIneq_sum_slice`,
-`KLWardIneq_sum_exp_maxDist` (`Loop/KLWardIneq.lean:220, 255`), `KLWardIneq_aIn_update`,
-`KLWardIneq_aOut_update` (`Loop/KLWardIneq.lean:531, 550`).
-
+The names of the private helpers begin with KWardIneq_.
+Re-proved here, because private in other files: `KInduct_theta_perm`, `KInduct_theta_shift`, `KInduct_theta_sup`, `KInduct_theta_l1`,
+`KInduct_one_le_rpow` (`BA/KInduct.lean`), `KLWardIneq_sum_slice`,
+`KLWardIneq_sum_exp_maxDist` (`Loop/KLWardIneq.lean`), `KLWardIneq_aIn_update`,
+`KLWardIneq_aOut_update` (`Loop/KLWardIneq.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -85,11 +79,11 @@ open scoped Matrix
 
 /-! ## 1. The statements -/
 
-/-- **`lem_wardineq_K`, `(wardineq_K)` for the block Anderson `𝒦`** (`3_5_Loop_Hierarchy.tex:1001-1012`; the BA twin of
-`KLwardIneqAt`, `Loop/KLWardIneq.lean:90`; the binders are those of `BAKBoundAt`, `BA/KInduct.lean:55`, plus `W ≥ 1`):
+/-- **Lemma 4.2 (`lem_wardineq_K`), (4.9) `wardineq_K` for the block Anderson `𝒦`** (the BA analogue of
+`KLwardIneqAt`, `Loop/KLWardIneq.lean`; the binders are those of `BAKBoundAt`, `BA/KInduct.lean`, plus `W ≥ 1`):
 at `(d, n, Λ, κ)` fixed, for every `τ > 0` one constant `C`, uniform in `L ≥ 3`, `W ≥ 1`, `g ∈ (0, Λ]`, the real-axis
 data `BAReal d L g κ E m` and `t ∈ [0,1)`: `max_σ ∑_{a_n} |𝒦^{(n)}_{t,σ,a}| ≤ C L^τ (W^d η_t)⁻¹ (W^{-d} B_{t,0})^{n-2}`,
-`η_t = (1 - t) Im m` (`1_2:721`), the sum over the last label. -/
+`η_t = (1 - t) Im m` ((2.38) `eta`), the sum over the last label. -/
 def BAWardIneqAt (d n : ℕ) (Λ κ : ℝ) : Prop :=
   ∀ τ : ℝ, 0 < τ → ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (W : ℕ), 1 ≤ W → ∀ g : ℝ, 0 < g → g ≤ Λ →
     ∀ (E : ℝ) (m : ℂ),
@@ -100,8 +94,8 @@ def BAWardIneqAt (d n : ℕ) (Λ κ : ℝ) : Prop :=
           ≤ C * (L : ℝ) ^ τ * (((W : ℝ) ^ d) * ((1 - t) * m.im))⁻¹ *
               (((W : ℝ) ^ d)⁻¹ * Bparam d L g t 0) ^ (n - 2)
 
-/-- **`(eq:ind-step-bound)` at BA** (`A_deterministic_estimates.tex:703`; the premise of the induction, owed by K09b/K12 through
-`KWardIneq_IndAt_of_abs`): `IndStepAbs` (`Loop/KLIndStepB.lean:77`) at the molecule weight `BASig` and the leaf edges `Θ` of the BA data,
+/-- **(A.45) `eq:ind-step-bound` at BA** (the premise of the induction, obtained through
+`KWardIneq_IndAt_of_abs`): `IndStepAbs` (`Loop/KLIndStepB.lean`) at the molecule weight `BASig` and the leaf edges `Θ` of the BA data,
 with `Bp = B_{t,0}`: for `σ_r ≠ σ_{r+1}`, `∑_b |∑_{δ_r = b} Σ^{(∅)}(σ,δ) ∏_{j ≠ r} Θ^{(σ_j,σ_{j+1})}(a_j, δ_j)| ≤ C L^τ B_{t,0}^{k-2}`. -/
 def KWardIneq_IndAt (d k : ℕ) [NeZero k] (Λ κ : ℝ) : Prop :=
   ∀ τ : ℝ, 0 < τ → ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
@@ -114,8 +108,8 @@ def KWardIneq_IndAt (d k : ℕ) [NeZero k] (Λ κ : ℝ) : Prop :=
                 BAThetaOf (BAMsigma d L (BAMB d L g (E : ℂ) m)) t (σ j) (σ (j + 1)) (a j) (δ j)‖
           ≤ C * (L : ℝ) ^ τ * (Bparam d L g t 0) ^ (k - 2)
 
-/-- **`(eq:molecule-decay)` at BA** (`A:691`): `|Σ^{(∅)}(σ,δ)| ≤ C e^{-c max_{i,j} |δ_i - δ_j|}` for every `σ`
-(`SigDecayAbs` at `BASig`); proved by `baWardMol_holds` from K07's `baSig_decay`. -/
+/-- **(A.44) `eq:molecule-decay` at BA**: `|Σ^{(∅)}(σ,δ)| ≤ C e^{-c max_{i,j} |δ_i - δ_j|}` for every `σ`
+(`SigDecayAbs` at `BASig`); proved by `baWardMol_holds` from `baSig_decay`. -/
 def KWardIneq_MolAt (d k : ℕ) [NeZero k] (Λ κ : ℝ) : Prop :=
   ∃ C : ℝ, 0 < C ∧ ∃ c : ℝ, 0 < c ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
     haveI : NeZero L := ⟨by omega⟩
@@ -123,8 +117,8 @@ def KWardIneq_MolAt (d k : ℕ) [NeZero k] (Λ κ : ℝ) : Prop :=
       ‖BASigmaPi d L k (BAMsigma d L (BAMB d L g (E : ℂ) m)) t σ ∅ δ‖
         ≤ C * Real.exp (-(c * (KLmaxDist d L δ : ℝ)))
 
-/-- **`(eq:K-pi-bound_partial)` at the polygon with `n = m + 1` vertices** (the layer form of `BAWardIneqAt`; the BA twin of
-`KLWardIneq_KpiAt`, `Loop/KLWardIneq.lean:662`): the sum over the last label `a_n = x`,
+/-- **(A.51) `eq:K-pi-bound_partial` at the polygon with `n = m + 1` vertices** (the layer form of `BAWardIneqAt`; the BA analogue of
+`KLWardIneq_KpiAt`, `Loop/KLWardIneq.lean`): the sum over the last label `a_n = x`,
 `∑_x |K^{(π)}(t,σ,a[x])| ≤ C L^τ η_t⁻¹ B_{t,0}^{n-2}`, every `σ`, every layer `π`; `BAKpi` carries no `W`. -/
 def BAWardKpiAt (d m : ℕ) (Λ κ : ℝ) : Prop :=
   ∀ τ : ℝ, 0 < τ → ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (z : ℂ),
@@ -135,9 +129,9 @@ def BAWardKpiAt (d m : ℕ) (Λ κ : ℝ) : Prop :=
           ‖BAKpi d L (m + 1) (BAMsigma d L (BAMB d L g (E : ℂ) z)) t σ (Function.update a (Fin.last m) x) π‖
         ≤ C * (L : ℝ) ^ τ * ((1 - t) * z.im)⁻¹ * (Bparam d L g t 0) ^ (m - 1)
 
-/-- **The data of the real-axis pins** at `(d, Λ, κ)`: the parameters `(L, g, E, m, t)` with `3 ≤ L`, `0 < g ≤ Λ`,
+/-- **The data of the real-axis statements** at `(d, Λ, κ)`: the parameters `(L, g, E, m, t)` with `3 ≤ L`, `0 < g ≤ Λ`,
 `BAReal d L g κ E m` and `t ∈ [0,1)`.  The index family `ι` through which the abstract interfaces `IndStepAbs`, `SigDecayAbs`
-(`Loop/KLIndStepB.lean:77`, `Loop/KLIndStepA.lean:1050`) see the BA data. -/
+(`Loop/KLIndStepB.lean`, `Loop/KLIndStepA.lean`) see the BA data. -/
 structure KWardIneq_Data (d : ℕ) (Λ κ : ℝ) where
   L : ℕ
   hL : 3 ≤ L
@@ -160,7 +154,7 @@ section Scalar
 
 variable {d L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ}
 
-/-- `Im m ≤ 1` at BA data (`Im m ≤ ‖m‖ ≤ 1`, `BAm_norm_le_one`, `BA/Ward.lean:136`). -/
+/-- `Im m ≤ 1` at BA data (`Im m ≤ ‖m‖ ≤ 1`, `BAm_norm_le_one`, `BA/Ward.lean`). -/
 private theorem KWardIneq_im_le_one (hr : BAReal d L g κ E m) : m.im ≤ 1 :=
   (Complex.im_le_norm m).trans (BAm_norm_le_one d L g (E : ℂ) m (by simp) hr.1)
 
@@ -175,7 +169,7 @@ private theorem KWardIneq_inv_le (hr : BAReal d L g κ E m) (hκ : 0 < κ) {t : 
   calc (1 - t) * m.im ≤ (1 - t) * 1 := mul_le_mul_of_nonneg_left (KWardIneq_im_le_one hr) (by linarith)
     _ = 1 - t := mul_one _
 
-/-- `1 ≤ L^τ` for `L ≥ 3`, `τ > 0` (a copy of `KInduct_one_le_rpow`, `BA/KInduct.lean:265`, private there). -/
+/-- `1 ≤ L^τ` for `L ≥ 3`, `τ > 0` (as `KInduct_one_le_rpow`, `BA/KInduct.lean`, private there). -/
 private theorem KWardIneq_one_le_rpow {L : ℕ} (hL : 3 ≤ L) {τ : ℝ} (hτ : 0 < τ) : (1 : ℝ) ≤ (L : ℝ) ^ τ :=
   Real.one_le_rpow (by exact_mod_cast (by omega : 1 ≤ L)) hτ.le
 
@@ -249,9 +243,9 @@ private theorem KWardIneq_col_of_resolvent {G : Type*} [Fintype G] [DecidableEq 
 
 variable {d L : ℕ} [NeZero L] {g κ E : ℝ} {m : ℂ}
 
-/-- **`(eq:THETAinftinf)` at BA, rows**: `Σ_b |Θ_t^{(s,s')}(a,b)| ≤ (1-t)⁻¹` for all four charge pairs: the right resolvent
+/-- **(2.65) `eq:THETAinftinf` at BA, rows**: `Σ_b |Θ_t^{(s,s')}(a,b)| ≤ (1-t)⁻¹` for all four charge pairs: the right resolvent
 identity (`BATheta_resolvent`) and `Σ_b |M^{(s,s')}_{cb}| = Σ_b K_{cb} = 1` (`BAMss_norm_eq_BAK`, `BAK_row_sum`).  The band's
-`sum_norm_Theta_row_le` (`Propagator/Props4.lean:210`) goes through `|Θ^{(σσ')}_{ab}| ≤ Θ^{(+,-)}_{ab}`; the resolvent identity is used here instead. -/
+`sum_norm_Theta_row_le` (`Propagator/Props4.lean`) goes through `|Θ^{(σσ')}_{ab}| ≤ Θ^{(+,-)}_{ab}`; the resolvent identity is used here instead. -/
 private theorem KWardIneq_theta_row_le (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (s s' : Bool) (a : Zd d L) :
     ∑ b, ‖BAThetaOf (BAMsigma d L (BAMB d L g (E : ℂ) m)) t s s' a b‖ ≤ (1 - t)⁻¹ := by
@@ -260,7 +254,7 @@ private theorem KWardIneq_theta_row_le (hr : BAReal d L g κ E m) {t : ℝ} (ht0
   simp only [BAMss_norm_eq_BAK]
   exact (BAK_row_sum d L g E m hr.1 c).le
 
-/-- **`(eq:THETAinftinf)` at BA, columns**: `Σ_a |Θ_t^{(s,s')}(a,b)| ≤ (1-t)⁻¹` (the left resolvent identity and
+/-- **(2.65) `eq:THETAinftinf` at BA, columns**: `Σ_a |Θ_t^{(s,s')}(a,b)| ≤ (1-t)⁻¹` (the left resolvent identity and
 `Σ_a |M^{(s,s')}_{ac}| = Σ_a K_{ac} = 1`, `BAK_col_sum`; no symmetry of `Θ`). -/
 private theorem KWardIneq_theta_col_le (hr : BAReal d L g κ E m) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (s s' : Bool) (b : Zd d L) :
@@ -270,8 +264,8 @@ private theorem KWardIneq_theta_col_le (hr : BAReal d L g κ E m) {t : ℝ} (ht0
   simp only [BAMss_norm_eq_BAK]
   exact (BAK_col_sum d L g E m hr.1 c).le
 
-/-- `Θ^{(s,s')}_t` is invariant under a permutation `e` of the labels fixing every `M(σ)` (a copy of the private
-`KInduct_theta_perm`, `BA/KInduct.lean:128`). -/
+/-- `Θ^{(s,s')}_t` is invariant under a permutation `e` of the labels fixing every `M(σ)` (as the private
+`KInduct_theta_perm`, `BA/KInduct.lean`). -/
 private theorem KWardIneq_theta_perm (e : Zd d L ≃ Zd d L) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (hM : ∀ σ x y, M σ (e x) (e y) = M σ x y) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
     BAThetaOf M t s s' (e x) (e y) = BAThetaOf M t s s' x y := by
@@ -290,8 +284,8 @@ private theorem KWardIneq_theta_perm (e : Zd d L ≃ Zd d L) (M : Bool → Matri
   rw [Matrix.submatrix_apply] at h3
   exact h3.symm
 
-/-- Translation invariance of `Θ`: `Θ_t^{(s,s')}(x, y) = Θ_t^{(s,s')}(0, y - x)` (a copy of the private `KInduct_theta_shift`,
-`BA/KInduct.lean:147`). -/
+/-- Translation invariance of `Θ`: `Θ_t^{(s,s')}(x, y) = Θ_t^{(s,s')}(0, y - x)` (as the private `KInduct_theta_shift`,
+`BA/KInduct.lean`). -/
 private theorem KWardIneq_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
     BATheta d L g E m t s s' x y = BATheta d L g E m t s s' 0 (y - x) := by
   have h := KWardIneq_theta_perm (Equiv.addRight (-x)) (BAMsigma d L (BAMB d L g (E : ℂ) m))
@@ -303,8 +297,8 @@ end Leaves
 
 section Constants
 
-/-- **Properties 4 + 5** (`BAProp5`): every entry of every `Θ_t^{(σ₁,σ₂)}` is `≤ C_d B_{t,0}` (a copy of the private
-`KInduct_theta_sup`, `BA/KInduct.lean:188`). -/
+/-- **Properties 4 and 5 of Lemma 2.19 (`lem_propTH`)** (`BAProp5`): every entry of every `Θ_t^{(σ₁,σ₂)}` is `≤ C_d B_{t,0}` (as the private
+`KInduct_theta_sup`, `BA/KInduct.lean`). -/
 private theorem KWardIneq_theta_sup {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ Cd : ℝ, 0 < Cd ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       haveI : NeZero L := ⟨by omega⟩
@@ -318,8 +312,8 @@ private theorem KWardIneq_theta_sup {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ 
   exact KLIndStepA_decay_le_zero (by omega) hCd.le hcd.le (y - x)
     (hbd L hL g hg hgΛ E m hr t ht0 ht1 σ₁ σ₂ (y - x))
 
-/-- **Property 5'** (`BAProp5s`): `Σ_b |Θ_t^{(σ,σ)}(x, b)| ≤ S`, `S = C_s (1 + Λ² expC k c_s)` (`d = k + 2`; a copy of the
-private `KInduct_theta_l1`, `BA/KInduct.lean:203`). -/
+/-- **Property 5'** (`BAProp5s`): `Σ_b |Θ_t^{(σ,σ)}(x, b)| ≤ S`, `S = C_s (1 + Λ² expC k c_s)` (`d = k + 2`; as the
+private `KInduct_theta_l1`, `BA/KInduct.lean`). -/
 private theorem KWardIneq_theta_l1 {k : ℕ} (hd : 3 ≤ k + 2) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ S : ℝ, 0 < S ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       haveI : NeZero L := ⟨by omega⟩
@@ -358,8 +352,8 @@ end Constants
 
 section DataBridge
 
-/-- **`(eq:molecule-decay)` at BA is proved** (`A:691`): K07's `baSig_decay` (`BA/KPure.lean:632`, `SigDecayAbs` at `BASig`, uniform in the
-family `ι`) at the family `ι = KWardIneq_Data d Λ κ` of the data of the real-axis pins. -/
+/-- **(A.44) `eq:molecule-decay` at BA is proved**: `baSig_decay` (`BA/KPure.lean`, `SigDecayAbs` at `BASig`, uniform in the
+family `ι`) at the family `ι = KWardIneq_Data d Λ κ` of the data of the real-axis statements. -/
 theorem baWardMol_holds {d k : ℕ} [NeZero k] (hd : 3 ≤ d) (hk : 3 ≤ k) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     KWardIneq_MolAt d k Λ κ := by
   obtain ⟨C, hC, c, hc, H⟩ := baSig_decay (ι := KWardIneq_Data d Λ κ) hd hk hΛ hκ (fun i => i.L) (fun i => i.g)
@@ -369,10 +363,10 @@ theorem baWardMol_holds {d k : ℕ} [NeZero k] (hd : 3 ≤ d) (hk : 3 ≤ k) {Λ
   intro L hL g hg hgΛ E m hr t ht0 ht1 σ δ
   exact H ⟨L, hL, g, hg, hgΛ, E, m, hr, t, ht0, ht1⟩ σ δ
 
-/-- **`(eq:ind-step-bound)` at BA from its abstract form** (the bridge K12 uses: `indStepAbs_of`, `Loop/KLIndStepB.lean:879`, concludes
-`IndStepAbs` over an index family; here the family `ι = KWardIneq_Data d Λ κ` of the data of the real-axis pins, the molecule weight
-`BASig`, the leaf edges `Θ` of the BA data and `Bp = B_{t,0}`): `IndStepAbs ⊢ KWardIneq_IndAt`.  Conclusion of this theorem is the premise
-of `baWardKpi_*` and `baWardIneq_holds`, so `KWardIneq_IndAt` carries no owed line in `Test/Axioms.lean`. -/
+/-- **(A.45) `eq:ind-step-bound` at BA from its abstract form** (the bridge: `indStepAbs_of`, `Loop/KLIndStepB.lean`, concludes
+`IndStepAbs` over an index family; here the family `ι = KWardIneq_Data d Λ κ` of the data of the real-axis statements, the molecule weight
+`BASig`, the leaf edges `Θ` of the BA data and `Bp = B_{t,0}`): `IndStepAbs ⊢ KWardIneq_IndAt`.  The conclusion of this theorem is the premise
+of `baWardKpi_step`, `baWardKpi_holds` and `baWardIneq_holds`. -/
 theorem KWardIneq_IndAt_of_abs {d k : ℕ} [NeZero k] {Λ κ : ℝ}
     (h : IndStepAbs (ι := KWardIneq_Data d Λ κ) d k (fun i => i.L) (fun i => Bparam d i.L i.g i.t 0)
       (BASig (ι := KWardIneq_Data d Λ κ) d k (fun i => i.L) (fun i => i.g) (fun i => i.E) (fun i => i.m) (fun i => i.t))
@@ -446,8 +440,8 @@ section Short
 
 variable {n : ℕ} [NeZero n] {d L : ℕ} [NeZero L]
 
-/-- A sum over the slice `δ_0 = x` of a product of one-point functions (a copy of the private `KLWardIneq_sum_slice`,
-`Loop/KLWardIneq.lean:220`, itself a copy of `KLMolecule_sum_slice`). -/
+/-- A sum over the slice `δ_0 = x` of a product of one-point functions (as the private `KLWardIneq_sum_slice`,
+`Loop/KLWardIneq.lean`, itself as `KLMolecule_sum_slice`). -/
 private theorem KWardIneq_sum_slice (x : Zd d L) (f : Zd d L → ℝ) :
     ∑ δ ∈ Finset.univ.filter (fun δ : Fin n → Zd d L => δ 0 = x), ∏ i : Fin n, f (δ i)
       = f x * (∑ y, f y) ^ (n - 1) := by
@@ -481,8 +475,8 @@ private theorem KWardIneq_sum_slice (x : Zd d L) (f : Zd d L → ℝ) :
   rw [h0, Finset.prod_congr rfl h1, Finset.prod_const, Finset.card_erase_of_mem (Finset.mem_univ _),
     Finset.card_univ, Fintype.card_fin]
 
-/-- `∑_{δ_0 = x} e^{-c max|δ_i - δ_j|} ≤ expC(c/n)^{n-1}` (a copy of the private `KLWardIneq_sum_exp_maxDist`,
-`Loop/KLWardIneq.lean:255`, itself a copy of `KLMolecule_sum_exp_maxDist`; generic lattice sums). -/
+/-- `∑_{δ_0 = x} e^{-c max|δ_i - δ_j|} ≤ expC(c/n)^{n-1}` (as the private `KLWardIneq_sum_exp_maxDist`,
+`Loop/KLWardIneq.lean`, itself as `KLMolecule_sum_exp_maxDist`; generic lattice sums). -/
 private theorem KWardIneq_sum_exp_maxDist (k : ℕ) {c : ℝ} (hc : 0 < c) (x : Zd (k + 2) L) :
     ∑ δ ∈ Finset.univ.filter (fun δ : Fin n → Zd (k + 2) L => δ 0 = x),
         Real.exp (-(c * (KLmaxDist (k + 2) L δ : ℝ))) ≤ (expC k (c / n)) ^ (n - 1) := by
@@ -533,8 +527,8 @@ end Short
 
 section ShortLast
 
-/-- **The absolute-value bound for a short last leaf** (case (S); the paper's displayed `π = ∅` bound `A:816-818` writes the last leaf as
-`Θ^{(+,-)}`; paper-delta candidate `T2384b`): `∑_δ |Σ^{(∅)}(δ) ∏_{i ≠ v} Θ^{(σ_i,σ_{i+1})}(a_i, δ_i)| ≲ (1-t)⁻¹ B^{n-2}` for every `σ`.
+/-- **The absolute-value bound for a short last leaf** (case (S); the paper's displayed `π = ∅` bound in Subappendix A.5 writes the last leaf as
+`Θ^{(+,-)}`): `∑_δ |Σ^{(∅)}(δ) ∏_{i ≠ v} Θ^{(σ_i,σ_{i+1})}(a_i, δ_i)| ≲ (1-t)⁻¹ B^{n-2}` for every `σ`.
 `|Σ^{(∅)}(δ)| ≤ C_m e^{-c_m max|δ_i - δ_j|}` (`KWardIneq_MolAt`); all leaves but two are `≤ C_d B` pointwise (`KWardIneq_theta_sup`), the leaf at the
 vertex `0` is summed (`∑_y |Θ(a_0, y)| ≤ (1-t)⁻¹`), the vertex `v` is free.  No cancellation and no loss `L^τ`. -/
 private theorem KWardIneq_abs_sum_le (d m : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hm : 2 ≤ m) (hΛ : 0 < Λ) (hκ : 0 < κ)
@@ -650,11 +644,11 @@ end ShortLast
 
 section EmptyBound
 
-/-- **The layer `π = ∅` with the last label summed** (`n = m + 1 ≥ 3`; the BA twin of `KLWardIneq_Kpi_empty_bound`,
-`Loop/KLWardIneq.lean:430`): `∑_x |K^{(∅)}(σ, a[x])| ≤ C L^τ η_t⁻¹ B_{t,0}^{n-2}`, every `σ`.  Long last leaf (`σ_v ≠ σ_{v+1}`): the column sums
-of `Θ^{(σ_v,σ_{v+1})}` are `≤ (1-t)⁻¹` (`KWardIneq_theta_col_le`) and the root sum is `(eq:ind-step-bound)` (`KWardIneq_IndAt` at `k = n`,
+/-- **The layer `π = ∅` with the last label summed** (`n = m + 1 ≥ 3`; the BA analogue of `KLWardIneq_Kpi_empty_bound`,
+`Loop/KLWardIneq.lean`): `∑_x |K^{(∅)}(σ, a[x])| ≤ C L^τ η_t⁻¹ B_{t,0}^{n-2}`, every `σ`.  Long last leaf (`σ_v ≠ σ_{v+1}`): the column sums
+of `Θ^{(σ_v,σ_{v+1})}` are `≤ (1-t)⁻¹` (`KWardIneq_theta_col_le`) and the root sum is (A.45) `eq:ind-step-bound` (`KWardIneq_IndAt` at `k = n`,
 with its cancellation), loss `L^τ`.  Short last leaf: the paper's displayed line does not cover it; `∑_x |Θ^{(s,s)}(x, b)| ≤ S` (property 5',
-`KWardIneq_theta_l1`, `Θ` symmetric) and the absolute bound `KWardIneq_abs_sum_le` (`(eq:molecule-decay)` from K07, `baWardMol_holds`), no loss. -/
+`KWardIneq_theta_l1`, `Θ` symmetric) and the absolute bound `KWardIneq_abs_sum_le` ((A.44) `eq:molecule-decay`, `baWardMol_holds`), no loss. -/
 theorem baWardKpi_empty_bound (d m : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hm : 2 ≤ m) (hΛ : 0 < Λ) (hκ : 0 < κ)
     (hInd : KWardIneq_IndAt d (m + 1) Λ κ) (τ : ℝ) (hτ : 0 < τ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (z : ℂ),
@@ -759,7 +753,7 @@ section CutLabels
 variable {d L : ℕ}
 
 /-- The inner labels at the non-root vertices do not see the last vertex `v = n - 1` of the polygon (`i + k < j ≤ n - 1` for `k` below
-the root; the BA twin of `KLWardIneq_aIn_update`, `Loop/KLWardIneq.lean:531`, over `BAinVinv`, `BA/KCactusCut.lean:44`). -/
+the root; the BA analogue of `KLWardIneq_aIn_update`, `Loop/KLWardIneq.lean`, over `BAinVinv`, `BA/KCactusCut.lean`). -/
 private theorem KWardIneq_aIn_update {m : ℕ} (J : Fin (m + 1) × Fin (m + 1)) (hJ : J.1.val < J.2.val)
     (a : Fin (m + 1) → Zd d L) (x : Zd d L) (i : Fin (KLwIn J + 1)) (hi : i ≠ Fin.last (KLwIn J)) :
     Function.update a (Fin.last m) x (BAinVinv J i) = a (BAinVinv J i) := by
@@ -776,8 +770,8 @@ private theorem KWardIneq_aIn_update {m : ℕ} (J : Fin (m + 1) × Fin (m + 1)) 
   omega
 
 /-- The last vertex of the polygon is the last vertex of the outer polygon (it is not the glue vertex `i < j ≤ n - 1`), with the same
-label: `a_out(a[x], u) = a_out(a, u)[x]` (the BA twin of `KLWardIneq_aOut_update`, `Loop/KLWardIneq.lean:550`, over `BAdeltaOut`,
-`BA/KCactusCut.lean:59`). -/
+label: `a_out(a[x], u) = a_out(a, u)[x]` (the BA analogue of `KLWardIneq_aOut_update`, `Loop/KLWardIneq.lean`, over `BAdeltaOut`,
+`BA/KCactusCut.lean`). -/
 private theorem KWardIneq_aOut_update {m : ℕ} (J : Fin (m + 1) × Fin (m + 1)) (hJ : J.1.val < J.2.val)
     (a : Fin (m + 1) → Zd d L) (w x : Zd d L) :
     BAdeltaOut J (Function.update a (Fin.last m) x) w
@@ -824,14 +818,14 @@ private theorem KWardIneq_aOut_update {m : ℕ} (J : Fin (m + 1) × Fin (m + 1))
 
 end CutLabels
 
-/-! ## 5. The induction step: `(eq:K-pi-bound_partial)` for all `π` -/
+/-! ## 5. The induction step: (A.51) `eq:K-pi-bound_partial` for all `π` -/
 
 section StepAux
 
 variable {d L : ℕ} [NeZero L]
 
 /-- `∑_x |∑_u ξ A(u) K(u, x)| ≤ |ξ| (∑_u |A(u)|) M` when `∑_x |K(u, x)| ≤ M` for every `u`: the summed last label stays in the outer factor
-(`baKpi_cut` has one glue sum, no kernel `S^{(B)}_{uw}`; the BA twin of `KLWardIneq_norm_cut_sum_le`, `Loop/KLWardIneq.lean:605`). -/
+(`baKpi_cut` has one glue sum, no kernel `S^{(B)}_{uw}`; the BA analogue of `KLWardIneq_norm_cut_sum_le`, `Loop/KLWardIneq.lean`). -/
 private theorem KWardIneq_norm_cut_sum_le (ξ : ℂ) (A : Zd d L → ℂ) (K : Zd d L → Zd d L → ℂ) {M : ℝ}
     (hK : ∀ u, ∑ x, ‖K u x‖ ≤ M) :
     ∑ x : Zd d L, ‖∑ u : Zd d L, ξ * A u * K u x‖ ≤ ‖ξ‖ * (∑ u : Zd d L, ‖A u‖) * M := by
@@ -856,11 +850,11 @@ end StepAux
 section Step
 
 /-- **The induction step** (strong induction on the number `n = m + 1` of polygon vertices, as `KLWardIneq_Kpi_step`,
-`Loop/KLWardIneq.lean:675`): the bound at `n ≥ 3` follows from the bound at every `3 ≤ n'' < n`.  The layer `π = ∅` is
-`baWardKpi_empty_bound`; a layer `π ≠ ∅` is cut at an innermost long edge (`baKpi_cut`, K10): the inner polygon `k = j - i + 1 ∈ [3, n-1]` has root
+`Loop/KLWardIneq.lean`): the bound at `n ≥ 3` follows from the bound at every `3 ≤ n'' < n`.  The layer `π = ∅` is
+`baWardKpi_empty_bound`; a layer `π ≠ ∅` is cut at an innermost long edge (`baKpi_cut`): the inner polygon `k = j - i + 1 ∈ [3, n-1]` has root
 sum `≺ B^{k-2}` (`KWardIneq_IndAt`, `L^{τ/2}`), the summed last label `x` is the last label of the outer polygon
 (`n'' = n - (j - i) + 1 ∈ [3, n-1]`), whose bound is `L^{τ/2} η_t⁻¹ B^{n''-2}`; `(k-2) + (n''-2) = n - 2`, `L^{τ/2} L^{τ/2} = L^τ`, and `η_t⁻¹`
-appears exactly once.  The chord is the glue leaf `tΘ` of the outer polygon (no `S^{(B)}`, paper-delta candidate `T2381a`). -/
+appears exactly once.  The chord is the glue leaf `tΘ` of the outer polygon (no `S^{(B)}`). -/
 theorem baWardKpi_step (d m : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hm : 2 ≤ m) (hΛ : 0 < Λ) (hκ : 0 < κ)
     (hInd : ∀ k : ℕ, 3 ≤ k → k ≤ m + 1 → ∀ [NeZero k], KWardIneq_IndAt d k Λ κ)
     (hout : ∀ m'' : ℕ, 2 ≤ m'' → m'' < m → BAWardKpiAt d m'' Λ κ) :
@@ -1041,8 +1035,8 @@ theorem baWardKpi_step (d m : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hm : 2 ≤ m) (
             ≤ C₀ + ∑ w ∈ Finset.range (m + 1), Ci (w + 1) * Co (m + 1 - w) := by linarith
         gcongr
 
-/-- **`(eq:K-pi-bound_partial)` is proved** for every `n = m + 1 ≥ 3`, every `π`: strong induction on `m` with `baWardKpi_step`; the premise is
-`(eq:ind-step-bound)` at every `k ∈ [3, m + 1]` (`KWardIneq_IndAt`). -/
+/-- **(A.51) `eq:K-pi-bound_partial` is proved** for every `n = m + 1 ≥ 3`, every `π`: strong induction on `m` with `baWardKpi_step`; the premise is
+(A.45) `eq:ind-step-bound` at every `k ∈ [3, m + 1]` (`KWardIneq_IndAt`). -/
 theorem baWardKpi_holds (d m : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hm : 2 ≤ m) (hΛ : 0 < Λ) (hκ : 0 < κ)
     (hInd : ∀ k : ℕ, 3 ≤ k → k ≤ m + 1 → ∀ [NeZero k], KWardIneq_IndAt d k Λ κ) :
     BAWardKpiAt d m Λ κ := by
@@ -1058,13 +1052,13 @@ theorem baWardKpi_holds (d m : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hm : 2 ≤ m) 
 
 end Step
 
-/-! ## 6. `n = 2`, the assembly over the layers, the statement `lem_wardineq_K` -/
+/-! ## 6. `n = 2`, the assembly over the layers, the statement of Lemma 4.2 (`lem_wardineq_K`) -/
 
 section Assembly
 
-/-- **`(wardineq_K)` at `n = 2`**, every `σ` (also `(s, s)`): `∑_x |𝒦^{(2)}(σ, (a₁, x))| = W^{-d} ∑_x |(Θ^{(σ₀,σ₁)} M^{(σ₀,σ₁)})(a₁, x)| ≤
-W^{-d} (1-t)⁻¹ ≤ (W^d η_t)⁻¹` (`baKsol_two`, `(Kn2sol)`; `Σ_x |M^{(σσ')}_{zx}| = Σ_x K_{zx} = 1` and `Σ_z |Θ(a₁, z)| ≤ (1-t)⁻¹`; no hypothesis on `d`;
-the band twin `KLWardIneq_At_two`, `Loop/KLWardIneq.lean:863`). -/
+/-- **(4.9) `wardineq_K` at `n = 2`**, every `σ` (also `(s, s)`): `∑_x |𝒦^{(2)}(σ, (a₁, x))| = W^{-d} ∑_x |(Θ^{(σ₀,σ₁)} M^{(σ₀,σ₁)})(a₁, x)| ≤
+W^{-d} (1-t)⁻¹ ≤ (W^d η_t)⁻¹` (`baKsol_two`, (2.71) `Kn2sol`; `Σ_x |M^{(σσ')}_{zx}| = Σ_x K_{zx} = 1` and `Σ_z |Θ(a₁, z)| ≤ (1-t)⁻¹`; no hypothesis on `d`;
+the band analogue `KLWardIneq_At_two`, `Loop/KLWardIneq.lean`). -/
 theorem baWardIneq_two (d : ℕ) {Λ κ : ℝ} (hκ : 0 < κ) : BAWardIneqAt d 2 Λ κ := by
   intro τ hτ
   refine ⟨1, one_pos, ?_⟩
@@ -1114,9 +1108,9 @@ theorem baWardIneq_two (d : ℕ) {Λ κ : ℝ} (hκ : 0 < κ) : BAWardIneqAt d 2
     _ ≤ (L : ℝ) ^ τ * (((W : ℝ) ^ d)⁻¹ * ((1 - t) * m.im)⁻¹) :=
         mul_le_mul_of_nonneg_right hL1 (by positivity)
 
-/-- **`(wardineq_K)` for `n = m + 1 ≥ 3`, from the layers**: `(eq_K-Kpi)` (`baK_eq_sum_Kpi`, K06) gives the prefactor `W^{-d(n-1)}`, the same for every
+/-- **(4.9) `wardineq_K` for `n = m + 1 ≥ 3`, from the layers**: (A.39) `eq_K-Kpi` (`baK_eq_sum_Kpi`) gives the prefactor `W^{-d(n-1)}`, the same for every
 `π`, times the sum over the `2^{|diagonals n|}` layers, each `∑_x |K^{(π)}| ≺ η_t⁻¹ B^{n-2}` (`BAWardKpiAt`): `(W^d)^{-(n-1)} η_t⁻¹ B^{n-2} =
-(W^d η_t)⁻¹ (W^{-d} B)^{n-2}` (the band twin `KLWardIneq_At_of_Kpi`, `Loop/KLWardIneq.lean:898`). -/
+(W^d η_t)⁻¹ (W^{-d} B)^{n-2}` (the band analogue `KLWardIneq_At_of_Kpi`, `Loop/KLWardIneq.lean`). -/
 theorem baWardIneq_of_Kpi (d m : ℕ) {Λ κ : ℝ} (hκ : 0 < κ) (hm : 2 ≤ m) (h : BAWardKpiAt d m Λ κ) :
     BAWardIneqAt d (m + 1) Λ κ := by
   intro τ hτ
@@ -1175,11 +1169,9 @@ theorem baWardIneq_of_Kpi (d m : ℕ) {Λ κ : ℝ} (hκ : 0 < κ) (hm : 2 ≤ m
         rw [e, mul_inv ((W : ℝ) ^ d) ((1 - t) * z.im), mul_pow, hpow]
         ring
 
-/-- **`lem_wardineq_K`, `(wardineq_K)`, at BA, conditional on `(eq:ind-step-bound)`** (`3_5_Loop_Hierarchy.tex:1001-1012`, proof
-`A_deterministic_estimates.tex:809-827`): `BAWardIneqAt d n Λ κ` for every `n ≥ 2`, uniformly in `L, W, g ∈ (0, Λ], t ∈ [0,1)` and the real-axis data:
+/-- **Lemma 4.2 (`lem_wardineq_K`), (4.9) `wardineq_K`, at BA, conditional on (A.45) `eq:ind-step-bound`**: `BAWardIneqAt d n Λ κ` for every `n ≥ 2`, uniformly in `L, W, g ∈ (0, Λ], t ∈ [0,1)` and the real-axis data:
 `n = 2` is `baWardIneq_two`, `n ≥ 3` is `baWardIneq_of_Kpi` and `baWardKpi_holds`.  The premises are `KWardIneq_IndAt d k Λ κ` at `k ∈ [3, n]`
-(`(eq:ind-step-bound)` at BA, K09b/K12; `(eq:molecule-decay)` is proved, `baWardMol_holds`).  A conditional form, not the unconditional lemma
-(paper-delta candidate `T2384c`). -/
+((A.45) `eq:ind-step-bound` at BA; (A.44) `eq:molecule-decay` is proved, `baWardMol_holds`).  A conditional form, not the unconditional lemma. -/
 theorem baWardIneq_holds (d n : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hn : 2 ≤ n) (hΛ : 0 < Λ) (hκ : 0 < κ)
     (hInd : ∀ k : ℕ, 3 ≤ k → k ≤ n → ∀ [NeZero k], KWardIneq_IndAt d k Λ κ) :
     BAWardIneqAt d n Λ κ := by
@@ -1190,15 +1182,5 @@ theorem baWardIneq_holds (d n : ℕ) {Λ κ : ℝ} (hd : 3 ≤ d) (hn : 2 ≤ n)
 
 end Assembly
 
-/-! ## 7. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 (Im m₀) P.E P.m₀`,
-`0 < P.g0 ≤ 10`; no smallness of `g` is used), `Λ = 10`, `κ = Im m₀ > 0`, `W = 2` (`W^d = 8`), `t = 1/2`, `τ = 1`.
-`n = 2`: `baWardIneq_two` at `σ = (+,-)` and `(+,+)`, no premise.  `n = 3, 4`: `baWardIneq_holds` at `σ = (+,-,+)` and `(+,+,-,-)` (spread
-labels, the last label summed); the layer form at `n = 4`: `baWardKpi_empty_bound` at `σ = (+,+,-,-)` (long last leaf) and `σ = (+,+,-,+)`
-(short last leaf, case (S)), `baWardKpi_step` at `m = 3` and the three layers `∅`, `{(0,2)}`, `{(1,3)}` of `σ = (+,+,-,-)` (both chords are long,
-`n_in = n_out = 3`; the induction hypothesis at `m'' = 2` is the proved `baWardKpi_holds`), `baWardIneq_of_Kpi`.  The only hypotheses left are the
-premises `KWardIneq_IndAt` (`(eq:ind-step-bound)`, K09b/K12's pin; K12 gets it from `KWardIneq_IndAt_of_abs`); `(eq:molecule-decay)` is proved
-(`baWardMol_holds`), every other hypothesis is discharged at the data. -/
 
 end RBM.BA

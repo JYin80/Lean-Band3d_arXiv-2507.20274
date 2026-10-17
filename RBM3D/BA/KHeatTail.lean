@@ -6,13 +6,13 @@ Authors: Jun Yin
 import RBM3D.BA.KHeat
 
 /-!
-# Regime (i) `τ ≤ L²` of the heat kernel of `K = |M^{(B)}|²` (BA-P4b)
+# Regime (i) `τ ≤ L²` of the heat kernel of `K = |M^{(B)}|²`
 
-Ticket T2335 (BA stage P, row P4b; supervisor 2026-10-08-1048 C1 (i), C3).  Target `kBA_le`, the
-twin of `Heat.kProd_le` (`HeatProduct.lean:439`) for the kernel `kBA τ = P_{τ/g²}(0, ·)` of `K`:
+Contents: `kBA_le`, the
+analogue of `Heat.kProd_le` (`HeatProduct.lean`) for the kernel `kBA τ = P_{τ/g²}(0, ·)` of `K`:
 `kBA τ a ≤ C min(1, τ^{-d/2}) e^{-c min(|a|²/τ, |a|)}` for `τ ≤ L²`, `|a| = zdistD`.
 
-Route.  The Chernoff step is done on the torus, with the test function `cosh(λ |x_j|_L)`; the
+Proof outline.  The Chernoff step is done on the torus, with the test function `cosh(λ |x_j|_L)`; the
 centered lift of `K` to `ℤ^d` is not constructed: the lift is only used through
 `zdist(u ± v) ≤ |ε p ± δ q|`, `p = zdist u`, `q = zdist v`, `ε, δ = ±1` the signs of the
 centered representatives (`KHeatTail_cosh_pair`).
@@ -22,8 +22,6 @@ symmetry `K(0,−c) = K(0,c)` give `Σ_b K(x,b) h(b) ≤ ρ_λ h(x)`, `h = cosh(
 `Σ_b P_s(0,b) h(b) ≤ e^{s(ρ_λ−1)}`.  (3) `ρ_λ − 1 ≤ C g² λ²` for `λ ≤ c₀ = BAct_rate/2`, from
 `BAK_exp_moment_le` (the diagonal `‖m‖²` cancels, `cosh 0 − 1 = 0`).  (4) Chernoff tail and union
 over the coordinates.  (5) Semigroup splitting at `τ/2` and `kBA_diag_le`.
-
-Nothing is ported from `../RBM1D` or `../RBM2D`.
 -/
 
 set_option linter.style.longLine false
@@ -508,9 +506,9 @@ private theorem KHeatTail_opt (C c₀ τ R : ℝ) (hC : 0 < C) (hc₀ : 0 < c₀
 
 end Tail
 
-/-! ## 5. Target helper: the tail of the torus `ℓ¹` distance -/
+/-! ## 5. The tail of the torus `ℓ¹` distance -/
 
-/-- **Tail of the heat kernel** (public helper): `Σ_{|b| ≥ ρ} kBA τ b ≤ 2d e^{-c_T min(ρ²/τ, ρ)}`,
+/-- **Tail of the heat kernel**: `Σ_{|b| ≥ ρ} kBA τ b ≤ 2d e^{-c_T min(ρ²/τ, ρ)}`,
 `|b| = zdistD d L b`, for every `τ > 0`, `ρ ≥ 0`; `c_T` depends on `(d, Λ, κ)` only. -/
 theorem BAP_tail_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ cT : ℝ, 0 < cT ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
@@ -584,7 +582,7 @@ theorem BAP_tail_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < �
         rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, neg_mul]
         ring
 
-/-! ## 6. Target: regime (i) `τ ≤ L²` -/
+/-! ## 6. Regime (i) `τ ≤ L²` -/
 
 section Prefactor
 
@@ -626,7 +624,7 @@ private theorem KHeatTail_half_le (d : ℕ) {τ : ℝ} (hτ : 0 < τ) :
 
 end Prefactor
 
-/-- **Regime (i) `τ ≤ L²`** (twin of `Heat.kProd_le`, `HeatProduct.lean:439`): no floor `L^{-d}`,
+/-- **Regime (i) `τ ≤ L²`** (the analogue of `Heat.kProd_le`, `HeatProduct.lean`): no floor `L^{-d}`,
 Gaussian-then-exponential decay in the torus `ℓ¹` distance. -/
 theorem kBA_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ → ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g E : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
@@ -748,7 +746,6 @@ theorem kBA_le : ∀ d : ℕ, 2 ≤ d → ∀ Λ κ : ℝ, 0 < Λ → 0 < κ →
         rw [this]
         ring
 
-/-! ## 7. Compiled nonempty instances (`d = 3`, `L = 4`, `Λ = 10`, `κ = Im m₀`, flow point `P` of `KKernelInst`) -/
 
 end RBM.BA
 

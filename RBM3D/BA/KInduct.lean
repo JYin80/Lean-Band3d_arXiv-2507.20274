@@ -13,30 +13,27 @@ import RBM3D.BA.GreenSchur
 import RBM3D.BA.KKernel
 
 /-!
-# Stage K, row K10: the base levels and the cut of `K^{(π)}` for the molecule induction
+# The base levels and the cut of `K^{(π)}` for the molecule induction
 
-Ticket T2381 (design BA-DK, `docs/reports/T2360-design.md` §4 row K10, §1 row `KLInduct`, §5;
-supervisor `docs/supervisor/2026-10-10-0350.md` C2, C4).  The BA twin of `Loop/KLInduct.lean`
-§1-§6 (everything except the generic step §7, which K09b restates over abstract data).
+The BA analogue of `Loop/KLInduct.lean` §1-§6 (everything except the generic step, which `Loop/KLIndStepB.lean`
+states over abstract data).
 
-1. The pins `BAKBoundAt` (verbatim: the probe pin `t/T2360:RBM3D/Probe/T2360Pins.lean:38-44`) and
-   `BAKpiBoundAt` (the twin of `KLKpiBoundAt`, no `W`).
-2. The base levels of `BAKsol`: `baKsol_one/two/three` (`𝒦^{(1)} = m(σ)`, `(Kn2sol)`, `(Kn3sol)`),
-   through `BAKsol_isKLoopS`, `baK_unique` against the `baKsolve` witness (0350 C4) and `baTreeRep`
+1. The statements `BAKBoundAt` and
+   `BAKpiBoundAt` (the analogue of `KLKpiBoundAt`, no `W`).
+2. The base levels of `BAKsol`: `baKsol_one`, `baKsol_two` (`𝒦^{(1)} = m(σ)`, (2.71) `Kn2sol`, (2.72) `Kn3sol`),
+   through `BAKsol_isKLoopS`, `baK_unique` against the `baKsolve` witness and `baTreeRep`
    at `n = 3`.
-3. The bounds the induction uses at these levels: `baKBoundAt_one/two/three` (the shape of
+3. The bounds the induction uses at these levels: `baKBoundAt_one`, `baKBoundAt_two`, `baKBoundAt_three` (the shape of
    `BAKBoundAt`).
 4. `baKpi_cut`: `K^{(π)}` at an innermost long edge `J ∈ π`: the outer `BAKpi` on `sigmaOut σ J`,
    the BA chord `tΘ^{(σ_i,σ_j)}` glued to the outer glue leaf (no `S^{(B)}`, no `Θ - 1 = ξ_J SΘ`),
    the inner molecule `Σ^{(∅)}` on `sigmaIn σ J` with the identity as the last leaf.
-   `baKpi_cut_abs` states it over the abstract data of `IndStepAbs`, `baKpi_cut_S` in the shape of
-   `KLKpi_cut` (kernel `S = 1`).  The cut machinery is `baCactus_cut` (`BA/KCactusCut.lean`), the
-   layer bijection is `Flong_eq_iff_cut` and `KLsum_cut`.
+   `baKpi_cut_abs` states it over the abstract data of `IndStepAbs`.  The cut machinery is `baCactus_cut`
+   (`BA/KCactusCut.lean`), the layer bijection is `Flong_eq_iff_cut` and `KLsum_cut`.
 5. The layer `π = ∅`: `baKpi_empty_slice`, `baKpi_empty_short` (the algebra of
-   `KLInduct_Kpi_empty_*`).
-6. Compiled instances at the flow point `P` of `(d, L) = (3, 4)`.
+   `KLInduct_Kpi_empty_slice`, `KLInduct_Kpi_empty_short`).
 
-Public: the declarations above; every other helper is `private` with the stem `KInduct_`.
+The names of the private helpers begin with KInduct_.
 -/
 
 set_option linter.style.longLine false
@@ -46,10 +43,9 @@ namespace RBM.BA
 open RBM RBM.Loop
 open scoped Matrix
 
-/-! ## 1. The pins and the base levels of `BAKsol` -/
+/-! ## 1. The statements and the base levels of `BAKsol` -/
 
-/-- **`BAKBoundAt`** (the BA analogue of `KLBoundAt`, `Loop/KLInduct.lean:89`; verbatim the probe pin
-`t/T2360:RBM3D/Probe/T2360Pins.lean:38`): at `(d, n, Λ, κ)` fixed, for every `τ > 0` one constant `C`, uniform in
+/-- **`BAKBoundAt`** (the BA analogue of `KLBoundAt`, `Loop/KLInduct.lean`): at `(d, n, Λ, κ)` fixed, for every `τ > 0` one constant `C`, uniform in
 `L ≥ 3`, `W ≥ 1`, `g ∈ (0, Λ]`, in the real-axis data `BAReal d L g κ E m` and in the real time `t ∈ [0,1)`:
 `|𝒦^{(n)}_{t,σ,a}| ≤ C L^τ (W^{-d} B_{t,0})^{n-1}`. -/
 def BAKBoundAt (d n : ℕ) (Λ κ : ℝ) : Prop :=
@@ -60,7 +56,7 @@ def BAKBoundAt (d n : ℕ) (Λ κ : ℝ) : Prop :=
         ‖BAKsol d L W (BAMsigma d L (BAMB d L g (E : ℂ) m)) (PropSpin m) t (KLloopOf d L σ a)‖
           ≤ C * (L : ℝ) ^ τ * (((W : ℝ) ^ d)⁻¹ * Bparam d L g t 0) ^ (n - 1)
 
-/-- **`BAKpiBoundAt`** (the BA twin of `KLKpiBoundAt`, `Loop/KLInduct.lean:105`, `(eq:K-pi-bound)`): for every `τ > 0` one
+/-- **`BAKpiBoundAt`** (the BA analogue of `KLKpiBoundAt`, `Loop/KLInduct.lean`, (A.42) `eq:K-pi-bound`): for every `τ > 0` one
 constant `C`, uniform in `L ≥ 3`, `g ∈ (0, Λ]`, the real-axis data `BAReal d L g κ E m`, `t ∈ [0,1)`, `σ`, every layer `π`
 and `a`: `|K^{(π)}_{t,σ,a}| ≤ C L^τ B_{t,0}^{n-1}`.  No `W` (`BAKpi` carries none). -/
 def BAKpiBoundAt (d n : ℕ) [NeZero n] (Λ κ : ℝ) : Prop :=
@@ -83,8 +79,8 @@ theorem baKsol_one (d : ℕ) {κ g : ℝ} (hκ : 0 < κ) (hg : 0 < g) {L : ℕ} 
   rw [hloop]
   exact h
 
-/-- **`(Kn2sol)`** for `BAKsol`: `𝒦^{(2)}_{σ,a} = W^{-d} (Θ_t^{(σ_0,σ_1)} M^{(σ_0,σ_1)})(a_0, a_1)`.  `BAKsol` carries no
-`(Kn2sol)` clause of its own (0350 C4): it is transferred through `baK_unique` from the `baKsolve` witness. -/
+/-- **(2.71) `Kn2sol`** for `BAKsol`: `𝒦^{(2)}_{σ,a} = W^{-d} (Θ_t^{(σ_0,σ_1)} M^{(σ_0,σ_1)})(a_0, a_1)`.  `BAKsol` carries no
+`Kn2sol` clause of its own: it is transferred through `baK_unique` from the `baKsolve` witness. -/
 theorem baKsol_two (d : ℕ) {κ g : ℝ} (hκ : 0 < κ) (hg : 0 < g) {L : ℕ} [NeZero L] (hL : 3 ≤ L) (W : ℕ)
     {E : ℝ} {m : ℂ} (hr : BAReal d L g κ E m) {t : ℝ} (ht : t ∈ Set.Ico (0 : ℝ) 1)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d L) :
@@ -109,8 +105,8 @@ section Calculus
 
 variable {d L : ℕ} [NeZero L]
 
-/-- `Θ^{(s,s')} = (1 - t M^{(s,s')})⁻¹` is invariant under a permutation `e` of the labels fixing every `M(σ)` (a copy of the
-private `KMolecule_theta_perm`, `BA/KMolecule.lean:166`: the conjugation of `Ring.inverse` by a permutation matrix,
+/-- `Θ^{(s,s')} = (1 - t M^{(s,s')})⁻¹` is invariant under a permutation `e` of the labels fixing every `M(σ)` (as the
+private `KMolecule_theta_perm`, `BA/KMolecule.lean`: the conjugation of `Ring.inverse` by a permutation matrix,
 `Matrix.inv_submatrix_equiv`; no invertibility). -/
 private theorem KInduct_theta_perm (e : Zd d L ≃ Zd d L) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (hM : ∀ σ x y, M σ (e x) (e y) = M σ x y) (t : ℝ) (s s' : Bool) (x y : Zd d L) :
@@ -138,8 +134,8 @@ private theorem KInduct_theta_shift (g E : ℝ) (m : ℂ) (t : ℝ) (s s' : Bool
   simp only [Equiv.coe_addRight, add_neg_cancel, ← sub_eq_add_neg] at h
   exact h.symm
 
-/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (`M(-) = (M^{(B)})^*`, `M^{(B)}` symmetric; a copy of the private `BKK_norm_sigma`,
-`BA/KKernel.lean:76`). -/
+/-- `|M(σ)_{ab}| = |M^{(B)}_{ab}|` (`M(-) = (M^{(B)})^*`, `M^{(B)}` symmetric; as the private `BKK_norm_sigma`,
+`BA/KKernel.lean`). -/
 private theorem KInduct_norm_sigma (g E : ℝ) (m : ℂ) (σ : Bool) (a b : Zd d L) :
     ‖BAMsigma d L (BAMB d L g (E : ℂ) m) σ a b‖ = ‖BAMB d L g (E : ℂ) m a b‖ := by
   cases σ
@@ -170,7 +166,7 @@ end Calculus
 
 section Constants
 
-/-- **Properties 4 + 5** (`BAProp5`): every entry of every `Θ_t^{(σ₁,σ₂)}` is `≤ C_d B_{t,0}`: translation invariance,
+/-- **Properties 4 and 5 of Lemma 2.19 (`lem_propTH`)** (`BAProp5`): every entry of every `Θ_t^{(σ₁,σ₂)}` is `≤ C_d B_{t,0}`: translation invariance,
 `B_{t,|a|} ≤ B_{t,0}` and `exp ≤ 1` (`KLIndStepA_decay_le_zero`).  The constant depends on `(d, Λ, κ)` only. -/
 private theorem KInduct_theta_sup {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ Cd : ℝ, 0 < Cd ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
@@ -186,7 +182,7 @@ private theorem KInduct_theta_sup {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 
     (hbd L hL g hg hgΛ E m hr t ht0 ht1 σ₁ σ₂ (y - x))
 
 /-- **Property 5'** (`BAProp5s`) gives an `ℓ¹` bound for a short edge: `Σ_b |Θ_t^{(σ,σ)}(x, b)| ≤ S`, `S = C_s (1 + Λ² expC k c_s)`,
-uniformly in `L` (`d = k + 2`; the port of `KLedge_l1`, `Loop/KLInduct.lean:168`). -/
+uniformly in `L` (`d = k + 2`; as `KLedge_l1`, `Loop/KLInduct.lean`). -/
 private theorem KInduct_theta_l1 {k : ℕ} (hd : 3 ≤ k + 2) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ S : ℝ, 0 < S ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
       haveI : NeZero L := ⟨by omega⟩
@@ -221,7 +217,7 @@ private theorem KInduct_theta_l1 {k : ℕ} (hd : 3 ≤ k + 2) {Λ κ : ℝ} (hΛ
         have : g ^ 2 ≤ Λ ^ 2 := pow_le_pow_left₀ hg.le hgΛ 2
         gcongr
 
-/-- **`ℓ¹` rows and columns of `M(σ)`, uniform in `L`** (`BAMB_row_l1`, `BA/GreenSchur.lean:139`; `M(σ)` and `M^{(B)}` have the same
+/-- **`ℓ¹` rows and columns of `M(σ)`, uniform in `L`** (`BAMB_row_l1`, `BA/GreenSchur.lean`; `M(σ)` and `M^{(B)}` have the same
 moduli, `M^{(B)}` is symmetric): `Σ_y |M(σ)_{xy}| ≤ C_M` and `Σ_y |M(σ)_{yx}| ≤ C_M`, `C_M = c⁻¹ expC k c`, `c = BAct_rate (k+2) Λ κ`. -/
 private theorem KInduct_M_l1 {k : ℕ} {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) :
     ∃ Cm : ℝ, 0 < Cm ∧ ∀ (L : ℕ) (hL : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ → ∀ (E : ℝ) (m : ℂ),
@@ -248,12 +244,12 @@ end Constants
 
 section BaseBounds
 
-/-- `1 ≤ L^τ` for `L ≥ 3`, `τ > 0` (a copy of `KLone_le_rpow`, `Loop/KLInduct.lean:219`; that file is not imported). -/
+/-- `1 ≤ L^τ` for `L ≥ 3`, `τ > 0` (as `KLone_le_rpow`, `Loop/KLInduct.lean`; that file is not imported). -/
 private theorem KInduct_one_le_rpow {L : ℕ} (hL : 3 ≤ L) {τ : ℝ} (hτ : 0 < τ) : (1 : ℝ) ≤ (L : ℝ) ^ τ :=
   Real.one_le_rpow (by exact_mod_cast (by omega : 1 ≤ L)) hτ.le
 
-/-- **`(eq:bcal_k)` at `n = 1`**: `𝒦^{(1)} = m(σ)`, `|m| ≤ 1` (`BAm_norm_le_one`), `L^τ ≥ 1`; no hypothesis on `(d, Λ, κ)`: the third
-clause of `IsKLoopS` of the solution, and `BAKsol = 0` where there is none (the probe's `BAKBoundAt_one`). -/
+/-- **(2.58) `eq:bcal_k` at `n = 1`**: `𝒦^{(1)} = m(σ)`, `|m| ≤ 1` (`BAm_norm_le_one`), `L^τ ≥ 1`; no hypothesis on `(d, Λ, κ)`: the third
+clause of `IsKLoopS` of the solution, and `BAKsol = 0` where there is none. -/
 theorem baKBoundAt_one (d : ℕ) (Λ κ : ℝ) : BAKBoundAt d 1 Λ κ := by
   intro τ hτ
   refine ⟨1, one_pos, ?_⟩
@@ -273,7 +269,7 @@ theorem baKBoundAt_one (d : ℕ) (Λ κ : ℝ) : BAKBoundAt d 1 Λ κ := by
     exact (hs _).trans hL1
   · simpa using (zero_le_one.trans hL1)
 
-/-- **`(eq:bcal_k)` at `n = 2`**: `(Kn2sol)` (`baKsol_two`), the sup bound `|Θ^{(σσ')}(x,y)| ≤ C_d B_{t,0}` (properties 4, 5) and the
+/-- **(2.58) `eq:bcal_k` at `n = 2`**: (2.71) `Kn2sol` (`baKsol_two`), the sup bound `|Θ^{(σσ')}(x,y)| ≤ C_d B_{t,0}` (properties 4, 5) and the
 column sum `Σ_z |M^{(σσ')}_{zy}| = Σ_z K_{zy} = 1`; the loss is `L^τ ≥ 1`. -/
 theorem baKBoundAt_two {d : ℕ} (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) : BAKBoundAt d 2 Λ κ := by
   obtain ⟨Cd, hCd, hsup⟩ := KInduct_theta_sup hd hΛ hκ
@@ -405,7 +401,7 @@ private theorem KInduct_Ksol_three (d : ℕ) {κ g : ℝ} (hκ : 0 < κ) (hg : 0
   rw [baTreeRep d g κ hg hκ L hL W g hg le_rfl E m hr t ht 3 le_rfl σ a, TSP_three, Finset.sum_singleton]
   exact congrArg _ (BACactusVal_three (BAMsigma d L (BAMB d L g (E : ℂ) m)) t σ a)
 
-/-- **`(eq:bcal_k)` at `n = 3`**: `(Kn3sol)` as the one-tree cactus sum; the three leaves `Θ^{(σ_k,σ_{k+1})}`, one of them short
+/-- **(2.58) `eq:bcal_k` at `n = 3`**: (2.72) `Kn3sol` as the one-tree cactus sum; the three leaves `Θ^{(σ_k,σ_{k+1})}`, one of them short
 (a triangle of charges has an equal neighbouring pair): the short leaf is summed (property 5', `ℓ¹ ≤ S`), the two others are bounded in
 sup norm by `C_d B_{t,0}` (properties 4, 5); the `M`-loop is bounded by `1` (Ward row identity) and by two `ℓ¹` rows of `M` (`C_M`).
 The exponent is `2 = n - 1`; the loss is `L^τ ≥ 1`. -/
@@ -477,9 +473,9 @@ section Cut
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] {J : Fin n × Fin n}
 
 /-- The generic value with the last leaf `r` of weight `1` at the label `u`: the sum over the labels `δ` with `δ_r = u` of the value with
-leaf weights `1` times the product of the other leaf weights at `δ`.  The first stage of `(eq:molecule-Kpi)` (the reattachment of the
-leaves to the self-energy, as `KMolecule_gval_eq_sum`, `BA/KMolecule.lean:87`, whose proof is the first `have` here) with the root leaf
-`1` at `u`; the twin of `KLInduct_inner_eq`, `Loop/KLInduct.lean:558`. -/
+leaf weights `1` times the product of the other leaf weights at `δ`.  The first step of (A.40) `eq:molecule-Kpi` (the reattachment of the
+leaves to the self-energy, as `KMolecule_gval_eq_sum`, `BA/KMolecule.lean`, whose proof is the first `have` here) with the root leaf
+`1` at `u`; the analogue of `KLInduct_inner_eq`, `Loop/KLInduct.lean`. -/
 private theorem KInduct_gval_last {Nd Lf Ed : Type*} [Fintype Nd] [DecidableEq Nd] [Fintype Lf] [DecidableEq Lf]
     [Fintype Ed] (r : Lf) (u : Zd d L) (a : Lf → Zd d L) (Lw : Lf → Matrix (Zd d L) (Zd d L) ℂ) (p : Lf → Nd)
     (E : Ed → Matrix (Zd d L) (Zd d L) ℂ) (c q : Ed → Nd) :
@@ -537,8 +533,8 @@ private theorem KInduct_leafW_in (hJ : J.1.val + 2 ≤ J.2.val) (M : Bool → Ma
 `P = 1`, `S = t·1`, `Q = Θ^{(σ_i,σ_j)}` (so `P S Q = tΘ^{(σ_i,σ_j)}` is the weight already on the chord `J` and the update is the identity).
 `S = t·1` collapses the glue labels `w = u`; the outer leaf `Q` is the glue leaf of the outer polygon (`baCactus_leafW_out`), so the outer
 factor is `Γ` of the outer tree at the glue label `u`; the inner polygon has the identity as its last leaf, i.e. the inner value is the sum
-over the labels `δ` with `δ_last = u` of the self-energy of the inner tree times the other leaves (the reversed inner leaf is `1ᵀ = 1`,
-C2: no symmetry of `M` is used). -/
+over the labels `δ` with `δ_last = u` of the self-energy of the inner tree times the other leaves (the reversed inner leaf is `1ᵀ = 1`;
+no symmetry of `M` is used). -/
 private theorem KInduct_tree_cut {F : Finset (Fin n × Fin n)} (hF : KLIsTSP F) (hn : 2 ≤ n) (hJ : J ∈ F)
     (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool) (a : Fin n → Zd d L) :
     BAGamma d L n M t F σ a = ∑ u : Zd d L, (t : ℂ) *
@@ -602,15 +598,15 @@ end Cut
 
 section CutThm
 
-/-- **The cut of `K^{(π)}` at an innermost long edge** (`n ≥ 3`; the BA twin of `KLKpi_cut`, `Loop/KLInduct.lean:606`; a step of `(eq:molecule-Kpi)`, `A_deterministic_estimates.tex:625`, whose long edges `tS^{(B)}Θ_t^{(+,-)}` are `tΘ_t^{(+,-)}` for BA).  If
+/-- **The cut of `K^{(π)}` at an innermost long edge** (`n ≥ 3`; the BA analogue of `KLKpi_cut`, `Loop/KLInduct.lean`; a step of (A.40) `eq:molecule-Kpi`, whose long edges `tS^{(B)}Θ_t^{(+,-)}` are `tΘ_t^{(+,-)}` for BA).  If
 `π = F_long(F₀, σ)` for a tree `F₀` and `J = (i, j) ∈ π` is innermost (no other edge of `π` inside its arc), then
 `K^{(π)}(t,σ,a) = t Σ_u A(u) K^{(π')}(σ_out, a_out(u))`, where `π' = (π ∖ {J})` moved to the outer polygon (`n - (j - i) + 1` vertices, glue
 vertex at `i`, charges `sigmaOut σ J`, labels `BAdeltaOut J a u`), and `A(u)` is the summand, at the root label `u`, of the left side of
 `IndStepAbs` for the inner polygon (`j - i + 1` vertices, charges `sigmaIn σ J`, root `Fin.last`, labels `a_i, …, a_{j-1}`):
 `A(u) = Σ_{δ: δ_last = u} Σ^{(∅)}(δ) ∏_{k ≠ last} Θ^{(σin_k,σin_{k+1})}(a_{i+k}, δ_k)`.  The glue is the BA chord `tΘ^{(σ_i,σ_j)}`, with prefactor
 exactly `t` (no `∏ m(σ_i)`): it is the standard glue leaf `Θ^{(σ_i,σ_j)}` of the outer polygon at the label `u`, so one glue sum replaces the
-band's `Σ_{u,w} ξ_J S^{(B)}_{uw}`; BA has no `Θ - 1 = ξ_J SΘ` (paper-delta candidate `T2381a`).  No hypothesis on `M` or `t` (the reversed
-inner leaf is `1ᵀ = 1`: C2).  `KLsum_cut` and `Flong_eq_iff_cut` (the layer bijection), `KInduct_tree_cut` (one tree). -/
+band's `Σ_{u,w} ξ_J S^{(B)}_{uw}`; BA has no `Θ - 1 = ξ_J SΘ`.  No hypothesis on `M` or `t` (the reversed
+inner leaf is `1ᵀ = 1`).  `KLsum_cut` and `Flong_eq_iff_cut` (the layer bijection), `KInduct_tree_cut` (one tree). -/
 theorem baKpi_cut {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] {J : Fin n × Fin n} (hn : 3 ≤ n)
     (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) (t : ℝ) (σ : Fin n → Bool)
     {F₀ : Finset (Fin n × Fin n)} (hF₀ : F₀ ∈ TSP n) {π : Finset (Fin n × Fin n)} (hπ : KLFlong F₀ σ = π)
@@ -696,7 +692,7 @@ end CutThm
 
 section Abstract
 
-/-- **`baKpi_cut` over the abstract data of `IndStepAbs`** (`Loop/KLIndStepB.lean:77`): the index family `ι` with sizes `L`, couplings `g`,
+/-- **`baKpi_cut` over the abstract data of `IndStepAbs`** (`Loop/KLIndStepB.lean`): the index family `ι` with sizes `L`, couplings `g`,
 energies `E`, the self-energy `m`, times `t`, the molecule weight `Sig = BASig` and the leaf edges `TH i = Θ^{(·,·)}` of the BA data.  The
 summand `A(u)` of the cut is, verbatim, the summand of the left side of `IndStepAbs d (KLwIn J + 1) L Bp (BASig d (KLwIn J + 1) L g E m t) TH`
 at the root `r = Fin.last _` of the charges `sigmaIn σ J` (`σin_last = σ_j ≠ σ_i = σin_0` when `J` is long, as `J ∈ KLFlong F₀ σ`) and the labels
@@ -724,7 +720,7 @@ section Empty
 
 /-- **`K^{(∅)}` through a root leaf `r`**: `K^{(∅)}(σ,a) = Σ_b Θ_t^{(σ_r,σ_{r+1})}(a_r, b) X_b` with
 `X_b = Σ_{δ_r = b} Σ^{(∅)}(δ) ∏_{i ≠ r} Θ_t^{(σ_i,σ_{i+1})}(a_i, δ_i)`, the summand of `IndStepAbs` (`baKpi_eq_sum_SigmaPi` and the fibres of
-`δ ↦ δ_r`; the BA twin of `KLInduct_Kpi_empty_slice`, `Loop/KLInduct.lean:781`). -/
+`δ ↦ δ_r`; the BA analogue of `KLInduct_Kpi_empty_slice`, `Loop/KLInduct.lean`). -/
 theorem baKpi_empty_slice {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (t : ℝ) (σ : Fin n → Bool) (a : Fin n → Zd d L) (r : Fin n) :
     BAKpi d L n M t σ a ∅ =
@@ -741,8 +737,8 @@ theorem baKpi_empty_slice {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] (M : Bool 
   ring
 
 /-- **The layer `π = ∅` when every leaf has an `ℓ¹` bound**: `|K^{(∅)}| ≤ C_Σ S^n` from the molecule bound `|Σ^{(∅)}| ≤ C_Σ` and
-`Σ_b |Θ_t^{(σ_v,σ_{v+1})}(x, b)| ≤ S` for every leaf `v` and label `x` (the BA twin of `KLInduct_Kpi_empty_short`, `Loop/KLInduct.lean:799`;
-used when every leaf is short, `σ_v = σ_{v+1}`, by property 5', `KInduct_theta_l1`).  The molecule bound is K07's `(eq:molecule-decay)`. -/
+`Σ_b |Θ_t^{(σ_v,σ_{v+1})}(x, b)| ≤ S` for every leaf `v` and label `x` (the BA analogue of `KLInduct_Kpi_empty_short`, `Loop/KLInduct.lean`;
+used when every leaf is short, `σ_v = σ_{v+1}`, by property 5', `KInduct_theta_l1`).  The molecule bound is (A.44) `eq:molecule-decay`. -/
 theorem baKpi_empty_short {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] (M : Bool → Matrix (Zd d L) (Zd d L) ℂ)
     (t : ℝ) (σ : Fin n → Bool) (a : Fin n → Zd d L) {Cm S : ℝ} (hCm : ∀ δ, ‖BASigmaPi d L n M t σ ∅ δ‖ ≤ Cm)
     (hS : ∀ (v : Fin n) (x : Zd d L), ∑ b, ‖BAThetaOf M t (σ v) (σ (v + 1)) x b‖ ≤ S) :
@@ -771,13 +767,5 @@ theorem baKpi_empty_short {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n] (M : Bool 
 
 end Empty
 
-/-! ## 6. Compiled nonempty instances
-
-Datum: the merged flow point `P` of `(d, L) = (3, 4)` (`BA/MFixedPoint.lean:893`; `P.real : BAReal 3 4 P.g0 P.m0.im P.E P.m0`,
-`0 < P.g0 ≤ 10`), `Λ = 10`, `κ = Im m₀ > 0`, `W = 2` (`W^d = 8`), `t = 1/2`.  The base levels at `n = 1, 2, 3`: every deterministic hypothesis
-is discharged (`baKsolve`, `baTreeRep` and the properties 5, 5' of `lem_propTH` are theorems on `main`).  The cut at `n = 4`,
-`π = {(0,2)}`, `σ = (+,+,-,+)` (`TSP 4 = {∅, {(0,2)}, {(1,3)}}`: an inner and an outer triangle), and at `n = 5`, `π = {(0,2),(2,4)}`,
-`σ = (+,+,-,+,+)` (mixed charges, both edges long and innermost; at either cut an inner triangle and an outer quadrilateral, `π' = {(1,3)}`
-resp. `{(0,2)}`), with distinct labels of `Z_4^3`.  Only `IndStepAbs` (K09a's pin) is a hypothesis, of the bridge example. -/
 
 end RBM.BA

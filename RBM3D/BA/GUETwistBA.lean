@@ -8,33 +8,32 @@ import RBM3D.BA.GUEOneLoop
 import RBM3D.BA.TwistAvgA2
 
 /-!
-# BA-C5 row b′, part 1: the twisted 1-loop law on the GUE grid at block Anderson, Steps 1-3
+# The twisted 1-loop law on the GUE grid at block Anderson, the moment identity
 
-Ticket T2519 (row b′; Amend 1 item 5, Amend 2 items 1-3, Amend 3 items 2-3; design gate D1 (i)
-signed by `docs/reports/T2519-1a-audit.md`, probe `t/T2519` b992c2e7).  New BA leaf: no merged
-file is edited.  The target `gueGrid_twistBA` (text `T2519_HoffBA`) is in `BA/GUETwistBA2`; this
-file has Steps 1-3 of Lemma T.7 (TL1, `docs/tickets/T2398-TL-proofs.md:64-78`; its input
-Lemma 8.3 is `lem:propM`, `paper/tex/7_8_light_weight.tex:1846-1910`) on the one-time Gaussian
+The statement `gueGrid_twistBA` is in `BA/GUETwistBA2`; this
+file has the first three steps of the proof of Lemma 8.6 (`lem:TL1_BA`, the twisted averaged law; its input
+is Lemma 8.3 `lem:propM`) on the one-time Gaussian
 law `law v` of the grid path, `v_c = t₁ gvar_c + c₀ w_c`, `Ŝ = t₁ S^{(B)}(0) + σ`
 (`S^{(B)}(0) = 1`):
 
 * §1 the twist matrix `Π_{qa}`, `Π Π^* = W^d E_a`; §2 Cauchy-Schwarz for traces; §3 the
   Hilbert-Schmidt bounds `GUETwistBA_RB1`, `GUETwistBA_RB2` of the two derivative terms against
-  2- and 4-loops (Step 3); §4 the pair contraction `Σ_c v_c tr(A B_c) tr(C B_c)` (from
+  2- and 4-loops; §4 the pair contraction `Σ_c v_c tr(A B_c) tr(C B_c)` (from
   `sum_coordinateBlock_trace_pair` and `OneLoop_sum_gue_block` at matrix units) and its two
   forms `𝒞₁`, `𝒞₂`; §5 the Stein identity with a test function and the Stein defect;
   §6 `Φ_p(x) = x^{p-1} x̄^p`; §7 the pointwise identity `G - M = -M(u m + X) G` for the twisted
-  trace; §8 the vocabulary `GUETwistBA_Tm`, `_Dm`, `_R1m`, `_R2m`, `_g1`-`_g3`;
-  §9 **`GUETwistBA_momentId`** (Steps 1-2: `𝔼|T_{qa}|^{2p} = 𝔼[Σ_{p'} M_{qp'} D_{p'}
+  trace; §8 the vocabulary `GUETwistBA_Tm`, `GUETwistBA_Dm`, `GUETwistBA_R1m`, `GUETwistBA_R2m`,
+  `GUETwistBA_g1`, `GUETwistBA_g2`, `GUETwistBA_g3`;
+  §9 **`GUETwistBA_momentId`** (the moment identity: `𝔼|T_{qa}|^{2p} = 𝔼[Σ_{p'} M_{qp'} D_{p'}
   (M_{p'a} + T_{p'a}) Φ_p(T_{qa}) + (p-1) R₁ T^{p-2} T̄^p + p R₂ |T|^{2p-2}]`);
-  §10 the envelope and the good-event bounds of `D`, `R₁`, `R₂`; §11 the PB interface
+  §10 the envelope and the good-event bounds of `D`, `R₁`, `R₂`; §11 the interface to the path bounds
   `GUETwistBA_good` (`GUEPathBoundsBA` `lk 1, 2, 4`, `localLaw`, the K-bound and `Kt = m` give
   the good event off a set of probability `≤ N^{-D}`); §12 the identity
-  `t_{aq} - M^{(++)}_{aq} = M^{(B)}_{aq} T_{qa}` (T2517 `(a)` row 8) and the entrywise bound of
+  `t_{aq} - M^{(++)}_{aq} = M^{(B)}_{aq} T_{qa}` and the entrywise bound of
   `T_{qa}`.
-Private pieces of `BA/GUEOneLoop`, `Chain/ExpAvgGen` and `GUEPhase/OneLoop` are read by
-`open private`; the pure-algebra lemmas `TwistAvgA2_cs`, `lwWx_Gres_conjTranspose` are read by
-name.  Helpers carry the stem `GUETwistBA_`.
+Private pieces of `BA/GUEOneLoop`, `Chain/ExpAvgGen` and `Universality/GUEPhase/OneLoop` are used through
+`open private`; the pure-algebra lemmas `TwistAvgA2_cs`, `lwWx_Gres_conjTranspose` are used by
+name.  The names of the helpers begin with GUETwistBA_.
 -/
 
 set_option linter.style.longLine false
@@ -632,7 +631,7 @@ theorem GUETwistBA_integrable_trX (v : CoordF d L W → ℝ≥0) {H₀b : Matrix
   rw [norm_mul]
   exact mul_le_mul (hC1 ω) (hCF ω) (norm_nonneg _) ((norm_nonneg _).trans (hC1 ω))
 
-/-- **The Stein identity with a test function** (twin of `GUEOneLoop_stein_trace`, with the extra factor `F`): for a
+/-- **The Stein identity with a test function** (the analogue of `GUEOneLoop_stein_trace`, with the extra factor `F`): for a
 continuous bounded `F` with the coordinate derivatives `F'_c`,
 `𝔼[tr(X G K) F] = -W^d Σ_{p,s} Ŝ_{ps} 𝔼[tr(G K E_p) tr(G E_s) F] + Σ_c v_c 𝔼[tr(B_c G K) F'_c]`. -/
 theorem GUETwistBA_stein_F {t1 c0 σ : ℝ} (hσ : σ = c0 * (W : ℝ) ^ d) (v : CoordF d L W → ℝ≥0)
@@ -929,13 +928,13 @@ def GUETwistBA_Dm (d L W : ℕ) [NeZero L] [NeZero W] (t1 σ : ℝ) (m : ℂ) (p
     (Gm : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ :=
   ∑ s : Zd d L, ((t1 : ℂ) * SB d L 0 p' s + (σ : ℂ)) * (Matrix.trace (Gm * Eblk d L W s) - m)
 
-/-- The derivative term `R₁ = W^{-2d} Σ_{p'} M_{qp'} Σ_s Ŝ_{p's} tr(Π_{p'a} G Π_{qa} · G E_s G)` (`𝒮₁` of T.7, grid profile). -/
+/-- The derivative term `R₁ = W^{-2d} Σ_{p'} M_{qp'} Σ_s Ŝ_{p's} tr(Π_{p'a} G Π_{qa} · G E_s G)` (`𝒮₁` of the proof of Lemma 8.6, grid profile). -/
 def GUETwistBA_R1m (d L W : ℕ) [NeZero L] [NeZero W] (t1 σ : ℝ) (Mbl : Zd d L → Zd d L → ℂ) (q a : Zd d L)
     (Gm : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ :=
   (((W : ℂ) ^ d)⁻¹) ^ 2 * ∑ p' : Zd d L, Mbl q p' * ∑ s : Zd d L, ((t1 : ℂ) * SB d L 0 p' s + (σ : ℂ)) *
     Matrix.trace (GUETwistBA_Pi d L W p' a * Gm * GUETwistBA_Pi d L W q a * (Gm * Eblk d L W s * Gm))
 
-/-- The derivative term `R₂ = W^{-2d} Σ_{p'} M_{qp'} Σ_s Ŝ_{p's} tr(Π_{p'a} G^* Π_{qa}^* · G^* E_s G)` (`𝒮₂` of T.7). -/
+/-- The derivative term `R₂ = W^{-2d} Σ_{p'} M_{qp'} Σ_s Ŝ_{p's} tr(Π_{p'a} G^* Π_{qa}^* · G^* E_s G)` (`𝒮₂` of the proof of Lemma 8.6). -/
 def GUETwistBA_R2m (d L W : ℕ) [NeZero L] [NeZero W] (t1 σ : ℝ) (Mbl : Zd d L → Zd d L → ℂ) (q a : Zd d L)
     (Gm : Matrix (Vtx d L W) (Vtx d L W) ℂ) : ℂ :=
   (((W : ℂ) ^ d)⁻¹) ^ 2 * ∑ p' : Zd d L, Mbl q p' * ∑ s : Zd d L, ((t1 : ℂ) * SB d L 0 p' s + (σ : ℂ)) *
@@ -1010,7 +1009,7 @@ open scoped Matrix.Norms.L2Operator
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- The centred twisted block trace `T_{qa}(ω) = W^{-d} tr(G Π_{qa}) - M^{(B)}_{qa}` (the fine-lattice form is the probe's `twTrBA`, `t/T2519` b992c2e7). -/
+/-- The centred twisted block trace `T_{qa}(ω) = W^{-d} tr(G Π_{qa}) - M^{(B)}_{qa}`. -/
 def GUETwistBA_T (d L W : ℕ) [NeZero L] [NeZero W] (H₀b : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ)
     (Mbl : Zd d L → Zd d L → ℂ) (q a : Zd d L) (ω : Ω d L W) : ℂ :=
   GUETwistBA_Tm d L W Mbl q a (Gres (H₀b + HflowBlock d L W 1 ω) z true)
@@ -1271,7 +1270,7 @@ theorem GUETwistBA_pointwise {t1 c0 σ u : ℝ} (hσ : σ = c0 * (W : ℝ) ^ d) 
     (a1 := x ^ (p - 2) * star x ^ p) (bb := (((‖x‖ ^ (2 * p - 2) : ℝ)) : ℂ)) (pp := (p : ℂ)) rfl rfl
   linear_combination this
 
-/-- **The `p`-th moment identity of the twisted trace under the one-time grid law** (Steps 1-3 of Lemma T.7, grid form): for
+/-- **The `p`-th moment identity of the twisted trace under the one-time grid law** (Steps 1-3 of the proof of Lemma 8.6, grid form): for
 `p ≥ 1` and `G = (H₀ + X - z)⁻¹`, `X ~ law v` (variances `v_c = t₁ gvar_c + c₀ w_c`),
 `𝔼|T_{qa}|^{2p} = 𝔼[Σ_{p'} M_{qp'} D_{p'} (M_{p'a} + T_{p'a}) Φ_p(T_{qa}) + (p-1) R₁ T^{p-2} T̄^p + p R₂ |T|^{2p-2}]`. -/
 theorem GUETwistBA_momentId {t1 c0 σ u : ℝ} (hσ : σ = c0 * (W : ℝ) ^ d) (hu : t1 + (L : ℝ) ^ d * σ = u) (hL : 3 ≤ L)
@@ -1676,7 +1675,7 @@ theorem GUETwistBA_Good_of_loops (sz : Sizes d) {g E t1 t0 : ℕ → ℝ} {m : �
           nlinarith [mul_le_mul_of_nonneg_left (show Λ ^ 4 ≤ Λ ^ 3 by nlinarith [pow_nonneg hΛ0 3]) hNε.le]
 
 
-/-- **The PB interface** (R1's inputs, `T2519_PBBA` at the grid): from `GUEPathBoundsBA` (`lk 1, 2, 4` and `localLaw`), the K-bound at the
+/-- **The interface to the path bounds**: from `GUEPathBoundsBA` (`lk 1, 2, 4` and `localLaw`), the K-bound at the
 grid times and `Kt = m` on 1-loops, there is, eventually in `n`, a measurable exceptional set `B` of probability `≤ N^{-D}` off which
 `GUETwistBA_Good` holds. -/
 theorem GUETwistBA_good (sz : Sizes d) {g E t1 t0 : ℕ → ℝ} {m : ℕ → ℂ} {K : ℕ → ℕ} {n0 : ℕ}
@@ -1728,7 +1727,7 @@ section Ident
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- `Σ_{x∈[a]} f x = Σ_o f (a, o)`: a block as its offsets (probe `t/T2519` b992c2e7 `probe_iblk`). -/
+/-- `Σ_{x∈[a]} f x = Σ_o f (a, o)`: a block as its offsets. -/
 theorem GUETwistBA_iblk (a : Zd d L) (f : Idx d L W → ℂ) :
     ∑ x ∈ Iblk d L W a, f x = ∑ o : Fin (W ^ d), f ((splitEquiv d L W).symm (a, o)) := by
   have hs : ∀ x ∈ Iblk d L W a, (splitEquiv d L W).symm (a, (split d L W x).2) = x := fun x hx => by
@@ -1751,7 +1750,7 @@ theorem GUETwistBA_Mres_entry (g : ℝ) (E m : ℂ) (hw : (E + m).im ≠ 0) (b b
   change split d L W _ = _ at h1 h2
   rw [h1, h2]
 
-/-- **The identity** (T2517 `(a)` row 8; probe `probe_ident`): `t_{aq} - M^{(++)}_{aq} = M^{(B)}_{aq} T_{qa}` for every matrix `G`,
+/-- **The identity** `t_{aq} - M^{(++)}_{aq} = M^{(B)}_{aq} T_{qa}` for every matrix `G`,
 `T_{qa} = W^{-d} Σ_o (G - M)_{(q,o),(a,o)}` (here in the block form `GUETwistBA_Tm` of `blockMat G`). -/
 theorem GUETwistBA_ident (g : ℝ) (E m : ℂ) (hw : (E + m).im ≠ 0) (G : Matrix (Idx d L W) (Idx d L W) ℂ) (a q : Zd d L) :
     ((W : ℂ) ^ d)⁻¹ * ∑ x ∈ Iblk d L W a, ∑ y ∈ Iblk d L W q, Mres ((g : ℂ) • PsiI d L W) E m x y * G y x -

@@ -10,19 +10,18 @@ import RBM3D.BA.GreenSchur
 import RBM3D.BA.CombesThomas
 
 /-!
-# The BA stability bound and the `M`, `Θ` row facts (BA-G3b)
+# The BA stability bound and the `M`, `Θ` row facts
 
-Ticket T2400 (design gate `docs/reports/T2390-prove.md` (G) G.2 (S1)-(S3), G.8 row G3b, (a′) D3.4).
-Deterministic inputs of G3a's coupled bound (R4) and of G4; paper `7_8:1888-1902`, `A:23-41`.
+Deterministic inputs of the coupled bound `GreenCore_coupled` and of the off-diagonal decay `BA/GreenOff.lean`; paper:
+Lemma 8.3 (`lem:propM`) with (8.5) `eq:WardM`, (8.6) `Mbound_AO`, (8.7) `Mbound_AO2`, and Subappendix A.1 (`sec:pf_propTH`).
 
-* Section 1 (S1): `baStab_of_real`, the body of the `BAStab` Prop of `BA/GreenCore.lean` with `K = 16 κ⁻⁴`:
+* Section 1: `baStab_of_real`, the body of the `BAStab` statement of `BA/GreenCore.lean` with `K = 16 κ⁻⁴`:
   if `|v_a - t Σ_b M^{(++)}_{ab} v_b| ≤ B` for all `a` then `|v_a| ≤ 16 κ⁻⁴ B`, at `BAReal` data, `0 ≤ t ≤ 1`
   (no `g`, no `Λ`, no `L`).  `BAStab` itself is not defined here.
-* Section 2 (S3): the row facts of `M`: `ρ` (`ℓ¹` column), `ρ₂ ≤ 1`, the weighted row `ρ̂ ≤ c₀⁻¹ S_{c₀/2}`
+* Section 2: the row facts of `M`: `ρ` (`ℓ¹` column), `ρ₂ ≤ 1`, the weighted row `ρ̂ ≤ c₀⁻¹ S_{c₀/2}`
   (block and fine lattice).
-* Section 3 (S2): the weighted `ℓ¹` row bound of `Θ_t` with `C_Θ̂ = C₅ (1 + Λ² S_{2μ/3})`; the translation
-  invariance of `Θ` is `baP8_BATheta_shift` (`BA/Prop6Path.lean`), made public in this ticket.
-* Section 4: compiled nonempty instances (`d = 3`, the flow datum of `sz0` at `n = 0`, `L = 4`, `t = 1/2`).
+* Section 3: the weighted `ℓ¹` row bound of `Θ_t` with `C_Θ̂ = C₅ (1 + Λ² S_{2μ/3})`; the translation
+  invariance of `Θ` is `baP8_BATheta_shift` (`BA/Prop6Path.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -37,9 +36,9 @@ namespace RBM.BA
 
 open RBM RBM.Gauss
 
-/-! ## 1. (S1) The stability bound `K = 16 κ⁻⁴` -/
+/-! ## 1. The stability bound `K = 16 κ⁻⁴` -/
 
-/-- **(S1)** at the real axis: if `|v_a - t Σ_b M^{(++)}_{ab} v_b| ≤ B` for all `a` then `|v_a| ≤ 16 κ⁻⁴ B`.
+/-- **The stability bound** at the real axis: if `|v_a - t Σ_b M^{(++)}_{ab} v_b| ≤ B` for all `a` then `|v_a| ≤ 16 κ⁻⁴ B`.
 The body of `BAStab d L g E m t (16 κ⁻⁴)`.  Proof at a maximiser `a₀` of `|v|`: `M^{(++)}_{a₀a₀} = m²`
 (`BAMss_ss_diag`), `Σ_{b≠a₀} |M^{(++)}_{a₀b}| = 1 - |m|²` (`BAMss_row_offdiag_sum`) and
 `ε ≤ |1 - t m²|`, `1 - |m|² ≤ (1 - ε)|1 - t m²|` (`BAoffDiag_scalar`, `ε = κ²/4`). -/
@@ -104,7 +103,7 @@ theorem baStab_of_real (d L : ℕ) [NeZero L] (g κ E : ℝ) (m : ℂ) (hκ : 0 
         norm_num
     _ ≤ 16 * κ⁻¹ ^ 4 * B := mul_le_mul_of_nonneg_left h5 (by positivity)
 
-/-! ## 2. (S3) The row facts of `M`
+/-! ## 2. The row facts of `M`
 
 `c₀ = BAct_rate d Λ κ`, `S_c = expC (d - 2) c ≥ Σ_x e^{-c|y-x|}`.  All uniform in `L` (and in `W`). -/
 
@@ -144,15 +143,15 @@ theorem baM_rho2 (g E : ℝ) (m : ℂ) (h : BASelf d L g (E : ℂ) m) (a c : Zd 
 
 end Rows
 
-/-! ## 3. (S2) The weighted `ℓ¹` row bound of `Θ_t`
+/-! ## 3. The weighted `ℓ¹` row bound of `Θ_t`
 
-Translation invariance: `baP8_BATheta_shift` (`BA/Prop6Path.lean`, made public by this ticket):
+Translation invariance: `baP8_BATheta_shift` (`BA/Prop6Path.lean`):
 `Θ_t(a + r, b + r) = Θ_t(a, b)`. -/
 
-/-- `c_λ = min (c₀/12) (μ/6)`, `c₀ = BAct_rate`, `μ = BAp5s_rate` (T2390 (a′) D3.4). -/
+/-- `c_λ = min (c₀/12) (μ/6)`, `c₀ = BAct_rate`, `μ = BAp5s_rate`. -/
 def GreenStab_clam (d : ℕ) (Λ κ : ℝ) : ℝ := min (BAct_rate d Λ κ / 12) (BAp5s_rate d Λ κ / 6)
 
-/-- `C_Θ̂ = C₅ (1 + Λ² S_{2μ/3})`, `C₅ = BAp5s_C`, `S_c = expC (d - 2) c` (T2390 (a′) D3.4). -/
+/-- `C_Θ̂ = C₅ (1 + Λ² S_{2μ/3})`, `C₅ = BAp5s_C`, `S_c = expC (d - 2) c`. -/
 def GreenStab_CTheta (d : ℕ) (Λ κ : ℝ) : ℝ :=
   BAp5s_C d Λ κ * (1 + Λ ^ 2 * expC (d - 2) (2 * BAp5s_rate d Λ κ / 3))
 
@@ -251,10 +250,5 @@ theorem baTheta_weighted_l1 (hd : 2 ≤ d) (hL : 3 ≤ L) (Λ g κ E : ℝ) (m :
 
 end Theta
 
-/-! ## 4. Compiled nonempty instances (`d = 3`, the flow datum of `sz0` at `n = 0`)
-
-`L = 4` (`sz0_values.1`), `g₀ = BAflowLam0 sz0 zSeq 0 ∈ (0, 1/64]`, `κ = 1/2`, `Λ = 1`, `t = 1/2`;
-`BAReal` is `BAflow_real` at the merged flow `flow_sz0` (`BA/FlowPins.lean`), so no external hypothesis:
-every deterministic hypothesis is discharged.  `card (Zd 3 4) = 64`. -/
 
 end RBM.BA
