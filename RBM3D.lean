@@ -32,7 +32,6 @@ import RBM3D.Loop.KBound
 import RBM3D.Graph.ScalingOrder
 import RBM3D.Graph.Expansions
 import RBM3D.Test.Axioms
-import RBM3D.Test.AuditNegative
 import RBM3D.Defs.Sizes
 import RBM3D.Gauss.FineModel
 import RBM3D.Gauss.LinearForm
