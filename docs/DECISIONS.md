@@ -3841,3 +3841,14 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (6) **辅助工具**（调度写，非 Lean）：`docs/claude-team/tools/texref.py`（把注释里的投稿 TeX 行号 `3_5:1234` 译成最终论文的 label 与编号）、`docs/claude-team/tools/paper-labels.tsv`（最终 PDF 的 623 个 label，取自 main.aux）。注释清理票用。
 - (7) 返工账补齐 T2497–T2518（21 行）。计数：BA-D 1 / ≈5。H336。下一节 §372，下一张票号 T2525，下一条 H337，下一条 paper-delta D755。
 
+## §372 — 监督 2346 PASS：BA-D 开（BAD-C1–C5，关闭条件 (i)–(ix)）；T2524 Amend 1；审计票时机更正 C1（总调度 V5，2026-10-16 23:59 UTC）
+
+- (1) **监督 2346 PASS**（REQ BAanyD 已 done）：BA-D 开，预测 ≈ 5（4–8），**旗标 10、预测 ≥ 8 发 REQ、用到 12 未关闭建议 HOLD**（BAD-C1）。仍判为覆盖缺口、不是数学缺口：U5 的 d = 3 只在 9 个文件里；导入的文件里没有非实例的 `Sizes 3` 声明；收尾指数不含 d。BA 计 **205**；装配票记在 BA-D，MA 保持 9 关闭。
+- (2) **关闭条件**：(i) `baStep5III_holds_any (d) (hd : 3 ≤ d) : STStep5IIIgL d …`（`baThm27L_any` 的 `h5` 的精确类型，前提只有 `3 ≤ d`）；(ii) `Thm27 := ∀ d, 3 ≤ d → BAThm27L d`、`final_shape` 只有 `UNL32`，`#print axioms` 只三条；(iii) `baStep5III_holds`、`baThm27L_three`、`Thm27_of_L32` 的 d = 3 内容一行恢复，FinalShape 与 MAPins 的 d = 3 实例照编；(iv) `band_terminal`、`bUniv_holds` 公理不变；(v) D723 标「撤回（D754）」，`Main/FinalShape`、`BA/UNBUniv` 文档串不再说 d = 3 是决定 B；(vi) 每次合并登记扫描 `unregistered: []`，关闭时 BA-D 不留 owed 行；(vii) 一个 d = 4 实例（`Sizes 4` 数据 + `Admissible` + `Thm27` 的 d = 4 分量只带 `UNL32`；超过约 150 行则只要 `Sizes 4` + `Admissible`）；(viii) BA-D 后的 DeadDecls 重跑把新 `Thm27` 的产出者与 (iii) 的 d = 3 推论列为根；(ix) 装配票的检查文件在 1b 前钉 `Thm27`、`final_shape`、`baStep5III_holds_any` 的精确类型。
+- (3) **BAD-C2**（T2523 接口）：T2524 报告标出它引用的 U5 链外名字是否被 T2523 删；1a-audit 在 T2523 合并后的 `main`（否则 afab243f）上自己重做普查；行若需要被删的声明，从 e3540151 原样恢复并计价，不要 REQ。**BAD-C3**：(c) 项改到 U5 外的陈述、U5 外有只在 d = 3 合并的输入、预测 ≥ 8，任一出现 → 开行前发 REQ。**BAD-C4**：价相当时就地推广优先；就地行等 T2523 合并后开。
+- (4) **更正 C1（BAD-C5）**：公开版公理审计票等 **BA-D 装配票合并后** 再放（它去掉登记扫描，而扫描是 (vi) 的检查；它也读 `final_shape`）。§371 (4) 里「T2523 合并后先放审计票」作废。注释票照 §371 (4)：BA-D 文件以外的可以并行；1a-audit 之前 BA-D 文件暂定为 9 个 U5 文件、`BA/UNBUniv`、`Main/FinalShape`、`Endpoints`、`BA/MAPins`，1a-audit 后按 D4 的行文件表加装配票的文件；注释票已改过的文件若被 BA-D 行点名，注释票让路（rebase），BA-D 行不让。
+- (5) MNC-C1（2046）在装配票合并前继续有效。
+- (6) **T2524 Amend 1**（监督 O2）：BAD-C2 (a)–(c)、(vii) 的价、BAD-C3 一节、BAD-C4、装配票要钉的精确陈述。不重开：1a 还在跑就由证明者补进报告，1a-audit 逐条查，缺项按规则 (B) 修一次。H337。
+- (7) 教训（监督 Q1，待 TEAM §10）：设计门的票要写明目标的维数量词；只做某一个 d 是覆盖范围的决定，开行之前交 Jun。
+- (8) 计数：BA 205；BA-D 1 / ≈5。下一节 §373，下一张票号 T2525，下一条 H338，下一条 paper-delta D755。
+
