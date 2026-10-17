@@ -7,22 +7,15 @@ import RBM3D.Induction.Step2Defs
 import RBM3D.Induction.ScaleFacts
 
 /-!
-# ST2-02 (ticket T2071): the real-number core of Step 2 of `lem:main_ind`
+# The real-number core of Step 2 of `lem:main_ind`
 
-Moved from the T2039 design probe (`git show 0362cbc:RBM3D/Probe/T2039Pins.lean`), sections 3-8
-(probe lines 819-2127): the discrete Gronwall inequality and the stopped bootstrap (section 3),
-the tail functions along the flow (section 4), the transfer between the single-time model and the
-grid walk through the merged `transferLaw` (section 5), the engine of the self-improving estimate
-and the closure arithmetic (section 6), the good event `STGoodAt` of one self-improving step and
-`ST_good_engine` (section 8).  Paper: `paper/tex/3_5_Loop_Hierarchy.tex:493-577`.
-
-Differences from the probe text: the namespace `RBM.Probe.T2039` of sections 3-7 is `RBM.Gauss.Sizes`
-(as in section 8 of the probe), the `open ... RBM.Probe.T2039` of section 8 is dropped, and the probe
-section 7 (`ST2_Bctl_pos`, `ST2_Bctl_mono`) is replaced by the merged `STBctl_pos`, `STBctl_mono`
-(`Induction/ScaleFacts.lean`), so that the six lines using them are renamed.  Nothing else is changed.
-The final section `Instances` (new, not from the probe) holds one compiled nonempty `example` per
-theorem, at `d = 3` (`sz0`, `n = 100` for the size-dependent ones); in the `ST_good_engine` example
-the pin `STNewKLKAt` and the good event `STGoodAt` stay hypotheses.
+Paper: arXiv:2507.20274, the proof of Step 2 (Subsection 3.3, `subsec:step2_pf`).  The file
+contains the discrete Gronwall inequality and the stopped bootstrap (section 3), the tail
+functions along the flow (section 4), the transfer between the single-time model and the grid
+walk through `transferLaw` (section 5), the engine of the self-improving estimate and the
+closure arithmetic (section 6), the good event `STGoodAt` of one self-improving step and
+`ST_good_engine` (section 8).  The scale facts `STBctl_pos`, `STBctl_mono` are those of
+`Induction/ScaleFacts.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -34,10 +27,11 @@ open scoped NNReal ENNReal
 
 /-! ## 3. Deterministic core of the Step 2 argument (real numbers only)
 
-2.1 the discrete Grönwall inequality (`Gronwall_inequality`, `3_5:493`), 2.2 the stopped bootstrap
-(`eq:def2_stopping`, `3_5:533`, and the closing paragraph `3_5:568`): the stopping index never fires
-if the Grönwall bound stays strictly below the threshold, 2.3 the logarithmic time sum (the left
-Riemann sum of `1/(1-u)`), which turns `exp(Δ Σ C/(1-u_j))` into `((1-s)/(1-u))^C`. -/
+(i) the discrete Grönwall inequality ((3.42) `Gronwall_inequality`), (ii) the stopped bootstrap
+((3.49) `eq:def2_stopping` and the closing paragraph of the proof of Step 2): the stopping index
+never fires if the Grönwall bound stays strictly below the threshold, (iii) the logarithmic time
+sum (the left Riemann sum of `1/(1-u)`), which turns `exp(Δ Σ C/(1-u_j))` into
+`((1-s)/(1-u))^C`. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -50,7 +44,7 @@ theorem ST_one_le_prod {k : ℕ} {Δ : ℝ} {β : ℕ → ℝ} (hΔ : 0 ≤ Δ) 
         Finset.prod_le_prod₀ (fun _ _ => zero_le_one)
           (fun j hj => by nlinarith [mul_nonneg hΔ (hβ j (Finset.mem_range.mp hj))])
 
-/-- **Discrete Grönwall** (`Gronwall_inequality`, `3_5:493`, on a grid with step `Δ ≥ 0`): if
+/-- **Discrete Grönwall** ((3.42) `Gronwall_inequality`, on a grid with step `Δ ≥ 0`): if
 `J_k ≤ α_k + Δ Σ_{j<k} β_j J_j` for `k ≤ m`, with `α` nondecreasing, `β, J ≥ 0`, then
 `J_k ≤ α_k Π_{j<k} (1 + Δ β_j)` for `k ≤ m`. -/
 theorem ST_gronwall {m : ℕ} {Δ : ℝ} (hΔ : 0 ≤ Δ) {α β J : ℕ → ℝ}
@@ -90,7 +84,7 @@ theorem ST_gronwall {m : ℕ} {Δ : ℝ} (hΔ : 0 ≤ Δ) {α β J : ℕ → ℝ
   have h2 := hS k hk
   nlinarith
 
-/-- **The stopped bootstrap** (`eq:def2_stopping`, `3_5:533`; the closing paragraph `3_5:568`):
+/-- **The stopped bootstrap** ((3.49) `eq:def2_stopping`; the closing paragraph of the proof of Step 2):
 `τ ≤ K` is the stopping index of a process `J` against the thresholds `θ` (a hit at `τ` if
 `τ < K`; the absence of a hit before `τ` is not needed here, only in the derivation of `hineq`).  If the Grönwall inequality holds up to `τ` (`hineq`) and the Grönwall
 bound stays strictly below the threshold (`hclose`: the paper's "`𝔠_d` chosen sufficiently small"),
@@ -121,8 +115,7 @@ theorem ST_logstep {x Δ : ℝ} (hx : 0 < x) (hy : 0 < x - Δ) :
     rw [inv_div]; field_simp; ring
   linarith
 
-/-- **The logarithmic time sum** (the left Riemann sum of `1/(1-u)`, RBM2D `TimeSums`
-`Path/TimeSums.lean`, here exact): on the grid `u_j = s + jΔ` with `u_k < 1`,
+/-- **The logarithmic time sum** (the left Riemann sum of `1/(1-u)`, RBM2D's `TimeSums`, here exact): on the grid `u_j = s + jΔ` with `u_k < 1`,
 `Δ Σ_{j<k} (1-u_j)^{-1} ≤ log((1-s)/(1-u_k))`. -/
 theorem ST_logsum {s Δ : ℝ} (hΔ : 0 ≤ Δ) : ∀ k : ℕ, s + k * Δ < 1 →
     Δ * ∑ j ∈ Finset.range k, (1 - (s + j * Δ))⁻¹ ≤ Real.log ((1 - s) / (1 - (s + k * Δ))) := by
@@ -155,7 +148,7 @@ theorem ST_logsum {s Δ : ℝ} (hΔ : 0 ≤ Δ) : ∀ k : ℕ, s + k * Δ < 1 �
     rw [hylog] at hstep
     linarith
 
-/-- `Π_{j<k} (1 + Δ c/(1-u_j)) ≤ ((1-s)/(1-u_k))^c`: the Grönwall factor of `3_5:481–509`
+/-- `Π_{j<k} (1 + Δ c/(1-u_j)) ≤ ((1-s)/(1-u_k))^c`: the Grönwall factor of (3.41) `eq:Gronwall_2L_max`
 (`exp ∫ C_0/(1-u) du = ((1-s)/(1-u))^{C_0}`). -/
 theorem ST_prod_le_rpow {s Δ c : ℝ} (hΔ : 0 ≤ Δ) (hc : 0 ≤ c) {k : ℕ} (hk : s + k * Δ < 1) :
     ∏ j ∈ Finset.range k, (1 + Δ * (c * (1 - (s + j * Δ))⁻¹)) ≤
@@ -187,7 +180,7 @@ theorem ST_prod_le_rpow {s Δ c : ℝ} (hΔ : 0 ≤ Δ) (hc : 0 ≤ c) {k : ℕ}
     _ = ((1 - s) / (1 - (s + (k : ℝ) * Δ))) ^ c := by
         rw [Real.rpow_def_of_pos hr, mul_comm]
 
-/-- **The pathwise Grönwall inequality** (`3_5:548–560`, from `(LKu2p2mmvj)` and `(defCALJ)`): at a
+/-- **The pathwise Grönwall inequality** (proof of Step 2, from `(LKu2p2mmvj)` and `(defCALJ)`): at a
 fixed sample, for labels `i` (the pairs `(σ, a)`), `x_k i = |(𝓛-𝒦)^{(2)}_{u_k, i}|`, profile
 `P_k i = W^{-d} 𝒯̃^{K_{u_k}}_{u_k,D}(|a|)` (positive, nondecreasing in `k`: `(eq:monotone_Ku)`) and
 `Ĵ_k = max_i x_k i / P_k i`: if up to the stopping index `τ` the grid increments are
@@ -257,12 +250,13 @@ theorem ST_alpha_mono {K : ℕ} {Δ a₀ r₀ : ℝ} {e m : ℕ → ℝ} (hΔ : 
 end Real
 
 end RBM.Gauss.Sizes
-/-! ## 4. The tail functions along the flow and the scale families (`3_5:520–527`, `3_5:570–577`)
+/-! ## 4. The tail functions along the flow and the scale families
 
-3.1 `𝒯_u(r)` is nondecreasing in `u`; 3.2 the monotonicity `(eq:monotone_Ku)` of the truncated
-profile follows from that of `𝒯_u(K_u)`; 3.3 the scale step `𝒯_u(K') = 𝒯_u(K) Δ_u^{1/6}`
+(Proof of Step 2: (3.45) `eq:simpleboundK`, (3.47) `eq:monotone_Ku`, (3.53) `eq:def_ell1`.)
+(i) `𝒯_u(r)` is nondecreasing in `u`; (ii) the monotonicity `(eq:monotone_Ku)` of the truncated
+profile follows from that of `𝒯_u(K_u)`; (iii) the scale step `𝒯_u(K') = 𝒯_u(K) Δ_u^{1/6}`
 (`(eq:def_ell1)`): `e · 𝒯̃^K ≤ 𝒯̃^{K'}` and `𝒯̃^L ≤ 𝒯̃^{K'}` on the range `|a-b| ≤ L`;
-3.4 the final scale: once `𝒯_u(K_u) ≤ W^{-D}`, `𝒯̃^{K_u}_{u,D} = max(𝒯_u, W^{-D})`. -/
+(iv) the final scale: once `𝒯_u(K_u) ≤ W^{-D}`, `𝒯̃^{K_u}_{u,D} = max(𝒯_u, W^{-D})`. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -297,7 +291,7 @@ theorem ST_tailT_mono_time {g u v r : ℝ} (hL : 1 ≤ (L : ℝ)) (hg : 0 ≤ g)
     positivity
   exact mul_le_mul hB hexp (Real.exp_pos _).le hBv
 
-/-- **`(eq:monotone_Ku)`** (`3_5:525–527`): if `𝒯_u(K_u) ≤ 𝒯_v(K_v)` for `u ≤ v < 1` (and
+/-- **`(eq:monotone_Ku)`**: if `𝒯_u(K_u) ≤ 𝒯_v(K_v)` for `u ≤ v < 1` (and
 `K_u, K_v ≥ 0`), then `𝒯̃^{K_u}_{u,D}(r) ≤ 𝒯̃^{K_v}_{v,D}(r)` for every `r ≥ 0`. -/
 theorem ST_tailW_mono_time {g u v Ku Kv W D r : ℝ} (hL : 1 ≤ (L : ℝ)) (hg : 0 ≤ g)
     (huv : u ≤ v) (hv : v < 1) (hKu : 0 ≤ Ku) (hKv : 0 ≤ Kv) (hr : 0 ≤ r)
@@ -320,7 +314,7 @@ theorem ST_tailW_mono_time {g u v Ku Kv W D r : ℝ} (hL : 1 ≤ (L : ℝ)) (hg 
     rw [hKu']
     exact hK.trans (tailT_antitone hb (min_le_right r Kv))
 
-/-- **The scale step** (`(eq:def_ell1)`, `3_5:570–575`): if `0 ≤ K ≤ K'`, `𝒯_u(K') = e 𝒯_u(K)` with
+/-- **The scale step** (`(eq:def_ell1)`): if `0 ≤ K ≤ K'`, `𝒯_u(K') = e 𝒯_u(K)` with
 `0 ≤ e ≤ 1`, then `e 𝒯̃^{K}_{u,D}(ρ) ≤ 𝒯̃^{K'}_{u,D}(ρ)` for every `ρ ≥ 0` (here `e = Δ_u^{1/6}`:
 the factor `Ĵ ≤ Δ_u^{1/6}` gained by one iteration is absorbed by the larger scale). -/
 theorem ST_tailW_scale_step {g u K K' W D e ρ : ℝ} (hW : 0 ≤ W) (hK : 0 ≤ K) (hKK : K ≤ K')
@@ -343,7 +337,7 @@ theorem ST_tailW_scale_step {g u K K' W D e ρ : ℝ} (hW : 0 ≤ W) (hK : 0 ≤
     · nlinarith
 
 /-- `𝒯̃^{L}_{u,D}(ρ) ≤ 𝒯̃^{ℓ}_{u,D}(ρ)` for `0 ≤ ρ ≤ L` and every `ℓ ≥ 0`: the full-range profile
-is the smallest one (`3_5:518`, `(eq:simpleboundK)`). -/
+is the smallest one (`(eq:simpleboundK)`). -/
 theorem ST_tailW_L_le {g u ℓ W D ρ : ℝ} (hℓ : 0 ≤ ℓ) (hρ : 0 ≤ ρ) (hρL : ρ ≤ (L : ℝ)) :
     tailW d L g u (L : ℝ) W D ρ ≤ tailW d L g u ℓ W D ρ := by
   unfold tailW
@@ -351,7 +345,7 @@ theorem ST_tailW_L_le {g u ℓ W D ρ : ℝ} (hℓ : 0 ≤ ℓ) (hρ : 0 ≤ ρ)
   rw [min_eq_left hρL]
   exact tailT_antitone (le_min hρ hℓ) (min_le_left ρ ℓ)
 
-/-- **The final scale** (`3_5:575–577`): once `𝒯_u(K) ≤ W^{-D}`, the truncated profile is
+/-- **The final scale**: once `𝒯_u(K) ≤ W^{-D}`, the truncated profile is
 `𝒯̃^{K}_{u,D}(ρ) = max(𝒯_u(ρ), W^{-D})`. -/
 theorem ST_tailW_final {g u K W D ρ : ℝ} (hK : 0 ≤ K)
     (hT : tailT d L g u K ≤ W ^ (-D)) :
@@ -369,7 +363,7 @@ end Tail
 end RBM.Gauss.Sizes
 /-! ## 5. The transfer between the single-time model and the grid walk
 
-`transferLaw` (merged, `Path/Walk.lean`) says that the grid state `H_k = pathH sz s t K n k` has the
+`transferLaw` (`Path/Walk.lean`) says that the grid state `H_k = pathH sz s t K n k` has the
 law of the single-time model at time `u_k = gridTime s t K n k`; this gives (5.1) the equality of
 the probabilities of a measurable matrix event, (5.2) the passage from a per-time `≺` of the model
 (at every time of `[s,t]`) to a `w.h.p.` event of the grid walk simultaneously for all grid indices,
@@ -490,7 +484,7 @@ theorem ST_sections_of_PT {V : ℕ → Type} [∀ n, Fintype (V n)] {s t : ℕ �
 end Transfer
 
 end RBM.Gauss.Sizes
-/-! ## 6. The engine of the self-improving estimate (`3_5:537–577`)
+/-! ## 6. The engine of the self-improving estimate
 
 Everything at a fixed sample of the grid walk, for real sequences: the Grönwall inequality for
 `Ĵ` up to the stopping index (`ST_engine`), proved from the pathwise inequalities that the good
@@ -512,7 +506,7 @@ theorem ST_rpow_half_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
   refine Real.sqrt_le_iff.mpr ⟨add_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _), ?_⟩
   nlinarith [Real.sq_sqrt hx, Real.sq_sqrt hy, mul_nonneg (Real.sqrt_nonneg x) (Real.sqrt_nonneg y)]
 
-/-- `J < b^{1/6}` and `J ≥ 0` give `J³ ≤ b^{1/2}` (`3_5:542`: `Ĵ^{3/2} ≤ Δ^{1/4}`). -/
+/-- `J < b^{1/6}` and `J ≥ 0` give `J³ ≤ b^{1/2}` ((3.51) `eq:boundmgterm`: `Ĵ^{3/2} ≤ Δ^{1/4}`). -/
 theorem ST_cube_le {J b : ℝ} (hJ : 0 ≤ J) (hb : 0 ≤ b) (h : J < b ^ (1 / 6 : ℝ)) :
     J ^ 3 ≤ b ^ (1 / 2 : ℝ) := by
   have h1 : J ^ 3 ≤ (b ^ (1 / 6 : ℝ)) ^ 3 := pow_le_pow_left₀ hJ h.le 3
@@ -520,7 +514,7 @@ theorem ST_cube_le {J b : ℝ} (hJ : 0 ≤ J) (hb : 0 ≤ b) (h : J < b ^ (1 / 6
     rw [← Real.rpow_natCast, ← Real.rpow_mul hb]; norm_num
   rw [← h2]; exact h1
 
-/-- **`ST_engine`: the Grönwall closure of `3_5:556–568`, at a fixed sample.**  For the labels `i`
+/-- **`ST_engine`: the Grönwall closure of the proof of Step 2, at a fixed sample.**  For the labels `i`
 (pairs `(σ,a)`), with `x_k i = |(𝓛-𝒦)^{(2)}_{u_k,i}|`, `P_k i = W^{-d} 𝒯̃^{K_{u_k}}_{u_k,D}`,
 `Ĵ_k = max_i x_k i/P_k i`, `u_k = s + kΔ`, `b_k = W^{-d} B_{u_k,0}`, stopping index `τ` of `Ĵ`
 against `b_k^{1/6}` (`eq:def2_stopping`):  the pathwise facts
@@ -741,7 +735,7 @@ end Engine
 
 section Closure
 
-/-- **The size of `α_k`** (`3_5:505–509`): with `L_k = log((1-s)/(1-u_k))` (the logarithmic time sum
+/-- **The size of `α_k`** ((3.43) `eq:L-K2max`): with `L_k = log((1-s)/(1-u_k))` (the logarithmic time sum
 `ST_logsum`) and `b_j ≤ b_k` (`j ≤ k`), `α_k` is at most
 `a₀ + r₀ + Λ b_k^{1/2} L_k/mI + Λ (2 Λ b_k^{1/2} L_k/mI + ρ₁)^{1/2}`. -/
 theorem ST_alpha_bound {k : ℕ} {Δ s a₀ r₀ ρ₁ Λ mI : ℝ} {b : ℕ → ℝ}
@@ -804,7 +798,7 @@ theorem ST_alpha_bound {k : ℕ} {Δ s a₀ r₀ ρ₁ Λ mI : ℝ} {b : ℕ →
   have h5 := mul_le_mul_of_nonneg_left h4 hΛ0
   linarith
 
-/-- **The size of `α'`** (`3_5:505–509`): if `a₀, r₀, √ρ₁ ≤ q b^{1/5}` (`b ≤ 1`, `Λ ≥ 1`), then
+/-- **The size of `α'`** ((3.43) `eq:L-K2max`): if `a₀, r₀, √ρ₁ ≤ q b^{1/5}` (`b ≤ 1`, `Λ ≥ 1`), then
 `a₀ + r₀ + Λ b^{1/2} L/mI + Λ (2 Λ b^{1/2} L/mI + ρ₁)^{1/2} ≤ (3 + 3/mI) Λ² (1+q+L) b^{1/5}`. -/
 theorem ST_alpha'_le {b q L Λ mI a₀ r₀ ρ₁ : ℝ} (hb0 : 0 < b) (hb1 : b ≤ 1) (hΛ : 1 ≤ Λ)
     (hmI : 0 < mI) (hL : 0 ≤ L) (hq : 0 ≤ q)
@@ -875,7 +869,7 @@ theorem ST_alpha'_le {b q L Λ mI a₀ r₀ ρ₁ : ℝ} (hb0 : 0 < b) (hb1 : b 
     linarith
   linarith
 
-/-- **The closure arithmetic** (`3_5:505–509`, `3_5:568`): if moreover
+/-- **The closure arithmetic** ((3.43) `eq:L-K2max`, closing paragraph of the proof of Step 2): if moreover
 `c₁ Λ² (1+q+L) R b^{1/30} < 1` (`c₁ = 3 + 3/mI`, `L = log r`, `R = r^{3C}`), then `α' R < b^{1/6}`:
 the exponent gap `1/5 - 1/6 = 1/30` absorbs the loss `Λ²`, the logarithm and the Grönwall factor
 `r^{3C}`. -/
@@ -905,8 +899,8 @@ end RBM.Gauss.Sizes
 
 /-! ## 8. The good event of one self-improving step and its pathwise consequence
 
-`STGoodAt` collects the pathwise facts that the pins provide for the grid walk (section 9 and the events `ST_event_*` of
-section 11 show that they hold with high probability); `ST_good_engine` applies the engine of section 6. -/
+`STGoodAt` collects the pathwise facts for the grid walk; they hold with high probability (the
+events `ST_event_*` of `Step2Events.lean`); `ST_good_engine` applies the engine of section 6. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -957,7 +951,7 @@ theorem ST_firstHit_hit {Ω' : Type*} (J : ℕ → Ω' → ℝ) (θ : ℝ) (K : 
   exact this
 
 /-- **`ST_good_engine`**: on the good event of one step the stopping index never fires
-(`T ≥ t`, `3_5:568`) and `Ĵ_k ≤ c₁ Λ² (1 + q + log r_k) b_k^{1/5} r_k^{3C}` for all grid indices
+(`T ≥ t`) and `Ĵ_k ≤ c₁ Λ² (1 + q + log r_k) b_k^{1/5} r_k^{3C}` for all grid indices
 (`(eq:Gronwall_dervJuD)`), `r_k = (1-s)/(1-u_k)`, `b_k = W^{-d} B_{u_k,0}`, `c₁ = 3 + 3/Im m`. -/
 theorem ST_good_engine (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (Efun : ℕ → ℝ) (D : ℝ)
     (Kf : ℕ → ℝ → ℝ) {Λ δ₀ C a₀ r₀ ρ₁ q κ 𝔡 : ℝ}
@@ -1264,17 +1258,8 @@ end Good
 
 end RBM.Gauss.Sizes
 
-/-! ## Compiled nonempty instances at `d = 3` (CLAUDE.md §4 step 2)
-
-Data: `sz0` (`Defs/Sizes.lean`) at `n = 100` (`L = 404`, `W = 202^5`, `lam = 202^{-6}`), `E = 0`
-(`mE 0 = I`), `s ≡ 0`, `t ≡ 1/16`, `K ≡ 16` (`Δ = 1/256`).  The pin `STNewKLKAt` and the good event
-`STGoodAt` of `ST_good_engine` stay hypotheses of its example. -/
-
-/-! ### Section 3: the real-number core, `Δ = 1/16`, `K = 4` -/
 
 
-/-! ### Section 4: tails at `d = 3`, `L = 404`, `lam = 202^{-6}`, `W = 202^5` (`n = 100`) -/
 
-/-! ### Section 5: the transfer lemmas -/
 
-/-! ### Sections 6 and 8: the engine and `ST_good_engine` -/
+

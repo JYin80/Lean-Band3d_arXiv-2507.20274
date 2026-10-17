@@ -7,36 +7,31 @@ import RBM3D.Induction.QtXiRoundLift
 import RBM3D.Induction.IterationsB
 
 /-!
-# S3-25 (ticket T2320): Step 3 of `lem:main_ind` at the three regimes of the main-induction assembly
+# Step 3 of `lem:main_ind` at the three regimes of the main-induction assembly
 
-Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex` (`1_2:line`) and
-`paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): Step 3 `1_2:1359-1366`, its proof `3_5:1366-1431`
-(case `1 - t ≥ ilambda²/L²`) and `3_5:1572-1601` (case `1 - s ≤ ilambda²/L²`).
+Paper: arXiv:2507.20274, Step 3 of Theorem 2.24 (`lem:main_ind`) and its proof in Section 4: case
+(i) `1 - t ≥ ilambda²/L²` (Subsection 4.1, Lemma 4.11 `lem:iterations`) and case (ii)
+`1 - s ≤ ilambda²/L²` (Subsection 4.2, `sec:1-s<L-2`, Lemma 4.14 `lem:STOeq_Qt_nonzero`).
 
-The pin `STStep3R d R` (`Step34Pins.lean:250`) is `(Eq:LGxb)` uniformly in `u ∈ [s,t]` (`STLmaxU`)
-under a regime predicate `R`.  Three targets (DECISIONS §132 (2)), each for every `d`:
+The statement `STStep3R d R` (`Step34Pins.lean`) is `(Eq:LGxb)` uniformly in `u ∈ [s,t]`
+(`STLmaxU`) under a regime predicate `R`.  Three statements are proved, each for every `d`:
 
-* `stStep3RegIII_holds : STStep3R d STReg5III` (`ilambda² ≤ 1 - t`, `3_5:1384`: `(Eq:LGxb)`
-  "follows directly from `(lRB1)`");
-* `stStep3RegI_holds : STStep3R d STReg5I` (`ilambda²/L² ≤ 1 - t`, `1 - s ≤ ilambda²`,
-  `3_5:1407-1431`: `lem:iterations` with `A = ilambda² W^d`);
-* `stStep3II_holds : STStep3II d` (`1 - s ≤ ilambda²/L²`, `3_5:1575-1595`: `lem:iterations` with
+* `stStep3RegIII_holds : STStep3R d STReg5III` (`ilambda² ≤ 1 - t`: `(Eq:LGxb)` "follows
+  directly from `(lRB1)`");
+* `stStep3RegI_holds : STStep3R d STReg5I` (`ilambda²/L² ≤ 1 - t`, `1 - s ≤ ilambda²`:
+  `lem:iterations` with `A = ilambda² W^d`);
+* `stStep3II_holds : STStep3II d` (`1 - s ≤ ilambda²/L²`: `lem:iterations` with
   `A = (W^{-d}B_{s,0})⁻¹`).
-
-`STStep3I` (case (i) with a straddling `[s,t]`) is not a target (it stays owed until S3-26).
 
 ## Contents
 
 * §1 regime (iii): `step3_xB` (`(1-s) B_s ≤ 2 (1-u) B_u` when `ilambda² ≤ 1 - u`);
-* §2 the skeleton (port of the probe `st_step3_skeleton`,
-  `3c58211:RBM3D/Probe/T2041Pins.lean:1087-1160`, with the case `k = 1` added): `step3_finish`,
-  `step3_skeleton`; `step3_hbase` (the a priori level
-  `l = 0` of `(eq:iteration_induc)` from `(sef8w483r324)` and `(eq:bcal_k)`); `step3_K_pairs` (the
-  pair-uniform `𝒦`-loop bound, rebuilt from `stKbound_timeIcc` as in the private
-  `iterationsB_K_pairs`, `IterationsB.lean:525`);
+* §2 the skeleton `step3_finish`, `step3_skeleton` (with the case `k = 1`); `step3_hbase` (the a
+  priori level `l = 0` of `(eq:iteration_induc)` from `(sef8w483r324)` and `(eq:bcal_k)`);
+  `step3_K_pairs` (the pair-uniform `𝒦`-loop bound, rebuilt from `stKbound_timeIcc` as in the
+  private `iterationsB_K_pairs` of `IterationsB.lean`);
 * §3 `step3_assemble` (everything of the iteration case except the three scale facts);
-* §4 the targets 1-3;
-* §5 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.Step3Inst`).
+* §4 the three statements above.
 
 Helpers are `private` and prefixed `step3_`.
 -/
@@ -56,7 +51,7 @@ variable {d : ℕ} (sz : Sizes d)
 
 /-! ## 1. Regime (iii): `ilambda² ≤ 1 - t`, directly from `(lRB1)` -/
 
-/-- `(1-s) W^{-d}B_{s,0} ≤ 2 (1-u) W^{-d}B_{u,0}` for `s ≤ u < 1` and `ilambda² ≤ 1 - u` (`3_5:1384`: `B_{u,0} ≍ |1-u|⁻¹`):
+/-- `(1-s) W^{-d}B_{s,0} ≤ 2 (1-u) W^{-d}B_{u,0}` for `s ≤ u < 1` and `ilambda² ≤ 1 - u` (proof of Step 3: `B_{u,0} ≍ |1-u|⁻¹`):
 with `x = 1 - u`, `y = 1 - s`, `a = L^{-d}`, `y B_s = W^{-d}(y/(ilambda² + y) + a) ≤ W^{-d}(1 + a)` and
 `x B_u = W^{-d}(x/(ilambda² + x) + a) ≥ W^{-d}(1/2 + a)` because `ilambda² ≤ x`. -/
 private theorem step3_xB {n : ℕ} {s u : ℝ} (hsu : s ≤ u) (hu1 : u < 1) (hg : sz.lam n ^ 2 ≤ 1 - u) :
@@ -94,11 +89,11 @@ private theorem step3_xB {n : ℕ} {s u : ℝ} (hsu : s ≤ u) (hu1 : u < 1) (hg
   exact mul_le_mul_of_nonneg_left (by linarith) (inv_nonneg.2 hWd.le)
 
 
-/-! ## 2. The skeleton (probe `st_step3_skeleton`) and its inputs -/
+/-! ## 2. The skeleton and its inputs -/
 
 /-- The last step of the skeleton, for a control `Z` of `Ξ̂^{(𝓛-𝒦)}_k`: `Ξ̂^{(𝓛-𝒦)}_{v,k} ≺ Z`, `W^{-d}B_{v,0} Z ≤ c` and
-`(rela_XILXILK)` (`3_5:1387`) give `Ξ̂^{(𝓛)}_{v,k} ≺ 1 + B Z ≲ 1`, i.e. `(Eq:LGxb)` at the loop length `k`
-(probe `3c58211:RBM3D/Probe/T2041Pins.lean:1087-1160`, with `A^{3/4}` replaced by `Z`). -/
+`(rela_XILXILK)` give `Ξ̂^{(𝓛)}_{v,k} ≺ 1 + B Z ≲ 1`, i.e. `(Eq:LGxb)` at the loop length `k`
+(with `A^{3/4}` replaced by `Z`). -/
 private theorem step3_finish {E s t : ℕ → ℝ} {Z : ℕ → ℝ} (hsize : Tendsto sz.size atTop atTop)
     (ht1 : ∀ n, t n < 1) {k : ℕ}
     (hX : Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 k ω) (fun n _ _ => Z n))
@@ -144,12 +139,12 @@ private theorem step3_finish {E s t : ℕ → ℝ} {Z : ℕ → ℝ} (hsize : Te
     (fun n v p ω => ‖Lloop sz n (E n) (v : ℝ) p.1 p.2 ω‖) (fun n v => (sz.Bctl n (v : ℝ)) ^ (k - 1))
     (fun n v => pow_pos (hBpos n v) _) (StochDomAt.precomp_param h7 ψ)
 
-/-- **Step 3 from `lem:iterations`, both cases** (`3_5:1422-1431` with `A = ilambda² W^d`; `3_5:1575-1595` with
-`A = (W^{-d}B_{s,0})⁻¹`): the probe's `st_step3_skeleton` (`3c58211:RBM3D/Probe/T2041Pins.lean:1087-1160`), for every loop
+/-- **Step 3 from `lem:iterations`, both cases** (proof of `(Eq:LGxb)` in case (i) with `A = ilambda² W^d`; in case (ii) with
+`A = (W^{-d}B_{s,0})⁻¹`), for every loop
 length `k ≥ 1`.  `k ≥ 2`: the one-step statement `hIter` (the conclusion of `STIterations'`/`STIterationsII'`), the
 a priori level `hbase`, the depth `hscale` (`Ψ(r,k';s,u) ≤ c A^{3/4}`, `k' > 2 + 8𝔠_d(r-1)`) give
 `Ξ̂^{(𝓛-𝒦)}_k ≺ A^{3/4}`; `hBA` (`W^{-d}B_{v,0} A^{3/4} ≤ c`) and `hrela` (`(rela_XILXILK)`) give `(Eq:LGxb)`.
-`k = 1`: the averaged law `havg` (`Ξ̂^{(𝓛-𝒦)}_1 ≺ 1`, `3_5:1385`) and `B ≤ B A^{3/4} ≤ c` (`A ≥ 1`). -/
+`k = 1`: the averaged law `havg` (`Ξ̂^{(𝓛-𝒦)}_1 ≺ 1`) and `B ≤ B A^{3/4} ≤ c` (`A ≥ 1`). -/
 private theorem step3_skeleton {E s t : ℕ → ℝ} {A : ℕ → ℝ} (hsize : Tendsto sz.size atTop atTop)
     (hA : ∀ n, 0 ≤ A n) (hA1 : ∀ᶠ n in atTop, 1 ≤ A n) (ht1 : ∀ n, t n < 1)
     (hIter : ∀ n_ k : ℕ, 2 ≤ n_ → 1 ≤ k → (∀ r, 2 ≤ r → r + 1 ≤ n_ → STIterHyp sz E s t A r k) →
@@ -209,7 +204,7 @@ private theorem step3_psi0_le {A ρ cv : ℝ} {r : ℕ} (hA : 1 ≤ A) (hρ : 1 
   have h3 : 0 ≤ (1 + 2 * cv) * A ^ (3 / 4 : ℝ) := by positivity
   nlinarith
 
-/-- **The a priori level `l = 0` of `(eq:iteration_induc)`** (`3_5:1391`, `(sef8w483r324)`: `Ξ̂^{(𝓛-𝒦)}_{u,n} ≺ (η_s/η_u)^{n-1}
+/-- **The a priori level `l = 0` of `(eq:iteration_induc)`** (`(sef8w483r324)`: `Ξ̂^{(𝓛-𝒦)}_{u,n} ≺ (η_s/η_u)^{n-1}
 (ilambda² W^d)`), for `A` with `(cv A)⁻¹ ≤ W^{-d}B_{v,0}` (the scale facts `IterationsAScale`): `Ξ̂^{(𝓛-𝒦)}_{v,r} ≤ 1 +
 cv A (Ξ̂^{(𝓛)}_{v,r} + (1 + max|𝒦|/B^{r-1}))`, `Ξ̂^{(𝓛)}_{v,r} ≺ ρ^{r-1}` (`(lRB1)`, `iterationsA_apriori_of_lRB1`) and
 `max|𝒦|/B^{r-1} ≺ 1` (`(eq:bcal_k)`), so `Ξ̂^{(𝓛-𝒦)}_{v,r} ≺ 1 + cv A (ρ^{r-1} + 1) ≤ (1 + 2 cv) Ψ(r,0)`
@@ -303,7 +298,7 @@ private theorem step3_hbase (hsize : Tendsto sz.size atTop atTop) {E s t A T : �
 
 /-- The pair-uniform `𝒦`-loop bound `(eq:bcal_k)` (the hypothesis `hK` of `iterationsA_rela_of_K`): `stKbound_timeIcc`
 (uniform in `u ∈ [s,t]`) reindexed along `(q, p) ↦ (⟨q.1.1, _⟩, p)`; copy of the private `iterationsB_K_pairs`
-(`IterationsB.lean:525`). -/
+(`IterationsB.lean`). -/
 private theorem step3_K_pairs (hd : 3 ≤ d) {E : ℕ → ℝ} {κ gmax : ℝ} (hκ : 0 < κ) (hg : 0 < gmax)
     (hN : sz.SizeTendsto) (hE : ∀ᶠ n in atTop, |E n| ≤ 2 - κ)
     (hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ gmax) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n)
@@ -316,7 +311,7 @@ private theorem step3_K_pairs (hd : 3 ≤ d) {E : ℕ → ℝ} {κ gmax : ℝ} (
     fun n p => (⟨p.1.1.1, p.1.2.1, p.1.2.2.1.trans p.1.2.2.2⟩, p.2)
   exact StochDomAt.precomp_param h φ
 
-/-- `(eq:WO)` gives `0 < lam n ≤ 𝔡⁻¹` eventually (copy of the private `iterationsB_flowLam`, `IterationsB.lean:517`). -/
+/-- `(eq:WO)` gives `0 < lam n ≤ 𝔡⁻¹` eventually (copy of the private `iterationsB_flowLam`, `IterationsB.lean`). -/
 private theorem step3_flowLam {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) :
     ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
   filter_upwards [hz.1.2.2.2.2] with n hn
@@ -371,7 +366,7 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-- **Step 3 at regime (iii)** `ilambda² ≤ 1 - t` (`3_5:1384`: `(Eq:LGxb)` follows directly from `(lRB1)`), every `d`,
+/-- **Step 3 at regime (iii)** `ilambda² ≤ 1 - t` (proof of Step 3: `(Eq:LGxb)` follows directly from `(lRB1)`), every `d`,
 `𝔠_d = 1/100` (not used by the proof).  `((1-s)/(1-u)) W^{-d}B_{s,0} ≤ 2 W^{-d}B_{u,0}` for `u ∈ [s,t]`
 (`step3_xB`), so `(lRB1)` gives `|𝓛^{(k)}_u| ≺ 2^{k-1} (W^{-d}B_{u,0})^{k-1}`, and the constant is absorbed. -/
 theorem stStep3RegIII_holds : ∀ d : ℕ, STStep3R d STReg5III := by
@@ -400,8 +395,8 @@ theorem stStep3RegIII_holds : ∀ d : ℕ, STStep3R d STReg5III := by
     _ ≤ (2 * sz.Bctl n (p.1 : ℝ)) ^ (k - 1) := pow_le_pow_left₀ hq0 hq _
     _ = 2 ^ (k - 1) * sz.Bctl n (p.1 : ℝ) ^ (k - 1) := mul_pow _ _ _
 
-/-- **Step 3 at regime (i)** `ilambda²/L² ≤ 1 - t`, `1 - s ≤ ilambda²` (`3_5:1407-1431`), every `d`.  The constant is
-`𝔠_d = min(𝔠_d^{Qt}, 𝔠_d^{It})`, the constants of `stOeqQt'_holds` (`STXiBoot'`, `3_5:1366`) and
+/-- **Step 3 at regime (i)** `ilambda²/L² ≤ 1 - t`, `1 - s ≤ ilambda²`, every `d`.  The constant is
+`𝔠_d = min(𝔠_d^{Qt}, 𝔠_d^{It})`, the constants of `stOeqQt'_holds` (`STXiBoot'`, (4.36) `am;asoi222`) and
 `stIterations'_holds` (`lem:iterations` case (i)); `(con_st_ind)` at the minimum gives it at each of them
 (`st5_conStInd_mono`).  The iteration `st_iterate` over `stIterations'_holds` (`A = ilambda² W^d`), the scale facts
 `st_hscale_I'`, `st_hBA_I`, the a priori level `step3_hbase` and `(rela_XILXILK)` give `(Eq:LGxb)`. -/
@@ -425,9 +420,9 @@ theorem stStep3RegI_holds : ∀ d : ℕ, STStep3R d STReg5I := by
     (fun ht1 hE hWO => st_hscale_I' sz hcpos hregI hcon hWO ht1 hE)
     (fun _ hWO => st_hBA_I sz (by omega) hregI.1 hWO) hIter hStep1 hStep2
 
-/-- **Step 3, case (ii)** `1 - s ≤ ilambda²/L²` (`3_5:1575-1595`), every `d`.  The constant is
-`𝔠_d = min(𝔠_d^{NZ}, 𝔠_d^{It'})`, the constants of `stOeqQtNZ'_holds` (`STXiBoot'`, `3_5:1561`) and
-`stIterationsII'_holds` (`A = (W^{-d}B_{s,0})⁻¹`, `3_5:1575-1595`); scale facts `st_hscale_II'`, `st_hBA_II`
+/-- **Step 3, case (ii)** `1 - s ≤ ilambda²/L²`, every `d`.  The constant is
+`𝔠_d = min(𝔠_d^{NZ}, 𝔠_d^{It'})`, the constants of `stOeqQtNZ'_holds` (`STXiBoot'`, Lemma 4.14 `lem:STOeq_Qt_nonzero`) and
+`stIterationsII'_holds` (`A = (W^{-d}B_{s,0})⁻¹`); scale facts `st_hscale_II'`, `st_hBA_II`
 (`𝔠_d ≤ 1/4`), `iterationsA_scale_II` (`𝔠_d ≤ 1/24`). -/
 theorem stStep3II_holds : ∀ d : ℕ, STStep3II d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -449,20 +444,5 @@ theorem stStep3II_holds : ∀ d : ℕ, STStep3II d := by
     (fun ht1 _ => st_hBA_II sz hcpos (hcle.trans (by norm_num)) hcon ht1) hIter hStep1 hStep2
 
 
-/-! ## 5. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.Step3Inst`.  Data, all from the merged instance files (`Step34Pins.lean`, `Induction/Defs.lean`):
-`κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `C_d` arbitrary positive, and
-
-* regime (iii): `sz0` (`d = 3`, `L = 4(n+1)`, `W = (2(n+1))^5`, `ilambda = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`,
-  `ilambda = 1/64`), the flow `z0`, `s ≡ 0`, `t ≡ 1/16` (`t ≤ lemT z0`: `sz0_ht`), `ilambda² ≤ 1/4096 ≤ 15/16 = 1 - t`
-  (`sz0_regIII`), `(con_st_ind)` for every `𝔠_d > 0` (`sz0_con`);
-* regime (i): `szB` (`L = 4`, `W = n + 4`, `ilambda = 1`), the flow `zB` (`z_n = 1/2 + i/64`), `(s,t) = (7/8, 15/16)`:
-  `1 - s = 1/8 ≤ ilambda² = 1` and `ilambda²/L² = 1/16 = 1 - t` (`szB_regIterI`), `(con_st_ind)` by `conStInd_const`;
-* case (ii): `szB`, `zB`, `(s,t) = (15/16, 31/32)`: `1 - s = ilambda²/L² = 1/16` (`szB_caseII`).
-
-`STKbound` and `STKward` are theorems of the flow (`stKbound_of_flow`, `stKward_of_flow`) and are discharged; what stays a
-hypothesis of an instance is a stochastic premise that is another gate's pin: `STLK s`, `(lRB1)` (`STStep1Loop`), the
-Step-2 conclusions (`STStep2Concl`). -/
 
 end RBM.Ind

@@ -10,17 +10,17 @@ import Mathlib.Analysis.InnerProductSpace.GramMatrix
 import Mathlib.Analysis.Matrix.HermitianFunctionalCalculus
 
 /-!
-# S1-09 (ticket T2033): splitting loops into chains, `d ≥ 3`
+# Splitting loops into chains, `d ≥ 3`
 
-Port of `RBM2D/Induction/Split.lean` at commit `c9a24cf` (itself the `d = 2` port of
-`RBM1D/Loop/Split.lean` and `RBM1D/Loop/Chain.lean`) onto the merged block-product index
-`Vtx d L W = Zd d L × Fin (W ^ d)`, block labels in `Zd d L`, the merged `Gres`, `Eblk`,
-`Loop.LoopIdx` and the list-based loop `loopL` (`RBM3D/Loop/GLoopFlow.lean`; RBM2D's `gloop`).
+The block-product index is `Vtx d L W = Zd d L × Fin (W ^ d)`, block labels are in `Zd d L`, and
+the objects are `Gres`, `Eblk`, `Loop.LoopIdx` and the list-based loop `loopL`
+(`RBM3D/Loop/GLoopFlow.lean`; RBM2D's `gloop`).  The development follows the two-dimensional
+formalization (RBM2D `Induction/Split`).
 Everything is for a **fixed deterministic Hermitian** `H` and a fixed spectral parameter `z`;
 there is no probability.  The equation numbers (5.2), (5.114)-(5.118), (6.4) and Lemma 6.1 are
-those of the `d = 2` paper `[YY_25]` (arXiv:2503.07606) as quoted in RBM2D; the present paper
-cites the argument of (5.118) there at `3_5:1841` and obtains `eq:boundtwochains`
-(`3_5:1842-1850`, factor `\ilambda² W^d` at `3_5:1846`, `\ilambda = g`, `main.tex:199`).
+those of the `d = 2` paper `[YY_25]` (arXiv:2503.07606); the present paper cites the argument of
+(5.118) there in the proof of Lemma 4.17 (`lem:sum_decay_nonzero`) and obtains (4.67)
+`eq:boundtwochains` (factor `\ilambda² W^d`, `\ilambda = g`).
 All statements are consequences of the Cauchy-Schwarz inequality and of the structure
 `E_a = W^{-d} · 1_{𝓘_a}` of the block projections (a block has `W^d` sites, so the weight is
 `W^{-d}`: RBM2D `W⁻²`).
@@ -50,13 +50,12 @@ inequalities `norm_sq_trace_mul_diagonal_le` and `wmass_mul_diagonal_mul_le`.
 
 `loopMax d L W H z n` is `max_{σ,a} |L_{σ,a}|` over all charge and label lists of length `n`
 (an `iSup` over the finite type `(Fin n → Bool) × (Fin n → Zd d L)`).  It is
-`RBM.Ind.loopMax`, a different declaration from the merged `RBM.Gauss.loopMax`
-(`RBM3D/Loop/GLoop.lean:102`, arguments `ω E t n`).
+`RBM.Ind.loopMax`, a different declaration from `RBM.Gauss.loopMax`
+(`RBM3D/Loop/GLoop.lean`, arguments `ω E t n`).
 
-The changes with respect to `d = 2` (portmap P.6 rows `Induction/Split:` `inv2`) are `bw`,
-`norm_Eblk_le`, `norm_gchain_le`, `norm_gloop_le_opNorm`, `norm_gloop_le_of_le_abs_im`
-(`(W⁻¹)^2 → (W^d)⁻¹`) and the proof of `sum_bw` (`W^d` sites per block).  The section
-`Checks` holds the compiled instances at `d = 3`, `W = 2`, `L = 3`, `H = 0`, `z = i`.
+The differences from `d = 2` are `bw`, `norm_Eblk_le`, `norm_gchain_le`, `norm_gloop_le_opNorm`,
+`norm_gloop_le_of_le_abs_im` (`(W⁻¹)^2 → (W^d)⁻¹`) and the proof of `sum_bw` (`W^d` sites per
+block).
 -/
 
 namespace RBM.Ind
@@ -240,10 +239,10 @@ end Block
 
 section Aux
 
-/-! Private copies of the algebra that the merged files keep `private`:
-`Gres_conjTranspose` (`RBM3D/Induction/Contract.lean:224`, `Green/Pins.lean:367`),
-`gloopProd_nil/cons/append` (`RBM3D/Loop/GLoopFlow.lean:391-401`); RBM2D
-`Hierarchy/Loops.lean` (`Gsig_conjTranspose`, `gloopProd_*`) at `c9a24cf`. -/
+/-! Private copies of the algebra that is `private` in other files:
+`Gres_conjTranspose` (`RBM3D/Induction/Contract.lean`, `Green/Pins.lean`),
+`gloopProd_nil/cons/append` (`RBM3D/Loop/GLoopFlow.lean`); compare RBM2D's `Gsig_conjTranspose`
+and `gloopProd_*`. -/
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -291,7 +290,7 @@ private theorem gloopProd_append {σ₁ : List Bool} {a₁ : List (Zd d L)}
     have h : σ.length = a.length := by simpa using h₁
     simp only [List.cons_append, gloopProd_cons, ih h, Matrix.mul_assoc]
 
-/-- `loopL` is the trace of `gloopProd` (RBM2D `gloop`, `Hierarchy/Loops.lean:92`). -/
+/-- `loopL` is the trace of `gloopProd` (RBM2D's `gloop`). -/
 private theorem loopL_eq_trace (I : Loop.LoopIdx (Zd d L)) :
     loopL d L W H z I = trace (gloopProd d L W H z I) := rfl
 
@@ -618,7 +617,7 @@ theorem loopMax_odd_sq_le (hH : H.IsHermitian) {m : ℕ} (hm : 1 ≤ m) :
 
 variable (d L W) in
 /-- `Ξ^{(L)}_{m} = max_{σ,a} |L_{σ,a}| · A^{m-1}` of (2.82)/(5.76), with the scale
-`A` a free parameter (the paper applies it with `A = g² W^d`, `3_5:1846`). -/
+`A` a free parameter (the paper applies it with `A = g² W^d`, (4.67) `eq:boundtwochains`). -/
 noncomputable def loopXi (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ) (A : ℝ)
     (m : ℕ) : ℝ :=
   loopMax d L W H z m * A ^ (m - 1)
@@ -652,9 +651,8 @@ open scoped Matrix.Norms.L2Operator
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
-/-- An entry is bounded by the `ℓ² → ℓ²` operator norm.  `RBM2D/Induction/Split.lean:590`
-(`norm_apply_le_l2_opNorm`); the proof is the merged `norm_matrix_entry_le_opNorm`
-(`RBM3D/Gauss/FlowCalculus.lean:591`). -/
+/-- An entry is bounded by the `ℓ² → ℓ²` operator norm (RBM2D's `norm_apply_le_l2_opNorm`); the
+proof is `norm_matrix_entry_le_opNorm` (`RBM3D/Gauss/FlowCalculus.lean`). -/
 theorem norm_apply_le_l2_opNorm (M : Matrix n n ℂ) (p q : n) : ‖M p q‖ ≤ ‖M‖ :=
   norm_matrix_entry_le_opNorm M p q
 
@@ -882,13 +880,5 @@ theorem sum_norm_inner_sq_le_trace_pow (v : E) (w : ι → E) {p : ℕ} (hp : 1 
 
 end Gram
 
-/-! ### Compiled instances at `d = 3`, `W = 2`, `L = 3`, `H = 0`, `z = i`
-
-For `H = 0` and `z = i` one has `G(+) = i · 1`, `G(-) = -i · 1`, so for the all-label-`0` loops of
-length `n ≥ 1` the loop is `(∏ ±i) · tr E_0^n`.  With `E_0² = W^{-d} E_0` and `tr E_0 = 1`
-(`trace_Eblk`), every such loop has modulus exactly `(W^{-d})^{n-1}`: the bound of
-`norm_gloop_le_of_le_abs_im` (`η = |Im z| = 1`) is attained, and `loopMax d L W 0 i n` equals it.
-No instance below has an empty index set, `W = 1`, or a collapsed window; `N = (W L)^d = 216`,
-block size `W^d = 8`, `L^d = 27` labels. -/
 
 end RBM.Ind

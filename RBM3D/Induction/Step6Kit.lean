@@ -17,23 +17,15 @@ import RBM3D.Graph.LWPins
 import RBM3D.Evolution.Prec
 
 /-!
-# S6-02 (ST-5): the Step 6 kit
+# The Step 6 kit
 
-The kit of Step 6 of `lem:main_ind` (paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex`
-`1390-1396` and `paper/tex/6_Step6_two_loop.tex`): the `Prec` calculus, the bridges at a section `u`
-(`STLK_of_STLKU_at`, `STDecay_of_STGdecayW_at`, ...), the compiled glue (windows, the rotation bridge
-`STEGt = LWE`, the Duhamel identity along `[s,t]`), the initial-term comparisons in regimes (iii), (iv),
-the four regime skeletons `ST_step6_case{I,II,III,IV}_of_pins` (the producers of `STStep6I..IV` from
-their ingredient pins), `st6_GdecayW_of_zero`, `ST_step6R_mono`, and the compiled nonempty instances at
-`d = 3` (namespace `RBM.Gauss.Step6Inst`).
-
-Moved verbatim (thirteen blocks) from the T2191 design probe `RBM3D/Probe/T2191Pins.lean` at `96c6b4c`
-(branch `t/T2191`, never merged); the pins (`STStep6I..IV`, `STExp*`, the instances `inst_step6I..IV`)
-are in `RBM3D/Induction/Step6Pins.lean` (S6-01, T2204).  Not ported (DECISIONS §68): `ST_mainInd_of_steps`
-and the intermediate-time gluing (`st6_restrict_*`, `st6_cover_two`, `ST_step6_compose`,
-`ST_step6_four_of_regimes`, `STGenericPos`, `ST_step6_generic_of_regimes`, `szFour`, the corresponding
-instances); they stay on `t/T2191` at `96c6b4c`.  Docstrings are verbatim and may cite them as references.
-No registry line: no `Prop` is defined here; `STStep6I..IV` stay owed.
+The kit of Step 6 of `lem:main_ind` (arXiv:2507.20274, Step 6 of Theorem 2.24 and Section 6):
+the `Prec` calculus, the bridges at a section `u` (`STLK_of_STLKU_at`,
+`STDecay_of_STGdecayW_at`, ...), the glue (windows, the rotation bridge `st6_EGt_eq_LWE`, the
+Duhamel identity along `[s,t]`), the initial-term comparisons in regimes (iii), (iv), and the
+regime skeletons `ST_step6_case{II,III,IV}_of_pins` (Step 6 in each regime from its ingredient
+statements).  The statements (`STStep6I..IV`, `STExp*`) are in `RBM3D/Induction/Step6Pins.lean`.
+No `Prop` is defined here.
 -/
 
 set_option linter.style.longLine false
@@ -45,7 +37,7 @@ open scoped NNReal ENNReal
 
 /-! ## 2. `0 < lam n` eventually, the generic lemma "per time sequence ⇒ uniform in `u`", the bridges at a sequence `u ∈ [s,t]`
 
-`(g)` of the ticket: `LWtermEXP` and `STImproveExpAver` are statements at one time sequence; Step 6 integrates over `u`.
+The generic lemma `(g)` below: `LWtermEXP` and `STImproveExpAver` are statements at one time sequence; Step 6 integrates over `u`.
 For a **deterministic** family the two agree: `Prec` of a deterministic family is the pointwise bound for all large `n`
 (`st6_prec_det_iff`), and a failing family of times is a sequence of times (`st6_precU_of_forall_seq`). -/
 
@@ -56,8 +48,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `(eq:WO)` gives `0 < lam n` eventually: `W^{-d/2+𝔡} ≤ lam n` and `W ≥ 1` (`W^{x} > 0`).  So the term
-`(lam² W^d)^{-1/5}` of `STExp2` is eventually positive (it is `0` at a size with `lam n = 0`, `0 ^ (-1/5) = 0` in Mathlib:
-`st6_target_lam_zero`). -/
+`(lam² W^d)^{-1/5}` of `STExp2` is eventually positive (it is `0` at a size with `lam n = 0`, `0 ^ (-1/5) = 0` in Mathlib). -/
 theorem st6_lam_pos {𝔡 : ℝ} (h : sz.WO 𝔡) : ∀ᶠ n in atTop, 0 < sz.lam n := by
   filter_upwards [h] with n hn
   exact lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.W_pos n) _) hn.1
@@ -142,7 +133,7 @@ end RBM.Gauss.Sizes
 
 /-! ### The bridges at a time sequence `u ∈ [s,t]` (consumers: `STImproveExpAver`, `LWtermEXP`, `STMainInd`)
 
-`LWtermEXP` (`Graph/LWPins.lean:311`) has the premises `STLocalEntry`, `LWAvgLaw`, `STLmax`, `STLK`, `STDecay` at **one** time
+`LWtermEXP` (`Graph/LWPins.lean`) has the premises `STLocalEntry`, `LWAvgLaw`, `STLmax`, `STLK`, `STDecay` at **one** time
 sequence; Steps 2, 3, 4, 5 give them uniformly in `u ∈ [s,t]` (`STLocalEntryU`, `STAvgU`, `STLmaxU`, `STLKU`,
 `STGdecayW … 0`).  The uniform statement restricted to the section `u` is the per-time statement (`precomp_param`).
 `STDecayStrong` has no such bridge at `u`: its index set is `ilambda² ≤ 1-t`, not `≤ 1-u`. -/
@@ -171,7 +162,7 @@ theorem STLocalEntry_of_STLocalEntryU_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s
     (fun n (p : Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n)) => ((⟨u n, hsu n, hut n⟩ : TimeIcc s t n), p))
 
 /-- `(Gt_avgbound_flow)` at the section `u`: `STAvgU` gives the premise `LWAvgLaw` of `LWtermEXP` (and of
-`STImproveExpAver`); `𝒦^{(1)}_{σ,a} = m(σ)` is the merged `ST_Kloop_one`. -/
+`STImproveExpAver`); `𝒦^{(1)}_{σ,a} = m(σ)` is `ST_Kloop_one`. -/
 theorem LWAvgLaw_of_STAvgU_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u n) (hut : ∀ n, u n ≤ t n)
     (h : STAvgU sz E s t) : LWAvgLaw sz E u := by
   have h1 := StochDomAt.precomp_param h
@@ -190,14 +181,14 @@ theorem STDecay_of_STGdecayW_at {E s t u : ℕ → ℝ} (hsu : ∀ n, s n ≤ u 
   simp only [Real.rpow_zero, one_mul] at this
   exact this
 
-/-- The endpoint `u = t` of `STLocalEntryU` (conclusion `STLocalEntry` of `lem:main_ind`, `Induction/Defs.lean:304`). -/
+/-- The endpoint `u = t` of `STLocalEntryU` (conclusion `STLocalEntry` of `lem:main_ind`, `Induction/Defs.lean`). -/
 theorem STLocalEntry_of_STLocalEntryU {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STLocalEntryU sz E s t) :
     STLocalEntry sz E t :=
   STLocalEntry_of_STLocalEntryU_at sz hst (fun _ => le_rfl) h
 
 end RBM.Gauss.Sizes
 
-/-! ## 5. Compiled glue: calculus of `Prec` (labels, finitely many signs), flow facts, the windows, the LW bridge `STEGt = LWE`,
+/-! ## 5. Glue: calculus of `Prec` (labels, finitely many signs), flow facts, the windows, the LW bridge `STEGt = LWE`,
 the Duhamel identity along `[s,t]` -/
 
 namespace RBM.Gauss.Sizes
@@ -207,7 +198,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **The sup norm over the labels of a tensor is `≺` if the entries are** (the union over the labels is inside `P`, so the event
-`‖f‖ > r` is contained in `∃ a, |f_a| > r`): from `(Eq:Gtlp_exp+IND)` (index `(σ,a)`) to the `L^∞` hypothesis `‖𝒜‖_∞ ≺ X` of the kernel pins. -/
+`‖f‖ > r` is contained in `∃ a, |f_a| > r`): from `(Eq:Gtlp_exp+IND)` (index `(σ,a)`) to the `L^∞` hypothesis `‖𝒜‖_∞ ≺ X` of the kernel statements. -/
 theorem st6_prec_pi_norm (hsz : sz.SizeTendsto) {E s : ℕ → ℝ} {X : ℕ → ℝ} (hX : ∀ n, 0 ≤ X n)
     (h : sz.Prec (U := fun n => (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
       (fun n p _ => ‖STExpErr sz n (E n) (s n) p.1 p.2‖) (fun n _ _ => X n))
@@ -290,8 +281,8 @@ theorem st6_hi_of_reg5III {s t : ℕ → ℝ} (h : STReg5III sz s t) : STDriftHi
     _ = sz.lam n ^ 2 := div_one _
     _ ≤ 1 - t n := h n
 
-/-! ### The rotation bridge `STEGt = LWE` (T2080; the proof is that of the `private` `STB_EGt_eq_LWE`,
-`Induction/Step2Events.lean:1294`, copied) -/
+/-! ### The rotation bridge `STEGt = LWE` (the proof is that of the `private` `STB_EGt_eq_LWE` of
+`Induction/Step2Events.lean`) -/
 
 private theorem st6_trace_six {ι : Type*} [Fintype ι] (P Q R S T U : Matrix ι ι ℂ) :
     (P * (Q * (R * (S * (T * U))))).trace = (T * (U * (P * (Q * (R * S))))).trace := by
@@ -343,7 +334,7 @@ theorem st6_expEGt_eq (n : ℕ) (E t : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 →
   funext ω
   exact st6_EGt_eq_LWE sz n E t σ a ω
 
-/-- **The Duhamel identity along `[s_n, t_n]`** from the pin `STExpDuhamelZ` (`|E_n| < 2`, `0 ≤ s`, `u ≤ t < 1`). -/
+/-- **The Duhamel identity along `[s_n, t_n]`** from `STExpDuhamelZ` (`|E_n| < 2`, `0 ≤ s`, `u ≤ t < 1`). -/
 theorem st6_duhEq_of_pin (hDu : STExpDuhamelZ d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ}
     (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ lemT (z n)) :
     STExpDuhEq sz (STflowE z) s t := by
@@ -353,7 +344,7 @@ theorem st6_duhEq_of_pin (hDu : STExpDuhamelZ d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡
 
 end RBM.Gauss.Sizes
 
-/-! ## 6. The initial term closes with no `𝔠_d` loss in regimes (iii) and (iv) (compiled; answers the preflight question (iii))
+/-! ## 6. The initial term closes with no `𝔠_d` loss in regimes (iii) and (iv)
 
 `(1-s) B_s` against `(1-u) B_u`: `x B(x) = W^{-d} x/(ilambda² + x) + N⁻¹` with `x = 1 - u` (`N = (WL)^d`).  In regime (iii),
 `x ≥ ilambda²` gives `x/(ilambda²+x) ∈ [1/2, 1]`; in regime (iv), `x ≤ ilambda²/L^d` gives `W^{-d} x/(ilambda²+x) ≤ N⁻¹`: in both
@@ -503,12 +494,12 @@ theorem st6_cube_le_target (n : ℕ) {u : ℝ} (hu : u < 1) : (sz.Bctl n u) ^ 3 
 
 end RBM.Gauss.Sizes
 
-/-! ## 7. The skeletons: Step 6 in each regime from its pins (compiled)
+/-! ## 7. The skeletons: Step 6 in each regime from its ingredient statements
 
-Each skeleton takes the ingredient pins of its regime and the compiled glue: the constant `𝔠_d` is the minimum of the constants of the pins
-(`st5_conStInd_mono`); the premises of the integrated pin are the Duhamel identity (from `STExpDuhamelZ`), the drift bounds (`(eq:Exp(L-K)1)`
-from `STExpLKLKHi`, `(eq:ExpLWn=2)` compiled from `LWtermEXP` by the bridges of §2 and (g)), and the Ward bounds; the initial term is bounded by
-the merged kernel theorems `stek_sumNdecay_holds`, `stek_nonzero_holds` (proved) applied to the deterministic tensor `f_s`, with the
+Each skeleton takes the ingredient statements of its regime and the glue: the constant `𝔠_d` is the minimum of the constants of the statements
+(`st5_conStInd_mono`); the premises of the integrated statement are the Duhamel identity (from `STExpDuhamelZ`), the drift bounds (`(eq:Exp(L-K)1)`
+from `STExpLKLKHi`, `(eq:ExpLWn=2)` derived from `LWtermEXP` by the bridges of §2 and (g)), and the Ward bounds; the initial term is bounded by
+the kernel theorems `stek_sumNdecay_holds`, `stek_nonzero_holds` applied to the deterministic tensor `f_s`, with the
 hypothesis `(Eq:Gtlp_exp+IND)` (`STExp2` at `s`); the closing comparisons are §6. -/
 
 namespace RBM.Gauss.Sizes
@@ -537,7 +528,7 @@ theorem st6_mE_im_ge {κ E : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) : Real.sq
   have := Real.sqrt_le_sqrt h
   linarith
 
-/-- **`(res_ELK_n=1)` uniformly in `u ∈ [s,t]`** from the per-time pin `STImproveExpAver` (consumers: the Ward pins, `STExpDriftLo`):
+/-- **`(res_ELK_n=1)` uniformly in `u ∈ [s,t]`** from the per-time statement `STImproveExpAver` (consumers: the Ward statements, `STExpDriftLo`):
 for each time sequence `u ∈ [s,t]` the premise `LWAvgLaw` is the section of `STAvgU` (Step 2), the premise `STLK` is the section of
 `STLKU` (Step 4), and (g) turns the per-time conclusions into the uniform one. -/
 theorem st6_expAvgU_of_pin (hAvg : STImproveExpAver d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
@@ -551,7 +542,7 @@ theorem st6_expAvgU_of_pin (hAvg : STImproveExpAver d) (hd : 3 ≤ d) {κ ε �
   exact hAvg hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u (fun n => (hs0 n).trans (hsu n))
     (fun n => (hut n).trans (htT n)) (LWAvgLaw_of_STAvgU_at sz hsu hut hS2.2) (STLK_of_STLKU_at sz hsu hut hLKU)
 
-/-- **`(eq:ExpLWn=2)` uniformly in `u ∈ [s,t]`, compiled from `LWtermEXP`** (LW-14, per time): the premises at the section `u` are the
+/-- **`(eq:ExpLWn=2)` uniformly in `u ∈ [s,t]`, derived from `LWtermEXP`** (per time): the premises at the section `u` are the
 bridges of §2, the conclusion is converted from `LWE` to `STEGt` by `st6_expEGt_eq`, and (g) makes it uniform; the index set
 `ilambda²/L^d ≤ 1-u` of `LWtermEXP` is all of `[s,t]` in the window `STDriftHi`. -/
 theorem st6_EGtHi_of_LW (hLW : LWtermEXP d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
@@ -632,7 +623,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **The initial term of regime (ii) (and (iv)-type zero modes)**: `‖Q^{(A)} 𝒰_{s,u} f_s‖ ≺ T_s` uniformly in `(u,σ,a)`, for the sign
-class `P` and `A ⊇ I_diff(σ)` (`(sum_res_Ndecay_nonzero)` `3_5:1667`, the merged `stek_nonzero_holds`, window `1-s ≤ ilambda²/L²`;
+class `P` and `A ⊇ I_diff(σ)` (`(sum_res_Ndecay_nonzero)` of Lemma 4.17, `stek_nonzero_holds`, window `1-s ≤ ilambda²/L²`;
 no decay hypothesis, no ratio). -/
 theorem st6_ini_nonzero (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z)
     {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n) (htT : ∀ n, t n ≤ lemT (z n))
@@ -700,7 +691,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- For `σ₁ = σ₂`, `I_diff(σ) = ∅` (`3_5:1470`): `A = ∅` is allowed in `(sum_res_Ndecay_nonzero)`. -/
+/-- For `σ₁ = σ₂`, `I_diff(σ) = ∅`: `A = ∅` is allowed in `(sum_res_Ndecay_nonzero)`. -/
 theorem st6_Idiff_same {σ : Fin 2 → Bool} (h : σ 0 = σ 1) (i : Fin 2) : ¬ σ i ≠ σ (finRotate 2 i) := by
   fin_cases i
   · have : finRotate 2 (0 : Fin 2) = 1 := by decide
@@ -708,10 +699,10 @@ theorem st6_Idiff_same {σ : Fin 2 → Bool} (h : σ 0 = σ 1) (i : Fin 2) : ¬ 
   · have : finRotate 2 (1 : Fin 2) = 0 := by decide
     simp [this, h]
 
-/-- **Step 6, regime (iii), from its pins.**  The ingredients are `(eq:Exp(L-K)1)` (`STExpLKLKHi`), `lem:LWterm_EXP` (`LWtermEXP`, the per-time
-pin of LW-14, consumed through the bridges of §2 and (g)), the Duhamel identity (`STExpDuhamelZ`) and the integrated estimate
-(`STExpIntIII`); the initial term is the merged `(sum_res_Ndecay)` (`st6_ini_sumNdecay`) closed by `st6_xB_III`, `st6_cmp_ini` with the
-constant `4`, no `𝔠_d` loss.  The constant `𝔠_d` is the minimum of the constants of the two pins. -/
+/-- **Step 6, regime (iii), from its ingredient statements.**  The ingredients are `(eq:Exp(L-K)1)` (`STExpLKLKHi`), `lem:LWterm_EXP`
+(`LWtermEXP`, the per-time statement, consumed through the bridges of §2 and (g)), the Duhamel identity (`STExpDuhamelZ`) and the integrated
+estimate (`STExpIntIII`); the initial term is `(sum_res_Ndecay)` (`st6_ini_sumNdecay`) closed by `st6_xB_III`, `st6_cmp_ini` with the
+constant `4`, no `𝔠_d` loss.  The constant `𝔠_d` is the minimum of the constants of the two statements. -/
 theorem ST_step6_caseIII_of_pins (hLK : STExpLKLKHi d) (hLW : LWtermEXP d) (hDu : STExpDuhamelZ d)
     (hInt : STExpIntIII d) : STStep6III d := by
   intro hd κ ε 𝔡 hκ hε h𝔡
@@ -759,8 +750,8 @@ theorem ST_step6_caseIII_of_pins (hLK : STExpLKLKHi d) (hLW : LWtermEXP d) (hDu 
       5 * STExpTarget sz n (p.1 : ℝ)
     linarith
 
-/-- **Step 6, regime (iv), from its pins.**  `STExpDriftLo` carries `(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)`; its premise `(res_ELK_n=1)`
-is compiled from `STImproveExpAver` (`st6_expAvgU_of_pin`, (g)); the initial term is `(sum_res_Ndecay)` closed by `st6_xB_IV` (constant `4`). -/
+/-- **Step 6, regime (iv), from its ingredient statements.**  `STExpDriftLo` carries `(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)`; its premise `(res_ELK_n=1)`
+is derived from `STImproveExpAver` (`st6_expAvgU_of_pin`, (g)); the initial term is `(sum_res_Ndecay)` closed by `st6_xB_IV` (constant `4`). -/
 theorem ST_step6_caseIV_of_pins (hAvg : STImproveExpAver d) (hDu : STExpDuhamelZ d) (hLo : STExpDriftLo d)
     (hInt : STExpIntIV d) : STStep6IV d := by
   intro hd κ ε 𝔡 hκ hε h𝔡
@@ -807,7 +798,7 @@ theorem ST_step6_caseIV_of_pins (hAvg : STImproveExpAver d) (hDu : STExpDuhamelZ
       5 * STExpTarget sz n (p.1 : ℝ)
     linarith
 
-/-- The `𝒬`-Duhamel identity along `[s_n,t_n]` for a mollifier family, eventually in `n`, from the pin `STExpDuhamelQ`. -/
+/-- The `𝒬`-Duhamel identity along `[s_n,t_n]` for a mollifier family, eventually in `n`, from `STExpDuhamelQ`. -/
 theorem st6_duhEqQ_of_pin (hDu : STExpDuhamelQ d) (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) {z : ℕ → ℂ}
     (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n) (htT : ∀ n, t n ≤ lemT (z n))
     (C c : ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ)
@@ -818,7 +809,7 @@ theorem st6_duhEqQ_of_pin (hDu : STExpDuhamelQ d) (hd : 3 ≤ d) {κ ε 𝔠 �
   exact hDu hd sz n (STflowE z n) (st6_flowE_lt_two sz hκ hflow n) C c (ϑ n) hn (s n) u (hs0 n) u.2.1
     (lt_of_le_of_lt u.2.2 (st5_t_lt_one sz hflow htT n)) σ a
 
-/-- **A mollifier family** (`Def:QtPt`, `rmk:choosechi`): from the proved `stMollifierEx_holds` (`Induction/QopAlgebra.lean:573`) at `m = 1`,
+/-- **A mollifier family** (`Def:QtPt`, `rmk:choosechi`): from the proved `stMollifierEx_holds` (`Induction/QopAlgebra.lean`) at `m = 1`,
 `Λ = 𝔡⁻¹`; `STMollifierProps` holds eventually (`0 < lam n ≤ 𝔡⁻¹` eventually by `(eq:WO)`). -/
 theorem st6_mollifier_family (hd : 3 ≤ d) {𝔡 : ℝ} (h𝔡 : 0 < 𝔡) (hWO : sz.WO 𝔡) :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∃ ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ,
@@ -836,8 +827,8 @@ theorem st6_mollifier_family (hd : 3 ≤ d) {𝔡 : ℝ} (h𝔡 : 0 < 𝔡) (hWO
   filter_upwards [st6_lam_pos sz hWO, hWO] with n hn1 hn2
   exact hϑ n ⟨hn1, hn2.2⟩
 
-/-- **Step 6, regime (ii), from its pins.**  The drift bounds are those of the window (`STExpLKLKHi`, `LWtermEXP`); the integrated pin `STExpIntII`
-gives `Q^{({1,2})} f_u` (`σ₁ ≠ σ₂`) and `f_u` (`σ₁ = σ₂`, `A = ∅`: paper-delta candidate `T2191a`) from the initial terms
+/-- **Step 6, regime (ii), from its ingredient statements.**  The drift bounds are those of the window (`STExpLKLKHi`, `LWtermEXP`); the integrated statement `STExpIntII`
+gives `Q^{({1,2})} f_u` (`σ₁ ≠ σ₂`) and `f_u` (`σ₁ = σ₂`, `A = ∅`) from the initial terms
 `st6_ini_nonzero` (`(sum_res_Ndecay_nonzero)`, constant `1`); `f_u = Q^{({1,2})} f_u + (f_u - Q^{({1,2})} f_u)` and the Ward
 decomposition `STExpWardII` (`≺ B³ ≤ T`) close `σ₁ ≠ σ₂`; the two sign classes are glued by `st6_cover_exp2U`. -/
 theorem ST_step6_caseII_of_pins (hLK : STExpLKLKHi d) (hLW : LWtermEXP d) (hAvg : STImproveExpAver d)
@@ -920,12 +911,5 @@ theorem ST_step6_caseII_of_pins (hLK : STExpLKLKHi d) (hLW : LWtermEXP d) (hAvg 
 
 end RBM.Gauss.Sizes
 
-/-! ## 7b. Two lemmas of the probe's section 7b
 
-`st6_GdecayW_of_zero` (the lossy conjunct of `STStep2Concl` follows from `(Eq:Gdecay_flow)` without loss) and
-`ST_step6R_mono` (monotonicity of `STStep6R` in the regime).  The rest of the probe's section 7b (gluing by an
-intermediate time) is not ported (DECISIONS §68). -/
 
-/-! ### The ingredient pins, one instance per regime of their window -/
-
-/-! ### The skeletons applied at the data of their regimes -/

@@ -10,31 +10,26 @@ import RBM3D.Induction.ScaleFacts3
 import RBM3D.Induction.MainIndRegimes
 
 /-!
-# S3-26 (ticket T2321): Step 4 of `lem:main_ind` at `d ≥ 3`, and the primed main-induction assembly
+# Step 4 of `lem:main_ind` at `d ≥ 3`, and the main-induction assembly from the step statements
 
-Paper: arXiv:2507.20274, Step 4 `paper/tex/1_2_Intro_model_result.tex:1370-1374`
-(`(Eq:L-KGt-flow)`), proof `paper/tex/3_5_Loop_Hierarchy.tex:1602-1614`
-(`(saww02)`, `3_5:1605-1613`);
-bootstrap bound `(am;asoi222)` `3_5:1366` (R2*, DECISIONS §80: first term at `B_{s,0}`).
-DECISIONS §68 (9), §80, §132, §133.
+Paper: arXiv:2507.20274, Step 4 of Theorem 2.24 (`lem:main_ind`), (2.91) `Eq:L-KGt-flow`; its
+proof (Subsection 4.3, (4.50) `saww02`); the bootstrap bound (4.36) `am;asoi222` with the first
+term at `B_{s,0}`.
 
-* §1 `step4_skeleton` (private): the probe skeleton `st_step4_skeleton`
-  (`3c58211:RBM3D/Probe/T2041Pins.lean:945-1040`) with `STXiBoot` replaced by `STXiBoot'`: the first
-  summand of `STbootRHS` is `(W^{-d}B_{s,0})^{-1/(4p)}` (constant in the pair), `≤ N^{1/(2p)}` by
-  `st_Bctl_ge` at `s n ∈ [0,1)`; with `Ξ^{(𝓛)} ≡ 1` (`STLmaxU`, `st_prec_one_add_sup`) and
-  `Ξ^{(𝓛-𝒦)}_m ≡ 1` for the shorter lengths (strong induction on the length, base
-  `iterationsA_avg_of_STAvgU`), `STXiBoot'` gives `Ξ̂^{(𝓛-𝒦)}_{n} ≺ 1`, and `st_prec_of_xi` turns
-  that into `(Eq:L-KGt-flow)` uniformly in `u ∈ [s,t]`;
+* §1 `step4_skeleton` (private): the skeleton for `(saww02)` with the bootstrap `STXiBoot'`: the
+  first summand of `STbootRHS` is `(W^{-d}B_{s,0})^{-1/(4p)}` (constant in the pair),
+  `≤ N^{1/(2p)}` by `st_Bctl_ge` at `s n ∈ [0,1)`; with `Ξ^{(𝓛)} ≡ 1` (`STLmaxU`,
+  `st_prec_one_add_sup`) and `Ξ^{(𝓛-𝒦)}_m ≡ 1` for the shorter lengths (strong induction on the
+  length, base `iterationsA_avg_of_STAvgU`), `STXiBoot'` gives `Ξ̂^{(𝓛-𝒦)}_{n} ≺ 1`, and
+  `st_prec_of_xi` turns that into `(Eq:L-KGt-flow)` uniformly in `u ∈ [s,t]`;
 * §2 `step4_of_ing` (private), `step4R_mono` (private), `stStep4I_holds`, `stStep4II_holds`
-  (`RBM.Ind`): `STStep4R d R` from the R2* bootstrap `STIngR d R STXiBoot'`
+  (`RBM.Ind`): `STStep4R d R` from the bootstrap `STIngR d R STXiBoot'`
   (`stOeqQt'_holds`, `stOeqQtNZ'_holds`); no regime split, the constant `𝔠_d` is that of the
-  bootstrap pin;
-* §3 `ST_mainInd_of_pins'` (`RBM.Gauss.Sizes`): `lem:main_ind` from the step pins still owed, with
-  Step 3 at the regimes the assembly consumes (`STStep3R · STReg5III`, `STStep3R · STReg5I`,
-  `STStep3II`) in place of `STStep3I`, and Step 4 proved here;
-* §4 the compiled nonempty instances (`RBM.Ind.Step4Inst`).
-
-The source of the port is the T2041 probe, not RBM2D.
+  bootstrap statement;
+* §3 `ST_mainInd_of_pins'` (`RBM.Gauss.Sizes`): `lem:main_ind` from the step statements
+  `STStep2`, `STStep3R · STReg5III`, `STStep3R · STReg5I`, `STStep3II`, `STStep5I/II`,
+  `STStep6I/II/III` as hypotheses (Step 3 at the regimes the assembly consumes), with Step 4
+  proved here.
 -/
 
 set_option linter.style.longLine false
@@ -50,9 +45,9 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-! ## 1. The skeleton of `(saww02)` over the R2* bootstrap -/
+/-! ## 1. The skeleton of `(saww02)` over the bootstrap `STXiBoot'` -/
 
-/-- **Step 4 from `(saww02)`, inductively in the length** (`3_5:1605-1613`): the R2* bootstrap `STXiBoot'`
+/-- **Step 4 from `(saww02)`, inductively in the length** (proof of Step 4): the bootstrap `STXiBoot'`
 (`(am;asoi222)` with `B_s`) with `Ξ^{𝓛} ≡ 1` (`STLmaxU`) and `Ξ^{𝓛-𝒦}_1 ≡ 1` (`STAvgU`) gives
 `Ξ̂^{𝓛-𝒦}_{v,n} ≺ B_s^{-1/(4p)} + c_n` for every `p`; `B_s ≥ N^{-2}` and `p` large give `Ξ̂^{𝓛-𝒦}_n ≺ 1`; the
 induction on the length and `Ξ̂ ≺ 1 ⟺ max ≺ B^k` give `(Eq:L-KGt-flow)` uniformly in `u`.  Hypotheses: `0 ≤ s`,
@@ -147,11 +142,11 @@ private theorem step4_skeleton {E s t : ℕ → ℝ} {Λ : ℝ} (hsize : Tendsto
     (fun n v => (sz.Bctl n (v : ℝ)) ^ k) (fun n v => hBpos n v _)
     (StochDomAt.precomp_param (hall k hk) ψ)
 
-/-! ## 2. `STStep4R` from the R2* bootstrap -/
+/-! ## 2. `STStep4R` from the bootstrap `STXiBoot'` -/
 
-/-- **Step 4 under a regime `R`, from the bootstrap pin over `R`**: `STIngR d R STXiBoot'` (the shape of the
-ingredient pins; `stOeqQt'_holds` for `STCaseI`, `stOeqQtNZ'_holds` for `STCaseII`) and the skeleton.  The constant
-`𝔠_d` is that of the bootstrap pin; `STStep4R` has the same `∃ 𝔠d` position and the hypotheses of `STIngR` plus
+/-- **Step 4 under a regime `R`, from the bootstrap statement over `R`**: `STIngR d R STXiBoot'` (the shape of the
+ingredient statements; `stOeqQt'_holds` for `STCaseI`, `stOeqQtNZ'_holds` for `STCaseII`) and the skeleton.  The constant
+`𝔠_d` is that of the bootstrap statement; `STStep4R` has the same `∃ 𝔠d` position and the hypotheses of `STIngR` plus
 `STStep1Loop` and `STLmaxU`. -/
 private theorem step4_of_ing (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
     (hI : STIngR d R (fun sz E s t => STXiBoot' sz E s t)) : STStep4R d R := by
@@ -183,13 +178,11 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-- **`stStep4I_holds`: Step 4 of `lem:main_ind`, case (i) `1 - t ≥ ilambda²/L²`, for every `d`** (`1_2:1370-1374`,
-proof `3_5:1602-1613`; DECISIONS §133 (1); check shape `T2321_stStep4I`): `(Eq:L-KGt-flow)` uniformly in `u ∈ [s,t]` from
-`STLmaxU` (Step 3's conclusion, a hypothesis of `STStep4R`), the R2* bootstrap `stOeqQt'_holds` and the averaged law. -/
+/-- **`stStep4I_holds`: Step 4 of `lem:main_ind`, case (i) `1 - t ≥ ilambda²/L²`, for every `d`** (proof of Step 4): `(Eq:L-KGt-flow)` uniformly in `u ∈ [s,t]` from
+`STLmaxU` (Step 3's conclusion, a hypothesis of `STStep4R`), the bootstrap `stOeqQt'_holds` and the averaged law. -/
 theorem stStep4I_holds : ∀ d : ℕ, STStep4I d := fun d => step4_of_ing d STCaseI (stOeqQt'_holds d)
 
-/-- **`stStep4II_holds`: Step 4 of `lem:main_ind`, case (ii) `1 - s ≤ ilambda²/L²`, for every `d`** (DECISIONS §133 (1);
-check shape `T2321_stStep4II`): the same with the bootstrap `stOeqQtNZ'_holds`. -/
+/-- **`stStep4II_holds`: Step 4 of `lem:main_ind`, case (ii) `1 - s ≤ ilambda²/L²`, for every `d`** (proof of Step 4): the same with the bootstrap `stOeqQtNZ'_holds`. -/
 theorem stStep4II_holds : ∀ d : ℕ, STStep4II d := fun d => step4_of_ing d STCaseII (stOeqQtNZ'_holds d)
 
 end RBM.Ind
@@ -198,14 +191,15 @@ namespace RBM.Gauss.Sizes
 
 open RBM RBM.Loop RBM.Path RBM.Gauss
 
-/-! ## 3. `lem:main_ind` from the step pins still owed, with Step 3 at the consumed regimes -/
+/-! ## 3. `lem:main_ind` from the step statements, with Step 3 at the consumed regimes -/
 
-/-- **`lem:main_ind` from the step pins still owed, Step 3 at the regimes the assembly consumes** (primed successor of
-`ST_mainInd_of_pins`, `MainIndRegimes.lean:674`; DECISIONS §132, §133 (2); check shape `T2321_mainInd_of_pins'`):
-`STStep2`, Step 3 at `STReg5III`, `STReg5I` (`STStep3R d ·`) and `STStep3II`, `STStep5I/II`, `STStep6I/II/III`.  Step 4 is
-proved (`stStep4I_holds`, `stStep4II_holds`), the other four step pins by `RBM.Green.stStep1_holds`, `stStep5III_holds`,
-`stStep5IV_holds`, `stStep6IV_holds`.  Regimes (iii), (i) use `ST_mainIndR_of_steps` with `R34 = R` (Step 3 at the
-regime itself; Step 4 by `step4R_mono` from case (i)), regimes (ii), (iv) the unprimed `ST_mainIndR_II/IV_of_steps`. -/
+/-- **`lem:main_ind` from the step statements, Step 3 at the regimes the assembly consumes**:
+`STStep2`, Step 3 at `STReg5III`, `STReg5I` (`STStep3R d ·`) and `STStep3II`, `STStep5I/II`,
+`STStep6I/II/III` are hypotheses.
+Step 4 is proved (`stStep4I_holds`, `stStep4II_holds`), the other four steps by
+`RBM.Green.stStep1_holds`, `stStep5III_holds`, `stStep5IV_holds`, `stStep6IV_holds`.  Regimes
+(iii), (i) use `ST_mainIndR_of_steps` with `R34 = R` (Step 3 at the regime itself; Step 4 by
+`step4R_mono` from case (i)), regimes (ii), (iv) use `ST_mainIndR_II/IV_of_steps`. -/
 theorem ST_mainInd_of_pins' (d : ℕ) (h2 : STStep2 d) (h3III : STStep3R d STReg5III)
     (h3I : STStep3R d STReg5I) (h3II : STStep3II d) (h5I : STStep5I d) (h5II : STStep5II d)
     (h6I : STStep6I d) (h6II : STStep6II d) (h6III : STStep6III d) : STMainInd d := by
@@ -223,14 +217,5 @@ theorem ST_mainInd_of_pins' (d : ℕ) (h2 : STStep2 d) (h3III : STStep3R d STReg
 
 end RBM.Gauss.Sizes
 
-/-! ## 4. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.Step4Inst`.  Data (all merged): `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `C_d = 1`; case (i): `sz0`
-(`L = 4(n+1)`, `W = (2(n+1))^5`, `ilambda = (2(n+1))^{-6}`), `z0`, `(s,t) = (0, 1/16)` (`sz0_caseI`); case (ii): `szB`
-(`L = 4`, `W = n + 4`, `ilambda = 1`), `zB`, `(s,t) = (15/16, 31/32)` (`szB_caseII`: `1 - s = ilambda²/L²`);
-`(con_st_ind)` for every `𝔠_d > 0` (`sz0_con`, `conStInd_const`).  `STKbound`, `STKward` are discharged (theorems of the
-flow, `stKbound_of_flow`, `stKward_of_flow`); what stays a hypothesis is a premise that is another gate's pin (`STLK s`,
-`STStep1Loop`, `STStep2Concl`, `STLmaxU` of Step 3, T2320).  The assembly is applied at `(szB, zB, 0, 31/32)` and at
-`(sz0, z0, 0, 1/16)` with the nine step pins as hypotheses. -/
 
 end

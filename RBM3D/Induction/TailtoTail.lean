@@ -9,17 +9,18 @@ import RBM3D.Evolution.Pins
 import RBM3D.Propagator.Props4
 
 /-!
-# S5-04 (ST-4): `TailtoTail`, `(neiwuj)` (`3_5:2344-2362`)
+# `TailtoTail`, `(neiwuj)`
 
-The deterministic lemma `STTailtoTail` (`Induction/Step5Pins.lean:121`) for `3 ≤ d`: for
+Paper: arXiv:2507.20274, Subsection 5.3, (5.46) `neiwuj`.
+
+The deterministic lemma `STTailtoTail` (`Induction/Step5Pins.lean`) for `3 ≤ d`: for
 `0 ≤ s ≤ t < 1`, `ilambda² ≤ 1 - t`, `|m| = 1`, every `σ ∈ {±}²` and every `A` with
 `|A_b| ≤ T_{s,D}(|b₁-b₂|)`,
 `|(𝒰^{(2)}_{s,t,σ} ∘ A)_a| ≤ C T_{t,D}(|a₁-a₂|) + ((1-s)/(1-t))² W^{-D}`,
 with `C = (3 e^{(4d+1)/4})²`.
 
-Route (arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex:2344-2362`, with the independent check
-`docs/claude-team/fable/2026-10-04-tailtotail.md` §2; the Neumann step is done by a weighted
-row-sum bound instead of the pointwise bound `(1-t)Θ_t(0,x) ≤ q^{|x|₁}`):
+Route (the Neumann step is done by a weighted row-sum bound instead of the pointwise bound
+`(1-t)Θ_t(0,x) ≤ q^{|x|₁}`):
 
 * `(1 - sμS) Θ_{tμ} = 1 + (t-s) μ S Θ_{tμ}` (`uKer_eq_one_add`), so by property 4
   (`norm_Theta_apply_le`) the entries of the one-index kernel are dominated by
@@ -32,7 +33,7 @@ row-sum bound instead of the pointwise bound `(1-t)Θ_t(0,x) ≤ q^{|x|₁}`):
 * `√|a₁-a₂| ≤ √|a₁-b₁| + √|b₁-b₂| + √|b₂-a₂|` splits the double sum, and
   `ρ² (W^d (1-s))^{-2} = (W^d (1-t))^{-2}` converts the amplitude.
 
-Registry (DECISIONS §16, §20): `STTailtoTail` is proved here (`stTailtoTail_holds`).
+`stTailtoTail_holds` proves `STTailtoTail`.
 -/
 
 set_option linter.style.longLine false
@@ -577,7 +578,7 @@ private theorem tailtoTail_main (hL : 3 ≤ L) (hd : 1 ≤ d) {g W D s t : ℝ} 
 
 end Main
 
-/-- **`TailtoTail`**, `(neiwuj)` (`3_5:2344-2362`): the pin `STTailtoTail d`, for every `d` (the hypothesis `3 ≤ d`
+/-- **`TailtoTail`**, `(neiwuj)` : the statement `STTailtoTail d`, for every `d` (the hypothesis `3 ≤ d`
 is only used as `1 ≤ d`), with `C = (3 e^{(4d+1)/4})²`. -/
 theorem stTailtoTail_holds (d : ℕ) : STTailtoTail d := by
   intro hd
@@ -587,6 +588,5 @@ theorem stTailtoTail_holds (d : ℕ) : STTailtoTail d := by
   intro a
   exact tailtoTail_main hL (by omega) hW hs hst ht hgt hm σ A hA a
 
-/-! ### 6. Instances (CLAUDE.md §4 step 2) -/
 
 end RBM.Gauss.Sizes

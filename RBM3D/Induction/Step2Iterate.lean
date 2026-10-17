@@ -9,24 +9,19 @@ import RBM3D.Path.NetLift2
 import RBM3D.Induction.Step2K2
 
 /-!
-# ST2-04 (ticket T2092): the iteration over scales and the closure of Step 2 from its pins
+# The iteration over scales and the closure of Step 2
 
-Moved from the T2039 design probe (`git show 0362cbc:RBM3D/Probe/T2039Pins.lean`): section 10
-(probe lines 2243-2525, without `STScaleInv`, `ST_STprof_pos`, `ST_card_lab_le`, which are merged in
-`Step2Events.lean`, and without `STScaleOk`, `STScaleAdm`, merged in `Step2Defs.lean`), section 11
-`Main` and `Iterate2` (3572-4089), section 12 (4090-4728, without the pins merged in `Step2Defs.lean`),
-12.1 (4729-4886, without the bundle `STStep2Concl` and its parts, merged in `Step34Pins.lean`) and
-12.2 (4888-5346, without the loop vocabulary `STLI` ... `STGridRepN`, merged).  Paper:
-`paper/tex/3_5_Loop_Hierarchy.tex:345-609`.
+Paper: arXiv:2507.20274, the proof of Step 2 (Subsection 3.3, `subsec:step2_pf`).  The file
+contains the iteration over scales (section 10: `STSelfImp`, one self-improving step at a time
+section, the iteration `Inv(K_m) ⇒ SelfImp(K_m) ⇒ Inv(K_{m+1})`, `(Eq:Gdecay_w)` from the last
+scale), the size data `ST_Bdata_holds` and the closure of Step 2 `ST_step2_of_pins` (sections
+11-12), the bundle `STStep2Concl` from the three parts `STStep2Local`, `STStep2Avg`,
+`STStep2Decay` (12.1), the general-`n` loop dynamics `Sol_CalL` and `lem:DIfREP` on the grid with
+the consistency statement `ST_gridMart_of_repN` (12.2), and the corollaries in which the proved
+statements `STK2decay`, `STNetLift2`, `STScaleExists` are discharged.
 
-Differences from the probe text: the namespace `RBM.Probe.T2039` is `RBM.Gauss.Sizes` everywhere, the
-`RBM.Probe.T2039` entries of the `open` lines are dropped, and `ST2_Bctl_pos`, `ST2_Bctl_mono` are the
-merged `STBctl_pos`, `STBctl_mono` (`Induction/ScaleFacts.lean`).  Adaptation (preflight finding D-1):
-the merged `STStep2` concludes the bundle `STStep2Concl`, the probe's concluded the triple
-`STStep2Local ∧ STStep2Avg ∧ STStep2Decay`; the probe's statement is `STStep2Parts` (new), the last line
-of `ST_step2_of_pins` goes through `ST_concl_of_step2`, and `ST_step2_concl` is stated for
-`STStep2Parts`.  The final section `Corollaries` (new) discharges the pins now proved, and the section
-`Instances` holds one compiled nonempty `example` per target.
+`STStep2` concludes the bundle `STStep2Concl`; the last line of `ST_step2_of_pins` goes through
+`ST_concl_of_step2`.
 -/
 
 set_option linter.style.longLine false
@@ -36,7 +31,7 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 10. The iteration over scales (`3_5:512–577`)
+/-! ## 10. The iteration over scales
 
 `STScaleInv` is the premise of the light-weight lemmas at the scale family `Kf` (at every time
 section); `STSelfImp` is the conclusion of one self-improving step (the Grönwall bound for `Ĵ`);
@@ -78,7 +73,7 @@ theorem ST_zdistInf_le (n : ℕ) (x : Zd d (sz.L n)) : ((zdistInf d (sz.L n) x :
     exact (min_le_left _ _).trans (ZMod.val_lt (x i)).le
   exact_mod_cast this
 
-/-- **From one self-improving step to the next premise** (`(eq:def_ell1)`, `3_5:570–575`, with
+/-- **From one self-improving step to the next premise** (`(eq:def_ell1)`, with
 `(eq:simpleboundK)`): `𝓛 = 𝒦 + (𝓛-𝒦)`, `|𝒦| ≤ C_K W^{-d} 𝒯̃^L`, `|𝓛-𝒦| ≺ q W^{-d} 𝒯̃^{K}` with
 `q ≤ (W^{-d}B_{u,0})^{1/6}`, and the scale step `𝒯_u(K') = (W^{-d}B_{u,0})^{1/6} 𝒯_u(K)` give
 `|𝓛| ≺ W^{-d} 𝒯̃^{K'}` at every time section. -/
@@ -186,7 +181,7 @@ theorem ST_next (hsz : sz.SizeTendsto) {E s t : ℕ → ℝ} (hst : ∀ n, s n �
     hpos (StochDomAt.refl (P := Sizes.seqP sz) hsize hpos)
   exact StochDomAt.trans hsize hmono hcst
 
-/-- **The last scale gives `(Eq:Gdecay_w)`** (`3_5:575–577`): if for every `D > 0` the self-improving
+/-- **The last scale gives `(Eq:Gdecay_w)`**: if for every `D > 0` the self-improving
 bound holds at a family `Kf` with `𝒯_u(K_u) ≤ W^{-D}` (eventually), then `𝒯̃^{K}_{u,D} = max(𝒯_u, W^{-D})`
 and `q W^{-d} 𝒯̃ ≤ q W^{-d} 𝒯 + W^{-D}` (`q W^{-d} ≤ 1`): the per-time `STStep2DecayPT`. -/
 theorem ST_decay_of_final {E s t : ℕ → ℝ} {Cd : ℝ}
@@ -275,9 +270,9 @@ section Main
 variable {d : ℕ} (sz : Sizes d)
 
 set_option maxHeartbeats 3200000 in
-/-- **One self-improving step at a time section** (`(eq:Gronwall_dervJuD)`, `3_5:529`, per time):
+/-- **One self-improving step at a time section** (`(eq:Gronwall_dervJuD)`, per time):
 from the premise `Inv(Kf)` (`(eq:LW_assm_exp)` at the scale family `Kf`, every time section of
-`[s,t]`) and the pins `lem:newKLK`, `lem: EWGn2_N`, `lem: EMn2_N`, `Sol_CalL`+`lem:DIfREP`:
+`[s,t]`) and the inputs `lem:newKLK`, `lem: EWGn2_N`, `lem: EMn2_N`, `Sol_CalL`+`lem:DIfREP`:
 `|(𝓛-𝒦)^{(2)}_{u,σ,a}| ≺ ((1-s)/(1-u))^{C_d} (W^{-d}B_{u,0})^{1/5} W^{-d} 𝒯̃^{K_u}_{u,D}(|a₁-a₂|)`
 at `u = tt n`, with `C_d = 3C + 1`.  The proof is the stopped Grönwall bootstrap of
 `ST_good_engine` on the good event of `ST_good_prob`, transferred to the model at `t_n`. -/
@@ -325,7 +320,7 @@ theorem ST_selfImprove_section (hLWT : STLWT d) (hEMe : STEMn2Exp d) (hd : 0 < d
   have hDm1 : D' + 1 + 3 ≤ Dm := by rw [hDmdef]; linarith
   have hDm2 : 2 * D + 6 ≤ Dm := by rw [hDmdef]; linarith
   have hDmpos : 0 < Dm := by rw [hDmdef]; linarith
-  -- the grid size and the martingale decomposition from the pin
+  -- the grid size and the martingale decomposition from `hmart`
   obtain ⟨CK, hCK0, hCK⟩ := hmart κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow s T hs hsT hTT Dm hDmpos
   obtain ⟨CK', hCK'def⟩ : ∃ CK' : ℝ, CK' = max CK (2 * (C₀ + D + 3)) := ⟨_, rfl⟩
   have hCK'0 : 0 ≤ CK' := by rw [hCK'def]; exact hCK0.trans (le_max_left _ _)
@@ -679,7 +674,7 @@ section Iterate2
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `r^{C_d} b^{1/5} ≤ b^{1/6}` from `r ≤ b_t^{-𝔠_d}`, `b ≤ b_t ≤ 1`, `C_d 𝔠_d ≤ 1/60`
-(`3_5:570`, "`𝔠_d` small"). -/
+(proof of Step 2, "`𝔠_d` small"). -/
 theorem ST_hq_arith {r b bt 𝔠' Cd : ℝ} (hCd : 0 ≤ Cd) (hr1 : 1 ≤ r) (hrb : r ≤ bt ^ (-𝔠'))
     (h𝔠 : 0 ≤ 𝔠') (hb : 0 < b) (hbt : b ≤ bt) (hbt1 : bt ≤ 1) (h : Cd * 𝔠' ≤ 1 / 60) :
     r ^ Cd * b ^ (1 / 5 : ℝ) ≤ b ^ (1 / 6 : ℝ) := by
@@ -719,7 +714,7 @@ theorem ST_selfImprove (hLWT : STLWT d) (hEMe : STEMn2Exp d) (hd : 0 < d)
     (fun tt => ST_selfImprove_section sz hLWT hEMe hd hκ hε h𝔡 hflow hs htT hC hδ₀ hC₀ hnew hmart
       h𝔠d h3 hDec hCon hS1W hcB hc hBd Kf hKok hinv tt D hD)
 
-/-- **The iteration over the scale family** (`3_5:570–577`): `Inv(K_m) ⇒ SelfImp(K_m) ⇒ Inv(K_{m+1})`
+/-- **The iteration over the scale family**: `Inv(K_m) ⇒ SelfImp(K_m) ⇒ Inv(K_{m+1})`
 for every level `m` of an admissible family, from the base `Inv(K_0)`, the one-step improvement
 `hSelf` and the deterministic `𝒦^{(2)}` bound (`(eq:simpleboundK)`). -/
 theorem ST_iterate {E s t : ℕ → ℝ} {Cd C_K : ℝ} (hsz : sz.SizeTendsto) (hst : ∀ n, s n ≤ t n)
@@ -746,7 +741,7 @@ theorem ST_iterate {E s t : ℕ → ℝ} {Cd C_K : ℝ} (hsz : sz.SizeTendsto) (
         hq ih.2
     exact ⟨hinv', hSelf _ (hAdm.2.1 (m + 1)) hinv'⟩
 
-/-- **`(Eq:Gdecay_w)` from the iteration** (`3_5:575–577`): after `M(D)` steps the scale family is
+/-- **`(Eq:Gdecay_w)` from the iteration**: after `M(D)` steps the scale family is
 at the floor, and `ST_decay_of_final` turns the last self-improving bound into the per-time
 `(Eq:Gdecay_w)`. -/
 theorem ST_decay_pt {E s t : ℕ → ℝ} {Cd C_K : ℝ} (hsz : sz.SizeTendsto) (hst : ∀ n, s n ≤ t n)
@@ -783,12 +778,12 @@ theorem ST_decay_pt {E s t : ℕ → ℝ} {Cd C_K : ℝ} (hsz : sz.SizeTendsto) 
 end Iterate2
 
 end RBM.Gauss.Sizes
-/-! ## 12. The remaining pins of the skeleton and the closure of Step 2
+/-! ## 12. The remaining ingredients of the skeleton and the closure of Step 2
 
 `STScaleExists` (the scale family of `(eq:def_ell1)`), `STOptL2` (`(eq:opt_L2)`, the base of the
-iteration) and `STLocalAvgOfL2` (the closing paragraph `3_5:455–465` from `(eq:L2_decay)` and
-`lem_GbEXP`) are pins (deterministic or owed to ST-2); everything else of the proof of Step 2 is
-compiled in this file (`ST_step2_of_pins`). -/
+iteration) and `STLocalAvgOfL2` (the closing paragraph of the proof of Step 2, from
+`(eq:L2_decay)` and `lem_GbEXP`) are hypotheses of the closure theorem `ST_step2_of_pins`; the
+rest of the proof of Step 2 is proved in this file. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -919,7 +914,7 @@ theorem ST_L2_cmp (n : ℕ) {u D₁ C_K q : ℝ} (hCK : 0 < C_K) (hu0 : 0 ≤ u)
   nlinarith [mul_le_mul_of_nonneg_left hP hCK.le]
 
 set_option maxHeartbeats 800000 in
-/-- **`(eq:L2_decay)`** (`3_5:455–462`) from `(Eq:Gdecay_w)` and the `𝒦^{(2)}` bound
+/-- **`(eq:L2_decay)`** from `(Eq:Gdecay_w)` and the `𝒦^{(2)}` bound
 (`(eq:kn2sol_decay)`), per time, at the floor `D₁ = 1/𝔠` (`W^{-D₁} ≤ N⁻¹`). -/
 theorem ST_L2_decay_pt {E s t : ℕ → ℝ} {Cd C_K : ℝ} (hsz : sz.SizeTendsto) (hst : ∀ n, s n ≤ t n)
     (hs0 : ∀ n, 0 ≤ s n) (ht1 : ∀ n, t n < 1) (hCK : 0 < C_K) {𝔠 : ℝ} (h𝔠 : 0 < 𝔠)
@@ -1010,7 +1005,7 @@ section Bdata
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **`1 - lemT z ≥ Im z/(1+|z|)`**: from `m + z = -m⁻¹` on imaginary parts,
-`Im z · |m|² = Im m (1 - |m|²)` with `Im m ≤ |m|`, and `|m| ≥ (1+|z|)⁻¹` (merged `lemT_ge`). -/
+`Im z · |m|² = Im m (1 - |m|²)` with `Im m ≤ |m|`, and `|m| ≥ (1+|z|)⁻¹` (`lemT_ge`). -/
 theorem ST_one_sub_lemT {z : ℂ} (hz : 0 < z.im) : z.im / (1 + ‖z‖) ≤ 1 - lemT z := by
   set m := msc z with hm
   have hr : 0 < ‖m‖ := norm_msc_pos hz
@@ -1176,11 +1171,11 @@ end Bdata
 
 end RBM.Gauss.Sizes
 
-/-! ## 12.1 The bundle `STStep2Concl` from the three parts of `STStep2Parts`
+/-! ## 12.1 The bundle `STStep2Concl` from its three parts
 
-`STStep2Parts` is the probe's `STStep2` (conclusion `STStep2Local ∧ STStep2Avg ∧ STStep2Decay`);
-the merged `STStep2` concludes the bundle `STStep2Concl = STLocalEntryU ∧ STAvgU ∧ STGdecayW` of
-`Induction/Step34Pins.lean`.  `STLocalEntryU`, `STGdecayW` are `STStep2Local`, `STStep2Decay` word for
+`STStep2` concludes the bundle `STStep2Concl = STLocalEntryU ∧ STAvgU ∧ STGdecayW` of
+`Induction/Step34Pins.lean`; its three parts are `STStep2Local`, `STStep2Avg`, `STStep2Decay`.
+`STLocalEntryU`, `STGdecayW` are `STStep2Local`, `STStep2Decay` word for
 word; `STAvgU` is `max_{σ,a} |𝓛^{(1)}_{u,σ,a} - 𝒦^{(1)}_{u,σ,a}| ≺ W^{-d}B_{u,0}` for **both** charges and
 follows from `STStep2Avg` (charge `+`, `𝒦^{(1)}_+ = m(E)`) because `𝓛^{(1)}_- = conj 𝓛^{(1)}_+`
 (`ST_Lloop_one_false`) and `𝒦^{(1)}_- = conj m(E)` (`ST_Kloop_one`) (`ST_avgU_of_avg`,
@@ -1233,7 +1228,7 @@ theorem ST_Lloop_one_false (n : ℕ) (E u : ℝ) (a : Zd d (sz.L n)) (ω : sz.Se
   rw [hm, Matrix.trace_conjTranspose, Matrix.trace_mul_comm]
   rfl
 
-/-- `𝒦^{(1)}_{u,σ,a} = m(σ)` (`Def_Ktza`, `1_2:988`; merged `KLK_one`) at the labels of `STKloop`. -/
+/-- `𝒦^{(1)}_{u,σ,a} = m(σ)` (Definition 2.14 `Def_Ktza`; `KLK_one`) at the labels of `STKloop`. -/
 theorem ST_Kloop_one (n : ℕ) (E u : ℝ) (σ : Bool) (a : Zd d (sz.L n)) :
     STKloop sz n E u (fun _ : Fin 1 => σ) (fun _ => a) = mSigma E σ := by
   have : KLloopOf d (sz.L n) (fun _ : Fin 1 => σ) (fun _ => a) = ⟨[σ], [a]⟩ := by
@@ -1268,7 +1263,7 @@ theorem ST_avgU_of_avg {E s t : ℕ → ℝ} (h : STStep2Avg sz E s t) : STAvgU 
   refine StochDomAt.of_le_left (fun n p ω => ?_) h1
   exact (ST_avg_pointwise sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω).le
 
-/-- **The conclusions of `STStep2` imply the bundle `STStep2Concl` of the merged Steps 3-4 pins** (the
+/-- **The conclusions of `STStep2` imply the bundle `STStep2Concl` used by Steps 3-4** (the
 same `C_d`). -/
 theorem ST_concl_of_step2 {E s t : ℕ → ℝ} {Cd : ℝ} (hL : STStep2Local sz E s t)
     (hA : STStep2Avg sz E s t) (hD : STStep2Decay sz Cd E s t) : STStep2Concl sz E s t Cd :=
@@ -1311,7 +1306,7 @@ theorem ST_prof_L_le_zero (n : ℕ) (u D : ℝ) (a b : Zd d (sz.L n)) :
   exact mul_le_mul_of_nonneg_left (ST_tailW_L_le (d := d) (L := sz.L n) (le_refl (0 : ℝ)) hρ0 hρL)
     (inv_nonneg.mpr (pow_nonneg hW.le d))
 
-/-- **The base of the iteration** (`(ksjjuw)`, `3_5:512–518`): `(eq:opt_L2)` and `(eq:simpleboundK)`
+/-- **The base of the iteration** (`(ksjjuw)`): `(eq:opt_L2)` and `(eq:simpleboundK)`
 give `𝓛^{(2)}_{u,σ,(a,b)} ≺ W^{-d} 𝒯̃^{0}_{u,D}(|a-b|)`, i.e. `Inv(K_0 = 0)`. -/
 theorem ST_base_inv {E s t : ℕ → ℝ} (hsz : sz.SizeTendsto) (hst : ∀ n, s n ≤ t n) {C_K : ℝ}
     (hCK : 0 < C_K)
@@ -1382,14 +1377,14 @@ theorem ST_ratio_le {s t u bt 𝔠' : ℝ} (hs1 : 0 < 1 - s) (ht1 : 0 < 1 - t) (
     _ = bt ^ (-𝔠') := (Real.rpow_neg hbt.le _).symm
 
 set_option maxHeartbeats 1600000 in
-/-- **Step 2 of `lem:main_ind` from its pinned ingredients** (the compiled skeleton of
-`3_5:345–609`).  Taken as hypotheses (each a `Prop` of the file, with its registry class in the
-report): the light-weight lemmas `STLWT`; the martingale estimate `STEMn2Exp`; `lem:newKLK`
-`STNewKLK`; `Sol_CalL` + `lem:DIfREP` `STGridMart`; the deterministic `𝒦^{(2)}` decay `STK2decay`; the
-scale family `STScaleExists`; the base `STOptL2`; the closing paragraph `STLocalAvgOfL2`; the net lift
-`STNetLift2`.  Proved here: the size data (`ST_Bdata_holds`), the good event of the grid walk, the
-stopped Grönwall bootstrap, the iteration over scales, `(Eq:Gdecay_w)` and `(eq:L2_decay)`; the
-constants are `C_d = 3C + 1` (`C` of `lem:newKLK`) and `𝔠_d = min(1/100, 1/(60 C_d), 𝔠₀)`. -/
+/-- **Step 2 of `lem:main_ind` from its ingredients** (the skeleton of the proof of
+Step 2).  Taken as hypotheses (each a `Prop` of the file): the light-weight lemmas `STLWT`; the
+martingale estimate `STEMn2Exp`; `lem:newKLK` `STNewKLK`; `Sol_CalL` + `lem:DIfREP` `STGridMart`;
+the deterministic `𝒦^{(2)}` decay `STK2decay`; the scale family `STScaleExists`; the base
+`STOptL2`; the closing paragraph `STLocalAvgOfL2`; the net lift `STNetLift2`.  Proved here: the
+size data (`ST_Bdata_holds`), the good event of the grid walk, the stopped Grönwall bootstrap,
+the iteration over scales, `(Eq:Gdecay_w)` and `(eq:L2_decay)`; the constants are `C_d = 3C + 1`
+(`C` of `lem:newKLK`) and `𝔠_d = min(1/100, 1/(60 C_d), 𝔠₀)`. -/
 theorem ST_step2_of_pins (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe : STEMn2Exp d)
     (hMart : STGridMart d) (hK2 : STK2decay d) (hNet : STNetLift2 d)
     (hScale : STScaleExists d) (hOpt : STOptL2 d) (hClos : STLocalAvgOfL2 d) : STStep2 d := by
@@ -1484,12 +1479,13 @@ end RBM.Gauss.Sizes
 
 /-! ## 12.2 The general-`n` loop dynamics shared by Steps 2-4: `Sol_CalL` and `lem:DIfREP` on the grid
 
-The paper states `Sol_CalL` (`(int_K-L_ST)`, `3_5:134`) and `lem:DIfREP` (`(aaswtghh)`, `(alu9_STime)`,
-`3_5:218`) for every loop length `n`; Step 2 uses `n = 2` (`STGridMart`), Steps 3-4 use every `n`.
-`STGridRepN d` (merged, `Step34Pins`/`Step2Defs`) is the grid form for **all** loop lengths `m ≥ 2`.
-The model-level terms are written once more for an arbitrary fine matrix `H` (suffix `M`, merged) so that
-they can be evaluated on the grid walk `pathH`; `STLIM_seqHflow` etc. are `rfl`.
-`ST_gridMart_of_repN` compiles the consistency with the loop-length-`2` pin used by the skeleton. -/
+The paper states `Sol_CalL` (Lemma 3.4, `(int_K-L_ST)`) and `lem:DIfREP` (Lemma 3.6, `(aaswtghh)`,
+`(alu9_STime)`) for every loop length `n`; Step 2 uses `n = 2` (`STGridMart`), Steps 3-4 use every `n`.
+`STGridRepN d` (`Step2Defs.lean`) is the grid form for **all** loop lengths `m ≥ 2`.
+The model-level terms are written once more for an arbitrary fine matrix `H` (suffix `M`) so that
+they can be evaluated on the grid walk `pathH`; the corresponding identities are `rfl`.
+`ST_gridMart_of_repN` is the consistency with the loop-length-`2` statement `STGridMart` used by
+the skeleton. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -1557,7 +1553,7 @@ theorem STgA_eq_STgAN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) 
     STgA sz s t K n E σ a k ω = STgAN sz s t K n E σ a k ω :=
   STLKM_eq_STLKIM sz n E _ _ σ a
 
-/-- `Θ^{(2)}` of §1 is the merged `ThetaN` at `m = 2`. -/
+/-- `Θ^{(2)}` of `Step2Defs.lean` is `ThetaN` at `m = 2`. -/
 theorem STthetaOp_eq_ThetaN (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool)
     (A : (Fin 2 → Zd d (sz.L n)) → ℂ) (a : Fin 2 → Zd d (sz.L n)) :
     STthetaOp sz n E u σ A a =
@@ -1587,7 +1583,7 @@ theorem KLloopOf_length2 (n : ℕ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz
     (KLloopOf d (sz.L n) σ a).length = 2 := by
   simp [KLloopOf, LoopIdx.length]
 
-/-- `ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}` of §1 is the general-`n` term at the loop length `2`. -/
+/-- `ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}` of `Step2Defs.lean` is the general-`n` term at the loop length `2`. -/
 theorem STELKLKM_eq_STelklkM (n : ℕ) (E u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) :
@@ -1623,7 +1619,7 @@ theorem STavgM_eq_STavgErrM (n : ℕ) (E u : ℝ)
   rw [this]
   rfl
 
-/-- `ℰ^{G̃,(2)}` of §1 is the general-`n` term at the loop length `2`. -/
+/-- `ℰ^{G̃,(2)}` of `Step2Defs.lean` is the general-`n` term at the loop length `2`. -/
 theorem STEGtM_eq_STegtM (n : ℕ) (E u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) :
@@ -1646,7 +1642,7 @@ theorem STeeLoop_two (n : ℕ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n
       KLloopOf d (sz.L n) ![σ 1, σ 0, σ 1, !(σ 1), !(σ 0), !(σ 1)] ![a 1, a 0, b', a 0, a 1, b] := by
   simp [STeeLoop, KLloopOf, List.ofFn_succ]
 
-/-- `(ℰ⊗ℰ)^{M,(2)}` of §1 is the general-`n` quadratic-variation loop at the loop length `2`
+/-- `(ℰ⊗ℰ)^{M,(2)}` of `Step2Defs.lean` is the general-`n` quadratic-variation loop at the loop length `2`
 (`a' = a`). -/
 theorem STEEM_eq_STeeM (n : ℕ) (E u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool)
@@ -1658,7 +1654,7 @@ theorem STEEM_eq_STeeM (n : ℕ) (E u : ℝ)
   simp only [STeeLoop_one, STeeLoop_two, STLIM]
   rfl
 
-/-- The drift of §2.3 (`n = 2`) is the general-`n` drift at the loop length `2` (`Σ_{l_K=3}^{2}` is empty). -/
+/-- The drift of `Step2Defs.lean` §2.3 (`n = 2`) is the general-`n` drift at the loop length `2` (`Σ_{l_K=3}^{2}` is empty). -/
 theorem STgDrift_eq_STgDriftN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) :
     STgDrift sz s t K n E σ a k ω = STgDriftN sz s t K n E σ a k ω := by
@@ -1675,8 +1671,8 @@ end Ident
 
 section Consistency
 
-/-- **The pin `STGridRepN` (every loop length) implies the pin `STGridMart` (loop length `2`) used by the
-skeleton**: the first three clauses are the case `m = 2` of the general ones, with the vocabulary of §1
+/-- **`STGridRepN` (every loop length) implies `STGridMart` (loop length `2`), used by the
+skeleton**: the first three clauses are the case `m = 2` of the general ones, with the vocabulary of `Step2Defs.lean`
 identified with the general-`n` vocabulary at length `2` (`STLKM_eq_STLKIM`, `STthetaOp_eq_ThetaN`,
 `STELKLKM_eq_STelklkM`, `STEGtM_eq_STegtM`, `STEEM_eq_STeeM`). -/
 theorem ST_gridMart_of_repN {d : ℕ} (h : STGridRepN d) : STGridMart d := by
@@ -1704,7 +1700,7 @@ namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- **The compiled skeleton with the general-`n` grid pin**: the same theorem as `ST_step2_of_pins`, with
+/-- **The skeleton with the general-`n` grid statement**: the same theorem as `ST_step2_of_pins`, with
 `STGridRepN` (every loop length) instead of `STGridMart` (loop length `2`). -/
 theorem ST_step2_of_pinsN {d : ℕ} (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe : STEMn2Exp d)
     (hRep : STGridRepN d) (hK2 : STK2decay d) (hNet : STNetLift2 d) (hScale : STScaleExists d)
@@ -1713,27 +1709,27 @@ theorem ST_step2_of_pinsN {d : ℕ} (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe :
 
 end RBM.Gauss.Sizes
 
-/-! ## Corollaries (new): the pins now proved are discharged
+/-! ## Corollaries: the proved statements are discharged
 
-`stK2decay_holds` (`Induction/Step2K2.lean`, T2093), `stNetLift2_holds` (`Path/NetLift2.lean`) and
-`stScaleExists_holds` (`Induction/Step2Scale.lean`, T2081) prove `STK2decay d`, `STNetLift2 d`,
-`STScaleExists d` for every `d` (no `3 ≤ d` in the pin statements).  The primed corollaries keep the
-six remaining pins `STNewKLK`, `STLWT`, `STEMn2Exp`, `STGridMart` (or `STGridRepN`), `STOptL2`,
-`STLocalAvgOfL2` as hypotheses.  `ST_step2_of_pinsLW'` replaces `STLWT` by `LWtermExp` through the bridge
-`STLWT_of_LWtermExp`, which needs `3 ≤ d` (DECISIONS section 29). -/
+`stK2decay_holds` (`Induction/Step2K2.lean`), `stNetLift2_holds` (`Path/NetLift2.lean`) and
+`stScaleExists_holds` (`Induction/Step2Scale.lean`) prove `STK2decay d`, `STNetLift2 d`,
+`STScaleExists d` for every `d` (no `3 ≤ d` in the statements).  The corollaries below keep the
+six remaining statements `STNewKLK`, `STLWT`, `STEMn2Exp`, `STGridMart` (or `STGridRepN`),
+`STOptL2`, `STLocalAvgOfL2` as hypotheses.  `ST_step2_of_pinsLW'` replaces `STLWT` by `LWtermExp`
+through the bridge `STLWT_of_LWtermExp`, which needs `3 ≤ d`. -/
 
 namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
 /-- `ST_step2_of_pinsN` with `STK2decay`, `STNetLift2`, `STScaleExists` discharged; the remaining
-pins are `STNewKLK`, `STLWT`, `STEMn2Exp`, `STGridRepN`, `STOptL2`, `STLocalAvgOfL2`. -/
+hypotheses are `STNewKLK`, `STLWT`, `STEMn2Exp`, `STGridRepN`, `STOptL2`, `STLocalAvgOfL2`. -/
 theorem ST_step2_of_pinsN' {d : ℕ} (hNew : STNewKLK d) (hLWT : STLWT d) (hEMe : STEMn2Exp d)
     (hRep : STGridRepN d) (hOpt : STOptL2 d) (hClos : STLocalAvgOfL2 d) : STStep2 d :=
   ST_step2_of_pinsN hNew hLWT hEMe hRep (stK2decay_holds d) (stNetLift2_holds d)
     (stScaleExists_holds d) hOpt hClos
 
-/-- `ST_step2_of_pinsN'` with `STLWT` obtained from the light-weight pin `LWtermExp` (bridge
+/-- `ST_step2_of_pinsN'` with `STLWT` obtained from the light-weight statement `LWtermExp` (bridge
 `STLWT_of_LWtermExp`, `3 ≤ d`). -/
 theorem ST_step2_of_pinsLW' {d : ℕ} (hd : 3 ≤ d) (hNew : STNewKLK d) (hLW : LWtermExp d)
     (hEMe : STEMn2Exp d) (hRep : STGridRepN d) (hOpt : STOptL2 d) (hClos : STLocalAvgOfL2 d) :
@@ -1793,13 +1789,3 @@ theorem ST_hq_of_data {d : ℕ} (sz : Sizes d) (hsz : sz.SizeTendsto) {s t : ℕ
 
 end RBM.Gauss.Sizes
 
-/-! ## Instances (new): every target at `d = 3`
-
-The data are the merged `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`,
-`lam_n = (2(n+1))^{-6}`, `N_n = (W_n L_n)^3`), the flow `z0` (`flow_z0`, `κ = ε = 𝔡 = 1/10`,
-`𝔠 = 1/6`, `Im z_n = N_n^{-4/5}`), the times `s ≡ 0`, `t ≡ 1/16 ≤ lemT z_n` and the pin constants
-`C = 1`, so `C_d = 3C + 1 = 4`, `𝔠_d = 1/240` with `(3C+1) 𝔠_d = 1/60` (preflight table).  In every example
-the deterministic hypotheses are discharged: `SizeTendsto`, `Bandwidth`, `STFlow`, the time ranges,
-`STConStInd`, the size data `cB W^{-3} ≤ B ≤ N^{-c}` (`ST_Bdata_holds`), the deterministic `𝒦^{(2)}` bound
-(`ST_K2e_of_flow`), the closure arithmetic `hq` (`ST_hq_of_data`), the scale family (`stScaleExists_holds`).
-What stays a hypothesis of an example is a pin or a stochastic premise of the statement. -/

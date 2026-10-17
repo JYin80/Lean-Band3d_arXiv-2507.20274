@@ -12,102 +12,83 @@ import RBM3D.Green.Pins
 
 /-!
 # Step 1 of `lem:main_ind`, first part: elementary facts, scales, per-time lemmas, loops, bridge
-(ST-1, S1-35)
 
-Ticket T2079.  Port of `RBM2D/Induction/Step1.lean` at `c9a24cf` up to `end Bridge` (lines 1-965,
-cited `Step1:line`) to `arXiv:2507.20274`: Step 1 of `lem:main_ind`, (`lRB1`) `1_2:1321` and
-(`Gtmwc`) `1_2:1327` (the merged `STStep1Loop`, `STStep1Weak`), `3_5:64-66`.
+Paper: arXiv:2507.20274, Step 1 of Theorem 2.24 (`lem:main_ind`): (2.85) `lRB1` and (2.86)
+`Gtmwc` (the conclusions `STStep1Loop`, `STStep1Weak` of `STStep1`).  The proof of Step 1
+(Section 3, with Lemma 3.1 `lem_GbEXP` and Lemma 3.2 `lem_ConArg`) follows [YY_25, §5.1].  This
+file follows the first part of the two-dimensional formalization (RBM2D `Induction/Step1`); the
+weak-law step, the net, the bootstrap and the assembly `step1` are in `Step1.lean`.
 
-## The cut
+## Contents
 
-S1-35 (this file) is `Step1:1-965`: `Step1TargetV3` (`:84`), sections `Elementary` (`:90`),
-`Scales` (`:211`), `Generic` (`:462`), `Loops` (`:508`), `Bridge` (`:729`-`:965`).  S1-36 is
-`Step1:967-1515`: `WeakLawSeq` (`s1x`, `s1a`, `s1f`, `s1_card_block*` `:983-1000`, `s1_card_loops`,
-`s1_wl_seq`), `Net` (`s1Net`, `s1_forb`), `Bootstrap` (`s1_boot`, `s1_weakPT`, `s1_loopPT`),
-`step1` (`:1378`), `Checks`.
+* `Step1TargetV3 d := STGbEXPii d → STGbEXPij d → STStep1 d`: both conjuncts `STStep1Loop`,
+  `STStep1Weak` of `STStep1`.
+* Elementary facts: `s1_bulk` (alias of `ContinuityNet.cont_bulk`), `s1_inv_rpow`,
+  `s1_mul_rpow_le` (private), `s1_one_le_W`, `s1_one_le_size`, `s1_hsize`, `s1_d_pos`, and
+  `s1_ratio_pt` (`a_s (1-s)/(1-u) ≤ a_s^{1-𝔠_d}`).  The two-dimensional scale `M_u = W² ℓ² η` has
+  no `d ≥ 3` reading; its uses become `STBctl_ge` (`s1_Wd_le_Bctl`, `s1_F8`, `s1_loop_det`) and
+  `cont_inv_size_le_Bctl` (`s1_F6`).
+* Scales: `S1Std` (the standing hypotheses; the fields `hWO`, `h𝔠d`, `h𝔠d'` are specific to
+  `d ≥ 3`), `s1_std_of_stFlow`, `s1_a_le`, `s1_B_tendsto`, `s1_B_pos`, `s1_Bu_pos`,
+  `s1_B_ev_pow`, `s1_B_le_one`, `s1_ratio_ev`, `s1B`, `s1_apow_le`, `s1_c1_pos`, `s1_c0_pos`,
+  `s1_F3`-`s1_F8`.
+* Generic `PerTimeDomAt` helpers: `s1_highProb_of_pt`, `s1_pt_of_highProb`, `s1_stochDom_unit`,
+  `s1_pt_of_ev_or` (private).
+* Loops: `s1T1`, `s1_blockMat_herm` (private), `s1_loop_det`, `s1_Kbound_seq`, `S1H55`,
+  `s1_h55`, `s1_LI`.
+* Bridges: `s1_zdist_le_one` (private), `s1_near_card`, `s1xM`, `s1xM_ge`, `s1xM_le`,
+  `s1_gMax_le`, `s1xM_le_add`, `s1_wl_det`, `s1_llErrMat_eq`, `s1_STGM_norm`,
+  `s1_omegaC_eq_one`, `s1_indMax_eq_one` (the sample-level indicators `STomegaC`, `STindMax`
+  read at `s1xM`).  The entries of `Gt` and `STGM` are read directly on the fine lattice
+  `Idx d L W`, where `STGiiGEX`, `STGijGEX` live.
 
-## Declarations of `Step1:1-965` (RBM2D line) and what became of them
-
-* `Step1TargetV3` `:84` -> `Step1TargetV3 d := STGbEXPii d → STGbEXPij d → STStep1 d`: both
-  conjuncts `STStep1Loop`, `STStep1Weak` of the merged pin `STStep1`.
-* `Elementary`: `s1_bulk` `:94` (alias of `ContinuityNet.cont_bulk`), `s1_im_le_one` `:107`
-  (dropped), `s1_inv_rpow` `:112`, `s1_mul_rpow_le` `:116` (private), `s1_size_eq` `:122`
-  (`size = (WL)^d`), `s1_one_le_L` `:125`, `s1_one_le_W` `:128`, `s1_one_le_size` `:130`,
-  `s1_W_sq_le_size` `:135` -> `s1_W_pow_le_size` (`W^d ≤ N`), `s1_hsize` `:141`,
-  `s1_scaleM_le_W2` `:145` (**deleted**: `M_u = W² ℓ² η` has no `d ≥ 3` reading; its uses become
-  `STBctl_ge` (`s1_Wd_le_Bctl`, `s1_F8`, `s1_loop_det`) and `cont_inv_size_le_Bctl` (`s1_F6`)),
-  `s1_ratio_pt` `:159` (`a_s (1-s)/(1-u) ≤ a_s^{1-𝔠_d}`); new: `s1_d_pos`.
-* `Scales`: `S1Std` `:214` (**new fields `hWO`, `h𝔠d`, `h𝔠d'`**), `s1_std_of_mainIndHyp` `:229` ->
-  `s1_std_of_stFlow`, `s1_Ms_ge` `:233` -> `s1_a_le`, `s1_Ms_tendsto` `:242` -> `s1_B_tendsto`,
-  `s1_Ms_pos`, `s1_Mu_pos` `:254`, `:259` -> `s1_B_pos`, `s1_Bu_pos`, `s1_Ms_ev_pow` `:264` ->
-  `s1_B_ev_pow`, `s1_one_le_Ms` `:268` -> `s1_B_le_one`, `s1_ratio_ev` `:273`, `s1Ms` `:282` ->
-  `s1B`, `s1_Npow_le` `:285` -> `s1_apow_le`, `s1_c1_pos` `:293`, `s1_c0_pos` `:296`,
-  `s1_F3` `:300`, `s1_F4` `:329`, `s1_F5` `:382`, `s1_F6` `:418`, `s1_F7` `:439`, `s1_F8` `:445`.
-* `Generic`: `s1_pt_of_le` `:467` (private), `s1_highProb_of_pt` `:481`, `s1_pt_of_highProb`
-  `:488`, `s1_stochDom_unit` `:499`; new (private): `s1_pt_of_ev_or`.
-* `Loops`: `s1T1` `:513`, `s1_blockMat_herm` `:515` (private), `s1_ellT_nonneg` `:519` (dropped: no
-  `ℓ` in the `d ≥ 3` controls), `s1_loop_det` `:525`, `s1_Kbound_seq` `:550`, `S1H55` `:570`,
-  `s1_h55` `:581`, `s1_LI` `:641`.
-* `Bridge`: `s1_green_blockMat`, `s1_greenBlk_apply`, `s1_diagSq_eq`, `s1_offSq_eq`,
-  `s1_norm_loopPM` `:735-766` (dropped: the merged `Green.diagSq`, `offSq`, `loopPM` are on the fine
-  lattice `Idx d L W`, and `STGiiGEX`, `STGijGEX` are on the sample, so the entries of `Gt`,
-  `STGM` are read directly), `s1_zdist_le_one` `:774` (private), `s1_mem_sbSupport` `:794`
-  (dropped: `sbSupport` is the `d = 2` five-point profile), `s1_near_card` `:810`, `s1_gexRHS_le`
-  `:823`, `s1xM` `:858`, `s1xM_ge`, `s1xM_le`, `s1xM_nonneg` `:862-871`, `s1_gMax_le` `:877`,
-  `s1xM_le_add` `:892`, `s1_wl_det` `:918`; new: `s1_llErrMat_eq`, `s1_STGM_norm`,
-  `s1_omegaC_eq_one`, `s1_indMax_eq_one` (the merged sample-level indicators `STomegaC`,
-  `STindMax` read at `s1xM`).
-* DECISIONS §26: `StochDomAt.of_subset_whp`, `StochDomAt.of_subset_compl` (probe `752e027`
-  `:907`, `:926`), absent from `Defs/StochDomAt.lean`, are proved in section 0.
-
-## Dimension-dependent statements (ST1-COMMON item 2)
+## Dimension-dependent statements
 
 `W²` -> `W^d`, `(WL)²` -> `(WL)^d = N`, `Z2 L` -> `Zd d L`; `M_s⁻¹` -> `a_s := sz.Bctl n s =
-W^{-d} B_{s,0}` (merged `ScaleFacts.lean:12-34`); `(ℓ_u/ℓ_s)² M_u⁻¹` -> `(1-s)/(1-u) · a_s`; the
+W^{-d} B_{s,0}` (`ScaleFacts.lean`); `(ℓ_u/ℓ_s)² M_u⁻¹` -> `(1-s)/(1-u) · a_s`; the
 exponent `30` of `CondStInd` -> the parameter `𝔠_d` of `STConStInd`.  Constants:
 `6 -> 2·3^d ≥ √(2·9^d + 1)` (F4), `25 → 2·9^d` and `26 → 2·9^d + 1` (`s1_gexRHS_le`,
 `s1_wl_det`: `STgexRHS` sums the two orientations `σ ∈ {(+,-),(-,+)}`, and the `zdistInf` ball
-of radius `1` has `≤ 3^d` blocks).  The ticket's `2d + 1` is the `zdistD` ball and is not used.
+of radius `1` has `≤ 3^d` blocks).  The `zdistD` ball, with `2d + 1` points, is not used.
 
-## Map `S1Std`/`MainIndHyp` -> merged hypotheses (`STFlow sz κ ε 𝔠 𝔡 z`, `E = STflowE z`)
+## The hypotheses of `S1Std` and of `STStep1` (`STFlow sz κ ε 𝔠 𝔡 z`, `E = STflowE z`)
 
-`hκ`, `hc`, `h𝔡` <- the pin arguments and `Admissible.1`; `hE` <- `lemma28_quant`;
-`hN` <- `Admissible.2.2.1`; `hB` <- `.2.2.2.1`; `hWO` <- `.2.2.2.2` (new); `hτ`, `hR` <-
-`Green.v3_premises_of_stFlow` (`τ = ε/2`); `hs0`, `hst`, `ht1` <- the pin (`t ≤ lemT z < 1`);
-`hCond` <- `STConStInd 𝔠_d s t`; `InitLK` <- `STLK s`; `InitLocal` <- `STLocalMax s`;
-`KboundConcl κ` <- `STKbound`; `InitDecay` unused; `GbEXPHypV3 d (κ/2) c τ` <- `STGbEXPii d`,
-`STGbEXPij d` (`STGbEXPav` unused).
+`hκ`, `hc`, `h𝔡` <- the arguments of `STStep1` and `Admissible.1`; `hE` <- `lemma28_quant`;
+`hN` <- `Admissible.2.2.1`; `hB` <- `.2.2.2.1`; `hWO` <- `.2.2.2.2`; `hτ`, `hR` <-
+`Green.v3_premises_of_stFlow` (`τ = ε/2`); `hs0`, `hst`, `ht1` <- the hypotheses of `STStep1`
+(`t ≤ lemT z < 1`); `hCond` <- `STConStInd 𝔠_d s t`; `InitLK` <- `STLK s`; `InitLocal` <-
+`STLocalMax s`; `KboundConcl κ` <- `STKbound`; `InitDecay` unused; `GbEXPHypV3 d (κ/2) c τ` <-
+`STGbEXPii d`, `STGbEXPij d` (`STGbEXPav` unused).
 
-## Time windows (DECISIONS §29)
+## Time windows
 
 `0 ≤ s` is used exactly in `STBctl_ge` (`s1_Wd_le_Bctl`, `s1_F8`, the `u < 1/2` branches of
 `s1_h55`, `s1_LI`) and `cont_inv_size_le_Bctl` (`s1_F6`); `s1_ratio_pt` and the `u ≥ 1/2` branch of
 `s1_LI` use only `s ≤ u ≤ t < 1`.  The facts that need `lam ≤ 𝔡⁻¹` or `a_s → 0` are `∀ᶠ n`; the
 pointwise facts are `∀ n`.  No statement here contains `ℓ` or uses `L^d ≤ W^K`.  The constants
-depend on `κ, 𝔡, d, k` only.  Section 7 holds the compiled instances at `d = 3` and the
-counterexample to dropping `0 ≤ s`.
+depend on `κ, 𝔡, d, k` only.
 -/
 
 set_option linter.style.longLine false
 
 noncomputable section
 
-/-! ## 0. Two `≺`-calculus lemmas of the T2015 probe (DECISIONS §26; probe `752e027`, §4.0) -/
 
 namespace RBM.Ind
 
 open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 open scoped NNReal ENNReal
 
-/-! ## 1. The pin `Step1TargetV3` -/
+/-! ## 1. The statement `Step1TargetV3` -/
 
-/-- **Successor of RBM2D's `Step1TargetV3`** (`Step1:84`, `GbEXPHypV3 d (κ/2) c τ` with
-`MainIndHyp`) in its `d`-dimensional form: Step 1 of `lem:main_ind` (`1_2:1317-1328`, `3_5:64-66`)
-is the merged pin `STStep1 d` (the hypotheses `STKbound`, `STLK s`, `STLocalMax s`, `STConStInd` and
-the flow are `STStep1`'s own, they play the roles of `KboundConcl`, `InitLK`, `InitLocal`,
-`CondStInd`, `MainIndHyp`), under the two parts `STGbEXPii`, `STGbEXPij` of `lem_GbEXP`
-(`3_5:21`, `3_5:24`) that RBM2D's `GbEXPHypV3` carries.  It covers **both** conjuncts
-`STStep1Loop` and `STStep1Weak` of `STStep1`; S1-36 proves it. -/
+/-- **The counterpart of RBM2D's `Step1TargetV3`** (`GbEXPHypV3 d (κ/2) c τ` with `MainIndHyp`) in
+its `d`-dimensional form: Step 1 of `lem:main_ind` (Theorem 2.24: (2.85), (2.86); proof of
+Step 1) is the statement `STStep1 d` (the hypotheses `STKbound`, `STLK s`, `STLocalMax s`,
+`STConStInd` and the flow are `STStep1`'s own, they play the roles of `KboundConcl`, `InitLK`,
+`InitLocal`, `CondStInd`, `MainIndHyp`), under the two parts `STGbEXPii`, `STGbEXPij` of
+`lem_GbEXP` ((3.2) `GiiGEX`, (3.3) `GijGEX`) that RBM2D's `GbEXPHypV3` carries.  It covers
+**both** conjuncts `STStep1Loop` and `STStep1Weak` of `STStep1`; `step1TargetV3_holds` (in
+`Step1.lean`) proves it. -/
 def Step1TargetV3 (d : ℕ) : Prop :=
   STGbEXPii d → STGbEXPij d → STStep1 d
 
@@ -117,17 +98,16 @@ section Elementary
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- Bulk energy: `|E| < 2` and `√(2κ)/2 ≤ Im m` for `|E| ≤ 2 - κ` (`Step1:94`; the merged
-`ContinuityNet.cont_bulk`, `spectralM` is `mE`). -/
+/-- Bulk energy: `|E| < 2` and `√(2κ)/2 ≤ Im m` for `|E| ≤ 2 - κ` (`ContinuityNet.cont_bulk`, `spectralM` is `mE`). -/
 theorem s1_bulk {κ E : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) :
     |E| < 2 ∧ Real.sqrt (2 * κ) / 2 ≤ (mE E).im :=
   ContinuityNet.cont_bulk hκ hE
 
-/-- `x⁻¹ ^ p = x ^ (-p)` for `x ≥ 0` (`Step1:112`). -/
+/-- `x⁻¹ ^ p = x ^ (-p)` for `x ≥ 0`. -/
 theorem s1_inv_rpow {x : ℝ} (hx : 0 ≤ x) (p : ℝ) : x⁻¹ ^ p = x ^ (-p) := by
   rw [Real.rpow_neg hx, Real.inv_rpow hx]
 
-/-- `K x^p ≤ x^q` from `K ≤ x^{q-p}` (`Step1:116`). -/
+/-- `K x^p ≤ x^q` from `K ≤ x^{q-p}`. -/
 private theorem s1_mul_rpow_le {x K p q : ℝ} (hx : 0 < x) (h : K ≤ x ^ (q - p)) :
     K * x ^ p ≤ x ^ q := by
   have e : x ^ q = x ^ (q - p) * x ^ p := by rw [← Real.rpow_add hx]; ring_nf
@@ -151,9 +131,9 @@ theorem s1_d_pos (h : sz.SizeTendsto) : 0 < d := by
   have : ((sz.size n : ℕ) : ℝ) = 1 := by simp [Sizes.size]
   linarith
 
-/-- The deterministic ratio fact behind Step 1 (`Step1:159`, `ℓ_u ℓ_s^{-1} ≤ M_s^{1/60}`;
+/-- The deterministic ratio fact behind Step 1 (RBM2D: `ℓ_u ℓ_s^{-1} ≤ M_s^{1/60}`;
 `(ℓ_u/ℓ_s)² M_u⁻¹ ≤ M_s^{-14/15}`), `d ≥ 3` form: with `a_s = W^{-d}B_{s,0}`, from
-`(con_st_ind)` `a_t^c ≤ (1-t)/(1-s)` (`c = 𝔠_d`, `1_2:1296`) and `s ≤ u ≤ t < 1`,
+`(con_st_ind)` `a_t^c ≤ (1-t)/(1-s)` (`c = 𝔠_d`) and `s ≤ u ≤ t < 1`,
 `a_s (1-s)/(1-u) ≤ a_s^{1-c}`.  No `0 ≤ s` is needed.  (The exponent `30` of RBM2D is `1/c`.) -/
 theorem s1_ratio_pt (n : ℕ) {c s u t : ℝ} (hc : 0 < c) (hsu : s ≤ u) (hut : u ≤ t) (ht : t < 1)
     (hstep : (sz.Bctl n t) ^ c ≤ (1 - t) / (1 - s)) :
@@ -173,10 +153,10 @@ end Elementary
 
 section Scales
 
-/-- The deterministic hypotheses of `STStep1` that Step 1 uses (RBM2D `S1Std`, `Step1:214`: all of
+/-- The deterministic hypotheses of `STStep1` that Step 1 uses (RBM2D's `S1Std`: all of
 `MainIndHyp` but the three initial-data clauses): `κ` bulk, `𝔠` bandwidth, `𝔡` window
-(`(eq:WO)`, a **new field** at `d ≥ 3`: `ilambda` is a sequence), `τ` the range exponent
-(`1 - t ≥ N^{-1+τ}`), `𝔠_d ∈ (0, 10^{-2}]` the constant of `(con_st_ind)`.  Public: S1-36 uses it. -/
+(`(eq:WO)`, a field specific to `d ≥ 3`: `ilambda` is a sequence), `τ` the range exponent
+(`1 - t ≥ N^{-1+τ}`), `𝔠_d ∈ (0, 10^{-2}]` the constant of `(con_st_ind)`.  Public: `Step1.lean` uses it. -/
 structure S1Std {d : ℕ} (sz : Sizes d) (κ 𝔠 𝔡 τ 𝔠d : ℝ) (E s t : ℕ → ℝ) : Prop where
   hκ : 0 < κ
   hE : ∀ n, |E n| ≤ 2 - κ
@@ -196,7 +176,7 @@ structure S1Std {d : ℕ} (sz : Sizes d) (κ 𝔠 𝔡 τ 𝔠d : ℝ) (E s t : 
 
 variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
 
-/-- `S1Std` from the merged flow hypotheses (`Step1:229` `s1_std_of_mainIndHyp`): `STFlow`,
+/-- `S1Std` from the flow hypotheses (RBM2D's `s1_std_of_mainIndHyp`): `STFlow`,
 `0 ≤ s ≤ t ≤ lemT z`, `STConStInd 𝔠_d s t`; `τ = ε/2` (`Green.v3_premises_of_stFlow`),
 `E = STflowE z`. -/
 theorem s1_std_of_stFlow {ε : ℝ} {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔠d : 0 < 𝔠d)
@@ -226,14 +206,14 @@ theorem s1_Bu_pos (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (n : ℕ) {u : ℝ}
     0 < sz.Bctl n u :=
   sz.STBctl_pos n (lt_of_le_of_lt hu (h.ht1 n))
 
-/-- `a_u ≤ 2 N^{-c₀}` for `u ≤ t n`, eventually (RBM2D `s1_Ms_ge`, `Step1:233`,
-`M_u ≥ Im m N^{c₀}`; merged `scaleFacts_R1`, needs `(eq:WO)`). -/
+/-- `a_u ≤ 2 N^{-c₀}` for `u ≤ t n`, eventually (RBM2D's `s1_Ms_ge`,
+`M_u ≥ Im m N^{c₀}`; `scaleFacts_R1`, needs `(eq:WO)`). -/
 theorem s1_a_le (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, u ≤ t n →
       sz.Bctl n u ≤ 2 * ((sz.size n : ℕ) : ℝ) ^ (-(min (2 * 𝔠 * 𝔡) τ)) :=
   scaleFacts_R1 sz 𝔠 𝔡 τ t h.h𝔡 h.hB h.hWO h.hR
 
-/-- `a_s → 0` (RBM2D `s1_Ms_tendsto`, `Step1:242`, `M_s → ∞`). -/
+/-- `a_s → 0` (RBM2D's `s1_Ms_tendsto`, `M_s → ∞`). -/
 theorem s1_B_tendsto (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     Tendsto (fun n => sz.Bctl n (s n)) atTop (nhds 0) := by
   have hc0 := s1_c0_pos h
@@ -247,7 +227,7 @@ theorem s1_B_tendsto (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
   filter_upwards [s1_a_le h] with n hn
   exact hn (s n) (h.hst n)
 
-/-- `a_s^p ≤ K` eventually (`p > 0`, `K > 0`; RBM2D `s1_Ms_ev_pow`, `Step1:264`). -/
+/-- `a_s^p ≤ K` eventually (`p > 0`, `K > 0`; RBM2D's `s1_Ms_ev_pow`). -/
 theorem s1_B_ev_pow (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) {p : ℝ} (hp : 0 < p) {K : ℝ} (hK : 0 < K) :
     ∀ᶠ n : ℕ in atTop, sz.Bctl n (s n) ^ p ≤ K := by
   have h0 : Tendsto (fun n => sz.Bctl n (s n) ^ p) atTop (nhds ((0 : ℝ) ^ p)) :=
@@ -255,17 +235,16 @@ theorem s1_B_ev_pow (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) {p : ℝ} (hp : 0
   rw [Real.zero_rpow hp.ne'] at h0
   exact (h0.eventually (gt_mem_nhds hK)).mono fun n hn => hn.le
 
-/-- `a_s ≤ 1` eventually (RBM2D `s1_one_le_Ms`, `Step1:268`). -/
+/-- `a_s ≤ 1` eventually (RBM2D's `s1_one_le_Ms`). -/
 theorem s1_B_le_one (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∀ᶠ n : ℕ in atTop, sz.Bctl n (s n) ≤ 1 := by
   have := s1_B_ev_pow h (p := 1) one_pos one_pos
   simpa using this
 
-/-- `a_s` at the energy `E n` (RBM2D `s1Ms`, `Step1:282`: there `M_s`, here `M_s⁻¹ = W^{-d}B_{s,0}`). -/
+/-- `a_s` at the energy `E n` (RBM2D's `s1Ms`: there `M_s`, here `M_s⁻¹ = W^{-d}B_{s,0}`). -/
 abbrev s1B (sz : Sizes d) (s : ℕ → ℝ) (n : ℕ) : ℝ := sz.Bctl n (s n)
 
-/-- From `a ≤ 2 N^{-c₀}`: `a^p ≤ 2 N^{-c₀ p}` for `0 ≤ p ≤ 1` (replaces RBM2D `s1_Npow_le`,
-`Step1:285`). -/
+/-- From `a ≤ 2 N^{-c₀}`: `a^p ≤ 2 N^{-c₀ p}` for `0 ≤ p ≤ 1` (replaces RBM2D's `s1_Npow_le`). -/
 theorem s1_apow_le {a N c₀ p : ℝ} (ha : 0 ≤ a) (hN : 0 ≤ N) (hle : a ≤ 2 * N ^ (-c₀))
     (hp0 : 0 ≤ p) (hp1 : p ≤ 1) : a ^ p ≤ 2 * N ^ (-(c₀ * p)) := by
   have h1 : a ^ p ≤ (2 * N ^ (-c₀)) ^ p := Real.rpow_le_rpow ha hle hp0
@@ -278,7 +257,7 @@ theorem s1_apow_le {a N c₀ p : ℝ} (ha : 0 ≤ a) (hN : 0 ≤ N) (hle : a ≤
   rw [e] at h1 h3
   exact h1.trans (mul_le_mul_of_nonneg_right h2 h3)
 
-/-- (`con_st_ind`, `Step1:273` `s1_ratio_ev`) `a_s (1-s)/(1-u) ≤ a_s^{14/15}` uniformly in
+/-- (`con_st_ind`; RBM2D's `s1_ratio_ev`) `a_s (1-s)/(1-u) ≤ a_s^{14/15}` uniformly in
 `u ∈ [s,t]`, eventually (`𝔠_d ≤ 1/100 ≤ 1/15`, `a_s ≤ 1`). -/
 theorem s1_ratio_ev (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∀ᶠ n : ℕ in atTop, ∀ u : ℝ, s n ≤ u → u ≤ t n →
@@ -295,7 +274,7 @@ theorem s1_N_pow_ev (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) {y : ℝ} (hy : 0
   ((tendsto_rpow_atTop hy).comp h.hN).eventually_ge_atTop K
 
 /-- The exponent `τ₀` of the initial-data step: `N^{τ₀} a_s^{1/2} < a_s^{1/4}`, eventually
-(RBM2D `s1_F3`, `Step1:300`, `N^{τ₀} M_s^{-1/2} < M_s^{-1/4}`), `τ₀ = c₀/8`. -/
+(RBM2D's `s1_F3`, `N^{τ₀} M_s^{-1/2} < M_s^{-1/4}`), `τ₀ = c₀/8`. -/
 theorem s1_F3 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∃ τ₀ > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
       ((sz.size n : ℕ) : ℝ) ^ τ₀ * (s1B sz s n) ^ ((1 : ℝ) / 2) < (s1B sz s n) ^ ((1 : ℝ) / 4) := by
@@ -327,7 +306,7 @@ theorem s1_F3 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
   nlinarith [mul_pos hb0 hb0]
 
 /-- The exponent `ε` of the gap `f ≪ a` at the net: `(2·3^d) a_s^{7/15} ≤ N^{-ε} (a_s^{1/4}/2)`,
-eventually (RBM2D `s1_F4`, `Step1:329`, constant `6`; here `C_d = 2·3^d ≥ √(2·9^d + 1)`, the root
+eventually (RBM2D's `s1_F4`, constant `6`; here `C_d = 2·3^d ≥ √(2·9^d + 1)`, the root
 of the constant of `s1_wl_det`), `ε = c₀/8`. -/
 theorem s1_F4 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∃ ε > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
@@ -376,8 +355,7 @@ theorem s1_F4 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
   rw [← sub_nonneg, this]
   exact mul_nonneg (by positivity) (by linarith)
 
-/-- The exponent `c'` of `Ω(u,c')`: `2 a_s^{1/4} ≤ W^{-c'}`, eventually (RBM2D `s1_F5`,
-`Step1:382`; there `W² ≤ N`, here `W^τ ≤ N^{τ/d}`, `d ≥ 1`), `c' = c₀/8`. -/
+/-- The exponent `c'` of `Ω(u,c')`: `2 a_s^{1/4} ≤ W^{-c'}`, eventually (RBM2D's `s1_F5`; there `W² ≤ N`, here `W^τ ≤ N^{τ/d}`, `d ≥ 1`), `c' = c₀/8`. -/
 theorem s1_F5 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∃ c' > (0 : ℝ), ∀ᶠ n : ℕ in atTop,
       2 * (s1B sz s n) ^ ((1 : ℝ) / 4) ≤ ((sz.W n : ℕ) : ℝ) ^ (-c') := by
@@ -415,8 +393,7 @@ theorem s1_F5 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
   rw [Real.rpow_neg hW0.le, ← one_div, le_div_iff₀ hw]
   exact h1
 
-/-- `N⁻¹ ≤ a_s^{1/4}/2`, eventually (the mesh of the net is finer than `a/2`; RBM2D `s1_F6`,
-`Step1:418`: there `M_s ≤ W² ≤ N`, here `N⁻¹ ≤ W^{-d}B_{s,0}`, `cont_inv_size_le_Bctl`). -/
+/-- `N⁻¹ ≤ a_s^{1/4}/2`, eventually (the mesh of the net is finer than `a/2`; RBM2D's `s1_F6`: there `M_s ≤ W² ≤ N`, here `N⁻¹ ≤ W^{-d}B_{s,0}`, `cont_inv_size_le_Bctl`). -/
 theorem s1_F6 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∀ᶠ n : ℕ in atTop,
       ((sz.size n : ℕ) : ℝ)⁻¹ ≤ (s1B sz s n) ^ ((1 : ℝ) / 4) / 2 := by
@@ -435,13 +412,13 @@ theorem s1_F6 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
   rw [Real.rpow_neg_one] at h2
   linarith
 
-/-- `a_s^{1/4} ≤ 1`, eventually (RBM2D `s1_F7`, `Step1:439`). -/
+/-- `a_s^{1/4} ≤ 1`, eventually (RBM2D's `s1_F7`). -/
 theorem s1_F7 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
     ∀ᶠ n : ℕ in atTop, (s1B sz s n) ^ ((1 : ℝ) / 4) ≤ 1 := by
   filter_upwards [s1_B_le_one h] with n hn
   exact Real.rpow_le_one (s1_B_pos h n).le hn (by norm_num)
 
-/-- `W^{-d} ≤ a_s^{14/15}`, eventually (RBM2D `s1_F8`, `Step1:445`, `W⁻² ≤ M_s^{-14/15}`): from
+/-- `W^{-d} ≤ a_s^{14/15}`, eventually (RBM2D's `s1_F8`, `W⁻² ≤ M_s^{-14/15}`): from
 `STBctl_ge` (`0 ≤ s`) and `ilambda ≤ 𝔡⁻¹` (`(eq:WO)`), `W^{-d} ≤ (𝔡⁻² + 1) a_s ≤ a_s^{14/15}` once
 `(𝔡⁻² + 1) a_s^{1/15} ≤ 1`. -/
 theorem s1_F8 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
@@ -490,16 +467,15 @@ section Generic
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ} {U : ℕ → Type*}
 
 /-- The union bound in event form: `ξ ≺ ζ` per time, with polynomially many parameters, gives that
-`ξ ≤ N^τ ζ` for all parameters simultaneously with high probability (RBM2D `s1_highProb_of_pt`,
-`Step1:481`). -/
+`ξ ≤ N^τ ζ` for all parameters simultaneously with high probability (RBM2D's `s1_highProb_of_pt`). -/
 theorem s1_highProb_of_pt [∀ l, Fintype (U l)] {ξ ζ : ∀ l, U l → Ω → ℝ} {C : ℝ}
     (hC0 : 0 ≤ C) (hC : ∀ᶠ l : ℕ in atTop, (Fintype.card (U l) : ℝ) ≤ (size l : ℝ) ^ C)
     (h : PerTimeDomAt P size ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
     HighProbAt P size (fun l => {ω | ∀ u, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω}) :=
   PerTimeCalc.perTimeCalc_highProbAt_of_stochDomAt (stochDomAt_of_perTimeDomAt P size hC0 hC h) hτ
 
-/-- Conversely, a high-probability event for every `τ > 0` gives `ξ ≺ ζ` per time (RBM2D
-`s1_pt_of_highProb`, `Step1:488`). -/
+/-- Conversely, a high-probability event for every `τ > 0` gives `ξ ≺ ζ` per time (RBM2D's
+`s1_pt_of_highProb`). -/
 theorem s1_pt_of_highProb {ξ ζ : ∀ l, U l → Ω → ℝ}
     (h : ∀ τ > (0 : ℝ), HighProbAt P size
       (fun l => {ω | ∀ u, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω})) :
@@ -510,8 +486,7 @@ theorem s1_pt_of_highProb {ξ ζ : ∀ l, U l → Ω → ℝ}
   intro ω hω hω'
   exact absurd (hω' u) (not_le.2 hω)
 
-/-- Per time along a `Unit`-indexed family is the uniform statement (RBM2D `s1_stochDom_unit`,
-`Step1:499`). -/
+/-- Per time along a `Unit`-indexed family is the uniform statement (RBM2D's `s1_stochDom_unit`). -/
 theorem s1_stochDom_unit {ξ ζ : ∀ _ : ℕ, Unit → Ω → ℝ} (h : PerTimeDomAt P size ξ ζ) :
     StochDomAt P size ξ ζ :=
   stochDomAt_of_perTimeDomAt P size (C := 0) le_rfl
@@ -541,12 +516,12 @@ section Loops
 
 variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
 
-/-- `c₁ = √(2κ)/2 > 0` (RBM2D `s1_c1_pos`, `Step1:293`). -/
+/-- `c₁ = √(2κ)/2 > 0` (RBM2D's `s1_c1_pos`). -/
 theorem s1_c1_pos (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) : 0 < Real.sqrt (2 * κ) / 2 := by
   have := Real.sqrt_pos.2 (by linarith [h.hκ] : 0 < 2 * κ); linarith
 
 /-- `W^{-d} ≤ (ilambda² + 1) W^{-d} B_{u,0}` for `0 ≤ u < 1` (`STBctl_ge`): the volume factor is
-at most the control up to the coupling (replaces RBM2D's `W⁻² ≤ M_u⁻¹`, `s1_scaleM_le_W2`). -/
+at most `W^{-d} B_{u,0}` up to the coupling (replaces RBM2D's `W⁻² ≤ M_u⁻¹`). -/
 theorem s1_Wd_le_Bctl (sz : Sizes d) (n : ℕ) {u : ℝ} (hu0 : 0 ≤ u) (hu1 : u < 1) :
     (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ (sz.lam n ^ 2 + 1) * sz.Bctl n u := by
   have hge := sz.STBctl_ge n hu0 hu1
@@ -566,7 +541,7 @@ theorem s1_lam_sq_le (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) :
   have : sz.lam n ^ 2 ≤ (𝔡⁻¹) ^ 2 := pow_le_pow_left₀ hlam0 hWO.2 2
   linarith
 
-/-- The start time `t₁ = max(s, 1/2)` of the continuity argument (RBM2D `s1T1`, `Step1:513`,
+/-- The start time `t₁ = max(s, 1/2)` of the continuity argument (RBM2D's `s1T1`,
 RBM1D `startTime`). -/
 abbrev s1T1 (s : ℕ → ℝ) (n : ℕ) : ℝ := max (s n) (1 / 2)
 
@@ -575,8 +550,8 @@ private theorem s1_blockMat_herm {L W : ℕ} [NeZero L] [NeZero W]
     (blockMat d L W M).IsHermitian :=
   hM.submatrix _
 
-/-- (`Lboundfor1/2`) (5-6:20--22 of the `d = 2` paper) at a time `u ≤ 1/2` (deterministic):
-`|𝓛_{u,σ,a}| ≤ (2/c₁)^k (W^{-d})^{k-1}` when `Im m ≥ c₁` (RBM2D `s1_loop_det`, `Step1:525`;
+/-- (`Lboundfor1/2`) ([YY_25, §5.1]) at a time `u ≤ 1/2` (deterministic):
+`|𝓛_{u,σ,a}| ≤ (2/c₁)^k (W^{-d})^{k-1}` when `Im m ≥ c₁` (RBM2D's `s1_loop_det`;
 `d = 2`: `(2/c₁)^k M_u^{-(k-1)}`, via `W⁻² ≤ M_u⁻¹`; here the volume factor `W^{-d}` is kept and
 compared with `a_s` by `s1_Wd_le_Bctl`).  `norm_loopM_le_sharp`, `Im z_u = (1-u) Im m ≥ c₁/2`. -/
 theorem s1_loop_det {L W : ℕ} [NeZero L] [NeZero W] {E u c₁ : ℝ} (hc₁ : 0 < c₁)
@@ -595,7 +570,7 @@ theorem s1_loop_det {L W : ℕ} [NeZero L] [NeZero W] {E u c₁ : ℝ} (hc₁ : 
   simpa [loopFine] using h1
 
 /-- `KboundConcl κ` along the sequence, per time: `|𝒦_{s,σ,a}| ≺ (W^{-d}B_{s,0})^{k-1}`
-(`ML:Kbound`; RBM2D `s1_Kbound_seq`, `Step1:550`): the pin `STKbound` at the time sequence `s`
+(`ML:Kbound`; RBM2D's `s1_Kbound_seq`): the statement `STKbound` at the time sequence `s`
 (`0 ≤ s < 1`), read per time by `perTimeOfStochDomAt`. -/
 theorem s1_Kbound_seq (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (hK : STKbound sz E) {k : ℕ}
     (hk : 1 ≤ k) :
@@ -604,19 +579,19 @@ theorem s1_Kbound_seq (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (hK : STKbound 
       (fun n _ _ => (sz.Bctl n (s n)) ^ (k - 1)) :=
   Path.perTimeOfStochDomAt (seqP sz) sz.size _ _ (hK s h.hs0 (s1_s_lt_one h) k hk)
 
-/-- Hypothesis (55) of `lem_ConArg` (5-6:43–45; `3_5:46` `(eq:loopbound_s)`) at `t₁ = max(s, 1/2)`:
-`max_{σ,a} |𝓛_{t₁,σ,a}| ≺ (W^{-d}B_{t₁,0})^{k-1}` per time, for every `k ≥ 1` (RBM2D `S1H55`,
-`Step1:570`; this is the hypothesis `h55` of the merged `ConArgPin`). -/
+/-- Hypothesis (55) of `lem_ConArg` ([YY_25, §5.1]; Lemma 3.2, (3.6) `eq:loopbound_s`) at `t₁ = max(s, 1/2)`:
+`max_{σ,a} |𝓛_{t₁,σ,a}| ≺ (W^{-d}B_{t₁,0})^{k-1}` per time, for every `k ≥ 1` (RBM2D's `S1H55`;
+this is the hypothesis `h55` of `ConArgPin`). -/
 def S1H55 (sz : Sizes d) (E s : ℕ → ℝ) : Prop :=
   ∀ k : ℕ, 1 ≤ k →
     sz.PrecPT (U := fun n => (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
       (fun n p ω => ‖Sizes.Lloop sz n (E n) (s1T1 s n) p.1 p.2 ω‖)
       (fun n _ _ => (sz.Bctl n (s1T1 s n)) ^ (k - 1))
 
-/-- **(55) at `t₁ = max(s, 1/2)`** (Case 2, 5-6:33--36, and Case 3, 5-6:72, of the `d = 2` paper):
+/-- **(55) at `t₁ = max(s, 1/2)`** (Cases 2 and 3 of [YY_25, §5.1]):
 for `s ≥ 1/2`, `𝓛 = (𝓛-𝒦) + 𝒦` with `STLK` (`InitLK`) and `STKbound` (`Lboundfors`); for `s < 1/2`
-the deterministic bound `s1_loop_det` at `1/2` with `W^{-d} ≤ (𝔡⁻² + 1) a_{1/2}`.  RBM2D `s1_h55`
-(`Step1:581`), RBM1D `eq54`, `eq55` (`Hierarchy/Step1.lean:375,399`).  The case distinction
+the deterministic bound `s1_loop_det` at `1/2` with `W^{-d} ≤ (𝔡⁻² + 1) a_{1/2}`.  RBM2D's `s1_h55`,
+RBM1D's `eq54`, `eq55`.  The case distinction
 `s n ≥ 1/2` is pointwise in `n`; the constant `(2/c₁)^k (𝔡⁻² + 1)^{k-1}` of the second case
 needs `ilambda ≤ 𝔡⁻¹` and so holds for large `n`. -/
 theorem s1_h55 (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (hIK : STLK sz E s) (hK : STKbound sz E) :
@@ -691,12 +666,11 @@ theorem s1_omegaC_le_one (n : ℕ) (E τ C₀ : ℝ) (ω : sz.SeqΩ) :
     sz.STomegaC n E τ C₀ ω ≤ 1 := by
   unfold Sizes.STomegaC; split_ifs <;> norm_num
 
-/-- **`(lRB1)` with the indicator, per time sequence** (`jsajufua`, 5-6:57–59 of the `d = 2`
-paper, from `lem_ConArg`, `3_5:42-62`, and (`Lboundfor1/2`) for `u < 1/2`; RBM2D `s1_LI`,
-`Step1:641`, RBM1D `eq58_seq`, `Hierarchy/Step1.lean:419`): for every time sequence
+/-- **`(lRB1)` with the indicator, per time sequence** (`jsajufua` of [YY_25, §5.1], from `lem_ConArg`
+(Lemma 3.2) and (`Lboundfor1/2`) for `u < 1/2`; RBM2D's `s1_LI`, RBM1D's `eq58_seq`): for every time sequence
 `u n ∈ [s n, t n]` and `k ≥ 1`,
 `1(‖G_u‖_max ≤ 2) |𝓛_{u,σ,a}| ≺ ((1-s)/(1-u))^{k-1} (W^{-d}B_{s,0})^{k-1}` per time.
-For `u ≥ 1/2` this is the merged `conArg` at `(t₁, u)`, `t₁ = max(s,1/2)`, with
+For `u ≥ 1/2` this is `conArg` at `(t₁, u)`, `t₁ = max(s,1/2)`, with
 `(W^{-d}B_{t₁,0} η_{t₁}/η_u)^{k-1} ≤ ((1-s)/(1-u) W^{-d}B_{s,0})^{k-1}` (`STBctl_xmono`,
 `η_s/η_u = (1-s)/(1-u)`); for `u < 1/2` the deterministic bound `s1_loop_det` with
 `W^{-d} ≤ (𝔡⁻² + 1) a_s ≤ (𝔡⁻² + 1) a_s (1-s)/(1-u)` (`(1-s)/(1-u) ≥ 1`). -/
@@ -805,9 +779,9 @@ private theorem s1_zdist_le_one {L : ℕ} [NeZero L] {x : ZMod L} (h : zdist L x
   · right; left; rw [hx', h0]; simp
   · right; right; rw [hx', h0, Nat.cast_sub (by omega)]; simp
 
-/-- **The number of near blocks** (RBM2D `s1_near_card`, `Step1:810`, `≤ 5`: the `sbSupport` of the
+/-- **The number of near blocks** (RBM2D's `s1_near_card`, `≤ 5`: the `sbSupport` of the
 `d = 2` profile): `#{a' : |a' - a|_∞ ≤ 1} ≤ 3^d` (the `L^∞` ball of radius `1` of the paper,
-`zdistInf`; it has exactly `3^d` points for `L ≥ 3`.  The ticket's `2d + 1` is the `zdistD` ball). -/
+`zdistInf`; it has exactly `3^d` points for `L ≥ 3`.  The `zdistD` ball has `2d + 1` points). -/
 theorem s1_near_card {L : ℕ} [NeZero L] (a : Zd d L) :
     ((Finset.univ.filter (fun a' : Zd d L => zdistInf d L (a' - a) ≤ 1)).card : ℝ) ≤ 3 ^ d := by
   classical
@@ -837,8 +811,8 @@ section BridgeEntries
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- `‖G_u - m‖_max = max_{i,j} |(G_u - m)_{ij}|` at the matrix `M` (RBM2D `s1xM`, `Step1:858`;
-entries `llErrMat`, `Green/Pins.lean:73`). -/
+/-- `‖G_u - m‖_max = max_{i,j} |(G_u - m)_{ij}|` at the matrix `M` (RBM2D's `s1xM`;
+entries `llErrMat`, `Green/Pins.lean`). -/
 def s1xM (d L W : ℕ) [NeZero L] [NeZero W] (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) : ℝ :=
   Finset.univ.sup' Finset.univ_nonempty
     (fun q : Idx d L W × Idx d L W => Green.llErrMat d L W E u M q.1 q.2)
@@ -861,7 +835,7 @@ theorem s1_llErrMat_eq (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) (i j
   simp only [ite_true]
   rw [Matrix.nonsing_inv_eq_ringInverse]
 
-/-- `‖G_u‖_max ≤ 1 + ‖G_u - m‖_max` (`|m| = 1`; RBM2D `s1_gMax_le`, `Step1:877`, `gMax`). -/
+/-- `‖G_u‖_max ≤ 1 + ‖G_u - m‖_max` (`|m| = 1`; RBM2D's `s1_gMax_le`, `gMax`). -/
 theorem s1_gMax_le {E u : ℝ} (hE : |E| ≤ 2) (M : Matrix (Idx d L W) (Idx d L W) ℂ)
     (i j : Idx d L W) : ‖Gres M (zt E u) true i j‖ ≤ 1 + s1xM d L W E u M := by
   have h1 := norm_le_norm_sub_add (Gres M (zt E u) true i j) (if i = j then mE E else 0)
@@ -873,8 +847,7 @@ theorem s1_gMax_le {E u : ℝ} (hE : |E| ≤ 2) (M : Matrix (Idx d L W) (Idx d L
   unfold Green.llErrMat at h3
   linarith
 
-/-- One-sided Lipschitz bound of `‖G_u - m‖_max` in the resolvent entries (RBM2D `s1xM_le_add`,
-`Step1:892`). -/
+/-- One-sided Lipschitz bound of `‖G_u - m‖_max` in the resolvent entries (RBM2D's `s1xM_le_add`). -/
 theorem s1xM_le_add {E u u' δ : ℝ} {M M' : Matrix (Idx d L W) (Idx d L W) ℂ}
     (h : ∀ i j, ‖(M - zt E u • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j -
       (M' - zt E u' • (1 : Matrix (Idx d L W) (Idx d L W) ℂ))⁻¹ i j‖ ≤ δ) :
@@ -903,12 +876,12 @@ section BridgeSample
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- The merged sample-level entry `‖(G_u - M)_{xy}‖` (`STGM`) is `llErrMat` at `H_u(ω)`. -/
+/-- The sample-level entry `‖(G_u - M)_{xy}‖` (`STGM`) is `llErrMat` at `H_u(ω)`. -/
 theorem s1_STGM_norm (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)) :
     ‖sz.STGM n E u ω x y‖ = Green.llErrMat d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) x y := rfl
 
 /-- `‖G_u - m‖_max ≤ C₀ - 1` gives the indicator `STomegaC = 1` of `{‖G_u‖_max ≤ C₀}`
-(RBM2D: `gMax E u M ≤ 2`, `Step1:877`). -/
+(RBM2D: `gMax E u M ≤ 2`). -/
 theorem s1_omegaC_eq_one (n : ℕ) (ω : sz.SeqΩ) {E u C₀ : ℝ} (hE : |E| ≤ 2)
     (hx : s1xM d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) ≤ C₀ - 1) :
     sz.STomegaC n E u C₀ ω = 1 := by
@@ -933,7 +906,7 @@ theorem s1_indMax_eq_one (n : ℕ) (ω : sz.SeqΩ) {E u A : ℝ}
   simp [hall]
 
 /-- **The right side of (`GijGEX`)** is at most `2·9^d B + W^{-d}` if every
-`|𝓛^{(2)}_{σ,(a',b')}| ≤ B` (RBM2D `s1_gexRHS_le`, `Step1:823`, `25 B + W⁻²`: at `d = 2` one
+`|𝓛^{(2)}_{σ,(a',b')}| ≤ B` (RBM2D's `s1_gexRHS_le`, `25 B + W⁻²`: at `d = 2` one
 orientation and `5 · 5` neighbours; here `STgexRHS` sums the two orientations
 `σ ∈ {(+,-),(-,+)}` and each `L^∞`-ball of radius `1` has `≤ 3^d` blocks, `s1_near_card`). -/
 theorem s1_gexRHS_le (n : ℕ) (E u B : ℝ) (ω : sz.SeqΩ)
@@ -979,11 +952,11 @@ theorem s1_gexRHS_le (n : ℕ) (E u B : ℝ) (ω : sz.SeqΩ)
     rw [show (9 : ℝ) = 3 * 3 by norm_num, mul_pow]; ring
   linarith
 
-/-- **The deterministic core of the weak-law step** (5-6:60–63; RBM2D `s1_wl_det`, `Step1:918`):
+/-- **The deterministic core of the weak-law step** ([YY_25, §5.1]; RBM2D's `s1_wl_det`):
 on `{‖G_u - m‖_max ≤ 2a}`, with `2a ≤ W^{-c'}` (so `Ω(u,c')` holds and `‖G_u‖_max ≤ 2`), the three
 per-time bounds `1_Ω |G_{pq}|² ≤ N^τ 𝓛-terms` (`STGiiGEX`, `STGijGEX`) and `1_Ω |𝓛| ≤ N^τ g` give
 `|(G_u - m)_{ij}|² ≤ (2·9^d + 1) N^{2τ} g` (RBM2D `26`; `s1_gexRHS_le`).  Stated at the sample
-`ω` with the merged `STGM`, `STindMax`, `STomegaC`, `STmaxLoop2`, `STgexRHS`; the hypotheses
+`ω` with `STGM`, `STindMax`, `STomegaC`, `STmaxLoop2`, `STgexRHS`; the hypotheses
 `hii`, `hij` are literally the events produced by `Prec.whp` from `STGiiGEX`, `STGijGEX`. -/
 theorem s1_wl_det (n : ℕ) (ω : sz.SeqΩ) {E u a c' g Nτ : ℝ} (hE : |E| ≤ 2) (hc' : 0 < c')
     (hx : s1xM d (sz.L n) (sz.W n) E u (sz.seqHflow n u ω) ≤ 2 * a)
@@ -1044,26 +1017,10 @@ end BridgeSample
 
 end RBM.Ind
 
-/-! ## 7. Compiled nonempty instances at `d = 3`
 
-The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
-`W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6} → 0`, `N_n = (W_n L_n)^3`; `n = 0`: `L = 4`, `W = 32`,
-`lam = 1/64`, `N = 2097152`), admissible at `𝔠 = 1/6`, `𝔡 = 1/10`; `κ = ε = 1/10`; the flow points
-`z_n = 1/2 + i N_n^{-4/5}` of `InductionDefsInst` (`flow_z0`); times `s ≡ 0 ≤ u ≤ t ≡ 1/16 ≤ lemT z_n`;
-`𝔠_d = 1/100` (`conStInd_inst`).  `S1Std` is discharged completely (`s1Std_sz0`), so every
-statement of sections 3-6 about the scales holds at these data.  What stays a hypothesis of an
-instance is another gate's pin (`STKbound`, `STLK`, `STLocalMax`, `STGbEXPii`, `STGbEXPij`,
-`Step1TargetV3` itself, proved by S1-36) or, for `s1_wl_det` at `u = 1/16`, an event premise on the
-sample (`‖G_u - m‖_max ≤ 2a`, `STGiiGEX`, `STGijGEX` at `ω`). -/
 
-/-! ### Further windows `[s_0, t_0]` at `sz0` (constant times), for the branches `u ≥ 1/2`, `s ≥ 1/2` -/
 
-/-! ### The loop family at `sz0` -/
 
-/-! ### The lattice ball, `‖G_u - m‖_max` and the weak-law step at `sz0` -/
 
-/-! ### The generic helpers and the `≺`-calculus lemmas at `sz0` -/
-
-/-! ### The pin `Step1TargetV3` -/
 
 end

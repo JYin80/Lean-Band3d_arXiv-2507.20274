@@ -8,9 +8,11 @@ import RBM3D.Induction.ConArgDet
 import RBM3D.Loop.KLWard
 
 /-!
-# S5-28 (ST-4): the Ward term `(zYU1)` of case (ii) of Step 5
+# The Ward term `(zYU1)` of case (ii) of Step 5
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex:2257-2262`.
+Paper: arXiv:2507.20274, (5.37) `zYU1` (Subsection 5.2).  `stWardII_identity` is the deterministic
+identity obtained from Ward's identities `(WI_calL)`, `(WI_calK)` summed over the first label;
+`stWardII_holds` proves `STWardII`.
 -/
 
 set_option linter.style.longLine false
@@ -138,7 +140,7 @@ private theorem wardII_zeroMode (n : ℕ) (T : (Fin 2 → Zd d (sz.L n)) → ℂ
   simp only [zeroModeSet, Finset.toList_singleton, List.foldr_cons, List.foldr_nil, zeroModeOp, avgOp, hup]
   ring
 
-/-- **`(WI_calL)` and `(WI_calK)` summed over the first label, `(zYU1)` of `3_5:2257-2262`** (deterministic, every Hermitian `H`, `σ₁ ≠ σ₂`,
+/-- **`(WI_calL)` and `(WI_calK)` summed over the first label, `(zYU1)`** (deterministic, every Hermitian `H`, `σ₁ ≠ σ₂`,
 `0 ≤ u < 1`, `|E| < 2`): `(𝓛-𝒦)^{(2)}_{u,σ,a} - [Q^{(1)} ∘ (𝓛-𝒦)^{(2)}_{u,σ}]_a = Im(𝓛-𝒦)^{(1)}_{u,+,a₂} / (N η_u)`, `N = (WL)^d`. -/
 theorem stWardII_identity (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 : 0 ≤ u) (hu1 : u < 1)
     {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
@@ -225,7 +227,7 @@ section Chain
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `W^{-d} B_{u,0} ≤ 2 A⁻¹` in regime (ii): `1 - u ≥ ilambda²/L^d` gives `(L^d (1-u))⁻¹ ≤ ilambda⁻²`
-and `(ilambda² + 1 - u)⁻¹ ≤ ilambda⁻²`; `(3_5:2259`, `Δ_u ≍ A⁻¹`). -/
+and `(ilambda² + 1 - u)⁻¹ ≤ ilambda⁻²`; `Δ_u ≍ A⁻¹`). -/
 private theorem wardII_Bctl_le (n : ℕ) (hlam : 0 < sz.lam n) {u : ℝ} (hu : u < 1)
     (hx : sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ 1 - u) :
     sz.Bctl n u ≤ 2 * (STAI sz n)⁻¹ := by
@@ -263,7 +265,7 @@ private theorem wardII_prec_scale {U : ℕ → Type*} {ξ ξ' ζ : ∀ n, U n �
       _ ≤ c n u * ξ' n u ω := hle n u ω
   exact lt_of_mul_lt_mul_left h1 (hc n u).le
 
-/-- **`(zYU1)`** (`3_5:2257-2262`), case (ii) of Step 5, `σ₁ ≠ σ₂`: the pin `STWardII d` (Ward's identities
+/-- **`(zYU1)`** ((5.37)), case (ii) of Step 5, `σ₁ ≠ σ₂`: the statement `STWardII d` (Ward's identities
 `(WI_calL)`, `(WI_calK)` through `stWardII_identity`, and `(Gt_avgbound_flow)`, i.e. `STAvgU` inside `STStep2Concl`,
 with `W^{-d}B_{u,0} ≤ 2 A⁻¹` in regime (ii)). -/
 theorem stWardII_holds (d : ℕ) : STWardII d := by
@@ -325,6 +327,5 @@ theorem stWardII_holds (d : ℕ) : STWardII d := by
 
 end Chain
 
-/-! ## Compiled nonempty instances -/
 
 end RBM.Gauss.Sizes

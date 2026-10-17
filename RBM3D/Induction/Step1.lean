@@ -8,68 +8,59 @@ import RBM3D.Induction.Continuity
 
 /-!
 # Step 1 of `lem:main_ind`, second part: the weak-law step, the net, the bootstrap, `step1`
-(ST-1, S1-36)
 
-Ticket T2090.  Port of `RBM2D/Induction/Step1.lean` at `c9a24cf`, lines 967-1515 (cited
-`Step1:line`; the part after the S1-35 cut of `RBM3D/Induction/Step1Setup.lean`, which is imported
-and not copied) to `arXiv:2507.20274`: Step 1 of `lem:main_ind`, (`lRB1`) `1_2:1321` and
-(`Gtmwc`) `1_2:1327`, `3_5:64-66`.
+Paper: arXiv:2507.20274, Step 1 of Theorem 2.24 (`lem:main_ind`): (2.85) `lRB1` and (2.86)
+`Gtmwc`.  The proof of Step 1 (Section 3, with Lemma 3.1 `lem_GbEXP` and Lemma 3.2 `lem_ConArg`)
+follows [YY_25, §5.1].  The first part of Step 1 is in `RBM3D/Induction/Step1Setup.lean`, which
+is imported and not copied; this file contains the weak-law step, the net argument, the
+continuity bootstrap and the assembly `step1`.  The argument follows the two-dimensional
+formalization (RBM2D `Induction/Step1`).
 
-## Contents (RBM2D line -> here)
+## Contents
 
-* `WeakLawSeq` (`Step1:969`): `s1x`, `s1a`, `s1f` (`:974-981`; `s1f = 6 M_s^{-7/15}` is
-  `2·3^d a_s^{7/15}`), `s1_card_block*` (`:983-1000`: the index sets `Unit × BlockIndex`, which
-  `STGiiGEX`, `STGijGEX`, `STLocalMax` do not have: they are `Prec` over `Idx × Idx` (`STGijGEX`:
-  its off-diagonal part), so `Prec.whp` gives their events with no counting; dropped),
-  `s1_card_loops` (`:1004`, `#((σ,a)) ≤ N^{2k}`),
-  `s1_wl_seq` (`:1027`, the weak-law step at one time sequence: `lem_GbEXP` with `n = 2`).
-* `Net` (`:1101`): `s1Net`, `s1Net_mem`, `s1_exists_close` (`:1107-1137`, copies of the private
-  `contTime`, `contTime_mem`, `cont_exists_close` of `ContinuityNet.lean`, which are `private`
-  there), `s1_forb` (`:1139`, the forbidden region for all `u ∈ [s,t]`: `forbidden_region` on the
-  net, `gopbound` to pass to all `u`).
-* `Bootstrap` (`:1240`): `s1x_continuousOn` (`:1246`), `s1_card_idx` (`:1267`, not needed: the
-  initial event is `Prec.whp` of `STLocalMax`), `s1_boot` (`:1274`, the continuity argument),
-  `s1_weakPT` (`:1311`, `(Gtmwc)` per time), `s1_loopPT` (`:1334`, `(lRB1)` per time).
-* `step1` (`:1378`) is `step1TargetV3_holds : Step1TargetV3 d` (the pin of `Step1Setup.lean:149`):
+* `WeakLawSeq`: `s1x`, `s1a`, `s1f` (`s1f = 6 M_s^{-7/15}` is `2·3^d a_s^{7/15}`),
+  `s1_card_loops` (`#((σ,a)) ≤ N^{2k}`), `s1_wl_seq` (the weak-law step at one time sequence:
+  `lem_GbEXP` with `n = 2`).  The index sets `Unit × BlockIndex` of the two-dimensional version
+  do not occur: `STGiiGEX`, `STGijGEX`, `STLocalMax` are `Prec` over `Idx × Idx` (`STGijGEX`:
+  its off-diagonal part), so `Prec.whp` gives their events with no counting.
+* `Net`: `s1Net`, `s1Net_mem`, `s1_exists_close` (copies of the `private` `contTime`,
+  `contTime_mem`, `cont_exists_close` of `ContinuityNet.lean`), `s1_forb` (the forbidden region
+  for all `u ∈ [s,t]`: `forbidden_region` on the net, `gopbound` to pass to all `u`).
+* `Bootstrap`: `s1x_continuousOn`, `s1_boot` (the continuity argument; the initial event is
+  `Prec.whp` of `STLocalMax`), `s1_weakPT` (`(Gtmwc)` per time), `s1_loopPT` (`(lRB1)` per time).
+* `step1` is `step1TargetV3_holds : Step1TargetV3 d` (stated in `Step1Setup.lean`):
   `Step1TargetV3 d := STGbEXPii d → STGbEXPij d → STStep1 d`, proved for every `d` from the
-  per-time statements and the net lift `step1NetLift` (`Continuity.lean:605`, T2062).
-* `Checks` (`:1389-1506`, compile checks at RBM2D's instance data) -> section 5 below: the
-  compiled nonempty instances at `d = 3` (`sz0`, `sz1`, `sz2`).
+  per-time statements and the net lift `step1NetLift` (`Continuity.lean`).
 
-## Differences from RBM2D (ST1-COMMON item 2, forced by the merged vocabulary)
+## Differences from the two-dimensional version
 
-* `GbEXPHypV3 d (κ/2) c τ` (per size sequence and per `(c, τ)`) is the pair of pins `STGbEXPii d`,
-  `STGbEXPij d`, which quantify over every `κ ε 𝔡 𝔠 sz z t ε₀`; at a time sequence `u ∈ [s,t]`
-  (`0 ≤ u ≤ t ≤ lemT z`) they give `STGiiGEX`, `STGijGEX` at `E = STflowE z`, `ε₀ = c'`.  The
-  private lemmas take these two instances (`hGii`, `hGij`) as hypotheses, so no `z` occurs in them.
+* `GbEXPHypV3 d (κ/2) c τ` (per size sequence and per `(c, τ)`) is the pair of hypotheses
+  `STGbEXPii d`, `STGbEXPij d`, which quantify over every `κ ε 𝔡 𝔠 sz z t ε₀`; at a time
+  sequence `u ∈ [s,t]` (`0 ≤ u ≤ t ≤ lemT z`) they give `STGiiGEX`, `STGijGEX` at
+  `E = STflowE z`, `ε₀ = c'`.  The private lemmas take these two instances (`hGii`, `hGij`) as
+  hypotheses, so no `z` occurs in them.
 * `M_s⁻¹` is `a_s = sz.Bctl n s`, `6` is `C_d = 2·3^d` (`s1_F4`), the constant of `s1_wl_det` is
   `2·9^d + 1 ≤ (2·3^d)²`.  The events of `Prec.whp` replace `s1_highProb_of_pt` for the two
-  pins (their index sets are `Idx × Idx` and `{p // p.1 ≠ p.2}`, `≺` is the uniform `Prec`);
-  `s1_highProb_of_pt` is kept for `s1_LI` (`PrecPT` over `(σ, a)`), with `#((σ,a)) ≤ N^4`.
+  statements (their index sets are `Idx × Idx` and `{p // p.1 ≠ p.2}`, `≺` is the uniform
+  `Prec`); `s1_highProb_of_pt` is kept for `s1_LI` (`PrecPT` over `(σ, a)`), with
+  `#((σ,a)) ≤ N^4`.
 * `STomegaC` is the indicator `1(‖G‖_max ≤ 2)` of `s1_LI`; `STindMax`, `STmaxLoop2`, `STgexRHS`
   are those of `s1_wl_det`.  `s1_loopPT` removes `STomegaC` by `stochDom_of_indicator` and the
   bootstrap event `‖G_u - m‖_max < a_s^{1/4} ≤ 1`.
 * `s1_perTime_timeIcc` is `Green.perTime_timeIcc_of_forall_seq` without the `Unit ×` factor
   (`s1_LI` is over `(σ, a)`).
-* The net lift is `step1NetLift` for both halves (`stNetLift_holds` covers the loop half only, in
-  the per-section form).
+* The net lift is `step1NetLift` for both halves.
 
-## Time windows (DECISIONS §29)
+## Time windows
 
 `0 ≤ s` is used for the window length `t - s ≤ 1` (`hlen`), for `0 ≤ u` at the net points and at
-the points handed to `gopbound` and to the two pins, and inside the imported `s1_F6`, `s1_F8`,
-`s1_h55`, `s1_LI` (`S1Std.hs0`); `s < t` is only used as `s ≤ t`; `t ≤ lemT z` gives `u ≤ lemT z`
-for the two pins and `t < 1` (`S1Std.ht1`, `RangeCond`).  The facts about the net, the mesh and the
-pointwise bounds on `[s,t]` are `∀ n`, those needing `a_s → 0` or `(eq:WO)` are `∀ᶠ n`
-(`s1_F3`-`s1_F8`, `S1Std.hR`).  Every constant (`2·3^d`, `2·9^d + 1`, `C' = 2C + 14` at `C = 1`,
-`c₀/8`) depends on `d, κ, 𝔠, 𝔡, ε` only, not on `W, L, ilambda`; no `ℓ` occurs and no `L^d ≤ W^K`
-is used (the counts use `L^d ≤ N`).
-
-## Registry
-
-`Step1TargetV3` (`Step1Setup.lean:149`) is registered *owed* in `RBM3D/Test/Axioms.lean`; the
-theorem `step1TargetV3_holds` proves it, so that line can go once this file is merged.  No new
-`Prop`-valued predicate is introduced here.
+the points handed to `gopbound` and to the two hypotheses `STGbEXPii`, `STGbEXPij`, and inside
+the imported `s1_F6`, `s1_F8`, `s1_h55`, `s1_LI` (`S1Std.hs0`); `s < t` is only used as `s ≤ t`;
+`t ≤ lemT z` gives `u ≤ lemT z` for the two hypotheses and `t < 1` (`S1Std.ht1`, `RangeCond`).
+The facts about the net, the mesh and the pointwise bounds on `[s,t]` are `∀ n`, those needing
+`a_s → 0` or `(eq:WO)` are `∀ᶠ n` (`s1_F3`-`s1_F8`, `S1Std.hR`).  Every constant (`2·3^d`,
+`2·9^d + 1`, `C' = 2C + 14` at `C = 1`, `c₀/8`) depends on `d, κ, 𝔠, 𝔡, ε` only, not on
+`W, L, ilambda`; no `ℓ` occurs and no `L^d ≤ W^K` is used (the counts use `L^d ≤ N`).
 -/
 
 set_option linter.style.longLine false
@@ -81,26 +72,26 @@ namespace RBM.Ind
 open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 open scoped NNReal ENNReal
 
-/-! ## 1. The weak-law step at one time sequence (RBM2D `WeakLawSeq`, `Step1:969-1097`) -/
+/-! ## 1. The weak-law step at one time sequence -/
 
 section WeakLawSeq
 
 variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
 
-/-- `‖G_v - m‖_max` at the size index `n`, time `v` (RBM2D `s1x`, `Step1:974`). -/
+/-- `‖G_v - m‖_max` at the size index `n`, time `v`. -/
 private abbrev s1x (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (v : ℝ) (ω : sz.SeqΩ) : ℝ :=
   s1xM d (sz.L n) (sz.W n) (E n) v (sz.seqHflow n v ω)
 
-/-- The threshold `a = a_s^{1/4}` (constant in `u`; RBM2D `s1a`, `Step1:978`, `M_s^{-1/4}`). -/
+/-- The threshold `a = a_s^{1/4}` (constant in `u`; RBM2D's `s1a`, `M_s^{-1/4}`). -/
 private abbrev s1a (sz : Sizes d) (s : ℕ → ℝ) (n : ℕ) : ℝ := (s1B sz s n) ^ ((1 : ℝ) / 4)
 
-/-- The bound `f = 2·3^d a_s^{7/15}` (constant in `u`; RBM2D `s1f`, `Step1:981`,
+/-- The bound `f = 2·3^d a_s^{7/15}` (constant in `u`; RBM2D's `s1f`,
 `6 M_s^{-7/15}`; `C_d = 2·3^d` as in `s1_F4`). -/
 private abbrev s1f (sz : Sizes d) (s : ℕ → ℝ) (n : ℕ) : ℝ :=
   (2 * (3 : ℝ) ^ d) * (s1B sz s n) ^ ((7 : ℝ) / 15)
 
 /-- `#((Fin k → Bool) × (Fin k → Z_L^d)) = 2^k (L^d)^k ≤ N^{2k}` for `N ≥ 2`, `N = (W L)^d`
-(RBM2D `s1_card_loops`, `Step1:1004`, `L·L ≤ N`; here `L^d ≤ (W L)^d = N`, no `L^d ≤ W^K`). -/
+(RBM2D's `s1_card_loops`, `L·L ≤ N`; here `L^d ≤ (W L)^d = N`, no `L^d ≤ W^K`). -/
 private theorem s1_card_loops (n k : ℕ) (hN2 : 2 ≤ sz.size n) :
     (Fintype.card ((Fin k → Bool) × (Fin k → Zd d (sz.L n))) : ℝ) ≤
       ((sz.size n : ℕ) : ℝ) ^ ((2 * k : ℕ) : ℝ) := by
@@ -121,8 +112,8 @@ private theorem s1_card_loops (n k : ℕ) (hN2 : 2 ≤ sz.size n) :
   rw [hc]
   exact_mod_cast key
 
-/-- **The weak-law step at one time sequence** (3_5:64-66 of the `d ≥ 3` paper, [YY_25, §5.1];
-RBM2D `s1_wl_seq`, `Step1:1027`, `5-6:60-63`): for every time sequence `u n ∈ [s n, t n]`,
+/-- **The weak-law step at one time sequence** (proof of Step 1 of the `d ≥ 3` paper, [YY_25, §5.1];
+RBM2D's `s1_wl_seq`): for every time sequence `u n ∈ [s n, t n]`,
 `1(‖G_u - m‖_max ≤ 2 a_s^{1/4}) ‖G_u - m‖_max ≺ 2·3^d a_s^{7/15}`.  The inputs are `lem_GbEXP`
 (`(GiiGEX)`, `(GijGEX)` at `ε₀ = c'` from `s1_F5`, so that `Ω(u, c')` holds on the event),
 `s1_LI` at `k = 2` with `s1_ratio_ev` (`(lRB1)` with the indicator, the loops `≺ a_s^{14/15}`) and
@@ -212,26 +203,25 @@ private theorem s1_wl_seq (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H5
 
 end WeakLawSeq
 
-/-! ## 2. The net and the forbidden region for all `u ∈ [s,t]` (RBM2D `Net`, `Step1:1101-1236`) -/
+/-! ## 2. The net and the forbidden region for all `u ∈ [s,t]` -/
 
 section Net
 
 variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
 
-/-- The clamped net of `[s n, t n]` at scale `1/netSize A N` (RBM2D `s1Net`, `Step1:1107`, a copy of
-the private `contTime` of `ContinuityNet.lean`; RBM1D `netTime_mem`, `Gauss/DominationHolder.lean:151`,
-commit `86573b9`). -/
+/-- The clamped net of `[s n, t n]` at scale `1/netSize A N` (RBM2D's `s1Net`, a copy of
+the private `contTime` of `ContinuityNet.lean`; compare RBM1D `netTime_mem`). -/
 private def s1Net (s t : ℕ → ℝ) (A : ℝ) (N n : ℕ) (k : Fin (netSize A N + 1)) : ℝ :=
   min (t n) (s n + netPt 1 A N k)
 
-/-- RBM2D `s1Net_mem`, `Step1:1110`. -/
+/-- Every net point lies in `[s n, t n]`. -/
 private theorem s1Net_mem {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (A : ℝ) (N n : ℕ)
     (k : Fin (netSize A N + 1)) : s1Net s t A N n k ∈ Set.Icc (s n) (t n) := by
   refine ⟨le_min (hst n) ?_, min_le_left _ _⟩
   have := (netPt_mem_Icc zero_le_one A N k).1
   linarith
 
-/-- RBM2D `s1_exists_close`, `Step1:1116`. -/
+/-- Every `u ∈ [s n, t n]` is within `1/netSize A N` of a net point (the window has length `≤ 1`). -/
 private theorem s1_exists_close {s t : ℕ → ℝ} (hlen : ∀ n, t n - s n ≤ 1) (A : ℝ) (N n : ℕ)
     {u : ℝ} (hu : u ∈ Set.Icc (s n) (t n)) :
     ∃ k, |u - s1Net s t A N n k| ≤ 1 / (netSize A N : ℝ) := by
@@ -250,12 +240,11 @@ private theorem s1_exists_close {s t : ℕ → ℝ} (hlen : ∀ n, t n - s n ≤
     rw [abs_of_nonpos (by linarith [hu.2]), abs_of_nonpos (by linarith [hu.2])]
     linarith
 
-/-- **The forbidden region for all `u ∈ [s,t]` simultaneously** (3_5:64-66, [YY_25, §5.1]; RBM2D
-`s1_forb`, `Step1:1139`, `5-6:13-16`, `5-6:64-68`; RBM1D `weakLaw_highProb`,
-`Hierarchy/Step1.lean:669`, commit `86573b9`): with high probability,
+/-- **The forbidden region for all `u ∈ [s,t]` simultaneously** (proof of Step 1, [YY_25, §5.1]; RBM2D's
+`s1_forb`; RBM1D's `weakLaw_highProb`): with high probability,
 `‖G_u - m‖_max ≠ α` for every `u ∈ [s,t]`, `α = a_s^{1/4}`.  The per-sequence bound `s1_wl_seq`
 is used at the points of a polynomial net (`#net ≤ N^{C'+1}`, `C'` the witness of `gopbound` at
-`C = 1`, which is `2 + 14` there, `Continuity.lean:529`; no `d` in it), the union bound over the net
+`C = 1`, which is `2 + 14` there; no `d` in it), the union bound over the net
 is `Unif.forbidden_region` (the band `[α/2, 2α]`, `f = 2·3^d a_s^{7/15} ≪ α/2` by `s1_F4`) and the
 passage to all `u` is `gopbound` (the mesh `N^{-C'}` moves `‖G_u - m‖_max` by at most
 `N^{-1} ≤ α/2`, `s1_F6`). -/
@@ -359,16 +348,14 @@ private theorem s1_forb (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H55 
 
 end Net
 
-/-! ## 3. The continuity argument and the two per-time conclusions
-(RBM2D `Bootstrap`, `Step1:1240-1370`) -/
+/-! ## 3. The continuity argument and the two per-time conclusions -/
 
 section Bootstrap
 
 variable {d : ℕ} {sz : Sizes d} {κ 𝔠 𝔡 τ 𝔠d : ℝ} {E s t : ℕ → ℝ}
 
 /-- `u ↦ ‖G_u - m‖_max` is continuous on `[a, b]`, `b < 1`, for every sample point
-(`continuous_green_Hflow_moving_time` applied to the clamped path `z(min(u, b))`; RBM2D
-`s1x_continuousOn`, `Step1:1246`). -/
+(`continuous_green_Hflow_moving_time` applied to the clamped path `z(min(u, b))`). -/
 private theorem s1x_continuousOn (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (hE : |E n| < 2) {a b : ℝ}
     (hb : b < 1) (ω : sz.SeqΩ) :
     ContinuousOn (fun v => s1x sz E n v ω) (Set.Icc a b) := by
@@ -391,8 +378,7 @@ private theorem s1x_continuousOn (sz : Sizes d) (E : ℕ → ℝ) (n : ℕ) (hE 
   simp only [s1x, s1xM, Green.llErrMat, hz, min_eq_left hv.2]
   rfl
 
-/-- **The continuity argument** (3_5:64-66, [YY_25, §5.1]; RBM2D `s1_boot`, `Step1:1274`,
-`5-6:68-70`): with high probability, `‖G_u - m‖_max < a_s^{1/4}` for every `u ∈ [s,t]`.  The initial
+/-- **The continuity argument** (proof of Step 1, [YY_25, §5.1]; RBM2D's `s1_boot`): with high probability, `‖G_u - m‖_max < a_s^{1/4}` for every `u ∈ [s,t]`.  The initial
 condition is `(c)` at `s` (`STLocalMax`, `≺ a_s^{1/2}`, `s1_F3`), the continuity of `u ↦ ‖G_u - m‖_max`
 is `s1x_continuousOn`, the forbidden region is `s1_forb`, the argument is `stepOneBootstrap`. -/
 private theorem s1_boot (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H55 sz E s)
@@ -425,8 +411,7 @@ private theorem s1_boot (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H55 
     hcont (fun l => continuousOn_const) (Eventually.of_forall fun l u => le_rfl)
     (s1_forb h h55 hGii hGij) hinit
 
-/-- **(`Gtmwc`) per time** (3_5:64-66; RBM2D `s1_weakPT`, `Step1:1311`, `5-6:70`; RBM1D `weakLaw`,
-`Hierarchy/Step1.lean:791`, commit `86573b9`): `‖G_u - m‖_max ≺ (W^{-d}B_{u,0})^{1/4}` uniformly in
+/-- **(`Gtmwc`) per time** (proof of Step 1; RBM2D's `s1_weakPT`; RBM1D's `weakLaw`): `‖G_u - m‖_max ≺ (W^{-d}B_{u,0})^{1/4}` uniformly in
 `u ∈ [s,t]`, per time.  `a_s^{1/4} ≤ a_u^{1/4}` is `STBctl_mono`. -/
 private theorem s1_weakPT (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H55 sz E s)
     (hGii : ∀ u : ℕ → ℝ, (∀ n, u n ∈ Set.Icc (s n) (t n)) → ∀ ε₀ > (0 : ℝ),
@@ -467,8 +452,7 @@ private theorem s1_perTime_timeIcc {Ω : Type*} [MeasurableSpace Ω] (P : Measur
   rw [perTimeDomAt_iff_forall_section P size hV] at h1
   exact h1 (fun n => (sec n).2)
 
-/-- **(`lRB1`) per time** (3_5:64-66; RBM2D `s1_loopPT`, `Step1:1334`, `5-6:70`; RBM1D `apriori`,
-`Hierarchy/Step1.lean:812`, commit `86573b9`): `|𝓛_{u,σ,a}| ≺ ((1-s)/(1-u))^{k-1} (W^{-d}B_{s,0})^{k-1}`
+/-- **(`lRB1`) per time** (proof of Step 1; RBM2D's `s1_loopPT`; RBM1D's `apriori`): `|𝓛_{u,σ,a}| ≺ ((1-s)/(1-u))^{k-1} (W^{-d}B_{s,0})^{k-1}`
 uniformly in `u ∈ [s,t]`, per time: the indicator of `{‖G_u‖_max ≤ 2}` is removed by the continuity
 argument (`‖G_u‖_max ≤ 1 + ‖G_u - m‖_max < 1 + a_s^{1/4} ≤ 2`). -/
 private theorem s1_loopPT (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H55 sz E s)
@@ -510,18 +494,18 @@ private theorem s1_loopPT (h : S1Std sz κ 𝔠 𝔡 τ 𝔠d E s t) (h55 : S1H5
 
 end Bootstrap
 
-/-! ## 4. The theorem (RBM2D `step1`, `Step1:1378`) -/
+/-! ## 4. The theorem -/
 
-/-- **Step 1 of `lem:main_ind`** (`1_2:1317-1328`, `3_5:64-66`; RBM2D `step1`, `Step1:1378`,
-`5-6:5-76`): `(lRB1)` and `(Gtmwc)` uniformly in `u ∈ [s,t]`, in the successor form
+/-- **Step 1 of `lem:main_ind`** (proof of Step 1; RBM2D's `step1`): `(lRB1)` and `(Gtmwc)`
+uniformly in `u ∈ [s,t]`, in the form
 `Step1TargetV3 d := STGbEXPii d → STGbEXPij d → STStep1 d`, for every `d`: under the two parts
 `(GiiGEX)`, `(GijGEX)` of `lem_GbEXP`, the hypotheses of `STStep1` (`STKbound`, `STLK s`,
 `STLocalMax s`, `STConStInd 𝔠_d s t`, the flow, `0 ≤ s < t`, `s, t ≤ lemT z`) give `STStep1Loop`
 and `STStep1Weak`.  Proof: the per-time statements `s1_loopPT`, `s1_weakPT` (continuity argument
-from `conArg` via `s1_LI`, the two pins, `gopbound`, `stepOneBootstrap`) and the net lift
-`step1NetLift` (T2062) at `κ`, `τ = ε/2`; `S1Std` is `s1_std_of_stFlow`.  The pins are used at
-`E = STflowE z`, at the time sequences `u n ∈ [s n, t n]` (so `0 ≤ u n ≤ t n ≤ lemT (z n)`) and
-at `ε₀ = c'` of `s1_F5`. -/
+from `conArg` via `s1_LI`, the two hypotheses `STGbEXPii`, `STGbEXPij`, `gopbound`,
+`stepOneBootstrap`) and the net lift `step1NetLift` at `κ`, `τ = ε/2`; `S1Std` is
+`s1_std_of_stFlow`.  The two hypotheses are used at `E = STflowE z`, at the time sequences
+`u n ∈ [s n, t n]` (so `0 ≤ u n ≤ t n ≤ lemT (z n)`) and at `ε₀ = c'` of `s1_F5`. -/
 theorem step1TargetV3_holds (d : ℕ) : RBM.Ind.Step1TargetV3 d := by
   intro hii hij κ ε 𝔡 hκ hε h𝔡 𝔠d h𝔠d h𝔠d' 𝔠 sz z hflow s t hs0 hsT hst htT hK hLK hLoc hCond
   have h := s1_std_of_stFlow hκ hε h𝔠d h𝔠d' hflow hs0 (fun n => (hst n).le) htT hCond
@@ -539,24 +523,7 @@ theorem step1TargetV3_holds (d : ℕ) : RBM.Ind.Step1TargetV3 d := by
 
 end RBM.Ind
 
-/-! ## 5. Compiled nonempty instances at `d = 3`
 
-The size data are the merged preflight sequences `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
-`W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6} → 0`, `N_n = (W_n L_n)^3`; `n = 0`: `L = 4`, `W = 32`,
-`N = 2097152`), `sz1` (the same with `lam_n = W_n^{-3/2+1/10}`, the lower end of `(eq:WO)`) and
-`sz2` (`lam_n = 𝔡⁻¹ = 10`, the upper end), admissible at `𝔠 = 1/6`, `𝔡 = 1/10`; `κ = ε = 1/10`; the flow points `z_n = 1/2 + i N_n^{-4/5}`
-(`flow_z0`, `flow_z1`); times `0 ≤ s < t ≤ 1/16 ≤ lemT z_n`; `𝔠_d = 1/100` and the constant windows of
-`Step1Setup.lean` section 7.  Every deterministic hypothesis (`STFlow`, the time ranges,
-`STConStInd`, `S1Std`) is discharged; what stays a hypothesis is another gate's pin
-(`STKbound`, `STLK`, `STLocalMax` at `s`; `STGbEXPii`, `STGbEXPij`, or their instances along the
-window). -/
 
-/-! ### The target `step1TargetV3_holds` -/
-
-/-! ### The intermediate statements at `sz0`
-
-`STGbEXPii 3`, `STGbEXPij 3` at the flow of the instance give `STGiiGEX`, `STGijGEX` along every
-time sequence of the window `[0, 1/16]` and every `ε₀ > 0` (the hypotheses `hGii`, `hGij` of the
-private lemmas); `STKbound`, `STLK` give `S1H55` (`s1_h55`). -/
 
 end

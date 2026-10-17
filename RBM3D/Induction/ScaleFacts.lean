@@ -7,15 +7,13 @@ import RBM3D.Induction.Defs
 import RBM3D.Induction.PerTimeCalc
 
 /-!
-# The scale facts of the size sequence at `d ≥ 3` (ST-1, S1-08)
+# The scale facts of the size sequence at `d ≥ 3`
 
-Ticket T2045.  Port of `RBM2D/Induction/ScaleFacts.lean` at `c9a24cf` (rows R1, R2, R3, R5 of the
-T2006 report) to the scales of `arXiv:2507.20274`: `ℓ_t` (`(eq:ellt)`, `1_2:1121`, merged `ellT`),
-`W^{-d} B_{t,0}` (`(eq_B_param)`, `1_2:1107-1108`, merged `Sizes.Bctl`), `η_t` (merged
-`RBM.Gauss.etaT`), `N = (W L)^d = sz.size n`.  Probe sections 4.1 of the T2015 probe
-(`RBM3D/Probe/T2015Pins.lean` at `752e027`, lines 938-1061, not merged): `STsize_pos`, `STBctl_pos`,
-`STBctl_mono`, `STBctl_xmono`, `STBctl_ge`, `closure_scale`, `closure_sq_le`, copied here with their
-proofs (the `open` lines name `RBM Filter`).
+The scales of arXiv:2507.20274: `ℓ_t` ((2.64) `eq:ellt`, `ellT`), `W^{-d} B_{t,0}` ((2.62)
+`eq_B_param`, `Sizes.Bctl`), `η_t` (`RBM.Gauss.etaT`), and `N = (W L)^d = sz.size n`.  The
+deterministic facts `STsize_pos`, `STBctl_pos`, `STBctl_mono`, `STBctl_xmono`, `STBctl_ge`,
+`closure_scale` are proved in §1-§2; the proofs follow the two-dimensional formalization (RBM2D
+`Induction/ScaleFacts`) with the scales of this paper.
 
 ## What changes from `d = 2`
 
@@ -24,23 +22,20 @@ only for `d = 2`, `ilambda = 1` (for `d ≥ 3` the zero-mode term `(L^d |1-t|)^{
 `1/(ℓ² |1-t|)`).  The role of `M_t^{-1}` is played by `a_t := sz.Bctl n t = W^{-d} B_{t,0}`:
 
 * `scaleFacts_R1`: `M_u ≥ Im m N^{c₀}` becomes `a_u ≤ 2 N^{-c₀}`, `c₀ = min(2 𝔠 𝔡, τ)`; it needs
-  `(eq:WO)` (`sz.WO 𝔡`: `ilambda² W^d ≥ W^{2𝔡}`) because `ilambda` is a sequence and not `1`
-  (paper-delta candidate T2045a);
+  `(eq:WO)` (`sz.WO 𝔡`: `ilambda² W^d ≥ W^{2𝔡}`) because `ilambda` is a sequence and not `1`; the
+  hypothesis is necessary (§7);
 * `scaleFacts_R2_pt`: `M_s^{29/30} ≤ M_u` from `M_s^{-1} ≤ ((1-t)/(1-s))^{30}` becomes
-  `a_u ≤ a_s^{1-c}` from `a_t^c ≤ (1-t)/(1-s)` (`(con_st_ind)`, `1_2:1296`, `c = 𝔠_d`); `c = 1/30`
+  `a_u ≤ a_s^{1-c}` from `a_t^c ≤ (1-t)/(1-s)` ((2.83) `con_st_ind`, `c = 𝔠_d`); `c = 1/30`
   reproduces `29/30`;
 * the ratio facts `ℓ_u/ℓ_s ≤ ((1-s)/(1-t))^{1/2}`, `(ℓ_t/ℓ_s)^4 ≤ (η_s/η_t)^2` keep their
-  exponents (dimension free); the merged `ellT` carries the coupling `g`, and `0 ≤ s` is not needed
-  (T2045a).
+  exponents (dimension free); `ellT` carries the coupling `g`, and `0 ≤ s` is not needed.
 
-## Dropped from the RBM2D file
+## Two-dimensional statements without a counterpart
 
-`ChainStepCond`, `chainStepCond` (the `d = 2` grid `1 - s_k = (1 - t)^{k/n₀}` of `1-2:989-996`; its
-consumers at `c9a24cf` are `Induction/Chain` and `Induction/MainInd`, not ST-1; the `d ≥ 3` paper
-(`1_2:1308-1312`) performs the induction on `t` in two phases and fixes no grid, so a `d ≥ 3` form
-belongs to the chain induction, whose core is `scaleFacts_R1` with `STConStInd`), and
-`scaleFacts_inv_sq_le_tailT` (Step 5 of the `d = 2` paper; consumer `Induction/Step45`; `tailT`,
-`ellStar`, `scaleM` are not `d ≥ 3` objects) (paper-delta candidate T2045b).
+`ChainStepCond`, `chainStepCond` (the `d = 2` grid `1 - s_k = (1 - t)^{k/n₀}`) have no `d ≥ 3`
+form here: in the proof of the main results (after (2.84) `Eq:Gdecay+s<g`) the induction on `t`
+runs in two phases and fixes no grid.  `scaleFacts_inv_sq_le_tailT` belongs to Step 5 of the
+`d = 2` paper; `tailT`, `ellStar`, `scaleM` are not `d ≥ 3` objects.
 -/
 
 set_option linter.style.longLine false
@@ -49,7 +44,7 @@ noncomputable section
 
 open Filter RBM RBM.Gauss
 
-/-! ## 1. Deterministic scale facts of `W^{-d} B_{t,0}` (probe section 4.1, rows 10-12) -/
+/-! ## 1. Deterministic scale facts of `W^{-d} B_{t,0}` -/
 
 namespace RBM.Gauss.Sizes
 
@@ -70,7 +65,7 @@ theorem STBctl_pos (n : ℕ) {t : ℝ} (ht : t < 1) : 0 < sz.Bctl n t := by
   have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
   positivity
 
-/-- **Row 10**: `W^{-d} B_{s,0} ≤ W^{-d} B_{u,0}` for `s ≤ u < 1`: the control grows along the flow. -/
+/-- **Monotonicity**: `W^{-d} B_{s,0} ≤ W^{-d} B_{u,0}` for `s ≤ u < 1`: it is nondecreasing along the flow. -/
 theorem STBctl_mono (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1) : sz.Bctl n s ≤ sz.Bctl n u := by
   unfold Sizes.Bctl Bparam
   have hxu : 0 < 1 - u := by linarith
@@ -87,8 +82,8 @@ theorem STBctl_mono (n : ℕ) {s u : ℝ} (hsu : s ≤ u) (hu : u < 1) : sz.Bctl
   have hK : 0 ≤ ((((0 : ℕ) : ℝ) + 1) ^ (d - 2))⁻¹ := by positivity
   gcongr
 
-/-- **Row 10, sharper form**: `(1-v) W^{-d} B_{v,0} ≤ (1-s) W^{-d} B_{s,0}` for `s ≤ v < 1`
-(`x ↦ x B_{x,0} = x/(g²+x) + L^{-d}` is nondecreasing): the control `(η_s/η_u) W^{-d} B_{s,0}` of
+/-- **Monotonicity, sharper form**: `(1-v) W^{-d} B_{v,0} ≤ (1-s) W^{-d} B_{s,0}` for `s ≤ v < 1`
+(`x ↦ x B_{x,0} = x/(g²+x) + L^{-d}` is nondecreasing): the bound `(η_s/η_u) W^{-d} B_{s,0}` of
 `lem_ConArg` can only improve if the starting time is moved later. -/
 theorem STBctl_xmono (n : ℕ) {s v : ℝ} (hsv : s ≤ v) (hv : v < 1) :
     (1 - v) * sz.Bctl n v ≤ (1 - s) * sz.Bctl n s := by
@@ -121,7 +116,7 @@ theorem STBctl_xmono (n : ℕ) {s v : ℝ} (hsv : s ≤ v) (hv : v < 1) :
     _ = (1 - s) * ((((sz.W n : ℕ) : ℝ) ^ d)⁻¹ *
         ((sz.lam n ^ 2 + (1 - s))⁻¹ + (((sz.L n : ℕ) : ℝ) ^ d * (1 - s))⁻¹)) := by ring
 
-/-- `W^{-d} B_{s,0} ≥ W^{-d} (ilambda² + 1)⁻¹` for `0 ≤ s < 1`: at the early times the control is
+/-- `W^{-d} B_{s,0} ≥ W^{-d} (ilambda² + 1)⁻¹` for `0 ≤ s < 1`: at the early times it is
 at least the volume factor (`x_s ≤ 1`). -/
 theorem STBctl_ge (n : ℕ) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s < 1) :
     ((((sz.W n : ℕ) : ℝ) ^ d))⁻¹ * (sz.lam n ^ 2 + 1)⁻¹ ≤ sz.Bctl n s := by
@@ -145,14 +140,13 @@ theorem STBctl_ge (n : ℕ) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s < 1) :
 
 end RBM.Gauss.Sizes
 
-/-! ## 2. The closure of Step 1 (probe row 12), pure real facts -/
+/-! ## 2. The closure of Step 1, pure real facts -/
 
 namespace RBM.Ind
 
-/-- **Row 12, the closure of Step 1**: if `a_s ≤ a_t`, `a_t^c ≤ x_t/x_s` (`(con_st_ind)` with
+/-- **The closure of Step 1**: if `a_s ≤ a_t`, `a_t^c ≤ x_t/x_s` (`(con_st_ind)` with
 `c = 𝔠_d`, `a = W^{-d}B_{·,0}`, `x = 1 - ·`) and `x_t ≤ x_u`, then `a_s x_s/x_u ≤ a_s^{1-c}`.
-With `c ≤ 1/4`: `(a_s x_s/x_u)^{1/2} ≤ a_s^{3/8}`; the `d`-dependence of RBM2D's exponent `30`
-(`Induction/ScaleFacts.lean:87`, `Induction/Step1.lean:157`) is only through `a`. -/
+With `c ≤ 1/4`: `(a_s x_s/x_u)^{1/2} ≤ a_s^{3/8}`; the exponent `30` of RBM2D is `1/c` at `c = 1/30`, and the dimension enters only through `a`. -/
 theorem closure_scale {as at_ xs xt xu c : ℝ} (hc : 0 < c) (has : 0 < as) (hat : as ≤ at_)
     (hxt : 0 < xt) (hxs : 0 < xs) (hxu : xt ≤ xu) (hcon : at_ ^ c ≤ xt / xs) :
     as * (xs / xu) ≤ as ^ (1 - c) := by
@@ -168,13 +162,13 @@ theorem closure_scale {as at_ xs xt xu c : ℝ} (hc : 0 < c) (has : 0 < as) (hat
 
 end RBM.Ind
 
-/-! ## 3. Row R1: `W^{-d} B_{u,0} ≤ 2 N^{-c₀}` for `u ≤ t` -/
+/-! ## 3. `scaleFacts_R1`: `W^{-d} B_{u,0} ≤ 2 N^{-c₀}` for `u ≤ t` -/
 
 namespace RBM.Ind
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- Row R1 (T2006 (a.4)/(b.4); RBM2D `scaleFacts_R1`, `ScaleFacts.lean:72`, `M_u ≥ Im m · N^{c₀}`):
+/-- `scaleFacts_R1` (the counterpart of RBM2D's `scaleFacts_R1`, `M_u ≥ Im m · N^{c₀}`):
 under `Bandwidth 𝔠` (`W ≥ N^𝔠`), `(eq:WO)` and the range condition `N^{-1+τ} ≤ 1 - t`
 (RBM2D `RangeCond`), eventually, for every `u ≤ t n`,
 `W^{-d} B_{u,0} ≤ 2 N^{-min(2𝔠𝔡, τ)}`, `N = sz.size n = (W L)^d`.
@@ -182,7 +176,7 @@ under `Bandwidth 𝔠` (`W ≥ N^𝔠`), `(eq:WO)` and the range condition `N^{-
 Proof: `W^{-d}B_{u,0} = (W^d (g² + x_u))⁻¹ + (N x_u)⁻¹ ≤ (g² W^d)⁻¹ + (N N^{-1+τ})⁻¹
 ≤ W^{-2𝔡} + N^{-τ} ≤ N^{-2𝔠𝔡} + N^{-τ}` (`x_u ≥ x_t ≥ N^{-1+τ}`, `Sizes.lam_sq_mul_pow_ge`).
 `(eq:WO)` is needed: for `ilambda ≡ 0`, `W = L = N^{1/(2d)}`, `x = N^{-1+τ}` the left side is
-`≥ (W^d x)⁻¹ = N^{1/2 - τ} → ∞` for `τ < 1/2` (paper-delta candidate T2045a).  The exponent
+`≥ (W^d x)⁻¹ = N^{1/2 - τ} → ∞` for `τ < 1/2`.  The exponent
 `2𝔠𝔡` replaces RBM2D's `2c`: `W^{-2𝔡}` is the `d = 2` bound `W^{-2}` with `ilambda = 1`. -/
 theorem scaleFacts_R1 (𝔠 𝔡 τ : ℝ) (t : ℕ → ℝ) (h𝔡 : 0 < 𝔡)
     (hB : sz.Bandwidth 𝔠) (hWO : sz.WO 𝔡)
@@ -247,14 +241,14 @@ theorem scaleFacts_R1 (𝔠 𝔡 τ : ℝ) (t : ℕ → ℝ) (h𝔡 : 0 < 𝔡)
 
 end RBM.Ind
 
-/-! ## 4. Row R2: `W^{-d} B_{u,0} ≤ (W^{-d} B_{s,0})^{1-𝔠_d}` for `u ∈ [s, t]` -/
+/-! ## 4. `scaleFacts_R2`: `W^{-d} B_{u,0} ≤ (W^{-d} B_{s,0})^{1-𝔠_d}` for `u ∈ [s, t]` -/
 
 namespace RBM.Ind
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- Row R2, pointwise (RBM2D `scaleFacts_R2_pt`, `ScaleFacts.lean:87`, `M_s^{29/30} ≤ M_u`
-from `M_s⁻¹ ≤ ((1 - t)/(1 - s))^{30}`): from the step condition `(con_st_ind)` (`1_2:1296`)
+/-- `scaleFacts_R2_pt`, pointwise (the counterpart of RBM2D's `scaleFacts_R2_pt`, `M_s^{29/30} ≤ M_u`
+from `M_s⁻¹ ≤ ((1 - t)/(1 - s))^{30}`): from the step condition `(con_st_ind)`
 `(W^{-d}B_{t,0})^c ≤ (1 - t)/(1 - s)` (`c = 𝔠_d`), for `s ≤ u ≤ t < 1`,
 `W^{-d} B_{u,0} ≤ (W^{-d} B_{s,0})^{1-c}`.  `c = 1/30` is the exponent `29/30` of RBM2D.
 Proof: `x_u a_u ≤ x_s a_s` (`STBctl_xmono`), `a_s ≤ a_t` (`STBctl_mono`) and `closure_scale`. -/
@@ -274,7 +268,7 @@ theorem scaleFacts_R2_pt (n : ℕ) {c s u t : ℝ} (hc : 0 < c) (hsu : s ≤ u) 
     linarith
   exact h1.trans (closure_scale hc has hat hxt hxs (by linarith) hstep)
 
-/-- Row R2, sequence form (RBM2D `scaleFacts_R2`, `ScaleFacts.lean:121`, with `CondStInd`,
+/-- `scaleFacts_R2`, sequence form (the counterpart of RBM2D's `scaleFacts_R2`, with `CondStInd`,
 `RangeCond`): `STConStInd sz 𝔠d s t` and `t n < 1` eventually give, eventually, for every
 `u ∈ [s n, t n]`, `W^{-d} B_{u,0} ≤ (W^{-d} B_{s n,0})^{1-𝔠_d}`.  `t n < 1` is needed because
 `STConStInd` is vacuous at `s ≥ 1` (Lean `x/0 = 0`). -/
@@ -285,39 +279,28 @@ theorem scaleFacts_R2 {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) {s t : ℕ → ℝ} (hC
   filter_upwards [hC, ht] with n hCn htn u hsu hut
   exact scaleFacts_R2_pt sz n h𝔠d hsu hut htn hCn.1
 
-/-! ## 5. The ratio facts behind R3 and R5 -/
+/-! ## 5. The ratio facts -/
 
-/-- `η_s/η_t = (1 - s)/(1 - t)` for `|E| < 2`, `t < 1` (RBM2D `Path/Scales.lean:92`
-`etaT_div_etaT`, for the merged `etaT E t = (1 - t) Im m^{(E)}`). -/
+/-- `η_s/η_t = (1 - s)/(1 - t)` for `|E| < 2`, `t < 1` (RBM2D's
+`etaT_div_etaT`, for `etaT E t = (1 - t) Im m^{(E)}`). -/
 theorem scaleFacts_etaT_div_etaT {E s t : ℝ} (hE : |E| < 2) :
     etaT E s / etaT E t = (1 - s) / (1 - t) :=
   mul_div_mul_right _ _ (mE_im_pos hE).ne'
 
 end RBM.Ind
 
-/-! ## 6. Instances at `d = 3`
 
-The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
-`W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6} → 0`, `N_n = (W_n L_n)^3`; `n = 0`: `L = 4`, `W = 32`,
-`lam = 1/64`, `N = 2097152`), admissible at `𝔠 = 1/6`, `𝔡 = 1/10` (`sz0_admissible`), and the
-times of `RBM.Gauss.InductionDefsInst`: `s ≡ 0`, `t ≡ 1/16` (window of positive length), with
-`(con_st_ind)` for every `𝔠_d > 0` (`conStInd_inst`).  Every deterministic hypothesis is
-discharged; the ratio facts are checked at the sharp point `s = 1 - 10^{-4}`, `t = 1 - 4^{-1} 10^{-4}`
-(both in the regime `g²/L² ≤ 1 - t ≤ g²` of `ℓ`: `ℓ_s = 25/16`, `ℓ_t = 25/8`, ratio `2`). -/
-
-/-! ## 7. `scaleFacts_R1` feeds `forbidden_region` (the last hypothesis of the bootstrap)
+/-! ## 6. `scaleFacts_R1` feeds `forbidden_region` (the last hypothesis of the bootstrap)
 
 Step 1 applies `forbidden_region` with `a = α = (W^{-d}B_{s,0})^{1/4}`, `b = 2α`,
-`f = α^{3/2} = (W^{-d}B_{s,0})^{3/8}` (`STForbidden`, `Induction/Defs.lean`); its hypothesis
+`f = α^{3/2} = (W^{-d}B_{s,0})^{3/8}` (`PerTimeCalc.Unif.forbidden_region`); its hypothesis
 `f ≤ N^{-ε} a` is `a_s^{1/8} ≤ N^{-ε}`, which follows from `scaleFacts_R1` (`a_s ≤ 2 N^{-c₀}`,
-`c₀ = 1/30` at `𝔠 = 1/6`, `𝔡 = 1/10`, `τ = 1/10`) with `ε = 1/480` once `N ≥ 2^{60}`.  Here the
-whole chain is run at `sz0`, `s ≡ 0`, window `[0, 1/16]` (`TimeIcc sInst tInst n`), with the random
-family `x = a_s^{3/8} obs` (so that `1(x ≤ 2α) x ≺ f` is `prec_of_le`). -/
+`c₀ = 1/30` at `𝔠 = 1/6`, `𝔡 = 1/10`, `τ = 1/10`) with `ε = 1/480` once `N ≥ 2^{60}`. -/
 
-/-! ## 8. `scaleFacts_R1` is false without `(eq:WO)` (compiled negative statement)
+/-! ## 7. `scaleFacts_R1` is false without `(eq:WO)`
 
 All other hypotheses of `scaleFacts_R1` hold for the size data below (`d = 3`, `ilambda ≡ 0`,
 `W_n = L_n = n + 3`, so `N = W^6`, `Bandwidth (1/6)`, `N^{-1+τ} = 1 - t_n` with `τ = 1/10`), `(eq:WO)`
 fails, and the conclusion fails at every `n` (at `u = t_n`): `W^{-3} B_{t_n,0} ≥ (W^3 N^{-9/10})^{-1}
 ≥ W^2 ≥ 9 > 2 ≥ 2 N^{-1/30}`.  This is why the `d ≥ 3` reading of RBM2D's `scaleFacts_R1` has the
-extra hypothesis `sz.WO 𝔡` (T2045a). -/
+extra hypothesis `sz.WO 𝔡`. -/

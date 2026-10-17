@@ -1,0 +1,4 @@
+state: audit-pass
+reason: prover-hard ea3537e4; audit PASS round 1 (claude-opus-5-5, wf_5bd80f1e-2a0); merging (rule A), full lake build running.
+updated: Sat Oct 17 13:44:50 UTC 2026
+reports: docs/reports/T2538-prove.md, docs/reports/T2538-audit.md

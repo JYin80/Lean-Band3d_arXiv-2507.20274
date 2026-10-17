@@ -7,35 +7,35 @@ import RBM3D.Induction.TailtoTail
 import RBM3D.Induction.Step5Cases
 
 /-!
-# S5-10a (ST-4): the squared-profile `TailtoTail` for the quadratic variation of `lem:pf_step5`
+# The squared-profile `TailtoTail` for the quadratic variation of `lem:pf_step5`
 
-The kernel bound for the merged `STeeUM` (`Induction/Step2Defs.lean:797`), the
-quadratic-variation weight of `(alu9_STime)` (`3_5:232-240`, `(def_Ustz)`) and of `STGridRepNAt`
-conjunct 4 (`Step2Defs.lean:839-851`), with the near/far split at `ℓ* = (log W)^{3/2}` (the
-martingale term of `(int_K-L_ST)`, `3_5:2364-2383`; the paper uses Burkholder-Davis-Gundy with
-`(res_deccalE_dif)` and states no kernel lemma: paper-delta candidates `T2215a`, `T2215b`).
+The kernel bound for `STeeUM` (`Induction/Step2Defs.lean`), the quadratic-variation weight of
+`(alu9_STime)` ((3.18); `(def_Ustz)`) and of conjunct 4 of `STGridRepNAt` (`Step2Defs.lean`), with
+the near/far split at `ℓ* = (log W)^{3/2}` (the martingale term of `(int_K-L_ST)` in the proof of
+Lemma 5.4 `lem:pf_step5`; the paper uses Burkholder-Davis-Gundy with `(res_deccalE_dif)` and
+states no kernel lemma).
 
 For any four-index tensor `X` with
 
 * (H1) `‖X(b,b')‖ ≤ p T_{v,D}(|b₀-b₁|)²` when `max_i |b_i-b'_i| ≤ ℓ*` (the shape of
-  `lemDecCalEPrec_Bounds` conjunct 3, `Induction/LemDecCalEPrec.lean:847-852`),
-* (H2) `‖X‖ ≤ Y` (`difRep2_norm_STeeM_le_N`, `Path/DifREP2.lean:1277`),
+  `lemDecCalEPrec_Bounds` conjunct 3, `Induction/LemDecCalEPrec.lean`),
+* (H2) `‖X‖ ≤ Y` (`difRep2_norm_STeeM_le_N`, `Path/DifREP2.lean`),
 * (H3) `‖Θ_w(x,y)‖ ≤ W^{-D₂}` for `(1/8) ℓ* ℓ_w ≤ |x-y|` (`hkell` of `lemDecCalEPrec_goodDet`,
-  `Induction/LemDecCalEPrec.lean:868-871`),
+  `Induction/LemDecCalEPrec.lean`),
 
 and `0 ≤ v ≤ w < 1`, `g² ≤ 1 - w`, `4 ≤ log W`, `|E| ≤ 2`, the bound
 `‖Σ_{b,b'} Π_i K^σ_i(a_i,b_i) Π_i K^{σ̄}_i(a_i,b'_i) X(b,b')‖
   ≤ 18 e^{8d+2} p (T_{w,D}(|a₀-a₁|)² + ρ⁴ (W^{-D})²) + 4 Y L^d ρ³ W^{-D₂}`
 holds, `ρ = (1-v)/(1-w)`, `K^σ_i = uKer (cycProd (m(σ)) i) v w`.
 
-Route: the helpers of `Induction/TailtoTail.lean` (S5-04, copied with the prefix `tailtoTailSq_`)
+Route: the helpers of `Induction/TailtoTail.lean` (copied with the prefix `tailtoTailSq_`)
 give the row sums `Σ_b |K(a,b)| ≤ ρ` and the weighted row sums
 `Σ_b |K(a,b)| e^{c|a-b|} ≤ 3ρ`, `c = 1/(4d+1)`; the squared profile uses
 `e^{2√r} ≤ e^{4d+1} e^{c r}` and `T_v² ≤ 2 α_v² e^{-2√r} + 2 (W^{-D})²`; the far pairs
 (`max_i |b_i-b'_i| > ℓ*`) lie in four events `|a_i-b_i| > ℓ*/2` or `|a_i-b'_i| > ℓ*/2`, each
 bounded by the entry bound `‖K(a,b)‖ ≤ W^{-D₂}` from (H3) and `card (Z_L^d) = L^d`.
 
-Registry (DECISIONS §16, §20): no `Prop` is defined or assumed; the targets are theorems.
+No `Prop` is defined or assumed; the targets are theorems.
 -/
 
 set_option linter.style.longLine false
@@ -50,7 +50,7 @@ section Weight
 
 variable {d L : ℕ} [NeZero L]
 
--- copy of `TailtoTail.lean:50` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 private theorem tailtoTailSq_zdistInf_add_le (x y : Zd d L) :
     zdistInf d L (x + y) ≤ zdistInf d L x + zdistInf d L y := by
   unfold zdistInf
@@ -61,35 +61,35 @@ private theorem tailtoTailSq_zdistInf_add_le (x y : Zd d L) :
         (Finset.le_sup (f := fun j => zdist L (x j)) (Finset.mem_univ i))
         (Finset.le_sup (f := fun j => zdist L (y j)) (Finset.mem_univ i))
 
--- copy of `TailtoTail.lean:61` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 omit [NeZero L] in
 private theorem tailtoTailSq_zdistInf_zero : zdistInf d L (0 : Zd d L) = 0 := by
   unfold zdistInf
   simp
 
--- copy of `TailtoTail.lean:66` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- three-point triangle inequality for `zdistInf` -/
 private theorem tailtoTailSq_zdistInf_tri (a y b : Zd d L) :
     zdistInf d L (a - b) ≤ zdistInf d L (a - y) + zdistInf d L (y - b) := by
   have := tailtoTailSq_zdistInf_add_le (a - y) (y - b)
   rwa [sub_add_sub_cancel] at this
 
--- copy of `TailtoTail.lean:72` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- the weight `w(x) = e^{c |x|_∞}` -/
 private noncomputable def tailtoTailSq_wt (d L : ℕ) (c : ℝ) (x : Zd d L) : ℝ :=
   Real.exp (c * (zdistInf d L x : ℝ))
 
--- copy of `TailtoTail.lean:76` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 omit [NeZero L] in
 private theorem tailtoTailSq_wt_pos (c : ℝ) (x : Zd d L) : 0 < tailtoTailSq_wt d L c x :=
   Real.exp_pos _
 
--- copy of `TailtoTail.lean:80` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 omit [NeZero L] in
 private theorem tailtoTailSq_wt_zero (c : ℝ) : tailtoTailSq_wt d L c 0 = 1 := by
   simp [tailtoTailSq_wt, tailtoTailSq_zdistInf_zero]
 
--- copy of `TailtoTail.lean:83` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 private theorem tailtoTailSq_wt_sub_le {c : ℝ} (hc : 0 ≤ c) (a y b : Zd d L) :
     tailtoTailSq_wt d L c (a - b) ≤ tailtoTailSq_wt d L c (a - y) * tailtoTailSq_wt d L c (y - b) := by
   unfold tailtoTailSq_wt
@@ -97,7 +97,7 @@ private theorem tailtoTailSq_wt_sub_le {c : ℝ} (hc : 0 ≤ c) (a y b : Zd d L)
   refine Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left ?_ hc)
   exact_mod_cast tailtoTailSq_zdistInf_tri a y b
 
--- copy of `TailtoTail.lean:91` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- `Σ_x S(x) w(x) ≤ 1 + g²/2` when `e^c - 1 ≤ 1/(4d)`: the `2d` neighbours have `|x|_∞ ≤ |x|₁ = 1`. -/
 private theorem tailtoTailSq_sum_s_wt (hL : 3 ≤ L) (g : ℝ) {c : ℝ} (hc : 0 ≤ c)
     (hec : (d : ℝ) * (Real.exp c - 1) ≤ 1 / 4) :
@@ -150,7 +150,7 @@ section Theta
 
 variable {d L : ℕ} [NeZero L] {g : ℝ}
 
--- copy of `TailtoTail.lean:143` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- `Θ_t = 1 + t Θ_t S` entrywise, for the (real, nonnegative) entries of `Θ_t^{(+,-)}`. -/
 private theorem tailtoTailSq_theta_eq (hL : 3 ≤ L) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (a b : Zd d L) :
     (Theta d L g t a b).re = (if a = b then 1 else 0) +
@@ -183,7 +183,7 @@ private theorem tailtoTailSq_theta_eq (hL : 3 ≤ L) {t : ℝ} (ht0 : 0 ≤ t) (
   rw [h4, h5] at h3
   linarith
 
--- copy of `TailtoTail.lean:176` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- `Σ_b Θ_t(a,b) w(a-b) ≤ 2/(1-t)` for `g² ≤ 1 - t`: from `Θ = 1 + tΘS`, `w(a-b) ≤ w(a-y) w(y-b)` and
 `Σ_x S(x) w(x) ≤ 1 + g²/2`. -/
 private theorem tailtoTailSq_theta_wt (hL : 3 ≤ L) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -255,7 +255,7 @@ section Kernel
 
 variable {d L : ℕ} [NeZero L] {g : ℝ}
 
--- copy of `TailtoTail.lean:246` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- the entries of `(1 - sμS)Θ_{tμ} = 1 + (t-s)μ S Θ_{tμ}` are dominated by `1_{a=b} + (t-s)(SΘ_t)(a,b)`. -/
 private theorem tailtoTailSq_ker_entry (hL : 3 ≤ L) {μ : ℂ} (hμ : ‖μ‖ = 1) {s t : ℝ} (hs : 0 ≤ s)
     (hst : s ≤ t) (ht1 : t < 1) (a b : Zd d L) :
@@ -279,7 +279,7 @@ private theorem tailtoTailSq_ker_entry (hL : 3 ≤ L) {μ : ℂ} (hμ : ‖μ‖
   exact mul_le_mul_of_nonneg_left (norm_Theta_apply_le hL ht0 ht1 hμ y b)
     (sbKernelR_nonneg d L g _)
 
--- copy of `TailtoTail.lean:269` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- `Σ_b |K(a,b)| w(a-b) ≤ 3ρ` for the one-index kernel `K = (1 - sμS)Θ_{tμ}`, `ρ = (1-s)/(1-t)`. -/
 private theorem tailtoTailSq_ker_wt (hL : 3 ≤ L) {μ : ℂ} (hμ : ‖μ‖ = 1) {s t : ℝ} (hs : 0 ≤ s)
     (hst : s ≤ t) (ht1 : t < 1) {c : ℝ} (hc : 0 ≤ c) (hec : (d : ℝ) * (Real.exp c - 1) ≤ 1 / 4)
@@ -358,7 +358,7 @@ section Sqrt
 
 variable {d L : ℕ} [NeZero L]
 
--- copy of `TailtoTail.lean:346` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 private theorem tailtoTailSq_hec (hd : 1 ≤ d) :
     (d : ℝ) * (Real.exp (1 / (4 * (d : ℝ) + 1)) - 1) ≤ 1 / 4 := by
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
@@ -381,27 +381,27 @@ private theorem tailtoTailSq_hec (hd : 1 ≤ d) :
     linarith
   nlinarith
 
--- copy of `TailtoTail.lean:368` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 private theorem tailtoTailSq_sqrt_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     Real.sqrt (x + y) ≤ Real.sqrt x + Real.sqrt y := by
   rw [Real.sqrt_le_left (by positivity)]
   nlinarith [Real.sq_sqrt hx, Real.sq_sqrt hy, mul_nonneg (Real.sqrt_nonneg x) (Real.sqrt_nonneg y)]
 
--- copy of `TailtoTail.lean:414` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 /-- the row sums of the one-index kernel: `Σ_b |K(a,b)| ≤ ρ` (`norm_uKer_le`). -/
 private theorem tailtoTailSq_ker_row (hL : 3 ≤ L) {g : ℝ} {μ : ℂ} (hμ : ‖μ‖ = 1)
     {s t : ℝ} (hs : 0 ≤ s) (hst : s ≤ t) (ht1 : t < 1) (a : Zd d L) :
     ∑ b, ‖uKer d L g μ s t a b‖ ≤ (1 - s) / (1 - t) :=
   (sum_norm_row_le _ a).trans (norm_uKer_le hL hs hst ht1 hμ)
 
--- copy of `TailtoTail.lean:419` (verbatim up to the prefix `tailtoTailSq_`).
+-- copy of the corresponding lemma of `TailtoTail.lean`, with the prefix `tailtoTailSq_`.
 private theorem tailtoTailSq_zdistInf_neg (x : Zd d L) :
     zdistInf d L (-x) = zdistInf d L x := by
   unfold zdistInf
   exact Finset.sup_congr rfl fun i _ => by simp [zdist_neg]
 
 omit [NeZero L] in
-/-- `e^{2√r} ≤ e^{4d+1} w_c(x)`, `c = 1/(4d+1)` (adapted from `TailtoTail.lean:374`, `√r` becomes `2√r`):
+/-- `e^{2√r} ≤ e^{4d+1} w_c(x)`, `c = 1/(4d+1)` (adapted from `TailtoTail.lean`, `√r` becomes `2√r`):
 `K + c r - 2√r = (√r - K)²/K ≥ 0`, `K = 4d+1`. -/
 private theorem tailtoTailSq_exp_sqrt_le (hd : 1 ≤ d) (x : Zd d L) :
     Real.exp (2 * Real.sqrt (zdistInf d L x : ℝ)) ≤
@@ -420,7 +420,7 @@ private theorem tailtoTailSq_exp_sqrt_le (hd : 1 ≤ d) (x : Zd d L) :
   have h2 : 0 ≤ (u - (4 * (d : ℝ) + 1)) ^ 2 / (4 * d + 1) := by positivity
   linarith
 
-/-- `Σ_b |K(a,b)| e^{2√|a-b|} ≤ 3 e^{4d+1} ρ` for the one-index kernel (adapted from `TailtoTail.lean:392`). -/
+/-- `Σ_b |K(a,b)| e^{2√|a-b|} ≤ 3 e^{4d+1} ρ` for the one-index kernel (adapted from `TailtoTail.lean`). -/
 private theorem tailtoTailSq_ker_exp (hL : 3 ≤ L) (hd : 1 ≤ d) {g : ℝ} {μ : ℂ} (hμ : ‖μ‖ = 1)
     {s t : ℝ} (hs : 0 ≤ s) (hst : s ≤ t) (ht1 : t < 1) (hgt : g ^ 2 ≤ 1 - t) (a : Zd d L) :
     ∑ b, ‖uKer d L g μ s t a b‖ * Real.exp (2 * Real.sqrt (zdistInf d L (a - b) : ℝ)) ≤
@@ -442,7 +442,7 @@ private theorem tailtoTailSq_ker_exp (hL : 3 ≤ L) (hd : 1 ≤ d) {g : ℝ} {μ
         mul_le_mul_of_nonneg_left hw (Real.exp_pos _).le
     _ = 3 * Real.exp (4 * (d : ℝ) + 1) * ((1 - s) / (1 - t)) := by ring
 
-/-- `√|a₀-a₁| ≤ √|a₀-b₀| + √|b₀-b₁| + √|b₁-a₁|`, in doubled exponential form (adapted from `TailtoTail.lean:425`). -/
+/-- `√|a₀-a₁| ≤ √|a₀-b₀| + √|b₀-b₁| + √|b₁-a₁|`, in doubled exponential form (adapted from `TailtoTail.lean`). -/
 private theorem tailtoTailSq_exp_tri (a0 a1 b0 b1 : Zd d L) :
     Real.exp (-(2 * Real.sqrt (zdistInf d L (b0 - b1) : ℝ))) ≤
       Real.exp (-(2 * Real.sqrt (zdistInf d L (a0 - a1) : ℝ))) *
@@ -539,7 +539,7 @@ section Main
 
 variable {d L : ℕ} [NeZero L]
 
-/-- `Σ_b F(b₀) G(b₁) = (Σ F)(Σ G)` over `b : Fin 2 → Z_L^d` (the factorisation of `TailtoTail.lean:485`). -/
+/-- `Σ_b F(b₀) G(b₁) = (Σ F)(Σ G)` over `b : Fin 2 → Z_L^d` (the factorisation of `TailtoTail.lean`). -/
 private theorem tailtoTailSq_sum_pair (F G : Zd d L → ℝ) :
     ∑ b : Fin 2 → Zd d L, F (b 0) * G (b 1) = (∑ x, F x) * (∑ y, G y) := by
   rw [Finset.sum_mul_sum, ← Fintype.sum_prod_type']
@@ -615,7 +615,7 @@ private theorem tailtoTailSq_final {p Y ρ Bd NN SNN R0 R1 R0' R1' F0 F1 F0' F1'
         add_le_add (mul_le_mul_of_nonneg_right hA hρρ) (mul_le_mul_of_nonneg_left hB hρρ)
     _ = p * (NN * ρ ^ 2) + 4 * Y * Bd * ρ ^ 3 := by ring
 
-/-- **Target 7g at a fixed `a`** (the kernel bound for an arbitrary tensor `X`). -/
+/-- **The kernel bound at a fixed `a`** (the kernel bound for an arbitrary tensor `X`). -/
 private theorem tailtoTailSq_main (hL : 3 ≤ L) (hd : 1 ≤ d) {g W D D₂ E v w p Y : ℝ} (hW : 0 < W)
     (hE : |E| ≤ 2) (hv : 0 ≤ v) (hvw : v ≤ w) (hw1 : w < 1) (hgw : g ^ 2 ≤ 1 - w)
     (hlog : 4 ≤ Real.log W) (hp : 0 ≤ p) (hY : 0 ≤ Y) (σ : Fin 2 → Bool)
@@ -888,14 +888,14 @@ private theorem tailtoTailSq_main (hL : 3 ≤ L) (hd : 1 ≤ d) {g W D D₂ E v 
 
 end Main
 
-/-! ### 6. The targets -/
+/-! ### 6. The statements -/
 
-/-- **Target 7g** (`tailtoTailSq_kernelGen`): the squared-profile `TailtoTail` for an arbitrary 4-index tensor `X`,
+/-- **`tailtoTailSq_kernelGen`**: the squared-profile `TailtoTail` for an arbitrary 4-index tensor `X`,
 near/far split at `ℓ* = (log W)^{3/2}`.  (H1) near bound `‖X(b,b')‖ ≤ p T_{v,D}(|b₀-b₁|)²` for `max_i |b_i - b'_i| ≤ ℓ*`,
 (H2) crude bound `‖X‖ ≤ Y`, (H3) `‖Θ_w(x,y)‖ ≤ W^{-D₂}` for `|x-y| ≥ ℓ* ℓ_w / 8` (`hkell` of
 `lemDecCalEPrec_goodDet` at `u = w`, `D = D₂`).  Conclusion with `ρ = (1-v)/(1-w)`, `C₇ = 18 e^{8d+2}`:
 `‖Σ_{b,b'} Π_i K^σ_i(a_i,b_i) Π_i K^σ̄_i(a_i,b'_i) X(b,b')‖ ≤ C₇ p (T_{w,D}(|a₀-a₁|)² + ρ⁴ (W^{-D})²) + 4 Y L^d ρ³ W^{-D₂}`.
-Paper-delta candidates `T2215a`, `T2215b`; a conditional adapter in `(H1)`-`(H3)`, not a statement of the paper. -/
+Conditional on `(H1)`-`(H3)`; it is not a statement of the paper. -/
 theorem tailtoTailSq_kernelGen (d : ℕ) :
   3 ≤ d → ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g W D D₂ E v w p Y : ℝ), 0 < W → |E| ≤ 2 →
     0 ≤ v → v ≤ w → w < 1 → g ^ 2 ≤ 1 - w → 4 ≤ Real.log W → 0 ≤ p → 0 ≤ Y →
@@ -919,9 +919,9 @@ theorem tailtoTailSq_kernelGen (d : ℕ) :
   intro hd L _ hL g W D D₂ E v w p Y hW hE hv hvw hw1 hgw hlog hp hY σ X hH1 hH2 hH3 a
   exact tailtoTailSq_main hL (by omega) hW hE hv hvw hw1 hgw hlog hp hY σ X hH1 hH2 hH3 a
 
-/-- **Target 7** (`tailtoTailSq_kernel`): target 7g at `L = L_n`, `g = lam_n`, `W = W_n`, `X = STeeM sz n E v H σ`
-for every fine matrix `H`; the left side is the merged `STeeUM` (`Step2Defs.lean:797`, the quadratic-variation
-weight of `STGridRepNAt` conjunct 4, `Step2Defs.lean:839-851`). -/
+/-- **`tailtoTailSq_kernel`**: `tailtoTailSq_kernelGen` at `L = L_n`, `g = lam_n`, `W = W_n`, `X = STeeM sz n E v H σ`
+for every fine matrix `H`; the left side is `STeeUM` (`Step2Defs.lean`, the quadratic-variation
+weight of `STGridRepNAt` conjunct 4). -/
 theorem tailtoTailSq_kernel {d : ℕ} (sz : Sizes d) :
   3 ≤ d → ∀ (n : ℕ) (E v w D D₂ p Y : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Fin 2 → Bool),
@@ -945,6 +945,5 @@ theorem tailtoTailSq_kernel {d : ℕ} (sz : Sizes d) :
   exact tailtoTailSq_kernelGen d hd (sz.L n) (sz.three_le_L n) (sz.lam n) ((sz.W n : ℕ) : ℝ) D D₂ E v w p Y
     (by exact_mod_cast sz.W_pos n) hE hv hvw hw1 hg hlog hp hY σ (STeeM sz n E v H σ) hH1 hH2 hH3 a
 
-/-! ### 7. Instances (CLAUDE.md §4 step 2) -/
 
 end RBM.Gauss.Sizes

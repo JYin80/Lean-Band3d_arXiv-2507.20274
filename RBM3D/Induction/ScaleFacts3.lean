@@ -7,34 +7,25 @@ import RBM3D.Induction.Step34Pins
 import RBM3D.Induction.ScaleFacts
 
 /-!
-# S3-23 (ticket T2058): the deterministic scale facts of Steps 3 and 4 at `d ≥ 3`
+# The deterministic scale facts of Steps 3 and 4 at `d ≥ 3`
 
-Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex` (`1_2:line`) and
-`paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`).  Everything here is real-variable algebra on the
-merged `Sizes.Bctl`, `Gauss.etaT`, `STPsi`, `STConStInd`; no random variable occurs.  No RBM2D
-source (portmap row S3-23: "new (paper lines)"); the three helpers of section 1 are copied
-verbatim from the T2041 probe `3c58211:RBM3D/Probe/T2041Pins.lean` (`st_Bctl_ge` :887-925,
-`st_bootRHS_one` :940-945, `st_iterate` :1049-1065).
+Paper: arXiv:2507.20274, Section 2 (proof of the main results) and Section 4 (Steps 3 and 4).
+Everything here is real-variable algebra on `Sizes.Bctl`, `Gauss.etaT`, `STPsi`, `STConStInd`; no
+random variable occurs.
 
-* §1 `st_Bctl_ge`, `st_bootRHS_one`, `st_iterate` (probe text, now public);
-* §2 `st_kmin` (the iteration depth `k > 2 + 8 𝔠d (r - 1)`, `3_5:1422-1431`) and
-  `st_hscale_I/II`, `st_hscale_I'/II'` (the hypothesis `hscale` of the probe's
-  `st_step3_skeleton`): `Ψ(r,k;s,u) ≤ c A^{3/4}`, `(adsyzz0s8d6)` `3_5:1396` (case (i),
-  `A = ilambda² W^d`) and `(eq:psipara_smalletacase)` `3_5:1577` (case (ii),
-  `A = (W^{-d}B_{s,0})⁻¹`);
+* §1 `st_Bctl_ge`, `st_bootRHS_one`, `st_iterate`;
+* §2 `st_kmin` (the iteration depth `k > 2 + 8 𝔠d (r - 1)`, proof of Lemma 4.11 `lem:iterations`)
+  and `st_hscale_I/II`, `st_hscale_I'/II'` (the hypothesis `hscale` of `step3_skeleton` in
+  `Step3.lean`): `Ψ(r,k;s,u) ≤ c A^{3/4}`, (4.40) `adsyzz0s8d6` (case (i), `A = ilambda² W^d`) and
+  (4.48) `eq:psipara_smalletacase` (case (ii), `A = (W^{-d}B_{s,0})⁻¹`);
 * §3 `st_hBA_I/II` (the hypothesis `hBA`: `W^{-d}B_{v,0} A^{3/4} ≤ c`);
-* §4 `st_window`, `st_EKWin` (`(1-t)/(1-s) ≥ W⁻¹`, the window of `lem:sum_decay`,
-  `3_5:1633-1637`);
-* §5 `st_conStInd_sub` and the split at the middle time `u = 1 - ilambda²/L²`
-  (`3_5:1104-1105`): `st_split_I`, `st_split_II`;
-* §6 the compiled instances (`d = 3`).
+* §4 `st_window` (`(1-t)/(1-s) ≥ W⁻¹`, the window of Lemma 4.16 `lem:sum_decay`);
+* §5 `st_conStInd_sub`: `(con_st_ind)` passes to a sub-interval.
 
-Statement-level differences from the ticket (each is a real condition of the mathematics, none
-weakens a conclusion; paper-delta candidates in the prove report): `hBA` case (i) needs `2 ≤ d`
-(`L^d ≥ L²`, `T2058c`); `hBA` case (ii) needs `𝔠d ≤ 1/4` and no range hypothesis (`B_s < 1`
-follows from `(con_st_ind)`, `T2058a`); `st_window` needs `(eq:WO)` and `W → ∞` besides
-`d 𝔠d < 1` (`T2058b`); `st_hscale_II` does not use `STCaseII` (the regime enters only through
-`A = STAII`).
+Each of the following is a real condition of the mathematics, and none weakens a conclusion:
+`hBA` case (i) needs `2 ≤ d` (`L^d ≥ L²`); `hBA` case (ii) needs `𝔠d ≤ 1/4` and no range
+hypothesis (`B_s < 1` follows from `(con_st_ind)`); `st_window` needs `(eq:WO)` and `W → ∞` besides
+`d 𝔠d < 1`; `st_hscale_II` does not use `STCaseII` (the regime enters only through `A = STAII`).
 -/
 
 set_option linter.style.longLine false
@@ -50,7 +41,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-! ## 1. The deterministic helpers of the probe skeletons (verbatim from the probe) -/
+/-! ## 1. The deterministic helpers of the skeletons of Steps 3 and 4 -/
 
 /-- `W^{-d} B_{u,0} ≥ (W^d)⁻¹ (ilambda² + 1)⁻¹ ≥ N^{-2}`, eventually, for `u ∈ [0,1]` (`0 < ilambda ≤ Λ`). -/
 theorem st_Bctl_ge {Λ : ℝ} (hsize : Tendsto sz.size atTop atTop)
@@ -100,7 +91,7 @@ theorem st_bootRHS_one (lo : ℕ) (B : ℝ) (n_ p : ℕ) :
         (Finset.Icc ((n_ + 1) / 2 + 1) (n_ - 1)).card : ℕ) : ℝ) := by
   simp [STbootRHS, Real.one_rpow]
 
-/-- The double induction of `3_5:1422-1426`: from the a priori level `l = 0` for every `r ≥ 2` and the one-step
+/-- The double induction in the proof of Lemma 4.11 (`lem:iterations`): from the a priori level `l = 0` for every `r ≥ 2` and the one-step
 statement of `lem:iterations` (`(r,k)`, `r < n`, and `(r,k-1)`, `r ≤ n+2` give `(n,k)`), every `(r,k)`,
 `r ≥ 2`, `k ≥ 0` (outer induction on `k`, inner on `r`). -/
 theorem st_iterate {S : ℕ → ℕ → Prop} (hbase : ∀ r, 2 ≤ r → S r 0)
@@ -120,7 +111,7 @@ theorem st_iterate {S : ℕ → ℕ → Prop} (hbase : ∀ r, 2 ≤ r → S r 0)
 
 /-! ## 2. The `Ψ`-bounds `hscale` and the iteration depth `k_min` -/
 
-/-- The iteration depth of `3_5:1422-1431`: `k_min = ⌊2 + 8 𝔠d (r - 1)⌋ + 1`, the least natural number with
+/-- The iteration depth of Lemma 4.11 (`lem:iterations`): `k_min = ⌊2 + 8 𝔠d (r - 1)⌋ + 1`, the least natural number with
 `k > 2 + 8 𝔠d (r - 1)`, i.e. with `𝔠d (r - 1) + 1 - k/8 < 3/4` (the exponent count `r^{r-1} A^{1-k/8} ≤ C A^{3/4}`
 for `r ≤ A^{𝔠d}`). -/
 def st_kmin (𝔠d : ℝ) (r : ℕ) : ℕ := ⌊2 + 8 * 𝔠d * ((r : ℝ) - 1)⌋₊ + 1
@@ -233,7 +224,7 @@ private theorem st_psi_core {A ρ a c : ℝ} {r : ℕ} (hr : 2 ≤ r) (hA : 1 �
     _ ≤ A ^ (3 / 4 : ℝ) + a ^ (r - 1) * A ^ (3 / 4 : ℝ) := by gcongr
     _ = (1 + a ^ (r - 1)) * A ^ (3 / 4 : ℝ) := by ring
 
-/-- **The `Ψ`-bound `hscale`, case (i)** (`(adsyzz0s8d6)` `3_5:1396`, depth `3_5:1422-1431`): under `STRegIterI`
+/-- **The `Ψ`-bound `hscale`, case (i)** (`(adsyzz0s8d6)`, depth of Lemma 4.11): under `STRegIterI`
 (`1 - s ≤ ilambda²`, `1 - t ≥ ilambda²/L²`), `(con_st_ind)`, `(eq:WO)`, `t < 1`, `|E| < 2`, `𝔠d > 0`: for every `r ≥ 2`
 there is `c > 0` with `Ψ(r, k_min; s, u) ≤ c A^{3/4}`, `A = ilambda² W^d`, uniformly in `q = (v,u) ∈ STPair`, eventually.
 Proof: `η_s/η_u = (1-s)/(1-u) ≤ (1-s)/(1-t) ≤ B_t^{-𝔠d} ≤ (2A)^{𝔠d}` (`B_t ≥ (2A)⁻¹` since `1 - t ≤ ilambda²`),
@@ -266,7 +257,7 @@ theorem st_hscale_I {E s t : ℕ → ℝ} {𝔠d 𝔡 : ℝ} (h𝔠d : 0 < 𝔠d
   refine st_psi_core hr hA hρ0 (by positivity) (hρ.trans (hB.trans_eq ?_))
   rw [Real.mul_rpow (by norm_num) hA0.le]
 
-/-- **The `Ψ`-bound `hscale`, case (ii)** (`(eq:psipara_smalletacase)` `3_5:1577`), `A = (W^{-d}B_{s,0})⁻¹`: from
+/-- **The `Ψ`-bound `hscale`, case (ii)** (`(eq:psipara_smalletacase)`), `A = (W^{-d}B_{s,0})⁻¹`: from
 `(con_st_ind)`, `t < 1`, `|E| < 2`, `𝔠d > 0` (the regime `STCaseII` is not used: it enters through `A` only).
 `η_s/η_u ≤ B_t^{-𝔠d} ≤ B_s^{-𝔠d} = A^{𝔠d}` (`STBctl_mono`), and `A ≥ 1` because `B_s ≤ B_t < 1`; `c = 2`. -/
 theorem st_hscale_II {E s t : ℕ → ℝ} {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) (hcon : sz.STConStInd 𝔠d s t)
@@ -298,7 +289,7 @@ theorem st_hscale_II {E s t : ℕ → ℝ} {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) (h
           rw [Real.inv_rpow hBs.le, Real.rpow_neg hBs.le]
   exact st_psi_core hr hA hρ0 zero_le_one (hρ.trans hB)
 
-/-- **`hscale` of `st_step3_skeleton`, case (i)**, in the exact form of the skeleton's hypothesis (`∃ k` before `∃ c`;
+/-- **`hscale` of `step3_skeleton`, case (i)**, in the exact form of the skeleton's hypothesis (`∃ k` before `∃ c`;
 `A = fun n => STAI sz n`): `k = st_kmin 𝔠d r`. -/
 theorem st_hscale_I' {E s t : ℕ → ℝ} {𝔠d 𝔡 : ℝ} (h𝔠d : 0 < 𝔠d) (hreg : STRegIterI sz s t)
     (hcon : sz.STConStInd 𝔠d s t) (hWO : sz.WO 𝔡) (ht1 : ∀ n, t n < 1) (hE : ∀ n, |E n| < 2) :
@@ -306,7 +297,7 @@ theorem st_hscale_I' {E s t : ℕ → ℝ} {𝔠d 𝔡 : ℝ} (h𝔠d : 0 < 𝔠
       STPsi (sz.STAI n) (etaT (E n) (s n) / etaT (E n) q.1.2) r k ≤ c * sz.STAI n ^ (3 / 4 : ℝ) :=
   fun r hr => ⟨st_kmin 𝔠d r, st_hscale_I sz h𝔠d hreg hcon hWO ht1 hE r hr⟩
 
-/-- **`hscale` of `st_step3_skeleton`, case (ii)** (`A = fun n => STAII sz s n`), in the skeleton's exact form. -/
+/-- **`hscale` of `step3_skeleton`, case (ii)** (`A = fun n => STAII sz s n`), in the skeleton's exact form. -/
 theorem st_hscale_II' {E s t : ℕ → ℝ} {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) (hcon : sz.STConStInd 𝔠d s t)
     (ht1 : ∀ n, t n < 1) (hE : ∀ n, |E n| < 2) :
     ∀ r, 2 ≤ r → ∃ k : ℕ, ∃ c : ℝ, 0 < c ∧ ∀ᶠ n in atTop, ∀ q : STPair s t n,
@@ -406,7 +397,7 @@ theorem st_hBA_II {s t : ℕ → ℝ} {𝔠d : ℝ} (h𝔠d : 0 < 𝔠d) (hc : �
 /-! ## 4. The window `(1-t)/(1-s) ≥ W⁻¹` of `lem:sum_decay` -/
 
 /-- `W → ∞` along an admissible sequence (`W ≥ N^𝔠` and `N → ∞`): the form in which the first component of the
-composers' `STFlow sz κ ε 𝔠 𝔡 z` (`Admissible 𝔠 𝔡`) feeds `st_window`. -/
+`STFlow sz κ ε 𝔠 𝔡 z` (`Admissible 𝔠 𝔡`) feeds `st_window`. -/
 theorem scaleFacts3_W_tendsto {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) :
     Tendsto (fun n => ((sz.W n : ℕ) : ℝ)) atTop atTop := by
   obtain ⟨h𝔠, -, hN, hB, -⟩ := hA
@@ -414,10 +405,10 @@ theorem scaleFacts3_W_tendsto {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) :
     (tendsto_rpow_atTop h𝔠).comp hN
   exact tendsto_atTop_mono' atTop hB h1
 
-/-- **The window of `lem:sum_decay`** (`3_5:1633-1637`): `(con_st_ind)` with `d 𝔠d < 1` gives `(1-t)/(1-s) ≥ W⁻¹`,
+/-- **The window of `lem:sum_decay`** (Lemma 4.16): `(con_st_ind)` with `d 𝔠d < 1` gives `(1-t)/(1-s) ≥ W⁻¹`,
 eventually.  Proof: `(1-t)/(1-s) ≥ B_t^{𝔠d}` (`(con_st_ind)`) `≥ ((W^d)⁻¹ (ilambda²+1)⁻¹)^{𝔠d}` (`STBctl_ge`, `0 ≤ t`)
 `= (W^{d𝔠d} (ilambda²+1)^{𝔠d})⁻¹ ≥ W⁻¹` iff `(ilambda²+1)^{𝔠d} ≤ W^{1-d𝔠d}`; the left side is `≤ (1 + 𝔡^{-2})^{𝔠d}` by
-`(eq:WO)` (`ilambda ≤ 𝔡⁻¹`) and the right side tends to `∞` with `W` (`d 𝔠d < 1`).  Needs, besides the ticket's list,
+`(eq:WO)` (`ilambda ≤ 𝔡⁻¹`) and the right side tends to `∞` with `W` (`d 𝔠d < 1`).  Needs, besides `d 𝔠d < 1`,
 `(eq:WO)` and `W → ∞` (`scaleFacts3_W_tendsto` from `Admissible`): without them the statement is false
 (`W ≡ 1`, `(1-t)/(1-s) < 1`). -/
 theorem st_window {𝔠d 𝔡 : ℝ} {s t : ℕ → ℝ} (h𝔠d : 0 < 𝔠d) (hdc : (d : ℝ) * 𝔠d < 1)
@@ -461,7 +452,7 @@ theorem st_window {𝔠d 𝔡 : ℝ} {s t : ℕ → ℝ} (h𝔠d : 0 < 𝔠d) (h
     _ ≤ sz.Bctl n (t n) ^ 𝔠d := hpow
     _ ≤ (1 - t n) / (1 - s n) := h1
 
-/-! ## 5. Regimes: sub-intervals and the split at the middle time `u = 1 - ilambda²/L²` -/
+/-! ## 5. Sub-intervals -/
 
 /-- **`(con_st_ind)` passes to a sub-interval**: from `[s,t]` to `[s',t']`, `s ≤ s' < t' ≤ t < 1`
 (`B_{t'} ≤ B_t` by `STBctl_mono`, and `(1-t)/(1-s) ≤ (1-t')/(1-s')` because `1-t ≤ 1-t'`, `1-s' ≤ 1-s`).
@@ -486,10 +477,3 @@ theorem st_conStInd_sub {𝔠d : ℝ} {s t s' t' : ℕ → ℝ} (h𝔠d : 0 < �
 
 end RBM.Gauss.Sizes
 
-/-! ## 6. Instances at `d = 3`
-
-Every deterministic hypothesis is discharged.  `szB` is the merged second size sequence (`L = 4`, `W_n = n + 4`,
-`ilambda = 1`, `RBM.Gauss.Step34Inst.szB`) with the flow `zB` (`E n = lemE (zB n)`, `|E n| < 2`); case (i) at
-`(s,t) = (7/8, 15/16)` (`STRegIterI szB`: `1 - s = 1/8 ≤ ilambda² = 1`, `1 - t = ilambda²/L² = 1/16`), case (ii) at
-`(15/16, 31/32)` (`STCaseII`: `1 - s = ilambda²/L² = 1/16`), `𝔠d = 1/100` (`(con_st_ind)` holds eventually for every
-`𝔠d > 0`, `conStInd_const`).  The window instances are at `sz0` with the merged `sInst = 0`, `tInst = 1/16`. -/

@@ -10,24 +10,21 @@ import RBM3D.Path.Walk
 import RBM3D.Path.Stop
 
 /-!
-# ST2-01 (ticket T2066): the vocabulary and the pins of Step 2 of `lem:main_ind`
+# The vocabulary and the statements of Step 2 of `lem:main_ind`
 
-Moved from the T2039 design probe (`git show 0362cbc:RBM3D/Probe/T2039Pins.lean`): sections 1 and 2
-(probe lines 248-818: the vocabulary of Step 2 at matrix and model level, their measurability, the
-pins), the pins `STScaleExists`, `STOptL2`, `STLocalAvgOfL2` of section 12 (probe 4101-4149), and
-the definitions of sections 3-12 that the pins mention (`STScaleOk`, `STScaleAdm`, `STL2decayPT`,
-the list-loop matrix functionals `STLIM ... STeeM` and the grid forms `STgAN`, `STgDriftN`,
-`STeeUM`, `STGridRepNAt`, `STGridRepN`, probe 2274-2296, 4995-5045, 5077-5156).  No theorem of
-sections 3-12.  Section 4 holds the probe's compiled instances that use only this file.
-Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex` (`1_2:line`) and
-`paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`).
+Paper: arXiv:2507.20274, Step 2 of Theorem 2.24 (`lem:main_ind`), (2.87)-(2.89), and its proof
+(Subsection 3.3, `subsec:step2_pf`).
 
-Differences from the probe text: the `open` lines (`RBM.Probe.T2039` is replaced by `RBM.Gauss`:
-the 24 copies of section 0 and the 4 copies of section 12.1 are the merged declarations of
-`Induction/Defs.lean` and `Induction/Step34Pins.lean`, and `STeeLoop` is the merged
-`Step34Pins.lean:152`), the section/namespace brackets, and the pin `STStep2`, which here
-concludes the merged bundle `STStep2Concl` (DECISIONS §28, T2039 report (d).6).  Docstrings are
-the probe's (their `Prop5Decay (borrowed)` remarks are stale: `prop5Decay_holds` is proved).
+* Section 1: the vocabulary of Step 2 at matrix and model level, and its measurability.
+* Section 2: the statements of Step 2 (the three conclusions, the single-time ingredients, the
+  grid representation, the stopping time, the combined statement `STStep2`) and the statements
+  `STScaleExists`, `STOptL2`, `STLocalAvgOfL2`.
+* Section 3: the definitions that these statements mention (`STScaleOk`, `STScaleAdm`,
+  `STL2decayPT`, the list-loop matrix functionals `STLIM ... STeeM` and the grid forms `STgAN`,
+  `STgDriftN`, `STeeUM`, `STGridRepNAt`, `STGridRepN`).
+
+The file contains no estimates.  `STStep2` concludes the bundle `STStep2Concl` of
+`Step34Pins.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -41,9 +38,9 @@ open scoped NNReal ENNReal
 Everything is first written for an arbitrary fine matrix `H` (the random matrix of the model at
 time `u`, or the grid state `pathH`), so that the same functional is evaluated on the single-time
 model (`seqHflow sz n u ω`, section 1.1) and on the grid walk (`pathH sz s t K n j ω`,
-section 2.3).  The loop length is `2` throughout (Step 2, `3_5:359–363`); the general-`n`
-forms of the drift and quadratic-variation terms are those of `lem:SEforLn` (ST-D3).  Merged
-vocabulary used: `loopFine`, `Lloop`, `Gt`, `KLK`, `SB`, `Theta`, `tailT`, `tailW`, `Bctl`,
+section 2.3).  The loop length is `2` throughout (Step 2, proof of Step 2); the general-`n`
+forms of the drift and quadratic-variation terms are those of `lem:SEforLn`.  Vocabulary used:
+`loopFine`, `Lloop`, `Gt`, `KLK`, `SB`, `Theta`, `tailT`, `tailW`, `Bctl`,
 `zdistInf`, `etaT`, `mE`, `zt`. -/
 
 namespace RBM.Gauss.Sizes
@@ -52,10 +49,10 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `K^{(1)}_σ = m(σ)` (`Def_Ktza`, `1_2:988`): `m(+) = m(E)`, `m(-) = conj m(E)`. -/
+/-- `K^{(1)}_σ = m(σ)` (Definition 2.14 `Def_Ktza`): `m(+) = m(E)`, `m(-) = conj m(E)`. -/
 def STmsig (E : ℝ) (σ : Bool) : ℂ := if σ then mE E else (starRingEnd ℂ) (mE E)
 
-/-- `𝓛^{(k)}_{u,σ,a}` of a fine matrix `H` (`(Eq:defGLoop)`, `1_2:824`) at size index `n`,
+/-- `𝓛^{(k)}_{u,σ,a}` of a fine matrix `H` ((2.44) `Eq:defGLoop`) at size index `n`,
 energy `E`, time `u`: `Lloop` is this at `H = seqHflow sz n u ω` (`STLM_seqHflow`). -/
 def STLM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) : ℂ :=
@@ -64,19 +61,19 @@ def STLM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.
 theorem STLM_seqHflow (n : ℕ) (E u : ℝ) {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n))
     (ω : sz.SeqΩ) : STLM sz n E u (sz.seqHflow n u ω) σ a = Lloop sz n E u σ a ω := rfl
 
-/-- `(𝓛 - 𝒦)^{(k)}_{u,σ,a}` of a fine matrix `H` (the merged `KLK` is deterministic). -/
+/-- `(𝓛 - 𝒦)^{(k)}_{u,σ,a}` of a fine matrix `H` (`KLK` is deterministic). -/
 def STLKM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     {k : ℕ} (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) : ℂ :=
   STLM sz n E u H σ a - STKloop sz n E u σ a
 
-/-- **The profile `W^{-d} 𝒯̃^ℓ_{u,D}(|a-b|)`** of `(defWTTlD)` (`3_5:319`) at size index `n`, with
-the paper's `L^∞` distance (paper-delta T2002b): the merged `tailW` at `ilambda = sz.lam n`,
+/-- **The profile `W^{-d} 𝒯̃^ℓ_{u,D}(|a-b|)`** of (3.20) `defWTTlD` at size index `n`, with
+the paper's `L^∞` distance : `tailW` at `ilambda = sz.lam n`,
 `W = sz.W n`; `STprof sz n u D ℓ a b ≥ W^{-d-D} > 0`. -/
 def STprof (n : ℕ) (u D ℓ : ℝ) (a b : Zd d (sz.L n)) : ℝ :=
   (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ *
     tailW d (sz.L n) (sz.lam n) u ℓ ((sz.W n : ℕ) : ℝ) D ((zdistInf d (sz.L n) (a - b) : ℕ) : ℝ)
 
-/-- **The random control `Ĵ^ℓ_{u,D}`** of `(defCALJ)` (`3_5:365`):
+/-- **The random control `Ĵ^ℓ_{u,D}`** of (3.24) `defCALJ`:
 `max_{σ ∈ {+,-}², a=(a₁,a₂)} |(𝓛-𝒦)^{(2)}_{u,σ,a}| / [W^{-d} 𝒯̃^ℓ_{u,D}(|a₁-a₂|)]`, of a fine matrix `H`. -/
 def STJhatM (n : ℕ) (E D ℓ u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
@@ -92,10 +89,10 @@ def STavgM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (s
     (σ : Bool) (a : Zd d (sz.L n)) : ℂ :=
   STLM sz n E u H (fun _ : Fin 1 => σ) (fun _ => a) - STmsig E σ
 
-/-- **The light-weight term `𝓔^{G̃,(2)}_{u,σ,a}`** (`(def_EwtG)`, `1_2:962`, `n = 2`):
+/-- **The light-weight term `𝓔^{G̃,(2)}_{u,σ,a}`** ((2.49) `def_EwtG`, `n = 2`):
 `W^d Σ_{k=1}^{2} Σ_{x,y} ⟨G̃_u(σ_k)E_x⟩ S^{(B)}_{xy} (cut^{(y)}_k ∘ 𝓛^{(2)}_{u,σ,a})`, with
 `cut^{(y)}_1 (σ,a) = ((σ₁,σ₁,σ₂),(y,a₁,a₂))`, `cut^{(y)}_2 (σ,a) = ((σ₁,σ₂,σ₂),(a₁,y,a₂))`
-(`Def:oper_loop`, `1_2:914–916`). -/
+(Definition 2.12 `Def:oper_loop`). -/
 def STEGtM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ x : Zd d (sz.L n), ∑ y : Zd d (sz.L n),
@@ -104,7 +101,7 @@ def STEGtM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (s
       STavgM sz n E u H (σ 1) x * SB d (sz.L n) (sz.lam n) x y *
         STLM sz n E u H ![σ 0, σ 1, σ 1] ![a 0, y, a 1])
 
-/-- **`𝓔^{(𝓛-𝓚)×(𝓛-𝓚),(2)}_{u,σ,a}`** (`(def_ELKLK)`, `3_5:98`, `n = 2`, `k = 1`, `l = 2`):
+/-- **`𝓔^{(𝓛-𝓚)×(𝓛-𝓚),(2)}_{u,σ,a}`** ((3.10) `def_ELKLK`, `n = 2`, `k = 1`, `l = 2`):
 `W^d Σ_{x,y} (𝓛-𝒦)_{σ,(x,a₂)} S^{(B)}_{xy} (𝓛-𝒦)_{σ,(a₁,y)}` (`cutL^{(x)}_{1,2}(σ,a) = (σ,(x,a₂))`,
 `cutR^{(y)}_{1,2}(σ,a) = (σ,(a₁,y))`). -/
 def STELKLKM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -112,10 +109,10 @@ def STELKLKM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d 
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ x : Zd d (sz.L n), ∑ y : Zd d (sz.L n),
     STLKM sz n E u H σ ![x, a 1] * SB d (sz.L n) (sz.lam n) x y * STLKM sz n E u H σ ![a 0, y]
 
-/-- **The operator `Θ^{(2)}_{u,σ}`** of `DefTHUST` (`3_5:109–113`, `n = 2`) acting on a tensor
+/-- **The operator `Θ^{(2)}_{u,σ}`** of Definition 3.3 (`DefTHUST`, `n = 2`) acting on a tensor
 `A : (Z_L^d)² → ℂ`: `Σ_{i=1}^{2} Σ_b (M S^{(B)} (1 - u M S^{(B)})^{-1})_{a_i b} A_{a^{(i)}(b)}`,
 `M = m(σ₁) m(σ₂)` (the same for both `i`: `σ₃ = σ₁`); `S (1 - u M S)^{-1} = S Θ_{uM}` with the
-merged `Theta`. -/
+`Theta`. -/
 def STthetaOp (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (A : (Fin 2 → Zd d (sz.L n)) → ℂ)
     (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   ∑ i : Fin 2, ∑ b : Zd d (sz.L n),
@@ -124,9 +121,9 @@ def STthetaOp (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (A : (Fin 2 → Zd d (
         Theta d (sz.L n) (sz.lam n) ((u : ℂ) * (STmsig E (σ 0) * STmsig E (σ 1)))) (a i) b) *
       A (Function.update a i b)
 
-/-- **The quadratic-variation loop `(𝓔⊗𝓔)^{M,(2;k)}_{u,σ,a,a}`** (`def:CALE`, `3_5:176–190`, `n = 2`,
+/-- **The quadratic-variation loop `(𝓔⊗𝓔)^{M,(2;k)}_{u,σ,a,a}`** (Definition 3.5 `def:CALE`, `n = 2`,
 `a' = a`): `W^d Σ_{c,c'} S^{(B)}_{cc'} 𝓛^{(6)}_{(σ⊗σ̄)^{(k)}, (a⊗a)^{(k)}(c',c)}`.  For `k = 1`
-(`3_5:672`): signs `(σ₁,σ₂,σ₁,-σ₁,-σ₂,-σ₁)`, labels `(a₁,a₂,c',a₂,a₁,c)`; for `k = 2` the roles of
+(Subsection 3.5): signs `(σ₁,σ₂,σ₁,-σ₁,-σ₂,-σ₁)`, labels `(a₁,a₂,c',a₂,a₁,c)`; for `k = 2` the roles of
 the two edges are exchanged: signs `(σ₂,σ₁,σ₂,-σ₂,-σ₁,-σ₂)`, labels `(a₂,a₁,c',a₁,a₂,c)`. -/
 def STEEkM (n : ℕ) (E u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     (k : Fin 2) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
@@ -217,14 +214,14 @@ theorem STGMM_measurable (x y : Idx d (sz.L n) (sz.W n)) :
 end Meas
 
 end RBM.Gauss.Sizes
-/-! ## 2. The pins (`d` is the dimension; constants before the sequence)
+/-! ## 2. The statements of Step 2 (`d` is the dimension; constants before the sequence)
 
-2.1 the three conclusions of Step 2 (`1_2:1340–1351`), uniformly in `u ∈ [s,t]` (`Prec`) and per time
-(`PrecPT`); 2.2 the single-time ingredients (`lem:newKLK`, the contraction inequality, the
-light-weight inputs `lem:LWterm`, `lem: EWGn2_N`, the martingale estimate `lem: EMn2_N`); 2.3 the
-grid representation `Sol_CalL` + `lem:DIfREP` (path layer, `PrecGrid` scale `N`); 2.4 the stopping
-time `(eq:def2_stopping)`; 2.5 the deterministic `𝒦^{(2)}` decay, the net lift, and the combined
-pin `STStep2`.  Premises that no ticket proves are listed with their registry class in the report. -/
+2.1 the three conclusions of Step 2 ((2.87) `Gt_bound_flow`, (2.88) `Gt_avgbound_flow`, (2.89)
+`Eq:Gdecay_w`), uniformly in `u ∈ [s,t]` (`Prec`) and per time (`PrecPT`); 2.2 the single-time
+ingredients (`lem:newKLK`, the contraction inequality, the light-weight inputs `lem:LWterm`,
+`lem: EWGn2_N`, the martingale estimate `lem: EMn2_N`); 2.3 the grid representation `Sol_CalL` +
+`lem:DIfREP` (path layer, `PrecGrid` scale `N`); 2.4 the stopping time `(eq:def2_stopping)`; 2.5
+the deterministic `𝒦^{(2)}` decay, the net lift, and the combined statement `STStep2`. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -234,22 +231,22 @@ section Conclusions
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **`(Gt_bound_flow)`** (`1_2:1343`), uniformly in `u ∈ [s,t]`: `|(G_u - M)_{xy}|² ≺ W^{-d}
-B_{u,|x-y|/W}`, with `|x-y|/W` read as the block distance (paper-delta T2001e) and the `L^∞`
-distance (T2002b). -/
+/-- **`(Gt_bound_flow)`**, uniformly in `u ∈ [s,t]`: `|(G_u - M)_{xy}|² ≺ W^{-d}
+B_{u,|x-y|/W}`, with `|x-y|/W` read as the block distance and the `L^∞`
+distance. -/
 def STStep2Local (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => TimeIcc s t n × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     (fun n p ω => ‖STGM sz n (E n) (p.1 : ℝ) ω p.2.1 p.2.2‖ ^ 2)
     (fun n p _ => STWB sz n (p.1 : ℝ) (zdistInf d (sz.L n) (STblk sz n p.2.1 - STblk sz n p.2.2)))
 
-/-- **`(Gt_avgbound_flow)`** (`1_2:1345`), uniformly in `u ∈ [s,t]`: `max_a |tr((G_u - M)E_a)| ≺
+/-- **`(Gt_avgbound_flow)`**, uniformly in `u ∈ [s,t]`: `max_a |tr((G_u - M)E_a)| ≺
 W^{-d} B_{u,0}`, with `tr((G_u - M) E_a) = 𝓛^{(1)}_{u,+,a} - m(E)`. -/
 def STStep2Avg (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => TimeIcc s t n × Zd d (sz.L n))
     (fun n p ω => ‖Lloop sz n (E n) (p.1 : ℝ) (fun _ : Fin 1 => true) (fun _ => p.2) ω - mE (E n)‖)
     (fun n p _ => sz.Bctl n (p.1 : ℝ))
 
-/-- **`(Eq:Gdecay_w)`** (`1_2:1349–1351`), uniformly in `u ∈ [s,t]`, every `D > 0`:
+/-- **`(Eq:Gdecay_w)`**, uniformly in `u ∈ [s,t]`, every `D > 0`:
 `|𝓛^{(2)}_{u,σ,a} - 𝒦^{(2)}_{u,σ,a}| ≺ ((1-s)/(1-u))^{C_d} (W^{-d}B_{u,0})^{1/5}
 (W^{-d}B_{u,|a₁-a₂|}) e^{-(|a₁-a₂|/ℓ_u)^{1/2}} + W^{-D}`. -/
 def STStep2Decay (Cd : ℝ) (E s t : ℕ → ℝ) : Prop :=
@@ -309,7 +306,7 @@ def STEEk (n : ℕ) (E t : ℝ) (k : Fin 2) (σ : Fin 2 → Bool) (a : Fin 2 →
     (ω : sz.SeqΩ) : ℂ :=
   STEEkM sz n E t (sz.seqHflow n t ω) k σ a
 
-/-- **`(initialGT2)`** (`3_5:28–30`) at the time sequence `t`, for a deterministic control `Ψ`:
+/-- **`(initialGT2)`** at the time sequence `t`, for a deterministic control `Ψ`:
 `‖G_t - M‖_max ≺ W^{-ε₀}` and `max_{a,b} 𝓛^{(2)}_{t,(-,+),(a,b)} ≺ Ψ_t²` (the two premises of
 `STGavLGEX`). -/
 def STInitialGT2 (E t : ℕ → ℝ) (ε₀ : ℝ) (Ψ : ℕ → ℝ) : Prop :=
@@ -318,7 +315,7 @@ def STInitialGT2 (E t : ℕ → ℝ) (ε₀ : ℝ) (Ψ : ℕ → ℝ) : Prop :=
     Prec sz (U := fun _ => Unit) (fun n _ ω => STmaxLoop2 sz n (E n) (t n) ω)
       (fun n _ _ => Ψ n ^ 2)
 
-/-- **The class of profiles `Ψ_t(|a-b|)`** of `lem:LWterm` (`3_5:385–393`): deterministic
+/-- **The class of profiles `Ψ_t(|a-b|)`** of `lem:LWterm` (Lemma 3.10): deterministic
 `0 < Ψ_t(r) ≤ W^{-ε₀}` (`r ∈ ℕ` the block distance), nonincreasing in `r`, with `(eq:Psi)`:
 `W^{-d/2} ≲ Ψ_t(0) ≍ Ψ_t(r)` for `r ≤ C` (the implicit constants depend on `C`), and
 `Ψ_t(r₁)/Ψ_t(r₂) ≤ C₁ (r₂/r₁)^{C₂}` for `1 ≤ r₁ ≤ r₂` with constants `C₁, C₂ > 1`. -/
@@ -330,13 +327,13 @@ def STPsiClass (ε₀ : ℝ) (Ψ : ℕ → ℕ → ℝ) : Prop :=
     (∃ C₁ C₂ : ℝ, 1 < C₁ ∧ 1 < C₂ ∧ ∀ n r₁ r₂ : ℕ, 1 ≤ r₁ → r₁ ≤ r₂ →
       Ψ n r₁ / Ψ n r₂ ≤ C₁ * ((r₂ : ℝ) / r₁) ^ C₂)
 
-/-- **`(eq:LW_assm)`** (`3_5:388`): `𝓛^{(2)}_{t,σ,(a,b)} ≺ Ψ_t²(|a-b|)` for `σ ∈ {(+,-),(-,+)}`. -/
+/-- **`(eq:LW_assm)`**: `𝓛^{(2)}_{t,σ,(a,b)} ≺ Ψ_t²(|a-b|)` for `σ ∈ {(+,-),(-,+)}`. -/
 def STLWassm (E t : ℕ → ℝ) (Ψ : ℕ → ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)))
     (fun n p ω => ‖Lloop sz n (E n) (t n) p.1.1 p.2 ω‖)
     (fun n p _ => (Ψ n (zdistInf d (sz.L n) (p.2 0 - p.2 1))) ^ 2)
 
-/-- **`(eq:LW_assm_exp)`** (`3_5:409`): `𝓛^{(2)}_{t,σ,(a,b)} ≺ W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|)` for
+/-- **`(eq:LW_assm_exp)`**: `𝓛^{(2)}_{t,σ,(a,b)} ≺ W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|)` for
 `σ ∈ {(+,-),(-,+)}`, at the deterministic scale `ℓ_n`. -/
 def STLWassmExp (E t : ℕ → ℝ) (D : ℝ) (ℓ : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)))
@@ -345,13 +342,13 @@ def STLWassmExp (E t : ℕ → ℝ) (D : ℝ) (ℓ : ℕ → ℝ) : Prop :=
 
 end Ingredients
 
-/-- **`lem:newKLK`** (`3_5:371–378`, proof `3_5:610–654`), deterministic form: there are `C, δ₀ > 0`
+/-- **`lem:newKLK`** (Lemma 3.9, proof in Subsection 3.4), deterministic form: there are `C, δ₀ > 0`
 (depending on `d`, `κ`, `𝔡` only: through `prop:ThfadC`, `lem:propT`) such that for every fine
 Hermitian `H` with `‖G_u - M‖_max ≤ δ₀` (the weak local law `(Gtmwc)` at `u`, eventually true with
 high probability) and every `0 ≤ ℓ ≤ L`, `D ≥ 0`: `|Θ^{(2)}_{u,σ} ∘ (𝓛-𝒦)^{(2)}_{u,σ}|` and
 `|𝓔^{(𝓛-𝓚)×(𝓛-𝓚)}_{u,σ}|` are at most `C/(1-u) (Ĵ + Ĵ² 1_{ℓ≥1}) W^{-d} 𝒯̃^ℓ_{u,D}(|a-b|)`
-(`(juwo2=klk)`, `(juwo=Lklk)`), as the predicate `STNewKLKAt` at the constants `C, δ₀`.  Inputs of its proof: `Prop5Decay` (borrowed), `lem:propT`
-(`EKPropT`, to be bridged to `zdistInf`), the Ward identities (`KLK_ward`, `eq_Ward`). -/
+(`(juwo2=klk)`, `(juwo=Lklk)`), as the predicate `STNewKLKAt` at the constants `C, δ₀`.  Inputs of its proof: `Prop5Decay`, `lem:propT`
+(`EKPropT`), the Ward identities (`KLK_ward`, `eq_Ward`). -/
 def STNewKLKAt (d : ℕ) (κ 𝔡 C δ₀ : ℝ) : Prop :=
   ∀ (sz : Sizes d) (n : ℕ) (E u D ℓ : ℝ), 0 < sz.lam n → sz.lam n ≤ 𝔡⁻¹ → |E| ≤ 2 - κ →
     0 ≤ u → u < 1 → 0 ≤ D → 0 ≤ ℓ → ℓ ≤ ((sz.L n : ℕ) : ℝ) →
@@ -365,20 +362,19 @@ def STNewKLKAt (d : ℕ) (κ 𝔡 C δ₀ : ℝ) : Prop :=
               STJhatM sz n E D ℓ u H ^ 2 * (if 1 ≤ ℓ then 1 else 0)) *
               STprof sz n u D ℓ (a 0) (a 1)
 
-/-- **`lem:newKLK`**, the pin: `∃ C, δ₀` with `STNewKLKAt`. -/
+/-- **`lem:newKLK`**, the statement `STNewKLK`: `∃ C, δ₀` with `STNewKLKAt`. -/
 def STNewKLK (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∃ C δ₀ : ℝ, 0 < C ∧ 0 < δ₀ ∧ STNewKLKAt d κ 𝔡 C δ₀
 
 /-- **The pointwise contraction inequality of Step 2** (`ygdhmsgq0`, `(eq_sym_loop_bound)`,
-`3_5:751–761`; the paper calls it "a pointwise version of the more general contraction inequality
-`(u2jzooi-2)`", which is the merged Step 3 pin `STContract` of T2049, `Induction/Step34Pins.lean:307`;
+Lemma 3.16; the paper calls it "a pointwise version of the more general contraction inequality
+`(u2jzooi-2)`", which is `STContract` (`Induction/Step34Pins.lean`);
 the two statements differ (label-dependent maxima here, maxima over all labels there), hence the
 name `STContractPt`), deterministic:
 for every Hermitian `H` on the fine lattice, `z` with `Im z > 0`, signs `σ`, labels `a, b`, a set
 `𝒜` of blocks and `M ≥ 0` with `(𝓛^{(4)}_{(σ₁,-σ₁,σ₁,-σ₁),(c',b,c',b)})^{1/2} ≤ M` on `𝒜`:
 `Σ_{c'∈𝒜} Σ_{|c-c'|≤1} 𝓛^{(6)}_{(σ⊗σ̄)^{(1)},(a,b,c',b,a,c)} ≤ 3^d/(W^d Im z) · M ·
-max_{σ'} |𝓛^{(3)}_{(σ',σ₂,-σ₂),(a,b,a)}|` (the constant `3^d` is the neighbour count; the numeric check
-of the report gives the ratio `0.39` at `d = 3`, `W = 2`, `L = 4`).  Proof: Cauchy–Schwarz and
+max_{σ'} |𝓛^{(3)}_{(σ',σ₂,-σ₂),(a,b,a)}|` (the constant `3^d` is the neighbour count).  Proof: Cauchy–Schwarz and
 Ward's identity (`G(+) G(-) = (G(+) - G(-))/(2 i Im z)`). -/
 def STContractPt (d : ℕ) : Prop :=
   ∀ (L W : ℕ) [NeZero L] [NeZero W] (H : Matrix (Idx d L W) (Idx d L W) ℂ) (z : ℂ),
@@ -391,7 +387,7 @@ def STContractPt (d : ℕ) : Prop :=
             max ‖loopFine d L W H z ![true, σ 1, !(σ 1)] ![a, b, a]‖
               ‖loopFine d L W H z ![false, σ 1, !(σ 1)] ![a, b, a]‖
 
-/-- **`lem:LWterm`** (light-weight estimate, `B`-bound; `3_5:385–404`; LW gate, proved there: **owed**),
+/-- **`lem:LWterm`** (light-weight estimate, `B`-bound; Lemma 3.10),
 a statement about the model alone at one time sequence `t ≤ t₀`: under `(initialGT2)`, `(eq:LW_assm)`
 and the profile conditions `(eq:Psi)`, `𝓔^{G̃,(2)}_{t,σ,(a,b)} ≺ η_t^{-1} Ψ_t(0) Ψ_t²(|a-b|)`
 for all `σ ∈ {+,-}²`, `a, b`. -/
@@ -406,7 +402,7 @@ def STLWB (d : ℕ) : Prop :=
               (fun n p _ => (etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 *
                 (Ψ n (zdistInf d (sz.L n) (p.2 0 - p.2 1))) ^ 2)
 
-/-- **`lem: EWGn2_N`** (light-weight estimate, `𝒯`-bound; `3_5:406–415`; LW gate: **owed**): under
+/-- **`lem: EWGn2_N`** (light-weight estimate, `𝒯`-bound; Lemma 3.11): under
 `(initialGT2)` (`W^{-d/2} ≤ Ψ_t ≤ W^{-ε₀}`) and `(eq:LW_assm_exp)` at a scale
 `0 ≤ ℓ ≤ (log W)^{10} ℓ_t`, for every large `D`:
 `𝓔^{G̃,(2)}_{t,σ,(a,b)} ≺ η_t^{-1} (W^{-d} B_{t,0})^{1/2} W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|)`. -/
@@ -427,8 +423,8 @@ def STLWT (d : ℕ) : Prop :=
                 (fun n p _ => (etaT (STflowE z n) (t n))⁻¹ * (sz.Bctl n (t n)) ^ (1 / 2 : ℝ) *
                   STprof sz n (t n) D (ℓ n) (p.2 0) (p.2 1))
 
-/-- **`lem: EMn2_N`, first estimate** `(eq:MG_conclusion)` (`3_5:427–432`, proof `3_5:800–825` with
-the contraction inequality; ST-2): the same premises as `STLWB`; for each cut `k ∈ {1,2}`
+/-- **`lem: EMn2_N`, first estimate** `(eq:MG_conclusion)` (Lemma 3.13, proof in Subsection 3.5 with
+the contraction inequality): the same premises as `STLWB`; for each cut `k ∈ {1,2}`
 `(𝓔⊗𝓔)^{M,(2;k)}_{t,σ,a,a} ≺ η_t^{-1} Ψ_t(0) Ψ_t⁴(|a-b|)`. -/
 def STEMn2Poly (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -441,7 +437,7 @@ def STEMn2Poly (d : ℕ) : Prop :=
               (fun n p _ => (etaT (STflowE z n) (t n))⁻¹ * Ψ n 0 *
                 (Ψ n (zdistInf d (sz.L n) (p.2.2 0 - p.2.2 1))) ^ 4)
 
-/-- **`lem: EMn2_N`, third estimate** `(eq:MG_conclusion3)` (`3_5:437–440`, proof `3_5:829–888`):
+/-- **`lem: EMn2_N`, third estimate** `(eq:MG_conclusion3)` (Lemma 3.13, proof in Subsection 3.5):
 the same premises as `STLWT`; for each cut `k` and every large `D`,
 `(𝓔⊗𝓔)^{M,(2;k)}_{t,σ,a,a} ≺ η_t^{-1} [(W^{-d}B_{t,0})^{1/2} + (Ĵ^ℓ_{t,D})³] (W^{-d} 𝒯̃^ℓ_{t,D}(|a-b|))²`
 with the **random** control `Ĵ^ℓ_{t,D}` (`STJhat`). -/
@@ -467,7 +463,7 @@ def STEMn2Exp (d : ℕ) : Prop :=
 end RBM.Gauss.Sizes
 /-! ### 2.3 The grid representation `Sol_CalL` and the martingale estimate `lem:DIfREP` (path layer)
 
-The walk is the grid Gaussian walk `pathH` (DECISIONS §7); `gridStep`, `gridTime` are merged.  The
+The walk is the grid Gaussian walk `pathH` (with `gridStep`, `gridTime`).  The
 loop observable of the walk at grid index `k` is `A_k = (𝓛-𝒦)^{(2)}_{u_k,σ,a}(H_k)`. -/
 
 namespace RBM.Gauss.Sizes
@@ -483,7 +479,7 @@ def STgA (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) (σ : Fin 2 �
     (k : ℕ) (ω : PathΩ sz) : ℂ :=
   STLKM sz n E (gridTime s t K n k) (pathH sz s t K n k ω) σ a
 
-/-- The drift of `(𝓛-𝒦)^{(2)}` (`(LK_simple)`, `3_5:360–362`): `Θ^{(2)}_{u,σ} ∘ (𝓛-𝒦)^{(2)} +
+/-- The drift of `(𝓛-𝒦)^{(2)}` ((3.23) `LK_simple`): `Θ^{(2)}_{u,σ} ∘ (𝓛-𝒦)^{(2)} +
 𝓔^{(𝓛-𝓚)×(𝓛-𝓚)} + 𝓔^{G̃}`, at the grid state. -/
 def STgDrift (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) : ℂ :=
@@ -492,16 +488,15 @@ def STgDrift (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) (σ : Fin
     STELKLKM sz n E (gridTime s t K n k) (pathH sz s t K n k ω) σ a +
     STEGtM sz n E (gridTime s t K n k) (pathH sz s t K n k ω) σ a
 
-/-- **`Sol_CalL` (`3_5:134–148`, `(int_K-L_ST)`) and `lem:DIfREP` (`3_5:218–228`) in grid form**
-(`n = 2`; `d = 2` sources: `Path/{OneStep, LoopStep, DriftAlgebra, Expansion, StepDecomp, QVIdentity,
-DuhamelTail}`, `Induction/{LoopGenN, GridDriftN, StepDecompN, AzumaProxyN, GridAssemblyN}`): for every
+/-- **`Sol_CalL` (Lemma 3.4, `(int_K-L_ST)`) and `lem:DIfREP` (Lemma 3.6) in grid form**
+(`n = 2`; the argument follows the two-dimensional formalization): for every
 `D` there is a grid exponent `C_K` such that on every grid `K_n ≥ N^{C_K}` from `s` to `t ≤ t₀`
 the observable splits as `A_k = A_0 + Δ Σ_{j<k} Drift_j + Rem_k + Mart_k` pathP-a.e. for all
 `k ≤ K` with (i) `|Rem_k| ≤ N^{C₀} Δ^{1/2}` (the one-step error `N^{C₀} Δ^{3/2}` summed over `K`
 steps) and (ii) the martingale part obeys the random-proxy tail bound (the grid form of the
-Burkholder–Davis–Gundy step `(aaswtghh)` + Markov, via Azuma–Hoeffding with Doob, DECISIONS §7):
+Burkholder–Davis–Gundy step `(aaswtghh)` + Markov, via Azuma–Hoeffding with Doob):
 `|Mart_k| ≤ N^{ε'} (Σ_{j<k} Δ |(𝓔⊗𝓔)^{M,(2)}_{u_j}(H_j)| + N^{-D})^{1/2}` for all `k ≤ K`, with
-probability `≥ 1 - N^{-D}`.  The constant `C₀` depends on `d` only; `Δ = (t-s)/K`.  **owed** (ST-2). -/
+probability `≥ 1 - N^{-D}`.  The constant `C₀` depends on `d` only; `Δ = (t-s)/K`. -/
 def STGridMartAt (d : ℕ) (C₀ : ℝ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -525,12 +520,12 @@ def STGridMartAt (d : ℕ) (C₀ : ℝ) : Prop :=
                           i.1 i.2‖ + ((sz.size n : ℕ) : ℝ) ^ (-D)) ^ (1 / 2 : ℝ) <
                     ‖Mart n i k ω‖} ≤ ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)))
 
-/-- **`Sol_CalL` + `lem:DIfREP`**, the pin: `∃ C₀` with `STGridMartAt`. -/
+/-- **`Sol_CalL` + `lem:DIfREP`**, the statement: `∃ C₀` with `STGridMartAt`. -/
 def STGridMart (d : ℕ) : Prop := ∃ C₀ : ℝ, 0 ≤ C₀ ∧ STGridMartAt d C₀
 
 /-! ### 2.4 The stopping time `(eq:def2_stopping)` on the grid -/
 
-/-- **`T` of `(eq:def2_stopping)`** (`3_5:533`) on the grid `u_j = s + jΔ`: the first grid index
+/-- **`T` of `(eq:def2_stopping)`** on the grid `u_j = s + jΔ`: the first grid index
 `j ≤ K` at which `Ĵ^{K_{u_j}}_{u_j,D}(H_j) ≥ (W^{-d} B_{u_j,0})^{1/6}` (`K` if there is none), for the
 scale family `ℓ n u` (the paper's `K_u`); `τ = t ∧ T` is the paper's stopping time. -/
 def STstopIdx (s t : ℕ → ℝ) (K : ℕ → ℕ) (E : ℕ → ℝ) (D : ℝ) (ℓ : ℕ → ℝ → ℝ) (n : ℕ) :
@@ -541,11 +536,11 @@ def STstopIdx (s t : ℕ → ℝ) (K : ℕ → ℕ) (E : ℕ → ℝ) (D : ℝ) 
 
 end PathLayer
 
-/-! ### 2.5 `𝒦^{(2)}` decay, the net lift, and the combined pin -/
+/-! ### 2.5 `𝒦^{(2)}` decay, the net lift, and the combined statement -/
 
-/-- **`(eq:simpleboundK)`** (`3_5:518`) = `(eq:kn2sol_decay)` (`3_5:457`), deterministic: `|𝒦^{(2)}_{u,σ,a}| ≤
-C W^{-d} 𝒯̃^{L}_{u,D}(|a₁-a₂|)` for every `D ≥ 0` (from `(Kn2sol)` = merged `KLK_two` and
-`prop:ThfadC`, `Prop5Decay` borrowed; the `ℓ¹` versus `L^∞` distance costs only the constant `c_d`
+/-- **`(eq:simpleboundK)`** = `(eq:kn2sol_decay)`, deterministic: `|𝒦^{(2)}_{u,σ,a}| ≤
+C W^{-d} 𝒯̃^{L}_{u,D}(|a₁-a₂|)` for every `D ≥ 0` (from `(Kn2sol)` = `KLK_two` and
+`prop:ThfadC`, `Prop5Decay`; the `ℓ¹` versus `L^∞` distance costs only the constant `c_d`
 in the exponent, absorbed by the square root of `𝒯`). -/
 def STK2decay (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ 𝔡 : ℝ, 0 < κ → 0 < 𝔡 → ∃ C : ℝ, 0 < C ∧
@@ -557,8 +552,8 @@ section Lift
 
 variable {d : ℕ}
 
-/-- **The net lift of Step 2** (the standard `N^{-C}`-net and perturbation argument, `1_2:1400`;
-RBM2D `Path/NetLift.lean`, `Step2NetLift`, `Step2LocalNetLift`): the per-time conclusions give the
+/-- **The net lift of Step 2** (the standard `N^{-C}`-net and perturbation argument, after (2.94) `Eq:Gtlp_exp_flow`;
+RBM2D's `Step2NetLift`, `Step2LocalNetLift`): the per-time conclusions give the
 uniform ones, for every `C_d`. -/
 def STNetLift2 (d : ℕ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
@@ -569,15 +564,15 @@ def STNetLift2 (d : ℕ) : Prop :=
             STStep2Local sz (STflowE z) s t ∧ STStep2Avg sz (STflowE z) s t ∧
               STStep2Decay sz Cd (STflowE z) s t
 
-/-- **Step 2 of `lem:main_ind`** (`1_2:1340–1357`, `(Gt_bound_flow)`, `(Gt_avgbound_flow)`,
-`(Eq:Gdecay_w)`) at sequence level.  Constants first: `κ, ε, 𝔡`, then `C_d` (independent of `𝔠_d`),
+/-- **Step 2 of `lem:main_ind`** ((2.87) `Gt_bound_flow`, (2.88) `Gt_avgbound_flow`, (2.89)
+`Eq:Gdecay_w`) at sequence level.  Constants first: `κ, ε, 𝔡`, then `C_d` (independent of `𝔠_d`),
 then `𝔠_d ∈ (0, 10^{-2}]` (depending on `d, κ, ε, 𝔡` and `C_d`), then the bandwidth exponent `𝔠`, the
 sizes and `z`.  Premises: `(a)` and `(b)` (first part) at `s`, `(con_st_ind)`, and Step 1's conclusions
 `(lRB1)`, `(Gtmwc)` uniformly in `u ∈ [s,t]` (`STStep1Loop`, `STStep1Weak`); `(c)`, `(d)` and the
-strong form of `(b)` are not used by Step 2.  The conclusion is the merged bundle `STStep2Concl`
-(`Induction/Step34Pins.lean:221`: `STLocalEntryU ∧ STAvgU ∧ STGdecayW`); `STStep2Local ∧ STStep2Avg ∧
-STStep2Decay` below are the three parts in the single-charge form of the probe, which ST2-04 proves
-and turns into `STStep2Concl` (`STStep2Avg` ≠ `STAvgU` as a statement: paper-delta T2039g). -/
+strong form of `(b)` are not used by Step 2.  The conclusion is the bundle `STStep2Concl`
+(`Induction/Step34Pins.lean`: `STLocalEntryU ∧ STAvgU ∧ STGdecayW`); `STStep2Local ∧ STStep2Avg ∧
+STStep2Decay` below are the three parts in the single-charge form, which together give
+`STStep2Concl` (`STStep2Avg` and `STAvgU` are different statements). -/
 def STStep2 (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∃ Cd : ℝ, 0 < Cd ∧ ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
@@ -592,7 +587,7 @@ end Lift
 
 end RBM.Gauss.Sizes
 
-/-! ## 3. Definitions the pins mention: the scale family, the per-time `(eq:L2_decay)`, the list-loop matrix functionals -/
+/-! ## 3. Definitions the statements mention: the scale family, the per-time `(eq:L2_decay)`, the list-loop matrix functionals -/
 
 namespace RBM.Gauss.Sizes
 
@@ -600,7 +595,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **Admissible scale family** (`(kwr3juw)`, `(eq:monotone_Ku)`, `3_5:521–527`): `K_u ≥ 0`, `K_u ≤ L`
+/-- **Admissible scale family** ((3.46) `kwr3juw`, (3.47) `eq:monotone_Ku`): `K_u ≥ 0`, `K_u ≤ L`
 (the profile only sees distances `≤ L`), `K_u ≤ (log W)^{10} ℓ_u` (the range of `lem: EWGn2_N`),
 eventually in `n`, and `u ↦ 𝒯_u(K_u)` is non-decreasing on `[s_n, t_n]`, eventually in `n`. -/
 def STScaleOk (s t : ℕ → ℝ) (Kf : ℕ → ℝ → ℝ) : Prop :=
@@ -613,7 +608,7 @@ def STScaleOk (s t : ℕ → ℝ) (Kf : ℕ → ℝ → ℝ) : Prop :=
 level is admissible (`STScaleOk`); `0 ≤ K_m ≤ K_{m+1}` and `𝒯_u(K_{m+1}) ≥ (W^{-d}B_{u,0})^{1/6} 𝒯_u(K_m)`
 (equality unless the solution of `(eq:def_ell1)` exceeds `L`, where the family is cut at `L`); after
 `M(D)` steps either `𝒯_u(K_M) ≤ W^{-D}` or `K_M ≥ L` (`𝒯̃^{K} ≍ 𝒯̃^{L}`), for all `u ∈ [s_n,t_n]`
-eventually in `n` (`3_5:577`); every clause but `K_0 = 0` is required only eventually in `n`. -/
+eventually in `n`; every clause but `K_0 = 0` is required only eventually in `n`. -/
 def STScaleAdm (s t : ℕ → ℝ) (Kseq : ℕ → ℕ → ℝ → ℝ) : Prop :=
   (∀ n u, Kseq 0 n u = 0) ∧ (∀ m, STScaleOk sz s t (Kseq m)) ∧
   (∀ m, ∀ᶠ n in atTop, ∀ u, s n ≤ u → u ≤ t n → 0 ≤ Kseq m n u ∧ Kseq m n u ≤ Kseq (m + 1) n u) ∧
@@ -630,7 +625,7 @@ namespace RBM.Gauss.Sizes
 
 open RBM RBM.Loop RBM.Path RBM.Gauss
 
-/-- **The scale family** `K_u^{(m)}` of `(eq:def_ell1)` (`3_5:571–577`; deterministic, ST-2, **owed**):
+/-- **The scale family** `K_u^{(m)}` of `(eq:def_ell1)` (deterministic):
 for every flow and every `0 ≤ s_n ≤ t_n ≤ lemT(z_n)` there is an admissible family (`STScaleAdm`):
 `K^{(0)} = 0`, `𝒯_u(K^{(m+1)}_u) = (W^{-d}B_{u,0})^{1/6} 𝒯_u(K^{(m)}_u)` (intermediate value theorem on the
 continuous decreasing `r ↦ 𝒯_u(r)`, cut at `L`), `u ↦ 𝒯_u(K_u)` non-decreasing, and the floor
@@ -641,7 +636,7 @@ def STScaleExists (d : ℕ) : Prop :=
       ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n ≤ lemT (z n)) →
         ∃ Kseq : ℕ → ℕ → ℝ → ℝ, STScaleAdm sz s t Kseq
 
-/-- **`(eq:opt_L2)`** (`3_5:470`, proof `3_5:466–512`; ST-2, **owed**): the maximal bound
+/-- **`(eq:opt_L2)`** ((3.39)): the maximal bound
 `max_{σ,a} |(𝓛-𝒦)^{(2)}_{u,σ,a}| ≺ W^{-d} B_{u,0}` uniformly in `u ∈ [s,t]` (per time), from the
 premises of Step 2 with `𝔠_d` small depending on the constant of `lem:newKLK`; its proof is the
 linear Grönwall argument at `ℓ = 0` (`STNewKLK`, `STLWB`, `STEMn2Poly`, `STGridMart`, the bound
@@ -661,7 +656,7 @@ section L2
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **`(eq:L2_decay)`** (`3_5:460`) per time: `𝓛^{(2)}_{u,(-,+),(a₁,a₂)} ≺ W^{-d} B_{u,|a₁-a₂|}`. -/
+/-- **`(eq:L2_decay)`** per time: `𝓛^{(2)}_{u,(-,+),(a₁,a₂)} ≺ W^{-d} B_{u,|a₁-a₂|}`. -/
 def STL2decayPT (E s t : ℕ → ℝ) : Prop :=
   PrecPT sz (U := fun n => TimeIcc s t n × (Fin 2 → Zd d (sz.L n)))
     (fun n p ω => ‖Lloop sz n (E n) (p.1 : ℝ) ![false, true] p.2 ω‖)
@@ -669,8 +664,7 @@ def STL2decayPT (E s t : ℕ → ℝ) : Prop :=
 
 end L2
 
-/-- **The closing paragraph of Step 2** (`3_5:455–465`; ST-2, **owed**, uses the merged ST-1 pin
-`STGbEXP`): `(eq:L2_decay)` and the weak law `(Gtmwc)` verify `(initialGT2)` at every time and
+/-- **The closing paragraph of Step 2** (uses `STGbEXP`): `(eq:L2_decay)` and the weak law `(Gtmwc)` verify `(initialGT2)` at every time and
 `lem_GbEXP` gives `(Gt_bound_flow)` (`(GiiGEX)`, `(GijGEX)` with the neighbour sums of
 `STgexRHS`) and `(Gt_avgbound_flow)` (`(GavLGEX)`), per time. -/
 def STLocalAvgOfL2 (d : ℕ) : Prop :=
@@ -691,7 +685,7 @@ section MatrixN
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `𝓛_{τ,I}` of a list-based loop index for an arbitrary fine matrix `H` (the grid state): the model-level
-`STLI` is the case `H = seqHflow sz n τ ω` (`STLIM_seqHflow`, `rfl`). -/
+`STLI` is the case `H = seqHflow sz n τ ω` (by `rfl`). -/
 def STLIM (n : ℕ) (E τ : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) H) (zt E τ) I
@@ -760,9 +754,9 @@ def STgAN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) {m : ℕ} (�
     (a : Fin m → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) : ℂ :=
   STLKIM sz n E (gridTime s t K n k) (pathH sz s t K n k ω) (KLloopOf d (sz.L n) σ a)
 
-/-- **The drift of `(𝓛-𝒦)^{(m)}`** (`(eq_L-Keee)`, `3_5:75-100`) at the grid state:
+/-- **The drift of `(𝓛-𝒦)^{(m)}`** ((3.8) `eq_L-Keee`) at the grid state:
 `Θ^{(m)}_{u,σ} ∘ (𝓛-𝒦)^{(m)} + Σ_{l_K=3}^{m} [𝒦^{(l_K)} ∼ (𝓛-𝒦)]^{(m)} + ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(m)} + ℰ^{G̃,(m)}`
-(`Θ^{(m)}` = the merged `ThetaN`, `DefTHUST`, `m(σ_i)` the charge values). -/
+(`Θ^{(m)}` = `ThetaN`, `DefTHUST`, `m(σ_i)` the charge values). -/
 def STgDriftN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) {m : ℕ} (σ : Fin m → Bool)
     (a : Fin m → Zd d (sz.L n)) (k : ℕ) (ω : PathΩ sz) : ℂ :=
   ThetaN d (sz.L n) (sz.lam n) (fun i => mSigma E (σ i)) (gridTime s t K n k)
@@ -774,7 +768,7 @@ def STgDriftN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) {m : ℕ
     STegtM sz n E (gridTime s t K n k) (pathH sz s t K n k ω) (KLloopOf d (sz.L n) σ a)
 
 /-- **The weighted quadratic-variation loop** `((𝒰_{v,w,σ} ⊗ 𝒰_{v,w,σ̄}) ∘ (ℰ⊗ℰ)^{M,(m)}_{v,σ})_{a,a}` of
-`(alu9_STime)` (`3_5:232-240`, `(def_Ustz)`) for a fine matrix `H`: the merged kernels `uKer` with the
+`(alu9_STime)` (`(def_Ustz)`) for a fine matrix `H`: the kernels `uKer` with the
 charge values `m(σ_i)` and `m(-σ_i) = conj m(σ_i)`, `M^{(σ_i,σ_{i+1})} = m(σ_i)m(σ_{i+1})` (`cycProd`). -/
 def STeeUM (n : ℕ) (E v w : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
     {m : ℕ} (σ : Fin m → Bool) (a : Fin m → Zd d (sz.L n)) : ℂ :=
@@ -783,9 +777,9 @@ def STeeUM (n : ℕ) (E v w : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d 
       (∏ i, uKer d (sz.L n) (sz.lam n) (cycProd (fun i => mSigma E (!σ i)) i) v w (a i) (b' i)) *
         STeeM sz n E v H σ b b'
 
-/-- **`Sol_CalL` and `lem:DIfREP` on the grid, every loop length `m`** (`(int_K-L_ST)` `3_5:134`, `(aaswtghh)`
-and `(alu9_STime)` `3_5:218-240`; DECISIONS §7: the Burkholder-Davis-Gundy step is replaced by the
-Azuma-Hoeffding step on the grid with the random proxy).  For every flow, every `D`, there is a grid
+/-- **`Sol_CalL` and `lem:DIfREP` on the grid, every loop length `m`** (`(int_K-L_ST)`, `(aaswtghh)`
+and `(alu9_STime)`; the Azuma-Hoeffding step on the grid with the random proxy is used in place of the
+Burkholder-Davis-Gundy step).  For every flow, every `D`, there is a grid
 exponent `C_K` such that on every grid `K_n ≥ N^{C_K}` from `s` to `t ≤ t₀` the observable splits
 `pathP`-a.e., for all `k ≤ K` simultaneously (hence at every stopping index), as
 `A_k = A_0 + Δ Σ_{j<k} Drift_j + Rem_k + Mart_k` with (i) `|Rem_k| ≤ N^{C₀} Δ^{1/2}` (`C₀ = C₀(d,m)`),
@@ -794,8 +788,8 @@ exponent `C_K` such that on every grid `K_n ≥ N^{C_K}` from `s` to `t ≤ t₀
 `Mart`: `|Σ_{j<k} (𝒰_{u_j,u_k,σ} ∘ ΔMart_j)_a| ≤ N^{ε'} (Σ_{j<k} Δ |((𝒰⊗𝒰̄) ∘ (ℰ⊗ℰ)^{M,(m)}_{u_j})_{a,a}| +
 N^{-D})^{1/2}`, for all `k ≤ K`, with probability `≥ 1 - N^{-D}` (the Duhamel form `(int_K-LcalE)` at the
 index `k` follows from the decomposition by the algebraic telescope of `Ugen`, RBM2D
-`GridDuhamelN_Ugen_duhamel_telescope`, and the remainder `N^{C}Δ^{1/2}`).  `m = 2` is the pin
-`STGridMartAt` (`ST_gridMart_of_repN`).  **owed** (ST2-12, ST2-13, ST2-27, ST2-34, ST2-35). -/
+`GridDuhamelN_Ugen_duhamel_telescope`, and the remainder `N^{C}Δ^{1/2}`).  `m = 2` is
+`STGridMartAt` (`ST_gridMart_of_repN`). -/
 def STGridRepNAt (d m : ℕ) (C₀ : ℝ) : Prop :=
   ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -831,7 +825,7 @@ def STGridRepNAt (d m : ℕ) (C₀ : ℝ) : Prop :=
                         (fun b => Mart n (i.1, b) (j + 1) ω - Mart n (i.1, b) j ω) i.2‖} ≤
                   ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D)))
 
-/-- **`Sol_CalL` + `lem:DIfREP`, every loop length**, the pin: for every `m ≥ 2` there is `C₀` with
+/-- **`Sol_CalL` + `lem:DIfREP`, every loop length**, the statement: for every `m ≥ 2` there is `C₀` with
 `STGridRepNAt`. -/
 def STGridRepN (d : ℕ) : Prop := ∀ m : ℕ, 2 ≤ m → ∃ C₀ : ℝ, 0 ≤ C₀ ∧ STGridRepNAt d m C₀
 
@@ -841,20 +835,4 @@ end RBM.Gauss.Sizes
 
 
 
-/-! ## 4. Compiled nonempty instances at `d = 3` (probe §13, the part that uses only this file)
 
-The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` and the flow block of
-`Induction/Defs.lean` (`RBM.Gauss.InductionDefsInst`: `z0`, `flow_z0`, `sInst ≡ 0`, `tInst ≡ 1/16`,
-`conStInd_inst`, `sz1`, `flow_z1`): `d = 3`, `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `z_n = 1/2 + i N_n^{-4/5}`.
-Every deterministic hypothesis is discharged; what stays a hypothesis of an instance is the pin
-itself (`h : STNewKLK 3`, ...) or a stochastic premise of the pin (`STLK`, `STDecay`, `STStep1Loop`,
-`STStep1Weak`, `STInitialGT2`, `STLWassm`, `STLWassmExp`, the per-time statements of `STNetLift2`).
-The instances of the probe that use theorems of sections 3-12 (`inst_Bdata`, `inst_skeleton*`,
-`inst_step2_concl`, `inst_scaleAdm_szX`) move with those theorems (ST2-02 to ST2-04). -/
-
-/- **`Sol_CalL` + `lem:DIfREP`, instantiated** at `s ≡ 0`, `t ≡ 1/16`, `D = 1`: the grid-size
-exponent `C_K` of the pin, the admissible grid `K_n = ⌈N^{C_K}⌉` (nonzero, `K_n ≥ N^{C_K}`), and the
-decomposition `A_k = A_0 + Δ Σ Drift_j + Rem_k + Mart_k` a.e. for the grid walk. -/
-/- **The net lift of Step 2, instantiated**: the three per-time statements stay hypotheses, the
-uniform ones follow for every `C_d`. -/
-/- **The closing paragraph of Step 2, instantiated.** -/

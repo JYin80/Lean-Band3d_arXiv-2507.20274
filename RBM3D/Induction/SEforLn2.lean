@@ -7,15 +7,14 @@ import RBM3D.Induction.SEforLn1
 import RBM3D.Induction.ScaleFacts
 
 /-!
-# S3-09 (ticket T2139): `lem:SEforLn`, parts (3) and (4), and the pin `STSEforLn`
+# `lem:SEforLn`, parts (3) and (4), and the statement `STSEforLn`
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`: `lem:SEforLn` (`3_5:1035-1046`), proof
-`3_5:1063-1093`: `(eq:sumtwoloop)`, `(eq:sumtwoloop2)`, `(yi2oslxj2)`, `(u2jzooi-2)`,
-`(wardineq_K)`, `(def:XiL)`, `(def:XIL-K)`.
+Paper: arXiv:2507.20274, Lemma 4.3 (`lem:SEforLn`) and its proof: `(eq:sumtwoloop)`,
+`(eq:sumtwoloop2)`, `(yi2oslxj2)`, `(u2jzooi-2)`, `(wardineq_K)`, `(def:XiL)`, `(def:XIL-K)`.
 
 * `stSEforLn_part3`: `‖ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(k)}‖ ≺ B^k η⁻¹ (Σ_{n'=⌈k/2⌉+1}^{k-1} Ξ̂^{𝓛-𝒦}_{k+2-n'}
   (Ξ̂^{𝓛}_{n'₁} Ξ̂^{𝓛}_{n'₂})^{1/2} + B^{1/6} Ξ̂^{𝓛-𝒦}_k)`: the third conjunct of `STSEforLnConcl`
-  (`Step34Pins.lean:363`), uniformly in `u ∈ [s,t]` and the labels.  The stochastic input is the
+  (in `Step34Pins.lean`), uniformly in `u ∈ [s,t]` and the labels.  The stochastic input is the
   uniform 2-`G`-loop estimate `STGdecayW` (the third conjunct of `STStep2Concl`); the `𝒦`-loop Ward
   bound is the deterministic `stKward_timeIcc`; the contraction inequality is `stContract_holds`.
 * `stSEforLn_part4`: `‖(ℰ⊗ℰ)^{M,(k)}‖ ≺ B^{2k-1/(2q)} η⁻¹ Ξ̂^{𝓛}_{2k-1} (Ξ̂^{𝓛}_{4q})^{1/(2q)}`,
@@ -26,7 +25,7 @@ Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`: `lem:SEforLn` (`3_5
 The deterministic cores (§1-§5, §9) are bounds for every sample `ω` and every time `u ∈ [0,1)`,
 `|E| < 2`; the `≺` is assembled in §7 and §9 by the inclusion of the bad events.  The private
 helpers of `SEforLn1.lean` that are needed again are copied with the prefix `SEforLn2_`; every
-helper that the ticket does not pin is `private`.
+auxiliary lemma is `private`.
 -/
 
 set_option linter.style.longLine false
@@ -374,7 +373,7 @@ private theorem SEforLn2_conU (n : ℕ) {𝔠d s' t' u : ℝ} (h𝔠 : 0 < 𝔠d
     _ ≤ (1 - t') / (1 - s') := hB
     _ ≤ (1 - u) / (1 - s') := div_le_div_of_nonneg_right (by linarith) hs.le
 
-/-- **`(eq:sumtwoloop)`, second `≺`, pointwise in `(n, u)`** (a copy of the proof of `stSumTwoLoop` at a time
+/-- **`(eq:sumtwoloop)`, second `≺`, pointwise in `(n, u)`** (the proof of the second `≺` of `(eq:sumtwoloop)` at a time
 `u` with `(con_st_ind)` in the form of `SEforLn2_conU`): `((1-s)/(1-u))^{C_d} B^{1/5} Σ_{a₂} 𝒯_u(|a₁-a₂|) ≤
 C_∞(d) B^{1/6} η_u⁻¹`. -/
 private theorem SEforLn2_sumTwo_pt (hd : 2 ≤ d) (n : ℕ) {𝔠d Cd s' u E : ℝ} (h𝔠 : 0 < 𝔠d) (hCd : 0 ≤ Cd)
@@ -631,7 +630,7 @@ private theorem SEforLn2_n12_sum (m : ℕ) (hm : 3 ≤ m) :
   unfold STn12
   split_ifs with h <;> simp only <;> omega
 
-/-- **The contraction of the glued label** (`(yi2oslxj2)` at `⌊m/2⌋`, `3_5:1078-1082`): for a loop of length
+/-- **The contraction of the glued label** (`(yi2oslxj2)` at `⌊m/2⌋`, proof of Lemma 4.3): for a loop of length
 `m ≥ 2` with the glued label last, `Σ_x |𝓛| ≤ (W^d η)⁻¹ (max|𝓛^{(m₁)}| max|𝓛^{(m₂)}|)^{1/2}`, `(m₁, m₂) = STn12 m`. -/
 private theorem SEforLn2_sumContract (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 ≤ τ) (h1 : τ < 1)
     (ω : sz.SeqΩ) {m : ℕ} (hm : 2 ≤ m) (σ' : Fin m → Bool) (a' : Fin (m - 1) → Zd d (sz.L n)) :
@@ -658,7 +657,7 @@ private theorem SEforLn2_sumLK (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 ≤
   rw [Finset.sum_add_distrib]
   exact add_le_add (SEforLn2_sumContract sz n hE h0 h1 ω hm σ' a') (hKw σ' a')
 
-/-- Exponent count for a pair with the longer piece `n'` summed (`3_5:1079-1086`):
+/-- Exponent count for a pair with the longer piece `n'` summed (proof of Lemma 4.3, `(eq:sumtwoloop2)`):
 `W^d · max|(𝓛-𝒦)^{(m')}| · ((W^dη)⁻¹ (R + δ B^{n'-2})) ≤ 2 δ (B^k/η) Ξ^{𝓛-𝒦}_{m'} Y`, `m' + n' - 2 = k`,
 `R ≤ B^{n'-2} Y`, `Y ≥ 1`, `δ ≥ 1`. -/
 private theorem SEforLn2_arith_long {Wd B η δ MK Ξ Y RR : ℝ} {k m' n' : ℕ} (hWd : 0 < Wd) (hB : 0 < B)
@@ -717,7 +716,7 @@ private theorem SEforLn2_sum_pairs (m : ℕ) (f : ℕ → ℕ → ℝ) {T : ℝ}
         rw [Finset.sum_const, Nat.card_Icc, nsmul_eq_mul, Nat.add_sub_cancel]; ring
 
 /-- A pair with the longer piece `n' ∈ [⌈k/2⌉+1, k-1]` summed: the exponent count of `(eq:sumtwoloop2)`,
-first term (`3_5:1079-1086`). -/
+first term (proof of Lemma 4.3, `(eq:sumtwoloop2)`). -/
 private theorem SEforLn2_long (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h1 : τ < 1) (ω : sz.SeqΩ) {k n' : ℕ}
     (hn' : n' ∈ Finset.Icc ((k + 1) / 2 + 1) (k - 1)) {δ : ℝ} (hδ : 1 ≤ δ) :
     ((sz.W n : ℕ) : ℝ) ^ d * (STmaxLK sz n E τ (k + 2 - n') ω *
@@ -747,7 +746,7 @@ private theorem SEforLn2_long (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h1 : τ < 1
     (Real.rpow_nonneg (mul_nonneg (SEforLn2_STmaxL_nonneg sz n E τ _ ω)
       (SEforLn2_STmaxL_nonneg sz n E τ _ ω)) _) hRR (by omega)
 
-/-- **The deterministic core of part (3)** (`3_5:1063-1086`): for every sample, a time `u = τ ∈ [0,1)`, `|E| < 2`,
+/-- **The deterministic core of part (3)** (proof of Lemma 4.3): for every sample, a time `u = τ ∈ [0,1)`, `|E| < 2`,
 if the 2-loop sum is bounded (`hS2`: `Σ_{a₂} |(𝓛-𝒦)^{(2)}| ≤ δ C_s B^{1/6} (W^d η)⁻¹`, `(eq:sumtwoloop)`) and the `𝒦`-loop
 Ward bound holds with the loss `δ` (`hKw`), then `‖ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(k)}‖ ≤ k² (C_s+2) δ B^k η⁻¹ (Σ_{n'} ... + B^{1/6} Ξ̂^{𝓛-𝒦}_k)`. -/
 private theorem SEforLn2_det3 (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 ≤ τ) (h1 : τ < 1) (ω : sz.SeqΩ)
@@ -997,7 +996,7 @@ private theorem SEforLn2_flow_im {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hflo
     0 < (z n).im :=
   lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1
 
-/-- **Part (3) of `lem:SEforLn`, `(eq:L-KsimL-K)`** (`3_5:1035-1041`, proof `3_5:1063-1086`): along the flow
+/-- **Part (3) of `lem:SEforLn`, `(eq:L-KsimL-K)`** (Lemma 4.3 and its proof): along the flow
 `STFlow` with `0 ≤ s < t ≤ lemT z`, from the uniform 2-`G`-loop estimate `STGdecayW` (`(Eq:Gdecay_w)`, the third
 input of `STStep2Concl`), `(con_st_ind)` with `𝔠_d C_d ≤ 1/30` (`(eq:sumtwoloop)`), the uniform `𝒦`-loop Ward bound
 (`stKward_timeIcc`) and the contraction inequality (`stContract_holds`): for every `k ≥ 2`,
@@ -1064,7 +1063,7 @@ private theorem SEforLn2_eeLoop {α : Type*} {k : ℕ} (σ : Fin k → Bool) (a 
   simp only [STeeLoop, hP, hR, List.append_assoc]
   simp
 
-/-- `𝒜(x) = {y : |x - y|_D ≤ 1}`, the support of the row `S^{(B)}_{x ·}` (`Block.lean:38`). -/
+/-- `𝒜(x) = {y : |x - y|_D ≤ 1}`, the support of the row `S^{(B)}_{x ·}` (in `Block.lean`). -/
 private def SEforLn2_nbhd (n : ℕ) (x : Zd d (sz.L n)) : Finset (Zd d (sz.L n)) :=
   Finset.univ.filter fun y => zdistD d (sz.L n) (x - y) ≤ 1
 
@@ -1112,7 +1111,7 @@ private theorem SEforLn2_SB_sum (n : ℕ) (x : Zd d (sz.L n)) (f : Zd d (sz.L n)
           rw [norm_mul]; exact mul_le_of_le_one_left (norm_nonneg _) (SEforLn2_SB_le_one sz n x y)
 
 /-- **The contraction of the `(2k+2)`-loop** (`(u2jzooi-2)` with `k`, `j = k + 1`, `l = k + 2`, `p = q`,
-`𝒜 b = {b' : |b - b'|_D ≤ 1}`, `3_5:1088-1093`): for the cut edge `j`,
+`𝒜 b = {b' : |b - b'|_D ≤ 1}`, proof of Lemma 4.3): for the cut edge `j`,
 `Σ_b Σ_{b' ∈ 𝒜 b} |𝓛(STeeLoop j b b')| ≤ (2d+1) (W^d η)⁻¹ (max|𝓛^{(2k-1)}| max|𝓛^{(2k-1)}|)^{1/2}
 (max|𝓛^{(4q)}|)^{1/(2q)}`. -/
 private theorem SEforLn2_eeSum (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 ≤ τ) (h1 : τ < 1) (ω : sz.SeqΩ)
@@ -1175,7 +1174,7 @@ private theorem SEforLn2_det4 (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 ≤ 
         field_simp
 
 /-- The exponent count of part (4): `M₁ ≤ B^{2k-2} Ξ₁`, `M₂ ≤ B^{4q-1} Ξ₂` give
-`(M₁ M₁)^{1/2} M₂^{1/(2q)} ≤ B^{2k - 1/(2q)} Ξ₁ Ξ₂^{1/(2q)}` (`(def:XiL)`, `3_5:1093`). -/
+`(M₁ M₁)^{1/2} M₂^{1/(2q)} ≤ B^{2k - 1/(2q)} Ξ₁ Ξ₂^{1/(2q)}` (`(def:XiL)`). -/
 private theorem SEforLn2_arith4 {B M1 M2 Ξ1 Ξ2 : ℝ} {k q : ℕ} (hk : 1 ≤ k) (hq : 1 ≤ q) (hB : 0 < B)
     (hM1 : 0 ≤ M1) (hM2 : 0 ≤ M2) (hΞ1 : 0 ≤ Ξ1) (hΞ2 : 0 ≤ Ξ2)
     (h1 : M1 ≤ B ^ (2 * k - 1 - 1) * Ξ1) (h2 : M2 ≤ B ^ (4 * q - 1) * Ξ2) :
@@ -1255,7 +1254,7 @@ private theorem SEforLn2_part4_core {E s t : ℕ → ℝ} (hN : sz.SizeTendsto) 
           (STXiL sz n (E n) (p.1 : ℝ) (2 * k - 1) ω * STXiL sz n (E n) (p.1 : ℝ) (4 * q) ω ^
             (1 / (2 * (q : ℝ))))) := mul_le_mul_of_nonneg_right hn hZ0
 
-/-- **Part (4) of `lem:SEforLn`, `(eq:MG_nloop)`** (`3_5:1042-1046`, proof `3_5:1088-1093`): along the flow
+/-- **Part (4) of `lem:SEforLn`, `(eq:MG_nloop)`** (Lemma 4.3 and its proof): along the flow
 `STFlow` with `0 ≤ s`, `t ≤ lemT z`, for every `k ≥ 2` and `q ≥ 1`,
 `max_{σ,a,a'} |(ℰ⊗ℰ)^{M,(k)}_{u,σ,a,a'}| ≺ (W^{-d}B_{u,0})^{2k-1/(2q)} η_u⁻¹ Ξ̂^{𝓛}_{u,2k-1} (Ξ̂^{𝓛}_{u,4q})^{1/(2q)}`,
 uniformly in `u ∈ [s_n, t_n]`.  The input is the second inequality of the contraction `stContract_holds`
@@ -1276,14 +1275,14 @@ theorem stSEforLn_part4 (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ}
   exact SEforLn2_part4_core sz hflow.1.2.2.1 (fun n => abs_lemE_lt_two (him n)) hs
     (fun n => (ht n).trans_lt (lemT_lt_one (him n))) k hk q hq
 
-/-! ## 10. The pin `STSEforLn` -/
+/-! ## 10. The statement `STSEforLn` -/
 
-/-- **`lem:SEforLn`** (`3_5:1017-1046`), the four estimates of the `ℰ` terms, for every `d ≥ 3`
-(`STSEforLn d`, `Step34Pins.lean:456`): `𝔠_d = min (1/100) (1/(30 C_d))` (as in `stSumTwoLoop_exists`; `𝔠_d C_d ≤ 1/30`
+/-- **`lem:SEforLn`** (Lemma 4.3), the four estimates of the `ℰ` terms, for every `d ≥ 3`
+(`STSEforLn d`): `𝔠_d = min (1/100) (1/(30 C_d))` (`𝔠_d C_d ≤ 1/30`
 is what `(eq:sumtwoloop)` needs; parts (1), (2), (4) hold for every `𝔠_d`), then the four parts:
 `stSEforLn_part1` (`STAvgU`, the second input of `STStep2Concl`), `stSEforLn_part2` (no stochastic input),
 `stSEforLn_part3` (`STGdecayW`, the third input of `STStep2Concl`), `stSEforLn_part4` (no stochastic input).  The
-other hypotheses of the pin (`STKbound`, `STKward`, `STLK s`, the regime `STAny`) are not used. -/
+other hypotheses of `STSEforLn` (`STKbound`, `STKward`, `STLK s`, the regime `STAny`) are not used. -/
 theorem stSEforLn_holds (d : ℕ) : STSEforLn d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   have h𝔠d : 0 < min (1 / 100 : ℝ) (1 / (30 * Cd)) := lt_min (by norm_num) (by positivity)
@@ -1299,16 +1298,7 @@ theorem stSEforLn_holds (d : ℕ) : STSEforLn d := by
 
 end RBM.Gauss.Sizes
 
-/-! ## 11. Compiled nonempty instances (`d = 3`)
 
-Data: the merged size sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`), the flow
-`flow_z0 : STFlow sz0 (1/10) (1/10) (1/6) (1/10) z0`, `s ≡ 0`, `t ≡ 1/16` (`1/16 ≤ lemT z0`): a nondegenerate window
-`[0, 1/16]`, nonempty index sets, `C_d = 4`, `𝔠_d = 1/120` (`𝔠_d C_d = 1/30`, `(con_st_ind)` from `sz0_con`).  Part (3) at
-`k = 2` (sum over `n'` empty) and `k = 4` (`n' = 3`, `STn12 3 = (1, 3)`); part (4) at `(k, q) = (2, 1)` and `(4, 2)`.
-The uniform 2-`G`-loop estimate `STGdecayW` of part (3) is the output of another gate (Step 2) and stays a
-hypothesis of the examples; every deterministic hypothesis (`3 ≤ d`, the flow, `0 ≤ s`, `s < t`, `t ≤ lemT z`,
-`0 < κ`, `0 < C_d`, `0 < 𝔠_d`, `𝔠_d C_d ≤ 1/30`, `(con_st_ind)`) is discharged.  Part (4) has no stochastic hypothesis. -/
-
-/-! ### The interface with `STSEforLnConcl`
+/-! ## 11. The interface with `STSEforLnConcl`
 
 The four conclusions are the four conjuncts of `STSEforLnConcl sz (STflowE z) s t` at `k`, definitionally. -/

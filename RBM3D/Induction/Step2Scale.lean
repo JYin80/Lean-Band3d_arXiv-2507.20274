@@ -8,10 +8,10 @@ import RBM3D.Induction.ScaleFacts
 import RBM3D.Green.Pins
 
 /-!
-# ST2-05 (ticket T2081): the scale family of `(eq:def_ell1)`
+# The scale family of `(eq:def_ell1)`
 
-Paper: `paper/tex/3_5_Loop_Hierarchy.tex:512-577` (`(kwr3juw)`, `(eq:monotone_Ku)`,
-`(eq:def_ell1)`).  Proves the pin `STScaleExists` (`Induction/Step2Defs.lean:656`).
+Paper: arXiv:2507.20274, the proof of Step 2: (3.46) `kwr3juw`, (3.47) `eq:monotone_Ku`, (3.53)
+`eq:def_ell1`.  The file proves the statement `STScaleExists` (`Induction/Step2Defs.lean`).
 
 ## Construction
 
@@ -19,18 +19,18 @@ For `u` and `n` fixed write `T(r) = 𝒯_u(r)` (`RBM.tailT`), `β = W^{-d} B_{u,
 `q = β^{1/6}`.  `K^{(0)} = 0`.  Given `K = K^{(m)}`: if some `r ≥ K` has `T(r) = q T(K)` (the
 solution of `(eq:def_ell1)`; it exists by the intermediate value theorem on `[K, R]` when
 `0 < β ≤ 1`, `T` being continuous on `[0, ∞)` with `T(R) → 0`), `K^{(m+1)} := min(r, L)`, else
-`K^{(m+1)} := K` (never used in the regime where the pin asserts anything).  Then
+`K^{(m+1)} := K` (never used in the regime where `STScaleExists` asserts anything).  Then
 `T(K^{(m+1)}) = max(q T(K), T(L))` (`T` antitone), which gives `u ↦ 𝒯_u(K_u)` nondecreasing (by
 induction on `m`, from `𝒯_u(r)` and `β_u` nondecreasing in `u`), the cut at `L` is absorbing, and
 `K^{(m)} = L ∨ 𝒯_u(K^{(m)}) ≤ q^m B_{u,0}`.
 
-Every property is a statement for `n ≥ n₀` only (the pin's `∀ᶠ n`), `n₀` being the point after which
-`β ≤ 1` (`scaleFacts_R1`, `N → ∞`), `W ≥ ` the constants, `ilambda ≥ 0`.  `STFlow` enters through
-`v3_premises_of_stFlow` (`t_n < 1`, `RangeCond (ε/2)`), `Admissible` (`W ≥ N^𝔠`, `N → ∞`,
-`(eq:WO)`) and `scaleFacts_R1` (`β_u ≤ 2 N^{-c₀}`, `c₀ = min(2𝔠𝔡, ε/2)`).
+Every property is a statement for `n ≥ n₀` only (the `∀ᶠ n` of `STScaleExists`), `n₀` being the
+point after which `β ≤ 1` (`scaleFacts_R1`, `N → ∞`), `W ≥ ` the constants, `ilambda ≥ 0`.
+`STFlow` enters through `v3_premises_of_stFlow` (`t_n < 1`, `RangeCond (ε/2)`), `Admissible`
+(`W ≥ N^𝔠`, `N → ∞`, `(eq:WO)`) and `scaleFacts_R1` (`β_u ≤ 2 N^{-c₀}`, `c₀ = min(2𝔠𝔡, ε/2)`).
 
-Continuity of `r ↦ 𝒯_u(r)` on `[0, ∞)` was not merged: `st2s_tailT_continuousOn` proves it here and
-is used only for the intermediate value argument of `st2s_exists_eq`.
+Continuity of `r ↦ 𝒯_u(r)` on `[0, ∞)` is `st2s_tailT_continuousOn`; it is used only for the
+intermediate value argument of `st2s_exists_eq`.
 -/
 
 set_option linter.style.longLine false
@@ -153,7 +153,7 @@ private theorem st2s_step_exists (hL : 1 ≤ (L : ℝ)) (hu : u < 1) (hβ : 0 < 
         mul_le_mul_of_nonneg_right (st2s_q_le_one hβ hβ1) hT.le
     _ = tailT d L g u K := one_mul _
 
-/-- **The facts of one step** (`3_5:570-577`): for `0 ≤ K ≤ L`, the new level `K'` is `min r L` for
+/-- **The facts of one step** (proof of Step 2): for `0 ≤ K ≤ L`, the new level `K'` is `min r L` for
 a solution `r ≥ K` of `T(r) = q T(K)`; so `K ≤ K' ≤ min r L`, `T(K') = max (q T(K)) (T(L))`, either
 `K' = L` or `T(K') = q T(K)`, and `K = L` gives `K' = L`. -/
 private theorem st2s_step_facts (hL : 1 ≤ (L : ℝ)) (hu : u < 1) (hβ : 0 < β) (hβ1 : β ≤ 1)
@@ -320,7 +320,7 @@ private theorem st2sSeq_cap (hL : 1 ≤ (L : ℝ)) (hu : u < 1) (hβ : 0 < β) (
     rw [div_le_iff₀ hℓ] at h6'
     linarith
 
-/-- **Monotonicity in time** (`(eq:monotone_Ku)`, `3_5:525-527`): `u ↦ 𝒯_u(K^{(m)}_u)` is nondecreasing
+/-- **Monotonicity in time** (`(eq:monotone_Ku)`): `u ↦ 𝒯_u(K^{(m)}_u)` is nondecreasing
 (`u ≤ v < 1`, `g ≥ 0`, both controls in `(0, 1]`, `β_u ≤ β_v`): by induction on `m` from
 `T_u(K^{(m+1)}_u) = max (q_u T_u(K^{(m)}_u)) (T_u(L))`, `ST_tailT_mono_time` and `q_u ≤ q_v`. -/
 private theorem st2sSeq_tailT_mono_time {g v βu βv : ℝ} (hL : 1 ≤ (L : ℝ)) (hg : 0 ≤ g)
@@ -417,13 +417,13 @@ private theorem st2s_cap_arith {W β Cc : ℝ} {d m : ℕ} (hW1 : 1 ≤ W) (hCc 
 
 end Arith
 
-/-! ## 4. The pin `STScaleExists` -/
+/-! ## 4. The statement `STScaleExists` -/
 
-/-- **The scale family of `(eq:def_ell1)`** (`3_5:521-527`, `3_5:571-577`): the pin `STScaleExists`
-(`Induction/Step2Defs.lean:656`) is true, for every `d`.  The levels are `st2sSeq`
+/-- **The scale family of `(eq:def_ell1)`** (`(kwr3juw)`, `(eq:def_ell1)`): `STScaleExists`
+(`Induction/Step2Defs.lean`) holds for every `d`.  The levels are `st2sSeq`
 (`K^{(0)} = 0`, `𝒯_u(K^{(m+1)}_u) = (W^{-d} B_{u,0})^{1/6} 𝒯_u(K^{(m)}_u)` cut at `L`); every
 clause but `K^{(0)} = 0` holds for `n ≥ n₀`, `n₀` depending on `m` (resp. `D`) and the data of the
-flow, as the pin states (DECISIONS §29 (4)).  `STFlow` gives `t_n < 1`, `RangeCond (ε/2)`
+flow, as `STScaleExists` states.  `STFlow` gives `t_n < 1`, `RangeCond (ε/2)`
 (`v3_premises_of_stFlow`), `(eq:WO)`, `W ≥ N^𝔠` and `N → ∞`; the control satisfies
 `W^{-d} B_{u,0} ≤ 2 N^{-c₀}`, `c₀ = min(2𝔠𝔡, ε/2)` (`scaleFacts_R1`); `d ≥ 1` follows from `N → ∞`.
 `M(D) = 6 ⌈(2 + D)/c₀⌉`. -/
@@ -556,14 +556,5 @@ theorem stScaleExists_holds (d : ℕ) : STScaleExists d := by
         _ ≤ ((sz.W n : ℕ) : ℝ) ^ (-D) :=
             st2s_floor_arith (hW1 n) (hWdN n) (hWN n) hβ.le hβ2 hD hjc hN
 
-/-! ## 5. Compiled nonempty instances at `d = 3`
-
-The size data are the merged preflight sequence `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`,
-`W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`, `N_n = (W_n L_n)^3`), admissible at `𝔠 = 1/6`,
-`𝔡 = 1/10`, `κ = ε = 1/10`, the flow points `z_n = 1/2 + i N_n^{-4/5}` (`flow_z0`), and the times
-`s ≡ 0 < t ≡ 1/16 ≤ lemT z_n` (a window of positive length).  Every hypothesis of
-`stScaleExists_holds` is discharged; the second instance is at the lower end of `(eq:WO)`
-(`sz1`, `ilambda_n = W_n^{-3/2+1/10}`), the third reads two clauses of `STScaleAdm` at the interior
-time `u = 1/32`. -/
 
 end RBM.Gauss.Sizes

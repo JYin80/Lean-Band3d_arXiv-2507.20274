@@ -10,32 +10,31 @@ import RBM3D.Induction.GridDuhamelN
 /-!
 # The zero-mode calculus of Step 3, case `1 - s ≤ ilambda²/L²` (`d ≥ 3`)
 
-Ticket T2112 (S3-20).  Paper: arXiv:2507.20274, `3_5:1435-1601`
-(`def;zero_mode_remove`, `(normQA2)`, the commutation remark `3_5:1540-1545`,
-`(eq_L-Keee_nonzeromode)`, `(iisuwjyys)`, and the combination at `3_5:1590`).  No RBM1D/RBM2D
-source: the zero-mode regime does not exist for `d ≤ 2` (portmap P.7 row S3-20).
+Paper: arXiv:2507.20274, the proof of Step 3 in case (ii) (Subsection 4.2, `sec:1-s<L-2`):
+`(def;zero_mode_remove)` (Definition 4.12), `(normQA2)`, the commutation remark before (4.46)
+`eq_L-Keee_nonzeromode`, `(eq_L-Keee_nonzeromode)`, (4.47) `iisuwjyys`, and the combination at the
+end of the proof.  The zero-mode regime does not exist for `d ≤ 2`, so there is no RBM1D/RBM2D
+counterpart.
 
-`Q^{(A)}` is the merged `RBM.zeroModeSet` (`RBM3D/Kernel/Evolution.lean:199`).  Targets:
+`Q^{(A)}` is `RBM.zeroModeSet` (`RBM3D/Kernel/Evolution.lean`).  The file proves:
 
 1. `(normQA2)`: `norm_zeroModeOp_le`, `norm_zeroModeSet_le` (`‖Q^{(A)} 𝒜‖_∞ ≤ 2^{|A|} ‖𝒜‖_∞`), and
    linearity (`zeroModeSet_add`, `zeroModeSet_smul`, `zeroModeSetLin`, `zeroModeSet_sub`,
    `zeroModeSet_sum`).
 2. Commutation: `zeroModeSet_UN`, `zeroModeSet_ThetaN`, `Ind.zeroModeSet_Ugen` (and the
-   single-index forms `zeroModeOp_UN`, `zeroModeOp_ThetaN`, `Ind.zeroModeOp_Ugen`): `Q^{(A)}`
-   commutes with `𝒰^{(n)}`, `Θ^{(n)}`.  The ingredients are `ZeroModeCalc_tensorKer_zeroModeOp`
-   (`Q^{(i)}` acting on the right of a tensor kernel; the merged `zeroModeOp_tensorKer` is the
-   left-hand identity) and `ZeroModeCalc_projMat_mul_Theta_comm` (`Proj_{e^⊥}` commutes with
-   `Θ_ξ`; the merged `projMat_mul_Theta` gives `Proj_{e^⊥} Θ_ξ = Θ̊_ξ` only).
+   single-index form `zeroModeOp_ThetaN`): `Q^{(A)}` commutes with `𝒰^{(n)}`, `Θ^{(n)}`.  The
+   ingredients are `ZeroModeCalc_tensorKer_zeroModeOp` (`Q^{(i)}` acting on the right of a tensor
+   kernel; `zeroModeOp_tensorKer` is the left-hand identity) and
+   `ZeroModeCalc_projMat_mul_Theta_comm` (`Proj_{e^⊥}` commutes with `Θ_ξ`; `projMat_mul_Theta`
+   gives `Proj_{e^⊥} Θ_ξ = Θ̊_ξ` only).
 3. `(iisuwjyys)` on the grid: `Ind.zeroModeCalc_duhamel_at` (`Q^{(A)}` outside `𝒰`),
-   `Ind.zeroModeCalc_duhamel_inside_at` (`Q^{(A)}` inside `𝒰`, by target 2).
-4. The combination with `lem: newPQ` (`3_5:1590`): `Gauss.Sizes.zeroModeCalc_LK_expansion` for every
-   `A`, and `Gauss.Sizes.zeroModeCalc_LK_expansion_empty` for `A = ∅`;
-   `sameSignOutside_of_STIdiff_subset` and `sameSignOutside_union_STIdiff` are the bridge to
-   `RBM.SameSignOutside` (the hypothesis of `norm_zeroModeSet_UN_le` also needs `0 < Im m_i`, false
-   for `mSigma E false`; the consumer form for mixed signs is `ekSumDecayNonzero_holds` with
-   `Ind.Ugen_eq_UN_EKsgn`).
+   `Ind.zeroModeCalc_duhamel_inside_at` (`Q^{(A)}` inside `𝒰`, by item 2).
+4. The combination with `lem: newPQ`: `Gauss.Sizes.zeroModeCalc_LK_expansion` for every `A`, and
+   `Gauss.Sizes.zeroModeCalc_LK_expansion_empty` for `A = ∅`; `ZeroModeCalc_mem_STIdiff` and
+   `ZeroModeCalc_STIdiff_subset_iff` express `A ⊇ I_diff(σ)` as the hypothesis of `STEKNonzero`.
 
-Every helper that is not a target is `private` (`zmc…`) or prefixed `ZeroModeCalc_`.
+Every helper that is not one of these statements is `private` (`zmc…`) or prefixed
+`ZeroModeCalc_`.
 -/
 
 set_option linter.style.longLine false
@@ -117,7 +116,7 @@ theorem zeroModeSet_sum {ι : Type*} (s : Finset ι) (A : Finset (Fin n))
     zeroModeSet d L (∅ : Finset (Fin n)) T = T := by
   simp [zeroModeSet]
 
-/-- **`(normQA2)`, one index** (`3_5:1454`): `‖Q^{(i)} 𝒜‖_∞ ≤ 2 ‖𝒜‖_∞`. -/
+/-- **`(normQA2)`, one index** (Definition 4.12): `‖Q^{(i)} 𝒜‖_∞ ≤ 2 ‖𝒜‖_∞`. -/
 theorem norm_zeroModeOp_le (i : Fin n) (T : (Fin n → Zd d L) → ℂ) :
     ‖zeroModeOp d L i T‖ ≤ 2 * ‖T‖ := by
   have hL0 : (0 : ℝ) < (L : ℝ) ^ d := by
@@ -155,7 +154,7 @@ private theorem zmc_norm_foldr_le (l : List (Fin n)) (T : (Fin n → Zd d L) →
       _ ≤ 2 * (2 ^ l.length * ‖T‖) := mul_le_mul_of_nonneg_left ih (by norm_num)
       _ = 2 ^ l.length * 2 * ‖T‖ := by ring
 
-/-- **`(normQA2)`** (`3_5:1454`): `‖Q^{(A)} ∘ 𝒜‖_∞ ≤ 2^{|A|} ‖𝒜‖_∞` for `Q^{(A)} = ∏_{i ∈ A} Q^{(i)}`
+/-- **`(normQA2)`** (Definition 4.12): `‖Q^{(A)} ∘ 𝒜‖_∞ ≤ 2^{|A|} ‖𝒜‖_∞` for `Q^{(A)} = ∏_{i ∈ A} Q^{(i)}`
 (each factor has `(∞→∞)`-norm at most `2`; sup norm on `(Fin n → Z_L^d) → ℂ`). -/
 theorem norm_zeroModeSet_le (A : Finset (Fin n)) (T : (Fin n → Zd d L) → ℂ) :
     ‖zeroModeSet d L A T‖ ≤ 2 ^ A.card * ‖T‖ := by
@@ -211,7 +210,7 @@ private theorem zmc_sum_col_eq_row {M : Matrix (Zd d L) (Zd d L) ℂ}
   exact mul_left_cancel₀ hL0 (sub_right_injective h1)
 
 /-- **`Q^{(i)}` on the right of a tensor kernel**: `K ∘ Q^{(i)} = K[i ↦ K_i (I - L^{-d} J)]`.
-(The merged `zeroModeOp_tensorKer` is the left-hand identity.) -/
+(The `zeroModeOp_tensorKer` is the left-hand identity.) -/
 theorem ZeroModeCalc_tensorKer_zeroModeOp (i : Fin n) (K : Fin n → Matrix (Zd d L) (Zd d L) ℂ)
     (T : (Fin n → Zd d L) → ℂ) :
     tensorKer d L K (zeroModeOp d L i T)
@@ -297,8 +296,8 @@ theorem ZeroModeCalc_projMat_comm_of_sums (M : Matrix (Zd d L) (Zd d L) ℂ) (c 
   ext a b
   rw [zmc_projMat_mul_apply, zmc_mul_projMat_apply, hcol, hrow]
 
-/-- **`Proj_{e^⊥}` commutes with `Θ_ξ`** (`3_5:1540-1545`): `Θ_ξ` is symmetric with all row (and
-column) sums `(1 - ξ)⁻¹`.  The merged `projMat_mul_Theta` gives the left-hand side as `Θ̊_ξ`. -/
+/-- **`Proj_{e^⊥}` commutes with `Θ_ξ`** (commutation remark of Subsection 4.2): `Θ_ξ` is symmetric with all row (and
+column) sums `(1 - ξ)⁻¹`.  The `projMat_mul_Theta` gives the left-hand side as `Θ̊_ξ`. -/
 theorem ZeroModeCalc_projMat_mul_Theta_comm (hL : 3 ≤ L) {ξ : ℂ} (hξ : ‖ξ‖ < 1) :
     projMat d L * Theta d L g ξ = Theta d L g ξ * projMat d L := by
   have hT := Theta_transpose_of_three_le (d := d) (L := L) (g := g) hL hξ
@@ -324,7 +323,7 @@ theorem ZeroModeCalc_projMat_mul_thetaKer_comm (hL : 3 ≤ L) {μ : ℂ} {t : �
   have hΘ : Commute (projMat d L) (Theta d L g ((t : ℂ) * μ)) := ZeroModeCalc_projMat_mul_Theta_comm hL hξ
   exact ((Commute.smul_right hS _).mul_right hΘ)
 
-/-- **`Q^{(A)}` commutes with `𝒰^{(n)}_{s,t,σ}`** (`3_5:1540-1545`, `(def_Ustz)`): for `3 ≤ L`,
+/-- **`Q^{(A)}` commutes with `𝒰^{(n)}_{s,t,σ}`** (commutation remark of Subsection 4.2, `(def_Ustz)`): for `3 ≤ L`,
 `‖t m_i m_{i+1}‖ < 1`, every `A ⊂ ⟦n⟧`, `s` arbitrary. -/
 theorem zeroModeSet_UN (hL : 3 ≤ L) {m : Fin n → ℂ} {s t : ℝ}
     (hξ : ∀ i, ‖(t : ℂ) * cycProd m i‖ < 1) (A : Finset (Fin n)) (T : (Fin n → Zd d L) → ℂ) :
@@ -372,7 +371,7 @@ private theorem zmc_ThetaN_eq (m : Fin n → ℂ) (t : ℝ) (T : (Fin n → Zd d
   funext a
   simp only [ThetaN, zmcSlot, Finset.sum_apply]
 
-/-- `Q^{(j)}` commutes with `Θ^{(n)}_{t,σ}` (`3_5:1540-1545`). -/
+/-- `Q^{(j)}` commutes with `Θ^{(n)}_{t,σ}` (commutation remark of Subsection 4.2). -/
 theorem zeroModeOp_ThetaN (hL : 3 ≤ L) {m : Fin n → ℂ} {t : ℝ}
     (hξ : ∀ i, ‖(t : ℂ) * cycProd m i‖ < 1) (j : Fin n) (T : (Fin n → Zd d L) → ℂ) :
     zeroModeOp d L j (ThetaN d L g m t T) = ThetaN d L g m t (zeroModeOp d L j T) := by
@@ -380,7 +379,7 @@ theorem zeroModeOp_ThetaN (hL : 3 ≤ L) {m : Fin n → ℂ} {t : ℝ}
   exact Finset.sum_congr rfl fun i _ =>
     zmcSlot_comm i j _ (fun _ => ZeroModeCalc_projMat_mul_thetaKer_comm hL (hξ i)) T
 
-/-- **`Q^{(A)}` commutes with `Θ^{(n)}_{t,σ}`** (`3_5:1540-1545`, `(def:op_thn)`): for `3 ≤ L`,
+/-- **`Q^{(A)}` commutes with `Θ^{(n)}_{t,σ}`** (commutation remark of Subsection 4.2, `(def:op_thn)`): for `3 ≤ L`,
 `‖t m_i m_{i+1}‖ < 1`, every `A ⊂ ⟦n⟧`. -/
 theorem zeroModeSet_ThetaN (hL : 3 ≤ L) {m : Fin n → ℂ} {t : ℝ}
     (hξ : ∀ i, ‖(t : ℂ) * cycProd m i‖ < 1) (A : Finset (Fin n)) (T : (Fin n → Zd d L) → ℂ) :
@@ -446,10 +445,10 @@ private theorem zmc_gridTime_lt_one (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : �
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **`(iisuwjyys)` on the grid, `Q^{(A)}` outside `𝒰`** (`3_5:1546-1568`; the grid form of
+/-- **`(iisuwjyys)` on the grid, `Q^{(A)}` outside `𝒰`** ((4.47) `iisuwjyys`; the grid form of
 `(eq_L-Keee_nonzeromode)` + Duhamel): the stopped grid Duhamel identity `stoppedDuhamelN_at`
 (`A_{j∧τ} = 𝒰_{u_0,u_{j∧τ}} A_0 + Σ_{i<j∧τ} 𝒰_{u_{i+1},u_{j∧τ}} (P_i + ξ_{i+1})`, hypotheses at
-the single size index `n`, DECISIONS §29 (4)) with `Q^{(A)}` applied pathwise and split by the
+the single size index `n`) with `Q^{(A)}` applied pathwise and split by the
 additivity of `𝒰` and of `Q^{(A)}`.  Needs neither the case condition `1 - s ≤ ilambda²/L²` nor any
 commutation; the kernel index is `u_{i+1}` (`GridDuhamelN_Ugen_duhamel_telescope`). -/
 theorem zeroModeCalc_duhamel_at (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (hE : |E n| < 2)
@@ -473,14 +472,14 @@ theorem zeroModeCalc_duhamel_at (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ �
   simp only [GridDuhamelN_Ugen_add, zeroModeSet_add, Finset.sum_add_distrib]
   ring
 
-/-- **`(iisuwjyys)` on the grid, `Q^{(A)}` inside `𝒰`** (`3_5:1540-1568`): moving `Q^{(A)}` through
+/-- **`(iisuwjyys)` on the grid, `Q^{(A)}` inside `𝒰`** ((4.46)-(4.47)): moving `Q^{(A)}` through
 `𝒰_{·,u_{j∧τ}}` by `zeroModeSet_Ugen` (all slot parameters `‖u_{j∧τ} m_i m_{i+1}‖ < 1` since
 `0 ≤ u_{j∧τ} < 1`),
 `Q^{(A)} A_{j∧τ} = 𝒰_{u_0,u_{j∧τ}} Q^{(A)} A_0 + Σ_i 𝒰_{u_{i+1},u_{j∧τ}} Q^{(A)} P_i
   + Σ_i 𝒰_{u_{i+1},u_{j∧τ}} Q^{(A)} ξ_{i+1}`.
 `Q^{(A)}` is deterministic and linear, so `Q^{(A)} ξ_{i+1}` is the tensor of the `≤ 2^{|A|}`
 coordinate martingale differences `ξ_{i+1}(a')` (that it is a martingale difference of
-`Q^{(A)} A_{i+1}` is the integrability bookkeeping of S3-21). -/
+`Q^{(A)} A_{i+1}` is integrability bookkeeping). -/
 theorem zeroModeCalc_duhamel_inside_at (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
     (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) {k : ℕ}
     (σ : Fin k → Bool) (A : Finset (Fin k)) (τ : PathΩ sz → ℕ) (j : ℕ) (ω : PathΩ sz)
@@ -507,21 +506,20 @@ end GridDuhamel
 
 end Ind
 
-/-! ## 6. The combination with `lem: newPQ` (`3_5:1590`) -/
+/-! ## 6. The combination with `lem: newPQ` (end of the proof of Step 3, case (ii)) -/
 
 namespace Gauss.Sizes
 
 open RBM.Gauss RBM.Loop
 
-/-- **`(𝓛 − 𝒦)` through `lem: newPQ`** (`3_5:1590`: "combining `(yurenAL)`, `(yurenAK)`"):
+/-- **`(𝓛 − 𝒦)` through `lem: newPQ`** (end of the proof of Step 3, case (ii): "combining `(yurenAL)`, `(yurenAK)`"):
 subtracting the two identities of `stNewPQ_holds` (one data `(ℓ, k, ξ, σ', ι, A')` serves both
 `𝓛` and `𝒦`; no different form of the `𝒦` half is needed),
 `(Q^{(A)}(𝓛 − 𝒦)^{(m)})_{σ,a} = (Q^{(A ∪ I_diff(σ))}(𝓛 − 𝒦)^{(m)})_{σ,a}
   + Σ_α ξ_α (2 i N η_τ)^{-(m - k_α)} (Q^{(A_α)}(𝓛 − 𝒦)^{(k_α)})_{σ_α, a_α}`
-with `A_α ⊇ I_diff(σ_α)`, `1 ≤ k_α ≤ m - 1`, for `(𝓛 − 𝒦)` the merged `STLKM` at `H = seqHflow`
+with `A_α ⊇ I_diff(σ_α)`, `1 ≤ k_α ≤ m - 1`, for `(𝓛 − 𝒦)` the `STLKM` at `H = seqHflow`
 (`𝓛 − 𝒦 = Lloop − STKloop` by definition).  Every index set on the right contains `I_diff` of its
-charge vector, i.e. `SameSignOutside` holds (`sameSignOutside_of_STIdiff_subset`,
-`sameSignOutside_union_STIdiff`). -/
+charge vector, i.e. `SameSignOutside` holds. -/
 theorem zeroModeCalc_LK_expansion (d m : ℕ) (σ : Fin m → Bool) (A : Finset (Fin m)) :
     ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
       (ι : ∀ α, Fin (k α) → Fin m) (A' : ∀ α, Finset (Fin (k α))),
@@ -552,7 +550,7 @@ theorem zeroModeCalc_LK_expansion (d m : ℕ) (σ : Fin m → Bool) (A : Finset 
   simp only [mul_sub, Finset.sum_sub_distrib]
   ring
 
-/-- **`(𝓛 − 𝒦)` through `lem: newPQ`, `A = ∅`** (`3_5:1590`): `(𝓛 − 𝒦)^{(m)}_{σ,a}` is
+/-- **`(𝓛 − 𝒦)` through `lem: newPQ`, `A = ∅`** (end of the proof of Step 3, case (ii)): `(𝓛 − 𝒦)^{(m)}_{σ,a}` is
 `(Q^{(I_diff(σ))}(𝓛 − 𝒦)^{(m)})_{σ,a}` plus lower loops with `A_α ⊇ I_diff(σ_α)`. -/
 theorem zeroModeCalc_LK_expansion_empty (d m : ℕ) (σ : Fin m → Bool) :
     ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
@@ -573,15 +571,6 @@ theorem zeroModeCalc_LK_expansion_empty (d m : ℕ) (σ : Fin m → Bool) :
 
 end Gauss.Sizes
 
-/-! ## 7. Compiled nonempty instances (`d = 3`)
 
-Targets 1 and 2 at `d = 3`, `L = 4` (`Zd 3 4`, 64 points), `n = 3`, `σ = (+,-,+)`,
-`A = I_diff(σ) = {0, 1}` (nonempty, proper), the nonzero tensor `δ₀ = 1_{a = 0}`, `g = 1/2`,
-`E = 0` (`m(+) = i`, `m(-) = -i`), `(v, w) = (9/10, 99/100)`; every deterministic hypothesis
-(`3 ≤ L`, `|E| ≤ 2`, `0 ≤ w < 1`, `‖w μ_i‖ < 1`) is discharged.  Targets 3 and 4 at the merged
-`sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `ilambda_0 = 1/64`), `n = 0`, `E ≡ 0`, `s ≡ 1/10`,
-`t ≡ 1/2`, `K ≡ 4`, `τ ≡ 3`, `j = 4`, `σ = (+,-,+)`, `A = I_diff(σ)`, for every sample `ω`. -/
-
-/-! ### Targets 3 and 4 at `sz0` -/
 
 end RBM

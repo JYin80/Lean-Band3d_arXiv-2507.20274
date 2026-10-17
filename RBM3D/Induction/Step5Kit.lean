@@ -9,18 +9,12 @@ import RBM3D.Induction.NewKLK
 import RBM3D.Induction.GridDuhamelN
 
 /-!
-# S5-02 (ST-4): the Step 5 kit
+# The Step 5 kit
 
-`Prec` comparisons, the assembly, case (i) from its pins, case (iv) proved.
-
-Moved from the T2134 design probe (`7b2b789`, `RBM3D/Probe/T2134Pins.lean`, never merged),
-lines `477-1039` (section 7 up to the heading `### Case (iii)`, which is S5-03) without
-`st5_reg5I_mid` (public in `Induction/Step5Pins.lean`), and the instances of probe `1819-1855`
-and `inst_skeletonI` (`2255-2261`); the instance namespace `RBM.Gauss.T2134Inst` is
-`RBM.Gauss.Step5Inst`.
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (Step 5 is `3_5:1935-2383`).
-Registry (DECISIONS §16, §20, §40): `STStep5IV` is proved here (`stStep5IV_holds`);
-`STStep5I` stays owed.
+Paper: arXiv:2507.20274, Section 5 (Step 5).  `Prec` comparisons, the assembly of the uniform
+conclusions of Step 5 into `STDecay` and `STDecayStrong` at `t`, case (i) from its ingredient
+statements, and case (iv) proved (`stStep5IV_holds`).  `st5_reg5I_mid` is in
+`Induction/Step5Pins.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -30,9 +24,9 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 7. The skeletons: Step 5 from its ingredients (compiled)
+/-! ## 7. The skeletons: Step 5 from its ingredients
 
-The `Prec` calculus used below is the merged `StochDomAt` (`Defs/StochDomAt.lean` §9); every deterministic comparison is a
+The `Prec` calculus used below is `StochDomAt` (`Defs/StochDomAt.lean`); every deterministic comparison is a
 theorem of this section (`st5_*`). -/
 
 namespace RBM.Gauss.Sizes
@@ -75,7 +69,7 @@ theorem st5_prec_cover (hsz : sz.SizeTendsto) {U V₁ V₂ : ℕ → Type*} {ξ 
 /-! ### The assembly `STDecay ∧ STDecayStrong` at `t` -/
 
 /-- **Assembly**: the uniform conclusions of Step 5 give `(Eq:Gdecay)` and `(Eq:Gdecay+s<g)` at the time sequence `t`
-(`1_2:1385`: "Hence the pointwise decay estimate `(Eq:Gdecay)` holds at time `t`"; the endpoint `u = t` of the index). -/
+(proof of the main results, after (2.93) `Eq:Gdecay+s<g_flow`: "Hence the pointwise decay estimate `(Eq:Gdecay)` holds at time `t`"; the endpoint `u = t` of the index). -/
 theorem ST_step5_assembly {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STStep5Concl sz E s t) :
     STDecay sz E t ∧ STDecayStrong sz E t := by
   obtain ⟨hW, hS⟩ := h
@@ -285,10 +279,10 @@ theorem st5_prec_of_isEmpty {U : ℕ → Type*} {ξ ζ : ∀ n, U n → sz.SeqΩ
   intro u _
   exact (h n).false u
 
-/-- **Case (i) from its ingredients** (`3_5:1957-2250`): the light-weight and quadratic-variation bounds `(S5WG+M000)`,
+/-- **Case (i) from its ingredients** (Subsection 5.1): the light-weight and quadratic-variation bounds `(S5WG+M000)`,
 `(S5WG+M)` (`STEtermsMid`), the integrated hierarchy `(iois-mtx2)` (`STDuhamelI`) and the initial term `(iksjuwjx0)`
 (`STIniTermI`, through `lem;CLT`) give `(Eq:Gdecay_flow)`; the strong estimate is void (`1 - t < 1 - s ≤ ilambda²`).
-The constant `𝔠_d` is the minimum of the three pins' (`STConStInd` is monotone, `st5_conStInd_mono`). -/
+The constant `𝔠_d` is the minimum of the three ingredient statements' (`STConStInd` is monotone, `st5_conStInd_mono`). -/
 theorem ST_step5_caseI_of_pins (hE : STEtermsMid d) (hD : STDuhamelI d) (hI : STIniTermI d) : STStep5I d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   obtain ⟨c₁, hc₁, hc₁', H₁⟩ := hE hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -440,7 +434,7 @@ theorem st5_exp_one_lt_three : Real.exp 1 < 3 := by
 /-- **Case (iv), the closure of the exponents**: for `1 - u ≤ ilambda²/L^d` and `W^{-d}B_{u,0} ≤ 1`, the Step-4 bound
 `(W^{-d}B_{u,0})²` is at most `6 Δ_u^{1/5} W^{-d}B_{u,r} e^{-(r/ℓ_u)^{1/2}}`: `ℓ_u = L` (`ellT_eq_of_le`), `e^{-(r/L)^{1/2}} ≥ e⁻¹`
 (`r ≤ L`), `B_{u,r} ≥ (L^d(1-u))⁻¹ ≥ ilambda⁻² ≥ (ilambda² + 1 - u)⁻¹`, so `B_{u,0} ≤ 2 (L^d(1-u))⁻¹ ≤ 2 B_{u,r}`
-(`3_5:1940`: "`B_{t,0}` is dominated by the `(L^d|1-t|)⁻¹` term"). -/
+(Section 5, introduction: "`B_{t,0}` is dominated by the `(L^d|1-t|)⁻¹` term"). -/
 theorem st5_compare_IV (n : ℕ) (hlam : 0 < sz.lam n) (hd : 2 ≤ d) {u D : ℝ} (hu : u < 1)
     (hΔ : sz.Bctl n u ≤ 1) (hx : 1 - u ≤ sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d) (a : Fin 2 → Zd d (sz.L n)) :
     (sz.Bctl n u) ^ 2 ≤ 6 * (((1 - 0 : ℝ) / 1) ^ (0 : ℝ) * (sz.Bctl n u) ^ (1 / 5 : ℝ) *
@@ -542,10 +536,10 @@ theorem st5_compare_IV (n : ℕ) (hlam : 0 < sz.lam n) (hd : 2 ≤ d) {u D : ℝ
   nlinarith [key, hfin, hD0, mul_nonneg h15 hSE]
 
 
-/-- **Step 5, case (iv), proved** (`3_5:1940`: "the desired bound already follows from the conclusion `(Eq:L-KGt-flow)` in Step 4"):
-the pin `STStep5IV` holds for every `d ≥ 3`, from `STLKU` at `k = 2`, `(W^{-d}B_{u,0})² ≤ 6 (W^{-d}B_{u,0})^{1/5} W^{-d}B_{u,r}
+/-- **Step 5, case (iv), proved** (Section 5, introduction: "the desired bound already follows from the conclusion `(Eq:L-KGt-flow)` in Step 4"):
+`STStep5IV` holds for every `d ≥ 3`, from `STLKU` at `k = 2`, `(W^{-d}B_{u,0})² ≤ 6 (W^{-d}B_{u,0})^{1/5} W^{-d}B_{u,r}
 e^{-(r/ℓ_u)^{1/2}}` (`st5_compare_IV`) and `W^{-d}B_{u,0} ≤ 1` on the flow window (`st5_Bctl_le_one`); the strong estimate is void
-(`1 - t < 1 - s ≤ ilambda²/L^d ≤ ilambda²`).  No ingredient pin is used. -/
+(`1 - t < 1 - s ≤ ilambda²/L^d ≤ ilambda²`).  No ingredient statement is used. -/
 theorem stStep5IV_holds (d : ℕ) : STStep5IV d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
@@ -588,6 +582,4 @@ theorem stStep5IV_holds (d : ℕ) : STStep5IV d := by
 
 end RBM.Gauss.Sizes
 
-/-! ### The four targets and the general statement -/
 
-/-! ### The skeletons at the data (ingredients as hypotheses) -/

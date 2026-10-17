@@ -6,18 +6,15 @@ Authors: Jun Yin
 import RBM3D.Induction.Step5Kit
 
 /-!
-# S5-03 (ST-4): Step 5, cases (iii) and (ii) from their ingredients
+# Step 5, cases (iii) and (ii), from their ingredients
 
-Case (iii) of Step 5 from `lem:pf_step5` (`ST_step5_caseIII_of_pf`), case (ii) from its ingredient
-pins (`ST_step5_caseII_of_pins`), with their deterministic comparisons, and the skeleton instances
-`inst_skeletonII`, `inst_skeletonIII`.
+Paper: arXiv:2507.20274, Section 5 (Step 5): the case `1 - t ≥ ilambda²` (Subsection 5.3,
+Lemma 5.4 `lem:pf_step5`) and the case `ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²` (Subsection 5.2).
 
-Moved from the T2134 design probe (`7b2b789`, `RBM3D/Probe/T2134Pins.lean`, never merged), lines
-`1040-1702` (`### Case (iii)` and `### Case (ii)`) and `2263-2272`; the instance namespace
-`RBM.Gauss.T2134Inst` is `RBM.Gauss.Step5Inst`.
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (Step 5 is `3_5:1935-2383`).
-Registry (DECISIONS §16, §20, §40): `STStep5II`, `STStep5III` stay owed (proved here only from
-`STEtermsMid`, `STDuhamelII`, `STIniTermII`, `STWardII`, resp. `STPfStep5`).
+Case (iii) of Step 5 from `lem:pf_step5` (`ST_step5_caseIII_of_pf`: `STStep5III` from
+`STPfStep5`), case (ii) from its ingredient statements (`ST_step5_caseII_of_pins`: `STStep5II`
+from `STEtermsMid`, `STDuhamelII`, `STIniTermII`, `STWardII`), with their deterministic
+comparisons.
 -/
 
 set_option linter.style.longLine false
@@ -80,7 +77,7 @@ theorem st5_one_add_log_pow_le {W : ℕ → ℕ} (hW : Tendsto W atTop atTop) (m
     _ ≤ 2 ^ m * (2 * ((W n : ℕ) : ℝ) ^ τ) := by gcongr; linarith
     _ = 2 ^ (m + 1) * ((W n : ℕ) : ℝ) ^ τ := by ring
 
-/-- `ℓ_u = 1` for `ilambda² ≤ 1 - u` (`3_5:2287`: "the length scale `ℓ_u` remains identically equal to `1`"). -/
+/-- `ℓ_u = 1` for `ilambda² ≤ 1 - u` (Subsection 5.3: "the length scale `ℓ_u` remains identically equal to `1`"). -/
 theorem st5_ellT_one {L : ℕ} {g u : ℝ} (hL : 1 ≤ (L : ℝ)) (hx : g ^ 2 ≤ 1 - u) : ellT L g u = 1 := by
   unfold ellT
   have h1 : g / Real.sqrt |1 - u| ≤ 1 := by
@@ -96,7 +93,7 @@ theorem st5_ellT_one {L : ℕ} {g u : ℝ} (hL : 1 ≤ (L : ℝ)) (hx : g ^ 2 �
   exact min_eq_left hL
 
 /-- `(W^d (1-u))⁻¹ ≤ 2 W^{-d} B_{u,0}` and `STWB(u, r) ≥ (2 W^d(1-u))⁻¹ (r+1)^{-(d-2)}` for `ilambda² ≤ 1 - u`: in the regime
-`1 - u ≥ ilambda²` the control `W^{-d}B_{u,0}` is of order `(W^d(1-u))⁻¹` (`3_5:2288`: "of order `(W^d|1-u|)⁻¹`"). -/
+`1 - u ≥ ilambda²` the control `W^{-d}B_{u,0}` is of order `(W^d(1-u))⁻¹` (Subsection 5.3: "of order `(W^d|1-u|)⁻¹`"). -/
 theorem st5_Bctl_ge_III (n : ℕ) {u : ℝ} (hu : u < 1) (hx : sz.lam n ^ 2 ≤ 1 - u) :
     (2 * (((sz.W n : ℕ) : ℝ) ^ d * (1 - u)))⁻¹ ≤ sz.Bctl n u := by
   have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) ^ d := by
@@ -142,7 +139,7 @@ theorem st5_STWB_ge_III (n : ℕ) {u : ℝ} (hu : u < 1) (hx : sz.lam n ^ 2 ≤ 
         linarith
 
 /-- **Case (iii), the strong estimate from `lem:pf_step5`**: `T_{u,D}(r) ≤ 4 ((W^{-d}B_{u,0})² e^{-√r} + W^{-D})` for
-`ilambda² ≤ 1 - u` (`(W^d(1-u))^{-2} ≤ 4 (W^{-d}B_{u,0})²`: constants in `[1/4, (1+L^{-d})²]`, preflight table). -/
+`ilambda² ≤ 1 - u` (`(W^d(1-u))^{-2} ≤ 4 (W^{-d}B_{u,0})²`: constants in `[1/4, (1+L^{-d})²]`). -/
 theorem st5_compare_IIIa (n : ℕ) {u D : ℝ} (hu : u < 1) (hx : sz.lam n ^ 2 ≤ 1 - u) (a : Fin 2 → Zd d (sz.L n)) :
     STtailTD sz n u D a ≤
       4 * ((sz.Bctl n u) ^ 2 * Real.exp (-((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ) ^ (1 / 2 : ℝ)) +
@@ -167,7 +164,7 @@ theorem st5_compare_IIIa (n : ℕ) {u D : ℝ} (hu : u < 1) (hx : sz.lam n ^ 2 �
   nlinarith [mul_le_mul_of_nonneg_right hsq hE.le]
 
 
-/-- **Case (iii), `(Eq:Gdecay+s<g_flow)` is stronger than `(Eq:Gdecay_flow)`** (`3_5:2383`), made explicit: for `ilambda² ≤ 1 - u`
+/-- **Case (iii), `(Eq:Gdecay+s<g_flow)` is stronger than `(Eq:Gdecay_flow)`** (Lemma 5.4), made explicit: for `ilambda² ≤ 1 - u`
 (so `ℓ_u = 1`) and `y = (W^d(1-u))⁻¹ ≤ 1`, `T_{u,D}(r) ≤ 4 (Δ_u^{1/5} W^{-d}B_{u,r} e^{-(r/ℓ_u)^{1/2}} + W^{-D})`
 provided `y^{4/5} ((D log W)² + 1)^{d-2} ≤ 1`.  Beyond `r ≥ (D log W)²` the factor `e^{-√r} ≤ W^{-D}` absorbs everything; below it
 `B_{u,r}` loses `(r+1)^{-(d-2)}`, a polylogarithm, which `y^{4/5} ≤ (ilambda² W^d)^{-4/5} ≤ W^{-8𝔡/5}` beats: the
@@ -305,7 +302,7 @@ theorem st5_polylog_le_W {W : ℕ → ℕ} (hW : Tendsto W atTop atTop) (d : ℕ
     _ = ((W n : ℕ) : ℝ) ^ (8 * 𝔡 / 5) := by
         rw [← Real.rpow_add (by linarith)]; ring_nf
 
-/-- **Case (iii) from `lem:pf_step5`**: the pin `STPfStep5` (`T ≥ t` w.h.p.) gives `(Eq:Gdecay+s<g_flow)` (`T_{u,D} ≤ 4(Δ_u² e^{-√r}
+/-- **Case (iii) from `lem:pf_step5`**: the statement `STPfStep5` (`T ≥ t` w.h.p.) gives `(Eq:Gdecay+s<g_flow)` (`T_{u,D} ≤ 4(Δ_u² e^{-√r}
 + W^{-D})`, `st5_compare_IIIa`) and `(Eq:Gdecay_flow)` (`T_{u,D} ≤ 4 (Δ_u^{1/5} W^{-d}B_{u,r} e^{-(r/ℓ_u)^{1/2}} + W^{-D})` up to the
 `(log W)^{2(d-2)}` that `≺` absorbs, `st5_compare_IIIb`, `(eq:WO)`). -/
 theorem ST_step5_caseIII_of_pf (hPf : STPfStep5 d) : STStep5III d := by
@@ -434,7 +431,7 @@ theorem st5_A15_le (n : ℕ) (hlam : 0 < sz.lam n) (hA1 : 1 ≤ STAI sz n) {u : 
           _ = 2 := Real.rpow_one 2
 
 /-- **Case (ii), the Ward term `(zYU1)`**: `A⁻¹ (N η_u)⁻¹ ≤ (6/c) Δ_u^{1/5} W^{-d}B_{u,r} e^{-(r/ℓ_u)^{1/2}}` for `1 - u ≤ ilambda²/L²`
-(`ℓ_u = L`), `Im m ≥ c`: the zero mode `(L^d(1-u))⁻¹` of `B_{u,r}` carries it (`3_5:2258`, preflight table row 20). -/
+(`ℓ_u = L`), `Im m ≥ c`: the zero mode `(L^d(1-u))⁻¹` of `B_{u,r}` carries it ((5.37) `zYU1`). -/
 theorem st5_compare_IIward (n : ℕ) (hlam : 0 < sz.lam n) (hA1 : 1 ≤ STAI sz n) {u E : ℝ} (hu : u < 1)
     (hx : 1 - u ≤ sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2) {c : ℝ} (hc : 0 < c) (hIm : c ≤ (mE E).im)
     (a : Fin 2 → Zd d (sz.L n)) :
@@ -535,7 +532,7 @@ theorem st5_reg5II_mid {sz : Sizes d} {s t : ℕ → ℝ} (h : STReg5II sz s t) 
   have hL : (1 : ℝ) ≤ ((sz.L n : ℕ) : ℝ) := by exact_mod_cast (by have := sz.three_le_L n; omega : 1 ≤ sz.L n)
   exact div_le_self (sq_nonneg _) (one_le_pow₀ hL)
 
-/-- **Case (ii) from its ingredients** (`3_5:2251-2283`): the three error terms (`STEtermsMid`), the integrated hierarchy with
+/-- **Case (ii) from its ingredients** (Subsection 5.2): the three error terms (`STEtermsMid`), the integrated hierarchy with
 `Q^{(1)}` for `σ₁ ≠ σ₂` and without `Q` for `σ₁ = σ₂` (`STDuhamelII`), the initial terms (`STIniTermII`) and the Ward term
 `(zYU1)` (`STWardII`) give `(Eq:Gdecay_flow)`: for `σ₁ ≠ σ₂`, `|𝓛-𝒦| ≤ |𝓛-𝒦 - Q^{(1)}(𝓛-𝒦)| + |Q^{(1)}(𝓛-𝒦)|`, the first
 bounded by the zero mode of `B_{u,r}` (`st5_compare_IIward`), the second as in case (i) (`st5_compare_I`); the strong estimate is void. -/
@@ -697,4 +694,3 @@ theorem ST_step5_caseII_of_pins (hE : STEtermsMid d) (hD : STDuhamelII d) (hI : 
 
 end RBM.Gauss.Sizes
 
-/-! ### The skeletons at the data (ingredients as hypotheses) -/

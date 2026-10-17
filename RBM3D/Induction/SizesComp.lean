@@ -12,15 +12,11 @@ import Mathlib.Data.Nat.Nth
 import Mathlib.Order.Filter.AtTopBot.Tendsto
 
 /-!
-# The generic subsequence transfer of route (A): `Sizes.comp`, `Sizes.reindex`, the exact image law
+# The generic subsequence transfer: `Sizes.comp`, `Sizes.reindex`, the exact image law
 
-Ticket T2206 (ST-A; DECISIONS §68 (7), (8), (10): route (A), one generic ticket; supervisor
-`docs/supervisor/2026-10-05-1806.md`, "Answers to REQ-2026-10-05-1746", Q1 "(A), one generic
-ticket", Q2 (the regime gluing of the main induction is a later ticket), Q3 (the same gluing is
-needed over the carrier and the block Anderson law)).  Paper: arXiv:2507.20274; no paper statement
-and no RBM1D/RBM2D source: the stage pattern of `[s_n, t_n]` in `lem:main_ind` (`1_2:1256-1330`)
-depends on `n`, so the formal proof applies the regime steps along finitely many subsequences and
-glues; the paper uses this tacitly (paper-delta candidate `T2206a`).
+Paper: arXiv:2507.20274; no statement of the paper is formalized here.  The pattern of regimes of
+`[s_n, t_n]` in Theorem 2.24 (`lem:main_ind`) depends on `n`, so the formal proof applies the regime
+steps along finitely many subsequences and glues them; the paper uses this tacitly.
 
 * Section 1: `Sizes.comp φ` (the sizes along `φ`), the field lemmas, and the transfer of the
   eventual predicates (`SizeTendsto`, `Bandwidth`, `WO`, `Admissible`, `STFlow`, `STConStInd`)
@@ -28,11 +24,10 @@ glues; the paper uses this tacitly (paper-delta candidate `T2206a`).
 * Section 2: the generic exact image law of an injective coordinate reindexing of an
   `infinitePi` (every set, every integrand: product splitting `Π_ι = Π_{range f} × Π_{rest}`,
   independence of the two coordinate blocks, `Measure.prod_prod` for arbitrary sets), and its
-  instances `reindex` for `seqP` and for `(sz.withLam g).seqP` (paper-delta candidate `T2206b`).
+  instances `reindex` for `seqP` and for `(sz.withLam g).seqP`.
 * Section 3: the commutation of the per-`n` objects with `reindex`.
 * Section 4: `≺` at an arbitrary law (`map_iff`, `of_map`, `subseq`, `iff_cover`, `nth_cover`).
 * Section 5: `≺` of the chain under one `comp` and the gluing composites.
-* Section 6: the compiled nonempty instances at `sz0`, `φ = (2 * ·)`.
 -/
 
 set_option linter.style.longLine false
@@ -51,7 +46,7 @@ namespace RBM.Gauss.Sizes
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **The sizes along `φ`**: the five fields of `Sizes` composed with `φ` (the sequence of sizes
-`n ↦ sz n` restricted to the subsequence `j ↦ φ j`; T2206, supervisor 1806 Q1 route (A)). -/
+`n ↦ sz n` restricted to the subsequence `j ↦ φ j`). -/
 def comp (φ : ℕ → ℕ) : Sizes d where
   L := fun j => sz.L (φ j)
   W := fun j => sz.W (φ j)
@@ -258,7 +253,7 @@ theorem Lloop_reindex (φ : ℕ → ℕ) (j : ℕ) (E t : ℝ) {m : ℕ} (σ : F
     (a : Fin m → RBM.Zd d (sz.L (φ j))) (ω : SeqΩ sz) :
     Lloop (sz.comp φ) j E t σ a (reindex sz φ ω) = Lloop sz (φ j) E t σ a ω := rfl
 
-/-- The deterministic left side of `STExp2` (`Induction/Defs.lean:159`) integrates over the whole
+/-- The deterministic left side of `STExp2` (`Induction/Defs.lean`) integrates over the whole
 law `seqP`, not over the coordinate `n`: it transfers by the exact image law of `integral_reindex`. -/
 theorem integral_Lloop_reindex (φ : ℕ → ℕ) (hφ : Function.Injective φ) (j : ℕ) (E t : ℝ)
     {m : ℕ} (σ : Fin m → Bool) (a : Fin m → RBM.Zd d (sz.L (φ j))) :
@@ -298,7 +293,7 @@ namespace StochDomAt
 
 /-- **Exact image law for `≺`**: if `μ (f ⁻¹' s) = ν s` for every set `s` of `Ω₁`, then `≺` under `ν`
 is `≺` of the pulled-back families under `μ` (the bad set of the pulled-back family is the
-preimage of the bad set, `rfl`).  T2206 target 5. -/
+preimage of the bad set, `rfl`). -/
 theorem map_iff {Ω₀ : Type u} {Ω₁ : Type v} [MeasurableSpace Ω₀] [MeasurableSpace Ω₁]
     (μ : Measure Ω₀) (ν : Measure Ω₁) (f : Ω₀ → Ω₁) (hf : ∀ s : Set Ω₁, μ (f ⁻¹' s) = ν s)
     (size : ℕ → ℕ) {U : ℕ → Type w} (ξ ζ : ∀ l, U l → Ω₁ → ℝ) :
@@ -387,8 +382,7 @@ theorem Prec_comp (φ : ℕ → ℕ) (hφ : StrictMono φ) {U : ℕ → Type u}
   rw [e1, e2]
   exact h1
 
-/-- **Law-generic gluing** (the `PrecL` form of the held T2197, `StochDomAt μ sz.size`, stated without
-that name): a law `μ` on `SeqΩ sz`, laws `ν k` on `SeqΩ (sz.comp (φ k))` with
+/-- **Law-generic gluing** (`StochDomAt μ sz.size` for an arbitrary law `μ`): a law `μ` on `SeqΩ sz`, laws `ν k` on `SeqΩ (sz.comp (φ k))` with
 `μ (reindex sz (φ k) ⁻¹' s) = ν k s` for every set `s`, a finite `StrictMono` cover and commuting
 families: `≺` under `μ` along `sz.size` iff `≺` under every `ν k` along `(sz.comp (φ k)).size`. -/
 theorem stochDomAt_iff_comp_cover (μ : Measure (SeqΩ sz)) {ι : Type w} [Finite ι]
@@ -424,13 +418,4 @@ theorem Prec_iff_comp_cover {ι : Type w} [Finite ι] (φ : ι → ℕ → ℕ) 
 
 end RBM.Gauss.Sizes
 
-/-! ## 6. The compiled nonempty instances: `d = 3`, `sz0`, `φ = (2 * ·)`
 
-`sz0` (`Defs/Sizes.lean:260`) has `L n = 4 (n+1)`, `W n = (2 (n+1))^5`, `lam n = (2 (n+1))^{-6}`; the
-subsequence `φ j = 2 j` is `StrictMono`, injective and tends to infinity.  Every deterministic
-hypothesis is discharged; what stays a hypothesis of an instance is a stochastic premise of
-`STLK`, `STExp2` (a `Prec` statement). -/
-
-/-! ### Extra instances: the deterministic family `ξ = 0 ≺ ζ = 1`, so that every generic target is applied
-at concrete data with nothing left open (the premises of instances 7-9 are stochastic and stay
-hypotheses). -/

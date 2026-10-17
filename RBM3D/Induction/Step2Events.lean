@@ -7,20 +7,14 @@ import RBM3D.Induction.Step2Core
 import RBM3D.Graph.LWPins
 
 /-!
-# ST2-03 (ticket T2080): the grid events, the light-weight premises at a time section, and the ST-2 / LW bridges
+# The grid events, the light-weight premises at a time section, and the light-weight bridges
 
-Moved from the T2039 design probe (`git show 0362cbc:RBM3D/Probe/T2039Pins.lean`): section 9
-(`GridWhp`, probe lines 2128-2242), the three section-10 declarations `STScaleInv`, `ST_STprof_pos`,
-`ST_card_lab_le` (probe lines 2258-2263, 2308-2313, 2314-2330; Amend 1 of T2080), and section 11 up to
-`end More` (probe lines 2526-3571: `STBdata`, `LWsec`, `LWsec2`, `LWsec3`, `Infra`, `Events`,
-`GoodProb`, `Arith`, `More`).  Paper: `paper/tex/3_5_Loop_Hierarchy.tex:493-577`.
-
-Differences from the probe text: the namespace `RBM.Probe.T2039` is `RBM.Gauss.Sizes` everywhere,
-the `RBM.Probe.T2039` entries of the `open` lines are dropped, and `ST2_Bctl_pos` (three
-uses) is the merged `STBctl_pos` (`Induction/ScaleFacts.lean`); the file-level `open` of Step2Core is
-repeated.  Nothing else is changed.
-The final section `Bridges` (new) proves `STLWB_of_LWterm` and `STLWT_of_LWtermExp` (DECISIONS
-section 29), and the section `Instances` holds one compiled nonempty `example` per target.
+Paper: arXiv:2507.20274, the proof of Step 2 (Subsection 3.3, `subsec:step2_pf`).  The file
+contains the good event of the grid walk (`ST_grid_whp_of_sections`, section 9), `STScaleInv`,
+`ST_STprof_pos`, `ST_card_lab_le`, the size data and the premises of the light-weight lemmas at a
+time section (`STBdata`, `ST_LW_sections`, the events (E1)-(E5), the closure inequality of the
+engine, section 11), and the bridges `STLWB_of_LWterm`, `STLWT_of_LWtermExp` from the
+light-weight lemmas to the statements `STLWB`, `STLWT` of Step 2 (section 12).
 -/
 
 set_option linter.style.longLine false
@@ -30,10 +24,10 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 9. The good event of the grid walk from the pins (`3_5:537–577`)
+/-! ## 9. The good event of the grid walk from single-time statements
 
 `ST_grid_whp_of_sections` turns single-time domination statements of the model, available at
-every time section `tt n ∈ [s_n, t_n]` (the shape of the light-weight and martingale pins at a
+every time section `tt n ∈ [s_n, t_n]` (the shape of the light-weight and martingale statements at a
 time `t`), into a `w.h.p.` statement of the grid walk simultaneously for all grid indices
 `j ≤ K_n` and all labels (`ST_whp_grid` of section 5 with the per-time `≺` of `ST_PT_of_sections`). -/
 
@@ -85,8 +79,8 @@ theorem ST_prec_sup {V : ℕ → Type} [∀ n, Fintype (V n)] [∀ n, Nonempty (
   obtain ⟨v, -, hv⟩ := (Finset.lt_sup'_iff Finset.univ_nonempty).1 hu
   exact ⟨v, hv⟩
 
-/-- **From single-time statements at every time section to the grid walk** (`3_5:537–577`, the
-`w.h.p.` events of the Grönwall bootstrap).  If, for every time section `tt n ∈ [s_n, t_n]`, the
+/-- **From single-time statements at every time section to the grid walk** (the
+`w.h.p.` events of the Grönwall bootstrap in the proof of Step 2).  If, for every time section `tt n ∈ [s_n, t_n]`, the
 labelled family `F ≺ Z` holds for the single-time model at `tt` (`Prec`, union over labels inside),
 and `K_n · #labels ≤ N^C`, then for every `τ > 0` w.h.p. the grid walk satisfies `F ≤ N^τ Z` at all
 grid indices `j ≤ K_n` and all labels simultaneously. -/
@@ -193,7 +187,7 @@ end RBM.Gauss.Sizes
 /-! ## 11. The size data and the premises of the light-weight lemmas at a time section
 
 `STBdata` is the deterministic statement on `W^{-d}B_{u,0}` that the assembly needs
-(proved in section 11 as `ST_Bdata_holds`): `W^{-d} B_{u,0} ≤ (ilambda² W^d)⁻¹ + (N (1-u))⁻¹` with `(eq:WO)`,
+(proved as `ST_Bdata_holds` in `Step2Iterate.lean`): `W^{-d} B_{u,0} ≤ (ilambda² W^d)⁻¹ + (N (1-u))⁻¹` with `(eq:WO)`,
 `(Main_DEL_COND)`, `Im z ≥ N^{-1+ε}` and `1 - lemT z ≥ Im z/(1+|z|)` (from `msc z + z = -(msc z)⁻¹`);
 the lower bound is `B_{u,0} ≥ (ilambda² + 1)⁻¹ ≥ (𝔡^{-2}+1)⁻¹` for `u ∈ [0,1]`.  `ST_LW_sections` verifies, at a
 time section, the premises of `STLWT`, `STEMn2Exp` (`(initialGT2)` from the weak law of Step 1
@@ -203,7 +197,7 @@ namespace RBM.Gauss.Sizes
 
 open RBM RBM.Loop RBM.Path
 
-/-- **Size data** (deterministic; a theorem, `ST_Bdata_holds`; `3_5:466` uses it as `c_0 ≳ 1` after `(lokis2)`): for every
+/-- **Size data** (deterministic; `ST_Bdata_holds`; the proof of Step 2 uses it as `c_0 ≳ 1` after (3.38) `lokis2`): for every
 flow `z` and time sequence `0 ≤ t_n ≤ lemT(z_n)`, eventually in `n`, for
 `0 ≤ u ≤ t_n`: `cB W^{-d} ≤ W^{-d} B_{u,0} ≤ N^{-c}`; `cB` depends on `𝔡` only, `c` on `(𝔠, 𝔡, ε)`. -/
 def STBdata (d : ℕ) : Prop :=
@@ -562,7 +556,7 @@ theorem ST_mE_im_ge {E κ : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) : Real.sqr
   have := Real.sqrt_le_sqrt this
   linarith
 
-/-- **From the grid endpoint back to the model**: a single-`D` form of `ST_model_of_whp_grid`. -/
+/-- **From the grid endpoint back to the model**. -/
 theorem ST_model_le_path (s t : ℕ → ℝ) (K : ℕ → ℕ) (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n)
     (hK : ∀ n, K n ≠ 0) (n : ℕ)
     (F Z : ∀ n, ℝ → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℝ)
@@ -1016,7 +1010,7 @@ theorem ST_log_le {q r : ℝ} (hq : 0 ≤ q) (hr : 1 ≤ r) : 1 + q + Real.log r
   have h := Real.log_le_sub_one_of_pos (show 0 < r by linarith)
   nlinarith
 
-/-- **The closure inequality of the engine from the size data** (`3_5:571–577`, "`𝔠_d` small"):
+/-- **The closure inequality of the engine from the size data** (proof of Step 2, "`𝔠_d` small"):
 `r ≤ b_t^{-𝔠_d}`, `(3C+1) 𝔠_d ≤ 1/60` and `c₁ Λ² (1+q) b_t^{1/60} < 1` give
 `c₁ Λ² (1 + q + log r) r^{3C} b^{1/30} < 1` for every `b ≤ b_t`. -/
 theorem ST_hsmall_aux {c₁ Λ q C r b bt 𝔠' : ℝ} (hC : 0 ≤ C) (hq : 0 ≤ q) (hc₁ : 0 ≤ c₁)
@@ -1236,16 +1230,17 @@ theorem ST_init_cmp (n : ℕ) {u D ℓ Di X : ℝ} (hX : 0 ≤ X) (hℓ : 0 ≤ 
 end More
 
 end RBM.Gauss.Sizes
-/-! ## 12. The bridges ST-2 ↔ LW (DECISIONS §29; Amend 1 of T2080)
+/-! ## 12. The bridges from the light-weight lemmas
 
-`STLWB_of_LWterm` and `STLWT_of_LWtermExp` derive the Step 2 pins `STLWB`, `STLWT` from the LW
-pins `LWterm`, `LWtermExp` (`Graph/LWPins.lean`).  The differences between the two statements are:
+`STLWB_of_LWterm` and `STLWT_of_LWtermExp` derive the statements `STLWB`, `STLWT` of Step 2 from
+the light-weight statements `LWterm`, `LWtermExp` (`Graph/LWPins.lean`).  The differences between
+the two statements are:
 (1) `STEGtM` and `LWE` differ by a cyclic rotation of the loop (cyclic invariance of the trace)
 and the order of the two factors (`STB_EGt_eq_LWE`); (2) `STLWB` binds the control `Ψ` of
 `(initialGT2)` to `Ψ_t(0)`, while `LWAssm` takes a separate `Ψ'`: it is `max (Ψ_t(0), W^{-d/2})`
 (the window `LWWindow` is strict, `STPsiClass` (3) has a constant; closed with `W → ∞`, which
-gives `ε₀ ≤ d/2`); (4) the range of `ℓ` is `∀ᶠ n` in `STLWT` and `∀ n` in `LWAssmExp`: `ℓ` is
-replaced by `0` at the finitely many `n < N₀`; (D1) `LWterm d` and `LWtermExp d` begin with
+gives `ε₀ ≤ d/2`); (3) the range of `ℓ` is `∀ᶠ n` in `STLWT` and `∀ n` in `LWAssmExp`: `ℓ` is
+replaced by `0` at the finitely many `n < N₀`; (4) `LWterm d` and `LWtermExp d` begin with
 `3 ≤ d →`, so the bridges take `(hd : 3 ≤ d)`. -/
 
 namespace RBM.Gauss.Sizes
@@ -1289,7 +1284,7 @@ private theorem STB_loop_rot (n : ℕ) (E u : ℝ) (σ₀ σ₁ : Bool) (a₀ y 
     List.ofFn_zero, List.prod_cons, List.prod_nil, mul_one, Matrix.mul_assoc]
   exact STB_trace_six _ _ _ _ _ _
 
-/-- **`STEGt = LWE`** (difference (1) of the bridge): the two forms of the light-weight term agree
+/-- **`STEGt = LWE`** (difference (1) of the bridges): the two forms of the light-weight term agree
 pointwise. -/
 private theorem STB_EGt_eq_LWE (n : ℕ) (E t : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n))
     (ω : sz.SeqΩ) : STEGt sz n E t σ a ω = LWE sz n E t σ a ω := by
@@ -1348,7 +1343,7 @@ private theorem STB_eps_le {ε₀ : ℝ} {Ψ : ℕ → ℕ → ℝ} (hΨ : STPsi
 
 end Bridges
 
-/-- **Bridge `lem:LWterm` ⇒ `STLWB`** (DECISIONS §29, F15; `(hd : 3 ≤ d)` by Amend 1, D1): with
+/-- **Bridge `lem:LWterm` ⇒ `STLWB`** (with `(hd : 3 ≤ d)`): with
 `Φ_t(r) = Ψ_t(⌊r⌋₊)` and `Ψ' = max (Ψ_t(0), W^{-d/2})` the hypotheses of `LWAssm` follow from
 `STPsiClass`, `STInitialGT2`, `STLWassm`, and the conclusion of `LWterm` is that of `STLWB` after
 `STB_EGt_eq_LWE`. -/
@@ -1419,11 +1414,9 @@ theorem STLWB_of_LWterm {d : ℕ} (hd : 3 ≤ d) : LWterm d → STLWB d := by
   · rw [STB_EGt_eq_LWE]
   · rw [hΦ0, hΦk]
 
-/-- **Bridge `lem: EWGn2_N` ⇒ `STLWT`** (DECISIONS §29, difference (4); `(hd : 3 ≤ d)` by Amend 1,
-D1): `ℓ` is replaced by `ℓ' = 0` at the finitely many `n < N₀` where the eventual range of `ℓ`
+/-- **Bridge `lem: EWGn2_N` ⇒ `STLWT`** (difference (3); `(hd : 3 ≤ d)`): `ℓ` is replaced by `ℓ' = 0` at the finitely many `n < N₀` where the eventual range of `ℓ`
 may fail (`0` is in the range since `(log W)^{10} ≥ 0` and `ellT ≥ 0`); `≺` does not see finitely
-many `n` (`STB_prec_dom` with an eventual domination).  Compare the probe's `ST_scaleAdm_congr`
-(probe lines 5907-5930). -/
+many `n` (`STB_prec_dom` with an eventual domination). -/
 theorem STLWT_of_LWtermExp {d : ℕ} (hd : 3 ≤ d) : LWtermExp d → STLWT d := by
   intro hLW κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow t ht0 htT ε₀ hε₀ Ψ hwin hinit ℓ hℓ hexp D hD
   obtain ⟨N₀, hN₀⟩ := Filter.eventually_atTop.1 hℓ
@@ -1453,24 +1446,9 @@ theorem STLWT_of_LWtermExp {d : ℕ} (hd : 3 ≤ d) : LWtermExp d → STLWT d :=
   · rw [STB_EGt_eq_LWE]
   · simp [STprof, hℓ'eq n hn]
 
-/-! ## 13. Compiled nonempty instances at `d = 3`
 
-The data are those of `Induction/Defs.lean` and `Induction/Step2Defs.lean`: `sz0`
-(`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`), `z0`, `flow_z0`
-(`κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `s ≡ 0`, `t ≡ 1/16`, `K ≡ 16`.  Every deterministic hypothesis
-is discharged; what stays a hypothesis of an example is a pin of another gate (`STLWT 3`,
-`STEMn2Exp 3`, `STStep1Weak`, `STDecay`, `STScaleInv`, `STGridMart 3`). -/
 
-/-! ### Section 9: `≺` for the grid walk -/
 
-/-! ### Section 10 and 11: the deterministic size facts -/
 
-/-! ### Section 11: arithmetic -/
-
-/-! ### The bridges, applied at `d = 3`
-
-`LWterm 3` and `LWtermExp 3` are pins of the LW gate and stay hypotheses; `3 ≤ 3` is discharged;
-the bridged pins are then applied with the merged instance data of `Step2Defs.lean` (`Ψ_n = W_n^{-1}`,
-`ε₀ = 1/20`, `t ≡ 1/16`; `ℓ ≡ 0`). -/
 
 end RBM.Gauss.Sizes

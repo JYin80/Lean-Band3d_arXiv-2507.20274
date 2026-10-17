@@ -12,20 +12,18 @@ import RBM3D.Loop.KLWard
 set_option linter.style.longLine false
 
 /-!
-# S3-01 (ticket T2049): the pins of Steps 3 and 4 of `lem:main_ind`, their ingredients and the
-# consumer form of the evolution-kernel pins (EK-6)
+# The statements of Steps 3 and 4 of `lem:main_ind`, their ingredients, and the consumer form of the evolution-kernel estimates
 
-Moved from the T2041 design probe (`git show 3c58211:RBM3D/Probe/T2041Pins.lean`, sections 1-4, with the
-`STMollifierProps` docstring tag corrected to `T2041b`; section 5 and 6 of the probe belong to EK-6 and S3-25/S3-26).
-Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex` (`1_2:line`) and
-`paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`).  The pins live in `RBM.Gauss.Sizes`, prefix `ST`;
-every `≺` is the merged `Prec` (scale `N = sz.size n`); constants are quantified before the sequence.
+Paper: arXiv:2507.20274, Steps 3 and 4 of Theorem 2.24 (`lem:main_ind`) and Section 4.  The
+statements live in `RBM.Gauss.Sizes`, prefix `ST`; every `≺` is `Prec` (scale `N = sz.size n`);
+constants are quantified before the sequence.
 
-* §1 vocabulary (`STXiL`, `STXiLK`, `STPsi`, `STPsum`, `STQop`, `STIdiff`, the hierarchy terms), ported from RBM2D
-  `Induction/HierVocab.lean:150-193` at `c9a24cf`;
-* §2 the targets `STStep3R`, `STStep4R` and the Step-2 conclusions `STStep2Concl`, `STLmaxU`, `STLKU`;
-* §3 the ingredient pins; §4 the consumer forms `STEK*`;
-* `st_Bctl_pos`, then the deterministic instances at `d = 3` (`sz0` and `szB`) in `RBM.Gauss.Step34Inst`.
+* §1 vocabulary (`STXiL`, `STXiLK`, `STPsi`, `STPsum`, `STQop`, `STIdiff`, the hierarchy terms),
+  following RBM2D `Induction/HierVocab`;
+* §2 the statements `STStep3R`, `STStep4R` and the Step-2 conclusions `STStep2Concl`, `STLmaxU`,
+  `STLKU`;
+* §3 the ingredient statements; §4 the consumer forms `STEK*` of the evolution-kernel estimates;
+* `st_Bctl_pos`, and the size sequence `szB` at `d = 3` in `RBM.Gauss.Step34Inst`.
 -/
 
 set_option linter.style.longLine false
@@ -44,7 +42,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 variable {d : ℕ} (sz : Sizes d)
 
 /-- The pairs `(v, u)`, `s_n ≤ v ≤ u ≤ t_n`: the index set of "`sup_{v ∈ [s,u]}`, uniformly in
-`u ∈ [s,t]`" (`3_5:1366`, `3_5:1407-1410`, `(eq:iteration_induc)`). -/
+`u ∈ [s,t]`" ((4.36) `am;asoi222`, (4.41) `eq:iteration_induc`). -/
 abbrev STPair (s t : ℕ → ℝ) (n : ℕ) : Type := {q : ℝ × ℝ // s n ≤ q.1 ∧ q.1 ≤ q.2 ∧ q.2 ≤ t n}
 
 /-- `max_{σ,a} |𝓛^{(k)}_{v,σ,a}|` at size index `n`, energy `E`, time `v`. -/
@@ -58,19 +56,19 @@ def STmaxLK (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ :=
     (fun p : (Fin k → Bool) × (Fin k → Zd d (sz.L n)) =>
       ‖Lloop sz n E v p.1 p.2 ω - STKloop sz n E v p.1 p.2‖)
 
-/-- **`Ξ̂^{(𝓛)}_{v,k}`** of `(def:XiL)` (`3_5:1010`): `1 + max_{σ,a} |𝓛^{(k)}_{v,σ,a}| /
+/-- **`Ξ̂^{(𝓛)}_{v,k}`** of (4.10) `def:XiL`: `1 + max_{σ,a} |𝓛^{(k)}_{v,σ,a}| /
 (W^{-d}B_{v,0})^{k-1}`; the deterministic control parameters `Ξ^{(𝓛)}` of the paper dominate it. -/
 def STXiL (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ :=
   1 + STmaxL sz n E v k ω / (sz.Bctl n v) ^ (k - 1)
 
-/-- **`Ξ̂^{(𝓛-𝒦)}_{v,k}`** of `(def:XIL-K)` (`3_5:1012`): `1 + max_{σ,a} |(𝓛-𝒦)^{(k)}_{v,σ,a}| /
+/-- **`Ξ̂^{(𝓛-𝒦)}_{v,k}`** of (4.11) `def:XIL-K`: `1 + max_{σ,a} |(𝓛-𝒦)^{(k)}_{v,σ,a}| /
 (W^{-d}B_{v,0})^k`. -/
 def STXiLK (n : ℕ) (E v : ℝ) (k : ℕ) (ω : sz.SeqΩ) : ℝ :=
   1 + STmaxLK sz n E v k ω / (sz.Bctl n v) ^ k
 
-/-- **The control parameter `Ψ(n,k;s,t)`** of `(adsyzz0s8d6)` (`3_5:1396`), case `1 - s ≤ ilambda²`:
+/-- **The control parameter `Ψ(n,k;s,t)`** of (4.40) `adsyzz0s8d6`, case `1 - s ≤ ilambda²`:
 `A^{3/4} + r^{n-1} A^{1-k/8}` with `A = ilambda² W^d` and `r = η_s/η_t`; and of
-`(eq:psipara_smalletacase)` (`3_5:1578`), case `1 - s ≤ ilambda²/L²`: the same shape with
+(4.48) `eq:psipara_smalletacase`, case `1 - s ≤ ilambda²/L²`: the same shape with
 `A = (W^{-d}B_{s,0})⁻¹` (the printed formula is `A^{3/4}` written as `(W^{-d}B_{s,0})^{-3/4}` and
 `A^{1-k/8}` as `(W^{-d}B_{s,0})^{k/8-1}`). -/
 def STPsi (A r : ℝ) (n k : ℕ) : ℝ := A ^ (3 / 4 : ℝ) + r ^ (n - 1) * A ^ (1 - (k : ℝ) / 8)
@@ -83,31 +81,31 @@ def STAII (s : ℕ → ℝ) (n : ℕ) : ℝ := (sz.Bctl n (s n))⁻¹
 
 /-! ### Tensor operators of `Def:QtPt` and `def;zero_mode_remove` -/
 
-/-- `(𝒫 ∘ 𝒜)_{a₁} = Σ_{a₂,…,a_k} 𝒜_a` (`Def:QtPt`, `3_5:1204`); tensors of `m + 1` indices. -/
+/-- `(𝒫 ∘ 𝒜)_{a₁} = Σ_{a₂,…,a_k} 𝒜_a` (Definition 4.7 `Def:QtPt`); tensors of `m + 1` indices. -/
 def STPsum {m L : ℕ} [NeZero L] (A : (Fin (m + 1) → Zd d L) → ℂ) (a₁ : Zd d L) : ℂ :=
   ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁), A a
 
-/-- The sum-zero operator `𝒬_t 𝒜 = 𝒜 - (𝒫 𝒜)_{a₁} ϑ_{t,a}` (`(eq:sumzero_op)`, `3_5:1210`) for a
-mollifier family `ϑ : t ↦ tensor` (`(eq:suma1chi)`, `(eq:derv_Theta)`: `STMollifier`). -/
+/-- The sum-zero operator `𝒬_t 𝒜 = 𝒜 - (𝒫 𝒜)_{a₁} ϑ_{t,a}` ((4.25) `eq:sumzero_op`) for a
+mollifier family `ϑ : t ↦ tensor` (`(eq:suma1chi)`, `(eq:derv_Theta)`: `STMollifierProps`). -/
 def STQop {m L : ℕ} [NeZero L] (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ) (t : ℝ)
     (A : (Fin (m + 1) → Zd d L) → ℂ) : (Fin (m + 1) → Zd d L) → ℂ :=
   fun a => A a - STPsum (d := d) A (a 0) * ϑ t a
 
-/-- `I_diff(σ) = {i : σ_i ≠ σ_{i+1}}`, cyclic (`3_5:1470-1471`). -/
+/-- `I_diff(σ) = {i : σ_i ≠ σ_{i+1}}`, cyclic. -/
 def STIdiff {k : ℕ} (σ : Fin k → Bool) : Finset (Fin k) :=
   Finset.univ.filter (fun i => σ i ≠ σ (finRotate k i))
 
-/-! ### The hierarchy terms of `eq_L-Keee` (`3_5:75-100`, `def_EwtG` `1_2:961`, `def:CALE` `3_5:169`)
+/-! ### The hierarchy terms of `eq_L-Keee` ((3.8), `def_EwtG` (2.49), `def:CALE` Definition 3.5)
 
-Port of RBM2D `Induction/HierVocab.lean:150-193` (`LLf`, `LKf`, `ksimLK`, `elklkN`, `egtN`, `eeLoop`,
-`eeN`; `c9a24cf`) onto the merged `loopL`, `blockMat`, `seqHflow`, `KLK`, `LoopIdx.cutGlue{,L,R}`:
+After RBM2D `Induction/HierVocab` (`LLf`, `LKf`, `ksimLK`, `elklkN`, `egtN`, `eeLoop`, `eeN`), on
+`loopL`, `blockMat`, `seqHflow`, `KLK`, `LoopIdx.cutGlue{,L,R}`:
 `Z2 L ↦ Zd d L`, `W^2 ↦ W^d`, `SB L ↦ SB d L g`. -/
 
 /-- `𝓛_{τ,I}` of a list-based loop index (the matrix `blockMat (H_τ)`, the flow value `zt E τ`). -/
 def STLI (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) (seqHflow sz n τ ω)) (zt E τ) I
 
-/-- `𝒦_{τ,I}` of a list-based loop index (merged `KLK`). -/
+/-- `𝒦_{τ,I}` of a list-based loop index (`KLK`). -/
 def STKI (n : ℕ) (E τ : ℝ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   KLK d (sz.L n) (sz.lam n) (sz.W n) E τ I
 
@@ -115,7 +113,7 @@ def STKI (n : ℕ) (E τ : ℝ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
 def STLKI (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   STLI sz n E τ ω I - STKI sz n E τ I
 
-/-- `[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(n)}_{τ,I}` of `(DefKsimLK)` (`3_5:89`): the cut pairs `k < l'` with the
+/-- `[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(n)}_{τ,I}` of (3.9) `DefKsimLK`: the cut pairs `k < l'` with the
 `𝒦`-piece of length `l`, both orders. -/
 def STksimLK (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (l : ℕ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ k ∈ Finset.Icc 1 I.length, ∑ l' ∈ Finset.Ioc k I.length,
@@ -129,7 +127,7 @@ def STksimLK (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (l : ℕ) (I : LoopIdx (Zd d
             STLKI sz n E τ ω (I.cutGlueR k l' b)
         else 0))
 
-/-- `ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(n)}_{τ,I}` of `(def_ELKLK)` (`3_5:97`). -/
+/-- `ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(n)}_{τ,I}` of (3.10) `def_ELKLK`. -/
 def STelklk (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ k ∈ Finset.Icc 1 I.length, ∑ l' ∈ Finset.Ioc k I.length,
     ∑ a : Zd d (sz.L n), ∑ b : Zd d (sz.L n),
@@ -140,13 +138,13 @@ def STelklk (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n)))
 def STavgErr (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (σ : Bool) (a : Zd d (sz.L n)) : ℂ :=
   STLI sz n E τ ω ⟨[σ], [a]⟩ - mSigma E σ
 
-/-- `ℰ^{G̃,(n)}_{τ,I}` of `(def_EwtG)` (`1_2:961`): the light-weight term. -/
+/-- `ℰ^{G̃,(n)}_{τ,I}` of (2.49) `def_EwtG`: the light-weight term. -/
 def STegt (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (I : LoopIdx (Zd d (sz.L n))) : ℂ :=
   (((sz.W n : ℕ) : ℂ) ^ d) * ∑ k ∈ Finset.Icc 1 I.length, ∑ a : Zd d (sz.L n), ∑ b : Zd d (sz.L n),
     STavgErr sz n E τ ω (I.σ.getD (k - 1) false) a * SB d (sz.L n) (sz.lam n) a b *
       STLI sz n E τ ω (I.cutGlue k b)
 
-/-- The `(2n+2)`-loop of `(def_diffakn_k)` (`3_5:187`), cut at the edge `k`:
+/-- The `(2n+2)`-loop of (3.16) `def_diffakn_k`, cut at the edge `k`:
 `a^{(k)} = (a_k..a_n, a_1..a_{k-1}, b', a'_{k-1}..a'_1, a'_n..a'_k, b)`,
 `σ^{(k)} = (σ_k..σ_n, σ_1..σ_k, σ̄_k..σ̄_1, σ̄_n..σ̄_k)`. -/
 def STeeLoop {α : Type*} (σ : List Bool) (a a' : List α) (k : ℕ) (b b' : α) : LoopIdx α :=
@@ -154,7 +152,7 @@ def STeeLoop {α : Type*} (σ : List Bool) (a a' : List α) (k : ℕ) (b b' : α
     a.drop (k - 1) ++ a.take (k - 1) ++ [b'] ++ (a'.take (k - 1)).reverse ++
       (a'.drop (k - 1)).reverse ++ [b]⟩
 
-/-- `(ℰ⊗ℰ)^{M,(n)}_{τ,σ,a,a'}` of `(defEOTE)` (`3_5:176`): the quadratic variation loop, summed over
+/-- `(ℰ⊗ℰ)^{M,(n)}_{τ,σ,a,a'}` of (3.15) `defEOTE`: the quadratic variation loop, summed over
 the cut edge `k`. -/
 def STee (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin m → Bool) (a a' : Fin m → Zd d (sz.L n)) :
     ℂ :=
@@ -164,14 +162,14 @@ def STee (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin m → Bool) 
 
 /-! ## 2. Steps 3 and 4 uniformly in `u ∈ [s,t]`; the conclusions of Step 2 that Step 3 consumes
 
-`STLmaxU`, `STLKU` are the shapes of `STLmax`, `STLK` (DECISIONS §19) with the time sequence `τ`
-replaced by `u ∈ [s_n, t_n]` inside `Prec` (union over `u` inside `P`, as the paper's "uniformly in
-`u`", `1_2:1371`).  Step 2 (ST-D2, T2039) provides `(Gt_bound_flow)`, `(Gt_avgbound_flow)`,
-`(Eq:Gdecay_w)` uniformly in `u`: `STStep2Concl`.  `STLK`, `STLocalEntry`, `STDecay` of §19 are at one
+`STLmaxU`, `STLKU` are the shapes of `STLmax`, `STLK` with the time sequence `τ` replaced by
+`u ∈ [s_n, t_n]` inside `Prec` (union over `u` inside `P`, as the paper's "uniformly in `u`",
+(2.91) `Eq:L-KGt-flow`).  Step 2 provides `(Gt_bound_flow)`, `(Gt_avgbound_flow)`,
+`(Eq:Gdecay_w)` uniformly in `u`: `STStep2Concl`.  `STLK`, `STLocalEntry`, `STDecay` are at one
 time sequence, and `STDecay` has no loss `((1-s)/(1-u))^{C_d}` (`STGdecayW`): so the three
-uniform statements are new. -/
+uniform statements are separate. -/
 
-/-- **`(Eq:LGxb)`** (`1_2:1361`), uniformly in `u ∈ [s,t]`: `max_{σ,a} |𝓛^{(k)}_{u,σ,a}| ≺
+/-- **`(Eq:LGxb)`**, uniformly in `u ∈ [s,t]`: `max_{σ,a} |𝓛^{(k)}_{u,σ,a}| ≺
 (W^{-d}B_{u,0})^{k-1}`, every `k ≥ 1`. -/
 def STLmaxU (E s t : ℕ → ℝ) : Prop :=
   ∀ k : ℕ, 1 ≤ k →
@@ -179,7 +177,7 @@ def STLmaxU (E s t : ℕ → ℝ) : Prop :=
       (fun n p ω => ‖Lloop sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω‖)
       (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ (k - 1))
 
-/-- **`(Eq:L-KGt-flow)`** (`1_2:1371`), uniformly in `u ∈ [s,t]`: `max_{σ,a} |(𝓛-𝒦)^{(k)}_{u,σ,a}| ≺
+/-- **`(Eq:L-KGt-flow)`**, uniformly in `u ∈ [s,t]`: `max_{σ,a} |(𝓛-𝒦)^{(k)}_{u,σ,a}| ≺
 (W^{-d}B_{u,0})^k`, every `k ≥ 1`. -/
 def STLKU (E s t : ℕ → ℝ) : Prop :=
   ∀ k : ℕ, 1 ≤ k →
@@ -187,21 +185,21 @@ def STLKU (E s t : ℕ → ℝ) : Prop :=
       (fun n p ω => ‖Lloop sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω - STKloop sz n (E n) (p.1 : ℝ) p.2.1 p.2.2‖)
       (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ k)
 
-/-- **`(Gt_avgbound_flow)`** (`1_2:1344`), uniformly in `u`: `max_a |tr((G_u - M)E_a)| ≺ W^{-d}B_{u,0}`,
+/-- **`(Gt_avgbound_flow)`**, uniformly in `u`: `max_a |tr((G_u - M)E_a)| ≺ W^{-d}B_{u,0}`,
 i.e. `STLKU` at `k = 1` (`tr((G_u - M)E_a) = 𝓛^{(1)}_{u,+,a} - 𝒦^{(1)}_{u,+,a}`). -/
 def STAvgU (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => TimeIcc s t n × (Fin 1 → Bool) × (Fin 1 → Zd d (sz.L n)))
     (fun n p ω => ‖Lloop sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω - STKloop sz n (E n) (p.1 : ℝ) p.2.1 p.2.2‖)
     (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ 1)
 
-/-- **`(Gt_bound_flow)`** (`1_2:1342`), uniformly in `u`: `|(G_u - M)_{xy}|² ≺ W^{-d}B_{u,|[x]-[y]|}`
+/-- **`(Gt_bound_flow)`**, uniformly in `u`: `|(G_u - M)_{xy}|² ≺ W^{-d}B_{u,|[x]-[y]|}`
 (the shape of `STLocalEntry` with the index `u ∈ [s,t]` inside `Prec`). -/
 def STLocalEntryU (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => TimeIcc s t n × Idx d (sz.L n) (sz.W n) × Idx d (sz.L n) (sz.W n))
     (fun n p ω => ‖STGM sz n (E n) (p.1 : ℝ) ω p.2.1 p.2.2‖ ^ 2)
     (fun n p _ => STWB sz n (p.1 : ℝ) (zdistInf d (sz.L n) (STblk sz n p.2.1 - STblk sz n p.2.2)))
 
-/-- **`(Eq:Gdecay_w)`** (`1_2:1349`), uniformly in `u ∈ [s,t]`, every `σ ∈ {±}²`, with the loss
+/-- **`(Eq:Gdecay_w)`**, uniformly in `u ∈ [s,t]`, every `σ ∈ {±}²`, with the loss
 `((1-s)/(1-u))^{C_d}`: `|𝓛^{(2)}_u - 𝒦^{(2)}_u| ≺ ((1-s)/(1-u))^{C_d} (W^{-d}B_{u,0})^{1/5}
 (W^{-d}B_{u,|a₁-a₂|}) e^{-(|a₁-a₂|/ℓ_u)^{1/2}} + W^{-D}`.  `C_d` is the constant of Step 2,
 independent of `𝔠_d` of `(con_st_ind)`. -/
@@ -215,17 +213,15 @@ def STGdecayW (E s t : ℕ → ℝ) (Cd : ℝ) : Prop :=
             ellT (sz.L n) (sz.lam n) (p.1 : ℝ)) ^ (1 / 2 : ℝ)) +
         ((sz.W n : ℕ) : ℝ) ^ (-D))
 
-/-- **The conclusions of Step 2 that Steps 3-4 consume** (`1_2:1342-1349`): `(Gt_bound_flow)`,
-`(Gt_avgbound_flow)`, `(Eq:Gdecay_w)` with the loss exponent `C_d`.  The pins of T2039 (ST-D2) must
-imply this bundle; Step 3 needs nothing else from Step 2. -/
+/-- **The conclusions of Step 2 that Steps 3-4 consume**: `(Gt_bound_flow)`,
+`(Gt_avgbound_flow)`, `(Eq:Gdecay_w)` with the loss exponent `C_d`.  Step 3 needs nothing else from Step 2. -/
 def STStep2Concl (E s t : ℕ → ℝ) (Cd : ℝ) : Prop :=
   STLocalEntryU sz E s t ∧ STAvgU sz E s t ∧ STGdecayW sz E s t Cd
 
-/-- **`lem_wardineq_K`**, `(wardineq_K)` (`3_5:1001`, KL pin `KLwardIneqPin` of T2004 / KL12), at the
+/-- **`lem_wardineq_K`**, `(wardineq_K)` (Lemma 4.2; compare `KLwardIneqPin`), at the
 sequence level: for every time sequence `τ ∈ [0,1)` and `k ≥ 2`, `max_σ Σ_{a_k} |𝒦^{(k)}_{τ,σ,a}| ≺
 (W^d η_τ)⁻¹ (W^{-d}B_{τ,0})^{k-2}` (the sum is over the last label; the left side is deterministic,
-so this is the `L^τ`-loss form `KLwardIneqAt` converted to the scale `N`).  Registry class: **owed**
-(KL12 proves it). -/
+so this is the `L^τ`-loss form `KLwardIneqAt` converted to the scale `N`). -/
 def STKward (E : ℕ → ℝ) : Prop :=
   ∀ τ : ℕ → ℝ, (∀ n, 0 ≤ τ n) → (∀ n, τ n < 1) → ∀ k : ℕ, 2 ≤ k →
     Prec sz (U := fun n => (Fin k → Bool) × (Fin (k - 1) → Zd d (sz.L n)))
@@ -233,18 +229,18 @@ def STKward (E : ℕ → ℝ) : Prop :=
         ‖STKI sz n (E n) (τ n) ⟨List.ofFn p.1, List.ofFn p.2 ++ [x]⟩‖)
       (fun n _ _ => (((sz.W n : ℕ) : ℝ) ^ d * etaT (E n) (τ n))⁻¹ * (sz.Bctl n (τ n)) ^ (k - 2))
 
-/-- **Case (i)** of `3_5:1105`: `1 - t ≥ ilambda²/L²`, for all sizes. -/
+/-- **Case (i)** of the proof of Step 3: `1 - t ≥ ilambda²/L²`, for all sizes. -/
 def STCaseI (_s t : ℕ → ℝ) : Prop :=
   ∀ n, sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ 1 - t n
 
-/-- **Case (ii)** of `3_5:1105`: `1 - s ≤ ilambda²/L²`, for all sizes. -/
+/-- **Case (ii)** of the proof of Step 3: `1 - s ≤ ilambda²/L²`, for all sizes. -/
 def STCaseII (s _t : ℕ → ℝ) : Prop :=
   ∀ n, 1 - s n ≤ sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2
 
-/-- **Step 3 of `lem:main_ind`** (`1_2:1359-1366`; proof `3_5:1107-1601`), uniformly in `u ∈ [s,t]`, under
+/-- **Step 3 of `lem:main_ind`** (proof in Section 4), uniformly in `u ∈ [s,t]`, under
 a regime predicate `R` of the time sequences (`True`: the general statement; `STCaseI`, `STCaseII`: the
-two cases of `3_5:1105`).  Constants first: `κ, ε, 𝔡`, the Step-2 exponent `C_d`, then
-`𝔠_d ∈ (0, 10^{-2}]` (small depending on `C_d`: `(eq:sumtwoloop)`, `3_5:1069`), then `𝔠`, the sizes, `z`.
+two cases of the proof of Step 3).  Constants first: `κ, ε, 𝔡`, the Step-2 exponent `C_d`, then
+`𝔠_d ∈ (0, 10^{-2}]` (small depending on `C_d`: `(eq:sumtwoloop)`), then `𝔠`, the sizes, `z`.
 Hypotheses: (a) at `s`, `(lRB1)` (Step 1), the three conclusions of Step 2, `(con_st_ind)`, `ML:Kbound`
 (`STKbound`), `(wardineq_K)` (`STKward`). -/
 def STStep3R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : Prop :=
@@ -256,7 +252,7 @@ def STStep3R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ �
           STLK sz (STflowE z) s → STConStInd sz 𝔠d s t → STStep1Loop sz (STflowE z) s t →
           STStep2Concl sz (STflowE z) s t Cd → STLmaxU sz (STflowE z) s t
 
-/-- **Step 4 of `lem:main_ind`** (`1_2:1370-1374`; proof `3_5:1602-1614`), uniformly in `u ∈ [s,t]`: the
+/-- **Step 4 of `lem:main_ind`** (proof of Step 4), uniformly in `u ∈ [s,t]`: the
 hypotheses of Step 3 and its conclusion `(Eq:LGxb)` give `(Eq:L-KGt-flow)`. -/
 def STStep4R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
@@ -275,8 +271,7 @@ def STStep3II (d : ℕ) : Prop := STStep3R d STCaseII
 def STStep4I (d : ℕ) : Prop := STStep4R d STCaseI
 def STStep4II (d : ℕ) : Prop := STStep4R d STCaseII
 
-/-- The endpoint `u = t` of `STLmaxU` is the conclusion `STLmax` of `lem:main_ind` at `t`
-(DECISIONS §19). -/
+/-- The endpoint `u = t` of `STLmaxU` is the conclusion `STLmax` of `lem:main_ind` at `t`. -/
 theorem STLmax_of_STLmaxU {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STLmaxU sz E s t) :
     STLmax sz E t := by
   intro k hk
@@ -293,8 +288,8 @@ theorem STLK_of_STLKU {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STLK
 /-! ## 3. The ingredients: contraction inequality, `lem: newPQ`, `lem:SEforLn`, `lem:STOeq_*`,
 `lem:iterations` -/
 
-/-- **The contraction inequality** `(yi2oslxj2)`, `(u2jzooi-2)` of `ygdhmsgq` (`3_5:923`, new in
-`d ≥ 3`, no RBM2D source), deterministic for every sample and flow time `τ ∈ [0,1)`, `|E| < 2`
+/-- **The contraction inequality** `(yi2oslxj2)`, `(u2jzooi-2)` of Lemma 4.1 `ygdhmsgq` (specific to
+`d ≥ 3`, no RBM2D counterpart), deterministic for every sample and flow time `τ ∈ [0,1)`, `|E| < 2`
 (`η_τ = (1-τ) Im m(E) > 0`): for a loop of length `m ≥ 2`, `1 ≤ k ≤ m-1`,
 `Σ_{a_m} |𝓛^{(m)}_{τ,σ,a}| ≤ (W^d η_τ)⁻¹ (max|𝓛^{(2k-1)}| max|𝓛^{(2m-2k-1)}|)^{1/2}`; and for `m ≥ 4`,
 `1 ≤ k < j < l ≤ m-1`, `𝒜(a_m) ⊂ Z_L^d` with `|𝒜(a_m)| ≤ C`, `p ≥ 1`:
@@ -315,13 +310,13 @@ def STContract (d : ℕ) : Prop :=
           (STmaxL sz n E τ (2 * k - 1) ω * STmaxL sz n E τ (2 * m - 2 * l - 1) ω) ^ (1 / 2 : ℝ) *
           STmaxL sz n E τ (2 * (l - k) * p) ω ^ (1 / (2 * (p : ℝ))))
 
-/-- **`lem: newPQ`** (`3_5:1482-1507`, expansions `(yurenAL)`, `(yurenAK)`): for every length `m`,
+/-- **`lem: newPQ`** (Lemma 4.13, expansions `(yurenAL)`, `(yurenAK)`): for every length `m`,
 charges `σ` and subset `A ⊂ ⟦m⟧` there is a family of `O(1)` data `(k_α, ξ_α, σ_α, ι_α, A_α)` (independent
 of the sizes, the sample, the labels): `1 ≤ k_α ≤ m-1`, `ξ_α ∈ ℤ`, `σ_α ∈ {±}^{k_α}`, `ι_α : ⟦k_α⟧ → ⟦m⟧` (the
 labels `a_α = a ∘ ι_α` are a sub-collection of `a`), `A_α ⊇ I_diff(σ_α)`, with
 `(Q^{(A)}∘𝓛^{(m)})_{σ,a} = (Q^{(A_m)}∘𝓛^{(m)})_{σ,a} + Σ_α ξ_α (2 i N η_τ)^{-(m-k_α)}
 (Q^{(A_α)}∘𝓛^{(k_α)})_{σ_α,a_α}`, `A_m = A ∪ I_diff(σ)`, `N = (WL)^d`, and the same identity for `𝒦`
-(Ward's identities `(WI_calL)` and `(WI_calK)` = merged `KLK_ward`).  `Q^{(A)}` is the merged
+(Ward's identities `(WI_calL)` and `(WI_calK)` = `KLK_ward`).  `Q^{(A)}` is
 `zeroModeSet`. -/
 def STNewPQ (d : ℕ) : Prop :=
   ∀ (m : ℕ) (σ : Fin m → Bool) (A : Finset (Fin m)),
@@ -339,14 +334,14 @@ def STNewPQ (d : ℕ) : Prop :=
             ∑ α : Fin ℓ, ((ξ α : ℂ) / (2 * Complex.I * ((sz.size n : ℕ) : ℂ) * (etaT E τ : ℂ)) ^ (m - k α)) *
               zeroModeSet d (sz.L n) (A' α) (fun a' => STKloop sz n E τ (σ' α) a') (a ∘ ι α))
 
-/-- The indices `(n₁, n₂)` of `lem:SEforLn` (1) (`3_5:1025`): `(n-1, n+1)` for `n` even, `(n, n)` for `n` odd. -/
+/-- The indices `(n₁, n₂)` of `lem:SEforLn` (1): `(n-1, n+1)` for `n` even, `(n, n)` for `n` odd. -/
 def STn12E (n : ℕ) : ℕ × ℕ := if n % 2 = 0 then (n - 1, n + 1) else (n, n)
 
-/-- The indices `(n'₁, n'₂)` below `(eq:L-KsimL-K)` (`3_5:1039`): `(n'-1, n'-1)` for `n'` even,
+/-- The indices `(n'₁, n'₂)` below `(eq:L-KsimL-K)`: `(n'-1, n'-1)` for `n'` even,
 `(n'-2, n')` for `n'` odd. -/
 def STn12 (n' : ℕ) : ℕ × ℕ := if n' % 2 = 0 then (n' - 1, n' - 1) else (n' - 2, n')
 
-/-- **`lem:SEforLn`**, the four estimates of the `ℰ` terms (`3_5:1017-1065`), uniformly in `u ∈ [s,t]`
+/-- **`lem:SEforLn`**, the four estimates of the `ℰ` terms (Lemma 4.3), uniformly in `u ∈ [s,t]`
 and in the labels, for every fixed loop length `k ≥ 2` (the paper's `n`) and `p ≥ 1`; the random
 control parameters are `Ξ̂`; `η_u = etaT`, `B = W^{-d}B_{u,0}`:
 (1) `|ℰ^{G̃,(k)}| ≺ B^k η⁻¹ (Ξ̂^{𝓛}_{n₁} Ξ̂^{𝓛}_{n₂})^{1/2}`;
@@ -386,8 +381,7 @@ def STSEforLnConcl (E s t : ℕ → ℝ) : Prop :=
 `n'₁, n'₂ ≤ n-1`), `m = 2 n_ - 1`, `m = 4 p`; those of `Ξ^{𝓛-𝒦}` are `m ≤ n_ - 1`. -/
 def STlenL (n_ p m : ℕ) : Prop := m ≤ n_ + 1 ∨ m = 2 * n_ - 1 ∨ m = 4 * p
 
-/-- The deterministic part of the right side of `(am;asoi222)` (`3_5:1366`) / of `(am;asoiuw)`
-(`3_5:1143-1149`): controls `XL m = Ξ^{𝓛}_{·,m}`, `XLK m = Ξ^{𝓛-𝒦}_{·,m}` (constant in `v ∈ [s,u]`, depending on the
+/-- The deterministic part of the right side of `(am;asoi222)` / of `(am;asoiuw)`: controls `XL m = Ξ^{𝓛}_{·,m}`, `XLK m = Ξ^{𝓛-𝒦}_{·,m}` (constant in `v ∈ [s,u]`, depending on the
 endpoint `u`), `B = W^{-d}B_{u,0}`, loop length `n_`, martingale exponent `p`; `lo = 1` for
 `lem:STOeq_Qt(_nonzero)` (`max_{n'=1}^{n-1}`), `lo = 2` for `lem:STOeq_NQ` (`max_{n'=2}^{n-1}`).  The paper's
 `max` over `O(1)` terms is written as a sum (equivalent for `≺`). -/
@@ -397,7 +391,7 @@ def STbootRHS (lo : ℕ) (XL XLK : ℕ → ℝ) (B : ℝ) (n_ p : ℕ) : ℝ :=
       ∑ m ∈ Finset.Icc ((n_ + 1) / 2 + 1) (n_ - 1),
         XLK (n_ + 2 - m) * (XL (STn12 m).1 * XL (STn12 m).2) ^ (1 / 2 : ℝ))
 
-/-- A Step-3 ingredient pin: the setting of `lem:main_ind` (constants first, `𝔠_d` after `C_d`), a regime `R`,
+/-- A Step-3 ingredient statement: the setting of `lem:main_ind` (constants first, `𝔠_d` after `C_d`), a regime `R`,
 the hypotheses `(a)` at `s`, `(con_st_ind)`, the conclusions of Step 2, `ML:Kbound`, `(wardineq_K)`; the
 conclusion is the statement `Concl` about `(E, s, t)`. -/
 def STIngR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
@@ -413,7 +407,7 @@ def STIngR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → 
 /-- `lem:SEforLn` (the setting of `lem:main_ind`; any regime). -/
 def STSEforLn (d : ℕ) : Prop := STIngR d STAny (fun sz E s t => STSEforLnConcl sz E s t)
 
-/-- `(eq:iteration_induc)` at `(r,l)` (`3_5:1410`): `sup_{v ∈ [s,u]} Ξ̂^{𝓛-𝒦}_{v,r} ≺ Ψ(r,l;s,u)`, uniformly in
+/-- `(eq:iteration_induc)` at `(r,l)`: `sup_{v ∈ [s,u]} Ξ̂^{𝓛-𝒦}_{v,r} ≺ Ψ(r,l;s,u)`, uniformly in
 `u ∈ [s,t]`, with `Ψ` built from the parameter `A`. -/
 def STIterHyp (E s t : ℕ → ℝ) (A : ℕ → ℝ) (r l : ℕ) : Prop :=
   Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 r ω)
@@ -425,11 +419,10 @@ def STRegIterI {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) : Prop :=
 
 /-! ### The mollifier `ϑ`, the bounds on `𝒬_t`, `(eq:Ward_typeP)` and `ℬ₄, ℬ₅` -/
 
-/-- **The mollifier `ϑ^{(n)}_{t,a}`** of `Def:QtPt` (`3_5:1217-1229`) for tensors of `m + 1` indices: `Σ_{a₂..a_n}
+/-- **The mollifier `ϑ^{(n)}_{t,a}`** of Definition 4.7 `Def:QtPt` for tensors of `m + 1` indices: `Σ_{a₂..a_n}
 ϑ_{t,a} = 1` (`(eq:suma1chi)`), `|ϑ_{t,a}| ≤ C (ℓ_t^d)^{-m} exp(-c Σ_{i≥2} |a_i - a₁| / ℓ_t)` and
 `|∂_tϑ_{t,a}| ≤ C (1-t)⁻¹ (ℓ_t^d)^{-m}` (`(eq:derv_Theta)`), differentiable in `t ∈ [0,1)` (the paper's `∂_t` needs it:
-`ℓ_t = min(max(g/√(1-t),1),L)` has kinks, so the bump of `rmk:choosechi` needs a smoothed scale; paper-delta candidate
-`T2041b`).  The RBM2D choice `ϑ = (1-t)^{m} Π Θ_t(a₁,a_i)` (`HierVocab.lean:66`) violates the first bound at `d ≥ 3`:
+`ℓ_t = min(max(g/√(1-t),1),L)` has kinks, so the bump of `rmk:choosechi` needs a smoothed scale).  The RBM2D choice `ϑ = (1-t)^{m} Π Θ_t(a₁,a_i)` violates the first bound at `d ≥ 3`:
 `(1-t)Θ_t(a,a) ≍ ℓ_t^{-2}` against `ℓ_t^{-d}`. -/
 def STMollifierProps {m L : ℕ} [NeZero L] (g C c : ℝ) (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ) : Prop :=
   (∀ t a₁, ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁), ϑ t a = 1) ∧
@@ -438,16 +431,16 @@ def STMollifierProps {m L : ℕ} [NeZero L] (g C c : ℝ) (ϑ : ℝ → (Fin (m 
   (∀ a, DifferentiableOn ℝ (fun t => ϑ t a) (Set.Ico 0 1)) ∧
   (∀ t, 0 ≤ t → t < 1 → ∀ a, ‖deriv (fun τ => ϑ τ a) t‖ ≤ C * (1 - t)⁻¹ * (((ellT L g t) ^ d)⁻¹) ^ m)
 
-/-- **Existence of the mollifier** (`rmk:choosechi`, `3_5:1250`): constants `C, c` depend on `(d, m, Λ)` only. -/
+/-- **Existence of the mollifier** (Example 4.8 `rmk:choosechi`): constants `C, c` depend on `(d, m, Λ)` only. -/
 def STMollifierEx (d : ℕ) : Prop :=
   3 ≤ d → ∀ (m : ℕ) (Λ : ℝ), 0 < Λ → ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
     ∀ (L : ℕ) (_ : 3 ≤ L) (g : ℝ), 0 < g → g ≤ Λ →
       haveI : NeZero L := ⟨by omega⟩
       ∃ ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ, STMollifierProps (d := d) g C c ϑ
 
-/-- **`lem_+Q`**, `(normQA)` (`3_5:1285-1289`): for `(t, ε, D)`-decaying tensors (`EKFastDecay`),
+/-- **`lem_+Q`**, `(normQA)` (Claim 4.9): for `(t, ε, D)`-decaying tensors (`EKFastDecay`),
 `‖𝒬_t 𝒜‖_∞ ≤ W^{C_n ε} ‖𝒜‖_∞ + W^{-D+C_n}`, `C_n` independent of `ε, D`: it depends on `(d, m, Λ, K)` and the mollifier
-constants `C, c`.  The hypothesis `L^d ≤ W^K` is the one of `EKSumDecay2` (DECISIONS §21, T2042a): the far part of
+constants `C, c`.  The hypothesis `L^d ≤ W^K` is the one of `EKSumDecay2`: the far part of
 `𝒫 𝒜` has `L^{d m}` terms of size `W^{-D}`; `4 ≤ W^ε` absorbs the constant `C` of the mollifier into `W^{C_n ε}`. -/
 def STQopNorm (d : ℕ) : Prop :=
   3 ≤ d → ∀ (m : ℕ) (Λ K C c : ℝ), 0 < Λ → 0 < K → 0 < C → 0 < c →
@@ -463,17 +456,17 @@ def STLKtensor (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) {m : ℕ} (σ : Fin (m + 1)
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   fun a => Lloop sz n E u σ a ω - STKloop sz n E u σ a
 
-/-! ## 4. The consumer form of the evolution-kernel pins (for EK-6)
+/-! ## 4. The consumer form of the evolution-kernel estimates
 
-Steps 3-4 use, in `3_5:900-1934`, only `(sum_res_2_NAL)` (`3_5:1153-1166`, `lem:STOeq_NQ`), `(sum_res_2)`
-(`3_5:1681-1716`, `lem:STOeq_Qt`) and `lem:sum_decay_nonzero` (`3_5:1557-1559`, `lem:STOeq_Qt_nonzero`); `(sum_res_1)`,
-`lem:propT`, `claim:TTk`, `(eq:latticesum_d3)` do not occur there (script, report b.6).  The kernel is applied
+Steps 3-4 use, in Section 4, only `(sum_res_2_NAL)` (`lem:STOeq_NQ`), `(sum_res_2)`
+(`lem:STOeq_Qt`) and `lem:sum_decay_nonzero` (`lem:STOeq_Qt_nonzero`); `(sum_res_1)`,
+`lem:propT`, `claim:TTk`, `(eq:latticesum_d3)` do not occur there.  The kernel is applied
 sample by sample to a random tensor family `𝒜_v(ω)`, `v ∈ [s_n,t_n]` (the integrand of the Duhamel formula at the
 time `v`), with the decay property `(deccA0)` w.h.p. for every `ε, D` and a control `X ≥ N^{-b}` w.h.p.; the output
-is `‖U_{v,t,σ} ∘ 𝒜_v‖_∞ ≺ (ratio)^{·} X`, uniformly in `v`, at the scale `N = sz.size n`.  EK-6 derives each
-form from the merged pin: `W^{Cε} ≤ N^{τ}` (`W ≤ N^{1/d}`, `ε = τ d / (4 C)`), `W^{-D+C} ≤ N^{-b'}`
-(`W ≥ N^𝔠`), `4 ≤ W^ε` and `log L ≤ W^ε` eventually (`W ≥ N^𝔠 → ∞`), `L^d ≤ N ≤ W^{1/𝔠}` (`K = 1/𝔠`,
-DECISIONS §21), `g ≤ Λ = 𝔡⁻¹` from `(eq:WO)`. -/
+is `‖U_{v,t,σ} ∘ 𝒜_v‖_∞ ≺ (ratio)^{·} X`, uniformly in `v`, at the scale `N = sz.size n`.  Each
+form follows from the corresponding evolution-kernel statement: `W^{Cε} ≤ N^{τ}` (`W ≤ N^{1/d}`,
+`ε = τ d / (4 C)`), `W^{-D+C} ≤ N^{-b'}` (`W ≥ N^𝔠`), `4 ≤ W^ε` and `log L ≤ W^ε` eventually
+(`W ≥ N^𝔠 → ∞`), `L^d ≤ N ≤ W^{1/𝔠}` (`K = 1/𝔠`), `g ≤ Λ = 𝔡⁻¹` from `(eq:WO)`. -/
 
 /-- `(deccA0)` w.h.p. for every `ε, D > 0`, at the kernel start time `v` (`Def_decay`, `lem_decayLoop`). -/
 def STEKDecay {m : ℕ} (s t : ℕ → ℝ)
@@ -486,13 +479,13 @@ def STEKDecay {m : ℕ} (s t : ℕ → ℝ)
 def STEKLow (s t : ℕ → ℝ) (X : ∀ n, TimeIcc s t n → sz.SeqΩ → ℝ) : Prop :=
   ∃ b : ℝ, Whp sz (fun n => {ω | ∀ v : TimeIcc s t n, ((sz.size n : ℕ) : ℝ) ^ (-b) ≤ X n v ω})
 
-/-- The window of `lem:sum_decay` (`3_5:1633`): `0 ≤ s ≤ t ≤ 1 - ilambda²/L²` (case (i)) and `(1-t)/(1-s) ≥ W⁻¹`,
-the latter eventually (it follows from `(con_st_ind)` when `d 𝔠_d < 1`, report (a) F1). -/
+/-- The window of `lem:sum_decay` (Lemma 4.16): `0 ≤ s ≤ t ≤ 1 - ilambda²/L²` (case (i)) and `(1-t)/(1-s) ≥ W⁻¹`,
+the latter eventually (it follows from `(con_st_ind)` when `d 𝔠_d < 1`). -/
 def STEKWin (s t : ℕ → ℝ) : Prop :=
   (∀ n, 0 ≤ s n) ∧ (∀ n, s n ≤ t n) ∧ (∀ n, t n ≤ 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2) ∧
     (∀ n, t n < 1) ∧ ∀ᶠ n in atTop, ((sz.W n : ℕ) : ℝ)⁻¹ ≤ (1 - t n) / (1 - s n)
 
-/-- **`lem:sum_Ndecay`** `(sum_res_Ndecay)` (`3_5:1620`) at scale `N`: `‖U_{v,t,σ}∘𝒜_v‖ ≺ ((1-v)/(1-t))^{n} X` from
+/-- **`lem:sum_Ndecay`** `(sum_res_Ndecay)` at scale `N`: `‖U_{v,t,σ}∘𝒜_v‖ ≺ ((1-v)/(1-t))^{n} X` from
 `‖𝒜_v‖ ≺ X`, for `0 ≤ s ≤ t < 1`, any charges `m` with `|m| = 1`, any sign vector. -/
 def STEKSumNdecay (d : ℕ) : Prop :=
   3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ 𝔠 𝔡 : ℝ, ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
@@ -505,7 +498,7 @@ def STEKSumNdecay (d : ℕ) : Prop :=
         (fun n v ω => ‖UN d (sz.L n) (sz.lam n) (EKsgn (m n) σ) (v : ℝ) (t n) (𝒜 n v ω)‖)
         (fun n v ω => ((1 - (v : ℝ)) / (1 - t n)) ^ n_ * X n v ω)
 
-/-- **`(sum_res_2_NAL)`** (`3_5:1649`) at scale `N`, `σ` non-alternating, bulk `κ ≤ Im m`: `≺ ratio^{n-1} X`. -/
+/-- **`(sum_res_2_NAL)`** at scale `N`, `σ` non-alternating, bulk `κ ≤ Im m`: `≺ ratio^{n-1} X`. -/
 def STEKSumRes2NAL (d : ℕ) : Prop :=
   3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
     ∀ s t : ℕ → ℝ, STEKWin sz s t → ∀ m : ℕ → ℂ, (∀ n, ‖m n‖ = 1) → (∀ n, κ ≤ (m n).im) →
@@ -517,8 +510,8 @@ def STEKSumRes2NAL (d : ℕ) : Prop :=
         (fun n v ω => ‖UN d (sz.L n) (sz.lam n) (EKsgn (m n) σ) (v : ℝ) (t n) (𝒜 n v ω)‖)
         (fun n v ω => ((sz.lam n ^ 2 + |1 - (v : ℝ)|) / (sz.lam n ^ 2 + |1 - t n|)) ^ (n_ - 1) * X n v ω)
 
-/-- **`(sum_res_2)`** (`3_5:1659`) at scale `N` for sum-zero tensors (`(sumAzero)`, surely), any `σ`, bulk `κ ≤ Im m`:
-`≺ ratio^{n} X`; the pin `EKSumDecay2` carries `log L ≤ W^ε` and `L^d ≤ W^K` (T2016a, T2042a), both eventual here
+/-- **`(sum_res_2)`** at scale `N` for sum-zero tensors (`(sumAzero)`, surely), any `σ`, bulk `κ ≤ Im m`:
+`≺ ratio^{n} X`; `EKSumDecay2` carries `log L ≤ W^ε` and `L^d ≤ W^K`, both eventual here
 (`K = 1/𝔠`). -/
 def STEKSumRes2 (d : ℕ) : Prop :=
   3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
@@ -532,9 +525,9 @@ def STEKSumRes2 (d : ℕ) : Prop :=
         (fun n v ω => ‖UN d (sz.L n) (sz.lam n) (EKsgn (m n) σ) (v : ℝ) (t n) (𝒜 n v ω)‖)
         (fun n v ω => ((sz.lam n ^ 2 + |1 - (v : ℝ)|) / (sz.lam n ^ 2 + |1 - t n|)) ^ n_ * X n v ω)
 
-/-- **`lem:sum_decay_nonzero`** (`3_5:1666`) at scale `N`, case (ii) `1 - ilambda²/L² ≤ s ≤ t < 1`, `A ⊇ I_diff(σ)`,
+/-- **`lem:sum_decay_nonzero`** at scale `N`, case (ii) `1 - ilambda²/L² ≤ s ≤ t < 1`, `A ⊇ I_diff(σ)`,
 bulk `κ ≤ Im m` (both charges): `‖Q^{(A)}∘U_{v,t,σ}∘𝒜_v‖_∞ ≺ X` from `‖𝒜_v‖_∞ ≺ X` (no decay hypothesis).
-The window carries `0 ≤ s` (DECISIONS §27, T2053 Amend 1): without it `ilambda > L` lets `[s,t]` reach negative times. -/
+The window carries `0 ≤ s`: without it `ilambda > L` lets `[s,t]` reach negative times. -/
 def STEKNonzero (d : ℕ) : Prop :=
   3 ≤ d → ∀ n_ : ℕ, 2 ≤ n_ → ∀ κ 𝔠 𝔡 : ℝ, 0 < κ → ∀ sz : Sizes d, sz.Admissible 𝔠 𝔡 →
     ∀ s t : ℕ → ℝ, (∀ n, 1 - sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ 2 ≤ s n) → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
@@ -562,17 +555,11 @@ theorem st_Bctl_pos {n : ℕ} {u : ℝ} (hu : u < 1) : 0 < sz.Bctl n u := by
 
 end RBM.Gauss.Sizes
 
-/-! ## 7. Instances at `d = 3`
+/-! ## 7. The size sequence `szB` at `d = 3`
 
-Two concrete size sequences, both nondegenerate (`N → ∞`, `d = 3`, `L ≥ 3`, `W ≥ 32` resp. `W ≥ 4`):
-* `sz0` (merged, `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `ilambda_n = (2(n+1))^{-6} → 0`, flow `z0`, `s ≡ 0`, `t ≡ 1/16`):
-  case (i): `ilambda²/L² ≤ 15/16`;
-* `szB` (new: `L = 4`, `W_n = n + 4`, `ilambda = 1`, flow `zB = 1/2 + i/64`, `lemT zB ≥ 31/32`): constant times in every regime,
-  `ilambda²/L² = 1/16`: case (ii) `(s,t) = (15/16, 31/32)` (`1 - s = ilambda²/L²`, `1 - t = ilambda²/(2L²)`, the intermediate
-  regime `ilambda²/L^3 = 1/64 ≤ 1 - t ≤ ilambda²/L²`), and `lem:iterations` case (i) `(s,t) = (7/8, 15/16)`
-  (`1 - s = 1/8 ≤ ilambda²`, `1 - t = ilambda²/L²`).
-What stays a hypothesis of an instance is a stochastic premise (`STKbound`, `STKward`, `(a)`, `(lRB1)`, the Step-2
-conclusions, `STXiBoot`), as in `RBM.Gauss.InductionDefsInst`. -/
+`szB` has `L = 4`, `W_n = n + 4`, `ilambda = 1`, so `ilambda²/L² = 1/16`.  With constant times
+it realizes the regime of `lem:iterations` case (i) at `(s,t) = (7/8, 15/16)`
+(`1 - s = 1/8 ≤ ilambda²`, `1 - t = ilambda²/L²`; `szB_regIterI`). -/
 
 namespace RBM.Gauss.Step34Inst
 
@@ -589,9 +576,6 @@ def szB : Sizes 3 where
 theorem szB_regIterI : STRegIterI szB (fun _ => 7 / 8) (fun _ => 15 / 16) :=
   ⟨fun n => by simp [szB]; norm_num, fun n => by simp [szB]; norm_num⟩
 
-/-! ### The instances of the pins.  Data: `sz0, z0, s ≡ 0, t ≡ 1/16` (general, case (i)); `szB, zB` with the constant times
-of the regime. -/
 
-/-! ### The deterministic pins at `d = 3` -/
 
 end RBM.Gauss.Step34Inst

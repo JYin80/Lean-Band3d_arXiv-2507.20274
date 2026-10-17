@@ -10,13 +10,14 @@ import RBM3D.Propagator.Prop5Hold
 import RBM3D.Propagator.Props4
 
 /-!
-# ST2-06 (ticket T2093): `(eq:simpleboundK)` = `(eq:kn2sol_decay)`, the pin `STK2decay` proved
+# `(eq:simpleboundK)` = `(eq:kn2sol_decay)`: the statement `STK2decay`
 
-`stK2decay_holds (d : ℕ) : STK2decay d` (`Induction/Step2Defs.lean:568`): for `3 ≤ d`,
+`stK2decay_holds (d : ℕ) : STK2decay d` (`Induction/Step2Defs.lean`): for `3 ≤ d`,
 `‖𝒦^{(2)}_{u,σ,a}‖ ≤ C W^{-d} 𝒯̃^{L}_{u,D}(|a₁-a₂|)` uniformly in `D ≥ 0`, `0 ≤ u < 1`,
-`|E| ≤ 2 - κ`, `0 < λ ≤ 𝔡⁻¹` (paper `3_5:457`, `3_5:518`).
+`|E| ≤ 2 - κ`, `0 < λ ≤ 𝔡⁻¹` (arXiv:2507.20274, (3.36) `eq:kn2sol_decay` and (3.45)
+`eq:simpleboundK`).
 
-Proof (all steps are merged facts).
+Proof.
 1. `(Kn2sol)` = `KLK_two`: `𝒦^{(2)} = W^{-d} m₁ m₂ Θ_{u m₁ m₂}(a₁, a₂)`, and `‖m(σ)‖ = 1`
    (`norm_mSigma`, `|E| ≤ 2`), so `‖𝒦^{(2)}‖ = W^{-d} ‖Θ(a₁, a₂)‖`.
 2. Translation invariance (`Theta_apply_add_right_of_three_le`, `‖u m₁ m₂‖ = u < 1`):
@@ -31,12 +32,12 @@ Proof (all steps are merged facts).
 5. `r ≤ L` (`zdist ≤ L`), so `min r L = r` in `tailW`, and `tailW ≥ 𝒯_u(r)` (`le_max_left`):
    the floor `W^{-D}` only enlarges the profile, and `D ≥ 0` plays no role.
 
-The statement of the pin is used exactly (it has no `λ`-lower bound, no `L^d ≤ W^K`, and `∀ n`).
+The statement `STK2decay` is used exactly (it has no `λ`-lower bound, no `L^d ≤ W^K`, and `∀ n`).
 The `λ > L` case needs no split: `ℓ_u = min (max (λ/√(1-u)) 1) L` is the same on both sides.
 
-Port: the `n = 2` tree formula and the Theta bound correspond to RBM2D `Path/KellStar.lean:39`
-(`KpmBoundProp5`) and `:240` (`kpmBoundProp5`) at `c9a24cf`; no text is copied (that statement is
-`≤ C (1 + log L) M_u⁻¹` without decay in `|a - b|`; here the decay comes from `Prop5Decay`).
+In the two-dimensional formalization the `n = 2` tree formula and the Theta bound are
+`KpmBoundProp5` and `kpmBoundProp5` of RBM2D; that statement is `≤ C (1 + log L) M_u⁻¹` without
+decay in `|a - b|`, while here the decay comes from `Prop5Decay`.
 -/
 
 set_option linter.style.longLine false
@@ -126,7 +127,7 @@ private theorem k2d_theta_tail {d : ℕ} {C₅ c : ℝ} (hC₅ : 0 < C₅) (hc :
         unfold tailT
         ring
 
-/-- **`(eq:simpleboundK)` = `(eq:kn2sol_decay)` (`3_5:457`, `518`): the pin `STK2decay` holds.**
+/-- **`(eq:simpleboundK)` = `(eq:kn2sol_decay)`: `STK2decay` holds.**
 Constants first (`κ, 𝔡`), then `C = C₅ e^{1/(4c)}` with `(C₅, c)` the constants of `Prop5Decay d 𝔡⁻¹`,
 independent of the sizes, `n`, `E`, `u`, `D`, `σ`, `a`. -/
 theorem stK2decay_holds (d : ℕ) : STK2decay d := by
@@ -178,9 +179,5 @@ theorem stK2decay_holds (d : ℕ) : STK2decay d := by
             tailW d (sz.L n) (sz.lam n) u ((sz.L n : ℕ) : ℝ) ((sz.W n : ℕ) : ℝ) D
               ((zdistInf d (sz.L n) (a 0 - a 1) : ℕ) : ℝ)) := by ring
 
-/-! ### Compiled nonempty instances (`d = 3`, the merged preflight sequence `sz0`)
-
-`sz0` at `n = 0`: `L = 4`, `W = 32`, `lam = 1/64` (`N = 2097152`, `sz0_values`), and the pin's
-constants `κ = 𝔡 = 1/10` (so `lam ≤ 𝔡⁻¹ = 10`).  Every deterministic hypothesis is discharged. -/
 
 end RBM.Gauss.Sizes

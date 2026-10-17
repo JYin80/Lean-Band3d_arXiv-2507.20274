@@ -9,20 +9,15 @@ import RBM3D.Induction.ZeroModeCalc
 import RBM3D.Induction.QopAlgebra
 
 /-!
-# S6-01 (T2204): the Step-6 pins of `lem:main_ind` (ST-5)
+# The statements of Step 6 of `lem:main_ind`
 
-Moved verbatim from the compiled design probe of T2191 (branch `t/T2191`, commit `96c6b4c`,
-`RBM3D/Probe/T2191Pins.lean`).  Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex`
-(`1_2:line`: `lem:main_ind` `1256-1330`, Step 6 `1390-1396`) and `paper/tex/6_Step6_two_loop.tex`
-(`6:line`).
+Paper: arXiv:2507.20274, Step 6 of Theorem 2.24 (`lem:main_ind`), (2.94) `Eq:Gtlp_exp_flow`
+((2.76) `Eq:Gtlp_exp` at time `t`), and Section 6.
 
-This file holds the Step-6 vocabulary, the shape `STIngR6`, the target `STExp2U`, the regime pins
-`STStep6R`, `STStep6I..IV`, the general pin `STStep6`, the twenty ingredient pins with their
-`*Concl` predicates (probe section 4), `STRegSeq`, and the compiled nonempty instances (probe
-section 8) whose proofs use nothing of the skeletons.  The skeletons `ST_step6_case*_of_pins`, the
-glue (`ST_step6_compose`, ...), the bridges and `STGenericPos` are `Induction/Step6Kit` (S6-02).
-The registry class of each pin (DECISIONS sections 16, 20) is in its docstring or in
-`RBM3D/Test/Axioms.lean`.
+This file holds the Step-6 vocabulary, the shape `STIngR6`, the target `STExp2U`, the regime
+statements `STStep6R`, `STStep6I..IV`, the general statement `STStep6`, the ingredient
+statements with their `*Concl` predicates (section 4), and `STRegSeq`.  The skeletons
+`ST_step6_case*_of_pins`, the glue and the bridges are in `Induction/Step6Kit`.
 -/
 
 
@@ -33,7 +28,7 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 1. Vocabulary, the shape `STIngR6`, the target `STExp2U` and the Step-6 pins -/
+/-! ## 1. Vocabulary, the shape `STIngR6`, the target `STExp2U` and the Step-6 statements -/
 
 namespace RBM.Gauss.Sizes
 
@@ -41,33 +36,33 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `f_{u,σ}(a) = 𝔼 𝓛^{(2)}_{u,σ,a} - 𝒦^{(2)}_{u,σ,a}` (`Eexpint_K-L`, `6:3-7`): a deterministic tensor. -/
+/-- `f_{u,σ}(a) = 𝔼 𝓛^{(2)}_{u,σ,a} - 𝒦^{(2)}_{u,σ,a}` ((6.1) `Eexpint_K-L`): a deterministic tensor. -/
 def STExpErr (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   (∫ ω, Lloop sz n E u σ a ω ∂(sz.seqP)) - STKloop sz n E u σ a
 
-/-- `𝔼 ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_{u,σ,a}` (merged `STELKLK`, `(def_ELKLK)`). -/
+/-- `𝔼 ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_{u,σ,a}` (`STELKLK`, `(def_ELKLK)`). -/
 def STExpELKLK (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   ∫ ω, STELKLK sz n E u σ a ω ∂(sz.seqP)
 
-/-- `𝔼 ℰ^{G̃,(2)}_{u,σ,a}` (merged `STEGt`, `(def_EwtG)`; equal to `𝔼 𝓔^{Gc,(2)}` = `𝔼 LWE` by the rotation bridge
-`STEGt = LWE` of T2080, §7 of this file). -/
+/-- `𝔼 ℰ^{G̃,(2)}_{u,σ,a}` (`STEGt`, `(def_EwtG)`; equal to `𝔼 𝓔^{Gc,(2)}` = `𝔼 LWE` by the rotation bridge
+`STEGt = LWE` of `Step6Kit.lean`). -/
 def STExpEGt (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   ∫ ω, STEGt sz n E u σ a ω ∂(sz.seqP)
 
 /-- The drift `D_{u,σ} = 𝔼ℰ^{LK×LK} + 𝔼ℰ^{G̃}` of the expected hierarchy at `n = 2` (the martingale term `dℰ^M` has
-expectation `0`, `6:90`). -/
+expectation `0`, see the remark after Lemma 6.2). -/
 def STExpDrift (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) : ℂ :=
   STExpELKLK sz n E u σ a + STExpEGt sz n E u σ a
 
-/-- The target `(W^{-d}B_{u,0})² ((ilambda² W^d)^{-1/5} + W^{-d}B_{u,0})` of `(Eq:Gtlp_exp_flow)` (`1_2:1390-1396`) at
+/-- The target `(W^{-d}B_{u,0})² ((ilambda² W^d)^{-1/5} + W^{-d}B_{u,0})` of `(Eq:Gtlp_exp_flow)` at
 size index `n`, time `u`.  At `lam n = 0` Mathlib has `0 ^ (-1/5) = 0`; `(eq:WO)` gives `0 < lam n` eventually
 (`st6_lam_pos`). -/
 def STExpTarget (n : ℕ) (u : ℝ) : ℝ :=
   (sz.Bctl n u) ^ 2 * ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n u)
 
-/-- **`(Eq:Gtlp_exp_flow)`** (`1_2:1390-1396`), uniformly in `u ∈ [s,t]`, left side deterministic: the shape of the merged
-`STExp2` (`Induction/Defs.lean:159`, `(Eq:Gtlp_exp)`) with the time `u ∈ [s_n, t_n]` inside `Prec` (union over `u` inside
-`P`, as the paper's "uniformly in `u`", `1_2:1400`).  Registry class: **owed** (S6-13, through `STStep6`). -/
+/-- **`(Eq:Gtlp_exp_flow)`**, uniformly in `u ∈ [s,t]`, left side deterministic: the shape of
+`STExp2` (`Induction/Defs.lean`, `(Eq:Gtlp_exp)`) with the time `u ∈ [s_n, t_n]` inside `Prec` (union over `u` inside
+`P`, as the paper's "uniformly in `u`"). -/
 def STExp2U (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => TimeIcc s t n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)))
     (fun n p _ => ‖(∫ ω, Lloop sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω ∂(sz.seqP)) -
@@ -75,29 +70,29 @@ def STExp2U (E s t : ℕ → ℝ) : Prop :=
     (fun n p _ => (sz.Bctl n (p.1 : ℝ)) ^ 2 *
         ((sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 5 : ℝ)) + sz.Bctl n (p.1 : ℝ)))
 
-/-- **The endpoint `u = t`** of `STExp2U` is `(Eq:Gtlp_exp)` at time `t` (`1_2:1396`: "Hence the estimate `(Eq:Gtlp_exp)`
-holds at time `t`"), the conclusion `STExp2` of `lem:main_ind` (consumer: `Induction/Defs.lean:304`). -/
+/-- **The endpoint `u = t`** of `STExp2U` is `(Eq:Gtlp_exp)` at time `t` (proof of the main results: "Hence the estimate `(Eq:Gtlp_exp)`
+holds at time `t`"), the conclusion `STExp2` of `lem:main_ind` (consumer: `Induction/Defs.lean`). -/
 theorem STExp2_of_STExp2U {E s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (h : STExp2U sz E s t) : STExp2 sz E t := by
   exact StochDomAt.precomp_param h
     (fun n (p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) => ((⟨t n, hst n, le_rfl⟩ : TimeIcc s t n), p))
 
-/-- **The loss-free part of Step 2** (`(Gt_bound_flow)`, `(Gt_avgbound_flow)` of `1_2:1342-1344`, uniformly in `u ∈ [s,t]`): the third
+/-- **The loss-free part of Step 2** (`(Gt_bound_flow)`, `(Gt_avgbound_flow)`, uniformly in `u ∈ [s,t]`): the third
 conjunct of `STStep2Concl`, `(Eq:Gdecay_w)`, has the loss `((1-s)/(1-u))^{C_d}` relative to the start `s` of the interval, so it does not
 restrict to a sub-interval `[s',t']` (the sub-interval needs the smaller loss `((1-s')/(1-u))^{C_d}`); Step 6 does not use it (its decay input is
-`(Eq:Gdecay_flow)` without loss, `STGdecayW … 0`, which implies it: `st6_GdecayW_of_zero`).  Structural. -/
+`(Eq:Gdecay_flow)` without loss, `STGdecayW … 0`, which implies it). -/
 def STStep2Core (E s t : ℕ → ℝ) : Prop := STLocalEntryU sz E s t ∧ STAvgU sz E s t
 
-/-- **A Step-6 pin.**  The shape of `STIngR5` (`Induction/Step5Pins.lean:82`) with the premises that Step 6 does not use removed, so that
-every premise restricts to a sub-interval `[s',t'] ⊂ [s,t]` (the gluing by intermediate times of `STStep6`: `ST_step6_compose`):
-`3 ≤ d`, constants first (`κ, ε, 𝔡`, then `𝔠_d ∈ (0, 10^{-2}]`, then `𝔠`, the sizes and `z`), `0 ≤ s < t ≤ lemT z` (§29 (1); `t < 1`
-follows, `st5_t_lt_one`), a regime `R`, the hypotheses `(a)`, `(b)` first part and `(d)` (`STExp2`, `(Eq:Gtlp_exp+IND)` `1_2:1281`) at `s`,
+/-- **A Step-6 statement.**  The shape of `STIngR5` (`Induction/Step5Pins.lean`) with the premises that Step 6 does not use removed, so that
+every premise restricts to a sub-interval `[s',t'] ⊂ [s,t]`:
+`3 ≤ d`, constants first (`κ, ε, 𝔡`, then `𝔠_d ∈ (0, 10^{-2}]`, then `𝔠`, the sizes and `z`), `0 ≤ s < t ≤ lemT z` (`t < 1`
+follows, `st5_t_lt_one`), a regime `R`, the hypotheses `(a)`, `(b)` first part and `(d)` (`STExp2`, (2.82) `Eq:Gtlp_exp+IND`) at `s`,
 `(con_st_ind)`, the conclusions of Steps 2 (loss-free part `STStep2Core`), 3, 4 on `[s,t]` and of Step 5 in the form `(Eq:Gdecay_flow)`
-(`STGdecayW … 0`, no loss).  Differences from `STIngR5` (report (d), T2191b): `STKbound`, `STKward` dropped (theorems of the flow:
+(`STGdecayW … 0`, no loss).  Differences from `STIngR5`: `STKbound`, `STKward` dropped (theorems of the flow:
 `stKbound_of_flow`, `stKward_of_flow`); `STDecayStrong s` and the second conjunct `STDecayStrongU` of `STStep5Concl` dropped
-(`(Eq:Gdecay+IND_s<g)`, `(Eq:Gdecay+s<g_flow)`: index `ilambda² ≤ 1-t`, not inherited by sub-intervals; `6:93-152` cites neither);
-`STStep1Loop` dropped (`(lRB1)`: superseded by Step 3, not inherited); `STStep2Concl … C_d` replaced by `STStep2Core` and the quantifier
-`∀ C_d` dropped (its lossy conjunct `(Eq:Gdecay_w)` does not restrict to a sub-interval and Step 6 does not use it).  §29 (2)-(7) for every
-pin of this file: the regime is the merged `STReg5*` (`0 ≤ s` explicit, so `ilambda > L` does not reach negative times), `L^d ≤ W^K` is not a
+(`(Eq:Gdecay+IND_s<g)`, `(Eq:Gdecay+s<g_flow)`: index `ilambda² ≤ 1-t`, not inherited by sub-intervals; the proof of Step 6 cites neither);
+`STStep1Loop` dropped (`(lRB1)` is not used: Step 3 gives the sharper bound; it is not inherited); `STStep2Concl … C_d` replaced by `STStep2Core` and the quantifier
+`∀ C_d` dropped (its lossy conjunct `(Eq:Gdecay_w)` does not restrict to a sub-interval and Step 6 does not use it).  For every
+statement of this file: the regime is `STReg5*` (`0 ≤ s` explicit, so `ilambda > L` does not reach negative times), `L^d ≤ W^K` is not a
 premise (it follows from `Bandwidth` in `STFlow`, `W ≥ N^𝔠`), `0 < lam n` eventually from `WO` in `STFlow` (`st6_lam_pos`), hypotheses on the
 sequences are for every `n` and conclusions are `≺` (mollifier properties are eventual), every `≺` is `Prec` at the scale `N`; per time or
 uniform in `u` is stated in each docstring. -/
@@ -115,39 +110,32 @@ def STIngR6 (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ →
 /-- The conclusion of Step 6: `(Eq:Gtlp_exp_flow)`, uniformly in `u ∈ [s,t]`. -/
 def STStep6Concl {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) : Prop := STExp2U sz E s t
 
-/-- **Step 6 of `lem:main_ind`** (`1_2:1390-1396`; proof `6:93-152`) under a regime predicate `R`. -/
+/-- **Step 6 of `lem:main_ind`** (proof of Step 6) under a regime predicate `R`. -/
 def STStep6R (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : Prop :=
   STIngR6 d R (fun sz E s t => STStep6Concl sz E s t)
 
-/-- **Step 6, regime (i)** `ilambda²/L² ≤ 1-t ≤ 1-s ≤ ilambda²` (`6:97`, `6:103-132`).  Registry class: **owed**
-(follows from the ingredient pins by `ST_step6_caseI_of_pins`, S6-02; the ingredients are proved in S6-09, S6-10, S6-11). -/
+/-- **Step 6, regime (i)** `ilambda²/L² ≤ 1-t ≤ 1-s ≤ ilambda²` (proof of Step 6, (6.9)-(6.12)). -/
 def STStep6I (d : ℕ) : Prop := STStep6R d STReg5I
-/-- **Step 6, regime (ii)** `ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²` (`6:97`, `6:136-147`).  Registry class: **owed**
-(`ST_step6_caseII_of_pins`, S6-02; ingredients S6-12). -/
+/-- **Step 6, regime (ii)** `ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²` (proof of Step 6, (6.14); `ST_step6_caseII_of_pins`). -/
 def STStep6II (d : ℕ) : Prop := STStep6R d STReg5II
-/-- **Step 6, regime (iii)** `1-s ≥ 1-t ≥ ilambda²` (`6:94-96`).  Registry class: **owed** (`ST_step6_caseIII_of_pins`, S6-02;
-ingredient S6-08). -/
+/-- **Step 6, regime (iii)** `1-s ≥ 1-t ≥ ilambda²` (proof of Step 6; `ST_step6_caseIII_of_pins`). -/
 def STStep6III (d : ℕ) : Prop := STStep6R d STReg5III
-/-- **Step 6, regime (iv)** `1-t ≤ 1-s ≤ ilambda²/L^d` (`6:94-96`).  Registry class: **owed**
-(`ST_step6_caseIV_of_pins`, S6-02; ingredients S6-07, S6-08). -/
+/-- **Step 6, regime (iv)** `1-t ≤ 1-s ≤ ilambda²/L^d` (proof of Step 6; `ST_step6_caseIV_of_pins`). -/
 def STStep6IV (d : ℕ) : Prop := STStep6R d STReg5IV
-/-- **Step 6, general** `0 ≤ s < t ≤ lemT z`: the four regimes glued by intermediate times (as `STStep5`,
-`Induction/Step5Pins.lean:461`; `6:93-97` states the four regimes separately).  An assembly pin.  One intermediate time is compiled
-(`ST_step6_compose`, §7b); the general case needs the split of `ℕ` into the patterns of nonempty stages.  Registry class: **owed**
-(S6-13). -/
+/-- **Step 6, general** `0 ≤ s < t ≤ lemT z`: the four regimes glued by intermediate times (the proof of Step 6 states the four
+regimes separately). -/
 def STStep6 (d : ℕ) : Prop := STStep6R d STAny
 
 end RBM.Gauss.Sizes
 
-/-! ## 4. The ingredient pins of Step 6
+/-! ## 4. The ingredient statements of Step 6
 
 * (b) `lem:improve_exp_aver` per time (`STImproveExpAver`) and uniformly (`STExpAvgU`);
 * (c) the expected hierarchy at `n = 2` (`STExpHier`) and its Duhamel forms (`STExpDuhamelZ` plain/`Q^{(A)}`, `STExpDuhamelQ`);
-* (d) the expected drift bounds (`STExpLKLKHi`, `STExpDriftDecay`, `STExpDriftLo`; `(eq:ExpLWn=2)` is compiled from `LWtermEXP`);
+* (d) the expected drift bounds (`STExpLKLKHi`, `STExpDriftDecay`, `STExpDriftLo`; `(eq:ExpLWn=2)` is derived from `LWtermEXP`);
 * (e) regime (i), `σ₁ ≠ σ₂`: `STExpWardI`; (f) regime (ii), `σ₁ ≠ σ₂`: `STExpWardII`;
-* the integrated estimates (`STExpIntI/II/III/IV`: Duhamel + kernel + `u`-integral, conditional on the drift and Ward bounds)
-  and the initial term of regime (i) (`STExpIniI`).
-The first column of every docstring is the paper statement, the last line the registry class (DECISIONS §16, §20). -/
+* the integrated estimates (`STExpIntII/III/IV`: Duhamel + kernel + `u`-integral, conditional on the drift and Ward bounds).
+Each docstring begins with the paper statement that it formalizes. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -157,22 +145,21 @@ variable {d : ℕ} (sz : Sizes d)
 
 /-! ### (b) `lem:improve_exp_aver` -/
 
-/-- **`(res_ELK_n=1)`** (`6:14-16`) at one time sequence `u`: `max_a |𝔼 tr((G_u - M) E_a)| ≺ (W^{-d}B_{u,0})²`, both charges
+/-- **`(res_ELK_n=1)`** at one time sequence `u`: `max_a |𝔼 tr((G_u - M) E_a)| ≺ (W^{-d}B_{u,0})²`, both charges
 (`tr((G_u - M)E_a) = 𝓛^{(1)}_{u,+,a} - m(E)`; for `σ = -` the conjugate).  Deterministic left side, per time. -/
 def STExpAvgAt (E u : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => Bool × Zd d (sz.L n))
     (fun n p _ => ‖(∫ ω, Lloop sz n (E n) (u n) (fun _ : Fin 1 => p.1) (fun _ => p.2) ω ∂(sz.seqP)) - mSigma (E n) p.1‖)
     (fun n _ _ => (sz.Bctl n (u n)) ^ 2)
 
-/-- **`lem:improve_exp_aver`** (`6:12-21`: "the same as [YY_25, Lemma 5.15] by using `(Gt_avgbound_flow)` and
+/-- **`lem:improve_exp_aver`** (Lemma 6.1: "the same as [YY_25, Lemma 5.15] by using `(Gt_avgbound_flow)` and
 `(Eq:L-KGt-flow)`"), per time sequence `u ∈ [0, lemT z]`.  Premises, at the time sequence `u`: `(Gt_avgbound_flow)` (`LWAvgLaw`) and
-`(Eq:L-KGt-flow)` (`STLK`; its `k = 1` case is the first premise, so `LWAvgLaw` is redundant, kept as in the paper).  Route (RBM2D `Evolution/Step61.lean`):
+`(Eq:L-KGt-flow)` (`STLK`; its `k = 1` case is the first premise, so `LWAvgLaw` is redundant, kept as in the paper).  Route (as in RBM2D):
 Stein for `H_u = √u X` gives `𝔼 tr(H G E_a) = -u Σ_p S_{pa} 𝔼[g_p g_a]`, with `z_u m + 1 = -u m²` the self-consistent equation
 `x = u m² S x + y`, `y ≺ (W^{-d}B_{u,0})²` by the second moments of `g_p - m` (`≺ → 𝔼`, envelope `‖G_u‖ ≤ η_u⁻¹ ≤ N^{1-ε}`) and
-`‖Θ_{u m²}‖_{∞→∞} ≤ C` (the merged `ekSameRow_holds`, `Evolution/XiPins.lean:357`; RBM2D has `1 + cShortRow κ (1 + log L)`).
-Consumer: `st6_expAvgU_of_pin` (§7), hence the Ward pins `STExpWardI/II` and `STExpDriftLo` and `ST_step6_case{I,II,IV}_of_pins`.
-§29: `0 ≤ u ≤ lemT z` (1); no regime, no `Q`, no `L^d ≤ W^K` (2)(3); **per time** (`Prec` over `a` only) (5); scale `N` (7).
-Registry class: **owed** (S6-03). -/
+`‖Θ_{u m²}‖_{∞→∞} ≤ C` (`ekSameRow_holds`, `Evolution/XiPins.lean`; RBM2D has `1 + cShortRow κ (1 + log L)`).
+Consumer: `st6_expAvgU_of_pin` (`Step6Kit.lean`), hence the Ward statements `STExpWardI/II` and `STExpDriftLo` and `ST_step6_case{II,IV}_of_pins`.
+The statement has `0 ≤ u ≤ lemT z`; no regime, no `Q`, no `L^d ≤ W^K`; it is **per time** (`Prec` over `a` only), at the scale `N`. -/
 def STImproveExpAver (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -188,13 +175,12 @@ def STExpAvgU (E s t : ℕ → ℝ) : Prop :=
 
 /-! ### (c) the expected hierarchy and its Duhamel forms (deterministic, fixed size) -/
 
-/-- **The expected hierarchy at `n = 2`** (`(eq_L-Keee)` `3_5:73` at `n = 2` after taking expectations, `6:90`: "the leading
+/-- **The expected hierarchy at `n = 2`** ((3.8) `eq_L-Keee` at `n = 2` after taking expectations; the remark after Lemma 6.2: "the leading
 error arises from the martingale term, which vanishes after taking the expectation"): for every `|E| < 2`, `σ`, `a`:
 `u ↦ f_u(σ)(a)` and `u ↦ D_u(σ)(a)` are continuous on `[0,1)`, and on `(0,1)` `∂_u f_u = Θ^{(2)}_{u,σ} f_u + D_u`.  Continuity
-at `u = 0` (`H_u = √u X` is not differentiable there).  Inputs: `Ind.hierarchyN_holds`, the merged
-`Gauss.deriv_integral_gloop_eq_integral_samplewiseLoopGeneratorCuts` (`Gauss/LoopGenerator.lean:312`) and
-`Gauss.initialLoopValue_two_edges` (`:487`); port of RBM2D `ExpHierPin` (`Evolution/MLExpVocab.lean:111`, S2.1).  Consumer: the proof of
-`STExpDuhamelZ/Q` (RBM2D `expDuhamelPin_of_hier`, `MLExpDuhamel.lean:412`).  Registry class: **owed** (S6-04). -/
+at `u = 0` (`H_u = √u X` is not differentiable there).  Inputs: `Ind.hierarchyN_holds`,
+`Gauss.deriv_integral_gloop_eq_integral_samplewiseLoopGeneratorCuts` (`Gauss/LoopGenerator.lean`) and the initial loop values of the
+two-edge loops; after RBM2D's `ExpHierPin`.  Consumer: the proof of `STExpDuhamelZ/Q` (RBM2D's `expDuhamelPin_of_hier`). -/
 def STExpHier (d : ℕ) : Prop :=
   3 ≤ d → ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), |E| < 2 → ∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
     ContinuousOn (fun u => STExpErr sz n E u σ a) (Set.Ico 0 1) ∧
@@ -202,11 +188,10 @@ def STExpHier (d : ℕ) : Prop :=
     ∀ u ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt (fun v => STExpErr sz n E v σ a)
       (STthetaOp sz n E u σ (fun b => STExpErr sz n E u σ b) a + STExpDrift sz n E u σ a) u
 
-/-- **Duhamel from `s`, plain and zero-mode** (`(Eexpint_K-L)` `6:3-7`; `(iisuwjyys_exp)` `6:142-146`): for `0 ≤ s ≤ t < 1`,
+/-- **Duhamel from `s`, plain and zero-mode** ((6.1) `Eexpint_K-L`; (6.14) `iisuwjyys_exp`): for `0 ≤ s ≤ t < 1`,
 `σ` and `A ⊂ {1,2}`, `Q^{(A)} f_t = Q^{(A)} 𝒰_{s,t} f_s + ∫_s^t Q^{(A)} 𝒰_{u,t} D_u du` (`Q^{(A)}` commutes with `𝒰`,
-the merged `zeroModeSet_Ugen`; `A = ∅` is the plain form, `A = {1,2}` is regime (ii)).  RBM2D starts at `0` with `f_0 = 0`
-(`ExpDuhamelPin`, `MLExpVocab.lean:124`); the paper integrates from `s` with the initial term `𝒰_{s,t} f_s`.  Consumer:
-`st6_duhEq_of_pin` (§5).  Registry class: **owed** (S6-05). -/
+`zeroModeSet_Ugen`; `A = ∅` is the plain form, `A = {1,2}` is regime (ii)).  RBM2D's `ExpDuhamelPin` starts at `0` with `f_0 = 0`; the paper integrates from `s` with the initial term `𝒰_{s,t} f_s`.  Consumer:
+`st6_duhEq_of_pin` (`Step6Kit.lean`). -/
 def STExpDuhamelZ (d : ℕ) : Prop :=
   3 ≤ d → ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), |E| < 2 → ∀ s t : ℝ, 0 ≤ s → s ≤ t → t < 1 →
     ∀ (σ : Fin 2 → Bool) (A : Finset (Fin 2)) (a : Fin 2 → Zd d (sz.L n)),
@@ -217,7 +202,7 @@ def STExpDuhamelZ (d : ℕ) : Prop :=
           (RBM.Ind.Ugen d (sz.L n) (sz.lam n) E σ u t (fun b => STExpDrift sz n E u σ b)) a
 
 /-- The source `A_u = 𝒬_u D_u + [𝒬_u, Θ^{(2)}_{u,σ}] f_u - (𝒫 f_u) ∂_u ϑ_u` of the `𝒬`-Duhamel formula `(int_K-L+QE)`
-(`6:109-116`; RBM2D `qDriftT`, `MLExpVocab.lean:70`, the sign of the last term is `-` as printed at `6:115`, paper-delta T2166a). -/
+(RBM2D's `qDriftT`; the sign of the last term is `-` as printed in `(int_K-L+QE)`). -/
 def STExpQsrc (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (ϑ : ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ) :
     (Fin 2 → Zd d (sz.L n)) → ℂ := fun b =>
   STQop (d := d) ϑ u (fun c => STExpDrift sz n E u σ c) b +
@@ -225,9 +210,9 @@ def STExpQsrc (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool) (ϑ : ℝ → (Fin 2 �
       STthetaOp sz n E u σ (STQop (d := d) ϑ u (fun c => STExpErr sz n E u σ c)) b) -
     STPsum (d := d) (fun c => STExpErr sz n E u σ c) (b 0) * deriv (fun τ => ϑ τ b) u
 
-/-- **Duhamel with `𝒬`** (`(int_K-L+QE)` `6:109-116`): for a mollifier `ϑ` with `STMollifierProps` (`Def:QtPt`), `0 ≤ s ≤ t < 1`:
-`𝒬_t f_t = 𝒰_{s,t} 𝒬_s f_s + ∫_s^t 𝒰_{u,t} A_u du`.  RBM2D `ExpQDuhamelPin` (`MLExpVocab.lean:131`).  Consumer:
-`st6_duhEqQ_of_pin` (§7).  Registry class: **owed** (S6-05). -/
+/-- **Duhamel with `𝒬`** (`(int_K-L+QE)`): for a mollifier `ϑ` with `STMollifierProps` (`Def:QtPt`), `0 ≤ s ≤ t < 1`:
+`𝒬_t f_t = 𝒰_{s,t} 𝒬_s f_s + ∫_s^t 𝒰_{u,t} A_u du`.  RBM2D's `ExpQDuhamelPin`.  Consumer:
+`st6_duhEqQ_of_pin` (`Step6Kit.lean`). -/
 def STExpDuhamelQ (d : ℕ) : Prop :=
   3 ≤ d → ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), |E| < 2 → ∀ (C c : ℝ) (ϑ : ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ),
     STMollifierProps (d := d) (sz.lam n) C c ϑ →
@@ -237,7 +222,7 @@ def STExpDuhamelQ (d : ℕ) : Prop :=
           (STQop (d := d) ϑ s (fun b => STExpErr sz n E s σ b)) a +
         ∫ u in s..t, RBM.Ind.Ugen d (sz.L n) (sz.lam n) E σ u t (STExpQsrc sz n E u σ ϑ) a
 
-/-- The Duhamel identities of `STExpDuhamelZ` along the sequences `[s_n, t_n]` (the hypothesis of the integrated pins). -/
+/-- The Duhamel identities of `STExpDuhamelZ` along the sequences `[s_n, t_n]` (the hypothesis of the integrated statements). -/
 def STExpDuhEq (E s t : ℕ → ℝ) : Prop :=
   ∀ n (u : TimeIcc s t n) (σ : Fin 2 → Bool) (A : Finset (Fin 2)) (a : Fin 2 → Zd d (sz.L n)),
     zeroModeSet d (sz.L n) A (fun b => STExpErr sz n (E n) (u : ℝ) σ b) a =
@@ -247,7 +232,7 @@ def STExpDuhEq (E s t : ℕ → ℝ) : Prop :=
         (RBM.Ind.Ugen d (sz.L n) (sz.lam n) (E n) σ v (u : ℝ) (fun b => STExpDrift sz n (E n) v σ b)) a
 
 /-- The `𝒬`-Duhamel identities of `STExpDuhamelQ` along the sequences, for a mollifier family `ϑ`, **eventually in `n`** (the
-mollifier exists for `0 < ilambda_n ≤ 𝔡⁻¹`, which holds eventually: §29 (4), (6)). -/
+mollifier exists for `0 < ilambda_n ≤ 𝔡⁻¹`, which holds eventually). -/
 def STExpDuhEqQ (E s t : ℕ → ℝ) (ϑ : ∀ n : ℕ, ℝ → (Fin 2 → Zd d (sz.L n)) → ℂ) : Prop :=
   ∀ᶠ n in atTop, ∀ (u : TimeIcc s t n) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
     STQop (d := d) (ϑ n) (u : ℝ) (fun b => STExpErr sz n (E n) (u : ℝ) σ b) a =
@@ -267,26 +252,26 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 variable {d : ℕ} (sz : Sizes d)
 
 /-- The window `ilambda²/L^d ≤ 1-t` (so `1-u ≥ ilambda²/L^d` for every `u ≤ t`): where `lem:LWterm_EXP` and `(eq:Exp(L-K)1)`
-apply (`6:58`, `6:83`); it contains regimes (i), (ii), (iii) (`st6_hi_of_reg5I/II/III`). -/
+apply ((6.3), (6.7)); it contains regimes (i), (ii), (iii) (`st6_hi_of_reg5I/II/III`). -/
 def STDriftHi {d : ℕ} (sz : Sizes d) (_s t : ℕ → ℝ) : Prop :=
   ∀ n, sz.lam n ^ 2 / ((sz.L n : ℕ) : ℝ) ^ d ≤ 1 - t n
 
-/-- **`(eq:Exp(L-K)1)`** (`6:58-62`), `1-u ≥ ilambda²/L^d`: `𝔼ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_{u,σ,a} ≺ (W^{-d}B_{u,0})^{11/5} Σ_b
+/-- **`(eq:Exp(L-K)1)`**, `1-u ≥ ilambda²/L^d`: `𝔼ℰ^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_{u,σ,a} ≺ (W^{-d}B_{u,0})^{11/5} Σ_b
 B_{u,|a₁-b|} e^{-(|a₁-b|/ℓ_u)^{1/2}} ≲ (1-u)⁻¹ (W^{-d}B_{u,0})^{11/5}`, uniformly in `u ∈ [s,t]` (the sum over `b` is `≲ (1-u)⁻¹`
-by the shell count, absolute constant: report (a)). -/
+by the shell count, absolute constant). -/
 def STExpLKLKHiConcl (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := STIdx2 sz s t)
     (fun n p _ => ‖STExpELKLK sz n (E n) (p.1 : ℝ) p.2.1 p.2.2‖)
     (fun n p _ => (1 - (p.1 : ℝ))⁻¹ * (sz.Bctl n (p.1 : ℝ)) ^ (11 / 5 : ℝ))
 
-/-- **`(eq:Exp(L-K)1)`**: the pin.  Inputs: `(Eq:Gdecay_flow)` (Step 5, pointwise decay), `(Eq:L-KGt-flow)` at `n = 2` (Step 4,
-the maximum bound), `Σ_y S^{(B)}_{xy} = 1`, the `≺ → 𝔼` step (`momentDomAt_of_stochDomAt`, `Gauss/DominationAt.lean:328`, envelope
-`‖G_u‖ ≤ η_u⁻¹ ≤ N^{1-ε}`).  Consumers: `ST_step6_case{I,II,III}_of_pins`.  §29: (2) window `STDriftHi`; (5) uniform in `u`
-(`Prec` over `TimeIcc`).  Registry class: **owed** (S6-06). -/
+/-- **`(eq:Exp(L-K)1)`**: the statement `STExpLKLKHi`.  Inputs: `(Eq:Gdecay_flow)` (Step 5, pointwise decay), `(Eq:L-KGt-flow)` at `n = 2` (Step 4,
+the maximum bound), `Σ_y S^{(B)}_{xy} = 1`, the `≺ → 𝔼` step (`momentDomAt_of_stochDomAt`, `Gauss/DominationAt.lean`, envelope
+`‖G_u‖ ≤ η_u⁻¹ ≤ N^{1-ε}`).  Consumers: `ST_step6_case{II,III}_of_pins`.  Window `STDriftHi`; uniform in `u`
+(`Prec` over `TimeIcc`). -/
 def STExpLKLKHi (d : ℕ) : Prop := STIngR6 d STDriftHi (fun sz E s t => STExpLKLKHiConcl sz E s t)
 
-/-- **`(eq:ExpLWn=2)`** (`6:83-88`, `lem:LWterm_EXP`), `1-u ≥ ilambda²/L^d`: `𝔼ℰ^{G̃,(2)}_{u,σ,a} ≺ (1-u)⁻¹ (W^{-d}B_{u,0})^{5/2}`,
-uniformly in `u ∈ [s,t]`; compiled from the per-time pin `LWtermEXP` (LW-14) by `st6_EGtHi_of_LW`. -/
+/-- **`(eq:ExpLWn=2)`** (Lemma 6.2 `lem:LWterm_EXP`), `1-u ≥ ilambda²/L^d`: `𝔼ℰ^{G̃,(2)}_{u,σ,a} ≺ (1-u)⁻¹ (W^{-d}B_{u,0})^{5/2}`,
+uniformly in `u ∈ [s,t]`; derived from the per-time statement `LWtermEXP` by `st6_EGtHi_of_LW`. -/
 def STExpEGtHiConcl (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := STIdx2 sz s t)
     (fun n p _ => ‖STExpEGt sz n (E n) (p.1 : ℝ) p.2.1 p.2.2‖)
@@ -295,32 +280,32 @@ def STExpEGtHiConcl (E s t : ℕ → ℝ) : Prop :=
 /-- The drift bounds of the window `1-u ≥ ilambda²/L^d` (regimes (i), (ii), (iii)): `(eq:Exp(L-K)1)` and `(eq:ExpLWn=2)`. -/
 def STExpDriftHiConcl (E s t : ℕ → ℝ) : Prop := STExpLKLKHiConcl sz E s t ∧ STExpEGtHiConcl sz E s t
 
-/-- **`(eq:Exp(L-K)2)` and `(eq:ExpLWn=2_smalleta)`** (`6:63-66`, `6:73-79`), `1-u ≤ ilambda²/L^d` (regime (iv)): both `𝔼ℰ^{LK×LK}`
+/-- **`(eq:Exp(L-K)2)` and `(eq:ExpLWn=2_smalleta)`** ((6.4), (6.6)), `1-u ≤ ilambda²/L^d` (regime (iv)): both `𝔼ℰ^{LK×LK}`
 and `𝔼ℰ^{G̃}` are `≺ W^d L^d (N|1-u|)^{-4} = (1-u)⁻¹ (N(1-u))^{-3}`, hence the drift `D_u`, uniformly in `u ∈ [s,t]`. -/
 def STExpDriftLoConcl (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := STIdx2 sz s t)
     (fun n p _ => ‖STExpDrift sz n (E n) (p.1 : ℝ) p.2.1 p.2.2‖)
     (fun n p _ => (1 - (p.1 : ℝ))⁻¹ * ((((sz.size n : ℕ) : ℝ) * (1 - (p.1 : ℝ)))⁻¹) ^ 3)
 
-/-- **`(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)`**: the pin, regime (iv).  Inputs: `(Eq:L-KGt-flow)` at `n = 2, 3` (Step 4), `(eq:bcal_k)`
-at `n = 3` (merged `stKbound_of_flow`), `(res_ELK_n=1)` (`STExpAvgU`, from `STImproveExpAver`, `STAvgU` and `STLKU`),
-`(Gt_avgbound_flow)`; `W^d Σ_{x,y} S_{xy} = N`.  Consumer: `ST_step6_caseIV_of_pins`.  Registry class: **owed** (S6-07). -/
+/-- **`(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)`**: the statement `STExpDriftLo`, regime (iv).  Inputs: `(Eq:L-KGt-flow)` at `n = 2, 3` (Step 4), `(eq:bcal_k)`
+at `n = 3` (`stKbound_of_flow`), `(res_ELK_n=1)` (`STExpAvgU`, from `STImproveExpAver`, `STAvgU` and `STLKU`),
+`(Gt_avgbound_flow)`; `W^d Σ_{x,y} S_{xy} = N`.  Consumer: `ST_step6_caseIV_of_pins`. -/
 def STExpDriftLo (d : ℕ) : Prop :=
   STIngR6 d STReg5IV (fun sz E s t => STExpAvgU sz E s t → STExpDriftLoConcl sz E s t)
 
-/-- **`(deccA0)` for the expected drift** (`3_5:1634`, `Def_decay`, for the deterministic tensor `D_{u,σ}`): for every `ε, D > 0`,
+/-- **`(deccA0)` for the expected drift** (`Def_decay`, for the deterministic tensor `D_{u,σ}`): for every `ε, D > 0`,
 eventually in `n`, `|D_{u,σ}(a)| ≤ W^{-D}` whenever `max_{i,j} |a_i - a_j| ≥ W^ε ℓ_u`, for every `u ∈ [s_n, t_n]`, `σ`
 (the hypothesis `STEKDecay` of `(sum_res_1)`, `(sum_res_2_NAL)`, `(sum_res_2)`, needed in regime (i); by `lem_decayLoop`, `STDecayLoopU`,
 for the loops of length `2, 3` inside `ℰ`, `ℓ¹` against `L^∞` distances: `STdiamInf`). -/
 def STExpDriftDecayConcl (E s t : ℕ → ℝ) : Prop :=
   ∀ σ : Fin 2 → Bool, STEKDecay sz s t (fun n v _ a => STExpDrift sz n (E n) (v : ℝ) σ a)
 
-/-- **`(deccA0)` for `D_u`**: the pin, window `1-t ≥ ilambda²/L²` (regime (i)); from `STDecayLoopU` (`Induction/DecayLoopB.lean:792`)
-and the `≺ → 𝔼` step.  Consumer: `ST_step6_caseI_of_pins`.  Registry class: **owed** (S6-07). -/
+/-- **`(deccA0)` for `D_u`**: the statement `STExpDriftDecay`, window `1-t ≥ ilambda²/L²` (regime (i)); from `STDecayLoopU` (`Induction/DecayLoopB.lean`)
+and the `≺ → 𝔼` step. -/
 def STExpDriftDecay (d : ℕ) : Prop := STIngR6 d STReg5I (fun sz E s t => STExpDriftDecayConcl sz E s t)
 
-/-- **Regime (i), `σ₁ ≠ σ₂`** (`(eq:EPL-K)` `6:104-107`, `(eq:boundELKQ1)` `6:121-123`, `(eq:boundcommutator)` `6:126-131`), for every
-mollifier family `ϑ` with `STMollifierProps` (eventually in `n`: `ilambda_n > 0` only eventually, §29 (4), (6)): by Ward's identities
+/-- **Regime (i), `σ₁ ≠ σ₂`** (`(eq:EPL-K)`, `(eq:boundELKQ1)`, `(eq:boundcommutator)`), for every
+mollifier family `ϑ` with `STMollifierProps` (eventually in `n`: `ilambda_n > 0` only eventually): by Ward's identities
 `(WI_calL)`, `(WI_calK)`, `(res_ELK_n=1)` and `(eq:derv_Theta)`:
 `[𝒫∘f_u]_{a₁} ϑ_{u,a} = Im 𝔼tr((G_u-M)E_{a₁})/(W^dη_u) ϑ_{u,a} ≺ (W^{-d}B_{u,0})³`,
 `‖[𝒫∘f_u] ∂_uϑ_u‖_∞, ‖[𝒬_u, Θ^{(2)}_{u,σ}] f_u‖_∞ ≺ (1-u)⁻¹ (W^{-d}B_{u,0})³`, uniformly in `u ∈ [s,t]`. -/
@@ -341,14 +326,12 @@ def STExpWardIConcl (E s t : ℕ → ℝ) : Prop :=
           deriv (fun τ => ϑ n τ q.2.2) (q.1 : ℝ)‖)
       (fun n q _ => (1 - (q.1 : ℝ))⁻¹ * (sz.Bctl n (q.1 : ℝ)) ^ 3)
 
-/-- **Regime (i) Ward terms**: the pin (window `1-t ≥ ilambda²/L²`, §29 (2): `(ℓ_u^d η_u)⁻¹ ≲ B_{u,0}` needs it).  Consumer:
-`ST_step6_caseI_of_pins`.  Registry class: **owed** (S6-10). -/
+/-- **Regime (i) Ward terms**: the statement `STExpWardI` (window `1-t ≥ ilambda²/L²`: `(ℓ_u^d η_u)⁻¹ ≲ B_{u,0}` needs it). -/
 def STExpWardI (d : ℕ) : Prop :=
   STIngR6 d STReg5I (fun sz E s t => STExpAvgU sz E s t → STExpWardIConcl sz E s t)
 
-/-- **Regime (ii) Ward decomposition** (`6:137-141`): for `σ₁ ≠ σ₂`, `f_{u,σ} - Q^{({1,2})} f_{u,σ} = Im[𝔼tr(G̃(E_{a₁}+E_{a₂})) -
-N^{-1} 𝔼tr G̃]/(N η_u)` (`tr` the unnormalised trace, `E_a = W^{-d} 1_{[a]}`, `N = (WL)^d`, `η_u = (1-u) Im m`; checked as a
-deterministic identity at `d = 3`, `L = 3`, `W ∈ {1,2}`: report (a)), hence by `(res_ELK_n=1)`, `(N η_u)⁻¹ ≤ (Im m)⁻¹ (N(1-u))⁻¹ ≤
+/-- **Regime (ii) Ward decomposition**: for `σ₁ ≠ σ₂`, `f_{u,σ} - Q^{({1,2})} f_{u,σ} = Im[𝔼tr(G̃(E_{a₁}+E_{a₂})) -
+N^{-1} 𝔼tr G̃]/(N η_u)` (`tr` the unnormalised trace, `E_a = W^{-d} 1_{[a]}`, `N = (WL)^d`, `η_u = (1-u) Im m`), hence by `(res_ELK_n=1)`, `(N η_u)⁻¹ ≤ (Im m)⁻¹ (N(1-u))⁻¹ ≤
 (Im m)⁻¹ W^{-d}B_{u,0}` (bulk `Im m ≥ c(κ)`): `≺ (W^{-d}B_{u,0})³`, uniformly in `u ∈ [s,t]`. -/
 def STExpWardIIConcl (E s t : ℕ → ℝ) : Prop :=
   Prec sz (U := fun n => TimeIcc s t n × {σ : Fin 2 → Bool // σ 0 ≠ σ 1} × (Fin 2 → Zd d (sz.L n)))
@@ -356,19 +339,19 @@ def STExpWardIIConcl (E s t : ℕ → ℝ) : Prop :=
       zeroModeSet d (sz.L n) (Finset.univ : Finset (Fin 2)) (fun b => STExpErr sz n (E n) (q.1 : ℝ) q.2.1.1 b) q.2.2‖)
     (fun n q _ => (sz.Bctl n (q.1 : ℝ)) ^ 3)
 
-/-- **Regime (ii) Ward decomposition**: the pin (`(normQA2)` at `A = {1,2}` is the merged `norm_zeroModeSet_le`, `‖Q^{(A)}𝒜‖ ≤ 2^{|A|}‖𝒜‖`).
-Consumer: `ST_step6_caseII_of_pins`.  Registry class: **owed** (S6-12). -/
+/-- **Regime (ii) Ward decomposition**: the statement `STExpWardII` (`(normQA2)` at `A = {1,2}` is `norm_zeroModeSet_le`,
+`‖Q^{(A)}𝒜‖ ≤ 2^{|A|}‖𝒜‖`).  Consumer: `ST_step6_caseII_of_pins`. -/
 def STExpWardII (d : ℕ) : Prop :=
   STIngR6 d STReg5II (fun sz E s t => STExpAvgU sz E s t → STExpWardIIConcl sz E s t)
 
 end RBM.Gauss.Sizes
 
-/-! ### The integrated estimates (Duhamel + kernel estimate + `u`-integral) and the initial term of regime (i)
+/-! ### The integrated estimates (Duhamel + kernel estimate + `u`-integral)
 
 `STExpIntConcl Q P`: if the initial term `Q^{(A)}𝒰_{s,u} f_s` is `≺ F` (a deterministic control), then `Q^{(A)} f_u ≺ F +
 (W^{-d}B_{u,0})² ((ilambda² W^d)^{-1/5} + W^{-d}B_{u,0})`, uniformly in `u ∈ [s,t]`: the drift integral
-`∫_s^u Q^{(A)} 𝒰_{v,u} D_v dv` is bounded by the kernel estimates (merged `stek_*_holds`) applied to the deterministic tensors `D_v`,
-integrated against the drift bounds; the exponents close as in report (a).  `P` restricts the sign vectors. -/
+`∫_s^u Q^{(A)} 𝒰_{v,u} D_v dv` is bounded by the kernel estimates (`stek_*_holds`) applied to the deterministic tensors `D_v`,
+integrated against the drift bounds.  `P` restricts the sign vectors. -/
 
 namespace RBM.Gauss.Sizes
 
@@ -388,25 +371,25 @@ def STExpIntConcl (Q : Finset (Fin 2)) (P : (Fin 2 → Bool) → Prop) (E s t : 
       (fun n p _ => ‖zeroModeSet d (sz.L n) Q (fun b => STExpErr sz n (E n) (p.1 : ℝ) p.2.1.1 b) p.2.2‖)
       (fun n p _ => F n p + STExpTarget sz n (p.1 : ℝ))
 
-/-- **Regime (iii)** `1-t ≥ ilambda²`, all `σ`, no `Q` (`6:94-96`: `(sum_res_Ndecay)` with `n = 2`, `∫_s^u ((1-v)/(1-u))² (1-v)⁻¹
+/-- **Regime (iii)** `1-t ≥ ilambda²`, all `σ`, no `Q` (proof of Step 6: `(sum_res_Ndecay)` with `n = 2`, `∫_s^u ((1-v)/(1-u))² (1-v)⁻¹
 (W^{-d}B_{v,0})^{11/5} dv ≲ (1-u)^{-2-1/5} W^{-11d/5}`, no `log`: `x^{-6/5}`, `x^{-3/2}`); conditional on the Duhamel identity and the drift
-bounds of the window.  Consumer: `ST_step6_caseIII_of_pins`.  Registry class: **owed** (S6-08). -/
+bounds of the window.  Consumer: `ST_step6_caseIII_of_pins`. -/
 def STExpIntIII (d : ℕ) : Prop :=
   STIngR6 d STReg5III (fun sz E s t =>
     STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t → STExpIntConcl sz ∅ STSigAll E s t)
 
-/-- **Regime (iv)** `1-s ≤ ilambda²/L^d`, all `σ`, no `Q` (`6:94-96`: `(sum_res_Ndecay)`, `n = 2`, `∫_s^u ((1-v)/(1-u))² x_v⁻¹
+/-- **Regime (iv)** `1-s ≤ ilambda²/L^d`, all `σ`, no `Q` (proof of Step 6: `(sum_res_Ndecay)`, `n = 2`, `∫_s^u ((1-v)/(1-u))² x_v⁻¹
 (N x_v)^{-3} dv ≲ (N x_u)^{-3}`); conditional on the Duhamel identity and `(eq:Exp(L-K)2)`, `(eq:ExpLWn=2_smalleta)`.
-Consumer: `ST_step6_caseIV_of_pins`.  Registry class: **owed** (S6-08). -/
+Consumer: `ST_step6_caseIV_of_pins`. -/
 def STExpIntIV (d : ℕ) : Prop :=
   STIngR6 d STReg5IV (fun sz E s t =>
     STExpDuhEq sz E s t → STExpDriftLoConcl sz E s t → STExpIntConcl sz ∅ STSigAll E s t)
 
-/-- **Regime (ii)** `ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²`: `Q^{({1,2})}` for `σ₁ ≠ σ₂`, none for `σ₁ = σ₂` (`6:97`, `6:142-147`:
-`(sum_res_Ndecay_nonzero)` `3_5:1667` with `A ⊇ I_diff(σ)`; for `σ₁ = σ₂`, `A = ∅` (`I_diff = ∅`), **not** `(sum_res_2_NAL)`: the
-latter, `lem:sum_decay` `3_5:1633`, needs `1-t ≥ ilambda²/L²`, which with `1-s ≤ ilambda²/L²` forces `s = t`: compiled as `st6_F1_window_vs_reg5II`, report (a), F1, paper-delta
-candidate `T2191a`); the kernel loses nothing, the `u`-integral `∫_s^u x_v⁻¹ dv ≤ log(x_s/x_u) ≤ (d-2) log L`; conditional on the Duhamel
-identity and the drift bounds.  Consumer: `ST_step6_caseII_of_pins`.  Registry class: **owed** (S6-12). -/
+/-- **Regime (ii)** `ilambda²/L^d ≤ 1-t ≤ 1-s ≤ ilambda²/L²`: `Q^{({1,2})}` for `σ₁ ≠ σ₂`, none for `σ₁ = σ₂` (proof of Step 6, (6.14):
+`(sum_res_Ndecay_nonzero)` of Lemma 4.17 with `A ⊇ I_diff(σ)`; for `σ₁ = σ₂`, `A = ∅` (`I_diff = ∅`), **not** `(sum_res_2_NAL)`: the
+latter, `lem:sum_decay` (Lemma 4.16), needs `1-t ≥ ilambda²/L²`, which with `1-s ≤ ilambda²/L²` forces `s = t`); the kernel loses
+nothing, the `u`-integral `∫_s^u x_v⁻¹ dv ≤ log(x_s/x_u) ≤ (d-2) log L`; conditional on the Duhamel
+identity and the drift bounds.  Consumer: `ST_step6_caseII_of_pins`. -/
 def STExpIntII (d : ℕ) : Prop :=
   STIngR6 d STReg5II (fun sz E s t =>
     STExpDuhEq sz E s t → STExpDriftHiConcl sz E s t →
@@ -420,27 +403,13 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **A two-stage regime**: `[s,t]` is cut at a sequence `m`, `s < m < t`, with `R₁` on `[s,m]` and `R₂` on `[m,t]`.  Registry class: structural. -/
+/-- **A regime in two pieces**: `[s,t]` is cut at a sequence `m`, `s < m < t`, with `R₁` on `[s,m]` and `R₂` on `[m,t]`. -/
 def STRegSeq (R₁ R₂ : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) : Prop :=
   ∃ m : ℕ → ℝ, (∀ n, s n < m n) ∧ (∀ n, m n < t n) ∧ R₁ sz s m ∧ R₂ sz m t
 
 end RBM.Gauss.Sizes
 
-/-! ## 8. Compiled nonempty instances at `d = 3`
 
-Data (all merged, `RBM.Gauss.Step5Inst` and `Step34Inst`, ticket item 7): `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`;
-* regime (i): `szB` (`L = 4`, `W_n = n + 4`, `ilambda = 1`), flow `zB`, `(s,t) = (7/8, 15/16)`: `1/16 = ilambda²/L² ≤ 1-t = 1/16 ≤ 1-s = 1/8 ≤ 1`;
-* regime (ii): `szB`, `(s,t) = (15/16, 31/32)`: `ilambda²/L³ = 1/64 ≤ 1-t = 1/32 ≤ 1-s = 1/16 ≤ 1/16`;
-* regime (iii): `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `ilambda_n = (2(n+1))^{-6}`), flow `z0`, `(s,t) = (0, 1/16)`;
-* regime (iv): `szG` (`szB` with `ilambda = 5`), flow `zB`, `(s,t) = (5/8, 3/4)`: `1-t = 1/4 ≤ 1-s = 3/8 ≤ 25/64`.
-Every deterministic hypothesis (flow, time ranges, regime, `(con_st_ind)` for every `𝔠_d > 0`) is discharged; what stays a
-hypothesis of an instance is a stochastic premise (`(a)`, `(b)`, `(d)` at `s`, the conclusions of Steps 2-5) or the premise of another gate's pin
-(`LWtermEXP`, `LWAvgLaw`).  `(ilambda² W^d)^{-1/5} ≠ 0` at each data (`inst_G_pos_*`). -/
 
-/-! ### The four regime pins and the general pin -/
 
-/-! ### The ingredient pins, one instance per regime of their window -/
 
-/-! ### The deterministic pins at concrete data (`sz0`, `n = 0`: `L = 4`, `W = 32`, `ilambda = 1/64`, `E = 1/2`) -/
-
-/-! ### `(ilambda² W^d)^{-1/5} ≠ 0`, the target, the index sets, `(normQA2)` -/

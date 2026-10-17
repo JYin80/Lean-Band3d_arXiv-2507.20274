@@ -9,25 +9,23 @@ import RBM3D.Induction.KDecay
 import RBM3D.Induction.DecayLoopB
 
 /-!
-# S3-08 (ticket T2137): `lem:SEforLn`, parts (1) and (2)
+# `lem:SEforLn`, parts (1) and (2)
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`: `lem:SEforLn` (`3_5:1017-1034`),
-proof `3_5:1047-1062`, `(bEwGn)`, `(eq:KsimL-K)`, `(yi2oslxj2)`, `(Gt_avgbound_flow)`,
-`(wardineq_K)`.  The reference (older paper version) is RBM2D `Induction/BcalE.lean` at
-`c9a24cf`, conjuncts (i)-(ii), whose window decomposition is replaced here by the contraction
+Paper: arXiv:2507.20274, Lemma 4.3 (`lem:SEforLn`), its proof, (4.12) `bEwGn`, (4.13) `eq:KsimL-K`,
+(4.1) `yi2oslxj2`, (2.88) `Gt_avgbound_flow`, (4.9) `wardineq_K`.  The proof uses the contraction
 inequality (`stContract_holds`) and the `𝒦`-loop Ward bound (`stKward_timeIcc`).
 
 * `stSEforLn_part1`: `‖ℰ^{G̃,(k)}‖ ≺ B^k η⁻¹ (Ξ̂^{𝓛}_{n₁} Ξ̂^{𝓛}_{n₂})^{1/2}`,
   `(n₁, n₂) = STn12E k`, uniformly in `u ∈ [s,t]` and the labels: the first conjunct of
-  `STSEforLnConcl` (`Step34Pins.lean:363`), from the uniform averaged local law `STAvgU` and
+  `STSEforLnConcl` (in `Step34Pins.lean`), from the uniform averaged local law `STAvgU` and
   the contraction inequality.
 * `stSEforLn_part2`: `‖[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(k)}‖ ≺ B^k η⁻¹ Ξ̂^{𝓛-𝒦}_{k-l+2}`, `3 ≤ l ≤ k`: the
   second conjunct, from the uniform `𝒦`-loop Ward bound `stKward_timeIcc` (no hypothesis beyond
   the flow).
 
 The deterministic core (§1-§3, §5) is a bound for every sample `ω` and every time `τ ∈ [0,1)`,
-`|E| < 2`; the `≺` is assembled in §4 and §6 by the inclusion of the bad events.  Every helper
-that the ticket does not pin is `private` with the prefix `SEforLn1_`.
+`|E| < 2`; the `≺` is assembled in §4 and §6 by the inclusion of the bad events.  Every auxiliary
+lemma is `private` with the prefix `SEforLn1_`.
 -/
 
 set_option linter.style.longLine false
@@ -105,13 +103,13 @@ end Rot
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `𝓛` of the pins (`STLI`) is invariant under rotation. -/
+/-- `𝓛` of the loop data `STLI` is invariant under rotation. -/
 private theorem SEforLn1_STLI_rotate (n : ℕ) (E τ : ℝ) (ω : sz.SeqΩ) (j : ℕ) (σ : List Bool)
     (a : List (Zd d (sz.L n))) (h : σ.length = a.length) :
     sz.STLI n E τ ω ⟨σ.rotate j, a.rotate j⟩ = sz.STLI n E τ ω ⟨σ, a⟩ :=
   SEforLn1_loopL_rotate_iter j σ a h
 
-/-- `𝒦` of the pins (`STKI`) is invariant under rotation (`KLK_rotate`, iterated). -/
+/-- `𝒦` of the loop data `STKI` is invariant under rotation (`KLK_rotate`, iterated). -/
 private theorem SEforLn1_STKI_rotate (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (hτ : τ ∈ Set.Ico (0 : ℝ) 1)
     (j : ℕ) (σ : List Bool) (a : List (Zd d (sz.L n))) (h : σ.length = a.length) :
     sz.STKI n E τ ⟨σ.rotate j, a.rotate j⟩ = sz.STKI n E τ ⟨σ, a⟩ := by
@@ -274,7 +272,7 @@ private theorem SEforLn1_sum_cutGlue (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 :
   change ‖sz.STLI n E τ ω ⟨σ.take j ++ σ.drop (j - 1), a.take (j - 1) ++ b :: a.drop (j - 1)⟩‖ = _
   rw [← this, hσ₁, ha₁]
 
-/-- **`ℰ^{G̃,(k)}` of a loop by the contraction inequality** (`3_5:1048-1053`): if `|tr(G̃(σ) E_a)| ≤ δ` for all
+/-- **`ℰ^{G̃,(k)}` of a loop by the contraction inequality** (proof of Lemma 4.3): if `|tr(G̃(σ) E_a)| ≤ δ` for all
 `σ`, `a`, then `‖ℰ^{G̃,(k)}‖ ≤ k δ η⁻¹ (max|𝓛^{(n₁)}| max|𝓛^{(n₂)}|)^{1/2}`: the sum over the cut edge `j`, the
 column sums of `S^{(B)}`, and `Σ_b |𝓛(cutGlue_j^{(b)})|` by `SEforLn1_sum_cutGlue`. -/
 private theorem SEforLn1_det_egt (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 ≤ τ) (h1 : τ < 1)
@@ -319,7 +317,7 @@ private theorem SEforLn1_det_egt (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h0 : 0 �
         rw [Finset.sum_const, Nat.card_Icc, Nat.add_sub_cancel, nsmul_eq_mul]
         field_simp
 
-/-! ## 3. The controls `Ξ̂` and the arithmetic of the exponents -/
+/-! ## 3. The quantities `Ξ̂` and the arithmetic of the exponents -/
 
 private theorem SEforLn1_maxL_le (n : ℕ) (E u : ℝ) (ω : sz.SeqΩ) (m : ℕ) (hB : 0 < sz.Bctl n u) :
     STmaxL sz n E u m ω ≤ sz.Bctl n u ^ (m - 1) * STXiL sz n E u m ω := by
@@ -457,7 +455,7 @@ private theorem SEforLn1_flow_im {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hflo
     0 < (z n).im :=
   lt_of_lt_of_le (Real.rpow_pos_of_pos (by exact_mod_cast sz.one_le_size n) _) (hflow.2 n).2.1
 
-/-- **Part (1) of `lem:SEforLn`, `(bEwGn)`** (`3_5:1017-1027`, proof `3_5:1047-1053`): along the flow `STFlow` with
+/-- **Part (1) of `lem:SEforLn`, `(bEwGn)`** (Lemma 4.3, `lem:SEforLn`, and its proof): along the flow `STFlow` with
 `0 ≤ s < t ≤ lemT z`, from the uniform averaged local law `STAvgU` (`(Gt_avgbound_flow)`, a conclusion of Step 2:
 the third input of `STStep2Concl`), for every `k ≥ 2`,
 `max_{σ,a} |ℰ^{G̃,(k)}_{u,σ,a}| ≺ (W^{-d}B_{u,0})^k η_u⁻¹ (Ξ̂^{𝓛}_{u,n₁} Ξ̂^{𝓛}_{u,n₂})^{1/2}`,
@@ -527,7 +525,7 @@ private theorem SEforLn1_sum_cutGlueL_K (n : ℕ) {E τ : ℝ} (hE : |E| < 2) (h
   change ‖sz.STKI n E τ ⟨σ.take k ++ σ.drop (l' - 1), a.take (k - 1) ++ x :: a.drop (l' - 1)⟩‖ = _
   rw [← this, hσ₂, ha₂]
 
-/-- **`[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(m)}` by the Ward bound** (`3_5:1054-1061`): if `Σ_{a_l} |𝒦^{(l)}_{σ,a}| ≤ Kw` for all
+/-- **`[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(m)}` by the Ward bound** (proof of Lemma 4.3): if `Σ_{a_l} |𝒦^{(l)}_{σ,a}| ≤ Kw` for all
 `σ`, `a`, then `‖[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(m)}‖ ≤ W^d · m² · 2 · max|(𝓛-𝒦)^{(m-l+2)}| · Kw`: for each pair of cut edges
 `k < l'` the two pieces have lengths summing to `m + 2`; the `𝒦`-piece is summed over its glued label
 (column or row sums of `S^{(B)}`). -/
@@ -689,7 +687,7 @@ private theorem SEforLn1_part2_core {E s t : ℕ → ℝ} (hN : sz.SizeTendsto) 
   rw [show k + 2 - l = k - l + 2 by omega] at hd1
   exact absurd hp (not_lt.2 (hd1.trans hfin))
 
-/-- **Part (2) of `lem:SEforLn`, `(eq:KsimL-K)`** (`3_5:1028-1034`, proof `3_5:1054-1061`): along the flow `STFlow`
+/-- **Part (2) of `lem:SEforLn`, `(eq:KsimL-K)`** (Lemma 4.3, `lem:SEforLn`, and its proof): along the flow `STFlow`
 with `0 ≤ s < t ≤ lemT z`, for every `k ≥ 2` and `3 ≤ l ≤ k`,
 `max_{σ,a} |[𝒦^{(l)} ∼ (𝓛-𝒦)]^{(k)}_{u,σ,a}| ≺ (W^{-d}B_{u,0})^k η_u⁻¹ Ξ̂^{𝓛-𝒦}_{u,k-l+2}`, uniformly in
 `u ∈ [s_n, t_n]`.  The input is the uniform `𝒦`-loop Ward bound `(wardineq_K)`, `stKward_timeIcc`, which
@@ -718,18 +716,9 @@ theorem stSEforLn_part2 (hd : 3 ≤ d) (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z
 
 end RBM.Gauss.Sizes
 
-/-! ## 7. Compiled nonempty instances (`d = 3`)
 
-Data: the merged size sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`, so `N = (WL)^3` is
-astronomically large but every window is a genuine one), the flow `flow_z0 : STFlow sz0 (1/10) (1/10) (1/6)
-(1/10) z0`, `s ≡ 0`, `t ≡ 1/16` (`1/16 ≤ lemT z0`): the window `[0, 1/16]` is a nondegenerate interval, the index
-set `TimeIcc × (Fin k → Bool) × (Fin k → Zd 3 (sz0.L n))` is nonempty, `k = 2` and `k = 3` (part (1)),
-`(k, l) = (3, 3)` and `(4, 3)` (part (2)).  The uniform averaged local law `STAvgU` of part (1) is the output of
-another gate (Step 2) and stays a hypothesis of the examples; every deterministic hypothesis (`3 ≤ d`, the flow,
-`0 ≤ s`, `t ≤ lemT z`, `3 ≤ l ≤ k`, `0 < κ`) is discharged.  Part (2) has no stochastic hypothesis. -/
-
-/-! ### The interface with `STSEforLnConcl`
+/-! ## 7. The interface with `STSEforLnConcl`
 
 The conclusions of the two theorems are, up to definitional unfolding, the first two conjuncts of
-`STSEforLnConcl sz (STflowE z) s t` at `k`, so that S3-09 can assemble
+`STSEforLnConcl sz (STflowE z) s t` at `k`, so that, together with parts (3) and (4), they assemble as
 `fun k hk => ⟨stSEforLn_part1 .., stSEforLn_part2 .., part3, part4⟩`. -/

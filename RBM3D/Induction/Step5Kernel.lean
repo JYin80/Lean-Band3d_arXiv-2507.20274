@@ -12,32 +12,25 @@ import RBM3D.Evolution.PropTInf
 import RBM3D.Defs.Tail
 
 /-!
-# S5-14 (ST-4): the kernel facts of the Duhamel step of Step 5 (`3_5:1983-2065`)
+# The kernel facts of the Duhamel step of Step 5
+
+Paper: arXiv:2507.20274, Section 5 (Step 5): (5.6) `eq:decompU`, (5.13) `uwp2-92kj`.
 
 Deterministic facts on `Θ^{(+,-)}_t = Theta d L g t` and the profile `W^{-d} 𝒯̃^L_{u,D}`
-(`STprof`, `tailW` with `ℓ = L`, the `L^∞` distance `zdistInf`), the inputs of S5-15, S5-16,
-S5-26, S5-27.  The paper writes `≺` and `≲`; here the constants are explicit.
+(`STprof`, `tailW` with `ℓ = L`, the `L^∞` distance `zdistInf`).  The paper writes `≺` and `≲`;
+here the constants are explicit.
 
-* `(eq:decompU)` (`3_5:1983`): `step5Kernel_decompU`, `step5Kernel_UN_decompU`;
-* `(eq:THETAinftinf)`: merged `RBM.norm_Theta_le` (`Propagator/Props4.lean`) and its row-sum form
-  `RBM.sum_norm_Theta_row_le`; nothing is restated (`step5Kernel_row_sum_inst`);
-* `(uwp2-92kj)` (`3_5:2048-2053`): `step5Kernel_profile_explicit_holds` (the two terms kept
-  explicitly) and `step5Kernel_profile_holds` (the floor `(1-u)/(1-t) W^{-D}` absorbed under
-  `(1-u)/(1-t) ≤ W^θ`, `D ↦ D - θ`; the paper's `D - 1` is `θ = 1`);
-* `step5Kernel_profile_not_unconditional`: the floor hypothesis cannot be dropped (compiled
-  negative statement, `d = 3`, `g = 1/2`, `W = 2`, `D = 2`, `u = 0`, `t = 1 - 1/(4L²)`);
-* `(uwftgwesj)` (`3_5:2055-2058`): `step5Kernel_calA` (`(eq:def_calA5)`, `3_5:2010-2015`),
-  `step5Kernel_calA_holds` (under `(1-s)/(1-t) ≤ W^θ`, `D ↦ D - 2θ`),
-  `step5Kernel_calA_explicit_holds` (no such hypothesis) and `step5Kernel_calA_sup_holds` (the
-  maximum over `u ∈ [s,t]` as a `sSup`).
+* `(eq:decompU)`: `step5Kernel_decompU`, `step5Kernel_UN_decompU`;
+* `(eq:THETAinftinf)`: `RBM.norm_Theta_le` (`Propagator/Props4.lean`) and its row-sum form
+  `RBM.sum_norm_Theta_row_le`;
+* `step5Kernel_norm_Theta_eq_re`, `step5Kernel_theta_decay`: `(prop:ThfadC)` in the `L^∞` form;
+* `(uwp2-92kj)`: `step5Kernel_profile_explicit_holds` (the two terms kept explicitly).
 
-## Differences from the paper (paper-delta candidates, see the report)
+## Differences from the paper
 
-* the constants of `(uwp2-92kj)`, `(uwftgwesj)` depend on `(d, Λ)`, `0 < g ≤ Λ`
-  (`prop5Decay_holds`), not on `d` alone;
-* `(TTT2)` (`ekPropTInf_holds`) needs `g²/L² ≤ 1 - t ∨ 1 - u ≤ g²/L²`, a hypothesis here;
-* the floor term `(1-u)/(1-t) W^{-D}` is `≤ 𝒯̃_{t,D-1}` only if `(1-u)/(1-t) ≤ W`; this is a
-  hypothesis `(1-u)/(1-t) ≤ W^θ` (resp. `(1-s)/(1-t) ≤ W^θ`), with `D - θ`, `D - 2θ`.
+* the constants of `(uwp2-92kj)` depend on `(d, Λ)`, `0 < g ≤ Λ` (`prop5Decay_holds`), not on `d`
+  alone;
+* `(TTT2)` (`ekPropTInf_holds`) needs `g²/L² ≤ 1 - t ∨ 1 - u ≤ g²/L²`, a hypothesis here.
 -/
 
 set_option linter.style.longLine false
@@ -52,7 +45,7 @@ section Decomp
 
 variable {d L : ℕ} [NeZero L] {g : ℝ}
 
-/-- **`(eq:decompU)`** (`3_5:1983`): `(1 - s μ S)/(1 - t μ S) = s/t + ((t-s)/t) Θ_t`, as an identity
+/-- **`(eq:decompU)`**: `(1 - s μ S)/(1 - t μ S) = s/t + ((t-s)/t) Θ_t`, as an identity
 of one-index kernels (`μ = m(σ₁) m(σ₂)`, `‖μ‖ = 1`, `Θ_t = Theta (t μ)`); `s` is free. -/
 theorem step5Kernel_decompU (hL : 3 ≤ L) {μ : ℂ} (hμ : ‖μ‖ = 1) {s t : ℝ} (ht0 : 0 < t)
     (ht1 : t < 1) :
@@ -69,7 +62,7 @@ theorem step5Kernel_decompU (hL : 3 ≤ L) {μ : ℂ} (hμ : ‖μ‖ = 1) {s t 
     ring
   rw [uKer, hsplit, add_mul, smul_mul_assoc, h, smul_mul_assoc, one_mul]
 
-/-- `(eq:decompU)` inside the merged `UN` (`(def_Ustz)`): every index factor of `𝒰^{(n)}_{s,t,σ}` is
+/-- `(eq:decompU)` inside `UN` (`(def_Ustz)`): every index factor of `𝒰^{(n)}_{s,t,σ}` is
 `s/t + ((t-s)/t) Θ_{t μ_i}`. -/
 theorem step5Kernel_UN_decompU (hL : 3 ≤ L) {n : ℕ} {m : Fin n → ℂ} (hm : ∀ i, ‖m i‖ = 1)
     {s t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) (A : (Fin n → Zd d L) → ℂ) (a : Fin n → Zd d L) :
@@ -191,7 +184,7 @@ theorem step5Kernel_theta_decay (d : ℕ) (Λ : ℝ) (hd : 3 ≤ d) (hΛ : 0 < �
 
 /-! ### 3. `(uwp2-92kj)` -/
 
-/-- **`(uwp2-92kj)`, explicit form** (`3_5:2048-2053`): for `0 ≤ u ≤ t < 1`, `0 < g ≤ Λ`, `3 ≤ d`,
+/-- **`(uwp2-92kj)`, explicit form**: for `0 ≤ u ≤ t < 1`, `0 < g ≤ Λ`, `3 ≤ d`,
 `3 ≤ L`, `g²/L² ≤ 1-t ∨ 1-u ≤ g²/L²` (the hypothesis of `(TTT2)`), `W > 0`:
 `(1-u) Σ_b |Θ^{(+,-)}_{t,a₁b}| 𝒯̃^L_{u,D}(|b-a₂|) ≤ C 𝒯_t(|a₁-a₂|) + (1-u)/(1-t) W^{-D}`,
 `C = C(d, Λ)`.  The floor term is the row sum `Σ_b |Θ_{a₁b}| ≤ (1-t)⁻¹` (`(eq:THETAinftinf)`) times
@@ -276,12 +269,6 @@ theorem step5Kernel_profile_explicit_holds (d : ℕ) (Λ : ℝ) (hd : 3 ≤ d) (
 
 end Profile
 
-/-! ### 4. `(eq:def_calA5)` and `(uwftgwesj)` -/
 
-/-! ### 5. Compiled nonempty instances (CLAUDE.md §4 step 2)
-
-`d = 3`, `L = 3`, `g = 1/2`, `W = 2`, `D = 2`, `θ = 1`, `Λ = 1/2`, `s = 0`, `u = 1/4`, `t = 1/2`.
-Torus `Z_3^3` (27 points), `a = (0, e₁)`, `|a₁ - a₂|_∞ = 1`.  `g²/L² = 1/36 ≤ 1/2 = 1 - t`
-(`(TTT2)` case (i)); `(1-u)/(1-t) = 3/2 ≤ 2 = W^1`; `(1-s)/(1-t) = 2 = W^1`. -/
 
 end RBM

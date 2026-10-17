@@ -12,12 +12,11 @@ import RBM3D.Path.StepDecomp
 /-!
 # The general-`n` one-step decomposition `ξ = Z + Y` of the loop observables (`d ≥ 3`)
 
-Ticket T2121 (ST2-30).  Port of RBM2D `Induction/StepDecompN.lean` at commit `c9a24cf` (cited
-`StepDecompN:<line>`; 1550 lines there; the RBM2D file is a port of RBM1D
-`Gauss/GridStepDecompC.lean` at `c06b103` on the structure of the merged real
-`Path/StepDecomp.lean`).
-Paper: arXiv:2507.20274, the martingale term of `int_K-L_ST` (`3_5:134`) and `alu9_STime`
-(`3_5:218-240`); the split `ξ = Z + Y` is a Lean device (BDG replaced by Azuma, DECISIONS §10).
+The argument follows the two-dimensional formalization (RBM2D `StepDecompN`), which follows the
+one-dimensional one (RBM1D `GridStepDecompC`).
+Paper: arXiv:2507.20274, the martingale term of Lemma 3.4 (`Sol_CalL`, `int_K-L_ST`) and of
+Lemma 3.6 (`lem:DIfREP`, `alu9_STime`); the split `ξ = Z + Y` is a device of the Lean proof
+(Azuma–Hoeffding is used in place of the Burkholder–Davis–Gundy step).
 
 For a label-indexed family `Φ_a` of complex observables in the Hermitian test class `HermTestFun`
 (`Path/StepDecomp.lean`) and a complex kernel `U`, one grid step `H_j ↦ H_{j+1} = H_j + √Δ X_{j+1}`
@@ -29,35 +28,30 @@ remainder with `E[Y_b | F_j] = 0` and `‖Y_b‖ ≤ g + E[g | F_j]`,
 
 ## Main declarations (namespace `RBM.Ind`)
 
-* Pinned definitions: `AbCN`, `stepZCN_re`, `stepZCN_im`, `stepZCN`, `stepXiCN`, `stepYCN`,
-  `StepDecompCN_Stmt`, `loopFamN` (`a ↦ (M ↦ 𝓛_{u_{j+1},σ,a}(M))`, with the merged `loopL`, `zt`).
-* The seven vocabulary declarations of RBM2D `GridGoodN:241-290` (class c; ST2-32 imports them from
-  here): `dirDerivN`, `ZfamN`, `ZvecN`, `YvecN`, `stoppedEdgeN`, `SubGaussFormN`, `SubGaussStopN`
-  (`d`-dimensional, no `[NeZero k]`; `dirDerivN` by Amend 1).
+* Definitions: `AbCN`, `stepZCN_re`, `stepZCN_im`, `stepZCN`, `stepXiCN`, `stepYCN`,
+  `StepDecompCN_Stmt`, `loopFamN` (`a ↦ (M ↦ 𝓛_{u_{j+1},σ,a}(M))`, with `loopL`, `zt`).
+* The vocabulary of the grid good event: `dirDerivN`, `ZfamN`, `ZvecN`, `YvecN`, `stoppedEdgeN`,
+  `SubGaussFormN`, `SubGaussStopN` (`d`-dimensional, no `[NeZero k]`).
 * `stepDecompCN : StepDecompCN_Stmt sz`, `stepDecompCN_Z_subG`,
   `integrable_stepZCN_re/im_of_hermTestFun`,
   `stepDecompCN_Y_sq`: `∫ ‖Y‖² ≤ 4 ((Σ_a ‖U(b,a)‖) C₂/2)² Δ² ∫ ‖X_{j+1}‖⁴`.
 * Identification for the loop family: `ZvecN_eq_stepZCN` (pointwise), `martIncN_eq_stepXiCN`,
-  `YvecN_eq_stepYCN` (a.e., all labels), `Ugen_stepZCN`, `Ugen_stepYCN`,
-  `StepDecompN_subGaussStopN_zvecN`.
-* Section 8: compiled nonempty instances at `sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `N = 2097152`).
+  `YvecN_eq_stepYCN` (a.e., all labels), `Ugen_stepYCN`.
 
-## Renaming and `d ≥ 3` changes (`docs/tickets/ST1-COMMON.md` items 2-3)
+## Differences from the two-dimensional version
 
 `d : Sizes` becomes `sz : Sizes d`; `Z2 (d.L n)` becomes `Zd d (sz.L n)`, `Idx L W` becomes
 `Idx d L W`; `Sizes.size` is `N = (W L)^d`.  The statements of the stepDecompCN family are
 `ι`-generic: the only dimension entering is `C₂` through the hypothesis `hC₂`, which for the loop
-family is `k (k + 1) N η_{u_{j+1}}^{-(k+2)}` with `N = (W L)^d` (merged `hermTestFunLoopN`).
-`gloop`, `spectralZ` become `loopL`, `zt`; RBM2D's `Ugen` (no coupling, `i + 1`) is the merged
-`Ugen d L g` (`= UN`, kernel `uKer d L g (cycProd m i)`, `finRotate`) at `g = sz.lam n`, and RBM2D's
-`KLoop.Kcal` is `sz.STKloop`.  `[NeZero k]` is dropped from `stoppedEdgeN`, `SubGaussStopN`,
-`Ugen_stepZCN`, `Ugen_stepYCN`, `StepDecompN_subGaussStopN_zvecN` (D204, T2111b): strictly stronger.
-The test-class step for `k = 0` needs no case split (the merged `hermTestFunLoopN` has all `k`).
-The grid-time arithmetic of RBM2D `Path/GoodEvent` (import cut) is copied as private
-`StepDecompN_gridTime_*`.
+family is `k (k + 1) N η_{u_{j+1}}^{-(k+2)}` with `N = (W L)^d` (`hermTestFunLoopN`).
+`gloop`, `spectralZ` become `loopL`, `zt`; RBM2D's `Ugen` (no coupling, `i + 1`) is
+`Ugen d L g` (`= UN`, kernel `uKer d L g (cycProd m i)`, `finRotate`) at `g = sz.lam n`, and
+RBM2D's `KLoop.Kcal` is `sz.STKloop`.  `[NeZero k]` is dropped from `stoppedEdgeN`,
+`SubGaussStopN`, `Ugen_stepYCN`: strictly stronger.  The test-class step for `k = 0` needs no
+case split (`hermTestFunLoopN` has all `k`).  The grid-time arithmetic of RBM2D `Path/GoodEvent`
+is copied as private `StepDecompN_gridTime_*`.
 
-Reduction at `k = 2` to the merged `Path/StepDecomp` (`stepDecomp`, `stepDecomp_Z_subG`): see the
-prove report (section (a), row 13).  Every helper is `private` or carries the prefix `StepDecompN_`.
+Every helper is `private` or carries the prefix `StepDecompN_`.
 -/
 
 set_option linter.style.longLine false
@@ -73,57 +67,55 @@ namespace RBM.Ind
 open MeasureTheory ProbabilityTheory Filter Matrix RBM RBM.Loop RBM.Gauss RBM.Path RBM.Ind
 open scoped NNReal ENNReal Matrix.Norms.L2Operator
 
-/-! ## 1. The pinned definitions -/
+/-! ## 1. The definitions -/
 
 section PinnedDefs
 
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **`AbCN`**: the `filt sz j`-measurable direction of a label-indexed complex family `Φ` with a
-complex kernel `U` and target label `b`: `Σ_a U(b,a) • gradMat (Φ a) (H_j)` (RBM1D `AbC`,
-`Gauss/GridStepDecompC.lean:87`; merged real version `Ab`, `Path/StepDecomp.lean:702`). -/
+complex kernel `U` and target label `b`: `Σ_a U(b,a) • gradMat (Φ a) (H_j)` (after RBM1D `AbC`). -/
 def AbCN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b : ι)
     (ω : PathΩ sz) : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ :=
   ∑ a, U b a • gradMat (Φ a) (pathH sz s t K n j ω)
 
-/-- Real part of the linear term: `√Δ · linTr (AbCN) X_{j+1}` (RBM1D `stepZC_re`, `:94`). -/
+/-- Real part of the linear term: `√Δ · linTr (AbCN) X_{j+1}` (RBM1D `stepZC_re`). -/
 def stepZCN_re (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b : ι)
     (ω : PathΩ sz) : ℝ :=
   Real.sqrt (gridStep s t K n) *
     linTr n (AbCN sz s t K n j Φ U b ω) (Sizes.seqXmat sz n (ω (j + 1)))
 
-/-- Imaginary part of the linear term: `√Δ · linTr ((−I) • AbCN) X_{j+1}` (RBM1D `stepZC_im`,
-`:102`). -/
+/-- Imaginary part of the linear term: `√Δ · linTr ((−I) • AbCN) X_{j+1}` (RBM1D `stepZC_im`). -/
 def stepZCN_im (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b : ι)
     (ω : PathΩ sz) : ℝ :=
   Real.sqrt (gridStep s t K n) *
     linTr n ((-Complex.I) • AbCN sz s t K n j Φ U b ω) (Sizes.seqXmat sz n (ω (j + 1)))
 
-/-- **`stepZCN`**: the exactly linear part of one grid step, complex (RBM1D `stepZC`, `:112`). -/
+/-- **`stepZCN`**: the exactly linear part of one grid step, complex (RBM1D `stepZC`). -/
 def stepZCN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b : ι)
     (ω : PathΩ sz) : ℂ :=
   (stepZCN_re sz s t K n j Φ U b ω : ℂ) + Complex.I * (stepZCN_im sz s t K n j Φ U b ω : ℂ)
 
 /-- **`stepXiCN`**: the propagated observable minus its `filt sz j`-conditional mean (RBM1D
-`stepXiC`, `:118`). -/
+`stepXiC`). -/
 def stepXiCN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b : ι)
     (ω : PathΩ sz) : ℂ :=
   (∑ a, U b a * Φ a (pathH sz s t K n (j + 1) ω))
     - (pathP sz)[fun ω' => ∑ a, U b a * Φ a (pathH sz s t K n (j + 1) ω') | filt sz j] ω
 
-/-- **`stepYCN`**: the remainder `ξ − Z` (RBM1D `stepYC`, `:126`). -/
+/-- **`stepYCN`**: the remainder `ξ − Z` (RBM1D `stepYC`). -/
 def stepYCN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (U : ι → ι → ℂ) (b : ι)
     (ω : PathΩ sz) : ℂ :=
   stepXiCN sz s t K n j Φ U b ω - stepZCN sz s t K n j Φ U b ω
 
-/-- **Statement of `stepDecompCN`** (RBM1D `stepDecompC`, `:455`, with the class `HermTestFun`
-and the Hermitian-direction bound `hC₂` of the merged `stepDecomp`, `Path/StepDecomp.lean:1160`;
+/-- **Statement of `stepDecompCN`** (after RBM1D `stepDecompC`, with the class `HermTestFun`
+and the Hermitian-direction bound `hC₂`;
 no reality hypothesis): (i) `ξ = Z + Y` pointwise; (ii) `AbCN` is `filt sz j`-measurable; (iii) a.e.
 `‖Y‖ ≤ g + E[g | F_j]`, `g = (Σ_a ‖U(b,a)‖)(C₂/2)Δ‖X_{j+1}‖²`; (iv) `E[Y | F_j] = 0`. -/
 def StepDecompCN_Stmt : Prop :=
@@ -144,9 +136,9 @@ def StepDecompCN_Stmt : Prop :=
                 * ‖Sizes.seqXmat sz n (ω' (j + 1))‖ ^ 2 | filt sz j] ω)
       ∧ (pathP sz)[stepYCN sz s t K n j Φ U b | filt sz j] =ᵐ[pathP sz] fun _ => (0 : ℂ)
 
-/-- **`loopFamN`** (pinned): the loop family `a ↦ (M ↦ 𝓛_{u_{j+1},σ,a}(M))` at the spectral time
+/-- **`loopFamN`**: the loop family `a ↦ (M ↦ 𝓛_{u_{j+1},σ,a}(M))` at the spectral time
 of the step `j → j+1`; with the identity kernel it turns `stepXiCN`, `stepZCN`, `stepYCN` into
-`martIncN`, `ZvecN`, `YvecN` (targets 3). -/
+`martIncN`, `ZvecN`, `YvecN` . -/
 def loopFamN (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {k : ℕ} (σ : Fin k → Bool) :
     (Fin k → Zd d (sz.L n)) → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ :=
   fun a M => loopL d (sz.L n) (sz.W n) (blockMat d (sz.L n) (sz.W n) M)
@@ -154,17 +146,15 @@ def loopFamN (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
 
 end PinnedDefs
 
-/-! ## 1b. The vocabulary of `GridGoodN` (RBM2D `Induction/GridGoodN.lean:241-290`)
+/-! ## 1b. The vocabulary of the grid good event (after RBM2D `GridGoodN`)
 
 The seven declarations `dirDerivN`, `ZfamN`, `ZvecN`, `YvecN`, `stoppedEdgeN`, `SubGaussFormN`,
-`SubGaussStopN` are defined here, `d`-dimensional and without `[NeZero k]` (D204, T2111b); ST2-32
-(`GridGoodN`) imports them from this file.  `dirDerivN` is the seventh declaration authorized by
-Amend 1 of the ticket. -/
+`SubGaussStopN` are defined here, `d`-dimensional and without `[NeZero k]`. -/
 
 section Vocab
 
 /-- The directional derivative of an observable `Φ` at `M` along `X` (real parameter):
-`d/dy Φ(M + yX)` at `y = 0` (RBM2D `dirDerivN`, `GridGoodN:241`). -/
+`d/dy Φ(M + yX)` at `y = 0` (RBM2D `dirDerivN`). -/
 def dirDerivN {d L W : ℕ} [NeZero L] [NeZero W]
     (Φ : Matrix (Idx d L W) (Idx d L W) ℂ → ℂ) (M X : Matrix (Idx d L W) (Idx d L W) ℂ) : ℂ :=
   deriv (fun y : ℝ => Φ (M + (y : ℂ) • X)) 0
@@ -172,7 +162,7 @@ def dirDerivN {d L W : ℕ} [NeZero L] [NeZero W]
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **`ZfamN`**: the first-chaos part of a family `Φ` of observables on the grid step
-`j → j+1`: `Z_b = √Δ · ∂_{X_{j+1}} Φ_b (H_j)` (RBM2D `ZfamN`, `GridGoodN:249`). -/
+`j → j+1`: `Z_b = √Δ · ∂_{X_{j+1}} Φ_b (H_j)` (RBM2D `ZfamN`). -/
 def ZfamN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*}
     (Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ)
     (ω : PathΩ sz) : ι → ℂ :=
@@ -181,20 +171,19 @@ def ZfamN (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*}
 
 /-- **`ZvecN`**: the first-chaos part of `martIncN` (the step `j → j+1`): `√Δ` times the
 directional derivative of `𝓛_{u_{j+1},σ,b}` at `H_j` along the Gaussian increment `X_{j+1}`
-(RBM2D `ZvecN`, `GridGoodN:258`). -/
+(RBM2D `ZvecN`). -/
 def ZvecN (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {k : ℕ} (σ : Fin k → Bool)
     (ω : PathΩ sz) : (Fin k → Zd d (sz.L n)) → ℂ :=
   fun b => ((Real.sqrt (gridStep s t K n) : ℝ) : ℂ) *
     loopDerivN d (sz.L n) (sz.W n) (E n) (gridTime s t K n (j + 1)) (pathH sz s t K n j ω)
       (Sizes.seqXmat sz n (ω (j + 1))) σ b
 
-/-- **`YvecN`**: the quadratic remainder `martIncN - ZvecN` (RBM2D `YvecN`, `GridGoodN:266`). -/
+/-- **`YvecN`**: the quadratic remainder `martIncN - ZvecN` (RBM2D `YvecN`). -/
 def YvecN (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {k : ℕ} (σ : Fin k → Bool)
     (ω : PathΩ sz) : (Fin k → Zd d (sz.L n)) → ℂ :=
   fun b => martIncN sz E s t K n j σ ω b - ZvecN sz E s t K n j σ ω b
 
-/-- The stopped, propagated increment `1_{j<τ} (𝒰_{u_{j+1},t'} Y_j)_b` (RBM2D `stoppedEdgeN`,
-`GridGoodN:271`; no `[NeZero k]`; `Ugen` at the coupling `sz.lam n`). -/
+/-- The stopped, propagated increment `1_{j<τ} (𝒰_{u_{j+1},t'} Y_j)_b` (RBM2D `stoppedEdgeN`; no `[NeZero k]`; `Ugen` at the coupling `sz.lam n`). -/
 def stoppedEdgeN {n k : ℕ} (E : ℝ) (σ : Fin k → Bool) (u : ℕ → ℝ) (t' : ℝ)
     (τ : PathΩ sz → ℕ) (Y : ℕ → PathΩ sz → (Fin k → Zd d (sz.L n)) → ℂ)
     (b : Fin k → Zd d (sz.L n)) (j : ℕ) (ω : PathΩ sz) : ℂ :=
@@ -202,7 +191,7 @@ def stoppedEdgeN {n k : ℕ} (E : ℝ) (σ : Fin k → Bool) (u : ℕ → ℝ) (
     (fun ω' => Ugen d (sz.L n) (sz.lam n) E σ (u (j + 1)) t' (Y j ω') b) ω
 
 /-- Conditional sub-Gaussianity (real and imaginary part, common proxy `c`) of the stopped
-complex increment `1_{j<τ} F` given `F_j` (RBM2D `SubGaussFormN`, `GridGoodN:279`). -/
+complex increment `1_{j<τ} F` given `F_j` (RBM2D `SubGaussFormN`). -/
 def SubGaussFormN (j : ℕ) (τ : PathΩ sz → ℕ) (F : PathΩ sz → ℂ) (c : ℝ≥0) : Prop :=
   HasCondSubgaussianMGF (filt sz j) ((filt sz).le j)
     (fun ω => ({ω' | j < τ ω'}.indicator F ω).re) c (pathP sz) ∧
@@ -211,7 +200,7 @@ def SubGaussFormN (j : ℕ) (τ : PathΩ sz → ℕ) (F : PathΩ sz → ℂ) (c 
 
 /-- The `hsubG` hypothesis of the assembled bound: the stopped, propagated increment
 `1_{j<τ} (𝒰_{u_{j+1},u_m} Z_j)_a` is conditionally sub-Gaussian with proxy `c` (RBM2D
-`SubGaussStopN`, `GridGoodN:287`; no `[NeZero k]`). -/
+`SubGaussStopN`; no `[NeZero k]`). -/
 def SubGaussStopN {n k : ℕ} (E : ℝ) (σ : Fin k → Bool) (u : ℕ → ℝ) (τ : PathΩ sz → ℕ)
     (Z : ℕ → PathΩ sz → (Fin k → Zd d (sz.L n)) → ℂ) (m : ℕ) (a : Fin k → Zd d (sz.L n))
     (j : ℕ) (c : ℝ≥0) : Prop :=
@@ -219,18 +208,17 @@ def SubGaussStopN {n k : ℕ} (E : ℝ) (σ : Fin k → Bool) (u : ℕ → ℝ) 
 
 end Vocab
 
-/-! ## 2. Private helpers copied from the merged `Path/StepDecomp.lean` (private there)
+/-! ## 2. Private helpers
 
 The Hermitian projection, the `C²` composition, `gradMat` along the projection and the pathwise
-second-order Taylor bound along a Hermitian line (merged `Path/StepDecomp.lean:186-365`, namespace
-`RBM.Path`, all `private`); copied with the prefix `StepDecompN_`. -/
+second-order Taylor bound along a Hermitian line, with the prefix `StepDecompN_`. -/
 
 section Herm
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- The Hermitian projection `M ↦ ½ (M + Mᴴ)` as a continuous `ℝ`-linear map (the pattern of
-RBM1D `hermCLM`, `Gauss/Generator.lean:1397`, commit `86573b9`). -/
+RBM1D `hermCLM`). -/
 private def StepDecompN_hermCLM (ι : Type*) [Fintype ι] [DecidableEq ι] :
     Matrix ι ι ℂ →L[ℝ] Matrix ι ι ℂ :=
   LinearMap.toContinuousLinearMap
@@ -324,7 +312,7 @@ section Taylor
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-/-- (RBM1D `hasDerivAt_add_smul`, `Gauss/GridStepDecomp.lean:331`.) -/
+/-- (RBM1D `hasDerivAt_add_smul`.) -/
 private theorem StepDecompN_hasDerivAt_add_smul (M y : Matrix ι ι ℂ) (t : ℝ) :
     HasDerivAt (fun t' : ℝ => M + t' • y) y t := by
   simpa using ((hasDerivAt_id t).smul_const y).const_add M
@@ -335,7 +323,7 @@ private theorem StepDecompN_isHermitian_add_smul {M y : Matrix ι ι ℂ} (hM : 
   rw [hcast]
   exact hM.add (hy.smul (Complex.conj_ofReal t))
 
-/-- `RBM1D` `hasFDerivAt_fderiv_apply'` (`Gauss/TestFunHerm.lean:104`, commit `86573b9`). -/
+/-- RBM1D's `hasFDerivAt_fderiv_apply'`. -/
 private theorem StepDecompN_hasFDerivAt_fderiv_apply {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] {f : E → ℂ} {M : E} (h : DifferentiableAt ℝ (fderiv ℝ f) M) (A : E) :
     HasFDerivAt (fun M' => fderiv ℝ f M' A) ((fderiv ℝ (fderiv ℝ f) M).flip A) M := by
@@ -343,7 +331,7 @@ private theorem StepDecompN_hasFDerivAt_fderiv_apply {E : Type*} [NormedAddCommG
   simpa using hc
 
 /-- **The pathwise second-order Taylor remainder bound along a Hermitian line** (RBM1D
-`norm_taylor_remainder_le`, `Gauss/GridStepDecomp.lean:342`, commit `86573b9`).  Only (H1) at
+`norm_taylor_remainder_le`).  Only (H1) at
 Hermitian points and the Hermitian-direction bound (H3) are used; every point of the segment
 `M + t y` is Hermitian. -/
 private theorem StepDecompN_taylor {Φ : Matrix ι ι ℂ → ℂ}
@@ -421,14 +409,14 @@ private theorem StepDecompN_measurable_seqXmat (i : ℕ) :
   ((continuous_Xmat d (sz.L n) (sz.W n)).measurable.comp (Sizes.measurable_slice sz n)).comp
     (measurable_pi_apply i)
 
-/-- The grid recursion `H_{k+1} = H_k + √Δ X_{k+1}` with the real scalar (merged `pathH_succ`,
-`Path/LoopStep.lean:48`, has the complex scalar). -/
+/-- The grid recursion `H_{k+1} = H_k + √Δ X_{k+1}` with the real scalar (`pathH_succ`,
+`Path/LoopStep.lean`, has the complex scalar). -/
 private theorem StepDecompN_pathH_succ (k : ℕ) (ω : PathΩ sz) :
     pathH sz s t K n (k + 1) ω
       = pathH sz s t K n k ω + Real.sqrt (gridStep s t K n) • Sizes.seqXmat sz n (ω (k + 1)) := by
   rw [pathH_succ, Complex.coe_smul]
 
-/-- `Ψ` along the walk is `filt sz k`-measurable (merged `StepDecomp_measurable_phi_filt`). -/
+/-- `Ψ` along the walk is `filt sz k`-measurable. -/
 private theorem StepDecompN_measurable_phi_filt
     {Ψ : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
     (hΨ : HermTestFun sz n Ψ) (k : ℕ) :
@@ -440,8 +428,7 @@ private theorem StepDecompN_measurable_phi_filt
   rw [heq]
   exact hcont.measurable.comp (pathH_measurable_filt sz s t K n k)
 
-/-- `Ψ` along the walk is integrable: measurable and bounded by (H2) (merged
-`StepDecomp_integrable_phi`). -/
+/-- `Ψ` along the walk is integrable: measurable and bounded by (H2). -/
 private theorem StepDecompN_integrable_phi
     {Ψ : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
     (hΨ : HermTestFun sz n Ψ) (k : ℕ) :
@@ -452,8 +439,7 @@ private theorem StepDecompN_integrable_phi
   exact (memLp_top_of_bound hm.aestronglyMeasurable C
     (Filter.Eventually.of_forall fun ω => hC _ (pathH_isHermitian sz s t K n k ω))).integrable le_top
 
-/-- `AbCN` is `filt sz j`-measurable (RBM1D `measurable_AbC`, `Gauss/GridStepDecompC.lean:143`;
-merged `StepDecomp_measurable_Ab`): `gradMat` of a member of the Hermitian class is a continuous
+/-- `AbCN` is `filt sz j`-measurable (after RBM1D `measurable_AbC`): `gradMat` of a member of the Hermitian class is a continuous
 function of the Hermitian walk, through the Hermitian projection. -/
 private theorem StepDecompN_measurable_AbCN (hΦ : ∀ a, HermTestFun sz n (Φ a)) (U : ι → ι → ℂ)
     (b : ι) : Measurable[filt sz j] (fun ω : PathΩ sz => AbCN sz s t K n j Φ U b ω) := by
@@ -471,8 +457,7 @@ private theorem StepDecompN_measurable_AbCN (hΦ : ∀ a, HermTestFun sz n (Φ a
   exact Finset.measurable_sum _ fun a _ => (hgrad a).const_smul (U b a)
 
 /-- **`Rlabel`**: the per-label Taylor remainder of one grid step,
-`Φ(H_{j+1}) - Φ(H_j) - √Δ · fderiv ℝ Φ (H_j) X_{j+1}` (RBM1D `Rlabel`,
-`Gauss/GridStepDecomp.lean:559`; merged `StepDecomp_Rlabel`). -/
+`Φ(H_{j+1}) - Φ(H_j) - √Δ · fderiv ℝ Φ (H_j) X_{j+1}` (after RBM1D `Rlabel`). -/
 private def StepDecompN_Rlabel
     (Ψ : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ) (ω : PathΩ sz) : ℂ :=
   Ψ (pathH sz s t K n (j + 1) ω) - Ψ (pathH sz s t K n j ω)
@@ -522,7 +507,7 @@ private theorem StepDecompN_measurable_Rlabel
   exact (h1.sub h2).sub (h3.const_mul _)
 
 /-- **The pathwise bound on the `U`-weighted sum of Taylor remainders**, complex `U`: `O(Δ)` in
-`‖X_{j+1}‖²` with the constant `(Σ_a ‖U(b,a)‖)(C₂/2)` (RBM1D `norm_RlabelC_sum_le`, `:238`). -/
+`‖X_{j+1}‖²` with the constant `(Σ_a ‖U(b,a)‖)(C₂/2)` (RBM1D `norm_RlabelC_sum_le`). -/
 private theorem StepDecompN_norm_Rlabel_sum_le (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
     (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
       M.IsHermitian → y.IsHermitian → ‖fderiv ℝ (fderiv ℝ (Φ a)) M y y‖ ≤ C₂ * ‖y‖ ^ 2)
@@ -543,8 +528,7 @@ private theorem StepDecompN_norm_Rlabel_sum_le (hΦ : ∀ a, HermTestFun sz n (�
         rw [Finset.sum_mul, Finset.sum_mul]
         exact Finset.sum_congr rfl fun a _ => by ring
 
-/-- The `U`-weighted sum of Taylor remainders is integrable (RBM1D `integrable_RlabelC_sum`,
-`:260`): measurable and dominated by a multiple of the integrable `‖X_{j+1}‖²`. -/
+/-- The `U`-weighted sum of Taylor remainders is integrable (RBM1D `integrable_RlabelC_sum`): measurable and dominated by a multiple of the integrable `‖X_{j+1}‖²`. -/
 private theorem StepDecompN_integrable_Rlabel_sum (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
     (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
       M.IsHermitian → y.IsHermitian → ‖fderiv ℝ (fderiv ℝ (Φ a)) M y y‖ ≤ C₂ * ‖y‖ ^ 2)
@@ -573,7 +557,7 @@ variable {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : �
   {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
 
 /-- **The key algebraic fact**: `linTr` at the direction `(-I) • A` reads the imaginary part of
-`trace (A * X)` (RBM1D `lin_neg_I_smul_eq_im`, `Gauss/GridStepDecompC.lean:135`).  Together with
+`trace (A * X)` (RBM1D `lin_neg_I_smul_eq_im`).  Together with
 `linTr n A X = (trace (A * X)).re` (its definition) this is why `stepZCN` is the whole complex
 first-order term, with no reality hypothesis. -/
 private theorem StepDecompN_linTr_neg_I_smul
@@ -584,7 +568,7 @@ private theorem StepDecompN_linTr_neg_I_smul
   simp only [Complex.mul_re, Complex.neg_re, Complex.neg_im, Complex.I_re, Complex.I_im]
   ring
 
-/-- **The complex algebraic bridge** (RBM1D `sum_fderivC_eq_stepZC`, `:165`): the `U`-weighted sum
+/-- **The complex algebraic bridge** (RBM1D `sum_fderivC_eq_stepZC`): the `U`-weighted sum
 of directional derivatives is `stepZCN`, unconditionally (no reality of `Φ` or `U`). -/
 private theorem StepDecompN_sum_fderiv_eq_stepZCN (U : ι → ι → ℂ) (b : ι) (ω : PathΩ sz) :
     (Real.sqrt (gridStep s t K n) : ℂ) *
@@ -609,7 +593,7 @@ private theorem StepDecompN_sum_fderiv_eq_stepZCN (U : ι → ι → ℂ) (b : �
   push_cast
   linear_combination (Real.sqrt (gridStep s t K n) : ℂ) * hreim.symm
 
-/-- **The pointwise identity** (RBM1D `g_eq_pointwiseC`, `:193`): `Σ_a U(b,a) Φ_a(H_{j+1})` splits
+/-- **The pointwise identity** (RBM1D `g_eq_pointwiseC`): `Σ_a U(b,a) Φ_a(H_{j+1})` splits
 into the `F_j`-measurable term, `stepZCN`, and the `U`-weighted Taylor remainder. -/
 private theorem StepDecompN_g_eq_pointwise (U : ι → ι → ℂ) (b : ι) (ω : PathΩ sz) :
     (∑ a, U b a * Φ a (pathH sz s t K n (j + 1) ω))
@@ -633,14 +617,14 @@ private theorem StepDecompN_g_eq_pointwise (U : ι → ι → ℂ) (b : ι) (ω 
   rw [Finset.sum_congr rfl fun a _ => hexpand a, Finset.sum_add_distrib, Finset.sum_add_distrib,
     ← Finset.mul_sum, hZ]
 
-/-- `h0 := Σ_a U(b,a)·Φ_a(H_j ω)` is `filt sz j`-measurable (RBM1D `measurable_h0C`, `:218`). -/
+/-- `h0 := Σ_a U(b,a)·Φ_a(H_j ω)` is `filt sz j`-measurable (RBM1D `measurable_h0C`). -/
 private theorem StepDecompN_measurable_h0 (hΦ : ∀ a, HermTestFun sz n (Φ a)) (U : ι → ι → ℂ)
     (b : ι) :
     Measurable[filt sz j] (fun ω : PathΩ sz => ∑ a, U b a * Φ a (pathH sz s t K n j ω)) :=
   Finset.measurable_sum _ fun a _ =>
     (StepDecompN_measurable_phi_filt sz s t K n (hΦ a) j).const_mul (U b a)
 
-/-- `h0` is integrable: a finite sum of bounded functions (RBM1D `integrable_h0C`, `:229`). -/
+/-- `h0` is integrable: a finite sum of bounded functions (RBM1D `integrable_h0C`). -/
 private theorem StepDecompN_integrable_h0 (hΦ : ∀ a, HermTestFun sz n (Φ a)) (U : ι → ι → ℂ)
     (b : ι) :
     Integrable (fun ω : PathΩ sz => ∑ a, U b a * Φ a (pathH sz s t K n j ω)) (pathP sz) :=
@@ -648,7 +632,7 @@ private theorem StepDecompN_integrable_h0 (hΦ : ∀ a, HermTestFun sz n (Φ a))
     (StepDecompN_integrable_phi sz s t K n (hΦ a) j).const_mul (U b a)
 
 /-- `stepZCN`, as a complex-valued function, is integrable given integrability of its real and
-imaginary parts (RBM1D `integrable_stepZC`, `:279`). -/
+imaginary parts (RBM1D `integrable_stepZC`). -/
 private theorem StepDecompN_integrable_stepZCN (U : ι → ι → ℂ) (b : ι)
     (hIntRe : Integrable (stepZCN_re sz s t K n j Φ U b) (pathP sz))
     (hIntIm : Integrable (stepZCN_im sz s t K n j Φ U b) (pathP sz)) :
@@ -663,7 +647,7 @@ private theorem StepDecompN_integrable_stepZCN (U : ι → ι → ℂ) (b : ι)
     funext ω; rfl
   rw [heq]; exact h1.add h3
 
-/-- **`stepZCN` has conditional mean zero** (RBM1D `condExp_stepZC_eq_zero`, `:297`): the merged
+/-- **`stepZCN` has conditional mean zero** (RBM1D `condExp_stepZC_eq_zero`): the
 `condExp_linear_eq_zero` applied to the real direction `AbCN` and to `(-I) • AbCN`, recombined via
 `condExp_add`/`condExp_smul`. -/
 private theorem StepDecompN_condExp_stepZCN_eq_zero (hΦ : ∀ a, HermTestFun sz n (Φ a))
@@ -738,7 +722,7 @@ section Decomposition
 variable {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*} [Fintype ι]
   {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
 
-/-- **The a.e. identity behind `stepDecompCN`** (RBM1D `stepXiC_eq_ae`, `:358`): `ξ` agrees a.e. with
+/-- **The a.e. identity behind `stepDecompCN`** (RBM1D `stepXiC_eq_ae`): `ξ` agrees a.e. with
 `Z` plus the `U`-weighted Taylor-remainder martingale difference. -/
 private theorem StepDecompN_stepXiCN_eq_ae (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
     (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
@@ -783,7 +767,7 @@ private theorem StepDecompN_stepXiCN_eq_ae (hΦ : ∀ a, HermTestFun sz n (Φ a)
   ring
 
 /-- **`stepYCN` a.e. equals the `U`-weighted Taylor remainder minus its own conditional mean**
-(RBM1D `stepYC_eq_ae`, `:400`). -/
+(RBM1D `stepYC_eq_ae`). -/
 private theorem StepDecompN_stepYCN_eq_ae (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
     (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
       M.IsHermitian → y.IsHermitian → ‖fderiv ℝ (fderiv ℝ (Φ a)) M y y‖ ≤ C₂ * ‖y‖ ^ 2)
@@ -799,7 +783,7 @@ private theorem StepDecompN_stepYCN_eq_ae (hΦ : ∀ a, HermTestFun sz n (Φ a))
   change stepXiCN sz s t K n j Φ U b ω - stepZCN sz s t K n j Φ U b ω = _
   rw [hω]; ring
 
-/-- **The pathwise bound on `Y`, a.e.** (RBM1D `stepYC_norm_le_ae`, `:419`):
+/-- **The pathwise bound on `Y`, a.e.** (RBM1D `stepYC_norm_le_ae`):
 `‖Y b ω‖ ≤ g + E[g | F_j]`, `g = (Σ_a ‖U(b,a)‖)(C₂/2)Δ‖X_{j+1}‖²`. -/
 private theorem StepDecompN_stepYCN_norm_le_ae (hΦ : ∀ a, HermTestFun sz n (Φ a)) {C₂ : ℝ}
     (hC₂ : ∀ a (M y : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
@@ -834,10 +818,9 @@ private theorem StepDecompN_stepYCN_norm_le_ae (hΦ : ∀ a, HermTestFun sz n (�
 
 end Decomposition
 
-/-- **`stepDecompCN`: the complex one-step decomposition of a loop observable** (RBM1D
-`stepDecompC`, `Gauss/GridStepDecompC.lean:455`, at `c06b103`; the class change is `HermTestFun`
-and the Hermitian-direction bound `hC₂`, as in the merged real `stepDecomp`,
-`Path/StepDecomp.lean:1160`).  (i) `ξ_b = Z_b + Y_b` pointwise; (ii) `AbCN` is
+/-- **`stepDecompCN`: the complex one-step decomposition of a loop observable** (after RBM1D
+`stepDecompC`; the class is `HermTestFun` with the Hermitian-direction bound `hC₂`).
+(i) `ξ_b = Z_b + Y_b` pointwise; (ii) `AbCN` is
 `filt sz j`-measurable; (iii) a.e., `‖Y_b‖ ≤ g + E[g | F_j]` with
 `g = (Σ_a ‖U(b,a)‖) ((C₂/2) Δ) ‖X_{j+1}‖²`; (iv) `E[Y_b | F_j] = 0`.  No reality hypothesis on
 `Φ` or `U`: the imaginary part of the first-order term is `stepZCN_im`. -/
@@ -873,9 +856,8 @@ theorem stepDecompCN {d : ℕ} (sz : Sizes d) : StepDecompCN_Stmt sz := by
 /-! ## 6. Sub-Gaussianity of `Z`, integrability, and the `L²` bound on `Y` -/
 
 /-- **`stepDecompCN_Z_subG`: the real and imaginary parts of `Z` are conditionally sub-Gaussian**
-(RBM1D `stepDecompC_ZC_subG`, `Gauss/GridStepDecompC.lean:502`; merged
-`stepDecomp_Z_subG`, `Path/StepDecomp.lean:1273`, with `hasCondSubgaussianMGF_linear`,
-`Path/Markov.lean:628`, `linTrVar` in place of RBM1D `v`): on a `filt sz j`-measurable set `E` where
+(after RBM1D `stepDecompC_ZC_subG`, with `hasCondSubgaussianMGF_linear` (`Path/Markov.lean`),
+`linTrVar` in place of RBM1D `v`): on a `filt sz j`-measurable set `E` where
 `Δ · linTrVar (AbCN ω) ≤ c` and `Δ · linTrVar ((-I) • AbCN ω) ≤ c`, both `E.indicator stepZCN_re`
 and `E.indicator stepZCN_im` are conditionally sub-Gaussian with the same parameter `c`. -/
 theorem stepDecompCN_Z_subG {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {ι : Type*}
@@ -899,7 +881,7 @@ theorem stepDecompCN_Z_subG {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : �
     have h := hasCondSubgaussianMGF_linear (sz := sz) s t K n j hAmeas' E hE c hc hboundIm
     simpa only [stepZCN_im] using h
 
-/-- **`stepZCN` is integrable, unconditionally** (RBM1D `integrable_stepZC_of_testFun`, `:524`):
+/-- **`stepZCN` is integrable, unconditionally** (RBM1D `integrable_stepZC_of_testFun`):
 `stepZCN = Σ_a U Φ_a(H_{j+1}) - Σ_a U Φ_a(H_j) - Σ_a U R_a` (`StepDecompN_g_eq_pointwise`) with
 all three terms integrable. -/
 private theorem StepDecompN_integrable_stepZCN_of_hermTestFun {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ)
@@ -926,8 +908,7 @@ private theorem StepDecompN_integrable_stepZCN_of_hermTestFun {d : ℕ} (sz : Si
   rw [heq]
   exact (hg.sub h0).sub hR
 
-/-- **`stepZCN_re` is integrable, unconditionally** (RBM1D `integrable_stepZC_re_of_testFun`,
-`:546`): discharges the hypothesis `hIntRe` of `stepDecompCN`. -/
+/-- **`stepZCN_re` is integrable, unconditionally** (RBM1D `integrable_stepZC_re_of_testFun`): discharges the hypothesis `hIntRe` of `stepDecompCN`. -/
 theorem integrable_stepZCN_re_of_hermTestFun {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
     {ι : Type*} [Fintype ι]
     {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
@@ -941,8 +922,7 @@ theorem integrable_stepZCN_re_of_hermTestFun {d : ℕ} (sz : Sizes d) (s t : ℕ
   refine h.congr (Filter.Eventually.of_forall fun ω => ?_)
   simp [stepZCN]
 
-/-- **`stepZCN_im` is integrable, unconditionally** (RBM1D `integrable_stepZC_im_of_testFun`,
-`:557`): discharges the hypothesis `hIntIm` of `stepDecompCN`. -/
+/-- **`stepZCN_im` is integrable, unconditionally** (RBM1D `integrable_stepZC_im_of_testFun`): discharges the hypothesis `hIntIm` of `stepDecompCN`. -/
 theorem integrable_stepZCN_im_of_hermTestFun {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
     {ι : Type*} [Fintype ι]
     {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
@@ -956,8 +936,7 @@ theorem integrable_stepZCN_im_of_hermTestFun {d : ℕ} (sz : Sizes d) (s t : ℕ
   refine h.congr (Filter.Eventually.of_forall fun ω => ?_)
   simp [stepZCN]
 
-/-- **`stepDecompCN_Y_sq`: the `L²` bound on `Y`** (merged `stepDecomp_Y_sq`,
-`Path/StepDecomp.lean:1209`, with `Σ_a ‖U(b,a)‖`): `∫ ‖Y_b‖² ≤ 4 ((Σ_a ‖U(b,a)‖) C₂/2)² Δ²
+/-- **`stepDecompCN_Y_sq`: the `L²` bound on `Y`** : `∫ ‖Y_b‖² ≤ 4 ((Σ_a ‖U(b,a)‖) C₂/2)² Δ²
 ∫ ‖X_{j+1}‖⁴`.  From (iii) of `stepDecompCN`, `(x+y)² ≤ 2x²+2y²`, conditional Jensen at
 `x ↦ x²` (`ConvexOn.map_condExp_le_univ`) and the tower property (`integral_condExp`); the
 integrability hypotheses of `stepDecompCN` are discharged by
@@ -1023,16 +1002,15 @@ theorem stepDecompCN_Y_sq {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ 
         * ∫ ω, ‖Sizes.seqXmat sz n (ω (j + 1))‖ ^ 4 ∂(pathP sz) := by ring
   linarith [hmono, hgoal]
 
-/-! ## 7. Identification with the merged `martIncN`: `ZvecN`, `YvecN`, `Ugen`
+/-! ## 7. Identification with the `martIncN`: `ZvecN`, `YvecN`, `Ugen`
 
 The loop family `loopFamN` at the spectral time `u_{j+1}` is in the Hermitian test class for
 `j + 1 ≤ K n`, `|E n| < 2`, `0 ≤ s n ≤ t n`, `t n < 1`: the argument of `hΦ_of_hermTestFunLoopN`
-stated per `n`, with the merged theorem `hermTestFunLoopN` (T2111) in place of the pin
-`HermTestFunLoopN`, so no test-class hypothesis appears below. -/
+stated per `n`, with the theorem `hermTestFunLoopN`, so no test-class hypothesis appears below. -/
 
 section Identification
 
-/-- Grid-time arithmetic (the merged versions in `GridDuhamelN` are private): `0 ≤ u_j`. -/
+/-- Grid-time arithmetic (the versions in `GridDuhamelN` are private): `0 ≤ u_j`. -/
 private theorem StepDecompN_gridTime_nonneg (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (hs0 : 0 ≤ s n)
     (hst : s n ≤ t n) (j : ℕ) : 0 ≤ gridTime s t K n j := by
   have hΔ : 0 ≤ gridStep s t K n := div_nonneg (sub_nonneg.2 hst) (Nat.cast_nonneg _)
@@ -1053,8 +1031,8 @@ private theorem StepDecompN_gridTime_lt_one (s t : ℕ → ℝ) (K : ℕ → ℕ
   linarith
 
 /-- The loop family is in the Hermitian test class at the spectral time `u_{j+1}` (the per-`n`
-form of `hΦ_of_hermTestFunLoopN`, with the merged theorem `hermTestFunLoopN` for the pin).  For
-`k = 0` (not covered by the pin) the loop is empty and the observable is the constant `tr 1`. -/
+form of `hΦ_of_hermTestFunLoopN`, with the theorem `hermTestFunLoopN`).  For
+`k = 0` the loop is empty and the observable is the constant `tr 1`. -/
 private theorem StepDecompN_loopFam_hermTestFun {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ)
     (n j : ℕ) (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1)
     (hj : j + 1 ≤ K n) {k : ℕ} (σ : Fin k → Bool) (b : Fin k → Zd d (sz.L n)) :
@@ -1064,7 +1042,7 @@ private theorem StepDecompN_loopFam_hermTestFun {d : ℕ} (sz : Sizes d) (E s t 
   exact (hermTestFunLoopN sz k n (E n) (gridTime s t K n (j + 1)) hE hu0 hu1 σ b).1
 
 /-- The directional derivative along the real line `y ↦ M + y X` at `0` is `fderiv ℝ Ψ M X`, for
-`Ψ` differentiable at `M` (merged `StepDecomp_fderiv_im_eq_zero`, first half). -/
+`Ψ` differentiable at `M`. -/
 private theorem StepDecompN_hasDerivAt_dir {ι : Type*} [Fintype ι] [DecidableEq ι]
     {Ψ : Matrix ι ι ℂ → ℂ} {M : Matrix ι ι ℂ} (X : Matrix ι ι ℂ) (hd : DifferentiableAt ℝ Ψ M) :
     HasDerivAt (fun y : ℝ => Ψ (M + (y : ℂ) • X)) (fderiv ℝ Ψ M X) 0 := by
@@ -1092,7 +1070,7 @@ private theorem StepDecompN_sum_delta {ι : Type*} [Fintype ι] [DecidableEq ι]
   simp [ite_mul]
 
 /-- **`stepZCN` is linear in the complex kernel `U`**, pointwise in `ω` (RBM1D
-`stepZC_eq_sum_gridDeltaC`, `:605`): `Z^U_b = Σ_a U(b,a) Z^δ_a`. -/
+`stepZC_eq_sum_gridDeltaC`): `Z^U_b = Σ_a U(b,a) Z^δ_a`. -/
 private theorem StepDecompN_stepZCN_eq_sum_delta {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ)
     (n j : ℕ) {ι : Type*} [Fintype ι] [DecidableEq ι]
     {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
@@ -1127,8 +1105,8 @@ private theorem StepDecompN_stepZCN_eq_sum_zvecN {d : ℕ} (sz : Sizes d) (E s t
   rw [h]
   ring
 
-/-- **`ZvecN = stepZCN`** (identity kernel; RBM1D `stepZC_gridDeltaC`, `:591`): the first-chaos
-part `√Δ · ∂_{X_{j+1}} 𝓛_{u_{j+1},σ,b}(H_j)` of the merged vocabulary is `stepZCN` of the loop family with the
+/-- **`ZvecN = stepZCN`** (identity kernel; RBM1D `stepZC_gridDeltaC`): the first-chaos
+part `√Δ · ∂_{X_{j+1}} 𝓛_{u_{j+1},σ,b}(H_j)` of the vocabulary is `stepZCN` of the loop family with the
 identity kernel, at every sample point.  The derivative `loopDerivN` is `fderiv ℝ` because the loop
 observable is differentiable at the Hermitian `H_j` (`HermTestFun.contDiffAt`), and `fderiv` along a
 Hermitian direction is `trace (gradMat · X)` (`fderiv_eq_trace_gradMat`). -/
@@ -1141,7 +1119,7 @@ theorem ZvecN_eq_stepZCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ
     StepDecompN_sum_delta]
 
 /-- **`stepXiCN` is linear in the complex kernel `U`**, a.e., simultaneously for all labels `b`
-(RBM1D `stepXiC_eq_sum_gridDeltaC_ae`, `:628`): `ξ^U_b = Σ_a U(b,a) ξ^δ_a`. -/
+(RBM1D `stepXiC_eq_sum_gridDeltaC_ae`): `ξ^U_b = Σ_a U(b,a) ξ^δ_a`. -/
 private theorem StepDecompN_stepXiCN_eq_sum_delta_ae {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ)
     (n j : ℕ) {ι : Type*} [Fintype ι] [DecidableEq ι]
     {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
@@ -1185,7 +1163,7 @@ private theorem StepDecompN_stepXiCN_eq_sum_delta_ae {d : ℕ} (sz : Sizes d) (s
   simp only [mul_sub, Finset.sum_sub_distrib]
 
 /-- **`stepYCN` is linear in the complex kernel `U`**, a.e., simultaneously for all labels `b`
-(RBM1D `stepYC_eq_sum_gridDeltaC_ae`, `:674`). -/
+(RBM1D `stepYC_eq_sum_gridDeltaC_ae`). -/
 private theorem StepDecompN_stepYCN_eq_sum_delta_ae {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ → ℕ)
     (n j : ℕ) {ι : Type*} [Fintype ι] [DecidableEq ι]
     {Φ : ι → Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ → ℂ}
@@ -1198,8 +1176,8 @@ private theorem StepDecompN_stepYCN_eq_sum_delta_ae {d : ℕ} (sz : Sizes d) (s 
   rw [hω b, StepDecompN_stepZCN_eq_sum_delta sz s t K n j (Φ := Φ) U b ω]
   simp only [mul_sub, Finset.sum_sub_distrib]
 
-/-- **`martIncN = stepXiCN`** (identity kernel; RBM1D `KernelC`, `:571-:698`): a.e., simultaneously
-for all labels `b`, the martingale increment `ξ_{j+1} = A_{j+1} - E[A_{j+1} | F_j]` of the merged vocabulary is
+/-- **`martIncN = stepXiCN`** (identity kernel; RBM1D `KernelC`): a.e., simultaneously
+for all labels `b`, the martingale increment `ξ_{j+1} = A_{j+1} - E[A_{j+1} | F_j]` of the vocabulary is
 `stepXiCN` of the loop family with the identity kernel.  The deterministic `𝒦` part of `AvecN`
 (`A = 𝓛 - 𝒦`) cancels: `E[𝓛 - 𝒦 | F_j] = E[𝓛 | F_j] - 𝒦`, the loop observable being bounded and
 measurable along the Hermitian walk (`HermTestFun`). -/
@@ -1246,7 +1224,7 @@ theorem martIncN_eq_stepXiCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K :
   ring
 
 /-- **`YvecN = stepYCN`** (identity kernel): a.e., simultaneously for all labels `b`, the remainder
-`martIncN - ZvecN` of the merged vocabulary is `stepYCN` of the loop family with the identity kernel. -/
+`martIncN - ZvecN` of the vocabulary is `stepYCN` of the loop family with the identity kernel. -/
 theorem YvecN_eq_stepYCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
     (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n)
     {k : ℕ} (σ : Fin k → Bool) :
@@ -1258,8 +1236,7 @@ theorem YvecN_eq_stepYCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ
   unfold YvecN stepYCN
   rw [hω b, ZvecN_eq_stepZCN sz E s t K n j hE hs0 hst ht1 hj σ b ω]
 
-/-- **`Ugen ∘ YvecN = stepYCN` with the propagator kernel** (RBM1D `stepYC_ukerMatC_eq_Uker_ae`,
-`:688`): a.e., for every label `a`, `(𝒰_{u_{j+1},u_m,σ} Y)_a` is `stepYCN` of the loop family with
+/-- **`Ugen ∘ YvecN = stepYCN` with the propagator kernel** (RBM1D `stepYC_ukerMatC_eq_Uker_ae`): a.e., for every label `a`, `(𝒰_{u_{j+1},u_m,σ} Y)_a` is `stepYCN` of the loop family with
 the kernel of `Ugen`. -/
 theorem Ugen_stepYCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
     (hE : |E n| < 2) (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hj : j + 1 ≤ K n)
@@ -1281,20 +1258,8 @@ theorem Ugen_stepYCN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ →
 
 end Identification
 
-/-! ## 8. Compiled nonempty instances
 
-Data: the merged `RBM.Gauss.SizesInst.sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`, `lam_0 = 1/64`,
-`N = 2097152`), energy `E ≡ 0`, `s ≡ 0`, `t ≡ 1/2`, `K ≡ 4` (`Δ = 1/8`, `u_1 = 1/8`, `u_2 = 1/4`),
-size index `n = 0`, loop length `k = 3`, `σ = (+,-,+)`, label `b = (0, 0, 0)` (all three insertions in
-one block; for three distinct blocks `E_{b_1} E_{b_2} = 0` kills the gradient at `H_0 = 0`).
-Step `j = 0`: `H_0 = 0` (`s 0 = 0`) is deterministic, so `AbCN` does not depend on `ω`; step
-`j = 1`: `H_1 = √Δ X_1` is random.  The test class and the Hermitian bound
-`C₂ = k (k + 1) N η^{-(k+2)}` come from the merged theorem `hermTestFunLoopN`, so every
-hypothesis is discharged (no external hypothesis occurs). -/
 
-/-! ### Step `j = 0` (`H_0 = 0`) -/
-
-/-! ### Step `j = 1` (`H_1 = √Δ X_1` random; `u_2 = 1/4`, `m = 2`) -/
 
 end RBM.Ind
 
