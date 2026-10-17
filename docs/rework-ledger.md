@@ -88,3 +88,4 @@
 | T2524 | 2026-10-17 01:04 UTC (0591c041) | prover-max（设计门） | Sonnet 5.5（prover-max） | 是（Amend 1 在审核边界交给 1a-audit，没有重跑，不算返工） | BA-D 设计门（只出报告）：`docs/reports/T2524-design.md` 240 行，(c) 实质项 0，就地推广 R1/R2；1a-audit 第 1 轮 PASS（§372、§374；§377 补记） |
 | T2523 | 2026-10-17 07:56 UTC (970b8b54) | prover-hard | Sonnet 5.5 effort xhigh | 否（审核第 1 轮 RETURN：D1 5 个没人用的恢复声明 → 规则 (B) 修一次 89856dac；D2 调度签字 Amend 1；第 2 轮 PASS） | 发布清理第 2 步：17 个整模块死文件 + 633 个文件里没人用的声明与检查杂物，`RBM3D/` 下 +484 −149,231；01:02 UTC 被调度误停（§373、§374），WIP a9d1a6d4 提交后续跑；110 个扫描用声明先留（§376） |
 | T2535 | 2026-10-17 02:25 UTC (07716bc2) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 发布：`docs/PAPER-VS-LEAN.md` 695 行（按最终形式；T2533/T2534 的名字待复核）；审核第 1 轮 PASS，观察 4 条（d = 4 实例空体内 → T2534 Amend 1） |
+| T2533 | 2026-10-17 08:14 UTC (feb83715) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-D 的 R1：`baStep5III_holds_any`（Step 5 情形 (iii) 在 BA 元组上对所有 d ≥ 3），就地改 5 个 `BA/Step5III*` 文件 +284 −268；1a → 1b → 审核第 1 轮 PASS，约 17 分钟 |

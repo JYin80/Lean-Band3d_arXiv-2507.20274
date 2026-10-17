@@ -499,3 +499,4 @@
 - 2026-10-17 02:35 UTC 调度 V5：T2535 合并 07716bc2（PAPER-VS-LEAN 695 行）；T2534 Amend 1（d = 4 实例体内非空）；H343；DECISIONS §375。
 - 2026-10-17 05:05 UTC 调度 V5：T2523 审核第 1 轮 RETURN 要签字 → Amend 1（D2 (a) 先留 110 个扫描用声明，(b) 插入上限只算 RBM3D/；D1 修一次），H345；DECISIONS §376。
 - 2026-10-17 08:15 UTC 调度 V5：T2523 合并 970b8b54（第 2 轮审核 PASS）；T2533 07:57 开工；注释清理拆成 12 张并行票 T2536–T2547（文件清单 `T####-files.txt`，646 个文件；BA-D 7 个文件与 Test/、RBM3D.lean 不在内），H346；DECISIONS §377。
+- 2026-10-17 08:24 UTC 调度 V5：T2533 合并 feb83715（BA-D R1，`baStep5III_holds_any`），检查 Part 2 启用；T2534 08:15 开工；磁盘 19 GiB < 20 GiB，注释票未开 → H347：清理已合并票的工作树（不加 --force），之后按剩余空间开注释票；DECISIONS §378。

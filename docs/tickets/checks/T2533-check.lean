@@ -2,7 +2,7 @@
 Release check for T2533 (dispatcher V5, 2026-10-17 01:25 UTC; DECISIONS §372 (2) (i), (iii)): BA-D row R1.
 Statements only: `#check` and Prop-valued `example`s whose term is a name; no proofs.
 Run: lake env lean docs/tickets/checks/T2533-check.lean
-Part 1 compiles on `main` before the row and on `t/T2533` after. Part 2 is commented out; the dispatcher activates it at merge.
+Part 1 compiles on `main` before the row and on `t/T2533` after. Part 2 was activated by the dispatcher at the merge feb83715 (2026-10-17 08:24 UTC).
 -/
 import RBM3D
 
@@ -23,5 +23,5 @@ example : RBM.Univ.UNL32 → RBM.BA.BAThm27L 3 := RBM.BA.baThm27L_three
 #check @RBM.BA.baThm27L_any
 #check @RBM.Endpoints.final_shape
 
--- Part 2 (activated at merge):
--- example : RBM.BA.T2533Check.Target := RBM.BA.baStep5III_holds_any
+-- Part 2 (activated at the merge feb83715):
+example : RBM.BA.T2533Check.Target := RBM.BA.baStep5III_holds_any
