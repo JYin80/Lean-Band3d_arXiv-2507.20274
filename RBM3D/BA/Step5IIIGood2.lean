@@ -7,26 +7,18 @@ import RBM3D.BA.Step5IIIGood
 import RBM3D.Path.LemDecCalEwG
 
 /-!
-# U5c, part 2: the scalar part of U5b's bundle along a flow, and the composed instance
+# Step 5, case `1 - t ≥ λ²`, block Anderson model: the scalar hypotheses of Lemma 5.2 along a flow
 
-Ticket T2485.  Paper: the scalar hypotheses of `lem_dec_calE` (`3_5:2314-2338`): `M_u = W^d(1-u)`,
-`ℓ_u = 1` as `lam² ≤ 1 - u`, `J ≤ W^{1/2}`; BA `7_8:2101` (omitted details, paper-delta candidate
-T2459a).  Design `docs/reports/T2459-design.md` U5-2; audit `docs/reports/T2459-audit.md` O2
-(second half).
+Paper: Lemma 5.2 (`lem_dec_calE`) in the proof of Step 5, case `1 - t ≥ λ²` (Subsection 5.3,
+`sec:Step5_larget`), whose scalar hypotheses are `M_u = W^d(1-u)`, `ℓ_u = 1` (because
+`lam² ≤ 1 - u`) and a parameter `J ≤ W^{1/2}`. For the block Anderson model the paper omits the
+details (proof of Steps 3-6 for Theorem 8.2, `lem:main_ind_BA`).
 
-1. `baStep5III_scalar_flow` (target 4): along a flow in the regime, eventually, every
-   `u ∈ [s_n, t_n]`, every level `D' ≥ D` and every control `1 ≤ J ≤ W^{1/2}` meet the scalar part
-   of the bundle (written inline) at `Λ = K₀ = N^{τ'}`.  Sources: `Sizes.WO` (`0 < lam`;
-   `lam_sq_mul_pow_ge`, `Defs/Sizes.lean:193`), `Sizes.Bandwidth`, `Sizes.SizeTendsto`
-   (`4 ≤ log W`).
-2. Compiled nonempty instances (target 5) at `d = 3`, `sz0`, `zSeq`, `flow_sz0`: target 4 with its
-   floor premise discharged, and the composed instance (audit O2): on `G ∩ {J♯ ≤ W^{1/2}}` both
-   parts of the bundle hold, and the three ℰ-bounds follow through an exact-type hypothesis
-   `Step5IIIGood2_Edet 3` (the text of `T2482_BAEdet`, `docs/tickets/checks/T2482-check.lean:180`;
-   U5b-2's pin, not merged).  The private bundle copies `Step5IIIGood2_Scalar`, `_Matrix`,
-   `_EdetConcl`, `_Edet` appear only in this section.
-
-Helpers carry the stem `Step5IIIGood2_`.
+`baStep5III_scalar_flow`: along a flow in the regime, eventually, every `u ∈ [s_n, t_n]`, every
+level `D' ≥ D` and every `J` with `1 ≤ J ≤ W^{1/2}` satisfy the scalar part of the hypothesis bundle
+of Lemma 5.2 (written inline; it is the list of clauses of `BAStep5IIIEScalar`) at
+`Λ = K₀ = N^{τ'}`.  The inputs are `Sizes.WO` (`0 < lam`, and `lam_sq_mul_pow_ge`),
+`Sizes.Bandwidth` and `Sizes.SizeTendsto` (`4 ≤ log W`).
 -/
 
 set_option linter.style.longLine false
@@ -44,13 +36,13 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
 variable {d : ℕ}
 
-/-! ## 1. Target 4: the scalar part at the flow -/
+/-! ## The scalar part along a flow -/
 
 section ScalarFlow
 
-/-- **Target 4** (content binding `T2485_ScalarFlow`; audit O2, second half): along a flow in the regime, eventually, every
-`u ∈ [s_n, t_n]`, every level `D' ≥ D` and every control `1 ≤ J ≤ W^{1/2}` meet the scalar part of the bundle (inline) at
-`Λ = K₀ = N^{τ'}`; the floor premise is `(L^d W^{6d})² ≤ W^D` eventually. -/
+/-- Along a flow in the regime, eventually, every `u ∈ [s_n, t_n]`, every level `D' ≥ D` and every parameter
+`1 ≤ J ≤ W^{1/2}` satisfy the scalar part of the hypothesis bundle (inline) at `Λ = K₀ = N^{τ'}`; the floor
+premise is `(L^d W^{6d})² ≤ W^D` eventually. -/
 theorem baStep5III_scalar_flow (d : ℕ) (hd : 3 ≤ d) :
     ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) →
       STReg5III sz s t → ∀ D τ' : ℝ, 0 ≤ τ' →
@@ -80,10 +72,5 @@ theorem baStep5III_scalar_flow (d : ℕ) (hd : 3 ≤ d) :
   · exact hfln.trans (Real.rpow_le_rpow_of_exponent_le hW1 hDD')
 
 end ScalarFlow
-
-/-! ## 2. Compiled nonempty instances at `d = 3`, `sz0`, `zSeq`, `flow_sz0`
-
-Data: `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `s ≡ 1/10 < t ≡ 1/2 < t₀`, `D = 40`, `Cd = 1`, `θ = 1/10`.  The four Steps 2-4 predicates
-and `Step5IIIGood2_Edet 3` stay hypotheses. -/
 
 end RBM.BA

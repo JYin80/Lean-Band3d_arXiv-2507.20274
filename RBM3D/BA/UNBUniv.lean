@@ -15,31 +15,31 @@ import RBM3D.Universality.PinsKD
 import RBM3D.Universality.GUEPhase.RandomLayerBGD
 
 /-!
-# T2520, T2534 (BA leaf): the block Anderson filtered assembly and `BAThm27L d`, `d ≥ 3`
+# The block Anderson end of the universality chain: Theorem 2.7 at every `d ≥ 3`
 
-MN-D3 D3-D6 and N2's own rows (`docs/reports/T2513-design.md` §3, §5, §6; DECISIONS §316, §336,
-§340, §353).  New declarations only; no merged statement is edited (MNO-C1).
+Paper: Theorem 2.7 (`MR:decol_BA`), whose bulk universality bullet is the block Anderson version of
+Theorem 2.4 (`Thm: B_Univ`).  The file assembles bulk universality for the block Anderson model and
+concludes `BAThm27L d`, the five bullets of Theorem 2.7 at the dimension `d`, for every `d ≥ 3`.  A
+*dimension filter* `Dm : ℕ → Prop` restricts a statement to the dimensions `d` with `Dm d`; at
+`Dm = (· = d)` it is the statement at the single dimension `d`.
 
-* §1 the BA readings of the filtered pins (`UNLocAvgBAD`, `UNQueBAD`, `UNOURowBAD`,
-  `UNEMCTE2RowBAD`, `UNJakUywRowBAD`, `UNClaimRowBAD`) and the two one-line links to the per-`d`
-  texts of M1 and M3 (`UNLocAvgBAAt`, `MAPins:170`; `UNQueBAAt`, `MADecolQUE:52`):
-  `unLocAvgBAD_iff_at`, `unQueBAD_iff_at` (§340 (2));
-* §2 the filtered BA assembly: `jakUywRowkD` (the filtered `jakUywRowk`, `EMCTE2BA:629`),
-  `un_claimAll_of_rowsBAD`, `baBUniv_of_rowsD` (the filtered `baBUniv_of_rows`, `UNPins:367`, with
-  the two TrLocal inputs at the per-`d` core types of M1 row b);
-* §3 N2's rows: `unNormBARow_holds` (`(2.3)` of [32] at `H = λ Ψ + V`, twin of `unNormBandRow`,
-  `NormBand:173`, at `sz.withLam 0`), `unEMCTE2RowBAD_holds`, `unG1RowkBAD_holds`,
-  `unOURowBAD_holds` and, from the unfiltered producers of T2519, `unG1RowkBA_holds`,
-  `unOURowBA_holds` (the merged `∀ d` implication `UNOURowBA`, `UNPins:123`);
-* §4 the end in `RBM.BA`: `baEnd_BUnivL_of_ML`, `baThm27L_of_ML` (per `d`),
-  `baThm27L_any` (general `d` under `STStep5IIIgL d`), `baThm27L_all`
-  (**Theorem 2.7 at every `d ≥ 3`**, `UNL32 → ∀ d, 3 ≤ d → BAThm27L d`; the only external hypothesis
-  is `UNL32`; T2534) and its `d = 3` instance `baThm27L_three`;
-* §5 compiled nonempty instances at `d = 3`, `S0`.
-
-C5 names read (T2519): `BAKFam`, `BAPB` (`BA/GUEProcBA:76, 93`), `ba_prodG`, `ba_LLG`, `ba_QueG`
-(`BA/GUEHyp`).  Paper: `Thm: B_Univ` for block Anderson, `1_2:452-460`, `MR:decol_BA` `1_2:655`;
-D723; DECISIONS §371, §372 (BA Theorem 2.7 at every `d ≥ 3`, T2534).
+* Section 1: the block Anderson readings of the dimension-filtered statements (`UNLocAvgBAD`,
+  `UNQueBAD`, `UNOURowBAD`, `UNEMCTE2RowBAD`, `UNJakUywRowBAD`, `UNClaimRowBAD`) and their one-line
+  links to the per-`d` statements `UNLocAvgBAAt` and `UNQueBAAt`: `unLocAvgBAD_iff_at`,
+  `unQueBAD_iff_at`;
+* Section 2: the filtered block Anderson assembly: `jakUywRowkD`, `un_claimAll_of_rowsBAD`,
+  `baBUniv_of_rowsD` (the dimension-filtered form of `baBUniv_of_rows`, with the two trace-locality
+  inputs at the per-`d` statements);
+* Section 3: the inputs proved for the block Anderson model: `unNormBARow_holds` (the norm bound
+  `(2.3)` of Landon-Sosoe-Yau, arXiv:1609.09011v4, at `H = λ Ψ + V`, the counterpart of
+  `unNormBandRow`, at `sz.withLam 0`), `unEMCTE2RowBAD_holds`, `unG1RowkBAD_holds` (from the layer
+  producers `ba_prodG`, `ba_LLG`, `ba_QueG` at `BAKFam`, `BAPB`) and `unOURowBAD_holds`;
+* Section 4: the end in `RBM.BA`: `baEnd_BUnivL_of_ML` and `baThm27L_of_ML` (at one `d`, from
+  `UNL32` and `UNMLOutBA d`), `baThm27L_any` (every `d ≥ 3`, with Step 5 in case (iii),
+  `STStep5IIIgL d`, as a hypothesis) and `baThm27L_all` (**Theorem 2.7 at every `d ≥ 3`**,
+  `UNL32 → ∀ d, 3 ≤ d → BAThm27L d`; the only external hypothesis is `UNL32`, Theorem 2.2 of
+  Landon-Sosoe-Yau, arXiv:1609.09011v4); `baThm27L_three` is its `d = 3` case;
+* Section 5: the instances of `baThm27L_all` are in `Main/FinalShape.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -57,40 +57,40 @@ open MeasureTheory ProbabilityTheory Filter Matrix Topology
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Endpoints RBM.Univ.GUEPhase RBM.BA RBM.BA.UNPinsInst RBM.Univ.BAInst
 open scoped NNReal ENNReal
 
-/-! ## 1. The BA readings and the links to the per-`d` texts of M1 and M3 -/
+/-! ## 1. The block Anderson readings and the links to the per-`d` statements -/
 
-/-- `UNLocAvgBAD`: `UNLocAvgkD` at the block Anderson kind (the filtered `UNLocAvgBA`, `UNPins:103`). -/
+/-- `UNLocAvgBAD`: `UNLocAvgkD` at the block Anderson kind (`UNLocAvgBA` read only at the dimensions `d` with `Dm d`). -/
 def UNLocAvgBAD (Dm : ℕ → Prop) : Prop := UNLocAvgkD Dm (fun d => UNKind.ba d)
 
-/-- `UNQueBAD`: `UNQuekD` at the block Anderson kind (the filtered `UNQueBA`, `UNPins:99`). -/
+/-- `UNQueBAD`: `UNQuekD` at the block Anderson kind (`UNQueBA` read only at the dimensions `d` with `Dm d`). -/
 def UNQueBAD (Dm : ℕ → Prop) : Prop := UNQuekD Dm (fun d => UNKind.ba d)
 
-/-- `UNOURowBAD`: `UNOURowkD` at the block Anderson kind with `ML := ∀ d, Dm d → UNMLOutBA d` (the filtered `UNOURowBA`,
-`UNPins:123`). -/
+/-- `UNOURowBAD`: `UNOURowkD` at the block Anderson kind with `ML := ∀ d, Dm d → UNMLOutBA d` (`UNOURowBA` read only at the
+dimensions `d` with `Dm d`). -/
 def UNOURowBAD (Dm : ℕ → Prop) : Prop :=
   UNOURowkD Dm (fun d => UNKind.ba d) (∀ d : ℕ, Dm d → UNMLOutBA d) (UNLocAvgBAD Dm) (UNQueBAD Dm)
 
-/-- `UNEMCTE2RowBAD`: `UNEMCTE2RowkD` at the block Anderson kind (the filtered `UNEMCTE2RowBA`, `UNPins:128`). -/
+/-- `UNEMCTE2RowBAD`: `UNEMCTE2RowkD` at the block Anderson kind (`UNEMCTE2RowBA` read only at the dimensions `d` with `Dm d`). -/
 def UNEMCTE2RowBAD (Dm : ℕ → Prop) : Prop := UNEMCTE2RowkD Dm (fun d => UNKind.ba d)
 
-/-- `UNJakUywRowBAD`: `UNJakUywRowkD` at the block Anderson kind (the filtered `UNJakUywRowBA`, `UNPins:132`). -/
+/-- `UNJakUywRowBAD`: `UNJakUywRowkD` at the block Anderson kind (`UNJakUywRowBA` read only at the dimensions `d` with `Dm d`). -/
 def UNJakUywRowBAD (Dm : ℕ → Prop) : Prop := UNJakUywRowkD Dm (fun d => UNKind.ba d) (UNLocAvgBAD Dm)
 
-/-- `UNClaimRowBAD`: `UNClaimRowkD` at the block Anderson kind (the filtered `UNClaimRowBA`, `UNPins:136`). -/
+/-- `UNClaimRowBAD`: `UNClaimRowkD` at the block Anderson kind (`UNClaimRowBA` read only at the dimensions `d` with `Dm d`). -/
 def UNClaimRowBAD (Dm : ℕ → Prop) : Prop := UNClaimRowkD Dm (fun d => UNKind.ba d)
 
-/-- `unLocAvgBAD_iff_at`: the filtered reading at `Dm = (· = d)` is M1's per-`d` text `UNLocAvgBAAt` (`MAPins:170`). -/
+/-- `unLocAvgBAD_iff_at`: the reading at the filter `Dm = (· = d)` is the per-`d` statement `UNLocAvgBAAt`. -/
 theorem unLocAvgBAD_iff_at (d : ℕ) : UNLocAvgBAD (· = d) ↔ (3 ≤ d → UNLocAvgBAAt d) :=
   ⟨fun h hd => h d rfl hd, fun h d' hdd hd => by subst hdd; exact h hd⟩
 
-/-- `unQueBAD_iff_at`: the same for M3's per-`d` text `UNQueBAAt` (`MADecolQUE:52`). -/
+/-- `unQueBAD_iff_at`: the same for the per-`d` statement `UNQueBAAt`. -/
 theorem unQueBAD_iff_at (d : ℕ) : UNQueBAD (· = d) ↔ (3 ≤ d → UNQueBAAt d) :=
   ⟨fun h hd => h d rfl hd, fun h d' hdd hd => by subst hdd; exact h hd⟩
 
-/-! ## 2. The filtered BA assembly -/
+/-! ## 2. The filtered block Anderson assembly -/
 
-/-- `jakUywRowkD`: `UNJakUywRowkD` for every filter and kind that satisfies the three kind hypotheses (the filtered
-`jakUywRowk`, `EMCTE2BA:629`; it imports `BA/EMCTE2BA`, so it lives here). -/
+/-- `jakUywRowkD`: `UNJakUywRowkD` for every filter and kind that satisfy the three kind hypotheses (the dimension-filtered
+form of `jakUywRowk`). -/
 theorem jakUywRowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : UNBadBoundk K)
     (hbb2 : UNBad2Boundk K) (Loc : Prop) : UNJakUywRowkD Dm K Loc := by
   intro _hloc hclaims d hD hd 𝔠 𝔡 sz hadm κ hκ E hE nf
@@ -101,8 +101,8 @@ theorem jakUywRowkD (Dm : ℕ → Prop) (K : ∀ d, UNKind d) (hbw : UNBulkWindo
   exact ⟨unJak_of_ouClaimsk K hbw hbb d hd 𝔠 𝔡 sz hadm κ hκ E hE nf τU hτU (le_min_iff.1 hτle).2 hQ hDg,
     unUyw_of_ouClaimsk K hbw hbb2 d hd 𝔠 𝔡 sz hadm κ hκ E hE nf τU hτU (le_min_iff.1 hτle).2 hQ hDg⟩
 
-/-- `un_claimAll_of_rowsBAD`: the Claim `(417)` of the block Anderson model from the filtered BA rows, at every `d` with
-`Dm d` (the filtered `un_claimAll_of_rowsBA`, `UNPins:142`; `un_claimAll_of_rowskD` at `UNKind.ba`). -/
+/-- `un_claimAll_of_rowsBAD`: the claim `UNClaimAllC` of the block Anderson model from the filtered block Anderson statements, at
+every `d` with `Dm d` (the dimension-filtered form of `un_claimAll_of_rowsBA`; it is `un_claimAll_of_rowskD` at `UNKind.ba`). -/
 theorem un_claimAll_of_rowsBAD (Dm : ℕ → Prop) (rC : UNClaimRowBAD Dm) (rE : UNEMCTE2RowBAD Dm)
     (rJ : UNJakUywRowBAD Dm) (rO : UNOURowBAD Dm) (hML : ∀ d : ℕ, Dm d → UNMLOutBA d) (hLoc : UNLocAvgBAD Dm)
     (hQ : UNQueBAD Dm) :
@@ -111,9 +111,9 @@ theorem un_claimAll_of_rowsBAD (Dm : ℕ → Prop) (rC : UNClaimRowBAD Dm) (rE :
   un_claimAll_of_rowskD Dm (fun d => UNKind.ba d) rC rE rJ rO hML hLoc hQ
 
 /-- `baBUniv_of_rowsD`: `BAEnd_BUnivL d` at every `d` with `Dm d` from `UNCoreC''`, `UNL32`, `UNGUELocal`,
-`UNGreenCorrAllC`, `UNDensBARow'`, the two TrLocal inputs at the per-`d` core types of M1 row b
-(`unTrLocalBAAt_of_locAvg`, `MATrLocalBA:80`; `unTrLocalInitBAAt'_of_locAvg`, `:237`), `UNNormBARow`, the filtered BA rows and
-the filtered consumed inputs (the filtered `baBUniv_of_rows`, `UNPins:367`). -/
+`UNGreenCorrAllC`, `UNDensBARow'`, the two trace-locality inputs at the per-`d` statements (`unTrLocalBAAt_of_locAvg`,
+`unTrLocalInitBAAt'_of_locAvg`), `UNNormBARow`, the filtered block Anderson statements and the filtered consumed inputs (the
+dimension-filtered form of `baBUniv_of_rows`). -/
 theorem baBUniv_of_rowsD (Dm : ℕ → Prop) (hcore : UNCoreC'') (h32 : UNL32) (hGL : UNGUELocal)
     (hGC : UNGreenCorrAllC) (rD : UNDensBARow')
     (rT0 : ∀ d : ℕ, 3 ≤ d → UNLocAvgBAAt d → UNTrLocalBAAt d)
@@ -133,16 +133,16 @@ theorem baBUniv_of_rowsD (Dm : ℕ → Prop) (hcore : UNCoreC'') (h32 : UNL32) (
     ⟨CV₀ + 1, by linarith, UNPins_normBound_mono hN (by linarith), unMeanBound_ba sz hA _ (by linarith)⟩ hCl E' hE'
     k hk O hO
 
-/-! ## 3. N2's rows -/
+/-! ## 3. The norm bound and the filtered block Anderson statements -/
 
-/-- **`unNormBARow_holds`**: the norm row `UNNormBARow` (`UNPins:190`, `(2.3)` of [32]) with `CV₀ = 3`.  `H = λ_n Ψ + V`,
+/-- **`unNormBARow_holds`**: the norm statement `UNNormBARow` (the norm bound `(2.3)` of Landon-Sosoe-Yau, arXiv:1609.09011v4) with `CV₀ = 3`.  `H = λ_n Ψ + V`,
 `V` the Gaussian matrix of `sz.withLam 0`.  Every real coordinate of `V` is `N(0, v)` with `v ≤ 1`
 (`NormBand_subgaussian`), so a union over the `2 N²` coordinates gives `P(∃ c, |ω_c| ≥ N) ≤ 4 N² e^{-N²/2} ≤ N^{-D}`
 eventually (`NormBand_tail_eventually`, from `SizeTendsto` only); on the complement every entry of `V` is `≤ 2 N`
 (`NormBand_Xentry_le`) and every entry of `λ_n Ψ` is `≤ 2d 𝔡⁻¹` (`λ_n ≤ 𝔡⁻¹` from `(eq:WO)`, row sum `2d` of `Ψ`,
-`UNPins_psiI_rowsum`), so `|λ_i| ≤ N (2 N + 2d 𝔡⁻¹) ≤ N³` once `N ≥ 2 + 2d 𝔡⁻¹` (`NormBand_eig_le`).  Twin of
-`unNormBandRow` (`NormBand:173`), which cannot be applied because `sz.withLam 0` is not admissible (`WO 𝔡` fails at `lam = 0`).
-No new `∃` constant: `CV₀ = 3` is the row's own. -/
+`UNPins_psiI_rowsum`), so `|λ_i| ≤ N (2 N + 2d 𝔡⁻¹) ≤ N³` once `N ≥ 2 + 2d 𝔡⁻¹` (`NormBand_eig_le`).  The band-model counterpart
+`unNormBandRow` cannot be applied here because `sz.withLam 0` is not admissible (`WO 𝔡` fails at `lam = 0`).
+The constant is `CV₀ = 3`. -/
 theorem unNormBARow_holds : UNNormBARow := by
   intro d hd 𝔠 𝔡 sz hA
   refine ⟨3, by norm_num, fun D hD => ?_⟩
@@ -213,13 +213,13 @@ theorem unNormBARow_holds : UNNormBARow := by
         congr 1; ring
     _ ≤ ENNReal.ofReal (N ^ (-D)) := ENNReal.ofReal_le_ofReal hn
 
-/-- `unEMCTE2RowBAD_holds`: the filtered weighted `(EMCTE2)` row of the block Anderson kind, at every filter, from the
-unfiltered `unEMCTE2RowBA_holds` (`EMCTE2BA:656`; each dimension is read at itself). -/
+/-- `unEMCTE2RowBAD_holds`: the filtered weighted `(EMCTE2)` statement of the block Anderson kind, at every filter, from the
+unfiltered `unEMCTE2RowBA_holds` (each dimension is read at itself). -/
 theorem unEMCTE2RowBAD_holds : ∀ Dm : ℕ → Prop, UNEMCTE2RowBAD Dm :=
   fun _ d _ hd => unEMCTE2RowBA_holds d hd
 
-/-- `unG1RowkBAD_holds`: the two layer pins `UNOULLk`, `UNOUEq747k` of the block Anderson kind at every filter, from the
-producers of T2519 (`ba_prodG`, `ba_LLG`, `ba_QueG` at `BAKFam`, `BAPB`, `BA/GUEHyp`) and the merged BA vocabulary of
+/-- `unG1RowkBAD_holds`: the two layer statements `UNOULLk`, `UNOUEq747k` of the block Anderson kind at every filter, from the
+producers `ba_prodG`, `ba_LLG`, `ba_QueG` (at `BAKFam`, `BAPB`, `BA/GUEHyp`) and the block Anderson vocabulary of
 `RandomLayerBGBA` (`ba_flowG`, `ba_domG`, `RandomLayerBGBA_comp`, `ba_mlout`) through `g1Rowk_of_inputsGD`. -/
 theorem unG1RowkBAD_holds : ∀ Dm : ℕ → Prop,
     UNG1RowkD Dm (fun d => UNKind.ba d) (fun d => UNOUProfile.ba d) (∀ d : ℕ, Dm d → UNMLOutBA d)
@@ -230,22 +230,22 @@ theorem unG1RowkBAD_holds : ∀ Dm : ℕ → Prop,
     (fun hML' d hdd hd => ba_mlout d hd (hML' d hdd))
 
 /-- `unOURowBAD_holds`: the filtered `𝐇_t` claims of the centred block Anderson flow, at every filter: `ouRowk_of_pinsD`
-with the profile rows `baOUProfRowk_holds` (`BA/GUEKPrim:584`), `unG1RowkBAD_holds` and `g2bRowk` (`QUEFlow:898`). -/
+with the profile statements `baOUProfRowk_holds`, `unG1RowkBAD_holds` and `g2bRowk`. -/
 theorem unOURowBAD_holds : ∀ Dm : ℕ → Prop, UNOURowBAD Dm :=
   fun Dm => ouRowk_of_pinsD Dm _ _ (fun d _ hd => baOUProfRowk_holds d hd) (unG1RowkBAD_holds Dm) (g2bRowk _ _)
 
 end RBM.Univ
 
-/-! ## 4. The end -/
+/-! ## 4. The end: Theorem 2.7 -/
 
 namespace RBM.BA
 
 open MeasureTheory Filter Topology
 open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Endpoints RBM.Univ RBM.Univ.GUEPhase
 
-/-- **`baEnd_BUnivL_of_ML`**: `BAEnd_BUnivL d` for every `d ≥ 3` from `UNL32` and `UNMLOutBA d` (the `d > 3` form stays in
-hypothesis form).  `baBUniv_of_rowsD (· = d)`: every input is read at the dimension `d` only (`baEnd_locSCL d`,
-`unLocAvgBAAt_of_locSCL`, `unQueBAAt_of_ML`, M1's and M3's cores) and the filtered rows are the proved ones. -/
+/-- **`baEnd_BUnivL_of_ML`**: `BAEnd_BUnivL d` for every `d ≥ 3` from `UNL32` and `UNMLOutBA d`.  It is `baBUniv_of_rowsD (· = d)`:
+every input is read at the dimension `d` only (`baEnd_locSCL d`, `unLocAvgBAAt_of_locSCL`, `unQueBAAt_of_ML`,
+`unTrLocalBAAt_of_locAvg`, `unTrLocalInitBAAt'_of_locAvg`) and the filtered statements are the proved ones. -/
 theorem baEnd_BUnivL_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOutBA d) : BAEnd_BUnivL d :=
   baBUniv_of_rowsD (· = d) unCoreC''_holds h32 (un_gueLocal_of_tail gueSchurTail) greenCorrAllC unDensBARow'_holds
     unTrLocalBAAt_of_locAvg unTrLocalInitBAAt'_of_locAvg unNormBARow_holds (unClaimRowkD _ _)
@@ -258,29 +258,26 @@ theorem baEnd_BUnivL_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOut
 theorem baThm27L_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOutBA d) : BAThm27L d :=
   ⟨baEnd_decolL d hML, baEnd_locSCL d hML, baEnd_QUEL d hML, baEnd_BUnivL_of_ML d hd h32 hML, baEnd_QDiffL d hML⟩
 
-/-- **`baThm27L_any`** (closing condition (iii), D723): `BAThm27L d` for every `d ≥ 3` under Step 5 (iii), `STStep5IIIgL d`,
-through `baMainIndFamTL_any` (`MainIndTermBA:53`) and `unMLOutBA_of_famStep` (`MainIndOutBA:326`). -/
+/-- **`baThm27L_any`**: `BAThm27L d` for every `d ≥ 3` with Step 5 in case (iii), `STStep5IIIgL d`, as a hypothesis, through
+`baMainIndFamTL_any` and `unMLOutBA_of_famStep`; `baThm27L_all` discharges this hypothesis. -/
 theorem baThm27L_any (d : ℕ) (hd : 3 ≤ d)
     (h5 : STStep5IIIgL d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z)
       (fun sz z => baFMz sz z) (fun sz z => BAflowT0 sz z)) (h32 : UNL32) : BAThm27L d :=
   baThm27L_of_ML d hd h32 (unMLOutBA_of_famStep d (baMainIndFamTL_any d h5))
 
-/-- **`baThm27L_all`** (T2534, BA-D row R2, the assembly): **Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`**.  `baThm27L_any` with its
-Step 5 (iii) premise discharged by `baStep5III_holds_any` (`BA/Step5IIITargets`, T2533); the only hypothesis is the borrowed `UNL32`
-(LSY arXiv:1609.09011 Thm 2.2). -/
+/-- **`baThm27L_all`**: **Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`**.  `baThm27L_any` with its Step 5 (iii) hypothesis
+discharged by `baStep5III_holds_any` (`BA/Step5IIITargets`); the only hypothesis is `UNL32` (Theorem 2.2 of Landon-Sosoe-Yau,
+arXiv:1609.09011v4), the one external input. -/
 theorem baThm27L_all (h32 : UNL32) : ∀ d : ℕ, 3 ≤ d → BAThm27L d :=
   fun d hd => baThm27L_any d hd (baStep5III_holds_any d hd) h32
 
-/-- **`baThm27L_three`** (D6, closing condition (vi)): the block Anderson Theorem 2.7 at `d = 3` (D723), the `d = 3` instance of
-`baThm27L_all`: the input of MA-06b.  The only hypothesis is `UNL32`. -/
+/-- **`baThm27L_three`**: Theorem 2.7 for the block Anderson model at `d = 3`, the `d = 3` case of `baThm27L_all`.  The only
+hypothesis is `UNL32`. -/
 theorem baThm27L_three : UNL32 → BAThm27L 3 :=
   fun h32 => baThm27L_all h32 3 le_rfl
 
 end RBM.BA
 
-/-! ## 5. Compiled nonempty instances (`d = 3`, `S0`: `(L, g) = (4, 3/10)`, `(𝔠, 𝔡) = (1/6, 1/10)`)
+/-! ## 5. Instances
 
-Data of the merged instances `UNPins:1027-1066`: `S0` (`UNPins:884`), `κ_* = clsκ 4`, `E_* = (fp 4 _).E` in the ρ-bulk,
-`k = 1` (`n_f = 1, 2` for the claim rows), `E' = 0`, `𝒪 = bump`.  Every deterministic hypothesis and every producer
-is discharged by a merged or C5 name; the one hypothesis left is the borrowed `UNL32` (`inst_univ_baD`, the two end
-theorems). -/
+`baThm27L_all` is applied at concrete data, at `d = 3` and `d = 4`, in `RBM3D/Main/FinalShape.lean` (through `Thm27_of_L32`). -/

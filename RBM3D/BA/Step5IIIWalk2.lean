@@ -8,29 +8,23 @@ import RBM3D.BA.NetLiftBA
 import RBM3D.Induction.Step1Setup
 
 /-!
-# U5d-2: the stopped grid walk, the closure and the lift of BA case (iii) of Step 5
+# Step 5, case `1 - t ≥ λ²`, block Anderson model: the stopped grid walk, closure and lift
 
-Ticket T2493, second half of the pre-signed split (branch `t/T2493b`, stacked on
-`BA/Step5IIIWalk.lean`, merged as f2af0245).  Paper: `lem:pf_step5` (`3_5:2376-2383`; stopping time
-`(eq:def_TTT)` `:2369-2372`; Duhamel form `(int_K-L_ST)` `:136`; `TailtoTail` `:2345-2367`;
-`lem_dec_calE` `:2317-2338`); BA `7_8:2101` ("we therefore omit the details", paper-delta candidate
-T2459a).  Band twins (not edited): `Induction/PfStep5.lean` (`pfStep5_path`, `pfStep5_fixedN`,
-`pfStep5_walk`, `pfStep5_PT_of_walk`, `pfStep5_lift`).  The check is
-`docs/tickets/checks/T2493-check.lean`.
+Paper: Lemma 5.4 (`lem:pf_step5`) in Subsection 5.3 (`sec:Step5_larget`): the stopping time `T`
+(`eq:def_TTT`, (5.47)), the Duhamel form `(int_K-L_ST)` ((3.13)), Lemma 5.3 (`TailtoTail`) and Lemma
+5.2 (`lem_dec_calE`).  For the block Anderson model the paper omits the details (proof of Steps 3-6
+for Theorem 8.2, `lem:main_ind_BA`).  The band-model counterparts are `pfStep5_path`,
+`pfStep5_fixedN`, `pfStep5_walk`, `pfStep5_PT_of_walk` and `pfStep5_lift`.  The file uses the public
+results of `BA/Step5IIIWalk.lean`.
 
-**Targets 6-8** (the `T2493_*` pins of the check):
+* `BAStep5IIIWalkConcl` (the grid conclusion); `baStep5III_walk_at` (the grid conclusion from a
+  flow, the horizon, the regime and the five premises read from Steps 2-4, written as one
+  conjunction binder); `BAStep5IIIWalk` with `baStep5IIIWalk_holds` (`𝔠d = 1/100`, as in the band
+  model).  The closure is the proof of `baStep5III_walk_at`; there is no separate closure statement.
+* `BAStep5IIIFromWalk` (with the hypotheses `0 < ε`, `0 < 𝔡`) and `baStep5IIIFromWalk_holds`: the
+  grid conclusion gives `STPfConclgL`.
 
-* 6. `BAStep5IIIWalkConcl` (= `T2493_BAWalkConcl`); `baStep5III_walk_at` (= `T2493_WalkAt`, with
-  `T2493_ReadPremises` written inline as one conjunction binder); `BAStep5IIIWalk`
-  (= `T2493_BAWalk`) with `baStep5IIIWalk_holds` (`𝔠d = 1/100`, as the band).  The closure is the
-  proof of `baStep5III_walk_at`; there is no public closure text.
-* 7. `BAStep5IIIFromWalk` (= `T2493_BAFromWalk`, correction (a): `0 < ε`, `0 < 𝔡`) with
-  `baStep5IIIFromWalk_holds`.
-* 8. Compiled nonempty instances at `d = 3` (section 7).
-
-Helpers carry the stem `Step5IIIWalk2_`.  The private lemmas of the band files and of `NetLiftBA`
-are reached by `open private` (the dispatcher's copy-or-open rule, §153 (1)); every lemma of
-`BA/Step5IIIWalk.lean` used here is public.
+The private lemmas of the band-model files and of `NetLiftBA` are reached by `open private`.
 -/
 
 set_option linter.style.longLine false
@@ -56,10 +50,10 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
 variable {d : ℕ}
 
-/-! ## 1. Vocabulary: the grid conclusion, the walk pin and the lift pin -/
+/-! ## 1. The grid conclusion, the walk statement and the lift statement -/
 
-/-- **The grid conclusion** (b1-b3; target 6 (a), `T2493_BAWalkConcl`; the probe's `T2459_BAWalkConcl` with `J♯` the merged `BAStep5IIIJsharp`; band
-`PfStep5_walkConcl`, `Induction/PfStep5.lean:79`): there is `ε₁ > 0` such that for every `ε₀ ∈ (0, ε₁)` and every `D > 0` there is a level
+/-- **The grid conclusion** (`J♯` is `BAStep5IIIJsharp`; the band counterpart is `PfStep5_walkConcl`): there is `ε₁ > 0` such that for every
+`ε₀ ∈ (0, ε₁)` and every `D > 0` there is a level
 `D* ≥ D + 2d` such that for every section `tt n ∈ [s_n, t_n]` and every probability exponent `D'` some grid `K` from `s` to `tt` has, eventually,
 `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for all `k ≤ K` outside an event of probability `≤ N^{-D'}`. -/
 def BAStep5IIIWalkConcl {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) : Prop :=
@@ -70,25 +64,25 @@ def BAStep5IIIWalkConcl {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : �
           ((baStep2Mat sz lam0 E).Hpath s (fun m => (tt m : ℝ)) K n k ω) < ((sz.W n : ℕ) : ℝ) ^ ε₀}ᶜ ≤
         ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D'))
 
-/-- **The walk pin** (target 6 (c), `T2493_BAWalk`; the probe's `T2459_BAWalk`): the shape of `STPfStep5gL` (`Chain/Step5Gen.lean:191`) with the grid
-conclusion.  An input of U5e. -/
+/-- **The walk statement**: the shape of `STPfStep5gL` with the grid conclusion as its conclusion.  It is an input of
+`baPfStep5_of_walk`. -/
 def BAStep5IIIWalk (d : ℕ) : Prop :=
   STIngR5gL d STReg5III (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z) baFMz BAflowT0
     (fun sz z s t => BAStep5IIIWalkConcl sz (BAflowLam0 sz z) (BAflowEs sz z) s t)
 
-/-- **The lift pin** (target 7, `T2493_BAFromWalk`; the probe's `T2459_BAfromWalk` with correction (a): `0 < ε`, `0 < 𝔡` added for the `η`-window and the
-`𝒦` window of the net lift): the grid conclusion gives `STPfConclgL`.  An input of U5e. -/
+/-- **The lift statement**: the grid conclusion gives `STPfConclgL` (the hypotheses `0 < ε`, `0 < 𝔡` serve the `η`-window and the
+`𝒦` window of the net lift).  It is an input of `baPfStep5_of_walk`. -/
 def BAStep5IIIFromWalk (d : ℕ) : Prop :=
   3 ≤ d → ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → 0 < ε → 0 < 𝔡 → BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ BAflowT0 sz z n) → STReg5III sz s t →
       BAStep5IIIWalkConcl sz (BAflowLam0 sz z) (BAflowEs sz z) s t → STPfConclgL (baFMz sz z) (Sizes.seqP (sz.withLam 0)) s t
 
-/-! ## 2. The pathwise induction (band `pfStep5_path`, `Induction/PfStep5.lean:1525`) -/
+/-! ## 2. The pathwise induction (as `pfStep5_path` in the band model) -/
 
 section Path
 
-/-- The numerical facts at one size index `n` used by the pathwise induction (all eventual facts of the choice of constants, collected; band
-`PfStep5Num`, `Induction/PfStep5.lean:1477`). -/
+/-- The numerical facts at one size index `n` used by the pathwise induction (all eventual facts of the choice of constants, collected; the
+band counterpart is `PfStep5Num`). -/
 private structure Step5IIIWalk2_Num (sz : Sizes d) (n : ℕ) (s tt : ℕ → ℝ) (K : ℕ → ℕ)
     (ε₀ τ ε' Dst Dg C₀ Ctot : ℝ) : Prop where
   hs0 : 0 ≤ s n
@@ -110,10 +104,10 @@ private structure Step5IIIWalk2_Num (sz : Sizes d) (n : ℕ) (s tt : ℕ → ℝ
   hRm : 64 * (((sz.W n : ℕ) : ℝ) ^ d) ^ 7 * (((sz.size n : ℕ) : ℝ) ^ C₀ * Real.sqrt (gridStep s tt K n) +
         gridStep s tt K n * ((sz.size n : ℕ) : ℝ) ^ 3) ≤ ((sz.W n : ℕ) : ℝ) ^ (-Dst)
 
-/-- **The pathwise induction** (`(b3)`; band `pfStep5_path`, `Induction/PfStep5.lean:1525`): at one size index `n` and one sample `ω` of the grid walk,
-if the matrix part holds at the grid indices (`hG`), the initial bound (`hI`), the decomposition of clause 1, the remainder bound of clause 2 and the
-weighted martingale bound of clause 4 hold, then `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for every `k ≤ K`: strong induction on `k`; the step is the per-time
-layer (`hpt`: target 4 and `baStep5IIIEdet_holds`), the Duhamel form (`Step5IIIWalk_duhamel` inside `Step5IIIWalk_assemble`), the four terms,
+/-- **The pathwise induction** (the band counterpart is `pfStep5_path`): at one size index `n` and one sample `ω` of the grid walk,
+if the matrix part holds at the grid indices (`hG`), the initial bound (`hI`), the decomposition (`hC1`), the remainder bound (`hC2`) and the
+weighted martingale bound (`hC4`) hold, then `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for every `k ≤ K`: strong induction on `k`; the step is the per-time
+layer (`hpt`: `baStep5III_walkLevel` and `baStep5IIIEdet_holds`), the Duhamel form (`Step5IIIWalk_duhamel` inside `Step5IIIWalk_assemble`), the four terms,
 `Step5IIIWalk_mart_real` and the closure `hclos`. -/
 private theorem Step5IIIWalk2_path {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {s t tt : ℕ → ℝ} {K : ℕ → ℕ}
     {ε₀ τ ε' Dst Dg C₀ τ' θ Cd Cc Cq : ℝ} (hCc : 0 < Cc) (hCq : 0 < Cq)
@@ -357,13 +351,13 @@ private theorem Step5IIIWalk2_path {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {s
 
 end Path
 
-/-! ## 3. The union bound at one size index (band `pfStep5_fixedN`, `Induction/PfStep5.lean:1785`) -/
+/-! ## 3. The union bound at one size index (as `pfStep5_fixedN` in the band model) -/
 
 section FixedN
 
-/-- **The probability at one size index** (band `pfStep5_fixedN`): the failure event of `∀ k ≤ K, J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` is contained in
+/-- **The probability at one size index** (the band counterpart is `pfStep5_fixedN`): the failure event of `∀ k ≤ K, J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` is contained in
 the union of the failure of the matrix part at the `K + 1` grid times (`hP1`, probability `≤ (K+1) N^{-D₁}`), of the initial bound (`hP2`), of the
-weighted martingale tails of the `#labels` labels (`hP4`) and a null set (clauses 1 and 2, `hae`); off it the pathwise induction applies. -/
+weighted martingale tails of the `#labels` labels (`hP4`) and a null set (the decomposition and the remainder bound, `hae`); off it the pathwise induction applies. -/
 private theorem Step5IIIWalk2_fixedN {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} {s t tt : ℕ → ℝ} {K : ℕ → ℕ}
     {ε₀ τ ε' Dst Dg C₀ τ' θ Cd Cc Cq D₁ D' : ℝ} (hCc : 0 < Cc) (hCq : 0 < Cq)
     (hnum : Step5IIIWalk2_Num sz n s tt K ε₀ τ ε' Dst Dg C₀ (Step5IIIWalk_Ctot d Cc Cq))
@@ -571,13 +565,13 @@ private theorem Step5IIIWalk2_fixedN {sz : Sizes d} {z : ℕ → ℂ} {n : ℕ} 
 
 end FixedN
 
-/-! ## 4. The walk: the constants and the closure (band `pfStep5_walk`, `Induction/PfStep5.lean:2129`) -/
+/-! ## 4. The walk: the constants and the closure (as `pfStep5_walk` in the band model) -/
 
 section Walk
 
-/-- **Target 6 (b), the per-flow walk** (`T2493_WalkAt`; the closure `T2459_BAclosure` is this proof): the grid conclusion from the flow, the horizon,
-the regime and the five read premises (`T2493_ReadPremises`, written inline: `STDecayStronggL` at `s` is the initial term, band
-`pfStep5_init_le`; `STAvgUgL`, `STGdecayWgL`, `STLmaxUgL`, `STLKUgL` go to `baStep5IIIGoodThm_holds`).  The constants: `ε₁ = min(𝔡/8, 1/4)`, `D* = max(D, D₀) + 2d + 1`,
+/-- **The per-flow walk** (the closure is this proof): the grid conclusion from the flow, the horizon,
+the regime and the five premises read from Steps 2-4 (written inline: `STDecayStronggL` at `s` is the initial term, as `pfStep5_init_le` in the band model;
+`STAvgUgL`, `STGdecayWgL`, `STLmaxUgL`, `STLKUgL` go to `baStep5IIIGoodThm_holds`).  The constants: `ε₁ = min(𝔡/8, 1/4)`, `D* = max(D, D₀) + 2d + 1`,
 `D₀ = 2/𝔠 + 12 d`, the closure exponent `τ` of `pfStep5Alg_closure` at the constant `Step5IIIWalk_Ctot d Cc Cq` (`Cc` of `baStep5IIIKernel_at_flow`, `Cq` of
 `baStep5IIITailSqQV_holds`, both from `κ, 𝔡` only), then `τ' = τ/48`, `θ = min(1/2, τ/(8(Cd+1)))` (after `ε₀`, `τ`), the grid exponent `CK` of
 `baGridRepNAt2_holds d`, and the grid `K = ⌈N^{max(CK, C_R)}⌉ + 1`. -/
@@ -603,7 +597,7 @@ theorem baStep5III_walk_at (d : ℕ) (hd : 3 ≤ d) :
   have hε₀d : ε₀ < 𝔡 / 4 :=
     lt_of_lt_of_le hε₀1 ((min_le_left _ _).trans (by linarith))
   have hε₀h : ε₀ ≤ 1 / 2 := (hε₀1.trans_le (min_le_right _ _)).le.trans (by norm_num)
-  -- (b1) the closure exponent `τ` and the level `D*`
+  -- the closure exponent `τ` and the level `D*`
   obtain ⟨τ, hτ, hclos⟩ := pfStep5Alg_closure sz 𝔠 𝔡 hflow.1 ε₀ (Step5IIIWalk_Ctot d Cc Cq) hε₀ hε₀d (by linarith)
   obtain ⟨Dst, hDstdef⟩ : ∃ Dst : ℝ, Dst = max D (2 / 𝔠 + 12 * ((d : ℕ) : ℝ)) + 2 * ((d : ℕ) : ℝ) + 1 := ⟨_, rfl⟩
   have hD₀ : (0 : ℝ) < 2 / 𝔠 + 12 * ((d : ℕ) : ℝ) := by positivity
@@ -718,7 +712,7 @@ theorem baStep5III_walk_at (d : ℕ) (hd : 3 ≤ d) :
     rw [hKfdef]
     have := pfStep5_hKD (N := ((sz.size n : ℕ) : ℝ)) (c := cK) (D' := D') hcK0 (by linarith)
     simpa using this
-  · -- the matrix part at the grid indices (targets 1-2, transfer to the grid walk)
+  · -- the matrix part at the grid indices (the good event transferred to the grid walk)
     intro j hj
     obtain ⟨G, hG, hGm⟩ := hgoodn ⟨_, hmem j hj⟩
     exact Step5IIIWalk_good_transfer sz (BAflowLam0 sz z) (BAflowEs sz z) s (fun m => ((tt m : TimeIcc s t m) : ℝ)) Kf n j
@@ -747,21 +741,21 @@ theorem baStep5III_walk_at (d : ℕ) (hd : 3 ≤ d) :
     intro ω' hω'
     obtain ⟨p, hp⟩ := hω'
     exact ⟨⟨p, by have := hReg n; have := hst' n; linarith⟩, hp⟩
-  · -- clauses 1 and 2 almost everywhere
+  · -- the decomposition and the remainder bound almost everywhere
     exact ae_all_iff.2 fun i => (h1 n i).and (h2n i)
-  · -- clause 4 (martingale)
+  · -- the weighted martingale bound
     exact h4n
 
 end Walk
 
-/-! ## 5. Target 6 (c): the walk pin (`T2493_BAWalk`) from the per-flow walk -/
+/-! ## 5. The walk statement from the per-flow walk -/
 
 section WalkPin
 
-/-- **Target 6 (c)** (`T2493_BAWalk`; the probe's `T2459_BAWalk`): the shape of `STPfStep5gL` with the grid conclusion, `𝔠d = 1/100` as the band `pfStep5_walk`.
+/-- **The walk statement holds**: the shape of `STPfStep5gL` with the grid conclusion, `𝔠d = 1/100` as in the band model (`pfStep5_walk`).
 The five read premises are the projections `STDecayStronggL`, conjuncts 2-3 of `STStep2ConclgL` and the inline Steps 3-4 premises; the carried premises
 (`STKboundgL`, `STKwardgL`, `STLKgL`, the weak decay premise of `STIngR5gL`, `STConStInd`, `STStep1LoopgL` and the entry-level conjunct of
-`STStep2ConclgL`) are unread. -/
+`STStep2ConclgL`) are not used. -/
 theorem baStep5IIIWalk_holds (d : ℕ) : BAStep5IIIWalk d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
@@ -771,13 +765,13 @@ theorem baStep5IIIWalk_holds (d : ℕ) : BAStep5IIIWalk d := by
 
 end WalkPin
 
-/-! ## 6. Target 7: the lift (band `pfStep5_PT_of_walk`, `Induction/PfStep5.lean:2320`, and `pfStep5_lift`, `:2398`) -/
+/-! ## 6. The lift (as `pfStep5_PT_of_walk` and `pfStep5_lift` in the band model) -/
 
 section Lift
 
 open RBM.Ind RBM.Ind.ContinuityNet
 
-/-- **The endpoint, the sections and the descent `D_u ≥ D`** (band `pfStep5_PT_of_walk`): the grid conclusion gives the per-time domination
+/-- **The endpoint, the sections and the descent `D_u ≥ D`** (the band counterpart is `pfStep5_PT_of_walk`): the grid conclusion gives the per-time domination
 `STLK2g ≺ T_{u,D}` (`PrecPTL`).  For a section `tt` and `ε₀ = min(ε₁, τ)/2`, the bad event of `STLK2g ≤ N^τ T_{tt,D}` is inside `{J♯(tt, D_{tt}) ≥ W^{ε₀}}`
 (`‖L-K‖ ≤ J♯ T_{tt,D_{tt}} ≤ J♯ T_{tt,D}`, `D_{tt} ≥ D`), a measurable set of matrices (`baStep5IIIJsharp_measurable`) whose law at the last grid index
 `K` is the law of the single-time model at `tt` (`Step2EventsGenTw_baLaw`, `gridTime_last`). -/
@@ -862,7 +856,7 @@ private theorem Step5IIIWalk2_PT (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (sz : Si
     exact absurd hω' (not_le.2 h1)
   exact (measure_mono hsub).trans (heq.symm.le.trans ((measure_mono hsub2).trans hn))
 
-/-- **The net lift `PrecPTL → PrecL`** of `STLK2g ≺ T_{u,D}` (band `pfStep5_lift` through `lemDecCalEPrec_lift`; here `cont_core` with the good event
+/-- **The net lift `PrecPTL → PrecL`** of `STLK2g ≺ T_{u,D}` (the band counterpart is `pfStep5_lift`, through `lemDecCalEPrec_lift`; here `cont_core` with the good event
 `contGood (sz.withLam 0)`, as `NetLiftBA_decay`): `V n = {±}² × (Z_L^d)²`, `A = 4 D + 40`, `#V ≤ N³`, `ε = N^{-D}`; the loop and `𝒦^{(2)}` moduli are
 `NetLiftBA_decay_close` (its first conjunct, at `C_d = 0`), and `T_{u',D} ≤ 2 T_{u,D}` is `LemDecCalELip_relcont`. -/
 private theorem Step5IIIWalk2_lift (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) {z : ℕ → ℂ} (hκ : 0 < κ) (hε : 0 < ε) (hflow : BAFlow sz κ ε 𝔠 𝔡 z)
@@ -973,7 +967,7 @@ private theorem Step5IIIWalk2_lift (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (sz : 
     have hT0 : 0 ≤ STtailTD sz n (u : ℝ) D a := tailTD_nonneg (Nat.cast_nonneg _)
     exact hrel.trans (by nlinarith)
 
-/-- **Target 7** (`T2493_BAFromWalk`; the probe's `T2459_BAfromWalk`, correction (a): `0 < ε`, `0 < 𝔡` added for the `η`-window and the `𝒦` window):
+/-- **The lift statement holds** (`BAStep5IIIFromWalk d`; the hypotheses `0 < ε`, `0 < 𝔡` serve the `η`-window and the `𝒦` window):
 the grid conclusion gives `STPfConclgL`: the endpoint, the sections and the descent `D_u ≥ D` (`Step5IIIWalk2_PT`), the net lift `PrecPTL → PrecL`
 (`Step5IIIWalk2_lift`: `cont_core` with the resolvent and `𝒦^{(2)}` moduli of `NetLiftBA`), and the restriction to the sizes with `lam² ≤ 1 - t` (`precomp_param`). -/
 theorem baStep5IIIFromWalk_holds (d : ℕ) : BAStep5IIIFromWalk d := by
@@ -985,12 +979,5 @@ theorem baStep5IIIFromWalk_holds (d : ℕ) : BAStep5IIIFromWalk d := by
     (fun n (p : {_p : STIdx2 sz s t n // sz.lam n ^ 2 ≤ 1 - t n}) => p.1)
 
 end Lift
-
-/-! ## 7. Compiled nonempty instances at `d = 3` (target 8)
-
-`sz0`, `zSeq`, `flow_sz0` with `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `s ≡ 1/10 < t ≡ 1/2 < t₀` (`half_lt_t0`), `Cd = 1`.  The regime
-(`Step5IIIGood_reg_sz0`) and `(con_st_ind)` (`s1Setup_conStInd_const`) are discharged; what stays a hypothesis is the Steps 1-4 carrier predicates of
-`STIngR5gL` (other gates' pins; the probe's `T2459_inst_IngR5` route).  Targets 1-5 and the per-time layer have their instances in
-`BA/Step5IIIWalk.lean` (section 11). -/
 
 end RBM.BA

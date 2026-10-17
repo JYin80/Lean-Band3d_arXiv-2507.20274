@@ -13,38 +13,48 @@ import RBM3D.Chain.Step2EventsGenTw
 import RBM3D.Induction.PfStep5
 
 /-!
-# U5d-1: the per-time layer of the stopped grid walk of BA case (iii) of Step 5 (ticket T2493, first half)
+# Step 5, case `1 - t ≥ λ²`, block Anderson model: the per-time layer of the grid walk
 
-Paper: `lem:pf_step5` (`3_5:2376-2383`; stopping time `(eq:def_TTT)` `:2369-2372`; Duhamel form `(int_K-L_ST)` `:136`; `TailtoTail`
-`:2345-2367`; `lem_dec_calE` `:2317-2338`); BA `7_8:2101` ("we therefore omit the details", paper-delta candidate T2459a).
-Band twins (not edited): `Induction/PfStep5.lean`, `Induction/PfStep5Grid.lean`, `Induction/PfStep5Alg.lean`.
-Design `docs/reports/T2459-design.md` U5-3; check `docs/tickets/checks/T2493-check.lean`.
+Paper: Lemma 5.4 (`lem:pf_step5`) in Subsection 5.3 (`sec:Step5_larget`): the stopping time `T`
+(`eq:def_TTT`, (5.47)), the Duhamel form `(int_K-L_ST)` ((3.13)), Lemma 5.3 (`TailtoTail`) and Lemma
+5.2 (`lem_dec_calE`).  For the block Anderson model (BA) the paper omits the details (proof of Steps
+3-6 for Theorem 8.2, `lem:main_ind_BA`).  The band-model counterparts are in
+`Induction/PfStep5.lean`, `Induction/PfStep5Grid.lean` and `Induction/PfStep5Alg.lean`.
 
-This is the first half of the pre-signed split of ticket T2493; the second half (the walk `BAStep5IIIWalk`, the lift `BAStep5IIIFromWalk`,
-targets 6-8) is `BA/Step5IIIWalk2.lean` on `t/T2493b`, which reads the public results below (stem `Step5IIIWalk_`).
+The stopped grid walk itself, the lift and the walk statement `BAStep5IIIWalk` are in
+`BA/Step5IIIWalk2.lean`, which uses the public results below.  The clauses (i)-(vi) of the matrix
+part `BAStep5IIIEMatrix` are listed in `BA/Step5IIIGood.lean`.
 
-**Targets 1-5** (the `T2493_*` pins of the check; each has a compiled nonempty instance in section 11):
+**The bundle, measurability, the crude bound, the walk level and the Duhamel form:**
 
-* 1. `baStep5III_EMatrix_level` (a), `baStep5IIIGood_bundle` (b); `Step5IIIWalk_good_of_flow` is `baStep5IIIGoodThm_holds` read as a theorem whose
-  conclusion head is `BAStep5IIIGood` (the registry scan counts the binder of (b) as proved by it).
-* 2. `baStep5IIIJsharp_measurable`, `baStep5III_goodMeas`.
-* 3. `baStep5III_crudeQV`: (H2), `‖STeeMg‖ ≤ 2N(16N)⁶`.
-* 4. `baStep5III_walkLevel`: the bundle at the walk level `D_u = D* + 2 log_W (1-u)`.
-* 5. `baStep5III_duhamel`: `(int_K-L_ST)` at `Step2Gen_UN` of a carrier with K1-K3 (`Step5IIIWalk_duhamel`), `Cdu = 64`, exponent `7`.
+* `baStep5III_EMatrix_level`, `baStep5IIIGood_bundle`: level monotonicity and the good event stated
+  through the named matrix part `BAStep5IIIEMatrix`; `Step5IIIWalk_good_of_flow` is
+  `baStep5IIIGoodThm_holds` read as a theorem whose conclusion head is `BAStep5IIIGood`.
+* `baStep5IIIJsharp_measurable`, `baStep5III_goodMeas`: measurability of `J♯` and of the matrix part
+  at the realized parameter.
+* `baStep5III_crudeQV`: the crude bound `‖STeeMg‖ ≤ 2N(16N)⁶`, the crude-bound hypothesis of
+  `baStep5IIITailSqQV_holds`.
+* `baStep5III_walkLevel`: the bundle at the walk level `D_u = D* + 2 log_W (1-u)`.
+* `Step5IIIWalk_duhamel`: `(int_K-L_ST)` at `Step2Gen_UN` of a carrier satisfying K1-K3 (the
+  semigroup law, the row sums and the near-identity bound of `GridRepTailGen_Ker`), with `Cdu = 64`
+  and exponent `7`.
 
-**The per-time layer** (read by the second half; band twins in brackets):
+**The per-time layer** (band counterparts in brackets):
 
-* `Step5IIIWalk_apriori` (`pfStep5_apriori`), `Step5IIIWalk_Kcrude`: the a priori bound `‖(𝓛-𝒦)^{(2)}‖ ≤ N³`.
+* `Step5IIIWalk_Kcrude` (the crude bound of `𝒦^{(2)}`), `Step5IIIWalk_apriori` (`pfStep5_apriori`):
+  the a priori bound `‖(𝓛-𝒦)^{(2)}‖ ≤ N³`.
 * `Step5IIIWalk_ugenSum` (`pfStep5Alg_ugenSum'`): the drift sum at the BA kernel from `TailtoTail`.
-* `Step5IIIWalk_mart_real` (`pfStep5_mart_real`, the constant `Cq` a parameter), `Step5IIIWalk_Ctot`, `Step5IIIWalk_assemble` (`pfStep5_assemble`): the
-  four-term assembly (initial term, drift, martingale, Duhamel remainder).
-* `Step5IIIWalk_pertime_det`, `Step5IIIWalk_pertime` (`pfStep5_pertime`, `pfStep5_perj`): the drift and quadratic-variation bounds at a grid time.
+* `Step5IIIWalk_mart_real` (`pfStep5_mart_real`, the constant `Cq` a parameter),
+  `Step5IIIWalk_Ctot`, `Step5IIIWalk_assemble` (`pfStep5_assemble`): the four-term assembly (initial
+  term, drift, martingale, Duhamel remainder).
+* `Step5IIIWalk_pertime_det`, `Step5IIIWalk_pertime` (`pfStep5_pertime`, `pfStep5_perj`): the drift
+  and quadratic-variation bounds at a grid time.
 * `Step5IIIWalk_xx` (`pfStep5_xx`): `‖STeeUMg‖ ≤ (2 Cq p + 1) T̂²` at a grid time, along the flow.
-* `Step5IIIWalk_good_transfer`: the good event of targets 1-2 moved to the grid walk (`Step2EventsGenTw_baLaw`).
-* `Step5IIIWalk_init` (`pfStep5_init_le`), `Step5IIIWalk_drift_eq`, `Step5IIIWalk_hQ` (the loss budget `lossE2wG · W^{2θ'} S_θ ≤ N^τ`).
+* `Step5IIIWalk_good_transfer`: the good event moved to the grid walk (`Step2EventsGenTw_baLaw`).
+* `Step5IIIWalk_init` (`pfStep5_init_le`), `Step5IIIWalk_drift_eq`, `Step5IIIWalk_hQ` (the loss
+  budget `lossE2wG · W^{2θ'} S_θ ≤ N^τ`).
 
-Registry: `BAStep5IIIEMatrix` is concluded by `baStep5III_EMatrix_level` (its `owedProps` line is removed).  Helpers carry the stem `Step5IIIWalk_`;
-the private lemmas of the band files are reached by `open private` (the dispatcher's copy-or-open rule, §153 (1)); nothing is copied from RBM1D/RBM2D.
+The private lemmas of the band-model files are reached by `open private`.
 -/
 
 set_option linter.style.longLine false
@@ -69,12 +79,12 @@ namespace RBM.BA
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. Targets 1 and 2: the bundle bridge and the measurable-preimage form -/
+/-! ## 1. The bundle bridge and the measurable-preimage form -/
 
 section Bundle
 
-/-- **Target 1 (a)** (`T2493_EMatrixLevel`; U5c target 2 in the bundle's name): the matrix part `BAStep5IIIEMatrix` at `(D, J)` gives it at
-`(D', J♯(D'))` for `D' ≤ D`.  The conclusion head is `BAStep5IIIEMatrix` (registry, DECISIONS §290 (3)); the content is
+/-- **Level monotonicity of the matrix part**: the matrix part `BAStep5IIIEMatrix` at `(D, J)` gives it at
+`(D', J♯(D'))` for `D' ≤ D`.  The conclusion is stated with the named predicate `BAStep5IIIEMatrix`; the content is
 `baStep5III_matrix_level` (`BAStep5IIIEMatrix` unfolds to its inline text). -/
 theorem baStep5III_EMatrix_level (d : ℕ) :
     ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u D D' Λ K₀ J θ Cd : ℝ)
@@ -83,7 +93,7 @@ theorem baStep5III_EMatrix_level (d : ℕ) :
         BAStep5IIIEMatrix sz lam0 E n u D' Λ K₀ (BAStep5IIIJsharp sz lam0 E n D' u H) θ Cd H :=
   fun sz lam0 E n u D D' Λ K₀ J θ Cd H hD h => baStep5III_matrix_level d sz lam0 E n u D D' Λ K₀ J θ Cd H hD h
 
-/-- **Target 1 (b)** (`T2493_GoodBundle`): U5c's good event `BAStep5IIIGood` with its matrix part read as `BAStep5IIIEMatrix` (definitional). -/
+/-- **The good event through the named matrix part**: the good event `BAStep5IIIGood` with its matrix part read as `BAStep5IIIEMatrix` (definitional). -/
 theorem baStep5IIIGood_bundle {d : ℕ} :
     ∀ (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : ℝ), BAStep5IIIGood sz z s t D Cd →
       ∀ τ' D₁ θ : ℝ, 0 < τ' → 0 < D₁ → 0 < θ → θ < 1 → ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, ∃ G : Set sz.SeqΩ,
@@ -96,8 +106,8 @@ theorem baStep5IIIGood_bundle {d : ℕ} :
   obtain ⟨G, hG, hGm⟩ := hn u
   exact ⟨G, hG, fun ω hω => hGm ω hω⟩
 
-/-- The good event of U5c at a flow: `baStep5IIIGoodThm_holds` read as a statement about the good event itself (its arguments are the
-arguments of `BAStep5IIIGoodThm`; the four carrier predicates are other gates' pins and stay hypotheses).  Its conclusion head is
+/-- The good event at a flow: `baStep5IIIGoodThm_holds` read as a statement about the good event itself (its arguments are the
+arguments of `BAStep5IIIGoodThm`; the four carrier predicates of Steps 2-4 stay hypotheses).  Its conclusion head is
 `BAStep5IIIGood`. -/
 theorem Step5IIIWalk_good_of_flow {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡)
     (hCd : 0 < Cd) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ) (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
@@ -109,8 +119,7 @@ theorem Step5IIIWalk_good_of_flow {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 Cd :
     BAStep5IIIGood sz z s t D Cd :=
   baStep5IIIGoodThm_holds d hd κ ε 𝔠 𝔡 Cd sz z hκ hε h𝔡 hCd hflow s t hs hst hT hReg hAvg hLmax hLK hDec D hD
 
-/-- The Hermitian matrices are a measurable (closed) set (copy of `EigenMeasurable.measurableSet_isHermitian`,
-`Universality/EigenMeasurable.lean:295`, private there). -/
+/-- The Hermitian matrices are a measurable (closed) set (as the private `EigenMeasurable.measurableSet_isHermitian`). -/
 private theorem Step5IIIWalk_meas_herm {n : Type*} [Fintype n] [DecidableEq n] :
     MeasurableSet {A : Matrix n n ℂ | A.IsHermitian} := by
   have hcont : Continuous (fun A : Matrix n n ℂ => Aᴴ) := by
@@ -130,7 +139,7 @@ private theorem Step5IIIWalk_meas_le {X ι κ : Type*} [MeasurableSpace X] [Coun
   rw [this]
   exact MeasurableSet.iInter fun i => MeasurableSet.iInter fun j => measurableSet_le (hf i j) (hg i j)
 
-/-- **Target 2 (a)** (`T2493_JsharpMeas`; band `pfStep5Grid_JsharpM_measurable`, `Induction/PfStep5Grid.lean:197`, private):
+/-- **Measurability of `J♯`** (the band counterpart is the private `pfStep5Grid_JsharpM_measurable`):
 `J♯` is measurable in the matrix. -/
 theorem baStep5IIIJsharp_measurable (d : ℕ) :
     ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (D u : ℝ),
@@ -150,9 +159,9 @@ theorem baStep5IIIJsharp_measurable (d : ℕ) :
   funext H
   simp [BAStep5IIIJsharp, Finset.sup'_apply]
 
-/-- **Target 2 (b)** (`T2493_GoodMeas`; band `pfStep5_goodMeas`, `Induction/PfStep5.lean:270`): the matrix part at the realized control is a
-measurable set of matrices.  (ii), (iii) and the right side of (vi) do not depend on `H`; the left sides are measurable by F9
-(`Step2EventsGenTw_baGrid`). -/
+/-- **Measurability of the matrix part at the realized parameter** (the band counterpart is `pfStep5_goodMeas`): the matrix part at the realized parameter is a
+measurable set of matrices.  (ii), (iii) and the right side of (vi) do not depend on `H`; the left sides are measurable by
+`Step2EventsGenTw_baGrid`. -/
 theorem baStep5III_goodMeas (d : ℕ) :
     ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u D Λ K₀ θ Cd : ℝ),
       MeasurableSet {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ |
@@ -215,11 +224,11 @@ theorem baStep5III_goodMeas (d : ℕ) :
 
 end Bundle
 
-/-! ## 2. Target 3: the crude quadratic variation at the flow ((H2) of `baStep5IIITailSqQV_holds`) -/
+/-! ## 2. The crude quadratic variation at the flow (the crude-bound hypothesis of `baStep5IIITailSqQV_holds`) -/
 
 section CrudeQV
 
-/-- **Target 3** (`T2493_CrudeQV`; band `difRep2_norm_STeeM_le_N`, `Path/DifREP2.lean:1277`): eventually, for `u ≤ t_n ≤ t₀` and Hermitian `H`,
+/-- **The crude quadratic variation** (the band counterpart is `difRep2_norm_STeeM_le_N`): eventually, for `u ≤ t_n ≤ t₀` and Hermitian `H`,
 `‖STeeMg‖ ≤ 2N(16N)⁶` (the `Y` of `pfStep5_farAbsorb`).  `gridRepTailBA_STeeMg_norm_le` at `η = 1/(16N)`, which is below `η_u` once
 `N^ε ≥ 1/(8κ)` (`gridRepTailBA_eta`). -/
 theorem baStep5III_crudeQV (d : ℕ) :
@@ -242,13 +251,13 @@ theorem baStep5III_crudeQV (d : ℕ) :
 
 end CrudeQV
 
-/-! ## 3. Target 4: the walk level -/
+/-! ## 3. The walk level -/
 
 section WalkLevel
 
-/-- **Target 4** (`T2493_WalkLevel`; band `pfStep5_perj`, `Induction/PfStep5.lean:1406-1468`): on the matrix part at the crude level `D*` and
-`J♯(u, D_u) < W^{ε₀}` (`ε₀ ≤ 1/2`), both bundle parts hold at the walk level `D_u = D* + 2 log_W (1-u)` with the control `J♯(u, D_u)` and
-`Λ = K₀ = N^{τ'}`.  The matrix part is U5c target 2 (`D_u ≤ D*` for `u ≥ 0`); the scalar part is U5c target 4 at `D* - 6`, with
+/-- **The walk level** (the band counterpart is `pfStep5_perj`): on the matrix part at the crude level `D*` and
+`J♯(u, D_u) < W^{ε₀}` (`ε₀ ≤ 1/2`), both bundle parts hold at the walk level `D_u = D* + 2 log_W (1-u)` with the parameter `J♯(u, D_u)` and
+`Λ = K₀ = N^{τ'}`.  The matrix part is `baStep5III_matrix_level` (`D_u ≤ D*` for `u ≥ 0`); the scalar part is `baStep5III_scalar_flow` at `D* - 6`, with
 `1 - u ≥ lam² ≥ W^{-3}` giving `D_u ≥ D* - 6`. -/
 theorem baStep5III_walkLevel (d : ℕ) (hd : 3 ≤ d) :
     ∀ (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), BAFlow sz κ ε 𝔠 𝔡 z → ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) →
@@ -299,7 +308,7 @@ theorem baStep5III_walkLevel (d : ℕ) (hd : 3 ≤ d) :
 
 end WalkLevel
 
-/-! ## 4. Target 5: the Duhamel form at the BA kernel -/
+/-! ## 4. The Duhamel form at the BA kernel -/
 
 section Duhamel
 
@@ -318,7 +327,7 @@ theorem Step5IIIWalk_norm_le_rows {ι : Type*} [Fintype ι] [DecidableEq ι] (A 
   simpa [Real.coe_toNNReal _ hρ] using this
 
 /-- **K1 gives the one-slot identity** `u_{s,t} = 1 + (t - s) θ_t` (`0 ≤ t < 1`, every `s`): `u_{t,t} = 1` and `u_{s,t} = (1 - sX) Θ_t`,
-`θ_t = X Θ_t` (`Chain/Step2Gen.lean:188-193`). -/
+`θ_t = X Θ_t`. -/
 theorem Step5IIIWalk_uKer_eq (hker : GridRepTailGen_Ker C n) (σ σ' : Bool) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (s : ℝ) :
     Step2Gen_uKer C n σ σ' s t = 1 + ((t - s : ℝ) : ℂ) • Step2Gen_thetaKer C n σ σ' t := by
   have h1 : Step2Gen_uKer C n σ σ' t t = 1 := (hker.1 σ σ' 0 t t ht0 ht1 ht0 ht1).1
@@ -570,8 +579,8 @@ end Norms
 
 /-! ### The Duhamel form -/
 
-/-- **The Duhamel form `(int_K-L_ST)` at the kernel `Step2Gen_UN` of a carrier with K1-K3** (deterministic, any 2-index tensors; band
-`pfStep5Grid_duhamel`, `Induction/PfStep5Grid.lean:892`, with the energy bound and the unit modulus of `m` replaced by the kernel class): on a grid
+/-- **The Duhamel form `(int_K-L_ST)` at the kernel `Step2Gen_UN` of a carrier with K1-K3** (deterministic, any 2-index tensors; the band
+counterpart is `pfStep5Grid_duhamel`, with the energy bound and the unit modulus of `m` replaced by the kernel class): on a grid
 `u_{j+1} = u_j + Δ`, `0 ≤ u_0`, `u_k < 1`, if `A_j = A_0 + Δ Σ_{i<j} (Θ^{(2)}_{u_i,σ} A_i + F_i) + Rem_j + Mart_j` for `j ≤ k` with
 `|A_j| ≤ M`, `|Rem_j| ≤ R`, then
 `|A_k - 𝒰_{u_0,u_k} A_0 - Δ Σ_{j<k} 𝒰_{u_j,u_k} F_j - Σ_{j<k} 𝒰_{u_j,u_k}(Mart_{j+1} - Mart_j)| ≤ 64 (1-u_k)^{-7} (R + Δ M)`. -/
@@ -675,7 +684,7 @@ end Duhamel
 
 section Apriori
 
-/-- `‖𝓛^{(ℓ)}_{z,σ,a}(H)‖ ≤ η^{-ℓ}` for Hermitian `H` and `η ≤ |Im z|` (band `norm_loopFine_crudeN`, `Induction/NQGood1.lean:916`, at a general
+/-- `‖𝓛^{(ℓ)}_{z,σ,a}(H)‖ ≤ η^{-ℓ}` for Hermitian `H` and `η ≤ |Im z|` (the band counterpart is `norm_loopFine_crudeN`, at a general
 spectral parameter). -/
 theorem Step5IIIWalk_norm_loopFine_le {d L W : ℕ} [NeZero L] [NeZero W] {M : Matrix (Idx d L W) (Idx d L W) ℂ}
     (hM : M.IsHermitian) {z : ℂ} {η : ℝ} (hη : 0 < η) (hz : η ≤ |z.im|) {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (σ : Fin ℓ → Bool)
@@ -695,7 +704,7 @@ theorem Step5IIIWalk_norm_loopFine_le {d L W : ℕ} [NeZero L] [NeZero W] {M : M
   calc η⁻¹ ^ ℓ * (((W : ℝ) ^ d)⁻¹) ^ (ℓ - 1) ≤ η⁻¹ ^ ℓ * 1 := mul_le_mul_of_nonneg_left hWi h0
     _ = _ := mul_one _
 
-/-- **The crude bound of `𝒦^{(2)}` along a flow, uniformly in `u ∈ [0, t_n]`**: stage K (`baKbound_holds`, `max |𝒦^{(2)}_{u,σ,a}| ≺ B_{u,0}`) read as a
+/-- **The crude bound of `𝒦^{(2)}` along a flow, uniformly in `u ∈ [0, t_n]`**: the bound on `𝒦` (`baKbound_holds`, `max |𝒦^{(2)}_{u,σ,a}| ≺ B_{u,0}`) read as a
 deterministic fact, `𝒦` not depending on the sample (`Step5IIIGood_det_of_prec`, `Step5IIIGood_uniform`). -/
 theorem Step5IIIWalk_Kcrude {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d) (z : ℕ → ℂ)
     (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (t : ℕ → ℝ) (ht0 : ∀ n, 0 ≤ t n) (htT : ∀ n, t n ≤ BAflowT0 sz z n) :
@@ -714,7 +723,7 @@ theorem Step5IIIWalk_Kcrude {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (h�
     filter_upwards [this] with n hn h2 σ a
     simpa using hn h2 (σ, a)
 
-/-- **The a priori bound** (band `pfStep5_apriori`, `Induction/PfStep5.lean:1269`): eventually, for `0 ≤ u ≤ t_n ≤ t₀`, Hermitian `H` and every label,
+/-- **The a priori bound** (the band counterpart is `pfStep5_apriori`): eventually, for `0 ≤ u ≤ t_n ≤ t₀`, Hermitian `H` and every label,
 `‖(𝓛 - 𝒦)^{(2)}_{u,σ,a}(H)‖ ≤ N³`.  `‖𝓛^{(2)}‖ ≤ η_u⁻² ≤ (16N)²` (`gridRepTailBA_eta`, the resolvent bound) and `‖𝒦^{(2)}‖ ≤ N^{1/2} B_{u,0}`,
 `B_{u,0} ≤ 2 (W^d (1-u))⁻¹ ≤ 32 N` (`gridRepTailGen_window_BA`). -/
 theorem Step5IIIWalk_apriori {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) (sz : Sizes d) (z : ℕ → ℂ)
@@ -786,7 +795,7 @@ private theorem Step5IIIWalk_tailTD_pos {W u D r : ℝ} (hW : 0 < W) : 0 < tailT
   have := Real.rpow_pos_of_pos hW (-D)
   positivity
 
-/-- One term of `ugenSum'` (band `pfStep5Alg_ugen_term`, `Induction/PfStep5Alg.lean:181`): `‖(𝒰_{v,w,σ} ∘ ℰ)_a‖ ≤ p (Cc T_{w,D'} + ((1-v)/(1-w))² W^{-D'})`
+/-- One term of `ugenSum'` (the band counterpart is `pfStep5Alg_ugen_term`): `‖(𝒰_{v,w,σ} ∘ ℰ)_a‖ ≤ p (Cc T_{w,D'} + ((1-v)/(1-w))² W^{-D'})`
 when `‖ℰ_b‖ ≤ p T_{v,D'}(|b₁-b₂|)`, from `TailtoTail` on the carrier. -/
 private theorem Step5IIIWalk_ugen_term {Cc v w D' p : ℝ} (σ : Fin 2 → Bool)
     (hTT : ∀ A : (Fin 2 → Zd d (sz.L n)) → ℂ,
@@ -834,7 +843,7 @@ private theorem Step5IIIWalk_ugen_term {Cc v w D' p : ℝ} (σ : Fin 2 → Bool)
     rw [hUg, norm_mul, Complex.norm_real, Real.norm_of_nonneg hp.le]
     exact mul_le_mul_of_nonneg_left hUN hp.le
 
-/-- **`ugenSum'` at the BA kernel** (band `pfStep5Alg_ugenSum'`, `Induction/PfStep5Alg.lean:236`, with the constant `Cc` of
+/-- **`ugenSum'` at the BA kernel** (the band counterpart is `pfStep5Alg_ugenSum'`, with the constant `Cc` of
 `baStep5IIIKernel_at_flow` and the levels `D_j`): for nonnegative weights `c_j` and tensors `ℰ_j` dominated by `p_j T_{u_j,D_j}`, the weighted sum
 of `𝒰_{u_j,u_k,σ} ∘ ℰ_j` is dominated by `Σ c_j p_j (Cc T_{u_k,D_j} + ((1-u_j)/(1-u_k))² W^{-D_j})`. -/
 theorem Step5IIIWalk_ugenSum {Cc : ℝ}
@@ -876,7 +885,7 @@ end UgenSum
 
 /-! ## 7. The martingale term, real part -/
 
-/-- **The martingale term, real part** (band `pfStep5_mart_real`, `Induction/PfStep5.lean:737`, with the quadratic-variation constant `C7` a parameter: `Cq` of `baStep5IIITailSqQV_holds`): from `x_j ≤ (2 C₇ p_j + 1) T²` for the quadratic variations, the
+/-- **The martingale term, real part** (the band counterpart is `pfStep5_mart_real`, with the quadratic-variation constant `C7` a parameter: `Cq` of `baStep5IIITailSqQV_holds`): from `x_j ≤ (2 C₇ p_j + 1) T²` for the quadratic variations, the
 grid sums and `N^{-D_g} ≤ T²`, the tail of conjunct 4 is at most `Q (r₁ log W + 2 r₂ X + 2) T`. -/
 theorem Step5IIIWalk_mart_real (d : ℕ) (C7 : ℝ) (hC70 : 0 < C7) (k : ℕ) (u : ℕ → ℝ) (Δ g W Q ε₀ T q Nm Mn : ℝ)
     (xx : ℕ → ℝ) (hg : 0 < g) (hW : 1 < W) (hΔ : 0 ≤ Δ) (hu0 : 0 ≤ u 0)
@@ -962,7 +971,7 @@ theorem Step5IIIWalk_mart_real (d : ℕ) (C7 : ℝ) (hC70 : 0 < C7) (k : ℕ) (u
 
 section Assemble
 
-/-- The total constant of the closure: `7 c + 3 + c d + √(2 Cq d) + 2 √Cq`, `c = Cc + 1` (band `pfStep5_Ctot`, `Induction/PfStep5.lean:490`, with the
+/-- The total constant of the closure: `7 c + 3 + c d + √(2 Cq d) + 2 √Cq`, `c = Cc + 1` (the band counterpart is `pfStep5_Ctot`, with the
 constants `Cc` of `TailtoTail` and `Cq` of the quadratic variation at BA). -/
 def Step5IIIWalk_Ctot (d : ℕ) (Cc Cq : ℝ) : ℝ :=
   7 * (Cc + 1) + 3 + (Cc + 1) * d + Real.sqrt (2 * Cq * d) + 2 * Real.sqrt Cq
@@ -974,7 +983,7 @@ theorem Step5IIIWalk_Ctot_ge {d : ℕ} {Cc Cq : ℝ} (hCc : 0 < Cc) : 4 ≤ Step
   have : (0 : ℝ) ≤ (Cc + 1) * d := by positivity
   linarith
 
-/-- **The assembly of the pathwise estimate at the BA kernel** (band `pfStep5_assemble`, `Induction/PfStep5.lean:857`): on the grid
+/-- **The assembly of the pathwise estimate at the BA kernel** (the band counterpart is `pfStep5_assemble`): on the grid
 `u_{j+1} = u_j + Δ`, `A_k` is dominated by `Q C_tot (1 + log W + X) T̂_k`, `T̂_k = T_{u_k, D_{u_k}}`, `D_u = D* + 2 log_W (1-u)`.  The four terms are
 the initial term (`TailtoTail`, hypothesis `hI`), the drift (`Step5IIIWalk_ugenSum` and `pfStep5_drift_sum`, hypothesis `hF`), the martingale
 (hypothesis `hMt`, from `Step5IIIWalk_mart_real`) and the Duhamel remainder (`Step5IIIWalk_duhamel`, hypothesis `hRm`). -/
@@ -1186,11 +1195,11 @@ theorem Step5IIIWalk_Phi_ge_one {d : ℕ} (sz : Sizes d) (n : ℕ) {θ Cd : ℝ}
     Real.one_le_rpow hW1 (by have : (0 : ℝ) ≤ d := Nat.cast_nonneg d; positivity)
   nlinarith
 
-/-- **The per-time bounds at a grid time** (band `pfStep5_pertime`, `Induction/PfStep5.lean:1054`; deterministic, one time `u`): from the bundle
-(`BAStep5IIIEScalar`, `BAStep5IIIEMatrix`) at the walk level `D` with the control `J ≤ W^{ε₀}`, `baStep5IIIEdet_holds` gives the drift
+/-- **The per-time bounds at a grid time** (the band counterpart is `pfStep5_pertime`; deterministic, one time `u`): from the bundle
+(`BAStep5IIIEScalar`, `BAStep5IIIEMatrix`) at the walk level `D` with the parameter `J ≤ W^{ε₀}`, `baStep5IIIEdet_holds` gives the drift
 `ℰ^{(𝓛-𝒦)×(𝓛-𝒦)} + ℰ^{G̃}` of the list-loop at `KLloopOf σ b` and the quadratic variation `STeeMg` (near pairs, cut `2ℓ*`):
 `≤ Q (W^{2ε₀} w y² + y + W^{3ε₀/2} w^{1/2} y^{3/2}) T` and `≤ Q (y + W^{3ε₀} w^{1/2} y^{3/2}) T²`, `y = (1-u)⁻¹`, `w = (W^d)⁻¹`, whenever
-`Q ≥ lossE2wG · W^{2θ'} S_θ` (the loss of `lem_dec_calE`; the J-free factor `W^{2θ'} S_θ` of (vi), T2459f). -/
+`Q ≥ lossE2wG · W^{2θ'} S_θ` (the loss of `lem_dec_calE`; the `J`-free factor `W^{2θ'} S_θ` of (vi)). -/
 theorem Step5IIIWalk_pertime_det {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {lam0 E : ℕ → ℝ} {n : ℕ} {u D Λ K₀ J θ Cd ε₀ Q : ℝ}
     {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hθ : 0 < θ) (hCd : 0 < Cd)
     (hs : BAStep5IIIEScalar sz n u D Λ K₀ J) (hm : BAStep5IIIEMatrix sz lam0 E n u D Λ K₀ J θ Cd H) (hε₀ : 0 ≤ ε₀)
@@ -1289,8 +1298,8 @@ theorem Step5IIIWalk_pertime_det {d : ℕ} (hd : 3 ≤ d) {sz : Sizes d} {lam0 E
             rw [mul_add, mul_one, ← hyw]; ring
           rw [mul_assoc Q, e]; ring
 
-/-- **The per-time bounds along the flow** (band `pfStep5_perj`, `Induction/PfStep5.lean:1406`): eventually, at every `u ∈ [s_n, t_n]` and matrix `H`,
-the matrix part at the crude level `D*` and `J♯(u, D_u) < W^{ε₀}` give (target 4, `baStep5III_walkLevel`, then
+/-- **The per-time bounds along the flow** (the band counterpart is `pfStep5_perj`): eventually, at every `u ∈ [s_n, t_n]` and matrix `H`,
+the matrix part at the crude level `D*` and `J♯(u, D_u) < W^{ε₀}` give (`baStep5III_walkLevel`, then
 `Step5IIIWalk_pertime_det` at `Λ = K₀ = N^{τ'}`, `J = J♯(u, D_u)`) the drift and quadratic-variation bounds at the level `D_u`, for `Q_n` above
 the loss `lossE2wG · W^{2θ'} S_θ`. -/
 theorem Step5IIIWalk_pertime {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (sz : Sizes d) (z : ℕ → ℂ) (hflow : BAFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ)
@@ -1323,8 +1332,8 @@ theorem Step5IIIWalk_pertime {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (s
   obtain ⟨hsc, hmat'⟩ := hn u H hmat hJ
   exact Step5IIIWalk_pertime_det (d := d) hd hθ hCd hsc hmat' hε₀ hJ.le hQn
 
-/-- **The good event at a grid index, transferred to the grid walk** (targets 1-2 and `Step2EventsGenTw_baLaw`): if `G ⊆ SeqΩ` has mass `≥ 1 - c`
-and the matrix part at the realized control holds at `H = seqHflowBA ω` for `ω ∈ G`, then off an event of probability `≤ c` the grid state
+/-- **The good event at a grid index, transferred to the grid walk** (`baStep5III_goodMeas` and `Step2EventsGenTw_baLaw`): if `G ⊆ SeqΩ` has mass `≥ 1 - c`
+and the matrix part at the realized parameter holds at `H = seqHflowBA ω` for `ω ∈ G`, then off an event of probability `≤ c` the grid state
 `H_j = Hpath j ω` carries the matrix part at the grid time `u_j`. -/
 theorem Step5IIIWalk_good_transfer {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hs0 : 0 ≤ s n)
     (hst : s n ≤ t n) (hK : K n ≠ 0) (D Λ K₀ θ Cd c : ℝ) (G : Set sz.SeqΩ)
@@ -1342,7 +1351,7 @@ theorem Step5IIIWalk_good_transfer {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → �
   by_contra hnG
   exact hω' (hGm ω' (not_not.mp hnG))
 
-/-- The initial term (band `pfStep5_init_le`, `Induction/PfStep5.lean:1234`, `STDecayStronggL` at `s`): `‖A_0‖ ≤ Q (B_s² e^{-√r} + W^{-D*})` gives
+/-- The initial term (the band counterpart is `pfStep5_init_le`; `STDecayStronggL` at `s`): `‖A_0‖ ≤ Q (B_s² e^{-√r} + W^{-D*})` gives
 `‖A_0‖ ≤ 4 Q T_{s, D_s}`, `D_s = D* + 2 log_W (1-s)`. -/
 theorem Step5IIIWalk_init {d : ℕ} (sz : Sizes d) (n : ℕ) {s Dst Q : ℝ} (hs0 : 0 ≤ s) (hs1 : s < 1)
     (hW : 1 < ((sz.W n : ℕ) : ℝ)) (hQ : 0 ≤ Q) (a : Fin 2 → Zd d (sz.L n)) {x : ℂ}
@@ -1365,10 +1374,10 @@ theorem Step5IIIWalk_drift_eq {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz) (s t :
   unfold STgDriftNg STgANg
   rw [show Finset.Icc 3 2 = (∅ : Finset ℕ) by decide, Finset.sum_empty, add_zero, add_assoc]
 
-/-- **The weighted quadratic variation at a grid time** (band `pfStep5_xx`, `Induction/PfStep5.lean:1326`): there is `Cq = Cq(d, κ, 𝔡)` such that, along
+/-- **The weighted quadratic variation at a grid time** (the band counterpart is `pfStep5_xx`): there is `Cq = Cq(d, κ, 𝔡)` such that, along
 a flow and for every `D* ≥ 0`, some `D₂ ≥ 0` gives, eventually, for `0 ≤ v ≤ w ≤ t_n ≤ t₀`, `lam² ≤ 1 - w`, Hermitian `H` whose quadratic variation
 `STeeMg_v(H)` is `≤ p T_{v,D_v}²` on the near pairs (cut `2ℓ*`):
-`‖STeeUMg_{v,w}(H)_{σ,a}‖ ≤ (2 Cq p + 1) T_{w,D_w}²`, `D_u = D* + 2 log_W (1-u)`.  Inputs: the crude bound (target 3), the `uKer` far field
+`‖STeeUMg_{v,w}(H)_{σ,a}‖ ≤ (2 Cq p + 1) T_{w,D_w}²`, `D_u = D* + 2 log_W (1-u)`.  Inputs: the crude bound (`baStep5III_crudeQV`), the `uKer` far field
 (`baStep5III_uKer_far`), the far absorption (`pfStep5_farAbsorb`) and `baStep5IIITailSqQV_holds` (the coupling crossing `lam0 ≤ lam` enters through
 `baStep5III_lam0_le_lam` at `0 < g₀`, `BAflow_lam0_window`). -/
 theorem Step5IIIWalk_xx {d : ℕ} (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
@@ -1438,7 +1447,7 @@ theorem Step5IIIWalk_loss_eq (d L W : ℕ) (Λ K₀ : ℝ) :
   unfold lossE2wG lossE2
   ring
 
-/-- **The loss budget** (band `lemDecCalEPrec_lossWG_eventually`, `Induction/LemDecCalEPrec.lean:246`, at `Λ = K₀ = N^{τ'}`, with the J-free factor of the
+/-- **The loss budget** (the band counterpart is `lemDecCalEPrec_lossWG_eventually`, at `Λ = K₀ = N^{τ'}`, with the `J`-free factor of the
 quadratic variation): for `12 τ' ≤ τ/4` and `2 θ (Cd + 1) ≤ τ/4`, eventually `lossE2wG · (W^{2θ d (Cd+1)} S_θ) ≤ N^τ`.  (`K₀² Λ⁶ = N^{8τ'} ≤ 32⁶ N^{12τ'}`
 is the band's `(32 N^{2τ'})⁶`; `W^d ≤ N`; `S_θ` is bounded uniformly, `baStep5IIIE_sumTheta`.) -/
 theorem Step5IIIWalk_hQ {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) (hsize : sz.SizeTendsto) {τ τ' θ Cd : ℝ} (hτ : 0 < τ) (hτ' : 0 ≤ τ')
@@ -1496,11 +1505,6 @@ theorem Step5IIIWalk_hQ {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) (hsize : sz.Size
     _ = N ^ τ := by rw [← mul_assoc, hsum]
 
 end Budget
-
-/-! ## 11. Compiled nonempty instances at `d = 3` (targets 1-5)
-
-`sz0`, `zSeq`, `flow_sz0` with `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)`, `s ≡ 1/10 < t ≡ 1/2 < t₀` (`half_lt_t0`), `Cd = 1`, `θ = 1/10`.  Every
-deterministic premise is discharged; the four carrier predicates of Steps 2-4 stay hypotheses where the good event enters. -/
 
 end RBM.BA
 

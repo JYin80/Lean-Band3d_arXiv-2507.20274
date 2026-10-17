@@ -10,43 +10,48 @@ import RBM3D.BA.MAPins
 set_option linter.style.longLine false
 
 /-!
-# The final shape (MA-06b, ticket T2521)
+# The final shape: Theorems 2.1-2.5 and Theorem 2.7
 
-The project's final theorem: the band Theorems 2.1-2.5 (`band_terminal`, `Main/BandTerminal.lean:104`) together with the
-block Anderson Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`, conditional only on the borrowed `UNL32` (LSY
-arXiv:1609.09011 Thm 2.2).  No new mathematics: every conjunct is a merged theorem.
+The final theorem: the band Theorems 2.1-2.5 (`band_terminal`, in `Main/BandTerminal.lean`) together
+with the block Anderson Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`, conditional only on the
+external input `UNL32` (Theorem 2.2 of Landon-Sosoe-Yau, arXiv:1609.09011v4).  No new mathematics:
+every conjunct is a theorem proved elsewhere.
 
-* `Thm27 := ∀ d, 3 ≤ d → BAThm27L d`: Theorem 2.7 at every `d ≥ 3`, the five BA bullets in the order of `band_terminal`
-  (decol, locSC, QUE, BUniv, QDiff) at each `d` (T2534, BA-D row R2: DECISIONS §371, §372);
+* `Thm27 := ∀ d, 3 ≤ d → BAThm27L d`: Theorem 2.7 at every `d ≥ 3`, the five bullets in the order of
+  `band_terminal` (decol, locSC, QUE, BUniv, QDiff) at each `d`;
 * `Thm27_of_L32 := baThm27L_all` (`BA/UNBUniv`);
 * `final_shape : UNL32 → (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27`.
 
-The compiled instances at the end apply every conjunct at concrete data: at `d = 3` (`(𝔠, 𝔡) = (1/6, 1/10)`, all
-five BA conjuncts) and at `d = 4` (`(𝔠, 𝔡) = (1/8, 1/10)`, the four BA conjuncts that read `Sizes` + `Admissible`, over a
-nonempty bulk); only `UNL32` stays a hypothesis.
+The instances at the end apply the conjuncts at concrete data.  At `d = 3` all five block Anderson
+conjuncts are applied on the class sequence `S0` (`L = 4`, `W_n = (2(n+1))⁵`, constant coupling
+`λ = g₀`), `(𝔠, 𝔡) = (1/6, 1/10)`, and at `d = 4` four of the five conjuncts (decol, locSC, QUE,
+QDiff) are applied on the class sequence with `L = 4`, `W_n = (2(n+1))⁵`, `(𝔠, 𝔡) = (1/8, 1/10)`,
+over a bulk proved to be nonempty.  Only `UNL32` stays a
+hypothesis.
 -/
 
 namespace RBM.Endpoints
 
 open RBM.Univ
 
-/-- **Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`**: `BAThm27L d` (`BA/MAPins.lean:126`) for each `d ≥ 3`, the five BA bullets in
+/-- **Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`**: `BAThm27L d` for each `d ≥ 3`, the five bullets in
 the order of `band_terminal`: decol, locSC, QUE, BUniv, QDiff. -/
 def Thm27 : Prop := ∀ d : ℕ, 3 ≤ d → RBM.BA.BAThm27L d
 
-/-- Theorem 2.7 at every `d ≥ 3` from the borrowed `UNL32` only: `baThm27L_all` (`BA/UNBUniv`, T2534). -/
+/-- Theorem 2.7 at every `d ≥ 3` from the external input `UNL32` only: `baThm27L_all` (`BA/UNBUniv`). -/
 theorem Thm27_of_L32 : RBM.Univ.UNL32 → Thm27 := RBM.BA.baThm27L_all
 
-/-- **The final shape**: the paper's main results (band Thms 2.1-2.5, block Anderson Thm 2.7 at every `d ≥ 3`) with the single
-external hypothesis `UNL32` (LSY arXiv:1609.09011 Thm 2.2). -/
+/-- **The final shape**: the paper's main results (band Theorems 2.1-2.5, block Anderson Theorem 2.7 at every `d ≥ 3`) with the single
+external hypothesis `UNL32` (Theorem 2.2 of Landon-Sosoe-Yau, arXiv:1609.09011v4). -/
 theorem final_shape : RBM.Univ.UNL32 →
     (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27 := fun h32 =>
   ⟨band_terminal h32, Thm27_of_L32 h32⟩
 
-/-! ## Compiled nonempty instances (`d = 3`, `(𝔠, 𝔡) = (1/6, 1/10)`; then `d = 4`, `(𝔠, 𝔡) = (1/8, 1/10)`)
+/-! ## Instances at concrete data (`d = 3`, `(𝔠, 𝔡) = (1/6, 1/10)`; then `d = 4`, `(𝔠, 𝔡) = (1/8, 1/10)`)
 
-Band conjuncts at `Inst.inst_*` (`Main/BandTerminal.lean` §Instances) on `sz0`; the five BA conjuncts at `S0`,
-`κ_* = clsκ 4`, `E_*` in the bulk (`BA/MAPins.lean:213-224`).  Only `UNL32` stays a hypothesis. -/
+The band conjuncts are applied at `Inst.inst_*` (the instances section of `Main/BandTerminal.lean`) on `sz0`.  The five
+block Anderson conjuncts at `d = 3` are applied on the class sequence `S0`, at `κ_* = clsκ 4 _` and at the energy
+`E_* = (fp 4 _).E`, which is in the bulk for every `n`.  Only `UNL32` stays a hypothesis. -/
 
 section Instances
 
@@ -78,8 +83,8 @@ section BAInstances
 
 open RBM.BA.UNPinsInst RBM.Univ.BAInst RBM.BA
 
-/-- The five BA conjuncts of `(final_shape h32).2 3 le_rfl` applied at `S0`, `κ_* = clsκ 4`, `E_*` in the bulk (as
-`BA/MAPins.lean:213-224`); the QUE conjunct at `τ = 1/300`. -/
+/-- The five block Anderson conjuncts of `(final_shape h32).2 3 le_rfl` applied at `S0`, `κ_* = clsκ 4`, `E_*` in the bulk; the QUE
+conjunct at `τ = 1/300`. -/
 example (h32 : UNL32) : True := by
   have h := (final_shape h32).2 3 le_rfl
   have _ := h.1 le_rfl (1 / 6) (1 / 10) S0 S0_adm (clsκ 4 FinalShape_hg) (1 / 10) 1 (clsκ_pos 4 FinalShape_hg) (by norm_num) (by norm_num)
@@ -115,13 +120,13 @@ example (h32 : UNL32) : True := by
 
 end BAInstances
 
-/-! ### The `d = 4` instance (closing (vii), Amend 1): `(𝔠, 𝔡) = (1/8, 1/10)`, nonempty bulk
+/-! ### The `d = 4` instance: `(𝔠, 𝔡) = (1/8, 1/10)`, nonempty bulk
 
-The class sequence at `d = 4` (`BA/UNPins.lean` `clsSz`, `d = 3`, rebuilt here at `d = 4`): constant block `L = 4`, `W_n = (2(n+1))^5`,
-constant coupling `g₀`.  The bulk is nonempty: a real-axis solution of `(self_m)` at `(d, L) = (4, 4)` is built from the subordination point
-`w = 6i/5` (`BASelf_subord`, `BAzztE_data`, as `MFixedPoint.lean`'s `exists_flowPt` at `d = 3`), and `BAbulk_iff_exists` turns it into
-`BAbulk 4 4 g₀ κ E` with `κ = Im m₀ / π > 0`, for every `n`.  The four conjuncts of `Thm27 4` that read `Sizes` + `Admissible`
-(decol, locSC, QUE, QDiff) are applied over it; the BUniv conjunct reads the UN spectral data at `d = 3` and is not applied. -/
+The class sequence at `d = 4` (the analogue of `clsSz` at `d = 3`): constant block size `L = 4`, bandwidth `W_n = (2(n+1))^5` and
+constant coupling `g₀`.  The bulk is nonempty: a real-axis solution of `(self_m)` at `(d, L) = (4, 4)` is built from the
+subordination point `w = 6i/5` (`BASelf_subord`, `BAzztE_data`, as `exists_flowPt` does at `d = 3`), and `BAbulk_iff_exists` turns it
+into `BAbulk 4 4 g₀ κ E` with `κ = Im m₀ / π > 0`, for every `n`.  Four of the five conjuncts of `Thm27 4`
+(decol, locSC, QUE, QDiff) are applied over it. -/
 
 section D4Instance
 
@@ -206,9 +211,9 @@ private theorem FinalShape_dom4 {g0 E κ ε : ℝ} (hε : ε ≤ 1) (hb : BAbulk
     exact_mod_cast h1
   exact Real.rpow_le_one_of_one_le_of_nonpos hN (by linarith)
 
-/-- **The `d = 4` instance of `Thm27`** (closing (vii), Amend 1): `Sizes 4` data `FinalShape_cls4 g₀` admissible at `(1/8, 1/10)`, a
-**nonempty bulk** `BAbulk 4 4 g₀ κ E` (every `n`) and nonempty end domains, and the four conjuncts of `(final_shape h32).2 4` that read
-`Sizes` + `Admissible` (decol, locSC, QUE, QDiff) applied at it; `UNL32` is the only hypothesis. -/
+/-- **The `d = 4` instance of `Thm27`**: `Sizes 4` data `FinalShape_cls4 g₀` admissible at `(1/8, 1/10)`, a
+**nonempty bulk** `BAbulk 4 4 g₀ κ E` (every `n`) and nonempty end domains, and four of the five conjuncts of
+`(final_shape h32).2 4` (decol, locSC, QUE, QDiff) applied at it; `UNL32` is the only hypothesis. -/
 example (h32 : UNL32) : ∃ g0 E κ : ℝ, 0 < κ ∧ (FinalShape_cls4 g0).Admissible (1 / 8) (1 / 10) ∧
     (∀ᶠ n in atTop, BAbulk 4 ((FinalShape_cls4 g0).L n) ((FinalShape_cls4 g0).lam n) κ E) ∧
     ∀ n, ∃ z : ℂ, BAendDom (FinalShape_cls4 g0) κ (1 / 10) n z := by

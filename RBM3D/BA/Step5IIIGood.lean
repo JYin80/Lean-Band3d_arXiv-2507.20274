@@ -16,39 +16,35 @@ import RBM3D.Graph.BAAuxGraph2
 import RBM3D.Induction.Step5Pins
 
 /-!
-# U5c, part 1: the realized control `J♯` and the per-time good event of Step 5, case (iii), at BA
+# Step 5, case `1 - t ≥ λ²`, block Anderson model: the realized parameter `J♯` and the good event
 
-Ticket T2485.  Paper: the good event behind `lem:pf_step5` (`3_5:2364-2383`; stopping time
-`(eq:def_TTT)` `3_5:2369-2372`; control `(eq:def_new_J*)` `3_5:2310-2312`) for the hypotheses of
-`lem_dec_calE` (`3_5:2314-2338`); BA `7_8:2101` ("we therefore omit the details", paper-delta
-candidate T2459a).  Band twins (not edited): `lemDecCalEPrec_good`/`_prob`
-(`Induction/LemDecCalEPrec.lean:670, 742`, without the entry conjuncts (P-e6)-(P-e8)),
-`LemDecCalELip_Jsharp` (`:925`), `PfStep5Grid_JsharpM` (`Induction/PfStep5Grid.lean:76`).
-Design: `docs/reports/T2459-design.md` U5-2 `:173-174`, U5-3 `:185`.
+Paper: the good event behind Lemma 5.4 (`lem:pf_step5`): the parameter `𝒥*_{u,D}` (`eq:def_new_J*`,
+(5.42)), the stopping time (`eq:def_TTT`, (5.47)) and the hypotheses of Lemma 5.2 (`lem_dec_calE`).
+For the block Anderson model the paper omits the details (proof of Steps 3-6 for Theorem 8.2,
+`lem:main_ind_BA`).  The band-model counterparts are `lemDecCalEPrec_good`, `lemDecCalEPrec_prob`,
+`LemDecCalELip_Jsharp` and `PfStep5Grid_JsharpM`.
 
-1. `BAStep5IIIJsharp`, `baStep5IIIJsharp_spec` (target 1): `J♯_{u,D}(H) = max(1, max_{σ,a}
-   ‖(𝓛-𝒦)^{(2)}‖ / T_{u,D}(a))` is `≥ 1` and dominates conjunct (i) at every level `D`.
-2. `baStep5III_matrix_level` (target 2): the matrix part at `(D, J)` gives it at `(D', J♯(D'))` for
-   `D' ≤ D`.
-3. `BAStep5IIIGood`, `BAStep5IIIGoodThm`, `baStep5IIIGoodThm_holds` (target 3): for `τ', D₁ > 0` and
-   `0 < θ < 1`, eventually, at every `u ∈ [s_n, t_n]`, an event `G` with
-   `seqP (sz.withLam 0) Gᶜ ≤ N^{-D₁}` on which the matrix part of U5b's premise bundle holds at
-   `H = seqHflowBA`, `Λ = K₀ = N^{τ'}`, `J = J♯`.  The matrix part is written inline (an exact-type
-   copy of the text fixed at T2482's 1a-audit: no second public name for the bundle).  Steps 2-4
-   enter as the four carrier predicates `STAvgUgL`, `STLmaxUgL`, `STLKUgL`, `STGdecayWgL`;
-   `STKboundgL` (`baKbound_holds`), the far field (`baEMn2ExpHK`) and `𝒦^{(1)} = m(σ)`
-   (`baKsol_one`) are merged and used by name.
-4. Compiled nonempty instances of targets 1-3 at `d = 3`, `sz0`, `zSeq`, `flow_sz0` (section 5):
-   target 3 with the flow, the window, the regime and the horizon discharged; target 1 at `n = 1`,
-   `H = 0`; target 2 composed with target 3 (a sample `ω` of the event `G`, whose mass is `> 0`),
-   through the private stem copy `Step5IIIGood_Mat` of the matrix part.
+The matrix part of the hypothesis bundle of Lemma 5.2, `BAStep5IIIEMatrix`, is written inline.  At
+the matrix `H` and the time `u` it says: `H` is Hermitian and (i) `‖(𝓛-𝒦)^{(2)}‖ ≤ J T_{u,D}`; (ii)
+`‖𝒦^{(2)}_{(+,-)}‖ ≤ K₀ M_u⁻¹`; (iii) the far field of `𝒦^{(2)}_{(+,-)}` beyond
+`ℓ* = (log W)^{3/2}`; (iv) the bound on `STavgMg`; (v) the bounds on `𝓛^{(k)}`, `k = 2, 3, 4, 6`;
+(vi) the `J`-free decay of `(𝓛-𝒦)^{(2)}`.
 
-The seven failure events (iv), (v) `k = 2, 3, 4, 6`, (vi) `STLKUgL` and `STGdecayWgL` carry the
-union over `u` inside, so one event `G` serves every `u`; (ii) and (iii) are deterministic and made
-uniform in `u` through a violator sequence.  Target 4 (the scalar part at the flow) and the composed
-instance with the ℰ-bounds are in `RBM3D/BA/Step5IIIGood2.lean`.
+1. `BAStep5IIIJsharp`, `baStep5IIIJsharp_spec`:
+   `J♯_{u,D}(H) = max(1, max_{σ,a} ‖(𝓛-𝒦)^{(2)}‖ / T_{u,D}(a))` is `≥ 1` and dominates conjunct (i)
+   at every level `D`.
+2. `baStep5III_matrix_level`: the matrix part at `(D, J)` gives it at `(D', J♯(D'))` for `D' ≤ D`.
+3. `BAStep5IIIGood`, `BAStep5IIIGoodThm`, `baStep5IIIGoodThm_holds`: for `τ', D₁ > 0` and
+   `0 < θ < 1`, eventually, at every `u ∈ [s_n, t_n]`, there is an event `G` with
+   `seqP (sz.withLam 0) Gᶜ ≤ N^{-D₁}` on which the matrix part holds at `H = seqHflowBA`,
+   `Λ = K₀ = N^{τ'}`, `J = J♯`.  Steps 2-4 enter as the four carrier predicates `STAvgUgL`,
+   `STLmaxUgL`, `STLKUgL`, `STGdecayWgL`; `STKboundgL` (`baKbound_holds`), the far field
+   (`baEMn2ExpHK`) and `𝒦^{(1)} = m(σ)` (`baKsol_one`) are used by name.
 
-Helpers carry the stem `Step5IIIGood_`.
+The seven failure events (iv), (v) for `k = 2, 3, 4, 6`, and the two events of (vi) (from `STLKUgL`
+and `STGdecayWgL`) carry the union over `u` inside, so one event `G` serves every `u`; (ii) and
+(iii) are deterministic and made uniform in `u` through a violator sequence.  The scalar part of the
+bundle along a flow is in `RBM3D/BA/Step5IIIGood2.lean`.
 -/
 
 set_option linter.style.longLine false
@@ -205,8 +201,7 @@ theorem Step5IIIGood_event {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {s
   by_contra hlt0
   exact hω ⟨u, not_le.1 hlt0⟩
 
-/-- Union bound for seven events of probability `≤ c` (copy of the private `lemDecCalEPrec_union7`,
-`Induction/LemDecCalEPrec.lean:705`). -/
+/-- Union bound for seven events of probability `≤ c` (as the private `lemDecCalEPrec_union7` of the band model). -/
 theorem Step5IIIGood_union7 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     {B₁ B₂ B₃ B₄ B₅ B₆ B₇ : Set Ω} {c : ℝ} (h₁ : P B₁ ≤ ENNReal.ofReal c)
     (h₂ : P B₂ ≤ ENNReal.ofReal c) (h₃ : P B₃ ≤ ENNReal.ofReal c) (h₄ : P B₄ ≤ ENNReal.ofReal c)
@@ -306,13 +301,12 @@ theorem Step5IIIGood_vi_alg {a q Bc y ρ Wd τ θ Cd F r Wf Q : ℝ} (hθ0 : 0 <
 
 end Helpers
 
-/-! ## 2. Target 1: the realized control `J♯` -/
+/-! ## 2. The realized parameter `J♯` -/
 
 section Jsharp
 
-/-- **The realized control** `J♯_{u,D}(H) = max(1, max_{σ,a} ‖(𝓛-𝒦)^{(2)}_{u,σ,a}(H)‖ / T_{u,D}(|a₁-a₂|))` at the BA carrier
-(`(eq:def_new_J*)`, `3_5:2310`; the probe's `T2459_BAJsharp`, `t/T2459:RBM3D/Probe/T2459Pins.lean:170`, verbatim; band
-`PfStep5Grid_JsharpM`, `Induction/PfStep5Grid.lean:76`). -/
+/-- **The realized parameter** `J♯_{u,D}(H) = max(1, max_{σ,a} ‖(𝓛-𝒦)^{(2)}_{u,σ,a}(H)‖ / T_{u,D}(|a₁-a₂|))` at the block Anderson
+carrier (`eq:def_new_J*`, (5.42); the band counterpart is `PfStep5Grid_JsharpM`). -/
 def BAStep5IIIJsharp {d : ℕ} (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (D u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
   max 1 (Finset.univ.sup' ⟨((fun _ => true), (fun _ => 0)), Finset.mem_univ _⟩ (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
@@ -325,7 +319,7 @@ theorem Step5IIIGood_tail_pos {d : ℕ} (sz : Sizes d) (n : ℕ) (u D : ℝ) (a 
   have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
   exact add_pos_of_nonneg_of_pos (by positivity) (Real.rpow_pos_of_pos hW _)
 
-/-- **Target 1** (content binding `T2485_JsharpSpec`): `1 ≤ J♯` and conjunct (i) `‖(𝓛-𝒦)^{(2)}‖ ≤ J♯ T_{u,D}` at every level `D`. -/
+/-- `1 ≤ J♯` and conjunct (i) `‖(𝓛-𝒦)^{(2)}‖ ≤ J♯ T_{u,D}` at every level `D`. -/
 theorem baStep5IIIJsharp_spec (d : ℕ) :
     ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (D u : ℝ) (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
       1 ≤ BAStep5IIIJsharp sz lam0 E n D u H ∧
@@ -341,13 +335,13 @@ theorem baStep5IIIJsharp_spec (d : ℕ) :
 
 end Jsharp
 
-/-! ## 3. Target 2: level monotonicity of the matrix part -/
+/-! ## 3. Level monotonicity of the matrix part -/
 
 section Level
 
-/-- **Target 2** (content binding `T2485_MatrixLevel`): the matrix part of the bundle (written inline) at `(D, J)` gives it at
-`(D', J♯(D'))` for every `D' ≤ D`.  (i) is target 1; (iii) and (vi) carry the floor `W^{-D} ≤ W^{-D'}`; the other conjuncts
-carry neither `D` nor `J`. -/
+/-- The matrix part of the bundle (written inline) at `(D, J)` gives it at
+`(D', J♯(D'))` for every `D' ≤ D`.  (i) is `baStep5IIIJsharp_spec`; (iii) and (vi) carry the floor `W^{-D} ≤ W^{-D'}`; the
+other conjuncts carry neither `D` nor `J`. -/
 theorem baStep5III_matrix_level (d : ℕ) :
     ∀ (sz : Sizes d) (lam0 E : ℕ → ℝ) (n : ℕ) (u D D' Λ K₀ J θ Cd : ℝ)
       (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ),
@@ -384,13 +378,13 @@ theorem baStep5III_matrix_level (d : ℕ) :
 
 end Level
 
-/-! ## 4. Target 3: the per-time good event -/
+/-! ## 4. The per-time good event -/
 
 section Good
 
-/-- **The per-time good event of Step 5, case (iii), at BA** (`T2485_BAGood`; the probe's `T2459_BAgood`, `:186`, with the law
-written out, `J♯` the realized control and the matrix part written inline): for `τ', D₁ > 0` and `0 < θ < 1`, eventually, at every
-`u ∈ [s_n, t_n]`, an event `G` with `seqP (sz.withLam 0) Gᶜ ≤ N^{-D₁}` on which the matrix part of U5b's bundle holds at
+/-- **The per-time good event of Step 5, case (iii), at the block Anderson model** (the law is written out, `J♯` is the realized
+parameter and the matrix part is written inline): for `τ', D₁ > 0` and `0 < θ < 1`, eventually, at every
+`u ∈ [s_n, t_n]`, there is an event `G` with `seqP (sz.withLam 0) Gᶜ ≤ N^{-D₁}` on which the matrix part of the bundle holds at
 `H = seqHflowBA`, `Λ = K₀ = N^{τ'}`, `J = J♯_{u,D}(H)`. -/
 def BAStep5IIIGood (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : ℝ) : Prop :=
   ∀ τ' D₁ θ : ℝ, 0 < τ' → 0 < D₁ → 0 < θ → θ < 1 → ∀ᶠ n in atTop, ∀ u : TimeIcc s t n, ∃ G : Set sz.SeqΩ,
@@ -409,10 +403,10 @@ def BAStep5IIIGood (sz : Sizes d) (z : ℕ → ℂ) (s t : ℕ → ℝ) (D Cd : 
       (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)), ‖STLKMg (baStep2Mat sz (BAflowLam0 sz z) (BAflowEs sz z)) n (u : ℝ) H σ a‖ ≤ ((sz.W n : ℕ) : ℝ) ^ (θ * (((d : ℕ) : ℝ) * (Cd + 1))) * ((sz.size n : ℕ) : ℝ) ^ τ' *
         ((((sz.W n : ℕ) : ℝ) ^ d * (1 - (u : ℝ)))⁻¹) ^ 2 * Real.exp (-(θ * Real.sqrt (zdistInf d (sz.L n) (a 0 - a 1) : ℝ))) + ((sz.W n : ℕ) : ℝ) ^ (-D))
 
-/-- **Target 3** (content binding `T2485_BAGoodThm`; the probe's `T2459_BAgoodThm`, `:191`, with four corrections): the merged
-`STLmaxUgL`, `STLKUgL` replace the probe-local copies; `0 < ε`, `0 < 𝔡` (for `baEMn2ExpHK`, `baKbound_holds`) and `0 < Cd` (for (vi))
-are added; `STKboundgL` is not a hypothesis (merged at BA: `baKbound_holds`).  The Steps 2-4 inputs are exactly the carrier
-predicates of `STIngR5gL` (`Chain/Step5Gen.lean:191`). -/
+/-- **The per-time good event holds** (`BAStep5IIIGood` at every level `D > 0`) for a block Anderson flow with `t_n ≤ t₀` in the
+regime `lam² ≤ 1 - t`, given the four carrier predicates of Steps 2-4 (`STAvgUgL`, `STLmaxUgL`, `STLKUgL`,
+`STGdecayWgL`).  The hypotheses `0 < ε`, `0 < 𝔡` serve `baEMn2ExpHK` and `baKbound_holds`, and `0 < Cd` serves (vi);
+`STKboundgL` is not a hypothesis (it is `baKbound_holds`). -/
 def BAStep5IIIGoodThm (d : ℕ) : Prop :=
   3 ≤ d → ∀ (κ ε 𝔠 𝔡 Cd : ℝ) (sz : Sizes d) (z : ℕ → ℂ), 0 < κ → 0 < ε → 0 < 𝔡 → 0 < Cd → BAFlow sz κ ε 𝔠 𝔡 z →
     ∀ s t : ℕ → ℝ, (∀ n, 0 ≤ s n) → (∀ n, s n < t n) → (∀ n, t n ≤ BAflowT0 sz z n) → STReg5III sz s t →
@@ -603,11 +597,5 @@ theorem baStep5IIIGoodThm_holds (d : ℕ) : BAStep5IIIGoodThm d := by
       exact hvi
 
 end Good
-
-/-! ## 5. Compiled nonempty instances of targets 1-3 at `d = 3`, `sz0`, `zSeq`, `flow_sz0`
-
-Data: `(κ, ε, 𝔠, 𝔡) = (1/2, 1/10, 1/6, 1/10)` (`flow_sz0`), `s ≡ 1/10 < t ≡ 1/2 < t₀` (`half_lt_t0`), `D = 40`, `Cd = 1`, `θ = 1/10`.
-The flow, the window, the regime and the horizon are discharged; the four Steps 2-4 predicates (`STAvgUgL`, `STLmaxUgL`, `STLKUgL`,
-`STGdecayWgL`, owners T1 and U3-BA) stay hypotheses. -/
 
 end RBM.BA
