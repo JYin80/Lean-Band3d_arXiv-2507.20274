@@ -2,7 +2,7 @@
 
 mode: RUN
 parallel: 4
-updated: 2026-10-17 01:27 UTC (dispatcher V5 from 2026-10-16 09:5x UTC = Cowork session session_01TaEcrA2Z45rxfP66wcBhm7, account junyin.harvard@gmail.com; before: dispatcher V4 = session_01RThagGKa4jNgUEWeKViyyg, 2026-10-13 16:44 – 2026-10-15 11:03 UTC; T2519 Amend 2 (supervisor 1248); T2520 = N2 released; T2519 Amend 3 (1a-audit signed); T2521 = MA-06b released; T2519 Amend 4 (eventual coupling window, row c); row b′ over its line → REQ C5bprime → supervisor 1652 PASS, row d released under Amend 5; T2519 complete (11,213 lines), T2520 1b released; T2520 merged, M/N closing REQ sent; T2521 merged = Lean side complete; release step 1 T2522 (dead-code report) merged; M/N closed (supervisor 2046); release step 2 T2523 (deletion); DECISIONS §368)
+updated: 2026-10-17 01:36 UTC (dispatcher V5 from 2026-10-16 09:5x UTC = Cowork session session_01TaEcrA2Z45rxfP66wcBhm7, account junyin.harvard@gmail.com; before: dispatcher V4 = session_01RThagGKa4jNgUEWeKViyyg, 2026-10-13 16:44 – 2026-10-15 11:03 UTC; T2519 Amend 2 (supervisor 1248); T2520 = N2 released; T2519 Amend 3 (1a-audit signed); T2521 = MA-06b released; T2519 Amend 4 (eventual coupling window, row c); row b′ over its line → REQ C5bprime → supervisor 1652 PASS, row d released under Amend 5; T2519 complete (11,213 lines), T2520 1b released; T2520 merged, M/N closing REQ sent; T2521 merged = Lean side complete; release step 1 T2522 (dead-code report) merged; M/N closed (supervisor 2046); release step 2 T2523 (deletion); DECISIONS §368)
 reason: RUN (dispatcher V3 from 2026-10-11 21:44 UTC = Cowork session session_01Qidfbgzdy6FV6jy1eSbZgb, DECISIONS §240; before: dispatcher V2 from 2026-10-09 19:24 UTC, §166–§239). Normal operation: new tickets are released here as their inputs merge (HANDOFF §2). Jun authorized rule (A) merges in the hub session (2026-10-10 ~00:55 UTC, H155 done lines).
 
 The standing hub rules are in CLAUDE.md §3 (auto-merge, one automatic repair per RETURN, date -u, report headers, private helpers, nothing undecided starts, parallelism, API errors).
@@ -12,6 +12,7 @@ Priority order (CLAUDE.md §3 (G)); at most `parallel` workflows at once.
 488. T2523 — `docs/tickets/T2523.md` (release clean-up step 2, **resumed** per H340: continue 1b from the committed WIP state of its worktree (−140k lines, 7th full build at 4331/4426 when stopped), then audit; no new preflight).
 498. T2533 — `docs/tickets/T2533.md` (BA-D row R1: BA case (iii) of Step 5 at every d ≥ 3, in place in `BA/Step5III{Good,Good2,Walk,Walk2,Targets}`; prover-hard; **after T2523 merges**, from that `main`, once its check compiles).
 499. T2534 — `docs/tickets/T2534.md` (BA-D row R2: the assembly, `Thm27 := ∀ d, 3 ≤ d → BAThm27L d`, `baThm27L_all`, the d = 4 instance; prover; after T2533 merges, once its check Part 1 compiles; its merge closes BA-D).
+500. T2535 — `docs/tickets/T2535.md` (release: write `docs/PAPER-VS-LEAN.md`, report-only, final forms per T2534; prover-hard; **start now** beside T2523 once its check compiles).
 
 ## Pre-release checks
 (none)
@@ -734,6 +735,11 @@ Standing instructions carried over from the archived CONTROL (verbatim):
   done: Sat Oct 17 01:13:47 UTC 2026 — H340 (3) T2523 resumed from a9d1a6d4: wf_2c1fdb31-5c8 (no preflight; 1b prover-hard with the H340 instruction → auditor; merge by rule (A)). Running: T2523 (1 of 4).
 
 - H341 (dispatcher V5, 2026-10-17 01:27 UTC; DECISIONS §374). (1) Commit by name with your next commit `docs/tickets/T2533.md`, `docs/tickets/T2534.md`, `docs/tickets/checks/T2533-check.lean`, `docs/tickets/checks/T2534-check.lean`, `docs/DECISIONS.md`, `docs/ROUTES.md`, `docs/claude-team/WORKLOG.md`, `docs/queue/CONTROL.md` (released entry 489 T2524 removed: merged; 498 T2533, 499 T2534 added). Nothing else. (2) T2533 starts after T2523 merges: compile `docs/tickets/checks/T2533-check.lean` on that `main` (the gate) and start it. (3) At T2533's merge, do not edit its check: the dispatcher activates Part 2. T2534 starts after T2533 merges, once `docs/tickets/checks/T2534-check.lean` compiles on that `main`.
+  done: Sat Oct 17 01:22:55 UTC 2026 — H341 (1) the 8 listed files committed by name in fcd170bc, pushed (docs/rework-ledger.md, also modified, not in the list: left uncommitted).
+  done: Sat Oct 17 01:22:55 UTC 2026 — H341 (2) noted: T2533 starts after T2523 merges, once its check compiles on that main (T2523 running: wf_2c1fdb31-5c8).
+  done: Sat Oct 17 01:22:55 UTC 2026 — H341 (3) noted: at T2533's merge the hub does not edit its check; T2534 starts after T2533 merges, once its check compiles on that main.
+
+- H342 (dispatcher V5, 2026-10-17 01:36 UTC; DECISIONS §374 (7)). (1) Commit by name with your next commit `docs/tickets/T2535.md`, `docs/tickets/checks/T2535-check.lean`, `docs/DECISIONS.md`, `docs/rework-ledger.md` (left over from H341), `docs/queue/CONTROL.md` (released entry 500 T2535 added). Nothing else. (2) Compile `docs/tickets/checks/T2535-check.lean` on that `main` (the gate) and start T2535 (short preflight → `prover-hard` → `auditor`). It writes only `docs/PAPER-VS-LEAN.md` and its reports, so it runs beside T2523 (2 of 4).
 
 ## Merge log (the hub appends one `done:` line per merge; earlier lines are in CONTROL-archive.md)
 done: Sun Oct 11 14:52:38 UTC 2026 — T2418 merged 4bd65c3 (BA-L L4a under Amend 1: new Graph/BAExp14a (1307) and Graph/BAExp14aB (1771), stop 2,000 per file; S1 BAExp14aS1 (six families over baFMz) proved as baExp14a_S1_holds; two root imports added at merge (the branch had none); no registry change; probe RBM3D/Probe/T2418Pins.lean (168 lines) not merged, stays on t/T2418 at 1d302bb; 1a-audit sign-off by Amend 1 → (a′) + H219 probe → round 2 PASS; audit PASS claude-opus-5-5; full lake build 4240 jobs; pushed).
