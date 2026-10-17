@@ -90,13 +90,14 @@ The four theorems without hypothesis are proved in `RBM3D/Main/BandTerminal.lean
 | Theorem 2.7 (block Anderson model), p. 11 | `RBM.Endpoints.Thm27` | `RBM.Endpoints.Thm27_of_L32 : RBM.Univ.UNL32 → Thm27` | `RBM.Univ.UNL32` |
 
 ```lean
--- namespace RBM.Endpoints
+-- namespace RBM.Endpoints (RBM3D/Main/FinalShape.lean), with `open RBM.Univ`
 def Thm27 : Prop := ∀ d : ℕ, 3 ≤ d → RBM.BA.BAThm27L d
-theorem RBM.Endpoints.Thm27_of_L32 : RBM.Univ.UNL32 → Thm27
-theorem RBM.BA.baThm27L_all : RBM.Univ.UNL32 → ∀ d : ℕ, 3 ≤ d → RBM.BA.BAThm27L d
-theorem final_shape :
-  RBM.Univ.UNL32 →
-    (RBM.Endpoints.decol ∧ RBM.Endpoints.locSC ∧ RBM.Endpoints.QUE ∧ RBM.Endpoints.BUniv ∧ RBM.Endpoints.QDiff) ∧ Thm27
+theorem Thm27_of_L32 : RBM.Univ.UNL32 → Thm27
+theorem final_shape : RBM.Univ.UNL32 →
+    (decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff) ∧ Thm27
+-- namespace RBM.BA (RBM3D/BA/UNBUniv.lean), with `open RBM.Univ`
+theorem baThm27L_all (h32 : UNL32) : ∀ d : ℕ, 3 ≤ d → BAThm27L d
+theorem baThm27L_three : UNL32 → BAThm27L 3
 ```
 
 The band half of `final_shape` is `RBM.Endpoints.band_terminal : UNL32 → decol ∧ locSC ∧ QUE ∧ BUniv ∧ QDiff`. "Parameters" are `d ≥ 3`, `𝔠, 𝔡`, a size sequence
@@ -113,9 +114,12 @@ for complex Hermitian matrices, written at unit density (§4). It is a hypothesi
 `final_shape`, not an axiom. Theorems 2.1, 2.2, 2.3 and 2.5 use no external input. The results that the paper quotes from
 [28], [64], [69] and the other cited works are not assumed in Lean; the corresponding Lean proofs are listed in §5.
 
-**Axioms.** The command `#assert_rbm_axioms` (file `RBM3D/Test/Axioms.lean`, run as the last command of `RBM3D.lean`) fails
-the build unless every declaration in the namespace `RBM` depends only on `propext`, `Classical.choice`, `Quot.sound`. The
-command `#print axioms` on the theorems of the table, on `band_terminal`, `final_shape` and `baThm27L_three` prints
+**Axioms.** The command `#assert_rbm_axioms` (file `RBM3D/Test/Axioms.lean`, run as the last command of `RBM3D.lean`) walks
+every constant of the environment whose name starts with `RBM`, computes the axioms it depends on (as `#print axioms` does) and
+fails the build unless each of them is `propext`, `Classical.choice` or `Quot.sound`. There is no further allowed axiom. The command also fails
+if it finds fewer than `100` such constants, so that a mistyped namespace cannot make the audit pass vacuously. In particular no `sorry` and no declared `axiom`
+occurs in `RBM`; every statement that is not proved is a hypothesis, a theorem parameter or a structure field. The command `#print axioms` on the theorems of the table, on `band_terminal`, `final_shape`,
+`baThm27L_all` and `baThm27L_three` prints
 
 ```
 'RBM.Endpoints.decol_holds' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -126,6 +130,7 @@ command `#print axioms` on the theorems of the table, on `band_terminal`, `final
 'RBM.Endpoints.band_terminal' depends on axioms: [propext, Classical.choice, Quot.sound]
 'RBM.Endpoints.Thm27_of_L32' depends on axioms: [propext, Classical.choice, Quot.sound]
 'RBM.Endpoints.final_shape' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RBM.BA.baThm27L_all' depends on axioms: [propext, Classical.choice, Quot.sound]
 'RBM.BA.baThm27L_three' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
@@ -141,8 +146,12 @@ left, and the four theorems without hypothesis are applied with none; the exampl
   (`RBM.BA.UNPinsInst.fp`), admissible at `(1/6, 1/10)`, with `κ_* = Im m₀/π > 0` and an energy `E_*` with `κ_* ≤ ρ_N(E_*)` for every `n` (the bulk is nonempty). The five conjuncts of
   `BAThm27L 3` are applied at `S0` at `κ_*`, with `E_*`, `k = 1`, `E' = 0` and `bump` in the universality conjunct; further examples apply the fixed-`z`, step and per-`d` statements of the file at `S0`.
 - `RBM3D/Main/FinalShape.lean`. The ten conjuncts of `final_shape` are applied at the data above (five at `sz0`, five at `S0`; the `d = 3` conjuncts of `Thm27` are `.2 3 le_rfl`), all at once,
-  with `UNL32` the only hypothesis. A further example at `d = 4` applies the conjuncts decol, locSC, QUE and QDiff of `Thm27` on `Sizes 4` at `L n = 4(n+1)`, `W n = (2(n+1))^5`,
-  `lam n = (2(n+1))^{-6}`, admissible at `(1/8, 1/10)`, with `UNL32` the only hypothesis.
+  with `UNL32` the only hypothesis. A further example applies the `d = 4` part of `Thm27`, that is `(final_shape h32).2 4`, to concrete data over a nonempty bulk. The data are a size sequence in
+  `Sizes 4` with `L n = 4`, `W n = (2(n+1))^5` and the constant coupling `lam n = g₀`, admissible at `(𝔠, 𝔡) = (1/8, 1/10)` (the proof of `Admissible (1/8) (1/10)` is in the file, for every
+  `g₀ ∈ (0, 10]`), and a triple `(g₀, E, κ)` with `0 < g₀ ≤ 3/10`, `κ > 0` and `BAbulk 4 4 g₀ κ E`, obtained from a real-axis solution of (2.32) at `(d, L) = (4, 4)` (the private lemma
+  `FinalShape_bulk4`, using `RBM.BA.BAbulk_iff_exists`). The bulk is nonempty: `κ ≤ ρ_N(E)` holds for every `n`, and the end domain `BAendDom` (§2.12) is nonempty at every `n`. The coupling is the
+  constant `g₀` because the witness of the bulk is built at one fixed coupling, so a constant sequence is an eventual witness directly. All five conjuncts of `Thm27 4` (decol, locSC, QUE, BUniv, QDiff) are applied at this
+  data, the universality conjunct at `k = 1`, `E' = 0` and `RBM.Univ.UNInst.bump`, with `UNL32` the only hypothesis.
 
 ---
 
@@ -425,7 +434,7 @@ deterministic lemmas are proved with explicit constants where the paper writes `
 
 ### 5.2 From the Itô formula to Gaussian integration by parts
 
-- **Paper.** The loop hierarchy (2.47) (p. 14) is derived by Itô's formula (stated on p. 78). Gaussian integration by parts is used for the light-weight terms (pp. 24, 55).
+- **Paper.** The loop hierarchy (2.47) (p. 14) is derived by Itô's formula (p. 14; the same derivation is applied to twisted loops on p. 78). Gaussian integration by parts is used for the light-weight terms (pp. 24, 55).
 - **Lean.** At one time, the derivative in `u` of an expected loop is the expectation of a finite sum of cut loops (`RBM.Gauss.deriv_integral_gloop_eq_integral_samplewiseLoopGeneratorCuts`); the
   second-order terms come from Stein's identity `E[x f(x)] = v E[f'(x)]` for each real coordinate (`RBM.integral_mul_gaussianReal`). Along the walk, `RBM.Path.oneStepEnvelope` says that for Hermitian
   `M`, `|E| < 2`, `0 ≤ u`, `0 ≤ Δ`, `u + Δ < 1` and a loop of length `k`, `‖E Φ_{u+Δ}(M + √Δ X) − Φ_u(M) − Δ·genMat‖ ≤ envConst · Δ^{3/2}`, where `RBM.Path.genMat` is `½ ∑_c gvar_c ∂_c² Φ_u + ∂_u Φ_u`
@@ -448,7 +457,7 @@ deterministic lemmas are proved with explicit constants where the paper writes `
 
 ### 5.5 The loops `𝒦`
 
-- **Paper.** `𝒦` is "the unique solution" of the convolution tree equations (2.50) with the initial data (2.52) (Definition 2.14, p. 14), and has an explicit tree representation (Appendix A.5, p. 86, (A.30), p. 87).
+- **Paper.** `𝒦` is "the unique solution" of the convolution tree equations (2.50) with the initial data (2.52) (Definition 2.14, p. 14; (2.52) is on p. 15), and has an explicit tree representation (Appendix A.5, p. 86, (A.30), p. 87).
 - **Lean.** `RBM.Loop.KLK` is defined by the tree sum, and `RBM.Loop.KLK_isKLoop` shows that it solves (2.50) on `[0, 1)` with the initial data and `𝒦^{(1)} = m(σ)`; the uniqueness of the solution, which
   the paper's definition presupposes, is not used by the Lean proof. The Ward identity (2.57) is `RBM.Loop.wardS_holds`.
 
