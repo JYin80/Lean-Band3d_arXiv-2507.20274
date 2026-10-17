@@ -7,23 +7,20 @@ import RBM3D.Induction.MainIndBase
 import RBM3D.Induction.LocalAvg1
 
 /-!
-# ST-6 R2 (ticket T2340): the chain of times from `lem:main_ind` to every `t_n > 0`
+# The chain of times from Theorem 2.24 (`lem:main_ind`) to every `t_n > 0`
 
-Design `docs/reports/T2338-design.md` §3, §4 (probe `RBM3D/Probe/T2338Pins.lean` on `t/T2338`, lines
-61-67, 78-79, 175-254, 262-287, 319-336).  Paper `1_2:1194-1243`, `(con_st_ind)` `1_2:1296-1298`.
+The induction along a chain of times in the subsection "Proof of the main results" of Section 2, with
+(2.83) `con_st_ind` at every step.
 
 * `STHorizonG`: what the chain needs of a flow and its horizon `T0` (admissible sizes, `0 < T0 < 1`,
   `N^{-1+ε/2} ≤ 1 - T0` eventually); `stHorizon_band`: the band instance (`T0 = lemT z`);
 * `stChainTime t K k`: `1 - p_k = (1 - t)^{k/K}` (`p_0 = 0`, `p_K = t`; RBM2D `chainTime`), with
   `stChainTime_zero`, `stChainTime_top` and the strict steps `stChainTime_facts` for `0 < t < 1`;
-* `stChainSteps`: `(con_st_ind)` eventually at every step of the chain, for `K` fixed with
+* `stChainSteps`: (2.83) `con_st_ind` eventually at every step of the chain, for `K` fixed with
   `K 𝔠_d min(2𝔠𝔡, τ) ≥ 2` (`K` never depends on `n` or `t`);
 * `STLocalMaxgL_of_STLocalEntrygL`: the closure of the induction (`‖G-M‖² ≺ W^{-d}B_{τ,K} ≤ Bctl`);
 * `stPosConclG_of_mainIndG`: the six conclusions at every `0 < t_n ≤ T0`, by induction over the
-  `K` steps.  `STBaseG` (R1) is the base of the induction.
-
-Imports: `Induction.ScaleFacts` (`scaleFacts_R1`) and `Induction.Step2Iterate`
-(`ST_one_sub_lemT`) are transitive through `Induction.MainIndBase` and are not repeated.
+  `K` steps.  `STBaseG` is the base of the induction.
 -/
 
 set_option linter.style.longLine false
@@ -36,9 +33,9 @@ namespace RBM.BA
 
 variable {d : ℕ}
 
-/-! ## 1. The pins -/
+/-! ## 1. The statements -/
 
-/-- **R2 (horizon)**: what the chain needs of the flow and its horizon `T0`: admissible sizes,
+/-- **The horizon**: what the chain needs of the flow and its horizon `T0`: admissible sizes,
 `0 < T0 < 1`, and `N^{-1+ε/2} ≤ 1 - T0` eventually (band: `T0 = lemT z`, `1 - lemT z ≥ Im z/(1+|z|)`). -/
 def STHorizonG (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop)
     (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) : Prop :=
@@ -46,11 +43,10 @@ def STHorizonG (d : ℕ) (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z :
     sz.Admissible 𝔠 𝔡 ∧ (∀ n, 0 < T0 sz z n ∧ T0 sz z n < 1) ∧
       ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (-1 + ε / 2) ≤ 1 - T0 sz z n
 
-/-- The geometric chain `1 - p_k = (1 - t)^{k/K}`: `p_0 = 0`, `p_K = t`
-(RBM2D `chainTime`, `Induction/Defs.lean:318` at `c9a24cf`). -/
+/-- The geometric chain `1 - p_k = (1 - t)^{k/K}`: `p_0 = 0`, `p_K = t` (as RBM2D's `chainTime`). -/
 noncomputable def stChainTime (t : ℕ → ℝ) (K k : ℕ) : ℕ → ℝ := fun n => 1 - (1 - t n) ^ ((k : ℝ) / K)
 
-/-! ## 2. The chain times and `(con_st_ind)` at every step (the exponent count) -/
+/-! ## 2. The chain times and (2.83) `con_st_ind` at every step (the exponent count) -/
 
 theorem stChainTime_zero (t : ℕ → ℝ) (K : ℕ) : stChainTime t K 0 = fun _ => 0 := by
   funext n; simp [stChainTime]
@@ -73,7 +69,7 @@ theorem stChainTime_facts {t : ℕ → ℝ} (ht0 : ∀ n, 0 < t n) (ht1 : ∀ n,
   simp only [stChainTime]
   exact ⟨by linarith, by linarith, by linarith⟩
 
-/-- **The chain-step count**: if `K · 𝔠_d · min(2𝔠𝔡, τ) ≥ 2`, then `(con_st_ind)` holds eventually at every
+/-- **The chain-step count**: if `K · 𝔠_d · min(2𝔠𝔡, τ) ≥ 2`, then (2.83) `con_st_ind` holds eventually at every
 step `(p_k, p_{k+1})` of the chain to any `0 < t_n ≤ T_n`, where `N^{-1+τ} ≤ 1 - T_n`.  Proof:
 `W^{-d}B_{u,0} ≤ 2N^{-μ}` (`scaleFacts_R1`, `μ = min(2𝔠𝔡, τ)`) and
 `(1-p_{k+1})/(1-p_k) = (1-t)^{1/K} ≥ N^{-1/K}`; `K` does not depend on `n`. -/
@@ -120,9 +116,9 @@ theorem stChainSteps (sz : Sizes d) {𝔠 𝔡 τ 𝔠d : ℝ} (h𝔠 : 0 < 𝔠
   exact h1.trans (h2 ▸ h3.trans (h5.trans (Real.rpow_le_rpow (Real.rpow_nonneg hN0.le _)
     (hr.trans (by linarith [htT n])) (by positivity))))
 
-/-- **R2 (closure of the induction), generic**: `‖G-M‖² ≺ W^{-d}B_{τ,K} ≤ Bctl` (`(Gt_bound)`), so
-`‖G-M‖ ≺ Bctl^{1/2}` (`(Gt_bound+IND)`): the twin of the merged band theorem
-`STLocalMax_of_STLocalEntry` (`MainIndRegimes.lean:244`). -/
+/-- **Closure of the induction, generic**: `‖G-M‖² ≺ W^{-d}B_{τ,K} ≤ Bctl` ((2.77) `Gt_bound`), so
+`‖G-M‖ ≺ Bctl^{1/2}` ((2.81) `Gt_bound+IND`): the carrier form of the band theorem
+`STLocalMax_of_STLocalEntry` of `MainIndRegimes.lean`. -/
 theorem STLocalMaxgL_of_STLocalEntrygL {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (τ : ℕ → ℝ)
     (h : STLocalEntrygL C μ τ) : STLocalMaxgL C μ τ :=
   StochDomAt.of_subset h fun σ hσ => ⟨2 * σ, by positivity, Eventually.of_forall fun n ω ⟨p, hp⟩ => ⟨p, by
@@ -143,7 +139,7 @@ section Assembly
 variable {law : ∀ sz : Sizes d, Measure sz.SeqΩ} {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
   {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} {T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ}
 
-/-- **R2**: the conclusions at every strictly positive `t_n ≤ T0`, by induction over the `K` chain steps
+/-- **The conclusions at every strictly positive `t_n ≤ T0`**, by induction over the `K` chain steps
 (`K` fixed by `𝔠_d`, `𝔠`, `𝔡`, `ε`; the base of the induction is `STBaseG`). -/
 theorem stPosConclG_of_mainIndG (hmain : STMainIndG d law Flow mk T0) (hhor : STHorizonG d Flow T0)
     (hbase : STBaseG d law Flow mk) :
@@ -201,5 +197,3 @@ theorem stHorizon_band (d : ℕ) :
   linarith [(hf.2 n).2.1, ST_one_sub_lemT (him n)]
 
 end RBM.BA
-
-/-! ## 5. Compiled nonempty instances (`d = 3`, merged data `sz0`, `z0`) -/

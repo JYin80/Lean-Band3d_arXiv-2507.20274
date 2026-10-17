@@ -16,35 +16,30 @@ import RBM3D.Gauss.Domination
 /-!
 # The case-(i) round at the flow, uniformly in the pair, and `stOeqQt'_holds` (`d ≥ 3`)
 
-Ticket T2314 (S3-18b2b, stochastic layer ST-3, case (i) `1 - t ≥ ilambda²/L²`; last of the chain
-S3-14 → … → S3-18b1 = T2310 → S3-18b2a = T2313 `Induction/QEndB1` → S3-18b2b).  Paper:
-arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`, `lem:STOeq_Qt` `3_5:1362-1378`
-(`(am;asoi222)` `3_5:1366`), proof `3_5:1678-1766`; the `N^{-C}`-net remark with `lem_ConArg`
-`3_5:1764` (the same remark for case (ii) `3_5:1931`).  DECISIONS §127, §129, §105 (1), §62, §80,
-§90, §120.
+Case (i), `1 - t ≥ ilambda²/L²`.  Paper: Lemma 4.10 (`lem:STOeq_Qt`, (4.36) `am;asoi222`) and its proof in
+Subsection 4.5; the `N^{-C}`-net remark with `lem_ConArg` in the proof of Lemma 4.17 (the same remark for
+case (ii)).  The per-time statement is in `Induction/QEndB1`.
 
 ## What is here
 
-* §2 the envelope lemmas (private copies of `NQEndFlowLift.lean:74-124`; `nqFlowSharp` is the
+* §2 the envelope lemmas (private, as in `NQEndFlowLift`; `nqFlowSharp` is the
   public vocabulary): the pair hypotheses carry over to `XL♯ = nqFlowSharp t XL`,
   `XLK♯ = nqFlowSharp t XLK`;
-* §3 the bootstrap right side `ζ♯` at `lo = 1` (private copies of `NQEndFlowLift.lean:133-248`,
-  `lo` generic or `2 ↦ 1`): `ζ♯` non-decreasing in `u ∈ [s_n, t_n]`, `ζ♯ ≤ ζ`, `1 ≤ ζ♯`;
-* §4 the one-sided floor-net core (private copy of `NQEndFlowLift.lean:268-416`);
-* §5 the mesh arithmetic and the per-loop closeness (copies of `NQEndFlowLift.lean:705-829`), the
-  new gluing (`qtLift_xiLK_close`: the closeness passes through the finite `sup'` of `STmaxLK`;
+* §3 the bootstrap right side `ζ♯` at `lo = 1` (private): `ζ♯` non-decreasing in `u ∈ [s_n, t_n]`, `ζ♯ ≤ ζ`, `1 ≤ ζ♯`;
+* §4 the one-sided floor-net core (private);
+* §5 the mesh arithmetic and the per-loop closeness, the
+  gluing (`qtLift_xiLK_close`: the closeness passes through the finite `sup'` of `STmaxLK`;
   `qtLift_diag_PT`: the restriction of the per-time statement to the diagonal `v = u`;
   `qtLift_diag_to_pair`: the diagonal statement gives the pair statement because `ζ♯` is
   non-decreasing) and the lift `qtLift_lift : STXiRoundPT'' → STXiRound'` (private);
 * §6 `RBM.Ind.stXiRoundQt_holds` (the case-(i) round, twin of `stXiRoundNZ_holds`) and
-  `RBM.Ind.stOeqQt'_holds` (= `stXiBootR_of_round d STCaseI (stXiRoundQt_holds d)`);
-* §7 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.QtXiRoundLiftInst`).
+  `RBM.Ind.stOeqQt'_holds` (= `stXiBootR_of_round d STCaseI (stXiRoundQt_holds d)`).
 
-The file adds no drift or good-set level (DECISIONS §95 (3)): the current length `n_` enters only
-through the merged `STXiRoundPT''` (its self-absorbing summand `B_u^{1/6} XLK n_ u`) and is removed
-by the merged `stXiBootR_of_round`.  Every helper that the ticket does not pin is `private` with
-the prefix `qtLift_`.  The new text is the four gluing lemmas of §5 and the two theorems of §6;
-everything else is a copy cited by source line range (no port from RBM1D/RBM2D).
+The file adds no drift or good-set level: the current length `n_` enters only
+through `STXiRoundPT''` (its self-absorbing summand `B_u^{1/6} XLK n_ u`) and is removed
+by `stXiBootR_of_round`.  Every helper that is not part of the statements is `private` with
+the prefix `qtLift_`.  The four gluing lemmas of §5 and the two theorems of §6 are specific to this file;
+the remaining private lemmas are those of `NQEndFlowLift` (no port from RBM1D/RBM2D).
 -/
 
 set_option linter.style.longLine false
@@ -67,7 +62,7 @@ private theorem qtLift_sharp_one_le : ∀ (t : ℕ → ℝ) (X : ℕ → ℕ →
     1 ≤ nqFlowSharp t X m n u :=
   fun _ _ _ _ _ => le_max_left _ _
 
-/-- Envelope (b): `X♯ ≤ X` for a control `X ≥ 1`. -/
+/-- Envelope (b): `X♯ ≤ X` for a bound `X ≥ 1`. -/
 private theorem qtLift_sharp_le : ∀ (t : ℕ → ℝ) (X : ℕ → ℕ → ℝ → ℝ), (∀ m n u, 1 ≤ X m n u) →
     ∀ (m n : ℕ) (u : ℝ), nqFlowSharp t X m n u ≤ X m n u := by
   intro t X hX m n u
@@ -121,7 +116,7 @@ section RightSide
 
 variable {d : ℕ}
 
-/-- `STbootRHS` is monotone in both controls (`B > 0` fixed, all exponents `≥ 0`). -/
+/-- `STbootRHS` is monotone in both bounds (`B > 0` fixed, all exponents `≥ 0`). -/
 private theorem qtLift_bootRHS_mono : ∀ (lo : ℕ) (XL XL' XLK XLK' : ℕ → ℝ) (B : ℝ) (n_ p : ℕ), 0 < B →
     (∀ m, 0 ≤ XL m) → (∀ m, 0 ≤ XLK m) → (∀ m, XL m ≤ XL' m) → (∀ m, XLK m ≤ XLK' m) →
     STbootRHS lo XL XLK B n_ p ≤ STbootRHS lo XL' XLK' B n_ p := by
@@ -155,8 +150,8 @@ private theorem qtLift_bootRHS_mono : ∀ (lo : ℕ) (XL XL' XLK XLK' : ℕ → 
       (Real.rpow_nonneg (mul_nonneg (hXL _) (hXL _)) _) ((hXLK _).trans (hleK _))
   exact add_le_add h1 (add_le_add (add_le_add h2 h3) h4)
 
-/-- `1 ≤ STbootRHS lo XL XLK B k p` for `XL ≥ 1`, `XLK ≥ 0`, `B ≥ 0`, `k ≥ 1` (copy of the private
-`nqFlow_bootRHS_one_le`, `NQEndFlow.lean:804`). -/
+/-- `1 ≤ STbootRHS lo XL XLK B k p` for `XL ≥ 1`, `XLK ≥ 0`, `B ≥ 0`, `k ≥ 1` (as the private
+`nqFlow_bootRHS_one_le`). -/
 private theorem qtLift_bootRHS_one_le {lo : ℕ} {XL XLK : ℕ → ℝ} {B : ℝ} {k p : ℕ} (hk : 1 ≤ k)
     (hXL : ∀ m, 1 ≤ XL m) (hXLK : ∀ m, 0 ≤ XLK m) (hB : 0 ≤ B) : 1 ≤ STbootRHS lo XL XLK B k p := by
   have hXL0 : ∀ m, 0 ≤ XL m := fun m => zero_le_one.trans (hXL m)
@@ -174,10 +169,10 @@ private theorem qtLift_bootRHS_one_le {lo : ℕ} {XL XLK : ℕ → ℝ} {B : ℝ
   have := hXL k
   linarith
 
-/-- **`ζ♯` is non-decreasing in `u`** (R2*: the first summand of `STbootRHS` is at the fixed `B_s`, so no ratio of
-`B` is needed): for `s_n ≤ θ ≤ u ≤ t_n < 1`, the right side of `STXiRoundPT''` at the envelope controls
+/-- **`ζ♯` is non-decreasing in `u`** (the first summand of `STbootRHS` is at the fixed `B_s`, so no ratio of
+`B` is needed): for `s_n ≤ θ ≤ u ≤ t_n < 1`, the right side of `STXiRoundPT''` at the envelope bounds
 `(XL♯, XLK♯)` at `θ` is at most that at `u` (`B_θ^{1/6} ≤ B_u^{1/6}` by `STBctl_mono`, the envelopes are
-non-decreasing, `STbootRHS` is monotone in the controls). -/
+non-decreasing, `STbootRHS` is monotone in the bounds). -/
 private theorem qtLift_zeta_mono (sz : Sizes d) {s t : ℕ → ℝ} (ht1 : ∀ n, t n < 1)
     {XL XLK : ℕ → ℕ → ℝ → ℝ} (hXL : ∀ m n u, 1 ≤ XL m n u) (hXLK : ∀ m n u, 1 ≤ XLK m n u)
     (n_ p n : ℕ) {θ u : ℝ} (hsθ : s n ≤ θ) (hθu : θ ≤ u) (hut : u ≤ t n) :
@@ -202,7 +197,7 @@ private theorem qtLift_zeta_mono (sz : Sizes d) {s t : ℕ → ℝ} (ht1 : ∀ n
     (qtLift_sharp_mono t XLK hXLK n_ n θ u hθu hut) (zero_le_one.trans (qtLift_sharp_one_le t XLK n_ n θ))
     (Real.rpow_nonneg (hBθ.le.trans hBθu) _)
 
-/-- **`ζ♯ ≤ ζ`** pointwise (`X♯ ≤ X`, `STbootRHS` monotone in the controls). -/
+/-- **`ζ♯ ≤ ζ`** pointwise (`X♯ ≤ X`, `STbootRHS` monotone in the bounds). -/
 private theorem qtLift_zeta_le (sz : Sizes d) {s t : ℕ → ℝ} (ht1 : ∀ n, t n < 1)
     {XL XLK : ℕ → ℕ → ℝ → ℝ} (hXL : ∀ m n u, 1 ≤ XL m n u) (hXLK : ∀ m n u, 1 ≤ XLK m n u)
     (n_ p n : ℕ) {u : ℝ} (hsu : s n ≤ u) (hut : u ≤ t n) :
@@ -243,15 +238,15 @@ end RightSide
 
 /-! ## 4. The one-sided net core
 
-The merged `ContinuityNet.cont_core` (`ContinuityNet.lean:142`) asks the closeness of `ξ` and `ζ` for every pair of
+`ContinuityNet.cont_core` asks the closeness of `ξ` and `ζ` for every pair of
 times at distance `≤ N^{-A}`; the envelope `ζ♯` is non-decreasing, so `ζ♯(θ) ≤ 2 ζ♯(u)` holds only for `θ ≤ u`.  The
 net point of `u` is therefore the floor point `θ = s_n + ⌊(u - s_n) m⌋/m ≤ u` (`m = netSize`), and the closeness is asked
-only for `u' ≤ u`; the clamp `min (t_n)` of the merged `contTime` is inactive at `θ`.  Everything else is the text of
+only for `u' ≤ u`; the clamp `min (t_n)` of `contTime` is inactive at `θ`.  Everything else is the text of
 `cont_core`. -/
 
 section Core
 
-/-- Copy of the private `ContinuityNet.cont_stochDomAt_of_subset` (`ContinuityNet.lean:76`). -/
+/-- as the private `ContinuityNet.cont_stochDomAt_of_subset`. -/
 private theorem qtLift_stochDomAt_of_subset {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ}
     (hsize : Tendsto size atTop atTop) {U V : ℕ → Type*}
     {ξ ζ : ∀ l, U l → Ω → ℝ} {ξ' ζ' : ∀ l, V l → Ω → ℝ} {Ξ : ℕ → Set Ω}
@@ -279,18 +274,18 @@ private theorem qtLift_stochDomAt_of_subset {Ω : Type*} [MeasurableSpace Ω] {P
         rw [← ENNReal.ofReal_add hp hp]; ring_nf
     _ ≤ ENNReal.ofReal ((size l : ℝ) ^ (-D)) := ENNReal.ofReal_le_ofReal h3
 
-/-- The clamped net of `[s n, t n]` (copy of the private `ContinuityNet.contTime`, `ContinuityNet.lean:106`). -/
+/-- The clamped net of `[s n, t n]` (as the private `ContinuityNet.contTime`). -/
 private def qtLift_time (s t : ℕ → ℝ) (A : ℝ) (N n : ℕ) (k : Fin (netSize A N + 1)) : ℝ :=
   min (t n) (s n + netPt 1 A N k)
 
-/-- Copy of `ContinuityNet.contTime_mem`. -/
+/-- as `ContinuityNet.contTime_mem`. -/
 private theorem qtLift_time_mem {s t : ℕ → ℝ} (hst : ∀ n, s n ≤ t n) (A : ℝ) (N n : ℕ)
     (k : Fin (netSize A N + 1)) : qtLift_time s t A N n k ∈ Set.Icc (s n) (t n) := by
   refine ⟨le_min (hst n) ?_, min_le_left _ _⟩
   have := (netPt_mem_Icc zero_le_one A N k).1
   linarith
 
-/-- **The floor net point** (copy of `nqLift_netPt_floor`, `NQEndFlowLift.lean:308`; the witness of `exists_netPt_close`, `Domination.lean:171`, at
+/-- **The floor net point** (as `nzLift_netPt_floor`; the witness of `exists_netPt_close`, at
 `T = 1`, with the one-sided information `netPt ≤ x`): `netPt` at `⌊x · netSize⌋` lies in `[x - 1/netSize, x]`. -/
 private theorem qtLift_netPt_floor : ∀ (A : ℝ) (N : ℕ) (x : ℝ), 0 ≤ x → x ≤ 1 →
     ∃ k : Fin (netSize A N + 1), netPt 1 A N k ≤ x ∧ x - netPt 1 A N k ≤ 1 / (netSize A N : ℝ) := by
@@ -311,7 +306,7 @@ private theorem qtLift_netPt_floor : ∀ (A : ℝ) (N : ℕ) (x : ℝ), 0 ≤ x 
       (x * (netSize A N : ℝ) - ((⌊x * (netSize A N : ℝ)⌋₊ : ℕ) : ℝ)) / (netSize A N : ℝ) by field_simp]
     exact div_le_div_of_nonneg_right (by linarith) hm.le
 
-/-- **The one-sided net lift** (copy of `nqLift_core_below`, `NQEndFlowLift.lean:332-416`): the merged `cont_core` (`ContinuityNet.lean:142`) with the
+/-- **The one-sided net lift** (as `nzLift_core_below`): `cont_core` with the
 closeness hypothesis `hclose` asked only for `u' ≤ u` (the floor net point lies below `u`).  Nothing else changes: a
 per-time domination on `TimeIcc s t n × V n`, a polynomial bound on `#V n`, a good event `Ξ` of high probability on
 which `ξ` moves up by at most `ε n` and `ζ` down by a factor `2` along a downward time change of size `size^{-A}`, and
@@ -410,7 +405,7 @@ section Lift
 
 variable {d : ℕ}
 
-/-- **The mesh arithmetic** (copy of `nqLift_arith`, `NQEndFlowLift.lean:705`): for `δ ≤ N^{-(6 n_ + 20)}` and `N ≥ 3 n_ + 1`,
+/-- **The mesh arithmetic** (as `nzLift_arith`, without the factor `2^{n_}`): for `δ ≤ N^{-(6 n_ + 20)}` and `N ≥ 3 n_ + 1`,
 `N^{n_} (3 n_ N^{2n_+7} √δ + N^{2n_+2} δ) ≤ 1` (the first term is `≤ 3 n_ N^{-3}`, the second `≤ N^{-3}`). -/
 private theorem qtLift_arith {N δ : ℝ} {n_ : ℕ} (hN : (3 * n_ + 1 : ℝ) ≤ N) (hδ0 : 0 ≤ δ)
     (hδ : δ ≤ (N ^ (6 * n_ + 20))⁻¹) :
@@ -459,7 +454,7 @@ private theorem qtLift_arith {N δ : ℝ} {n_ : ℕ} (hN : (3 * n_ + 1 : ℝ) �
     _ = (3 * n_ + 1) * (N ^ 3)⁻¹ := by ring
     _ ≤ 1 := hN3
 
-/-- **The per-loop `ξ` closeness on `contGood`** (copy of `nqLift_xi_close`, `NQEndFlowLift.lean:757`; one-sided, for `s ≤ u' ≤ u ≤ t`, `u - u' ≤ N^{-(6 n_ + 20)}`):
+/-- **The per-loop `ξ` closeness on `contGood`** (as `nzLift_xi_close`, without the projection; one-sided, for `s ≤ u' ≤ u ≤ t`, `u - u' ≤ N^{-(6 n_ + 20)}`):
 `‖(𝓛-𝒦)_u‖ / B_u^{n_} ≤ ‖(𝓛-𝒦)_{u'}‖ / B_{u'}^{n_} + 1`.  `‖Δ𝓛‖ ≤ 3 n_ N^{2n_+7} √δ` (`LemDecCalELip_Lloop_sub`),
 `‖Δ𝒦‖ ≤ N^{2n_+2} δ` (`stKloop_lip`), `B_{u'} ≤ B_u` (`STBctl_mono`), `N⁻¹ ≤ B_u` (`cont_inv_size_le_Bctl`); the
 ratio term `‖(𝓛-𝒦)_{u'}‖ (B_{u'}^{-n_} - B_u^{-n_}) ≥ 0` of the two-sided estimate has the favourable sign
@@ -536,8 +531,7 @@ private theorem qtLift_xi_close (sz : Sizes d) (n : ℕ) (E : ℝ) {n_ : ℕ} {s
         refine add_le_add ?_ ((div_le_one hBpow).2 hsum2)
         exact div_le_div_of_nonneg_left (norm_nonneg _) (pow_pos hBu' _) (pow_le_pow_left₀ hBu'.le hBle _)
 
-/-- A pointwise larger right side keeps `≺` (copy of the private `nqFlow_prec_of_le_right`,
-`NQEndFlow.lean:206`). -/
+/-- A pointwise larger right side keeps `≺` (as the private `nqFlow_prec_of_le_right`). -/
 private theorem qtLift_prec_of_le_right {sz : Sizes d} {U : ℕ → Type*} {ξ ζ ζ' : ∀ n, U n → sz.SeqΩ → ℝ}
     (h : sz.Prec ξ ζ) (hle : ∀ n u ω, ζ n u ω ≤ ζ' n u ω) : sz.Prec ξ ζ' := by
   refine StochDomAt.of_subset h fun τ hτ => ⟨τ, hτ, Eventually.of_forall fun n ω hω => ?_⟩
@@ -545,14 +539,14 @@ private theorem qtLift_prec_of_le_right {sz : Sizes d} {U : ℕ → Type*} {ξ �
   exact ⟨u, lt_of_le_of_lt (mul_le_mul_of_nonneg_left (hle n u ω)
     (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hu⟩
 
-/-- `(eq:WO)` gives `0 < lam n ≤ 𝔡⁻¹` eventually (copy of the private `KLFinal_flowLam`, `KLFinal.lean:294`). -/
+/-- `(eq:WO)` gives `0 < lam n ≤ 𝔡⁻¹` eventually (as the private `KLFinal_flowLam`). -/
 private theorem qtLift_flowLam (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) :
     ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
   filter_upwards [hz.1.2.2.2.2] with n hn
   have hW : (0 : ℝ) < ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
   exact ⟨lt_of_lt_of_le (Real.rpow_pos_of_pos hW _) hn.1, hn.2⟩
 
-/-- **The one-sided closeness of `Ξ̂^{(𝓛-𝒦)}_{·,n_}` on `contGood`** (new text, check shape `T2314_xiLK_close`): the
+/-- **The one-sided closeness of `Ξ̂^{(𝓛-𝒦)}_{·,n_}` on `contGood`**: the
 per-loop closeness `qtLift_xi_close` passed through the finite `sup'` of `STmaxLK` (`Finset.sup'_le`, `Finset.le_sup'`):
 for `s ≤ u' ≤ u ≤ t`, `u - u' ≤ N^{-(6 n_ + 20)}`, `STXiLK_u ≤ STXiLK_{u'} + 1` (the leading `1` of `STXiLK` cancels). -/
 private theorem qtLift_xiLK_close (sz : Sizes d) (n : ℕ) (E : ℝ) {n_ : ℕ} {s t u u' N : ℝ} (ω : sz.SeqΩ)
@@ -581,7 +575,7 @@ private theorem qtLift_xiLK_close (sz : Sizes d) (n : ℕ) (E : ℝ) {n_ : ℕ} 
   unfold STXiLK
   linarith
 
-/-- **Diagonal restriction of the per-time statement** (new text, check shape `T2314_diag_PT`): a per-time `≺` over the
+/-- **Diagonal restriction of the per-time statement**: a per-time `≺` over the
 pairs, whose left side depends on `q.1.1` only and whose right side on `q.1.2` only, restricts to the diagonal
 `w ↦ ((w, w), _)`: a per-time `≺` over `TimeIcc s t n × Unit` (the shape `qtLift_core_below` consumes). -/
 private theorem qtLift_diag_PT : ∀ {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (f : ℕ → ℝ → sz.SeqΩ → ℝ) (g : ℕ → ℝ → ℝ),
@@ -591,7 +585,7 @@ private theorem qtLift_diag_PT : ∀ {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ
   filter_upwards [h τ hτ D hD] with l hl w
   exact hl ⟨((w.1 : ℝ), (w.1 : ℝ)), w.1.2.1, le_rfl, w.1.2.2⟩
 
-/-- **Diagonal → pair propagation** (new text, check shape `T2314_diag_to_pair`): for a right side `g` non-decreasing in
+/-- **Diagonal → pair propagation**: for a right side `g` non-decreasing in
 the endpoint on `[s_n, t_n]`, the uniform `≺` on the diagonal gives the uniform `≺` over the pairs (`g n q.1.1 ≤ g n q.1.2`:
 the pair-bad event is inside the diagonal-bad event at the same `τ`; `measure_mono`). -/
 private theorem qtLift_diag_to_pair : ∀ {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (f : ℕ → ℝ → sz.SeqΩ → ℝ) (g : ℕ → ℝ → ℝ),
@@ -608,8 +602,8 @@ private theorem qtLift_diag_to_pair : ∀ {d : ℕ} (sz : Sizes d) (s t : ℕ �
   change ((sz.size n : ℕ) : ℝ) ^ τ * g n q.1.1 < f n q.1.1 ω
   exact lt_of_le_of_lt (mul_le_mul_of_nonneg_left (hmono n q.1.1 q.1.2 q.2.1 q.2.2.1 q.2.2.2) hc) hq'
 
-/-- **The lift `STXiRoundPT'' → STXiRound'`** (private: its binder is the per-time pin, which no public theorem
-concludes; check shape `T2314_lift`).  At the envelope controls `(XL♯, XLK♯)` the per-time pin gives
+/-- **The lift `STXiRoundPT'' → STXiRound'`** (private: its binder is the per-time statement, which no public theorem
+concludes).  At the envelope bounds `(XL♯, XLK♯)` the per-time statement gives
 `PrecPT(Ξ̂ ≺ ζ♯)` over the pairs; restricted to the diagonal (`qtLift_diag_PT`), the one-sided net core
 (`qtLift_core_below`, `P = seqP`, `V = Unit`, `Cv = 0`, `Ξ = contGood`, `ε = 1`, `A = 6 n_ + 20`) gives the uniform `Prec`
 on the diagonal, `qtLift_diag_to_pair` the uniform `Prec` over the pairs, and `ζ♯ ≤ ζ` gives `STXiRound'`. -/
@@ -680,13 +674,12 @@ end Lift
 
 /-! ## 6. The case-(i) round and `stOeqQt'_holds` -/
 
-/-- **The case-(i) round** (`lem:STOeq_Qt` `3_5:1362-1378`, proof `3_5:1678-1766`, the `N^{-C}`-net remark `3_5:1764`;
-check shape `T2314_stXiRoundQt_holds`): the case-(i) twin of `stXiRoundNZ_holds` (`QtNonzeroBoot.lean:1059`).  At every flow
-setting of `STIngR d STCaseI` the round pin `STXiRound'` holds, with the constant `𝔠_d` of `stOeqQtRoundPT''_holds d`
-(T2313).  The uniform-in-the-pair conclusion `Prec` follows from the per-time `PrecPT` by the envelope `X♯` of the controls,
+/-- **The case-(i) round** (Lemma 4.10 `lem:STOeq_Qt` and its proof in Subsection 4.5, with the `N^{-C}`-net remark): the case-(i) twin of `stXiRoundNZ_holds`.  At every flow
+setting of `STIngR d STCaseI` the round statement `STXiRound'` holds, with the constant `𝔠_d` of `stOeqQtRoundPT''_holds d`.
+The uniform-in-the-pair conclusion `Prec` follows from the per-time `PrecPT` by the envelope `X♯` of the bounds,
 the diagonal restriction, the one-sided floor net, the `ξ` modulus on `contGood` (`LemDecCalELip_Lloop_sub`) and the time
 modulus of `𝒦^{(k)}` (`stKloop_lip`), and the diagonal-to-pair propagation by the monotonicity of `ζ♯`.  `STCaseI` enters
-only through `stOeqQtRoundPT''_holds`.  Paper-delta candidate `T2314a`. -/
+only through `stOeqQtRoundPT''_holds`. -/
 theorem stXiRoundQt_holds : ∀ d : ℕ, STIngR d STCaseI (fun sz E s t => STXiRound' sz E s t) := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   obtain ⟨𝔠d, h𝔠d0, h𝔠d1, H⟩ := stOeqQtRoundPT''_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -705,23 +698,11 @@ theorem stXiRoundQt_holds : ∀ d : ℕ, STIngR d STCaseI (fun sz E s t => STXiR
   exact qtLift_lift sz hd (half_pos hκ) (inv_pos.2 hA.2.1) (fun n => (hE' n).le) hA.2.2.1 hs hst ht1 htN
     (qtLift_flowLam sz hflow) hPT
 
-/-- **`stOeqQt'_holds`: `lem:STOeq_Qt`, R2*, uniformly in the pair `(v, u)`, for every `d ≥ 3`** (`3_5:1362-1378`, bound
-`(am;asoi222)` `3_5:1366` with `B_s`; DECISIONS §80, §105 (1), §127; check shape `T2314_stOeqQt'_holds`): `STOeqQt' d` is
+/-- **`stOeqQt'_holds`: Lemma 4.10 `lem:STOeq_Qt`, uniformly in the pair `(v, u)`, for every `d ≥ 3`** (bound
+(4.36) `am;asoi222` with `B_s`): `STOeqQt' d` is
 `STIngR d STCaseI (fun … => STXiBoot' …)`; the round is `stXiRoundQt_holds d` and the self-absorbing current-length term is
-removed by the deterministic bootstrap `stXiBootR_of_round` (T2304).  No hypothesis. -/
+removed by the deterministic bootstrap `stXiBootR_of_round`.  No hypothesis. -/
 theorem stOeqQt'_holds : ∀ d : ℕ, STOeqQt' d := fun d => stXiBootR_of_round d STCaseI (stXiRoundQt_holds d)
-
-/-! ## 7. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.QtXiRoundLiftInst`.  Data (the case-(i) data of `QEndB1Inst` / `NQEndFlowLiftInst`): `sz0` (`d = 3`,
-`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2^21`), the flow `z0`
-(`z_n = 1/2 + i N_n^{-4/5}`, `flow_z0` at `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `s ≡ 0`, `t ≡ 1/16` (`t ≤ lemT z_n`, `STCaseI`:
-`sz0_caseI`; `(con_st_ind)` for every `𝔠_d > 0`: `sz0_con`), `C_d = 1`.  `STKbound`, `STKward` are theorems of the flow
-(`stKbound_of_flow`, `stKward_of_flow`); what stays a hypothesis of an example is a stochastic premise that is another
-gate's pin (`STLK s`, `STStep2Concl`, the pair hypotheses `Ξ̂ ≺ 1` of the pin, the per-time pin `STXiRoundPT''` where the
-lift is applied directly). -/
-
-/-! ### The shapes of the new private helpers (check file `T2314-check.lean`, §3) -/
 
 end RBM.Ind
 

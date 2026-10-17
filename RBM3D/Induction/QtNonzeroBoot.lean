@@ -21,46 +21,38 @@ import RBM3D.Green.Pins
 /-!
 # The regime-generic self-absorption bootstrap and `stOeqQtNZ'_holds` (`d ≥ 3`)
 
-Ticket T2304 (S3-22c, stochastic layer ST-3, case (ii) `1 - s ≤ ilambda²/L²`; last of the chain
-S3-21 = T2274, S3-22a = T2284, S3-22b = T2292 `Induction/QtNonzeroFlow`, S3-22b2 = T2299
-`Induction/QtNonzeroFlowLift`).  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`:
-`lem:STOeq_Qt_nonzero` `3_5:1561-1572`, proof `3_5:1889-1933` (`(eq:expandQAempty)` `3_5:1893`,
-`(am;asoiuw_smalleta)` `3_5:1916-1922`, "with `n` replaced by `k_α`; `(Nη_t)^{-1} ≤ W^{-d}B_{t,0}`"
-`3_5:1923-1926`, "solving which" `3_5:1929-1930`), `lem:STOeq_Qt` `3_5:1362-1378`
-(`(am;asoi222)` `3_5:1366`), `(normQA2)` `3_5:1466`, `lem: newPQ` `3_5:1482-1507`.
-DECISIONS §62 (1), (2), (4), §80, §85, §90, §91 (2), §95 (3), §105 (1) (supervisor
-`2026-10-06-1356` O1, O2).
+Case (ii), `1 - s ≤ ilambda²/L²`.  Paper: Lemma 4.14 (`lem:STOeq_Qt_nonzero`) and its proof in
+Subsection 4.5 (proof of Lemma 4.17 `lem:sum_decay_nonzero`: (4.72) `eq:expandQAempty`, (4.76)
+`am;asoiuw_smalleta`, "with `n` replaced by `k_α`; `(Nη_t)^{-1} ≤ W^{-d}B_{t,0}`", "solving which");
+Lemma 4.10 (`lem:STOeq_Qt`) with (4.36) `am;asoi222`; (4.43) `normQA2`; Lemma 4.13 (`lem: newPQ`).
 
 ## What is here
 
-* §1 the pin `STXiRound'` (namespace `RBM.Gauss.Sizes`): `STXiBoot'` with the `XLK` hypotheses for
+* §1 the statement `STXiRound'` (namespace `RBM.Gauss.Sizes`): `STXiBoot'` with the `XLK` hypotheses for
   `m ≤ n_` (the current length included) and the right side
-  `B_u^{1/6} XLK n_ u + STbootRHS 1 … B_s n_ p` (`u = q.1.2`; R2* unchanged);
+  `B_u^{1/6} XLK n_ u + STbootRHS 1 … B_s n_ p` (`u = q.1.2`);
 * §2 `stBoot_rounds`, the abstract finite deterministic bootstrap: crude start `ξ ≺ N^{C₀}`, round
   `ξ ≺ Y ⇒ ξ ≺ N^{-c} Y + R`, conclusion `ξ ≺ R` after `⌈C₀/c⌉ + 1` rounds (`r` depends on `C₀, c`
   only);
 * §3 setting facts (private, prefix `qtBoot_`): the contraction `(W^{-d} B_{u,0})^{1/6} ≤ N^{-c}`,
   `c = min(2 𝔡 𝔠, ε/2)/12`, uniformly in `u ∈ [0, t_n]` and in both regimes (from `(eq:WO)`,
   `W ≥ N^𝔠`, `1 - t ≥ N^{-1+ε/2}`; no regime predicate, no `(con_st_ind)`); the crude start
-  `Ξ̂ ≺ N^{2 n_ + 1}`; the `STbootRHS` facts (`XLK` is read at lengths `≤ n_ - 1` only: the
-  §95 (3) fact in Lean);
+  `Ξ̂ ≺ N^{2 n_ + 1}`; the `STbootRHS` facts (`XLK` is read at lengths `≤ n_ - 1` only);
 * §4 `stXiBoot'_of_round` (flow setting), `stXiBootR_of_round` (`STIngR`, the regime `R` a
-  parameter; S3-18b2 instantiates it at `STCaseI`);
-* §5 `stXiRoundNZ_holds`: the `newPQ` combination on the uniform projected endpoint `STNZConcl''`
-  (`stOeqNZ''_holds`, T2299): envelope copies, `zeroModeCalc_LK_expansion_empty` per `σ`, the lower
+  parameter);
+* §5 `stXiRoundNZ_holds`: the `lem: newPQ` combination on the uniform projected endpoint `STNZConcl''`
+  (`stOeqNZ''_holds`): envelope copies, `zeroModeCalc_LK_expansion_empty` per `σ`, the lower
   terms `k_α ∈ [1, n_ - 1]` bounded by the hypotheses, finite max and sums;
-* §6 `stOeqQtNZ'_holds : ∀ d, STOeqQtNZ' d`;
-* §7 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.QtNonzeroBootInst`).
+* §6 `stOeqQtNZ'_holds : ∀ d, STOeqQtNZ' d`.
 
-Paper-delta candidates (see the report): `T2304a` ("solving which" is a finite deterministic
-bootstrap with an a priori crude start that the paper does not state), `T2304b` (the lower terms of
-`(eq:expandQAempty)`, `k_α = 1` included, follow from the hypotheses with `(normQA2)` and
-`(Nη_t)^{-1} ≤ C W^{-d}B_{t,0}`; neither `(eq:kalpha1)` nor `(am;asoiuw_smalleta)` at length `k_α`
-is used).
+Differences from the paper: "solving which" is a finite deterministic bootstrap with an a priori crude
+start that the paper does not state; the lower terms of (4.72) `eq:expandQAempty`, `k_α = 1` included,
+follow from the hypotheses with (4.43) `normQA2` and `(Nη_t)^{-1} ≤ C W^{-d}B_{t,0}`; neither
+`(eq:kalpha1)` nor (4.76) `am;asoiuw_smalleta` at length `k_α` is used.
 
-The file adds no drift or good-set level (DECISIONS §95 (3)): the current length `n_` enters only
+The file adds no drift or good-set level: the current length `n_` enters only
 as the self-absorbing summand `B_u^{1/6} XLK n_` of `STXiRound'`, removed by deterministic rounds
-(`Y_j` are deterministic functions of `(n, u)`).  Every helper that the ticket does not pin is
+(`Y_j` are deterministic functions of `(n, u)`).  Every helper that is not part of the statements is
 `private` or prefixed `qtBoot_`.
 -/
 
@@ -73,7 +65,7 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 1. The pin -/
+/-! ## 1. The statement -/
 
 namespace RBM.Gauss.Sizes
 
@@ -83,11 +75,10 @@ section Pins
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **One round of `(am;asoi222)` with the current-length control** (T2304; `lem:STOeq_Qt` and `(am;asoi222)`
-`3_5:1361-1366`; the bound `(am;asoiuw_smalleta)` and the display before "solving which" `3_5:1916-1930`;
-DECISIONS §62 (1), §105 (1); R2* §80): under `Ξ̂ ≺ Ξ` for every length `m ≤ n_` (the current one included), over the
-pairs `(v, u)`: `Ξ̂^{(𝓛-𝒦)}_{v,n_} ≺ B_u^{1/6} XLK n_ u + STbootRHS 1 XL XLK B_s n_ p`.  It is `STXiBoot'`
-(`NQEndFlow.lean:95`) with two changes: the hypotheses `m + 1 ≤ n_` ↦ `m ≤ n_`, and the extra summand
+/-- **One round of (4.36) `am;asoi222` with the current-length bound** (Lemma 4.10 `lem:STOeq_Qt`; the bound
+(4.76) `am;asoiuw_smalleta` and the display before "solving which"): under `Ξ̂ ≺ Ξ` for every length `m ≤ n_`
+(the current one included), over the
+pairs `(v, u)`: `Ξ̂^{(𝓛-𝒦)}_{v,n_} ≺ B_u^{1/6} XLK n_ u + STbootRHS 1 XL XLK B_s n_ p`.  It is `STXiBoot'` with two changes: the hypotheses `m + 1 ≤ n_` ↦ `m ≤ n_`, and the extra summand
 `B_u^{1/6} XLK n_ u`. -/
 def STXiRound' (E s t : ℕ → ℝ) : Prop :=
   ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
@@ -110,7 +101,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
 /-! ## 2. The abstract self-absorption bootstrap -/
 
-/-- A pointwise larger right side keeps `≺`, eventually in `n` (copy of `NQEndFlow.lean:206`, with the comparison
+/-- A pointwise larger right side keeps `≺`, eventually in `n` (as for the comparison
 only for large `n`). -/
 private theorem qtBoot_prec_of_le_ev {d : ℕ} {sz : Sizes d} {U : ℕ → Type*} {ξ ζ ζ' : ∀ n, U n → sz.SeqΩ → ℝ}
     (h : sz.Prec ξ ζ) (hle : ∀ᶠ n in atTop, ∀ u ω, ζ n u ω ≤ ζ' n u ω) : sz.Prec ξ ζ' := by
@@ -129,10 +120,9 @@ private noncomputable def qtBoot_Y {d : ℕ} (sz : Sizes d) (c C₀ : ℝ) (R : 
   | 0 => fun n _ => ((sz.size n : ℕ) : ℝ) ^ C₀
   | j + 1 => fun n u => ((sz.size n : ℕ) : ℝ) ^ (-c) * qtBoot_Y sz c C₀ R j n u + R n u
 
-/-- **The abstract self-absorption bootstrap** (DECISIONS §62 (1), §105 (1) O2; paper `3_5:1923-1930`, "solving
-which"): from a crude start `ξ ≺ N^{C₀}` and a round `ξ ≺ Y ⇒ ξ ≺ N^{-c} Y + R` (every deterministic `Y ≥ 1` of the
-endpoint `π q`), `ξ ≺ R` after `⌈C₀/c⌉ + 1` rounds.  The round count depends on `C₀, c` only, never on `n`
-(paper-delta candidate `T2304a`). -/
+/-- **The abstract self-absorption bootstrap** ("solving which" in the proof of Lemma 4.17):
+from a crude start `ξ ≺ N^{C₀}` and a round `ξ ≺ Y ⇒ ξ ≺ N^{-c} Y + R` (every deterministic `Y ≥ 1` of the
+endpoint `π q`), `ξ ≺ R` after `⌈C₀/c⌉ + 1` rounds.  The round count depends on `C₀, c` only, never on `n`. -/
 theorem stBoot_rounds {d : ℕ} (sz : Sizes d) (hsz : sz.SizeTendsto) {U : ℕ → Type} (π : ∀ n, U n → ℝ)
     (ξ : ∀ n, U n → sz.SeqΩ → ℝ) (R : ℕ → ℝ → ℝ) (c C₀ : ℝ) (hc : 0 < c) (hC₀ : 0 ≤ C₀)
     (hR : ∀ n u, 1 ≤ R n u)
@@ -223,7 +213,7 @@ section Setting
 
 variable {d : ℕ}
 
-/-- The contraction exponent `c = min(2 𝔡 𝔠, ε/2)/12` (DECISIONS §105 (1) O2): `(W^{-d} B_{u,0})^{1/6} ≤ N^{-c}`
+/-- The contraction exponent `c = min(2 𝔡 𝔠, ε/2)/12`: `(W^{-d} B_{u,0})^{1/6} ≤ N^{-c}`
 for every `u ∈ [0, t_n]` and `n` large, in both regimes (the source bound is `B_u ≤ W^{-2𝔡} + N^{-ε/2}`,
 from `(eq:WO)`, `W ≥ N^𝔠` and `1 - t ≥ N^{-1+ε/2}`; no regime predicate and no `(con_st_ind)`). -/
 private noncomputable def qtBoot_c (𝔠 𝔡 ε : ℝ) : ℝ := min (2 * 𝔡 * 𝔠) (ε / 2) / 12
@@ -233,7 +223,7 @@ private theorem qtBoot_c_pos {𝔠 𝔡 ε : ℝ} (h𝔠 : 0 < 𝔠) (h𝔡 : 0 
   have : 0 < min (2 * 𝔡 * 𝔠) (ε / 2) := lt_min (by positivity) (by linarith)
   positivity
 
-/-- `(eq:WO)` gives `0 < lam n ≤ 𝔡⁻¹` eventually (copy of `NQEndFlowLift.lean:859`). -/
+/-- `(eq:WO)` gives `0 < lam n ≤ 𝔡⁻¹` eventually. -/
 private theorem qtBoot_flowLam (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} {z : ℕ → ℂ} (hz : STFlow sz κ ε 𝔠 𝔡 z) :
     ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ 𝔡⁻¹ := by
   filter_upwards [hz.1.2.2.2.2] with n hn
@@ -330,7 +320,7 @@ private theorem qtBoot_contraction (sz : Sizes d) {𝔠 𝔡 ε : ℝ} {t : ℕ 
         unfold qtBoot_c
         ring
 
-/-- **The crude start** (DECISIONS §62 (1); paper `3_5:1923-1926` supplies no a priori bound, T2304a): for `n_ ≥ 1`,
+/-- **The crude start** (the paper supplies no a priori bound): for `n_ ≥ 1`,
 `Ξ̂^{(𝓛-𝒦)}_{v,n_} ≺ N^{2 n_ + 1}` over the pairs (indeed `Ξ̂ ≤ N^{2 n_ + 1}` for every sample, once `N` is large).
 Hermitian crude loop bound `|𝓛| ≤ η^{-ℓ}` (`STXiLKM_crudeN`), `|𝒦| ≤ N` (`stKbound_timeIcc` at `τ = 1`, `B ≤ 1`),
 `η⁻¹ ≤ μ N` (`expWII_inv_Neta_le`, `B ≤ 1`, `Im m ≥ √(κ/2)/2`, `ST_mE_im_ge`), `B⁻¹ ≤ N` (`cont_inv_size_le_Bctl`). -/
@@ -445,7 +435,7 @@ private theorem qtBoot_crude (hd : 3 ≤ d) (sz : Sizes d) {κ ε 𝔠 𝔡 : �
 
 /-! ### `STbootRHS` -/
 
-/-- **`STbootRHS` reads `XLK` only at lengths `≤ n_ - 1`** (the §95 (3) fact in Lean): for `lo ≥ 1`, the control
+/-- **`STbootRHS` reads `XLK` only at lengths `≤ n_ - 1`**: for `lo ≥ 1`, the bound
 `XLK` may be changed at every length `m ≥ n_` without changing the value (the indices that occur are `m ∈ Icc lo (n_-1)`
 and `n_ + 2 - m` for `m ∈ Icc ((n_+1)/2+1) (n_-1)`, and in the second range `1 ≤ n_ + 2 - m ≤ n_ - 1`: the range is
 empty for `n_ ≤ 3`, and `(n_+1)/2 ≥ 2` for `n_ ≥ 4`). -/
@@ -466,8 +456,7 @@ private theorem qtBoot_bootRHS_update {lo : ℕ} (hlo : 1 ≤ lo) {XL XLK XLK' :
     rw [h (n_ + 2 - m) (by omega) (by omega)]
   rw [h1, h2]
 
-/-- `1 ≤ STbootRHS lo XL XLK B k p` for `XL ≥ 1`, `XLK ≥ 0`, `B ≥ 0`, `k ≥ 1` (copy of `nzLift_bootRHS_one_le`,
-`QtNonzeroFlowLift.lean:193`). -/
+/-- `1 ≤ STbootRHS lo XL XLK B k p` for `XL ≥ 1`, `XLK ≥ 0`, `B ≥ 0`, `k ≥ 1` (as `nzLift_bootRHS_one_le`). -/
 private theorem qtBoot_bootRHS_one_le {lo : ℕ} {XL XLK : ℕ → ℝ} {B : ℝ} {k p : ℕ} (hk : 1 ≤ k)
     (hXL : ∀ m, 1 ≤ XL m) (hXLK : ∀ m, 0 ≤ XLK m) (hB : 0 ≤ B) : 1 ≤ STbootRHS lo XL XLK B k p := by
   have hXL0 : ∀ m, 0 ≤ XL m := fun m => zero_le_one.trans (hXL m)
@@ -513,12 +502,12 @@ end Setting
 
 /-! ## 4. The bootstrap at a flow setting and at `STIngR` -/
 
-/-- **`STXiRound' → STXiBoot'` at a flow setting** (regime-free; DECISIONS §62 (1), (2), (4), §105 (1) O2; paper
-`3_5:1923-1930`, "solving which"): the abstract bootstrap `stBoot_rounds` with `ξ = Ξ̂^{(𝓛-𝒦)}_{v,n_}`, `π q = q.1.2`,
+/-- **`STXiRound' → STXiBoot'` at a flow setting** (regime-free; "solving which" in the proof of Lemma 4.17): the abstract
+bootstrap `stBoot_rounds` with `ξ = Ξ̂^{(𝓛-𝒦)}_{v,n_}`, `π q = q.1.2`,
 `R n u = STbootRHS 1 (XL u) (XLK u) B_s n_ p` (`≥ 1`), `C₀ = 2 n_ + 1` (`qtBoot_crude`), `c = qtBoot_c 𝔠 𝔡 ε`
-(`qtBoot_contraction`); the round for a control `Y ≥ 1` is `STXiRound'` at `XLK' := Y` in the slot `m = n_`
+(`qtBoot_contraction`); the round for a bound `Y ≥ 1` is `STXiRound'` at `XLK' := Y` in the slot `m = n_`
 (`STbootRHS` reads `XLK` at lengths `≤ n_ - 1` only, `qtBoot_bootRHS_update`) followed by `B_u^{1/6} Y ≤ N^{-c} Y`.
-No regime predicate, no `STConStInd`, no `STKbound`-type premise of the pin enters.  Paper-delta candidate `T2304a`. -/
+No regime predicate, no `STConStInd`, no `STKbound`-type premise of the statement enters. -/
 theorem stXiBoot'_of_round {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (hκ : 0 < κ) (hε : 0 < ε) (sz : Sizes d)
     (z : ℕ → ℂ) (hflow : STFlow sz κ ε 𝔠 𝔡 z) (s t : ℕ → ℝ) (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
     (ht : ∀ n, t n ≤ lemT (z n)) (hround : STXiRound' sz (STflowE z) s t) :
@@ -573,10 +562,10 @@ theorem stXiBoot'_of_round {d : ℕ} (hd : 3 ≤ d) (κ ε 𝔠 𝔡 : ℝ) (hκ
   rw [hXLK'n, hupd]
   exact add_le_add_left (mul_le_mul_of_nonneg_right hcq (zero_le_one.trans (hY1 n q.1.2))) _
 
-/-- **The regime-generic bootstrap** (supervisor `2026-10-06-1356` O2; reused by S3-18b2 at `R := STCaseI`): the round
-pin `STXiRound'` over an ingredient setting `STIngR d R` gives `STXiBoot'` over the same setting.  The constant
+/-- **The regime-generic bootstrap**: the round
+statement `STXiRound'` over an ingredient setting `STIngR d R` gives `STXiBoot'` over the same setting.  The constant
 `𝔠_d` of the hypothesis is kept; the regime `R`, `STKbound`, `STKward`, `STLK s`, `STConStInd`, `STStep2Concl` go to the
-round only (paper-delta candidate `T2304a`).  Case (i) consumer shape (S3-18b2): `stOeqQt'_holds d :=
+round only.  Case (i) consumer shape: `stOeqQt'_holds d :=
 stXiBootR_of_round d STCaseI H`, `H : STIngR d STCaseI (fun sz E s t => STXiRound' sz E s t)`. -/
 theorem stXiBootR_of_round (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
     (h : STIngR d R (fun sz E s t => STXiRound' sz E s t)) :
@@ -588,20 +577,20 @@ theorem stXiBootR_of_round (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → �
   exact stXiBoot'_of_round hd κ ε 𝔠 𝔡 hκ hε sz z hflow s t hs hst ht
     (H 𝔠 sz z hflow s t hs hst ht hR hK hKw hLK hcon hStep2)
 
-/-! ## 5. The case-(ii) round: the `newPQ` combination on `STNZConcl''` -/
+/-! ## 5. The case-(ii) round: the `lem: newPQ` combination on `STNZConcl''` -/
 
 section Combine
 
 variable {d : ℕ}
 
-/-! ### The envelope (copies of `QtNonzeroFlowLift.lean:98-149`; `nqFlowSharp` is the public vocabulary) -/
+/-! ### The envelope (as `nqFlowSharp`, the public vocabulary) -/
 
 /-- Envelope (a): `1 ≤ X♯`. -/
 private theorem qtBoot_sharp_one_le : ∀ (t : ℕ → ℝ) (X : ℕ → ℕ → ℝ → ℝ) (m n : ℕ) (u : ℝ),
     1 ≤ nqFlowSharp t X m n u :=
   fun _ _ _ _ _ => le_max_left _ _
 
-/-- Envelope (b): `X♯ ≤ X` for a control `X ≥ 1`. -/
+/-- Envelope (b): `X♯ ≤ X` for a bound `X ≥ 1`. -/
 private theorem qtBoot_sharp_le : ∀ (t : ℕ → ℝ) (X : ℕ → ℕ → ℝ → ℝ), (∀ m n u, 1 ≤ X m n u) →
     ∀ (m n : ℕ) (u : ℝ), nqFlowSharp t X m n u ≤ X m n u := by
   intro t X hX m n u
@@ -622,7 +611,7 @@ private theorem qtBoot_sharp_mono : ∀ (t : ℕ → ℝ) (X : ℕ → ℕ → �
     ⟨X m n u', u', ⟨le_rfl, hu't⟩, rfl⟩ ?_
   exact Set.image_mono (Set.Icc_subset_Icc_left huu')
 
-/-- Envelope (d): the pair hypotheses carry over to `X♯` (copy of `nzLift_sharp_prec`). -/
+/-- Envelope (d): the pair hypotheses carry over to `X♯` (as `nzLift_sharp_prec`). -/
 private theorem qtBoot_sharp_prec : ∀ {d : ℕ} (sz : Sizes d) (s t : ℕ → ℝ) (f : ℕ → ℝ → sz.SeqΩ → ℝ)
     (X : ℕ → ℕ → ℝ → ℝ) (m : ℕ), (∀ m n u, 1 ≤ X m n u) →
     Prec sz (U := STPair s t) (fun n q ω => f n q.1.1 ω) (fun n q _ => X m n q.1.2) →
@@ -647,7 +636,7 @@ private theorem qtBoot_sharp_prec : ∀ {d : ℕ} (sz : Sizes d) (s t : ℕ → 
   change ((sz.size n : ℕ) : ℝ) ^ τ * X m n u' < f n q.1.1 ω
   linarith
 
-/-- `STbootRHS` is monotone in both controls (copy of `nzLift_bootRHS_mono`, `QtNonzeroFlowLift.lean:158`). -/
+/-- `STbootRHS` is monotone in both bounds (as `nzLift_bootRHS_mono`). -/
 private theorem qtBoot_bootRHS_mono : ∀ (lo : ℕ) (XL XL' XLK XLK' : ℕ → ℝ) (B : ℝ) (n_ p : ℕ), 0 < B →
     (∀ m, 0 ≤ XL m) → (∀ m, 0 ≤ XLK m) → (∀ m, XL m ≤ XL' m) → (∀ m, XLK m ≤ XLK' m) →
     STbootRHS lo XL XLK B n_ p ≤ STbootRHS lo XL' XLK' B n_ p := by
@@ -740,7 +729,7 @@ private theorem qtBoot_prec_sum {sz : Sizes d} (hsz : sz.SizeTendsto) {U : ℕ �
 /-! ### The lower terms of `(eq:expandQAempty)` -/
 
 /-- `(2 N η_v)⁻¹ ≤ (√(κ/2))⁻¹ B_v` for `|E| ≤ 2 - κ/2`, `v < 1` (`expWII_inv_Neta_le`, `Im m(E) ≥ √(κ/2)/2` by
-`ST_mE_im_ge` at `κ/2`): the `(Nη_t)^{-1} ≤ C W^{-d}B_{t,0}` of `3_5:1925`. -/
+`ST_mE_im_ge` at `κ/2`): the `(Nη_t)^{-1} ≤ C W^{-d}B_{t,0}` of the proof of Lemma 4.17. -/
 private theorem qtBoot_inv_Neta (sz : Sizes d) (n : ℕ) {E v κ : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ / 2)
     (hv : v < 1) :
     (2 * (((sz.size n : ℕ) : ℝ) * etaT E v))⁻¹ ≤ (Real.sqrt (κ / 2))⁻¹ * sz.Bctl n v := by
@@ -759,10 +748,9 @@ private theorem qtBoot_inv_Neta (sz : Sizes d) (n : ℕ) {E v κ : ℝ} (hκ : 0
         refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (h2.trans h3.le) hB) (by norm_num)
     _ = (Real.sqrt (κ / 2))⁻¹ * sz.Bctl n v := by ring
 
-/-- **One lower term of `(eq:expandQAempty)`, divided by `B_v^{n_}`**: with `1 ≤ k ≤ n_ - 1` (`k_α = 1` included,
-paper-delta candidate `T2304b`),
+/-- **One lower term of (4.72) `eq:expandQAempty`, divided by `B_v^{n_}`**: with `1 ≤ k ≤ n_ - 1` (`k_α = 1` included),
 `|ξ| (2Nη_v)^{-(n_-k)} |(Q^{(A')}(𝓛-𝒦)^{(k)}_{v,σ'})(a ∘ ι)| / B_v^{n_} ≤ |ξ| 2^k (√(κ/2))^{-(n_-k)} Ξ̂^{(𝓛-𝒦)}_{v,k}`:
-`(normQA2)` `‖Q^{(A')} T‖ ≤ 2^{#A'} ‖T‖` with `#A' ≤ k`, `‖T‖ ≤ max|(𝓛-𝒦)^{(k)}_v| ≤ B_v^k Ξ̂_{v,k}`, and
+(4.43) `normQA2` `‖Q^{(A')} T‖ ≤ 2^{#A'} ‖T‖` with `#A' ≤ k`, `‖T‖ ≤ max|(𝓛-𝒦)^{(k)}_v| ≤ B_v^k Ξ̂_{v,k}`, and
 `(2Nη_v)⁻¹ ≤ (√(κ/2))⁻¹ B_v`: the powers of `B` cancel exactly (`(n_-k) + k = n_`). -/
 private theorem qtBoot_term_le (sz : Sizes d) (n : ℕ) {E v κ : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ / 2)
     (hv1 : v < 1) (ω : sz.SeqΩ) {n_ k : ℕ} (hkn : k + 1 ≤ n_) (ξc : ℤ) (σ' : Fin k → Bool)
@@ -834,20 +822,20 @@ private theorem qtBoot_term_le (sz : Sizes d) (n : ℕ) {E v κ : ℝ} (hκ : 0 
 
 /-! ### The combination -/
 
-/-- **The case-(ii) round from the uniform projected endpoint** (`lem:STOeq_Qt_nonzero`, proof `3_5:1889-1933`): at the
-flow data `|E_n| < 2 - κ/2`, `0 ≤ s`, `t < 1`, `STNZConcl''` (the uniform pin for `Q^{(I_diff σ)}(𝓛-𝒦)`) gives
+/-- **The case-(ii) round from the uniform projected endpoint** (Lemma 4.14 `lem:STOeq_Qt_nonzero` and its proof): at the
+flow data `|E_n| < 2 - κ/2`, `0 ≤ s`, `t < 1`, `STNZConcl''` (the uniform statement for `Q^{(I_diff σ)}(𝓛-𝒦)`) gives
 `STXiRound'`: `lem: newPQ` at `A = ∅` (`zeroModeCalc_LK_expansion_empty`, data chosen per `σ`) writes
 `(𝓛-𝒦)^{(n_)}_{v,σ,a}` as `(Q^{(I_diff σ)}(𝓛-𝒦)^{(n_)})_{σ,a}` plus lower terms; the first is `STNZConcl''` at the
-envelope controls (compared with the controls of the round on the pairs), every lower term `k_α ∈ [1, n_-1]` is
+envelope bounds (compared with the bounds of the round on the pairs), every lower term `k_α ∈ [1, n_-1]` is
 `≤ C_{n_} Ξ̂_{v,k_α}` (`qtBoot_term_le`) and `Ξ̂_{v,k_α} ≺ XLK k_α u ≤ STbootRHS 1`; the finite max over `(σ, a)` and the finite
-sums are `≺` algebra (`qtBoot_prec_sup`, `qtBoot_prec_sum`, `qtBoot_prec_of_add_le`).  Paper-delta candidate `T2304b`
-(the lower terms follow from the hypotheses, `k_α = 1` included; no averaged law `(eq:kalpha1)`). -/
+sums are `≺` algebra (`qtBoot_prec_sup`, `qtBoot_prec_sum`, `qtBoot_prec_of_add_le`).  The lower terms follow
+from the hypotheses, `k_α = 1` included; no averaged law `(eq:kalpha1)`. -/
 private theorem qtBoot_round_of_NZ (sz : Sizes d) (hsz : sz.SizeTendsto) {κ : ℝ} (hκ : 0 < κ) {E s t : ℕ → ℝ}
     (hE : ∀ n, |E n| < 2 - κ / 2) (hs : ∀ n, 0 ≤ s n) (ht1 : ∀ n, t n < 1)
     (hNZ : STNZConcl'' sz E s t) : STXiRound' sz E s t := by
   intro n_ p hn hp XL XLK hXL hXLK hXLp hXLKp
   have hsize := sz.tendsto_size hsz
-  -- the envelope controls and the uniform endpoint at them
+  -- the envelope bounds and the uniform endpoint at them
   have hXL' : ∀ m n u, 1 ≤ nqFlowSharp t XL m n u := fun m n u => qtBoot_sharp_one_le t XL m n u
   have hXLK' : ∀ m n u, 1 ≤ nqFlowSharp t XLK m n u := fun m n u => qtBoot_sharp_one_le t XLK m n u
   have hXLp' : ∀ m, 1 ≤ m → STlenL n_ p m →
@@ -860,7 +848,7 @@ private theorem qtBoot_round_of_NZ (sz : Sizes d) (hsz : sz.SizeTendsto) {κ : �
     qtBoot_sharp_prec sz s t (fun n w ω => STXiLK sz n (E n) w m ω) XLK m hXLK (hXLKp m hm hm')
   have hNZ' := hNZ n_ p hn hp (fun m n u => nqFlowSharp t XL m n u) (fun m n u => nqFlowSharp t XLK m n u)
     hXL' hXLK' hXLp' hXLKp'
-  -- positivity and the control `ζ`
+  -- positivity and the bound `ζ`
   have hBs : ∀ n, ∀ q : STPair s t n, 0 < sz.Bctl n (s n) := fun n q =>
     STBctl_pos sz n (q.2.1.trans (q.2.2.1.trans q.2.2.2) |>.trans_lt (ht1 n))
   have hζ1 : ∀ (n : ℕ) (q : STPair s t n),
@@ -1051,10 +1039,10 @@ private theorem qtBoot_round_of_NZ (sz : Sizes d) (hsz : sz.SizeTendsto) {κ : �
 
 end Combine
 
-/-- **The case-(ii) round** (`lem:STOeq_Qt_nonzero` `3_5:1561-1572`, proof `3_5:1889-1933`): at every flow setting of
-`STIngR d STCaseII` the round pin `STXiRound'` holds, with the constant `𝔠_d` of `stOeqNZ''_holds d` (T2299).  The
+/-- **The case-(ii) round** (Lemma 4.14 `lem:STOeq_Qt_nonzero` and its proof): at every flow setting of
+`STIngR d STCaseII` the round statement `STXiRound'` holds, with the constant `𝔠_d` of `stOeqNZ''_holds d`.  The
 combination is `qtBoot_round_of_NZ`: `lem: newPQ` at `A = ∅` on the uniform projected endpoint `STNZConcl''`, the lower terms
-`k_α ∈ [1, n_-1]` from the hypotheses (paper-delta candidate `T2304b`).  `STCaseII` enters only through
+`k_α ∈ [1, n_-1]` from the hypotheses.  `STCaseII` enters only through
 `stOeqNZ''_holds`. -/
 theorem stXiRoundNZ_holds : ∀ d : ℕ, STIngR d STCaseII (fun sz E s t => STXiRound' sz E s t) := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -1065,22 +1053,12 @@ theorem stXiRoundNZ_holds : ∀ d : ℕ, STIngR d STCaseII (fun sz E s t => STXi
   obtain ⟨hA, hE', ht1, hrange⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow ht
   exact qtBoot_round_of_NZ sz hA.2.2.1 hκ hE' hs ht1 hNZ
 
-/-! ## 6. The target -/
+/-! ## 6. The statement `STOeqQtNZ'` -/
 
-/-- **`stOeqQtNZ'_holds`: `lem:STOeq_Qt_nonzero`, R2*, for every `d`** (`3_5:1561-1572`; DECISIONS §80 (1), §91 (2), §105 (1);
-paper-delta candidates `T2304a`, `T2304b`): `STOeqQtNZ' d` is `STIngR d STCaseII (fun … => STXiBoot' …)`; the round is
+/-- **`stOeqQtNZ'_holds`: Lemma 4.14 `lem:STOeq_Qt_nonzero`, for every `d`**: `STOeqQtNZ' d` is `STIngR d STCaseII (fun … => STXiBoot' …)`; the round is
 `stXiRoundNZ_holds d` and the self-absorbing current-length term is removed by the deterministic bootstrap
 `stXiBootR_of_round`.  No hypothesis. -/
 theorem stOeqQtNZ'_holds : ∀ d : ℕ, STOeqQtNZ' d := fun d => stXiBootR_of_round d STCaseII (stXiRoundNZ_holds d)
-
-/-! ## 7. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.QtNonzeroBootInst`.  Data: the case-(ii) data of the merged `inst_OeqQtNZ` (`Step34Pins.lean:1006`) and of
-`QtNonzeroFlowLiftInst` (`QtNonzeroFlowLift.lean:791`): `szB` (`d = 3`, `L = 4`, `W = n + 4`, `ilambda = 1`,
-`N = (4(n+4))^3 ≥ 4096`), the flow `zB` (`z_n = 1/2 + i/64`, `flow_zB` at `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `s ≡ 15/16`,
-`t ≡ 31/32` (`szB_flow_ht`, `szB_caseII`: `1 - s = ilambda²/L² = 1/16`; `conStInd_const`), `C_d = 1`.  `STKbound`, `STKward` are
-theorems of the flow; what stays a hypothesis of an example is a stochastic premise that is another gate's pin
-(`STLK s`, `STStep2Concl`, the pair hypotheses `Ξ̂ ≺ 1`, the round `STXiRound'` at the case-(i) data). -/
 
 end RBM.Ind
 

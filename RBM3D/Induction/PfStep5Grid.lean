@@ -8,32 +8,26 @@ import RBM3D.Induction.Step2Iterate
 import RBM3D.Induction.GridDuhamelN
 
 /-!
-# S5-11a (ST-4): the level, the control `J♯` and the Duhamel form of the stopped hierarchy
+# The level, the bound `J♯` and the Duhamel form of the stopped hierarchy
 
-Ticket T2221.  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex:134` (`int_K-L_ST`),
-`:218-240` (`def_Ustz`, `alu9_STime`), `:2296-2297` (`def_WTuD`), `:2364-2369` (`eq:def_TTT`),
-`:2371-2383` (`lem:pf_step5`; the paper omits the proof, "analogous to, and much simpler than,
-`(2.76)` of [YY_25, §5.3]", `3_5:2380`).
+Paper: (3.13) `int_K-L_ST`, (3.12) `def_Ustz`, (3.18) `alu9_STime`, (5.41) `def_WTuD`, (5.47)
+`eq:def_TTT`, Lemma 5.4 (`lem:pf_step5`; the paper omits the proof, "analogous to, and much simpler than,
+`(2.76)` of [YY_25, §5.3]").
 
-Part a of the split of S5-11 (DECISIONS §70 (1), (4)): the vocabulary and the deterministic
-grid algebra of `lem:pf_step5`.  No pin of the registry is proved here (`STPfStep5` is S5-11b's);
-every statement is deterministic, per `n` and per sample, with no `Prec` and no probability, and
-nothing is lifted (DECISIONS §64 (4)).  The vocabulary and the five pins are copies of
-`docs/tickets/checks/T2221-check.lean` (sections 0 and 1); each target theorem has the body of the
-pin of the same name.
+The vocabulary and the deterministic grid algebra of `lem:pf_step5`.  Every statement is deterministic,
+per `n` and per sample, with no `Prec` and no probability, and nothing is lifted.  The statements
+`PfStep5Grid_level_pin`, `PfStep5Grid_Jsharp_pin`, `PfStep5Grid_duhamel_pin` fix the statements of the
+theorems; each theorem has the body of the statement of the same name.
 
 * `PfStep5Grid_level W D* u = D* + 2 log_W (1 - u)`: the time-dependent level `D_u`;
-  `PfStep5Grid_JsharpM`: `J♯` of a fine matrix (the matrix form of `LemDecCalELip_Jsharp`);
-  `PfStep5Grid_stopIdx`: the grid stopping index of `(eq:def_TTT)` at `(u_j, D_{u_j})`.
-* **1** `pfStep5Grid_level`: `W^{-D_{u'}} = (1-u')^{-2} W^{-D*}`, `D_u` nonincreasing,
+  `PfStep5Grid_JsharpM`: `J♯` of a fine matrix (the matrix form of `LemDecCalELip_Jsharp`).
+* `pfStep5Grid_level`: `W^{-D_{u'}} = (1-u')^{-2} W^{-D*}`, `D_u` nonincreasing,
   `D_u ≤ D*`, `D_{u'} ≥ D* - 2d` when `1 - u' ≥ W^{-d}`.
-* **2** `pfStep5Grid_Jsharp`: `LemDecCalELip_Jsharp` at the flow matrix is `PfStep5Grid_JsharpM`.
-* **3a** `pfStep5Grid_stop`: the stopping index is a stopping time of the coordinate filtration;
-  **3b** `pfStep5Grid_below`: `J♯ < W^ε` at every grid index below it.
-* **4** `pfStep5Grid_duhamel`: the Duhamel form `(int_K-L_ST)` from the additive grid
+* `pfStep5Grid_Jsharp`: `LemDecCalELip_Jsharp` at the flow matrix is `PfStep5Grid_JsharpM`.
+* `pfStep5Grid_duhamel`: the Duhamel form `(int_K-L_ST)` from the additive grid
   decomposition (`STGridRepNAt` conjunct 1) with the remainder `64 (1-u_k)^{-7} (R + ΔM)`.
 
-Proof of target 4 (the paper gives none; no port): with `B = (1-u_k)^{-1}` and the bounded
+Proof of `pfStep5Grid_duhamel` (the paper gives none): with `B = (1-u_k)^{-1}` and the bounded
 operators `P_j = 𝒰_{u_j,u_k}`, `X_j = 𝒰_{u_j,u_{j+1}}`, `Θ_j = Θ^{(2)}_{u_j}` on the sup-normed
 tensors, the algebraic telescope `A_k - P_0 A_0 = Σ_j [P_j ΔA_j + ΔP_j A_{j+1}]` (`P_k = 1`),
 the decomposition `ΔA_j = Δ(Θ_j A_j + F_j) + ΔRem_j + ΔMart_j` and `P_j = P_{j+1} X_j` leave
@@ -44,11 +38,7 @@ the second difference `‖P_{j+2} - 2P_{j+1} + P_j‖ ≤ 17Δ²B⁶`; no increm
 `uKer = 1 + (w-v) thetaKer`, `‖thetaKer_w‖ ≤ B`, the resolvent identity
 `‖thetaKer_w - thetaKer_v‖ ≤ (w-v)B²`, the identity `𝒰_{v,w} = (1 + δS₀)(1 + δS₁)` with slot
 operators `S_i` (`pfStep5Grid_Uc_expand`) and `Θ^{(2)} = S₀ + S₁` (`pfStep5Grid_ThetaN_eq`).
-The semigroup law and `𝒰_{v,v} = 1` are the merged `GridDuhamelN_Ugen_comp`, `_self`.
-
-Section 5b ports the private zero-time computation `𝓛^{(2)} - 𝒦^{(2)} = 0` at `H = 0`, `u = 0`
-(`Path/LemDecCalE.lean:1204-1317`) for the instance of target 3b; section 6 holds the compiled
-nonempty instances and the consumer check of target 4 against `STGridRepNAt` conjunct 1 and 4.
+The semigroup law and `𝒰_{v,v} = 1` are `GridDuhamelN_Ugen_comp`, `_self`.
 Every helper is `private` with the prefix `pfStep5Grid_`.
 -/
 
@@ -64,24 +54,23 @@ namespace RBM.Gauss.Sizes
 
 open RBM RBM.Loop RBM.Path RBM.Gauss
 
-/-! ## 0. Vocabulary (copied verbatim into `RBM3D/Induction/PfStep5Grid.lean`) -/
+/-! ## 0. Vocabulary -/
 
-/-- The time-dependent level `D_u := D* + 2 log_W(1-u)` (DECISIONS §70 (1); `docs/reports/T2209-prove.md` (a),
-row 1): `W^{-D_u} = (1-u)^{-2} W^{-D*}`. -/
+/-- The time-dependent level `D_u := D* + 2 log_W(1-u)`: `W^{-D_u} = (1-u)^{-2} W^{-D*}`. -/
 noncomputable def PfStep5Grid_level (W Dst u : ℝ) : ℝ :=
   Dst + 2 * (Real.log (1 - u) / Real.log W)
 
-/-- The realized control `J♯ = max(1, max_{σ,a} |(𝓛-𝒦)^{(2)}_{u,σ,a}(H)| / T_{u,D}(|a₁-a₂|))` of a fine matrix `H`
-(the matrix form of `LemDecCalELip_Jsharp`, `Induction/LemDecCalELip.lean:925`, same `sup'`). -/
+/-- The realized bound `J♯ = max(1, max_{σ,a} |(𝓛-𝒦)^{(2)}_{u,σ,a}(H)| / T_{u,D}(|a₁-a₂|))` of a fine matrix `H`
+(the matrix form of `LemDecCalELip_Jsharp`, same `sup'`). -/
 noncomputable def PfStep5Grid_JsharpM {d : ℕ} (sz : Sizes d) (n : ℕ) (E D u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) : ℝ :=
   max 1 (Finset.univ.sup' ⟨((fun _ => true), (fun _ => 0)), Finset.mem_univ _⟩
     (fun p : (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n)) =>
       ‖STLKM sz n E u H p.1 p.2‖ / STtailTD sz n u D p.2))
 
-/-! ## 1. Pins -/
+/-! ## 1. The statements -/
 
-/-- **Target 1** (the level, DECISIONS §70 (1)): for `W > 1`, `u ≤ u' < 1`: `W^{-D_{u'}} = (1-u')^{-2} W^{-D*}`;
+/-- **The level**: for `W > 1`, `u ≤ u' < 1`: `W^{-D_{u'}} = (1-u')^{-2} W^{-D*}`;
 `D_u` is nonincreasing in `u`; `D_u ≤ D*` for `u ≥ 0`; `D_{u'} ≥ D* - 2d` when `1 - u' ≥ W^{-d}`. -/
 def PfStep5Grid_level_pin : Prop :=
   ∀ (d : ℕ) (W Dst u u' : ℝ), 1 < W → u ≤ u' → u' < 1 →
@@ -90,14 +79,14 @@ def PfStep5Grid_level_pin : Prop :=
     (0 ≤ u → PfStep5Grid_level W Dst u ≤ Dst) ∧
     (W ^ (-(d : ℝ)) ≤ 1 - u' → Dst - 2 * (d : ℝ) ≤ PfStep5Grid_level W Dst u')
 
-/-- **Target 2** (bridge, expected `rfl` after unfolding: `STLM_seqHflow`): the merged realized control of the
-model at `(n, u, ω)` is the matrix control at the flow matrix `H_u(ω)`. -/
+/-- **Bridge** (`rfl` after unfolding: `STLM_seqHflow`): the realized bound of the
+model at `(n, u, ω)` is the matrix bound at the flow matrix `H_u(ω)`. -/
 def PfStep5Grid_Jsharp_pin {d : ℕ} (sz : Sizes d) : Prop :=
   ∀ (E : ℕ → ℝ) (D : ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ),
     LemDecCalELip_Jsharp sz E D n u ω = PfStep5Grid_JsharpM sz n (E n) D u (sz.seqHflow n u ω)
 
-/-- **Target 4** (the Duhamel form `(int_K-L_ST)` from the additive grid decomposition of `STGridRepNAt`
-conjunct 1, deterministic, any 2-index tensors): on a grid `u_{j+1} = u_j + Δ`, `0 ≤ u_0`, `u_k < 1`, if
+/-- **The Duhamel form** `(int_K-L_ST)` from the additive grid decomposition of `STGridRepNAt`
+conjunct 1 (deterministic, any 2-index tensors): on a grid `u_{j+1} = u_j + Δ`, `0 ≤ u_0`, `u_k < 1`, if
 `A_j = A_0 + Δ Σ_{i<j} (Θ^{(2)}_{u_i,σ} A_i + F_i) + Rem_j + Mart_j` for `j ≤ k` with `|A_j| ≤ M`, `|Rem_j| ≤ R`, then
 `|A_k - 𝒰_{u_0,u_k} A_0 - Δ Σ_{j<k} 𝒰_{u_j,u_k} F_j - Σ_{j<k} 𝒰_{u_j,u_k}(Mart_{j+1} - Mart_j)| ≤ 64 (1-u_k)^{-7} (R + Δ M)`.
 The martingale sum is token for token the one of `STGridRepNAt` conjunct 4 (`Ugen = UN … (fun i => mSigma E (σ i))`). -/
@@ -114,12 +103,12 @@ def PfStep5Grid_duhamel_pin (d : ℕ) : Prop :=
           RBM.Ind.Ugen d L g E σ (u j) (u k) (fun b => Mart (j + 1) b - Mart j b) a‖ ≤
       64 * ((1 - u k)⁻¹) ^ 7 * (R + Δ * M)
 
-/-! ## 2. Targets 1-3b -/
+/-! ## 2. The level and the bridge -/
 
 /-- `0 < log W` for `W > 1` (private helper). -/
 private theorem pfStep5Grid_logW_pos {W : ℝ} (hW : 1 < W) : 0 < Real.log W := Real.log_pos hW
 
-/-- **Target 1** (the level). -/
+/-- **The level**. -/
 theorem pfStep5Grid_level : PfStep5Grid_level_pin := by
   intro d W Dst u u' hW huu hu'
   have hW0 : 0 < W := by linarith
@@ -161,7 +150,7 @@ theorem pfStep5Grid_level : PfStep5Grid_level_pin := by
       linarith
     linarith
 
-/-- **Target 2** (bridge). -/
+/-- **Bridge**. -/
 theorem pfStep5Grid_Jsharp {d : ℕ} (sz : Sizes d) : PfStep5Grid_Jsharp_pin sz := by
   intro E D n u ω
   unfold LemDecCalELip_Jsharp PfStep5Grid_JsharpM
@@ -824,9 +813,9 @@ end Ops
 
 
 
-/-! ## 5. Target 4 -/
+/-! ## 5. The Duhamel form -/
 
-/-- **Target 4** (the Duhamel form). -/
+/-- **The Duhamel form**. -/
 theorem pfStep5Grid_duhamel (d : ℕ) : PfStep5Grid_duhamel_pin d := by
   intro L hLz hL g E Δ M R σ k u A F Rem Mart hE hΔ hu0 hu hk hA hRem hrec a
   -- the time grid
@@ -921,20 +910,5 @@ theorem pfStep5Grid_duhamel (d : ℕ) : PfStep5Grid_duhamel_pin d := by
     rfl
 
 end Kernel
-
-/-! ## 5b. Support for the instance of target 3b: `H = 0`, `u = 0`
-
-Ports of the private lemmas `lemDecCalE_gres_zero_true` ... `lemDecCalE_STLKM_zero_time` of
-`RBM3D/Path/LemDecCalE.lean:1204-1317` (last commit of that file: `6e63fbc`; not importable, private),
-with `ST_Gres_false` for the merged `lemDecCalE_Gres_false`. -/
-
-/-! ## 6. Compiled nonempty instances
-
-Concrete nondegenerate data at `d = 3`: the merged preflight sizes `SizesInst.sz0`
-(`L_0 = 4`, `W_0 = 32`, `lam_0 = 1/64`) and the flow block of `InductionDefsInst`
-(`z0`).  Targets 1, 2, 3a and 4 are applied with every hypothesis discharged; target 3b is applied
-twice: at `E ≡ 0` with `0 < T(ω)` discharged (`pfStep5Grid_inst_below`, using section 5b), and at the
-flow energy `STflowE z0` with `0 < T(ω)` kept as a hypothesis (`pfStep5Grid_inst_below_flow`, the
-ticket's data). -/
 
 end RBM.Gauss.Sizes

@@ -13,11 +13,8 @@ import RBM3D.Defs.Sizes
 /-!
 # The general-length `C²` bound of the loop observables (`d ≥ 3`)
 
-Ticket T2111 (ST2-29, first file).  Port of `RBM2D/Induction/LoopC2N.lean` at commit `c9a24cf`
-(cited `LC2N:<line>`; 580 lines there).  The pin `HermTestFunLoopN` (RBM2D
-`Induction/GridGoodN.lean:365`, section `TestClass`; `GridGoodN` is ST2-32 and is not imported) is
-defined here and proved: for every loop length `k`, every `n`, `|E| < 2`, `0 ≤ u < 1`, every sign
-vector `σ : Fin k → Bool` and label vector `b : Fin k → Z_L^d`, the observable
+`HermTestFunLoopN` is defined and proved: for every loop length `k`, every `n`, `|E| < 2`,
+`0 ≤ u < 1`, every sign vector `σ : Fin k → Bool` and label vector `b : Fin k → Z_L^d`, the observable
 
   `Φ(M) = loopL d L W (blockMat M) (zt E u) (loopOf σ b) = tr ∏_{i=1}^k (G_{σ_i}(z_u) E_{b_i})`
 
@@ -25,20 +22,21 @@ is in the Hermitian test class `HermTestFun` of `Path/StepDecomp.lean`, and at H
 
   `‖∂²Φ(M)[y, y]‖ ≤ k (k + 1) · N · η_u^{-(k+2)} · ‖y‖²`,   `N = (W L)^d`, `η_u = (1 - u) Im m`.
 
-## Main result (namespace `RBM.Ind`)
+## Main results (namespace `RBM.Ind`)
 
-* `HermTestFunLoopN sz` : the pin, with the vocabulary of the merged files (`Sizes d`, `Zd d L`,
-  `Idx d L W`, `loopL`, `blockMat d L W`, `zt`, `etaT`, `Sizes.size = (W L)^d`).
-* `hermTestFunLoopN sz : HermTestFunLoopN sz`.  Compiled nonempty instances: section 6.
+* `HermTestFunLoopN sz`: the statement, in the vocabulary `Sizes d`, `Zd d L`, `Idx d L W`, `loopL`,
+  `blockMat d L W`, `zt`, `etaT`, `Sizes.size = (W L)^d`.
+* `hermTestFunLoopN sz : HermTestFunLoopN sz`.
 
-## Route (CLAUDE.md §5.2)
+## Proof
 
-Generalisation of the merged `k = 2`, `σ = (+,-)` proof `hermTestFun_loopPM`
-(`Path/StepDecompLoop.lean:603`), whose private jets (`StepDecompLoop_blockCLM`, `_norm_blockMat`,
-`_trCLM`, `_hasDerivAt_Gres`, `_fderiv(2)_of_line`, `_contDiffAt_Gres`) are copied here as private
-`LoopC2N_` helpers; the two-resolvent `word_jets` is replaced by an induction on the word
-(`LoopC2N_word_jets`).  Along the Hermitian line `s ↦ M + s y`, with `H = blockMat M`,
-`D = blockMat y`, `R_i(s) = G_{σ_i}(H + s D)`, `R_i' = -R_i D R_i`:
+The argument generalises the case `k = 2`, `σ = (+,-)` of
+`Path/StepDecompLoop.lean`, whose private jets (`StepDecompLoop_blockCLM`, `_norm_blockMat`,
+`_trCLM`, `_hasDerivAt_Gres`, `_fderiv(2)_of_line`, `_contDiffAt_Gres`) have private `LoopC2N_`
+counterparts here; the jets of a word of resolvents are obtained by an induction on the word
+(`LoopC2N_word_jets`), as in the two-dimensional formalization.  Along the Hermitian line
+`s ↦ M + s y`, with `H = blockMat M`, `D = blockMat y`, `R_i(s) = G_{σ_i}(H + s D)`,
+`R_i' = -R_i D R_i`:
 
   `P_l = ∏_{i ∈ l} (R_i E_i)`,   `‖R_i‖ ≤ K = η⁻¹`,   `‖E_b‖ ≤ 1`,
   `‖P_l‖ ≤ K^m`,  `‖P_l'‖ ≤ m K^{m+1} ‖D‖`,  `‖P_l''‖ ≤ m (m + 1) K^{m+2} ‖D‖²`  (`m = |l|`),
@@ -47,12 +45,11 @@ by the Leibniz rule `(R E Q)'' = R'' E Q + 2 R' E Q' + R E Q''`, `R'' = 2 R D R 
 `m (m + 1) + 2 m + 2 = (m + 1) (m + 2)`.  Only the trace cost carries the dimension:
 `‖tr A‖ ≤ card · ‖A‖` with `card (Vtx d L W) = (L W)^d = size n` (`card_BlockIndex`); the Leibniz
 count is dimension-free.  `‖blockMat y‖ = ‖y‖`; `‖E_b‖ ≤ (W^d)⁻¹ ≤ 1` (the factor `W^{-dk}` is
-dropped, as in the pin).  The `HermTestFun` fields come from `ContDiffAt` of the resolvent
+dropped).  The `HermTestFun` fields come from `ContDiffAt` of the resolvent
 product at `Im z_u ≠ 0` and the crude envelope `norm_gloop_le_crude`.
 
-Vocabulary changes (DECISIONS §29, D204; as T2104): `HermTestFunLoopN` drops RBM2D's `[NeZero k]`
-(the proof does not use it, so the statement is stronger).  Every helper is `private` and carries
-the prefix `LoopC2N_`.
+`HermTestFunLoopN` carries no `[NeZero k]` assumption (the proof does not use it).  Every helper is
+`private` and carries the prefix `LoopC2N_`.
 -/
 
 set_option linter.style.longLine false
@@ -68,7 +65,7 @@ set_option linter.unusedSectionVars false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
 
-/-! ### 1. Block coordinates (copied from `Path/StepDecompLoop.lean`, section 1) -/
+/-! ### 1. Block coordinates -/
 
 section BlockCoordinates
 
@@ -79,7 +76,7 @@ private theorem LoopC2N_blockMat_add_smul (A C : Matrix (Idx d L W) (Idx d L W) 
   ext p q
   simp [blockMat]
 
-/-- `blockMat` as a continuous real-linear map (`LC2N:82`). -/
+/-- `blockMat` as a continuous real-linear map. -/
 private def LoopC2N_blockCLM (d L W : ℕ) [NeZero L] [NeZero W] :
     Matrix (Idx d L W) (Idx d L W) ℂ →L[ℝ] Matrix (Vtx d L W) (Vtx d L W) ℂ :=
   LinearMap.toContinuousLinearMap
@@ -148,7 +145,7 @@ private def LoopC2N_word {α : Type*} (R : α → ℝ → Matrix n n ℂ) (E : �
     (l : List α) (s : ℝ) : Matrix n n ℂ :=
   l.foldr (fun a M => R a s * E a * M) 1
 
-/-- **The Leibniz induction over the word** (`LC2N:144`).  Let `R a s` be resolvent-type matrices
+/-- **The Leibniz induction over the word**.  Let `R a s` be resolvent-type matrices
 with `(R a)' = -R a D R a` and `‖R a s‖ ≤ K`, and `E a` matrices with `‖E a‖ ≤ 1`.  Then the word
 `P_l(s) = ∏_{a ∈ l} (R a s * E a)` has two derivatives along `s`, with
 `‖P_l‖ ≤ K^m`, `‖P_l'‖ ≤ m K^{m+1} ‖D‖`, `‖P_l''‖ ≤ m (m + 1) K^{m+2} ‖D‖²`, `m = l.length`. -/
@@ -225,7 +222,7 @@ private theorem LoopC2N_word_jets [Nonempty n] {α : Type*}
 
 end Words
 
-/-! ### 3. Lines through Hermitian points (copied from `Path/StepDecompLoop.lean`, section 3) -/
+/-! ### 3. Lines through Hermitian points -/
 
 section Lines
 
@@ -309,8 +306,7 @@ section Observable
 
 variable {d L W : ℕ} [NeZero L] [NeZero W]
 
-/-- The resolvent of `blockMat M` is `C²` at every `M` for which `blockMat M - w` is invertible
-(`LC2N:313`). -/
+/-- The resolvent of `blockMat M` is `C²` at every `M` for which `blockMat M - w` is invertible. -/
 private theorem LoopC2N_contDiffAt_Gres {w : ℂ} {M : Matrix (Idx d L W) (Idx d L W) ℂ}
     (hu : IsUnit (blockMat d L W M - w • (1 : Matrix (Vtx d L W) (Vtx d L W) ℂ))) :
     ContDiffAt ℝ 2 (fun M' : Matrix (Idx d L W) (Idx d L W) ℂ => Gres (blockMat d L W M') w true)
@@ -358,7 +354,7 @@ private theorem LoopC2N_contDiffAt_word {z : ℂ} (hz : z.im ≠ 0) (l : List (B
       contDiffAt_const
     exact ((LoopC2N_contDiffAt_Gsig hz p.1 hM).mul hEp).mul ih
 
-/-- (H1) for the `k`-loop observable: `C²` at every Hermitian point. -/
+/-- The `k`-loop observable is `C²` at every Hermitian point. -/
 private theorem LoopC2N_contDiffAt_loop {z : ℂ} (hz : z.im ≠ 0) {k : ℕ} (σ : Fin k → Bool)
     (b : Fin k → Zd d L) {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) :
     ContDiffAt ℝ 2
@@ -369,7 +365,7 @@ private theorem LoopC2N_contDiffAt_loop {z : ℂ} (hz : z.im ≠ 0) {k : ℕ} (�
   exact h
 
 /-- The first two derivatives of the `k`-loop observable along a Hermitian line, with the bound
-`|φ₂| ≤ N · k (k + 1) η⁻⁽ᵏ⁺²⁾ ‖y‖²`, `N = (L W)^d` (`LC2N:366`). -/
+`|φ₂| ≤ N · k (k + 1) η⁻⁽ᵏ⁺²⁾ ‖y‖²`, `N = (L W)^d`. -/
 private theorem LoopC2N_line_jets {z : ℂ} {η : ℝ} (hη : 0 < η) (hz : η ≤ |z.im|) {k : ℕ}
     (σ : Fin k → Bool) (b : Fin k → Zd d L) {M y : Matrix (Idx d L W) (Idx d L W) ℂ}
     (hM : M.IsHermitian) (hy : y.IsHermitian) :
@@ -417,7 +413,7 @@ private theorem LoopC2N_line_jets {z : ℂ} {η : ℝ} (hη : 0 < η) (hz : η �
     rw [hlen, LoopC2N_norm_blockMat] at h2
     exact h2
 
-/-- (H3): the second derivative of the `k`-loop observable in a Hermitian direction. -/
+/-- The second derivative of the `k`-loop observable in a Hermitian direction. -/
 private theorem LoopC2N_second_deriv_bound {z : ℂ} {η : ℝ} (hη : 0 < η) (hz : η ≤ |z.im|)
     {k : ℕ} (σ : Fin k → Bool) (b : Fin k → Zd d L) {M y : Matrix (Idx d L W) (Idx d L W) ℂ}
     (hM : M.IsHermitian) (hy : y.IsHermitian) :
@@ -433,20 +429,19 @@ private theorem LoopC2N_second_deriv_bound {z : ℂ} {η : ℝ} (hη : 0 < η) (
 
 end Observable
 
-/-! ### 5. The target -/
+/-! ### 5. The statement -/
 
 section Target
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **Pin `HermTestFunLoopN`** (RBM2D `Induction/GridGoodN.lean:365`, section `TestClass`, with
+/-- **`HermTestFunLoopN`** (the `d`-dimensional form of RBM2D's `HermTestFunLoopN`, with
 `N = (W L)^d`): every `k`-loop observable `M ↦ 𝓛_{z_u,σ,b}(M)` (any length `k`, any signs,
 complex-valued) is in the Hermitian test class and has the Hermitian second-derivative bound
 `‖∂²𝓛(M)[y,y]‖ ≤ k(k+1) N η_u^{-(k+2)} ‖y‖²`, `z = z_u`, `η_u = (1 - u) Im m`
-(`∂²` of a product of `k` resolvents has `2k + k(k−1)` terms).  It is the input `hΦ` of
-`azumaSubG_ugen` and of `YMomentsN` (`C₂` in `stepDecompN`).  Differences from RBM2D: `Z2 → Zd d`,
-`gloop → loopL`, `spectralZ → zt`, `W² → W^d` through `Sizes.size`; RBM2D's `[NeZero k]` is
-dropped (the proof does not use it; T2111a). -/
+(`∂²` of a product of `k` resolvents has `2k + k(k−1)` terms).  It is the input `hΦ` of the step decomposition in
+`Induction/StepDecompN.lean`.  Relative to RBM2D: `Z2 → Zd d`,
+`gloop → loopL`, `spectralZ → zt`, `W² → W^d` through `Sizes.size`, and no `[NeZero k]`. -/
 def HermTestFunLoopN : Prop :=
   ∀ (k : ℕ) (n : ℕ) (E u : ℝ), |E| < 2 → 0 ≤ u → u < 1 →
     ∀ (σ : Fin k → Bool) (b : Fin k → Zd d (sz.L n)),
@@ -459,8 +454,8 @@ def HermTestFunLoopN : Prop :=
               (loopOf σ b))) M y y‖ ≤
           ((k * (k + 1) : ℕ) : ℝ) * (Sizes.size sz n : ℝ) * (etaT E u)⁻¹ ^ (k + 2) * ‖y‖ ^ 2
 
-/-- **`HermTestFunLoopN`, the general-length `C²` bound of the loop observables** (`LC2N:441`).
-The merged pin with no added hypothesis; `0 ≤ u` is not used (as in the merged `k = 2` case).
+/-- **`HermTestFunLoopN`, the general-length `C²` bound of the loop observables**.
+No hypothesis beyond the data is needed; `0 ≤ u` is not used (as in the case `k = 2`).
 The proof uses `‖E_b‖ ≤ (W^d)⁻¹ ≤ 1` (dropping the factor `W^{-dk}`), so the constant is the
 count `k (k + 1)` of the Leibniz terms. -/
 theorem hermTestFunLoopN : HermTestFunLoopN sz := by
@@ -487,14 +482,6 @@ theorem hermTestFunLoopN : HermTestFunLoopN sz := by
   ring
 
 end Target
-
-/-! ### 6. Compiled nonempty instances of `hermTestFunLoopN`
-
-Data: the merged admissible sequence `sz0` (`RBM3D/Defs/Sizes.lean`, `d = 3`, `n = 0`: `L = 4`,
-`W = 32`, `N = size 0 = 2097152`), energy `E = 0` (`|E| < 2`), `u = 1/2` (`0 ≤ u < 1`, so
-`η_u = (1/2) Im m > 0`).  The signs and labels are given in each statement; the bound is evaluated
-at the Hermitian pair `M = 0`, `y = 1`.  Every hypothesis of the theorem is discharged; there is no
-external pin. -/
 
 end RBM.Ind
 

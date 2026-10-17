@@ -10,34 +10,26 @@ import RBM3D.Induction.SEforLn2
 import RBM3D.Induction.AzumaProxyN
 
 /-!
-# Route (R) of the non-alternating endpoint (`d ≥ 3`): the linear good set `GoodLinN`, its
-# exit time, the linear drift level, the sub-Gaussian input and the linear budget
+# The linear good set `GoodLinN`, its exit time, the linear drift level, the sub-Gaussian input and the linear budget (`d ≥ 3`)
 
-Ticket T2186 (S3-12a, stochastic layer ST-3, first of three; the primed pins are in
-`Induction/Step34PinsP`).  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`
-(`3_5:line`): `lem:SEforLn` (`3_5:1017-1065`), `lem:STOeq_NQ` (`3_5:1136`, bound `(am;asoiuw)`
-`3_5:1143-1148`, proof `3_5:1152-1190`).  DECISIONS §62 (2), supervisor `2026-10-05-0755`
-answer 2 and (R): the merged `GoodSetN` is used at a *crude* level `Φ` (only its level-free
-clauses Herm, Dec, Va, Vb and (D4) are used, through the merged field theorems that take any
-`τ` with `hτG`); the drift comes from the new set `GoodLinN` alone, whose clauses (D1'), (D2'),
-(D3') sit at their own deterministic levels `Φ₁, Φ₂, Φ₃` (no `Φ²`, no crude level).  The
+The non-alternating endpoint of Lemma 4.6 with the linear drift level; the statements with `B_s` are
+in `Induction/NQEndFlow.lean`.  Paper: Lemma 4.3 (`lem:SEforLn`) and Lemma 4.6 (`lem:STOeq_NQ`, bound (4.22)
+`am;asoiuw`, and its proof).  The good set `GoodSetN` is used at a *crude* level `Φ` (only its level-free
+clauses -- Hermitian, decay, the two far-label clauses and the bound on `STeeM` -- are used, through the
+field theorems that take any `τ` with `hτG`); the drift comes from the set `GoodLinN` alone, whose
+three drift clauses sit at their own deterministic levels `Φ₁, Φ₂, Φ₃` (no `Φ²`, no crude level).  The
 current length enters only as `B_v^{1/6} Φ_cur` inside `Φ₂`.
 
 ## What is here
 
-* §1 (`RBM.Gauss.Sizes`) the vocabulary `GoodLinN`, `nqLinPhi1`-`3`, `NQLinConcl`, `NQLinGood`
-  (check file `docs/tickets/checks/T2186-check.lean`, section 2, verbatim);
-* §2 `measurableGoodLinN` (copies of the private measurability helpers of `GridGoodN`),
-  `goodSetN_subset_goodLinN`;
-* §3 `nqLinGood_holds : ∀ d, NQLinGood d` (the shape of `gridGoodN_holds`, with the `ε/3`
-  split);
-* §4 (`RBM.Ind`) `dDriftLinN`, `nqLinExitTauN` (section 3 of the check file),
-  `dDriftNonAltN_eq_lin`, `driftTensorN_norm_le_of_goodLin`, `nqLin_hdriftN`,
+* §1 (`RBM.Gauss.Sizes`) the vocabulary `GoodLinN`, `nqLinPhi1`-`3`, `NQLinConcl`, `NQLinGood`;
+* §2 `measurableGoodLinN`;
+* §3 `nqLinGood_holds : ∀ d, NQLinGood d` (the shape of `gridGoodN_holds`, with the `ε/3` split);
+* §4 (`RBM.Ind`) `dDriftLinN`, `nqLinExitTauN`, `driftTensorN_norm_le_of_goodLin`, `nqLin_hdriftN`,
   `mem_of_lt_nqLinExitTauN`, `nqLinExitMeasN`, `subGaussStop_linN`;
-* §5 `assembledRHSLinN`, `tbDriftLinN`, `budgetNonAltLinN`;
-* §6 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.NQLinInst`).
+* §5 `assembledRHSLinN`, `tbDriftLinN`, `budgetNonAltLinN`.
 
-Every helper that the ticket does not pin is `private` or prefixed `nqLin_`.
+Every helper that is not part of the statements is `private` or prefixed `nqLin_`.
 -/
 
 set_option linter.style.longLine false
@@ -59,10 +51,10 @@ section GoodLin
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **The linear set `G_lin`** (DECISIONS §62 (2); supervisor 2026-10-05-0755 answer 2, (R)): the clauses
-(D1), (D2), (D3) of `GoodSetN` (`GridGoodN.lean:124`) with a separate deterministic level each:
-(D1') `‖[𝒦^{(l)}∼(𝓛-𝒦)]^{(k)}‖ ≤ Γ(ΓΦ₁)B^k/η` (`3 ≤ l ≤ k`), (D2') `‖ℰ^{(𝓛-𝒦)×(𝓛-𝒦)}‖ ≤ Γ(ΓΦ₂)B^k/η`
-(linear in `Φ₂`, in place of `Γ k (ΓΦ)²`), (D3') `‖ℰ^{G̃}‖ ≤ Γ(ΓΦ₃)B^k/η`. -/
+/-- **The linear set `GoodLinN`**: the three drift clauses of `GoodSetN` (`GridGoodN.lean`) with a separate
+deterministic level each: (1) `‖[𝒦^{(l)}∼(𝓛-𝒦)]^{(k)}‖ ≤ Γ(ΓΦ₁)B^k/η` (`3 ≤ l ≤ k`),
+(2) `‖ℰ^{(𝓛-𝒦)×(𝓛-𝒦)}‖ ≤ Γ(ΓΦ₂)B^k/η` (linear in `Φ₂`, in place of `Γ k (ΓΦ)²`),
+(3) `‖ℰ^{G̃}‖ ≤ Γ(ΓΦ₃)B^k/η`. -/
 def GoodLinN (n : ℕ) (E u : ℝ) (k : ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℝ) :
     Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :=
   {H | (∀ l : ℕ, 3 ≤ l → l ≤ k → ∀ (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)),
@@ -74,19 +66,19 @@ def GoodLinN (n : ℕ) (E u : ℝ) (k : ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℝ) :
 
 end GoodLin
 
-/-- The (D1') level from the controls of lengths `2 ≤ m ≤ k-1` (`3_5:1058-1061`; the lengths `k-l+2`,
-`3 ≤ l ≤ k`, of conjunct 2 of `STSEforLnConcl`); `0` for `k = 2`. -/
+/-- The level `Φ₁` of the first clause from the bounds of lengths `2 ≤ m ≤ k-1` (proof of Lemma 4.3
+`lem:SEforLn`; the lengths `k-l+2`, `3 ≤ l ≤ k`, of conjunct 2 of `STSEforLnConcl`); `0` for `k = 2`. -/
 def nqLinPhi1 (XLK : ℕ → ℝ) (k : ℕ) : ℝ := ∑ m ∈ Finset.Icc 2 (k - 1), XLK m
 
-/-- The (D2') level `Φ₂ = Σ_{n'} XLK(k+2-n') (XL(n'₁) XL(n'₂))^{1/2} + B^{1/6} Φ_cur` (conjunct 3 of
-`STSEforLnConcl` with the controls in place of `Ξ̂`; `B` is the caller's `B_v` at the grid endpoint, `Φ_cur`
-the deterministic control of the current length). -/
+/-- The level of the second clause, `Φ₂ = Σ_{n'} XLK(k+2-n') (XL(n'₁) XL(n'₂))^{1/2} + B^{1/6} Φ_cur` (conjunct 3 of
+`STSEforLnConcl` with the bounds in place of `Ξ̂`; `B` is the caller's `B_v` at the grid endpoint, `Φ_cur`
+the deterministic bound of the current length). -/
 def nqLinPhi2 (XL XLK : ℕ → ℝ) (B : ℝ) (k : ℕ) (Φcur : ℝ) : ℝ :=
   ∑ n' ∈ Finset.Icc ((k + 1) / 2 + 1) (k - 1),
       XLK (k + 2 - n') * (XL (STn12 n').1 * XL (STn12 n').2) ^ (1 / 2 : ℝ) +
     B ^ (1 / 6 : ℝ) * Φcur
 
-/-- The (D3') level `(XL(n₁) XL(n₂))^{1/2}`, `(n₁, n₂) = STn12E k` (`𝓛`-lengths `k-1 … k+1`; conjunct 1 of
+/-- The level of the third clause, `(XL(n₁) XL(n₂))^{1/2}`, `(n₁, n₂) = STn12E k` (`𝓛`-lengths `k-1 … k+1`; conjunct 1 of
 `STSEforLnConcl`). -/
 def nqLinPhi3 (XL : ℕ → ℝ) (k : ℕ) : ℝ := (XL (STn12E k).1 * XL (STn12E k).2) ^ (1 / 2 : ℝ)
 
@@ -94,9 +86,9 @@ section NQLinGood
 
 variable {d : ℕ}
 
-/-- **The conclusion of the pin `NQLinGood`** at `(sz, E, s, t)` (the shape of `GridGoodNConcl`,
-`GridGoodN.lean:505`): for every grid end `v ∈ [s,t]`, grid size `K`, loop length `k ≥ 2`, and deterministic
-controls `XL m n`, `XLK m n ≥ 1` of `Ξ̂^{𝓛}_m` (`m ≤ k+1`) and `Ξ̂^{𝓛-𝒦}_m` (`m ≤ k`, the current length
+/-- **The conclusion of `NQLinGood`** at `(sz, E, s, t)` (the shape of `GridGoodNConcl`): for every grid end
+`v ∈ [s,t]`, grid size `K`, loop length `k ≥ 2`, and deterministic
+bounds `XL m n`, `XLK m n ≥ 1` of `Ξ̂^{𝓛}_m` (`m ≤ k+1`) and `Ξ̂^{𝓛-𝒦}_m` (`m ≤ k`, the current length
 included) uniformly on `[s_n, v_n]`, with high probability the grid walk is in `GoodLinN` at every
 `j ≤ K n`, at the levels `nqLinPhi1`, `nqLinPhi2` (with `B = B_{v_n}`, `Φ_cur = XLK k n`), `nqLinPhi3`. -/
 def NQLinConcl (sz : Sizes d) (E s t : ℕ → ℝ) : Prop :=
@@ -116,8 +108,8 @@ def NQLinConcl (sz : Sizes d) (E s t : ℕ → ℝ) : Prop :=
           (nqLinPhi2 (fun m => XL m n) (fun m => XLK m n) (sz.Bctl n (v n)) k (XLK k n))
           (nqLinPhi3 (fun m => XL m n) k)})
 
-/-- **Pin (`NQLinGood`)**: the Step 3-4 ingredient shape (`STIngR`, any regime) with the conclusion
-`NQLinConcl` (as `GridGoodN`, `GridGoodN.lean:528`). -/
+/-- **`NQLinGood`**: the Step 3-4 ingredient shape (`STIngR`, any regime) with the conclusion
+`NQLinConcl` (as for `GridGoodN`). -/
 def NQLinGood (d : ℕ) : Prop := STIngR d STAny (fun sz E s t => NQLinConcl sz E s t)
 
 end NQLinGood
@@ -189,10 +181,10 @@ private theorem nqLin_meas_STegtM (E u : ℝ) (I : LoopIdx (Zd d (sz.L n))) :
 
 end MeasurableProof
 
-/-- **Target `measurableGoodLinN`**: `GoodLinN` is a measurable set of matrices, for every
+/-- **`measurableGoodLinN`**: `GoodLinN` is a measurable set of matrices, for every
 `sz n E u k Γ Φ₁ Φ₂ Φ₃` (no hypothesis): a finite conjunction, over finitely many labels, of inequalities
 between measurable functions of `H` (norms of the loop observables).  The three-clause analogue of
-`measurableGoodSetN` (`GridGoodN.lean:361`). -/
+`measurableGoodSetN`. -/
 theorem measurableGoodLinN {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (k : ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℝ) :
     MeasurableSet (GoodLinN sz n E u k Γ Φ₁ Φ₂ Φ₃) := by
   unfold GoodLinN
@@ -219,7 +211,7 @@ section Helpers
 
 open RBM.Gauss
 
-/-- A finite family of `w.h.p.` events holds simultaneously `w.h.p.` (copy of the private
+/-- A finite family of `w.h.p.` events holds simultaneously `w.h.p.` (as the private
 `gridGood_whp_iInter` of `GridGoodN`). -/
 private theorem nqLin_whp_iInter {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ}
     (hsize : Tendsto size atTop atTop) {ι : Type*} [Finite ι] {Ξ : ι → ℕ → Set Ω}
@@ -274,7 +266,7 @@ private theorem nqLin_sqrt_bound {x₁ x₂ A c₁ c₂ : ℝ} (hx1 : 0 ≤ x₁
         Real.mul_rpow (mul_nonneg hA hA) (mul_nonneg hc1 hc2)
     _ = A * (c₁ * c₂) ^ (1 / 2 : ℝ) := by rw [← Real.sqrt_eq_rpow, Real.sqrt_mul_self hA]
 
-/-- The clauses (D1'), (D3'): `x ≤ A (Bk (A Y))` with `A ≤ Γ`, `Y ≤ Φ` gives `x ≤ Γ (Γ Φ) Bk`. -/
+/-- The first and third clauses: `x ≤ A (Bk (A Y))` with `A ≤ Γ`, `Y ≤ Φ` gives `x ≤ Γ (Γ Φ) Bk`. -/
 private theorem nqLin_clause {x A Γ Bk Y Φ : ℝ} (hA0 : 0 ≤ A) (hAΓ : A ≤ Γ) (hBk : 0 ≤ Bk)
     (hY : 0 ≤ Y) (hYΦ : Y ≤ Φ) (hx : x ≤ A * (Bk * (A * Y))) : x ≤ Γ * (Γ * Φ) * Bk := by
   have hΓ0 : 0 ≤ Γ := hA0.trans hAΓ
@@ -285,10 +277,10 @@ private theorem nqLin_clause {x A Γ Bk Y Φ : ℝ} (hA0 : 0 ≤ A) (hAΓ : A �
     _ ≤ (Γ * Γ * Φ) * Bk := mul_le_mul_of_nonneg_right h1 hBk
     _ = Γ * (Γ * Φ) * Bk := by ring
 
-/-- The clause (D2'), linear in the level: the sum over `n'` has the terms
+/-- The second clause, linear in the level: the sum over `n'` has the terms
 `Y_{k+2-n'} (X_{n'₁} X_{n'₂})^{1/2} ≤ A² XLK_{k+2-n'} (XL_{n'₁} XL_{n'₂})^{1/2}` and the last term
 `B_u^{1/6} Y_k ≤ B_v^{1/6} A XLK_k ≤ A² B_v^{1/6} XLK_k`; so `x ≤ A (Bk (A² Φ₂)) ≤ Γ (Γ Φ₂) Bk` when
-`A³ ≤ Γ²` (`A = N^{ε/3}`, `Γ = N^ε ≥ 1`).  No `B ≤ 1`, no `gridGood_D2_arith`. -/
+`A³ ≤ Γ²` (`A = N^{ε/3}`, `Γ = N^ε ≥ 1`). -/
 private theorem nqLin_D2_arith {k : ℕ} (hk : 2 ≤ k) {A Γ Bk b6u b6v x : ℝ}
     {Y X XL XLK : ℕ → ℝ} (hA1 : 1 ≤ A) (hAΓ : A * A * A ≤ Γ * Γ) (hBk : 0 ≤ Bk) (hb6 : 0 ≤ b6u)
     (hb6' : b6u ≤ b6v) (hXL1 : ∀ m, 1 ≤ XL m) (hXLK1 : ∀ m, 1 ≤ XLK m)
@@ -457,7 +449,7 @@ private theorem nqLin_whp_uniform (sz : Sizes d) {E s v : ℕ → ℝ} (hsz : sz
     ⟨zero_le_one.trans (nqLin_one_le_STXiL sz m ω hBpos), hX' m (Finset.mem_Icc.2 ⟨h1, h2⟩) u⟩
   rw [GoodLinN, Set.mem_ofPred_eq]
   refine ⟨fun l hl3 hlk σ a => ?_, fun σ a => ?_, fun σ a => ?_⟩
-  · -- (D1')
+  · -- the first clause
     have h := hD1' l (Finset.mem_Icc.2 ⟨hl3, hlk⟩) ((u, σ, a) : TimeIcc s v n × (Fin k → Bool) ×
       (Fin k → Zd d (sz.L n)))
     have hm := hYb (k - l + 2) (by omega) (by omega)
@@ -466,7 +458,7 @@ private theorem nqLin_whp_uniform (sz : Sizes d) {E s v : ℕ → ℝ} (hsz : sz
         (Finset.mem_Icc.2 ⟨by omega, by omega⟩)
     exact nqLin_clause hA0 hAΓ hBk (zero_le_one.trans (hXLK1 _ n)) hΦ
       (h.trans (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hm.2 hBk) hA0))
-  · -- (D2')
+  · -- the second clause
     have h := hD2' ((u, σ, a) : TimeIcc s v n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
     have hb6 : (sz.Bctl n (u : ℝ)) ^ (1 / 6 : ℝ) ≤ (sz.Bctl n (v n)) ^ (1 / 6 : ℝ) :=
       Real.rpow_le_rpow hBpos.le (Sizes.STBctl_mono sz n (u.2.2) (hv1 n)) (by norm_num)
@@ -474,7 +466,7 @@ private theorem nqLin_whp_uniform (sz : Sizes d) {E s v : ℕ → ℝ} (hsz : sz
       (X := fun m => STXiL sz n (E n) (u : ℝ) m ω) (XL := fun m => XL m n) (XLK := fun m => XLK m n)
       hA1 hAAA hBk (Real.rpow_nonneg hBpos.le _) hb6 (fun m => hXL1 m n) (fun m => hXLK1 m n)
       hYb hXb h
-  · -- (D3')
+  · -- the third clause
     have h := hD3' ((u, σ, a) : TimeIcc s v n × (Fin k → Bool) × (Fin k → Zd d (sz.L n)))
     have hi : 1 ≤ (STn12E k).1 ∧ (STn12E k).1 ≤ k + 1 ∧ 1 ≤ (STn12E k).2 ∧
         (STn12E k).2 ≤ k + 1 := by
@@ -569,11 +561,12 @@ private theorem nqLin_grid (sz : Sizes d) {E s v : ℕ → ℝ} {K : ℕ → ℕ
 
 end Grid
 
-/-- **`nqLinGood_holds`: the pin `NQLinGood` is a theorem for every `d ≥ 3`.**  `𝔠_d` is that of
+/-- **`nqLinGood_holds`: `NQLinGood` holds for every `d ≥ 3`.**  `𝔠_d` is that of
 `stSEforLn_holds` (`lem:SEforLn`); the conjuncts 2, 3, 1 of `STSEforLnConcl` (restricted from `[s,t]` to `[s,v]`)
-give the levels (D1'), (D2'), (D3') from the hypotheses `Ξ̂^{𝓛}_m ≺ XL m`, `Ξ̂^{𝓛-𝒦}_m ≺ XLK m` (all at the exponent
-`ε/3`; `B_u^{1/6} ≤ B_v^{1/6}`, `STBctl_mono`, `v_n < 1`); then `nqLin_grid`.  The other premises of the pin
-(`STKbound`, `STKward`, `STLK s`, `(con_st_ind)`, `STStep2Concl`) enter only through `stSEforLn_holds`. -/
+give the levels of the first, second and third clauses from the hypotheses `Ξ̂^{𝓛}_m ≺ XL m`,
+`Ξ̂^{𝓛-𝒦}_m ≺ XLK m` (all at the exponent
+`ε/3`; `B_u^{1/6} ≤ B_v^{1/6}`, `STBctl_mono`, `v_n < 1`); then `nqLin_grid`.  The other premises
+(`STKbound`, `STKward`, `STLK s`, (2.83) `con_st_ind`, `STStep2Concl`) enter only through `stSEforLn_holds`. -/
 theorem nqLinGood_holds (d : ℕ) : NQLinGood d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   obtain ⟨𝔠d, h𝔠d0, h𝔠d1, H⟩ := stSEforLn_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -591,12 +584,6 @@ theorem nqLinGood_holds (d : ℕ) : NQLinGood d := by
     hX hY hε₁
   exact nqLin_grid sz hs hsv hK0 hC hW
 
-/-! ### The hypotheses `hX`, `hY` of `NQLinConcl` at the levels `XL ≡ XLK ≡ 1`: they follow from `STLmaxU`, `STLKU`
-
-(Used by the instance of `nqLinGood_holds`, section 6; the other gates' pins `STLmaxU`, `STLKU` stay hypotheses
-there.  Copies of the private lemmas of `GridGoodN` §6, on an arbitrary window `[s,t]`, and the restriction of
-`STLmaxU`, `STLKU` from `[s,t]` to `[s,v]`.) -/
-
 end RBM.Gauss.Sizes
 
 /-! ## 4. The linear drift, the exit time of `GoodSetN ∩ GoodLinN`, the sub-Gaussian input -/
@@ -605,22 +592,22 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- **The linear drift level** (replaces `dDriftNonAltN`, `NQGood2.lean:96`): the sum of the `k-2` copies of
-(D1'), one (D2') and one (D3'): `Γ·Γ·(B_u^k/η_u)·((k-2)Φ₁ + Φ₂ + Φ₃)`; no additive `W^{-D'}`. -/
+/-- **The linear drift level**: the sum of the `k-2` copies of
+the first clause, one second and one third: `Γ·Γ·(B_u^k/η_u)·((k-2)Φ₁ + Φ₂ + Φ₃)`; no additive `W^{-D'}`. -/
 def dDriftLinN {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (k : ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℝ) : ℝ :=
   Γ * Γ * ((sz.Bctl n u) ^ k / etaT E u) * (((k : ℝ) - 2) * Φ₁ + Φ₂ + Φ₃)
 
-/-- **The exit time of the grid walk from `GoodSetN ∩ GoodLinN`** (the merged generic `gridExitTauN`,
-`GridGoodN.lean:169`; `GoodSetN` is used at the crude level `Φ`, only its level-free clauses and (D4)). -/
+/-- **The exit time of the grid walk from `GoodSetN ∩ GoodLinN`** (the generic `gridExitTauN` of
+`GridGoodN`; `GoodSetN` is used at the crude level `Φ`, only its level-free clauses and the bound on `STeeM`). -/
 def nqLinExitTauN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s v : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ)
     (Γ Λ Φ Φ₁ Φ₂ Φ₃ : ℕ → ℝ) (τ' D' : ℝ) (n : ℕ) : PathΩ sz → ℕ :=
   gridExitTauN sz s v K n (fun j =>
     sz.GoodSetN n (E n) (gridTime s v K n j) k (Γ n) (Λ n) (Φ n) τ' D' ∩
       GoodLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n))
 
-/-- **Target `driftTensorN_norm_le_of_goodLin`** (the proof of `driftTensorN_norm_le_of_goodSet`,
-`NQGood1.lean:104`, with three levels): on `GoodLinN` the drift tensor is bounded by the linear level
-`Γ²(B_u^k/η_u)((k-2)Φ₁ + Φ₂ + Φ₃)` (`k-2` copies of (D1'), one of (D2'), one of (D3')). -/
+/-- **`driftTensorN_norm_le_of_goodLin`** (the bound on `GoodLinN` with three levels):
+on `GoodLinN` the drift tensor is bounded by the linear level
+`Γ²(B_u^k/η_u)((k-2)Φ₁ + Φ₂ + Φ₃)` (`k-2` copies of the first clause, one of the second, one of the third). -/
 theorem driftTensorN_norm_le_of_goodLin {d : ℕ} (sz : Sizes d) {n : ℕ} {E u Γ Φ₁ Φ₂ Φ₃ : ℝ}
     {k : ℕ} (hk : 2 ≤ k)
     {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
@@ -647,9 +634,8 @@ theorem driftTensorN_norm_le_of_goodLin {d : ℕ} (sz : Sizes d) {n : ℕ} {E u 
   rw [hc] at h1
   nlinarith [h1, h2, h3]
 
-/-- **Target `nqLin_hdriftN`** (the field `hdrift` on `{H_j ∈ GoodLinN(u_j), j < τ}`): the drift tensor along
-the walk is bounded by `dDriftLinN` (`driftTensorN_norm_le_of_goodLin`; the merged `nonAlt_hdriftN` with the
-linear level). -/
+/-- **`nqLin_hdriftN`** (the field `hdrift` on `{H_j ∈ GoodLinN(u_j), j < τ}`): the drift tensor along
+the walk is bounded by `dDriftLinN` (`driftTensorN_norm_le_of_goodLin`). -/
 theorem nqLin_hdriftN {d : ℕ} (sz : Sizes d) {n k : ℕ} (hk : 2 ≤ k) (σ : Fin k → Bool)
     (E s v : ℕ → ℝ) (K : ℕ → ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℕ → ℝ) (τ : PathΩ sz → ℕ)
     (hτG : ∀ ω j, j < τ ω → pathH sz s v K n j ω ∈
@@ -659,7 +645,7 @@ theorem nqLin_hdriftN {d : ℕ} (sz : Sizes d) {n k : ℕ} (hk : 2 ≤ k) (σ : 
         dDriftLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n) :=
   fun ω j _ hjτ b => driftTensorN_norm_le_of_goodLin sz hk (hτG ω j hjτ) σ b
 
-/-- **Target `mem_of_lt_nqLinExitTauN`**: strictly before the exit, the grid state is in
+/-- **`mem_of_lt_nqLinExitTauN`**: strictly before the exit, the grid state is in
 `GoodSetN ∩ GoodLinN` (`mem_of_lt_gridExitTauN`). -/
 theorem mem_of_lt_nqLinExitTauN {d : ℕ} {sz : Sizes d} {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ} {k : ℕ}
     {Γ Λ Φ Φ₁ Φ₂ Φ₃ : ℕ → ℝ} {τ' D' : ℝ} {n : ℕ} {ω : PathΩ sz} {j : ℕ}
@@ -668,7 +654,7 @@ theorem mem_of_lt_nqLinExitTauN {d : ℕ} {sz : Sizes d} {E : ℕ → ℝ} {s v 
       GoodLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n) :=
   mem_of_lt_gridExitTauN h
 
-/-- **Target `nqLinExitMeasN`**: `{j < nqLinExitTauN}` is `filt j`-measurable (`gridExitTauN_measurableSet`
+/-- **`nqLinExitMeasN`**: `{j < nqLinExitTauN}` is `filt j`-measurable (`gridExitTauN_measurableSet`
 with `measurableGoodSetN` and `measurableGoodLinN`). -/
 theorem nqLinExitMeasN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (Γ Λ Φ Φ₁ Φ₂ Φ₃ : ℕ → ℝ) (τ' D' : ℝ) (j : ℕ) :
@@ -677,8 +663,8 @@ theorem nqLinExitMeasN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ �
     (measurableGoodSetN d sz n _ _ _ _ _ _ _ _).inter
       (measurableGoodLinN sz n _ _ _ _ _ _ _)) j
 
-/-- **Target `subGaussStop_linN`**: the merged `subGaussStop_nonAltN` (`NQGood2.lean:564`) with the exit time
-`nqLinExitTauN` (from `azumaProxy_subG_ugen`, `AzumaProxyN.lean:980`, with `G j = GoodSetN ∩ GoodLinN`,
+/-- **`subGaussStop_linN`**: the sub-Gaussian input of `NQGood2` at the exit time
+`nqLinExitTauN` (from `azumaProxy_subG_ugen` with `G j = GoodSetN ∩ GoodLinN`,
 `mem_of_lt_nqLinExitTauN`, `nqLinExitMeasN`, and `hQ_nonAltN` on the `GoodSetN` component); same hypotheses, same
 proxy `cQVNonAltN` (independent of `Φ, Φ₁, Φ₂, Φ₃`). -/
 theorem subGaussStop_linN {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤ k) (hΛg : 0 < Λg)
@@ -711,8 +697,7 @@ theorem subGaussStop_linN {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤
 
 /-! ## 5. The linear budget -/
 
-/-- **The right-hand side of the merged `AssembledN` at `m = K n` with the linear drift**: the merged
-`assembledRHSNonAltN` (`NQBudget.lean:77`) with `dDriftNonAltN … (Γ n) (Φ n)` replaced by
+/-- **The right-hand side of `AssembledN` at `m = K n` with the linear drift**: the drift level is
 `dDriftLinN … (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n)`; no crude level `Φ` (the QV proxy `cQVNonAltN` has none). -/
 def assembledRHSLinN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (Λg κ' ε : ℝ) (Γ Λ Φ₁ Φ₂ Φ₃ : ℕ → ℝ) (D' D'' D_Y τK εq X0 : ℝ) (a : Fin k → Zd d (sz.L n)) : ℝ :=
@@ -734,7 +719,7 @@ section Budget
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- The absorption step of a far part (copy of the private `nqBudget_absorb`, `NQBudget.lean:327`):
+/-- The absorption step of a far part:
 `y N_p ≤ B`, `N_p⁻¹ ≤ X`, `B ≥ 0` give `y ≤ B X`. -/
 private theorem nqLin_absorb {y Np B X : ℝ} (hNp : 0 < Np) (hB : 0 ≤ B) (h : y * Np ≤ B)
     (hX : Np⁻¹ ≤ X) : y ≤ B * X := by
@@ -761,7 +746,7 @@ private theorem nqLin_K_mul_step {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ}
   unfold gridStep
   rw [mul_div_cancel₀ _ hK']
 
-/-- **The linear drift term at the data of S3-10b** (the analogue of `tbDriftNonAltN`, `NQBudget.lean:391`): the
+/-- **The linear drift term at the data of `NQGood2`** (the drift term of the budget): the
 drift term of `assembledRHSLinN` is at most `W^{Cε} Γ²((k-2)Φ₁ + Φ₂ + Φ₃) B_v^k Σ_j Δ/η_{u_j} +
 (KΔ)(W^C W^{-D'})` (`tbDriftN` with `a = Γ²((k-2)Φ₁ + Φ₂ + Φ₃) ≥ 0`, `b = 0`, the sharp kernel
 `kappaNonAltN_succ_mul_Bctl_pow_le`; `dDriftLinN = a B_{u_j}^k/η_{u_j}`). -/
@@ -830,8 +815,7 @@ theorem tbDriftLinN {E s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Λg κ'
 /-- The final bookkeeping of the linear budget on plain reals: the six term bounds `t₁ ≤ P₀X/6`, `t₂ ≤ P₀X/12`,
 `t₃ ≤ P₀(Φ₁+Φ₂+Φ₃)X/12 + P₀X/12`, `t₄ ≤ P₀Λ^{1/2}X/12 + P₀X/12`, `t₅, t₆ ≤ P₀X/6` give
 `Σ t ≤ P₀ (Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) X` (coefficients of `Λ^{1/2}X`: `5/6`; of each `Φ_iX`: `1/12`; `X ≤ Λ^{1/2} X`
-for `Λ^{1/2} ≥ 1`; the analogue of `nqBudget_final`, `NQBudget.lean:527`, with `Φ + Φ²` replaced by
-`Φ₁ + Φ₂ + Φ₃`). -/
+for `Λ^{1/2} ≥ 1`; with `Φ₁ + Φ₂ + Φ₃` in place of `Φ + Φ²`). -/
 private theorem nqLin_final {t1 t2 t3 t4 t5 t6 P0 X Λr Φ₁ Φ₂ Φ₃ : ℝ} (hP0 : 0 ≤ P0) (hX : 0 ≤ X)
     (hΛr : 1 ≤ Λr) (hΦ₁ : 0 ≤ Φ₁) (hΦ₂ : 0 ≤ Φ₂) (hΦ₃ : 0 ≤ Φ₃) (T1 : t1 ≤ P0 / 6 * X)
     (T2 : t2 ≤ P0 / 12 * X) (T3 : t3 ≤ P0 / 12 * ((Φ₁ + Φ₂ + Φ₃) * X) + P0 / 12 * X)
@@ -849,9 +833,9 @@ private theorem nqLin_final {t1 t2 t3 t4 t5 t6 P0 X Λr Φ₁ Φ₂ Φ₃ : ℝ}
   nlinarith [T1, T2, T3, T4, T5, T6, hPX, hΦ₁X, hΦ₂X, hΦ₃X]
 
 set_option maxHeartbeats 400000 in
--- the 450-line proof of `budgetNonAltN` with a longer drift term needs more than 200000
-/-- **The (5.93) budget of the non-alternating endpoint at the linear drift** (`d ≥ 3`; the merged
-`budgetNonAltN`, `NQBudget.lean:555`, with `dDriftLinN`): at a fixed `n`, under explicit numerical inequalities
+-- the long proof needs more than the default 200000 heartbeats
+/-- **The budget of the non-alternating endpoint at the linear drift** (`d ≥ 3`; the budget of
+`NQBudget` with the drift level `dDriftLinN`): at a fixed `n`, under explicit numerical inequalities
 only, `assembledRHSLinN ≤ N^{ε₀} (Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^k`.  `ha2` has `Γ²` (`(N^{ε₁})²`) in place of `Γ³`;
 no `Φ²`, no crude level (`tbInitNonAltN`, `tbQvNonAltN` unchanged; the drift term is `tbDriftLinN`;
 final bookkeeping `nqLin_final`). -/
@@ -931,16 +915,16 @@ theorem budgetNonAltLinN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ
   have hfar : ((sz.W n : ℕ) : ℝ) ^ nqGood1C d k Λg κ' * ((sz.W n : ℕ) : ℝ) ^ (-D') ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ k :=
     nqLin_absorb hNk (by positivity) ((mul_comm _ _).trans_le he1) hXN
-  -- T1: the initial term
+    -- the initial term
   have T1 : _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ k :=
     (tbInitNonAltN sz n k Λg κ' ε (((sz.size n : ℕ) : ℝ) ^ ε₁) X0 hs0 hsv hv1 hK
       (Real.rpow_nonneg hN0.le _) hX0).trans (mul_le_mul_of_nonneg_right ha1 hX0')
-  -- T2: the initial decay error
+    -- the initial decay error
   have T2 : epsNonAltN d k Λg κ' ((sz.W n : ℕ) : ℝ) 0 (K n) * ((sz.W n : ℕ) : ℝ) ^ (-D') ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ k := by
     unfold epsNonAltN
     exact hfar
-  -- T3: the drift term (linear in the levels `Φ₁, Φ₂, Φ₃`)
+    -- the drift term (linear in the levels `Φ₁, Φ₂, Φ₃`)
   have T3 : gridStep s v K n * ∑ j ∈ Finset.range (K n),
       (kappaNonAltN d k Λg κ' (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n) (j + 1) (K n) *
           dDriftLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n) +
@@ -1003,7 +987,7 @@ theorem budgetNonAltLinN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ
         ((sz.W n : ℕ) : ℝ) ^ nqGood1C d k Λg κ' * ((sz.W n : ℕ) : ℝ) ^ (-D') :=
       (mul_le_mul_of_nonneg_right hKΔ1 (mul_nonneg hWC0 hWD0)).trans_eq (one_mul _)
     exact add_le_add (m1.trans (m2.trans (m3.le.trans m4))) (f1.trans hfar)
-  -- T4: the quadratic-variation term (unchanged)
+    -- the quadratic-variation term
   have T4 : ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
       (cQVNonAltN sz E s v K n k Λg κ' ε Γ Λ D'' (K n) a j : ℝ)) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ k) +
@@ -1117,7 +1101,7 @@ theorem budgetNonAltLinN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ
             Real.sqrt ((k : ℝ) * (nqBudget_qvFar sz n k Λg κ' ε *
               ((sz.W n : ℕ) : ℝ) ^ (-D''))) := by ring
       _ ≤ _ := add_le_add k1 k2
-  -- T5, T6
+    -- the last two terms
   have T5 : ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ k :=
     nqLin_absorb hNk (by positivity) ((mul_comm _ _).trans_le he3) hXN
@@ -1127,41 +1111,6 @@ theorem budgetNonAltLinN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ
   exact nqLin_final hP0 hX0' hΛr1 hΦ₁ hΦ₂ hΦ₃ T1 T2 T3 T4 T5 T6
 
 end Budget
-
-/-! ## 6. Compiled nonempty instances at `d = 3`
-
-Data (the merged instance data of `GridGoodN` §7, `AzumaProxyN` §6, `NQGood1` §6, `NQGood2` §5, `NQBudget` §6):
-`sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2^21`, `lam = 1/64`), `E ≡ 1/2` (`Im m = √15/4 ≈ 0.968`), `s ≡ 0`, `v ≡ 1/32`,
-`K ≡ 4` (`Δ = 1/128`, `u_j = j/128`), `k = 3`, `σ = (+,-,+)`, `Λ_g = 10`, `κ' = 1/2`, `ε = 4/5`, crude levels
-`(Γ, Λ, Φ) = (4, 3, 1)` of `GoodSetN`, linear levels `(Φ₁, Φ₂, Φ₃) = (1, 12, 1)` (`12 = kΓΦ²`, so that
-`GoodSetN ⊆ GoodLinN` there, `goodSetN_subset_goodLinN`), `τ' = 1/5`, `D' = 6`, `D'' = 5`, `ε₀ = C + 12` with the
-abstract `C = nqGood1C 3 3 10 (1/2) > 0`.
-* (2) the exit time `nqLinExitTauN … = NQGood2Inst.tau0`, positive at every sample; the drift bound
-  `driftTensorN_norm_le_of_goodLin` at `0 ∈ GoodLinN`; `nqLin_hdriftN`, `mem_of_lt_nqLinExitTauN`,
-  `nqLinExitMeasN`, `subGaussStop_linN` at the data of `NQGood2Inst.subGaussStop_instance`;
-* (3) `nqLinGood_holds 3` through `inst_ing` at `(sz0, z0, 0, 1/16)`, `v ≡ 1/32`, `K ≡ 4`, `XL ≡ XLK ≡ 1`, `ε = 1/10`,
-  `k ∈ {2, 4}`; the premises `STKbound`, `STKward`, `STLK`, `STStep2Concl` of `STIngR` and the Step 3-4 conclusions
-  `STLmaxU`, `STLKU` (other gates' pins) are hypotheses; `hX`, `hY` of `NQLinConcl` are *discharged* from them;
-* (4) `budgetNonAltLinN`: every hypothesis discharged (`hlog`, `hR` by the merged `NQBudgetInst`, `ha1`-`he4` for every
-  `C > 0`; `ha2` with `(N^{ε₁})² = 16`). -/
-
-/-! ### (2) The exit time, the linear drift and the sub-Gaussian input at the data of `NQGood2Inst` -/
-
-/-! ### (3) `nqLinGood_holds` at the data: with high probability the grid walk is in `GoodLinN` at every `j ≤ 4`
-
-`inst_ing` (the merged shape of the instances of `STIngR`) at `(sz0, z0, 0, 1/16)`, the grid end `v ≡ 1/32`
-(`Δ = 1/128`, `u_j = j/128`), `K ≡ 4` (`K + 1 = 5 ≤ N^1`), `XL ≡ XLK ≡ 1`, `ε = 1/10`.  The hypotheses `STKbound`,
-`STKward`, `STLK`, `STStep2Concl` and `STLmaxU`, `STLKU` are other gates' pins and stay hypotheses; `hX`, `hY` of
-`NQLinConcl` (window `[0, 1/32]`) are *discharged* from the last two (`nqLin_prec_XiL_one`,
-`nqLin_prec_XiLK_one` after the restriction from `[0, 1/16]`), and `0 ≤ s ≤ v ≤ t`, `K ≠ 0`, `K + 1 ≤ N^C`, the
-controls `≥ 1` are proved at the data. -/
-
-/-! ### (4) `budgetNonAltLinN` at the data of `NQBudgetInst.budgetNonAltN_instance`
-
-`d = 3`, `sz0`, `n = 0`: `Γ = N^{2/21} = 4`, `Λ = 3`, `Φ₁ = Φ₃ = 1`, `Φ₂ = 12` (`= kΓΦ²`), `D' = 6`, `D'' = 5`, `D_Y = 1`,
-`D_t = -5`, `τ_K = 1/21`, `ε_q = 1`, `ε₀ = C + 12`, `X0 = 4 B_0^3`, label `aFar`.  `hlog`, `hR` are the merged
-`NQBudgetInst.hlog_instance`, `hR_instance`; `ha1`, `ha3`, `he1`-`he4` are re-derived (the originals are private to
-`NQBudget`), `ha2` is the new inequality with `(N^{ε₁})² = 16`. -/
 
 end RBM.Ind
 

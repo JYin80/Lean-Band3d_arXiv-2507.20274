@@ -11,46 +11,38 @@ import RBM3D.Induction.Step2Events
 import RBM3D.Green.Pins
 
 /-!
-# The non-alternating endpoint at the flow, per time (`d ≥ 3`): the R2* pins, `stOeqNQPT''_holds`
+# The non-alternating endpoint at the flow, per time (`d ≥ 3`)
 
-Ticket T2246 (S3-12c1, stochastic layer ST-3, third of four after the DECISIONS §80 split;
-S3-12a = T2186 `Induction/Step34PinsP` + `Induction/NQLin`,
-S3-12b = T2199 `Induction/NQEndLin`; S3-12c2 lifts the per-time pin to `STOeqNQ''`).
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`,
-`lem:STOeq_NQ` (`3_5:1136`, bound `(am;asoiuw)` `3_5:1143-1148`, proof `3_5:1152-1190`),
-`(am;asoi222)` `3_5:1366`, `lem:iterations` `3_5:1407-1417`.
+The statements `STNQConcl''`, `STXiBoot'`, `STOeqQt'`, `STOeqQtNZ'`, `STIterR'`,
+`STIterations'`, `STIterationsII'`, the per-time `STNQConclPT''`, `STOeqNQPT''`, and the proof of
+`stOeqNQPT''_holds`.
+Paper: Lemma 4.6 (`lem:STOeq_NQ`, bound (4.22) `am;asoiuw`, and its proof), (4.36) `am;asoi222` in
+Lemma 4.10 (`lem:STOeq_Qt`), Lemma 4.11 (`lem:iterations`).
 
-## R2* (DECISIONS §80 (1); supervisor `docs/supervisor/2026-10-05-1955.md` A1)
+## The form of the statements
 
-In the first summand of `STbootRHS` (the only summand containing `B`) the endpoint value `B_u`
-is replaced by the window start `B_s`.  Every primed pin is the merged text with the argument
-`sz.Bctl n u` of `STbootRHS` replaced by `sz.Bctl n (s n)`; the separate term
-`B_u^{1/6} · XLK n_ n u`, the normalisation `/ B_u^{n_}` and all hypotheses are unchanged
-(paper-delta candidate `T2246a`).  The consumers use `B` in this summand only through a time-uniform
-lower bound, available at `w = s`.
+In every statement of §1 the argument `B` of `STbootRHS` (it enters only the first summand,
+`B^{-1/(4p)} XL(2 n_ - 1)^{1/2} XL(4p)^{1/(4p)}`) is the window start `B_s = sz.Bctl n (s n)`; the
+paper's (4.22) and (4.36) have the endpoint value `B_u` there.  The separate term `B_u^{1/6} · XLK n_ n u`
+and the normalisation `/ B_u^{n_}` stay at the endpoint `u`.  The consumers use `B` in this summand only
+through a time-uniform lower bound, available at `w = s`.
 
 ## What is here
 
-* §1 the pins `STNQConcl''`, `STOeqNQ''`, `STXiBoot'`, `STOeqQt'`, `STOeqQtNZ'`, `STIterR'`,
+* §1 the statements `STNQConcl''`, `STXiBoot'`, `STOeqQt'`, `STOeqQtNZ'`, `STIterR'`,
   `STIterations'`, `STIterationsII'`, the per-time `STNQConclPT''`, `STOeqNQPT''` (namespace
-  `RBM.Gauss.Sizes`), and the vocabulary `RBM.Ind.nqFlowLam`, `RBM.Ind.nqFlowPhiC` (check file
-  `docs/tickets/checks/T2246-check.lean`, section 2, verbatim);
-* §2 the trivial bridges `STNQConcl' → STNQConcl''` (private), `STOeqNQ' → STOeqNQ''`,
-  `STXiBoot → STXiBoot'`, `STOeqQt → STOeqQt'`, `STOeqQtNZ → STOeqQtNZ'` (`B_s ≤ B_u`, and the
-  exponent of `B` in `STbootRHS` is negative);
-* §3 window and setting facts (private): `(con_st_ind)` in the exponent, `STStep2Concl` and the pair
-  hypotheses restricted from `[s, t]` to `[s, v]` (paper-delta candidate `T2246b`);
-* §4 the levels (private): the crude level `Φc` of `GoodSetN` as the sum of the controls
-  (paper-delta candidate `T2246c`), the level `Λ_s = max 1 (nqFlowLam X B_s k p)`, `hQ`, the
-  degree-1 inequality `Λ_s^{1/2} + Φ₁ + Φ₂ + Φ₃ ≤ ζ`;
-* §5 the per-section endpoint `nqFlow_core`, `nqFlow_section` (private; the shape of RBM2D
-  `gridEnd_to_flow`, `RBM2D/Induction/StoppedEndDefs.lean:280-470` at `c9a24cf`): `nqGridEndLinN` on
-  the window `[s, v]`, the good events `gridGoodN_holds` (re-instantiated on `[s, v]`) and
-  `nqLinGood_holds`, the initial event from `STLK s`;
-* §6 **`stOeqNQPT''_holds`**, the per-time pin;
-* §7 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.NQEndFlowInst`).
+  `RBM.Gauss.Sizes`), and the vocabulary `RBM.Ind.nqFlowLam`, `RBM.Ind.nqFlowPhiC`;
+* §2 a larger right side keeps `≺` (`B_s ≤ B_u`, and the exponent of `B` in `STbootRHS` is negative);
+* §3 window and setting facts (private): (2.83) `con_st_ind` in the exponent, `STStep2Concl` and the pair
+  hypotheses restricted from `[s, t]` to `[s, v]`;
+* §4 the levels (private): the crude level `Φc` of `GoodSetN` as the sum of the bounds, the level
+  `Λ_s = max 1 (nqFlowLam X B_s k p)`, `hQ`, the degree-1 inequality `Λ_s^{1/2} + Φ₁ + Φ₂ + Φ₃ ≤ ζ`;
+* §5 the per-section endpoint `nqFlow_core`, `nqFlow_section` (private; the shape of RBM2D's
+  `gridEnd_to_flow`): `nqGridEndLinN` on the window `[s, v]`, the good events `gridGoodN_holds`
+  (instantiated on `[s, v]`) and `nqLinGood_holds`, the initial event from `STLK s`;
+* §6 **`stOeqNQPT''_holds`**, the per-time statement.
 
-Every helper that the ticket does not pin is `private` or prefixed `nqFlow_`.
+Every helper that is not part of the statements is `private` or prefixed `nqFlow_`.
 -/
 
 set_option linter.style.longLine false
@@ -62,7 +54,7 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 1. The pins (R2*, DECISIONS §80 (1)) and the vocabulary -/
+/-! ## 1. The statements and the vocabulary -/
 
 namespace RBM.Gauss.Sizes
 
@@ -72,9 +64,10 @@ section Pins
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **`lem:STOeq_NQ`, R2*** (`3_5:1136`, bound `(am;asoiuw)` `3_5:1143-1148`; DECISIONS §80 (1), supervisor
-`2026-10-05-1955` A1; paper-delta candidate `T2246a`): the merged `STNQConcl'` (`Step34PinsP.lean:53`) with the first
-summand of `STbootRHS` at the window start `B_s = sz.Bctl n (s n)` in place of `B_u`. -/
+/-- **Lemma 4.6 (`lem:STOeq_NQ`) with `B_s`** (bound (4.22) `am;asoiuw`): for `n_ ≥ 2`, `p ≥ 1` and bounds
+`XL, XLK ≥ 1` of `Ξ^{𝓛}` (the lengths `STlenL n_ p`) and of `Ξ^{𝓛-𝒦}` (lengths `≤ n_`) on the pairs of
+`[s, t]`, the non-alternating loops satisfy `‖𝓛 - 𝒦‖_{u,σ} / B_u^{n_} ≺ B_u^{1/6} XLK n_ u + STbootRHS 2 …`,
+uniformly in `u ∈ [s, t]`, with the first summand of `STbootRHS` at the window start `B_s = sz.Bctl n (s n)`. -/
 def STNQConcl'' (E s t : ℕ → ℝ) : Prop :=
   ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
     (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
@@ -89,8 +82,9 @@ def STNQConcl'' (E s t : ℕ → ℝ) : Prop :=
       (fun n q _ => (sz.Bctl n (q.1 : ℝ)) ^ (1 / 6 : ℝ) * XLK n_ n (q.1 : ℝ) +
         STbootRHS 2 (fun m => XL m n (q.1 : ℝ)) (fun m => XLK m n (q.1 : ℝ)) (sz.Bctl n (s n)) n_ p)
 
-/-- **`(am;asoi222)`, R2*** (`3_5:1366`; DECISIONS §80 (1); paper-delta candidate `T2246a`): the merged `STXiBoot`
-(`Step34Pins.lean:414`) with the first summand of `STbootRHS` at `B_s = sz.Bctl n (s n)` in place of `B_u`. -/
+/-- **(4.36) `am;asoi222` with `B_s`**: for `n_ ≥ 2`, `p ≥ 1` and bounds `XL, XLK ≥ 1` of `Ξ^{𝓛}` (the lengths
+`STlenL n_ p`) and of `Ξ^{𝓛-𝒦}` (lengths `≤ n_ - 1`) on the pairs of `[s, t]`, `Ξ^{𝓛-𝒦}_{·,n_} ≺ STbootRHS 1 …`
+on the pairs, with the first summand of `STbootRHS` at the window start `B_s = sz.Bctl n (s n)`. -/
 def STXiBoot' (E s t : ℕ → ℝ) : Prop :=
   ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
     (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
@@ -101,7 +95,7 @@ def STXiBoot' (E s t : ℕ → ℝ) : Prop :=
     Prec sz (U := STPair s t) (fun n q ω => STXiLK sz n (E n) q.1.1 n_ ω)
       (fun n q _ => STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2) (sz.Bctl n (s n)) n_ p)
 
-/-- **Per-time R2* conclusion** (the union over `u` outside `P`, DECISIONS §7; target of `stOeqNQPT''_holds`):
+/-- **Per-time conclusion** (the union over `u` outside `P`; the target of `stOeqNQPT''_holds`):
 `STNQConcl''` with `Prec` ↦ `PrecPT` in the conclusion. -/
 def STNQConclPT'' (E s t : ℕ → ℝ) : Prop :=
   ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
@@ -119,14 +113,18 @@ def STNQConclPT'' (E s t : ℕ → ℝ) : Prop :=
 
 end Pins
 
-/-- `lem:STOeq_Qt`, R2* (`3_5:1362`): case (i), `STOeqQt` over `STXiBoot'` (DECISIONS §80 (1)). -/
+/-- Lemma 4.10 (`lem:STOeq_Qt`) with `B_s`: in the setting `STIngR` of `lem:main_ind`, case (i) `STCaseI`,
+the conclusion `STXiBoot'`. -/
 def STOeqQt' (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STXiBoot' sz E s t)
 
-/-- `lem:STOeq_Qt_nonzero`, R2* (`3_5:1561`): case (ii), `STOeqQtNZ` over `STXiBoot'` (DECISIONS §80 (1)). -/
+/-- Lemma 4.14 (`lem:STOeq_Qt_nonzero`) with `B_s`: in the setting `STIngR` of `lem:main_ind`, case (ii)
+`STCaseII`, the conclusion `STXiBoot'`. -/
 def STOeqQtNZ' (d : ℕ) : Prop := STIngR d STCaseII (fun sz E s t => STXiBoot' sz E s t)
 
-/-- **`lem:iterations`, R2*** (`3_5:1407-1417`, `3_5:1575-1595`; DECISIONS §80 (1)): `STIterR` with the hypothesis
-`STXiBoot'`.  Proof: S3-24b (copy of `iterationsA_step` with `hlow` at `w = s`; DECISIONS §80 (2)). -/
+/-- **Lemma 4.11 (`lem:iterations`) with `B_s`** (and the corresponding step in the proof of Lemma 4.14):
+in the setting of `lem:main_ind` with a regime `R` and the hypothesis `STXiBoot'`, the bound `STIterHyp` at
+`(n_, k)` follows from those at `(r, k)`, `2 ≤ r ≤ n_ - 1`, and at `(r, k - 1)`, `2 ≤ r ≤ n_ + 2`.  The proof is
+that of the iteration step of `Induction/IterationsA` with `hlow` at `w = s`. -/
 def STIterR' (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
     (Aof : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → ℕ → ℝ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ Cd : ℝ, 0 < Cd →
@@ -141,13 +139,13 @@ def STIterR' (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ �
             (∀ r, 2 ≤ r → r ≤ n_ + 2 → STIterHyp sz (STflowE z) s t (Aof sz s) r (k - 1)) →
             STIterHyp sz (STflowE z) s t (Aof sz s) n_ k
 
-/-- `lem:iterations`, case (i), R2* (DECISIONS §80 (1)). -/
+/-- Lemma 4.11 (`lem:iterations`), case (i), with `B_s`. -/
 def STIterations' (d : ℕ) : Prop := STIterR' d STRegIterI (fun sz _ n => STAI sz n)
 
-/-- The case-(ii) analogue, R2* (DECISIONS §80 (1)). -/
+/-- The case-(ii) analogue, with `B_s`. -/
 def STIterationsII' (d : ℕ) : Prop := STIterR' d STCaseII (fun sz s n => STAII sz s n)
 
-/-- The per-time pin in the ingredient shape (case (i)): the conclusion of `stOeqNQPT''_holds`. -/
+/-- The per-time statement in the ingredient shape (case (i)): the conclusion of `stOeqNQPT''_holds`. -/
 def STOeqNQPT'' (d : ℕ) : Prop := STIngR d STCaseI (fun sz E s t => STNQConclPT'' sz E s t)
 
 end RBM.Gauss.Sizes
@@ -156,13 +154,13 @@ namespace RBM.Ind
 
 open RBM RBM.Gauss RBM.Gauss.Sizes
 
-/-- **The level `Λ` of `GoodSetN`'s (D4) clause** (vocabulary): `Λ = XL(2k−1) (XL(4p)/B)^{1/(2p)}`; at `B = B_s`,
-`Λ^{1/2}` is the first summand of `STbootRHS … B_s k p` (R2*: exactly, no loss).  The endpoint uses
+/-- **The level `Λ` of `GoodSetN`** (vocabulary): `Λ = XL(2k−1) (XL(4p)/B)^{1/(2p)}`; at `B = B_s`,
+`Λ^{1/2}` is exactly the first summand of `STbootRHS … B_s k p`, with no loss.  The endpoint uses
 `max 1 (nqFlowLam X B_s k p)`. -/
 noncomputable def nqFlowLam (XL : ℕ → ℝ) (B : ℝ) (k p : ℕ) : ℝ :=
   XL (2 * k - 1) * (XL (4 * p) / B) ^ (1 / (2 * (p : ℝ)))
 
-/-- **The crude level `Φc` of `GoodSetN`** (vocabulary): the sum of the controls of lengths `1 … k+1` at the window
+/-- **The crude level `Φc` of `GoodSetN`** (vocabulary): the sum of the bounds of lengths `1 … k+1` at the window
 end, so that `hX`, `hY` of `GridGoodNConcl` follow from the pair hypotheses (`nqGridEndLinN` quantifies over every
 `Φc`, it enters only the exit time). -/
 noncomputable def nqFlowPhiC (X Y : ℕ → ℝ) (k : ℕ) : ℝ :=
@@ -170,7 +168,7 @@ noncomputable def nqFlowPhiC (X Y : ℕ → ℝ) (k : ℕ) : ℝ :=
 
 end RBM.Ind
 
-/-! ## 2. The merged pins imply the primed ones (`B_s ≤ B_u`; the exponent of `B` in `STbootRHS` is negative) -/
+/-! ## 2. A larger right side keeps `≺` (`B_s ≤ B_u`; the exponent of `B` in `STbootRHS` is negative) -/
 
 namespace RBM.Gauss.Sizes
 
@@ -196,7 +194,7 @@ section Window
 
 variable {d : ℕ}
 
-/-- `(con_st_ind)` is monotone in the exponent: it forces `B_t < 1` (`B_t^a ≥ 1` if `B_t ≥ 1`, against the
+/-- (2.83) `con_st_ind` is monotone in the exponent: it forces `B_t < 1` (`B_t^a ≥ 1` if `B_t ≥ 1`, against the
 ratio `< 1`), and `B^b ≤ B^a` for `B ≤ 1`, `a ≤ b`. -/
 private theorem nqFlow_conStInd_exp_mono (sz : Sizes d) {s t : ℕ → ℝ} {a b : ℝ} (ha : 0 < a) (hab : a ≤ b)
     (ht1 : ∀ n, t n < 1) (h : sz.STConStInd a s t) : sz.STConStInd b s t := by
@@ -228,7 +226,7 @@ private theorem nqFlow_step2_restrict {sz : Sizes d} {E s t v : ℕ → ℝ} {Cd
       (fun n p => (⟨p.1.1, p.1.2.1, p.1.2.2.trans (hvt n)⟩, p.2))
 
 /-- The pair hypotheses `Ξ̂_{w,m} ≺ Z m n u`, `s_n ≤ w ≤ u ≤ t_n`, restricted to the pairs `(w, v_n)`, `w ∈ [s_n, v_n]`
-(`v_n ≤ t_n`): the controls become the numbers `Z m n (v n)` (`StochDomAt.precomp_param`). -/
+(`v_n ≤ t_n`): the bounds become the numbers `Z m n (v n)` (`StochDomAt.precomp_param`). -/
 private theorem nqFlow_restrict_pair {sz : Sizes d} {s t v : ℕ → ℝ} (hvt : ∀ n, v n ≤ t n)
     {F : ∀ n, ℝ → sz.SeqΩ → ℝ} {Z : ∀ n, ℝ → ℝ}
     (h : sz.Prec (U := STPair s t) (fun n q ω => F n q.1.1 ω) (fun n q _ => Z n q.1.2)) :
@@ -250,7 +248,7 @@ section Levels
 
 variable {d : ℕ}
 
-/-- `Ξ̂^{(𝓛)}_{v,k} ≥ 1` (copy of the private `gridGood_one_le_STXiL`, `GridGoodN.lean:655`). -/
+/-- `Ξ̂^{(𝓛)}_{v,k} ≥ 1`. -/
 private theorem nqFlow_one_le_STXiL (sz : Sizes d) {n : ℕ} {E v : ℝ} (k : ℕ) (ω : sz.SeqΩ)
     (hB : 0 < sz.Bctl n v) : 1 ≤ STXiL sz n E v k ω := by
   unfold STXiL
@@ -262,7 +260,7 @@ private theorem nqFlow_one_le_STXiL (sz : Sizes d) {n : ℕ} {E v : ℝ} (k : �
 
 end Levels
 
-/-- **G1, exactly** (R2*): `(XL(2k−1) (XL(4p)/B)^{1/(2p)})^{1/2}` is the first summand of `STbootRHS … B k p`
+/-- **The level, exactly**: `(XL(2k−1) (XL(4p)/B)^{1/(2p)})^{1/2}` is the first summand of `STbootRHS … B k p`
 (`B > 0`, `p ≥ 1`, `XL ≥ 0`): `nqFlowLam` at `B = B_s` has `Λ^{1/2}` equal to it, with no loss. -/
 private theorem nqFlow_lam_sqrt {X : ℕ → ℝ} {B : ℝ} {k p : ℕ} (hp : 1 ≤ p) (hB : 0 < B) (hX : ∀ m, 0 ≤ X m) :
     (nqFlowLam X B k p) ^ ((1 : ℝ) / 2) =
@@ -300,9 +298,9 @@ private theorem nqFlow_phi3_le {X : ℕ → ℝ} {k : ℕ} (hk : 2 ≤ k) (hX : 
     rw [← Real.sqrt_eq_rpow, Real.sqrt_mul_self (by linarith)]
     linarith
 
-/-- **The degree-1 inequality** (R2*): the final loss `Λ_s^{1/2} + Φ₁ + Φ₂ + Φ₃` with
+/-- **The degree-1 inequality**: the final loss `Λ_s^{1/2} + Φ₁ + Φ₂ + Φ₃` with
 `Λ_s = max 1 (nqFlowLam X B_s k p)` is at most the right side `B^{1/6} XLK k + STbootRHS 2 X Y B_s k p` of the
-pin.  `Φ₁` is the sum of the controls `XLK 2 … XLK (k-1)`, `Φ₂` is the third sum of `STbootRHS` plus
+statement.  `Φ₁` is the sum of the bounds `XLK 2 … XLK (k-1)`, `Φ₂` is the third sum of `STbootRHS` plus
 `B^{1/6} XLK k`, `1 + Φ₃ ≤ Σ_{m=k-1}^{k+1} XL m` (`nqFlow_phi3_le`), and `(nqFlowLam X B_s k p)^{1/2}` is the first
 summand of `STbootRHS` (`nqFlow_lam_sqrt`), so `Λ_s^{1/2} ≤ 1 + ` that summand. -/
 private theorem nqFlow_level_le {X Y : ℕ → ℝ} {B Bs : ℝ} {k p : ℕ} (hk : 2 ≤ k) (hp : 1 ≤ p)
@@ -330,7 +328,7 @@ section Levels2
 
 variable {d : ℕ}
 
-/-- **`hQ` at the level `Λ_s`** (the shape of the private `gridGood_prec_Q_one`, `GridGoodN.lean:1045`, with the controls
+/-- **`hQ` at the level `Λ_s`** (the shape of the corresponding lemma of `GridGoodN`, with the bounds
 `Xa, Xb` in place of `1` and `B_s` as the floor): `Ξ̂_a (Ξ̂_b/B_u)^r ≺ max 1 (Xa (Xb/B_s)^r)` for `0 ≤ r ≤ 1` from
 `Ξ̂_a ≺ Xa`, `Ξ̂_b ≺ Xb` uniformly in `u ∈ [s,v]` (`B_{u,0}` is non-decreasing in `u`, `STBctl_mono`). -/
 private theorem nqFlow_hQ (sz : Sizes d) (hsz : sz.SizeTendsto) {E s v : ℕ → ℝ} (hsv : ∀ n, s n ≤ v n)
@@ -418,7 +416,7 @@ private theorem nqFlow_phi_nonneg {X Y : ℕ → ℝ} {B : ℝ} {k : ℕ} (hX : 
   exact add_nonneg (Finset.sum_nonneg fun m _ => mul_nonneg (hY0 _)
     (Real.rpow_nonneg (mul_nonneg (hX0 _) (hX0 _)) _)) (mul_nonneg (Real.rpow_nonneg hB _) (hY0 _))
 
-/-- The crude level `Φc` dominates every control of length `1 … k+1` and is `≥ 1`. -/
+/-- The crude level `Φc` dominates every bound of length `1 … k+1` and is `≥ 1`. -/
 private theorem nqFlow_phiC_ge {X Y : ℕ → ℝ} {k m : ℕ} (hX : ∀ m, 1 ≤ X m) (hY : ∀ m, 1 ≤ Y m)
     (hm : m ∈ Finset.Icc 1 (k + 1)) : X m ≤ nqFlowPhiC X Y k ∧ Y m ≤ nqFlowPhiC X Y k := by
   have h := Finset.single_le_sum (f := fun m => X m + Y m)
@@ -433,8 +431,7 @@ private theorem nqFlow_phiC_one_le {X Y : ℕ → ℝ} {k : ℕ} (hX : ∀ m, 1 
   have := (nqFlow_phiC_ge (k := k) (m := 1) hX hY (Finset.mem_Icc.2 ⟨le_rfl, by omega⟩)).1
   exact (hX 1).trans this
 
-/-- The grid of the endpoint: `K_n = max 1 ⌈N^{C}⌉` (so `N^C ≤ K_n ≤ ⌈N^C⌉`, `K_n ≠ 0`; RBM2D `KC`, `NonAltEnd:1469`;
-the merged `NQEndLinInst.KC` is at `sz0`). -/
+/-- The grid of the endpoint: `K_n = max 1 ⌈N^{C}⌉` (so `N^C ≤ K_n ≤ ⌈N^C⌉`, `K_n ≠ 0`). -/
 private def nqFlow_K (sz : Sizes d) (C : ℝ) (n : ℕ) : ℕ := max 1 ⌈((sz.size n : ℕ) : ℝ) ^ C⌉₊
 
 private theorem nqFlow_K_ne_zero (sz : Sizes d) (C : ℝ) (n : ℕ) : nqFlow_K sz C n ≠ 0 := by
@@ -503,15 +500,15 @@ private theorem nqFlow_meas_pathH (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ �
 private theorem nqFlow_meas_seqHflow (sz : Sizes d) (n : ℕ) (u : ℝ) : Measurable (sz.seqHflow n u) :=
   Measurable.of_eval_matrix _ fun i j => Sizes.measurable_seqHflow_entry sz n u i j
 
-/-- `(𝓛 - 𝒦)^{(k)}_{u,σ,a}(H)` is measurable in the matrix `H` (as `gridGood_meas_loopFine`,
-`GridGoodN.lean:266`, minus the constant `STKloop`). -/
+/-- `(𝓛 - 𝒦)^{(k)}_{u,σ,a}(H)` is measurable in the matrix `H` (as `gridGood_meas_loopFine` of `GridGoodN`,
+minus the constant `STKloop`). -/
 private theorem nqFlow_meas_STLKM (sz : Sizes d) (n : ℕ) (E u : ℝ) {k : ℕ} (σ : Fin k → Bool)
     (a : Fin k → Zd d (sz.L n)) :
     Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
       sz.STLKM n E u H σ a :=
   (walk_measurable_loopFine d (sz.L n) (sz.W n) (zt E u) σ a).sub_const _
 
-/-- **The transfer** (`map_pathH_eq`, RBM2D `gridTerminal_transfer`, `StoppedEndDefs.lean:254`): a measurable matrix event
+/-- **The transfer** (`map_pathH_eq`, as RBM2D's `gridTerminal_transfer`): a measurable matrix event
 has the same probability on `pathP` at the grid index `j` and on `seqP` at the grid time. -/
 private theorem nqFlow_transfer (sz : Sizes d) {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (j : ℕ) (hs0 : 0 ≤ s n)
     (hsv : s n ≤ v n) (hK : K n ≠ 0)
@@ -535,9 +532,9 @@ private theorem nqFlow_union4 {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω
           ENNReal.ofReal_add hx hx]
     _ ≤ ENNReal.ofReal y := ENNReal.ofReal_le_ofReal (by linarith)
 
-/-- **The endpoint at one non-collapsed section** (`s_n < v_n ≤ t_n`; the shape of RBM2D `gridEnd_to_flow`,
-`StoppedEndDefs.lean:280-470` at `c9a24cf`, with `nqGridEndLinN` in place of `GridEndConcl`): for deterministic
-controls `X m n`, `Y m n ≥ 1` with `Ξ̂^{(𝓛)}_{w,m} ≺ X m` (`STlenL n_ p m`) and `Ξ̂^{(𝓛-𝒦)}_{w,m} ≺ Y m` (`m ≤ n_`)
+/-- **The endpoint at one non-collapsed section** (`s_n < v_n ≤ t_n`; the shape of RBM2D's `gridEnd_to_flow`,
+with `nqGridEndLinN` in place of `GridEndConcl`): for deterministic
+bounds `X m n`, `Y m n ≥ 1` with `Ξ̂^{(𝓛)}_{w,m} ≺ X m` (`STlenL n_ p m`) and `Ξ̂^{(𝓛-𝒦)}_{w,m} ≺ Y m` (`m ≤ n_`)
 uniformly in `w ∈ [s_n, v_n]`, the non-alternating `(𝓛-𝒦)^{(n_)}_{v,σ_n,a_n}/B_v^{n_}` is `≺ B_v^{1/6} Y n_ +
 STbootRHS 2 X Y B_s n_ p`.  The failure event is inside the union of four events of probability `≤ N^{-(D+2)}`:
 the grid walk leaving `GoodSetN` (`hGrid`, the good-event lemma on the window `[s, v]`, at the crude level `Φc` and
@@ -726,7 +723,7 @@ private theorem nqFlow_bootRHS_one_le {lo : ℕ} {XL XLK : ℕ → ℝ} {B : ℝ
 
 /-- **The endpoint at an arbitrary section** `q n = (u_n, σ_n, a_n)` of the parameter set of `STNQConclPT''`
 (`perTimeDomAt_iff_forall_section`): `v_n = u_n` where `s_n < u_n`, `v_n = t_n` elsewhere (so `s < v ≤ t`), the
-controls are the numbers `XL m n (v n)`, `XLK m n (v n)` on the window `[s, v]` (`nqFlow_restrict_pair`), and
+bounds are the numbers `XL m n (v n)`, `XLK m n (v n)` on the window `[s, v]` (`nqFlow_restrict_pair`), and
 `nqFlow_core` gives the bound at the indices with `s_n < u_n`; at the collapsed indices `u_n = s_n` the section is
 bounded by `STLK s` at length `n_` (`‖𝓛-𝒦‖_s ≤ N^τ B_s^{n_} ≤ N^τ ζ B_s^{n_}`, `ζ ≥ 1`). -/
 private theorem nqFlow_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 ≤ d) {κ' 𝔠 τR 𝔡 : ℝ} (hκ : 0 < κ')
@@ -814,16 +811,15 @@ private theorem nqFlow_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 ≤ 
 
 end Endpoint
 
-/-! ## 6. The per-time pin `stOeqNQPT''_holds` -/
+/-! ## 6. The per-time statement `stOeqNQPT''_holds` -/
 
-/-- **`stOeqNQPT''_holds`: the per-time R2* pin for every `d ≥ 3`** (`T2246_stOeqNQPT''_holds`; `lem:STOeq_NQ`
-`3_5:1136`, bound `(am;asoiuw)` `3_5:1143-1148` with `B_s`; proof `3_5:1152-1190`).  `𝔠_d = min (min 𝔠_d^G 𝔠_d^L) (1/(2d))`
+/-- **`stOeqNQPT''_holds`: the per-time statement with `B_s`, for every `d ≥ 3`** (Lemma 4.6 `lem:STOeq_NQ`,
+bound (4.22) `am;asoiuw` with `B_s`, and its proof).  `𝔠_d = min (min 𝔠_d^G 𝔠_d^L) (1/(2d))`
 with `𝔠_d^G`, `𝔠_d^L` the constants of `gridGoodN_holds d` and `nqLinGood_holds d` at the same `(κ, ε, 𝔡, C_d)`:
 `d 𝔠_d ≤ 1/2 < 1` for `st_window`, and `STConStInd` passes to the larger exponents `𝔠_d^G`, `𝔠_d^L`
 (`nqFlow_conStInd_exp_mono`).  The premises of `nqGridEndLinN` come from the flow (`v3_premises_of_stFlow` with `κ/2`,
-`ε/2`; `st_window`); the good-event lemma `gridGoodN_holds` is re-instantiated on every window `[s, v]` (`st_conStInd_sub`,
-`nqFlow_step2_restrict`); then `perTimeDomAt_iff_forall_section` and `nqFlow_section` (paper-delta candidates `T2246a`,
-`T2246b`, `T2246c`). -/
+`ε/2`; `st_window`); the good-event lemma `gridGoodN_holds` is instantiated on every window `[s, v]` (`st_conStInd_sub`,
+`nqFlow_step2_restrict`); then `perTimeDomAt_iff_forall_section` and `nqFlow_section`. -/
 theorem stOeqNQPT''_holds : ∀ d : ℕ, STOeqNQPT'' d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   obtain ⟨𝔠G, hG0, hG1, HG⟩ := gridGoodN_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -857,17 +853,6 @@ theorem stOeqNQPT''_holds : ∀ d : ℕ, STOeqNQPT'' d := by
   intro q
   exact nqFlow_section sz hd (half_pos hκ) hA.1 (half_pos hε) hA.2.1 hA.2.2.1 hA.2.2.2.1 hA.2.2.2.2
     (fun n => (hE' n).le) hs hst ht1 hR hrange hWt hLK hGrid hLin hn hp hXL hXLK hXLp hXLKp q
-
-/-! ## 7. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.NQEndFlowInst`.  Data (the merged instance data, as `inst_OeqNQ'`, `Step34PinsP.lean:184`): `sz0`
-(`d = 3`, `L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2^21`), the flow
-`z0` (`z_n = 1/2 + i N_n^{-4/5}`, `flow_z0` at `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `s ≡ 0`, `t ≡ 1/16` (`t ≤ lemT z_n`,
-`STCaseI`: `sz0_caseI`; `(con_st_ind)` for every `𝔠_d > 0`: `sz0_con`), `C_d = 1`; the case-(ii) data of the
-merged `inst_OeqQtNZ` (`szB`, `zB`, `s ≡ 15/16`, `t ≡ 31/32`).  `STKbound`, `STKward` are theorems of the flow
-(`stKbound_of_flow`, `stKward_of_flow`); what stays a hypothesis of an example is a stochastic premise that is another
-gate's pin (`STLK s`, `STStep2Concl`, the pair hypotheses `Ξ̂ ≺ 1` of the pin, the owed merged pins `STOeqNQ`,
-`STOeqQt`, `STOeqQtNZ`). -/
 
 end RBM.Ind
 

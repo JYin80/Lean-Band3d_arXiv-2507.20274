@@ -12,39 +12,36 @@ import RBM3D.Induction.Step34Pins
 /-!
 # The `𝒬`-hierarchy on the grid (`d ≥ 3`)
 
-Ticket T2132 (S3-13a).  Paper: arXiv:2507.20274, `3_5` (`Def:QtPt` `3_5:1204`, `zjuii1`-`zjuii2`
-`3_5:1300-1330`, `int_K-L+Q` `3_5:1337-1346`).  Port of RBM2D `Induction/AltGridQ.lean` at
-commit `c9a24cf` (sections 1-9 and 11; cited `AltGridQ:<line>`), with `Z2 L ↦ Zd d L`,
-`W² ↦ W^d`, `L² ↦ L^d`, tensors of `m + 1` indices (`Fin (m+1)`, no `[NeZero k]`), the merged
-`STQop`, `STPsum`, `ThetaN`, `Ugen`, `AvecN`, `martIncN`, and an abstract mollifier family `ϑ`
-(RBM2D's `Θ`-product `ϑ` is not admissible at `d ≥ 3`, docstring of `STMollifierProps`).
+Paper: Definition 4.7 (`Def:QtPt`), (4.33) `zjuii1` and (4.34) `zjuii2`, (4.35) `int_K-L+Q`.  As RBM2D's
+`gridDriftQN` and `stoppedDuhamelQN` (with `aTrueQN`, `dGridQN`, `martIncQN`, `rGridQN`), with `Z2 L ↦ Zd d L`, `W² ↦ W^d`, `L² ↦ L^d`, tensors of
+`m + 1` indices (`Fin (m+1)`, no `[NeZero k]`), the vocabulary `STQop`, `STPsum`, `ThetaN`, `Ugen`, `AvecN`,
+`martIncN`, and an abstract mollifier family `ϑ` (RBM2D's `Θ`-product `ϑ` is not admissible at `d ≥ 3`,
+see the docstring of `STMollifierProps`).
 
 ## Main results (namespace `RBM.Ind`)
 
-* **Definitions** (target 1): `aTrueQN` (`A^Q_j = 𝒬_{u_j} A_j`), `dGridQN` (the drift
+* **Definitions**: `aTrueQN` (`A^Q_j = 𝒬_{u_j} A_j`), `dGridQN` (the drift
   `𝒬_u D + ℬ₄ + ℬ₅`), `aFrozQN`, `martIncQN`, `rGridQN`, `lkEnvN`, `driftEnvN`, `qStepErrN`,
   `qErrQN`.
-* **`gridDriftQN`** (target 2): a.e., for every label,
-  `‖𝔼[A^Q_{j+1} | F_j] - 𝒰_{u_j,u_{j+1}} A^Q_j - Δ dGridQN_j‖ ≤ qErrQN_j`, for the merged
+* **`gridDriftQN`**: a.e., for every label,
+  `‖𝔼[A^Q_{j+1} | F_j] - 𝒰_{u_j,u_{j+1}} A^Q_j - Δ dGridQN_j‖ ≤ qErrQN_j`, for the
   mollifier `QopAlgebra_mollifier`; `QGridA_gridDriftQN_of` is the same for any `ϑ` with
   `STMollifierProps`, differentiable on `[0,1)`, and the Taylor bound `QGridA_Taylor2 C₂ ϑ` as
   a hypothesis.
-* **`stoppedDuhamelQN`** (target 3): the pathwise stopped Duhamel expansion of `aFrozQN`
+* **`stoppedDuhamelQN`**: the pathwise stopped Duhamel expansion of `aFrozQN`
   (any `ϑ`).
 * `QGridA_Taylor2`, `QGridA_mollifier_taylor2`: the time regularity of `ϑ` (below).
 
-Not here: RBM2D's section 10 (`sum_weighted_qErrQN_le`, the summed envelope), which needs
-`sum_weighted_stepErrN_le` of ST2-31 (S3-13b).
+The summed envelope of RBM2D's section 10 (`sum_weighted_qErrQN_le`) is not part of this file.
 
 ## The sign of `ℬ₅`
 
-The paper writes `ℬ₅(u) := -[𝒫∘(𝓛-𝒦)_{u,σ}]_{a₁} ∂_uϑ` (`3_5:1345`, last term of `zjuii1`
-`3_5:1315`), with the minus sign inside `ℬ₅`; `QopAlgebra_Qop_hasDerivAt` has
+The paper writes `ℬ₅(u) := -[𝒫∘(𝓛-𝒦)_{u,σ}]_{a₁} ∂_uϑ` ((4.35) `int_K-L+Q`, last term of (4.33)
+`zjuii1`), with the minus sign inside `ℬ₅`; `QopAlgebra_Qop_hasDerivAt` has
 `-(𝒫𝒜)_{a₁} ∂_tϑ`.  `dGridQN` carries `ℬ₅` with this sign
-(`- STPsum X (a 0) * deriv (fun τ => ϑ τ a) u`).  RBM2D's paper-delta #122 corrects a `+`
-printed in the `d = 2` paper; the `d ≥ 3` paper prints `-`, so there is no sign delta here.
+(`- STPsum X (a 0) * deriv (fun τ => ϑ τ a) u`).
 
-## Time regularity of `ϑ` (route (b) of the ticket)
+## Time regularity of `ϑ`
 
 The one-step remainder contains `𝒫X (ϑ_u - ϑ_v + Δ ∂_uϑ_u)` (term `T1` of
 `QGridA_qstep_algebra`), which needs a second-order Taylor bound of `t ↦ ϑ_t`:
@@ -54,17 +51,16 @@ differentiability and `|∂_tϑ| ≤ C (1-t)⁻¹ (ℓ_t^d)^{-m}`.  With the fir
 `β = (1-v)⁻¹`), which sums over the `K` grid steps to `Lp Mk 2 C β (t-s)`, independent of `K`,
 so it cannot be absorbed by `N^{-D_t}` as `K` grows; with the Taylor bound the bound of `T1`
 is `Lp Mk C₂ β² Δ²`.  Hence `QGridA_Taylor2 C₂ ϑ` is a hypothesis of the general theorem, and
-`QGridA_mollifier_taylor2` proves it for the merged mollifier with `C₂ = 1000 (1 + d m)²`
+`QGridA_mollifier_taylor2` proves it for the mollifier `QopAlgebra_mollifier` with `C₂ = 1000 (1 + d m)²`
 (second `t`-derivative of `exp(-u_t S)/z(u_t)^{dm}` through `u_t = y_t⁻¹ + L⁻¹`, with
 `u z₂ ≤ 40 z`, `u² z₃ ≤ 160 z`, `z ≥ 1`; sections 4a-4d).  No change of `STMollifierProps`
 is needed.  The error terms are then `S = stepErrN = O(Δ^{3/2})` and `O(Δ²)` with
-polynomial-in-`N` prefactors `(1 + C (L^d)^m)` (S3-13b sums them).
+polynomial-in-`N` prefactors `(1 + C (L^d)^m)`.
 
 ## Conventions
 
-All helpers are `private` with the prefix `QGridA_`; copies of private helpers of the merged
-`GridDriftN.lean` (`gdn_*`) and of `QopAlgebra.lean` (`qa*`) carry that prefix too.  Hypotheses
-are at the size index `n` only (DECISIONS §29 (4)).
+All helpers are `private` with the prefix `QGridA_`; the helpers taken from `GridDriftN.lean` (`gdn_*`) and
+from `QopAlgebra.lean` (`qa*`) carry that prefix too.  Hypotheses are at the size index `n` only.
 -/
 
 set_option linter.style.longLine false
@@ -285,8 +281,7 @@ open scoped Matrix.Norms.Operator
 
 variable {d L : ℕ} [NeZero L] {g : ℝ}
 
-/-- A row `ℓ¹` norm is at most the `ℓ^∞` operator norm (copied from the private
-`sum_norm_row_le_opNorm` of `Path/UBounds.lean`). -/
+/-- A row `ℓ¹` norm is at most the `ℓ^∞` operator norm (as in `Path/UBounds.lean`). -/
 private theorem QGridA_sum_norm_row_le_opNorm (M : Matrix (Zd d L) (Zd d L) ℂ) (x : Zd d L) :
     ∑ c : Zd d L, ‖M x c‖ ≤ ‖M‖ := by
   have h : ∑ c : Zd d L, ‖M x c‖₊ ≤ ‖M‖₊ := by
@@ -296,8 +291,7 @@ private theorem QGridA_sum_norm_row_le_opNorm (M : Matrix (Zd d L) (Zd d L) ℂ)
     NNReal.coe_le_coe.mpr h
   simpa using h'
 
-/-- `‖Θ_z‖ ≤ (1 - ‖z‖)⁻¹` for complex `z`, `‖z‖ < 1` (copied from the private
-`norm_Theta_le_of_lt` of `Path/UBounds.lean`; merged `norm_Theta_le` at `z = ‖z‖ · (z/‖z‖)`). -/
+/-- `‖Θ_z‖ ≤ (1 - ‖z‖)⁻¹` for complex `z`, `‖z‖ < 1` (as in `Path/UBounds.lean`; `norm_Theta_le` at `z = ‖z‖ · (z/‖z‖)`). -/
 private theorem QGridA_norm_Theta_le_of_lt (hL : 3 ≤ L) {z : ℂ} (hz : ‖z‖ < 1) :
     ‖Theta d L g z‖ ≤ (1 - ‖z‖)⁻¹ := by
   by_cases h0 : z = 0
@@ -314,8 +308,8 @@ private theorem QGridA_norm_Theta_le_of_lt (hL : 3 ≤ L) {z : ℂ} (hz : ‖z�
       field_simp
     rwa [e] at h
 
-/-- Row `ℓ¹` bound for the generator `ξ S Θ_{sξ}` (copied from the private
-`sum_norm_thetaGenMat_row_le` of `Path/UBounds.lean`; port of RBM1D `row_bound_edge`). -/
+/-- Row `ℓ¹` bound for the generator `ξ S Θ_{sξ}` (as RBM1D's
+`row_bound_edge`). -/
 private theorem QGridA_row_thetaGenMat (hL : 3 ≤ L) {ξ : ℂ} {s : ℝ}
     (hsξ : ‖(s : ℂ) * ξ‖ < 1) (x : Zd d L) :
     ∑ c : Zd d L, ‖thetaGenMat d L g ξ s x c‖ ≤ ‖ξ‖ * (1 - ‖(s : ℂ) * ξ‖)⁻¹ := by
@@ -330,8 +324,8 @@ private theorem QGridA_row_thetaGenMat (hL : 3 ≤ L) {ξ : ℂ} {s : ℝ}
     _ = ‖Theta d L g ((s : ℂ) * ξ)‖ := by rw [norm_SB d L g hL, one_mul]
     _ ≤ (1 - ‖(s : ℂ) * ξ‖)⁻¹ := QGridA_norm_Theta_le_of_lt hL hsξ
 
-/-- Row `ℓ¹` bound for the difference of generators at times `u + Δ` and `u` (copied from the
-private `sum_norm_thetaGenMat_diff_row_le` of `Path/UBounds.lean`; resolvent identity
+/-- Row `ℓ¹` bound for the difference of generators at times `u + Δ` and `u` (as in
+`Path/UBounds.lean`; resolvent identity
 `Theta_sub_Theta`). -/
 private theorem QGridA_row_thetaGenMat_diff (hL : 3 ≤ L) {ξ : ℂ} {u Δ : ℝ} (hΔ : 0 ≤ Δ)
     (hu : ‖(u : ℂ) * ξ‖ < 1) (hd : ‖((u + Δ : ℝ) : ℂ) * ξ‖ < 1) (x : Zd d L) :
@@ -380,8 +374,7 @@ private theorem QGridA_norm_real_mul {ξ : ℂ} (hξ : ‖ξ‖ = 1) {w : ℝ} (
     ‖(w : ℂ) * ξ‖ = w := by
   rw [norm_mul, hξ, mul_one, Complex.norm_of_nonneg hw]
 
-/-- `(1 - vξS)Θ_{wξ} = 1 + (w - v) ξ S Θ_{wξ}`, i.e. `𝒰_{u,u+Δ} - 1 = Δ · (generator at u+Δ)`
-(`def_Ustz_2`, `3_5`). -/
+/-- `(1 - vξS)Θ_{wξ} = 1 + (w - v) ξ S Θ_{wξ}`, i.e. `𝒰_{u,u+Δ} - 1 = Δ · (generator at u+Δ)`. -/
 private theorem QGridA_ukerMat_sub_one (hL : 3 ≤ L) {ξ : ℂ} {u Δ : ℝ}
     (hd : ‖((u + Δ : ℝ) : ℂ) * ξ‖ < 1) :
     uKer d L g ξ u (u + Δ) - 1 = (Δ : ℂ) • thetaGenMat d L g ξ (u + Δ) := by
@@ -449,8 +442,8 @@ private theorem QGridA_thetaKer_eq (μ : ℂ) (t : ℝ) :
   unfold thetaKer thetaGenMat
   rw [Matrix.smul_mul]
 
-/-- **One step of `𝒰`** (RBM1D `Uker_step_n`, `Gauss/GridHierarchyN.lean:698` at `c06b103`;
-copy of the private `gdn_Ugen_step_le` of `GridDriftN.lean`, in the `Ugen`/`ThetaN` vocabulary): for `‖A‖_max ≤ M`,
+/-- **One step of `𝒰`** (as RBM1D's `Uker_step_n`; as the private `gdn_Ugen_step_le` of `GridDriftN.lean`, in the
+`Ugen`/`ThetaN` vocabulary): for `‖A‖_max ≤ M`,
 `‖𝒰_{u,u+Δ,σ} A - A - Δ ϴ_{u,σ} A‖ ≤ uStepC k Δ (u+Δ) M`. -/
 private theorem QGridA_Ugen_step_le (hL : 3 ≤ L) {E : ℝ} (hE : |E| ≤ 2) {k : ℕ}
     (σ : Fin k → Bool) {u Δ : ℝ} (hu0 : 0 ≤ u) (hΔ : 0 ≤ Δ) (hv : u + Δ < 1)
@@ -488,7 +481,7 @@ private theorem QGridA_Ugen_step_le (hL : 3 ≤ L) {E : ℝ} (hE : |E| ≤ 2) {k
 
 end UStep
 
-/-! ## 3. Grid-time facts and integrability (copies of the private `gdn_*` helpers of `GridDriftN.lean`) -/
+/-! ## 3. Grid-time facts and integrability (as the private `gdn_*` helpers of `GridDriftN.lean`) -/
 
 section GridFacts
 
@@ -503,7 +496,7 @@ private theorem QGridA_loopOf_length {α : Type*} {k : ℕ} (σ : Fin k → Bool
   simp [loopOf, LoopIdx.length]
 
 /-- The grid-time facts used by `gridDriftN_at`: `Δ ≥ 0`, `u_j ≥ 0`, `u_{j+1} = u_j + Δ`,
-`u_{j+1} < 1`, `Δ ≤ 1` (copy of the private `gdn_time_facts`). -/
+`u_{j+1} < 1`, `Δ ≤ 1` (as the private `gdn_time_facts`). -/
 private theorem QGridA_time_facts (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hs0 : 0 ≤ s n)
     (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) (hj : j < K n) :
     0 ≤ gridStep s t K n ∧ 0 ≤ gridTime s t K n j ∧
@@ -527,9 +520,9 @@ private theorem QGridA_time_facts (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : �
 
 
 
-/-- Integrability of the bounded loop observable along the walk (copy of the private
-`gdn_integrable_loopL`; measurability by the merged `walk_measurable_loopL`, `walk_measurable_blockMat`,
-`pathH_measurable_filt` instead of `GoodEvent_measurable_gloop`). -/
+/-- Integrability of the bounded loop observable along the walk (as the private
+`gdn_integrable_loopL`; measurability by `walk_measurable_loopL`, `walk_measurable_blockMat`,
+`pathH_measurable_filt` instead of RBM2D's `GoodEvent_measurable_gloop`). -/
 private theorem QGridA_integrable_loopL (s t : ℕ → ℝ) (K : ℕ → ℕ) (n i : ℕ) {E : ℝ}
     (hE : |E| < 2) {w : ℝ} (hw : w < 1) (I : LoopIdx (Zd d (sz.L n))) (hwf : I.WF)
     (hn : 1 ≤ I.length) :
@@ -565,11 +558,11 @@ private theorem QGridA_sum_zmod_val {L : ℕ} [NeZero L] (F : ℕ → ℝ) :
     (fun k hk => ⟨(k : ZMod L), Finset.mem_univ _, ZMod.val_natCast_of_lt (Finset.mem_range.1 hk)⟩)
     (fun _ _ => rfl)
 
-/-- `z(u) = Σ_{y ∈ ℤ_L} exp(-u |y|)` (copy of the private `qaZ1` of `QopAlgebra.lean`). -/
+/-- `z(u) = Σ_{y ∈ ℤ_L} exp(-u |y|)` (as the private `qaZ1` of `QopAlgebra.lean`). -/
 private def QGridA_Z1 (L : ℕ) [NeZero L] (u : ℝ) : ℝ :=
   ∑ y : ZMod L, Real.exp (-u * (zdist L y : ℝ))
 
-/-- `z₂(u) = Σ_y |y| exp(-u |y|)` (copy of `qaZ2`). -/
+/-- `z₂(u) = Σ_y |y| exp(-u |y|)` (as `qaZ2`). -/
 private def QGridA_Z2 (L : ℕ) [NeZero L] (u : ℝ) : ℝ :=
   ∑ y : ZMod L, (zdist L y : ℝ) * Real.exp (-u * (zdist L y : ℝ))
 
@@ -596,7 +589,7 @@ private theorem QGridA_Z1_eq_range {L : ℕ} [NeZero L] (u : ℝ) :
     QGridA_Z1 L u = ∑ k ∈ Finset.range L, Real.exp (-u * ((min k (L - k) : ℕ) : ℝ)) :=
   QGridA_sum_zmod_val (fun k => Real.exp (-u * ((min k (L - k) : ℕ) : ℝ)))
 
-/-- Lower bound for the one-dimensional mass: `z(u) ≥ (e u)⁻¹` when `L⁻¹ < u` (copy of `qaZ1_ge`). -/
+/-- Lower bound for the one-dimensional mass: `z(u) ≥ (e u)⁻¹` when `L⁻¹ < u` (as `qaZ1_ge`). -/
 private theorem QGridA_Z1_ge {L : ℕ} [NeZero L] {u : ℝ} (hu : 0 < u) (huL : (L : ℝ)⁻¹ < u) :
     (Real.exp 1)⁻¹ * u⁻¹ ≤ QGridA_Z1 L u := by
   set k := ⌊u⁻¹⌋₊ with hk
@@ -740,10 +733,10 @@ private theorem QGridA_Z1_half_le {L : ℕ} [NeZero L] {u : ℝ} (hu : 0 < u) (h
 
 /-! ## 4b. The scale `u_t = y_t⁻¹ + L⁻¹` and its first two derivatives -/
 
-/-- `y_t = 1 + g (1 - t)^{-1/2}` (copy of `qaY`). -/
+/-- `y_t = 1 + g (1 - t)^{-1/2}` (as `qaY`). -/
 private def QGridA_Y (g t : ℝ) : ℝ := 1 + g / Real.sqrt (1 - t)
 
-/-- `u_t = y_t⁻¹ + L⁻¹` (copy of `qaU`). -/
+/-- `u_t = y_t⁻¹ + L⁻¹` (as `qaU`). -/
 private def QGridA_U (L : ℕ) (g t : ℝ) : ℝ := (QGridA_Y g t)⁻¹ + (L : ℝ)⁻¹
 
 private theorem QGridA_Y_gt {g t : ℝ} (hg : 0 < g) (ht : t < 1) : 1 < QGridA_Y g t := by
@@ -977,7 +970,7 @@ private theorem QGridA_dphi_hasDerivAt (L : ℕ) [NeZero L] (S : ℝ) (n : ℕ) 
   field_simp
   ring
 
-/-- `|Φ'(u)| u ≤ (1 + 40 n) / z^n` given `u z₂ ≤ 40 z` (copy of `qa_core`). -/
+/-- `|Φ'(u)| u ≤ (1 + 40 n) / z^n` given `u z₂ ≤ 40 z` (as `qa_core`). -/
 private theorem QGridA_core1 {u S z z₂ : ℝ} (n : ℕ) (hu : 0 < u) (hS : 0 ≤ S) (hz : 0 < z)
     (hz₂ : 0 ≤ z₂) (h : u * z₂ ≤ 40 * z) :
     |Real.exp (-u * S) / z ^ n * (-S + n * z₂ / z)| * u ≤ (1 + 40 * (n : ℝ)) / z ^ n := by
@@ -1204,30 +1197,29 @@ private theorem QGridA_psi_taylor {L : ℕ} [NeZero L] (hL : 3 ≤ L) {g : ℝ} 
   exact key
 
 
-/-- `S(a) = Σ_{i ≥ 2} |a_i - a₁|` (copy of the private `qaS`). -/
+/-- `S(a) = Σ_{i ≥ 2} |a_i - a₁|` (as the private `qaS`). -/
 private def QGridA_S {d L m : ℕ} [NeZero L] (a : Fin (m + 1) → Zd d L) : ℝ :=
   ∑ i ∈ Finset.univ.erase (0 : Fin (m + 1)), (zdistD d L (a i - a 0) : ℝ)
 
 private theorem QGridA_S_nonneg {d L m : ℕ} [NeZero L] (a : Fin (m + 1) → Zd d L) : 0 ≤ QGridA_S a :=
   Finset.sum_nonneg fun _ _ => Nat.cast_nonneg _
 
-/-- The merged mollifier is `Φ_a(u_t)` (`QopAlgebra_mollifier` unfolds to the private `qaPhi ∘ qaU`). -/
+/-- The mollifier is `Φ_a(u_t)` (`QopAlgebra_mollifier` unfolds to the private `qaPhi ∘ qaU`). -/
 private theorem QGridA_mollifier_eq (d L m : ℕ) [NeZero L] (g t : ℝ) (a : Fin (m + 1) → Zd d L) :
     QopAlgebra_mollifier d L m g t a =
       ((QGridA_phi L (QGridA_S a) (d * m) (QGridA_U L g t) : ℝ) : ℂ) := rfl
 
-/-- **The second-order Taylor hypothesis** on a mollifier family `ϑ` (T2132; paper-delta candidate
-`T2132b`): for `0 ≤ u`, `0 ≤ Δ`, `u + Δ < 1`, every label `a`,
+/-- **The second-order Taylor hypothesis** on a mollifier family `ϑ`: for `0 ≤ u`, `0 ≤ Δ`, `u + Δ < 1`, every label `a`,
 `‖ϑ_{u+Δ,a} - ϑ_{u,a} - Δ ∂_uϑ_{u,a}‖ ≤ C₂ (1-(u+Δ))⁻² Δ²`.  It is not a clause of
 `STMollifierProps` (which has the sup bound, differentiability and `|∂_tϑ| ≤ C (1-t)⁻¹ (ℓ^d)^{-m}`);
-`QGridA_mollifier_taylor2` proves it for the merged mollifier `QopAlgebra_mollifier`. -/
+`QGridA_mollifier_taylor2` proves it for the mollifier `QopAlgebra_mollifier`. -/
 def QGridA_Taylor2 {d m L : ℕ} [NeZero L] (C₂ : ℝ)
     (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ) : Prop :=
   ∀ (u Δ : ℝ), 0 ≤ u → 0 ≤ Δ → u + Δ < 1 → ∀ a : Fin (m + 1) → Zd d L,
     ‖ϑ (u + Δ) a - ϑ u a - (Δ : ℂ) * deriv (fun τ => ϑ τ a) u‖ ≤
       C₂ * ((1 - (u + Δ))⁻¹) ^ 2 * Δ ^ 2
 
-/-- **The Taylor hypothesis holds for the merged mollifier** with `C₂ = 1000 (1 + d m)²`, for every
+/-- **The Taylor hypothesis holds for the mollifier `QopAlgebra_mollifier`** with `C₂ = 1000 (1 + d m)²`, for every
 `g > 0` and `L ≥ 3` (the second `t`-derivative of `exp(-u_t S) / z(u_t)^{dm}`:
 `Φ'' u² ≤ (4 + 3200 n² + 1760 n) z^{-n}`, `|u'| ≤ u/(2(1-t))`, `|u''| ≤ (3/4) u/(1-t)²`, `z ≥ 1`). -/
 theorem QGridA_mollifier_taylor2 (d L m : ℕ) [NeZero L] (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) :
@@ -1251,24 +1243,24 @@ theorem QGridA_mollifier_taylor2 (d L m : ℕ) [NeZero L] (hL : 3 ≤ L) {g : �
 
 end Mollifier
 
-/-! ## 5. The definitions (target 1) -/
+/-! ## 5. The definitions -/
 
 section Defs
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **`A^Q_j = 𝒬_{u_j} A_j`** (RBM2D `aTrueQN`, `AltGridQ:923`), with `A_j = (𝓛-𝒦)_{u_j,σ}(H_j)` the
-merged `AvecN` and `(𝒬_t 𝒜)_a = 𝒜_a - (𝒫𝒜)_{a₁} ϑ_{t,a}` the merged `STQop` for the mollifier family `ϑ`
+/-- **`A^Q_j = 𝒬_{u_j} A_j`** (RBM2D `aTrueQN`), with `A_j = (𝓛-𝒦)_{u_j,σ}(H_j)` given by
+`AvecN` and `(𝒬_t 𝒜)_a = 𝒜_a - (𝒫𝒜)_{a₁} ϑ_{t,a}` given by `STQop` for the mollifier family `ϑ`
 (tensors of `m + 1` indices; `ϑ` an explicit parameter). -/
 def aTrueQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool) (j : ℕ) (ω : PathΩ sz) :
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   STQop (d := d) ϑ (gridTime s t K n j) (AvecN sz E s t K n j σ ω)
 
-/-- **The drift of `int_K-L+Q`** (`3_5:1337-1346`) at the grid time `u = u_j`:
-`𝒬_u` of the merged `GridDriftN` drift `Σ_{l≥3}[𝒦∼(𝓛-𝒦)]^l + 𝓔^{LK×LK} + 𝓔^{G̃}`, plus
+/-- **The drift of `int_K-L+Q`** ((4.35)) at the grid time `u = u_j`:
+`𝒬_u` of the `GridDriftN` drift `Σ_{l≥3}[𝒦∼(𝓛-𝒦)]^l + 𝓔^{LK×LK} + 𝓔^{G̃}`, plus
 `ℬ₄ = [𝒬_u, Θ^{(m+1)}_{u,σ}](𝓛-𝒦)_{u,σ}` and `ℬ₅ = -[𝒫∘(𝓛-𝒦)_{u,σ}] ∂_uϑ` with the paper's sign
-(`3_5:1345`): the minus sign is inside `ℬ₅`, so the drift is `𝒬_u D + ℬ₄ + ℬ₅` and the last Lean term
+((4.35) `int_K-L+Q`): the minus sign is inside `ℬ₅`, so the drift is `𝒬_u D + ℬ₄ + ℬ₅` and the last Lean term
 is `- STPsum X (a 0) * deriv (fun τ => ϑ τ a) u` (the `-(𝒫𝒜)_{a₁} ∂_tϑ` of
 `QopAlgebra_Qop_hasDerivAt`). -/
 def dGridQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) {m : ℕ}
@@ -1287,7 +1279,7 @@ def dGridQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : 
           (STQop (d := d) ϑ (gridTime s t K n j) (AvecN sz E s t K n j σ ω)) a) -
       STPsum (d := d) (AvecN sz E s t K n j σ ω) (a 0) * deriv (fun τ => ϑ τ a) (gridTime s t K n j)
 
-/-- **The frozen `𝒬`-process**: the process stopped at `τ` and then propagated by the kernel,
+/-- **The stopped `𝒬`-process**: the process stopped at `τ` and then propagated by the kernel,
 `A^{Q,frz}_j = 𝒰_{u_{j∧τ},u_j,σ} A^Q_{j∧τ}` (RBM2D `aFrozQN`). -/
 def aFrozQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool)
@@ -1315,7 +1307,7 @@ def rGridQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : 
 end Defs
 
 /-- The deterministic sup bound on `A_j = (𝓛-𝒦)_{u,σ}` at loop length `k` (`|𝓛| ≤ η^{-k} (W^{-d})^{k-1}`
-plus the `𝒦` envelope `Bk`): the bracket of the merged `stepErrN` (RBM2D `lkEnvN`). -/
+plus the `𝒦` envelope `Bk`): the bracket of `stepErrN` (RBM2D `lkEnvN`). -/
 def lkEnvN (d W : ℕ) (E : ℝ) (k : ℕ) (u Bk : ℝ) : ℝ :=
   (etaT E u)⁻¹ ^ k * (((W : ℝ) ^ d)⁻¹) ^ (k - 1) + Bk
 
@@ -1329,12 +1321,12 @@ def driftEnvN (d L W : ℕ) (E : ℝ) (k : ℕ) (u Bk : ℝ) : ℝ :=
       (k : ℝ) ^ 2 * (((etaT E u)⁻¹ ^ k + Bk) * ((etaT E u)⁻¹ ^ k + Bk)) +
       (k : ℝ) * (((etaT E u)⁻¹ + 1) * (etaT E u)⁻¹ ^ (k + 1)))
 
-/-- **The explicit one-step remainder of the `𝒬` identity** (RBM2D `qStepErrN`, `AltGridQ:986`), for
+/-- **The explicit one-step remainder of the `𝒬` identity** (RBM2D `qStepErrN`), for
 tensors of `m + 1` indices, `Lp = (L^d)^m` the number of terms of `𝒫`, `β = (1-(u+Δ))⁻¹`,
 `C`, `C₂` the sup/Lipschitz and second-order Taylor constants of the mollifier (`‖ϑ‖ ≤ C`,
 `‖ϑ_v-ϑ_u‖ ≤ CβΔ`, `‖ϑ_v-ϑ_u-Δϑ̇_u‖ ≤ C₂β²Δ²`):
 `(1 + C Lp) S + Δ Lp Dm (CβΔ) + 2 C Lp Ust Mk + Lp Mk (C₂β²Δ²) + Δ Lp ((m+1) β Mk) (CβΔ)`,
-`S` the merged `stepErrN` bound, `Mk`, `Dm` the sup bounds of `A_j` and of the drift,
+`S` the `stepErrN` bound, `Mk`, `Dm` the sup bounds of `A_j` and of the drift,
 `Ust = uStepC (m+1) Δ (u+Δ)`. -/
 def qStepErrN (d L m : ℕ) (C C₂ u Δ Mk Dm S : ℝ) : ℝ :=
   (1 + C * ((L : ℝ) ^ d) ^ m) * S +
@@ -1345,7 +1337,7 @@ def qStepErrN (d L m : ℕ) (C C₂ u Δ Mk Dm S : ℝ) : ℝ :=
         (C * (1 - (u + Δ))⁻¹ * Δ))
 
 /-- **The explicit one-step remainder of the grid step `j` of `int_K-L+Q`** (RBM2D `qErrQN`), in terms
-of the merged `stepErrN`, `Bk` the `𝒦` envelope on `[0, u_{j+1}]`. -/
+of `stepErrN`, `Bk` the `𝒦` envelope on `[0, u_{j+1}]`. -/
 def qErrQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ)
     (C C₂ Bk : ℝ) (j : ℕ) : ℝ :=
   qStepErrN d (sz.L n) m C C₂ (gridTime s t K n j) (gridStep s t K n)
@@ -1436,9 +1428,8 @@ private theorem QGridA_norm_six_le (T1 T2 T3 T4 T5 T6 : ℂ) :
     _ ≤ ‖T1 + T2‖ + ‖T3‖ + ‖T4‖ + ‖T5‖ + ‖T6‖ := by gcongr; exact norm_add_le _ _
     _ ≤ ‖T1‖ + ‖T2‖ + ‖T3‖ + ‖T4‖ + ‖T5‖ + ‖T6‖ := by gcongr; exact norm_add_le _ _
 
-/-- **The deterministic core of the one-step `𝒬`-identity** (RBM2D `AltGridQ_qstep_algebra`,
-`AltGridQ:1072`; RBM1D `Qstep_algebra`): if `c = 𝒰_{u,u+Δ} X + Δ D + e` with `‖e‖ ≤ S` (the conclusion
-of the merged `gridDriftN`) and the mollifier satisfies `‖ϑ‖ ≤ C` at `u`, `u+Δ`, the Lipschitz bound
+/-- **The deterministic core of the one-step `𝒬`-identity** (RBM2D `AltGridQ_qstep_algebra`; RBM1D `Qstep_algebra`): if `c = 𝒰_{u,u+Δ} X + Δ D + e` with `‖e‖ ≤ S` (the conclusion
+of `gridDriftN`) and the mollifier satisfies `‖ϑ‖ ≤ C` at `u`, `u+Δ`, the Lipschitz bound
 and the second-order Taylor bound between `u` and `u+Δ`, then
 `𝒬_{u+Δ} c - 𝒰_{u,u+Δ}(𝒬_u X) = Δ (𝒬_u D + [𝒬_u, Θ_{u,σ}] X - 𝒫X ∂_uϑ_u) + R`, `‖R‖ ≤ qStepErrN`.
 Exact identity:
@@ -1661,7 +1652,7 @@ private theorem QGridA_norm_avgErr_le (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 
     simpa using h
   · rw [norm_mSigma hE.le]
 
-/-- `∑_b ‖S_{ab}‖ = 1` (copy of the private `HierAlgebra_sum_norm_SB_row`). -/
+/-- `∑_b ‖S_{ab}‖ = 1` (as the private `HierAlgebra_sum_norm_SB_row`). -/
 private theorem QGridA_sum_norm_SB_row {L : ℕ} [NeZero L] (g : ℝ) (hL : 3 ≤ L) (a : Zd d L) :
     ∑ b : Zd d L, ‖SB d L g a b‖ = 1 := by
   have h := sum_nnnorm_SB_row d L g hL a
@@ -1729,14 +1720,14 @@ private theorem QGridA_norm_elklkN_le (n : ℕ) (E u : ℝ)
   norm_primBil_le d (sz.L n) (sz.W n) (sz.lam n) (sz.three_le_L n) (sz.STLKIM n E u M)
     (sz.STLKIM n E u M) I hI hBF0 hBF0 hF hF
 
-/-- The operation `cutGlue` adds exactly one Green edge (copy of the private `OneStep_length_cutGlue`). -/
+/-- The operation `cutGlue` adds exactly one Green edge (as in `Path/OneStep.lean`). -/
 private theorem QGridA_length_cutGlue {α : Type*} (I : LoopIdx α) (b : α) {k : ℕ}
     (hk : k ≤ I.length) : (I.cutGlue k b).length = I.length + 1 := by
   simp only [LoopIdx.length, LoopIdx.cutGlue, List.length_append, List.length_take,
     List.length_cons, List.length_drop] at hk ⊢
   omega
 
-/-- A valid one-based cut preserves well-formedness (copy of the private `OneStep_wf_cutGlue`). -/
+/-- A valid one-based cut preserves well-formedness (as in `Path/OneStep.lean`). -/
 private theorem QGridA_wf_cutGlue {α : Type*} {I : LoopIdx α} (hI : I.WF) (b : α) {k : ℕ}
     (hk1 : 1 ≤ k) (hk : k ≤ I.length) : (I.cutGlue k b).WF := by
   simp only [LoopIdx.WF, LoopIdx.length, LoopIdx.cutGlue, List.length_append,
@@ -1867,13 +1858,13 @@ private theorem QGridA_norm_drift_le (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 :
 
 end DriftEnv
 
-/-! ## 8. Target 2: the one-step identity of `int_K-L+Q` on the grid -/
+/-! ## 8. The one-step identity of `int_K-L+Q` on the grid -/
 
 section GridDriftQ
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `A_i = (𝓛 - 𝒦)_{u_i,σ}` along the walk is the loop of the block matrix minus `𝒦` (copy of the
+/-- `A_i = (𝓛 - 𝒦)_{u_i,σ}` along the walk is the loop of the block matrix minus `𝒦` (as the
 private `gdn_AvecN_eq` of `GridDriftN.lean`). -/
 private theorem QGridA_AvecN_eq (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n i : ℕ) {k : ℕ}
     (σ : Fin k → Bool) (ω : PathΩ sz) (a : Fin k → Zd d (sz.L n)) :
@@ -1902,7 +1893,7 @@ private theorem QGridA_integrable_AvecN (E : ℕ → ℝ) (s t : ℕ → ℝ) (K
 
 /-- **`𝔼[·| F_j]` commutes with `𝒬_{u_{j+1}}`** (a.e., label by label): the `𝒬`-process satisfies
 `𝔼[A^Q_{j+1}(a) | F_j] = (𝒬_{u_{j+1}} c)(a)`, `c_b = 𝔼[A_{j+1}(b) | F_j]` (RBM2D
-`AltGridQ_condExp_aTrueQN`, `AltGridQ:1499`). -/
+`AltGridQ_condExp_aTrueQN`). -/
 theorem QGridA_condExp_aTrueQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
     (hE : |E n| < 2) (hj1 : gridTime s t K n (j + 1) < 1) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool)
@@ -1995,15 +1986,15 @@ section GridDriftQ3
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **`gridDriftQN` for a general mollifier family** (the engine of the target): the one-step
+/-- **`gridDriftQN` for a general mollifier family**: the one-step
 identity of `int_K-L+Q` for every `ϑ` with `STMollifierProps (sz.lam n) C c ϑ`, differentiable on
 `[0, 1)` and satisfying the second-order Taylor bound `QGridA_Taylor2 C₂` (the part of the
-time regularity of `ϑ` that `STMollifierProps` does not give; paper-delta candidate `T2132b`).  A.e.,
+time regularity of `ϑ` that `STMollifierProps` does not give).  A.e.,
 for every label,
 `‖𝔼[A^Q_{j+1} | F_j] - 𝒰_{u_j,u_{j+1}} A^Q_j - Δ dGridQN_j‖ ≤ qErrQN_j`.
-Proof: the merged `gridDriftN_at` gives `c = 𝒰 X + Δ D + e`, `‖e‖ ≤ stepErrN`; conditional
+Proof: `gridDriftN_at` gives `c = 𝒰 X + Δ D + e`, `‖e‖ ≤ stepErrN`; conditional
 expectation commutes with `𝒬_{u_{j+1}}`; the deterministic identity `QGridA_qstep_algebra`
-finishes.  RBM2D `gridDriftQN` (`AltGridQ:1536`). -/
+finishes.  As RBM2D's `gridDriftQN`. -/
 theorem QGridA_gridDriftQN_of {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hE : |E n| < 2)
     (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) (hj : j < K n)
     {m : ℕ} (hm : 1 ≤ m) (σ : Fin (m + 1) → Bool) (Bk : ℝ) (hBk : 0 ≤ Bk)
@@ -2074,7 +2065,7 @@ theorem QGridA_gridDriftQN_of {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : 
           sz.STegtM n (E n) (gridTime s t K n j) (pathH sz s t K n j ω) (loopOf σ b)‖ ≤
         driftEnvN d (sz.L n) (sz.W n) (E n) (m + 1) (gridTime s t K n j) Bk := fun b =>
     QGridA_norm_drift_le sz n hE hu0 hu1 hHb σ hBk hBk' b
-  -- the merged one-step bound in the shape of the algebra lemma
+    -- the one-step bound in the shape of the algebra lemma
   have hc' : ∀ b : Fin (m + 1) → Zd d (sz.L n),
       ‖(pathP sz)[fun ω' => AvecN sz E s t K n (j + 1) σ ω' b | filt sz j] ω -
           Ugen d (sz.L n) (sz.lam n) (E n) σ (gridTime s t K n j)
@@ -2102,15 +2093,15 @@ section Targets
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **Target 2 (`gridDriftQN`)**: the `𝒬`-analogue of the merged `gridDriftN_at` for the merged
+/-- **`gridDriftQN`**: the `𝒬`-analogue of `gridDriftN_at` for the
 mollifier `QopAlgebra_mollifier d L m (sz.lam n)` (`Σ_{a₂..a_n} ϑ = 1`, `‖ϑ‖ ≤ C`, `‖∂_tϑ‖ ≤ C (1-t)⁻¹`,
 `C = (1 + 40 d m) 6^{d m}`, `c = 1/2`: `QopAlgebra_mollifier_props`) and the second-order Taylor
 bound `C₂ = 1000 (1 + d m)²` (`QGridA_mollifier_taylor2`): a.e., for every label,
 `‖𝔼[A^Q_{j+1} | F_j] - 𝒰_{u_j,u_{j+1},σ} A^Q_j - Δ dGridQN_j‖ ≤ qErrQN_j`.
-The hypotheses are those of `gridDriftN_at` (DECISIONS §29 (4): at the size index `n` only; the
+The hypotheses are those of `gridDriftN_at` (at the size index `n` only; the
 envelope `B_k` of `𝒦` on `[0, u_{j+1}]` is a hypothesis as there) plus `0 < sz.lam n` (`g > 0` of the
-mollifier).  `m + 1 ≥ 2` indices.  Time regularity of `ϑ`: route (b) of the ticket
-(`QGridA_gridDriftQN_of` is the version for any `ϑ` with the Taylor bound as a hypothesis). -/
+mollifier).  `m + 1 ≥ 2` indices.  `QGridA_gridDriftQN_of` is the version for any `ϑ` with the Taylor bound
+as a hypothesis. -/
 theorem gridDriftQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hE : |E n| < 2)
     (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) (hj : j < K n)
     (hlam : 0 < sz.lam n) {m : ℕ} (hm : 1 ≤ m) (σ : Fin (m + 1) → Bool) (Bk : ℝ) (hBk : 0 ≤ Bk)
@@ -2134,7 +2125,7 @@ theorem gridDriftQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → �
 
 end Targets
 
-/-! ## 9. Target 3: the stopped Duhamel expansion of the frozen `𝒬`-process -/
+/-! ## 9. The stopped Duhamel expansion of the stopped `𝒬`-process -/
 
 section StoppedDuhamelQ
 
@@ -2157,14 +2148,12 @@ private theorem QGridA_gridTime_lt_one (s t : ℕ → ℝ) (K : ℕ → ℕ) (n 
   rw [gridTime_last s t K n hK] at h
   linarith
 
-/-- **Target 3 (`stoppedDuhamelQN`)**: the `𝒬`-analogue of the merged `stoppedDuhamelN_at` for the frozen
+/-- **`stoppedDuhamelQN`**: the `𝒬`-analogue of `stoppedDuhamelN_at` for the stopped
 process `aFrozQN`, pathwise, for every mollifier family `ϑ`, every stopping index
-`τ : PathΩ sz → ℕ` and every grid index `j ≤ K n` (hypotheses at the size index `n` only,
-DECISIONS §29 (4)):
+`τ : PathΩ sz → ℕ` and every grid index `j ≤ K n` (hypotheses at the size index `n` only):
 `A^{Q,frz}_j = 𝒰_{u_0,u_j} A^Q_0 + Σ_{i<j∧τ} 𝒰_{u_{i+1},u_j}(Δ dGridQN_i + ξ^Q_{i+1} + R^Q_i)`.
 The remainder `R^Q_i = rGridQN` is named by subtraction; `gridDriftQN` bounds it a.e. by `qErrQN`.
-The telescope is the merged `GridDuhamelN_Ugen_duhamel_telescope`. RBM2D `stoppedDuhamelQN`
-(`AltGridQ:1627`). -/
+The telescope is `GridDuhamelN_Ugen_duhamel_telescope`.  As RBM2D's `stoppedDuhamelQN`. -/
 theorem stoppedDuhamelQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (hE : |E n| < 2)
     (hs0 : 0 ≤ s n) (hst : s n ≤ t n) (ht1 : t n < 1) (hK : K n ≠ 0) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool)
@@ -2216,16 +2205,6 @@ theorem stoppedDuhamelQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s t : ℕ �
   refine hsum.trans (Finset.sum_congr rfl fun i _ => hcomp (i + 1) _)
 
 end StoppedDuhamelQ
-
-/-! ## 11. Compiled nonempty instances
-
-The merged admissible sequence `RBM.Gauss.SizesInst.sz0` (`d = 3`, `L_0 = 4`, `W_0 = 32`,
-`lam_0 = 1/64`) and the grid data of `GridDriftNCheck`: `E ≡ 0`, `s ≡ 1/10`, `t ≡ 1/2`, `K ≡ 4`
-(`Δ = 1/10`, `u_0 = 1/10`, `u_1 = 1/5`), size index `n = 0`, `k = 4 = m + 1` (`m = 3`) and the
-alternating sign vector `σ = (+,-,+,-)`; the mollifier is the merged `QopAlgebra_mollifier 3 4 3 (1/64)`.
-Every deterministic hypothesis is discharged: `|E| < 2`, `0 ≤ s ≤ t < 1`, `K ≠ 0`, `j < K`, `0 < lam`,
-the envelope `B_4` of `𝒦` on `[0, u_1]` (`GridDriftN_exists_envelope`); nothing is left as a
-hypothesis (no external input is used). -/
 
 end RBM.Ind
 

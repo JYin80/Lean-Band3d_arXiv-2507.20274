@@ -13,17 +13,17 @@ import RBM3D.Chain.Step5KerGen
 import RBM3D.Chain.B45Gen
 
 /-!
-# S3-15b (ticket T2263): the decay class of the alternating drift, `d ≥ 3`
+# The decay class of the alternating drift, `d ≥ 3`
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`: `int_K-L+Q` (`3_5:1337-1346`), `lem_+Q`
-(`3_5:1284-1289`), `(A4)`, `(A5)` (`3_5:1692-1706`), `(eq:alternatecase2)` (`3_5:1711-1714`).
-Pattern (not a port): RBM2D `Induction/AltEnd.lean:254-264` at `c9a24cf` (`hDcls` at `d = 2`:
-the drift class at `u_j` moved to the index `j + 1` by `ellT_mono`).
+Paper: (4.35) `int_K-L+Q`, Claim 4.9 (`lem_+Q`), (4.59) `y27kasdfg`, (4.61) `A4`, (4.60) `A5`, (4.62)
+`eq:alternatecase2`.  The argument is that of RBM2D (`hDcls` at `d = 2`: the drift class at `u_j` moved
+to the index `j + 1` by `ellT_mono`).
 
 The drift `dFlowQN = 𝒬_u(ℬ₁ + ℬ₂ + ℬ₃) + ℬ₄ + ℬ₅` of `Induction/QDriftA` is in the class `altClsQN`
-of the merged `goodSetN_A0clsQN` (radius `ε'`, `δD = 4 W^{-D'}`):
+of `goodSetN_A0clsQN` (radius `ε'`, `δD = 4 W^{-D'}`):
 
-* `drift13_fastDecay`: the block `ℬ₁ + ℬ₂ + ℬ₃` decays at a `GoodSetN` matrix (clause (Vb));
+* `drift13_fastDecay`: the block `ℬ₁ + ℬ₂ + ℬ₃` decays at a `GoodSetN` matrix (the far-label clause of
+  the drift);
 * `altB4N_fastDecay`: `ℬ₄ = Θ(𝒜 - 𝒬𝒜) - (Θ𝒜 - 𝒬Θ𝒜)` decays at every radius and depth from the
   crude sup of `𝒜 = (𝓛-𝒦)_{u,σ}(H)` alone (`stQop_sub_fastDecay`, `QopDecay_ThetaN_fastDecay`);
 * `altB5N_fastDecay_moll`: `ℬ₅ = -(𝒫𝒜)_{a₁} ∂_uϑ` decays at every radius and depth for the explicit
@@ -32,12 +32,13 @@ of the merged `goodSetN_A0clsQN` (radius `ε'`, `δD = 4 W^{-D'}`):
 * `alt_hDclsQN`: the field `hDcls` of `GridAssemblyHypN` along the walk at the explicit mollifier.
 
 All statements are deterministic and level-free, per matrix or per grid time; `Γ Λ Φ` occur only
-inside `GoodSetN` memberships.  Every unpinned helper is `private` or prefixed `QDriftB_`.
+inside `GoodSetN` memberships.  Every helper that is not part of the statements is `private` or
+prefixed `QDriftB_`.
 
-T2498 (row U3s3a, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`), added after the band text, which is
-unchanged: `drift13_fastDecayg`, `altB4Ng_fastDecay` (with the private `QDriftB_ThetaNg_fastDecay`: the decay of the one-index kernel from
-`Step5KerGen_ThDecay` at the kernel coupling `gK`, crossed to the size level by the comparison R1), `altB5Ng_fastDecay_moll`, `dFlowQNg_clsQNg`,
-`alt_hDclsQNg`; their compiled instances at `bandStep2Mat sz0 E0` close §8.
+The generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`):
+`drift13_fastDecayg`, `altB4Ng_fastDecay` (with the private `QDriftB_ThetaNg_fastDecay`: the decay of the
+one-index kernel from `Step5KerGen_ThDecay` at the kernel coupling `gK`, crossed to the size level by the
+comparison of couplings), `altB5Ng_fastDecay_moll`, `dFlowQNg_clsQNg`, `alt_hDclsQNg`.
 -/
 
 open private qdec_growth qdec_far_dist from RBM3D.Induction.QopDecay
@@ -56,10 +57,10 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
-/-! ## 1. Copies of the private helpers of `QDriftA` (ticket target 1) -/
+/-! ## 1. Helpers from `QDriftA` -/
 
-/-- A pair of indices realising `R ≤ diam_∞ b` gives the `ℓ¹` window `R ≤ zdistD (b i - b j)`.  A copy of
-the private `QDriftA_window_of_diamInf` (`QDriftA.lean:389`, ticket T2250, `88ee6fd`). -/
+/-- A pair of indices realising `R ≤ diam_∞ b` gives the `ℓ¹` window `R ≤ zdistD (b i - b j)`.  As
+the private `QDriftA_window_of_diamInf`. -/
 private theorem QDriftB_window_of_diamInf {d L k : ℕ} (hk : 1 ≤ k) {R : ℝ} (b : Fin k → Zd d L)
     (hb : R ≤ (STdiamInf b : ℝ)) : ∃ i j : Fin k, R ≤ (zdistD d L (b i - b j) : ℝ) := by
   have : Nonempty (Fin k) := ⟨⟨0, hk⟩⟩
@@ -70,8 +71,7 @@ private theorem QDriftB_window_of_diamInf {d L k : ℕ} (hk : 1 ≤ k) {R : ℝ}
   rw [h1]
   exact_mod_cast zdistInf_le_zdistD d L _
 
-/-- The spec of `QDriftA_W0`.  A copy of the private `QDriftA_W0_spec` (`QDriftA.lean:409`, ticket T2250,
-`88ee6fd`); it unfolds the merged `QDriftA_W0`. -/
+/-- The specification of `QDriftA_W0`.  As the private `QDriftA_W0_spec`; it unfolds `QDriftA_W0`. -/
 private theorem QDriftB_W0_spec (d m : ℕ) (K C c C₀ ε' D' : ℝ) (hC : 0 < C) (hc : 0 < c)
     (hε' : 0 < ε') :
     1 < QDriftA_W0 d m K C c C₀ ε' D' ∧
@@ -154,10 +154,10 @@ private theorem QDriftB_two_mul_rpow_le {W D : ℝ} (hW : 2 ≤ W) :
   rw [h]
   nlinarith
 
-/-! ## 3. Target 2: the block `ℬ₁ + ℬ₂ + ℬ₃` decays at a good matrix -/
+/-! ## 3. The block `ℬ₁ + ℬ₂ + ℬ₃` decays at a good matrix -/
 
-/-- **Target 2** (`T2263_drift13_fastDecay`): the `ℬ₁ + ℬ₂ + ℬ₃` block `driftTensorN` decays in the `ℓ¹`
-window of radius `ε'` at a `GoodSetN` matrix: clause (Vb) of `GoodSetN` (`driftTensorN_far_of_goodSet`,
+/-- **`drift13_fastDecay`**: the `ℬ₁ + ℬ₂ + ℬ₃` block `driftTensorN` decays in the `ℓ¹`
+window of radius `ε'` at a `GoodSetN` matrix: the far-label clause of `GoodSetN` (`driftTensorN_far_of_goodSet`,
 the `L^∞` window `ℓ_u W^{τ'}`) and `fastDecay_of_diamInf` (`d W^{τ'} ≤ W^{ε'}`).  No threshold. -/
 theorem drift13_fastDecay :
     ∀ {d : ℕ} (sz : Sizes d), 3 ≤ d → ∀ {m n : ℕ} {E u Γ Λ Φ τ' ε' D' : ℝ}
@@ -172,9 +172,9 @@ theorem drift13_fastDecay :
   exact fastDecay_of_diamInf (by omega) hL1 hdW le_rfl
     (fun b hb => driftTensorN_far_of_goodSet sz hH σ b hb)
 
-/-! ## 4. Target 3: `ℬ₄` decays at every radius and depth from the crude sup alone -/
+/-! ## 4. `ℬ₄` decays at every radius and depth from the crude sup alone -/
 
-/-- **Target 3** (`T2263_altB4N_fastDecay`): `ℬ₄ = Θ(𝒜 - 𝒬𝒜) - (Θ𝒜 - 𝒬Θ𝒜)` (`QopAlgebra_ThetaN_sub`,
+/-- **`altB4N_fastDecay`**: `ℬ₄ = Θ(𝒜 - 𝒬𝒜) - (Θ𝒜 - 𝒬Θ𝒜)` (`QopAlgebra_ThetaN_sub`,
 `STQop`), `𝒜 = (𝓛-𝒦)_{u,σ}(H)`.  `𝒜 - 𝒬𝒜 = (𝒫𝒜)ϑ` and `Θ𝒜 - 𝒬Θ𝒜` decay at `(ε'/2, D'+K+2)` resp.
 `(ε', D'+1)` by `stQop_sub_fastDecay` (crude sups `W^{C₀+Km+1}` resp. `W^{C₀+K+1}`: `B45_Psum_le`,
 `B45_norm_ThetaN_le`), `Θ` maps the first to `(ε', D'+1)` (`QopDecay_ThetaN_fastDecay`), and
@@ -279,11 +279,11 @@ theorem altB4N_fastDecay :
     _ ≤ W ^ (-(D' + 1)) + W ^ (-(D' + 1)) := add_le_add b1 b2
     _ ≤ W ^ (-D') := QDriftB_two_mul_rpow_le hW2
 
-/-! ## 5. Target 4: `ℬ₅` decays at every radius and depth for the explicit mollifier -/
+/-! ## 5. `ℬ₅` decays at every radius and depth for the explicit mollifier -/
 
-/-- **Target 4** (`T2263_altB5N_fastDecay_moll`): `ℬ₅ = (-𝒫𝒜)_{a₁} ∂_uϑ_{u,a}` for `ϑ = QopAlgebra_mollifier`
+/-- **`altB5N_fastDecay_moll`**: `ℬ₅ = (-𝒫𝒜)_{a₁} ∂_uϑ_{u,a}` for `ϑ = QopAlgebra_mollifier`
 is `QopDecay_deriv_fastDecay` with `B = -𝒫𝒜`, `‖𝒫𝒜‖ ≤ ((2^d)^m + (L^d)^m) W^{C₀} ≤ W^{C₀+Km+1}`
-(`B45_Psum_le`).  The merged `STMollifierProps` has no decay of `∂_uϑ` (clause 4 is the size only), so the
+(`B45_Psum_le`).  `STMollifierProps` has no decay of `∂_uϑ` (clause 4 is the size only), so the
 explicit mollifier is used. -/
 theorem altB5N_fastDecay_moll :
     ∀ (d m : ℕ) (K C₀ ε' D' : ℝ), 0 < ε' →
@@ -330,13 +330,13 @@ theorem altB5N_fastDecay_moll :
   rw [e]
   exact Hd (sz.L n) hL3 (sz.lam n) hlam W hWd' u hu0 hu1 hK _ hB
 
-/-! ## 6. Target 5: the drift class at a matrix -/
+/-! ## 6. The drift class at a matrix -/
 
-/-- **Target 5** (`T2263_dFlowQN_clsQN`): `dFlowQN … u … H ∈ altClsQN … ε' Dc uu i (4 W^{-D'})` whenever
+/-- **`dFlowQN_clsQN`**: `dFlowQN … u … H ∈ altClsQN … ε' Dc uu i (4 W^{-D'})` whenever
 `ℓ_u ≤ ℓ_{uu i}` (the index shift of `hDcls`).  Sum-zero by `dFlowQN_sumZero`; on the `L^∞` window
 `ℓ_{uu i} W^{ε'}` the `ℓ¹` window `W^{ε'} ℓ_u` is attained by a pair (`QDriftB_window_of_diamInf`);
-`|𝒬_u(ℬ₁₋₃)| ≤ 2 W^{-D'}` (`drift13_fastDecay`, `QDriftB_W0_spec`), `|ℬ₄|, |ℬ₅| ≤ W^{-D'}` (hypotheses;
-targets 3 and 4). -/
+`|𝒬_u(ℬ₁₋₃)| ≤ 2 W^{-D'}` (`drift13_fastDecay`, `QDriftB_W0_spec`), `|ℬ₄|, |ℬ₅| ≤ W^{-D'}` (hypotheses,
+supplied by `altB4N_fastDecay` and `altB5N_fastDecay_moll`). -/
 theorem dFlowQN_clsQN :
     ∀ {d : ℕ} (sz : Sizes d), 3 ≤ d → ∀ (m : ℕ) (K C c C₀ ε' D' : ℝ), 0 < C → 0 < c → 0 < ε' →
       ∀ {n : ℕ} {E u Γ Λ Φ τ' Dc : ℝ} {uu : ℕ → ℝ} {i : ℕ},
@@ -377,13 +377,13 @@ theorem dFlowQN_clsQN :
         add_le_add (add_le_add hq h4) h5
     _ = 4 * ((sz.W n : ℕ) : ℝ) ^ (-D') := by ring
 
-/-! ## 7. Target 6: the field `hDcls` of `GridAssemblyHypN` along the walk -/
+/-! ## 7. The field `hDcls` of `GridAssemblyHypN` along the walk -/
 
-/-- **Target 6** (`T2263_alt_hDclsQN`): the field `hDcls` of `GridAssemblyHypN` (`GridAssemblyN.lean:209`) for
+/-- **`alt_hDclsQN`**: the field `hDcls` of `GridAssemblyHypN` for
 the alternating chain at the explicit mollifier: `Cls = altClsQN … ε' Dc (gridTime s v Kg n)`,
-`δD = 4 W^{-D'}`, `Dr j ω = dGridQN … j ω`, on `{j < Kg n, j < τ ω}`.  `dGridQN_eq_dFlowQN`; target 5 at
+`δD = 4 W^{-D'}`, `Dr j ω = dGridQN … j ω`, on `{j < Kg n, j < τ ω}`.  `dGridQN_eq_dFlowQN`; `dFlowQN_clsQN` at
 `u = u_j`, `uu = gridTime s v Kg n`, `i = j + 1` (`ℓ_{u_j} ≤ ℓ_{u_{j+1}}`: `ellT_mono`, `ST_gridTime_mono`,
-`ST_gridTime_mem`); targets 3, 4 at `u = u_j` (`(1 - u_j)⁻¹ ≤ (1 - v_n)⁻¹ ≤ W^K`); the mollifier facts
+`ST_gridTime_mem`); `altB4N_fastDecay`, `altB5N_fastDecay_moll` at `u = u_j` (`(1 - u_j)⁻¹ ≤ (1 - v_n)⁻¹ ≤ W^K`); the mollifier facts
 `QopAlgebra_mollifier_props` (`C = (1 + 40dm) 6^{dm}`, `c = 1/2`) and
 `QopAlgebra_mollifier_differentiableAt`. -/
 theorem alt_hDclsQN :
@@ -446,7 +446,7 @@ theorem alt_hDclsQN :
     (H₄ sz n (E n) (gridTime s v Kg n j) (pathH sz s v Kg n j ω) σ hlam hW4' hLK hu0 hu1 hKj hA)
 
 
-/-! ## 3g.-7g. The generic twins over a carrier (T2498) -/
+/-! ## 3g.-7g. The generic twins over a carrier -/
 
 /-! ## 3g. The `ℬ₁ + ℬ₂ + ℬ₃` block decays at a good matrix (over a carrier) -/
 
@@ -454,7 +454,7 @@ section DriftBG
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- **`drift13_fastDecayg`** (band `drift13_fastDecay`): clause (Va) of `GoodSetNg` (`driftTensorNg_far_of_goodSetNg`) and `fastDecay_of_diamInf`. -/
+/-- **`drift13_fastDecayg`** (band `drift13_fastDecay`): the far-label clause of `GoodSetNg` (`driftTensorNg_far_of_goodSetNg`) and `fastDecay_of_diamInf`. -/
 theorem drift13_fastDecayg (Cm : Step2Mat sz) (hd : 3 ≤ d) {m n : ℕ} {u Γ Λ Φ τ' ε' D' : ℝ}
     {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (σ : Fin (m + 1) → Bool)
     (hdW : (d : ℝ) * ((sz.W n : ℕ) : ℝ) ^ τ' ≤ ((sz.W n : ℕ) : ℝ) ^ ε')
@@ -474,7 +474,7 @@ section ThetaG
 variable {d : ℕ}
 
 
-/-- `B_{u,r} ≤ 2 (1 - u)⁻¹` at a real argument (band `qdec_Bparam_le`, `QopDecay:614`). -/
+/-- `B_{u,r} ≤ 2 (1 - u)⁻¹` at a real argument (band `qdec_Bparam_le`). -/
 private theorem QDriftB_BparamR_le {L : ℕ} (g u : ℝ) (hL : 1 ≤ L) (hu : u < 1) {r : ℝ} (hr : 0 ≤ r) :
     BparamR d L g u r ≤ 2 * (1 - u)⁻¹ := by
   have h1u : 0 < 1 - u := by linarith
@@ -494,8 +494,8 @@ private theorem QDriftB_BparamR_le {L : ℕ} (g u : ℝ) (hL : 1 ≤ L) (hu : u 
       ≤ (1 - u)⁻¹ * 1 + (1 - u)⁻¹ := by gcongr
     _ = 2 * (1 - u)⁻¹ := by ring
 
-/-- **`Θ^{(k)}_u` over a carrier maps a decaying tensor to a decaying tensor** (band `QopDecay_ThetaN_fastDecay`, `QopDecay:762`): the class
-`Step5KerGen_ThDecay C gK Λ C₆` of the one-index kernel at the kernel coupling `gK`, the comparison R1 (`tailT^{gK} ≤ A tailT^{lam}`,
+/-- **`Θ^{(k)}_u` over a carrier maps a decaying tensor to a decaying tensor** (band `QopDecay_ThetaN_fastDecay`): the class
+`Step5KerGen_ThDecay C gK Λ C₆` of the one-index kernel at the kernel coupling `gK`, the comparison of couplings (`tailT^{gK} ≤ A tailT^{lam}`,
 `Step5KerGen_tailT_cross`), the row sums `C₆/(1-u)`; a `(u, ε, D)`-decaying tensor of size `≤ W^{C₀}` is mapped to a `(u, 2ε, D - (K + 1))`-decaying
 tensor at the size level `sz.lam`, for `W ≥ W₀(d, k, Λ, C₆, A, K, C₀, ε, D)`, `L^d ≤ W^K`, `(1 - u)⁻¹ ≤ W^K`. -/
 private theorem QDriftB_ThetaNg_fastDecay (d k : ℕ) (hd : 0 < d) (C₆ A K C₀ ε D : ℝ) (hC₆ : 0 ≤ C₆) (hA : 1 ≤ A) (hε : 0 < ε) :
@@ -677,9 +677,9 @@ end ThetaG
 
 section B4G
 
-/-- **`altB4Ng_fastDecay`** (band `altB4N_fastDecay`, `QDriftB:167`): `ℬ₄ = Θ(𝒜 - 𝒬𝒜) - (Θ𝒜 - 𝒬Θ𝒜)` decays at the size level `sz.lam` at every radius and
+/-- **`altB4Ng_fastDecay`** (band `altB4N_fastDecay`): `ℬ₄ = Θ(𝒜 - 𝒬𝒜) - (Θ𝒜 - 𝒬Θ𝒜)` decays at the size level `sz.lam` at every radius and
 depth from the crude sup of `𝒜 = (𝓛-𝒦)_{u,σ}(H)` alone.  The kernel of `Θ` is `Step2Gen_thetaKer` with the class `Step5KerGen_ThDecay Cm.toFlowFM gK Λg C₆`
-(`C₆` before the carrier), the comparison R1 (`gK² ≤ lam² ≤ A gK²`) crosses the tail to `sz.lam` (`QDriftB_ThetaNg_fastDecay`). -/
+(`C₆` before the carrier), the comparison of couplings (`gK² ≤ lam² ≤ A gK²`) crosses the tail to `sz.lam` (`QDriftB_ThetaNg_fastDecay`). -/
 theorem altB4Ng_fastDecay :
     ∀ (d m : ℕ) (Λg K C c C₀ ε' D' C₆ A : ℝ), 3 ≤ d → 0 < Λg → 0 < C → 0 < c → 0 < ε' → 0 ≤ C₆ → 1 ≤ A →
       ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (gK : ℕ → ℝ) (n : ℕ) (u : ℝ)
@@ -786,7 +786,7 @@ theorem altB4Ng_fastDecay :
 
 end B4G
 
-/-- **Band concluder with head `Step5KerGen_ThDecay`** (preflight A3): the premise of `altB4Ng_fastDecay`, `alt_hDclsQNg` and of the row-c bundle holds at the band flow
+/-- **Band concluder with head `Step5KerGen_ThDecay`**: the premise of `altB4Ng_fastDecay` and `alt_hDclsQNg` holds at the band flow
 `bandFM sz E` (`|E n| ≤ 2`) with the constant `C₆ = C₆(d, Λ)` of `step5KerGen_thDecay_band`, at `gK = sz.lam`. -/
 theorem qDriftB_thDecay_band_concl (d : ℕ) (hd : 3 ≤ d) {Λ : ℝ} (hΛ : 0 < Λ) (sz : Sizes d) (E : ℕ → ℝ) (hE : ∀ n, |E n| ≤ 2) :
     Step5KerGen_ThDecay (bandFM sz E) sz.lam Λ (Classical.choose (step5KerGen_thDecay_band d Λ hd hΛ)) :=
@@ -796,7 +796,7 @@ theorem qDriftB_thDecay_band_concl (d : ℕ) (hd : 3 ≤ d) {Λ : ℝ} (hΛ : 0 
 
 section B5G
 
-/-- **`altB5Ng_fastDecay_moll`** (band `altB5N_fastDecay_moll`, `QDriftB:278`): the size level `sz.lam` only; the carrier enters through `STLKMg`. -/
+/-- **`altB5Ng_fastDecay_moll`** (band `altB5N_fastDecay_moll`): the size level `sz.lam` only; the carrier enters through `STLKMg`. -/
 theorem altB5Ng_fastDecay_moll :
     ∀ (d m : ℕ) (K C₀ ε' D' : ℝ), 0 < ε' →
       ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (n : ℕ) (u : ℝ)
@@ -849,8 +849,8 @@ end B5G
 
 section ClsG
 
-/-- **`dFlowQNg_clsQNg`** (band `dFlowQN_clsQN`, `QDriftB:330`): `dFlowQNg … u … H ∈ altClsQN … ε' Dc uu i (4 W^{-D'})` whenever `ℓ_u ≤ ℓ_{uu i}`.  The kernel class
-`ZeroModeGen_KerSums` (the sum-zero of the drift) replaces `|E| ≤ 2`; the good set is `GoodSetNg`. -/
+/-- **`dFlowQNg_clsQNg`** (band `dFlowQN_clsQN`): `dFlowQNg … u … H ∈ altClsQN … ε' Dc uu i (4 W^{-D'})` whenever `ℓ_u ≤ ℓ_{uu i}`.  The kernel class
+`ZeroModeGen_KerSums` (the sum-zero of the drift) is used in place of `|E| ≤ 2`; the good set is `GoodSetNg`. -/
 theorem dFlowQNg_clsQNg :
     ∀ {d : ℕ} (sz : Sizes d) (Cm : Step2Mat sz), 3 ≤ d → ∀ (m : ℕ) (K C c C₀ ε' D' : ℝ), 0 < C → 0 < c → 0 < ε' →
       ∀ {n : ℕ} {u Γ Λ Φ τ' Dc : ℝ} {uu : ℕ → ℝ} {i : ℕ},
@@ -893,9 +893,9 @@ theorem dFlowQNg_clsQNg :
     _ = 4 * ((sz.W n : ℕ) : ℝ) ^ (-D') := by ring
 
 
-/-- **`alt_hDclsQNg`** (band `alt_hDclsQN`, `QDriftB:379`): the field `hDcls` of `GridAssemblyHypNg` for the alternating chain at the explicit mollifier over a carrier:
+/-- **`alt_hDclsQNg`** (band `alt_hDclsQN`): the field `hDcls` of `GridAssemblyHypNg` for the alternating chain at the explicit mollifier over a carrier:
 `Cls = altClsQN … ε' Dc (gridTime s v Kg n)`, `δD = 4 W^{-D'}`, `Dr j ω = dGridQNg … j ω`, on `{j < Kg n, j < τ ω}`.  The kernel enters through
-`ZeroModeGen_KerSums` (sum-zero of the drift) and `Step5KerGen_ThDecay` at `gK` with the comparison R1 (`C₆`, `A` before the carrier). -/
+`ZeroModeGen_KerSums` (sum-zero of the drift) and `Step5KerGen_ThDecay` at `gK` with the comparison of couplings (`C₆`, `A` before the carrier). -/
 theorem alt_hDclsQNg :
     ∀ (d m : ℕ) (Λg K C₀ ε' D' C₆ A : ℝ), 3 ≤ d → 0 < Λg → 0 < ε' → 0 ≤ C₆ → 1 ≤ A →
       ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (gK : ℕ → ℝ) (n : ℕ) (σ : Fin (m + 1) → Bool)
@@ -957,22 +957,6 @@ theorem alt_hDclsQNg :
     (H₄ sz Cm n (gridTime s v Kg n j) (Cm.Hpath s v Kg n j ω) σ hlam hW4' hLK hu0 hu1 hKj hA')
 
 end ClsG
-
-/-! ## 8. Compiled nonempty instances (namespace `QDriftBInst`)
-
-The merged admissible sequence `sz0` (`d = 3`; `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`) and the
-T2250 data (`QDriftAInst`, `QDriftA.lean:649-1335`): `m = 3` (`k = 4`), `K = 2`, the explicit mollifier
-`QopAlgebra_mollifier` (`C = (1 + 40·9)·6^9`, `c = 1/2`), `C₀ = 7`, `ε' = 1/5`, `τ' = 1/10`, `E = 0`, `u = 0`,
-`H = 0 ∈ GoodSetN` at the levels `(Γ, Λ, Φ) = (4, 100, 1)`, at an `n` with `W_n` above the thresholds of the
-targets.  The first part of the namespace copies the private numeric helpers of `QDriftAInst` (ticket T2250,
-`88ee6fd`, `QDriftA.lean:715-806, 808-857, 864-869, 891-892, 1150-1209`, without `mE_zero_im_ge`). -/
-
-/-! ### The instances -/
-
-/-! ### Generic instances (T2498, row U3s3a): the carrier `bandStep2Mat sz0 E0`, `gK = sz0.lam`, `A = 1`
-
-The data of the band instances above; `Step5KerGen_ThDecay` by `step5KerGen_thDecay_band` (`C₆(d, Λ)`), `ZeroModeGen_KerSums` by
-`zeroModeGen_kerSums_band`, `GoodSetNg` by `bandStep2_GoodSetN`. -/
 
 end RBM.Ind
 

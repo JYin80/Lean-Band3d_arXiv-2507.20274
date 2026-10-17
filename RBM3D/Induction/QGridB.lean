@@ -9,9 +9,7 @@ import RBM3D.Induction.GridEnvelopeN
 /-!
 # The envelope of the `𝒬`-process remainder summed over the grid (`d ≥ 3`)
 
-Ticket T2156 (S3-13b, stochastic layer ST-3).  Port of RBM2D `Induction/AltGridQ.lean` §10 at
-commit `c9a24cf` (cited `AltGridQ:<line>`, `:1680-2262`).  Paper: arXiv:2507.20274, `3_5`
-(`int_K-L+Q` `3_5:1337-1346`).
+As RBM2D's `sum_weighted_qErrQN_le`.  Paper: (4.35) `int_K-L+Q`.
 
 ## Main result (namespace `RBM.Ind`)
 
@@ -19,29 +17,29 @@ commit `c9a24cf` (cited `AltGridQ:<line>`, `:1680-2262`).  Paper: arXiv:2507.202
   one-step remainders `qErrQN` of `gridDriftQN` at the envelope
   `B_{m+1} = N^{τ_K} η_{u_{j+1}}^{-(m+1)}`, weighted by `(1 + (1 - u_p)⁻¹)^{m+1}`, sum over `j <
   p` to at most `N^{-D_t}` for every
-  `p ≤ K n`, eventually (RBM2D `sum_weighted_qErrQN_le`, `AltGridQ:2146`).
+  `p ≤ K n`, eventually (RBM2D `sum_weighted_qErrQN_le`).
 
-## Dictionary and `d ≥ 3` changes (CLAUDE.md §5.2)
+## Dictionary and `d ≥ 3` changes
 
 `Z2 L ↦ Zd d L`; `d : Sizes ↦ sz : Sizes d`; tensors of `m + 1` indices, loop length `k = m + 1`
 (RBM2D's `k`), `m ≥ 1`; `Lp = (L²)^{k-1} ↦ (L^d)^m ≤ N^m` (`L^d ≤ W^d L^d = N`); the sum length
 is called `p` (the letter `m` is the tensor index); `W² L² = N ↦ W^d L^d = N`;
-`spectralM ↦ mE`.  Paper-delta candidates:
+`spectralM ↦ mE`.  Differences from RBM2D:
 
-* **T2156a** : the statement carries two fixed constants `0 ≤ C`, `0 ≤ C₂` (the sup bound of the
-  mollifier and its second-order Taylor constant, the arguments of the merged `qStepErrN`),
-  quantified before `∀ᶠ n`; RBM2D has none (`Lp` times the explicit constants of its `Θ`-product).
-* **T2156b** : the decay exponent applied to the merged `sum_weighted_stepErrN_le` is
+* the statement carries two fixed constants `0 ≤ C`, `0 ≤ C₂` (the sup bound of the
+  mollifier and its second-order Taylor constant, the arguments of `qStepErrN`),
+  quantified before `∀ᶠ n`; RBM2D has none (`Lp` times the explicit constants of its `Θ`-product);
+* the decay exponent applied to `sum_weighted_stepErrN_le` is
   `D_t + (m + 1)`, as in RBM2D (`D_t + k`), not `D_t + m`: the factor `1 + C Lp ≤ (1 + C) N^m` of
   `qStepErrN` costs `N^m`, and `(1 + C) N^m N^{-(D_t+m)} = (1+C) N^{-D_t}` cannot be `≤ N^{-D_t}/2`.
-  The four rows of the statement are those of `SumWeightedStepErrN_Stmt` with `D_t + (m+1)` in
+  The four conditions of the statement are those of `SumWeightedStepErrN_Stmt` with `D_t + (m+1)` in
   place of `D_t`; the `Δ²`-part needs only `(m+1) + 2τ_K + (3(m+1)+2)(1-τ') + D_t < C_K`, which
-  the second row implies.
-* **T2156c** : no `STKbound` hypothesis: the sum theorem is deterministic (`STKbound` enters only
-  through `gridDriftN_envelope`, at the consumer).  RBM2D has no pin for this statement.
-* The statement has no `[NeZero k]` (as T2153b).
+  the second condition implies;
+* no `STKbound` hypothesis: the sum theorem is deterministic (`STKbound` enters only
+  through `gridDriftN_envelope`, at the consumer);
+* the statement has no `[NeZero k]`.
 
-Every unpinned helper is `private` with the prefix `qGridB_`.
+Every helper is `private` with the prefix `qGridB_`.
 -/
 
 set_option linter.style.longLine false
@@ -87,8 +85,8 @@ private theorem qGridB_size_cast {d : ℕ} (sz : Sizes d) (n : ℕ) :
   push_cast
   ring
 
-/-- The grid-time facts: `Δ ≥ 0`, `u_j ≥ 0`, `u_{j+1} = u_j + Δ` (copy of the private
-`QGridA_time_facts`, `QGridA.lean:507`). -/
+/-- The grid-time facts: `Δ ≥ 0`, `u_j ≥ 0`, `u_{j+1} = u_j + Δ` (as the private
+`QGridA_time_facts`). -/
 private theorem qGridB_time_facts (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hs0 : 0 ≤ s n)
     (hst : s n ≤ t n) (hK : K n ≠ 0) :
     0 ≤ gridStep s t K n ∧ 0 ≤ gridTime s t K n j ∧
@@ -105,7 +103,7 @@ end Helpers
 
 section Step
 
-/-- `(1 + x)^k - 1 - k x ≤ k 2^k x²` for `0 ≤ x ≤ 1` (copy of the private `gridEnv_binom_rem`). -/
+/-- `(1 + x)^k - 1 - k x ≤ k 2^k x²` for `0 ≤ x ≤ 1` (as the private `gridEnv_binom_rem`). -/
 private theorem qGridB_binom_rem (x : ℝ) (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (k : ℕ) :
     (1 + x) ^ k - 1 - (k : ℝ) * x ≤ (k : ℝ) * 2 ^ k * x ^ 2 := by
   induction k with
@@ -176,7 +174,7 @@ private theorem qGridB_aQ_nonneg {C C₂ : ℝ} (hC : 0 ≤ C) (hC₂ : 0 ≤ C�
 
 /-- **The `Δ²`-part of `qStepErrN`, for `S = 0`** (per step), `k = m + 1`: with `N = W^d L^d`,
 `H ≥ (1-v)⁻¹`, `H/c ≥ η_u⁻¹, η_v⁻¹`, `Y ≥ 1`, `Δ H ≤ 1`, the envelope `Bk = Y η_v^{-k}`:
-`qStepErrN … 0 ≤ Δ² a_Q N^k (Y (H/c)^k)² H²` (RBM2D `AltGridQ_extra_le`, `AltGridQ:1739`). -/
+`qStepErrN … 0 ≤ Δ² a_Q N^k (Y (H/c)^k)² H²` (RBM2D `AltGridQ_extra_le`). -/
 private theorem qGridB_extra_le (d L W : ℕ) (E : ℝ) (m k : ℕ) (hk : k = m + 1) (hm : 1 ≤ m)
     (C C₂ u Δ N H Y c : ℝ) (hC : 0 ≤ C) (hC₂ : 0 ≤ C₂) (hu0 : 0 ≤ u) (hN1 : 1 ≤ N)
     (hWL : (W : ℝ) ^ d * (L : ℝ) ^ d = N) (hW : (1 : ℝ) ≤ W) (hL1 : (1 : ℝ) ≤ L)
@@ -371,7 +369,7 @@ end Step
 
 section Sum
 
-/-- `N^a (N^θ)^p (N^τ)^q N^b = N^{a + θ p + τ q + b}` (copy of the private `gridEnv_mono`). -/
+/-- `N^a (N^θ)^p (N^τ)^q N^b = N^{a + θ p + τ q + b}` (as the private `gridEnv_mono`). -/
 private theorem qGridB_mono (N : ℝ) (hN : 0 < N) (a : ℕ) (θ : ℝ) (p : ℕ) (τ : ℝ) (q : ℕ)
     (b : ℝ) :
     N ^ a * (N ^ θ) ^ p * (N ^ τ) ^ q * N ^ b = N ^ ((a : ℝ) + θ * p + τ * q + b) := by
@@ -379,7 +377,7 @@ private theorem qGridB_mono (N : ℝ) (hN : 0 < N) (a : ℕ) (θ : ℝ) (p : ℕ
     ← Real.rpow_mul hN.le, ← Real.rpow_mul hN.le, ← Real.rpow_add hN, ← Real.rpow_add hN,
     ← Real.rpow_add hN]
 
-/-- `A N^e ≤ N^f` eventually, for `e < f` (copy of the private `gridEnv_eventually_le`). -/
+/-- `A N^e ≤ N^f` eventually, for `e < f` (as the private `gridEnv_eventually_le`). -/
 private theorem qGridB_eventually_le {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto)
     (A e f : ℝ) (hef : e < f) :
     ∀ᶠ n : ℕ in atTop, A * ((sz.size n : ℕ) : ℝ) ^ e ≤ ((sz.size n : ℕ) : ℝ) ^ f := by
@@ -391,7 +389,7 @@ private theorem qGridB_eventually_le {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTe
         mul_le_mul_of_nonneg_right hA (Real.rpow_nonneg hN0.le _)
     _ = ((sz.size n : ℕ) : ℝ) ^ f := by rw [← Real.rpow_add hN0]; congr 1; ring
 
-/-- A uniform lower bound `0 < c ≤ 1`, `c ≤ Im m(E n)` in the bulk (copy of the private
+/-- A uniform lower bound `0 < c ≤ 1`, `c ≤ Im m(E n)` in the bulk (as the private
 `gridEnv_exists_c`). -/
 private theorem qGridB_exists_c {κ : ℝ} (hκ : 0 < κ) {E : ℕ → ℝ}
     (hE : ∀ n, |E n| ≤ 2 - κ) :
@@ -410,7 +408,7 @@ private theorem qGridB_exists_c {κ : ℝ} (hκ : 0 < κ) {E : ℕ → ℝ}
 /-- **The `Δ²`-part summed over the grid**, at a fixed size index (per-step bound
 `qGridB_extra_le`, `p Δ² ≤ K Δ² ≤ N^{-C_K}`, weight `≤ (2H)^k`), as one `N`-monomial:
 `≤ 2^k a_Q c^{-2k} N^k H^{3k+2} Y² N^{-C_K}`, `H = N^{1-τ'}`, `Y = N^{τ_K}`, `c ≤ Im m(E n)`
-(RBM2D `AltGridQ_extra_sum_le`, `AltGridQ:1951`). -/
+(RBM2D `AltGridQ_extra_sum_le`). -/
 private theorem qGridB_extra_sum_le {d : ℕ} (sz : Sizes d) {τ' τK C_K C C₂ : ℝ} {E s t : ℕ → ℝ}
     {K : ℕ → ℕ} (m k : ℕ) (hk : k = m + 1) (hm : 1 ≤ m) (hC : 0 ≤ C) (hC₂ : 0 ≤ C₂)
     (c : ℝ) (n : ℕ) (hc0 : 0 < c) (hc1 : c ≤ 1)
@@ -546,22 +544,22 @@ private theorem qGridB_extra_sum_le {d : ℕ} (sz : Sizes d) {τ' τK C_K C C₂
 
 end Sum
 
-/-! ## 4. Target 1: `sum_weighted_qErrQN_le` -/
+/-! ## 4. `sum_weighted_qErrQN_le` -/
 
 section Main
 
-/-- **Target 1 (`sum_weighted_qErrQN_le`)**: on the grid `u_j = gridTime s t K n j` with
+/-- **`sum_weighted_qErrQN_le`**: on the grid `u_j = gridTime s t K n j` with
 `K n ≥ N^{C_K}`, the one-step remainders `qErrQN` of `gridDriftQN` (for the sup constant `C` and
 the Taylor constant `C₂` of the mollifier, any `0 ≤ C, C₂`; `gridDriftQN` has
 `C = (1 + 40 d m) 6^{d m}`, `C₂ = 1000 (1 + d m)²`) at the envelope
 `B_{m+1} = N^{τ_K} η_{u_{j+1}}^{-(m+1)}`, weighted by the coarse row bound
 `(1 + (1 - u_p)⁻¹)^{m+1}` of `Ugen`, sum over `j < p` to at most `N^{-D_t}` for every `p ≤ K n`,
 eventually.  `m ≥ 1` is the tensor index (`m + 1` indices, loop length `k = m + 1`).  The four
-rows are those of the merged `SumWeightedStepErrN_Stmt` (`θ = 1 - τ'`, `RangeCond τ' t`) with the
+conditions are those of `SumWeightedStepErrN_Stmt` (`θ = 1 - τ'`, `RangeCond τ' t`) with the
 decay exponent `D_t + (m + 1)` (the factor `1 + C Lp ≤ (1 + C) N^m` of `qErrQN`); the `Δ²`-part
-of `qErrQN` needs only `(m+1) + 2τ_K + (3(m+1)+2)θ + D_t < C_K`, which the second row implies.
-RBM2D `sum_weighted_qErrQN_le` (`AltGridQ:2146`); new fixed constants `C, C₂` (T2156a), decay
-exponent `D_t + (m + 1)` (T2156b), no `STKbound` (T2156c). -/
+of `qErrQN` needs only `(m+1) + 2τ_K + (3(m+1)+2)θ + D_t < C_K`, which the second condition implies.
+As RBM2D's `sum_weighted_qErrQN_le`, with fixed constants `C, C₂`, decay
+exponent `D_t + (m + 1)`, and no `STKbound`. -/
 theorem sum_weighted_qErrQN_le (d : ℕ) (sz : Sizes d) {κ τ' τK C_K D_t C C₂ : ℝ}
     {E s t : ℕ → ℝ} {K : ℕ → ℕ} (m : ℕ) (hC : 0 ≤ C) (hC₂ : 0 ≤ C₂)
     (hκ : 0 < κ) (hτ' : 0 < τ') (hτ'1 : τ' ≤ 1) (hτK : 0 < τK) (hDt : 0 ≤ D_t) (hm : 1 ≤ m)
@@ -678,17 +676,6 @@ theorem sum_weighted_qErrQN_le (d : ℕ) (sz : Sizes d) {κ τ' τK C_K D_t C C�
   linarith [hp1, hp2]
 
 end Main
-
-/-! ## 5. The compiled nonempty instance at `d = 3`, on the merged `sz0`
-
-`RBM.Gauss.SizesInst.sz0` (`d = 3`, `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `N_n = (W_n L_n)^3`) and the
-grid data of the merged `sum_weighted_stepErrN_instance` (`E ≡ 0`, `s ≡ 0`, `t ≡ 1/2`,
-`RangeCond sz0 (1/2) t`): `κ = 1`, `m = 3` (`m + 1 = 4` indices, as the merged `gridDriftQN_instance`),
-`τ' = τ_K = 1/2`, `D_t = 1`, `C_K = 31`, `K n = N_n^{31}`, and the constants of the merged
-`gridDriftQN` at `d = 3`, `m = 3`: `C = (1 + 40·9) 6^9`, `C₂ = 1000 (1 + 9)²`.  The four rows read
-`30 < 31`, `20 < 31`, `10.5 < 31`, `0.5 < 31`.  Every hypothesis is discharged; nothing is left as
-a hypothesis (the merged grid `K n = N_n^{21}` of `sum_weighted_stepErrN_instance` is too small:
-the first row at `D_t + (m + 1)` is `30`). -/
 
 end RBM.Ind
 

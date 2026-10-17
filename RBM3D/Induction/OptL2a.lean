@@ -10,26 +10,22 @@ import RBM3D.Induction.NewKLK
 set_option linter.style.longLine false
 
 /-!
-# ST2-14 (ticket T2110): `(eq:opt_L2)`, part 1: the Grönwall inequality `(eq:Gronwall_2L_max)` on the grid
+# `(eq:opt_L2)`, part 1: the Grönwall inequality `(eq:Gronwall_2L_max)` on the grid
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `(lokis2)` `3_5:466`,
-`(eq:opt_L2)` `3_5:470`, `(l>0EQ)` `3_5:474`, `(eq:Gronwall_2L_max)` `3_5:481`.  New; no port.
+Paper: (3.38) `lokis2`, (3.39) `eq:opt_L2`, (3.40) `l>0EQ`, (3.41) `eq:Gronwall_2L_max`.
 
-Targets (section 7), all for a time window `[s, T]` (`T` is the end of the grid; ST2-15 takes
-`T = u` for each section `u ∈ [s,t]`, runs the linear Grönwall step `ST_gronwall`, chooses `𝔠₀`, and
-proves `STOptL2`):
-* `stOptL2a_drift` (Target 1, `(l>0EQ)`): w.h.p. on the grid, drift of `(𝓛-𝒦)^{(2)}` `≤ C₀ (1-u_j)⁻¹ J_j
+Three results (section 7), all for a time window `[s, T]` (`T` is the end of the grid):
+* `stOptL2a_drift` ((3.40) `l>0EQ`): w.h.p. on the grid, drift of `(𝓛-𝒦)^{(2)}` `≤ C₀ (1-u_j)⁻¹ J_j
   + N^τ η_{u_j}⁻¹ λ^{3/2}`, from `lem:newKLK` at `ℓ = 0` (`stNewKLK_holds`, deterministic form
-  `OptL2a_drift_matrix`, `OptL2a_drift_grid`) and the light-weight term (pin `STLWB`);
-* `stOptL2a_martingale` (Target 2): `|Mart_k| ≤ N^τ λ^{5/4}` w.h.p., from `stEMn2Poly_holds` and the pin
-  `STGridMart` (its Markov step `3_5:476–478`);
-* `stOptL2a_gronwall` (Target 3, `(eq:Gronwall_2L_max)`): `J_k ≤ N^τ (B_s² + λ^{5/4}) + Δ Σ_{j<k} (C₀/(1-u_j)) J_j`
+  `OptL2a_drift_matrix`, `OptL2a_drift_grid`) and the light-weight term (hypothesis `STLWB`);
+* `stOptL2a_martingale`: `|Mart_k| ≤ N^τ λ^{5/4}` w.h.p., from `stEMn2Poly_holds` and the hypothesis
+  `STGridMart` (its Markov step, in the proof of (3.40) `l>0EQ`);
+* `stOptL2a_gronwall` ((3.41) `eq:Gronwall_2L_max`): `J_k ≤ N^τ (B_s² + λ^{5/4}) + Δ Σ_{j<k} (C₀/(1-u_j)) J_j`
   w.h.p. for all `k ≤ K_n`, in the form that `ST_gronwall` consumes.
 
-`λ = ((1-s)/(1-T)) W^{-d}B_{T,0}` (`OptL2alam`) is the paper's `W^{-c₀}` of `(lokis2)`; the control of the
-pins is `Ψ = min(√λ, W^{-ε₀})` (`OptL2aPsi`), equal to `√λ` for large `n`.  Of `(con_st_ind)` only the first
-conjunct `B_T^{𝔠_d} ≤ (1-T)/(1-s)` with `𝔠_d ≤ 1/2` is used.  The final section holds one compiled `example` per
-target at `d = 3` (`sz0`).
+`λ = ((1-s)/(1-T)) W^{-d}B_{T,0}` (`OptL2alam`) is the paper's `W^{-c₀}` of (3.38) `lokis2`; the bound of the
+hypotheses is `Ψ = min(√λ, W^{-ε₀})` (`OptL2aPsi`), equal to `√λ` for large `n`.  Of `(con_st_ind)` only the first
+conjunct `B_T^{𝔠_d} ≤ (1-T)/(1-s)` with `𝔠_d ≤ 1/2` is used.
 -/
 
 noncomputable section
@@ -37,7 +33,7 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## 1. The drift bound of `(l>0EQ)` (deterministic), Target 1 -/
+/-! ## 1. The drift bound of (3.40) `l>0EQ` (deterministic) -/
 
 namespace RBM.Gauss.Sizes
 
@@ -79,7 +75,7 @@ theorem OptL2a_prof_zero (n : ℕ) (u D : ℝ) (a b a' b' : Zd d (sz.L n)) :
   unfold STprof
   rw [h, h]
 
-/-- `Ĵ^0_{u,D} · W^{-d} 𝒯̃^0_{u,D} ≤ J`: at `ℓ = 0` the random control times the (constant) profile
+/-- `Ĵ^0_{u,D} · W^{-d} 𝒯̃^0_{u,D} ≤ J`: at `ℓ = 0` the random bound times the (constant) profile
 is at most the maximum `J`. -/
 theorem OptL2a_Jhat_mul_le (n : ℕ) (E D u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -92,7 +88,7 @@ theorem OptL2a_Jhat_mul_le (n : ℕ) (E D u : ℝ)
   rw [OptL2a_prof_zero sz n u D (p.2 0) (p.2 1) (a 0) (a 1)]
   exact div_le_div_of_nonneg_right (OptL2aJ_ge sz n E u H p) hP.le
 
-/-- **Target 1, matrix level (`(l>0EQ)`, `3_5:474`)**: `lem:newKLK` at `ℓ = 0` bounds the two
+/-- **The drift bound, matrix level ((3.40) `l>0EQ`)**: `lem:newKLK` at `ℓ = 0` bounds the two
 terms `Θ^{(2)}_{u,σ} ∘ (𝓛-𝒦)^{(2)}` and `𝓔^{(𝓛-𝓚)×(𝓛-𝓚)}` of the drift of `(𝓛-𝒦)^{(2)}`
 by `2C (1-u)⁻¹ J`; the quadratic term of `lem:newKLK` is absent at `ℓ = 0`. -/
 theorem OptL2a_drift_matrix {κ 𝔡 C δ₀ : ℝ} (hC : 0 ≤ C) (hnew : STNewKLKAt d κ 𝔡 C δ₀) (n : ℕ)
@@ -120,7 +116,7 @@ theorem OptL2a_drift_matrix {κ 𝔡 C δ₀ : ℝ} (hC : 0 ≤ C) (hnew : STNew
   calc _ ≤ C / (1 - u) * OptL2aJ sz n E u H + C / (1 - u) * OptL2aJ sz n E u H := add_le_add e1 e2
     _ = 2 * C / (1 - u) * OptL2aJ sz n E u H := by ring
 
-/-- **Target 1, grid level**: the drift of `(𝓛-𝒦)^{(2)}` at the grid state `j` is at most
+/-- **The drift bound, grid level**: the drift of `(𝓛-𝒦)^{(2)}` at the grid state `j` is at most
 `C₀ (1-u_j)⁻¹ J_j + |𝓔^{G̃}|` with `C₀ = 2C`, whenever the weak law holds at the grid state. -/
 theorem OptL2a_drift_grid {κ 𝔡 C δ₀ : ℝ} (hC : 0 ≤ C) (hnew : STNewKLKAt d κ 𝔡 C δ₀)
     (s t : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) (hlam : 0 < sz.lam n) (hlam' : sz.lam n ≤ 𝔡⁻¹)
@@ -148,7 +144,7 @@ end Drift
 
 end RBM.Gauss.Sizes
 
-/-! ## 2. The control `Ψ` of the light-weight and martingale pins at a time section -/
+/-! ## 2. The bound `Ψ` of the light-weight and martingale hypotheses at a time section -/
 
 namespace RBM.Gauss.Sizes
 
@@ -158,11 +154,11 @@ section Sections
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `λ_n = ((1-s)/(1-T)) W^{-d}B_{T,0}`: the paper's `W^{-c₀}` of `(lokis2)` (`3_5:466`) at the end
+/-- `λ_n = ((1-s)/(1-T)) W^{-d}B_{T,0}`: the paper's `W^{-c₀}` of (3.38) `lokis2` at the end
 `T` of the time window. -/
 def OptL2alam (s T : ℕ → ℝ) (n : ℕ) : ℝ := (1 - s n) / (1 - T n) * sz.Bctl n (T n)
 
-/-- The deterministic control of `lem:LWterm` and `lem: EMn2_N`: `Ψ_n = min(√λ_n, W^{-ε₀})`, the same
+/-- The deterministic bound of `lem:LWterm` and `lem: EMn2_N`: `Ψ_n = min(√λ_n, W^{-ε₀})`, the same
 for all distances (equal to `√λ_n` for large `n`, `STPsiClass` asks `Ψ ≤ W^{-ε₀}` for every `n`). -/
 def OptL2aPsi (ε₀ : ℝ) (s T : ℕ → ℝ) (n : ℕ) : ℝ :=
   min (Real.sqrt (OptL2alam sz s T n)) (((sz.W n : ℕ) : ℝ) ^ (-ε₀))
@@ -276,7 +272,7 @@ theorem OptL2a_loop_ctl (n : ℕ) {s T : ℕ → ℝ} {u : ℝ} (hsu : s n ≤ u
   exact mul_le_mul h1 h2 hb0 (div_nonneg (by linarith) (by linarith))
 
 /-- **The premises of `lem:LWterm` and `lem: EMn2_N` at a time section `tt_n ∈ [s_n, T_n]`**, with the
-control `Ψ = min(√λ, W^{-ε₀})`: `(eq:Psi)` (`OptL2a_psiClass_const`); `(initialGT2)`: the weak law of
+bound `Ψ = min(√λ, W^{-ε₀})`: `(eq:Psi)` (`OptL2a_psiClass_const`); `(initialGT2)`: the weak law of
 Step 1 (`ε₀ = d c/4`) and `(lokis2)` (`STStep1Loop` at `k = 2`, `((1-s)/(1-u)) B_s ≤ λ`);
 `(eq:LW_assm)`: `(lokis2)`.  `STConStInd` enters through its first conjunct
 `B_T^{𝔠_d} ≤ (1-T)/(1-s)` only (it gives `√λ ≤ W^{-ε₀}` for large `n`). -/
@@ -425,7 +421,7 @@ theorem OptL2a_sections_lw (hd0 : 0 < d) (hLWB : STLWB d)
     (fun n => (tt n).2.2.trans (hTT n)) ε₀ hε₀pos (fun n _ => OptL2aPsi sz ε₀ s T n) hPsi hinit hassm
 
 /-- **`lem: EMn2_N`, first estimate `(eq:MG_conclusion)`, at a time section** (`stEMn2Poly_holds` at the
-premises `OptL2a_premises`): `(𝓔⊗𝓔)^{M,(2;k)}_{tt,σ,a,a} ≺ η⁻¹ Ψ⁵`.  No light-weight pin is used. -/
+premises `OptL2a_premises`): `(𝓔⊗𝓔)^{M,(2;k)}_{tt,σ,a,a} ≺ η⁻¹ Ψ⁵`.  No light-weight hypothesis is used. -/
 theorem OptL2a_sections_mg (hd0 : 0 < d)
     {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) {z : ℕ → ℂ}
     (hflow : STFlow sz κ ε 𝔠 𝔡 z) {s T : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hsT : ∀ n, s n ≤ T n)
@@ -464,7 +460,7 @@ section Events2
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **The light-weight term on the grid** (`lem:LWterm` at every grid time, `(l>0EQ)`, `3_5:474`):
+/-- **The light-weight term on the grid** (`lem:LWterm` at every grid time, (3.40) `l>0EQ`):
 `|𝓔^{G̃,(2)}_{u_j,σ,a}| ≤ N^{ε₁} η_{u_j}⁻¹ Ψ³` for all `j ≤ K_n` and all labels, w.h.p. -/
 theorem OptL2a_event_lw (hd0 : 0 < d) (hLWB : STLWB d)
     {κ ε 𝔡 𝔠 : ℝ} (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) {z : ℕ → ℂ}
@@ -579,7 +575,7 @@ theorem OptL2a_prob_combine {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
     _ ≤ ENNReal.ofReal ((size n : ℝ) ^ (-D')) := ENNReal.ofReal_le_ofReal h2
 
 /-- The martingale term: `M (2MΨ⁵x + N^{-D_m})^{1/2} ≤ 2 M² w⁵` for `Ψ ≤ w²`, `N^{-D_m} ≤ w^{10}`,
-`x ≤ M` (`w = λ^{1/4}`; `(Σ_j Δ W^{-5c₀/2}/η_{u_j})^{1/2} ≺ W^{-5c₀/4}`, `3_5:476-478`). -/
+`x ≤ M` (`w = λ^{1/4}`; `(Σ_j Δ W^{-5c₀/2}/η_{u_j})^{1/2} ≺ W^{-5c₀/4}`). -/
 theorem OptL2a_mart_arith {M w Ψ x Nm : ℝ} (hM : 1 ≤ M) (hw0 : 0 < w) (hΨ0 : 0 < Ψ)
     (hΨw : Ψ ≤ w ^ 2) (hx0 : 0 ≤ x) (hxM : x ≤ M) (hNm0 : 0 ≤ Nm) (hNm : Nm ≤ w ^ 10) :
     M * (2 * M * Ψ ^ 5 * x + Nm) ^ (1 / 2 : ℝ) ≤ 2 * M ^ 2 * w ^ 5 := by
@@ -754,7 +750,7 @@ section Pathwise
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `Δ Σ_{j<k} η_{u_j}⁻¹ ≤ q log((1-s)/(1-T))` along the grid (`Im m(E) ≥ q⁻¹`; the logarithmic time
-sum `ST_logsum`, `3_5:481`). -/
+sum `ST_logsum`). -/
 theorem OptL2a_eta_sum {s T : ℕ → ℝ} (K : ℕ → ℕ) (n : ℕ) {E q : ℝ} (hsT : s n ≤ T n) (hT1 : T n < 1)
     (hK : K n ≠ 0) (hE2 : |E| < 2) (hq : ((mE E).im)⁻¹ ≤ q) {k : ℕ} (hk : k ≤ K n) :
     gridStep s T K n * ∑ j ∈ Finset.range k, (etaT E (gridTime s T K n j))⁻¹ ≤
@@ -810,9 +806,9 @@ theorem OptL2a_eta_sum_mul {s T : ℕ → ℝ} (K : ℕ → ℕ) (n : ℕ) {E q 
   rw [hrew]
   exact mul_le_mul_of_nonneg_left (h.trans h2) ha
 
-/-- **Targets 1-3 on one sample**: on the sample where the drift bound (Target 1), the initial value,
-the martingale bound (Target 2), the remainder and the grid decomposition hold,
-`J_k ≤ α + Δ Σ_{j<k} (C₀/(1-u_j)) J_j` for all `k ≤ K_n` (`(eq:Gronwall_2L_max)`, `3_5:481`). -/
+/-- **The drift bound, the martingale bound and the initial value on one sample**: on the sample where the
+drift bound, the initial value, the martingale bound, the remainder and the grid decomposition hold,
+`J_k ≤ α + Δ Σ_{j<k} (C₀/(1-u_j)) J_j` for all `k ≤ K_n` ((3.41) `eq:Gronwall_2L_max`). -/
 theorem OptL2a_pathwise {κ C₀ : ℝ} (hκ : 0 < κ) (hC₀ : 0 ≤ C₀)
     (s T : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (E : ℝ) (hE : |E| ≤ 2 - κ) (hsT : s n ≤ T n)
     (hT1 : T n < 1) (hK : K n ≠ 0)
@@ -905,7 +901,7 @@ end Pathwise
 
 end RBM.Gauss.Sizes
 
-/-! ## 7. The three targets of ST2-14 -/
+/-! ## 7. The drift bound, the martingale bound and the Grönwall inequality -/
 
 namespace RBM.Gauss.Sizes
 
@@ -972,14 +968,14 @@ namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- **Target 1: the drift bound of `(l>0EQ)`** (`3_5:474`).  For `κ, ε, 𝔡 > 0` there is `C₀ > 0`
+/-- **The drift bound of (3.40) `l>0EQ`**.  For `κ, ε, 𝔡 > 0` there is `C₀ > 0`
 (`C₀ = 2C`, `C` of `lem:newKLK`, depending only on `d, κ, 𝔡`) such that, along a flow `z` and for
 times `0 ≤ s ≤ T ≤ lemT z` with the first conjunct of `(con_st_ind)` (`B_T^{𝔠_d} ≤ (1-T)/(1-s)`,
 `𝔠_d ≤ 1/2`) and Step 1 on `[s,T]`, for every `τ > 0` and every grid `K_n = ⌈N^{CK}⌉` from `s` to `T`, w.h.p.,
 for all `j ≤ K_n` and all labels `(σ,a)`: the drift of `(𝓛-𝒦)^{(2)}` at `u_j` is at most
 `C₀ (1-u_j)⁻¹ J_j + N^τ η_{u_j}⁻¹ λ^{3/2}`, `J_j = max_{σ,a} |(𝓛-𝒦)^{(2)}_{u_j,σ,a}|`,
 `λ = ((1-s)/(1-T)) W^{-d}B_{T,0}` (the paper's `W^{-c₀}`; `λ^{3/2} = W^{-3c₀/2}`).  The light-weight
-term enters through the pin `STLWB`; `lem:newKLK` (`stNewKLK_holds`) at `ℓ = 0` is proved. -/
+term enters through the hypothesis `STLWB`; `lem:newKLK` (`stNewKLK_holds`) at `ℓ = 0` is used. -/
 theorem stOptL2a_drift {d : ℕ} (hd : 3 ≤ d) (hLWB : STLWB d)
     (κ ε 𝔡 : ℝ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1011,7 +1007,7 @@ theorem stOptL2a_drift {d : ℕ} (hd : 3 ≤ d) (hLWB : STLWB d)
   obtain ⟨ε₀, hε₀⟩ : ∃ ε₀ : ℝ, ε₀ = (d : ℝ) * c / 4 := ⟨_, rfl⟩
   obtain ⟨hK0, -⟩ := OptL2a_grid sz K hKn
   obtain ⟨hcardIdx, -, hcardLab, -⟩ := OptL2a_cards sz hsize hCK K hKn
-  -- (E1) the weak law
+    -- the weak law
   have hsmallE1 : ∀ᶠ n in atTop, ∀ u, s n ≤ u → u ≤ T n →
       ((sz.size n : ℕ) : ℝ) ^ (c / 8) * (sz.Bctl n u) ^ (1 / 4 : ℝ) ≤ δ₀ := by
     filter_upwards [hBd, ST_size_pow_small sz hsize (a := c / 8 - c / 4) (δ := δ₀)
@@ -1029,7 +1025,7 @@ theorem stOptL2a_drift {d : ℕ} (hd : 3 ≤ d) (hLWB : STLWB d)
   have hE1 := ST_event_weak sz (κ := κ) (ε := ε) (𝔡 := 𝔡) (𝔠 := 𝔠) (z := z) (s := s) (t := T)
     (T := T) K hs hsT (fun n => le_refl _) hK0 (by linarith : (0 : ℝ) ≤ CK + 5) hcardIdx hS1W
     (ε₁ := c / 8) (by positivity) hsmallE1
-  -- (E3) the light-weight term
+    -- the light-weight term
   have hE3 := OptL2a_event_lw sz hd0 hLWB hκ hε h𝔡 hflow K hs hsT hK0 hTT hS1L hS1W hcB hc hc1 hε₀
     hBd h𝔠d hcon (C₁ := CK + 5) (by linarith) hcardLab hτ
   have hlf := OptL2a_lam_facts sz hc hε₀ h𝔠d hT1
@@ -1066,15 +1062,15 @@ namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- **Target 2: the martingale bound** (`3_5:476-478`).  Under the hypotheses of Target 1 (without
-`STLWB`), for every
+/-- **The martingale bound** (the Markov step in the proof of (3.40) `l>0EQ`).  Under the hypotheses of
+the drift bound (without `STLWB`), for every
 `τ, D > 0` there is a grid exponent `CK` such that on every grid `K_n = ⌈N^{CK}⌉` from `s` to `T` the
 grid decomposition of `STGridMart` (`Sol_CalL`, `lem:DIfREP`) holds with a remainder `|Rem| ≤ N^{-2}`
 and a martingale part with `|Mart_k| ≤ N^τ λ^{5/4}` for all `k ≤ K_n` and all labels, with
 probability `≥ 1 - N^{-D}` (`λ^{5/4} = W^{-5c₀/4}`).  Inputs: `(eq:MG_conclusion)` of
 `stEMn2Poly_holds` with `Ψ = √λ` (the quadratic variation `|(𝓔⊗𝓔)^{M,(2)}_{u_j}| ≤ N^{ε} η_{u_j}⁻¹ λ^{5/2}`,
-`ΔΣ_j η_{u_j}⁻¹ ≤ q log ρ`) and the Markov step of the pin `STGridMart`; no light-weight pin is used
-(`3 ≤ d` is not needed here: only `0 < d`). -/
+`ΔΣ_j η_{u_j}⁻¹ ≤ q log ρ`) and the Markov step of the hypothesis `STGridMart`; no light-weight
+hypothesis is used (`3 ≤ d` is not needed here: only `0 < d`). -/
 theorem stOptL2a_martingale {d : ℕ} (hd0 : 0 < d) (hGM : STGridMart d)
     (κ ε 𝔡 : ℝ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) :
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1245,8 +1241,8 @@ namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- **Target 3: `(eq:Gronwall_2L_max)` on the grid, in the form `ST_gronwall` consumes**
-(`3_5:466–481`, the first part of the proof of `(eq:opt_L2)`).  For `κ, ε, 𝔡 > 0` there is `C₀ > 0`
+/-- **(3.41) `eq:Gronwall_2L_max` on the grid, in the form `ST_gronwall` consumes** (the first part of the
+proof of (3.39) `eq:opt_L2`).  For `κ, ε, 𝔡 > 0` there is `C₀ > 0`
 (`C₀ = 2C`, depending only on `d, κ, 𝔡`) such that for a flow `z`, times `0 ≤ s ≤ T ≤ lemT z`, under
 `(Eq:L-KGt+IND)` at `s` (`STLK`), the first conjunct `B_T^{𝔠_d} ≤ (1-T)/(1-s)` of `(con_st_ind)`
 (`𝔠_d ≤ 1/2`) and Step 1 (`STStep1Loop`, `STStep1Weak` on `[s,T]`), for every `τ, D > 0` there is a
@@ -1255,8 +1251,8 @@ for all `k ≤ K_n`
 `J_k ≤ N^τ ((W^{-d}B_{s,0})² + λ^{5/4}) + Δ Σ_{j<k} (C₀/(1-u_j)) J_j`,
 `J_k = max_{σ,a} |(𝓛-𝒦)^{(2)}_{u_k,σ,a}|` of the grid walk, `λ = ((1-s)/(1-T)) W^{-d}B_{T,0}` (the
 paper's `W^{-c₀}`).  The right side has the form of `ST_gronwall` (`α` constant, `β_j = C₀/(1-u_j)`).
-It combines Target 1 (`stOptL2a_drift`) and Target 2 (`stOptL2a_martingale`) with the initial value
-`J_0 ≺ B_s²` (`STLK`, `ST_grid_whp_zero`).  The two owed pins enter as `STLWB`, `STGridMart`. -/
+It combines the drift bound (`stOptL2a_drift`) and the martingale bound (`stOptL2a_martingale`) with the initial value
+`J_0 ≺ B_s²` (`STLK`, `ST_grid_whp_zero`).  The two further hypotheses are `STLWB`, `STGridMart`. -/
 theorem stOptL2a_gronwall {d : ℕ} (hd : 3 ≤ d) (hLWB : STLWB d) (hGM : STGridMart d)
     (κ ε 𝔡 : ℝ) (hκ : 0 < κ) (hε : 0 < ε) (h𝔡 : 0 < 𝔡) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -1417,13 +1413,3 @@ theorem stOptL2a_gronwall {d : ℕ} (hd : 3 ≤ d) (hLWB : STLWB d) (hGM : STGri
     (fun i k hk => (hQ i k hk).2) (fun i k hk => (hQ i k hk).1))
 
 end RBM.Gauss.Sizes
-
-/-! ## Instances (new): every endpoint theorem at `d = 3`
-
-The data are the merged `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`,
-`lam_n = (2(n+1))^{-6}`, `N_n = (W_n L_n)^3`), the flow `z0` (`flow_z0`, `κ = ε = 𝔡 = 1/10`,
-`𝔠 = 1/6`, `Im z_n = N_n^{-4/5}`), the times `s ≡ 0`, `T ≡ 1/16 ≤ lemT z_n`, `𝔠_d = 1/26`, `τ = D = 1`.
-Discharged in every example: `STFlow`, the time ranges, `𝔠_d ≤ 1/2`, and the first conjunct of
-`(con_st_ind)` (`conStInd_inst`).  What stays a hypothesis of an example is a pin of another gate
-(`STLWB`, `STGridMart`) or a stochastic premise of Step 1 / the induction (`STLK`, `STStep1Loop`,
-`STStep1Weak`). -/

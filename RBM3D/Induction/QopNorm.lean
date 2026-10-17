@@ -7,20 +7,19 @@ import RBM3D.Induction.QopAlgebra
 import RBM3D.Evolution.Pins
 
 /-!
-# S3-05 (ticket T2059): `lem_+Q`, the norm bound on `𝒬_t` and its decay clause
+# `lem_+Q`: the norm bound on `𝒬_t` and its decay clause
 
-Paper: `paper/tex/3_5_Loop_Hierarchy.tex:1284-1289` (`(normQA)`), after `Def:QtPt` (`3_5:1204`).
+Paper: (4.32) `normQA` in Claim 4.9 (`lem_+Q`), after Definition 4.7 (`Def:QtPt`).
 
-* `stQopNorm_holds`: the merged pin `STQopNorm` (`Step34Pins.lean:528`), with
+* `stQopNorm_holds`: the statement `STQopNorm`, with
   `C_n = C + 2 d m + K m` (it depends on `(d, m, K, C)` only, not on `Λ, c, ε, D, L, g, W, t`).
-  Route of RBM2D `Induction/QopBounds.lean:525` (`qopNorm`, commit `c9a24cf`): `𝒬_t 𝒜 = 𝒜 - (𝒫𝒜) ϑ_t`;
+  As RBM2D's `qopNorm`: `𝒬_t 𝒜 = 𝒜 - (𝒫𝒜) ϑ_t`;
   the near part of `𝒫𝒜` (`|a_i - a₁| < W^ε ℓ_t`) has at most `((2 W^ε ℓ_t + 2)^d)^m` terms, the sup bound of `ϑ`
   gives `(ℓ_t^d)^{-m}`, so `W^{2 d m ε}`; the far part has `≤ (L^d)^m ≤ W^{K m}` terms of size `W^{-D}`;
   `4 ≤ W^ε` absorbs the mollifier constant `C`.
-* `stQop_sub_fastDecay`: the decay clause (RBM2D `qopDecay`, `QopBounds.lean:622`): if `‖𝒜‖_∞ ≤ W^{C₀}` then
+* `stQop_sub_fastDecay`: the decay clause (RBM2D `qopDecay`): if `‖𝒜‖_∞ ≤ W^{C₀}` then
   `𝒜 - 𝒬_t 𝒜 = (𝒫𝒜) ϑ_t` is `(t, ε', D')`-decaying for `W ≥ W₀(d, m, K, C, c, C₀, ε', D')`, `L^d ≤ W^K`.
-  The threshold depends on `K` (and the hypothesis `L^d ≤ W^K` is needed) and not on `Λ`: paper-delta
-  candidate `T2059a`.
+  The threshold depends on `K` (and the hypothesis `L^d ≤ W^K` is needed) and not on `Λ`.
 -/
 
 set_option linter.style.longLine false
@@ -254,9 +253,9 @@ private theorem qn_arith {W ε C K D : ℝ} (d m : ℕ) (hW : 1 < W) (hε : 0 < 
           refine Real.rpow_le_rpow_of_exponent_le hW.le ?_
           linarith
 
-/-! ## 3. The norm bound `(normQA)` -/
+/-! ## 3. The norm bound (4.32) `normQA` -/
 
-/-- **`lem_+Q`, `(normQA)`** (`3_5:1284-1289`): the merged pin `STQopNorm` with
+/-- **`lem_+Q`, (4.32) `normQA`**: the statement `STQopNorm` with
 `C_n = C + 2 d m + K m`. -/
 theorem stQopNorm_holds (d : ℕ) : STQopNorm d := by
   intro _ m Λ K C c _ hK hC hc
@@ -371,10 +370,9 @@ private theorem qn_growth {C c ε' p : ℝ} (hC : 0 < C) (hc : 0 < c) (hε' : 0 
     _ ≤ (C * (2 / c) ^ q) * ((C * (2 / c) ^ q)⁻¹ * Real.exp y) := by gcongr
     _ = Real.exp y := by field_simp
 
-/-- **The decay clause of `lem_+Q`** (`3_5:1284-1289`, ported role of RBM2D `qopDecay`): if `‖𝒜‖_∞ ≤ W^{C₀}` then
+/-- **The decay clause of `lem_+Q`** (in the role of RBM2D's `qopDecay`): if `‖𝒜‖_∞ ≤ W^{C₀}` then
 `𝒜 - 𝒬_t 𝒜 = (𝒫𝒜) ϑ_t` is `(t, ε', D')`-decaying (`EKFastDecay`) for every `ε', D'` (`ε' > 0`) once `W ≥ W₀`, where
-`W₀` depends on `(d, m, K, C, c, C₀, ε', D')` (not on `Λ`, `L`, `g`, `t`); it needs `L^d ≤ W^K` (paper-delta
-candidate `T2059a`). -/
+`W₀` depends on `(d, m, K, C, c, C₀, ε', D')` (not on `Λ`, `L`, `g`, `t`); it needs `L^d ≤ W^K`. -/
 theorem stQop_sub_fastDecay (d m : ℕ) (K C c C₀ ε' D' : ℝ) (hC : 0 < C) (hc : 0 < c) (hε' : 0 < ε') :
     ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (L : ℕ) (_ : 3 ≤ L) (g : ℝ), 0 < g →
       ∀ W : ℝ, W₀ ≤ W → (L : ℝ) ^ d ≤ W ^ K →
@@ -461,7 +459,5 @@ theorem stQop_sub_fastDecay (d m : ℕ) (K C c C₀ ε' D' : ℝ) (hC : 0 < C) (
   calc E * (C * Real.exp (-y)) = E * (C * Real.exp (-y)) * G * G⁻¹ := by field_simp
     _ ≤ 1 * G⁻¹ := by gcongr
     _ = G⁻¹ := one_mul _
-
-/-! ## 5. Compiled nonempty instances (`d = 3`, `m = 1`, `Λ = 1`, `K = 2`, `L = 5`, `g = 1`, `t = 1/2`) -/
 
 end RBM.Gauss.Sizes

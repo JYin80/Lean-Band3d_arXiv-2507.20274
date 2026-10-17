@@ -17,32 +17,25 @@ import RBM3D.Propagator.Prop5Short
 /-!
 # The grid ingredients of the zero-mode-removed evolution `Q^{(A)}(𝓛 − 𝒦)^{(k)}` (`d ≥ 3`)
 
-Ticket T2274 (S3-21, stochastic layer ST-3, case (ii) `1 − s ≤ ilambda²/L²`).  Paper:
-arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `def;zero_mode_remove`
-(`3_5:1446`), `(normQA2)` (`3_5:1475`), `lem: newPQ` (`3_5:1482`), the commutation
-(`3_5:1540-1545`), `(iisuwjyys)` (`3_5:1546`), `lem:STOeq_Qt_nonzero` (`3_5:1561`),
-`lem:sum_decay_nonzero` (`3_5:1666`), the proof `3_5:1889-1928`, and
-`A_deterministic_estimates.tex:204-232`.  No RBM1D/RBM2D source (portmap `T2041` P.7 rows S3-20,
-S3-21): the zero-mode regime does not exist for `d ≤ 2`.
+Case (ii), `1 − s ≤ ilambda²/L²`.  Paper: Definition 4.12 (`def;zero_mode_remove`), (4.43) `normQA2`,
+Lemma 4.13 (`lem: newPQ`), the commutation (4.46) `eq_L-Keee_nonzeromode`, (4.47) `iisuwjyys`,
+Lemma 4.14 (`lem:STOeq_Qt_nonzero`), Lemma 4.17 (`lem:sum_decay_nonzero`) and its proof (Subsection 4.5
+and Appendix A).  No RBM1D/RBM2D source: the zero-mode regime does not exist for `d ≤ 2`.
 
 ## What is here
 
 * §1 (`RBM`) `zeroModeSet_idem` : `Q^{(A)} ∘ Q^{(A)} = Q^{(A)}`; the real kernel `qtNZ_q` of
   `Q^{(A)}` and its row sum `≤ 2^{|A|}`; the `∞→∞` duality `qtNZ_sum_norm_le_of_bound`.
 * §2 (`RBM.Ind`) the vocabulary `cQVNZN`, `assembledRHSNZN`.
-* §3 `nzUgen_holds`: `lem:sum_decay_nonzero` for the grid kernel `Ugen`, loss-free (EK-5), as an
+* §3 `nzUgen_holds`: Lemma 4.17 `lem:sum_decay_nonzero` for the grid kernel `Ugen`, loss-free, as an
   operator bound and as a row-sum bound with one constant.
 * §4 `nz_hker`, §5 `nz_hdriftN`: the fields `hker`, `hdrift` of `GridAssemblyHypN` for the class
   "fixed points of `Q^{(A)}`".
 * §6 `subGaussStop_nzN`: the Azuma input `SubGaussStopN` for `Q^{(A)} Z_j`.
 * §7 `yMomentBounds_nzN`: the `Y`-moment inputs `YMomentBoundsN` pass to `Q^{(A)} Y`.
 * §8 `budgetNZN`: the budget `assembledRHSNZN ≤ N^{ε₀} (Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^k`.
-* §9 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.QtNonzeroInst`): every target at
-  concrete nondegenerate data (`szB` for `nzUgen_holds`, `nz_hker`; the merged `sz0` data for
-  the others).
 
-No conclusion pin is proved here; the registry is unchanged.  Every helper that the ticket does not
-pin is `private` or carries the prefix `qtNZ_`.
+Every helper that is not part of the statements is `private` or carries the prefix `qtNZ_`.
 -/
 
 set_option linter.style.longLine false
@@ -92,7 +85,7 @@ private theorem qtNZ_zeroModeSet_eq {n : ℕ} (A : Finset (Fin n)) (T : (Fin n �
   funext i
   by_cases hi : i ∈ A <;> simp [hi]
 
-/-- **`Q^{(A)} ∘ Q^{(A)} = Q^{(A)}`** (target 3): `Q^{(i)}` is the projection `I - P^{(i)}`
+/-- **`Q^{(A)} ∘ Q^{(A)} = Q^{(A)}`**: `Q^{(i)}` is the projection `I - P^{(i)}`
 (`P^{(i)} P^{(i)} = P^{(i)}`, `projMat_mul_self`) and the `Q^{(i)}` commute. -/
 theorem zeroModeSet_idem (d L : ℕ) [NeZero L] (n : ℕ) (A : Finset (Fin n))
     (T : (Fin n → Zd d L) → ℂ) :
@@ -167,7 +160,7 @@ private theorem qtNZ_sum_abs_f_le {k : ℕ} (A : Finset (Fin k)) (i : Fin k) (x 
       by_cases hxc : x = c <;> simp [hxc] : |(if x = c then (1 : ℝ) else 0)| = if x = c then 1 else 0)]
     exact hone
 
-/-- **The row sum of the real kernel of `Q^{(A)}` is at most `2^{|A|}`** (the `(normQA2)` of the paper
+/-- **The row sum of the real kernel of `Q^{(A)}` is at most `2^{|A|}`** ((4.43) `normQA2`
 in the form needed for the moments of `Q^{(A)} Y`). -/
 private theorem qtNZ_sum_abs_q_le {k : ℕ} (A : Finset (Fin k)) (b : Fin k → Zd d L) :
     ∑ b', |qtNZ_q d L A b b'| ≤ 2 ^ A.card := by
@@ -212,7 +205,7 @@ end Projection
 
 end RBM
 
-/-! ## 2. The vocabulary (targets 1-2 of the ticket, verbatim) -/
+/-! ## 2. The vocabulary -/
 
 namespace RBM.Ind
 
@@ -220,16 +213,16 @@ open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
 /-- The sub-Gaussian proxy of the `j`-th propagated zero-mode-removed increment (case (ii)):
 `Δ · k · C² · (Γ(ΓΛ) B_{u_j}^{2k}/η_{u_j} + W^{-D''})` (`C` = row-sum bound of `Q^{(A)}∘𝒰`;
-no ratio factor, no far part: the analogue of `cQVNonAltN`, `NQGood2.lean:115`). -/
+no ratio factor, no far part: the analogue of `cQVNonAltN`). -/
 def cQVNZN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (C Γ Λ D'' : ℝ) (j : ℕ) : ℝ≥0 :=
   (gridStep s v K n * ((k : ℝ) * C ^ 2 *
     (Γ * (Γ * Λ) * ((sz.Bctl n (gridTime s v K n j)) ^ (2 * k) / etaT (E n) (gridTime s v K n j)) +
       ((sz.W n : ℕ) : ℝ) ^ (-D'')))).toNNReal
 
-/-- The right side of `AssembledN` (`GridAssemblyN.lean:227`) at `m = K n` for the zero-mode-removed
+/-- The right side of `AssembledN` at `m = K n` for the zero-mode-removed
 evolution: kernel weight `κ ≡ C`, `εK ≡ 0`, drift level `cA · dDriftLinN`, proxy `cQVNZN`,
-step error `cA · stepErrN` (`cA = 2^{|A|}`); the analogue of `assembledRHSLinN` (`NQLin.lean:825`). -/
+step error `cA · stepErrN` (`cA = 2^{|A|}`); the analogue of `assembledRHSLinN`. -/
 def assembledRHSNZN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (C cA : ℝ) (Γ Λ Φ₁ Φ₂ Φ₃ : ℕ → ℝ) (D'' D_Y τK εq X0 : ℝ) : ℝ :=
   C * X0 +
@@ -243,7 +236,7 @@ def assembledRHSNZN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → 
         (gridStep s v K n)
         (((sz.size n : ℕ) : ℝ) ^ τK * (etaT (E n) (gridTime s v K n (j + 1)))⁻¹ ^ k))
 
-/-! ## 3. `lem:sum_decay_nonzero` for the grid kernel `Ugen` (target 4) -/
+/-! ## 3. Lemma 4.17 `lem:sum_decay_nonzero` for the grid kernel `Ugen` -/
 
 /-- **The row of `Q^{(A)} ∘ 𝒰` from an operator bound**: if `‖Q^{(A)} 𝒰 X‖_∞ ≤ C ‖X‖_∞` for all `X`, then
 for every label `a` the functional `X ↦ (Q^{(A)} 𝒰 X)(a)` is `Σ_b κ_b X_b` with `Σ_b |κ_b| ≤ C`
@@ -270,10 +263,10 @@ private theorem qtNZ_row_of_op (d L : ℕ) [NeZero L] (g E : ℝ) {k : ℕ} (σ 
     rw [← hrow X]
     exact (norm_le_pi_norm _ a).trans (hop X)
 
-/-- Target 4, `RBM.Ind.nzUgen_holds`: `lem:sum_decay_nonzero` (`3_5:1666`) for the grid kernel `Ugen`,
-loss-free (EK-5), as an operator bound and as a row-sum bound with one constant.  The merged
+/-- **`RBM.Ind.nzUgen_holds`**: Lemma 4.17 `lem:sum_decay_nonzero` for the grid kernel `Ugen`,
+loss-free, as an operator bound and as a row-sum bound with one constant.  The
 `ekSumDecayNonzero_holds` (deterministic, no decay class, no sum-zero) at `m = mE E`
-(`norm_mE`, `|E| < 2`), `Ugen = UN … (EKsgn (mE E) σ)` (`Ugen_eq_UN_EKsgn`); the row-sum form is
+(`norm_mE`, `|E| < 2`), `Ugen = UN … (EKsgn (mE E) σ)`; the row-sum form is
 the `∞→∞` duality (`qtNZ_sum_norm_le_of_bound`) for the row `κ_b = ∏_i K_i(a_i, b_i)` of the tensor
 kernel `Q^{(A)} ∘ 𝒰` (`zeroModeSet_tensorKer`). -/
 theorem nzUgen_holds :
@@ -298,9 +291,9 @@ theorem nzUgen_holds :
       ((ZeroModeCalc_STIdiff_subset_iff σ A).1 hA) X
   exact ⟨hop, fun a => qtNZ_row_of_op d L g E σ A v w hC.le hop a⟩
 
-/-! ## 4. The field `hker` for the class "fixed points of `Q^{(A)}`" (target 5) -/
+/-! ## 4. The field `hker` for the class "fixed points of `Q^{(A)}`" -/
 
-/-- Target 5, `RBM.Ind.nz_hker`: the `hker` field of `GridAssemblyHypN` (`GridAssemblyN.lean:201`) for
+/-- **`RBM.Ind.nz_hker`**: the `hker` field of `GridAssemblyHypN` for
 the class `Cls := fun _ _ X => zeroModeSet d (sz.L n) A X = X`, `κ ≡ C`, `εK ≡ 0`.  For
 `X = Q^{(A)} X`: `𝒰 X = 𝒰 Q^{(A)} X = Q^{(A)} 𝒰 X` (`zeroModeSet_Ugen`, `0 ≤ u_m < 1`, `|E| ≤ 2`,
 `3 ≤ L`), so `‖(𝒰 X)(a)‖ ≤ ‖Q^{(A)} 𝒰 X‖ ≤ C ‖X‖ ≤ C M`. -/
@@ -330,11 +323,11 @@ theorem nz_hker :
     _ ≤ C * M := mul_le_mul_of_nonneg_left hXn hC
     _ = C * M + 0 * δ := by ring
 
-/-! ## 5. The drift of the zero-mode-removed hierarchy on `GoodLinN` (target 6) -/
+/-! ## 5. The drift of the zero-mode-removed hierarchy on `GoodLinN` -/
 
-/-- Target 6, `RBM.Ind.nz_hdriftN`: the drift of the zero-mode-removed hierarchy on `GoodLinN`
-(`Q^{(A)}` of the merged `driftTensorN`): `‖(Q^{(A)} Dr)(b)‖ ≤ 2^{|A|} ‖Dr‖ ≤ 2^{|A|} · dDriftLinN`
-(`norm_zeroModeSet_le` = `(normQA2)`, `nqLin_hdriftN`; the sup over `b` by `pi_norm_le_iff_of_nonneg`). -/
+/-- **`RBM.Ind.nz_hdriftN`**: the drift of the zero-mode-removed hierarchy on `GoodLinN`
+(`Q^{(A)}` of `driftTensorN`): `‖(Q^{(A)} Dr)(b)‖ ≤ 2^{|A|} ‖Dr‖ ≤ 2^{|A|} · dDriftLinN`
+(`norm_zeroModeSet_le` = (4.43) `normQA2`, `nqLin_hdriftN`; the sup over `b` by `pi_norm_le_iff_of_nonneg`). -/
 theorem nz_hdriftN :
     ∀ {d : ℕ} (sz : Sizes d) {n k : ℕ}, 2 ≤ k → ∀ (σ : Fin k → Bool) (A : Finset (Fin k))
       (E s v : ℕ → ℝ) (K : ℕ → ℕ) (Γ Φ₁ Φ₂ Φ₃ : ℕ → ℝ) (τ : PathΩ sz → ℕ),
@@ -361,7 +354,7 @@ theorem nz_hdriftN :
     _ ≤ 2 ^ A.card * dDriftLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n) :=
         mul_le_mul_of_nonneg_left hDn (by positivity)
 
-/-! ## 6. The Azuma input for `Q^{(A)} Z_j` (target 7) -/
+/-! ## 6. The Azuma input for `Q^{(A)} Z_j` -/
 
 section Azuma
 
@@ -387,13 +380,12 @@ private theorem qtNZ_re_sum_le {ι : Type*} [Fintype ι] (κ : ι → ℂ) (e : 
         refine mul_le_mul_of_nonneg_right ?_ hM0
         nlinarith [hC, hS0]
 
-/-- Target 7, `RBM.Ind.subGaussStop_nzN`: the Azuma input (`SubGaussStopN`, `StepDecompN.lean:215`) for the
+/-- **`RBM.Ind.subGaussStop_nzN`**: the Azuma input (`SubGaussStopN`) for the
 zero-mode-removed first-chaos part `Q^{(A)} Z_j`, proxy `cQVNZN`, on any stopping family that stays in
 `GoodSetN` (its `STeeM` clause only), from a row-sum bound `≤ C` of `Q^{(A)}∘𝒰_{u_{j+1},u_m}`.
 `𝒰(Q^{(A)} Z_j)(a) = Q^{(A)} 𝒰(Z_j)(a) = Σ_b κ_b Z_j(b)` (commutation `zeroModeSet_Ugen`, the row
-`κ`); `azumaSubGN` with `Φ = loopFamN …` and the weights `κ` (as `azumaProxy_subG_ugen`,
-`AzumaProxyN.lean:980`); `qvPropagatedN` at these weights; `Re Σ κ κ̄' ee ≤ C² max‖ee(u_{j+1})‖` and
-the `STeeM` clause (D4) of `GoodSetN` at `u_j` plus the shift `eeShiftErrN` (the hypothesis `hδ`). -/
+`κ`); `azumaSubGN` with `Φ = loopFamN …` and the weights `κ` (as `azumaProxy_subG_ugen`); `qvPropagatedN` at these weights; `Re Σ κ κ̄' ee ≤ C² max‖ee(u_{j+1})‖` and
+the `STeeM` clause of `GoodSetN` at `u_j` plus the shift `eeShiftErrN` (the hypothesis `hδ`). -/
 theorem subGaussStop_nzN :
     ∀ {d k : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ) (σ : Fin k → Bool)
       (A : Finset (Fin k)) (C Γ Λ Φ τ' D' D'' : ℝ) (τ : PathΩ sz → ℕ),
@@ -499,7 +491,7 @@ theorem subGaussStop_nzN :
 
 end Azuma
 
-/-! ## 7. The `Y`-moment inputs pass to `Q^{(A)} Y` (target 8) -/
+/-! ## 7. The `Y`-moment inputs pass to `Q^{(A)} Y` -/
 
 section Moments
 
@@ -674,8 +666,7 @@ private theorem qtNZ_stopped_comm {n k : ℕ} (E : ℝ) (σ : Fin k → Bool) (A
     rw [← zeroModeSet_Ugen (sz.three_le_L n) hE σ hum0 hum1 A, qtNZ_zeroModeSet_apply]
   · simp [Set.indicator_of_notMem hω]
 
-/-- Target 8, `RBM.Ind.yMomentBounds_nzN`: the `Y`-moment inputs (`YMomentBoundsN`,
-`GridAssemblyN.lean:141`) pass to `Q^{(A)} Y` with the levels `4^{|A|+1} v`, `16^{|A|+1} w`.
+/-- **`RBM.Ind.yMomentBounds_nzN`**: the `Y`-moment inputs (`YMomentBoundsN`) pass to `Q^{(A)} Y` with the levels `4^{|A|+1} v`, `16^{|A|+1} w`.
 `stoppedEdgeN (Q^{(A)} Y)_b = Σ_{b'} q_{b b'} stoppedEdgeN (Y)_{b'}` (commutation at `u_m`) with the
 real kernel `q` of `Q^{(A)}` and `Σ_{b'} |q_{b b'}| ≤ 2^{|A|}`; then linearity of the conditional
 expectation and `(Σ q x)² ≤ (Σ|q|) Σ|q| x²`, `(Σ q x)⁴ ≤ (Σ|q|)³ Σ|q| x⁴` (`qtNZ_comb`, for the real
@@ -789,7 +780,7 @@ theorem yMomentBounds_nzN :
 
 end YMoments
 
-/-! ## 8. The budget of the case-(ii) grid endpoint (target 9) -/
+/-! ## 8. The budget of the case-(ii) grid endpoint -/
 
 section Budget
 
@@ -817,8 +808,8 @@ private theorem qtNZ_final {t1 t2 t3 t4 t5 P0 X Λr Φ₁ Φ₂ Φ₃ : ℝ} (hP
   rw [e]
   nlinarith [T1, T2, T3, T4, T5, hPX, hΦ]
 
-/-- Target 9, `RBM.Ind.budgetNZN`: the budget of the case-(ii) grid endpoint at the linear levels
-(the analogue of `budgetNonAltLinN`, `NQLin.lean:966`; no ratio weights, no far parts):
+/-- **`RBM.Ind.budgetNZN`**: the budget of the case-(ii) grid endpoint at the linear levels
+(the analogue of `budgetNonAltLinN`; no ratio weights, no far parts):
 `assembledRHSNZN ≤ N^{ε₀} (Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^k`.  `B_{u_j} ≤ B_v`, `B_s ≤ B_v`
 (`STBctl_mono`), `Σ_j Δ/η_{u_j}` by `hlog`, `KΔ = v - s ≤ 1`, `B_v ≥ N^{-1}` (`cont_inv_size_le_Bctl`:
 `N^{-D_Y}`, `N^{-D_t}`, `√(k W^{-D''})` are absorbed by `N^k ·`), `Λ ≥ 1`. -/
@@ -895,7 +886,7 @@ theorem budgetNZN :
   have hBpos : ∀ i ≤ K n, 0 < sz.Bctl n (gridTime s v K n i) := fun i hi =>
     Sizes.STBctl_pos sz n (hu1 i hi)
   have hη : ∀ i ≤ K n, 0 < etaT (E n) (gridTime s v K n i) := fun i hi => etaT_pos hE (hu1 i hi)
-  -- T1: the initial term
+    -- the initial term
   have T1 : C * X0 ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ k := by
     have hBs0 := Sizes.STBctl_pos sz n (hsv.trans_lt hv1)
     have hBs : sz.Bctl n (s n) ≤ sz.Bctl n (v n) := Sizes.STBctl_mono sz n hsv hv1
@@ -906,7 +897,7 @@ theorem budgetNZN :
           mul_le_mul_of_nonneg_right H1 (pow_nonneg hBs0.le _)
       _ ≤ (((sz.size n : ℕ) : ℝ) ^ ε₀ / 6) * (sz.Bctl n (v n)) ^ k :=
           mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hBs0.le hBs k) (by positivity)
-  -- T2: the drift term
+    -- the drift term
   have T2 : gridStep s v K n * ∑ j ∈ Finset.range (K n),
       C * (cA * dDriftLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n)) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * ((Φ₁ n + Φ₂ n + Φ₃ n) * (sz.Bctl n (v n)) ^ k) := by
@@ -960,7 +951,7 @@ theorem budgetNZN :
       _ ≤ (((sz.size n : ℕ) : ℝ) ^ ε₀ / 6) * ((Φ₁ n + Φ₂ n + Φ₃ n) * X) :=
           mul_le_mul_of_nonneg_right H2
             (mul_nonneg (add_nonneg (add_nonneg hΦ₁ hΦ₂) hΦ₃) hX0')
-  -- T3: the quadratic-variation term
+    -- the quadratic-variation term
   have T3 : ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
       (cQVNZN sz E s v K n k C (Γ n) (Λ n) D'' j : ℝ)) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ k) +
@@ -1060,7 +1051,7 @@ theorem budgetNZN :
           ((sz.size n : ℕ) : ℝ) ^ εq * (C * Real.sqrt ((k : ℝ) * ((sz.W n : ℕ) : ℝ) ^ (-D''))) := by
           ring
       _ ≤ _ := add_le_add k1 k2
-  -- T4, T5
+    -- the last two terms
   have T4 : ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ k :=
     qtNZ_absorb hNk (by positivity) ((mul_comm _ _).trans_le H5) hXN
@@ -1086,41 +1077,6 @@ theorem budgetNZN :
   exact qtNZ_final hP0 hX0' hΛr1 hΦ₁ hΦ₂ hΦ₃ T1 T2 T3 T4 T5
 
 end Budget
-
-/-! ## 9. Compiled nonempty instances (`d = 3`)
-
-Numbering of the ticket.  (1) `idem_instance`, (2) `nzUgen_instance`, (3) `nz_hker_instance`: at `L = 4`
-(`Zd 3 4`, 64 points), `g = 1` (`1 - g²/L² = 15/16`), `E = 0` (`m(+) = i`, `Im m = 1`), `σ = (+,-,+)`
-(`I_diff(σ) = {0, 1}`), `A = I_diff(σ)`, the point mass `δ₀`, the case-(ii) window `(v, w) = (15/16, 31/32)` of
-`PrecInst` (`szB`: `L = 4`, `ilambda = 1`).  (4) `nz_hdrift_instance`, (5) `subGaussStop_nz_instance`
-(`cQVNZN_inst_pos`), (6) `yMoment_zero_instance` (`Y ≡ 0`, the `Y` of the merged bundle
-`GridAssemblyNInst.gridAsm_bundle`) and `yMoment_random_instance` (a nonzero Gaussian `Y_j = ζ_j δ₀`),
-(7) `budgetNZN_instance`: at the merged `sz0` of `NQLinInst`/`NQGood2Inst` (`L = 4`, `W = 32`, `N = 2^21`,
-`E = 1/2`, grid `(sInst, vg, Kg) = (0, 1/32, 4)`, levels `(Γ, Λ, Φ) = (4, 3, 1)`, `(Φ₁, Φ₂, Φ₃) = (1, 12, 1)`,
-`τ' = 1/5`, `D' = 6`, `D'' = 5`) with the exit time `tau0 = goodExitTauN …` of `NQGood2Inst` (positive at every
-sample). -/
-
-/-! ### (1) `zeroModeSet_idem` at `d = 3`, `L = 4`, `A = {0, 1}`, `T = δ₀` -/
-
-/-! ### (2) `nzUgen_holds` at `L = 4`, `g = 1`, `E = 0`, `(v, w) = (15/16, 31/32)` -/
-
-/-! ### (3) `nz_hker` at `szB`, `K = 1`, `u_0 = 15/16`, `u_1 = 31/32`, `X = Q^{(A)} δ₀` -/
-
-/-! ### (4) `nz_hdriftN` on the `GoodLinN` instance of `NQLinInst`, `A = ∅` and `A = I_diff(σ)` -/
-
-/-! ### (5) `subGaussStop_nzN` at the `sz0` grid data of `NQLinInst` -/
-
-/-! ### (6) `yMomentBounds_nzN` at `Y ≡ 0` (the merged `GridAssemblyNInst` bundle has `Y = 0`) -/
-
-/-! ### (6b) `yMomentBounds_nzN` at a genuinely random `Y_j = ζ_j δ₀`
-
-`ζ_j = √Δ · Re tr X_{j+1}` is the Gaussian increment of `GridAssemblyNInst` (`gridAsm_witZ`, a centred
-Gaussian under `pathP`, independent of `filt j`): `Y_j = ζ_j δ₀` is `filt (j+1)`-measurable, not identically
-zero, conditionally centred, in `L⁴`, with `E[ζ_j² | filt j] = E ζ_j²` (independent increments,
-`condExp_indep_eq`), and the levels are `v = R² E ζ_j²`, `w = R⁴ E ζ_j⁴` with `R = (32/31)³ ≥ |(𝒰 δ₀)(b)|`
-(`norm_UN_apply_le`).  `τ ≡ K = 4` (the stopping family never stops). -/
-
-/-! ### (7) `budgetNZN` at the data of `NQLinInst.budgetNonAltLinN_instance` -/
 
 end RBM.Ind
 

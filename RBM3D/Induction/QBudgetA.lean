@@ -10,41 +10,35 @@ import RBM3D.Chain.NQBudgetGen
 import RBM3D.Chain.NQLinGen
 
 /-!
-# S3-17a (ticket T2279): the budget of the alternating endpoint at `d ≥ 3`
+# The budget of the alternating endpoint at `d ≥ 3`
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `lem:STOeq_Qt`
-`3_5:1364-1378`, `(am;asoi222)` `3_5:1366`, the alternating case `3_5:1676-1714`
-(`(eq:alternatecase1)` `3_5:1680-1690`, `(y27kasdfg)`, `(A4)`, `(A5)` `3_5:1692-1706`,
-`(eq:alternatecase2)` `3_5:1711-1714`: "applying `(sum_res_2)` ... and performing the
-integral over `v`"), the non-alternating budget it refers to `3_5:1152-1180`.
+Paper: Lemma 4.10 (`lem:STOeq_Qt`), (4.36) `am;asoi222`, and the alternating case in the proof of
+Lemma 4.17 (`lem:sum_decay_nonzero`), Subsection 4.5 `subsec:support`: (4.58) `eq:alternatecase1`,
+(4.59) `y27kasdfg`, (4.61) `A4`, (4.60) `A5`, (4.62) `eq:alternatecase2` ("applying `(sum_res_2)` ... and
+performing the integral over `v`"); the non-alternating budget it refers to is that of the proof of
+Lemma 4.6 (`lem:STOeq_NQ`).
 
-Re-scope (DECISIONS §83, §62 (2)/(4), §64 (4)/(5), §91 (2)): RBM2D `AltBudgetTerms` /
-`AltBudget` (`c9a24cf`) are ported in the RBM3D non-alternating form on the merged generic
+The `d ≥ 3` form of RBM2D's `AltBudgetTerms` / `AltBudget`, in the non-alternating shape on the generic
 budgets of `NQBudget` (`tbInitN`, `tbDriftN`, `tbQvN`): one kernel `kappaAltQN`, one drift level
-(entering generically, `dd j ≤ Pa Φd B_{u_j}^k/η_{u_j} + b`), no `ℚ/𝔼` split, no Case-4 weights,
-no `AltBudgetHyp` structure.  No probability, no `Prec`, no lift, no prime, no good set.
+(entering generically, `dd j ≤ Pa Φd B_{u_j}^k/η_{u_j} + b`), no `ℚ/𝔼` split, no `AltBudgetHyp`
+structure.  No probability, no `Prec`, no lift, no good set.
 
-* §0 the vocabulary (check file `docs/tickets/checks/T2279-check.lean` §2, verbatim):
-  `altBudget_kapFar`, `altBudget_qvFar`, `qvBdAltQN`, `cQVAltQN`, `dDriftAltLinQN`,
-  `assembledRHSAltQN`;
-* §1 targets 1-3: the sharp kernel `κ_{i,m} B_{u_i}^k ≤ W^{C₄ε} B_{u_m}^k` and the far bound;
-* §2 targets 4-7: the three term budgets (`qvBdAltQN_eq_qvShape`, `tbInitAltQN`, `tbDriftAltQN`,
-  `tbQvAltQN`);
-* §3 targets 8-9: the two drift levels in the generic shape (`dDriftAltLinQN_le_shape`,
-  `dDriftAltQN_le_shape`);
-* §4 target 10: `budgetAltQN` (the proof of `budgetNonAltLinN`, `NQLin.lean:966`, with the
-  generic drift level, the extra `he0` and the `b` part of `he1`);
-* §5 compiled nonempty instances (namespace `QBudgetAInst`) at `d = 3`, `sz0`, `n = 0`.
+* §0 the vocabulary (band): `altBudget_kapFar`, `altBudget_qvFar`, `qvBdAltQN`, `cQVAltQN`,
+  `dDriftAltLinQN`, `assembledRHSAltQN`; and over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`,
+  `open RBM.BA`): `altBudget_kapFarg`, `altBudget_qvFarg`, `qvBdAltQNg`, `cQVAltQNg`,
+  `dDriftAltLinQNg`, `assembledRHSAltQNg` (§0g; explicit `Cv` for `qProxy4C`, `η_u = Cm.eta n u`,
+  `stepErrNg`);
+* §1g the kernel weights `kappaAltQNg_*`: the sharp kernel `κ_{i,m} B_{u_i}^k ≤ W^{C₄ε} B_{u_m}^k` and
+  the far bound;
+* §2g the term budgets `tbInitAltQNg`, `tbDriftAltQNg`, `tbQvAltQNg` on `tbInitNg`/`tbDriftNg`/`tbQvNg`
+  (`LoopForm` and the inline `‖Cm.m n‖ ≤ 1` in place of `|E n| < 2`);
+* §3g `dDriftAltLinQNg_le_shape`: the linear drift level in the generic shape;
+* §4g `budgetAltQNg` (the proof of `budgetNonAltLinN` with the generic drift level, the extra `he0` and
+  the `b` part of `he1`);
+* §3b the band statements `dDriftAltLinQN_le_shape` and `budgetAltQN` (read by `QEndGrid`) are the
+  corollaries at `bandStep2Mat`.
 
-T2498 (row U3s3a′, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`, no `BA/*` import), added beside the
-band vocabulary, which is unchanged: `altBudget_kapFarg`, `altBudget_qvFarg`, `qvBdAltQNg`, `cQVAltQNg`, `dDriftAltLinQNg`, `assembledRHSAltQNg` (§0g;
-explicit `Cv` for `qProxy4C`, `η_u = Cm.eta n u`, `stepErrNg`; band bridges `*_band` by `rfl`), the kernel weights `kappaAltQNg_*` (§1g), the term budgets
-`tbInitAltQNg`, `tbDriftAltQNg`, `tbQvAltQNg` on `tbInitNg`/`tbDriftNg`/`tbQvNg` (§2g; `LoopForm` and the inline `‖Cm.m n‖ ≤ 1` replace `|E n| < 2`),
-`dDriftAltLinQNg_le_shape` (§3g) and `budgetAltQNg` (§4g).  The two band statements read by `QEndGrid`, `dDriftAltLinQN_le_shape` and `budgetAltQN`, keep
-name and type and are corollaries at `bandStep2Mat` (§3b); the band theorems of §1-§3 that no file reads (`kappaAltQN_*`, `tbInitAltQN`, `tbDriftAltQN`,
-`tbQvAltQN`, `qvBdAltQN_eq_qvShape`) are replaced by their generic twins; the superseded quadratic level `dDriftAltQN_le_shape` stays as band text.  The instances of §5 are re-pointed to the generic theorems.
-
-Unpinned helpers are `private` or prefixed `QBudgetA_`.
+Helpers are `private` or prefixed `QBudgetA_`.
 -/
 
 set_option linter.style.longLine false
@@ -60,23 +54,23 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
-/-! ## 0. Vocabulary (the six definitions of the ticket, verbatim) -/
+/-! ## 0. Vocabulary -/
 
 /-- **The far bound of the alternating kernel weight**: `κ_{i,m} ≤ W^{C₄ε} ((1+g²) N)^k` when `(1-u_m)⁻¹ ≤ N`
-(`kappaAltQN`, `QDriftA.lean:100`, exponent `k`, not `k-1`; analogue of `nqBudget_kapFar`, `NQBudget.lean:101`). -/
+(`kappaAltQN`, exponent `k`, not `k-1`; analogue of `nqBudget_kapFar`). -/
 def altBudget_kapFar {d : ℕ} (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) : ℝ :=
   ((sz.W n : ℕ) : ℝ) ^ (qProxy4C d k Λg κ' KL * ε) *
     ((1 + sz.lam n ^ 2) * ((sz.size n : ℕ) : ℝ)) ^ k
 
 /-- **The far coefficient of the alternating quadratic variation**: `C_far (C_far + C_e) + C_c` of the generic
-`tbQvN` (`NQBudget.lean:269`) at `C_far = altBudget_kapFar`, `C_e = W^{C₄}`, `C_c = W^{C₄} W^k`. -/
+`tbQvN` at `C_far = altBudget_kapFar`, `C_e = W^{C₄}`, `C_c = W^{C₄} W^k`. -/
 def altBudget_qvFar {d : ℕ} (sz : Sizes d) (n k : ℕ) (Λg κ' KL ε : ℝ) : ℝ :=
   altBudget_kapFar sz n k Λg κ' KL ε *
       (altBudget_kapFar sz n k Λg κ' KL ε + ((sz.W n : ℕ) : ℝ) ^ qProxy4C d k Λg κ' KL) +
     ((sz.W n : ℕ) : ℝ) ^ qProxy4C d k Λg κ' KL * ((sz.W n : ℕ) : ℝ) ^ k
 
-/-- **The variance majorant of the `𝒬`-process** (tensors of `m + 1 + 1` indices): the right side of the merged
-`qvFormQN_le_of_goodSetN` (`QProxy.lean:1167`) with its `m` at `m + 1`. -/
+/-- **The variance majorant of the `𝒬`-process** (tensors of `m + 1 + 1` indices): the right side of
+`qvFormQNg_le_of_bounds` with its `m` at `m + 1`. -/
 def qvBdAltQN {d : ℕ} (sz : Sizes d) (n : ℕ) (E : ℝ) (m : ℕ) (Λg κ' KL C c ε Γ Λ D u w : ℝ) : ℝ :=
   (((sz.W n : ℕ) : ℝ) ^ (qProxy4C d (m + 1 + 1) Λg κ' KL * ε) *
       ((sz.lam n ^ 2 + |1 - u|) / (sz.lam n ^ 2 + |1 - w|)) ^ (m + 1 + 1)) *
@@ -91,25 +85,24 @@ def qvBdAltQN {d : ℕ} (sz : Sizes d) (n : ℕ) (E : ℝ) (m : ℕ) (Λg κ' KL
       (((sz.W n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.W n : ℕ) : ℝ) ^ (-D + qProxyCQ d (m + 1) Λg KL C c))
 
 /-- **The sub-Gaussian proxy of the `j`-th propagated `𝒬`-increment towards `u_p`**: `Δ · (m+2) · qvBdAltQN(u_{j+1}, u_p)`
-(the left side of the `hQ` premise of `azumaSubGQ_gridExitN`, `QProxy.lean:409`, at its `m` = `m + 1`; the label does
-not enter; pattern `cQVNonAltN`, `NQGood2.lean:115`). -/
+(the left side of the `hQ` premise of `azumaSubGQ_gridExitN`, at its `m` = `m + 1`; the label does
+not enter; pattern `cQVNonAltN`). -/
 def cQVAltQN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Λg κ' KL C c ε : ℝ)
     (Γ Λ : ℕ → ℝ) (D'' : ℝ) (p : ℕ) (_a : Fin (m + 1 + 1) → Zd d (sz.L n)) (j : ℕ) : ℝ≥0 :=
   (gridStep s v K n * (((m + 1 + 1 : ℕ) : ℝ) * qvBdAltQN sz n (E n) m Λg κ' KL C c ε (Γ n) (Λ n) D''
     (gridTime s v K n (j + 1)) (gridTime s v K n p))).toNNReal
 
-/-- **The linear drift level of the alternating chain** (DECISIONS §62 (2)/(4)): `dDriftAltQN` (`QLevelsB.lean:53`)
-with the quadratic `dDriftNonAltN` replaced by the linear `dDriftLinN` (`NQLin.lean:711`):
+/-- **The linear drift level of the alternating chain**, with the block level of `dDriftLinN`:
 `W^{C_n ε'} Γ²(B^k/η)((k-2)Φ₁ + Φ₂ + Φ₃) + W^{-D'+C_n} + N^{τ_N} η⁻¹ B^{m+2} X`, `k = m + 2`. -/
 def dDriftAltLinQN {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ) : ℝ :=
   ((sz.W n : ℕ) : ℝ) ^ (Cn * ε') * dDriftLinN sz n E u (m + 1 + 1) Γ Φ₁ Φ₂ Φ₃ +
     ((sz.W n : ℕ) : ℝ) ^ (-D' + Cn) +
     ((sz.size n : ℕ) : ℝ) ^ τN * ((etaT E u)⁻¹ * sz.Bctl n u ^ (m + 2) * X)
 
-/-- **The right-hand side of the merged `AssembledN` at the target `K n` for the alternating chain** (tensors of
-`m + 1 + 1` indices; pattern `assembledRHSLinN`, `NQLin.lean:825`): `κ = kappaAltQN`, `εK = epsAltQN` at `g = lam n`
+/-- **The right-hand side of the `AssembledN` at the target `K n` for the alternating chain** (tensors of
+`m + 1 + 1` indices; pattern `assembledRHSLinN`): `κ = kappaAltQN`, `εK = epsAltQN` at `g = lam n`
 (`alt_hkerQN`), initial supremum `X0`, initial decay error `δ0` (`alt_hA0clsQN`), drift levels `dd j` (generic:
-`dDriftAltLinQN` or `dDriftAltQN` at `u_j`), drift decay error `δD` (`alt_hDclsQN`: `4 W^{-D'}`), proxy `cQVAltQN`,
+`dDriftAltLinQN` at `u_j`), drift decay error `δD` (`alt_hDclsQN`: `4 W^{-D'}`), proxy `cQVAltQN`,
 `N^{-D_Y}`, `stepErrN` at the envelope `N^{τ_K} η_{u_{j+1}}^{-k}`. -/
 def assembledRHSAltQN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ)
     (Λg κ' KL C c ε : ℝ) (Γ Λ : ℕ → ℝ) (dd : ℕ → ℝ) (δ0 δD D'' D_Y τK εq X0 : ℝ)
@@ -130,26 +123,26 @@ def assembledRHSAltQN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ �
 
 /-! ## 0b. Model-free private helpers -/
 
-/-- `0 ≤ u_i` on the grid `0 ≤ s_n ≤ v_n` (copy of the private `nqBudget_gridTime_nonneg`, `NQBudget.lean:334`). -/
+/-- `0 ≤ u_i` on the grid `0 ≤ s_n ≤ v_n` (as the private `nqBudget_gridTime_nonneg`). -/
 private theorem QBudgetA_gridTime_nonneg {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hs0 : 0 ≤ s n)
     (hsv : s n ≤ v n) (i : ℕ) : 0 ≤ gridTime s v K n i := by
   have h := ST_gridTime_mono s v K n hsv (Nat.zero_le i)
   rw [ST_gridTime_zero] at h
   linarith
 
-/-- `u_i ≤ v_n` for `i ≤ K_n`, `K_n ≠ 0` (copy of `nqBudget_gridTime_le`, `NQBudget.lean:341`). -/
+/-- `u_i ≤ v_n` for `i ≤ K_n`, `K_n ≠ 0` (as `nqBudget_gridTime_le`). -/
 private theorem QBudgetA_gridTime_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hsv : s n ≤ v n)
     (hK : K n ≠ 0) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i ≤ v n :=
   (ST_gridTime_mono s v K n hsv hi).trans_eq (gridTime_last s v K n hK)
 
-/-- `K Δ = v - s` (copy of `nqBudget_K_mul_step`, `NQBudget.lean:346`). -/
+/-- `K Δ = v - s`. -/
 private theorem QBudgetA_K_mul_step {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hK : K n ≠ 0) :
     (K n : ℝ) * gridStep s v K n = v n - s n := by
   have hK' : (K n : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hK
   unfold gridStep
   rw [mul_div_cancel₀ _ hK']
 
-/-- The absorption step of a far part (copy of the private `nqLin_absorb`, `NQLin.lean:847`):
+/-- The absorption step of a far part (as the private `nqLin_absorb`):
 `y N_p ≤ B`, `N_p⁻¹ ≤ X`, `B ≥ 0` give `y ≤ B X`. -/
 private theorem QBudgetA_absorb {y Np B X : ℝ} (hNp : 0 < Np) (hB : 0 ≤ B) (h : y * Np ≤ B)
     (hX : Np⁻¹ ≤ X) : y ≤ B * X := by
@@ -167,7 +160,7 @@ private theorem QBudgetA_rpow_two_mul {W : ℝ} (hW : 0 ≤ W) (C ε : ℝ) :
 
 /-- The final bookkeeping on plain reals: the six term bounds `t₁ ≤ P₀X/6`, `t₂ ≤ P₀X/12`,
 `t₃ ≤ P₀Φd X/12 + P₀X/12`, `t₄ ≤ P₀Λ^{1/2}X/12 + P₀X/12`, `t₅, t₆ ≤ P₀X/6` give
-`Σ t ≤ P₀ (Λ^{1/2} + Φd) X` (copy of `nqLin_final`, `NQLin.lean:943`, with `Φ₁ + Φ₂ + Φ₃ ↦ Φd`). -/
+`Σ t ≤ P₀ (Λ^{1/2} + Φd) X` (as `nqLin_final`, with `Φ₁ + Φ₂ + Φ₃ ↦ Φd`). -/
 private theorem QBudgetA_final {t1 t2 t3 t4 t5 t6 P0 X Λr Φd : ℝ} (hP0 : 0 ≤ P0) (hX : 0 ≤ X)
     (hΛr : 1 ≤ Λr) (hΦd : 0 ≤ Φd) (T1 : t1 ≤ P0 / 6 * X) (T2 : t2 ≤ P0 / 12 * X)
     (T3 : t3 ≤ P0 / 12 * (Φd * X) + P0 / 12 * X)
@@ -256,7 +249,7 @@ private theorem QBudgetA_epsg_nonneg (Cv W : ℝ) (hW : 0 ≤ W) (i m : ℕ) : 0
   unfold epsAltQNg
   exact Real.rpow_nonneg hW _
 
-/-- Target 7 (sharp kernel, initial datum; band `kappaAltQN_mul_Bctl_pow_le`; model-free in the carrier). -/
+/-- Sharp kernel, initial datum (model-free in the carrier). -/
 theorem kappaAltQNg_mul_Bctl_pow_le {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) {W : ℝ} (hW : 0 ≤ W)
     (u : ℕ → ℝ) {i m : ℕ} (him : u i ≤ u m) (hm1 : u m < 1) :
     kappaAltQNg k Cv (sz.lam n) W ε u i m * (sz.Bctl n (u i)) ^ k ≤ W ^ (Cv * ε) * (sz.Bctl n (u m)) ^ k := by
@@ -270,7 +263,7 @@ theorem kappaAltQNg_mul_Bctl_pow_le {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε 
   rw [mul_assoc, ← mul_pow]
   exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (mul_nonneg hr0 hBu.le) hrB k) hWC
 
-/-- Sharp kernel, drift (band `kappaAltQN_succ_mul_Bctl_pow_le`). -/
+/-- Sharp kernel, drift. -/
 theorem kappaAltQNg_succ_mul_Bctl_pow_le {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) {W : ℝ} (hW : 0 ≤ W)
     (u : ℕ → ℝ) (j m : ℕ) (hjj : u j ≤ u (j + 1)) (hj1m : u (j + 1) ≤ u m) (hm1 : u m < 1) :
     kappaAltQNg k Cv (sz.lam n) W ε u (j + 1) m * (sz.Bctl n (u j)) ^ k ≤ W ^ (Cv * ε) * (sz.Bctl n (u m)) ^ k := by
@@ -283,7 +276,7 @@ theorem kappaAltQNg_succ_mul_Bctl_pow_le {d : ℕ} (sz : Sizes d) (n k : ℕ) (C
         mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hBj.le hBle k) hκ
     _ ≤ W ^ (Cv * ε) * (sz.Bctl n (u m)) ^ k := kappaAltQNg_mul_Bctl_pow_le sz n k Cv ε hW u hj1m hm1
 
-/-- Far bound (band `kappaAltQN_le_kapFar`). -/
+/-- Far bound. -/
 theorem kappaAltQNg_le_kapFar {d : ℕ} (sz : Sizes d) (n k : ℕ) (Cv ε : ℝ) (u : ℕ → ℝ) {i m : ℕ}
     (hu0 : 0 ≤ u i) (hium : u i ≤ u m) (hm1 : u m < 1) (hN : (1 - u m)⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) :
     kappaAltQNg k Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε u i m ≤ altBudget_kapFarg sz n k Cv ε := by
@@ -325,7 +318,7 @@ section TermsG
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- The variance majorant is an `nqBudget_qvShape` (band `qvBdAltQN_eq_qvShape`). -/
+/-- The variance majorant is an `nqBudget_qvShape`. -/
 theorem qvBdAltQNg_eq_qvShape (Cm : Step2Mat sz) (n m : ℕ) (Cv Λg KL C c ε Γ Λ D u w : ℝ) :
     qvBdAltQNg Cm n m Cv Λg KL C c ε Γ Λ D u w =
       nqBudget_qvShape (m + 1 + 1)
@@ -336,7 +329,7 @@ theorem qvBdAltQNg_eq_qvShape (Cm : Step2Mat sz) (n m : ℕ) (Cv Λg KL C c ε �
   unfold qvBdAltQNg nqBudget_qvShape
   ring
 
-/-- The initial term (band `tbInitAltQN`; no spectral hypothesis). -/
+/-- The initial term (no spectral hypothesis). -/
 theorem tbInitAltQNg (sz : Sizes d) {s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Cv ε G X0 : ℝ)
     (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0) (hG : 0 ≤ G)
     (hX0 : X0 ≤ G * (sz.Bctl n (s n)) ^ k) :
@@ -355,7 +348,7 @@ theorem tbInitAltQNg (sz : Sizes d) {s v : ℕ → ℝ} {K : ℕ → ℕ} (n k :
     (by simpa only [hu0, huK] using hker) (by simpa only [hu0] using hX0)
   simpa only [huK] using h
 
-/-- The drift term at a generic level `dd j ≤ Pa Φd B_{u_j}^k/η_{u_j} + b` (band `tbDriftAltQN`; `LoopForm` and the inline `‖m‖ ≤ 1`
+/-- The drift term at a generic level `dd j ≤ Pa Φd B_{u_j}^k/η_{u_j} + b` (`LoopForm` and the inline `‖m‖ ≤ 1`
 replace `|E n| < 2`). -/
 theorem tbDriftAltQNg {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E)
     (n k : ℕ) (Cv ε : ℝ) (dd : ℕ → ℝ) (Pa Φd b δD : ℝ) (hm : ‖Cm.m n‖ ≤ 1) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n)
@@ -420,7 +413,7 @@ private theorem QBudgetA_qvBdg_nonneg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL :
   unfold qvBdAltQNg
   positivity
 
-/-- The quadratic-variation term (band `tbQvAltQN`). -/
+/-- The quadratic-variation term. -/
 theorem tbQvAltQNg {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E)
     (n m : ℕ) (Cv Λg KL C c ε : ℝ) (Γ Λ : ℕ → ℝ) (D'' : ℝ) (a : Fin (m + 1 + 1) → Zd d (sz.L n))
     (hm : ‖Cm.m n‖ ≤ 1) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0) (hΛ : 0 ≤ Λ n)
@@ -552,7 +545,8 @@ section BudgetG
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- **The budget of the alternating endpoint over a carrier** (band `budgetAltQN`; paper `3_5:1692-1714`): at a fixed `n`, under explicit
+/-- **The budget of the alternating endpoint over a carrier** (band `budgetAltQN`; Subsection 4.5, proof of
+Lemma 4.17): at a fixed `n`, under explicit
 numerical inequalities only, `assembledRHSAltQNg ≤ N^{ε₀} (Λ^{1/2} + Φd) B_v^k`, `k = m + 2`, `C₄ = Cv` explicit,
 `C_n = qProxyCn d (m+1) Λg KL C c`, `C_Q = qProxyCQ d (m+1) Λg KL C c`; `LoopForm` and the inline `‖Cm.m n‖ ≤ 1` replace `|E n| < 2`. -/
 theorem budgetAltQNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ)
@@ -565,12 +559,12 @@ theorem budgetAltQNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_Lo
     (hPa : 0 ≤ Pa) (hΦd : 0 ≤ Φd) (hb : 0 ≤ b) (hδ0 : 0 ≤ δ0) (hδD : 0 ≤ δD)
     (hdd : ∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ (m + 1 + 1) /
       Cm.eta n (gridTime s v K n j)) + b)
-    -- `hlog` (merged input, `nqBudget_merged_inputsg` conjunct 1)
+    -- `hlog` (input, `nqBudget_merged_inputsg` conjunct 1)
     (hlog : ∑ j ∈ Finset.range (K n), gridStep s v K n / Cm.eta n (gridTime s v K n j) ≤
       (Cm.m n).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ))
     -- `hX0` (initial level; `startLevelQNg`)
     (hX0 : X0 ≤ ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1))
-    -- `hR` (merged input, `nqBudget_merged_inputsg` conjunct 2 at `k = m + 2`)
+    -- `hR` (input, `nqBudget_merged_inputsg` conjunct 2 at `k = m + 2`)
     (hR : ∑ j ∈ Finset.range (K n), (1 + (1 - gridTime s v K n (K n))⁻¹) ^ (m + 1 + 1) *
         stepErrNg Cm.toFlowFM n (m + 1 + 1) (gridTime s v K n j) (gridTime s v K n (j + 1))
           (gridStep s v K n)
@@ -642,16 +636,16 @@ theorem budgetAltQNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_Lo
   have hfar1' : 0 ≤ altBudget_kapFarg sz n (m + 1 + 1) Cv ε * b +
       ((sz.W n : ℕ) : ℝ) ^ Cv * δD :=
     add_nonneg (mul_nonneg hkap0 hb) (mul_nonneg hWC0 hδD)
-  -- T1: the initial term
+    -- the initial term
   have T1 : _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
     (tbInitAltQNg sz n (m + 1 + 1) Cv ε (((sz.size n : ℕ) : ℝ) ^ ε₁) X0 hs0 hsv hv1 hK
       (Real.rpow_nonneg hN0.le _) hX0).trans (mul_le_mul_of_nonneg_right ha1 hX0')
-  -- T2: the initial decay error
+    -- the initial decay error
   have T2 : epsAltQNg Cv ((sz.W n : ℕ) : ℝ) 0 (K n) * δ0 ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (sz.Bctl n (v n)) ^ (m + 1 + 1) := by
     unfold epsAltQNg
     exact hfar0
-  -- T3: the drift term (generic level `Pa Φd B^k/η + b`)
+    -- the drift term (generic level `Pa Φd B^k/η + b`)
   have T3 : gridStep s v K n * ∑ j ∈ Finset.range (K n),
       (kappaAltQNg (m + 1 + 1) Cv (sz.lam n) ((sz.W n : ℕ) : ℝ) ε (gridTime s v K n)
           (j + 1) (K n) * dd j +
@@ -686,7 +680,7 @@ theorem budgetAltQNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_Lo
           ((sz.W n : ℕ) : ℝ) ^ Cv * δD :=
       (mul_le_mul_of_nonneg_right hKΔ1 hfar1').trans_eq (one_mul _)
     exact add_le_add (m1.trans (m3.le.trans m4)) (f1.trans hfar1)
-  -- T4: the quadratic-variation term
+    -- the quadratic-variation term
   have T4 : ((sz.size n : ℕ) : ℝ) ^ εq * Real.sqrt (∑ j ∈ Finset.range (K n),
       (cQVAltQNg Cm s v K n m Cv Λg KL C c ε Γ Λ D'' (K n) a j : ℝ)) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 12 * (Λ n ^ ((1 : ℝ) / 2) * (sz.Bctl n (v n)) ^ (m + 1 + 1)) +
@@ -831,7 +825,7 @@ theorem budgetAltQNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_Lo
             Real.sqrt (((m + 1 + 1 : ℕ) : ℝ) * (altBudget_qvFarg sz n (m + 1 + 1) Cv ε *
               ((sz.W n : ℕ) : ℝ) ^ (-D'' + qProxyCQ d (m + 1) Λg KL C c))) := by ring
       _ ≤ _ := add_le_add k1 k2
-  -- T5, T6
+    -- the last two terms
   have T5 : ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤
       ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 * (sz.Bctl n (v n)) ^ (m + 1 + 1) :=
     QBudgetA_absorb hNk (by positivity) ((mul_comm _ _).trans_le he3) hXN
@@ -844,7 +838,7 @@ end BudgetG
 
 /-! ## 3b. The band statements read by `QEndGrid` (name and type unchanged): corollaries at `bandStep2Mat` -/
 
-/-- Target 8 (`dDriftAltLinQN_le_shape`), name and type unchanged: the corollary of `dDriftAltLinQNg_le_shape` at `bandStep2Mat sz (fun _ => E)`
+/-- `dDriftAltLinQN_le_shape`, name and type as stated: the corollary of `dDriftAltLinQNg_le_shape` at `bandStep2Mat sz (fun _ => E)`
 (`LoopForm` from `|E| < 2`, `stepDecompGen_loopForm_band`). -/
 theorem dDriftAltLinQN_le_shape :
   ∀ {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ),
@@ -857,7 +851,7 @@ theorem dDriftAltLinQN_le_shape :
   exact dDriftAltLinQNg_le_shape (bandStep2Mat sz (fun _ => E))
     (stepDecompGen_loopForm_band sz (fun _ => E) (fun _ => hE)) n u m Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X hu h1 h2 h3 hX
 
-/-- Target 7 (`budgetAltQN`), name and type unchanged: the corollary of `budgetAltQNg` at `bandStep2Mat sz (fun _ => E n)`,
+/-- `budgetAltQN`, name and type as stated: the corollary of `budgetAltQNg` at `bandStep2Mat sz (fun _ => E n)`,
 `Cv = qProxy4C d (m + 2) Λg κ' KL` (`‖mE (E n)‖ = 1` from `|E n| < 2`). -/
 theorem budgetAltQN :
   ∀ {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ) (Λg κ' KL C c ε : ℝ)
@@ -870,12 +864,12 @@ theorem budgetAltQN :
     0 ≤ Pa → 0 ≤ Φd → 0 ≤ b → 0 ≤ δ0 → 0 ≤ δD →
     (∀ j < K n, dd j ≤ Pa * Φd * ((sz.Bctl n (gridTime s v K n j)) ^ (m + 1 + 1) /
       etaT (E n) (gridTime s v K n j)) + b) →
-    -- `hlog` (merged input, `nqBudget_merged_inputs` conjunct 1)
+    -- `hlog` (input, `nqBudget_merged_inputs` conjunct 1)
     ∑ j ∈ Finset.range (K n), gridStep s v K n / etaT (E n) (gridTime s v K n j) ≤
       (mE (E n)).im⁻¹ * Real.log ((sz.size n : ℕ) : ℝ) →
-    -- `hX0` (initial level; S3-18a: `startLevelQN`)
+        -- `hX0` (initial level; `startLevelQN`)
     X0 ≤ ((sz.size n : ℕ) : ℝ) ^ ε₁ * (sz.Bctl n (s n)) ^ (m + 1 + 1) →
-    -- `hR` (merged input, `nqBudget_merged_inputs` conjunct 2 at `k = m + 2`)
+    -- `hR` (input, `nqBudget_merged_inputs` conjunct 2 at `k = m + 2`)
     ∑ j ∈ Finset.range (K n), (1 + (1 - gridTime s v K n (K n))⁻¹) ^ (m + 1 + 1) *
         stepErrN d (sz.L n) (sz.W n) (E n) (m + 1 + 1) (gridTime s v K n j) (gridTime s v K n (j + 1))
           (gridStep s v K n)
@@ -915,24 +909,6 @@ theorem budgetAltQN :
   exact budgetAltQNg (bandStep2Mat sz (fun _ => E n)) (stepDecompGen_loopForm_band sz (fun _ => E n) (fun _ => hE))
     s v K n m (qProxy4C d (m + 1 + 1) Λg κ' KL) Λg KL C c ε Γ Λ dd Pa Φd b δ0 δD D'' D_Y D_t τK εq ε₀ ε₁ X0 a
     hε₁ (norm_mE hE.le).le hs0 hsv hv1 hK hη hΔη hΓ hΛ hPa hΦd hb hδ0 hδD hdd hlog hX0 hR ha1 ha2 ha3 he0 he1 he2 he3 he4
-
-/-! ## 5. Compiled nonempty instances at `d = 3`
-
-Data (the instance data of `NQLinInst`, `NQLin.lean:1256-1739`): `sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2^21`,
-`lam = 1/64`), `E ≡ 1/2` (`Im m = √15/4 ≈ 0.968`), `s ≡ 0`, `v ≡ 1/32`, `K ≡ 4` (`Δ = 1/128`, `u_j = j/128`), `m = 1`
-(`k = 3`), `Λ_g = 10`, `κ' = 1/2`, `K_L = 1`, `C = 1`, `c = 1/2`, `ε = 4/5`, `(Γ, Λ) = (4, 3)` with `Γ = N^{2/21}`,
-`D'' = 7 + 2 C_n` (so that `-D'' + C_Q = -5`, and the hypothesis `(m+1)+2+C_Q < D''` of
-`qvFormQN_le_of_goodSetN` at `m ↦ m+1` holds), `D_Y = 1`, `D_t = -5`, `τ_K = 1/21`, `ε_q = 1`, label `aFar`,
-the drift level `dd j = dDriftAltLinQN(u_j)` at `(Γ, Φ₁, Φ₂, Φ₃, C_n, ε', D', τ_N, X) = (4, 1, 12, 1, C_n, 1/5, 6, 1, 1)`
-and `ε₀ = C₄ + C_n + 12` with the abstract constants `C₄ = qProxy4C 3 3 10 (1/2) 1 > 0`,
-`C_n = qProxyCn 3 2 10 1 1 (1/2) > 0`.  The eight absorption inequalities `ha1`-`he4` are proved for every
-`C₄, C_n > 0` (private lemmas `*_inst`); `hlog`, `hR` are the merged `NQBudgetInst.hlog_instance`,
-`hR_instance`; `hdd` is target 8 at the data. -/
-
-/-! ### The eight absorption inequalities at the data, for every `C₄, C_n > 0`
-(`x = 2^{C₄}`, `y = 2^{C_n}`, `N^{ε₀} = x^21 y^21 2^252`) -/
-
-/-! ### Instances of targets 1-9 and of the budget (target 10) -/
 
 end RBM.Ind
 

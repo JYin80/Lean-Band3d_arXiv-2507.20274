@@ -8,24 +8,24 @@ import RBM3D.Green.GbEXP
 import RBM3D.Chain.Step2Gen
 
 /-!
-# ST2-16 (ticket T2130, part 1): `(initialGT2)` at every time and `(Gt_avgbound_flow)`
+# `(initialGT2)` at every time and `(Gt_avgbound_flow)`
 
-The closing paragraph of Step 2 (`paper/tex/3_5_Loop_Hierarchy.tex:455–465`): `(eq:L2_decay)`
-(`STL2decayPT`) and the weak law `(Gtmwc)` (`STStep1Weak`) verify `(initialGT2)` at every time
-(`stInitialGT2_of_L2decay`), and `lem_GbEXP` (`stGbEXP_holds`, `(GavLGEX)`) gives
-`(Gt_avgbound_flow)` per time (`stStep2AvgPT_of_L2decay`).  The part 2 file `LocalAvg2.lean`
-gives `(Gt_bound_flow)` and the pin `STLocalAvgOfL2`.
+The closing paragraph of the proof of Step 2 (Subsection 3.3 `subsec:step2_pf`): (3.37) `eq:L2_decay`
+(`STL2decayPT`) and the weak law (2.86) `Gtmwc` (`STStep1Weak`) verify (3.4) `initialGT2` at every
+time (`stInitialGT2_of_L2decayG`), and Lemma 3.1 `lem_GbEXP` (`stGbEXP_holds`, (3.5) `GavLGEX`) gives
+(2.88) `Gt_avgbound_flow` per time (`stStep2AvgPT_of_L2decayG`).  The file `LocalAvg2.lean` gives
+(2.87) `Gt_bound_flow` and the statement `STLocalAvgOfL2`.
 
-* The control of `(initialGT2)` is `Ψ_u = max(W^{-d/2}, (W^{-d} B_{u,0})^{1/2})` (`stLocalPsi`), a
+* The bound of `(initialGT2)` is `Ψ_u = max(W^{-d/2}, (W^{-d} B_{u,0})^{1/2})` (`stLocalPsi`), a
   constant multiple of the paper's `Ψ_u = (W^{-d} B_{u,0})^{1/2}` on the window
-  `W^{-d/2} ≤ Ψ_u ≤ W^{-ε₀}` (paper-delta candidate `T2130a`).
+  `W^{-d/2} ≤ Ψ_u ≤ W^{-ε₀}`.
 * `ε₀ = min(1/2, d c / 8)`, `c` of the size data `ST_Bdata_holds`: `W^{-d} B_{u,0} ≤ N^{-c}` for
   `u ≤ t_n ≤ lemT z_n`, and `cB W^{-d} ≤ W^{-d} B_{u,0}`.
-* T2386 (BA-T row T8): every theorem that reads a band object is restated over a carrier
-  (`localAvg1_whp_L2G`, `localAvg1_whp_omegaG`, `localAvg1_maxLoop2_leG`, `stInitialGT2_of_L2decayG`,
+* Every theorem that reads a model object is stated over a carrier (`localAvg1_whp_L2G`,
+  `localAvg1_whp_omegaG`, `localAvg1_maxLoop2_leG`, `stInitialGT2_of_L2decayG`,
   `stStep2AvgPT_of_L2decayG`, over `FlowFM` / `Step2Data` of `Chain/Step2Gen.lean`), with the inputs of
-  other blocks as arguments (`hdat`: `ST_Bdata_holds`; `hGav`: `stGbEXP_holds`); each band theorem stays,
-  under its old name and statement, as the corollary at `bandFM` / `bandStep2Data`.
+  other results as arguments (`hdat`: `ST_Bdata_holds`; `hGav`: `stGbEXP_holds`); the band case is
+  the instance at `bandFM` / `bandStep2Data`.
 -/
 
 set_option linter.style.longLine false
@@ -167,13 +167,13 @@ theorem localAvg1_STWB_comp (n : ℕ) (u : ℝ) {K K' : ℕ} (h : K ≤ K' + 2) 
 theorem localAvg1_rpow_half_sq {y : ℝ} (hy : 0 ≤ y) : (y ^ (1 / 2 : ℝ)) ^ 2 = y := by
   rw [← Real.sqrt_eq_rpow, Real.sq_sqrt hy]
 
-/-- The control of `(initialGT2)`: `Ψ_u = max(W^{-d/2}, (W^{-d} B_{u,0})^{1/2})` (paper:
-`Ψ_u = (W^{-d} B_{u,0})^{1/2}`; the `max` makes the lower window `W^{-d/2} ≤ Ψ_u` hold, T2130a). -/
+/-- The bound of `(initialGT2)`: `Ψ_u = max(W^{-d/2}, (W^{-d} B_{u,0})^{1/2})` (paper:
+`Ψ_u = (W^{-d} B_{u,0})^{1/2}`; the `max` makes the lower window `W^{-d/2} ≤ Ψ_u` hold). -/
 def stLocalPsi (sz : Sizes d) (u : ℕ → ℝ) (n : ℕ) : ℝ :=
   max (((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ) / 2)) ((sz.Bctl n (u n)) ^ (1 / 2 : ℝ))
 
-/-- The numerics of the window at one size index (`B = W^{-d} B_{u,0}`; the exponents of the
-preflight table (a): `ε₀ ≤ 1/2`, `ε₀ ≤ d c / 8`). -/
+/-- The numerics of the window at one size index (`B = W^{-d} B_{u,0}`; the exponents satisfy
+`ε₀ ≤ 1/2`, `ε₀ ≤ d c / 8`). -/
 theorem localAvg1_det (n : ℕ) (hd : 0 < d) {cB c ε₀ B : ℝ} (hcB : 0 < cB) (hc : 0 < c)
     (hε₀1 : ε₀ ≤ 1 / 2) (hε₀2 : ε₀ ≤ d * c / 8)
     (hlow : cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ B) (hup : B ≤ ((sz.size n : ℕ) : ℝ) ^ (-c)) :
@@ -264,7 +264,7 @@ section EventsG
 
 variable {d : ℕ} {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ)
 
-/-- **`(eq:L2_decay)` at a section, uniformly in `(a,b)`, over a carrier** (`localAvg1_whp_L2` at `(C, μ)`). -/
+/-- **(3.37) `eq:L2_decay` at a section, uniformly in `(a,b)`, over a carrier**. -/
 theorem localAvg1_whp_L2G {s t : ℕ → ℝ} (hL2 : STL2decayPTgL C μ s t) {u : ℕ → ℝ}
     (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {τ : ℝ} (hτ : 0 < τ) :
     HighProbAt μ sz.size (fun n => {ω | ∀ a b : Zd d (sz.L n),
@@ -302,7 +302,7 @@ theorem localAvg1_whp_L2G {s t : ℕ → ℝ} (hL2 : STL2decayPTgL C μ s t) {u 
   have := Set.mem_iInter.1 hω ![a, b]
   simpa using this
 
-/-- **`‖G_u - M‖_max ≤ W^{-ε₀}` w.h.p. over a carrier** (`localAvg1_whp_omega` at `(C, μ)`). -/
+/-- **`‖G_u - M‖_max ≤ W^{-ε₀}` w.h.p. over a carrier**. -/
 theorem localAvg1_whp_omegaG {s t : ℕ → ℝ} (hweak : STStep1WeakgL C μ s t) {u : ℕ → ℝ}
     (hu : ∀ n, u n ∈ Set.Icc (s n) (t n)) {c ε₀ : ℝ} (hc : 0 < c)
     (hev : ∀ᶠ n in atTop, ((sz.size n : ℕ) : ℝ) ^ (c / 8) * (sz.Bctl n (u n)) ^ (1 / 4 : ℝ) ≤
@@ -321,7 +321,7 @@ theorem localAvg1_whp_omegaG {s t : ℕ → ℝ} (hweak : STStep1WeakgL C μ s t
   filter_upwards [hev] with n hn ω hω x y
   exact (hω (x, y)).trans hn
 
-/-- `max_{a,b} ‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ X · W^{-d} B_{u,0}` over a carrier (`localAvg1_maxLoop2_le` at `C`). -/
+/-- `max_{a,b} ‖𝓛^{(2)}_{(-,+),(a,b)}‖ ≤ X · W^{-d} B_{u,0}` over a carrier. -/
 theorem localAvg1_maxLoop2_leG (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) {X : ℝ} (hX : 0 ≤ X)
     (hL : ∀ a b : Zd d (sz.L n), ‖C.L n u ![false, true] ![a, b] ω‖ ≤
       X * STWB sz n u (zdistInf d (sz.L n) (a - b))) :
@@ -332,13 +332,13 @@ theorem localAvg1_maxLoop2_leG (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) {X : ℝ} (hX
 
 end EventsG
 
-/-! ## 4. Item 1: `(initialGT2)` at every time -/
+/-! ## 4. `(initialGT2)` at every time -/
 
 section Item1
 
 variable {d : ℕ}
 
-/-- **`(initialGT2)` at every time, over a carrier** (`stInitialGT2_of_L2decay` at `(Cm, μ)`; `0 < d` only).  The size data
+/-- **`(initialGT2)` at every time, over a carrier** (`0 < d` only).  The size data
 `ST_Bdata_holds` is the argument `hdat` (`cB W^{-d} ≤ W^{-d} B_{u,0} ≤ N^{-c}` for `0 ≤ u ≤ t_n ≤ T0`, eventually in `n`, some
 `cB, c > 0`); `ε₀ = min(1/2, d c/8)`, `CΨ = cB⁻¹ + 1`. -/
 theorem stInitialGT2_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measure sz.SeqΩ) (hd : 0 < d)
@@ -397,13 +397,13 @@ theorem stInitialGT2_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measur
 
 end Item1
 
-/-! ## 5. Item 2: `(Gt_avgbound_flow)` per time -/
+/-! ## 5. `(Gt_avgbound_flow)` per time -/
 
 section Item2
 
 variable {d : ℕ}
 
-/-- **`(Gt_avgbound_flow)` per time, over a carrier** (`stStep2AvgPT_of_L2decay` at `(Cm, μ)`).  The inputs of other blocks
+/-- **`(Gt_avgbound_flow)` per time, over a carrier**.  The inputs of other results
 are arguments: the size data `hdat` (`ST_Bdata_holds`) and `(GavLGEX)` of `lem_GbEXP` at every `u ≤ T0` (`hGav`; band:
 `stGbEXP_holds`). -/
 theorem stStep2AvgPT_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measure sz.SeqΩ) (hd : 0 < d)
@@ -439,10 +439,3 @@ theorem stStep2AvgPT_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measur
 end Item2
 
 end RBM.Gauss.Sizes
-
-/-! ## 6. Compiled nonempty instances at `d = 3`
-
-The merged flow instance `(sz0, z0)` (`κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`, `L_n = 4(n+1)`, `W_n = (2(n+1))^5`),
-the window `s ≡ 0`, `t ≡ 1/16 ≤ lemT z0` (`Step2IterateInst.hs0`, `hst`, `htT`, `flow_z0`) and the
-time section `u ≡ 1/32`.  Every deterministic hypothesis is discharged; what stays a hypothesis is the
-weak law `STStep1Weak` and `(eq:L2_decay)` `STL2decayPT`, the outputs of other gates. -/

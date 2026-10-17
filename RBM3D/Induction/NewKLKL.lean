@@ -7,19 +7,21 @@ import RBM3D.Induction.NewKLK
 import RBM3D.Induction.Step5Pins
 
 /-!
-# S5-12 (ticket T2150): `lem:newKLK` at `ℓ = L`, sharp form; the pin `STNewKLKL` proved
+# `lem:newKLK` at `ℓ = L`, sharp form: `STNewKLKL` proved
 
-`stNewKLKL_holds (d : ℕ) : STNewKLKL d` (`Induction/Step5Pins.lean:245`; paper `3_5:628-651` with `ℓ = L`,
-paper-delta candidate `T2134a`): for `3 ≤ d`, with `δ₀ = κ/2` and a constant `C = 10 + C_s C_T` depending on `d`
+`stNewKLKL_holds (d : ℕ) : STNewKLKL d` (`STNewKLKL` in `Induction/Step5Pins.lean`; (3.57) `i2kk2zgg`
+with `ℓ = L`): for `3 ≤ d`, with `δ₀ = κ/2` and a constant `C = 10 + C_s C_T` depending on `d`
 only (`newKLKL_at`), every Hermitian `H` with `‖G_u - M‖_max ≤ δ₀` has
 `|𝓔^{(𝓛-𝒦)×(𝓛-𝒦),(2)}_{u,σ,a}| ≤ C/(1-u) (Ĵ² W^{-d} 𝒯̃^L_{u,D}(|a₁-a₂|) + Ĵ W^{-d} W^{-D})`, `Ĵ = Ĵ^L_{u,D}`
-(`STNewKLKLAt`).  Deterministic: the only external input is `(TTT2)` (`ekPropTInf_holds`) and the resolvent identity.
+(`STNewKLKLAt`).  Deterministic: the only external input is (3.21) `TTT2` (`ekPropTInf_holds`) and the
+resolvent identity.
 
-Route (the proof of `nkl_bound2`, `Induction/NewKLK.lean:840`, at `ℓ = L`).
+Proof (the proof of `nkl_bound2` in `Induction/NewKLK.lean`, at `ℓ = L`).
 * `W^{-d} 𝓔 = Σ_{x,y} F(x,a₂) S_{xy} F(a₁,y)`, `F = 𝓛-𝒦`.  At `ℓ = L` every `L^∞` distance is `≤ L = ℓ`
   (`zdist L u = min u.val (L - u.val) ≤ L`), so `1 ≤ ℓ` and, for `r = |·|_∞`,
   `𝒯̃^L(r) = max(𝒯(r), W^{-D})`: either `W^{-D} ≤ 𝒯(r)` (near, `𝒯̃ = 𝒯`) or `𝒯(r) < W^{-D}` (far, `𝒯̃ = W^{-D}` exactly).
-  This pointwise split replaces the paper's case distinction on `𝒯_u(L) ≥ W^{-D}` (`3_5:612-616`).
+  This pointwise split takes the place of the paper's case distinction on `𝒯_u(L) ≥ W^{-D}` in
+  Subsection 3.4 (`subsec:pf_lem:newKLK`).
 * Pairs `(x,y)` with `y` far: `B_y = |F(a₁,y)| ≤ Ĵ W^{-d} W^{-D}` (no shift `C_s`, no profile at `|a₁-a₂|`), summed
   against `Σ_x A_x ≤ 5 W^{-d}/(1-u)` (Ward, `newKLKL_ward_LKM`); `y` near and `x` far: `A_x ≤ Ĵ W^{-d} W^{-D}`,
   `Σ_y B_y ≤ 5 W^{-d}/(1-u)` (`S` symmetric with row sums `1`); both near: `A_x ≤ Ĵ W^{-d} 𝒯(|x-a₂|)`,
@@ -28,11 +30,7 @@ Route (the proof of `nkl_bound2`, `Induction/NewKLK.lean:840`, at `ℓ = L`).
   the first power of `Ĵ` multiplies only the floor, the second the profile, and `𝒯 ≤ 𝒯̃^L`.
 * Constants: `C = 10 + C_s C_T`, `C_s = 2^{d-2} e` (shift of `𝒯`), `C_T` of `(TTT2)`; `δ₀ = κ/2`.
 
-Sources: no port from RBM1D/RBM2D.  Private copies of the private helpers of `Induction/NewKLK.lean` (`b06ff9b`),
-prefix `newKLKL_`: `nkl_tailT_shift`, `nkl_Cs_ge_one`, `nkl_tailT_le_tailW`, `nkl_tailW_eq_of_near`,
-`nkl_zdistInf_{neg,sub_comm,add_le,tri}`, `nkl_SB_support`, `nkl_conv_two`, the Ward block (sections D, E:
-`nklQ` ... `nkl_ward_LKM`), `nkl_mE_zero`, `nkl_diag0`, `nkl_STGMM_zero`.  New: `newKLKL_zdistInf_le_L`,
-`newKLKL_tailW_of_far`, `newKLKL_bound2`, `newKLKL_at`, `stNewKLKL_holds`.
+Every helper is `private`, with the prefix `newKLKL_`.
 -/
 
 set_option linter.style.longLine false
@@ -598,7 +596,8 @@ private theorem newKLKL_tailW_of_far {ℓ Wr D r : ℝ} (hrℓ : r ≤ ℓ) (hlt
   rw [min_eq_left hrℓ]
   exact max_eq_right hlt.le
 
-/-- **Bound 2 at `ℓ = L`, abstractly** (`3_5:626-654`, `3_5:640-646`): with `A_x = |F(x,a₁)|`, `B_y = |F(a₀,y)|`,
+/-- **Bound 2 at `ℓ = L`, abstractly** (Subsection 3.4 `subsec:pf_lem:newKLK`, after (3.56) `eq;facts`): with
+`A_x = |F(x,a₁)|`, `B_y = |F(a₀,y)|`,
 `A_x ≤ J W^{-d} 𝒯̃^L(|x-a₁|)`, `B_y ≤ J W^{-d} 𝒯̃^L(|a₀-y|)` and the marginal sums bounded by `Σ̄`:
 `Σ_{x,y} A_x |S_{xy}| B_y ≤ 2 J W^{-d} W^{-D} Σ̄ + (J W^{-d})² C_s C_T' 𝒯(|a₀-a₁|)`.
 A far factor (`𝒯(|·|) < W^{-D}`) is bounded by `J W^{-d} W^{-D}` exactly, with no shift and no profile at `|a₀-a₁|`
@@ -726,7 +725,7 @@ private theorem newKLKL_bound2 (hL : 3 ≤ L) {Wr D CT J cW Sig : ℝ} (hW : 0 <
 
 end Assembly
 
-/-! ### G. The pin `STNewKLKL` -/
+/-! ### G. The statement `STNewKLKL` -/
 
 /-- `lem:newKLK` at `ℓ = L`, sharp, with `δ₀ = κ/2` and `C = 10 + C_s C_T` (`C_s = 2^{d-2} e`, `C_T` of `(TTT2)`). -/
 private theorem newKLKL_at (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) :
@@ -831,17 +830,11 @@ private theorem newKLKL_at (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < �
   have hn2 : 0 ≤ Cs * CT / (1 - u) * (J * (Wr ^ d)⁻¹ * Wr ^ (-D)) := by positivity
   linarith
 
-/-- **`lem:newKLK` at `ℓ = L`, sharp form** (`(i2kk2zgg)` `3_5:628-651` with `ℓ = L`; paper-delta candidate `T2134a`):
-the pin `STNewKLKL` holds, with `δ₀ = κ/2` and `C = 10 + 2^{d-2} e C_T` (`newKLKL_at`). -/
+/-- **`lem:newKLK` at `ℓ = L`, sharp form** ((3.57) `i2kk2zgg` with `ℓ = L`):
+`STNewKLKL` holds, with `δ₀ = κ/2` and `C = 10 + 2^{d-2} e C_T` (`newKLKL_at`). -/
 theorem stNewKLKL_holds (d : ℕ) : STNewKLKL d := by
   intro hd κ 𝔡 hκ h𝔡
   obtain ⟨C, hC, h⟩ := newKLKL_at d hd κ 𝔡 hκ
   exact ⟨C, κ / 2, hC, by positivity, h⟩
-
-/-! ### Compiled nonempty instances (`d = 3`)
-
-The weak-law premise `‖G_u - M‖_max ≤ δ₀` is discharged at `H = 0`, `E = 0` (`m = i`) with the time
-`u = δ₀/(1+δ₀) ∈ (0,1)`: `G_u - M = i u/(1-u) I` is not `0`, `‖G_u - M‖_max = u/(1-u) = δ₀` (`newKLKL_STGMM_zero`).
--/
 
 end RBM.Gauss.Sizes

@@ -10,35 +10,30 @@ import RBM3D.Gauss.LoopCoordinate
 import RBM3D.Gauss.LoopGenerator
 
 /-!
-# The general-`n` loop generator (ST2-28, ticket T2103, part 1)
+# The general-`n` loop generator
 
-Port of RBM2D `Induction/LoopGenN.lean` at commit `c9a24cf` (cited `LoopGenN:<line>`; 575 lines
-there), the pin `LoopGenN` of `Induction/HierVocab.lean`, onto the merged vocabulary.  Renaming
-rules R1-R4 of `docs/tickets/ST1-COMMON.md`; `Z2 L → Zd d L`, `Idx L W → Idx d L W`,
-`BlockIndex L W → Vtx d L W`, `Gsig → Gres`, `spectralZ → zt`, `gloop L W → loopL d L W`,
-`Coord/gvar → CoordF/gvarF`, `SB L → SB d L g`, `W ^ 2 → W ^ d` (the block size `W^d`: `tr E_a = 1`,
-`Σ_b E_b = W^{-d} 1`), `LLf/avgErr/llPairN/egtN → STLIM/STavgErrM/STllPairN/STegtM`.
+The `d`-dimensional form of RBM2D's `LoopGenN`, in the vocabulary of this development: the lattice
+`Zd d L`, `Idx d L W`, `Vtx d L W`, `Gres`, `zt`, `loopL d L W`, `CoordF/gvarF`, `SB d L g`, and the block
+size `W^d` (`tr E_a = 1`, `Σ_b E_b = W^{-d} 1`); `STLIM`, `STavgErrM`, `STllPairN`, `STegtM` denote
+the loop, the averaged error, and the two sums of the generator.
 
 ## Main results
 
-* `RBM.Ind.loopGenN` : for every `d L W`, coupling `g`, `3 ≤ L`, Hermitian `M` and loop `(σ, a)`,
+* `RBM.Ind.loopGenN`: for every `d L W`, coupling `g`, `3 ≤ L`, Hermitian `M` and loop `(σ, a)`,
   `genMat(𝓛_{σ,a}) = W^d Σ_{k<l} Σ_{x,y} 𝓛 S^{(B)} 𝓛`
   `+ W^d Σ_k Σ_{x,y} (𝓛_{(σ_k),(x)} - m(σ_k)) S^{(B)} 𝓛`
-  (`eq:mainStoflow`, `1_2`, drift part, with `def_EwtG`).
-* `RBM.Ind.stLoopGenNForm_holds` : the owed pin `STLoopGenNForm d` of `Induction/HierarchyN.lean`
-  (DECISIONS §32), its type unchanged.
-* `RBM.Ind.hierarchyN_holds` : the unconditional `HierarchyN d`
+  (the drift part of (2.47) `eq:mainStoflow`, with (2.49) `def_EwtG`).
+* `RBM.Ind.stLoopGenNForm_holds`: the statement `STLoopGenNForm d` of `Induction/HierarchyN.lean`.
+* `RBM.Ind.hierarchyN_holds`: the unconditional `HierarchyN d`
   (`hierarchyN_of_loopGenN d (stLoopGenNForm_holds d)`).
 
-## Route (as in RBM2D, `LoopGenN:1-30`)
+## Proof
 
 The Hessian of `genMat` along `coordinateMatrix c` is the coordinate Hessian of the flow sample
-`ω_M` at the auxiliary time `1` (`LoopGenN:82-112`); the merged
-`sum_coordinateSecondWordDeriv_allCuts` contracts it into same-edge and pair cuts; the spectral
-derivative is a sum of single-edge insertions (`LoopGenN:113-236`) turned into single-edge cuts by
-`neg_trace_scalarDrift_cutGlue_split`; the cut enumerations are reindexed (`LoopGenN:237-419`) and
-the single-edge algebra uses `Σ_a S^{(B)}_{ab} = 1`, true for `3 ≤ L`
-(`LoopGenN:436`, `LoopGenN_sum_SB_col`).
+`ω_M` at the auxiliary time `1`; the lemma `sum_coordinateSecondWordDeriv_allCuts` contracts it into
+same-edge and pair cuts; the spectral derivative is a sum of single-edge insertions, turned into
+single-edge cuts by `neg_trace_scalarDrift_cutGlue_split`; the cut enumerations are reindexed, and
+the single-edge algebra uses `Σ_a S^{(B)}_{ab} = 1`, true for `3 ≤ L` (`LoopGenN_sum_SB_col`).
 
 Every helper is `private` and prefixed `LoopGenN_`.
 -/
@@ -377,8 +372,7 @@ private theorem LoopGenN_getD (b a : List (Bool × Zd d L)) (s : Bool) :
   rw [Nat.add_sub_cancel, List.getD_append_right _ _ _ _ (by simp)]
   simp
 
-/-- Cut-and-glue at the edge after a matching prefix (RBM2D `LoopIdx.cutGlue_split`,
-`Hierarchy/Operations.lean:40`; private copy). -/
+/-- Cut-and-glue at the edge after a matching prefix (as RBM2D's `LoopIdx.cutGlue_split`). -/
 private theorem LoopGenN_cutGlue_split (σ₁ σ₂ : List Bool) (a₁ a₂ : List (Zd d L))
     (s : Bool) (a b : Zd d L) (h₁ : σ₁.length = a₁.length) :
     Loop.LoopIdx.cutGlue (σ₁.length + 1) b
@@ -549,8 +543,8 @@ private theorem LoopGenN_edge_algebra (hL : 3 ≤ L) (m : ℂ) (E u : ℝ) (M : 
 
 end Assembly
 
-/-- `genMat` along the generic flow `ztOf m E u` (the generic-`m` form of `Path/OneStep.lean:68`;
-`genMat_eq_genMatOf` is `rfl`). -/
+/-- `genMat` along the generic flow `ztOf m E u` (the generic-`m` form of the flow generator of
+`Path/OneStep.lean`; the identification with `genMat` is `rfl`). -/
 def genMatOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (m : ℂ) (E u : ℝ)
     (M : Matrix (Idx d L W) (Idx d L W) ℂ) (I : Loop.LoopIdx (Zd d L)) : ℂ :=
   (1 / 2 : ℂ) * ∑ c : CoordF d L W, ((gvarF d L W g c : ℝ) : ℂ) *
@@ -624,8 +618,8 @@ theorem loopGenNOf (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (m : ℂ) (E : 
   simp only [hFp]
   ring
 
-/-- **`loopGenN`** (RBM2D `LoopGenN`, `Induction/LoopGenN.lean:484`; `eq:mainStoflow`, `1_2`, drift part
-with `def_EwtG`): the band statement, unchanged, is the generic `loopGenNOf` at `m = mE E`
+/-- **`loopGenN`** (the `d`-dimensional form of RBM2D's `LoopGenN`; drift part of (2.47) `eq:mainStoflow`
+with (2.49) `def_EwtG`): the generic `loopGenNOf` at `m = mE E`
 (`zt E u = ztOf (mE E) E u` and `mSigma E = PropSpin (mE E)` by unfolding; `0 < (mE E).im` is `mE_im_pos`).
 At `(L, W, g) = (sz.L n, sz.W n, sz.lam n)` the two terms are `STllPairN` and `STegtM`
 (`stLoopGenNForm_holds`). -/
@@ -645,25 +639,17 @@ theorem loopGenN (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W] (E : ℝ) (hL : 3
   loopGenNOf d L W g (mE E) E hL (mE_im_pos hE) u hu1 M hM σ a
 
 
-/-- **`STLoopGenNForm` holds** (DECISIONS §32; `eq:mainStoflow`, `1_2`, drift part, with
-`def_EwtG`): `genMat(𝓛_{σ,a}) = STllPairN + STegtM` at `(L, W, g) = (sz.L n, sz.W n, sz.lam n)`,
+/-- **`STLoopGenNForm` holds** (drift part of (2.47) `eq:mainStoflow`, with
+(2.49) `def_EwtG`): `genMat(𝓛_{σ,a}) = STllPairN + STegtM` at `(L, W, g) = (sz.L n, sz.W n, sz.lam n)`,
 from `loopGenN` and `3 ≤ sz.L n` (`Sizes.three_le_L`). -/
 theorem stLoopGenNForm_holds (d : ℕ) : STLoopGenNForm d := by
   intro sz n E hE u hu0 hu1 M hM k hk σ a
   exact loopGenN d (sz.L n) (sz.W n) (sz.lam n) E (sz.three_le_L n) hE u hu1 M hM σ a
 
-/-- **`hierarchyN` unconditional** (RBM2D `hierarchyN`, `Induction/HierarchyN.lean:31`): the
+/-- **`hierarchyN` unconditional** (as RBM2D's `hierarchyN`): the
 general-`n` hierarchy identity, from `hierarchyN_of_loopGenN` and `stLoopGenNForm_holds`. -/
 theorem hierarchyN_holds (d : ℕ) : HierarchyN d :=
   hierarchyN_of_loopGenN d (stLoopGenNForm_holds d)
-
-/-! ## Compiled nonempty instances
-
-`loopGenN` at `d = 3`, `L = 3`, `W = 2`, `g = 1/2`, `E = 1/2`, `u = 1/2`, the non-scalar Hermitian
-`M = X_{(0,1,true)}`, the loop `(+,-,+)`, `a = (0,1,2)` of length `k = 3` (`Idx 3 3 2` has `216`
-sites).  `stLoopGenNForm_holds` and `hierarchyN_holds` at the merged admissible sequence `sz0`
-(`RBM.Gauss.SizesInst.sz0`: `d = 3`, `L_0 = 4`, `W_0 = 32`, `lam_0 = 1/64`), size index `0`, `E = 0`,
-`u = 1/2`, `M = 1`, `k = 3`.  No hypothesis is left open. -/
 
 end RBM.Ind
 

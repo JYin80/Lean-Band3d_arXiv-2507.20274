@@ -8,34 +8,32 @@ import RBM3D.Induction.Step2Defs
 import RBM3D.Path.QVIdentity
 
 /-!
-# The general-`n` variance proxy `QVPropagatedN` (ST2-28, ticket T2103, part 2)
+# The general-`n` variance proxy `QVPropagatedN`
 
-Port of RBM2D `Induction/QVN.lean` at commit `c9a24cf` (cited `QVN:<line>`; 739 lines there) and of
-the definitions `loopDerivN`, `QVPropagatedN` of `Induction/HierVocab.lean` (`HierVocab:479`,
-`:486`), onto the merged vocabulary and in the shape of the merged `QVPropagated`
-(`Path/QVIdentity.lean`, T2084; D152-D155).  Renaming rules R1-R4 of `docs/tickets/ST1-COMMON.md`;
-`Z2 L → Zd d L`, `Idx L W → Idx d L W`, `BlockIndex L W → Vtx d L W`, `Gsig → Gres`,
-`spectralZ → zt`, `gloop → loopL`, `Coord/gvar → CoordF/gvarF`, `SB L → SB d L g`, `W ^ 2 → W ^ d`,
-`eeLoop/eeN → STeeLoop/STeeM`.
+As RBM2D's `qvPropagatedN` and the definitions `loopDerivN`, `QVPropagatedN` it uses,
+in the vocabulary of this development and in the shape of `QVPropagated`
+(`Path/QVIdentity.lean`).  Vocabulary: `Z2 L → Zd d L`, `Idx L W → Idx d L W`, `BlockIndex L W → Vtx d L W`,
+`Gsig → Gres`, `spectralZ → zt`, `gloop → loopL`, `Coord/gvar → CoordF/gvarF`, `SB L → SB d L g`,
+`W ^ 2 → W ^ d`, `eeLoop/eeN → STeeLoop/STeeM`.
 
 ## Main results
 
-* `RBM.Ind.loopDerivN` : the directional derivative of `𝓛_{u,σ,b}(M)` along `X` (`HierVocab:479`).
-* `RBM.Ind.QVPropagatedN d` : the pin (`∀ sz n`, `g = sz.lam n`, `STeeM`, factor `k`).
-* `RBM.Ind.qvPropagatedN d` : its proof.  For Hermitian `M`, a loop of length `k ≥ 2`, every sign
+* `RBM.Ind.loopDerivN`: the directional derivative of `𝓛_{u,σ,b}(M)` along `X`.
+* `RBM.Ind.QVPropagatedN d`: the statement (`∀ sz n`, `g = sz.lam n`, `STeeM`, factor `k`).
+* `RBM.Ind.qvPropagatedN d`: its proof.  For Hermitian `M`, a loop of length `k ≥ 2`, every sign
   vector `σ` and coefficient family `κ`,
   `Σ_c gvar_c |Σ_b κ_b ∂_c 𝓛_{σ,b}|² ≤ k · Re Σ_{b,b'} κ_b conj κ_{b'} (𝓔⊗𝓔)_{σ,b,b'}`
-  (`def:CALE`, `defEOTE` `3_5:176`, `def_diffakn_k` `3_5:187`; RBM2D `QVN:622`).
+  (Definition 3.5 `def:CALE`, (3.15) `defEOTE`, (3.16) `def_diffakn_k`).
 
-## Proof (as in RBM2D, `QVN:1-40`)
+## Proof (as in RBM2D)
 
-* section 1 (`QVN:54-278`): the coordinate algebra
-  `Σ_c gvar_c ⟨X̂_c, F⟩ conj ⟨X̂_c, G⟩ = W^d Σ S^{(B)} tr(F E G* E)`, copied (and renamed) from the
-  `private` lemmas of `Path/QVIdentity.lean:430-688`, which cannot be imported;
-* sections 2-3 (`QVN:280-552`): words `∏ G^{σ_i} E_{a_i}`, Leibniz
+* section 1: the coordinate algebra
+  `Σ_c gvar_c ⟨X̂_c, F⟩ conj ⟨X̂_c, G⟩ = W^d Σ S^{(B)} tr(F E G* E)`, as the private lemmas of
+  `Path/QVIdentity.lean`, re-proved here;
+* sections 2-3: words `∏ G^{σ_i} E_{a_i}`, Leibniz
   `∂_X 𝓛_{σ,b} = -Σ_j tr(X̂ A_j(b))` with the cut chain `A_j(b)`, and the glued loop
   `STeeLoop σ b b' (j+1) β β' = tr(A_j(b) E_{β'} A_j(b')ᴴ E_β)`;
-* section 4 (`QVN:553-615`): the per-cut identity `𝓔⊗𝓔 = Σ_j (cut j)` and Cauchy–Schwarz over the
+* section 4: the per-cut identity `𝓔⊗𝓔 = Σ_j (cut j)` and Cauchy–Schwarz over the
   `k` cuts (`‖Σ_j P_j‖² ≤ k Σ_j ‖P_j‖²`, dimension-free).
 
 Every helper is `private` and prefixed `QVN_`.
@@ -57,14 +55,13 @@ section Vocab
 
 variable (d L W : ℕ) (g : ℝ) [NeZero L] [NeZero W]
 
-/-- The derivative of `𝓛_{u,σ,b}(M)` along a direction `X` (RBM2D `loopDerivN`,
-`Induction/HierVocab.lean:479`). -/
+/-- The derivative of `𝓛_{u,σ,b}(M)` along a direction `X` (RBM2D `loopDerivN`). -/
 def loopDerivN (E u : ℝ) (M X : Matrix (Idx d L W) (Idx d L W) ℂ)
     {k : ℕ} (σ : Fin k → Bool) (b : Fin k → Zd d L) : ℂ :=
   deriv (fun y : ℝ => loopL d L W (blockMat d L W (M + (y : ℂ) • X)) (zt E u) (loopOf σ b)) 0
 
-/-- `(𝓔⊗𝓔)_{u,σ,a,a'}` of a fine matrix (`defEOTE`, `3_5:176`) at general `(d, L, W, g)`: the body of
-`STeeM` (`QVN_STeeM_eq`; RBM2D `eeN`, `HierVocab:190`). -/
+/-- `(𝓔⊗𝓔)_{u,σ,a,a'}` of a fine matrix ((3.15) `defEOTE`) at general `(d, L, W, g)`: the body of
+`STeeM` (RBM2D `eeN`). -/
 private def QVN_eeN (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) {m : ℕ} (σ : Fin m → Bool)
     (a a' : Fin m → Zd d L) : ℂ :=
   (W : ℂ) ^ d * ∑ k ∈ Finset.Icc 1 m, ∑ b : Zd d L, ∑ b' : Zd d L,
@@ -151,15 +148,15 @@ private theorem QVN_cm_gt {i j : Idx d L W} (h : idxKey d L W j < idxKey d L W i
   cases b <;> split_ifs <;> (try push_cast) <;>
     (try simp only [zero_add, add_zero, mul_zero, mul_one, sub_zero, zero_sub]) <;> grind
 
-/-- The diagonal coordinate variance is `S_ii` (the private `fineModel_gvarF_diag` of
-`Gauss/FineModel.lean:233`, re-proved). -/
+/-- The diagonal coordinate variance is `S_ii` (as the private `fineModel_gvarF_diag`,
+re-proved). -/
 private theorem QVN_gvar_diag (g : ℝ) (i : Idx d L W) (b : Bool) :
     (gvarF d L W g (i, i, b) : ℝ) = svarF d L W g i i := by
   change (if i = i then svarF d L W g i i else svarF d L W g i i / 2) = _
   simp
 
-/-- The off-diagonal coordinate variance is `S_ij / 2` (the private `fineModel_gvarF_offDiag` of
-`Gauss/FineModel.lean:241`, re-proved). -/
+/-- The off-diagonal coordinate variance is `S_ij / 2` (as the private `fineModel_gvarF_offDiag`,
+re-proved). -/
 private theorem QVN_gvar_offDiag (g : ℝ) (i j : Idx d L W) (b : Bool) (hij : i ≠ j) :
     (gvarF d L W g (i, j, b) : ℝ) = svarF d L W g i j / 2 := by
   change (if i = j then svarF d L W g i j else svarF d L W g i j / 2) = _
@@ -400,16 +397,15 @@ private theorem QVN_greenBlk_conjTranspose (E u : ℝ) {M : Matrix (Idx d L W) (
     (greenBlk d L W E u M σ)ᴴ = greenBlk d L W E u M (!σ) :=
   QVN_Gres_conjTranspose (hM.submatrix _) _ σ
 
-/-- **Reverse a chain and flip its charges** (RBM1D `EEBridge.rflip`,
-`RBM1D/Hierarchy/EEBridge.lean:149`, commit `c06b103`, with `ZMod L` replaced by `Zd d L`):
+/-- **Reverse a chain and flip its charges** (as RBM1D's `EEBridge.rflip`, with `Zd d L` in place of `ZMod L`):
 `QVN_rflip t l c` reads `l` backwards with every charge flipped, prefixed by the charge `t` and
 closed by the label `c`. -/
 private def QVN_rflip (t : Bool) : List (Bool × Zd d L) → Zd d L → List (Bool × Zd d L)
   | [], c => [(t, c)]
   | p :: l, c => QVN_rflip t l p.2 ++ [(!p.1, c)]
 
-/-- **The conjugate-transposed chain is a chain again** (RBM1D
-`Gsig_mul_conjTranspose_prodList_mul`, `RBM1D/Hierarchy/EEBridge.lean:195`, commit `c06b103`):
+/-- **The conjugate-transposed chain is a chain again** (as RBM1D's
+`Gsig_mul_conjTranspose_prodList_mul`):
 `G(t) · (∏ G E)ᴴ · E_c` is the word of `QVN_rflip t l c`, for Hermitian `M`. -/
 private theorem QVN_wd_rflip (E u : ℝ) {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian)
     (t : Bool) (l : List (Bool × Zd d L)) (c : Zd d L) :
@@ -455,7 +451,7 @@ private theorem QVN_flip_zip (σ : List Bool) (a : List (Zd d L)) (h : σ.length
   · rw [List.map_reverse, e, ← List.map_reverse]
   · rw [List.map_reverse, h2]
 
-/-- **The glued `(2n+2)`-loop as a chain** (the layout `eeLoop` of `Induction/HierVocab.lean` at
+/-- **The glued `(2n+2)`-loop as a chain** (the layout of RBM2D's `eeLoop` at
 cut `q + 1`, read as pairs): the cut chain `rot_q(σ,a) · (σ_q, b')`, then the reversed and
 flipped rotated chain of `a'` closed by `b`. -/
 private theorem QVN_eeLoop_zip (σ : List Bool) (a a' : List (Zd d L)) (h1 : σ.length = a.length)
@@ -487,8 +483,7 @@ open scoped Matrix.Norms.L2Operator
 variable {d L W : ℕ} {g : ℝ} [NeZero L] [NeZero W]
 
 set_option linter.unusedDecidableInType false in
-/-- The trace of a differentiable matrix path (copy of the `private` `QVIdentity_hasDerivAt_trace`
-of `Path/QVIdentity.lean`). -/
+/-- The trace of a differentiable matrix path (as in `Path/QVIdentity.lean`). -/
 private theorem QVN_hasDerivAt_trace {n : Type*} [Fintype n] [DecidableEq n]
     {f : ℝ → Matrix n n ℂ} {f' : Matrix n n ℂ} {t : ℝ} (h : HasDerivAt f f' t) :
     HasDerivAt (fun s => Matrix.trace (f s)) (Matrix.trace f') t := by
@@ -498,8 +493,7 @@ private theorem QVN_hasDerivAt_trace {n : Type*} [Fintype n] [DecidableEq n]
   have := T.hasFDerivAt.comp_hasDerivAt t h
   simpa only [hT, Function.comp_def] using this
 
-/-- `∂_y G^σ(M + yX)|_{y=0} = -G^σ X̂ G^σ` (the resolvent derivative, as in the proof of
-`QVIdentity_loopDeriv_eq` of `Path/QVIdentity.lean`, for either sign). -/
+/-- `∂_y G^σ(M + yX)|_{y=0} = -G^σ X̂ G^σ` (the resolvent derivative, as in `Path/QVIdentity.lean`, for either sign). -/
 private theorem QVN_hasDerivAt_greenBlk {E u : ℝ} (hE : |E| < 2) (hu : u < 1)
     {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian)
     (X : Matrix (Idx d L W) (Idx d L W) ℂ) (σ : Bool) :
@@ -600,9 +594,7 @@ private def QVN_cut (E u : ℝ) (M : Matrix (Idx d L W) (Idx d L W) ℂ) {k : �
   QVN_wd E u M (((List.ofFn σ).zip (List.ofFn b)).drop j ++
       ((List.ofFn σ).zip (List.ofFn b)).take j) * greenBlk d L W E u M (σ j)
 
-/-- **Leibniz decomposition of the loop derivative** (RBM1D `gradMat_loopObs`,
-`RBM1D/Gauss/EETensorBound.lean:267`, commit `c06b103`, read through `loopCut_eq` of
-`Hierarchy/EEBridge.lean:256`): `∂_X 𝓛_{σ,b} = -Σ_j tr(X̂ · A_j(b))`. -/
+/-- **Leibniz decomposition of the loop derivative** (as RBM1D's `gradMat_loopObs`, read through `loopCut_eq`): `∂_X 𝓛_{σ,b} = -Σ_j tr(X̂ · A_j(b))`. -/
 private theorem QVN_loopDerivN_eq {E u : ℝ} (hE : |E| < 2) (hu : u < 1)
     {M : Matrix (Idx d L W) (Idx d L W) ℂ} (hM : M.IsHermitian) (X : Matrix (Idx d L W) (Idx d L W) ℂ)
     {k : ℕ} (σ : Fin k → Bool) (b : Fin k → Zd d L) :
@@ -618,9 +610,9 @@ private theorem QVN_loopDerivN_eq {E u : ℝ} (hE : |E| < 2) (hu : u < 1)
   rw [QVN_trace_term E u M X l (by omega : (j : ℕ) < l.length)]
   simp [QVN_cut, hl]
 
-/-- **The glued `(2k+2)`-loop of the cut `j` is `tr(A_j(a) E_{β'} A_j(a')ᴴ E_β)`** (RBM1D
-`glueLoop_prodList`, `RBM1D/Hierarchy/EEBridge.lean:208`, commit `c06b103`; the layout is
-`eeLoop` of `Induction/HierVocab.lean`). -/
+/-- **The glued `(2k+2)`-loop of the cut `j` is `tr(A_j(a) E_{β'} A_j(a')ᴴ E_β)`** (as RBM1D's
+`glueLoop_prodList`; the layout is
+that of RBM2D's `eeLoop`). -/
 private theorem QVN_eeLoop_gloop (E u : ℝ) {M : Matrix (Idx d L W) (Idx d L W) ℂ}
     (hM : M.IsHermitian) {k : ℕ} (σ : Fin k → Bool) (a a' : Fin k → Zd d L) (j : Fin k)
     (β β' : Zd d L) :
@@ -648,15 +640,14 @@ section Assembly
 
 variable {d L W : ℕ} {g : ℝ} [NeZero L] [NeZero W]
 
-/-- Swapping the summation labels of an `S^{(B)}`-weighted double sum (copy of the `private`
-`QVIdentity_SB_swap`). -/
+/-- Swapping the summation labels of an `S^{(B)}`-weighted double sum (as in `Path/QVIdentity.lean`). -/
 private theorem QVN_SB_swap (F : Zd d L → Zd d L → ℂ) :
     ∑ b : Zd d L, ∑ b' : Zd d L, SB d L g b b' * F b' b = ∑ b : Zd d L, ∑ b' : Zd d L, SB d L g b b' * F b b' := by
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun b _ => Finset.sum_congr rfl fun b' _ => ?_
   rw [show SB d L g b' b = SB d L g b b' from congrFun (congrFun (SB_transpose d L g) b) b']
 
-/-- **The per-cut identity of `def:CALE`** (paper-delta #22): for two block matrices `A, A'`,
+/-- **The per-cut identity of `def:CALE`**: for two block matrices `A, A'`,
 `Σ_c gvar_c ⟨X̂_c, A⟩ conj ⟨X̂_c, A'⟩ = W² Σ_{x,y} S^B_{xy} tr(A E_x A'ᴴ E_y)`, with
 `⟨X̂, A⟩ = -tr(X̂ A)`. -/
 private theorem QVN_cut_pair (A A' : Matrix (Vtx d L W) (Vtx d L W) ℂ) :
@@ -699,13 +690,13 @@ private theorem QVN_norm_sum_sq_le {k : ℕ} (P : Fin k → ℂ) :
     _ ≤ ((Finset.univ : Finset (Fin k)).card : ℝ) * ∑ j, ‖P j‖ ^ 2 := sq_sum_le_card_mul_sum_sq
     _ = (k : ℝ) * ∑ j, ‖P j‖ ^ 2 := by simp
 
-/-- `‖x‖² = x · conj x`, as a complex identity (copy of `QVIdentity_mul_conj`). -/
+/-- `‖x‖² = x · conj x`, as a complex identity (as in `Path/QVIdentity.lean`). -/
 private theorem QVN_mul_conj (x : ℂ) : x * (starRingEnd ℂ) x = ((‖x‖ ^ 2 : ℝ) : ℂ) := by
   rw [Complex.mul_conj, Complex.normSq_eq_norm_sq]
 
 end Assembly
 
-/-! ## 5. The pinned theorem -/
+/-! ## 5. The statement and its proof -/
 
 section Final
 
@@ -789,9 +780,9 @@ private theorem QVN_core (E u : ℝ) (hE : |E| < 2) (hu : u < 1)
 
 end Final
 
-/-- **The general-`n` variance proxy `QVPropagatedN`** (`def:CALE`, `defEOTE` `3_5:176`,
-`def_diffakn_k` `3_5:187`; RBM2D `QVPropagatedN`, `Induction/HierVocab.lean:486`), in the shape of
-the merged `QVPropagated` (`Path/QVIdentity.lean`, D152-D155: `(𝓔⊗𝓔)` is not literally the quadratic
+/-- **The general-`n` variance proxy `QVPropagatedN`** (Definition 3.5 `def:CALE`, (3.15) `defEOTE`,
+(3.16) `def_diffakn_k`; RBM2D `QVPropagatedN`), in the shape of
+`QVPropagated` (`Path/QVIdentity.lean`: `(𝓔⊗𝓔)` is not literally the quadratic
 variation; the inequality carries the number `k` of cuts): for Hermitian `M`, a loop of length
 `k ≥ 2`, every sign vector `σ` and every coefficient family `κ`,
 `Σ_c gvar_c |Σ_b κ_b ∂_c 𝓛_{σ,b}|² ≤ k · Re Σ_{b,b'} κ_b conj κ_{b'} (𝓔⊗𝓔)_{σ,b,b'}`
@@ -807,20 +798,11 @@ def QVPropagatedN (d : ℕ) : Prop :=
           (k : ℝ) * (∑ b : Fin k → Zd d (sz.L n), ∑ b' : Fin k → Zd d (sz.L n),
             κ b * (starRingEnd ℂ) (κ b') * sz.STeeM n E u M σ b b').re
 
-/-- **`qvPropagatedN`** (RBM2D `Induction/QVN.lean:622`): the variance proxy of a propagated
-increment, every `d`.  Its `n = 2` analogue is the merged `qvPropagated` (`Path/QVIdentity.lean`; the
-relation between the two is not proved here). -/
+/-- **`qvPropagatedN`** (RBM2D): the variance proxy of a propagated
+increment, every `d`.  Its `n = 2` analogue is `QVPropagated` (`Path/QVIdentity.lean`). -/
 theorem qvPropagatedN (d : ℕ) : QVPropagatedN d := by
   intro sz n E hE u _ hu M hM k _ σ κ
   exact QVN_core (g := sz.lam n) E u hE hu hM σ κ
-
-/-! ## Compiled nonempty instances
-
-`qvPropagatedN 3` at the merged admissible sequence `sz0` (`RBM.Gauss.SizesInst.sz0`: `d = 3`,
-`L_0 = 4`, `W_0 = 32`, `lam_0 = 1/64`), size index `0`, loops of length `k = 3`, with every
-hypothesis discharged: (1) `E = 0`, `u = 1/2`, `M = 1`, `σ = (+,-,+)`, `κ ≡ 1`; (2) `E = 1/2`,
-`u = 1/3`, the non-scalar Hermitian `M = X_{(0,0,true)}` (`coordinateMatrix_isHermitian`),
-non-alternating signs `(+,+,-)` and the non-constant `κ_b = 1(b₀ = b₁)`. -/
 
 end RBM.Ind
 

@@ -11,14 +11,11 @@ import RBM3D.Loop.KLFinal
 /-!
 # The non-alternating grid endpoint with the linear right side (`d ≥ 3`): `nqGridEndLinN`
 
-Ticket T2199 (S3-12b, stochastic layer ST-3, second of three; S3-12a = `Induction/NQLin`).  Port of
-RBM2D `Induction/NonAltEnd.lean` (`NonAltEnd:54-1276` at `c9a24cf`) on the `d ≥ 3` data of route (R)
-(DECISIONS §62 (2)).  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`, `lem:STOeq_NQ`
-(`3_5:1136`, proof `3_5:1152-1180`).
+The `d ≥ 3` form of RBM2D's `NonAltEnd`.  Paper: Lemma 4.6 (`lem:STOeq_NQ`) and its proof.
 
 ## What is here (namespace `RBM.Ind`)
 
-* §0 asymptotic helpers `C (1 + log x)^j x^a ≤ x^b` (private; RBM2D `NonAltEnd:54-121`);
+* §0 asymptotic helpers `C (1 + log x)^j x^a ≤ x^b` (private);
 * §1 facts on the sizes, `W ≤ N` (crude), `W ≥ N^𝔠` for the negative powers of `W`;
 * §2 the absorption lemmas of the seven numerical hypotheses of `budgetNonAltLinN` (`ha1`-`he4`),
   the regime facts (`hη`, the grid step, the shift hypothesis `hδ`), the exponent bookkeeping
@@ -26,14 +23,12 @@ RBM2D `Induction/NonAltEnd.lean` (`NonAltEnd:54-1276` at `c9a24cf`) on the `d �
 * §3 the assembly per sign vector at the exit time `nqLinExitTauN` (`nqEndLin_assembly`, private:
   its binder mentions `YMomentBoundsN`);
 * §4 the collapsed window `v_n = s_n`, the union bound, the `Y`-moment constant;
-* §5 **`nqGridEndLinN`** with exactly the statement `T2199_nqGridEndLinN` of
-  `docs/tickets/checks/T2199-check.lean`: the `GoodSetN` at a free crude level `Φc`, the `GoodLinN`
+* §5 **`nqGridEndLinN`**: the `GoodSetN` at a free crude level `Φc`, the `GoodLinN`
   at the deterministic levels `Φ₁ Φ₂ Φ₃`, right side `N^{ε₀}(Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^k`
-  (degree 1 in the levels, no `Φ²`, no `Φc`); no `STKbound` premise (`stKbound_holds` gives it);
-* §6 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.NQEndLinInst`).
+  (degree 1 in the levels, no `Φ²`, no `Φc`); no `STKbound` premise (`stKbound_holds` gives it).
 
-The good-event probability is not here (S3-12c, as in RBM2D `GridEndConcl`).  Every helper that the
-ticket does not pin is `private` or prefixed `nqEnd_`.
+The good-event probability is not here (as in RBM2D's `GridEndConcl`).  Every helper that is not
+part of the statement is `private` or prefixed `nqEnd_`.
 -/
 
 set_option linter.style.longLine false
@@ -49,11 +44,11 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-! ## 0. Asymptotic helpers (RBM2D `NonAltEnd.lean:54-121`, real variable `x`) -/
+/-! ## 0. Asymptotic helpers (real variable `x`) -/
 
 section Asymp
 
-/-- `C · x^a ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd_ev_rpow_le`, `NonAltEnd:60`). -/
+/-- `C · x^a ≤ x^b` for all large real `x` when `a < b` (as RBM2D's `NonAltEnd_ev_rpow_le`). -/
 private theorem nqEnd_ev_rpow_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     ∀ᶠ x : ℝ in atTop, C * x ^ a ≤ x ^ b := by
   have ht : Tendsto (fun x : ℝ => x ^ (b - a)) atTop atTop := tendsto_rpow_atTop (sub_pos.mpr hab)
@@ -63,7 +58,7 @@ private theorem nqEnd_ev_rpow_le {a b : ℝ} (hab : a < b) (C : ℝ) :
   rw [h1]
   exact mul_le_mul_of_nonneg_right hx (Real.rpow_nonneg hx0.le _)
 
-/-- `C · x^a (log x + 1) ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd:70`). -/
+/-- `C · x^a (log x + 1) ≤ x^b` for all large real `x` when `a < b`. -/
 private theorem nqEnd_ev_rpow_log_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     ∀ᶠ x : ℝ in atTop, C * x ^ a * (Real.log x + 1) ≤ x ^ b := by
   set δ := (b - a) / 2 with hδ
@@ -88,7 +83,7 @@ private theorem nqEnd_ev_rpow_log_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     _ ≤ x ^ b := hN
 
 /-- **Polylog absorption**: `C (1 + log x)^j x^a ≤ x^b` for all large real `x` when `a < b`
-(RBM2D `NonAltEnd_ev_polylog_le`, `NonAltEnd:94`). -/
+(as RBM2D's `NonAltEnd_ev_polylog_le`). -/
 private theorem nqEnd_ev_polylog_le (j : ℕ) :
     ∀ {a b : ℝ}, a < b → ∀ C : ℝ, ∀ᶠ x : ℝ in atTop, C * (1 + Real.log x) ^ j * x ^ a ≤ x ^ b := by
   induction j with
@@ -127,7 +122,7 @@ variable {d : ℕ} (sz : Sizes d)
 private theorem nqEnd_one_le_size (n : ℕ) : (1 : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
   exact_mod_cast sz.one_le_size n
 
-/-- `W^d L^d = N` (the private `gridEnv_size_cast` of `GridEnvelopeN`). -/
+/-- `W^d L^d = N` (as the private `gridEnv_size_cast` of `GridEnvelopeN`). -/
 private theorem nqEnd_size_cast (n : ℕ) :
     (sz.W n : ℝ) ^ d * (sz.L n : ℝ) ^ d = ((sz.size n : ℕ) : ℝ) := by
   have : ((sz.size n : ℕ) : ℝ) = (((sz.W n * sz.L n) ^ d : ℕ) : ℝ) := rfl
@@ -146,8 +141,8 @@ private theorem nqEnd_W_le_size (hd : 1 ≤ d) (n : ℕ) :
 
 end Facts
 
-/-- `W^e ≤ N^{𝔠 e}` for `e ≤ 0` from `N^𝔠 ≤ W` (the negative powers of `W`; RBM2D
-`NonAltEnd_Wneg_le`, `NonAltEnd:266`, with a general nonpositive exponent). -/
+/-- `W^e ≤ N^{𝔠 e}` for `e ≤ 0` from `N^𝔠 ≤ W` (the negative powers of `W`; as RBM2D's
+`NonAltEnd_Wneg_le`, with a general nonpositive exponent). -/
 private theorem nqEnd_Wpow_le {W N c e : ℝ} (hN0 : 0 < N) (hcW : N ^ c ≤ W) (he : e ≤ 0) :
     W ^ e ≤ N ^ (c * e) := by
   have h1 : 0 < N ^ c := Real.rpow_pos_of_pos hN0 _
@@ -157,7 +152,7 @@ private theorem nqEnd_Wpow_le {W N c e : ℝ} (hN0 : 0 < N) (hcW : N ^ c ≤ W) 
 /-! ## 2. The absorption lemmas (the seven numerical hypotheses of `budgetNonAltLinN`)
 
 Each is stated for abstract exponents (`c = C ε` of `nqGood1C`, `ε₁`, `εq`, `ε₀`, `D'`, ...) in the exact
-form of the corresponding hypothesis of `budgetNonAltLinN` (`NQLin.lean:966`), eventually in `n`.
+form of the corresponding hypothesis of `budgetNonAltLinN` (`NQLin.lean`), eventually in `n`.
 Positive powers of `W` are bounded by `W ≤ N` (crude, `W^d L^d = N`), negative ones by `W ≥ N^𝔠`
 (`Bandwidth`); the polylogarithm of `Ls = (Im m)⁻¹ log N ≤ κ'⁻¹ log N` is absorbed by
 `nqEnd_ev_polylog_le`. -/
@@ -296,7 +291,7 @@ private theorem nqEnd_ev_he1 (hsize : sz.SizeTendsto) {𝔠 : ℝ} (hband : sz.B
     _ ≤ _ := by linarith
 
 /-- (he3, he4) `N^k N^{-D} ≤ N^{ε₀}/6` when `k - D < ε₀` (`budgetNonAltLinN.he3`, `he4` at
-`D = D_Y`, `D = D_t`; RBM2D `NonAltEnd_ev_he4`, `NonAltEnd:573`). -/
+`D = D_Y`, `D = D_t`; as RBM2D's `NonAltEnd_ev_he4`). -/
 private theorem nqEnd_ev_he4 (hsize : sz.SizeTendsto) (k : ℕ) {D ε₀ : ℝ}
     (hε : (k : ℝ) - D < ε₀) :
     ∀ᶠ n : ℕ in atTop, ((sz.size n : ℕ) : ℝ) ^ k * ((sz.size n : ℕ) : ℝ) ^ (-D) ≤
@@ -451,8 +446,7 @@ private theorem nqEnd_ev_W_rpow_ge (hsize : sz.SizeTendsto) {𝔠 : ℝ} (h𝔠 
     _ = (((sz.size n : ℕ) : ℝ) ^ 𝔠) ^ a := Real.rpow_mul hN0.le _ _
     _ ≤ ((sz.W n : ℕ) : ℝ) ^ a := Real.rpow_le_rpow (Real.rpow_nonneg hN0.le _) hW ha.le
 
-/-- `Δ ≤ N^{-C_K}` on a grid with `N^{C_K} ≤ K n` and `v - s ≤ 1` (RBM2D `NonAltEnd_step_le`,
-`NonAltEnd:652`). -/
+/-- `Δ ≤ N^{-C_K}` on a grid with `N^{C_K} ≤ K n` and `v - s ≤ 1` (as RBM2D's `NonAltEnd_step_le`). -/
 private theorem nqEnd_step_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {C_K : ℝ}
     (hK : ((sz.size n : ℕ) : ℝ) ^ C_K ≤ (K n : ℝ)) (hvs : v n - s n ≤ 1) :
     gridStep s v K n ≤ ((sz.size n : ℕ) : ℝ) ^ (-C_K) := by
@@ -481,7 +475,7 @@ private theorem nqEnd_gridTime_succ_sub (s v : ℕ → ℝ) (K : ℕ → ℕ) (n
   unfold gridTime; push_cast; ring
 
 /-- `η_u⁻¹ ≤ N^{1-τ}/κ'` for `u ≤ t`, `κ' ≤ Im m`, under the range condition
-`N^{-1+τ} ≤ 1 - t` (RBM2D `NonAltEnd_etaT_inv_le`, `NonAltEnd:593`, with `κ'` for `c₀`). -/
+`N^{-1+τ} ≤ 1 - t` (as RBM2D's `NonAltEnd_etaT_inv_le`, with `κ'` for `c₀`). -/
 private theorem nqEnd_etaT_inv_le {κ' E u t τR N : ℝ} (hκ' : 0 < κ') (hκm : κ' ≤ (mE E).im)
     (hut : u ≤ t) (hN0 : 0 < N) (hR : N ^ (-1 + τR) ≤ 1 - t) :
     (etaT E u)⁻¹ ≤ N ^ (1 - τR) / κ' := by
@@ -496,7 +490,7 @@ private theorem nqEnd_etaT_inv_le {κ' E u t τR N : ℝ} (hκ' : 0 < κ') (hκm
         exact (div_eq_mul_inv _ _).symm
 
 /-- (`hη`) `η_v⁻¹ ≤ N` eventually, from `RangeCond τ_R v`, `κ' ≤ Im m` and `N^{τ_R} ≥ κ'⁻¹`
-(RBM2D `NonAltEnd_ev_hη`, `NonAltEnd:634`). -/
+(as RBM2D's `NonAltEnd_ev_hη`). -/
 private theorem nqEnd_ev_hη (hsize : sz.SizeTendsto) {κ' τR : ℝ} (hκ' : 0 < κ') {E v : ℕ → ℝ}
     (hκm : ∀ n, κ' ≤ (mE (E n)).im) (hτR : 0 < τR) (hrange : sz.RangeCond τR v) :
     ∀ᶠ n : ℕ in atTop, (etaT (E n) (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := by
@@ -511,7 +505,7 @@ private theorem nqEnd_ev_hη (hsize : sz.SizeTendsto) {κ' τR : ℝ} (hκ' : 0 
         mul_le_mul_of_nonneg_left hbig (Real.rpow_nonneg hN0.le _)
     _ = ((sz.size n : ℕ) : ℝ) := by rw [← Real.rpow_add hN0]; simp
 
-/-- (`hΔη`) `Δ η_v⁻¹ ≤ 1` for `C_K ≥ 1`, `η_v⁻¹ ≤ N` (RBM2D `NonAltEnd_hΔN`, `NonAltEnd:667`). -/
+/-- (`hΔη`) `Δ η_v⁻¹ ≤ 1` for `C_K ≥ 1`, `η_v⁻¹ ≤ N` (as RBM2D's `NonAltEnd_hΔN`). -/
 private theorem nqEnd_hΔη {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {C_K η : ℝ} (hC : 1 ≤ C_K)
     (hK : ((sz.size n : ℕ) : ℝ) ^ C_K ≤ (K n : ℝ)) (hvs : v n - s n ≤ 1) (hη0 : 0 ≤ η⁻¹)
     (hη : η⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) : gridStep s v K n * η⁻¹ ≤ 1 := by
@@ -526,7 +520,7 @@ private theorem nqEnd_hΔη {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {C_K
     _ ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hN1 (by linarith)
 
 /-- The shift error with `η_{u'}⁻¹ ≤ B`: `eeShiftErrN ≤ W^d k L^d (2k+2) B^{2k+3} (u' - u)`
-(RBM2D `NonAltEnd_eeShiftErr_le`, `NonAltEnd:694`, with `W^d`, `L^d`). -/
+(as RBM2D's `NonAltEnd_eeShiftErr_le`, with `W^d`, `L^d`). -/
 private theorem nqEnd_eeShiftErrN_le {d L W : ℕ} (hW : 1 ≤ W) {E : ℝ} (k : ℕ) {u u' B : ℝ}
     (hη0 : 0 ≤ (etaT E u')⁻¹) (hB : (etaT E u')⁻¹ ≤ B) (hΔ : 0 ≤ u' - u) :
     eeShiftErrN d L W E k u u' ≤
@@ -550,8 +544,7 @@ private theorem nqEnd_eeShiftErrN_le {d L W : ℕ} (hW : 1 ≤ W) {E : ℝ} (k :
 /-- (`hδ`, the shift hypothesis of `subGaussStop_linN`) `W^{-(D''+1)} + eeShiftErrN(u_j, u_{j+1}) ≤
 W^{-D''}` for every `j < K n`, eventually: `eeShiftErrN ≤ k(2k+2) N^{2k+4} Δ`
 (`W^d L^d = N`, `η_{u_{j+1}}⁻¹ ≤ η_v⁻¹ ≤ N`, `(W^{-d})^{2k+1} ≤ 1`), `Δ ≤ N^{-C_K}`,
-`C_K ≥ D'' + 2k + 5`, `W ≥ 2`, `N ≥ 2k(2k+2)`, `N^{-D''} ≤ W^{-D''}` (RBM2D `NonAltEnd_ev_hδ`,
-`NonAltEnd:717`). -/
+`C_K ≥ D'' + 2k + 5`, `W ≥ 2`, `N ≥ 2k(2k+2)`, `N^{-D''} ≤ W^{-D''}` (as RBM2D's `NonAltEnd_ev_hδ`). -/
 private theorem nqEnd_ev_hδ (hd : 1 ≤ d) (hsize : sz.SizeTendsto) {𝔠 : ℝ} (h𝔠 : 0 < 𝔠)
     (hband : sz.Bandwidth 𝔠) (k : ℕ) {D'' C_K : ℝ} {E s v : ℕ → ℝ} {K : ℕ → ℕ}
     (hE : ∀ n, |E n| < 2) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n) (hv1 : ∀ n, v n < 1)
@@ -649,7 +642,7 @@ end Regime
 The order of the constants of `nqGridEndLinN` is `(d, k, Λg, κ') → C = nqGood1C → ε₀' = min ε₀ 1 →
 ε₁ = εq = ε₀'/8 → ε = min (ε₀'/(8C)) (1/2) → τ' = ε/2 → D'' = C + k + 2 + (4k+2)/𝔠 → D' = D'' + 1 →
 C_P → C_K`.  `nqEnd_arith` packages every inequality between these numbers that the absorption
-lemmas and the regime facts need (so the endpoint and the instances use the same bookkeeping). -/
+lemmas and the regime facts need. -/
 
 /-- **The exponent bookkeeping** at `ε = min (e0/(8C)) (1/2)`, `D'' = C + k + 2 + (4k+2)/𝔠`, `ε₁ = εq = e0/8`,
 `D' = D'' + 1`, `ξ = -(2k+4)`: `0 < ε < 1`, `Cε ≤ e0/8`, `k + 1 < D''`, the conditions of `ha1`, `ha2`, `ha3`
@@ -707,10 +700,11 @@ private theorem nqEnd_arith (k : ℕ) (hk : 2 ≤ k) {𝔠 C e0 : ℝ} (h𝔠 : 
   · nlinarith
 /-! ## 3. The assembly at the exit time `nqLinExitTauN`, for one sign vector
 
-RBM2D `NonAltEnd_assembly` (`NonAltEnd:853`) with three substitutions: the exit time is `nqLinExitTauN`
+As RBM2D's `NonAltEnd_assembly`, with three differences: the exit time is `nqLinExitTauN`
 (exit from `GoodSetN ∩ GoodLinN`), the drift field is `nqLin_hdriftN` at the level `dDriftLinN`, and the
-right side is `assembledRHSLinN`.  `GoodSetN` is used through its level-free clauses and (D4) only
-(`nonAlt_hA0clsN`, `nonAlt_hDclsN`, `subGaussStop_linN`), so its crude level `Φ` never enters the bound. -/
+right side is `assembledRHSLinN`.  `GoodSetN` is used through its level-free clauses and the clause
+carrying `Λ` only (`nonAlt_hA0clsN`, `nonAlt_hDclsN`, `subGaussStop_linN`), so its crude level `Φ` never
+enters the bound. -/
 
 section Assembly
 
@@ -728,8 +722,8 @@ private theorem nqEnd_gridTime_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ
     (hK : K n ≠ 0) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i ≤ v n :=
   (ST_gridTime_mono s v K n hsv hi).trans_eq (gridTime_last s v K n hK)
 
-/-- The step error of `gridDriftN` is nonnegative (RBM2D `NonAltEnd_stepErrN_nonneg`,
-`NonAltEnd:817`, with `W^d` in place of `W²`). -/
+/-- The step error of `gridDriftN` is nonnegative (as RBM2D's `NonAltEnd_stepErrN_nonneg`, with `W^d` in
+place of `W²`). -/
 private theorem nqEnd_stepErrN_nonneg {d L W : ℕ} {E u v Δ Bk : ℝ} {k : ℕ} (hE : |E| < 2)
     (hu1 : u < 1) (hv1 : v < 1) (hΔ : 0 ≤ Δ) (hBk : 0 ≤ Bk) : 0 ≤ stepErrN d L W E k u v Δ Bk := by
   have hη : 0 < etaT E v := etaT_pos hE hv1
@@ -755,7 +749,7 @@ private theorem nqEnd_stepErrN_nonneg {d L W : ℕ} {E u v Δ Bk : ℝ} {k : ℕ
   have := mul_nonneg h3 h4
   linarith
 
-/-- **The assembly at the exit time, for one sign vector** (the merged `assembledN` at
+/-- **The assembly at the exit time, for one sign vector** (`assembledN` at
 `τ = nqLinExitTauN`).  With the data of `NQGood2` (`nonAltClsN`, `kappaNonAltN`, `epsNonAltN`,
 `cQVNonAltN`), the linear drift level `dDriftLinN`, the sub-Gaussian input `subGaussStop_linN`, the `Y`
 moments (`hY`) and the envelope of the step error (`gridDriftN_envelope`, `hKb`), eventually in `n`, for
@@ -959,8 +953,8 @@ section Endpoint
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- If `v_n = s_n` the grid walk does not move: `Δ = 0` and every `H_j = H_0` (RBM2D
-`NonAltEnd_pathH_collapse`, `NonAltEnd:1014`). -/
+/-- If `v_n = s_n` the grid walk does not move: `Δ = 0` and every `H_j = H_0` (as RBM2D's
+`NonAltEnd_pathH_collapse`). -/
 private theorem nqEnd_pathH_collapse {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hsv : s n = v n) (j : ℕ)
     (ω : PathΩ sz) : pathH sz s v K n j ω = pathH sz s v K n 0 ω := by
   have hΔ : gridStep s v K n = 0 := by unfold gridStep; rw [← hsv]; simp
@@ -971,7 +965,7 @@ private theorem nqEnd_pathH_collapse {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : 
 /-- **The collapsed window** (the case `v_n = s_n` of the endpoint, where `hc_pos` of the assembly
 fails): `H_K = H_0` and `u_K = s`, so the initial bound `‖(𝓛-𝒦)_s‖ ≤ N^{ε₁} B_s^k` with `ε₁ ≤ ε₀`, `N ≥ 1`,
 `Λ ≥ 1`, `Φ_i ≥ 0` and `B_s^k ≥ 0` is the conclusion `‖(𝓛-𝒦)_v‖ ≤ N^{ε₀} (Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^k`
-(RBM2D `NonAltEnd_collapse`, `NonAltEnd:1025`). -/
+(as RBM2D's `NonAltEnd_collapse`). -/
 private theorem nqEnd_collapse {E s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hv1 : v n < 1)
     (hsv : s n = v n) {k : ℕ} {ε₁ ε₀ Λ Φ₁ Φ₂ Φ₃ : ℝ} (hε : ε₁ ≤ ε₀) (hΛ : 1 ≤ Λ) (hΦ₁ : 0 ≤ Φ₁)
     (hΦ₂ : 0 ≤ Φ₂) (hΦ₃ : 0 ≤ Φ₃) (ω : PathΩ sz) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n))
@@ -993,8 +987,8 @@ private theorem nqEnd_collapse {E s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ}
     le_mul_of_one_le_right (Real.rpow_nonneg (by linarith) _) h2
   exact hinit.trans (mul_le_mul_of_nonneg_right (h1.trans h3) hB)
 
-/-- The range condition passes to a smaller exponent and an earlier time (RBM2D
-`NonAltEnd_rangeCond_mono`, `NonAltEnd:1059`). -/
+/-- The range condition passes to a smaller exponent and an earlier time (as RBM2D's
+`NonAltEnd_rangeCond_mono`). -/
 private theorem nqEnd_rangeCond_mono {τ τR : ℝ} {t v : ℕ → ℝ} (hτ : τR ≤ τ)
     (hvt : ∀ n, v n ≤ t n) (h : sz.RangeCond τ t) : sz.RangeCond τR v := by
   filter_upwards [h] with n hn
@@ -1003,8 +997,8 @@ private theorem nqEnd_rangeCond_mono {τ τR : ℝ} {t v : ℕ → ℝ} (hτ : �
     _ ≤ 1 - t n := hn
     _ ≤ 1 - v n := by linarith [hvt n]
 
-/-- The union bound over the sign vectors: `2^k N^{-(D+1)} ≤ N^{-D}` eventually (RBM2D
-`NonAltEnd_ev_union`, `NonAltEnd:1068`). -/
+/-- The union bound over the sign vectors: `2^k N^{-(D+1)} ≤ N^{-D}` eventually (as RBM2D's
+`NonAltEnd_ev_union`). -/
 private theorem nqEnd_ev_union (hsize : sz.SizeTendsto) (k : ℕ) (D : ℝ) :
     ∀ᶠ n : ℕ in atTop, (2 : ℝ) ^ k * ((sz.size n : ℕ) : ℝ) ^ (-(D + 1)) ≤
       ((sz.size n : ℕ) : ℝ) ^ (-D) := by
@@ -1020,8 +1014,8 @@ private theorem nqEnd_ev_union (hsize : sz.SizeTendsto) (k : ℕ) (D : ℝ) :
     _ = _ := mul_one _
 
 /-- **The uniform `Y` moments for all signs with one `C_P`** (before the grid `K`): the maximum over the
-`2^k` sign vectors of the constants of `yMomentsUnifN` serves every sign (`N ≥ 1`; RBM2D
-`NonAltEnd_yMomentsMax`, `NonAltEnd:1092`). -/
+`2^k` sign vectors of the constants of `yMomentsUnifN` serves every sign (`N ≥ 1`; as RBM2D's
+`NonAltEnd_yMomentsMax`). -/
 private theorem nqEnd_yMomentsMax {κ τR : ℝ} {E s v : ℕ → ℝ} (hκ : 0 < κ)
     (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n) (hv1 : ∀ n, v n < 1)
     (hsize : sz.SizeTendsto) (hrange : sz.RangeCond τR v) (k : ℕ) :
@@ -1044,14 +1038,13 @@ end Endpoint
 
 /-! ## 5. The grid endpoint `nqGridEndLinN`
 
-RBM2D `nonAltGridEnd` (`NonAltEnd:1116-1276`).  The statement is the pin `T2199_nqGridEndLinN` of
-`docs/tickets/checks/T2199-check.lean`, copied verbatim (script diff in the report).  Exponents (fixed
+As RBM2D's `nonAltGridEnd`.  Exponents (fixed
 order): `Λg = 𝔡⁻¹`, `κ' = min κ (4/5)`, `C = nqGood1C d k Λg κ'`, `ε₀' = min ε₀ 1`, `ε₁ = εq = ε₀'/8`,
 `ε = min (ε₀'/(8C)) (1/2)`, `τ' = ε/2`, `D'' = C + k + 2 + (4k+2)/𝔠`, `D' = D'' + 1`, `τ_K = 1`,
 `D_Y = D_t = k + 1`, `C_P^* = max_σ C_P(σ)` (`yMomentsUnifN`), `C_K = D₁ + 2 C_P^* + 6k + 20 + D''`. -/
 
-/-- **`nqGridEndLinN`: the non-alternating grid endpoint with the linear right side** (`lem:STOeq_NQ`,
-`3_5:1136`, proof `3_5:1152-1180`; RBM2D `nonAltGridEnd`, `NonAltEnd:1116` at `c9a24cf`).  For every length
+/-- **`nqGridEndLinN`: the non-alternating grid endpoint with the linear right side** (Lemma 4.6
+`lem:STOeq_NQ` and its proof; as RBM2D's `nonAltGridEnd`).  For every length
 `k ≥ 2`, deterministic levels `Λ ≥ 0` (`≥ 1` eventually), `Φ₁, Φ₂, Φ₃ ≥ 0`, end time `v ∈ [s,t]`, final loss
 `ε₀ > 0` and failure exponent `D₁ > 0` there are exponents `ε₁, τ', D', C_K` such that, for every crude level
 `Φc` of `GoodSetN` and every grid `N^{C_K} ≤ K_n ≤ ⌈N^{C_K}⌉`, eventually there is an event `G`,
@@ -1060,7 +1053,7 @@ GoodLinN(N^{ε₁}, Φ₁, Φ₂, Φ₃)` at every `j ≤ K_n` and the initial l
 `|(𝓛-𝒦)_{s,σ,a}| ≤ N^{ε₁} B_s^k` for the non-alternating `σ`, then
 `|(𝓛-𝒦)_{v,σ,a}(H_{K_n})| ≤ N^{ε₀}(Λ^{1/2} + Φ₁ + Φ₂ + Φ₃) B_v^k` for every non-alternating `σ` and label
 `a`.  No `Φ²`, no `Φc` on the right side; no `STKbound` premise (`stKbound_holds` discharges it); the
-good-event probability is S3-12c's. -/
+good-event probability is not part of the statement. -/
 theorem nqGridEndLinN :
   ∀ {d : ℕ} (sz : Sizes d) (κ 𝔠 τ 𝔡 : ℝ) (E s t : ℕ → ℝ),
     3 ≤ d → 0 < κ → 0 < 𝔠 → 0 < τ → 0 < 𝔡 →
@@ -1270,36 +1263,6 @@ theorem nqGridEndLinN :
         linarith
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
         (Real.rpow_le_rpow_of_exponent_le hN1 he0le) hS) hB
-
-/-! ## 6. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.NQEndLinInst`.  Data (the merged instance data): `sz0` (`d = 3`, `L = 4(n+1)`,
-`W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`, `N = (WL)^3`; `n = 0`: `L = 4`, `W = 32`, `N = 2^21`;
-`sz0_tendsto`, `sz0_bandwidth` `𝔠 = 1/6`, `sz0_WO` `𝔡 = 1/10`), `E = Einst ≡ 1/2` (`Im m = √15/4 ≈ 0.968`),
-`κ = 1` (`κ' = min κ (4/5) = 4/5`), `s = sInst ≡ 0`, `t = tInst ≡ 1/16`, `v = vg ≡ 1/32`, `τ = 1/2`
-(`RangeCond (1/2) tInst` from the merged `rangeCond_half`), `STCaseI` = `sz0_caseI`, `W⁻¹ ≤ 15/16` from
-`W_ge_32`; `k = 3`, `σ = sig3 = (+,-,+)`, `Λ = Λ3 ≡ 3`, `Φ₁ = Φ₃ = Φc = Φ1 ≡ 1`, `Φ₂ ≡ 12`, `ε₀ = 1/10`,
-`D₁ = 1`.  The grid is `KC C_K n = max 1 ⌈N^{C_K}⌉` (so `N^{C_K} ≤ K_n ≤ ⌈N^{C_K}⌉`).  The constant
-`C = nqGood1C 3 3 10 κ'` of EK-6 stays abstract (`Classical.choose`; only `C > 0` is known), so every
-instance holds for the actual `C`.  Each eventual statement is unfolded at one size index
-(`Filter.Eventually.exists`). -/
-
-/-! ### The data -/
-
-/-! ### The grid `KC C_K n = max 1 ⌈N^{C_K}⌉` -/
-
-/-! ### (1) The asymptotic helpers at concrete exponents -/
-
-/-! ### (2) The absorption and regime lemmas at the exponents the endpoint chooses at the data
-
-`ε₁ = εq = e0i/8 = 1/80`, `ε = epsi`, `τ' = epsi/2`, `D'' = Ddi`, `D' = Ddi + 1`, `D_Y = D_t = 4`,
-`ε₀' = e0i = 1/10`, `Λg = 10`, `κ' = κi`; each statement is unfolded at one size index. -/
-
-/-! ### (3) The assembly at the exit time at the data
-
-The per-`n` regime facts of the assembly at the data (`ε = 1/2`, `τ' = 1/4`): `W ≥ 32`, `W → ∞`. -/
-
-/-! ### (4) `nqGridEndLinN` at the data, every premise discharged -/
 
 end RBM.Ind
 

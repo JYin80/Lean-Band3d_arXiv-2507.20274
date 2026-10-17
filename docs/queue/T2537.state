@@ -1,0 +1,4 @@
+state: audit-pass
+reason: prover-hard 25756477; audit round 1 RETURN (docstrings naming non-existent declarations/module) → one rule-(B) repair b202392c → audit round 2 PASS (claude-opus-5-5, wf_cab1f8c8-25d); merging (rule A), full lake build running.
+updated: Sat Oct 17 19:12:33 UTC 2026
+reports: docs/reports/T2537-prove.md, docs/reports/T2537-audit.md

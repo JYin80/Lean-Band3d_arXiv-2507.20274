@@ -13,27 +13,21 @@ import RBM3D.Graph.LWExpTerm6
 import RBM3D.BA.UNPins
 
 /-!
-# ST-6 R3 (ticket T2340): from `lem:main_ind` to `UNMLOut` at every `0 ≤ t_n ≤ lemT z_n`
+# From `lem:main_ind` to `UNMLOut` at every `0 ≤ t_n ≤ lemT z_n`
 
-Design `docs/reports/T2338-design.md` §4-§6 (probe `RBM3D/Probe/T2338Pins.lean` on `t/T2338`, lines
-69-76, 140-174, 289-313, 357-380).  Paper `1_2:1194-1243, 1309-1311`.
+The loop estimates of Lemma 2.21 `ML:GLoop`, Lemma 2.22 `ML:GLoop_expec` and Lemma 2.23 `ML:GtLocal`
+at every `0 ≤ t_n ≤ T0`, from the induction of Theorem 2.24 (`lem:main_ind`).
 
 * `STMLOutG`: the output over a carrier `(law, Flow, mk, T0)` (`ML:GLoop`, `ML:GLoop_expec`,
   `ML:GtLocal`);
-* `stMLOutG_of_mainIndG`: `STMainIndG` + `STHorizonG` (R2) + `STBaseG` (R1) give `STMLOutG`.  Run
-  the chain (R2) to `t'_n = t_n` if `t_n > 0`, `T0_n/2` if `t_n = 0`, and mix with the zero
-  sequence (R1) on the class `t_n = 0` (`StochDomAt.of_subset_union`: no subsequence, no pattern
-  classes);
+* `stMLOutG_of_mainIndG`: `STMainIndG` + `STHorizonG` + `STBaseG` give `STMLOutG`.  Run the chain to
+  `t'_n = t_n` if `t_n > 0`, `T0_n/2` if `t_n = 0`, and mix with the zero sequence on the class
+  `t_n = 0` (`StochDomAt.of_subset_union`: no subsequence, no pattern classes);
 * `RBM.Univ.unMLOut_iff` (`Iff.rfl`: `UNMLOut` is `STMLOutG` at the band data),
-  `unMLOut_of_mainInd` (`STMainInd d → UNMLOut d`, no further hypothesis), `unMLOutBA_of_pins`
-  (instantiation at the block Anderson data; the three BA pins stay owed to BA-V);
-* `RBM.Gauss.Sizes.stMainInd_of_LW`: `STMainInd` from the two owed LW pins `LWterm`, `LWtermExp`
-  (every other premise of `ST_mainInd_of_pins'` is proved, `stDuhamelII_holds` since T2339), and
+  `unMLOut_of_mainInd` (`STMainInd d → UNMLOut d`, no further hypothesis);
+* `RBM.Gauss.Sizes.stMainInd_of_LW`: `STMainInd` from the two light-weight estimates `LWterm`,
+  `LWtermExp` (every other premise of `ST_mainInd_of_pins'` is proved, `stDuhamelII_holds`), and
   `RBM.Univ.unMLOut_of_LW`.
-
-Imports: the check file's, minus the transitive ones (`DuhamelI` through `DuhamelII`,
-`Universality.Pins` through `BA.UNPins`, `AzumaProxyN` through `MainIndBase`) and `Main.FixedZ`
-(not used).
 -/
 
 set_option linter.style.longLine false
@@ -44,9 +38,9 @@ open RBM RBM.Gauss RBM.Gauss.Sizes RBM.Ind
 
 namespace RBM.BA
 
-/-! ## 1. The pin -/
+/-! ## 1. The statement -/
 
-/-- **R3 (the ST-6 output)**: `ML:GLoop`, `ML:GLoop_expec`, `ML:GtLocal` at every `0 ≤ t_n ≤ T0`;
+/-- **The output over a carrier**: `ML:GLoop`, `ML:GLoop_expec`, `ML:GtLocal` at every `0 ≤ t_n ≤ T0`;
 band: `UNMLOut`. -/
 def STMLOutG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz)
@@ -93,9 +87,9 @@ end Mix
 
 /-! ## 3. The assembly over a carrier -/
 
-/-- **R3**: every `0 ≤ t_n ≤ T0`: run the chain to `t'_n = t_n` if `t_n > 0`, `T0_n/2` if `t_n = 0` (R2), and mix
-with the zero sequence (R1) on the class `t_n = 0`.  No subsequence, no case split on `n` beyond the class
-`t_n = 0`.  Over the three pins `STMainIndG`, `STHorizonG`, `STBaseG` and nothing else. -/
+/-- **The assembly**: every `0 ≤ t_n ≤ T0`: run the chain to `t'_n = t_n` if `t_n > 0`, `T0_n/2` if `t_n = 0`, and mix
+with the zero sequence on the class `t_n = 0`.  No subsequence, no case split on `n` beyond the class
+`t_n = 0`.  From the three hypotheses `STMainIndG`, `STHorizonG`, `STBaseG` and nothing else. -/
 theorem stMLOutG_of_mainIndG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz)
     (T0 : ∀ (sz : Sizes d) (z : ℕ → ℂ), ℕ → ℝ) (hmain : STMainIndG d law Flow mk T0)
@@ -124,7 +118,7 @@ theorem stMLOutG_of_mainIndG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ
 
 end RBM.BA
 
-/-! ## 4. The band output `UNMLOut` and the block Anderson output `UNMLOutBA` -/
+/-! ## 4. The band output `UNMLOut` -/
 
 namespace RBM.Univ
 
@@ -134,19 +128,19 @@ open RBM.BA
 theorem unMLOut_iff (d : ℕ) : UNMLOut d ↔ STMLOutG d (fun sz => Sizes.seqP sz)
     (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) (fun _ z n => lemT (z n)) := Iff.rfl
 
-/-- **The ST-6 output**: `∀ d, STMainInd d → UNMLOut d` with no further hypothesis (the base case is `stBase_band`,
+/-- **`UNMLOut` from `STMainInd`**: `∀ d, STMainInd d → UNMLOut d` with no further hypothesis (the base case is `stBase_band`,
 the horizon `stHorizon_band`). -/
 theorem unMLOut_of_mainInd (d : ℕ) (hmain : STMainInd d) : UNMLOut d :=
   (unMLOut_iff d).2 (stMLOutG_of_mainIndG d _ _ _ _ ((STMainInd_iff d).1 hmain) (stHorizon_band d) (stBase_band d))
 
 end RBM.Univ
 
-/-! ## 5. `STMainInd` from the two owed LW pins, and the ST-6 output from them -/
+/-! ## 5. `STMainInd` and `UNMLOut` from the two light-weight estimates -/
 
 namespace RBM.Gauss.Sizes
 
-/-- **`STMainInd` from the two owed LW pins** (`LWterm`, `LWtermExp`: LW-01): `ST_mainInd_of_pins'` with every other
-premise proved on `main` (`stDuhamelII_holds` since T2339). -/
+/-- **`STMainInd` from the two light-weight estimates** (`LWterm`, `LWtermExp`): `ST_mainInd_of_pins'` with every other
+premise proved (`stDuhamelII_holds`). -/
 theorem stMainInd_of_LW (d : ℕ) (hLW : LWterm d) (hLWE : LWtermExp d) : STMainInd d := fun hd =>
   have hEM : STEtermsMid d := stEtermsMid_of_LWT d (STLWT_of_LWtermExp hd hLWE)
   ST_mainInd_of_pins' d (ST_step2_of_pinsLW' hd (stNewKLK_holds d) hLWE (stEMn2Exp_holds d hd) (stGridRepN_holds d hd)
@@ -160,10 +154,8 @@ end RBM.Gauss.Sizes
 
 namespace RBM.Univ
 
-/-- **The ST-6 output from the two owed LW pins**: `unMLOut_of_mainInd` and `stMainInd_of_LW`. -/
+/-- **`UNMLOut` from the two light-weight estimates**: `unMLOut_of_mainInd` and `stMainInd_of_LW`. -/
 theorem unMLOut_of_LW (d : ℕ) (hLW : LWterm d) (hLWE : LWtermExp d) : UNMLOut d :=
   unMLOut_of_mainInd d (stMainInd_of_LW d hLW hLWE)
 
 end RBM.Univ
-
-/-! ## 6. Compiled nonempty instances (`d = 3`, merged data `sz0`, `z0`, `zSeq`) -/

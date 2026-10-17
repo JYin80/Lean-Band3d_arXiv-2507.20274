@@ -6,25 +6,22 @@ Authors: Jun Yin
 import RBM3D.Induction.OptL2a
 
 /-!
-# ST2-15 (ticket T2116): `(eq:opt_L2)`, part 2: the linear Grönwall step and the pin `STOptL2`
+# `(eq:opt_L2)`, part 2: the linear Grönwall step and the statement `STOptL2`
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `(eq:opt_L2)` `3_5:470`,
-`(eq:Gronwall_2L_max)` `3_5:481`, `(eq:L-K2max)` `3_5:504–509`.  New; no port.
+Paper: (3.39) `eq:opt_L2`, (3.41) `eq:Gronwall_2L_max`, (3.43) `eq:L-K2max`.
 
-Target: `stOptL2_of_pins (hd : 3 ≤ d) : STLWB d → STGridMart d → STOptL2 d`, the pin
-`Induction/Step2Defs.lean:667` unchanged.  The Grönwall inequality on the grid is the merged
-`stOptL2a_gronwall` (T2110); this file
+`stOptL2_of_pins (hd : 3 ≤ d) : STLWB d → STGridMart d → STOptL2 d`, with `STOptL2` of
+`Induction/Step2Defs.lean`.  The Grönwall inequality on the grid is `stOptL2a_gronwall`; this file
 
 1. restricts the premises of `STOptL2` on `[s,t]` to the window `[s,T]`, `T ≤ t` a time section
    (`OptL2b_loop_restrict`, `OptL2b_weak_restrict`, `OptL2b_con_restrict`; `STLK` is at `s` only);
 2. runs `ST_gronwall` with `ST_prod_le_rpow` (`J_K ≤ α ρ_T^{C₀}`), compares with `B_T`
    (`OptL2b_arith`, the explicit `𝔠₀ = 1/(8 C₀ + 10)`), transfers the endpoint `k = K` from the grid
-   walk to the single-time model (`ST_model_le_path`, `OptL2b_J_model_bad`) and passes to `PrecPT`
+   walk to the single-time model (`ST_model_le_path`, `OptL2b_badSet_eq`) and passes to `PrecPT`
    (`ST_PT_of_sections`);
-3. states the pin as written (`∃ 𝔠₀ > 0` before `𝔠_d`, the sequences, and `∀ᶠ n` inside).
+3. states the result as `STOptL2` is written (`∃ 𝔠₀ > 0` before `𝔠_d`, the sequences, and `∀ᶠ n` inside).
 
-`𝔠₀` depends on `C₀` only (`C₀` of `stOptL2a_gronwall`, a function of `d, κ, ε, 𝔡`).  The final
-section holds compiled `example`s at `d = 3` (`sz0`).
+`𝔠₀` depends on `C₀` only (`C₀` of `stOptL2a_gronwall`, a function of `d, κ, ε, 𝔡`).
 -/
 
 set_option linter.style.longLine false
@@ -50,7 +47,7 @@ theorem OptL2b_rho_pow_mul {ρ B 𝔠d p e : ℝ} (hB0 : 0 < B) (hB1 : B ≤ 1) 
     _ ≤ B ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_ge hB0 hB1 (by linarith)
     _ = B := Real.rpow_one B
 
-/-- **`(eq:L-K2max)` with the explicit `𝔠₀ = 1/(8C₀+10)`** (`3_5:504–509`): with `ρ = (1-s)/(1-T)`,
+/-- **(3.43) `eq:L-K2max` with the explicit `𝔠₀ = 1/(8C₀+10)`**: with `ρ = (1-s)/(1-T)`,
 `λ = ρ B_T` and `ρ ≤ B_T^{-𝔠_d}` (the first conjunct of `(con_st_ind)`),
 `M (B_s² + λ^{5/4}) ρ^{C₀} ≤ M² B_T` for `M ≥ 2`, `0 < B_s ≤ B_T ≤ 1`.  Terms: `ρ^{C₀} B_s² ≤ B_T`
 (`C₀ 𝔠_d ≤ 1`) and `ρ^{C₀} λ^{5/4} ≤ B_T` (`𝔠_d (C₀ + 5/4) ≤ 1/4`). -/
@@ -97,7 +94,7 @@ section Restrict
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `(lRB1)` on `[s,t]` gives `(lRB1)` on `[s,T]` for a pointwise smaller end `T ≤ t`:
-`TimeIcc s T n ⊆ TimeIcc s t n`, the control does not depend on the end. -/
+`TimeIcc s T n ⊆ TimeIcc s t n`, the bound does not depend on the end. -/
 theorem OptL2b_loop_restrict {E s t T : ℕ → ℝ} (hTt : ∀ n, T n ≤ t n)
     (h : STStep1Loop sz E s t) : STStep1Loop sz E s T := by
   intro k hk
@@ -177,21 +174,22 @@ end JModel
 
 end RBM.Gauss.Sizes
 
-/-! ## 4. The pin `STOptL2` conditional on `STLWB`, `STGridMart` -/
+/-! ## 4. `STOptL2` conditional on `STLWB`, `STGridMart` -/
 
 namespace RBM.Gauss.Sizes
 
 open MeasureTheory Filter RBM RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-- **`(eq:opt_L2)`** (`3_5:470`, proof `3_5:466–512`), the pin `STOptL2`, from the light-weight pin
-`STLWB` (`lem:LWterm`) and the grid martingale pin `STGridMart` (`lem:DIfREP`, `m = 2`); `lem:newKLK`
-(`stNewKLK_holds`) and `lem: EMn2_N` (`stEMn2Poly_holds`) enter through `stOptL2a_gronwall` (T2110).
+/-- **(3.39) `eq:opt_L2`** (proof in Subsection 3.3 `subsec:step2_pf`), the statement `STOptL2`, from the
+light-weight hypothesis `STLWB` (`lem:LWterm`) and the grid martingale hypothesis `STGridMart` (`lem:DIfREP`,
+`m = 2`); `lem:newKLK` (`stNewKLK_holds`) and `lem: EMn2_N` (`stEMn2Poly_holds`) enter through
+`stOptL2a_gronwall`.
 `𝔠₀ = 1/(8 C₀ + 10)`, `C₀` the constant of `stOptL2a_gronwall` (a function of `d, κ, ε, 𝔡`).  For every
 time section `T_n ∈ [s_n, t_n]`: the Grönwall inequality on the grid `[s_n, T_n]`
 (`stOptL2a_gronwall`, premises restricted to `[s,T]`), `ST_gronwall` with `ST_prod_le_rpow`
-(`J_K ≤ α ρ_T^{C₀}`), the comparison `(eq:L-K2max)` (`OptL2b_arith`), the transfer of the endpoint to
+(`J_K ≤ α ρ_T^{C₀}`), the comparison (3.43) `eq:L-K2max` (`OptL2b_arith`), the transfer of the endpoint to
 the single-time model (`ST_model_le_path`), and `ST_PT_of_sections`.  `hd : 3 ≤ d` because
-`STNewKLK d` starts with `3 ≤ d` (T2110f). -/
+`STNewKLK d` starts with `3 ≤ d`. -/
 theorem stOptL2_of_pins {d : ℕ} (hd : 3 ≤ d) : STLWB d → STGridMart d → STOptL2 d := by
   classical
   intro hLWB hGM κ ε 𝔡 hκ hε h𝔡
@@ -314,13 +312,3 @@ theorem stOptL2_of_pins {d : ℕ} (hd : 3 ≤ d) : STLWB d → STGridMart d → 
   exact hset
 
 end RBM.Gauss.Sizes
-
-/-! ## Instances: every endpoint theorem at `d = 3`
-
-The data are the merged `RBM.Gauss.SizesInst.sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`,
-`lam_n = (2(n+1))^{-6}`, `N_n = (W_n L_n)^3`), the flow `z0` (`flow_z0`, `κ = ε = 𝔡 = 1/10`,
-`𝔠 = 1/6`, `Im z_n = N_n^{-4/5}`), the window `s ≡ 0`, `t ≡ 1/16 ≤ lemT z_n` (`sInst`, `tInst`),
-every `0 < 𝔠_d ≤ 𝔠₀`.  Discharged: `3 ≤ d`, `STFlow`, the time ranges, and `(con_st_ind)`
-(`conStInd_inst`).  What stays a hypothesis of an example is a pin of another gate (`STLWB`,
-`STGridMart`) or a stochastic premise of the induction and of Step 1 (`STLK`, `STStep1Loop`,
-`STStep1Weak`). -/

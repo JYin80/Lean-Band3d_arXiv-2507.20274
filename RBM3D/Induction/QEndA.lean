@@ -10,35 +10,33 @@ import RBM3D.Induction.NQGood2
 import RBM3D.Induction.GridAssemblyN
 
 /-!
-# S3-18a1 (ticket T2294): vocabulary, the `hY` event at length `n_ - 1`, and the compositions C1-C5
+# Vocabulary, the `hY` event at length `n_ - 1`, and the compositions for the alternating endpoint
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `lem:STOeq_Qt`
-`3_5:1362-1378`, the alternating case `3_5:1676-1714` (`(y27kasdfg)`, `(A4)`, `(A5)`
-`3_5:1692-1706`), `(normQA)` `3_5:1284-1289`.
+Paper: Lemma 4.10 (`lem:STOeq_Qt`), the alternating case in Subsection 4.5 `subsec:support` ((4.59)
+`y27kasdfg`, (4.61) `A4`, (4.60) `A5`), (4.32) `normQA`.
 
-* §0 vocabulary `altYSetN`, `altExitTauN` (check file `docs/tickets/checks/T2294-check.lean` §2,
-  verbatim);
+* §0 vocabulary `altYSetN`, `altExitTauN`;
 * §1 `measurableAltYSetN`, `mem_of_lt_altExitTauN`, `altExitMeasN`;
-* §2 `altYGridN` (pin `T2294_altYGridN`): the `hY` event at length `l` on the grid at the level
-  `N^ε X`;
-* §3 C1 `gridDriftQN_envelope`, `assembledRHSAltQN_qErr_le`;
-* §4 C2 `hQ_altQN`, `subGaussStop_altQN`;
-* §5 C3 `alt_hkerGridQN`;
-* §6 C4 `alt_hdriftGridQN`, `alt_hA0clsGridQN`, `alt_hDclsGridQN`, and the two crude-sup derivations
-  `altEnd_crudeSup`, `altEnd_driftSup`;
-* §7 C5 `altEnd_hexp`, `altEnd_stronglyMeasurable_zVecQN`, `altEnd_aFroz_eq_aTrue`, `altEnd_unQ`,
-  `altEnd_yMomentsMax`;
-* §8 compiled nonempty instances (namespace `RBM.Ind.QEndAInst`), with the fixed-`n` shift estimate
-  `altEnd_shift_fixed` (copy of the body of `nqEnd_ev_hδ`); T2498 moved §8 verbatim to `Induction/QEndA2`.
+* §2 `altYGridN`: the `hY` event at length `l` on the grid at the level `N^ε X`;
+* §3 the `𝒬`-remainder envelope `gridDriftQN_envelope'` and the bridge `assembledRHSAltQN_qErr_le`;
+* §4 the variance proxy after the spectral-time shift: `hQ_altQN`, `subGaussStop_altQN`;
+* §5 the kernel field on the grid: `alt_hkerGridQN`;
+* §6 the drift and class fields on the exit family: `alt_hdriftGridQN`, `alt_hA0clsGridQN`,
+  `alt_hDclsGridQN`, and the crude-sup derivation `altEnd_driftSup`;
+* §7 the identity, measurability, terminal value and de-`𝒬`: `altEnd_hexp`,
+  `altEnd_stronglyMeasurable_zVecQN`, `altEnd_aFroz_eq_aTrue`, `altEnd_unQ`.
 
-T2498 (row U3s3a′, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`, no `BA/*` import), appended after §7, the band text
-being unchanged: `altYSetNg`, `altExitTauNg` (§0g), `measurableAltYSetNg`, `mem_of_lt_altExitTauNg`, `altExitMeasNg` (§1g), `altYGridNg` (§2g), D2 `gridDriftQNg_envelope_ev` and
-`assembledRHSAltQNg_qErr_le` (§3g), `hQ_altQNg`, `subGaussStop_altQNg` (§4g: D1 `QProxyG_KerEK4` at the kernel coupling `gK`, the comparison R1, two radii `ε₁ ≤ ε`),
-`alt_hkerGridQNg` (§5g), `alt_hdriftGridQNg`, `alt_hA0clsGridQNg`, `alt_hDclsGridQNg`, `altEnd_driftSupg` (§6g), `altEnd_hexpg`, `altEnd_stronglyMeasurable_zVecQNg`,
-`altEnd_aFroz_eq_aTrueg`, `altEnd_unQg` (§7g).  `LoopForm` and the inline `‖Cm.m n‖ ≤ 1` replace `|E n| < 2`; the spectral levels of `ℬ₄ + ℬ₅` are the fields of `B45Gen_Facts`.
-The band theorems read by `QEndGrid`/`QEndB1` keep name and type.
+The generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`, no `BA/*`
+import), after §7: `altYSetNg`, `altExitTauNg` (§0g), `measurableAltYSetNg`, `mem_of_lt_altExitTauNg`,
+`altExitMeasNg` (§1g), `altYGridNg` (§2g), `gridDriftQNg_envelope_ev` and
+`assembledRHSAltQNg_qErr_le` (§3g), `hQ_altQNg`, `subGaussStop_altQNg` (§4g: `QProxyG_KerEK4` at the
+kernel coupling `gK`, the comparison of couplings, two radii `ε₁ ≤ ε`), `alt_hkerGridQNg` (§5g),
+`alt_hdriftGridQNg`, `alt_hA0clsGridQNg`, `alt_hDclsGridQNg`, `altEnd_driftSupg` (§6g),
+`altEnd_hexpg`, `altEnd_stronglyMeasurable_zVecQNg`, `altEnd_aFroz_eq_aTrueg`, `altEnd_unQg` (§7g).
+`LoopForm` and the inline `‖Cm.m n‖ ≤ 1` are used in place of `|E n| < 2`; the spectral levels of
+`ℬ₄ + ℬ₅` are the fields of `B45Gen_Facts`.
 
-Unpinned helpers are `private` or prefixed `altEnd_`.
+Helpers are `private` or prefixed `altEnd_`.
 -/
 
 open private GridGoodGen_precL_whp from RBM3D.Chain.GridGoodGen
@@ -57,16 +55,16 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
-/-! ## 0. Vocabulary (copied verbatim from the check file §2) -/
+/-! ## 0. Vocabulary -/
 
-/-- **The `hY` set at length `l`** (supervisor 1102 O1): the fine matrices whose `(𝓛-𝒦)^{(l)}` loops are at most
+/-- **The `hY` set at length `l`**: the fine matrices whose `(𝓛-𝒦)^{(l)}` loops are at most
 `Y · B_u^l` at every sign vector and label (the `hY` premise of `altB45N_levelM`, `alt_hdriftLinQN` at `ν X := Y`). -/
 def altYSetN {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (l : ℕ) (Y : ℝ) :
     Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :=
   {H | ∀ (σ' : Fin l → Bool) (a' : Fin l → Zd d (sz.L n)),
     ‖sz.STLKM n E u H σ' a'‖ ≤ Y * sz.Bctl n u ^ l}
 
-/-- **The alternating exit time**: `nqLinExitTauN` (`NQLin.lean:716`) with the `hY` set at length `k - 1` added
+/-- **The alternating exit time**: `nqLinExitTauN` with the `hY` set at length `k - 1` added
 (`GoodSetN` at the crude level `Φc`, `GoodLinN` at the linear levels, `altYSetN` at the level `Yl`). -/
 noncomputable def altExitTauN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s v : ℕ → ℝ) (K : ℕ → ℕ) (k : ℕ)
     (Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl : ℕ → ℝ) (τ' D' : ℝ) (n : ℕ) : PathΩ sz → ℕ :=
@@ -75,7 +73,7 @@ noncomputable def altExitTauN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (s v : 
       GoodLinN sz n (E n) (gridTime s v K n j) k (Γ n) (Φ₁ n) (Φ₂ n) (Φ₃ n) ∩
         altYSetN sz n (E n) (gridTime s v K n j) (k - 1) (Yl n))
 
-/-! ## 1. Targets 1: measurability and the exit family -/
+/-! ## 1. Measurability and the exit family -/
 
 section Meas
 
@@ -95,7 +93,7 @@ private theorem altEnd_meas_loopFine (E u : ℝ) {j : ℕ} (σ : Fin j → Bool)
       loopFine d (sz.L n) (sz.W n) H (zt E u) σ a :=
   walk_measurable_loopFine d (sz.L n) (sz.W n) (zt E u) σ a
 
-/-- **Target `measurableAltYSetN`**: `altYSetN` is a measurable set of matrices (a finite intersection over the
+/-- **`measurableAltYSetN`**: `altYSetN` is a measurable set of matrices (a finite intersection over the
 labels of sublevel sets of the measurable norms of the loop observables). -/
 theorem measurableAltYSetN {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (l : ℕ) (Y : ℝ) :
     MeasurableSet (altYSetN sz n E u l Y) := by
@@ -105,7 +103,7 @@ theorem measurableAltYSetN {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (l : �
 
 end Meas
 
-/-- **Target `mem_of_lt_altExitTauN`**: strictly before the exit, the grid state is in `GoodSetN ∩ GoodLinN ∩ altYSetN`
+/-- **`mem_of_lt_altExitTauN`**: strictly before the exit, the grid state is in `GoodSetN ∩ GoodLinN ∩ altYSetN`
 (`mem_of_lt_gridExitTauN`). -/
 theorem mem_of_lt_altExitTauN {d : ℕ} {sz : Sizes d} {E : ℕ → ℝ} {s v : ℕ → ℝ} {K : ℕ → ℕ} {k : ℕ}
     {Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl : ℕ → ℝ} {τ' D' : ℝ} {n : ℕ} {ω : PathΩ sz} {j : ℕ}
@@ -115,7 +113,7 @@ theorem mem_of_lt_altExitTauN {d : ℕ} {sz : Sizes d} {E : ℕ → ℝ} {s v : 
         altYSetN sz n (E n) (gridTime s v K n j) (k - 1) (Yl n) :=
   mem_of_lt_gridExitTauN h
 
-/-- **Target `altExitMeasN`**: `{j < altExitTauN}` is `filt j`-measurable (`gridExitTauN_measurableSet` with
+/-- **`altExitMeasN`**: `{j < altExitTauN}` is `filt j`-measurable (`gridExitTauN_measurableSet` with
 `measurableGoodSetN`, `measurableGoodLinN`, `measurableAltYSetN`). -/
 theorem altExitMeasN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl : ℕ → ℝ) (τ' D' : ℝ) (j : ℕ) :
@@ -124,12 +122,11 @@ theorem altExitMeasN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ →
     ((measurableGoodSetN d sz n _ _ _ _ _ _ _ _).inter
       (measurableGoodLinN sz n _ _ _ _ _ _ _)).inter (measurableAltYSetN sz n _ _ _ _)) j
 
-/-! ## 2. Target 2: the `hY` event on the grid (`altYGridN`) -/
+/-! ## 2. The `hY` event on the grid (`altYGridN`) -/
 
 section Grid
 
-/-- Clause `STXiLKM ≤ Z` read as an entry bound: `‖(𝓛-𝒦)^{(j)}_{σ,a}(H)‖ ≤ (Z - 1) B^j` (copy of the private
-`QLevelsB_norm_STLKM_le_of_XiLKM`, `QLevelsB.lean:62`). -/
+/-- Clause `STXiLKM ≤ Z` read as an entry bound: `‖(𝓛-𝒦)^{(j)}_{σ,a}(H)‖ ≤ (Z - 1) B^j` (as in `QLevelsB`). -/
 private theorem altEnd_norm_STLKM_le_of_XiLKM {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (j : ℕ) {Z : ℝ}
     (hB : 0 < sz.Bctl n u) (h : sz.STXiLKM n E u j H ≤ Z) (σ : Fin j → Bool)
@@ -152,8 +149,8 @@ private theorem altEnd_measurable_seqHflow {d : ℕ} (sz : Sizes d) (n : ℕ) (u
     Measurable (sz.seqHflow n u) :=
   Measurable.of_eval_matrix _ fun i j => measurable_seqHflow_entry sz n u i j
 
-/-- **The transfer and the union bound** (copy of the private `gridGood_grid`, `GridGoodN.lean:879`, and
-`nqLin_grid`, `NQLin.lean:541`, with `altYSetN`): if w.h.p. `seqHflow n u ω ∈ altYSetN … u` for every
+/-- **The transfer and the union bound** (as the private `gridGood_grid`, and
+`nqLin_grid`, with `altYSetN`): if w.h.p. `seqHflow n u ω ∈ altYSetN … u` for every
 `u ∈ [s_n,v_n]`, then w.h.p. the grid walk `pathH … j` is in `altYSetN` at every `j ≤ K n`. -/
 private theorem altEnd_yGrid {d : ℕ} (sz : Sizes d) {E s v : ℕ → ℝ} {K : ℕ → ℕ} (hs0 : ∀ n, 0 ≤ s n)
     (hsv : ∀ n, s n ≤ v n) (hK : ∀ n, K n ≠ 0) {C : ℝ}
@@ -196,11 +193,11 @@ private theorem altEnd_yGrid {d : ℕ} (sz : Sizes d) {E s v : ℕ → ℝ} {K :
 
 end Grid
 
-/-- **Target 2, `altYGridN`** (pin `T2294_altYGridN`, check file §2; supervisor 1102 O1, DECISIONS §95 (3)): from
-the deterministic control `Ξ̂^{(𝓛-𝒦)}_l ≺ X` uniformly on `[s_n, v_n]`, with high probability the grid walk is in
+/-- **`altYGridN`**: from
+the deterministic bound `Ξ̂^{(𝓛-𝒦)}_l ≺ X` uniformly on `[s_n, v_n]`, with high probability the grid walk is in
 `altYSetN` at the level `N^ε X` at every grid time `j ≤ K n` (`Prec.whp` at the exponent `ε`; `STXiLKM ≤ Z` gives
-`‖(𝓛-𝒦)^{(l)}‖ ≤ (Z-1)B^l ≤ Z B^l`; `map_pathH_eq` at each `j`; `highProbAt_iInter`, `K n + 1 ≤ N^C`).  S3-18b
-calls it with `l = n_ - 1`. -/
+`‖(𝓛-𝒦)^{(l)}‖ ≤ (Z-1)B^l ≤ Z B^l`; `map_pathH_eq` at each `j`; `highProbAt_iInter`, `K n + 1 ≤ N^C`).  It is used
+with `l = n_ - 1`. -/
 theorem altYGridN :
   ∀ {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (l : ℕ) (X : ℕ → ℝ),
     (∀ n, 0 ≤ s n) → (∀ n, s n ≤ v n) → (∀ n, v n < 1) → (∀ n, K n ≠ 0) → (∀ n, 1 ≤ X n) →
@@ -225,7 +222,7 @@ theorem altYGridN :
     exact mul_le_mul_of_nonneg_right (by linarith) hBl
   exact altEnd_yGrid sz hs0 hsv hK hC hW
 
-/-! ## 3. C1: the `𝒬`-remainder envelope and the bridge to `assembledRHSAltQN` -/
+/-! ## 3. The `𝒬`-remainder envelope and the bridge to `assembledRHSAltQN` -/
 
 section C1
 
@@ -249,10 +246,10 @@ private theorem altEnd_gridTime_lt_one {s v : ℕ → ℝ} {K : ℕ → ℕ} {n 
     (hK : K n ≠ 0) (hv1 : v n < 1) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i < 1 :=
   (altEnd_gridTime_le hsv hK hi).trans_lt hv1
 
-/-- **`gridDriftQN_envelope'`** (T2313, S3-18b2a): the primed successor of `gridDriftQN_envelope` (`m ≥ 1` dropped).  The
-hypothesis `hm : 1 ≤ m` of the original is not used in its body (the call to `gridDriftQN` is at the mollifier index `m + 1 ≥ 1`,
-`(by omega)`), so the statement is the same with `m : ℕ` arbitrary (tensors of `m + 2 ≥ 2` indices) and the proof is a copy.
--/
+/-- **`gridDriftQN_envelope'`**: the `𝒬`-remainder `rGridQN` along the grid is bounded by `qErrQN` at the
+envelope `N^{τ_K} η_{u_{j+1}}^{-(m+2)}`, a.e., eventually in `n`, for every grid step `j < K n` and label
+(tensors of `m + 2 ≥ 2` indices, `m : ℕ` arbitrary; the call to `gridDriftQN` is at the mollifier index
+`m + 1 ≥ 1`). -/
 theorem gridDriftQN_envelope' {d : ℕ} (sz : Sizes d) (κ : ℝ) (hκ : 0 < κ) (m : ℕ)
     (τK : ℝ) (hτK : 0 < τK) {E s v : ℕ → ℝ} {K : ℕ → ℕ} (hsize : sz.SizeTendsto)
     (hKb : sz.STKbound E) (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n)
@@ -315,15 +312,14 @@ theorem gridDriftQN_envelope' {d : ℕ} (sz : Sizes d) (κ : ℝ) (hκ : 0 < κ)
     exact h.mono fun ω hω _ a => hω a
   · exact Eventually.of_forall fun ω h => absurd h hj
 
-/-- `kappaAltQN` is nonnegative (copy of the private `QBudgetA_kappa_nonneg`, `QBudgetA.lean:125`). -/
+/-- `kappaAltQN` is nonnegative. -/
 private theorem altEnd_kappa_nonneg (d k : ℕ) (Λg κ' KL g W ε : ℝ) (hW : 0 ≤ W) (u : ℕ → ℝ)
     (i m : ℕ) : 0 ≤ kappaAltQN d k Λg κ' KL g W ε u i m := by
   unfold kappaAltQN
   exact mul_nonneg (Real.rpow_nonneg hW _)
     (pow_nonneg (div_nonneg (by positivity) (by positivity)) _)
 
-/-- The step error of `gridDriftN` is nonnegative (copy of the private `nqEnd_stepErrN_nonneg`,
-`NQEndLin.lean:736`). -/
+/-- The step error of `gridDriftN` is nonnegative (as the private `nqEnd_stepErrN_nonneg`). -/
 private theorem altEnd_stepErrN_nonneg {d L W : ℕ} {E u v Δ Bk : ℝ} {k : ℕ} (hE : |E| < 2)
     (hu1 : u < 1) (hv1 : v < 1) (hΔ : 0 ≤ Δ) (hBk : 0 ≤ Bk) : 0 ≤ stepErrN d L W E k u v Δ Bk := by
   have hη : 0 < etaT E v := etaT_pos hE hv1
@@ -349,11 +345,11 @@ private theorem altEnd_stepErrN_nonneg {d L W : ℕ} {E u v Δ Bk : ℝ} {k : �
   have := mul_nonneg h3 h4
   linarith
 
-/-- **Target C1b, `assembledRHSAltQN_qErr_le`** (the bridge; ticket Design (c), finding).  The right side of the merged
-`AssembledN` (`GridAssemblyN.lean:249-255`) at the target `m = K n` for the alternating chain (`κ = kappaAltQN`,
+/-- **`assembledRHSAltQN_qErr_le`** (the bridge).  The right side of
+`AssembledN` at the target `m = K n` for the alternating chain (`κ = kappaAltQN`,
 `εK = epsAltQN`, `c = cQVAltQN`, `k = m + 2`, `u = gridTime`), with the remainder `stepErr := qErrQN` (the `𝒬`-process
-remainder of `gridDriftQN_envelope`) and an initial supremum `Xs ≤ X0`, is at most `assembledRHSAltQN` (whose last term
-is the non-alternating `stepErrN`, `QBudgetA.lean:117-121`) plus `N^{-D_t}`, once the weighted `qErrQN` sum is at
+remainder of `gridDriftQN_envelope'`) and an initial supremum `Xs ≤ X0`, is at most `assembledRHSAltQN` (whose last term
+is the non-alternating `stepErrN`) plus `N^{-D_t}`, once the weighted `qErrQN` sum is at
 most `N^{-D_t}` (`sum_weighted_qErrQN_le` at `m ↦ m + 1`).  The five common terms are identical and
 `stepErrN ≥ 0`. -/
 theorem assembledRHSAltQN_qErr_le {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n m : ℕ)
@@ -406,11 +402,11 @@ theorem assembledRHSAltQN_qErr_le {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ)
 
 end C1
 
-/-! ## 4. C2: the variance proxy after the spectral-time shift, and `SubGaussStopN` -/
+/-! ## 4. The variance proxy after the spectral-time shift, and `SubGaussStopN` -/
 
 section C2
 
-/-- The two `W`-power facts behind the shift `D ↦ D'' + 1` of C2: `W^{2C_nε}·W^{-(D''+1)} ≤ W^{-(D''+1)+C_Q}` and
+/-- The two `W`-power facts behind the shift `D ↦ D'' + 1` of `hQ_altQN`: `W^{2C_nε}·W^{-(D''+1)} ≤ W^{-(D''+1)+C_Q}` and
 `2·W^{-(D''+1)+C_Q} ≤ W^{-D''+C_Q}` (`C_Q = 2C_n + 2`, `0 < C_n`, `ε < 1`, `2 ≤ W`). -/
 private theorem altEnd_shift_rpow {W Cn ε D : ℝ} (hW : 2 ≤ W) (hCn : 0 < Cn) (hε : ε < 1) :
     W ^ (2 * Cn * ε) * W ^ (-(D + 1)) ≤ W ^ (-(D + 1) + (2 * Cn + 2)) ∧
@@ -428,7 +424,7 @@ private theorem altEnd_shift_rpow {W Cn ε D : ℝ} (hW : 2 ≤ W) (hCn : 0 < Cn
     rw [hyx]
     nlinarith
 
-/-- The monotone arithmetic of C2: replacing `x ↦ y` and `P(G + z) + x ↦ PG + y` in the closed form of
+/-- The monotone arithmetic of `hQ_altQN`: replacing `x ↦ y` and `P(G + z) + x ↦ PG + y` in the closed form of
 `qvFormQN_le_of_bounds`. -/
 private theorem altEnd_qv_arith {κ4 A B P G x y z : ℝ} (hκ4 : 0 ≤ κ4) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hPz : P * z ≤ x) (h2x : 2 * x ≤ y) (hx0 : 0 ≤ x) :
@@ -438,14 +434,13 @@ private theorem altEnd_qv_arith {κ4 A B P G x y z : ℝ} (hκ4 : 0 ≤ κ4) (hA
   have hxy : x ≤ y := by linarith
   gcongr
 
-/-- **Target C2a, `hQ_altQN`** (RBM2D (C2) `hQ_alt`, `AltEndCompose.lean:422-571`; the pattern of `hQ_nonAltN`,
-`NQGood2.lean:519`; fixed `n`): for `M ∈ GoodSetN n E u_j (m+2) Γ Λ Φc τ' D'` Hermitian and every `σ`, the proxy
+/-- **`hQ_altQN`** (RBM2D `hQ_alt`; the pattern of `hQ_nonAltN`; fixed `n`): for `M ∈ GoodSetN n E u_j (m+2) Γ Λ Φc τ' D'` Hermitian and every `σ`, the proxy
 `Δ · ((m+2) · qvFormQN_{u_{j+1},u_p}(M)(a))` of the `j`-th propagated `𝒬`-increment towards `u_p` is at most
-`cQVAltQN … D'' p a j`.  Route: (D4) and (Vb) of `GoodSetN` at `u_j` are moved to `u_{j+1}` by
+`cQVAltQN … D'' p a j`.  Proof: the bound on `STeeM` and the far-label decay of `(ℰ⊗ℰ)^M` in `GoodSetN` at `u_j` are moved to `u_{j+1}` by
 `norm_STeeM_shiftN_le`, `B_{u_j} ≤ B_{u_{j+1}}`, `η_{u_j}⁻¹ ≤ η_{u_{j+1}}⁻¹`, `ℓ_{u_j} ≤ ℓ_{u_{j+1}}`, then
-`qvFormQN_le_of_bounds` (`QProxy.lean:1102`) at `m ↦ m + 1`, `v := u_{j+1}`, `w := u_p`, `D := D'' + 1`,
+`qvFormQN_le_of_bounds` at `m ↦ m + 1`, `v := u_{j+1}`, `w := u_p`, `D := D'' + 1`,
 `M_ee = Γ(ΓΛ)B_{u_{j+1}}^{2k}/η_{u_{j+1}} + W^{-(D''+1)}`.  The shift hypothesis is
-`W^{-D'} + eeShiftErrN(u_j, u_{j+1}) ≤ W^{-(D''+1)}` together with `2 ≤ W` (paper-delta candidate `T2294c`: the
+`W^{-D'} + eeShiftErrN(u_j, u_{j+1}) ≤ W^{-(D''+1)}` together with `2 ≤ W` (the
 literal `≤ W^{-D''}` does not give `qvBdAltQN … D''`, because `qvBdAltQN` has no `W^{2C_nε - D}` term; the extra
 `+1` pays the factor `2`). -/
 theorem hQ_altQN {d m : ℕ} (Λg κ' KL C c : ℝ) (hd : 3 ≤ d) (hΛg : 0 < Λg) (hκ' : 0 < κ')
@@ -537,7 +532,7 @@ theorem hQ_altQN {d m : ℕ} (Λg κ' KL C c : ℝ) (hd : 3 ≤ d) (hΛg : 0 < �
   have hD4' : ∀ b b', ‖sz.STeeM n (E n) (gridTime s v K n j) M σ b b'‖ ≤
       Γ n * (Γ n * Λ n) * ((sz.Bctl n (gridTime s v K n j)) ^ (2 * (m + 1 + 1)) /
         etaT (E n) (gridTime s v K n j)) := fun b b' => hD4 σ b b'
-  -- `G ≥ 0` is forced by (D4) (a norm is nonnegative and the quotient is positive)
+    -- `G ≥ 0` is forced by the bound on `STeeM` (a norm is nonnegative and the quotient is positive)
   have hGnn : 0 ≤ Γ n * (Γ n * Λ n) := by
     have h0 := (norm_nonneg _).trans (hD4' (fun _ => 0) (fun _ => 0))
     have hq : 0 < (sz.Bctl n (gridTime s v K n j)) ^ (2 * (m + 1 + 1)) /
@@ -580,9 +575,9 @@ theorem hQ_altQN {d m : ℕ} (Λg κ' KL C c : ℝ) (hd : 3 ≤ d) (hΛg : 0 < �
   refine le_trans ?_ (Real.le_coe_toNNReal _)
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hq (Nat.cast_nonneg _)) hΔ
 
-/-- **Target C2b, `subGaussStop_altQN`** (RBM2D `subGaussStop_alt`, `AltEndCompose.lean:540-571`; pattern
-`subGaussStop_linN`, `NQLin.lean:786`): the merged `azumaSubGQ_gridExitN` (`QProxy.lean:409`) at the alternating exit
-family of `altExitTauN` (the family `GoodSetN ∩ GoodLinN ∩ altYSetN`; measurable by `altExitMeasN`'s ingredients) and the
+/-- **`subGaussStop_altQN`** (RBM2D `subGaussStop_alt`; pattern
+`subGaussStop_linN`): `azumaSubGQ_gridExitN` at the alternating exit
+family of `altExitTauN` (the family `GoodSetN ∩ GoodLinN ∩ altYSetN`; measurable by the ingredients of `altExitMeasN`) and the
 `hQ` premise from `hQ_altQN` on the `GoodSetN` component: sub-Gaussianity of the stopped propagated first-chaos part
 `zVecQN` (mollifier `QopAlgebra_mollifier … (m+1)`, constants `C = (1 + 40 d(m+1)) 6^{d(m+1)}`, `c = 1/2`) with the
 explicit proxy `cQVAltQN`.  Hypotheses as `hQ_altQN`. -/
@@ -629,12 +624,12 @@ theorem subGaussStop_altQN {d m : ℕ} (Λg κ' KL : ℝ) (hd : 3 ≤ d) (hΛg :
 
 end C2
 
-/-! ## 5. C3: the kernel field on the grid -/
+/-! ## 5. The kernel field on the grid -/
 
 section C3
 
-/-- **Target C3, `alt_hkerGridQN`** (RBM2D `altQ_hker_shift`, `AltEndCompose.lean:380-420`, reduced; the field `hker` of
-`GridAssemblyHypN`): `alt_hkerQN` (`QDriftA.lean:353`) at the grid `u = gridTime s v K n`, `Kg = K n`
+/-- **`alt_hkerGridQN`** (RBM2D `altQ_hker_shift`, reduced; the field `hker` of
+`GridAssemblyHypN`): `alt_hkerQN` at the grid `u = gridTime s v K n`, `Kg = K n`
 (`0 ≤ u_i` from `s n ≥ 0`, monotone `ST_gridTime_mono`, `u_{K n} = v n` `gridTime_last`), with the regime premises
 explicit (case (i) only here: `v n ≤ 1 - g²/L²`, `W⁻¹ ≤ (1-v_n)/(1-s_n)`).  `Cls = altClsQN … ε' Dc` (the class radius
 exponent `ε'` of `alt_hA0clsQN`, `alt_hDclsQN`), `κ = kappaAltQN`, `εK = epsAltQN` (tensors of `m + 2` indices). -/
@@ -663,14 +658,13 @@ theorem alt_hkerGridQN {d m : ℕ} (Λg κ' KL : ℝ) (hd : 3 ≤ d) (hΛg : 0 <
 
 end C3
 
-/-! ## 6. C4: the drift and class fields on the alternating exit family -/
+/-! ## 6. The drift and class fields on the alternating exit family -/
 
 section C4
 
-/-- **Target C4a, `alt_hdriftGridQN`** (the field `hdrift` of `GridAssemblyHypN`): `alt_hdriftLinQN`
-(`QBudgetB.lean:209`) with `τ := altExitTauN`; the premise `hτG` is components 1 and 2 of
+/-- **`alt_hdriftGridQN`** (the field `hdrift` of `GridAssemblyHypN`): `alt_hdriftLinQN` with `τ := altExitTauN`; the premise `hτG` is components 1 and 2 of
 `mem_of_lt_altExitTauN` and the premise `hY` is component 3 at the level `Yl n ≤ ν X`
-(`altYSetN` at length `k - 1 = m + 1`; S3-18a2 takes `Yl n = N^{ε₁} X n`). -/
+(`altYSetN` at length `k - 1 = m + 1`; used with `Yl n = N^{ε₁} X n`). -/
 theorem alt_hdriftGridQN :
   ∀ (d m : ℕ) (Λg KL : ℝ), 3 ≤ d → 0 < Λg → 0 < KL →
     ∀ (sz : Sizes d) (n : ℕ) (σ : Fin (m + 1 + 1) → Bool) (E s v : ℕ → ℝ) (Kg : ℕ → ℕ)
@@ -710,10 +704,10 @@ theorem alt_hdriftGridQN :
       Yl n * sz.Bctl n (gridTime s v Kg n j') ^ (m + 1) := (mem_of_lt_altExitTauN hj').2 σ' a'
   exact h.trans (mul_le_mul_of_nonneg_right hYl hB')
 
-/-- **Target C4b, `alt_hA0clsGridQN`** (the field `hA0cls` of `GridAssemblyHypN`): `alt_hA0clsQN`
-(`QDriftA.lean:473`, tensors of `m + 2` indices) with `τ := altExitTauN`: `hτG` is component 1 of
+/-- **`alt_hA0clsGridQN`** (the field `hA0cls` of `GridAssemblyHypN`): `alt_hA0clsQN`
+(tensors of `m + 2` indices) with `τ := altExitTauN`: `hτG` is component 1 of
 `mem_of_lt_altExitTauN` (`k = m + 1 + 1`, crude level `Φc`), and the crude sup `‖A_0‖ ≤ W^{C₀}` is an explicit premise
-(a bound on `‖(𝓛-𝒦)^{(m+2)}(H_0)‖` at length `k`, which no clause of `GoodSetN` gives; see `altEnd_crudeSup`).
+(a bound on `‖(𝓛-𝒦)^{(m+2)}(H_0)‖` at length `k`, which no clause of `GoodSetN` gives).
 The class exponent is `ε'` (`d W^{τ'} ≤ W^{ε'}`), the radius level `Dc ≤ D' - 1`. -/
 theorem alt_hA0clsGridQN {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) (m : ℕ) (K C₀ ε' D' : ℝ) (hε' : 0 < ε')
     {n : ℕ} (σ : Fin (m + 1 + 1) → Bool) (E s v : ℕ → ℝ) (Kg : ℕ → ℕ)
@@ -736,11 +730,11 @@ theorem alt_hA0clsGridQN {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) (m : ℕ) (K C�
     (QopAlgebra_mollifier_props d (sz.L n) (m + 1) (sz.three_le_L n) hlam)
     (fun ω' j' hj' => (mem_of_lt_altExitTauN hj').1.1) hcrude
 
-/-- **Target C4c, `alt_hDclsGridQN`** (the field `hDcls` of `GridAssemblyHypN`): `alt_hDclsQN`
-(`QDriftB.lean:379`, tensors of `m + 2` indices, the existential `W₀` of the merged statement) with
+/-- **`alt_hDclsGridQN`** (the field `hDcls` of `GridAssemblyHypN`): `alt_hDclsQN`
+(tensors of `m + 2` indices, the existential `W₀` of its statement) with
 `τ := altExitTauN`: `hτG` is component 1 of `mem_of_lt_altExitTauN`; the crude sups `hAcr`
-(`‖(𝓛-𝒦)^{(m+2)}(H_j)‖ ≤ W^{C₀}`) and `hDcr` (`‖driftTensorN‖ ≤ W^{C₀}`) are explicit premises (preflight finding F1;
-derivations from the exit family are `altEnd_crudeSup`, `altEnd_driftSup`). -/
+(`‖(𝓛-𝒦)^{(m+2)}(H_j)‖ ≤ W^{C₀}`) and `hDcr` (`‖driftTensorN‖ ≤ W^{C₀}`) are explicit premises
+(the second is derived from the exit family by `altEnd_driftSup`). -/
 theorem alt_hDclsGridQN :
   ∀ (d m : ℕ) (Λg K C₀ ε' D' : ℝ), 3 ≤ d → 0 < Λg → 0 < ε' →
     ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (n : ℕ) (σ : Fin (m + 1 + 1) → Bool) (E s v : ℕ → ℝ)
@@ -771,9 +765,9 @@ theorem alt_hDclsGridQN :
     hE hlam hlamΛ hW hLK hs0 hsv hv1 hKv hdW hDD (fun ω' j' hj' => (mem_of_lt_altExitTauN hj').1.1)
     hAcr hDcr
 
-/-- **The crude sup of the drift tensor from the exit family** (preflight finding F1; deterministic):
+/-- **The crude sup of the drift tensor from the exit family** (deterministic):
 `GoodLinN` (component 2) gives `‖driftTensorN‖ ≤ dDriftLinN` (`driftTensorN_norm_le_of_goodLin`), so a bound
-`dDriftLinN ≤ W^{C₀}` gives the `hDcr` premise of C4c. -/
+`dDriftLinN ≤ W^{C₀}` gives the `hDcr` premise of `alt_hDclsGridQN`. -/
 theorem altEnd_driftSup {d : ℕ} (sz : Sizes d) (n : ℕ) {E u Γ Φ₁ Φ₂ Φ₃ C₀ : ℝ} {k : ℕ} (hk : 2 ≤ k)
     {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
     (hH : H ∈ GoodLinN sz n E u k Γ Φ₁ Φ₂ Φ₃)
@@ -785,11 +779,11 @@ theorem altEnd_driftSup {d : ℕ} (sz : Sizes d) (n : ℕ) {E u Γ Φ₁ Φ₂ �
 
 end C4
 
-/-! ## 7. C5: the identity, measurability, terminal value, de-`𝒬`, `Y` moments -/
+/-! ## 7. The identity, measurability, terminal value, de-`𝒬` -/
 
 section C5
 
-/-- **Target C5a, `altEnd_hexp`** (RBM2D `altEnd_identity`, `AltEndCompose.lean:580`; literally the field `hexp` of
+/-- **`altEnd_hexp`** (RBM2D `altEnd_identity`; literally the field `hexp` of
 `GridAssemblyHypN` at `A := aFrozQN`, `A0 := aTrueQN … 0`, `Dr := dGridQN`, `Z := zVecQN`, `Y := yVecQN`,
 `R := rGridQN`): for every stopping index `τ` and target `m' ≤ K n`, a.e.,
 `A^{Q,frz}_{m'} = 𝒰_{u_0,u_{m'}} A^Q_0 + Σ_{j < m' ∧ τ} 𝒰_{u_{j+1},u_{m'}}(Δ dGridQN_j + zVecQN_j + yVecQN_j + rGridQN_j)`
@@ -822,7 +816,7 @@ theorem altEnd_hexp {d m : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ �
   have hj' : j < K n := (Finset.mem_range.1 hj).trans_le ((min_le_left _ _).trans hm')
   rw [hω j hj', ← add_assoc ((gridStep s v K n : ℂ) • dGridQN sz E s v K n ϑ σ j ω)]
 
-/-- **Target C5b, `altEnd_stronglyMeasurable_zVecQN`**: `zVecQN … j` is `filt sz (j + 1)`-strongly measurable
+/-- **`altEnd_stronglyMeasurable_zVecQN`**: `zVecQN … j` is `filt sz (j + 1)`-strongly measurable
 (`gridAsm_stronglyMeasurable_ZvecN` composed with the continuous linear `STQop ϑ u_{j+1}` on the finite-dimensional
 space of tensors). -/
 theorem altEnd_stronglyMeasurable_zVecQN {d m : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ)
@@ -838,7 +832,7 @@ theorem altEnd_stronglyMeasurable_zVecQN {d m : ℕ} (sz : Sizes d) (E s v : ℕ
   refine Measurable.stronglyMeasurable ?_
   exact @Measurable.comp _ _ _ (filt sz (j + 1)) _ _ _ _ hcont.measurable hZ.measurable
 
-/-- **Target C5c, `altEnd_aFroz_eq_aTrue`**: on `{K n ≤ τ ω}` the frozen `𝒬`-process at the last grid index is the true
+/-- **`altEnd_aFroz_eq_aTrue`**: on `{K n ≤ τ ω}` the stopped `𝒬`-process (`aFrozQN`) at the last grid index is the true
 one (`min (K n) (τ ω) = K n`, `𝒰_{u,u} = id`: `GridDuhamelN_Ugen_self`). -/
 theorem altEnd_aFroz_eq_aTrue {d m : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
     (hE : |E n| ≤ 2) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0)
@@ -850,12 +844,12 @@ theorem altEnd_aFroz_eq_aTrue {d m : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (
   exact GridDuhamelN_Ugen_self (sz.three_le_L n) hE σ (altEnd_gridTime_nonneg hs0 hsv _)
     (altEnd_gridTime_lt_one hsv hK hv1 le_rfl) _
 
-/-- **Target C5d, `altEnd_unQ`** (de-`𝒬` at the end, per matrix; RBM2D `altEnd_unQ`): for alternating `σ`, under the
-hypotheses of `altB45N_levelM` (`QLevelsA.lean:376`; `GoodSetN` at a free crude level gives Hermitian and (Dec); `hY` the
+/-- **`altEnd_unQ`** (de-`𝒬` at the end, per matrix; RBM2D `altEnd_unQ`): for alternating `σ`, under the
+hypotheses of `altB45N_levelM` (`QLevelsA.lean`; `GoodSetN` at a free crude level gives Hermitian and the decay clause; `hY` the
 length-`m + 1` level at `u`; the mollifier `ϑ` with `STMollifierProps`),
 `‖(𝓛-𝒦)_{u,σ}(H)_a‖ ≤ ‖𝒬_u(𝓛-𝒦)_{u,σ}(H)_a‖ + N^{τ_N} B_u^{m+2} X`
-(`STQop` unfolded, the first conjunct of `altB45N_levelM`, `norm_add_le`).  S3-18a2 applies it at `u = v_n`,
-`H = H_{K n}` (the `altYSetN` component and (Dec) at `j = K n`, `u_{K n} = v_n`). -/
+(`STQop` unfolded, the first conjunct of `altB45N_levelM`, `norm_add_le`).  It is applied at `u = v_n`,
+`H = H_{K n}` (the `altYSetN` component and the decay clause at `j = K n`, `u_{K n} = v_n`). -/
 theorem altEnd_unQ {d : ℕ} (hd : 3 ≤ d) (m : ℕ) (sz : Sizes d) (n : ℕ)
     (E u κ Γc Λc Φc τ' D' ν X τN C c : ℝ)
     (H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -957,7 +951,7 @@ theorem mem_of_lt_altExitTauNg {s v : ℕ → ℝ} {K : ℕ → ℕ} {k : ℕ}
         altYSetNg Cm n (gridTime s v K n j) (k - 1) (Yl n) :=
   mem_of_lt_gridExitTauNg h
 
-/-- `{j < altExitTauNg}` is `filt j`-measurable (band `altExitMeasN`): `gridExitTauNg_measurableSet` under `WalkForm`, with `measurableGoodSetNg`, `measurableGoodLinNg`,
+/-- `{j < altExitTauNg}` is `filt j`-measurable (band `altExitMeasN`): `gridExitTauNg_measurableSet` under `StepDecompGen_WalkForm`, with `measurableGoodSetNg`, `measurableGoodLinNg`,
 `measurableAltYSetNg` under `LoopForm`. -/
 theorem altExitMeasNg {E lam' : ℕ → ℝ} {Ψ : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
     (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ) (s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
@@ -1026,7 +1020,7 @@ private theorem altEnd_yGridg {Cm : Step2Mat sz} {E : ℕ → ℝ} {μ : Measure
   refine hI.mono (Eventually.of_forall fun n ω hω j hj => ?_)
   exact Set.mem_iInter.1 hω ⟨j, Nat.lt_succ_of_le hj⟩
 
-/-- **`altYGridNg`** (band `altYGridN`, pin `T2294_altYGridN`; supervisor 1102 O1): from the control `Ξ̂^{(𝓛-𝒦)}_l ≺ X` uniformly on `[s_n, v_n]` at the law `μ` of the flow
+/-- **`altYGridNg`** (band `altYGridN`): from the bound `Ξ̂^{(𝓛-𝒦)}_l ≺ X` uniformly on `[s_n, v_n]` at the law `μ` of the flow
 matrix `Hf` (`LoopForm`, `Step34Gen_LCompat`, the law `Step2EventsGen_Law`), with high probability the carrier walk is in `altYSetNg` at the level `N^ε X` at every grid time `j ≤ K n`
 (`GridGoodGen_precL_whp` at the exponent `ε`; `STXiLKMg ≤ Z` gives `‖(𝓛-𝒦)^{(l)}‖ ≤ (Z-1)B^l ≤ Z B^l`; `K n + 1 ≤ N^C`). -/
 theorem altYGridNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (μ : Measure sz.SeqΩ)
@@ -1055,13 +1049,13 @@ theorem altYGridNg {E : ℕ → ℝ} (Cm : Step2Mat sz) (μ : Measure sz.SeqΩ)
 
 end GridG
 
-/-! ## 3g. C1: the `𝒬`-remainder envelope (D2) and the bridge to `assembledRHSAltQNg` -/
+/-! ## 3g. The `𝒬`-remainder envelope and the bridge to `assembledRHSAltQNg` -/
 
 section C1G
 
-/-- **D2, `gridDriftQNg_envelope_ev`** (text fixed at the 1a-audit; band `gridDriftQN_envelope'`, `QEndA:313`): the merged `gridDriftQNg` (`Chain/QGridGen:759`, T2497) at `m ↦ m + 1` with its
-drift premise per index under `∀ᶠ n` (`0 < sz.lam n` and the classes `Expand`, `KLoop`, `KTwo`, `UStep`), `hS`, the all-`w` link, `‖m‖ ≤ 1`, `hη` for every `n`, and the wing envelope
-`exists_norm_KI_le_wing` (`HierDriftGen:1083`, under `STKboundgL`): eventually in `n`, a.e., for every grid step `j < K n` and label, the `𝒬`-remainder `rGridQNg` (tensors of `m + 2` indices,
+/-- **`gridDriftQNg_envelope_ev`** (band `gridDriftQN_envelope'`): `gridDriftQNg` (`Chain/QGridGen`) at `m ↦ m + 1` with its
+drift premise per index under `∀ᶠ n` (`0 < sz.lam n` and the classes `HierDriftGen_Expand`, `HierDriftGen_KLoop`, `HierDriftGen_KTwo`, `HierDriftGen_UStep`), `hS`, the all-`w` link, `‖m‖ ≤ 1`, `hη` for every `n`, and the wing envelope
+`exists_norm_KI_le_wing` (under `STKboundgL`): eventually in `n`, a.e., for every grid step `j < K n` and label, the `𝒬`-remainder `rGridQNg` (tensors of `m + 2` indices,
 mollifier at `m + 1`) is at most `qErrQNg` at the envelope `N^{τ_K} η_{u_{j+1}}^{-(m+2)}` of `𝒦` on `[0, u_{j+1}]`. -/
 theorem gridDriftQNg_envelope_ev :
   ∀ (d : ℕ) (sz : Sizes d) (Cm : Step2Mat sz) (E lam' : ℕ → ℝ)
@@ -1139,14 +1133,14 @@ section C1bG
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- `kappaAltQNg` is nonnegative (copy of the private `QBudgetA_kappag_nonneg`). -/
+/-- `kappaAltQNg` is nonnegative (as in `QBudgetA`). -/
 private theorem altEnd_kappag_nonneg (k : ℕ) (Cv g W ε : ℝ) (hW : 0 ≤ W) (u : ℕ → ℝ) (i m : ℕ) :
     0 ≤ kappaAltQNg k Cv g W ε u i m := by
   unfold kappaAltQNg
   exact mul_nonneg (Real.rpow_nonneg hW _)
     (pow_nonneg (div_nonneg (by positivity) (by positivity)) _)
 
-/-- The step error of `gridDriftNg` is nonnegative (band `altEnd_stepErrN_nonneg`, with `envConst` unfolded in `stepErrNg`; `0 < η_u`, `0 < η_v`). -/
+/-- The step error `stepErrNg` is nonnegative (the carrier form of the band step error, with `envConst` unfolded in `stepErrNg`; `0 < η_u`, `0 < η_v`). -/
 private theorem altEnd_stepErrNg_nonneg (C : FlowFM sz) (n k : ℕ) {u v Δ Bk : ℝ} (hηu : 0 < C.eta n u)
     (hηv : 0 < C.eta n v) (hv1 : v < 1) (hΔ : 0 ≤ Δ) (hBk : 0 ≤ Bk) : 0 ≤ stepErrNg C n k u v Δ Bk := by
   have hv : 0 < 1 - v := by linarith
@@ -1172,7 +1166,7 @@ private theorem altEnd_stepErrNg_nonneg (C : FlowFM sz) (n k : ℕ) {u v Δ Bk :
   have := mul_nonneg h3 h4
   linarith
 
-/-- **`assembledRHSAltQNg_qErr_le`** (band `assembledRHSAltQN_qErr_le`; ticket Design (c), finding): the right side of `AssembledNg` at the target `m = K n` for the alternating chain
+/-- **`assembledRHSAltQNg_qErr_le`** (band `assembledRHSAltQN_qErr_le`): the right side of `AssembledNg` at the target `m = K n` for the alternating chain
 (`κ = kappaAltQNg`, `εK = epsAltQNg`, `c = cQVAltQNg`, `k = m + 2`, `u = gridTime`), with the remainder `stepErr := qErrQNg` (the `𝒬`-process remainder of `gridDriftQNg_envelope_ev`) and
 an initial supremum `Xs ≤ X0`, is at most `assembledRHSAltQNg` (whose last term is the non-alternating `stepErrNg`) plus `N^{-D_t}`, once the weighted `qErrQNg` sum is at most `N^{-D_t}`
 (`sum_weighted_qErrQNg_le` at `m ↦ m + 1`).  The five common terms are identical and `stepErrNg ≥ 0`. -/
@@ -1226,18 +1220,18 @@ theorem assembledRHSAltQNg_qErr_le {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : St
 
 end C1bG
 
-/-! ## 4g. C2: the variance proxy after the spectral-time shift, and `SubGaussStopNg` -/
+/-! ## 4g. The variance proxy after the spectral-time shift, and `SubGaussStopNg` -/
 
 section C2G
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- **`hQ_altQNg`** (band `hQ_altQN`; RBM2D (C2) `hQ_alt`; the pattern of `hQ_nonAltNg`; fixed `n`): for `M ∈ GoodSetNg n u_j (m+2) Γ Λ Φc τ' D'` Hermitian and every `σ`, the proxy
-`Δ · ((m+2) · qvFormQNg_{u_{j+1},u_p}(M)(a))` of the `j`-th propagated `𝒬`-increment towards `u_p` is at most `cQVAltQNg … D'' p a j`.  Route: (D4) and (Vb) of `GoodSetNg` at `u_j` are moved
+/-- **`hQ_altQNg`** (band `hQ_altQN`; RBM2D `hQ_alt`; the pattern of `hQ_nonAltNg`; fixed `n`): for `M ∈ GoodSetNg n u_j (m+2) Γ Λ Φc τ' D'` Hermitian and every `σ`, the proxy
+`Δ · ((m+2) · qvFormQNg_{u_{j+1},u_p}(M)(a))` of the `j`-th propagated `𝒬`-increment towards `u_p` is at most `cQVAltQNg … D'' p a j`.  Proof: the bound on `STeeM` and the far-label decay of `(ℰ⊗ℰ)^M` in `GoodSetNg` at `u_j` are moved
 to `u_{j+1}` by `norm_STeeMg_shiftNg_le`, `B_{u_j} ≤ B_{u_{j+1}}`, `η_{u_j}⁻¹ ≤ η_{u_{j+1}}⁻¹` (`NQGood1Gen_eta_anti`), `ℓ_{u_j} ≤ ℓ_{u_{j+1}}`, then `qvFormQNg_le_of_bounds` (`QProxy`) at
-`m ↦ m + 1`, `v := u_{j+1}`, `w := u_p`, `D := D'' + 1`, `M_ee = Γ(ΓΛ)B_{u_{j+1}}^{2k}/η_{u_{j+1}} + W^{-(D''+1)}`.  D1 enters through `hKer` at the kernel coupling `gK` and the comparison R1
+`m ↦ m + 1`, `v := u_{j+1}`, `w := u_p`, `D := D'' + 1`, `M_ee = Γ(ΓΛ)B_{u_{j+1}}^{2k}/η_{u_{j+1}} + W^{-(D''+1)}`.  `QProxyG_KerEK4` enters through `hKer` at the kernel coupling `gK` and the comparison of couplings
 (`hcmp`, `hA`, `hεε`, `hAk`, `C4 ≤ Cv`); the two radii `ε₁ ≤ ε` of `qvFormQNg_le_of_bounds` are tied by `√A W^{ε₁} ≤ W^ε`.  The shift hypothesis is
-`W^{-D'} + eeShiftErrNg(u_j, u_{j+1}) ≤ W^{-(D''+1)}` together with `2 ≤ W` (paper-delta candidate `T2294c`). -/
+`W^{-D'} + eeShiftErrNg(u_j, u_{j+1}) ≤ W^{-(D''+1)}` together with `2 ≤ W`. -/
 theorem hQ_altQNg {m : ℕ} (hd : 3 ≤ d) (Λg KL C c : ℝ) (hΛg : 0 < Λg) (hKL : 0 < KL) (hC : 0 < C) (hc : 0 < c)
     {E : ℕ → ℝ} (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) {gK : ℕ → ℝ} {A C4 Cv : ℝ}
     {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hm : ‖Cm.m n‖ ≤ 1)
@@ -1332,7 +1326,7 @@ theorem hQ_altQNg {m : ℕ} (hd : 3 ≤ d) (Λg KL C c : ℝ) (hΛg : 0 < Λg) (
   have hD4' : ∀ b b', ‖STeeMg Cm n (gridTime s v K n j) M σ b b'‖ ≤
       Γ n * (Γ n * Λ n) * ((sz.Bctl n (gridTime s v K n j)) ^ (2 * (m + 1 + 1)) /
         Cm.eta n (gridTime s v K n j)) := fun b b' => hD4 σ b b'
-  -- `G ≥ 0` is forced by (D4) (a norm is nonnegative and the quotient is positive)
+    -- `G ≥ 0` is forced by the bound on `STeeM` (a norm is nonnegative and the quotient is positive)
   have hGnn : 0 ≤ Γ n * (Γ n * Λ n) := by
     have h0 := (norm_nonneg _).trans (hD4' (fun _ => 0) (fun _ => 0))
     have hq : 0 < (sz.Bctl n (gridTime s v K n j)) ^ (2 * (m + 1 + 1)) /
@@ -1398,9 +1392,9 @@ theorem hQ_altQNg {m : ℕ} (hd : 3 ≤ d) (Λg KL C c : ℝ) (hΛg : 0 < Λg) (
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hq (Nat.cast_nonneg _)) hΔ
 
 /-- **`subGaussStop_altQNg`** (band `subGaussStop_altQN`; RBM2D `subGaussStop_alt`; pattern `subGaussStop_linNg`): the `azumaSubGQ_gridExitNg` (`QProxy`) at the alternating exit family of
-`altExitTauNg` (the family `GoodSetNg ∩ GoodLinNg ∩ altYSetNg`, measurable by `altExitMeasNg`'s ingredients) and the `hQ` premise from `hQ_altQNg` on the `GoodSetNg` component:
+`altExitTauNg` (the family `GoodSetNg ∩ GoodLinNg ∩ altYSetNg`, measurable by the ingredients of `altExitMeasNg`) and the `hQ` premise from `hQ_altQNg` on the `GoodSetNg` component:
 sub-Gaussianity of the stopped propagated first-chaos part `zVecQNg` (mollifier `QopAlgebra_mollifier … (m+1)`, constants `C = (1 + 40 d(m+1)) 6^{d(m+1)}`, `c = 1/2`) with the explicit
-proxy `cQVAltQNg`.  Hypotheses as `hQ_altQNg`, plus the pins `AzumaSubGNg`, `QVPropagatedNg`, the loop and walk forms of the carrier. -/
+proxy `cQVAltQNg`.  Hypotheses as `hQ_altQNg`, plus `AzumaSubGNg`, `QVPropagatedNg`, the loop and walk forms of the carrier. -/
 theorem subGaussStop_altQNg {m : ℕ} {Cm : Step2Mat sz} [IsProbabilityMeasure Cm.Pp] {g lam' s v : ℕ → ℝ} {K : ℕ → ℕ}
     {Ψ : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hd : 3 ≤ d) (Λg KL : ℝ)
     (hΛg : 0 < Λg) (hKL : 0 < KL) {E : ℕ → ℝ} (hAz : AzumaSubGNg Cm g s v K) (hL : StepDecompGen_LoopForm Cm E)
@@ -1451,7 +1445,7 @@ theorem subGaussStop_altQNg {m : ℕ} {Cm : Step2Mat sz} [IsProbabilityMeasure C
 
 end C2G
 
-/-! ## 5g. C3: the kernel field on the grid over a carrier -/
+/-! ## 5g. The kernel field on the grid over a carrier -/
 
 section C3G
 
@@ -1459,7 +1453,7 @@ variable {d : ℕ} {sz : Sizes d}
 
 /-- **`alt_hkerGridQNg`** (band `alt_hkerGridQN`; the field `hker` of `GridAssemblyHypNg`): `alt_hkerQNg` (`QDriftA`) at the grid `u = gridTime s v K n`, `Kg = K n`
 (`0 ≤ u_i` from `s n ≥ 0`, monotone `ST_gridTime_mono`, `u_{K n} = v n` `gridTime_last`), with the regime premises explicit (case (i) only here: `v n ≤ 1 - g²/L²`,
-`W⁻¹ ≤ (1-v_n)/(1-s_n)`).  D1 `QProxyG_KerEK4` at the kernel coupling `gK`, the comparison R1 (`hcmp`, `hA`, `hdW`, `hAk`, `C4 ≤ Cv`); `Cls = altClsQN … ε' Dc`,
+`W⁻¹ ≤ (1-v_n)/(1-s_n)`).  `QProxyG_KerEK4` at the kernel coupling `gK`, the comparison of couplings (`hcmp`, `hA`, `hdW`, `hAk`, `C4 ≤ Cv`); `Cls = altClsQN … ε' Dc`,
 `κ = kappaAltQNg`, `εK = epsAltQNg` (tensors of `m + 2` indices). -/
 theorem alt_hkerGridQNg {m : ℕ} (hd : 3 ≤ d) (Cm : Step2Mat sz) {gK : ℕ → ℝ} {A C4 Cv KL : ℝ}
     (hcmp : ∀ n', 0 ≤ gK n' * sz.lam n' ∧ gK n' ^ 2 ≤ sz.lam n' ^ 2 ∧ sz.lam n' ^ 2 ≤ A * gK n' ^ 2) (hA : 1 ≤ A)
@@ -1488,14 +1482,14 @@ theorem alt_hkerGridQNg {m : ℕ} (hd : 3 ≤ d) (Cm : Step2Mat sz) {gK : ℕ �
 
 end C3G
 
-/-! ## 6g. C4: the drift and class fields on the alternating exit family over a carrier -/
+/-! ## 6g. The drift and class fields on the alternating exit family over a carrier -/
 
 section C4G
 
 variable {d : ℕ} {sz : Sizes d}
 
 /-- **`alt_hdriftGridQNg`** (band `alt_hdriftGridQN`; the field `hdrift` of `GridAssemblyHypNg`): `alt_hdriftLinQNg` with `τ := altExitTauNg`; the premise `hτG` is components 1 and 2 of
-`mem_of_lt_altExitTauNg` and the premise `hY` is component 3 at the level `Yl n ≤ ν X` (`altYSetNg` at length `k - 1 = m + 1`; S3-18a2 takes `Yl n = N^{ε₁} X n`).  The spectral
+`mem_of_lt_altExitTauNg` and the premise `hY` is component 3 at the level `Yl n ≤ ν X` (`altYSetNg` at length `k - 1 = m + 1`; used with `Yl n = N^{ε₁} X n`).  The spectral
 levels are the fields of `B45Gen_Facts` at `n` (`κm`, `K₆`, `hward`, `hker`, `hrow`, `hcol`), `Γ = κm⁻¹`. -/
 theorem alt_hdriftGridQNg {E : ℕ → ℝ} (hd : 3 ≤ d) (m : ℕ) (Λg KL : ℝ) (hΛg : 0 < Λg) (hKL : 0 < KL)
     (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) {κm K₆ : ℝ} (hκm : 0 < κm) (hmn : κm ≤ (Cm.m n).im)
@@ -1561,8 +1555,8 @@ theorem alt_hA0clsGridQNg (hd : 3 ≤ d) (m : ℕ) (K C₀ ε' D' : ℝ) (hε' :
 
 /-- **`alt_hDclsGridQNg`** (band `alt_hDclsGridQN`; the field `hDcls` of `GridAssemblyHypNg`): `alt_hDclsQNg` (`QDriftB`, tensors of `m + 2` indices, the existential `W₀` of the
 generic statement) with `τ := altExitTauNg`: `hτG` is component 1 of `mem_of_lt_altExitTauNg`; the crude sups `hAcr` (`‖(𝓛-𝒦)^{(m+2)}(H_j)‖ ≤ W^{C₀}`) and `hDcr`
-(`‖driftTensorNg‖ ≤ W^{C₀}`) are explicit premises (derivations from the exit family: `altEnd_driftSupg`).  The kernel enters through `ZeroModeGen_KerSums` and
-`Step5KerGen_ThDecay` at `gK` with the comparison R1 (`C₆`, `A` before the carrier). -/
+(`‖driftTensorNg‖ ≤ W^{C₀}`) are explicit premises (the second is derived from the exit family by `altEnd_driftSupg`).  The kernel enters through `ZeroModeGen_KerSums` and
+`Step5KerGen_ThDecay` at `gK` with the comparison of couplings (`C₆`, `A` before the carrier). -/
 theorem alt_hDclsGridQNg :
     ∀ (d m : ℕ) (Λg K C₀ ε' D' C₆ A : ℝ), 3 ≤ d → 0 < Λg → 0 < ε' → 0 ≤ C₆ → 1 ≤ A →
       ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (Cm : Step2Mat sz) (gK : ℕ → ℝ) (n : ℕ) (σ : Fin (m + 1 + 1) → Bool)
@@ -1594,7 +1588,7 @@ theorem alt_hDclsGridQNg :
   exact H sz Cm gK n σ s v Kg Γ Λ Φc τ' Dc (altExitTauNg Cm s v Kg (m + 1 + 1) Γ Λ Φc Φ₁ Φ₂ Φ₃ Yl τ' D' n)
     hKS hTh hcmp hg hgΛ hW hLK hs0 hsv hv1 hKv hdW hDD (fun ω' j' hj' => (mem_of_lt_altExitTauNg hj').1.1) hAcr hDcr
 
-/-- **The crude sup of the drift tensor from the exit family** (preflight finding F1; deterministic; band `altEnd_driftSup`): `GoodLinNg` (component 2) gives
+/-- **The crude sup of the drift tensor from the exit family** (deterministic; band `altEnd_driftSup`): `GoodLinNg` (component 2) gives
 `‖driftTensorNg‖ ≤ dDriftLinNg` (`driftTensorNg_norm_le_of_goodLin`), so a bound `dDriftLinNg ≤ W^{C₀}` gives the `hDcr` premise of `alt_hDclsGridQNg`. -/
 theorem altEnd_driftSupg (Cm : Step2Mat sz) (n : ℕ) {u Γ Φ₁ Φ₂ Φ₃ C₀ : ℝ} {k : ℕ} (hk : 2 ≤ k)
     {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
@@ -1607,7 +1601,7 @@ theorem altEnd_driftSupg (Cm : Step2Mat sz) (n : ℕ) {u Γ Φ₁ Φ₂ Φ₃ C�
 
 end C4G
 
-/-! ## 7g. C5: the identity, measurability, terminal value, de-`𝒬` over a carrier -/
+/-! ## 7g. The identity, measurability, terminal value, de-`𝒬` over a carrier -/
 
 section C5G
 
@@ -1664,7 +1658,7 @@ theorem altEnd_stronglyMeasurable_zVecQNg {m : ℕ} {E lam' : ℕ → ℝ}
   refine Measurable.stronglyMeasurable ?_
   exact @Measurable.comp _ _ _ (filt sz (j + 1)) _ _ _ _ hcont.measurable hZ.measurable
 
-/-- **`altEnd_aFroz_eq_aTrueg`** (band `altEnd_aFroz_eq_aTrue`): on `{K n ≤ τ ω}` the frozen `𝒬`-process at the last grid index is the true one
+/-- **`altEnd_aFroz_eq_aTrueg`** (band `altEnd_aFroz_eq_aTrue`): on `{K n ≤ τ ω}` the stopped `𝒬`-process (`aFrozQN`) at the last grid index is the true one
 (`min (K n) (τ ω) = K n`, `𝒰_{u,u} = id`: `Step2Gen_UN_self` under the semigroup law). -/
 theorem altEnd_aFroz_eq_aTrueg {m : ℕ} (Cm : Step2Mat sz) (s v : ℕ → ℝ) (K : ℕ → ℕ) (n : ℕ)
     (hS : Step2Gen_USemigroup Cm.toFlowFM n) (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0)
@@ -1677,9 +1671,9 @@ theorem altEnd_aFroz_eq_aTrueg {m : ℕ} (Cm : Step2Mat sz) (s v : ℕ → ℝ) 
     (altEnd_gridTime_lt_one hsv hK hv1 le_rfl) _
 
 /-- **`altEnd_unQg`** (band `altEnd_unQ`; de-`𝒬` at the end, per matrix; RBM2D `altEnd_unQ`): for alternating `σ`, under the hypotheses of `altB45Ng_levelM` (`GoodSetNg` at a free
-crude level gives Hermitian and (Dec); `hY` the length-`m + 1` level at `u`; the mollifier `ϑ` with `STMollifierProps`),
-`‖(𝓛-𝒦)_{u,σ}(H)_a‖ ≤ ‖𝒬_u(𝓛-𝒦)_{u,σ}(H)_a‖ + N^{τ_N} B_u^{m+2} X` (`STQop` unfolded, the first conjunct of `altB45Ng_levelM`, `norm_add_le`).  S3-18a2 applies it at `u = v_n`,
-`H = H_{K n}` (the `altYSetNg` component and (Dec) at `j = K n`, `u_{K n} = v_n`).  The spectral levels are the fields of `B45Gen_Facts` (`κm`, `K₆`, `hward`, `hker`, `hrow`, `hcol`),
+crude level gives Hermitian and the decay clause; `hY` the length-`m + 1` level at `u`; the mollifier `ϑ` with `STMollifierProps`),
+`‖(𝓛-𝒦)_{u,σ}(H)_a‖ ≤ ‖𝒬_u(𝓛-𝒦)_{u,σ}(H)_a‖ + N^{τ_N} B_u^{m+2} X` (`STQop` unfolded, the first conjunct of `altB45Ng_levelM`, `norm_add_le`).  It is applied at `u = v_n`,
+`H = H_{K n}` (the `altYSetNg` component and the decay clause at `j = K n`, `u_{K n} = v_n`).  The spectral levels are the fields of `B45Gen_Facts` (`κm`, `K₆`, `hward`, `hker`, `hrow`, `hcol`),
 `Γ = κm⁻¹`. -/
 theorem altEnd_unQg {E : ℕ → ℝ} (hd : 3 ≤ d) (m : ℕ) (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (n : ℕ)
     {κm K₆ : ℝ} (hκm : 0 < κm) (hmn : κm ≤ (Cm.m n).im) (hm : ‖Cm.m n‖ ≤ 1)

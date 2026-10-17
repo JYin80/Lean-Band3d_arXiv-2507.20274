@@ -7,43 +7,39 @@ import RBM3D.Induction.LemDecCalEPrec
 import RBM3D.Induction.TailtoTail
 
 /-!
-# S5-10 (ST-4): the algebra of `lem:pf_step5`, part 1 (ticket T2209 with Amend 1)
+# The algebra of `lem:pf_step5`, part 1
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex:2296-2297` (`def_WTuD`), `:2310`
-(`eq:def_new_J*`), `:2317-2338` (`lem_dec_calE`), `:2344-2362` (`TailtoTail`), `:2364-2369`
-(`eq:def_TTT`, the stopped hierarchy `(int_K-L_ST)`), `:2371-2383` (`lem:pf_step5`; the paper omits
-the proof, "analogous to, and much simpler than, `(2.76)` of [YY_25, §5.3]", `3_5:2380`).
+Paper: (5.41) `def_WTuD`, (5.42) `eq:def_new_J*`, Lemma 5.2 (`lem_dec_calE`), Lemma 5.3 (`TailtoTail`),
+(5.47) `eq:def_TTT` (the stopped hierarchy `(int_K-L_ST)`), Lemma 5.4 (`lem:pf_step5`; the paper omits
+the proof, "analogous to, and much simpler than, `(2.76)` of [YY_25, §5.3]").
 
-This file is the deterministic algebra of the stopped hierarchy in regime (iii); no `Prec`
-conclusion and no pin: `STPfStep5` is S5-11's.  Every statement is per time or deterministic
-(DECISIONS §64 (4): nothing with the random right side `J♯^m R` is lifted).  The quadratic-variation
-analogue of `TailtoTail` (target 7 of the ticket) is **not** here: Amend 1 moved it to S5-10a
-(`Induction/TailtoTailSq`).  Targets, with the pins of the check file
-`docs/tickets/checks/T2209-check.lean` (the `def … _pin` of section 1 are copies; the pins of
-2′ and 4′ are new, from Amend 1):
+This file is the deterministic algebra of the stopped hierarchy in regime (iii); it contains no `Prec`
+conclusion: `STPfStep5` is proved in `Induction/PfStep5`.  Every statement is per time or deterministic
+(nothing with the random right side `J♯^m R` is lifted).  The quadratic-variation analogue of
+`TailtoTail` is in `Induction/TailtoTailSq`.  The statements `PfStep5Alg_*_pin` of section 1 fix the
+statements of the theorems:
 
-* **1** `pfStep5Alg_tailAnti`: `T_{u,D'} ≤ T_{u,D}` for `D ≤ D'`.
-* **2′** `pfStep5Alg_ugenSum'` (Amend 1: the level is a sequence `D : ℕ → ℝ`) and **2**
-  `pfStep5Alg_ugenSum` (`D_j ≡ D`, a one-line corollary): the weighted sums of `𝒰_{u_j,u_k,σ} ∘ ℰ_j`
-  against `T_{u_k,D_j}`, termwise `stTailtoTail_holds` at `D_j`.
-* **3** `pfStep5Alg_riemann`: the three left Riemann sums of `(1-u)^{-2}`, `(1-u)^{-3/2}`,
+* `pfStep5Alg_tailAnti`: `T_{u,D'} ≤ T_{u,D}` for `D ≤ D'`.
+* `pfStep5Alg_ugenSum'` (the level is a sequence `D : ℕ → ℝ`; `PfStep5Alg_ugenSum_pin` is the case
+  `D_j ≡ D`): the weighted sums of `𝒰_{u_j,u_k,σ} ∘ ℰ_j` against `T_{u_k,D_j}`, termwise
+  `stTailtoTail_holds` at `D_j`.
+* `pfStep5Alg_riemann`: the three left Riemann sums of `(1-u)^{-2}`, `(1-u)^{-3/2}`,
   `(1-u)^{-1}` (telescoping inequalities, no integrals).
-* **4′** `pfStep5Alg_goodStop'` (Amend 1: the good event may sit at another level `D₁`) and **4**
-  `pfStep5Alg_goodStop` (`D₁ = D`): the stopping condition `J♯(u) ≤ W^ε` turns a good event of
-  S5-09 into the one at the constant control `Jst ≡ W^ε`.
-* **5** `pfStep5Alg_goodProb`: `lemDecCalEPrec_prob` at the crude control `Jst n u D = W^D`, whose
+* `pfStep5Alg_goodStop'` (the good event may sit at another level `D₁`; `PfStep5Alg_goodStop'_pin`):
+  the stopping condition `J♯(u) ≤ W^ε` turns a good event of `LemDecCalEPrec` into the one at the
+  constant bound `Jst ≡ W^ε`.
+* `pfStep5Alg_goodProb`: `lemDecCalEPrec_prob` at the crude bound `Jst n u D = W^D`, whose
   hypothesis `STLK2 ≺ W^D T` follows from `STLKU` at `k = 2`, `Bctl ≤ 1` and `T ≥ W^{-D}`.
-* **6** `pfStep5Alg_closure`: `N^τ C (1 + log W + W^{2ε} (ilambda² W^d)^{-1/4}) < W^ε` eventually.
+* `pfStep5Alg_closure`: `N^τ C (1 + log W + W^{2ε} (ilambda² W^d)^{-1/4}) < W^ε` eventually.
 
-Intended use by S5-11 (Amend 1, DECISIONS §70; one level per time `D_u := D* + 2 log_W (1-u)`,
-`D* := max(D, D₀) + 2d + 1`): target 5 once at `D*`; at each grid time `u_j` target 4′ with
-`(D, D₁) = (D_{u_j}, D*)` feeds `lemDecCalEPrec_goodDet` at the control `Jst ≡ W^ε`; the drift
-terms go through target 2′ at the levels `D_{u_j}` and target 3; target 6 closes the sum; target 1
-descends from `D_u ≥ D` to `D`.
+Intended use (one level per time `D_u := D* + 2 log_W (1-u)`, `D* := max(D, D₀) + 2d + 1`):
+`pfStep5Alg_goodProb` once at `D*`; at each grid time `u_j` `pfStep5Alg_goodStop'` with
+`(D, D₁) = (D_{u_j}, D*)` feeds `lemDecCalEPrec_goodDet` at the bound `Jst ≡ W^ε`; the drift
+terms go through `pfStep5Alg_ugenSum'` at the levels `D_{u_j}` and `pfStep5Alg_riemann`;
+`pfStep5Alg_closure` closes the sum; `pfStep5Alg_tailAnti` descends from `D_u ≥ D` to `D`.
 
-No private proof is copied from another file; target 2′ uses the public `stTailtoTail_holds`
-(`Induction/TailtoTail.lean:582`, constant `(3 e^{(4d+1)/4})²`).  Section 8 holds the compiled
-nonempty instances.
+`pfStep5Alg_ugenSum'` uses the public `stTailtoTail_holds` (`Induction/TailtoTail.lean`, constant
+`(3 e^{(4d+1)/4})²`).
 -/
 
 set_option linter.style.longLine false
@@ -57,15 +53,15 @@ namespace RBM.Gauss.Sizes
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Green
 
-/-! ## 1. The pins (copies of the check file `docs/tickets/checks/T2209-check.lean`, section 1) -/
+/-! ## 1. The statements -/
 
-/-- **Target 1** (descent in `D`, `STPfConcl` docstring `Step5Pins.lean:195-201`): `T_{u,D'} ≤ T_{u,D}` for
+/-- **Descent in `D`** (`STPfConcl`, `Step5Pins.lean`): `T_{u,D'} ≤ T_{u,D}` for
 `D ≤ D'` (`W ≥ 1`). -/
 def PfStep5Alg_tailAnti_pin {d : ℕ} (sz : Sizes d) : Prop :=
   ∀ (n : ℕ) (u D D' : ℝ) (a : Fin 2 → Zd d (sz.L n)), D ≤ D' →
     STtailTD sz n u D' a ≤ STtailTD sz n u D a
 
-/-- **Target 2** (kernel sums, the `Ugen` form of `stTailtoTail_holds`; `EKsgn (mE E) σ` is
+/-- **Kernel sums with a constant level** (the `Ugen` form of `stTailtoTail_holds`; `EKsgn (mE E) σ` is
 `fun i => mSigma E (σ i)`, `‖mE E‖ = 1` by `norm_mE`): for nonnegative weights `c j` and tensors
 `ℰ j` dominated by `p j · T_{u_j,D}`, the weighted sum of `𝒰_{u_j,u_k,σ} ∘ ℰ_j` is dominated by
 `Σ c_j p_j (C T_{u_k,D} + ((1-u_j)/(1-u_k))² W^{-D})`, `C` the constant of `STTailtoTail`. -/
@@ -80,9 +76,10 @@ def PfStep5Alg_ugenSum_pin (d : ℕ) : Prop :=
             (C * tailTD d W (u k) D (zdistInf d L (a 0 - a 1) : ℝ) +
               ((1 - u j) / (1 - u k)) ^ 2 * W ^ (-D))
 
-/-- **Target 2′** (Amend 1, DECISIONS §70: pin 2 with the level a sequence `D : ℕ → ℝ`, one extra binder): the
+/-- **Kernel sums with a level sequence** (`PfStep5Alg_ugenSum_pin` with the level a sequence
+`D : ℕ → ℝ`, one extra binder): the
 tensors `ℰ j` are dominated by `p j · T_{u_j,D_j}` and the weighted sum of `𝒰_{u_j,u_k,σ} ∘ ℰ_j` by
-`Σ c_j p_j (C T_{u_k,D_j} + ((1-u_j)/(1-u_k))² W^{-D_j})`; pin 2 is the case `D_j ≡ D`. -/
+`Σ c_j p_j (C T_{u_k,D_j} + ((1-u_j)/(1-u_k))² W^{-D_j})`; `PfStep5Alg_ugenSum_pin` is the case `D_j ≡ D`. -/
 def PfStep5Alg_ugenSum'_pin (d : ℕ) : Prop :=
   3 ≤ d → ∃ C : ℝ, 0 < C ∧
     ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ (g W E : ℝ) (D : ℕ → ℝ), 0 < g → 0 < W → |E| ≤ 2 →
@@ -94,8 +91,8 @@ def PfStep5Alg_ugenSum'_pin (d : ℕ) : Prop :=
             (C * tailTD d W (u k) (D j) (zdistInf d L (a 0 - a 1) : ℝ) +
               ((1 - u j) / (1 - u k)) ^ 2 * W ^ (-(D j)))
 
-/-- **Target 3** (left Riemann sums of the increasing functions `(1-u)^{-2}`, `(1-u)^{-3/2}`, `(1-u)^{-1}`):
-the time integrals `∫_s^{t'} (1-u)^{-2} du ≤ (1-t')^{-1}` etc. of Fable §4(3) on a grid. -/
+/-- **Left Riemann sums** of the increasing functions `(1-u)^{-2}`, `(1-u)^{-3/2}`, `(1-u)^{-1}`:
+the time integrals `∫_s^{t'} (1-u)^{-2} du ≤ (1-t')^{-1}` etc. on a grid. -/
 def PfStep5Alg_riemann_pin : Prop :=
   ∀ (k : ℕ) (u : ℕ → ℝ), 0 ≤ u 0 → (∀ j, u j ≤ u (j + 1)) → u k < 1 →
     ∑ j ∈ Finset.range k, (u (j + 1) - u j) * (1 - u j)⁻¹ ^ 2 ≤ (1 - u k)⁻¹ ∧
@@ -103,9 +100,9 @@ def PfStep5Alg_riemann_pin : Prop :=
       2 * ((1 - u k)⁻¹) ^ (1 / 2 : ℝ) ∧
     ∑ j ∈ Finset.range k, (u (j + 1) - u j) * (1 - u j)⁻¹ ≤ Real.log ((1 - u 0) / (1 - u k))
 
-/-- **Target 4′** (Amend 1: the good event is taken at a level `D₁` independent of the level `D` of the
-conclusion and of the stopping condition; events 2-7 of `lemDecCalEPrec_good` contain neither `D` nor `Jst`);
-pin 4 is the case `D₁ = D`. -/
+/-- **The stopping condition and the good event** (the good event is taken at a level `D₁` independent of the
+level `D` of the conclusion and of the stopping condition; events 2-7 of `lemDecCalEPrec_good` contain
+neither `D` nor `Jst`); the case `D₁ = D` is the special case. -/
 def PfStep5Alg_goodStop'_pin {d : ℕ} (sz : Sizes d) : Prop :=
   ∀ (E : ℕ → ℝ) (D D₁ ε τ' : ℝ) (J₀ : ℕ → ℝ → ℝ → ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ), 0 ≤ τ' →
     1 ≤ ((sz.size n : ℕ) : ℝ) →
@@ -113,8 +110,8 @@ def PfStep5Alg_goodStop'_pin {d : ℕ} (sz : Sizes d) : Prop :=
     ω ∈ lemDecCalEPrec_good sz E D₁ J₀ τ' n u →
     ω ∈ lemDecCalEPrec_good sz E D (fun m _ _ => ((sz.W m : ℕ) : ℝ) ^ ε) τ' n u
 
-/-- **Target 5** (probability of the good event without the circular hypothesis): `lemDecCalEPrec_prob` at the
-crude control `Jst n u D = W^D`, whose hypothesis `STLK2 ≺ W^D T` follows from `STLKU` at `k = 2`, `Bctl ≤ 1`
+/-- **Probability of the good event** without a circular hypothesis: `lemDecCalEPrec_prob` at the
+crude bound `Jst n u D = W^D`, whose hypothesis `STLK2 ≺ W^D T` follows from `STLKU` at `k = 2`, `Bctl ≤ 1`
 and `T ≥ W^{-D}` (`lemDecCalEPrec_tail_ge`). -/
 def PfStep5Alg_goodProb_pin {d : ℕ} (sz : Sizes d) : Prop :=
   ∀ (E s t : ℕ → ℝ) (D : ℝ), sz.SizeTendsto →
@@ -126,7 +123,7 @@ def PfStep5Alg_goodProb_pin {d : ℕ} (sz : Sizes d) : Prop :=
         sz.seqP (lemDecCalEPrec_good sz E D (fun m _ D' => ((sz.W m : ℕ) : ℝ) ^ D') τ' n (u : ℝ))ᶜ ≤
           ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D₁))
 
-/-- **Target 6** (the closure, Fable §4(3) last line): for `0 < ε < 𝔡/4` and every `C ≥ 0` there is `τ > 0`
+/-- **The closure**: for `0 < ε < 𝔡/4` and every `C ≥ 0` there is `τ > 0`
 with `N^τ · C (1 + log W + W^{2ε} (ilambda² W^d)^{-1/4}) < W^ε` eventually (`(eq:WO)` gives
 `(ilambda² W^d)^{-1/4} ≤ W^{-𝔡/2}`, `Bandwidth` gives `N^τ ≤ W^{τ/𝔠}`). -/
 def PfStep5Alg_closure_pin {d : ℕ} (sz : Sizes d) : Prop :=
@@ -137,9 +134,9 @@ def PfStep5Alg_closure_pin {d : ℕ} (sz : Sizes d) : Prop :=
             ((sz.W n : ℕ) : ℝ) ^ (2 * ε) * (sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d) ^ (-(1 / 4 : ℝ)))) <
         ((sz.W n : ℕ) : ℝ) ^ ε
 
-/-! ## 2. Target 1: descent in `D` -/
+/-! ## 2. Descent in `D` -/
 
-/-- **Target 1**: `T_{u,D'} ≤ T_{u,D}` for `D ≤ D'` (the amplitude is the same, `W^{-D'} ≤ W^{-D}` as `W ≥ 1`). -/
+/-- **Descent in `D`**: `T_{u,D'} ≤ T_{u,D}` for `D ≤ D'` (the amplitude is the same, `W^{-D'} ≤ W^{-D}` as `W ≥ 1`). -/
 theorem pfStep5Alg_tailAnti {d : ℕ} (sz : Sizes d) : PfStep5Alg_tailAnti_pin sz := by
   intro n u D D' a hDD'
   have hW : (1 : ℝ) ≤ ((sz.W n : ℕ) : ℝ) := by exact_mod_cast sz.W_pos n
@@ -147,7 +144,7 @@ theorem pfStep5Alg_tailAnti {d : ℕ} (sz : Sizes d) : PfStep5Alg_tailAnti_pin s
   unfold STtailTD tailTD
   linarith
 
-/-! ## 3. Target 2′ and target 2: the kernel sums -/
+/-! ## 3. The kernel sums -/
 
 section UgenSum
 
@@ -165,7 +162,7 @@ private theorem pfStep5Alg_tailTD_pos {d : ℕ} {W u D r : ℝ} (hW : 0 < W) : 0
   have := Real.rpow_pos_of_pos hW (-D)
   positivity
 
-/-- One term of target 2′: `‖(𝒰_{v,w,σ} ∘ ℰ)_a‖ ≤ p (C T_{w,D'} + ((1-v)/(1-w))² W^{-D'})` when
+/-- One term of the kernel sum: `‖(𝒰_{v,w,σ} ∘ ℰ)_a‖ ≤ p (C T_{w,D'} + ((1-v)/(1-w))² W^{-D'})` when
 `‖ℰ_b‖ ≤ p T_{v,D'}(|b₁-b₂|)`, from the constant `C` of `STTailtoTail`. -/
 private theorem pfStep5Alg_ugen_term {d : ℕ} {C : ℝ}
     (H : ∀ (L : ℕ) (_hL : 3 ≤ L) (g W D s t : ℝ), 0 < g → 0 < W → 0 ≤ s → s ≤ t → t < 1 → g ^ 2 ≤ 1 - t →
@@ -219,7 +216,7 @@ private theorem pfStep5Alg_ugen_term {d : ℕ} {C : ℝ}
 
 end UgenSum
 
-/-- **Target 2′** (Amend 1): the weighted kernel sums with a level `D_j` per term.  Termwise
+/-- **The kernel sums with a level sequence**: the weighted kernel sums with a level `D_j` per term.  Termwise
 `stTailtoTail_holds` at `D_j` (scaling by `p_j`, `p_j = 0 ⇒ ℰ_j = 0`, `EKsgn (mE E) σ = fun i => mSigma E (σ i)`
 by `rfl`, `‖mE E‖ = 1`), then the triangle inequality. -/
 theorem pfStep5Alg_ugenSum' (d : ℕ) : PfStep5Alg_ugenSum'_pin d := by
@@ -250,7 +247,7 @@ theorem pfStep5Alg_ugenSum' (d : ℕ) : PfStep5Alg_ugenSum'_pin d := by
                 mul_le_mul_of_nonneg_left (term j hj) (hc j)
             _ = _ := by ring
 
-/-! ## 4. Target 3: the left Riemann sums -/
+/-! ## 4. The left Riemann sums -/
 
 section Riemann
 
@@ -320,7 +317,7 @@ private theorem pfStep5Alg_riem3 {a b : ℝ} (hab : a ≤ b) (hb : b < 1) :
 
 end Riemann
 
-/-- **Target 3**: the three left Riemann sums on a grid `u₀ ≤ u₁ ≤ … ≤ u_k < 1`. -/
+/-- **The left Riemann sums**: the three left Riemann sums on a grid `u₀ ≤ u₁ ≤ … ≤ u_k < 1`. -/
 theorem pfStep5Alg_riemann : PfStep5Alg_riemann_pin := by
   intro k u hu0 hmono hk
   have hm : Monotone u := monotone_nat_of_le_succ hmono
@@ -360,11 +357,12 @@ theorem pfStep5Alg_riemann : PfStep5Alg_riemann_pin := by
           Finset.sum_range_sub' (fun j => Real.log (1 - u j)) k
       _ = Real.log ((1 - u 0) / (1 - u k)) := (Real.log_div h10.ne' h1k.ne').symm
 
-/-! ## 5. Targets 4′ and 4: the stopping condition and the good event -/
+/-! ## 5. The stopping condition and the good event -/
 
-/-- **Target 4′** (Amend 1): conjunct 1 of `lemDecCalEPrec_good` at the constant control `Jst ≡ W^ε` and level `D` is the
+/-- **The stopping condition and the good event**: conjunct 1 of `lemDecCalEPrec_good` at the constant bound
+`Jst ≡ W^ε` and level `D` is the
 stopping condition `J♯ ≤ W^ε` (`LemDecCalELip_Jsharp_basic`: `STLK2 ≤ J♯ T`; `N^{τ'} ≥ 1`, `T > 0`), and conjuncts 2-7
-(`STGM`, `Gt`, the one-, three-, four- and six-loop clauses) contain neither `D` nor the control, so they are
+(`STGM`, `Gt`, the one-, three-, four- and six-loop clauses) contain neither `D` nor the bound, so they are
 those of the good event at `(D₁, J₀)`. -/
 theorem pfStep5Alg_goodStop' {d : ℕ} (sz : Sizes d) : PfStep5Alg_goodStop'_pin sz := by
   intro E D D₁ ε τ' J₀ n u ω hτ' hN hJ hω
@@ -382,14 +380,15 @@ theorem pfStep5Alg_goodStop' {d : ℕ} (sz : Sizes d) : PfStep5Alg_goodStop'_pin
     _ ≤ ((sz.size n : ℕ) : ℝ) ^ τ' * (((sz.W n : ℕ) : ℝ) ^ ε * STtailTD sz n u D a) :=
         le_mul_of_one_le_left h0 hQ
 
-/-! ## 6. Target 5: the probability of the good event -/
+/-! ## 6. The probability of the good event -/
 
 /-- `Bctl ≥ 0` (`Bparam` is built from inverses of nonnegative terms). -/
 private theorem pfStep5Alg_Bctl_nonneg {d : ℕ} (sz : Sizes d) (n : ℕ) (u : ℝ) : 0 ≤ sz.Bctl n u := by
   unfold Sizes.Bctl Bparam
   positivity
 
-/-- **Target 5**: the hypothesis `STLK2 ≺ W^D T` of `lemDecCalEPrec_prob` at `Jst n u D = W^D` from `STLKU` at `k = 2`:
+/-- **The probability of the good event**: the hypothesis `STLK2 ≺ W^D T` of `lemDecCalEPrec_prob` at
+`Jst n u D = W^D` from `STLKU` at `k = 2`:
 `Bctl² ≤ 1 ≤ W^D · W^{-D} ≤ W^D T` (`Bctl ≤ 1`, `lemDecCalEPrec_tail_ge`), through `st5_prec_mono`. -/
 theorem pfStep5Alg_goodProb {d : ℕ} (sz : Sizes d) : PfStep5Alg_goodProb_pin sz := by
   intro E s t D hsize hB hLKU hLoc hAvg hLmax hGij τ' D₁ hτ' hD₁
@@ -415,9 +414,9 @@ theorem pfStep5Alg_goodProb {d : ℕ} (sz : Sizes d) : PfStep5Alg_goodProb_pin s
   exact lemDecCalEPrec_prob sz E s t (fun m _ D' => ((sz.W m : ℕ) : ℝ) ^ D') D hsize hLK hLoc hAvg hLmax hGij
     hτ' hD₁
 
-/-! ## 7. Target 6: the closure -/
+/-! ## 7. The closure -/
 
-/-- **Target 6**: with `τ = 𝔠 ε / 2`: `N^τ ≤ W^{ε/2}` (`Bandwidth`), `(ilambda² W^d)^{-1/4} ≤ W^{-𝔡/2}` (`(eq:WO)`),
+/-- **The closure**: with `τ = 𝔠 ε / 2`: `N^τ ≤ W^{ε/2}` (`Bandwidth`), `(ilambda² W^d)^{-1/4} ≤ W^{-𝔡/2}` (`(eq:WO)`),
 `W^{2ε - 𝔡/2} ≤ 1`, `log W ≤ (4/ε) W^{ε/4}`, and `W^{ε/4} ≥ 4C/ε + 2C + 1` eventually (`W → ∞`), so
 `C (2 + log W) < W^{ε/2}` and the product is `< W^ε`. -/
 theorem pfStep5Alg_closure {d : ℕ} (sz : Sizes d) : PfStep5Alg_closure_pin sz := by
@@ -491,15 +490,5 @@ theorem pfStep5Alg_closure {d : ℕ} (sz : Sizes d) : PfStep5Alg_closure_pin sz 
         mul_le_mul_of_nonneg_right hNτ hXnn
     _ < W ^ (ε / 2) * W ^ (ε / 2) := mul_lt_mul_of_pos_left hX hWh
     _ = W ^ ε := hWε'.symm
-
-/-! ## 8. Compiled nonempty instances (CLAUDE.md §4 step 2)
-
-Data: the merged preflight instance `sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `N_n = (W_n L_n)^3`, `n = 0`: `L = 4`,
-`W = 32`, `N = 2097152`; `Admissible (1/6) (1/10)`), the flow `z0`, `s ≡ 0`, `t ≡ 1/16`; `d = 3`, `L = 4`, `g = 1/64`
-(`g² = 1/4096 ≤ 15/16 = 1 - 1/16`), `W = 32`, `E = 0`.  The events of the sample `ω` (the stopping condition and the good
-event of targets 4, 4′) and the stochastic pins of target 5 (`STLKU, STLocalEntryU, STAvgU, STLmaxU, GijGEXPTSwap`: other
-gates' pins) stay hypotheses of their instance theorems; every deterministic hypothesis is discharged.  Given the five
-pins, the events of targets 4, 4′ are jointly satisfiable at `sz0` (`pfStep5Alg_inst_goodStop'_nonvac`: target 5 gives
-a sample in the good event, and the stopping condition holds on it at `ε = D₁ + 6/100`). -/
 
 end RBM.Gauss.Sizes

@@ -8,53 +8,42 @@ import RBM3D.Induction.TailtoTailSq
 import RBM3D.Path.DifREP3
 
 /-!
-# S5-11b (ST-4): `lem:pf_step5`, part 2b: the stopped loop on the grid, the lift, `STPfStep5`
+# `lem:pf_step5`, part 2b: the stopped loop on the grid, the lift, `STPfStep5`
 
-Ticket T2231 (DECISIONS §71, §70, §64, §63).  Paper: arXiv:2507.20274,
-`paper/tex/3_5_Loop_Hierarchy.tex:2364-2369` (`eq:def_TTT`), `:2371-2383` (`lem:pf_step5`; the paper
-omits the proof, "analogous to, and in fact much simpler than, the proof of (2.76) in
-[YY_25, §5.3]", `3_5:2380`), `:134` (`int_K-L_ST`), `:218-240` (`alu9_STime`).  No RBM2D
-counterpart (RBM2D derives Step 5 from Step 4).
+Paper: (5.47) `eq:def_TTT`, Lemma 5.4 (`lem:pf_step5`; the paper omits the proof, "analogous to, and in
+fact much simpler than, the proof of (2.76) in [YY_25, §5.3]"), (3.13) `int_K-L_ST`, (3.18) `alu9_STime`.
 
-Proves the borrowed pin `STPfStep5 d` (`Induction/Step5Pins.lean:211`, text unchanged) from the
-deterministic grid layer of S5-11a (`PfStep5Grid`: level `D_u`, `J♯`, the Duhamel form), S5-10
-(`PfStep5Alg`), S5-10a (`TailtoTailSq`), S5-09/09a (`LemDecCalEPrec`, `LemDecCalELip`) and the
-merged `stGridRepN_holds` (`Path/DifREP3.lean`); target 8 is the one line `STStep5III d`.  The
-vocabulary (section 0) and the six pins (section 1) are copies of
-`docs/tickets/checks/T2231-check.lean`; each target theorem has the body of the pin of the same
-name.
+Proves `STPfStep5 d` (`Induction/Step5Pins.lean`) from the deterministic grid layer (`PfStep5Grid`:
+level `D_u`, `J♯`, the Duhamel form), `PfStep5Alg`, `TailtoTailSq`, `LemDecCalEPrec`, `LemDecCalELip` and
+`stGridRepN_holds` (`Path/DifREP3.lean`); `stStep5III_holds` is the one line `STStep5III d`.  The
+vocabulary (section 0) and the six statements `PfStep5_*_pin` (section 1) fix the statements of
+the theorems; each theorem has the body of the statement of the same name.
 
-* **1** `pfStep5_realize`: every grid state `H_k = seqXmat(√s ω₀ + √Δ Σ_{i ≤ k} ω_i)` is a
-  single-time state `seqHflow n u_k ω'` (private copies of the realization lemmas of
-  `Path/Walk.lean:280-316, 411-424`).
-* **2** `pfStep5_goodMeas`: the good event `lemDecCalEPrec_good` is the preimage of a measurable set
+* `pfStep5_realize`: every grid state `H_k = seqXmat(√s ω₀ + √Δ Σ_{i ≤ k} ω_i)` is a
+  single-time state `seqHflow n u_k ω'` (private copies of the realization lemmas of `Path/Walk.lean`).
+* `pfStep5_goodMeas`: the good event `lemDecCalEPrec_good` is the preimage of a measurable set
   of matrices.
-* **3** `pfStep5_farAbsorb`: `4 Y L^d ρ³ W^{-D₂} ≤ W^{-2D*}` for `D₂ = 2D* + 8/𝔠 + 3d + 1`,
+* `pfStep5_farAbsorb`: `4 Y L^d ρ³ W^{-D₂} ≤ W^{-2D*}` for `D₂ = 2D* + 8/𝔠 + 3d + 1`,
   `Y = 2N(16N)^6`.
-* **4** `pfStep5_walk` (`(b1)-(b3)`): with `ε₁ = min(𝔡/8, 1/4)`, `D* = max(D, D₀) + 2d + 1`,
+* `pfStep5_walk` (the grid conclusion): with `ε₁ = min(𝔡/8, 1/4)`, `D* = max(D, D₀) + 2d + 1`,
   `D₀ = 2/𝔠 + 12 d`, the closure exponent `τ` of `pfStep5Alg_closure` at the constant `C_tot`
   (`pfStep5_Ctot`), the loss `τ' = min(τ/24, 1/(2D*))`, the grid exponent `C_K` of `STGridRepNAt` at
   `m = 2` and the grid `K = ⌈N^{max(C_K, C_R)}⌉ + 1`, the failure event of
   `∀ k ≤ K, J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` is covered by the failure of the good events at the
   `K + 1` grid times (transfer `ST_pathP_eq_seqP`), of the initial bound (`STDecayStrong` at `s`),
   of the weighted martingale tail (conjunct 4) of each label, and a null set (conjuncts 1, 2); off
-  it the strong induction on `k` (`pfStep5_path`) gives `J♯(u_k, D_{u_k}) < W^{ε₀}`: `goodStop'` and
-  `goodDet` per time (`pfStep5_perj`), the Duhamel form (`pfStep5Grid_duhamel`), the four terms
+  it the strong induction on `k` (`pfStep5_path`) gives `J♯(u_k, D_{u_k}) < W^{ε₀}`: `pfStep5Alg_goodStop'` and
+  `lemDecCalEPrec_goodDet` per time (`pfStep5_perj`), the Duhamel form (`pfStep5Grid_duhamel`), the four terms
   (`pfStep5_assemble`: initial, drift by `pfStep5Alg_ugenSum'`, martingale by `tailtoTailSq_kernel`
   and `pfStep5_mart_real`, remainder), `pfStep5Alg_riemann`, `pfStep5Alg_closure`.
-* **5** `pfStep5_PT_of_walk`: endpoint (`gridTime_last`), sections (`ST_PT_of_sections`), descent
+* `pfStep5_PT_of_walk`: endpoint (`gridTime_last`), sections (`ST_PT_of_sections`), descent
   `D_u ≥ D`.
-* **6** `pfStep5_lift`: the only lift of the ticket (`PrecPT → Prec`, deterministic floored right
-  side, DECISIONS §64 (4)).
-* **7** `stPfStep5_holds`; **8** `stStep5III_holds`.
+* `pfStep5_lift`: the lift (`PrecPT → Prec`, deterministic floored right side).
+* `stPfStep5_holds`, `stStep5III_holds`.
 
-Corrections (c1)-(c3) of the ticket are followed: one grid per section and per probability exponent
-(`PfStep5_walkConcl`); conjuncts 1, 2, 4 of `STGridRepNAt` are used; conjunct 4 is uniform in
-`k ≤ K`, so no stopping index is needed (strong induction on the grid index).  Ports: private text
-of `Path/Walk.lean` (cited at each lemma), copied because it is private there; nothing from
-RBM1D/RBM2D.  Registry (`RBM3D/Test/Axioms.lean`): the lines of `STPfStep5` and `STStep5III` are
-removed; the one `Prop` assumed here, `PfStep5_walkConcl` (hypothesis of target 5), is appended to
-`owedProps`.  Paper-delta candidates `T2231a`-`T2231c` in the report.
+One grid per section and per probability exponent (`PfStep5_walkConcl`); conjuncts 1, 2, 4 of
+`STGridRepNAt` are used; conjunct 4 is uniform in `k ≤ K`, so no stopping index is needed (strong
+induction on the grid index).  `PfStep5_walkConcl` is the hypothesis of `pfStep5_PT_of_walk`.
 -/
 
 set_option linter.style.longLine false
@@ -71,7 +60,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 /-! ## 0. Vocabulary -/
 
-/-- **The grid conclusion** (b1-b3): there is `ε₁ > 0` such that for every `ε₀ ∈ (0, ε₁)` and every `D > 0`
+/-- **The grid conclusion**: there is `ε₁ > 0` such that for every `ε₀ ∈ (0, ε₁)` and every `D > 0`
 there is a level `D* ≥ D + 2d` such that for every section `tt n ∈ [s_n, t_n]` and every probability
 exponent `D'`, some grid `K` from `s` to `tt` has, eventually, `J♯(u_k, D_{u_k})(H_k) < W^{ε₀}` for **all**
 `k ≤ K` outside an event of probability `≤ N^{-D'}` (the grid depends on `D'`: the grid exponent `C_K` of
@@ -87,35 +76,35 @@ def PfStep5_walkConcl {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) : Prop :=
             ((sz.W n : ℕ) : ℝ) ^ ε₀}ᶜ ≤
           ENNReal.ofReal (((sz.size n : ℕ) : ℝ) ^ (-D'))
 
-/-- **The per-time conclusion** (b4): `STLK2 ≺ T_{u,D}` per time on `[s,t] × {±}² × (Z_L^d)²`. -/
+/-- **The per-time conclusion**: `STLK2 ≺ T_{u,D}` per time on `[s,t] × {±}² × (Z_L^d)²`. -/
 def PfStep5_PTConcl {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) : Prop :=
   ∀ D : ℝ, 0 < D →
     PrecPT sz (U := fun n => TimeIcc s t n × ((Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))))
       (fun n p ω => STLK2 sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω)
       (fun n p _ => STtailTD sz n (p.1 : ℝ) D p.2.2)
 
-/-- **The uniform conclusion** (b5): `STLK2 ≺ T_{u,D}` uniformly in `u` (the union over `u` inside `P`). -/
+/-- **The uniform conclusion**: `STLK2 ≺ T_{u,D}` uniformly in `u` (the union over `u` inside `P`). -/
 def PfStep5_PrecConcl {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) : Prop :=
   ∀ D : ℝ, 0 < D →
     Prec sz (U := fun n => TimeIcc s t n × ((Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))))
       (fun n p ω => STLK2 sz n (E n) (p.1 : ℝ) p.2.1 p.2.2 ω)
       (fun n p _ => STtailTD sz n (p.1 : ℝ) D p.2.2)
 
-/-! ## 1. Pins -/
+/-! ## 1. The statements -/
 
-/-- **Target 1** (realization): every grid state is a single-time state at the grid time
+/-- **Realization**: every grid state is a single-time state at the grid time
 (`H_k = seqXmat(c)`, `c = √s ω₀ + √Δ Σ_{i ≤ k} ω_i`; `ω' := (√u_k)⁻¹ • c` if `u_k > 0`, any `ω'` if `u_k = 0`). -/
 def PfStep5_realize_pin {d : ℕ} (sz : Sizes d) : Prop :=
   ∀ (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (ω : PathΩ sz), 0 ≤ s n → s n ≤ t n →
     ∃ ω' : sz.SeqΩ, sz.seqHflow n (gridTime s t K n j) ω' = pathH sz s t K n j ω
 
-/-- **Target 2** (the good event of S5-09 is the preimage of a measurable set of matrices). -/
+/-- **Good measurability** (the good event of `LemDecCalEPrec` is the preimage of a measurable set of matrices). -/
 def PfStep5_goodMeas_pin {d : ℕ} (sz : Sizes d) : Prop :=
   ∀ (E : ℕ → ℝ) (D : ℝ) (Jst : ℕ → ℝ → ℝ → ℝ) (τ' : ℝ) (n : ℕ) (u : ℝ),
     ∃ S : Set (Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ), MeasurableSet S ∧
       ∀ ω : sz.SeqΩ, ω ∈ lemDecCalEPrec_good sz E D Jst τ' n u ↔ sz.seqHflow n u ω ∈ S
 
-/-- **Target 3** (far-remainder absorption, DECISIONS §71): with `Y = 2N(16N)^6` (`difRep2_norm_STeeM_le_N`
+/-- **Far-remainder absorption**: with `Y = 2N(16N)^6` (`difRep2_norm_STeeM_le_N`
 at `m = 2`), some `D₂` gives `4 Y L^d ρ³ W^{-D₂} ≤ W^{-2D*}` eventually, uniformly in `0 ≤ v ≤ w`,
 `ilambda² ≤ 1 - w` (`ρ = (1-v)/(1-w) ≤ ilambda^{-2} ≤ W^d`, `L^d ≤ N ≤ W^{1/𝔠}`). -/
 def PfStep5_farAbsorb_pin {d : ℕ} (sz : Sizes d) : Prop :=
@@ -125,19 +114,19 @@ def PfStep5_farAbsorb_pin {d : ℕ} (sz : Sizes d) : Prop :=
           ((1 - v) / (1 - w)) ^ 3 * ((sz.W n : ℕ) : ℝ) ^ (-D₂) ≤
         ((sz.W n : ℕ) : ℝ) ^ (-(2 * Dst))
 
-/-- **Target 4** (the stopped loop on the grid, b1-b3): the setting of Step 5, regime (iii), gives the grid
+/-- **The stopped loop on the grid** (the grid conclusion): the setting of Step 5, regime (iii), gives the grid
 conclusion. -/
 def PfStep5_walk_pin (d : ℕ) : Prop :=
   STIngR5 d STReg5III (fun sz E s t => PfStep5_walkConcl sz E s t)
 
-/-- **Target 5** (endpoint, sections, descent `D_u ≥ D`, b4). -/
+/-- **The endpoint, the sections and the descent `D_u ≥ D`** (the per-time conclusion). -/
 def PfStep5_PT_of_walk_pin (d : ℕ) : Prop :=
   ∀ (sz : Sizes d) (E s t : ℕ → ℝ), (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →
     STReg5III sz s t →
     (∀ᶠ n in atTop, 1 < ((sz.W n : ℕ) : ℝ) ∧ ((sz.W n : ℕ) : ℝ) ^ (-(d : ℝ)) ≤ sz.lam n ^ 2) →
     PfStep5_walkConcl sz E s t → PfStep5_PTConcl sz E s t
 
-/-- **Target 6** (the lift `PrecPT → Prec`, b5; DECISIONS §64 (4): deterministic right side, floor `W^{-D}`). -/
+/-- **The lift `PrecPT → Prec`** (the uniform conclusion): deterministic right side, floor `W^{-D}`. -/
 def PfStep5_lift_pin (d : ℕ) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∀ (𝔠 : ℝ) (sz : Sizes d) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z →
@@ -145,52 +134,52 @@ def PfStep5_lift_pin (d : ℕ) : Prop :=
         STReg5III sz s t →
         PfStep5_PTConcl sz (STflowE z) s t → PfStep5_PrecConcl sz (STflowE z) s t
 
-/-! ## 2. Target 1: realization -/
+/-! ## 2. Realization -/
 
 section Realize
 
 variable {d : ℕ} {sz : Sizes d}
 
--- copy of `Path/Walk.lean:280` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_slice_add (n : ℕ) (ω ν : Sizes.SeqΩ sz) :
     Sizes.slice sz n (ω + ν) = Sizes.slice sz n ω + Sizes.slice sz n ν := rfl
 
--- copy of `Path/Walk.lean:283` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_slice_smul (n : ℕ) (a : ℝ) (ω : Sizes.SeqΩ sz) :
     Sizes.slice sz n (a • ω) = a • Sizes.slice sz n ω := rfl
 
--- copy of `Path/Walk.lean:286` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_slice_sum {ι : Type*} (n : ℕ) (S : Finset ι) (ω : ι → Sizes.SeqΩ sz) :
     Sizes.slice sz n (∑ l ∈ S, ω l) = ∑ l ∈ S, Sizes.slice sz n (ω l) := by
   funext c
   simp [Sizes.slice, Finset.sum_apply]
 
--- copy of `Path/Walk.lean:293` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_seqXmat_add (n : ℕ) (ω ν : Sizes.SeqΩ sz) :
     Sizes.seqXmat sz n (ω + ν) = Sizes.seqXmat sz n ω + Sizes.seqXmat sz n ν := by
   unfold Sizes.seqXmat
   rw [pfStep5_slice_add, Xmat_add]
 
--- copy of `Path/Walk.lean:299` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_seqXmat_smul (n : ℕ) (a : ℝ) (ω : Sizes.SeqΩ sz) :
     Sizes.seqXmat sz n (a • ω) = a • Sizes.seqXmat sz n ω := by
   unfold Sizes.seqXmat
   rw [pfStep5_slice_smul, Xmat_smul]
 
--- copy of `Path/Walk.lean:305` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_seqXmat_sum {ι : Type*} (n : ℕ) (S : Finset ι) (ω : ι → Sizes.SeqΩ sz) :
     Sizes.seqXmat sz n (∑ l ∈ S, ω l) = ∑ l ∈ S, Sizes.seqXmat sz n (ω l) := by
   unfold Sizes.seqXmat
   rw [pfStep5_slice_sum]
   exact map_sum (Xlinear d (sz.L n) (sz.W n)) (fun l => Sizes.slice sz n (ω l)) S
 
--- copy of `Path/Walk.lean:313` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_real_smul_matrix {m : Type*} (r : ℝ) (M : Matrix m m ℂ) :
     r • M = (r : ℂ) • M := by
   ext i j
   simp [Complex.real_smul]
 
--- copy of `Path/Walk.lean:411` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_pathH_eq (s t : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (ω : PathΩ sz) :
     pathH sz s t K n k ω
       = Sizes.seqXmat sz n ((Real.sqrt (s n) : ℝ) • ω 0
@@ -199,12 +188,12 @@ private theorem pfStep5_pathH_eq (s t : ℕ → ℝ) (K : ℕ → ℕ) (n k : �
     pfStep5_real_smul_matrix, pfStep5_real_smul_matrix]
   rfl
 
--- copy of `Path/Walk.lean:421` (private there).
+-- as the corresponding private lemma of `Path/Walk.lean`.
 private theorem pfStep5_seqHflow_eq (n : ℕ) (u : ℝ) (ω' : Sizes.SeqΩ sz) :
     Sizes.seqHflow sz n u ω' = Sizes.seqXmat sz n ((Real.sqrt u : ℝ) • ω') := by
   rw [Sizes.seqHflow_eq_smul, pfStep5_seqXmat_smul, pfStep5_real_smul_matrix]
 
-/-- **Target 1** (realization): every grid state is a single-time state at the grid time. -/
+/-- **Realization**: every grid state is a single-time state at the grid time. -/
 theorem pfStep5_realize {d : ℕ} (sz : Sizes d) : PfStep5_realize_pin sz := by
   intro s t K n j ω hs hst
   set Δ : ℝ := gridStep s t K n with hΔ
@@ -240,7 +229,7 @@ theorem pfStep5_realize {d : ℕ} (sz : Sizes d) : PfStep5_realize_pin sz := by
 
 end Realize
 
-/-! ## 3. Target 2: the good event of S5-09 as a preimage of a measurable set of matrices -/
+/-! ## 3. The good event of `LemDecCalEPrec` as a preimage of a measurable set of matrices -/
 
 section GoodMeas
 
@@ -266,7 +255,7 @@ private theorem pfStep5_gexRHS_measurable {d : ℕ} (L W : ℕ) [NeZero L] [NeZe
   · simp only [h, ite_false]
     exact measurable_const
 
-/-- **Target 2** (the good event is the preimage of a measurable set of matrices). -/
+/-- **Good measurability** (the good event is the preimage of a measurable set of matrices). -/
 theorem pfStep5_goodMeas {d : ℕ} (sz : Sizes d) : PfStep5_goodMeas_pin sz := by
   intro E D Jst τ' n u
   classical
@@ -366,12 +355,12 @@ theorem pfStep5_goodMeas {d : ℕ} (sz : Sizes d) : PfStep5_goodMeas_pin sz := b
 
 end GoodMeas
 
-/-! ## 4. Target 3: absorption of the far remainder -/
+/-! ## 4. Absorption of the far remainder -/
 
 section FarAbsorb
 
 /-- `W ≥ 1`, `L ≥ 1`, `N = (W L)^d`, `L^d ≤ N`, `W^d ≤ N`, `W ≤ N` and `1 ≤ N` for `1 ≤ d`
-(private copy of `lemDecCalEPrec_sizes` with `L^d ≤ N`). -/
+(as `lemDecCalEPrec_sizes`, with `L^d ≤ N`). -/
 private theorem pfStep5_sizes {d : ℕ} (sz : Sizes d) (n : ℕ) (hd : 1 ≤ d) :
     1 ≤ ((sz.W n : ℕ) : ℝ) ∧ 1 ≤ ((sz.L n : ℕ) : ℝ) ∧
       ((sz.size n : ℕ) : ℝ) = ((sz.W n : ℕ) : ℝ) ^ d * ((sz.L n : ℕ) : ℝ) ^ d ∧
@@ -402,7 +391,7 @@ private theorem pfStep5_one_le_d {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendst
   obtain ⟨n, hn⟩ := (hsize.eventually_ge_atTop 2).exists
   simp [Sizes.size] at hn
 
-/-- **Target 3** (far-remainder absorption). -/
+/-- **Far-remainder absorption**. -/
 theorem pfStep5_farAbsorb {d : ℕ} (sz : Sizes d) : PfStep5_farAbsorb_pin sz := by
   intro 𝔠 𝔡 hA Dst hDst
   obtain ⟨h𝔠, h𝔡, hsize, hBW, hWO⟩ := hA
@@ -479,7 +468,7 @@ theorem pfStep5_farAbsorb {d : ℕ} (sz : Sizes d) : PfStep5_farAbsorb_pin sz :=
 
 end FarAbsorb
 
-/-! ## 5. Generic real-number and tensor lemmas for target 4 -/
+/-! ## 5. Generic real-number and tensor lemmas for the grid conclusion -/
 
 section Generic
 
@@ -1047,7 +1036,7 @@ private theorem pfStep5_y_three_half {y w : ℝ} (hy : 0 < y) (hw : 0 ≤ w) :
     rw [show (3 / 2 : ℝ) = 1 + 1 / 2 by norm_num, Real.rpow_add hy, Real.rpow_one]
   rw [Real.mul_rpow hw hy.le, h]; ring
 
-/-- **The per-time bounds at a grid time**: on the good event at the crude control and with
+/-- **The per-time bounds at a grid time**: on the good event at the crude bound and with
 `J♯ ≤ W^{ε₀}`, the drift term and the quadratic variation of the flow matrix `H_u = √u X(ω')` are
 dominated, with `y = (1-u)⁻¹`, `w = (W^d)⁻¹`, by `N^τ (W^{2ε₀} w y² + y + W^{3ε₀/2} w^{1/2} y^{3/2}) T` and
 `N^τ (y + W^{3ε₀} w^{1/2} y^{3/2}) T²` (near pairs). -/
@@ -1399,9 +1388,9 @@ section PerJ
 
 variable {d : ℕ}
 
-/-- **The per-time facts at the time `u`** at the level `D_u = D* + 2 log_W (1-u)`: the good event of S5-09 at
-the crude control and the level `D*` (`goodProb`), plus `J♯(u, D_u) ≤ W^{ε₀}`, give via `goodStop'` the good
-event at the control `W^{ε₀}` and the level `D_u`, and `pfStep5_pertime` the drift and quadratic-variation
+/-- **The per-time facts at the time `u`** at the level `D_u = D* + 2 log_W (1-u)`: the good event of `LemDecCalEPrec` at
+the crude bound and the level `D*` (`pfStep5Alg_goodProb`), plus `J♯(u, D_u) ≤ W^{ε₀}`, give via `pfStep5Alg_goodStop'` the good
+event at the bound `W^{ε₀}` and the level `D_u`, and `pfStep5_pertime` the drift and quadratic-variation
 bounds at the level `D_u`. -/
 private theorem pfStep5_perj (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) (E : ℕ → ℝ)
     {u Dst τ τ' ε₀ : ℝ} (ω' : sz.SeqΩ) (hτ' : 0 ≤ τ') (hτ : 0 < τ) (hε₀ : 0 ≤ ε₀)
@@ -2100,11 +2089,11 @@ private theorem pfStep5_hlabel (sz : Sizes d) (n : ℕ) {Dg D' : ℝ}
 
 end Consts
 
-/-! ## 12. Target 4: the stopped loop on the grid -/
+/-! ## 12. The stopped loop on the grid -/
 
 section Walk
 
-/-- `η_u ≥ 1/(16 N)` along the flow (`difRep_flow_bounds`, as in `DifREP3.lean:2359-2366`). -/
+/-- `η_u ≥ 1/(16 N)` along the flow (`difRep_flow_bounds`, as in `DifREP3`). -/
 private theorem pfStep5_eta_lb {d : ℕ} (sz : Sizes d) {κ ε 𝔠 𝔡 : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
     {z : ℕ → ℂ} (hflow : STFlow sz κ ε 𝔠 𝔡 z) (n : ℕ) {u : ℝ} (hu : u ≤ lemT (z n)) :
     1 / (16 * ((sz.size n : ℕ) : ℝ)) ≤ etaT (STflowE z n) u := by
@@ -2125,7 +2114,7 @@ private theorem pfStep5_gridStep_le {a b K C N : ℝ} (hlen : b - a ≤ 1) (hN :
     _ ≤ 1 / N ^ C := one_div_le_one_div_of_le (Real.rpow_pos_of_pos hN _) hK
     _ = N ^ (-C) := by rw [Real.rpow_neg hN.le, one_div]
 
-/-- **Target 4** (the stopped loop on the grid, `(b1)`-`(b3)`; `𝔠_d := 1/100`, the premise `STConStInd` unused). -/
+/-- **The stopped loop on the grid** (the grid conclusion; `𝔠_d := 1/100`, the premise `STConStInd` unused). -/
 theorem pfStep5_walk (d : ℕ) : PfStep5_walk_pin d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   refine ⟨1 / 100, by norm_num, le_rfl, ?_⟩
@@ -2140,7 +2129,7 @@ theorem pfStep5_walk (d : ℕ) : PfStep5_walk_pin d := by
   have hε₀d : ε₀ < 𝔡 / 4 :=
     lt_of_lt_of_le hε₀1 ((min_le_left _ _).trans (by linarith))
   have hε₀h : ε₀ ≤ 1 / 2 := (hε₀1.trans_le (min_le_right _ _)).le.trans (by norm_num)
-  -- (b1) the constants: the closure exponent `τ`, the level `D*`
+    -- the constants: the closure exponent `τ`, the level `D*`
   have hCu : 0 < pfStep5_Cu d hd := (Classical.choose_spec (pfStep5Alg_ugenSum' d hd)).1
   have hCtot : 4 ≤ pfStep5_Ctot d (pfStep5_Cu d hd) := pfStep5_Ctot_ge hCu
   obtain ⟨τ, hτ, hclos⟩ := pfStep5Alg_closure sz 𝔠 𝔡 hAdm' ε₀ (pfStep5_Ctot d (pfStep5_Cu d hd)) hε₀
@@ -2258,7 +2247,7 @@ theorem pfStep5_walk (d : ℕ) : PfStep5_walk_pin d := by
     rw [hKfdef]
     have := pfStep5_hKD (N := ((sz.size n : ℕ) : ℝ)) (c := cK) (D' := D') hcK0 (by linarith)
     simpa using this
-  · -- the good events (`goodProb`)
+  · -- the good events (`pfStep5Alg_goodProb`)
     intro u hu1 hu2
     exact hgpn ⟨u, hu1, hu2.trans (httt n)⟩
   · -- the initial bound (`STDecayStrong`)
@@ -2273,14 +2262,13 @@ theorem pfStep5_walk (d : ℕ) : PfStep5_walk_pin d := by
 
 end Walk
 
-/-! ## 13. Target 5: the endpoint, the sections and the descent `D_u ≥ D` -/
+/-! ## 13. The endpoint, the sections and the descent `D_u ≥ D` -/
 
 section PT
 
 variable {d : ℕ}
 
-/-- Measurability of the matrix control `J♯` in the fine matrix (a copy of the private lemma of
-`Induction/PfStep5Grid.lean:197`, `pfStep5Grid_JsharpM_measurable`). -/
+/-- Measurability of the matrix bound `J♯` in the fine matrix. -/
 private theorem pfStep5_JsharpM_measurable (sz : Sizes d) (n : ℕ) (E D u : ℝ) :
     Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
       PfStep5Grid_JsharpM sz n E D u H := by
@@ -2316,7 +2304,7 @@ private theorem pfStep5_bad_sub (sz : Sizes d) (n : ℕ) (E : ℕ → ℝ) {u D 
     linarith
   exact hWN.trans h4.le
 
-/-- **Target 5** (endpoint, sections, descent `D_u ≥ D`). -/
+/-- **The endpoint, the sections and the descent `D_u ≥ D`**. -/
 theorem pfStep5_PT_of_walk (d : ℕ) : PfStep5_PT_of_walk_pin d := by
   intro sz E s t hs hst ht hReg hWev hwalk D hD
   obtain ⟨ε₁, hε₁, hall⟩ := hwalk
@@ -2389,12 +2377,12 @@ theorem pfStep5_PT_of_walk (d : ℕ) : PfStep5_PT_of_walk_pin d := by
 
 end PT
 
-/-! ## 14. Target 6: the lift `PrecPT → Prec` of `STLK2 ≤ N^τ T_{u,D}` (DECISIONS §64 (4)) -/
+/-! ## 14. The lift `PrecPT → Prec` of `STLK2 ≤ N^τ T_{u,D}` -/
 
 section Lift
 
-/-- **Target 6** (the lift `PrecPT → Prec`: the right side `T_{u,D}` is deterministic with the floor `W^{-D} ≥ N^{-D}`;
-`LemDecCalELip_lift` through `lemDecCalEPrec_lift` at `J ≡ 1`, `m = 0`, `R₀ = 0`, `R = T`). -/
+/-- **The lift `PrecPT → Prec`**: the right side `T_{u,D}` is deterministic with the floor `W^{-D} ≥ N^{-D}`;
+`LemDecCalELip_lift` through `lemDecCalEPrec_lift` at `J ≡ 1`, `m = 0`, `R₀ = 0`, `R = T`. -/
 theorem pfStep5_lift (d : ℕ) : PfStep5_lift_pin d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow s t hs hst htz hReg hPT D hD
   obtain ⟨hAdm, hEn, ht1, -⟩ := RBM.Green.v3_premises_of_stFlow sz hκ hε hflow htz
@@ -2430,7 +2418,7 @@ theorem pfStep5_lift (d : ℕ) : PfStep5_lift_pin d := by
 
 end Lift
 
-/-! ## 15. Targets 7 and 8: `STPfStep5` and the case (iii) of Step 5 -/
+/-! ## 15. `STPfStep5` and the case (iii) of Step 5 -/
 
 section Final
 
@@ -2451,9 +2439,9 @@ private theorem pfStep5_Wev {d : ℕ} (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.
   rw [Real.rpow_neg hW0.le, Real.rpow_natCast, inv_le_iff_one_le_mul₀' hWd]
   linarith
 
-/-- **Target 7** (`lem:pf_step5`, regime (iii), the borrowed pin `STPfStep5`, now proved): the grid walk
-conclusion (target 4), the endpoint and sections (target 5), the lift (target 6) and the re-indexing by
-`StochDomAt.precomp_param`. -/
+/-- **`STPfStep5`** (Lemma 5.4 `lem:pf_step5`, regime (iii)): the grid walk
+conclusion (`pfStep5_walk`), the endpoint and sections (`pfStep5_PT_of_walk`), the lift (`pfStep5_lift`) and the
+re-indexing by `StochDomAt.precomp_param`. -/
 theorem stPfStep5_holds (d : ℕ) : STPfStep5 d := by
   intro hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   obtain ⟨𝔠d, h0, h1, H⟩ := pfStep5_walk d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -2469,19 +2457,9 @@ theorem stPfStep5_holds (d : ℕ) : STPfStep5 d := by
   exact RBM.StochDomAt.precomp_param (hPrec D hD)
     (fun n (p : {_p : STIdx2 sz s t n // sz.lam n ^ 2 ≤ 1 - t n}) => p.1)
 
-/-- **Target 8** (one line): case (iii) of Step 5 from `lem:pf_step5` (`ST_step5_caseIII_of_pf`). -/
+/-- **Case (iii) of Step 5** from `lem:pf_step5` (`ST_step5_caseIII_of_pf`). -/
 theorem stStep5III_holds (d : ℕ) : STStep5III d := ST_step5_caseIII_of_pf (stPfStep5_holds d)
 
 end Final
 
 end RBM.Gauss.Sizes
-
-/-! ## 16. Compiled nonempty instances at `d = 3`
-
-The data are the merged preflight instance (`RBM3D/Induction/Step5Pins.lean`, section 8): `sz0` (`L_n = 4(n+1)`,
-`W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`, `N_n = (W_n L_n)^3`), the flow `z0` at `κ = ε = 𝔡 = 1/10`,
-`𝔠 = 1/6`, `s ≡ 0`, `t ≡ 1/16`, regime (iii) `sz0_reg5III`.  Targets 1-3 are applied at concrete data; target 4
-and the pin `STPfStep5` (target 7) through the merged `inst_ing5_III`, `inst_pfStep5` (the stochastic premises of
-`STIngR5`, other gates' pins, stay hypotheses inside `InstIng5Concl`); targets 5 and 6 at the same data with the
-grid-walk conclusion (the output of target 4) and the per-time conclusion (the output of target 5) as hypotheses;
-target 8 through `inst_skeletonIII`. -/

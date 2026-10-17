@@ -12,47 +12,34 @@ import RBM3D.Induction.Step5Kit
 import RBM3D.Induction.LemDecCalELip
 
 /-!
-# `lem_dec_calE` in the `Prec` form (S5-09, ticket T2193 with Amend 1)
+# Ingredients of `lem_dec_calE` in the `Prec` form
 
-`stLemDecCalE_holds (d : ℕ) : STLemDecCalE d`: the three bounds `(res_deccalE_lk)`,
-`(res_deccalE_wG)`, `(res_deccalE_dif)` of `lem_dec_calE`
-(`paper/tex/3_5_Loop_Hierarchy.tex:2317-2338`; the paper omits the proof,
-"a special case of [YY_25, Lemma 5.7]", `3_5:2338`), uniformly in
-`u ∈ [s,t]` (the union over `u` inside `P`), for the pin `STLemDecCalE`
-(`Induction/Step5Pins.lean`) after DECISIONS §61, §63.  No RBM2D counterpart for the `Prec` layer
-(RBM2D stops at the deterministic `lemDecCalE_*`).
+The three bounds (5.43) `res_deccalE_lk`, (5.44) `res_deccalE_wG`, (5.45) `res_deccalE_dif` of
+Lemma 5.2 (`lem_dec_calE`), uniformly in `u ∈ [s,t]` (the union over `u` inside `P`), for the conclusion
+`STLemDecCalEConcl` (`Induction/Step5Pins.lean`).  The paper omits the proof ("a special case of
+[YY_25, Lemma 5.7]").  The argument has three parts.
 
-**Route (d)** (DECISIONS §64, `docs/tickets/T2193-amend-1.md`): no statement of `(P-e7/8)` uniform
-in `u` is made.
-* (P) per time: on the good event `lemDecCalEPrec_good` (the hypothesis `STLK2 ≤ N^{τ'} Jst T`,
+* Per time: on the good event `lemDecCalEPrec_good` (the hypothesis `STLK2 ≤ N^{τ'} Jst T`,
   `STLocalEntryU`, `GijGEXPTSwap` per time, `STAvgU`, `STLmaxU` at `k = 3, 4, 6`;
-  `lemDecCalEPrec_prob`) the realized control `J♯ = LemDecCalELip_Jsharp` satisfies
+  `lemDecCalEPrec_prob`) the realized bound `J♯ = LemDecCalELip_Jsharp` satisfies
   `1 ≤ J♯ ≤ N^{τ'} Jst ≤ W`, `E2HypDif` and `E2HypWG` hold at `M = H_u` (`lemDecCalEPrec_det`) and
   `lemDecCalE_lk/_wG/_dif` give `‖ℰ_i‖ ≤ N^τ (R₀ᵢ + J♯^{m_i} Rᵢ)` (`lemDecCalEPrec_goodDet`),
-  `m = 2, 3/2, 3`; hence `PrecPT` (`lemDecCalEPrec_precPT`).
-* (N) net: `lemDecCalEPrec_lift` (from T2198's `LemDecCalELip_lift`, `_ELKLK`, `_EGt`, `_ee`,
-  `_Jsharp_rel`, `_relcont`) turns `PrecPT(ξ ≺ R₀ + J♯^m R)` into `Prec`; the fourth conclusion is
-  re-indexed by `StochDomAt.precomp_param`.
-* (C) combine: `lemDecCalEPrec_combine` replaces `J♯` by `Jst` on the event of the hypothesis
-  (`J♯(u) ≤ N^{τ'} Jst(u)` for every `u` at once, `τ' = τ/(m+1)`).
+  `m = 2, 3/2, 3`; the numerical facts and the premise of `kellStarEv` at all times are
+  `lemDecCalEPrec_numeric`, `lemDecCalEPrec_kell`, `lemDecCalEPrec_QW`.
+* Net lift: `lemDecCalEPrec_lift` (from `LemDecCalELip_lift`, `LemDecCalELip_Jsharp_rel`,
+  `LemDecCalELip_relcont`) turns `PrecPT(ξ ≺ R₀ + J♯^m R)` into `Prec`.
+* Floors and relative continuity of the deterministic factors: `lemDecCalEPrec_tail_ge`,
+  `lemDecCalEPrec_htN`.
 
 Sections: 1 real analysis (`lemDecCalEPrec_RA`); 2 the loss `≤ N^{τ/2}`; 3 bridges to the
-conjuncts of `E2Hyp` (`B_{u,0} ≤ 2 (1-u)⁻¹`, `avgErr`, `𝒦^{(1)}`, `𝒦^{(2)}`, `(Kell*)`);
-4 `GijGEXPTSwap` from `(Gt_bound_flow)`; 5-7 the good event, its probability and the per-time
-bounds; 8 (N); 9 (C); 10 floors and relative continuity of the factors; 11 the endpoint theorem;
-12 compiled instances.
+conjuncts of `E2Hyp` (`B_{u,0} ≤ 2 (1-u)⁻¹`, `avgErr`, `𝒦^{(1)}`, `𝒦^{(2)}`, the bridge for `kellStarEv`);
+4 `GijGEXPTSwap` from (2.87) `Gt_bound_flow`; 5 and 6 the good event, its probability and the
+deterministic conclusions on it; 7 the eventual numerical facts; 8 the net lift; 9 floors and
+relative continuity of the factors.
 
-Copies of private helpers (all inside RBM3D; no port from RBM1D/RBM2D): `kellStar_bparam_le`
-(`Path/KellStar.lean:68`) as `lemDecCalEPrec_bparam_le`; `lemDecCalEwG_STavgM_eq_avgErr`
-(`Path/LemDecCalEwG.lean:839`) as `lemDecCalEPrec_avgErr_eq`; `lemDecCalE_STKloop_two`
-(`Path/LemDecCalE.lean:1276`) as `lemDecCalEPrec_STKloop_two_eq`; the floor `T ≥ W^{-D}` of the
-proof of `LemDecCalELip_Jsharp_rel` (`Induction/LemDecCalELip.lean:1081-1086`) as
-`lemDecCalEPrec_tail_ge`.
-
-Differences from the paper (paper-delta candidates in the report): the floor
-`(L^d W^{6d})² ≤ W^D` replaces `W^D ≥ N` (`3_5:2317`) and the premise `J*_{u,D} ≤ W^{1/2}` is added
-(T2193a, T2193b); `(GijGEX)` is used per time in its one-orientation form and the conclusions are
-lifted in `u` (T2193c′).
+Differences from the printed Lemma 5.2: the floor `(L^d W^{6d})² ≤ W^D` replaces `W^D ≥ N`, and the
+premise `J*_{u,D} ≤ W^{1/2}` is added; (3.3) `GijGEX` is used per time in its one-orientation form
+and the conclusions are lifted in `u`.
 -/
 
 set_option linter.style.longLine false
@@ -314,8 +301,7 @@ section Bridge
 
 variable {d : ℕ}
 
-/-- `B_{u,K} ≤ 2 (1-u)⁻¹` for `u < 1`, `L ≥ 1` (copy of the private `kellStar_bparam_le`,
-`Path/KellStar.lean:68`). -/
+/-- `B_{u,K} ≤ 2 (1-u)⁻¹` for `u < 1`, `L ≥ 1`. -/
 private theorem lemDecCalEPrec_bparam_le (d L : ℕ) (hL : 1 ≤ L) (g : ℝ) {u : ℝ} (hu : u < 1)
     (n : ℕ) : Bparam d L g u n ≤ 2 * (1 - u)⁻¹ := by
   have hx : 0 < 1 - u := by linarith
@@ -353,8 +339,7 @@ theorem lemDecCalEPrec_Bctl_le (sz : Sizes d) (n : ℕ) {u : ℝ} (hu : u < 1) :
     sz.Bctl n u ≤ 2 * (((sz.W n : ℕ) : ℝ) ^ d * (1 - u))⁻¹ :=
   lemDecCalEPrec_STWB_le sz n hu 0
 
-/-- `⟨G̃(σ) E_a⟩` is the merged `avgErr` (copy of the private `lemDecCalEwG_STavgM_eq_avgErr`,
-`Path/LemDecCalEwG.lean:839`; `tr E_a = 1`). -/
+/-- `⟨G̃(σ) E_a⟩` is `avgErr` (`tr E_a = 1`). -/
 theorem lemDecCalEPrec_avgErr_eq (sz : Sizes d) (n : ℕ) (E u : ℝ)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (σ : Bool)
     (x : Zd d (sz.L n)) :
@@ -375,8 +360,7 @@ theorem lemDecCalEPrec_STKloop_one (sz : Sizes d) (n : ℕ) (E u : ℝ) (σ : Bo
   rw [h]
   exact KLK_one d (sz.L n) (sz.lam n) (sz.W n) E u σ x
 
-/-- `𝒦^{(2)}_{u,σ,a} = W^{-d} μ Θ_{uμ}(a₀, a₁)`, `μ = m(σ₀) m(σ₁)` (`KLK_two`; copy of the private
-`lemDecCalE_STKloop_two`, `Path/LemDecCalE.lean:1276`). -/
+/-- `𝒦^{(2)}_{u,σ,a} = W^{-d} μ Θ_{uμ}(a₀, a₁)`, `μ = m(σ₀) m(σ₁)` (`KLK_two`). -/
 theorem lemDecCalEPrec_STKloop_two_eq (sz : Sizes d) (n : ℕ) (E u : ℝ) (σ : Fin 2 → Bool)
     (a : Fin 2 → Zd d (sz.L n)) :
     STKloop sz n E u σ a =
@@ -408,7 +392,7 @@ theorem lemDecCalEPrec_Kbound (sz : Sizes d) (n : ℕ) {E u : ℝ} (hE : |E| ≤
   rw [lemDecCalEPrec_STKloop_two_eq, norm_mul, norm_mul, hμ, mul_one, hWd, mul_inv]
   exact mul_le_mul_of_nonneg_left hent (inv_nonneg.2 hW.le)
 
-/-- **The `(Kell*)` bridge**: `‖𝒦^{(2)}_{u,(+,-),(a,b)}‖ ≤ ‖Θ_u(a,b)‖` (`‖Θ_{uμ}(a,b)‖ ≤ Re Θ_u(a,b)`,
+/-- **The bridge for `kellStarEv`**: `‖𝒦^{(2)}_{u,(+,-),(a,b)}‖ ≤ ‖Θ_u(a,b)‖` (`‖Θ_{uμ}(a,b)‖ ≤ Re Θ_u(a,b)`,
 `norm_Theta_apply_le`, `‖μ‖ = 1`, `W^{-d} ≤ 1`). -/
 theorem lemDecCalEPrec_Kell_bridge (sz : Sizes d) (n : ℕ) {E u : ℝ} (hE : |E| ≤ 2) (hu0 : 0 ≤ u)
     (hu1 : u < 1) (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)) :
@@ -429,7 +413,7 @@ theorem lemDecCalEPrec_Kell_bridge (sz : Sizes d) (n : ℕ) {E u : ℝ} (hE : |E
         mul_le_mul hWd (h1.trans h2) (norm_nonneg _) zero_le_one
     _ = _ := one_mul _
 
-/-- `a² ≤ 2 Q X`, `Q ≥ 1`, `0 < X ≤ 1` give `a ≤ 32 Q X^{1/4}` (`(P-e6)`). -/
+/-- `a² ≤ 2 Q X`, `Q ≥ 1`, `0 < X ≤ 1` give `a ≤ 32 Q X^{1/4}`. -/
 private theorem lemDecCalEPrec_sqrt_le {a Q X : ℝ} (ha : 0 ≤ a) (hQ : 1 ≤ Q) (hX0 : 0 < X)
     (hX1 : X ≤ 1) (h : a ^ 2 ≤ Q * (2 * X)) : a ≤ 32 * Q * X ^ ((1 : ℝ) / 4) := by
   set Y : ℝ := X ^ ((1 : ℝ) / 4) with hY
@@ -460,9 +444,10 @@ private theorem lemDecCalEPrec_gexRHS_nonneg (sz : Sizes d) (n : ℕ) (E u : ℝ
 
 /-- **The deterministic core at one time and one matrix** (`E2HypDif`, `E2HypWG` at `M = H_u`, `J := J`,
 `Λ = 32 Q`, `K₀ = 1`): the twenty conjuncts of `E2Hyp` and the extras, from the numerical facts of
-the size data, `1 ≤ J ≤ W` with `‖(𝓛-𝒦)^{(2)}‖ ≤ J T`, and the good-event bounds `g2` (`(P-e6)`), `g3`
-(`(P-e7/8)`), `g4` (`(P-e9)`), `g53, g54, g56` (the three-, four-, six-loop clauses), each with the
-loss `Q`.  The four-, six- and three-loop constants `2^{k-1} ≤ 32` use `B_{u,0} ≤ 2 (1-u)⁻¹`. -/
+the size data, `1 ≤ J ≤ W` with `‖(𝓛-𝒦)^{(2)}‖ ≤ J T`, and the good-event bounds `g2` (the local-entry
+bound), `g3` (`GijGEXPTSwap`), `g4` (the averaged error), `g53, g54, g56` (the three-, four-, six-loop
+clauses), each with the loss `Q`.  The four-, six- and three-loop constants `2^{k-1} ≤ 32` use
+`B_{u,0} ≤ 2 (1-u)⁻¹`. -/
 theorem lemDecCalEPrec_det (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {E u D Q J : ℝ} (ω : sz.SeqΩ)
     (hE : |E| < 2) (hu0 : 0 ≤ u) (hu1 : u < 1) (hlam : 0 < sz.lam n)
     (hlamu : sz.lam n ^ 2 ≤ 1 - u) (hA : 1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d)
@@ -575,7 +560,7 @@ theorem lemDecCalEPrec_det (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) {E u D Q J : 
 
 end Bridge
 
-/-! ## 4. `(P-e7/8)` per time: `GijGEXPTSwap` from `(Gt_bound_flow)` -/
+/-! ## 4. `GijGEXPTSwap` per time from (2.87) `Gt_bound_flow` -/
 
 section Gij
 
@@ -598,8 +583,8 @@ theorem lemDecCalEPrec_X_le (sz : Sizes d) (n : ℕ) {u 𝔡 : ℝ}
     _ = ((sz.W n : ℕ) : ℝ) ^ d * sz.lam n ^ 2 := mul_comm _ _
     _ ≤ ((sz.W n : ℕ) : ℝ) ^ d * (1 - u) := mul_le_mul_of_nonneg_left hlamu hWd.le
 
-/-- **`(asGMc)` per time, from `(Gt_bound_flow)` uniformly in `u`** (`c = 𝔡`): `|(G_u - M)_{xy}|² ≺ STWB
-≤ 2 (W^d (1-u))⁻¹ ≤ 2 W^{-2𝔡}`, so `‖G_u - M‖_max ≺ W^{-𝔡}` per time (`W^{-2𝔡}` from `(eq:WO)` and
+/-- **`(asGMc)` per time, from (2.87) `Gt_bound_flow` uniformly in `u`** (`c = 𝔡`): `|(G_u - M)_{xy}|² ≺ STWB
+≤ 2 (W^d (1-u))⁻¹ ≤ 2 W^{-2𝔡}`, so `‖G_u - M‖_max ≺ W^{-𝔡}` per time (`W^{-2𝔡}` from (2.10) `eq:WO` and
 `lam² ≤ 1 - t`). -/
 theorem lemDecCalEPrec_asGMcPT (sz : Sizes d) (E s t : ℕ → ℝ) {𝔡 : ℝ} (hWO : sz.WO 𝔡)
     (hsize : sz.SizeTendsto) (ht1 : ∀ n, t n < 1)
@@ -665,8 +650,8 @@ section Good
 variable {d : ℕ}
 
 /-- **The per-time good event** at time `u`, loss `N^{τ'}`: the hypothesis `STLK2 ≤ N^{τ'} Jst T`,
-`(P-e6)` (`STLocalEntryU`), `(P-e7/8)` (`GijGEXPTSwap`), `(P-e9)` (`STAvgU`) and the three-, four-,
-six-loop clauses (`STLmaxU`, `k = 3, 4, 6`). -/
+the local-entry bound (`STLocalEntryU`), `GijGEXPTSwap`, the averaged error (`STAvgU`) and the three-,
+four-, six-loop clauses (`STLmaxU`, `k = 3, 4, 6`). -/
 def lemDecCalEPrec_good (sz : Sizes d) (E : ℕ → ℝ) (D : ℝ) (Jst : ℕ → ℝ → ℝ → ℝ) (τ' : ℝ) (n : ℕ)
     (u : ℝ) : Set sz.SeqΩ :=
   {ω | (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
@@ -812,7 +797,7 @@ theorem lemDecCalEPrec_prob (sz : Sizes d) (E s t : ℕ → ℝ) (Jst : ℕ → 
 /-! ## 6. The deterministic conclusion on the good event -/
 
 /-- `R₁ = (1-u)⁻¹ (W^d |1-u|)⁻¹ T_{u,D}(|a₁-a₂|)`: the deterministic factor of the first conclusion of
-`STLemDecCalEConcl` (`Step5Pins.lean:169`). -/
+`STLemDecCalEConcl`. -/
 def lemDecCalEPrec_R1 (sz : Sizes d) (n : ℕ) (D u : ℝ) (a : Fin 2 → Zd d (sz.L n)) : ℝ :=
   (1 - u)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ d * |1 - u|)⁻¹ * STtailTD sz n u D a
 
@@ -834,7 +819,7 @@ def lemDecCalEPrec_R3₀ (sz : Sizes d) (n : ℕ) (D u : ℝ) (a : Fin 2 → Zd 
 def lemDecCalEPrec_R3 (sz : Sizes d) (n : ℕ) (D u : ℝ) (a : Fin 2 → Zd d (sz.L n)) : ℝ :=
   (1 - u)⁻¹ * (((sz.W n : ℕ) : ℝ) ^ d * |1 - u|)⁻¹ ^ (1 / 2 : ℝ) * STtailTD sz n u D a ^ 2
 
-/-- The three bounds of `STLemDecCalEConcl` at one time, one sample, with the realized control `J♯` and the
+/-- The three bounds of `STLemDecCalEConcl` at one time, one sample, with the realized bound `J♯` and the
 loss absorbed by `N^τ`: `ξ ≤ N^τ (R₀ + J♯^m R)`, `m = 2, 3/2, 3`. -/
 def lemDecCalEPrec_Bounds (sz : Sizes d) (E : ℕ → ℝ) (D τ : ℝ) (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) : Prop :=
   (∀ (σ : Fin 2 → Bool) (a : Fin 2 → Zd d (sz.L n)),
@@ -851,8 +836,8 @@ def lemDecCalEPrec_Bounds (sz : Sizes d) (E : ℕ → ℝ) (D τ : ℝ) (n : ℕ
         (lemDecCalEPrec_R3₀ sz n D u a +
           LemDecCalELip_Jsharp sz E D n u ω ^ (3 : ℝ) * lemDecCalEPrec_R3 sz n D u a))
 
-/-- **Deterministic conclusions on the good event** (steps (P) of the amendment): on `ω ∈ good` the
-realized control `J♯` satisfies `1 ≤ J♯ ≤ N^{τ'} Jst ≤ W` (the premise `Jst ≤ W^{1/2}` and
+/-- **Deterministic conclusions on the good event**: on `ω ∈ good` the
+realized bound `J♯` satisfies `1 ≤ J♯ ≤ N^{τ'} Jst ≤ W` (the premise `Jst ≤ W^{1/2}` and
 `N^{τ'} ≤ W^{1/2}`), so `E2HypDif`, `E2HypWG` hold at `M = H_u`, `J := J♯`, `Λ = 32 N^{τ'}`, `K₀ = 1`
 (`lemDecCalEPrec_det`) and `lemDecCalE_lk/_wG/_dif` give the three bounds with the loss
 `≤ N^{τ/2} ≤ N^τ`, in the form `ξ ≤ N^τ (R₀ + J♯^m R)`. -/
@@ -959,7 +944,7 @@ theorem lemDecCalEPrec_goodDet (hd : 3 ≤ d) (sz : Sizes d) (n : ℕ) (E : ℕ 
 
 /-! ## 7. The eventual numerical facts and the per-time bounds -/
 
-/-- Eventually: `0 < lam`, `1 ≤ lam² W^d` (`(eq:WO)`), `4 ≤ log W` (`W ≥ N^𝔠 → ∞`) and `1 ≤ N`. -/
+/-- Eventually: `0 < lam`, `1 ≤ lam² W^d` (2.10 `eq:WO`), `4 ≤ log W` (`W ≥ N^𝔠 → ∞`) and `1 ≤ N`. -/
 theorem lemDecCalEPrec_numeric (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) :
     ∀ᶠ n in atTop, 0 < sz.lam n ∧ 1 ≤ sz.lam n ^ 2 * ((sz.W n : ℕ) : ℝ) ^ d ∧
       4 ≤ Real.log ((sz.W n : ℕ) : ℝ) ∧ 1 ≤ ((sz.size n : ℕ) : ℝ) := by
@@ -973,7 +958,7 @@ theorem lemDecCalEPrec_numeric (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissi
   calc (4 : ℝ) = Real.log (Real.exp 4) := (Real.log_exp 4).symm
     _ ≤ Real.log ((sz.W n : ℕ) : ℝ) := Real.log_le_log (Real.exp_pos 4) h5
 
-/-- The `(Kell*)` premise of `E2Hyp`, eventually and uniformly in `u ∈ [0, t_n]`
+/-- The `kellStarEv` premise of `E2Hyp`, eventually and uniformly in `u ∈ [0, t_n]`
 (`kellStarEv` at `δ = 1/8`, `Λ = 𝔡⁻¹`, `τ = ε/2`, `s = 0`; `RangeCond (ε/2) t` from
 `v3_premises_of_stFlow`). -/
 theorem lemDecCalEPrec_kell (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d) (z : ℕ → ℂ) (hκ : 0 < κ)
@@ -992,7 +977,7 @@ theorem lemDecCalEPrec_kell (hd : 3 ≤ d) {κ ε 𝔠 𝔡 : ℝ} (sz : Sizes d
   exact (hn 0 u le_rfl hu0 hut a b hab).1
 
 /-- `N^{τ'} ≤ W^{1/2}` from the floor `(L^d W^{6d})² ≤ W^D` (`N ≤ L^d W^{6d} ≤ (L^d W^{6d})² ≤ W^D`) and
-`D τ' ≤ 1/2`: the realized control `J♯ ≤ N^{τ'} Jst ≤ W^{1/2} W^{1/2}` (M3, DECISIONS §63). -/
+`D τ' ≤ 1/2`: the realized bound `J♯ ≤ N^{τ'} Jst ≤ W^{1/2} W^{1/2}`. -/
 theorem lemDecCalEPrec_QW (sz : Sizes d) (n : ℕ) (hd : 1 ≤ d) {D τ' : ℝ} (hτ' : 0 ≤ τ')
     (hDτ : D * τ' ≤ 1 / 2)
     (hfl : (((sz.L n : ℕ) : ℝ) ^ d * ((sz.W n : ℕ) : ℝ) ^ (6 * d)) ^ 2 ≤ ((sz.W n : ℕ) : ℝ) ^ D) :
@@ -1009,7 +994,7 @@ theorem lemDecCalEPrec_QW (sz : Sizes d) (n : ℕ) (hd : 1 ≤ d) {D τ' : ℝ} 
 
 end Good
 
-/-! ## 8. (N): the net lift of the three conclusions -/
+/-! ## 8. The net lift of the three conclusions -/
 
 section Lift
 
@@ -1072,12 +1057,12 @@ theorem lemDecCalEPrec_card_V12 (sz : Sizes d) (n : ℕ) (hN : 4 ≤ ((sz.size n
   have hN0 : 0 ≤ ((sz.size n : ℕ) : ℝ) := by linarith
   nlinarith [pow_nonneg hN0 2]
 
-/-- **(N) the net lift** (the amendment, step (N)): `PrecPT(ξ ≺ R₀ + J♯^m R)` gives `Prec(ξ ≺ R₀ + J♯^m R)` for
-the realized control `J♯` (`LemDecCalELip_Jsharp`), when `ξ` is Hölder-1/2 in `u` on `contGood` (`hξ`, from
-(L1)), `R₀ ≥ 0`, `R ≥ N^{-CR}`, and `R₀, R` are relatively continuous at the power `ρ^k`,
-`ρ = 1 + (1-t)⁻¹ |u-u'|` (`hrel`, from (L2)); the relative continuity of `J♯` is
-`LemDecCalELip_Jsharp_rel`, and `ρ^k ≤ 1 + N^{2k} √|u-u'|` (`lemDecCalEPrec_pow_rel`).  The exponent of
-the lift is `C = max (C_ξ, C_J, 2k)`. -/
+/-- **The net lift**: `PrecPT(ξ ≺ R₀ + J♯^m R)` gives `Prec(ξ ≺ R₀ + J♯^m R)` for
+the realized bound `J♯` (`LemDecCalELip_Jsharp`), when `ξ` is Hölder-1/2 in `u` on `contGood` (`hξ`,
+from the Hölder bounds of `LemDecCalELip`), `R₀ ≥ 0`, `R ≥ N^{-CR}`, and `R₀, R` are relatively continuous
+at the power `ρ^k`, `ρ = 1 + (1-t)⁻¹ |u-u'|` (`hrel`, from `LemDecCalELip_relcont`); the relative
+continuity of `J♯` is `LemDecCalELip_Jsharp_rel`, and `ρ^k ≤ 1 + N^{2k} √|u-u'|`
+(`lemDecCalEPrec_pow_rel`).  The exponent of the lift is `C = max (C_ξ, C_J, 2k)`. -/
 theorem lemDecCalEPrec_lift (hd : 3 ≤ d) (sz : Sizes d) (E s t : ℕ → ℝ) {κ D : ℝ} (hκ : 0 < κ)
     (hD : 0 < D) (hsize : sz.SizeTendsto) (hE : ∀ n, |E n| ≤ 2 - κ) (hs : ∀ n, 0 ≤ s n)
     (hst : ∀ n, s n ≤ t n) (ht : ∀ n, t n < 1)
@@ -1154,9 +1139,7 @@ theorem lemDecCalEPrec_lift (hd : 3 ≤ d) (sz : Sizes d) (E s t : ℕ → ℝ) 
 
 end Lift
 
-/-! ## 9. (C): from the realized control `J♯` to the given control `Jst` -/
-
-/-! ## 10. The floors and the relative continuity of the deterministic factors -/
+/-! ## 9. The floors and the relative continuity of the deterministic factors -/
 
 section Factors
 
@@ -1172,7 +1155,7 @@ theorem lemDecCalEPrec_tail_ge (sz : Sizes d) (n : ℕ) (u D : ℝ) (a : Fin 2 �
   linarith
 
 /-- `(1 - t_n)⁻¹ ≤ N` eventually in regime (iii): `lam² ≤ 1 - t` (`STReg5III`), `1 ≤ lam² W^d`
-(`(eq:WO)`) and `W^d ≤ N`. -/
+(2.10 `eq:WO`) and `W^d ≤ N`. -/
 theorem lemDecCalEPrec_htN (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 𝔠 𝔡) {s t : ℕ → ℝ}
     (hReg : STReg5III sz s t) (hd : 1 ≤ d) :
     ∀ᶠ n in atTop, (1 - t n)⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := by
@@ -1191,13 +1174,5 @@ theorem lemDecCalEPrec_htN (sz : Sizes d) {𝔠 𝔡 : ℝ} (hA : sz.Admissible 
   exact h1.trans (h2.trans h3)
 
 end Factors
-
-/-! ## 11. The endpoint theorem -/
-
-/-! ## 12. Compiled nonempty instances at `d = 3`
-
-The data are the merged preflight instance (`RBM3D/Induction/Step5Pins.lean:575-596`): the size sequence
-`sz0` (`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `N_n = (W_n L_n)^3`), the flow `z0`, `s = 0`, `t = 1/16`
-(`sInst`, `tInst`), regime (iii) (`sz0_reg5III`); `D = 42`, `Jst ≡ 1`, `Cd = 1`. -/
 
 end RBM.Gauss.Sizes

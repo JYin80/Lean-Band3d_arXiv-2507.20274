@@ -11,51 +11,28 @@ import RBM3D.Induction.Step2Events
 import RBM3D.Green.CondDom
 
 /-!
-# The non-alternating good-set inputs, second half (`d ≥ 3`): the class, the constants, the
-# fields of `GridAssemblyHypN` and the quadratic-variation constant
+# The non-alternating good-set inputs, second half (`d ≥ 3`)
 
-Ticket T2167 (S3-10b, stochastic layer ST-3).  Port of RBM2D `Induction/NonAltGood.lean` §4 Classes
-and Pathwise (`NAG:1117-1371`), §5 QVConst/QVGrid (`NAG:1385-1571`) and the items 3-4 instances of
-§6 (`NAG:1883-2191`) at commit `c9a24cf`, re-derived for `d ≥ 3` on the merged S3-10a
-(`Induction/NQGood1`): `hker_of_case1N` gives `W^{Cε} r^{k-1}` and `W^C` (no `cCase1 (1+log L)^k
-K_w^{2(k-1)} ρ^k`, no `((1-u)/(1-w))^k`), `Bctl` replaces `scaleM⁻¹`, and
-`nqGood1_qvFormN_le_of_bounds` replaces `ugenPairCase1Explicit`.  Paper: arXiv:2507.20274,
-`paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `lem:STOeq_NQ` (`3_5:1136`, proof `3_5:1152`),
-(5.93) (`3_5:1158`).  Not ported: RBM2D §3 (`zero_mem_goodSetN`: merged as `zero_mem_goodSetN_of_levels`),
-`NonAltGood_cCase1_nonneg`, `NonAltGood_cPair1_nonneg` (the constant is `nqGood1C`),
-`dDriftNonAlt_eq` (the `d ≥ 3` level is in closed form), the §6 item 1-2 instances (`NQGood1Inst`).
+The class, the constants, the fields of `GridAssemblyHypN` and the quadratic-variation constant.  The
+`d ≥ 3` form of RBM2D's `NonAltGood` (the sections on classes and pathwise statements and on the
+quadratic-variation constant), on top of `Induction/NQGood1`: `hker_of_case1N` gives `W^{Cε} r^{k-1}`
+and `W^C` (no `cCase1 (1+log L)^k K_w^{2(k-1)} ρ^k`, no `((1-u)/(1-w))^k`), `Bctl` is used in place of
+`scaleM⁻¹`, and `nqGood1_qvFormN_le_of_bounds` in place of `ugenPairCase1Explicit`.
+Paper: Lemma 4.6 (`lem:STOeq_NQ`) and its proof.
 
 ## What is here (namespace `RBM.Ind`)
 
-* §1 the vocabulary: `nonAltClsN`, `kappaNonAltN`, `epsNonAltN`, `dDriftNonAltN`, `qvBdNonAltN`,
-  `cQVNonAltN` (the six definitions of the ticket, verbatim).
-* §2 (5.93) at `d ≥ 3`: `nqGood2_ratio_mul_Bctl_le` (`r_{u,t} B_u ≤ B_t`, an inequality: the
-  `(L^d|1-t|)⁻¹` term of `Bparam` turns RBM2D's identity into `g²(t-u) ≥ 0`),
-  `kappaNonAltN_mul_Bctl_pow_le`, `kappaNonAltN_succ_mul_Bctl_pow_le`.
+* §1 the vocabulary: `nonAltClsN`, `kappaNonAltN`, `epsNonAltN`, `qvBdNonAltN`, `cQVNonAltN`.
+* §2 the ratio inequality at `d ≥ 3`: `nqGood2_ratio_mul_Bctl_le` (`r_{u,t} B_u ≤ B_t`, the inequality
+  `((ℓ²+|1-u|)/(ℓ²+|1-t|)) B_{u,0} ≤ B_{t,0}` of the proof of Lemma 4.6; the `(L^d|1-t|)⁻¹` term of
+  `Bparam` turns RBM2D's identity into `g²(t-u) ≥ 0`), `kappaNonAltN_mul_Bctl_pow_le`,
+  `kappaNonAltN_succ_mul_Bctl_pow_le`.
 * §3 the fields of `GridAssemblyHypN`: `nonAlt_hkerN`, `goodSetN_A0clsN`, `nonAlt_hA0clsN`,
-  `nonAlt_hdriftN`, `goodSetN_driftClsN`, `nonAlt_hDclsN`, `nonAlt_hκ0N`, `nonAlt_hε0N`,
-  `nonAlt_hdDrift0N`.
+  `goodSetN_driftClsN`, `nonAlt_hDclsN`, `nonAlt_hκ0N`, `nonAlt_hε0N`.
 * §4 the quadratic-variation constant: `qvBdNonAltN_pos`, `qvFormN_le_of_goodSetN_shiftN`,
-  `hQ_nonAltN`, `subGaussStop_nonAltN`, `cQVNonAltN_sum_pos`.
-* §5 compiled nonempty instances at `d = 3` (namespace `NQGood2Inst`) on `sz0`, with the compiled
-  bundle `GridAssemblyHypN` built from the theorems of §§3-4.
+  `hQ_nonAltN`, `cQVNonAltN_sum_pos`.
 
-## Port map (RBM2D at `c9a24cf`; `NAG` = `NonAltGood.lean`)
-
-`NonAltGood_rhoR_mul_scaleM_inv` `NAG:1143` → `nqGood2_ratio_mul_Bctl_le`; `nonAltCls` `:1168` →
-`nonAltClsN`; `kappaNonAlt` `:1174` → `kappaNonAltN`; `epsNonAlt` `:1179` → `epsNonAltN`;
-`dDriftNonAlt` `:1184` → `dDriftNonAltN`; `kappaNonAlt_mul_scale_pow_eq` `:1232` →
-`kappaNonAltN_mul_Bctl_pow_le`; `kappaNonAlt_succ_mul_scale_pow_le` `:1250` →
-`kappaNonAltN_succ_mul_Bctl_pow_le`; `nonAlt_hker` `:1272` → `nonAlt_hkerN`; `goodSetN_A0cls`
-`:1283` → `goodSetN_A0clsN`; `goodSetN_driftCls` `:1297` → `goodSetN_driftClsN`; `nonAlt_hA0cls`
-`:1317`, `nonAlt_hdrift` `:1329`, `nonAlt_hDcls` `:1341`, `nonAlt_hκ0` `:1356`,
-`nonAlt_hε0` `:1361`, `nonAlt_hdDrift0` `:1366` → the `N` versions; `qvBdNonAlt` `:1385` → `qvBdNonAltN`;
-`qvBdNonAlt_pos` `:1395` → `qvBdNonAltN_pos`; `qvFormN_le_of_goodSet_shiftN` `:1424` →
-`qvFormN_le_of_goodSetN_shiftN`; `cQVNonAlt` `:1495` → `cQVNonAltN`; `hQ_nonAlt` `:1503` →
-`hQ_nonAltN`; `subGaussStop_nonAlt` `:1532` → `subGaussStop_nonAltN`; `cQVNonAlt_sum_pos` `:1549` →
-`cQVNonAltN_sum_pos`; §6 items 3-4 (`:1883-2191`) → §5 below.
-
-Every unpinned helper is `private` or prefixed `nqGood2_`.
+Every helper that is not part of the statements is `private` or prefixed `nqGood2_`.
 -/
 
 set_option linter.style.longLine false
@@ -71,9 +48,9 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-! ## 1. The vocabulary (the six definitions of the ticket, verbatim) -/
+/-! ## 1. The vocabulary -/
 
-/-- **The kernel class of the non-alternating case** (RBM2D `nonAltCls`, `NonAltGood:1168`):
+/-- **The kernel class of the non-alternating case** (as RBM2D's `nonAltCls`):
 `Cls i δ X :⇔ δ ≤ W^{-Dc}` and `‖X b‖ ≤ δ` when `ℓ_{u_i} W^{τ'} ≤ diam_∞ b` -- exactly the hypotheses
 `hδD`, `hXcls` of `hker_of_case1N` at `s = u_i`, `D = Dc`; the radius is the `L^∞` one of `GoodSetN`. -/
 def nonAltClsN (d L : ℕ) {k : ℕ} (g W τ' Dc : ℝ) (u : ℕ → ℝ) :
@@ -81,17 +58,17 @@ def nonAltClsN (d L : ℕ) {k : ℕ} (g W τ' Dc : ℝ) (u : ℕ → ℝ) :
   fun i δ X => δ ≤ W ^ (-Dc) ∧
     ∀ b : Fin k → Zd d L, ellT L g (u i) * W ^ τ' ≤ (STdiamInf b : ℝ) → ‖X b‖ ≤ δ
 
-/-- **The kernel weight `κ_{i,m}`** (RBM2D `kappaNonAlt`, `NonAltGood:1174`): the coefficient of `M`
+/-- **The kernel weight `κ_{i,m}`** (as RBM2D's `kappaNonAlt`): the coefficient of `M`
 in `hker_of_case1N`, `W^{Cε} ((g²+|1-u_i|)/(g²+|1-u_m|))^{k-1}`, `C = nqGood1C d k Λg κ'`. -/
 def kappaNonAltN (d k : ℕ) (Λg κ' g W ε : ℝ) (u : ℕ → ℝ) (i m : ℕ) : ℝ :=
   W ^ (nqGood1C d k Λg κ' * ε) * ((g ^ 2 + |1 - u i|) / (g ^ 2 + |1 - u m|)) ^ (k - 1)
 
-/-- **The additive decay-error weight `ε_{i,m}`** (RBM2D `epsNonAlt`, `NonAltGood:1179`): the
+/-- **The additive decay-error weight `ε_{i,m}`** (as RBM2D's `epsNonAlt`): the
 coefficient of `δ` in `hker_of_case1N`, the constant `W^C`. -/
 def epsNonAltN (d k : ℕ) (Λg κ' W : ℝ) (_i _m : ℕ) : ℝ :=
   W ^ nqGood1C d k Λg κ'
 
-/-- **The variance majorant** (RBM2D `qvBdNonAlt`, `NonAltGood:1385`): the right side of
+/-- **The variance majorant** (as RBM2D's `qvBdNonAlt`): the right side of
 `nqGood1_qvFormN_le_of_bounds` at `(v, w) = (u, w)` with `M_ee = Γ(ΓΛ)B_u^{2k}/η_u + W^{-D''}` and
 `δ = W^{-D''}`. -/
 def qvBdNonAltN {d : ℕ} (sz : Sizes d) (n : ℕ) (E : ℝ) (k : ℕ)
@@ -105,21 +82,21 @@ def qvBdNonAltN {d : ℕ} (sz : Sizes d) (n : ℕ) (E : ℝ) (k : ℕ)
     ((sz.W n : ℕ) : ℝ) ^ nqGood1C d k Λg κ' *
       (((sz.W n : ℕ) : ℝ) ^ k * ((sz.W n : ℕ) : ℝ) ^ (-D''))
 
-/-- **The sub-Gaussian proxy of the `j`-th propagated increment towards `u_m`** (RBM2D `cQVNonAlt`,
-`NonAltGood:1495`): `Δ · k · qvBdNonAltN(u_{j+1}, u_m)` (the label `a` does not enter). -/
+/-- **The sub-Gaussian proxy of the `j`-th propagated increment towards `u_m`** (as RBM2D's `cQVNonAlt`):
+`Δ · k · qvBdNonAltN(u_{j+1}, u_m)` (the label `a` does not enter). -/
 def cQVNonAltN {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ) (Λg κ' ε : ℝ)
     (Γ Λ : ℕ → ℝ) (D'' : ℝ) (m : ℕ) (_a : Fin k → Zd d (sz.L n)) (j : ℕ) : ℝ≥0 :=
   (gridStep s v K n * ((k : ℝ) * qvBdNonAltN sz n (E n) k Λg κ' ε (Γ n) (Λ n) D''
     (gridTime s v K n (j + 1)) (gridTime s v K n m))).toNNReal
 
-/-! ## 2. (5.93) at `d ≥ 3` -/
+/-! ## 2. The ratio inequality at `d ≥ 3` -/
 
 section Ratio
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- **(5.93) at `d ≥ 3`** (paper `3_5:1158`: "`(ilambda²+|1-u|)/(ilambda²+|1-t|) B_{u,0} ≤ B_{t,0}`";
-RBM2D `NonAltGood_rhoR_mul_scaleM_inv`, `NonAltGood.lean:1143`, was the exact identity
+/-- **The ratio inequality at `d ≥ 3`** (proof of Lemma 4.6: "`(ilambda²+|1-u|)/(ilambda²+|1-t|) B_{u,0} ≤ B_{t,0}`";
+RBM2D's `NonAltGood_rhoR_mul_scaleM_inv` is the exact identity
 `ρ_{s,t} M_s⁻¹ = M_t⁻¹`): for `u ≤ t < 1` and every real `g = sz.lam n`,
 `((g²+|1-u|)/(g²+|1-t|)) · B_u ≤ B_t`, `B = W^{-d} B_{·,0}` (`sz.Bctl`).  The first term of `Bparam`,
 `(g²+|1-u|)⁻¹`, gives equality; the second, `(L^d|1-u|)⁻¹`, gives the defect `g²(t-u) ≥ 0`. -/
@@ -176,8 +153,8 @@ private theorem nqGood2_pow_aux {r a b : ℝ} (hr : 0 ≤ r) (ha : 0 ≤ a) (hab
           (pow_nonneg (ha.trans hab) _)
       _ = b ^ (k' + 1) := by ring
 
-/-- **(5.93), the sharp kernel on the initial datum** (RBM2D `kappaNonAlt_mul_scale_pow_eq`,
-`NonAltGood.lean:1232`, an identity there): for `u_i ≤ u_m < 1` and `0 ≤ W`,
+/-- **The ratio inequality, the sharp kernel on the initial datum** (an identity in RBM2D's
+`kappaNonAlt_mul_scale_pow_eq`): for `u_i ≤ u_m < 1` and `0 ≤ W`,
 `κ_{i,m} B_{u_i}^k ≤ W^{Cε} B_{u_m}^k` (`κ_{i,m} = W^{Cε} r_{i,m}^{k-1}`; `r^{k-1} B_u^k =
 (r B_u)^{k-1} B_u ≤ B_t^{k-1} B_t`). -/
 theorem kappaNonAltN_mul_Bctl_pow_le (n k : ℕ) (Λg κ' ε : ℝ) {W : ℝ} (hW : 0 ≤ W) (u : ℕ → ℝ)
@@ -195,8 +172,8 @@ theorem kappaNonAltN_mul_Bctl_pow_le (n k : ℕ) (Λg κ' ε : ℝ) {W : ℝ} (h
   rw [mul_assoc]
   exact mul_le_mul_of_nonneg_left (nqGood2_pow_aux hr0 hBu.le hBle hrB k) hWC
 
-/-- **(5.93), the sharp kernel on the drift** (RBM2D `kappaNonAlt_succ_mul_scale_pow_le`,
-`NonAltGood.lean:1250`): for `u_j ≤ u_{j+1} ≤ u_m < 1`, `κ_{j+1,m} B_{u_j}^k ≤ W^{Cε} B_{u_m}^k`
+/-- **The ratio inequality, the sharp kernel on the drift** (as RBM2D's `kappaNonAlt_succ_mul_scale_pow_le`):
+for `u_j ≤ u_{j+1} ≤ u_m < 1`, `κ_{j+1,m} B_{u_j}^k ≤ W^{Cε} B_{u_m}^k`
 (`B_{u_j} ≤ B_{u_{j+1}}`, `STBctl_mono`, then `kappaNonAltN_mul_Bctl_pow_le`). -/
 theorem kappaNonAltN_succ_mul_Bctl_pow_le (n k : ℕ) (Λg κ' ε : ℝ) {W : ℝ} (hW : 0 ≤ W)
     (u : ℕ → ℝ) (j m : ℕ) (hjj : u j ≤ u (j + 1)) (hj1m : u (j + 1) ≤ u m) (hm1 : u m < 1) :
@@ -236,8 +213,8 @@ private theorem nqGood2_gridTime_nonneg {s v : ℕ → ℝ} {K : ℕ → ℕ} {n
   rw [ST_gridTime_zero] at h
   linarith
 
-/-- **The field `hker` for non-alternating `σ`, `d ≥ 3`** (RBM2D `nonAlt_hker`,
-`NonAltGood.lean:1272`; the merged `hker_of_case1N`, i.e. EK-6, in the shape of the field of
+/-- **The field `hker` for non-alternating `σ`, `d ≥ 3`** (as RBM2D's `nonAlt_hker`;
+`hker_of_case1N` in the shape of the field of
 `GridAssemblyHypN`, `Cls = nonAltClsN`, `κ = kappaNonAltN`, `εK = epsNonAltN`): for `u` nonnegative and
 monotone on `[0, K]`, `u_K ≤ 1 - g²/L²`, `W⁻¹ ≤ (1-u_K)/(1-u_0)` (so `W⁻¹ ≤ (1-u_m)/(1-u_i)` for
 `i ≤ m ≤ K`), `|E| ≤ 2`, `κ' ≤ Im m(E)` and `σ` with `σ_i = σ_{i+1}` for some `i`:
@@ -272,10 +249,10 @@ theorem nonAlt_hkerN {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤ k) (
     (hmono i m him hmK) (hmK'.trans huK) hwin hE hκm hσ X hM hδ hδD hXM hXcls a
   exact h
 
-/-- **The field `hA0cls`** (RBM1D `kerClass_A0`, `:1239`; RBM2D `goodSetN_A0cls`,
-`NonAltGood.lean:1283`), matrix level: for `M ∈ GoodSetN … u_i`, `1 ≤ k` and `Dc ≤ D'`, the tensor
-`a ↦ (𝓛-𝒦)_{u_i,σ,a}(M)` is in the class `nonAltClsN … i` with `δ = W^{-D'}` (clause (Dec) at
-length `k ≤ 2k+2`; `W^{-D'} ≤ W^{-Dc}` as `1 ≤ W`). -/
+/-- **The field `hA0cls`** (as RBM2D's `goodSetN_A0cls`), matrix level: for `M ∈ GoodSetN … u_i`,
+`1 ≤ k` and `Dc ≤ D'`, the tensor
+`a ↦ (𝓛-𝒦)_{u_i,σ,a}(M)` is in the class `nonAltClsN … i` with `δ = W^{-D'}` (the decay clause of
+`GoodSetN` at length `k ≤ 2k+2`; `W^{-D'} ≤ W^{-Dc}` as `1 ≤ W`). -/
 theorem goodSetN_A0clsN {n k : ℕ} (hk : 1 ≤ k) {E Γ Λ Φ τ' D' Dc : ℝ} (hDc : Dc ≤ D')
     (hW : 1 ≤ ((sz.W n : ℕ) : ℝ)) {u : ℕ → ℝ} {i : ℕ}
     {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
@@ -292,8 +269,8 @@ theorem goodSetN_A0clsN {n k : ℕ} (hk : 1 ≤ k) {E Γ Λ Φ τ' D' Dc : ℝ} 
   have h0 : 0 ≤ ‖loopFine d (sz.L n) (sz.W n) M (zt E (u i)) σ b‖ := norm_nonneg _
   linarith
 
-/-- **The field `hA0cls` on the event `{H_0 ∈ GoodSetN(u_0)}`** (RBM2D `nonAlt_hA0cls`,
-`NonAltGood.lean:1317`): on `{0 < τ}` the initial tensor `A_0 = (𝓛-𝒦)_{u_0}(H_0)` is in the class
+/-- **The field `hA0cls` on the event `{H_0 ∈ GoodSetN(u_0)}`** (as RBM2D's `nonAlt_hA0cls`):
+on `{0 < τ}` the initial tensor `A_0 = (𝓛-𝒦)_{u_0}(H_0)` is in the class
 `nonAltClsN` with radius `ℓ_{u_0} W^{τ'}` and `δ_0 = W^{-D'}`. -/
 theorem nonAlt_hA0clsN {n k : ℕ} (hk : 1 ≤ k) (hW : 1 ≤ ((sz.W n : ℕ) : ℝ)) (σ : Fin k → Bool)
     (E s v : ℕ → ℝ) (K : ℕ → ℕ) (Γ Λ Φ : ℕ → ℝ) (τ' D' Dc : ℝ) (hDc : Dc ≤ D')
@@ -304,10 +281,10 @@ theorem nonAlt_hA0clsN {n k : ℕ} (hk : 1 ≤ k) (hW : 1 ≤ ((sz.W n : ℕ) : 
       (((sz.W n : ℕ) : ℝ) ^ (-D')) (AvecN sz E s v K n 0 σ ω) :=
   fun ω hω => goodSetN_A0clsN sz hk hDc hW (hτG ω 0 hω) σ
 
-/-- **The field `hDcls`** (RBM1D `kerClass_drift`, `:1265`; RBM2D `goodSetN_driftCls`,
-`NonAltGood.lean:1297`), matrix level: the drift tensor at `u_i` of `M ∈ GoodSetN … u_i` is in the
-class `nonAltClsN … i'` of radius `ℓ_{u_{i'}} W^{τ'}`, `δ = W^{-D'}`, for `u_i ≤ u_{i'} < 1` (clause
-(Va) at `u_i`; the radius `ℓ_{u_i} W^{τ'} ≤ ℓ_{u_{i'}} W^{τ'}` only grows,
+/-- **The field `hDcls`** (as RBM2D's `goodSetN_driftCls`), matrix level: the drift tensor at `u_i` of
+`M ∈ GoodSetN … u_i` is in the
+class `nonAltClsN … i'` of radius `ℓ_{u_{i'}} W^{τ'}`, `δ = W^{-D'}`, for `u_i ≤ u_{i'} < 1` (the
+far-label clause of the drift at `u_i`; the radius `ℓ_{u_i} W^{τ'} ≤ ℓ_{u_{i'}} W^{τ'}` only grows,
 `nqGood1_ellT_mono`, for every real `g`). -/
 theorem goodSetN_driftClsN {n k : ℕ} {E Γ Λ Φ τ' D' Dc : ℝ} (hDc : Dc ≤ D')
     (hW : 1 ≤ ((sz.W n : ℕ) : ℝ)) {u : ℕ → ℝ} {i i' : ℕ} (hii' : u i ≤ u i') (hi'1 : u i' < 1)
@@ -321,7 +298,7 @@ theorem goodSetN_driftClsN {n k : ℕ} {E Γ Λ Φ τ' D' Dc : ℝ} (hDc : Dc �
     nqGood1_ellT_mono _ _ hii' hi'1
   exact driftTensorN_far_of_goodSet sz hM σ b ((mul_le_mul_of_nonneg_right hrad hWτ).trans hfar)
 
-/-- **The field `hDcls` on the event** (RBM2D `nonAlt_hDcls`, `NonAltGood.lean:1341`): the drift
+/-- **The field `hDcls` on the event** (as RBM2D's `nonAlt_hDcls`): the drift
 tensor at `(u_j, H_j)` is in the class `nonAltClsN` at index `j + 1` (radius `ℓ_{u_{j+1}} W^{τ'}`) with
 `δ_D = W^{-D'}`. -/
 theorem nonAlt_hDclsN {n k : ℕ} (E s v : ℕ → ℝ) (K : ℕ → ℕ) (hsv : s n ≤ v n) (hv1 : v n < 1)
@@ -340,13 +317,13 @@ theorem nonAlt_hDclsN {n k : ℕ} (E s v : ℕ → ℝ) (K : ℕ → ℕ) (hsv :
     (nqGood2_gridTime_le hsv (show j + 1 ≤ K n by omega)).trans_lt hv1
   exact goodSetN_driftClsN sz hDc hW hjj hu1 (hτG ω j hjτ) σ
 
-/-- The non-negativity field `hκ0` of `GridAssemblyHypN` (RBM2D `nonAlt_hκ0`, `NonAltGood.lean:1356`;
+/-- The non-negativity field `hκ0` of `GridAssemblyHypN` (as RBM2D's `nonAlt_hκ0`;
 no condition on the grid but `0 ≤ W`: `κ_{i,m} = W^{Cε} r^{k-1}`, `r ≥ 0`). -/
 theorem nonAlt_hκ0N (d k : ℕ) (Λg κ' g W ε : ℝ) (hW : 0 ≤ W) (K : ℕ) (u : ℕ → ℝ) :
     ∀ i m, i ≤ m → m ≤ K → 0 ≤ kappaNonAltN d k Λg κ' g W ε u i m :=
   fun i m _ _ => nqGood2_kappaNonAltN_nonneg d k Λg κ' g W ε hW u i m
 
-/-- The non-negativity field `hε0` of `GridAssemblyHypN` (RBM2D `nonAlt_hε0`, `NonAltGood.lean:1361`):
+/-- The non-negativity field `hε0` of `GridAssemblyHypN` (as RBM2D's `nonAlt_hε0`):
 `ε_{i,m} = W^C ≥ 0`. -/
 theorem nonAlt_hε0N (d k : ℕ) (Λg κ' W : ℝ) (hW : 0 ≤ W) (K : ℕ) :
     ∀ i m, i ≤ m → m ≤ K → 0 ≤ epsNonAltN d k Λg κ' W i m :=
@@ -358,10 +335,10 @@ end Fields
 
 section QVConst
 
-/-- `0 < qvBdNonAltN` (RBM2D `qvBdNonAlt_pos`, `NonAltGood.lean:1395`): the last term
+/-- `0 < qvBdNonAltN` (as RBM2D's `qvBdNonAlt_pos`): the last term
 `W^C W^k W^{-D''}` is positive and the others are nonnegative (`ratio ≥ 0`, `Γ(ΓΛ) = Γ²Λ ≥ 0`,
 `η_u = (1-u) Im m(E) ≥ 0` for `u ≤ 1`, as `Im m(E) = √(4-E²)/2 ≥ 0` for every real `E`; `W > 0` is
-`sz.W_pos`).  No energy condition is needed (paper-delta candidate `T2167e`). -/
+`sz.W_pos`).  No energy condition is needed. -/
 theorem qvBdNonAltN_pos {d : ℕ} (sz : Sizes d) (n : ℕ) {E : ℝ} {k : ℕ}
     {Λg κ' ε Γ Λ D'' u w : ℝ} (hΛ : 0 ≤ Λ) (hu1 : u ≤ 1) :
     0 < qvBdNonAltN sz n E k Λg κ' ε Γ Λ D'' u w := by
@@ -387,15 +364,16 @@ theorem qvBdNonAltN_pos {d : ℕ} (sz : Sizes d) (n : ℕ) {E : ℝ} {k : ℕ}
       (mul_nonneg hWC.le hWD.le)))
     (mul_pos hWC (mul_pos (pow_pos hWp k) hWD))
 
-/-- **The variance majorant of `AzumaSubGN` after the spectral-time shift `u → u'`** (RBM1D
-`hqv514`, `:1446`; RBM2D `qvFormN_le_of_goodSet_shiftN`, `NonAltGood.lean:1424`): for
+/-- **The variance majorant of `AzumaSubGN` after the spectral-time shift `u → u'`** (as RBM2D's
+`qvFormN_le_of_goodSet_shiftN`): for
 `M ∈ GoodSetN(u)` (levels `Γ, Λ, Φ`, decay `τ', D'`), `0 ≤ u ≤ u' ≤ w ≤ 1 - g²/L²`,
 `W⁻¹ ≤ (1-w)/(1-u')`, non-alternating `σ`, `k + 1 < D''` and the shift hypothesis
 `W^{-D'} + eeShiftErrN(u, u') ≤ W^{-D''}`,
-`qvFormN_{u',w}(M)(a) ≤ qvBdNonAltN(u', w)`.  Route: `nqGood1_qvFormN_le_of_bounds` at `v = u'` with
-`M_ee = Γ(ΓΛ)B_{u'}^{2k}/η_{u'} + W^{-D''}` (from (D4) at `u`, `norm_STeeM_shiftN_le`, `STBctl_mono`,
-`etaT_le_of_le`) and `δ = W^{-D''}` (from (Vb) at `u`, `nqGood1_ellT_mono` and the shift).  The
-hypothesis `0 ≤ Γ` of the ticket is not used (`Γ(ΓΛ) = Γ²Λ`). -/
+`qvFormN_{u',w}(M)(a) ≤ qvBdNonAltN(u', w)`.  Proof: `nqGood1_qvFormN_le_of_bounds` at `v = u'` with
+`M_ee = Γ(ΓΛ)B_{u'}^{2k}/η_{u'} + W^{-D''}` (from the bound on `STeeM` in `GoodSetN` at `u`,
+`norm_STeeM_shiftN_le`, `STBctl_mono`, `etaT_le_of_le`) and `δ = W^{-D''}` (from the far-label decay of
+`(ℰ⊗ℰ)^M` in `GoodSetN` at `u`, `nqGood1_ellT_mono` and the shift).  The
+hypothesis `0 ≤ Γ` is not used (`Γ(ΓΛ) = Γ²Λ`). -/
 theorem qvFormN_le_of_goodSetN_shiftN {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤ k)
     (hΛg : 0 < Λg) (hκ' : 0 < κ') (sz : Sizes d) (n : ℕ) (hg : 0 < sz.lam n)
     (hgΛ : sz.lam n ≤ Λg) {ε τ' D' D'' : ℝ} (hW : 1 < ((sz.W n : ℕ) : ℝ)) (hε0 : 0 < ε)
@@ -474,8 +452,8 @@ theorem qvFormN_le_of_goodSetN_shiftN {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d)
   unfold qvBdNonAltN
   exact key
 
-/-- **The majorant `hQ` of `azumaProxy_subG_goodExit` on the good set** (RBM2D `hQ_nonAlt`,
-`NonAltGood.lean:1503`; RBM1D `hqv514`, `:1446`, the deterministic part): for `M ∈ GoodSetN(u_j)`
+/-- **The majorant `hQ` of `azumaProxy_subG_ugen` on the good set** (as RBM2D's `hQ_nonAlt`; the
+deterministic part): for `M ∈ GoodSetN(u_j)`
 Hermitian, `Δ · (k · qvFormN_{u_{j+1},u_m}(M)) ≤ cQVNonAltN`, under the shift hypothesis
 `W^{-D'} + eeShiftErrN(u_j, u_{j+1}) ≤ W^{-D''}`.  All hypotheses are at the fixed `n`; the window
 `W⁻¹ ≤ (1-v_n)/(1-s_n)` and `v_n ≤ 1 - g²/L²` give those of the shifted majorant for every
@@ -519,9 +497,8 @@ theorem hQ_nonAltN {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤ k) (h�
   refine le_trans ?_ (Real.le_coe_toNNReal _)
   exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hq (Nat.cast_nonneg _)) hΔ
 
-/-- **The field `hc_pos`** (RBM1D `cQV514_sum_pos`, `:1511`; RBM2D `cQVNonAlt_sum_pos`,
-`NonAltGood.lean:1549`): `Σ_{j<m} c_j > 0` for `Δ > 0`, i.e. `s_n < v_n`, `K_n ≠ 0` (the field needs
-the strict window; `AssembledN` gives only `0 ≤ Δ`). -/
+/-- **The field `hc_pos`** (as RBM2D's `cQVNonAlt_sum_pos`): `Σ_{j<m} c_j > 0` for `Δ > 0`, i.e. `s_n < v_n`,
+`K_n ≠ 0` (the field needs the strict window; `AssembledN` gives only `0 ≤ Δ`). -/
 theorem cQVNonAltN_sum_pos {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : ℕ → ℕ) (n k : ℕ)
     (Λg κ' ε : ℝ) (hk : 1 ≤ k) (hsv : s n < v n) (hv1 : v n < 1)
     (hK : K n ≠ 0) (Γ Λ : ℕ → ℝ) (hΛ : 0 ≤ Λ n) (D'' : ℝ) :
@@ -545,27 +522,6 @@ theorem cQVNonAltN_sum_pos {d : ℕ} (sz : Sizes d) (E s v : ℕ → ℝ) (K : �
 
 end QVConst
 
-/-! ## 5. Compiled nonempty instances at `d = 3`
-
-Data (the merged instance data of `GridGoodN` §7 and `AzumaProxyN` §6, and `NQGood1` §6): `sz0` (`n = 0`:
-`L = 4`, `W = 32`, `lam = 1/64`), `E ≡ 1/2` (`Im m = √15/4 ≈ 0.968`), `s ≡ 0`, `v ≡ 1/32`, `K ≡ 4` (`Δ = 1/128`,
-`u_j = j/128`), `k = 3`, `σ = (+,-,+)` (`σ_2 = σ_0` cyclically: non-alternating), levels `(Γ, Λ, Φ) =
-(4, 3, 1)` (D366: `Γ²Λ = 48 ≥ 3(1+g²)^6`; `zero_mem_goodSetN_inst_grid`), `τ' = 1/5`, `ε = 4/5`
-(`W^ε = 16`, `W^{τ'} = 2`, `d W^{τ'} = 6 ≤ 16`), `D' = Dc = 6`, `D'' = 5`, `Λ_g = 10`, `κ' = 1/2`; the
-exit time is `τ = goodExitTauN … (1/5) 6 0` and the label vector of the far clauses is `aFar` (`diam_∞ = 2`).
-The constant `C = nqGood1C 3 3 10 (1/2)` stays abstract (`Classical.choose` of EK-6; only `C > 0` is
-known), so every instance holds for the actual `C`. -/
-
-/-! ### Target 2: (5.93) at `d ≥ 3` -/
-
-/-! ### Target 3: the fields of `GridAssemblyHypN` -/
-
-/-! ### Target 4: the quadratic-variation constant -/
-
-/-! ### The bundle `GridAssemblyHypN` at the data, built from the theorems of §§3-4 -/
-
 end RBM.Ind
 
 end
-
-/-! ## 6. Axioms -/

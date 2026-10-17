@@ -8,51 +8,30 @@ import RBM3D.Induction.GridEnvelopeN
 import RBM3D.Induction.ContinuityNet
 
 /-!
-# The term budgets of the non-alternating assembled bound at the `d ≥ 3` data of S3-10b
+# The term budgets of the non-alternating assembled bound at the `d ≥ 3` data of `NQGood2`
 
-Ticket T2179 (S3-11, stochastic layer ST-3).  Port of RBM2D `Induction/NonAltBudget.lean`, sections
-1-5b (`NAB:57-839`, commit `c9a24cf`), on the merged S3-10b (`Induction/NQGood2`): the sharp
-identity `ρ_{s,t} M_s⁻¹ = M_t⁻¹` of d = 2 is the merged inequality (5.93)
-`nqGood2_ratio_mul_Bctl_le` (`scaleM⁻¹ ↦ Bctl`), the kernel weights are `W^{Cε} r^{k-1}` and
-`W^C` with `C = nqGood1C` (abstract), the drift level has no additive part, and the budget gains
-the `Φ²` term of (D2).
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`), `lem:STOeq_NQ`
-(`3_5:1136`, proof `3_5:1152`), (5.93) (`3_5:1158`).
+Generic budgets for the initial, drift and quadratic-variation terms of the non-alternating assembled
+bound, and their instances at the data of `Induction/NQGood2` (the `d ≥ 3` form of RBM2D's
+`NonAltBudget`).  The ratio inequality `nqGood2_ratio_mul_Bctl_le`
+(`((ℓ²+|1-u|)/(ℓ²+|1-t|)) B_{u,0} ≤ B_{t,0}`, used in the proof of Lemma 4.6 `lem:STOeq_NQ`) takes the
+place of the two-dimensional identity `ρ_{s,t} M_s⁻¹ = M_t⁻¹` (`scaleM⁻¹ ↦ Bctl`); the kernel weights
+are `W^{Cε} r^{k-1}` and `W^C` with `C = nqGood1C` (abstract), and the drift level has no additive
+part.
+Paper: Lemma 4.6 (`lem:STOeq_NQ`) and its proof.
 
 ## Sections (namespace `RBM.Ind`)
 
-1. The vocabulary (the four definitions of the ticket, verbatim): `assembledRHSNonAltN`,
-   `nqBudget_qvShape`, `nqBudget_kapFar`, `nqBudget_qvFar`.
-2. Elementary facts (public, prefix `nqBudget_`): `nqBudget_im_le_one`, `nqBudget_inv_one_sub_le`,
+1. The vocabulary: `nqBudget_qvShape`, `nqBudget_kapFar`, `nqBudget_qvFar`.
+2. Elementary facts (prefix `nqBudget_`): `nqBudget_im_le_one`, `nqBudget_inv_one_sub_le`,
    `nqBudget_sum_succ_le`, `nqBudget_sqrt_add_le`, `nqBudget_kappa_le_kapFar`.
 3. Generic budgets for abstract kernel weights (`B : ℕ → ℝ` the scale sequence): `tbInitN`,
    `tbDriftN`, `tbQvN`.
-4. Their instances at the S3-10b data and the budget: `qvBdNonAltN_eq_qvShape`, `tbInitNonAltN`,
-   `tbDriftNonAltN`, `tbQvNonAltN`, `budgetNonAltN`.
-5. `nqBudget_merged_inputs`: `hlog`, `hR` of `budgetNonAltN` are the conclusions of the merged
-   `sum_gridStep_div_etaT_le`, `sum_weighted_stepErrN_le` at `m = K n`.
-6. Compiled nonempty instances (namespace `NQBudgetInst`) at `d = 3`, `sz0`, `n = 0`.
+4. Their instances at the data of `NQGood2`: `qvBdNonAltN_eq_qvShape`, `tbInitNonAltN`,
+   `tbQvNonAltN`.
+5. `nqBudget_merged_inputs`: the two summation bounds `hlog`, `hR` of the assembled budget are the
+   conclusions of `sum_gridStep_div_etaT_le`, `sum_weighted_stepErrN_le` at `m = K n`.
 
-## Port map (RBM2D at `c9a24cf`; `NAB` = `Induction/NonAltBudget.lean`)
-
-`assembledRHSNonAlt` `NAB:57` → `assembledRHSNonAltN`; `NonAltBudget_im_le_one` `:77` →
-`nqBudget_im_le_one`; `NonAltBudget_inv_one_sub_le` `:105` → `nqBudget_inv_one_sub_le`;
-`NonAltBudget_sum_succ_le` `:139` → `nqBudget_sum_succ_le`; `NonAltBudget_sqrt_add_le` `:146` →
-`nqBudget_sqrt_add_le`; `NonAltBudget_absorb` `:158` → `nqBudget_absorb` (private); `tbInit` `:173`
-→ `tbInitN`; `tbDrift` `:189` → `tbDriftN`; `NonAltBudget_qvShape` `:240` → `nqBudget_qvShape`;
-`NonAltBudget_qv_step` `:247` → inlined in `tbQvN`; `tbQv` `:307` → `tbQvN`; `tbInitNonAlt` `:386`
-→ `tbInitNonAltN`; `NonAltBudget_far_kappa` `:415` → `nqBudget_kappa_le_kapFar` (the far bound is
-`r ≤ (1+g²)(1-u_m)⁻¹ ≤ (1+g²)N`, not `M_j ≤ N`); `tbDriftNonAlt` `:446` → `tbDriftNonAltN`;
-`NonAltBudget_qvBdNonAlt_eq_qvShape` `:506` → `qvBdNonAltN_eq_qvShape`; `tbQvNonAlt` `:516` →
-`tbQvNonAltN`; `budgetNonAlt` `:587` → `budgetNonAltN`; `NonAltBudget_merged_inputs` `:815` →
-`nqBudget_merged_inputs`.
-Not ported: `NonAltBudget_far_eps` `:432` (`ε_{i,m} = W^C` is constant at `d ≥ 3`),
-`NonAltBudget_scaleM_le`, `_scaleM_le_size`, `_size_eq` (`M_u ≤ N` becomes
-`N⁻¹ ≤ B_u`, `cont_inv_size_le_Bctl`), `_cCase1_nonneg`, `_cPair1_nonneg`, `_cKap`, `_aQv` (no such
-constants at `d ≥ 3`), and the §6 numerical facts about `cCase1 3 1`, `cPair1 3 1`, `log 3`,
-`gridK sizes 28 2`.
-
-Every unpinned helper is `private` or prefixed `nqBudget_`.
+Every helper that is not part of the statements is `private` or prefixed `nqBudget_`.
 -/
 
 set_option linter.style.longLine false
@@ -68,10 +47,10 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-! ## 1. The vocabulary (the four definitions of the ticket, verbatim) -/
+/-! ## 1. The vocabulary -/
 
-/-- **The shape of the quadratic-variation majorant** (RBM2D `NonAltBudget_qvShape`,
-`NonAltBudget.lean:240`, at `d ≥ 3`): `κ(κ(G B^{2k}/η + Wd) + Ce Wd) + Cc Wd`; `qvBdNonAltN` is the
+/-- **The shape of the quadratic-variation majorant** (the `d ≥ 3` form of RBM2D's `NonAltBudget_qvShape`):
+`κ(κ(G B^{2k}/η + Wd) + Ce Wd) + Cc Wd`; `qvBdNonAltN` is the
 case `κ = W^{Cε} r^{k-1}`, `Ce = W^C`, `Cc = W^C W^k`, `G = Γ(ΓΛ)`, `Wd = W^{-D''}`, `B = B_u`, `η = η_u`. -/
 def nqBudget_qvShape (k : ℕ) (κ Ce Cc G Wd B η : ℝ) : ℝ :=
   κ * (κ * (G * (B ^ (2 * k) / η) + Wd) + Ce * Wd) + Cc * Wd
@@ -116,7 +95,7 @@ theorem nqBudget_inv_one_sub_le {E v Nn : ℝ} (hE : |E| < 2) (hv1 : v < 1)
     positivity
   nlinarith
 
-/-- Reindexing the time sum (RBM1D `sum_succ_le`): `Σ_{j<K} f(j+1) ≤ Σ_{j<K} f j + f K` for
+/-- Reindexing the time sum: `Σ_{j<K} f(j+1) ≤ Σ_{j<K} f j + f K` for
 `0 ≤ f 0`. -/
 theorem nqBudget_sum_succ_le {K : ℕ} (f : ℕ → ℝ) (hf0 : 0 ≤ f 0) :
     ∑ j ∈ Finset.range K, f (j + 1) ≤ ∑ j ∈ Finset.range K, f j + f K := by
@@ -124,7 +103,7 @@ theorem nqBudget_sum_succ_le {K : ℕ} (f : ℕ → ℝ) (hf0 : 0 ≤ f 0) :
   have h2 := Finset.sum_range_succ f K
   linarith
 
-/-- `√(x + y) ≤ √x + √y` for `x, y ≥ 0` (RBM1D `sqrt_add_le514`). -/
+/-- `√(x + y) ≤ √x + √y` for `x, y ≥ 0`. -/
 theorem nqBudget_sqrt_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     Real.sqrt (x + y) ≤ Real.sqrt x + Real.sqrt y := by
   have h : x + y ≤ (Real.sqrt x + Real.sqrt y) ^ 2 := by
@@ -136,8 +115,7 @@ theorem nqBudget_sqrt_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     _ = Real.sqrt x + Real.sqrt y :=
         Real.sqrt_sq (add_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
 
-/-- **The far bound of the kernel weight** (RBM2D `NonAltBudget_far_kappa`, `:415`, there for
-`κ M^{-k} ≤ C_κ M_K^{-k}`): for `0 ≤ u_i ≤ u_m < 1` and `(1-u_m)⁻¹ ≤ N`,
+/-- **The far bound of the kernel weight**: for `0 ≤ u_i ≤ u_m < 1` and `(1-u_m)⁻¹ ≤ N`,
 `κ_{i,m} = W^{Cε} r_{i,m}^{k-1} ≤ W^{Cε} ((1+g²) N)^{k-1}` (`r_{i,m} ≤ (1+g²)(1-u_m)⁻¹`), for every
 real `g = sz.lam n`. -/
 theorem nqBudget_kappa_le_kapFar {d : ℕ} (sz : Sizes d) (n k : ℕ) (Λg κ' ε : ℝ) (u : ℕ → ℝ)
@@ -181,9 +159,8 @@ end Basic
 
 section Generic
 
-/-- **Generic initial term** (RBM2D `tbInit`, `NonAltBudget.lean:173`; RBM1D `tb_init`, `:2863`),
-with `(scaleM^k)⁻¹ ↦ B^k`: for weights `κ` with `κ(0,K) B_0^k ≤ C_κ B_K^k` and an initial supremum
-`X0 ≤ G B_0^k`, `κ(0,K) X0 ≤ C_κ G B_K^k`. -/
+/-- **Generic initial term** (the form of RBM2D's `tbInit`): for weights `κ` with
+`κ(0,K) B_0^k ≤ C_κ B_K^k` and an initial supremum `X0 ≤ G B_0^k`, `κ(0,K) X0 ≤ C_κ G B_K^k`. -/
 theorem tbInitN {k K : ℕ} {Cκ G X0 : ℝ} (B : ℕ → ℝ) (κ : ℕ → ℕ → ℝ)
     (hκ0 : 0 ≤ κ 0 K) (hG : 0 ≤ G)
     (hker : κ 0 K * B 0 ^ k ≤ Cκ * B K ^ k) (hX0 : X0 ≤ G * B 0 ^ k) :
@@ -193,8 +170,8 @@ theorem tbInitN {k K : ℕ} {Cκ G X0 : ℝ} (B : ℕ → ℝ) (κ : ℕ → ℕ
     _ ≤ G * (Cκ * B K ^ k) := mul_le_mul_of_nonneg_left hker hG
     _ = _ := by ring
 
-/-- **Generic drift term** (RBM2D `tbDrift`, `NonAltBudget.lean:189`; RBM1D `tb_drift`, `:2539`),
-with `(scaleM^k)⁻¹ ↦ B^k`: for weights `κ, ε` with `κ(j+1,K) B_j^k ≤ C_κ B_K^k`,
+/-- **Generic drift term** (the form of RBM2D's `tbDrift`): for weights `κ, ε` with
+`κ(j+1,K) B_j^k ≤ C_κ B_K^k`,
 `κ(j+1,K) ≤ C_far`, `ε(j+1,K) ≤ C_ε` and drift levels `d_j ≤ a (B_j^k / η_{u_j}) + b`,
 `0 ≤ δ_j ≤ δ_max`: `Δ Σ_{j<K} (κ(j+1,K) d_j + ε(j+1,K) δ_j) ≤
 C_κ a B_K^k Σ_j Δ/η_{u_j} + (K Δ)(C_far b + C_ε δ_max)`. -/
@@ -241,8 +218,8 @@ theorem tbDriftN {E : ℝ} {k K : ℕ} {Δ Cκ Cε Cfar a b δmax : ℝ} (u B : 
     nsmul_eq_mul]
   ring
 
-/-- **Generic quadratic-variation term** (RBM2D `tbQv`, `NonAltBudget.lean:307`; RBM1D `tb_qv`,
-`:2748`; the proxies are `c_j = Δ k nqBudget_qvShape(κ_j, …, B_{j+1}, η_{u_{j+1}})`): for weights
+/-- **Generic quadratic-variation term** (the form of RBM2D's `tbQv`; the proxies are
+`c_j = Δ k nqBudget_qvShape(κ_j, …, B_{j+1}, η_{u_{j+1}})`): for weights
 `0 ≤ κ_j ≤ C_far` with `κ_j B_{j+1}^k ≤ C_κ B_K^k`,
 `Σ_{j<K} Δ k qvShape ≤ k C_κ² G (B_K^k)² Σ_j Δ/η_{u_{j+1}} +
 (K Δ) k ((C_far (C_far + C_e) + C_c) Wd)`. -/
@@ -296,7 +273,7 @@ theorem tbQvN {E : ℝ} {k K : ℕ} {Cκ Cfar Ce Cc G Wd Δ : ℝ} (u B κ : ℕ
 
 end Generic
 
-/-! ## 4. The generic budgets at the data of S3-10b, and the budget -/
+/-! ## 4. The generic budgets at the data of `NQGood2` -/
 
 section Instances
 
@@ -315,8 +292,7 @@ private theorem nqBudget_gridTime_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : 
   (ST_gridTime_mono s v K n hsv hi).trans_eq (gridTime_last s v K n hK)
 
 /-- **`qvBdNonAltN` has the shape `nqBudget_qvShape`** with `κ = W^{Cε} r^{k-1}`, `Ce = W^C`,
-`Cc = W^C W^k`, `G = Γ(ΓΛ)`, `Wd = W^{-D''}`, `B = B_u`, `η = η_u` (RBM2D
-`NonAltBudget_qvBdNonAlt_eq_qvShape`, `:506`). -/
+`Cc = W^C W^k`, `G = Γ(ΓΛ)`, `Wd = W^{-D''}`, `B = B_u`, `η = η_u`. -/
 theorem qvBdNonAltN_eq_qvShape (n k : ℕ) (E : ℝ) (Λg κ' ε Γ Λ D'' u w : ℝ) :
     qvBdNonAltN sz n E k Λg κ' ε Γ Λ D'' u w =
       nqBudget_qvShape k
@@ -328,7 +304,7 @@ theorem qvBdNonAltN_eq_qvShape (n k : ℕ) (E : ℝ) (Λg κ' ε Γ Λ D'' u w :
   unfold qvBdNonAltN nqBudget_qvShape
   ring
 
-/-- **The initial term at the data of S3-10b** (RBM2D `tbInitNonAlt`, `:386`): `κ_{0,K} X0 ≤
+/-- **The initial term at the data of `NQGood2`**: `κ_{0,K} X0 ≤
 W^{Cε} G B_v^k` for `X0 ≤ G B_{s}^k` (`kappaNonAltN_mul_Bctl_pow_le`).  `|E n| < 2` is not needed. -/
 theorem tbInitNonAltN {s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Λg κ' ε G X0 : ℝ)
     (hs0 : 0 ≤ s n) (hsv : s n ≤ v n) (hv1 : v n < 1) (hK : K n ≠ 0) (hG : 0 ≤ G)
@@ -349,7 +325,7 @@ theorem tbInitNonAltN {s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Λg κ'
     (by simpa only [hu0, huK] using hker) (by simpa only [hu0] using hX0)
   simpa only [huK] using h
 
-/-- **The quadratic-variation term at the data of S3-10b** (RBM2D `tbQvNonAlt`, `:516`): the sum of
+/-- **The quadratic-variation term at the data of `NQGood2`**: the sum of
 the sub-Gaussian proxies `cQVNonAltN` at the target `u_K = v` is at most
 `k (W^{Cε})² Γ(ΓΛ) (B_v^k)² Σ_j Δ/η_{u_{j+1}} + (KΔ) k (nqBudget_qvFar W^{-D''})`
 (`toNNReal` removed by `qvBdNonAltN_pos`). -/
@@ -414,13 +390,11 @@ theorem tbQvNonAltN {E s v : ℕ → ℝ} {K : ℕ → ℕ} (n k : ℕ) (Λg κ'
 
 end Instances
 
-/-! ## 4b. The budget `budgetNonAltN` -/
+/-! ## 5. The two summation bounds of the assembled budget
 
-/-! ## 5. The merged inputs `hlog`, `hR` are the conclusions of merged theorems
-
-`hlog` and `hR` of `budgetNonAltN` are, at each `n`, exactly the conclusions of the merged
-`sum_gridStep_div_etaT_le` and `sum_weighted_stepErrN_le` (at `m = K n`): the theorem below is the
-compiled interface for S3-12 (the side conditions are those of the two merged theorems). -/
+`hlog` and `hR` of the assembled budget are, at each `n`, exactly the conclusions of
+`sum_gridStep_div_etaT_le` and `sum_weighted_stepErrN_le` (at `m = K n`); the theorem below states them
+(the side conditions are those of the two theorems). -/
 
 section MergedInputs
 
@@ -448,32 +422,6 @@ theorem nqBudget_merged_inputs {d : ℕ} (sz : Sizes d) {κ τ' τK C_K D_t : �
   exact ⟨hn1, hn2 (K n) le_rfl⟩
 
 end MergedInputs
-
-/-! ## 6. Compiled nonempty instances at `d = 3`
-
-Data (the merged instance data of `GridGoodN` §7, `AzumaProxyN` §6, `NQGood1` §6, `NQGood2` §5):
-`sz0` (`n = 0`: `L = 4`, `W = 32`, `N = 2^21`, `lam = 1/64`), `E ≡ 1/2` (`Im m = √15/4 ≈ 0.968`),
-`s ≡ 0`, `v ≡ 1/32`, `K ≡ 4` (`Δ = 1/128`, `u_j = j/128`), `k = 3`, `Λ_g = 10`, `κ' = 1/2`,
-`ε = 4/5`, levels `(Γ, Λ, Φ) = (4, 3, 1)`, `D' = 6`, `D'' = 5`, label `aFar`.  The constant
-`C = nqGood1C 3 3 10 (1/2)` stays abstract (only `C > 0` is known), so every instance holds for the
-actual `C`; the exponent `ε₀ = C + 12` of the budget is chosen so that all seven absorption
-inequalities hold for every `C > 0` (the left sides grow at most like `2^{5C}` against `2^{21C}`).
-Part (a): the three generic budgets with constant weights.  Part (b): targets 2 and 4 (except the
-budget) at the S3-10b data.  Part (c): `budgetNonAltN`, every hypothesis discharged (`hlog`, `hR`
-included).  Part (d): `nqBudget_merged_inputs` at the data of `GridEnvelopeNCheck`. -/
-
-/-! ### (a) The three generic budgets, constant weights `κ ≡ 2`, `ε ≡ 1`, at
-`u = gridTime sInst vg Kg 0` and `B i = sz0.Bctl 0 (u i)` -/
-
-/-! ### (b) Targets 2 and 4 (except the budget) at the data of S3-10b -/
-
-/-! ### (c) `budgetNonAltN` at the data: grid facts, powers of `2`, `hR`, `hlog`, `ha1`-`he4` -/
-
-/-! ### `hR` at the data -/
-
-/-! ### `hlog` and the seven absorption inequalities at the data, for every `C > 0` -/
-
-/-! ### (d) `nqBudget_merged_inputs` at the data of `GridEnvelopeNCheck` -/
 
 end RBM.Ind
 

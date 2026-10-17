@@ -6,27 +6,26 @@ Authors: Jun Yin
 import RBM3D.Induction.LocalAvg1
 
 /-!
-# ST2-17 (ticket T2130, part 2): `(Gt_bound_flow)` and the pin `STLocalAvgOfL2`
+# `(Gt_bound_flow)` and the statement `STLocalAvgOfL2`
 
-The closing paragraph of Step 2 (`paper/tex/3_5_Loop_Hierarchy.tex:455–465`), second half:
-`lem_GbEXP` (`stGbEXP_holds`, `(GiiGEX)`, `(GijGEX)`) together with `(eq:L2_decay)` gives
-`(Gt_bound_flow)`, `|(G_u - M)_{xy}|² ≺ W^{-d} B_{u,|[x]-[y]|}` per time
-(`stStep2LocalPT_of_L2decay`), and with part 1 (`stStep2AvgPT_of_L2decay`) the pin
-`STLocalAvgOfL2` (`stLocalAvgOfL2_holds`, `3 ≤ d`: DECISIONS §36).
+The closing paragraph of the proof of Step 2 (Subsection 3.3 `subsec:step2_pf`), second half:
+Lemma 3.1 `lem_GbEXP` (`stGbEXP_holds`, (3.2) `GiiGEX`, (3.3) `GijGEX`) together with (3.37)
+`eq:L2_decay` gives (2.87) `Gt_bound_flow`, `|(G_u - M)_{xy}|² ≺ W^{-d} B_{u,|[x]-[y]|}`, per time
+(`stStep2LocalPT_of_L2decayG`), and with `stStep2AvgPT_of_L2decayG` of `LocalAvg1.lean` the statement
+`STLocalAvgOfL2` (`stLocalAvgOfL2_holds`, `3 ≤ d`).
 
 * The indicator `1(Ω(u, ε₀))` is removed because `Ω(u, ε₀) ⊇ {‖G_u - M‖_max ≤ N^{c/8}
-  (W^{-d}B_{u,0})^{1/4}}` holds with high probability (weak law `(Gtmwc)`).
+  (W^{-d}B_{u,0})^{1/4}}` holds with high probability (weak law (2.86) `Gtmwc`).
 * The neighbour sums of `STgexRHS` (both charges): `𝓛_{(+,-),(a,b)} = 𝓛_{(-,+),(b,a)}` (trace
-  cyclicity), then `(eq:L2_decay)` at `(b',a')`, `|[b'-a']| = |[a'-b']|`; the pairs `(a',b')`,
+  cyclicity), then (3.37) `eq:L2_decay` at `(b',a')`, `|[b'-a']| = |[a'-b']|`; the pairs `(a',b')`,
   `|a'-a| ≤ 1`, `|b'-b| ≤ 1` have `|a'-b'| ≥ |a-b| - 2`, and `B_{u,K'} ≤ 3^{d-2} B_{u,K}` for
   `K ≤ K' + 2` (`localAvg1_STWB_comp`).
 * `W^{-d} 1_{|a-b| ≤ 1} ≤ 2^{d-2} cB⁻¹ W^{-d} B_{u,|a-b|}` from `cB W^{-d} ≤ W^{-d} B_{u,0}`
-  (`localAvg1_STWB_ge`): the feared failure of the ticket does not occur.
-* T2386 (BA-T row T8): `localAvg2_rhs_leG`, `localAvg2_entry_leG`, `stStep2LocalPT_of_L2decayG` and
-  `stLocalAvgOfL2_holdsG` restate the band theorems over a carrier (`Chain/Step2Gen.lean`); the inputs of
-  other blocks (`hdat`, `hGii`, `hGij`, `hGav`) and the trace cyclicity (`hswap`) are arguments, `hGij` in the
-  form `STGijGEXgL` for `(G_t - M)_{xy}` (paper-delta candidate T2386a).  The band theorems stay under their
-  old names and statements, as corollaries at `bandFM` / `bandStep2Data`.
+  (`localAvg1_STWB_ge`).
+* `localAvg2_rhs_leG`, `localAvg2_entry_leG`, `stStep2LocalPT_of_L2decayG` and
+  `stLocalAvgOfL2_holdsG` are stated over a carrier (`Chain/Step2Gen.lean`); the inputs of
+  other results (`hdat`, `hGii`, `hGij`, `hGav`) and the trace cyclicity (`hswap`) are arguments, `hGij` in the
+  form `STGijGEXgL` for `(G_t - M)_{xy}`.  The band case is the instance at `bandFM` / `bandStep2Data`.
 -/
 
 set_option linter.style.longLine false
@@ -108,7 +107,7 @@ section DetG
 
 variable {d : ℕ} {sz : Sizes d} (C : FlowFM sz)
 
-/-- **The right side of `(GijGEX)` is `≤ C · X · W^{-d} B_{u,|a-b|}`, over a carrier** (`localAvg2_rhs_le` at `C`; the trace
+/-- **The right side of `(GijGEX)` is `≤ C · X · W^{-d} B_{u,|a-b|}`, over a carrier** (the trace
 cyclicity of `𝓛^{(2)}` is the argument `hswap`) when every
 `𝓛^{(2)}_{(-,+),(a',b')}` is `≤ X W^{-d} B_{u,|a'-b'|}` (`X ≥ 1`) and `cB W^{-d} ≤ W^{-d}B_{u,0}`:
 `C = 2 · 3^d · 3^d · 3^{d-2} + 2^{d-2} cB⁻¹` (two charges, two unit balls, the comparison
@@ -228,8 +227,8 @@ theorem localAvg2_rhs_leG (n : ℕ) (u : ℝ) (ω : sz.SeqΩ) (a b : Zd d (sz.L 
   rw [hM]
   nlinarith [mul_nonneg hK (mul_nonneg hX0 hT0)]
 
-/-- **The pointwise bound `|(G_u - M)_{xy}|² ≤ Y · C X · W^{-d} B_{u,|[x]-[y]|}`, over a carrier** (`localAvg2_entry_le` at `C`;
-`hij` is `(GijGEX)` for `(G_t - M)_{xy}`, `x ≠ y`, as in `STGijGEXgL`). -/
+/-- **The pointwise bound `|(G_u - M)_{xy}|² ≤ Y · C X · W^{-d} B_{u,|[x]-[y]|}`, over a carrier**
+(`hij` is `(GijGEX)` for `(G_t - M)_{xy}`, `x ≠ y`, as in `STGijGEXgL`). -/
 theorem localAvg2_entry_leG (n : ℕ) (u ε₀ : ℝ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n))
     {X Y cB : ℝ} (hX : 1 ≤ X) (hY : 0 ≤ Y) (hcB : 0 < cB)
     (hlow : cB * (((sz.W n : ℕ) : ℝ) ^ d)⁻¹ ≤ sz.Bctl n u)
@@ -287,14 +286,14 @@ theorem localAvg2_entry_leG (n : ℕ) (u ε₀ : ℝ) (ω : sz.SeqΩ) (x y : Idx
 
 end DetG
 
-/-! ## 2. Item 3: `(Gt_bound_flow)` per time -/
+/-! ## 2. `(Gt_bound_flow)` per time -/
 
 section Item3
 
 variable {d : ℕ}
 
-/-- **`(Gt_bound_flow)` per time, over a carrier** (`stStep2LocalPT_of_L2decay` at `(Cm, μ)`; `0 < d` only).  The inputs of
-other blocks are arguments: the size data `hdat` (`ST_Bdata_holds`) and `(GiiGEX)`, `(GijGEX)` of `lem_GbEXP` at every
+/-- **`(Gt_bound_flow)` per time, over a carrier** (`0 < d` only).  The inputs of
+other results are arguments: the size data `hdat` (`ST_Bdata_holds`) and `(GiiGEX)`, `(GijGEX)` of `lem_GbEXP` at every
 `u ≤ T0` (`hGii`, `hGij`; band: `stGbEXP_holds`, with `hGij` in the form of `STGijGEXgL`). -/
 theorem stStep2LocalPT_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Measure sz.SeqΩ) (hd : 0 < d)
     {κ ε 𝔠 𝔡 : ℝ} (hflow : Cm.flowOK κ ε 𝔠 𝔡) {s t : ℕ → ℝ} (hs : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n)
@@ -368,10 +367,10 @@ theorem stStep2LocalPT_of_L2decayG {sz : Sizes d} (Cm : Step2Data sz) (μ : Meas
 
 end Item3
 
-/-! ## 3. Item 4: the pin `STLocalAvgOfL2` -/
+/-! ## 3. The statement `STLocalAvgOfL2` -/
 
-/-- **The closing paragraph of Step 2 over a carrier** (`stLocalAvgOfL2_holds` at `(law, Flow, mk)`): the pin
-`STLocalAvgOfL2gL`, from the inputs of other blocks as `∀`-flow arguments (`hdat`: `ST_Bdata_holds`; `hGii`, `hGij`, `hGav`:
+/-- **The closing paragraph of the proof of Step 2 over a carrier**: the statement
+`STLocalAvgOfL2gL`, from the inputs of other results as `∀`-flow arguments (`hdat`: `ST_Bdata_holds`; `hGii`, `hGij`, `hGav`:
 `lem_GbEXP`, the three parts `(GiiGEX)`, `(GijGEX)`, `(GavLGEX)`) and `hF`: the setting `Flow` gives `flowOK`. -/
 theorem stLocalAvgOfL2_holdsG {d : ℕ} (hd : 0 < d) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), Step2Data sz)
@@ -397,11 +396,10 @@ theorem stLocalAvgOfL2_holdsG {d : ℕ} (hd : 0 < d) (law : ∀ sz : Sizes d, Me
     stStep2AvgPT_of_L2decayG (mk sz z) (law sz) hd hκ (hF sz κ ε 𝔠 𝔡 z hflow) hs hst htl
       (hdat κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow) (hGav κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow) hweak hL2⟩
 
-/-- **The closing paragraph of Step 2** (`3_5:455–465`; the pin `STLocalAvgOfL2` of
-`Induction/Step2Defs.lean`): `(eq:L2_decay)` and `(Gtmwc)` give `(Gt_bound_flow)` and
-`(Gt_avgbound_flow)` per time.  The hypothesis `3 ≤ d` comes from `stGbEXP_holds` (the T2126
-`lem_GbEXP`, `(GbEXPHypV3)`), DECISIONS §36: both consumers (`ST_step2_of_pins`,
-`ST_step2_of_pins'`) sit under `STStep2 d := 3 ≤ d → …`.  The band case of `stLocalAvgOfL2_holdsG`. -/
+/-- **The closing paragraph of the proof of Step 2** (Subsection 3.3 `subsec:step2_pf`; the statement
+`STLocalAvgOfL2` of `Induction/Step2Defs.lean`): (3.37) `eq:L2_decay` and (2.86) `Gtmwc` give
+(2.87) `Gt_bound_flow` and (2.88) `Gt_avgbound_flow` per time.  The hypothesis `3 ≤ d` comes from
+`stGbEXP_holds` (Lemma 3.1 `lem_GbEXP`).  This is the band case of `stLocalAvgOfL2_holdsG`. -/
 theorem stLocalAvgOfL2_holds {d : ℕ} (hd : 3 ≤ d) : STLocalAvgOfL2 d := by
   have hd0 : 0 < d := by omega
   exact stLocalAvgOfL2_holdsG hd0 (fun sz => sz.seqP) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z)
@@ -417,9 +415,3 @@ theorem stLocalAvgOfL2_holds {d : ℕ} (hd : 3 ≤ d) : STLocalAvgOfL2 d := by
       (Green.stGbEXP_holds hd).2.2 κ ε 𝔡 hκ hε h𝔡 𝔠 sz z hflow u hu0 hul ε₀ hε₀)
 
 end RBM.Gauss.Sizes
-
-/-! ## 4. Compiled nonempty instances at `d = 3`
-
-As in `LocalAvg1.lean`: the merged flow instance `(sz0, z0)`, the window `s ≡ 0`, `t ≡ 1/16`; the
-random hypotheses `STStep1Weak`, `STL2decayPT` stay hypotheses (other gates' outputs), and the other
-pins of `ST_step2_of_pins'` stay hypotheses of the last example. -/

@@ -10,24 +10,23 @@ import RBM3D.Loop.KLWard
 set_option linter.style.longLine false
 
 /-!
-# S3-03 (ticket T2086): `lem: newPQ`, the Ward expansions `(yurenAL)`, `(yurenAK)` of the zero-mode operator
+# `lem: newPQ`: the Ward expansions `(yurenAL)`, `(yurenAK)` of the zero-mode operator
 
-Proves the pin `RBM.Gauss.Sizes.STNewPQ` (`RBM3D/Induction/Step34Pins.lean:330`) as
-`stNewPQ_holds`.  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`),
-`lem: newPQ` `3_5:1482-1507`, the proof `3_5:1866-1886`, Ward's identities `(WI_calL)`, `(WI_calK)`
-(`paper/tex/1_2_Intro_model_result.tex:1036-1042`).  No RBM2D source (portmap: "new (paper lines)").
+Proves the statement `RBM.Gauss.Sizes.STNewPQ` (`RBM3D/Induction/Step34Pins.lean`) as
+`stNewPQ_holds`.  Paper: Lemma 4.13 (`lem: newPQ`), the expansions (4.44) `yurenAL`, (4.45) `yurenAK`
+(proved in Subsection 4.5 `subsec:support`), and Ward's identities (2.56) `WI_calL`, (2.57) `WI_calK`.
 
 * §1 the operators: `Q^(i)`, `P^(i)` commute, `Q^(insert i A) = Q^(i) Q^(A)`, linearity, and the
   reindexing of `Q^(A)` along an injection of index sets.
 * §2 loops: cyclic invariance of `𝓛` (trace cyclicity) and the Ward identity for `𝓛` at the last
-  index for **both** charge orders `σ₁ = ±`, `σ_n = ∓` (the merged `sum_gloop_ward_last_div` has
-  `σ₁ = +`; the other order is its image under `z ↦ z̄`); for `𝒦` the merged `KLK_rotate`, `KLK_ward`.
+  index for **both** charge orders `σ₁ = ±`, `σ_n = ∓` (`sum_gloop_ward_last_div` has
+  `σ₁ = +`; the other order is its image under `z ↦ z̄`); for `𝒦`, `KLK_rotate`, `KLK_ward`.
 * §3 the Ward step at an interior index `i` (`σ_i ≠ σ_{i+1}`, cyclic): rotate `i` to the last
   position by `ρ^(i+1)`, `ρ = finRotate`, apply the last-index Ward identity, keep the labels of the
   rotated loop (`ι = ρ^(i+1) ∘ castSucc`, the paper's `ι_i` up to a cyclic relabelling).
 * §4 the induction on `m` and on `#(I_diff(σ) \ A)`, one Ward step per index; the data
   `(k_α, ξ_α, σ_α, ι_α, A_α)` are a `List` of records independent of `L`, `W`, the sample and `E`, `τ`.
-* §5 `stNewPQ_holds`; §6 a compiled instance at `d = 3` (`sz0`).
+* §5 `stNewPQ_holds`.
 -/
 
 noncomputable section
@@ -204,9 +203,9 @@ private theorem npq_loopL_conj (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z : ℂ
   refine List.map_congr_left fun p _ => ?_
   simp [npq_Gres_conj]
 
-/-- **`(WI_calL)` at the last index, both charge orders** (`σ₁ = s`, `σ_n = ¬s`):
+/-- **(2.56) `WI_calL` at the last index, both charge orders** (`σ₁ = s`, `σ_n = ¬s`):
 `∑_x 𝓛^{(n)}_{(s, μ, ¬s),(a, x)} = (2 i W^d Im z)⁻¹ (𝓛^{(n-1),+}_{(μ),a} - 𝓛^{(n-1),-}_{(μ),a})`.
-For `s = +` this is the merged `sum_gloop_ward_last_div` (D105); for `s = -` it is that identity at
+For `s = +` this is `sum_gloop_ward_last_div`; for `s = -` it is that identity at
 `z̄` (`Im z̄ = -Im z`, charges flipped by `npq_loopL_conj`). -/
 private theorem npq_loopL_ward [NeZero W] {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) (s : Bool) (μ : List Bool)
@@ -470,7 +469,7 @@ private theorem npq_lift_sum (d L : ℕ) [NeZero L] (c : ℂ)
   rw [show (a ∘ e) ∘ t.ι = a ∘ e ∘ t.ι from rfl]
   ring
 
-/-- **The expansion `(yurenAL)`/`(yurenAK)` for a general loop functional with the Ward hypothesis
+/-- **The expansion (4.44) `yurenAL`/(4.45) `yurenAK` for a general loop functional with the Ward hypothesis
 `NPQWard`**: for every `m`, `σ`, `B ⊆ I_diff(σ)` and `A`, a list of terms, independent of `L`, `c`,
 `T`, with `1 ≤ k`, `k + 1 ≤ m`, `I_diff(σ_α) ⊆ A_α`, such that
 `Q^(A) T_σ = Q^(A ∪ B) T_σ + ∑_α ξ_α c^{m-k_α} Q^(A_α) T_{σ_α} (· ∘ ι_α)`.
@@ -575,8 +574,8 @@ private theorem npq_sum_get {α β : Type*} [AddCommMonoid β] (Ls : List α) (F
     _ = ((List.ofFn Ls.get).map F).sum := by rw [List.map_ofFn]
     _ = (Ls.map F).sum := by rw [List.ofFn_get]
 
-/-- **`lem: newPQ`** (`3_5:1482-1507`; expansions `(yurenAL)`, `(yurenAK)`, `3_5:1871-1886`): the pin
-`STNewPQ` (`RBM3D/Induction/Step34Pins.lean:330`), for every `d`.  The data `(k_α, ξ_α, σ_α, ι_α, A_α)`
+/-- **`lem: newPQ`** (Lemma 4.13; expansions (4.44) `yurenAL`, (4.45) `yurenAK`): the statement
+`STNewPQ` (`RBM3D/Induction/Step34Pins.lean`), for every `d`.  The data `(k_α, ξ_α, σ_α, ι_α, A_α)`
 are built by induction on `m` and on `#(I_diff(σ) \ A)`, one Ward step per index (`npq_main`); the
 same data serve `𝓛` (Ward identity `npq_loopL_ward`, both charge orders) and `𝒦` (`KLK_ward`).
 Each Ward step lowers the length by one and multiplies by `(2 i N η_τ)⁻¹`:
@@ -644,13 +643,5 @@ theorem stNewPQ_holds (d : ℕ) : STNewPQ d := by
       exact key
 
 end Gauss.Sizes
-
-/-! ## 6. The compiled instance of `stNewPQ_holds`: `d = 3`, `m = 3`, `σ = (+,-,+)`, `A = ∅`
-
-At the merged preflight sequence `sz0` (`L_0 = 4`, `W_0 = 32`, `N = 2097152`, `RBM3D/Defs/Sizes.lean:260`),
-size index `n = 0`, `E = 0` (`|E| < 2`), `τ = 1/2` (`0 ≤ τ < 1`), every `ω` and every label vector
-`a : Fin 3 → Z_4^3`.  The three deterministic hypotheses `|0| < 2`, `0 ≤ 1/2`, `1/2 < 1` are discharged
-by `norm_num`; the loop has `I_diff(σ) = {0, 1}` (`σ_0 ≠ σ_1`, `σ_1 ≠ σ_2`); the data
-`(ℓ, k, ξ, σ', ι, A')` are the ones of `stNewPQ_holds`, chosen before `sz`, `n`, `E`, `τ`, `ω`, `a`. -/
 
 end RBM

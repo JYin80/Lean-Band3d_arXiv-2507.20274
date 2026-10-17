@@ -16,63 +16,55 @@ import RBM3D.Chain.GridGoodGen
 import RBM3D.Chain.NQGood1Gen
 
 /-!
-# The martingale part of the `𝒬`-process at `d ≥ 3` (stochastic layer ST-3, S3-14)
+# The martingale part of the `𝒬`-process at `d ≥ 3`
 
-Ticket T2194 (with its amend 1).  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`
-(`3_5:line`): `Def:QtPt` (`3_5:1204`), `lem_+Q` (`3_5:1284-1289`), `int_K-L+Q` (`3_5:1337-1346`,
-last term), `(eq:alternatecase1)` (`3_5:1687`), `lem:sum_decay` (`3_5:1629-1665`).  Port of RBM2D
-`Induction/AltProxyQ.lean` at `c9a24cf` (cited `AltProxyQ:<line>`), re-derived for `d ≥ 3`: tensors
-of `m + 1` indices on `Zd d L`, the merged `STQop` with an abstract mollifier family `ϑ`
-(`‖ϑ‖ ≤ C (ℓ_t^d)^{-m} e^{-c S/ℓ_t}`, not `≤ 1`), the pair kernel from EK-4 instead of Case 5 of
+Paper: Definition 4.7 (`Def:QtPt`), Claim 4.9 (`lem_+Q`) with (4.32) `normQA`, (4.35) `int_K-L+Q` (last
+term), (4.58) `eq:alternatecase1`, Lemma 4.16 (`lem:sum_decay`).  As RBM2D's `qqTensorBoundsN`, `qvFormQN_le_of_bounds`, `azumaSubGQ_ugen`, `yMomentsQUnifN`, for
+`d ≥ 3`: tensors of `m + 1` indices on `Zd d L`, `STQop` with an abstract mollifier family `ϑ`
+(`‖ϑ‖ ≤ C (ℓ_t^d)^{-m} e^{-c S/ℓ_t}`, not `≤ 1`), the pair kernel from `ekSumDecay2_holds` instead of Case 5 of
 the `d = 2` evolution kernel.  **Every statement is generic in the stopping time / set family
-(`τ`, `G`) and in the mollifier family `ϑ`; none carries a level of the current length**
-(DECISIONS §62 (4)): the only level that occurs is the (D4) level `Γ(ΓΛ)B_u^{2k}/η_u` of `GoodSetN`.
+(`τ`, `G`) and in the mollifier family `ϑ`; none carries a level of the current length**: the only level
+that occurs is the level `Γ(ΓΛ)B_u^{2k}/η_u` of the bound on `STeeM` in `GoodSetN`.
 
 ## What is here (namespace `RBM.Ind`)
 
-* §1 the vocabulary `qqTensorN` (`(𝒬_t ⊗ 𝒬̄_t)𝒜`), `qvFormQN`, `zVecQN`, `yVecQN` (the check
-  file §2, verbatim).
+* §1 the vocabulary `qqTensorN` (`(𝒬_t ⊗ 𝒬̄_t)𝒜`), `qvFormQN`, `zVecQN`, `yVecQN`.
 * §2-§4 linearity of `STQop` and the transposed weights `κ'_c = κ_c - Σ_{b : b₀ = c₀} κ_b ϑ_u(b)`
   (private `qProxy_wts`, `qProxy_sum_Qop`, `qProxy_sum_qq`); **`martIncQN_ae_eq`**
-  (`martIncQN = zVecQN + yVecQN` a.e.); **`qv_at_propagatorQ`** (the merged `qvPropagatedN` at
-  `κ'`); **`qqTensorN_sumZero`** (`𝒫 ∘ 𝒬_t = 0` in each copy, `EKSumZero`).
-* §5 **`azumaSubGQ_ugenN`** and **`azumaSubGQ_gridExitN`**: the sub-Gaussian input of the
-  `𝒬`-process for ANY stopping family `τ` with sets `G`, and at the exit time of ANY measurable
-  family `G` (RBM2D `azumaSubGQ_goodExit`, which hard-wires `goodExitTauN` at one level `Φ`, is
-  not ported: paper-delta `T2194a`).
+  (`martIncQN = zVecQN + yVecQN` a.e.); **`qv_at_propagatorQg`** (`qvPropagatedNg` at `κ'`);
+  **`qqTensorN_sumZero`** (`𝒫 ∘ 𝒬_t = 0` in each copy, `EKSumZero`).
+* §5 **`azumaSubGQ_ugenNg`**, **`azumaSubGQ_gridExitNg`** and **`azumaSubGQ_gridExitN`**: the sub-Gaussian
+  input of the `𝒬`-process for ANY stopping family `τ` with sets `G`, and at the exit time of ANY measurable
+  family `G` (RBM2D's `azumaSubGQ_goodExit` hard-wires `goodExitTauN` at one level `Φ`).
 * §6 the constants `qProxyCn` (`C_n` of `lem_+Q`), `qProxyCQ = 2 C_n + 2`, `qProxy4C` (`C₄` of
-  EK-4), `qProxyW0` (the threshold `W₀` of the decay clause of `lem_+Q`), extracted once as
+  `ekSumDecay2_holds`), `qProxyW0` (the threshold `W₀` of the decay clause of `lem_+Q`), extracted once as
   `nqGood1C`.
-* §7 **`qqTensorBoundsN`**, the two-copy `lem_+Q` (new mathematics): `‖(𝒬⊗𝒬̄)T‖_∞ ≤ W^{2C_nε} M_ee +
+* §7 **`qqTensorBoundsN`**, the two-copy `lem_+Q`: `‖(𝒬⊗𝒬̄)T‖_∞ ≤ W^{2C_nε} M_ee +
   W^{-D+C_Q}`, the slice decay in `b'` at `D - C_Q`, the block decay in `b` at `W^{-D+C_Q}` (the
-  factor `(2 + M_ee)` of the ticket is not needed, `T2194c`).  No concatenated window: inner copy
+  factor `(2 + M_ee)` is not needed).  No concatenated window: inner copy
   slice by slice, a spread block makes the whole slice small.
-* §8 **`ugenPairQN_le_of_bounds`**: the pair kernel `(𝒰_σ ⊗ 𝒰_σ̄) ∘ T` from EK-4
-  (`ekSumDecay2_holds`) for every `σ` (`T2194b`): stage 1 on the `b'`-block, stage 2 on the
-  `b`-block, far level `W^k δ'`.
-* §9 **`qvFormQN_le_of_bounds`**, **`qvFormQN_le_of_goodSetN`**: the closed-form majorant
+* §8 **`ugenPairQNg_le_of_bounds`**: the pair kernel `(𝒰_σ ⊗ 𝒰_σ̄) ∘ T` from `ekSumDecay2_holds` for every
+  `σ`: first the `b'`-block, then the `b`-block, far level `W^k δ'`.
+* §9 **`qvFormQNg_le_of_bounds`** (band `qvFormQN_le_of_bounds`): the closed-form majorant
   `κ₄(κ₄ M_Q + W^{C₄} δ_Q) + W^{C₄} W^k δ_Q`, `M_Q = W^{2C_nε} M_ee + W^{-D+C_Q}`,
-  `δ_Q = W^{-D+C_Q}`, `κ₄ = W^{C₄ε} r_{u,w}^k`; in 6b `M_ee = Γ(ΓΛ)B_u^{2k}/η_u` and `δ = W^{-D}`
-  from clauses (D4), (Vb); `Φ` is free.
-* §10 **`yMomentsQUnifN`**: the uniform `Y` moments of `yVecQN`,
-  `C_P = 11 + (4(m+1)+4) max 0 (1-τ') + 2m + 2` (`T2194d`; needs `0 ≤ c`, amend 1); the body is
-  the private `qProxy_yMomentsQPos` with `P > 0`.
-* §11 compiled nonempty instances (namespace `QProxyInst`).
+  `δ_Q = W^{-D+C_Q}`, `κ₄ = W^{C₄ε} r_{u,w}^k`; with `M_ee = Γ(ΓΛ)B_u^{2k}/η_u` and `δ = W^{-D}`
+  from the `STeeM` bound and the far-label clause of `GoodSetN`; `Φ` is free.
+* §10 **`yMomentsQUnifNg`** and `yMomentsQUnifN`: the uniform `Y` moments of `yVecQN`,
+  `C_P = 11 + (4(m+1)+4) max 0 (1-τ') + 2m + 2` (needs `0 ≤ c`); the body is
+  `qProxy_yMomentsQPosg` with `P > 0`.
 
-Every unpinned helper is `private` or prefixed `qProxy` / `QProxy`.
+Every helper that is not part of the statements is `private` or prefixed `qProxy` / `QProxy`.
 
-## T2498 (row U3s3a, in place): the vocabulary and the targets over a flow carrier
+## Generic twins over a flow carrier
 
 Generic twins over `Cm : Step2Mat sz` (kernel `Step2Gen_UN`, law `Cm.Pp`, walk `Cm.Hpath`), namespace `RBM.Ind`, `open RBM.BA`:
-* **Target 1 (D1).** `QProxyG_KerEK4` (EK-4 `(sum_res_2)` for `Step2Gen_UN C` at the kernel coupling `gK`, explicit constant `C4`, `L^d ≤ W^{KL}`),
-  its family form `QProxyG_KerEK4Fam`, and the band discharge `qProxyG_kerEK4_band_at`, `qProxyG_kerEK4_band` (`C4 = qProxy4C d k 𝔡⁻¹ (min κ (4/5)) KL`).
-* **Target 2.** `qvFormQNg`, `zVecQNg`, `yVecQNg`, `martIncQNg_ae_eq`, `qv_at_propagatorQg`, `azumaSubGQ_ugenNg`, `azumaSubGQ_gridExitNg`
+* `QProxyG_KerEK4` (`(sum_res_2)` for `Step2Gen_UN C` at the kernel coupling `gK`, explicit constant `C4`, `L^d ≤ W^{KL}`),
+  its family form `QProxyG_KerEK4Fam`, and the band discharge `qProxyG_kerEK4_band_at` (`C4 = qProxy4C d k 𝔡⁻¹ (min κ (4/5)) KL`).
+* `qvFormQNg`, `zVecQNg`, `yVecQNg`, `martIncQNg_ae_eq`, `qv_at_propagatorQg`, `azumaSubGQ_ugenNg`, `azumaSubGQ_gridExitNg`
   (band bridges `qProxy_qvFormQN_eq_g`, `qProxy_zVecQN_eq_g`, `qProxy_yVecQN_eq_g`).
-* **Target 3.** `ugenPairQNg_le_of_bounds`, `qvFormQNg_le_of_bounds` (D1 at `gK`, the comparison R1 to the size level `sz.lam`, two constants
+* `ugenPairQNg_le_of_bounds`, `qvFormQNg_le_of_bounds` (`QProxyG_KerEK4` at `gK`, the comparison of couplings to the size level `sz.lam`, two constants
   `C4 ≤ Cv`, two radii `ε₁`, `ε` with `√A W^{ε₁} ≤ W^ε`), `yMomentsQUnifNg`.
-* The band statements read outside this file (`martIncQN_ae_eq`, `azumaSubGQ_gridExitN`, `qvFormQN_le_of_bounds`, `yMomentsQUnifN`) keep name and type; the
-  last three are corollaries of the generic theorems at `bandStep2Mat`; the band proofs of `qv_at_propagatorQ`, `azumaSubGQ_ugenN`, `ugenPairQN_le_of_bounds` and
-  of the private chain behind them are replaced by the generic ones (no reader).  The compiled instances (§11 of the previous layout) are in `Induction/QProxy2`.
+* The band statements `azumaSubGQ_gridExitN`, `qvFormQN_le_of_bounds` and `yMomentsQUnifN` are corollaries of the generic theorems at `bandStep2Mat`.
 -/
 set_option linter.style.longLine false
 set_option linter.unusedSectionVars false
@@ -89,17 +81,17 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.Green RBM.BA
 
-/-! ## 1. The vocabulary (target 1; the check file §2, verbatim) -/
+/-! ## 1. The vocabulary -/
 
-/-- `(𝒬_t ⊗ 𝒬̄_t) 𝒜 = Σ_{c,c'} Qmat_t(b,c) conj(Qmat_t(b',c')) 𝒜(c,c')` (RBM2D `qqTensorN`, `AltProxyQ:93`),
-for the merged `STQop` with an abstract mollifier family `ϑ`, tensors of `m + 1` indices. -/
+/-- `(𝒬_t ⊗ 𝒬̄_t) 𝒜 = Σ_{c,c'} Qmat_t(b,c) conj(Qmat_t(b',c')) 𝒜(c,c')` (RBM2D `qqTensorN`),
+for `STQop` with an abstract mollifier family `ϑ`, tensors of `m + 1` indices. -/
 def qqTensorN {d L m : ℕ} [NeZero L] (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ) (t : ℝ)
     (A : (Fin (m + 1) → Zd d L) → (Fin (m + 1) → Zd d L) → ℂ) (b b' : Fin (m + 1) → Zd d L) : ℂ :=
   STQop (d := d) ϑ t
     (fun c => starRingEnd ℂ (STQop (d := d) ϑ t (fun c' => starRingEnd ℂ (A c c')) b')) b
 
-/-- The merged `qvFormN` (`GridAssemblyN.lean:105`) with `𝓔 ⊗ 𝓔` (`STeeM`) replaced by
-`(𝒬_v ⊗ 𝒬̄_v)(𝓔 ⊗ 𝓔)` (RBM2D `qvFormQN`, `AltProxyQ:98`). -/
+/-- `qvFormN` with `𝓔 ⊗ 𝓔` (`STeeM`) replaced by
+`(𝒬_v ⊗ 𝒬̄_v)(𝓔 ⊗ 𝓔)` (RBM2D `qvFormQN`). -/
 noncomputable def qvFormQN {d : ℕ} (sz : Sizes d) (n : ℕ) {m : ℕ} (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ)
     (E v w : ℝ) (σ : Fin (m + 1) → Bool)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -111,19 +103,19 @@ noncomputable def qvFormQN {d : ℕ} (sz : Sizes d) (n : ℕ) {m : ℕ} (ϑ : �
         (cycProd (fun i => mSigma E (σ i)) i) v w (a i) (b' i)) *
       qqTensorN ϑ v (fun c c' => sz.STeeM n E v M σ c c') b b').re
 
-/-- The first-chaos part of the `𝒬`-martingale increment, `𝒬_{u_{j+1}} ZvecN` (RBM2D `zVecQN`, `AltProxyQ:107`). -/
+/-- The first-chaos part of the `𝒬`-martingale increment, `𝒬_{u_{j+1}} ZvecN` (RBM2D `zVecQN`). -/
 noncomputable def zVecQN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool) (ω : PathΩ sz) :
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   STQop (d := d) ϑ (gridTime s t K n (j + 1)) (ZvecN sz E s t K n j σ ω)
 
-/-- The second-order part, `𝒬_{u_{j+1}} YvecN` (RBM2D `yVecQN`, `AltProxyQ:112`). -/
+/-- The second-order part, `𝒬_{u_{j+1}} YvecN` (RBM2D `yVecQN`). -/
 noncomputable def yVecQN {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m : ℕ}
     (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool) (ω : PathΩ sz) :
     (Fin (m + 1) → Zd d (sz.L n)) → ℂ :=
   STQop (d := d) ϑ (gridTime s t K n (j + 1)) (YvecN sz E s t K n j σ ω)
 
-/-! ### 1g. The vocabulary over a carrier `Cm : Step2Mat sz` (generic twins, D4; band bridges) -/
+/-! ### 1g. The vocabulary over a carrier `Cm : Step2Mat sz` (generic twins; band bridges) -/
 
 section VocabG
 
@@ -178,7 +170,7 @@ theorem qProxy_yVecQN_eq_g (s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) {m 
 
 end VocabG
 
-/-! ## 2. Linearity of `𝒬_t` and the transposed weights (RBM2D `AltProxyQ:122-213`) -/
+/-! ## 2. Linearity of `𝒬_t` and the transposed weights (RBM2D) -/
 
 section QopAlg
 
@@ -285,12 +277,12 @@ private theorem qProxy_sum_qq (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ) (t
 
 end QopAlg
 
-/-! ## 3. Target 2: `martIncQN = zVecQN + yVecQN` -/
+/-! ## 3. `martIncQN = zVecQN + yVecQN` -/
 
-/-- **Target 2 (`martIncQN_ae_eq`)**: a.e., the martingale increment of the `𝒬`-process is `𝒬_{u_{j+1}}` of
+/-- **`martIncQN_ae_eq`**: a.e., the martingale increment of the `𝒬`-process is `𝒬_{u_{j+1}}` of
 the first-chaos part plus `𝒬_{u_{j+1}}` of the remainder, `martIncQN_j = zVecQN_j + yVecQN_j` (any `ϑ`).
 Proof: `QGridA_condExp_aTrueQN` (`𝔼[·|F_j]` commutes with `𝒬_{u_{j+1}}`), linearity of `STQop`, and
-`YvecN = martIncN - ZvecN`.  RBM2D `martIncQN_ae_eq` (`AltProxyQ:227`). -/
+`YvecN = martIncN - ZvecN`.  As RBM2D's `martIncQN_ae_eq`. -/
 theorem martIncQN_ae_eq {d : ℕ} (sz : Sizes d) (E s t : ℕ → ℝ) (K : ℕ → ℕ) (n j : ℕ) (hE : |E n| < 2)
     (hj1 : gridTime s t K n (j + 1) < 1) {m : ℕ} (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ)
     (σ : Fin (m + 1) → Bool) (a : Fin (m + 1) → Zd d (sz.L n)) :
@@ -341,13 +333,13 @@ theorem martIncQNg_ae_eq {Cm : Step2Mat sz} {E lam' : ℕ → ℝ}
 
 end Gen3
 
-/-! ## 4. Target 3: `𝒫 ∘ 𝒬_t = 0` in each copy, and the variance identity of the propagated `𝒬`-family over a carrier -/
+/-! ## 4. `𝒫 ∘ 𝒬_t = 0` in each copy, and the variance identity of the propagated `𝒬`-family over a carrier -/
 
 section Gen4
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- `qvFormQNg` as the conjugate pairing (K4). -/
+/-- `qvFormQNg` as the conjugate pairing. -/
 private theorem qProxy_qvFormQNg_eq {Cm : Step2Mat sz} {n : ℕ} (hK : GridRepTailGen_Ker Cm.toFlowFM n) {v w : ℝ}
     (hw0 : 0 ≤ w) (hw1 : w < 1) {m : ℕ} (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) (a : Fin (m + 1) → Zd d (sz.L n)) :
@@ -394,10 +386,10 @@ theorem qv_at_propagatorQg {Cm : Step2Mat sz} {g : ℕ → ℝ} (hQV : QVPropaga
 
 end Gen4
 
-/-- **Target 3b (`qqTensorN_sumZero`)**: `(𝒬_t ⊗ 𝒬̄_t) 𝒜` is sum-zero in each block (`𝒫 ∘ 𝒬_t = 0`,
+/-- **`qqTensorN_sumZero`**: `(𝒬_t ⊗ 𝒬̄_t) 𝒜` is sum-zero in each block (`𝒫 ∘ 𝒬_t = 0`,
 `QopAlgebra_Psum_Qop`, in each copy; linearity of `STQop` and of complex conjugation for the second
-block), for every `𝒜`, given `Σ_{a₂..a_n} ϑ_{t,a} = 1`; RBM2D `doubleSumZero_qqTensorN` (`AltProxyQ:303`) in
-the form EK-4 consumes (`EKSumZero`). -/
+block), for every `𝒜`, given `Σ_{a₂..a_n} ϑ_{t,a} = 1`; as RBM2D's `doubleSumZero_qqTensorN` in
+the form `ekSumDecay2_holds` consumes (`EKSumZero`). -/
 theorem qqTensorN_sumZero {d L m : ℕ} [NeZero L] (ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ) (t : ℝ)
     (hϑ : ∀ a₁ : Zd d L,
       ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁), ϑ t a = 1)
@@ -428,7 +420,7 @@ theorem qqTensorN_sumZero {d L m : ℕ} [NeZero L] (ϑ : ℝ → (Fin (m + 1) �
     exact h1.symm
 
 
-/-! ## 5. Target 7: the sub-Gaussian input for the first-chaos part of the `𝒬`-increment -/
+/-! ## 5. The sub-Gaussian input for the first-chaos part of the `𝒬`-increment -/
 
 section GridArith
 
@@ -530,8 +522,8 @@ theorem azumaSubGQ_gridExitNg {Cm : Step2Mat sz} [IsProbabilityMeasure Cm.Pp] {E
 
 end AzumaQ
 
-/-- **`azumaSubGQ_gridExitN`** (name and type unchanged): the corollary of `azumaSubGQ_gridExitNg` at `bandStep2Mat sz E`
-(`LoopForm`, `WalkForm`, `qvPropagatedNg`, `azumaSubGNg`, K1-K4 by the band discharges; `qvFormQN = qvFormQNg`, `zVecQN = zVecQNg`). -/
+/-- **`azumaSubGQ_gridExitN`**: the corollary of `azumaSubGQ_gridExitNg` at `bandStep2Mat sz E`
+(`LoopForm`, `StepDecompGen_WalkForm`, `qvPropagatedNg`, `azumaSubGNg` and the kernel facts by the band discharges; `qvFormQN = qvFormQNg`, `zVecQN = zVecQNg`). -/
 theorem azumaSubGQ_gridExitN {d : ℕ} (sz : Sizes d) {E s v : ℕ → ℝ} {K : ℕ → ℕ}
     (hE : ∀ n, |E n| < 2) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n) (hv1 : ∀ n, v n < 1)
     (n m : ℕ) (hm : 1 ≤ m) (ϑ : ℝ → (Fin (m + 1) → Zd d (sz.L n)) → ℂ) (σ : Fin (m + 1) → Bool)
@@ -560,12 +552,12 @@ theorem azumaSubGQ_gridExitN {d : ℕ} (sz : Sizes d) {E s v : ℕ → ℝ} {K :
   rw [hZ]
   exact (bandStep2_SubGaussStopN sz E σ _ _ _ p a j Q).2 hkey
 
-/-! ## 6. The constants of `lem_+Q` and of EK-4 (extracted once, as `nqGood1C`) -/
+/-! ## 6. The constants of `lem_+Q` and of `ekSumDecay2_holds` (extracted once, as `nqGood1C`) -/
 
 section Constants
 
-/-- **The constant `C_n(d, m, Λ_g, K, C, c)` of `lem_+Q`** (`(normQA)`, `3_5:1284-1289`; `stQopNorm_holds`),
-chosen once for all `L, g, W, ε, D`; `1` outside the range of the pin.  It depends on `(d, m, Λ_g, K, C, c)`
+/-- **The constant `C_n(d, m, Λ_g, K, C, c)` of `lem_+Q`** ((4.32) `normQA`; `stQopNorm_holds`),
+chosen once for all `L, g, W, ε, D`; `1` outside the range of the statement.  It depends on `(d, m, Λ_g, K, C, c)`
 only (the proof of `stQopNorm_holds` has `C_n = C + 2 d m + K m`). -/
 def qProxyCn (d m : ℕ) (Λg K C c : ℝ) : ℝ :=
   if h : 3 ≤ d ∧ 0 < Λg ∧ 0 < K ∧ 0 < C ∧ 0 < c then
@@ -575,8 +567,8 @@ def qProxyCn (d m : ℕ) (Λg K C c : ℝ) : ℝ :=
 /-- **`C_Q = 2 C_n + 2`**: the additive exponent of the two-copy `lem_+Q` (`qqTensorBoundsN`). -/
 def qProxyCQ (d m : ℕ) (Λg K C c : ℝ) : ℝ := 2 * qProxyCn d m Λg K C c + 2
 
-/-- **The constant `C₄(d, k, Λ_g, κ', K)` of EK-4** (`ekSumDecay2_holds`, `lem:sum_decay` `(sum_res_2)`),
-chosen once for all `L, g, W, ε, D`; `1` outside the range of the pin. -/
+/-- **The constant `C₄(d, k, Λ_g, κ', K)` of `ekSumDecay2_holds`** (Lemma 4.16 `lem:sum_decay`, (4.56) `sum_res_2`),
+chosen once for all `L, g, W, ε, D`; `1` outside the range of the statement. -/
 def qProxy4C (d k : ℕ) (Λg κ' K : ℝ) : ℝ :=
   if h : 3 ≤ d ∧ 2 ≤ k ∧ 0 < Λg ∧ 0 < κ' ∧ 0 < K then
     Classical.choose (ekSumDecay2_holds d k Λg κ' (prop5Decay_holds d Λg) (prop5Short_holds d Λg κ')
@@ -691,11 +683,10 @@ theorem qProxyG_kerEK4_band_at {d k : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (hd 
 end D1
 
 
-/-! ## 7. Target 4: the two-copy `lem_+Q`
+/-! ## 7. The two-copy `lem_+Q`
 
-New mathematics (the paper has only the one-copy `lem_+Q`, `3_5:1284-1289`; RBM2D `qqTensorBoundsN`,
-`AltProxyQ:711`, uses a concatenated window `3ρ` that is not needed here).  Inner copy, slice by slice
-(`stQopNorm_holds`, `EKFastDecay` of `c' ↦ conj T_{c,c'}` from the far clause (Vb) of `GoodSetN`); a spread `c`
+The paper has only the one-copy `lem_+Q`; RBM2D's `qqTensorBoundsN` uses a concatenated window `3ρ` that is not needed here.  Inner copy, slice by slice
+(`stQopNorm_holds`, `EKFastDecay` of `c' ↦ conj T_{c,c'}` from the far-label clause of `GoodSetN`); a spread `c`
 makes the whole slice `≤ W^{-D}`; the decay of `𝒬A = A - (A - 𝒬A)` is `stQop_sub_fastDecay` (threshold
 `qProxyW0`). -/
 
@@ -762,15 +753,15 @@ private theorem qProxy_add_two_le {W : ℝ} (hW : 2 ≤ W) (a : ℝ) (e : ℝ) (
   nlinarith
 
 
-/-- **Target 4 (`qqTensorBoundsN`): the two-copy `lem_+Q`** for `d ≥ 3`, `m ≥ 1`.  Constants: `C_n = qProxyCn`
+/-- **`qqTensorBoundsN`: the two-copy `lem_+Q`** for `d ≥ 3`, `m ≥ 1`.  Constants: `C_n = qProxyCn`
 (`d, m, Λ_g, K, C, c`), `C_Q = qProxyCQ = 2 C_n + 2`, `W₀ = qProxyW0` (`d, m, Λ_g, K, C, c, C₀, ε, D`), all before
 `L, g, W`.  For `STMollifierProps g C c ϑ`, `L^d ≤ W^K`, `4 ≤ W^ε`, `d W^{τ'} ≤ W^ε`, `W ≥ W₀`, and a tensor `T`
-with `‖T‖_∞ ≤ M_ee ≤ W^{C₀}` and `‖T_{b,b'}‖ ≤ W^{-D}` whenever `ℓ_t W^{τ'} ≤ diam_∞(b ⧺ b')` (the form (Vb) of
+with `‖T‖_∞ ≤ M_ee ≤ W^{C₀}` and `‖T_{b,b'}‖ ≤ W^{-D}` whenever `ℓ_t W^{τ'} ≤ diam_∞(b ⧺ b')` (the far-label form for
 `GoodSetN`), `D > C_n + 2`:
 (i) `‖(𝒬_t ⊗ 𝒬̄_t) T‖_∞ ≤ W^{2 C_n ε} M_ee + W^{-D + C_Q}`;
 (ii) for each `b`, `b' ↦ ((𝒬_t ⊗ 𝒬̄_t) T)_{b,b'}` is `EKFastDecay g t W ε (D - C_Q)`;
 (iii) for each `b'`, `|((𝒬_t ⊗ 𝒬̄_t) T)_{b,b'}| ≤ W^{-D+C_Q}` whenever `b` has `ℓ¹`-spread `≥ W^ε ℓ_t`
-(block decay in `b`, uniform in `b'`; the ticket's factor `(2 + M_ee)` is not needed, paper-delta `T2194c`). -/
+(block decay in `b`, uniform in `b'`; the factor `(2 + M_ee)` is not needed). -/
 theorem qqTensorBoundsN {d m : ℕ} (hd : 3 ≤ d) (Λg K C c : ℝ) (hΛ : 0 < Λg) (hK : 0 < K)
     (hC : 0 < C) (hc : 0 < c) {L : ℕ} [NeZero L] (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) (hgΛ : g ≤ Λg)
     {W ε τ' C₀ D : ℝ} (hW : 1 < W) (hε0 : 0 < ε) (hε1 : ε < 1) (hWε : 4 ≤ W ^ ε)
@@ -988,13 +979,13 @@ theorem qqTensorBoundsN {d m : ℕ} (hd : 3 ≤ d) (Λg K C c : ℝ) (hΛ : 0 < 
 end TwoCopy
 
 
-/-! ## 8. Target 5: the pair kernel from EK-4 over a carrier (D1 and R1) -/
+/-! ## 8. The pair kernel from `ekSumDecay2_holds` over a carrier -/
 
 section PairKernelG
 
 variable {d k : ℕ} {sz : Sizes d}
 
-/-- **`hker` for sum-zero tensors over a carrier** (band `qProxy_hker`): D1 at the kernel coupling `gK`, R1 to the size level. -/
+/-- **`hker` for sum-zero tensors over a carrier**: `QProxyG_KerEK4` at the kernel coupling `gK`, the comparison of couplings to the size level. -/
 private theorem qProxy_hkerg (C : FlowFM sz) {gK : ℕ → ℝ} {A C4 Cv KL : ℝ}
     (hcmp : ∀ m, 0 ≤ gK m * sz.lam m ∧ gK m ^ 2 ≤ sz.lam m ^ 2 ∧ sz.lam m ^ 2 ≤ A * gK m ^ 2) (hA : 1 ≤ A) {n : ℕ}
     (hKer : QProxyG_KerEK4 C gK k KL C4 n) (hCv : C4 ≤ Cv) {ε ε₁ D : ℝ} (hW : 1 < ((sz.W n : ℕ) : ℝ))
@@ -1061,7 +1052,7 @@ private theorem qProxy_hkerg (C : FlowFM sz) {gK : ℕ → ℝ} {A C4 Cv KL : �
     calc _ ≤ _ := h1
       _ = _ := by ring
 
-/-- **`ugenPairQNg_le_of_bounds`** (band `ugenPairQN_le_of_bounds`): the pair kernel `(𝒰_σ ⊗ 𝒰_σ̄) ∘ T` at `(a, a)` from D1. -/
+/-- **`ugenPairQNg_le_of_bounds`** the pair kernel `(𝒰_σ ⊗ 𝒰_σ̄) ∘ T` at `(a, a)` from `QProxyG_KerEK4`. -/
 theorem ugenPairQNg_le_of_bounds (C : FlowFM sz) {gK : ℕ → ℝ} {A C4 Cv KL : ℝ}
     (hcmp : ∀ m, 0 ≤ gK m * sz.lam m ∧ gK m ^ 2 ≤ sz.lam m ^ 2 ∧ sz.lam m ^ 2 ≤ A * gK m ^ 2) (hA : 1 ≤ A) {n : ℕ}
     (hKer : QProxyG_KerEK4 C gK k KL C4 n) (hRow : GridRepTailGen_Ker C n) (hCv : C4 ≤ Cv) {ε ε₁ D₂ : ℝ}
@@ -1130,7 +1121,7 @@ theorem ugenPairQNg_le_of_bounds (C : FlowFM sz) {gK : ℕ → ℝ} {A C4 Cv KL 
 
 end PairKernelG
 
-/-! ## 9. Target 6: the quadratic-variation majorant of `qvFormQNg` -/
+/-! ## 9. The quadratic-variation majorant of `qvFormQNg` -/
 
 section QVBoundG
 
@@ -1150,7 +1141,7 @@ private theorem qProxy_qvFormQNg_eq_pair (Cm : Step2Mat sz) (n : ℕ) {m : ℕ}
   ring
 
 /-- **`qvFormQNg_le_of_bounds`** (band `qvFormQN_le_of_bounds`): the closed-form majorant of the variance form of the `𝒬`-process from
-bounds on `𝓔 ⊗ 𝓔`, D1 at `gK` and R1; the two-copy `lem_+Q` is read at the radius `ε₁` with `√A W^{ε₁} ≤ W^ε`. -/
+bounds on `𝓔 ⊗ 𝓔`, `QProxyG_KerEK4` at `gK` and the comparison of couplings; the two-copy `lem_+Q` is read at the radius `ε₁` with `√A W^{ε₁} ≤ W^ε`. -/
 theorem qvFormQNg_le_of_bounds {m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) (Λg K C c : ℝ) (hΛ : 0 < Λg) (hK : 0 < K)
     (hC : 0 < C) (hc : 0 < c) (Cm : Step2Mat sz) {gK : ℕ → ℝ} {A C4 Cv : ℝ}
     (hcmp : ∀ n, 0 ≤ gK n * sz.lam n ∧ gK n ^ 2 ≤ sz.lam n ^ 2 ∧ sz.lam n ^ 2 ≤ A * gK n ^ 2) (hA : 1 ≤ A) {n : ℕ}
@@ -1212,8 +1203,8 @@ end QVBoundG
 
 section QVBound
 
-/-- **Target 6a (`qvFormQN_le_of_bounds`)**, name and type unchanged: the corollary of `qvFormQNg_le_of_bounds` at `bandStep2Mat sz (fun _ => E)`,
-`gK = sz.lam`, `A = 1`, `ε₁ = ε`, `Cv = C4 = qProxy4C` (D1 by `qProxyG_kerEK4_band_at`). -/
+/-- **`qvFormQN_le_of_bounds`**, name and type as stated: the corollary of `qvFormQNg_le_of_bounds` at `bandStep2Mat sz (fun _ => E)`,
+`gK = sz.lam`, `A = 1`, `ε₁ = ε`, `Cv = C4 = qProxy4C` (`QProxyG_KerEK4` by `qProxyG_kerEK4_band_at`). -/
 theorem qvFormQN_le_of_bounds {d m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) (Λg κ' K C c : ℝ)
     (hΛ : 0 < Λg) (hκ' : 0 < κ') (hK : 0 < K) (hC : 0 < C) (hc : 0 < c)
     (sz : Sizes d) (n : ℕ) (hg : 0 < sz.lam n) (hgΛ : sz.lam n ≤ Λg)
@@ -1257,7 +1248,7 @@ theorem qvFormQN_le_of_bounds {d m : ℕ} (hd : 3 ≤ d) (hm : 1 ≤ m) (Λg κ'
 
 end QVBound
 
-/-! ## 10. Target 8: the `Y` moments of the `𝒬`-increment -/
+/-! ## 10. The `Y` moments of the `𝒬`-increment -/
 
 section YQ
 
@@ -1278,8 +1269,8 @@ private theorem qProxy_card_filter {d L m : ℕ} [NeZero L] (x : Zd d L) :
   push_cast
   rfl
 
-/-- From `STMollifierProps`: `‖ϑ_t‖ ≤ C` on `[0, 1)` (`ℓ_t ≥ 1`, `c ≥ 0`, `C ≥ 0`); copy of the private
-`QGridA_vartheta_sup` (`QGridA.lean:1943`). -/
+/-- From `STMollifierProps`: `‖ϑ_t‖ ≤ C` on `[0, 1)` (`ℓ_t ≥ 1`, `c ≥ 0`, `C ≥ 0`); as the private
+`QGridA_vartheta_sup`. -/
 private theorem qProxy_vartheta_sup {d m L : ℕ} [NeZero L] (hL : 1 ≤ L) {g C c : ℝ} (hC : 0 ≤ C)
     (hc : 0 ≤ c) {ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ}
     (hϑ : STMollifierProps (d := d) g C c ϑ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -1305,8 +1296,7 @@ private theorem qProxy_vartheta_sup {d m L : ℕ} [NeZero L] (hL : 1 ≤ L) {g C
     _ = C := by ring
 
 /-- The transposed weights have `ℓ¹` norm at most `1 + C (L^d)^m` times that of `κ` (`‖ϑ‖ ≤ C`, and every `b`
-lies in the `(L^d)^m` fibres `{c : c₀ = b₀}`): the kernel row sum of `𝒬_u` (RBM2D `AltProxyQ_sum_norm_wts_le`,
-`AltProxyQ:1053`, with `‖ϑ‖ ≤ 1` replaced by `‖ϑ‖ ≤ C` at `d ≥ 3`: paper-delta candidate `T2194d`). -/
+lies in the `(L^d)^m` fibres `{c : c₀ = b₀}`): the kernel row sum of `𝒬_u` (RBM2D `AltProxyQ_sum_norm_wts_le`, with `‖ϑ‖ ≤ C` at `d ≥ 3` in place of `‖ϑ‖ ≤ 1`). -/
 private theorem qProxy_sum_norm_wts_le {d m L : ℕ} [NeZero L] (hL : 1 ≤ L) {g C c : ℝ}
     (hC : 0 ≤ C) (hc : 0 ≤ c) {ϑ : ℝ → (Fin (m + 1) → Zd d L) → ℂ}
     (hϑ : STMollifierProps (d := d) g C c ϑ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -1367,7 +1357,7 @@ private theorem qProxy_stronglyMeasurable_yVecQNg {Cm : Step2Mat sz} {E lam' : �
   exact hcont.comp_stronglyMeasurable (GridAssemblyGen_stronglyMeasurable_YvecNg hL hW s t K n j σ)
 
 open scoped Matrix.Norms.L2Operator in
-/-- **Item 8 over a carrier with an explicit strictly positive level** (body of `yMomentsQUnifNg`; band `qProxy_yMomentsQPos`). -/
+/-- **The `Y` moments over a carrier with an explicit strictly positive level** (body of `yMomentsQUnifNg`). -/
 theorem qProxy_yMomentsQPosg {Cm : Step2Mat sz} {E lam' : ℕ → ℝ}
     {Ψ : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
     (hL : StepDecompGen_LoopForm Cm E) (hW : StepDecompGen_WalkForm Cm lam' Ψ)
@@ -1532,7 +1522,7 @@ theorem yMomentsQUnifNg {Cm : Step2Mat sz} {E lam' : ℕ → ℝ}
 
 end YQG
 
-/-- **Target 8 (`yMomentsQUnifN`)**, name and type unchanged: the corollary of `yMomentsQUnifNg` at `bandStep2Mat sz E` with the spectral data
+/-- **`yMomentsQUnifN`**, name and type as stated: the corollary of `yMomentsQUnifNg` at `bandStep2Mat sz E` with the spectral data
 `κm = √κ/2` (`DecayGen_bandSpec`); the conclusion is converted by `bandStep2_YMomentBoundsN` and `qProxy_yVecQN_eq_g`. -/
 theorem yMomentsQUnifN {d : ℕ} (sz : Sizes d) (κ τ' : ℝ) (E s t : ℕ → ℝ) :
     0 < κ → (∀ n, |E n| ≤ 2 - κ) → (∀ n, 0 ≤ s n) → (∀ n, s n ≤ t n) → (∀ n, t n < 1) →

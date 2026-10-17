@@ -18,33 +18,21 @@ import RBM3D.Loop.Unique
 import Mathlib.Analysis.Calculus.MeanValue
 
 /-!
-# The uniform non-alternating endpoint at the flow (`d ≥ 3`): `stOeqNQ''_holds`
+# The monotone envelope of a bound and the time modulus of `𝒦^{(k)}` (`d ≥ 3`)
 
-Ticket T2258 (S3-12c2, stochastic layer ST-3, fourth of four after the DECISIONS §80 split;
-S3-12c1 = T2246 `Induction/NQEndFlow` proves the per-time pin `stOeqNQPT''_holds`).
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex`, `lem:STOeq_NQ` (`3_5:1136`, bound
-`(am;asoiuw)` `3_5:1143-1148`, proof `3_5:1152-1190`; the `N^{-C}`-net remark is commented out
-at `3_5:1182`, the same remark at `3_5:1764`).
+Tools for the uniform-in-time non-alternating endpoint at the flow (the uniform statement `STNQConcl''`, from the
+per-time `STNQConclPT''` of `Induction/NQEndFlow`).
+Paper: Lemma 4.6 (`lem:STOeq_NQ`, bound (4.22) `am;asoiuw`, and its proof).
 
 ## What is here
 
 * §1 the vocabulary `RBM.Ind.nqFlowSharp`: the monotone envelope
-  `X♯(m,n,u) = max 1 (inf_{u' ∈ [u, t_n]} X(m,n,u'))` of a control (`1 ≤ X♯ ≤ X`, non-decreasing
-  on `u ≤ t_n`; check file `docs/tickets/checks/T2258-check.lean`, §2);
-* §2 the envelope lemmas (private): `1 ≤ X♯`, `X♯ ≤ X`, monotonicity, and the pair hypotheses
-  carry over to `X♯` (one `Prec` event: the `X♯`-bad event is inside the `X`-bad event);
-* §3 the bootstrap right side `ζ♯` (private): `STbootRHS` is monotone in the controls, `ζ♯ ≤ ζ`,
-  `1 ≤ ζ♯`, `ζ♯` non-decreasing in `u`;
-* §4 the one-sided net core (private): the merged `ContinuityNet.cont_core`
-  (`ContinuityNet.lean:142`) with the floor net point, so that the closeness hypothesis is asked
-  only for `u' ≤ u`;
-* §5 the time modulus of `𝒦^{(k)}`, every `k ≥ 2` (public `RBM.Gauss.Sizes.stKloop_lip`): tree
-  equations `KLK_isKLoop`, the uniform crude bound `KLbound_holds`, the mean value theorem;
-* §6 the `ξ` modulus on `contGood`, the lift `STNQConclPT'' → STNQConcl''` (private) and the
-  target `RBM.Ind.stOeqNQ''_holds`;
-* §7 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.NQEndFlowLiftInst`).
+  `X♯(m,n,u) = max 1 (inf_{u' ∈ [u, t_n]} X(m,n,u'))` of a bound (`1 ≤ X♯ ≤ X`, non-decreasing
+  on `u ≤ t_n`);
+* §2 the time modulus of `𝒦^{(k)}`, every `k ≥ 2` (public `RBM.Gauss.Sizes.stKloop_lip`): tree
+  equations `KLK_isKLoop`, the uniform crude bound `KLbound_holds`, the mean value theorem.
 
-Every helper that the ticket does not pin is `private` or prefixed `nqLift_`.
+Every helper that is not part of the statements is `private` or prefixed `nqLift_`.
 -/
 
 set_option linter.style.longLine false
@@ -60,35 +48,23 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## 1. The vocabulary: the monotone envelope of a control -/
+/-! ## 1. The vocabulary: the monotone envelope of a bound -/
 
-/-- **The monotone envelope `X♯` of a control** (supervisor `2026-10-05-1955` A2): `X♯(m,n,u) =
+/-- **The monotone envelope `X♯` of a bound**: `X♯(m,n,u) =
 inf_{u' ∈ [u, t_n]} X(m,n,u')`, floored at `1` (the floor is inactive for `u ≤ t_n` when `X ≥ 1`; for `u > t_n` the
 set is empty and `X♯ = 1`).  `1 ≤ X♯ ≤ X`, non-decreasing in `u ≤ t_n`. -/
 noncomputable def nqFlowSharp (t : ℕ → ℝ) (X : ℕ → ℕ → ℝ → ℝ) (m n : ℕ) (u : ℝ) : ℝ :=
   max 1 (sInf (X m n '' Set.Icc u (t n)))
 
-/-! ## 2. The envelope lemmas -/
-
-/-! ## 3. The bootstrap right side `ζ♯` -/
-
-/-! ## 4. The one-sided net core
-
-The merged `ContinuityNet.cont_core` (`ContinuityNet.lean:142`) asks the closeness of `ξ` and `ζ` for every pair of
-times at distance `≤ N^{-A}`; the envelope `ζ♯` is non-decreasing, so `ζ♯(θ) ≤ 2 ζ♯(u)` holds only for `θ ≤ u`.  The
-net point of `u` is therefore the floor point `θ = s_n + ⌊(u - s_n) m⌋/m ≤ u` (`m = netSize`), and the closeness is asked
-only for `u' ≤ u`; the clamp `min (t_n)` of the merged `contTime` is inactive at `θ`.  Everything else is the text of
-`cont_core`. -/
-
 end RBM.Ind
 
-/-! ## 5. The time modulus of `𝒦^{(k)}`, every `k ≥ 2`
+/-! ## 2. The time modulus of `𝒦^{(k)}`, every `k ≥ 2`
 
-The tree equations `(pro_dyncalK)` (`KLK_isKLoop`: `∂_t 𝒦^{(k)} = treeEqRhs`, on `t ∈ [0, 1)`) with the uniform crude
+The tree equations (2.50) `pro_dyncalK` (`KLK_isKLoop`: `∂_t 𝒦^{(k)} = treeEqRhs`, on `t ∈ [0, 1)`) with the uniform crude
 bound `KLbound_holds` (constants depending on `(d, m, κ, gmax, τ)` only, `τ = 1`) for the cut loops (lengths
 `i + k - l + 1`, `l - i + 1 ∈ [2, k]`, total `k + 2`) bound the derivative by `k² C² 2^k N^{k+3} ≤ N^{2k+2}`
-(eventually), and the mean value theorem on `[0, t_n]` gives the Lipschitz constant (paper-delta candidate
-`T2258b`: the paper does not state a time modulus of `𝒦^{(k)}`). -/
+(eventually), and the mean value theorem on `[0, t_n]` gives the Lipschitz constant (the paper does not state a
+time modulus of `𝒦^{(k)}`). -/
 
 namespace RBM.Gauss.Sizes
 
@@ -96,8 +72,7 @@ open RBM RBM.Loop RBM.Path RBM.Gauss
 
 section Modulus
 
-/-- A loop index of length `m` is `KLloopOf σ a` for vectors `σ`, `a` (the list bridge of `KLoopBound_KLK`,
-`KLFinal.lean:168`). -/
+/-- A loop index of length `m` is `KLloopOf σ a` for vectors `σ`, `a`. -/
 private theorem nqLift_loopOf_eq {d L : ℕ} (J : LoopIdx (Zd d L)) (hJ : J.WF) {m : ℕ} (hm : J.length = m) :
     ∃ (σ : Fin m → Bool) (a : Fin m → Zd d L), J = KLloopOf d L σ a := by
   obtain ⟨σl, al⟩ := J
@@ -216,8 +191,8 @@ private theorem nqLift_Bctl_le {d : ℕ} (sz : Sizes d) (n : ℕ) {r t : ℝ} (h
       ≤ 1 * (2 * N) := mul_le_mul hWi hsum hnn zero_le_one
     _ = 2 * N := one_mul _
 
-/-- **The time modulus of `𝒦^{(k)}`, every `k ≥ 2`** (`T2258_stKloop_lip`; G3 of the ticket, paper-delta candidate
-`T2258b`): Lipschitz in time with the polynomial constant `N^{2k+2}`, uniformly in the labels on `[0, t_n]`, for sequences
+/-- **The time modulus of `𝒦^{(k)}`, every `k ≥ 2`**: Lipschitz in time with the polynomial constant `N^{2k+2}`,
+uniformly in the labels on `[0, t_n]`, for sequences
 with `|E_n| ≤ 2 - κ`, `0 < lam_n ≤ gmax` and `(1 - t_n)⁻¹ ≤ N` eventually (and `N → ∞`).  `KLK_isKLoop` gives
 `∂_t 𝒦^{(k)} = treeEqRhs` on `[0, 1)`; the cut loops have lengths in `[2, k]` and `KLbound_holds` (constants depending
 on `(d, m, κ, gmax)` only, `τ = 1`) bounds `‖treeEqRhs‖ ≤ k² C² 2^k N^{k+3} ≤ N^{2k+2}` (eventually); then the mean value
@@ -333,18 +308,5 @@ theorem stKloop_lip {d : ℕ} (sz : Sizes d) (hd : 3 ≤ d) {κ gmax : ℝ} (hκ
 end Modulus
 
 end RBM.Gauss.Sizes
-
-/-! ## 6. The `ξ` modulus on `contGood`, the lift, and `stOeqNQ''_holds` -/
-
-/-! ### The target -/
-
-/-! ## 7. Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.NQEndFlowLiftInst`.  Data (the merged instance data, as `inst_OeqNQPT''`, `NQEndFlow.lean:974`):
-`sz0` (`d = 3`, `L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2^21`), the flow
-`z0` (`z_n = 1/2 + i N_n^{-4/5}`, `flow_z0` at `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `s ≡ 0`, `t ≡ 1/16` (`t ≤ lemT z_n`,
-`STCaseI`: `sz0_caseI`; `(con_st_ind)` for every `𝔠_d > 0`: `sz0_con`), `C_d = 1`.  `STKbound`, `STKward` are theorems of
-the flow (`stKbound_of_flow`, `stKward_of_flow`); what stays a hypothesis of an example is a stochastic premise that is
-another gate's pin (`STLK s`, `STStep2Concl`, the pair hypotheses `Ξ̂ ≺ 1` of the pin). -/
 
 end

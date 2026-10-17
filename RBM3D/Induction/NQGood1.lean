@@ -16,60 +16,38 @@ import RBM3D.Evolution.SumDecay
 import Mathlib.Analysis.SpecialFunctions.Log.Base
 
 /-!
-# The non-alternating good-set inputs, first half (`d ≥ 3`): the drift tensor, `hker`, the
-# quadratic-variation majorant of `qvFormN`, and the good-set shift `u_j → u_{j+1}`
+# The non-alternating good-set inputs, first half (`d ≥ 3`)
 
-Ticket T2166 (S3-10a, stochastic layer ST-3).  Port of RBM2D `Induction/NonAltGood.lean` §§1-2
-(`NAG:67-559`) and of the pieces of `Induction/StoppedEndDefs.lean` (`driftTensor` `SED:570`,
-`hker_of_case1` `SED:576`, `qvFormN_eq_re_UgenPair` `SED:690`) at commit `c9a24cf`, re-derived
-for `d ≥ 3`: loops carry `W^{-d}` per insertion, labels live in `Zd d L`, the merged `GoodSetN`
-(`Induction/GridGoodN.lean:124`) has the levels `Γ, Λ, Φ` and no additive `W^{-D'}` in
-(D2)/(D4).  Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`):
-`lem:STOeq_NQ` (`3_5:1136`, proof `3_5:1152`), `(sum_res_2_NAL)` of `lem:sum_decay`
-(`3_5:1632`).  `zero_mem_goodSetN` (RBM2D §3) is not ported: it is the merged
-`zero_mem_goodSetN_of_levels` (D366), used in the instances.
+The drift tensor, `hker`, the quadratic-variation majorant of `qvFormN`, and the good-set shift
+`u_j → u_{j+1}`.  The `d ≥ 3` form of RBM2D's `NonAltGood` (§§1-2) and of the corresponding pieces of
+`StoppedEndDefs` (`driftTensor`, `hker_of_case1`, `qvFormN_eq_re_UgenPair`): loops carry `W^{-d}` per
+insertion, labels live in `Zd d L`, and `GoodSetN` (`Induction/GridGoodN.lean`) has the levels
+`Γ, Λ, Φ` and no additive `W^{-D'}` in the bounds on the `ℰ` terms.
+Paper: Lemma 4.6 (`lem:STOeq_NQ`) and its proof, (4.54) `sum_res_2_NAL` of Lemma 4.16 (`lem:sum_decay`).
 
 ## What is here (namespace `RBM.Ind`)
 
 * §1 `driftTensorN` (the sum `Σ_{l=3}^k STksimLKM_l + STelklkM + STegtM` of `GridDriftN`, which
-  states it inline) and its two compositions with `GoodSetN`: `driftTensorN_norm_le_of_goodSet`
-  (clauses (D1)-(D3): `Γ(ΓΦ)(B_u^k/η_u)((k-1) + kΓΦ)`, no additive `W^{-D'}`) and
-  `driftTensorN_far_of_goodSet` (clause (Va): `≤ W^{-D'}` beyond `ℓ_u W^{τ'}`).
+  states it inline) and `driftTensorN_far_of_goodSet` (the far-label clause of `GoodSetN`:
+  `≤ W^{-D'}` beyond `ℓ_u W^{τ'}`).
 * §2 `UgenPairN` (`𝒰_σ ⊗ 𝒰_σ̄`) and `qvFormN_eq_re_UgenPairN`.
-* §3 `nqGood1C` (the constant of EK-6) and `hker_of_case1N`: for non-alternating `σ`, the bound
-  `‖𝒰_{s,t,σ} X‖ ≤ W^{Cε} ((g²+|1-s|)/(g²+|1-t|))^{k-1} M + W^C δ` from `ekSumDecayNAL_holds`;
-  no `log L` power and no `ρ_{s,t}`, `K_w` factors (RBM2D's `(1+log L)^k K_w^{2(k-1)} ρ^k` and
-  `((1-u)/(1-w))^k δ` do not occur: EK-6 has `W^{Cε}` and the ratio `r^{k-1}`).  The `L^∞` window of
-  `GoodSetN` (`STdiamInf`) is turned into the `ℓ¹` window of EK-6 by `d W^{τ'} ≤ W^ε`.
-* §4 `nqGood1_ugenPairN_le_of_bounds`, `nqGood1_qvFormN_le_of_bounds`, `qvFormN_le_of_goodSetN`: the
-  majorant `κ₁ (κ₁ Γ(ΓΛ)B_u^{2k}/η_u + W^C W^{-D'}) + W^C W^k W^{-D'}` of `qvFormN`, by two uses of
-  `hker_of_case1N` (stage 1 on the `b'`-block with `σ̄`, stage 2 on the `b`-block with `σ`); needs
-  `D' > k + 1` (no 3D pair-kernel estimate is merged: RBM2D's `ugenPairCase1Explicit` is replaced).
-* §5 the shift `u_j → u_{j+1}`: `loopShiftErrN`, `norm_loopL_zshiftN_le`, `loopMax_zshiftN_le`,
-  `loopFine_shiftN_le`, `STXiLM_shiftN_le`, `goodSetN_dec_shiftN` (hypothesis for `2 ≤ ℓ ≤ 2k+2`:
-  `ℓ = 1` is vacuous), the crude envelopes `norm_loopFine_crudeN`, `STmaxLKM_crudeN`,
-  `STXiLKM_crudeN`, the corrected `η⁻¹` shift `etaT_inv_shiftN_le` (RBM2D's ticket form
-  `η_{u'}⁻¹ ≤ η_u⁻¹(1 + Δη_u⁻¹)` is false at `E = 0`, `u = 0`, `Δ = 1/10`), and the shift of the
-  pair form `norm_STeeM_shiftN_le` with `eeShiftErrN` (`STeeM` contains `𝓛` only).
-  `ℓ_u ≤ ℓ_{u'}` is `nqGood1_ellT_mono`, for every real `g` (CONTROL §45 O3 (3): `0 ≤ lam n` is
-  no field of `Sizes`; for `g < 0` both sides are `min 1 L`).
-* §6 compiled nonempty instances at `d = 3` (namespace `NQGood1Inst`) on `sz0`.
+* §3 `nqGood1C` (the constant of `ekSumDecayNAL_holds`) and `hker_of_case1N`: for non-alternating `σ`,
+  the bound `‖𝒰_{s,t,σ} X‖ ≤ W^{Cε} ((g²+|1-s|)/(g²+|1-t|))^{k-1} M + W^C δ` from
+  `ekSumDecayNAL_holds`; no `log L` power and no `ρ_{s,t}`, `K_w` factors (RBM2D's
+  `(1+log L)^k K_w^{2(k-1)} ρ^k` and `((1-u)/(1-w))^k δ` do not occur: `ekSumDecayNAL_holds` has `W^{Cε}`
+  and the ratio `r^{k-1}`).  The `L^∞` window of `GoodSetN` (`STdiamInf`) is turned into the `ℓ¹` window
+  of `ekSumDecayNAL_holds` by `d W^{τ'} ≤ W^ε`.
+* §4 `nqGood1_ugenPairN_le_of_bounds`, `nqGood1_qvFormN_le_of_bounds`: the majorant
+  `κ₁ (κ₁ Γ(ΓΛ)B_u^{2k}/η_u + W^C W^{-D'}) + W^C W^k W^{-D'}` of `qvFormN`, by two uses of
+  `hker_of_case1N` (first on the `b'`-block with `σ̄`, then on the `b`-block with `σ`); needs
+  `D' > k + 1`.
+* §5 the shift `u_j → u_{j+1}`: `loopShiftErrN`, `norm_loopL_zshiftN_le`, the crude envelopes
+  `norm_loopFine_crudeN`, `STmaxLKM_crudeN`, `STXiLKM_crudeN`, and the shift of the pair form
+  `norm_STeeM_shiftN_le` with `eeShiftErrN` (`STeeM` contains `𝓛` only).
+  `ℓ_u ≤ ℓ_{u'}` is `nqGood1_ellT_mono`, for every real `g` (`0 ≤ lam n` is no field of `Sizes`; for
+  `g < 0` both sides are `min 1 L`).
 
-## Port map (RBM2D at `c9a24cf`; `NAG` = `NonAltGood.lean`, `SED` = `StoppedEndDefs.lean`)
-
-`driftTensor` `SED:570` → `driftTensorN`; `driftTensor_norm_le_of_goodSet` `NAG:72`,
-`driftTensor_far_of_goodSet` `NAG:98` → `driftTensorN_norm_le_of_goodSet`,
-`driftTensorN_far_of_goodSet`; `qvFormN_eq_re_UgenPair` `SED:690` → `qvFormN_eq_re_UgenPairN`;
-`hker_of_case1` `SED:576` → `hker_of_case1N`; `qvFormN_le_of_goodSet` `NAG:120` →
-`qvFormN_le_of_goodSetN`; `norm_gloop_zshiftN_le` `NAG:245` → `norm_loopL_zshiftN_le`;
-`loopShiftErr` `NAG:266` → `loopShiftErrN`; `etaT_inv_shiftN_le` `NAG:308`; `loopMax_zshiftN_le`
-`NAG:338`; `loopAbs_shiftN_le` `NAG:359` → `loopFine_shiftN_le`; `xiL_shiftN_le` `NAG:380` →
-`STXiLM_shiftN_le`; `goodSetN_dec_shiftN` `NAG:416`; `norm_gloop_crudeN` `NAG:439` →
-`norm_loopFine_crudeN`; `norm_lk_envN` `NAG:457`, `xiLK_crudeN` `NAG:477` → `STmaxLKM_crudeN`,
-`STXiLKM_crudeN`; `eeShiftErr` `NAG:503` → `eeShiftErrN`; `norm_eeN_shiftN_le` `NAG:510` →
-`norm_STeeM_shiftN_le`.
-
-Every unpinned helper is `private` or prefixed `nqGood1_`.
+Every helper that is not part of the statements is `private` or prefixed `nqGood1_`.
 -/
 
 set_option linter.style.longLine false
@@ -98,9 +76,8 @@ def driftTensorN (n : ℕ) (E u : ℝ)
   ∑ l ∈ Finset.Icc 3 k, sz.STksimLKM n E u H l (loopOf σ a) +
     sz.STelklkM n E u H (loopOf σ a) + sz.STegtM n E u H (loopOf σ a)
 
-/-- **The drift far decay on the good set** (`hDcls`; clause (Va) of `GoodSetN`): `‖Dr(σ,a)‖ ≤
-W^{-D'}` when `ℓ_u W^{τ'} ≤ diam_∞ a`.  RBM2D `driftTensor_far_of_goodSet`
-(`NonAltGood.lean:98`). -/
+/-- **The drift far decay on the good set** (`hDcls`; the far-label clause of `GoodSetN`): `‖Dr(σ,a)‖ ≤
+W^{-D'}` when `ℓ_u W^{τ'} ≤ diam_∞ a`; as RBM2D's `driftTensor_far_of_goodSet`. -/
 theorem driftTensorN_far_of_goodSet {n : ℕ} {E u Γ Λ Φ τ' D' : ℝ} {k : ℕ}
     {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ}
     (hM : M ∈ sz.GoodSetN n E u k Γ Λ Φ τ' D') (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n))
@@ -197,7 +174,7 @@ variable {d : ℕ} (sz : Sizes d)
 
 /-- **`qvFormN` is the real part of the pair kernel `𝒰_σ ⊗ 𝒰_σ̄` applied to `𝓔 ⊗ 𝓔`**
 (`STeeM`): the conjugate of the slotwise kernel of `σ` is the slotwise kernel of `σ̄`
-(`m(σ̄) = conj m(σ)`, `S^{(B)}` real).  RBM2D `StoppedEndDefs.lean:690` (`qvFormN_eq_re_UgenPair`). -/
+(`m(σ̄) = conj m(σ)`, `S^{(B)}` real); as RBM2D's `qvFormN_eq_re_UgenPair`. -/
 theorem qvFormN_eq_re_UgenPairN (n : ℕ) {E : ℝ} (hE : |E| ≤ 2) {v w : ℝ} (hw : |w| < 1)
     {k : ℕ} (σ : Fin k → Bool)
     (M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -227,8 +204,8 @@ end QV
 
 section Hker
 
-/-- **The constant `C(d, k, Λ_g, κ')` of EK-6** (`ekSumDecayNAL_holds`, `lem:sum_decay`
-`(sum_res_2_NAL)`), chosen once for all `L, g, W, ε, D`; `1` outside the range of the pin. -/
+/-- **The constant `C(d, k, Λ_g, κ')` of `ekSumDecayNAL_holds`** (Lemma 4.16 `lem:sum_decay`, (4.54)
+`sum_res_2_NAL`), chosen once for all `L, g, W, ε, D`; `1` outside the range of the statement. -/
 def nqGood1C (d k : ℕ) (Λg κ' : ℝ) : ℝ :=
   if h : 3 ≤ d ∧ 2 ≤ k ∧ 0 < Λg ∧ 0 < κ' then
     Classical.choose (ekSumDecayNAL_holds d k Λg κ' (prop5Decay_holds d Λg)
@@ -269,15 +246,15 @@ private theorem nqGood1_fast_of_cls {d L k : ℕ} (hd : 0 < d) (hL : 1 ≤ (L : 
       _ ≤ _ := h1
   exact le_of_mul_le_mul_left h5 hd0
 
-/-- **`hker` in the non-alternating case, `d ≥ 3`**, from the merged EK-6
-(`ekSumDecayNAL_holds`, `lem:sum_decay` `(sum_res_2_NAL)`), with the constant
+/-- **`hker` in the non-alternating case, `d ≥ 3`**, from `ekSumDecayNAL_holds`
+(Lemma 4.16 `lem:sum_decay`, (4.54) `sum_res_2_NAL`), with the constant
 `C = nqGood1C d k Λ_g κ'`.  For `σ` with `σ_i = σ_{i+1}` for some `i`, `0 ≤ s ≤ t ≤ 1 - g²/L²`,
 `W⁻¹ ≤ (1-t)/(1-s)`, `κ' ≤ Im m(E)`, the kernel `𝒰_{s,t,σ}` maps a tensor of sup-norm `≤ M`, which
 is `≤ δ ≤ W^{-D}` (`D > 1`) off the window `ℓ_s W^{τ'} ≤ diam_∞`, to
 `W^{Cε} ((g²+|1-s|)/(g²+|1-t|))^{k-1} M + W^C δ`.  No `log L` power and no `ρ_{s,t}`, `K_w`
-factors appear (RBM2D `hker_of_case1` had `(1+log L)^k K_w^{2(k-1)} ρ^k` and
+factors appear (RBM2D's `hker_of_case1` has `(1+log L)^k K_w^{2(k-1)} ρ^k` and
 `((1-u)/(1-w))^k δ`); the hypothesis `d W^{τ'} ≤ W^ε` converts the `L^∞` window of `GoodSetN` into
-the `ℓ¹` window of EK-6. -/
+the `ℓ¹` window of `ekSumDecayNAL_holds`. -/
 theorem hker_of_case1N {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤ k) (hΛ : 0 < Λg)
     (hκ' : 0 < κ') {L : ℕ} [NeZero L] (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g) (hgΛ : g ≤ Λg)
     {W ε τ' D : ℝ} (hW : 1 < W) (hε0 : 0 < ε) (hε1 : ε < 1) (hWε : 4 ≤ W ^ ε)
@@ -391,12 +368,12 @@ theorem nqGood1_mE_im_ge {E κ : ℝ} (hκ : 0 < κ) (hE : |E| ≤ 2 - κ) :
   linarith
 
 /-- **The pair kernel on a tensor with a sup bound and far decay** (the engine of the
-quadratic-variation majorant; RBM2D `ugenPairCase1Explicit`, here derived from `hker_of_case1N`
+quadratic-variation majorant; as RBM2D's `ugenPairCase1Explicit`, derived here from `hker_of_case1N`
 twice): for non-alternating `σ`, a tensor `T_{b,b'}` with `‖T_{b,b'}‖ ≤ M_ee` and
 `‖T_{b,b'}‖ ≤ δ ≤ W^{-D}` when `ℓ_s W^{τ'} ≤ diam_∞(b,b')`, `D > k + 1`,
 `‖(𝒰_{s,t,σ} ⊗ 𝒰_{s,t,σ̄}) ∘ T (a,a)‖ ≤ κ₁ (κ₁ M_ee + W^C δ) + W^C (W^k δ)`,
-`κ₁ = W^{Cε} ((g²+|1-s|)/(g²+|1-t|))^{k-1}`, `C = nqGood1C d k Λ_g κ'`.  Stage 1: the `b'`-block
-with `σ̄` (non-alternating iff `σ` is), tensors `b' ↦ T_{b,b'}`; stage 2: the `b`-block with `σ`,
+`κ₁ = W^{Cε} ((g²+|1-s|)/(g²+|1-t|))^{k-1}`, `C = nqGood1C d k Λ_g κ'`.  First the `b'`-block
+with `σ̄` (non-alternating iff `σ` is), on the tensors `b' ↦ T_{b,b'}`; then the `b`-block with `σ`,
 on `b ↦ (𝒰_σ̄ ∘ T_{b,·})(a)`, whose far level `W^k δ` comes from the row sums
 (`norm_UN_apply_le`, `(1-s)/(1-t) ≤ W`). -/
 theorem nqGood1_ugenPairN_le_of_bounds {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d) (hk : 2 ≤ k) (hΛ : 0 < Λg)
@@ -440,14 +417,14 @@ theorem nqGood1_ugenPairN_le_of_bounds {d k : ℕ} (Λg κ' : ℝ) (hd : 3 ≤ d
   have hσb : ∃ i, (fun i => !σ i) i = (fun i => !σ i) (finRotate k i) := by
     obtain ⟨i, hi⟩ := hσ
     exact ⟨i, by simp only [hi]⟩
-  -- stage 1: the `b'`-block, for every `b`
+    -- first the `b'`-block, for every `b`
   have hstage1 : ∀ b : Fin k → Zd d L,
       ‖Ugen d L g E (fun i => !σ i) s t (fun b' => T b b') a‖ ≤ κ1 * Mee + W ^ C * δ := by
     intro b
     exact hker_of_case1N Λg κ' hd hk hΛ hκ' hL hg hgΛ hW hε0 hε1 hWε hdW hD1 hs hst ht hWt hE
       hκm hσb (fun b' => T b b') hMee0 hδ hδD (fun b' => hT b b')
       (fun b' hfar => hTfar b b' (hfar.trans (by exact_mod_cast nqGood1_diam_append_right b b'))) a
-  -- the far decay of the stage-1 output
+    -- the far decay of the output of the first step
   have hP : (1 - s) / (1 - t) ≤ W := by
     have h1 : ((1 - t) / (1 - s))⁻¹ ≤ W := inv_le_of_inv_le₀ hW0 hWt
     rwa [inv_div] at h1
@@ -611,8 +588,8 @@ theorem nqGood1_loopShiftErrN_nonneg {η Δ : ℝ} (hη : 0 ≤ η) (hΔ : 0 ≤
   have : 0 ≤ η⁻¹ := inv_nonneg.2 hη
   positivity
 
-/-- **Spectral-parameter shift of one loop** at a fixed Hermitian matrix (RBM2D
-`norm_gloop_zshiftN_le`, `NonAltGood.lean:226`; RBM1D `norm_gloop_zshift_le`; `d ≥ 3`: the loop has
+/-- **Spectral-parameter shift of one loop** at a fixed Hermitian matrix (as RBM2D's
+`norm_gloop_zshiftN_le`; `d ≥ 3`: the loop has
 `ℓ` edges and `ℓ - 1` insertions `E_a` of operator norm `W^{-d}`):
 `|𝓛(z') - 𝓛(z)| ≤ ℓ η^{-(ℓ+1)} (W^{-d})^{ℓ-1} |z' - z|` for `|Im z|, |Im z'| ≥ η`. -/
 theorem norm_loopL_zshiftN_le {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
@@ -674,7 +651,7 @@ open scoped Matrix.Norms.L2Operator
 variable {d : ℕ} (sz : Sizes d)
 
 /-- `ℓ_u ≤ ℓ_{u'}` for every real `g` (`ellT_mono` needs `0 ≤ g`, and `0 ≤ sz.lam n` is not a field
-of `Sizes`: for `g < 0` both sides are `min 1 L`; CONTROL §45 O3 (3), the direct argument). -/
+of `Sizes`: for `g < 0` both sides are `min 1 L`). -/
 theorem nqGood1_ellT_mono (L : ℕ) (g : ℝ) {u t : ℝ} (hut : u ≤ t) (ht : t < 1) :
     ellT L g u ≤ ellT L g t := by
   by_cases hg : 0 ≤ g
@@ -685,7 +662,7 @@ theorem nqGood1_ellT_mono (L : ℕ) (g : ℝ) {u t : ℝ} (hut : u ≤ t) (ht : 
       div_nonpos_of_nonpos_of_nonneg hg'.le (Real.sqrt_nonneg _)
     rw [max_eq_right ((h1 u).trans zero_le_one), max_eq_right ((h1 t).trans zero_le_one)]
 
-/-- **Crude loop bound** (RBM2D `norm_gloop_crudeN`): `|𝓛_{u,σ,a}(M)| ≤ η_u^{-ℓ}` for Hermitian
+/-- **Crude loop bound** (as RBM2D's `norm_gloop_crudeN`): `|𝓛_{u,σ,a}(M)| ≤ η_u^{-ℓ}` for Hermitian
 `M`, `ℓ ≥ 1` (`d ≥ 3` has the sharper `η^{-ℓ} (W^{-d})^{ℓ-1}`, `norm_gloop_le_of_le_abs_im`). -/
 theorem norm_loopFine_crudeN (n : ℕ) {E : ℝ} (hE : |E| < 2)
     {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian)
@@ -709,7 +686,7 @@ theorem norm_loopFine_crudeN (n : ℕ) {E : ℝ} (hE : |E| < 2)
       ≤ (etaT E u)⁻¹ ^ ℓ * 1 := mul_le_mul_of_nonneg_left hWi h0
     _ = _ := mul_one _
 
-/-- **The crude `(𝓛-𝒦)` envelope** (RBM2D `norm_lk_envN`, `xiLK_crudeN`): for Hermitian `M`,
+/-- **The crude `(𝓛-𝒦)` envelope** (as RBM2D's `norm_lk_envN`): for Hermitian `M`,
 `0 ≤ u < 1` and a bound `‖𝒦^{(m)}_{u,σ,a}‖ ≤ M_K` for the loops of length `m ≤ n'`, the matrix-level
 maximum satisfies `max|𝓛 - 𝒦| ≤ η_u^{-n'} + M_K` (`1 ≤ m ≤ n'`). -/
 theorem STmaxLKM_crudeN (n : ℕ) {E : ℝ} (hE : |E| < 2)
@@ -728,7 +705,7 @@ theorem STmaxLKM_crudeN (n : ℕ) {E : ℝ} (hE : |E| < 2)
         norm_sub_le _ _
     _ ≤ _ := by linarith
 
-/-- **Crude bound on `Ξ̂^{(𝓛-𝒦)}_m(M)`** (RBM2D `xiLK_crudeN`): for `1 ≤ m ≤ n'` and `B_u ≤ 1`,
+/-- **Crude bound on `Ξ̂^{(𝓛-𝒦)}_m(M)`**: for `1 ≤ m ≤ n'` and `B_u ≤ 1`,
 `Ξ̂^{(𝓛-𝒦)}_m ≤ 1 + (η_u^{-n'} + M_K) / B_u^{n'}`. -/
 theorem STXiLKM_crudeN (n : ℕ) {E : ℝ} (hE : |E| < 2)
     {M : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hM : M.IsHermitian)
@@ -764,7 +741,7 @@ private theorem nqGood1_sum_sum_norm_SB {d L : ℕ} [NeZero L] (g : ℝ) (hL : 3
   push_cast
   rfl
 
-/-- **The shift of the pair form** (RBM2D `norm_eeN_shiftN_le`): `|(𝓔⊗𝓔)_{u'} - (𝓔⊗𝓔)_u| ≤
+/-- **The shift of the pair form** (as RBM2D's `norm_eeN_shiftN_le`): `|(𝓔⊗𝓔)_{u'} - (𝓔⊗𝓔)_u| ≤
 eeShiftErrN` for Hermitian `M` (`STeeM` contains `𝓛` only, no `𝒦`, so only the loop shift of
 `norm_loopL_zshiftN_le` enters). -/
 theorem norm_STeeM_shiftN_le (n : ℕ) {E : ℝ} (hE : |E| < 2)
@@ -825,24 +802,5 @@ theorem norm_STeeM_shiftN_le (n : ℕ) {E : ℝ} (hE : |E| < 2)
   exact mul_le_mul_of_nonneg_left key (by positivity)
 
 end ShiftSz
-
-/-! ## 6. Compiled nonempty instances at `d = 3`
-
-Data (the merged instance data of `GridGoodN` §7 and `AzumaProxyN` §6): `sz0` (`n = 0`: `L = 4`,
-`W = 32`, `lam = 1/64`), `E = 1/2` (`Im m = √15/4 ≈ 0.968`), the grid `u_0 = 0`, `u_1 = 1/128`
-(`grid_data`), loop length `k = 3`, signs `σ = (+,-,+)` (`σ_2 = σ_0` cyclically: non-alternating),
-levels `Γ = 4`, `Λ = 3`, `Φ = 1` (`Γ² Λ = 48 ≥ k (1+g²)^{2k}`, D366), `τ' = 1/5`, `D' = 6 > k + 1`,
-`ε = 4/5` (`W^ε = 16`, `W^{τ'} = 2`, `d W^{τ'} = 6 ≤ 16`), `Λ_g = 10`, `κ' = 1/2`.  The initial state
-`H_0 = 0` is a member of `GoodSetN` (`zero_mem_goodSetN_of_levels`).  The label vector
-`a = (0, (2,2,2), 0)` has `diam_∞ = 2 ≥ ℓ_0 W^{τ'} = 2` (the far hypotheses are not vacuous: `L = 4`
-allows at most diameter `2`).  No hypothesis of a target is left open. -/
-
-/-! ### Target 1: the drift tensor and its compositions -/
-
-/-! ### Target 2: `hker` from EK-6 -/
-
-/-! ### The quadratic-variation majorant -/
-
-/-! ### Target 3: the shift lemmas, one step `u_0 = 0 → u_1 = 1/128` -/
 
 end RBM.Ind

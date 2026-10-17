@@ -7,20 +7,20 @@ import RBM3D.Induction.Step34Pins
 import RBM3D.Kernel.Evolution
 
 /-!
-# S3-04 (ticket T2055): the mollifier `ϑ` and the algebra of `𝒫`, `ϑ_t`, `𝒬_t`
+# The mollifier `ϑ` and the algebra of `𝒫`, `ϑ_t`, `𝒬_t`
 
-Paper: `paper/tex/3_5_Loop_Hierarchy.tex:1204-1250` (`Def:QtPt`, `(eq:sumzero_op)`,
-`(eq:suma1chi)`, `(eq:derv_Theta)`, `rmk:choosechi`).
+Paper: Definition 4.7 (`Def:QtPt`), (`eq:sumzero_op`), (`eq:suma1chi`), (4.27) `eq:derv_Theta`, Example 4.8
+(`rmk:choosechi`).
 
-**The mollifier** (`rmk:choosechi`, `3_5:1250`), at a smoothed scale (paper-delta candidate
-`T2041b`): with `y_t = 1 + g (1 - t)^{-1/2}` and `u_t = 1/ℓ̃_t = y_t⁻¹ + L⁻¹`,
+**The mollifier** (Example 4.8 `rmk:choosechi`), at a smoothed scale: with `y_t = 1 + g (1 - t)^{-1/2}`
+and `u_t = 1/ℓ̃_t = y_t⁻¹ + L⁻¹`,
 `ϑ_{t,a} = exp(-u_t Σ_{i ≥ 2} |a_i - a₁|) / z(u_t)^{d m}`, `z(u) = Σ_{y ∈ ℤ_L} exp(-u |y|)`.
 The scale `ℓ̃_t = 1/u_t` is smooth in `t < 1`, `ℓ_t / 2 ≤ ℓ̃_t ≤ 2 ℓ_t` and
 `|∂_t u_t| ≤ u_t / (2 (1 - t))`.  `z(u)^d` is the total mass `Σ_{x ∈ ℤ_L^d} exp(-u |x|)` (the `ℓ¹`
 norm splits over the coordinates), so `Σ_{a₂..a_n} ϑ = 1`.  The RBM2D choice
 `(1-t)^m Π Θ_t(a₁, a_i)` is not admissible at `d ≥ 3` (docstring of `STMollifierProps`).
 
-**The algebra of the operators** (RBM2D `Induction/SumZeroQ.lean`, ported with `Z2 L ↦ Zd d L`,
+**The algebra of the operators** (as RBM2D's `qopAlgebra`, with `Z2 L ↦ Zd d L`,
 `Fin k ↦ Fin (m+1)`, `Psum ↦ STPsum`, `Qop ↦ STQop`, `thetaSig ↦ ThetaN`): `𝒫 𝒬_t = 0`,
 `𝒬_t = id` on sum-zero tensors, `Θ^{(m+1)}` and `U^{(m+1)}` preserve sum-zero, the commutator
 formulas, `𝒫 ∂_tϑ = 0` and `∂_t(𝒬_t 𝒜_t) = 𝒬_t(∂_t 𝒜_t) - (𝒫 𝒜_t)_{a₁} ∂_tϑ_t`.
@@ -296,7 +296,7 @@ private theorem qaZ1_pow (d L : ℕ) [NeZero L] (u : ℝ) :
         rw [Finset.prod_const, Finset.card_univ, Fintype.card_fin]; rfl
 
 /-- **The factorisation** `Σ_{a : a₀ = a₁} Π_{i ≠ 0} g_i(a_i) = Π_{i ≠ 0} Σ_b g_i(b)`
-(RBM2D `SumZeroQ.lean:53` `SumZeroQ_sum_filter_prod`, `c9a24cf`, with `Z2 L ↦ Zd d L`, `Fin k ↦ Fin (m+1)`). -/
+(as RBM2D's `SumZeroQ_sum_filter_prod`, with `Z2 L ↦ Zd d L`, `Fin k ↦ Fin (m+1)`). -/
 private theorem qa_sum_filter_prod {d L m : ℕ} [NeZero L] {R : Type*} [CommSemiring R] (a₁ : Zd d L)
     (g : Fin (m + 1) → Zd d L → R) :
     ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁),
@@ -339,8 +339,8 @@ private theorem qaS_nonneg {d L m : ℕ} [NeZero L] (a : Fin (m + 1) → Zd d L)
 private def qaPhi (d L m : ℕ) [NeZero L] (a : Fin (m + 1) → Zd d L) (u : ℝ) : ℝ :=
   Real.exp (-u * qaS a) / (qaZ1 L u) ^ (d * m)
 
-/-- **The mollifier** `ϑ_{t,a} = exp(-u_t Σ_{i ≥ 2} |a_i - a₁|) / z(u_t)^{d m}` of `rmk:choosechi`
-(`3_5:1250`) at the smoothed scale `ℓ̃_t = 1/u_t = (y_t⁻¹ + L⁻¹)⁻¹`, `y_t = 1 + g (1 - t)^{-1/2}` (`T2041b`);
+/-- **The mollifier** `ϑ_{t,a} = exp(-u_t Σ_{i ≥ 2} |a_i - a₁|) / z(u_t)^{d m}` of Example 4.8 `rmk:choosechi`
+at the smoothed scale `ℓ̃_t = 1/u_t = (y_t⁻¹ + L⁻¹)⁻¹`, `y_t = 1 + g (1 - t)^{-1/2}`;
 tensors of `m + 1` indices. -/
 def QopAlgebra_mollifier (d L m : ℕ) [NeZero L] (g : ℝ) (t : ℝ) (a : Fin (m + 1) → Zd d L) : ℂ :=
   ((qaPhi d L m a (qaU L g t) : ℝ) : ℂ)
@@ -456,7 +456,7 @@ private theorem qa_Zinv_le {L : ℕ} [NeZero L] {g t : ℝ} (hg : 0 < g) (ht : t
     _ ≤ 6 * (ellT L g t)⁻¹ := by
         refine mul_le_mul_of_nonneg_right (by linarith) (inv_nonneg.2 hl.le)
 
-/-- The derivative of `t ↦ Φ_a(u_t)` and its bound (`(eq:derv_Theta)`), for `0 ≤ t < 1`, `L ≥ 3`. -/
+/-- The derivative of `t ↦ Φ_a(u_t)` and its bound ((4.27) `eq:derv_Theta`), for `0 ≤ t < 1`, `L ≥ 3`. -/
 private theorem qa_deriv_real (d L m : ℕ) [NeZero L] {g t : ℝ} (hg : 0 < g) (ht : t < 1)
     (hL : 3 ≤ L) (a : Fin (m + 1) → Zd d L) :
     ∃ x : ℝ, HasDerivAt (fun τ => qaPhi d L m a (qaU L g τ)) x t ∧
@@ -568,8 +568,8 @@ theorem QopAlgebra_mollifier_props (d L m : ℕ) [NeZero L] (hL : 3 ≤ L) {g : 
     calc |x| ≤ _ := hxb
       _ = _ := by ring
 
-/-- **Existence of the mollifier** (`rmk:choosechi`, `3_5:1250`): the pin `STMollifierEx` of
-`Step34Pins.lean:518`.  The constants `C = (1 + 40 d m) 6^{d m}`, `c = 1/2` do not depend on `Λ`. -/
+/-- **Existence of the mollifier** (Example 4.8 `rmk:choosechi`): the statement `STMollifierEx`.  The constants
+`C = (1 + 40 d m) 6^{d m}`, `c = 1/2` do not depend on `Λ`. -/
 theorem stMollifierEx_holds (d : ℕ) : STMollifierEx d := by
   intro _ m Λ _
   refine ⟨(1 + 40 * ((d * m : ℕ) : ℝ)) * 6 ^ (d * m), 1 / 2, by positivity, by norm_num, ?_⟩
@@ -586,9 +586,9 @@ theorem QopAlgebra_mollifier_differentiableAt (d L m : ℕ) [NeZero L] (hL : 3 �
 
 /-! ## 5. The algebra of `𝒫`, `𝒬_t`, `Θ`, `U` on sum-zero tensors
 
-Ported from RBM2D `Induction/SumZeroQ.lean` at `c9a24cf` (`qa_sum_filter_prod` :53, `qa_slot_zero` :236,
-`qa_slot_succ` :269; `QopAlgebra_Psum_Qop` :122, `QopAlgebra_Qop_of_sumZero`, `qa_SB_mul_Theta_symm` :216,
-`qa_col_sum_SBTheta` :226, `QopAlgebra_ThetaN_sumZero` :324, `QopAlgebra_commutator_ThetaN` :359): `Z2 L ↦ Zd d L`, `Fin k ↦ Fin (m+1)`, `Psum ↦ STPsum`,
+As in the proof of RBM2D's `qopAlgebra` (here `qa_sum_filter_prod`, `qa_slot_zero`, `qa_slot_succ`, `QopAlgebra_Psum_Qop`,
+`QopAlgebra_Qop_of_sumZero`, `qa_SB_mul_Theta_symm`, `qa_col_sum_SBTheta`, `QopAlgebra_ThetaN_sumZero`,
+`QopAlgebra_commutator_ThetaN`): `Z2 L ↦ Zd d L`, `Fin k ↦ Fin (m+1)`, `Psum ↦ STPsum`,
 `Qop ↦ STQop`, `thetaSig ↦ ThetaN`, `thetaGenMat ↦ thetaKer`. -/
 
 open scoped Matrix
@@ -679,7 +679,7 @@ theorem QopAlgebra_col_sum_thetaKer (g : ℝ) (hL : 3 ≤ L) {μ : ℂ} {t : ℝ
 /-! ### Slot-by-slot sums -/
 
 /-- Slot `0`: `Σ_{a₀ = a₁} Σ_b G(a₀, b) A(a^{(0)}_b) = Σ_b G(a₁, b) (𝒫A)_b`
-(RBM2D `SumZeroQ_slot_zero`, `SumZeroQ.lean:236` at `c9a24cf`). -/
+(RBM2D `SumZeroQ_slot_zero`). -/
 private theorem qa_slot_zero (G : Zd d L → Zd d L → ℂ) (A : (Fin (m + 1) → Zd d L) → ℂ) (a₁ : Zd d L) :
     ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁),
         ∑ b : Zd d L, G (a 0) b * A (Function.update a 0 b)
@@ -712,7 +712,7 @@ private theorem qa_slot_zero (G : Zd d L → Zd d L → ℂ) (A : (Fin (m + 1) �
     rfl
 
 /-- Slot `i ≠ 0`: the reindexing `(a, b) ↦ (a^{(i)}_b, a_i)` of `{a₀ = a₁} × ℤ_L^d`
-(RBM2D `SumZeroQ_slot_succ`, `SumZeroQ.lean:269` at `c9a24cf`). -/
+(RBM2D `SumZeroQ_slot_succ`). -/
 private theorem qa_slot_succ {i : Fin (m + 1)} (hi : i ≠ 0) (G : Zd d L → Zd d L → ℂ)
     (A : (Fin (m + 1) → Zd d L) → ℂ) (a₁ : Zd d L) :
     ∑ a ∈ Finset.univ.filter (fun a : Fin (m + 1) → Zd d L => a 0 = a₁),
@@ -798,8 +798,6 @@ theorem QopAlgebra_commutator_ThetaN (g : ℝ) (μs : Fin (m + 1) → ℂ) (ϑ :
   ring
 
 end Algebra
-
-/-! ## 6. Compiled nonempty instances -/
 
 end RBM.Gauss.Sizes
 

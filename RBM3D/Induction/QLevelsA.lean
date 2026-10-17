@@ -8,31 +8,27 @@ import RBM3D.Induction.B45
 import RBM3D.Chain.B45Gen
 
 /-!
-# S3-16a (ticket T2268): the deterministic levels of the alternating start term and of `ℬ₄ + ℬ₅` at a matrix
+# The deterministic levels of the alternating start term and of `ℬ₄ + ℬ₅` at a matrix
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `(eq:Ward_typeP)` `3_5:1264-1271`,
-start term `3_5:1676-1690`, `(y27kasdfg)`, `(A5)`, `(A4)` `3_5:1692-1706`.
+Paper: (4.30) `eq:Ward_typeP`, the start term in Subsection 4.5 `subsec:support`, (4.59) `y27kasdfg`,
+(4.60) `A5`, (4.61) `A4`.
 
-Re-scope (DECISIONS §83, §62 (4), §64 (4)): RBM2D `AltLevelsQ0` (`AltLevelsQ0.lean:55-64, 380-522` at `c9a24cf`)
-is ported in its deterministic, per-matrix form, as the merged `B45_det`/`B45_det2` (S3-19, `B45.lean:2346, 2577`)
-at a Hermitian matrix `H` on `altB4N`/`altB5N`/`STQop (STLKM … H …)` (`QDriftA.lean:59-91`).  `AltLevelsE` is
-not ported (the Q/E split is gone, §83).  Nothing is lifted, no probability, no `≺`: every statement holds per
-matrix `H`, from `H.IsHermitian` and deterministic rank-`(m+1)` levels alone.
+RBM2D's `AltLevelsQ0` in its deterministic, per-matrix form, via the deterministic core of `Induction/B45` at a Hermitian matrix
+`H` on `altB4N`/`altB5N`/`STQop (STLKM … H …)`.  Nothing is lifted, no probability, no `≺`: every statement
+holds per matrix `H`, from `H.IsHermitian` and deterministic rank-`(m+1)` levels alone.
 
 * `QLevelsA_ward_finM`, `QLevelsA_Psum_LK_leM`: Ward's identity at the last index and the near/far split of `𝒫`
-  at a matrix (copies of `B45_ward_fin` `B45.lean:200` and `B45_Psum_LK_le` `:414`; `ω` becomes `H` with
+  at a matrix (as `B45_ward_fin` and `B45_Psum_le`, with the sample `ω` replaced by a matrix `H` with
   `H.IsHermitian`, `STLKtensor sz n E u ω = sz.STLKM n E u (sz.seqHflow n u ω)` by `rfl`), with the private chain
-  `QLevelsA_loopL_ward` (copy of the private `B45_loopL_ward` `B45.lean:78-149`, generic in `H`);
-* `altB45N_levelM` (target 2): `B45_det2` at a Hermitian matrix, restated on `altB4N`, `altB5N`;
-* `startLevelQN` (target 3): `‖𝒬_u(𝓛-𝒦)_{u,σ}(H)‖ ≤ Y + N^τ B_u^{m+2} X`;
-* `crudeLKM_of_level` (target 4): the crude-sup form of the `hcrude` binders of `alt_hA0clsQN`/`alt_hDclsQN`;
-* instances (namespace `QLevelsAInst`) at `sz0`, `d = 3`, `m = 1`, `E = 0`, `u = 0`, `H = 0`.
+  `QLevelsA_loopL_ward` (as the private `B45_loopL_ward`, generic in `H`);
+* `altB45N_levelM`: the deterministic core of `Induction/B45` at a Hermitian matrix, restated on `altB4N`, `altB5N`;
+* `startLevelQN`: `‖𝒬_u(𝓛-𝒦)_{u,σ}(H)‖ ≤ Y + N^τ B_u^{m+2} X`.
 
-Unpinned helpers are `private` or prefixed `QLevelsA_`.
+Helpers are `private` or prefixed `QLevelsA_`.
 
-T2498 (row U3s3a, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`), after the band text, which is unchanged:
-`altB45Ng_levelM` (the sample-level `B45_det2g` of `Chain/B45Gen` read at a Hermitian matrix through the carrier frozen at the matrix) and `startLevelQNg`;
-their compiled instances at `bandStep2Mat sz0 Ez` close §5.
+The generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`): `altB45Ng_levelM`
+(the sample-level `B45_det2g` of `Chain/B45Gen` read at a Hermitian matrix through the carrier with the matrices
+fixed) and `startLevelQNg`.
 -/
 
 open private B45_norm_colsum from RBM3D.Induction.B45
@@ -50,7 +46,7 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
-/-! ## 1. Ward's identity at the last index at a matrix (target 1) -/
+/-! ## 1. Ward's identity at the last index at a matrix -/
 
 section Ward
 
@@ -83,8 +79,8 @@ private theorem QLevelsA_loopL_conj (H : Matrix (Vtx d L W) (Vtx d L W) ℂ) (z 
   refine List.map_congr_left fun p _ => ?_
   simp [QLevelsA_Gres_conj]
 
-/-- **`(WI_calL)` at the last index, both charge orders**: a copy of the private `B45_loopL_ward`
-(`B45.lean:107`, ticket T2136, `1ef8fa7`); the proof uses `H.IsHermitian` and `Im z ≠ 0` only. -/
+/-- **(2.56) `WI_calL` at the last index, both charge orders**: as the private `B45_loopL_ward`;
+the proof uses `H.IsHermitian` and `Im z ≠ 0` only. -/
 private theorem QLevelsA_loopL_ward [NeZero W] {H : Matrix (Vtx d L W) (Vtx d L W) ℂ}
     (hH : H.IsHermitian) {z : ℂ} (hz : z.im ≠ 0) (s : Bool) (μ : List Bool)
     (a : List (Zd d L)) (ha : a.length = μ.length + 1) :
@@ -135,7 +131,7 @@ section WardM
 variable {d : ℕ} (sz : Sizes d)
 
 /-- **Ward's identities at the last index** for `𝓛 - 𝒦` at a Hermitian matrix `H` (`lem_WI_K`, `(WI_calL)`),
-alternating `σ`: a copy of `B45_ward_fin` (`B45.lean:200`, ticket T2136, `1ef8fa7`) with `H.IsHermitian`
+alternating `σ`: as `B45_ward_fin` with `H.IsHermitian`
 for `seqHflow_isHermitian`:
 `Σ_x (𝓛-𝒦)^{(m+2)}_{σ,(a',x)}(H) = (2iW^d η)⁻¹ ((𝓛-𝒦)^{(m+1)}_{σ⁺,a'}(H) - (𝓛-𝒦)^{(m+1)}_{σ⁻,a'}(H))`. -/
 private theorem QLevelsA_ward_finM (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 : 0 ≤ u) (hu1 : u < 1)
@@ -163,8 +159,7 @@ private theorem QLevelsA_ward_finM (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 : 0
   rw [hLw, hKw, ← etaT_eq_zt_im]
   ring
 
-/-- **`(jywiiwsoks)`, deterministic window step at a matrix**: a copy of `B45_Psum_LK_le` (`B45.lean:414`,
-ticket T2136, `1ef8fa7`) with `sz.STLKM n E u H` for `STLKtensor sz n E u ω`. -/
+/-- **(4.31) `jywiiwsoks`, deterministic window step at a matrix**: as `B45_Psum_le` with `sz.STLKM n E u H` for `STLKtensor sz n E u ω`. -/
 private theorem QLevelsA_Psum_LK_leM (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 : 0 ≤ u) (hu1 : u < 1)
     {H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ} (hH : H.IsHermitian)
     {m : ℕ} (σ : Fin (m + 2) → Bool) (hσ : σ (Fin.last (m + 1)) = !σ 0) (a₁ : Zd d (sz.L n))
@@ -205,14 +200,14 @@ private theorem QLevelsA_Psum_LK_leM (n : ℕ) {E u : ℝ} (hE : |E| < 2) (hu0 :
 
 end WardM
 
-/-! ## 2. Target 2: `B45_det2` at a Hermitian matrix, on `altB4N`/`altB5N` -/
+/-! ## 2. The deterministic core at a Hermitian matrix, on `altB4N`/`altB5N` -/
 
 section Det
 
 variable {d : ℕ}
 
-/-- **The `𝒫`-bound and the exponent count at a matrix** (the first half of `B45_det`, `B45.lean:2370-2402`, ticket
-T2136, `1ef8fa7`, at `H`; neither `ϑ` nor `σ`'s tensor beyond `𝒫` enters): there is `Π ≥ 0` with
+/-- **The `𝒫`-bound and the exponent count at a matrix** (the first half of the deterministic core of `Induction/B45`, at `H`; neither `ϑ` nor `σ`'s tensor
+beyond `𝒫` enters): there is `Π ≥ 0` with
 `‖(𝒫(𝓛-𝒦)_{σ})_{b₁}‖ ≤ Π` for every `b₁` and `Π · Λ (ℓ^d)^{-(m+1)} ≤ M B^{m+2} X`, `M = 3·4^{dm} Γ Λ ν²`. -/
 private theorem QLevelsA_PiM (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) {E u κ : ℝ} (hκ : 0 < κ)
     (hE : |E| ≤ 2 - κ) (hu0 : 0 ≤ u) (hu1 : u < 1) (hg : 0 < sz.lam n)
@@ -265,7 +260,7 @@ private theorem QLevelsA_PiM (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) {E u κ : �
       (Pi := Pi) (Fv := Fv) (by linarith) hLd1 hNe hℓ1 hν hX hB0 hη hωf hωd hΓ0 hΛ hWd1 hKB hηN hBN
       hFv hFv0 hνN hPi0 hvs0 (by rw [hPi]) (le_of_eq hvs)
 
-/-- `(2m+5) M ≤ N^τ` gives `M B^{m+2} X ≤ N^τ B^{m+2} X` (the absorption of `B45_det2`, `B45.lean:2603-2626`). -/
+/-- `(2m+5) M ≤ N^τ` gives `M B^{m+2} X ≤ N^τ B^{m+2} X` (the absorption in the deterministic core). -/
 private theorem QLevelsA_absorb (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) {E u κ : ℝ} (hκ : 0 < κ)
     (hE : |E| ≤ 2 - κ) (hu0 : 0 ≤ u) (hu1 : u < 1) (hg : 0 < sz.lam n)
     (hNu : (((sz.size n : ℕ) : ℝ))⁻¹ ≤ 1 - u) {m : ℕ} {Γ ν X Λ τN : ℝ} (hΓ : Γ = 2 / Real.sqrt κ)
@@ -298,8 +293,7 @@ private theorem QLevelsA_absorb (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) {E u κ 
     nlinarith
   exact ⟨hη, hZ, mul_le_mul_of_nonneg_right (hM1.trans hMΛ) hZ, mul_le_mul_of_nonneg_right hMΛ hZ⟩
 
-/-- **The deterministic core of `(eq:Ward_typeP)` and `(y27kasdfg)` at a matrix** (a copy of `B45_det`,
-`B45.lean:2346-2438`, ticket T2136, `1ef8fa7`; `STLKM … H` for `STLKtensor … ω`, `H.IsHermitian` for `ω`), with the
+/-- **The deterministic core of `(eq:Ward_typeP)` and `(y27kasdfg)` at a matrix** (as in `Induction/B45`; `STLKM … H` for `STLKtensor … ω`, `H.IsHermitian` for `ω`), with the
 second conjunct stated on `altB4N`, `altB5N`: `|𝒫(𝓛-𝒦)_{a₀} ϑ_a| ≤ M B^{m+2} X` and
 `‖ℬ₄‖ + ‖ℬ₅‖ ≤ η⁻¹ (2m+5) M B^{m+2} X`, `M = 3·4^{dm} Γ Λ ν²`, `Γ = 2/√κ`. -/
 private theorem QLevelsA_detM (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) {E u κ : ℝ} (hκ : 0 < κ)
@@ -374,12 +368,12 @@ private theorem QLevelsA_detM (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) {E u κ : 
         exact mul_le_mul hinv h2 h3 (inv_nonneg.2 hη.le)
     _ = _ := by rw [hM']; ring
 
-/-- **Target 2: `B45_det2` at a Hermitian matrix** (`(eq:Ward_typeP)`, `(y27kasdfg)`, `3_5:1264-1271, 1692-1706`),
-restated on `altB4N`, `altB5N` (`QDriftA.lean:59, 71`): if `(𝓛-𝒦)^{(m+1)}_{σ'}(H)` is at most `ν X B^{m+1}` at every
+/-- **The deterministic core at a Hermitian matrix** ((4.30) `eq:Ward_typeP`, (4.59) `y27kasdfg`),
+restated on `altB4N`, `altB5N`: if `(𝓛-𝒦)^{(m+1)}_{σ'}(H)` is at most `ν X B^{m+1}` at every
 label (`hY`), at most `Fv` at labels with `diam_∞ ≥ ℓ_u ω_f` (`hF`), `ϑ` obeys the mollifier bounds and
 `(2m+5) M ≤ N^τ`, `M = 3·4^{dm} Γ Λ ν²`, then for alternating `σ`
 `|𝒫(𝓛-𝒦)_{a₀} ϑ_a| ≤ N^τ B^{m+2} X` and `‖ℬ₄‖ + ‖ℬ₅‖ ≤ N^τ η⁻¹ B^{m+2} X`, `B = W^{-d}B_{u,0}`.
-Per matrix, no probability, no good set (only `H.IsHermitian`); case (i) `N⁻¹ ≤ 1 - u` only, as `B45_det`. -/
+Per matrix, no probability, no good set (only `H.IsHermitian`); case (i) `N⁻¹ ≤ 1 - u` only, as in `Induction/B45`. -/
 theorem altB45N_levelM (d : ℕ) (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) (E u κ : ℝ) (hκ : 0 < κ)
     (hE : |E| ≤ 2 - κ) (hu0 : 0 ≤ u) (hu1 : u < 1) (hg : 0 < sz.lam n)
     (hNu : (((sz.size n : ℕ) : ℝ))⁻¹ ≤ 1 - u)
@@ -422,13 +416,13 @@ section DetG
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- The carrier frozen at a family of matrices `Hs`: `L` is the matrix-level loop `Cm.LM n t (Hs n)` and does not read the sample; `K`, `M`, `S`, `η`, `m` are
+/-- The carrier with the matrices fixed at a family `Hs`: `L` is the matrix-level loop `Cm.LM n t (Hs n)` and does not read the sample; `K`, `M`, `S`, `η`, `m` are
 those of `Cm`.  It carries the matrix-level statements of this section to the sample-level theorems of `Chain/B45Gen`. -/
 private def QLevelsA_frozen (Cm : Step2Mat sz) (Hs : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ) :
     FlowFM sz :=
   { Cm.toFlowFM with L := fun n t _ σ a _ => Cm.LM n t (Hs n) σ a }
 
-/-- The frozen carrier is in the Ward class (`ZeroModeGen_WardCls`): the loops of a Hermitian matrix form a Ward family
+/-- The carrier with fixed matrices is in the Ward class (`ZeroModeGen_WardCls`): the loops of a Hermitian matrix form a Ward family
 (`zeroModeGen_loopL_wardFam`, `LoopForm`), `K` is that of `Cm`. -/
 private theorem QLevelsA_frozen_ward {Cm : Step2Mat sz} {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E)
     (hward : ZeroModeGen_WardCls sz Cm.toFlowFM) (Hs : ∀ n : ℕ, Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ)
@@ -447,11 +441,10 @@ private theorem QLevelsA_frozen_ward {Cm : Step2Mat sz} {E : ℕ → ℝ} (hL : 
     rw [ztOf_im, ← (hL n).2.2.2 τ] at this
     exact this
 
-/-- **`altB45Ng_levelM`** (band `altB45N_levelM`, `QLevelsA:376`): `B45_det2g` at a Hermitian matrix `H` over a carrier (`(eq:Ward_typeP)`, `(y27kasdfg)`,
-`3_5:1264-1271, 1692-1706`), restated on `altB4Ng`, `altB5Ng`: if `(𝓛-𝒦)^{(m+1)}_{σ'}(H)` is at most `ν X B^{m+1}` at every label (`hY`), at most `Fv` at labels
+/-- **`altB45Ng_levelM`** (band `altB45N_levelM`): `B45_det2g` at a Hermitian matrix `H` over a carrier ((4.30) `eq:Ward_typeP`, (4.59) `y27kasdfg`), restated on `altB4Ng`, `altB5Ng`: if `(𝓛-𝒦)^{(m+1)}_{σ'}(H)` is at most `ν X B^{m+1}` at every label (`hY`), at most `Fv` at labels
 with `diam_∞ ≥ ℓ_u ω_f` (`hF`), `ϑ` obeys the mollifier bounds and `(2m+5) K₆ M ≤ N^τ`, `M = 3·4^{dm} Γ Λ ν²`, `Γ = κm⁻¹`, then for alternating `σ`
 `|𝒫(𝓛-𝒦)_{a₀} ϑ_a| ≤ N^τ B^{m+2} X` and `‖ℬ₄‖ + ‖ℬ₅‖ ≤ N^τ η⁻¹ B^{m+2} X`, `B = W^{-d}B_{u,0}`, `η = Cm.eta n u`.  The carrier facts are the fields of
-`B45Gen_Facts` and `DecayGen_Spec`; `LoopForm` reads `LM` at `H` as the loops of `H` (the sample-level theorem is read through the frozen carrier). -/
+`B45Gen_Facts` and `DecayGen_Spec`; `LoopForm` reads `LM` at `H` as the loops of `H` (the sample-level theorem is read through the carrier with fixed matrices). -/
 theorem altB45Ng_levelM (hd : 2 ≤ d) (Cm : Step2Mat sz) {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) {u κm K₆ : ℝ}
     (hκm : 0 < κm) (hmn : κm ≤ (Cm.m n).im) (him1 : (Cm.m n).im ≤ 1) (heta : ∀ t : ℝ, Cm.eta n t = (1 - t) * (Cm.m n).im)
     (hward : ZeroModeGen_WardCls sz Cm.toFlowFM) (hker : ZeroModeGen_KerSums Cm.toFlowFM n) (hK₆ : 1 ≤ K₆)
@@ -505,7 +498,7 @@ theorem altB45Ng_levelM (hd : 2 ≤ d) (Cm : Step2Mat sz) {E : ℕ → ℝ} (hL 
   exact k2
 
 
-/-- **`startLevelQNg`** (band `startLevelQN`, `QLevelsA:421`): the deterministic `AltLevelsQ0` at a Hermitian matrix over a carrier: with the hypotheses of `altB45Ng_levelM`
+/-- **`startLevelQNg`** (band `startLevelQN`): RBM2D's deterministic `AltLevelsQ0` at a Hermitian matrix over a carrier: with the hypotheses of `altB45Ng_levelM`
 (without the derivative bound, which only `ℬ₅` uses: the constant-in-time mollifier `fun _ b => ϑ u b` has derivative `0`) and a rank-`(m+2)` level `Y` of `(𝓛-𝒦)_{u,σ}(H)`,
 `‖𝒬_u(𝓛-𝒦)_{u,σ}(H)_a‖ ≤ Y + N^τ B_u^{m+2} X`. -/
 theorem startLevelQNg (hd : 2 ≤ d) (Cm : Step2Mat sz) {E : ℕ → ℝ} (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) {u κm K₆ : ℝ}
@@ -550,12 +543,11 @@ theorem startLevelQNg (hd : 2 ≤ d) (Cm : Step2Mat sz) {E : ℕ → ℝ} (hL : 
 end DetG
 
 
-/-! ## 3. Target 3: the start level of `𝒬_u(𝓛-𝒦)_{u,σ}(H)` -/
+/-! ## 3. The start level of `𝒬_u(𝓛-𝒦)_{u,σ}(H)` -/
 
 section Start
 
-/-- **Target 3: the deterministic `AltLevelsQ0` at a matrix** (RBM2D `AltLevelsQ0_pointwise`,
-`AltLevelsQ0.lean:380-522` at `c9a24cf`; start term `3_5:1676-1690`): with the hypotheses of `altB45N_levelM`
+/-- **RBM2D's deterministic `AltLevelsQ0` at a matrix** (`AltLevelsQ0_pointwise`; the start term in Subsection 4.5): with the hypotheses of `altB45N_levelM`
 (without the derivative bound `hϑ'`, which only `ℬ₅` uses) and a rank-`(m+2)` level `Y` of `(𝓛-𝒦)_{u,σ}(H)`,
 `‖𝒬_u(𝓛-𝒦)_{u,σ}(H)_a‖ ≤ Y + N^τ B_u^{m+2} X`: `𝒬_u 𝒜 = 𝒜 - (𝒫𝒜)_{a₀} ϑ_u`, `norm_sub_le`, and the
 first conjunct of `altB45N_levelM`. -/
@@ -594,23 +586,6 @@ theorem startLevelQN (d : ℕ) (hd : 2 ≤ d) (sz : Sizes d) (n : ℕ) (E u κ :
   exact (norm_sub_le _ _).trans (add_le_add (hYtop a) h1)
 
 end Start
-
-/-! ## 4. Target 4: the crude-sup bridge -/
-
-/-! ## 5. Compiled nonempty instances (namespace `QLevelsAInst`)
-
-The merged admissible sequence `sz0` (`d = 3`; `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`) at
-`n = 0` (`L = 4`, `W = 32`, `lam = 1/64`, `N = 2097152`), `m = 1` (tensors of `m + 2 = 3` indices), `E = 0`,
-`u = 0`, `κ = 1` (`Γ = 2`), `H = 0` (Hermitian), `ν = 8`, `ωf = W^{1/5} = 2`, `X = 1`, `Fv = W^{-36}`, `τN = 2`,
-the explicit mollifier `QopAlgebra_mollifier 3 L 2 lam` with `Λ = (1 + 40·6)·6^6 = 11244096`.  The levels `hY`, `hF`,
-`hYtop` are read off `0 ∈ GoodSetN` at `(Γ, Λ, Φ) = (4, 100, 1)`, `k = 4`, `τ' = 1/5`, `D' = 36`
-(clause (G2) for `j = 2, 3`, clause (Dec) for `j = 2`), the merged `zero_mem_goodSetN_of_levels`.  The far labels
-(`ℓ_0 ωf = 2 ≤ diam_∞`) exist, so `hF` is not vacuous.  Every deterministic hypothesis is discharged. -/
-
-/-! ### Generic instances (T2498, row U3s3a): the carrier `bandStep2Mat sz0 Ez`, `Ez ≡ 0`
-
-The data of the band instances above; `κm = 1/2` (`Γ = 2`, `κm ≤ Im m = 1`), `K₆ = 1`; the Ward class by `zeroModeGen_wardCls_band`, the kernel sums by
-`zeroModeGen_kerSums_band`, the rows and columns of `Step2Gen_thetaKer` as in `b45Gen_facts_band`. -/
 
 end RBM.Ind
 

@@ -6,35 +6,29 @@ Authors: Jun Yin
 import RBM3D.Induction.QBudgetA
 
 /-!
-# S3-17b (ticket T2286): the linear drift level of the alternating chain, eventual absorptions
+# The linear drift level of the alternating chain, eventual absorptions
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `lem:STOeq_Qt`
-`3_5:1364-1378`, the alternating case `3_5:1676-1714` (`(y27kasdfg)`, `(A4)`, `(A5)`
-`3_5:1692-1706`), `lem_+Q`/`(normQA)` `3_5:1284-1289`, the non-alternating linear budget
-`3_5:1152-1180`.
+Paper: Lemma 4.10 (`lem:STOeq_Qt`), the alternating case in Subsection 4.5 `subsec:support` (proof of
+Lemma 4.17: (4.59) `y27kasdfg`, (4.61) `A4`, (4.60) `A5`), Claim 4.9 (`lem_+Q`) with (4.32) `normQA`,
+and the non-alternating linear budget of the proof of Lemma 4.6 (`lem:STOeq_NQ`).
 
-Re-scope (DECISIONS §92 (4), §62 (2)/(4), §64 (4)/(5), §83, §91 (2)): the merged level
-`dDriftAltQN` (`QLevelsB.lean:53`) takes the block level from (D2) of `GoodSetN`; here the block
-level is the linear one of `GoodLinN` (`NQLin.lean:66`), `GoodSetN` enters only through its
-level-free clauses (Herm), (Vb), (Dec) at a free crude level, and `hY` (the length-`m + 1`
-control) is an explicit premise.  No probability, no `Prec`, no lift, no prime.
+The drift level of the alternating chain takes its block level from `GoodLinN` (linear in the levels); `GoodSetN` enters only through its level-free clauses
+(Hermitian, the far-label clause of the `ℰ⊗ℰ` term, decay) at a free crude level, and `hY` (the
+length-`m + 1` bound) is an explicit premise.  No probability, no `Prec`, no lift.
 
-* §0 vocabulary (check file `docs/tickets/checks/T2286-check.lean` §2, verbatim):
-  `altBudgetNumQN`, `altBudgetExpQN`;
-* §1 targets 1-4: `dFlowQN_levelLin`, `alt_hdriftLinQN`, `dDriftAltLinQN_nonneg`,
-  `dDriftAltQN_eq_lin`;
-* §2 asymptotic helpers and the eight row lemmas (private, copies of `NQEndLin.lean:54-436`);
-* §3 targets 5-6: `altBudgetExpQN_of_choice`, `altBudgetNumQN_eventually`;
-* §4 compiled nonempty instances (namespace `QBudgetBInst`) at `d = 3`, `sz0`.
+* §0 vocabulary: `altBudgetNumQN`, `altBudgetExpQN`;
+* §1 `dFlowQN_levelLin`, `alt_hdriftLinQN`, `dDriftAltLinQN_nonneg`;
+* §2 asymptotic helpers and the eight per-condition lemmas (private, as the `nqEnd_*` lemmas of `NQEndLin`);
+* §3 `altBudgetExpQN_of_choice`, `altBudgetNumQN_eventually`;
+and their twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`, no `BA/*` import):
+`altBudgetNumQNg` (§0g; explicit `Cv`, `(Cm.m n).im`; the band case is `rfl`),
+`dFlowQNg_levelLin`, `alt_hdriftLinQNg`, `dDriftAltLinQNg_nonneg` (§1g; `drift13_fastDecayg`,
+`driftTensorNg_norm_le_of_goodLin`, `goodSetNg_LKM_far`, and `altB45Ng_levelM` with `Γ = κm⁻¹` and the
+fields of `B45Gen_Facts` in place of `|E| ≤ 2 - κ`) and `altBudgetNumQNg_eventually` (§3g; the exponent
+conditions `altBudgetExpQN` and `altBudgetExpQN_of_choice` are model-free).  The private lemmas
+`QBudgetB_ev_ha2`, `QBudgetB_ev_ha3` read an arbitrary sequence `im n` for `(mE (E n)).im`.
 
-T2498 (row U3s3a′, in place): the generic twins over a carrier `Cm : Step2Mat sz` (namespace `RBM.Ind`, `open RBM.BA`, no `BA/*` import), added after the band text, which is
-unchanged except that the private rows `QBudgetB_ev_ha2`, `QBudgetB_ev_ha3` read an arbitrary sequence `im n` for `(mE (E n)).im`: `altBudgetNumQNg` (§0g; explicit `Cv`,
-`(Cm.m n).im`; band bridge `altBudgetNumQNg_band` by `rfl`), `dFlowQNg_levelLin`, `alt_hdriftLinQNg`, `dDriftAltLinQNg_nonneg` (§1g; `drift13_fastDecayg`,
-`driftTensorNg_norm_le_of_goodLin`, `goodSetNg_LKM_far`, and `altB45Ng_levelM` with `Γ = κm⁻¹` and the fields of `B45Gen_Facts` in place of `|E| ≤ 2 - κ`) and
-`altBudgetNumQNg_eventually` (§3g; the exponent conditions `altBudgetExpQN` and `altBudgetExpQN_of_choice` are model-free and reused).  The generic instances close §4 at the
-carrier `bandStep2Mat sz0 Ez`.
-
-Unpinned helpers are `private` or prefixed `QBudgetB_`.
+Helpers are `private` or prefixed `QBudgetB_`.
 -/
 
 open private B45_norm_colsum from RBM3D.Induction.B45
@@ -52,11 +46,11 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path RBM.BA
 
-/-! ## §2 Vocabulary (copied verbatim into `QBudgetB.lean`) -/
+/-! ## 0. Vocabulary -/
 
 /-- **The eight numerical hypotheses of `budgetAltQN` at the linear drift level** (one `n`):
-`ha1`, `ha2`, `ha3`, `he0`, `he1`, `he2`, `he3`, `he4` of `budgetAltQN` (`QBudgetA.lean:575`) verbatim, with
-`Pa = W^{C_n ε'} (Γ Γ) k + N^{τ_N}` (the shape of `dDriftAltLinQN_le_shape`, `QBudgetA.lean:419`) at
+`ha1`, `ha2`, `ha3`, `he0`, `he1`, `he2`, `he3`, `he4` of `budgetAltQN` verbatim, with
+`Pa = W^{C_n ε'} (Γ Γ) k + N^{τ_N}` (the shape of `dDriftAltLinQN_le_shape`) at
 `Γ = N^{ε₁}`, `b = W^{-D'+C_n}`, `δ0 = 2 W^{-D'}` (`alt_hA0clsQN`), `δD = 4 W^{-D'}` (`alt_hDclsQN`),
 `C_n = qProxyCn d (m+1) Λg KL C c` (one constant for the drift level and the QV). -/
 def altBudgetNumQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n m : ℕ)
@@ -95,9 +89,9 @@ def altBudgetNumQN {d : ℕ} (sz : Sizes d) (E : ℕ → ℝ) (n m : ℕ)
   ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_t) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6
 
 /-- **The exponent conditions of the eight absorptions** (`k = m + 2`, `C4 = C₄`, `Cn = C_n`, `C_Q = 2 C_n + 2`,
-bandwidth exponent `𝔠`, common `he2` exponent `ξ`): nonnegativity of the positive `W`-exponents, then per row
+bandwidth exponent `𝔠`, common `he2` exponent `ξ`): nonnegativity of the positive `W`-exponents, then per condition
 (`ha1`; `ha2` two summands; `ha3`; `he0` and the `δD` part of `he1`; the `b` part of `he1`; `he2` as
-`nqEnd_ev_he2`, `NQEndLin.lean:397`, with `R = ((1+g²)N)^k` and `D = D'' - C_Q`; `he3`; `he4`). -/
+`nqEnd_ev_he2`, with `R = ((1+g²)N)^k` and `D = D'' - C_Q`; `he3`; `he4`). -/
 def altBudgetExpQN (k : ℕ) (C4 Cn 𝔠 ε ε' τN D' D'' D_Y D_t εq ε₀ ε₁ ξ : ℝ) : Prop :=
   0 ≤ C4 * ε ∧ 0 ≤ Cn * ε ∧ 0 ≤ Cn * ε' ∧
   C4 * ε + ε₁ < ε₀ ∧
@@ -153,19 +147,19 @@ def altBudgetNumQNg {d : ℕ} {sz : Sizes d} (Cm : Step2Mat sz) (n m : ℕ)
   ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_Y) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6 ∧
   ((sz.size n : ℕ) : ℝ) ^ (m + 1 + 1) * ((sz.size n : ℕ) : ℝ) ^ (-D_t) ≤ ((sz.size n : ℕ) : ℝ) ^ ε₀ / 6
 
-/-! ## 1. Targets 1-4: the linear drift level of the alternating chain -/
+/-! ## 1. The linear drift level of the alternating chain -/
 
 /-- `C_n = qProxyCn d m Λg K C c` is the `Classical.choose` of `stQopNorm_holds` under the range `3 ≤ d ∧ 0 < Λg ∧
-0 < K ∧ 0 < C ∧ 0 < c` (the `dite` of `QProxy.lean:434`, as in `qProxyCn_pos`, `QProxy.lean:458`). -/
+0 < K ∧ 0 < C ∧ 0 < c` (the `dite` as in `qProxyCn_pos`). -/
 private theorem QBudgetB_qProxyCn_eq {d : ℕ} (hd : 3 ≤ d) (m : ℕ) {Λg K C c : ℝ} (hΛ : 0 < Λg)
     (hK : 0 < K) (hC : 0 < C) (hc : 0 < c) :
     qProxyCn d m Λg K C c = Classical.choose (stQopNorm_holds d hd m Λg K C c hΛ hK hC hc) := by
   unfold qProxyCn
   rw [dite_eq_left_of_eq_true (eq_true ⟨hd, hΛ, hK, hC, hc⟩)]
 
-/-- Target 1: the per-matrix LINEAR drift level of the alternating chain (`dFlowQN_levelM` with
-`driftTensorN_norm_le_of_goodLin` for the block, `GoodSetN` only at a free crude level for (Herm), (Vb), (Dec),
-`hY` an explicit premise, `C_n = qProxyCn d (m+1) Λg KL C c` explicit). -/
+/-- The per-matrix LINEAR drift level of the alternating chain (the per-matrix level of `dFlowQN` with
+`driftTensorN_norm_le_of_goodLin` for the block, `GoodSetN` only at a free crude level for its level-free
+clauses, `hY` an explicit premise, `C_n = qProxyCn d (m+1) Λg KL C c` explicit). -/
 theorem dFlowQN_levelLin :
   ∀ (d m : ℕ) (Λg KL C c : ℝ), 3 ≤ d → 0 < Λg → 0 < KL → 0 < C → 0 < c →
     ∀ (sz : Sizes d) (n : ℕ) (E u κ Γc Λc Φc Γ Φ₁ Φ₂ Φ₃ τ' ε' D' ν X τN : ℝ)
@@ -252,8 +246,7 @@ theorem dFlowQN_levelLin :
     driftTensorN sz n E u Hm σ b) a) (b := altB4N sz n E u ϑ σ Hm a) (c := altB5N sz n E u ϑ σ Hm a)
   linarith [hB45.2]
 
-/-- Target 2: the field `hdrift` of `GridAssemblyHypN` along the walk at the linear level (`alt_hdriftQN` with
-target 1; mollifier `QopAlgebra_mollifier`, `C = (1 + 40 d(m+1)) 6^{d(m+1)}`, `c = 1/2`; membership in
+/-- The field `hdrift` of `GridAssemblyHypN` along the walk at the linear level (`dFlowQN_levelLin` at each `j`; mollifier `QopAlgebra_mollifier`, `C = (1 + 40 d(m+1)) 6^{d(m+1)}`, `c = 1/2`; membership in
 `GoodSetN ∩ GoodLinN` in the form of `mem_of_lt_nqLinExitTauN`; `hY` on `{j < τ}` separate). -/
 theorem alt_hdriftLinQN :
   ∀ (d m : ℕ) (Λg KL : ℝ), 3 ≤ d → 0 < Λg → 0 < KL →
@@ -296,7 +289,7 @@ theorem alt_hdriftLinQN :
     (QopAlgebra_mollifier d (sz.L n) (m + 1) (sz.lam n)) hκ hE hu0 hu1 hlam hlamΛ hNu hW hτ' hε hε1 hD h4 hLW
     hdW hν hX hνt hνN hFv hMΛ hϑ (hτG ω j hjτ).1 (hτG ω j hjτ).2 (hY ω j hjτ) hσ b
 
-/-- Target 3: the field `hdDrift0` at the linear level. -/
+/-- The field `hdDrift0` at the linear level. -/
 theorem dDriftAltLinQN_nonneg :
   ∀ {d : ℕ} (sz : Sizes d) (n : ℕ) (E u : ℝ) (m : ℕ) (Γ Φ₁ Φ₂ Φ₃ Cn ε' D' τN X : ℝ),
     |E| < 2 → u < 1 → 0 ≤ Φ₁ → 0 ≤ Φ₂ → 0 ≤ Φ₃ → 0 ≤ X →
@@ -321,17 +314,16 @@ theorem dDriftAltLinQN_nonneg :
   have := mul_nonneg h4' h5
   linarith
 
-/-! ## 2. Asymptotic helpers and the eight row lemmas
+/-! ## 2. Asymptotic helpers and the eight per-condition lemmas
 
 The private helpers `QBudgetB_ev_rpow_le`, `QBudgetB_ev_rpow_log_le`, `QBudgetB_ev_polylog_le`, `QBudgetB_W_le_size`,
-`QBudgetB_Wpow_le`, `QBudgetB_he2_bound`, `QBudgetB_he2_final`, `QBudgetB_ev_he4` are copies of the `nqEnd_*` lemmas of
-`NQEndLin.lean` (`:57`, `:67`, `:92`, `:142`, `:154`, `:324`, `:367`, `:303`; ticket T2199, RBM2D `NonAltEnd.lean:54-121`,
-`:266`, `:573`); the rows `ha2`, `ha3`, `he1` are adapted to the eventual hypothesis `κ' ≤ Im m(E n)`, to the two-term
+`QBudgetB_Wpow_le`, `QBudgetB_he2_bound`, `QBudgetB_he2_final`, `QBudgetB_ev_he4` are the `nqEnd_*` lemmas of
+`NQEndLin.lean` (as in RBM2D); the conditions `ha2`, `ha3`, `he1` are adapted to the eventual hypothesis `κ' ≤ Im m(E n)`, to the two-term
 `Pa`, and to the `b` part. -/
 
 section Asymp
 
-/-- `C · x^a ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd_ev_rpow_le`, `NonAltEnd:60`). -/
+/-- `C · x^a ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd_ev_rpow_le`). -/
 private theorem QBudgetB_ev_rpow_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     ∀ᶠ x : ℝ in atTop, C * x ^ a ≤ x ^ b := by
   have ht : Tendsto (fun x : ℝ => x ^ (b - a)) atTop atTop := tendsto_rpow_atTop (sub_pos.mpr hab)
@@ -341,7 +333,7 @@ private theorem QBudgetB_ev_rpow_le {a b : ℝ} (hab : a < b) (C : ℝ) :
   rw [h1]
   exact mul_le_mul_of_nonneg_right hx (Real.rpow_nonneg hx0.le _)
 
-/-- `C · x^a (log x + 1) ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd:70`). -/
+/-- `C · x^a (log x + 1) ≤ x^b` for all large real `x` when `a < b` (RBM2D). -/
 private theorem QBudgetB_ev_rpow_log_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     ∀ᶠ x : ℝ in atTop, C * x ^ a * (Real.log x + 1) ≤ x ^ b := by
   set δ := (b - a) / 2 with hδ
@@ -366,7 +358,7 @@ private theorem QBudgetB_ev_rpow_log_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     _ ≤ x ^ b := hN
 
 /-- **Polylog absorption**: `C (1 + log x)^j x^a ≤ x^b` for all large real `x` when `a < b`
-(RBM2D `NonAltEnd_ev_polylog_le`, `NonAltEnd:94`). -/
+(RBM2D `NonAltEnd_ev_polylog_le`). -/
 private theorem QBudgetB_ev_polylog_le (j : ℕ) :
     ∀ {a b : ℝ}, a < b → ∀ C : ℝ, ∀ᶠ x : ℝ in atTop, C * (1 + Real.log x) ^ j * x ^ a ≤ x ^ b := by
   induction j with
@@ -397,7 +389,7 @@ private theorem QBudgetB_ev_polylog_le (j : ℕ) :
 end Asymp
 
 /-- **Crude `W ≤ N`** (`W ≤ W^d ≤ (W L)^d = N`, `d ≥ 1`): the bound for the positive powers of `W`
-(copy of `nqEnd_W_le_size`, `NQEndLin.lean:142`). -/
+(as `nqEnd_W_le_size`). -/
 private theorem QBudgetB_W_le_size {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (n : ℕ) :
     ((sz.W n : ℕ) : ℝ) ≤ ((sz.size n : ℕ) : ℝ) := by
   have h1 : sz.W n ≤ (sz.W n) ^ d := Nat.le_self_pow (by omega) _
@@ -407,7 +399,7 @@ private theorem QBudgetB_W_le_size {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (n : 
   exact_mod_cast h1.trans h2
 
 /-- `W^e ≤ N^{𝔠 e}` for `e ≤ 0` from `N^𝔠 ≤ W` (the negative powers of `W`; RBM2D
-`NonAltEnd_Wneg_le`, `NonAltEnd:266`, with a general nonpositive exponent). -/
+`NonAltEnd_Wneg_le`, with a general nonpositive exponent). -/
 private theorem QBudgetB_Wpow_le {W N c e : ℝ} (hN0 : 0 < N) (hcW : N ^ c ≤ W) (he : e ≤ 0) :
     W ^ e ≤ N ^ (c * e) := by
   have h1 : 0 < N ^ c := Real.rpow_pos_of_pos hN0 _
@@ -486,7 +478,7 @@ private theorem QBudgetB_he2_final {N Y εq ε₀ ξ M : ℝ} {k : ℕ} (hN1 : 1
     _ ≤ N ^ ε₀ / 12 := by linarith
 
 /-- (he3, he4) `N^k N^{-D} ≤ N^{ε₀}/6` when `k - D < ε₀` (`budgetNonAltLinN.he3`, `he4` at
-`D = D_Y`, `D = D_t`; RBM2D `NonAltEnd_ev_he4`, `NonAltEnd:573`). -/
+`D = D_Y`, `D = D_t`; RBM2D `NonAltEnd_ev_he4`). -/
 private theorem QBudgetB_ev_he4 {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto) (k : ℕ) {D ε₀ : ℝ}
     (hε : (k : ℝ) - D < ε₀) :
     ∀ᶠ n : ℕ in atTop, ((sz.size n : ℕ) : ℝ) ^ k * ((sz.size n : ℕ) : ℝ) ^ (-D) ≤
@@ -500,7 +492,7 @@ private theorem QBudgetB_ev_he4 {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto
   rw [e]
   linarith
 
-/-- (ha1) `W^c N^{ε₁} ≤ N^{ε₀}/6` when `0 ≤ c`, `c + ε₁ < ε₀` (copy of `nqEnd_ev_ha1`, `NQEndLin.lean:173`). -/
+/-- (ha1) `W^c N^{ε₁} ≤ N^{ε₀}/6` when `0 ≤ c`, `c + ε₁ < ε₀` (as `nqEnd_ev_ha1`). -/
 private theorem QBudgetB_ev_ha1 {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (hsize : sz.SizeTendsto) {c ε₁ ε₀ : ℝ}
     (hc : 0 ≤ c) (hε : c + ε₁ < ε₀) :
     ∀ᶠ n : ℕ in atTop, ((sz.W n : ℕ) : ℝ) ^ c * ((sz.size n : ℕ) : ℝ) ^ ε₁ ≤
@@ -518,7 +510,7 @@ private theorem QBudgetB_ev_ha1 {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (hsize :
 
 /-- (ha2) the two-term `Pa`: `W^a (W^b (N^{ε₁} N^{ε₁}) k + N^{τ_N}) Ls ≤ N^{ε₀}/12` when `0 ≤ a, b`,
 `a + b + 2ε₁ < ε₀`, `a + τ_N < ε₀`, `Ls = (Im m(E n))⁻¹ log N`, eventually `κ' ≤ im n` (`im n = Im m(E n)`, `(Cm.m n).im`); each summand is
-absorbed to `N^{ε₀}/24` (adapted from `nqEnd_ev_ha2`, `NQEndLin.lean:190`). -/
+absorbed to `N^{ε₀}/24` (adapted from `nqEnd_ev_ha2`). -/
 private theorem QBudgetB_ev_ha2 {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (hsize : sz.SizeTendsto) (k : ℕ)
     {κ' : ℝ} (hκ' : 0 < κ') {im : ℕ → ℝ} (hκm : ∀ᶠ n : ℕ in atTop, κ' ≤ im n)
     {a b ε₁ τN ε₀ : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (h1 : a + b + 2 * ε₁ < ε₀) (h2 : a + τN < ε₀) :
@@ -574,7 +566,7 @@ private theorem QBudgetB_ev_ha2 {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (hsize :
     _ ≤ N ^ ε₀ / 12 := by linarith
 
 /-- (ha3) `N^{εq} (W^a W^b N^{ε₁} √(k (Ls + 1))) ≤ N^{ε₀}/12` when `0 ≤ a, b`, `εq + a + b + ε₁ < ε₀`, eventually
-`κ' ≤ Im m(E n)` (adapted from `nqEnd_ev_ha3`, `NQEndLin.lean:229`, with `c = a + b`; `√z ≤ z + 1`). -/
+`κ' ≤ Im m(E n)` (adapted from `nqEnd_ev_ha3`, with `c = a + b`; `√z ≤ z + 1`). -/
 private theorem QBudgetB_ev_ha3 {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (hsize : sz.SizeTendsto) (k : ℕ)
     {κ' : ℝ} (hκ' : 0 < κ') {im : ℕ → ℝ} (hκm : ∀ᶠ n : ℕ in atTop, κ' ≤ im n)
     {a b ε₁ εq ε₀ : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hε : εq + a + b + ε₁ < ε₀) :
@@ -626,7 +618,7 @@ private theorem QBudgetB_ev_ha3 {d : ℕ} (sz : Sizes d) (hd : 1 ≤ d) (hsize :
         linarith
 
 /-- (he0, and the `δD` part of he1) `N^k (W^C (c₀ W^{-D'})) ≤ N^{ε₀}/q` when `C ≤ D'`, `k + 𝔠 (C - D') < ε₀`
-(`W^C W^{-D'} = W^{C-D'} ≤ N^{𝔠(C-D')}`; adapted from `nqEnd_ev_he1`, `NQEndLin.lean:276`, with a constant). -/
+(`W^C W^{-D'} = W^{C-D'} ≤ N^{𝔠(C-D')}`; adapted from `nqEnd_ev_he1`, with a constant). -/
 private theorem QBudgetB_ev_he0 {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto) {𝔠 : ℝ}
     (hband : sz.Bandwidth 𝔠) (k : ℕ) {C D' ε₀ c₀ q : ℝ} (hc₀ : 0 ≤ c₀) (hq : 0 < q) (hCD : C ≤ D')
     (hε : (k : ℝ) + 𝔠 * (C - D') < ε₀) :
@@ -708,7 +700,7 @@ private theorem QBudgetB_ev_he1b {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendst
   nlinarith [h1, h]
 
 /-- (he2) `N^{εq} (N^k √(k · qvFar' · W^{-D})) ≤ N^{ε₀}/12`, `qvFar' = W^a R (W^a R + W^b) + W^b W^k` with
-`R = ((1+g²)N)^k`, `a = C₄ε`, `b = C₄`, `D = D'' - C_Q` (adapted from `nqEnd_ev_he2`, `NQEndLin.lean:397`, at
+`R = ((1+g²)N)^k`, `a = C₄ε`, `b = C₄`, `D = D'' - C_Q` (adapted from `nqEnd_ev_he2`, at
 `r = k`, since `kappaAltQN` has exponent `k`, not `k - 1`). -/
 private theorem QBudgetB_ev_he2 {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto) {𝔠 : ℝ}
     (hband : sz.Bandwidth 𝔠) (k : ℕ) {Λg a b D εq ε₀ ξ : ℝ}
@@ -741,9 +733,9 @@ private theorem QBudgetB_ev_he2 {d : ℕ} (sz : Sizes d) (hsize : sz.SizeTendsto
     h1 h2 h3
   exact QBudgetB_he2_final hN1 hM0 hbound h
 
-/-! ## 3. Targets 5-6: the exponent choice and the eventual absorptions -/
+/-! ## 3. The exponent choice and the eventual absorptions -/
 
-/-- Target 5: an explicit admissible choice of the exponents (`ξ = -(2k+1)`; monotone in `D'`, `D''`, `D_Y`,
+/-- An explicit admissible choice of the exponents (`ξ = -(2k+1)`; monotone in `D'`, `D''`, `D_Y`,
 `D_t`; `ε`, `ε'`, `ε₁`, `εq`, `τN` small against `ε₀`), so the conditions are not vacuous for any positive
 `C₄`, `C_n`, `𝔠`, `ε₀`. -/
 theorem altBudgetExpQN_of_choice :
@@ -794,7 +786,7 @@ theorem altBudgetExpQN_of_choice :
     by linarith, f11, by linarith, by linarith, by linarith, f15, f16, f17, by linarith, by linarith,
     by linarith⟩
 
-/-- Target 6 (the theorem S3-18a consumes): the eight hypotheses of `budgetAltQN` at the linear level hold
+/-- The eight hypotheses of `budgetAltQN` at the linear level hold
 eventually, from `SizeTendsto`, `Bandwidth 𝔠`, `κ' ≤ Im m(E n)` and `0 < g ≤ Λg` eventually, and the exponent
 conditions at `C₄ = qProxy4C d (m+2) Λg κ' KL`, `C_n = qProxyCn d (m+1) Λg KL C c`. -/
 theorem altBudgetNumQN_eventually :
@@ -838,7 +830,7 @@ section LevelG
 variable {d : ℕ} {sz : Sizes d}
 
 /-- **`dFlowQNg_levelLin`** (band `dFlowQN_levelLin`): the per-matrix LINEAR drift level of the alternating chain over a carrier (`drift13_fastDecayg` and
-`driftTensorNg_norm_le_of_goodLin` for the block, `GoodSetNg` at a free crude level for (Herm), (Vb), (Dec), `hY` an explicit premise, `C_n = qProxyCn d (m+1) Λg KL C c`
+`driftTensorNg_norm_le_of_goodLin` for the block, `GoodSetNg` at a free crude level for its level-free clauses, `hY` an explicit premise, `C_n = qProxyCn d (m+1) Λg KL C c`
 explicit; the spectral levels `ℬ₄ + ℬ₅` from `altB45Ng_levelM` with `Γ = κm⁻¹` and the fields of `B45Gen_Facts`). `LoopForm` and `‖Cm.m n‖ ≤ 1` replace `|E| ≤ 2 - κ`. -/
 theorem dFlowQNg_levelLin {E : ℕ → ℝ} (hd : 3 ≤ d) (m : ℕ) (Λg KL C c : ℝ) (hΛg : 0 < Λg) (hKL : 0 < KL) (hC : 0 < C) (hc : 0 < c)
     (Cm : Step2Mat sz) (hL : StepDecompGen_LoopForm Cm E) (n : ℕ) {κm K₆ : ℝ} (hκm : 0 < κm) (hmn : κm ≤ (Cm.m n).im)
@@ -1011,7 +1003,7 @@ section EventualG
 
 variable {d : ℕ} {sz : Sizes d}
 
-/-- **`altBudgetNumQNg_eventually`** (band `altBudgetNumQN_eventually`; the theorem the endpoint consumes): the eight hypotheses of `budgetAltQNg` at the linear level hold
+/-- **`altBudgetNumQNg_eventually`** (band `altBudgetNumQN_eventually`): the eight hypotheses of `budgetAltQNg` at the linear level hold
 eventually, from `SizeTendsto`, `Bandwidth 𝔠`, `κ' ≤ Im m` and `0 < g ≤ Λg` eventually, and the exponent conditions `altBudgetExpQN` (model-free, band) at the explicit
 `Cv = C₄` and `C_n = qProxyCn d (m+1) Λg KL C c`. -/
 theorem altBudgetNumQNg_eventually (Cm : Step2Mat sz) (m : ℕ)
@@ -1046,28 +1038,6 @@ theorem altBudgetNumQNg_eventually (Cm : Step2Mat sz) (m : ℕ)
     exact s6
 
 end EventualG
-
-/-! ## 4. Compiled nonempty instances (namespace `QBudgetBInst`)
-
-Targets 1-4 at the data of `QLevelsBInst` (`QLevelsB.lean:307-582`): the merged admissible sequence `sz0` (`d = 3`,
-`L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`) at `n = 4` (`x = 10`, `L = 20`, `W = 10^5`,
-`N = (W L)^3 = 8·10^18`, `lam = 10^{-6}`), `m = 2` (tensors of `k = 4` indices), `K_L = 2`, `Λ_g = 1`, `E = 0`,
-`u = 0`, `κ = 1`, `H = 0`, `σ = ![T, F, T, F]`, the crude `GoodSetN` levels `(Γc, Λc, Φc) = (4, 100, 1)`, the
-`GoodLinN` levels `(Γ, Φ₁, Φ₂, Φ₃) = (4, 1, 16, 1)` (`goodSetN_subset_goodLinN`, `Φ₂ = kΓΦ² = 16`), `τ' = 1/10`,
-`ε' = 1/5`, `D' = 40`, `ν = W`, `X = 1`, `τ_N = 2`, `C = Cmol3`, `c = 1/2`.  The premise `hY` of targets 1-2 is
-discharged by `goodSetN_LKM_le` (`4 ≤ ν X = W`).  Targets 5-6: `k = 3` (`m = 1`), `Λ_g = 1`, `κ' = 24/25`,
-`K_L = 1`, `C = 1`, `c = 1/2`, `𝔠 = 1/6`, `ε₀ = 1`, `ε₁ = εq = τ_N = 1/8`, `D' = C₄ + C_n + 42`,
-`D'' = 2C_n + 2 + 2C₄ + 3 + 78`, `D_Y = D_t = 3`, `ε = min (1/(8(C₄ + C_n))) (1/2)`, `ε' = 1/(8 C_n)`, with the abstract
-positive constants `C₄ = qProxy4C 3 3 1 (24/25) 1`, `C_n = qProxyCn 3 2 1 1 1 (1/2)`; target 6 at `sz0`, `E ≡ 1/2`
-(`Im m = √15/4 ≥ 24/25`).  The numeric helpers are copies of the private ones of `QLevelsBInst` and `QBudgetAInst`. -/
-
-/-! ### Generic instances (T2498, row U3s3a′): the carrier `bandStep2Mat sz0 Ez`, `Ez ≡ 0`
-
-The data of the band instances above (`n = 4`, `m = 2`, `E = 0`, `u = 0`, `H = 0`, levels `(4, 100, 1)`, `(4, 1, 16, 1)`); `κm = 1/2` (`κm⁻¹ = 2 = 2/√1`, `κm ≤ Im m = 1`), `K₆ = 1`;
-the Ward class by `zeroModeGen_wardCls_band`, the kernel sums by `zeroModeGen_kerSums_band`, the rows and columns of `Step2Gen_thetaKer` as in
-`b45Gen_facts_band`; `GoodSetNg`, `GoodLinNg` by the `rfl` bridges of the band sets. -/
-
-/-! ### Targets 5-6 -/
 
 end RBM.Ind
 

@@ -8,25 +8,19 @@ import RBM3D.Induction.AzumaProxyN
 import RBM3D.Graph.LWExpTerm3
 
 /-!
-# ST-6 R1 (ticket T2340): the base case `t = 0` of the final assembly, over a carrier
+# The base case `t = 0` of the final assembly, over a carrier
 
-Design `docs/reports/T2338-design.md` §2 (rows R1-R3 of §7), probe `RBM3D/Probe/T2338Pins.lean`
-on `t/T2338` (lines 42-59, 81-139, 344-355).  Paper `1_2:1240-1243` (`G_0 = M`, `𝓛_0 = 𝒦_0`).
+At `t = 0`, `G_0 = M` and `𝓛_0 = 𝒦_0` (the outline of the proofs of Lemma 2.21 `ML:GLoop`,
+Lemma 2.22 `ML:GLoop_expec` and Lemma 2.23 `ML:GtLocal` in the subsection "Proof of the main results"
+of Section 2).
 
-* the pins (`RBM.BA`, route G: over a carrier `(law, Flow, mk, T0)` as `STMainIndG`): `STConclgL`
-  (the six conclusions of `lem:main_ind`), `STLK0` (`𝓛_0 = 𝒦_0`), `STG0M` (`G_0 = M`), `STBaseG`
-  (the six conclusions at the zero sequence);
-* `stBaseG_of_init`: `STBaseG` from `STLK0`, `STG0M` and `ML:Kbound` (`STKboundgL`) at every
-  flow point;
-* `stBase_band`: the band instance, with **no hypothesis** (the identity `𝓛_0 = 𝒦_0` is the now
-  public `RBM.Ind.azumaProxy_loopFine_sub_STKloop`, whose keyword `private` is dropped in
-  `Induction/AzumaProxyN.lean`).
-
-`STLK0`, `STG0M`, `STBaseG` are owed for the block Anderson data (BA-V `GLoopAtT0`); the band
-instances are proved here.
-
-Imports: only what the file uses and what is not transitive (`Loop.KLFinal`, `stKbound_of_flow`,
-comes with `Graph.LWExpTerm3`).
+* the statements (`RBM.BA`, over a carrier `(law, Flow, mk, T0)` as `STMainIndG`): `STConclgL`
+  (the six conclusions of Theorem 2.24 `lem:main_ind`), `STLK0` (`𝓛_0 = 𝒦_0`), `STG0M` (`G_0 = M`),
+  `STBaseG` (the six conclusions at the zero sequence);
+* `stBaseG_of_init`: `STBaseG` from `STLK0`, `STG0M` and Lemma 2.16 `ML:Kbound` (`STKboundgL`) at
+  every flow point;
+* `stBase_band`: the band instance, with no hypothesis (the identity `𝓛_0 = 𝒦_0` is
+  `RBM.Ind.azumaProxy_loopFine_sub_STKloop`).
 -/
 
 set_option linter.unusedVariables false
@@ -39,22 +33,23 @@ namespace RBM.BA
 
 variable {d : ℕ}
 
-/-! ## 1. The pins -/
+/-! ## 1. The statements -/
 
-/-- The six conclusions of `lem:main_ind` at the time sequence `τ` over a carrier (the order of `STMainIndG`). -/
+/-- The six conclusions of Theorem 2.24 `lem:main_ind` at the time sequence `τ` over a carrier (the
+order of `STMainIndG`). -/
 def STConclgL {sz : Sizes d} (C : FlowFM sz) (μ : Measure sz.SeqΩ) (τ : ℕ → ℝ) : Prop :=
   STLKgL C μ τ ∧ STLmaxgL C μ τ ∧ STDecaygL C μ τ ∧ STExp2gL C μ τ ∧ STLocalEntrygL C μ τ ∧
     STDecayStronggL C μ τ
 
-/-- R1: `𝓛_0 = 𝒦_0` (`1_2:1240-1243`) for every loop length `k ≥ 1`. -/
+/-- `𝓛_0 = 𝒦_0` for every loop length `k ≥ 1`. -/
 def STLK0 {sz : Sizes d} (C : FlowFM sz) : Prop :=
   ∀ (n k : ℕ) (σ : Fin k → Bool) (a : Fin k → Zd d (sz.L n)) (ω : sz.SeqΩ), 1 ≤ k → C.L n 0 σ a ω = C.K n 0 σ a
 
-/-- R1: `G_0 = M` (`1_2:1240`). -/
+/-- `G_0 = M`. -/
 def STG0M {sz : Sizes d} (C : FlowFM sz) : Prop :=
   ∀ (n : ℕ) (ω : sz.SeqΩ) (x y : Idx d (sz.L n) (sz.W n)), C.G n 0 ω x y = C.M n x y
 
-/-- **R1 (base case)**: the six conclusions at the zero sequence, for every flow. -/
+/-- **The base case**: the six conclusions at the zero sequence, for every flow. -/
 def STBaseG (d : ℕ) (law : ∀ sz : Sizes d, Measure sz.SeqΩ)
     (Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop) (mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 𝔠 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 → ∀ (sz : Sizes d) (z : ℕ → ℂ),
@@ -106,7 +101,7 @@ private theorem STExp2gL_zero [IsProbabilityMeasure μ] (h : STLK0 C) : STExp2gL
     (fun n _ _ => mul_nonneg (pow_nonneg (mainIndBase_bctl_nonneg n _) _) (add_nonneg (Real.rpow_nonneg (by positivity) _)
       (mainIndBase_bctl_nonneg n _)))
 
-/-- **R1, generic**: the base case from the three carrier facts (`𝓛_0 = 𝒦_0`, `G_0 = M`, `ML:Kbound`). -/
+/-- **The base case, generic**: from the three carrier facts (`𝓛_0 = 𝒦_0`, `G_0 = M`, `ML:Kbound`). -/
 theorem stBaseG_of_init {law : ∀ sz : Sizes d, Measure sz.SeqΩ} {Flow : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), Prop}
     {mk : ∀ (sz : Sizes d) (z : ℕ → ℂ), FlowFM sz} (hprob : ∀ sz, IsProbabilityMeasure (law sz))
     (hL : ∀ κ ε 𝔠 𝔡 sz z, Flow sz κ ε 𝔠 𝔡 z → STLK0 (mk sz z))
@@ -122,9 +117,9 @@ end Base
 
 /-! ## 3. The band instance: no hypothesis -/
 
-/-- **R1, band**: the base case for the band model (`Sizes.seqP`, `STFlow`, `bandFM`).  `𝓛_0 = 𝒦_0` is
-`RBM.Ind.azumaProxy_loopFine_sub_STKloop` at `H_0 = 0` (`Sizes.seqHflow n 0 ω = 0`), `G_0 = M` is `lwExpTerm3_Gt_zero`,
-`ML:Kbound` is `stKbound_of_flow`. -/
+/-- **The base case, band**: the base case for the band model (`Sizes.seqP`, `STFlow`, `bandFM`).
+`𝓛_0 = 𝒦_0` is `RBM.Ind.azumaProxy_loopFine_sub_STKloop` at `H_0 = 0` (`Sizes.seqHflow n 0 ω = 0`), `G_0 = M` is
+`lwExpTerm3_Gt_zero`, `ML:Kbound` is `stKbound_of_flow`. -/
 theorem stBase_band (d : ℕ) :
     STBaseG d (fun sz => Sizes.seqP sz) (fun sz κ ε 𝔠 𝔡 z => STFlow sz κ ε 𝔠 𝔡 z) (fun sz z => bandFM sz (STflowE z)) := by
   have hE : ∀ (sz : Sizes d) (κ ε 𝔠 𝔡 : ℝ) (z : ℕ → ℂ), STFlow sz κ ε 𝔠 𝔡 z → ∀ n, |STflowE z n| < 2 := fun sz _ _ _ _ z hf n =>
@@ -138,5 +133,3 @@ theorem stBase_band (d : ℕ) :
   exact sub_eq_zero.1 (azumaProxy_loopFine_sub_STKloop sz n (hE sz κ ε 𝔠 𝔡 z hf n) hk σ a)
 
 end RBM.BA
-
-/-! ## 4. Compiled nonempty instances (`d = 3`, merged data `sz0`, `z0`, `zSeq`) -/

@@ -7,33 +7,22 @@ import RBM3D.Defs.StochDomAt
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
 /-!
-# The `≺`-calculus for the per-time predicate `PerTimeDomAt`, the forbidden region and the
-continuity bootstrap (ST-1, S1-08)
+# The `≺`-calculus for the per-time predicate `PerTimeDomAt`, the forbidden region and the continuity bootstrap
 
-Ticket T2045.  Port of `RBM2D/Induction/PerTimeCalc.lean` at `c9a24cf` (lines 67-849: the
-`PerTime` and `Unif` calculus, `forbidden_region`, `stepOneBootstrap`; the toy instances, the
-compiled negative statements and the axiom audit of lines 851-1434 are not copied: the instances
-of this file are those of section "Instances" below, at the merged `sz0`).  The file is dimension
-free: `PerTimeDomAt`, `StochDomAt`, `HighProbAt`, `TimeIcc` are the merged scale-`size` vocabulary
-of `RBM3D/Defs/StochDomAt.lean` (`size = sz.size = (W L)^d`), the proofs are the RBM2D proofs.
-Paper: arXiv:2507.20274, Step 1 of `lem:main_ind` (`3_5:64-66`, "the same as [YY_25 section 5.1]").
+The `PerTime` and `Unif` calculus, `forbidden_region` and `stepOneBootstrap`, as in the two-dimensional
+formalization (RBM2D `PerTimeCalc`), which follows the one-dimensional one
+(`StochDom.mono_right_eventually`, `StochDom.rpow_of_le_one`, `StochDom.sqrt_of`,
+`StochDom.of_forall_rpow_mul`, `sq_le_four_mul_of_le_add_mul`, `StochDom.of_le_add_sqrt_mul`,
+`StochDom.finset_sum_of`, `rpow_mul_rpow_neg_lt_one`, `forbidden_region`,
+`lt_of_forall_ne_of_continuousOn`, `bootstrap`, here `stepOneBootstrap`, `stochDom_of_indicator`,
+`stochDom_of_forall_or`, `stochDom_of_le_const_mul`, `stochDom_of_le_left_eventually`,
+`stochDom_of_highProb`).  The file is dimension free: `PerTimeDomAt`, `StochDomAt`, `HighProbAt`,
+`TimeIcc` are the scale-`size` vocabulary of `RBM3D/Defs/StochDomAt.lean` (`size = sz.size = (W L)^d`), and the
+proofs are the RBM2D proofs.
+Paper: Step 1 of the proof of Theorem 2.24 (`lem:main_ind`): "the same as [YY_25, Section 5.1]".
 
-## RBM1D sources (commit `86573b9`, as cited in the RBM2D file)
-
-* `RBM1D/Loop/ContinuityAssembly.lean`, section `StochGeneric`:
-  `StochDom.mono_right_eventually` (:540), `StochDom.rpow_of_le_one` (:549),
-  `StochDom.sqrt_of` (:565), `StochDom.of_forall_rpow_mul` (:572),
-  `sq_le_four_mul_of_le_add_mul` (:584), `StochDom.of_le_add_sqrt_mul` (:594),
-  `StochDom.finset_sum_of` (:625).
-* `RBM1D/Hierarchy/Step1.lean`, section `Generic`: `rpow_mul_rpow_neg_lt_one` (:114),
-  `forbidden_region` (:123), `lt_of_forall_ne_of_continuousOn` (:151), `bootstrap` (:167,
-  renamed `stepOneBootstrap`), `stochDom_of_indicator` (:188), `stochDom_of_forall_or` (:218),
-  `stochDom_of_le_const_mul` (:230), `stochDom_of_le_left_eventually` (:236).
-* `RBM1D/Defs/StochDomHighProb.lean`: `stochDom_of_highProb` (:25).
-* `RBM1D/Hierarchy/Step45.lean`: `stochDom_min` (:109), `quad_le_one` (:121).
-
-The base layer is public with the file-stem prefix `perTimeCalc_` (the merged
-`RBM.StochDomAt.*`, `RBM.Gauss.HighProbAt.*` have other names and are not renamed).
+The base layer is public with the file-stem prefix `perTimeCalc_` (`RBM.StochDomAt.*` and
+`RBM.Gauss.HighProbAt.*` have other names).
 
 ## The hypothesis `hsize`
 
@@ -41,7 +30,7 @@ The base layer is public with the file-stem prefix `perTimeCalc_` (the merged
 `2 x^{-(D+1)} ≤ x^{-D}`, `1 ≤ size l` or `C ≤ (size l)^{τ'}` eventually (for `sz : Sizes d` it is
 `Sizes.tendsto_size`).  The per-time variant of `forbidden_region` is not stated: its conclusion is
 a `HighProbAt` event with the union over `u` inside `P`, which the per-time hypothesis does not
-control (RBM2D `pt_forbidden_region_fails`, `PerTimeCalc.lean:1290`).
+bound.
 -/
 
 set_option linter.style.longLine false
@@ -53,9 +42,8 @@ open scoped ENNReal
 
 /-! ### Pure real facts -/
 
-/-- The elementary inequality behind the last step of §6: for `s ≥ 0`, `T ≥ 1`,
-`s² ≤ T(r² + r s)` implies `s² ≤ 4T²r²`.  (RBM1D `sq_le_four_mul_of_le_add_mul`,
-`ContinuityAssembly.lean:584`.) -/
+/-- The elementary inequality behind the absorption `X ≺ A + A^{1/2} X^{1/2} ⇒ X ≺ A`: for `s ≥ 0`, `T ≥ 1`,
+`s² ≤ T(r² + r s)` implies `s² ≤ 4T²r²`.  (As RBM1D's `sq_le_four_mul_of_le_add_mul`.) -/
 theorem sq_le_four_mul_of_le_add_mul {s r T : ℝ} (hs : 0 ≤ s) (hT : 1 ≤ T)
     (h : s ^ 2 ≤ T * (r ^ 2 + r * s)) : s ^ 2 ≤ 4 * T ^ 2 * r ^ 2 := by
   rcases le_or_gt s (2 * T * r) with h1 | h1
@@ -65,8 +53,8 @@ theorem sq_le_four_mul_of_le_add_mul {s r T : ℝ} (hs : 0 ≤ s) (hT : 1 ≤ T)
     have hr2 : 0 ≤ r ^ 2 := sq_nonneg r
     nlinarith
 
-/-- `N^{τ} N^{-ε} < 1` for `τ < ε`, `N ≥ 2`.  (RBM1D `rpow_mul_rpow_neg_lt_one`,
-`Step1.lean:114`; here `N` is a value `size l`.) -/
+/-- `N^{τ} N^{-ε} < 1` for `τ < ε`, `N ≥ 2`.  (As RBM1D's `rpow_mul_rpow_neg_lt_one`;
+here `N` is a value `size l`.) -/
 theorem rpow_mul_rpow_neg_lt_one {N : ℕ} (hN : 2 ≤ N) {τ ε : ℝ} (hτε : τ < ε) :
     (N : ℝ) ^ τ * (N : ℝ) ^ (-ε) < 1 := by
   have hN1 : (1 : ℝ) < N := by exact_mod_cast hN
@@ -75,7 +63,7 @@ theorem rpow_mul_rpow_neg_lt_one {N : ℕ} (hN : 2 ≤ N) {τ ε : ℝ} (hτε :
 
 /-- **The continuity argument, deterministic core.**  If `g` and `a` are continuous on
 `[s, t]`, `g(s) < a(s)`, and `g(u) ≠ a(u)` for all `u ∈ [s, t]`, then `g < a` on `[s, t]`
-(intermediate value theorem).  (RBM1D `lt_of_forall_ne_of_continuousOn`, `Step1.lean:151`.) -/
+(intermediate value theorem).  (As RBM1D's `lt_of_forall_ne_of_continuousOn`.) -/
 theorem lt_of_forall_ne_of_continuousOn {g a : ℝ → ℝ} {s t : ℝ}
     (hg : ContinuousOn g (Set.Icc s t)) (ha : ContinuousOn a (Set.Icc s t)) (h0 : g s < a s)
     (hne : ∀ u ∈ Set.Icc s t, g u ≠ a u) : ∀ u ∈ Set.Icc s t, g u < a u := by
@@ -105,8 +93,7 @@ private theorem measure_union_le_of_two {A B : Set Ω} {x D : ℝ} (hx : 0 ≤ x
 
 /-! ### `HighProbAt`: monotonicity and finite intersections
 
-The `size`-indexed analogues of RBM1D `HighProb.mono` (`Defs/StochDom.lean:291`) and
-`HighProb.inter` (`:298`). -/
+The `size`-indexed analogues of RBM1D's `HighProb.mono` and `HighProb.inter`. -/
 
 /-- Monotonicity of `HighProbAt`. -/
 theorem perTimeCalc_highProbAt_mono {Ξ Ξ' : ℕ → Set Ω} (h : HighProbAt P size Ξ)
@@ -126,7 +113,7 @@ theorem perTimeCalc_highProbAt_inter (hsize : Tendsto size atTop atTop) {Ξ₁ �
   exact measure_union_le_of_two (Nat.cast_nonneg _) hN1 hN2 h3
 
 /-- **`StochDomAt` gives a high-probability event**: `{∀ u, ξ ≤ (size l)^τ ζ}` holds with high
-probability.  (RBM1D `StochDom.highProb`, `Defs/StochDom.lean:277`.) -/
+probability.  (As RBM1D's `StochDom.highProb`.) -/
 theorem perTimeCalc_highProbAt_of_stochDomAt {ξ ζ : ∀ l, U l → Ω → ℝ}
     (h : StochDomAt P size ξ ζ) {τ : ℝ} (hτ : 0 < τ) :
     HighProbAt P size (fun l => {ω | ∀ u, ξ l u ω ≤ (size l : ℝ) ^ τ * ζ l u ω}) := by
@@ -296,7 +283,7 @@ variable {ξ ζ ξ₁ ζ₁ ξ₂ ζ₂ : ∀ l, U l → Ω → ℝ}
 /-! #### Base layer (per time) -/
 
 /-- A failure event eventually contained in the failure event of a single domination
-(pointwise form).  Per-time analogue of RBM1D `StochDom.of_subset` (`Defs/StochDom.lean:109`). -/
+(pointwise form).  Per-time analogue of RBM1D's `StochDom.of_subset`. -/
 theorem perTimeCalc_of_imp (h : PerTimeDomAt P size ξ₁ ζ₁)
     (himp : ∀ τ > (0 : ℝ), ∃ τ' > (0 : ℝ), ∀ᶠ l : ℕ in atTop, ∀ u ω,
       (size l : ℝ) ^ τ * ζ l u ω < ξ l u ω → (size l : ℝ) ^ τ' * ζ₁ l u ω < ξ₁ l u ω) :
@@ -307,7 +294,7 @@ theorem perTimeCalc_of_imp (h : PerTimeDomAt P size ξ₁ ζ₁)
   exact (measure_mono fun ω hω => h1 u ω hω).trans (h2 u)
 
 /-- A failure event eventually contained in the union of two failure events (pointwise form).
-Per-time analogue of RBM1D `StochDom.of_subset_union` (`Defs/StochDom.lean:118`). -/
+Per-time analogue of RBM1D's `StochDom.of_subset_union`. -/
 theorem perTimeCalc_of_imp_union (hsize : Tendsto size atTop atTop)
     (h₁ : PerTimeDomAt P size ξ₁ ζ₁) (h₂ : PerTimeDomAt P size ξ₂ ζ₂)
     (himp : ∀ τ > (0 : ℝ), ∃ τ' > (0 : ℝ), ∀ᶠ l : ℕ in atTop, ∀ u ω,
@@ -325,7 +312,7 @@ theorem perTimeCalc_of_imp_union (hsize : Tendsto size atTop atTop)
   · exact Or.inr h
 
 /-- `ζ ≺ ζ` for a non-negative family (needs `1 ≤ size l` eventually).  Per-time analogue of
-RBM1D `StochDom.refl` (`Defs/StochDom.lean:151`). -/
+RBM1D's `StochDom.refl`. -/
 theorem perTimeCalc_refl (hsize : Tendsto size atTop atTop) (hζ : ∀ l u ω, 0 ≤ ζ l u ω) :
     PerTimeDomAt P size ζ ζ := by
   intro τ hτ D hD
@@ -338,16 +325,15 @@ theorem perTimeCalc_refl (hsize : Tendsto size atTop atTop) (hζ : ∀ l u ω, 0
   rw [hE, measure_empty]
   exact zero_le
 
-/-- `≺` is closed under addition.  Per-time analogue of RBM1D `StochDom.add`
-(`Defs/StochDom.lean:174`). -/
+/-- `≺` is closed under addition.  Per-time analogue of RBM1D's `StochDom.add`. -/
 theorem perTimeCalc_add (hsize : Tendsto size atTop atTop) (h₁ : PerTimeDomAt P size ξ₁ ζ₁)
     (h₂ : PerTimeDomAt P size ξ₂ ζ₂) :
     PerTimeDomAt P size (fun l u ω => ξ₁ l u ω + ξ₂ l u ω)
       (fun l u ω => ζ₁ l u ω + ζ₂ l u ω) :=
   perTimeCalc_of_imp_union hsize h₁ h₂ imp_add
 
-/-- `≺` is closed under multiplication of non-negative quantities.  Per-time analogue of RBM1D
-`StochDom.mul` (`Defs/StochDom.lean:184`). -/
+/-- `≺` is closed under multiplication of non-negative quantities.  Per-time analogue of RBM1D's
+`StochDom.mul`. -/
 theorem perTimeCalc_mul (hsize : Tendsto size atTop atTop) (hξ₂ : ∀ l u ω, 0 ≤ ξ₂ l u ω)
     (hζ₁ : ∀ l u ω, 0 ≤ ζ₁ l u ω) (h₁ : PerTimeDomAt P size ξ₁ ζ₁)
     (h₂ : PerTimeDomAt P size ξ₂ ζ₂) :
@@ -355,40 +341,38 @@ theorem perTimeCalc_mul (hsize : Tendsto size atTop atTop) (hξ₂ : ∀ l u ω,
       (fun l u ω => ζ₁ l u ω * ζ₂ l u ω) :=
   perTimeCalc_of_imp_union hsize h₁ h₂ (imp_mul hξ₂ hζ₁)
 
-/-- `ξ ≺ ζ` and `ζ ≤ C ζ'` (eventually, pointwise) give `ξ ≺ ζ'`.  Per-time analogue of RBM1D
-`Step3.stochDom_mono` (`Defs/StochDomMono.lean:24`). -/
+/-- `ξ ≺ ζ` and `ζ ≤ C ζ'` (eventually, pointwise) give `ξ ≺ ζ'`.  Per-time analogue of RBM1D's
+`Step3.stochDom_mono`. -/
 theorem perTimeCalc_mono (hsize : Tendsto size atTop atTop) {ζ' : ∀ l, U l → Ω → ℝ}
     (hζ' : ∀ l u ω, 0 ≤ ζ' l u ω) (C : ℝ)
     (hle : ∀ᶠ l : ℕ in atTop, ∀ u ω, ζ l u ω ≤ C * ζ' l u ω) (h : PerTimeDomAt P size ξ ζ) :
     PerTimeDomAt P size ξ ζ' :=
   perTimeCalc_of_imp h (imp_mono hsize hζ' C hle)
 
-/-! #### Targets: `ContinuityAssembly.lean`, section `StochGeneric` -/
+/-! #### Monotonicity, powers, roots, sums and absorption of `≺` -/
 
-/-- Enlarging the right side of `≺` (for large `l`).  Port of RBM1D
-`StochDom.mono_right_eventually` (`ContinuityAssembly.lean:540`). -/
+/-- Enlarging the right side of `≺` (for large `l`).  As RBM1D's `StochDom.mono_right_eventually`. -/
 theorem mono_right_eventually {ζ' : ∀ l, U l → Ω → ℝ} (h : PerTimeDomAt P size ξ ζ)
     (hle : ∀ᶠ l : ℕ in atTop, ∀ u ω, ζ l u ω ≤ ζ' l u ω) : PerTimeDomAt P size ξ ζ' :=
   perTimeCalc_of_imp h (imp_mono_right hle)
 
-/-- Powers `0 < r ≤ 1` preserve `≺`: `ξ ≺ ζ` implies `ξ^r ≺ ζ^r`.  Port of RBM1D
-`StochDom.rpow_of_le_one` (`ContinuityAssembly.lean:549`); no growth hypothesis on `size`
+/-- Powers `0 < r ≤ 1` preserve `≺`: `ξ ≺ ζ` implies `ξ^r ≺ ζ^r`.  As RBM1D's
+`StochDom.rpow_of_le_one`; no growth hypothesis on `size`
 (the case `size l = 0` is treated separately). -/
 theorem rpow_of_le_one {r : ℝ} (hr0 : 0 < r) (hr1 : r ≤ 1)
     (hξ : ∀ l u ω, 0 ≤ ξ l u ω) (hζ : ∀ l u ω, 0 ≤ ζ l u ω) (h : PerTimeDomAt P size ξ ζ) :
     PerTimeDomAt P size (fun l u ω => ξ l u ω ^ r) (fun l u ω => ζ l u ω ^ r) :=
   perTimeCalc_of_imp h (imp_rpow_of_le_one hr0 hr1 hξ hζ)
 
-/-- Square roots preserve `≺`.  Port of RBM1D `StochDom.sqrt_of`
-(`ContinuityAssembly.lean:565`). -/
+/-- Square roots preserve `≺`.  As RBM1D's `StochDom.sqrt_of`. -/
 theorem sqrt_of (hξ : ∀ l u ω, 0 ≤ ξ l u ω) (hζ : ∀ l u ω, 0 ≤ ζ l u ω)
     (h : PerTimeDomAt P size ξ ζ) :
     PerTimeDomAt P size (fun l u ω => Real.sqrt (ξ l u ω)) (fun l u ω => Real.sqrt (ζ l u ω)) := by
   simp only [Real.sqrt_eq_rpow]
   exact rpow_of_le_one (by norm_num) (by norm_num) hξ hζ h
 
-/-- **Absorbing `(size l)^δ`**: if `ξ ≺ (size l)^δ ζ` for every `δ > 0`, then `ξ ≺ ζ`.  Port of
-RBM1D `StochDom.of_forall_rpow_mul` (`ContinuityAssembly.lean:572`). -/
+/-- **Absorbing `(size l)^δ`**: if `ξ ≺ (size l)^δ ζ` for every `δ > 0`, then `ξ ≺ ζ`.  As
+RBM1D's `StochDom.of_forall_rpow_mul`. -/
 theorem of_forall_rpow_mul
     (h : ∀ δ > (0 : ℝ), PerTimeDomAt P size ξ (fun l u ω => (size l : ℝ) ^ δ * ζ l u ω)) :
     PerTimeDomAt P size ξ ζ := by
@@ -399,16 +383,15 @@ theorem of_forall_rpow_mul
   change (size l : ℝ) ^ (τ / 2) * ((size l : ℝ) ^ (τ / 2) * ζ l u ω) < ξ l u ω
   rwa [← mul_assoc, UnifDetDom.rpow_half_mul_rpow_half (size l) hτ]
 
-/-- **The last step of §6**: `X ≺ A + A^{1/2} X^{1/2}` implies `X ≺ A` (for `X, A ≥ 0`).  Port of
-RBM1D `StochDom.of_le_add_sqrt_mul` (`ContinuityAssembly.lean:594`). -/
+/-- **The absorption step**: `X ≺ A + A^{1/2} X^{1/2}` implies `X ≺ A` (for `X, A ≥ 0`).  As
+RBM1D's `StochDom.of_le_add_sqrt_mul`. -/
 theorem of_le_add_sqrt_mul (hsize : Tendsto size atTop atTop)
     (hξ : ∀ l u ω, 0 ≤ ξ l u ω) (hζ : ∀ l u ω, 0 ≤ ζ l u ω)
     (h : PerTimeDomAt P size ξ (fun l u ω => ζ l u ω + Real.sqrt (ζ l u ω * ξ l u ω))) :
     PerTimeDomAt P size ξ ζ :=
   perTimeCalc_of_imp h (imp_of_le_add_sqrt_mul hsize hξ hζ)
 
-/-- `≺` is closed under finite sums.  Port of RBM1D `StochDom.finset_sum_of`
-(`ContinuityAssembly.lean:625`). -/
+/-- `≺` is closed under finite sums.  As RBM1D's `StochDom.finset_sum_of`. -/
 theorem finset_sum_of (hsize : Tendsto size atTop atTop) {ι : Type*} (s : Finset ι)
     {ξ ζ : ι → ∀ l, U l → Ω → ℝ} (h : ∀ i ∈ s, PerTimeDomAt P size (ξ i) (ζ i)) :
     PerTimeDomAt P size (fun l u ω => ∑ i ∈ s, ξ i l u ω) (fun l u ω => ∑ i ∈ s, ζ i l u ω) := by
@@ -423,11 +406,11 @@ theorem finset_sum_of (hsize : Tendsto size atTop atTop) {ι : Type*} (s : Finse
     exact perTimeCalc_add hsize (h i (Finset.mem_insert_self i s))
       (ih fun j hj => h j (Finset.mem_insert_of_mem hj))
 
-/-! #### Targets: `Hierarchy/Step1.lean`, section `Generic`, and `Defs/StochDomHighProb.lean` -/
+/-! #### Indicators, case splits and high probability -/
 
 /-- **Removing a parameter-dependent indicator.**  If `1_{Ω(l,u)} ξ ≺ ζ` and the events
-`Ω(l,u)` hold for all `u` simultaneously with high probability, then `ξ ≺ ζ`.  Port of RBM1D
-`stochDom_of_indicator` (`Step1.lean:188`). -/
+`Ω(l,u)` hold for all `u` simultaneously with high probability, then `ξ ≺ ζ`.  As RBM1D's
+`stochDom_of_indicator`. -/
 theorem stochDom_of_indicator (hsize : Tendsto size atTop atTop)
     {Ωs : ∀ l, U l → Set Ω} {ξ ζ : ∀ l, U l → Ω → ℝ}
     (hΩ : HighProbAt P size (fun l => {ω | ∀ u, ω ∈ Ωs l u}))
@@ -447,7 +430,7 @@ theorem stochDom_of_indicator (hsize : Tendsto size atTop atTop)
 
 /-- **Case splitting under `≺`**: if at every `(l, u, ω)` the pair `(ξ, ζ)` is dominated by
 `(ξ₁, ζ₁)` or by `(ξ₂, ζ₂)` (`ξ ≤ ξᵢ`, `ζᵢ ≤ ζ`), then `ξ₁ ≺ ζ₁` and `ξ₂ ≺ ζ₂` give `ξ ≺ ζ`.
-Port of RBM1D `stochDom_of_forall_or` (`Step1.lean:218`). -/
+As RBM1D's `stochDom_of_forall_or`. -/
 theorem stochDom_of_forall_or (hsize : Tendsto size atTop atTop)
     {ξ ζ ξ₁ ζ₁ ξ₂ ζ₂ : ∀ l, U l → Ω → ℝ}
     (h₁ : PerTimeDomAt P size ξ₁ ζ₁) (h₂ : PerTimeDomAt P size ξ₂ ζ₂)
@@ -455,23 +438,21 @@ theorem stochDom_of_forall_or (hsize : Tendsto size atTop atTop)
       (ξ l u ω ≤ ξ₂ l u ω ∧ ζ₂ l u ω ≤ ζ l u ω)) : PerTimeDomAt P size ξ ζ :=
   perTimeCalc_of_imp_union hsize h₁ h₂ (imp_forall_or hor)
 
-/-- A pointwise bound `ξ ≤ C ζ` (`ξ, ζ ≥ 0`) gives `ξ ≺ ζ`.  Port of RBM1D
-`stochDom_of_le_const_mul` (`Step1.lean:230`). -/
+/-- A pointwise bound `ξ ≤ C ζ` (`ξ, ζ ≥ 0`) gives `ξ ≺ ζ`.  As RBM1D's `stochDom_of_le_const_mul`. -/
 theorem stochDom_of_le_const_mul (hsize : Tendsto size atTop atTop)
     {ξ ζ : ∀ l, U l → Ω → ℝ} (hξ : ∀ l u ω, 0 ≤ ξ l u ω)
     (hζ : ∀ l u ω, 0 ≤ ζ l u ω) (C : ℝ) (h : ∀ l u ω, ξ l u ω ≤ C * ζ l u ω) :
     PerTimeDomAt P size ξ ζ :=
   perTimeCalc_mono hsize hζ C (Eventually.of_forall h) (perTimeCalc_refl hsize hξ)
 
-/-- A left side that is eventually pointwise smaller.  Port of RBM1D
-`stochDom_of_le_left_eventually` (`Step1.lean:236`). -/
+/-- A left side that is eventually pointwise smaller.  As RBM1D's `stochDom_of_le_left_eventually`. -/
 theorem stochDom_of_le_left_eventually {ξ ξ' ζ : ∀ l, U l → Ω → ℝ}
     (hle : ∀ᶠ l : ℕ in atTop, ∀ u ω, ξ l u ω ≤ ξ' l u ω) (h : PerTimeDomAt P size ξ' ζ) :
     PerTimeDomAt P size ξ ζ :=
   perTimeCalc_of_imp h (imp_left_eventually hle)
 
 /-- **High probability gives `≺`**: if `ξ ≤ ζ` for all `u` w.h.p. (`ζ ≥ 0`), then `ξ ≺ ζ`.
-Port of RBM1D `stochDom_of_highProb` (`Defs/StochDomHighProb.lean:25`). -/
+As RBM1D's `stochDom_of_highProb`. -/
 theorem stochDom_of_highProb (hsize : Tendsto size atTop atTop)
     {ξ ζ : ∀ l, U l → Ω → ℝ} (hζ : ∀ l u ω, 0 ≤ ζ l u ω)
     (h : HighProbAt P size (fun l => {ω | ∀ u, ξ l u ω ≤ ζ l u ω})) :
@@ -484,8 +465,6 @@ theorem stochDom_of_highProb (hsize : Tendsto size atTop atTop)
   have := hω' u
   have hω'' : (size l : ℝ) ^ τ * ζ l u ω < ξ l u ω := hω
   nlinarith [hζ l u ω]
-
-/-! #### Targets: `Hierarchy/Step45.lean` -/
 
 end PerTime
 
@@ -501,16 +480,12 @@ namespace Unif
 
 variable {ξ ζ ξ₁ ζ₁ ξ₂ ζ₂ : ∀ l, U l → Ω → ℝ}
 
-/-! #### Base layer (uniform) -/
+/-! #### The forbidden region and indicators (uniform) -/
 
-/-! #### Targets: `ContinuityAssembly.lean`, section `StochGeneric` -/
-
-/-! #### Targets: `Hierarchy/Step1.lean`, section `Generic`, and `Defs/StochDomHighProb.lean` -/
-
-/-- **The forbidden region (5.9).**  Let `x ≥ 0` be random and `f, a, b` deterministic with
+/-- **The forbidden region.**  Let `x ≥ 0` be random and `f, a, b` deterministic with
 `a > 0`.  If `1(x ≤ b) x ≺ f` and `f ≪ a` (i.e. `f ≤ (size l)^{-ε} a` for some `ε > 0`), then
-with high probability `x` avoids `[a, b]`, simultaneously for all parameters `u`.  Port of RBM1D
-`forbidden_region` (`Step1.lean:123`); only the uniform variant is stated (the per-time variant
+with high probability `x` avoids `[a, b]`, simultaneously for all parameters `u`.  As RBM1D's
+`forbidden_region`; only the uniform variant is stated (the per-time variant
 is false, see the module docstring). -/
 theorem forbidden_region (hsize : Tendsto size atTop atTop) {x : ∀ l, U l → Ω → ℝ}
     {f a b : ∀ l, U l → ℝ}
@@ -540,8 +515,8 @@ theorem forbidden_region (hsize : Tendsto size atTop atTop) {x : ∀ l, U l → 
   linarith
 
 /-- **Removing a parameter-dependent indicator.**  If `1_{Ω(l,u)} ξ ≺ ζ` and the events
-`Ω(l,u)` hold for all `u` simultaneously with high probability, then `ξ ≺ ζ`.  Port of RBM1D
-`stochDom_of_indicator` (`Step1.lean:188`). -/
+`Ω(l,u)` hold for all `u` simultaneously with high probability, then `ξ ≺ ζ`.  As RBM1D's
+`stochDom_of_indicator`. -/
 theorem stochDom_of_indicator (hsize : Tendsto size atTop atTop)
     {Ωs : ∀ l, U l → Set Ω} {ξ ζ : ∀ l, U l → Ω → ℝ}
     (hΩ : HighProbAt P size (fun l => {ω | ∀ u, ω ∈ Ωs l u}))
@@ -559,8 +534,6 @@ theorem stochDom_of_indicator (hsize : Tendsto size atTop atTop)
     exact hu
   · exact Or.inr hω
 
-/-! #### Targets: `Hierarchy/Step45.lean` -/
-
 end Unif
 
 end UnifSection
@@ -574,8 +547,7 @@ variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {size : ℕ → ℕ}
 /-- **The continuity argument (bootstrap).**  Let `M(u)` be random, continuous in `u ∈ [s,t]`
 with high probability, and `a ≤ b` deterministic, `a` continuous.  If the forbidden region
 `[a(u), b(u)]` is avoided for all `u` simultaneously (w.h.p.) and `M(s) < a(s)` (w.h.p.), then
-`M(u) < a(u)` for all `u ∈ [s,t]` (w.h.p.).  Port of RBM1D `bootstrap` (`Step1.lean:167`),
-renamed `stepOneBootstrap`.  It is a statement about events only, so there is no per-time /
+`M(u) < a(u)` for all `u ∈ [s,t]` (w.h.p.).  As RBM1D's `bootstrap`.  It is a statement about events only, so there is no per-time /
 uniform split. -/
 theorem stepOneBootstrap (hsize : Tendsto size atTop atTop)
     {M : ∀ _ : ℕ, ℝ → Ω → ℝ} {a b : ∀ _ : ℕ, ℝ → ℝ} {s t : ℕ → ℝ}
@@ -603,23 +575,3 @@ theorem stepOneBootstrap (hsize : Tendsto size atTop atTop)
 end Bootstrap
 
 end RBM.Ind.PerTimeCalc
-
-/-! ## Instances at `d = 3` (the merged preflight sequence `sz0`)
-
-Data: `RBM.Gauss.SizesInst.sz0` (`d = 3`, `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `N_0 = 2097152`),
-the model measure `seqP sz0`, the scale `sz0.size = N_n = (W_n L_n)^3`, the random bounded
-observable `RBM.Gauss.StochDomAtInst.obs` (`|sin|` of a Gaussian coordinate, not constant,
-`obs_nonconst`), and the nondegenerate window `[s_n, t_n] = [0, 1/16]` (`TimeIcc s t n`, a nonempty
-interval of positive length).  The hypothesis `hsize` is `tendsto_sz0_size`.  Every hypothesis of
-`forbidden_region` and `stepOneBootstrap` is discharged at these data. -/
-
-/-! ### The calculus at the random chain `Xi ≺ Ze ≺ Ch` of `StochDomAtInst`
-
-`Xi = obs`, `Ze = 1 + obs`, `Ch = 2 + obs` on `seqP sz0`, parameter set `Unit`; every lemma of the
-two variants is applied (`PerTimeDomAt` from `precPT_of_le`, `StochDomAt` from `prec_of_le`). -/
-
-/-! #### Per-time variants -/
-
-/-! #### Uniform variants -/
-
-/-! #### `HighProbAt` helpers, the real facts, and the base layer -/

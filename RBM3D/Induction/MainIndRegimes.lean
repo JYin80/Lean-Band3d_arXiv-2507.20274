@@ -13,34 +13,28 @@ import RBM3D.Induction.LocalAvg1
 import Mathlib.Data.Nat.Nth
 
 /-!
-# ST-5: the main-induction regime assembly (T2245)
+# The main-induction regime assembly
 
-Ticket T2245 (DECISIONS §68 (7), (9), (10), §76 (3); supervisor
-`docs/supervisor/2026-10-05-1806.md`, "Answers to REQ-2026-10-05-1746", Q1, Q2 "The fix" and
-"Assembly" 1-2, Q3).  Paper: arXiv:2507.20274,
-`paper/tex/1_2_Intro_model_result.tex` (cited `1_2:line`): `lem:main_ind` `1256-1330`, Steps 1-6
-`1317-1396`; regimes `3_5:1105`, `3_5:1939`, `6:93-97`.
+Theorem 2.24 (`lem:main_ind`) assembled from one induction step per regime.  Paper: the proof of
+Theorem 2.24 in the subsection "Proof of the main results" (Steps 1-6); the regimes of Steps 5 and 6 are
+those of Section 5 (`Sec:Step5`) and of the proof of Lemma 6.2 (`lem:LWterm_EXP`).
 
-* Section 1: `STMainIndR d R`, the shape of `STMainInd` under a regime `R` of the time sequences
-  (`ST_mainInd_iff_any`, `STMainIndR_mono`).
-* Section 2: the four regimes of Step 5/6 lie in the cases of Step 3/4 (`st_caseI_of_reg5III`, ...).
-* Section 3: one main-induction step per regime, from the six step pins (`ST_mainIndR_of_steps`, the
-  four regime instances `ST_mainIndR_III/I/II/IV_of_steps`).
-* Section 4: two stages cut at an intermediate time (`STLocalMax_of_STLocalEntry`,
-  `ST_mainIndR_seq`).
+* Section 1: `STMainIndR d R`, the shape of `STMainInd` under a regime `R` of the time sequences.
+* Section 2: the four regimes of Steps 5 and 6 lie in the cases of Steps 3 and 4 (`st_caseI_of_reg5III`, ...).
+* Section 3: one main-induction step per regime, from the step statements (`ST_mainIndR_of_steps`;
+  the instances `ST_mainIndR_II_of_steps`, `ST_mainIndR_IV_of_steps`).
+* Section 4: two stages cut at an intermediate time (`STLocalMax_of_STLocalEntry`).
 * Section 5: the seven predicates along a finite `StrictMono` cover (`STLK_iff_comp_cover`, ...).
-* Section 6: the classifier of the stage pattern of `[s_n, t_n]`, and `ST_mainInd_of_regimes`.
-* Section 7: `ST_mainInd_of_pins`.
-* Section 8: the compiled nonempty instances (namespace `RBM.Gauss.MainIndRegimesInst`).
+* Section 6: the classifier of the stage pattern of `[s_n, t_n]` (`STPattern`), `STRegChain_holds`
+  and `ST_mainInd_of_regimes`.
 
-Why the regimes are assembled by subsequences (DECISIONS §67, §68): the proof of `lem:main_ind` in
-`1_2:1317-1396` applies Steps 1-6 on the whole `[s,t]`, and Steps 3-6 are proved per regime
-(`3_5:1105`, `3_5:1939`, `6:93-97`); "adding intermediate times" (`3_5:1939`) cannot be done inside
-Steps 2-5 (their losses `((1-s)/(1-s'))^{C_d}` and `(L^d/4)^{k-1}` are anchored at `s`), so the
-formal
+Why the regimes are assembled by subsequences: the proof of Theorem 2.24 applies Steps 1-6 on the
+whole `[s,t]`, and Steps 3-6 are proved per regime (Section 4 `Sec:Steps34`, Section 5 `Sec:Step5`,
+the proof of Lemma 6.2 `lem:LWterm_EXP`); "adding intermediate times" (Section 5) cannot be done inside
+Steps 2-5 (their losses `((1-s)/(1-s'))^{C_d}` and `(L^d/4)^{k-1}` are anchored at `s`), so the formal
 proof reruns the whole induction step from each cut `1-g²`, `1-g²/L²`, `1-g²/L^d`, composes the
-single-time conclusions (`ST_mainIndR_seq`), and glues the ten stage patterns along finitely many
-subsequences (route (A), `Sizes.comp`; paper-delta candidates `T2245a`, `T2245b`).
+single-time conclusions, and glues the ten stage patterns along finitely many subsequences
+(`Sizes.comp`).
 -/
 
 set_option linter.style.longLine false
@@ -58,9 +52,8 @@ namespace RBM.Gauss.Sizes
 
 open RBM RBM.Loop RBM.Path RBM.Gauss
 
-/-- **`lem:main_ind` under a regime `R`** (`1_2:1256-1330`; DECISIONS §68 (7), supervisor 1806 Q2 "The fix"):
-the body of `STMainInd` (`Induction/Defs.lean:294-306`) with the hypothesis `R sz s t` after
-`t ≤ lemT z`.  One constant `𝔠_d` serves every flow. -/
+/-- **`lem:main_ind` under a regime `R`**: the body of `STMainInd` (`Induction/Defs.lean`) with the
+hypothesis `R sz s t` after `t ≤ lemT z`.  One constant `𝔠_d` serves every flow. -/
 def STMainIndR (d : ℕ) (R : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop) : Prop :=
   3 ≤ d → ∀ κ ε 𝔡 : ℝ, 0 < κ → 0 < ε → 0 < 𝔡 →
     ∃ 𝔠d : ℝ, 0 < 𝔠d ∧ 𝔠d ≤ 1 / 100 ∧
@@ -97,7 +90,7 @@ private theorem STMainIndRAt_mono {d : ℕ} {R : ∀ {d : ℕ}, Sizes d → (ℕ
   exact h 𝔠 sz z hflow s t hs0 hsT hst htT hR hyp
     (st5_conStInd_mono sz hcon (st5_t_lt_one sz hflow htT) hc' hcc)
 
-/-! ## 2. The Step 5/6 regimes inside the Step 3/4 cases (supervisor 1806 Q2 "Assembly" 1) -/
+/-! ## 2. The Step 5/6 regimes inside the Step 3/4 cases -/
 
 /-- Regime (iii) `g² ≤ 1-t` lies in case (i) `g²/L² ≤ 1-t` (`g²/L² ≤ g²`, `L ≥ 3`). -/
 theorem st_caseI_of_reg5III (d : ℕ) (sz : Sizes d) (s t : ℕ → ℝ) (h : STReg5III sz s t) :
@@ -135,11 +128,11 @@ theorem st_caseII_of_reg5IV (d : ℕ) (hd : 2 ≤ d) (sz : Sizes d) (s t : ℕ �
 
 /-! ## 3. One main-induction step per regime -/
 
-/-- **One main-induction step** from the six step pins (the proof of the T2191 probe `ST_mainInd_of_steps`,
-`t/T2191` 96c6b4c `:351-404`, with the regime `R` threaded through): Step 2 gives `(C_d, 𝔠_d²)`, Steps 3-6 give
-their constants, Step 1 holds for every `𝔠_d ∈ (0, 10^{-2}]`; the constant is the minimum (`(con_st_ind)` for the
-minimum implies it for each larger exponent, `st5_conStInd_mono`).  The Step 3/4 regime `R34` contains `R`
-(`3 ≤ d → R ⊆ R34`).  `STKbound`, `STKward` are the theorems `stKbound_of_flow`, `stKward_of_flow`. -/
+/-- **One main-induction step** from the six step statements (with the regime `R` threaded through): Step 2 gives
+`(C_d, 𝔠_d²)`, Steps 3-6 give their constants, Step 1 holds for every `𝔠_d ∈ (0, 10^{-2}]`; the constant is the
+minimum (`(con_st_ind)` for the minimum implies it for each larger exponent, `st5_conStInd_mono`).  The Step 3/4
+regime `R34` contains `R` (`3 ≤ d → R ⊆ R34`).  `STKbound`, `STKward` are the theorems `stKbound_of_flow`,
+`stKward_of_flow`. -/
 theorem ST_mainIndR_of_steps (d : ℕ) (R R34 : ∀ {d : ℕ}, Sizes d → (ℕ → ℝ) → (ℕ → ℝ) → Prop)
     (hR : 3 ≤ d → ∀ (sz : Sizes d) (s t : ℕ → ℝ), R sz s t → R34 sz s t)
     (h1 : STStep1 d) (h2 : STStep2 d) (h3 : STStep3R d R34) (h4 : STStep4R d R34)
@@ -204,8 +197,8 @@ theorem ST_mainIndR_IV_of_steps (d : ℕ) (h1 : STStep1 d) (h2 : STStep2 d) (h3 
 
 /-! ## 4. Two stages cut at an intermediate time -/
 
-/-- **`(Gt_bound)` gives `(Gt_bound+IND)`** (the input of the next stage from the conclusion of the previous one,
-paper-delta candidate `T2245b`): `|(G_τ - M)_{xy}|² ≺ W^{-d}B_{τ,K} ≤ W^{-d}B_{τ,0} = Bctl` (`localAvg1_STWB_le`,
+/-- **`(Gt_bound)` gives `(Gt_bound+IND)`** (the input of the next stage from the conclusion of the previous one):
+`|(G_τ - M)_{xy}|² ≺ W^{-d}B_{τ,K} ≤ W^{-d}B_{τ,0} = Bctl` (`localAvg1_STWB_le`,
 no hypothesis on `τ`), so `‖G_τ - M‖²_max ≺ Bctl` (`StochDomAt.of_subset`: the failure event is eventually
 contained in the failure event of `STLocalEntry`, at the same exponent; `Bctl` is not needed to tend to `0`), and
 `iterationsA_prec_rpow` with `θ = 1/2`, `(‖x‖²)^{1/2} = ‖x‖`, gives `‖G_τ - M‖ ≺ Bctl^{1/2}`. -/
@@ -258,7 +251,7 @@ end RBM.Gauss.Sizes
 
 `X sz E τ ↔ ∀ k, X (sz.comp (φ k)) (E ∘ φ k) (τ ∘ φ k)` for a finite family of strictly increasing
 `φ k` whose ranges cover all large `n` (`Prec_iff_comp_cover`; the commutations of the per-`n` objects
-with `reindex` are `rfl`, `Induction/SizesComp.lean:285-305`; for `STExp2` the deterministic left side
+with `reindex` are `rfl`, see `Induction/SizesComp.lean`; for `STExp2` the deterministic left side
 integrates over the whole law and transfers by `integral_Lloop_reindex`).  The outer `∀ k ≥ 1` /
 `∀ D > 0` of the predicates is carried through. -/
 
@@ -352,11 +345,12 @@ end RBM.Gauss.Sizes
 /-! ## 6. The stage pattern of `[s_n, t_n]` and `ST_mainInd_of_regimes`
 
 The cuts of `[0, t₀]` are `c₁ = 1-g²`, `c₂ = 1-g²/L²`, `c₃ = 1-g²/L^d` (`g = sz.lam n`); the four regimes of
-Steps 5, 6 are the four intervals between them (`3_5:1939`, `6:93-97`).  `c₁ ≤ c₂ ≤ c₃ ≤ 1`, strictly if `g ≠ 0`
-(`L ≥ 3`, `d ≥ 3`).  The stage of `s_n` is `0` if `s < c₁`, `1` if `c₁ ≤ s < c₂`, `2` if `c₂ ≤ s < c₃`, `3` if
-`c₃ ≤ s`; the stage of `t_n` is `0` if `t ≤ c₁`, `1` if `c₁ < t ≤ c₂`, `2` if `c₂ < t ≤ c₃`, `3` if `c₃ < t`
-(the `<`/`≤` choice excludes point-stages).  The pattern `(i, j)` has `i ≤ j` (ten values) and `[s,t]` is cut at
-`c_{i+1}, …, c_j`, each stage on `[c_k, c_{k+1}]` with equality at the cuts. -/
+Steps 5, 6 are the four intervals between them (Section 5 `Sec:Step5`, the proof of Lemma 6.2 `lem:LWterm_EXP`).
+`c₁ ≤ c₂ ≤ c₃ ≤ 1`, strictly if `g ≠ 0` (`L ≥ 3`, `d ≥ 3`).  The stage of `s_n` is `0` if `s < c₁`, `1` if
+`c₁ ≤ s < c₂`, `2` if `c₂ ≤ s < c₃`, `3` if `c₃ ≤ s`; the stage of `t_n` is `0` if `t ≤ c₁`, `1` if
+`c₁ < t ≤ c₂`, `2` if `c₂ < t ≤ c₃`, `3` if `c₃ < t` (the `<`/`≤` choice excludes point-stages).  The pattern
+`(i, j)` has `i ≤ j` (ten values) and `[s,t]` is cut at `c_{i+1}, …, c_j`, each stage on `[c_k, c_{k+1}]` with
+equality at the cuts. -/
 
 namespace RBM.Gauss.Sizes
 open RBM RBM.Loop RBM.Path RBM.Gauss
@@ -548,7 +542,7 @@ private theorem STMainIndRAt_stage {d : ℕ} {κ ε 𝔡 c₀ c₁ c₂ c₃ : �
   · exact STMainIndRAt_mono hpos ((min_le_right _ _).trans (min_le_left _ _)) H₂
   · exact STMainIndRAt_mono hpos ((min_le_right _ _).trans (min_le_right _ _)) H₃
 
-/-- Every chain of stages, at the common constant `c`: `ST_mainIndR_seq` at the level of constants. -/
+/-- Every chain of stages, at the common constant `c`: the two-stage composition at the level of constants. -/
 private theorem STMainIndRAt_chain {d : ℕ} {κ ε 𝔡 c : ℝ} (hc : 0 < c)
     (h : ∀ k, k ≤ 3 → STMainIndRAt d (STRegK k) κ ε 𝔡 c) :
     ∀ m i : ℕ, i + m ≤ 3 → STMainIndRAt d (STRegChain i m) κ ε 𝔡 c := by
@@ -561,12 +555,12 @@ private theorem STMainIndRAt_chain {d : ℕ} {κ ε 𝔡 c : ℝ} (hc : 0 < c)
     rw [min_self] at this
     exact this
 
-/-- **`lem:main_ind` from the four regime steps** (route (A), DECISIONS §68 (7); supervisor 1806 Q1, Q2 "Assembly" 2):
-the stage pattern `(i, j)` of `[s_n, t_n]` (`STPattern`; the cuts `1-g²`, `1-g²/L²`, `1-g²/L^d`) takes ten values; on each
-infinite class the pattern regime is the chain of stages `i, …, j` (`STRegChain`, the nesting of `STRegSeq` in the order
-(iii), (i), (ii), (iv)), whose `STMainIndR` follows from the four by `ST_mainIndR_seq`; the six conclusions are glued back
-along the `Nat.nth` enumerations of the classes (`ST_*_iff_comp_cover`, `nth_cover`).  The constant is the minimum of the
-four regime constants (every chain is at that constant, `STMainIndRAt_chain`); one `𝔠_d` serves every class. -/
+/-- **`lem:main_ind` from the four regime steps**: the stage pattern `(i, j)` of `[s_n, t_n]` (`STPattern`; the
+cuts `1-g²`, `1-g²/L²`, `1-g²/L^d`) takes ten values; on each infinite class the pattern regime is the chain of
+stages `i, …, j` (`STRegChain`, the nesting of `STRegSeq` in the order (iii), (i), (ii), (iv)), whose `STMainIndR`
+follows from the four by the two-stage composition; the six conclusions are glued back along the `Nat.nth`
+enumerations of the classes (`ST_*_iff_comp_cover`, `nth_cover`).  The constant is the minimum of the four regime
+constants (every chain is at that constant, `STMainIndRAt_chain`); one `𝔠_d` serves every class. -/
 theorem ST_mainInd_of_regimes (d : ℕ) (h₀ : STMainIndR d STReg5III) (h₁ : STMainIndR d STReg5I)
     (h₂ : STMainIndR d STReg5II) (h₃ : STMainIndR d STReg5IV) : STMainInd d := by
   intro hd κ ε 𝔡 hκ hε h𝔡
@@ -614,16 +608,3 @@ theorem ST_mainInd_of_regimes (d : ℕ) (h₀ : STMainIndR d STReg5III) (h₁ : 
     (STDecayStrong_iff_comp_cover d sz ι φ hφ hcov _ _).2 fun P => (key P).2.2.2.2.2⟩
 
 end RBM.Gauss.Sizes
-
-/-! ## 7. `lem:main_ind` from the ten step pins that are still owed -/
-
-/-! ## 8. Compiled nonempty instances at `d = 3`
-
-Data (all merged): `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`; `sz0`, `z0`, `(s,t) = (0, 1/16)` (regime (iii)); `szB` (`L = 4`,
-`W_n = n + 4`, `ilambda = 1`), `zB`, `lemT zB ≥ 31/32`, `(7/8, 15/16)` (regime (i)), `(15/16, 31/32)` (regime (ii)),
-`(7/8, 31/32)` cut at `15/16` (the two-stage regime); `szG` (`ilambda = 5`), `zB`, `(5/8, 3/4)` (regime (iv)).  Every
-deterministic hypothesis (flow, time ranges, regime, `(con_st_ind)` for every `𝔠_d > 0`) is discharged; what stays a
-hypothesis of an instance is a premise that is the statement of another gate's pin (`STStep2`, `STStep3I`, ..., the
-regime statements `STMainIndR`) or the stochastic premises `(a)`-`(d)` at `s`. -/
-
-/-! ### Extra instances: the classifier at `(szB, 0, 49/50)`, the targets applied at the data -/

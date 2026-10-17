@@ -9,33 +9,32 @@ import RBM3D.Loop.KLWard
 import RBM3D.Induction.ConArgDet
 
 /-!
-# ST2-07 (ticket T2099): `lem:newKLK`, the pin `STNewKLK` proved
+# `lem:newKLK`: the statement `STNewKLK` proved
 
-`stNewKLK_holds (d : ℕ) : STNewKLK d` (`Induction/Step2Defs.lean:377`; paper `3_5:371-378`, proof
-`3_5:610-654`): for `3 ≤ d`, with `δ₀ = κ/2` and a constant `C` depending on `(d, 𝔡)` only
-(`nkl_at`), every Hermitian `H` with `‖G_u - M‖_max ≤ δ₀` has
+`stNewKLK_holds (d : ℕ) : STNewKLK d` (`STNewKLK` in `Induction/Step2Defs.lean`; Lemma 3.9
+`lem:newKLK`, proof in Subsection 3.4 `subsec:pf_lem:newKLK`): for `3 ≤ d`, with `δ₀ = κ/2` and a
+constant `C` depending on `(d, 𝔡)` only (`nkl_at`), every Hermitian `H` with `‖G_u - M‖_max ≤ δ₀` has
 `|Θ^{(2)} ∘ (𝓛-𝒦)^{(2)}| ≤ C/(1-u) Ĵ W^{-d} 𝒯̃` and
 `|𝓔^{(𝓛-𝒦)×(𝓛-𝒦)}| ≤ C/(1-u) (Ĵ + Ĵ² 1_{ℓ≥1}) W^{-d} 𝒯̃` (`STNewKLKAt`).  Deterministic: the only
-inputs are `Prop5Decay` (`prop5Decay_holds`), `(TTT2)` (`ekPropTInf_holds`) and the resolvent
+inputs are `Prop5Decay` (`prop5Decay_holds`), (3.21) `TTT2` (`ekPropTInf_holds`) and the resolvent
 identity; no stochastic premise.
 
-Proof (all steps are merged facts or elementary).
+Proof.
 * **A. Tail function.** Shift `𝒯_t(r') ≤ C_s 𝒯_t(r)` for `r ≤ r' + 1`, `C_s = 2^{d-2} e`
   (`nkl_tailT_shift`: `B_{t,r}` loses `2^{d-2}`, the zero mode is constant, `√(r/ℓ_t)` moves by at
-  most `1` since `ℓ_t ≥ 1`).  *Near/far* (replaces the paper's cut `K` with `𝒯(K) = W^{-D}`, no
+  most `1` since `ℓ_t ≥ 1`).  *Near/far* (this avoids the paper's cut `K` with `𝒯(K) = W^{-D}` and any
   intermediate value argument): `r` is near if `1 ≤ ℓ`, `r ≤ ℓ`, `W^{-D} ≤ 𝒯(r)`; then
   `𝒯̃(r) = 𝒯(r)` (`nkl_tailW_eq_of_near`); otherwise `𝒯̃(r) ≤ C_s 𝒯̃(r')` for every distance `r'`
   (`nkl_tailW_far`; for `ℓ < 1` the profile is constant up to `C_s` on distances).  The floor
-  `W^{-D}` is never summed over `L^d` points (DECISIONS §29 (3)).
-* **B. Propagator.** `|Θ_ξ(a,b)| ≤ C₁ 𝒯_u(|a-b|_∞)`, `C₁ = C₅ e^{1/(4c)}` (`nkl_theta_tail`, a
-  copy of the private `k2d_theta_tail`; `stK2decay_holds` carries the floor and cannot be used);
-  then
+  `W^{-D}` is never summed over `L^d` points.
+* **B. Propagator.** `|Θ_ξ(a,b)| ≤ C₁ 𝒯_u(|a-b|_∞)`, `C₁ = C₅ e^{1/(4c)}` (`nkl_theta_tail`;
+  `stK2decay_holds` carries the floor and cannot be used); then
   `|(SΘ)(a,b)| ≤ C₁ C_s 𝒯_u(|a-b|)` (`S_{ab} ≠ 0 ⟹ |a-b|_∞ ≤ 1`) and `Σ_b |(SΘ)(a,b)| ≤ (1-u)⁻¹`
   (`sum_norm_Theta_row_le`, `sum_norm_SB_row`).
 * **C. Convolutions.** `Σ_b |(SΘ)(a,b)| 𝒯̃(|b-a'|) ≤ (C₁ C_s C_T + C_s)/(1-u) 𝒯̃(|a-a'|)`
   (`nkl_conv_P`: near `b` by `(TTT2)`, far `b` by the row sum); both-near double sum
   (`nkl_conv_two`).
-* **D. Ward for `𝓛^{(2)}`, entrywise** (no list-loop Ward needed).  For every sign pattern
+* **D. Ward for `𝓛^{(2)}`, entrywise** (no list-loop Ward identity is needed).  For every sign pattern
   `‖𝓛_{σ,(a,b)}‖ ≤ W^{-2d} (Q_{ab} + Q_{ba})`, `Q_{ab} = Σ_{l∈[b], j∈[a]} |G_{lj}|²`; the row and
   column masses are `Σ_j |G_{lj}|² = Im G_{ll}/η` and `Σ_l |G_{lj}|² = Im G_{jj}/η`
   (`G G† = G† G = (G-G†)/(2iη)`, `Ind.Gres_mul_conjTranspose`).  With
@@ -46,10 +45,7 @@ Proof (all steps are merged facts or elementary).
   `x` far use `Σ_y |F(a₀,y)|` (`S` symmetric), both near (only if `1 ≤ ℓ`) use `nkl_conv_two`.
 * **Constants.** `C = 2(C₁ C_s C_T + C_s) + 10 C_s + C_s C_T`, `δ₀ = κ/2`.
 
-Sources: no port from RBM1D/RBM2D.  Copies of RBM3D private lemmas: `nkl_sqrt_le`, `nkl_theta_tail`
-(`Induction/Step2K2.lean:65`, `:78`, `0fc2597`), `nkl_gres_blockMat_true`, `nkl_Gres_false`
-(`Green/Pins.lean:350`, `:367`, `64bdfd3`), `nkl_mE_zero` (`Induction/ConArgDet.lean:1371`,
-`bbd22a5`), `nkl_zdistInf_add_le` (`Evolution/PropTInf.lean:43`).  Helpers are `private`.
+Helpers are `private`.
 -/
 
 set_option linter.style.longLine false
@@ -208,7 +204,7 @@ private theorem nkl_SB_support (g : ℝ) {a b : Zd d L} (h : SB d L g a b ≠ 0)
     · exact (zdistInf_le_zdistD d L _).trans h1.le
     · exact absurd (by simp [sbKernel, h0, h1]) h
 
-/-- `√y ≤ c y + 1/(4c)` for `c > 0` (copy of the private `k2d_sqrt_le`, `Step2K2.lean:63`). -/
+/-- `√y ≤ c y + 1/(4c)` for `c > 0`. -/
 private theorem nkl_sqrt_le {c : ℝ} (hc : 0 < c) (y : ℝ) (hy : 0 ≤ y) :
     Real.sqrt y ≤ c * y + 1 / (4 * c) := by
   set s := Real.sqrt y with hs
@@ -221,8 +217,7 @@ private theorem nkl_sqrt_le {c : ℝ} (hc : 0 < c) (y : ℝ) (hy : 0 ≤ y) :
   positivity
 
 /-- **The tail bound of one propagator entry** from the decay of `Θ_ξ(0, ·)` in the `ℓ¹` distance:
-`‖Θ_ξ(a,b)‖ ≤ C₅ e^{1/(4c)} 𝒯_t(|a-b|_∞)` (copy of the private `k2d_theta_tail`,
-`Step2K2.lean:78`; the floor `W^{-D}` of `stK2decay_holds` is not wanted here). -/
+`‖Θ_ξ(a,b)‖ ≤ C₅ e^{1/(4c)} 𝒯_t(|a-b|_∞)` (the floor `W^{-D}` of `stK2decay_holds` is not wanted here). -/
 private theorem nkl_theta_tail {C₅ c : ℝ} (hC₅ : 0 < C₅) (hc : 0 < c) (hL : 3 ≤ L) {g t : ℝ} {ξ : ℂ}
     (hξ : ‖ξ‖ < 1)
     (H : ∀ x : Zd d L, ‖Theta d L g ξ 0 x‖ ≤
@@ -834,7 +829,8 @@ private theorem nkl_dist_cases (x : Zd d L) :
   · left; exact_mod_cast h
   · right; exact_mod_cast h
 
-/-- **Bound 2, abstractly** (`3_5:626-654`): with `A_x = |F(x,a₁)|`, `B_y = |F(a₀,y)|`,
+/-- **Bound 2, abstractly** (Subsection 3.4 `subsec:pf_lem:newKLK`, after (3.56) `eq;facts`): with `A_x = |F(x,a₁)|`,
+`B_y = |F(a₀,y)|`,
 `A_x ≤ J W^{-d} 𝒯̃(|x-a₁|)`, `B_y ≤ J W^{-d} 𝒯̃(|a₀-y|)` and the marginal sums bounded by `Σ̄`:
 `Σ_{x,y} A_x |S_{xy}| B_y ≤ 2 J W^{-d} C_s 𝒯̃(|a₀-a₁|) Σ̄ + 1_{ℓ≥1} (J W^{-d})² C_s C_T' 𝒯(|a₀-a₁|)`. -/
 private theorem nkl_bound2 (hL : 3 ≤ L) {ℓ Wr D CT J cW Sig : ℝ} (hW : 0 < Wr) (hℓ : 0 ≤ ℓ)
@@ -982,13 +978,13 @@ private theorem nkl_bound2 (hL : 3 ≤ L) {ℓ Wr D CT J cW Sig : ℝ} (hW : 0 <
 
 end Assembly
 
-/-! ### G. The pin `STNewKLK` -/
+/-! ### G. The statement `STNewKLK` -/
 
 private theorem nkl_STmsig_eq (E : ℝ) (s : Bool) : STmsig E s = mSigma E s := rfl
 
 /-- `lem:newKLK` with the explicit `δ₀ = κ/2`.
 Constants: `C = 2 (C₁ C_s C_T + C_s) + 10 C_s + C_s C_T`, with `C₁ = C₅ e^{1/(4c)}`
-(`Prop5Decay d 𝔡⁻¹`), `C_s = 2^{d-2} e` (the shift of `𝒯`), `C_T` (`(TTT2)`, `ekPropTInf_holds`);
+(`Prop5Decay d 𝔡⁻¹`), `C_s = 2^{d-2} e` (the shift of `𝒯`), `C_T` ((3.21) `TTT2`, `ekPropTInf_holds`);
 all depend only on `(d, 𝔡)`. -/
 private theorem nkl_at (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
     ∃ C : ℝ, 0 < C ∧ STNewKLKAt d κ 𝔡 C (κ / 2) := by
@@ -1193,26 +1189,15 @@ private theorem nkl_at (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (
         have := div_nonneg hCc2 hv.le; positivity
       linarith
 
-/-- **`lem:newKLK`** (`3_5:371–378`, proof `3_5:610–654`): the pin `STNewKLK` holds, with
+/-- **`lem:newKLK`** (Lemma 3.9 and its proof in Subsection 3.4): `STNewKLK` holds, with
 `δ₀ = κ/2` and `C` as in `nkl_at`. -/
 theorem stNewKLK_holds (d : ℕ) : STNewKLK d := by
   intro hd κ 𝔡 hκ h𝔡
   obtain ⟨C, hC, h⟩ := nkl_at d hd κ 𝔡 hκ h𝔡
   exact ⟨C, κ / 2, hC, by positivity, h⟩
 
-/-! ### Compiled nonempty instances (`d = 3`, the merged preflight sequence `sz0`)
-
-`sz0` at `n = 0`: `L = 4`, `W = 32`, `lam = 1/64` (`sz0_values`); `κ = 𝔡 = 1/10` (`lam ≤ 𝔡⁻¹ = 10`),
-`E = 0` (`|E| ≤ 2 - κ`, `m(0) = i`), `D = 1`, `ℓ = 2` (`1 ≤ ℓ ≤ L`, so the indicator `1_{ℓ≥1}` is
-on), `u > 0`, and `H = 0` (Hermitian).  At `H = 0` the resolvent is `G_u = (-z_u)⁻¹ I` with
-`z_u = (1-u) i`, so `G_u - M = i u/(1-u) I` is not `0` for `u > 0` and `‖G_u - M‖_max = u/(1-u)`
-(`nkl_STGMM_zero`).  Every deterministic hypothesis of the pin is discharged. -/
-
-/-! ### The pointwise form `STNewKLKAt`, concluded (T2099 audit O1; ticket T2127) -/
-
 /-- **`lem:newKLK`, pointwise form.**  `STNewKLKAt` holds at the constants `C, δ₀` that
-`stNewKLK_holds` chooses for `(d, κ, 𝔡)`; it is the conclusion the registry scan of
-`RBM3D/Test/Axioms.lean` looks for. -/
+`stNewKLK_holds` chooses for `(d, κ, 𝔡)`. -/
 theorem stNewKLKAt_holds (d : ℕ) (hd : 3 ≤ d) (κ 𝔡 : ℝ) (hκ : 0 < κ) (h𝔡 : 0 < 𝔡) :
     STNewKLKAt d κ 𝔡 (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose
       (stNewKLK_holds d hd κ 𝔡 hκ h𝔡).choose_spec.choose :=

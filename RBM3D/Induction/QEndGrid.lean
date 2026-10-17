@@ -11,28 +11,27 @@ import RBM3D.Induction.GridAssemblyN
 import RBM3D.Loop.KLFinal
 
 /-!
-# S3-18a2 (ticket T2302): the alternating grid endpoint `altGridEndQN`
+# The alternating grid endpoint `altGridEndQN'`
 
-Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`): `lem:STOeq_Qt` `3_5:1362-1378`, the alternating case
-`3_5:1676-1714` (`(y27kasdfg)`, `(A4)`, `(A5)` `3_5:1692-1706`), `(normQA)` `3_5:1284-1289`.  Composition, no new
-mathematics (DECISIONS §62 (2)/(4), §83, §95 (3), §98 (1), §105 (1)): the merged `assembledN` at the alternating exit family
-`altExitTauN` with the fields of `QEndA` (T2294), the bridge C1b and `budgetAltQN` at `ε₀/2`, the de-`𝒬` step `altEnd_unQ` at
-`v`, the per-`n` level split, the `lam` patch for `yMomentsQUnifN`, the collapsed window and the union bound over the
-alternating `σ`.  The statement is the pin `T2302_altGridEndQN` of `docs/tickets/checks/T2302-check.lean` (= `T2294_altGridEndQN_shape`),
-unchanged.
+Paper: Lemma 4.10 (`lem:STOeq_Qt`), the alternating case in Subsection 4.5 `subsec:support` (proof of
+Lemma 4.17: (4.59) `y27kasdfg`, (4.61) `A4`, (4.60) `A5`), (4.32) `normQA`.  A composition, no new
+mathematics: `assembledN` at the alternating exit family `altExitTauN` with the fields of `QEndA`, the
+bridge `assembledRHSAltQN_qErr_le` and `budgetAltQN` at `ε₀/2`, the de-`𝒬` step `altEnd_unQ` at `v`, the
+per-`n` level split, the `lam` patch for `yMomentsQUnifN`, the collapsed window and the union bound over
+the alternating `σ`.
 
 ## What is here (namespace `RBM.Ind`; every helper is `private` with the prefix `altGrid_`)
 
-* §0-§1 copies of the private helpers of `NQEndLin` (`:56`, `:127-148`, `:446-646`, `:722-759`, `:967-1023`): the asymptotic
+* §0-§1 helpers (as the private helpers of `NQEndLin`): the asymptotic
   absorption, `W ≤ N`, `W ≥ N^𝔠 → ∞`, `η_v⁻¹ ≤ N`, the grid step, the shift hypothesis `hδ`, the collapsed window, the range
   condition, the union bound;
-* §2 the `lam` patch (paper-delta candidate `T2302c`): the family `altGrid_mol` (explicit mollifier if `0 < lam n`, else the delta
+* §2 the `lam` patch: the family `altGrid_mol` (explicit mollifier if `0 < lam n`, else the delta
   family on constant labels), `STMollifierProps` at every `n`, and the `Y`-moment constant `altGrid_yMomentsMax` over all signs;
-* §3 the level split (`T2302b`): the crude sup `‖(𝓛-𝒦)^{(k)}‖ ≤ N^{k+2}` on the good walk (`STmaxLKM_crudeN`, the `𝒦` envelope
+* §3 the level split: the crude sup `‖(𝓛-𝒦)^{(k)}‖ ≤ N^{k+2}` on the good walk (`STmaxLKM_crudeN`, the `𝒦` envelope
   `M_K = N η_v^{-k}`), `B_u ≤ 2 N`, and on the small levels `𝔏 < N^{2k+2}` the quantities of the assembly `≤ N^{8k+7}`;
-* §4 `altGrid_assembly` (per alternating `σ`): the bundle `GridAssemblyHypN` at `altExitTauN`, `assembledN`, the bridge C1b;
-* §5 the exponent bookkeeping `AltGridArith` and helpers; §6 **`altGridEndQN`**;
-* §7 compiled nonempty instances (namespace `RBM.Ind.QEndGridInst`).
+* §4 `altGrid_assembly'` (per alternating `σ`): the bundle `GridAssemblyHypN` at `altExitTauN`, `assembledN`, the bridge
+  `assembledRHSAltQN_qErr_le`;
+* §5 the exponent bookkeeping `AltGridArith` and helpers; §6 **`altGridEndQN'`**.
 
 Constants of the proof (fixed order): `Λg = 𝔡⁻¹`, `κ' = min κ (4/5)`, `KL = 1/𝔠`, `C₁ = (1 + 40 d(m+1)) 6^{d(m+1)}`, `C₄`, `C_n`,
 `ε₀' = min ε₀ 1`, `e₂ = ε₀'/2` (the budget runs at `e₂`), `ε = min (e₂/(8 max(C₄,C_n))) (1/2)`, `ε' = ε/2`,
@@ -54,9 +53,9 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Gauss RBM.Gauss.Sizes RBM.Path
 
-/-! ## 0. Asymptotic helper (copy of `NQEndLin.lean:56`) -/
+/-! ## 0. Asymptotic helper -/
 
-/-- `C · x^a ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd_ev_rpow_le`, `NonAltEnd:60`). -/
+/-- `C · x^a ≤ x^b` for all large real `x` when `a < b` (RBM2D `NonAltEnd_ev_rpow_le`). -/
 private theorem altGrid_ev_rpow_le {a b : ℝ} (hab : a < b) (C : ℝ) :
     ∀ᶠ x : ℝ in atTop, C * x ^ a ≤ x ^ b := by
   have ht : Tendsto (fun x : ℝ => x ^ (b - a)) atTop atTop := tendsto_rpow_atTop (sub_pos.mpr hab)
@@ -66,8 +65,7 @@ private theorem altGrid_ev_rpow_le {a b : ℝ} (hab : a < b) (C : ℝ) :
   rw [h1]
   exact mul_le_mul_of_nonneg_right hx (Real.rpow_nonneg hx0.le _)
 
-/-! ## 1. Elementary facts on the sizes and the grid (copies of `NQEndLin.lean:127-148`, `:446-646`, `:722-759`,
-`:967-1023`) -/
+/-! ## 1. Elementary facts on the sizes and the grid -/
 
 section Facts
 
@@ -112,8 +110,7 @@ private theorem altGrid_ev_W_rpow_ge (hsize : sz.SizeTendsto) {𝔠 : ℝ} (h�
     _ = (((sz.size n : ℕ) : ℝ) ^ 𝔠) ^ a := Real.rpow_mul hN0.le _ _
     _ ≤ ((sz.W n : ℕ) : ℝ) ^ a := Real.rpow_le_rpow (Real.rpow_nonneg hN0.le _) hW ha.le
 
-/-- `Δ ≤ N^{-C_K}` on a grid with `N^{C_K} ≤ K n` and `v - s ≤ 1` (RBM2D `NonAltEnd_step_le`,
-`NonAltEnd:652`). -/
+/-- `Δ ≤ N^{-C_K}` on a grid with `N^{C_K} ≤ K n` and `v - s ≤ 1` (RBM2D `NonAltEnd_step_le`). -/
 private theorem altGrid_step_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {C_K : ℝ}
     (hK : ((sz.size n : ℕ) : ℝ) ^ C_K ≤ (K n : ℝ)) (hvs : v n - s n ≤ 1) :
     gridStep s v K n ≤ ((sz.size n : ℕ) : ℝ) ^ (-C_K) := by
@@ -142,7 +139,7 @@ private theorem altGrid_gridTime_succ_sub (s v : ℕ → ℝ) (K : ℕ → ℕ) 
   unfold gridTime; push_cast; ring
 
 /-- `η_u⁻¹ ≤ N^{1-τ}/κ'` for `u ≤ t`, `κ' ≤ Im m`, under the range condition
-`N^{-1+τ} ≤ 1 - t` (RBM2D `NonAltEnd_etaT_inv_le`, `NonAltEnd:593`, with `κ'` for `c₀`). -/
+`N^{-1+τ} ≤ 1 - t` (RBM2D `NonAltEnd_etaT_inv_le`, with `κ'` for `c₀`). -/
 private theorem altGrid_etaT_inv_le {κ' E u t τR N : ℝ} (hκ' : 0 < κ') (hκm : κ' ≤ (mE E).im)
     (hut : u ≤ t) (hN0 : 0 < N) (hR : N ^ (-1 + τR) ≤ 1 - t) :
     (etaT E u)⁻¹ ≤ N ^ (1 - τR) / κ' := by
@@ -157,7 +154,7 @@ private theorem altGrid_etaT_inv_le {κ' E u t τR N : ℝ} (hκ' : 0 < κ') (h�
         exact (div_eq_mul_inv _ _).symm
 
 /-- (`hη`) `η_v⁻¹ ≤ N` eventually, from `RangeCond τ_R v`, `κ' ≤ Im m` and `N^{τ_R} ≥ κ'⁻¹`
-(RBM2D `NonAltEnd_ev_hη`, `NonAltEnd:634`). -/
+(RBM2D `NonAltEnd_ev_hη`). -/
 private theorem altGrid_ev_hη (hsize : sz.SizeTendsto) {κ' τR : ℝ} (hκ' : 0 < κ') {E v : ℕ → ℝ}
     (hκm : ∀ n, κ' ≤ (mE (E n)).im) (hτR : 0 < τR) (hrange : sz.RangeCond τR v) :
     ∀ᶠ n : ℕ in atTop, (etaT (E n) (v n))⁻¹ ≤ ((sz.size n : ℕ) : ℝ) := by
@@ -172,7 +169,7 @@ private theorem altGrid_ev_hη (hsize : sz.SizeTendsto) {κ' τR : ℝ} (hκ' : 
         mul_le_mul_of_nonneg_left hbig (Real.rpow_nonneg hN0.le _)
     _ = ((sz.size n : ℕ) : ℝ) := by rw [← Real.rpow_add hN0]; simp
 
-/-- (`hΔη`) `Δ η_v⁻¹ ≤ 1` for `C_K ≥ 1`, `η_v⁻¹ ≤ N` (RBM2D `NonAltEnd_hΔN`, `NonAltEnd:667`). -/
+/-- (`hΔη`) `Δ η_v⁻¹ ≤ 1` for `C_K ≥ 1`, `η_v⁻¹ ≤ N` (RBM2D `NonAltEnd_hΔN`). -/
 private theorem altGrid_hΔη {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {C_K η : ℝ} (hC : 1 ≤ C_K)
     (hK : ((sz.size n : ℕ) : ℝ) ^ C_K ≤ (K n : ℝ)) (hvs : v n - s n ≤ 1) (hη0 : 0 ≤ η⁻¹)
     (hη : η⁻¹ ≤ ((sz.size n : ℕ) : ℝ)) : gridStep s v K n * η⁻¹ ≤ 1 := by
@@ -187,7 +184,7 @@ private theorem altGrid_hΔη {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} {C
     _ ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hN1 (by linarith)
 
 /-- The shift error with `η_{u'}⁻¹ ≤ B`: `eeShiftErrN ≤ W^d k L^d (2k+2) B^{2k+3} (u' - u)`
-(RBM2D `NonAltEnd_eeShiftErr_le`, `NonAltEnd:694`, with `W^d`, `L^d`). -/
+(RBM2D `NonAltEnd_eeShiftErr_le`, with `W^d`, `L^d`). -/
 private theorem altGrid_eeShiftErrN_le {d L W : ℕ} (hW : 1 ≤ W) {E : ℝ} (k : ℕ) {u u' B : ℝ}
     (hη0 : 0 ≤ (etaT E u')⁻¹) (hB : (etaT E u')⁻¹ ≤ B) (hΔ : 0 ≤ u' - u) :
     eeShiftErrN d L W E k u u' ≤
@@ -211,8 +208,7 @@ private theorem altGrid_eeShiftErrN_le {d L W : ℕ} (hW : 1 ≤ W) {E : ℝ} (k
 /-- (`hδ`, the shift hypothesis of `subGaussStop_linN`) `W^{-(D''+1)} + eeShiftErrN(u_j, u_{j+1}) ≤
 W^{-D''}` for every `j < K n`, eventually: `eeShiftErrN ≤ k(2k+2) N^{2k+4} Δ`
 (`W^d L^d = N`, `η_{u_{j+1}}⁻¹ ≤ η_v⁻¹ ≤ N`, `(W^{-d})^{2k+1} ≤ 1`), `Δ ≤ N^{-C_K}`,
-`C_K ≥ D'' + 2k + 5`, `W ≥ 2`, `N ≥ 2k(2k+2)`, `N^{-D''} ≤ W^{-D''}` (RBM2D `NonAltEnd_ev_hδ`,
-`NonAltEnd:717`). -/
+`C_K ≥ D'' + 2k + 5`, `W ≥ 2`, `N ≥ 2k(2k+2)`, `N^{-D''} ≤ W^{-D''}` (RBM2D `NonAltEnd_ev_hδ`). -/
 private theorem altGrid_ev_hδ (hd : 1 ≤ d) (hsize : sz.SizeTendsto) {𝔠 : ℝ} (h𝔠 : 0 < 𝔠)
     (hband : sz.Bandwidth 𝔠) (k : ℕ) {D'' C_K : ℝ} {E s v : ℕ → ℝ} {K : ℕ → ℕ}
     (hE : ∀ n, |E n| < 2) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n) (hv1 : ∀ n, v n < 1)
@@ -321,8 +317,7 @@ private theorem altGrid_gridTime_le {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : �
     (hK : K n ≠ 0) {i : ℕ} (hi : i ≤ K n) : gridTime s v K n i ≤ v n :=
   (ST_gridTime_mono s v K n hsv hi).trans_eq (gridTime_last s v K n hK)
 
-/-- The step error of `gridDriftN` is nonnegative (RBM2D `NonAltEnd_stepErrN_nonneg`,
-`NonAltEnd:817`, with `W^d` in place of `W²`). -/
+/-- The step error of `gridDriftN` is nonnegative (RBM2D `NonAltEnd_stepErrN_nonneg`, with `W^d` in place of `W²`). -/
 private theorem altGrid_stepErrN_nonneg {d L W : ℕ} {E u v Δ Bk : ℝ} {k : ℕ} (hE : |E| < 2)
     (hu1 : u < 1) (hv1 : v < 1) (hΔ : 0 ≤ Δ) (hBk : 0 ≤ Bk) : 0 ≤ stepErrN d L W E k u v Δ Bk := by
   have hη : 0 < etaT E v := etaT_pos hE hv1
@@ -349,7 +344,7 @@ private theorem altGrid_stepErrN_nonneg {d L W : ℕ} {E u v Δ Bk : ℝ} {k : �
   linarith
 
 /-- If `v_n = s_n` the grid walk does not move: `Δ = 0` and every `H_j = H_0` (RBM2D
-`NonAltEnd_pathH_collapse`, `NonAltEnd:1014`). -/
+`NonAltEnd_pathH_collapse`). -/
 private theorem altGrid_pathH_collapse {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (hsv : s n = v n) (j : ℕ)
     (ω : PathΩ sz) : pathH sz s v K n j ω = pathH sz s v K n 0 ω := by
   have hΔ : gridStep s v K n = 0 := by unfold gridStep; rw [← hsv]; simp
@@ -358,7 +353,7 @@ private theorem altGrid_pathH_collapse {s v : ℕ → ℝ} {K : ℕ → ℕ} {n 
   simp
 
 /-- The range condition passes to a smaller exponent and an earlier time (RBM2D
-`NonAltEnd_rangeCond_mono`, `NonAltEnd:1059`). -/
+`NonAltEnd_rangeCond_mono`). -/
 private theorem altGrid_rangeCond_mono {τ τR : ℝ} {t v : ℕ → ℝ} (hτ : τR ≤ τ)
     (hvt : ∀ n, v n ≤ t n) (h : sz.RangeCond τ t) : sz.RangeCond τR v := by
   filter_upwards [h] with n hn
@@ -368,7 +363,7 @@ private theorem altGrid_rangeCond_mono {τ τR : ℝ} {t v : ℕ → ℝ} (hτ :
     _ ≤ 1 - v n := by linarith [hvt n]
 
 /-- The union bound over the sign vectors: `2^k N^{-(D+1)} ≤ N^{-D}` eventually (RBM2D
-`NonAltEnd_ev_union`, `NonAltEnd:1068`). -/
+`NonAltEnd_ev_union`). -/
 private theorem altGrid_ev_union (hsize : sz.SizeTendsto) (k : ℕ) (D : ℝ) :
     ∀ᶠ n : ℕ in atTop, (2 : ℝ) ^ k * ((sz.size n : ℕ) : ℝ) ^ (-(D + 1)) ≤
       ((sz.size n : ℕ) : ℝ) ^ (-D) := by
@@ -384,9 +379,9 @@ private theorem altGrid_ev_union (hsize : sz.SizeTendsto) (k : ℕ) (D : ℝ) :
     _ = _ := mul_one _
 
 end Grid
-/-! ## 2. The `lam` patch (paper-delta candidate `T2302c`)
+/-! ## 2. The `lam` patch
 
-The merged `yMomentsQUnifN` asks `STMollifierProps (lam n) C c (ϑ n)` for **every** `n`, while the endpoint knows
+`yMomentsQUnifN` asks `STMollifierProps (lam n) C c (ϑ n)` for **every** `n`, while the endpoint knows
 `0 < lam n` only eventually (`WO`; `KLFinal_flowLam` gives only `∀ᶠ n, 0 < lam n`).  At `g ≤ 0` the window `ℓ_t` of
 `(eq:ellt)` is `1` (`ellT L g t = min (max (g/√|1-t|) 1) L`), and the delta family on constant labels satisfies the
 four clauses of `STMollifierProps` with `C ≥ 1`; the family `altGrid_mol` is the explicit mollifier when
@@ -482,7 +477,7 @@ private theorem altGrid_mol_props {d : ℕ} (sz : Sizes d) (m n : ℕ) :
 
 /-- **The uniform `Y` moments for all signs with one `C_P`** (the patch): the maximum over the `2^k` sign vectors of
 the constants of `yMomentsQUnifN` at the patched family serves every sign; the conclusion is for the explicit
-mollifier on the eventual set `0 < lam n` (copy of `altEnd_yMomentsMax`, `QEndA.lean:926`). -/
+mollifier on the eventual set `0 < lam n` (as in `QEndA`). -/
 private theorem altGrid_yMomentsMax {d : ℕ} (sz : Sizes d) {κ τR : ℝ} {E s v : ℕ → ℝ} (hκ : 0 < κ)
     (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n) (hv1 : ∀ n, v n < 1)
     (hsize : sz.SizeTendsto) (hrange : sz.RangeCond τR v) (m : ℕ) :
@@ -509,7 +504,7 @@ private theorem altGrid_yMomentsMax {d : ℕ} (sz : Sizes d) {κ τR : ℝ} {E s
 
 end Patch
 
-/-! ## 3. The level split (F1/`T2294c`/`T2294e`, F6): deterministic facts per `n`
+/-! ## 3. The level split: deterministic facts per `n`
 
 The crude constants (in `N`-exponents): the crude sup of `(𝓛-𝒦)^{(k)}` on the good walk is `≤ N^{k+2}`
 (`STmaxLKM_crudeN` with the `𝒦` envelope `M_K = N η_v^{-k}`), `C_big = 2k + 2`; on the small levels
@@ -520,7 +515,7 @@ section Levels
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `B_{w} ≤ 2 (1 - v)⁻¹` for `0 ≤ w ≤ v < 1` (copy of the private `gdn_Bctl_le`, `GridDriftN.lean:987`). -/
+/-- `B_{w} ≤ 2 (1 - v)⁻¹` for `0 ≤ w ≤ v < 1` (as the private `gdn_Bctl_le`). -/
 private theorem altGrid_Bctl_le (n : ℕ) {w v : ℝ} (hw0 : 0 ≤ w) (hwv : w ≤ v) (hv1 : v < 1) :
     sz.Bctl n w ≤ 2 * (1 - v)⁻¹ := by
   have hw1 : 0 < 1 - w := by linarith
@@ -647,10 +642,9 @@ private theorem altGrid_dDrift_bound {Γ Φ₁ Φ₂ Φ₃ N B η : ℝ} {k : �
     _ = N ^ (5 * k + 5) := by rw [← pow_add, ← pow_add]; ring_nf
     _ ≤ N ^ (8 * k + 7) := pow_le_pow_right₀ (by linarith) (by omega)
 
-/-- **The crude sup at length `k` on the good walk, in `N`-exponents** (F1/F6; deterministic, fixed `n`): for
+/-- **The crude sup at length `k` on the good walk, in `N`-exponents** (deterministic, fixed `n`): for
 Hermitian `H` and `u ∈ [0, v]`, `‖(𝓛-𝒦)^{(k)}_{u,σ}(H)‖_∞ ≤ N^{k+2}`, from `STmaxLKM_crudeN` with the `𝒦`
-envelope `M_K = N η_v^{-k}` (`exists_norm_Kcal_le_win` at `τ = 1`), `η_u⁻¹ ≤ η_v⁻¹ ≤ N`, `N ≥ 2`
-(pattern `crude_u`, `QEndA.lean:1093`). -/
+envelope `M_K = N η_v^{-k}` (`exists_norm_Kcal_le_win` at `τ = 1`), `η_u⁻¹ ≤ η_v⁻¹ ≤ N`, `N ≥ 2`). -/
 private theorem altGrid_crude_N (n : ℕ) {E v : ℝ} (hE : |E| < 2) {k : ℕ} (hk : 2 ≤ k)
     (hKcal : ∀ w ∈ Set.Icc (0 : ℝ) v, ∀ J : LoopIdx (Zd d (sz.L n)), J.WF → 2 ≤ J.length → J.length ≤ k →
       ‖KLK d (sz.L n) (sz.lam n) (sz.W n) E w J‖ ≤
@@ -750,11 +744,11 @@ end Levels
 
 /-! ## 4. The assembly at the alternating exit time, for one sign vector
 
-The merged `assembledN` (`GridAssemblyN.lean:1605`) at the exit time `altExitTauN` of the walk from
+`assembledN` at the exit time `altExitTauN` of the walk from
 `GoodSetN ∩ GoodLinN ∩ altYSetN` (levels `Γ = N^{ε₁}`, `Yl = N^{ε₁} X`), for the `𝒬`-process `aTrueQN` with the
 kernel class `altClsQN` (`κ = kappaAltQN`, `εK = epsAltQN`, class exponent `ε'`, radius level `Dc`), the linear drift
 level `dDriftAltLinQN`, the sub-Gaussian proxy `cQVAltQN` (`subGaussStop_altQN`), the `Y` moments of `yVecQN`
-(`altGrid_yMomentsMax`) and the `qErrQN` remainder (`gridDriftQN_envelope`); then the bridge C1b
+(`altGrid_yMomentsMax`) and the `qErrQN` remainder (`gridDriftQN_envelope'`); then the bridge
 (`assembledRHSAltQN_qErr_le`) turns the remainder sum into `assembledRHSAltQN + N^{-D_t}`.  `GoodSetN` is used through
 its level-free clauses only: its crude level `Φc` never enters the bound.  Private: its binders mention
 `YMomentBoundsN`. -/
@@ -769,7 +763,7 @@ private abbrev altGrid_C1 (d m : ℕ) : ℝ := (1 + 40 * ((d * (m + 1) : ℕ) : 
 /-- The Taylor constant `C₂ = 1000 (1 + d (m+1))²` of `gridDriftQN`. -/
 private abbrev altGrid_C2 (d m : ℕ) : ℝ := 1000 * (1 + ((d * (m + 1) : ℕ) : ℝ)) ^ 2
 
-/-- `uStepC ≥ 0` (the `𝒰`-remainder factor, copy of the block `h3` of `altEnd_stepErrN_nonneg`). -/
+/-- `uStepC ≥ 0` (the `𝒰`-remainder factor, as the block `h3` of `altEnd_stepErrN_nonneg`). -/
 private theorem altGrid_uStepC_nonneg (k : ℕ) {Δ v : ℝ} (hΔ : 0 ≤ Δ) (hv1 : v < 1) :
     0 ≤ uStepC k Δ v := by
   have hv : 0 < 1 - v := by linarith
@@ -781,7 +775,7 @@ private theorem altGrid_uStepC_nonneg (k : ℕ) {Δ v : ℝ} (hΔ : 0 ≤ Δ) (h
   have hk : 0 ≤ (k : ℝ) * Δ ^ 2 * (1 - v)⁻¹ ^ 2 := by positivity
   nlinarith
 
-/-- **The `𝒬`-remainder `qErrQN` is nonnegative** (the field `hstepErr0`; new, ticket row `.hstepErr0`): every term of
+/-- **The `𝒬`-remainder `qErrQN` is nonnegative** (the field `hstepErr0`): every term of
 `qStepErrN` is a product of nonnegative factors (`stepErrN ≥ 0`, `uStepC ≥ 0`, `lkEnvN`, `driftEnvN ≥ 0`,
 `(1 - (u + Δ))⁻¹ ≥ 0`). -/
 private theorem altGrid_qErrQN_nonneg (n j m : ℕ) {E s t : ℕ → ℝ} {K : ℕ → ℕ} {C C₂ Bk : ℝ}
@@ -808,29 +802,28 @@ private theorem altGrid_qErrQN_nonneg (n j m : ℕ) {E s t : ℕ → ℝ} {K : �
   positivity
 
 
-/-- `kappaAltQN` is nonnegative (copy of the private `QBudgetA_kappa_nonneg`, `QBudgetA.lean:125`; F4). -/
+/-- `kappaAltQN` is nonnegative (as in `QBudgetA`). -/
 private theorem altGrid_kappa_nonneg (d k : ℕ) (Λg κ' KL g W ε : ℝ) (hW : 0 ≤ W) (u : ℕ → ℝ)
     (i m : ℕ) : 0 ≤ kappaAltQN d k Λg κ' KL g W ε u i m := by
   unfold kappaAltQN
   exact mul_nonneg (Real.rpow_nonneg hW _)
     (pow_nonneg (div_nonneg (by positivity) (by positivity)) _)
 
-/-- `epsAltQN` is nonnegative (copy of the private `QBudgetA_eps_nonneg`, `QBudgetA.lean:131`; F4). -/
+/-- `epsAltQN` is nonnegative (as in `QBudgetA`). -/
 private theorem altGrid_eps_nonneg (d k : ℕ) (Λg κ' KL W : ℝ) (hW : 0 ≤ W) (i m : ℕ) :
     0 ≤ epsAltQN d k Λg κ' KL W i m := by
   unfold epsAltQN
   exact Real.rpow_nonneg hW _
 
 
-/-- **`altGrid_assembly'`** (T2313): the copy of `altGrid_assembly` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped; it was used only
-in the call to `gridDriftQN_envelope`, now `gridDriftQN_envelope'`).  Same statement otherwise.
+/-- **`altGrid_assembly'`**: the assembly with `m : ℕ` arbitrary (the call to `gridDriftQN_envelope'`).
 
-**The assembly at the alternating exit time, for one sign vector** (the merged `assembledN` at `τ = altExitTauN`).
+**The assembly at the alternating exit time, for one sign vector** (`assembledN` at `τ = altExitTauN`).
 Eventually in `n`, on the small levels `S n` (the level split, `§3`), for every alternating `σ` on a strict window
 `s_n < v_n`, there is an event `G`, `P(Gᶜ) ≤ N^{-D₁}`, on which the terminal bound
 `‖𝒬_{v_n}(𝓛-𝒦)_{v_n}(H_{K n})(a)‖ ≤ assembledRHSAltQN + N^{-D_t}` holds as soon as the grid walk stays in
 `GoodSetN ∩ GoodLinN ∩ altYSetN` at every `j ≤ K n`.  The levels are `Γ = N^{ε₁}` (also `ν`) and
-`Yl = N^{ε₁} X`; every numerical row is an eventual hypothesis. -/
+`Yl = N^{ε₁} X`; every numerical condition is an eventual hypothesis. -/
 private theorem altGrid_assembly' {κ : ℝ} {E s v : ℕ → ℝ} {K : ℕ → ℕ} (m : ℕ) (hd : 3 ≤ d)
     (hκ : 0 < κ) (hE : ∀ n, |E n| ≤ 2 - κ) (hs0 : ∀ n, 0 ≤ s n) (hsv : ∀ n, s n ≤ v n)
     (hv1 : ∀ n, v n < 1) (hK0 : ∀ n, K n ≠ 0) (hsize : sz.SizeTendsto) (hKb : sz.STKbound E)
@@ -1116,7 +1109,7 @@ section EndHelpers
 
 variable {d : ℕ} (sz : Sizes d)
 
-/-- `W^e ≤ N^{𝔠 e}` for `e ≤ 0` from `N^𝔠 ≤ W` (copy of `nqEnd_Wpow_le`, `NQEndLin.lean:154`). -/
+/-- `W^e ≤ N^{𝔠 e}` for `e ≤ 0` from `N^𝔠 ≤ W` (as `nqEnd_Wpow_le`). -/
 private theorem altGrid_Wpow_le {W N c e : ℝ} (hN0 : 0 < N) (hcW : N ^ c ≤ W) (he : e ≤ 0) :
     W ^ e ≤ N ^ (c * e) := by
   have h1 : 0 < N ^ c := Real.rpow_pos_of_pos hN0 _
@@ -1184,10 +1177,10 @@ private theorem altGrid_fin_arith {N e2 τN ε₀ : ℝ} (hN1 : 1 ≤ N) (hτN :
   rw [h2]
   nlinarith [mul_le_mul_of_nonneg_right hbig h3]
 
-/-- **The exponent bookkeeping** (private `Prop`-valued structure, pattern `NQEndArith`, `NQEndLin.lean:662`) at
+/-- **The exponent bookkeeping** (private `Prop`-valued structure, pattern `NQEndArith`) at
 `e₂ = ε₀''` (the budget exponent), `ε = min (e₂/(8 max(C₄, C_n))) (1/2)`, `ε' = ε/2`,
 `τ' = min (ε/4) (e₂/(40 d m))`, `ε₁ = e₂/40`, `τ_N = e₂/8`, `D'' = 2C_n + 2 + 2C₄ + k + (4k+1)/𝔠`,
-`D' = D'' + 2` (F2), `D_c = D'' + 1`, `C_K = D₁ + 2C_P + 8k + 20 + D''` (F5), `k = m + 2`, `D_Y = D_t = k + 1`. -/
+`D' = D'' + 2`, `D_c = D'' + 1`, `C_K = D₁ + 2C_P + 8k + 20 + D''`, `k = m + 2`, `D_Y = D_t = k + 1`. -/
 private structure AltGridArith (d m : ℕ) (𝔠 C₄ Cn e2 D₁ Cmax ε ε' τ' ε₁ τN D'' D' Dc C_K : ℝ) : Prop where
   hε0 : 0 < ε
   hε1 : ε < 1
@@ -1224,9 +1217,9 @@ private structure AltGridArith (d m : ℕ) (𝔠 C₄ Cn e2 D₁ Cmax ε ε' τ'
   hexp : altBudgetExpQN (m + 1 + 1) C₄ Cn 𝔠 ε ε' τN D' D'' (((m + 1 + 1 : ℕ) : ℝ) + 1)
     (((m + 1 + 1 : ℕ) : ℝ) + 1) ε₁ e2 ε₁ (-(2 * ((m + 1 + 1 : ℕ) : ℝ) + 1))
 
-/-- **`altGrid_arith'`** (T2313): `altGrid_arith` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped) and
-`τ' = min (ε/4) (e₂/(40 d (m+1)))`; the field `hτ'dm : τ' d m ≤ ε₁` follows from `τ' d m ≤ τ' d (m+1) ≤ e₂/40`.  No other field
-used `1 ≤ m`: `D''`, `C_K`, `hD`, `hFv`, `hexp` need only `m ≥ 0`. -/
+/-- **`altGrid_arith'`**: the exponent bookkeeping with `m : ℕ` arbitrary and
+`τ' = min (ε/4) (e₂/(40 d (m+1)))`; the field `hτ'dm : τ' d m ≤ ε₁` follows from `τ' d m ≤ τ' d (m+1) ≤ e₂/40`.  The fields
+`D''`, `C_K`, `hD`, `hFv`, `hexp` need only `m ≥ 0`. -/
 private theorem altGrid_arith' (d m : ℕ) {𝔠 C₄ Cn e2 D₁ Cmax ε ε' τ' ε₁ τN D'' D' Dc C_K : ℝ}
     (hd : 3 ≤ d) (h𝔠 : 0 < 𝔠) (hC₄ : 0 < C₄) (hCn : 0 < Cn) (he2 : 0 < e2) (he2le : e2 ≤ 1)
     (hD₁ : 0 < D₁) (hCmax : 0 ≤ Cmax)
@@ -1312,12 +1305,11 @@ private theorem altGrid_arith' (d m : ℕ) {𝔠 C₄ Cn e2 D₁ Cmax ε ε' τ'
       (by rw [hε₁]; linarith) (by rw [hε₁]; linarith) (by rw [hτN])
       (by rw [hD']; linarith) hD'' (by linarith) (by linarith)
 
-/-! ## 6. The grid endpoint `altGridEndQN`
+/-! ## 6. The grid endpoint `altGridEndQN'`
 
-The statement is the pin `T2302_altGridEndQN` of `docs/tickets/checks/T2302-check.lean`, copied verbatim (script diff in the
-report).  Exponents (fixed order): `Λg = 𝔡⁻¹`, `κ' = min κ (4/5)`, `KL = 1/𝔠`, `C₁ = (1 + 40 d(m+1)) 6^{d(m+1)}`,
+Exponents (fixed order): `Λg = 𝔡⁻¹`, `κ' = min κ (4/5)`, `KL = 1/𝔠`, `C₁ = (1 + 40 d(m+1)) 6^{d(m+1)}`,
 `C₄ = qProxy4C d (m+2) Λg κ' KL`, `C_n = qProxyCn d (m+1) Λg KL C₁ (1/2)`, `ε₀' = min ε₀ 1`, `e₂ = ε₀'/2` (the budget runs at
-`e₂`, C1b absorption), `ε = min (e₂/(8 max(C₄, C_n))) (1/2)`, `ε' = ε/2`, `τ' = min (ε/4) (e₂/(40 d m))`, `ε₁ = εq = e₂/40`,
+`e₂`, absorbing the bridge), `ε = min (e₂/(8 max(C₄, C_n))) (1/2)`, `ε' = ε/2`, `τ' = min (ε/4) (e₂/(40 d m))`, `ε₁ = εq = e₂/40`,
 `τ_N = e₂/8`, `D'' = 2C_n + 2 + 2C₄ + k + (4k+1)/𝔠`, `D' = D'' + 2`, `D_c = D'' + 1`, `τ_K = 1`, `D_Y = D_t = k + 1`,
 `C_P^* = max_σ C_P(σ)`, `C_K = D₁ + 2C_P^* + 8k + 20 + D''`, `D₁' = D₁ + 1`, `C₀ = (8k+8)/𝔠` (`k = m + 2`). -/
 
@@ -1331,9 +1323,8 @@ private theorem altGrid_pow_succ_le {N : ℝ} (hN2 : 2 ≤ N) (p : ℕ) : N ^ p 
   rw [pow_succ]
   nlinarith
 
-/-- **`altGridEndQN'`** (T2313, S3-18b2a): the primed successor of `altGridEndQN` with `m : ℕ` arbitrary (`1 ≤ m` dropped; so the
-loop length `m + 2 ≥ 2`).  The statement is that of `altGridEndQN` with `∀ m : ℕ, 1 ≤ m →` replaced by `∀ m : ℕ,`.  The proof is a
-copy using `altGrid_arith'` (`τ' = min (ε/4) (e₂/(40 d (m+1)))`, positive at `m = 0`), `altGrid_assembly'` and
+/-- **`altGridEndQN'`**: the alternating grid endpoint with `m : ℕ` arbitrary (loop length `m + 2 ≥ 2`).  The proof uses
+`altGrid_arith'` (`τ' = min (ε/4) (e₂/(40 d (m+1)))`, positive at `m = 0`), `altGrid_assembly'` and
 `gridDriftQN_envelope'`; the lower layers are called at `m + 1 ≥ 1`, `m + 1 + 1 ≥ 2`. -/
 theorem altGridEndQN' :
   ∀ {d : ℕ} (sz : Sizes d) (κ 𝔠 τ 𝔡 : ℝ) (E s t : ℕ → ℝ),
@@ -1806,26 +1797,6 @@ theorem altGridEndQN' :
           (by linarith only [h𝔏1, hΛh1, hΦ₁ n, hΦ₂ n, hΦ₃ n]) h𝔏0 (Real.rpow_nonneg hN0.le _) hunQ hb hbud
           ?_ hfinn
         exact hdt
-
-/-! ## 7. Compiled nonempty instances (namespace `QEndGridInst`)
-
-The merged admissible sequence `sz0` (`d = 3`; `L_n = 4(n+1)`, `W_n = (2(n+1))^5`, `lam_n = (2(n+1))^{-6}`; `sz0_tendsto`,
-`sz0_bandwidth` `𝔠 = 1/6`, `sz0_WO` `𝔡 = 1/10`) at `E ≡ 0` (`κ = 1`), `s ≡ 0`, `t ≡ 1/2`, `τ = 1/2`
-(`RangeCond (1/2) t` is `rangeCond_half`), the non-collapsed end time `v ≡ 1/2` and the collapsed one `v ≡ 0`, levels
-`Λ ≡ Φ₁ ≡ Φ₂ ≡ Φ₃ ≡ X ≡ Φc ≡ 1`, `ε₀ = 1/10`, `D₁ = 1`, every `m ≥ 1`; the grid is `agK C_K n = max 1 ⌈N^{C_K}⌉`
-(so `N^{C_K} ≤ K_n ≤ ⌈N^{C_K}⌉`).  The constants `C₄`, `C_n`, `C_P` stay abstract, so every instance holds for the actual
-constants.  Items: (1) the `lam` patch (`sz0` and `sz0.withLam 0`); (2) the level split (`n = 4`: small levels, big levels, the
-crude bound at an `n` of the `𝒦`-envelope); (3) `altGridEndQN` at the data, every structural premise discharged, unfolded at the
-grid; (4) the collapsed window; (5) the pinned statement.  The good-walk and initial hypotheses stay in the conclusion
-(made non-vacuous in S3-18b1). -/
-
-/-! ### (5) The pinned statement (copy of `docs/tickets/checks/T2302-check.lean` §2, `T2302_altGridEndQN`) -/
-
-/-! ### (3) `altGridEndQN` at the data, non-collapsed window; (4) the collapsed window -/
-
-/-! ### (1) The `lam` patch at one size index -/
-
-/-! ### (2) The level split at one size index (`n = 4`: `N = 8·10^{18}`, `W = 10^5`, `E = 0`, `u = v = 1/2`, `η = 1/2`) -/
 
 end RBM.Ind
 

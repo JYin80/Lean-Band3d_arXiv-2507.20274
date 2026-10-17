@@ -13,50 +13,44 @@ import RBM3D.Induction.NQBudget
 import RBM3D.Loop.KLFinal
 
 /-!
-# S3-18b1 (ticket T2310): per-time alternating flow endpoint, `stOeqQtRoundPT'_holds`
+# The per-time alternating flow endpoint, `stOeqQtRoundPT''_holds`
 
-Stochastic layer ST-3, ticket 45 of 46 (the alternating chain S3-15…18; S3-18b2 assembles the
-round to `STXiBoot'`). Paper: arXiv:2507.20274, `paper/tex/3_5_Loop_Hierarchy.tex` (`3_5:line`):
-`lem:STOeq_Qt` `3_5:1362-1378`, its proof `3_5:1678-1714` (non-alternating signs: `lem:STOeq_NQ`
-`3_5:1679`; alternating signs: `(eq:alternatecase1)` `3_5:1687`, `(y27kasdfg)` `3_5:1692`,
-`(eq:alternatecase2)` `3_5:1713`). Authority: DECISIONS §62 (2)/(4), §95 (3), §105 (1), §119-§120.
-Format models: `Induction/NQEndFlow.lean` (T2246; `nqFlow_core`, `:642`) and
-`Induction/QtNonzeroFlow.lean` (T2292) with `altGridEndQN` (`QEndGrid.lean:1326`, T2302) in place
-of `nqGridEndLinN`.
+Paper: Lemma 4.10 (`lem:STOeq_Qt`) and its proof in Subsection 4.5 `subsec:support` (non-alternating
+signs: Lemma 4.6 `lem:STOeq_NQ`; alternating signs: (4.58) `eq:alternatecase1`, (4.59) `y27kasdfg`,
+(4.62) `eq:alternatecase2`).  Format models: `Induction/NQEndFlow.lean` (`nqFlow_core`) and
+`Induction/QtNonzeroFlow.lean`; the grid endpoint is `altGridEndQN'` (`QEndGrid.lean`), where those use
+`nqGridEndLinN` and `nzGridEndN` respectively.
 
-## What is here (namespace `RBM.Gauss.Sizes` for the pins, `RBM.Ind` for the proof; every helper
-is `private` with the prefix `altQFlow_`)
+## What is here (namespace `RBM.Gauss.Sizes` for the statements, `RBM.Ind` for the proof; every helper
+is `private` with the prefix `altQFlow_` or `altQFlow0_`)
 
-* **Pins** `STXiRoundPT'` (`STXiRound'`, `QtNonzeroBoot.lean:92`, with `Prec ↦ PrecPT` in the
+* **Statements** `STXiRoundPT'` (`STXiRound'`, with `Prec ↦ PrecPT` in the
   conclusion and `3 ≤ n_`; the index set is the pairs `(w, u)`, `s ≤ w ≤ u ≤ t`, and the
-  current-length control `XLK n_` enters through the summand `B_u^{1/6} XLK n_ n u`) and
-  `STOeqQtRoundPT'` (= `STIngR d STCaseI STXiRoundPT'`);
-* §0 private copies of the helpers of `NQEndFlow.lean` (window and setting facts, the levels
-  `Λ_s`, `Φc`, the degree-1 inequality, `hQ`, the grid `K_n`, the transfer `map_pathH_eq`, `1 ≤
-  STbootRHS`);
+  current-length bound `XLK n_` enters through the summand `B_u^{1/6} XLK n_ n u`),
+  `STXiRoundPT''` (the same at `n_ ≥ 2`) and `STOeqQtRoundPT''` (= `STIngR d STCaseI STXiRoundPT''`);
+* §0 helpers (private, as in `NQEndFlow.lean`): window and setting facts, the levels
+  `Λ_s`, `Φc`, the degree-1 inequality, `hQ`, the grid `K_n`, the transfer `map_pathH_eq`,
+  `1 ≤ STbootRHS`;
 * §1 small facts: `STbootRHS 2 ≤ STbootRHS 1`, `XLK (k-1) ≤ STbootRHS 2` for `k ≥ 3`, `W ≤ N`,
   `#Z_L^d`, `2 N^{-(D+c)} ≤ N^{-D}`;
-* §2 **`altQFlow_initQ`**: the projected initial loops `‖𝒬_s(𝓛-𝒦)^{(m+2)}_{s,σ}‖ ≤ N^ε B_s^{m+2}`
-  for every alternating `σ`, with high probability, from `startLevelQN` (`QLevelsA.lean:421`),
+* §2 **`altQFlow0_initQ`**: the projected initial loops `‖𝒬_s(𝓛-𝒦)^{(m+2)}_{s,σ}‖ ≤ N^ε B_s^{m+2}`
+  for every alternating `σ`, with high probability, from `startLevelQN`,
   `STLK s` at the lengths `m+1`, `m+2` and the far decay `STDecayLoopU` (`stDecayLoopU_of_step2`);
-* §3 **`altQFlow_core`**: the alternating endpoint at one section `s < v ≤ t` (`altGridEndQN` at
+* §3 **`altQFlow0_core`**: the alternating endpoint at one section `s < v ≤ t` (`altGridEndQN'` at
   `ε₀ = τ/2`, `D₁ = D + 2`, the good events `gridGoodN_holds`, `nqLinGood_holds`, `altYGridN` at
   the length `m+1`, the initial event, the transfer to `seqHflow`);
-* §4 `altQFlow_nq_half` (the non-alternating signs from the merged per-time pin
-  `stOeqNQPT''_holds` on the window `[s, uu]` with the controls frozen at `uu_n`, union over `(σ,
+* §4 `altQFlow_nq_half` (the non-alternating signs from the per-time statement
+  `stOeqNQPT''_holds` on the window `[s, uu]` with the bounds fixed at `uu_n`, union over `(σ,
   a)` by `stochDomAt_of_perTimeDomAt`) and `altQFlow_collapsed` (`STLK s`);
-* §5 `altQFlow_section`: the bound at an arbitrary pair `q n = ((w_n, u_n), _)`; §6
-  **`stOeqQtRoundPT'_holds`**;
-* §7 compiled nonempty instances at `d = 3` (namespace `RBM.Ind.QEndB1Inst`).
+* §5 `altQFlow0_section`: the bound at an arbitrary pair `q n = ((w_n, u_n), _)`; §6
+  **`stOeqQtRoundPT''_holds`**.
 
-Differences from the ticket's proof sketch (paper-delta candidates, see the prove report):
-`T2310a` the pin is the pair-indexed per-time form of `(eq:alternatecase1)` with controls constant
-in `v` and `B_v^{1/6} ≤ B_u^{1/6}`; `T2310b` the initial-loop split is `ν = N^{e/8}`, `τ_N = e/2`,
-`e = min ε₁ 1` (the sketch's `τ_N = ε₁/8` violates `hMΛ`, and `ν ≤ N` needs `ε₁ ≤ 8`); `T2310c`
-the non-alternating half is the merged `stOeqNQPT''_holds` used as a black box on the window `[s,
-uu]` (the sketch has no non-alternating half, but `Ξ̂^{(𝓛-𝒦)}` is the maximum over all signs);
-`T2310d` collapsed sections `w_n = s_n` by `STLK s`; `T2310e` the factor `2` of the `X`-summand
-and of `1 + max` is absorbed by `N^{τ/2} ≥ 2`.
+Differences from the proof in the paper: the statement is the pair-indexed per-time form of (4.58)
+`eq:alternatecase1` with bounds constant in `v` and `B_v^{1/6} ≤ B_u^{1/6}`; the initial-loop split is
+`ν = N^{e/8}`, `τ_N = e/2`, `e = min ε₁ 1` (`τ_N = ε₁/8` would violate `hMΛ`, and `ν ≤ N` needs
+`ε₁ ≤ 8`); the non-alternating half is `stOeqNQPT''_holds` used as a black box on the window
+`[s, uu]` (`Ξ̂^{(𝓛-𝒦)}` is the maximum over all signs); collapsed sections `w_n = s_n` are handled by
+`STLK s`; the factor `2` of the `X`-summand and of `1 + max` is absorbed by `N^{τ/2} ≥ 2`.
 -/
 
 set_option linter.style.longLine false
@@ -68,7 +62,7 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Matrix
 open scoped NNReal ENNReal
 
-/-! ## Pins -/
+/-! ## Statements -/
 
 namespace RBM.Gauss.Sizes
 
@@ -79,8 +73,7 @@ section Pins
 variable {d : ℕ} (sz : Sizes d)
 
 /-- Per-time round: `STXiRound'` with `Prec` ↦ `PrecPT` in the conclusion and `3 ≤ n_`.
-    Target of `stOeqQtRoundPT'_holds`; assembled to `STXiBoot'`/`STOeqQt'` by S3-18b2
-    via `stXiBootR_of_round` (QtNonzeroBoot.lean:581). -/
+    It is assembled to `STXiBoot'`/`STOeqQt'` via `stXiBootR_of_round`. -/
 def STXiRoundPT' (E s t : ℕ → ℝ) : Prop :=
   ∀ n_ p : ℕ, 3 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
     (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
@@ -95,8 +88,8 @@ def STXiRoundPT' (E s t : ℕ → ℝ) : Prop :=
         STbootRHS 1 (fun m => XL m n q.1.2) (fun m => XLK m n q.1.2)
           (sz.Bctl n (s n)) n_ p)
 
-/-- Per-time round at `n_ ≥ 2`: primed successor of `STXiRoundPT'` (T2310) lowering the threshold from `3` to `2`.  Target of
-`stOeqQtRoundPT''_holds` (T2313). -/
+/-- Per-time round at `n_ ≥ 2`: `STXiRoundPT'` with the threshold lowered from `3` to `2`; it is the statement
+behind `stOeqQtRoundPT''_holds` (through `STOeqQtRoundPT''`). -/
 def STXiRoundPT'' (E s t : ℕ → ℝ) : Prop :=
   ∀ n_ p : ℕ, 2 ≤ n_ → 1 ≤ p → ∀ XL XLK : ℕ → ℕ → ℝ → ℝ,
     (∀ m n u, 1 ≤ XL m n u) → (∀ m n u, 1 ≤ XLK m n u) →
@@ -123,7 +116,7 @@ namespace RBM.Ind
 
 open RBM RBM.Loop RBM.Path RBM.Gauss RBM.Gauss.Sizes
 
-/-! ## §0 helpers (private copies of `NQEndFlow.lean`) -/
+/-! ## §0 helpers (private; as in `NQEndFlow.lean`) -/
 
 section Helpers
 
@@ -168,7 +161,7 @@ private theorem altQFlow_step2_restrict {sz : Sizes d} {E s t v : ℕ → ℝ} {
       (V := fun n => TimeIcc s v n × (Fin 2 → Bool) × (Fin 2 → Zd d (sz.L n))) (h3 D hD)
       (fun n p => (⟨p.1.1, p.1.2.1, p.1.2.2.trans (hvt n)⟩, p.2))
 
-/-- `Ξ̂^{(𝓛)}_{v,k} ≥ 1` (copy of the private `gridGood_one_le_STXiL`, `GridGoodN.lean:655`). -/
+/-- `Ξ̂^{(𝓛)}_{v,k} ≥ 1` (as the private `gridGood_one_le_STXiL`). -/
 private theorem altQFlow_one_le_STXiL (sz : Sizes d) {n : ℕ} {E v : ℝ} (k : ℕ) (ω : sz.SeqΩ)
     (hB : 0 < sz.Bctl n v) : 1 ≤ STXiL sz n E v k ω := by
   unfold STXiL
@@ -178,7 +171,7 @@ private theorem altQFlow_one_le_STXiL (sz : Sizes d) {n : ℕ} {E v : ℝ} (k : 
   have := div_nonneg h0 (pow_pos hB (k - 1)).le
   linarith
 
-/-- **G1, exactly** (R2*): `(XL(2k−1) (XL(4p)/B)^{1/(2p)})^{1/2}` is the first summand of `STbootRHS … B k p`
+/-- **The level, exactly**: `(XL(2k−1) (XL(4p)/B)^{1/(2p)})^{1/2}` is the first summand of `STbootRHS … B k p`
 (`B > 0`, `p ≥ 1`, `XL ≥ 0`): `nqFlowLam` at `B = B_s` has `Λ^{1/2}` equal to it, with no loss. -/
 private theorem altQFlow_lam_sqrt {X : ℕ → ℝ} {B : ℝ} {k p : ℕ} (hp : 1 ≤ p) (hB : 0 < B) (hX : ∀ m, 0 ≤ X m) :
     (nqFlowLam X B k p) ^ ((1 : ℝ) / 2) =
@@ -216,9 +209,9 @@ private theorem altQFlow_phi3_le {X : ℕ → ℝ} {k : ℕ} (hk : 2 ≤ k) (hX 
     rw [← Real.sqrt_eq_rpow, Real.sqrt_mul_self (by linarith)]
     linarith
 
-/-- **The degree-1 inequality** (R2*): the final loss `Λ_s^{1/2} + Φ₁ + Φ₂ + Φ₃` with
+/-- **The degree-1 inequality**: the final loss `Λ_s^{1/2} + Φ₁ + Φ₂ + Φ₃` with
 `Λ_s = max 1 (nqFlowLam X B_s k p)` is at most the right side `B^{1/6} XLK k + STbootRHS 2 X Y B_s k p` of the
-pin.  `Φ₁` is the sum of the controls `XLK 2 … XLK (k-1)`, `Φ₂` is the third sum of `STbootRHS` plus
+statement.  `Φ₁` is the sum of the bounds `XLK 2 … XLK (k-1)`, `Φ₂` is the third sum of `STbootRHS` plus
 `B^{1/6} XLK k`, `1 + Φ₃ ≤ Σ_{m=k-1}^{k+1} XL m` (`altQFlow_phi3_le`), and `(nqFlowLam X B_s k p)^{1/2}` is the first
 summand of `STbootRHS` (`altQFlow_lam_sqrt`), so `Λ_s^{1/2} ≤ 1 + ` that summand. -/
 private theorem altQFlow_level_le {X Y : ℕ → ℝ} {B Bs : ℝ} {k p : ℕ} (hk : 2 ≤ k) (hp : 1 ≤ p)
@@ -242,7 +235,7 @@ private theorem altQFlow_level_le {X Y : ℕ → ℝ} {B Bs : ℝ} {k p : ℕ} (
   unfold nqLinPhi1 nqLinPhi2 STbootRHS
   linarith
 
-/-- **`hQ` at the level `Λ_s`** (the shape of the private `gridGood_prec_Q_one`, `GridGoodN.lean:1045`, with the controls
+/-- **`hQ` at the level `Λ_s`** (the shape of the corresponding lemma of `GridGoodN`, with the bounds
 `Xa, Xb` in place of `1` and `B_s` as the floor): `Ξ̂_a (Ξ̂_b/B_u)^r ≺ max 1 (Xa (Xb/B_s)^r)` for `0 ≤ r ≤ 1` from
 `Ξ̂_a ≺ Xa`, `Ξ̂_b ≺ Xb` uniformly in `u ∈ [s,v]` (`B_{u,0}` is non-decreasing in `u`, `STBctl_mono`). -/
 private theorem altQFlow_hQ (sz : Sizes d) (hsz : sz.SizeTendsto) {E s v : ℕ → ℝ} (hsv : ∀ n, s n ≤ v n)
@@ -330,7 +323,7 @@ private theorem altQFlow_phi_nonneg {X Y : ℕ → ℝ} {B : ℝ} {k : ℕ} (hX 
   exact add_nonneg (Finset.sum_nonneg fun m _ => mul_nonneg (hY0 _)
     (Real.rpow_nonneg (mul_nonneg (hX0 _) (hX0 _)) _)) (mul_nonneg (Real.rpow_nonneg hB _) (hY0 _))
 
-/-- The crude level `Φc` dominates every control of length `1 … k+1` and is `≥ 1`. -/
+/-- The crude level `Φc` dominates every bound of length `1 … k+1` and is `≥ 1`. -/
 private theorem altQFlow_phiC_ge {X Y : ℕ → ℝ} {k m : ℕ} (hX : ∀ m, 1 ≤ X m) (hY : ∀ m, 1 ≤ Y m)
     (hm : m ∈ Finset.Icc 1 (k + 1)) : X m ≤ nqFlowPhiC X Y k ∧ Y m ≤ nqFlowPhiC X Y k := by
   have h := Finset.single_le_sum (f := fun m => X m + Y m)
@@ -345,8 +338,7 @@ private theorem altQFlow_phiC_one_le {X Y : ℕ → ℝ} {k : ℕ} (hX : ∀ m, 
   have := (altQFlow_phiC_ge (k := k) (m := 1) hX hY (Finset.mem_Icc.2 ⟨le_rfl, by omega⟩)).1
   exact (hX 1).trans this
 
-/-- The grid of the endpoint: `K_n = max 1 ⌈N^{C}⌉` (so `N^C ≤ K_n ≤ ⌈N^C⌉`, `K_n ≠ 0`; copy of `nqFlow_K`,
-`NQEndFlow.lean:532`). -/
+/-- The grid of the endpoint: `K_n = max 1 ⌈N^{C}⌉` (so `N^C ≤ K_n ≤ ⌈N^C⌉`, `K_n ≠ 0`; as `nqFlow_K`). -/
 private def altQFlow_K (sz : Sizes d) (C : ℝ) (n : ℕ) : ℕ := max 1 ⌈((sz.size n : ℕ) : ℝ) ^ C⌉₊
 
 private theorem altQFlow_K_ne_zero (sz : Sizes d) (C : ℝ) (n : ℕ) : altQFlow_K sz C n ≠ 0 := by
@@ -392,15 +384,14 @@ private theorem altQFlow_meas_pathH (sz : Sizes d) (s t : ℕ → ℝ) (K : ℕ 
 private theorem altQFlow_meas_seqHflow (sz : Sizes d) (n : ℕ) (u : ℝ) : Measurable (sz.seqHflow n u) :=
   Measurable.of_eval_matrix _ fun i j => Sizes.measurable_seqHflow_entry sz n u i j
 
-/-- `(𝓛 - 𝒦)^{(k)}_{u,σ,a}(H)` is measurable in the matrix `H` (as `gridGood_meas_loopFine`,
-`GridGoodN.lean:266`, minus the constant `STKloop`). -/
+/-- `(𝓛 - 𝒦)^{(k)}_{u,σ,a}(H)` is measurable in the matrix `H` (as `gridGood_meas_loopFine`, minus the constant `STKloop`). -/
 private theorem altQFlow_meas_STLKM (sz : Sizes d) (n : ℕ) (E u : ℝ) {k : ℕ} (σ : Fin k → Bool)
     (a : Fin k → Zd d (sz.L n)) :
     Measurable fun H : Matrix (Idx d (sz.L n) (sz.W n)) (Idx d (sz.L n) (sz.W n)) ℂ =>
       sz.STLKM n E u H σ a :=
   (walk_measurable_loopFine d (sz.L n) (sz.W n) (zt E u) σ a).sub_const _
 
-/-- **The transfer** (`map_pathH_eq`; copy of `nqFlow_transfer`, `NQEndFlow.lean:610`): a measurable matrix event
+/-- **The transfer** (`map_pathH_eq`; as `nqFlow_transfer`): a measurable matrix event
 has the same probability on `pathP` at the grid index `j` and on `seqP` at the grid time. -/
 private theorem altQFlow_transfer (sz : Sizes d) {s v : ℕ → ℝ} {K : ℕ → ℕ} {n : ℕ} (j : ℕ) (hs0 : 0 ≤ s n)
     (hsv : s n ≤ v n) (hK : K n ≠ 0)
@@ -450,7 +441,7 @@ private theorem altQFlow_Zd_le_size {d : ℕ} (sz : Sizes d) (n : ℕ) : (sz.L n
   rw [Sizes.size]
   exact Nat.pow_le_pow_left (Nat.le_mul_of_pos_left _ (sz.W_pos n)) d
 
-/-- `#Z_L^d = L^d` (copy of the private `entryDom_card_Zd`, `Green/EntryDom.lean:730`). -/
+/-- `#Z_L^d = L^d`. -/
 private theorem altQFlow_card_Zd {d : ℕ} (L : ℕ) [NeZero L] : Fintype.card (Zd d L) = L ^ d := by
   simp [Zd, ZMod.card]
 
@@ -469,7 +460,7 @@ private theorem altQFlow_two_pow_le {N D c : ℝ} (hN : 2 ≤ N) (hc : 1 ≤ c) 
   rw [h]
   nlinarith
 
-/-! ## §2 the projected initial loops `altQFlow_initQ` -/
+/-! ## §2 the projected initial loops `altQFlow0_initQ` -/
 
 /-- `H ↦ ‖(𝒬_t (𝓛-𝒦)^{(k)}_{u,σ}(H))_a‖` is measurable (`𝒬_t 𝒜 = 𝒜 - (𝒫𝒜)_{a₀} ϑ_{t,a}`, a finite sum of the
 measurable entries `altQFlow_meas_STLKM`). -/
@@ -520,13 +511,13 @@ private theorem altQFlow_union2 {Ω : Type*} [MeasurableSpace Ω] {μ : Measure 
     _ = ENNReal.ofReal (x + x) := (ENNReal.ofReal_add hx hx).symm
     _ ≤ ENNReal.ofReal y := ENNReal.ofReal_le_ofReal (by linarith)
 
-/-! ## §4 the non-alternating half (the merged per-time pin `stOeqNQPT''_holds`) and the collapsed section -/
+/-! ## §4 the non-alternating half (the per-time statement `stOeqNQPT''_holds`) and the collapsed section -/
 
-/-- **The non-alternating half at a section time, uniformly in the signs and labels.**  The merged per-time pin
-`STNQConclPT''` (`NQEndFlow.lean:107`) on the window `[s, uu]` with the controls frozen at `uu_n`
+/-- **The non-alternating half at a section time, uniformly in the signs and labels.**  The per-time statement
+`STNQConclPT''` on the window `[s, uu]` with the bounds fixed at `uu_n`
 (`XL i n x := XL i n (uu n)`, so the pair hypotheses restrict along `(w, x) ↦ (w, uu_n)`) is `PrecPT` over
 `TimeIcc s uu × {σ non-alternating} × labels`; at the time `w_n ∈ [s_n, uu_n]` it is a `PerTimeDomAt` over
-`{σ} × labels`, and `stochDomAt_of_perTimeDomAt` (`StochDomAt.lean:249`, `#(σ, a) ≤ 2^{n_} (L^d)^{n_} ≤ N^{2n_}`) moves the
+`{σ} × labels`, and `stochDomAt_of_perTimeDomAt` (`#(σ, a) ≤ 2^{n_} (L^d)^{n_} ≤ N^{2n_}`) moves the
 union over `(σ, a)` inside `P`. -/
 private theorem altQFlow_nq_half (sz : Sizes d) (hsize : sz.SizeTendsto) {E s t uu w : ℕ → ℝ} {n_ p : ℕ}
     (hn : 2 ≤ n_) (hp : 1 ≤ p) {XL XLK : ℕ → ℕ → ℝ → ℝ} (hXL : ∀ i n u, 1 ≤ XL i n u)
@@ -611,17 +602,17 @@ private theorem altQFlow_xi_le {sz : Sizes d} {n : ℕ} {E v : ℝ} {k : ℕ} (h
     exact Finset.sup'_le _ _ fun p' _ => (div_le_iff₀ hBk).1 (h p')
   linarith
 
-/-! ## §5' (T2313, S3-18b2a) the endpoint at `m ≥ 0`: copies of §2, §3, §5 for the loop length `n_ = m + 2 ≥ 2`
+/-! ## The endpoint at `m ≥ 0`: the loop length `n_ = m + 2 ≥ 2`
 
-`altQFlow0_initQ`, `altQFlow0_core`, `altQFlow0_section` are copies of `altQFlow_initQ`, `altQFlow_core`, `altQFlow_section` without
-`1 ≤ m`.  The changes are: the far-decay window `τ'' = e/(8 d (m+1))` of the initial loops (`τ'' d m ≤ e/8`); `altGridEndQN'`
-(`QEndGrid.lean`) in place of `altGridEndQN`; the conclusion of the core with `STbootRHS 1` (`altQFlow0_Ylow_le_bootRHS`: at `m = 0`
-the level `X = Y 1` is `XLK (k-1)` with `k = 2`, which `STbootRHS 2` does not contain); and in the section the non-alternating
-bound `STbootRHS 2 ≤ STbootRHS 1`.  The originals are untouched. -/
+`altQFlow0_initQ`, `altQFlow0_core`, `altQFlow0_section` treat the loop length `n_ = m + 2 ≥ 2` (no
+assumption `1 ≤ m`).  Features: the far-decay window `τ'' = e/(8 d (m+1))` of the initial loops
+(`τ'' d m ≤ e/8`); the grid endpoint `altGridEndQN'` (`QEndGrid.lean`) at `m : ℕ`; the conclusion of the core with
+`STbootRHS 1` (`altQFlow0_Ylow_le_bootRHS`: at `m = 0` the level `X = Y 1` is `XLK (k-1)` with `k = 2`, which
+`STbootRHS 2` does not contain); and in the section the non-alternating bound `STbootRHS 2 ≤ STbootRHS 1`. -/
 
-/-- **`altQFlow0_initQ`** (T2313): `altQFlow_initQ` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped).  The only use of `1 ≤ m` was
-`0 < τ''` for the far-decay window `ωf = W^{τ''}`; here `τ'' = e / (8 d (m+1))` is positive for every `m`, and
-`ωf^{d m} = W^{τ'' d m} ≤ W^{e/8} ≤ N^{e/8} = ν` (`τ'' d m ≤ e/8`).  The statement is that of `altQFlow_initQ`. -/
+/-- **`altQFlow0_initQ`**: the projected initial loops, with `m : ℕ` arbitrary.  The far-decay window
+`ωf = W^{τ''}` needs `0 < τ''`: `τ'' = e / (8 d (m+1))` is positive for every `m`, and
+`ωf^{d m} = W^{τ'' d m} ≤ W^{e/8} ≤ N^{e/8} = ν` (`τ'' d m ≤ e/8`). -/
 private theorem altQFlow0_initQ (sz : Sizes d) (hd : 3 ≤ d) {E s t : ℕ → ℝ} {κ' 𝔠 𝔡 τR : ℝ} (hκ : 0 < κ')
     (h𝔠 : 0 < 𝔠) (hsize : sz.SizeTendsto) (hband : sz.Bandwidth 𝔠) (hWO : sz.WO 𝔡)
     (hE : ∀ n, |E n| ≤ 2 - κ') (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n ≤ t n) (ht1 : ∀ n, t n < 1)
@@ -805,7 +796,7 @@ private theorem altQFlow0_initQ (sz : Sizes d) (hd : 3 ≤ d) {E s t : ℕ → �
     _ ≤ ((sz.size n : ℕ) : ℝ) ^ ε * sz.Bctl n (s n) ^ (m + 1 + 1) :=
         mul_le_mul_of_nonneg_right hsum hBp
 
-/-- `XLK (k-1) ≤ STbootRHS 1 XL XLK B k p` for `2 ≤ k` (T2313; the length `k - 1 ≥ 1` is in the sum over `Icc 1 (k-1)`).
+/-- `XLK (k-1) ≤ STbootRHS 1 XL XLK B k p` for `2 ≤ k` (the length `k - 1 ≥ 1` is in the sum over `Icc 1 (k-1)`).
 At `k = 2` it is the only inequality of this kind: `XLK 1 ≤ STbootRHS 2 …` is false (`Icc 2 1 = ∅`). -/
 private theorem altQFlow0_Ylow_le_bootRHS {XL XLK : ℕ → ℝ} {B : ℝ} {k p : ℕ} (hk : 2 ≤ k)
     (hXL : ∀ i, 0 ≤ XL i) (hXLK : ∀ i, 0 ≤ XLK i) (hB : 0 ≤ B) :
@@ -823,8 +814,8 @@ private theorem altQFlow0_Ylow_le_bootRHS {XL XLK : ℕ → ℝ} {B : ℝ} {k p 
     Finset.sum_nonneg fun i _ => mul_nonneg (hXLK _) (Real.rpow_nonneg (mul_nonneg (hXL _) (hXL _)) _)
   linarith
 
-/-- **`altQFlow0_core`** (T2313): `altQFlow_core` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped; loop length `m + 2 ≥ 2`).  Uses
-`altGridEndQN'` and `altQFlow0_initQ`, and concludes with `STbootRHS 1` in place of `STbootRHS 2`: at `m = 0` the level
+/-- **`altQFlow0_core`**: the alternating endpoint with `m : ℕ` arbitrary (loop length `m + 2 ≥ 2`).  Uses
+`altGridEndQN'` and `altQFlow0_initQ`, and concludes with `STbootRHS 1`: at `m = 0` the level
 `X = Y (m+1) = Y 1` is bounded by `STbootRHS 1` (`altQFlow0_Ylow_le_bootRHS`) and not by `STbootRHS 2` (`Icc 2 1 = ∅`); the
 degree-1 inequality `altQFlow_level_le` (with `STbootRHS 2`) and `STbootRHS 2 ≤ STbootRHS 1` give the same level bound. -/
 private theorem altQFlow0_core (sz : Sizes d) {E s t v : ℕ → ℝ} (hd : 3 ≤ d) {κ' 𝔠 τR 𝔡 : ℝ} (hκ : 0 < κ')
@@ -1009,9 +1000,9 @@ private theorem altQFlow0_core (sz : Sizes d) {E s t v : ℕ → ℝ} (hd : 3 �
     _ = pathP sz (pathH sz s v K n (K n) ⁻¹' Sterm) := e1
     _ ≤ _ := hmain
 
-/-- **`altQFlow0_section`** (T2313): `altQFlow_section` with `m : ℕ` arbitrary (`hm : 1 ≤ m` dropped); the alternating part is
+/-- **`altQFlow0_section`**: the endpoint at an arbitrary pair, with `m : ℕ` arbitrary; the alternating part is
 `altQFlow0_core` (bound with `STbootRHS 1`), the non-alternating part is `altQFlow_nq_half` (bound with `STbootRHS 2 ≤ STbootRHS 1`),
-so the common bound is `N^{τ/2} ζ_A` with `ζ_A = B_w^{1/6} XLK (m+2) u + STbootRHS 1 …`.  Same statement as `altQFlow_section`. -/
+so the common bound is `N^{τ/2} ζ_A` with `ζ_A = B_w^{1/6} XLK (m+2) u + STbootRHS 1 …`. -/
 private theorem altQFlow0_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 ≤ d) {κ' 𝔠 τR 𝔡 : ℝ} (hκ : 0 < κ')
     (h𝔠 : 0 < 𝔠) (hτR : 0 < τR) (h𝔡 : 0 < 𝔡) (hsize : sz.SizeTendsto) (hband : sz.Bandwidth 𝔠)
     (hWO : sz.WO 𝔡) (hE : ∀ n, |E n| ≤ 2 - κ') (hs0 : ∀ n, 0 ≤ s n) (hst : ∀ n, s n < t n)
@@ -1034,7 +1025,7 @@ private theorem altQFlow0_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 �
         STbootRHS 1 (fun i => XL i n (q n).1.2) (fun i => XLK i n (q n).1.2) (sz.Bctl n (s n))
           (m + 1 + 1) p) := by
   classical
-  -- the window `v`, the frozen controls `uu`
+    -- the window `v`, the bounds at `uu`
   obtain ⟨v, hvdef⟩ : ∃ v : ℕ → ℝ, v = fun n => if s n < (q n).1.1 then (q n).1.1 else t n := ⟨_, rfl⟩
   obtain ⟨uu, huudef⟩ : ∃ uu : ℕ → ℝ, uu = fun n => if s n < (q n).1.1 then (q n).1.2 else t n := ⟨_, rfl⟩
   have hv_pos : ∀ n, s n < (q n).1.1 → v n = (q n).1.1 := fun n h => by simp only [hvdef, h, ↓reduceIte]
@@ -1061,7 +1052,7 @@ private theorem altQFlow0_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 �
     · have : (q n).1.1 = s n := le_antisymm (not_lt.1 h) (q n).2.1
       rw [hu_neg n h, this]; exact (hst n).le
   have hBs : ∀ n, 0 < sz.Bctl n (s n) := fun n => st_Bctl_pos sz ((hst n).trans (ht1 n))
-  -- the restricted pair hypotheses on `[s, v]` with the controls at `uu`
+  -- the restricted pair hypotheses on `[s, v]` with the bounds at `uu`
   have hX : ∀ i : ℕ, 1 ≤ i → STlenL (m + 1 + 1) p i →
       Prec sz (U := fun n => TimeIcc s v n) (fun n u ω => STXiL sz n (E n) (u : ℝ) i ω)
         (fun n _ _ => XL i n (uu n)) := fun i hi hl =>
@@ -1095,7 +1086,7 @@ private theorem altQFlow0_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 �
   have hsq : ((sz.size n : ℕ) : ℝ) ^ τ =
       ((sz.size n : ℕ) : ℝ) ^ (τ / 2) * ((sz.size n : ℕ) : ℝ) ^ (τ / 2) :=
     (UnifDetDom.rpow_half_mul_rpow_half _ hτ).symm
-  -- the right side `ζ` of the pin at the pair, and its lower bound `1 ≤ ζ`
+    -- the right side `ζ` of the statement at the pair, and its lower bound `1 ≤ ζ`
   obtain ⟨ζ, hζ⟩ : ∃ ζ : ℝ, ζ = (sz.Bctl n (q n).1.2) ^ (1 / 6 : ℝ) * XLK (m + 1 + 1) n (q n).1.2 +
       STbootRHS 1 (fun i => XL i n (q n).1.2) (fun i => XLK i n (q n).1.2) (sz.Bctl n (s n)) (m + 1 + 1) p :=
     ⟨_, rfl⟩
@@ -1196,12 +1187,11 @@ private theorem altQFlow0_section (sz : Sizes d) {E s t : ℕ → ℝ} (hd : 3 �
 
 end Helpers
 
-/-! ## §6 the per-time round `stOeqQtRoundPT'_holds` -/
+/-! ## §6 the per-time round `stOeqQtRoundPT''_holds` -/
 
-/-- **`stOeqQtRoundPT''_holds`** (T2313, S3-18b2a): the per-time round at `n_ ≥ 2`, the primed successor of `stOeqQtRoundPT'_holds`
-(`3 ≤ n_` lowered to `2 ≤ n_`; `n_ = m + 2`, `m ≥ 0`).  The proof is that of `stOeqQtRoundPT'_holds` with `altQFlow0_section` (built on
-`altGridEndQN'`, `gridDriftQN_envelope'`) in place of `altQFlow_section`; the constant `𝔠_d` and every premise are the same.  Together
-with `stOeqQtRoundPT'_holds` it covers every `n_ ≥ 2` (the lift from `PrecPT` to `Prec` is S3-18b2b). -/
+/-- **`stOeqQtRoundPT''_holds`**: the per-time round at `n_ ≥ 2` (`STOeqQtRoundPT''`; `n_ = m + 2`, `m ≥ 0`),
+from `altQFlow0_section` (built on `altGridEndQN'`, `gridDriftQN_envelope'`); the constant `𝔠_d` and every
+premise are those of `STXiRoundPT'`. -/
 theorem stOeqQtRoundPT''_holds : ∀ d : ℕ, STOeqQtRoundPT'' d := by
   intro d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
   obtain ⟨𝔠G, hG0, hG1, HG⟩ := gridGoodN_holds d hd κ ε 𝔡 hκ hε h𝔡 Cd hCd
@@ -1248,15 +1238,6 @@ theorem stOeqQtRoundPT''_holds : ∀ d : ℕ, STOeqQtRoundPT'' d := by
   intro q
   exact altQFlow0_section sz hd (half_pos hκ) hA.1 (half_pos hε) hA.2.1 hA.2.2.1 hA.2.2.2.1 hA.2.2.2.2
     (fun n => (hE' n).le) hs hst ht1 hR hrange hWt hLK hDecay hGrid hLin hNQ hp hXL hXLK hXLp hXLKp q
-
-/-! ## §7 Compiled nonempty instances at `d = 3`
-
-Namespace `RBM.Ind.QEndB1Inst`.  Data (the merged instance data of `RBM.Gauss.Step34Inst`, as `NQEndFlowInst`): `sz0`
-(`d = 3`, `L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`; `n = 0`: `L = 4`, `W = 32`, `N = 2^21`), the flow `z0`
-(`flow_z0` at `κ = ε = 𝔡 = 1/10`, `𝔠 = 1/6`), `s ≡ 0`, `t ≡ 1/16` (`t ≤ lemT z_n`, `STCaseI`: `sz0_caseI`; `(con_st_ind)` for
-every `𝔠_d > 0`: `sz0_con`), `C_d = 1`.  `STKbound`, `STKward` are theorems of the flow (`stKbound_of_flow`, `stKward_of_flow`);
-what stays a hypothesis of an example is a stochastic premise that is another gate's pin (`STLK s`, `STStep2Concl`, the pair
-hypotheses `Ξ̂ ≺ 1` of the pin).  The pin is stated over the pairs `(w, u)`, `0 ≤ w ≤ u ≤ 1/16`, including `w < u`. -/
 
 end RBM.Ind
 

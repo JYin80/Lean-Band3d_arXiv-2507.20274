@@ -9,19 +9,19 @@ import RBM3D.Induction.Step2Iterate
 import RBM3D.Propagator.Prop5Hold
 
 /-!
-# S6-09c (ticket T2249): decay of `∂_tϑ` and propagation of `(deccA0)` through `Θ^{(n)}`
+# Decay of `∂_tϑ` and propagation of `(deccA0)` through `Θ^{(n)}`
 
 Deterministic, public, generic in the tensor order.
 
 * `QopAlgebra_mollifier_derivDecay`: `|∂_t ϑ_{t,a}| ≤ (1 + 40 d m) 6^{d m} (1-t)⁻¹ (ℓ_t^d)^{-m} e^{-S/(4ℓ_t)}`
-  (paper `(eq:derv_Theta)` `3_5:1215` states the size only; `rmk:choosechi` `3_5:1250`).
+  ((4.27) `eq:derv_Theta` states the size only; Example 4.8 `rmk:choosechi`).
 * `QopDecay_deriv_fastDecay`: the `STExpQsrc` source `(𝒫f)_{a₁} ∂_tϑ_{t,a}` is `(t, ε', D')`-decaying.
 * `QopDecay_thetaKer_decay`: the kernel `μ S^{(B)} Θ_{uμ}` of `Θ^{(n)}_u` decays at scale `ℓ_u`, prefactor `(1-u)⁻¹`.
 * `QopDecay_ThetaN_fastDecay`: `Θ^{(n)}_u` maps `(u, ε, D)` to `(u, 2ε, D - (K+1))`.
 * `QopDecay_STthetaOp_fastDecay`: the same for `STthetaOp`.
 
-Section 1 is a verbatim copy (renamed `qa… ↦ qdec…`) of the private helpers of
-`RBM3D/Induction/QopAlgebra.lean` (main `d822fd7`, last change `6b2494e`), lines 37-282, 331-340, 377-408, 438-458, 506-508; `qdec_growth` copies `qn_growth` (`QopNorm.lean:343`).
+Section 1 consists of the private helpers of `RBM3D/Induction/QopAlgebra.lean` under the prefix `qdec` in place of `qa`
+(`qdec_growth` is `qn_growth` of `RBM3D/Induction/QopNorm.lean`).
 -/
 
 set_option linter.style.longLine false
@@ -346,7 +346,7 @@ private theorem qdec_Zinv_le {L : ℕ} [NeZero L] {g t : ℝ} (hg : 0 < g) (ht :
 private theorem qdec_inv_pow_eq (d m : ℕ) (x : ℝ) : ((x ^ d)⁻¹) ^ m = (x⁻¹) ^ (d * m) := by
   rw [pow_mul, inv_pow x d]
 
-/-- Growth: `C W^p ≤ exp (c W^{ε'} / 2)` for large `W` (copy of `qn_growth`, `QopNorm.lean:343`). -/
+/-- Growth: `C W^p ≤ exp (c W^{ε'} / 2)` for large `W` (as `qn_growth`). -/
 private theorem qdec_growth {C c ε' p : ℝ} (hC : 0 < C) (hc : 0 < c) (hε' : 0 < ε') :
     ∃ W₁ : ℝ, 1 < W₁ ∧ ∀ W : ℝ, W₁ ≤ W → C * W ^ p ≤ Real.exp (c * W ^ ε' / 2) := by
   set q := p / ε' with hq
@@ -487,9 +487,9 @@ private theorem qdec_deriv_real (d L m : ℕ) [NeZero L] {g t : ℝ} (hg : 0 < g
               Real.exp (-(1 / 4) * qdecS a / ellT L g t) := by ring
         rw [e]; linarith
 
-/-- **Target 1.** The time derivative of the explicit mollifier decays like the mollifier itself: constants
+/-- **The derivative of the mollifier.** The time derivative of the explicit mollifier decays like the mollifier itself: constants
 `C = (1 + 40 d m) 6^{d m}` (that of `QopAlgebra_mollifier_props`), `c = 1/4`, factor `(1 - t)⁻¹` as in clause 4 of
-`STMollifierProps` (`rmk:choosechi` `3_5:1250`; `(eq:derv_Theta)` `3_5:1215` states only the size). -/
+`STMollifierProps` (Example 4.8 `rmk:choosechi`; (4.27) `eq:derv_Theta` states only the size). -/
 theorem QopAlgebra_mollifier_derivDecay (d L m : ℕ) [NeZero L] (hL : 3 ≤ L) {g : ℝ} (hg : 0 < g)
     (t : ℝ) (_ht0 : 0 ≤ t) (ht : t < 1) (a : Fin (m + 1) → Zd d L) :
     ‖deriv (fun τ => QopAlgebra_mollifier d L m g τ a) t‖ ≤
@@ -504,7 +504,7 @@ theorem QopAlgebra_mollifier_derivDecay (d L m : ℕ) [NeZero L] (hL : 3 ≤ L) 
 
 /-! ## 3. `EKFastDecay` of the source `(𝒫f)_{a₁} ∂_tϑ_{t,a}` -/
 
-/-- **Target 2.** The `STExpQsrc` source `B(a₀) ∂_tϑ_{t,a}` is `(t, ε', D')`-decaying for every `ε', D'` once
+/-- **The source `(𝒫f)_{a₁} ∂_tϑ_{t,a}` decays.** The `STExpQsrc` source `B(a₀) ∂_tϑ_{t,a}` is `(t, ε', D')`-decaying for every `ε', D'` once
 `W ≥ W₀(d, m, K, C₀, ε', D')`, if `‖B‖ ≤ W^{C₀}` and `(1 - t)⁻¹ ≤ W^K` (pattern of `stQop_sub_fastDecay`;
 no `L^d ≤ W^K` is needed). -/
 theorem QopDecay_deriv_fastDecay (d m : ℕ) (K C₀ ε' D' : ℝ) (hε' : 0 < ε') :
@@ -626,7 +626,7 @@ private theorem qdec_Bparam_le (d L : ℕ) (g u : ℝ) (hL : 1 ≤ L) (hu : u < 
       ≤ (1 - u)⁻¹ * 1 + (1 - u)⁻¹ := by gcongr
     _ = 2 * (1 - u)⁻¹ := by ring
 
-/-- **Target 3.** The one-index kernel `μ S^{(B)} Θ_{uμ}` of `Θ^{(n)}_u` (`(def:op_thn)`, `3_5:112`) decays at the
+/-- **The kernel decay.** The one-index kernel `μ S^{(B)} Θ_{uμ}` of `Θ^{(n)}_u` ((3.11) `def:op_thn`) decays at the
 scale `ℓ_u` with prefactor `(1 - u)⁻¹`, for every `|μ| = 1`: property 5 (`Prop5Decay`, at a square root
 `m` of `μ`, signs `(+,+)`), `B_{u,K} ≤ 2 (1 - u)⁻¹`, and the nearest-neighbour convolution; constants `(d, Λ)`. -/
 theorem QopDecay_thetaKer_decay (d : ℕ) (hd : 3 ≤ d) (Λ : ℝ) (hΛ : 0 < Λ) :
@@ -751,10 +751,10 @@ private theorem qdec_far_dist {d L n : ℕ} [NeZero L] (a : Fin n → Zd d L) (b
       rw [Function.update_of_ne hji, Function.update_of_ne hki] at h1
       linarith
 
-/-- **Target 4.** `Θ^{(n)}_u` maps a `(u, ε, D)`-decaying tensor of size `≤ W^{C₀}` to a `(u, 2ε, D - (K + 1))`-decaying
+/-- **Propagation of decay.** `Θ^{(n)}_u` maps a `(u, ε, D)`-decaying tensor of size `≤ W^{C₀}` to a `(u, 2ε, D - (K + 1))`-decaying
 tensor for `W ≥ W₀(d, n, Λ, K, C₀, ε, D)`, `L^d ≤ W^K`, `(1 - u)⁻¹ ≤ W^K`; any tensor order `n`, any unit charges.
 Near/far split of the sum over `b` in `(Θ^{(n)} A)_a = Σ_i Σ_b K_i(a_i, b) A(a^{(i)}(b))`: near terms by the row
-sum `(1 - u)⁻¹` of `K_i` (`B45_row_thetaKer`) and the decay of `A`; far terms by the kernel decay (target 3). -/
+sum `(1 - u)⁻¹` of `K_i` (`B45_row_thetaKer`) and the decay of `A`; far terms by the kernel decay (`QopDecay_thetaKer_decay`). -/
 theorem QopDecay_ThetaN_fastDecay (d n : ℕ) (hd : 3 ≤ d) (Λ K C₀ ε D : ℝ) (hΛ : 0 < Λ) (hε : 0 < ε) :
     ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (L : ℕ) [NeZero L], 3 ≤ L → ∀ g : ℝ, 0 < g → g ≤ Λ →
       ∀ W : ℝ, W₀ ≤ W → (L : ℝ) ^ d ≤ W ^ K →
@@ -874,7 +874,7 @@ theorem QopDecay_ThetaN_fastDecay (d n : ℕ) (hd : 3 ≤ d) (Λ K C₀ ε D : �
 
 /-! ## 6. The operator `STthetaOp` -/
 
-/-- **Target 5.** Target 4 for the Step 2/6 operator `STthetaOp` (`n = 2`, `STthetaOp_eq_ThetaN`, `norm_mSigma`):
+/-- **The operator `STthetaOp`.** `QopDecay_ThetaN_fastDecay` for the Step 2/6 operator `STthetaOp` (`n = 2`, `STthetaOp_eq_ThetaN`, `norm_mSigma`):
 `L = sz.L n`, `g = sz.lam n`, `W = sz.W n`; every sign pattern `σ`. -/
 theorem QopDecay_STthetaOp_fastDecay {d : ℕ} (hd : 3 ≤ d) (Λ K C₀ ε D : ℝ) (hΛ : 0 < Λ) (hε : 0 < ε) :
     ∃ W₀ : ℝ, 1 < W₀ ∧ ∀ (sz : Sizes d) (n : ℕ) (E : ℝ), |E| ≤ 2 → 0 < sz.lam n → sz.lam n ≤ Λ →
@@ -891,8 +891,6 @@ theorem QopDecay_STthetaOp_fastDecay {d : ℕ} (hd : 3 ≤ d) (Λ K C₀ ε D : 
   intro a ha
   rw [STthetaOp_eq_ThetaN]
   exact key a ha
-
-/-! ## 7. Compiled nonempty instances (`d = 3`, `L = 5`, `g = 1`, `u = t = 1/2`) -/
 
 end RBM.Gauss.Sizes
 

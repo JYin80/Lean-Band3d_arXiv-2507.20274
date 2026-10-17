@@ -14,34 +14,32 @@ import RBM3D.Induction.Step34Pins
 import RBM3D.Green.Pins
 
 /-!
-# S3-06 (ticket T2129): far-label decay of `𝒦`, `STKbound`/`STKward` over `TimeIcc`, tail sum
+# Far-label decay of the primitive loop `𝒦` and the lattice sum of the tail `𝒯_t`
 
 The fast decay of the primitive loop `𝒦` at far labels (`STKcalDecay`), the uniform-in-time forms of
-`STKbound`/`STKward`, and the lattice sum of the tail `𝒯_t` behind `(eq:sumtwoloop)`.
+`STKbound`/`STKward` over `TimeIcc`, and the lattice sum of the tail `𝒯_t` that enters (4.16)
+`eq:sumtwoloop`.
 
-Paper: arXiv:2507.20274, `paper/tex/1_2_Intro_model_result.tex` (`(eq:bcal_k)`, `1_2:1056`) and
-`paper/tex/3_5_Loop_Hierarchy.tex` (`(eq:sumtwoloop)`, `3_5:1069`).  The RBM2D source is
-`RBM2D/Induction/KcalDecay.lean` (`d = 2`; read at `9e0f275`, the ticket cites `c9a24cf`).
+Paper: (2.58) `eq:bcal_k` in Lemma 2.16 (`ML:Kbound`), Lemma 4.2 (`lem_wardineq_K`), and (4.16)
+`eq:sumtwoloop` in the proof of Lemma 4.3 (`lem:SEforLn`); the tree representation of `𝒦` is
+(A.30) `eq_Ktree`, and the case of two vertices is (2.71) `Kn2sol`.  The tree sums follow the
+two-dimensional formalization (RBM2D's `kcalDecay_tree_bound` and the lemmas around it), here on `Zd d L`
+with the distance `zdistD`.
 
-* §1-§3 (private, `RBM.Loop`): the path bound (two vertices of a tree are at distance at most its
-  total edge length) and the crude tree bound, ported from `KcalDecay.lean` (`zdist2_symm`,
-  `zdist2_tri`, `anc_step`, `path_aux`, `path_le`, `dist_bounds`, `kcalDecay_tree_bound`) onto the
-  merged laminar API `KLnodes`, `KLnodePar`, `KLleafPar`, `KLtreeValW` (`Loop/KLTree.lean`);
-  `Z2 L ↦ Zd d L`, `zdist2 ↦ zdistD`.
-* §4-§6b (private): the edge kernels from the merged properties 5 and 5' (`KLPT_holds`: `KLDecay`,
-  `KLShort`; `d`-dimensional, with `ℓ_u = ellT L g u` and `B_{u,r}`; new, in place of RBM2D's
-  `kcalDecay_theta_bound`), the tree sums for `k ≥ 3` and `k = 2` (ported from `kcalDecay_card_TSP`,
-  `kcalDecay_Kcal_far`, `kcalDecay_maxDist_two_le`, `kcalDecay_Kcal_two_far`; `KLgen_loopOf`,
-  `KLK_two`), the far-region estimate with the new constants (`W^{-Q} ≤ g`), and the absorption
-  `A N^P e^{-c N^s} ≤ 1` (from `kcalDecay_eventually`, real exponent).
-* §7 (target 1): `STKcalDecay d` (the pin, with the amendment `W^{-Q} ≤ g` of DECISIONS §37) and
-  `stKcalDecay_holds (hd : 3 ≤ d) : STKcalDecay d`.
-* §9 (target 2): `stKbound_timeIcc`, `stKward_timeIcc` (F-H of T2041): `STKbound`, `STKward`
-  with the time `u ∈ [s_n,t_n]` inside the `≺`.
-* §10 (target 3): `KDecay_sum_tailT_le` (the lattice sum `Σ_a 𝒯_t(|a|_∞) ≤ C_∞(d)/(1-t)`),
-  `stSumTwoLoop`, `stSumTwoLoop_exists` (the second `≺` of `(eq:sumtwoloop)`).
-* §8, §11: compiled nonempty instances (named theorems `inst_*` in `RBM.Gauss.KDecayInst`),
-  `d = 3`.
+* Sections 1-3 (private, `RBM.Loop`): the path bound (two vertices of a tree are at distance at most
+  its total edge length) and the crude tree bound, on the laminar vocabulary `KLnodes`, `KLnodePar`,
+  `KLleafPar`, `KLtreeValW`.
+* Sections 4-6 (private): the edge kernels from the propagator properties 5 and 5' (`KLPT_holds`:
+  `KLDecay`, `KLShort`; `d`-dimensional, with `ℓ_u = ellT L g u` and `B_{u,r}`), the tree sums for
+  `k ≥ 3` and `k = 2`, the far-region estimate under `W^{-Q} ≤ g`, and the absorption
+  `A N^P e^{-c N^s} ≤ 1`.
+* Section 7: `STKcalDecay d` and `stKcalDecay_holds (hd : 3 ≤ d) : STKcalDecay d`.
+* Section 8: `inst_stKcalDecay_admissible`, the form of `stKcalDecay_holds` for an admissible size
+  sequence.
+* Section 9: `stKbound_timeIcc`, `stKward_timeIcc`: `STKbound`, `STKward` with the time
+  `u ∈ [s_n,t_n]` inside the `≺`.
+* Section 10: `KDecay_tailC`, `KDecay_one_le_tailC`, `KDecay_sum_tailT_le` (the lattice sum
+  `Σ_a 𝒯_t(|a|_∞) ≤ C_∞(d)/(1-t)`).
 -/
 
 set_option linter.style.longLine false
@@ -294,9 +292,9 @@ end TreeBound
 /-! ## 4. The edge kernels
 
 The edge parameter of the tree representation is `ξ = u m(σ_i) m(σ_j)`.  For opposite charges
-`m(+) m(-) = |m|² = 1`, so `ξ = u` and the pin `KLDecay` (property 5) applies; for equal charges the
-pin `KLShort` (property 5') applies.  In both cases `ℓ_u ≥ 1`, so both give a bound
-`B_edge e^{-c |x-y|/ℓ_u}` with `c = min c_d c_κ`, `B_edge = C_d B_{u,0} + C_κ (1 + gmax²)`
+`m(+) m(-) = |m|² = 1`, so `ξ = u` and the propagator property `KLDecay` (property 5) applies; for
+equal charges the property `KLShort` (property 5') applies.  In both cases `ℓ_u ≥ 1`, so both give a
+bound `B_edge e^{-c |x-y|/ℓ_u}` with `c = min c_d c_κ`, `B_edge = C_d B_{u,0} + C_κ (1 + gmax²)`
 (`B_{u,r} ≤ B_{u,0}`). -/
 
 section Edges
@@ -675,13 +673,12 @@ end FarCore
 
 end RBM.Loop
 
-/-! ## 7. Target 1: the fast decay of `𝒦` at far labels, `STKcalDecay`
+/-! ## 7. The fast decay of `𝒦` at far labels, `STKcalDecay`
 
-`STKcalDecay d` is RBM2D's `KcalDecay` (`Induction/HierVocab.lean:224` at `c9a24cf`) in `d` dimensions on
-the merged `K`-loop vocabulary (`KLK`, `KLloopOf`, `KLmaxDist`), with two changes forced by `d ≥ 3` and
-`g`: the coupling `g ∈ (0, gmax]` is a parameter, and the premise `W^{-Q} ≤ g` (`Q > 0` fixed before the
-`∀ᶠ N`; paper-delta candidate `T2129a`, the paper has it from `(eq:WO)`, `Q = d/2`) is needed: without it
-the statement is false (preflight of T2129 at `d = 3`: `|𝒦^{(3)}| ≈ c W^{-6} g⁻⁴` at `1 - u = g²`, `g → 0`).
+`STKcalDecay d` is the `d`-dimensional form of RBM2D's `KcalDecay`, on the `K`-loop vocabulary `KLK`,
+`KLloopOf`, `KLmaxDist`.  The coupling `g ∈ (0, gmax]` is a parameter, and the premise `W^{-Q} ≤ g`
+(`Q > 0` fixed before the `∀ᶠ N`) is part of the statement; the paper has it from (2.10) `eq:WO`,
+with `Q = d/2`.
 
 Proof (deterministic): `k = 1`: `maxDist = 0`, the premise fails.  `k ≥ 2`: `maxDist ≤ d L` and
 `W^τ > d` force `ℓ_u < L`, hence `g² < L²(1-u)`, `B_{u,0} ≤ 2 g⁻² ≤ 2 W^{2Q}`; every edge of the tree
@@ -775,10 +772,10 @@ namespace RBM.Gauss.Sizes
 
 open Filter RBM RBM.Loop
 
-/-- **`STKcalDecay d`**: the fast decay of the primitive loop `𝒦` at far labels (used by `lem_decayLoop`,
-`lem_BcalE`, `GridGoodEvent`; source `(eq:bcal_k)` and the tree representation `(eq_Ktree)`), the `d`-dimensional
-form of RBM2D's `KcalDecay`, deterministic, eventually in `N`.  The lower bound `W^{-Q} ≤ g`
-(`Q > 0` fixed before the `∀ᶠ N`) is the amendment of DECISIONS §37 (paper-delta candidate `T2129a`). -/
+/-- **`STKcalDecay d`**: the fast decay of the primitive loop `𝒦` at far labels (source (2.58)
+`eq:bcal_k` and the tree representation (A.30) `eq_Ktree`), the `d`-dimensional form of RBM2D's
+`KcalDecay`; deterministic, eventually in `N`.  The lower bound `W^{-Q} ≤ g` (`Q > 0` fixed before
+the `∀ᶠ N`) is a premise of the statement. -/
 def STKcalDecay (d : ℕ) : Prop :=
   ∀ κ gmax : ℝ, 0 < κ → 0 < gmax → ∀ 𝔠 : ℝ, 0 < 𝔠 → ∀ k : ℕ, 1 ≤ k → ∀ τ D : ℝ, 0 < τ → 0 < D →
     ∀ Q : ℝ, 0 < Q →
@@ -790,11 +787,9 @@ def STKcalDecay (d : ℕ) : Prop :=
         ellT L g u * ((W : ℕ) : ℝ) ^ τ ≤ (KLmaxDist d L a : ℝ) →
           ‖KLK d L g W E u (KLloopOf d L σ a)‖ ≤ ((W : ℕ) : ℝ) ^ (-D)
 
-/-- **`STKcalDecay d` is proved** for `3 ≤ d` (`3 ≤ d` enters through `KLPT_holds`, the propagator
-properties 5, 5', which are stated for `d ≥ 3`).  DECISIONS §36: its consumers `lem_decayLoop`,
-`lem_BcalE`, `GridGoodEvent` are not yet in the library; the pins above them, `STMainInd`, `STStep3R`,
-`STStep4R`, begin with `3 ≤ d →`, and `inst_stKcalDecay_admissible` below reaches the consumer form
-under `3 ≤ d`. -/
+/-- **`STKcalDecay d` holds** for `3 ≤ d`: the hypothesis `3 ≤ d` enters through `KLPT_holds`, the
+propagator properties 5, 5', which are stated for `d ≥ 3`.  `inst_stKcalDecay_admissible` below gives
+the form for an admissible size sequence. -/
 theorem stKcalDecay_holds {d : ℕ} (hd : 3 ≤ d) : STKcalDecay d := by
   intro κ gmax hκ hg 𝔠 h𝔠 k hk τ D hτ hD Q hQ
   obtain ⟨Cd, hCd, cd, hcd, Hd⟩ := (KLPT_holds hd hκ hg).decay
@@ -884,13 +879,7 @@ theorem stKcalDecay_holds {d : ℕ} (hd : 3 ≤ d) : STKcalDecay d := by
 
 end RBM.Gauss.Sizes
 
-/-! ## 8. Instances of target 1
-
-`d = 3`, `κ = 1/10`, `gmax = 1`, `𝔠 = 1/10`, `k = 3`, `τ = D = 1`, `Q = 3/2`; the size family
-`L = W = n + 3`, `N = ((n+3)(n+3))^3 → ∞`, `g = 1/2`, `E = 0`, `u = 3/4` (`ℓ_u = 1`), the loop
-`a = (0, (h,h,h), 0)`, `h = ⌊L/2⌋` (`maxDist a ≥ 3h ≥ L = W`).  The merged size sequence `sz0` has
-`W ≫ L`, so there the premise `ℓ_u W^τ ≤ maxDist` (`τ = 1`) is false (`maxDist ≤ d L/2 < W`); the family
-here has it true.  Every deterministic hypothesis is discharged. -/
+/-! ## 8. The form for an admissible size sequence -/
 
 namespace RBM.Gauss.KDecayInst
 
@@ -924,7 +913,7 @@ theorem inst_stKcalDecay_admissible {d : ℕ} (hd : 3 ≤ d) (sz : Sizes d) {�
 end RBM.Gauss.KDecayInst
 
 
-/-! ## 9. Target 2: `STKbound`, `STKward` uniformly in time (F-H)
+/-! ## 9. `STKbound`, `STKward` uniformly in time
 
 `STKbound`, `STKward` are per time sequence `τ : ℕ → ℝ`.  Step 3 needs them with the time inside the
 `≺`: `u ∈ [s_n, t_n]` an index of the union (as `STLmaxU`).  The left sides are deterministic, so the
@@ -982,9 +971,9 @@ private theorem KDecay_prec_timeIcc (hN : sz.SizeTendsto) {s t : ℕ → ℝ} (h
   intro ω hω
   exact ⟨p.2, hω⟩
 
-/-- **`STKbound` uniformly in `u ∈ [s_n, t_n]`** (`ML:Kbound`, `(eq:bcal_k)`, `1_2:1056`, the shape of
-`STLmaxU` for `𝒦`): `max_{u ∈ [s,t], σ, a} |𝒦^{(k)}_{u,σ,a}| / (W^{-d}B_{u,0})^{k-1} ≺ 1`, every `k ≥ 1`,
-from `stKbound_holds` under its hypotheses and the window `0 ≤ s ≤ t < 1`. -/
+/-- **`STKbound` uniformly in `u ∈ [s_n, t_n]`** (Lemma 2.16 `ML:Kbound`, (2.58) `eq:bcal_k`, the shape
+of `STLmaxU` for `𝒦`): `max_{u ∈ [s,t], σ, a} |𝒦^{(k)}_{u,σ,a}| / (W^{-d}B_{u,0})^{k-1} ≺ 1`, every
+`k ≥ 1`, from `stKbound_holds` under its hypotheses and the window `0 ≤ s ≤ t < 1`. -/
 theorem stKbound_timeIcc (hd : 3 ≤ d) {E : ℕ → ℝ} {κ gmax : ℝ} (hκ : 0 < κ) (hg : 0 < gmax)
     (hN : sz.SizeTendsto) (hE : ∀ᶠ n in atTop, |E n| ≤ 2 - κ)
     (hlam : ∀ᶠ n in atTop, 0 < sz.lam n ∧ sz.lam n ≤ gmax) {s t : ℕ → ℝ} (hs0 : ∀ n, 0 ≤ s n)
@@ -1001,8 +990,8 @@ theorem stKbound_timeIcc (hd : 3 ≤ d) {E : ℕ → ℝ} {κ gmax : ℝ} (hκ :
   exact stKbound_holds sz hd hκ hg hN hE hlam u (fun n => (hs0 n).trans (hu n).1)
     (fun n => (hu n).2.trans_lt (ht1 n)) k hk
 
-/-- **`STKward` uniformly in `u ∈ [s_n, t_n]`** (`lem_wardineq_K`, `(wardineq_K)`, `3_5:1001`): for every
-`k ≥ 2`, `max_{σ, a_1..a_{k-1}} Σ_{a_k} |𝒦^{(k)}_{u,σ,a}| ≺ (W^d η_u)⁻¹ (W^{-d}B_{u,0})^{k-2}`,
+/-- **`STKward` uniformly in `u ∈ [s_n, t_n]`** (Lemma 4.2 `lem_wardineq_K`, (4.9) `wardineq_K`): for
+every `k ≥ 2`, `max_{σ, a_1..a_{k-1}} Σ_{a_k} |𝒦^{(k)}_{u,σ,a}| ≺ (W^d η_u)⁻¹ (W^{-d}B_{u,0})^{k-2}`,
 uniformly in `u ∈ [s,t]`, from `stKward_holds`. -/
 theorem stKward_timeIcc (hd : 3 ≤ d) {E : ℕ → ℝ} {κ gmax : ℝ} (hκ : 0 < κ) (hg : 0 < gmax)
     (hN : sz.SizeTendsto) (hE : ∀ᶠ n in atTop, |E n| ≤ 2 - κ)
@@ -1026,12 +1015,13 @@ theorem stKward_timeIcc (hd : 3 ≤ d) {E : ℕ → ℝ} {κ gmax : ℝ} (hκ : 
 end RBM.Gauss.Sizes
 
 
-/-! ## 10. Target 3: the lattice sum of the tail `𝒯_t` and `(eq:sumtwoloop)`
+/-! ## 10. The lattice sum of the tail `𝒯_t` and (4.16) `eq:sumtwoloop`
 
-`(eq:sumtwoloop)` (`3_5:1069`): `((1-s)/(1-t))^{C_d} (W^{-d}B_{t,0})^{1/5} Σ_{a₂} 𝒯_t(|a₁-a₂|) ≺
-(W^{-d}B_{t,0})^{1/6} η_t⁻¹` under `(con_st_ind)` as long as `𝔠_d` is small depending on `C_d`.
-The distance `|a|` is the block `l^∞` distance `zdistInf` (paper-delta candidate `T2129b`; the
-propagator side is in `zdistD`, `zdistInf ≤ zdistD ≤ d zdistInf`).  The lattice sum is
+In (4.16) `eq:sumtwoloop`, in the proof of Lemma 4.3 (`lem:SEforLn`):
+`((1-s)/(1-t))^{C_d} (W^{-d}B_{t,0})^{1/5} Σ_{a₂} 𝒯_t(|a₁-a₂|) ≺ (W^{-d}B_{t,0})^{1/6} η_t⁻¹`
+under (2.83) `con_st_ind` as long as `𝔠_d` is small depending on `C_d`.
+The distance `|a|` is the block `l^∞` distance `zdistInf`; the propagator side is in `zdistD`, with
+`zdistInf ≤ zdistD ≤ d zdistInf`.  The lattice sum is
 `Σ_a 𝒯_t(|a|_∞) ≤ C_∞(d) (1-t)⁻¹`, `C_∞(d) = d^{d-2} 2^d C(1/d) + 1`, uniformly in `L`, `g ≥ 0`, `t < 1`:
 the first term of `B_{t,r}` is summed by the radial sum `sum_radial_exp_le` (`l¹` reduction
 `|a|_1 ≤ d |a|_∞`) and `(1-t) ℓ_t² ≤ g² + (1-t)`, the zero-mode term `(L^d(1-t))⁻¹` by the number of
@@ -1162,7 +1152,7 @@ private theorem KDecay_sum_tailT_core (k : ℕ) {L : ℕ} [NeZero L] {g t : ℝ}
         simp only [Nat.add_sub_cancel]
         field_simp
 
-/-- **The lattice sum of the tail** (`F-E`): `Σ_{a ∈ Z_L^d} 𝒯_t(|a|_∞) ≤ C_∞(d) (1-t)⁻¹`, `d ≥ 2`,
+/-- **The lattice sum of the tail**: `Σ_{a ∈ Z_L^d} 𝒯_t(|a|_∞) ≤ C_∞(d) (1-t)⁻¹`, `d ≥ 2`,
 uniformly in `L ≥ 1`, `g ≥ 0` and `t < 1` (in particular `g ∈ (0, gmax]`, `t ∈ [0,1)`). -/
 theorem KDecay_sum_tailT_le {d L : ℕ} [NeZero L] (hd : 2 ≤ d) {g t : ℝ} (hg : 0 ≤ g)
     (ht : t < 1) :
@@ -1171,10 +1161,3 @@ theorem KDecay_sum_tailT_le {d L : ℕ} [NeZero L] (hd : 2 ≤ d) {g t : ℝ} (h
   exact KDecay_sum_tailT_core k hg ht
 
 end RBM.Loop
-
-/-! ## 11. Instances of targets 2 and 3
-
-At `d = 3` on the merged preflight sequence `sz0` (`L = 4(n+1)`, `W = (2(n+1))^5`, `lam = (2(n+1))^{-6}`),
-the flow `z0` (`E n = lemE (z0 n)`, `|E n| ≤ 2 - 1/10`), `(s, t) = (sInst, tInst) = (0, 1/16)`,
-`κ = 1/10`, `gmax = 10 = 𝔡⁻¹`; the lattice sum at `d = 3`, `L = 5`, `g = 1`, `t = 1/2`.  Every
-deterministic hypothesis is discharged. -/
