@@ -213,7 +213,7 @@ theorem unNormBARow_holds : UNNormBARow := by
         congr 1; ring
     _ ≤ ENNReal.ofReal (N ^ (-D)) := ENNReal.ofReal_le_ofReal hn
 
-/-- `unEMCTE2RowBAD_holds`: the filtered weighted `(EMCTE2)` statement of the block Anderson kind, at every filter, from the
+/-- `unEMCTE2RowBAD_holds`: the filtered weighted [DYYY25, (2.21)] statement of the block Anderson kind, at every filter, from the
 unfiltered `unEMCTE2RowBA_holds` (each dimension is read at itself). -/
 theorem unEMCTE2RowBAD_holds : ∀ Dm : ℕ → Prop, UNEMCTE2RowBAD Dm :=
   fun _ d _ hd => unEMCTE2RowBA_holds d hd

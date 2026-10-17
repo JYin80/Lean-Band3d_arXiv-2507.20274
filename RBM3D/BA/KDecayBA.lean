@@ -22,10 +22,10 @@ The BA analogue of `Induction/KDecay.lean` (`STKcalDecay`, `stKcalDecay_holds`):
 (paper: (2.58) `eq:bcal_k`; Lemma A.6 `tree-representation_BA`; Lemma A.7 `lem_pureloop`; Lemma 8.3 `lem:propM`).
 
 * §1 walks in the graph of a weighted tree value (`KLgval`) and the distance bound `|a_i - a_j| ≤ k S`; the generic bound
-  `‖KLgval‖ ≤ (L^d)^{#nodes} B^{n + #edges} exp(-κ' maxDist/(R+1))` when any two labels are joined by a walk of at most `R` steps.
+  `‖KLgval‖ ≤ (L^d)^{#nodes} B^{n + #edges} exp(-κ' KLmaxDist/(R+1))` when any two labels are joined by a walk of at most `R` steps.
 * §2 the slot graph of the cactus of `F ∈ TSP n` (leaf `Θ`, chord `tΘ`, `M`-edges `s → BAnextSlot s`) is connected
   (`BAnextSlot_orbit`, the chord slots, the tree of `F`); a walk bound `R_n` uniform in `F ∈ TSP n` (finitely many trees).
-* §3 `Γ_M(F)`: the cactus value is bounded by `(L^d)^{n+2n²} B^{2n+3n²} e^{-κ' maxDist/(R+1)}`.
+* §3 `Γ_M(F)`: the cactus value is bounded by `(L^d)^{n+2n²} B^{2n+3n²} e^{-κ' KLmaxDist/(R+1)}`.
 * §4 the edge bounds at the BA datum from `baProp5to8_holds` (`Θ`) and `baPropM_holds` (`M^{(B)}`): `C₁ W^{2Q} e^{-(c/ℓ_u)|x-y|}`.
 * §5 `𝒦` for `k = 2` ((2.71) `Kn2sol`, the convolution `Θ M^{(σσ')}`) and `k ≥ 3` (`baTreeRep`); §6 the far-region estimate at fixed `(L, W)`.
 * §7 `BAKcalDecay` and `baKcalDecay_holds` (the absorption into `W^{-D}`).
@@ -85,7 +85,7 @@ private theorem KDecayBA_walk_dist {V : Type*} (adj : V → V → Prop) (β : V 
 
 /-- **The generic bound** for a weighted tree value: if every leaf weight and every edge weight is bounded by
 `B e^{-κ' |x-y|}` and any two labels are joined by a walk of at most `R` steps, then
-`‖KLgval‖ ≤ (L^d)^{#nodes} B^{n + #edges} e^{-κ' maxDist/(R+1)}`. -/
+`‖KLgval‖ ≤ (L^d)^{#nodes} B^{n + #edges} e^{-κ' KLmaxDist/(R+1)}`. -/
 private theorem KDecayBA_gval_bound {Nd Ed : Type*} [Fintype Nd] [DecidableEq Nd] [Fintype Ed] {n : ℕ}
     (a : Fin n → Zd d L) (Mw : Fin n → Matrix (Zd d L) (Zd d L) ℂ) (p : Fin n → Nd)
     (E : Ed → Matrix (Zd d L) (Zd d L) ℂ) (c q : Ed → Nd) {B κ' : ℝ} (hB : 1 ≤ B) (hκ : 0 ≤ κ')
@@ -274,7 +274,7 @@ section Cactus
 variable {d L : ℕ} [NeZero L] {n : ℕ} [NeZero n]
 
 /-- **`Γ_M(F)` for `F ∈ TSP n`**: if every `Θ`-entry and every `M`-entry is bounded by `B e^{-κ' |x-y|}`, then
-`|Γ_M(F)| ≤ (L^d)^{n + 2n²} B^{2n + 3n²} e^{-κ' maxDist a/(R+1)}`, `R` the walk bound of the slot graph. -/
+`|Γ_M(F)| ≤ (L^d)^{n + 2n²} B^{2n + 3n²} e^{-κ' KLmaxDist a/(R+1)}`, `R` the walk bound of the slot graph. -/
 private theorem KDecayBA_cactus_bound {R : ℕ}
     (hR : ∀ F ∈ TSP n, ∀ i j : Fin n, ∃ k ≤ R, KDecayBA_Walk (KDecayBA_G F) k (Sum.inl i) (Sum.inl j))
     {F : Finset (Fin n × Fin n)} (hF : F ∈ TSP n) (M : Bool → Matrix (Zd d L) (Zd d L) ℂ) {t : ℝ} (ht0 : 0 ≤ t)
@@ -509,7 +509,7 @@ private theorem KDecayBA_two_bound {L : ℕ} [NeZero L] {g E u B κ' : ℝ} {m :
         rw [sum_const, card_univ, nsmul_eq_mul, hcard]; ring
 
 /-- **`𝒦` for every `k ≥ 2`** at a BA flow point: (2.71) `Kn2sol` for `k = 2`, `baTreeRep` for `k ≥ 3`; the one shape
-`2^{k²} (L^d)^{k+2k²} B^{2k+3k²} e^{-κ' maxDist a/(R+1)}`, with `R` depending on `k` only. -/
+`2^{k²} (L^d)^{k+2k²} B^{2k+3k²} e^{-κ' KLmaxDist a/(R+1)}`, with `R` depending on `k` only. -/
 private theorem KDecayBA_Kn_far {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) (k : ℕ) (hk : 2 ≤ k) :
     ∃ R : ℕ, ∀ (L W : ℕ) [NeZero L], 3 ≤ L → 1 ≤ W → ∀ (g E u B κ' : ℝ) (m : ℂ), 0 < g → g ≤ Λ → BAReal d L g κ E m →
       0 ≤ u → u < 1 → 1 ≤ B → 0 ≤ κ' →
@@ -603,7 +603,7 @@ private theorem KDecayBA_ellT_mono {L : ℕ} {g₀ g : ℝ} (h : g₀ ≤ g) (u 
   min_le_min (max_le_max (div_le_div_of_nonneg_right h (Real.sqrt_nonneg _)) le_rfl) le_rfl
 
 /-- **The far-region estimate** (`k ≥ 2`, `ℓ_u(g) < L`, kernels at `g₀ ≤ g`): `|𝒦_{u,σ,a}| ≤ Ak N^{P_k} e^{-c W^τ}` for every
-`N ≥ max(W, L^d)` and `ℓ_u(g) W^τ ≤ maxDist a`; `Ak = 2^{k²} C₁^{2k+3k²}`, `P_k = (k + 2k²) + 2Q(2k + 3k²)`,
+`N ≥ max(W, L^d)` and `ℓ_u(g) W^τ ≤ KLmaxDist a`; `Ak = 2^{k²} C₁^{2k+3k²}`, `P_k = (k + 2k²) + 2Q(2k + 3k²)`,
 `c = c₀/(R_k+1)`; the constants depend on `(d, Λ, κ, k)` only. -/
 private theorem KDecayBA_far_const (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (hκ : 0 < κ) (k : ℕ) (hk : 2 ≤ k) :
     ∃ Ak : ℝ, 0 ≤ Ak ∧ ∃ c : ℝ, 0 < c ∧ ∀ (L W N : ℕ) [NeZero L], 3 ≤ L → 1 ≤ W → W ≤ N → L ^ d ≤ N →
@@ -630,7 +630,7 @@ private theorem KDecayBA_far_const (hd : 3 ≤ d) {Λ κ : ℝ} (hΛ : 0 < Λ) (
   have hB1 : 1 ≤ C₁ * (W : ℝ) ^ (2 * Q) := one_le_mul_of_one_le_of_one_le hC₁ hWQ1
   have hκ'0 : 0 ≤ c₀ / ellT L g₀ u := by positivity
   have hK := HK L W hL hW g₀ E u (C₁ * (W : ℝ) ^ (2 * Q)) (c₀ / ellT L g₀ u) m hg0 hgΛ hr hu0 hu1 hB1 hκ'0 hΘ hMM σ a
-  -- `κ' maxDist ≥ c₀ W^τ`
+  -- `κ' KLmaxDist ≥ c₀ W^τ`
   have hWτ : 0 < (W : ℝ) ^ τ := Real.rpow_pos_of_pos hWpos τ
   have hκ' : c₀ * (W : ℝ) ^ τ ≤ c₀ / ellT L g₀ u * (KLmaxDist d L a : ℝ) := by
     have hle : ellT L g₀ u * (W : ℝ) ^ τ ≤ (KLmaxDist d L a : ℝ) :=

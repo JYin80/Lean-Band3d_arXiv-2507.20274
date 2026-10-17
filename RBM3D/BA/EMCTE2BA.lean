@@ -9,24 +9,24 @@ import RBM3D.BA.UNPins
 import RBM3D.BA.MReg
 
 /-!
-# The block Anderson weighted `(EMCTE2)` estimate and the bad-event bounds
+# The block Anderson weighted [DYYY25, (2.21)] estimate and the bad-event bounds
 
 The block Anderson producer `unEMCTE2RowBA_holds` of the statement `UNEMCTE2RowBA` (`BA/UNPins.lean`), and the
 three kind hypotheses `UNBulkWindowk`, `UNBadBoundk`, `UNBad2Boundk` with their block Anderson instances, which feed the
 model-generic forms `unJak_of_ouClaimsk`, `unUyw_of_ouClaimsk` (used by `jakUywRowkD` in `BA/UNBUniv.lean`).
 
 Paper: Theorem 2.4 (`Thm: B_Univ`) for the block Anderson model `H = V + iλ Ψ` ((2.30) `eq:H_blocka`).  Its proof is the
-Green's function comparison of [DYYY25, Theorem 2.6]: the weighted estimate `(EMCTE2)` is obtained "as in Step 3" of the
-proof of [YY_25, Theorem 2.6], and `(jaklsdufowe)`, `(uywy7723r3rf)` are the equations (2.22), (2.23) of [DYYY25].
+Green's function comparison of [DYYY25, Theorem 2.6]: the weighted estimate [DYYY25, (2.21)] is obtained "as in Step 3" of the
+proof of [YY_25, Theorem 2.6], and the two estimates of item (ii) are [DYYY25, (2.22)] and [DYYY25, (2.23)].
 
-* **(i) `(EMCTE2)`**: the centred block Anderson flow is `λ_n Ψ` plus the band OU flow of
+* **(i) [DYYY25, (2.21)]**: the centred block Anderson flow is `λ_n Ψ` plus the band OU flow of
   `sz.withLam 0` (`ouMatC_ba_eq_band_add`, on the same probability space; profile
   `S^{(B)}(0) = I`, `lamV = 0`).  So the generator identity holds for the shifted test function
   `Φ(A + ·)` (`EMCTE2BA_testFunH_translate`, `EMCTE2BA_wirtSecond_translate`);
   `eq225_intervalShift` is `eq225_interval` for it, `unEMCTE2k_ba` is
   `unEMCTE2_of_sizeTendsto` read through the translation, and
   `unEMCTE2RowBA_holds` is the statement `UNEMCTE2RowBA`.
-* **(ii) `(jaklsdufowe)`, `(uywy7723r3rf)`**: `unJak_of_ouClaimsk`, `unUyw_of_ouClaimsk`
+* **(ii) [DYYY25, (2.22)], [DYYY25, (2.23)]**: `unJak_of_ouClaimsk`, `unUyw_of_ouClaimsk`
   are the model-generic forms of `unJak_of_ouClaims`, `unUyw_of_ouClaims`
   (`Jak.lean`, `Uyw.lean`: the private fixed-time lemmas carry the profile coupling
   `lamV` and the bulk window, and are reached by `open private`), under the three kind
@@ -247,7 +247,7 @@ theorem eq225_intervalShift (d : ℕ) (sz : Sizes d) (n nf : ℕ) (z : Fin nf �
 
 /-! ## 3. `UNEMCTE2k` at the block Anderson kind -/
 
-/-- **The weighted `(EMCTE2)` at a size sequence**: the block Anderson kind at every size sequence with
+/-- **The weighted [DYYY25, (2.21)] at a size sequence**: the block Anderson kind at every size sequence with
 `N → ∞` and `τU ≤ Cn τU` (the argument of `unEMCTE2_of_sizeTendsto`).  The centred flow is `λ_n Ψ` plus the
 band flow of `sz.withLam 0` (`ouMatC_ba_eq_band_add`), the probability space is the same, the profile coupling
 is `lamV = 0 = (sz.withLam 0).lam n`; then `eq225_intervalShift` at `A = λ_n Ψ` (Hermitian: `mean_herm`).  `E` is not used. -/
@@ -605,7 +605,7 @@ theorem unUyw_of_ouClaimsk (K : ∀ d, UNKind d) (hbw : UNBulkWindowk K) (hbb : 
 
 /-! ## 5. The statement `UNEMCTE2RowBA` -/
 
-/-- **The weighted `(EMCTE2)` of the block Anderson kind**, `UNEMCTE2Rowk` at `UNKind.ba`:
+/-- **The weighted [DYYY25, (2.21)] of the block Anderson kind**, `UNEMCTE2Rowk` at `UNKind.ba`:
 `Cn = 1`, `τ₀ = 1`; the size hypothesis is the third conjunct of `Admissible`; the bulk premise is not used. -/
 theorem unEMCTE2RowBA_holds : UNEMCTE2RowBA := by
   intro d _ 𝔠 𝔡 sz hA κ _ E _ nf

@@ -96,3 +96,5 @@
 | T2550 | 2026-10-17 09:49 UTC (59931dea) | prover | Sonnet 5.5 | 是（09:01 被提前开、09:03 停，未提交，不算返工） | 发布：`docs/PAPER-VS-LEAN.md` 到合并后的状态（704 行；Theorem 2.7 对所有 d ≥ 3、公开版审计、d = 4 五个合取；BDC-C1/C2）；审核第 1 轮 PASS，242 行 Lean 引文与源码一致 |
 | T2538 | 2026-10-17 13:46 UTC (6921148b) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 发布第 3 步：`Induction/` S–Z 28 个文件注释（+1,150 −1,595，去注释后与 main 相同）；审核第 1 轮 PASS，124 对编号/label 与最终论文一致 |
 | T2539 | 2026-10-17 15:20 UTC (de214014) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 发布第 3 步：`Graph/` A–B 70 个文件注释（+2,251 −2,742，去注释后与 main 相同）；审核第 1 轮 PASS；审核 O1（`claim:size`/`claim:xi` 简写）、O2（BASymm2 文档串位置）由调度按 §382 直接改（H355） |
+| T2537 | 2026-10-17 20:49 UTC (afb1dcfe) | prover-hard | Sonnet 5.5 effort xhigh | 否（审核第 1 轮 RETURN：注释里不存在的声明与模块 `Step34PinsP` → 规则 (B) 修一次 b202392c → 第 2 轮 PASS） | 发布第 3 步：`Induction/` K–Q 50 个文件注释（去注释后相同） |
+| T2541 | 2026-10-17 21:01 UTC (cb43f8db) | prover-hard | Sonnet 5.5 effort xhigh | 是（两次 RETURN 都只因开工后才加的 Amend 2，H356 (3)；第 2 次后两处名字由调度定稿、中枢在分支上改、签字合并，§385） | 发布第 3 步：`BA/` A–K 69 个文件注释（去注释后相同） |

@@ -27,7 +27,7 @@ discharges the blocks at the BA reading `Flow := BAFlow`, `mk := baFMz`, `T0 := 
   alone (constants in `(d, κ, 𝔡)`).
 * `baComp_Q_row`, `baComp_Q_col`, `baComp_row_le`, `baComp_col_le`, `baComp_holds` (`BACompBound`): the composition `Θ_BA M^{(σσ')}` has row and column sums
   `≤ (1-t)⁻¹` and decays beyond `ℓ_t(g)`, for every charge pair.
-* `baEMn2ExpHK`: `(HK)` from `(Kn2sol)` (`baKsol_two`) and `baComp_holds`.
+* `baEMn2ExpHK`: `emn2ExpHK` from `(Kn2sol)` (`baKsol_two`) and `baComp_holds`.
 * `baSTEMn2Poly`, `baSTEMn2Exp`: the estimates at the BA reading; the Green function hypotheses `STInitialGT2gL`,
   `STLWassmgL`, `STLWassmExpgL` are hypotheses of the statements `STEMn2PolygL`, `STEMn2ExpgL`.
 

@@ -3951,3 +3951,17 @@ T2313 → T2314 → `stOeqQt'_holds` → S3-24b（`STIterR'`，NQEndFlow.lean:13
 - (2) `CLAUDE.md` §7 加一条 "Processes (shared machine)"：不准按名字或模式停进程（`pkill`、`killall`、`kill $(pgrep …)`），只能按 PID 停自己起的进程（或带本工作树绝对路径的 `pgrep -f`），并在报告里写明。`CLAUDE.md` 归总调度（TEAM §5），不动 `.claude/agents/`（那要 Jun 同意）。
 - (3) H357：中枢提交 `CLAUDE.md`，并从现在起在每个新开的 preflight、prover、repairer、auditor 的提示里加一句指向这条。已在跑的工作流不动。被杀掉的 build 只会失败重跑，不会产生假的 PASS；不算返工。
 - (4) T2541 审核第 1 轮 RETURN 只因 Amend 2（审核自己写明），按 H356 (3) 不算返工。下一节 §385。
+
+## §385 — T2541 第 2 次 RETURN：两行注释由调度定稿、中枢在分支上改后合并（总调度 V5，2026-10-17 19:14 UTC）
+
+- (1) T2541 审核第 2 轮 RETURN（仅 Amend 2 第 1、3 项，两处都是 main 上原有的注释）：`BA/GreenMinor3.lean` 文档串里的 `DiffBd.add`、`.smul` 不存在；`BA/GUEDuhamelBA.lean` 模块文档串把 `gueGrid_loop_duhamel` 归到 `BA/GUEDuhamelBA2`（那里是 `gueGrid_loop_duhamelBA`）。其余全部通过（去注释 69/69 相同、全量 build、公理、检查文件、票的 grep）。规则 (B) 停在第二次 RETURN，中枢问调度。
+- (2) 定：不再开第二次修复、不再审第三轮。按 §382 由调度给出两处原文替换，中枢在 t/T2541 上照改、核对去注释相同并编译两个模块，然后按规则 (A) 走全量 build 合并（调度签字代替第三轮审核）。
+- (3) 返工：不算（仅 Amend 2，H356 (3)）。H358。下一节 §386。
+
+## §386 — T2537、T2541 合并；别的论文的 TeX 标签改成文献编号（Amend 3）；调度改 T2541 观察项（总调度 V5，2026-10-17 21:05 UTC）
+
+- (1) T2537 合并 afb1dcfe（20:49），T2541 合并 cb43f8db（21:01，按 §385 签字）。
+- (2) T2541 审核第 2 轮 O2：注释用 [DYYY25] 的 TeX 标签 `(EMCTE2)`、`(jaklsdufowe)`、`(uywy7723r3rf)` 当名字，读者查不到。查 RBM2D 论文 TeX（`../RBM2D/paper/tex/1-2_intro-results-new.tex`）与其 PDF：`417` = (2.20)，`EMCTE2` = (2.21)，`jaklsdufowe` = (2.22)，`uywy7723r3rf` = (2.23)（最终论文正文也写 "(2.22) and (2.23) of [DYYY25]"）。
+- (3) 写 `docs/tickets/T2536-T2547-amend-3.md`：这四个标签改成 [DYYY25, (2.20)–(2.23)]，含这些字串的 Lean 名字不动；别的外文标签写成"文献 + 编号"或文字描述加引用。交给此后开工的注释票（T2544–T2547），以及 T2542、T2543 中审核尚未开始者的审核；仅因 Amend 3 的 RETURN 不算返工。主要落在 T2544（`Universality/`，约 16 个文件）。
+- (4) 按 §382 调度直接改已合并文件的注释：`BA/EMCTE2BA`、`BA/UNBUniv` 的 `(EMCTE2)` 等改成文献编号；`BA/EMn2BA` 的 `(HK)` 改成它指的 Lean 名字 `emn2ExpHK`；`BA/KDecayBA` 公式里的 `maxDist` 改成 Lean 名字 `KLmaxDist`（T2541 审核两轮 O1）。H359 要求中枢先编译这 4 个模块、核对去注释相同再提交。
+- (5) 返工账：T2537 否（第 1 轮 RETURN、修一次）；T2541 是（两次 RETURN 都只因开工后才加的 Amend 2，H356 (3)）。下一节 §387。
