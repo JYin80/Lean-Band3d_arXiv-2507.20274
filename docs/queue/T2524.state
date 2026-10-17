@@ -1,0 +1,4 @@
+state: audit-pass
+reason: design gate: preflight PASS, prover-max PASS (probe 67f99efb), 1a-audit PASS (claude-opus-5-5, with Amend 1 items 1-5); merging the report only.
+updated: Sat Oct 17 01:04:37 UTC 2026
+reports: docs/reports/T2524-prove.md, docs/reports/T2524-design.md, docs/reports/T2524-audit.md
