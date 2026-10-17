@@ -90,3 +90,4 @@
 | T2535 | 2026-10-17 02:25 UTC (07716bc2) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 发布：`docs/PAPER-VS-LEAN.md` 695 行（按最终形式；T2533/T2534 的名字待复核）；审核第 1 轮 PASS，观察 4 条（d = 4 实例空体内 → T2534 Amend 1） |
 | T2533 | 2026-10-17 08:14 UTC (feb83715) | prover-hard | Sonnet 5.5 effort xhigh | 是 | BA-D 的 R1：`baStep5III_holds_any`（Step 5 情形 (iii) 在 BA 元组上对所有 d ≥ 3），就地改 5 个 `BA/Step5III*` 文件 +284 −268；1a → 1b → 审核第 1 轮 PASS，约 17 分钟 |
 | T2534 | 2026-10-17 08:27 UTC (4b68c4cc) | prover | Sonnet 5.5 | 是 | BA-D 的 R2（装配，关 BA-D）：`Thm27 := ∀ d, 3 ≤ d → BAThm27L d`、`baThm27L_all`、d = 4 实例（体内非空，Amend 1 选项 1，`L = 4`、`λ = g₀`），+151 −33；审核第 1 轮 PASS，约 12 分钟 |
+| T2548 | 2026-10-17 09:00 UTC (ba53553a) | prover | Sonnet 5.5 | 是 | 发布：公开版公理审计（`Test/Axioms.lean` 换成 RBM2D 形式，24,150 个 `RBM` 声明只用三条标准公理；删 `Test/AuditNegative.lean`），−612 行；审核第 1 轮 PASS |

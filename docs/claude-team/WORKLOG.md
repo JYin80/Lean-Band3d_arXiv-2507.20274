@@ -502,3 +502,4 @@
 - 2026-10-17 08:24 UTC 调度 V5：T2533 合并 feb83715（BA-D R1，`baStep5III_holds_any`），检查 Part 2 启用；T2534 08:15 开工；磁盘 19 GiB < 20 GiB，注释票未开 → H347：清理已合并票的工作树（不加 --force），之后按剩余空间开注释票；DECISIONS §378。
 - 2026-10-17 08:45 UTC 调度 V5：T2534 合并 4b68c4cc——Theorem 2.7 对所有 d ≥ 3 证完（唯一假设 UNL32）；检查 Part 2 启用、D723 标撤回；BA-D 关闭 REQ；放 T2548（公开版审计）、T2549（BA-D 注释）、T2550（PAPER-VS-LEAN 复核），注释票共用 Amend 1；make_publish 改写 paper/final 路径；H348；DECISIONS §379。
 - 2026-10-17 09:00 UTC 调度 V5：监督 0846 PASS——BA-D 关闭（3 / 3，BA 207），全部 gate 关闭，Lean 端完成；BDC-C1（d = 4 数据的理由更正）、BDC-C2（BUniv 在 d = 4 不读 d = 3 数据）→ T2549、T2550 Amend 1；T2551 加 d = 4 第五个合取；清工作树后磁盘 105 GiB，T2548、T2549、T2536、T2537 在跑；H349；DECISIONS §380。
+- 2026-10-17 09:12 UTC 调度 V5：T2548 合并 ba53553a（公开版公理审计，24,150 个声明三公理）；T2550 停等 T2551；在跑 T2549、T2536、T2537、T2538；H350；DECISIONS §381。
