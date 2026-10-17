@@ -15,7 +15,7 @@ import RBM3D.Universality.PinsKD
 import RBM3D.Universality.GUEPhase.RandomLayerBGD
 
 /-!
-# T2520 (BA leaf): the block Anderson filtered assembly and the end `BAThm27L 3`
+# T2520, T2534 (BA leaf): the block Anderson filtered assembly and `BAThm27L d`, `d ≥ 3`
 
 MN-D3 D3-D6 and N2's own rows (`docs/reports/T2513-design.md` §3, §5, §6; DECISIONS §316, §336,
 §340, §353).  New declarations only; no merged statement is edited (MNO-C1).
@@ -32,13 +32,14 @@ MN-D3 D3-D6 and N2's own rows (`docs/reports/T2513-design.md` §3, §5, §6; DEC
   `unOURowBAD_holds` and, from the unfiltered producers of T2519, `unG1RowkBA_holds`,
   `unOURowBA_holds` (the merged `∀ d` implication `UNOURowBA`, `UNPins:123`);
 * §4 the end in `RBM.BA`: `baEnd_BUnivL_of_ML`, `baThm27L_of_ML` (per `d`),
-  `baEnd_BUnivL_three`, `baThm27L_three` (`UNL32 → BAEnd_BUnivL 3`, `UNL32 → BAThm27L 3`: the only
-  external hypothesis is `UNL32`), `baThm27L_any` (general `d` under `STStep5IIIgL d`);
+  `baThm27L_any` (general `d` under `STStep5IIIgL d`), `baThm27L_all`
+  (**Theorem 2.7 at every `d ≥ 3`**, `UNL32 → ∀ d, 3 ≤ d → BAThm27L d`; the only external hypothesis
+  is `UNL32`; T2534) and its `d = 3` instance `baThm27L_three`;
 * §5 compiled nonempty instances at `d = 3`, `S0`.
 
 C5 names read (T2519): `BAKFam`, `BAPB` (`BA/GUEProcBA:76, 93`), `ba_prodG`, `ba_LLG`, `ba_QueG`
 (`BA/GUEHyp`).  Paper: `Thm: B_Univ` for block Anderson, `1_2:452-460`, `MR:decol_BA` `1_2:655`;
-D723 (BA Theorem 2.7 at `d = 3`).
+D723; DECISIONS §371, §372 (BA Theorem 2.7 at every `d ≥ 3`, T2534).
 -/
 
 set_option linter.style.longLine false
@@ -257,17 +258,23 @@ theorem baEnd_BUnivL_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOut
 theorem baThm27L_of_ML (d : ℕ) (hd : 3 ≤ d) (h32 : UNL32) (hML : UNMLOutBA d) : BAThm27L d :=
   ⟨baEnd_decolL d hML, baEnd_locSCL d hML, baEnd_QUEL d hML, baEnd_BUnivL_of_ML d hd h32 hML, baEnd_QDiffL d hML⟩
 
-/-- **`baThm27L_three`** (D6, closing condition (vi)): the block Anderson Theorem 2.7 pins at `d = 3` (D723): the input of
-MA-06b.  The only hypothesis is `UNL32`. -/
-theorem baThm27L_three : UNL32 → BAThm27L 3 :=
-  fun h32 => baThm27L_of_ML 3 le_rfl h32 unMLOutBA_three
-
 /-- **`baThm27L_any`** (closing condition (iii), D723): `BAThm27L d` for every `d ≥ 3` under Step 5 (iii), `STStep5IIIgL d`,
 through `baMainIndFamTL_any` (`MainIndTermBA:53`) and `unMLOutBA_of_famStep` (`MainIndOutBA:326`). -/
 theorem baThm27L_any (d : ℕ) (hd : 3 ≤ d)
     (h5 : STStep5IIIgL d (fun sz => Sizes.seqP (sz.withLam 0)) (fun sz κ ε 𝔠 𝔡 z => BAFlow sz κ ε 𝔠 𝔡 z)
       (fun sz z => baFMz sz z) (fun sz z => BAflowT0 sz z)) (h32 : UNL32) : BAThm27L d :=
   baThm27L_of_ML d hd h32 (unMLOutBA_of_famStep d (baMainIndFamTL_any d h5))
+
+/-- **`baThm27L_all`** (T2534, BA-D row R2, the assembly): **Theorem 2.7 (`MR:decol_BA`) at every `d ≥ 3`**.  `baThm27L_any` with its
+Step 5 (iii) premise discharged by `baStep5III_holds_any` (`BA/Step5IIITargets`, T2533); the only hypothesis is the borrowed `UNL32`
+(LSY arXiv:1609.09011 Thm 2.2). -/
+theorem baThm27L_all (h32 : UNL32) : ∀ d : ℕ, 3 ≤ d → BAThm27L d :=
+  fun d hd => baThm27L_any d hd (baStep5III_holds_any d hd) h32
+
+/-- **`baThm27L_three`** (D6, closing condition (vi)): the block Anderson Theorem 2.7 at `d = 3` (D723), the `d = 3` instance of
+`baThm27L_all`: the input of MA-06b.  The only hypothesis is `UNL32`. -/
+theorem baThm27L_three : UNL32 → BAThm27L 3 :=
+  fun h32 => baThm27L_all h32 3 le_rfl
 
 end RBM.BA
 
