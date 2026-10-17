@@ -19,7 +19,7 @@ The deterministic lemma `STTailtoTail` (`Induction/Step5Pins.lean`) for `3 ≤ d
 `|(𝒰^{(2)}_{s,t,σ} ∘ A)_a| ≤ C T_{t,D}(|a₁-a₂|) + ((1-s)/(1-t))² W^{-D}`,
 with `C = (3 e^{(4d+1)/4})²`.
 
-Route (the Neumann step is done by a weighted row-sum bound instead of the pointwise bound
+Proof outline (the Neumann step is done by a weighted row-sum bound instead of the pointwise bound
 `(1-t)Θ_t(0,x) ≤ q^{|x|₁}`):
 
 * `(1 - sμS) Θ_{tμ} = 1 + (t-s) μ S Θ_{tμ}` (`uKer_eq_one_add`), so by property 4

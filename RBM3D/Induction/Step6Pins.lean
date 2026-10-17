@@ -154,7 +154,7 @@ def STExpAvgAt (E u : ℕ → ℝ) : Prop :=
 
 /-- **`lem:improve_exp_aver`** (Lemma 6.1: "the same as [YY_25, Lemma 5.15] by using `(Gt_avgbound_flow)` and
 `(Eq:L-KGt-flow)`"), per time sequence `u ∈ [0, lemT z]`.  Premises, at the time sequence `u`: `(Gt_avgbound_flow)` (`LWAvgLaw`) and
-`(Eq:L-KGt-flow)` (`STLK`; its `k = 1` case is the first premise, so `LWAvgLaw` is redundant, kept as in the paper).  Route (as in RBM2D):
+`(Eq:L-KGt-flow)` (`STLK`; its `k = 1` case is the first premise, so `LWAvgLaw` is redundant, kept as in the paper).  Proof outline (as in RBM2D):
 Stein for `H_u = √u X` gives `𝔼 tr(H G E_a) = -u Σ_p S_{pa} 𝔼[g_p g_a]`, with `z_u m + 1 = -u m²` the self-consistent equation
 `x = u m² S x + y`, `y ≺ (W^{-d}B_{u,0})²` by the second moments of `g_p - m` (`≺ → 𝔼`, envelope `‖G_u‖ ≤ η_u⁻¹ ≤ N^{1-ε}`) and
 `‖Θ_{u m²}‖_{∞→∞} ≤ C` (`ekSameRow_holds`, `Evolution/XiPins.lean`; RBM2D has `1 + cShortRow κ (1 + log L)`).

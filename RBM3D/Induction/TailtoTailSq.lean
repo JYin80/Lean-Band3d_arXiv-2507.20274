@@ -28,7 +28,7 @@ and `0 ≤ v ≤ w < 1`, `g² ≤ 1 - w`, `4 ≤ log W`, `|E| ≤ 2`, the bound
   ≤ 18 e^{8d+2} p (T_{w,D}(|a₀-a₁|)² + ρ⁴ (W^{-D})²) + 4 Y L^d ρ³ W^{-D₂}`
 holds, `ρ = (1-v)/(1-w)`, `K^σ_i = uKer (cycProd (m(σ)) i) v w`.
 
-Route: the helpers of `Induction/TailtoTail.lean` (copied with the prefix `tailtoTailSq_`)
+Proof outline: the helpers of `Induction/TailtoTail.lean` (copied with the prefix `tailtoTailSq_`)
 give the row sums `Σ_b |K(a,b)| ≤ ρ` and the weighted row sums
 `Σ_b |K(a,b)| e^{c|a-b|} ≤ 3ρ`, `c = 1/(4d+1)`; the squared profile uses
 `e^{2√r} ≤ e^{4d+1} e^{c r}` and `T_v² ≤ 2 α_v² e^{-2√r} + 2 (W^{-D})²`; the far pairs

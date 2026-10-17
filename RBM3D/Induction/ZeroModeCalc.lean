@@ -388,7 +388,7 @@ theorem zeroModeSet_ThetaN (hL : 3 ≤ L) {m : Fin n → ℂ} {t : ℝ}
 
 end Commute
 
-/-! ## 3. The bridge to `SameSignOutside` and the sign data of `Ugen` -/
+/-! ## 3. The bridge to the condition `I_diff(σ) ⊆ A` and the sign data of `Ugen` -/
 
 section Bridge
 
@@ -519,7 +519,7 @@ subtracting the two identities of `stNewPQ_holds` (one data `(ℓ, k, ξ, σ', �
   + Σ_α ξ_α (2 i N η_τ)^{-(m - k_α)} (Q^{(A_α)}(𝓛 − 𝒦)^{(k_α)})_{σ_α, a_α}`
 with `A_α ⊇ I_diff(σ_α)`, `1 ≤ k_α ≤ m - 1`, for `(𝓛 − 𝒦)` the `STLKM` at `H = seqHflow`
 (`𝓛 − 𝒦 = Lloop − STKloop` by definition).  Every index set on the right contains `I_diff` of its
-charge vector, i.e. `SameSignOutside` holds. -/
+charge vector. -/
 theorem zeroModeCalc_LK_expansion (d m : ℕ) (σ : Fin m → Bool) (A : Finset (Fin m)) :
     ∃ (ℓ : ℕ) (k : Fin ℓ → ℕ) (ξ : Fin ℓ → ℤ) (σ' : ∀ α, Fin (k α) → Bool)
       (ι : ∀ α, Fin (k α) → Fin m) (A' : ∀ α, Finset (Fin (k α))),

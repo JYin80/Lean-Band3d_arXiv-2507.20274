@@ -94,3 +94,4 @@
 | T2549 | 2026-10-17 09:19 UTC (a92d38ad) | prover-hard | Sonnet 5.5 effort xhigh | 是（审核第 1 轮按开工后才给的 Amend 1 BDC-C2 RETURN，规则 (B) 改注释一次 94109171，H349 (2) 定为不算返工） | 发布第 3 步：BA-D 7 个文件的注释（+312 −344，去注释后 7/7 相同）；Theorem 2.7 的范围句、BDC-C1/C2；第 2 轮 PASS |
 | T2551 | 2026-10-17 09:25 UTC (1a8c2c11) | prover | Sonnet 5.5 | 否（审核第 1 轮 RETURN：一条文档串 → 规则 (B) 修一次 3b9ebf4a；第 2 轮 PASS） | 发布：d = 4 例子加 BUniv 合取，`(final_shape h32).2 4` 五个合取全部用上；只改 `Main/FinalShape` |
 | T2550 | 2026-10-17 09:49 UTC (59931dea) | prover | Sonnet 5.5 | 是（09:01 被提前开、09:03 停，未提交，不算返工） | 发布：`docs/PAPER-VS-LEAN.md` 到合并后的状态（704 行；Theorem 2.7 对所有 d ≥ 3、公开版审计、d = 4 五个合取；BDC-C1/C2）；审核第 1 轮 PASS，242 行 Lean 引文与源码一致 |
+| T2538 | 2026-10-17 13:46 UTC (6921148b) | prover-hard | Sonnet 5.5 effort xhigh | 是 | 发布第 3 步：`Induction/` S–Z 28 个文件注释（+1,150 −1,595，去注释后与 main 相同）；审核第 1 轮 PASS，124 对编号/label 与最终论文一致 |
